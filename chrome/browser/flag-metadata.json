@@ -2077,6 +2077,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "grid-layout-for-ntp-shortcuts",
+    "owners": [ "kristipark", "ramyan" ],
+    "expiry_milestone": 77
+  },
+  {
     "name": "handwriting-gesture",
     "owners": [ "shend" ],
     "expiry_milestone": 76

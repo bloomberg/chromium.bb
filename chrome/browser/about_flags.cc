@@ -2695,6 +2695,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kChromeColorsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kChromeColors)},
 
+    {"grid-layout-for-ntp-shortcuts",
+     flag_descriptions::kGridLayoutForNtpShortcutsName,
+     flag_descriptions::kGridLayoutForNtpShortcutsDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kGridLayoutForNtpShortcuts)},
+
     {"remove-ntp-fakebox", flag_descriptions::kRemoveNtpFakeboxName,
      flag_descriptions::kRemoveNtpFakeboxDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kRemoveNtpFakebox)},

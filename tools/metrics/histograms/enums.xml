@@ -33607,6 +33607,7 @@ from previous Chrome versions.
   <int value="-716953514" label="disable-password-separated-signin-flow"/>
   <int value="-716272467" label="AssistantAppSupport:disabled"/>
   <int value="-715733307" label="force-effective-connection-type"/>
+  <int value="-715552057" label="GridLayoutForNtpShortcuts:disabled"/>
   <int value="-714712077" label="ClickToOpenPDFPlaceholder:disabled"/>
   <int value="-714710496" label="VideoFullscreenOrientationLock:disabled"/>
   <int value="-714543772" label="enable-gpu-service-logging"/>
@@ -34334,6 +34335,7 @@ from previous Chrome versions.
   <int value="422307097" label="PhysicalWeb:disabled"/>
   <int value="423615350" label="enable-tab-audio-muting"/>
   <int value="423855924" label="enable-tab-switcher-theme-colors"/>
+  <int value="425072496" label="GridLayoutForNtpShortcuts:enabled"/>
   <int value="430959979" label="SyncStandaloneTransport:disabled"/>
   <int value="431691805" label="MediaDocumentDownloadButton:enabled"/>
   <int value="434033638" label="PwaPersistentNotification:disabled"/>

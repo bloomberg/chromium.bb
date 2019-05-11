@@ -2576,6 +2576,12 @@ const char kChromeColorsName[] = "Chrome Colors menu";
 const char kChromeColorsDescription[] =
     "Show Chrome Colors menu in the NTP customization menu.";
 
+const char kGridLayoutForNtpShortcutsName[] =
+    "Enable grid layout for NTP shortcuts";
+const char kGridLayoutForNtpShortcutsDescription[] =
+    "Enables better animations for the shortcuts, including improved "
+    "drag-and-drop.";
+
 const char kRemoveNtpFakeboxName[] = "Remove fakebox from the NTP";
 const char kRemoveNtpFakeboxDescription[] =
     "Do not show the fakebox on the New Tab page.";
