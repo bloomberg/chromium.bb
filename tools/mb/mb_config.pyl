@@ -49,7 +49,6 @@
 
     'chromium.android': {
       'Android ASAN (dbg)': 'android_clang_asan_debug_bot_minimal_symbols',
-      'Android Cronet Marshmallow 64bit Perf': 'android_cronet_release_bot_minimal_symbols_arm64',
       'Android arm Builder (dbg)': 'android_debug_static_bot',
       'Android arm64 Builder (dbg)': 'android_debug_static_bot_arm64',
       'Android x64 Builder (dbg)': 'android_debug_static_bot_x64',
