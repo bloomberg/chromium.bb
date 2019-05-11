@@ -229,7 +229,7 @@ bool FtlSignalStrategy::Core::SendStanza(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!stream_parser_) {
-    VLOG(0) << "Dropping signaling message because XMPP is not connected.";
+    HOST_LOG << "Dropping signaling message because FTL is not connected.";
     return false;
   }
 

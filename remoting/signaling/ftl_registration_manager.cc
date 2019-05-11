@@ -43,7 +43,7 @@ FtlRegistrationManager::FtlRegistrationManager(
 FtlRegistrationManager::~FtlRegistrationManager() = default;
 
 void FtlRegistrationManager::SignInGaia(DoneCallback on_done) {
-  VLOG(0) << "SignInGaia will be called with backoff: "
+  VLOG(1) << "SignInGaia will be called with backoff: "
           << sign_in_backoff_.GetTimeUntilRelease();
   sign_in_backoff_timer_.Start(
       FROM_HERE, sign_in_backoff_.GetTimeUntilRelease(),
@@ -120,7 +120,7 @@ void FtlRegistrationManager::OnSignInGaiaResponse(
 
   // TODO(yuweih): Consider caching auth token.
   ftl_auth_token_ = response.auth_token().payload();
-  VLOG(0) << "Auth token set on FtlClient";
+  VLOG(1) << "Auth token set on FtlClient";
   base::TimeDelta refresh_delay =
       base::TimeDelta::FromMicroseconds(response.auth_token().expires_in());
   if (refresh_delay > kRefreshBufferTime) {
@@ -133,7 +133,7 @@ void FtlRegistrationManager::OnSignInGaiaResponse(
       base::BindOnce(&FtlRegistrationManager::SignInGaia,
                      base::Unretained(this),
                      base::DoNothing::Once<const grpc::Status&>()));
-  VLOG(0) << "Scheduled auth token refresh in: " << refresh_delay;
+  VLOG(1) << "Scheduled auth token refresh in: " << refresh_delay;
   std::move(on_done).Run(status);
 }
 

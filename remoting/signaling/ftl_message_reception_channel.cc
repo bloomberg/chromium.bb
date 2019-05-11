@@ -138,7 +138,7 @@ void FtlMessageReceptionChannel::RunStreamClosedCallbacks(
 }
 
 void FtlMessageReceptionChannel::RetryStartReceivingMessagesWithBackoff() {
-  VLOG(0) << "RetryStartReceivingMessages will be called with backoff: "
+  VLOG(1) << "RetryStartReceivingMessages will be called with backoff: "
           << reconnect_retry_backoff_.GetTimeUntilRelease();
   reconnect_retry_timer_.Start(
       FROM_HERE, reconnect_retry_backoff_.GetTimeUntilRelease(),
@@ -147,7 +147,7 @@ void FtlMessageReceptionChannel::RetryStartReceivingMessagesWithBackoff() {
 }
 
 void FtlMessageReceptionChannel::RetryStartReceivingMessages() {
-  VLOG(0) << "RetryStartReceivingMessages called";
+  VLOG(1) << "RetryStartReceivingMessages called";
   StopReceivingMessagesInternal();
   StartReceivingMessagesInternal();
 }
@@ -194,7 +194,7 @@ void FtlMessageReceptionChannel::OnPongTimeout() {
 }
 
 void FtlMessageReceptionChannel::OnStreamLifetimeExceeded() {
-  VLOG(0) << "Reached maximum lifetime for current stream.";
+  VLOG(1) << "Reached maximum lifetime for current stream.";
   reconnect_retry_backoff_.Reset();
   RetryStartReceivingMessages();
 }

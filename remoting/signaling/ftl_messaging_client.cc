@@ -158,7 +158,7 @@ void FtlMessagingClient::OnPullMessagesResponse(
     return;
   }
 
-  VLOG(0) << "Acking " << ack_request.messages_size() << " messages";
+  VLOG(1) << "Acking " << ack_request.messages_size() << " messages";
 
   AckMessages(ack_request, std::move(on_done));
 }

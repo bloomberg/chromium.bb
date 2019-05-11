@@ -93,7 +93,7 @@ GrpcAsyncExecutor::GrpcAsyncExecutor() : weak_factory_(this) {}
 
 GrpcAsyncExecutor::~GrpcAsyncExecutor() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  VLOG(0) << "# of pending RPCs at destruction: " << pending_requests_.size();
+  VLOG(1) << "# of pending RPCs at destruction: " << pending_requests_.size();
   CancelPendingRequests();
 }
 
@@ -107,7 +107,7 @@ void GrpcAsyncExecutor::ExecuteRpc(std::unique_ptr<GrpcAsyncRequest> request) {
       base::BindOnce(&GrpcAsyncExecutor::OnDequeue, weak_factory_.GetWeakPtr(),
                      std::move(request));
   if (!unowned_request->CanStartRequest()) {
-    VLOG(0) << "RPC is canceled before execution: " << unowned_request;
+    VLOG(1) << "RPC is canceled before execution: " << unowned_request;
     return;
   }
   VLOG(1) << "Enqueuing RPC: " << unowned_request;
@@ -131,7 +131,7 @@ void GrpcAsyncExecutor::ExecuteRpc(std::unique_ptr<GrpcAsyncRequest> request) {
 }
 
 void GrpcAsyncExecutor::CancelPendingRequests() {
-  VLOG(0) << "Canceling # of pending requests: " << pending_requests_.size();
+  VLOG(1) << "Canceling # of pending requests: " << pending_requests_.size();
   // Drop pending response callbacks.
   weak_factory_.InvalidateWeakPtrs();
   for (auto& pending_request : pending_requests_) {
