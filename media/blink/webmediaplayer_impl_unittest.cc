@@ -456,7 +456,9 @@ class WebMediaPlayerImplTest : public testing::Test {
     wmpi_->OnError(status);
   }
 
-  void OnMetadata(PipelineMetadata metadata) { wmpi_->OnMetadata(metadata); }
+  void OnMetadata(const PipelineMetadata& metadata) {
+    wmpi_->OnMetadata(metadata);
+  }
 
   void OnWaiting(WaitingReason reason) { wmpi_->OnWaiting(reason); }
 

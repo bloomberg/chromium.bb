@@ -1755,7 +1755,7 @@ void WebMediaPlayerImpl::OnEnded() {
   UpdatePlayState();
 }
 
-void WebMediaPlayerImpl::OnMetadata(PipelineMetadata metadata) {
+void WebMediaPlayerImpl::OnMetadata(const PipelineMetadata& metadata) {
   DVLOG(1) << __func__;
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 

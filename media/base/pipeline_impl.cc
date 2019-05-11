@@ -1301,7 +1301,7 @@ void PipelineImpl::OnEnded() {
   client_->OnEnded();
 }
 
-void PipelineImpl::OnMetadata(PipelineMetadata metadata) {
+void PipelineImpl::OnMetadata(const PipelineMetadata& metadata) {
   DVLOG(2) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(IsRunning());

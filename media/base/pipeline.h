@@ -45,7 +45,7 @@ class MEDIA_EXPORT Pipeline {
     // Executed when the content duration, container video size, start time,
     // and whether the content has audio and/or video in supported formats are
     // known.
-    virtual void OnMetadata(PipelineMetadata metadata) = 0;
+    virtual void OnMetadata(const PipelineMetadata& metadata) = 0;
 
     // Executed whenever there are changes in the buffering state of the
     // pipeline.
