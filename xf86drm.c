@@ -3141,10 +3141,6 @@ drm_public int drmDevicesEqual(drmDevicePtr a, drmDevicePtr b)
 
 static int drmGetNodeType(const char *name)
 {
-    if (strncmp(name, DRM_PRIMARY_MINOR_NAME,
-        sizeof(DRM_PRIMARY_MINOR_NAME) - 1) == 0)
-        return DRM_NODE_PRIMARY;
-
     if (strncmp(name, DRM_CONTROL_MINOR_NAME,
         sizeof(DRM_CONTROL_MINOR_NAME ) - 1) == 0)
         return DRM_NODE_CONTROL;
@@ -3152,6 +3148,10 @@ static int drmGetNodeType(const char *name)
     if (strncmp(name, DRM_RENDER_MINOR_NAME,
         sizeof(DRM_RENDER_MINOR_NAME) - 1) == 0)
         return DRM_NODE_RENDER;
+
+    if (strncmp(name, DRM_PRIMARY_MINOR_NAME,
+        sizeof(DRM_PRIMARY_MINOR_NAME) - 1) == 0)
+        return DRM_NODE_PRIMARY;
 
     return -EINVAL;
 }
