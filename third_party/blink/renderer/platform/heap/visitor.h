@@ -120,8 +120,7 @@ class PLATFORM_EXPORT Visitor {
     static_assert(IsGarbageCollectedType<T>::value,
                   "T needs to be a garbage collected object");
 
-    VisitBackingStoreStrongly(__PRETTY_FUNCTION__,
-                              reinterpret_cast<void*>(backing_store),
+    VisitBackingStoreStrongly(reinterpret_cast<void*>(backing_store),
                               reinterpret_cast<void**>(backing_store_slot),
                               TraceDescriptorFor(backing_store));
   }
@@ -135,8 +134,7 @@ class PLATFORM_EXPORT Visitor {
     static_assert(IsGarbageCollectedType<T>::value,
                   "T needs to be a garbage collected object");
 
-    VisitBackingStoreWeakly(__PRETTY_FUNCTION__,
-                            reinterpret_cast<void*>(backing_store),
+    VisitBackingStoreWeakly(reinterpret_cast<void*>(backing_store),
                             reinterpret_cast<void**>(backing_store_slot),
                             TraceTrait<T>::GetTraceDescriptor(
                                 reinterpret_cast<void*>(backing_store)),
@@ -149,8 +147,7 @@ class PLATFORM_EXPORT Visitor {
     static_assert(IsGarbageCollectedType<T>::value,
                   "T needs to be a garbage collected object");
 
-    VisitBackingStoreOnly(__PRETTY_FUNCTION__,
-                          reinterpret_cast<void*>(backing_store),
+    VisitBackingStoreOnly(reinterpret_cast<void*>(backing_store),
                           reinterpret_cast<void**>(backing_store_slot));
   }
 
@@ -220,17 +217,13 @@ class PLATFORM_EXPORT Visitor {
   virtual void VisitWeak(void*, void**, TraceDescriptor, WeakCallback) = 0;
 
   // Visitors for collection backing stores.
-  virtual void VisitBackingStoreStrongly(const char*,
-                                         void*,
-                                         void**,
-                                         TraceDescriptor) = 0;
-  virtual void VisitBackingStoreWeakly(const char*,
-                                       void*,
+  virtual void VisitBackingStoreStrongly(void*, void**, TraceDescriptor) = 0;
+  virtual void VisitBackingStoreWeakly(void*,
                                        void**,
                                        TraceDescriptor,
                                        WeakCallback,
                                        void*) = 0;
-  virtual void VisitBackingStoreOnly(const char*, void*, void**) = 0;
+  virtual void VisitBackingStoreOnly(void*, void**) = 0;
 
   // Visits cross-component references to V8.
 
