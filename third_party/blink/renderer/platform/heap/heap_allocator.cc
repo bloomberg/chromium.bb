@@ -6,30 +6,57 @@
 
 namespace blink {
 
+namespace {
+
+struct BackingModifier {
+  bool can_modify;
+  BasePage* const page;
+  HeapObjectHeader* const header;
+};
+
+BackingModifier CanFreeOrShrinkBacking(ThreadState* const state,
+                                       void* address) {
+  // - |SweepForbidden| protects against modifying objects from destructors.
+  // - |in_atomic_pause| protects against modifying objects from within the GC.
+  // This can
+  //   e.g. happen when hash table buckets that have containers inlined are
+  //   freed during weakness processing.
+  // - |IsMarkingInProgress| protects against incremental marking which may have
+  //   registered callbacks.
+  if (state->SweepForbidden() || state->in_atomic_pause() ||
+      state->IsMarkingInProgress())
+    return {false, nullptr, nullptr};
+
+  // - Don't adjust large objects because their page is never reused.
+  // - Don't free backings allocated on other threads.
+  BasePage* page = PageFromObject(address);
+  if (page->IsLargeObjectPage() || page->Arena()->GetThreadState() != state)
+    return {false, nullptr, nullptr};
+
+  HeapObjectHeader* const header = HeapObjectHeader::FromPayload(address);
+  // - Guards against pages that have not been swept. Technically, it should be
+  // fine to modify those backings. We bail out to maintain the invariant that
+  // no marked backing is modified.
+  if (header->IsMarked())
+    return {false, nullptr, nullptr};
+  return {true, page, header};
+}
+
+}  // namespace
+
 void HeapAllocator::BackingFree(void* address) {
   if (!address)
     return;
 
-  ThreadState* state = ThreadState::Current();
-  if (state->SweepForbidden())
-    return;
-  DCHECK(!state->in_atomic_pause());
-
-  // Don't promptly free large objects because their page is never reused.
-  // Don't free backings allocated on other threads.
-  BasePage* page = PageFromObject(address);
-  if (page->IsLargeObjectPage() || page->Arena()->GetThreadState() != state)
+  ThreadState* const state = ThreadState::Current();
+  BackingModifier result = CanFreeOrShrinkBacking(state, address);
+  if (!result.can_modify)
     return;
 
-  HeapObjectHeader* header = HeapObjectHeader::FromPayload(address);
-  // Don't promptly free marked backing as they may be registered on the marking
-  // callback stack. The effect on non incremental marking GCs is that promptly
-  // free is disabled for surviving backings during lazy sweeping.
-  if (header->IsMarked())
-    return;
-  state->Heap().PromptlyFreed(header->GcInfoIndex());
-  static_cast<NormalPage*>(page)->ArenaForNormalPage()->PromptlyFreeObject(
-      header);
+  state->Heap().PromptlyFreed(result.header->GcInfoIndex());
+  static_cast<NormalPage*>(result.page)
+      ->ArenaForNormalPage()
+      ->PromptlyFreeObject(result.header);
 }
 
 void HeapAllocator::FreeVectorBacking(void* address) {
@@ -41,10 +68,7 @@ void HeapAllocator::FreeInlineVectorBacking(void* address) {
 }
 
 void HeapAllocator::FreeHashTableBacking(void* address) {
-  // When incremental marking is enabled weak callbacks may have been
-  // registered.
-  if (!ThreadState::Current()->IsMarkingInProgress())
-    BackingFree(address);
+  BackingFree(address);
 }
 
 bool HeapAllocator::BackingExpand(void* address, size_t new_size) {
@@ -92,39 +116,27 @@ bool HeapAllocator::BackingShrink(void* address,
 
   DCHECK_LT(quantized_shrunk_size, quantized_current_size);
 
-  ThreadState* state = ThreadState::Current();
-  if (state->SweepForbidden())
+  ThreadState* const state = ThreadState::Current();
+  BackingModifier result = CanFreeOrShrinkBacking(state, address);
+  if (!result.can_modify)
     return false;
-  DCHECK(!state->in_atomic_pause());
+
   DCHECK(state->IsAllocationAllowed());
   DCHECK_EQ(&state->Heap(), &ThreadState::FromObject(address)->Heap());
 
-  // FIXME: Support shrink for large objects.
-  // Don't shrink backings allocated on other threads.
-  BasePage* page = PageFromObject(address);
-  if (page->IsLargeObjectPage() || page->Arena()->GetThreadState() != state)
-    return false;
-
-  HeapObjectHeader* header = HeapObjectHeader::FromPayload(address);
-
-  // Compaction may register slots for compaction in slots of vector backings.
-  // E.g., when vectors are embedded in each other. To avoid dereferincing a
-  // broken slot, bail out on already marked backings.
-  if (header->IsMarked())
-    return false;
-
-  NormalPageArena* arena = static_cast<NormalPage*>(page)->ArenaForNormalPage();
+  NormalPageArena* arena =
+      static_cast<NormalPage*>(result.page)->ArenaForNormalPage();
   // We shrink the object only if the shrinking will make a non-small
   // prompt-free block.
   // FIXME: Optimize the threshold size.
   if (quantized_current_size <= quantized_shrunk_size +
                                     sizeof(HeapObjectHeader) +
                                     sizeof(void*) * 32 &&
-      !arena->IsObjectAllocatedAtAllocationPoint(header))
+      !arena->IsObjectAllocatedAtAllocationPoint(result.header))
     return true;
 
   bool succeeded_at_allocation_point =
-      arena->ShrinkObject(header, quantized_shrunk_size);
+      arena->ShrinkObject(result.header, quantized_shrunk_size);
   if (succeeded_at_allocation_point)
     state->Heap().AllocationPointAdjusted(arena->ArenaIndex());
   return true;
