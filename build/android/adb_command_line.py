@@ -5,6 +5,8 @@
 
 """Utility for reading / writing command-line flag files on device(s)."""
 
+from __future__ import print_function
+
 import argparse
 import logging
 import sys
@@ -80,14 +82,14 @@ Otherwise: Writes command-line file.
 
   updated_values = all_devices.pMap(update_flags).pGet(None)
 
-  print '%sCurrent flags (in %s):' % (action, args.name)
+  print('%sCurrent flags (in %s):' % (action, args.name))
   for d, desc, flags in updated_values:
     if flags:
       # Shell-quote flags for easy copy/paste as new args on the terminal.
       quoted_flags = ' '.join(cmd_helper.SingleQuote(f) for f in sorted(flags))
     else:
       quoted_flags = '( empty )'
-    print '  %s (%s): %s' % (d, desc, quoted_flags)
+    print('  %s (%s): %s' % (d, desc, quoted_flags))
 
   return 0
 

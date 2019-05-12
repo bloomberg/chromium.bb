@@ -5,6 +5,8 @@
 """Contains a helper function for deploying and executing a packaged
 executable on a Target."""
 
+from __future__ import print_function
+
 import common
 import hashlib
 import logging
@@ -146,7 +148,7 @@ def _DrainStreamToStdout(stream, quit_event):
       line = rlist[0].readline()
       if not line:
         return
-      print line.rstrip()
+      print(line.rstrip())
 
 
 def RunPackage(output_dir, target, package_path, package_name,
@@ -207,7 +209,7 @@ def RunPackage(output_dir, target, package_path, package_name,
     output_stream = SymbolizerFilter(output_stream, build_ids_paths)
 
     for next_line in output_stream:
-      print next_line.rstrip()
+      print(next_line.rstrip())
 
     process.wait()
     if process.returncode == 0:

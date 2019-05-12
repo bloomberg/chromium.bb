@@ -552,6 +552,8 @@ This type corresponds to an Android app bundle (`.aab` file).
 --------------- END_MARKDOWN ---------------------------------------------------
 """
 
+from __future__ import print_function
+
 import collections
 import itertools
 import json

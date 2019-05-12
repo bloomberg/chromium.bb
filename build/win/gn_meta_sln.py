@@ -6,6 +6,8 @@
 #   Helper utility to combine GN-generated Visual Studio projects into
 #   a single meta-solution.
 
+from __future__ import print_function
+
 import os
 import glob
 import re

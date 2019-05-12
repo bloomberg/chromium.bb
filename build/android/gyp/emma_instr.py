@@ -17,6 +17,8 @@ Possible commands are:
       Also removes any stale coverage files.
 """
 
+from __future__ import print_function
+
 import collections
 import json
 import optparse
@@ -121,8 +123,8 @@ def _CreateSourcesListFile(source_dirs, sources_list_file, src_root):
   for s in source_dirs:
     abs_source = os.path.abspath(s)
     if abs_source[:len(src_root)] != src_root:
-      print ('Error: found source directory not under repository root: %s %s'
-             % (abs_source, src_root))
+      print('Error: found source directory not under repository root: %s %s' %
+            (abs_source, src_root))
       return 1
     rel_source = os.path.relpath(abs_source, src_root)
 

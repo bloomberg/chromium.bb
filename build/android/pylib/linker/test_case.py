@@ -35,6 +35,8 @@
 """
 # pylint: disable=R0201
 
+from __future__ import print_function
+
 import logging
 import re
 
@@ -158,7 +160,7 @@ class LinkerTestCaseBase(object):
       A base_test_result.TestRunResult() instance.
     """
     margin = 8
-    print '[ %-*s ] %s' % (margin, 'RUN', self.tagged_name)
+    print('[ %-*s ] %s' % (margin, 'RUN', self.tagged_name))
     logging.info('Running linker test: %s', self.tagged_name)
 
     command_line_flags = ''
@@ -174,7 +176,7 @@ class LinkerTestCaseBase(object):
       result_text = 'FAILED'
     elif status == ResultType.TIMEOUT:
       result_text = 'TIMEOUT'
-    print '[ %*s ] %s' % (margin, result_text, self.tagged_name)
+    print('[ %*s ] %s' % (margin, result_text, self.tagged_name))
 
     return base_test_result.BaseTestResult(self.tagged_name, status, log=logs)
 

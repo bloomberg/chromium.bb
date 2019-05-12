@@ -16,6 +16,8 @@ The toolchain version can be overridden by setting MAC_TOOLCHAIN_REVISION with
 the full revision, e.g. 9A235.
 """
 
+from __future__ import print_function
+
 import os
 import platform
 import shutil
@@ -61,22 +63,22 @@ def _UseHermeticToolchain():
 def RequestCipdAuthentication():
   """Requests that the user authenticate to access Xcode CIPD packages."""
 
-  print 'Access to Xcode CIPD package requires authentication.'
-  print '-----------------------------------------------------------------'
-  print
-  print 'You appear to be a Googler.'
-  print
-  print 'I\'m sorry for the hassle, but you may need to do a one-time manual'
-  print 'authentication. Please run:'
-  print
-  print '    cipd auth-login'
-  print
-  print 'and follow the instructions.'
-  print
-  print 'NOTE: Use your google.com credentials, not chromium.org.'
-  print
-  print '-----------------------------------------------------------------'
-  print
+  print('Access to Xcode CIPD package requires authentication.')
+  print('-----------------------------------------------------------------')
+  print()
+  print('You appear to be a Googler.')
+  print()
+  print('I\'m sorry for the hassle, but you may need to do a one-time manual')
+  print('authentication. Please run:')
+  print()
+  print('    cipd auth-login')
+  print()
+  print('and follow the instructions.')
+  print()
+  print('NOTE: Use your google.com credentials, not chromium.org.')
+  print()
+  print('-----------------------------------------------------------------')
+  print()
   sys.stdout.flush()
 
 
@@ -132,11 +134,11 @@ def main():
     return 0
 
   if not _UseHermeticToolchain():
-    print 'Skipping Mac toolchain installation for mac'
+    print('Skipping Mac toolchain installation for mac')
     return 0
 
   if not PlatformMeetsHermeticXcodeRequirements():
-    print 'OS version does not support toolchain.'
+    print('OS version does not support toolchain.')
     return 0
 
   toolchain_version = os.environ.get('MAC_TOOLCHAIN_REVISION',
@@ -156,8 +158,8 @@ def main():
   # TODO(crbug.com/797051): remove this once the old "hermetic" solution is no
   # longer in use.
   if os.path.exists(stamp_file):
-    print 'Detected old hermetic installation at %s. Deleting.' % (
-      toolchain_root)
+    print(
+        'Detected old hermetic installation at %s. Deleting.' % toolchain_root)
     shutil.rmtree(toolchain_root)
 
   success = InstallXcode(toolchain_version, installer_cmd, xcode_app_path)

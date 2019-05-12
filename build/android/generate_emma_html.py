@@ -6,6 +6,8 @@
 
 """Aggregates EMMA coverage files to produce html output."""
 
+from __future__ import print_function
+
 import fnmatch
 import json
 import optparse
@@ -61,8 +63,8 @@ def main():
   # Filter out zero-length files. These are created by emma_instr.py when a
   # target has no classes matching the coverage filter.
   metadata_files = [f for f in metadata_files if os.path.getsize(f)]
-  print 'Found coverage files: %s' % str(coverage_files)
-  print 'Found metadata files: %s' % str(metadata_files)
+  print('Found coverage files: %s' % str(coverage_files))
+  print('Found metadata files: %s' % str(metadata_files))
 
   sources = []
   for f in metadata_files:

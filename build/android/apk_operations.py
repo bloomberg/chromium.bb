@@ -6,6 +6,8 @@
 # Using colorama.Fore/Back/Style members
 # pylint: disable=no-member
 
+from __future__ import print_function
+
 import argparse
 import collections
 import json
@@ -222,7 +224,7 @@ def _InstallBundle(devices, bundle_apks, package_name, command_line_flags_file,
       if ShouldWarnFakeFeatureModuleInstallFlag(device):
         msg = ('Command line has no %s: Fake modules will be ignored.' %
                FAKE_FEATURE_MODULE_INSTALL)
-        print _Colorize(msg, colorama.Fore.YELLOW + colorama.Style.BRIGHT)
+        print(_Colorize(msg, colorama.Fore.YELLOW + colorama.Style.BRIGHT))
 
     InstallFakeModules(device)
 
@@ -346,8 +348,8 @@ def _LaunchUrl(devices, package_name, argv=None, command_line_flags_file=None,
       device.StartActivity(launch_intent)
   device_utils.DeviceUtils.parallel(devices).pMap(launch)
   if wait_for_java_debugger:
-    print ('Waiting for debugger to attach to process: ' +
-           _Colorize(debug_process_name, colorama.Fore.YELLOW))
+    print('Waiting for debugger to attach to process: ' +
+          _Colorize(debug_process_name, colorama.Fore.YELLOW))
 
 
 def _ChangeFlags(devices, argv, command_line_flags_file):
@@ -399,8 +401,8 @@ def _RunGdb(device, package_name, debug_process_name, pid, output_directory,
   if target_cpu:
     cmd.append('--target-arch=%s' % _TargetCpuToTargetArch(target_cpu))
   logging.warning('Running: %s', ' '.join(pipes.quote(x) for x in cmd))
-  print _Colorize(
-      'All subsequent output is from adb_gdb script.', colorama.Fore.YELLOW)
+  print(_Colorize('All subsequent output is from adb_gdb script.',
+                  colorama.Fore.YELLOW))
   os.execv(gdb_script_path, cmd)
 
 
@@ -431,13 +433,12 @@ def _RunMemUsage(devices, package_name, query_app=False):
   all_results = parallel_devices.pMap(mem_usage_helper).pGet(None)
   for result in _PrintPerDeviceOutput(devices, all_results):
     if not result:
-      print 'No processes found.'
+      print('No processes found.')
     else:
       for name, usage in sorted(result):
-        print _Colorize(
-            '==== Output of "dumpsys meminfo %s" ====' % name,
-            colorama.Fore.GREEN)
-        print usage
+        print(_Colorize('==== Output of "dumpsys meminfo %s" ====' % name,
+                        colorama.Fore.GREEN))
+        print(usage)
 
 
 def _DuHelper(device, path_spec, run_as=None):
@@ -609,15 +610,15 @@ def _RunDiskUsage(devices, package_name):
             compilation_filter)
 
   def print_sizes(desc, sizes):
-    print '%s: %d KiB' % (desc, sum(sizes.itervalues()))
+    print('%s: %d KiB' % (desc, sum(sizes.itervalues())))
     for path, size in sorted(sizes.iteritems()):
-      print '    %s: %s KiB' % (path, size)
+      print('    %s: %s KiB' % (path, size))
 
   parallel_devices = device_utils.DeviceUtils.parallel(devices)
   all_results = parallel_devices.pMap(disk_usage_helper).pGet(None)
   for result in _PrintPerDeviceOutput(devices, all_results):
     if not result:
-      print 'APK is not installed.'
+      print('APK is not installed.')
       continue
 
     (data_dir_sizes, code_cache_sizes, apk_sizes, lib_sizes, odex_sizes,
@@ -634,7 +635,7 @@ def _RunDiskUsage(devices, package_name):
     if show_warning:
       logging.warning('For a more realistic odex size, run:')
       logging.warning('    %s compile-dex [speed|speed-profile]', sys.argv[0])
-    print 'Total: %s KiB (%.1f MiB)' % (total, total / 1024.0)
+    print('Total: %s KiB (%.1f MiB)' % (total, total / 1024.0))
 
 
 class _LogcatProcessor(object):
@@ -801,13 +802,13 @@ def _RunPs(devices, package_name):
       lambda d: _GetPackageProcesses(d, package_name)).pGet(None)
   for processes in _PrintPerDeviceOutput(devices, all_processes):
     if not processes:
-      print 'No processes found.'
+      print('No processes found.')
     else:
       proc_map = collections.defaultdict(list)
       for p in processes:
         proc_map[p.name].append(str(p.pid))
       for name, pids in sorted(proc_map.items()):
-        print name, ','.join(pids)
+        print(name, ','.join(pids))
 
 
 def _RunShell(devices, package_name, cmd):
@@ -817,7 +818,7 @@ def _RunShell(devices, package_name, cmd):
         cmd, run_as=package_name).pGet(None)
     for output in _PrintPerDeviceOutput(devices, outputs):
       for line in output:
-        print line
+        print(line)
   else:
     adb_path = adb_wrapper.AdbWrapper.GetAdbPath()
     cmd = [adb_path, '-s', devices[0].serial, 'shell']
@@ -825,9 +826,9 @@ def _RunShell(devices, package_name, cmd):
     if devices[0].build_version_sdk >= version_codes.NOUGAT:
       cmd += ['-t', 'run-as', package_name]
     else:
-      print 'Upon entering the shell, run:'
-      print 'run-as', package_name
-      print
+      print('Upon entering the shell, run:')
+      print('run-as', package_name)
+      print()
     os.execv(adb_path, cmd)
 
 
@@ -838,7 +839,7 @@ def _RunCompileDex(devices, package_name, compilation_filter):
   outputs = parallel_devices.RunShellCommand(cmd, timeout=120).pGet(None)
   for output in _PrintPerDeviceOutput(devices, outputs):
     for line in output:
-      print line
+      print(line)
 
 
 def _RunProfile(device, package_name, host_build_directory, pprof_out_path,
@@ -858,7 +859,7 @@ def _RunProfile(device, package_name, host_build_directory, pprof_out_path,
 
     simpleperf.ConvertSimpleperfToPprof(host_simpleperf_out_path,
                                         host_build_directory, pprof_out_path)
-    print textwrap.dedent("""
+    print(textwrap.dedent("""
         Profile data written to %(s)s.
 
         To view profile as a call graph in browser:
@@ -868,7 +869,7 @@ def _RunProfile(device, package_name, host_build_directory, pprof_out_path,
           pprof -top %(s)s
 
         pprof has many useful customization options; `pprof --help` for details.
-        """ % {'s': pprof_out_path})
+        """ % {'s': pprof_out_path}))
 
 
 def _GenerateAvailableDevicesMessage(devices):
@@ -894,11 +895,11 @@ def _DisplayArgs(devices, command_line_flags_file):
 
   parallel_devices = device_utils.DeviceUtils.parallel(devices)
   outputs = parallel_devices.pMap(flags_helper).pGet(None)
-  print 'Existing flags per-device (via /data/local/tmp/{}):'.format(
-      command_line_flags_file)
+  print('Existing flags per-device (via /data/local/tmp/{}):'.format(
+      command_line_flags_file))
   for flags in _PrintPerDeviceOutput(devices, outputs, single_line=True):
     quoted_flags = ' '.join(pipes.quote(f) for f in flags)
-    print quoted_flags or 'No flags set.'
+    print(quoted_flags or 'No flags set.')
 
 
 def _DeviceCachePath(device, output_directory):
@@ -1134,7 +1135,7 @@ class _DevicesCommand(_Command):
   all_devices_by_default = True
 
   def Run(self):
-    print _GenerateAvailableDevicesMessage(self.devices)
+    print(_GenerateAvailableDevicesMessage(self.devices))
 
 
 class _PackageInfoCommand(_Command):
@@ -1148,12 +1149,12 @@ class _PackageInfoCommand(_Command):
 
   def Run(self):
     # Format all (even ints) as strings, to handle cases where APIs return None
-    print 'Package name: "%s"' % self.args.package_name
-    print 'versionCode: %s' % self.apk_helper.GetVersionCode()
-    print 'versionName: "%s"' % self.apk_helper.GetVersionName()
-    print 'minSdkVersion: %s' % self.apk_helper.GetMinSdkVersion()
-    print 'targetSdkVersion: %s' % self.apk_helper.GetTargetSdkVersion()
-    print 'Supported ABIs: %r' % self.apk_helper.GetAbis()
+    print('Package name: "%s"' % self.args.package_name)
+    print('versionCode: %s' % self.apk_helper.GetVersionCode())
+    print('versionName: "%s"' % self.apk_helper.GetVersionName())
+    print('minSdkVersion: %s' % self.apk_helper.GetMinSdkVersion())
+    print('targetSdkVersion: %s' % self.apk_helper.GetTargetSdkVersion())
+    print('Supported ABIs: %r' % self.apk_helper.GetAbis())
 
 
 class _InstallCommand(_Command):

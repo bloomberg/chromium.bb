@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import json
 import os
 import subprocess
@@ -54,7 +56,7 @@ def SetConfigPath(options):
   # Compute the library path name based on the architecture.
   arch = options.arch
   if sysroot and not arch:
-    print "You must specify an architecture via -a if using a sysroot."
+    print("You must specify an architecture via -a if using a sysroot.")
     sys.exit(1)
 
   libdir = sysroot + '/usr/' + options.system_libdir + '/pkgconfig'
@@ -108,7 +110,7 @@ def main():
   # success. This allows us to "kind of emulate" a Linux build from other
   # platforms.
   if "linux" not in sys.platform:
-    print "[[],[],[],[],[]]"
+    print("[[],[],[],[],[]]")
     return 0
 
   parser = OptionParser()
@@ -148,9 +150,9 @@ def main():
     if not subprocess.call([options.pkg_config,
                             "--atleast-version=" + options.atleast_version] +
                             args):
-      print "true"
+      print("true")
     else:
-      print "false"
+      print("false")
     return 0
 
   if options.version_as_components:
@@ -160,7 +162,7 @@ def main():
     except:
       sys.stderr.write('Error from pkg-config.\n')
       return 1
-    print json.dumps(list(map(int, version_string.strip().split("."))))
+    print(json.dumps(list(map(int, version_string.strip().split(".")))))
     return 0
 
 
@@ -171,7 +173,7 @@ def main():
     try:
       libdir = subprocess.check_output(cmd)
     except:
-      print "Error from pkg-config."
+      print("Error from pkg-config.")
       return 1
     sys.stdout.write(libdir.strip())
     return 0
@@ -183,7 +185,7 @@ def main():
     try:
       dridriverdir = subprocess.check_output(cmd)
     except:
-      print "Error from pkg-config."
+      print("Error from pkg-config.")
       return 1
     sys.stdout.write(dridriverdir.strip())
     return
@@ -238,7 +240,7 @@ def main():
   # Output a GN array, the first one is the cflags, the second are the libs. The
   # JSON formatter prints GN compatible lists when everything is a list of
   # strings.
-  print json.dumps([includes, cflags, libs, lib_dirs])
+  print(json.dumps([includes, cflags, libs, lib_dirs]))
   return 0
 
 

@@ -27,6 +27,9 @@ remoting/resources/remoting_strings.grd contains an in-line comment element
 inside its <outputs> section that breaks the script. The check will fail, and
 trying to fix it too, but at least the file will not be modified.
 """
+
+from __future__ import print_function
+
 import argparse
 import json
 import os
@@ -103,9 +106,9 @@ def _CompareLocaleLists(list_a, list_expected, list_name):
     errors.append('Unexpected locales: %s' % extra_locales)
 
   if errors:
-    print 'Errors in %s definition:' % list_name
+    print('Errors in %s definition:' % list_name)
     for error in errors:
-      print '  %s\n' % error
+      print('  %s\n' % error)
     return True
 
   return False
@@ -202,22 +205,22 @@ def _ProcessFile(input_file, locales, check_func, fix_func):
   Returns:
     True at the moment.
   """
-  print '%sProcessing %s...' % (_CONSOLE_START_LINE, input_file),
+  print('%sProcessing %s...' % (_CONSOLE_START_LINE, input_file), end=' ')
   sys.stdout.flush()
   with open(input_file) as f:
     input_lines = f.readlines()
   errors = check_func(input_file, input_lines, locales)
   if errors:
-    print '\n%s%s' % (_CONSOLE_START_LINE, '\n'.join(errors))
+    print('\n%s%s' % (_CONSOLE_START_LINE, '\n'.join(errors)))
     if fix_func:
       try:
         input_lines = fix_func(input_file, input_lines, locales)
         output = ''.join(input_lines)
         with open(input_file, 'wt') as f:
           f.write(output)
-        print 'Fixed %s.' % input_file
+        print('Fixed %s.' % input_file)
       except Exception as e:  # pylint: disable=broad-except
-        print 'Skipped %s: %s' % (input_file, e)
+        print('Skipped %s: %s' % (input_file, e))
 
   return True
 
@@ -1308,9 +1311,9 @@ instead of the default format (which is a space-separated list of locale names).
   def Run(self):
     locale_list = self.TYPE_MAP[self.args.type]()
     if self.args.as_json:
-      print '[%s]' % ", ".join("'%s'" % loc for loc in locale_list)
+      print('[%s]' % ", ".join("'%s'" % loc for loc in locale_list))
     else:
-      print ' '.join(locale_list)
+      print(' '.join(locale_list))
 
 
 class _CheckInputFileBaseCommand(_Command):
@@ -1368,7 +1371,7 @@ class _CheckInputFileBaseCommand(_Command):
                    locales,
                    self.check_func.__func__,
                    self.fix_func.__func__ if args.fix_inplace else None)
-    print '%sDone.' % (_CONSOLE_START_LINE)
+    print('%sDone.' % (_CONSOLE_START_LINE))
 
 
 class _CheckGrdAndroidOutputsCommand(_CheckInputFileBaseCommand):
