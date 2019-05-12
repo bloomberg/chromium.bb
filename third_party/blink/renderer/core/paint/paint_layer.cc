@@ -2471,7 +2471,6 @@ FloatRect PaintLayer::BackdropFilterReferenceBox() const {
   float zoom = GetLayoutObject().StyleRef().EffectiveZoom();
   if (zoom != 1)
     reference_box.Scale(1 / zoom);
-  reference_box.Move(-ToFloatSize(FilterReferenceBox().Location()));
   return reference_box;
 }
 
