@@ -2804,7 +2804,7 @@ TYPED_TEST(RendererPixelTest, RenderPassAndMaskForRoundedCornerMultiRadii) {
 }
 
 template <typename RendererType>
-class RendererPixelTestWithBackdropFilter
+class RendererPixelTestWithBackgroundFilter
     : public RendererPixelTest<RendererType> {
  protected:
   void SetUpRenderPassList() {
@@ -2911,18 +2911,23 @@ class RendererPixelTestWithBackdropFilter
   gfx::Rect filter_pass_layer_rect_;
 };
 
-// TODO(916318): The software renderer does not support background filters yet.
-using BackdropFilterRendererTypes = ::testing::Types<GLRenderer, SkiaRenderer>;
+// The software renderer does not support background filters yet.
+using BackgroundFilterRendererTypes =
+    ::testing::Types<GLRenderer, SkiaRenderer>;
 
-TYPED_TEST_SUITE(RendererPixelTestWithBackdropFilter,
-                 BackdropFilterRendererTypes);
+TYPED_TEST_SUITE(RendererPixelTestWithBackgroundFilter,
+                 BackgroundFilterRendererTypes);
 
-TYPED_TEST(RendererPixelTestWithBackdropFilter, InvertFilter) {
+TYPED_TEST(RendererPixelTestWithBackgroundFilter, InvertFilter) {
   this->backdrop_filters_.Append(cc::FilterOperation::CreateInvertFilter(1.f));
   this->filter_pass_layer_rect_ = gfx::Rect(this->device_viewport_size_);
   this->filter_pass_layer_rect_.Inset(12, 14, 16, 18);
+  // The backdrop_filter_bounds will apply within the layer's coordinate space,
+  // so the clipping bounds should be 0,0 WxH, not
+  // this->filter_pass_layer_rect_.
   this->backdrop_filter_bounds_ =
-      gfx::RRectF(gfx::RectF(this->filter_pass_layer_rect_));
+      gfx::RRectF(0, 0, this->filter_pass_layer_rect_.width(),
+                  this->filter_pass_layer_rect_.height(), 0);
   this->SetUpRenderPassList();
   EXPECT_TRUE(this->RunPixelTest(
       &this->pass_list_,

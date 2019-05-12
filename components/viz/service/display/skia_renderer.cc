@@ -1643,9 +1643,10 @@ SkiaRenderer::DrawRPDQParams SkiaRenderer::CalculateRPDQParams(
       // Scale by the filter's scale, but don't apply filter origin
       rpdq_params.backdrop_filter_bounds->Scale(quad->filters_scale.x(),
                                                 quad->filters_scale.y());
-      // Offset by the render pass' output rect.
+      // Offset by the difference in origins between the quad->rect and the
+      // render pass' output rect.
       rpdq_params.backdrop_filter_bounds->Offset(
-          gfx::Point() -
+          quad->rect.origin() -
           current_frame()->current_render_pass->output_rect.origin());
 
       // If there are also regular image filters, they apply to the area of

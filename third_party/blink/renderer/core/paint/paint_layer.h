@@ -644,7 +644,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   PaintLayerResourceInfo& EnsureResourceInfo();
 
   // Filter reference box is the area over which the filter is computed, in the
-  // local coordinate system of the effect node containing the filter.
+  // coordinate system of the object with the filter. Filter bounds is the
+  // reference box, offset by the object's location in the graphics layer.
   FloatRect FilterReferenceBox() const;
   FloatRect BackdropFilterReferenceBox() const;
   gfx::RRectF BackdropFilterBounds(const FloatRect& reference_box) const;
