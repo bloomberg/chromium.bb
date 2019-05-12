@@ -2,10 +2,10 @@
 
 variables:
   UPSTREAM_REPO: wayland/weston
-  DEBIAN_VERSION: stretch
+  DEBIAN_VERSION: buster
   DEBIAN_EXEC: 'bash .gitlab-ci/debian-install.sh'
 
-  DEBIAN_TAG: '2019-06-14.0'
+  DEBIAN_TAG: '2019-06-26.0'
   DEBIAN_CONTAINER_IMAGE: $CI_REGISTRY_IMAGE/debian/$DEBIAN_VERSION:$DEBIAN_TAG
 
 
