@@ -2904,7 +2904,7 @@ static char *drmGetMinorNameForFD(int fd, int type)
     char buf[PATH_MAX + 1];
     const char *dev_name;
     unsigned int maj, min;
-    int n, base;
+    int n;
 
     if (fstat(fd, &sbuf))
         return NULL;
@@ -2929,11 +2929,7 @@ static char *drmGetMinorNameForFD(int fd, int type)
         return NULL;
     };
 
-    base = drmGetMinorBase(type);
-    if (base < 0)
-        return NULL;
-
-    n = snprintf(buf, sizeof(buf), dev_name, DRM_DIR_NAME, min - base);
+    n = snprintf(buf, sizeof(buf), dev_name, DRM_DIR_NAME, min);
     if (n == -1 || n >= sizeof(buf))
         return NULL;
 
@@ -3827,7 +3823,7 @@ drm_public int drmGetDevice2(int fd, uint32_t flags, drmDevicePtr *device)
     char             node[PATH_MAX + 1];
     const char      *dev_name;
     int              node_type, subsystem_type;
-    int              maj, min, n, ret, base;
+    int              maj, min, n, ret;
 
     if (fd == -1 || device == NULL)
         return -EINVAL;
@@ -3859,11 +3855,7 @@ drm_public int drmGetDevice2(int fd, uint32_t flags, drmDevicePtr *device)
         return -EINVAL;
     };
 
-    base = drmGetMinorBase(node_type);
-    if (base < 0)
-        return -EINVAL;
-
-    n = snprintf(node, PATH_MAX, dev_name, DRM_DIR_NAME, min - base);
+    n = snprintf(node, PATH_MAX, dev_name, DRM_DIR_NAME, min);
     if (n == -1 || n >= PATH_MAX)
       return -errno;
     if (stat(node, &sbuf))
@@ -4083,7 +4075,7 @@ drm_public char *drmGetDeviceNameFromFd2(int fd)
     char             node[PATH_MAX + 1];
     const char      *dev_name;
     int              node_type;
-    int              maj, min, n, base;
+    int              maj, min, n;
 
     if (fstat(fd, &sbuf))
         return NULL;
@@ -4112,11 +4104,7 @@ drm_public char *drmGetDeviceNameFromFd2(int fd)
         return NULL;
     };
 
-    base = drmGetMinorBase(node_type);
-    if (base < 0)
-        return NULL;
-
-    n = snprintf(node, PATH_MAX, dev_name, DRM_DIR_NAME, min - base);
+    n = snprintf(node, PATH_MAX, dev_name, DRM_DIR_NAME, min);
     if (n == -1 || n >= PATH_MAX)
       return NULL;
 
