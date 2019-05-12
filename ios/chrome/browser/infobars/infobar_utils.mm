@@ -19,7 +19,9 @@
 
 std::unique_ptr<infobars::InfoBar> CreateConfirmInfoBar(
     std::unique_ptr<ConfirmInfoBarDelegate> delegate) {
-  if (IsInfobarUIRebootEnabled()) {
+  // TODO(crbug.com/961343): Temporarily disabling the use of
+  // InfobarConfirmCoordinator until multiple message support has been added.
+  if (IsInfobarUIRebootEnabled() && NO) {
     // TODO(crbug.com/927064): Coordinators shouldn't be created at this level,
     // we should probably send only the delegate and have the presenting
     // Coordinator create the right Coordinator using that delegate.
