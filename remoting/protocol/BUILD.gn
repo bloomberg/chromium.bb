@@ -204,6 +204,7 @@ static_library("protocol") {
     "//net",
     "//remoting/base",
     "//remoting/codec:decoder",
+    "//remoting/proto/remoting/v1:network_traversal_proto",
     "//remoting/signaling",
     "//third_party/boringssl",
     "//third_party/libyuv",
@@ -227,6 +228,8 @@ static_library("protocol") {
       "chromium_port_allocator_factory.h",
       "chromium_socket_factory.cc",
       "chromium_socket_factory.h",
+      "remoting_ice_config_request.cc",
+      "remoting_ice_config_request.h",
       "rfc7050_prefix_refresher.cc",
       "rfc7050_prefix_refresher.h",
       "webrtc_audio_module.cc",
@@ -262,6 +265,7 @@ static_library("protocol") {
     }
 
     deps += [
+      "//remoting/proto/remoting/v1:network_traversal_grpc_library",
       "//third_party/webrtc/api:create_peerconnection_factory",
       "//third_party/webrtc/api/audio_codecs:audio_codecs_api",
       "//third_party/webrtc/api/audio_codecs/opus:audio_decoder_opus",
@@ -363,6 +367,7 @@ source_set("unit_tests") {
     "port_range_unittest.cc",
     "ppapi_module_stub.cc",
     "pseudotcp_adapter_unittest.cc",
+    "remoting_ice_config_request_unittest.cc",
     "rfc7050_ip_synthesizer_unittest.cc",
     "sdp_message_unittest.cc",
     "session_config_unittest.cc",
@@ -388,6 +393,7 @@ source_set("unit_tests") {
   deps = [
     ":test_support",
     "//net:test_support",
+    "//remoting/proto/remoting/v1:network_traversal_grpc_library",
     "//testing/gmock",
     "//testing/gtest",
   ]

@@ -32,3 +32,18 @@ if (is_android) {
     ]
   }
 }
+
+proto_library("network_traversal_proto") {
+  sources = [
+    "network_traversal_messages.proto",
+  ]
+}
+
+cc_grpc_library("network_traversal_grpc_library") {
+  sources = [
+    "network_traversal_service.proto",
+  ]
+  deps = [
+    ":network_traversal_proto",
+  ]
+}

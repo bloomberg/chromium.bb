@@ -69,11 +69,11 @@ HttpIceConfigRequest::HttpIceConfigRequest(
 
 HttpIceConfigRequest::~HttpIceConfigRequest() = default;
 
-void HttpIceConfigRequest::Send(const OnIceConfigCallback& callback) {
+void HttpIceConfigRequest::Send(OnIceConfigCallback callback) {
   DCHECK(on_ice_config_callback_.is_null());
   DCHECK(!callback.is_null());
 
-  on_ice_config_callback_ = callback;
+  on_ice_config_callback_ = std::move(callback);
 
   if (oauth_token_getter_) {
     oauth_token_getter_->CallWithToken(base::BindOnce(

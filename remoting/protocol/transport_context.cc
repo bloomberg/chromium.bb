@@ -10,8 +10,8 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "remoting/base/url_request.h"
-#include "remoting/protocol/http_ice_config_request.h"
 #include "remoting/protocol/jingle_info_request.h"
 #include "remoting/protocol/port_allocator_factory.h"
 #include "third_party/webrtc/rtc_base/socket_address.h"
@@ -20,6 +20,7 @@
 #include "jingle/glue/thread_wrapper.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "remoting/protocol/chromium_port_allocator_factory.h"
+#include "remoting/protocol/remoting_ice_config_request.h"
 #endif  // !defined(OS_NACL)
 
 namespace remoting {
@@ -93,12 +94,11 @@ void TransportContext::EnsureFreshIceConfig() {
     std::unique_ptr<IceConfigRequest> request;
     switch (relay_mode_) {
       case RelayMode::TURN:
-        if (ice_config_url_.empty()) {
-          LOG(WARNING) << "ice_config_url isn't set.";
-          return;
-        }
-        request.reset(new HttpIceConfigRequest(
-            url_request_factory_.get(), ice_config_url_, oauth_token_getter_));
+#if defined(OS_NACL)
+        NOTREACHED() << "TURN is not supported on NACL";
+#else
+        request = std::make_unique<RemotingIceConfigRequest>();
+#endif
         break;
       case RelayMode::GTURN:
         request.reset(new JingleInfoRequest(signal_strategy_));

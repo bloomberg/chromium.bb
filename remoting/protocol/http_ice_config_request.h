@@ -32,7 +32,7 @@ class HttpIceConfigRequest : public IceConfigRequest {
   ~HttpIceConfigRequest() override;
 
   // IceConfigRequest interface.
-  void Send(const OnIceConfigCallback& callback) override;
+  void Send(OnIceConfigCallback callback) override;
 
  private:
   void OnOAuthToken(OAuthTokenGetter::Status status,

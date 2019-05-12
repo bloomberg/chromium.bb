@@ -516,8 +516,6 @@ void ChromotingSession::Core::ConnectOnNetworkThread() {
           protocol::NetworkSettings(
               protocol::NetworkSettings::NAT_TRAVERSAL_FULL),
           protocol::TransportRole::CLIENT);
-  transport_context->set_ice_config_url(
-      ServiceUrls::GetInstance()->ice_config_url(), token_getter_.get());
 
 #if defined(ENABLE_WEBRTC_REMOTING_CLIENT)
   if (session_context_->info.flags.find("useWebrtc") != std::string::npos) {

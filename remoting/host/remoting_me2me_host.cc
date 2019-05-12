@@ -1584,8 +1584,6 @@ void HostProcess::StartHost() {
           std::make_unique<ChromiumUrlRequestFactory>(
               context_->url_loader_factory()),
           network_settings, protocol::TransportRole::SERVER);
-  transport_context->set_ice_config_url(
-      ServiceUrls::GetInstance()->ice_config_url(), oauth_token_getter_.get());
   std::unique_ptr<protocol::SessionManager> session_manager(
       new protocol::JingleSessionManager(GetSignalStrategyForJingleSession()));
 

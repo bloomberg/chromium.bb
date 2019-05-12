@@ -257,8 +257,6 @@ void FtlSignalingPlayground::InitializeTransport() {
       std::make_unique<ChromiumUrlRequestFactory>(
           url_loader_factory_owner_->GetURLLoaderFactory()),
       network_settings, transport_role_);
-  transport_context->set_ice_config_url(
-      ServiceUrls::GetInstance()->ice_config_url(), token_getter_.get());
   auto close_callback =
       base::BindOnce(&FtlSignalingPlayground::AsyncTearDownAndRunCallback,
                      base::Unretained(this));

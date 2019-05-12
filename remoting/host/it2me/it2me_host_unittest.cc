@@ -279,7 +279,7 @@ void It2MeHostTest::StartHost(bool enable_dialogs) {
   protocol::IceConfig ice_config;
   ice_config.stun_servers.push_back(rtc::SocketAddress(kTestStunServer, 100));
   ice_config.expiration_time =
-      base::Time::Now() + base::TimeDelta::FromHours(1);
+      base::Time::Now() + base::TimeDelta::FromHours(2);
 
   auto fake_signal_strategy =
       std::make_unique<FakeSignalStrategy>(SignalingAddress("fake_local_jid"));
