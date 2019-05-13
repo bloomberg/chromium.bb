@@ -74,7 +74,7 @@ class JavaChecker(object):
     return False
 
   def _PrescanFiles(self, added_classset):
-    for root, dirs, files in os.walk(self._base_directory):
+    for root, dirs, files in os.walk(self._base_directory.encode('utf-8')):
       # Skip unwanted subdirectories. TODO(husky): it would be better to do
       # this via the skip_child_includes flag in DEPS files. Maybe hoist this
       # prescan logic into checkdeps.py itself?
