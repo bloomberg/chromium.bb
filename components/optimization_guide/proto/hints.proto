@@ -244,6 +244,11 @@ message Hint {
   // An ordered set of per-page hints. Only the first PageHint record
   // that matches a committed page URL should be used for that page load.
   repeated PageHint page_hints = 4;
+  // Version that generated this hint.
+  //
+  // It is expected that this version be sent along with subsequent requests
+  // for hosts that match this hint.
+  optional string version = 5;
 }
 
 // Configuration and data for a Bloom filter.
