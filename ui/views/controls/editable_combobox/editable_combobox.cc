@@ -43,6 +43,7 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/combobox/combobox_util.h"
 #include "ui/views/controls/editable_combobox/editable_combobox_listener.h"
+#include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/menu/menu_types.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -156,6 +157,10 @@ class EditableCombobox::EditableComboboxMenuModel
 
   void EnableUpdateItemsShown() { update_items_shown_enabled_ = true; }
 
+  bool UseCheckmarks() const {
+    return MenuConfig::instance().check_selected_combobox_item;
+  }
+
   //////////////////////////////////////////////////////////////////////////////
   // Overridden from ComboboxModelObserver:
   void OnComboboxModelChanged(ui::ComboboxModel* model) override {
@@ -182,7 +187,9 @@ class EditableCombobox::EditableComboboxMenuModel
  private:
   bool HasIcons() const override { return false; }
 
-  ItemType GetTypeAt(int index) const override { return TYPE_COMMAND; }
+  ItemType GetTypeAt(int index) const override {
+    return UseCheckmarks() ? TYPE_CHECK : TYPE_COMMAND;
+  }
 
   ui::MenuSeparatorType GetSeparatorTypeAt(int index) const override {
     return ui::NORMAL_SEPARATOR;
@@ -204,7 +211,9 @@ class EditableCombobox::EditableComboboxMenuModel
     return false;
   }
 
-  bool IsItemCheckedAt(int index) const override { return false; }
+  bool IsItemCheckedAt(int index) const override {
+    return UseCheckmarks() && items_shown_[index] == owner_->GetText();
+  }
 
   int GetGroupIdAt(int index) const override { return -1; }
 
