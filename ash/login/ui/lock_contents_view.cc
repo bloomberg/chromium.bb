@@ -1108,6 +1108,11 @@ void LockContentsView::OnOobeDialogStateChanged(mojom::OobeDialogState state) {
   // prevent lock screen from grabbing focus and hiding the OOBE dialog.
   GetWidget()->widget_delegate()->SetCanActivate(!oobe_dialog_visible_);
 
+  // Block login screen events, to prevent actions on user pods shown in the
+  // background (e.g. hover over user name, or clicking a pod) from having
+  // effect.
+  set_can_process_events_within_subtree(!oobe_dialog_visible_);
+
   if (state == mojom::OobeDialogState::HIDDEN && primary_big_view_)
     primary_big_view_->RequestFocus();
 }
