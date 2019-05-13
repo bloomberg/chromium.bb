@@ -28,12 +28,21 @@
 #define MC_FLOW_NUM_PELS (MC_FLOW_BSIZE * MC_FLOW_BSIZE)
 
 static void wht_fwd_txfm(int16_t *src_diff, int bw, tran_low_t *coeff,
-                         TX_SIZE tx_size) {
-  switch (tx_size) {
-    case TX_8X8: aom_hadamard_8x8(src_diff, bw, coeff); break;
-    case TX_16X16: aom_hadamard_16x16(src_diff, bw, coeff); break;
-    case TX_32X32: aom_hadamard_32x32(src_diff, bw, coeff); break;
-    default: assert(0);
+                         TX_SIZE tx_size, int is_hbd) {
+  if (is_hbd) {
+    switch (tx_size) {
+      case TX_8X8: aom_highbd_hadamard_8x8(src_diff, bw, coeff); break;
+      case TX_16X16: aom_highbd_hadamard_16x16(src_diff, bw, coeff); break;
+      case TX_32X32: aom_highbd_hadamard_32x32(src_diff, bw, coeff); break;
+      default: assert(0);
+    }
+  } else {
+    switch (tx_size) {
+      case TX_8X8: aom_hadamard_8x8(src_diff, bw, coeff); break;
+      case TX_16X16: aom_hadamard_16x16(src_diff, bw, coeff); break;
+      case TX_32X32: aom_hadamard_32x32(src_diff, bw, coeff); break;
+      default: assert(0);
+    }
   }
 }
 
@@ -156,7 +165,7 @@ static void mode_estimation(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
         aom_subtract_block(bh, bw, src_diff, bw, src, src_stride, dst,
                            dst_stride);
       }
-      wht_fwd_txfm(src_diff, bw, coeff, tx_size);
+      wht_fwd_txfm(src_diff, bw, coeff, tx_size, is_cur_buf_hbd(xd));
       intra_cost = aom_satd(coeff, pix_num);
     } else {
       int64_t sse;
@@ -233,7 +242,8 @@ static void mode_estimation(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
                            xd->cur_buf->y_buffer + mb_y_offset,
                            xd->cur_buf->y_stride, &predictor[0], bw);
       }
-      wht_fwd_txfm(src_diff, bw, coeff, tx_size);
+      wht_fwd_txfm(src_diff, bw, coeff, tx_size, is_cur_buf_hbd(xd));
+
       inter_cost = aom_satd(coeff, pix_num);
     } else {
       int64_t sse;
@@ -766,8 +776,7 @@ static void get_tpl_forward_stats(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
             aom_subtract_block(bh, bw, src_diff, bw, src_buf, src_stride,
                                dst_buf, dst_stride);
           }
-
-          wht_fwd_txfm(src_diff, bw, coeff, tx_size);
+          wht_fwd_txfm(src_diff, bw, coeff, tx_size, is_cur_buf_hbd(xd));
 
           intra_cost = aom_satd(coeff, pix_num);
         } else {
@@ -809,7 +818,7 @@ static void get_tpl_forward_stats(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
           aom_subtract_block(bh, bw, src_diff, bw, src->y_buffer + mb_y_offset,
                              src->y_stride, &predictor[0], bw);
         }
-        wht_fwd_txfm(src_diff, bw, coeff, tx_size);
+        wht_fwd_txfm(src_diff, bw, coeff, tx_size, is_cur_buf_hbd(xd));
         inter_cost = aom_satd(coeff, pix_num);
       } else {
         int64_t sse;
