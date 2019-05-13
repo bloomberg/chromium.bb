@@ -1158,6 +1158,10 @@
         ],
       },
     },
+    'remove_from': [
+      # chromium.memory
+      'android-asan',  # https://crbug.com/962650
+    ],
   },
   'services_unittests': {
     'remove_from': [
