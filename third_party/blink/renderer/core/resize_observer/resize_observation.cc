@@ -39,8 +39,8 @@ size_t ResizeObservation::TargetDepth() {
 LayoutSize ResizeObservation::ComputeTargetSize() const {
   if (target_) {
     if (LayoutObject* layout_object = target_->GetLayoutObject()) {
-      if (target_->IsSVGElement() &&
-          ToSVGElement(target_)->IsSVGGraphicsElement()) {
+      auto* svg_element = DynamicTo<SVGElement>(target_.Get());
+      if (svg_element && svg_element->IsSVGGraphicsElement()) {
         SVGGraphicsElement& svg = ToSVGGraphicsElement(*target_);
         return LayoutSize(svg.GetBBox().Size());
       }

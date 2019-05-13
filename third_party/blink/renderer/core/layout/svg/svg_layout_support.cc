@@ -328,9 +328,7 @@ void SVGLayoutSupport::LayoutChildren(LayoutObject* first_child,
     if (layout_size_changed) {
       // When selfNeedsLayout is false and the layout size changed, we have to
       // check whether this child uses relative lengths
-      if (SVGElement* element = child->GetNode()->IsSVGElement()
-                                    ? ToSVGElement(child->GetNode())
-                                    : nullptr) {
+      if (auto* element = DynamicTo<SVGElement>(child->GetNode())) {
         if (element->HasRelativeLengths()) {
           // FIXME: this should be done on invalidation, not during layout.
           // When the layout size changed and when using relative values tell
@@ -477,7 +475,7 @@ void SVGLayoutSupport::ApplyStrokeStyleToStrokeData(StrokeData& stroke_data,
 
   const SVGComputedStyle& svg_style = style.SvgStyle();
 
-  SVGLengthContext length_context(ToSVGElement(object.GetNode()));
+  SVGLengthContext length_context(To<SVGElement>(object.GetNode()));
   stroke_data.SetThickness(
       length_context.ValueForLength(svg_style.StrokeWidth()));
   stroke_data.SetLineCap(svg_style.CapStyle());

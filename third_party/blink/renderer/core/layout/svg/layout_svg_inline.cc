@@ -120,8 +120,8 @@ void LayoutSVGInline::AbsoluteQuads(Vector<FloatQuad>& quads,
 
 void LayoutSVGInline::WillBeDestroyed() {
   SVGResourcesCache::ClientDestroyed(*this);
-  SVGResources::ClearClipPathFilterMask(ToSVGElement(*GetNode()), Style());
-  SVGResources::ClearPaints(ToSVGElement(*GetNode()), Style());
+  SVGResources::ClearClipPathFilterMask(To<SVGElement>(*GetNode()), Style());
+  SVGResources::ClearPaints(To<SVGElement>(*GetNode()), Style());
   LayoutInline::WillBeDestroyed();
 }
 
@@ -136,9 +136,9 @@ void LayoutSVGInline::StyleDidChange(StyleDifference diff,
     SetNeedsBoundariesUpdate();
 
   LayoutInline::StyleDidChange(diff, old_style);
-  SVGResources::UpdateClipPathFilterMask(ToSVGElement(*GetNode()), old_style,
+  SVGResources::UpdateClipPathFilterMask(To<SVGElement>(*GetNode()), old_style,
                                          StyleRef());
-  SVGResources::UpdatePaints(ToSVGElement(*GetNode()), old_style, StyleRef());
+  SVGResources::UpdatePaints(To<SVGElement>(*GetNode()), old_style, StyleRef());
   SVGResourcesCache::ClientStyleChanged(*this, diff, StyleRef());
 }
 

@@ -74,7 +74,7 @@ class LayoutSVGModelObject : public LayoutObject {
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
 
   SVGElement* GetElement() const {
-    return ToSVGElement(LayoutObject::GetNode());
+    return To<SVGElement>(LayoutObject::GetNode());
   }
 
   bool IsOfType(LayoutObjectType type) const override {

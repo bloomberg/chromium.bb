@@ -759,8 +759,8 @@ Response InspectorDOMAgent::setAttributesAsText(int element_id,
                         kAllowScriptingContent);
   } else {
     Element* contextElement = nullptr;
-    if (element->IsSVGElement())
-      contextElement = ToSVGElement(element)->ownerSVGElement();
+    if (auto* svg_element = DynamicTo<SVGElement>(element))
+      contextElement = svg_element->ownerSVGElement();
     fragment->ParseXML(markup, contextElement, kAllowScriptingContent);
   }
 

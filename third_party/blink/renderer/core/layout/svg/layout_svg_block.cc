@@ -37,7 +37,7 @@ LayoutSVGBlock::LayoutSVGBlock(SVGElement* element)
     : LayoutBlockFlow(element) {}
 
 SVGElement* LayoutSVGBlock::GetElement() const {
-  return ToSVGElement(LayoutObject::GetNode());
+  return To<SVGElement>(LayoutObject::GetNode());
 }
 
 void LayoutSVGBlock::AbsoluteRects(Vector<IntRect>&, const LayoutPoint&) const {
