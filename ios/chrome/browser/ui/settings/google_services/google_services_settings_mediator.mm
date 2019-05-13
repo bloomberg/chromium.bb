@@ -60,6 +60,7 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
 typedef NS_ENUM(NSInteger, ItemType) {
   // IdentitySectionIdentifier section.
   IdentityItemType = kItemTypeEnumZero,
+  ManageGoogleAccountItemType,
   // SyncSectionIdentifier section.
   SignInItemType,
   RestartAuthenticationFlowErrorItemType,
@@ -192,7 +193,7 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
   [self configureIdentityAccountItem];
 }
 
-// Creates the identity sections.
+// Creates the identity section.
 - (void)createIdentitySection {
   TableViewModel* model = self.consumer.tableViewModel;
   [model insertSectionWithIdentifier:IdentitySectionIdentifier atIndex:0];
@@ -206,6 +207,12 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
         UITableViewCellAccessoryDisclosureIndicator;
   }
   [model addItem:self.accountItem
+      toSectionWithIdentifier:IdentitySectionIdentifier];
+  TableViewImageItem* manageGoogleAccount =
+      [[TableViewImageItem alloc] initWithType:ManageGoogleAccountItemType];
+  manageGoogleAccount.title =
+      GetNSString(IDS_IOS_MANAGE_YOUR_GOOGLE_ACCOUNT_TITLE);
+  [model addItem:manageGoogleAccount
       toSectionWithIdentifier:IdentitySectionIdentifier];
 }
 
@@ -484,6 +491,7 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
         switchItem.on = self.anonymizedDataCollectionPreference.value;
         break;
       case IdentityItemType:
+      case ManageGoogleAccountItemType:
       case SignInItemType:
       case RestartAuthenticationFlowErrorItemType:
       case ReauthDialogAsSyncIsInAuthErrorItemType:
@@ -662,6 +670,7 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
       }
       break;
     case IdentityItemType:
+    case ManageGoogleAccountItemType:
     case SignInItemType:
     case RestartAuthenticationFlowErrorItemType:
     case ReauthDialogAsSyncIsInAuthErrorItemType:
@@ -679,6 +688,9 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
   switch (type) {
     case IdentityItemType:
       [self.commandHandler openAccountSettings];
+      break;
+    case ManageGoogleAccountItemType:
+      [self.commandHandler openManageGoogleAccountWebPage];
       break;
     case SignInItemType:
       [self.commandHandler showSignIn];

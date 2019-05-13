@@ -5,8 +5,10 @@
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_coordinator.h"
 
 #include "base/mac/foundation_util.h"
+#include "components/google/core/common/google_util.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
@@ -15,6 +17,7 @@
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/authentication_flow.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
+#import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/settings/google_services/accounts_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_command_handler.h"
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_mediator.h"
@@ -237,6 +240,14 @@
       self.navigationController;
   self.manageSyncSettingsCoordinator.delegate = self;
   [self.manageSyncSettingsCoordinator start];
+}
+
+- (void)openManageGoogleAccountWebPage {
+  GURL url = google_util::AppendGoogleLocaleParam(
+      GURL(kManageYourGoogleAccountURL),
+      GetApplicationContext()->GetApplicationLocale());
+  OpenNewTabCommand* command = [OpenNewTabCommand commandWithURLFromChrome:url];
+  [self.dispatcher closeSettingsUIAndOpenURL:command];
 }
 
 #pragma mark - GoogleServicesSettingsViewControllerPresentationDelegate

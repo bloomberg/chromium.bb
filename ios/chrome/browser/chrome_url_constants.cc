@@ -77,6 +77,8 @@ const size_t kNumberOfChromeHostURLs = base::size(kChromeHostURLs);
 const char kSyncGoogleDashboardURL[] =
     "https://www.google.com/settings/chrome/sync/";
 
+const char kManageYourGoogleAccountURL[] = "https://myaccount.google.com/";
+
 const char kPageInfoHelpCenterURL[] =
     "https://support.google.com/chrome?p=ui_security_indicator&ios=1";
 
