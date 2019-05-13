@@ -486,11 +486,12 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
       std::make_unique<SyncManagerFactory>(network_connection_tracker_);
   params.birthday = sync_prefs_.GetBirthday();
   params.cache_guid = sync_prefs_.GetCacheGuid();
-  // If either the cache GUID or the birthday are unitialized, it means we
-  // haven't completed a first sync cycle. We regenerate the cache GUID either
-  // way, even if just the birthday is missing, because fetching updates
-  // requires that the request either has a birthday, or there should be no
-  // progress marker.
+  // If either the cache GUID or the birthday are uninitialized, it means we
+  // haven't completed a first sync cycle (OnEngineInitialized()). Theoretically
+  // both or neither should be empty, but just in case, we regenerate the cache
+  // GUID if either of them is missing, to avoid protocol violations (fetching
+  // updates requires that the request either has a birthday, or there should be
+  // no progress marker).
   // TODO(crbug.com/923285): This looks questionable here for
   // |!IsFirstSetupComplete()| but it mimics the old behavior of deleting the
   // directory via Directory::DeleteDirectoryFiles(). One consecuence is that,
@@ -502,7 +503,6 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
     params.cache_guid = GenerateCacheGUID();
     params.birthday.clear();
     params.delete_sync_data_folder = true;
-    sync_prefs_.SetCacheGuid(params.cache_guid);
   }
   params.enable_local_sync_backend = sync_prefs_.IsLocalSyncEnabled();
   params.local_sync_backend_folder = sync_client_->GetLocalSyncBackendFolder();
@@ -839,8 +839,12 @@ void ProfileSyncService::OnEngineInitialized(
     ModelTypeSet initial_types,
     const WeakHandle<JsBackend>& js_backend,
     const WeakHandle<DataTypeDebugInfoListener>& debug_info_listener,
+    const std::string& cache_guid,
+    const std::string& birthday,
+    const std::string& bag_of_chips,
     bool success) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!cache_guid.empty());
 
   // TODO(treib): Based on some crash reports, it seems like the user could have
   // signed out already at this point, so many of the steps below, including
@@ -862,11 +866,12 @@ void ProfileSyncService::OnEngineInitialized(
     return;
   }
 
-  // TODO(crbug.com/923285): The store birthday should be available at this
-  // point, so we should ideally save to prefs, since OnSyncCycleCompleted()
-  // does not get called for the first sync cycle for control types.
-
   sync_js_controller_.AttachJsBackend(js_backend);
+
+  // Save initialization data to preferences.
+  sync_prefs_.SetCacheGuid(cache_guid);
+  sync_prefs_.SetBirthday(birthday);
+  sync_prefs_.SetBagOfChips(bag_of_chips);
 
   if (protocol_event_observers_.might_have_observers()) {
     engine_->RequestBufferedProtocolEventsAndEnableForwarding();
@@ -936,7 +941,6 @@ void ProfileSyncService::OnSyncCycleCompleted(
   DCHECK(!snapshot.poll_interval().is_zero());
   sync_prefs_.SetPollInterval(snapshot.poll_interval());
 
-  sync_prefs_.SetBirthday(snapshot.birthday());
   sync_prefs_.SetBagOfChips(snapshot.bag_of_chips());
 
   DVLOG(2) << "Notifying observers sync cycle completed";

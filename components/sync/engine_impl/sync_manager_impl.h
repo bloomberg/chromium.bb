@@ -94,7 +94,9 @@ class SyncManagerImpl
   UserShare* GetUserShare() override;
   ModelTypeConnector* GetModelTypeConnector() override;
   std::unique_ptr<ModelTypeConnector> GetModelTypeConnectorProxy() override;
-  const std::string cache_guid() override;
+  std::string cache_guid() override;
+  std::string birthday() override;
+  std::string bag_of_chips() override;
   bool HasUnsyncedItemsForTest() override;
   SyncEncryptionHandler* GetEncryptionHandler() override;
   base::WeakPtr<ModelTypeControllerDelegate> GetNigoriControllerDelegate()

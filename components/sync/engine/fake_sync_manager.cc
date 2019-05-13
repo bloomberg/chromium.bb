@@ -206,8 +206,18 @@ FakeSyncManager::GetModelTypeConnectorProxy() {
   return std::make_unique<FakeModelTypeConnector>();
 }
 
-const std::string FakeSyncManager::cache_guid() {
+std::string FakeSyncManager::cache_guid() {
   return test_user_share_.user_share()->directory->cache_guid();
+}
+
+std::string FakeSyncManager::birthday() {
+  NOTIMPLEMENTED();
+  return std::string();
+}
+
+std::string FakeSyncManager::bag_of_chips() {
+  NOTIMPLEMENTED();
+  return std::string();
 }
 
 bool FakeSyncManager::HasUnsyncedItemsForTest() {

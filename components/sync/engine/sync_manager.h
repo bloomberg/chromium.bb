@@ -352,7 +352,15 @@ class SyncManager {
 
   // Returns the cache_guid of the currently open database.
   // Requires that the SyncManager be initialized.
-  virtual const std::string cache_guid() = 0;
+  virtual std::string cache_guid() = 0;
+
+  // Returns the birthday of the currently open database.
+  // Requires that the SyncManager be initialized.
+  virtual std::string birthday() = 0;
+
+  // Returns the bag of chips of the currently open database.
+  // Requires that the SyncManager be initialized.
+  virtual std::string bag_of_chips() = 0;
 
   // Returns whether there are remaining unsynced items.
   virtual bool HasUnsyncedItemsForTest() = 0;

@@ -958,9 +958,21 @@ SyncManagerImpl::GetModelTypeConnectorProxy() {
       model_type_registry_->AsWeakPtr());
 }
 
-const std::string SyncManagerImpl::cache_guid() {
+std::string SyncManagerImpl::cache_guid() {
   DCHECK(initialized_);
   return directory()->cache_guid();
+}
+
+std::string SyncManagerImpl::birthday() {
+  DCHECK(initialized_);
+  DCHECK(cycle_context_);
+  return cycle_context_->birthday();
+}
+
+std::string SyncManagerImpl::bag_of_chips() {
+  DCHECK(initialized_);
+  DCHECK(cycle_context_);
+  return cycle_context_->bag_of_chips();
 }
 
 bool SyncManagerImpl::HasUnsyncedItemsForTest() {

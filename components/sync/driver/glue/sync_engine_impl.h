@@ -122,7 +122,10 @@ class SyncEngineImpl : public SyncEngine, public InvalidationHandler {
       ModelTypeSet initial_types,
       const WeakHandle<JsBackend> js_backend,
       const WeakHandle<DataTypeDebugInfoListener> debug_info_listener,
-      std::unique_ptr<ModelTypeConnector> model_type_connector);
+      std::unique_ptr<ModelTypeConnector> model_type_connector,
+      const std::string& cache_guid,
+      const std::string& birthday,
+      const std::string& bag_of_chips);
 
   // Forwards a ProtocolEvent to the host. Will not be called unless a call to
   // SetForwardProtocolEvents() explicitly requested that we start forwarding

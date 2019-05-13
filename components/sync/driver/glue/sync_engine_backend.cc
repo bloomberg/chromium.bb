@@ -432,7 +432,9 @@ void SyncEngineBackend::DoInitialProcessControlTypes() {
   host_.Call(
       FROM_HERE, &SyncEngineImpl::HandleInitializationSuccessOnFrontendLoop,
       registrar_->GetLastConfiguredTypes(), js_backend_, debug_info_listener_,
-      base::Passed(sync_manager_->GetModelTypeConnectorProxy()));
+      base::Passed(sync_manager_->GetModelTypeConnectorProxy()),
+      sync_manager_->cache_guid(), sync_manager_->birthday(),
+      sync_manager_->bag_of_chips());
 
   js_backend_.Reset();
   debug_info_listener_.Reset();
