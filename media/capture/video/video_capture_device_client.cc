@@ -68,6 +68,38 @@ void GetI420BufferAccess(
   *uv_plane_stride = *y_plane_stride / 2;
 }
 
+gfx::ColorSpace OverrideColorSpaceForLibYuvConversion(
+    const gfx::ColorSpace& color_space,
+    const media::VideoPixelFormat pixel_format) {
+  gfx::ColorSpace overriden_color_space = color_space;
+  switch (pixel_format) {
+    case media::PIXEL_FORMAT_UNKNOWN:  // Color format not set.
+      break;
+    case media::PIXEL_FORMAT_ARGB:
+    case media::PIXEL_FORMAT_XRGB:
+    case media::PIXEL_FORMAT_RGB24:
+    case media::PIXEL_FORMAT_RGB32:
+    case media::PIXEL_FORMAT_ABGR:
+    case media::PIXEL_FORMAT_XBGR:
+      // TODO(julien.isorce): Merge data 's primary and transfer function into
+      // the returned color space, see http://crbug.com/945468.
+
+      // Color space is not specified but it's probably safe to assume its
+      // sRGB though, and so it would be valid to assume that libyuv 's
+      // ConvertToI420() is going to produce results in Rec601
+      // (or very close to it).
+      // TODO(julien.isorce): pass color space information to libyuv once the
+      // support is added, see http://crbug.com/libyuv/835.
+      if (!color_space.IsValid())
+        overriden_color_space = gfx::ColorSpace::CreateREC601();
+      break;
+    default:
+      break;
+  }
+
+  return overriden_color_space;
+}
+
 }  // anonymous namespace
 
 namespace media {
@@ -148,6 +180,7 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
     const uint8_t* data,
     int length,
     const VideoCaptureFormat& format,
+    const gfx::ColorSpace& data_color_space,
     int rotation,
     base::TimeTicks reference_time,
     base::TimeDelta timestamp,
@@ -219,7 +252,6 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
   int crop_x = 0;
   int crop_y = 0;
   libyuv::FourCC fourcc_format = libyuv::FOURCC_ANY;
-  gfx::ColorSpace color_space;
 
   bool flip = false;
   switch (format.pixel_format) {
@@ -268,11 +300,6 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
       // that vertical flipping is needed.
       flip = true;
 #endif
-      // We don't actually know, for sure, what the source color space is. It's
-      // probably safe to assume its sRGB, though, and so it would be valid to
-      // assume libyuv::ConvertToI420() is going to produce results in Rec601
-      // (or very close to it).
-      color_space = gfx::ColorSpace::CreateREC601();
       break;
     case PIXEL_FORMAT_RGB32:
 // Fallback to PIXEL_FORMAT_ARGB setting |flip| in Windows
@@ -283,7 +310,6 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
 #endif
     case PIXEL_FORMAT_ARGB:
       fourcc_format = libyuv::FOURCC_ARGB;
-      color_space = gfx::ColorSpace::CreateREC601();
       break;
     case PIXEL_FORMAT_MJPEG:
       fourcc_format = libyuv::FOURCC_MJPG;
@@ -291,6 +317,9 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
     default:
       NOTREACHED();
   }
+
+  const gfx::ColorSpace color_space = OverrideColorSpaceForLibYuvConversion(
+      data_color_space, format.pixel_format);
 
   // The input |length| can be greater than the required buffer size because of
   // paddings and/or alignments, but it cannot be smaller.

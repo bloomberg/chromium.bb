@@ -881,7 +881,13 @@ void VideoCaptureDeviceWin::FrameReceived(const uint8_t* buffer,
   if (timestamp == kNoTimestamp)
     timestamp = base::TimeTicks::Now() - first_ref_time_;
 
-  client_->OnIncomingCapturedData(buffer, length, format,
+  // TODO(julien.isorce): retrieve the color space information using the
+  // DirectShow api, AM_MEDIA_TYPE::VIDEOINFOHEADER2::dwControlFlags. If
+  // AMCONTROL_COLORINFO_PRESENT, then reinterpret dwControlFlags as a
+  // DXVA_ExtendedFormat. Then use its fields DXVA_VideoPrimaries,
+  // DXVA_VideoTransferMatrix, DXVA_VideoTransferFunction and
+  // DXVA_NominalRangeto build a gfx::ColorSpace. See http://crbug.com/959992.
+  client_->OnIncomingCapturedData(buffer, length, format, gfx::ColorSpace(),
                                   GetCameraRotation(device_descriptor_.facing),
                                   base::TimeTicks::Now(), timestamp);
 

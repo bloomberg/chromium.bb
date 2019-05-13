@@ -428,6 +428,8 @@ void DesktopCaptureDevice::Core::OnCaptureResult(
     }
   }
 
+  // TODO(julien.isorce): Pass color space of the captured raw data, see
+  // http://crbug.com/945468.
   base::TimeTicks now = NowTicks();
   if (first_ref_time_.is_null())
     first_ref_time_ = now;
@@ -436,7 +438,7 @@ void DesktopCaptureDevice::Core::OnCaptureResult(
       media::VideoCaptureFormat(
           gfx::Size(output_size.width(), output_size.height()),
           requested_frame_rate_, media::PIXEL_FORMAT_ARGB),
-      0, now, now - first_ref_time_);
+      gfx::ColorSpace(), 0, now, now - first_ref_time_);
 }
 
 void DesktopCaptureDevice::Core::OnCaptureTimer() {

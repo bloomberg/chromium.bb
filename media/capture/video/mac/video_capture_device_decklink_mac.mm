@@ -292,9 +292,12 @@ HRESULT DeckLinkCaptureDelegate::VideoInputFrameArrived(
     } else {
       timestamp = now - first_ref_time_;
     }
+    // TODO(julien.isorce): Build a gfx::ColorSpace from DeckLink API, .i.e
+    // using BMDDisplayModeFlags or BMDDeckLinkFrameMetadataID. See
+    // http://crbug.com/959953.
     frame_receiver_->OnIncomingCapturedData(
         video_data, video_frame->GetRowBytes() * video_frame->GetHeight(),
-        capture_format,
+        capture_format, gfx::ColorSpace(),
         0,  // Rotation.
         now, timestamp);
   }
@@ -486,13 +489,14 @@ void VideoCaptureDeviceDeckLinkMac::OnIncomingCapturedData(
     const uint8_t* data,
     size_t length,
     const VideoCaptureFormat& frame_format,
+    const gfx::ColorSpace& color_space,
     int rotation,  // Clockwise.
     base::TimeTicks reference_time,
     base::TimeDelta timestamp) {
   base::AutoLock lock(lock_);
   if (client_) {
-    client_->OnIncomingCapturedData(data, length, frame_format, rotation,
-                                    reference_time, timestamp);
+    client_->OnIncomingCapturedData(data, length, frame_format, color_space,
+                                    rotation, reference_time, timestamp);
   }
 }
 

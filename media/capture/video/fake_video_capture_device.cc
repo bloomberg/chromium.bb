@@ -109,6 +109,44 @@ const VideoCaptureFormat& FindClosestSupportedFormat(
   return supported_formats[best_index];
 }
 
+gfx::ColorSpace GetDefaultColorSpace(VideoPixelFormat format) {
+  switch (format) {
+    case PIXEL_FORMAT_UYVY:
+    case PIXEL_FORMAT_YUY2:
+    case PIXEL_FORMAT_YV12:
+    case PIXEL_FORMAT_I420:
+    case PIXEL_FORMAT_I422:
+    case PIXEL_FORMAT_I420A:
+    case PIXEL_FORMAT_I444:
+    case PIXEL_FORMAT_NV12:
+    case PIXEL_FORMAT_NV21:
+    case PIXEL_FORMAT_MT21:
+    case PIXEL_FORMAT_YUV420P9:
+    case PIXEL_FORMAT_YUV420P10:
+    case PIXEL_FORMAT_YUV422P9:
+    case PIXEL_FORMAT_YUV422P10:
+    case PIXEL_FORMAT_YUV444P9:
+    case PIXEL_FORMAT_YUV444P10:
+    case PIXEL_FORMAT_YUV420P12:
+    case PIXEL_FORMAT_YUV422P12:
+    case PIXEL_FORMAT_YUV444P12:
+    case PIXEL_FORMAT_P016LE:
+    case PIXEL_FORMAT_Y16:
+      return gfx::ColorSpace::CreateREC601();
+    case PIXEL_FORMAT_ARGB:
+    case PIXEL_FORMAT_XRGB:
+    case PIXEL_FORMAT_RGB24:
+    case PIXEL_FORMAT_RGB32:
+    case PIXEL_FORMAT_MJPEG:
+    case PIXEL_FORMAT_ABGR:
+    case PIXEL_FORMAT_XBGR:
+      return gfx::ColorSpace::CreateSRGB();
+    case PIXEL_FORMAT_UNKNOWN:
+      return gfx::ColorSpace();
+  }
+  return gfx::ColorSpace();
+}
+
 }  // anonymous namespace
 
 // Paints and delivers frames to a client, which is set via Initialize().
@@ -592,9 +630,10 @@ void OwnBufferFrameDeliverer::PaintAndDeliverNextFrame(
   memset(buffer_.get(), 0, frame_size);
   frame_painter()->PaintFrame(timestamp_to_paint, buffer_.get());
   base::TimeTicks now = base::TimeTicks::Now();
-  client()->OnIncomingCapturedData(buffer_.get(), frame_size,
-                                   device_state()->format, 0 /* rotation */,
-                                   now, CalculateTimeSinceFirstInvocation(now));
+  client()->OnIncomingCapturedData(
+      buffer_.get(), frame_size, device_state()->format,
+      GetDefaultColorSpace(device_state()->format.pixel_format),
+      0 /* rotation */, now, CalculateTimeSinceFirstInvocation(now));
 }
 
 ClientBufferFrameDeliverer::ClientBufferFrameDeliverer(
@@ -665,9 +704,10 @@ void JpegEncodingFrameDeliverer::PaintAndDeliverNextFrame(
 
   const size_t frame_size = jpeg_buffer_.size();
   base::TimeTicks now = base::TimeTicks::Now();
-  client()->OnIncomingCapturedData(&jpeg_buffer_[0], frame_size,
-                                   device_state()->format, 0 /* rotation */,
-                                   now, CalculateTimeSinceFirstInvocation(now));
+  client()->OnIncomingCapturedData(
+      &jpeg_buffer_[0], frame_size, device_state()->format,
+      gfx::ColorSpace::CreateJpeg(), 0 /* rotation */, now,
+      CalculateTimeSinceFirstInvocation(now));
 }
 
 void FakeVideoCaptureDevice::BeepAndScheduleNextCapture(

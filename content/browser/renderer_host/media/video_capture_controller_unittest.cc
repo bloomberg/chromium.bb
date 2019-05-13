@@ -91,6 +91,7 @@ class MockVideoCaptureControllerEventHandler
       int buffer_id,
       const media::mojom::VideoFrameInfoPtr& frame_info) override {
     EXPECT_EQ(expected_pixel_format_, frame_info->pixel_format);
+    EXPECT_EQ(expected_color_space_, frame_info->color_space);
     media::VideoFrameMetadata metadata;
     metadata.MergeInternalValuesFrom(frame_info->metadata);
     base::TimeTicks reference_time;
@@ -115,6 +116,7 @@ class MockVideoCaptureControllerEventHandler
 
   VideoCaptureController* controller_;
   media::VideoPixelFormat expected_pixel_format_ = media::PIXEL_FORMAT_I420;
+  gfx::ColorSpace expected_color_space_ = gfx::ColorSpace::CreateREC709();
   double resource_utilization_;
   bool enable_auto_return_buffer_on_buffer_ready_ = true;
 };
@@ -129,6 +131,7 @@ class VideoCaptureControllerTest
  public:
   VideoCaptureControllerTest()
       : arbitrary_format_(gfx::Size(320, 240), 30, media::PIXEL_FORMAT_I420),
+        arbitrary_color_space_(gfx::ColorSpace::CreateREC709()),
         arbitrary_route_id_(0x99),
         arbitrary_session_id_(100) {}
   ~VideoCaptureControllerTest() override {}
@@ -180,7 +183,8 @@ class VideoCaptureControllerTest
 #endif  // defined(OS_CHROMEOS)
   }
 
-  void SendStubFrameToDeviceClient(const media::VideoCaptureFormat format) {
+  void SendStubFrameToDeviceClient(const media::VideoCaptureFormat format,
+                                   const gfx::ColorSpace& color_space) {
     auto stub_frame = media::VideoFrame::CreateZeroInitializedFrame(
         format.pixel_format, format.frame_size,
         gfx::Rect(format.frame_size.width(), format.frame_size.height()),
@@ -191,7 +195,7 @@ class VideoCaptureControllerTest
         stub_frame->data(0),
         media::VideoFrame::AllocationSize(stub_frame->format(),
                                           stub_frame->coded_size()),
-        format, rotation, base::TimeTicks(), base::TimeDelta(),
+        format, color_space, rotation, base::TimeTicks(), base::TimeDelta(),
         frame_feedback_id);
   }
 
@@ -206,6 +210,7 @@ class VideoCaptureControllerTest
   const base::TimeTicks arbitrary_reference_time_ = base::TimeTicks();
   const base::TimeDelta arbitrary_timestamp_ = base::TimeDelta();
   const media::VideoCaptureFormat arbitrary_format_;
+  const gfx::ColorSpace arbitrary_color_space_;
   const VideoCaptureControllerID arbitrary_route_id_;
   const media::VideoCaptureSessionId arbitrary_session_id_;
 
@@ -302,6 +307,10 @@ TEST_P(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   const media::VideoPixelFormat format = GetParam();
   client_a_->expected_pixel_format_ = format;
   client_b_->expected_pixel_format_ = format;
+  // OnIncomingCapturedBuffer keeps the color space unset. If needed use
+  // OnIncomingCapturedBufferExt.
+  client_a_->expected_color_space_ = gfx::ColorSpace();
+  client_b_->expected_color_space_ = gfx::ColorSpace();
 
   session_100.requested_format =
       media::VideoCaptureFormat(gfx::Size(320, 240), 30, format);
@@ -627,6 +636,9 @@ TEST_F(VideoCaptureControllerTest, FrameFeedbackIsReportedForSequenceOfFrames) {
   const int kTestFrameSequenceLength = 10;
   media::VideoCaptureFormat arbitrary_format(
       gfx::Size(320, 240), arbitrary_frame_rate_, media::PIXEL_FORMAT_I420);
+  // OnIncomingCapturedBuffer keeps the color space unset. If needed use
+  // OnIncomingCapturedBufferExt.
+  client_a_->expected_color_space_ = gfx::ColorSpace();
 
   // Register |client_a_| at |controller_|.
   media::VideoCaptureParams session_100;
@@ -707,7 +719,7 @@ TEST_F(VideoCaptureControllerTest,
     EXPECT_CALL(*client_a_, DoBufferReady(_, _)).Times(1);
   }
   EXPECT_CALL(*client_a_, DoBufferDestroyed(_, _)).Times(0);
-  SendStubFrameToDeviceClient(arbitrary_format_);
+  SendStubFrameToDeviceClient(arbitrary_format_, arbitrary_color_space_);
   base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(client_a_.get());
 
@@ -737,7 +749,7 @@ TEST_F(VideoCaptureControllerTest,
         .WillOnce(SaveArg<1>(&buffer_id_reported_to_client));
     EXPECT_CALL(*client_a_, DoBufferReady(_, _)).Times(1);
   }
-  SendStubFrameToDeviceClient(arbitrary_format_);
+  SendStubFrameToDeviceClient(arbitrary_format_, arbitrary_color_space_);
   base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(client_a_.get());
 
@@ -777,7 +789,7 @@ TEST_F(VideoCaptureControllerTest,
         .WillOnce(SaveArg<1>(&first_buffer_id));
     EXPECT_CALL(*client_a_, DoBufferReady(_, _)).Times(1);
   }
-  SendStubFrameToDeviceClient(arbitrary_format_);
+  SendStubFrameToDeviceClient(arbitrary_format_, arbitrary_color_space_);
   base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(client_a_.get());
 
@@ -799,7 +811,7 @@ TEST_F(VideoCaptureControllerTest,
         .WillOnce(SaveArg<1>(&second_buffer_id));
     EXPECT_CALL(*client_a_, DoBufferReady(_, _)).Times(1);
   }
-  SendStubFrameToDeviceClient(arbitrary_format_);
+  SendStubFrameToDeviceClient(arbitrary_format_, arbitrary_color_space_);
   base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(client_a_.get());
 
@@ -920,7 +932,7 @@ TEST_F(VideoCaptureControllerTest,
         media::VideoCaptureFrameDropReason::kDeviceClientFrameHasInvalidFormat);
   }
 
-  SendStubFrameToDeviceClient(arbitrary_format_);
+  SendStubFrameToDeviceClient(arbitrary_format_, arbitrary_color_space_);
   base::RunLoop().RunUntilIdle();
 
   for (int i = 0;
@@ -948,7 +960,7 @@ TEST_F(VideoCaptureControllerTest, DeliveredFrameReenablesDroppedFrameLogging) {
         media::VideoCaptureFrameDropReason::kDeviceClientFrameHasInvalidFormat);
   }
 
-  SendStubFrameToDeviceClient(arbitrary_format_);
+  SendStubFrameToDeviceClient(arbitrary_format_, arbitrary_color_space_);
   base::RunLoop().RunUntilIdle();
 
   controller_->OnFrameDropped(

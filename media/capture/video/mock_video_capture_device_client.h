@@ -15,10 +15,11 @@ class MockVideoCaptureDeviceClient : public VideoCaptureDevice::Client {
   MockVideoCaptureDeviceClient();
   ~MockVideoCaptureDeviceClient() override;
 
-  MOCK_METHOD7(OnIncomingCapturedData,
+  MOCK_METHOD8(OnIncomingCapturedData,
                void(const uint8_t* data,
                     int length,
                     const media::VideoCaptureFormat& frame_format,
+                    const gfx::ColorSpace& color_space,
                     int rotation,
                     base::TimeTicks reference_time,
                     base::TimeDelta timestamp,
