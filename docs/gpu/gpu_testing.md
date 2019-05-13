@@ -563,7 +563,7 @@ The [GPU rasterization test] is a good example of a recently added test which
 performs such spot checks.
 
 [pixel test]: https://chromium.googlesource.com/chromium/src/+/master/content/test/gpu/gpu_tests/pixel_test_pages.py
-[test expectations]: https://chromium.googlesource.com/chromium/src/+/master/content/test/gpu/gpu_tests/pixel_expectations.py
+[test expectations]: https://chromium.googlesource.com/chromium/src/+/master/content/test/gpu/gpu_tests/test_expectations/pixel_expectations.txt
 [test pages]: https://chromium.googlesource.com/chromium/src/+/master/content/test/gpu/gpu_tests/pixel_test_pages.py
 [cloud storage bucket]: https://console.developers.google.com/storage/chromium-gpu-archive/reference-images
 <!-- XXX: old link -->
