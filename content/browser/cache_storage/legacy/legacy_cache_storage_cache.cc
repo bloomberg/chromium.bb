@@ -39,6 +39,7 @@
 #include "content/browser/cache_storage/cache_storage_quota_client.h"
 #include "content/browser/cache_storage/cache_storage_scheduler.h"
 #include "content/browser/cache_storage/cache_storage_trace_utils.h"
+#include "content/browser/cache_storage/legacy/legacy_cache_storage.h"
 #include "content/common/background_fetch/background_fetch_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_thread.h"
@@ -1416,7 +1417,11 @@ void LegacyCacheStorageCache::WriteSideDataDidOpenEntry(
     std::move(callback).Run(CacheStorageError::kErrorNotFound);
     return;
   }
-  disk_cache::ScopedEntryPtr entry(*entry_ptr);
+
+  // Moving the entry into a ScopedWritableEntry which will doom the entry
+  // before closing unless we tell it that writing has successfully completed
+  // via WritingCompleted.
+  ScopedWritableEntry entry(*entry_ptr);
 
   ReadMetadata(
       *entry_ptr,
@@ -1432,7 +1437,7 @@ void LegacyCacheStorageCache::WriteSideDataDidReadMetaData(
     int64_t trace_id,
     scoped_refptr<net::IOBuffer> buffer,
     int buf_len,
-    disk_cache::ScopedEntryPtr entry,
+    ScopedWritableEntry entry,
     std::unique_ptr<proto::CacheMetadata> headers) {
   TRACE_EVENT_WITH_FLOW0(
       "CacheStorage", "LegacyCacheStorageCache::WriteSideDataDidReadMetaData",
@@ -1440,7 +1445,8 @@ void LegacyCacheStorageCache::WriteSideDataDidReadMetaData(
       TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
   if (!headers || headers->response().response_time() !=
                       expected_response_time.ToInternalValue()) {
-    std::move(callback).Run(CacheStorageError::kErrorNotFound);
+    WriteSideDataComplete(std::move(callback), std::move(entry),
+                          CacheStorageError::kErrorNotFound);
     return;
   }
   // Get a temporary copy of the entry pointer before passing it in base::Bind.
@@ -1472,7 +1478,7 @@ void LegacyCacheStorageCache::WriteSideDataDidReadMetaData(
 
 void LegacyCacheStorageCache::WriteSideDataDidWrite(
     ErrorCallback callback,
-    disk_cache::ScopedEntryPtr entry,
+    ScopedWritableEntry entry,
     int expected_bytes,
     std::unique_ptr<::content::proto::CacheResponse> response,
     int side_data_size_before_write,
@@ -1482,9 +1488,8 @@ void LegacyCacheStorageCache::WriteSideDataDidWrite(
                          "LegacyCacheStorageCache::WriteSideDataDidWrite",
                          TRACE_ID_GLOBAL(trace_id), TRACE_EVENT_FLAG_FLOW_IN);
   if (rv != expected_bytes) {
-    entry->Doom();
-    UpdateCacheSize(
-        base::BindOnce(std::move(callback), CacheStorageError::kErrorNotFound));
+    WriteSideDataComplete(std::move(callback), std::move(entry),
+                          CacheStorageError::kErrorStorage);
     return;
   }
 
@@ -1499,8 +1504,31 @@ void LegacyCacheStorageCache::WriteSideDataDidWrite(
         response.get(), cache_padding_key_.get(), rv);
   }
 
-  UpdateCacheSize(
-      base::BindOnce(std::move(callback), CacheStorageError::kSuccess));
+  WriteSideDataComplete(std::move(callback), std::move(entry),
+                        CacheStorageError::kSuccess);
+}
+
+void LegacyCacheStorageCache::WriteSideDataComplete(
+    ErrorCallback callback,
+    ScopedWritableEntry entry,
+    blink::mojom::CacheStorageError error) {
+  if (error != CacheStorageError::kSuccess) {
+    // If we found the entry, then we possibly wrote something and now we're
+    // dooming the entry, causing a change in size, so update the size before
+    // returning.
+    if (error != CacheStorageError::kErrorNotFound) {
+      UpdateCacheSize(base::BindOnce(std::move(callback), error));
+      return;
+    }
+
+    entry.get_deleter()
+        .WritingCompleted();  // Since we didn't change the entry.
+    std::move(callback).Run(error);
+    return;
+  }
+
+  entry.get_deleter().WritingCompleted();  // Since we didn't change the entry.
+  UpdateCacheSize(base::BindOnce(std::move(callback), error));
 }
 
 void LegacyCacheStorageCache::Put(blink::mojom::BatchOperationPtr operation,
@@ -1541,8 +1569,8 @@ void LegacyCacheStorageCache::PutImpl(std::unique_ptr<PutContext> put_context) {
       CacheStorageTracedValue(put_context->request), "response",
       CacheStorageTracedValue(put_context->response));
   if (backend_state_ != BACKEND_OPEN) {
-    std::move(put_context->callback)
-        .Run(MakeErrorStorage(ErrorStorageType::kPutImplBackendClosed));
+    PutComplete(std::move(put_context),
+                MakeErrorStorage(ErrorStorageType::kPutImplBackendClosed));
     return;
   }
 
@@ -1581,15 +1609,15 @@ void LegacyCacheStorageCache::PutDidDeleteEntry(
                          TRACE_ID_GLOBAL(put_context->trace_id),
                          TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
   if (backend_state_ != BACKEND_OPEN) {
-    std::move(put_context->callback)
-        .Run(MakeErrorStorage(
-            ErrorStorageType::kPutDidDeleteEntryBackendClosed));
+    PutComplete(
+        std::move(put_context),
+        MakeErrorStorage(ErrorStorageType::kPutDidDeleteEntryBackendClosed));
     return;
   }
 
   if (error != CacheStorageError::kSuccess &&
       error != CacheStorageError::kErrorNotFound) {
-    std::move(put_context->callback).Run(error);
+    PutComplete(std::move(put_context), error);
     return;
   }
 
@@ -1624,10 +1652,13 @@ void LegacyCacheStorageCache::PutDidCreateEntry(
                          TRACE_ID_GLOBAL(put_context->trace_id),
                          TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
 
+  // Moving the entry into a ScopedWritableEntry which will doom the entry
+  // before closing unless we tell it that writing has successfully completed
+  // via WritingCompleted.
   put_context->cache_entry.reset(*entry_ptr);
 
   if (rv != net::OK) {
-    std::move(put_context->callback).Run(CacheStorageError::kErrorExists);
+    PutComplete(std::move(put_context), CacheStorageError::kErrorExists);
     return;
   }
 
@@ -1666,8 +1697,9 @@ void LegacyCacheStorageCache::PutDidCreateEntry(
 
   std::unique_ptr<std::string> serialized(new std::string());
   if (!metadata.SerializeToString(serialized.get())) {
-    std::move(put_context->callback)
-        .Run(MakeErrorStorage(ErrorStorageType::kMetadataSerializationFailed));
+    PutComplete(
+        std::move(put_context),
+        MakeErrorStorage(ErrorStorageType::kMetadataSerializationFailed));
     return;
   }
 
@@ -1704,9 +1736,9 @@ void LegacyCacheStorageCache::PutDidWriteHeaders(
                          TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
 
   if (rv != expected_bytes) {
-    put_context->cache_entry->Doom();
-    std::move(put_context->callback)
-        .Run(MakeErrorStorage(ErrorStorageType::kPutDidWriteHeadersWrongBytes));
+    PutComplete(
+        std::move(put_context),
+        MakeErrorStorage(ErrorStorageType::kPutDidWriteHeadersWrongBytes));
     return;
   }
 
@@ -1732,8 +1764,7 @@ void LegacyCacheStorageCache::PutDidWriteHeaders(
     return;
   }
 
-  UpdateCacheSize(base::BindOnce(std::move(put_context->callback),
-                                 CacheStorageError::kSuccess));
+  PutComplete(std::move(put_context), CacheStorageError::kSuccess);
 }
 
 void LegacyCacheStorageCache::PutWriteBlobToCache(
@@ -1747,17 +1778,28 @@ void LegacyCacheStorageCache::PutWriteBlobToCache(
                          TRACE_ID_GLOBAL(put_context->trace_id),
                          TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
 
-  blink::mojom::BlobPtr blob = disk_cache_body_index == INDEX_RESPONSE_BODY
-                                   ? std::move(put_context->blob)
-                                   : std::move(put_context->side_data_blob);
+  blink::mojom::BlobPtr blob;
+  int64_t blob_size = 0;
+
+  switch (disk_cache_body_index) {
+    case INDEX_RESPONSE_BODY: {
+      blob = std::move(put_context->blob);
+      put_context->blob.reset();
+      blob_size = put_context->blob_size;
+      break;
+    }
+    case INDEX_SIDE_DATA: {
+      blob = std::move(put_context->side_data_blob);
+      put_context->side_data_blob.reset();
+      blob_size = put_context->side_data_blob_size;
+      break;
+    }
+    case INDEX_HEADERS:
+      NOTREACHED();
+  }
   DCHECK(blob);
 
-  int64_t blob_size = disk_cache_body_index == INDEX_RESPONSE_BODY
-                          ? put_context->blob_size
-                          : put_context->side_data_blob_size;
-
-  disk_cache::ScopedEntryPtr entry(std::move(put_context->cache_entry));
-  put_context->cache_entry = nullptr;
+  ScopedWritableEntry entry(put_context->cache_entry.release());
 
   auto blob_to_cache = std::make_unique<CacheStorageBlobToDiskCache>();
   CacheStorageBlobToDiskCache* blob_to_cache_raw = blob_to_cache.get();
@@ -1774,7 +1816,7 @@ void LegacyCacheStorageCache::PutWriteBlobToCache(
 void LegacyCacheStorageCache::PutDidWriteBlobToCache(
     std::unique_ptr<PutContext> put_context,
     BlobToDiskCacheIDMap::KeyType blob_to_cache_key,
-    disk_cache::ScopedEntryPtr entry,
+    ScopedWritableEntry entry,
     bool success) {
   DCHECK(entry);
   TRACE_EVENT_WITH_FLOW0("CacheStorage",
@@ -1787,9 +1829,9 @@ void LegacyCacheStorageCache::PutDidWriteBlobToCache(
   active_blob_to_disk_cache_writers_.Remove(blob_to_cache_key);
 
   if (!success) {
-    put_context->cache_entry->Doom();
-    std::move(put_context->callback)
-        .Run(MakeErrorStorage(ErrorStorageType::kPutDidWriteBlobToCacheFailed));
+    PutComplete(
+        std::move(put_context),
+        MakeErrorStorage(ErrorStorageType::kPutDidWriteBlobToCacheFailed));
     return;
   }
 
@@ -1798,8 +1840,24 @@ void LegacyCacheStorageCache::PutDidWriteBlobToCache(
     return;
   }
 
-  UpdateCacheSize(base::BindOnce(std::move(put_context->callback),
-                                 CacheStorageError::kSuccess));
+  PutComplete(std::move(put_context), CacheStorageError::kSuccess);
+}
+
+void LegacyCacheStorageCache::PutComplete(
+    std::unique_ptr<PutContext> put_context,
+    blink::mojom::CacheStorageError error) {
+  if (error == CacheStorageError::kSuccess) {
+    // Make sure we've written everything.
+    DCHECK(put_context->cache_entry);
+    DCHECK(!put_context->blob);
+    DCHECK(!put_context->side_data_blob);
+
+    // Tell the WritableScopedEntry not to doom the entry since it was a
+    // successful operation.
+    put_context->cache_entry.get_deleter().WritingCompleted();
+  }
+
+  UpdateCacheSize(base::BindOnce(std::move(put_context->callback), error));
 }
 
 void LegacyCacheStorageCache::CalculateCacheSizePadding(

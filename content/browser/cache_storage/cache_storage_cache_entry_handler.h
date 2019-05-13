@@ -12,6 +12,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/cache_storage/cache_storage_cache_handle.h"
+#include "content/browser/cache_storage/scoped_writable_entry.h"
 #include "content/common/content_export.h"
 #include "net/disk_cache/disk_cache.h"
 #include "storage/browser/blob/blob_data_builder.h"
@@ -51,7 +52,7 @@ struct PutContext {
 
   // Provided while writing to the cache.
   ErrorCallback callback;
-  disk_cache::ScopedEntryPtr cache_entry;
+  ScopedWritableEntry cache_entry;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PutContext);

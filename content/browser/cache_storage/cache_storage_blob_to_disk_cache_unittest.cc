@@ -16,6 +16,7 @@
 #include "base/test/null_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
+#include "content/browser/cache_storage/scoped_writable_entry.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
@@ -181,7 +182,7 @@ class CacheStorageBlobToDiskCacheTest : public testing::Test {
     return callback_called_ && callback_success_;
   }
 
-  void StreamCallback(disk_cache::ScopedEntryPtr entry_ptr, bool success) {
+  void StreamCallback(ScopedWritableEntry entry_ptr, bool success) {
     disk_cache_entry_ = std::move(entry_ptr);
     callback_success_ = success;
     callback_called_ = true;
@@ -194,7 +195,7 @@ class CacheStorageBlobToDiskCacheTest : public testing::Test {
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
   std::unique_ptr<storage::BlobDataHandle> blob_handle_;
   std::unique_ptr<disk_cache::Backend> cache_backend_;
-  disk_cache::ScopedEntryPtr disk_cache_entry_;
+  ScopedWritableEntry disk_cache_entry_;
   std::unique_ptr<TestCacheStorageBlobToDiskCache>
       cache_storage_blob_to_disk_cache_;
   std::string data_;

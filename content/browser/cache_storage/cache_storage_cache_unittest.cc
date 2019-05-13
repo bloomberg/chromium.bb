@@ -40,6 +40,8 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "crypto/symmetric_key.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/data_pipe_drainer.h"
 #include "net/base/test_completion_callback.h"
 #include "net/disk_cache/disk_cache.h"
@@ -52,6 +54,7 @@
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/blob/blob_url_request_job_factory.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
+#include "storage/browser/test/fake_blob.h"
 #include "storage/browser/test/mock_quota_manager_proxy.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
 #include "storage/common/blob_storage/blob_handle.h"
@@ -93,6 +96,22 @@ void SizeCallback(base::RunLoop* run_loop,
   if (run_loop)
     run_loop->Quit();
 }
+
+// A blob that never finishes writing to its pipe.
+class SlowBlob : public storage::FakeBlob {
+ public:
+  explicit SlowBlob(base::OnceClosure quit_closure)
+      : FakeBlob("foo"), quit_closure_(std::move(quit_closure)) {}
+
+  void ReadAll(mojo::ScopedDataPipeProducerHandle producer_handle,
+               blink::mojom::BlobReaderClientPtr client) override {
+    // Don't respond, forcing the consumer to wait forever.
+    std::move(quit_closure_).Run();
+  }
+
+ private:
+  base::OnceClosure quit_closure_;
+};
 
 // A disk_cache::Backend wrapper that can delay operations.
 class DelayableBackend : public disk_cache::Backend {
@@ -416,15 +435,14 @@ class CacheStorageCacheTest : public testing::Test {
     blob_storage_context_ = blob_storage_context->context();
 
     const bool is_incognito = MemoryOnly();
-    base::FilePath temp_dir_path;
     if (!is_incognito) {
       ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-      temp_dir_path = temp_dir_.GetPath();
+      temp_dir_path_ = temp_dir_.GetPath();
     }
 
     quota_policy_ = new MockSpecialStoragePolicy;
     mock_quota_manager_ = new MockQuotaManager(
-        is_incognito, temp_dir_path, base::ThreadTaskRunnerHandle::Get().get(),
+        is_incognito, temp_dir_path_, base::ThreadTaskRunnerHandle::Get().get(),
         quota_policy_.get());
     mock_quota_manager_->SetQuota(
         kOrigin, blink::mojom::StorageType::kTemporary, 1024 * 1024 * 100);
@@ -456,13 +474,13 @@ class CacheStorageCacheTest : public testing::Test {
     // CacheStorageCacheHandle reference counting.  A LegacyCacheStorage
     // must be present to be notified when a cache becomes unreferenced.
     mock_cache_storage_ = std::make_unique<MockLegacyCacheStorage>(
-        temp_dir_path, MemoryOnly(), base::ThreadTaskRunnerHandle::Get().get(),
+        temp_dir_path_, MemoryOnly(), base::ThreadTaskRunnerHandle::Get().get(),
         quota_manager_proxy_, blob_storage_context_->AsWeakPtr(),
         /* cache_storage_manager = */ nullptr, kOrigin,
         CacheStorageOwner::kCacheAPI);
 
     cache_ = std::make_unique<TestCacheStorageCache>(
-        kOrigin, kCacheName, temp_dir_path, mock_cache_storage_.get(),
+        kOrigin, kCacheName, temp_dir_path_, mock_cache_storage_.get(),
         quota_manager_proxy_, blob_storage_context->context()->AsWeakPtr());
     cache_->Init();
   }
@@ -842,6 +860,7 @@ class CacheStorageCacheTest : public testing::Test {
   storage::BlobStorageContext* blob_storage_context_;
   std::unique_ptr<MockLegacyCacheStorage> mock_cache_storage_;
 
+  base::FilePath temp_dir_path_;
   std::unique_ptr<TestCacheStorageCache> cache_;
 
   blink::mojom::FetchAPIRequestPtr body_request_;
@@ -2209,6 +2228,53 @@ TEST_P(CacheStorageCacheTestP, OpsFailOnClosedBackend) {
   EXPECT_TRUE(Put(body_request_, CreateBlobBodyResponse()));
   EXPECT_TRUE(Close());
   VerifyAllOpsFail();
+}
+
+// Shutdown the cache in the middle of its writing the response body. Upon
+// restarting, that response shouldn't be available. See crbug.com/617683.
+TEST_P(CacheStorageCacheTestP, UnfinishedPutsShouldNotBeReusable) {
+  // Create a response with a blob that takes forever to write its bytes to the
+  // mojo pipe. Guaranteeing that the response isn't finished writing by the
+  // time we close the backend.
+  base::RunLoop run_loop;
+  auto blob = blink::mojom::SerializedBlob::New();
+  blob->uuid = "mock blob";
+  blob->size = 100;
+  mojo::MakeStrongBinding(std::make_unique<SlowBlob>(run_loop.QuitClosure()),
+                          MakeRequest(&blob->blob));
+  blink::mojom::FetchAPIResponsePtr response = CreateNoBodyResponse();
+  response->url_list = {kBodyUrl};
+  response->blob = std::move(blob);
+
+  blink::mojom::BatchOperationPtr operation =
+      blink::mojom::BatchOperation::New();
+  operation->operation_type = blink::mojom::OperationType::kPut;
+  operation->request = BackgroundFetchSettledFetch::CloneRequest(body_request_);
+  operation->response = std::move(response);
+  std::vector<blink::mojom::BatchOperationPtr> operations;
+  operations.emplace_back(std::move(operation));
+
+  // Start the put operation and let it run until the blob is supposed to write
+  // to its pipe.
+  cache_->BatchOperation(std::move(operations), /* trace_id = */ 0,
+                         base::DoNothing(), base::DoNothing());
+  run_loop.Run();
+
+  // Shut down the cache. Doing so causes the write to cease, and the entry
+  // should be erased.
+  cache_ = nullptr;
+  base::RunLoop().RunUntilIdle();
+
+  // Create a new Cache in the same space.
+  ChromeBlobStorageContext* blob_storage_context =
+      ChromeBlobStorageContext::GetFor(&browser_context_);
+  cache_ = std::make_unique<TestCacheStorageCache>(
+      kOrigin, kCacheName, temp_dir_path_, nullptr /* CacheStorage */,
+      quota_manager_proxy_, blob_storage_context->context()->AsWeakPtr());
+  cache_->Init();
+
+  // Now attempt to read the same response from the cache. It should fail.
+  EXPECT_FALSE(Match(body_request_));
 }
 
 TEST_P(CacheStorageCacheTestP, BlobReferenceDelaysClose) {

@@ -30,7 +30,7 @@ CacheStorageBlobToDiskCache::CacheStorageBlobToDiskCache()
 CacheStorageBlobToDiskCache::~CacheStorageBlobToDiskCache() = default;
 
 void CacheStorageBlobToDiskCache::StreamBlobToCache(
-    disk_cache::ScopedEntryPtr entry,
+    ScopedWritableEntry entry,
     int disk_cache_body_index,
     blink::mojom::BlobPtr blob,
     uint64_t blob_size,
