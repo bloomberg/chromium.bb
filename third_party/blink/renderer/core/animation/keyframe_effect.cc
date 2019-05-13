@@ -379,9 +379,9 @@ void KeyframeEffect::ApplyEffects() {
 
   if (changed) {
     target_->SetNeedsAnimationStyleRecalc();
-    if (RuntimeEnabledFeatures::WebAnimationsSVGEnabled() &&
-        target_->IsSVGElement())
-      ToSVGElement(*target_).SetWebAnimationsPending();
+    auto* svg_element = DynamicTo<SVGElement>(target_.Get());
+    if (RuntimeEnabledFeatures::WebAnimationsSVGEnabled() && svg_element)
+      svg_element->SetWebAnimationsPending();
   }
 }
 
@@ -393,9 +393,9 @@ void KeyframeEffect::ClearEffects() {
   if (GetAnimation())
     GetAnimation()->RestartAnimationOnCompositor();
   target_->SetNeedsAnimationStyleRecalc();
-  if (RuntimeEnabledFeatures::WebAnimationsSVGEnabled() &&
-      target_->IsSVGElement())
-    ToSVGElement(*target_).ClearWebAnimatedAttributes();
+  auto* svg_element = DynamicTo<SVGElement>(target_.Get());
+  if (RuntimeEnabledFeatures::WebAnimationsSVGEnabled() && svg_element)
+    svg_element->ClearWebAnimatedAttributes();
   Invalidate();
 }
 
@@ -424,9 +424,9 @@ void KeyframeEffect::AttachTarget(Animation* animation) {
     return;
   target_->EnsureElementAnimations().Animations().insert(animation);
   target_->SetNeedsAnimationStyleRecalc();
-  if (RuntimeEnabledFeatures::WebAnimationsSVGEnabled() &&
-      target_->IsSVGElement())
-    ToSVGElement(target_)->SetWebAnimationsPending();
+  auto* svg_element = DynamicTo<SVGElement>(target_.Get());
+  if (RuntimeEnabledFeatures::WebAnimationsSVGEnabled() && svg_element)
+    svg_element->SetWebAnimationsPending();
 }
 
 void KeyframeEffect::DetachTarget(Animation* animation) {

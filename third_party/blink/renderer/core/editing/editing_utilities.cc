@@ -1698,7 +1698,7 @@ AtomicString GetUrlStringFromNode(const Node& node) {
   if (IsHTMLImageElement(node) || IsHTMLInputElement(node))
     return To<HTMLElement>(node).getAttribute(kSrcAttr);
   if (IsSVGImageElement(node))
-    return ToSVGElement(node).ImageSourceURL();
+    return To<SVGElement>(node).ImageSourceURL();
   if (IsHTMLEmbedElement(node) || IsHTMLObjectElement(node) ||
       IsHTMLCanvasElement(node))
     return To<HTMLElement>(node).ImageSourceURL();

@@ -1213,8 +1213,8 @@ void Node::SetNeedsStyleRecalc(StyleChangeType change_type,
   if (IsElementNode() && HasRareData())
     ToElement(*this).SetAnimationStyleChange(false);
 
-  if (IsSVGElement())
-    ToSVGElement(this)->SetNeedsStyleRecalcForInstances(change_type, reason);
+  if (auto* svg_element = DynamicTo<SVGElement>(this))
+    svg_element->SetNeedsStyleRecalcForInstances(change_type, reason);
 }
 
 void Node::ClearNeedsStyleRecalc() {

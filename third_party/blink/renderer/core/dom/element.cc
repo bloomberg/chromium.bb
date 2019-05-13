@@ -554,7 +554,7 @@ void Element::SynchronizeAllAttributes() const {
     SynchronizeStyleAttributeInternal();
   }
   if (GetElementData()->animated_svg_attributes_are_dirty_)
-    ToSVGElement(this)->SynchronizeAnimatedSVGAttribute(AnyQName());
+    To<SVGElement>(this)->SynchronizeAnimatedSVGAttribute(AnyQName());
 }
 
 inline void Element::SynchronizeAttribute(const QualifiedName& name) const {
@@ -569,7 +569,7 @@ inline void Element::SynchronizeAttribute(const QualifiedName& name) const {
   if (UNLIKELY(GetElementData()->animated_svg_attributes_are_dirty_)) {
     // See comment in the AtomicString version of SynchronizeAttribute()
     // also.
-    ToSVGElement(this)->SynchronizeAnimatedSVGAttribute(name);
+    To<SVGElement>(this)->SynchronizeAnimatedSVGAttribute(name);
   }
 }
 
@@ -597,7 +597,7 @@ void Element::SynchronizeAttribute(const AtomicString& local_name) const {
     // AnyQName(). This means that even if Element::SynchronizeAttribute()
     // is called on all attributes, animated_svg_attributes_are_dirty_ remains
     // true.
-    ToSVGElement(this)->SynchronizeAnimatedSVGAttribute(
+    To<SVGElement>(this)->SynchronizeAnimatedSVGAttribute(
         QualifiedName(g_null_atom, local_name, g_null_atom));
   }
 }
@@ -1223,11 +1223,12 @@ IntRect Element::BoundsInViewport() const {
   // cannot use LocalToAbsoluteQuad directly with ObjectBoundingBox which is
   // SVG coordinates and not HTML coordinates. Instead, use the AbsoluteQuads
   // codepath below.
-  if (IsSVGElement() && GetLayoutObject() &&
+  auto* svg_element = DynamicTo<SVGElement>(this);
+  if (svg_element && GetLayoutObject() &&
       !GetLayoutObject()->IsSVGForeignObject()) {
     // Get the bounding rectangle from the SVG model.
     // TODO(pdr): This should include stroke.
-    if (ToSVGElement(this)->IsSVGGraphicsElement())
+    if (svg_element->IsSVGGraphicsElement())
       quads.push_back(GetLayoutObject()->LocalToAbsoluteQuad(
           GetLayoutObject()->ObjectBoundingBox()));
   } else {
@@ -1293,13 +1294,14 @@ void Element::ClientQuads(Vector<FloatQuad>& quads) {
   // cannot use LocalToAbsoluteQuad directly with ObjectBoundingBox which is
   // SVG coordinates and not HTML coordinates. Instead, use the AbsoluteQuads
   // codepath below.
-  if (IsSVGElement() && !element_layout_object->IsSVGRoot() &&
+  auto* svg_element = DynamicTo<SVGElement>(this);
+  if (svg_element && !element_layout_object->IsSVGRoot() &&
       !element_layout_object->IsSVGForeignObject()) {
     // Get the bounding rectangle from the SVG model.
     // TODO(pdr): ObjectBoundingBox does not include stroke and the spec is not
     // clear (see: https://github.com/w3c/svgwg/issues/339, crbug.com/529734).
     // If stroke is desired, we can update this to use AbsoluteQuads, below.
-    if (ToSVGElement(this)->IsSVGGraphicsElement())
+    if (svg_element->IsSVGGraphicsElement())
       quads.push_back(element_layout_object->LocalToAbsoluteQuad(
           element_layout_object->ObjectBoundingBox()));
     return;
@@ -4148,8 +4150,8 @@ bool Element::HasDisplayContentsStyle() const {
 bool Element::ShouldStoreComputedStyle(const ComputedStyle& style) const {
   if (LayoutObjectIsNeeded(style))
     return true;
-  if (IsSVGElement()) {
-    if (!ToSVGElement(*this).HasSVGParent())
+  if (auto* svg_element = DynamicTo<SVGElement>(this)) {
+    if (!svg_element->HasSVGParent())
       return false;
     if (IsSVGStopElement(*this))
       return true;
@@ -4677,8 +4679,8 @@ bool Element::FastAttributeLookupAllowed(const QualifiedName& name) const {
   if (name == html_names::kStyleAttr)
     return false;
 
-  if (IsSVGElement())
-    return !ToSVGElement(this)->IsAnimatableAttribute(name);
+  if (auto* svg_element = DynamicTo<SVGElement>(this))
+    return !svg_element->IsAnimatableAttribute(name);
 
   return true;
 }

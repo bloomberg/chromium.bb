@@ -595,10 +595,11 @@ void StyleResolver::MatchAllRules(StyleResolverState& state,
     }
 
     // Now check SMIL animation override style.
-    if (include_smil_properties && state.GetElement()->IsSVGElement())
+    auto* svg_element = DynamicTo<SVGElement>(state.GetElement());
+    if (include_smil_properties && svg_element) {
       collector.AddElementStyleProperties(
-          ToSVGElement(state.GetElement())->AnimatedSMILStyleProperties(),
-          false /* isCacheable */);
+          svg_element->AnimatedSMILStyleProperties(), false /* isCacheable */);
+    }
   }
 
   collector.FinishAddingAuthorRulesForTreeScope();

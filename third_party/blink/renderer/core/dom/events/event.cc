@@ -359,9 +359,9 @@ HeapVector<Member<EventTarget>> Event::PathInternal(ScriptState* script_state,
 EventTarget* Event::currentTarget() const {
   if (!current_target_)
     return nullptr;
-  Node* node = current_target_->ToNode();
-  if (node && node->IsSVGElement()) {
-    if (SVGElement* svg_element = ToSVGElement(node)->CorrespondingElement())
+  if (auto* curr_svg_element =
+          DynamicTo<SVGElement>(current_target_->ToNode())) {
+    if (SVGElement* svg_element = curr_svg_element->CorrespondingElement())
       return svg_element;
   }
   return current_target_.Get();

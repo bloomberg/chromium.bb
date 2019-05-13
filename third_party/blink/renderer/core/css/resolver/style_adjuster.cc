@@ -122,8 +122,8 @@ static EDisplay EquivalentBlockDisplay(EDisplay display) {
 }
 
 static bool IsOutermostSVGElement(const Element* element) {
-  return element && element->IsSVGElement() &&
-         ToSVGElement(*element).IsOutermostSVGSVGElement();
+  auto* svg_element = DynamicTo<SVGElement>(element);
+  return svg_element && svg_element->IsOutermostSVGSVGElement();
 }
 
 static bool IsAtUAShadowBoundary(const Element* element) {
@@ -589,10 +589,10 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
   AdjustStyleForEditing(style);
 
   bool is_svg_root = false;
-  bool is_svg_element = element && element->IsSVGElement();
+  auto* svg_element = DynamicTo<SVGElement>(element);
 
-  if (is_svg_element) {
-    is_svg_root = ToSVGElement(element)->IsOutermostSVGSVGElement();
+  if (svg_element) {
+    is_svg_root = svg_element->IsOutermostSVGSVGElement();
     if (!is_svg_root) {
       // Only the root <svg> element in an SVG document fragment tree honors css
       // position.

@@ -81,9 +81,9 @@ const LayoutObject* FindTargetLayoutObject(Node*& target_node) {
     layout_object = layout_object->Parent();
   // Update the target node to point to the SVG root.
   target_node = layout_object->GetNode();
+  auto* svg_element = DynamicTo<SVGElement>(target_node);
   DCHECK(!target_node ||
-         (target_node->IsSVGElement() &&
-          ToSVGElement(*target_node).IsOutermostSVGSVGElement()));
+         (svg_element && svg_element->IsOutermostSVGSVGElement()));
   return layout_object;
 }
 
