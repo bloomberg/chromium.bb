@@ -255,13 +255,6 @@ Frame* FrameTree::FindFrameForNavigationInternal(
   if (EqualIgnoringASCIICase(name, "_blank"))
     return nullptr;
 
-  // TODO(japhet): window-open-noopener.html?indexed asserts that the noopener
-  // feature prevents named-window reuse, but the spec doesn't mention this.
-  // There is ongoing discussion at https://github.com/whatwg/html/issues/1826,
-  // and this will probably need to be updated once that discussion is resolved.
-  if (request.IsWindowOpen() && request.GetWindowFeatures().noopener)
-    return nullptr;
-
   const KURL& url = request.GetResourceRequest().Url();
   // Search subtree starting with this frame first.
   for (Frame* frame = this_frame_; frame;
