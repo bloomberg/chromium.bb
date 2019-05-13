@@ -96,8 +96,10 @@ def SmokeTestGenerator(benchmark, num_pages=1):
     with open(path_util.GetExpectationsPath()) as fp:
       single_page_benchmark.AugmentExpectationsWithParser(fp.read())
 
-    self.assertEqual(0, single_page_benchmark.Run(options),
-                     msg='Failed: %s' % benchmark)
+    return_code = single_page_benchmark.Run(options)
+    if return_code == -1:
+      self.skipTest('The benchmark was not run.')
+    self.assertEqual(0, return_code, msg='Failed: %s' % benchmark)
 
   return BenchmarkSmokeTest
 

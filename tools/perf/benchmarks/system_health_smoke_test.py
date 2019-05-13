@@ -218,8 +218,10 @@ def _GenerateSmokeTestCase(benchmark_class, story_to_smoke_test):
     with open(path_util.GetExpectationsPath()) as fp:
       single_page_benchmark.AugmentExpectationsWithParser(fp.read())
 
-    self.assertEqual(0, single_page_benchmark.Run(options),
-                     msg='Failed: %s' % benchmark_class)
+    return_code = single_page_benchmark.Run(options)
+    if return_code == -1:
+      self.skipTest('The benchmark was not run.')
+    self.assertEqual(0, return_code, msg='Failed: %s' % benchmark_class)
 
   # We attach the test method to SystemHealthBenchmarkSmokeTest dynamically
   # so that we can set the test method name to include
