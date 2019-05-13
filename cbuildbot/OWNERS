@@ -4,3 +4,6 @@ evanhernandez@chromium.org
 dhanyaganesh@chromium.org
 mikenichols@chromium.org
 jclinton@chromium.org
+
+per-file afdo.py=llozano@chromium.org
+per-file afdo_unittest.py=llozano@chromium.org
