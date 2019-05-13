@@ -64,6 +64,7 @@
 #if defined(OS_ANDROID)
 #include "base/android/apk_assets.h"
 #include "base/posix/global_descriptors.h"
+#include "content/public/browser/android/compositor.h"
 #include "content/public/test/nested_message_pump_android.h"
 #include "content/shell/android/shell_descriptors.h"
 #endif
@@ -161,6 +162,9 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
   if (!exit_code)
     exit_code = &dummy;
 
+#if defined(OS_ANDROID)
+  Compositor::Initialize();
+#endif
 #if defined(OS_WIN)
   // Enable trace control and transport through event tracing for Windows.
   logging::LogEventProvider::Initialize(kContentShellProviderName);
