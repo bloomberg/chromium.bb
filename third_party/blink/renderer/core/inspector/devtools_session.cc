@@ -135,7 +135,8 @@ DevToolsSession::DevToolsSession(
       inspector_backend_dispatcher_(new protocol::UberDispatcher(this)),
       session_state_(std::move(reattach_session_state)),
       v8_session_state_(kV8StateKey),
-      v8_session_state_json_(&v8_session_state_, /*default_value=*/String()) {
+      v8_session_state_cbor_(&v8_session_state_,
+                             /*default_value=*/std::vector<uint8_t>()) {
   io_session_ =
       new IOSession(agent_->io_task_runner_, agent_->inspector_task_runner_,
                     WrapCrossThreadWeakPersistent(this), std::move(io_request));
@@ -160,9 +161,10 @@ DevToolsSession::~DevToolsSession() {
 
 void DevToolsSession::ConnectToV8(v8_inspector::V8Inspector* inspector,
                                   int context_group_id) {
+  const std::vector<uint8_t>& cbor = v8_session_state_cbor_.Get();
   v8_session_ =
       inspector->connect(context_group_id, this,
-                         ToV8InspectorStringView(v8_session_state_json_.Get()));
+                         v8_inspector::StringView(cbor.data(), cbor.size()));
 }
 
 bool DevToolsSession::IsDetached() {
@@ -285,7 +287,7 @@ void DevToolsSession::SendProtocolResponse(
     return;
   flushProtocolNotifications();
   if (v8_session_)
-    v8_session_state_json_.Set(ToCoreString(v8_session_->stateJSON()));
+    v8_session_state_cbor_.Set(v8_session_->state());
   // Make tests more predictable by flushing all sessions before sending
   // protocol response in any of them.
   if (WebTestSupport::IsRunningWebTest())
@@ -356,7 +358,7 @@ void DevToolsSession::flushProtocolNotifications() {
   if (!notification_queue_.size())
     return;
   if (v8_session_)
-    v8_session_state_json_.Set(ToCoreString(v8_session_->stateJSON()));
+    v8_session_state_cbor_.Set(v8_session_->state());
   for (wtf_size_t i = 0; i < notification_queue_.size(); ++i) {
     auto serialized = notification_queue_[i]->Serialize();
     host_ptr_->DispatchProtocolNotification(std::move(serialized),
