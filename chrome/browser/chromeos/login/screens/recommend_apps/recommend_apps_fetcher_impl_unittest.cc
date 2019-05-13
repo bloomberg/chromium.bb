@@ -257,6 +257,8 @@ class RecommendAppsFetcherImplTest : public testing::Test {
     cros_display_config_.reset();
     display::Screen::SetScreenInstance(nullptr);
     input_device_manager_.reset();
+    input_device_client_test_api_.SetKeyboardDevices({});
+    input_device_client_test_api_.SetTouchscreenDevices({});
   }
 
  protected:
@@ -1223,7 +1225,7 @@ TEST_F(RecommendAppsFetcherImplTest, InvalidErrorCodeType) {
   ASSERT_TRUE(request);
 
   test_url_loader_factory_.AddResponse(request->url.spec(),
-                                       R"({"Error Code": ""})");
+                                       R"({"Error code": ""})");
 
   EXPECT_EQ(FakeRecommendAppsFetcherDelegate::Result::PARSE_ERROR,
             delegate_.WaitForResult());
@@ -1245,7 +1247,7 @@ TEST_F(RecommendAppsFetcherImplTest, ResponseWithErrorCode) {
   ASSERT_TRUE(request);
 
   test_url_loader_factory_.AddResponse(request->url.spec(),
-                                       R"({"Error Code": "6"})");
+                                       R"({"Error code": "6"})");
 
   EXPECT_EQ(FakeRecommendAppsFetcherDelegate::Result::PARSE_ERROR,
             delegate_.WaitForResult());
@@ -1267,7 +1269,7 @@ TEST_F(RecommendAppsFetcherImplTest, NotEnoughAppsError) {
   ASSERT_TRUE(request);
 
   test_url_loader_factory_.AddResponse(request->url.spec(),
-                                       R"({"Error Code": "5"})");
+                                       R"({"Error code": "5"})");
 
   EXPECT_EQ(FakeRecommendAppsFetcherDelegate::Result::PARSE_ERROR,
             delegate_.WaitForResult());
@@ -1311,7 +1313,7 @@ TEST_F(RecommendAppsFetcherImplTest, SuccessOnRetry) {
   ASSERT_TRUE(request);
 
   test_url_loader_factory_.AddResponse(request->url.spec(),
-                                       R"({"Error Code": "5"})");
+                                       R"({"Error code": "5"})");
 
   EXPECT_EQ(FakeRecommendAppsFetcherDelegate::Result::PARSE_ERROR,
             delegate_.WaitForResult());
@@ -1364,7 +1366,7 @@ TEST_F(RecommendAppsFetcherImplTest, FailureOnRetry) {
   network::ResourceRequest* request = WaitForAppListRequest();
   ASSERT_TRUE(request);
   test_url_loader_factory_.AddResponse(request->url.spec(),
-                                       R"({"Error Code": "5"})");
+                                       R"({"Error code": "5"})");
 
   EXPECT_EQ(FakeRecommendAppsFetcherDelegate::Result::PARSE_ERROR,
             delegate_.WaitForResult());
@@ -1377,7 +1379,7 @@ TEST_F(RecommendAppsFetcherImplTest, FailureOnRetry) {
   ASSERT_TRUE(request);
 
   test_url_loader_factory_.AddResponse(request->url.spec(),
-                                       R"({"Error Code": "10"})");
+                                       R"({"Error code": "10"})");
 
   EXPECT_EQ(FakeRecommendAppsFetcherDelegate::Result::PARSE_ERROR,
             delegate_.WaitForResult());
