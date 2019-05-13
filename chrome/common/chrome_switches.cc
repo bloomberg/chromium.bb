@@ -797,6 +797,10 @@ const char kMakeChromeDefault[] = "make-chrome-default";
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_WIN)
+// Disables custom-drawing the window titlebar on Windows 10.
+const char kDisableWindows10CustomTitlebar[] =
+    "disable-windows10-custom-titlebar";
+
 // Fallback to XPS. By default connector uses CDD.
 const char kEnableCloudPrintXps[]           = "enable-cloud-print-xps";
 

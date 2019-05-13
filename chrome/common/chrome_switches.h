@@ -242,6 +242,7 @@ extern const char kMakeChromeDefault[];
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_WIN)
+extern const char kDisableWindows10CustomTitlebar[];
 extern const char kEnableCloudPrintXps[];
 extern const char kEnableProfileShortcutManager[];
 extern const char kHideIcons[];
