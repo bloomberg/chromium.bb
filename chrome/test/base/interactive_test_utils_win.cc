@@ -14,6 +14,7 @@
 #include "chrome/test/base/interactive_test_utils_aura.h"
 #include "chrome/test/base/process_lineage_win.h"
 #include "chrome/test/base/save_desktop_snapshot_win.h"
+#include "chrome/test/base/window_contents_as_string_win.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/test/ui_controls.h"
 #include "ui/base/win/foreground_helper.h"
@@ -56,6 +57,7 @@ bool ShowAndFocusNativeWindow(gfx::NativeWindow window) {
   GetWindowText(foreground_window, window_title, base::size(window_title));
 
   base::string16 lineage_str;
+  base::string16 window_contents;
   if (foreground_window) {
     DWORD process_id = 0;
     GetWindowThreadProcessId(foreground_window, &process_id);
@@ -64,9 +66,13 @@ bool ShowAndFocusNativeWindow(gfx::NativeWindow window) {
       lineage_str = STRING16_LITERAL(", process lineage: ");
       lineage_str.append(lineage.ToString());
     }
+
+    window_contents = WindowContentsAsString(foreground_window);
   }
   LOG(ERROR) << "ShowAndFocusNativeWindow failed. foreground window: "
-             << foreground_window << ", title: " << window_title << lineage_str;
+             << foreground_window << ", title: " << window_title << lineage_str
+             << ", contents:" << std::endl
+             << window_contents;
 
   const base::FilePath output_dir =
       base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
