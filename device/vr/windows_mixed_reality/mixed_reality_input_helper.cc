@@ -24,6 +24,7 @@
 #include "device/vr/windows_mixed_reality/wrappers/wmr_pointer_pose.h"
 #include "device/vr/windows_mixed_reality/wrappers/wmr_pointer_source_pose.h"
 #include "device/vr/windows_mixed_reality/wrappers/wmr_timestamp.h"
+#include "device/vr/windows_mixed_reality/wrappers/wmr_wrapper_factories.h"
 #include "ui/gfx/transform.h"
 #include "ui/gfx/transform_util.h"
 
@@ -368,7 +369,7 @@ bool MixedRealityInputHelper::EnsureSpatialInteractionManager() {
   if (!hwnd_)
     return false;
 
-  input_manager_ = WMRInputManager::GetForWindow(hwnd_);
+  input_manager_ = WMRInputManagerFactory::GetForWindow(hwnd_);
 
   if (!input_manager_)
     return false;

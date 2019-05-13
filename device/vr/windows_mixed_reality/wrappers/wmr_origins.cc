@@ -39,6 +39,11 @@ using Microsoft::WRL::ComPtr;
 
 namespace device {
 // WMRCoordinateSystem
+ISpatialCoordinateSystem* WMRCoordinateSystem::GetRawPtr() const {
+  NOTREACHED();
+  return nullptr;
+}
+
 WMRCoordinateSystemImpl::WMRCoordinateSystemImpl(
     ComPtr<ISpatialCoordinateSystem> coordinates)
     : coordinates_(coordinates) {

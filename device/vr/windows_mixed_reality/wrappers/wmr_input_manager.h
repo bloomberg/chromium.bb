@@ -44,27 +44,41 @@ class WMRInputManager {
   using InputEventCallback =
       base::RepeatingCallback<void(const WMRInputSourceEventArgs&)>;
 
-  static std::unique_ptr<WMRInputManager> GetForWindow(HWND hwnd);
-
-  explicit WMRInputManager(
-      Microsoft::WRL::ComPtr<
-          ABI::Windows::UI::Input::Spatial::ISpatialInteractionManager>
-          manager);
-  virtual ~WMRInputManager();
+  virtual ~WMRInputManager() = default;
 
   virtual std::vector<WMRInputSourceState> GetDetectedSourcesAtTimestamp(
       Microsoft::WRL::ComPtr<ABI::Windows::Perception::IPerceptionTimestamp>
-          timestamp) const;
+          timestamp) const = 0;
+
+  virtual std::unique_ptr<InputEventCallbackList::Subscription>
+  AddPressedCallback(const InputEventCallback& cb) = 0;
+
+  virtual std::unique_ptr<InputEventCallbackList::Subscription>
+  AddReleasedCallback(const InputEventCallback& cb) = 0;
+};
+
+class WMRInputManagerImpl : public WMRInputManager {
+ public:
+  using InputEventCallbackList =
+      base::CallbackList<void(const WMRInputSourceEventArgs&)>;
+  using InputEventCallback =
+      base::RepeatingCallback<void(const WMRInputSourceEventArgs&)>;
+
+  explicit WMRInputManagerImpl(
+      Microsoft::WRL::ComPtr<
+          ABI::Windows::UI::Input::Spatial::ISpatialInteractionManager>
+          manager);
+  ~WMRInputManagerImpl() override;
+
+  std::vector<WMRInputSourceState> GetDetectedSourcesAtTimestamp(
+      Microsoft::WRL::ComPtr<ABI::Windows::Perception::IPerceptionTimestamp>
+          timestamp) const override;
 
   std::unique_ptr<InputEventCallbackList::Subscription> AddPressedCallback(
-      const InputEventCallback& cb);
+      const InputEventCallback& cb) override;
 
   std::unique_ptr<InputEventCallbackList::Subscription> AddReleasedCallback(
-      const InputEventCallback& cb);
-
- protected:
-  // Necessary so subclasses don't call the explicit constructor.
-  WMRInputManager();
+      const InputEventCallback& cb) override;
 
  private:
   void SubscribeEvents();
@@ -88,7 +102,7 @@ class WMRInputManager {
   InputEventCallbackList pressed_callback_list_;
   InputEventCallbackList released_callback_list_;
 
-  DISALLOW_COPY_AND_ASSIGN(WMRInputManager);
+  DISALLOW_COPY_AND_ASSIGN(WMRInputManagerImpl);
 };
 }  // namespace device
 

@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 #include "device/vr/windows_mixed_reality/wrappers/wmr_input_manager.h"
 
-#include <SpatialInteractionManagerInterop.h>
 #include <windows.perception.h>
 #include <windows.ui.input.spatial.h>
 #include <wrl.h>
@@ -65,32 +64,8 @@ WMRInputSourceState WMRInputSourceEventArgs::State() const {
   return WMRInputSourceState(wmr_state);
 }
 
-std::unique_ptr<WMRInputManager> WMRInputManager::GetForWindow(HWND hwnd) {
-  if (MixedRealityDeviceStatics::GetLockedTestHook().GetHook()) {
-    return std::make_unique<MockWMRInputManager>();
-  }
-  if (!hwnd)
-    return nullptr;
-
-  ComPtr<ISpatialInteractionManagerInterop> spatial_interaction_interop;
-  base::win::ScopedHString spatial_interaction_interop_string =
-      base::win::ScopedHString::Create(
-          RuntimeClass_Windows_UI_Input_Spatial_SpatialInteractionManager);
-  HRESULT hr = base::win::RoGetActivationFactory(
-      spatial_interaction_interop_string.get(),
-      IID_PPV_ARGS(&spatial_interaction_interop));
-  if (FAILED(hr))
-    return nullptr;
-
-  ComPtr<ISpatialInteractionManager> manager;
-  hr = spatial_interaction_interop->GetForWindow(hwnd, IID_PPV_ARGS(&manager));
-  if (FAILED(hr))
-    return nullptr;
-
-  return std::make_unique<WMRInputManager>(manager);
-}
-
-WMRInputManager::WMRInputManager(ComPtr<ISpatialInteractionManager> manager)
+WMRInputManagerImpl::WMRInputManagerImpl(
+    ComPtr<ISpatialInteractionManager> manager)
     : manager_(manager) {
   DCHECK(manager_);
   pressed_token_.value = 0;
@@ -98,13 +73,12 @@ WMRInputManager::WMRInputManager(ComPtr<ISpatialInteractionManager> manager)
   SubscribeEvents();
 }
 
-WMRInputManager::WMRInputManager() {}
-
-WMRInputManager::~WMRInputManager() {
+WMRInputManagerImpl::~WMRInputManagerImpl() {
   UnsubscribeEvents();
 }
 
-std::vector<WMRInputSourceState> WMRInputManager::GetDetectedSourcesAtTimestamp(
+std::vector<WMRInputSourceState>
+WMRInputManagerImpl::GetDetectedSourcesAtTimestamp(
     ComPtr<IPerceptionTimestamp> timestamp) const {
   std::vector<WMRInputSourceState> input_states;
   ComPtr<IVectorView<SpatialInteractionSourceState*>> source_states;
@@ -127,16 +101,16 @@ std::vector<WMRInputSourceState> WMRInputManager::GetDetectedSourcesAtTimestamp(
 }
 
 std::unique_ptr<WMRInputManager::InputEventCallbackList::Subscription>
-WMRInputManager::AddPressedCallback(const InputEventCallback& cb) {
+WMRInputManagerImpl::AddPressedCallback(const InputEventCallback& cb) {
   return pressed_callback_list_.Add(cb);
 }
 
 std::unique_ptr<WMRInputManager::InputEventCallbackList::Subscription>
-WMRInputManager::AddReleasedCallback(const InputEventCallback& cb) {
+WMRInputManagerImpl::AddReleasedCallback(const InputEventCallback& cb) {
   return released_callback_list_.Add(cb);
 }
 
-HRESULT WMRInputManager::OnSourcePressed(
+HRESULT WMRInputManagerImpl::OnSourcePressed(
     ISpatialInteractionManager* sender,
     ISpatialInteractionSourceEventArgs* raw_args) {
   ComPtr<ISpatialInteractionSourceEventArgs> wmr_args(raw_args);
@@ -145,7 +119,7 @@ HRESULT WMRInputManager::OnSourcePressed(
   return S_OK;
 }
 
-HRESULT WMRInputManager::OnSourceReleased(
+HRESULT WMRInputManagerImpl::OnSourceReleased(
     ISpatialInteractionManager* sender,
     ISpatialInteractionSourceEventArgs* raw_args) {
   ComPtr<ISpatialInteractionSourceEventArgs> wmr_args(raw_args);
@@ -154,26 +128,26 @@ HRESULT WMRInputManager::OnSourceReleased(
   return S_OK;
 }
 
-void WMRInputManager::SubscribeEvents() {
+void WMRInputManagerImpl::SubscribeEvents() {
   DCHECK(manager_);
   DCHECK(pressed_token_.value == 0);
   DCHECK(released_token_.value == 0);
 
   // The destructor ensures that we're unsubscribed so raw this is fine.
   auto pressed_callback = Callback<SpatialInteractionSourceEventHandler>(
-      this, &WMRInputManager::OnSourcePressed);
+      this, &WMRInputManagerImpl::OnSourcePressed);
   HRESULT hr =
       manager_->add_SourcePressed(pressed_callback.Get(), &pressed_token_);
   DCHECK(SUCCEEDED(hr));
 
   // The destructor ensures that we're unsubscribed so raw this is fine.
   auto released_callback = Callback<SpatialInteractionSourceEventHandler>(
-      this, &WMRInputManager::OnSourceReleased);
+      this, &WMRInputManagerImpl::OnSourceReleased);
   hr = manager_->add_SourceReleased(released_callback.Get(), &released_token_);
   DCHECK(SUCCEEDED(hr));
 }
 
-void WMRInputManager::UnsubscribeEvents() {
+void WMRInputManagerImpl::UnsubscribeEvents() {
   if (!manager_)
     return;
 

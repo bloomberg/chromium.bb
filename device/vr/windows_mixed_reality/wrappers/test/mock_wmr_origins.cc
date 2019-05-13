@@ -18,11 +18,6 @@ bool MockWMRCoordinateSystem::TryGetTransformTo(
   return true;
 }
 
-ABI::Windows::Perception::Spatial::ISpatialCoordinateSystem*
-MockWMRCoordinateSystem::GetRawPtr() const {
-  return nullptr;
-}
-
 // MockWMRStationaryOrigin
 MockWMRStationaryOrigin::MockWMRStationaryOrigin() {}
 

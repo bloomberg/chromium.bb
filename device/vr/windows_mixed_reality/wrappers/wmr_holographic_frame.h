@@ -19,49 +19,61 @@ class WMRTimestamp;
 
 class WMRHolographicFramePrediction {
  public:
-  explicit WMRHolographicFramePrediction(
+  virtual ~WMRHolographicFramePrediction() = default;
+
+  virtual std::unique_ptr<WMRTimestamp> Timestamp() = 0;
+  virtual std::vector<std::unique_ptr<WMRCameraPose>> CameraPoses() = 0;
+};
+
+class WMRHolographicFramePredictionImpl : public WMRHolographicFramePrediction {
+ public:
+  explicit WMRHolographicFramePredictionImpl(
       Microsoft::WRL::ComPtr<
           ABI::Windows::Graphics::Holographic::IHolographicFramePrediction>
           prediction);
-  virtual ~WMRHolographicFramePrediction();
+  ~WMRHolographicFramePredictionImpl() override;
 
-  virtual std::unique_ptr<WMRTimestamp> Timestamp();
-  virtual std::vector<std::unique_ptr<WMRCameraPose>> CameraPoses();
-
- protected:
-  // Necessary so subclasses don't call the explicit constructor.
-  WMRHolographicFramePrediction();
+  std::unique_ptr<WMRTimestamp> Timestamp() override;
+  std::vector<std::unique_ptr<WMRCameraPose>> CameraPoses() override;
 
  private:
   Microsoft::WRL::ComPtr<
       ABI::Windows::Graphics::Holographic::IHolographicFramePrediction>
       prediction_;
 
-  DISALLOW_COPY_AND_ASSIGN(WMRHolographicFramePrediction);
+  DISALLOW_COPY_AND_ASSIGN(WMRHolographicFramePredictionImpl);
 };
 
 class WMRHolographicFrame {
  public:
-  explicit WMRHolographicFrame(
+  virtual ~WMRHolographicFrame() = default;
+
+  virtual std::unique_ptr<WMRHolographicFramePrediction>
+  CurrentPrediction() = 0;
+  virtual std::unique_ptr<WMRRenderingParameters> TryGetRenderingParameters(
+      const WMRCameraPose* pose) = 0;
+  virtual bool TryPresentUsingCurrentPrediction() = 0;
+};
+
+class WMRHolographicFrameImpl : public WMRHolographicFrame {
+ public:
+  explicit WMRHolographicFrameImpl(
       Microsoft::WRL::ComPtr<
           ABI::Windows::Graphics::Holographic::IHolographicFrame>
           holographic_frame);
-  virtual ~WMRHolographicFrame();
+  ~WMRHolographicFrameImpl() override;
 
-  virtual std::unique_ptr<WMRHolographicFramePrediction> CurrentPrediction();
-  virtual std::unique_ptr<WMRRenderingParameters> TryGetRenderingParameters(
-      const WMRCameraPose* pose);
-  virtual bool TryPresentUsingCurrentPrediction();
-
- protected:
-  // Necessary so subclasses don't call the explicit constructor.
-  WMRHolographicFrame();
+  std::unique_ptr<WMRHolographicFramePrediction> CurrentPrediction() override;
+  std::unique_ptr<WMRRenderingParameters> TryGetRenderingParameters(
+      const WMRCameraPose* pose) override;
+  bool TryPresentUsingCurrentPrediction() override;
 
  private:
   Microsoft::WRL::ComPtr<ABI::Windows::Graphics::Holographic::IHolographicFrame>
       holographic_frame_;
 
-  DISALLOW_COPY_AND_ASSIGN(WMRHolographicFrame);
+  DISALLOW_COPY_AND_ASSIGN(WMRHolographicFrameImpl);
 };
+
 }  // namespace device
 #endif  // DEVICE_VR_WINDOWS_MIXED_REALITY_WRAPPERS_WMR_HOLOGRAPHIC_FRAME_H_

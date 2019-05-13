@@ -19,4 +19,16 @@ MockWMRInputManager::GetDetectedSourcesAtTimestamp(
   return {};
 }
 
+std::unique_ptr<WMRInputManager::InputEventCallbackList::Subscription>
+MockWMRInputManager::AddPressedCallback(
+    const WMRInputManager::InputEventCallback& cb) {
+  return pressed_callback_list_.Add(cb);
+}
+
+std::unique_ptr<WMRInputManager::InputEventCallbackList::Subscription>
+MockWMRInputManager::AddReleasedCallback(
+    const WMRInputManager::InputEventCallback& cb) {
+  return released_callback_list_.Add(cb);
+}
+
 }  // namespace device

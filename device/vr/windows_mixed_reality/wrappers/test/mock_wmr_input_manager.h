@@ -17,7 +17,15 @@ class MockWMRInputManager : public WMRInputManager {
       Microsoft::WRL::ComPtr<ABI::Windows::Perception::IPerceptionTimestamp>
           timestamp) const override;
 
+  std::unique_ptr<InputEventCallbackList::Subscription> AddPressedCallback(
+      const InputEventCallback& cb) override;
+
+  std::unique_ptr<InputEventCallbackList::Subscription> AddReleasedCallback(
+      const InputEventCallback& cb) override;
+
  private:
+  InputEventCallbackList pressed_callback_list_;
+  InputEventCallbackList released_callback_list_;
   DISALLOW_COPY_AND_ASSIGN(MockWMRInputManager);
 };
 

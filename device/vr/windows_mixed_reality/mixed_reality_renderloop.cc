@@ -410,7 +410,8 @@ void MixedRealityRenderLoop::InitializeSpace() {
 
   // A small arbitrary size that keeps the window from being distracting.
   window_->Init(NULL, gfx::Rect(25, 10));
-  holographic_space_ = WMRHolographicSpace::CreateForWindow(window_->hwnd());
+  holographic_space_ =
+      WMRHolographicSpaceFactory::CreateForWindow(window_->hwnd());
 }
 
 void MixedRealityRenderLoop::StartPresenting() {

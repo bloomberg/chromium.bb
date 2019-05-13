@@ -19,9 +19,6 @@ class MockWMRCoordinateSystem : public WMRCoordinateSystem {
       const WMRCoordinateSystem* other,
       ABI::Windows::Foundation::Numerics::Matrix4x4* this_to_other) override;
 
-  ABI::Windows::Perception::Spatial::ISpatialCoordinateSystem* GetRawPtr()
-      const override;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(MockWMRCoordinateSystem);
 };

@@ -4,6 +4,9 @@
 
 #include "device/vr/windows_mixed_reality/wrappers/wmr_wrapper_factories.h"
 
+#include <HolographicSpaceInterop.h>
+#include <SpatialInteractionManagerInterop.h>
+#include <windows.perception.h>
 #include <windows.perception.spatial.h>
 #include <wrl.h>
 
@@ -11,6 +14,8 @@
 #include "base/win/core_winrt_util.h"
 #include "base/win/scoped_hstring.h"
 #include "device/vr/windows_mixed_reality/mixed_reality_statics.h"
+#include "device/vr/windows_mixed_reality/wrappers/test/mock_wmr_holographic_space.h"
+#include "device/vr/windows_mixed_reality/wrappers/test/mock_wmr_input_manager.h"
 #include "device/vr/windows_mixed_reality/wrappers/test/mock_wmr_origins.h"
 #include "device/vr/windows_mixed_reality/wrappers/wmr_logging.h"
 
@@ -19,6 +24,7 @@ using SpatialMovementRange =
     ABI::Windows::Perception::Spatial::SpatialMovementRange;
 using ABI::Windows::Foundation::IEventHandler;
 using ABI::Windows::Foundation::IReference;
+using ABI::Windows::Graphics::Holographic::IHolographicSpace;
 using ABI::Windows::Perception::Spatial::ISpatialCoordinateSystem;
 using ABI::Windows::Perception::Spatial::ISpatialLocator;
 using ABI::Windows::Perception::Spatial::
@@ -27,6 +33,7 @@ using ABI::Windows::Perception::Spatial::ISpatialLocatorStatics;
 using ABI::Windows::Perception::Spatial::ISpatialStageFrameOfReference;
 using ABI::Windows::Perception::Spatial::ISpatialStageFrameOfReferenceStatics;
 using ABI::Windows::Perception::Spatial::ISpatialStationaryFrameOfReference;
+using ABI::Windows::UI::Input::Spatial::ISpatialInteractionManager;
 using Microsoft::WRL::ComPtr;
 
 namespace {
@@ -113,6 +120,60 @@ std::unique_ptr<WMRStageStatics> WMRStageStaticsFactory::Create() {
     return nullptr;
 
   return std::make_unique<WMRStageStaticsImpl>(stage_statics);
+}
+
+std::unique_ptr<WMRInputManager> WMRInputManagerFactory::GetForWindow(
+    HWND hwnd) {
+  if (MixedRealityDeviceStatics::ShouldUseMocks()) {
+    return std::make_unique<MockWMRInputManager>();
+  }
+  if (!hwnd)
+    return nullptr;
+
+  ComPtr<ISpatialInteractionManagerInterop> spatial_interaction_interop;
+  base::win::ScopedHString spatial_interaction_interop_string =
+      base::win::ScopedHString::Create(
+          RuntimeClass_Windows_UI_Input_Spatial_SpatialInteractionManager);
+  HRESULT hr = base::win::RoGetActivationFactory(
+      spatial_interaction_interop_string.get(),
+      IID_PPV_ARGS(&spatial_interaction_interop));
+  if (FAILED(hr))
+    return nullptr;
+
+  ComPtr<ISpatialInteractionManager> manager;
+  hr = spatial_interaction_interop->GetForWindow(hwnd, IID_PPV_ARGS(&manager));
+  if (FAILED(hr))
+    return nullptr;
+
+  return std::make_unique<WMRInputManagerImpl>(manager);
+}
+
+std::unique_ptr<WMRHolographicSpace>
+WMRHolographicSpaceFactory::CreateForWindow(HWND hwnd) {
+  if (MixedRealityDeviceStatics::ShouldUseMocks()) {
+    return std::make_unique<MockWMRHolographicSpace>();
+  }
+  if (!hwnd)
+    return nullptr;
+
+  ComPtr<IHolographicSpaceInterop> holographic_space_interop;
+  base::win::ScopedHString holographic_space_string =
+      base::win::ScopedHString::Create(
+          RuntimeClass_Windows_Graphics_Holographic_HolographicSpace);
+  HRESULT hr = base::win::RoGetActivationFactory(
+      holographic_space_string.get(), IID_PPV_ARGS(&holographic_space_interop));
+
+  if (FAILED(hr))
+    return nullptr;
+
+  ComPtr<IHolographicSpace> holographic_space;
+  hr = holographic_space_interop->CreateForWindow(
+      hwnd, IID_PPV_ARGS(&holographic_space));
+
+  if (FAILED(hr))
+    return nullptr;
+
+  return std::make_unique<WMRHolographicSpaceImpl>(holographic_space);
 }
 
 }  // namespace device

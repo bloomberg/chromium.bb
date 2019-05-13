@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 #include "device/vr/windows_mixed_reality/wrappers/wmr_holographic_space.h"
 
-#include <HolographicSpaceInterop.h>
 #include <Windows.Graphics.DirectX.Direct3D11.interop.h>
 #include <windows.graphics.holographic.h>
 #include <wrl.h>
@@ -26,59 +25,32 @@ using ABI::Windows::Graphics::Holographic::IHolographicSpace;
 using Microsoft::WRL::ComPtr;
 
 namespace device {
-std::unique_ptr<WMRHolographicSpace> WMRHolographicSpace::CreateForWindow(
-    HWND hwnd) {
-  if (MixedRealityDeviceStatics::GetLockedTestHook().GetHook()) {
-    return std::make_unique<MockWMRHolographicSpace>();
-  }
-  if (!hwnd)
-    return nullptr;
 
-  ComPtr<IHolographicSpaceInterop> holographic_space_interop;
-  base::win::ScopedHString holographic_space_string =
-      base::win::ScopedHString::Create(
-          RuntimeClass_Windows_Graphics_Holographic_HolographicSpace);
-  HRESULT hr = base::win::RoGetActivationFactory(
-      holographic_space_string.get(), IID_PPV_ARGS(&holographic_space_interop));
-
-  if (FAILED(hr))
-    return nullptr;
-
-  ComPtr<IHolographicSpace> holographic_space;
-  hr = holographic_space_interop->CreateForWindow(
-      hwnd, IID_PPV_ARGS(&holographic_space));
-
-  if (FAILED(hr))
-    return nullptr;
-
-  return std::make_unique<WMRHolographicSpace>(holographic_space);
-}
-
-WMRHolographicSpace::WMRHolographicSpace(ComPtr<IHolographicSpace> space)
+WMRHolographicSpaceImpl::WMRHolographicSpaceImpl(
+    ComPtr<IHolographicSpace> space)
     : space_(space) {
   DCHECK(space_);
 }
 
-WMRHolographicSpace::WMRHolographicSpace() {}
+WMRHolographicSpaceImpl::~WMRHolographicSpaceImpl() = default;
 
-WMRHolographicSpace::~WMRHolographicSpace() = default;
-
-HolographicAdapterId WMRHolographicSpace::PrimaryAdapterId() {
+HolographicAdapterId WMRHolographicSpaceImpl::PrimaryAdapterId() {
   HolographicAdapterId id;
   HRESULT hr = space_->get_PrimaryAdapterId(&id);
   DCHECK(SUCCEEDED(hr));
   return id;
 }
 
-std::unique_ptr<WMRHolographicFrame> WMRHolographicSpace::TryCreateNextFrame() {
+std::unique_ptr<WMRHolographicFrame>
+WMRHolographicSpaceImpl::TryCreateNextFrame() {
   ComPtr<IHolographicFrame> frame;
   HRESULT hr = space_->CreateNextFrame(&frame);
   if (FAILED(hr))
     return nullptr;
-  return std::make_unique<WMRHolographicFrame>(frame);
+  return std::make_unique<WMRHolographicFrameImpl>(frame);
 }
 
-bool WMRHolographicSpace::TrySetDirect3D11Device(
+bool WMRHolographicSpaceImpl::TrySetDirect3D11Device(
     const ComPtr<IDirect3DDevice>& device) {
   HRESULT hr = space_->SetDirect3D11Device(device.Get());
   return SUCCEEDED(hr);

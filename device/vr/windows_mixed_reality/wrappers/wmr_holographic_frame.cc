@@ -31,17 +31,16 @@ using Microsoft::WRL::ComPtr;
 namespace device {
 
 // WMRHolographicFramePrediction
-WMRHolographicFramePrediction::WMRHolographicFramePrediction(
+WMRHolographicFramePredictionImpl::WMRHolographicFramePredictionImpl(
     ComPtr<IHolographicFramePrediction> prediction)
     : prediction_(prediction) {
   DCHECK(prediction_);
 }
 
-WMRHolographicFramePrediction::WMRHolographicFramePrediction() {}
+WMRHolographicFramePredictionImpl::~WMRHolographicFramePredictionImpl() =
+    default;
 
-WMRHolographicFramePrediction::~WMRHolographicFramePrediction() = default;
-
-std::unique_ptr<WMRTimestamp> WMRHolographicFramePrediction::Timestamp() {
+std::unique_ptr<WMRTimestamp> WMRHolographicFramePredictionImpl::Timestamp() {
   ComPtr<IPerceptionTimestamp> timestamp;
   HRESULT hr = prediction_->get_Timestamp(&timestamp);
   DCHECK(SUCCEEDED(hr));
@@ -49,7 +48,7 @@ std::unique_ptr<WMRTimestamp> WMRHolographicFramePrediction::Timestamp() {
 }
 
 std::vector<std::unique_ptr<WMRCameraPose>>
-WMRHolographicFramePrediction::CameraPoses() {
+WMRHolographicFramePredictionImpl::CameraPoses() {
   std::vector<std::unique_ptr<WMRCameraPose>> ret_val;
   ComPtr<IVectorView<HolographicCameraPose*>> poses;
   HRESULT hr = prediction_->get_CameraPoses(&poses);
@@ -70,26 +69,24 @@ WMRHolographicFramePrediction::CameraPoses() {
 }
 
 // WMRHolographicFrame
-WMRHolographicFrame::WMRHolographicFrame(
+WMRHolographicFrameImpl::WMRHolographicFrameImpl(
     ComPtr<IHolographicFrame> holographic_frame)
     : holographic_frame_(holographic_frame) {
   DCHECK(holographic_frame_);
 }
 
-WMRHolographicFrame::WMRHolographicFrame() {}
-
-WMRHolographicFrame::~WMRHolographicFrame() = default;
+WMRHolographicFrameImpl::~WMRHolographicFrameImpl() = default;
 
 std::unique_ptr<WMRHolographicFramePrediction>
-WMRHolographicFrame::CurrentPrediction() {
+WMRHolographicFrameImpl::CurrentPrediction() {
   ComPtr<IHolographicFramePrediction> prediction;
   HRESULT hr = holographic_frame_->get_CurrentPrediction(&prediction);
   DCHECK(SUCCEEDED(hr));
-  return std::make_unique<WMRHolographicFramePrediction>(prediction);
+  return std::make_unique<WMRHolographicFramePredictionImpl>(prediction);
 }
 
 std::unique_ptr<WMRRenderingParameters>
-WMRHolographicFrame::TryGetRenderingParameters(const WMRCameraPose* pose) {
+WMRHolographicFrameImpl::TryGetRenderingParameters(const WMRCameraPose* pose) {
   ComPtr<IHolographicCameraRenderingParameters> rendering_params;
   HRESULT hr = holographic_frame_->GetRenderingParameters(pose->GetRawPtr(),
                                                           &rendering_params);
@@ -98,7 +95,7 @@ WMRHolographicFrame::TryGetRenderingParameters(const WMRCameraPose* pose) {
   return std::make_unique<WMRRenderingParameters>(rendering_params);
 }
 
-bool WMRHolographicFrame::TryPresentUsingCurrentPrediction() {
+bool WMRHolographicFrameImpl::TryPresentUsingCurrentPrediction() {
   PresentResult result = PresentResult::HolographicFramePresentResult_Success;
   HRESULT hr = holographic_frame_->PresentUsingCurrentPrediction(&result);
 

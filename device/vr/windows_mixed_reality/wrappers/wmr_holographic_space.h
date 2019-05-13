@@ -15,30 +15,39 @@ namespace device {
 class WMRHolographicFrame;
 class WMRHolographicSpace {
  public:
-  static std::unique_ptr<WMRHolographicSpace> CreateForWindow(HWND hwnd);
-  explicit WMRHolographicSpace(
-      Microsoft::WRL::ComPtr<
-          ABI::Windows::Graphics::Holographic::IHolographicSpace> space);
-  virtual ~WMRHolographicSpace();
+  virtual ~WMRHolographicSpace() = default;
 
   virtual ABI::Windows::Graphics::Holographic::HolographicAdapterId
-  PrimaryAdapterId();
-  virtual std::unique_ptr<WMRHolographicFrame> TryCreateNextFrame();
+  PrimaryAdapterId() = 0;
+  virtual std::unique_ptr<WMRHolographicFrame> TryCreateNextFrame() = 0;
   virtual bool TrySetDirect3D11Device(
       const Microsoft::WRL::ComPtr<
           ABI::Windows::Graphics::DirectX::Direct3D11::IDirect3DDevice>&
-          device);
+          device) = 0;
+};
 
- protected:
-  // Necessary so subclasses don't call the explicit constructor.
-  WMRHolographicSpace();
+class WMRHolographicSpaceImpl : public WMRHolographicSpace {
+ public:
+  explicit WMRHolographicSpaceImpl(
+      Microsoft::WRL::ComPtr<
+          ABI::Windows::Graphics::Holographic::IHolographicSpace> space);
+  ~WMRHolographicSpaceImpl() override;
+
+  ABI::Windows::Graphics::Holographic::HolographicAdapterId PrimaryAdapterId()
+      override;
+  std::unique_ptr<WMRHolographicFrame> TryCreateNextFrame() override;
+  bool TrySetDirect3D11Device(
+      const Microsoft::WRL::ComPtr<
+          ABI::Windows::Graphics::DirectX::Direct3D11::IDirect3DDevice>& device)
+      override;
 
  private:
   Microsoft::WRL::ComPtr<ABI::Windows::Graphics::Holographic::IHolographicSpace>
       space_;
 
-  DISALLOW_COPY_AND_ASSIGN(WMRHolographicSpace);
+  DISALLOW_COPY_AND_ASSIGN(WMRHolographicSpaceImpl);
 };
+
 }  // namespace device
 
 #endif  // DEVICE_VR_WINDOWS_MIXED_REALITY_WRAPPERS_WMR_HOLOGRAPHIC_SPACE_H_

@@ -4,6 +4,8 @@
 #ifndef DEVICE_VR_WINDOWS_MIXED_REALITY_WRAPPERS_WMR_WRAPPER_FACTORIES_H_
 #define DEVICE_VR_WINDOWS_MIXED_REALITY_WRAPPERS_WMR_WRAPPER_FACTORIES_H_
 
+#include "device/vr/windows_mixed_reality/wrappers/wmr_holographic_space.h"
+#include "device/vr/windows_mixed_reality/wrappers/wmr_input_manager.h"
 #include "device/vr/windows_mixed_reality/wrappers/wmr_origins.h"
 
 namespace device {
@@ -21,6 +23,16 @@ class WMRAttachedOriginFactory {
 class WMRStageStaticsFactory {
  public:
   static std::unique_ptr<WMRStageStatics> Create();
+};
+
+class WMRInputManagerFactory {
+ public:
+  static std::unique_ptr<WMRInputManager> GetForWindow(HWND hwnd);
+};
+
+class WMRHolographicSpaceFactory {
+ public:
+  static std::unique_ptr<WMRHolographicSpace> CreateForWindow(HWND hwnd);
 };
 
 }  // namespace device
