@@ -2083,7 +2083,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'lasilla-ground',
       'leon',
       'littlejoe',
-      'moblab-generic-vm',
       'monroe',
       'nami',
       'nocturne',
@@ -2153,6 +2152,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # notice, preferably with a comment indicating why and a bug.
   _paladin_experimental_boards = _paladin_new_boards | frozenset([
       'mistral', # contact: roopeshr@, b/131190241.
+      'moblab-generic-vm', # contact: alevkoy@, crbug/960998
   ])
 
 
