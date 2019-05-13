@@ -78,12 +78,56 @@ std::unique_ptr<RecurrencePredictor> MakePredictor(
     const RecurrenceRankerConfigProto& config) {
   if (config.has_fake_predictor())
     return std::make_unique<FakePredictor>(config.fake_predictor());
+  if (config.has_default_predictor())
+    return std::make_unique<DefaultPredictor>(config.default_predictor());
   if (config.has_zero_state_frecency_predictor())
     return std::make_unique<ZeroStateFrecencyPredictor>(
         config.zero_state_frecency_predictor());
 
   NOTREACHED();
   return nullptr;
+}
+
+std::vector<std::pair<std::string, float>> SortAndTruncateRanks(
+    int n,
+    const base::flat_map<std::string, float>& ranks) {
+  std::vector<std::pair<std::string, float>> sorted_ranks(ranks.begin(),
+                                                          ranks.end());
+  std::sort(sorted_ranks.begin(), sorted_ranks.end(),
+            [](const std::pair<std::string, float>& a,
+               const std::pair<std::string, float>& b) {
+              return a.second > b.second;
+            });
+
+  // vector::resize simply truncates the array if there are more than n
+  // elements. Note this is still O(N).
+  if (sorted_ranks.size() > static_cast<unsigned long>(n))
+    sorted_ranks.resize(n);
+  return sorted_ranks;
+}
+
+base::flat_map<std::string, float> ZipTargetsWithScores(
+    const base::flat_map<std::string, FrecencyStore::ValueData>& target_to_id,
+    const base::flat_map<unsigned int, float>& id_to_score) {
+  base::flat_map<std::string, float> target_to_score;
+  for (const auto& pair : target_to_id) {
+    DCHECK(pair.second.last_num_updates ==
+           target_to_id.begin()->second.last_num_updates);
+    const auto& it = id_to_score.find(pair.second.id);
+    if (it != id_to_score.end()) {
+      target_to_score[pair.first] = it->second;
+    }
+  }
+
+  return target_to_score;
+}
+
+base::flat_map<std::string, float> GetScoresFromFrecencyStore(
+    const base::flat_map<std::string, FrecencyStore::ValueData>& target_to_id) {
+  base::flat_map<std::string, float> target_to_score;
+  for (const auto& pair : target_to_id)
+    target_to_score[pair.first] = pair.second.last_score;
+  return target_to_score;
 }
 
 }  // namespace
@@ -102,12 +146,16 @@ RecurrenceRanker::RecurrenceRanker(const base::FilePath& filepath,
       {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 
+  targets_ = std::make_unique<FrecencyStore>(config.target_limit(),
+                                             config.target_decay());
+  conditions_ = std::make_unique<FrecencyStore>(config.condition_limit(),
+                                                config.condition_decay());
+
   if (is_ephemeral_user_) {
     // Ephemeral users have no persistent storage, so we don't try and load the
-    // proto from disk. Instead, we fall back on using a frecency predictor,
-    // which is still useful with only data from the current session.
-    predictor_ = std::make_unique<ZeroStateFrecencyPredictor>(
-        config.fallback_predictor());
+    // proto from disk. Instead, we fall back on using a default (frecency)
+    // predictor, which is still useful with only data from the current session.
+    predictor_ = std::make_unique<DefaultPredictor>(config.default_predictor());
   } else {
     predictor_ = MakePredictor(config);
 
@@ -135,75 +183,123 @@ void RecurrenceRanker::OnLoadProtoFromDiskComplete(
 
   if (proto->has_predictor())
     predictor_->FromProto(proto->predictor());
+  if (proto->has_targets())
+    targets_->FromProto(proto->targets());
+  if (proto->has_conditions())
+    conditions_->FromProto(proto->conditions());
+
   load_from_disk_completed_ = true;
 }
 
 void RecurrenceRanker::Record(const std::string& target) {
-  Record(target, "");
+  if (!load_from_disk_completed_)
+    return;
+
+  if (predictor_->GetPredictorName() == DefaultPredictor::kPredictorName) {
+    targets_->Update(target);
+  } else {
+    predictor_->Train(targets_->Update(target));
+  }
+
+  MaybeSave();
 }
 
 void RecurrenceRanker::Record(const std::string& target,
-                              const std::string& query) {
+                              const std::string& condition) {
   if (!load_from_disk_completed_)
     return;
 
-  predictor_->Train(target, query);
+  if (predictor_->GetPredictorName() == DefaultPredictor::kPredictorName) {
+    // TODO(921444): The default predictor does not support queries, so we fail
+    // here. Once we have a suitable query-based default predictor implemented,
+    // change this.
+    NOTREACHED();
+  } else {
+    predictor_->Train(targets_->Update(target), conditions_->Update(condition));
+  }
+
   MaybeSave();
 }
 
-void RecurrenceRanker::Rename(const std::string& target,
-                              const std::string& new_target) {
+void RecurrenceRanker::RenameTarget(const std::string& target,
+                                    const std::string& new_target) {
   if (!load_from_disk_completed_)
     return;
 
-  predictor_->Rename(target, new_target);
+  targets_->Rename(target, new_target);
   MaybeSave();
 }
 
-void RecurrenceRanker::Remove(const std::string& target) {
+void RecurrenceRanker::RemoveTarget(const std::string& target) {
+  // TODO(tby): Find a solution to the edge case of a removal before disk
+  // loading is complete, resulting in the remove getting dropped.
   if (!load_from_disk_completed_)
     return;
 
-  predictor_->Remove(target);
+  targets_->Remove(target);
+  MaybeSave();
+}
+
+void RecurrenceRanker::RenameCondition(const std::string& condition,
+                                       const std::string& new_condition) {
+  if (!load_from_disk_completed_)
+    return;
+
+  conditions_->Rename(condition, new_condition);
+  MaybeSave();
+}
+
+void RecurrenceRanker::RemoveCondition(const std::string& condition) {
+  if (!load_from_disk_completed_)
+    return;
+
+  conditions_->Remove(condition);
   MaybeSave();
 }
 
 base::flat_map<std::string, float> RecurrenceRanker::Rank() {
-  return Rank("");
-}
-
-base::flat_map<std::string, float> RecurrenceRanker::Rank(
-    const std::string& query) {
   if (!load_from_disk_completed_)
     return {};
 
-  return predictor_->Rank(query);
+  if (predictor_->GetPredictorName() == DefaultPredictor::kPredictorName)
+    return GetScoresFromFrecencyStore(targets_->GetAll());
+  return ZipTargetsWithScores(targets_->GetAll(), predictor_->Rank());
+}
+
+base::flat_map<std::string, float> RecurrenceRanker::Rank(
+    const std::string& condition) {
+  if (!load_from_disk_completed_)
+    return {};
+
+  base::Optional<unsigned int> condition_id = conditions_->GetId(condition);
+  if (condition_id == base::nullopt)
+    return {};
+
+  if (predictor_->GetPredictorName() == DefaultPredictor::kPredictorName) {
+    // TODO(921444): The default predictor does not support queries, so we fail
+    // here. Once we have a suitable query-based default predictor implemented,
+    // change this.
+    NOTREACHED();
+    return {};
+  }
+  return ZipTargetsWithScores(targets_->GetAll(),
+                              predictor_->Rank(condition_id.value()));
 }
 
 std::vector<std::pair<std::string, float>> RecurrenceRanker::RankTopN(int n) {
-  return RankTopN(n, "");
+  if (!load_from_disk_completed_)
+    return {};
+
+  return SortAndTruncateRanks(n, Rank());
 }
 
 std::vector<std::pair<std::string, float>> RecurrenceRanker::RankTopN(
     int n,
-    const std::string& query) {
+    const std::string& condition) {
   if (!load_from_disk_completed_)
     return {};
 
-  base::flat_map<std::string, float> ranks = Rank(query);
-  std::vector<std::pair<std::string, float>> sorted_ranks(ranks.begin(),
-                                                          ranks.end());
-  std::sort(sorted_ranks.begin(), sorted_ranks.end(),
-            [](const std::pair<std::string, float>& a,
-               const std::pair<std::string, float>& b) {
-              return a.second > b.second;
-            });
-
-  // vector::resize simply truncates the array if there are more than n
-  // elements. Note this is still O(N).
-  if (sorted_ranks.size() > static_cast<unsigned long>(n))
-    sorted_ranks.resize(n);
-  return sorted_ranks;
+  return SortAndTruncateRanks(n, Rank(condition));
 }
 
 void RecurrenceRanker::MaybeSave() {
@@ -222,6 +318,8 @@ void RecurrenceRanker::MaybeSave() {
 void RecurrenceRanker::ToProto(RecurrenceRankerProto* proto) {
   proto->set_config_hash(config_hash_);
   predictor_->ToProto(proto->mutable_predictor());
+  targets_->ToProto(proto->mutable_targets());
+  conditions_->ToProto(proto->mutable_conditions());
 }
 
 void RecurrenceRanker::ForceSaveOnNextUpdateForTesting() {

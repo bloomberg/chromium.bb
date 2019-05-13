@@ -250,7 +250,13 @@ DEFINE_EQUIVTO_PROTO_LITE_2(SerializedMrfuAppLaunchPredictorProto_Score,
                             num_of_trains_at_last_update,
                             last_score);
 
-DEFINE_EQUIVTO_PROTO_LITE_1(ZeroStateFrecencyPredictorProto, targets);
+DEFINE_EQUIVTO_PROTO_LITE_2(ZeroStateFrecencyPredictorProto,
+                            targets,
+                            num_updates);
+
+DEFINE_EQUIVTO_PROTO_LITE_2(ZeroStateFrecencyPredictorProto_TargetData,
+                            last_score,
+                            last_num_updates);
 
 }  // namespace internal
 

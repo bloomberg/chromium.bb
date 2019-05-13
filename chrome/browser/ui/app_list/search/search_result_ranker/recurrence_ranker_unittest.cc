@@ -22,13 +22,24 @@
 using testing::_;
 using testing::ElementsAre;
 using testing::FloatEq;
-using testing::NiceMock;
 using testing::Pair;
-using testing::Return;
 using testing::StrEq;
 using testing::UnorderedElementsAre;
 
 namespace app_list {
+
+namespace {
+
+// For convenience, sets all fields of a config proto except for the predictor.
+void PartiallyPopulateConfig(RecurrenceRankerConfigProto* config) {
+  config->set_target_limit(100u);
+  config->set_target_decay(0.8f);
+  config->set_condition_limit(101u);
+  config->set_condition_decay(0.81f);
+  config->set_min_seconds_between_saves(5);
+}
+
+}  // namespace
 
 class RecurrenceRankerTest : public testing::Test {
  protected:
@@ -37,14 +48,11 @@ class RecurrenceRankerTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     ranker_filepath_ = temp_dir_.GetPath().AppendASCII("recurrence_ranker");
 
-    auto* fallback = config_.mutable_fallback_predictor();
-    fallback->set_target_limit(0u);
-    fallback->set_decay_coeff(0.0f);
+    PartiallyPopulateConfig(&config_);
     // Even if empty, the setting of the oneof |predictor_config| in
-    // |RecurrenceRankerConfigProto| is used to determine which predictor is
+    // RecurrenceRankerConfigProto is used to determine which predictor is
     // constructed.
     config_.mutable_fake_predictor();
-    config_.set_min_seconds_between_saves(5);
 
     ranker_ =
         std::make_unique<RecurrenceRanker>(ranker_filepath_, config_, false);
@@ -57,11 +65,38 @@ class RecurrenceRankerTest : public testing::Test {
     RecurrenceRankerProto proto;
     proto.set_config_hash(base::PersistentHash(config_.SerializeAsString()));
 
+    // Make target frecency store.
+    auto* targets = proto.mutable_targets();
+    targets->set_value_limit(100u);
+    targets->set_decay_coeff(0.8f);
+    targets->set_num_updates(4);
+    targets->set_next_id(3);
+    auto* target_values = targets->mutable_values();
+
+    FrecencyStoreProto::ValueData value_data;
+    value_data.set_id(0u);
+    value_data.set_last_score(0.5f);
+    value_data.set_last_num_updates(1);
+    (*target_values)["A"] = value_data;
+
+    value_data = FrecencyStoreProto::ValueData();
+    value_data.set_id(1u);
+    value_data.set_last_score(0.5f);
+    value_data.set_last_num_updates(3);
+    (*target_values)["B"] = value_data;
+
+    value_data = FrecencyStoreProto::ValueData();
+    value_data.set_id(2u);
+    value_data.set_last_score(0.5f);
+    value_data.set_last_num_updates(4);
+    (*target_values)["C"] = value_data;
+
+    // Make FakePredictor counts.
     auto* counts =
         proto.mutable_predictor()->mutable_fake_predictor()->mutable_counts();
-    (*counts)["A"] = 1.0f;
-    (*counts)["B"] = 2.0f;
-    (*counts)["C"] = 1.0f;
+    (*counts)[0u] = 1.0f;
+    (*counts)[1u] = 2.0f;
+    (*counts)[2u] = 1.0f;
 
     return proto;
   }
@@ -86,20 +121,20 @@ TEST_F(RecurrenceRankerTest, Record) {
                                                     Pair("B", FloatEq(2.0f))));
 }
 
-TEST_F(RecurrenceRankerTest, Rename) {
+TEST_F(RecurrenceRankerTest, RenameTarget) {
   ranker_->Record("A");
   ranker_->Record("B");
   ranker_->Record("B");
-  ranker_->Rename("B", "A");
+  ranker_->RenameTarget("B", "A");
 
   EXPECT_THAT(ranker_->Rank(), ElementsAre(Pair("A", FloatEq(2.0f))));
 }
 
-TEST_F(RecurrenceRankerTest, Remove) {
+TEST_F(RecurrenceRankerTest, RemoveTarget) {
   ranker_->Record("A");
   ranker_->Record("B");
   ranker_->Record("B");
-  ranker_->Remove("A");
+  ranker_->RemoveTarget("A");
 
   EXPECT_THAT(ranker_->Rank(), ElementsAre(Pair("B", FloatEq(2.0f))));
 }
@@ -109,11 +144,11 @@ TEST_F(RecurrenceRankerTest, ComplexRecordAndRank) {
   ranker_->Record("B");
   ranker_->Record("C");
   ranker_->Record("B");
-  ranker_->Rename("D", "C");
-  ranker_->Remove("F");
-  ranker_->Rename("C", "F");
-  ranker_->Remove("A");
-  ranker_->Rename("C", "F");
+  ranker_->RenameTarget("D", "C");
+  ranker_->RemoveTarget("F");
+  ranker_->RenameTarget("C", "F");
+  ranker_->RemoveTarget("A");
+  ranker_->RenameTarget("C", "F");
   ranker_->Record("A");
 
   EXPECT_THAT(ranker_->Rank(), UnorderedElementsAre(Pair("A", FloatEq(1.0f)),
@@ -209,11 +244,8 @@ TEST_F(RecurrenceRankerTest, SavedRankerRejectedIfConfigMismatched) {
 
   // Construct a second ranker with a slightly different config.
   RecurrenceRankerConfigProto other_config;
-  auto* fallback = other_config.mutable_fallback_predictor();
-  fallback->set_target_limit(0u);
-  fallback->set_decay_coeff(0.0f);
+  PartiallyPopulateConfig(&other_config);
   other_config.mutable_fake_predictor();
-  // This is different.
   other_config.set_min_seconds_between_saves(
       config_.min_seconds_between_saves() + 1);
 
@@ -228,35 +260,50 @@ TEST_F(RecurrenceRankerTest, SavedRankerRejectedIfConfigMismatched) {
   EXPECT_THAT(ranker_->Rank(), UnorderedElementsAre(Pair("A", FloatEq(1.0f))));
 }
 
-TEST_F(RecurrenceRankerTest, EphemeralUsersUseFrecencyPredictor) {
+TEST_F(RecurrenceRankerTest, EphemeralUsersUseDefaultPredictor) {
   RecurrenceRanker ephemeral_ranker(ranker_filepath_, config_, true);
   Wait();
   EXPECT_THAT(ephemeral_ranker.GetPredictorNameForTesting(),
-              StrEq(ZeroStateFrecencyPredictor::kPredictorName));
+              StrEq(DefaultPredictor::kPredictorName));
 }
 
-TEST_F(RecurrenceRankerTest, IntegrationWithZeroStateFrecencyPredictor) {
+TEST_F(RecurrenceRankerTest, IntegrationWithDefaultPredictor) {
   RecurrenceRankerConfigProto config;
-  config.set_min_seconds_between_saves(5);
-  auto* predictor = config.mutable_zero_state_frecency_predictor();
-  predictor->set_target_limit(100u);
-  predictor->set_decay_coeff(0.5f);
-  auto* fallback = config.mutable_fallback_predictor();
-  fallback->set_target_limit(100u);
-  fallback->set_decay_coeff(0.5f);
+  PartiallyPopulateConfig(&config);
+  config.mutable_default_predictor();
 
   RecurrenceRanker ranker(ranker_filepath_, config, false);
   Wait();
 
   ranker.Record("A");
+  ranker.Record("A");
+  ranker.Record("B");
+  ranker.Record("C");
+
+  EXPECT_THAT(ranker.Rank(), UnorderedElementsAre(Pair("A", FloatEq(0.2304f)),
+                                                  Pair("B", FloatEq(0.16f)),
+                                                  Pair("C", FloatEq(0.2f))));
+}
+
+TEST_F(RecurrenceRankerTest, IntegrationWithZeroStateFrecencyPredictor) {
+  RecurrenceRankerConfigProto config;
+  PartiallyPopulateConfig(&config);
+  auto* predictor = config.mutable_zero_state_frecency_predictor();
+  predictor->set_decay_coeff(0.5f);
+
+  RecurrenceRanker ranker(ranker_filepath_, config, false);
+  Wait();
+
+  ranker.Record("A");
+  ranker.Record("A");
   ranker.Record("D");
   ranker.Record("C");
   ranker.Record("E");
-  ranker.Rename("D", "B");
-  ranker.Remove("E");
-  ranker.Rename("E", "A");
+  ranker.RenameTarget("D", "B");
+  ranker.RemoveTarget("E");
+  ranker.RenameTarget("E", "A");
 
-  EXPECT_THAT(ranker.Rank(), UnorderedElementsAre(Pair("A", FloatEq(0.0625f)),
+  EXPECT_THAT(ranker.Rank(), UnorderedElementsAre(Pair("A", FloatEq(0.09375f)),
                                                   Pair("B", FloatEq(0.125f)),
                                                   Pair("C", FloatEq(0.25f))));
 }

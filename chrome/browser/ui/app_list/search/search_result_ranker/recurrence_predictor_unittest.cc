@@ -19,13 +19,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
-using testing::ElementsAre;
 using testing::FloatEq;
-using testing::IsSupersetOf;
-using testing::NiceMock;
 using testing::Pair;
-using testing::Return;
-using testing::StrEq;
 using testing::UnorderedElementsAre;
 
 namespace app_list {
@@ -35,7 +30,6 @@ class ZeroStateFrecencyPredictorTest : public testing::Test {
   void SetUp() override {
     Test::SetUp();
 
-    config_.set_target_limit(100u);
     config_.set_decay_coeff(0.5f);
     predictor_ = std::make_unique<ZeroStateFrecencyPredictor>(config_);
   }
@@ -45,90 +39,50 @@ class ZeroStateFrecencyPredictorTest : public testing::Test {
 };
 
 TEST_F(ZeroStateFrecencyPredictorTest, RankWithNoTargets) {
-  EXPECT_TRUE(predictor_->Rank("").empty());
+  EXPECT_TRUE(predictor_->Rank().empty());
 }
 
-TEST_F(ZeroStateFrecencyPredictorTest, RecordAndRank) {
-  predictor_->Train("A", "");
-  predictor_->Train("B", "");
-  predictor_->Train("C", "");
+TEST_F(ZeroStateFrecencyPredictorTest, RecordAndRankSimple) {
+  predictor_->Train(2u);
+  predictor_->Train(4u);
+  predictor_->Train(6u);
 
-  EXPECT_THAT(predictor_->Rank(""),
-              UnorderedElementsAre(Pair("A", FloatEq(0.125f)),
-                                   Pair("B", FloatEq(0.25f)),
-                                   Pair("C", FloatEq(0.5f))));
-}
-
-TEST_F(ZeroStateFrecencyPredictorTest, Rename) {
-  predictor_->Train("A", "");
-  predictor_->Train("B", "");
-  predictor_->Train("B", "");
-  predictor_->Rename("B", "A");
-
-  EXPECT_THAT(predictor_->Rank(""),
-              UnorderedElementsAre(Pair("A", FloatEq(0.75f))));
-}
-
-TEST_F(ZeroStateFrecencyPredictorTest, RenameNonexistentTarget) {
-  predictor_->Train("A", "");
-  predictor_->Rename("B", "C");
-
-  EXPECT_THAT(predictor_->Rank(""),
-              UnorderedElementsAre(Pair("A", FloatEq(0.5f))));
-}
-
-TEST_F(ZeroStateFrecencyPredictorTest, Remove) {
-  predictor_->Train("A", "");
-  predictor_->Train("B", "");
-  predictor_->Remove("B");
-
-  EXPECT_THAT(predictor_->Rank(""),
-              UnorderedElementsAre(Pair("A", FloatEq(0.25f))));
-}
-
-TEST_F(ZeroStateFrecencyPredictorTest, RemoveNonexistentTarget) {
-  predictor_->Train("A", "");
-  predictor_->Remove("B");
-
-  EXPECT_THAT(predictor_->Rank(""),
-              UnorderedElementsAre(Pair("A", FloatEq(0.5f))));
-}
-
-TEST_F(ZeroStateFrecencyPredictorTest, TargetLimitExceeded) {
-  ZeroStateFrecencyPredictorConfig config;
-  config.set_target_limit(5u);
-  config.set_decay_coeff(0.9999f);
-  ZeroStateFrecencyPredictor predictor(config);
-
-  // Insert many more targets than the target limit.
-  for (int i = 0; i < 50; i++) {
-    predictor.Train(std::to_string(i), "");
-  }
-
-  // Check that some of the values have been deleted, and the most recent ones
-  // remain. We check loose bounds on these requirements, to prevent the test
-  // from being tied to implementation details of the |FrecencyStore| cleanup
-  // logic. See |FrecencyStoreTest::CleanupOnOverflow| for a corresponding, more
-  // precise test.
-  auto ranks = predictor.Rank("");
-  EXPECT_LE(ranks.size(), 10ul);
   EXPECT_THAT(
-      ranks, testing::IsSupersetOf({Pair("45", _), Pair("46", _), Pair("47", _),
-                                    Pair("48", _), Pair("49", _)}));
+      predictor_->Rank(),
+      UnorderedElementsAre(Pair(2u, FloatEq(0.125f)), Pair(4u, FloatEq(0.25f)),
+                           Pair(6u, FloatEq(0.5f))));
+}
+
+TEST_F(ZeroStateFrecencyPredictorTest, RecordAndRankComplex) {
+  predictor_->Train(2u);
+  predictor_->Train(4u);
+  predictor_->Train(6u);
+  predictor_->Train(4u);
+  predictor_->Train(2u);
+
+  // Ranks should be deterministic.
+  for (int i = 0; i < 3; ++i) {
+    EXPECT_THAT(predictor_->Rank(),
+                UnorderedElementsAre(Pair(2u, FloatEq(0.53125f)),
+                                     Pair(4u, FloatEq(0.3125f)),
+                                     Pair(6u, FloatEq(0.125f))));
+  }
 }
 
 TEST_F(ZeroStateFrecencyPredictorTest, ToAndFromProto) {
-  predictor_->Train("A", "");
-  predictor_->Train("B", "");
-  predictor_->Train("C", "");
-
-  const auto ranks = predictor_->Rank("");
+  predictor_->Train(1u);
+  predictor_->Train(3u);
+  predictor_->Train(5u);
 
   RecurrencePredictorProto proto;
   predictor_->ToProto(&proto);
-  predictor_->FromProto(proto);
 
-  EXPECT_EQ(ranks, predictor_->Rank(""));
+  ZeroStateFrecencyPredictor new_predictor(config_);
+  new_predictor.FromProto(proto);
+
+  EXPECT_TRUE(proto.has_zero_state_frecency_predictor());
+  EXPECT_EQ(proto.zero_state_frecency_predictor().num_updates(), 3u);
+  EXPECT_EQ(predictor_->Rank(), new_predictor.Rank());
 }
 
 }  // namespace app_list

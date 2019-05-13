@@ -4,21 +4,34 @@
 
 syntax = "proto2";
 
-import "frecency_store.proto";
-
 option optimize_for = LITE_RUNTIME;
 
 package app_list;
 
 // Fake predictor used for testing.
 message FakePredictorProto {
-  // Maps targets to their score.
-  map<string, float> counts = 1;
+  // Maps target IDs to scores.
+  map<uint32, float> counts = 1;
 }
 
 // Zero-state frecency predictor.
 message ZeroStateFrecencyPredictorProto {
-  optional FrecencyStoreProto targets = 1;
+  // Field 1 (targets) has been deleted.
+  reserved 1;
+
+  // Records all data relating to a particular stored target, corresponding
+  // exactly to the ZeroStateFrecencyPredictor::ValueData struct.
+  message TargetData {
+    required uint32 id = 1;
+    // The last calculated score associated with a value.
+    required float last_score = 2;
+    // The model's number of updates when the score was last calculated.
+    required uint32 last_num_updates = 3;
+  }
+
+  repeated TargetData targets = 4;
+
+  required uint32 num_updates = 5;
 }
 
 // Represents the serialisation of one particular predictor.

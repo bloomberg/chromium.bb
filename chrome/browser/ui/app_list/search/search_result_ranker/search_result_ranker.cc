@@ -53,18 +53,15 @@ SearchResultRanker::SearchResultRanker(Profile* profile) {
   if (app_list_features::IsAdaptiveResultRankerEnabled()) {
     RecurrenceRankerConfigProto config;
     config.set_min_seconds_between_saves(240u);
-    auto* predictor = config.mutable_zero_state_frecency_predictor();
-    predictor->set_target_limit(base::GetFieldTrialParamByFeatureAsInt(
+    config.set_condition_limit(0u);
+    config.set_condition_decay(0.5f);
+
+    config.set_target_limit(base::GetFieldTrialParamByFeatureAsInt(
         app_list_features::kEnableAdaptiveResultRanker, "target_limit", 200));
-    predictor->set_decay_coeff(base::GetFieldTrialParamByFeatureAsDouble(
-        app_list_features::kEnableAdaptiveResultRanker, "decay_coeff", 0.8f));
-    auto* fallback = config.mutable_fallback_predictor();
-    fallback->set_target_limit(base::GetFieldTrialParamByFeatureAsInt(
-        app_list_features::kEnableAdaptiveResultRanker, "fallback_target_limit",
-        200));
-    fallback->set_decay_coeff(base::GetFieldTrialParamByFeatureAsDouble(
-        app_list_features::kEnableAdaptiveResultRanker, "fallback_decay_coeff",
-        0.8f));
+    config.set_target_decay(base::GetFieldTrialParamByFeatureAsDouble(
+        app_list_features::kEnableAdaptiveResultRanker, "target_decay", 0.8f));
+
+    config.mutable_default_predictor();
 
     results_list_group_ranker_ = std::make_unique<RecurrenceRanker>(
         profile->GetPath().AppendASCII("adaptive_result_ranker.proto"), config,
