@@ -146,8 +146,9 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, LoadDataWithBaseURL) {
   // without an origin lock]).  Therefore, skip the test in --site-per-process
   // mode to avoid renderer kills which won't happen in practice as described
   // above.
-  // TODO(lukasza): https://crbug.com/614463: Consider enabling this test
-  // once WebView guests support OOPIFs and/or origin locks.
+  //
+  // TODO(https://crbug.com/962643): Consider enabling this test once Android
+  // Webview or WebView guests support OOPIFs and/or origin locks.
   if (AreAllSitesIsolatedForTesting())
     return;
 
@@ -209,8 +210,9 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // without an origin lock]).  Therefore, skip the test in --site-per-process
   // mode to avoid renderer kills which won't happen in practice as described
   // above.
-  // TODO(lukasza): https://crbug.com/614463: Consider enabling this test
-  // once WebView guests support OOPIFs and/or origin locks.
+  //
+  // TODO(https://crbug.com/962643): Consider enabling this test once Android
+  // Webview or WebView guests support OOPIFs and/or origin locks.
   if (AreAllSitesIsolatedForTesting())
     return;
 
@@ -315,6 +317,18 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 #if defined(OS_ANDROID)
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
                        LoadDataWithInvalidBaseURL) {
+  // LoadDataWithBaseURL is never subject to --site-per-process policy today
+  // (this API is only used by Android WebView [where OOPIFs have not shipped
+  // yet] and GuestView cases [which always hosts guests inside a renderer
+  // without an origin lock]).  Therefore, skip the test in --site-per-process
+  // mode to avoid renderer kills which won't happen in practice as described
+  // above.
+  //
+  // TODO(https://crbug.com/962643): Consider enabling this test once Android
+  // Webview or WebView guests support OOPIFs and/or origin locks.
+  if (AreAllSitesIsolatedForTesting())
+    return;
+
   const GURL base_url("http://");  // Invalid.
   const GURL history_url("http://historyurl");
   const std::string title = "invalid_base_url";
@@ -348,8 +362,9 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // without an origin lock]).  Therefore, skip the test in --site-per-process
   // mode to avoid renderer kills which won't happen in practice as described
   // above.
-  // TODO(lukasza): https://crbug.com/614463: Consider enabling this test
-  // once WebView guests support OOPIFs and/or origin locks.
+  //
+  // TODO(https://crbug.com/962643): Consider enabling this test once Android
+  // Webview or WebView guests support OOPIFs and/or origin locks.
   if (AreAllSitesIsolatedForTesting())
     return;
 
@@ -401,8 +416,9 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // without an origin lock]).  Therefore, skip the test in --site-per-process
   // mode to avoid renderer kills which won't happen in practice as described
   // above.
-  // TODO(lukasza): https://crbug.com/614463: Consider enabling this test
-  // once WebView guests support OOPIFs and/or origin locks.
+  //
+  // TODO(https://crbug.com/962643): Consider enabling this test once Android
+  // Webview or WebView guests support OOPIFs and/or origin locks.
   if (AreAllSitesIsolatedForTesting())
     return;
 
@@ -770,8 +786,9 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // without an origin lock]).  Therefore, skip the test in --site-per-process
   // mode to avoid renderer kills which won't happen in practice as described
   // above.
-  // TODO(lukasza): https://crbug.com/614463: Consider enabling this test
-  // once WebView guests support OOPIFs and/or origin locks.
+  //
+  // TODO(https://crbug.com/962643): Consider enabling this test once Android
+  // Webview or WebView guests support OOPIFs and/or origin locks.
   if (AreAllSitesIsolatedForTesting())
     return;
 
