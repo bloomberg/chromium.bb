@@ -27,7 +27,6 @@ class HIDCollectionInfo : public ScriptWrappable {
   const HeapVector<Member<HIDReportInfo>>& inputReports() const;
   const HeapVector<Member<HIDReportInfo>>& outputReports() const;
   const HeapVector<Member<HIDReportInfo>>& featureReports() const;
-  const Vector<uint8_t>& reportIds() const;
   uint32_t collectionType() const;
 
   void Trace(blink::Visitor* visitor) override;
@@ -37,7 +36,6 @@ class HIDCollectionInfo : public ScriptWrappable {
   HeapVector<Member<HIDReportInfo>> input_reports_;
   HeapVector<Member<HIDReportInfo>> output_reports_;
   HeapVector<Member<HIDReportInfo>> feature_reports_;
-  Vector<uint8_t> report_ids_;
 };
 
 }  // namespace blink

@@ -6,6 +6,28 @@
 // the report.
 // https://wicg.github.io/webhid/index.html#report-descriptor
 
+// The HID specification allows a device to specify units in one of four
+// standard unit systems. A device may also specify it is not using units, or is
+// using a vendor-defined unit system. Each unit system corresponds to a set of
+// units for length, mass, time, temperature, current, and luminous intensity.
+// See the units table in section 6.2.2.7 of the Device Class Definition for
+// HID, v1.11.
+// https://www.usb.org/document-library/device-class-definition-hid-111
+enum HIDUnitSystem {
+    // No unit system in use.
+    "none",
+    // Centimeter, gram, seconds, kelvin, ampere, candela.
+    "si-linear",
+    // Radians, gram, seconds, kelvin, ampere, candela.
+    "si-rotation",
+    // Inch, slug, seconds, Fahrenheit, ampere, candela.
+    "english-linear",
+    // Degrees, slug, seconds, Fahrenheit, ampere, candela.
+    "english-rotation",
+    "vendor-defined",
+    "reserved",
+};
+
 [
     Exposed(Window WebHID),
     SecureContext
@@ -39,18 +61,6 @@
     readonly attribute unsigned long usageMinimum;
     readonly attribute unsigned long usageMaximum;
 
-    // The minimum and maximum designator indices associated with this item. If
-    // there are no designators, both are set to zero.
-    // TODO(mattreynolds): Expose the designators instead of the indices.
-    readonly attribute unsigned long designatorMinimum;
-    readonly attribute unsigned long designatorMaximum;
-
-    // The minimum and maximum string indices associated with this item. If
-    // there are no designators, both are set to zero.
-    // TODO(mattreynolds): Expose the strings instead of the indices.
-    readonly attribute unsigned long stringMinimum;
-    readonly attribute unsigned long stringMaximum;
-
     // The size of a single field described by this item, in bits.
     readonly attribute unsigned short reportSize;
 
@@ -62,12 +72,21 @@
     // kilograms |unitExponent| would be 3 and for micrograms it would be -6.
     readonly attribute unsigned long unitExponent;
 
-    // A value that specifies the unit factors that make up the units for this
-    // report item. See the units table in section 6.2.2.7 of the Device Class
-    // Definition for HID, v1.11.
-    // https://www.usb.org/document-library/device-class-definition-hid-111
-    // TODO(mattreynolds): Split this into its component nibbles.
-    readonly attribute unsigned long unit;
+    // The unit system determines which units are used for length, mass, time,
+    // temperature, current, and luminous intensity. May be "none" if the values
+    // for this report item are unitless.
+    readonly attribute HIDUnitSystem unitSystem;
+
+    // The following members determine the exponents for each factor of the
+    // unit definition. For instance, for acceleration all factors would have
+    // an exponent of 0 except |unitFactorLengthExponent| which would be 1 and
+    // |unitFactorTimeExponent| which would be -2.
+    readonly attribute byte unitFactorLengthExponent;
+    readonly attribute byte unitFactorMassExponent;
+    readonly attribute byte unitFactorTimeExponent;
+    readonly attribute byte unitFactorTemperatureExponent;
+    readonly attribute byte unitFactorCurrentExponent;
+    readonly attribute byte unitFactorLuminousIntensityExponent;
 
     // The minimum and maximum values that may be represented by this input. A
     // device with |hasNull| may report a value outside this range to indicate
@@ -79,4 +98,7 @@
     // and |unitExponent|.
     readonly attribute long physicalMinimum;
     readonly attribute long physicalMaximum;
+
+    // The strings associated with this item.
+    readonly attribute FrozenArray<DOMString> strings;
 };

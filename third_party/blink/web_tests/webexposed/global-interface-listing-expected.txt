@@ -2369,7 +2369,6 @@ interface HIDCollectionInfo
     getter featureReports
     getter inputReports
     getter outputReports
-    getter reportIds
     getter usage
     getter usagePage
     method constructor
@@ -2405,8 +2404,6 @@ interface HIDReportInfo
     method constructor
 interface HIDReportItem
     attribute @@toStringTag
-    getter designatorMaximum
-    getter designatorMinimum
     getter hasNull
     getter isAbsolute
     getter isArray
@@ -2417,10 +2414,15 @@ interface HIDReportItem
     getter physicalMinimum
     getter reportCount
     getter reportSize
-    getter stringMaximum
-    getter stringMinimum
-    getter unit
+    getter strings
     getter unitExponent
+    getter unitFactorCurrentExponent
+    getter unitFactorLengthExponent
+    getter unitFactorLuminousIntensityExponent
+    getter unitFactorMassExponent
+    getter unitFactorTemperatureExponent
+    getter unitFactorTimeExponent
+    getter unitSystem
     getter usageMaximum
     getter usageMinimum
     getter usages

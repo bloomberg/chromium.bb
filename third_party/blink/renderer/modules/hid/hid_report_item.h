@@ -7,6 +7,10 @@
 
 #include "services/device/public/mojom/hid.mojom-blink.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/heap/member.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -24,23 +28,25 @@ class HIDReportItem : public ScriptWrappable {
   const Vector<uint32_t>& usages() const { return usages_; }
   uint32_t usageMinimum() const { return 0; }
   uint32_t usageMaximum() const { return 0; }
-  uint32_t designatorMinimum() const { return 0; }
-  uint32_t designatorMaximum() const { return 0; }
-  uint32_t stringMinimum() const { return 0; }
-  uint32_t stringMaximum() const { return 0; }
+  const Vector<String>& strings() const { return strings_; }
   uint16_t reportSize() const { return 0; }
   uint16_t reportCount() const { return 0; }
   uint32_t unitExponent() const { return 0; }
-  uint32_t unit() const { return 0; }
+  String unitSystem() const { return String(); }
+  int8_t unitFactorLengthExponent() const { return 0; }
+  int8_t unitFactorMassExponent() const { return 0; }
+  int8_t unitFactorTimeExponent() const { return 0; }
+  int8_t unitFactorTemperatureExponent() const { return 0; }
+  int8_t unitFactorCurrentExponent() const { return 0; }
+  int8_t unitFactorLuminousIntensityExponent() const { return 0; }
   int32_t logicalMinimum() const { return 0; }
   int32_t logicalMaximum() const { return 0; }
   int32_t physicalMinimum() const { return 0; }
   int32_t physicalMaximum() const { return 0; }
 
-  void Trace(blink::Visitor* visitor) override;
-
  private:
   Vector<uint32_t> usages_;
+  Vector<String> strings_;
 };
 
 }  // namespace blink
