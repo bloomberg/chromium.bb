@@ -45,7 +45,7 @@ const base::Feature kEnableUnifiedAudioFocusFeature{
 
 // Controls experimental file picker feature for ARC.
 const base::Feature kFilePickerExperimentFeature{
-    "ArcFilePickerExperiment", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ArcFilePickerExperiment", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls experimental ARC graphic buffers visualization tools.
 const base::Feature kGraphicBuffersVisualizationTool{
