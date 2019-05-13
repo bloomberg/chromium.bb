@@ -48,8 +48,12 @@ TEST_F('SettingsUIBrowserTest', 'MAYBE_All', function() {
       Polymer.dom.flush();
     });
 
-    test('showing menu in toolbar', function() {
+    test('showing menu in toolbar is dependent on narrow mode', function() {
       toolbar = assert(ui.$$('cr-toolbar'));
+      toolbar.narrow = true;
+      assertTrue(toolbar.showMenu);
+
+      toolbar.narrow = false;
       assertFalse(toolbar.showMenu);
     });
 
