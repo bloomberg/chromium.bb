@@ -6,4 +6,5 @@
 <resources>
     <drawable name="ntp_search_box">@drawable/modern_toolbar_text_box_background</drawable>
     <drawable name="badge_update">@drawable/badge_update_dark</drawable>
+    <drawable name="ic_error_24dp_filled">@drawable/ic_error_grey800_24dp_filled</drawable>
 </resources>

@@ -4,4 +4,5 @@
      found in the LICENSE file. -->
 <resources>
     <drawable name="badge_update">@drawable/badge_update_light</drawable>
+    <drawable name="ic_error_24dp_filled">@drawable/ic_error_white_24dp_filled</drawable>
 </resources>
