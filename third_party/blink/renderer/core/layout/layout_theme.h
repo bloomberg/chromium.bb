@@ -142,6 +142,10 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   Color InactiveSelectionBackgroundColor() const;
   Color ActiveSelectionForegroundColor() const;
   Color InactiveSelectionForegroundColor() const;
+  virtual void SetSelectionColors(unsigned active_background_color,
+                                  unsigned active_foreground_color,
+                                  unsigned inactive_background_color,
+                                  unsigned inactive_foreground_color) {}
 
   // List box selection colors
   Color ActiveListBoxSelectionBackgroundColor() const;

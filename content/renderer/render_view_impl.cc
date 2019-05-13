@@ -1972,14 +1972,12 @@ void RenderViewImpl::OnSetRendererPrefs(
 #if BUILDFLAG(USE_DEFAULT_RENDER_THEME)
   if (renderer_prefs.use_custom_colors) {
     blink::SetFocusRingColor(renderer_prefs.focus_ring_color);
-
-    if (webview()) {
-      webview()->SetSelectionColors(renderer_prefs.active_selection_bg_color,
-                                    renderer_prefs.active_selection_fg_color,
-                                    renderer_prefs.inactive_selection_bg_color,
-                                    renderer_prefs.inactive_selection_fg_color);
+    blink::SetSelectionColors(renderer_prefs.active_selection_bg_color,
+                              renderer_prefs.active_selection_fg_color,
+                              renderer_prefs.inactive_selection_bg_color,
+                              renderer_prefs.inactive_selection_fg_color);
+    if (webview())
       webview()->MainFrameWidget()->ThemeChanged();
-    }
   }
 #endif  // BUILDFLAG(USE_DEFAULT_RENDER_THEME)
 

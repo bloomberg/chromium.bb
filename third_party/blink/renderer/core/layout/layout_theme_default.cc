@@ -187,6 +187,7 @@ void LayoutThemeDefault::SetSelectionColors(
   active_selection_foreground_color_ = active_foreground_color;
   inactive_selection_background_color_ = inactive_background_color;
   inactive_selection_foreground_color_ = inactive_foreground_color;
+  PlatformColorsDidChange();
 }
 
 void LayoutThemeDefault::SetCheckboxSize(ComputedStyle& style) const {

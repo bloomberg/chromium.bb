@@ -48,6 +48,7 @@
 #include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/public/web/web_input_element.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_render_theme.h"
 #include "third_party/blink/public/web/web_script_source.h"
 #include "third_party/blink/public/web/web_security_policy.h"
 #include "third_party/blink/public/web/web_serialized_script_value.h"
@@ -90,8 +91,7 @@ void TestRunnerForSpecificView::Reset() {
 #if !defined(OS_MACOSX) && !defined(OS_WIN)
   // (Constants copied because we can't depend on the header that defined
   // them from this file.)
-  web_view()->SetSelectionColors(0xff1e90ff, 0xff000000, 0xffc8c8c8,
-                                 0xff323232);
+  blink::SetSelectionColors(0xff1e90ff, 0xff000000, 0xffc8c8c8, 0xff323232);
 #endif
   if (web_view()->MainFrame()->IsWebLocalFrame()) {
     web_view()->MainFrame()->ToWebLocalFrame()->EnableViewSourceMode(false);
@@ -483,8 +483,7 @@ bool TestRunnerForSpecificView::HasCustomPageSizeStyle(int page_index) {
 }
 
 void TestRunnerForSpecificView::ForceRedSelectionColors() {
-  web_view()->SetSelectionColors(0xffee0000, 0xff00ee00, 0xff000000,
-                                 0xffc0c0c0);
+  blink::SetSelectionColors(0xffee0000, 0xff00ee00, 0xff000000, 0xffc0c0c0);
 }
 
 void TestRunnerForSpecificView::SetPageVisibility(

@@ -81,6 +81,10 @@ class CORE_EXPORT LayoutThemeDefault : public LayoutTheme {
   // when hovered.
   bool SupportsHover(const ComputedStyle&) const final;
 
+  void SetSelectionColors(unsigned active_background_color,
+                          unsigned active_foreground_color,
+                          unsigned inactive_background_color,
+                          unsigned inactive_foreground_color) override;
   Color PlatformFocusRingColor() const override;
 
   // System fonts.
@@ -123,11 +127,6 @@ class CORE_EXPORT LayoutThemeDefault : public LayoutTheme {
   int MenuListArrowWidthInDIP() const;
   float ClampedMenuListArrowPaddingSize(const ChromeClient*,
                                         const ComputedStyle&) const;
-
-  static void SetSelectionColors(unsigned active_background_color,
-                                 unsigned active_foreground_color,
-                                 unsigned inactive_background_color,
-                                 unsigned inactive_foreground_color);
 
  protected:
   LayoutThemeDefault();

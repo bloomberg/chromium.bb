@@ -385,11 +385,6 @@ class WebView {
 
   // Custom colors -------------------------------------------------------
 
-  virtual void SetSelectionColors(unsigned active_background_color,
-                                  unsigned active_foreground_color,
-                                  unsigned inactive_background_color,
-                                  unsigned inactive_foreground_color) = 0;
-
   // Sets the default background color when the page has not loaded enough to
   // know a background colour. This can be overridden by the methods below as
   // well.

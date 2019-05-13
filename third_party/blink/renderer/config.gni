@@ -74,13 +74,6 @@ if (use_webaudio_pffft) {
   feature_defines_list += [ "WTF_USE_WEBAUDIO_PFFFT=1" ]
 }
 
-if (use_default_render_theme) {
-  # Mirrors the USE_DEFAULT_RENDER_THEME buildflag_header in WebKit/public.
-  # If/when Blink can use buildflag headers, this should be removed in
-  # preference to that.
-  feature_defines_list += [ "WTF_USE_DEFAULT_RENDER_THEME=1" ]
-}
-
 if (blink_symbol_level == 0 && is_win && symbol_level != 0) {
   # If we use no_symbols on Windows when symbol_level is not zero then no
   # PDB will be generated but ninja will be expecting one. This would mean

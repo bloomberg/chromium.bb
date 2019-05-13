@@ -165,10 +165,6 @@
 #include "third_party/blink/renderer/platform/wtf/time.h"
 #include "ui/gfx/skia_util.h"
 
-#if defined(WTF_USE_DEFAULT_RENDER_THEME)
-#include "third_party/blink/renderer/core/layout/layout_theme_default.h"
-#endif
-
 // Get rid of WTF's pow define so we can use std::pow.
 #undef pow
 #include <cmath>  // for std::pow
@@ -3014,18 +3010,6 @@ void WebViewImpl::SetWindowFeatures(const WebWindowFeatures& features) {
 
 void WebViewImpl::SetOpenedByDOM() {
   AsView().page->SetOpenedByDOM();
-}
-
-void WebViewImpl::SetSelectionColors(unsigned active_background_color,
-                                     unsigned active_foreground_color,
-                                     unsigned inactive_background_color,
-                                     unsigned inactive_foreground_color) {
-#if defined(WTF_USE_DEFAULT_RENDER_THEME)
-  LayoutThemeDefault::SetSelectionColors(
-      active_background_color, active_foreground_color,
-      inactive_background_color, inactive_foreground_color);
-  LayoutTheme::GetTheme().PlatformColorsDidChange();
-#endif
 }
 
 void WebViewImpl::DidCommitLoad(bool is_new_navigation,
