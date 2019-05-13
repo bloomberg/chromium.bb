@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/feature_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/page_load_metrics/observers/largest_contentful_paint_handler.h"
@@ -28,6 +29,7 @@
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/network/public/cpp/network_quality_tracker.h"
 #include "third_party/metrics_proto/system_profile.pb.h"
+#include "ui/events/blink/blink_features.h"
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
 #include "chrome/browser/offline_pages/offline_page_tab_helper.h"
@@ -350,14 +352,40 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
   if (timing.interactive_timing->first_input_delay) {
     base::TimeDelta first_input_delay =
         timing.interactive_timing->first_input_delay.value();
-    builder.SetInteractiveTiming_FirstInputDelay3(
+    builder.SetInteractiveTiming_FirstInputDelay_SkipFilteringComparison(
         first_input_delay.InMilliseconds());
+    if (base::FeatureList::IsEnabled(features::kSkipTouchEventFilter)) {
+      // This experiment will change the FID and first input metric by
+      // changing the timestamp on pointerdown events on mobile pages with no
+      // pointer event handlers. If it is ramped up to 100% to launch, we need
+      // to update the metric name (v3->v4).
+      builder.SetInteractiveTiming_FirstInputDelay4(
+          first_input_delay.InMilliseconds());
+    } else {
+      // If the SkipTouchEventFilter experiment does not launch, we want to
+      // continue reporting first input events under the current name.
+      builder.SetInteractiveTiming_FirstInputDelay3(
+          first_input_delay.InMilliseconds());
+    }
   }
   if (timing.interactive_timing->first_input_timestamp) {
     base::TimeDelta first_input_timestamp =
         timing.interactive_timing->first_input_timestamp.value();
-    builder.SetInteractiveTiming_FirstInputTimestamp3(
+    builder.SetInteractiveTiming_FirstInputTimestamp_SkipFilteringComparison(
         first_input_timestamp.InMilliseconds());
+    if (base::FeatureList::IsEnabled(features::kSkipTouchEventFilter)) {
+      // This experiment will change the FID and first input metric by
+      // changing the timestamp on pointerdown events on mobile pages with no
+      // pointer event handlers. If it is ramped up to 100% to launch, we need
+      // to update the metric name (v3->v4).
+      builder.SetInteractiveTiming_FirstInputTimestamp4(
+          first_input_timestamp.InMilliseconds());
+    } else {
+      // If the SkipTouchEventFilter experiment does not launch, we want to
+      // continue reporting first input events under the current name.
+      builder.SetInteractiveTiming_FirstInputTimestamp3(
+          first_input_timestamp.InMilliseconds());
+    }
   }
 
   if (timing.interactive_timing->longest_input_delay) {
