@@ -18,6 +18,10 @@
 #include "device/fido/fido_discovery_factory.h"
 #include "services/service_manager/public/cpp/connector.h"
 
+#if defined(OS_WIN)
+#include "device/fido/win/authenticator.h"
+#endif
+
 namespace device {
 
 // PlatformAuthenticatorInfo --------------------------
@@ -154,6 +158,8 @@ void FidoRequestHandlerBase::InitDiscoveriesWin(
   //  responsible for dispatch of the authenticator and whether they
   //  display any UI in addition to the one provided by the OS.
   transport_availability_info_.has_win_native_api_authenticator = true;
+  transport_availability_info_.win_native_ui_shows_resident_credential_notice =
+      WinWebAuthnApiAuthenticator::ShowsResidentCredentialPrivacyNotice();
 
   // Allow caBLE as a potential additional transport if requested by
   // the implementing class because it is not subject to the OS'

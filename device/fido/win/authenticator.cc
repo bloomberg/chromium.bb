@@ -42,6 +42,13 @@ bool WinWebAuthnApiAuthenticator::
          result == TRUE;
 }
 
+// static
+bool WinWebAuthnApiAuthenticator::ShowsResidentCredentialPrivacyNotice() {
+  // TODO: Once Windows shows a resident credential privacy notice in their UI,
+  // this should check for the respective API version.
+  return false;
+}
+
 WinWebAuthnApiAuthenticator::WinWebAuthnApiAuthenticator(HWND current_window)
     : FidoAuthenticator(),
       current_window_(current_window),

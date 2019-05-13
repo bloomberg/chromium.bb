@@ -94,6 +94,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
     //  - should dispatch immediately if no other transport is available
     bool has_win_native_api_authenticator = false;
 
+    // Indicates whether the Windows native UI will include a privacy notice
+    // when creating a resident credential.
+    bool win_native_ui_shows_resident_credential_notice = false;
+
     // Contains the authenticator ID of the native Windows
     // authenticator if |has_win_native_api_authenticator| is true.
     // This allows the observer to distinguish it from other

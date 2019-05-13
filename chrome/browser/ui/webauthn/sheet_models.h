@@ -457,6 +457,26 @@ class AuthenticatorGenericErrorSheetModel : public AuthenticatorSheetModelBase {
   base::string16 description_;
 };
 
+class AuthenticatorResidentCredentialConfirmationSheetView
+    : public AuthenticatorSheetModelBase {
+ public:
+  AuthenticatorResidentCredentialConfirmationSheetView(
+      AuthenticatorRequestDialogModel* dialog_model);
+  ~AuthenticatorResidentCredentialConfirmationSheetView() override;
+
+ private:
+  // AuthenticatorSheetModelBase:
+  const gfx::VectorIcon& GetStepIllustration(
+      ImageColorScheme color_scheme) const override;
+  bool IsBackButtonVisible() const override;
+  bool IsAcceptButtonVisible() const override;
+  bool IsAcceptButtonEnabled() const override;
+  base::string16 GetAcceptButtonLabel() const override;
+  base::string16 GetStepTitle() const override;
+  base::string16 GetStepDescription() const override;
+  void OnAccept() override;
+};
+
 // The sheet shown when the user needs to select an account.
 class AuthenticatorSelectAccountSheetModel
     : public AuthenticatorSheetModelBase {

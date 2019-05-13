@@ -94,6 +94,11 @@ class AuthenticatorRequestDialogModel {
     kClientPinErrorHardBlock,
     kClientPinErrorAuthenticatorRemoved,
 
+    // Confirm user consent to create a resident credential. Used prior to
+    // triggering Windows-native APIs when Windows itself won't show any
+    // notice about resident credentials.
+    kResidentCredentialConfirmation,
+
     // Account selection,
     kSelectAccount,
 
@@ -333,6 +338,10 @@ class AuthenticatorRequestDialogModel {
 
   // OnHavePIN is called when the user enters a PIN in the UI.
   void OnHavePIN(const std::string& pin);
+
+  // OnResidentCredentialConfirmed is called when a user accepts a dialog
+  // confirming that they're happy to create a resident credential.
+  void OnResidentCredentialConfirmed();
 
   // OnAttestationPermissionResponse is called when the user either allows or
   // disallows an attestation permission request.

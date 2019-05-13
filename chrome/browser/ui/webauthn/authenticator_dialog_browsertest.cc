@@ -275,6 +275,11 @@ IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_storage_full) {
   ShowAndVerifyUi();
 }
 
+IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest,
+                       InvokeUi_resident_credential_confirm) {
+  ShowAndVerifyUi();
+}
+
 IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_account_select) {
   ShowAndVerifyUi();
 }

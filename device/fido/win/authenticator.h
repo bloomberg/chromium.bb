@@ -34,6 +34,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) WinWebAuthnApiAuthenticator
   // WinWebAuthnApi::IsAvailable().
   static bool IsUserVerifyingPlatformAuthenticatorAvailable();
 
+  // ShowsResidentCredentialPrivacyNotice returns true if the Windows native UI
+  // will show a privacy notice when creating a resident credential.
+  static bool ShowsResidentCredentialPrivacyNotice();
+
   // Instantiates an authenticator that uses the default WinWebAuthnApi.
   //
   // Callers must ensure that WinWebAuthnApi::IsAvailable() returns true

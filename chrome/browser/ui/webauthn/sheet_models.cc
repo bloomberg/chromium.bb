@@ -42,8 +42,7 @@ base::string16 GetRelyingPartyIdString(
 base::Optional<base::string16> PossibleResidentKeyWarning(
     AuthenticatorRequestDialogModel* dialog_model) {
   if (dialog_model->might_create_resident_credential()) {
-    return l10n_util::GetStringFUTF16(IDS_WEBAUTHN_RESIDENT_KEY_PRIVACY,
-                                      GetRelyingPartyIdString(dialog_model));
+    return l10n_util::GetStringUTF16(IDS_WEBAUTHN_RESIDENT_KEY_PRIVACY);
   }
   return base::nullopt;
 }
@@ -985,6 +984,60 @@ base::string16 AuthenticatorGenericErrorSheetModel::GetStepTitle() const {
 
 base::string16 AuthenticatorGenericErrorSheetModel::GetStepDescription() const {
   return description_;
+}
+
+// AuthenticatorResidentCredentialConfirmationSheetView -----------------------
+
+AuthenticatorResidentCredentialConfirmationSheetView::
+    AuthenticatorResidentCredentialConfirmationSheetView(
+        AuthenticatorRequestDialogModel* dialog_model)
+    : AuthenticatorSheetModelBase(dialog_model) {}
+
+AuthenticatorResidentCredentialConfirmationSheetView::
+    ~AuthenticatorResidentCredentialConfirmationSheetView() = default;
+
+const gfx::VectorIcon&
+AuthenticatorResidentCredentialConfirmationSheetView::GetStepIllustration(
+    ImageColorScheme color_scheme) const {
+  return color_scheme == ImageColorScheme::kDark ? kWebauthnPermissionDarkIcon
+                                                 : kWebauthnPermissionIcon;
+}
+
+bool AuthenticatorResidentCredentialConfirmationSheetView::IsBackButtonVisible()
+    const {
+  return false;
+}
+
+bool AuthenticatorResidentCredentialConfirmationSheetView::
+    IsAcceptButtonVisible() const {
+  return true;
+}
+
+bool AuthenticatorResidentCredentialConfirmationSheetView::
+    IsAcceptButtonEnabled() const {
+  return true;
+}
+
+base::string16
+AuthenticatorResidentCredentialConfirmationSheetView::GetAcceptButtonLabel()
+    const {
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_WELCOME_SCREEN_NEXT);
+}
+
+base::string16
+AuthenticatorResidentCredentialConfirmationSheetView::GetStepTitle() const {
+  return l10n_util::GetStringFUTF16(IDS_WEBAUTHN_GENERIC_TITLE,
+                                    GetRelyingPartyIdString(dialog_model()));
+}
+
+base::string16
+AuthenticatorResidentCredentialConfirmationSheetView::GetStepDescription()
+    const {
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_RESIDENT_KEY_PRIVACY);
+}
+
+void AuthenticatorResidentCredentialConfirmationSheetView::OnAccept() {
+  dialog_model()->OnResidentCredentialConfirmed();
 }
 
 // AuthenticatorSelectAccountSheetModel ---------------------------------------
