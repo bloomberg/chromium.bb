@@ -11,8 +11,10 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/vector_icons/vector_icons.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/font_list.h"
@@ -249,6 +251,16 @@ void MediaNotificationView::UpdateCornerRadius(int top_radius,
                                                        bottom_radius);
 }
 
+void MediaNotificationView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->role = ax::mojom::Role::kListItem;
+  node_data->AddStringAttribute(
+      ax::mojom::StringAttribute::kRoleDescription,
+      l10n_util::GetStringUTF8(IDS_ASH_MEDIA_NOTIFICATION_ACCESSIBLE_NAME));
+
+  if (!accessible_name_.empty())
+    node_data->SetName(accessible_name_);
+}
+
 void MediaNotificationView::OnMouseEvent(ui::MouseEvent* event) {
   switch (event->type()) {
     case ui::ET_MOUSE_ENTERED:
@@ -307,14 +319,24 @@ void MediaNotificationView::UpdateWithMediaMetadata(
   artist_label_->SetText(metadata.artist);
   header_row_->SetSummaryText(metadata.album);
 
-  if (!metadata.title.empty())
+  std::vector<base::string16> text;
+
+  if (!metadata.title.empty()) {
+    text.push_back(metadata.title);
     RecordMetadataHistogram(Metadata::kTitle);
+  }
 
-  if (!metadata.artist.empty())
+  if (!metadata.artist.empty()) {
+    text.push_back(metadata.artist);
     RecordMetadataHistogram(Metadata::kArtist);
+  }
 
-  if (!metadata.album.empty())
+  if (!metadata.album.empty()) {
+    text.push_back(metadata.album);
     RecordMetadataHistogram(Metadata::kAlbum);
+  }
+
+  accessible_name_ = base::JoinString(text, base::ASCIIToUTF16(" - "));
 
   RecordMetadataHistogram(Metadata::kCount);
 

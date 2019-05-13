@@ -27,6 +27,7 @@
 #include "services/media_session/public/cpp/test/test_media_controller.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/message_center/message_center.h"
@@ -177,6 +178,10 @@ class MediaNotificationViewTest : public AshTestBase {
 
   message_center::NotificationHeaderView* header_row() const {
     return view_->header_row_;
+  }
+
+  const base::string16& accessible_name() const {
+    return view_->accessible_name_;
   }
 
   views::View* button_row() const { return view_->button_row_; }
@@ -608,6 +613,8 @@ TEST_F(MediaNotificationViewTest, UpdateMetadata_FromObserver) {
 
   EXPECT_EQ(kMediaTitleArtistRowExpectedHeight, title_artist_row()->height());
 
+  EXPECT_EQ(base::ASCIIToUTF16("title2 - artist2 - album"), accessible_name());
+
   ExpectHistogramMetadataRecorded(MediaNotificationView::Metadata::kTitle, 2);
   ExpectHistogramMetadataRecorded(MediaNotificationView::Metadata::kArtist, 2);
   ExpectHistogramMetadataRecorded(MediaNotificationView::Metadata::kAlbum, 1);
@@ -897,6 +904,15 @@ TEST_F(MediaNotificationViewTest, ActionButtonRowSizeAndAlignment) {
   EXPECT_TRUE(IsActuallyExpanded());
   EXPECT_LT(124, button_row()->width());
   EXPECT_GT(button_x, button->GetBoundsInScreen().x());
+}
+
+TEST_F(MediaNotificationViewTest, AccessibleNodeData) {
+  ui::AXNodeData data;
+  view()->GetAccessibleNodeData(&data);
+
+  EXPECT_TRUE(
+      data.HasStringAttribute(ax::mojom::StringAttribute::kRoleDescription));
+  EXPECT_EQ(base::ASCIIToUTF16("title - artist"), accessible_name());
 }
 
 }  // namespace ash

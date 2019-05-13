@@ -74,6 +74,7 @@ class ASH_EXPORT MediaNotificationView : public message_center::MessageView,
       const override;
   void SetExpanded(bool expanded) override;
   void UpdateCornerRadius(int top_radius, int bottom_radius) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // views::View:
   void OnMouseEvent(ui::MouseEvent* event) override;
@@ -125,6 +126,10 @@ class ASH_EXPORT MediaNotificationView : public message_center::MessageView,
 
   // Set of enabled actions.
   std::set<media_session::mojom::MediaSessionAction> enabled_actions_;
+
+  // Stores the text to be read by screen readers describing the notification.
+  // Contains the title, artist and album separated by hypens.
+  base::string16 accessible_name_;
 
   // Container views directly attached to this view.
   message_center::NotificationHeaderView* header_row_ = nullptr;

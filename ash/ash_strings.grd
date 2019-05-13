@@ -1922,6 +1922,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_MEDIA_NOTIFICATION_ACTION_NEXT_TRACK" desc="The button to trigger media playback to go to the next track.">
         Next Track
       </message>
+      <message name="IDS_ASH_MEDIA_NOTIFICATION_ACCESSIBLE_NAME" desc="The accessible name for the media notification to control playback">
+        Media Controls
+      </message>
     </messages>
   </release>
 </grit>
