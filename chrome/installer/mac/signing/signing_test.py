@@ -223,30 +223,8 @@ class TestSignChrome(unittest.TestCase):
 
         signing.sign_chrome(self.paths, config)
 
-        # Test that the two file moves are for app_mode_loader.
-        self.assertEqual(kwargs['move_file'].mock_calls, [
-            mock.call.move_file(
-                '$W/App Product.app/Contents/Versions/99.0.9999.99/Product Framework.framework/Resources/app_mode_loader.app/Contents/MacOS/app_mode_loader',
-                '$W/app_mode_loader'),
-            mock.call.move_file(
-                '$W/app_mode_loader',
-                '$W/App Product.app/Contents/Versions/99.0.9999.99/Product Framework.framework/Resources/app_mode_loader.app/Contents/MacOS/app_mode_loader'
-            ),
-        ])
-
-        # Find the signing step between the two moves.
-        moved_app_loader_index = manager.mock_calls.index(
-            mock.call.move_file(*kwargs['move_file'].mock_calls[0][1]))
-        sign_app_mode = manager.mock_calls[moved_app_loader_index + 1]
-        self.assertEqual('$W/app_mode_loader', sign_app_mode[1][2].path)
-
-        # Make sure app_mode_loader is only signed that once.
-        other_sign_app_modes = [
-            call for call in kwargs['sign_part'].mock_calls
-            if call[1][2].identifier == 'app_mode_loader'
-        ]
-        self.assertEqual(1, len(other_sign_app_modes))
-        self.assertEqual(sign_app_mode[1], other_sign_app_modes[0][1])
+        # No files should be moved.
+        self.assertEqual(0, kwargs['move_file'].call_count)
 
         # Test that the provisioning profile is copied.
         self.assertEqual(kwargs['copy_files'].mock_calls, [
@@ -255,11 +233,17 @@ class TestSignChrome(unittest.TestCase):
                 '$W/App Product.app/Contents/embedded.provisionprofile')
         ])
 
+        # Ensure that all the parts are signed.
+        signed_paths = [
+            call[1][2].path for call in kwargs['sign_part'].mock_calls
+        ]
+        self.assertEqual(
+            set([p.path for p in signing.get_parts(config).values()]),
+            set(signed_paths))
+
         # Make sure that the framework and the app are the last two parts that
         # are signed.
-        last_two_sign_parts = kwargs['sign_part'].mock_calls[-2:]
-        last_two_part_paths = [call[1][2].path for call in last_two_sign_parts]
-        self.assertEqual(last_two_part_paths, [
+        self.assertEqual(signed_paths[-2:], [
             'App Product.app/Contents/Versions/99.0.9999.99/Product Framework.framework',
             'App Product.app'
         ])

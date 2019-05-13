@@ -124,7 +124,8 @@ class WebAppShortcutCreator {
   std::string GetInternalBundleIdentifier() const;
 
   // Copies the app loader template into a temporary directory and fills in all
-  // relevant information.
+  // relevant information. This works around a Finder bug where the app's icon
+  // doesn't properly update.
   bool BuildShortcut(const base::FilePath& staging_path) const;
 
   // Builds a shortcut and copies it to the specified app paths. Populates

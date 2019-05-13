@@ -904,6 +904,7 @@ if (is_win) {
 
   bundle_data("chrome_framework_helpers") {
     sources = [
+      "$root_out_dir/app_mode_loader",
       "$root_out_dir/chrome_crashpad_handler",
     ]
 
@@ -912,6 +913,7 @@ if (is_win) {
     ]
 
     public_deps = [
+      "//chrome/app_shim:app_mode_loader",
       "//components/crash/content/app:chrome_crashpad_handler",
     ]
 
@@ -924,8 +926,6 @@ if (is_win) {
 
   bundle_data("chrome_framework_resources") {
     sources = [
-      "$root_out_dir/app_mode_loader.app",
-
       # This image is used to badge the lock icon in the
       # authentication dialogs, such as those used for installation
       # from disk image and Keystone promotion (if so enabled).  It
@@ -943,7 +943,7 @@ if (is_win) {
 
     public_deps = [
       ":packed_resources",
-      "//chrome/app_shim:app_mode_loader",
+      "//chrome/app_shim:app_mode_loader_plist_bundle_data",
     ]
 
     if (is_chrome_branded) {

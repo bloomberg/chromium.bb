@@ -75,8 +75,7 @@ def get_parts(config):
                 verify_options=VerifyOptions.DEEP),
         'app-mode-app':
             CodeSignedProduct(
-                '{.framework_dir}/Resources/app_mode_loader.app/Contents/MacOS/app_mode_loader'
-                .format(config),
+                '{.framework_dir}/Helpers/app_mode_loader'.format(config),
                 'app_mode_loader',
                 options=config.codesign_options_helpers,
                 verify_options=VerifyOptions.IGNORE_RESOURCES),
@@ -224,24 +223,9 @@ def sign_chrome(paths, config):
     # signing the entire framework is equivalent to signing the Current version.
     # https://developer.apple.com/library/content/technotes/tn2206/_index.html#//apple_ref/doc/uid/DTS40007919-CH1-TNTAG13
     for name, part in parts.items():
-        if name in ('app', 'framework', 'app-mode-app'):
+        if name in ('app', 'framework'):
             continue
         sign_part(paths, config, part)
-
-    # The app mode loader bundle is modified dynamically at runtime. Just sign
-    # the executable, which shouldn't change. In order to do this, the
-    # executable needs to be moved out of the bundle, signed, and then moved
-    # back in. The resulting bundle's signature won't validate normally, but if
-    # the executable file is verified in isolation or with --ignore-resources,
-    # it will.
-    app_mode_app = copy.copy(parts['app-mode-app'])
-    orig_app_mode_path = os.path.join(paths.work, app_mode_app.path)
-    temp_app_mode_path = os.path.join(paths.work,
-                                      os.path.basename(app_mode_app.path))
-    commands.move_file(orig_app_mode_path, temp_app_mode_path)
-    app_mode_app.path = temp_app_mode_path
-    sign_part(paths, config, app_mode_app)
-    commands.move_file(temp_app_mode_path, orig_app_mode_path)
 
     # Sign the framework bundle.
     sign_part(paths, config, parts['framework'])
