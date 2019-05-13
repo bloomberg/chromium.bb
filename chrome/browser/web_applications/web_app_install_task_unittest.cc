@@ -431,8 +431,9 @@ TEST_F(WebAppInstallTaskTest, GetIcons) {
   const SkColor color = SK_ColorBLUE;
 
   // Generate one icon as if it was downloaded.
-  IconsMap icons_map =
-      GenerateIconsMapWithOneIcon(icon_url, icon_size::k128, color);
+  IconsMap icons_map;
+  AddIconToIconsMap(icon_url, icon_size::k128, color, &icons_map);
+
   SetIconsMapToRetrieve(std::move(icons_map));
 
   InstallWebAppFromManifestWithFallback();
@@ -553,8 +554,9 @@ TEST_F(WebAppInstallTaskTest, WriteDataToDiskFailed) {
   CreateDefaultDataToRetrieve(app_url);
   CreateRendererAppInfo(app_url, "Name", "Description");
 
-  IconsMap icons_map = GenerateIconsMapWithOneIcon(
-      GURL("https://example.com/app.ico"), icon_size::k512, SK_ColorBLUE);
+  IconsMap icons_map;
+  AddIconToIconsMap(GURL("https://example.com/app.ico"), icon_size::k512,
+                    SK_ColorBLUE, &icons_map);
   SetIconsMapToRetrieve(std::move(icons_map));
 
   const base::FilePath profile_dir = profile()->GetPath();
@@ -794,6 +796,118 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfo_GenerateIcons) {
   run_loop.Run();
 }
 
-// TODO(loyso): Convert more tests from bookmark_app_helper_unittest.cc
+TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfoRetrieveIcons_TwoIcons) {
+  SetInstallFinalizerForTesting();
+
+  const GURL url{"https://example.com/path"};
+  const GURL icon1_url{"https://example.com/path/icon1.png"};
+  const GURL icon2_url{"https://example.com/path/icon2.png"};
+
+  CreateDefaultDataToRetrieve(url);
+
+  const AppId app_id = GenerateAppIdFromURL(url);
+
+  auto web_app_info = std::make_unique<WebApplicationInfo>();
+  web_app_info->app_url = url;
+
+  WebApplicationInfo::IconInfo icon1_info;
+  icon1_info.url = icon1_url;
+  icon1_info.width = icon_size::k128;
+  web_app_info->icons.push_back(std::move(icon1_info));
+
+  WebApplicationInfo::IconInfo icon2_info;
+  icon2_info.url = icon2_url;
+  icon2_info.width = icon_size::k256;
+  web_app_info->icons.push_back(std::move(icon2_info));
+
+  IconsMap icons_map;
+  AddIconToIconsMap(icon1_url, icon_size::k128, SK_ColorBLUE, &icons_map);
+  AddIconToIconsMap(icon2_url, icon_size::k256, SK_ColorRED, &icons_map);
+
+  SetIconsMapToRetrieve(std::move(icons_map));
+
+  base::RunLoop run_loop;
+
+  install_task_->InstallWebAppFromInfoRetrieveIcons(
+      web_contents(), std::move(web_app_info), /*is_locally_installed=*/true,
+      WebappInstallSource::SYNC,
+      base::BindLambdaForTesting(
+          [&](const AppId& installed_app_id, InstallResultCode code) {
+            EXPECT_EQ(InstallResultCode::kSuccess, code);
+            EXPECT_EQ(app_id, installed_app_id);
+
+            EXPECT_TRUE(test_install_finalizer()
+                            .finalize_options_list()
+                            .at(0)
+                            .locally_installed);
+            EXPECT_TRUE(test_install_finalizer()
+                            .finalize_options_list()
+                            .at(0)
+                            .error_on_unsupported_requirements);
+
+            std::unique_ptr<WebApplicationInfo> final_web_app_info =
+                test_install_finalizer().web_app_info();
+
+            EXPECT_EQ(2U, final_web_app_info->icons.size());
+
+            const auto& icon1 = final_web_app_info->icons.at(0);
+            EXPECT_FALSE(icon1.data.drawsNothing());
+            EXPECT_EQ(SK_ColorBLUE, icon1.data.getColor(0, 0));
+            EXPECT_EQ(icon1_url, icon1.url);
+
+            const auto& icon2 = final_web_app_info->icons.at(1);
+            EXPECT_FALSE(icon2.data.drawsNothing());
+            EXPECT_EQ(SK_ColorRED, icon2.data.getColor(0, 0));
+            EXPECT_EQ(icon2_url, icon2.url);
+
+            run_loop.Quit();
+          }));
+
+  run_loop.Run();
+}
+
+TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfoRetrieveIcons_NoIcons) {
+  SetInstallFinalizerForTesting();
+
+  const GURL url{"https://example.com/path"};
+  CreateDefaultDataToRetrieve(url);
+  const AppId app_id = GenerateAppIdFromURL(url);
+
+  auto web_app_info = std::make_unique<WebApplicationInfo>();
+  web_app_info->app_url = url;
+  // All icons will get the E letter drawn into a rounded yellow background.
+  web_app_info->generated_icon_color = SK_ColorYELLOW;
+
+  base::RunLoop run_loop;
+
+  install_task_->InstallWebAppFromInfoRetrieveIcons(
+      web_contents(), std::move(web_app_info), /*is_locally_installed=*/false,
+      WebappInstallSource::SYNC,
+      base::BindLambdaForTesting(
+          [&](const AppId& installed_app_id, InstallResultCode code) {
+            EXPECT_EQ(InstallResultCode::kSuccess, code);
+            EXPECT_EQ(app_id, installed_app_id);
+
+            EXPECT_FALSE(test_install_finalizer()
+                             .finalize_options_list()
+                             .at(0)
+                             .locally_installed);
+
+            std::unique_ptr<WebApplicationInfo> final_web_app_info =
+                test_install_finalizer().web_app_info();
+            // Make sure that icons have been generated for all sub sizes.
+            EXPECT_TRUE(ContainsOneIconOfEachSize(*final_web_app_info));
+
+            for (const WebApplicationInfo::IconInfo& icon :
+                 final_web_app_info->icons) {
+              EXPECT_FALSE(icon.data.drawsNothing());
+              EXPECT_TRUE(icon.url.is_empty());
+            }
+
+            run_loop.Quit();
+          }));
+
+  run_loop.Run();
+}
 
 }  // namespace web_app

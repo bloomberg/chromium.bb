@@ -44,12 +44,12 @@ void UpdateWebAppInfoFromManifest(const blink::Manifest& manifest,
 // Returns icon sizes to be generated from downloaded icons.
 std::set<int> SizesToGenerate();
 
-// Form a list of icons to download:
-// Remove icons with invalid urls. Skip primary icon that we already have
-// downloaded during installability check phase.
+// Form a list of icons to download: Remove icons with invalid urls. If |data|
+// is specified and contains a valid primary icon, we skip downloading any
+// matching icon in |web_app_info|.
 std::vector<GURL> GetValidIconUrlsToDownload(
-    const InstallableData& data,
-    const WebApplicationInfo& web_app_info);
+    const WebApplicationInfo& web_app_info,
+    const InstallableData* data);
 
 // Merge primary icon from installability check phase:
 // Add the primary icon to the final web app creation data.
@@ -59,6 +59,10 @@ void MergeInstallableDataIcon(const InstallableData& data,
 // Get a list of non-empty square icons from |web_app_info|.
 void FilterSquareIconsFromInfo(const WebApplicationInfo& web_app_info,
                                std::vector<BitmapAndSource>* square_icons);
+
+// Get a list of non-empty square icons from |icons_map|.
+void FilterSquareIconsFromMap(const IconsMap& icons_map,
+                              std::vector<BitmapAndSource>* square_icons);
 
 // Get a list of non-empty square icons from downloaded |icons_map| and
 // |web_app_info| (merged together).
@@ -71,6 +75,17 @@ std::vector<BitmapAndSource> FilterSquareIcons(
 // is not possible.
 void ResizeDownloadedIconsGenerateMissing(
     std::vector<BitmapAndSource> downloaded_icons,
+    WebApplicationInfo* web_app_info);
+
+// It is important that the linked app information in any web app that
+// gets created from sync matches the linked app information that came from
+// sync. If there are any changes, they will be synced back to other devices
+// and could potentially create a never ending sync cycle.
+// This function updates |web_app_info| with the image data of any icon from
+// |size_map| that has a URL and size matching that in |web_app_info|, as
+// well as adding any new images from |size_map| that have no URL.
+void UpdateWebAppIconsWithoutChangingLinks(
+    const std::map<int, BitmapAndSource>& size_map,
     WebApplicationInfo* web_app_info);
 
 // Record an app banner added to homescreen event to ensure banners are not

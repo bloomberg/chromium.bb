@@ -4,6 +4,8 @@
 
 #include "chrome/browser/web_applications/test/test_data_retriever.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "chrome/common/web_application_info.h"
@@ -13,7 +15,10 @@ namespace web_app {
 
 TestDataRetriever::TestDataRetriever() = default;
 
-TestDataRetriever::~TestDataRetriever() = default;
+TestDataRetriever::~TestDataRetriever() {
+  if (destruction_callback_)
+    std::move(destruction_callback_).Run();
+}
 
 void TestDataRetriever::GetWebApplicationInfo(
     content::WebContents* web_contents,
@@ -59,6 +64,10 @@ void TestDataRetriever::SetManifest(std::unique_ptr<blink::Manifest> manifest,
 
 void TestDataRetriever::SetIcons(IconsMap icons_map) {
   icons_map_ = std::move(icons_map);
+}
+
+void TestDataRetriever::SetDestructionCallback(base::OnceClosure callback) {
+  destruction_callback_ = std::move(callback);
 }
 
 }  // namespace web_app

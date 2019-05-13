@@ -173,8 +173,8 @@ class BookmarkAppInstaller : public base::RefCounted<BookmarkAppInstaller>,
             downloaded_bitmaps_, sizes_to_generate, web_app_info_.app_url,
             &web_app_info_.generated_icon_color);
 
-    BookmarkAppHelper::UpdateWebAppIconsWithoutChangingLinks(size_map,
-                                                             &web_app_info_);
+    web_app::UpdateWebAppIconsWithoutChangingLinks(size_map, &web_app_info_);
+
     scoped_refptr<CrxInstaller> installer(CrxInstaller::CreateSilent(service_));
     installer->set_error_on_unsupported_requirements(true);
     installer->set_installer_callback(base::BindOnce(
@@ -203,32 +203,6 @@ class BookmarkAppInstaller : public base::RefCounted<BookmarkAppInstaller>,
 };
 
 }  // namespace
-
-// static
-void BookmarkAppHelper::UpdateWebAppIconsWithoutChangingLinks(
-    std::map<int, web_app::BitmapAndSource> bitmap_map,
-    WebApplicationInfo* web_app_info) {
-  // First add in the icon data that have urls with the url / size data from the
-  // original web app info, and the data from the new icons (if any).
-  for (auto& icon : web_app_info->icons) {
-    if (!icon.url.is_empty() && icon.data.empty()) {
-      const auto& it = bitmap_map.find(icon.width);
-      if (it != bitmap_map.end() && it->second.source_url == icon.url)
-        icon.data = it->second.bitmap;
-    }
-  }
-
-  // Now add in any icons from the updated list that don't have URLs.
-  for (const auto& pair : bitmap_map) {
-    if (pair.second.source_url.is_empty()) {
-      WebApplicationInfo::IconInfo icon_info;
-      icon_info.data = pair.second.bitmap;
-      icon_info.width = pair.first;
-      icon_info.height = pair.first;
-      web_app_info->icons.push_back(icon_info);
-    }
-  }
-}
 
 BookmarkAppHelper::BookmarkAppHelper(Profile* profile,
                                      WebApplicationInfo web_app_info,
@@ -328,7 +302,7 @@ void BookmarkAppHelper::OnDidPerformInstallableCheck(
                                         for_installable_site_);
 
   const std::vector<GURL> web_app_info_icon_urls =
-      web_app::GetValidIconUrlsToDownload(data, web_app_info_);
+      web_app::GetValidIconUrlsToDownload(web_app_info_, &data);
 
   web_app::MergeInstallableDataIcon(data, &web_app_info_);
 

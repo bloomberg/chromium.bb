@@ -35,6 +35,8 @@ class InstallFinalizer {
     // If |force_launch_container| defined as non-kDefault then the installed
     // app will launch in |force_launch_container|.
     LaunchContainer force_launch_container = LaunchContainer::kDefault;
+    bool error_on_unsupported_requirements = false;
+    bool locally_installed = true;
     bool policy_installed = false;
     bool no_network_install = false;
   };

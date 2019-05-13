@@ -14,6 +14,7 @@
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_data_retriever.h"
 #include "chrome/browser/web_applications/components/web_app_icon_generator.h"
+#include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/common/web_application_info.h"
 #include "content/public/browser/browser_thread.h"
@@ -77,6 +78,8 @@ void WebAppInstallTask::InstallWebAppFromInfo(
     bool no_network_install,
     WebappInstallSource install_source,
     InstallManager::OnceInstallCallback callback) {
+  CheckInstallPreconditions();
+
   std::vector<BitmapAndSource> square_icons;
   FilterSquareIconsFromInfo(*web_application_info, &square_icons);
   ResizeDownloadedIconsGenerateMissing(std::move(square_icons),
@@ -98,6 +101,36 @@ void WebAppInstallTask::InstallWebAppFromInfo(
 
   install_finalizer_->FinalizeInstall(*web_application_info, options,
                                       std::move(callback));
+}
+
+void WebAppInstallTask::InstallWebAppFromInfoRetrieveIcons(
+    content::WebContents* web_contents,
+    std::unique_ptr<WebApplicationInfo> web_application_info,
+    bool is_locally_installed,
+    WebappInstallSource install_source,
+    InstallManager::OnceInstallCallback callback) {
+  CheckInstallPreconditions();
+
+  Observe(web_contents);
+  install_callback_ = std::move(callback);
+  install_source_ = install_source;
+
+  std::vector<GURL> icon_urls =
+      GetValidIconUrlsToDownload(*web_application_info, /*data=*/nullptr);
+  if (icon_urls.empty()) {
+    OnIconsRetrieved(std::move(web_application_info), is_locally_installed,
+                     IconsMap{});
+    return;
+  }
+
+  // Skip downloading the page favicons as everything in is the URL list.
+  // TODO(loyso): Pass WebApp.Icon.HttpStatusCodeClassOnSync histogram name
+  // to WebAppDataRetriever. crbug.com/907296.
+  data_retriever_->GetIcons(
+      web_contents, icon_urls, /*skip_page_fav_icons*/ true,
+      base::BindOnce(&WebAppInstallTask::OnIconsRetrieved,
+                     base::Unretained(this), std::move(web_application_info),
+                     is_locally_installed));
 }
 
 void WebAppInstallTask::WebContentsDestroyed() {
@@ -184,23 +217,62 @@ void WebAppInstallTask::OnDidPerformInstallableCheck(
   UpdateWebAppInfoFromManifest(manifest, web_app_info.get(),
                                for_installable_site);
 
-  std::vector<GURL> icon_urls;
-  for (auto& icon_info : web_app_info->icons) {
-    if (icon_info.url.is_valid())
-      icon_urls.push_back(icon_info.url);
-  }
+  std::vector<GURL> icon_urls =
+      GetValidIconUrlsToDownload(*web_app_info, /*data=*/nullptr);
 
   // If the manifest specified icons, don't use the page icons.
-  const bool skip_page_fav_icons = !manifest.icons.empty();
+  const bool skip_page_favicons = !manifest.icons.empty();
 
   data_retriever_->GetIcons(
-      web_contents(), icon_urls, skip_page_fav_icons,
-      base::BindOnce(&WebAppInstallTask::OnIconsRetrieved,
+      web_contents(), icon_urls, skip_page_favicons,
+      base::BindOnce(&WebAppInstallTask::OnIconsRetrievedShowDialog,
                      base::Unretained(this), std::move(web_app_info),
                      for_installable_site));
 }
 
 void WebAppInstallTask::OnIconsRetrieved(
+    std::unique_ptr<WebApplicationInfo> web_app_info,
+    bool is_locally_installed,
+    IconsMap icons_map) {
+  if (ShouldStopInstall())
+    return;
+
+  DCHECK(web_app_info);
+
+  std::vector<BitmapAndSource> downloaded_icons;
+  FilterSquareIconsFromMap(icons_map, &downloaded_icons);
+
+  // Ensure that all icons that are in web_app_info are present, by generating
+  // icons for any sizes which have failed to download. This ensures that the
+  // created manifest for the web app does not contain links to icons
+  // which are not actually created and linked on disk.
+
+  // Ensure that all icon widths in the web app info icon array are present in
+  // the sizes to generate set. This ensures that we will have all of the
+  // icon sizes from when the app was originally added, even if icon URLs are
+  // no longer accessible.
+  std::set<int> sizes_to_generate = SizesToGenerate();
+  for (const auto& icon : web_app_info->icons)
+    sizes_to_generate.insert(icon.width);
+
+  web_app_info->generated_icon_color = SK_ColorTRANSPARENT;
+  std::map<int, BitmapAndSource> size_map = ResizeIconsAndGenerateMissing(
+      downloaded_icons, sizes_to_generate, web_app_info->app_url,
+      &web_app_info->generated_icon_color);
+
+  UpdateWebAppIconsWithoutChangingLinks(size_map, web_app_info.get());
+
+  InstallFinalizer::FinalizeOptions options;
+  options.locally_installed = is_locally_installed;
+  options.error_on_unsupported_requirements = true;
+
+  install_finalizer_->FinalizeInstall(
+      *web_app_info, options,
+      base::BindOnce(&WebAppInstallTask::OnInstallFinalized,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void WebAppInstallTask::OnIconsRetrievedShowDialog(
     std::unique_ptr<WebApplicationInfo> web_app_info,
     ForInstallableSite for_installable_site,
     IconsMap icons_map) {
@@ -242,14 +314,23 @@ void WebAppInstallTask::OnDialogCompleted(
 
   install_finalizer_->FinalizeInstall(
       web_app_info_copy, options,
-      base::BindOnce(&WebAppInstallTask::OnInstallFinalized,
+      base::BindOnce(&WebAppInstallTask::OnInstallFinalizedCreateShortcuts,
                      weak_ptr_factory_.GetWeakPtr(), std::move(web_app_info)));
 
-  // Check that the finalizer hasn't called OnInstallFinalized synchronously:
+  // Check that the finalizer hasn't called OnInstallFinalizedCreateShortcuts
+  // synchronously:
   DCHECK(install_callback_);
 }
 
-void WebAppInstallTask::OnInstallFinalized(
+void WebAppInstallTask::OnInstallFinalized(const AppId& app_id,
+                                           InstallResultCode code) {
+  if (ShouldStopInstall())
+    return;
+
+  CallInstallCallback(app_id, code);
+}
+
+void WebAppInstallTask::OnInstallFinalizedCreateShortcuts(
     std::unique_ptr<WebApplicationInfo> web_app_info,
     const AppId& app_id,
     InstallResultCode code) {

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/web_applications/test/web_app_test.h"
 
+#include <utility>
 #include <vector>
 
 #include "content/public/test/web_contents_tester.h"
@@ -42,18 +43,16 @@ WebApplicationInfo::IconInfo WebAppTest::GenerateIconInfo(const GURL& url,
 }
 
 // static
-IconsMap WebAppTest::GenerateIconsMapWithOneIcon(const GURL& icon_url,
-                                                 int size_px,
-                                                 SkColor solid_color) {
+void WebAppTest::AddIconToIconsMap(const GURL& icon_url,
+                                   int size_px,
+                                   SkColor solid_color,
+                                   IconsMap* icons_map) {
   SkBitmap bitmap = CreateSquareIcon(size_px, solid_color);
 
   std::vector<SkBitmap> bitmaps;
   bitmaps.push_back(std::move(bitmap));
 
-  IconsMap icons_map;
-  icons_map.emplace(icon_url, std::move(bitmaps));
-
-  return icons_map;
+  icons_map->emplace(icon_url, std::move(bitmaps));
 }
 
 }  // namespace web_app

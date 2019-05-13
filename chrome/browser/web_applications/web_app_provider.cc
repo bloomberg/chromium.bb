@@ -114,8 +114,8 @@ void WebAppProvider::CreateWebAppsSubsystems(Profile* profile) {
 
   install_finalizer_ = std::make_unique<WebAppInstallFinalizer>(
       web_app_registrar.get(), icon_manager_.get());
-  install_manager_ =
-      std::make_unique<WebAppInstallManager>(profile, install_finalizer_.get());
+  install_manager_ = std::make_unique<WebAppInstallManager>(
+      profile, web_app_registrar.get(), install_finalizer_.get());
 
   registrar_ = std::move(web_app_registrar);
 }
@@ -129,7 +129,7 @@ void WebAppProvider::CreateBookmarkAppsSubsystems(Profile* profile) {
 
   if (base::FeatureList::IsEnabled(features::kDesktopPWAsUnifiedInstall)) {
     install_manager_ = std::make_unique<WebAppInstallManager>(
-        profile, install_finalizer_.get());
+        profile, bookmark_app_registrar.get(), install_finalizer_.get());
   } else {
     install_manager_ = std::make_unique<extensions::BookmarkAppInstallManager>(
         profile, install_finalizer_.get());

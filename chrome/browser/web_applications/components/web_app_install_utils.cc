@@ -97,8 +97,8 @@ std::set<int> SizesToGenerate() {
 }
 
 std::vector<GURL> GetValidIconUrlsToDownload(
-    const InstallableData& data,
-    const WebApplicationInfo& web_app_info) {
+    const WebApplicationInfo& web_app_info,
+    const InstallableData* data) {
   // Add icon urls to download from the WebApplicationInfo.
   std::vector<GURL> web_app_info_icon_urls;
   for (auto& info : web_app_info.icons) {
@@ -106,7 +106,7 @@ std::vector<GURL> GetValidIconUrlsToDownload(
       continue;
 
     // Skip downloading icon if we already have it from the InstallableManager.
-    if (info.url == data.primary_icon_url && data.primary_icon)
+    if (data && data->primary_icon && data->primary_icon_url == info.url)
       continue;
 
     web_app_info_icon_urls.push_back(info.url);
@@ -138,20 +138,21 @@ void FilterSquareIconsFromInfo(const WebApplicationInfo& web_app_info,
   }
 }
 
+void FilterSquareIconsFromMap(const IconsMap& icons_map,
+                              std::vector<BitmapAndSource>* square_icons) {
+  for (const std::pair<GURL, std::vector<SkBitmap>>& url_icon : icons_map) {
+    for (const SkBitmap& icon : url_icon.second) {
+      if (!icon.empty() && icon.width() == icon.height())
+        square_icons->push_back(BitmapAndSource(url_icon.first, icon));
+    }
+  }
+}
+
 std::vector<BitmapAndSource> FilterSquareIcons(
     const IconsMap& icons_map,
     const WebApplicationInfo& web_app_info) {
   std::vector<BitmapAndSource> square_icons;
-
-  for (const std::pair<GURL, std::vector<SkBitmap>>& url_bitmap : icons_map) {
-    for (const SkBitmap& bitmap : url_bitmap.second) {
-      if (bitmap.empty() || bitmap.width() != bitmap.height())
-        continue;
-
-      square_icons.push_back(BitmapAndSource(url_bitmap.first, bitmap));
-    }
-  }
-
+  FilterSquareIconsFromMap(icons_map, &square_icons);
   FilterSquareIconsFromInfo(web_app_info, &square_icons);
   return square_icons;
 }
@@ -165,6 +166,31 @@ void ResizeDownloadedIconsGenerateMissing(
       &web_app_info->generated_icon_color);
 
   ReplaceWebAppIcons(size_to_icons, web_app_info);
+}
+
+void UpdateWebAppIconsWithoutChangingLinks(
+    const std::map<int, BitmapAndSource>& size_map,
+    WebApplicationInfo* web_app_info) {
+  // First add in the icon data that have urls with the url / size data from the
+  // original web app info, and the data from the new icons (if any).
+  for (auto& icon : web_app_info->icons) {
+    if (!icon.url.is_empty() && icon.data.empty()) {
+      const auto& it = size_map.find(icon.width);
+      if (it != size_map.end() && it->second.source_url == icon.url)
+        icon.data = it->second.bitmap;
+    }
+  }
+
+  // Now add in any icons from the updated list that don't have URLs.
+  for (const auto& pair : size_map) {
+    if (pair.second.source_url.is_empty()) {
+      WebApplicationInfo::IconInfo icon_info;
+      icon_info.data = pair.second.bitmap;
+      icon_info.width = pair.first;
+      icon_info.height = pair.first;
+      web_app_info->icons.push_back(icon_info);
+    }
+  }
 }
 
 void RecordAppBanner(content::WebContents* contents, const GURL& app_url) {

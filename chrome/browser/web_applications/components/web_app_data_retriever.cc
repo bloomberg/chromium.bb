@@ -89,7 +89,7 @@ void WebAppDataRetriever::CheckInstallabilityAndRetrieveManifest(
 
 void WebAppDataRetriever::GetIcons(content::WebContents* web_contents,
                                    const std::vector<GURL>& icon_urls,
-                                   bool skip_page_fav_icons,
+                                   bool skip_page_favicons,
                                    GetIconsCallback callback) {
   DCHECK(!icon_urls.empty());
 
@@ -99,7 +99,7 @@ void WebAppDataRetriever::GetIcons(content::WebContents* web_contents,
       base::BindOnce(&WebAppDataRetriever::OnIconsDownloaded,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 
-  if (skip_page_fav_icons)
+  if (skip_page_favicons)
     icon_downloader_->SkipPageFavicons();
 
   icon_downloader_->Start();

@@ -29,9 +29,10 @@ class WebAppTest : public ChromeRenderViewHostTestHarness {
                                                        int size_px,
                                                        SkColor solid_color);
 
-  static IconsMap GenerateIconsMapWithOneIcon(const GURL& icon_url,
-                                              int size_px,
-                                              SkColor solid_color);
+  static void AddIconToIconsMap(const GURL& icon_url,
+                                int size_px,
+                                SkColor solid_color,
+                                IconsMap* icons_map);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebAppTest);

@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/web_applications/components/web_app_data_retriever.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
@@ -42,7 +43,10 @@ class TestDataRetriever : public WebAppDataRetriever {
   // Set icons to respond on |GetIcons|.
   void SetIcons(IconsMap icons_map);
 
+  void SetDestructionCallback(base::OnceClosure callback);
+
   WebApplicationInfo& web_app_info() { return *web_app_info_; }
+  bool HasIcons() const { return !icons_map_.empty(); }
 
  private:
   std::unique_ptr<WebApplicationInfo> web_app_info_;
@@ -51,6 +55,7 @@ class TestDataRetriever : public WebAppDataRetriever {
   bool is_installable_;
 
   IconsMap icons_map_;
+  base::OnceClosure destruction_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TestDataRetriever);
 };

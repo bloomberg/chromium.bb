@@ -61,7 +61,7 @@ class WebAppDataRetriever {
   // the retrieved icons.
   virtual void GetIcons(content::WebContents* web_contents,
                         const std::vector<GURL>& icon_urls,
-                        bool skip_page_fav_icons,
+                        bool skip_page_favicons,
                         GetIconsCallback callback);
 
  private:

@@ -9,23 +9,33 @@
 
 #include "base/callback_forward.h"
 #include "base/containers/flat_set.h"
+#include "base/containers/queue.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/web_applications/components/install_manager.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_url_loader.h"
 
 class Profile;
+
+namespace content {
+class WebContents;
+}
 
 namespace web_app {
 
 enum class InstallResultCode;
+class AppRegistrar;
 class InstallFinalizer;
 class WebAppDataRetriever;
 class WebAppInstallTask;
 
 class WebAppInstallManager final : public InstallManager {
  public:
-  WebAppInstallManager(Profile* profile, InstallFinalizer* install_finalizer);
+  WebAppInstallManager(Profile* profile,
+                       AppRegistrar* app_registrar,
+                       InstallFinalizer* install_finalizer);
   ~WebAppInstallManager() override;
 
   // InstallManager:
@@ -61,19 +71,44 @@ class WebAppInstallManager final : public InstallManager {
   void SetDataRetrieverFactoryForTesting(
       DataRetrieverFactory data_retriever_factory);
 
+  void SetUrlLoaderForTesting(std::unique_ptr<WebAppUrlLoader> url_loader);
+
  private:
+  void MaybeStartQueuedTask();
   void OnTaskCompleted(WebAppInstallTask* task,
                        OnceInstallCallback callback,
                        const AppId& app_id,
                        InstallResultCode code);
+  void OnQueuedTaskCompleted(WebAppInstallTask* task,
+                             OnceInstallCallback callback,
+                             const AppId& app_id,
+                             InstallResultCode code);
+
+  void CreateWebContentsIfNecessary();
+  void OnWebContentsReady(WebAppUrlLoader::Result result);
 
   DataRetrieverFactory data_retriever_factory_;
 
+  std::unique_ptr<WebAppUrlLoader> url_loader_;
+
+  // All owned tasks.
   using Tasks = base::flat_set<std::unique_ptr<WebAppInstallTask>,
                                base::UniquePtrComparator>;
   Tasks tasks_;
 
+  // Tasks can be queued for sequential completion (to be run one at a time).
+  // FIFO. This is a subset of |tasks_|.
+  base::queue<base::OnceClosure> task_queue_;
+  bool is_running_queued_task_ = false;
+
+  // A single WebContents, shared between tasks in |task_queue_|.
+  std::unique_ptr<content::WebContents> web_contents_;
+  bool web_contents_ready_ = false;
+
+  AppRegistrar* app_registrar_;
   InstallFinalizer* install_finalizer_;
+
+  base::WeakPtrFactory<WebAppInstallManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebAppInstallManager);
 };

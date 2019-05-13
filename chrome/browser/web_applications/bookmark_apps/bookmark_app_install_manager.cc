@@ -385,6 +385,7 @@ void BookmarkAppInstallManager::InstallOrUpdateWebAppFromSync(
     return;
 
 #if defined(OS_CHROMEOS)
+  // On Chrome OS, sync always locally installs an app.
   bool is_locally_installed = true;
 #else
   bool is_locally_installed =

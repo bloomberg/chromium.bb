@@ -43,6 +43,7 @@ const Extension* GetExtensionById(Profile* profile,
 void OnExtensionInstalled(
     const GURL& app_url,
     LaunchType launch_type,
+    bool is_locally_installed,
     web_app::InstallFinalizer::InstallFinalizedCallback callback,
     scoped_refptr<CrxInstaller> crx_installer,
     const base::Optional<CrxInstallError>& error) {
@@ -57,12 +58,10 @@ void OnExtensionInstalled(
 
   DCHECK_EQ(AppLaunchInfo::GetLaunchWebURL(extension), app_url);
 
-  // Set the launcher type for the app.
   SetLaunchType(crx_installer->profile(), extension->id(), launch_type);
 
-  // Set this app to be locally installed, as it was installed from this
-  // machine.
-  SetBookmarkAppIsLocallyInstalled(crx_installer->profile(), extension, true);
+  SetBookmarkAppIsLocallyInstalled(crx_installer->profile(), extension,
+                                   is_locally_installed);
 
   std::move(callback).Run(extension->id(),
                           web_app::InstallResultCode::kSuccess);
@@ -89,6 +88,9 @@ void BookmarkAppInstallFinalizer::FinalizeInstall(
   scoped_refptr<CrxInstaller> crx_installer =
       crx_installer_factory_.Run(profile_);
 
+  crx_installer->set_error_on_unsupported_requirements(
+      options.error_on_unsupported_requirements);
+
   extensions::LaunchType launch_type =
       web_app_info.open_as_window ? LAUNCH_TYPE_WINDOW : LAUNCH_TYPE_REGULAR;
 
@@ -105,9 +107,9 @@ void BookmarkAppInstallFinalizer::FinalizeInstall(
       break;
   }
 
-  crx_installer->set_installer_callback(
-      base::BindOnce(OnExtensionInstalled, web_app_info.app_url, launch_type,
-                     std::move(callback), crx_installer));
+  crx_installer->set_installer_callback(base::BindOnce(
+      OnExtensionInstalled, web_app_info.app_url, launch_type,
+      options.locally_installed, std::move(callback), crx_installer));
 
   if (options.policy_installed)
     crx_installer->set_install_source(Manifest::EXTERNAL_POLICY_DOWNLOAD);

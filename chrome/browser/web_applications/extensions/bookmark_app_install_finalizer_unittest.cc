@@ -18,6 +18,7 @@
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -231,6 +232,7 @@ TEST_F(BookmarkAppInstallFinalizerTest, PolicyInstallSucceeds) {
             ExtensionRegistry::Get(profile())->GetInstalledExtension(
                 installed_app_id);
         EXPECT_TRUE(Manifest::IsPolicyLocation(extension->location()));
+        EXPECT_TRUE(BookmarkAppIsLocallyInstalled(profile(), extension));
 
         run_loop.Quit();
       }));
@@ -332,6 +334,32 @@ TEST_F(BookmarkAppInstallFinalizerTest, CanSkipAppUpdateForSync) {
   info_with_diff_description.title = base::ASCIIToUTF16("Description2");
   EXPECT_FALSE(
       installer.CanSkipAppUpdateForSync(app_id, info_with_diff_description));
+}
+
+TEST_F(BookmarkAppInstallFinalizerTest, NotLocallyInstalled) {
+  BookmarkAppInstallFinalizer installer(profile());
+
+  auto info = std::make_unique<WebApplicationInfo>();
+  info->app_url = kWebAppUrl;
+
+  web_app::InstallFinalizer::FinalizeOptions options;
+  options.locally_installed = false;
+
+  base::RunLoop run_loop;
+  installer.FinalizeInstall(
+      *info, options,
+      base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
+                                     web_app::InstallResultCode code) {
+        EXPECT_EQ(web_app::InstallResultCode::kSuccess, code);
+
+        auto* extension =
+            ExtensionRegistry::Get(profile())->GetInstalledExtension(
+                installed_app_id);
+        EXPECT_FALSE(BookmarkAppIsLocallyInstalled(profile(), extension));
+
+        run_loop.Quit();
+      }));
+  run_loop.Run();
 }
 
 }  // namespace extensions

@@ -68,6 +68,16 @@ class WebAppInstallTask : content::WebContentsObserver {
       WebappInstallSource install_source,
       InstallManager::OnceInstallCallback callback);
 
+  // Starts background installation of a web app: does not show UI dialog.
+  // |web_application_info| contains all the data needed for installation. Icons
+  // will be downloaded from the icon URLs provided in |web_application_info|.
+  void InstallWebAppFromInfoRetrieveIcons(
+      content::WebContents* web_contents,
+      std::unique_ptr<WebApplicationInfo> web_application_info,
+      bool is_locally_installed,
+      WebappInstallSource install_source,
+      InstallManager::OnceInstallCallback callback);
+
   // WebContentsObserver:
   void WebContentsDestroyed() override;
 
@@ -97,14 +107,20 @@ class WebAppInstallTask : content::WebContentsObserver {
       const blink::Manifest& manifest,
       bool is_installable);
   void OnIconsRetrieved(std::unique_ptr<WebApplicationInfo> web_app_info,
-                        ForInstallableSite for_installable_site,
+                        bool is_locally_installed,
                         IconsMap icons_map);
+  void OnIconsRetrievedShowDialog(
+      std::unique_ptr<WebApplicationInfo> web_app_info,
+      ForInstallableSite for_installable_site,
+      IconsMap icons_map);
   void OnDialogCompleted(ForInstallableSite for_installable_site,
                          bool user_accepted,
                          std::unique_ptr<WebApplicationInfo> web_app_info);
-  void OnInstallFinalized(std::unique_ptr<WebApplicationInfo> web_app_info,
-                          const AppId& app_id,
-                          InstallResultCode code);
+  void OnInstallFinalized(const AppId& app_id, InstallResultCode code);
+  void OnInstallFinalizedCreateShortcuts(
+      std::unique_ptr<WebApplicationInfo> web_app_info,
+      const AppId& app_id,
+      InstallResultCode code);
   void OnShortcutsCreated(std::unique_ptr<WebApplicationInfo> web_app_info,
                           const AppId& app_id,
                           bool shortcut_created);

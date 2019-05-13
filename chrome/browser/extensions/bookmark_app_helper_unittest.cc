@@ -535,7 +535,7 @@ TEST_F(BookmarkAppHelperExtensionServiceTest,
 }
 
 // Deprecated in favour of InstallManagerBookmarkAppTest.CreateWebAppFromInfo.
-// TODO(loyso): Erase it. crbug.com/915043.
+// TODO(crbug.com/915043): Erase it.
 TEST_F(BookmarkAppHelperExtensionServiceTest, CreateBookmarkAppNoContents) {
   WebApplicationInfo web_app_info;
   web_app_info.app_url = GURL(kAppUrl);
@@ -579,6 +579,9 @@ TEST_F(BookmarkAppHelperExtensionServiceTest, CreateBookmarkAppNoContents) {
                                  ExtensionIconSet::MATCH_EXACTLY).empty());
 }
 
+// Deprecated in favour of
+// InstallManagerBookmarkAppTest.InstallOrUpdateWebAppFromSync.
+// TODO(crbug.com/915043): Erase it.
 TEST_F(BookmarkAppHelperExtensionServiceTest, CreateAndUpdateBookmarkApp) {
   EXPECT_EQ(0u, registry()->enabled_extensions().size());
   WebApplicationInfo web_app_info;

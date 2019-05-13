@@ -62,17 +62,6 @@ class BookmarkAppHelper : public content::NotificationObserver {
                     WebappInstallSource install_source);
   ~BookmarkAppHelper() override;
 
-  // It is important that the linked app information in any extension that
-  // gets created from sync matches the linked app information that came from
-  // sync. If there are any changes, they will be synced back to other devices
-  // and could potentially create a never ending sync cycle.
-  // This function updates |web_app_info| with the image data of any icon from
-  // |bitmap_map| that has a URL and size matching that in |web_app_info|, as
-  // well as adding any new images from |bitmap_map| that have no URL.
-  static void UpdateWebAppIconsWithoutChangingLinks(
-      std::map<int, web_app::BitmapAndSource> bitmap_map,
-      WebApplicationInfo* web_app_info);
-
   // Begins the asynchronous bookmark app creation.
   void Create(const CreateBookmarkAppCallback& callback);
 
