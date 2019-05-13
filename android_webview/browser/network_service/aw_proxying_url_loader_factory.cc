@@ -27,6 +27,7 @@
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_constants.h"
 #include "content/public/common/url_utils.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_util.h"
@@ -36,7 +37,6 @@ namespace android_webview {
 namespace {
 
 const char kAutoLoginHeaderName[] = "X-Auto-Login";
-const char kRequestedWithHeaderName[] = "X-Requested-With";
 
 // Handles intercepted, in-progress requests/responses, so that they can be
 // controlled and modified accordingly.
@@ -332,18 +332,18 @@ bool InterceptedRequest::ShouldNotInterceptRequest() {
           android_webview::IsAndroidSpecialFileUrl(request_.url));
 }
 
-void SetRequestedWithHeader(net::HttpRequestHeaders& headers) {
-  // We send the application's package name in the X-Requested-With header for
-  // compatibility with previous WebView versions. This should not be visible to
-  // shouldInterceptRequest.
-  headers.SetHeaderIfMissing(
-      kRequestedWithHeaderName,
-      base::android::BuildInfo::GetInstance()->host_package_name());
-}
-
 void InterceptedRequest::InterceptResponseReceived(
     std::unique_ptr<AwWebResourceResponse> response) {
-  SetRequestedWithHeader(request_.headers);
+  // We send the application's package name in the X-Requested-With header for
+  // compatibility with previous WebView versions. This should not be visible to
+  // shouldInterceptRequest. It should also not trigger CORS prefetch if
+  // OOR-CORS is enabled.
+  if (!request_.headers.HasHeader(
+          content::kCorsExemptRequestedWithHeaderName)) {
+    request_.cors_exempt_headers.SetHeader(
+        content::kCorsExemptRequestedWithHeaderName,
+        base::android::BuildInfo::GetInstance()->host_package_name());
+  }
 
   if (response) {
     // non-null response: make sure to use it as an override for the

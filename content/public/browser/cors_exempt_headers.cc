@@ -4,7 +4,7 @@
 
 #include "content/public/browser/cors_exempt_headers.h"
 
-#include "content/common/content_constants_internal.h"
+#include "content/public/common/content_constants.h"
 
 namespace content {
 
