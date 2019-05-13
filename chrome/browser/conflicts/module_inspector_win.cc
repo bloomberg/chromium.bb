@@ -17,7 +17,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/services/util_win/public/mojom/constants.mojom.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace {
@@ -76,9 +75,11 @@ constexpr base::Feature ModuleInspector::kWinOOPInspectModuleFeature;
 constexpr base::TimeDelta ModuleInspector::kFlushInspectionResultsTimerTimeout;
 
 ModuleInspector::ModuleInspector(
-    const OnModuleInspectedCallback& on_module_inspected_callback)
+    const OnModuleInspectedCallback& on_module_inspected_callback,
+    std::unique_ptr<service_manager::Connector> connector)
     : on_module_inspected_callback_(on_module_inspected_callback),
       is_after_startup_(false),
+      connector_(std::move(connector)),
       inspection_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
@@ -169,16 +170,8 @@ void ModuleInspector::EnsureUtilWinServiceBound() {
   DCHECK(base::FeatureList::IsEnabled(kWinOOPInspectModuleFeature));
 
   // Use the |test_connector_| if set.
-  service_manager::Connector* connector = test_connector_;
-  if (!connector) {
-    // The ServiceManagerConnection can be null during shutdown.
-    content::ServiceManagerConnection* service_manager_connection =
-        content::ServiceManagerConnection::GetForProcess();
-    if (!service_manager_connection)
-      return;
-
-    connector = service_manager_connection->GetConnector();
-  }
+  service_manager::Connector* connector =
+      test_connector_ ? test_connector_ : connector_.get();
 
   connector->BindInterface(chrome::mojom::kUtilWinServiceName, &util_win_ptr_);
   util_win_ptr_.set_connection_error_handler(

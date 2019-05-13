@@ -90,8 +90,10 @@ class ModuleInspectorTest : public testing::Test {
 }  // namespace
 
 TEST_F(ModuleInspectorTest, OneModule) {
-  ModuleInspector module_inspector(base::Bind(
-      &ModuleInspectorTest::OnModuleInspected, base::Unretained(this)));
+  ModuleInspector module_inspector(
+      base::Bind(&ModuleInspectorTest::OnModuleInspected,
+                 base::Unretained(this)),
+      nullptr);
 
   module_inspector.AddModule({GetKernel32DllFilePath(), 0, 0});
 
@@ -107,8 +109,10 @@ TEST_F(ModuleInspectorTest, MultipleModules) {
       {base::FilePath(), 0, 0},
   };
 
-  ModuleInspector module_inspector(base::Bind(
-      &ModuleInspectorTest::OnModuleInspected, base::Unretained(this)));
+  ModuleInspector module_inspector(
+      base::Bind(&ModuleInspectorTest::OnModuleInspected,
+                 base::Unretained(this)),
+      nullptr);
 
   for (const auto& module : kTestCases)
     module_inspector.AddModule(module);
@@ -128,8 +132,10 @@ TEST_F(ModuleInspectorTest, DisableBackgroundInspection) {
       {base::FilePath(), 0, 0},
   };
 
-  ModuleInspector module_inspector(base::Bind(
-      &ModuleInspectorTest::OnModuleInspected, base::Unretained(this)));
+  ModuleInspector module_inspector(
+      base::Bind(&ModuleInspectorTest::OnModuleInspected,
+                 base::Unretained(this)),
+      nullptr);
 
   for (const auto& module : kTestCases)
     module_inspector.AddModule(module);
@@ -161,8 +167,10 @@ TEST_F(ModuleInspectorTest, OOPInspectModule) {
       {base::FilePath(), 0, 0},
   };
 
-  ModuleInspector module_inspector(base::Bind(
-      &ModuleInspectorTest::OnModuleInspected, base::Unretained(this)));
+  ModuleInspector module_inspector(
+      base::Bind(&ModuleInspectorTest::OnModuleInspected,
+                 base::Unretained(this)),
+      nullptr);
   module_inspector.SetConnectorForTesting(
       test_connector_factory_.GetDefaultConnector());
 
@@ -192,8 +200,10 @@ TEST_F(ModuleInspectorTest, InspectionResultsCache) {
   ASSERT_TRUE(
       CreateInspectionResultsCacheWithEntry(module_key, inspection_result));
 
-  ModuleInspector module_inspector(base::Bind(
-      &ModuleInspectorTest::OnModuleInspected, base::Unretained(this)));
+  ModuleInspector module_inspector(
+      base::Bind(&ModuleInspectorTest::OnModuleInspected,
+                 base::Unretained(this)),
+      nullptr);
 
   module_inspector.AddModule(module_key);
 
@@ -219,8 +229,10 @@ TEST_F(ModuleInspectorTest, InspectionResultsCache_OnModuleDatabaseIdle) {
   base::ScopedPathOverride scoped_user_data_dir_override(
       chrome::DIR_USER_DATA, scoped_temp_dir.GetPath());
 
-  ModuleInspector module_inspector(base::Bind(
-      &ModuleInspectorTest::OnModuleInspected, base::Unretained(this)));
+  ModuleInspector module_inspector(
+      base::Bind(&ModuleInspectorTest::OnModuleInspected,
+                 base::Unretained(this)),
+      nullptr);
 
   ModuleInfoKey module_key(GetKernel32DllFilePath(), 0, 0);
   module_inspector.AddModule(module_key);
@@ -258,8 +270,10 @@ TEST_F(ModuleInspectorTest, InspectionResultsCache_TimerExpired) {
   base::ScopedPathOverride scoped_user_data_dir_override(
       chrome::DIR_USER_DATA, scoped_temp_dir.GetPath());
 
-  ModuleInspector module_inspector(base::Bind(
-      &ModuleInspectorTest::OnModuleInspected, base::Unretained(this)));
+  ModuleInspector module_inspector(
+      base::Bind(&ModuleInspectorTest::OnModuleInspected,
+                 base::Unretained(this)),
+      nullptr);
 
   ModuleInfoKey module_key(GetKernel32DllFilePath(), 0, 0);
   module_inspector.AddModule(module_key);

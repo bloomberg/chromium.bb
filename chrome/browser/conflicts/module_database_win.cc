@@ -89,7 +89,9 @@ void InitPrefChangeRegistrarOnUIThread(
 // static
 constexpr base::TimeDelta ModuleDatabase::kIdleTimeout;
 
-ModuleDatabase::ModuleDatabase(bool third_party_blocking_policy_enabled)
+ModuleDatabase::ModuleDatabase(
+    std::unique_ptr<service_manager::Connector> connector,
+    bool third_party_blocking_policy_enabled)
     : idle_timer_(
           FROM_HERE,
           kIdleTimeout,
@@ -103,7 +105,8 @@ ModuleDatabase::ModuleDatabase(bool third_party_blocking_policy_enabled)
       // ModuleDatabase owns |module_inspector_|, so it is safe to use
       // base::Unretained().
       module_inspector_(base::Bind(&ModuleDatabase::OnModuleInspected,
-                                   base::Unretained(this))) {
+                                   base::Unretained(this)),
+                        std::move(connector)) {
   AddObserver(&module_inspector_);
   AddObserver(&third_party_metrics_);
 

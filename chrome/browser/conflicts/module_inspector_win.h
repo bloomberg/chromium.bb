@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CONFLICTS_MODULE_INSPECTOR_WIN_H_
 
 #include <map>
+#include <memory>
 
 #include "base/callback.h"
 #include "base/containers/queue.h"
@@ -61,8 +62,8 @@ class ModuleInspector : public ModuleDatabaseObserver {
       base::Callback<void(const ModuleInfoKey& module_key,
                           ModuleInspectionResult inspection_result)>;
 
-  explicit ModuleInspector(
-      const OnModuleInspectedCallback& on_module_inspected_callback);
+  ModuleInspector(const OnModuleInspectedCallback& on_module_inspected_callback,
+                  std::unique_ptr<service_manager::Connector> connector);
   ~ModuleInspector() override;
 
   // Adds the module to the queue of modules to inspect. Starts the inspection
@@ -131,6 +132,9 @@ class ModuleInspector : public ModuleDatabaseObserver {
   // Indicates if Chrome has finished starting up. Used to delay the background
   // inspection tasks in order to not negatively impact startup performance.
   bool is_after_startup_;
+
+  // Allows this class to connect to the UtilWin service.
+  std::unique_ptr<service_manager::Connector> connector_;
 
   // A pointer to the UtilWin service. Only used if the WinOOPInspectModule
   // feature is enabled. It is created when inspection is ongoing, and freed
