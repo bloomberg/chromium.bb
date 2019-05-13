@@ -1791,8 +1791,6 @@ source_set("chromeos") {
     "power/renderer_freezer.h",
     "preferences.cc",
     "preferences.h",
-    "prefs/pref_connector_service.cc",
-    "prefs/pref_connector_service.h",
     "printing/automatic_usb_printer_configurer.cc",
     "printing/automatic_usb_printer_configurer.h",
     "printing/bulk_printers_calculator.cc",
@@ -2766,20 +2764,6 @@ proto_library("device_configuration_proto") {
     "login/screens/recommend_apps/device_configuration.proto",
   ]
   generate_python = false
-}
-
-source_set("ash_pref_connector_manifest") {
-  sources = [
-    "prefs/ash_pref_connector_manifest.cc",
-    "prefs/ash_pref_connector_manifest.h",
-  ]
-
-  deps = [
-    "//ash/public/cpp",
-    "//base",
-    "//services/preferences/public/mojom",
-    "//services/service_manager/public/cpp",
-  ]
 }
 
 device_policy_remover_path = "$target_gen_dir/device_policy_remover.cc"

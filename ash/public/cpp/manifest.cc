@@ -27,7 +27,6 @@
 #include "ash/public/interfaces/new_window.mojom.h"
 #include "ash/public/interfaces/night_light_controller.mojom.h"
 #include "ash/public/interfaces/note_taking_controller.mojom.h"
-#include "ash/public/interfaces/pref_connector.mojom.h"
 #include "ash/public/interfaces/process_creation_time_recorder.mojom.h"
 #include "ash/public/interfaces/shelf.mojom.h"
 #include "ash/public/interfaces/shelf_integration_test_api.mojom.h"
@@ -107,7 +106,6 @@ const service_manager::Manifest& GetManifest() {
                              "pref_client")
           .RequireCapability(content::mojom::kServiceName, "navigation")
           .RequireCapability(data_decoder::mojom::kServiceName, "image_decoder")
-          .RequireCapability(mojom::kPrefConnectorServiceName, "pref_connector")
           .RequireCapability(viz::mojom::kVizServiceName, "ozone")
           .RequireCapability(viz::mojom::kVizServiceName, "viz_host")
           .RequireCapability(ws::mojom::kServiceName, "ozone")

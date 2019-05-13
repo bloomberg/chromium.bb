@@ -6,7 +6,6 @@
 
 #include "ash/ash_service.h"
 #include "ash/public/interfaces/constants.mojom.h"
-#include "chrome/browser/chromeos/prefs/pref_connector_service.h"
 #include "content/public/common/service_manager_connection.h"
 
 namespace ash_service_registry {
@@ -14,8 +13,6 @@ namespace ash_service_registry {
 std::unique_ptr<service_manager::Service> HandleServiceRequest(
     const std::string& service_name,
     service_manager::mojom::ServiceRequest request) {
-  if (service_name == ash::mojom::kPrefConnectorServiceName)
-    return std::make_unique<AshPrefConnector>(std::move(request));
   return service_name == ash::mojom::kServiceName
              ? std::make_unique<ash::AshService>(std::move(request))
              : nullptr;

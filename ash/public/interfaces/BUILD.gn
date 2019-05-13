@@ -48,7 +48,6 @@ mojom("interfaces_internal") {
     "new_window.mojom",
     "night_light_controller.mojom",
     "note_taking_controller.mojom",
-    "pref_connector.mojom",
     "process_creation_time_recorder.mojom",
     "shelf.mojom",
     "shelf_integration_test_api.mojom",
