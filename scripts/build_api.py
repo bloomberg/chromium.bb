@@ -356,9 +356,11 @@ class Router(object):
     env = {}
     if use_flags:
       env['USE'] = ' '.join(use_flags)
+
+    # TODO(saklein) Remove the default when fully integrated in recipes.
+    env['FEATURES'] = 'separatedebug'
     if features:
-      # TODO(saklein) Remove the default when fully integrated in recipes.
-      env['FEATURES'] = ' '.join(features) or 'separatedebug'
+      env['FEATURES'] = ' '.join(features)
 
     return env
 
