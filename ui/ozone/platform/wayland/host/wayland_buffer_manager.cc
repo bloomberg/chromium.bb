@@ -56,8 +56,6 @@ class WaylandBufferManager::Surface {
   ~Surface() = default;
 
   bool CommitBuffer(uint32_t buffer_id, const gfx::Rect& damage_region) {
-    DCHECK(!submitted_buffer_);
-
     WaylandBuffer* buffer = GetBuffer(buffer_id);
     if (!buffer)
       return false;
@@ -69,14 +67,25 @@ class WaylandBufferManager::Surface {
     // zwp linux dmabuf protocol version, the wl_buffer can be created
     // immediately without asynchronous wait 2) the wl_buffer can have been
     // created by this time.
-    while (!buffer->wl_buffer) {
+    //
+    // Another case, which always happen is waiting until the frame callback is
+    // completed. Thus, wait here when the Wayland compositor fires the frame
+    // callback.
+    while (!buffer->wl_buffer || !!wl_frame_callback_) {
       // If the wl_buffer has been attached, but the wl_buffer still has been
       // null, it means the Wayland server failed to create the buffer and we
       // have to fail here.
-      if (buffer->attached ||
+      if ((buffer->attached && !buffer->wl_buffer) ||
           wl_display_roundtrip(connection_->display()) == -1)
         return false;
     }
+
+    // Once the BufferRelease is called. The buffer will be released.
+    DCHECK(buffer->released);
+    buffer->released = false;
+
+    DCHECK(!submitted_buffer_);
+    submitted_buffer_ = buffer;
 
     AttachAndDamageBuffer(buffer, damage_region);
 
@@ -86,6 +95,13 @@ class WaylandBufferManager::Surface {
     CommitSurface();
 
     connection_->ScheduleFlush();
+
+    // If it was the very first frame, the surface has not had a back buffer
+    // before, and Wayland won't release the front buffer until next buffer is
+    // attached. Thus, notify about successful submission immediately.
+    if (!prev_submitted_buffer_)
+      OnRelease();
+
     return true;
   }
 
@@ -96,8 +112,29 @@ class WaylandBufferManager::Surface {
   }
 
   size_t DestroyBuffer(uint32_t buffer_id) {
-    if (submitted_buffer_ && submitted_buffer_->buffer_id == buffer_id)
-      submitted_buffer_ = nullptr;
+    auto* buffer = GetBuffer(buffer_id);
+    // We ack the submission of a front buffer whenever a previous front back
+    // becomes the back one and receives a buffer release callback. But the
+    // following can happen:
+    //
+    // Imagine the order:
+    // the front buffer is buffer 2, then
+    // Commit[1]
+    // Destroy[2]
+    // Commit[3]
+    // Release[1]
+    // Ack[3] <= this results in a wrong order of the callbacks. In reality,
+    // the buffer [1] must have been acked, because the buffer 2 was
+    // released.
+    // But if the buffer 2 is destroyed, the buffer release callback never
+    // comes for that buffer. Thus, if there is a submitted buffer, notify
+    // the client about successful swap.
+    if (buffer && !buffer->released && submitted_buffer_)
+      OnRelease();
+
+    if (prev_submitted_buffer_ == buffer)
+      prev_submitted_buffer_ = nullptr;
+
     auto result = buffers_.erase(buffer_id);
     return result;
   }
@@ -112,12 +149,21 @@ class WaylandBufferManager::Surface {
     DCHECK(!buffer->wl_buffer);
     buffer->wl_buffer = std::move(new_buffer);
     buffer->attached = true;
+
+    if (buffer->wl_buffer)
+      SetupBufferReleaseListener(buffer);
   }
 
   void ClearState() {
     buffers_.clear();
     wl_frame_callback_.reset();
     presentation_feedbacks_ = PresentationFeedbackQueue();
+
+    wl_surface_attach(window_->surface(), nullptr, 0, 0);
+    prev_submitted_buffer_ = nullptr;
+    submitted_buffer_ = nullptr;
+
+    connection_->ScheduleFlush();
   }
 
  private:
@@ -144,15 +190,17 @@ class WaylandBufferManager::Surface {
 
     // A wl_buffer backed by a dmabuf created on the GPU side.
     wl::Object<struct wl_buffer> wl_buffer;
+
     // Tells if the buffer has the wl_buffer attached. This can be used to
     // identify potential problems, when the Wayland compositor fails to create
     // wl_buffers.
     bool attached = false;
 
-    gfx::PresentationFeedback feedback;
+    // Tells if the buffer has already been released aka not busy, and the
+    // surface can tell the gpu about successful swap.
+    bool released = true;
 
-    bool swapped = false;
-    bool presented = false;
+    gfx::PresentationFeedback feedback;
 
     DISALLOW_COPY_AND_ASSIGN(WaylandBuffer);
   };
@@ -172,8 +220,6 @@ class WaylandBufferManager::Surface {
         surface, pending_damage_region.x(), pending_damage_region.y(),
         pending_damage_region.width(), pending_damage_region.height());
     wl_surface_attach(surface, buffer->wl_buffer.get(), 0, 0);
-
-    submitted_buffer_ = buffer;
   }
 
   void CommitSurface() { wl_surface_commit(window_->surface()); }
@@ -204,6 +250,13 @@ class WaylandBufferManager::Surface {
         presentation_feedbacks_.back().second.get(), &feedback_listener, this);
   }
 
+  void SetupBufferReleaseListener(WaylandBuffer* buffer) {
+    static struct wl_buffer_listener buffer_listener = {
+        &Surface::BufferRelease,
+    };
+    wl_buffer_add_listener(buffer->wl_buffer.get(), &buffer_listener, this);
+  }
+
   WaylandBuffer* GetBuffer(uint32_t buffer_id) {
     auto it = buffers_.find(buffer_id);
     return it != buffers_.end() ? it->second.get() : nullptr;
@@ -212,38 +265,6 @@ class WaylandBufferManager::Surface {
   void OnFrameCallback(struct wl_callback* callback) {
     DCHECK(wl_frame_callback_.get() == callback);
     wl_frame_callback_.reset();
-
-    if (!submitted_buffer_)
-      return;
-
-    // TODO(msisov): remove these once pending buffers logic goes to the
-    // manager as long as it will always notify about successful swap once the
-    // surface is committed.
-    DCHECK(submitted_buffer_);
-    WaylandBuffer* buffer = submitted_buffer_;
-    submitted_buffer_ = nullptr;
-
-    buffer->swapped = true;
-    DCHECK(connection_);
-    connection_->OnSubmission(window_->GetWidget(), buffer->buffer_id,
-                              gfx::SwapResult::SWAP_ACK);
-
-    // If presentation feedback is not supported, use a fake feedback. This
-    // literally means there are no presentation feedback callbacks created.
-    if (!connection_->presentation()) {
-      DCHECK(presentation_feedbacks_.empty() && !buffer->presented);
-      OnPresentation(
-          buffer->buffer_id,
-          gfx::PresentationFeedback(base::TimeTicks::Now(), base::TimeDelta(),
-                                    GetPresentationKindFlags(0)));
-    } else if (buffer->presented) {
-      // If the buffer has been presented before the frame callback aka
-      // completion callback (in the future, release callback is going to be
-      // used), present the feedback to the GPU.
-      OnPresentation(buffer->buffer_id, buffer->feedback);
-    } else {
-      DCHECK(!presentation_feedbacks_.empty());
-    }
   }
 
   // wl_callback_listener
@@ -255,21 +276,49 @@ class WaylandBufferManager::Surface {
     self->OnFrameCallback(callback);
   }
 
+  // wl_buffer_listener
+  static void BufferRelease(void* data, struct wl_buffer* wl_buffer) {
+    Surface* self = static_cast<Surface*>(data);
+    DCHECK(self);
+
+    DCHECK(self->prev_submitted_buffer_->wl_buffer.get() == wl_buffer);
+    self->prev_submitted_buffer_->released = true;
+
+    // Although, the Wayland compositor has just released the previously
+    // attached buffer, which became a back buffer, we have to notify the client
+    // that next buffer has been attach and become the front one. Thus, mark the
+    // back buffer as released to ensure the DCHECK is not hit, and notify about
+    // successful submission of the front buffer.
+    self->OnRelease();
+  }
+
+  void OnRelease() {
+    DCHECK(submitted_buffer_);
+    auto id = submitted_buffer_->buffer_id;
+    prev_submitted_buffer_ = submitted_buffer_;
+    submitted_buffer_ = nullptr;
+    // We can now complete the latest submission. We had to wait for this
+    // release because SwapCompletionCallback indicates to the client that the
+    // previous buffer is available for reuse.
+    connection_->OnSubmission(window_->GetWidget(), id,
+                              gfx::SwapResult::SWAP_ACK);
+
+    // If presentation feedback is not supported, use a fake feedback. This
+    // literally means there are no presentation feedback callbacks created.
+    if (!connection_->presentation()) {
+      DCHECK(presentation_feedbacks_.empty());
+      OnPresentation(id, gfx::PresentationFeedback(
+                             base::TimeTicks::Now(), base::TimeDelta(),
+                             GetPresentationKindFlags(0)));
+    }
+  }
+
   void OnPresentation(uint32_t buffer_id,
                       const gfx::PresentationFeedback& feedback) {
-    WaylandBuffer* buffer = GetBuffer(buffer_id);
-    DCHECK(buffer);
-
-    if (buffer->swapped) {
-      DCHECK(connection_);
-      connection_->OnPresentation(window_->GetWidget(), buffer_id, feedback);
-
-      buffer->swapped = false;
-      buffer->presented = false;
-    } else {
-      buffer->presented = true;
-      buffer->feedback = feedback;
-    }
+    // The order of submission and presentation callbacks is checked on the GPU
+    // side, but it must never happen, because the Submission is called
+    // immediately after the buffer is swapped.
+    connection_->OnPresentation(window_->GetWidget(), buffer_id, feedback);
   }
 
   // wp_presentation_feedback_listener
@@ -322,9 +371,6 @@ class WaylandBufferManager::Surface {
   // Non-owned pointer to the connection.
   WaylandConnection* const connection_;
 
-  // A buffer the surface has committed. Reset on frame callback.
-  WaylandBuffer* submitted_buffer_ = nullptr;
-
   // A container of created buffers.
   base::flat_map<uint32_t, std::unique_ptr<WaylandBuffer>> buffers_;
 
@@ -336,6 +382,11 @@ class WaylandBufferManager::Surface {
   // A presentation feedback provided by the Wayland server once frame is
   // shown.
   PresentationFeedbackQueue presentation_feedbacks_;
+
+  // Current submitted buffer.
+  WaylandBuffer* submitted_buffer_ = nullptr;
+  // Previous submitted buffer.
+  WaylandBuffer* prev_submitted_buffer_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(Surface);
 };
