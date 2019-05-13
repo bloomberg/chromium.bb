@@ -514,6 +514,7 @@ TEST_F(TabManagerTest, OnTabIsLoaded) {
       ->DidStartNavigation(nav_handle1_.get());
 
   EXPECT_TRUE(tab_manager_->IsTabLoadingForTest(contents1_.get()));
+  EXPECT_FALSE(ResourceCoordinatorTabHelper::IsLoaded(contents1_.get()));
   EXPECT_FALSE(tab_manager_->IsTabLoadingForTest(contents2_.get()));
   EXPECT_TRUE(tab_manager_->IsNavigationDelayedForTest(nav_handle2_.get()));
 
@@ -524,6 +525,7 @@ TEST_F(TabManagerTest, OnTabIsLoaded) {
   // After tab 1 has finished loading, TabManager starts loading the next tab.
   EXPECT_FALSE(tab_manager_->IsTabLoadingForTest(contents1_.get()));
   EXPECT_TRUE(tab_manager_->IsTabLoadingForTest(contents2_.get()));
+  EXPECT_TRUE(ResourceCoordinatorTabHelper::IsLoaded(contents1_.get()));
   EXPECT_FALSE(tab_manager_->IsNavigationDelayedForTest(nav_handle2_.get()));
 }
 
@@ -1402,12 +1404,24 @@ TEST_F(TabManagerWithProactiveDiscardExperimentEnabledTest,
   EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(0)));
   EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(1)));
   EXPECT_TRUE(IsTabFrozen(tab_strip->GetWebContentsAt(2)));
+  EXPECT_FALSE(
+      ResourceCoordinatorTabHelper::IsFrozen(tab_strip->GetWebContentsAt(0)));
+  EXPECT_FALSE(
+      ResourceCoordinatorTabHelper::IsFrozen(tab_strip->GetWebContentsAt(1)));
+  EXPECT_TRUE(
+      ResourceCoordinatorTabHelper::IsFrozen(tab_strip->GetWebContentsAt(2)));
 
   // After half the freeze timeout, the 1st tab should be frozen.
   task_runner_->FastForwardBy(kFreezeTimeout / 2);
   EXPECT_TRUE(IsTabFrozen(tab_strip->GetWebContentsAt(0)));
   EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(1)));
   EXPECT_TRUE(IsTabFrozen(tab_strip->GetWebContentsAt(2)));
+  EXPECT_TRUE(
+      ResourceCoordinatorTabHelper::IsFrozen(tab_strip->GetWebContentsAt(0)));
+  EXPECT_FALSE(
+      ResourceCoordinatorTabHelper::IsFrozen(tab_strip->GetWebContentsAt(1)));
+  EXPECT_TRUE(
+      ResourceCoordinatorTabHelper::IsFrozen(tab_strip->GetWebContentsAt(2)));
 
   tab_strip->CloseAllTabs();
 }

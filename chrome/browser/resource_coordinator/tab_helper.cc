@@ -13,7 +13,10 @@
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/resource_coordinator/lifecycle_unit_state.mojom-shared.h"
 #include "chrome/browser/resource_coordinator/resource_coordinator_parts.h"
+#include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
+#include "chrome/browser/resource_coordinator/tab_lifecycle_unit_source.h"
 #include "chrome/browser/resource_coordinator/tab_load_tracker.h"
 #include "chrome/browser/resource_coordinator/tab_memory_metrics_reporter.h"
 #include "chrome/browser/resource_coordinator/utils.h"
@@ -52,6 +55,28 @@ ResourceCoordinatorTabHelper::ResourceCoordinatorTabHelper(
 }
 
 ResourceCoordinatorTabHelper::~ResourceCoordinatorTabHelper() = default;
+
+bool ResourceCoordinatorTabHelper::IsLoaded(content::WebContents* contents) {
+  if (resource_coordinator::ResourceCoordinatorTabHelper::FromWebContents(
+          contents)) {
+    return resource_coordinator::TabLoadTracker::Get()->GetLoadingState(
+               contents) == ::mojom::LifecycleUnitLoadingState::LOADED;
+  }
+  return true;
+}
+
+bool ResourceCoordinatorTabHelper::IsFrozen(content::WebContents* contents) {
+#if !defined(OS_ANDROID)
+  if (resource_coordinator::ResourceCoordinatorTabHelper::FromWebContents(
+          contents)) {
+    auto* tab_lifecycle_unit = resource_coordinator::TabLifecycleUnitSource::
+        GetTabLifecycleUnitExternal(contents);
+    if (tab_lifecycle_unit)
+      return tab_lifecycle_unit->IsFrozen();
+  }
+#endif
+  return false;
+}
 
 void ResourceCoordinatorTabHelper::DidStartLoading() {
   TabLoadTracker::Get()->DidStartLoading(web_contents());

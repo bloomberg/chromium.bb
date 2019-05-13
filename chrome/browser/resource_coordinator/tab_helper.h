@@ -13,6 +13,7 @@
 #include "base/process/kill.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -27,6 +28,14 @@ class ResourceCoordinatorTabHelper
       public content::WebContentsUserData<ResourceCoordinatorTabHelper> {
  public:
   ~ResourceCoordinatorTabHelper() override;
+
+  // Helper function to check if a given WebContents is loaded. Returns true by
+  // default if there's no TabHelper for this content.
+  static bool IsLoaded(content::WebContents* contents);
+
+  // Helper function to check if a given WebContents is frozen. Returns false by
+  // default if there's no TabHelper for this content.
+  static bool IsFrozen(content::WebContents* contents);
 
   // WebContentsObserver overrides.
   void DidStartLoading() override;
