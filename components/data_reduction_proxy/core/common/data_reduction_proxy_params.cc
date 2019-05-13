@@ -57,6 +57,8 @@ const char kServerExperimentsFieldTrial[] =
 // LitePage black list version.
 const char kLitePageBlackListVersion[] = "lite-page-blacklist-version";
 
+const char kExperimentsOption[] = "exp";
+
 bool IsIncludedInFieldTrial(const std::string& name) {
   return base::StartsWith(base::FieldTrialList::FindFullName(name), kEnabled,
                           base::CompareCase::SENSITIVE);
@@ -82,6 +84,13 @@ bool CanShowAndroidLowMemoryDevicePromo() {
                  kDataReductionProxyLowMemoryDevicePromo);
 #endif
   return false;
+}
+
+// Returns true if this client is part of the field trial that should enable
+// server experiments for the data reduction proxy.
+bool IsIncludedInServerExperimentsFieldTrial() {
+  return base::FieldTrialList::FindFullName(kServerExperimentsFieldTrial)
+             .find(kDisabled) != 0;
 }
 
 }  // namespace
@@ -124,13 +133,6 @@ const char* GetLoFiFlagFieldTrialName() {
   return kLoFiFlagFieldTrial;
 }
 
-bool IsIncludedInServerExperimentsFieldTrial() {
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-             data_reduction_proxy::switches::
-                 kDataReductionProxyServerExperimentsDisabled) &&
-         base::FieldTrialList::FindFullName(kServerExperimentsFieldTrial)
-                 .find(kDisabled) != 0;
-}
 
 bool FetchWarmupProbeURLEnabled() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -339,7 +341,37 @@ bool GetOverrideProxiesForHttpFromCommandLine(
   return true;
 }
 
-const char* GetServerExperimentsFieldTrialName() {
+std::string GetDataSaverServerExperimentsOptionName() {
+  return kExperimentsOption;
+}
+
+std::string GetDataSaverServerExperiments() {
+  const std::string cmd_line_experiment =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          data_reduction_proxy::switches::kDataReductionProxyExperiment);
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          data_reduction_proxy::switches::
+              kDataReductionProxyServerExperimentsDisabled)) {
+    // Both kDataReductionProxyExperiment and
+    // kDataReductionProxyServerExperimentsDisabled switches can't be set at the
+    // same time.
+    DCHECK(cmd_line_experiment.empty());
+    return std::string();
+  }
+
+  // Experiment set using command line overrides field trial.
+  if (!cmd_line_experiment.empty())
+    return cmd_line_experiment;
+
+  // Next, check if the experiment is set using the field trial.
+  if (!IsIncludedInServerExperimentsFieldTrial())
+    return std::string();
+  return variations::GetVariationParamValue(kServerExperimentsFieldTrial,
+                                            kExperimentsOption);
+}
+
+const char* GetDataSaverServerExperimentsFieldTrialNameForTesting() {
   return kServerExperimentsFieldTrial;
 }
 

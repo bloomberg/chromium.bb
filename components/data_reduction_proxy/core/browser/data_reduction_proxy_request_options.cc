@@ -56,7 +56,6 @@ const char kSecureSessionHeaderOption[] = "s";
 const char kBuildNumberHeaderOption[] = "b";
 const char kPatchNumberHeaderOption[] = "p";
 const char kClientHeaderOption[] = "c";
-const char kExperimentsOption[] = "exp";
 const char kPageIdOption[] = "pid";
 
 // The empty version for the authentication protocol. Currently used by
@@ -85,6 +84,7 @@ DataReductionProxyRequestOptions::DataReductionProxyRequestOptions(
     const std::string& version,
     DataReductionProxyConfig* config)
     : client_(util::GetStringForClient(client)),
+      server_experiments_(params::GetDataSaverServerExperiments()),
       data_reduction_proxy_config_(config),
       current_page_id_(base::RandUint64()) {
   DCHECK(data_reduction_proxy_config_);
@@ -98,7 +98,7 @@ void DataReductionProxyRequestOptions::Init() {
   DCHECK(thread_checker_.CalledOnValidThread());
   key_ = GetDefaultKey(),
   UpdateCredentials();
-  UpdateExperiments();
+  RegenerateRequestHeaderValue();
   // Called on the UI thread, but should be checked on the IO thread.
   thread_checker_.DetachFromThread();
 }
@@ -108,38 +108,6 @@ std::string DataReductionProxyRequestOptions::GetHeaderValueForTesting() const {
   return header_value_;
 }
 
-void DataReductionProxyRequestOptions::UpdateExperiments() {
-  experiments_.clear();
-  std::string experiments =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          data_reduction_proxy::switches::kDataReductionProxyExperiment);
-
-  // The command line override takes precedence over field trial "exp"
-  // directives.
-  if (!experiments.empty()) {
-    base::StringTokenizer experiment_tokenizer(experiments, ", ");
-    experiment_tokenizer.set_quote_chars("\"");
-    while (experiment_tokenizer.GetNext()) {
-      if (!experiment_tokenizer.token().empty())
-        experiments_.push_back(experiment_tokenizer.token());
-    }
-  } else {
-    // If no other "exp" directive is forced by flags, add the field trial
-    // value.
-    AddServerExperimentFromFieldTrial();
-  }
-
-  RegenerateRequestHeaderValue();
-}
-
-void DataReductionProxyRequestOptions::AddServerExperimentFromFieldTrial() {
-  if (!params::IsIncludedInServerExperimentsFieldTrial())
-    return;
-  const std::string server_experiment = variations::GetVariationParamValue(
-      params::GetServerExperimentsFieldTrialName(), kExperimentsOption);
-  if (!server_experiment.empty())
-    experiments_.push_back(server_experiment);
-}
 
 void DataReductionProxyRequestOptions::AddPageIDRequestHeader(
     net::HttpRequestHeaders* request_headers,
@@ -248,8 +216,11 @@ void DataReductionProxyRequestOptions::RegenerateRequestHeaderValue() {
   DCHECK(!patch_.empty());
   headers.push_back(FormatOption(kPatchNumberHeaderOption, patch_));
 
-  for (const auto& experiment : experiments_)
-    headers.push_back(FormatOption(kExperimentsOption, experiment));
+  if (!server_experiments_.empty()) {
+    headers.push_back(
+        FormatOption(params::GetDataSaverServerExperimentsOptionName(),
+                     server_experiments_));
+  }
 
   header_value_ = base::JoinString(headers, ", ");
 

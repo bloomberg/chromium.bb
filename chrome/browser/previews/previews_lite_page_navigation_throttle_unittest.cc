@@ -134,12 +134,16 @@ TEST(PreviewsLitePageNavigationThrottleTest, TestGetPreviewsURL) {
         {{"previews_host", test_case.previews_host}});
 
     base::FieldTrialList::CreateFieldTrial(
-        data_reduction_proxy::params::GetServerExperimentsFieldTrialName(),
+        data_reduction_proxy::params::
+            GetDataSaverServerExperimentsFieldTrialNameForTesting(),
         "enabled");
     std::map<std::string, std::string> server_experiment;
-    server_experiment["exp"] = test_case.experiment_variation;
+    server_experiment[data_reduction_proxy::params::
+                          GetDataSaverServerExperimentsOptionName()] =
+        test_case.experiment_variation;
     variations::AssociateVariationParams(
-        data_reduction_proxy::params::GetServerExperimentsFieldTrialName(),
+        data_reduction_proxy::params::
+            GetDataSaverServerExperimentsFieldTrialNameForTesting(),
         "enabled", server_experiment);
 
     EXPECT_EQ(PreviewsLitePageNavigationThrottle::GetPreviewsURLForURL(

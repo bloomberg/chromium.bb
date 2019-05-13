@@ -13,6 +13,8 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/field_trial_param_associator.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/optional.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
@@ -112,36 +114,66 @@ TEST_F(DataReductionProxyParamsTest, AreServerExperimentsEnabled) {
     bool expected;
   } tests[] = {
       {
-          "Field trial not set", "", false, true,
+          "Field trial not set",
+          "Enabled_42",
+          false,
+          true,
       },
       {
-          "Field trial not set, flag set", "", true, false,
-      },
-      {
-          "Enabled", "Enabled", false, true,
-      },
-      {
-          "Enabled via field trial but disabled via flag", "Enabled", true,
+          "Field trial not set, flag set",
+          "",
+          true,
           false,
       },
       {
-          "Disabled via field trial", "Disabled", false, false,
+          "Enabled",
+          "Enabled",
+          false,
+          true,
+      },
+      {
+          "Enabled via field trial but disabled via flag",
+          "Enabled",
+          true,
+          false,
+      },
+      {
+          "Disabled via field trial",
+          "Disabled",
+          false,
+          false,
       },
   };
 
   for (const auto& test : tests) {
+    base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
+
     base::FieldTrialList field_trial_list(nullptr);
-    if (!test.trial_group_value.empty()) {
-      ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-          "DataReductionProxyServerExperiments", test.trial_group_value));
+    std::map<std::string, std::string> variation_params;
+    std::string exp_name;
+
+    if (test.trial_group_value != "Disabled") {
+      exp_name = "foobar";
+      variation_params[params::GetDataSaverServerExperimentsOptionName()] =
+          exp_name;
+      ASSERT_TRUE(base::AssociateFieldTrialParams(
+          params::GetDataSaverServerExperimentsFieldTrialNameForTesting(),
+          test.trial_group_value, variation_params));
+      base::FieldTrialList::CreateFieldTrial(
+          params::GetDataSaverServerExperimentsFieldTrialNameForTesting(),
+          test.trial_group_value);
     }
 
     base::CommandLine::ForCurrentProcess()->InitFromArgv(0, nullptr);
     if (test.disable_flag_set) {
+      exp_name = "";
       base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
           switches::kDataReductionProxyServerExperimentsDisabled, "");
+    } else {
+      base::CommandLine::ForCurrentProcess()->RemoveSwitch(
+          switches::kDataReductionProxyServerExperimentsDisabled);
     }
-    EXPECT_EQ(test.expected, params::IsIncludedInServerExperimentsFieldTrial())
+    EXPECT_EQ(exp_name, params::GetDataSaverServerExperiments())
         << test.test_case;
   }
 }

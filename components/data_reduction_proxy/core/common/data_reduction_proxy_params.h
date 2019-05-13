@@ -57,10 +57,6 @@ const char* GetLoFiFieldTrialName();
 // TODO(ryansturm): crbug.com/759052 Cleanup once fully cutover to new blacklist
 const char* GetLoFiFlagFieldTrialName();
 
-// Returns true if this client is part of the field trial that should enable
-// server experiments for the data reduction proxy.
-bool IsIncludedInServerExperimentsFieldTrial();
-
 // Returns true if this client has the command line switch to enable forced
 // pageload metrics pingbacks on every page load.
 bool IsForcePingbackEnabledViaFlags();
@@ -104,8 +100,18 @@ int GetFieldTrialParameterAsInteger(const std::string& group,
 bool GetOverrideProxiesForHttpFromCommandLine(
     std::vector<DataReductionProxyServer>* override_proxies_for_http);
 
+// Returns the server experiments option name. This name is used in the request
+// headers to the data saver proxy. This name is also used to set the experiment
+// name using finch trial.
+std::string GetDataSaverServerExperimentsOptionName();
+
+// Returns the server experiment. This name is used in the request
+// headers to the data saver proxy. Returned value may be empty indicating no
+// experiment is enabled.
+std::string GetDataSaverServerExperiments();
+
 // Returns the name of the server side experiment field trial.
-const char* GetServerExperimentsFieldTrialName();
+const char* GetDataSaverServerExperimentsFieldTrialNameForTesting();
 
 // Returns the URL to check to decide if the secure proxy origin should be
 // used.

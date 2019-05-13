@@ -5,6 +5,7 @@
 #include <tuple>
 
 #include "base/bind.h"
+#include "base/metrics/field_trial_param_associator.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -37,6 +38,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/proxy_config/proxy_config_dictionary.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
+#include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
@@ -210,10 +212,15 @@ class DataReductionProxyBrowsertestBase : public InProcessBrowserTest {
   // headers.
   void MonitorAndVerifyRequestsToProxyServer(
       const net::test_server::HttpRequest& request) {
+    ++count_proxy_server_requests_received_;
     // All requests to proxy server should have at least these headers.
     EXPECT_NE(request.headers.end(),
               request.headers.find(data_reduction_proxy::chrome_proxy_header()))
         << " url=" << request.GetURL() << " path=" << request.GetURL().path();
+
+    VerifyChromeProxyRequestHeader(
+        request.headers.at(data_reduction_proxy::chrome_proxy_header()));
+
     EXPECT_NE(
         request.headers.end(),
         request.headers.find(data_reduction_proxy::chrome_proxy_ect_header()))
@@ -221,6 +228,26 @@ class DataReductionProxyBrowsertestBase : public InProcessBrowserTest {
 
     base::AutoLock lock(lock_);
     monitored_urls_.push_back(request.GetURL());
+  }
+
+  void VerifyChromeProxyRequestHeader(
+      const std::string& chrome_proxy_header_value) const {
+    bool exp_found = false;
+    for (const auto& attributes : base::SplitStringPiece(
+             chrome_proxy_header_value, ",", base::TRIM_WHITESPACE,
+             base::SPLIT_WANT_NONEMPTY)) {
+      if (base::StartsWith(attributes,
+                           "exp=", base::CompareCase::INSENSITIVE_ASCII)) {
+        const auto attribute_split = base::SplitStringPiece(
+            attributes, "=", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+        EXPECT_EQ(2u, attribute_split.size());
+        EXPECT_EQ(expect_exp_value_in_request_header_, attribute_split[1]);
+        exp_found = true;
+      }
+    }
+    EXPECT_EQ(!expect_exp_value_in_request_header_.empty(), exp_found)
+        << " expect_exp_value_in_request_header_="
+        << expect_exp_value_in_request_header_;
   }
 
   // Returns true if a request for URL with path |url_path| was observed by
@@ -275,6 +302,10 @@ class DataReductionProxyBrowsertestBase : public InProcessBrowserTest {
   }
 
   void WaitForConfig() { config_run_loop_->Run(); }
+
+  std::string expect_exp_value_in_request_header_;
+
+  size_t count_proxy_server_requests_received_ = 0u;
 
  private:
   std::unique_ptr<net::test_server::HttpResponse> GetConfigResponse(
@@ -633,6 +664,37 @@ INSTANTIATE_TEST_SUITE_P(,
                          DataReductionProxyWithHoldbackBrowsertest,
                          ::testing::Values(false, true));
 
+class DataReductionProxyExpBrowsertest : public DataReductionProxyBrowsertest {
+ public:
+  void SetUp() override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        data_reduction_proxy::switches::kDataReductionProxyExperiment,
+        "foo_experiment");
+
+    DataReductionProxyBrowsertest::SetUp();
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(DataReductionProxyExpBrowsertest,
+                       ChromeProxyExpHeaderSet) {
+  expect_exp_value_in_request_header_ = "foo_experiment";
+
+  net::EmbeddedTestServer proxy_server;
+  proxy_server.RegisterRequestMonitor(base::BindRepeating(
+      &DataReductionProxyBrowsertest::MonitorAndVerifyRequestsToProxyServer,
+      base::Unretained(this)));
+  proxy_server.RegisterRequestHandler(
+      base::BindRepeating(&BasicResponse, kPrimaryResponse));
+  ASSERT_TRUE(proxy_server.Start());
+  SetConfig(CreateConfigForServer(proxy_server));
+  // A network change forces the config to be fetched.
+  SimulateNetworkChange(network::mojom::ConnectionType::CONNECTION_3G);
+  WaitForConfig();
+
+  ui_test_utils::NavigateToURL(browser(), GURL("http://does.not.resolve/foo"));
+  EXPECT_LE(1u, count_proxy_server_requests_received_);
+}
+
 class DataReductionProxyBrowsertestWithNetworkService
     : public DataReductionProxyBrowsertest {
  public:
@@ -729,6 +791,12 @@ class DataReductionProxyFallbackBrowsertest
   void SetLocationHeader(const std::string& header) {
     base::AutoLock auto_lock(lock_);
     location_header_ = header;
+  }
+
+  void TearDown() override {
+    if (IsNetworkServiceEnabled()) {
+      EXPECT_LE(1u, count_proxy_server_requests_received_);
+    }
   }
 
  private:
