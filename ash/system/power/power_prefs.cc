@@ -130,9 +130,6 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
     registry->RegisterBooleanPref(
         prefs::kEnableAutoScreenLock, false,
         user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
-  } else {
-    registry->RegisterForeignPref(prefs::kAllowScreenLock);
-    registry->RegisterForeignPref(prefs::kEnableAutoScreenLock);
   }
 }
 

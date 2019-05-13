@@ -18,11 +18,13 @@
 #include "components/user_manager/user_type.h"
 
 class AccountId;
+class PrefService;
 
 namespace ash {
 
 enum class AddUserSessionPolicy;
 class SessionControllerImpl;
+class TestPrefServiceProvider;
 
 // Implement SessionControllerClient to simulate chrome behavior
 // in tests. This breaks the ash/chrome dependency to allow testing ash code in
@@ -33,7 +35,8 @@ class SessionControllerImpl;
 // not run BrowserMain, e.g. testing::Test based test.
 class TestSessionControllerClient : public ash::SessionControllerClient {
  public:
-  explicit TestSessionControllerClient(SessionControllerImpl* controller);
+  TestSessionControllerClient(SessionControllerImpl* controller,
+                              TestPrefServiceProvider* prefs_provider);
   ~TestSessionControllerClient() override;
 
   static void DisableAutomaticallyProvideSigninPref();
@@ -93,6 +96,13 @@ class TestSessionControllerClient : public ash::SessionControllerClient {
   // Spins message loop to finish pending lock screen request if any.
   void FlushForTest();
 
+  // Use |pref_service| for sign-in profile pref service.
+  void SetSigninScreenPrefService(std::unique_ptr<PrefService> pref_service);
+
+  // Use |pref_service| for the user identified by |account_id|.
+  void SetUserPrefService(const AccountId& account_id,
+                          std::unique_ptr<PrefService> pref_service);
+
   // ash::SessionControllerClient:
   void RequestLockScreen() override;
   void RequestSignOut() override;
@@ -100,9 +110,12 @@ class TestSessionControllerClient : public ash::SessionControllerClient {
   void CycleActiveUser(CycleUserDirection direction) override;
   void ShowMultiProfileLogin() override;
   void EmitAshInitialized() override;
+  PrefService* GetSigninScreenPrefService() override;
+  PrefService* GetUserPrefService(const AccountId& account_id) override;
 
  private:
   SessionControllerImpl* const controller_;
+  TestPrefServiceProvider* const prefs_provider_;
 
   int fake_session_id_ = 0;
   SessionInfo session_info_;

@@ -33,9 +33,6 @@ void KioskNextShellController::RegisterProfilePrefs(
                                   PrefRegistry::PUBLIC);
     return;
   }
-  // The registration has been moved to
-  // chromeos::Preferences::RegisterProfilePrefs to avoid race conditions.
-  registry->RegisterForeignPref(prefs::kKioskNextShellEnabled);
 }
 
 void KioskNextShellController::BindRequest(

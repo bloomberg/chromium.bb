@@ -80,6 +80,8 @@ class SessionControllerClientImpl
   void CycleActiveUser(ash::CycleUserDirection direction) override;
   void ShowMultiProfileLogin() override;
   void EmitAshInitialized() override;
+  PrefService* GetSigninScreenPrefService() override;
+  PrefService* GetUserPrefService(const AccountId& account_id) override;
 
   // Returns true if a multi-profile user can be added to the session or if
   // multiple users are already signed in.

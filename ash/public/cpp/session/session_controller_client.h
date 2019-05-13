@@ -10,6 +10,9 @@
 #include "ash/public/cpp/session/session_types.h"
 #include "components/account_id/account_id.h"
 
+class AccountId;
+class PrefService;
+
 namespace ash {
 
 class ASH_PUBLIC_EXPORT SessionControllerClient {
@@ -33,6 +36,12 @@ class ASH_PUBLIC_EXPORT SessionControllerClient {
   // Emits the ash-initialized upstart signal to start Chrome OS tasks that
   // expect that Ash is listening to D-Bus signals they emit.
   virtual void EmitAshInitialized() = 0;
+
+  // Returns the sign-in screen pref service if available.
+  virtual PrefService* GetSigninScreenPrefService() = 0;
+
+  // Returns the pref service for the given user if available.
+  virtual PrefService* GetUserPrefService(const AccountId& account_id) = 0;
 
  protected:
   virtual ~SessionControllerClient() = default;

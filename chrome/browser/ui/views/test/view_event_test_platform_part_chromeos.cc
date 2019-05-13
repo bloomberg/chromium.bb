@@ -71,7 +71,7 @@ ViewEventTestPlatformPartChromeOS::ViewEventTestPlatformPartChromeOS(
       switches::kHostWindowBounds, "0+0-1280x800");
   ash::Shell::CreateInstance(std::move(init_params));
   ash::TestSessionControllerClient session_controller_client(
-      ash::Shell::Get()->session_controller());
+      ash::Shell::Get()->session_controller(), /*prefs_provider=*/nullptr);
   session_controller_client.CreatePredefinedUserSessions(1);
   GetContext()->GetHost()->Show();
 }

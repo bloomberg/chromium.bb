@@ -9,14 +9,14 @@
 
 #include "ash/login_status.h"
 #include "ash/session/session_controller_impl.h"
-#include "ash/shell.h"
+#include "ash/session/test_pref_service_provider.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/account_id/account_id.h"
-#include "components/prefs/testing_pref_service.h"
+#include "components/prefs/pref_service.h"
 #include "components/session_manager/session_manager_types.h"
 #include "components/user_manager/user_type.h"
 
@@ -43,8 +43,9 @@ void TestSessionControllerClient::DisableAutomaticallyProvideSigninPref() {
 }
 
 TestSessionControllerClient::TestSessionControllerClient(
-    SessionControllerImpl* controller)
-    : controller_(controller) {
+    SessionControllerImpl* controller,
+    TestPrefServiceProvider* prefs_provider)
+    : controller_(controller), prefs_provider_(prefs_provider) {
   DCHECK(controller_);
   Reset();
 }
@@ -59,6 +60,8 @@ void TestSessionControllerClient::InitializeAndSetClient() {
   session_info_.state = controller_->GetSessionState();
 
   controller_->SetClient(this);
+  if (g_provide_signin_pref_service && prefs_provider_)
+    controller_->EnsureSigninScreenPrefService();
 }
 
 void TestSessionControllerClient::Reset() {
@@ -70,13 +73,8 @@ void TestSessionControllerClient::Reset() {
   controller_->ClearUserSessionsForTest();
   controller_->SetSessionInfo(session_info_);
 
-  if (g_provide_signin_pref_service &&
-      !controller_->GetSigninScreenPrefService()) {
-    auto pref_service = std::make_unique<TestingPrefServiceSimple>();
-    Shell::RegisterSigninProfilePrefs(pref_service->registry(),
-                                      true /* for_test */);
-    controller_->SetSigninScreenPrefServiceForTest(std::move(pref_service));
-  }
+  if (g_provide_signin_pref_service && prefs_provider_)
+    prefs_provider_->CreateSigninPrefsIfNeeded();
 }
 
 void TestSessionControllerClient::SetCanLockScreen(bool can_lock) {
@@ -154,7 +152,7 @@ void TestSessionControllerClient::AddUserSession(
   session.should_show_notification_tray = true;
   controller_->UpdateUserSession(std::move(session));
 
-  if (provide_pref_service &&
+  if (provide_pref_service && prefs_provider_ &&
       !controller_->GetUserPrefServiceForUser(account_id)) {
     ProvidePrefServiceForUser(account_id);
   }
@@ -163,12 +161,9 @@ void TestSessionControllerClient::AddUserSession(
 void TestSessionControllerClient::ProvidePrefServiceForUser(
     const AccountId& account_id) {
   DCHECK(!controller_->GetUserPrefServiceForUser(account_id));
-
-  auto pref_service = std::make_unique<TestingPrefServiceSimple>();
-  Shell::RegisterUserProfilePrefs(pref_service->registry(),
-                                  true /* for_test */);
-  controller_->ProvideUserPrefServiceForTest(account_id,
-                                             std::move(pref_service));
+  prefs_provider_->CreateUserPrefs(account_id);
+  controller_->OnProfilePrefServiceInitialized(
+      account_id, prefs_provider_->GetUserPrefs(account_id));
 }
 
 void TestSessionControllerClient::LockScreen() {
@@ -182,6 +177,22 @@ void TestSessionControllerClient::UnlockScreen() {
 
 void TestSessionControllerClient::FlushForTest() {
   base::RunLoop().RunUntilIdle();
+}
+
+void TestSessionControllerClient::SetSigninScreenPrefService(
+    std::unique_ptr<PrefService> pref_service) {
+  prefs_provider_->SetSigninPrefs(std::move(pref_service));
+  controller_->OnSigninScreenPrefServiceInitialized(
+      prefs_provider_->GetSigninPrefs());
+}
+
+void TestSessionControllerClient::SetUserPrefService(
+    const AccountId& account_id,
+    std::unique_ptr<PrefService> pref_service) {
+  DCHECK(!controller_->GetUserPrefServiceForUser(account_id));
+  prefs_provider_->SetUserPrefs(account_id, std::move(pref_service));
+  controller_->OnProfilePrefServiceInitialized(
+      account_id, prefs_provider_->GetUserPrefs(account_id));
 }
 
 void TestSessionControllerClient::RequestLockScreen() {
@@ -257,5 +268,14 @@ void TestSessionControllerClient::CycleActiveUser(
 void TestSessionControllerClient::ShowMultiProfileLogin() {}
 
 void TestSessionControllerClient::EmitAshInitialized() {}
+
+PrefService* TestSessionControllerClient::GetSigninScreenPrefService() {
+  return prefs_provider_ ? prefs_provider_->GetSigninPrefs() : nullptr;
+}
+
+PrefService* TestSessionControllerClient::GetUserPrefService(
+    const AccountId& account_id) {
+  return prefs_provider_ ? prefs_provider_->GetUserPrefs(account_id) : nullptr;
+}
 
 }  // namespace ash

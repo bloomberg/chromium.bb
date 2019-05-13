@@ -148,12 +148,11 @@ void DockedMagnifierController::RegisterProfilePrefs(
     bool for_test) {
   if (for_test) {
     // In tests there is no remote pref service. Make ash own the prefs.
+    // TODO(xiyuan): move ownership to ash.
     registry->RegisterBooleanPref(prefs::kDockedMagnifierEnabled, false,
                                   PrefRegistry::PUBLIC);
-  } else {
-    // TODO(warx): move ownership to ash.
-    registry->RegisterForeignPref(prefs::kDockedMagnifierEnabled);
   }
+
   registry->RegisterDoublePref(prefs::kDockedMagnifierScale,
                                kDefaultMagnifierScale, PrefRegistry::PUBLIC);
 }

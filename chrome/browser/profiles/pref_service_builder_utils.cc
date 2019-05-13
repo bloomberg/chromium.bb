@@ -73,7 +73,7 @@ void RegisterProfilePrefs(bool is_signin_profile,
                           user_prefs::PrefRegistrySyncable* pref_registry) {
 #if defined(OS_CHROMEOS)
   if (is_signin_profile)
-    RegisterLoginProfilePrefs(pref_registry);
+    RegisterSigninProfilePrefs(pref_registry);
   else
 #endif
     RegisterUserProfilePrefs(pref_registry, locale);

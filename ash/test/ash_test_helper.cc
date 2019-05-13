@@ -17,6 +17,7 @@
 #include "ash/mojo_test_interface_factory.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/test/test_keyboard_controller_observer.h"
+#include "ash/session/test_pref_service_provider.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
 #include "ash/shell_init_params.h"
@@ -156,8 +157,9 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
     Shell::Get()->OnLocalStatePrefServiceInitialized(std::move(pref_service));
   }
 
-  session_controller_client_.reset(
-      new TestSessionControllerClient(shell->session_controller()));
+  prefs_provider_ = std::make_unique<TestPrefServiceProvider>();
+  session_controller_client_.reset(new TestSessionControllerClient(
+      shell->session_controller(), prefs_provider_.get()));
   session_controller_client_->InitializeAndSetClient();
 
   if (start_session)

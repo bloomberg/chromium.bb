@@ -176,13 +176,6 @@ class AdapterTest : public testing::Test {
     chromeos::power::auto_screen_brightness::MetricsReporter::
         RegisterLocalStatePrefs(registry.get());
 
-    // Same default values as used in the actual pref store.
-    registry->RegisterIntegerPref(ash::prefs::kPowerAcScreenBrightnessPercent,
-                                  -1, PrefRegistry::PUBLIC);
-    registry->RegisterIntegerPref(
-        ash::prefs::kPowerBatteryScreenBrightnessPercent, -1,
-        PrefRegistry::PUBLIC);
-
     sync_preferences::PrefServiceSyncable* regular_prefs =
         factory.CreateSyncable(registry.get()).release();
 

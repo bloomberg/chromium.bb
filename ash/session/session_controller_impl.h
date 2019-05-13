@@ -24,14 +24,11 @@
 class AccountId;
 class PrefService;
 
-namespace service_manager {
-class Connector;
-}
-
 namespace ash {
 
 class SessionControllerClient;
 class SessionObserver;
+class TestSessionControllerClient;
 
 // Implements mojom::SessionController to cache session related info such as
 // session state, meta data about user sessions to support synchronous
@@ -40,11 +37,7 @@ class ASH_EXPORT SessionControllerImpl : public SessionController {
  public:
   using UserSessions = std::vector<std::unique_ptr<UserSession>>;
 
-  // |connector| is used to connect to other services for connecting to per-user
-  // PrefServices. If |connector| is null, no per-user PrefService instances
-  // will be created. In tests, ProvideUserPrefServiceForTest() can be used to
-  // inject a PrefService for a user when |connector| is null.
-  explicit SessionControllerImpl(service_manager::Connector* connector);
+  SessionControllerImpl();
   ~SessionControllerImpl() override;
 
   base::TimeDelta session_length_limit() const { return session_length_limit_; }
@@ -217,11 +210,10 @@ class ASH_EXPORT SessionControllerImpl : public SessionController {
 
   // Test helpers.
   void ClearUserSessionsForTest();
-  void SetSigninScreenPrefServiceForTest(std::unique_ptr<PrefService> prefs);
-  void ProvideUserPrefServiceForTest(const AccountId& account_id,
-                                     std::unique_ptr<PrefService> pref_service);
 
  private:
+  friend class TestSessionControllerClient;
+
   // Marks the session as a demo session for Demo Mode.
   void SetIsDemoSession();
   void SetSessionState(session_manager::SessionState state);
@@ -241,15 +233,13 @@ class ASH_EXPORT SessionControllerImpl : public SessionController {
   // run |start_lock_callback_| to indicate ash is locked successfully.
   void OnLockAnimationFinished();
 
-  // Connects over mojo to the PrefService for the signin screen profile.
-  void ConnectToSigninScreenPrefService();
+  // Ensure that the sign-in screen PrefService is obtained.
+  void EnsureSigninScreenPrefService();
 
-  void OnSigninScreenPrefServiceInitialized(
-      std::unique_ptr<PrefService> pref_service);
+  void OnSigninScreenPrefServiceInitialized(PrefService* pref_service);
 
-  void OnProfilePrefServiceInitialized(
-      const AccountId& account_id,
-      std::unique_ptr<PrefService> pref_service);
+  void OnProfilePrefServiceInitialized(const AccountId& account_id,
+                                       PrefService* pref_service);
 
   // Notifies observers that the active user pref service changed only if the
   // signin profile pref service has been connected and observers were notified
@@ -312,16 +302,10 @@ class ASH_EXPORT SessionControllerImpl : public SessionController {
 
   base::ObserverList<SessionObserver> observers_;
 
-  service_manager::Connector* const connector_;
-
-  // Prefs for the incognito profile used by the signin screen.
-  std::unique_ptr<PrefService> signin_screen_prefs_;
-
   SessionActivationObserverHolder session_activation_observer_holder_;
 
-  bool signin_screen_prefs_requested_ = false;
+  bool signin_screen_prefs_obtained_ = false;
 
-  std::map<AccountId, std::unique_ptr<PrefService>> per_user_prefs_;
   PrefService* last_active_user_prefs_ = nullptr;
 
   base::WeakPtrFactory<SessionControllerImpl> weak_ptr_factory_{this};

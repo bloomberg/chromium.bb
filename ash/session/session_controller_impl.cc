@@ -12,7 +12,6 @@
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/session/session_activation_observer.h"
 #include "ash/public/cpp/session/session_controller_client.h"
-#include "ash/public/interfaces/pref_connector.mojom.h"
 #include "ash/public/interfaces/user_info.mojom.h"
 #include "ash/session/multiprofiles_intro_dialog.h"
 #include "ash/session/session_aborted_dialog.h"
@@ -35,18 +34,13 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_type.h"
-#include "services/preferences/public/cpp/pref_service_factory.h"
-#include "services/preferences/public/mojom/preferences.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/message_center/message_center.h"
 
 using session_manager::SessionState;
 
 namespace ash {
 
-SessionControllerImpl::SessionControllerImpl(
-    service_manager::Connector* connector)
-    : connector_(connector) {}
+SessionControllerImpl::SessionControllerImpl() = default;
 
 SessionControllerImpl::~SessionControllerImpl() {
   // Abort pending start lock request.
@@ -249,16 +243,12 @@ void SessionControllerImpl::EmitAshInitialized() {
 }
 
 PrefService* SessionControllerImpl::GetSigninScreenPrefService() const {
-  return signin_screen_prefs_.get();
+  return client_ ? client_->GetSigninScreenPrefService() : nullptr;
 }
 
 PrefService* SessionControllerImpl::GetUserPrefServiceForUser(
     const AccountId& account_id) const {
-  auto it = per_user_prefs_.find(account_id);
-  if (it != per_user_prefs_.end())
-    return it->second.get();
-
-  return nullptr;
+  return client_ ? client_->GetUserPrefService(account_id) : nullptr;
 }
 
 PrefService* SessionControllerImpl::GetPrimaryUserPrefService() const {
@@ -276,7 +266,7 @@ PrefService* SessionControllerImpl::GetActivePrefService() const {
   // object instead of session state because prefs load is async after login.
   if (last_active_user_prefs_)
     return last_active_user_prefs_;
-  return signin_screen_prefs_.get();
+  return GetSigninScreenPrefService();
 }
 
 void SessionControllerImpl::AddObserver(SessionObserver* observer) {
@@ -288,7 +278,7 @@ void SessionControllerImpl::RemoveObserver(SessionObserver* observer) {
 }
 
 void SessionControllerImpl::SetClient(SessionControllerClient* client) {
-  client_ = std::move(client);
+  client_ = client;
 }
 
 void SessionControllerImpl::SetSessionInfo(const SessionInfo& info) {
@@ -361,16 +351,17 @@ void SessionControllerImpl::SetUserSessionOrder(
     // When switching to a user for whose PrefService is not ready,
     // |last_active_user_prefs_| continues to point to the PrefService of the
     // most-recently active user with a loaded PrefService.
-    auto it = per_user_prefs_.find(user_sessions_[0]->user_info.account_id);
-    if (it != per_user_prefs_.end())
-      last_active_user_prefs_ = it->second.get();
+    PrefService* user_pref_service =
+        GetUserPrefServiceForUser(user_sessions_[0]->user_info.account_id);
+    if (user_pref_service)
+      last_active_user_prefs_ = user_pref_service;
 
     for (auto& observer : observers_) {
       observer.OnActiveUserSessionChanged(
           user_sessions_[0]->user_info.account_id);
     }
 
-    if (it != per_user_prefs_.end())
+    if (user_pref_service)
       MaybeNotifyOnActiveUserPrefServiceChanged();
 
     UpdateLoginStatus();
@@ -483,17 +474,6 @@ void SessionControllerImpl::ClearUserSessionsForTest() {
   primary_session_id_ = 0u;
 }
 
-void SessionControllerImpl::SetSigninScreenPrefServiceForTest(
-    std::unique_ptr<PrefService> prefs) {
-  OnSigninScreenPrefServiceInitialized(std::move(prefs));
-}
-
-void SessionControllerImpl::ProvideUserPrefServiceForTest(
-    const AccountId& account_id,
-    std::unique_ptr<PrefService> pref_service) {
-  OnProfilePrefServiceInitialized(account_id, std::move(pref_service));
-}
-
 void SessionControllerImpl::SetIsDemoSession() {
   if (is_demo_session_)
     return;
@@ -527,11 +507,7 @@ void SessionControllerImpl::SetSessionState(SessionState state) {
     session_activation_observer_holder_.NotifyLockStateChanged(locked);
   }
 
-  // Request signin profile prefs only once.
-  if (!signin_screen_prefs_requested_) {
-    ConnectToSigninScreenPrefService();
-    signin_screen_prefs_requested_ = true;
-  }
+  EnsureSigninScreenPrefService();
 
   if (was_user_session_blocked && !IsUserSessionBlocked())
     EnsureActiveWindowAfterUnblockingUserSession();
@@ -545,22 +521,8 @@ void SessionControllerImpl::AddUserSession(const UserSession& user_session) {
 
   user_sessions_.push_back(std::make_unique<UserSession>(user_session));
 
-  if (connector_) {
-    auto pref_registry = base::MakeRefCounted<PrefRegistrySimple>();
-    Shell::RegisterUserProfilePrefs(pref_registry.get());
-    ash::mojom::PrefConnectorPtr pref_connector_connector;
-    connector_->BindInterface(mojom::kPrefConnectorServiceName,
-                              &pref_connector_connector);
-    prefs::mojom::PrefStoreConnectorPtr pref_connector;
-    pref_connector_connector->GetPrefStoreConnectorForUser(
-        account_id, mojo::MakeRequest(&pref_connector));
-
-    prefs::ConnectToPrefService(
-        std::move(pref_connector), std::move(pref_registry),
-        base::Bind(&SessionControllerImpl::OnProfilePrefServiceInitialized,
-                   weak_ptr_factory_.GetWeakPtr(), account_id));
-  }
-
+  OnProfilePrefServiceInitialized(account_id,
+                                  GetUserPrefServiceForUser(account_id));
   UpdateLoginStatus();
   for (auto& observer : observers_)
     observer.OnUserSessionAdded(account_id);
@@ -640,40 +602,27 @@ void SessionControllerImpl::OnLockAnimationFinished() {
     std::move(start_lock_callback_).Run(true /* locked */);
 }
 
-void SessionControllerImpl::ConnectToSigninScreenPrefService() {
-  DCHECK(!signin_screen_prefs_requested_);
-
-  // Null in tests.
-  if (!connector_)
+void SessionControllerImpl::EnsureSigninScreenPrefService() {
+  // Obtain and notify signin profile prefs only once.
+  if (signin_screen_prefs_obtained_)
     return;
 
-  // Connect to the PrefService for the signin profile.
-  auto pref_registry = base::MakeRefCounted<PrefRegistrySimple>();
-  Shell::RegisterSigninProfilePrefs(pref_registry.get());
-  ash::mojom::PrefConnectorPtr pref_connector_connector;
-  connector_->BindInterface(mojom::kPrefConnectorServiceName,
-                            &pref_connector_connector);
-  prefs::mojom::PrefStoreConnectorPtr pref_connector;
-  pref_connector_connector->GetPrefStoreConnectorForSigninScreen(
-      mojo::MakeRequest(&pref_connector));
-  prefs::ConnectToPrefService(
-      std::move(pref_connector), std::move(pref_registry),
-      base::Bind(&SessionControllerImpl::OnSigninScreenPrefServiceInitialized,
-                 weak_ptr_factory_.GetWeakPtr()));
+  PrefService* const signin_prefs = GetSigninScreenPrefService();
+  if (!signin_prefs)
+    return;
+
+  OnSigninScreenPrefServiceInitialized(signin_prefs);
 }
 
 void SessionControllerImpl::OnSigninScreenPrefServiceInitialized(
-    std::unique_ptr<PrefService> pref_service) {
-  // |pref_service| can be null when running standalone without chrome.
-  if (!pref_service)
-    return;
+    PrefService* pref_service) {
+  DCHECK(pref_service);
+  DCHECK(!signin_screen_prefs_obtained_);
 
-  DCHECK(!signin_screen_prefs_);
-  signin_screen_prefs_ = std::move(pref_service);
+  signin_screen_prefs_obtained_ = true;
 
-  for (auto& observer : observers_) {
-    observer.OnSigninScreenPrefServiceInitialized(signin_screen_prefs_.get());
-  }
+  for (auto& observer : observers_)
+    observer.OnSigninScreenPrefServiceInitialized(pref_service);
 
   if (on_active_user_prefs_changed_notify_deferred_) {
     // Notify obsevers with the deferred OnActiveUserPrefServiceChanged(). Do
@@ -687,18 +636,14 @@ void SessionControllerImpl::OnSigninScreenPrefServiceInitialized(
 
 void SessionControllerImpl::OnProfilePrefServiceInitialized(
     const AccountId& account_id,
-    std::unique_ptr<PrefService> pref_service) {
-  // |pref_service| can be null when running standalone without chrome.
+    PrefService* pref_service) {
+  // |pref_service| can be null in tests.
   if (!pref_service)
     return;
 
-  PrefService* pref_service_ptr = pref_service.get();
-  bool inserted =
-      per_user_prefs_.emplace(account_id, std::move(pref_service)).second;
-  DCHECK(inserted);
   DCHECK(!user_sessions_.empty());
   if (account_id == user_sessions_[0]->user_info.account_id) {
-    last_active_user_prefs_ = pref_service_ptr;
+    last_active_user_prefs_ = pref_service;
 
     MaybeNotifyOnActiveUserPrefServiceChanged();
   }
@@ -707,7 +652,7 @@ void SessionControllerImpl::OnProfilePrefServiceInitialized(
 void SessionControllerImpl::MaybeNotifyOnActiveUserPrefServiceChanged() {
   DCHECK(last_active_user_prefs_);
 
-  if (!signin_screen_prefs_) {
+  if (!signin_screen_prefs_obtained_) {
     // We must guarantee that OnSigninScreenPrefServiceInitialized() is called
     // before OnActiveUserPrefServiceChanged(), so defer notifying the
     // observers until the sign in prefs are received.

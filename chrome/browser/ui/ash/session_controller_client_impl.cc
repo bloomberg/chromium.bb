@@ -201,6 +201,10 @@ SessionControllerClientImpl::SessionControllerClientImpl() {
 SessionControllerClientImpl::~SessionControllerClientImpl() {
   DCHECK_EQ(this, g_session_controller_client_instance);
   g_session_controller_client_instance = nullptr;
+  if (session_controller_ &&
+      session_controller_ == ash::SessionController::Get()) {
+    session_controller_->SetClient(nullptr);
+  }
 
   if (supervised_user_profile_) {
     SupervisedUserServiceFactory::GetForProfile(supervised_user_profile_)
@@ -319,6 +323,20 @@ void SessionControllerClientImpl::EmitAshInitialized() {
   // started so Ash (DetachableBaseHandler in particular) gets the proper view
   // of the current detachable base state.
   chromeos::SessionManagerClient::Get()->EmitAshInitialized();
+}
+
+PrefService* SessionControllerClientImpl::GetSigninScreenPrefService() {
+  return chromeos::ProfileHelper::Get()->GetSigninProfile()->GetPrefs();
+}
+
+PrefService* SessionControllerClientImpl::GetUserPrefService(
+    const AccountId& account_id) {
+  Profile* const user_profile =
+      multi_user_util::GetProfileFromAccountId(account_id);
+  if (!user_profile)
+    return nullptr;
+
+  return user_profile->GetPrefs();
 }
 
 // static

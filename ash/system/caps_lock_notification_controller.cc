@@ -85,8 +85,6 @@ void CapsLockNotificationController::RegisterProfilePrefs(
         static_cast<int>(ui::chromeos::ModifierKey::kSearchKey));
     return;
   }
-  // Pref is owned by chrome and flagged as PUBLIC.
-  registry->RegisterForeignPref(prefs::kLanguageRemapSearchKeyTo);
 }
 
 void CapsLockNotificationController::OnCapsLockChanged(bool enabled) {

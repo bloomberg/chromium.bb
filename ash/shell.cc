@@ -74,6 +74,7 @@
 #include "ash/policy/policy_recommendation_restorer.h"
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/ash_prefs.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -104,10 +105,8 @@
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/network/sms_observer.h"
 #include "ash/system/network/vpn_list.h"
-#include "ash/system/network/vpn_list_view.h"
 #include "ash/system/night_light/night_light_controller.h"
 #include "ash/system/palette/palette_tray.h"
-#include "ash/system/palette/palette_welcome_bubble.h"
 #include "ash/system/power/backlights_forced_off_setter.h"
 #include "ash/system/power/notification_reporter.h"
 #include "ash/system/power/peripheral_battery_notifier.h"
@@ -118,7 +117,6 @@
 #include "ash/system/power/video_activity_notifier.h"
 #include "ash/system/screen_layout_observer.h"
 #include "ash/system/screen_security/screen_switch_check_controller.h"
-#include "ash/system/session/logout_button_tray.h"
 #include "ash/system/session/logout_confirmation_controller.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/system_notification_controller.h"
@@ -240,26 +238,6 @@ class AshVisibilityController : public ::wm::VisibilityController {
 
   DISALLOW_COPY_AND_ASSIGN(AshVisibilityController);
 };
-
-// Registers prefs whose default values are same in user and signin prefs.
-void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
-  AccessibilityController::RegisterProfilePrefs(registry, for_test);
-  AppListControllerImpl::RegisterProfilePrefs(registry);
-  AssistantController::RegisterProfilePrefs(registry);
-  BluetoothPowerController::RegisterProfilePrefs(registry);
-  CapsLockNotificationController::RegisterProfilePrefs(registry, for_test);
-  DockedMagnifierController::RegisterProfilePrefs(registry, for_test);
-  KioskNextShellController::RegisterProfilePrefs(registry, for_test);
-  LoginScreenController::RegisterProfilePrefs(registry, for_test);
-  LogoutButtonTray::RegisterProfilePrefs(registry);
-  MessageCenterController::RegisterProfilePrefs(registry);
-  NightLightController::RegisterProfilePrefs(registry);
-  PaletteTray::RegisterProfilePrefs(registry);
-  PaletteWelcomeBubble::RegisterProfilePrefs(registry);
-  ShelfController::RegisterProfilePrefs(registry);
-  TouchDevicesController::RegisterProfilePrefs(registry);
-  tray::VPNListView::RegisterProfilePrefs(registry);
-}
 
 }  // namespace
 
@@ -398,20 +376,6 @@ void Shell::RegisterLocalStatePrefs(PrefRegistrySimple* registry,
     DisplayPrefs::RegisterLocalStatePrefs(registry);
   else
     DisplayPrefs::RegisterForeignPrefs(registry);
-}
-
-// static
-void Shell::RegisterSigninProfilePrefs(PrefRegistrySimple* registry,
-                                       bool for_test) {
-  RegisterProfilePrefs(registry, for_test);
-  PowerPrefs::RegisterSigninProfilePrefs(registry, for_test);
-}
-
-// static
-void Shell::RegisterUserProfilePrefs(PrefRegistrySimple* registry,
-                                     bool for_test) {
-  RegisterProfilePrefs(registry, for_test);
-  PowerPrefs::RegisterUserProfilePrefs(registry, for_test);
 }
 
 display::DisplayConfigurator* Shell::display_configurator() {
@@ -630,7 +594,7 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
       locale_update_controller_(std::make_unique<LocaleUpdateController>()),
       media_controller_(std::make_unique<MediaController>(connector)),
       new_window_controller_(std::make_unique<NewWindowController>()),
-      session_controller_(std::make_unique<SessionControllerImpl>(connector)),
+      session_controller_(std::make_unique<SessionControllerImpl>()),
       note_taking_controller_(std::make_unique<NoteTakingController>()),
       shell_delegate_(std::move(shell_delegate)),
       shell_state_(std::make_unique<ShellState>()),

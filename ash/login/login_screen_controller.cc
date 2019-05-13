@@ -77,9 +77,6 @@ void LoginScreenController::RegisterProfilePrefs(PrefRegistrySimple* registry,
     registry->RegisterStringPref(prefs::kQuickUnlockPinSalt, "");
     return;
   }
-
-  // Pref is owned by chrome and flagged as PUBLIC.
-  registry->RegisterForeignPref(prefs::kQuickUnlockPinSalt);
 }
 
 void LoginScreenController::BindRequest(mojom::LoginScreenRequest request) {
@@ -592,6 +589,8 @@ void LoginScreenController::FocusOobeDialog() {
 }
 
 void LoginScreenController::NotifyUserActivity() {
+  if (!login_screen_client_)
+    return;
   login_screen_client_->OnUserActivity();
 }
 

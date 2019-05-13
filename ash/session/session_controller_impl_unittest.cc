@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "ash/login_status.h"
+#include "ash/public/cpp/ash_prefs.h"
 #include "ash/session/session_observer.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
@@ -100,7 +101,7 @@ class SessionControllerImplTest : public testing::Test {
 
   // testing::Test:
   void SetUp() override {
-    controller_ = std::make_unique<SessionControllerImpl>(nullptr);
+    controller_ = std::make_unique<SessionControllerImpl>();
     controller_->AddObserver(&observer_);
   }
 
@@ -472,10 +473,8 @@ TEST_F(SessionControllerImplPrefsTest, Observer) {
   EXPECT_EQ(nullptr, observer.last_user_pref_service());
 
   auto pref_service = std::make_unique<TestingPrefServiceSimple>();
-  Shell::RegisterUserProfilePrefs(pref_service->registry(),
-                                  true /* for_test */);
-  controller->ProvideUserPrefServiceForTest(kUserAccount1,
-                                            std::move(pref_service));
+  RegisterUserProfilePrefs(pref_service->registry(), true /* for_test */);
+  session->SetUserPrefService(kUserAccount1, std::move(pref_service));
   EXPECT_EQ(controller->GetUserPrefServiceForUser(kUserAccount1),
             observer.last_user_pref_service());
   EXPECT_EQ(controller->GetUserPrefServiceForUser(kUserAccount1),
@@ -500,10 +499,8 @@ TEST_F(SessionControllerImplPrefsTest, Observer) {
   // becoming initialized.
   observer.clear_last_user_pref_service();
   pref_service = std::make_unique<TestingPrefServiceSimple>();
-  Shell::RegisterUserProfilePrefs(pref_service->registry(),
-                                  true /* for_test */);
-  controller->ProvideUserPrefServiceForTest(kUserAccount2,
-                                            std::move(pref_service));
+  RegisterUserProfilePrefs(pref_service->registry(), true /* for_test */);
+  session->SetUserPrefService(kUserAccount2, std::move(pref_service));
   EXPECT_EQ(nullptr, observer.last_user_pref_service());
 
   session->SwitchActiveUser(AccountId::FromUserEmail(kUser2));

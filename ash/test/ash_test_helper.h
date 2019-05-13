@@ -44,6 +44,7 @@ namespace ash {
 class AppListTestHelper;
 class AshTestViewsDelegate;
 class TestKeyboardControllerObserver;
+class TestPrefServiceProvider;
 class TestShellDelegate;
 
 // A helper class that does common initialization required for Ash. Creates a
@@ -92,6 +93,7 @@ class AshTestHelper {
       std::unique_ptr<TestSessionControllerClient> session_controller_client) {
     session_controller_client_ = std::move(session_controller_client);
   }
+  TestPrefServiceProvider* prefs_provider() { return prefs_provider_.get(); }
 
   AppListTestHelper* app_list_test_helper() {
     return app_list_test_helper_.get();
@@ -121,6 +123,7 @@ class AshTestHelper {
   bool power_policy_controller_initialized_ = false;
 
   std::unique_ptr<TestSessionControllerClient> session_controller_client_;
+  std::unique_ptr<TestPrefServiceProvider> prefs_provider_;
 
   std::unique_ptr<ui::TestContextFactories> context_factories_;
 

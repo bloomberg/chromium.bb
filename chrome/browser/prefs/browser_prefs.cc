@@ -228,6 +228,7 @@
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
+#include "ash/public/cpp/ash_prefs.h"
 #include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
@@ -918,6 +919,9 @@ void RegisterUserProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
 #if defined(OS_ANDROID)
   ::android::RegisterUserProfilePrefs(registry);
 #endif
+#if defined(OS_CHROMEOS)
+  ash::RegisterUserProfilePrefs(registry);
+#endif
 }
 
 void RegisterScreenshotPrefs(PrefRegistrySimple* registry) {
@@ -925,8 +929,9 @@ void RegisterScreenshotPrefs(PrefRegistrySimple* registry) {
 }
 
 #if defined(OS_CHROMEOS)
-void RegisterLoginProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
+void RegisterSigninProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   RegisterProfilePrefs(registry, g_browser_process->GetApplicationLocale());
+  ash::RegisterSigninProfilePrefs(registry);
 }
 
 #if BUILDFLAG(ENABLE_CROS_ASSISTANT)

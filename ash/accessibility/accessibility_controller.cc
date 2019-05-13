@@ -317,41 +317,6 @@ void AccessibilityController::RegisterProfilePrefs(PrefRegistrySimple* registry,
 
   // In production the prefs are owned by chrome.
   // TODO(jamescook): Move ownership to ash.
-  registry->RegisterForeignPref(prefs::kAccessibilityAutoclickEnabled);
-  registry->RegisterForeignPref(prefs::kAccessibilityAutoclickDelayMs);
-  registry->RegisterForeignPref(prefs::kAccessibilityAutoclickEventType);
-  registry->RegisterForeignPref(
-      prefs::kAccessibilityAutoclickRevertToLeftClick);
-  registry->RegisterForeignPref(
-      prefs::kAccessibilityAutoclickStabilizePosition);
-  registry->RegisterForeignPref(
-      prefs::kAccessibilityAutoclickMovementThreshold);
-  registry->RegisterForeignPref(prefs::kAccessibilityAutoclickMenuPosition);
-  registry->RegisterForeignPref(prefs::kAccessibilityCaretHighlightEnabled);
-  registry->RegisterForeignPref(prefs::kAccessibilityCursorHighlightEnabled);
-  registry->RegisterForeignPref(prefs::kAccessibilityDictationEnabled);
-  registry->RegisterForeignPref(prefs::kAccessibilityFocusHighlightEnabled);
-  registry->RegisterForeignPref(prefs::kAccessibilityHighContrastEnabled);
-  registry->RegisterForeignPref(prefs::kAccessibilityLargeCursorEnabled);
-  registry->RegisterForeignPref(prefs::kAccessibilityLargeCursorDipSize);
-  registry->RegisterForeignPref(prefs::kAccessibilityMonoAudioEnabled);
-  registry->RegisterForeignPref(prefs::kAccessibilityScreenMagnifierEnabled);
-  registry->RegisterForeignPref(prefs::kAccessibilityScreenMagnifierScale);
-  registry->RegisterForeignPref(prefs::kAccessibilitySpokenFeedbackEnabled);
-  registry->RegisterForeignPref(prefs::kAccessibilitySelectToSpeakEnabled);
-  registry->RegisterForeignPref(prefs::kAccessibilityStickyKeysEnabled);
-  registry->RegisterForeignPref(prefs::kAccessibilitySwitchAccessEnabled);
-  registry->RegisterForeignPref(prefs::kAccessibilityVirtualKeyboardEnabled);
-  registry->RegisterForeignPref(
-      prefs::kHighContrastAcceleratorDialogHasBeenAccepted);
-  registry->RegisterForeignPref(
-      prefs::kScreenMagnifierAcceleratorDialogHasBeenAccepted);
-  registry->RegisterForeignPref(
-      prefs::kDockedMagnifierAcceleratorDialogHasBeenAccepted);
-  registry->RegisterForeignPref(
-      prefs::kDictationAcceleratorDialogHasBeenAccepted);
-  registry->RegisterForeignPref(
-      prefs::kDisplayRotationAcceleratorDialogHasBeenAccepted);
 }
 
 void AccessibilityController::SetHighContrastAcceleratorDialogAccepted() {

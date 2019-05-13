@@ -277,15 +277,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   static void RegisterLocalStatePrefs(PrefRegistrySimple* registry,
                                       bool for_test);
 
-  // Registers all ash related signin/user profile prefs to the given
-  // |registry|. Can be called before Shell is initialized. When |for_test| is
-  // true this registers foreign user profile prefs (e.g. chrome prefs) as if
-  // they are owned by ash. This allows test code to read the pref values.
-  static void RegisterSigninProfilePrefs(PrefRegistrySimple* registry,
-                                         bool for_test = false);
-  static void RegisterUserProfilePrefs(PrefRegistrySimple* registry,
-                                       bool for_test = false);
-
   // If necessary, initializes the Wayland server.
   void InitWaylandServer(std::unique_ptr<exo::FileHelper> file_helper);
   void DestroyWaylandServer();
