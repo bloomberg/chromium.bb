@@ -1094,6 +1094,10 @@ base::string16 AttestationPermissionRequestSheetModel::GetStepDescription()
       GetRelyingPartyIdString(dialog_model()));
 }
 
+bool AttestationPermissionRequestSheetModel::IsBackButtonVisible() const {
+  return false;
+}
+
 bool AttestationPermissionRequestSheetModel::IsAcceptButtonVisible() const {
   return true;
 }
