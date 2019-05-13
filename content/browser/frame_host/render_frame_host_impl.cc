@@ -769,7 +769,6 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
       frame_tree_(frame_tree),
       frame_tree_node_(frame_tree_node),
       parent_(nullptr),
-      render_widget_host_(nullptr),
       routing_id_(routing_id),
       is_waiting_for_swapout_ack_(false),
       render_frame_created_(false),
@@ -837,12 +836,29 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
     mojom::WidgetPtr widget;
     GetRemoteInterfaces()->GetInterface(&widget);
 
-    // TODO(avi): Once RenderViewHostImpl has-a RenderWidgetHostImpl, the main
-    // render frame should probably start owning the RenderWidgetHostImpl,
-    // so this logic checking for an already existing RWHI should be removed.
-    // https://crbug.com/545684
-    render_widget_host_ =
-        RenderWidgetHostImpl::FromID(GetProcess()->GetID(), widget_routing_id);
+    if (!parent_) {
+      // For main frames, the RenderWidgetHost is owned by the RenderViewHost.
+      // TODO(https://crbug.com/545684): Once RenderViewHostImpl has-a
+      // RenderWidgetHostImpl, the main render frame should probably start
+      // owning the RenderWidgetHostImpl itself.
+      DCHECK(GetLocalRenderWidgetHost());
+      DCHECK_EQ(GetLocalRenderWidgetHost()->GetRoutingID(), widget_routing_id);
+      DCHECK(!GetLocalRenderWidgetHost()->owned_by_render_frame_host());
+
+      // Make the RenderWidgetHostImpl able to call the mojo Widget interface
+      // (implemented by the RenderWidgetImpl).
+      GetLocalRenderWidgetHost()->SetWidget(std::move(widget));
+    } else {
+      // For subframes, the RenderFrameHost directly creates and owns its
+      // RenderWidgetHost.
+      DCHECK_EQ(nullptr, GetLocalRenderWidgetHost());
+      DCHECK_EQ(nullptr, RenderWidgetHostImpl::FromID(GetProcess()->GetID(),
+                                                      widget_routing_id));
+      owned_render_widget_host_ = RenderWidgetHostFactory::Create(
+          frame_tree_->render_widget_delegate(), GetProcess(),
+          widget_routing_id, std::move(widget), hidden);
+      owned_render_widget_host_->set_owned_by_render_frame_host(true);
+    }
 
     mojom::WidgetInputHandlerAssociatedPtr widget_handler;
     mojom::WidgetInputHandlerHostRequest host_request;
@@ -852,22 +868,12 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
       frame_input_handler_->GetWidgetInputHandler(
           mojo::MakeRequest(&widget_handler), std::move(host));
     }
-    if (!render_widget_host_) {
-      DCHECK(frame_tree_node->parent());
-      render_widget_host_ = RenderWidgetHostFactory::Create(
-          frame_tree_->render_widget_delegate(), GetProcess(),
-          widget_routing_id, std::move(widget), hidden);
-      render_widget_host_->set_owned_by_render_frame_host(true);
-    } else {
-      DCHECK(!render_widget_host_->owned_by_render_frame_host());
-      render_widget_host_->SetWidget(std::move(widget));
-    }
     if (!frame_tree_node_->parent())
-      render_widget_host_->SetIntersectsViewport(true);
-    render_widget_host_->SetFrameDepth(frame_tree_node_->depth());
-    render_widget_host_->SetWidgetInputHandler(std::move(widget_handler),
-                                               std::move(host_request));
-    render_widget_host_->input_router()->SetFrameTreeNodeId(
+      GetLocalRenderWidgetHost()->SetIntersectsViewport(true);
+    GetLocalRenderWidgetHost()->SetFrameDepth(frame_tree_node_->depth());
+    GetLocalRenderWidgetHost()->SetWidgetInputHandler(std::move(widget_handler),
+                                                      std::move(host_request));
+    GetLocalRenderWidgetHost()->input_router()->SetFrameTreeNodeId(
         frame_tree_node_->frame_tree_node_id());
   }
   ResetFeaturePolicy();
@@ -994,11 +1000,11 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   for (auto& iter : visual_state_callbacks_)
     std::move(iter.second).Run(false);
 
-  if (render_widget_host_ &&
-      render_widget_host_->owned_by_render_frame_host()) {
-    // Shutdown causes the RenderWidgetHost to delete itself.
-    render_widget_host_->ShutdownAndDestroyWidget(true);
-  }
+  // Note: The RenderWidgetHost of the main frame is owned by the RenderViewHost
+  // instead. In this case the RenderViewHost is responsible for shutting down
+  // its RenderViewHost.
+  if (owned_render_widget_host_)
+    owned_render_widget_host_->ShutdownAndDestroyWidget(false);
 
   // Notify the FrameTree that this RFH is going away, allowing it to shut down
   // the corresponding RenderViewHost if it is no longer needed.
@@ -1333,7 +1339,7 @@ PageVisibilityState RenderFrameHostImpl::GetVisibilityState() {
   // https://crbug.com/615867.
   RenderFrameHostImpl* frame = this;
   while (frame) {
-    if (frame->render_widget_host_)
+    if (frame->GetLocalRenderWidgetHost())
       break;
     frame = frame->GetParent();
   }
@@ -1567,10 +1573,8 @@ bool RenderFrameHostImpl::AccessibilityIsMainFrame() {
 void RenderFrameHostImpl::RenderProcessGone(SiteInstanceImpl* site_instance) {
   DCHECK_EQ(site_instance_.get(), site_instance);
 
-  if (render_widget_host_ &&
-      render_widget_host_->owned_by_render_frame_host()) {
-    render_widget_host_->RendererExited();
-  }
+  if (owned_render_widget_host_)
+    owned_render_widget_host_->RendererExited();
 
   // The renderer process is gone, so this frame can no longer be loading.
   if (GetNavigationHandle())
@@ -1710,9 +1714,10 @@ bool RenderFrameHostImpl::CreateRenderFrame(int previous_routing_id,
       frame_tree_node()->has_committed_real_load();
 
   params->widget_params = mojom::CreateFrameWidgetParams::New();
-  if (render_widget_host_) {
-    params->widget_params->routing_id = render_widget_host_->GetRoutingID();
-    params->widget_params->hidden = render_widget_host_->is_hidden();
+  if (GetLocalRenderWidgetHost()) {
+    params->widget_params->routing_id =
+        GetLocalRenderWidgetHost()->GetRoutingID();
+    params->widget_params->hidden = GetLocalRenderWidgetHost()->is_hidden();
   } else {
     // MSG_ROUTING_NONE will prevent a new RenderWidget from being created in
     // the renderer process.
@@ -1727,9 +1732,11 @@ bool RenderFrameHostImpl::CreateRenderFrame(int previous_routing_id,
   // TODO(avi): This will need to change to initialize a
   // RenderWidgetHostViewAura for the main frame once RenderViewHostImpl has-a
   // RenderWidgetHostImpl. https://crbug.com/545684
-  if (parent_routing_id != MSG_ROUTING_NONE && render_widget_host_) {
+  if (owned_render_widget_host_) {
+    DCHECK(parent_);
+    DCHECK_NE(parent_routing_id, MSG_ROUTING_NONE);
     RenderWidgetHostView* rwhv =
-        RenderWidgetHostViewChildFrame::Create(render_widget_host_);
+        RenderWidgetHostViewChildFrame::Create(owned_render_widget_host_.get());
     rwhv->Hide();
   }
 
@@ -1795,10 +1802,10 @@ void RenderFrameHostImpl::SetRenderFrameCreated(bool created) {
     }
   }
 
-  if (created && render_widget_host_) {
+  if (created && GetLocalRenderWidgetHost()) {
     mojom::WidgetPtr widget;
     GetRemoteInterfaces()->GetInterface(&widget);
-    render_widget_host_->SetWidget(std::move(widget));
+    GetLocalRenderWidgetHost()->SetWidget(std::move(widget));
 
     if (frame_input_handler_) {
       mojom::WidgetInputHandlerAssociatedPtr widget_handler;
@@ -1807,16 +1814,17 @@ void RenderFrameHostImpl::SetRenderFrameCreated(bool created) {
           mojo::MakeRequest(&host);
       frame_input_handler_->GetWidgetInputHandler(
           mojo::MakeRequest(&widget_handler), std::move(host));
-      render_widget_host_->SetWidgetInputHandler(std::move(widget_handler),
-                                                 std::move(host_request));
+      GetLocalRenderWidgetHost()->SetWidgetInputHandler(
+          std::move(widget_handler), std::move(host_request));
     }
-    render_widget_host_->input_router()->SetFrameTreeNodeId(
+    GetLocalRenderWidgetHost()->input_router()->SetFrameTreeNodeId(
         frame_tree_node_->frame_tree_node_id());
     viz::mojom::InputTargetClientPtr input_target_client;
     remote_interfaces_->GetInterface(&input_target_client);
     input_target_client_ = input_target_client.get();
-    render_widget_host_->SetInputTargetClient(std::move(input_target_client));
-    render_widget_host_->InitForFrame();
+    GetLocalRenderWidgetHost()->SetInputTargetClient(
+        std::move(input_target_client));
+    GetLocalRenderWidgetHost()->InitForFrame();
   }
 
   if (enabled_bindings_ && created) {
@@ -2275,8 +2283,8 @@ void RenderFrameHostImpl::OnUpdateState(const PageState& state) {
 RenderWidgetHostImpl* RenderFrameHostImpl::GetRenderWidgetHost() {
   RenderFrameHostImpl* frame = this;
   while (frame) {
-    if (frame->render_widget_host_)
-      return frame->render_widget_host_;
+    if (frame->GetLocalRenderWidgetHost())
+      return frame->GetLocalRenderWidgetHost();
     frame = frame->GetParent();
   }
 
@@ -6970,6 +6978,13 @@ RenderFrameHostImpl::EnsurePrefetchedSignedExchangeCache() {
         base::MakeRefCounted<PrefetchedSignedExchangeCache>();
   }
   return prefetched_signed_exchange_cache_;
+}
+
+RenderWidgetHostImpl* RenderFrameHostImpl::GetLocalRenderWidgetHost() const {
+  if (!parent_)
+    return render_view_host_->GetWidget();
+  else
+    return owned_render_widget_host_.get();
 }
 
 }  // namespace content

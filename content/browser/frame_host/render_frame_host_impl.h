@@ -435,7 +435,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // distinguished by owning a RenderWidgetHost, which manages input events
   // and painting for this frame and its contiguous local subtree in the
   // renderer process.
-  bool is_local_root() const { return !!render_widget_host_; }
+  bool is_local_root() const { return !!GetLocalRenderWidgetHost(); }
 
   // Returns the RenderWidgetHostImpl attached to this frame or the nearest
   // ancestor frame, which could potentially be the root. For most input
@@ -1592,6 +1592,15 @@ class CONTENT_EXPORT RenderFrameHostImpl
       FrameHostMsg_DidCommitProvisionalLoad_Params* validated_params,
       mojom::DidCommitProvisionalLoadInterfaceParamsPtr* interface_params);
 
+  // If this RenderFrameHost is a local root (i.e., either the main frame or a
+  // subframe in a different process than its parent), this returns the
+  // RenderWidgetHost corresponding to this frame. Otherwise this returns null.
+  // See also GetRenderWidgetHost(), which walks up the tree to find the nearest
+  // local root.
+  // Main frame: RenderWidgetHost is owned by the RenderViewHost.
+  // Subframe: RenderWidgetHost is owned by this RenderFrameHost.
+  RenderWidgetHostImpl* GetLocalRenderWidgetHost() const;
+
   // For now, RenderFrameHosts indirectly keep RenderViewHosts alive via a
   // refcount that calls Shutdown when it reaches zero.  This allows each
   // RenderFrameHostManager to just care about RenderFrameHosts, while ensuring
@@ -1649,13 +1658,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   std::map<uint64_t, VisualStateCallback> visual_state_callbacks_;
 
-  // RenderFrameHosts that need management of the rendering and input events
-  // for their frame subtrees require RenderWidgetHosts. This typically
-  // means frames that are rendered in different processes from their parent
-  // frames.
+  // Local root subframes directly own their RenderWidgetHost.
+  // Please see comments about the GetLocalRenderWidgetHost() function.
   // TODO(kenrb): Later this will also be used on the top-level frame, when
   // RenderFrameHost owns its RenderViewHost.
-  RenderWidgetHostImpl* render_widget_host_;
+  std::unique_ptr<RenderWidgetHostImpl> owned_render_widget_host_;
 
   const int routing_id_;
 

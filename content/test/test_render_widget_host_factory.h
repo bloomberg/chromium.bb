@@ -22,7 +22,7 @@ class TestRenderWidgetHostFactory : public RenderWidgetHostFactory {
   TestRenderWidgetHostFactory();
   ~TestRenderWidgetHostFactory() override;
 
-  RenderWidgetHostImpl* CreateRenderWidgetHost(
+  std::unique_ptr<RenderWidgetHostImpl> CreateRenderWidgetHost(
       RenderWidgetHostDelegate* delegate,
       RenderProcessHost* process,
       int32_t routing_id,
