@@ -40,20 +40,19 @@ bool FindSearchBoxElement(IUIAutomation* automation,
       L"SystemSettings_StorageSense_AppSizesListFilter_DisplayStringValue");
   Microsoft::WRL::ComPtr<IUIAutomationCondition> condition;
   HRESULT result = automation->CreatePropertyCondition(
-      UIA_AutomationIdPropertyId, search_box_id, condition.GetAddressOf());
+      UIA_AutomationIdPropertyId, search_box_id, &condition);
   if (FAILED(result))
     return false;
 
   Microsoft::WRL::ComPtr<IUIAutomationTreeWalker> tree_walker;
-  result =
-      automation->CreateTreeWalker(condition.Get(), tree_walker.GetAddressOf());
+  result = automation->CreateTreeWalker(condition.Get(), &tree_walker);
   if (FAILED(result))
     return false;
 
   // Setup a cache request so that the element contains the needed property
   // afterwards.
   Microsoft::WRL::ComPtr<IUIAutomationCacheRequest> cache_request;
-  result = automation->CreateCacheRequest(cache_request.GetAddressOf());
+  result = automation->CreateCacheRequest(&cache_request);
   if (FAILED(result))
     return false;
   cache_request->AddPattern(UIA_ValuePatternId);
@@ -214,12 +213,12 @@ void UninstallAppController::AutomationControllerDelegate::OnFocusChangedEvent(
     return;
 
   Microsoft::WRL::ComPtr<IUIAutomationElement> search_box;
-  if (!FindSearchBoxElement(automation, sender, search_box.GetAddressOf()))
+  if (!FindSearchBoxElement(automation, sender, &search_box))
     return;
 
   Microsoft::WRL::ComPtr<IUIAutomationValuePattern> value_pattern;
-  HRESULT result = search_box->GetCachedPatternAs(
-      UIA_ValuePatternId, IID_PPV_ARGS(value_pattern.GetAddressOf()));
+  HRESULT result = search_box->GetCachedPatternAs(UIA_ValuePatternId,
+                                                  IID_PPV_ARGS(&value_pattern));
   if (FAILED(result))
     return;
 
