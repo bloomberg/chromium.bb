@@ -22,6 +22,10 @@ namespace base {
 // ReadOnlySharedMemoryRegion. However, unlike ReadOnlySharedMemoryRegion and
 // UnsafeSharedMemoryRegion, ownership of this region (while writable) is unique
 // and may only be transferred, not duplicated.
+//
+// Unlike ReadOnlySharedMemoryRegion and UnsafeSharedMemoryRegion,
+// WritableSharedMemoryRegion doesn't provide GetPlatformHandle() method to
+// ensure that the region is never duplicated while writable.
 class BASE_EXPORT WritableSharedMemoryRegion {
  public:
   using MappingType = WritableSharedMemoryMapping;

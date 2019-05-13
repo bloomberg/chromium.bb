@@ -1057,7 +1057,7 @@ IPC_SYNC_MESSAGE_ROUTED4_3(PpapiHostMsg_PPBImageData_CreatePlatform,
                            PP_Bool /* init_to_zero */,
                            ppapi::HostResource /* result_resource */,
                            PP_ImageDataDesc /* image_data_desc */,
-                           ppapi::proxy::ImageHandle /* result */)
+                           ppapi::proxy::SerializedHandle /* result */)
 IPC_SYNC_MESSAGE_ROUTED4_3(PpapiHostMsg_PPBImageData_CreateSimple,
                            PP_Instance /* instance */,
                            int32_t /* format */,

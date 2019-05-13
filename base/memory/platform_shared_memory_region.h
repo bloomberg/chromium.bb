@@ -36,7 +36,11 @@ namespace subtle {
 // Helper structs to keep two descriptors on POSIX. It's needed to support
 // ConvertToReadOnly().
 struct BASE_EXPORT FDPair {
+  // The main shared memory descriptor that is used for mapping. May be either
+  // writable or read-only, depending on region's mode.
   int fd;
+  // The read-only descriptor, valid only in kWritable mode. Replaces |fd| when
+  // a region is converted to read-only.
   int readonly_fd;
 };
 
