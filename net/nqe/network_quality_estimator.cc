@@ -965,6 +965,53 @@ NetworkQualityEstimator::GetRecentEffectiveConnectionTypeAndNetworkQuality(
       transport_rtt_observation_count, end_to_end_rtt_observation_count);
 }
 
+void NetworkQualityEstimator::UpdateHttpRttUsingAllRttValues(
+    base::TimeDelta* http_rtt,
+    const base::TimeDelta transport_rtt,
+    const base::TimeDelta end_to_end_rtt) const {
+  DCHECK(http_rtt);
+
+  // Use transport RTT to clamp the lower bound on HTTP RTT.
+  // To improve accuracy, the transport RTT estimate is used only when the
+  // transport RTT estimate was computed using at least
+  // |params_->http_rtt_transport_rtt_min_count()| observations.
+  if (*http_rtt != nqe::internal::InvalidRTT() &&
+      transport_rtt != nqe::internal::InvalidRTT() &&
+      transport_rtt_observation_count_last_ect_computation_ >=
+          params_->http_rtt_transport_rtt_min_count() &&
+      params_->lower_bound_http_rtt_transport_rtt_multiplier() > 0) {
+    *http_rtt =
+        std::max(*http_rtt,
+                 transport_rtt *
+                     params_->lower_bound_http_rtt_transport_rtt_multiplier());
+  }
+
+  // Put lower bound on |http_rtt| using |end_to_end_rtt|.
+  if (*http_rtt != nqe::internal::InvalidRTT() &&
+      params_->use_end_to_end_rtt() &&
+      end_to_end_rtt != nqe::internal::InvalidRTT() &&
+      end_to_end_rtt_observation_count_at_last_ect_computation_ >=
+          params_->http_rtt_transport_rtt_min_count() &&
+      params_->lower_bound_http_rtt_transport_rtt_multiplier() > 0) {
+    *http_rtt =
+        std::max(*http_rtt,
+                 end_to_end_rtt *
+                     params_->lower_bound_http_rtt_transport_rtt_multiplier());
+  }
+
+  // Put upper bound on |http_rtt| using |end_to_end_rtt|.
+  if (*http_rtt != nqe::internal::InvalidRTT() &&
+      params_->use_end_to_end_rtt() &&
+      end_to_end_rtt != nqe::internal::InvalidRTT() &&
+      end_to_end_rtt_observation_count_at_last_ect_computation_ >=
+          params_->http_rtt_transport_rtt_min_count() &&
+      params_->upper_bound_http_rtt_endtoend_rtt_multiplier() > 0) {
+    *http_rtt = std::min(
+        *http_rtt, end_to_end_rtt *
+                       params_->upper_bound_http_rtt_endtoend_rtt_multiplier());
+  }
+}
+
 EffectiveConnectionType
 NetworkQualityEstimator::GetRecentEffectiveConnectionTypeUsingMetrics(
     const base::TimeTicks& start_time,
@@ -1015,45 +1062,7 @@ NetworkQualityEstimator::GetRecentEffectiveConnectionTypeUsingMetrics(
     *end_to_end_rtt = nqe::internal::InvalidRTT();
   }
 
-  // Use transport RTT to clamp the lower bound on HTTP RTT.
-  // To improve accuracy, the transport RTT estimate is used only when the
-  // transport RTT estimate was computed using at least
-  // |params_->http_rtt_transport_rtt_min_count()| observations.
-  if (*http_rtt != nqe::internal::InvalidRTT() &&
-      *transport_rtt != nqe::internal::InvalidRTT() &&
-      transport_rtt_observation_count_last_ect_computation_ >=
-          params_->http_rtt_transport_rtt_min_count() &&
-      params_->lower_bound_http_rtt_transport_rtt_multiplier() > 0) {
-    *http_rtt =
-        std::max(*http_rtt,
-                 *transport_rtt *
-                     params_->lower_bound_http_rtt_transport_rtt_multiplier());
-  }
-
-  // Put lower bound on |http_rtt| using |end_to_end_rtt|.
-  if (*http_rtt != nqe::internal::InvalidRTT() &&
-      params_->use_end_to_end_rtt() &&
-      *end_to_end_rtt != nqe::internal::InvalidRTT() &&
-      end_to_end_rtt_observation_count_at_last_ect_computation_ >=
-          params_->http_rtt_transport_rtt_min_count() &&
-      params_->lower_bound_http_rtt_transport_rtt_multiplier() > 0) {
-    *http_rtt =
-        std::max(*http_rtt,
-                 *end_to_end_rtt *
-                     params_->lower_bound_http_rtt_transport_rtt_multiplier());
-  }
-
-  // Put upper bound on |http_rtt| using |end_to_end_rtt|.
-  if (*http_rtt != nqe::internal::InvalidRTT() &&
-      params_->use_end_to_end_rtt() &&
-      *end_to_end_rtt != nqe::internal::InvalidRTT() &&
-      end_to_end_rtt_observation_count_at_last_ect_computation_ >=
-          params_->http_rtt_transport_rtt_min_count() &&
-      params_->upper_bound_http_rtt_endtoend_rtt_multiplier() > 0) {
-    *http_rtt = std::min(
-        *http_rtt, *end_to_end_rtt *
-                       params_->upper_bound_http_rtt_endtoend_rtt_multiplier());
-  }
+  UpdateHttpRttUsingAllRttValues(http_rtt, *transport_rtt, *end_to_end_rtt);
 
   if (!GetRecentDownlinkThroughputKbps(start_time, downstream_throughput_kbps))
     *downstream_throughput_kbps = nqe::internal::INVALID_RTT_THROUGHPUT;

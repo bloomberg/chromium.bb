@@ -488,6 +488,12 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
       size_t* transport_rtt_observation_count,
       size_t* end_to_end_rtt_observation_count) const;
 
+  // Updates the provided |http_rtt| based on all provided RTT values.
+  void UpdateHttpRttUsingAllRttValues(
+      base::TimeDelta* http_rtt,
+      const base::TimeDelta transport_rtt,
+      const base::TimeDelta end_to_end_rtt) const;
+
   // Returns true if the cached network quality estimate was successfully read.
   bool ReadCachedNetworkQualityEstimate();
 
