@@ -15,7 +15,7 @@ Important information to include:
 * If an event will only happen once per Navigation, it can be marked singular="true".
 
 ### Example
-```
+```xml
 <event name="Goat.Teleported">
   <owner>teleporter@chromium.org</owner>
   <summary>
@@ -41,7 +41,7 @@ Control of which metrics are included in the History table is done via the same
 file in the Chromium codebase. To have a metric aggregated, `<aggregation>` and
 `<history>` tags need to be added.
 
-```
+```xml
 <event name="Goat.Teleported">
   <metric name="Duration">
     ...
@@ -94,7 +94,7 @@ The metric to act as a key must also have <aggregation>, <history>, and
 supported). However, since generating statistics for this "key" metric isn't
 likely to be useful on its own, add "export=False" to its <statistics> tag.
 
-```
+```xml
 <event name="Memory.Experimental">
   <metric name="ProcessType">
     <aggregation>
@@ -160,11 +160,11 @@ In order to record UKM events, your code needs a UkmRecorder object, defined by 
 
 There are two main ways of getting a UkmRecorder instance.
 
-1) Use ukm::UkmRecorder::Get().  This currently only works from the Browser process.
+1) Use `ukm::UkmRecorder::Get()`.  This currently only works from the Browser process.
 
 2) Use a service connector and get a UkmRecorder.
 
-```
+```cpp
 std::unique_ptr<ukm::UkmRecorder> ukm_recorder =
     ukm::UkmRecorder::Create(context()->connector());
 ukm::builders::MyEvent(source_id)
@@ -176,18 +176,41 @@ ukm::builders::MyEvent(source_id)
 
 UKM identifies navigations by their source ID and you'll need to associate and ID with your event in order to tie it to a main frame URL.  Preferrably, get an existing ID for the navigation from another object.
 
-The main methods for doing this are using one of the following methods:
+The main method for doing this is by getting a navigation ID:
 
-```
+```cpp
 ukm::SourceId source_id = GetSourceIdForWebContentsDocument(web_contents);
 ukm::SourceId source_id = ukm::ConvertToSourceId(
     navigation_handle->GetNavigationId(), ukm::SourceIdType::NAVIGATION_ID);
 ```
 
-Currently, however, the code for passing these IDs around is incomplete so you may need to temporarily create your own IDs and associate the URL with them. However we currently prefer that this method is not used, and if you need to setup the URL yourself, please email us first at ukm-team@google.com.
+Some events however occur in the background, and a navigation ID does not exist. In that case, you can use the `ukm::UkmBackgroundRecorderService` to check whether the event can be recorded. This is achieved by using the History Service to determine whether the event's origin is still present in the user profile.
+
+```cpp
+// Add the service as a dependency in your service's constructor.
+DependsOn(ukm::UkmBackgroundRecorderFactory::GetInstance());
+
+// Get an instance of the UKM service using a Profile.
+auto* ukm_background_service = ukm::UkmBackgroundRecorderFactory::GetForProfile(profile);
+
+// Check if recording a background event for |origin| is allowed.
+ukm_background_service->GetBackgroundSourceIdIfAllowed(origin, base::BindOnce(&DidGetBackgroundSourceId));
+
+// A callback will run with an optional source ID.
+void DidGetBackgroundSourceId(base::Optional<ukm::SourceId> source_id) {
+  if (!source_id) return;  // Can't record as it wasn't found in the history.
+
+  // Use the newly generated source ID.
+  ukm::builders::MyEvent(*source_id)
+      .SetMyMetric(metric_value)
+      .Record(ukm_recorder.get());
+}
+```
+
+For the remaining cases you may need to temporarily create your own IDs and associate the URL with them. However we currently prefer that this method is not used, and if you need to setup the URL yourself, please email us first at ukm-team@google.com.
 Example:
 
-```
+```cpp
 ukm::SourceId source_id = ukm::UkmRecorder::GetNewSourceID();
 ukm_recorder->UpdateSourceURL(source_id, main_frame_url);
 ```
@@ -198,7 +221,7 @@ You will also need to add your class as a friend of UkmRecorder in order to use 
 
 Helper objects for recording your event are generated from the descriptions in ukm.xml.  You can use them like so:
 
-```
+```cpp
 #include "services/metrics/public/cpp/ukm_builders.h"
 
 void OnGoatTeleported() {
