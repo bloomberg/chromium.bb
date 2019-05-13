@@ -650,7 +650,7 @@ constexpr CrashPoint kCrashPointsAfterStartup[] = {
 
 // Tests where the process gets past the startup phase and finds UwS to clean.
 INSTANTIATE_TEST_SUITE_P(
-    CleanerFindsUwS,
+    CleanerFindsUwSAndRuns,
     ChromeCleanerControllerTest,
     Combine(Values(CleanerProcessStatus::kFetchSuccessValidProcess),
             ValuesIn(kCrashPointsAfterStartup),
@@ -665,9 +665,21 @@ INSTANTIATE_TEST_SUITE_P(
                    ItemsReporting::kNotReported,
                    ItemsReporting::kReported),
             Values(UserResponse::kAcceptedWithLogs,
-                   UserResponse::kAcceptedWithoutLogs,
-                   UserResponse::kDenied,
-                   UserResponse::kDismissed)),
+                   UserResponse::kAcceptedWithoutLogs)),
+    chrome_cleaner::GetParamNameForTest());
+
+// Tests where the process gets past the startup phase and finds UwS to clean,
+// but is dismissed by the user.
+INSTANTIATE_TEST_SUITE_P(
+    CleanerIsDismissed,
+    ChromeCleanerControllerTest,
+    Combine(Values(CleanerProcessStatus::kFetchSuccessValidProcess),
+            ValuesIn(kCrashPointsAfterStartup),
+            Values(UwsFoundStatus::kUwsFoundRebootRequired),
+            Values(ExtensionCleaningFeatureStatus::kEnabled),
+            Values(ItemsReporting::kReported),
+            Values(ItemsReporting::kReported),
+            Values(UserResponse::kDenied, UserResponse::kDismissed)),
     chrome_cleaner::GetParamNameForTest());
 
 // Tests where the process gets past the startup phase but finds nothing to
