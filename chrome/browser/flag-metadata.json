@@ -665,7 +665,7 @@
   },
   {
     "name": "enable-accessibility-tab-switcher",
-    // "owners": [ "your-team" ],
+    "owners": [ "dtrainor", "mdjones" ],
     "expiry_milestone": 76
   },
   {
