@@ -1075,16 +1075,16 @@ void ExpensiveTestTask(scoped_refptr<base::TestMockTimeTaskRunner> task_runner,
 }
 
 void InitializeTrialParams() {
-  std::map<std::string, std::string> params = {{"cpu_budget", "0.01"},
-                                               {"max_budget", "0.0"},
-                                               {"initial_budget", "0.0"},
-                                               {"max_delay", "0.0"}};
+  base::FieldTrialParams params = {{"cpu_budget", "0.01"},
+                                   {"max_budget", "0.0"},
+                                   {"initial_budget", "0.0"},
+                                   {"max_delay", "0.0"}};
   const char kParamName[] = "ExpensiveBackgroundTimerThrottling";
   const char kGroupName[] = "Enabled";
   EXPECT_TRUE(base::AssociateFieldTrialParams(kParamName, kGroupName, params));
   EXPECT_TRUE(base::FieldTrialList::CreateFieldTrial(kParamName, kGroupName));
 
-  std::map<std::string, std::string> actual_params;
+  base::FieldTrialParams actual_params;
   base::GetFieldTrialParams(kParamName, &actual_params);
   EXPECT_EQ(actual_params, params);
 }

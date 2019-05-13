@@ -251,7 +251,7 @@ void InitializeFeatureList(const base::DictionaryValue& dcs_features,
               feature_name, base::FeatureList::OVERRIDE_DISABLE_FEATURE)) {
         // Build a map of the FieldTrial parameters and associate it to the
         // FieldTrial.
-        base::FieldTrialParamAssociator::FieldTrialParams params;
+        base::FieldTrialParams params;
         for (Iterator p(*params_dict); !p.IsAtEnd(); p.Advance()) {
           std::string val;
           if (p.value().GetAsString(&val)) {

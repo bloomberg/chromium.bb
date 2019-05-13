@@ -1532,9 +1532,9 @@ class ResourceFetchPriorityExperimentTest : public FrameSchedulerImplTest {
  public:
   ResourceFetchPriorityExperimentTest()
       : FrameSchedulerImplTest({kUseResourceFetchPriority}, {}) {
-    std::map<std::string, std::string> params{
-        {"HIGHEST", "HIGH"}, {"MEDIUM", "NORMAL"}, {"LOW", "NORMAL"},
-        {"LOWEST", "LOW"},   {"IDLE", "LOW"},      {"THROTTLED", "LOW"}};
+    base::FieldTrialParams params{{"HIGHEST", "HIGH"}, {"MEDIUM", "NORMAL"},
+                                  {"LOW", "NORMAL"},   {"LOWEST", "LOW"},
+                                  {"IDLE", "LOW"},     {"THROTTLED", "LOW"}};
 
     const char kStudyName[] = "ResourceFetchPriorityExperiment";
     const char kGroupName[] = "GroupName1";
@@ -1567,9 +1567,9 @@ class ResourceFetchPriorityExperimentOnlyWhenLoadingTest
  public:
   ResourceFetchPriorityExperimentOnlyWhenLoadingTest()
       : FrameSchedulerImplTest({kUseResourceFetchPriorityOnlyWhenLoading}, {}) {
-    std::map<std::string, std::string> params{
-        {"HIGHEST", "HIGH"}, {"MEDIUM", "NORMAL"}, {"LOW", "NORMAL"},
-        {"LOWEST", "LOW"},   {"IDLE", "LOW"},      {"THROTTLED", "LOW"}};
+    base::FieldTrialParams params{{"HIGHEST", "HIGH"}, {"MEDIUM", "NORMAL"},
+                                  {"LOW", "NORMAL"},   {"LOWEST", "LOW"},
+                                  {"IDLE", "LOW"},     {"THROTTLED", "LOW"}};
 
     const char kStudyName[] = "ResourceFetchPriorityExperiment";
     const char kGroupName[] = "GroupName2";
@@ -1746,9 +1746,8 @@ TEST_F(FrameSchedulerImplTest, TaskTypeToTaskQueueMapping) {
 
 class ThrottleAndFreezeTaskTypesExperimentTest : public FrameSchedulerImplTest {
  public:
-  ThrottleAndFreezeTaskTypesExperimentTest(
-      std::map<std::string, std::string> params,
-      const char* group_name) {
+  ThrottleAndFreezeTaskTypesExperimentTest(const base::FieldTrialParams& params,
+                                           const char* group_name) {
     const char kStudyName[] = "ThrottleAndFreezeTaskTypes";
 
     field_trial_list_ = std::make_unique<base::FieldTrialList>(nullptr);
@@ -1772,7 +1771,7 @@ class ThrottleableAndFreezableTaskTypesTest
  public:
   ThrottleableAndFreezableTaskTypesTest()
       : ThrottleAndFreezeTaskTypesExperimentTest(
-            std::map<std::string, std::string>{
+            base::FieldTrialParams{
                 // Leading spaces are allowed.
                 {kThrottleableTaskTypesListParam, "PostedMessage"},
                 {kFreezableTaskTypesListParam,
@@ -1826,7 +1825,7 @@ class FreezableOnlyTaskTypesTest
  public:
   FreezableOnlyTaskTypesTest()
       : ThrottleAndFreezeTaskTypesExperimentTest(
-            std::map<std::string, std::string>{
+            base::FieldTrialParams{
                 {kThrottleableTaskTypesListParam, ""},
                 {kFreezableTaskTypesListParam,
                  "PostedMessage,MediaElementEvent,DOMManipulation"}},
@@ -1880,7 +1879,7 @@ class ThrottleableOnlyTaskTypesTest
  public:
   ThrottleableOnlyTaskTypesTest()
       : ThrottleAndFreezeTaskTypesExperimentTest(
-            std::map<std::string, std::string>{
+            base::FieldTrialParams{
                 {kFreezableTaskTypesListParam, ""},
                 {kThrottleableTaskTypesListParam, "PostedMessage"}},
             "Group3") {}

@@ -80,7 +80,7 @@ base::HistogramBase::Sample ToSample(ReportCircumstance circumstance) {
 uint32_t GetFieldTrialUint32Param(const char* trial_name,
                                   const char* parameter_name,
                                   uint32_t default_param) {
-  std::map<std::string, std::string> trial_params;
+  base::FieldTrialParams trial_params;
   bool result = base::GetFieldTrialParams(trial_name, &trial_params);
   if (!result)
     return default_param;

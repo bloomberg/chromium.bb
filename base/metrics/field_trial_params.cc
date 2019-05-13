@@ -11,22 +11,21 @@
 
 namespace base {
 
-bool AssociateFieldTrialParams(
-    const std::string& trial_name,
-    const std::string& group_name,
-    const std::map<std::string, std::string>& params) {
+bool AssociateFieldTrialParams(const std::string& trial_name,
+                               const std::string& group_name,
+                               const FieldTrialParams& params) {
   return base::FieldTrialParamAssociator::GetInstance()
       ->AssociateFieldTrialParams(trial_name, group_name, params);
 }
 
 bool GetFieldTrialParams(const std::string& trial_name,
-                         std::map<std::string, std::string>* params) {
+                         FieldTrialParams* params) {
   return base::FieldTrialParamAssociator::GetInstance()->GetFieldTrialParams(
       trial_name, params);
 }
 
 bool GetFieldTrialParamsByFeature(const base::Feature& feature,
-                                  std::map<std::string, std::string>* params) {
+                                  FieldTrialParams* params) {
   if (!base::FeatureList::IsEnabled(feature))
     return false;
 
@@ -39,7 +38,7 @@ bool GetFieldTrialParamsByFeature(const base::Feature& feature,
 
 std::string GetFieldTrialParamValue(const std::string& trial_name,
                                     const std::string& param_name) {
-  std::map<std::string, std::string> params;
+  FieldTrialParams params;
   if (GetFieldTrialParams(trial_name, &params)) {
     auto it = params.find(param_name);
     if (it != params.end())

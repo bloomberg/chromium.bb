@@ -565,7 +565,7 @@ MainThreadSchedulerImpl::SchedulingSettings::SchedulingSettings() {
 
   if (use_resource_fetch_priority ||
       use_resource_priorities_only_during_loading) {
-    std::map<std::string, std::string> params;
+    base::FieldTrialParams params;
     base::GetFieldTrialParams(kResourceFetchPriorityExperiment, &params);
     for (size_t net_priority = 0;
          net_priority < net::RequestPrioritySize::NUM_PRIORITIES;
