@@ -7,6 +7,8 @@
 #include "base/files/file_path.h"
 #include "sql/database.h"
 #include "sql/internal_api_token.h"
+#include "sql/recovery.h"
+#include "third_party/sqlite/sqlite3.h"
 
 namespace sql {
 
@@ -22,6 +24,11 @@ bool DatabaseTestPeer::AttachDatabase(Database* db,
 bool DatabaseTestPeer::DetachDatabase(Database* db,
                                       const char* attachment_point) {
   return db->DetachDatabase(attachment_point, InternalApiToken());
+}
+
+// static
+bool DatabaseTestPeer::EnableRecoveryExtension(Database* db) {
+  return Recovery::EnableRecoveryExtension(db, InternalApiToken()) == SQLITE_OK;
 }
 
 }  // namespace sql

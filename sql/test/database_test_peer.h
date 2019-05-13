@@ -19,6 +19,8 @@ class DatabaseTestPeer {
                              const base::FilePath& other_db_path,
                              const char* attachment_point);
   static bool DetachDatabase(Database* db, const char* attachment_point);
+
+  static bool EnableRecoveryExtension(Database* db);
 };
 
 }  // namespace sql

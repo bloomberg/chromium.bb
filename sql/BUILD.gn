@@ -94,6 +94,7 @@ test("sql_unittests") {
   sources = [
     "database_unittest.cc",
     "meta_table_unittest.cc",
+    "recover_module_unittest.cc",
     "recovery_unittest.cc",
     "sql_memory_dump_provider_unittest.cc",
     "sqlite_features_unittest.cc",

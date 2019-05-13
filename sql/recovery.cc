@@ -239,7 +239,7 @@ bool Recovery::Init(const base::FilePath& db_path) {
   }
 
   // Enable the recover virtual table for this connection.
-  int rc = chrome_sqlite3_recoverVtableInit(recover_db_.db(InternalApiToken()));
+  int rc = EnableRecoveryExtension(&recover_db_, InternalApiToken());
   if (rc != SQLITE_OK) {
     RecordRecoveryEvent(RECOVERY_FAILED_VIRTUAL_TABLE_INIT);
     LOG(ERROR) << "Failed to initialize recover module: "
@@ -796,6 +796,11 @@ bool Recovery::ShouldRecover(int extended_error) {
     default:
       return false;
   }
+}
+
+// static
+int Recovery::EnableRecoveryExtension(Database* db, InternalApiToken) {
+  return chrome_sqlite3_recoverVtableInit(db->db(InternalApiToken()));
 }
 
 }  // namespace sql
