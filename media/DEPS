@@ -5,7 +5,7 @@ include_rules = [
   "+chromeos/audio",
   "+crypto",
   "+device/udev_linux",
-  "+device/usb",
+  "+device/usb/public",
   "+gpu",
   "+jni",
   "+mojo/public/cpp/bindings/callback_helpers.h",

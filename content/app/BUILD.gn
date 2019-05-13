@@ -51,7 +51,6 @@ template("implement_content_app") {
       "//content/public/android:jni",
       "//device/bluetooth",
       "//device/gamepad",
-      "//device/usb",
       "//gpu",
       "//media",
       "//media/capture",

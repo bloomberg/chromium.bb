@@ -6,6 +6,8 @@
 
 #pragma warning(disable : 4467)
 
+#define INITGUID
+
 #include <windows.h>
 
 #include <cfgmgr32.h>

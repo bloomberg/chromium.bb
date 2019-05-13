@@ -1117,6 +1117,7 @@ jumbo_static_library("extensions") {
       "//third_party/iaccessible2",
       "//third_party/isimpledom",
     ]
+    libs = [ "setupapi.lib" ]
   } else if (use_aura && !is_chromeos) {
     sources += [
       "system_display/display_info_provider_aura.cc",

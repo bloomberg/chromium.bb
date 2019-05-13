@@ -26,7 +26,7 @@
 #include "url/gurl.h"
 
 #if !defined(OS_ANDROID)
-#include "device/usb/usb_ids.h"
+#include "device/usb/public/cpp/usb_ids.h"
 #endif  // !defined(OS_ANDROID)
 
 using content::RenderFrameHost;

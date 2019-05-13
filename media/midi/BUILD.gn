@@ -137,13 +137,15 @@ component("midi") {
   }
 
   if (is_win) {
-    deps += [ "//device/usb" ]
+    deps += [ "//device/usb/public/cpp" ]
     sources += [
       "midi_manager_win.cc",
       "midi_manager_win.h",
       "midi_manager_winrt.cc",
       "midi_manager_winrt.h",
     ]
+
+    libs += [ "setupapi.lib" ]
 
     # This library is included in base in static builds.
     if (is_component_build) {

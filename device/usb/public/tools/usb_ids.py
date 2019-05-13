@@ -93,7 +93,7 @@ if __name__ == "__main__":
 
 #include <stddef.h>
 
-#include "device/usb/usb_ids.h"
+#include "device/usb/public/cpp/usb_ids.h"
 
 namespace device {
 

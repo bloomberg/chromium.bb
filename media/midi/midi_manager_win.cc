@@ -13,7 +13,9 @@
 
 #include <algorithm>
 #include <limits>
+#include <map>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -27,7 +29,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/win/windows_version.h"
-#include "device/usb/usb_ids.h"
+#include "device/usb/public/cpp/usb_ids.h"
 #include "media/midi/message_util.h"
 #include "media/midi/midi_manager_winrt.h"
 #include "media/midi/midi_service.h"

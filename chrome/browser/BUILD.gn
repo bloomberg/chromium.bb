@@ -2028,6 +2028,7 @@ jumbo_split_static_library("browser") {
     "//content/public/common:service_names",
     "//crypto",
     "//crypto:platform",
+    "//device/base",
     "//device/fido",
     "//device/gamepad/public/cpp:switches",
     "//device/usb/public/cpp",

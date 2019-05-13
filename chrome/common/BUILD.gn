@@ -374,7 +374,7 @@ static_library("common") {
     public_deps += [
       "//chrome/common/extensions/api",
       "//chrome/common/extensions/api:extensions_features",
-      "//device/usb",
+      "//device/usb/public/cpp",
       "//extensions:extensions_resources",
       "//extensions/common",
       "//extensions/common:core_api_provider",

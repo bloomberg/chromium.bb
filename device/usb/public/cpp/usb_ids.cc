@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/usb/usb_ids.h"
+#include "device/usb/public/cpp/usb_ids.h"
 
 #include <stdlib.h>
 

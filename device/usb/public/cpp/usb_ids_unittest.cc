@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "device/usb/usb_ids.h"
+#include "device/usb/public/cpp/usb_ids.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -26,8 +26,8 @@ TEST(UsbIdsTest, GetVendorName) {
 TEST(UsbIdsTest, GetProductName) {
   EXPECT_EQ(NULL, UsbIds::GetProductName(0, 0));
   EXPECT_EQ(NULL, UsbIds::GetProductName(kGoogleVendorId, 0));
-  EXPECT_EQ(std::string("Nexus S"), UsbIds::GetProductName(kGoogleVendorId,
-                                                           kNexusSProductId));
+  EXPECT_EQ(std::string("Nexus S"),
+            UsbIds::GetProductName(kGoogleVendorId, kNexusSProductId));
 }
 
 }  // namespace device

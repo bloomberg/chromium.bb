@@ -3,7 +3,6 @@ include_rules = [
   "+content",
   "+device/bluetooth",
   "+device/gamepad",
-  "+device/usb",
   # For loading V8's initial snapshot from external files.
   "+gin/public/isolate_holder.h",
   "+gin/public/snapshot_fd_data.h",

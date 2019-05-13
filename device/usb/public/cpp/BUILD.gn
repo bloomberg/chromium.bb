@@ -2,17 +2,39 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+source_ids = "//third_party/usb_ids/usb.ids"
+generated_ids = "$target_gen_dir/usb_ids_gen.cc"
+
+action("usb_device_ids") {
+  script = "//device/usb/public/tools/usb_ids.py"
+  inputs = [
+    source_ids,
+  ]
+  outputs = [
+    generated_ids,
+  ]
+  args = [
+    "-i",
+    rebase_path(source_ids, root_build_dir),
+    "-o",
+    rebase_path(generated_ids, root_build_dir),
+  ]
+
+  # Only the device_usb_public_cpp target can depend on us.
+  visibility = [ ":cpp" ]
+}
+
 source_set("cpp") {
   sources = [
+    "usb_ids.cc",
     "usb_ids.h",
     "usb_utils.cc",
     "usb_utils.h",
+    generated_ids,
   ]
 
   deps = [
-    # TODO(donna.wu@intel.com): remove this when usb_ids.h/cpp have been
-    # moved to the public folder.
-    "//device/usb",
+    ":usb_device_ids",
     "//device/usb/public/mojom",
   ]
 }

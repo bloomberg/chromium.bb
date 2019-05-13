@@ -199,7 +199,7 @@ test("device_unittests") {
     ]
 
     if (!is_android) {
-      sources += [ "usb/usb_ids_unittest.cc" ]
+      sources += [ "usb/public/cpp/usb_ids_unittest.cc" ]
     }
   }
 

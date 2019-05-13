@@ -11,10 +11,15 @@ if (is_android) {
   import("//build/config/android/rules.gni")  # For generate_jni().
 }
 
-source_ids = "//third_party/usb_ids/usb.ids"
-generated_ids = "$target_gen_dir/usb_ids_gen.cc"
-
 static_library("usb") {
+  # Only the device_usb_mojo and tests in //device folder can depend on it.
+  visibility = [
+    ":*",
+    "//device:*",
+    "//device/usb/mojo:*",
+    "//services/device:*",
+  ]
+
   sources = [
     "usb_configuration_android.cc",
     "usb_configuration_android.h",
@@ -71,12 +76,7 @@ static_library("usb") {
   if (is_android) {
     deps += [ ":jni_headers" ]
   } else {
-    deps += [ ":usb_device_ids" ]
-    sources += [
-      "usb_ids.cc",
-      "usb_ids.h",
-      generated_ids,
-    ]
+    deps += [ "//device/usb/public/cpp" ]
   }
 
   if (is_win || is_mac) {
@@ -150,25 +150,6 @@ static_library("test_support") {
   public_deps = [
     "//testing/gmock",
   ]
-}
-
-action("usb_device_ids") {
-  script = "//device/usb/tools/usb_ids.py"
-  inputs = [
-    source_ids,
-  ]
-  outputs = [
-    generated_ids,
-  ]
-  args = [
-    "-i",
-    rebase_path(source_ids, root_build_dir),
-    "-o",
-    rebase_path(generated_ids, root_build_dir),
-  ]
-
-  # Only the device_usb target can depend on us.
-  visibility = [ ":usb" ]
 }
 
 fuzzer_test("webusb_descriptors_fuzzer") {
