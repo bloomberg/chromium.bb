@@ -124,6 +124,8 @@ const char* EventTypeToSuffix(ServiceWorkerMetrics::EventType event_type) {
       return "_LONG_RUNNING_MESSAGE";
     case ServiceWorkerMetrics::EventType::BACKGROUND_FETCH_SUCCESS:
       return "_BACKGROUND_FETCH_SUCCESS";
+    case ServiceWorkerMetrics::EventType::PERIODIC_SYNC:
+      return "_PERIODIC_SYNC";
   }
   return "_UNKNOWN";
 }
@@ -238,6 +240,8 @@ const char* ServiceWorkerMetrics::EventTypeToString(EventType event_type) {
       return "Long Running Message";
     case EventType::BACKGROUND_FETCH_SUCCESS:
       return "Background Fetch Success";
+    case EventType::PERIODIC_SYNC:
+      return "Periodic Sync";
   }
   NOTREACHED() << "Got unexpected event type: " << static_cast<int>(event_type);
   return "error";
@@ -571,6 +575,10 @@ void ServiceWorkerMetrics::RecordEventDuration(EventType event,
     case EventType::LONG_RUNNING_MESSAGE:
       // Since this event is expected to last indefinitely we don't need to log
       // how long they actually last.
+      break;
+    case EventType::PERIODIC_SYNC:
+      UMA_HISTOGRAM_MEDIUM_TIMES(
+          "ServiceWorker.PeriodicBackgroundSyncEvent.Time", time);
       break;
 
     case EventType::NAVIGATION_HINT:

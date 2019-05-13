@@ -271,6 +271,12 @@ void ServiceWorkerGlobalScopeClient::DidHandleSyncEvent(
   client_.DidHandleSyncEvent(sync_event_id, status);
 }
 
+void ServiceWorkerGlobalScopeClient::DidHandlePeriodicSyncEvent(
+    int periodic_sync_event_id,
+    mojom::ServiceWorkerEventStatus status) {
+  client_.DidHandlePeriodicSyncEvent(periodic_sync_event_id, status);
+}
+
 void ServiceWorkerGlobalScopeClient::DidHandleAbortPaymentEvent(
     int abort_payment_event_id,
     mojom::ServiceWorkerEventStatus status) {

@@ -183,6 +183,9 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   void DidHandleSyncEvent(
       int request_id,
       blink::mojom::ServiceWorkerEventStatus status) override;
+  void DidHandlePeriodicSyncEvent(
+      int request_id,
+      blink::mojom::ServiceWorkerEventStatus status) override;
   void RespondToAbortPaymentEvent(int event_id, bool payment_aborted) override;
   void DidHandleAbortPaymentEvent(
       int event_id,
@@ -314,6 +317,9 @@ class CONTENT_EXPORT ServiceWorkerContextClient
                          bool last_chance,
                          base::TimeDelta timeout,
                          DispatchSyncEventCallback callback) override;
+  void DispatchPeriodicSyncEvent(const std::string& tag,
+                                 base::TimeDelta timeout,
+                                 DispatchSyncEventCallback callback) override;
   void DispatchAbortPaymentEvent(
       payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
       DispatchAbortPaymentEventCallback callback) override;

@@ -388,6 +388,13 @@ class BackgroundSyncManagerTest
     SetNetwork(network::mojom::ConnectionType::CONNECTION_WIFI);
   }
 
+  void SetupForPeriodicSyncEvent(
+      const TestBackgroundSyncManager::DispatchSyncCallback& callback) {
+    test_background_sync_manager_->set_dispatch_periodic_sync_callback(
+        callback);
+    SetNetwork(network::mojom::ConnectionType::CONNECTION_WIFI);
+  }
+
   void DispatchSyncStatusCallback(
       blink::ServiceWorkerStatusCode status,
       scoped_refptr<ServiceWorkerVersion> active_version,
@@ -396,9 +403,23 @@ class BackgroundSyncManagerTest
     std::move(callback).Run(status);
   }
 
+  void DispatchPeriodicSyncStatusCallback(
+      blink::ServiceWorkerStatusCode status,
+      scoped_refptr<ServiceWorkerVersion> active_version,
+      ServiceWorkerVersion::StatusCallback callback) {
+    periodic_sync_events_called_++;
+    std::move(callback).Run(status);
+  }
+
   void InitSyncEventTest() {
     SetupForSyncEvent(base::BindRepeating(
         &BackgroundSyncManagerTest::DispatchSyncStatusCallback,
+        base::Unretained(this), blink::ServiceWorkerStatusCode::kOk));
+  }
+
+  void InitPeriodicSyncEventTest() {
+    SetupForPeriodicSyncEvent(base::BindRepeating(
+        &BackgroundSyncManagerTest::DispatchPeriodicSyncStatusCallback,
         base::Unretained(this), blink::ServiceWorkerStatusCode::kOk));
   }
 
@@ -424,12 +445,12 @@ class BackgroundSyncManagerTest
 
   void RegisterAndVerifySyncEventDelayed(
       blink::mojom::SyncRegistrationOptions sync_options) {
-    int sync_events_called = sync_events_called_;
+    int count_sync_events = sync_events_called_;
     EXPECT_FALSE(sync_fired_callback_);
 
     EXPECT_TRUE(Register(sync_options));
 
-    EXPECT_EQ(sync_events_called + 1, sync_events_called_);
+    EXPECT_EQ(count_sync_events + 1, sync_events_called_);
     EXPECT_TRUE(GetRegistration(std::move(sync_options)));
     EXPECT_TRUE(sync_fired_callback_);
   }
@@ -448,6 +469,12 @@ class BackgroundSyncManagerTest
 
     // Restart the BackgroundSyncManager so that it updates its parameters.
     SetupBackgroundSyncManager();
+  }
+
+  void FireReadyEvents() { background_sync_manager_->OnNetworkChanged(); }
+
+  bool AreOptionConditionsMet() {
+    return background_sync_manager_->AreOptionConditionsMet();
   }
 
   TestBrowserThreadBundle browser_thread_bundle_;
@@ -473,6 +500,7 @@ class BackgroundSyncManagerTest
   blink::ServiceWorkerStatusCode callback_sw_status_code_ =
       blink::ServiceWorkerStatusCode::kOk;
   int sync_events_called_ = 0;
+  int periodic_sync_events_called_ = 0;
   ServiceWorkerVersion::StatusCallback sync_fired_callback_;
 };
 
@@ -906,18 +934,21 @@ TEST_F(BackgroundSyncManagerTest, FiresOnRegistration) {
   EXPECT_FALSE(GetRegistration(sync_options_1_));
 }
 
-// TODO(crbug.com/925297): Update once we support dispatching periodic sync
-// events.
-TEST_F(BackgroundSyncManagerTest, PeriodicSyncDoesNotFireOnRegistration) {
-  InitSyncEventTest();
-  sync_options_2_.min_interval = 36000;
-
-  EXPECT_TRUE(Register(sync_options_1_));
-  EXPECT_EQ(1, sync_events_called_);
-  EXPECT_FALSE(GetRegistration(sync_options_1_));
+TEST_F(BackgroundSyncManagerTest, PeriodicSyncFiresWhenExpected) {
+  InitPeriodicSyncEventTest();
+  int thirteen_hours_ms = 13 * 60 * 60 * 1000;
+  sync_options_2_.min_interval = thirteen_hours_ms;
 
   EXPECT_TRUE(Register(sync_options_2_));
-  EXPECT_EQ(1, sync_events_called_);  // no increase.
+  EXPECT_EQ(0, periodic_sync_events_called_);
+  EXPECT_TRUE(GetRegistration(sync_options_2_));
+
+  // Advance clock.
+  test_clock_.Advance(base::TimeDelta::FromMilliseconds(thirteen_hours_ms));
+  FireReadyEvents();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(1, periodic_sync_events_called_);
   EXPECT_TRUE(GetRegistration(sync_options_2_));
 }
 
@@ -1609,6 +1640,24 @@ TEST_F(BackgroundSyncManagerTest, EmulateDispatchSyncEvent) {
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, code);
 
   EXPECT_EQ(2, sync_events_called_);
+}
+
+TEST_F(BackgroundSyncManagerTest, DispatchPeriodicSyncEvent) {
+  InitPeriodicSyncEventTest();
+
+  EXPECT_TRUE(AreOptionConditionsMet());
+
+  bool was_called = false;
+  blink::ServiceWorkerStatusCode code =
+      blink::ServiceWorkerStatusCode::kErrorEventWaitUntilRejected;
+  test_background_sync_manager_->DispatchPeriodicSyncEvent(
+      "test_tag", sw_registration_1_->active_version(),
+      base::BindOnce(EmulateDispatchSyncEventCallback, &was_called, &code));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(was_called);
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, code);
+
+  EXPECT_EQ(1, periodic_sync_events_called_);
 }
 
 TEST_F(BackgroundSyncManagerTest, EventsLoggedForRegistration) {

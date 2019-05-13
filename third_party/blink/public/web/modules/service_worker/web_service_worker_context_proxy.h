@@ -117,11 +117,16 @@ class WebServiceWorkerContextProxy {
 
   virtual bool HasFetchEventHandler() = 0;
 
-  // Once the ServiceWorker has finished handling the sync event,
-  // didHandleSyncEvent is called on the context client.
+  // Once the ServiceWorker has finished handling the periodicSync event,
+  // DidHandleSyncEvent is called on the context client.
   virtual void DispatchSyncEvent(int sync_event_id,
                                  const WebString& tag,
                                  bool last_chance) = 0;
+
+  // Once the ServiceWorker has finished handling the sync event,
+  // DidHandlePeriodicSyncEvent is called on the context client.
+  virtual void DispatchPeriodicSyncEvent(int sync_event_id,
+                                         const WebString& tag) = 0;
 
   virtual void DispatchAbortPaymentEvent(int event_id) = 0;
 

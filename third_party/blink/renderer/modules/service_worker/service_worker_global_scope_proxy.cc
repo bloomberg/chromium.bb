@@ -60,6 +60,7 @@
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_event_init.h"
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_registration.h"
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_update_ui_event.h"
+#include "third_party/blink/renderer/modules/background_sync/periodic_sync_event.h"
 #include "third_party/blink/renderer/modules/background_sync/sync_event.h"
 #include "third_party/blink/renderer/modules/cookie_store/cookie_change_event.h"
 #include "third_party/blink/renderer/modules/cookie_store/extendable_cookie_change_event.h"
@@ -531,6 +532,19 @@ void ServiceWorkerGlobalScopeProxy::DispatchSyncEvent(int event_id,
       WorkerGlobalScope(), WaitUntilObserver::kSync, event_id);
   Event* event =
       SyncEvent::Create(event_type_names::kSync, id, last_chance, observer);
+
+  WorkerGlobalScope()->DispatchExtendableEvent(event, observer);
+}
+
+void ServiceWorkerGlobalScopeProxy::DispatchPeriodicSyncEvent(
+    int event_id,
+    const WebString& id) {
+  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
+  WaitUntilObserver* observer = WaitUntilObserver::Create(
+      WorkerGlobalScope(), WaitUntilObserver::kPeriodicSync, event_id);
+  Event* event =
+      PeriodicSyncEvent::Create(event_type_names::kPeriodicsync, id, observer);
+
   WorkerGlobalScope()->DispatchExtendableEvent(event, observer);
 }
 

@@ -251,6 +251,11 @@ class WebServiceWorkerContextClient {
   virtual void DidHandleSyncEvent(int sync_event_id,
                                   mojom::ServiceWorkerEventStatus) {}
 
+  // Called after PeriodicSyncEvent (dispatched via
+  // WebServiceWorkerContextProxy) is handled by the service worker.
+  virtual void DidHandlePeriodicSyncEvent(int sync_event_id,
+                                          mojom::ServiceWorkerEventStatus) {}
+
   // RespondToAbortPaymentEvent will be called after the service worker
   // returns a response to a AbortPaymentEvent, and DidHandleAbortPaymentEvent
   // will be called after the end of AbortPaymentEvent's lifecycle.

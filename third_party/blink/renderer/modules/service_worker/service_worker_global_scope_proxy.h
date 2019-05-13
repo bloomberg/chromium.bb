@@ -127,7 +127,11 @@ class ServiceWorkerGlobalScopeProxy final
                                       const WebString& notification_id,
                                       const WebNotificationData&) override;
   void DispatchPushEvent(int, const WebString& data) override;
-  void DispatchSyncEvent(int, const WebString& tag, bool last_chance) override;
+  void DispatchSyncEvent(int sync_event_id,
+                         const WebString& tag,
+                         bool last_chance) override;
+  void DispatchPeriodicSyncEvent(int periodic_sync_event_id,
+                                 const WebString& tag) override;
   void DispatchAbortPaymentEvent(int) override;
   void DispatchCanMakePaymentEvent(int,
                                    const WebCanMakePaymentEventData&) override;

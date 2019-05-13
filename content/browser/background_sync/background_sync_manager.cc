@@ -1036,6 +1036,40 @@ void BackgroundSyncManager::DispatchSyncEvent(
   }
 }
 
+void BackgroundSyncManager::DispatchPeriodicSyncEvent(
+    const std::string& tag,
+    scoped_refptr<ServiceWorkerVersion> active_version,
+    ServiceWorkerVersion::StatusCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(active_version);
+
+  if (active_version->running_status() != EmbeddedWorkerStatus::RUNNING) {
+    active_version->RunAfterStartWorker(
+        ServiceWorkerMetrics::EventType::PERIODIC_SYNC,
+        base::BindOnce(
+            &DidStartWorkerForSyncEvent,
+            base::BindOnce(&BackgroundSyncManager::DispatchPeriodicSyncEvent,
+                           weak_ptr_factory_.GetWeakPtr(), tag, active_version),
+            std::move(callback)));
+    return;
+  }
+
+  auto repeating_callback =
+      base::AdaptCallbackForRepeating(std::move(callback));
+
+  int request_id = active_version->StartRequestWithCustomTimeout(
+      ServiceWorkerMetrics::EventType::PERIODIC_SYNC, repeating_callback,
+      parameters_->max_sync_event_duration,
+      ServiceWorkerVersion::CONTINUE_ON_TIMEOUT);
+
+  active_version->endpoint()->DispatchPeriodicSyncEvent(
+      tag, parameters_->max_sync_event_duration,
+      base::BindOnce(&OnSyncEventFinished, active_version, request_id,
+                     std::move(repeating_callback)));
+
+  // TODO(crbug.com/961238): Record Periodic Sync events for DevTools.
+}
+
 void BackgroundSyncManager::ScheduleDelayedTask(base::OnceClosure callback,
                                                 base::TimeDelta delay) {
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
@@ -1285,21 +1319,6 @@ void BackgroundSyncManager::FireReadyEventsDidFindRegistration(
             service_worker_registration->id());
   DCHECK(registration);
 
-  // Don't dispatch a sync event if the sync is periodic.
-  // TODO(crbug.com/925297): Remove this code when we've added the logic to
-  // dispatch periodic sync events.
-  if (registration &&
-      registration_info->sync_type == BackgroundSyncType::PERIODIC) {
-    RemoveActiveRegistration(*registration_info);
-    StoreRegistrations(registration_info->service_worker_registration_id,
-                       base::DoNothing());
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, std::move(event_fired_callback));
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, std::move(event_completed_callback));
-    return;
-  }
-
   // The connectivity was lost before dispatching the sync event, so there is
   // no point in going through with it.
   if (!AreOptionConditionsMet()) {
@@ -1320,13 +1339,26 @@ void BackgroundSyncManager::FireReadyEventsDidFindRegistration(
       url::Origin::Create(service_worker_registration->scope().GetOrigin()),
       base::BindOnce(&BackgroundSyncMetrics::RecordEventStarted));
 
-  DispatchSyncEvent(
-      registration->options()->tag,
-      service_worker_registration->active_version(), last_chance,
-      base::BindOnce(
-          &BackgroundSyncManager::EventComplete, weak_ptr_factory_.GetWeakPtr(),
-          service_worker_registration, std::move(registration_info),
-          std::move(keepalive), std::move(event_completed_callback)));
+  auto sync_type = registration_info->sync_type;
+  if (sync_type == BackgroundSyncType::ONE_SHOT) {
+    DispatchSyncEvent(
+        registration->options()->tag,
+        service_worker_registration->active_version(), last_chance,
+        base::BindOnce(&BackgroundSyncManager::EventComplete,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       service_worker_registration,
+                       std::move(registration_info), std::move(keepalive),
+                       std::move(event_completed_callback)));
+  } else {
+    DispatchPeriodicSyncEvent(
+        registration->options()->tag,
+        service_worker_registration->active_version(),
+        base::BindOnce(&BackgroundSyncManager::EventComplete,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       service_worker_registration,
+                       std::move(registration_info), std::move(keepalive),
+                       std::move(event_completed_callback)));
+  }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, std::move(event_fired_callback));

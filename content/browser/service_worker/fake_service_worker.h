@@ -86,6 +86,9 @@ class FakeServiceWorker : public blink::mojom::ServiceWorker {
                          bool last_chance,
                          base::TimeDelta timeout,
                          DispatchSyncEventCallback callback) override;
+  void DispatchPeriodicSyncEvent(const std::string& tag,
+                                 base::TimeDelta timeout,
+                                 DispatchSyncEventCallback callback) override;
   void DispatchAbortPaymentEvent(
       payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
       DispatchAbortPaymentEventCallback callback) override;

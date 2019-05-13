@@ -175,8 +175,9 @@ class ServiceWorkerMetrics {
     COOKIE_CHANGE = 30,
     LONG_RUNNING_MESSAGE = 31,
     BACKGROUND_FETCH_SUCCESS = 32,
+    PERIODIC_SYNC = 33,
     // Add new events to record here.
-    kMaxValue = BACKGROUND_FETCH_SUCCESS,
+    kMaxValue = PERIODIC_SYNC,
   };
 
   // Used for UMA. Append only.

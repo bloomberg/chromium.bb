@@ -232,6 +232,8 @@ struct ServiceWorkerContextClient::WorkerContextData {
   std::map<int, DispatchBackgroundFetchSuccessEventCallback>
       background_fetched_event_callbacks;
   std::map<int, DispatchSyncEventCallback> sync_event_callbacks;
+  std::map<int, DispatchPeriodicSyncEventCallback>
+      periodic_sync_event_callbacks;
   std::map<int, payments::mojom::PaymentHandlerResponseCallbackPtr>
       abort_payment_result_callbacks;
   std::map<int, DispatchCanMakePaymentEventCallback>
@@ -897,6 +899,22 @@ void ServiceWorkerContextClient::DidHandleSyncEvent(
                    context_->timeout_timer.get(), request_id, status);
 }
 
+void ServiceWorkerContextClient::DidHandlePeriodicSyncEvent(
+    int request_id,
+    blink::mojom::ServiceWorkerEventStatus status) {
+  DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());
+  if (!context_)
+    return;
+  TRACE_EVENT_WITH_FLOW1(
+      "ServiceWorker", "ServiceWorkerContextClient::DidHandlePeriodicSyncEvent",
+      TRACE_ID_WITH_SCOPE(kServiceWorkerContextClientScope,
+                          TRACE_ID_LOCAL(request_id)),
+      TRACE_EVENT_FLAG_FLOW_IN, "status",
+      ServiceWorkerUtils::MojoEnumToString(status));
+  RunEventCallback(&context_->periodic_sync_event_callbacks,
+                   context_->timeout_timer.get(), request_id, status);
+}
+
 void ServiceWorkerContextClient::RespondToAbortPaymentEvent(
     int event_id,
     bool payment_aborted) {
@@ -1125,6 +1143,28 @@ void ServiceWorkerContextClient::DispatchSyncEvent(
   // https://crrev.com/1768063002/ lands.
   proxy_->DispatchSyncEvent(request_id, blink::WebString::FromUTF8(tag),
                             last_chance);
+}
+
+void ServiceWorkerContextClient::DispatchPeriodicSyncEvent(
+    const std::string& tag,
+    base::TimeDelta timeout,
+    DispatchSyncEventCallback callback) {
+  DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());
+  // |context_| is valid because the Mojo binding is on |worker_task_runner_|.
+  DCHECK(context_);
+
+  int request_id = context_->timeout_timer->StartEventWithCustomTimeout(
+      CreateAbortCallback(&context_->periodic_sync_event_callbacks), timeout);
+  context_->periodic_sync_event_callbacks.emplace(request_id,
+                                                  std::move(callback));
+  TRACE_EVENT_WITH_FLOW0(
+      "ServiceWorker", "ServiceWorkerContextClient::DispatchPeriodicSyncEvent",
+      TRACE_ID_WITH_SCOPE(kServiceWorkerContextClientScope,
+                          TRACE_ID_LOCAL(request_id)),
+      TRACE_EVENT_FLAG_FLOW_OUT);
+
+  proxy_->DispatchPeriodicSyncEvent(request_id,
+                                    blink::WebString::FromUTF8(tag));
 }
 
 void ServiceWorkerContextClient::DispatchAbortPaymentEvent(

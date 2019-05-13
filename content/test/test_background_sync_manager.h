@@ -71,6 +71,13 @@ class TestBackgroundSyncManager : public BackgroundSyncManager {
     dispatch_sync_callback_ = callback;
   }
 
+  // Set a callback for when the periodicSync event is dispatched, so tests can
+  // observe it.
+  void set_dispatch_periodic_sync_callback(
+      const DispatchSyncCallback& callback) {
+    dispatch_periodic_sync_callback_ = callback;
+  }
+
   // Sets the response to checks for a main frame for register attempts.
   void set_has_main_frame_provider_host(bool value) {
     has_main_frame_provider_host_ = value;
@@ -93,6 +100,11 @@ class TestBackgroundSyncManager : public BackgroundSyncManager {
   bool EqualsSoonestOneShotWakeupDelta(base::TimeDelta compare_to) const {
     return soonest_one_shot_wakeup_delta_ == compare_to;
   }
+
+  void DispatchPeriodicSyncEvent(
+      const std::string& tag,
+      scoped_refptr<ServiceWorkerVersion> active_version,
+      ServiceWorkerVersion::StatusCallback callback) override;
 
   // Override to allow the test to cache the result.
   base::TimeDelta GetSoonestWakeupDelta(
@@ -153,6 +165,7 @@ class TestBackgroundSyncManager : public BackgroundSyncManager {
   bool last_chance_ = false;
   base::OnceClosure continuation_;
   DispatchSyncCallback dispatch_sync_callback_;
+  DispatchSyncCallback dispatch_periodic_sync_callback_;
   base::OnceClosure delayed_task_;
   base::TimeDelta delayed_task_delta_;
   base::TimeDelta soonest_one_shot_wakeup_delta_;

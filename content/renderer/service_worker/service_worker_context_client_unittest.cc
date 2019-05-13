@@ -177,6 +177,10 @@ class MockWebServiceWorkerContextProxy
                          bool last_chance) override {
     NOTREACHED();
   }
+  void DispatchPeriodicSyncEvent(int sync_event_id,
+                                 const blink::WebString& tag) override {
+    NOTREACHED();
+  }
   void DispatchAbortPaymentEvent(int event_id) override { NOTREACHED(); }
   void DispatchCanMakePaymentEvent(
       int event_id,

@@ -147,6 +147,13 @@ void FakeServiceWorker::DispatchSyncEvent(const std::string& tag,
   NOTIMPLEMENTED();
 }
 
+void FakeServiceWorker::DispatchPeriodicSyncEvent(
+    const std::string& tag,
+    base::TimeDelta timeout,
+    DispatchSyncEventCallback callback) {
+  NOTIMPLEMENTED();
+}
+
 void FakeServiceWorker::DispatchAbortPaymentEvent(
     payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
     DispatchAbortPaymentEventCallback callback) {

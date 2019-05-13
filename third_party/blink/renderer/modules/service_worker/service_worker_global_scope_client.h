@@ -126,7 +126,10 @@ class MODULES_EXPORT ServiceWorkerGlobalScopeClient final
   void DidHandleNotificationCloseEvent(int event_id,
                                        mojom::ServiceWorkerEventStatus);
   void DidHandlePushEvent(int push_event_id, mojom::ServiceWorkerEventStatus);
-  void DidHandleSyncEvent(int sync_event_id, mojom::ServiceWorkerEventStatus);
+  void DidHandleSyncEvent(int sync_event_id,
+                          mojom::ServiceWorkerEventStatus status);
+  void DidHandlePeriodicSyncEvent(int periodic_sync_event_id,
+                                  mojom::ServiceWorkerEventStatus status);
   void DidHandleAbortPaymentEvent(int abort_payment_event_id,
                                   mojom::ServiceWorkerEventStatus);
   void DidHandleCanMakePaymentEvent(int payment_request_event_id,

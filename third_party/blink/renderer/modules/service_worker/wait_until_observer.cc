@@ -291,6 +291,9 @@ void WaitUntilObserver::MaybeCompleteEvent() {
     case kSync:
       client->DidHandleSyncEvent(event_id_, status);
       break;
+    case kPeriodicSync:
+      client->DidHandlePeriodicSyncEvent(event_id_, status);
+      break;
     case kPaymentRequest:
       client->DidHandlePaymentRequestEvent(event_id_, status);
       break;

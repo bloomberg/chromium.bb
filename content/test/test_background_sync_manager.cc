@@ -90,6 +90,14 @@ void TestBackgroundSyncManager::DispatchSyncEvent(
   dispatch_sync_callback_.Run(active_version, std::move(callback));
 }
 
+void TestBackgroundSyncManager::DispatchPeriodicSyncEvent(
+    const std::string& tag,
+    scoped_refptr<ServiceWorkerVersion> active_version,
+    ServiceWorkerVersion::StatusCallback callback) {
+  ASSERT_TRUE(dispatch_periodic_sync_callback_);
+  dispatch_periodic_sync_callback_.Run(active_version, std::move(callback));
+}
+
 void TestBackgroundSyncManager::ScheduleDelayedTask(base::OnceClosure callback,
                                                     base::TimeDelta delay) {
   delayed_task_ = std::move(callback);

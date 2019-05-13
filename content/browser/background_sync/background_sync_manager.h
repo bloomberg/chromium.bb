@@ -158,6 +158,10 @@ class CONTENT_EXPORT BackgroundSyncManager
       scoped_refptr<ServiceWorkerVersion> active_version,
       bool last_chance,
       ServiceWorkerVersion::StatusCallback callback);
+  virtual void DispatchPeriodicSyncEvent(
+      const std::string& tag,
+      scoped_refptr<ServiceWorkerVersion> active_version,
+      ServiceWorkerVersion::StatusCallback callback);
   virtual void ScheduleDelayedTask(base::OnceClosure callback,
                                    base::TimeDelta delay);
   virtual void HasMainFrameProviderHost(const url::Origin& origin,
