@@ -9972,6 +9972,9 @@ bool GLES2DecoderImpl::SupportsDrawBuffers() const {
 }
 
 bool GLES2DecoderImpl::ValidateAndAdjustDrawBuffers(const char* func_name) {
+  if (state_.GetEnabled(GL_RASTERIZER_DISCARD)) {
+    return true;
+  }
   if (!SupportsDrawBuffers()) {
     return true;
   }
