@@ -168,6 +168,13 @@ bool RenderFrameProxyHost::OnMessageReceived(const IPC::Message& msg) {
 bool RenderFrameProxyHost::InitRenderFrameProxy() {
   DCHECK(!render_frame_proxy_created_);
 
+  // If the current RenderFrameHost is pending deletion, no new proxies should
+  // be created for it, since this frame should no longer be visible from other
+  // processes. We can get here with postMessage while trying to recreate
+  // proxies for the sender.
+  if (!frame_tree_node_->current_frame_host()->is_active())
+    return false;
+
   // It is possible to reach this when the process is dead (in particular, when
   // creating proxies from CreateProxiesForChildFrame).  In that case, don't
   // create the proxy.  The process shouldn't be resurrected just to create
