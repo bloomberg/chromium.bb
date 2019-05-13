@@ -10,6 +10,8 @@ static_library("task") {
   sources = [
     "closure_task.cc",
     "closure_task.h",
+    "sql_callback_task.cc",
+    "sql_callback_task.h",
     "sql_store_base.cc",
     "sql_store_base.h",
     "task.cc",

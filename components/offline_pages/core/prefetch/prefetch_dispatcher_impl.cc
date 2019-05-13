@@ -44,6 +44,7 @@
 #include "components/offline_pages/core/prefetch/tasks/mark_operation_done_task.h"
 #include "components/offline_pages/core/prefetch/tasks/metrics_finalization_task.h"
 #include "components/offline_pages/core/prefetch/tasks/page_bundle_update_task.h"
+#include "components/offline_pages/core/prefetch/tasks/remove_url_task.h"
 #include "components/offline_pages/core/prefetch/tasks/sent_get_operation_cleanup_task.h"
 #include "components/offline_pages/core/prefetch/tasks/stale_entry_finalizer_task.h"
 #include "components/offline_pages/core/prefetch/thumbnail_fetcher.h"
@@ -146,8 +147,17 @@ void PrefetchDispatcherImpl::NewSuggestionsAvailable(
 void PrefetchDispatcherImpl::RemoveSuggestion(const GURL& url) {
   if (!prefetch_prefs::IsEnabled(pref_service_))
     return;
-  // TODO(https://crbug.com/841516): to be implemented soon.
-  NOTIMPLEMENTED();
+
+  // Remove the URL from the prefetch database.
+  task_queue_.AddTask(MakeRemoveUrlTask(service_->GetPrefetchStore(), url));
+
+  // Remove the URL from the offline model.
+  PageCriteria criteria;
+  criteria.url = url;
+  criteria.client_namespaces =
+      std::vector<std::string>{kSuggestedArticlesNamespace};
+  service_->GetOfflinePageModel()->DeletePagesWithCriteria(criteria,
+                                                           base::DoNothing());
 }
 
 void PrefetchDispatcherImpl::RemoveAllUnprocessedPrefetchURLs(

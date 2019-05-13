@@ -166,6 +166,8 @@ class MockOfflinePageModel : public StubOfflinePageModel {
 
   MOCK_METHOD2(AddPage,
                void(const OfflinePageItem& page, AddPageCallback callback));
+  MOCK_METHOD2(DeletePagesWithCriteria,
+               void(const PageCriteria& criteria, DeletePageCallback callback));
 
   void StoreThumbnail(int64_t offline_id, std::string thumbnail) override {
     insert_or_update_visuals(offline_id, thumbnail, std::string());
@@ -424,6 +426,13 @@ class PrefetchDispatcherTest : public PrefetchRequestTestBase {
   PrefetchDispatcherImpl* dispatcher() { return dispatcher_; }
   PrefetchService* prefetch_service() { return taco_->prefetch_service(); }
   TestDownloadService* download_service() { return taco_->download_service(); }
+
+  // Asserts that there exists a single item in the database, and returns it.
+  PrefetchItem GetSingleItem() {
+    std::set<PrefetchItem> items;
+    EXPECT_EQ(1ul, store_util_.GetAllItems(&items));
+    return *items.begin();
+  }
 
  protected:
   // Owned by |taco_|.
@@ -1067,6 +1076,52 @@ TEST_F(PrefetchDispatcherTest, FeedPrefetchItemFlow) {
   EXPECT_EQ(TestSuggestion1().article_url, item.url);
   EXPECT_EQ(PrefetchItemState::ZOMBIE, item.state);
   EXPECT_EQ(PrefetchItemErrorCode::SUCCESS, item.error_code);
+}
+
+// Tests that |RemoveSuggestion()| removes items from the offline database, and
+// triggers finalization of the prefetch item.
+TEST_F(PrefetchDispatcherTest, RemoveSuggestion) {
+  Configure(PrefetchServiceTestTaco::kFeed);
+
+  EXPECT_CALL(*offline_model_, DeletePagesWithCriteria(_, _))
+      .WillOnce([&](const PageCriteria& criteria, DeletePageCallback callback) {
+        EXPECT_EQ(TestSuggestion1().article_url, criteria.url);
+        EXPECT_EQ(std::vector<std::string>({kSuggestedArticlesNamespace}),
+                  criteria.client_namespaces);
+      });
+
+  suggestions_provider_->SetSuggestions({TestSuggestion1()});
+  prefetch_service()->NewSuggestionsAvailable();
+  RunUntilIdle();
+
+  const PrefetchItem item_state_1 = GetSingleItem();
+
+  dispatcher()->RemoveSuggestion(TestSuggestion1().article_url);
+  RunUntilIdle();
+  const PrefetchItem item_state_2 = GetSingleItem();
+
+  // The item is initially not finished.
+  EXPECT_EQ(TestSuggestion1().article_url, item_state_1.url);
+  EXPECT_NE(PrefetchItemState::FINISHED, item_state_1.state);
+
+  // The item is finished after the suggestion is removed.
+  EXPECT_EQ(PrefetchItemState::FINISHED, item_state_2.state);
+}
+
+// Verify that we can attempt to remove a URL that isn't in the prefetch
+// database.
+TEST_F(PrefetchDispatcherTest, RemoveSuggestionDoesNotExist) {
+  Configure(PrefetchServiceTestTaco::kFeed);
+
+  suggestions_provider_->SetSuggestions({TestSuggestion1()});
+  prefetch_service()->NewSuggestionsAvailable();
+  RunUntilIdle();
+
+  dispatcher()->RemoveSuggestion(GURL("http://otherurl.com"));
+  RunUntilIdle();
+
+  // Verify the item still exists.
+  GetSingleItem();
 }
 
 }  // namespace offline_pages
