@@ -124,6 +124,7 @@ void InlineLoginHandlerChromeOS::SetExtraInitParams(
 
   params.SetKey("constrained", base::Value("1"));
   params.SetKey("flow", base::Value("crosAddAccount"));
+  params.SetBoolean("dontResizeNonEmbeddedPages", true);
 }
 
 void InlineLoginHandlerChromeOS::CompleteLogin(const std::string& email,
