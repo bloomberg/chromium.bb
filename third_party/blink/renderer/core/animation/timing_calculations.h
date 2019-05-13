@@ -38,6 +38,18 @@
 
 namespace blink {
 
+namespace {
+inline bool IsWithinEpsilon(double a, double b) {
+  // Permit 2-bits of quantization error. Threshold based on experimentation
+  // with accuracy of fmod.
+  return std::abs(a - b) <= 2.0 * std::numeric_limits<double>::epsilon();
+}
+
+inline bool LessThanOrEqualToWithinEpsilon(double a, double b) {
+  return a <= b || IsWithinEpsilon(a, b);
+}
+}  // namespace
+
 static inline double MultiplyZeroAlwaysGivesZero(double x, double y) {
   DCHECK(!IsNull(x));
   DCHECK(!IsNull(y));
@@ -48,12 +60,6 @@ static inline double MultiplyZeroAlwaysGivesZero(AnimationTimeDelta x,
                                                  double y) {
   DCHECK(!IsNull(y));
   return x.is_zero() || y == 0 ? 0 : (x * y).InSecondsF();
-}
-
-static inline bool IsWithinEpsilon(double a, double b) {
-  // Permit 2-bits of quantization error. Threshold based on experimentation
-  // with accuracy of fmod.
-  return std::abs(a - b) <= 2.0 * std::numeric_limits<double>::epsilon();
 }
 
 // https://drafts.csswg.org/web-animations-1/#animation-effect-phases-and-states
@@ -124,7 +130,8 @@ static inline double CalculateOffsetActiveTime(double active_duration,
   if (IsNull(active_time))
     return NullValue();
 
-  DCHECK(active_time >= 0 && active_time <= active_duration);
+  DCHECK(active_time >= 0 &&
+         LessThanOrEqualToWithinEpsilon(active_time, active_duration));
 
   if (!std::isfinite(active_time))
     return std::numeric_limits<double>::infinity();
@@ -155,7 +162,8 @@ static inline double CalculateIterationTime(double iteration_duration,
     return NullValue();
 
   DCHECK_GE(offset_active_time, 0);
-  DCHECK_LE(offset_active_time, repeated_duration + start_offset);
+  DCHECK(LessThanOrEqualToWithinEpsilon(offset_active_time,
+                                        repeated_duration + start_offset));
 
   if (!std::isfinite(offset_active_time) ||
       (offset_active_time - start_offset == repeated_duration &&

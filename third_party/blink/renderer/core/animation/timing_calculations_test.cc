@@ -91,6 +91,13 @@ TEST(AnimationTimingCalculationsTest, OffsetActiveTime) {
       std::numeric_limits<double>::infinity(),
       CalculateOffsetActiveTime(std::numeric_limits<double>::infinity(),
                                 std::numeric_limits<double>::infinity(), 0));
+
+  // Edge case for active_time being within epsilon of active_duration.
+  // https://crbug.com/962138
+  const double active_time = 1.3435713716800004;
+  const double active_duration = 1.3435713716800002;
+  EXPECT_EQ(active_time,
+            CalculateOffsetActiveTime(active_duration, active_time, 0));
 }
 
 TEST(AnimationTimingCalculationsTest, IterationTime) {
@@ -117,6 +124,18 @@ TEST(AnimationTimingCalculationsTest, IterationTime) {
   timing.iteration_start = 1.1;
   EXPECT_EQ(8, CalculateIterationTime(12, 120, 20, 7,
                                       AnimationEffect::kPhaseActive, timing));
+
+  // Edge case for offset_active_time being within epsilon of (repeated_duration
+  // + start_offset). https://crbug.com/962138
+  timing.iteration_count = 1;
+  const double offset_active_time = 1.3435713716800004;
+  const double iteration_duration = 1.3435713716800002;
+  const double repeated_duration = 1.3435713716800002;
+  EXPECT_NEAR(2.22045e-16,
+              CalculateIterationTime(iteration_duration, repeated_duration,
+                                     offset_active_time, 0,
+                                     AnimationEffect::kPhaseActive, timing),
+              std::numeric_limits<float>::epsilon());
 }
 
 TEST(AnimationTimingCalculationsTest, OverallProgress) {
