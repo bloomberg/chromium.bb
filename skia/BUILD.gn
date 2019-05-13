@@ -832,7 +832,11 @@ source_set("test_fonts") {
       "ext/test_fonts_fuchsia.cc",
       "ext/test_fonts_fuchsia.h",
     ]
-    deps += [ "//third_party/fuchsia-sdk/sdk:sys" ]
+    deps += [
+      "//third_party/fuchsia-sdk/sdk:fonts",
+      "//third_party/fuchsia-sdk/sdk:io",
+      "//third_party/fuchsia-sdk/sdk:sys",
+    ]
   }
   if (is_linux) {
     sources += [ "ext/test_fonts_linux.cc" ]
