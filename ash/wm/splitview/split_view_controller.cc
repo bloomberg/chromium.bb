@@ -22,6 +22,7 @@
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/overview_utils.h"
+#include "ash/wm/splitview/split_view_constants.h"
 #include "ash/wm/splitview/split_view_divider.h"
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -308,7 +309,8 @@ bool SplitViewController::InTabletSplitViewMode() const {
 }
 
 void SplitViewController::SnapWindow(aura::Window* window,
-                                     SnapPosition snap_position) {
+                                     SnapPosition snap_position,
+                                     bool use_divider_spawn_animation) {
   DCHECK(window && CanSnapInSplitview(window));
   DCHECK_NE(snap_position, NONE);
   DCHECK(!is_resizing_);
@@ -323,6 +325,7 @@ void SplitViewController::SnapWindow(aura::Window* window,
   UpdateSnappingWindowTransformedBounds(window);
   RemoveWindowFromOverviewIfApplicable(window);
 
+  bool do_divider_spawn_animation = false;
   if (state_ == SplitViewState::kNoSnap) {
     // Add observers when the split view mode starts.
     Shell::Get()->AddShellObserver(this);
@@ -337,6 +340,20 @@ void SplitViewController::SnapWindow(aura::Window* window,
     if (split_view_type_ == SplitViewType::kTabletType) {
       split_view_divider_ =
           std::make_unique<SplitViewDivider>(this, window->GetRootWindow());
+      // The divider spawn animation adds a finishing touch to the |window|
+      // animation that generally accommodates snapping by dragging, but if
+      // |window| is currently minimized then it will undergo the unminimizing
+      // animation instead. Therefore skip the divider spawn animation if
+      // |window| is minimized.
+      if (use_divider_spawn_animation &&
+          !wm::GetWindowState(window)->IsMinimized()) {
+        // For the divider spawn animation, at the end of the delay, the divider
+        // shall be visually aligned with an edge of |window|. This effect will
+        // be more easily achieved after |window| has been snapped and the
+        // corresponding transform animation has begun. So for now, just set a
+        // flag to indicate that the divider spawn animation should be done.
+        do_divider_spawn_animation = true;
+      }
     }
     splitview_start_time_ = base::Time::Now();
   }
@@ -406,6 +423,28 @@ void SplitViewController::SnapWindow(aura::Window* window,
     const wm::WMEvent event((snap_position == LEFT) ? wm::WM_EVENT_SNAP_LEFT
                                                     : wm::WM_EVENT_SNAP_RIGHT);
     wm::GetWindowState(window)->OnWMEvent(&event);
+  }
+
+  if (do_divider_spawn_animation) {
+    DCHECK(window->layer()->GetAnimator()->GetTargetTransform().IsIdentity());
+
+    const gfx::Rect bounds =
+        GetSnappedWindowBoundsInScreen(window, snap_position);
+    // Get one of the two corners of |window| that meet the divider.
+    gfx::Point p = IsPhysicalLeftOrTop(snap_position) ? bounds.bottom_right()
+                                                      : bounds.origin();
+    // Apply the transform that |window| will undergo when the divider spawns.
+    static const double value = gfx::Tween::CalculateValue(
+        gfx::Tween::FAST_OUT_SLOW_IN,
+        static_cast<double>(kSplitviewDividerSpawnDelayMs) /
+            static_cast<double>(kSplitviewWindowTransformMs));
+    gfx::TransformAboutPivot(bounds.origin(),
+                             gfx::Tween::TransformValueBetween(
+                                 value, window->transform(), gfx::Transform()))
+        .TransformPoint(&p);
+    // Use a coordinate of the transformed |window| corner for spawn_position.
+    split_view_divider_->DoSpawningAnimation(
+        IsCurrentScreenOrientationLandscape() ? p.x() : p.y());
   }
 
   base::RecordAction(base::UserMetricsAction("SplitView_SnapWindow"));
@@ -1851,9 +1890,12 @@ void SplitViewController::EndWindowDragImpl(
                                                   /*animate=*/true);
     }
   } else {
+    aura::Window* initiator_window =
+        window->GetProperty(ash::kTabDraggingSourceWindowKey);
     // Note SnapWindow() might put the previous window that was snapped at the
     // |desired_snap_position| in overview.
-    SnapWindow(window, desired_snap_position);
+    SnapWindow(window, desired_snap_position,
+               /*use_divider_spawn_animation=*/!initiator_window);
     // Reapply the bounds update because the bounds might have been
     // modified by dragging operation.
     // TODO(oshima): WindowState already gets notified when drag ends. Refactor
@@ -1868,8 +1910,6 @@ void SplitViewController::EndWindowDragImpl(
       // If splitview mode was not active before snapping the dragged
       // window, snap the initiator window to the other side of the screen
       // if it's not the same window as the dragged window.
-      aura::Window* initiator_window =
-          window->GetProperty(ash::kTabDraggingSourceWindowKey);
       if (initiator_window && initiator_window != window) {
         SnapWindow(initiator_window,
                    (desired_snap_position == SplitViewController::LEFT)

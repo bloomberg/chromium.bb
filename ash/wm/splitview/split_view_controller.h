@@ -98,8 +98,14 @@ class ASH_EXPORT SplitViewController : public SplitViewNotifier,
 
   // Snaps window to left/right. It will try to remove |window| from the
   // overview window grid first before snapping it if |window| is currently
-  // showing in the overview window grid.
-  void SnapWindow(aura::Window* window, SnapPosition snap_position);
+  // showing in the overview window grid. If split view mode is not already
+  // active, and if |window| is not minimized, |use_divider_spawn_animation|
+  // causes the divider to show up with an animation that adds a finishing touch
+  // to the snap animation of |window|. Use true when |window| is snapped by
+  // dragging, except for tab dragging.
+  void SnapWindow(aura::Window* window,
+                  SnapPosition snap_position,
+                  bool use_divider_spawn_animation = false);
 
   // Swaps the left and right windows. This will do nothing if one of the
   // windows is not snapped.

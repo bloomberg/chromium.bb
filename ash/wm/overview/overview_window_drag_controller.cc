@@ -482,7 +482,8 @@ void OverviewWindowDragController::SnapWindow(
   DCHECK_NE(snap_position, SplitViewController::NONE);
 
   // |item_| will be deleted after SplitViewController::SnapWindow().
-  split_view_controller_->SnapWindow(item_->GetWindow(), snap_position);
+  split_view_controller_->SnapWindow(item_->GetWindow(), snap_position,
+                                     /*use_divider_spawn_animation=*/true);
   item_ = nullptr;
 }
 

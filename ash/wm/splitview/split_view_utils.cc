@@ -5,6 +5,7 @@
 #include "ash/wm/splitview/split_view_utils.h"
 
 #include "ash/accessibility/accessibility_controller.h"
+#include "ash/display/screen_orientation_controller.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/screen_util.h"
@@ -46,7 +47,7 @@ constexpr base::TimeDelta kLabelAnimationDelay =
     base::TimeDelta::FromMilliseconds(167);
 // The time duration for the window transformation animations.
 constexpr base::TimeDelta kWindowTransform =
-    base::TimeDelta::FromMilliseconds(250);
+    base::TimeDelta::FromMilliseconds(kSplitviewWindowTransformMs);
 
 constexpr float kHighlightOpacity = 0.3f;
 constexpr float kPreviewAreaHighlightOpacity = 0.18f;
@@ -265,6 +266,13 @@ bool CanSnapInSplitview(aura::Window* window) {
   }
 
   return true;
+}
+
+bool IsPhysicalLeftOrTop(SplitViewController::SnapPosition position) {
+  DCHECK_NE(SplitViewController::NONE, position);
+  return position == (IsCurrentScreenOrientationPrimary()
+                          ? SplitViewController::LEFT
+                          : SplitViewController::RIGHT);
 }
 
 }  // namespace ash
