@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/strings/string16.h"
+#include "base/trace_event/trace_event.h"
 #include "base/values.h"
 
 namespace content {
@@ -32,6 +33,7 @@ static int CALLBACK EnumFontFamExProc(ENUMLOGFONTEXW* logical_font,
 }
 
 std::unique_ptr<base::ListValue> GetFontList_SlowBlocking() {
+  TRACE_EVENT0("fonts", "GetFontList_SlowBlocking");
   std::set<base::string16> font_names;
 
   LOGFONTW logfont;
