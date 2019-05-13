@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_thread.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -235,6 +236,12 @@ class Internal : public mojom::blink::ServiceWorkerInstalledScriptsManager {
   base::WeakPtrFactory<Internal> weak_factory_;
 };
 
+std::unique_ptr<TracedValue> UrlToTracedValue(const KURL& url) {
+  auto value = std::make_unique<TracedValue>();
+  value->SetString("url", url.GetString());
+  return value;
+}
+
 }  // namespace
 
 ServiceWorkerInstalledScriptsManager::ServiceWorkerInstalledScriptsManager(
@@ -267,8 +274,8 @@ std::unique_ptr<InstalledScriptsManager::ScriptData>
 ServiceWorkerInstalledScriptsManager::GetScriptData(const KURL& script_url) {
   DCHECK(!IsMainThread());
   TRACE_EVENT1("ServiceWorker",
-               "ServiceWorkerInstalledScriptsManager::GetScriptData", "url",
-               script_url.GetString().Utf8().data());
+               "ServiceWorkerInstalledScriptsManager::GetScriptData",
+               "script_url", UrlToTracedValue(script_url));
   if (!IsScriptInstalled(script_url))
     return nullptr;
 
