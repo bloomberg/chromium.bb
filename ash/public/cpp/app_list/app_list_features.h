@@ -53,9 +53,6 @@ ASH_PUBLIC_EXPORT extern const base::Feature kEnableZeroStateAppsRanker;
 // Enable an model that ranks query based non-apps result.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableQueryBasedMixedTypesRanker;
 
-// Enable a model that ranks zero-state files and recent queries.
-ASH_PUBLIC_EXPORT extern const base::Feature kEnableZeroStateMixedTypesRanker;
-
 // Enables the feature to include a single reinstallation candidate in
 // zero-state.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableAppReinstallZeroState;
@@ -80,7 +77,6 @@ bool ASH_PUBLIC_EXPORT IsAdaptiveResultRankerEnabled();
 bool ASH_PUBLIC_EXPORT IsQueryBasedAppsRankerEnabled();
 bool ASH_PUBLIC_EXPORT IsZeroStateAppsRankerEnabled();
 bool ASH_PUBLIC_EXPORT IsQueryBasedMixedTypesRankerEnabled();
-bool ASH_PUBLIC_EXPORT IsZeroStateMixedTypesRankerEnabled();
 bool ASH_PUBLIC_EXPORT IsAppReinstallZeroStateEnabled();
 bool ASH_PUBLIC_EXPORT IsEmbeddedAssistantUIEnabled();
 bool ASH_PUBLIC_EXPORT IsAppGridGhostEnabled();

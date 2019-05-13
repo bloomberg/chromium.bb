@@ -156,24 +156,19 @@ void Mixer::RemoveDuplicates(SortedResults* results) {
 }
 
 void Mixer::FetchResults(const base::string16& query) {
-  if (non_app_ranker_)
-    non_app_ranker_->FetchRankings(query);
+  if (ranker_)
+    ranker_->FetchRankings(query);
   for (const auto& group : groups_)
-    group->FetchResults(non_app_ranker_.get());
+    group->FetchResults(ranker_.get());
 }
 
-void Mixer::SetNonAppSearchResultRanker(
-    std::unique_ptr<SearchResultRanker> ranker) {
-  non_app_ranker_ = std::move(ranker);
-}
-
-SearchResultRanker* Mixer::GetNonAppSearchResultRanker() {
-  return non_app_ranker_.get();
+void Mixer::SetSearchResultRanker(std::unique_ptr<SearchResultRanker> ranker) {
+  ranker_ = std::move(ranker);
 }
 
 void Mixer::Train(const std::string& id, RankingItemType type) {
-  if (non_app_ranker_)
-    non_app_ranker_->Train(id, type);
+  if (ranker_)
+    ranker_->Train(id, type);
 }
 
 }  // namespace app_list

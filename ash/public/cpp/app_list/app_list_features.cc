@@ -33,8 +33,6 @@ const base::Feature kEnableZeroStateAppsRanker{
     "EnableZeroStateAppsRanker", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kEnableQueryBasedMixedTypesRanker{
     "EnableQueryBasedMixedTypesRanker", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kEnableZeroStateMixedTypesRanker{
-    "EnableZeroStateMixedTypesRanker", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnableAppReinstallZeroState{
     "EnableAppReinstallZeroState", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnableEmbeddedAssistantUI{
@@ -90,10 +88,6 @@ bool IsZeroStateAppsRankerEnabled() {
 
 bool IsQueryBasedMixedTypesEnabled() {
   return base::FeatureList::IsEnabled(kEnableQueryBasedMixedTypesRanker);
-}
-
-bool IsZeroStateMixedTypesRankerEnabled() {
-  return base::FeatureList::IsEnabled(kEnableZeroStateMixedTypesRanker);
 }
 
 bool IsAppReinstallZeroStateEnabled() {

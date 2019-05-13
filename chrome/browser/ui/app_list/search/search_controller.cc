@@ -51,13 +51,10 @@ SearchController::SearchController(AppListModelUpdater* model_updater,
                                    AppListControllerDelegate* list_controller,
                                    Profile* profile)
     : mixer_(std::make_unique<Mixer>(model_updater)),
-      app_ranker_(std::make_unique<AppSearchResultRanker>(
+      ranker_(std::make_unique<AppSearchResultRanker>(
           profile->GetPath(),
           chromeos::ProfileHelper::IsEphemeralUserProfile(profile))),
-      list_controller_(list_controller) {
-  mixer_->SetNonAppSearchResultRanker(
-      std::make_unique<SearchResultRanker>(profile));
-}
+      list_controller_(list_controller) {}
 
 SearchController::~SearchController() {}
 
@@ -153,12 +150,9 @@ ChromeSearchResult* SearchController::GetResultByTitleForTest(
   return nullptr;
 }
 
-AppSearchResultRanker* SearchController::GetAppSearchResultRanker() {
-  return app_ranker_.get();
-}
-
-SearchResultRanker* SearchController::GetNonAppSearchResultRanker() {
-  return mixer_->GetNonAppSearchResultRanker();
+void SearchController::SetSearchResultRanker(
+    std::unique_ptr<SearchResultRanker> ranker) {
+  mixer_->SetSearchResultRanker(std::move(ranker));
 }
 
 void SearchController::Train(const std::string& id, RankingItemType type) {
@@ -180,6 +174,10 @@ void SearchController::Train(const std::string& id, RankingItemType type) {
   for (const auto& provider : providers_)
     provider->Train(id, type);
   mixer_->Train(id, type);
+}
+
+AppSearchResultRanker* SearchController::GetSearchResultRanker() {
+  return ranker_.get();
 }
 
 }  // namespace app_list
