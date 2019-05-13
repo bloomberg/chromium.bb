@@ -27,4 +27,12 @@ public class TouchlessDelegate {
             ChromeActivity activity, NativePageHost host) {
         return null;
     }
+
+    public static Class<?> getNoTouchActivityClass() {
+        return null;
+    }
+
+    public static Class<?> getTouchlessPreferencesClass() {
+        return null;
+    }
 }
