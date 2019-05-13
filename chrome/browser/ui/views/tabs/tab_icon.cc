@@ -31,10 +31,6 @@
 
 namespace {
 
-bool UseNewLoadingAnimation() {
-  return base::FeatureList::IsEnabled(features::kNewTabLoadingAnimation);
-}
-
 constexpr int kAttentionIndicatorRadius = 3;
 constexpr int kNewLoadingAnimationStrokeWidthDp = 2;
 
@@ -84,6 +80,8 @@ class TabIcon::CrashAnimation : public gfx::LinearAnimation,
 
 TabIcon::TabIcon()
     : clock_(base::DefaultTickClock::GetInstance()),
+      use_new_loading_animation_(
+          base::FeatureList::IsEnabled(features::kNewTabLoadingAnimation)),
       favicon_fade_in_animation_(base::TimeDelta::FromMilliseconds(250),
                                  gfx::LinearAnimation::kDefaultFrameRate,
                                  this) {
@@ -183,7 +181,7 @@ void TabIcon::OnPaint(gfx::Canvas* canvas) {
       std::min(gfx::kFaviconSize, contents_bounds.height()));
 
   // The old animation replaces the favicon and should early-abort.
-  if (!UseNewLoadingAnimation() && ShowingLoadingAnimation()) {
+  if (!use_new_loading_animation_ && ShowingLoadingAnimation()) {
     PaintLoadingAnimation(canvas, icon_bounds);
     return;
   }
@@ -251,7 +249,7 @@ void TabIcon::PaintAttentionIndicatorAndIcon(gfx::Canvas* canvas,
 void TabIcon::PaintLoadingAnimation(gfx::Canvas* canvas, gfx::Rect bounds) {
   const ui::ThemeProvider* tp = GetThemeProvider();
   base::Optional<SkScalar> stroke_width;
-  if (UseNewLoadingAnimation())
+  if (use_new_loading_animation_)
     stroke_width = kNewLoadingAnimationStrokeWidthDp;
 
   if (network_state_ == TabNetworkState::kWaiting) {
@@ -370,7 +368,7 @@ void TabIcon::SetNetworkState(TabNetworkState network_state) {
   const bool was_animated = NetworkStateIsAnimated(network_state_);
   network_state_ = network_state;
   const bool is_animated = NetworkStateIsAnimated(network_state_);
-  if (UseNewLoadingAnimation() && was_animated != is_animated) {
+  if (use_new_loading_animation_ && was_animated != is_animated) {
     if (was_animated && HasNonDefaultFavicon()) {
       favicon_fade_in_animation_.Start();
     } else {
