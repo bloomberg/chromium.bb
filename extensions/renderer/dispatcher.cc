@@ -685,7 +685,7 @@ std::vector<Dispatcher::JsResourceInfo> Dispatcher::GetJsResources() {
       {"webViewInternal", IDR_WEB_VIEW_INTERNAL_CUSTOM_BINDINGS_JS},
 
       {"keep_alive", IDR_KEEP_ALIVE_JS},
-      {"mojo_bindings", IDR_MOJO_MOJO_BINDINGS_JS, true},
+      {"mojo_bindings", IDR_MOJO_MOJO_BINDINGS_JS},
       {"extensions/common/mojo/keep_alive.mojom", IDR_KEEP_ALIVE_MOJOM_JS},
 
       // Custom bindings.
@@ -1323,7 +1323,7 @@ void Dispatcher::UpdateContentCapabilities(ScriptContext* context) {
 void Dispatcher::PopulateSourceMap() {
   const std::vector<JsResourceInfo> resources = GetJsResources();
   for (const auto& resource : resources)
-    source_map_.RegisterSource(resource.name, resource.id, resource.gzipped);
+    source_map_.RegisterSource(resource.name, resource.id);
   delegate_->PopulateSourceMap(&source_map_);
 }
 
