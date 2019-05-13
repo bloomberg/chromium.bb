@@ -25,7 +25,8 @@ USE_FAKE_CAMERA_DEVICE = Tag(
 BACKDROP_FILTER = Tag(
     'backdrop_filter', 'Backdrop filter stories')
 IMAGE_DECODING = Tag(
-    'image_decoding', 'Stories with accelerated jpeg decoding')
+    'image_decoding', ('Stories decoding JPEG and WebP (and using GPU '
+                       'rasterization) to compare YUV and RGB'))
 KEY_DESKTOP_MOVE = Tag(
     'key_desktop_move', 'Key desktop move stories')
 KEY_HIT_TEST = Tag(
