@@ -113,8 +113,7 @@ void NTPJsonFetcher::OnJsonParseSuccess(
     return;
   }
 
-  auto catalog = NTPCatalog::create(
-      static_cast<base::DictionaryValue*>(parsed_json.get()));
+  auto catalog = NTPCatalog::create(*parsed_json);
   std::move(callback_).Run(std::move(catalog));
 }
 
