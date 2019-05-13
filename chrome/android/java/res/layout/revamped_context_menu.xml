@@ -13,7 +13,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:layout_margin="24dp"
+        android:layout_marginStart="@dimen/revamped_context_menu_lateral_margin"
+        android:layout_marginEnd="@dimen/revamped_context_menu_lateral_margin"
+        android:layout_marginTop="@dimen/revamped_context_menu_vertical_margin"
+        android:layout_marginBottom="@dimen/revamped_context_menu_vertical_margin"
         android:background="@drawable/popup_bg_tinted"
         android:divider="@null" />
 </FrameLayout>

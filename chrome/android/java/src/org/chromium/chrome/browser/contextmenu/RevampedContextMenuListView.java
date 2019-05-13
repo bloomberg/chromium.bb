@@ -34,7 +34,8 @@ public class RevampedContextMenuListView extends ListView {
     private int calculateWidth() {
         int windowWidthPx = getResources().getDisplayMetrics().widthPixels;
         int maxWidth = getResources().getDimensionPixelSize(R.dimen.context_menu_max_width);
-        int lateralMargin = getResources().getDimensionPixelSize(R.dimen.context_menu_min_padding);
+        int lateralMargin =
+                getResources().getDimensionPixelSize(R.dimen.revamped_context_menu_lateral_margin);
 
         return Math.min(maxWidth, windowWidthPx - 2 * lateralMargin);
     }

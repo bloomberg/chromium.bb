@@ -542,8 +542,16 @@
     <dimen name="context_menu_selectable_items_min_size">120dp</dimen>
 
     <!-- Revamped Context Menu Dimensions -->
-    <dimen name="revamped_context_menu_header_image_max_size">64dp</dimen>
-
+    <dimen name="revamped_context_menu_lateral_margin">40dp</dimen>
+    <dimen name="revamped_context_menu_vertical_margin">20dp</dimen>
+    <dimen name="revamped_context_menu_list_lateral_padding">16dp</dimen>
+    <dimen name="revamped_context_menu_header_vertical_padding">16dp</dimen>
+    <dimen name="revamped_context_menu_divider_padding">8dp</dimen>
+    <dimen name="revamped_context_menu_header_image_max_size">60dp</dimen>
+    <dimen name="revamped_context_menu_header_circle_bg_diameter">48dp</dimen>
+    <dimen name="revamped_context_menu_header_circle_bg_margin">6dp</dimen>
+    <dimen name="revamped_context_menu_header_monogram_text_size">16dp</dimen>
+    <dimen name="revamped_context_menu_header_monogram_size">26dp</dimen>
     <!-- Reader Mode dimensions -->
     <!-- Padding surrounding the message. -->
     <dimen name="reader_mode_infobar_text_padding">8dp</dimen>
