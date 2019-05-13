@@ -314,13 +314,21 @@ contact someone from the OWNERS file.
 
 Histogram expiry is specified by **'expires_after'** attribute in histogram
 descriptions in histograms.xml. The attribute can be specified as date in
-**YYYY-MM-DD** format or as Chrome milestone in **M**\*(e.g. M68) format. After
-a histogram expires, it will not be recorded (nor uploaded to the UMA servers).
-The code to record it becomes dead code, and should be removed from the
-codebase along with marking the histogram definition as obsolete. However, if
-histogram would remain useful, the expiration should be extended accordingly
-before it becomes expired. If histogram you care about already expired, see
-[Expired Histogram Whitelist](#Expired-histogram-whitelist).
+**YYYY-MM-DD** format or as Chrome milestone in **M**\*(e.g. M68) format. In the
+latter case, the actual expiry date is about 12 weeks after that branch is cut,
+or basically when it is replaced on the "stable" channel by the following
+release.
+
+After a histogram expires, it will cease to be displayed on the dashboard.
+However, the client may continue to send data for that histogram for some time
+after the official expiry date so simply bumping the 'expires_after' date in
+HEAD may be sufficient to resurrect it without any discontinuity. If too much
+time has passed and the client is no longer sending data, it can be re-enabled
+via Finch: see [Expired Histogram Whitelist](#Expired-histogram-whitelist).
+
+Once a histogram has expired, the code to record it becomes dead code and should
+be removed from the codebase along with marking the histogram definition as
+obsolete.
 
 In **rare** cases, the expiry can be set to "never". This is used to denote
 metrics of critical importance that are, typically, used for other reports.
