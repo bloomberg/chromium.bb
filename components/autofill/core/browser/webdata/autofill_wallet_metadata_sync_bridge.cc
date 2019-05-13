@@ -549,6 +549,7 @@ void AutofillWalletMetadataSyncBridge::DeleteOldOrphanMetadata() {
     return;
   }
 
+  int deleted_count = 0;
   std::unique_ptr<MetadataChangeList> metadata_change_list =
       CreateMetadataChangeList();
   for (const std::string storage_key : old_orphan_keys) {
@@ -558,12 +559,20 @@ void AutofillWalletMetadataSyncBridge::DeleteOldOrphanMetadata() {
                              parsed_storage_key.metadata_id)) {
       cache_.erase(storage_key);
       change_processor()->Delete(storage_key, metadata_change_list.get());
+      ++deleted_count;
     }
   }
+  UMA_HISTOGRAM_COUNTS_100("Sync.WalletMetadata.DeletedOldOrphans",
+                           deleted_count);
+
   // Commit the transaction to make sure the data and the metadata is written
   // down (especially on Android where we cannot rely on committing transactions
   // on shutdown).
   web_data_backend_->CommitChanges();
+
+  // We do not need to NotifyOfMultipleAutofillChanges() because this change is
+  // invisible for PersonalDataManager - it does not change metadata for any
+  // existing data.
 }
 
 void AutofillWalletMetadataSyncBridge::GetDataImpl(
