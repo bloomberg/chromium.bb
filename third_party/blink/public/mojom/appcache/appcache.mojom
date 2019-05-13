@@ -66,10 +66,12 @@ interface AppCacheBackend {
   //
   // Unregistering the host is accomplished by closing the AppCacheHost pipe.
   //
-  // TODO(mek): Move this method to DocumentInterfaceBroker to stop passing
-  // frame ID over mojo.
+  // Frames go through DocumentInterfaceBroker and this is now only used for
+  // workers.
+  // TODO(mek): Once it has 'WebContextInterfaceBroker' for workers, move this
+  // to the implementation of 'WebContextInterfaceBroker'. crbug.com/718652
   RegisterHost(AppCacheHost& host_request, AppCacheFrontend frontend,
-               int32 host_id, int32 render_frame_id);
+               int32 host_id);
 };
 
 interface AppCacheHost {

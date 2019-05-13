@@ -20,6 +20,7 @@
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
+#include "third_party/blink/public/mojom/frame/document_interface_broker.mojom.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_response.h"
@@ -64,9 +65,9 @@ WebApplicationCacheHostImpl* WebApplicationCacheHostImpl::FromId(int id) {
 }
 
 WebApplicationCacheHostImpl::WebApplicationCacheHostImpl(
+    blink::mojom::DocumentInterfaceBroker* interface_broker,
     WebApplicationCacheHostClient* client,
     int appcache_host_id,
-    int render_frame_id,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : binding_(this),
       client_(client),
@@ -85,6 +86,15 @@ WebApplicationCacheHostImpl::WebApplicationCacheHostImpl(
   }
   DCHECK(host_id_ != blink::mojom::kAppCacheNoHostId);
 
+  blink::mojom::AppCacheFrontendPtr frontend_ptr;
+  binding_.Bind(mojo::MakeRequest(&frontend_ptr, task_runner), task_runner);
+  if (interface_broker) {
+    interface_broker->RegisterAppCacheHost(
+        mojo::MakeRequest(&backend_host_, std::move(task_runner)),
+        std::move(frontend_ptr), host_id_);
+    return;
+  }
+
   static const base::NoDestructor<blink::mojom::AppCacheBackendPtr> backend_ptr(
       [] {
         blink::mojom::AppCacheBackendPtr result;
@@ -92,13 +102,13 @@ WebApplicationCacheHostImpl::WebApplicationCacheHostImpl(
             mojom::kBrowserServiceName, mojo::MakeRequest(&result));
         return result;
       }());
-  backend_ = backend_ptr->get();
 
-  blink::mojom::AppCacheFrontendPtr frontend_ptr;
-  binding_.Bind(mojo::MakeRequest(&frontend_ptr, task_runner), task_runner);
-  backend_->RegisterHost(
+  // Once we have 'WebContextInterfaceBroker', we can call this function through
+  // it like render frame.
+  // Refer to the design document, 'https://bit.ly/2GT0rZv'.
+  backend_ptr->get()->RegisterHost(
       mojo::MakeRequest(&backend_host_, std::move(task_runner)),
-      std::move(frontend_ptr), host_id_, render_frame_id);
+      std::move(frontend_ptr), host_id_);
 }
 
 WebApplicationCacheHostImpl::~WebApplicationCacheHostImpl() {

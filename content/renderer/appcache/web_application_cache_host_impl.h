@@ -17,6 +17,12 @@
 #include "third_party/blink/public/platform/web_vector.h"
 #include "url/gurl.h"
 
+namespace blink {
+namespace mojom {
+class DocumentInterfaceBroker;
+}
+}  // namespace blink
+
 namespace content {
 
 class WebApplicationCacheHostImpl : public blink::WebApplicationCacheHost,
@@ -25,15 +31,15 @@ class WebApplicationCacheHostImpl : public blink::WebApplicationCacheHost,
   // Returns the host having given id or NULL if there is no such host.
   static WebApplicationCacheHostImpl* FromId(int id);
 
+  // |interface_broker| can be null for workers.
   WebApplicationCacheHostImpl(
+      blink::mojom::DocumentInterfaceBroker* interface_broker,
       blink::WebApplicationCacheHostClient* client,
       int appcache_host_id,
-      int render_frame_id,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~WebApplicationCacheHostImpl() override;
 
   int host_id() const { return host_id_; }
-  blink::mojom::AppCacheBackend* backend() const { return backend_; }
   blink::WebApplicationCacheHostClient* client() const { return client_; }
 
   // blink::mojom::AppCacheFrontend
@@ -66,7 +72,6 @@ class WebApplicationCacheHostImpl : public blink::WebApplicationCacheHost,
 
   mojo::Binding<blink::mojom::AppCacheFrontend> binding_;
   blink::WebApplicationCacheHostClient* client_;
-  blink::mojom::AppCacheBackend* backend_;
   blink::mojom::AppCacheHostPtr backend_host_;
   int host_id_;
   blink::mojom::AppCacheStatus status_;

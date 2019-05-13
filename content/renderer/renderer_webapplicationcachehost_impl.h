@@ -12,15 +12,15 @@
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 
 namespace content {
+class RenderFrameImpl;
 class RenderViewImpl;
 
 class RendererWebApplicationCacheHostImpl : public WebApplicationCacheHostImpl {
  public:
   RendererWebApplicationCacheHostImpl(
-      RenderViewImpl* render_view,
+      RenderFrameImpl* render_frame,
       blink::WebApplicationCacheHostClient* client,
       int appcache_host_id,
-      int frame_routing_id,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // blink::mojom::AppCacheHostFrontend:

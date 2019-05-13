@@ -21,6 +21,8 @@
 #include "content/browser/appcache/appcache_backend_impl.h"
 #include "content/browser/appcache/appcache_entry.h"
 #include "content/browser/appcache/appcache_histograms.h"
+#include "content/browser/appcache/appcache_host.h"
+#include "content/browser/appcache/appcache_navigation_handle_core.h"
 #include "content/browser/appcache/appcache_policy.h"
 #include "content/browser/appcache/appcache_quota_client.h"
 #include "content/browser/appcache/appcache_response.h"
@@ -405,6 +407,7 @@ AppCacheServiceImpl::AppCacheServiceImpl(
 
 AppCacheServiceImpl::~AppCacheServiceImpl() {
   DCHECK(backends_.empty());
+  hosts_.clear();
   for (auto& observer : observers_)
     observer.OnServiceDestructionImminent(this);
   for (auto& helper : pending_helpers_)
@@ -513,6 +516,70 @@ void AppCacheServiceImpl::RegisterBackend(
 void AppCacheServiceImpl::UnregisterBackend(
     AppCacheBackendImpl* backend_impl) {
   backends_.erase(backend_impl->process_id());
+}
+
+AppCacheHost* AppCacheServiceImpl::GetHost(int process_id, int host_id) {
+  auto it = hosts_.find({process_id, host_id});
+  return (it != hosts_.end()) ? (it->second.get()) : nullptr;
+}
+
+bool AppCacheServiceImpl::EraseHost(int process_id, int host_id) {
+  return (hosts_.erase({process_id, host_id}) != 0);
+}
+
+void AppCacheServiceImpl::RegisterHostForFrame(
+    blink::mojom::AppCacheHostRequest host_request,
+    blink::mojom::AppCacheFrontendPtrInfo frontend,
+    int32_t host_id,
+    int32_t render_frame_id,
+    int process_id,
+    mojo::ReportBadMessageCallback bad_message_callback) {
+  blink::mojom::AppCacheFrontendPtr appcache_frontend_ptr(std::move(frontend));
+  RegisterHostInternal(
+      std::move(host_request), std::move(appcache_frontend_ptr), host_id,
+      render_frame_id, process_id, std::move(bad_message_callback));
+}
+
+void AppCacheServiceImpl::RegisterHostInternal(
+    blink::mojom::AppCacheHostRequest host_request,
+    blink::mojom::AppCacheFrontendPtr frontend,
+    int32_t id,
+    int32_t render_frame_id,
+    int process_id,
+    mojo::ReportBadMessageCallback bad_message_callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (GetHost(process_id, id)) {
+    std::move(bad_message_callback).Run("ACSI_REGISTER");
+    return;
+  }
+
+  // The AppCacheHost could have been precreated in which case we want to
+  // register it with the backend here.
+  std::unique_ptr<AppCacheHost> host =
+      AppCacheNavigationHandleCore::GetPrecreatedHost(id);
+  if (host) {
+    // Switch the frontend proxy so that the host can make IPC calls from
+    // here on.
+    host->set_frontend(std::move(frontend), render_frame_id);
+  } else {
+    if (id < 0) {
+      // Negative ids correspond to precreated hosts. We should be able to
+      // retrieve one, but currently we have a race between this IPC and
+      // browser removing the corresponding frame and precreated AppCacheHost.
+      // Instead of crashing the renderer or returning wrong host, we do not
+      // bind any host and let renderer do nothing until it is destroyed by
+      // the request from browser.
+      return;
+    }
+    host = std::make_unique<AppCacheHost>(id, process_id, render_frame_id,
+                                          std::move(frontend), this);
+  }
+
+  host->BindRequest(std::move(host_request));
+
+  std::pair<int, int> key = std::make_pair(process_id, id);
+  hosts_.emplace(std::piecewise_construct, std::forward_as_tuple(key),
+                 std::forward_as_tuple(std::move(host)));
 }
 
 }  // namespace content
