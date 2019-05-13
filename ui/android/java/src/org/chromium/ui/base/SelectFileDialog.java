@@ -19,7 +19,6 @@ import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.webkit.MimeTypeMap;
 
-import org.chromium.base.BuildInfo;
 import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -155,9 +154,7 @@ public class SelectFileDialog implements WindowAndroid.IntentCallback, PhotoPick
                         new Intent(MediaStore.Audio.Media.RECORD_SOUND_ACTION));
 
         List<String> missingPermissions = new ArrayList<>();
-        String storagePermission = BuildInfo.isAtLeastQ()
-                ? "android.permission.READ_MEDIA_IMAGES"
-                : Manifest.permission.READ_EXTERNAL_STORAGE;
+        String storagePermission = Manifest.permission.READ_EXTERNAL_STORAGE;
         boolean shouldUsePhotoPicker = shouldUsePhotoPicker();
         if (shouldUsePhotoPicker) {
             if (!window.hasPermission(storagePermission)) missingPermissions.add(storagePermission);
