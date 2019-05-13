@@ -2229,11 +2229,7 @@ test("browser_tests") {
       ]
 
       if (is_chrome_branded) {
-        sources += [
-          "../browser/conflicts/incompatible_applications_browsertest.cc",
-          "../browser/conflicts/third_party_blocking_browsertest.cc",
-        ]
-        deps += [ ":conflicts_dll" ]
+        deps += [ "//chrome/browser/conflicts:browser_tests" ]
       }
     } else {  # Not Windows.
       sources -= [ "../app/chrome_version.rc.version" ]
@@ -2658,14 +2654,6 @@ test("unit_tests") {
     "../browser/component_updater/subresource_filter_component_installer_unittest.cc",
     "../browser/component_updater/supervised_user_whitelist_installer_unittest.cc",
     "../browser/component_updater/sw_reporter_installer_win_unittest.cc",
-    "../browser/conflicts/enumerate_input_method_editors_win_unittest.cc",
-    "../browser/conflicts/enumerate_shell_extensions_win_unittest.cc",
-    "../browser/conflicts/inspection_results_cache_win_unittest.cc",
-    "../browser/conflicts/module_database_win_unittest.cc",
-    "../browser/conflicts/module_event_sink_impl_win_unittest.cc",
-    "../browser/conflicts/module_info_util_win_unittest.cc",
-    "../browser/conflicts/module_info_win_unittest.cc",
-    "../browser/conflicts/module_inspector_win_unittest.cc",
     "../browser/content_settings/content_settings_default_provider_unittest.cc",
     "../browser/content_settings/content_settings_mock_observer.cc",
     "../browser/content_settings/content_settings_mock_observer.h",
@@ -3245,7 +3233,10 @@ test("unit_tests") {
   if (is_win) {
     assert(toolkit_views)
     sources += [ "../browser/ui/startup/credential_provider_signin_info_fetcher_win_unittest.cc" ]
-    deps += [ "//chrome/test:credential_provider_test_utils" ]
+    deps += [
+      "//chrome/browser/conflicts:unit_tests",
+      "//chrome/test:credential_provider_test_utils",
+    ]
   }
 
   if (enable_dice_support) {
@@ -4570,7 +4561,6 @@ test("unit_tests") {
     data_deps += [
       "//chrome/browser/safe_browsing/incident_reporting/verifier_test:verifier_test_dll_1",
       "//chrome/browser/safe_browsing/incident_reporting/verifier_test:verifier_test_dll_2",
-      ":conflicts_dll",
     ]
 
     libs = [
@@ -4589,17 +4579,7 @@ test("unit_tests") {
     ]
 
     if (is_chrome_branded) {
-      sources += [
-        "../browser/conflicts/incompatible_applications_updater_win_unittest.cc",
-        "../browser/conflicts/installed_applications_win_unittest.cc",
-        "../browser/conflicts/module_blacklist_cache_updater_win_unittest.cc",
-        "../browser/conflicts/module_blacklist_cache_util_win_unittest.cc",
-        "../browser/conflicts/module_list_filter_win_unittest.cc",
-        "../browser/conflicts/module_load_attempt_log_listener_win_unittest.cc",
-        "../browser/conflicts/registry_key_watcher_win_unittest.cc",
-        "../browser/conflicts/third_party_conflicts_manager_win_unittest.cc",
-        "../browser/google/google_update_win_unittest.cc",
-      ]
+      sources += [ "../browser/google/google_update_win_unittest.cc" ]
     }
   }
   if (is_android) {
@@ -4862,15 +4842,6 @@ static_library("test_support_unit") {
     ]
 
     deps += [ "//ash:test_support" ]
-  }
-}
-
-if (is_win) {
-  loadable_module("conflicts_dll") {
-    testonly = true
-    sources = [
-      "conflicts/conflicts_dll.cc",
-    ]
   }
 }
 
