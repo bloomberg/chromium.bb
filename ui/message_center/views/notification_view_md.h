@@ -123,7 +123,7 @@ class NotificationInputContainerMD : public views::InkDropHostView,
   NotificationInputContainerMD(NotificationInputDelegate* delegate);
   ~NotificationInputContainerMD() override;
 
-  void AnimateBackground(const ui::LocatedEvent& event);
+  void AnimateBackground(const ui::Event& event);
 
   // Overridden from views::InkDropHostView:
   void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
@@ -223,6 +223,8 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, TestDeleteOnToggleExpanded);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, TestIconSizing);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, TestInlineReply);
+  FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest,
+                           TestInlineReplyActivateWithKeyPress);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest,
                            TestInlineReplyRemovedByUpdate);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, UpdateAddingIcon);

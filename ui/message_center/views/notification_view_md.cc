@@ -390,11 +390,13 @@ NotificationInputContainerMD::NotificationInputContainerMD(
 
 NotificationInputContainerMD::~NotificationInputContainerMD() = default;
 
-void NotificationInputContainerMD::AnimateBackground(
-    const ui::LocatedEvent& event) {
-  if (View::HitTestPoint(event.location()))
-    AnimateInkDrop(views::InkDropState::ACTION_PENDING,
-                   ui::LocatedEvent::FromIfValid(&event));
+void NotificationInputContainerMD::AnimateBackground(const ui::Event& event) {
+  // Try to get a located event. This can be NULL if triggered via keyboard.
+  const ui::LocatedEvent* located_event = ui::LocatedEvent::FromIfValid(&event);
+  // Use default animation if location is out of bounds.
+  if (located_event && !View::HitTestPoint(located_event->location()))
+    located_event = nullptr;
+  AnimateInkDrop(views::InkDropState::ACTION_PENDING, located_event);
 }
 
 void NotificationInputContainerMD::AddInkDropLayer(ui::Layer* ink_drop_layer) {
@@ -742,7 +744,7 @@ void NotificationViewMD::ButtonPressed(views::Button* sender,
               ? l10n_util::GetStringUTF16(
                     IDS_MESSAGE_CENTER_NOTIFICATION_INLINE_REPLY_PLACEHOLDER)
               : *placeholder);
-      inline_reply_->AnimateBackground(*event.AsLocatedEvent());
+      inline_reply_->AnimateBackground(event);
       inline_reply_->SetVisible(true);
       action_buttons_row_->SetVisible(false);
       // RequestFocus() should be called after SetVisible().
@@ -1330,14 +1332,17 @@ void NotificationViewMD::AddBackgroundAnimation(const ui::Event& event) {
   const gfx::Point& location = event.AsLocatedEvent()->location();
   gfx::Point converted_location(location);
   View::ConvertPointToTarget(target, this, &converted_location);
+
+  // Use default animation if location is out of bounds.
+  if (!View::HitTestPoint(converted_location)) {
+    AnimateInkDrop(views::InkDropState::ACTION_PENDING, nullptr);
+    return;
+  }
+
   std::unique_ptr<ui::Event> cloned_event = ui::Event::Clone(event);
   ui::LocatedEvent* cloned_located_event = cloned_event->AsLocatedEvent();
   cloned_located_event->set_location(converted_location);
-
-  if (View::HitTestPoint(event.AsLocatedEvent()->location())) {
-    AnimateInkDrop(views::InkDropState::ACTION_PENDING,
-                   ui::LocatedEvent::FromIfValid(cloned_located_event));
-  }
+  AnimateInkDrop(views::InkDropState::ACTION_PENDING, cloned_located_event);
 }
 
 void NotificationViewMD::RemoveBackgroundAnimation() {

@@ -739,6 +739,30 @@ TEST_F(NotificationViewMDTest, TestInlineReplyRemovedByUpdate) {
   EXPECT_FALSE(notification_view()->actions_row_->visible());
 }
 
+TEST_F(NotificationViewMDTest, TestInlineReplyActivateWithKeyPress) {
+  std::unique_ptr<Notification> notification = CreateSimpleNotification();
+
+  std::vector<ButtonInfo> buttons = CreateButtons(2);
+  buttons[1].placeholder = base::string16();
+  notification->set_buttons(buttons);
+  UpdateNotificationViews(*notification);
+  widget()->Show();
+
+  // Action buttons are hidden by collapsed state.
+  if (!notification_view()->expanded_)
+    notification_view()->ToggleExpanded();
+
+  ui::test::EventGenerator generator(GetRootWindow(widget()));
+
+  // Press and release space key to open inline reply text field.
+  // Note: VKEY_RETURN should work too, but triggers a click on MacOS.
+  notification_view()->action_buttons_[1]->RequestFocus();
+  generator.PressKey(ui::VKEY_SPACE, ui::EF_NONE);
+  generator.ReleaseKey(ui::VKEY_SPACE, ui::EF_NONE);
+
+  EXPECT_TRUE(notification_view()->inline_reply_->visible());
+}
+
 // Synthetic scroll events are not supported on Mac in the views
 // test framework.
 #if defined(OS_MACOSX)
