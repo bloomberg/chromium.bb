@@ -47,13 +47,17 @@ bool PolicyListMerger::CanMerge(const std::string& policy_name,
 
 PolicyMap::Entry PolicyListMerger::Merge(const PolicyMap::Entry& policy) const {
   std::vector<const base::Value*> value;
-  std::set<std::string> duplicates;
+  auto compare_value_ptr = [](const base::Value* a, const base::Value* b) {
+    return *a < *b;
+  };
+  std::set<const base::Value*, decltype(compare_value_ptr)> duplicates(
+      compare_value_ptr);
   bool merged = false;
 
   for (const base::Value& val : policy.value->GetList()) {
-    if (duplicates.find(val.GetString()) != duplicates.end())
+    if (duplicates.find(&val) != duplicates.end())
       continue;
-    duplicates.insert(val.GetString());
+    duplicates.insert(&val);
     value.push_back(&val);
   }
 
@@ -72,9 +76,9 @@ PolicyMap::Entry PolicyListMerger::Merge(const PolicyMap::Entry& policy) const {
     }
 
     for (const base::Value& val : it.value->GetList()) {
-      if (duplicates.find(val.GetString()) != duplicates.end())
+      if (duplicates.find(&val) != duplicates.end())
         continue;
-      duplicates.insert(val.GetString());
+      duplicates.insert(&val);
       value.push_back(&val);
     }
 
