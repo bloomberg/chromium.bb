@@ -521,7 +521,6 @@ jumbo_component("platform") {
     "exported/web_blob_info.cc",
     "exported/web_cache.cc",
     "exported/web_canonical_cookie.cc",
-    "exported/web_canvas_capture_handler.cc",
     "exported/web_coalesced_input_event.cc",
     "exported/web_content_decryption_module.cc",
     "exported/web_content_decryption_module_access.cc",

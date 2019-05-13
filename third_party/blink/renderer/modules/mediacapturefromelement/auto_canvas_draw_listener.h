@@ -6,22 +6,32 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIACAPTUREFROMELEMENT_AUTO_CANVAS_DRAW_LISTENER_H_
 
 #include <memory>
-#include "third_party/blink/public/platform/web_canvas_capture_handler.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_draw_listener.h"
+#include "third_party/blink/renderer/modules/mediacapturefromelement/canvas_capture_handler.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
-class AutoCanvasDrawListener final
+class AutoCanvasDrawListener
     : public GarbageCollectedFinalized<AutoCanvasDrawListener>,
       public CanvasDrawListener {
   USING_GARBAGE_COLLECTED_MIXIN(AutoCanvasDrawListener);
 
  public:
-  explicit AutoCanvasDrawListener(std::unique_ptr<WebCanvasCaptureHandler>);
+  explicit AutoCanvasDrawListener(std::unique_ptr<CanvasCaptureHandler>);
   ~AutoCanvasDrawListener() override = default;
 
-  void Trace(blink::Visitor* visitor) override {}
+  void SendNewFrame(
+      sk_sp<SkImage>,
+      base::WeakPtr<WebGraphicsContext3DProviderWrapper>) override;
+  bool NeedsNewFrame() const final;
+  void RequestFrame() final;
+
+  void Trace(blink::Visitor*) override {}
+
+ protected:
+  std::unique_ptr<CanvasCaptureHandler> handler_;
+  bool frame_capture_requested_;
 };
 
 }  // namespace blink

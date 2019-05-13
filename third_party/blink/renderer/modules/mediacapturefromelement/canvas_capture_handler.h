@@ -17,7 +17,6 @@
 #include "base/threading/thread_checker.h"
 #include "media/base/video_frame_pool.h"
 #include "media/capture/video_capturer_source.h"
-#include "third_party/blink/public/platform/web_canvas_capture_handler.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -26,6 +25,8 @@
 class SkImage;
 
 namespace blink {
+
+class WebGraphicsContext3DProvider;
 
 // CanvasCaptureHandler acts as the link between Blink side HTMLCanvasElement
 // and Chrome side VideoCapturerSource. It is responsible for handling
@@ -36,10 +37,9 @@ namespace blink {
 // All methods are called on the same thread as construction and destruction,
 // i.e. the Main Render thread. Note that a CanvasCaptureHandlerDelegate is
 // used to send back frames to |io_task_runner_|, i.e. IO thread.
-class MODULES_EXPORT CanvasCaptureHandler final
-    : public blink::WebCanvasCaptureHandler {
+class MODULES_EXPORT CanvasCaptureHandler {
  public:
-  ~CanvasCaptureHandler() override;
+  ~CanvasCaptureHandler();
 
   // Creates a CanvasCaptureHandler instance and updates UMA histogram.
   static std::unique_ptr<CanvasCaptureHandler> CreateCanvasCaptureHandler(
@@ -48,11 +48,9 @@ class MODULES_EXPORT CanvasCaptureHandler final
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       blink::WebMediaStreamTrack* track);
 
-  // blink::WebCanvasCaptureHandler implementation.
-  void SendNewFrame(
-      sk_sp<SkImage> image,
-      blink::WebGraphicsContext3DProvider* context_provider) override;
-  bool NeedsNewFrame() const override;
+  void SendNewFrame(sk_sp<SkImage> image,
+                    blink::WebGraphicsContext3DProvider* context_provider);
+  bool NeedsNewFrame() const;
 
   // Functions called by media::VideoCapturerSource implementation.
   void StartVideoCapture(

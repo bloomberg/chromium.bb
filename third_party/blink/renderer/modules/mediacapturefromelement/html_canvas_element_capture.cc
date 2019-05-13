@@ -55,7 +55,7 @@ MediaStream* HTMLCanvasElementCapture::captureStream(
 
   WebMediaStreamTrack track;
   const WebSize size(element.width(), element.height());
-  std::unique_ptr<WebCanvasCaptureHandler> handler;
+  std::unique_ptr<CanvasCaptureHandler> handler;
   if (given_frame_rate) {
     handler = CanvasCaptureHandler::CreateCanvasCaptureHandler(
         size, frame_rate, Platform::Current()->GetIOTaskRunner(), &track);

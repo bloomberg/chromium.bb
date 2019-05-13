@@ -50,7 +50,7 @@ CanvasCaptureMediaStreamTrack::CanvasCaptureMediaStreamTrack(
     MediaStreamComponent* component,
     HTMLCanvasElement* element,
     ExecutionContext* context,
-    std::unique_ptr<WebCanvasCaptureHandler> handler)
+    std::unique_ptr<CanvasCaptureHandler> handler)
     : MediaStreamTrack(context, component), canvas_element_(element) {
   draw_listener_ =
       MakeGarbageCollected<AutoCanvasDrawListener>(std::move(handler));
@@ -61,7 +61,7 @@ CanvasCaptureMediaStreamTrack::CanvasCaptureMediaStreamTrack(
     MediaStreamComponent* component,
     HTMLCanvasElement* element,
     ExecutionContext* context,
-    std::unique_ptr<WebCanvasCaptureHandler> handler,
+    std::unique_ptr<CanvasCaptureHandler> handler,
     double frame_rate)
     : MediaStreamTrack(context, component), canvas_element_(element) {
   if (frame_rate == 0) {

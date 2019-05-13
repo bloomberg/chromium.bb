@@ -9,8 +9,8 @@
 namespace blink {
 
 OnRequestCanvasDrawListener::OnRequestCanvasDrawListener(
-    std::unique_ptr<WebCanvasCaptureHandler> handler)
-    : CanvasDrawListener(std::move(handler)) {}
+    std::unique_ptr<CanvasCaptureHandler> handler)
+    : AutoCanvasDrawListener(std::move(handler)) {}
 
 OnRequestCanvasDrawListener::~OnRequestCanvasDrawListener() = default;
 
@@ -18,7 +18,11 @@ void OnRequestCanvasDrawListener::SendNewFrame(
     sk_sp<SkImage> image,
     base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider) {
   frame_capture_requested_ = false;
-  CanvasDrawListener::SendNewFrame(image, context_provider);
+  AutoCanvasDrawListener::SendNewFrame(image, context_provider);
+}
+
+void OnRequestCanvasDrawListener::Trace(blink::Visitor* visitor) {
+  AutoCanvasDrawListener::Trace(visitor);
 }
 
 }  // namespace blink
