@@ -283,12 +283,9 @@ std::unique_ptr<views::View> CreateProductLogoFooterView() {
   std::unique_ptr<views::ImageView> chrome_logo =
       std::make_unique<views::ImageView>();
   chrome_logo->set_can_process_events_within_subtree(false);
-  chrome_logo->SetImage(
-      ui::ResourceBundle::GetSharedInstance()
-          .GetImageNamed(content_view->GetNativeTheme()->SystemDarkModeEnabled()
-                             ? IDR_PRODUCT_LOGO_NAME_22_WHITE
-                             : IDR_PRODUCT_LOGO_NAME_22)
-          .AsImageSkia());
+  chrome_logo->SetImage(ui::ResourceBundle::GetSharedInstance()
+                            .GetImageNamed(IDR_PRODUCT_LOGO_NAME_22)
+                            .AsImageSkia());
   chrome_logo->set_tooltip_text(l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
   content_view->AddChildView(chrome_logo.release());
 
