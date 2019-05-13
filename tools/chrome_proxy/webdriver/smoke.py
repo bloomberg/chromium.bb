@@ -78,6 +78,7 @@ class Smoke(IntegrationTest):
       t.LoadURL('http://check.googlezip.net/test.html')
       t.LoadURL('http://check.googlezip.net/test.html')
       t.SleepUntilHistogramHasEntry("DataReductionProxy.Pingback.Succeeded")
+      t.SleepUntilHistogramHasEntry("DataReductionProxy.Pingback.Attempted")
       # Verify one pingback attempt that was successful.
       attempted = t.GetBrowserHistogram('DataReductionProxy.Pingback.Attempted')
       self.assertEqual(1, attempted['count'])
