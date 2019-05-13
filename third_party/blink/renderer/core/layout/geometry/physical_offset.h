@@ -22,8 +22,12 @@ struct PhysicalSize;
 // PhysicalOffset is the position of a rect (typically a fragment) relative to
 // its parent rect in the physical coordinate system.
 struct CORE_EXPORT PhysicalOffset {
-  PhysicalOffset() = default;
-  PhysicalOffset(LayoutUnit left, LayoutUnit top) : left(left), top(top) {}
+  constexpr PhysicalOffset() = default;
+  constexpr PhysicalOffset(LayoutUnit left, LayoutUnit top)
+      : left(left), top(top) {}
+
+  // For testing only. It's defined in core/testing/core_unit_test_helpers.h.
+  inline PhysicalOffset(int left, int top);
 
   LayoutUnit left;
   LayoutUnit top;
@@ -37,6 +41,8 @@ struct CORE_EXPORT PhysicalOffset {
                                  PhysicalSize outer_size,
                                  PhysicalSize inner_size) const;
 
+  bool IsZero() const { return !left && !top; }
+
   PhysicalOffset operator+(const PhysicalOffset& other) const {
     return PhysicalOffset{this->left + other.left, this->top + other.top};
   }
@@ -45,6 +51,9 @@ struct CORE_EXPORT PhysicalOffset {
     return *this;
   }
 
+  PhysicalOffset operator-() const {
+    return PhysicalOffset{-this->left, -this->top};
+  }
   PhysicalOffset operator-(const PhysicalOffset& other) const {
     return PhysicalOffset{this->left - other.left, this->top - other.top};
   }
@@ -53,32 +62,67 @@ struct CORE_EXPORT PhysicalOffset {
     return *this;
   }
 
-  bool operator==(const PhysicalOffset& other) const {
+  constexpr bool operator==(const PhysicalOffset& other) const {
     return other.left == left && other.top == top;
   }
 
-  bool operator!=(const PhysicalOffset& other) const {
+  constexpr bool operator!=(const PhysicalOffset& other) const {
     return !(*this == other);
   }
 
   // Conversions from/to existing code. New code prefers type safety for
   // logical/physical distinctions.
-  explicit PhysicalOffset(const LayoutPoint& point) {
-    left = point.X();
-    top = point.Y();
-  }
-  explicit PhysicalOffset(const LayoutSize& size) {
-    left = size.Width();
-    top = size.Height();
-  }
+  constexpr explicit PhysicalOffset(const LayoutPoint& point)
+      : left(point.X()), top(point.Y()) {}
+  constexpr explicit PhysicalOffset(const LayoutSize& size)
+      : left(size.Width()), top(size.Height()) {}
 
   // Conversions from/to existing code. New code prefers type safety for
   // logical/physical distinctions.
-  LayoutPoint ToLayoutPoint() const { return {left, top}; }
-  LayoutSize ToLayoutSize() const { return {left, top}; }
+  constexpr LayoutPoint ToLayoutPoint() const { return {left, top}; }
+  constexpr LayoutSize ToLayoutSize() const { return {left, top}; }
+
+  explicit PhysicalOffset(const IntPoint& point)
+      : left(point.X()), top(point.Y()) {}
+  explicit PhysicalOffset(const IntSize& size)
+      : left(size.Width()), top(size.Height()) {}
+
+  static PhysicalOffset FromFloatPointRound(const FloatPoint& point) {
+    return {LayoutUnit::FromFloatRound(point.X()),
+            LayoutUnit::FromFloatRound(point.Y())};
+  }
+  static PhysicalOffset FromFloatSizeRound(const FloatSize& size) {
+    return {LayoutUnit::FromFloatRound(size.Width()),
+            LayoutUnit::FromFloatRound(size.Height())};
+  }
+
+  constexpr explicit operator FloatPoint() const { return {left, top}; }
+  constexpr explicit operator FloatSize() const { return {left, top}; }
 
   String ToString() const;
 };
+
+// TODO(crbug.com/962299): These functions should upgraded to force correct
+// pixel snapping in a type-safe way.
+inline IntPoint RoundedIntPoint(const PhysicalOffset& o) {
+  return {o.left.Round(), o.top.Round()};
+}
+inline IntPoint FlooredIntPoint(const PhysicalOffset& o) {
+  return {o.left.Floor(), o.top.Floor()};
+}
+inline IntPoint CeiledIntPoint(const PhysicalOffset& o) {
+  return {o.left.Ceil(), o.top.Ceil()};
+}
+
+// TODO(wangxianzhu): For temporary conversion from LayoutPoint/LayoutSize to
+// PhysicalOffset, where the input will be changed to PhysicalOffset soon, to
+// avoid redundant PhysicalOffset() which can't be discovered by the compiler.
+inline PhysicalOffset PhysicalOffsetToBeNoop(const LayoutPoint& p) {
+  return PhysicalOffset(p);
+}
+inline PhysicalOffset PhysicalOffsetToBeNoop(const LayoutSize& s) {
+  return PhysicalOffset(s);
+}
 
 CORE_EXPORT std::ostream& operator<<(std::ostream&, const PhysicalOffset&);
 

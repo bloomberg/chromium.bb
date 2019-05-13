@@ -76,7 +76,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     space_.available_size_ = available_size;
 
     if (UNLIKELY(!is_in_parallel_flow_)) {
-      space_.available_size_.Flip();
+      space_.available_size_.Transpose();
       AdjustInlineSizeIfNeeded(&space_.available_size_.inline_size);
     }
 

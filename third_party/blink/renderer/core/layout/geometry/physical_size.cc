@@ -8,8 +8,26 @@
 
 namespace blink {
 
+PhysicalSize PhysicalSize::FitToAspectRatio(const PhysicalSize& aspect_ratio,
+                                            AspectRatioFit fit) const {
+  // Convert to float to avoid overflow of LayoutUnit in multiplication below
+  // and improve precision when calculating scale.
+  float height_float = height.ToFloat();
+  float width_float = width.ToFloat();
+  float height_scale = height_float / aspect_ratio.height.ToFloat();
+  float width_scale = width_float / aspect_ratio.width.ToFloat();
+  if ((width_scale > height_scale) != (fit == kAspectRatioFitGrow)) {
+    return {LayoutUnit::FromFloatRound(height_float * aspect_ratio.width /
+                                       aspect_ratio.height),
+            height};
+  }
+  return {width, LayoutUnit::FromFloatRound(width_float * aspect_ratio.height /
+                                            aspect_ratio.width)};
+}
+
 String PhysicalSize::ToString() const {
-  return String::Format("%dx%d", width.ToInt(), height.ToInt());
+  return String::Format("%sx%s", width.ToString().Ascii().data(),
+                        height.ToString().Ascii().data());
 }
 
 std::ostream& operator<<(std::ostream& os, const PhysicalSize& value) {

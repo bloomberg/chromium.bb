@@ -19,9 +19,12 @@ struct LogicalSize;
 // PhysicalSize is the size of a rect (typically a fragment) in the physical
 // coordinate system.
 struct CORE_EXPORT PhysicalSize {
-  PhysicalSize() = default;
-  PhysicalSize(LayoutUnit width, LayoutUnit height)
+  constexpr PhysicalSize() = default;
+  constexpr PhysicalSize(LayoutUnit width, LayoutUnit height)
       : width(width), height(height) {}
+
+  // For testing only. It's defined in core/testing/core_unit_test_helpers.h.
+  inline PhysicalSize(int width, int height);
 
   LayoutUnit width;
   LayoutUnit height;
@@ -31,23 +34,70 @@ struct CORE_EXPORT PhysicalSize {
                                               : LogicalSize(height, width);
   }
 
-  bool operator==(const PhysicalSize& other) const {
+  PhysicalSize operator+(const PhysicalSize& other) const {
+    return PhysicalSize{this->width + other.width, this->height + other.height};
+  }
+  PhysicalSize& operator+=(const PhysicalSize& other) {
+    *this = *this + other;
+    return *this;
+  }
+
+  PhysicalSize operator-() const {
+    return PhysicalSize{-this->width, -this->height};
+  }
+  PhysicalSize operator-(const PhysicalSize& other) const {
+    return PhysicalSize{this->width - other.width, this->height - other.height};
+  }
+  PhysicalSize& operator-=(const PhysicalSize& other) {
+    *this = *this - other;
+    return *this;
+  }
+
+  constexpr bool operator==(const PhysicalSize& other) const {
     return std::tie(other.width, other.height) == std::tie(width, height);
   }
-  bool operator!=(const PhysicalSize& other) const { return !(*this == other); }
+  constexpr bool operator!=(const PhysicalSize& other) const {
+    return !(*this == other);
+  }
 
-  bool IsEmpty() const {
+  constexpr bool IsEmpty() const {
     return width == LayoutUnit() || height == LayoutUnit();
   }
-  bool IsZero() const {
+  constexpr bool IsZero() const {
     return width == LayoutUnit() && height == LayoutUnit();
   }
 
+  void Scale(float s) {
+    width *= s;
+    height *= s;
+  }
+  void Scale(LayoutUnit s) {
+    width *= s;
+    height *= s;
+  }
+
+  void ClampNegativeToZero() {
+    width = std::max(width, LayoutUnit());
+    height = std::max(height, LayoutUnit());
+  }
+
+  PhysicalSize FitToAspectRatio(const PhysicalSize& aspect_ratio,
+                                AspectRatioFit fit) const;
+
   // Conversions from/to existing code. New code prefers type safety for
   // logical/physical distinctions.
-  explicit PhysicalSize(const LayoutSize& size)
+  constexpr explicit PhysicalSize(const LayoutSize& size)
       : width(size.Width()), height(size.Height()) {}
-  LayoutSize ToLayoutSize() const { return {width, height}; }
+  constexpr LayoutSize ToLayoutSize() const { return {width, height}; }
+
+  static PhysicalSize FromFloatSizeRound(const FloatSize& size) {
+    return {LayoutUnit::FromFloatRound(size.Width()),
+            LayoutUnit::FromFloatRound(size.Height())};
+  }
+  constexpr explicit operator FloatSize() const { return {width, height}; }
+
+  explicit PhysicalSize(const IntSize& size)
+      : width(size.Width()), height(size.Height()) {}
 
   String ToString() const;
 };
@@ -58,6 +108,25 @@ inline PhysicalSize ToPhysicalSize(const LogicalSize& other, WritingMode mode) {
   return mode == WritingMode::kHorizontalTb
              ? PhysicalSize(other.inline_size, other.block_size)
              : PhysicalSize(other.block_size, other.inline_size);
+}
+
+// TODO(crbug.com/962299): These functions should upgraded to force correct
+// pixel snapping in a type-safe way.
+inline IntSize RoundedIntSize(const PhysicalSize& s) {
+  return {s.width.Round(), s.height.Round()};
+}
+inline IntSize FlooredIntSize(const PhysicalSize& s) {
+  return {s.width.Floor(), s.height.Floor()};
+}
+inline IntSize CeiledIntSize(const PhysicalSize& s) {
+  return {s.width.Ceil(), s.height.Ceil()};
+}
+
+// TODO(wangxianzhu): For temporary conversion from LayoutSize to PhysicalSize,
+// where the input will be changed to PhysicalSize soon, to avoid redundant
+// PhysicalSize() which can't be discovered by the compiler.
+inline PhysicalSize PhysicalSizeToBeNoop(const LayoutSize& s) {
+  return PhysicalSize(s);
 }
 
 }  // namespace blink

@@ -19,9 +19,12 @@ struct PhysicalSize;
 // LogicalOffset is the position of a rect (typically a fragment) relative to
 // its parent rect in the logical coordinate system.
 struct CORE_EXPORT LogicalOffset {
-  LogicalOffset() = default;
-  LogicalOffset(LayoutUnit inline_offset, LayoutUnit block_offset)
+  constexpr LogicalOffset() = default;
+  constexpr LogicalOffset(LayoutUnit inline_offset, LayoutUnit block_offset)
       : inline_offset(inline_offset), block_offset(block_offset) {}
+
+  // For testing only. It's defined in core/testing/core_unit_test_helpers.h.
+  inline LogicalOffset(int inline_offset, int block_offset);
 
   LayoutUnit inline_offset;
   LayoutUnit block_offset;
@@ -38,11 +41,11 @@ struct CORE_EXPORT LogicalOffset {
                                    PhysicalSize outer_size,
                                    PhysicalSize inner_size) const;
 
-  bool operator==(const LogicalOffset& other) const {
+  constexpr bool operator==(const LogicalOffset& other) const {
     return std::tie(other.inline_offset, other.block_offset) ==
            std::tie(inline_offset, block_offset);
   }
-  bool operator!=(const LogicalOffset& other) const {
+  constexpr bool operator!=(const LogicalOffset& other) const {
     return !operator==(other);
   }
 

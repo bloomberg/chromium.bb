@@ -80,14 +80,14 @@ TEST_F(NGColumnLayoutAlgorithmTest, EmptyMulticol) {
   FragmentChildIterator iterator(parent_fragment.get());
   const auto* fragment = iterator.NextChild();
   ASSERT_TRUE(fragment);
-  EXPECT_EQ(PhysicalSize(LayoutUnit(210), LayoutUnit(100)), fragment->Size());
+  EXPECT_EQ(PhysicalSize(210, 100), fragment->Size());
   EXPECT_FALSE(iterator.NextChild());
 
   // There should be nothing inside the multicol container.
   // TODO(mstensho): Get rid of this column fragment. It shouldn't be here.
   fragment = FragmentChildIterator(fragment).NextChild();
   ASSERT_TRUE(fragment);
-  EXPECT_EQ(PhysicalSize(LayoutUnit(100), LayoutUnit()), fragment->Size());
+  EXPECT_EQ(PhysicalSize(100, 0), fragment->Size());
   EXPECT_EQ(0UL, fragment->Children().size());
   EXPECT_FALSE(iterator.NextChild());
 
@@ -120,7 +120,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, EmptyBlock) {
       NGBaseLayoutAlgorithmTest::RunBlockLayoutAlgorithm(container, space);
   FragmentChildIterator iterator(parent_fragment.get());
   const auto* fragment = iterator.NextChild();
-  EXPECT_EQ(PhysicalSize(LayoutUnit(210), LayoutUnit(100)), fragment->Size());
+  EXPECT_EQ(PhysicalSize(210, 100), fragment->Size());
   ASSERT_TRUE(fragment);
   EXPECT_FALSE(iterator.NextChild());
   iterator.SetParent(fragment);
@@ -129,16 +129,16 @@ TEST_F(NGColumnLayoutAlgorithmTest, EmptyBlock) {
   PhysicalOffset offset;
   fragment = iterator.NextChild(&offset);
   ASSERT_TRUE(fragment);
-  EXPECT_EQ(PhysicalOffset(LayoutUnit(), LayoutUnit()), offset);
-  EXPECT_EQ(PhysicalSize(LayoutUnit(100), LayoutUnit()), fragment->Size());
+  EXPECT_EQ(PhysicalOffset(), offset);
+  EXPECT_EQ(PhysicalSize(100, 0), fragment->Size());
   EXPECT_FALSE(iterator.NextChild());
 
   // #child fragment in first column
   iterator.SetParent(fragment);
   fragment = iterator.NextChild(&offset);
   ASSERT_TRUE(fragment);
-  EXPECT_EQ(PhysicalOffset(LayoutUnit(), LayoutUnit()), offset);
-  EXPECT_EQ(PhysicalSize(LayoutUnit(100), LayoutUnit()), fragment->Size());
+  EXPECT_EQ(PhysicalOffset(), offset);
+  EXPECT_EQ(PhysicalSize(100, 0), fragment->Size());
   EXPECT_EQ(0UL, fragment->Children().size());
   EXPECT_FALSE(iterator.NextChild());
 }
@@ -171,7 +171,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, BlockInOneColumn) {
   FragmentChildIterator iterator(parent_fragment.get());
   const auto* fragment = iterator.NextChild();
   ASSERT_TRUE(fragment);
-  EXPECT_EQ(PhysicalSize(LayoutUnit(310), LayoutUnit(100)), fragment->Size());
+  EXPECT_EQ(PhysicalSize(310, 100), fragment->Size());
   EXPECT_FALSE(iterator.NextChild());
   iterator.SetParent(fragment);
 
@@ -179,16 +179,16 @@ TEST_F(NGColumnLayoutAlgorithmTest, BlockInOneColumn) {
   PhysicalOffset offset;
   fragment = iterator.NextChild(&offset);
   ASSERT_TRUE(fragment);
-  EXPECT_EQ(PhysicalOffset(LayoutUnit(), LayoutUnit()), offset);
-  EXPECT_EQ(PhysicalSize(LayoutUnit(150), LayoutUnit(100)), fragment->Size());
+  EXPECT_EQ(PhysicalOffset(), offset);
+  EXPECT_EQ(PhysicalSize(150, 100), fragment->Size());
   EXPECT_FALSE(iterator.NextChild());
 
   // #child fragment in first column
   iterator.SetParent(fragment);
   fragment = iterator.NextChild(&offset);
   ASSERT_TRUE(fragment);
-  EXPECT_EQ(PhysicalOffset(LayoutUnit(), LayoutUnit()), offset);
-  EXPECT_EQ(PhysicalSize(LayoutUnit(90), LayoutUnit(100)), fragment->Size());
+  EXPECT_EQ(PhysicalOffset(), offset);
+  EXPECT_EQ(PhysicalSize(90, 100), fragment->Size());
   EXPECT_EQ(0UL, fragment->Children().size());
   EXPECT_FALSE(iterator.NextChild());
 }

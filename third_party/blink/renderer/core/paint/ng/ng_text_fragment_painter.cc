@@ -106,7 +106,7 @@ void PaintRect(GraphicsContext& context,
   if (rect.size.IsEmpty())
     return;
   const PhysicalRect global_rect(rect.offset + location, rect.size);
-  context.FillRect(global_rect.ToFloatRect(), color);
+  context.FillRect(FloatRect(global_rect), color);
 }
 
 LayoutRect MarkerRectForForeground(const NGPhysicalTextFragment& text_fragment,

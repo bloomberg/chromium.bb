@@ -91,11 +91,11 @@ PhysicalRect NGPhysicalTextFragment::ConvertToLocal(
     case NGLineOrientation::kHorizontal:
       return PhysicalRect(logical_rect);
     case NGLineOrientation::kClockWiseVertical:
-      return {{size_.width - logical_rect.MaxY(), logical_rect.X()},
-              {logical_rect.Height(), logical_rect.Width()}};
+      return {size_.width - logical_rect.MaxY(), logical_rect.X(),
+              logical_rect.Height(), logical_rect.Width()};
     case NGLineOrientation::kCounterClockWiseVertical:
-      return {{logical_rect.Y(), size_.height - logical_rect.MaxX()},
-              {logical_rect.Height(), logical_rect.Width()}};
+      return {logical_rect.Y(), size_.height - logical_rect.MaxX(),
+              logical_rect.Height(), logical_rect.Width()};
   }
   NOTREACHED();
   return PhysicalRect(logical_rect);
@@ -161,12 +161,12 @@ PhysicalRect NGPhysicalTextFragment::LocalRect(unsigned start_offset,
   const LayoutUnit inline_size = end_position - start_position;
   switch (LineOrientation()) {
     case NGLineOrientation::kHorizontal:
-      return {{start_position, LayoutUnit()}, {inline_size, Size().height}};
+      return {start_position, LayoutUnit(), inline_size, Size().height};
     case NGLineOrientation::kClockWiseVertical:
-      return {{LayoutUnit(), start_position}, {Size().width, inline_size}};
+      return {LayoutUnit(), start_position, Size().width, inline_size};
     case NGLineOrientation::kCounterClockWiseVertical:
-      return {{LayoutUnit(), Size().height - end_position},
-              {Size().width, inline_size}};
+      return {LayoutUnit(), Size().height - end_position, Size().width,
+              inline_size};
   }
   NOTREACHED();
   return {};

@@ -17,15 +17,26 @@ class LayoutRect;
 // LogicalRect is the position and size of a rect (typically a fragment)
 // relative to the parent in the logical coordinate system.
 struct CORE_EXPORT LogicalRect {
-  LogicalRect() = default;
-  LogicalRect(const LogicalOffset& offset, const LogicalSize& size)
+  constexpr LogicalRect() = default;
+  constexpr LogicalRect(const LogicalOffset& offset, const LogicalSize& size)
       : offset(offset), size(size) {}
+  constexpr LogicalRect(LayoutUnit inline_offset,
+                        LayoutUnit block_offset,
+                        LayoutUnit inline_size,
+                        LayoutUnit block_size)
+      : offset(inline_offset, block_offset), size(inline_size, block_size) {}
 
-  explicit LogicalRect(const LayoutRect& source)
+  // For testing only. It's defined in core/testing/core_unit_test_helpers.h.
+  inline LogicalRect(int inline_offset,
+                     int block_offset,
+                     int inline_size,
+                     int block_size);
+
+  constexpr explicit LogicalRect(const LayoutRect& source)
       : LogicalRect({source.X(), source.Y()},
                     {source.Width(), source.Height()}) {}
 
-  LayoutRect ToLayoutRect() const {
+  constexpr LayoutRect ToLayoutRect() const {
     return {offset.inline_offset, offset.block_offset, size.inline_size,
             size.block_size};
   }
@@ -34,9 +45,9 @@ struct CORE_EXPORT LogicalRect {
   LogicalSize size;
 
   LogicalOffset EndOffset() const { return offset + size; }
-  bool IsEmpty() const { return size.IsEmpty(); }
+  constexpr bool IsEmpty() const { return size.IsEmpty(); }
 
-  bool operator==(const LogicalRect& other) const {
+  constexpr bool operator==(const LogicalRect& other) const {
     return other.offset == offset && other.size == size;
   }
 

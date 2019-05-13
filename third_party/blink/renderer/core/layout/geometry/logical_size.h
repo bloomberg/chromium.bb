@@ -21,26 +21,31 @@ struct LogicalOffset;
 // LogicalSize is the size of rect (typically a fragment) in the logical
 // coordinate system.
 struct CORE_EXPORT LogicalSize {
-  LogicalSize() = default;
-  LogicalSize(LayoutUnit inline_size, LayoutUnit block_size)
+  constexpr LogicalSize() = default;
+  constexpr LogicalSize(LayoutUnit inline_size, LayoutUnit block_size)
       : inline_size(inline_size), block_size(block_size) {}
+
+  // For testing only. It's defined in core/testing/core_unit_test_helpers.h.
+  inline LogicalSize(int inline_size, int block_size);
 
   // Use ToPhysicalSize to convert to a physical size.
 
   LayoutUnit inline_size;
   LayoutUnit block_size;
 
-  bool operator==(const LogicalSize& other) const {
+  constexpr bool operator==(const LogicalSize& other) const {
     return std::tie(other.inline_size, other.block_size) ==
            std::tie(inline_size, block_size);
   }
-  bool operator!=(const LogicalSize& other) const { return !(*this == other); }
+  constexpr bool operator!=(const LogicalSize& other) const {
+    return !(*this == other);
+  }
 
-  bool IsEmpty() const {
+  constexpr bool IsEmpty() const {
     return inline_size == LayoutUnit() || block_size == LayoutUnit();
   }
 
-  void Flip() { std::swap(inline_size, block_size); }
+  void Transpose() { std::swap(inline_size, block_size); }
 };
 
 inline LogicalSize& operator-=(LogicalSize& a, const NGBoxStrut& b) {
@@ -74,7 +79,7 @@ CORE_EXPORT std::ostream& operator<<(std::ostream&, const LogicalSize&);
 struct CORE_EXPORT LogicalDelta : public LogicalSize {
  public:
   using LogicalSize::LogicalSize;
-  operator LogicalOffset() const { return {inline_size, block_size}; }
+  constexpr operator LogicalOffset() const { return {inline_size, block_size}; }
 };
 
 inline LogicalDelta operator-(const LogicalOffset& a, const LogicalOffset& b) {

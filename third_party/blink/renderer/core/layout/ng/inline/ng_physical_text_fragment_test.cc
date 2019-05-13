@@ -55,9 +55,7 @@ TEST_F(NGPhysicalTextFragmentTest, LocalRect) {
   )HTML");
   auto text_fragments = CollectTextFragmentsInContainer("container");
   ASSERT_EQ(2u, text_fragments.size());
-  EXPECT_EQ(PhysicalRect({LayoutUnit(20), LayoutUnit(0)},
-                         {LayoutUnit(20), LayoutUnit(10)}),
-            text_fragments[1]->LocalRect(8, 10));
+  EXPECT_EQ(PhysicalRect(20, 0, 20, 10), text_fragments[1]->LocalRect(8, 10));
 }
 
 TEST_F(NGPhysicalTextFragmentTest, LocalRectRTL) {
@@ -78,8 +76,7 @@ TEST_F(NGPhysicalTextFragmentTest, LocalRectRTL) {
   // The 2nd line starts at 12, because the div has a bidi-control.
   EXPECT_EQ(12u, text_fragments[1]->StartOffset());
   // TODO(layout-dev): Investigate whether this is correct.
-  // EXPECT_EQ(PhysicalRect({LayoutUnit(50), LayoutUnit(0)},
-  //                               {LayoutUnit(20), LayoutUnit(10)}),
+  // EXPECT_EQ(PhysicalRect(50, 0, 20, 10),
   //          text_fragments[1]->LocalRect(14, 16));
 }
 
@@ -97,9 +94,7 @@ TEST_F(NGPhysicalTextFragmentTest, LocalRectVLR) {
   )HTML");
   auto text_fragments = CollectTextFragmentsInContainer("container");
   ASSERT_EQ(2u, text_fragments.size());
-  EXPECT_EQ(PhysicalRect({LayoutUnit(0), LayoutUnit(20)},
-                         {LayoutUnit(10), LayoutUnit(20)}),
-            text_fragments[1]->LocalRect(8, 10));
+  EXPECT_EQ(PhysicalRect(0, 20, 10, 20), text_fragments[1]->LocalRect(8, 10));
 }
 
 TEST_F(NGPhysicalTextFragmentTest, LocalRectVRL) {
@@ -116,9 +111,7 @@ TEST_F(NGPhysicalTextFragmentTest, LocalRectVRL) {
   )HTML");
   auto text_fragments = CollectTextFragmentsInContainer("container");
   ASSERT_EQ(2u, text_fragments.size());
-  EXPECT_EQ(PhysicalRect({LayoutUnit(0), LayoutUnit(20)},
-                         {LayoutUnit(10), LayoutUnit(20)}),
-            text_fragments[1]->LocalRect(8, 10));
+  EXPECT_EQ(PhysicalRect(0, 20, 10, 20), text_fragments[1]->LocalRect(8, 10));
 }
 
 TEST_F(NGPhysicalTextFragmentTest, NormalTextIsNotAnonymousText) {

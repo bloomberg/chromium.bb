@@ -28,6 +28,7 @@
 
 #include <memory>
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/geometry/physical_offset.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/geometry/float_quad.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
@@ -106,7 +107,10 @@ class CORE_EXPORT TransformState {
             TransformAccumulation accumulate = kFlattenTransform) {
     Move(LayoutSize(x, y), accumulate);
   }
-
+  void Move(const PhysicalOffset& offset,
+            TransformAccumulation accumulate = kFlattenTransform) {
+    Move(offset.ToLayoutSize(), accumulate);
+  }
   void Move(const LayoutSize&, TransformAccumulation = kFlattenTransform);
   void Move(const IntSize& size,
             TransformAccumulation accumulate = kFlattenTransform) {

@@ -13,6 +13,8 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/core/layout/geometry/logical_rect.h"
+#include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
@@ -126,6 +128,24 @@ class RenderingTest : public PageTestBase, public UseMockScrollbarSettings {
  private:
   Persistent<LocalFrameClient> local_frame_client_;
 };
+
+// These constructors are for convenience of tests to construct these geometries
+// from integers.
+inline LogicalOffset::LogicalOffset(int inline_offset, int block_offset)
+    : inline_offset(inline_offset), block_offset(block_offset) {}
+inline LogicalSize::LogicalSize(int inline_size, int block_size)
+    : inline_size(inline_size), block_size(block_size) {}
+inline LogicalRect::LogicalRect(int inline_offset,
+                                int block_offset,
+                                int inline_size,
+                                int block_size)
+    : offset(inline_offset, block_offset), size(inline_size, block_size) {}
+inline PhysicalOffset::PhysicalOffset(int left, int top)
+    : left(left), top(top) {}
+inline PhysicalSize::PhysicalSize(int width, int height)
+    : width(width), height(height) {}
+inline PhysicalRect::PhysicalRect(int left, int top, int width, int height)
+    : offset(left, top), size(width, height) {}
 
 }  // namespace blink
 

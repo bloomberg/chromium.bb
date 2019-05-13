@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_stream.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -14,6 +15,19 @@ namespace blink {
 bool PhysicalRect::Contains(const PhysicalRect& other) const {
   return offset.left <= other.offset.left && offset.top <= other.offset.top &&
          Right() >= other.Right() && Bottom() >= other.Bottom();
+}
+
+bool PhysicalRect::Intersects(const PhysicalRect& other) const {
+  // Checking emptiness handles negative widths as well as zero.
+  return !IsEmpty() && !other.IsEmpty() && offset.left < other.Right() &&
+         other.offset.left < Right() && offset.top < other.Bottom() &&
+         other.offset.top < Bottom();
+}
+
+bool PhysicalRect::IntersectsInclusively(const PhysicalRect& other) const {
+  // TODO(pdr): How should negative widths or heights be handled?
+  return offset.left <= other.Right() && other.offset.left <= Right() &&
+         offset.top <= other.Bottom() && other.offset.top <= Bottom();
 }
 
 void PhysicalRect::Unite(const PhysicalRect& other) {
@@ -48,20 +62,11 @@ void PhysicalRect::UniteEvenIfEmpty(const PhysicalRect& other) {
 }
 
 void PhysicalRect::Expand(const NGPhysicalBoxStrut& strut) {
-  if (strut.top) {
-    offset.top -= strut.top;
-    size.height += strut.top;
-  }
-  if (strut.bottom) {
-    size.height += strut.bottom;
-  }
-  if (strut.left) {
-    offset.left -= strut.left;
-    size.width += strut.left;
-  }
-  if (strut.right) {
-    size.width += strut.right;
-  }
+  ExpandEdges(strut.top, strut.right, strut.bottom, strut.left);
+}
+
+void PhysicalRect::Expand(const LayoutRectOutsets& outsets) {
+  ExpandEdges(outsets.Top(), outsets.Right(), outsets.Bottom(), outsets.Left());
 }
 
 void PhysicalRect::ExpandEdgesToPixelBoundaries() {
@@ -75,6 +80,49 @@ void PhysicalRect::ExpandEdgesToPixelBoundaries() {
   size.height = LayoutUnit(max_bottom - top);
 }
 
+void PhysicalRect::Contract(const NGPhysicalBoxStrut& strut) {
+  ExpandEdges(-strut.top, -strut.right, -strut.bottom, -strut.left);
+}
+
+void PhysicalRect::Contract(const LayoutRectOutsets& outsets) {
+  ExpandEdges(-outsets.Top(), -outsets.Right(), -outsets.Bottom(),
+              -outsets.Left());
+}
+
+void PhysicalRect::Intersect(const PhysicalRect& other) {
+  PhysicalOffset new_offset(std::max(X(), other.X()), std::max(Y(), other.Y()));
+  PhysicalOffset new_max_point(std::min(Right(), other.Right()),
+                               std::min(Bottom(), other.Bottom()));
+
+  // Return a clean empty rectangle for non-intersecting cases.
+  if (new_offset.left >= new_max_point.left ||
+      new_offset.top >= new_max_point.top) {
+    new_offset = PhysicalOffset();
+    new_max_point = PhysicalOffset();
+  }
+
+  offset = new_offset;
+  size = {new_max_point.left - new_offset.left,
+          new_max_point.top - new_offset.top};
+}
+
+bool PhysicalRect::InclusiveIntersect(const PhysicalRect& other) {
+  PhysicalOffset new_offset(std::max(X(), other.X()), std::max(Y(), other.Y()));
+  PhysicalOffset new_max_point(std::min(Right(), other.Right()),
+                               std::min(Bottom(), other.Bottom()));
+
+  if (new_offset.left > new_max_point.left ||
+      new_offset.top > new_max_point.top) {
+    *this = PhysicalRect();
+    return false;
+  }
+
+  offset = new_offset;
+  size = {new_max_point.left - new_offset.left,
+          new_max_point.top - new_offset.top};
+  return true;
+}
+
 LayoutRect PhysicalRect::ToLayoutFlippedRect(
     const ComputedStyle& style,
     const PhysicalSize& container_size) const {
@@ -85,14 +133,31 @@ LayoutRect PhysicalRect::ToLayoutFlippedRect(
 }
 
 String PhysicalRect::ToString() const {
-  return String::Format("%s,%s %sx%s", offset.left.ToString().Ascii().data(),
-                        offset.top.ToString().Ascii().data(),
-                        size.width.ToString().Ascii().data(),
-                        size.height.ToString().Ascii().data());
+  return String::Format("%s %s", offset.ToString().Ascii().data(),
+                        size.ToString().Ascii().data());
+}
+
+PhysicalRect UnionRect(const Vector<PhysicalRect>& rects) {
+  PhysicalRect result;
+  for (const auto& rect : rects)
+    result.Unite(rect);
+  return result;
 }
 
 std::ostream& operator<<(std::ostream& os, const PhysicalRect& value) {
   return os << value.ToString();
+}
+
+WTF::TextStream& operator<<(WTF::TextStream& ts, const PhysicalRect& r) {
+  // This format is required by some layout tests.
+  ts << "at ("
+     << WTF::TextStream::FormatNumberRespectingIntegers(r.X().ToFloat());
+  ts << "," << WTF::TextStream::FormatNumberRespectingIntegers(r.Y().ToFloat());
+  ts << ") size "
+     << WTF::TextStream::FormatNumberRespectingIntegers(r.Width().ToFloat());
+  ts << "x"
+     << WTF::TextStream::FormatNumberRespectingIntegers(r.Height().ToFloat());
+  return ts;
 }
 
 }  // namespace blink

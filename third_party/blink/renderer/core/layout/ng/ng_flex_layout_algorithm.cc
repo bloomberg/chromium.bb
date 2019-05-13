@@ -368,7 +368,7 @@ void NGFlexLayoutAlgorithm::GiveLinesAndItemsFinalPositionAndSize() {
                 flex_item.main_axis_border_scrollbar_padding,
             flex_item.cross_axis_size);
         if (is_column_)
-          available_size.Flip();
+          available_size.Transpose();
         space_builder.SetAvailableSize(available_size);
         space_builder.SetPercentageResolutionSize(content_box_size_);
         space_builder.SetIsFixedSizeInline(true);
