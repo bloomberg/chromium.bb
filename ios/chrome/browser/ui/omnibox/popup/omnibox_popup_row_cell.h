@@ -55,8 +55,6 @@ const CGFloat kOmniboxPopupCellMinimumHeight = 58;
 
 // Image view for the leading image.
 @property(nonatomic, strong, readonly) UIImageView* leadingImageView;
-// Trailing image view for images from suggestions (e.g. weather).
-@property(nonatomic, strong, readonly) UIImageView* answerImageView;
 
 @end
 

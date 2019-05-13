@@ -26,7 +26,6 @@
 #endif
 
 namespace {
-const CGFloat kImageViewCornerRadius = 7;
 const CGFloat kTextTopMargin = 6;
 const CGFloat kTrailingButtonSize = 24;
 const CGFloat kTrailingButtonTrailingMargin = 14;
@@ -89,7 +88,6 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
     _leadingImageView = [[UIImageView alloc] initWithImage:nil];
     _leadingImageView.translatesAutoresizingMaskIntoConstraints = NO;
     _leadingImageView.contentMode = UIViewContentModeCenter;
-    _leadingImageView.layer.cornerRadius = kImageViewCornerRadius;
 
     _trailingButton =
         [ExtendedTouchTargetButton buttonWithType:UIButtonTypeCustom];
@@ -98,18 +96,6 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
     [_trailingButton addTarget:self
                         action:@selector(trailingButtonTapped)
               forControlEvents:UIControlEventTouchUpInside];
-
-    _answerImageView = [[UIImageView alloc] initWithImage:nil];
-    _answerImageView.translatesAutoresizingMaskIntoConstraints = NO;
-    [_answerImageView
-        setContentHuggingPriority:UILayoutPriorityDefaultHigh
-                          forAxis:UILayoutConstraintAxisHorizontal];
-    [_answerImageView setContentHuggingPriority:UILayoutPriorityDefaultHigh
-                                        forAxis:UILayoutConstraintAxisVertical];
-    [_answerImageView
-        setContentCompressionResistancePriority:UILayoutPriorityRequired
-                                        forAxis:
-                                            UILayoutConstraintAxisHorizontal];
 
     _separator = [[UIView alloc] initWithFrame:CGRectZero];
     _separator.translatesAutoresizingMaskIntoConstraints = NO;
@@ -198,20 +184,6 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
   ]];
 }
 
-// Add the answer image view as a subview and setup its constraints.
-- (void)setupAnswerImageViewLayout {
-  [self.contentView addSubview:self.answerImageView];
-  [NSLayoutConstraint activateConstraints:@[
-    [self.answerImageView.centerYAnchor
-        constraintEqualToAnchor:self.contentView.centerYAnchor],
-    [self.contentView.trailingAnchor
-        constraintEqualToAnchor:self.answerImageView.trailingAnchor
-                       constant:kTrailingButtonTrailingMargin],
-    [self.answerImageView.leadingAnchor
-        constraintEqualToAnchor:self.textStackView.trailingAnchor],
-  ]];
-}
-
 - (void)attachToLayoutGuides {
   NamedGuide* imageLayoutGuide =
       [NamedGuide guideWithName:kOmniboxLeadingImageGuide view:self];
@@ -291,11 +263,11 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
   self.detailTruncatingLabel.attributedText = nil;
   self.detailAnswerLabel.attributedText = nil;
 
+  self.leadingImageView.image = nil;
+
   // Remove optional views.
   [self.trailingButton setImage:nil forState:UIControlStateNormal];
   [self.trailingButton removeFromSuperview];
-  self.answerImageView.image = nil;
-  [self.answerImageView removeFromSuperview];
   [self.detailTruncatingLabel removeFromSuperview];
   [self.detailAnswerLabel removeFromSuperview];
 
@@ -337,18 +309,45 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
 
   [self setupLeadingImageView];
 
-  if (self.suggestion.hasImage) {
-    [self setupAnswerImageView];
-  } else if (self.suggestion.isAppendable || self.suggestion.isTabMatch) {
+  if (self.suggestion.isAppendable || self.suggestion.isTabMatch) {
     [self setupTrailingButton];
   }
 }
 
-// Populate the leading image view with the correct icon and color.
+// Populate the leading image view with the correct image and color.
 - (void)setupLeadingImageView {
+  if (self.suggestion.hasImage) {
+    [self setupLeadingImageViewForAnswerImage];
+  } else {
+    [self setupLeadingImageViewForIconAndFavicon];
+  }
+}
+
+// Populate the leading image view in the case where the image should be an
+// image from answers-in-suggest or rich entity.
+- (void)setupLeadingImageViewForAnswerImage {
+  self.leadingImageView.contentMode = UIViewContentModeScaleAspectFill;
+  __weak OmniboxPopupRowCell* weakSelf = self;
+  GURL imageURL = self.suggestion.imageURL;
+  [self.imageRetriever fetchImage:imageURL
+                       completion:^(UIImage* image) {
+                         // Make sure cell is still displaying the same
+                         // suggestion.
+                         if (weakSelf.suggestion.imageURL != imageURL) {
+                           return;
+                         }
+                         weakSelf.leadingImageView.image = image;
+                       }];
+  self.leadingImageView.backgroundColor = nil;
+}
+
+// Populate the leading image view in the case where the image should be a
+// standard suggestion icon or a favicon.
+- (void)setupLeadingImageViewForIconAndFavicon {
+  self.leadingImageView.contentMode = UIViewContentModeCenter;
   self.leadingImageView.image = self.suggestion.suggestionTypeIcon;
 
-  // Load favicon.
+  // Attempt to load favicon.
   GURL pageURL = self.suggestion.faviconPageURL;
   __weak OmniboxPopupRowCell* weakSelf = self;
   [self.faviconRetriever fetchFavicon:pageURL
@@ -363,23 +362,6 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
   self.leadingImageView.tintColor = self.incognito
                                         ? [UIColor colorWithWhite:1 alpha:0.4]
                                         : [UIColor colorWithWhite:0 alpha:0.33];
-}
-
-// Setup the answer image view. This includes both setting up its layout and
-// populating the image correctly.
-- (void)setupAnswerImageView {
-  [self setupAnswerImageViewLayout];
-  __weak OmniboxPopupRowCell* weakSelf = self;
-  GURL imageURL = self.suggestion.imageURL;
-  [self.imageRetriever fetchImage:imageURL
-                       completion:^(UIImage* image) {
-                         // Make sure cell is still displaying the same
-                         // suggestion.
-                         if (weakSelf.suggestion.imageURL != imageURL) {
-                           return;
-                         }
-                         weakSelf.answerImageView.image = image;
-                       }];
 }
 
 // Setup the trailing button. This includes both setting up the button's layout
