@@ -143,4 +143,9 @@ ukm::SourceId RenderFrameHostDelegate::GetUkmSourceIdForLastCommittedSource()
   return ukm::kInvalidSourceId;
 }
 
+RenderFrameHostImpl* RenderFrameHostDelegate::GetMainFrameForInnerDelegate(
+    FrameTreeNode* frame_tree_node) {
+  return nullptr;
+}
+
 }  // namespace content

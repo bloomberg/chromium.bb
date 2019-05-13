@@ -436,6 +436,12 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   virtual void AudioContextPlaybackStopped(RenderFrameHost* host,
                                            int context_id) {}
 
+  // Returns the main frame of the inner delegate that is attached to this
+  // delegate using |frame_tree_node|. Returns nullptr if no such inner delegate
+  // exists.
+  virtual RenderFrameHostImpl* GetMainFrameForInnerDelegate(
+      FrameTreeNode* frame_tree_node);
+
  protected:
   virtual ~RenderFrameHostDelegate() {}
 };

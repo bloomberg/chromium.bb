@@ -6868,6 +6868,13 @@ void WebContentsImpl::AudioContextPlaybackStopped(RenderFrameHost* host,
     observer.AudioContextPlaybackStopped(audio_context_id);
 }
 
+RenderFrameHostImpl* WebContentsImpl::GetMainFrameForInnerDelegate(
+    FrameTreeNode* frame_tree_node) {
+  if (auto* web_contents = node_.GetInnerWebContentsInFrame(frame_tree_node))
+    return web_contents->GetMainFrame();
+  return nullptr;
+}
+
 void WebContentsImpl::UpdateWebContentsVisibility(Visibility visibility) {
   // Occlusion is disabled when |features::kWebContentsOcclusion| is disabled
   // (for power and speed impact assessment) or when

@@ -354,6 +354,15 @@ void RenderFrameProxyHost::OnCheckCompleted() {
 void RenderFrameProxyHost::OnRouteMessageEvent(
     const FrameMsg_PostMessage_Params& params) {
   RenderFrameHostImpl* target_rfh = frame_tree_node()->current_frame_host();
+  if (!target_rfh->IsRenderFrameLive()) {
+    // Check if there is an inner delegate involved; if so target its main
+    // frame or otherwise return since there is no point in forwarding the
+    // message.
+    target_rfh = target_rfh->delegate()->GetMainFrameForInnerDelegate(
+        target_rfh->frame_tree_node());
+    if (!target_rfh || !target_rfh->IsRenderFrameLive())
+      return;
+  }
 
   // |targetOrigin| argument of postMessage is already checked by
   // blink::LocalDOMWindow::DispatchMessageEventWithOriginCheck (needed for
