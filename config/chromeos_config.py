@@ -3852,6 +3852,11 @@ def ApplyCustomOverrides(site_config):
       },
 
       # For crbug.com/961920.
+      'scarlet-compile-only-pre-cq': {
+          'useflags': config_lib.append_useflags(['-chrome_internal']),
+      },
+
+      # For crbug.com/961920.
       'scarlet-pre-cq': {
           'useflags': config_lib.append_useflags(['-chrome_internal']),
       },
