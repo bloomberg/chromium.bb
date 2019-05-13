@@ -203,6 +203,14 @@
       },
     },
 
+    'chrome_sizes': {
+      'chrome_sizes': {
+        'merge': {
+          'script': '//tools/perf/process_perf_results.py',
+        },
+      },
+    },
+
     'chromedriver_py_tests_isolated_scripts': {
       'chromedriver_py_tests': {
         "args": [
