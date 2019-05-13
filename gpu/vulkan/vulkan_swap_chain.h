@@ -22,7 +22,7 @@ class VulkanDeviceQueue;
 
 class VULKAN_EXPORT VulkanSwapChain {
  public:
-  class ScopedWrite {
+  class VULKAN_EXPORT ScopedWrite {
    public:
     explicit ScopedWrite(VulkanSwapChain* swap_chain);
     ~ScopedWrite();

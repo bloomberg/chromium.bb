@@ -38,7 +38,7 @@ SemaphoreHandle SemaphoreHandle::Duplicate() const {
                          base::ScopedFD(HANDLE_EINTR(dup(handle_.get()))));
 #elif defined(OS_WIN)
   HANDLE handle_dup;
-  if (!::DuplicateHandle(::GetCurrentProcess(), handle_.get(),
+  if (!::DuplicateHandle(::GetCurrentProcess(), handle_.Get(),
                          ::GetCurrentProcess(), &handle_dup, 0, FALSE,
                          DUPLICATE_SAME_ACCESS)) {
     return SemaphoreHandle();
