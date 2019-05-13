@@ -273,9 +273,9 @@ IN_PROC_BROWSER_TEST_F(ImageAnnotationBrowserTest, ImagesInLinks) {
   // that never happens, the test will time out.
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  while (8 > DescribeNodesWithAnnotations(
-                 content::GetAccessibilityTreeSnapshot(web_contents))
-                 .size()) {
+  while (10 > DescribeNodesWithAnnotations(
+                  content::GetAccessibilityTreeSnapshot(web_contents))
+                  .size()) {
     content::WaitForAccessibilityTreeToChange(web_contents);
   }
 
@@ -292,7 +292,9 @@ IN_PROC_BROWSER_TEST_F(ImageAnnotationBrowserTest, ImagesInLinks) {
                            "image Appears to say: printer.png Annotation",
                            "image Appears to say: red.png Annotation",
                            "link Appears to say: printer.png Annotation",
-                           "image Appears to say: printer.png Annotation"));
+                           "image Appears to say: printer.png Annotation",
+                           "link Appears to say: green.png Annotation",
+                           "image Appears to say: green.png Annotation"));
 }
 
 IN_PROC_BROWSER_TEST_F(ImageAnnotationBrowserTest, ImageDoc) {

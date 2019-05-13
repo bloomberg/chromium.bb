@@ -1211,8 +1211,15 @@ void BlinkAXTreeSource::AddImageAnnotations(blink::WebAXObject src,
 
   // Skip images that are too small to label. This also catches
   // unloaded images where the size is unknown.
-  if (dst->relative_bounds.bounds.width() < kMinImageAnnotationWidth ||
-      dst->relative_bounds.bounds.height() < kMinImageAnnotationHeight) {
+
+  WebAXObject offset_container;
+  WebFloatRect bounds;
+  SkMatrix44 container_transform;
+  bool clips_children = false;
+  src.GetRelativeBounds(offset_container, bounds, container_transform,
+                        &clips_children);
+  if (bounds.width < kMinImageAnnotationWidth ||
+      bounds.height < kMinImageAnnotationHeight) {
     dst->SetImageAnnotationStatus(
         ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation);
     return;
