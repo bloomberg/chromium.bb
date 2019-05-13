@@ -158,9 +158,9 @@ public class TouchlessContextMenuManager extends ContextMenuManager {
         PropertyModel.Builder builder =
                 new PropertyModel.Builder(TouchlessDialogProperties.ALL_DIALOG_KEYS);
         ActionNames names = new ActionNames();
-        names.cancel = context.getResources().getString(org.chromium.chrome.R.string.cancel);
-        names.select = context.getResources().getString(org.chromium.chrome.R.string.select);
-        names.alt = "";
+        names.cancel = org.chromium.chrome.R.string.cancel;
+        names.select = org.chromium.chrome.R.string.select;
+        names.alt = 0;
         builder.with(TouchlessDialogProperties.IS_FULLSCREEN, true)
                 .with(ModalDialogProperties.CONTROLLER,
                         new ModalDialogProperties.Controller() {
