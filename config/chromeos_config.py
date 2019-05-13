@@ -3850,6 +3850,11 @@ def ApplyCustomOverrides(site_config):
           'useflags': config_lib.append_useflags(['-chrome_internal']),
       },
 
+      # For crbug.com/961920.
+      'scarlet-pre-cq': {
+          'useflags': config_lib.append_useflags(['-chrome_internal']),
+      },
+
       'peach_pit-release': {
           'useflags': config_lib.append_useflags(['cfi']),
       },
