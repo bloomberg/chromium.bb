@@ -328,6 +328,7 @@
   firmware-reks-7287.133.B-firmwarebranch
   firmware-rikku-6301.110.B-firmwarebranch
   firmware-samus-6300.B-firmwarebranch
+  firmware-sarien-12200.B-firmwarebranch
   firmware-scarlet-10388.B-firmwarebranch
   firmware-servo-11011.B-firmwarebranch
   firmware-servo-9040.B-firmwarebranch
@@ -1856,6 +1857,7 @@
   firmware-reks-7287.133.B-firmwarebranch-tryjob
   firmware-rikku-6301.110.B-firmwarebranch-tryjob
   firmware-samus-6300.B-firmwarebranch-tryjob
+  firmware-sarien-12200.B-firmwarebranch-tryjob
   firmware-scarlet-10388.B-firmwarebranch-tryjob
   firmware-servo-11011.B-firmwarebranch-tryjob
   firmware-servo-9040.B-firmwarebranch-tryjob

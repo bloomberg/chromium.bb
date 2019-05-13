@@ -3338,6 +3338,7 @@ def FirmwareBuilders(site_config, _boards_dict, _ge_build_config):
       (ACTIVE, 'firmware-atlas-11827.B', ['atlas']),
       (ACTIVE, 'firmware-atlas-11827.12.B', ['atlas']),
       (ACTIVE, 'firmware-nami-10775.108.B', ['nami']),
+      (ACTIVE, 'firmware-sarien-12200.B', ['sarien']),
   ]
 
   for interval, branch, boards in firmware_branch_builders:
