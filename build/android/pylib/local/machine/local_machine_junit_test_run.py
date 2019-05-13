@@ -96,7 +96,7 @@ class LocalMachineJunitTestRun(test_run.TestRun):
           os.makedirs(self._test_instance.coverage_dir)
         elif not os.path.isdir(self._test_instance.coverage_dir):
           raise Exception('--coverage-dir takes a directory, not file path.')
-        if self._test_instance.jacoco:
+        if self._test_instance.coverage_on_the_fly:
           jacoco_coverage_file = os.path.join(
               self._test_instance.coverage_dir,
               '%s.exec' % self._test_instance.suite)
@@ -107,9 +107,9 @@ class LocalMachineJunitTestRun(test_run.TestRun):
           jvm_args.append(
               jacoco_args.format(jacoco_agent_path, jacoco_coverage_file))
         else:
-          jvm_args.append('-Demma.coverage.out.file=%s' % os.path.join(
+          jvm_args.append('-Djacoco-agent.destfile=%s' % os.path.join(
               self._test_instance.coverage_dir,
-              '%s.ec' % self._test_instance.suite))
+              '%s.exec' % self._test_instance.suite))
 
       if jvm_args:
         command.extend(['--jvm-args', '"%s"' % ' '.join(jvm_args)])

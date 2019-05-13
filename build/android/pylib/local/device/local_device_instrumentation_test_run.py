@@ -427,8 +427,9 @@ class LocalDeviceInstrumentationTestRun(
     flags_to_add = []
     test_timeout_scale = None
     if self._test_instance.coverage_directory:
-      coverage_basename = '%s.ec' % ('%s_group' % test[0]['method']
-          if isinstance(test, list) else test['method'])
+      coverage_basename = '%s.exec' % ('%s_group' % test[0]['method']
+                                       if isinstance(test, list) else
+                                       test['method'])
       extras['coverage'] = 'true'
       coverage_directory = os.path.join(
           device.GetExternalStoragePath(), 'chrome', 'test', 'coverage')

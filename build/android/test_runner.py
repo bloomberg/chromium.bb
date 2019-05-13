@@ -397,7 +397,7 @@ def AddInstrumentationTestOptions(parser):
       '--coverage-dir',
       type=os.path.realpath,
       help='Directory in which to place all generated '
-           'EMMA coverage files.')
+      'Jacoco coverage files.')
   parser.add_argument(
       '--delete-stale-data',
       action='store_true', dest='delete_stale_data',
@@ -509,8 +509,9 @@ def AddJUnitTestOptions(parser):
   parser = parser.add_argument_group('junit arguments')
 
   parser.add_argument(
-      '--jacoco', action='store_true',
-      help='Generate jacoco report.')
+      '--coverage-on-the-fly',
+      action='store_true',
+      help='Generate coverage data by Jacoco on-the-fly instrumentation.')
   parser.add_argument(
       '--coverage-dir', type=os.path.realpath,
       help='Directory to store coverage info.')
@@ -1040,9 +1041,9 @@ def main():
     parser.error('--use-webview-provider and --enable-concurrent-adb cannot '
                  'be used together')
 
-  if (getattr(args, 'jacoco', False) and
-      not getattr(args, 'coverage_dir', '')):
-    parser.error('--jacoco requires --coverage-dir')
+  if (getattr(args, 'coverage_on_the_fly', False)
+      and not getattr(args, 'coverage_dir', '')):
+    parser.error('--coverage-on-the-fly requires --coverage-dir')
 
   if (hasattr(args, 'debug_socket') or
       (hasattr(args, 'wait_for_java_debugger') and

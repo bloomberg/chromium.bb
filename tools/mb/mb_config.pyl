@@ -2209,7 +2209,7 @@
     },
 
     'java_coverage': {
-      'gn_args': 'emma_coverage=true emma_filter="org.chromium.*"',
+      'gn_args': 'jacoco_coverage=true',
     },
 
     'jumbo': {

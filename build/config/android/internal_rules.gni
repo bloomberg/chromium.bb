@@ -760,7 +760,7 @@ template("test_runner_script") {
       if (defined(invoker.proguard_enabled) && invoker.proguard_enabled) {
         executable_args += [ "--enable-java-deobfuscation" ]
       }
-      if (emma_coverage) {
+      if (jacoco_coverage) {
         # Set a default coverage output directory (can be overridden by user
         # passing the same flag).
         _rebased_coverage_dir =
@@ -1161,10 +1161,10 @@ if (enable_java_templates) {
       }
       args += [ "--classpath=@FileArg($_rebased_build_config:deps_info:java_runtime_classpath)" ]
 
-      if (emma_coverage) {
+      if (jacoco_coverage) {
         args += [
           "--classpath",
-          rebase_path("//third_party/android_sdk/public/tools/lib/emma.jar",
+          rebase_path("//third_party/jacoco/lib/jacocoagent.jar",
                       root_build_dir),
           "--noverify",
         ]
@@ -1493,7 +1493,7 @@ if (enable_java_templates) {
     }
   }
 
-  template("emma_instr") {
+  template("jacoco_instr") {
     action_with_pydeps(target_name) {
       forward_variables_from(invoker,
                              [
@@ -1502,45 +1502,30 @@ if (enable_java_templates) {
                                "testonly",
                              ])
 
-      _coverage_file = "$target_out_dir/${target_name}.em"
       _source_dirs_listing_file = "$target_out_dir/${target_name}_sources.txt"
-      _emma_jar = "${android_sdk_root}/tools/lib/emma.jar"
+      _jacococli_jar = "//third_party/jacoco/lib/jacococli.jar"
 
-      script = "//build/android/gyp/emma_instr.py"
+      script = "//build/android/gyp/jacoco_instr.py"
       inputs = invoker.java_files + [
-                 _emma_jar,
+                 _jacococli_jar,
                  invoker.input_jar_path,
                ]
       outputs = [
-        _coverage_file,
         _source_dirs_listing_file,
         invoker.output_jar_path,
       ]
       args = [
-        "instrument_jar",
         "--input-path",
         rebase_path(invoker.input_jar_path, root_build_dir),
         "--output-path",
         rebase_path(invoker.output_jar_path, root_build_dir),
-        "--coverage-file",
-        rebase_path(_coverage_file, root_build_dir),
         "--sources-list-file",
         rebase_path(_source_dirs_listing_file, root_build_dir),
-        "--src-root",
-        rebase_path("//", root_build_dir),
-        "--emma-jar",
-        rebase_path(_emma_jar, root_build_dir),
+        "--java-sources-file",
+        rebase_path(invoker.java_sources_file, root_build_dir),
+        "--jacococli-jar",
+        rebase_path(_jacococli_jar, root_build_dir),
       ]
-      _rebased_java_sources_file =
-          rebase_path(invoker.java_sources_file, root_build_dir)
-      args += [ "--java-sources-file=$_rebased_java_sources_file" ]
-
-      if (emma_filter != "") {
-        args += [
-          "--filter-string",
-          emma_filter,
-        ]
-      }
     }
   }
 
@@ -1554,7 +1539,8 @@ if (enable_java_templates) {
   #  enable_build_hooks:
   #  enable_build_hooks_android:
   #  supports_android:
-  #  emma_instrument:
+  #  jacoco_instrument: Use Jacoco-instrumented classes to generate Java
+  #    coverage data.
   #  jar_excluded_patterns: Optional list of .class file patterns to exclude
   #    from the final .jar file.
   #  jar_included_patterns: OPtional list of .class file patterns to include
@@ -1590,7 +1576,7 @@ if (enable_java_templates) {
     _enable_thread_annotations = false
 
     _desugar = defined(invoker.supports_android) && invoker.supports_android
-    _emma_instrument = invoker.emma_instrument
+    _jacoco_instrument = invoker.jacoco_instrument
     _enable_split_compat = defined(invoker.split_compat_class_names)
 
     _enable_class_deps_output = defined(invoker.enable_class_deps_output)
@@ -1783,13 +1769,13 @@ if (enable_java_templates) {
       _previous_output_jar = _filter_output_jar
     }
 
-    if (_emma_instrument) {
-      # Emma must run after desugar (or else desugar sometimes fails).
-      _emma_target = "${target_name}__emma"
-      _emma_input_jar = _previous_output_jar
-      _emma_output_jar = "$target_out_dir/$target_name-instrumented.jar"
+    if (_jacoco_instrument) {
+      # Jacoco must run after desugar (or else desugar sometimes fails).
+      _jacoco_target = "${target_name}__jacoco"
+      _jacoco_input_jar = _previous_output_jar
+      _jacoco_output_jar = "$target_out_dir/$target_name-instrumented.jar"
 
-      emma_instr(_emma_target) {
+      jacoco_instr(_jacoco_target) {
         deps = _deps
         if (defined(invoker.deps)) {
           deps += invoker.deps
@@ -1801,13 +1787,13 @@ if (enable_java_templates) {
                                  "java_sources_file",
                                ])
 
-        input_jar_path = _emma_input_jar
-        output_jar_path = _emma_output_jar
+        input_jar_path = _jacoco_input_jar
+        output_jar_path = _jacoco_output_jar
       }
 
       _deps = []
-      _deps = [ ":$_emma_target" ]
-      _previous_output_jar = _emma_output_jar
+      _deps = [ ":$_jacoco_target" ]
+      _previous_output_jar = _jacoco_output_jar
     }
 
     _output_jar_target = "${target_name}__copy"
@@ -3174,9 +3160,9 @@ if (enable_java_templates) {
   #    provided, this is determined automatically, based on the location of
   #    the source files (i.e. anything under third_party/ is not
   #    Chromium-specific unless it is in a 'chromium' sub-directory).
-  #  emma_never_instrument: Optional. If provided, whether to forbid
-  #    instrumentation with the Emma coverage processor. If not provided,
-  #    this is controlled by the global emma_coverage build arg variable
+  #  jacoco_never_instrument: Optional. If provided, whether to forbid
+  #    instrumentation with the Jacoco coverage processor. If not provided,
+  #    this is controlled by the global jacoco_coverage build arg variable
   #    and only used for non-test Chromium code.
   #  include_android_sdk: Optional. Whether or not the android SDK dep
   #    should be added to deps. Defaults to true for non-system libraries
@@ -3399,13 +3385,15 @@ if (enable_java_templates) {
     }
 
     if (defined(_final_jar_path)) {
-      _emma_instrument = emma_coverage && _chromium_code && _java_files != [] &&
-                         (!defined(invoker.testonly) || !invoker.testonly)
-      if (defined(invoker.emma_never_instrument)) {
-        _emma_instrument = !invoker.emma_never_instrument && _emma_instrument
+      _jacoco_instrument =
+          jacoco_coverage && _chromium_code && _java_files != [] &&
+          (!defined(invoker.testonly) || !invoker.testonly)
+      if (defined(invoker.jacoco_never_instrument)) {
+        _jacoco_instrument =
+            !invoker.jacoco_never_instrument && _jacoco_instrument
       }
-      if (_emma_instrument) {
-        _accumulated_deps += [ "//third_party/android_sdk:emma_device_java" ]
+      if (_jacoco_instrument) {
+        _accumulated_deps += [ "//third_party/jacoco:jacocoagent_java" ]
       }
     }
 
@@ -3688,8 +3676,8 @@ if (enable_java_templates) {
           enable_build_hooks_android = _enable_build_hooks_android
           build_config = _build_config
           input_jar_path = _unprocessed_jar_path
-          emma_instrument = _emma_instrument
-          if (_emma_instrument) {
+          jacoco_instrument = _jacoco_instrument
+          if (_jacoco_instrument) {
             java_files = _java_files
             java_sources_file = _java_sources_file
           }

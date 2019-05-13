@@ -19,8 +19,8 @@ java_library("errorprone_plugin_java") {
   enable_errorprone = false
   enable_bytecode_rewriter = false
 
-  # So that we don't need to inject emma runtime into the compiler's classpath.
-  emma_never_instrument = true
+  # So that we don't need to inject jacoco runtime into the compiler's classpath.
+  jacoco_never_instrument = true
 
   annotation_processor_deps = [ "//third_party/auto:auto_service_processor" ]
   deps = [

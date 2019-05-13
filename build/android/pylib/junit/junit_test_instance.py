@@ -14,7 +14,7 @@ class JunitTestInstance(test_instance.TestInstance):
     self._android_manifest_path = args.android_manifest_path
     self._coverage_dir = args.coverage_dir
     self._debug_socket = args.debug_socket
-    self._jacoco = args.jacoco
+    self._coverage_on_the_fly = args.coverage_on_the_fly
     self._package_filter = args.package_filter
     self._package_name = args.package_name
     self._resource_zips = args.resource_zips
@@ -44,8 +44,8 @@ class JunitTestInstance(test_instance.TestInstance):
     return self._coverage_dir
 
   @property
-  def jacoco(self):
-    return self._jacoco
+  def coverage_on_the_fly(self):
+    return self._coverage_on_the_fly
 
   @property
   def debug_socket(self):
