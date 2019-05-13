@@ -4,15 +4,10 @@
 
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
 
-#include <algorithm>
-#include <string>
-#include <unordered_map>
-#include <unordered_set>
+#include <map>
 #include <utility>
-#include <vector>
 
 #include "base/bind.h"
-#include "base/memory/singleton.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/scoped_observer.h"
@@ -22,6 +17,7 @@
 #include "chrome/browser/chromeos/printing/ppd_provider_factory.h"
 #include "chrome/browser/chromeos/printing/ppd_resolution_tracker.h"
 #include "chrome/browser/chromeos/printing/printer_configurer.h"
+#include "chrome/browser/chromeos/printing/printer_event_tracker.h"
 #include "chrome/browser/chromeos/printing/printer_event_tracker_factory.h"
 #include "chrome/browser/chromeos/printing/printers_map.h"
 #include "chrome/browser/chromeos/printing/synced_printers_manager.h"

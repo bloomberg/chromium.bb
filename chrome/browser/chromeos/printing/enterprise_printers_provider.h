@@ -10,12 +10,16 @@
 #include <unordered_map>
 
 #include "base/macros.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chromeos/printing/printer_configuration.h"
-#include "components/pref_registry/pref_registry_syncable.h"
+
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
 
 namespace chromeos {
+
+class CrosSettings;
+class Printer;
 
 // Uses classes BulkPrintersCalculator and CalculatorsPoliciesBinder to track
 // device settings & user profile modifications and to calculates resultant

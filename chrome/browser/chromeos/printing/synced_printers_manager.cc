@@ -4,11 +4,8 @@
 
 #include "chrome/browser/chromeos/printing/synced_printers_manager.h"
 
-#include <memory>
-#include <string>
 #include <unordered_map>
 #include <utility>
-#include <vector>
 
 #include "base/guid.h"
 #include "base/observer_list_threadsafe.h"
@@ -20,6 +17,7 @@
 #include "chrome/browser/chromeos/printing/enterprise_printers_provider.h"
 #include "chrome/browser/chromeos/printing/printers_sync_bridge.h"
 #include "chrome/browser/chromeos/printing/specifics_translation.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"

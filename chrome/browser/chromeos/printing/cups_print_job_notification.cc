@@ -4,10 +4,6 @@
 
 #include "chrome/browser/chromeos/printing/cups_print_job_notification.h"
 
-#include <memory>
-#include <string>
-#include <vector>
-
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/strings/string16.h"

@@ -4,8 +4,6 @@
 
 #include "chrome/browser/chromeos/printing/fake_cups_print_job_manager.h"
 
-#include <memory>
-#include <string>
 #include <utility>
 
 #include "base/bind.h"

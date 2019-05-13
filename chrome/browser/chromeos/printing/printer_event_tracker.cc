@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/printing/printer_event_tracker.h"
 
+#include "chromeos/printing/printer_configuration.h"
+
 namespace chromeos {
 namespace {
 

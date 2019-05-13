@@ -4,20 +4,16 @@
 
 #include "chrome/browser/chromeos/printing/printers_sync_bridge.h"
 
-#include <memory>
 #include <set>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "base/bind.h"
-#include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/chromeos/printing/specifics_translation.h"
+#include "chromeos/printing/printer_configuration.h"
 #include "components/sync/base/report_unrecoverable_error.h"
 #include "components/sync/model/model_type_change_processor.h"
-#include "components/sync/model/model_type_store.h"
 #include "components/sync/model/mutable_data_batch.h"
 #include "components/sync/model_impl/client_tag_based_model_type_processor.h"
 #include "components/sync/protocol/model_type_state.pb.h"

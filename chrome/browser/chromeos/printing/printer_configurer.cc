@@ -5,9 +5,7 @@
 #include "chrome/browser/chromeos/printing/printer_configurer.h"
 
 #include <map>
-#include <memory>
 #include <set>
-#include <string>
 #include <utility>
 #include <vector>
 

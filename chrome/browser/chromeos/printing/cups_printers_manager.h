@@ -9,12 +9,11 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/chromeos/printing/printer_event_tracker.h"
 #include "chrome/browser/chromeos/printing/printer_installation_manager.h"
 #include "chromeos/printing/printer_configuration.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/prefs/pref_service.h"
 
+class PrefService;
 class Profile;
 
 namespace user_prefs {

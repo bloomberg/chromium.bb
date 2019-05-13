@@ -5,18 +5,15 @@
 #ifndef CHROME_BROWSER_CHROMEOS_PRINTING_SYNCED_PRINTERS_MANAGER_H_
 #define CHROME_BROWSER_CHROMEOS_PRINTING_SYNCED_PRINTERS_MANAGER_H_
 
-#include <map>
 #include <memory>
 #include <string>
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "chrome/browser/chromeos/printing/printers_sync_bridge.h"
 #include "chromeos/printing/printer_configuration.h"
 #include "chromeos/printing/printer_translator.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/prefs/pref_change_registrar.h"
 
 class Profile;
 
@@ -25,6 +22,8 @@ class PrefRegistrySyncable;
 }
 
 namespace chromeos {
+
+class PrintersSyncBridge;
 
 // Manages information about synced local printers classes (SAVED
 // and ENTERPRISE).  Provides an interface to a user's printers and

@@ -8,11 +8,16 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/profiles/profile.h"
-#include "components/pref_registry/pref_registry_syncable.h"
+
+class Profile;
+
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
 
 namespace chromeos {
+
+class CrosSettings;
 
 // Observes device settings & user profile modifications and propagates them to
 // BulkPrintersCalculator objects associated with given device context and user

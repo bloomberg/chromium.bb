@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/printing/bulk_printers_calculator.h"
 #include "chrome/browser/chromeos/printing/bulk_printers_calculator_factory.h"
 #include "components/policy/policy_constants.h"
 

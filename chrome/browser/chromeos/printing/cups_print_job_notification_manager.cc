@@ -5,6 +5,8 @@
 #include "chrome/browser/chromeos/printing/cups_print_job_notification_manager.h"
 
 #include "chrome/browser/chromeos/printing/cups_print_job.h"
+#include "chrome/browser/chromeos/printing/cups_print_job_manager.h"
+#include "chrome/browser/chromeos/printing/cups_print_job_notification.h"
 #include "chrome/browser/profiles/profile.h"
 
 namespace chromeos {

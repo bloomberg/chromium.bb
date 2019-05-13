@@ -10,11 +10,12 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "chromeos/printing/printer_configuration.h"
 
 class Profile;
 
 namespace chromeos {
+
+class Printer;
 
 // These values are written to logs.  New enum values can be added, but existing
 // enums must never be renumbered or deleted and reused.

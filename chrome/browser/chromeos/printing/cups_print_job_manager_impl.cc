@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/printing/cups_print_job_manager.h"
 
 #include <cups/cups.h>
-#include <algorithm>
 #include <set>
 #include <string>
 #include <utility>
@@ -15,7 +14,6 @@
 #include "base/compiler_specific.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"

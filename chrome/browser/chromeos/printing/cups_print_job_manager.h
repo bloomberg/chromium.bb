@@ -12,13 +12,13 @@
 
 #include "base/observer_list.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/printing/cups_print_job.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 class Profile;
 
 namespace chromeos {
 
+class CupsPrintJob;
 class CupsPrintJobNotificationManager;
 
 class CupsPrintJobManager : public KeyedService {

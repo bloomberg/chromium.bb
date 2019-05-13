@@ -11,7 +11,6 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
-#include "chrome/browser/chromeos/printing/cups_printers_manager.h"
 #include "chromeos/printing/printer_configuration.h"
 
 namespace chromeos {

@@ -4,12 +4,8 @@
 
 #include "chrome/browser/chromeos/printing/ppd_resolution_tracker.h"
 
-#include <memory>
-#include <string>
-#include <unordered_map>
-#include <vector>
-
 #include "base/stl_util.h"
+#include "chrome/browser/chromeos/printing/ppd_resolution_state.h"
 
 namespace chromeos {
 

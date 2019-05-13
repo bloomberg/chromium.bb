@@ -7,10 +7,11 @@
 
 #include <memory>
 
-#include "chromeos/printing/printer_configuration.h"
 #include "components/sync/protocol/printer_specifics.pb.h"
 
 namespace chromeos {
+
+class Printer;
 
 // Convert |printer| into its local representation.  Enforces that only one
 // field in PpdReference is filled in.  In order of preference, we populate

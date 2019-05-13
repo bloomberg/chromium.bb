@@ -6,8 +6,6 @@
 #define CHROME_BROWSER_CHROMEOS_PRINTING_USB_PRINTER_DETECTOR_H_
 
 #include <memory>
-#include <string>
-#include <vector>
 
 #include "base/macros.h"
 #include "chrome/browser/chromeos/printing/printer_detector.h"
