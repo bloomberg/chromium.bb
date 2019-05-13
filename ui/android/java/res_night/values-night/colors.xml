@@ -19,6 +19,7 @@
     <color name="default_icon_color_inverse">@color/default_icon_color_dark</color>
     <color name="default_icon_color_inverse_disabled">@color/default_icon_color_dark_disabled</color>
     <color name="default_icon_color_blue">@color/modern_blue_300</color>
+    <color name="default_icon_color_secondary">@color/default_icon_color_secondary_light</color>
     <color name="hairline_stroke_color">@color/white_alpha_10</color>
 
     <!-- Common background and branding color. -->
