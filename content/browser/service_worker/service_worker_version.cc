@@ -349,13 +349,19 @@ void ServiceWorkerVersion::SetStatus(Status status) {
 
   if (status == INSTALLED)
     embedded_worker_->OnWorkerVersionInstalled();
-  else if (status == REDUNDANT)
+  else if (status == REDUNDANT) {
     embedded_worker_->OnWorkerVersionDoomed();
 
-  // TODO(crbug.com/951571): Remove this once we figured out the cause of
-  // invalid controller status.
-  if (status == REDUNDANT)
+    // TODO(crbug.com/951571): Remove this once we figured out the cause of
+    // invalid controller status.
     redundant_state_callstack_ = base::debug::StackTrace();
+
+    // Tell the storage system that this worker's script resources can now be
+    // deleted.
+    std::vector<ServiceWorkerDatabase::ResourceRecord> resources;
+    script_cache_map_.GetResources(&resources);
+    context_->storage()->PurgeResources(resources);
+  }
 }
 
 void ServiceWorkerVersion::RegisterStatusChangeCallback(
@@ -800,11 +806,6 @@ void ServiceWorkerVersion::Doom() {
     else
       embedded_worker_->Stop();
   }
-  if (!context_)
-    return;
-  std::vector<ServiceWorkerDatabase::ResourceRecord> resources;
-  script_cache_map_.GetResources(&resources);
-  context_->storage()->PurgeResources(resources);
 }
 
 void ServiceWorkerVersion::SetToPauseAfterDownload(base::OnceClosure callback) {

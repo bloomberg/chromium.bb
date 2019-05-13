@@ -1493,12 +1493,26 @@ void ServiceWorkerStorage::DidStoreRegistration(
             deleted_version.resources_total_size_bytes);
   }
 
+  // Purge the deleted version's resources now if needed. This is subtle. The
+  // version might still be used for a long time even after it's deleted. We can
+  // only purge safely once the version is REDUNDANT, since it will never be
+  // used again.
+  //
+  // If the deleted version's ServiceWorkerVersion doesn't exist, we can assume
+  // it's effectively REDUNDANT so it's safe to purge now. This is because the
+  // caller is assumed to promote the new version to active unless the deleted
+  // version is doing work, and it can't be doing work if it's not live.
+  //
+  // If the ServiceWorkerVersion does exist, it triggers purging once it reaches
+  // REDUNDANT. Otherwise, purging happens on the next browser session (via
+  // DeleteStaleResources).
+  if (!context_->GetLiveVersion(deleted_version.version_id))
+    StartPurgingResources(newly_purgeable_resources);
+
   context_->NotifyRegistrationStored(new_version.registration_id,
                                      new_version.scope);
   std::move(callback).Run(blink::ServiceWorkerStatusCode::kOk);
 
-  if (!context_->GetLiveVersion(deleted_version.version_id))
-    StartPurgingResources(newly_purgeable_resources);
 }
 
 void ServiceWorkerStorage::DidUpdateToActiveState(
@@ -1805,6 +1819,9 @@ void ServiceWorkerStorage::OnResourcePurged(int64_t id, int rv) {
 
   ServiceWorkerMetrics::RecordPurgeResourceResult(rv);
 
+  // TODO(falken): Is it always OK to ClearPurgeableResourceIds if |rv| is
+  // failure? The disk cache entry might still remain and once we remove its
+  // purgeable id, we will never retry deleting it.
   std::set<int64_t> ids = {id};
   database_task_runner_->PostTask(
       FROM_HERE,

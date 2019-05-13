@@ -1448,11 +1448,9 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_WaitingVersion) {
   EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id1_, false));
   EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id2_, false));
 
-  // Doom the version, now it happens.
+  // Doom the version. The resources should be purged.
   registration_->waiting_version()->Doom();
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, result);
-  EXPECT_EQ(2u, verify_ids.size());
   verify_ids.clear();
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
             database()->GetPurgeableResourceIds(&verify_ids));
@@ -1497,10 +1495,11 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_ActiveVersion) {
   EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id1_, true));
   EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id2_, true));
 
-  // Removing the controllee should cause the resources to be deleted.
+  // Dooming the version should cause the resources to be deleted.
   registration_->active_version()->RemoveControllee(host->client_uuid());
   registration_->active_version()->Doom();
   base::RunLoop().RunUntilIdle();
+
   verify_ids.clear();
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
             database()->GetPurgeableResourceIds(&verify_ids));
@@ -1718,16 +1717,67 @@ TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration) {
   EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id1_, false));
   EXPECT_TRUE(VerifyBasicResponse(storage(), resource_id2_, false));
 
-  // Removing the controllee should cause the old version's resources to be
-  // deleted.
-  registration_->active_version()->RemoveControllee(host->client_uuid());
-  registration_->active_version()->Doom();
+  // Remove the controllee to allow the new version to become active, making the
+  // old version redundant.
+  scoped_refptr<ServiceWorkerVersion> old_version(
+      registration_->active_version());
+  old_version->RemoveControllee(host->client_uuid());
+  registration_->ActivateWaitingVersionWhenReady();
+  EXPECT_EQ(ServiceWorkerVersion::REDUNDANT, old_version->status());
+
+  // Its resources should be purged.
   base::RunLoop().RunUntilIdle();
   verify_ids.clear();
   EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
             database()->GetPurgeableResourceIds(&verify_ids));
   EXPECT_TRUE(verify_ids.empty());
 
+  EXPECT_FALSE(VerifyBasicResponse(storage(), resource_id1_, false));
+  EXPECT_FALSE(VerifyBasicResponse(storage(), resource_id2_, false));
+}
+
+TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration_NoLiveVersion) {
+  // Promote the worker to active worker and add a controllee.
+  registration_->SetActiveVersion(registration_->waiting_version());
+  storage()->UpdateToActiveState(registration_.get(), base::DoNothing());
+
+  // Make an updated registration.
+  scoped_refptr<ServiceWorkerVersion> live_version = new ServiceWorkerVersion(
+      registration_.get(), script_, blink::mojom::ScriptType::kClassic,
+      storage()->NewVersionId(), context()->AsWeakPtr());
+  live_version->SetStatus(ServiceWorkerVersion::NEW);
+  registration_->SetWaitingVersion(live_version);
+  std::vector<ResourceRecord> records;
+  records.push_back(ResourceRecord(10, live_version->script_url(), 100));
+  live_version->script_cache_map()->SetResources(records);
+  live_version->set_fetch_handler_existence(
+      ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
+
+  // Destroy the active version.
+  registration_->UnsetVersion(registration_->active_version());
+
+  // Writing the registration should purge the old version's resources,
+  // since it's not live.
+  std::set<int64_t> verify_ids;
+  bool was_called = false;
+  auto result = blink::ServiceWorkerStatusCode::kErrorFailed;
+  storage()->StoreRegistration(
+      registration_.get(), registration_->waiting_version(),
+      base::BindOnce(&VerifyPurgeableListStatusCallback,
+                     base::Unretained(database()), &verify_ids, &was_called,
+                     &result));
+  base::RunLoop().RunUntilIdle();
+
+  // The StoreRegistration callback was called with the purgeable list.
+  ASSERT_TRUE(was_called);
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, result);
+  EXPECT_EQ(2u, verify_ids.size());
+
+  // The resources have already been purged.
+  verify_ids.clear();
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database()->GetPurgeableResourceIds(&verify_ids));
+  EXPECT_TRUE(verify_ids.empty());
   EXPECT_FALSE(VerifyBasicResponse(storage(), resource_id1_, false));
   EXPECT_FALSE(VerifyBasicResponse(storage(), resource_id2_, false));
 }
