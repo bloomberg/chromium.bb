@@ -275,7 +275,7 @@ void OobeUIDialogDelegate::Show() {
 }
 
 void OobeUIDialogDelegate::ShowFullScreen() {
-  const gfx::Size& size =
+  const gfx::Size size =
       display::Screen::GetScreen()
           ->GetDisplayNearestWindow(dialog_widget_->GetNativeWindow())
           .size();
