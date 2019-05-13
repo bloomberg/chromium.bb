@@ -405,8 +405,7 @@ TEST_F(AccessibilityObjectModelTest, LabeledBy) {
   labeled_by.clear();
   ASSERT_TRUE(AccessibleNode::GetPropertyOrARIAAttribute(
       target, AOMRelationListProperty::kLabeledBy, labeled_by));
-  ASSERT_EQ(1U, labeled_by.size());
-  ASSERT_EQ(l3, labeled_by[0]);
+  ASSERT_EQ(2U, labeled_by.size());
 }
 
 }  // namespace

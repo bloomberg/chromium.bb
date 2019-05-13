@@ -729,7 +729,6 @@ void AXNodeObject::AccessibilityChildrenFromAOMProperty(
   HeapVector<Member<Element>> elements;
   if (!HasAOMPropertyOrARIAAttribute(property, elements))
     return;
-
   AXObjectCacheImpl& cache = AXObjectCache();
   for (const auto& element : elements) {
     if (AXObject* child = cache.GetOrCreate(element)) {
@@ -2779,24 +2778,10 @@ void AXNodeObject::ComputeAriaOwnsChildren(
     return;
   }
 
-  // Case 2: AOM owns property
-  HeapVector<Member<Element>> elements;
-  if (HasAOMProperty(AOMRelationListProperty::kOwns, elements)) {
-    AXObjectCache().UpdateAriaOwns(this, id_vector, owned_children);
-
-    for (const auto& element : elements) {
-      AXObject* ax_element = ax_object_cache_->GetOrCreate(&*element);
-      if (ax_element && !ax_element->AccessibilityIsIgnored())
-        owned_children.push_back(ax_element);
-    }
-
-    return;
-  }
-
   if (!HasAttribute(kAriaOwnsAttr))
     return;
 
-  // Case 3: aria-owns attribute
+  // Case 2: aria-owns attribute
   TokenVectorFromAttribute(id_vector, kAriaOwnsAttr);
   AXObjectCache().UpdateAriaOwns(this, id_vector, owned_children);
 }
@@ -3355,28 +3340,6 @@ String AXNodeObject::Description(ax::mojom::NameFrom name_from,
     description_sources->push_back(
         DescriptionSource(found_description, kAriaDescribedbyAttr));
     description_sources->back().type = description_from;
-  }
-
-  // aria-describedby overrides any other accessible description, from:
-  // http://rawgit.com/w3c/aria/master/html-aam/html-aam.html
-  // AOM version.
-  HeapVector<Member<Element>> elements;
-  if (HasAOMProperty(AOMRelationListProperty::kDescribedBy, elements)) {
-    AXObjectSet visited;
-    description = TextFromElements(true, visited, elements, related_objects);
-    if (!description.IsNull()) {
-      if (description_sources) {
-        DescriptionSource& source = description_sources->back();
-        source.type = description_from;
-        source.related_objects = *related_objects;
-        source.text = description;
-        found_description = true;
-      } else {
-        return description;
-      }
-    } else if (description_sources) {
-      description_sources->back().invalid = true;
-    }
   }
 
   // aria-describedby overrides any other accessible description, from:

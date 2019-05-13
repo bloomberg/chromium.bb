@@ -390,11 +390,8 @@ Element* AccessibleNode::GetPropertyOrARIAAttribute(
     AOMRelationProperty property) {
   if (!element)
     return nullptr;
-
   if (AccessibleNode* result = GetProperty(element, property))
     return result->element();
-
-  // Fall back on the equivalent ARIA attribute.
   QualifiedName attribute = GetCorrespondingARIAAttribute(property);
   AtomicString value = element->FastGetAttribute(attribute);
   return element->GetTreeScope().getElementById(value);
@@ -407,11 +404,6 @@ bool AccessibleNode::GetPropertyOrARIAAttribute(
     HeapVector<Member<Element>>& targets) {
   if (!element)
     return false;
-
-  if (GetProperty(element, property, targets))
-    return true;
-
-  // Fall back on the equivalent ARIA attribute.
   QualifiedName attribute = GetCorrespondingARIAAttribute(property);
   String value = element->FastGetAttribute(attribute).GetString();
   if (value.IsEmpty() && property == AOMRelationListProperty::kLabeledBy)

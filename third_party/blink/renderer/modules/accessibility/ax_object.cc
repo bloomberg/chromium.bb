@@ -1530,21 +1530,31 @@ String AXObject::AriaTextAlternative(bool recursive,
   if (!in_aria_labelled_by_traversal && !already_visited) {
     name_from = ax::mojom::NameFrom::kRelatedElement;
 
-    // Check AOM property first.
-    HeapVector<Member<Element>> elements;
-    if (HasAOMProperty(AOMRelationListProperty::kLabeledBy, elements)) {
-      if (name_sources) {
-        name_sources->push_back(
-            NameSource(*found_text_alternative, kAriaLabelledbyAttr));
-        name_sources->back().type = name_from;
-      }
+    // Check ARIA attributes.
+    const QualifiedName& attr =
+        HasAttribute(kAriaLabeledbyAttr) && !HasAttribute(kAriaLabelledbyAttr)
+            ? kAriaLabeledbyAttr
+            : kAriaLabelledbyAttr;
+
+    if (name_sources) {
+      name_sources->push_back(NameSource(*found_text_alternative, attr));
+      name_sources->back().type = name_from;
+    }
+
+    const AtomicString& aria_labelledby = GetAttribute(attr);
+    if (!aria_labelledby.IsNull()) {
+      if (name_sources)
+        name_sources->back().attribute_value = aria_labelledby;
 
       // Operate on a copy of |visited| so that if |nameSources| is not null,
       // the set of visited objects is preserved unmodified for future
       // calculations.
       AXObjectSet visited_copy = visited;
+      Vector<String> ids;
       text_alternative =
-          TextFromElements(true, visited_copy, elements, related_objects);
+          TextFromAriaLabelledby(visited_copy, related_objects, ids);
+      if (!ids.IsEmpty())
+        AXObjectCache().UpdateReverseRelations(this, ids);
       if (!text_alternative.IsNull()) {
         if (name_sources) {
           NameSource& source = name_sources->back();
@@ -1558,47 +1568,6 @@ String AXObject::AriaTextAlternative(bool recursive,
         }
       } else if (name_sources) {
         name_sources->back().invalid = true;
-      }
-    } else {
-      // Now check ARIA attribute
-      const QualifiedName& attr =
-          HasAttribute(kAriaLabeledbyAttr) && !HasAttribute(kAriaLabelledbyAttr)
-              ? kAriaLabeledbyAttr
-              : kAriaLabelledbyAttr;
-
-      if (name_sources) {
-        name_sources->push_back(NameSource(*found_text_alternative, attr));
-        name_sources->back().type = name_from;
-      }
-
-      const AtomicString& aria_labelledby = GetAttribute(attr);
-      if (!aria_labelledby.IsNull()) {
-        if (name_sources)
-          name_sources->back().attribute_value = aria_labelledby;
-
-        // Operate on a copy of |visited| so that if |nameSources| is not null,
-        // the set of visited objects is preserved unmodified for future
-        // calculations.
-        AXObjectSet visited_copy = visited;
-        Vector<String> ids;
-        text_alternative =
-            TextFromAriaLabelledby(visited_copy, related_objects, ids);
-        if (!ids.IsEmpty())
-          AXObjectCache().UpdateReverseRelations(this, ids);
-        if (!text_alternative.IsNull()) {
-          if (name_sources) {
-            NameSource& source = name_sources->back();
-            source.type = name_from;
-            source.related_objects = *related_objects;
-            source.text = text_alternative;
-            *found_text_alternative = true;
-          } else {
-            *found_text_alternative = true;
-            return text_alternative;
-          }
-        } else if (name_sources) {
-          name_sources->back().invalid = true;
-        }
       }
     }
   }

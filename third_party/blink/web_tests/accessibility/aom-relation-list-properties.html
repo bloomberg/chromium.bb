@@ -49,22 +49,22 @@ test(function(t) {
     assert_equals(input2.accessibleNode.labeledBy[1], l4.accessibleNode);
     assert_equals(input2.accessibleNode.labeledBy[2], undefined);
 
-    assert_equals(axInput.name, "L3");
-    assert_equals(axInput2.name, "L3 L4");
+    // No change observed in accessibility tree.
+    assert_equals(axInput.name, "L1 L2");
+    assert_equals(axInput2.name, "L1 L3");
 
     input.accessibleNode.labeledBy = null;
     assert_equals(axInput.name, "L1 L2");
 
     input2.accessibleNode.labeledBy.remove(l3.accessibleNode);
-    assert_equals(axInput2.name, "L4");
+    assert_equals(axInput2.name, "L1 L3");
 
     input2.accessibleNode.labeledBy[0] = l2.accessibleNode;
-    assert_equals(axInput2.name, "L2");
+    assert_equals(axInput2.name, "L1 L3");
     input2.accessibleNode.labeledBy[2] = l4.accessibleNode;
-    assert_equals(axInput2.name, "L2 L4");
+    assert_equals(axInput2.name, "L1 L3");
 }, "AccessibleNode.labeledBy");
 </script>
-
 <input id="input3" aria-describedby="l1 l2">
 
 <script>
@@ -78,9 +78,6 @@ test(function(t) {
 
     input.accessibleNode.describedBy = new AccessibleNodeList();
     input.accessibleNode.describedBy.add(l3.accessibleNode);
-
-    input.accessibleNode.describedBy = new AccessibleNodeList();
-    input.accessibleNode.describedBy.add(l3.accessibleNode);
     input.accessibleNode.describedBy.add(l4.accessibleNode);
 
     assert_equals(input.accessibleNode.describedBy.length, 2);
@@ -88,15 +85,15 @@ test(function(t) {
     assert_equals(input.accessibleNode.describedBy[1], l4.accessibleNode);
     assert_equals(input.accessibleNode.describedBy[2], undefined);
 
-    assert_equals(axInput.description, "L3 L4");
+    assert_equals(axInput.description, "L1 L2");
 
     input.accessibleNode.describedBy.remove(l3.accessibleNode);
-    assert_equals(axInput.description, "L4");
+    assert_equals(axInput.description, "L1 L2");
 
     input.accessibleNode.describedBy[0] = l2.accessibleNode;
-    assert_equals(axInput.description, "L2");
+    assert_equals(axInput.description, "L1 L2");
     input.accessibleNode.describedBy[2] = l4.accessibleNode;
-    assert_equals(axInput.description, "L2 L4");
+    assert_equals(axInput.description, "L1 L2");
 
     input.accessibleNode.describedBy = null;
     assert_equals(axInput.description, "L1 L2");
@@ -116,6 +113,8 @@ test(function(t) {
 <div id="console"></div>
 
 <script>
+// aria-controls and aria-flowto is part of the sparse attributes set on accessible node.
+// These will be decoupled in a later CL.
 test(function(t) {
     var axTab1 = accessibilityController.accessibleElementById("tablist_1").childAtIndex(0);
     var axPanel1 = accessibilityController.accessibleElementById("panel_1");
@@ -218,7 +217,7 @@ test(function(t)
     var list1 = document.getElementById("list1");
 
     list1.accessibleNode.owns = new AccessibleNodeList();
-    assert_equals(axList1.childrenCount, 2);
+    assert_equals(axList1.childrenCount, 3);
 }, "AccessibleNode.owns");
 </script>
 
