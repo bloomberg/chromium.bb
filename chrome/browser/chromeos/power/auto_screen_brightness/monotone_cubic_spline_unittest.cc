@@ -105,6 +105,25 @@ TEST(MonotoneCubicSpline, ToString) {
   EXPECT_EQ(expected_string, string_from_spline);
 }
 
+TEST(MonotoneCubicSpline, AssignmentAndEquality) {
+  const std::vector<double> xs1 = {0,   10,  20,   40,   60,  80,
+                                   100, 500, 1000, 2000, 3000};
+  const std::vector<double> ys1 = {0, 5, 10, 15, 20, 25, 30, 40, 60, 80, 1000};
+  MonotoneCubicSpline spline1(xs1, ys1);
+
+  const std::vector<double> xs2 = {1, 2, 3};
+  const std::vector<double> ys2 = {10, 20, 30};
+  const MonotoneCubicSpline spline2(xs2, ys2);
+
+  EXPECT_NE(spline1, spline2);
+  spline1 = spline2;
+
+  EXPECT_EQ(spline1, spline2);
+
+  const MonotoneCubicSpline spline3 = spline1;
+  EXPECT_EQ(spline3, spline2);
+}
+
 }  // namespace auto_screen_brightness
 }  // namespace power
 }  // namespace chromeos

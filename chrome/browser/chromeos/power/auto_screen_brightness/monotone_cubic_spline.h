@@ -26,6 +26,8 @@ class MonotoneCubicSpline {
 
   MonotoneCubicSpline(const MonotoneCubicSpline& spline);
 
+  MonotoneCubicSpline& operator=(const MonotoneCubicSpline& spline);
+
   ~MonotoneCubicSpline();
 
   // Parses and returns a MonotoneCubicSpline from input |data| or nullopt if
@@ -36,6 +38,7 @@ class MonotoneCubicSpline {
       const std::string& data);
 
   bool operator==(const MonotoneCubicSpline& spline) const;
+  bool operator!=(const MonotoneCubicSpline& spline) const;
 
   // Returns interpolated value for |x|. If |x| is smaller|greater than
   // smallest|largest value in |xs_|, then smallest|largest value in |ys_| will
@@ -51,13 +54,13 @@ class MonotoneCubicSpline {
   std::string ToString() const;
 
  private:
-  const std::vector<double> xs_;
-  const std::vector<double> ys_;
+  std::vector<double> xs_;
+  std::vector<double> ys_;
 
-  const size_t num_points_;
+  size_t num_points_;
 
   // Tangents of control points.
-  const std::vector<double> ms_;
+  std::vector<double> ms_;
 };
 
 }  // namespace auto_screen_brightness

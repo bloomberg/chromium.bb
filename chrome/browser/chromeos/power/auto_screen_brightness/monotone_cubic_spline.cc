@@ -91,6 +91,9 @@ MonotoneCubicSpline::MonotoneCubicSpline(const std::vector<double>& xs,
 MonotoneCubicSpline::MonotoneCubicSpline(const MonotoneCubicSpline& spline) =
     default;
 
+MonotoneCubicSpline& MonotoneCubicSpline::operator=(
+    const MonotoneCubicSpline& spline) = default;
+
 MonotoneCubicSpline::~MonotoneCubicSpline() = default;
 
 base::Optional<MonotoneCubicSpline> MonotoneCubicSpline::FromString(
@@ -143,6 +146,10 @@ bool MonotoneCubicSpline::operator==(const MonotoneCubicSpline& spline) const {
   }
 
   return true;
+}
+
+bool MonotoneCubicSpline::operator!=(const MonotoneCubicSpline& spline) const {
+  return !(*this == spline);
 }
 
 double MonotoneCubicSpline::Interpolate(double x) const {
