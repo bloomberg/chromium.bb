@@ -6,18 +6,24 @@
 <link rel="help" href="https://drafts.fxtf.org/filter-effects-2/#BackdropFilterProperty">
 <link rel="match"  href="backdrop-filter-clip-rect-zoom-ref.html">
 
-<div>
-  <p>Expected: A green box, color-inverted inside the short, wide box with a<br>
-  blue border and rounded corners, and not color-inverted anywhere else. In<br>
-  particular, there should be no color inversion inside the tall, narrow box,<br>
-  or anywhere outside that.</p>
-</div>
+<!-- See [1] for an implementation of this test in WPT format. It requires the
+  WPT Fuzzy Matching [2] feature to be implemented, due to AA on the border
+  radii.
+
+  [1] https://cs.chromium.org/chromium/src/third_party/blink/web_tests/external/wpt/css/filter-effects/backdrop-filter-clip-rect-zoom-ref.html?rcl=04f3fcde0d60b908e7c452b4956b693144cdfdd5&l=1
+  [2] https://github.com/web-platform-tests/wpt/blob/1f570a686843ca10f151a79956ee16110f4a4d42/docs/_writing-tests/reftests.md#fuzzy-matching
+-->
+
 <div class="box"></div>
 <div class="navbar">
   <div class="menu"></div>
   <div class="menu2"></div>
 </div>
 <style>
+html::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+}
 div {
   position: absolute;
 }

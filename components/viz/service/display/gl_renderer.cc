@@ -774,9 +774,8 @@ gfx::Rect GLRenderer::GetBackdropBoundingBoxForRenderPassQuad(
   }
   // |backdrop_filter_bounds| is a rounded rect in [-0.5,0.5] space that
   // represents |params->backdrop_filter_bounds| as a fraction of the space
-  // defined by |quad->rect|, not including its offset.
-  if (!GetScaledRRectF(gfx::Rect(quad->rect.size()),
-                       params->backdrop_filter_bounds,
+  // defined by |quad->rect|.
+  if (!GetScaledRRectF(quad->rect, params->backdrop_filter_bounds,
                        backdrop_filter_bounds)) {
     *backdrop_filter_bounds = gfx::RRectF(SharedGeometryQuad().BoundingBox());
   }
@@ -828,9 +827,12 @@ gfx::Rect GLRenderer::GetBackdropBoundingBoxForRenderPassQuad(
   // and it is included in |contents_device_transform| (through
   // |projection_matrix|). Don't double-flip.
   *backdrop_filter_bounds_transform = params->contents_device_transform;
-  float old_y = backdrop_filter_bounds_transform->To2dTranslation().y();
+  float new_y = 2 * backdrop_filter_bounds_transform->To2dTranslation().y() +
+                backdrop_rect.bottom() - unclipped_rect->bottom() +
+                backdrop_rect.y() - unclipped_rect->y();
   backdrop_filter_bounds_transform->PostScale(1, -1);
-  backdrop_filter_bounds_transform->PostTranslate(0, 2 * old_y);
+  backdrop_filter_bounds_transform->PostTranslate(0, new_y);
+
   // Shift to the space of the captured backdrop image.
   backdrop_filter_bounds_transform->PostTranslate(-backdrop_rect.x(),
                                                   -backdrop_rect.y());
