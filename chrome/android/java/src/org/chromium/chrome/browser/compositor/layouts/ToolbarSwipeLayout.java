@@ -7,8 +7,6 @@ package org.chromium.chrome.browser.compositor.layouts;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.RectF;
-import android.view.animation.DecelerateInterpolator;
-import android.view.animation.Interpolator;
 
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
@@ -66,8 +64,6 @@ public class ToolbarSwipeLayout extends Layout {
 
     private final BlackHoleEventFilter mBlackHoleEventFilter;
     private final TabListSceneLayer mSceneLayer;
-
-    private final Interpolator mEdgeInterpolator = new DecelerateInterpolator();
 
     /** The left and right scene layer responsible for drawing bottom toolbars for each tab. */
     private ScrollingBottomViewSceneLayer mLeftBottomToolbarSceneLayer;
@@ -284,7 +280,8 @@ public class ToolbarSwipeLayout extends Layout {
         if (doEdge) {
             float progress = mOffset / getWidth();
             float direction = Math.signum(progress);
-            float smoothedProgress = mEdgeInterpolator.getInterpolation(Math.abs(progress));
+            float smoothedProgress =
+                    CompositorAnimator.DECELERATE_INTERPOLATOR.getInterpolation(Math.abs(progress));
 
             float maxSlide = getWidth() / 5.f;
             rightX = direction * smoothedProgress * maxSlide;

@@ -9,6 +9,7 @@ import android.animation.TimeInterpolator;
 import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.LinearInterpolator;
@@ -96,6 +97,8 @@ public class CompositorAnimator extends Animator {
             new AccelerateInterpolator();
     public static final DecelerateInterpolator DECELERATE_INTERPOLATOR =
             new DecelerateInterpolator();
+    public static final FastOutSlowInInterpolator FAST_OUT_SLOW_IN_INTERPOLATOR =
+            new FastOutSlowInInterpolator();
     public static final LinearInterpolator LINEAR_INTERPOLATOR = new LinearInterpolator();
 
     /**

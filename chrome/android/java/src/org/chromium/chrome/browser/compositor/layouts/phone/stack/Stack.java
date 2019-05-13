@@ -12,8 +12,6 @@ import android.content.res.Resources;
 import android.graphics.RectF;
 import android.support.annotation.IntDef;
 import android.util.Pair;
-import android.view.animation.AccelerateDecelerateInterpolator;
-import android.view.animation.Interpolator;
 
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
@@ -176,12 +174,6 @@ public abstract class Stack {
     protected float mMaxUnderScroll;
     protected float mMaxOverScrollAngle; // This will be updated from values.xml
     private float mMaxOverScrollSlide;
-    private final Interpolator mOverScrollAngleInterpolator =
-            new AccelerateDecelerateInterpolator();
-    private final Interpolator mUnderScrollAngleInterpolator =
-            CompositorAnimator.DECELERATE_INTERPOLATOR;
-    private final Interpolator mOverscrollSlideInterpolator =
-            new AccelerateDecelerateInterpolator();
 
     // Drag Lock
     private @DragLock int mDragLock = DragLock.NONE;

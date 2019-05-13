@@ -5,10 +5,8 @@
 package org.chromium.chrome.browser.compositor.bottombar.contextualsearch;
 
 import android.content.Context;
-import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.Interpolator;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
@@ -25,7 +23,6 @@ import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 public class ContextualSearchCaptionControl extends OverlayPanelTextViewInflater {
     private static final float ANIMATION_PERCENTAGE_ZERO = 0.f;
     private static final float ANIMATION_PERCENTAGE_COMPLETE = 1.f;
-    private static final Interpolator ANIMATION_INTERPOLATOR = new FastOutSlowInInterpolator();
 
     /**
      * The caption View.
@@ -195,7 +192,8 @@ public class ContextualSearchCaptionControl extends OverlayPanelTextViewInflater
                 OverlayPanelAnimation.BASE_ANIMATION_DURATION_MS, null);
         mTransitionAnimator.addUpdateListener(
                 animator -> mAnimationPercentage = animator.getAnimatedValue());
-        mTransitionAnimator.setInterpolator(ANIMATION_INTERPOLATOR);
+        mTransitionAnimator.setInterpolator(CompositorAnimator.FAST_OUT_SLOW_IN_INTERPOLATOR);
+
         mTransitionAnimator.start();
     }
 }
