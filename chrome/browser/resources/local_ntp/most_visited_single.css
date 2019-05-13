@@ -25,7 +25,7 @@ html {
   --md-title-max-height: 28px;
 
   /* May be overridden by themes (on the body element). */
-  --tile-title-color: #323232;
+  --tile-title-color: rgb(var(--GG800-rgb));
 }
 
 body {
@@ -255,7 +255,7 @@ html[darkmode=true] .md-add-icon {
 }
 
 .md-title {
-  color: rgb(var(--GG800-rgb));
+  color: rgb(var(--tile-title-color));
   font-size: var(--md-title-font-size);
   font-weight: 500;
   max-height: var(--md-title-max-height);
@@ -276,40 +276,22 @@ body.mac-chromeos .md-title {
   font-weight: 400;
 }
 
-/* Apply when Chrome is in dark mode. */
-html[darkmode=true] .md-title {
-  color: rgb(var(--GG200-rgb));
-}
-
 /* Apply when a custom background is set. */
-body.dark-theme .md-tile-container:not(.reorder) .md-title {
-  color: rgb(var(--GG050-rgb));
+body.custom-background .md-tile-container:not(.reorder) .md-title {
   filter: drop-shadow(0 0 6px rgba(0, 0, 0, 0.35));
 }
 
-/* Apply only when a theme is installed. */
-body.using-theme .md-title-container {
+/* Apply only when a theme with image is installed. */
+body.use-title-container .md-title-container {
   background-color: white;
   /* Necessary for a "pill" shape. Using 50% creates an oval. */
   border-radius: 500px;
   padding: 0 8px;
 }
 
-html[darkmode=true] body.using-theme .md-title-container {
-  background-color: rgb(var(--GG900-rgb));
-}
-
-html[darkmode=true] body.using-theme .md-tile-container.reorder .md-title-container {
-  background-color: rgb(var(--dark-mode-bg-rgb));
-}
-
-body.using-theme .md-tile-container:not(.reorder) .md-title {
+body.use-title-container .md-tile-container:not(.reorder) .md-title {
   color: rgb(var(--GG800-rgb));
   filter: unset;
-}
-
-html[darkmode=true] body.using-theme .md-tile-container:not(.reorder) .md-title {
-  color: rgb(var(--GG200-rgb));
 }
 
 .md-menu {

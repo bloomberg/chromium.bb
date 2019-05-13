@@ -59,8 +59,8 @@ function disableIframesAndVoiceSearchForTesting() {
  */
 const NTP_DESIGN = {
   numTitleLines: 1,
-  titleColor: [50, 50, 50, 255],
-  titleColorAgainstDark: [210, 210, 210, 255],
+  titleColor: [60, 64, 67, 255],               /** GG800 */
+  titleColorAgainstDark: [248, 249, 250, 255], /** GG050 */
 };
 
 
@@ -481,7 +481,8 @@ function sendThemeInfoToMostVisitedIframe() {
 
   const message = {cmd: 'updateTheme'};
   message.isThemeDark = info.isNtpBackgroundDark;
-  message.isUsingTheme = !info.usingDefaultTheme;
+  message.customBackground = info.customBackgroundConfigured;
+  message.useTitleContainer = info.useTitleContainer;
   message.isDarkMode = getUseDarkChips(info);
 
   let titleColor = NTP_DESIGN.titleColor;

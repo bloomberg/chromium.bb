@@ -808,13 +808,14 @@ function showTiles(info) {
 function updateTheme(info) {
   document.body.style.setProperty('--tile-title-color', info.tileTitleColor);
   document.body.classList.toggle('dark-theme', info.isThemeDark);
-  document.body.classList.toggle('using-theme', info.isUsingTheme);
+  document.body.classList.toggle('use-title-container', info.useTitleContainer);
+  document.body.classList.toggle('custom-background', info.customBackground);
   document.documentElement.setAttribute('darkmode', info.isDarkMode);
 
   // Reduce font weight on the default(white) background for Mac and CrOS.
   document.body.classList.toggle(
       CLASSES.MAC_CHROMEOS,
-      !info.isThemeDark && !info.isUsingTheme &&
+      !info.isThemeDark && !info.useTitleContainer &&
           (navigator.userAgent.indexOf('Mac') > -1 ||
            navigator.userAgent.indexOf('CrOS') > -1));
 }

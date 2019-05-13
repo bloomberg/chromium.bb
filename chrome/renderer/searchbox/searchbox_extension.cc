@@ -199,11 +199,15 @@ base::Optional<int> CoerceToInt(v8::Isolate* isolate, v8::Value* value) {
   return maybe_int.ToLocalChecked()->Value();
 }
 
+// TODO(gayane): Consider removing RGBAColor struct and replacing it with
+// SkColor.
 // Converts RGBAColor to SkColor.
 SkColor RGBAColorToSkColor(const RGBAColor& color) {
   return SkColorSetARGB(color.a, color.r, color.g, color.b);
 }
 
+// TODO(gayane): Consider moving any non-trivial logic up to |InstantService|
+// and do only mapping here.
 v8::Local<v8::Object> GenerateThemeBackgroundInfo(
     v8::Isolate* isolate,
     const ThemeBackgroundInfo& theme_info) {
@@ -308,7 +312,7 @@ v8::Local<v8::Object> GenerateThemeBackgroundInfo(
   // If a custom background has been set provide the relevant information to the
   // page.
   if (!theme_info.custom_background_url.is_empty()) {
-    ntp_text = RGBAColor{255, 255, 255, 255};
+    ntp_text = RGBAColor{248, 249, 250, 255};  // GG050
     builder.Set("alternateLogo", true);
     builder.Set("customBackgroundConfigured", true);
     builder.Set("imageUrl", theme_info.custom_background_url.spec());
@@ -327,8 +331,11 @@ v8::Local<v8::Object> GenerateThemeBackgroundInfo(
   // Value is always valid.
   builder.Set("textColorRgba", internal::RGBAColorToArray(isolate, ntp_text));
 
+  // Generate fields for themeing NTP elements.
   builder.Set("isNtpBackgroundDark",
               internal::IsNtpBackgroundDark(RGBAColorToSkColor(ntp_text)));
+  builder.Set("useTitleContainer",
+              crx_file::id_util::IdIsValid(theme_info.theme_id));
 
   return builder.Build();
 }
