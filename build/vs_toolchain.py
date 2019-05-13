@@ -196,23 +196,6 @@ def _CopyRuntimeImpl(target, source, verbose=True):
     # keep it readable.
     os.chmod(target, stat.S_IWRITE | stat.S_IREAD)
 
-def _SortByHighestVersionNumberFirst(list_of_str_versions):
-  """This sorts |list_of_str_versions| according to version number rules
-  so that version "1.12" is higher than version "1.9". Does not work
-  with non-numeric versions like 1.4.a8 which will be higher than
-  1.4.a12. It does handle the versions being embedded in file paths.
-  """
-  def to_int_if_int(x):
-    try:
-      return int(x)
-    except ValueError:
-      return x
-
-  def to_number_sequence(x):
-    part_sequence = re.split(r'[\\/\.]', x)
-    return [to_int_if_int(x) for x in part_sequence]
-
-  list_of_str_versions.sort(key=to_number_sequence, reverse=True)
 
 def _CopyUCRTRuntime(target_dir, source_dir, target_cpu, dll_pattern, suffix):
   """Copy both the msvcp and vccorlib runtime DLLs, only if the target doesn't
@@ -249,7 +232,7 @@ def _CopyUCRTRuntime(target_dir, source_dir, target_cpu, dll_pattern, suffix):
     redist_dir = os.path.join(win_sdk_dir, 'Redist')
     version_dirs = glob.glob(os.path.join(redist_dir, '10.*'))
     if len(version_dirs) > 0:
-      _SortByHighestVersionNumberFirst(version_dirs)
+      version_dirs.sort(reverse=True)
       redist_dir = version_dirs[0]
     ucrt_dll_dirs = os.path.join(redist_dir, 'ucrt', 'DLLs', target_cpu)
     ucrt_files = glob.glob(os.path.join(ucrt_dll_dirs, 'api-ms-win-*.dll'))
@@ -266,7 +249,7 @@ def _CopyUCRTRuntime(target_dir, source_dir, target_cpu, dll_pattern, suffix):
       sdk_redist_root = os.path.join(win_sdk_dir, 'bin')
       sdk_bin_sub_dirs = os.listdir(sdk_redist_root)
       # Select the most recent SDK if there are multiple versions installed.
-      _SortByHighestVersionNumberFirst(sdk_bin_sub_dirs)
+      sdk_bin_sub_dirs.sort(reverse=True)
       for directory in sdk_bin_sub_dirs:
         sdk_redist_root_version = os.path.join(sdk_redist_root, directory)
         if not os.path.isdir(sdk_redist_root_version):
@@ -291,7 +274,7 @@ def FindVCComponentRoot(component):
       'VC', component, 'MSVC')
   vc_component_msvc_contents = os.listdir(vc_component_msvc_root)
   # Select the most recent toolchain if there are several.
-  _SortByHighestVersionNumberFirst(vc_component_msvc_root)
+  vc_component_msvc_contents.sort(reverse=True)
   for directory in vc_component_msvc_contents:
     if not os.path.isdir(os.path.join(vc_component_msvc_root, directory)):
       continue
