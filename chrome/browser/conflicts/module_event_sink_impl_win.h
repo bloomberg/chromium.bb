@@ -26,7 +26,7 @@ class ModuleEventSinkImpl : public mojom::ModuleEventSink {
  public:
   // Callback for retrieving the handle associated with a process. This is used
   // by "Create" to get a handle to the remote process.
-  using GetProcessCallback = base::Callback<base::Process()>;
+  using GetProcessCallback = base::RepeatingCallback<base::Process()>;
 
   using OnModuleLoadCallback =
       base::RepeatingCallback<void(content::ProcessType process_type,

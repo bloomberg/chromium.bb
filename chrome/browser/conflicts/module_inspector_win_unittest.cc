@@ -91,8 +91,8 @@ class ModuleInspectorTest : public testing::Test {
 
 TEST_F(ModuleInspectorTest, OneModule) {
   ModuleInspector module_inspector(
-      base::Bind(&ModuleInspectorTest::OnModuleInspected,
-                 base::Unretained(this)),
+      base::BindRepeating(&ModuleInspectorTest::OnModuleInspected,
+                          base::Unretained(this)),
       nullptr);
 
   module_inspector.AddModule({GetKernel32DllFilePath(), 0, 0});
@@ -110,8 +110,8 @@ TEST_F(ModuleInspectorTest, MultipleModules) {
   };
 
   ModuleInspector module_inspector(
-      base::Bind(&ModuleInspectorTest::OnModuleInspected,
-                 base::Unretained(this)),
+      base::BindRepeating(&ModuleInspectorTest::OnModuleInspected,
+                          base::Unretained(this)),
       nullptr);
 
   for (const auto& module : kTestCases)
@@ -133,8 +133,8 @@ TEST_F(ModuleInspectorTest, DisableBackgroundInspection) {
   };
 
   ModuleInspector module_inspector(
-      base::Bind(&ModuleInspectorTest::OnModuleInspected,
-                 base::Unretained(this)),
+      base::BindRepeating(&ModuleInspectorTest::OnModuleInspected,
+                          base::Unretained(this)),
       nullptr);
 
   for (const auto& module : kTestCases)
@@ -168,8 +168,8 @@ TEST_F(ModuleInspectorTest, OOPInspectModule) {
   };
 
   ModuleInspector module_inspector(
-      base::Bind(&ModuleInspectorTest::OnModuleInspected,
-                 base::Unretained(this)),
+      base::BindRepeating(&ModuleInspectorTest::OnModuleInspected,
+                          base::Unretained(this)),
       nullptr);
   module_inspector.SetConnectorForTesting(
       test_connector_factory_.GetDefaultConnector());
@@ -201,8 +201,8 @@ TEST_F(ModuleInspectorTest, InspectionResultsCache) {
       CreateInspectionResultsCacheWithEntry(module_key, inspection_result));
 
   ModuleInspector module_inspector(
-      base::Bind(&ModuleInspectorTest::OnModuleInspected,
-                 base::Unretained(this)),
+      base::BindRepeating(&ModuleInspectorTest::OnModuleInspected,
+                          base::Unretained(this)),
       nullptr);
 
   module_inspector.AddModule(module_key);
@@ -230,8 +230,8 @@ TEST_F(ModuleInspectorTest, InspectionResultsCache_OnModuleDatabaseIdle) {
       chrome::DIR_USER_DATA, scoped_temp_dir.GetPath());
 
   ModuleInspector module_inspector(
-      base::Bind(&ModuleInspectorTest::OnModuleInspected,
-                 base::Unretained(this)),
+      base::BindRepeating(&ModuleInspectorTest::OnModuleInspected,
+                          base::Unretained(this)),
       nullptr);
 
   ModuleInfoKey module_key(GetKernel32DllFilePath(), 0, 0);
@@ -271,8 +271,8 @@ TEST_F(ModuleInspectorTest, InspectionResultsCache_TimerExpired) {
       chrome::DIR_USER_DATA, scoped_temp_dir.GetPath());
 
   ModuleInspector module_inspector(
-      base::Bind(&ModuleInspectorTest::OnModuleInspected,
-                 base::Unretained(this)),
+      base::BindRepeating(&ModuleInspectorTest::OnModuleInspected,
+                          base::Unretained(this)),
       nullptr);
 
   ModuleInfoKey module_key(GetKernel32DllFilePath(), 0, 0);

@@ -80,7 +80,8 @@ void InitPrefChangeRegistrarOnUIThread(
   // only be invoked if it is still alive.
   pref_change_registrar->Add(
       prefs::kThirdPartyBlockingEnabled,
-      base::Bind(&OnThirdPartyBlockingPolicyChanged, pref_change_registrar));
+      base::BindRepeating(&OnThirdPartyBlockingPolicyChanged,
+                          pref_change_registrar));
 }
 #endif  // defined(GOOGLE_CHROME_BUILD)
 
@@ -92,10 +93,10 @@ constexpr base::TimeDelta ModuleDatabase::kIdleTimeout;
 ModuleDatabase::ModuleDatabase(
     std::unique_ptr<service_manager::Connector> connector,
     bool third_party_blocking_policy_enabled)
-    : idle_timer_(
-          FROM_HERE,
-          kIdleTimeout,
-          base::Bind(&ModuleDatabase::OnDelayExpired, base::Unretained(this))),
+    : idle_timer_(FROM_HERE,
+                  kIdleTimeout,
+                  base::BindRepeating(&ModuleDatabase::OnDelayExpired,
+                                      base::Unretained(this))),
       has_started_processing_(false),
       shell_extensions_enumerated_(false),
       ime_enumerated_(false),
@@ -104,8 +105,8 @@ ModuleDatabase::ModuleDatabase(
 #endif
       // ModuleDatabase owns |module_inspector_|, so it is safe to use
       // base::Unretained().
-      module_inspector_(base::Bind(&ModuleDatabase::OnModuleInspected,
-                                   base::Unretained(this)),
+      module_inspector_(base::BindRepeating(&ModuleDatabase::OnModuleInspected,
+                                            base::Unretained(this)),
                         std::move(connector)) {
   AddObserver(&module_inspector_);
   AddObserver(&third_party_metrics_);

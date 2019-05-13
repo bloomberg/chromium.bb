@@ -59,8 +59,8 @@ class ModuleInspector : public ModuleDatabaseObserver {
       base::TimeDelta::FromMinutes(5);
 
   using OnModuleInspectedCallback =
-      base::Callback<void(const ModuleInfoKey& module_key,
-                          ModuleInspectionResult inspection_result)>;
+      base::RepeatingCallback<void(const ModuleInfoKey& module_key,
+                                   ModuleInspectionResult inspection_result)>;
 
   ModuleInspector(const OnModuleInspectedCallback& on_module_inspected_callback,
                   std::unique_ptr<service_manager::Connector> connector);
