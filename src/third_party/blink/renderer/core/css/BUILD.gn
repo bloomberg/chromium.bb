@@ -481,6 +481,16 @@ blink_core_sources("css") {
     "properties/longhands/box_shadow_custom.cc",
     "properties/longhands/box_sizing_custom.cc",
     "properties/longhands/break_after_custom.cc",
+
+
+
+    # patch section: lcd-text background
+
+
+    # patch section: suppress-needs-compositing-input-update
+
+
+
     "properties/longhands/break_before_custom.cc",
     "properties/longhands/break_inside_custom.cc",
     "properties/longhands/buffered_rendering_custom.cc",
