@@ -154,6 +154,8 @@ void MimeHandlerViewContainerManager::DidLoad(int32_t element_instance_id,
     return;
   }
   for (auto& frame_container : frame_containers_) {
+    if (frame_container->post_message_support()->is_active())
+      continue;
     if (frame_container->resource_url() != resource_url)
       continue;
     // To ensure the postMessages will be sent to the right target frame, we

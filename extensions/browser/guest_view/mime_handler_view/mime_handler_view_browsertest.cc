@@ -22,6 +22,7 @@
 #include "components/app_modal/native_app_modal_dialog.h"
 #include "components/guest_view/browser/test_guest_view_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
@@ -573,4 +574,42 @@ IN_PROC_BROWSER_TEST_F(MimeHandlerViewBrowserPluginSpecificTest,
     run_loop.Run();
   }
   EXPECT_EQ(GetMouseCaptureWidget(embedder_web_contents), guest_widget);
+}
+
+// Helper class to wait for document load event in the main frame.
+class DocumentLoadComplete : public content::WebContentsObserver {
+ public:
+  explicit DocumentLoadComplete(content::WebContents* web_contents)
+      : content::WebContentsObserver(web_contents) {}
+  ~DocumentLoadComplete() override {}
+
+  void DocumentOnLoadCompletedInMainFrame() override {
+    did_load_ = true;
+    run_loop_.Quit();
+  }
+
+  void Wait() {
+    if (!did_load_)
+      run_loop_.Run();
+  }
+
+ private:
+  bool did_load_ = false;
+  base::RunLoop run_loop_;
+};
+
+IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest,
+                       ActivatePostMessageSupportOnce) {
+  RunTest("test_embedded.html");
+  // Attach a second <embed>.
+  ASSERT_TRUE(content::ExecJs(GetEmbedderWebContents(),
+                              "const e = document.createElement('embed');"
+                              "e.src = './testEmbedded.csv'; e.type='text/csv';"
+                              "document.body.appendChild(e);"));
+  DocumentLoadComplete(GetGuestViewManager()->WaitForNextGuestCreated()).Wait();
+  // After load, an IPC has been sent to the renderer to update routing IDs for
+  // the guest frame and the content frame (and activate the
+  // PostMessageSupport). Run some JS to Ensure no DCHECKs have fired in the
+  // embedder process.
+  ASSERT_TRUE(content::ExecJs(GetEmbedderWebContents(), "foo = 0;"));
 }
