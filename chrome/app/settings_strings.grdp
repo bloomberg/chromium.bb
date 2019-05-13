@@ -4774,13 +4774,13 @@
     Reset your security key
   </message>
   <message name="IDS_SETTINGS_SECURITY_KEYS_RESET_CONFIRM_TITLE" desc="The title of a dialog for factory-resetting security keys (which are external devices for user authentication). Resetting in this context means erasing a security key and returning it to an initial, blank state.">
-    Confirm reset
+    Touch to confirm reset
   </message>
   <message name="IDS_SETTINGS_SECURITY_KEYS_RESET_STEP1" desc="An instruction to a user to physically unplug a security key from their computer, reinsert it, and then touch the activation button that's on the device.">
     Remove your security key from your device, then reinsert and touch it.
   </message>
   <message name="IDS_SETTINGS_SECURITY_KEYS_RESET_STEP2" desc="An instruction to a user to press the activation button on their security key a second time to confirm that they wish to reset (i.e. erase) their security key (which is an external device for user authentication).">
-    To confirm you want to reset your security key, touch it again. All credentials stored on the security key and its PIN will be erased.
+    Touch your security key again to confirm reset. All information stored on the security key, including its PIN, will be erased.
   </message>
   <message name="IDS_SETTINGS_SECURITY_KEYS_NO_RESET" desc="A failure message reporting to the user that it is not possible to reset the security key that they selected because the device does not support that operation.">
     Can’t reset this security key
