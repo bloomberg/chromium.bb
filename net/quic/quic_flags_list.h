@@ -67,7 +67,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_adaptive_time_loss, false)
 // If true, adjust congestion window when doing bandwidth resumption in BBR.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_fix_bbr_cwnd_in_bandwidth_resumption,
-          false)
+          true)
 
 // When true, defaults to BBR congestion control instead of Cubic.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_default_to_bbr, false)
@@ -154,7 +154,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_one_mss_conservation, false)
 
 // Add 3 connection options to decrease the pacing and CWND gain in QUIC BBR
 // STARTUP.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_slower_startup3, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_slower_startup3, true)
 
 // When true, the LOSS connection option allows for 1/8 RTT of reording instead
 // of the current 1/8th threshold which has been found to be too large for fast
@@ -230,7 +230,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_monotonic_epoll_clock, false)
 // reconnection.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_no_client_conn_ver_negotiation,
-          true)
+          false)
 
 // If true, public reset packets sent from GFE will include a kEPID tag.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_spurious_ack_alarm, false)
@@ -336,7 +336,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_print_tag_hex, false)
 // If true, terminate Google QUIC connections similary as IETF QUIC.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_terminate_gquic_connection_as_ietf,
-          false)
+          true)
 
 // If true, disable QUIC trial decryption in V44 and above.
 QUIC_FLAG(bool,
@@ -364,3 +364,11 @@ QUIC_FLAG(bool,
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_send_version_negotiation_fixed_bit,
           false)
+
+// When true, allow variable length QUIC connection IDs for unsupported
+// versions. This allows performing version negotiation when the client-chosen
+// server connection ID length is not 8.
+QUIC_FLAG(
+    bool,
+    FLAGS_quic_restart_flag_quic_allow_variable_length_connection_id_for_negotiation,
+    false)

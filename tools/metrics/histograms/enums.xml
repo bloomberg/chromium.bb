@@ -8846,6 +8846,7 @@ Called by update_net_error_codes.py.-->
   <int value="21" label="QUIC/43"/>
   <int value="22" label="QUIC/99"/>
   <int value="23" label="QUIC/44"/>
+  <int value="27" label="QUIC/999"/>
 </enum>
 
 <enum name="ConnectionResult">
