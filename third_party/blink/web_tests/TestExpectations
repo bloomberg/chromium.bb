@@ -2144,6 +2144,7 @@ crbug.com/472330 fast/writing-mode/table-percent-width-quirk.html [ Failure ]
 # These are the failing tests because Chrome hasn't implemented according to the spec.
 crbug.com/645988 external/wpt/uievents/order-of-events/focus-events/focus-manual.html [ Failure ]
 
+# TODO(https://crbug.com/960132): Remove these when WebVR is removed.
 crbug.com/807152 vr/VRDisplay_rAF_fires_with_window_rAF.html [ Pass Failure ]
 crbug.com/813697 vr/getFrameData_oneframeupdate.html [ Pass Failure ]
 
@@ -5276,8 +5277,9 @@ crbug.com/921242 [ Mac ] fast/overflow/clip-rects-fixed-ancestor.html [ Failure 
 # Sheriff 2019-01-24
 crbug.com/924954 http/tests/images/feature-policy-image-policies-with-border-radius.html [ Pass Failure ]
 
-# WebXR feature policy feature name in Chrome doesn't match spec.
-crbug.com/924670 external/wpt/webvr/webvr-supported-by-feature-policy.html [ Failure ]
+# Chrome does not implement the feature policy name currently in the spec,
+# which is still in flux.
+crbug.com/924670 external/wpt/webxr/webxr-supported-by-feature-policy.html [ Failure ]
 
 crbug.com/961015 [ Mac ] external/wpt/webxr/xrSession_requestAnimationFrame_callback_calls.https.html [ Timeout ]
 crbug.com/961015 [ Mac ] external/wpt/webxr/xrSession_requestAnimationFrame_getViewerPose.https.html [ Timeout ]
