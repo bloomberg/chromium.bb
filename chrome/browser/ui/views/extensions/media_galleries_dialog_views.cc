@@ -254,8 +254,9 @@ views::View* MediaGalleriesDialogViews::CreateExtraView() {
   DCHECK(!auxiliary_button_);
   base::string16 button_label = controller_->GetAuxiliaryButtonText();
   if (!button_label.empty()) {
-    auxiliary_button_ =
+    auto auxiliary_button =
         views::MdTextButton::CreateSecondaryUiButton(this, button_label);
+    auxiliary_button_ = auxiliary_button.release();
   }
   return auxiliary_button_;
 }

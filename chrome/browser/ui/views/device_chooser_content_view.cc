@@ -45,24 +45,23 @@ constexpr int kReScanButtonTag = 2;
 
 DeviceChooserContentView::BluetoothStatusContainer::BluetoothStatusContainer(
     views::ButtonListener* listener) {
-  re_scan_button_ = views::MdTextButton::CreateSecondaryUiButton(
+  auto re_scan_button = views::MdTextButton::CreateSecondaryUiButton(
       listener,
       l10n_util::GetStringUTF16(IDS_BLUETOOTH_DEVICE_CHOOSER_RE_SCAN));
-  re_scan_button_->SetTooltipText(
+  re_scan_button->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_BLUETOOTH_DEVICE_CHOOSER_RE_SCAN_TOOLTIP));
-  re_scan_button_->SetFocusForPlatform();
-  re_scan_button_->set_tag(kReScanButtonTag);
-  AddChildView(re_scan_button_);
+  re_scan_button->SetFocusForPlatform();
+  re_scan_button->set_tag(kReScanButtonTag);
+  re_scan_button_ = AddChildView(std::move(re_scan_button));
 
-  throbber_ = new views::Throbber();
-  AddChildView(throbber_);
+  throbber_ = AddChildView(std::make_unique<views::Throbber>());
 
-  scanning_label_ = new views::Label(
+  auto scanning_label = std::make_unique<views::Label>(
       l10n_util::GetStringUTF16(IDS_BLUETOOTH_DEVICE_CHOOSER_SCANNING_LABEL),
       views::style::CONTEXT_LABEL, views::style::STYLE_DISABLED);
-  scanning_label_->SetTooltipText(l10n_util::GetStringUTF16(
+  scanning_label->SetTooltipText(l10n_util::GetStringUTF16(
       IDS_BLUETOOTH_DEVICE_CHOOSER_SCANNING_LABEL_TOOLTIP));
-  AddChildView(scanning_label_);
+  scanning_label_ = AddChildView(std::move(scanning_label));
 }
 
 gfx::Size

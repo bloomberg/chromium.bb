@@ -562,11 +562,13 @@ views::View* ContentSettingBubbleContents::CreateExtraView() {
     base::string16 title = bubble_content.manage_text;
     if (title.empty())
       title = l10n_util::GetStringUTF16(IDS_MANAGE);
-    manage_button_ = views::MdTextButton::CreateSecondaryUiButton(this, title);
-    manage_button_->SetMinSize(gfx::Size(
+    auto manage_button =
+        views::MdTextButton::CreateSecondaryUiButton(this, title);
+    manage_button->SetMinSize(gfx::Size(
         layout->GetDistanceMetric(views::DISTANCE_DIALOG_BUTTON_MINIMUM_WIDTH),
         0));
-    extra_views.push_back(base::WrapUnique(manage_button_));
+    manage_button_ = manage_button.get();
+    extra_views.push_back(std::move(manage_button));
   }
   if (extra_views.empty())
     return nullptr;

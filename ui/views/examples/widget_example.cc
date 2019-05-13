@@ -56,9 +56,11 @@ base::string16 WidgetDialogExample::GetWindowTitle() const {
   return ASCIIToUTF16("Dialog Widget Example");
 }
 
+// TODO(crbug.com/961660): CreateExtraView should return std::unique_ptr<View>
 View* WidgetDialogExample::CreateExtraView() {
-  return MdTextButton::CreateSecondaryUiButton(nullptr,
-                                               ASCIIToUTF16("Extra button!"));
+  auto view = MdTextButton::CreateSecondaryUiButton(
+      nullptr, ASCIIToUTF16("Extra button!"));
+  return view.release();
 }
 
 View* WidgetDialogExample::CreateFootnoteView() {

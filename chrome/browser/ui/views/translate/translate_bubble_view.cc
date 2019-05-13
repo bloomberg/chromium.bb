@@ -602,11 +602,10 @@ views::View* TranslateBubbleView::CreateViewBeforeTranslate() {
       views::GridLayout::kFixedSize, kButtonColumnSetId,
       views::GridLayout::kFixedSize,
       provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL));
-  views::LabelButton* accept_button =
-      views::MdTextButton::CreateSecondaryUiButton(
-          this, l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_ACCEPT));
-  accept_button->SetID(BUTTON_ID_TRANSLATE);
 
+  auto accept_button = views::MdTextButton::CreateSecondaryUiButton(
+      this, l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_ACCEPT));
+  accept_button->SetID(BUTTON_ID_TRANSLATE);
   accept_button->SetIsDefault(true);
   before_translate_options_button_ = new views::MdTextButtonWithDownArrow(
       this,
@@ -615,11 +614,11 @@ views::View* TranslateBubbleView::CreateViewBeforeTranslate() {
   before_translate_options_button_->set_request_focus_on_press(true);
 
   if (views::PlatformStyle::kIsOkButtonLeading) {
-    layout->AddView(accept_button);
+    layout->AddView(accept_button.release());
     layout->AddView(before_translate_options_button_);
   } else {
     layout->AddView(before_translate_options_button_);
-    layout->AddView(accept_button);
+    layout->AddView(accept_button.release());
   }
 
   return view;
@@ -654,12 +653,12 @@ views::View* TranslateBubbleView::CreateViewTranslating() {
       provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL));
 
   layout->StartRow(views::GridLayout::kFixedSize, kColumnSetId);
-  views::LabelButton* revert_button =
-      views::MdTextButton::CreateSecondaryUiButton(
-          this, l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_REVERT));
+
+  auto revert_button = views::MdTextButton::CreateSecondaryUiButton(
+      this, l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_REVERT));
   revert_button->SetID(BUTTON_ID_SHOW_ORIGINAL);
   revert_button->SetEnabled(false);
-  layout->AddView(revert_button);
+  layout->AddView(revert_button.release());
 
   return view;
 }
@@ -690,10 +689,10 @@ views::View* TranslateBubbleView::CreateViewAfterTranslate() {
       provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL));
 
   layout->StartRow(views::GridLayout::kFixedSize, kColumnSetId);
-  views::LabelButton* button = views::MdTextButton::CreateSecondaryUiButton(
+  auto button = views::MdTextButton::CreateSecondaryUiButton(
       this, l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_REVERT));
   button->SetID(BUTTON_ID_SHOW_ORIGINAL);
-  layout->AddView(button);
+  layout->AddView(button.release());
 
   views::Button* options_menu_button = new views::MdTextButtonWithDownArrow(
       this,
@@ -732,18 +731,16 @@ views::View* TranslateBubbleView::CreateViewError() {
       provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL));
 
   layout->StartRow(views::GridLayout::kFixedSize, kColumnSetId);
-  views::LabelButton* try_again_button =
-      views::MdTextButton::CreateSecondaryUiButton(
-          this, l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_TRY_AGAIN));
-  try_again_button->SetID(BUTTON_ID_TRY_AGAIN);
-  layout->AddView(try_again_button);
 
-  views::LabelButton* advanced_button =
-      views::MdTextButton::CreateSecondaryUiButton(
-          this,
-          l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_ADVANCED_BUTTON));
+  auto try_again_button = views::MdTextButton::CreateSecondaryUiButton(
+      this, l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_TRY_AGAIN));
+  try_again_button->SetID(BUTTON_ID_TRY_AGAIN);
+  layout->AddView(try_again_button.release());
+
+  auto advanced_button = views::MdTextButton::CreateSecondaryUiButton(
+      this, l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_ADVANCED_BUTTON));
   advanced_button->SetID(BUTTON_ID_ADVANCED);
-  layout->AddView(advanced_button);
+  layout->AddView(advanced_button.release());
 
   return view;
 }
@@ -853,13 +850,16 @@ views::View* TranslateBubbleView::CreateViewAdvanced() {
   layout->StartRow(views::GridLayout::kFixedSize, COLUMN_SET_ID_BUTTONS);
   layout->SkipColumns(1);
 
-  advanced_done_button_ = views::MdTextButton::CreateSecondaryUiButton(
+  auto advanced_done_button = views::MdTextButton::CreateSecondaryUiButton(
       this, l10n_util::GetStringUTF16(IDS_DONE));
-  advanced_done_button_->SetID(BUTTON_ID_DONE);
-  advanced_done_button_->SetIsDefault(true);
-  advanced_cancel_button_ = views::MdTextButton::CreateSecondaryUiButton(
+  advanced_done_button->SetID(BUTTON_ID_DONE);
+  advanced_done_button->SetIsDefault(true);
+  auto advanced_cancel_button = views::MdTextButton::CreateSecondaryUiButton(
       this, l10n_util::GetStringUTF16(IDS_CANCEL));
-  advanced_cancel_button_->SetID(BUTTON_ID_CANCEL);
+  advanced_cancel_button->SetID(BUTTON_ID_CANCEL);
+  advanced_done_button_ = advanced_done_button.release();
+  advanced_cancel_button_ = advanced_cancel_button.release();
+
   layout->AddView(advanced_done_button_);
   layout->AddView(advanced_cancel_button_);
 

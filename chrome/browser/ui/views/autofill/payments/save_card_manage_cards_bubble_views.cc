@@ -66,11 +66,10 @@ views::View* SaveCardManageCardsBubbleViews::CreateFootnoteView() {
 }
 
 views::View* SaveCardManageCardsBubbleViews::CreateExtraView() {
-  views::View* manage_cards_button =
-      views::MdTextButton::CreateSecondaryUiButton(
-          this, l10n_util::GetStringUTF16(IDS_AUTOFILL_MANAGE_CARDS));
+  auto manage_cards_button = views::MdTextButton::CreateSecondaryUiButton(
+      this, l10n_util::GetStringUTF16(IDS_AUTOFILL_MANAGE_CARDS));
   manage_cards_button->SetID(DialogViewId::MANAGE_CARDS_BUTTON);
-  return manage_cards_button;
+  return manage_cards_button.release();
 }
 
 int SaveCardManageCardsBubbleViews::GetDialogButtons() const {

@@ -188,19 +188,16 @@ class BubbleHeaderView : public views::View {
   // The label that displays the status of the identity check for this site.
   // Includes a link to open the Chrome Help Center article about connection
   // security.
-  views::StyledLabel* security_details_label_;
+  views::StyledLabel* security_details_label_ = nullptr;
 
   // A container for the styled label with a link for resetting cert decisions.
   // This is only shown sometimes, so we use a container to keep track of
   // where to place it (if needed).
-  views::View* reset_decisions_label_container_;
-  views::StyledLabel* reset_cert_decisions_label_;
+  views::View* reset_decisions_label_container_ = nullptr;
 
   // A container for the label buttons used to change password or mark the site
   // as safe.
-  views::View* password_reuse_button_container_;
-  views::LabelButton* change_password_button_;
-  views::LabelButton* whitelist_password_reuse_button_;
+  views::View* password_reuse_button_container_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(BubbleHeaderView);
 };
@@ -231,13 +228,7 @@ BubbleHeaderView::BubbleHeaderView(
     views::StyledLabelListener* styled_label_listener,
     int side_margin)
     : button_listener_(button_listener),
-      styled_label_listener_(styled_label_listener),
-      security_details_label_(nullptr),
-      reset_decisions_label_container_(nullptr),
-      reset_cert_decisions_label_(nullptr),
-      password_reuse_button_container_(nullptr),
-      change_password_button_(nullptr),
-      whitelist_password_reuse_button_(nullptr) {
+      styled_label_listener_(styled_label_listener) {
   views::GridLayout* layout =
       SetLayoutManager(std::make_unique<views::GridLayout>(this));
 
@@ -303,9 +294,9 @@ void BubbleHeaderView::AddResetDecisionsLabel() {
 
   base::string16 text = base::ReplaceStringPlaceholders(
       base::ASCIIToUTF16("$1 $2"), subst, &offsets);
-  reset_cert_decisions_label_ =
-      new views::StyledLabel(text, styled_label_listener_);
-  reset_cert_decisions_label_->SetID(
+  auto reset_cert_decisions_label =
+      std::make_unique<views::StyledLabel>(text, styled_label_listener_);
+  reset_cert_decisions_label->SetID(
       PageInfoBubbleView::VIEW_ID_PAGE_INFO_LABEL_RESET_CERTIFICATE_DECISIONS);
   gfx::Range link_range(offsets[1], text.length());
 
@@ -313,10 +304,11 @@ void BubbleHeaderView::AddResetDecisionsLabel() {
       views::StyledLabel::RangeStyleInfo::CreateForLink();
   link_style.disable_line_wrapping = false;
 
-  reset_cert_decisions_label_->AddStyleRange(link_range, link_style);
+  reset_cert_decisions_label->AddStyleRange(link_range, link_style);
   // Fit the styled label to occupy available width.
-  reset_cert_decisions_label_->SizeToFit(0);
-  reset_decisions_label_container_->AddChildView(reset_cert_decisions_label_);
+  reset_cert_decisions_label->SizeToFit(0);
+  reset_decisions_label_container_->AddChildView(
+      std::move(reset_cert_decisions_label));
 
   // Now that it contains a label, the container needs padding at the top.
   reset_decisions_label_container_->SetBorder(views::CreateEmptyBorder(
@@ -331,16 +323,17 @@ void BubbleHeaderView::AddPasswordReuseButtons() {
     password_reuse_button_container_->RemoveAllChildViews(true /* delete */);
   }
 
-  change_password_button_ = views::MdTextButton::CreateSecondaryUiBlueButton(
-      button_listener_,
-      l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_BUTTON));
-  change_password_button_->SetID(
+  auto change_password_button =
+      views::MdTextButton::CreateSecondaryUiBlueButton(
+          button_listener_,
+          l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_BUTTON));
+  change_password_button->SetID(
       PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_CHANGE_PASSWORD);
-  whitelist_password_reuse_button_ =
+  auto whitelist_password_reuse_button =
       views::MdTextButton::CreateSecondaryUiButton(
           button_listener_, l10n_util::GetStringUTF16(
                                 IDS_PAGE_INFO_WHITELIST_PASSWORD_REUSE_BUTTON));
-  whitelist_password_reuse_button_->SetID(
+  whitelist_password_reuse_button->SetID(
       PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_WHITELIST_PASSWORD_REUSE);
 
   int kSpacingBetweenButtons = 8;
@@ -348,8 +341,8 @@ void BubbleHeaderView::AddPasswordReuseButtons() {
   // If these two buttons cannot fit into a single line, stack them vertically.
   bool can_fit_in_one_line =
       (password_reuse_button_container_->width() - kSpacingBetweenButtons) >=
-      (change_password_button_->CalculatePreferredSize().width() +
-       whitelist_password_reuse_button_->CalculatePreferredSize().width());
+      (change_password_button->CalculatePreferredSize().width() +
+       whitelist_password_reuse_button->CalculatePreferredSize().width());
   auto layout = std::make_unique<views::BoxLayout>(
       can_fit_in_one_line ? views::BoxLayout::kHorizontal
                           : views::BoxLayout::kVertical,
@@ -360,13 +353,15 @@ void BubbleHeaderView::AddPasswordReuseButtons() {
   password_reuse_button_container_->SetLayoutManager(std::move(layout));
 
 #if defined(OS_WIN) || defined(OS_CHROMEOS)
-  password_reuse_button_container_->AddChildView(change_password_button_);
   password_reuse_button_container_->AddChildView(
-      whitelist_password_reuse_button_);
+      std::move(change_password_button));
+  password_reuse_button_container_->AddChildView(
+      std::move(whitelist_password_reuse_button));
 #else
   password_reuse_button_container_->AddChildView(
-      whitelist_password_reuse_button_);
-  password_reuse_button_container_->AddChildView(change_password_button_);
+      std::move(whitelist_password_reuse_button));
+  password_reuse_button_container_->AddChildView(
+      std::move(change_password_button));
 #endif
 
   // Add padding at the top.

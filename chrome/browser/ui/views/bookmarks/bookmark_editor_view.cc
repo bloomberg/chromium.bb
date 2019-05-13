@@ -327,9 +327,8 @@ void BookmarkEditorView::Init() {
     tree_view->SetRootShown(false);
     tree_view->set_context_menu_controller(this);
 
-    new_folder_button_.reset(views::MdTextButton::CreateSecondaryUiButton(
-        this,
-        l10n_util::GetStringUTF16(IDS_BOOKMARK_EDITOR_NEW_FOLDER_BUTTON)));
+    new_folder_button_ = views::MdTextButton::CreateSecondaryUiButton(
+        this, l10n_util::GetStringUTF16(IDS_BOOKMARK_EDITOR_NEW_FOLDER_BUTTON));
     new_folder_button_->set_owned_by_client();
     new_folder_button_->SetEnabled(false);
   }

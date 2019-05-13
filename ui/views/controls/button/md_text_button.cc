@@ -26,19 +26,21 @@
 namespace views {
 
 // static
-LabelButton* MdTextButton::CreateSecondaryUiButton(ButtonListener* listener,
-                                                   const base::string16& text) {
-  return MdTextButton::Create(listener, text, style::CONTEXT_BUTTON_MD);
+std::unique_ptr<LabelButton> MdTextButton::CreateSecondaryUiButton(
+    ButtonListener* listener,
+    const base::string16& text) {
+  return base::WrapUnique(
+      MdTextButton::Create(listener, text, style::CONTEXT_BUTTON_MD));
 }
 
 // static
-LabelButton* MdTextButton::CreateSecondaryUiBlueButton(
+std::unique_ptr<LabelButton> MdTextButton::CreateSecondaryUiBlueButton(
     ButtonListener* listener,
     const base::string16& text) {
-  MdTextButton* md_button =
+  auto* md_button =
       MdTextButton::Create(listener, text, style::CONTEXT_BUTTON_MD);
   md_button->SetProminent(true);
-  return md_button;
+  return base::WrapUnique(md_button);
 }
 
 // static

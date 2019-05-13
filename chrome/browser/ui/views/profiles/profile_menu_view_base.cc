@@ -260,9 +260,9 @@ views::Button* ProfileMenuViewBase::CreateAndAddTitleCard(
   std::unique_ptr<HoverButton> title_card = std::make_unique<HoverButton>(
       enabled ? this : nullptr, std::move(icon_view), title, subtitle);
   title_card->SetEnabled(enabled);
-  views::Button* pointer = title_card.get();
+  views::Button* button_ptr = title_card.get();
   AddMenuItemInternal(std::move(title_card), MenuItems::kTitleCard);
-  return pointer;
+  return button_ptr;
 }
 
 views::Button* ProfileMenuViewBase::CreateAndAddButton(
@@ -278,9 +278,9 @@ views::Button* ProfileMenuViewBase::CreateAndAddButton(
 views::Button* ProfileMenuViewBase::CreateAndAddBlueButton(
     const base::string16& text,
     bool md_style) {
-  std::unique_ptr<views::LabelButton> button = base::WrapUnique(
+  std::unique_ptr<views::LabelButton> button =
       md_style ? views::MdTextButton::CreateSecondaryUiBlueButton(this, text)
-               : views::MdTextButton::Create(this, text));
+               : base::WrapUnique(views::MdTextButton::Create(this, text));
   views::Button* pointer = button.get();
 
   // Add margins.

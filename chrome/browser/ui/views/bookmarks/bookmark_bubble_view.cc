@@ -144,9 +144,10 @@ base::string16 BookmarkBubbleView::GetDialogButtonLabel(
 }
 
 views::View* BookmarkBubbleView::CreateExtraView() {
-  edit_button_ = views::MdTextButton::CreateSecondaryUiButton(
+  auto edit_button = views::MdTextButton::CreateSecondaryUiButton(
       this, l10n_util::GetStringUTF16(IDS_BOOKMARK_BUBBLE_OPTIONS));
-  edit_button_->AddAccelerator(ui::Accelerator(ui::VKEY_E, ui::EF_ALT_DOWN));
+  edit_button->AddAccelerator(ui::Accelerator(ui::VKEY_E, ui::EF_ALT_DOWN));
+  edit_button_ = edit_button.release();
   return edit_button_;
 }
 

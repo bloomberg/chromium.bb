@@ -260,11 +260,11 @@ void LayoutExampleBase::CreateExampleView(View* container) {
 
   int vertical_pos = kLayoutExampleVerticalSpacing;
   int horizontal_pos = kLayoutExampleLeftPadding;
-  add_button_ =
+  auto add_button =
       MdTextButton::CreateSecondaryUiButton(this, base::ASCIIToUTF16("Add"));
-  add_button_->SetPosition(gfx::Point(horizontal_pos, vertical_pos));
-  add_button_->SizeToPreferredSize();
-  control_panel_->AddChildView(add_button_);
+  add_button->SetPosition(gfx::Point(horizontal_pos, vertical_pos));
+  add_button->SizeToPreferredSize();
+  add_button_ = control_panel_->AddChildView(std::move(add_button));
   horizontal_pos += add_button_->width() + kLayoutExampleVerticalSpacing;
   for (size_t i = 0; i < base::size(child_panel_size_); ++i) {
     child_panel_size_[i] =

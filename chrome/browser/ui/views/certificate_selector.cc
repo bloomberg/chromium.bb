@@ -283,8 +283,9 @@ views::View* CertificateSelector::GetInitiallyFocusedView() {
 
 views::View* CertificateSelector::CreateExtraView() {
   DCHECK(!view_cert_button_);
-  view_cert_button_ = views::MdTextButton::CreateSecondaryUiButton(
+  auto view_cert_button = views::MdTextButton::CreateSecondaryUiButton(
       this, l10n_util::GetStringUTF16(IDS_PAGE_INFO_CERT_INFO_BUTTON));
+  view_cert_button_ = view_cert_button.release();
   return view_cert_button_;
 }
 

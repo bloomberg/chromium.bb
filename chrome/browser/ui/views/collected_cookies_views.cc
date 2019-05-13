@@ -575,16 +575,19 @@ std::unique_ptr<views::View> CollectedCookiesViews::CreateButtonsPane() {
     views::GridLayout* layout = allowed->SetLayoutManager(
         std::make_unique<views::GridLayout>(allowed.get()));
 
-    block_allowed_button_ = views::MdTextButton::CreateSecondaryUiButton(
-        this, l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_BLOCK_BUTTON));
-    delete_allowed_button_ = views::MdTextButton::CreateSecondaryUiButton(
-        this, l10n_util::GetStringUTF16(IDS_COOKIES_REMOVE_LABEL));
+    block_allowed_button_ =
+        views::MdTextButton::CreateSecondaryUiButton(
+            this, l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_BLOCK_BUTTON))
+            .release();
+    delete_allowed_button_ =
+        views::MdTextButton::CreateSecondaryUiButton(
+            this, l10n_util::GetStringUTF16(IDS_COOKIES_REMOVE_LABEL))
+            .release();
     StartNewButtonColumnSet(layout, 0);
     layout->AddView(block_allowed_button_);
     layout->AddView(delete_allowed_button_);
 
-    allowed_buttons_pane_ = allowed.get();
-    view->AddChildView(allowed.release());
+    allowed_buttons_pane_ = view->AddChildView(std::move(allowed));
   }
 
   {
@@ -593,17 +596,20 @@ std::unique_ptr<views::View> CollectedCookiesViews::CreateButtonsPane() {
         std::make_unique<views::GridLayout>(blocked.get()));
     blocked->SetVisible(false);
 
-    allow_blocked_button_ = views::MdTextButton::CreateSecondaryUiButton(
-        this, l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_ALLOW_BUTTON));
-    for_session_blocked_button_ = views::MdTextButton::CreateSecondaryUiButton(
-        this,
-        l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_SESSION_ONLY_BUTTON));
+    allow_blocked_button_ =
+        views::MdTextButton::CreateSecondaryUiButton(
+            this, l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_ALLOW_BUTTON))
+            .release();
+    for_session_blocked_button_ =
+        views::MdTextButton::CreateSecondaryUiButton(
+            this, l10n_util::GetStringUTF16(
+                      IDS_COLLECTED_COOKIES_SESSION_ONLY_BUTTON))
+            .release();
     StartNewButtonColumnSet(layout, 0);
     layout->AddView(allow_blocked_button_);
     layout->AddView(for_session_blocked_button_);
 
-    blocked_buttons_pane_ = blocked.get();
-    view->AddChildView(blocked.release());
+    blocked_buttons_pane_ = view->AddChildView(std::move(blocked));
   }
 
   return view;

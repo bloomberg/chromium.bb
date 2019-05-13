@@ -296,7 +296,7 @@ void DialogClientView::UpdateDialogButton(LabelButton** member,
     // MdTextButton, make it so. Note that some overrides may not always update
     // the title (they should). See http://crbug.com/697303 .
     const base::string16 title = delegate->GetDialogButtonLabel(type);
-    LabelButton* button = nullptr;
+    std::unique_ptr<LabelButton> button = nullptr;
 
     const bool is_default = delegate->GetDefaultDialogButton() == type &&
                             (type != ui::DIALOG_BUTTON_CANCEL ||
@@ -311,7 +311,7 @@ void DialogClientView::UpdateDialogButton(LabelButton** member,
 
     button->SetGroup(kButtonGroup);
 
-    *member = button;
+    *member = button.release();
   }
 
   delegate->UpdateButton(*member, type);

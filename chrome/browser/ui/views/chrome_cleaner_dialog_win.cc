@@ -153,9 +153,10 @@ base::string16 ChromeCleanerDialog::GetDialogButtonLabel(
 views::View* ChromeCleanerDialog::CreateExtraView() {
   DCHECK(!details_button_);
 
-  details_button_ = views::MdTextButton::CreateSecondaryUiButton(
+  auto details_button = views::MdTextButton::CreateSecondaryUiButton(
       this, l10n_util::GetStringUTF16(
                 IDS_CHROME_CLEANUP_PROMPT_DETAILS_BUTTON_LABEL));
+  details_button_ = details_button.release();
   return details_button_;
 }
 

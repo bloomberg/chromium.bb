@@ -448,11 +448,11 @@ void ZoomBubbleView::Init() {
   AddChildView(zoom_in_button.release());
 
   // Add "Reset" button.
-  reset_button_ = views::MdTextButton::CreateSecondaryUiButton(
+  auto reset_button = views::MdTextButton::CreateSecondaryUiButton(
       this, l10n_util::GetStringUTF16(IDS_ZOOM_SET_DEFAULT));
-  reset_button_->SetTooltipText(
+  reset_button->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_ACCNAME_ZOOM_SET_DEFAULT));
-  AddChildView(reset_button_);
+  reset_button_ = AddChildView(std::move(reset_button));
 
   StartTimerIfNecessary();
 }

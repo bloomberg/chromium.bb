@@ -59,12 +59,14 @@ class DialogExample::Delegate : public virtual DialogType {
     return parent_->title_->text();
   }
 
+  // TODO(crbug.com/961660): CreateExtraView should return std::unique_ptr<View>
   // DialogDelegate:
   View* CreateExtraView() override {
     if (!parent_->has_extra_button_->checked())
       return nullptr;
-    return MdTextButton::CreateSecondaryUiButton(
+    auto view = MdTextButton::CreateSecondaryUiButton(
         nullptr, parent_->extra_button_label_->text());
+    return view.release();
   }
 
   bool Cancel() override { return parent_->AllowDialogClose(false); }
@@ -174,8 +176,11 @@ void DialogExample::CreateExampleView(View* container) {
   layout->StartRowWithPadding(
       kFixed, kButtonsColumnId, kFixed,
       provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL));
+
+  // TODO(crbug.com/943560): Avoid this release().
   show_ =
-      MdTextButton::CreateSecondaryUiButton(this, base::ASCIIToUTF16("Show"));
+      MdTextButton::CreateSecondaryUiButton(this, base::ASCIIToUTF16("Show"))
+          .release();
   layout->AddView(show_);
 
   // Grow the dialog a bit when this example is first selected, so it all fits.

@@ -516,9 +516,8 @@ void PaymentRequestSheetController::AddPrimaryButton(views::View* container) {
 
 void PaymentRequestSheetController::AddSecondaryButton(views::View* container) {
   if (ShouldShowSecondaryButton()) {
-    secondary_button_ = std::unique_ptr<views::Button>(
-        views::MdTextButton::CreateSecondaryUiButton(
-            this, GetSecondaryButtonLabel()));
+    secondary_button_ = views::MdTextButton::CreateSecondaryUiButton(
+        this, GetSecondaryButtonLabel());
     secondary_button_->set_owned_by_client();
     secondary_button_->set_tag(GetSecondaryButtonTag());
     secondary_button_->SetID(GetSecondaryButtonId());
