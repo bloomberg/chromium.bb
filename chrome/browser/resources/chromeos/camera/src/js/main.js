@@ -49,7 +49,8 @@ cca.App = function() {
     new cca.views.TimerSettings(),
     this.browserView_,
     new cca.views.Warning(),
-    new cca.views.Dialog(),
+    new cca.views.Dialog('#message-dialog'),
+    new cca.views.Dialog('#intro-dialog'),
   ]);
 };
 
@@ -133,12 +134,13 @@ cca.App.prototype.start = function() {
   cca.models.FileSystem.initialize(() => {
     // Prompt to migrate pictures if needed.
     var message = chrome.i18n.getMessage('migrate_pictures_msg');
-    return cca.nav.open('dialog', message, false).then((acked) => {
-      if (!acked) {
-        throw new Error('no-migrate');
-      }
-      ackMigrate = true;
-    });
+    return cca.nav.open('message-dialog', {message, cancellable: false})
+        .then((acked) => {
+          if (!acked) {
+            throw new Error('no-migrate');
+          }
+          ackMigrate = true;
+        });
   }).then((external) => {
     cca.state.set('ext-fs', external);
     this.model_.addObserver(this.galleryButton_);
@@ -147,6 +149,7 @@ cca.App.prototype.start = function() {
     }
     this.model_.load();
     cca.nav.open('camera');
+    this.openIntroDialog_();
   }).catch((error) => {
     console.error(error);
     if (error && error.message == 'no-migrate') {
@@ -167,6 +170,19 @@ cca.App.prototype.start = function() {
 cca.App.prototype.onKeyPressed_ = function(event) {
   cca.tooltip.hide(); // Hide shown tooltip on any keypress.
   cca.nav.onKeyPressed(event);
+};
+
+/**
+ * Tries to open dialog for introducing new CCA.
+ * @private
+ */
+cca.App.prototype.openIntroDialog_ = function() {
+  chrome.storage.local.get(['isIntroDialogShown'], (values) => {
+    if (!values['isIntroDialogShown']) {
+      cca.nav.open('intro-dialog');
+      chrome.storage.local.set({isIntroDialogShown: true});
+    }
+  });
 };
 
 /**

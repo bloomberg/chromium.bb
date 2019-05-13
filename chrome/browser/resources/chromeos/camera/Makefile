@@ -104,6 +104,7 @@ RESOURCES = \
 	src/images/camera_shutter_video_start_hover.svg \
 	src/images/camera_shutter_video_stop.svg \
 	src/images/camera_shutter_video_stop_hover.svg \
+	src/images/dialog_intro_icon.svg \
 	src/images/settings_button_back.svg \
 	src/images/settings_button_expand.svg \
 	src/images/settings_feedback.svg \

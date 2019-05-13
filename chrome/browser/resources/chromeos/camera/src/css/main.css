@@ -444,7 +444,8 @@ body._10sec #toggle-timer:checked {
 #gridsettings,
 #timersettings,
 #browser,
-#dialog,
+#message-dialog,
+#intro-dialog,
 #warning {
   bottom: 0;
   left: 0;
@@ -461,7 +462,8 @@ body.settings #settings,
 body.gridsettings #gridsettings,
 body.timersettings #timersettings,
 body.browser #browser,
-body.dialog #dialog,
+body.message-dialog #message-dialog,
+body.intro-dialog #intro-dialog,
 body.warning #warning {
   opacity: 1;
   transition: opacity 100ms;
@@ -1005,7 +1007,7 @@ body._10sec .description span[i18n-content=label_timer_10s] {
 }
 
 #warning,
-#dialog {
+.dialog {
   align-items: center;
   display: flex;
   justify-content: center;
@@ -1025,13 +1027,14 @@ body._10sec .description span[i18n-content=label_timer_10s] {
   white-space: pre-wrap;
 }
 
-#dialog {
-  background: rgba(0, 0, 0, 0.8);
+.dialog {
+  background: rgba(0, 0, 0, 0.6);
 }
 
-#dialog-popup {
+.dialog-popup {
   background: white;
-  border-radius: 4px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px 0 rgba(60, 64, 67, 0.3), 0 4px 8px 3px rgba(60, 64, 67, 0.15);
   display: flex;
   flex-direction: column;
   padding: 20px;
@@ -1039,11 +1042,11 @@ body._10sec .description span[i18n-content=label_timer_10s] {
   transition: transform 200ms;
 }
 
-body.dialog #dialog #dialog-popup {
+.dialog .dialog-popup {
   transform: translateY(0);
 }
 
-#dialog #dialog-msg {
+.dialog .dialog-msg {
   color: rgb(32, 33, 36);
   cursor: text;
   font-family: 'Roboto', sans-serif;
@@ -1056,29 +1059,29 @@ body.dialog #dialog #dialog-popup {
   white-space: pre-wrap;
 }
 
-#dialog #dialog-msg::-webkit-scrollbar {
+.dialog .dialog-msg::-webkit-scrollbar {
   height: 6px;
   width: 6px;
 }
 
-#dialog #dialog-msg::-webkit-scrollbar-track {
+.dialog .dialog-msg::-webkit-scrollbar-track {
   background: transparent;
 }
 
-#dialog #dialog-msg::-webkit-scrollbar-thumb {
+.dialog .dialog-msg::-webkit-scrollbar-thumb {
   background: gray;
   height: 6px;
   width: 6px;
 }
 
-#dialog-buttons {
+.dialog-buttons {
   align-items: center;
   display: flex;
   justify-content: flex-end;
   margin: 0 -2px;
 }
 
-#dialog-buttons button {
+.dialog-buttons button {
   background-color: white;
   border-style: solid;
   color: rgb(37, 129, 223);
@@ -1088,14 +1091,57 @@ body.dialog #dialog #dialog-popup {
   padding: 6px 18px;
 }
 
-#dialog-buttons button:focus {
+.dialog-buttons button:focus {
   background-color: rgb(37, 129, 223);
   border-color: rgb(37, 129, 223);
   color: white;
 }
 
-#dialog-buttons button:focus::after {
+.dialog-buttons button:focus::after {
   border: none;
+}
+
+#intro-dialog .dialog-popup {
+  align-items: center;
+  justify-content: center;
+  padding: 32px 50px;
+  text-align: center;
+  width: 360px;
+}
+
+#intro-dialog .dialog-title-icon {
+  background-image: url(../images/dialog_new_cca_icon.svg);
+  background-size: cover;
+  height: 32px;
+  width: 32px;
+}
+
+#intro-dialog .dialog-title {
+  color: rgb(32, 33, 36);
+  font: normal 28px/36px 'Google Sans', sans-serif;
+  margin-top: 20px;
+}
+
+#intro-dialog .dialog-msg {
+  color: rgb(95, 99, 104);
+  font: normal 13px/20px 'Roboto';
+  margin-top: 12px;
+  padding: 0;
+}
+
+#intro-dialog .dialog-buttons {
+  justify-content: center;
+  margin-top: 32px;
+}
+
+#intro-dialog .dialog-positive-button {
+  background: rgb(26, 115, 232);
+  border: none;
+  color: white;
+  font: 500 13px/20px 'Roboto', sans-serif;
+  height: 32px;
+  margin: 0;
+  padding: 0 16px;
 }
 
 #spinner {

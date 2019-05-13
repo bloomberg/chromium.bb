@@ -234,14 +234,25 @@
     <div id="warning">
       <div id="error-msg" aria-live="polite"></div>
     </div>
-    <div id="dialog">
-      <div id="dialog-popup" role="dialog" aria-labelledby="dialog-msg">
-        <div id="dialog-msg"></div>
-        <div id="dialog-buttons">
-          <button id="dialog-negative-button" tabindex="0"
+    <div id="message-dialog" class="dialog">
+      <div class="dialog-popup" role="dialog" aria-labelledby="dialog-msg">
+        <div class="dialog-msg dialog-msg-holder"></div>
+        <div class="dialog-buttons">
+          <button class="dialog-negative-button" tabindex="0"
                   i18n-content="dialog_cancel_button"></button>
-          <button id="dialog-positive-button" tabindex="0"
+          <button class="dialog-positive-button" tabindex="0"
                   i18n-content="dialog_ok_button"></button>
+        </div>
+      </div>
+    </div>
+    <div id="intro-dialog" class="dialog">
+      <div class="dialog-popup" role="dialog" aria-labelledby="dialog-msg">
+        <div class="dialog-title-icon"></div>
+        <div class="dialog-title" i18n-content="dialog_intro_title"></div>
+        <div class="dialog-msg" i18n-content="dialog_intro_msg"></div>
+        <div class="dialog-buttons">
+          <button class="dialog-positive-button" tabindex="0"
+            i18n-content="dialog_got_it_button"></button>
         </div>
       </div>
     </div>
