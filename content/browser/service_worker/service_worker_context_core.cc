@@ -72,21 +72,49 @@ void CheckFetchHandlerOfInstalledServiceWorker(
           : ServiceWorkerCapability::SERVICE_WORKER_NO_FETCH_HANDLER);
 }
 
+// Waits until a |registration| is deleted and calls |callback|.
+class RegistrationDeletionListener
+    : public ServiceWorkerRegistration::Listener {
+ public:
+  RegistrationDeletionListener(
+      scoped_refptr<ServiceWorkerRegistration> registration,
+      base::OnceClosure callback)
+      : registration_(std::move(registration)), callback_(std::move(callback)) {
+    DCHECK(!registration_->is_deleted());
+    registration_->AddListener(this);
+  }
+
+  virtual ~RegistrationDeletionListener() {
+    registration_->RemoveListener(this);
+  }
+
+  void OnRegistrationDeleted(ServiceWorkerRegistration* registration) override {
+    if (callback_)
+      std::move(callback_).Run();
+  }
+
+  scoped_refptr<ServiceWorkerRegistration> registration_;
+  base::OnceClosure callback_;
+};
+
 // This function will call |callback| after |*expected_calls| reaches zero or
 // when an error occurs. In case of an error, |*expected_calls| is set to -1
 // to prevent calling |callback| again.
 void SuccessReportingCallback(
     int* expected_calls,
+    std::vector<std::unique_ptr<RegistrationDeletionListener>>* listeners,
     const base::RepeatingCallback<void(blink::ServiceWorkerStatusCode)>&
         callback,
     blink::ServiceWorkerStatusCode status) {
   if (status != blink::ServiceWorkerStatusCode::kOk) {
     *expected_calls = -1;
+    listeners->clear();
     callback.Run(blink::ServiceWorkerStatusCode::kErrorFailed);
     return;
   }
   (*expected_calls)--;
   if (*expected_calls == 0) {
+    listeners->clear();
     callback.Run(blink::ServiceWorkerStatusCode::kOk);
   }
 }
@@ -170,36 +198,6 @@ class ClearAllServiceWorkersHelper
 
   base::OnceClosure callback_;
   DISALLOW_COPY_AND_ASSIGN(ClearAllServiceWorkersHelper);
-};
-
-class RegistrationDeletionListener
-    : public ServiceWorkerRegistration::Listener {
- public:
-  // Wait until a |registration| is deleted and call |callback|.
-  static void WaitForDeletion(
-      scoped_refptr<ServiceWorkerRegistration> registration,
-      base::OnceClosure callback) {
-    DCHECK(!registration->is_deleted());
-    registration->AddListener(
-        new RegistrationDeletionListener(registration, std::move(callback)));
-  }
-
-  void OnRegistrationDeleted(ServiceWorkerRegistration* registration) override {
-    registration->RemoveListener(this);
-    std::move(callback_).Run();
-    delete this;
-  }
-
- private:
-  RegistrationDeletionListener(
-      scoped_refptr<ServiceWorkerRegistration> registration,
-      base::OnceClosure callback)
-      : registration_(std::move(registration)),
-        callback_(std::move(callback)) {}
-  virtual ~RegistrationDeletionListener() = default;
-
-  scoped_refptr<ServiceWorkerRegistration> registration_;
-  base::OnceClosure callback_;
 };
 
 }  // namespace
@@ -459,20 +457,26 @@ void ServiceWorkerContextCore::DidGetRegistrationsForDeleteForOrigin(
   }
 
   int* expected_calls = new int(2 * registrations.size());
+  auto* listeners =
+      new std::vector<std::unique_ptr<RegistrationDeletionListener>>();
+
   // The barrier must be executed twice for each registration: once for
   // unregistration and once for deletion. It will call |callback| immediately
   // if an error occurs.
   base::RepeatingCallback<void(blink::ServiceWorkerStatusCode)> barrier =
       base::BindRepeating(SuccessReportingCallback, base::Owned(expected_calls),
+                          base::Owned(listeners),
                           base::AdaptCallbackForRepeating(std::move(callback)));
   for (const auto& registration : registrations) {
     DCHECK(registration);
-    if (!registration->is_deleted()) {
-      RegistrationDeletionListener::WaitForDeletion(
-          registration,
-          base::BindOnce(barrier, blink::ServiceWorkerStatusCode::kOk));
-    } else {
-      barrier.Run(blink::ServiceWorkerStatusCode::kOk);
+    if (*expected_calls != -1) {
+      if (!registration->is_deleted()) {
+        listeners->emplace_back(std::make_unique<RegistrationDeletionListener>(
+            registration,
+            base::BindOnce(barrier, blink::ServiceWorkerStatusCode::kOk)));
+      } else {
+        barrier.Run(blink::ServiceWorkerStatusCode::kOk);
+      }
     }
     job_coordinator_->Abort(registration->scope());
     UnregisterServiceWorker(registration->scope(), barrier);
