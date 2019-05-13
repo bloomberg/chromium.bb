@@ -15,6 +15,7 @@ bool SchedulingPolicy::IsFeatureSticky(SchedulingPolicy::Feature feature) {
     case Feature::kDedicatedWorkerOrWorklet:
     case Feature::kOutstandingNetworkRequest:
     case Feature::kOutstandingIndexedDBTransaction:
+    case Feature::kHasScriptableFramesInMultipleTabs:
       return false;
     case Feature::kMainResourceHasCacheControlNoStore:
     case Feature::kMainResourceHasCacheControlNoCache:
