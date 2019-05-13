@@ -1236,6 +1236,9 @@ config("default_warnings") {
     if (treat_warnings_as_errors) {
       cflags += [ "/WX" ]
     }
+    if (fatal_linker_warnings) {
+      ldflags = [ "/WX" ]
+    }
 
     cflags += [
       # Warnings permanently disabled:
@@ -1497,14 +1500,6 @@ config("default_warnings") {
         }
       }
     }
-  }
-}
-
-config("fatal_linker_warnings_win") {
-  # TODO(thakis): Move this back into default_warnings once
-  # https://crbug.com/958955 is resolved.
-  if (is_win && fatal_linker_warnings) {
-    ldflags = [ "/WX" ]
   }
 }
 

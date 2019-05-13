@@ -431,7 +431,6 @@ default_compiler_configs = [
   "//build/config/compiler:default_stack_frames",
   "//build/config/compiler:default_symbols",
   "//build/config/compiler:export_dynamic",
-  "//build/config/compiler:fatal_linker_warnings_win",
   "//build/config/compiler:no_exceptions",
   "//build/config/compiler:no_rtti",
   "//build/config/compiler:runtime_library",
