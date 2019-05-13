@@ -63,7 +63,6 @@ void Fatal(ScriptContext* context, const std::string& message) {
   if (client->ShouldSuppressFatalErrors()) {
     console::AddMessage(context, blink::mojom::ConsoleMessageLevel::kError,
                         full_message);
-    client->RecordDidSuppressFatalError();
   } else {
     console::Fatal(context, full_message);
   }

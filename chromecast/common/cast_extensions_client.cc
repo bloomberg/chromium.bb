@@ -129,8 +129,6 @@ bool CastExtensionsClient::ShouldSuppressFatalErrors() const {
   return true;
 }
 
-void CastExtensionsClient::RecordDidSuppressFatalError() {}
-
 const GURL& CastExtensionsClient::GetWebstoreBaseURL() const {
   return webstore_base_url_;
 }

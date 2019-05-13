@@ -7012,6 +7012,9 @@ histogram as enum -->
 </enum>
 
 <enum name="ChromeChannelForHistogram">
+  <obsolete>
+    Relevant histogram (DidSuppressJavaScriptException) expired 2018-08.
+  </obsolete>
   <int value="0" label="UNKNOWN"/>
   <int value="1" label="CANARY"/>
   <int value="2" label="DEV"/>
