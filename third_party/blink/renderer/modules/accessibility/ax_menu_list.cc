@@ -78,7 +78,7 @@ void AXMenuList::AddChildren() {
     return;
 
   ToAXMockObject(popup)->SetParent(this);
-  if (!popup->AccessibilityIsIncludedInTree()) {
+  if (popup->AccessibilityIsIgnored()) {
     cache.Remove(popup->AXObjectID());
     return;
   }

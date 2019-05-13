@@ -2724,7 +2724,7 @@ void AXLayoutObject::AddInlineTextBoxChildren(bool force) {
            layout_text->FirstAbstractInlineTextBox();
        box.get(); box = box->NextInlineTextBox()) {
     AXObject* ax_object = AXObjectCache().GetOrCreate(box.get());
-    if (ax_object->AccessibilityIsIncludedInTree())
+    if (!ax_object->AccessibilityIsIgnored())
       children_.push_back(ax_object);
   }
 }
@@ -3448,7 +3448,7 @@ void AXLayoutObject::AddHiddenChildren() {
       // Find out where the last layout sibling is located within m_children.
       if (AXObject* child_object =
               AXObjectCache().Get(child.GetLayoutObject())) {
-        if (!child_object->AccessibilityIsIncludedInTree()) {
+        if (child_object->AccessibilityIsIgnored()) {
           const auto& children = child_object->Children();
           child_object = children.size() ? children.back().Get() : nullptr;
         }
@@ -3487,7 +3487,7 @@ void AXLayoutObject::AddImageMapChildren() {
       AXImageMapLink* area_object = ToAXImageMapLink(obj);
       area_object->SetParent(this);
       DCHECK_NE(area_object->AXObjectID(), 0U);
-      if (area_object->AccessibilityIsIncludedInTree())
+      if (!area_object->AccessibilityIsIgnored())
         children_.push_back(area_object);
       else
         AXObjectCache().Remove(area_object->AXObjectID());
@@ -3529,7 +3529,7 @@ void AXLayoutObject::AddRemoteSVGChildren() {
 
   root->SetParent(this);
 
-  if (!root->AccessibilityIsIncludedInTree()) {
+  if (root->AccessibilityIsIgnored()) {
     for (const auto& child : root->Children())
       children_.push_back(child);
   } else {
@@ -3550,7 +3550,7 @@ void AXLayoutObject::AddTableChildren() {
       if (HTMLTableCaptionElement* caption =
               ToHTMLTableElement(table_node)->caption()) {
         AXObject* caption_object = ax_cache.GetOrCreate(caption);
-        if (caption_object && caption_object->AccessibilityIsIncludedInTree())
+        if (caption_object && !caption_object->AccessibilityIsIgnored())
           children_.push_front(caption_object);
       }
     }
