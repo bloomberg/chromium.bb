@@ -312,12 +312,6 @@ bool RequiresContentFilterBlockingWorkaround() {
   // helps with diagnosing a navigation related crash (crbug.com/565457).
   __weak WKNavigation* _stoppedWKNavigation;
 
-  // Used to poll for a SafeBrowsing warning being displayed. This is created in
-  // |decidePolicyForNavigationAction| and destroyed once any of the following
-  // happens: 1) a SafeBrowsing warning is detected; 2) any WKNavigationDelegate
-  // method is called; 3) |abortLoad| is called.
-  base::RepeatingTimer _safeBrowsingWarningDetectionTimer;
-
   // Updates SSLStatus for current navigation item.
   CRWSSLStatusUpdater* _SSLStatusUpdater;
 
@@ -2187,10 +2181,9 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
 - (void)abortLoad {
   [self.webView stopLoading];
-  self.navigationHandler.pendingNavigationInfo.cancelled = YES;
+  [self.navigationHandler stopLoading];
   _certVerificationErrors->Clear();
   [self loadCancelled];
-  _safeBrowsingWarningDetectionTimer.Stop();
 }
 
 - (void)loadCancelled {
@@ -4294,7 +4287,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     __weak CRWWebController* weakSelf = self;
     const base::TimeDelta kDelayUntilSafeBrowsingWarningCheck =
         base::TimeDelta::FromMilliseconds(20);
-    _safeBrowsingWarningDetectionTimer.Start(
+    self.navigationHandler.safeBrowsingWarningDetectionTimer->Start(
         FROM_HERE, kDelayUntilSafeBrowsingWarningCheck, base::BindRepeating(^{
           __strong __typeof(weakSelf) strongSelf = weakSelf;
           if ([strongSelf isSafeBrowsingWarningDisplayedInWebView]) {
@@ -4317,7 +4310,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
             strongSelf.navigationManagerImpl->AddTransientItem(requestURL);
             strongSelf.webStateImpl->OnNavigationStarted(context.get());
             strongSelf.webStateImpl->OnNavigationFinished(context.get());
-            strongSelf->_safeBrowsingWarningDetectionTimer.Stop();
+            strongSelf.navigationHandler.safeBrowsingWarningDetectionTimer
+                ->Stop();
             if (!existingContext) {
               // If there's an existing context, observers will already be aware
               // of a load in progress. Otherwise, observers need to be notified
@@ -5386,7 +5380,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   if (_isBeingDestroyed) {
     UMA_HISTOGRAM_BOOLEAN("Renderer.WKWebViewCallbackAfterDestroy", true);
   }
-  _safeBrowsingWarningDetectionTimer.Stop();
+  self.navigationHandler.safeBrowsingWarningDetectionTimer->Stop();
 }
 
 // Returns YES if response should be rendered in WKWebView.

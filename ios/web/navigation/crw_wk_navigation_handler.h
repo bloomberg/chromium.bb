@@ -11,6 +11,10 @@
 @class CRWPendingNavigationInfo;
 @class CRWWKNavigationStates;
 
+namespace base {
+class RepeatingTimer;
+}
+
 // CRWWKNavigationHandler uses this protocol to interact with its owner.
 @protocol CRWWKNavigationHandlerDelegate <NSObject>
 
@@ -29,6 +33,14 @@
 // Holds all WKNavigation objects and their states which are currently in
 // flight.
 @property(nonatomic, readonly, strong) CRWWKNavigationStates* navigationStates;
+
+// The SafeBrowsingDetection timer.
+// TODO(crbug.com/956511): Remove this once refactor is done.
+@property(nonatomic, readonly, assign)
+    base::RepeatingTimer* safeBrowsingWarningDetectionTimer;
+
+// Instructs this handler to stop loading.
+- (void)stopLoading;
 
 @end
 
