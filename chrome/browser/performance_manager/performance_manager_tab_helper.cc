@@ -297,8 +297,7 @@ void PerformanceManagerTabHelper::OnMainFrameNavigation(int64_t navigation_id) {
 
 void PerformanceManagerTabHelper::UpdatePageNodeVisibility(
     content::Visibility visibility) {
-  // TODO(fdoray): An OCCLUDED tab should not be considered visible.
-  const bool is_visible = visibility != content::Visibility::HIDDEN;
+  const bool is_visible = visibility == content::Visibility::VISIBLE;
   PostToGraph(FROM_HERE, &PageNodeImpl::SetIsVisible, page_node_.get(),
               is_visible);
 }
