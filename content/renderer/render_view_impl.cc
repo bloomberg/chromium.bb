@@ -130,8 +130,6 @@
 #include "third_party/blink/public/public_buildflags.h"
 #include "third_party/blink/public/web/web_autofill_client.h"
 #include "third_party/blink/public/web/web_ax_object.h"
-#include "third_party/blink/public/web/web_date_time_chooser_completion.h"
-#include "third_party/blink/public/web/web_date_time_chooser_params.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_dom_event.h"
 #include "third_party/blink/public/web/web_dom_message_event.h"
@@ -587,12 +585,6 @@ void RenderViewImpl::Initialize(
 RenderViewImpl::~RenderViewImpl() {
   DCHECK(!frame_widget_);
   RenderThread::Get()->RemoveRoute(routing_id_);
-
-#if defined(OS_ANDROID)
-  // The date/time picker client is both a std::unique_ptr member of this class
-  // and a RenderViewObserver. Reset it to prevent double deletion.
-  date_time_picker_client_.reset();
-#endif
 
 #ifndef NDEBUG
   // Make sure we are no longer referenced by the ViewMap or RoutingIDViewMap.
@@ -2157,23 +2149,6 @@ blink::WebScreenInfo RenderViewImpl::GetScreenInfo() {
 }
 
 #if defined(OS_ANDROID)
-bool RenderViewImpl::OpenDateTimeChooser(
-    const blink::WebDateTimeChooserParams& params,
-    blink::WebDateTimeChooserCompletion* completion) {
-  // JavaScript may try to open a date time chooser while one is already open.
-  if (date_time_picker_client_)
-    return false;
-  date_time_picker_client_.reset(
-      new RendererDateTimePicker(this, params, completion));
-  date_time_picker_client_->Open();
-  return true;
-}
-
-void RenderViewImpl::DismissDateTimeDialog() {
-  DCHECK(date_time_picker_client_);
-  date_time_picker_client_.reset();
-}
-
 void RenderViewImpl::SuspendVideoCaptureDevices(bool suspend) {
   if (!main_render_frame_)
     return;

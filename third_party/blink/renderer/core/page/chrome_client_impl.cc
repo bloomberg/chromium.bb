@@ -165,6 +165,7 @@ ChromeClientImpl* ChromeClientImpl::Create(WebViewImpl* web_view) {
 
 void ChromeClientImpl::Trace(Visitor* visitor) {
   visitor->Trace(popup_opening_observers_);
+  visitor->Trace(external_date_time_chooser_);
   ChromeClient::Trace(visitor);
 }
 
@@ -594,6 +595,7 @@ ColorChooser* ChromeClientImpl::OpenColorChooser(
 }
 
 DateTimeChooser* ChromeClientImpl::OpenDateTimeChooser(
+    LocalFrame* frame,
     DateTimeChooserClient* picker_client,
     const DateTimeChooserParameters& parameters) {
   // TODO(crbug.com/779126): add support for the chooser in immersive mode.
@@ -608,8 +610,20 @@ DateTimeChooser* ChromeClientImpl::OpenDateTimeChooser(
     return MakeGarbageCollected<DateTimeChooserImpl>(this, picker_client,
                                                      parameters);
   }
-  return ExternalDateTimeChooser::Create(this, web_view_->Client(),
-                                         picker_client, parameters);
+
+  // JavaScript may try to open a date time chooser while one is already open.
+  if (external_date_time_chooser_ &&
+      external_date_time_chooser_->IsShowingDateTimeChooserUI())
+    return nullptr;
+
+  external_date_time_chooser_ = ExternalDateTimeChooser::Create(picker_client);
+  external_date_time_chooser_->OpenDateTimeChooser(frame, parameters);
+  return external_date_time_chooser_;
+}
+
+ExternalDateTimeChooser*
+ChromeClientImpl::GetExternalDateTimeChooserForTesting() {
+  return external_date_time_chooser_;
 }
 
 void ChromeClientImpl::OpenFileChooser(

@@ -127,7 +127,7 @@ void PickerIndicatorElement::OpenPopup() {
   if (!picker_indicator_owner_->SetupDateTimeChooserParameters(parameters))
     return;
   chooser_ = GetDocument().GetPage()->GetChromeClient().OpenDateTimeChooser(
-      this, parameters);
+      GetDocument().GetFrame(), this, parameters);
 }
 
 Element& PickerIndicatorElement::OwnerElement() const {

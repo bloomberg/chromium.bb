@@ -139,8 +139,10 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
                                  ColorChooserClient*,
                                  const Color&) override;
   DateTimeChooser* OpenDateTimeChooser(
+      LocalFrame* frame,
       DateTimeChooserClient*,
       const DateTimeChooserParameters&) override;
+  ExternalDateTimeChooser* GetExternalDateTimeChooserForTesting() override;
   void OpenFileChooser(LocalFrame*, scoped_refptr<FileChooser>) override;
   void SetCursor(const Cursor&, LocalFrame*) override;
   void SetCursorOverridden(bool) override;
@@ -275,6 +277,7 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   Vector<scoped_refptr<FileChooser>> file_chooser_queue_;
   Cursor last_set_mouse_cursor_for_testing_;
   bool cursor_overridden_;
+  Member<ExternalDateTimeChooser> external_date_time_chooser_;
   bool did_request_non_empty_tool_tip_;
 
   FRIEND_TEST_ALL_PREFIXES(FileChooserQueueTest, DerefQueuedChooser);

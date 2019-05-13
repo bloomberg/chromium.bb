@@ -42,14 +42,12 @@
 
 namespace blink {
 
-class WebDateTimeChooserCompletion;
 class WebNode;
 class WebPagePopup;
 class WebURL;
 class WebURLRequest;
 class WebView;
 enum class WebSandboxFlags;
-struct WebDateTimeChooserParams;
 struct WebRect;
 struct WebSize;
 struct WebWindowFeatures;
@@ -107,18 +105,6 @@ class WebViewClient {
 
   // Called when PageImportanceSignals for the WebView is updated.
   virtual void PageImportanceSignalsChanged() {}
-
-  // Dialogs -------------------------------------------------------------
-
-  // Ask users to choose date/time for the specified parameters. When a user
-  // chooses a value, an implementation of this function should call
-  // WebDateTimeChooserCompletion::didChooseValue or didCancelChooser. If the
-  // implementation opened date/time chooser UI successfully, it should return
-  // true. This function is used only if ExternalDateTimeChooser is used.
-  virtual bool OpenDateTimeChooser(const WebDateTimeChooserParams&,
-                                   WebDateTimeChooserCompletion*) {
-    return false;
-  }
 
   // UI ------------------------------------------------------------------
 

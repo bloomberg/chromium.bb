@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module content.mojom;
+module blink.mojom;
 
 import "mojo/public/mojom/base/string16.mojom";
 import "ui/base/ime/mojo/ime_types.mojom";
@@ -28,10 +28,9 @@ struct DateTimeDialogValue {
 };
 
 // Interface exposed by the browser to the renderer.
-interface DateTimePicker {
+interface DateTimeChooser {
   // Requires for opening a date/time dialog, and then |dialog_value| is
   // returned to replace a date/time input field.
-  [EnableIf=is_android]
   OpenDateTimeDialog(DateTimeDialogValue value) =>
       (bool success, double dialog_value);
 };

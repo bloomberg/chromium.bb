@@ -59,7 +59,6 @@
 #include "third_party/blink/public/public_buildflags.h"
 #include "third_party/blink/public/web/web_autofill_client.h"
 #include "third_party/blink/public/web/web_console_message.h"
-#include "third_party/blink/public/web/web_date_time_chooser_completion.h"
 #include "third_party/blink/public/web/web_device_emulation_params.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_element.h"
@@ -95,6 +94,7 @@
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
+#include "third_party/blink/renderer/core/html/forms/external_date_time_chooser.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_text_area_element.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
@@ -231,27 +231,6 @@ class TapHandlingWebWidgetClient
   int longpress_y_;
 };
 
-class DateTimeChooserWebViewClient
-    : public frame_test_helpers::TestWebViewClient {
- public:
-  WebDateTimeChooserCompletion* ChooserCompletion() {
-    return chooser_completion_;
-  }
-
-  void ClearChooserCompletion() { chooser_completion_ = nullptr; }
-
-  // WebViewClient methods
-  bool OpenDateTimeChooser(
-      const WebDateTimeChooserParams&,
-      WebDateTimeChooserCompletion* chooser_completion) override {
-    chooser_completion_ = chooser_completion;
-    return true;
-  }
-
- private:
-  WebDateTimeChooserCompletion* chooser_completion_;
-};
-
 class WebViewTest : public testing::Test {
  public:
   WebViewTest() : base_url_("http://www.test.com/") {}
@@ -296,6 +275,9 @@ class WebViewTest : public testing::Test {
   bool TapElement(WebInputEvent::Type, Element*);
   bool TapElementById(WebInputEvent::Type, const WebString& id);
   IntSize PrintICBSizeFromPageSize(const FloatSize& page_size);
+
+  ExternalDateTimeChooser* GetExternalDateTimeChooser(
+      WebViewImpl* web_view_impl);
 
   void UpdateAllLifecyclePhases() {
     web_view_helper_.GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases(
@@ -2547,6 +2529,12 @@ IntSize WebViewTest::PrintICBSizeFromPageSize(const FloatSize& page_size) {
   return IntSize(icb_width, icb_height);
 }
 
+ExternalDateTimeChooser* WebViewTest::GetExternalDateTimeChooser(
+    WebViewImpl* web_view_impl) {
+  return web_view_impl->GetChromeClient()
+      .GetExternalDateTimeChooserForTesting();
+}
+
 TEST_F(WebViewTest, ClientTapHandling) {
   TapHandlingWebWidgetClient client;
   WebView* web_view = web_view_helper_.InitializeAndLoad("about:blank", nullptr,
@@ -3632,17 +3620,11 @@ static void OpenDateTimeChooser(WebView* web_view,
       WebCoalescedInputEvent(key_event));
 }
 
-// TODO(crbug.com/605112) This test is crashing on Android (Nexus 4) bot.
-#if defined(OS_ANDROID)
-TEST_F(WebViewTest, DISABLED_ChooseValueFromDateTimeChooser) {
-#else
 TEST_F(WebViewTest, ChooseValueFromDateTimeChooser) {
-#endif
   ScopedInputMultipleFieldsUIForTest input_multiple_fields_ui(false);
-  DateTimeChooserWebViewClient client;
   std::string url = RegisterMockedHttpURLLoad("date_time_chooser.html");
   WebViewImpl* web_view_impl =
-      web_view_helper_.InitializeAndLoad(url, nullptr, &client);
+      web_view_helper_.InitializeAndLoad(url, nullptr, nullptr);
 
   Document* document =
       web_view_impl->MainFrameImpl()->GetFrame()->GetDocument();
@@ -3651,62 +3633,52 @@ TEST_F(WebViewTest, ChooseValueFromDateTimeChooser) {
 
   input_element = ToHTMLInputElement(document->getElementById("date"));
   OpenDateTimeChooser(web_view_impl, input_element);
-  client.ChooserCompletion()->DidChooseValue(0);
-  client.ClearChooserCompletion();
+  GetExternalDateTimeChooser(web_view_impl)->ResponseHandler(true, 0);
   EXPECT_STREQ("1970-01-01", input_element->value().Utf8().data());
 
   OpenDateTimeChooser(web_view_impl, input_element);
-  client.ChooserCompletion()->DidChooseValue(
-      std::numeric_limits<double>::quiet_NaN());
-  client.ClearChooserCompletion();
+  GetExternalDateTimeChooser(web_view_impl)
+      ->ResponseHandler(true, std::numeric_limits<double>::quiet_NaN());
   EXPECT_STREQ("", input_element->value().Utf8().data());
 
   input_element = ToHTMLInputElement(document->getElementById("datetimelocal"));
   OpenDateTimeChooser(web_view_impl, input_element);
-  client.ChooserCompletion()->DidChooseValue(0);
-  client.ClearChooserCompletion();
+  GetExternalDateTimeChooser(web_view_impl)->ResponseHandler(true, 0);
   EXPECT_STREQ("1970-01-01T00:00", input_element->value().Utf8().data());
 
   OpenDateTimeChooser(web_view_impl, input_element);
-  client.ChooserCompletion()->DidChooseValue(
-      std::numeric_limits<double>::quiet_NaN());
-  client.ClearChooserCompletion();
+  GetExternalDateTimeChooser(web_view_impl)
+      ->ResponseHandler(true, std::numeric_limits<double>::quiet_NaN());
   EXPECT_STREQ("", input_element->value().Utf8().data());
 
   input_element = ToHTMLInputElement(document->getElementById("month"));
   OpenDateTimeChooser(web_view_impl, input_element);
-  client.ChooserCompletion()->DidChooseValue(0);
-  client.ClearChooserCompletion();
+  GetExternalDateTimeChooser(web_view_impl)->ResponseHandler(true, 0);
   EXPECT_STREQ("1970-01", input_element->value().Utf8().data());
 
   OpenDateTimeChooser(web_view_impl, input_element);
-  client.ChooserCompletion()->DidChooseValue(
-      std::numeric_limits<double>::quiet_NaN());
-  client.ClearChooserCompletion();
+  GetExternalDateTimeChooser(web_view_impl)
+      ->ResponseHandler(true, std::numeric_limits<double>::quiet_NaN());
   EXPECT_STREQ("", input_element->value().Utf8().data());
 
   input_element = ToHTMLInputElement(document->getElementById("time"));
   OpenDateTimeChooser(web_view_impl, input_element);
-  client.ChooserCompletion()->DidChooseValue(0);
-  client.ClearChooserCompletion();
+  GetExternalDateTimeChooser(web_view_impl)->ResponseHandler(true, 0);
   EXPECT_STREQ("00:00", input_element->value().Utf8().data());
 
   OpenDateTimeChooser(web_view_impl, input_element);
-  client.ChooserCompletion()->DidChooseValue(
-      std::numeric_limits<double>::quiet_NaN());
-  client.ClearChooserCompletion();
+  GetExternalDateTimeChooser(web_view_impl)
+      ->ResponseHandler(true, std::numeric_limits<double>::quiet_NaN());
   EXPECT_STREQ("", input_element->value().Utf8().data());
 
   input_element = ToHTMLInputElement(document->getElementById("week"));
   OpenDateTimeChooser(web_view_impl, input_element);
-  client.ChooserCompletion()->DidChooseValue(0);
-  client.ClearChooserCompletion();
+  GetExternalDateTimeChooser(web_view_impl)->ResponseHandler(true, 0);
   EXPECT_STREQ("1970-W01", input_element->value().Utf8().data());
 
   OpenDateTimeChooser(web_view_impl, input_element);
-  client.ChooserCompletion()->DidChooseValue(
-      std::numeric_limits<double>::quiet_NaN());
-  client.ClearChooserCompletion();
+  GetExternalDateTimeChooser(web_view_impl)
+      ->ResponseHandler(true, std::numeric_limits<double>::quiet_NaN());
   EXPECT_STREQ("", input_element->value().Utf8().data());
 
   // Clear the WebViewClient from the webViewHelper to avoid use-after-free in

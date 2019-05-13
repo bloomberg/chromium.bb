@@ -59,22 +59,15 @@
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/surface/transport_dib.h"
 
-#if defined(OS_ANDROID)
-#include "content/renderer/android/renderer_date_time_picker.h"
-#endif
-
 namespace blink {
-class WebDateTimeChooserCompletion;
 class WebGestureEvent;
 class WebMouseEvent;
 class WebURLRequest;
-struct WebDateTimeChooserParams;
 struct WebPluginAction;
 struct WebWindowFeatures;
 }  // namespace blink
 
 namespace content {
-class RendererDateTimePicker;
 class RenderViewImplTest;
 class RenderViewObserver;
 class RenderViewTest;
@@ -161,10 +154,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // Functions to add and remove observers for this object.
   void AddObserver(RenderViewObserver* observer);
   void RemoveObserver(RenderViewObserver* observer);
-
-#if defined(OS_ANDROID)
-  void DismissDateTimeDialog();
-#endif
 
   // Sets the zoom level and notifies observers.
   void SetZoomLevel(double zoom_level);
@@ -262,13 +251,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   blink::WebScreenInfo GetScreenInfo() override;
   bool CanHandleGestureEvent() override;
   bool AllowPopupsDuringPageUnload() override;
-
-#if defined(OS_ANDROID)
-  // Only used on Android since all other platforms implement
-  // date and time input fields using MULTIPLE_FIELDS_UI
-  bool OpenDateTimeChooser(const blink::WebDateTimeChooserParams&,
-                           blink::WebDateTimeChooserCompletion*) override;
-#endif
 
   // RenderView implementation -------------------------------------------------
 
@@ -650,10 +632,7 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   blink::WebFrameWidget* frame_widget_ = nullptr;
 
 #if defined(OS_ANDROID)
-  // Android Specific ---------------------------------------------------------
-
-  // A date/time picker object for date and time related input elements.
-  std::unique_ptr<RendererDateTimePicker> date_time_picker_client_;
+  // Android Specific ----------------------------------------------------------
 
   // Whether this was a renderer-created or browser-created RenderView.
   bool was_created_by_renderer_ = false;

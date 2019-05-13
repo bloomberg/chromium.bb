@@ -74,8 +74,8 @@ void ChooserOnlyTemporalInputTypeView::HandleDOMActivateEvent(Event& event) {
           ? WebFeature::kTemporalInputTypeChooserByTrustedClick
           : WebFeature::kTemporalInputTypeChooserByUntrustedClick);
   date_time_chooser_ =
-      document.GetPage()->GetChromeClient().OpenDateTimeChooser(this,
-                                                                parameters);
+      document.GetPage()->GetChromeClient().OpenDateTimeChooser(
+          document.GetFrame(), this, parameters);
 }
 
 void ChooserOnlyTemporalInputTypeView::CreateShadowSubtree() {

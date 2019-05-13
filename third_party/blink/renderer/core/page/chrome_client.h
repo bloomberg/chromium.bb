@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/sandbox_flags.h"
+#include "third_party/blink/renderer/core/html/forms/external_date_time_chooser.h"
 #include "third_party/blink/renderer/core/html/forms/popup_menu.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/loader/navigation_policy.h"
@@ -286,9 +287,14 @@ class CORE_EXPORT ChromeClient
   //    InputMultipleFieldsUI flag is set
   //  - <datalist> UI for date/time input types regardless of
   //    InputMultipleFieldsUI flag
+  // |LocalFrame| should not be null.
   virtual DateTimeChooser* OpenDateTimeChooser(
+      LocalFrame*,
       DateTimeChooserClient*,
       const DateTimeChooserParameters&) = 0;
+  virtual ExternalDateTimeChooser* GetExternalDateTimeChooserForTesting() {
+    return nullptr;
+  }
 
   virtual void OpenTextDataListChooser(HTMLInputElement&) = 0;
 

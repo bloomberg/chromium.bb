@@ -69,6 +69,7 @@ ColorChooser* EmptyChromeClient::OpenColorChooser(LocalFrame*,
 }
 
 DateTimeChooser* EmptyChromeClient::OpenDateTimeChooser(
+    LocalFrame* frame,
     DateTimeChooserClient*,
     const DateTimeChooserParameters&) {
   return nullptr;

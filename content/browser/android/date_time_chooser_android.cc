@@ -47,30 +47,30 @@ namespace content {
 // DateTimeChooserAndroid implementation
 DateTimeChooserAndroid::DateTimeChooserAndroid(WebContentsImpl* web_contents)
     : content::WebContentsObserver(web_contents),
-      date_time_picker_binding_(this) {
+      date_time_chooser_binding_(this) {
   registry_.AddInterface(
-      base::BindRepeating(&DateTimeChooserAndroid::OnDateTimePickerRequest,
+      base::BindRepeating(&DateTimeChooserAndroid::OnDateTimeChooserRequest,
                           base::Unretained(this)));
 }
 
 DateTimeChooserAndroid::~DateTimeChooserAndroid() {
 }
 
-void DateTimeChooserAndroid::OnDateTimePickerRequest(
-    mojom::DateTimePickerRequest request) {
+void DateTimeChooserAndroid::OnDateTimeChooserRequest(
+    blink::mojom::DateTimeChooserRequest request) {
   // Disconnect the previous picker first.
-  date_time_picker_binding_.Close();
+  date_time_chooser_binding_.Close();
 
-  date_time_picker_binding_.Bind(std::move(request));
+  date_time_chooser_binding_.Bind(std::move(request));
 }
 
 void DateTimeChooserAndroid::OpenDateTimeDialog(
-    mojom::DateTimeDialogValuePtr value,
+    blink::mojom::DateTimeDialogValuePtr value,
     OpenDateTimeDialogCallback callback) {
   JNIEnv* env = AttachCurrentThread();
 
   if (open_date_time_response_callback_) {
-    date_time_picker_binding_.ReportBadMessage(
+    date_time_chooser_binding_.ReportBadMessage(
         "DateTimeChooserAndroid: Previous picker's binding isn't closed.");
     return;
   }
@@ -81,7 +81,7 @@ void DateTimeChooserAndroid::OpenDateTimeDialog(
     suggestions_array = Java_DateTimeChooserAndroid_createSuggestionsArray(
         env, value->suggestions.size());
     for (size_t i = 0; i < value->suggestions.size(); ++i) {
-      const mojom::DateTimeSuggestionPtr suggestion =
+      const blink::mojom::DateTimeSuggestionPtr suggestion =
           std::move(value->suggestions[i]);
       ScopedJavaLocalRef<jstring> localized_value = ConvertUTF16ToJavaString(
           env, SanitizeSuggestionString(suggestion->localized_value));

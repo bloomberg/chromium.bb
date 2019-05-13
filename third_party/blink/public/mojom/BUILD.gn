@@ -245,6 +245,7 @@ mojom("android_mojo_bindings") {
 # those high-level service worker mojom files there.
 mojom("mojom_core") {
   sources = [
+    "choosers/date_time_chooser.mojom",
     "messaging/cloneable_message.mojom",
     "messaging/transferable_message.mojom",
     "messaging/user_activation_snapshot.mojom",
@@ -277,6 +278,7 @@ mojom("mojom_core") {
     "//services/network/public/mojom",
     "//services/service_manager/public/mojom",
     "//skia/public/interfaces",
+    "//ui/base/ime/mojo",
     "//url/mojom:url_mojom_gurl",
     "//url/mojom:url_mojom_origin",
   ]

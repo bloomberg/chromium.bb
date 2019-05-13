@@ -500,10 +500,6 @@ mojom("mojo_bindings") {
     ]
   }
 
-  if (is_android) {
-    sources += [ "date_time_picker.mojom" ]
-  }
-
   enabled_features = []
   if (enable_ipc_logging) {
     enabled_features += [ "ipc_logging" ]

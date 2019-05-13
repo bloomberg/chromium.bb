@@ -11,10 +11,10 @@
 
 #include "base/android/jni_weak_ref.h"
 #include "base/macros.h"
-#include "content/common/date_time_picker.mojom.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
+#include "third_party/blink/public/mojom/choosers/date_time_chooser.mojom.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -24,18 +24,18 @@ class WebContentsImpl;
 class RenderFrameHost;
 
 // Android implementation for DateTimeChooser dialogs.
-class DateTimeChooserAndroid : public mojom::DateTimePicker,
+class DateTimeChooserAndroid : public blink::mojom::DateTimeChooser,
                                public WebContentsObserver {
  public:
   explicit DateTimeChooserAndroid(WebContentsImpl* web_contents);
   ~DateTimeChooserAndroid() override;
 
-  void OnDateTimePickerRequest(mojom::DateTimePickerRequest request);
+  void OnDateTimeChooserRequest(blink::mojom::DateTimeChooserRequest request);
 
-  // content::mojom::DateTimePicker implementation:
+  // blink::mojom::DateTimeChooser implementation:
   // Shows the dialog. |value| is the date/time value converted to a
   // number as defined in HTML. (See blink::InputType::parseToNumber())
-  void OpenDateTimeDialog(mojom::DateTimeDialogValuePtr value,
+  void OpenDateTimeDialog(blink::mojom::DateTimeDialogValuePtr value,
                           OpenDateTimeDialogCallback callback) override;
 
   // Replaces the current value.
@@ -57,7 +57,7 @@ class DateTimeChooserAndroid : public mojom::DateTimePicker,
 
   base::android::ScopedJavaGlobalRef<jobject> j_date_time_chooser_;
 
-  mojo::Binding<mojom::DateTimePicker> date_time_picker_binding_;
+  mojo::Binding<blink::mojom::DateTimeChooser> date_time_chooser_binding_;
 
   service_manager::BinderRegistry registry_;
 
