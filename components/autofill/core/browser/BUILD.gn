@@ -247,7 +247,6 @@ jumbo_static_library("browser") {
     "webdata/autofill_wallet_sync_bridge.h",
     "webdata/autofill_wallet_syncable_service.cc",
     "webdata/autofill_wallet_syncable_service.h",
-    "webdata/autofill_webdata.h",
     "webdata/autofill_webdata_backend.h",
     "webdata/autofill_webdata_backend_impl.cc",
     "webdata/autofill_webdata_backend_impl.h",
