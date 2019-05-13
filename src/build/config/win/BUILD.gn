@@ -10,6 +10,7 @@ import("//build/config/win/visual_studio_version.gni")
 import("//build/timestamp.gni")
 import("//build/toolchain/goma.gni")
 import("//build/toolchain/toolchain.gni")
+import("//blpwtk2/blpwtk2.gni")
 
 assert(is_win)
 
@@ -86,7 +87,7 @@ config("compiler") {
   if (is_clang) {
     cflags += [ "-fmsc-version=1911" ]
 
-    if (is_component_build) {
+    if (is_component_build && !is_blpwtk2) {
       cflags += [
         # Do not export inline member functions. This makes component builds
         # faster. This is similar to -fvisibility-inlines-hidden.

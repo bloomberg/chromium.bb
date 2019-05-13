@@ -118,6 +118,13 @@ static_library("devtools") {
       "//third_party/icu",
       "//third_party/leveldatabase",
     ]
+
+    if (enable_extensions) {
+      deps += [
+        "//chrome/common/extensions/api",
+      ]
+    }
+
     sources += [
       "chrome_devtools_manager_delegate.cc",
       "chrome_devtools_manager_delegate.h",

@@ -1113,7 +1113,6 @@ test("browser_tests") {
       "//chrome:strings",
       "//chrome/browser",
       "//chrome/browser/devtools:test_support",
-      "//chrome/browser/web_applications:browser_tests",
       "//chrome/renderer",
       "//chrome/services/removable_storage_writer:lib",
       "//components/autofill/content/browser:risk_proto",
@@ -4059,7 +4058,6 @@ test("unit_tests") {
       "../utility/image_writer/image_writer_unittest.cc",
     ]
     deps += [
-      "//chrome/browser/web_applications:unit_tests",
       "//chrome/common/extensions/api",
       "//extensions:extensions_resources",
       "//extensions/browser:test_support",

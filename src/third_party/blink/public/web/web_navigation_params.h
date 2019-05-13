@@ -49,7 +49,11 @@ class WebDocumentLoader;
 // navigation is being initiated.
 struct BLINK_EXPORT WebNavigationInfo {
   WebNavigationInfo() = default;
-  ~WebNavigationInfo() = default;
+
+  // Destructor
+  // Since this header file does not have a corresponding source file, this
+  // destructor is defined in web_local_frame_impl.cc
+  virtual ~WebNavigationInfo();
 
   // The main resource request.
   WebURLRequest url_request;

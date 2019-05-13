@@ -64,10 +64,16 @@ static_library("router") {
   if (enable_extensions) {
     deps += [
       "discovery",
-      "//extensions/browser",
       "//mojo/public/cpp/bindings",
       "//ui/base:buildflags",
     ]
+
+    if (enable_extensions) {
+      deps += [
+        "//extensions/browser",
+      ]
+    }
+
     sources += [
       "data_decoder_util.cc",
       "data_decoder_util.h",
@@ -153,9 +159,15 @@ static_library("test_support") {
       "discovery",
       "//chrome/common/media_router/mojo:media_router",
       "//chrome/common/media_router/mojo:media_router_test_interfaces",
-      "//extensions/browser",
-      "//extensions/common",
     ]
+
+    if (enable_extensions) {
+      deps += [
+        "//extensions/common",
+        "//extensions/browser",
+      ]
+    }
+
     sources += [
       "test/media_router_mojo_test.cc",
       "test/media_router_mojo_test.h",

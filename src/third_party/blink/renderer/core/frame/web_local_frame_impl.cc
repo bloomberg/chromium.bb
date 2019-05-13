@@ -507,6 +507,11 @@ static WebDocumentLoader* DocumentLoaderForDocLoader(DocumentLoader* loader) {
   return loader ? WebDocumentLoaderImpl::FromDocumentLoader(loader) : nullptr;
 }
 
+// WebNavigationInfo ----------------------------------------------------------
+
+WebNavigationInfo::~WebNavigationInfo() {
+}
+
 // WebFrame -------------------------------------------------------------------
 
 int WebFrame::InstanceCount() {
