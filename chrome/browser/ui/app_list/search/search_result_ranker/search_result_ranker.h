@@ -51,6 +51,8 @@ class SearchResultRanker : file_manager::file_tasks::FileTasksObserver {
   // file_manager::file_tasks::FileTaskObserver:
   void OnFilesOpened(const std::vector<FileOpenEvent>& file_opens) override;
 
+  RecurrenceRanker* get_zero_state_mixed_types_ranker();
+
  private:
   // Records the time of the last call to FetchRankings() and is used to
   // limit the number of queries to the models within a short timespan.
@@ -68,13 +70,15 @@ class SearchResultRanker : file_manager::file_tasks::FileTasksObserver {
   // affect apps.
   std::unique_ptr<RecurrenceRanker> results_list_group_ranker_;
 
+  // Ranks files and previous queries for launcher zero-state.
+  std::unique_ptr<RecurrenceRanker> zero_state_mixed_types_ranker_;
+
   // TODO(931149): Move the AppSearchResultRanker instance and associated logic
   // to here.
 
   Profile* profile_;
-  /*ScopedObserver<file_manager::file_tasks::FileTasksNotifier,
-                 file_manager::file_tasks::FileTasksObserver>
-      file_tasks_observer_{this};*/
+
+  const bool enable_zero_state_mixed_types_;
 };
 
 }  // namespace app_list
