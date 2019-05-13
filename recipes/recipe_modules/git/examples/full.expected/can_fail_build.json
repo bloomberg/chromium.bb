@@ -162,7 +162,7 @@
   },
   {
     "failure": {
-      "humanReason": "Infra Failure: Step('git status can_fail_build') (retcode: 1)"
+      "humanReason": "Infra Failure: Step('git status can_fail_build') returned 1"
     },
     "name": "$result"
   }

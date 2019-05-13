@@ -176,7 +176,7 @@
   {
     "failure": {
       "failure": {},
-      "humanReason": "Step('Patch failure') (retcode: 1)"
+      "humanReason": "Step('Patch failure') failed with return_code 1"
     },
     "name": "$result"
   }

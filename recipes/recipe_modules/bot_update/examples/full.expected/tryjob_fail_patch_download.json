@@ -175,7 +175,7 @@
   },
   {
     "failure": {
-      "humanReason": "Infra Failure: Step('Patch failure') (retcode: 1)"
+      "humanReason": "Infra Failure: Step('Patch failure') returned 1"
     },
     "name": "$result"
   }
