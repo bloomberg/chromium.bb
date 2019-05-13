@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/resource_coordinator/exponential_moving_average.h"
+#include "chrome/browser/performance_manager/persistence/site_data/exponential_moving_average.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace resource_coordinator {
+namespace performance_manager {
 
 TEST(ExponentialMovingAverageTest, AppendDatum) {
   ExponentialMovingAverage avg(0.5);
@@ -94,4 +94,4 @@ TEST(ExponentialMovingAverageTest, Clear) {
   EXPECT_EQ(old_value, avg.value());
 }
 
-}  // namespace resource_coordinator
+}  // namespace performance_manager

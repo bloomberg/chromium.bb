@@ -44,7 +44,7 @@ class LocalSiteCharacteristicsDataStore
       const url::Origin& origin) override;
   std::unique_ptr<SiteCharacteristicsDataWriter> GetWriterForOrigin(
       const url::Origin& origin,
-      TabVisibility tab_visibility) override;
+      performance_manager::TabVisibility tab_visibility) override;
   bool IsRecordingForTesting() override;
 
   const LocalSiteCharacteristicsMap& origin_data_map_for_testing() const {

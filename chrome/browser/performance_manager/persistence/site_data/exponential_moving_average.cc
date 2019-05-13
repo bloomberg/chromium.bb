@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/resource_coordinator/exponential_moving_average.h"
+#include "chrome/browser/performance_manager/persistence/site_data/exponential_moving_average.h"
 
 #include <cmath>
 
 #include "base/logging.h"
 
-namespace resource_coordinator {
+namespace performance_manager {
 
 ExponentialMovingAverage::ExponentialMovingAverage(float alpha)
     : alpha_(alpha) {
@@ -50,4 +50,4 @@ void ExponentialMovingAverage::Clear() {
   num_datums_ = 0;
 }
 
-}  // namespace resource_coordinator
+}  // namespace performance_manager

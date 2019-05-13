@@ -12,11 +12,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
+#include "chrome/browser/performance_manager/persistence/site_data/exponential_moving_average.h"
+#include "chrome/browser/performance_manager/persistence/site_data/feature_usage.h"
 #include "chrome/browser/performance_manager/persistence/site_data/site_data.pb.h"
-#include "chrome/browser/resource_coordinator/exponential_moving_average.h"
+#include "chrome/browser/performance_manager/persistence/site_data/tab_visibility.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_database.h"
-#include "chrome/browser/resource_coordinator/local_site_characteristics_feature_usage.h"
-#include "chrome/browser/resource_coordinator/site_characteristics_tab_visibility.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "url/origin.h"
 
@@ -74,7 +74,7 @@ class LocalSiteCharacteristicsDataImpl
   // Must be called when an unload event is received for this site, this can be
   // invoked several times if instances of this class are shared between
   // multiple tabs.
-  void NotifySiteUnloaded(TabVisibility tab_visibility);
+  void NotifySiteUnloaded(performance_manager::TabVisibility tab_visibility);
 
   // Must be called when a loaded tab gets backgrounded.
   void NotifyLoadedSiteBackgrounded();
@@ -83,10 +83,10 @@ class LocalSiteCharacteristicsDataImpl
   void NotifyLoadedSiteForegrounded();
 
   // Returns the usage of a given feature for this origin.
-  SiteFeatureUsage UpdatesFaviconInBackground() const;
-  SiteFeatureUsage UpdatesTitleInBackground() const;
-  SiteFeatureUsage UsesAudioInBackground() const;
-  SiteFeatureUsage UsesNotificationsInBackground() const;
+  performance_manager::SiteFeatureUsage UpdatesFaviconInBackground() const;
+  performance_manager::SiteFeatureUsage UpdatesTitleInBackground() const;
+  performance_manager::SiteFeatureUsage UsesAudioInBackground() const;
+  performance_manager::SiteFeatureUsage UsesNotificationsInBackground() const;
 
   // Returns true if the most authoritative data has been loaded from the
   // backing store.
@@ -98,13 +98,15 @@ class LocalSiteCharacteristicsDataImpl
 
   // Accessors for load-time performance measurement estimates.
   // If |num_datum| is zero, there's no estimate available.
-  const ExponentialMovingAverage& load_duration() const {
+  const performance_manager::ExponentialMovingAverage& load_duration() const {
     return load_duration_;
   }
-  const ExponentialMovingAverage& cpu_usage_estimate() const {
+  const performance_manager::ExponentialMovingAverage& cpu_usage_estimate()
+      const {
     return cpu_usage_estimate_;
   }
-  const ExponentialMovingAverage& private_footprint_kb_estimate() const {
+  const performance_manager::ExponentialMovingAverage&
+  private_footprint_kb_estimate() const {
     return private_footprint_kb_estimate_;
   }
 
@@ -210,8 +212,9 @@ class LocalSiteCharacteristicsDataImpl
   void ClearObservationsAndInvalidateReadOperation();
 
   // Returns the usage of |site_feature| for this site.
-  SiteFeatureUsage GetFeatureUsage(const SiteDataFeatureProto& feature_proto,
-                                   const base::TimeDelta min_obs_time) const;
+  performance_manager::SiteFeatureUsage GetFeatureUsage(
+      const SiteDataFeatureProto& feature_proto,
+      const base::TimeDelta min_obs_time) const;
 
   // Helper function to update a given |SiteDataFeatureProto| when a
   // feature gets used.
@@ -242,9 +245,11 @@ class LocalSiteCharacteristicsDataImpl
   SiteDataProto site_characteristics_;
 
   // The in-memory storage for the moving performance averages.
-  ExponentialMovingAverage load_duration_;       // microseconds.
-  ExponentialMovingAverage cpu_usage_estimate_;  // microseconds.
-  ExponentialMovingAverage private_footprint_kb_estimate_;
+  performance_manager::ExponentialMovingAverage
+      load_duration_;  // microseconds.
+  performance_manager::ExponentialMovingAverage
+      cpu_usage_estimate_;  // microseconds.
+  performance_manager::ExponentialMovingAverage private_footprint_kb_estimate_;
 
   // This site's origin.
   const url::Origin origin_;

@@ -61,10 +61,10 @@ void LocalSiteCharacteristicsDataImpl::NotifySiteLoaded() {
 }
 
 void LocalSiteCharacteristicsDataImpl::NotifySiteUnloaded(
-    TabVisibility tab_visibility) {
+    performance_manager::TabVisibility tab_visibility) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (tab_visibility == TabVisibility::kBackground)
+  if (tab_visibility == performance_manager::TabVisibility::kBackground)
     DecrementNumLoadedBackgroundTabs();
 
   loaded_tabs_count_--;
@@ -94,28 +94,28 @@ void LocalSiteCharacteristicsDataImpl::NotifyLoadedSiteForegrounded() {
   DecrementNumLoadedBackgroundTabs();
 }
 
-SiteFeatureUsage LocalSiteCharacteristicsDataImpl::UpdatesFaviconInBackground()
-    const {
+performance_manager::SiteFeatureUsage
+LocalSiteCharacteristicsDataImpl::UpdatesFaviconInBackground() const {
   return GetFeatureUsage(
       site_characteristics_.updates_favicon_in_background(),
       GetSiteCharacteristicsDatabaseParams().favicon_update_observation_window);
 }
 
-SiteFeatureUsage LocalSiteCharacteristicsDataImpl::UpdatesTitleInBackground()
-    const {
+performance_manager::SiteFeatureUsage
+LocalSiteCharacteristicsDataImpl::UpdatesTitleInBackground() const {
   return GetFeatureUsage(
       site_characteristics_.updates_title_in_background(),
       GetSiteCharacteristicsDatabaseParams().title_update_observation_window);
 }
 
-SiteFeatureUsage LocalSiteCharacteristicsDataImpl::UsesAudioInBackground()
-    const {
+performance_manager::SiteFeatureUsage
+LocalSiteCharacteristicsDataImpl::UsesAudioInBackground() const {
   return GetFeatureUsage(
       site_characteristics_.uses_audio_in_background(),
       GetSiteCharacteristicsDatabaseParams().audio_usage_observation_window);
 }
 
-SiteFeatureUsage
+performance_manager::SiteFeatureUsage
 LocalSiteCharacteristicsDataImpl::UsesNotificationsInBackground() const {
   return GetFeatureUsage(
       site_characteristics_.uses_notifications_in_background(),
@@ -286,7 +286,8 @@ void LocalSiteCharacteristicsDataImpl::
   TransitionToFullyInitialized();
 }
 
-SiteFeatureUsage LocalSiteCharacteristicsDataImpl::GetFeatureUsage(
+performance_manager::SiteFeatureUsage
+LocalSiteCharacteristicsDataImpl::GetFeatureUsage(
     const SiteDataFeatureProto& feature_proto,
     const base::TimeDelta min_obs_time) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -299,12 +300,12 @@ SiteFeatureUsage LocalSiteCharacteristicsDataImpl::GetFeatureUsage(
   // TODO(sebmarchand): Check the timestamp and reset features that haven't been
   // observed in a long time, https://crbug.com/826446.
   if (feature_proto.has_use_timestamp())
-    return SiteFeatureUsage::kSiteFeatureInUse;
+    return performance_manager::SiteFeatureUsage::kSiteFeatureInUse;
 
   if (FeatureObservationDuration(feature_proto) >= min_obs_time)
-    return SiteFeatureUsage::kSiteFeatureNotInUse;
+    return performance_manager::SiteFeatureUsage::kSiteFeatureNotInUse;
 
-  return SiteFeatureUsage::kSiteFeatureUsageUnknown;
+  return performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown;
 }
 
 void LocalSiteCharacteristicsDataImpl::NotifyFeatureUsage(

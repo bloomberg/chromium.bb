@@ -37,7 +37,7 @@ LocalSiteCharacteristicsNonRecordingDataStore::GetReaderForOrigin(
 std::unique_ptr<SiteCharacteristicsDataWriter>
 LocalSiteCharacteristicsNonRecordingDataStore::GetWriterForOrigin(
     const url::Origin& origin,
-    TabVisibility tab_visibility) {
+    performance_manager::TabVisibility tab_visibility) {
   // Return a fake data writer.
   SiteCharacteristicsDataWriter* writer =
       new LocalSiteCharacteristicsNoopDataWriter();

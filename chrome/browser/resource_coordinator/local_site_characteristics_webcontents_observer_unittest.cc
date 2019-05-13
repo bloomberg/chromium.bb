@@ -34,7 +34,8 @@ class LenientMockDataWriter : public SiteCharacteristicsDataWriter {
 
   MOCK_METHOD0(NotifySiteLoaded, void());
   MOCK_METHOD0(NotifySiteUnloaded, void());
-  MOCK_METHOD1(NotifySiteVisibilityChanged, void(TabVisibility));
+  MOCK_METHOD1(NotifySiteVisibilityChanged,
+               void(performance_manager::TabVisibility));
   MOCK_METHOD0(NotifyUpdatesFaviconInBackground, void());
   MOCK_METHOD0(NotifyUpdatesTitleInBackground, void());
   MOCK_METHOD0(NotifyUsesAudioInBackground, void());
@@ -64,7 +65,7 @@ class MockDataStore : public SiteCharacteristicsDataStore {
   }
   std::unique_ptr<SiteCharacteristicsDataWriter> GetWriterForOrigin(
       const url::Origin& origin,
-      TabVisibility tab_visibility) override {
+      performance_manager::TabVisibility tab_visibility) override {
     return std::make_unique<MockDataWriter>(origin);
   }
   bool IsRecordingForTesting() override { return true; }
@@ -184,7 +185,8 @@ TEST_F(LocalSiteCharacteristicsWebContentsObserverTest,
   TabLoadTracker::Get()->TransitionStateForTesting(web_contents(),
                                                    LoadingState::LOADED);
   EXPECT_CALL(*mock_writer,
-              NotifySiteVisibilityChanged(TabVisibility::kForeground));
+              NotifySiteVisibilityChanged(
+                  performance_manager::TabVisibility::kForeground));
   EXPECT_CALL(*mock_writer, NotifySiteLoaded());
   web_contents()->WasShown();
   observer()->OnLoadingStateChange(web_contents(),
@@ -204,7 +206,8 @@ TEST_F(LocalSiteCharacteristicsWebContentsObserverTest,
   ::testing::Mock::VerifyAndClear(mock_writer);
 
   EXPECT_CALL(*mock_writer,
-              NotifySiteVisibilityChanged(TabVisibility::kBackground));
+              NotifySiteVisibilityChanged(
+                  performance_manager::TabVisibility::kBackground));
   web_contents()->WasHidden();
   ::testing::Mock::VerifyAndClear(mock_writer);
 
@@ -230,9 +233,11 @@ TEST_F(LocalSiteCharacteristicsWebContentsObserverTest,
 
   // Brievly switch the tab to foreground to reset the last backgrounded time.
   EXPECT_CALL(*mock_writer,
-              NotifySiteVisibilityChanged(TabVisibility::kForeground));
+              NotifySiteVisibilityChanged(
+                  performance_manager::TabVisibility::kForeground));
   EXPECT_CALL(*mock_writer,
-              NotifySiteVisibilityChanged(TabVisibility::kBackground));
+              NotifySiteVisibilityChanged(
+                  performance_manager::TabVisibility::kBackground));
   web_contents()->WasShown();
   web_contents()->WasHidden();
   ::testing::Mock::VerifyAndClear(mock_writer);
@@ -263,7 +268,8 @@ TEST_F(LocalSiteCharacteristicsWebContentsObserverTest,
                                                    LoadingState::LOADING);
 
   EXPECT_CALL(*mock_writer,
-              NotifySiteVisibilityChanged(TabVisibility::kBackground));
+              NotifySiteVisibilityChanged(
+                  performance_manager::TabVisibility::kBackground));
   web_contents()->WasHidden();
   ::testing::Mock::VerifyAndClear(mock_writer);
 
@@ -285,7 +291,8 @@ TEST_F(LocalSiteCharacteristicsWebContentsObserverTest,
                                                    LoadingState::LOADING);
 
   EXPECT_CALL(*mock_writer,
-              NotifySiteVisibilityChanged(TabVisibility::kBackground));
+              NotifySiteVisibilityChanged(
+                  performance_manager::TabVisibility::kBackground));
   web_contents()->WasHidden();
   ::testing::Mock::VerifyAndClear(mock_writer);
 
@@ -302,14 +309,16 @@ TEST_F(LocalSiteCharacteristicsWebContentsObserverTest, VisibilityEvent) {
   // Test that the visibility events get forwarded to the writer.
 
   EXPECT_CALL(*mock_writer,
-              NotifySiteVisibilityChanged(TabVisibility::kBackground))
+              NotifySiteVisibilityChanged(
+                  performance_manager::TabVisibility::kBackground))
       .Times(2);
   observer()->OnVisibilityChanged(content::Visibility::OCCLUDED);
   observer()->OnVisibilityChanged(content::Visibility::HIDDEN);
   ::testing::Mock::VerifyAndClear(mock_writer);
 
   EXPECT_CALL(*mock_writer,
-              NotifySiteVisibilityChanged(TabVisibility::kForeground));
+              NotifySiteVisibilityChanged(
+                  performance_manager::TabVisibility::kForeground));
   observer()->OnVisibilityChanged(content::Visibility::VISIBLE);
   ::testing::Mock::VerifyAndClear(mock_writer);
 

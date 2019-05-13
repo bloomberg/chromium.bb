@@ -26,10 +26,11 @@ namespace {
 
 using LoadingState = TabLoadTracker::LoadingState;
 
-TabVisibility ContentVisibilityToRCVisibility(content::Visibility visibility) {
+performance_manager::TabVisibility ContentVisibilityToRCVisibility(
+    content::Visibility visibility) {
   if (visibility == content::Visibility::VISIBLE)
-    return TabVisibility::kForeground;
-  return TabVisibility::kBackground;
+    return performance_manager::TabVisibility::kForeground;
+  return performance_manager::TabVisibility::kBackground;
 }
 
 }  // namespace
@@ -248,7 +249,7 @@ bool LocalSiteCharacteristicsWebContentsObserver::ShouldIgnoreFeatureUsageEvent(
 
   // Ignore events if the tab is not in background.
   if (ContentVisibilityToRCVisibility(web_contents()->GetVisibility()) !=
-      TabVisibility::kBackground) {
+      performance_manager::TabVisibility::kBackground) {
     return true;
   }
 
@@ -289,8 +290,8 @@ void LocalSiteCharacteristicsWebContentsObserver::OnSiteLoaded() {
 }
 
 void LocalSiteCharacteristicsWebContentsObserver::UpdateBackgroundedTime(
-    TabVisibility visibility) {
-  if (visibility == TabVisibility::kBackground) {
+    performance_manager::TabVisibility visibility) {
+  if (visibility == performance_manager::TabVisibility::kBackground) {
     backgrounded_time_ = NowTicks();
   } else {
     backgrounded_time_ = base::TimeTicks();

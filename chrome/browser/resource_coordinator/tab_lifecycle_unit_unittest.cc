@@ -238,7 +238,7 @@ void TabLifecycleUnitTest::TestCannotDiscardBasedOnHeuristicUsage(
   }
 
   testing::GetLocalSiteCharacteristicsDataImplForWC(web_contents_)
-      ->NotifySiteUnloaded(TabVisibility::kBackground);
+      ->NotifySiteUnloaded(performance_manager::TabVisibility::kBackground);
 }
 
 TEST_F(TabLifecycleUnitTest, AsTabLifecycleUnitExternal) {

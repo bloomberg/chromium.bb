@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_RESOURCE_COORDINATOR_LOCAL_SITE_CHARACTERISTICS_FEATURE_USAGE_H_
-#define CHROME_BROWSER_RESOURCE_COORDINATOR_LOCAL_SITE_CHARACTERISTICS_FEATURE_USAGE_H_
+#ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_PERSISTENCE_SITE_DATA_FEATURE_USAGE_H_
+#define CHROME_BROWSER_PERFORMANCE_MANAGER_PERSISTENCE_SITE_DATA_FEATURE_USAGE_H_
 
-namespace resource_coordinator {
+namespace performance_manager {
 
 // A tri-state return value for site feature usage. If a definitive decision
 // can't be made then an "unknown" result can be returned.
@@ -15,6 +15,6 @@ enum class SiteFeatureUsage {
   kSiteFeatureUsageUnknown,
 };
 
-}  // namespace resource_coordinator
+}  // namespace performance_manager
 
-#endif  // CHROME_BROWSER_RESOURCE_COORDINATOR_LOCAL_SITE_CHARACTERISTICS_FEATURE_USAGE_H_
+#endif  // CHROME_BROWSER_PERFORMANCE_MANAGER_PERSISTENCE_SITE_DATA_FEATURE_USAGE_H_

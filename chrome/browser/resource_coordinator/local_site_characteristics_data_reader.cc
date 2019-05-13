@@ -17,22 +17,22 @@ LocalSiteCharacteristicsDataReader::LocalSiteCharacteristicsDataReader(
 
 LocalSiteCharacteristicsDataReader::~LocalSiteCharacteristicsDataReader() {}
 
-SiteFeatureUsage
+performance_manager::SiteFeatureUsage
 LocalSiteCharacteristicsDataReader::UpdatesFaviconInBackground() const {
   return impl_->UpdatesFaviconInBackground();
 }
 
-SiteFeatureUsage LocalSiteCharacteristicsDataReader::UpdatesTitleInBackground()
-    const {
+performance_manager::SiteFeatureUsage
+LocalSiteCharacteristicsDataReader::UpdatesTitleInBackground() const {
   return impl_->UpdatesTitleInBackground();
 }
 
-SiteFeatureUsage LocalSiteCharacteristicsDataReader::UsesAudioInBackground()
-    const {
+performance_manager::SiteFeatureUsage
+LocalSiteCharacteristicsDataReader::UsesAudioInBackground() const {
   return impl_->UsesAudioInBackground();
 }
 
-SiteFeatureUsage
+performance_manager::SiteFeatureUsage
 LocalSiteCharacteristicsDataReader::UsesNotificationsInBackground() const {
   return impl_->UsesNotificationsInBackground();
 }

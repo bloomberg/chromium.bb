@@ -57,22 +57,22 @@ TEST_F(LocalSiteCharacteristicsNonRecordingDataStoreTest, EndToEnd) {
   auto reader = non_recording_data_store_->GetReaderForOrigin(kTestOrigin);
   EXPECT_TRUE(reader);
   auto fake_writer = non_recording_data_store_->GetWriterForOrigin(
-      kTestOrigin, TabVisibility::kBackground);
+      kTestOrigin, performance_manager::TabVisibility::kBackground);
   EXPECT_TRUE(fake_writer);
   auto real_writer = recording_data_store_->GetWriterForOrigin(
-      kTestOrigin, TabVisibility::kBackground);
+      kTestOrigin, performance_manager::TabVisibility::kBackground);
   EXPECT_TRUE(real_writer);
 
-  EXPECT_EQ(SiteFeatureUsage::kSiteFeatureUsageUnknown,
+  EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown,
             reader->UpdatesTitleInBackground());
   fake_writer->NotifySiteLoaded();
   fake_writer->NotifyUpdatesTitleInBackground();
-  EXPECT_EQ(SiteFeatureUsage::kSiteFeatureUsageUnknown,
+  EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown,
             reader->UpdatesTitleInBackground());
 
   real_writer->NotifySiteLoaded();
   real_writer->NotifyUpdatesTitleInBackground();
-  EXPECT_EQ(SiteFeatureUsage::kSiteFeatureInUse,
+  EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureInUse,
             reader->UpdatesTitleInBackground());
 
   // These unload events shouldn't be registered, make sure that they aren't by
@@ -118,7 +118,7 @@ TEST_F(LocalSiteCharacteristicsNonRecordingDataStoreTest, InspectorWorks) {
     // Add an entry through the writing data store, see that it's reflected in
     // the inspector interface.
     auto writer = recording_data_store_->GetWriterForOrigin(
-        kTestOrigin, TabVisibility::kBackground);
+        kTestOrigin, performance_manager::TabVisibility::kBackground);
 
     EXPECT_EQ(1U, inspector->GetAllInMemoryOrigins().size());
     EXPECT_TRUE(inspector->GetDataForOrigin(kTestOrigin, &is_dirty, &data));

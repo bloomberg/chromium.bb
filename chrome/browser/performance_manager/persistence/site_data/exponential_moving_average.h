@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_RESOURCE_COORDINATOR_EXPONENTIAL_MOVING_AVERAGE_H_
-#define CHROME_BROWSER_RESOURCE_COORDINATOR_EXPONENTIAL_MOVING_AVERAGE_H_
+#ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_PERSISTENCE_SITE_DATA_EXPONENTIAL_MOVING_AVERAGE_H_
+#define CHROME_BROWSER_PERFORMANCE_MANAGER_PERSISTENCE_SITE_DATA_EXPONENTIAL_MOVING_AVERAGE_H_
 
 #include <cstddef>
 
-namespace resource_coordinator {
+namespace performance_manager {
 
 // This class is an implementation of an exponential moving average,
 // as described in
@@ -46,6 +46,6 @@ class ExponentialMovingAverage {
   size_t num_datums_ = 0;
 };
 
-}  // namespace resource_coordinator
+}  // namespace performance_manager
 
-#endif  // CHROME_BROWSER_RESOURCE_COORDINATOR_EXPONENTIAL_MOVING_AVERAGE_H_
+#endif  // CHROME_BROWSER_PERFORMANCE_MANAGER_PERSISTENCE_SITE_DATA_EXPONENTIAL_MOVING_AVERAGE_H_

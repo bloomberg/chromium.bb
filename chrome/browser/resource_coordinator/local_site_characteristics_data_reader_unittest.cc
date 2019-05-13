@@ -88,7 +88,8 @@ class LocalSiteCharacteristicsDataReaderTest : public ::testing::Test {
   }
 
   ~LocalSiteCharacteristicsDataReaderTest() override {
-    test_impl_->NotifySiteUnloaded(TabVisibility::kBackground);
+    test_impl_->NotifySiteUnloaded(
+        performance_manager::TabVisibility::kBackground);
   }
 
   base::SimpleTestTickClock test_clock_;
@@ -115,32 +116,32 @@ class LocalSiteCharacteristicsDataReaderTest : public ::testing::Test {
 
 TEST_F(LocalSiteCharacteristicsDataReaderTest, TestAccessors) {
   // Initially we have no information about any of the features.
-  EXPECT_EQ(SiteFeatureUsage::kSiteFeatureUsageUnknown,
+  EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown,
             reader_->UpdatesFaviconInBackground());
-  EXPECT_EQ(SiteFeatureUsage::kSiteFeatureUsageUnknown,
+  EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown,
             reader_->UpdatesTitleInBackground());
-  EXPECT_EQ(SiteFeatureUsage::kSiteFeatureUsageUnknown,
+  EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown,
             reader_->UsesAudioInBackground());
-  EXPECT_EQ(SiteFeatureUsage::kSiteFeatureUsageUnknown,
+  EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown,
             reader_->UsesNotificationsInBackground());
 
   // Simulates a title update event, make sure it gets reported directly.
   test_impl_->NotifyUpdatesTitleInBackground();
 
-  EXPECT_EQ(SiteFeatureUsage::kSiteFeatureInUse,
+  EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureInUse,
             reader_->UpdatesTitleInBackground());
 
   // Advance the clock by a large amount of time, enough for the unused features
   // observation windows to expire.
   test_clock_.Advance(base::TimeDelta::FromDays(31));
 
-  EXPECT_EQ(SiteFeatureUsage::kSiteFeatureNotInUse,
+  EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureNotInUse,
             reader_->UpdatesFaviconInBackground());
-  EXPECT_EQ(SiteFeatureUsage::kSiteFeatureInUse,
+  EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureInUse,
             reader_->UpdatesTitleInBackground());
-  EXPECT_EQ(SiteFeatureUsage::kSiteFeatureNotInUse,
+  EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureNotInUse,
             reader_->UsesAudioInBackground());
-  EXPECT_EQ(SiteFeatureUsage::kSiteFeatureNotInUse,
+  EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureNotInUse,
             reader_->UsesNotificationsInBackground());
 }
 

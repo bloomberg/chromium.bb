@@ -67,7 +67,7 @@ LocalSiteCharacteristicsDataStore::GetReaderForOrigin(
 std::unique_ptr<SiteCharacteristicsDataWriter>
 LocalSiteCharacteristicsDataStore::GetWriterForOrigin(
     const url::Origin& origin,
-    TabVisibility tab_visibility) {
+    performance_manager::TabVisibility tab_visibility) {
   internal::LocalSiteCharacteristicsDataImpl* impl =
       GetOrCreateFeatureImpl(origin);
   DCHECK(impl);

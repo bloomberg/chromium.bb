@@ -88,7 +88,7 @@ class LocalSiteCharacteristicsWebContentsObserver
   void OnSiteLoaded();
 
   // Updates |backgrounded_time_| based on |visibility|.
-  void UpdateBackgroundedTime(TabVisibility visibility);
+  void UpdateBackgroundedTime(performance_manager::TabVisibility visibility);
 
   // The writer that processes the event received by this class.
   std::unique_ptr<SiteCharacteristicsDataWriter> writer_;

@@ -180,7 +180,7 @@ StateChangeReason DiscardReasonToStateChangeReason(
 }
 
 struct FeatureUsageEntry {
-  SiteFeatureUsage usage;
+  performance_manager::SiteFeatureUsage usage;
   DecisionFailureReason failure_reason;
 };
 
@@ -200,9 +200,10 @@ void CheckFeatureUsage(const SiteCharacteristicsDataReader* reader,
 
   const auto* last = features + base::size(features);
   for (const auto* f = features; f != last; f++) {
-    if (f->usage == SiteFeatureUsage::kSiteFeatureInUse) {
+    if (f->usage == performance_manager::SiteFeatureUsage::kSiteFeatureInUse) {
       details->AddReason(f->failure_reason);
-    } else if (f->usage == SiteFeatureUsage::kSiteFeatureUsageUnknown) {
+    } else if (f->usage == performance_manager::SiteFeatureUsage::
+                               kSiteFeatureUsageUnknown) {
       insufficient_observation = true;
     }
   }
