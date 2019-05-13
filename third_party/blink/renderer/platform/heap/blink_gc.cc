@@ -18,8 +18,6 @@ const char* BlinkGC::ToString(BlinkGC::GCReason reason) {
       return "ForcedGCForTesting";
     case BlinkGC::GCReason::kMemoryPressureGC:
       return "MemoryPressureGC";
-    case BlinkGC::GCReason::kPageNavigationGC:
-      return "PageNavigationGC";
     case BlinkGC::GCReason::kThreadTerminationGC:
       return "ThreadTerminationGC";
     case BlinkGC::GCReason::kIncrementalV8FollowupGC:

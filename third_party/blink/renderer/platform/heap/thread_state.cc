@@ -415,16 +415,6 @@ bool ThreadState::ShouldScheduleV8FollowupGC() {
                           32 * 1024 * 1024, 1.5);
 }
 
-bool ThreadState::ShouldSchedulePageNavigationGC(
-    float estimated_removal_ratio) {
-  // If estimatedRemovalRatio is low we should let IdleGC handle this.
-  if (estimated_removal_ratio < 0.01)
-    return false;
-  return JudgeGCThreshold(kDefaultAllocatedObjectSizeThreshold,
-                          32 * 1024 * 1024,
-                          1.5 * (1 - estimated_removal_ratio));
-}
-
 bool ThreadState::ShouldForceConservativeGC() {
   // TODO(haraken): 400% is too large. Lower the heap growing factor.
   return JudgeGCThreshold(kDefaultAllocatedObjectSizeThreshold,
@@ -485,44 +475,6 @@ void ThreadState::WillStartV8GC(BlinkGC::V8GCType gc_type) {
   // This will let the GC collect more V8 objects.
   if (gc_type == BlinkGC::kV8MajorGC)
     CompleteSweep();
-}
-
-void ThreadState::SchedulePageNavigationGCIfNeeded(
-    float estimated_removal_ratio) {
-  VLOG(2) << "[state:" << this << "] SchedulePageNavigationGCIfNeeded: "
-          << "estimatedRemovalRatio=" << std::setprecision(2)
-          << estimated_removal_ratio;
-  DCHECK(CheckThread());
-
-  if (IsGCForbidden())
-    return;
-
-  // Finish on-going lazy sweeping.
-  // TODO(haraken): It might not make sense to force completeSweep() for all
-  // page navigations.
-  CompleteSweep();
-  DCHECK(!IsSweepingInProgress());
-  DCHECK(!SweepForbidden());
-
-  if (ShouldForceMemoryPressureGC()) {
-    VLOG(2) << "[state:" << this << "] "
-            << "SchedulePageNavigationGCIfNeeded: Scheduled memory pressure GC";
-    CollectGarbage(BlinkGC::kHeapPointersOnStack, BlinkGC::kAtomicMarking,
-                   BlinkGC::kLazySweeping,
-                   BlinkGC::GCReason::kMemoryPressureGC);
-    return;
-  }
-  if (ShouldSchedulePageNavigationGC(estimated_removal_ratio)) {
-    VLOG(2) << "[state:" << this << "] "
-            << "SchedulePageNavigationGCIfNeeded: Scheduled page navigation GC";
-    SchedulePageNavigationGC();
-  }
-}
-
-void ThreadState::SchedulePageNavigationGC() {
-  DCHECK(CheckThread());
-  DCHECK(!IsSweepingInProgress());
-  SetGCState(kPageNavigationGCScheduled);
 }
 
 void ThreadState::ScheduleForcedGCForTesting() {
@@ -677,7 +629,6 @@ void UnexpectedGCState(ThreadState::GCState gc_state) {
     UNEXPECTED_GCSTATE(kIncrementalMarkingStepPaused);
     UNEXPECTED_GCSTATE(kIncrementalMarkingStepScheduled);
     UNEXPECTED_GCSTATE(kIncrementalMarkingFinalizeScheduled);
-    UNEXPECTED_GCSTATE(kPageNavigationGCScheduled);
     UNEXPECTED_GCSTATE(kIncrementalGCScheduled);
   }
 }
@@ -697,7 +648,6 @@ void ThreadState::SetGCState(GCState gc_state) {
       VERIFY_STATE_TRANSITION(
           gc_state_ == kNoGCScheduled || gc_state_ == kPreciseGCScheduled ||
           gc_state_ == kForcedGCForTestingScheduled ||
-          gc_state_ == kPageNavigationGCScheduled ||
           gc_state_ == kIncrementalMarkingStepPaused ||
           gc_state_ == kIncrementalMarkingStepScheduled ||
           gc_state_ == kIncrementalMarkingFinalizeScheduled ||
@@ -714,7 +664,6 @@ void ThreadState::SetGCState(GCState gc_state) {
       VERIFY_STATE_TRANSITION(gc_state_ == kIncrementalMarkingStepScheduled);
       break;
     case kForcedGCForTestingScheduled:
-    case kPageNavigationGCScheduled:
     case kPreciseGCScheduled:
       DCHECK(CheckThread());
       DCHECK(!IsSweepingInProgress());
@@ -725,7 +674,6 @@ void ThreadState::SetGCState(GCState gc_state) {
                                   kIncrementalMarkingFinalizeScheduled ||
                               gc_state_ == kPreciseGCScheduled ||
                               gc_state_ == kForcedGCForTestingScheduled ||
-                              gc_state_ == kPageNavigationGCScheduled ||
                               gc_state_ == kIncrementalGCScheduled);
       break;
     case kIncrementalGCScheduled:
@@ -785,11 +733,6 @@ void ThreadState::RunScheduledGC(BlinkGC::StackState stack_state) {
     case kPreciseGCScheduled:
       CollectGarbage(BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
                      BlinkGC::kLazySweeping, BlinkGC::GCReason::kPreciseGC);
-      break;
-    case kPageNavigationGCScheduled:
-      CollectGarbage(BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
-                     BlinkGC::kEagerSweeping,
-                     BlinkGC::GCReason::kPageNavigationGC);
       break;
     case kIncrementalMarkingStepScheduled:
       IncrementalMarkingStep(stack_state);
@@ -1121,7 +1064,6 @@ void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
     COUNT_BY_GC_REASON(ConservativeGC)
     COUNT_BY_GC_REASON(ForcedGCForTesting)
     COUNT_BY_GC_REASON(MemoryPressureGC)
-    COUNT_BY_GC_REASON(PageNavigationGC)
     COUNT_BY_GC_REASON(ThreadTerminationGC)
     COUNT_BY_GC_REASON(IncrementalV8FollowupGC)
     COUNT_BY_GC_REASON(UnifiedHeapGC)
@@ -1460,7 +1402,6 @@ void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,
     COUNT_BY_GC_REASON(ConservativeGC)
     COUNT_BY_GC_REASON(ForcedGCForTesting)
     COUNT_BY_GC_REASON(MemoryPressureGC)
-    COUNT_BY_GC_REASON(PageNavigationGC)
     COUNT_BY_GC_REASON(ThreadTerminationGC)
     COUNT_BY_GC_REASON(IncrementalV8FollowupGC)
     COUNT_BY_GC_REASON(UnifiedHeapGC)

@@ -151,7 +151,6 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
     kIncrementalMarkingFinalizeScheduled,
     kPreciseGCScheduled,
     kForcedGCForTestingScheduled,
-    kPageNavigationGCScheduled,
     kIncrementalGCScheduled,
   };
 
@@ -224,8 +223,6 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   void SchedulePreciseGC();
   void ScheduleIncrementalGC(BlinkGC::GCReason);
   void ScheduleV8FollowupGCIfNeeded(BlinkGC::V8GCType);
-  void SchedulePageNavigationGCIfNeeded(float estimated_removal_ratio);
-  void SchedulePageNavigationGC();
   void ScheduleForcedGCForTesting();
   void ScheduleGCIfNeeded();
   void PostIdleGCTask();
@@ -491,11 +488,6 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   // V8 minor or major GC is likely to drop a lot of references to objects
   // on Oilpan's heap. We give a chance to schedule a GC.
   bool ShouldScheduleV8FollowupGC();
-  // Page navigation is likely to drop a lot of references to objects
-  // on Oilpan's heap. We give a chance to schedule a GC.
-  // estimatedRemovalRatio is the estimated ratio of objects that will be no
-  // longer necessary due to the navigation.
-  bool ShouldSchedulePageNavigationGC(float estimated_removal_ratio);
 
   // Internal helpers to handle memory pressure conditions.
 

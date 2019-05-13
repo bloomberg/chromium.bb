@@ -94,7 +94,7 @@ class PLATFORM_EXPORT BlinkGC final {
     kConservativeGC = 2,
     kForcedGCForTesting = 3,
     kMemoryPressureGC = 4,
-    kPageNavigationGC = 5,
+    // kPageNavigationGC = 5,
     kThreadTerminationGC = 6,
     // kTesting = 7,
     // kIncrementalIdleGC = 8,

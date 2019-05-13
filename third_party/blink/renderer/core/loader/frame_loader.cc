@@ -936,18 +936,6 @@ bool FrameLoader::PrepareForCommit() {
   PluginScriptForbiddenScope forbid_plugin_destructor_scripting;
   DocumentLoader* pdl = provisional_document_loader_;
 
-  if (frame_->GetDocument()) {
-    unsigned node_count = 0;
-    for (Frame* frame = frame_; frame; frame = frame->Tree().TraverseNext()) {
-      if (auto* local_frame = DynamicTo<LocalFrame>(frame))
-        node_count += local_frame->GetDocument()->NodeCount();
-    }
-    unsigned total_node_count =
-        InstanceCounters::CounterValue(InstanceCounters::kNodeCounter);
-    float ratio = static_cast<float>(node_count) / total_node_count;
-    ThreadState::Current()->SchedulePageNavigationGCIfNeeded(ratio);
-  }
-
   // Don't allow this frame to navigate anymore. This line is needed for
   // navigation triggered from children's unload handlers. Blocking navigations
   // triggered from this frame's unload handler is already covered in
