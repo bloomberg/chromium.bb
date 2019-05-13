@@ -12447,7 +12447,7 @@
       {
         "args": [
           "--enable-features=VizDisplayCompositor,UseSkiaRenderer",
-          "--gtest_filter=AuraWindowVideoCaptureDeviceBrowserTest.*"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/skia_renderer.content_browsertests.filter"
         ],
         "merge": {
           "args": [],
@@ -19597,7 +19597,7 @@
       {
         "args": [
           "--enable-features=VizDisplayCompositor,UseSkiaRenderer",
-          "--gtest_filter=AuraWindowVideoCaptureDeviceBrowserTest.*"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/skia_renderer.content_browsertests.filter"
         ],
         "merge": {
           "args": [],
