@@ -30,6 +30,7 @@
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
+#include "ui/views/style/typography.h"
 
 namespace {
 
@@ -119,9 +120,15 @@ std::unique_ptr<views::EditableCombobox> CreateUsernameEditableCombobox(
     if (other_possible_username_pair.first != form.username_value)
       usernames.push_back(other_possible_username_pair.first);
   }
+  base::EraseIf(usernames, [](const base::string16& username) {
+    return username.empty();
+  });
+  bool display_arrow = !usernames.empty();
   auto combobox = std::make_unique<views::EditableCombobox>(
       std::make_unique<ui::SimpleComboboxModel>(usernames),
-      /*filter_on_edit=*/false, /*show_on_empty=*/true);
+      /*filter_on_edit=*/false, /*show_on_empty=*/true,
+      views::EditableCombobox::Type::kRegular, views::style::CONTEXT_BUTTON,
+      views::style::STYLE_PRIMARY, display_arrow);
   combobox->SetText(form.username_value);
   combobox->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_USERNAME_LABEL));
