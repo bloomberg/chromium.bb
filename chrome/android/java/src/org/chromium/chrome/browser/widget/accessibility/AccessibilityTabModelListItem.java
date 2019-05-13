@@ -60,7 +60,8 @@ public class AccessibilityTabModelListItem extends FrameLayout implements OnClic
     private final float mFlingCommitDistance;
     private final int mDefaultLevel;
     private final int mIncognitoLevel;
-    private final ColorStateList mDarkIconColor;
+    private final ColorStateList mDefaultIconColor;
+    private final ColorStateList mIncognitoIconColor;
     private final ColorStateList mDefaultCloseIconColor;
     private final ColorStateList mIncognitoCloseIconColor;
 
@@ -216,7 +217,9 @@ public class AccessibilityTabModelListItem extends FrameLayout implements OnClic
 
         mDefaultHeight =
                 context.getResources().getDimensionPixelOffset(R.dimen.accessibility_tab_height);
-        mDarkIconColor = ColorUtils.getIconTint(context, false);
+        mDefaultIconColor = ColorUtils.getIconTint(context, false);
+        mIncognitoIconColor =
+                AppCompatResources.getColorStateList(context, R.color.default_icon_color_dark);
         mDefaultCloseIconColor =
                 AppCompatResources.getColorStateList(context, R.color.default_icon_color_secondary);
         mIncognitoCloseIconColor =
@@ -342,7 +345,8 @@ public class AccessibilityTabModelListItem extends FrameLayout implements OnClic
                 mFaviconView.setImageBitmap(bitmap);
             } else {
                 mFaviconView.setImageResource(R.drawable.ic_globe_24dp);
-                ApiCompatibilityUtils.setImageTintList(mFaviconView, mDarkIconColor);
+                ApiCompatibilityUtils.setImageTintList(
+                        mFaviconView, mTab.isIncognito() ? mIncognitoIconColor : mDefaultIconColor);
             }
         }
     }
