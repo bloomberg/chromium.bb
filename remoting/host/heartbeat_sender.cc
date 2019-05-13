@@ -30,8 +30,8 @@ namespace remoting {
 
 namespace {
 
-constexpr base::TimeDelta kDefaultHeartbeatInterval =
-    base::TimeDelta::FromMinutes(5);
+constexpr base::TimeDelta kMinimumHeartbeatInterval =
+    base::TimeDelta::FromMinutes(3);
 constexpr base::TimeDelta kHeartbeatResponseTimeout =
     base::TimeDelta::FromSeconds(30);
 constexpr base::TimeDelta kWaitForAllStrategiesConnectedTimeout =
@@ -273,10 +273,11 @@ void HeartbeatSender::OnResponse(const grpc::Status& status,
   switch (status.error_code()) {
     case grpc::StatusCode::OK:
       delay = base::TimeDelta::FromSeconds(response.set_interval_seconds());
-      if (delay.is_zero()) {
-        LOG(WARNING)
-            << "set_interval_seconds is not set. Using default interval.";
-        delay = kDefaultHeartbeatInterval;
+      if (delay < kMinimumHeartbeatInterval) {
+        LOG(WARNING) << "Received suspicious set_interval_seconds: " << delay
+                     << ". Using minimum interval: "
+                     << kMinimumHeartbeatInterval;
+        delay = kMinimumHeartbeatInterval;
       }
       break;
     case grpc::StatusCode::NOT_FOUND:
