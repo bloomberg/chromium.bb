@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/base/get_session_name.h"
+#include "components/sync_device_info/local_device_info_util.h"
 
 #include <utility>
 

@@ -18,7 +18,6 @@
 #include "base/pickle.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
-#include "components/sync/base/get_session_name.h"
 #include "components/sync/base/time.h"
 #include "components/sync/model/entity_change.h"
 #include "components/sync/model/metadata_batch.h"

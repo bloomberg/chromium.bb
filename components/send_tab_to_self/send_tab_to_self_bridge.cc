@@ -18,7 +18,6 @@
 #include "components/send_tab_to_self/features.h"
 #include "components/send_tab_to_self/proto/send_tab_to_self.pb.h"
 #include "components/send_tab_to_self/target_device_info.h"
-#include "components/sync/base/get_session_name.h"
 #include "components/sync/model/entity_change.h"
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/metadata_change_list.h"
@@ -26,6 +25,7 @@
 #include "components/sync/model/mutable_data_batch.h"
 #include "components/sync/protocol/model_type_state.pb.h"
 #include "components/sync_device_info/device_info_tracker.h"
+#include "components/sync_device_info/local_device_info_util.h"
 
 namespace send_tab_to_self {
 

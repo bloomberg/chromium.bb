@@ -15,7 +15,6 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/strings/string_util.h"
-#include "components/sync/base/get_session_name.h"
 #include "components/sync/base/time.h"
 #include "components/sync/model/data_type_activation_request.h"
 #include "components/sync/model/entity_change.h"
@@ -24,6 +23,7 @@
 #include "components/sync/protocol/model_type_state.pb.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync_device_info/device_info_util.h"
+#include "components/sync_device_info/local_device_info_util.h"
 
 namespace syncer {
 

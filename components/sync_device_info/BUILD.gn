@@ -26,6 +26,11 @@ jumbo_static_library("sync_device_info") {
     "local_device_info_provider_impl.h",
     "local_device_info_util.cc",
     "local_device_info_util.h",
+    "local_device_info_util_android.cc",
+    "local_device_info_util_ios.mm",
+    "local_device_info_util_linux.cc",
+    "local_device_info_util_mac.mm",
+    "local_device_info_util_win.cc",
   ]
 
   configs += [ "//build/config:precompiled_headers" ]
@@ -43,6 +48,18 @@ jumbo_static_library("sync_device_info") {
   ]
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
+
+  if (is_mac) {
+    libs = [
+      "CoreFoundation.framework",
+      "SystemConfiguration.framework",  # Required by local_device_info_util_mac.mm.
+    ]
+  }
+
+  if (is_chromeos) {
+    # Required by device_info_util_linux.cc on Chrome OS.
+    deps += [ "//chromeos/constants" ]
+  }
 }
 
 source_set("unit_tests") {
@@ -52,6 +69,7 @@ source_set("unit_tests") {
     "device_info_sync_bridge_unittest.cc",
     "device_info_util_unittest.cc",
     "local_device_info_provider_impl_unittest.cc",
+    "local_device_info_util_unittest.cc",
   ]
 
   configs += [ "//build/config:precompiled_headers" ]
@@ -65,4 +83,9 @@ source_set("unit_tests") {
     "//testing/gmock",
     "//testing/gtest",
   ]
+
+  if (is_chromeos) {
+    # Required by local_device_info_util_unittest.cc on Chrome OS.
+    deps += [ "//chromeos/constants" ]
+  }
 }

@@ -21,16 +21,6 @@ jumbo_static_library("base") {
     "enum_set.h",
     "extensions_activity.cc",
     "extensions_activity.h",
-    "get_session_name.cc",
-    "get_session_name.h",
-    "get_session_name_ios.h",
-    "get_session_name_ios.mm",
-    "get_session_name_linux.cc",
-    "get_session_name_linux.h",
-    "get_session_name_mac.h",
-    "get_session_name_mac.mm",
-    "get_session_name_win.cc",
-    "get_session_name_win.h",
     "hash_util.cc",
     "hash_util.h",
     "immutable.h",
@@ -100,18 +90,6 @@ jumbo_static_library("base") {
     "//net",
     "//third_party/zlib",
   ]
-
-  if (is_mac) {
-    libs = [
-      "CoreFoundation.framework",
-      "SystemConfiguration.framework",  # Required by get_session_name_mac.mm.
-    ]
-  }
-
-  if (is_chromeos) {
-    # Required by get_session_name.cc on Chrome OS.
-    deps += [ "//chromeos/constants" ]
-  }
 }
 
 static_library("test_support") {

@@ -14,7 +14,6 @@ include_rules = [
   "-components/signin/core/browser/signin_manager.h",
   "-components/signin/core/browser/signin_manager_base.h",
   "+components/sync/base",
-  "+components/sync/device_info",
   "+components/sync/engine",
   "+components/sync/js",
   "+components/sync/model",

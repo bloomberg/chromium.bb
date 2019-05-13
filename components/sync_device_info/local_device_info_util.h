@@ -5,11 +5,15 @@
 #ifndef COMPONENTS_SYNC_DEVICE_INFO_LOCAL_DEVICE_INFO_UTIL_H_
 #define COMPONENTS_SYNC_DEVICE_INFO_LOCAL_DEVICE_INFO_UTIL_H_
 
+#include <string>
+
 #include "components/sync/protocol/sync_enums.pb.h"
 
 namespace syncer {
 
 sync_pb::SyncEnums::DeviceType GetLocalDeviceType();
+
+std::string GetSessionNameBlocking();
 
 }  // namespace syncer
 

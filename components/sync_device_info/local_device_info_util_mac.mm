@@ -2,20 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/base/get_session_name_mac.h"
-
+#import <SystemConfiguration/SCDynamicStoreCopySpecific.h>
 #include <stddef.h>
 #include <sys/sysctl.h>
-#import <SystemConfiguration/SCDynamicStoreCopySpecific.h>
+
+#include <string>
 
 #include "base/mac/scoped_cftyperef.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 
 namespace syncer {
-namespace internal {
 
-std::string GetHardwareModelName() {
+// Returns the Hardware model name, without trailing numbers, if
+// possible.  See http://www.cocoadev.com/index.pl?MacintoshModels for
+// an example list of models. If an error occurs trying to read the
+// model, this simply returns "Unknown".
+std::string GetSessionNameInternal() {
   // Do not use NSHost currentHost, as it's very slow. http://crbug.com/138570
   SCDynamicStoreContext context = {0, NULL, NULL, NULL};
   base::ScopedCFTypeRef<SCDynamicStoreRef> store(SCDynamicStoreCreate(
@@ -45,5 +48,4 @@ std::string GetHardwareModelName() {
   return "Unknown";
 }
 
-}  // namespace internal
 }  // namespace syncer
