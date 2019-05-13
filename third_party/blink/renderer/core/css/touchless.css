@@ -29,7 +29,3 @@ video:-internal-spatial-navigation-interest {
 body {
     user-select: none !important;
 }
-
-* {
-    -webkit-user-drag: none !important;
-}
