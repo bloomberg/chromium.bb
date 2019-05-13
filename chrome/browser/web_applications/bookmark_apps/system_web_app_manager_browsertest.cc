@@ -180,7 +180,7 @@ Browser* SystemWebAppManagerBrowserTest::WaitForSystemAppInstallAndLaunch() {
 IN_PROC_BROWSER_TEST_F(SystemWebAppManagerBrowserTest, Install) {
   const extensions::Extension* app =
       static_cast<extensions::HostedAppBrowserController*>(
-          WaitForSystemAppInstallAndLaunch()->web_app_controller())
+          WaitForSystemAppInstallAndLaunch()->app_controller())
           ->GetExtensionForTesting();
   EXPECT_EQ("Test System App", app->name());
   EXPECT_EQ(SkColorSetRGB(0, 0xFF, 0),

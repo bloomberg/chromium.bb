@@ -134,7 +134,7 @@ bool BrowserNonClientFrameView::EverHasVisibleBackgroundTabShapes() const {
 
 bool BrowserNonClientFrameView::CanDrawStrokes() const {
   // Hosted apps should not draw strokes, as they don't have a tab strip.
-  return !browser_view_->browser()->web_app_controller();
+  return !browser_view_->browser()->app_controller();
 }
 
 SkColor BrowserNonClientFrameView::GetCaptionColor(
@@ -153,10 +153,10 @@ SkColor BrowserNonClientFrameView::GetFrameColor(
   if (frame_->ShouldUseTheme())
     return GetThemeProviderForProfile()->GetColor(color_id);
 
-  web_app::AppBrowserController* web_app_controller =
-      browser_view_->browser()->web_app_controller();
-  if (web_app_controller && web_app_controller->GetThemeColor())
-    return *web_app_controller->GetThemeColor();
+  web_app::AppBrowserController* app_controller =
+      browser_view_->browser()->app_controller();
+  if (app_controller && app_controller->GetThemeColor())
+    return *app_controller->GetThemeColor();
 
   return ThemeProperties::GetDefaultColor(color_id,
                                           browser_view_->IsIncognito());

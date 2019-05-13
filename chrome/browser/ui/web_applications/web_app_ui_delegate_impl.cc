@@ -99,10 +99,10 @@ base::Optional<AppId> WebAppUiDelegateImpl::GetAppIdForBrowser(
   if (browser->profile() != profile_)
     return base::nullopt;
 
-  if (!browser->web_app_controller())
+  if (!browser->app_controller())
     return base::nullopt;
 
-  return browser->web_app_controller()->GetAppId();
+  return browser->app_controller()->GetAppId();
 }
 
 }  // namespace web_app

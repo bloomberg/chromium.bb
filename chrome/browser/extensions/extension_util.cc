@@ -361,7 +361,7 @@ bool IsWebContentsInAppWindow(content::WebContents* web_contents) {
   // TODO(loyso): Unify this check as a util (including
   // MaybeCreateHostedAppController).
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
-  return browser && browser->web_app_controller();
+  return browser && browser->app_controller();
 }
 
 }  // namespace util

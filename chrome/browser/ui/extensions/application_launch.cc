@@ -417,7 +417,7 @@ WebContents* ShowApplicationWindow(const AppLaunchParams& params,
   WebContents* web_contents = nav_params.navigated_or_inserted_contents;
 
   extensions::HostedAppBrowserController::SetAppPrefsForWebContents(
-      browser->web_app_controller(), web_contents);
+      browser->app_controller(), web_contents);
   if (extension) {
     web_app::WebAppTabHelperBase* tab_helper =
         web_app::WebAppTabHelperBase::FromWebContents(web_contents);

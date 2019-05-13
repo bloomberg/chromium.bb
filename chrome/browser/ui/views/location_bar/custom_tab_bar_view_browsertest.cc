@@ -225,7 +225,7 @@ class CustomTabBarViewBrowserTest : public extensions::ExtensionBrowserTest {
   BrowserView* browser_view_;
   LocationBarView* location_bar_;
   CustomTabBarView* custom_tab_bar_;
-  web_app::AppBrowserController* web_app_controller_;
+  web_app::AppBrowserController* app_controller_;
 
   net::EmbeddedTestServer* https_server() { return &https_server_; }
 
@@ -241,8 +241,8 @@ class CustomTabBarViewBrowserTest : public extensions::ExtensionBrowserTest {
     DCHECK(app_browser_);
     DCHECK(app_browser_ != browser());
 
-    web_app_controller_ = app_browser_->web_app_controller();
-    DCHECK(web_app_controller_);
+    app_controller_ = app_browser_->app_controller();
+    DCHECK(app_controller_);
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -365,11 +365,11 @@ IN_PROC_BROWSER_TEST_F(CustomTabBarViewBrowserTest,
   const GURL& other_app_url =
       https_server()->GetURL("app.com", "/ssl/blank_page.html");
   NavigateAndWait(web_contents, other_app_url);
-  EXPECT_FALSE(web_app_controller_->ShouldShowToolbar());
+  EXPECT_FALSE(app_controller_->ShouldShowToolbar());
 
   // Navigate out of scope.
   NavigateAndWait(web_contents, GURL("http://example.test/"));
-  EXPECT_TRUE(web_app_controller_->ShouldShowToolbar());
+  EXPECT_TRUE(app_controller_->ShouldShowToolbar());
 
   // Simulate clicking the close button and wait for navigation to finish.
   content::TestNavigationObserver nav_observer(web_contents);
@@ -400,12 +400,12 @@ IN_PROC_BROWSER_TEST_F(CustomTabBarViewBrowserTest,
   const GURL& other_app_url =
       https_server()->GetURL("app.com", "/ssl/blank_page.html");
   NavigateAndWait(web_contents, other_app_url);
-  EXPECT_FALSE(web_app_controller_->ShouldShowToolbar());
+  EXPECT_FALSE(app_controller_->ShouldShowToolbar());
 
   // Navigate above the scope of the app, on the same origin.
   NavigateAndWait(web_contents, https_server()->GetURL(
                                     "app.com", "/accessibility_fail.html"));
-  EXPECT_TRUE(web_app_controller_->ShouldShowToolbar());
+  EXPECT_TRUE(app_controller_->ShouldShowToolbar());
 
   // Simulate clicking the close button and wait for navigation to finish.
   content::TestNavigationObserver nav_observer(web_contents);
@@ -439,7 +439,7 @@ IN_PROC_BROWSER_TEST_F(
     EXPECT_TRUE(content::ExecuteScript(
         web_contents, "window.location.replace('http://example.com');"));
     nav_observer.Wait();
-    EXPECT_TRUE(web_app_controller_->ShouldShowToolbar());
+    EXPECT_TRUE(app_controller_->ShouldShowToolbar());
   }
   {
     // Simulate clicking the close button and wait for navigation to finish.

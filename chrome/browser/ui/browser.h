@@ -323,10 +323,10 @@ class Browser : public TabStripModelObserver,
   BrowserInstantController* instant_controller() {
     return instant_controller_.get();
   }
-  const web_app::AppBrowserController* web_app_controller() const {
+  const web_app::AppBrowserController* app_controller() const {
     return app_controller_.get();
   }
-  web_app::AppBrowserController* web_app_controller() {
+  web_app::AppBrowserController* app_controller() {
     return app_controller_.get();
   }
 

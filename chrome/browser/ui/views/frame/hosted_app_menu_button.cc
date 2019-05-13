@@ -39,7 +39,7 @@ HostedAppMenuButton::HostedAppMenuButton(BrowserView* browser_view)
   // Get the app name only, aka "Google Docs" instead of "My Doc - Google Docs",
   // because the menu applies to the entire app.
   base::string16 app_name = base::UTF8ToUTF16(
-      browser_view->browser()->web_app_controller()->GetAppShortName());
+      browser_view->browser()->app_controller()->GetAppShortName());
   SetAccessibleName(app_name);
   SetTooltipText(
       l10n_util::GetStringFUTF16(IDS_HOSTED_APPMENU_TOOLTIP, app_name));

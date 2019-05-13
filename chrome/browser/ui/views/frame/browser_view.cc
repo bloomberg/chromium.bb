@@ -2017,7 +2017,7 @@ bool BrowserView::CanChangeWindowIcon() const {
   // The logic of this function needs to be same as GetWindowIcon().
   if (browser_->is_devtools())
     return false;
-  if (browser_->web_app_controller())
+  if (browser_->app_controller())
     return true;
 #if defined(OS_CHROMEOS)
   // On ChromeOS, the tabbed browser always use a static image for the window
@@ -2045,8 +2045,7 @@ bool BrowserView::ShouldShowWindowTitle() const {
 }
 
 gfx::ImageSkia BrowserView::GetWindowAppIcon() {
-  web_app::AppBrowserController* app_controller =
-      browser()->web_app_controller();
+  web_app::AppBrowserController* app_controller = browser()->app_controller();
   return app_controller ? app_controller->GetWindowAppIcon() : GetWindowIcon();
 }
 
@@ -2056,8 +2055,7 @@ gfx::ImageSkia BrowserView::GetWindowIcon() {
     return gfx::ImageSkia();
 
   // Hosted apps always show their app icon.
-  web_app::AppBrowserController* app_controller =
-      browser()->web_app_controller();
+  web_app::AppBrowserController* app_controller = browser()->app_controller();
   if (app_controller)
     return app_controller->GetWindowIcon();
 

@@ -261,7 +261,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppTest, EngagementHistogramForAppInTab) {
       InstallBookmarkAppAndCountApps(web_app_info);
 
   Browser* browser = LaunchBrowserForAppInTab(app);
-  EXPECT_FALSE(browser->web_app_controller());
+  EXPECT_FALSE(browser->app_controller());
   NavigateToURLAndWait(browser, example_url);
 
   Histograms histograms;
@@ -292,7 +292,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppTest, EngagementHistogramAppWithoutScope) {
 
   EXPECT_EQ(web_app::GetAppIdFromApplicationName(browser->app_name()),
             app->id());
-  EXPECT_TRUE(browser->web_app_controller());
+  EXPECT_TRUE(browser->app_controller());
   NavigateToURLAndWait(browser, example_url);
 
   Histograms histograms;
@@ -433,7 +433,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppTest,
       InstallBookmarkAppAndCountApps(web_app_info);
 
   Browser* browser = LaunchBrowserForAppInTab(app);
-  EXPECT_FALSE(browser->web_app_controller());
+  EXPECT_FALSE(browser->app_controller());
 
   NavigateToURLAndWait(browser, app_url);
   {

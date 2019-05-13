@@ -147,9 +147,9 @@ bool SettingsWindowManager::IsSettingsBrowser(Browser* browser) const {
     base::Optional<std::string> settings_app_id =
         web_app::GetAppIdForSystemWebApp(profile,
                                          web_app::SystemAppType::SETTINGS);
-    return settings_app_id && browser->web_app_controller() &&
+    return settings_app_id && browser->app_controller() &&
            static_cast<extensions::HostedAppBrowserController*>(
-               browser->web_app_controller())
+               browser->app_controller())
                    ->GetAppId() == settings_app_id.value();
   } else {
     auto iter = settings_session_map_.find(profile);

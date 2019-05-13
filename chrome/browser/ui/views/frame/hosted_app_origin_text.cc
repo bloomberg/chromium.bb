@@ -31,7 +31,7 @@ HostedAppOriginText::HostedAppOriginText(Browser* browser) {
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
   label_ = std::make_unique<views::Label>(
-               browser->web_app_controller()->GetFormattedUrlOrigin(),
+               browser->app_controller()->GetFormattedUrlOrigin(),
                ChromeTextContext::CONTEXT_BODY_TEXT_SMALL,
                ChromeTextStyle::STYLE_EMPHASIZED)
                .release();

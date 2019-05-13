@@ -270,7 +270,7 @@ SkColor BrowserNonClientFrameViewAsh::GetCaptionColor(
   // Hosted apps apply a theme color if specified by the extension.
   Browser* browser = browser_view()->browser();
   base::Optional<SkColor> theme_color =
-      browser->web_app_controller()->GetThemeColor();
+      browser->app_controller()->GetThemeColor();
   if (theme_color)
     active_color = views::FrameCaptionButton::GetButtonColor(*theme_color);
 
@@ -683,7 +683,7 @@ BrowserNonClientFrameViewAsh::CreateFrameHeader() {
 
 void BrowserNonClientFrameViewAsh::SetUpForHostedApp() {
   Browser* browser = browser_view()->browser();
-  if (!browser->web_app_controller()->ShouldShowHostedAppButtonContainer())
+  if (!browser->app_controller()->ShouldShowHostedAppButtonContainer())
     return;
 
   // Add the container for extra hosted app buttons (e.g app menu button).
@@ -700,8 +700,7 @@ void BrowserNonClientFrameViewAsh::UpdateFrameColors() {
     active_color = GetFrameColor(kActive);
     inactive_color = GetFrameColor(kInactive);
   } else if (browser_view()->IsBrowserTypeHostedApp()) {
-    active_color =
-        browser_view()->browser()->web_app_controller()->GetThemeColor();
+    active_color = browser_view()->browser()->app_controller()->GetThemeColor();
   } else if (!browser_view()->browser()->is_app()) {
     active_color =
         base::FeatureList::IsEnabled(chromeos::features::kSplitSettings)

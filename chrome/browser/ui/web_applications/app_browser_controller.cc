@@ -23,8 +23,8 @@ namespace web_app {
 // static
 bool AppBrowserController::IsForExperimentalWebAppBrowser(
     const Browser* browser) {
-  return browser && browser->web_app_controller() &&
-         browser->web_app_controller()->IsForExperimentalWebAppBrowser();
+  return browser && browser->app_controller() &&
+         browser->app_controller()->IsForExperimentalWebAppBrowser();
 }
 
 // static

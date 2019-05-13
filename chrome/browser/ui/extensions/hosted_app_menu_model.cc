@@ -46,14 +46,14 @@ void HostedAppMenuModel::Build() {
 // Chrome OS's app list is prominent enough to not need a separate uninstall
 // option in the app menu.
 #if !defined(OS_CHROMEOS)
-  DCHECK(browser()->web_app_controller());
-  if (browser()->web_app_controller()->IsInstalled()) {
+  DCHECK(browser()->app_controller());
+  if (browser()->app_controller()->IsInstalled()) {
     AddSeparator(ui::NORMAL_SEPARATOR);
-    AddItem(kUninstallAppCommandId,
-            l10n_util::GetStringFUTF16(
-                IDS_UNINSTALL_FROM_OS_LAUNCH_SURFACE,
-                base::UTF8ToUTF16(
-                    browser()->web_app_controller()->GetAppShortName())));
+    AddItem(
+        kUninstallAppCommandId,
+        l10n_util::GetStringFUTF16(
+            IDS_UNINSTALL_FROM_OS_LAUNCH_SURFACE,
+            base::UTF8ToUTF16(browser()->app_controller()->GetAppShortName())));
   }
 #endif  // !defined(OS_CHROMEOS)
   AddSeparator(ui::LOWER_SEPARATOR);
@@ -70,13 +70,13 @@ void HostedAppMenuModel::Build() {
 
 bool HostedAppMenuModel::IsCommandIdEnabled(int command_id) const {
   return command_id == kUninstallAppCommandId
-             ? browser()->web_app_controller()->CanUninstall()
+             ? browser()->app_controller()->CanUninstall()
              : AppMenuModel::IsCommandIdEnabled(command_id);
 }
 
 void HostedAppMenuModel::ExecuteCommand(int command_id, int event_flags) {
   if (command_id == kUninstallAppCommandId) {
-    browser()->web_app_controller()->Uninstall();
+    browser()->app_controller()->Uninstall();
   } else {
     AppMenuModel::ExecuteCommand(command_id, event_flags);
   }
