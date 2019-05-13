@@ -27532,6 +27532,35 @@
       }
     ]
   },
+  "Win10 FYI Release XR Perf (NVIDIA)": {
+    "isolated_scripts": [
+      {
+        "args": [
+          "--benchmarks=xr.webxr.static",
+          "-v",
+          "--upload-results",
+          "--output-format=histograms",
+          "--browser=release"
+        ],
+        "experiment_percentage": 100,
+        "isolate_name": "vr_perf_tests",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "xr.webxr.static",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "nvidia-quadro-p400-win10-stable",
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        }
+      }
+    ]
+  },
   "Win10 FYI dEQP Release (Intel HD 630)": {
     "gtest_tests": [
       {

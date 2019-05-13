@@ -4431,6 +4431,25 @@
         },
       },
     },
+
+    'win_specific_xr_perf_tests': {
+      'xr.webxr.static': {
+        'args': [
+          '--benchmarks=xr.webxr.static',
+          '-v',
+          '--upload-results',
+          '--output-format=histograms',
+          '--browser=release',
+        ],
+        'isolate_name': 'vr_perf_tests',
+        'merge': {
+          'script': '//tools/perf/process_perf_results.py',
+        },
+        'name': 'xr.webxr.static',
+        # Experimental until we're sure these are stable.
+        'experiment_percentage': 100,
+      }
+    }
   },
 
   ##############################################################################

@@ -3190,6 +3190,16 @@
         # We keep this value enabled to provide minimal regression testing.
         'use_multi_dimension_trigger_script': True,
       },
+      'Win10 FYI Release XR Perf (NVIDIA)': {
+        'os_type': 'win',
+        'browser_config': 'release',
+        'mixins': [
+          'win10_nvidia_quadro_p400_stable',
+        ],
+        'test_suites': {
+          'isolated_scripts': 'win_specific_xr_perf_tests',
+        },
+      },
       'Win10 FYI dEQP Release (Intel HD 630)': {
         'os_type': 'win',
         'mixins': [
