@@ -652,16 +652,10 @@
         'additional_compile_targets': [
           'chrome',
         ],
-        'mixins': [
-          'chrome-swarming-pool',
-        ],
       },
       'chromeos-betty-google-rel': {
         'additional_compile_targets': [
           'chrome',
-        ],
-        'mixins': [
-          'chrome-swarming-pool',
         ],
       },
       'linux-chromeos-google-rel': {
@@ -685,35 +679,17 @@
           'chrome',
           'chrome/installer/linux',
         ],
-        'mixins': [
-          'chrome-swarming-pool',
-        ],
-        'test_suites': {
-          'isolated_scripts': 'chrome_sizes',
-        },
       },
       'mac-google-rel': {
         'additional_compile_targets': [
           'chrome',
         ],
-        'mixins': [
-          'chrome-swarming-pool',
-        ],
-        'test_suites': {
-          'isolated_scripts': 'chrome_sizes',
-        },
       },
       'win-google-rel': {
         'additional_compile_targets': [
           'chrome',
           'chrome_official_builder',
         ],
-        'mixins': [
-          'chrome-swarming-pool',
-        ],
-        'test_suites': {
-          'isolated_scripts': 'chrome_sizes',
-        },
       },
     },
   },
