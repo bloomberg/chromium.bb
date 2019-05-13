@@ -117,6 +117,7 @@ source_set("unified_consent_eg_tests") {
     "//base",
     "//base/test:test_support",
     "//components/prefs",
+    "//components/unified_consent",
     "//ios/chrome/app:app_internal",
     "//ios/chrome/app/strings:ios_chromium_strings_grit",
     "//ios/chrome/app/strings:ios_strings_grit",

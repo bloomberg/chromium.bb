@@ -76,3 +76,16 @@ source_set("unity_eg_tests") {
   ]
   libs = [ "XCTest.framework" ]
 }
+
+source_set("unified_consent_enabled_hooks") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [
+    "unified_consent_enabled_egtests_hook.mm",
+  ]
+  deps = [
+    "//components/unified_consent",
+    "//components/unified_consent:test_support",
+    "//ios/chrome/app:tests_hook",
+  ]
+}

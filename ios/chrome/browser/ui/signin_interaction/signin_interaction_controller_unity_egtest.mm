@@ -47,17 +47,13 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
 
 // Returns a matcher for |userEmail| in IdentityChooserViewController.
 id<GREYMatcher> identityChooserButtonMatcherWithEmail(NSString* userEmail) {
-  if (base::FeatureList::IsEnabled(unified_consent::kUnifiedConsent)) {
-    return grey_allOf(grey_accessibilityID(userEmail),
-                      grey_kindOfClass([IdentityChooserCell class]),
-                      grey_sufficientlyVisible(), nil);
-  }
-  return chrome_test_util::ButtonWithAccessibilityLabel(userEmail);
+  return grey_allOf(grey_accessibilityID(userEmail),
+                    grey_kindOfClass([IdentityChooserCell class]),
+                    grey_sufficientlyVisible(), nil);
 }
 
 // Returns a matcher for "ADD ACCOUNT" in IdentityChooserViewController.
 id<GREYMatcher> addIdentityButtonInIdentityChooser() {
-  DCHECK(base::FeatureList::IsEnabled(unified_consent::kUnifiedConsent));
   return chrome_test_util::ButtonWithAccessibilityLabel(
       l10n_util::GetNSStringWithFixup(
           IDS_IOS_ACCOUNT_UNIFIED_CONSENT_ADD_ACCOUNT));
@@ -69,6 +65,13 @@ id<GREYMatcher> addIdentityButtonInIdentityChooser() {
 @end
 
 @implementation SigninInteractionControllerTestCase
+
+- (void)setUp {
+  [super setUp];
+
+  CHECK(unified_consent::IsUnifiedConsentFeatureEnabled())
+      << "This test suite must be run with Unified Consent feature enabled.";
+}
 
 // Tests that opening the sign-in screen from the Settings and signing in works
 // correctly when there is already an identity on the device.

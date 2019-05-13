@@ -1308,6 +1308,11 @@
     "label": "//ios/showcase:ios_showcase_egtests",
     "type": "raw",
   },
+  "ios_chrome_unified_consent_egtests": {
+    "args": [],
+    "label": "//ios/chrome/test/earl_grey:ios_chrome_unified_consent_egtests",
+    "type": "raw",
+  },
   "ios_web_inttests": {
     "args": [],
     "label": "//ios/web:ios_web_inttests",
