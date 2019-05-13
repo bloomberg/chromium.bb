@@ -371,6 +371,7 @@ const char kTetherSettingsSubPage[] = "networks?type=Tether";
 
 bool IsOSSettingsSubPage(const std::string& sub_page) {
   static const char* const kSubPages[] = {kAccessibilitySubPage,
+                                          kAccountManagerSubPage,
                                           kAndroidAppsDetailsSubPage,
                                           kAssistantSubPage,
                                           kBluetoothSubPage,
