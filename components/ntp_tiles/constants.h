@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_NTP_TILES_CONSTANTS_H_
 #define COMPONENTS_NTP_TILES_CONSTANTS_H_
 
+#include <stddef.h>
+
 #include <utility>
 
 namespace ntp_tiles {
