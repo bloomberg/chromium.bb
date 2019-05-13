@@ -72,8 +72,7 @@ class NamedMessagePortConnectorTest : public cr_fuchsia::WebEngineBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(NamedMessagePortConnectorTest);
 };
 
-IN_PROC_BROWSER_TEST_F(NamedMessagePortConnectorTest,
-                       NamedMessagePortConnectorEndToEnd) {
+IN_PROC_BROWSER_TEST_F(NamedMessagePortConnectorTest, EndToEnd) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL test_url(embedded_test_server()->GetURL("/connector.html"));
 
@@ -134,4 +133,68 @@ IN_PROC_BROWSER_TEST_F(NamedMessagePortConnectorTest,
   }
 
   connector_->Unregister("hello");
+}
+
+// Tests that the NamedMessagePortConnector can receive more than one port over
+// its lifetime.
+IN_PROC_BROWSER_TEST_F(NamedMessagePortConnectorTest, MultiplePorts) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL test_url(
+      embedded_test_server()->GetURL("/connector_multiple_ports.html"));
+
+  fuchsia::web::NavigationControllerPtr controller;
+  frame_->GetNavigationController(controller.NewRequest());
+
+  base::RunLoop receive_port_1_run_loop;
+  base::RunLoop receive_port_2_run_loop;
+  cr_fuchsia::ResultReceiver<fidl::InterfaceHandle<fuchsia::web::MessagePort>>
+      port_1_receiver(receive_port_1_run_loop.QuitClosure());
+  cr_fuchsia::ResultReceiver<fidl::InterfaceHandle<fuchsia::web::MessagePort>>
+      port_2_receiver(receive_port_2_run_loop.QuitClosure());
+  connector_->Register(
+      "port1",
+      base::BindRepeating(
+          &cr_fuchsia::ResultReceiver<
+              fidl::InterfaceHandle<fuchsia::web::MessagePort>>::ReceiveResult,
+          base::Unretained(&port_1_receiver)));
+  connector_->Register(
+      "port2",
+      base::BindRepeating(
+          &cr_fuchsia::ResultReceiver<
+              fidl::InterfaceHandle<fuchsia::web::MessagePort>>::ReceiveResult,
+          base::Unretained(&port_2_receiver)));
+  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
+      controller.get(), fuchsia::web::LoadUrlParams(), test_url.spec()));
+  navigation_listener_.RunUntilUrlEquals(test_url);
+
+  receive_port_1_run_loop.Run();
+  receive_port_2_run_loop.Run();
+
+  fuchsia::web::MessagePortPtr port_1 = (*port_1_receiver).Bind();
+  fuchsia::web::MessagePortPtr port_2 = (*port_2_receiver).Bind();
+
+  for (fuchsia::web::MessagePortPtr* port : {&port_1, &port_2}) {
+    fuchsia::web::WebMessage msg;
+    msg.set_data(cr_fuchsia::MemBufferFromString("ping"));
+    cr_fuchsia::ResultReceiver<fuchsia::web::MessagePort_PostMessage_Result>
+        post_result;
+    (*port)->PostMessage(std::move(msg), cr_fuchsia::CallbackToFitFunction(
+                                             post_result.GetReceiveCallback()));
+
+    base::RunLoop run_loop;
+    cr_fuchsia::ResultReceiver<fuchsia::web::WebMessage> message_receiver(
+        run_loop.QuitClosure());
+    (*port)->ReceiveMessage(cr_fuchsia::CallbackToFitFunction(
+        message_receiver.GetReceiveCallback()));
+    run_loop.Run();
+
+    std::string data;
+    ASSERT_TRUE(message_receiver->has_data());
+    ASSERT_TRUE(
+        cr_fuchsia::StringFromMemBuffer(message_receiver->data(), &data));
+    EXPECT_EQ(data, "ack ping");
+  }
+
+  connector_->Unregister("port1");
+  connector_->Unregister("port2");
 }
