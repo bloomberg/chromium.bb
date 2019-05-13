@@ -143,6 +143,7 @@
 #include "chromeos/disks/disk_mount_manager.h"
 #include "chromeos/login/auth/login_event_recorder.h"
 #include "chromeos/login/login_state/login_state.h"
+#include "chromeos/login/session/session_termination_manager.h"
 #include "chromeos/network/fast_transition_observer.h"
 #include "chromeos/network/network_cert_loader.h"
 #include "chromeos/network/network_handler.h"
@@ -679,6 +680,8 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
           DBusThreadManager::Get()->GetDebugDaemonClient(),
           g_browser_process->local_state());
 
+  session_termination_manager_ =
+      std::make_unique<chromeos::SessionTerminationManager>();
   lock_to_single_user_manager_ =
       std::make_unique<policy::LockToSingleUserManager>();
 
@@ -1217,6 +1220,7 @@ void ChromeBrowserMainPartsChromeos::PostDestroyThreads() {
   crosvm_metrics_.reset();
 
   network_change_manager_client_.reset();
+  session_termination_manager_.reset();
 
   // Destroy DBus services immediately after threads are stopped.
   dbus_services_.reset();

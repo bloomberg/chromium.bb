@@ -118,6 +118,7 @@ source_set("chromeos") {
     "//chromeos/geolocation",
     "//chromeos/login/auth",
     "//chromeos/login/login_state",
+    "//chromeos/login/session",
     "//chromeos/network",
     "//chromeos/services/device_sync/public/cpp",
     "//chromeos/services/machine_learning/public/cpp",
