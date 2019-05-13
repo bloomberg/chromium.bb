@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/animation/primitive_interpolation.h"
 #include "third_party/blink/renderer/core/animation/property_handle.h"
 #include "third_party/blink/renderer/core/animation/underlying_value_owner.h"
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
@@ -28,7 +29,7 @@ class InterpolationEnvironment;
 // - Convert the target Element's property value to an InterpolationValue:
 // maybeConvertUnderlyingValue()
 // - Apply an InterpolationValue to a target Element's property: apply().
-class InterpolationType {
+class CORE_EXPORT InterpolationType {
   USING_FAST_MALLOC(InterpolationType);
 
  public:
