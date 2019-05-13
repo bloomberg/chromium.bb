@@ -49,7 +49,6 @@
 #include "content/renderer/loader/child_url_loader_factory_bundle.h"
 #include "content/renderer/loader/code_cache_loader_impl.h"
 #include "content/renderer/loader/resource_dispatcher.h"
-#include "content/renderer/loader/web_data_consumer_handle_impl.h"
 #include "content/renderer/loader/web_url_loader_impl.h"
 #include "content/renderer/media/audio/audio_device_factory.h"
 #include "content/renderer/media/audio_decoder.h"
@@ -285,12 +284,6 @@ RendererBlinkPlatformImpl::WrapSharedURLLoaderFactory(
   return std::make_unique<WebURLLoaderFactoryImpl>(
       RenderThreadImpl::current()->resource_dispatcher()->GetWeakPtr(),
       std::move(factory));
-}
-
-std::unique_ptr<blink::WebDataConsumerHandle>
-RendererBlinkPlatformImpl::CreateDataConsumerHandle(
-    mojo::ScopedDataPipeConsumerHandle handle) {
-  return std::make_unique<WebDataConsumerHandleImpl>(std::move(handle));
 }
 
 scoped_refptr<ChildURLLoaderFactoryBundle>

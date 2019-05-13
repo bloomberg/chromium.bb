@@ -53,7 +53,6 @@
 #include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
 #include "third_party/blink/renderer/platform/loader/cors/cors.h"
 #include "third_party/blink/renderer/platform/loader/cors/cors_error_string.h"
-#include "third_party/blink/renderer/platform/loader/fetch/bytes_consumer_for_data_consumer_handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/console_logger.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_context.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
@@ -869,17 +868,13 @@ FetchContext& ResourceLoader::Context() const {
   return fetcher_->Context();
 }
 
-void ResourceLoader::DidReceiveResponse(
-    const WebURLResponse& web_url_response,
-    std::unique_ptr<WebDataConsumerHandle> handle) {
-  DCHECK(!web_url_response.IsNull());
-  DidReceiveResponseInternal(web_url_response.ToResourceResponse(),
-                             std::move(handle));
+void ResourceLoader::DidReceiveResponse(const WebURLResponse& response) {
+  DCHECK(!response.IsNull());
+  DidReceiveResponseInternal(response.ToResourceResponse());
 }
 
 void ResourceLoader::DidReceiveResponseInternal(
-    const ResourceResponse& response,
-    std::unique_ptr<WebDataConsumerHandle> handle) {
+    const ResourceResponse& response) {
   const ResourceRequest& request = resource_->GetResourceRequest();
 
   if (request.IsAutomaticUpgrade()) {
@@ -1013,11 +1008,6 @@ void ResourceLoader::DidReceiveResponseInternal(
         ResourceLoadObserver::ResponseSource::kNotFromMemoryCache);
   }
 
-  // When streaming, unpause virtual time early to prevent deadlocking
-  // against stream consumer in case stream has backpressure enabled.
-  if (handle)
-    resource_->VirtualTimePauser().UnpauseVirtualTime();
-
   resource_->ResponseReceived(response_to_pass);
 
   // Send the cached code after we notify that the response is received.
@@ -1050,16 +1040,6 @@ void ResourceLoader::DidReceiveResponseInternal(
         ResourceError::CancelledError(response_to_pass.CurrentRequestUrl()));
     return;
   }
-
-  if (handle) {
-    DidStartLoadingResponseBodyInternal(
-        *MakeGarbageCollected<BytesConsumerForDataConsumerHandle>(
-            GetLoadingTaskRunner(), std::move(handle)));
-  }
-}
-
-void ResourceLoader::DidReceiveResponse(const WebURLResponse& response) {
-  DidReceiveResponse(response, nullptr);
 }
 
 void ResourceLoader::DidStartLoadingResponseBody(
@@ -1469,7 +1449,7 @@ void ResourceLoader::HandleDataUrl() {
   DCHECK(data);
   const size_t data_size = data->size();
 
-  DidReceiveResponseInternal(response, nullptr);
+  DidReceiveResponseInternal(response);
   if (!IsLoading())
     return;
 

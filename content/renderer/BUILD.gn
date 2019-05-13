@@ -178,8 +178,6 @@ target(link_target_type, "renderer") {
     "loader/tracked_child_url_loader_factory_bundle.h",
     "loader/url_loader_client_impl.cc",
     "loader/url_loader_client_impl.h",
-    "loader/web_data_consumer_handle_impl.cc",
-    "loader/web_data_consumer_handle_impl.h",
     "loader/web_url_loader_impl.cc",
     "loader/web_url_loader_impl.h",
     "loader/web_url_request_util.cc",

@@ -224,7 +224,6 @@ source_set("blink_headers") {
     "platform/web_crypto_key_algorithm_params.h",
     "platform/web_cursor_info.h",
     "platform/web_data.h",
-    "platform/web_data_consumer_handle.h",
     "platform/web_database_observer.h",
     "platform/web_dedicated_worker.h",
     "platform/web_dedicated_worker_host_factory_client.h",

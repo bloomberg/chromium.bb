@@ -1804,7 +1804,6 @@ test("content_unittests") {
     "../renderer/loader/test_request_peer.cc",
     "../renderer/loader/test_request_peer.h",
     "../renderer/loader/url_loader_client_impl_unittest.cc",
-    "../renderer/loader/web_data_consumer_handle_impl_unittest.cc",
     "../renderer/loader/web_url_loader_impl_unittest.cc",
     "../renderer/low_memory_mode_controller_unittest.cc",
     "../renderer/media/audio/audio_output_ipc_factory_unittest.cc",

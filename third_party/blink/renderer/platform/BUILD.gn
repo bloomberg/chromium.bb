@@ -532,7 +532,6 @@ jumbo_component("platform") {
     "exported/web_crypto_result.cc",
     "exported/web_cursor_info.cc",
     "exported/web_data.cc",
-    "exported/web_data_consumer_handle.cc",
     "exported/web_drag_data.cc",
     "exported/web_encrypted_media_client.cc",
     "exported/web_encrypted_media_key_information.cc",

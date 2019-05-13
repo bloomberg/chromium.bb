@@ -38,7 +38,6 @@
 #include "services/network/public/cpp/cors/preflight_timing_info.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "third_party/blink/public/platform/web_common.h"
-#include "third_party/blink/public/platform/web_data_consumer_handle.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 
 namespace blink {
@@ -75,13 +74,6 @@ class BLINK_PLATFORM_EXPORT WebURLLoaderClient {
 
   // Called when response headers are received.
   virtual void DidReceiveResponse(const WebURLResponse&) {}
-
-  // Called when response headers are received.
-  virtual void DidReceiveResponse(
-      const WebURLResponse& response,
-      std::unique_ptr<WebDataConsumerHandle> handle) {
-    DidReceiveResponse(response);
-  }
 
   // Called when the response body becomes available. This method is only called
   // if the request's PassResponsePipeToClient flag was set to true.

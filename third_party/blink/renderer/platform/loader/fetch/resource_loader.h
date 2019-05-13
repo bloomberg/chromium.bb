@@ -125,8 +125,6 @@ class PLATFORM_EXPORT ResourceLoader final
   void DidSendData(uint64_t bytes_sent,
                    uint64_t total_bytes_to_be_sent) override;
   void DidReceiveResponse(const WebURLResponse&) override;
-  void DidReceiveResponse(const WebURLResponse&,
-                          std::unique_ptr<WebDataConsumerHandle>) override;
   void DidReceiveCachedMetadata(const char* data, int length) override;
   void DidReceiveData(const char*, int) override;
   void DidReceiveTransferSizeUpdate(int transfer_size_diff) override;
@@ -193,8 +191,7 @@ class PLATFORM_EXPORT ResourceLoader final
   void RequestAsynchronously(const ResourceRequest&);
   void Dispose();
 
-  void DidReceiveResponseInternal(const ResourceResponse&,
-                                  std::unique_ptr<WebDataConsumerHandle>);
+  void DidReceiveResponseInternal(const ResourceResponse&);
 
   void CancelTimerFired(TimerBase*);
 

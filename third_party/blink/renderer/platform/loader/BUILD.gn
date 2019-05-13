@@ -24,8 +24,6 @@ blink_platform_sources("loader") {
     "fetch/buffering_bytes_consumer.h",
     "fetch/bytes_consumer.cc",
     "fetch/bytes_consumer.h",
-    "fetch/bytes_consumer_for_data_consumer_handle.cc",
-    "fetch/bytes_consumer_for_data_consumer_handle.h",
     "fetch/cached_metadata.cc",
     "fetch/cached_metadata.h",
     "fetch/cached_metadata_handler.cc",
@@ -136,7 +134,6 @@ jumbo_source_set("unit_tests") {
   # Source files for blink_platform_unittests.
   sources = [
     "fetch/buffering_bytes_consumer_test.cc",
-    "fetch/bytes_consumer_for_data_consumer_handle_test.cc",
     "fetch/bytes_consumer_test.cc",
     "fetch/client_hints_preferences_test.cc",
     "fetch/data_pipe_bytes_consumer_test.cc",
@@ -188,8 +185,6 @@ jumbo_source_set("test_support") {
     "testing/mock_resource_client.h",
     "testing/replaying_bytes_consumer.cc",
     "testing/replaying_bytes_consumer.h",
-    "testing/replaying_web_data_consumer_handle.cc",
-    "testing/replaying_web_data_consumer_handle.h",
     "testing/test_loader_factory.h",
     "testing/test_resource_fetcher_properties.cc",
     "testing/test_resource_fetcher_properties.h",

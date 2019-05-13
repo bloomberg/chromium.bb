@@ -53,7 +53,6 @@
 #include "third_party/blink/public/platform/web_audio_device.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_data.h"
-#include "third_party/blink/public/platform/web_data_consumer_handle.h"
 #include "third_party/blink/public/platform/web_dedicated_worker_host_factory_client.h"
 #include "third_party/blink/public/platform/web_gesture_device.h"
 #include "third_party/blink/public/platform/web_localized_string.h"
@@ -349,12 +348,6 @@ class BLINK_PLATFORM_EXPORT Platform {
   virtual std::unique_ptr<blink::WebURLLoaderFactory>
   WrapSharedURLLoaderFactory(
       scoped_refptr<network::SharedURLLoaderFactory> factory) {
-    return nullptr;
-  }
-
-  // Returns a WebDataConsumerHandle for a given mojo data pipe endpoint.
-  virtual std::unique_ptr<WebDataConsumerHandle> CreateDataConsumerHandle(
-      mojo::ScopedDataPipeConsumerHandle handle) {
     return nullptr;
   }
 
