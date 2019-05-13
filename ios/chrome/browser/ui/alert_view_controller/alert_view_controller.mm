@@ -95,6 +95,9 @@ constexpr int kTextfieldBackgroundColor = 0xf7f7f7;
 // view.
 @property(nonatomic, strong) UITapGestureRecognizer* tapRecognizer;
 
+// Recognizer used to dismiss the keyboard swipping down the alert.
+@property(nonatomic, strong) UISwipeGestureRecognizer* swipeRecognizer;
+
 // This is the last focused text field, the gestures to dismiss the keyboard
 // will end up calling |resignFirstResponder| on this.
 @property(nonatomic, weak) UITextField* lastFocusedTextField;
@@ -127,6 +130,13 @@ constexpr int kTextfieldBackgroundColor = 0xf7f7f7;
   self.contentView.layer.shadowOpacity = kShadowOpacity;
   self.contentView.translatesAutoresizingMaskIntoConstraints = NO;
   [self.view addSubview:self.contentView];
+
+  self.swipeRecognizer = [[UISwipeGestureRecognizer alloc]
+      initWithTarget:self
+              action:@selector(dismissKeyboard)];
+  self.swipeRecognizer.direction = UISwipeGestureRecognizerDirectionDown;
+  self.swipeRecognizer.enabled = NO;
+  [self.contentView addGestureRecognizer:self.swipeRecognizer];
 
   BOOL isAccessibilityContentSize =
       UIContentSizeCategoryIsAccessibilityCategory(
@@ -429,11 +439,13 @@ constexpr int kTextfieldBackgroundColor = 0xf7f7f7;
   self.additionalSafeAreaInsets =
       UIEdgeInsetsMake(0, 0, keyboardFrame.size.height, 0);
   self.tapRecognizer.enabled = YES;
+  self.swipeRecognizer.enabled = YES;
 }
 
 - (void)handleKeyboardWillHide:(NSNotification*)notification {
   self.additionalSafeAreaInsets = UIEdgeInsetsZero;
   self.tapRecognizer.enabled = NO;
+  self.swipeRecognizer.enabled = NO;
 }
 
 - (void)didSelectActionForButton:(UIButton*)button {
