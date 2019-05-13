@@ -39,6 +39,10 @@ const base::Feature kInstantTetheringBackgroundAdvertisementSupport{
 const base::Feature kAccountManager{"ChromeOSAccountManager",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether to enable Chrome OS Add Child Account Supervision flow.
+const base::Feature kAddSupervision{"ChromeOSAddSupervision",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether to enable Google Assistant feature.
 const base::Feature kAssistantFeature{"ChromeOSAssistant",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
@@ -568,6 +572,10 @@ bool IsCellularFirstDevice() {
 
 bool IsAccountManagerEnabled() {
   return base::FeatureList::IsEnabled(kAccountManager);
+}
+
+bool IsAddSupervisionEnabled() {
+  return base::FeatureList::IsEnabled(kAddSupervision);
 }
 
 bool IsAssistantFlagsEnabled() {

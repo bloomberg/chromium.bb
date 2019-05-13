@@ -241,7 +241,8 @@
       "chrome://mobilesetup/*",
       "chrome://oobe/*",
       "chrome://password-change/*",
-      "chrome://assistant-optin/*"
+      "chrome://assistant-optin/*",
+      "chrome://add-supervision/*"
     ]
   }],
   "cloudPrintPrivate": {

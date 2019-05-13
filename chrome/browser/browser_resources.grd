@@ -698,6 +698,11 @@
         <include name="IDR_SYS_INTERNALS_IMAGE_CPU_SVG" file="resources\chromeos\sys_internals\img\cpu.svg" type="BINDATA" />
         <include name="IDR_SYS_INTERNALS_IMAGE_MEMORY_SVG" file="resources\chromeos\sys_internals\img\memory.svg" type="BINDATA" />
         <include name="IDR_SYS_INTERNALS_IMAGE_ZRAM_SVG" file="resources\chromeos\sys_internals\img\zram.svg" type="BINDATA" />
+        <include name="IDR_ADD_SUPERVISION_HTML" file="resources\chromeos\add_supervision\add_supervision.html" compress="gzip" type="BINDATA" />
+        <include name="IDR_ADD_SUPERVISION_JS" file="resources\chromeos\add_supervision\add_supervision.js" compress="gzip" type="BINDATA" />
+        <include name="IDR_ADD_SUPERVISION_API_SERVER_JS" file="resources\chromeos\add_supervision\add_supervision_api_server.js" compress="gzip" type="BINDATA" />
+        <include name="IDR_ADD_SUPERVISION_POST_MESSAGE_API_JS" file="resources\chromeos\add_supervision\post_message_api.js" compress="gzip" type="BINDATA" />
+        <include name="IDR_ADD_SUPERVISION_MOJOM_LITE_JS" file="${root_gen_dir}\chrome\browser\ui\webui\chromeos\add_supervision\add_supervision.mojom-lite.js" compress="gzip" use_base_dir="false" type="BINDATA" />
       </if>
       <if expr="chromeos">
         <include name="IDR_ASSISTANT_LOGO_PNG" file="resources\chromeos\assistant_optin\assistant_logo.png" type="BINDATA" />

@@ -458,6 +458,7 @@ source_set("chrome_content_browser_overlay_manifest") {
     deps += [
       "//chrome/browser/chromeos/kiosk_next_home/mojom",
       "//chrome/browser/chromeos/supervision/mojom",
+      "//chrome/browser/ui/webui/chromeos/add_supervision:mojo_bindings",
       "//chrome/browser/ui/webui/chromeos/machine_learning:mojo_bindings",
       "//chromeos/assistant:buildflags",
       "//chromeos/services/cellular_setup/public/mojom",

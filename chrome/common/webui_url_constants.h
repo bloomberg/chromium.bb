@@ -189,6 +189,8 @@ extern const char kChromeUIWebApksHost[];
 extern const char kChromeUIAccountManagerWelcomeHost[];
 extern const char kChromeUIAccountManagerWelcomeURL[];
 extern const char kChromeUIActivationMessageHost[];
+extern const char kChromeUIAddSupervisionHost[];
+extern const char kChromeUIAddSupervisionURL[];
 extern const char kChromeUIArcGraphicsTracingHost[];
 extern const char kChromeUIArcGraphicsTracingURL[];
 extern const char kChromeUIAssistantOptInHost[];

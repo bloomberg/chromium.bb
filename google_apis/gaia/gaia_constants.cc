@@ -44,7 +44,7 @@ const char kChromeSyncSupervisedOAuth2Scope[] =
 
 // OAuth2 scope for access to Google Family Link kid scope.
 const char kKidFamilyOAuth2Scope[] =
-    "https://www.googleapis.com/auth/kid.family";
+    "https://www.googleapis.com/auth/kid.family.readonly";
 
 // OAuth2 scope for access to Google Talk APIs (XMPP).
 const char kGoogleTalkOAuth2Scope[] =

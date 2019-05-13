@@ -200,6 +200,9 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kWakeOnWifiPacket[];
 // Controls whether to enable Chrome OS Account Manager.
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kAccountManager;
 
+// Controls whether to enable Chrome OS Add Child Account Supervision flow.
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kAddSupervision;
+
 // Controls whether to enable Google Assistant feature.
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kAssistantFeature;
@@ -241,6 +244,9 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsCellularFirstDevice();
 
 // Returns true if Chrome OS Account Manager is enabled.
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsAccountManagerEnabled();
+
+// Returns true if Chrome OS Add Child Supervision flow is enabled.
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsAddSupervisionEnabled();
 
 // Returns true if Google Assistant flags are enabled.
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsAssistantFlagsEnabled();

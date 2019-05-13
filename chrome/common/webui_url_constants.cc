@@ -189,6 +189,8 @@ const char kChromeUIAccountManagerWelcomeHost[] = "account-manager-welcome";
 const char kChromeUIAccountManagerWelcomeURL[] =
     "chrome://account-manager-welcome";
 const char kChromeUIActivationMessageHost[] = "activationmessage";
+const char kChromeUIAddSupervisionHost[] = "add-supervision";
+const char kChromeUIAddSupervisionURL[] = "chrome://add-supervision/";
 const char kChromeUIArcGraphicsTracingHost[] = "arc-graphics-tracing";
 const char kChromeUIArcGraphicsTracingURL[] = "chrome://arc-graphics-tracing/";
 const char kChromeUIAssistantOptInHost[] = "assistant-optin";
@@ -251,6 +253,7 @@ bool IsSystemWebUIHost(base::StringPiece host) {
   static const char* const kHosts[] = {
       kChromeUIAccountManagerWelcomeHost,
       kChromeUIActivationMessageHost,
+      kChromeUIAddSupervisionHost,
       kChromeUIAssistantOptInHost,
       kChromeUIBluetoothPairingHost,
       kChromeUICellularSetupHost,

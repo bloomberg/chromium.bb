@@ -3909,4 +3909,9 @@
   <message name="IDS_TPM_AUTO_UPDATE_REBOOT_NOTIFICATION_MESSAGE" desc="Text for the notification informing the user that a TPM update will be performed after reboot which will result in local data being deleted.">
     The next time you restart your device, your administrator will perform a one-time update that will delete your local data.
   </message>
+
+  <!-- Strings for Add Supervision screen -->
+  <message name="IDS_ADD_SUPERVISION_PAGE_TITLE" desc="Title for the Chrome OS Add Supervision screen.">
+    Add Supervision
+  </message>
 </grit-part>
