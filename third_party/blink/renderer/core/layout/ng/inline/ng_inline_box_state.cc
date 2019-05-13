@@ -435,7 +435,8 @@ unsigned NGInlineLayoutStateStack::UpdateBoxDataFragmentRange(
       box_data_list_[box_data_index - 1].fragmented_box_data_index =
           box_data_list_.size();
       // Do not use `emplace_back()` here because adding to |box_data_list_| may
-      // reallocate the buffer. Create a new instance and |push_back()| instead.
+      // reallocate the buffer, but the `BoxData` ctor must run before the
+      // reallocation. Create a new instance and |push_back()| instead.
       BoxData fragmented_box_data(box_data_list_[box_data_index - 1],
                                   start_index, index);
       box_data_list_.push_back(fragmented_box_data);
