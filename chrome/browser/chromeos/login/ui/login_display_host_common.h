@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "chrome/browser/chromeos/login/ui/kiosk_app_menu_updater.h"
+#include "chrome/browser/chromeos/login/ui/kiosk_app_menu_controller.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -113,7 +113,7 @@ class LoginDisplayHostCommon : public LoginDisplayHost,
   // Called after host deletion.
   std::vector<base::OnceClosure> completion_callbacks_;
 
-  KioskAppMenuUpdater kiosk_updater_;
+  KioskAppMenuController kiosk_app_menu_controller_;
 
   base::WeakPtrFactory<LoginDisplayHostCommon> weak_factory_;
 

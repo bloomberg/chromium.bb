@@ -265,25 +265,27 @@ class KioskAppsButton : public views::MenuButton,
 
   bool LaunchAppForTesting(const std::string& app_id) {
     for (size_t i = 0; i < kiosk_apps_.size(); ++i) {
-      if (kiosk_apps_[i]->identifier->get_app_id() != app_id)
-        continue;
-
-      ExecuteCommand(i, 0);
-      return true;
+      if (kiosk_apps_[i].app_id == app_id) {
+        ExecuteCommand(i, 0);
+        return true;
+      }
     }
     return false;
   }
 
   // Replace the existing items list with a new list of kiosk app menu items.
-  void SetApps(std::vector<mojom::KioskAppInfoPtr> kiosk_apps) {
-    kiosk_apps_ = std::move(kiosk_apps);
+  void SetApps(const std::vector<KioskAppMenuEntry>& kiosk_apps,
+               const base::RepeatingCallback<void(const KioskAppMenuEntry&)>&
+                   launch_app) {
+    launch_app_callback_ = launch_app;
+    kiosk_apps_ = kiosk_apps;
     Clear();
     const gfx::Size kAppIconSize(16, 16);
     for (size_t i = 0; i < kiosk_apps_.size(); ++i) {
       gfx::ImageSkia icon = gfx::ImageSkiaOperations::CreateResizedImage(
-          kiosk_apps_[i]->icon, skia::ImageOperations::RESIZE_GOOD,
+          kiosk_apps_[i].icon, skia::ImageOperations::RESIZE_GOOD,
           kAppIconSize);
-      AddItemWithIcon(i, kiosk_apps_[i]->name, icon);
+      AddItemWithIcon(i, kiosk_apps_[i].name, icon);
     }
   }
 
@@ -359,20 +361,7 @@ class KioskAppsButton : public views::MenuButton,
     // the state is reset (when login screen reappears).
     is_launch_enabled_ = false;
 
-    const mojom::KioskAppInfoPtr& kiosk_app = kiosk_apps_[command_id];
-
-    switch (kiosk_app->identifier->which()) {
-      case mojom::KioskAppIdentifier::Tag::ACCOUNT_ID:
-        Shell::Get()->login_screen_controller()->LaunchArcKioskApp(
-            kiosk_app->identifier->get_account_id());
-        return;
-      case mojom::KioskAppIdentifier::Tag::APP_ID:
-        Shell::Get()->login_screen_controller()->LaunchKioskApp(
-            kiosk_app->identifier->get_app_id());
-        return;
-      default:
-        NOTREACHED();
-    }
+    launch_app_callback_.Run(kiosk_apps_[command_id]);
   }
 
   bool IsCommandIdChecked(int command_id) const override { return false; }
@@ -380,8 +369,9 @@ class KioskAppsButton : public views::MenuButton,
   bool IsCommandIdEnabled(int command_id) const override { return true; }
 
  private:
+  base::RepeatingCallback<void(const KioskAppMenuEntry&)> launch_app_callback_;
   std::unique_ptr<views::MenuRunner> menu_runner_;
-  std::vector<mojom::KioskAppInfoPtr> kiosk_apps_;
+  std::vector<KioskAppMenuEntry> kiosk_apps_;
   bool is_launch_enabled_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(KioskAppsButton);
@@ -548,8 +538,9 @@ void LoginShelfView::InstallTestUiUpdateDelegate(
 }
 
 void LoginShelfView::SetKioskApps(
-    std::vector<mojom::KioskAppInfoPtr> kiosk_apps) {
-  kiosk_apps_button_->SetApps(std::move(kiosk_apps));
+    const std::vector<KioskAppMenuEntry>& kiosk_apps,
+    const base::RepeatingCallback<void(const KioskAppMenuEntry&)>& launch_app) {
+  kiosk_apps_button_->SetApps(kiosk_apps, launch_app);
   UpdateUi();
 }
 

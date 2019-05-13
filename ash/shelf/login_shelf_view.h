@@ -13,7 +13,7 @@
 #include "ash/lock_screen_action/lock_screen_action_background_observer.h"
 #include "ash/login/login_screen_controller_observer.h"
 #include "ash/login/ui/login_data_dispatcher.h"
-#include "ash/public/interfaces/kiosk_app_info.mojom.h"
+#include "ash/public/cpp/kiosk_app_menu.h"
 #include "ash/public/interfaces/login_screen.mojom.h"
 #include "ash/shutdown_controller.h"
 #include "ash/system/locale/locale_update_controller.h"
@@ -80,8 +80,12 @@ class ASH_EXPORT LoginShelfView : public views::View,
   // then notifies LoginShelfView to update its own UI.
   void UpdateAfterSessionChange();
 
-  // Sets the list of kiosk apps that can be launched from the login shelf.
-  void SetKioskApps(std::vector<mojom::KioskAppInfoPtr> kiosk_apps);
+  // Sets the contents of the kiosk app menu, as well as the callback used when
+  // a menu item is selected.
+  void SetKioskApps(
+      const std::vector<KioskAppMenuEntry>& kiosk_apps,
+      const base::RepeatingCallback<void(const KioskAppMenuEntry&)>&
+          launch_app);
 
   // Sets the state of the login dialog.
   void SetLoginDialogState(mojom::OobeDialogState state);
@@ -188,7 +192,9 @@ class ASH_EXPORT LoginShelfView : public views::View,
   ScopedObserver<LocaleUpdateController, LocaleChangeObserver>
       locale_change_observer_{this};
 
-  KioskAppsButton* kiosk_apps_button_ = nullptr;  // Owned by view hierarchy
+  // The kiosk app button will only be created for the primary display's login
+  // shelf.
+  KioskAppsButton* kiosk_apps_button_ = nullptr;
 
   // This is used in tests to wait until UI is updated.
   std::unique_ptr<TestUiUpdateDelegate> test_ui_update_delegate_;

@@ -79,6 +79,8 @@ component("cpp") {
     "immersive/immersive_revealed_lock.cc",
     "immersive/immersive_revealed_lock.h",
     "keyboard_shortcut_viewer.h",
+    "kiosk_app_menu.cc",
+    "kiosk_app_menu.h",
     "lock_screen_widget_factory.cc",
     "lock_screen_widget_factory.h",
     "login_constants.h",

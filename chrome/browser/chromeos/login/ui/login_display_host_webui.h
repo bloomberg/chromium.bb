@@ -17,7 +17,6 @@
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/oobe_configuration.h"
 #include "chrome/browser/chromeos/login/signin_screen_controller.h"
-#include "chrome/browser/chromeos/login/ui/kiosk_app_menu_updater.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_common.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -272,9 +271,6 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
 
   // True if we need to play startup sound when audio device becomes available.
   bool need_to_play_startup_sound_ = false;
-
-  // Updates shelf kiosk app list.
-  KioskAppMenuUpdater kiosk_updater_;
 
   base::WeakPtrFactory<LoginDisplayHostWebUI> weak_factory_;
 

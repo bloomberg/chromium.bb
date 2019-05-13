@@ -18,7 +18,7 @@
 #include "ash/login/ui/login_detachable_base_model.h"
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/login/ui/views_utils.h"
-#include "ash/public/interfaces/kiosk_app_info.mojom.h"
+#include "ash/public/cpp/kiosk_app_menu.h"
 #include "ash/shelf/login_shelf_view.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
@@ -414,19 +414,18 @@ class LockDebugView::DebugDataDispatcherTransformer
   }
 
   void AddKioskApp(ShelfWidget* shelf_widget) {
-    mojom::KioskAppInfoPtr app_info = mojom::KioskAppInfo::New();
-    app_info->identifier = mojom::KioskAppIdentifier::New();
-    app_info->identifier->set_app_id(kDebugKioskAppId);
-    app_info->name = base::UTF8ToUTF16(kDebugKioskAppName);
-    kiosk_apps_.push_back(std::move(app_info));
-    shelf_widget->login_shelf_view()->SetKioskApps(mojo::Clone(kiosk_apps_));
+    KioskAppMenuEntry menu_item;
+    menu_item.app_id = kDebugKioskAppId;
+    menu_item.name = base::UTF8ToUTF16(kDebugKioskAppName);
+    kiosk_apps_.push_back(std::move(menu_item));
+    shelf_widget->login_shelf_view()->SetKioskApps(kiosk_apps_, {});
   }
 
   void RemoveKioskApp(ShelfWidget* shelf_widget) {
     if (kiosk_apps_.empty())
       return;
     kiosk_apps_.pop_back();
-    shelf_widget->login_shelf_view()->SetKioskApps(mojo::Clone(kiosk_apps_));
+    shelf_widget->login_shelf_view()->SetKioskApps(kiosk_apps_, {});
   }
 
   void AddSystemInfo(const std::string& os_version,
@@ -522,7 +521,7 @@ class LockDebugView::DebugDataDispatcherTransformer
   mojom::TrayActionState lock_screen_note_state_;
 
   // List of kiosk apps loaded.
-  std::vector<mojom::KioskAppInfoPtr> kiosk_apps_;
+  std::vector<KioskAppMenuEntry> kiosk_apps_;
 
   // Called when a new user list has been received.
   base::RepeatingClosure on_users_received_;

@@ -38,7 +38,6 @@ mojom("interfaces_internal") {
     "ime_controller.mojom",
     "ime_info.mojom",
     "keyboard_controller.mojom",
-    "kiosk_app_info.mojom",
     "kiosk_next_shell.mojom",
     "locale.mojom",
     "login_screen.mojom",

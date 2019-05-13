@@ -218,15 +218,6 @@ void LoginScreenClient::ShowFeedback() {
     chromeos::LoginDisplayHost::default_host()->ShowFeedback();
 }
 
-void LoginScreenClient::LaunchKioskApp(const std::string& app_id) {
-  chromeos::LoginDisplayHost::default_host()->StartAppLaunch(app_id, false,
-                                                             false);
-}
-
-void LoginScreenClient::LaunchArcKioskApp(const AccountId& account_id) {
-  chromeos::LoginDisplayHost::default_host()->StartArcKiosk(account_id);
-}
-
 void LoginScreenClient::ShowResetScreen() {
   chromeos::LoginDisplayHost::default_host()->ShowResetScreen();
 }
