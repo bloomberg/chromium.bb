@@ -192,7 +192,7 @@ ax::mojom::Role AXLayoutObject::NativeRoleIgnoringAria() const {
 
   if ((css_box && css_box->IsListItem()) || IsHTMLLIElement(node))
     return ax::mojom::Role::kListItem;
-  if (layout_object_->IsListMarkerIncludingNG())
+  if (layout_object_->IsListMarkerIncludingNGInside())
     return ax::mojom::Role::kListMarker;
   if (layout_object_->IsBR())
     return ax::mojom::Role::kLineBreak;
@@ -279,8 +279,12 @@ Node* AXLayoutObject::GetNodeOrContainingBlockNode() const {
   if (layout_object_->IsListMarker())
     return ToLayoutListMarker(layout_object_)->ListItem()->GetNode();
 
-  if (layout_object_->IsLayoutNGListMarker())
-    return ToLayoutNGListMarker(layout_object_)->ListItem()->GetNode();
+  if (layout_object_->IsLayoutNGListMarkerIncludingInside()) {
+    if (LayoutNGListItem* list_item =
+            LayoutNGListItem::FromMarker(*layout_object_))
+      return list_item->GetNode();
+    return nullptr;
+  }
 
   if (layout_object_->IsAnonymousBlock() && layout_object_->ContainingBlock()) {
     return layout_object_->ContainingBlock()->GetNode();
@@ -1490,9 +1494,9 @@ String AXLayoutObject::TextAlternative(bool recursive,
     } else if (layout_object_->IsListMarker() && !recursive) {
       text_alternative = ToLayoutListMarker(layout_object_)->TextAlternative();
       found_text_alternative = true;
-    } else if (layout_object_->IsLayoutNGListMarker() && !recursive) {
-      text_alternative =
-          ToLayoutNGListMarker(layout_object_)->TextAlternative();
+    } else if (layout_object_->IsLayoutNGListMarkerIncludingInside() &&
+               !recursive) {
+      text_alternative = LayoutNGListItem::TextAlternative(*layout_object_);
       found_text_alternative = true;
     }
 

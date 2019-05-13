@@ -1044,8 +1044,12 @@ Node* NGPaintFragment::NodeForHitTest() const {
     return Parent()->NodeForHitTest();
 
   // When the fragment is a list marker, return the list item.
-  if (GetLayoutObject() && GetLayoutObject()->IsLayoutNGListMarker())
-    return ToLayoutNGListMarker(GetLayoutObject())->ListItem()->GetNode();
+  LayoutObject* object = GetLayoutObject();
+  if (object && object->IsLayoutNGListMarker()) {
+    if (LayoutNGListItem* list_item = LayoutNGListItem::FromMarker(*object))
+      return list_item->GetNode();
+    return nullptr;
+  }
 
   for (const NGPaintFragment* runner = Parent(); runner;
        runner = runner->Parent()) {

@@ -633,6 +633,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   bool IsLayoutNGListMarker() const {
     return IsOfType(kLayoutObjectNGListMarker);
   }
+  bool IsLayoutNGInsideListMarker() const {
+    return IsOfType(kLayoutObjectNGInsideListMarker);
+  }
   bool IsLayoutNGListMarkerImage() const {
     return IsOfType(kLayoutObjectNGListMarkerImage);
   }
@@ -1793,8 +1796,17 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return IsListItem() || IsLayoutNGListItem();
   }
 
+  // There are 3 types of list marker. LayoutNG creates different types for
+  // inside and outside; outside is derived from LayoutBlockFlow, and inside
+  // from LayoutInline. Legacy is derived from LayoutBox.
   bool IsListMarkerIncludingNG() const {
     return IsListMarker() || IsLayoutNGListMarker();
+  }
+  bool IsLayoutNGListMarkerIncludingInside() const {
+    return IsLayoutNGListMarker() || IsLayoutNGInsideListMarker();
+  }
+  bool IsListMarkerIncludingNGInside() const {
+    return IsListMarker() || IsLayoutNGListMarkerIncludingInside();
   }
 
   virtual bool IsCombineText() const { return false; }
@@ -2333,6 +2345,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     kLayoutObjectNGMixin,
     kLayoutObjectNGListItem,
     kLayoutObjectNGListMarker,
+    kLayoutObjectNGInsideListMarker,
     kLayoutObjectNGListMarkerImage,
     kLayoutObjectNGText,
     kLayoutObjectProgress,

@@ -12,9 +12,8 @@
 namespace blink {
 
 class Document;
-class LayoutNGListItem;
 
-// A LayoutObject subclass for list markers in LayoutNG.
+// A LayoutObject subclass for outside-positioned list markers in LayoutNG.
 class CORE_EXPORT LayoutNGListMarker final
     : public LayoutNGMixin<LayoutBlockFlow> {
  public:
@@ -27,12 +26,7 @@ class CORE_EXPORT LayoutNGListMarker final
 
   LayoutObject* SymbolMarkerLayoutText() const;
 
-  // Marker text with suffix, e.g. "1. ", for use in accessibility.
-  String TextAlternative() const;
-
   const char* GetName() const override { return "LayoutNGListMarker"; }
-
-  LayoutNGListItem* ListItem() const;
 
   bool NeedsOccupyWholeLine() const;
 
