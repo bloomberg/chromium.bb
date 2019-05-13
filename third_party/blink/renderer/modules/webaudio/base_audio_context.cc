@@ -185,6 +185,10 @@ void BaseAudioContext::Uninitialize() {
 
 void BaseAudioContext::ContextLifecycleStateChanged(
     mojom::FrameLifecycleState state) {
+  // Don't need to do anything for an offline context.
+  if (!HasRealtimeConstraint())
+    return;
+
   if (state == mojom::FrameLifecycleState::kRunning)
     destination()->GetAudioDestinationHandler().Resume();
   else if (state == mojom::FrameLifecycleState::kFrozen ||
