@@ -5563,3 +5563,8 @@ crbug.com/954349 fast/forms/autofocus-in-sandbox-with-allow-scripts.html [ Timeo
 # Sheriff 2019-05-11
 crbug.com/962139 [ Linux Debug ] external/wpt/html/infrastructure/urls/dynamic-changes-to-base-urls/dynamic-urls.sub.html [ Pass Crash ]
 crbug.com/962139 [ Linux Debug ] external/wpt/html/infrastructure/urls/dynamic-changes-to-base-urls/historical.sub.xhtml [ Pass Crash ]
+
+# Sheriff 2019-05-13
+crbug.com/865432 [ Linux ] external/wpt/workers/modules/dedicated-worker-import-blob-url.any.worker.html [ Timeout Pass ]
+crbug.com/867532 [ Linux ] external/wpt/workers/modules/dedicated-worker-import-data-url.any.worker.html [ Timeout Pass ]
+crbug.com/867532 [ Linux ] external/wpt/workers/modules/dedicated-worker-import.any.worker.html [ Timeout Pass ]
