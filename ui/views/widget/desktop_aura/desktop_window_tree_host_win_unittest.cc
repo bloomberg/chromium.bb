@@ -2,15 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/views/widget/desktop_aura/desktop_window_tree_host_win.h"
+
 #include <oleacc.h>
 #include <windows.h>
 
+#include "base/command_line.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/platform/ax_platform_node_win.h"
 #include "ui/accessibility/platform/ax_system_caret_win.h"
 #include "ui/views/test/desktop_window_tree_host_win_test_api.h"
 #include "ui/views/test/widget_test.h"
-#include "ui/views/widget/desktop_aura/desktop_window_tree_host_win.h"
 #include "ui/views/win/hwnd_message_handler.h"
 
 namespace views {

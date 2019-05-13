@@ -34,7 +34,6 @@ ScopedViewsTestHelper::ScopedViewsTestHelper(
 
   test_helper_.reset(
       ViewsTestHelper::Create(context_factory, context_factory_private));
-  platform_test_helper_->OnTestHelperCreated(test_helper_.get());
   test_helper_->SetUp();
 
   ui::InitializeInputMethodForTesting();

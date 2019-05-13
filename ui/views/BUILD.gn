@@ -640,15 +640,6 @@ jumbo_component("views") {
       "touchui/touch_selection_menu_runner_views.h",
       "touchui/touch_selection_menu_views.h",
       "view_constants_aura.h",
-      "widget/desktop_aura/desktop_capture_client.h",
-      "widget/desktop_aura/desktop_drop_target_win.h",
-      "widget/desktop_aura/desktop_event_client.h",
-      "widget/desktop_aura/desktop_focus_rules.h",
-      "widget/desktop_aura/desktop_native_cursor_manager.h",
-      "widget/desktop_aura/desktop_native_widget_aura.h",
-      "widget/desktop_aura/desktop_screen.h",
-      "widget/desktop_aura/desktop_screen_position_client.h",
-      "widget/desktop_aura/desktop_window_tree_host.h",
       "widget/focus_manager_event_handler.h",
       "widget/native_widget_aura.h",
       "widget/tooltip_manager_aura.h",
@@ -681,15 +672,6 @@ jumbo_component("views") {
       "touchui/touch_selection_menu_views.cc",
       "view_constants_aura.cc",
       "views_touch_selection_controller_factory_aura.cc",
-      "widget/desktop_aura/desktop_capture_client.cc",
-      "widget/desktop_aura/desktop_drop_target_win.cc",
-      "widget/desktop_aura/desktop_event_client.cc",
-      "widget/desktop_aura/desktop_focus_rules.cc",
-      "widget/desktop_aura/desktop_native_cursor_manager.cc",
-      "widget/desktop_aura/desktop_native_widget_aura.cc",
-      "widget/desktop_aura/desktop_screen.cc",
-      "widget/desktop_aura/desktop_screen_position_client.cc",
-      "widget/desktop_aura/desktop_window_tree_host.cc",
       "widget/focus_manager_event_handler.cc",
       "widget/native_widget_aura.cc",
       "widget/tooltip_manager_aura.cc",
@@ -706,6 +688,28 @@ jumbo_component("views") {
       "//ui/wm/public",
     ]
     if (!is_chromeos) {
+      public += [
+        "widget/desktop_aura/desktop_capture_client.h",
+        "widget/desktop_aura/desktop_drop_target_win.h",
+        "widget/desktop_aura/desktop_event_client.h",
+        "widget/desktop_aura/desktop_focus_rules.h",
+        "widget/desktop_aura/desktop_native_cursor_manager.h",
+        "widget/desktop_aura/desktop_native_widget_aura.h",
+        "widget/desktop_aura/desktop_screen.h",
+        "widget/desktop_aura/desktop_screen_position_client.h",
+        "widget/desktop_aura/desktop_window_tree_host.h",
+      ]
+      sources += [
+        "widget/desktop_aura/desktop_capture_client.cc",
+        "widget/desktop_aura/desktop_drop_target_win.cc",
+        "widget/desktop_aura/desktop_event_client.cc",
+        "widget/desktop_aura/desktop_focus_rules.cc",
+        "widget/desktop_aura/desktop_native_cursor_manager.cc",
+        "widget/desktop_aura/desktop_native_widget_aura.cc",
+        "widget/desktop_aura/desktop_screen.cc",
+        "widget/desktop_aura/desktop_screen_position_client.cc",
+        "widget/desktop_aura/desktop_window_tree_host.cc",
+      ]
       if (use_x11) {
         public += [
           "widget/desktop_aura/desktop_drag_drop_client_aurax11.h",
@@ -918,35 +922,6 @@ jumbo_source_set("test_support") {
     "//ui/gl:test_support",
   ]
 
-  if (enable_mus) {
-    sources += [
-      "test/platform_test_helper_mus.cc",
-      "test/platform_test_helper_mus.h",
-    ]
-
-    deps += [
-      "//services/service_manager",
-      "//services/service_manager/public/cpp",
-      "//services/service_manager/public/mojom",
-      "//services/viz/public/cpp:manifest",
-      "//services/ws/common",
-      "//services/ws/ime/test_ime_driver/public/cpp:manifest",
-      "//services/ws/public/mojom",
-      "//services/ws/test_ws:manifest",
-      "//testing/gtest",
-      "//ui/compositor:test_support",
-      "//ui/gl:test_support",
-      "//ui/resources",
-      "//ui/resources:ui_test_pak",
-    ]
-
-    data_deps = [
-      "//services/viz",
-      "//services/ws/ime/test_ime_driver",
-      "//ui/resources:ui_test_pak_data",
-    ]
-  }
-
   if (is_win) {
     sources += [
       "test/desktop_window_tree_host_win_test_api.cc",
@@ -972,7 +947,6 @@ jumbo_source_set("test_support") {
     deps += [
       "//ui/aura",
       "//ui/aura:test_support",
-      "//ui/views/mus",
       "//ui/wm",
       "//ui/wm/public",
     ]
@@ -1084,7 +1058,6 @@ test("views_unittests") {
     "view_unittest.cc",
     "view_unittest_mac.mm",
     "widget/ax_native_widget_mac_unittest.mm",
-    "widget/desktop_widget_unittest.cc",
     "widget/native_widget_mac_unittest.mm",
     "widget/native_widget_unittest.cc",
     "widget/root_view_unittest.cc",
@@ -1141,24 +1114,6 @@ test("views_unittests") {
     "//ui/resources:ui_test_pak_data",
   ]
 
-  if (enable_mus) {
-    sources += [
-      "mus/desktop_window_tree_host_mus_unittest.cc",
-      "mus/screen_mus_unittest.cc",
-    ]
-
-    deps += [
-      "//services/ws/test_ws:mojom",
-      "//ui/views/mus",
-      "//ui/views/mus/remote_view:tests",
-    ]
-
-    data_deps += [
-      "//services/ws/ime/test_ime_driver",
-      "//services/ws/test_ws",
-    ]
-  }
-
   if (is_win) {
     public_deps = [
       "//build/win:default_exe_manifest",
@@ -1209,8 +1164,6 @@ test("views_unittests") {
       "touchui/touch_selection_controller_impl_unittest.cc",
       "touchui/touch_selection_menu_runner_views_unittest.cc",
       "view_unittest_aura.cc",
-      "widget/desktop_aura/desktop_focus_rules_unittest.cc",
-      "widget/desktop_aura/desktop_native_widget_aura_unittest.cc",
       "widget/native_widget_aura_unittest.cc",
       "widget/window_reorderer_unittest.cc",
     ]
@@ -1246,6 +1199,12 @@ test("views_unittests") {
     }
 
     if (!is_chromeos) {
+      if (!is_chromeos) {
+        sources += [
+          "widget/desktop_aura/desktop_focus_rules_unittest.cc",
+          "widget/desktop_aura/desktop_native_widget_aura_unittest.cc",
+        ]
+      }
       if (use_x11) {
         sources += [
           "widget/desktop_aura/desktop_drag_drop_client_aurax11_unittest.cc",
@@ -1259,6 +1218,10 @@ test("views_unittests") {
         ]
       }
     }
+  }
+
+  if (!is_chromeos) {
+    sources += [ "widget/desktop_widget_unittest.cc" ]
   }
 }
 
@@ -1335,28 +1298,6 @@ source_set("views_interactive_ui_tests") {
 
   if (is_chromeos) {
     sources -= [ "corewm/desktop_capture_controller_unittest.cc" ]
-  }
-
-  if (enable_mus) {
-    sources += [
-      "mus/clipboard_unittest.cc",
-      "mus/drag_interactive_uitest.cc",
-    ]
-
-    deps += [
-      "//mojo/core/embedder",
-      "//services/ws/public/mojom",
-      "//testing/gmock",
-      "//ui/base/ime",
-      "//ui/base/mojo:lib",
-      "//ui/events:events_base",
-      "//ui/touch_selection",
-      "//ui/views/mus",
-    ]
-
-    data_deps = [
-      "//services/ws/test_ws",
-    ]
   }
 }
 

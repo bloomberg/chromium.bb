@@ -11,7 +11,6 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/views/mus/mus_client.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/shadow_controller.h"
 
@@ -80,20 +79,14 @@ std::vector<aura::Window*> GetAllTopLevelWindows() {
                       reinterpret_cast<LPARAM>(&data));
   }
 #endif
-  if (MusClient::Get()) {
-    auto mus_roots = MusClient::Get()->window_tree_client()->GetRoots();
-    roots.insert(roots.end(), mus_roots.begin(), mus_roots.end());
-  } else {
-    aura::test::AuraTestHelper* aura_test_helper =
-        aura::test::AuraTestHelper::GetInstance();
+  aura::test::AuraTestHelper* aura_test_helper =
+      aura::test::AuraTestHelper::GetInstance();
 #if defined(OS_CHROMEOS)
-    // Chrome OS non-mash unit tests use AuraTestHelper to get the root window.
-    // Chrome OS non-mash browser tests must use ash::Shell::GetAllRootWindows.
-    DCHECK(aura_test_helper) << "Can't find all widgets without a test helper";
+  // Chrome OS browser tests must use ash::Shell::GetAllRootWindows.
+  DCHECK(aura_test_helper) << "Can't find all widgets without a test helper";
 #endif
-    if (aura_test_helper)
-      roots.push_back(aura_test_helper->root_window());
-  }
+  if (aura_test_helper)
+    roots.push_back(aura_test_helper->root_window());
   return roots;
 }
 

@@ -75,7 +75,7 @@ void ChromeBrowserMainExtraPartsViews::ToolkitInitialized() {
 }
 
 void ChromeBrowserMainExtraPartsViews::PreCreateThreads() {
-#if defined(USE_AURA)
+#if defined(USE_AURA) && !defined(OS_CHROMEOS)
   views::InstallDesktopScreenIfNecessary();
 #endif
 }

@@ -1025,6 +1025,7 @@ class ModalDialogDelegate : public DialogDelegateView {
   DISALLOW_COPY_AND_ASSIGN(ModalDialogDelegate);
 };
 
+#if !defined(OS_CHROMEOS)
 // Tests whether the focused window is set correctly when a modal window is
 // created and destroyed. When it is destroyed it should focus the owner window.
 TEST_F(DesktopWidgetTestInteractive, WindowModalWindowDestroyedActivationTest) {
@@ -1051,12 +1052,6 @@ TEST_F(DesktopWidgetTestInteractive, WindowModalWindowDestroyedActivationTest) {
 
   // Create a modal dialog.
   ui::ModalType modal_type = ui::MODAL_TYPE_WINDOW;
-#if defined(OS_CHROMEOS)
-  // On Chrome OS this only works for MODAL_TYPE_CHILD, which makes a widget
-  // backed by NativeWidgetAura. Restoring focus to the parent window from a
-  // closed MODAL_TYPE_WINDOW requires help from the window service.
-  modal_type = ui::MODAL_TYPE_CHILD;
-#endif
   // This instance will be destroyed when the dialog is destroyed.
   ModalDialogDelegate* dialog_delegate = new ModalDialogDelegate(modal_type);
 
@@ -1090,6 +1085,7 @@ TEST_F(DesktopWidgetTestInteractive, WindowModalWindowDestroyedActivationTest) {
   top_level_widget.CloseNow();
   WidgetFocusManager::GetInstance()->RemoveFocusChangeListener(&focus_listener);
 }
+#endif
 
 // Disabled on Mac. Desktop Mac doesn't have system modal windows since Carbon
 // was deprecated. It does have application modal windows, but only Ash requests
@@ -1463,6 +1459,7 @@ TEST_F(DesktopWidgetTestInteractive, RestoreAndMinimizeVisibility) {
 }
 #endif  // defined(OS_WIN)
 
+#if !defined(OS_CHROMEOS)
 // Tests that minimizing a widget causes the gesture_handler
 // to be cleared when the widget is minimized.
 TEST_F(DesktopWidgetTestInteractive, EventHandlersClearedOnWidgetMinimize) {
@@ -1482,6 +1479,7 @@ TEST_F(DesktopWidgetTestInteractive, EventHandlersClearedOnWidgetMinimize) {
 
   widget->CloseNow();
 }
+#endif
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 // Tests that when a desktop native widget has modal transient child, it should
@@ -1533,7 +1531,7 @@ TEST_F(DesktopWidgetTestInteractive,
   top_level->CloseNow();
   deactivate_widget->CloseNow();
 }
-#endif  // defined(USE_AURA) && !defined(OS_CHROMEOS)
+#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
 namespace {
 

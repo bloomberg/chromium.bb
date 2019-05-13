@@ -4001,8 +4001,13 @@ class WidgetShadowTest : public WidgetTest {
 // activation. Test that shadows are added to non-root windows even if not
 // activated.
 TEST_F(WidgetShadowTest, MAYBE_ShadowsInRootWindow) {
-  // A desktop window clips to its bounds, so it shouldn't have a shadow.
+#if defined(OS_CHROMEOS)
+  // On ChromeOS, top-levels have shadows.
+  bool top_level_window_should_have_shadow = true;
+#else
+  // On non-chromeos platforms, the hosting OS is responsible for the shadow.
   bool top_level_window_should_have_shadow = false;
+#endif
 
   // To start, just create a Widget. This constructs the first ShadowController
   // which will start observing the environment for additional aura::Window

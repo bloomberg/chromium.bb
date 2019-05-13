@@ -18,7 +18,6 @@ class TestContextFactories;
 
 namespace views {
 
-class ViewsTestHelper;
 class Widget;
 
 class PlatformTestHelper {
@@ -31,10 +30,6 @@ class PlatformTestHelper {
 
   static void set_factory(Factory factory);
   static std::unique_ptr<PlatformTestHelper> Create();
-
-  // Called once the ViewsTestHelper has been created, but before SetUp() is
-  // called.
-  virtual void OnTestHelperCreated(ViewsTestHelper* helper) {}
 
   // Simulate an OS-level destruction of the native window held by |widget|.
   virtual void SimulateNativeDestroy(Widget* widget);
