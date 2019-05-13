@@ -53,10 +53,9 @@ class LongTaskDetectorTest : public testing::Test {
   TimeTicks DummyTaskEndTime() { return dummy_task_end_time_; }
 
   void SimulateTask(base::TimeDelta duration) {
-    PostCrossThreadTask(
-        *Thread::Current()->GetTaskRunner(), FROM_HERE,
-        CrossThreadBind(&LongTaskDetectorTest::DummyTaskWithDuration,
-                        CrossThreadUnretained(this), duration));
+    Thread::Current()->GetTaskRunner()->PostTask(
+        FROM_HERE, WTF::Bind(&LongTaskDetectorTest::DummyTaskWithDuration,
+                             WTF::Unretained(this), duration));
     platform_->RunUntilIdle();
   }
 

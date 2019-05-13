@@ -522,10 +522,9 @@ TEST_F(InteractiveDetectorTest, TaskLongerThan5sBlocksTTI) {
                       t0 + TimeDelta::FromSeconds(4));
 
   // Post a task with 6 seconds duration.
-  PostCrossThreadTask(
-      *Thread::Current()->GetTaskRunner(), FROM_HERE,
-      CrossThreadBind(&InteractiveDetectorTest::DummyTaskWithDuration,
-                      CrossThreadUnretained(this), 6.0));
+  Thread::Current()->GetTaskRunner()->PostTask(
+      FROM_HERE, WTF::Bind(&InteractiveDetectorTest::DummyTaskWithDuration,
+                           WTF::Unretained(this), 6.0));
 
   platform_->RunUntilIdle();
 
@@ -543,10 +542,9 @@ TEST_F(InteractiveDetectorTest, LongTaskAfterTTIDoesNothing) {
                       t0 + TimeDelta::FromSeconds(4));
 
   // Long task 1.
-  PostCrossThreadTask(
-      *Thread::Current()->GetTaskRunner(), FROM_HERE,
-      CrossThreadBind(&InteractiveDetectorTest::DummyTaskWithDuration,
-                      CrossThreadUnretained(this), 0.1));
+  Thread::Current()->GetTaskRunner()->PostTask(
+      FROM_HERE, WTF::Bind(&InteractiveDetectorTest::DummyTaskWithDuration,
+                           WTF::Unretained(this), 0.1));
 
   platform_->RunUntilIdle();
 
@@ -556,10 +554,9 @@ TEST_F(InteractiveDetectorTest, LongTaskAfterTTIDoesNothing) {
   EXPECT_EQ(GetDetector()->GetInteractiveTime(), long_task_1_end_time);
 
   // Long task 2.
-  PostCrossThreadTask(
-      *Thread::Current()->GetTaskRunner(), FROM_HERE,
-      CrossThreadBind(&InteractiveDetectorTest::DummyTaskWithDuration,
-                      CrossThreadUnretained(this), 0.1));
+  Thread::Current()->GetTaskRunner()->PostTask(
+      FROM_HERE, WTF::Bind(&InteractiveDetectorTest::DummyTaskWithDuration,
+                           WTF::Unretained(this), 0.1));
 
   platform_->RunUntilIdle();
   // Wait 5 seconds to see if TTI time changes.
