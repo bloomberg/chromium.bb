@@ -37,10 +37,11 @@ class ArcIntentPickerAppFetcher : content::WebContentsObserver {
   // Returns true if the navigation request represented by |handle| should be
   // deferred while ARC is queried for apps, and if so, |callback| will be run
   // asynchronously with the action for the navigation. |callback| will not be
-  // run if false is returned.
-  static bool WillGetArcAppsForNavigation(
-      content::NavigationHandle* handle,
-      apps::AppsNavigationCallback callback);
+  // run if false is returned. If |should_launch_preferred_app| is set to true,
+  // the preferred app (if it exists) will be automatically launched.
+  static bool WillGetArcAppsForNavigation(content::NavigationHandle* handle,
+                                          apps::AppsNavigationCallback callback,
+                                          bool should_aunch_preferred_app);
 
   // Called to launch an ARC app if it was selected by the user, and persist the
   // preference to launch or stay in Chrome if |should_persist| is true. Returns
@@ -77,10 +78,12 @@ class ArcIntentPickerAppFetcher : content::WebContentsObserver {
 
   // Asychronously queries ARC for apps which can handle |url|. Runs |callback|
   // with RESUME/CANCEL for the deferred navigation and (if applicable) the list
-  // of handling apps.
+  // of handling apps. |should_launch_preferred_app| represent whether we want
+  // to automatically launch the preferred app (if exists).
   void GetArcAppsForNavigation(mojom::IntentHelperInstance* instance,
                                const GURL& url,
-                               apps::AppsNavigationCallback callback);
+                               apps::AppsNavigationCallback callback,
+                               bool should_launch_preferred_app);
 
   // Asychronously queries ARC for apps which can handle |url|. Runs |callback|
   // with the list of handling apps.
@@ -97,6 +100,7 @@ class ArcIntentPickerAppFetcher : content::WebContentsObserver {
   void OnAppCandidatesReceivedForNavigation(
       const GURL& url,
       apps::AppsNavigationCallback callback,
+      bool should_launch_preferred_app,
       std::vector<mojom::IntentHandlerInfoPtr> app_candidates);
 
   // Determines if there are apps to show the intent picker. Runs |callback|

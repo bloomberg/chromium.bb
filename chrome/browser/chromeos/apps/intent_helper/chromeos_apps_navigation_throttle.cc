@@ -205,12 +205,15 @@ void ChromeOsAppsNavigationThrottle::CancelNavigation() {
 
 bool ChromeOsAppsNavigationThrottle::ShouldDeferNavigationForArc(
     content::NavigationHandle* handle) {
+  // Query for ARC apps, and if we are handling a link navigation, allow the
+  // preferred app (if it exists) to be launched.
   if (arc_enabled_ &&
       arc::ArcIntentPickerAppFetcher::WillGetArcAppsForNavigation(
           handle,
           base::BindOnce(
               &ChromeOsAppsNavigationThrottle::OnDeferredNavigationProcessed,
-              weak_factory_.GetWeakPtr()))) {
+              weak_factory_.GetWeakPtr()),
+          /*should_launch_preferred_app=*/navigate_from_link())) {
     return true;
   }
   return false;
