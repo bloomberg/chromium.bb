@@ -94,10 +94,10 @@ static uint32_t motion_compensated_prediction(AV1_COMP *cpi, ThreadData *td,
 
 static void mode_estimation(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
                             struct scale_factors *sf, int frame_idx,
-                            int16_t *src_diff, tran_low_t *coeff, int mi_row,
-                            int mi_col, BLOCK_SIZE bsize, TX_SIZE tx_size,
-                            YV12_BUFFER_CONFIG *ref_frame[], uint8_t *predictor,
-                            TplDepStats *tpl_stats) {
+                            int16_t *src_diff, tran_low_t *coeff, int use_satd,
+                            int mi_row, int mi_col, BLOCK_SIZE bsize,
+                            TX_SIZE tx_size, YV12_BUFFER_CONFIG *ref_frame[],
+                            uint8_t *predictor, TplDepStats *tpl_stats) {
   AV1_COMMON *cm = &cpi->common;
   ThreadData *td = &cpi->td;
   const GF_GROUP *gf_group = &cpi->twopass.gf_group;
@@ -141,17 +141,29 @@ static void mode_estimation(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
         cm, xd, block_size_wide[bsize], block_size_high[bsize], tx_size, mode,
         0, 0, FILTER_INTRA_MODES, src, src_stride, dst, dst_stride, 0, 0, 0);
 
-    if (is_cur_buf_hbd(xd)) {
-      aom_highbd_subtract_block(bh, bw, src_diff, bw, src, src_stride, dst,
-                                dst_stride, xd->bd);
+    if (use_satd) {
+      if (is_cur_buf_hbd(xd)) {
+        aom_highbd_subtract_block(bh, bw, src_diff, bw, src, src_stride, dst,
+                                  dst_stride, xd->bd);
+      } else {
+        aom_subtract_block(bh, bw, src_diff, bw, src, src_stride, dst,
+                           dst_stride);
+      }
+
+      wht_fwd_txfm(src_diff, bw, coeff, tx_size);
+
+      intra_cost = aom_satd(coeff, pix_num);
     } else {
-      aom_subtract_block(bh, bw, src_diff, bw, src, src_stride, dst,
-                         dst_stride);
+      int64_t sse;
+      if (is_cur_buf_hbd(xd)) {
+        sse = aom_highbd_sse(xd->cur_buf->y_buffer + mb_y_offset,
+                             xd->cur_buf->y_stride, &predictor[0], bw, bw, bh);
+      } else {
+        sse = aom_sse(xd->cur_buf->y_buffer + mb_y_offset,
+                      xd->cur_buf->y_stride, &predictor[0], bw, bw, bh);
+      }
+      intra_cost = ROUND_POWER_OF_TWO(sse, (xd->bd - 8) * 2);
     }
-
-    wht_fwd_txfm(src_diff, bw, coeff, tx_size);
-
-    intra_cost = aom_satd(coeff, pix_num);
 
     if (intra_cost < best_intra_cost) best_intra_cost = intra_cost;
   }
@@ -200,18 +212,31 @@ static void mode_estimation(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
                               kernel, &warp_types, mi_col * MI_SIZE,
                               mi_row * MI_SIZE, 0, 0, MV_PRECISION_Q3,
                               mi_col * MI_SIZE, mi_row * MI_SIZE, xd, 0);
-    if (is_cur_buf_hbd(xd)) {
-      aom_highbd_subtract_block(
-          bh, bw, src_diff, bw, xd->cur_buf->y_buffer + mb_y_offset,
-          xd->cur_buf->y_stride, &predictor[0], bw, xd->bd);
-    } else {
-      aom_subtract_block(bh, bw, src_diff, bw,
-                         xd->cur_buf->y_buffer + mb_y_offset,
-                         xd->cur_buf->y_stride, &predictor[0], bw);
-    }
-    wht_fwd_txfm(src_diff, bw, coeff, tx_size);
+    if (use_satd) {
+      if (is_cur_buf_hbd(xd)) {
+        aom_highbd_subtract_block(
+            bh, bw, src_diff, bw, xd->cur_buf->y_buffer + mb_y_offset,
+            xd->cur_buf->y_stride, &predictor[0], bw, xd->bd);
+      } else {
+        aom_subtract_block(bh, bw, src_diff, bw,
+                           xd->cur_buf->y_buffer + mb_y_offset,
+                           xd->cur_buf->y_stride, &predictor[0], bw);
+      }
+      wht_fwd_txfm(src_diff, bw, coeff, tx_size);
 
-    inter_cost = aom_satd(coeff, pix_num);
+      inter_cost = aom_satd(coeff, pix_num);
+    } else {
+      int64_t sse;
+      if (is_cur_buf_hbd(xd)) {
+        sse = aom_highbd_sse(xd->cur_buf->y_buffer + mb_y_offset,
+                             xd->cur_buf->y_stride, &predictor[0], bw, bw, bh);
+      } else {
+        sse = aom_sse(xd->cur_buf->y_buffer + mb_y_offset,
+                      xd->cur_buf->y_stride, &predictor[0], bw, bw, bh);
+      }
+      inter_cost = ROUND_POWER_OF_TWO(sse, (xd->bd - 8) * 2);
+    }
+
     const double weight_factor = 0.5;
     inter_cost_weighted = (int64_t)(
         (double)inter_cost *
@@ -473,7 +498,7 @@ static void mc_flow_dispenser(AV1_COMP *cpi, YV12_BUFFER_CONFIG **gf_picture,
         (cm->mi_rows - 1 - mi_row) * MI_SIZE + (17 - 2 * AOM_INTERP_EXTEND);
     for (mi_col = 0; mi_col < cm->mi_cols; mi_col += mi_width) {
       TplDepStats tpl_stats;
-      mode_estimation(cpi, x, xd, &sf, frame_idx, src_diff, coeff, mi_row,
+      mode_estimation(cpi, x, xd, &sf, frame_idx, src_diff, coeff, 1, mi_row,
                       mi_col, bsize, tx_size, ref_frame, predictor, &tpl_stats);
 
       // Motion flow dependency dispenser.
@@ -642,7 +667,8 @@ void av1_tpl_setup_stats(AV1_COMP *cpi,
 }
 
 static void get_tpl_forward_stats(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
-                                  BLOCK_SIZE bsize, YV12_BUFFER_CONFIG *ref,
+                                  BLOCK_SIZE bsize, int use_satd,
+                                  YV12_BUFFER_CONFIG *ref,
                                   YV12_BUFFER_CONFIG *src,
                                   TplDepFrame *ref_tpl_frame) {
   AV1_COMMON *cm = &cpi->common;
@@ -712,18 +738,28 @@ static void get_tpl_forward_stats(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
                                 FILTER_INTRA_MODES, src_buf, src_stride,
                                 dst_buf, dst_stride, 0, 0, 0);
 
-        if (is_cur_buf_hbd(xd)) {
-          aom_highbd_subtract_block(bh, bw, src_diff, bw, src_buf, src_stride,
-                                    dst_buf, dst_stride, xd->bd);
+        if (use_satd) {
+          if (is_cur_buf_hbd(xd)) {
+            aom_highbd_subtract_block(bh, bw, src_diff, bw, src_buf, src_stride,
+                                      dst_buf, dst_stride, xd->bd);
+          } else {
+            aom_subtract_block(bh, bw, src_diff, bw, src_buf, src_stride,
+                               dst_buf, dst_stride);
+          }
+
+          wht_fwd_txfm(src_diff, bw, coeff, tx_size);
+
+          intra_cost = aom_satd(coeff, pix_num);
         } else {
-          aom_subtract_block(bh, bw, src_diff, bw, src_buf, src_stride, dst_buf,
-                             dst_stride);
+          int64_t sse;
+          if (is_cur_buf_hbd(xd)) {
+            sse = aom_highbd_sse(src_buf, src_stride, dst_buf, dst_stride, bw,
+                                 bh);
+          } else {
+            sse = aom_sse(src_buf, src_stride, dst_buf, dst_stride, bw, bh);
+          }
+          intra_cost = ROUND_POWER_OF_TWO(sse, (xd->bd - 8) * 2);
         }
-
-        wht_fwd_txfm(src_diff, bw, coeff, tx_size);
-
-        intra_cost = aom_satd(coeff, pix_num);
-
         if (intra_cost < best_intra_cost) best_intra_cost = intra_cost;
       }
 
@@ -744,16 +780,28 @@ static void get_tpl_forward_stats(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
           &x->best_mv.as_mv, &sf, bw, bh, &conv_params, kernel, &warp_types,
           mi_col * MI_SIZE, mi_row * MI_SIZE, 0, 0, MV_PRECISION_Q3,
           mi_col * MI_SIZE, mi_row * MI_SIZE, xd, 0);
-      if (is_cur_buf_hbd(xd)) {
-        aom_highbd_subtract_block(bh, bw, src_diff, bw,
-                                  src->y_buffer + mb_y_offset, src->y_stride,
-                                  &predictor[0], bw, xd->bd);
+      if (use_satd) {
+        if (is_cur_buf_hbd(xd)) {
+          aom_highbd_subtract_block(bh, bw, src_diff, bw,
+                                    src->y_buffer + mb_y_offset, src->y_stride,
+                                    &predictor[0], bw, xd->bd);
+        } else {
+          aom_subtract_block(bh, bw, src_diff, bw, src->y_buffer + mb_y_offset,
+                             src->y_stride, &predictor[0], bw);
+        }
+        wht_fwd_txfm(src_diff, bw, coeff, tx_size);
+        inter_cost = aom_satd(coeff, pix_num);
       } else {
-        aom_subtract_block(bh, bw, src_diff, bw, src->y_buffer + mb_y_offset,
-                           src->y_stride, &predictor[0], bw);
+        int64_t sse;
+        if (is_cur_buf_hbd(xd)) {
+          sse = aom_highbd_sse(src->y_buffer + mb_y_offset, src->y_stride,
+                               &predictor[0], bw, bw, bh);
+        } else {
+          sse = aom_sse(src->y_buffer + mb_y_offset, src->y_stride,
+                        &predictor[0], bw, bw, bh);
+        }
+        inter_cost = ROUND_POWER_OF_TWO(sse, (xd->bd - 8) * 2);
       }
-      wht_fwd_txfm(src_diff, bw, coeff, tx_size);
-      inter_cost = aom_satd(coeff, pix_num);
 
       // Finalize stats
       best_intra_cost = AOMMAX(best_intra_cost, 1);
@@ -844,7 +892,7 @@ void av1_tpl_setup_forward_stats(AV1_COMP *cpi) {
         assert(idx >= 2);
         YV12_BUFFER_CONFIG *cur_buf = &cpi->common.cur_frame->buf;
         YV12_BUFFER_CONFIG *future_buf = get_framebuf(cpi, NULL, idx);
-        get_tpl_forward_stats(cpi, x, xd, bsize, cur_buf, future_buf,
+        get_tpl_forward_stats(cpi, x, xd, bsize, 0, cur_buf, future_buf,
                               tpl_frame);
         tpl_frame->is_valid = 1;
         tpl_used_mask[tpl_future_idx] = 1;

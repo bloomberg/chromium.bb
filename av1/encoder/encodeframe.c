@@ -3871,7 +3871,7 @@ static void setup_delta_q(AV1_COMP *const cpi, MACROBLOCK *const x,
     assert(cpi->oxcf.enable_tpl_model);
     // Setup deltaq based on tpl stats
     current_qindex =
-        get_q_for_deltaq_objective(cpi, sb_size, 2, mi_row, mi_col);
+        get_q_for_deltaq_objective(cpi, sb_size, 1, mi_row, mi_col);
   }
 
   const int qmask = ~(delta_q_info->delta_q_res - 1);
