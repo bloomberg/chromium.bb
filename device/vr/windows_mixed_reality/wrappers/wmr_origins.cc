@@ -37,46 +37,19 @@ using ABI::Windows::Perception::Spatial::ISpatialStageFrameOfReferenceStatics;
 using ABI::Windows::Perception::Spatial::ISpatialStationaryFrameOfReference;
 using Microsoft::WRL::ComPtr;
 
-namespace {
-ComPtr<ISpatialLocator> GetSpatialLocator() {
-  ComPtr<ISpatialLocatorStatics> spatial_locator_statics;
-  base::win::ScopedHString spatial_locator_string =
-      base::win::ScopedHString::Create(
-          RuntimeClass_Windows_Perception_Spatial_SpatialLocator);
-  HRESULT hr = base::win::RoGetActivationFactory(
-      spatial_locator_string.get(), IID_PPV_ARGS(&spatial_locator_statics));
-  if (FAILED(hr)) {
-    device::WMRLogging::TraceError(device::WMRErrorLocation::kGetSpatialLocator,
-                                   hr);
-    return nullptr;
-  }
-
-  ComPtr<ISpatialLocator> locator;
-  hr = spatial_locator_statics->GetDefault(&locator);
-  if (FAILED(hr)) {
-    device::WMRLogging::TraceError(device::WMRErrorLocation::kGetSpatialLocator,
-                                   hr);
-    return nullptr;
-  }
-
-  return locator;
-}
-}  // anonymous namespace
-
 namespace device {
 // WMRCoordinateSystem
-WMRCoordinateSystem::WMRCoordinateSystem(
+WMRCoordinateSystemImpl::WMRCoordinateSystemImpl(
     ComPtr<ISpatialCoordinateSystem> coordinates)
     : coordinates_(coordinates) {
   DCHECK(coordinates_);
 }
 
-WMRCoordinateSystem::WMRCoordinateSystem() {}
+WMRCoordinateSystemImpl::~WMRCoordinateSystemImpl() = default;
 
-WMRCoordinateSystem::~WMRCoordinateSystem() = default;
-
-bool WMRCoordinateSystem::TryGetTransformTo(const WMRCoordinateSystem* other,
-                                            WFN::Matrix4x4* this_to_other) {
+bool WMRCoordinateSystemImpl::TryGetTransformTo(
+    const WMRCoordinateSystem* other,
+    WFN::Matrix4x4* this_to_other) {
   DCHECK(this_to_other);
   DCHECK(other);
   ComPtr<IReference<WFN::Matrix4x4>> this_to_other_ref;
@@ -92,109 +65,66 @@ bool WMRCoordinateSystem::TryGetTransformTo(const WMRCoordinateSystem* other,
   return true;
 }
 
-ISpatialCoordinateSystem* WMRCoordinateSystem::GetRawPtr() const {
+ISpatialCoordinateSystem* WMRCoordinateSystemImpl::GetRawPtr() const {
   return coordinates_.Get();
 }
 
 // WMRStationaryOrigin
-std::unique_ptr<WMRStationaryOrigin>
-WMRStationaryOrigin::CreateAtCurrentLocation() {
-  if (MixedRealityDeviceStatics::GetLockedTestHook().GetHook()) {
-    return std::make_unique<MockWMRStationaryOrigin>();
-  }
-  ComPtr<ISpatialLocator> locator = GetSpatialLocator();
-  if (!locator)
-    return nullptr;
-
-  ComPtr<ISpatialStationaryFrameOfReference> origin;
-  HRESULT hr =
-      locator->CreateStationaryFrameOfReferenceAtCurrentLocation(&origin);
-  if (FAILED(hr)) {
-    WMRLogging::TraceError(WMRErrorLocation::kStationaryReferenceCreation, hr);
-    return nullptr;
-  }
-
-  return std::make_unique<WMRStationaryOrigin>(origin);
-}
-
-WMRStationaryOrigin::WMRStationaryOrigin(
+WMRStationaryOriginImpl::WMRStationaryOriginImpl(
     ComPtr<ISpatialStationaryFrameOfReference> stationary_origin)
     : stationary_origin_(stationary_origin) {
   DCHECK(stationary_origin_);
 }
 
-WMRStationaryOrigin::WMRStationaryOrigin() {}
+WMRStationaryOriginImpl::~WMRStationaryOriginImpl() = default;
 
-WMRStationaryOrigin::~WMRStationaryOrigin() = default;
-
-std::unique_ptr<WMRCoordinateSystem> WMRStationaryOrigin::CoordinateSystem() {
+std::unique_ptr<WMRCoordinateSystem>
+WMRStationaryOriginImpl::CoordinateSystem() {
   ComPtr<ISpatialCoordinateSystem> coordinates;
   HRESULT hr = stationary_origin_->get_CoordinateSystem(&coordinates);
   DCHECK(SUCCEEDED(hr));
-  return std::make_unique<WMRCoordinateSystem>(coordinates);
+  return std::make_unique<WMRCoordinateSystemImpl>(coordinates);
 }
 
 // WMRAttachedOrigin
-std::unique_ptr<WMRAttachedOrigin>
-WMRAttachedOrigin::CreateAtCurrentLocation() {
-  if (MixedRealityDeviceStatics::GetLockedTestHook().GetHook()) {
-    return std::make_unique<MockWMRAttachedOrigin>();
-  }
-  ComPtr<ISpatialLocator> locator = GetSpatialLocator();
-  if (!locator)
-    return nullptr;
-
-  ComPtr<ISpatialLocatorAttachedFrameOfReference> origin;
-  HRESULT hr = locator->CreateAttachedFrameOfReferenceAtCurrentHeading(&origin);
-  if (FAILED(hr)) {
-    WMRLogging::TraceError(WMRErrorLocation::kAttachedReferenceCreation, hr);
-    return nullptr;
-  }
-
-  return std::make_unique<WMRAttachedOrigin>(origin);
-}
-
-WMRAttachedOrigin::WMRAttachedOrigin(
+WMRAttachedOriginImpl::WMRAttachedOriginImpl(
     ComPtr<ISpatialLocatorAttachedFrameOfReference> attached_origin)
     : attached_origin_(attached_origin) {
   DCHECK(attached_origin_);
 }
 
-WMRAttachedOrigin::WMRAttachedOrigin() {}
-
-WMRAttachedOrigin::~WMRAttachedOrigin() = default;
+WMRAttachedOriginImpl::~WMRAttachedOriginImpl() = default;
 
 std::unique_ptr<WMRCoordinateSystem>
-WMRAttachedOrigin::TryGetCoordinatesAtTimestamp(const WMRTimestamp* timestamp) {
+WMRAttachedOriginImpl::TryGetCoordinatesAtTimestamp(
+    const WMRTimestamp* timestamp) {
   ComPtr<ISpatialCoordinateSystem> coordinates;
   HRESULT hr = attached_origin_->GetStationaryCoordinateSystemAtTimestamp(
       timestamp->GetRawPtr(), &coordinates);
   if (FAILED(hr))
     return nullptr;
 
-  return std::make_unique<WMRCoordinateSystem>(coordinates);
+  return std::make_unique<WMRCoordinateSystemImpl>(coordinates);
 }
 
 // WMRStageOrigin
-WMRStageOrigin::WMRStageOrigin(
+WMRStageOriginImpl::WMRStageOriginImpl(
     ComPtr<ISpatialStageFrameOfReference> stage_origin)
     : stage_origin_(stage_origin) {
   DCHECK(stage_origin_);
 }
 
-WMRStageOrigin::WMRStageOrigin() {}
+WMRStageOriginImpl::~WMRStageOriginImpl() = default;
 
-WMRStageOrigin::~WMRStageOrigin() = default;
-
-std::unique_ptr<WMRCoordinateSystem> WMRStageOrigin::CoordinateSystem() {
+std::unique_ptr<WMRCoordinateSystem> WMRStageOriginImpl::CoordinateSystem() {
   ComPtr<ISpatialCoordinateSystem> coordinates;
   HRESULT hr = stage_origin_->get_CoordinateSystem(&coordinates);
   DCHECK(SUCCEEDED(hr));
 
-  return std::make_unique<WMRCoordinateSystem>(coordinates);
+  return std::make_unique<WMRCoordinateSystemImpl>(coordinates);
 }
 
-SpatialMovementRange WMRStageOrigin::MovementRange() {
+SpatialMovementRange WMRStageOriginImpl::MovementRange() {
   SpatialMovementRange movement_range;
   HRESULT hr = stage_origin_->get_MovementRange(&movement_range);
   DCHECK(SUCCEEDED(hr));
@@ -202,7 +132,7 @@ SpatialMovementRange WMRStageOrigin::MovementRange() {
   return movement_range;
 }
 
-std::vector<WFN::Vector3> WMRStageOrigin::GetMovementBounds(
+std::vector<WFN::Vector3> WMRStageOriginImpl::GetMovementBounds(
     const WMRCoordinateSystem* coordinates) {
   DCHECK(coordinates);
 
@@ -222,48 +152,26 @@ std::vector<WFN::Vector3> WMRStageOrigin::GetMovementBounds(
 }
 
 // WMRStageStatics
-std::unique_ptr<WMRStageStatics> WMRStageStatics::Create() {
-  if (MixedRealityDeviceStatics::GetLockedTestHook().GetHook())
-    return std::make_unique<MockWMRStageStatics>();
-  ComPtr<ISpatialStageFrameOfReferenceStatics> stage_statics;
-  base::win::ScopedHString spatial_stage_string =
-      base::win::ScopedHString::Create(
-          RuntimeClass_Windows_Perception_Spatial_SpatialStageFrameOfReference);
-  HRESULT hr = base::win::RoGetActivationFactory(spatial_stage_string.get(),
-                                                 IID_PPV_ARGS(&stage_statics));
-  if (FAILED(hr))
-    return nullptr;
-
-  return std::make_unique<WMRStageStatics>(stage_statics);
-}
-
-WMRStageStatics::WMRStageStatics(
+WMRStageStaticsImpl::WMRStageStaticsImpl(
     ComPtr<ISpatialStageFrameOfReferenceStatics> stage_statics)
     : stage_statics_(stage_statics) {
   DCHECK(stage_statics_);
   auto callback = Microsoft::WRL::Callback<IEventHandler<IInspectable*>>(
-      this, &WMRStageStatics::OnCurrentChanged);
+      this, &WMRStageStaticsImpl::OnCurrentChanged);
   HRESULT hr =
       stage_statics_->add_CurrentChanged(callback.Get(), &stage_changed_token_);
   DCHECK(SUCCEEDED(hr));
 }
 
-WMRStageStatics::WMRStageStatics() {}
-
-WMRStageStatics::~WMRStageStatics() {
-  DCHECK(dispose_called_);
-}
-
-void WMRStageStatics::Dispose() {
+WMRStageStaticsImpl::~WMRStageStaticsImpl() {
   if (stage_changed_token_.value != 0) {
     HRESULT hr = stage_statics_->remove_CurrentChanged(stage_changed_token_);
     stage_changed_token_.value = 0;
     DCHECK(SUCCEEDED(hr));
   }
-  dispose_called_ = true;
 }
 
-std::unique_ptr<WMRStageOrigin> WMRStageStatics::CurrentStage() {
+std::unique_ptr<WMRStageOrigin> WMRStageStaticsImpl::CurrentStage() {
   ComPtr<ISpatialStageFrameOfReference> stage_origin;
   HRESULT hr = stage_statics_->get_Current(&stage_origin);
   if (FAILED(hr) || !stage_origin) {
@@ -271,16 +179,16 @@ std::unique_ptr<WMRStageOrigin> WMRStageStatics::CurrentStage() {
     return nullptr;
   }
 
-  return std::make_unique<WMRStageOrigin>(stage_origin);
+  return std::make_unique<WMRStageOriginImpl>(stage_origin);
 }
 
 std::unique_ptr<base::CallbackList<void()>::Subscription>
-WMRStageStatics::AddStageChangedCallback(
+WMRStageStaticsImpl::AddStageChangedCallback(
     const base::RepeatingCallback<void()>& cb) {
   return callback_list_.Add(cb);
 }
 
-HRESULT WMRStageStatics::OnCurrentChanged(IInspectable*, IInspectable*) {
+HRESULT WMRStageStaticsImpl::OnCurrentChanged(IInspectable*, IInspectable*) {
   callback_list_.Notify();
   return S_OK;
 }

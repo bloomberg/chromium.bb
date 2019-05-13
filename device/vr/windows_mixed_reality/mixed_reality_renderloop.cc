@@ -29,6 +29,7 @@
 #include "device/vr/windows_mixed_reality/wrappers/wmr_origins.h"
 #include "device/vr/windows_mixed_reality/wrappers/wmr_rendering.h"
 #include "device/vr/windows_mixed_reality/wrappers/wmr_timestamp.h"
+#include "device/vr/windows_mixed_reality/wrappers/wmr_wrapper_factories.h"
 #include "ui/gfx/geometry/angle_conversions.h"
 #include "ui/gfx/geometry/vector3d_f.h"
 #include "ui/gfx/transform.h"
@@ -287,13 +288,13 @@ void MixedRealityRenderLoop::InitializeOrigin() {
   // Try to get a stationary frame.  We'll hand out all of our poses in this
   // space.
   if (!attached_) {
-    attached_ = WMRAttachedOrigin::CreateAtCurrentLocation();
+    attached_ = WMRAttachedOriginFactory::CreateAtCurrentLocation();
     if (!attached_)
       return;
   }
 
   std::unique_ptr<WMRStationaryOrigin> stationary_frame =
-      WMRStationaryOrigin::CreateAtCurrentLocation();
+      WMRStationaryOriginFactory::CreateAtCurrentLocation();
   if (!stationary_frame)
     return;
 
@@ -328,7 +329,7 @@ bool MixedRealityRenderLoop::EnsureStageStatics() {
   if (stage_statics_)
     return true;
 
-  stage_statics_ = WMRStageStatics::Create();
+  stage_statics_ = WMRStageStaticsFactory::Create();
   if (!stage_statics_)
     return false;
 
@@ -343,8 +344,6 @@ bool MixedRealityRenderLoop::EnsureStageStatics() {
 
 void MixedRealityRenderLoop::ClearStageStatics() {
   stage_changed_subscription_ = nullptr;
-  if (stage_statics_)
-    stage_statics_->Dispose();
   stage_statics_ = nullptr;
 }
 

@@ -19,6 +19,9 @@ class MockWMRCoordinateSystem : public WMRCoordinateSystem {
       const WMRCoordinateSystem* other,
       ABI::Windows::Foundation::Numerics::Matrix4x4* this_to_other) override;
 
+  ABI::Windows::Perception::Spatial::ISpatialCoordinateSystem* GetRawPtr()
+      const override;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(MockWMRCoordinateSystem);
 };
@@ -68,9 +71,12 @@ class MockWMRStageStatics : public WMRStageStatics {
 
   std::unique_ptr<WMRStageOrigin> CurrentStage() override;
 
-  void Dispose() override;
+  std::unique_ptr<base::CallbackList<void()>::Subscription>
+  AddStageChangedCallback(const base::RepeatingCallback<void()>& cb) override;
 
  private:
+  base::CallbackList<void()> callback_list_;
+
   DISALLOW_COPY_AND_ASSIGN(MockWMRStageStatics);
 };
 

@@ -56,6 +56,12 @@ LockedVRTestHook MixedRealityDeviceStatics::GetLockedTestHook() {
   return LockedVRTestHook(test_hook_);
 }
 
+bool MixedRealityDeviceStatics::ShouldUseMocks() {
+  auto locked_hook = GetLockedTestHook();
+  static bool should_use_mocks = (locked_hook.GetHook() != nullptr);
+  return should_use_mocks;
+}
+
 MixedRealityDeviceStatics::~MixedRealityDeviceStatics() {}
 
 MixedRealityDeviceStaticsImpl::MixedRealityDeviceStaticsImpl() {

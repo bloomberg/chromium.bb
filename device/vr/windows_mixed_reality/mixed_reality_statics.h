@@ -19,6 +19,7 @@ class DEVICE_VR_EXPORT MixedRealityDeviceStatics {
   static std::unique_ptr<MixedRealityDeviceStatics> CreateInstance();
   static void SetTestHook(VRTestHook* hook);
   static LockedVRTestHook GetLockedTestHook();
+  static bool ShouldUseMocks();
 
   virtual ~MixedRealityDeviceStatics();
 

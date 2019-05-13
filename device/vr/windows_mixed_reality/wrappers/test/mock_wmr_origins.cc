@@ -18,6 +18,11 @@ bool MockWMRCoordinateSystem::TryGetTransformTo(
   return true;
 }
 
+ABI::Windows::Perception::Spatial::ISpatialCoordinateSystem*
+MockWMRCoordinateSystem::GetRawPtr() const {
+  return nullptr;
+}
+
 // MockWMRStationaryOrigin
 MockWMRStationaryOrigin::MockWMRStationaryOrigin() {}
 
@@ -61,14 +66,16 @@ MockWMRStageOrigin::GetMovementBounds(const WMRCoordinateSystem* coordinates) {
 // MockWMRStageStatics
 MockWMRStageStatics::MockWMRStageStatics() {}
 
-MockWMRStageStatics::~MockWMRStageStatics() {}
-
-void MockWMRStageStatics::Dispose() {
-  dispose_called_ = true;
-}
+MockWMRStageStatics::~MockWMRStageStatics() = default;
 
 std::unique_ptr<WMRStageOrigin> MockWMRStageStatics::CurrentStage() {
   return std::make_unique<MockWMRStageOrigin>();
+}
+
+std::unique_ptr<base::CallbackList<void()>::Subscription>
+MockWMRStageStatics::AddStageChangedCallback(
+    const base::RepeatingCallback<void()>& cb) {
+  return callback_list_.Add(cb);
 }
 
 }  // namespace device

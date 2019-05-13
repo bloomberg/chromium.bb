@@ -177,6 +177,8 @@ if (enable_vr) {
         "windows_mixed_reality/wrappers/wmr_rendering.h",
         "windows_mixed_reality/wrappers/wmr_timestamp.cc",
         "windows_mixed_reality/wrappers/wmr_timestamp.h",
+        "windows_mixed_reality/wrappers/wmr_wrapper_factories.cc",
+        "windows_mixed_reality/wrappers/wmr_wrapper_factories.h",
       ]
 
       # Sources only meant to be actually used in tests, but need to be always

@@ -18,127 +18,147 @@ class WMRTimestamp;
 
 class WMRCoordinateSystem {
  public:
-  explicit WMRCoordinateSystem(
+  virtual ~WMRCoordinateSystem() = default;
+  virtual bool TryGetTransformTo(
+      const WMRCoordinateSystem* other,
+      ABI::Windows::Foundation::Numerics::Matrix4x4* this_to_other) = 0;
+
+  virtual ABI::Windows::Perception::Spatial::ISpatialCoordinateSystem*
+  GetRawPtr() const = 0;
+};
+
+class WMRCoordinateSystemImpl : public WMRCoordinateSystem {
+ public:
+  explicit WMRCoordinateSystemImpl(
       Microsoft::WRL::ComPtr<
           ABI::Windows::Perception::Spatial::ISpatialCoordinateSystem>
           coordinates);
-  virtual ~WMRCoordinateSystem();
+  ~WMRCoordinateSystemImpl() override;
 
-  virtual bool TryGetTransformTo(
+  bool TryGetTransformTo(
       const WMRCoordinateSystem* other,
-      ABI::Windows::Foundation::Numerics::Matrix4x4* this_to_other);
+      ABI::Windows::Foundation::Numerics::Matrix4x4* this_to_other) override;
 
   ABI::Windows::Perception::Spatial::ISpatialCoordinateSystem* GetRawPtr()
-      const;
-
- protected:
-  // Necessary so subclasses don't call the explicit constructor.
-  WMRCoordinateSystem();
+      const override;
 
  private:
   Microsoft::WRL::ComPtr<
       ABI::Windows::Perception::Spatial::ISpatialCoordinateSystem>
       coordinates_;
 
-  DISALLOW_COPY_AND_ASSIGN(WMRCoordinateSystem);
+  DISALLOW_COPY_AND_ASSIGN(WMRCoordinateSystemImpl);
 };
 
 class WMRStationaryOrigin {
  public:
-  static std::unique_ptr<WMRStationaryOrigin> CreateAtCurrentLocation();
-  explicit WMRStationaryOrigin(
+  virtual ~WMRStationaryOrigin() = default;
+
+  virtual std::unique_ptr<WMRCoordinateSystem> CoordinateSystem() = 0;
+};
+
+class WMRStationaryOriginImpl : public WMRStationaryOrigin {
+ public:
+  explicit WMRStationaryOriginImpl(
       Microsoft::WRL::ComPtr<
           ABI::Windows::Perception::Spatial::ISpatialStationaryFrameOfReference>
           stationary_origin);
-  virtual ~WMRStationaryOrigin();
+  ~WMRStationaryOriginImpl() override;
 
-  virtual std::unique_ptr<WMRCoordinateSystem> CoordinateSystem();
-
- protected:
-  // Necessary so subclasses don't call the explicit constructor.
-  WMRStationaryOrigin();
+  std::unique_ptr<WMRCoordinateSystem> CoordinateSystem() override;
 
  private:
   Microsoft::WRL::ComPtr<
       ABI::Windows::Perception::Spatial::ISpatialStationaryFrameOfReference>
       stationary_origin_;
 
-  DISALLOW_COPY_AND_ASSIGN(WMRStationaryOrigin);
+  DISALLOW_COPY_AND_ASSIGN(WMRStationaryOriginImpl);
 };
 
 class WMRAttachedOrigin {
  public:
-  static std::unique_ptr<WMRAttachedOrigin> CreateAtCurrentLocation();
-  explicit WMRAttachedOrigin(
+  virtual ~WMRAttachedOrigin() = default;
+
+  virtual std::unique_ptr<WMRCoordinateSystem> TryGetCoordinatesAtTimestamp(
+      const WMRTimestamp* timestamp) = 0;
+};
+
+class WMRAttachedOriginImpl : public WMRAttachedOrigin {
+ public:
+  explicit WMRAttachedOriginImpl(
       Microsoft::WRL::ComPtr<ABI::Windows::Perception::Spatial::
                                  ISpatialLocatorAttachedFrameOfReference>
           attached_origin);
-  virtual ~WMRAttachedOrigin();
+  ~WMRAttachedOriginImpl() override;
 
-  virtual std::unique_ptr<WMRCoordinateSystem> TryGetCoordinatesAtTimestamp(
-      const WMRTimestamp* timestamp);
-
- protected:
-  // Necessary so subclasses don't call the explicit constructor.
-  WMRAttachedOrigin();
+  std::unique_ptr<WMRCoordinateSystem> TryGetCoordinatesAtTimestamp(
+      const WMRTimestamp* timestamp) override;
 
  private:
   Microsoft::WRL::ComPtr<ABI::Windows::Perception::Spatial::
                              ISpatialLocatorAttachedFrameOfReference>
       attached_origin_;
 
-  DISALLOW_COPY_AND_ASSIGN(WMRAttachedOrigin);
+  DISALLOW_COPY_AND_ASSIGN(WMRAttachedOriginImpl);
 };
 
 class WMRStageOrigin {
  public:
-  static std::unique_ptr<WMRStageOrigin> CreateAtCurrentLocation();
-  explicit WMRStageOrigin(
-      Microsoft::WRL::ComPtr<
-          ABI::Windows::Perception::Spatial::ISpatialStageFrameOfReference>
-          stage_origin);
-  virtual ~WMRStageOrigin();
+  virtual ~WMRStageOrigin() = default;
 
-  virtual std::unique_ptr<WMRCoordinateSystem> CoordinateSystem();
+  virtual std::unique_ptr<WMRCoordinateSystem> CoordinateSystem() = 0;
   virtual ABI::Windows::Perception::Spatial::SpatialMovementRange
-  MovementRange();
+  MovementRange() = 0;
 
   // This will return an empty array if no bounds are set.
   virtual std::vector<ABI::Windows::Foundation::Numerics::Vector3>
-  GetMovementBounds(const WMRCoordinateSystem* coordinates);
+  GetMovementBounds(const WMRCoordinateSystem* coordinates) = 0;
+};
 
- protected:
-  // Necessary so subclasses don't call the explicit constructor.
-  WMRStageOrigin();
+class WMRStageOriginImpl : public WMRStageOrigin {
+ public:
+  explicit WMRStageOriginImpl(
+      Microsoft::WRL::ComPtr<
+          ABI::Windows::Perception::Spatial::ISpatialStageFrameOfReference>
+          stage_origin);
+  ~WMRStageOriginImpl() override;
+
+  std::unique_ptr<WMRCoordinateSystem> CoordinateSystem() override;
+  ABI::Windows::Perception::Spatial::SpatialMovementRange MovementRange()
+      override;
+  std::vector<ABI::Windows::Foundation::Numerics::Vector3> GetMovementBounds(
+      const WMRCoordinateSystem* coordinates) override;
 
  private:
   Microsoft::WRL::ComPtr<
       ABI::Windows::Perception::Spatial::ISpatialStageFrameOfReference>
       stage_origin_;
 
-  DISALLOW_COPY_AND_ASSIGN(WMRStageOrigin);
+  DISALLOW_COPY_AND_ASSIGN(WMRStageOriginImpl);
 };
 
 class WMRStageStatics {
  public:
-  static std::unique_ptr<WMRStageStatics> Create();
-  explicit WMRStageStatics(
+  virtual ~WMRStageStatics() = default;
+
+  virtual std::unique_ptr<WMRStageOrigin> CurrentStage() = 0;
+
+  virtual std::unique_ptr<base::CallbackList<void()>::Subscription>
+  AddStageChangedCallback(const base::RepeatingCallback<void()>& cb) = 0;
+};
+
+class WMRStageStaticsImpl : public WMRStageStatics {
+ public:
+  explicit WMRStageStaticsImpl(
       Microsoft::WRL::ComPtr<ABI::Windows::Perception::Spatial::
                                  ISpatialStageFrameOfReferenceStatics>
           stage_statics);
-  virtual ~WMRStageStatics();
+  ~WMRStageStaticsImpl() override;
 
-  virtual std::unique_ptr<WMRStageOrigin> CurrentStage();
+  std::unique_ptr<WMRStageOrigin> CurrentStage() override;
 
   std::unique_ptr<base::CallbackList<void()>::Subscription>
-  AddStageChangedCallback(const base::RepeatingCallback<void()>& cb);
-
-  virtual void Dispose();
-
- protected:
-  // Necessary so subclasses don't call the explicit constructor.
-  WMRStageStatics();
-  bool dispose_called_ = false;
+  AddStageChangedCallback(const base::RepeatingCallback<void()>& cb) override;
 
  private:
   HRESULT OnCurrentChanged(IInspectable* sender, IInspectable* args);
@@ -149,7 +169,7 @@ class WMRStageStatics {
   EventRegistrationToken stage_changed_token_;
   base::CallbackList<void()> callback_list_;
 
-  DISALLOW_COPY_AND_ASSIGN(WMRStageStatics);
+  DISALLOW_COPY_AND_ASSIGN(WMRStageStaticsImpl);
 };
 }  // namespace device
 
