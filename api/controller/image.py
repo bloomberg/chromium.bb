@@ -12,7 +12,7 @@ from __future__ import print_function
 
 import os
 
-from chromite.api.gen.chromite.api import image_pb2
+from chromite.api.gen.chromiumos import common_pb2
 from chromite.api.controller import controller_util
 from chromite.lib import cros_build_lib
 from chromite.lib import constants
@@ -20,9 +20,9 @@ from chromite.lib import image_lib
 from chromite.service import image
 
 # The image.proto ImageType enum ids.
-_BASE_ID = image_pb2.Image.BASE
-_DEV_ID = image_pb2.Image.DEV
-_TEST_ID = image_pb2.Image.TEST
+_BASE_ID = common_pb2.BASE
+_DEV_ID = common_pb2.DEV
+_TEST_ID = common_pb2.TEST
 
 # Dict to allow easily translating names to enum ids and vice versa.
 _IMAGE_MAPPING = {
