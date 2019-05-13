@@ -498,3 +498,15 @@ std::ostream& operator<<(std::ostream& o, const CFErrorRef err) {
   }
   return o;
 }
+
+std::ostream& operator<<(std::ostream& o, CFRange range) {
+  return o << NSStringFromRange(NSMakeRange(range.location, range.length));
+}
+
+std::ostream& operator<<(std::ostream& o, id obj) {
+  return obj ? o << [obj description].UTF8String : o << "(nil)";
+}
+
+std::ostream& operator<<(std::ostream& o, NSRange range) {
+  return o << NSStringFromRange(range);
+}

@@ -397,5 +397,11 @@ BASE_EXPORT extern std::ostream& operator<<(std::ostream& o,
                                             const CFErrorRef err);
 BASE_EXPORT extern std::ostream& operator<<(std::ostream& o,
                                             const CFStringRef str);
+BASE_EXPORT extern std::ostream& operator<<(std::ostream& o, CFRange);
+
+#if defined(__OBJC__)
+BASE_EXPORT extern std::ostream& operator<<(std::ostream& o, id);
+BASE_EXPORT extern std::ostream& operator<<(std::ostream& o, NSRange);
+#endif
 
 #endif  // BASE_MAC_FOUNDATION_UTIL_H_
