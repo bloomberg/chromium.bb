@@ -10,7 +10,6 @@ crbug.com/896924 http/tests/inspector-protocol/network/interception-multiclient.
 crbug.com/899303 http/tests/inspector-protocol/fetch/fetch-basic.js [ Timeout ]
 crbug.com/899303 http/tests/inspector-protocol/fetch/fetch-renderer.js [ Timeout ]
 crbug.com/917284 external/wpt/service-workers/service-worker/claim-fetch-with-appcache.https.html [ Failure ]
-crbug.com/917284 virtual/disabled-service-worker-servicification/external/wpt/service-workers/service-worker/claim-fetch-with-appcache.https.html [ Failure ]
 crbug.com/933880 external/wpt/FileAPI/url/cross-global-revoke.sub.html [ Failure ]
 crbug.com/933880 external/wpt/FileAPI/url/url-with-fetch.any.html [ Failure ]
 crbug.com/933880 external/wpt/FileAPI/url/url-with-xhr.any.html [ Failure ]
