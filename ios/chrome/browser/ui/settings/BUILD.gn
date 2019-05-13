@@ -54,6 +54,8 @@ source_set("settings") {
     "handoff_table_view_controller.mm",
     "import_data_table_view_controller.h",
     "import_data_table_view_controller.mm",
+    "language_details_table_view_controller.h",
+    "language_details_table_view_controller.mm",
     "language_settings_table_view_controller.h",
     "language_settings_table_view_controller.mm",
     "material_cell_catalog_view_controller.h",

@@ -29,6 +29,7 @@
 #import "ios/chrome/browser/ui/settings/cells/settings_cells_constants.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_cell.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
+#import "ios/chrome/browser/ui/settings/language_details_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
@@ -64,8 +65,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 }  // namespace
 
-@interface LanguageSettingsTableViewController () <BooleanObserver,
-                                                   PrefObserverDelegate> {
+@interface LanguageSettingsTableViewController () <
+    BooleanObserver,
+    LanguageDetailsTableViewControllerDelegate,
+    PrefObserverDelegate> {
   // Registrar for pref change notifications.
   std::unique_ptr<PrefChangeRegistrar> _prefChangeRegistrar;
 
@@ -218,7 +221,22 @@ typedef NS_ENUM(NSInteger, ItemType) {
     didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
   [super tableView:tableView didSelectRowAtIndexPath:indexPath];
 
-  // TODO(crbug.com/957688): Handle selections.
+  TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
+  if (item.type == ItemTypeLanguage) {
+    LanguageItem* languageItem = base::mac::ObjCCastStrict<LanguageItem>(item);
+    BOOL canOfferTranslate =
+        [self canOfferToTranslateLanguage:languageItem.languageCode
+                                  blocked:languageItem.isBlocked];
+    LanguageDetailsTableViewController* viewController =
+        [[LanguageDetailsTableViewController alloc]
+            initWithLanguageCode:base::SysUTF8ToNSString(
+                                     languageItem.languageCode)
+                    languageName:languageItem.text
+                         blocked:languageItem.isBlocked
+               canOfferTranslate:canOfferTranslate];
+    viewController.delegate = self;
+    [self.navigationController pushViewController:viewController animated:YES];
+  }
 }
 
 - (NSIndexPath*)tableView:(UITableView*)tableView
@@ -326,6 +344,22 @@ typedef NS_ENUM(NSInteger, ItemType) {
     }
   }
   return cell;
+}
+
+#pragma mark - LanguageDetailsTableViewControllerDelegate
+
+- (void)languageDetailsTableViewController:
+            (LanguageDetailsTableViewController*)tableViewController
+                   didSelectOfferTranslate:(BOOL)offerTranslate
+                              languageCode:(NSString*)languageCode {
+  const std::string& code = base::SysNSStringToUTF8(languageCode);
+  if (offerTranslate) {
+    _translatePrefs->UnblockLanguage(code);
+  } else {
+    _translatePrefs->BlockLanguage(code);
+  }
+  [self updateLanguagesSection];
+  [self.navigationController popViewControllerAnimated:YES];
 }
 
 #pragma mark - BooleanObserver
