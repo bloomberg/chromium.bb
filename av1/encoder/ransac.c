@@ -34,14 +34,13 @@ typedef void (*DenormalizeFunc)(double *params, double *T1, double *T2);
 typedef int (*FindTransformationFunc)(int points, double *points1,
                                       double *points2, double *params);
 typedef void (*ProjectPointsDoubleFunc)(double *mat, double *points,
-                                        double *proj, const int n,
-                                        const int stride_points,
-                                        const int stride_proj);
+                                        double *proj, int n, int stride_points,
+                                        int stride_proj);
 
 static void project_points_double_translation(double *mat, double *points,
-                                              double *proj, const int n,
-                                              const int stride_points,
-                                              const int stride_proj) {
+                                              double *proj, int n,
+                                              int stride_points,
+                                              int stride_proj) {
   int i;
   for (i = 0; i < n; ++i) {
     const double x = *(points++), y = *(points++);
@@ -53,9 +52,8 @@ static void project_points_double_translation(double *mat, double *points,
 }
 
 static void project_points_double_rotzoom(double *mat, double *points,
-                                          double *proj, const int n,
-                                          const int stride_points,
-                                          const int stride_proj) {
+                                          double *proj, int n,
+                                          int stride_points, int stride_proj) {
   int i;
   for (i = 0; i < n; ++i) {
     const double x = *(points++), y = *(points++);
@@ -67,9 +65,8 @@ static void project_points_double_rotzoom(double *mat, double *points,
 }
 
 static void project_points_double_affine(double *mat, double *points,
-                                         double *proj, const int n,
-                                         const int stride_points,
-                                         const int stride_proj) {
+                                         double *proj, int n, int stride_points,
+                                         int stride_proj) {
   int i;
   for (i = 0; i < n; ++i) {
     const double x = *(points++), y = *(points++);
@@ -374,7 +371,7 @@ static void clear_motion(RANSAC_MOTION *motion, int num_points) {
 
 static int ransac(const int *matched_points, int npoints,
                   int *num_inliers_by_motion, MotionModel *params_by_motion,
-                  int num_desired_motions, const int minpts,
+                  int num_desired_motions, int minpts,
                   IsDegenerateFunc is_degenerate,
                   FindTransformationFunc find_transformation,
                   ProjectPointsDoubleFunc projectpoints) {
@@ -555,7 +552,7 @@ finish_ransac:
 static int ransac_double_prec(const double *matched_points, int npoints,
                               int *num_inliers_by_motion,
                               MotionModel *params_by_motion,
-                              int num_desired_motions, const int minpts,
+                              int num_desired_motions, int minpts,
                               IsDegenerateFunc is_degenerate,
                               FindTransformationFunc find_transformation,
                               ProjectPointsDoubleFunc projectpoints) {
