@@ -2022,11 +2022,6 @@
     "expiry_milestone": 78
   },
   {
-    "name": "force-enable-stylus-tools",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "force-enable-system-aec",
     "owners": [ "grunell" ],
     "expiry_milestone": 80

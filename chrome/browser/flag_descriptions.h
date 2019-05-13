@@ -1876,9 +1876,6 @@ extern const char kFileManagerTouchModeDescription[];
 extern const char kFirstRunUiTransitionsName[];
 extern const char kFirstRunUiTransitionsDescription[];
 
-extern const char kForceEnableStylusToolsName[];
-extern const char kForceEnableStylusToolsDescription[];
-
 extern const char kForceUseChromeCameraName[];
 extern const char kForceUseChromeCameraDescription[];
 

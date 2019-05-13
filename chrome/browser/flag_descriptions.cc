@@ -3114,11 +3114,6 @@ const char kFirstRunUiTransitionsName[] =
 const char kFirstRunUiTransitionsDescription[] =
     "Transitions during first-run tutorial are animated.";
 
-const char kForceEnableStylusToolsName[] = "Force enable stylus features";
-const char kForceEnableStylusToolsDescription[] =
-    "Forces display of the stylus tools menu in the shelf and the stylus "
-    "section in settings, even if there is no attached stylus device.";
-
 const char kForceUseChromeCameraName[] =
     "Open Chrome camera app when clicking on camera icon";
 const char kForceUseChromeCameraDescription[] =

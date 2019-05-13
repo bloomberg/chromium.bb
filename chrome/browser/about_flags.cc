@@ -2327,13 +2327,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kDisablePostScriptPrinting)},
 #endif  // defined(OS_WIN)
 
-#if defined(OS_CHROMEOS)
-    {"force-enable-stylus-tools",
-     flag_descriptions::kForceEnableStylusToolsName,
-     flag_descriptions::kForceEnableStylusToolsDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(ash::switches::kAshForceEnableStylusTools)},
-#endif  // defined(OS_CHROMEOS)
-
 #if defined(OS_WIN)
     {"new-usb-backend", flag_descriptions::kNewUsbBackendName,
      flag_descriptions::kNewUsbBackendDescription, kOsWin,
