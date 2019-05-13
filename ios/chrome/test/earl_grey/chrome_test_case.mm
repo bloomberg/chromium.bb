@@ -200,6 +200,11 @@ const CFTimeInterval kDrainTimeout = 5;
 
   chrome_test_util::ResetSigninPromoPreferences();
   chrome_test_util::ResetMockAuthentication();
+
+  // Reset any remaining sign-in state from previous tests.
+  GREYAssert(chrome_test_util::SignOutAndClearAccounts(),
+             @"Failed to clean up the sign-in state before starting the test.");
+
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
 }
 

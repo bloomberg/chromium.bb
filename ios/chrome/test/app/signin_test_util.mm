@@ -149,6 +149,11 @@ bool SignOutAndClearAccounts() {
   browser_state->GetPrefs()->ClearPref(prefs::kGoogleServicesLastAccountId);
   browser_state->GetPrefs()->ClearPref(prefs::kGoogleServicesLastUsername);
 
+  // |SignOutAndClearAccounts()| is called during shutdown. Commit all pref
+  // changes to ensure that clearing the last signed in account is saved on disk
+  // in case Chrome crashes during shutdown.
+  browser_state->GetPrefs()->CommitPendingWrite();
+
   // Clear known identities.
   ios::ChromeIdentityService* identity_service =
       ios::GetChromeBrowserProvider()->GetChromeIdentityService();
