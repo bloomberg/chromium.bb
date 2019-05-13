@@ -5560,3 +5560,6 @@ crbug.com/962139 [ Linux Debug ] external/wpt/html/infrastructure/urls/dynamic-c
 crbug.com/865432 [ Linux ] external/wpt/workers/modules/dedicated-worker-import-blob-url.any.worker.html [ Timeout Pass ]
 crbug.com/867532 [ Linux ] external/wpt/workers/modules/dedicated-worker-import-data-url.any.worker.html [ Timeout Pass ]
 crbug.com/867532 [ Linux ] external/wpt/workers/modules/dedicated-worker-import.any.worker.html [ Timeout Pass ]
+crbug.com/865432 [ Linux ] virtual/omt-worker-fetch/external/wpt/workers/modules/dedicated-worker-import-blob-url.any.worker.html [ Timeout Pass ]
+crbug.com/867532 [ Linux ] virtual/omt-worker-fetch/external/wpt/workers/modules/dedicated-worker-import-data-url.any.worker.html [ Timeout Pass ]
+crbug.com/867532 [ Linux ] virtual/omt-worker-fetch/external/wpt/workers/modules/dedicated-worker-import.any.worker.html [ Timeout Pass ]
