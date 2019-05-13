@@ -140,6 +140,7 @@ class TabHoverCardBubbleView::WidgetFadeAnimationDelegate
         base::TimeDelta::FromMilliseconds(200);
     set_animation_state(FadeAnimationState::FADE_IN);
     widget_->SetOpacity(0);
+    widget_->Show();
     fade_animation_ = std::make_unique<gfx::LinearAnimation>(this);
     fade_animation_->SetDuration(kFadeInDuration);
     fade_animation_->Start();
@@ -329,6 +330,16 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
 TabHoverCardBubbleView::~TabHoverCardBubbleView() = default;
 
 void TabHoverCardBubbleView::UpdateAndShow(Tab* tab) {
+  // If less than |kShowWithoutDelayTimeBuffer| time has passed since the hover
+  // card was last visible then it is shown immediately. This is to account for
+  // if hover unintentionally leaves the tab strip.
+  constexpr base::TimeDelta kShowWithoutDelayTimeBuffer =
+      base::TimeDelta::FromMilliseconds(500);
+  base::TimeDelta elapsed_time =
+      base::TimeTicks::Now() - last_visible_timestamp_;
+  bool show_immediately = !last_visible_timestamp_.is_null() &&
+                          elapsed_time <= kShowWithoutDelayTimeBuffer;
+
   if (preview_image_)
     preview_image_->SetVisible(!tab->IsActive());
 
@@ -341,18 +352,22 @@ void TabHoverCardBubbleView::UpdateAndShow(Tab* tab) {
 
   fade_animation_delegate_->CancelFadeOut();
 
-  // Start trigger timer if necessary.
   if (!widget_->IsVisible()) {
-    // Note that this will restart the timer if it is already running. If the
-    // hover cards are not yet visible, moving the cursor within the tabstrip
-    // will not trigger the hover cards.
-    delayed_show_timer_.Start(FROM_HERE, GetDelay(tab->width()), this,
-                              &TabHoverCardBubbleView::FadeInToShow);
+    if (disable_animations_for_testing_ || show_immediately) {
+      widget_->Show();
+    } else {
+      // Note that this will restart the timer if it is already running. If the
+      // hover cards are not yet visible, moving the cursor within the tabstrip
+      // will not trigger the hover cards.
+      delayed_show_timer_.Start(FROM_HERE, GetDelay(tab->width()), this,
+                                &TabHoverCardBubbleView::FadeInToShow);
+    }
   }
 }
 
 void TabHoverCardBubbleView::FadeOutToHide() {
   delayed_show_timer_.Stop();
+  last_visible_timestamp_ = base::TimeTicks::Now();
   if (disable_animations_for_testing_) {
     widget_->Hide();
   } else {
@@ -402,9 +417,7 @@ base::TimeDelta TabHoverCardBubbleView::GetDelay(int tab_width) const {
 }
 
 void TabHoverCardBubbleView::FadeInToShow() {
-  widget_->Show();
-  if (!disable_animations_for_testing_)
-    fade_animation_delegate_->FadeIn();
+  fade_animation_delegate_->FadeIn();
 }
 
 void TabHoverCardBubbleView::UpdateCardContent(TabRendererData data) {

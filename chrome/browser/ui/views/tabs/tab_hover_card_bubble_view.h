@@ -70,6 +70,8 @@ class TabHoverCardBubbleView : public views::BubbleDialogDelegateView {
   // Used to animate the tab hover card's movement between tabs.
   std::unique_ptr<WidgetSlideAnimationDelegate> slide_animation_delegate_;
 
+  base::TimeTicks last_visible_timestamp_;
+
   views::Widget* widget_ = nullptr;
   views::Label* title_label_ = nullptr;
   views::Label* domain_label_ = nullptr;
