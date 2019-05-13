@@ -240,7 +240,11 @@ Polymer({
 
   /** @private */
   onTapBack_() {
-    window.location.href = `chrome://settings/help`;
+    if (history.length > 1) {
+      history.back();
+    } else {
+      window.location.href = 'chrome://settings/help';
+    }
   },
 
   /** @private */
