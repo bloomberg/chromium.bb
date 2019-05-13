@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/time/time.h"
 #include "components/sync/test/fake_server/fake_server.h"
 #include "net/base/net_errors.h"
 
@@ -16,6 +15,10 @@ namespace fake_server {
 
 // static
 std::atomic_bool FakeServerHttpPostProvider::network_enabled_(true);
+
+// static
+std::atomic<base::TimeDelta> FakeServerHttpPostProvider::network_delay_ = {
+    base::TimeDelta()};
 
 FakeServerHttpPostProviderFactory::FakeServerHttpPostProviderFactory(
     const base::WeakPtr<FakeServer>& fake_server,
@@ -89,6 +92,17 @@ bool FakeServerHttpPostProvider::MakeSynchronousPost(int* net_error_code,
   synchronous_post_completion_.Reset();
   aborted_ = false;
 
+  const base::TimeDelta network_delay = network_delay_.load();
+  if (!network_delay.is_zero()) {
+    // Block the specified time unless Abort() is called meanwhile.
+    synchronous_post_completion_.TimedWait(network_delay);
+    if (aborted_) {
+      *net_error_code = net::ERR_ABORTED;
+      return false;
+    }
+    DCHECK(!synchronous_post_completion_.IsSignaled());
+  }
+
   // It is assumed that a POST is being made to /command.
   int post_status_code = -1;
   std::string post_response;
@@ -158,6 +172,12 @@ void FakeServerHttpPostProvider::DisableNetwork() {
 void FakeServerHttpPostProvider::EnableNetwork() {
   // Note: This may be called on any thread.
   network_enabled_ = true;
+}
+
+// static
+void FakeServerHttpPostProvider::SetNetworkDelay(base::TimeDelta delay) {
+  // Note: This may be called on any thread.
+  network_delay_ = delay;
 }
 
 void FakeServerHttpPostProvider::HandleCommandOnFakeServerThread(
