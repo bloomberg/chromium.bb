@@ -53,6 +53,7 @@
 #include "storage/browser/blob/blob_url_request_job_factory.h"
 #include "storage/browser/quota/padding_key.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
+#include "storage/browser/test/fake_blob.h"
 #include "storage/browser/test/mock_quota_manager_proxy.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
 #include "storage/common/blob_storage/blob_handle.h"
@@ -70,6 +71,58 @@ namespace cache_storage_manager_unittest {
 
 using blink::mojom::StorageType;
 using ResponseHeaderMap = base::flat_map<std::string, std::string>;
+
+class DelayedBlob : public storage::FakeBlob {
+ public:
+  DelayedBlob(blink::mojom::BlobRequest request,
+              std::string data,
+              base::OnceClosure read_closure)
+      : FakeBlob("foo"),
+        binding_(this, std::move(request)),
+        data_(std::move(data)),
+        read_closure_(std::move(read_closure)) {}
+
+  void Resume() {
+    paused_ = false;
+    MaybeComplete();
+  }
+
+  void ReadAll(mojo::ScopedDataPipeProducerHandle producer_handle,
+               blink::mojom::BlobReaderClientPtr client) override {
+    client_ = std::move(client);
+    producer_handle_ = std::move(producer_handle);
+
+    client_->OnCalculatedSize(data_.length(), data_.length());
+
+    // This should always succeed immediately because we size the pipe to
+    // hold the entire blob for tiny data lengths.
+    uint32_t num_bytes = data_.length();
+    producer_handle_->WriteData(data_.data(), &num_bytes,
+                                MOJO_WRITE_DATA_FLAG_NONE);
+    ASSERT_EQ(data_.length(), num_bytes);
+
+    // Signal that ReadAll() was called.
+    std::move(read_closure_).Run();
+
+    MaybeComplete();
+  }
+
+ private:
+  void MaybeComplete() {
+    if (paused_ || !client_)
+      return;
+    client_->OnComplete(net::OK, data_.length());
+    client_.reset();
+    producer_handle_.reset();
+  }
+
+  mojo::Binding<blink::mojom::Blob> binding_;
+  std::string data_;
+  base::OnceClosure read_closure_;
+  blink::mojom::BlobReaderClientPtr client_;
+  mojo::ScopedDataPipeProducerHandle producer_handle_;
+  bool paused_ = true;
+};
 
 class MockCacheStorageQuotaManagerProxy : public MockQuotaManagerProxy {
  public:
@@ -508,6 +561,23 @@ class CacheStorageManagerTest : public testing::Test {
     blob->size = request->url.spec().size();
     blob->blob = std::move(blob_ptr_info);
 
+    base::RunLoop loop;
+    CachePutWithStatusCodeAndBlobInternal(cache, std::move(request),
+                                          status_code, std::move(blob), &loop,
+                                          response_type, response_headers);
+    loop.Run();
+
+    return callback_error_ == CacheStorageError::kSuccess;
+  }
+
+  void CachePutWithStatusCodeAndBlobInternal(
+      CacheStorageCache* cache,
+      blink::mojom::FetchAPIRequestPtr request,
+      int status_code,
+      blink::mojom::SerializedBlobPtr blob,
+      base::RunLoop* loop,
+      FetchResponseType response_type = FetchResponseType::kDefault,
+      ResponseHeaderMap response_headers = ResponseHeaderMap()) {
     auto response = blink::mojom::FetchAPIResponse::New(
         std::vector<GURL>({request->url}), status_code, "OK", response_type,
         network::mojom::FetchResponseSource::kUnspecified, response_headers,
@@ -524,15 +594,11 @@ class CacheStorageManagerTest : public testing::Test {
 
     std::vector<blink::mojom::BatchOperationPtr> operations;
     operations.emplace_back(std::move(operation));
-    base::RunLoop loop;
     cache->BatchOperation(
         std::move(operations), /* trace_id = */ 0,
         base::BindOnce(&CacheStorageManagerTest::CachePutCallback,
-                       base::Unretained(this), base::Unretained(&loop)),
+                       base::Unretained(this), base::Unretained(loop)),
         CacheStorageCache::BadMessageCallback());
-    loop.Run();
-
-    return callback_error_ == CacheStorageError::kSuccess;
   }
 
   bool CacheDelete(CacheStorageCache* cache, const GURL& url) {
@@ -2055,6 +2121,49 @@ TEST_F(CacheStorageManagerTest, WriteIndexOnlyScheduledWhenValueChanges) {
   EXPECT_FALSE(CacheMatch(callback_cache_handle_.value(), kNonExistant));
   EXPECT_TRUE(CacheMatch(callback_cache_handle_.value(), kResource));
   EXPECT_FALSE(FlushCacheStorageIndex(origin1_));
+}
+
+TEST_P(CacheStorageManagerTestP, SlowPutCompletesWithoutExternalRef) {
+  EXPECT_TRUE(Open(origin1_, "foo"));
+
+  auto request = blink::mojom::FetchAPIRequest::New();
+  request->url = GURL("http://example.com/foo");
+
+  // Start defining a blob for the response body.
+  std::string body_data("hello world");
+  auto blob = blink::mojom::SerializedBlob::New();
+  blob->uuid = "mock blob";
+  blob->size = body_data.length();
+
+  // Provide a fake blob implementation that delays completion.  This will
+  // allow us to pause the writing operation so we can drop the external
+  // reference.
+  auto blob_request = mojo::MakeRequest(&blob->blob);
+  base::RunLoop blob_loop;
+  DelayedBlob delayed_blob(std::move(blob_request), body_data,
+                           blob_loop.QuitClosure());
+
+  // Begin the operation to write the blob into the cache.
+  base::RunLoop cache_loop;
+  CachePutWithStatusCodeAndBlobInternal(callback_cache_handle_.value(),
+                                        std::move(request), 200,
+                                        std::move(blob), &cache_loop);
+
+  // Wait for blob's ReadAll() method to be called.
+  blob_loop.Run();
+
+  // Drop the external reference to the cache.  The operation should hold
+  // itself alive, but previous versions of the code would destroy the cache
+  // immediately at this step.
+  callback_cache_handle_ = CacheStorageCacheHandle();
+
+  // Signal the blob to complete reading.
+  delayed_blob.Resume();
+
+  // Wait for the cache write operation to be complete and verify that it
+  // succeeded.
+  cache_loop.Run();
+  EXPECT_EQ(CacheStorageError::kSuccess, callback_error_);
 }
 
 class CacheStorageQuotaClientTest : public CacheStorageManagerTest {

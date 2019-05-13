@@ -1287,6 +1287,10 @@ void LegacyCacheStorageCache::MatchAllImpl(
     return;
   }
 
+  // Hold the cache alive while performing any operation touching the
+  // disk_cache backend.
+  callback = WrapCallbackWithHandle(std::move(callback));
+
   QueryCache(std::move(request), std::move(options),
              QUERY_CACHE_REQUESTS | QUERY_CACHE_RESPONSES_WITH_BODIES,
              base::BindOnce(&LegacyCacheStorageCache::MatchAllDidQueryCache,
@@ -1369,6 +1373,10 @@ void LegacyCacheStorageCache::WriteSideDataImpl(
         MakeErrorStorage(ErrorStorageType::kWriteSideDataImplBackendClosed));
     return;
   }
+
+  // Hold the cache alive while performing any operation touching the
+  // disk_cache backend.
+  callback = WrapCallbackWithHandle(std::move(callback));
 
   std::unique_ptr<disk_cache::Entry*> scoped_entry_ptr(
       new disk_cache::Entry*());
@@ -1537,6 +1545,11 @@ void LegacyCacheStorageCache::PutImpl(std::unique_ptr<PutContext> put_context) {
         .Run(MakeErrorStorage(ErrorStorageType::kPutImplBackendClosed));
     return;
   }
+
+  // Hold the cache alive while performing any operation touching the
+  // disk_cache backend.
+  put_context->callback =
+      WrapCallbackWithHandle(std::move(put_context->callback));
 
   // Explicitly delete the incumbent resource (which may not exist). This is
   // only done so that it's padding will be decremented from the calculated
@@ -1923,6 +1936,10 @@ void LegacyCacheStorageCache::GetAllMatchedEntriesImpl(
     return;
   }
 
+  // Hold the cache alive while performing any operation touching the
+  // disk_cache backend.
+  callback = WrapCallbackWithHandle(std::move(callback));
+
   QueryCache(
       std::move(request), std::move(options),
       QUERY_CACHE_REQUESTS | QUERY_CACHE_RESPONSES_WITH_BODIES,
@@ -1988,6 +2005,10 @@ void LegacyCacheStorageCache::DeleteImpl(
     return;
   }
 
+  // Hold the cache alive while performing any operation touching the
+  // disk_cache backend.
+  callback = WrapCallbackWithHandle(std::move(callback));
+
   QueryCache(
       std::move(request), std::move(match_options),
       QUERY_CACHE_ENTRIES | QUERY_CACHE_RESPONSES_NO_BODIES,
@@ -2040,6 +2061,10 @@ void LegacyCacheStorageCache::KeysImpl(
         MakeErrorStorage(ErrorStorageType::kKeysImplBackendClosed), nullptr);
     return;
   }
+
+  // Hold the cache alive while performing any operation touching the
+  // disk_cache backend.
+  callback = WrapCallbackWithHandle(std::move(callback));
 
   QueryCache(std::move(request), std::move(options), QUERY_CACHE_REQUESTS,
              base::BindOnce(&LegacyCacheStorageCache::KeysDidQueryCache,

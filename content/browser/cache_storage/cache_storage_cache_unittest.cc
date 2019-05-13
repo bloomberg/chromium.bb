@@ -370,16 +370,37 @@ class TestCacheStorageCache : public LegacyCacheStorageCache {
   }
 
  private:
-  CacheStorageCacheHandle CreateHandle() override {
-    // Returns an empty handle. There is no need for CacheStorage and its
-    // handles in these tests.
-    return CacheStorageCacheHandle();
-  }
-
   bool delay_backend_creation_;
   ErrorCallback backend_creation_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TestCacheStorageCache);
+};
+
+class MockLegacyCacheStorage : public LegacyCacheStorage {
+ public:
+  MockLegacyCacheStorage(
+      const base::FilePath& origin_path,
+      bool memory_only,
+      base::SequencedTaskRunner* cache_task_runner,
+      scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
+      base::WeakPtr<storage::BlobStorageContext> blob_context,
+      CacheStorageManager* cache_storage_manager,
+      const url::Origin& origin,
+      CacheStorageOwner owner)
+      : LegacyCacheStorage(origin_path,
+                           memory_only,
+                           cache_task_runner,
+                           std::move(quota_manager_proxy),
+                           std::move(blob_context),
+                           cache_storage_manager,
+                           std::move(origin),
+                           owner) {}
+
+  void CacheUnreferenced(LegacyCacheStorageCache* cache) override {
+    // Normally the LegacyCacheStorage will attempt to delete the cache
+    // from its map when the cache has become unreferenced.  Since we are
+    // using detached cache objects we instead override to do nothing here.
+  }
 };
 
 class CacheStorageCacheTest : public testing::Test {
@@ -431,8 +452,17 @@ class CacheStorageCacheTest : public testing::Test {
         std::make_unique<storage::BlobDataHandle>(*blob_handle_),
         MakeRequest(&blob_ptr_));
 
+    // Use a mock LegacyCacheStorage object so we can use real
+    // CacheStorageCacheHandle reference counting.  A LegacyCacheStorage
+    // must be present to be notified when a cache becomes unreferenced.
+    mock_cache_storage_ = std::make_unique<MockLegacyCacheStorage>(
+        temp_dir_path, MemoryOnly(), base::ThreadTaskRunnerHandle::Get().get(),
+        quota_manager_proxy_, blob_storage_context_->AsWeakPtr(),
+        /* cache_storage_manager = */ nullptr, kOrigin,
+        CacheStorageOwner::kCacheAPI);
+
     cache_ = std::make_unique<TestCacheStorageCache>(
-        kOrigin, kCacheName, temp_dir_path, nullptr /* CacheStorage */,
+        kOrigin, kCacheName, temp_dir_path, mock_cache_storage_.get(),
         quota_manager_proxy_, blob_storage_context->context()->AsWeakPtr());
     cache_->Init();
   }
@@ -810,6 +840,7 @@ class CacheStorageCacheTest : public testing::Test {
   scoped_refptr<MockQuotaManager> mock_quota_manager_;
   scoped_refptr<MockQuotaManagerProxy> quota_manager_proxy_;
   storage::BlobStorageContext* blob_storage_context_;
+  std::unique_ptr<MockLegacyCacheStorage> mock_cache_storage_;
 
   std::unique_ptr<TestCacheStorageCache> cache_;
 
@@ -2284,6 +2315,221 @@ TEST_P(CacheStorageCacheTestP, MAYBE_KeysWithManyCacheEntries) {
   EXPECT_TRUE(Keys());
   EXPECT_EQ(expected_keys.size(), callback_strings_.size());
   EXPECT_EQ(expected_keys, callback_strings_);
+}
+
+TEST_P(CacheStorageCacheTestP, SelfRefsDuringMatch) {
+  EXPECT_TRUE(Put(body_request_, CreateBlobBodyResponse()));
+
+  // When there are no operations outstanding and we're not holding an
+  // explicit reference the cache should consider itself unreferenced.
+  EXPECT_TRUE(cache_->IsUnreferenced());
+
+  DelayableBackend* delayable_backend = cache_->UseDelayableBackend();
+  delayable_backend->set_delay_open_entry(true);
+
+  std::unique_ptr<base::RunLoop> loop(new base::RunLoop());
+  cache_->Match(CopyFetchRequest(body_request_), /* match_options = */ nullptr,
+                /* trace_id = */ 0,
+                base::BindOnce(&CacheStorageCacheTest::ResponseAndErrorCallback,
+                               base::Unretained(this), loop.get()));
+
+  // Blocks on opening the cache entry.
+  base::RunLoop().RunUntilIdle();
+
+  // Since an operation is outstanding the cache should consider itself
+  // referenced.
+  EXPECT_FALSE(cache_->IsUnreferenced());
+
+  // Allow the operation to continue.
+  EXPECT_TRUE(delayable_backend->OpenEntryContinue());
+  loop->Run();
+
+  // The operation should succeed.
+  EXPECT_EQ(CacheStorageError::kSuccess, callback_error_);
+}
+
+TEST_P(CacheStorageCacheTestP, SelfRefsDuringMatchAll) {
+  EXPECT_TRUE(Put(body_request_, CreateBlobBodyResponse()));
+
+  // When there are no operations outstanding and we're not holding an
+  // explicit reference the cache should consider itself unreferenced.
+  EXPECT_TRUE(cache_->IsUnreferenced());
+
+  DelayableBackend* delayable_backend = cache_->UseDelayableBackend();
+  delayable_backend->set_delay_open_entry(true);
+
+  std::vector<blink::mojom::FetchAPIResponsePtr> responses;
+
+  std::unique_ptr<base::RunLoop> loop(new base::RunLoop());
+  cache_->MatchAll(
+      CopyFetchRequest(body_request_), /* match_options = */ nullptr,
+      /* trace_id = */ 0,
+      base::BindOnce(&CacheStorageCacheTest::ResponsesAndErrorCallback,
+                     base::Unretained(this), loop->QuitClosure(), &responses));
+
+  // Blocks on opening the cache entry.
+  base::RunLoop().RunUntilIdle();
+
+  // Since an operation is outstanding the cache should consider itself
+  // referenced.
+  EXPECT_FALSE(cache_->IsUnreferenced());
+
+  // Allow the operation to continue.
+  EXPECT_TRUE(delayable_backend->OpenEntryContinue());
+  loop->Run();
+
+  // The operation should succeed.
+  EXPECT_EQ(CacheStorageError::kSuccess, callback_error_);
+  EXPECT_EQ(1u, responses.size());
+}
+
+TEST_P(CacheStorageCacheTestP, SelfRefsDuringWriteSideData) {
+  base::Time response_time(base::Time::Now());
+  blink::mojom::FetchAPIResponsePtr response = CreateBlobBodyResponse();
+  response->response_time = response_time;
+  EXPECT_TRUE(Put(body_request_, std::move(response)));
+
+  // When there are no operations outstanding and we're not holding an
+  // explicit reference the cache should consider itself unreferenced.
+  EXPECT_TRUE(cache_->IsUnreferenced());
+
+  DelayableBackend* delayable_backend = cache_->UseDelayableBackend();
+  delayable_backend->set_delay_open_entry(true);
+
+  const std::string expected_side_data = "SideDataSample";
+  scoped_refptr<net::IOBuffer> buffer =
+      base::MakeRefCounted<net::StringIOBuffer>(expected_side_data);
+
+  std::unique_ptr<base::RunLoop> loop(new base::RunLoop());
+  cache_->WriteSideData(
+      base::BindOnce(&CacheStorageCacheTest::ErrorTypeCallback,
+                     base::Unretained(this), base::Unretained(loop.get())),
+      kBodyUrl, response_time, /* trace_id = */ 0, buffer,
+      expected_side_data.length());
+
+  // Blocks on opening the cache entry.
+  base::RunLoop().RunUntilIdle();
+
+  // Since an operation is outstanding the cache should consider itself
+  // referenced.
+  EXPECT_FALSE(cache_->IsUnreferenced());
+
+  // Allow the operation to continue.
+  EXPECT_TRUE(delayable_backend->OpenEntryContinue());
+  loop->Run();
+
+  // The operation should succeed.
+  EXPECT_EQ(CacheStorageError::kSuccess, callback_error_);
+}
+
+TEST_P(CacheStorageCacheTestP, SelfRefsDuringBatchOperation) {
+  // Open the backend
+  EXPECT_TRUE(Keys());
+
+  blink::mojom::BatchOperationPtr operation =
+      blink::mojom::BatchOperation::New();
+  operation->operation_type = blink::mojom::OperationType::kPut;
+  operation->request = BackgroundFetchSettledFetch::CloneRequest(body_request_);
+  operation->request->url = GURL("http://example.com/1");
+  operation->response = CreateBlobBodyResponse();
+  operation->response->url_list.push_back(GURL("http://example.com/1"));
+
+  std::vector<blink::mojom::BatchOperationPtr> operations;
+  operations.push_back(std::move(operation));
+
+  // When there are no operations outstanding and we're not holding an
+  // explicit reference the cache should consider itself unreferenced.
+  EXPECT_TRUE(cache_->IsUnreferenced());
+
+  DelayableBackend* delayable_backend = cache_->UseDelayableBackend();
+  delayable_backend->set_delay_open_entry(true);
+
+  std::unique_ptr<base::RunLoop> loop(new base::RunLoop());
+  cache_->BatchOperation(
+      std::move(operations), /* trace_id = */ 0,
+      base::BindOnce(&CacheStorageCacheTest::VerboseErrorTypeCallback,
+                     base::Unretained(this), base::Unretained(loop.get())),
+      base::BindOnce(&OnBadMessage, base::Unretained(&bad_message_reason_)));
+
+  // Blocks on opening the cache entry.
+  base::RunLoop().RunUntilIdle();
+
+  // Since an operation is outstanding the cache should consider itself
+  // referenced.
+  EXPECT_FALSE(cache_->IsUnreferenced());
+
+  // Allow the operation to continue.
+  EXPECT_TRUE(delayable_backend->OpenEntryContinue());
+  loop->Run();
+
+  // The operation should succeed.
+  EXPECT_EQ(CacheStorageError::kSuccess, callback_error_);
+}
+
+TEST_P(CacheStorageCacheTestP, SelfRefsDuringKeys) {
+  EXPECT_TRUE(Put(body_request_, CreateBlobBodyResponse()));
+
+  // When there are no operations outstanding and we're not holding an
+  // explicit reference the cache should consider itself unreferenced.
+  EXPECT_TRUE(cache_->IsUnreferenced());
+
+  DelayableBackend* delayable_backend = cache_->UseDelayableBackend();
+  delayable_backend->set_delay_open_entry(true);
+
+  std::unique_ptr<base::RunLoop> loop(new base::RunLoop());
+  cache_->Keys(
+      BackgroundFetchSettledFetch::CloneRequest(body_request_),
+      /* match_options = */ nullptr,
+      /* trace_id = */ 0,
+      base::BindOnce(&CacheStorageCacheTest::RequestsCallback,
+                     base::Unretained(this), base::Unretained(loop.get())));
+
+  // Blocks on opening the cache entry.
+  base::RunLoop().RunUntilIdle();
+
+  // Since an operation is outstanding the cache should consider itself
+  // referenced.
+  EXPECT_FALSE(cache_->IsUnreferenced());
+
+  // Allow the operation to continue.
+  EXPECT_TRUE(delayable_backend->OpenEntryContinue());
+  loop->Run();
+
+  // The operation should succeed.
+  EXPECT_EQ(CacheStorageError::kSuccess, callback_error_);
+}
+
+TEST_P(CacheStorageCacheTestP, SelfRefsDuringPut) {
+  // Open the backend
+  EXPECT_TRUE(Keys());
+
+  // When there are no operations outstanding and we're not holding an
+  // explicit reference the cache should consider itself unreferenced.
+  EXPECT_TRUE(cache_->IsUnreferenced());
+
+  DelayableBackend* delayable_backend = cache_->UseDelayableBackend();
+  delayable_backend->set_delay_open_entry(true);
+
+  std::unique_ptr<base::RunLoop> loop(new base::RunLoop());
+  cache_->Put(
+      BackgroundFetchSettledFetch::CloneRequest(body_request_),
+      CreateBlobBodyResponse(), /* trace_id = */ 0,
+      base::BindOnce(&CacheStorageCacheTest::ErrorTypeCallback,
+                     base::Unretained(this), base::Unretained(loop.get())));
+
+  // Blocks on opening the cache entry.
+  base::RunLoop().RunUntilIdle();
+
+  // Since an operation is outstanding the cache should consider itself
+  // referenced.
+  EXPECT_FALSE(cache_->IsUnreferenced());
+
+  // Allow the operation to continue.
+  EXPECT_TRUE(delayable_backend->OpenEntryContinue());
+  loop->Run();
+
+  // The operation should succeed.
+  EXPECT_EQ(CacheStorageError::kSuccess, callback_error_);
 }
 
 INSTANTIATE_TEST_SUITE_P(CacheStorageCacheTest,

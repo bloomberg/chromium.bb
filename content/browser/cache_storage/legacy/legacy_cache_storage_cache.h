@@ -458,6 +458,32 @@ class CONTENT_EXPORT LegacyCacheStorageCache : public CacheStorageCache {
   base::CheckedNumeric<uint64_t> CalculateRequiredSafeSpaceForResponse(
       const blink::mojom::FetchAPIResponsePtr& response);
 
+  // Wrap |callback| in order to reference a CacheStorageCacheHandle
+  // for the duration of an asynchronous operation.  We must keep this
+  // self reference for a couple reasons.  First, we must allow any writes
+  // to cleanly complete in order to avoid truncated entries.  In addition,
+  // we must keep the cache and its disk_cache backend alive until all
+  // open Entry objects are destroyed to avoid having a second backend
+  // opened by another CacheStorageCache clobbering the entries.
+  template <typename... Args>
+  base::OnceCallback<void(Args...)> WrapCallbackWithHandle(
+      base::OnceCallback<void(Args...)> callback) {
+    return base::BindOnce(&LegacyCacheStorageCache::RunWithHandle<Args...>,
+                          weak_ptr_factory_.GetWeakPtr(), CreateHandle(),
+                          std::move(callback));
+  }
+
+  // Invoked by wrapped callbacks with the CacheStorageCacheHandle passed
+  // as a parameter.  The handle is kept alive here simply to maintain
+  // a self-reference during the operation.
+  template <typename... Args>
+  void RunWithHandle(CacheStorageCacheHandle handle,
+                     base::OnceCallback<void(Args...)> callback,
+                     Args... args) {
+    std::move(callback).Run(std::forward<Args>(args)...);
+    // |handle| is destroyed after running the inner wrapped callback.
+  }
+
   // Be sure to check |backend_state_| before use.
   std::unique_ptr<disk_cache::Backend> backend_;
 
