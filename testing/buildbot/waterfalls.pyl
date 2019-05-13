@@ -3819,6 +3819,21 @@
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
       },
+      'android-asan': {
+        'test_suites': {
+          'gtest_tests': 'chromium_android_gtests',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'device_os': 'MMB29Q',
+              'device_type': 'bullhead',
+              'os': 'Android',
+            },
+          ],
+        },
+        'os_type': 'android',
+      },
       'win-asan': {
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',
