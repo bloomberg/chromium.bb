@@ -191,6 +191,15 @@ class ShutdownPolicyLockerTest : public ShutdownPolicyBaseTest {
     ShutdownPolicyBaseTest::TearDownOnMainThread();
   }
 
+  void WaitForShutdownButtonVisibility(bool visible) {
+    ScreenLockerTester tester;
+    int ui_update_count = tester.GetUiUpdateCount();
+    while (tester.IsLockShutdownButtonShown() != visible) {
+      tester.WaitForUiUpdate(ui_update_count);
+      ui_update_count = tester.GetUiUpdateCount();
+    }
+  }
+
  private:
   std::unique_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_mode_;
 
@@ -205,19 +214,15 @@ IN_PROC_BROWSER_TEST_F(ShutdownPolicyLockerTest, TestBasic) {
 
 IN_PROC_BROWSER_TEST_F(ShutdownPolicyLockerTest, PolicyChange) {
   ScreenLockerTester tester;
-  int ui_update_count = tester.GetUiUpdateCount();
   UpdateRebootOnShutdownPolicy(true);
   RefreshDevicePolicy();
-  tester.WaitForUiUpdate(ui_update_count);
+  WaitForShutdownButtonVisibility(false);
   EXPECT_TRUE(tester.IsLockRestartButtonShown());
-  EXPECT_FALSE(tester.IsLockShutdownButtonShown());
 
-  ui_update_count = tester.GetUiUpdateCount();
   UpdateRebootOnShutdownPolicy(false);
   RefreshDevicePolicy();
-  tester.WaitForUiUpdate(ui_update_count);
+  WaitForShutdownButtonVisibility(true);
   EXPECT_FALSE(tester.IsLockRestartButtonShown());
-  EXPECT_TRUE(tester.IsLockShutdownButtonShown());
 }
 
 class ShutdownPolicyLoginTest : public ShutdownPolicyBaseTest {
@@ -254,6 +259,15 @@ class ShutdownPolicyLoginTest : public ShutdownPolicyBaseTest {
     }
   }
 
+  void WaitForShutdownButtonVisibility(bool visible) {
+    test::LoginScreenTester tester;
+    int ui_update_count = tester.GetUiUpdateCount();
+    while (tester.IsShutdownButtonShown() != visible) {
+      tester.WaitForUiUpdate(ui_update_count);
+      ui_update_count = tester.GetUiUpdateCount();
+    }
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ShutdownPolicyLoginTest);
 };
@@ -266,19 +280,15 @@ IN_PROC_BROWSER_TEST_F(ShutdownPolicyLoginTest, PolicyNotSet) {
 
 IN_PROC_BROWSER_TEST_F(ShutdownPolicyLoginTest, PolicyChange) {
   test::LoginScreenTester tester;
-  int ui_update_count = tester.GetUiUpdateCount();
   UpdateRebootOnShutdownPolicy(true);
   RefreshDevicePolicy();
-  tester.WaitForUiUpdate(ui_update_count);
+  WaitForShutdownButtonVisibility(false);
   EXPECT_TRUE(tester.IsRestartButtonShown());
-  EXPECT_FALSE(tester.IsShutdownButtonShown());
 
-  ui_update_count = tester.GetUiUpdateCount();
   UpdateRebootOnShutdownPolicy(false);
   RefreshDevicePolicy();
-  tester.WaitForUiUpdate(ui_update_count);
+  WaitForShutdownButtonVisibility(true);
   EXPECT_FALSE(tester.IsRestartButtonShown());
-  EXPECT_TRUE(tester.IsShutdownButtonShown());
 }
 
 }  // namespace chromeos
