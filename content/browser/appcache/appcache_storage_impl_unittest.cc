@@ -1783,7 +1783,7 @@ class AppCacheStorageImplTest : public testing::Test {
     return static_cast<AppCacheStorageImpl*>(service()->storage());
   }
 
-  AppCacheDatabase* database() { return storage()->database_; }
+  AppCacheDatabase* database() { return storage()->database_.get(); }
 
   MockStorageDelegate* delegate() { return delegate_.get(); }
 

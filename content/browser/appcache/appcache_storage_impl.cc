@@ -83,14 +83,11 @@ bool DeleteGroupAndRelatedRecords(
 
 }  // namespace
 
-// Destroys |database|. If there is appcache data to be deleted
-// (|force_keep_session_state| is false), deletes session-only appcache data.
+// static
 void AppCacheStorageImpl::ClearSessionOnlyOrigins(
-    AppCacheDatabase* database,
+    std::unique_ptr<AppCacheDatabase> database,
     scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy,
     bool force_keep_session_state) {
-  std::unique_ptr<AppCacheDatabase> database_to_delete(database);
-
   // If saving session state, only delete the database.
   if (force_keep_session_state)
     return;
@@ -129,8 +126,8 @@ void AppCacheStorageImpl::ClearSessionOnlyOrigins(
         return;
       }
       std::vector<int64_t> deletable_response_ids;
-      bool success = DeleteGroupAndRelatedRecords(database, group.group_id,
-                                                  &deletable_response_ids);
+      bool success = DeleteGroupAndRelatedRecords(
+          database.get(), group.group_id, &deletable_response_ids);
       success = success && transaction.Commit();
       DCHECK(success);
     }  // for each group
@@ -144,7 +141,7 @@ class AppCacheStorageImpl::DatabaseTask
  public:
   explicit DatabaseTask(AppCacheStorageImpl* storage)
       : storage_(storage),
-        database_(storage->database_),
+        database_(storage->database_.get()),
         io_thread_(base::SequencedTaskRunnerHandle::Get()) {
     DCHECK(io_thread_.get());
   }
@@ -178,7 +175,7 @@ class AppCacheStorageImpl::DatabaseTask
   virtual ~DatabaseTask() {}
 
   AppCacheStorageImpl* storage_;
-  AppCacheDatabase* database_;
+  AppCacheDatabase* const database_;
   DelegateReferenceVector delegates_;
 
  private:
@@ -186,7 +183,7 @@ class AppCacheStorageImpl::DatabaseTask
   void CallRunCompleted(base::TimeTicks schedule_time);
   void OnFatalError();
 
-  scoped_refptr<base::SequencedTaskRunner> io_thread_;
+  const scoped_refptr<base::SequencedTaskRunner> io_thread_;
 };
 
 void AppCacheStorageImpl::DatabaseTask::Schedule() {
@@ -577,9 +574,10 @@ void AppCacheStorageImpl::GroupLoadTask::Run() {
       database_->FindCacheForGroup(group_record_.group_id, &cache_record_) &&
       FindRelatedCacheRecords(cache_record_.cache_id);
 
-  if (success_)
+  if (success_) {
     database_->LazyUpdateLastAccessTime(group_record_.group_id,
                                         base::Time::Now());
+  }
 }
 
 void AppCacheStorageImpl::GroupLoadTask::RunCompleted() {
@@ -702,7 +700,7 @@ void AppCacheStorageImpl::StoreGroupAndCacheTask::OnQuotaCallback(
 
 void AppCacheStorageImpl::StoreGroupAndCacheTask::Run() {
   DCHECK(!success_);
-  sql::Database* connection = database_->db_connection();
+  sql::Database* const connection = database_->db_connection();
   if (!connection)
     return;
 
@@ -898,7 +896,7 @@ class NetworkNamespaceHelper {
   // Key is cache id
   using WhiteListMap = std::map<int64_t, std::vector<AppCacheNamespace>>;
   WhiteListMap namespaces_map_;
-  AppCacheDatabase* database_;
+  AppCacheDatabase* const database_;
 };
 
 }  // namespace
@@ -1411,13 +1409,12 @@ AppCacheStorageImpl::~AppCacheStorageImpl() {
 
   if (database_ &&
       !db_task_runner_->PostTask(
-          FROM_HERE, base::BindOnce(&ClearSessionOnlyOrigins, database_,
-                                    base::WrapRefCounted(
-                                        service_->special_storage_policy()),
-                                    service()->force_keep_session_state()))) {
-    delete database_;
+          FROM_HERE,
+          base::BindOnce(
+              &ClearSessionOnlyOrigins, std::move(database_),
+              base::WrapRefCounted(service_->special_storage_policy()),
+              service()->force_keep_session_state()))) {
   }
-  database_ = nullptr;  // So no further database tasks can be scheduled.
 }
 
 void AppCacheStorageImpl::Initialize(
@@ -1429,7 +1426,7 @@ void AppCacheStorageImpl::Initialize(
   base::FilePath db_file_path;
   if (!is_incognito_)
     db_file_path = cache_directory_.Append(kAppCacheDatabaseName);
-  database_ = new AppCacheDatabase(db_file_path);
+  database_ = std::make_unique<AppCacheDatabase>(db_file_path);
 
   db_task_runner_ = db_task_runner;
 

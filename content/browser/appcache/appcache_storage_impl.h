@@ -130,8 +130,10 @@ class AppCacheStorageImpl : public AppCacheStorage {
   void LazilyCommitLastAccessTimes();
   void OnLazyCommitTimer();
 
+  // If there is appcache data to be deleted (|force_keep_session_state| is
+  // false), deletes session-only appcache data.
   static void ClearSessionOnlyOrigins(
-      AppCacheDatabase* database,
+      std::unique_ptr<AppCacheDatabase> database,
       scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy,
       bool force_keep_session_state);
 
@@ -180,7 +182,7 @@ class AppCacheStorageImpl : public AppCacheStorage {
   int64_t last_deletable_response_rowid_;
 
   // Created on the IO thread, but only used on the DB thread.
-  AppCacheDatabase* database_;
+  std::unique_ptr<AppCacheDatabase> database_;
 
   // Set if we discover a fatal error like a corrupt SQL database or
   // disk cache and cannot continue.
