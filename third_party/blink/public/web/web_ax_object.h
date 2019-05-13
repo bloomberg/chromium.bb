@@ -283,6 +283,7 @@ class WebAXObject {
   BLINK_EXPORT bool HasComputedStyle() const;
   BLINK_EXPORT WebString ComputedStyleDisplay() const;
   BLINK_EXPORT bool AccessibilityIsIgnored() const;
+  BLINK_EXPORT bool AccessibilityIsIncludedInTree() const;
   BLINK_EXPORT void Markers(WebVector<ax::mojom::MarkerType>& types,
                             WebVector<int>& starts,
                             WebVector<int>& ends) const;

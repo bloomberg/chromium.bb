@@ -117,16 +117,16 @@ IN_PROC_BROWSER_TEST_F(AccessibilityIpcErrorBrowserTest,
   VLOG(1) << tree->ToString();
 
   EXPECT_EQ(ax::mojom::Role::kRootWebArea, root->data().role);
-  ASSERT_EQ(2, root->child_count());
+  ASSERT_EQ(2, root->GetUnignoredChildCount());
 
-  const ui::AXNode* live_region = root->ChildAtIndex(0);
-  ASSERT_EQ(1, live_region->child_count());
+  const ui::AXNode* live_region = root->GetUnignoredChildAtIndex(0);
+  ASSERT_EQ(1, live_region->GetUnignoredChildCount());
   EXPECT_EQ(ax::mojom::Role::kGenericContainer, live_region->data().role);
 
-  const ui::AXNode* para = live_region->ChildAtIndex(0);
+  const ui::AXNode* para = live_region->GetUnignoredChildAtIndex(0);
   EXPECT_EQ(ax::mojom::Role::kParagraph, para->data().role);
 
-  const ui::AXNode* button = root->ChildAtIndex(1);
+  const ui::AXNode* button = root->GetUnignoredChildAtIndex(1);
   EXPECT_EQ(ax::mojom::Role::kButton, button->data().role);
 }
 

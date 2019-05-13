@@ -94,6 +94,9 @@ class AX_EXPORT AXNode final {
   // Set the index in parent, for example if siblings were inserted or deleted.
   void SetIndexInParent(int index_in_parent);
 
+  // Update the unignored index in parent for unignored children.
+  void UpdateUnignoredIndexInParentForChildren();
+
   // Swap the internal children vector with |children|. This instance
   // now owns all of the passed children.
   void SwapChildren(std::vector<AXNode*>& children);
@@ -308,11 +311,14 @@ class AX_EXPORT AXNode final {
   void IdVectorToNodeVector(std::vector<int32_t>& ids,
                             std::vector<AXNode*>* nodes) const;
 
+  int ComputeUnignoredIndexInParentForChildrenRecursive(int startIndex);
+
   // Finds and returns a pointer to ordered set containing node.
   AXNode* GetOrderedSet() const;
 
   OwnerTree* tree_;  // Owns this.
   int index_in_parent_;
+  int unignored_index_in_parent_;
   AXNode* parent_;
   std::vector<AXNode*> children_;
   AXNodeData data_;

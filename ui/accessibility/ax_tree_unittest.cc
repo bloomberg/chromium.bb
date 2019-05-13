@@ -1403,6 +1403,100 @@ TEST(AXTreeTest, SkipIgnoredNodes) {
   EXPECT_EQ(1, root->GetUnignoredChildAtIndex(0)->GetUnignoredParent()->id());
 }
 
+TEST(AXTreeTest, UnignoredIndexInParentCache) {
+  AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(5);
+  initial_state.nodes[0].id = 1;
+  initial_state.nodes[0].child_ids = {2, 3};
+  initial_state.nodes[1].id = 2;
+  initial_state.nodes[1].AddState(ax::mojom::State::kIgnored);
+  initial_state.nodes[1].child_ids = {4, 5};
+  initial_state.nodes[2].id = 3;
+  initial_state.nodes[3].id = 4;
+  initial_state.nodes[4].id = 5;
+
+  AXTree tree(initial_state);
+  AXNode* root = tree.root();
+  ASSERT_EQ(2, root->child_count());
+  ASSERT_EQ(2, root->ChildAtIndex(0)->id());
+  ASSERT_EQ(3, root->ChildAtIndex(1)->id());
+
+  EXPECT_EQ(3, root->GetUnignoredChildCount());
+  EXPECT_EQ(4, root->GetUnignoredChildAtIndex(0)->id());
+  EXPECT_EQ(5, root->GetUnignoredChildAtIndex(1)->id());
+  EXPECT_EQ(3, root->GetUnignoredChildAtIndex(2)->id());
+  EXPECT_EQ(0, root->GetUnignoredChildAtIndex(0)->GetUnignoredIndexInParent());
+  EXPECT_EQ(1, root->GetUnignoredChildAtIndex(1)->GetUnignoredIndexInParent());
+  EXPECT_EQ(2, root->GetUnignoredChildAtIndex(2)->GetUnignoredIndexInParent());
+
+  EXPECT_EQ(1, root->GetUnignoredChildAtIndex(0)->GetUnignoredParent()->id());
+
+  EXPECT_EQ(-1, tree.GetFromId(2)->GetUnignoredIndexInParent());
+
+  // Ensure when a node goes from ignored to unignored, its children have their
+  // unignored_index_in_parent updated.
+  AXTreeUpdate update = initial_state;
+  update.nodes[1].RemoveState(ax::mojom::State::kIgnored);
+
+  EXPECT_TRUE(tree.Unserialize(update));
+
+  root = tree.root();
+  EXPECT_EQ(2, root->GetUnignoredChildCount());
+  EXPECT_EQ(2, root->GetUnignoredChildAtIndex(0)->id());
+  EXPECT_EQ(0, tree.GetFromId(4)->GetUnignoredIndexInParent());
+  EXPECT_EQ(1, tree.GetFromId(5)->GetUnignoredIndexInParent());
+
+  // Ensure when a node goes from unignored to unignored, siblings are correctly
+  // updated.
+  AXTreeUpdate update2 = update;
+  update2.nodes[3].AddState(ax::mojom::State::kIgnored);
+
+  EXPECT_TRUE(tree.Unserialize(update2));
+
+  EXPECT_EQ(-1, tree.GetFromId(4)->GetUnignoredIndexInParent());
+  EXPECT_EQ(0, tree.GetFromId(5)->GetUnignoredIndexInParent());
+
+  // Ensure siblings of a deleted node are updated.
+  AXTreeUpdate update3 = update2;
+  update3.nodes.resize(1);
+  update3.nodes[0].id = 1;
+  update3.nodes[0].child_ids = {3};
+
+  EXPECT_TRUE(tree.Unserialize(update3));
+
+  EXPECT_EQ(0, tree.GetFromId(3)->GetUnignoredIndexInParent());
+
+  // Ensure new nodes are correctly updated.
+  AXTreeUpdate update4 = update3;
+  update4.nodes.resize(3);
+  update4.nodes[0].id = 1;
+  update4.nodes[0].child_ids = {3, 6};
+  update4.nodes[1].id = 6;
+  update4.nodes[1].child_ids = {7};
+  update4.nodes[2].id = 7;
+
+  EXPECT_TRUE(tree.Unserialize(update4));
+
+  EXPECT_EQ(0, tree.GetFromId(3)->GetUnignoredIndexInParent());
+  EXPECT_EQ(1, tree.GetFromId(6)->GetUnignoredIndexInParent());
+  EXPECT_EQ(0, tree.GetFromId(7)->GetUnignoredIndexInParent());
+
+  // Ensure reparented nodes are correctly updated.
+  AXTreeUpdate update5 = update4;
+  update5.nodes.resize(2);
+  update5.node_id_to_clear = 6;
+  update5.nodes[0].id = 1;
+  update5.nodes[0].child_ids = {3, 7};
+  update5.nodes[1].id = 7;
+  update5.nodes[1].child_ids = {};
+
+  EXPECT_TRUE(tree.Unserialize(update5));
+
+  EXPECT_EQ(0, tree.GetFromId(3)->GetUnignoredIndexInParent());
+  EXPECT_EQ(1, tree.GetFromId(7)->GetUnignoredIndexInParent());
+}
+
 TEST(AXTreeTest, TestRecursionUnignoredChildCount) {
   AXTreeUpdate tree_update;
   tree_update.root_id = 1;

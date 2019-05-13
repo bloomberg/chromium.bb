@@ -26,6 +26,12 @@ AXNode::AXNode(AXNode::OwnerTree* tree,
       parent_(parent),
       language_info_(nullptr) {
   data_.id = id;
+  // If this node is the root, use the given index_in_parent to provide
+  // consistency.
+  if (!parent)
+    unignored_index_in_parent_ = index_in_parent_;
+  else
+    unignored_index_in_parent_ = -1;
 }
 
 AXNode::~AXNode() = default;
@@ -75,15 +81,7 @@ AXNode* AXNode::GetUnignoredParent() const {
 }
 
 int AXNode::GetUnignoredIndexInParent() const {
-  AXNode* parent = GetUnignoredParent();
-  if (parent) {
-    for (int i = 0; i < parent->GetUnignoredChildCount(); ++i) {
-      if (parent->GetUnignoredChildAtIndex(i) == this)
-        return i;
-    }
-  }
-
-  return 0;
+  return unignored_index_in_parent_;
 }
 
 bool AXNode::IsText() const {
@@ -115,6 +113,11 @@ void AXNode::SetLocation(int32_t offset_container_id,
 
 void AXNode::SetIndexInParent(int index_in_parent) {
   index_in_parent_ = index_in_parent;
+}
+
+void AXNode::UpdateUnignoredIndexInParentForChildren() {
+  if (!data().HasState(ax::mojom::State::kIgnored))
+    ComputeUnignoredIndexInParentForChildrenRecursive(0);
 }
 
 void AXNode::SwapChildren(std::vector<AXNode*>& children) {
@@ -685,6 +688,21 @@ bool AXNode::SetRoleMatchesItemRole(const AXNode* ordered_set) const {
     default:
       return false;
   }
+}
+
+int AXNode::ComputeUnignoredIndexInParentForChildrenRecursive(int startIndex) {
+  int count = 0;
+  for (int i = 0; i < child_count(); i++) {
+    AXNode* child = children_[i];
+    if (child->data().HasState(ax::mojom::State::kIgnored)) {
+      child->unignored_index_in_parent_ = -1;
+      count += child->ComputeUnignoredIndexInParentForChildrenRecursive(
+          startIndex + count);
+    } else {
+      child->unignored_index_in_parent_ = startIndex + count++;
+    }
+  }
+  return count;
 }
 
 // Finds ordered set that immediately contains node.

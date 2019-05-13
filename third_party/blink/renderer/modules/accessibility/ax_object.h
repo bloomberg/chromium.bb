@@ -561,8 +561,13 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual bool CanSetFocusAttribute() const;
   bool CanSetValueAttribute() const;
 
-  // Whether objects are ignored, i.e. not included in the tree.
+  // Whether objects are ignored, i.e. hidden in the tree for most ATs
   bool AccessibilityIsIgnored() const;
+
+  // Whether objects are included in the tree. A node may be Ignored,
+  // but allowed to pass into the tree, e.g. a hidden node referenced
+  // by labeled-by.
+  bool AccessibilityIsIncludedInTree() const;
   typedef HeapVector<IgnoredReason> IgnoredReasons;
   virtual bool ComputeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const {
     return true;
@@ -1107,6 +1112,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   mutable int last_modification_count_;
   mutable RGBA32 cached_background_color_;
   mutable bool cached_is_ignored_ : 1;
+
   mutable bool cached_is_inert_or_aria_hidden_ : 1;
   mutable bool cached_is_descendant_of_leaf_node_ : 1;
   mutable bool cached_is_descendant_of_disabled_node_ : 1;

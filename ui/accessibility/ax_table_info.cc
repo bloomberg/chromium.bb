@@ -376,8 +376,13 @@ AXNode* AXTableInfo::CreateExtraMacColumnNode(int col_index) {
   data.id = id;
   data.role = ax::mojom::Role::kColumn;
   node->SetData(data);
-  for (AXTreeObserver& observer : tree_->observers())
+  for (AXTreeObserver& observer : tree_->observers()) {
     observer.OnNodeCreated(tree_, node);
+    observer.OnAtomicUpdateFinished(
+        tree_, false,
+        {AXTreeObserver::Change(node,
+                                AXTreeObserver::ChangeType::NODE_CREATED)});
+  }
   return node;
 }
 
@@ -389,8 +394,14 @@ AXNode* AXTableInfo::CreateExtraMacTableHeaderNode() {
   data.id = id;
   data.role = ax::mojom::Role::kTableHeaderContainer;
   node->SetData(data);
-  for (AXTreeObserver& observer : tree_->observers())
+
+  for (AXTreeObserver& observer : tree_->observers()) {
     observer.OnNodeCreated(tree_, node);
+    observer.OnAtomicUpdateFinished(
+        tree_, false,
+        {AXTreeObserver::Change(node,
+                                AXTreeObserver::ChangeType::NODE_CREATED)});
+  }
 
   return node;
 }

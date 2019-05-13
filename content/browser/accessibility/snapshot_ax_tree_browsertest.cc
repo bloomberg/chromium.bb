@@ -52,7 +52,7 @@ void DumpRolesAndNamesAsText(const ui::AXNode* node,
             node->data().GetStringAttribute(ax::mojom::StringAttribute::kName) +
             "'";
   *dst += "\n";
-  for (int i = 0; i < node->child_count(); ++i)
+  for (int i = 0; i < node->GetUnignoredChildCount(); ++i)
     DumpRolesAndNamesAsText(node->children()[i], indent + 1, dst);
 }
 
@@ -87,9 +87,9 @@ IN_PROC_BROWSER_TEST_F(SnapshotAXTreeBrowserTest,
   ui::AXNode* root = tree.root();
   ASSERT_NE(nullptr, root);
   ASSERT_EQ(ax::mojom::Role::kRootWebArea, root->data().role);
-  ui::AXNode* group = root->ChildAtIndex(0);
+  ui::AXNode* group = root->GetUnignoredChildAtIndex(0);
   ASSERT_EQ(ax::mojom::Role::kGenericContainer, group->data().role);
-  ui::AXNode* button = group->ChildAtIndex(0);
+  ui::AXNode* button = group->GetUnignoredChildAtIndex(0);
   ASSERT_EQ(ax::mojom::Role::kButton, button->data().role);
 }
 
