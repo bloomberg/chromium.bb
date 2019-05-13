@@ -147,8 +147,9 @@ class BuildPackagesRunConfig(object):
       existing_flags.extend(use_flags)
       use_flags = existing_flags
 
-    return ' '.join(use_flags)
+      return ' '.join(use_flags)
 
+    return None
 
 def SetupBoard(target, accept_licenses=None, run_configs=None):
   """Run the full process to setup a board's sysroot.
@@ -296,6 +297,8 @@ def BuildPackages(target, sysroot, run_configs):
     status_file = os.path.join(tempdir, 'status_file')
     extra_env = {constants.PARALLEL_EMERGE_STATUS_FILE_ENVVAR: status_file}
 
+    if run_configs.use_flags:
+      extra_env['USE'] = run_configs.GetUseFlags()
 
     try:
       cros_build_lib.RunCommand(cmd, enter_chroot=True, extra_env=extra_env)
