@@ -787,6 +787,9 @@
       'filepath': 'chrome/browser/ui/webui/chromeos/|'\
                   'chrome/browser/resources/chromeos/',
     },
+    'chromevox': {
+      'filepath': 'chromevox',
+    },
     'clang_update': {
       'filepath': 'tools/clang/scripts/update.py'
     },
@@ -2209,6 +2212,7 @@
     'chromeos_power': ['derat+watch@chromium.org'],
     'chromeos_timezone': ['alemate+watch@chromium.org'],
     'chromeos_webui': ['alemate+watch@chromium.org'],
+    'chromevox': ['anastasi+watch@google.com'],
     'clang_update': ['dcheng@chromium.org',
                      'dmikurube+clang@chromium.org',
                      'eugenis+clang@chromium.org',
@@ -2500,7 +2504,8 @@
                       'vakh+watch@chromium.org'],
     'screen_orientation': ['mlamouri+watch-screen-orientation@chromium.org'],
     'security': ['security-watchlist@chromium.org'],
-    'select_to_speak': ['katie+watch@chromium.org'],
+    'select_to_speak': ['katie+watch@chromium.org',
+                        'anastasi+watch@google.com'],
     'send_tab_to_self': ['hansberry+watch-send_tab_to_self@chromium.org',
                          'jeffreycohen+watch-send_tab_to_self@chromium.org',
                          'jlklein+watch-send_tab_to_self@chromium.org',
