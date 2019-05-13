@@ -66,7 +66,8 @@ constexpr int kTextfieldBackgroundColor = 0xf7f7f7;
 
 }  // namespace
 
-@interface AlertViewController () <UITextFieldDelegate>
+@interface AlertViewController () <UITextFieldDelegate,
+                                   UIGestureRecognizerDelegate>
 
 // The actions for to this alert. |copy| for safety against mutable objects.
 @property(nonatomic, copy) NSArray<AlertAction*>* actions;
@@ -90,6 +91,14 @@ constexpr int kTextfieldBackgroundColor = 0xf7f7f7;
 // The text fields that had been added to this alert.
 @property(nonatomic, strong) NSArray<UITextField*>* textFields;
 
+// Recognizer used to dismiss the keyboard when tapping outside the container
+// view.
+@property(nonatomic, strong) UITapGestureRecognizer* tapRecognizer;
+
+// This is the last focused text field, the gestures to dismiss the keyboard
+// will end up calling |resignFirstResponder| on this.
+@property(nonatomic, weak) UITextField* lastFocusedTextField;
+
 @end
 
 @implementation AlertViewController
@@ -100,6 +109,13 @@ constexpr int kTextfieldBackgroundColor = 0xf7f7f7;
   [super loadView];
   self.view.backgroundColor =
       [[UIColor blackColor] colorWithAlphaComponent:kBackgroundAlpha];
+
+  self.tapRecognizer = [[UITapGestureRecognizer alloc]
+      initWithTarget:self
+              action:@selector(dismissKeyboard)];
+  self.tapRecognizer.enabled = NO;
+  self.tapRecognizer.delegate = self;
+  [self.view addGestureRecognizer:self.tapRecognizer];
 
   self.contentView = [[UIView alloc] init];
   self.contentView.clipsToBounds = YES;
@@ -378,7 +394,22 @@ constexpr int kTextfieldBackgroundColor = 0xf7f7f7;
   return results;
 }
 
+#pragma mark - UIGestureRecognizerDelegate
+
+- (BOOL)gestureRecognizer:(UIGestureRecognizer*)gestureRecognizer
+       shouldReceiveTouch:(UITouch*)touch {
+  if (self.tapRecognizer != gestureRecognizer) {
+    return YES;
+  }
+  CGPoint locationInContentView = [touch locationInView:self.contentView];
+  return !CGRectContainsPoint(self.contentView.bounds, locationInContentView);
+}
+
 #pragma mark - UITextFieldDelegate
+
+- (void)textFieldDidBeginEditing:(UITextField*)textField {
+  self.lastFocusedTextField = textField;
+}
 
 - (BOOL)textFieldShouldReturn:(UITextField*)textField {
   NSUInteger index = [self.textFields indexOfObject:textField];
@@ -397,10 +428,12 @@ constexpr int kTextfieldBackgroundColor = 0xf7f7f7;
       [notification.userInfo[UIKeyboardFrameEndUserInfoKey] CGRectValue];
   self.additionalSafeAreaInsets =
       UIEdgeInsetsMake(0, 0, keyboardFrame.size.height, 0);
+  self.tapRecognizer.enabled = YES;
 }
 
 - (void)handleKeyboardWillHide:(NSNotification*)notification {
   self.additionalSafeAreaInsets = UIEdgeInsetsZero;
+  self.tapRecognizer.enabled = NO;
 }
 
 - (void)didSelectActionForButton:(UIButton*)button {
@@ -408,6 +441,10 @@ constexpr int kTextfieldBackgroundColor = 0xf7f7f7;
   if (action.handler) {
     action.handler(action);
   }
+}
+
+- (void)dismissKeyboard {
+  [self.lastFocusedTextField resignFirstResponder];
 }
 
 @end
