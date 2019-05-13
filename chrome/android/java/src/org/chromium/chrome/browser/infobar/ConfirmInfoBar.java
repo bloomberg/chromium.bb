@@ -70,7 +70,10 @@ public class ConfirmInfoBar extends InfoBar {
     @Override
     public boolean supportsTouchlessMode() {
         // Only allow whitelisted implementations of the confirm infobar.
-        return getInfoBarIdentifier() == InfoBarIdentifier.POPUP_BLOCKED_INFOBAR_DELEGATE_MOBILE;
+        @InfoBarIdentifier
+        int infobarId = getInfoBarIdentifier();
+        return infobarId == InfoBarIdentifier.POPUP_BLOCKED_INFOBAR_DELEGATE_MOBILE
+                || infobarId == InfoBarIdentifier.DANGEROUS_DOWNLOAD_INFOBAR_DELEGATE_ANDROID;
     }
 
     @Override
