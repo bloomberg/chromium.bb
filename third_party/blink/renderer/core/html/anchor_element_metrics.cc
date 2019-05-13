@@ -222,15 +222,18 @@ AnchorElementMetrics::MaybeReportClickedMetricsOnClick(
     return base::nullopt;
   }
 
-  auto anchor_metrics = Create(anchor_element);
-  if (anchor_metrics.has_value()) {
-    anchor_metrics.value().RecordMetricsOnClick();
+  // Create metrics that don't have sizes set. The browser only records
+  // metrics unrelated to sizes.
+  AnchorElementMetrics anchor_metrics(
+      anchor_element, 0, 0, 0, 0, 0, 0, 0, IsInIFrame(*anchor_element),
+      ContainsImage(*anchor_element), IsSameHost(*anchor_element),
+      IsUrlIncrementedByOne(*anchor_element));
 
-    // Send metrics of the anchor element to the browser process.
-    AnchorElementMetricsSender::From(*GetRootDocument(*anchor_element))
-        ->SendClickedAnchorMetricsToBrowser(
-            anchor_metrics.value().CreateMetricsPtr());
-  }
+  anchor_metrics.RecordMetricsOnClick();
+
+  // Send metrics of the anchor element to the browser process.
+  AnchorElementMetricsSender::From(*GetRootDocument(*anchor_element))
+      ->SendClickedAnchorMetricsToBrowser(anchor_metrics.CreateMetricsPtr());
 
   return anchor_metrics;
 }

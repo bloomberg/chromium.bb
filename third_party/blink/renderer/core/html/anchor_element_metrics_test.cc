@@ -90,7 +90,7 @@ TEST_F(AnchorElementMetricsTest, FinchControl) {
   base::test::ScopedFeatureList disabled_feature_list;
   disabled_feature_list.InitAndDisableFeature(features::kNavigationPredictor);
   AnchorElementMetrics::MaybeReportClickedMetricsOnClick(anchor_element);
-  histogram_tester.ExpectTotalCount("AnchorElementMetrics.Clicked.RatioArea",
+  histogram_tester.ExpectTotalCount("AnchorElementMetrics.Clicked.IsSameHost",
                                     0);
 
   // If we enable feature kNavigationPredictor, we should see count is 1
@@ -98,7 +98,7 @@ TEST_F(AnchorElementMetricsTest, FinchControl) {
   base::test::ScopedFeatureList enabled_feature_list;
   enabled_feature_list.InitAndEnableFeature(features::kNavigationPredictor);
   AnchorElementMetrics::MaybeReportClickedMetricsOnClick(anchor_element);
-  histogram_tester.ExpectTotalCount("AnchorElementMetrics.Clicked.RatioArea",
+  histogram_tester.ExpectTotalCount("AnchorElementMetrics.Clicked.IsSameHost",
                                     1);
 }
 
@@ -115,7 +115,7 @@ TEST_F(AnchorElementMetricsTest, NonHTTPOnClick) {
       ToHTMLAnchorElement(GetDocument().getElementById("anchor"));
 
   AnchorElementMetrics::MaybeReportClickedMetricsOnClick(anchor_element);
-  histogram_tester.ExpectTotalCount("AnchorElementMetrics.Clicked.RatioArea",
+  histogram_tester.ExpectTotalCount("AnchorElementMetrics.Clicked.IsSameHost",
                                     0);
 
   // Tests that a data page with an HTTPS anchor is not reported when the anchor
@@ -125,7 +125,7 @@ TEST_F(AnchorElementMetricsTest, NonHTTPOnClick) {
   anchor_element = ToHTMLAnchorElement(GetDocument().getElementById("anchor"));
 
   AnchorElementMetrics::MaybeReportClickedMetricsOnClick(anchor_element);
-  histogram_tester.ExpectTotalCount("AnchorElementMetrics.Clicked.RatioArea",
+  histogram_tester.ExpectTotalCount("AnchorElementMetrics.Clicked.IsSameHost",
                                     0);
 
   // Tests that an HTTPS page with an HTTPS anchor is reported when the anchor
@@ -137,7 +137,7 @@ TEST_F(AnchorElementMetricsTest, NonHTTPOnClick) {
   anchor_element = ToHTMLAnchorElement(GetDocument().getElementById("anchor"));
 
   AnchorElementMetrics::MaybeReportClickedMetricsOnClick(anchor_element);
-  histogram_tester.ExpectTotalCount("AnchorElementMetrics.Clicked.RatioArea",
+  histogram_tester.ExpectTotalCount("AnchorElementMetrics.Clicked.IsSameHost",
                                     1);
 }
 
@@ -164,12 +164,6 @@ TEST_F(AnchorElementMetricsTest, AnchorFeatureImageLink) {
   auto feature =
       AnchorElementMetrics::MaybeReportClickedMetricsOnClick(anchor_element)
           .value();
-  EXPECT_FLOAT_EQ(0.25, feature.GetRatioArea());
-  EXPECT_FLOAT_EQ(0.25, feature.GetRatioVisibleArea());
-  EXPECT_FLOAT_EQ(0.5, feature.GetRatioDistanceTopToVisibleTop());
-  EXPECT_FLOAT_EQ(0.75, feature.GetRatioDistanceCenterToVisibleTop());
-  EXPECT_FLOAT_EQ(0.5, feature.GetRatioDistanceRootTop());
-  EXPECT_FLOAT_EQ(10, feature.GetRatioDistanceRootBottom());
   EXPECT_FALSE(feature.GetIsInIframe());
   EXPECT_TRUE(feature.GetContainsImage());
   EXPECT_TRUE(feature.GetIsSameHost());
@@ -199,18 +193,9 @@ TEST_F(AnchorElementMetricsTest, AnchorFeatureExtract) {
   auto feature =
       AnchorElementMetrics::MaybeReportClickedMetricsOnClick(anchor_element)
           .value();
-  EXPECT_GT(feature.GetRatioArea(), 0);
-  EXPECT_FLOAT_EQ(feature.GetRatioDistanceRootTop(), 2);
-  EXPECT_FLOAT_EQ(feature.GetRatioDistanceTopToVisibleTop(), 2);
   EXPECT_EQ(feature.GetIsInIframe(), false);
 
   // Element not in the viewport.
-  EXPECT_GT(feature.GetRatioArea(), 0);
-  EXPECT_FLOAT_EQ(0, feature.GetRatioVisibleArea());
-  EXPECT_FLOAT_EQ(2, feature.GetRatioDistanceTopToVisibleTop());
-  EXPECT_LT(2, feature.GetRatioDistanceCenterToVisibleTop());
-  EXPECT_FLOAT_EQ(2, feature.GetRatioDistanceRootTop());
-  EXPECT_FLOAT_EQ(10, feature.GetRatioDistanceRootBottom());
   EXPECT_FALSE(feature.GetIsInIframe());
   EXPECT_FALSE(feature.GetContainsImage());
   EXPECT_FALSE(feature.GetIsSameHost());
@@ -223,11 +208,11 @@ TEST_F(AnchorElementMetricsTest, AnchorFeatureExtract) {
   auto feature2 =
       AnchorElementMetrics::MaybeReportClickedMetricsOnClick(anchor_element)
           .value();
-  EXPECT_LT(0, feature2.GetRatioVisibleArea());
-  EXPECT_FLOAT_EQ(0.5, feature2.GetRatioDistanceTopToVisibleTop());
-  EXPECT_LT(0.5, feature2.GetRatioDistanceCenterToVisibleTop());
-  EXPECT_FLOAT_EQ(2, feature2.GetRatioDistanceRootTop());
-  EXPECT_FLOAT_EQ(10, feature2.GetRatioDistanceRootBottom());
+  EXPECT_EQ(feature2.GetIsInIframe(), false);
+  EXPECT_FALSE(feature2.GetIsInIframe());
+  EXPECT_FALSE(feature2.GetContainsImage());
+  EXPECT_FALSE(feature2.GetIsSameHost());
+  EXPECT_FALSE(feature2.GetIsUrlIncrementedByOne());
 }
 
 // The main frame contains an iframe. The iframe contains an anchor element.
@@ -273,11 +258,6 @@ TEST_F(AnchorElementMetricsTest, AnchorFeatureInIframe) {
   auto feature =
       AnchorElementMetrics::MaybeReportClickedMetricsOnClick(anchor_element)
           .value();
-  EXPECT_LT(0, feature.GetRatioArea());
-  EXPECT_FLOAT_EQ(0, feature.GetRatioVisibleArea());
-  EXPECT_FLOAT_EQ(2.5, feature.GetRatioDistanceTopToVisibleTop());
-  EXPECT_LT(2.5, feature.GetRatioDistanceCenterToVisibleTop());
-  EXPECT_FLOAT_EQ(2.5, feature.GetRatioDistanceRootTop());
   EXPECT_TRUE(feature.GetIsInIframe());
   EXPECT_FALSE(feature.GetContainsImage());
   EXPECT_TRUE(feature.GetIsSameHost());
@@ -290,9 +270,10 @@ TEST_F(AnchorElementMetricsTest, AnchorFeatureInIframe) {
   auto feature2 =
       AnchorElementMetrics::MaybeReportClickedMetricsOnClick(anchor_element)
           .value();
-  EXPECT_LT(0, feature2.GetRatioVisibleArea());
-  EXPECT_FLOAT_EQ(0.7, feature2.GetRatioDistanceTopToVisibleTop());
-  EXPECT_FLOAT_EQ(2.5, feature2.GetRatioDistanceRootTop());
+  EXPECT_TRUE(feature2.GetIsInIframe());
+  EXPECT_FALSE(feature2.GetContainsImage());
+  EXPECT_TRUE(feature2.GetIsSameHost());
+  EXPECT_TRUE(feature2.GetIsUrlIncrementedByOne());
 
   // Scroll down inside iframe. Now the anchor element is visible.
   subframe->View()->LayoutViewport()->SetScrollOffset(
@@ -301,11 +282,10 @@ TEST_F(AnchorElementMetricsTest, AnchorFeatureInIframe) {
   auto feature3 =
       AnchorElementMetrics::MaybeReportClickedMetricsOnClick(anchor_element)
           .value();
-  EXPECT_LT(0, feature3.GetRatioVisibleArea());
-  EXPECT_FLOAT_EQ(0.5, feature3.GetRatioDistanceTopToVisibleTop());
-  EXPECT_FLOAT_EQ(2.5, feature3.GetRatioDistanceRootTop());
-  // The distance is expected to be 10.2 - height of the anchor element.
-  EXPECT_GT(10.2, feature3.GetRatioDistanceRootBottom());
+  EXPECT_TRUE(feature3.GetIsInIframe());
+  EXPECT_FALSE(feature3.GetContainsImage());
+  EXPECT_TRUE(feature3.GetIsSameHost());
+  EXPECT_TRUE(feature3.GetIsUrlIncrementedByOne());
 }
 
 TEST_F(AnchorElementMetricsTest, AnchorFeatureInIframeNonHttp) {
