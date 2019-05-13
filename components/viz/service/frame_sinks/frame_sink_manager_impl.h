@@ -24,7 +24,6 @@
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_impl.h"
 #include "components/viz/service/frame_sinks/frame_sink_observer.h"
-#include "components/viz/service/frame_sinks/primary_begin_frame_source.h"
 #include "components/viz/service/frame_sinks/root_compositor_frame_sink_impl.h"
 #include "components/viz/service/frame_sinks/video_capture/frame_sink_video_capturer_manager.h"
 #include "components/viz/service/frame_sinks/video_detector.h"
@@ -171,10 +170,6 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
                                 const FrameSinkId& frame_sink_id);
   void UnregisterBeginFrameSource(BeginFrameSource* source);
 
-  // Returns a stable BeginFrameSource that forwards BeginFrames from the first
-  // available BeginFrameSource.
-  BeginFrameSource* GetPrimaryBeginFrameSource();
-
   SurfaceManager* surface_manager() { return &surface_manager_; }
   const HitTestManager* hit_test_manager() { return &hit_test_manager_; }
   SharedBitmapManager* shared_bitmap_manager() {
@@ -281,9 +276,6 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   // Provides an output surface for CreateRootCompositorFrameSink().
   OutputSurfaceProvider* const output_surface_provider_;
 
-  PrimaryBeginFrameSource primary_source_;
-
-  // Must be created after and destroyed before |primary_source_|.
   SurfaceManager surface_manager_;
 
   // Must be created after and destroyed before |surface_manager_|.

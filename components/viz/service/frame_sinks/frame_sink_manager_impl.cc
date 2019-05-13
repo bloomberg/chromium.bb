@@ -13,7 +13,6 @@
 #include "components/viz/service/display/shared_bitmap_manager.h"
 #include "components/viz/service/display_embedder/output_surface_provider.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
-#include "components/viz/service/frame_sinks/primary_begin_frame_source.h"
 #include "components/viz/service/frame_sinks/video_capture/capturable_frame_sink.h"
 #include "components/viz/service/frame_sinks/video_capture/frame_sink_video_capturer_impl.h"
 
@@ -425,8 +424,6 @@ void FrameSinkManagerImpl::RegisterBeginFrameSource(
 
   registered_sources_[source] = frame_sink_id;
   RecursivelyAttachBeginFrameSource(frame_sink_id, source);
-
-  primary_source_.OnBeginFrameSourceAdded(source);
 }
 
 void FrameSinkManagerImpl::UnregisterBeginFrameSource(
@@ -436,8 +433,6 @@ void FrameSinkManagerImpl::UnregisterBeginFrameSource(
 
   FrameSinkId frame_sink_id = registered_sources_[source];
   registered_sources_.erase(source);
-
-  primary_source_.OnBeginFrameSourceRemoved(source);
 
   if (frame_sink_source_map_.count(frame_sink_id) == 0u)
     return;
@@ -449,10 +444,6 @@ void FrameSinkManagerImpl::UnregisterBeginFrameSource(
   // became null because of the previous step but that have an alternative.
   for (auto source_iter : registered_sources_)
     RecursivelyAttachBeginFrameSource(source_iter.second, source_iter.first);
-}
-
-BeginFrameSource* FrameSinkManagerImpl::GetPrimaryBeginFrameSource() {
-  return &primary_source_;
 }
 
 void FrameSinkManagerImpl::RecursivelyAttachBeginFrameSource(

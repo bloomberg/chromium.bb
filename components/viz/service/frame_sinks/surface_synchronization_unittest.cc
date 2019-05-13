@@ -212,6 +212,12 @@ class SurfaceSynchronizationTest : public testing::Test {
     // BeginFrames, since the frame sink hierarchy is not set up in this test.
     frame_sink_manager_.RegisterBeginFrameSource(begin_frame_source_.get(),
                                                  kDisplayFrameSink);
+    frame_sink_manager_.RegisterFrameSinkHierarchy(kDisplayFrameSink,
+                                                   kParentFrameSink);
+    frame_sink_manager_.RegisterFrameSinkHierarchy(kDisplayFrameSink,
+                                                   kChildFrameSink1);
+    frame_sink_manager_.RegisterFrameSinkHierarchy(kDisplayFrameSink,
+                                                   kChildFrameSink2);
   }
 
   void TearDown() override {
@@ -1923,22 +1929,9 @@ TEST_F(SurfaceSynchronizationTest, FrameActivationAfterFrameSinkDestruction) {
   // alive by the display.
   DestroyFrameSink(kParentFrameSink);
 
-  Surface* parent_surface = GetSurfaceForId(parent_id);
-  ASSERT_NE(nullptr, parent_surface);
-
-  EXPECT_TRUE(parent_surface->has_deadline());
-  EXPECT_TRUE(parent_surface->HasActiveFrame());
-  EXPECT_TRUE(parent_surface->HasPendingFrame());
-
-  // Advance BeginFrames to trigger a deadline. This activates the
-  // CompositorFrame submitted above.
-  for (int i = 0; i < 4; ++i)
-    SendNextBeginFrame();
-
   // The parent surface stays alive through the display.
-  parent_surface = GetSurfaceForId(parent_id);
+  Surface* parent_surface = GetSurfaceForId(parent_id);
   EXPECT_NE(nullptr, parent_surface);
-  EXPECT_TRUE(surface_observer().IsSurfaceDamaged(parent_id));
 
   // Submitting a new CompositorFrame to the display should free the parent.
   display_support().SubmitCompositorFrame(display_id.local_surface_id(),
@@ -1975,7 +1968,7 @@ TEST_F(SurfaceSynchronizationTest, PreviousFrameSurfaceId) {
 
   // Activate the pending frame in |parent_id2|. previous_frame_surface_id()
   // should still return |parent_id1|.
-  parent_surface2->ActivatePendingFrameForDeadline(base::nullopt);
+  parent_surface2->ActivatePendingFrameForDeadline();
   EXPECT_TRUE(parent_surface2->HasActiveFrame());
   EXPECT_FALSE(parent_surface2->HasPendingFrame());
   EXPECT_EQ(parent_id1, parent_surface2->previous_frame_surface_id());
@@ -2008,7 +2001,7 @@ TEST_F(SurfaceSynchronizationTest, FrameIndexWithPendingFrames) {
 
   // Activate the pending frame. GetActiveFrameIndex should return the frame
   // index of the newly activated frame.
-  parent_surface->ActivatePendingFrameForDeadline(base::nullopt);
+  parent_surface->ActivatePendingFrameForDeadline();
   EXPECT_EQ(initial_frame_index + n_iterations,
             parent_surface->GetActiveFrameIndex());
 }

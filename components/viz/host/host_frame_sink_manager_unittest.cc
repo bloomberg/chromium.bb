@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/surface_id.h"
@@ -23,6 +24,7 @@
 #include "components/viz/test/fake_surface_observer.h"
 #include "components/viz/test/mock_compositor_frame_sink_client.h"
 #include "components/viz/test/mock_display_client.h"
+#include "components/viz/test/surface_id_allocator_set.h"
 #include "services/viz/privileged/interfaces/compositing/frame_sink_manager.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -38,13 +40,6 @@ constexpr FrameSinkId kFrameSinkChild1(3, 1);
 
 ACTION_P(InvokeClosure, closure) {
   closure.Run();
-}
-
-// Makes a SurfaceId with a default nonce.
-SurfaceId MakeSurfaceId(const FrameSinkId& frame_sink_id, uint32_t parent_id) {
-  return SurfaceId(
-      frame_sink_id,
-      LocalSurfaceId(parent_id, base::UnguessableToken::Deserialize(0, 1u)));
 }
 
 // Holds the four interface objects needed to create a RootCompositorFrameSink.
@@ -146,12 +141,15 @@ class HostFrameSinkManagerTestBase : public testing::Test {
   void TearDown() override {
     host_manager_.reset();
     manager_impl_.reset();
+    now_src_.reset();
   }
 
  protected:
+  std::unique_ptr<base::SimpleTestTickClock> now_src_;
   ServerSharedBitmapManager shared_bitmap_manager_;
   std::unique_ptr<HostFrameSinkManager> host_manager_;
   std::unique_ptr<testing::NiceMock<MockFrameSinkManagerImpl>> manager_impl_;
+  SurfaceIdAllocatorSet allocators_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HostFrameSinkManagerTestBase);
@@ -172,9 +170,11 @@ class HostFrameSinkManagerLocalTest : public HostFrameSinkManagerTestBase {
 
   // testing::Test:
   void SetUp() override {
+    now_src_ = std::make_unique<base::SimpleTestTickClock>();
     manager_impl_ =
         std::make_unique<testing::NiceMock<MockFrameSinkManagerImpl>>(
             &shared_bitmap_manager_);
+    manager_impl_->surface_manager()->SetTickClockForTesting(now_src_.get());
     host_manager_ = std::make_unique<HostFrameSinkManager>();
 
     manager_impl_->SetLocalClient(host_manager_.get());
@@ -274,8 +274,8 @@ TEST_F(HostFrameSinkManagerLocalTest, CommunicateFrameToken) {
   FakeHostFrameSinkClient host_client_child;
   FrameSinkId kParentFrameSink(3, 0);
   FrameSinkId kChildFrameSink1(65563, 0);
-  const SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
-  const SurfaceId parent_id1 = MakeSurfaceId(kParentFrameSink, 1);
+  const SurfaceId child_id1 = allocators_.MakeSurfaceId(kChildFrameSink1, 1);
+  const SurfaceId parent_id1 = allocators_.MakeSurfaceId(kParentFrameSink, 1);
   host().RegisterFrameSinkId(kParentFrameSink, &host_client_parent,
                              ReportFirstSurfaceActivation::kYes);
   host().RegisterFrameSinkId(kChildFrameSink1, &host_client_child,
@@ -301,7 +301,7 @@ TEST_F(HostFrameSinkManagerLocalTest, CommunicateFrameToken) {
   // HostFrameSinkClient.
   EXPECT_EQ(0u, host_client_parent.last_frame_token_seen());
 
-  parent_surface->ActivatePendingFrameForDeadline(base::nullopt);
+  parent_surface->ActivatePendingFrameForDeadline();
   EXPECT_FALSE(parent_surface->has_deadline());
   EXPECT_TRUE(parent_surface->HasActiveFrame());
   EXPECT_FALSE(parent_surface->HasPendingFrame());

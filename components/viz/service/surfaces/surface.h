@@ -74,10 +74,11 @@ class SurfaceManager;
 // deadline passes, then the CompositorFrame will activate despite missing
 // dependencies. The activated CompositorFrame can specify fallback behavior in
 // the event of missing dependencies at display time.
-class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
+class VIZ_SERVICE_EXPORT Surface final {
  public:
   using PresentedCallback =
       base::OnceCallback<void(const gfx::PresentationFeedback&)>;
+  enum QueueFrameResult { REJECTED, ACCEPTED_ACTIVE, ACCEPTED_PENDING };
 
   Surface(const SurfaceInfo& surface_info,
           SurfaceManager* surface_manager,
@@ -126,10 +127,10 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
   // |presented_callback| is called when the |frame| has been turned into light
   // the first time on display, or if the |frame| is replaced by another prior
   // to display.
-  bool QueueFrame(CompositorFrame frame,
-                  uint64_t frame_index,
-                  base::ScopedClosureRunner frame_rejected_callback,
-                  PresentedCallback presented_callback);
+  QueueFrameResult QueueFrame(CompositorFrame frame,
+                              uint64_t frame_index,
+                              base::ScopedClosureRunner frame_rejected_callback,
+                              PresentedCallback presented_callback);
 
   // Notifies the Surface that a blocking SurfaceId now has an active
   // frame.
@@ -137,8 +138,7 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
 
   // Called if a deadline has been hit and this surface is not yet active but
   // it's marked as respecting deadlines.
-  void ActivatePendingFrameForDeadline(
-      base::Optional<base::TimeDelta> duration);
+  void ActivatePendingFrameForDeadline();
 
   using CopyRequestsMap =
       std::multimap<RenderPassId, std::unique_ptr<CopyOutputRequest>>;
@@ -208,9 +208,6 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
 
   SurfaceAllocationGroup* allocation_group() const { return allocation_group_; }
 
-  // SurfaceDeadlineClient implementation:
-  void OnDeadline(base::TimeDelta duration) override;
-
   // Called when this surface will be included in the next display frame.
   void OnWillBeDrawn();
 
@@ -244,6 +241,8 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
   // well. This allows the client to not wait for acks from the fallback
   // surfaces and be able to submit to the primary surface.
   void SetIsFallbackAndMaybeActivate();
+
+  void ActivateIfDeadlinePassed();
 
  private:
   struct FrameData {
@@ -279,7 +278,7 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
   // in the submitted compositor frame.
   void RecomputeActiveReferencedSurfaces();
 
-  void ActivatePendingFrame(base::Optional<base::TimeDelta> duration);
+  void ActivatePendingFrame();
 
   // Called when all of the surface's dependencies have been resolved.
   void ActivateFrame(FrameData frame_data,

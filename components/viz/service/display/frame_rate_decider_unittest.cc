@@ -64,8 +64,8 @@ class FrameRateDeciderTest : public testing::Test,
     SurfaceId surface_id(frame_sink_id, local_surface_id);
     SurfaceInfo surface_info(surface_id, frame_.device_scale_factor(),
                              frame_.size_in_pixels());
-    auto* surface = surface_manager_->CreateSurface(
-        surface_client(), surface_info, &begin_frame_source_, false, false);
+    auto* surface = surface_manager_->CreateSurface(surface_client(),
+                                                    surface_info, false, false);
 
     {
       FrameRateDecider::ScopedAggregate scope(frame_rate_decider_.get());
@@ -80,7 +80,7 @@ class FrameRateDeciderTest : public testing::Test,
     ASSERT_TRUE(surface->QueueFrame(MakeDefaultCompositorFrame(), frame_index,
                                     base::ScopedClosureRunner(),
                                     Surface::PresentedCallback()));
-    surface->ActivatePendingFrameForDeadline(base::nullopt);
+    surface->ActivatePendingFrameForDeadline();
     ASSERT_EQ(surface->GetActiveFrameIndex(), frame_index);
   }
 
@@ -92,7 +92,6 @@ class FrameRateDeciderTest : public testing::Test,
 
   CompositorFrame frame_;
   StubSurfaceClient surface_client_;
-  StubBeginFrameSource begin_frame_source_;
 };
 
 TEST_F(FrameRateDeciderTest, ActiveSurfaceTrackingFrameIndexChange) {
