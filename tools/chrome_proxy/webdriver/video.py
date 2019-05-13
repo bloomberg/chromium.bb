@@ -95,16 +95,18 @@ class Video(IntegrationTest):
           # ofcl should be same as compressed full content length, since no
           # compression for XHR.
           self.assertEqual(ofcl, compressed_full_content_length)
-      # Navigate away to trigger the metrics recording for previous page load.
+      # Wait and navigate away to trigger the metrics recording for previous
+      # page load.
+      time.sleep(1)
       t.LoadURL('about:blank')
-      original_kb_histogram = t.GetHistogram('PageLoad.Clients.'
+      original_kb_histogram = t.GetBrowserHistogram('PageLoad.Clients.'
         'DataReductionProxy.Experimental.Bytes.Network.Original2')
-      compression_percent_histogram = t.GetHistogram('PageLoad.Clients.'
+      compression_percent_histogram = t.GetBrowserHistogram('PageLoad.Clients.'
         'DataReductionProxy.Experimental.Bytes.Network.CompressionRatio2')
       self.assertEqual(1, original_kb_histogram['count'])
       self.assertEqual(1, compression_percent_histogram['count'])
       # Verify the total page size is 3 KB, and compression ratio.
-      self.assertEqual(3, original_kb_histogram['sum'])
+      self.assertGreaterEqual(3, original_kb_histogram['sum'])
       self.assertEqual(compression_percent_histogram['sum'],
                        compressed_full_content_length/ofcl*100)
       self.assertTrue(saw_range_response, 'No range request was seen in test!')
