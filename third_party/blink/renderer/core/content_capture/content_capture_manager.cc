@@ -69,6 +69,11 @@ void ContentCaptureManager::OnScrollPositionChanged() {
   ScheduleTask(ContentCaptureTask::ScheduleReason::kScrolling);
 }
 
+void ContentCaptureManager::OnNodeTextChanged(const NodeHolder& node_holder) {
+  task_session_->OnNodeChanged(node_holder);
+  ScheduleTask(ContentCaptureTask::ScheduleReason::kContentChange);
+}
+
 void ContentCaptureManager::Trace(Visitor* visitor) {
   visitor->Trace(local_frame_root_);
   visitor->Trace(task_session_);

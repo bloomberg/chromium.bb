@@ -42,9 +42,11 @@ class ContentCaptureSender : public content::RenderFrameObserver,
   void DidCaptureContent(
       const std::vector<scoped_refptr<blink::WebContentHolder>>& data,
       bool first_data) override;
+  void DidUpdateContent(
+      const std::vector<scoped_refptr<blink::WebContentHolder>>& data) override;
   void DidRemoveContent(const std::vector<int64_t>& data) override;
 
-  // mojom::ContentCaptureSender
+  // mojom::ContentCaptureSender:
   void StartCapture() override;
   void StopCapture() override;
 

@@ -77,23 +77,33 @@ void ContentCaptureTask::SendContent(
     TaskSession::DocumentSession& doc_session) {
   auto* document = doc_session.GetDocument();
   DCHECK(document);
+  auto* client = GetWebContentCaptureClient(*document);
+  DCHECK(client);
+
   if (histogram_reporter_)
     histogram_reporter_->OnSendContentStarted();
   std::vector<scoped_refptr<WebContentHolder>> content_batch;
   content_batch.reserve(kBatchSize);
+  // Only send changed content after the new content was sent.
+  bool sending_changed_content = !doc_session.HasUnsentCapturedContent();
   while (content_batch.size() < kBatchSize) {
-    scoped_refptr<ContentHolder> content_holder =
-        doc_session.GetNextUnsentContentHolder();
+    scoped_refptr<ContentHolder> content_holder;
+    if (sending_changed_content)
+      content_holder = doc_session.GetNextChangedContentHolder();
+    else
+      content_holder = doc_session.GetNextUnsentContentHolder();
     if (!content_holder)
       break;
     content_batch.push_back(
         base::MakeRefCounted<WebContentHolder>(content_holder));
   }
   if (!content_batch.empty()) {
-    DCHECK(GetWebContentCaptureClient(*document));
-    GetWebContentCaptureClient(*document)->DidCaptureContent(
-        content_batch, !doc_session.FirstDataHasSent());
-    doc_session.SetFirstDataHasSent();
+    if (sending_changed_content) {
+      client->DidUpdateContent(content_batch);
+    } else {
+      client->DidCaptureContent(content_batch, !doc_session.FirstDataHasSent());
+      doc_session.SetFirstDataHasSent();
+    }
   }
   if (histogram_reporter_)
     histogram_reporter_->OnSendContentEnded(content_batch.size());
@@ -128,7 +138,8 @@ bool ContentCaptureTask::ProcessDocumentSession(
     return true;
   }
 
-  while (doc_session.HasUnsentCapturedContent()) {
+  while (doc_session.HasUnsentCapturedContent() ||
+         doc_session.HasUnsentChangedContent()) {
     SendContent(doc_session);
     if (ShouldPause()) {
       return !doc_session.HasUnsentData();

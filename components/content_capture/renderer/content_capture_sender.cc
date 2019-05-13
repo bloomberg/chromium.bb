@@ -69,6 +69,9 @@ void ContentCaptureSender::DidCaptureContent(
   GetContentCaptureReceiver()->DidCaptureContent(frame_data, first_data);
 }
 
+void ContentCaptureSender::DidUpdateContent(
+    const std::vector<scoped_refptr<blink::WebContentHolder>>& data) {}
+
 void ContentCaptureSender::DidRemoveContent(const std::vector<int64_t>& data) {
   GetContentCaptureReceiver()->DidRemoveContent(data);
 }

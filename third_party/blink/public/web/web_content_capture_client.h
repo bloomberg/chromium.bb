@@ -31,6 +31,10 @@ class WebContentCaptureClient {
       const std::vector<scoped_refptr<WebContentHolder>>& content,
       bool first_data) = 0;
 
+  // Invoked when a list of |content| is updated.
+  virtual void DidUpdateContent(
+      const std::vector<scoped_refptr<WebContentHolder>>& content) = 0;
+
   // Invoked when the previously captured content is removed, |content_ids| is a
   // list of removed content id.
   virtual void DidRemoveContent(const std::vector<int64_t>& content_ids) = 0;

@@ -1873,6 +1873,11 @@ void LayoutText::SetText(scoped_refptr<StringImpl> text,
   if (text_autosizer)
     text_autosizer->Record(this);
 
+  if (HasNodeHolder()) {
+    if (auto* content_capture_manager = GetContentCaptureManager())
+      content_capture_manager->OnNodeTextChanged(node_holder_);
+  }
+
   valid_ng_items_ = false;
   SetNeedsCollectInlines();
 }

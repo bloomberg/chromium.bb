@@ -55,6 +55,13 @@ class WebContentCaptureClientTestHelper : public WebContentCaptureClient {
       all_text_.push_back(d->GetValue().Utf8());
   }
 
+  void DidUpdateContent(
+      const std::vector<scoped_refptr<WebContentHolder>>& data) override {
+    updated_data_ = data;
+    for (auto d : data)
+      updated_text_.push_back(d->GetValue().Utf8());
+  }
+
   void DidRemoveContent(const std::vector<int64_t>& data) override {
     removed_data_ = data;
   }
@@ -65,22 +72,31 @@ class WebContentCaptureClientTestHelper : public WebContentCaptureClient {
     return data_;
   }
 
+  const std::vector<scoped_refptr<WebContentHolder>>& UpdatedData() const {
+    return updated_data_;
+  }
+
   const std::vector<std::string>& AllText() const { return all_text_; }
+
+  const std::vector<std::string>& UpdatedText() const { return updated_text_; }
 
   const std::vector<int64_t>& RemovedData() const { return removed_data_; }
 
   void ResetResults() {
     first_data_ = false;
     data_.clear();
+    updated_data_.clear();
     removed_data_.clear();
   }
 
  private:
   bool first_data_ = false;
   std::vector<scoped_refptr<WebContentHolder>> data_;
+  std::vector<scoped_refptr<WebContentHolder>> updated_data_;
   std::vector<int64_t> removed_data_;
   NodeHolder::Type node_holder_type_;
   std::vector<std::string> all_text_;
+  std::vector<std::string> updated_text_;
 };
 
 class ContentCaptureTaskTestHelper : public ContentCaptureTask {
@@ -525,6 +541,8 @@ class ContentCaptureSimTest
     : public SimTest,
       public ::testing::WithParamInterface<NodeHolder::Type> {
  public:
+  static const char* kEditableContent;
+
   ContentCaptureSimTest() : client_(GetParam()), child_client_(GetParam()) {}
   void SetUp() override {
     SimTest::SetUp();
@@ -570,12 +588,27 @@ class ContentCaptureSimTest
     child_frame_expected_text_.push_back("New Text");
   }
 
+  void InsertMainFrameEditableContent(const std::string& content,
+                                      unsigned offset) {
+    InsertNodeContent(GetDocument(), "editable_id", content, offset);
+  }
+
+  void DeleteMainFrameEditableContent(unsigned offset, unsigned length) {
+    DeleteNodeContent(GetDocument(), "editable_id", offset, length);
+  }
+
   const std::vector<std::string>& MainFrameExpectedText() const {
     return main_frame_expected_text_;
   }
 
   const std::vector<std::string>& ChildFrameExpectedText() const {
     return child_frame_expected_text_;
+  }
+
+  void ReplaceMainFrameExpectedText(const std::string& old_text,
+                                    const std::string& new_text) {
+    std::replace(main_frame_expected_text_.begin(),
+                 main_frame_expected_text_.end(), old_text, new_text);
   }
 
  private:
@@ -595,6 +628,7 @@ class ContentCaptureSimTest
       <p id='p5'>Hello World5</p>
       <p id='p6'>Hello World6</p>
       <p id='p7'>Hello World7</p>
+      <div id='editable_id'>editable</div>
       <svg>
       <text id="s8">Hello World8</text>
       </svg>
@@ -620,13 +654,14 @@ class ContentCaptureSimTest
   }
 
   void InitMainFrameNodeHolders() {
-    std::vector<std::string> ids = {"p1", "p2", "p3", "p4",
-                                    "p5", "p6", "p7", "s8"};
-    main_frame_expected_text_ = {"Hello World1", "Hello World2", "Hello World3",
-                                 "Hello World4", "Hello World5", "Hello World6",
-                                 "Hello World7", "Hello World8"};
+    std::vector<std::string> ids = {"p1", "p2", "p3", "p4", "p5",
+                                    "p6", "p7", "s8", "editable_id"};
+    main_frame_expected_text_ = {
+        "Hello World1", "Hello World2", "Hello World3",
+        "Hello World4", "Hello World5", "Hello World6",
+        "Hello World7", "Hello World8", kEditableContent};
     InitNodeHolders(main_frame_content_, ids, GetDocument());
-    EXPECT_EQ(8u, main_frame_content_.size());
+    EXPECT_EQ(9u, main_frame_content_.size());
   }
 
   void InitChildFrameNodeHolders(const Document& doc) {
@@ -659,6 +694,25 @@ class ContentCaptureSimTest
     buffer.insert(buffer.begin(), layout_text->EnsureNodeHolder());
   }
 
+  void InsertNodeContent(Document& doc,
+                         const std::string& id,
+                         const std::string& content,
+                         unsigned offset) {
+    To<Text>(doc.getElementById(id.c_str())->firstChild())
+        ->insertData(offset, String(content.c_str()),
+                     IGNORE_EXCEPTION_FOR_TESTING);
+    Compositor().BeginFrame();
+  }
+
+  void DeleteNodeContent(Document& doc,
+                         const std::string& id,
+                         unsigned offset,
+                         unsigned length) {
+    To<Text>(doc.getElementById(id.c_str())->firstChild())
+        ->deleteData(offset, length, IGNORE_EXCEPTION_FOR_TESTING);
+    Compositor().BeginFrame();
+  }
+
   void SetCapturedContent(const std::vector<NodeHolder>& captured_content) {
     GetDocument()
         .GetFrame()
@@ -677,6 +731,8 @@ class ContentCaptureSimTest
   Persistent<Document> child_document_;
 };
 
+const char* ContentCaptureSimTest::kEditableContent = "editable";
+
 INSTANTIATE_TEST_SUITE_P(,
                          ContentCaptureSimTest,
                          testing::Values(NodeHolder::Type::kID,
@@ -685,7 +741,7 @@ INSTANTIATE_TEST_SUITE_P(,
 TEST_P(ContentCaptureSimTest, MultiFrame) {
   SetCapturedContent(ContentType::kAll);
   RunContentCaptureTaskUntil(ContentCaptureTask::TaskState::kStop);
-  EXPECT_EQ(3u, Client().Data().size());
+  EXPECT_EQ(4u, Client().Data().size());
   EXPECT_EQ(2u, ChildClient().Data().size());
   EXPECT_THAT(Client().AllText(),
               testing::UnorderedElementsAreArray(MainFrameExpectedText()));
@@ -710,7 +766,7 @@ TEST_P(ContentCaptureSimTest, AddNodeToMultiFrame) {
 
   // Sends the reset of data
   RunContentCaptureTaskUntil(ContentCaptureTask::TaskState::kProcessRetryTask);
-  EXPECT_EQ(3u, Client().Data().size());
+  EXPECT_EQ(4u, Client().Data().size());
   EXPECT_FALSE(Client().FirstData());
   EXPECT_TRUE(ChildClient().Data().empty());
   EXPECT_THAT(Client().AllText(),
@@ -733,6 +789,106 @@ TEST_P(ContentCaptureSimTest, AddNodeToMultiFrame) {
   EXPECT_THAT(ChildClient().AllText(),
               testing::UnorderedElementsAreArray(ChildFrameExpectedText()));
   EXPECT_TRUE(ChildClient().FirstData());
+}
+
+TEST_P(ContentCaptureSimTest, ChangeNode) {
+  SetCapturedContent(ContentType::kMainFrame);
+  RunContentCaptureTaskUntil(ContentCaptureTask::TaskState::kStop);
+  EXPECT_EQ(4u, Client().Data().size());
+  EXPECT_FALSE(Client().FirstData());
+  EXPECT_TRUE(ChildClient().Data().empty());
+  EXPECT_THAT(Client().AllText(),
+              testing::UnorderedElementsAreArray(MainFrameExpectedText()));
+  std::vector<std::string> expected_text_update;
+  std::string insert_text = "content ";
+
+  // Changed content to 'content editable'.
+  InsertMainFrameEditableContent(insert_text, 0);
+  SetCapturedContent(ContentType::kMainFrame);
+  RunContentCaptureTaskUntil(ContentCaptureTask::TaskState::kStop);
+  EXPECT_EQ(1u, Client().UpdatedData().size());
+  EXPECT_FALSE(Client().FirstData());
+  EXPECT_TRUE(ChildClient().Data().empty());
+  expected_text_update.push_back(insert_text + kEditableContent);
+  EXPECT_THAT(Client().UpdatedText(),
+              testing::UnorderedElementsAreArray(expected_text_update));
+
+  // Changing content multiple times before capturing.
+  std::string insert_text1 = "i";
+  // Changed content to 'content ieditable'.
+  InsertMainFrameEditableContent(insert_text1, insert_text.size());
+  std::string insert_text2 = "s ";
+  // Changed content to 'content is editable'.
+  InsertMainFrameEditableContent(insert_text2,
+                                 insert_text.size() + insert_text1.size());
+
+  SetCapturedContent(ContentType::kMainFrame);
+  RunContentCaptureTaskUntil(ContentCaptureTask::TaskState::kStop);
+  EXPECT_EQ(1u, Client().UpdatedData().size());
+  EXPECT_FALSE(Client().FirstData());
+  EXPECT_TRUE(ChildClient().Data().empty());
+  expected_text_update.push_back(insert_text + insert_text1 + insert_text2 +
+                                 kEditableContent);
+  EXPECT_THAT(Client().UpdatedText(),
+              testing::UnorderedElementsAreArray(expected_text_update));
+}
+
+TEST_P(ContentCaptureSimTest, ChangeNodeBeforeCapture) {
+  // Changed content to 'content editable' before capture.
+  std::string insert_text = "content ";
+  InsertMainFrameEditableContent(insert_text, 0);
+  // Changing content multiple times before capturing.
+  std::string insert_text1 = "i";
+  // Changed content to 'content ieditable'.
+  InsertMainFrameEditableContent(insert_text1, insert_text.size());
+  std::string insert_text2 = "s ";
+  // Changed content to 'content is editable'.
+  InsertMainFrameEditableContent(insert_text2,
+                                 insert_text.size() + insert_text1.size());
+
+  // The changed content shall be captured as new content.
+  ReplaceMainFrameExpectedText(
+      kEditableContent,
+      insert_text + insert_text1 + insert_text2 + kEditableContent);
+  SetCapturedContent(ContentType::kMainFrame);
+  RunContentCaptureTaskUntil(ContentCaptureTask::TaskState::kStop);
+  EXPECT_EQ(4u, Client().Data().size());
+  EXPECT_FALSE(Client().FirstData());
+  EXPECT_TRUE(ChildClient().Data().empty());
+  EXPECT_TRUE(ChildClient().UpdatedData().empty());
+  EXPECT_THAT(Client().AllText(),
+              testing::UnorderedElementsAreArray(MainFrameExpectedText()));
+}
+
+TEST_P(ContentCaptureSimTest, DeleteNodeContent) {
+  SetCapturedContent(ContentType::kMainFrame);
+  RunContentCaptureTaskUntil(ContentCaptureTask::TaskState::kStop);
+  EXPECT_EQ(4u, Client().Data().size());
+  EXPECT_FALSE(Client().FirstData());
+  EXPECT_TRUE(ChildClient().Data().empty());
+  EXPECT_THAT(Client().AllText(),
+              testing::UnorderedElementsAreArray(MainFrameExpectedText()));
+
+  // Deleted 4 char, changed content to 'edit'.
+  DeleteMainFrameEditableContent(4, 4);
+  SetCapturedContent(ContentType::kMainFrame);
+  RunContentCaptureTaskUntil(ContentCaptureTask::TaskState::kStop);
+  EXPECT_EQ(1u, Client().UpdatedData().size());
+  EXPECT_FALSE(Client().FirstData());
+  EXPECT_TRUE(ChildClient().Data().empty());
+  std::vector<std::string> expected_text_update;
+  expected_text_update.push_back("edit");
+  EXPECT_THAT(Client().UpdatedText(),
+              testing::UnorderedElementsAreArray(expected_text_update));
+
+  // Emptied content, the node shall be removed.
+  DeleteMainFrameEditableContent(0, 4);
+  SetCapturedContent(ContentType::kMainFrame);
+  RunContentCaptureTaskUntil(ContentCaptureTask::TaskState::kStop);
+  EXPECT_TRUE(Client().UpdatedData().empty());
+  EXPECT_FALSE(Client().FirstData());
+  EXPECT_TRUE(ChildClient().Data().empty());
+  EXPECT_EQ(1u, Client().RemovedData().size());
 }
 
 }  // namespace blink

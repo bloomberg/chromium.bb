@@ -36,6 +36,9 @@ class CORE_EXPORT ContentCaptureManager
   // Invokes when scroll position was changed.
   void OnScrollPositionChanged();
 
+  // Invokes when text node content was changed.
+  void OnNodeTextChanged(const NodeHolder& node_holder);
+
   // Invokes when the local_frame_root shutdown.
   void Shutdown();
 
