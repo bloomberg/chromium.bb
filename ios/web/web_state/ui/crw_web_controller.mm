@@ -136,6 +136,8 @@ using web::wk_navigation_util::CreatePlaceholderUrlForUrl;
 using web::wk_navigation_util::ExtractUrlFromPlaceholderUrl;
 using web::wk_navigation_util::IsRestoreSessionUrl;
 using web::wk_navigation_util::IsWKInternalUrl;
+using web::wk_navigation_util::kReferrerHeaderName;
+using web::wk_navigation_util::URLNeedsUserAgentType;
 
 namespace {
 
@@ -162,8 +164,6 @@ NSString* const kScriptMessageName = @"crwebinvoke";
 NSString* const kFrameBecameAvailableMessageName = @"FrameBecameAvailable";
 // Message command sent when a frame is unloading.
 NSString* const kFrameBecameUnavailableMessageName = @"FrameBecameUnavailable";
-
-NSString* const kReferrerHeaderName = @"Referer";  // [sic]
 
 // The duration of the period following a screen touch during which the user is
 // still considered to be interacting with the page.
@@ -409,9 +409,6 @@ bool RequiresContentFilterBlockingWorkaround() {
 // The HTTP headers associated with the current navigation item. These are nil
 // unless the request was a POST.
 @property(weak, nonatomic, readonly) NSDictionary* currentHTTPHeaders;
-
-// Extracts "Referer" [sic] value from WKNavigationAction request header.
-- (NSString*)referrerFromNavigationAction:(WKNavigationAction*)action;
 
 // Returns the current URL of the web view, and sets |trustLevel| accordingly
 // based on the confidence in the verification.
@@ -1273,7 +1270,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   item->SetURL(URL);
   navigationContext->SetMimeType(MIMEType);
   if (item->GetUserAgentType() == web::UserAgentType::NONE &&
-      web::wk_navigation_util::URLNeedsUserAgentType(URL)) {
+      URLNeedsUserAgentType(URL)) {
     item->SetUserAgentType(web::UserAgentType::MOBILE);
   }
 
@@ -3862,7 +3859,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     return nil;
   }
 
-  NSString* referrer = [self referrerFromNavigationAction:action];
+  NSString* referrer =
+      [action.request valueForHTTPHeaderField:kReferrerHeaderName];
   GURL openerURL =
       referrer.length ? GURL(base::SysNSStringToUTF8(referrer)) : _documentURL;
 
@@ -4432,7 +4430,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
       // performing characters escaping).
       web::NavigationItem* item =
           web::GetItemWithUniqueID(self.navigationManagerImpl, context);
-      if (!web::wk_navigation_util::IsWKInternalUrl(webViewURL)) {
+      if (!IsWKInternalUrl(webViewURL)) {
         if (item) {
           item->SetURL(webViewURL);
         }
@@ -5453,7 +5451,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     self.navigationHandler.pendingNavigationInfo =
         [[CRWPendingNavigationInfo alloc] init];
     self.navigationHandler.pendingNavigationInfo.referrer =
-        [self referrerFromNavigationAction:action];
+        [action.request valueForHTTPHeaderField:kReferrerHeaderName];
     self.navigationHandler.pendingNavigationInfo.navigationType =
         action.navigationType;
     self.navigationHandler.pendingNavigationInfo.HTTPMethod =
@@ -5556,7 +5554,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   // navigation. WKWebView allows multiple provisional navigations, while
   // Navigation Manager has only one pending navigation.
   if (item) {
-    if (!web::wk_navigation_util::IsWKInternalUrl(URL)) {
+    if (!IsWKInternalUrl(URL)) {
       item->SetVirtualURL(URL);
       item->SetURL(URL);
     }
@@ -6096,10 +6094,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   [self setWebView:nil];
   [_containerView removeFromSuperview];
   _containerView = nil;
-}
-
-- (NSString*)referrerFromNavigationAction:(WKNavigationAction*)action {
-  return [action.request valueForHTTPHeaderField:kReferrerHeaderName];
 }
 
 @end

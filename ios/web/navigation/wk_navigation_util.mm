@@ -32,6 +32,7 @@ const int kMaxSessionSize = 75;
 const char kRestoreSessionSessionHashPrefix[] = "session=";
 const char kRestoreSessionTargetUrlHashPrefix[] = "targetUrl=";
 const char kOriginalUrlKey[] = "for";
+NSString* const kReferrerHeaderName = @"Referer";
 
 namespace {
 // Returns begin and end iterators and an updated last committed index for the
