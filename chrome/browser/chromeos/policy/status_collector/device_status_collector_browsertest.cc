@@ -194,7 +194,7 @@ class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
     return app_id;
   }
 
-  std::string GetDMTokenForProfile(Profile* profile) override {
+  std::string GetDMTokenForProfile(Profile* profile) const override {
     // Return the profile user name (passed to CreateTestingProfile) to make it
     // easy to confirm that the correct profile's DMToken was requested.
     return profile->GetProfileUserName();

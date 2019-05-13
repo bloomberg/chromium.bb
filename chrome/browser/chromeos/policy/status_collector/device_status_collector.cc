@@ -46,8 +46,6 @@
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/status_collector/activity_storage.h"
 #include "chrome/browser/chromeos/policy/status_collector/status_collector_state.h"
-#include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
-#include "chrome/browser/chromeos/policy/user_policy_manager_factory_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
@@ -645,28 +643,26 @@ DeviceStatusCollector::DeviceStatusCollector(
     const EMMCLifetimeFetcher& emmc_lifetime_fetcher,
     TimeDelta activity_day_start,
     bool is_enterprise_reporting)
-    : max_stored_past_activity_interval_(kMaxStoredPastActivityInterval),
-      max_stored_future_activity_interval_(kMaxStoredFutureActivityInterval),
+    : StatusCollector(provider,
+                      chromeos::CrosSettings::Get(),
+                      chromeos::PowerManagerClient::Get(),
+                      session_manager::SessionManager::Get(),
+                      activity_day_start),
       pref_service_(pref_service),
-      last_idle_check_(Time()),
-      last_active_check_(base::Time()),
-      last_state_active_(true),
       volume_info_fetcher_(volume_info_fetcher),
       cpu_statistics_fetcher_(cpu_statistics_fetcher),
       cpu_temp_fetcher_(cpu_temp_fetcher),
       android_status_fetcher_(android_status_fetcher),
       tpm_status_fetcher_(tpm_status_fetcher),
       emmc_lifetime_fetcher_(emmc_lifetime_fetcher),
-      statistics_provider_(provider),
-      cros_settings_(chromeos::CrosSettings::Get()),
-      power_manager_(chromeos::PowerManagerClient::Get()),
-      session_manager_(session_manager::SessionManager::Get()),
       runtime_probe_(
           chromeos::DBusThreadManager::Get()->GetRuntimeProbeClient()),
       is_enterprise_reporting_(is_enterprise_reporting),
-      activity_day_start_(activity_day_start),
-      task_runner_(nullptr),
       weak_factory_(this) {
+  // protected fields of `StatusCollector`.
+  max_stored_past_activity_interval_ = kMaxStoredPastActivityInterval;
+  max_stored_future_activity_interval_ = kMaxStoredFutureActivityInterval;
+
   // Get the task runner of the current thread, so we can queue status responses
   // on this thread.
   CHECK(base::SequencedTaskRunnerHandle::IsSet());
@@ -793,15 +789,6 @@ void DeviceStatusCollector::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(prefs::kDeviceActivityTimes);
 }
 
-// static
-void DeviceStatusCollector::RegisterProfilePrefs(PrefRegistrySimple* registry) {
-  registry->RegisterBooleanPref(prefs::kReportArcStatusEnabled, false);
-  registry->RegisterDictionaryPref(prefs::kUserActivityTimes);
-  registry->RegisterTimePref(prefs::kLastChildScreenTimeReset, Time());
-  registry->RegisterTimePref(prefs::kLastChildScreenTimeSaved, Time());
-  registry->RegisterIntegerPref(prefs::kChildScreenTimeMilliseconds, 0);
-}
-
 TimeDelta DeviceStatusCollector::GetActiveChildScreenTime() {
   if (!user_manager::UserManager::Get()->IsLoggedInAsChildUser())
     return TimeDelta::FromSeconds(0);
@@ -892,10 +879,6 @@ void DeviceStatusCollector::UpdateReportingSettings() {
                                   &report_running_kiosk_app_)) {
     report_running_kiosk_app_ = false;
   }
-}
-
-Time DeviceStatusCollector::GetCurrentTime() {
-  return Time::Now();
 }
 
 void DeviceStatusCollector::ClearCachedResourceUsage() {
@@ -1349,20 +1332,6 @@ bool DeviceStatusCollector::GetVersionInfo(
   return true;
 }
 
-bool DeviceStatusCollector::GetBootMode(em::DeviceStatusReportRequest* status) {
-  std::string dev_switch_mode;
-  bool anything_reported = false;
-  if (statistics_provider_->GetMachineStatistic(
-          chromeos::system::kDevSwitchBootKey, &dev_switch_mode)) {
-    if (dev_switch_mode == chromeos::system::kDevSwitchBootValueDev)
-      status->set_boot_mode("Dev");
-    else if (dev_switch_mode == chromeos::system::kDevSwitchBootValueVerified)
-      status->set_boot_mode("Verified");
-    anything_reported = true;
-  }
-  return anything_reported;
-}
-
 bool DeviceStatusCollector::GetWriteProtectSwitch(
     em::DeviceStatusReportRequest* status) {
   std::string firmware_write_protect;
@@ -1697,8 +1666,14 @@ void DeviceStatusCollector::GetDeviceStatus(
   if (report_version_info_)
     anything_reported |= GetVersionInfo(status);
 
-  if (report_boot_mode_)
-    anything_reported |= GetBootMode(status);
+  if (report_boot_mode_) {
+    base::Optional<std::string> boot_mode =
+        StatusCollector::GetBootMode(statistics_provider_);
+    if (boot_mode) {
+      status->set_boot_mode(*boot_mode);
+      anything_reported = true;
+    }
+  }
 
   if (report_network_interfaces_)
     anything_reported |= GetNetworkInterfaces(status);
@@ -1720,21 +1695,6 @@ void DeviceStatusCollector::GetDeviceStatus(
   // Wipe pointer if we didn't actually add any data.
   if (!anything_reported)
     state->response_params().device_status.reset();
-}
-
-std::string DeviceStatusCollector::GetDMTokenForProfile(Profile* profile) {
-  CloudPolicyManager* user_cloud_policy_manager =
-      UserPolicyManagerFactoryChromeOS::GetCloudPolicyManagerForProfile(
-          profile);
-  if (!user_cloud_policy_manager) {
-    NOTREACHED();
-    return std::string();
-  }
-
-  auto* cloud_policy_client = user_cloud_policy_manager->core()->client();
-  std::string dm_token = cloud_policy_client->dm_token();
-
-  return dm_token;
 }
 
 bool DeviceStatusCollector::GetSessionStatusForUser(
