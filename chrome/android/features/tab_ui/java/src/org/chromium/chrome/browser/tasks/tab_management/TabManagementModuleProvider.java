@@ -8,30 +8,19 @@ import android.support.annotation.Nullable;
 
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
-import org.chromium.components.module_installer.ModuleInstaller;
-
 /**
  * Provider class for TabManagementModule.
  */
 public class TabManagementModuleProvider {
     public static final String SYNTHETIC_TRIAL_POSTFIX = "SyntheticTrial";
 
-    private static final String TAB_MANAGEMENT_MODULE_IMPL_CLASS_NAME =
-            "org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleImpl";
-
     /**
-     * Returns fallback or real {@link TabManagementModule} implementation depending on whether
-     * the module is installed.
+     * Returns {@link TabManagementDelegate} implementation if the module is installed. null,
+     * otherwise.
      */
-    public static @Nullable TabManagementModule getTabManagementModule() {
-        TabManagementModule tabManagementModule;
-        try {
-            tabManagementModule =
-                    (TabManagementModule) Class.forName(TAB_MANAGEMENT_MODULE_IMPL_CLASS_NAME)
-                            .newInstance();
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
-                | IllegalArgumentException e) {
-            ModuleInstaller.installDeferred("tab_ui");
+    public static @Nullable TabManagementDelegate getDelegate() {
+        if (!TabManagementModule.isInstalled()) {
+            TabManagementModule.installDeferred();
             if (ChromeFeatureList.isInitialized()) {
                 UmaSessionStats.registerSyntheticFieldTrial(
                         ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID + SYNTHETIC_TRIAL_POSTFIX,
@@ -54,6 +43,6 @@ public class TabManagementModuleProvider {
                         "Downloaded_Control");
             }
         }
-        return tabManagementModule;
+        return TabManagementModule.getImpl();
     }
 }

@@ -41,7 +41,7 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/tasks/tab_management/TabListMediator.java",
     "java/src/org/chromium/chrome/browser/tasks/tab_management/TabListModel.java",
     "java/src/org/chromium/chrome/browser/tasks/tab_management/TabListRecyclerView.java",
-    "java/src/org/chromium/chrome/browser/tasks/tab_management/TabManagementModuleImpl.java",
+    "java/src/org/chromium/chrome/browser/tasks/tab_management/TabManagementDelegateImpl.java",
     "java/src/org/chromium/chrome/browser/tasks/tab_management/TabProperties.java",
     "java/src/org/chromium/chrome/browser/tasks/tab_management/TabStripToolbarCoordinator.java",
     "java/src/org/chromium/chrome/browser/tasks/tab_management/TabStripToolbarViewProperties.java",

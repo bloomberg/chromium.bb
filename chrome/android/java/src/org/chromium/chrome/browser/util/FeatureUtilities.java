@@ -593,7 +593,7 @@ public class FeatureUtilities {
                                     ChromeFeatureList.DOWNLOAD_TAB_MANAGEMENT_MODULE)
                                 || ChromeFeatureList.isEnabled(
                                         ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID))
-                        && TabManagementModuleProvider.getTabManagementModule() != null
+                        && TabManagementModuleProvider.getDelegate() != null
                         && ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID));
     }
 
@@ -620,7 +620,7 @@ public class FeatureUtilities {
                                     ChromeFeatureList.DOWNLOAD_TAB_MANAGEMENT_MODULE)
                                 || ChromeFeatureList.isEnabled(
                                         ChromeFeatureList.TAB_GROUPS_ANDROID))
-                        && TabManagementModuleProvider.getTabManagementModule() != null
+                        && TabManagementModuleProvider.getDelegate() != null
                         && ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_GROUPS_ANDROID));
     }
 
@@ -654,7 +654,7 @@ public class FeatureUtilities {
                                     ChromeFeatureList.DOWNLOAD_TAB_MANAGEMENT_MODULE)
                                 || ChromeFeatureList.isEnabled(
                                         ChromeFeatureList.TAB_GROUPS_UI_IMPROVEMENTS_ANDROID))
-                        && TabManagementModuleProvider.getTabManagementModule() != null
+                        && TabManagementModuleProvider.getDelegate() != null
                         && ChromeFeatureList.isEnabled(
                                 ChromeFeatureList.TAB_GROUPS_UI_IMPROVEMENTS_ANDROID));
     }

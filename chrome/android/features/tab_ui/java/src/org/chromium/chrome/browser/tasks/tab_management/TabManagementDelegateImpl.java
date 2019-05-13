@@ -17,8 +17,8 @@ import org.chromium.chrome.browser.metrics.UmaSessionStats;
 /**
  * Impl class that will resolve components for tab management.
  */
-@UsedByReflection("TabManagementModuleProvider.java")
-public class TabManagementModuleImpl implements TabManagementModule {
+@UsedByReflection("TabManagementModule")
+public class TabManagementDelegateImpl implements TabManagementDelegate {
     @Override
     public GridTabSwitcher createGridTabSwitcher(ChromeActivity activity) {
         if (ChromeFeatureList.isInitialized()) {

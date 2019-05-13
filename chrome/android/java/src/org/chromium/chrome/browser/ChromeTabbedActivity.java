@@ -749,11 +749,11 @@ public class ChromeTabbedActivity
                 UsageStatsService.getInstance().createPageViewObserver(mTabModelSelectorImpl, this);
             }
 
-            if (FeatureUtilities.isGridTabSwitcherEnabled()
-                    || FeatureUtilities.isTabGroupsAndroidEnabled()) {
+            if (TabManagementModuleProvider.getDelegate() != null
+                    && (FeatureUtilities.isGridTabSwitcherEnabled()
+                            || FeatureUtilities.isTabGroupsAndroidEnabled())) {
                 GridTabSwitcher gridTabSwitcher =
-                        TabManagementModuleProvider.getTabManagementModule().createGridTabSwitcher(
-                                this);
+                        TabManagementModuleProvider.getDelegate().createGridTabSwitcher(this);
                 mOverviewModeController.overrideOverviewModeController(
                         gridTabSwitcher.getOverviewModeController());
             }
