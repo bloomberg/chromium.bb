@@ -2281,6 +2281,7 @@ enum WebFeature {
   kFocusWithoutUserActivationNotSandboxedAdFrame = 2883,
   kFocusWithoutUserActivationSandboxedNotAdFrame = 2884,
   kFocusWithoutUserActivationSandboxedAdFrame = 2885,
+  kMediaCapabilitiesDecodingInfoWithKeySystemConfig = 2888,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

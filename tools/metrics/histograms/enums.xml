@@ -22959,6 +22959,7 @@ Called by update_net_error_codes.py.-->
   <int value="2883" label="FocusWithoutUserActivationNotSandboxedAdFrame"/>
   <int value="2884" label="FocusWithoutUserActivationSandboxedNotAdFrame"/>
   <int value="2885" label="FocusWithoutUserActivationSandboxedAdFrame"/>
+  <int value="2888" label="MediaCapabilitiesDecodingInfoWithKeySystemConfig"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">

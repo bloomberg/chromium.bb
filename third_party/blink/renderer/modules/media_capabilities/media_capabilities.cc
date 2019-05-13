@@ -10,6 +10,7 @@
 #include "media/base/mime_util.h"
 #include "media/base/supported_types.h"
 #include "media/filters/stream_parser_factory.h"
+#include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/media_capabilities/web_media_capabilities_client.h"
 #include "third_party/blink/public/platform/modules/media_capabilities/web_media_capabilities_info.h"
 #include "third_party/blink/public/platform/modules/media_capabilities/web_media_configuration.h"
@@ -25,6 +26,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/modules/encryptedmedia/encrypted_media_utils.h"
@@ -642,6 +644,11 @@ MediaCapabilities::MediaCapabilities() = default;
 ScriptPromise MediaCapabilities::decodingInfo(
     ScriptState* script_state,
     const MediaDecodingConfiguration* configuration) {
+  if (configuration->hasKeySystemConfiguration()) {
+    UseCounter::Count(
+        ExecutionContext::From(script_state),
+        WebFeature::kMediaCapabilitiesDecodingInfoWithKeySystemConfig);
+  }
 
   String message;
   if (!IsValidMediaDecodingConfiguration(configuration, &message)) {
