@@ -63,6 +63,18 @@ class FakeGaiaMixin : public InProcessBrowserTestMixin {
   void SetupFakeGaiaForLogin(const std::string& user_email,
                              const std::string& gaia_id,
                              const std::string& refresh_token);
+  // Sets up fake gaia to serve access tokens for a child user.
+  // *   Maps |user_email| to |gaia_id|. If |gaia_id| is empty, |user_email|
+  //     will be mapped to kDefaultGaiaId in FakeGaia.
+  // *   Issues user info token scoped for device management service.
+  // *   If |issue_any_scope_token|, issues a special all-access token
+  //     associated with the test refresh token (as it's done in
+  //     SetupFakeGaiaForLogin()).
+  // *   Initializes fake merge session as needed.
+  void SetupFakeGaiaForChildUser(const std::string& user_email,
+                                 const std::string& gaia_id,
+                                 const std::string& refresh_token,
+                                 bool issue_any_scope_token);
   void SetupFakeGaiaForLoginManager();
 
   bool initialize_fake_merge_session() {

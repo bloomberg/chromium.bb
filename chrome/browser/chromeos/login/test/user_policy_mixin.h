@@ -17,13 +17,19 @@
 
 namespace chromeos {
 
+class LocalPolicyTestServerMixin;
+
 // Mixin for setting up user policy for a test user.
-// Currently supports setting cached user policy.
+// Currently supports setting cached user policy and optionally user policy
+// served by local policy test server..
 // NOTE: This mixin will set up in-memory FakeSessionManagerClient during setup.
 class UserPolicyMixin : public InProcessBrowserTestMixin {
  public:
   UserPolicyMixin(InProcessBrowserTestMixinHost* mixin_host,
                   const AccountId& account_id);
+  UserPolicyMixin(InProcessBrowserTestMixinHost* mixin_host,
+                  const AccountId& account_id,
+                  LocalPolicyTestServerMixin* policy_server);
   ~UserPolicyMixin() override;
 
   // InProcessBrowserTestMixin:
@@ -36,7 +42,7 @@ class UserPolicyMixin : public InProcessBrowserTestMixin {
   //
   // If called during setup, before steps that initialize session manager,
   // policy change will be deferred until session manager initialization.
-  std::unique_ptr<ScopedUserPolicyUpdate> RequestCachedPolicyUpdate();
+  std::unique_ptr<ScopedUserPolicyUpdate> RequestPolicyUpdate();
 
  private:
   // Creates a file containing public policy signing key that will be used to
@@ -44,21 +50,26 @@ class UserPolicyMixin : public InProcessBrowserTestMixin {
   // this step is skipped.
   void SetUpUserKeysFile(const std::string& user_key_bits);
 
-  // Sets policy blobs cached in the fake session manager client.
-  void SetUpCachedPolicy();
+  // Sets policy blobs in the fake session manager client.
+  void SetUpPolicy();
 
   // The account ID of the user whose policy is set up by the mixin.
   AccountId account_id_;
 
-  // Whether the mixin should set up the cached policy blobs during setup.
+  // Whether the mixin should set up policy blobs during setup.
   // Set in RequestCachedPolicyUpdate() is used during test setup (before
   // SetUpInProcessBrowserTestFixture()).
-  bool set_cached_policy_in_setup_ = false;
+  bool set_policy_in_setup_ = false;
 
   // Whether the mixin initialized fake session manager client.
   bool session_manager_initialized_ = false;
 
-  policy::UserPolicyBuilder cached_user_policy_builder_;
+  // Policy server that can optionally be passed into UserPolicyMixin. If set
+  // user policy changes done by RequestPolicyUpdate() will also be forwarded
+  // to the policy server.
+  LocalPolicyTestServerMixin* policy_server_ = nullptr;
+
+  policy::UserPolicyBuilder user_policy_builder_;
 
   base::WeakPtrFactory<UserPolicyMixin> weak_factory_{this};
 

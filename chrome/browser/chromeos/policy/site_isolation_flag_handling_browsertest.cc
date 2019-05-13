@@ -306,7 +306,7 @@ class SiteIsolationFlagHandlingTest
     update.reset();
 
     std::unique_ptr<ScopedUserPolicyUpdate> user_policy_update =
-        user_policy_.RequestCachedPolicyUpdate();
+        user_policy_.RequestPolicyUpdate();
     if (GetParam().user_policy_site_per_process) {
       user_policy_update->policy_payload()
           ->mutable_siteperprocess()

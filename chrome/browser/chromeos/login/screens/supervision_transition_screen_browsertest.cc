@@ -11,7 +11,10 @@
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/login/mixin_based_in_process_browser_test.h"
+#include "chrome/browser/chromeos/login/test/embedded_test_server_mixin.h"
+#include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
+#include "chrome/browser/chromeos/login/test/local_policy_test_server_mixin.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/chromeos/login/test/login_screen_tester.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
@@ -30,6 +33,7 @@
 #include "components/arc/test/fake_arc_session.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_type.h"
+#include "net/dns/mock_host_resolver.h"
 
 namespace chromeos {
 
@@ -49,7 +53,9 @@ class SupervisionTransitionScreenTest
   }
 
   void SetUpOnMainThread() override {
-    ASSERT_TRUE(user_policy_.RequestCachedPolicyUpdate());
+    host_resolver()->AddRule("*", "127.0.0.1");
+
+    ASSERT_TRUE(user_policy_.RequestPolicyUpdate());
 
     arc::ArcServiceLauncher::Get()->ResetForTesting();
     arc::ArcSessionManager::Get()->SetArcSessionRunnerForTesting(
@@ -68,17 +74,35 @@ class SupervisionTransitionScreenTest
                : user_manager::USER_TYPE_REGULAR;
   }
 
+  void LogIn(const LoginManagerMixin::TestUserInfo& user) {
+    UserContext user_context =
+        LoginManagerMixin::CreateDefaultUserContext(user);
+    if (user.user_type == user_manager::USER_TYPE_CHILD) {
+      fake_gaia_.SetupFakeGaiaForChildUser(
+          user.account_id.GetUserEmail(), user.account_id.GetGaiaId(),
+          "refresh-token", false /*issue_any_scope_token*/);
+      user_context.SetRefreshToken("refresh-token");
+    }
+    login_manager_.AttemptLoginUsingAuthenticator(
+        user_context, std::make_unique<StubAuthenticatorBuilder>(user_context));
+  }
+
   LoginManagerMixin::TestUserInfo user_{
       AccountId::FromUserEmailGaiaId("user@gmail.com", "user"), GetParam()};
   LoginManagerMixin login_manager_{&mixin_host_, {user_}};
 
-  UserPolicyMixin user_policy_{&mixin_host_, user_.account_id};
+  LocalPolicyTestServerMixin policy_server_{&mixin_host_};
+  UserPolicyMixin user_policy_{&mixin_host_, user_.account_id, &policy_server_};
+
+  EmbeddedTestServerSetupMixin embedded_test_server_setup_{
+      &mixin_host_, embedded_test_server()};
+  FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
 };
 
 IN_PROC_BROWSER_TEST_P(SupervisionTransitionScreenTest,
                        PRE_SuccessfulTransition) {
-  login_manager_.LoginAndWaitForActiveSession(
-      LoginManagerMixin::CreateDefaultUserContext(user_));
+  LogIn(user_);
+  login_manager_.WaitForActiveSession();
 
   Profile* profile = ProfileManager::GetPrimaryUserProfile();
   profile->GetPrefs()->SetBoolean(arc::prefs::kArcSignedIn, true);
@@ -88,11 +112,7 @@ IN_PROC_BROWSER_TEST_P(SupervisionTransitionScreenTest,
 IN_PROC_BROWSER_TEST_P(SupervisionTransitionScreenTest, SuccessfulTransition) {
   LoginManagerMixin::TestUserInfo transitioned_user(user_.account_id,
                                                     GetTargetUserType());
-  UserContext user_context =
-      LoginManagerMixin::CreateDefaultUserContext(transitioned_user);
-
-  login_manager_.AttemptLoginUsingAuthenticator(
-      user_context, std::make_unique<StubAuthenticatorBuilder>(user_context));
+  LogIn(transitioned_user);
 
   OobeScreenWaiter(SupervisionTransitionScreenView::kScreenId).Wait();
 
@@ -115,8 +135,8 @@ IN_PROC_BROWSER_TEST_P(SupervisionTransitionScreenTest, SuccessfulTransition) {
 }
 
 IN_PROC_BROWSER_TEST_P(SupervisionTransitionScreenTest, PRE_TransitionTimeout) {
-  login_manager_.LoginAndWaitForActiveSession(
-      LoginManagerMixin::CreateDefaultUserContext(user_));
+  LogIn(user_);
+  login_manager_.WaitForActiveSession();
 
   Profile* profile = ProfileManager::GetPrimaryUserProfile();
   profile->GetPrefs()->SetBoolean(arc::prefs::kArcSignedIn, true);
@@ -126,11 +146,7 @@ IN_PROC_BROWSER_TEST_P(SupervisionTransitionScreenTest, PRE_TransitionTimeout) {
 IN_PROC_BROWSER_TEST_P(SupervisionTransitionScreenTest, TransitionTimeout) {
   LoginManagerMixin::TestUserInfo transitioned_user(user_.account_id,
                                                     GetTargetUserType());
-  UserContext user_context =
-      LoginManagerMixin::CreateDefaultUserContext(transitioned_user);
-
-  login_manager_.AttemptLoginUsingAuthenticator(
-      user_context, std::make_unique<StubAuthenticatorBuilder>(user_context));
+  LogIn(transitioned_user);
 
   OobeScreenWaiter(SupervisionTransitionScreenView::kScreenId).Wait();
 
@@ -170,8 +186,8 @@ IN_PROC_BROWSER_TEST_P(SupervisionTransitionScreenTest, TransitionTimeout) {
 
 IN_PROC_BROWSER_TEST_P(SupervisionTransitionScreenTest,
                        PRE_SkipTransitionIfArcNeverStarted) {
-  login_manager_.LoginAndWaitForActiveSession(
-      LoginManagerMixin::CreateDefaultUserContext(user_));
+  LogIn(user_);
+  login_manager_.WaitForActiveSession();
 }
 
 IN_PROC_BROWSER_TEST_P(SupervisionTransitionScreenTest,
@@ -180,8 +196,8 @@ IN_PROC_BROWSER_TEST_P(SupervisionTransitionScreenTest,
                                                     GetTargetUserType());
 
   // Login should go through without being interrupted.
-  login_manager_.LoginAndWaitForActiveSession(
-      LoginManagerMixin::CreateDefaultUserContext(transitioned_user));
+  LogIn(transitioned_user);
+  login_manager_.WaitForActiveSession();
 }
 
 INSTANTIATE_TEST_SUITE_P(/* no prefix */,

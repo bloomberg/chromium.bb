@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/threading/thread_restrictions.h"
+#include "chrome/browser/chromeos/login/test/local_policy_test_server_mixin.h"
 #include "chrome/common/chrome_paths.h"
 #include "chromeos/constants/chromeos_paths.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
@@ -18,6 +19,7 @@
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
+#include "components/policy/core/common/cloud/cloud_policy_constants.h"
 
 namespace chromeos {
 
@@ -25,10 +27,17 @@ UserPolicyMixin::UserPolicyMixin(InProcessBrowserTestMixinHost* mixin_host,
                                  const AccountId& account_id)
     : InProcessBrowserTestMixin(mixin_host), account_id_(account_id) {}
 
+UserPolicyMixin::UserPolicyMixin(InProcessBrowserTestMixinHost* mixin_host,
+                                 const AccountId& account_id,
+                                 LocalPolicyTestServerMixin* policy_server)
+    : InProcessBrowserTestMixin(mixin_host),
+      account_id_(account_id),
+      policy_server_(policy_server) {}
+
 UserPolicyMixin::~UserPolicyMixin() = default;
 
 void UserPolicyMixin::SetUpInProcessBrowserTestFixture() {
-  SetUpUserKeysFile(cached_user_policy_builder_.GetPublicSigningKeyAsString());
+  SetUpUserKeysFile(user_policy_builder_.GetPublicSigningKeyAsString());
 
   // Make sure session manager client has been initialized as in-memory. This is
   // requirement for setting policy blobs.
@@ -37,16 +46,14 @@ void UserPolicyMixin::SetUpInProcessBrowserTestFixture() {
 
   session_manager_initialized_ = true;
 
-  if (set_cached_policy_in_setup_)
-    SetUpCachedPolicy();
+  if (set_policy_in_setup_)
+    SetUpPolicy();
 }
 
-std::unique_ptr<ScopedUserPolicyUpdate>
-UserPolicyMixin::RequestCachedPolicyUpdate() {
+std::unique_ptr<ScopedUserPolicyUpdate> UserPolicyMixin::RequestPolicyUpdate() {
   return std::make_unique<ScopedUserPolicyUpdate>(
-      &cached_user_policy_builder_,
-      base::BindOnce(&UserPolicyMixin::SetUpCachedPolicy,
-                     weak_factory_.GetWeakPtr()));
+      &user_policy_builder_, base::BindOnce(&UserPolicyMixin::SetUpPolicy,
+                                            weak_factory_.GetWeakPtr()));
 }
 
 void UserPolicyMixin::SetUpUserKeysFile(const std::string& user_key_bits) {
@@ -76,24 +83,31 @@ void UserPolicyMixin::SetUpUserKeysFile(const std::string& user_key_bits) {
   DCHECK_EQ(static_cast<int>(user_key_bits.length()), write_result);
 }
 
-void UserPolicyMixin::SetUpCachedPolicy() {
+void UserPolicyMixin::SetUpPolicy() {
   if (!session_manager_initialized_) {
-    set_cached_policy_in_setup_ = true;
+    set_policy_in_setup_ = true;
     return;
   }
 
-  cached_user_policy_builder_.policy_data().set_username(
-      account_id_.GetUserEmail());
-  cached_user_policy_builder_.policy_data().set_gaia_id(
-      account_id_.GetGaiaId());
-  cached_user_policy_builder_.Build();
+  user_policy_builder_.policy_data().set_username(account_id_.GetUserEmail());
+  user_policy_builder_.policy_data().set_gaia_id(account_id_.GetGaiaId());
+  user_policy_builder_.policy_data().set_public_key_version(1);
+
+  user_policy_builder_.SetDefaultSigningKey();
+  user_policy_builder_.Build();
+
+  const std::string policy_blob = user_policy_builder_.GetBlob();
 
   const cryptohome::AccountIdentifier cryptohome_id =
       cryptohome::CreateAccountIdentifierFromAccountId(account_id_);
-  FakeSessionManagerClient::Get()->set_user_policy(
-      cryptohome_id, cached_user_policy_builder_.GetBlob());
+  FakeSessionManagerClient::Get()->set_user_policy(cryptohome_id, policy_blob);
   FakeSessionManagerClient::Get()->set_user_policy_without_session(
-      cryptohome_id, cached_user_policy_builder_.GetBlob());
+      cryptohome_id, policy_blob);
+
+  if (policy_server_) {
+    policy_server_->UpdateUserPolicy(user_policy_builder_.payload(),
+                                     account_id_.GetUserEmail());
+  }
 }
 
 }  // namespace chromeos

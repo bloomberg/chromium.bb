@@ -129,6 +129,26 @@ bool LocalPolicyTestServerMixin::UpdateDevicePolicy(
 }
 
 bool LocalPolicyTestServerMixin::UpdateUserPolicy(
+    const enterprise_management::CloudPolicySettings& policy,
+    const std::string& policy_user) {
+  // Configure the test server's policy user. This will ensure the desired
+  // username is set in policy responses, even if the request does not contain
+  // username field.
+  base::Value managed_users_list(base::Value::Type::LIST);
+  managed_users_list.GetList().emplace_back("*");
+  server_config_.SetKey("managed_users", std::move(managed_users_list));
+  server_config_.SetKey("policy_user", base::Value(policy_user));
+  server_config_.SetKey("current_key_index", base::Value(0));
+  if (!policy_test_server_->SetConfig(server_config_))
+    return false;
+
+  // Update the policy that should be served for the user.
+  return policy_test_server_->UpdatePolicy(
+      policy::dm_protocol::kChromeUserPolicyType, std::string() /* entity_id */,
+      policy.SerializeAsString());
+}
+
+bool LocalPolicyTestServerMixin::UpdateUserPolicy(
     const base::Value& mandatory_policy,
     const base::Value& recommended_policy,
     const std::string& policy_user) {
