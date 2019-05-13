@@ -50,61 +50,46 @@ static const EnumStrings<T>& GetEnumStringsInstance();
 // conversions. The first argument is the type T, and the rest of the argument
 // should have the enum value and string pairs defined in a format like
 // "{enum_value0, string16_value0}, {enum_value1, string16_value1} ...".
-#define DEFINE_ENUM_CONVERTERS(T, ...)                                        \
-  template <>                                                                 \
-  const views::metadata::EnumStrings<T>&                                      \
-  views::metadata::GetEnumStringsInstance<T>() {                              \
-    static const base::NoDestructor<EnumStrings<T>> instance(                 \
-        std::vector<views::metadata::EnumStrings<T>::EnumString>(             \
-            {__VA_ARGS__}));                                                  \
-    return *instance;                                                         \
-  }                                                                           \
-                                                                              \
-  template <>                                                                 \
-  base::string16 views::metadata::ConvertToString<T>(T source_value) {        \
-    for (const auto& pair : GetEnumStringsInstance<T>().pairs) {              \
-      if (source_value == pair.enum_value)                                    \
-        return pair.str_value;                                                \
-    }                                                                         \
-    return base::string16();                                                  \
-  }                                                                           \
-                                                                              \
-  template <>                                                                 \
-  T views::metadata::ConvertFromString<T>(const base::string16& source_value, \
-                                          T default_value) {                  \
-    for (const auto& pair : GetEnumStringsInstance<T>().pairs) {              \
-      if (source_value == pair.str_value)                                     \
-        return pair.enum_value;                                               \
-    }                                                                         \
-    return default_value;                                                     \
+#define DEFINE_ENUM_CONVERTERS(T, ...)                                 \
+  template <>                                                          \
+  const views::metadata::EnumStrings<T>&                               \
+  views::metadata::GetEnumStringsInstance<T>() {                       \
+    static const base::NoDestructor<EnumStrings<T>> instance(          \
+        std::vector<views::metadata::EnumStrings<T>::EnumString>(      \
+            {__VA_ARGS__}));                                           \
+    return *instance;                                                  \
+  }                                                                    \
+                                                                       \
+  template <>                                                          \
+  base::string16 views::metadata::ConvertToString<T>(T source_value) { \
+    for (const auto& pair : GetEnumStringsInstance<T>().pairs) {       \
+      if (source_value == pair.enum_value)                             \
+        return pair.str_value;                                         \
+    }                                                                  \
+    return base::string16();                                           \
+  }                                                                    \
+                                                                       \
+  template <>                                                          \
+  bool views::metadata::ConvertFromString<T>(                          \
+      const base::string16& source_value, T* dst_value) {              \
+    for (const auto& pair : GetEnumStringsInstance<T>().pairs) {       \
+      if (source_value == pair.str_value) {                            \
+        *dst_value = pair.enum_value;                                  \
+        return true;                                                   \
+      }                                                                \
+    }                                                                  \
+    return false;                                                      \
   }
 
-// TypeConverter Class --------------------------------------------------------
-template <typename TSource, typename TTarget>
-class TypeConverter {
- public:
-  static TTarget Convert(ArgType<TSource>) = delete;
-  static TTarget Convert(ArgType<TSource>, ArgType<TTarget>) = delete;
+// Type Conversion Template Function
+// --------------------------------------------
+template <typename TSource>
+base::string16 ConvertToString(ArgType<TSource> source_value);
 
- private:
-  TypeConverter();
-};
-
-// Master Type Conversion Functions --------------------------------------------
-template <typename TSource, typename TTarget>
-TTarget Convert(ArgType<TSource> source_value) {
-  return TypeConverter<TSource, TTarget>::Convert(source_value);
-}
-
-template <typename TSource, typename TTarget>
-TTarget Convert(ArgType<TSource> source_value, ArgType<TTarget> default_value) {
-  return TypeConverter<TSource, TTarget>::Convert(source_value, default_value);
-}
+template <typename TTarget>
+bool ConvertFromString(const base::string16& source_value, TTarget* dst_value);
 
 // String Conversions ---------------------------------------------------------
-
-template <typename TSource>
-base::string16 ConvertToString(ArgType<TSource>) = delete;
 
 template <>
 VIEWS_EXPORT base::string16 ConvertToString<base::string16>(
@@ -147,97 +132,66 @@ template <>
 VIEWS_EXPORT base::string16 ConvertToString<gfx::Size>(
     const gfx::Size& source_value);
 
-template <typename TSource>
-class TypeConverter<TSource, base::string16> {
- public:
-  static base::string16 Convert(ArgType<TSource> source_value) {
-    return ConvertToString<TSource>(source_value);
-  }
-};
-
-// A specialization used for string16 conversions. Since it simply passes
-// the value, it is used for both converting to and from a string16 value.
 template <>
-class TypeConverter<base::string16, base::string16> {
- public:
-  static base::string16 Convert(const base::string16& source_val) {
-    return ConvertToString<base::string16>(source_val);
-  }
-  static base::string16 Convert(const base::string16& source_val,
-                                const base::string16& default_value) {
-    return ConvertToString<base::string16>(source_val);
-  }
-};
-
-template <typename TTarget>
-TTarget ConvertFromString(const base::string16&, ArgType<TTarget>) = delete;
+VIEWS_EXPORT base::string16 ConvertToString<base::string16>(
+    const base::string16& source_value);
 
 template <>
-VIEWS_EXPORT int8_t
-ConvertFromString<int8_t>(const base::string16& source_value,
-                          int8_t default_value);
+VIEWS_EXPORT bool ConvertFromString<int8_t>(const base::string16& source_value,
+                                            int8_t* dst_value);
 
 template <>
-VIEWS_EXPORT int16_t
-ConvertFromString<int16_t>(const base::string16& source_value,
-                           int16_t default_value);
+VIEWS_EXPORT bool ConvertFromString<int16_t>(const base::string16& source_value,
+                                             int16_t* dst_value);
 
 template <>
-VIEWS_EXPORT int32_t
-ConvertFromString<int32_t>(const base::string16& source_value,
-                           int32_t default_value);
+VIEWS_EXPORT bool ConvertFromString<int32_t>(const base::string16& source_value,
+                                             int32_t* dst_value);
 
 template <>
-VIEWS_EXPORT int64_t
-ConvertFromString<int64_t>(const base::string16& source_value,
-                           int64_t default_value);
+VIEWS_EXPORT bool ConvertFromString<int64_t>(const base::string16& source_value,
+                                             int64_t* dst_value);
 
 template <>
-VIEWS_EXPORT uint8_t
-ConvertFromString<uint8_t>(const base::string16& source_value,
-                           uint8_t default_value);
+VIEWS_EXPORT bool ConvertFromString<uint8_t>(const base::string16& source_value,
+                                             uint8_t* dst_value);
 
 template <>
-VIEWS_EXPORT uint16_t
-ConvertFromString<uint16_t>(const base::string16& source_value,
-                            uint16_t default_value);
-
-template <>
-VIEWS_EXPORT uint32_t
-ConvertFromString<uint32_t>(const base::string16& source_value,
-                            uint32_t default_value);
-
-template <>
-VIEWS_EXPORT uint64_t
-ConvertFromString<uint64_t>(const base::string16& source_value,
-                            uint64_t default_value);
-
-template <>
-VIEWS_EXPORT double ConvertFromString<double>(
+VIEWS_EXPORT bool ConvertFromString<uint16_t>(
     const base::string16& source_value,
-    double default_value);
+    uint16_t* dst_value);
 
 template <>
-VIEWS_EXPORT float ConvertFromString<float>(const base::string16& source_value,
-                                            float default_value);
+VIEWS_EXPORT bool ConvertFromString<uint32_t>(
+    const base::string16& source_value,
+    uint32_t* dst_value);
+
+template <>
+VIEWS_EXPORT bool ConvertFromString<uint64_t>(
+    const base::string16& source_value,
+    uint64_t* dst_value);
+
+template <>
+VIEWS_EXPORT bool ConvertFromString<double>(const base::string16& source_value,
+                                            double* dst_value);
+
+template <>
+VIEWS_EXPORT bool ConvertFromString<float>(const base::string16& source_value,
+                                           float* dst_value);
 
 template <>
 VIEWS_EXPORT bool ConvertFromString<bool>(const base::string16& source_value,
-                                          bool default_value);
+                                          bool* dst_value);
 
 template <>
-VIEWS_EXPORT gfx::Size ConvertFromString<gfx::Size>(
+VIEWS_EXPORT bool ConvertFromString<gfx::Size>(
     const base::string16& source_value,
-    const gfx::Size& default_value);
+    gfx::Size* dst_value);
 
-template <typename TTarget>
-class TypeConverter<base::string16, TTarget> {
- public:
-  static TTarget Convert(const base::string16& source_value,
-                         ArgType<TTarget> default_value) {
-    return ConvertFromString<TTarget>(source_value, default_value);
-  }
-};
+template <>
+VIEWS_EXPORT bool ConvertFromString<base::string16>(
+    const base::string16& source_value,
+    base::string16* dst_value);
 
 }  // namespace metadata
 }  // namespace views
