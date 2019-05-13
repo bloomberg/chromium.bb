@@ -172,8 +172,14 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeWinBrowserTest,
   LoadInitialAccessibilityTreeFromHtmlFilePath(
       "/accessibility/aria/aria-label.html");
 
-  UIAGetPropertyValueFlowsFromBrowserTestTemplate(
-      FindNode(ax::mojom::Role::kCheckBox, "aria label"), {});
+  base::win::ScopedVariant flows_from_variant;
+  ComPtr<IRawElementProviderSimple> node_provider =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(
+          FindNode(ax::mojom::Role::kCheckBox, "aria label"));
+  node_provider->GetPropertyValue(UIA_FlowsFromPropertyId,
+                                  flows_from_variant.Receive());
+  ASSERT_EQ(VT_ARRAY | VT_UNKNOWN, flows_from_variant.type());
+  ASSERT_EQ(nullptr, V_ARRAY(flows_from_variant.ptr()));
 }
 
 IN_PROC_BROWSER_TEST_F(AXPlatformNodeWinBrowserTest,

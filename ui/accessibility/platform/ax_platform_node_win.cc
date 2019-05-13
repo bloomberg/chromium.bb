@@ -399,6 +399,9 @@ SAFEARRAY* AXPlatformNodeWin::CreateUIAElementsArrayForReverseRelation(
 
 SAFEARRAY* AXPlatformNodeWin::CreateUIAElementsArrayFromIdVector(
     std::vector<int32_t>& ids) {
+  if (ids.size() == 0)
+    return nullptr;
+
   SAFEARRAY* uia_array = SafeArrayCreateVector(VT_UNKNOWN, 0, ids.size());
 
   LONG i = 0;
@@ -2080,12 +2083,10 @@ IFACEMETHODIMP AXPlatformNodeWin::GetColumnHeaderItems(SAFEARRAY** result) {
     return E_FAIL;
 
   std::vector<int32_t> column_header_ids =
-      GetDelegate()->GetColHeaderNodeIds(GetTableColumn());
+      GetTable()->GetDelegate()->GetColHeaderNodeIds(GetTableColumn());
   base::EraseIf(column_header_ids, [&](int32_t node_id) {
     return !IsValidUiaRelationTarget(GetDelegate()->GetFromNodeID(node_id));
   });
-  if (column_header_ids.empty())
-    return S_FALSE;
   *result = CreateUIAElementsArrayFromIdVector(column_header_ids);
   return S_OK;
 }
@@ -2098,12 +2099,10 @@ IFACEMETHODIMP AXPlatformNodeWin::GetRowHeaderItems(SAFEARRAY** result) {
     return E_FAIL;
 
   std::vector<int32_t> row_header_ids =
-      GetDelegate()->GetRowHeaderNodeIds(GetTableRow());
+      GetTable()->GetDelegate()->GetRowHeaderNodeIds(GetTableRow());
   base::EraseIf(row_header_ids, [&](int32_t node_id) {
     return !IsValidUiaRelationTarget(GetDelegate()->GetFromNodeID(node_id));
   });
-  if (row_header_ids.empty())
-    return S_FALSE;
   *result = CreateUIAElementsArrayFromIdVector(row_header_ids);
   return S_OK;
 }
