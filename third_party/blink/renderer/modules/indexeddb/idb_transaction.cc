@@ -87,7 +87,13 @@ IDBTransaction::IDBTransaction(
       scope_(scope),
       event_queue_(
           MakeGarbageCollected<EventQueue>(ExecutionContext::From(script_state),
-                                           TaskType::kDatabaseAccess)) {
+                                           TaskType::kDatabaseAccess)),
+      feature_handle_for_scheduler_(
+          ExecutionContext::From(script_state)
+              ->GetScheduler()
+              ->RegisterFeature(
+                  SchedulingPolicy::Feature::kOutstandingIndexedDBTransaction,
+                  {SchedulingPolicy::RecordMetricsForBackForwardCache()})) {
   DCHECK(database_);
   DCHECK(!scope_.IsEmpty()) << "Non-versionchange transactions must operate "
                                "on a well-defined set of stores";
@@ -640,6 +646,8 @@ void IDBTransaction::Finished() {
 
   deleted_indexes_.clear();
   deleted_object_stores_.clear();
+
+  feature_handle_for_scheduler_.reset();
 }
 
 }  // namespace blink

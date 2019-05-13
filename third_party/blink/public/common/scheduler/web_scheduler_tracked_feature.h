@@ -35,7 +35,9 @@ enum class WebSchedulerTrackedFeature {
   // We need to track them too.
   kServiceWorkerControlledPage = 16,
 
-  kMaxValue = kServiceWorkerControlledPage
+  kOutstandingIndexedDBTransaction = 17,
+
+  kMaxValue = kOutstandingIndexedDBTransaction
 };
 
 }  // namespace scheduler
