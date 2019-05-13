@@ -6,21 +6,27 @@
 #include "base/strings/strcat.h"
 #include "base/test/bind_test_util.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
+#include "chrome/browser/chromeos/login/mixin_based_in_process_browser_test.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
+#include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/welcome_screen_handler.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chromeos/dbus/session_manager/fake_session_manager_client.h"
+#include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/dbus/shill/shill_profile_client.h"
 #include "chromeos/network/network_state_test_helper.h"
+#include "components/user_manager/user_manager.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
 namespace chromeos {
 
 namespace {
 
+constexpr char kTestUser[] = "test-user1@gmail.com";
 constexpr char kWifiServiceName[] = "stub_wifi";
 constexpr char kWifiNetworkName[] = "wifi-test-network";
 
@@ -165,6 +171,50 @@ IN_PROC_BROWSER_TEST_F(NetworkErrorScreenTest, HideCallback) {
   GetScreen()->Hide();
 
   EXPECT_TRUE(callback_called);
+}
+
+class GuestErrorScreenTest : public MixinBasedInProcessBrowserTest {
+ public:
+  GuestErrorScreenTest() { login_manager_.set_session_restore_enabled(); }
+  ~GuestErrorScreenTest() override = default;
+
+  void SetUpInProcessBrowserTestFixture() override {
+    MixinBasedInProcessBrowserTest::SetUpInProcessBrowserTestFixture();
+    SessionManagerClient::InitializeFakeInMemory();
+    FakeSessionManagerClient::Get()->set_supports_browser_restart(true);
+  }
+
+ protected:
+  const LoginManagerMixin::TestUserInfo test_user_{
+      AccountId::FromUserEmailGaiaId(kTestUser, kTestUser)};
+  LoginManagerMixin login_manager_{&mixin_host_, {test_user_}};
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(GuestErrorScreenTest);
+};
+
+// Test that guest signin option is shown when enabled and that clicking on it
+// starts a guest session.
+IN_PROC_BROWSER_TEST_F(GuestErrorScreenTest, PRE_GuestLogin) {
+  ShowLoginWizard(OobeScreen::SCREEN_TEST_NO_WINDOW);
+  GetScreen()->AllowGuestSignin(true);
+  GetScreen()->SetUIState(NetworkError::UI_STATE_UPDATE);
+  GetScreen()->Show();
+
+  OobeScreenWaiter(ErrorScreenView::kScreenId).Wait();
+  test::OobeJS().ExpectVisiblePath({"error-guest-signin-link"});
+  test::OobeJS().ClickOnPath({"error-guest-signin-link"});
+
+  base::RunLoop restart_job_waiter;
+  FakeSessionManagerClient::Get()->set_restart_job_callback(
+      restart_job_waiter.QuitClosure());
+  restart_job_waiter.Run();
+}
+
+IN_PROC_BROWSER_TEST_F(GuestErrorScreenTest, GuestLogin) {
+  login_manager_.WaitForActiveSession();
+  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
+  EXPECT_TRUE(user_manager->IsLoggedInAsGuest());
 }
 
 }  // namespace chromeos
