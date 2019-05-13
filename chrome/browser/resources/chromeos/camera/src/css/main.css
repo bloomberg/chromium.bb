@@ -225,7 +225,7 @@ body.tablet-landscape .actions-group {
   height: calc(var(--modes-height) - var(--modes-gradient-padding) * 2);
   justify-content: flex-start;
   overflow: scroll;
-  padding: var(--modes-gradient-padding) 0;
+  padding: var(--modes-gradient-padding) 3px;
   pointer-events: auto;
 }
 
