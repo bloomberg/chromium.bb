@@ -39,6 +39,10 @@
 #include "base/win/win_util.h"
 #include "base/win/wrapped_window_proc.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/conflicts/enumerate_input_method_editors_win.h"
+#include "chrome/browser/conflicts/enumerate_shell_extensions_win.h"
+#include "chrome/browser/conflicts/module_database_win.h"
+#include "chrome/browser/conflicts/module_event_sink_impl_win.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/memory/memory_pressure_monitor.h"
 #include "chrome/browser/memory/swap_thrashing_monitor.h"
@@ -51,10 +55,6 @@
 #include "chrome/browser/ui/uninstall_browser_prompt.h"
 #include "chrome/browser/win/browser_util.h"
 #include "chrome/browser/win/chrome_elf_init.h"
-#include "chrome/browser/win/conflicts/enumerate_input_method_editors.h"
-#include "chrome/browser/win/conflicts/enumerate_shell_extensions.h"
-#include "chrome/browser/win/conflicts/module_database.h"
-#include "chrome/browser/win/conflicts/module_event_sink_impl.h"
 #include "chrome/chrome_watcher/chrome_watcher_main_api.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
@@ -96,7 +96,7 @@
 #include "ui/strings/grit/app_locale_settings.h"
 
 #if defined(GOOGLE_CHROME_BUILD)
-#include "chrome/browser/win/conflicts/third_party_conflicts_manager.h"
+#include "chrome/browser/conflicts/third_party_conflicts_manager_win.h"
 #endif
 
 namespace {

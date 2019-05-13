@@ -374,8 +374,8 @@
 #if defined(OS_WIN)
 #include "base/strings/string_tokenizer.h"
 #include "chrome/browser/chrome_browser_main_win.h"
-#include "chrome/browser/win/conflicts/module_database.h"
-#include "chrome/browser/win/conflicts/module_event_sink_impl.h"
+#include "chrome/browser/conflicts/module_database_win.h"
+#include "chrome/browser/conflicts/module_event_sink_impl_win.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome/services/util_win/public/mojom/constants.mojom.h"
 #include "chrome/services/wifi_util_win/public/mojom/constants.mojom.h"
