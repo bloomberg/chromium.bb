@@ -55,7 +55,7 @@ OmniboxTabSwitchButton::OmniboxTabSwitchButton(
     SetText(hint_);
   }
   SetTooltipText(hint_);
-  set_corner_radius(kButtonHeight / 2.f);
+  SetCornerRadius(kButtonHeight / 2.f);
   animation_->SetSlideDuration(500);
   SetElideBehavior(gfx::FADE_TAIL);
 

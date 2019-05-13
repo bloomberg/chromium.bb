@@ -65,7 +65,7 @@ class SearchBoxBackground : public views::Background {
   }
   ~SearchBoxBackground() override {}
 
-  void set_corner_radius(int corner_radius) { corner_radius_ = corner_radius; }
+  void SetCornerRadius(int corner_radius) { corner_radius_ = corner_radius; }
 
  private:
   // views::Background overrides:
@@ -526,7 +526,7 @@ bool SearchBoxViewBase::HandleGestureEvent(
 
 void SearchBoxViewBase::SetSearchBoxBackgroundCornerRadius(int corner_radius) {
   static_cast<SearchBoxBackground*>(GetSearchBoxBackground())
-      ->set_corner_radius(corner_radius);
+      ->SetCornerRadius(corner_radius);
 }
 
 void SearchBoxViewBase::SetSearchIconImage(gfx::ImageSkia image) {

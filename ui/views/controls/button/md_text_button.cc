@@ -19,6 +19,7 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/layout/layout_provider.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/painter.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/style/typography.h"
@@ -62,6 +63,11 @@ void MdTextButton::SetProminent(bool is_prominent) {
 
   is_prominent_ = is_prominent;
   UpdateColors();
+  OnPropertyChanged(&is_prominent_, kPropertyEffectsNone);
+}
+
+bool MdTextButton::GetProminent() const {
+  return is_prominent_;
 }
 
 void MdTextButton::SetBgColorOverride(const base::Optional<SkColor>& color) {
@@ -69,9 +75,14 @@ void MdTextButton::SetBgColorOverride(const base::Optional<SkColor>& color) {
   UpdateColors();
 }
 
-void MdTextButton::set_corner_radius(float radius) {
+void MdTextButton::SetCornerRadius(float radius) {
   corner_radius_ = radius;
   set_ink_drop_corner_radii(corner_radius_, corner_radius_);
+  OnPropertyChanged(&corner_radius_, kPropertyEffectsPaint);
+}
+
+float MdTextButton::GetCornerRadius() const {
+  return corner_radius_;
 }
 
 void MdTextButton::OnPaintBackground(gfx::Canvas* canvas) {
@@ -162,7 +173,7 @@ MdTextButton::MdTextButton(ButtonListener* listener, int button_context)
       is_prominent_(false) {
   SetInkDropMode(InkDropMode::ON);
   set_has_ink_drop_action_on_click(true);
-  set_corner_radius(LayoutProvider::Get()->GetCornerRadiusMetric(EMPHASIS_LOW));
+  SetCornerRadius(LayoutProvider::Get()->GetCornerRadiusMetric(EMPHASIS_LOW));
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
   SetFocusForPlatform();
   const int minimum_width = LayoutProvider::Get()->GetDistanceMetric(
@@ -278,5 +289,11 @@ void MdTextButton::UpdateColors() {
           bg_color, stroke_color, corner_radius_)));
   SchedulePaint();
 }
+
+BEGIN_METADATA(MdTextButton)
+METADATA_PARENT_CLASS(LabelButton)
+ADD_PROPERTY_METADATA(MdTextButton, bool, Prominent)
+ADD_PROPERTY_METADATA(MdTextButton, float, CornerRadius)
+END_METADATA()
 
 }  // namespace views

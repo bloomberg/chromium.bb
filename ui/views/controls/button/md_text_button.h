@@ -17,6 +17,8 @@ namespace views {
 // A button class that implements the Material Design text button spec.
 class VIEWS_EXPORT MdTextButton : public LabelButton {
  public:
+  METADATA_HEADER(MdTextButton);
+
   // As above, but only creates an MdTextButton if MD is enabled in the
   // secondary UI (as opposed to just "top chrome"/"primary" UI).
   static std::unique_ptr<LabelButton> CreateSecondaryUiButton(
@@ -33,13 +35,15 @@ class VIEWS_EXPORT MdTextButton : public LabelButton {
 
   // See |is_prominent_|.
   void SetProminent(bool is_prominent);
+  bool GetProminent() const;
 
   // See |bg_color_override_|.
   void SetBgColorOverride(const base::Optional<SkColor>& color);
 
   // Override the default corner radius of the round rect used for the
   // background and ink drop effects.
-  void set_corner_radius(float radius);
+  void SetCornerRadius(float radius);
+  float GetCornerRadius() const;
 
   // LabelButton:
   void OnThemeChanged() override;

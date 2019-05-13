@@ -15,7 +15,7 @@ TEST(VectorIconButton, CornerRadiiOnResize) {
   VectorIconButton button(base::RepeatingCallback<void()>(),
                           GetVrIcon(kVrMicIcon), nullptr);
   button.SetSize(1.0f, 1.0f);
-  button.set_corner_radius(0.25f);
+  button.SetCornerRadius(0.25f);
 
   EXPECT_FLOAT_EQ(0.25f, button.corner_radius());
   // The foreground of vector icons is not not automatically affected by corner

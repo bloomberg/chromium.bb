@@ -303,7 +303,7 @@ std::unique_ptr<UiElement> CreatePrompt(Model* model) {
   auto primary_button = Create<TextButton>(kNone, kPhaseForeground,
                                            kPromptButtonTextSize, nullptr);
   primary_button->SetType(kTypePromptPrimaryButton);
-  primary_button->set_corner_radius(kPromptButtonCornerRadius);
+  primary_button->SetCornerRadius(kPromptButtonCornerRadius);
   VR_BIND_BUTTON_COLORS(model, primary_button.get(),
                         &ColorScheme::modal_prompt_primary_button_colors,
                         &Button::SetButtonColors);
@@ -311,7 +311,7 @@ std::unique_ptr<UiElement> CreatePrompt(Model* model) {
   auto secondary_button = Create<TextButton>(kNone, kPhaseForeground,
                                              kPromptButtonTextSize, nullptr);
   secondary_button->SetType(kTypePromptSecondaryButton);
-  secondary_button->set_corner_radius(kPromptButtonCornerRadius);
+  secondary_button->SetCornerRadius(kPromptButtonCornerRadius);
   VR_BIND_BUTTON_COLORS(model, secondary_button.get(),
                         &ColorScheme::modal_prompt_secondary_button_colors,
                         &Button::SetButtonColors);
@@ -364,7 +364,7 @@ std::unique_ptr<UiElement> CreatePrompt(Model* model) {
   background->set_hit_testable(true);
   background->set_padding(kPromptPadding, kPromptPadding);
   background->SetTranslate(0, 0, kPromptShadowOffsetDMM);
-  background->set_corner_radius(kPromptCornerRadius);
+  background->SetCornerRadius(kPromptCornerRadius);
   background->AddChild(std::move(prompt_layout));
   VR_BIND_COLOR(model, background.get(), &ColorScheme::modal_prompt_background,
                 &Rect::SetColor);
@@ -553,7 +553,7 @@ std::unique_ptr<UiElement> CreateControllerElement(
         Create<Rect>(static_cast<UiElementName>(kControllerBatteryDot0 + i),
                      kPhaseForeground);
     battery_dot->SetSize(kControllerBatteryDotSize, kControllerBatteryDotSize);
-    battery_dot->set_corner_radius(kControllerBatteryDotSize / 2);
+    battery_dot->SetCornerRadius(kControllerBatteryDotSize / 2);
 
     battery_dot->AddBinding(std::make_unique<Binding<SkColor>>(
         VR_BIND_LAMBDA(
@@ -692,7 +692,7 @@ std::unique_ptr<UiElement> CreateWebVrIndicator(Model* model,
   auto container = Create<Rect>(spec.webvr_name, phase);
   VR_BIND_COLOR(model, container.get(),
                 &ColorScheme::webvr_permission_background, &Rect::SetColor);
-  container->set_corner_radius(kWebVrPermissionCornerRadius);
+  container->SetCornerRadius(kWebVrPermissionCornerRadius);
   container->set_bounds_contain_children(true);
   container->SetVisible(false);
   container->set_padding(
@@ -767,7 +767,7 @@ std::unique_ptr<UiElement> CreateHostedUi(Model* model,
   // when we support the keyboard on native UI elements.
   hosted_ui->set_focusable(false);
   hosted_ui->set_requires_layout(false);
-  hosted_ui->set_corner_radius(kContentCornerRadius);
+  hosted_ui->SetCornerRadius(kContentCornerRadius);
   hosted_ui->SetTranslate(0, 0, kHostedUiShadowOffset);
   hosted_ui->AddBinding(VR_BIND_FUNC(PlatformUiInputDelegatePtr, Model, model,
                                      model->hosted_platform_ui.delegate,
@@ -919,7 +919,7 @@ std::unique_ptr<TransientElement> CreateTextToast(
                                   kToastXPaddingDMM, kToastYPaddingDMM);
   background_element->SetTransitionedProperties({OPACITY});
   background_element->SetType(kTypeToastBackground);
-  background_element->set_corner_radius(kToastCornerRadiusDMM);
+  background_element->SetCornerRadius(kToastCornerRadiusDMM);
 
   auto text_element =
       Create<Text>(kNone, kPhaseForeground, kToastTextFontHeightDMM);
@@ -1245,7 +1245,7 @@ void UiSceneCreator::CreateSystemIndicators() {
   backplane->set_bounds_contain_children(true);
   backplane->set_contributes_to_parent_bounds(false);
   backplane->set_y_anchoring(TOP);
-  backplane->set_corner_radius(kIndicatorCornerRadiusDMM);
+  backplane->SetCornerRadius(kIndicatorCornerRadiusDMM);
   backplane->SetTranslate(0, kIndicatorVerticalOffset,
                           kIndicatorDistanceOffset);
   backplane->SetScale(kIndicatorDepth, kIndicatorDepth, 1.0f);
@@ -1399,7 +1399,7 @@ void UiSceneCreator::CreateContentQuad() {
   main_content->set_hit_testable(true);
   main_content->SetDrawPhase(kPhaseForeground);
   main_content->SetSize(kContentWidth, kContentHeight);
-  main_content->set_corner_radius(kContentCornerRadius);
+  main_content->SetCornerRadius(kContentCornerRadius);
   main_content->SetTransitionedProperties({BOUNDS});
   main_content->SetTextInputDelegate(text_input_delegate_);
   main_content->AddBinding(std::make_unique<Binding<bool>>(
@@ -1490,7 +1490,7 @@ void UiSceneCreator::CreateContentQuad() {
   frame->set_bounds_contain_children(true);
   frame->set_padding(kRepositionFrameEdgePadding, kRepositionFrameTopPadding,
                      kRepositionFrameEdgePadding, kRepositionFrameEdgePadding);
-  frame->set_corner_radius(kContentCornerRadius);
+  frame->SetCornerRadius(kContentCornerRadius);
   frame->set_bounds_contain_padding(false);
   frame->SetLocalOpacity(0.0f);
   frame->SetTransitionedProperties({LOCAL_OPACITY});
@@ -1503,7 +1503,7 @@ void UiSceneCreator::CreateContentQuad() {
       Create<InvisibleHitTarget>(kContentFrameHitPlane, kPhaseForeground);
   plane->set_bounds_contain_children(true);
   plane->set_bounds_contain_padding(false);
-  plane->set_corner_radius(kContentCornerRadius);
+  plane->SetCornerRadius(kContentCornerRadius);
   plane->set_cursor_type(kCursorReposition);
   Sounds sounds;
   sounds.button_up = kSoundButtonClick;
@@ -1585,7 +1585,7 @@ void UiSceneCreator::CreateExternalPromptNotifcationOverlay() {
   prompt_window->set_hit_testable(false);
   prompt_window->set_padding(kPromptPadding, kPromptPadding);
   prompt_window->SetTranslate(0, 0, kPromptShadowOffsetDMM);
-  prompt_window->set_corner_radius(kPromptCornerRadius);
+  prompt_window->SetCornerRadius(kPromptCornerRadius);
   prompt_window->AddChild(std::move(message_layout));
   VR_BIND_COLOR(model_, prompt_window.get(),
                 &ColorScheme::modal_prompt_background, &Rect::SetColor);
@@ -1709,7 +1709,7 @@ void UiSceneCreator::CreateWebVrTimeoutScreen() {
   timeout_message->SetVisible(false);
   timeout_message->set_hit_testable(true);
   timeout_message->set_bounds_contain_children(true);
-  timeout_message->set_corner_radius(kTimeoutMessageCornerRadiusDMM);
+  timeout_message->SetCornerRadius(kTimeoutMessageCornerRadiusDMM);
   timeout_message->SetTransitionedProperties({OPACITY, TRANSFORM});
   timeout_message->set_padding(kTimeoutMessageHorizontalPaddingDMM,
                                kTimeoutMessageVerticalPaddingDMM);
@@ -1893,7 +1893,7 @@ void UiSceneCreator::CreateVoiceSearchUiGroup() {
   inner_circle->SetName(kSpeechRecognitionCircle);
   inner_circle->SetDrawPhase(kPhaseForeground);
   inner_circle->SetSize(kCloseButtonDiameter * 2, kCloseButtonDiameter * 2);
-  inner_circle->set_corner_radius(kCloseButtonDiameter);
+  inner_circle->SetCornerRadius(kCloseButtonDiameter);
   VR_BIND_COLOR(model_, inner_circle.get(),
                 &ColorScheme::speech_recognition_circle_background,
                 &Rect::SetColor);
@@ -1950,7 +1950,7 @@ void UiSceneCreator::CreateVoiceSearchUiGroup() {
   growing_circle->SetName(kSpeechRecognitionListeningGrowingCircle);
   growing_circle->SetDrawPhase(kPhaseForeground);
   growing_circle->SetSize(kCloseButtonDiameter * 2, kCloseButtonDiameter * 2);
-  growing_circle->set_corner_radius(kCloseButtonDiameter);
+  growing_circle->SetCornerRadius(kCloseButtonDiameter);
   VR_BIND_COLOR(model_, growing_circle.get(),
                 &ColorScheme::speech_recognition_circle_background,
                 &Rect::SetColor);
@@ -2170,7 +2170,7 @@ void UiSceneCreator::CreateUrlBar() {
   auto url_bar = Create<Rect>(kUrlBar, kPhaseForeground);
   url_bar->SetRotate(1, 0, 0, kUrlBarRotationRad);
   url_bar->set_bounds_contain_children(true);
-  url_bar->set_corner_radius(kUrlBarHeightDMM / 2);
+  url_bar->SetCornerRadius(kUrlBarHeightDMM / 2);
   url_bar->SetTransitionedProperties({FOREGROUND_COLOR, BACKGROUND_COLOR});
   VR_BIND_VISIBILITY(url_bar, !model->fullscreen_enabled());
   VR_BIND_COLOR(model_, url_bar.get(), &ColorScheme::url_bar_background,
@@ -2254,7 +2254,7 @@ void UiSceneCreator::CreateUrlBar() {
       GetVrIcon(kVrNoneIcon), audio_delegate_);
   security_button->SetIconScaleFactor(kUrlBarButtonIconScaleFactor);
   security_button->SetSize(kUrlBarButtonSizeDMM, kUrlBarButtonSizeDMM);
-  security_button->set_corner_radius(kUrlBarItemCornerRadiusDMM);
+  security_button->SetCornerRadius(kUrlBarItemCornerRadiusDMM);
   security_button->set_hover_offset(kUrlBarButtonHoverOffsetDMM);
   VR_BIND_BUTTON_COLORS(model_, security_button.get(),
                         &ColorScheme::url_bar_button, &Button::SetButtonColors);
@@ -2364,7 +2364,7 @@ void UiSceneCreator::CreateOverflowMenu() {
   overflow_menu->set_bounds_contain_children(true);
   overflow_menu->set_contributes_to_parent_bounds(false);
   overflow_menu->SetTranslate(0, kOverflowMenuOffset, 0);
-  overflow_menu->set_corner_radius(kUrlBarItemCornerRadiusDMM);
+  overflow_menu->SetCornerRadius(kUrlBarItemCornerRadiusDMM);
   VR_BIND_COLOR(model_, overflow_menu.get(), &ColorScheme::omnibox_background,
                 &Rect::SetColor);
 
@@ -2405,7 +2405,7 @@ void UiSceneCreator::CreateOverflowMenu() {
     button->SetSize(kUrlBarButtonSizeDMM, kUrlBarButtonSizeDMM);
     button->SetIconScaleFactor(kUrlBarButtonIconScaleFactor);
     button->set_hover_offset(kUrlBarButtonHoverOffsetDMM);
-    button->set_corner_radius(kUrlBarItemCornerRadiusDMM);
+    button->SetCornerRadius(kUrlBarItemCornerRadiusDMM);
     button->set_requires_layout(false);
     button->set_contributes_to_parent_bounds(false);
     button->set_x_anchoring(std::get<1>(item));
@@ -2698,7 +2698,7 @@ void UiSceneCreator::CreateOmnibox() {
   mic_button->SetSize(kUrlBarButtonSizeDMM, kUrlBarButtonSizeDMM);
   mic_button->SetIconScaleFactor(kUrlBarButtonIconScaleFactor);
   mic_button->set_hover_offset(kUrlBarButtonHoverOffsetDMM);
-  mic_button->set_corner_radius(kUrlBarItemCornerRadiusDMM);
+  mic_button->SetCornerRadius(kUrlBarItemCornerRadiusDMM);
   VR_BIND_VISIBILITY(mic_button, model->voice_search_available());
   VR_BIND_BUTTON_COLORS(model_, mic_button.get(), &ColorScheme::url_bar_button,
                         &Button::SetButtonColors);
@@ -2769,7 +2769,7 @@ void UiSceneCreator::CreateOmnibox() {
   omnibox_background->set_y_centering(BOTTOM);
   omnibox_background->set_contributes_to_parent_bounds(false);
   omnibox_background->set_focusable(false);
-  omnibox_background->set_corner_radius(kOmniboxCornerRadiusDMM);
+  omnibox_background->SetCornerRadius(kOmniboxCornerRadiusDMM);
   omnibox_background->SetTranslate(
       0, kOmniboxVerticalOffsetDMM - 0.5 * kOmniboxHeightDMM, 0);
   VR_BIND_COLOR(model_, omnibox_background.get(),
