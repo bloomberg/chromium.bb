@@ -63,8 +63,6 @@ MediaControlTimelineElement::MediaControlTimelineElement(
     : MediaControlSliderElement(media_controls) {
   SetShadowPseudoId(AtomicString("-webkit-media-controls-timeline"));
 
-  setAttribute(html_names::kAriaLiveAttr, "polite");
-
   if (MediaControlsImpl::IsModern()) {
     Element& track = GetTrackElement();
 
