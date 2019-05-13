@@ -43,10 +43,10 @@ class NavigationBarColorController implements VrModeObserver {
     // May be null if we return from the constructor early. Otherwise will be set.
     private final @Nullable TabModelSelector mTabModelSelector;
     private final @Nullable TabModelSelectorObserver mTabModelSelectorObserver;
-    private final @Nullable ImmersiveModeManager mImmersiveModeManager;
     private @Nullable OverviewModeBehavior mOverviewModeBehavior;
     private @Nullable OverviewModeObserver mOverviewModeObserver;
 
+    private boolean mInitialized;
     private boolean mUseLightNavigation;
     private boolean mOverviewModeHiding;
 
@@ -62,7 +62,6 @@ class NavigationBarColorController implements VrModeObserver {
         assert Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1;
 
         mWindow = window;
-        mImmersiveModeManager = immersiveModeManager;
         mRootView = (ViewGroup) mWindow.getDecorView().getRootView();
         mResources = mRootView.getResources();
 
@@ -70,8 +69,6 @@ class NavigationBarColorController implements VrModeObserver {
             // TODO(https://crbug.com/937946): Hook up immersive mode observer.
             mTabModelSelector = null;
             mTabModelSelectorObserver = null;
-            mOverviewModeBehavior = null;
-            mOverviewModeObserver = null;
 
             window.setNavigationBarColor(Color.TRANSPARENT);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
@@ -89,11 +86,10 @@ class NavigationBarColorController implements VrModeObserver {
         if (!mResources.getBoolean(R.bool.window_light_navigation_bar) || BuildInfo.isAtLeastQ()) {
             mTabModelSelector = null;
             mTabModelSelectorObserver = null;
-            mOverviewModeBehavior = null;
-            mOverviewModeObserver = null;
             return;
         }
 
+        mInitialized = true;
         mUseLightNavigation = true;
 
         mTabModelSelector = tabModelSelector;
@@ -129,12 +125,7 @@ class NavigationBarColorController implements VrModeObserver {
      *                             overview mode is showing.
      */
     public void setOverviewModeBehavior(OverviewModeBehavior overviewModeBehavior) {
-        // TODO(https://crbug.com/937946): Adjust after immersive mode manager is hooked up.
-        if (!mResources.getBoolean(R.bool.window_light_navigation_bar) || BuildInfo.isAtLeastQ()
-                || (mImmersiveModeManager != null
-                        && mImmersiveModeManager.isImmersiveModeSupported())) {
-            return;
-        }
+        if (!mInitialized) return;
 
         mOverviewModeBehavior = overviewModeBehavior;
         mOverviewModeObserver = new EmptyOverviewModeObserver() {
