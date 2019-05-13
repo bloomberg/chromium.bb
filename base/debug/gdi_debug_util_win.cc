@@ -17,9 +17,73 @@
 
 namespace {
 
-void CollectChildGDIUsageAndDie(DWORD parent_pid) {
+constexpr size_t kLotsOfMemory = 1500 * 1024 * 1024;  // 1.5GB
+
+HANDLE NOINLINE GetToolhelpSnapshot() {
   HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
   CHECK_NE(INVALID_HANDLE_VALUE, snapshot);
+  return snapshot;
+}
+
+void NOINLINE GetFirstProcess(HANDLE snapshot, PROCESSENTRY32* proc_entry) {
+  proc_entry->dwSize = sizeof(PROCESSENTRY32);
+  CHECK(Process32First(snapshot, proc_entry));
+}
+
+void NOINLINE CrashIfExcessiveHandles(DWORD num_gdi_handles) {
+  // By default, Windows 10 allows a max of 10,000 GDI handles per process.
+  // Number found by inspecting
+  //
+  // HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\
+  //    CurrentVersion\Windows\GDIProcessHandleQuota
+  //
+  // on a Windows 10 laptop.
+  static constexpr DWORD kLotsOfHandles = 9990;
+  CHECK_LE(num_gdi_handles, kLotsOfHandles);
+}
+
+void NOINLINE
+CrashIfPagefileUsageTooLarge(const PROCESS_MEMORY_COUNTERS_EX& pmc) {
+  CHECK_LE(pmc.PagefileUsage, kLotsOfMemory);
+}
+
+void NOINLINE
+CrashIfPrivateUsageTooLarge(const PROCESS_MEMORY_COUNTERS_EX& pmc) {
+  CHECK_LE(pmc.PrivateUsage, kLotsOfMemory);
+}
+
+void NOINLINE CrashIfCannotAllocateSmallBitmap(BITMAPINFOHEADER* header,
+                                               HANDLE shared_section) {
+  void* small_data = nullptr;
+  base::debug::Alias(&small_data);
+  header->biWidth = 5;
+  header->biHeight = -5;
+  HBITMAP small_bitmap =
+      CreateDIBSection(nullptr, reinterpret_cast<BITMAPINFO*>(&header), 0,
+                       &small_data, shared_section, 0);
+  CHECK(small_bitmap != nullptr);
+  DeleteObject(small_bitmap);
+}
+
+void NOINLINE GetProcessMemoryInfo(PROCESS_MEMORY_COUNTERS_EX* pmc) {
+  pmc->cb = sizeof(*pmc);
+  CHECK(GetProcessMemoryInfo(GetCurrentProcess(),
+                             reinterpret_cast<PROCESS_MEMORY_COUNTERS*>(pmc),
+                             sizeof(*pmc)));
+}
+
+DWORD NOINLINE GetNumGdiHandles() {
+  DWORD num_gdi_handles = GetGuiResources(GetCurrentProcess(), GR_GDIOBJECTS);
+  if (num_gdi_handles == 0) {
+    DWORD get_gui_resources_error = GetLastError();
+    base::debug::Alias(&get_gui_resources_error);
+    CHECK(false);
+  }
+  return num_gdi_handles;
+}
+
+void CollectChildGDIUsageAndDie(DWORD parent_pid) {
+  HANDLE snapshot = GetToolhelpSnapshot();
 
   int total_process_count = 0;
   base::debug::Alias(&total_process_count);
@@ -39,9 +103,8 @@ void CollectChildGDIUsageAndDie(DWORD parent_pid) {
   int sum_user_count = 0;
   base::debug::Alias(&sum_user_count);
 
-  PROCESSENTRY32 proc_entry = {0};
-  proc_entry.dwSize = sizeof(PROCESSENTRY32);
-  CHECK(Process32First(snapshot, &proc_entry));
+  PROCESSENTRY32 proc_entry = {};
+  GetFirstProcess(snapshot, &proc_entry);
 
   do {
     base::win::ScopedHandle process(
@@ -95,43 +158,23 @@ void CollectGDIUsageAndDie(BITMAPINFOHEADER* header, HANDLE shared_section) {
   base::debug::Alias(&shared_section);
 
   DWORD num_user_handles = GetGuiResources(GetCurrentProcess(), GR_USEROBJECTS);
-
-  DWORD num_gdi_handles = GetGuiResources(GetCurrentProcess(), GR_GDIOBJECTS);
-  if (num_gdi_handles == 0) {
-    DWORD get_gui_resources_error = GetLastError();
-    base::debug::Alias(&get_gui_resources_error);
-    CHECK(false);
-  }
+  DWORD num_gdi_handles = GetNumGdiHandles();
 
   base::debug::Alias(&num_gdi_handles);
   base::debug::Alias(&num_user_handles);
 
-  const DWORD kLotsOfHandles = 9990;
-  CHECK_LE(num_gdi_handles, kLotsOfHandles);
+  CrashIfExcessiveHandles(num_gdi_handles);
 
   PROCESS_MEMORY_COUNTERS_EX pmc;
-  pmc.cb = sizeof(pmc);
-  CHECK(GetProcessMemoryInfo(GetCurrentProcess(),
-                             reinterpret_cast<PROCESS_MEMORY_COUNTERS*>(&pmc),
-                             sizeof(pmc)));
-  const size_t kLotsOfMemory = 1500 * 1024 * 1024; // 1.5GB
-  CHECK_LE(pmc.PagefileUsage, kLotsOfMemory);
-  CHECK_LE(pmc.PrivateUsage, kLotsOfMemory);
-
-  void* small_data = nullptr;
-  base::debug::Alias(&small_data);
+  GetProcessMemoryInfo(&pmc);
+  CrashIfPagefileUsageTooLarge(pmc);
+  CrashIfPrivateUsageTooLarge(pmc);
 
   if (std::abs(height) * width > 100) {
     // Huh, that's weird.  We don't have crazy handle count, we don't have
     // ridiculous memory usage. Try to allocate a small bitmap and see if that
     // fails too.
-    header->biWidth = 5;
-    header->biHeight = -5;
-    HBITMAP small_bitmap = CreateDIBSection(
-        nullptr, reinterpret_cast<BITMAPINFO*>(&header),
-        0, &small_data, shared_section, 0);
-    CHECK(small_bitmap != nullptr);
-    DeleteObject(small_bitmap);
+    CrashIfCannotAllocateSmallBitmap(header, shared_section);
   }
   // Maybe the child processes are the ones leaking GDI or USER resouces.
   CollectChildGDIUsageAndDie(GetCurrentProcessId());
