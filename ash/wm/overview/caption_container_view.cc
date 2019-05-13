@@ -238,10 +238,8 @@ void CaptionContainerView::UpdatePreviewRoundedCorners(bool show,
     return;
 
   const float scale = preview_view_->layer()->transform().Scale2d().x();
-  constexpr std::array<uint32_t, 4> kEmptyRadii = {0, 0, 0, 0};
-  const std::array<uint32_t, 4> kRadii = {rounding / scale, rounding / scale,
-                                          rounding / scale, rounding / scale};
-  preview_view_->layer()->SetRoundedCornerRadius(show ? kRadii : kEmptyRadii);
+  const gfx::RoundedCornersF radii(show ? rounding / scale : 0.0f);
+  preview_view_->layer()->SetRoundedCornerRadius(radii);
   preview_view_->layer()->SetIsFastRoundedCorner(true);
 }
 

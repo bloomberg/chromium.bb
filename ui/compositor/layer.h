@@ -29,6 +29,7 @@
 #include "ui/compositor/layer_delegate.h"
 #include "ui/compositor/layer_type.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rounded_corners_f.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/transform.h"
 
@@ -274,11 +275,9 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   void SetAcceptEvents(bool accept_events);
   bool accept_events() const { return accept_events_; }
 
-  // Sets a rounded corner clip radius on the layer. This will clip the layer to
-  // bounds. The ordering for the array is:
-  //    top left, top right, bottom right, bottom left
-  void SetRoundedCornerRadius(const std::array<uint32_t, 4>& corner_radii);
-  const std::array<uint32_t, 4>& rounded_corner_radii() const {
+  // Sets a rounded corner clip on the layer.
+  void SetRoundedCornerRadius(const gfx::RoundedCornersF& corner_radii);
+  const gfx::RoundedCornersF& rounded_corner_radii() const {
     return cc_layer_->corner_radii();
   }
 

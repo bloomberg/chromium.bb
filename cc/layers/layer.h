@@ -34,6 +34,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rounded_corners_f.h"
 #include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/rrect_f.h"
 #include "ui/gfx/transform.h"
@@ -249,16 +250,13 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // Set or get the rounded corner radii which is applied to the layer and its
   // subtree (as if they are together as a single composited entity) when
   // blitting into their target. Setting this makes the layer masked to bounds.
-  void SetRoundedCorner(const std::array<uint32_t, 4>& corner_radii);
-  const std::array<uint32_t, 4>& corner_radii() const {
+  void SetRoundedCorner(const gfx::RoundedCornersF& corner_radii);
+  const gfx::RoundedCornersF& corner_radii() const {
     return inputs_.corner_radii;
   }
 
   // Returns true if any of the corner has a non-zero radius set.
-  bool HasRoundedCorner() const {
-    return corner_radii()[0] + corner_radii()[1] + corner_radii()[2] +
-           corner_radii()[3];
-  }
+  bool HasRoundedCorner() const { return !corner_radii().IsEmpty(); }
 
   // Set or get the flag that disables the requirement of a render surface for
   // this layer due to it having rounded corners. This improves performance at
@@ -960,7 +958,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
     // Corner clip radius for the 4 corners of the layer in the following order:
     //     top left, top right, bottom right, bottom left
-    std::array<uint32_t, 4> corner_radii;
+    gfx::RoundedCornersF corner_radii;
 
     // If set, disables this layer's rounded corner from triggering a render
     // surface on itself if possible.

@@ -4483,7 +4483,7 @@ TYPED_TEST(RendererPixelTest, RoundedCornerOnRenderPass) {
 
 TYPED_TEST(RendererPixelTest, RoundedCornerMultiRadii) {
   gfx::Rect viewport_rect(this->device_viewport_size_);
-  constexpr std::array<uint32_t, 4> kCornerRadii = {5, 15, 25, 35};
+  constexpr gfx::RoundedCornersF kCornerRadii(5, 15, 25, 35);
   constexpr int kInset = 20;
 
   int root_pass_id = 1;
@@ -4492,10 +4492,7 @@ TYPED_TEST(RendererPixelTest, RoundedCornerMultiRadii) {
 
   gfx::Rect pass_rect(this->device_viewport_size_);
   pass_rect.Inset(kInset, kInset);
-  gfx::RRectF rounded_corner_bounds(
-      gfx::RectF(pass_rect), kCornerRadii[0], kCornerRadii[0], kCornerRadii[1],
-      kCornerRadii[1], kCornerRadii[2], kCornerRadii[2], kCornerRadii[3],
-      kCornerRadii[3]);
+  gfx::RRectF rounded_corner_bounds(gfx::RectF(pass_rect), kCornerRadii);
   gfx::Rect blue_rect = pass_rect;
   blue_rect.set_height(blue_rect.height() / 2);
 
@@ -4542,7 +4539,10 @@ TYPED_TEST(RendererPixelTest, RoundedCornerMultiRadii) {
 
 TYPED_TEST(RendererPixelTest, RoundedCornerMultipleQads) {
   const gfx::Rect viewport_rect(this->device_viewport_size_);
-  constexpr std::array<uint32_t, 4> kCornerRadii = {5, 15, 25, 35};
+  constexpr gfx::RoundedCornersF kCornerRadiiUL(5, 0, 0, 0);
+  constexpr gfx::RoundedCornersF kCornerRadiiUR(0, 15, 0, 0);
+  constexpr gfx::RoundedCornersF kCornerRadiiLR(0, 0, 25, 0);
+  constexpr gfx::RoundedCornersF kCornerRadiiLL(0, 0, 0, 35);
   constexpr int kInset = 20;
 
   int root_pass_id = 1;
@@ -4551,15 +4551,10 @@ TYPED_TEST(RendererPixelTest, RoundedCornerMultipleQads) {
 
   gfx::Rect pass_rect(this->device_viewport_size_);
   pass_rect.Inset(kInset, kInset);
-  gfx::RRectF rounded_corner_bounds_ul(gfx::RectF(pass_rect), kCornerRadii[0],
-                                       kCornerRadii[0], 0, 0, 0, 0, 0, 0);
-  gfx::RRectF rounded_corner_bounds_ur(gfx::RectF(pass_rect), 0, 0,
-                                       kCornerRadii[1], kCornerRadii[1], 0, 0,
-                                       0, 0);
-  gfx::RRectF rounded_corner_bounds_lr(gfx::RectF(pass_rect), 0, 0, 0, 0,
-                                       kCornerRadii[2], kCornerRadii[2], 0, 0);
-  gfx::RRectF rounded_corner_bounds_ll(gfx::RectF(pass_rect), 0, 0, 0, 0, 0, 0,
-                                       kCornerRadii[3], kCornerRadii[3]);
+  gfx::RRectF rounded_corner_bounds_ul(gfx::RectF(pass_rect), kCornerRadiiUL);
+  gfx::RRectF rounded_corner_bounds_ur(gfx::RectF(pass_rect), kCornerRadiiUR);
+  gfx::RRectF rounded_corner_bounds_lr(gfx::RectF(pass_rect), kCornerRadiiLR);
+  gfx::RRectF rounded_corner_bounds_ll(gfx::RectF(pass_rect), kCornerRadiiLL);
 
   gfx::Rect ul_rect = pass_rect;
   ul_rect.set_height(ul_rect.height() / 2);

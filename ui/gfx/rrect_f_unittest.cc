@@ -142,6 +142,25 @@ TEST(RRectFTest, FromSkRRect) {
   EXPECT_EQ(b, c);
 }
 
+TEST(RRectFTest, FromRoundedCornersF) {
+  constexpr RectF kRect(50.0f, 40.0f);
+  constexpr RoundedCornersF kCorners(1.5f, 2.5f, 3.5f, 4.5f);
+  const RRectF rrect_f(kRect, kCorners);
+
+  const auto upper_left = rrect_f.GetCornerRadii(RRectF::Corner::kUpperLeft);
+  EXPECT_EQ(kCorners.upper_left(), upper_left.x());
+  EXPECT_EQ(kCorners.upper_left(), upper_left.y());
+  const auto upper_right = rrect_f.GetCornerRadii(RRectF::Corner::kUpperRight);
+  EXPECT_EQ(kCorners.upper_right(), upper_right.x());
+  EXPECT_EQ(kCorners.upper_right(), upper_right.y());
+  const auto lower_right = rrect_f.GetCornerRadii(RRectF::Corner::kLowerRight);
+  EXPECT_EQ(kCorners.lower_right(), lower_right.x());
+  EXPECT_EQ(kCorners.lower_right(), lower_right.y());
+  const auto lower_left = rrect_f.GetCornerRadii(RRectF::Corner::kLowerLeft);
+  EXPECT_EQ(kCorners.lower_left(), lower_left.x());
+  EXPECT_EQ(kCorners.lower_left(), lower_left.y());
+}
+
 TEST(RRectFTest, ToString) {
   RRectF a(40, 50, 60, 70, 0);
   EXPECT_EQ(a.ToString(), "40.000,50.000 60.000x70.000, rectangular");

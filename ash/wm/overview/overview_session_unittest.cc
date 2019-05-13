@@ -2458,8 +2458,7 @@ class OverviewSessionRoundedCornerTest
     const ui::Layer* layer = item->transform_window_.IsMinimized()
                                  ? GetPreviewView(item)->layer()
                                  : transform_window(item).window()->layer();
-    const std::array<uint32_t, 4>& radii = layer->rounded_corner_radii();
-    return (radii[0] + radii[1] + radii[2] + radii[3]) > 0;
+    return !layer->rounded_corner_radii().IsEmpty();
   }
 
  private:

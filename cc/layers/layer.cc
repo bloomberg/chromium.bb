@@ -615,7 +615,7 @@ void Layer::SetFiltersOrigin(const gfx::PointF& filters_origin) {
   SetNeedsCommit();
 }
 
-void Layer::SetRoundedCorner(const std::array<uint32_t, 4>& corner_radii) {
+void Layer::SetRoundedCorner(const gfx::RoundedCornersF& corner_radii) {
   DCHECK(IsPropertyChangeAllowed());
   if (inputs_.corner_radii == corner_radii)
     return;

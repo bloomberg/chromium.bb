@@ -467,11 +467,9 @@ void ScopedOverviewTransformWindow::UpdateMask(bool show) {
   ui::Layer* layer = window_->layer();
   if (ash::features::ShouldUseShaderRoundedCorner()) {
     const float scale = layer->transform().Scale2d().x();
-    static constexpr std::array<uint32_t, 4> kEmptyRadii = {0, 0, 0, 0};
-    const std::array<uint32_t, 4> kRadii = {
-        kOverviewWindowRoundingDp / scale, kOverviewWindowRoundingDp / scale,
-        kOverviewWindowRoundingDp / scale, kOverviewWindowRoundingDp / scale};
-    layer->SetRoundedCornerRadius(show ? kRadii : kEmptyRadii);
+    const gfx::RoundedCornersF radii(show ? kOverviewWindowRoundingDp / scale
+                                          : 0.0f);
+    layer->SetRoundedCornerRadius(radii);
     layer->SetIsFastRoundedCorner(true);
     return;
   }

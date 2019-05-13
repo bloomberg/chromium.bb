@@ -922,13 +922,12 @@ TEST_F(LayerWithDelegateTest, Mirroring) {
   EXPECT_EQ(new_bounds, mirror->bounds());
 
   // Check for rounded corner mirror behavior
-  constexpr std::array<uint32_t, 4> kEmptyCornerRadii = {0, 0, 0, 0};
-  EXPECT_EQ(mirror->rounded_corner_radii(), kEmptyCornerRadii);
+  EXPECT_TRUE(mirror->rounded_corner_radii().IsEmpty());
   EXPECT_FALSE(mirror->is_fast_rounded_corner());
-  constexpr std::array<uint32_t, 4> corner_radii = {2, 3, 4, 5};
-  child->SetRoundedCornerRadius(corner_radii);
+  constexpr gfx::RoundedCornersF kCornerRadii(2, 3, 4, 5);
+  child->SetRoundedCornerRadius(kCornerRadii);
   child->SetIsFastRoundedCorner(true);
-  EXPECT_EQ(mirror->rounded_corner_radii(), corner_radii);
+  EXPECT_EQ(kCornerRadii, mirror->rounded_corner_radii());
   EXPECT_TRUE(mirror->is_fast_rounded_corner());
 }
 
@@ -1034,7 +1033,7 @@ TEST_F(LayerWithNullDelegateTest, SwitchLayerPreservesCCLayerState) {
   l1->SetVisible(false);
   l1->SetBounds(gfx::Rect(4, 5));
 
-  constexpr std::array<uint32_t, 4> kCornerRadii = {1, 2, 3, 4};
+  constexpr gfx::RoundedCornersF kCornerRadii(1, 2, 3, 4);
   l1->SetRoundedCornerRadius(kCornerRadii);
   l1->SetIsFastRoundedCorner(true);
 
@@ -1278,8 +1277,7 @@ TEST_F(LayerWithNullDelegateTest, MirroringVisibility) {
 
 TEST_F(LayerWithDelegateTest, RoundedCorner) {
   gfx::Rect layer_bounds(10, 20, 100, 100);
-  const std::array<uint32_t, 4> radii = {5, 10, 15, 20};
-  const std::array<uint32_t, 4> kEmpty = {0, 0, 0, 0};
+  constexpr gfx::RoundedCornersF kRadii(5, 10, 15, 20);
   std::unique_ptr<Layer> layer(new Layer(LAYER_TEXTURED));
 
   NullLayerDelegate delegate;
@@ -1291,12 +1289,12 @@ TEST_F(LayerWithDelegateTest, RoundedCorner) {
   compositor()->SetRootLayer(layer.get());
   Draw();
 
-  EXPECT_EQ(layer->rounded_corner_radii(), kEmpty);
+  EXPECT_TRUE(layer->rounded_corner_radii().IsEmpty());
 
   // Setting a rounded corner radius should set an rrect with bounds same as the
   // layer.
-  layer->SetRoundedCornerRadius(radii);
-  EXPECT_EQ(layer->rounded_corner_radii(), radii);
+  layer->SetRoundedCornerRadius(kRadii);
+  EXPECT_EQ(kRadii, layer->rounded_corner_radii());
 }
 
 // Checks that stacking-related methods behave as advertised.

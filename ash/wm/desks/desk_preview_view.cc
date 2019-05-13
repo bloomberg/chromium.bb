@@ -11,6 +11,7 @@
 #include "base/containers/flat_map.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_tree_owner.h"
+#include "ui/gfx/geometry/rounded_corners_f.h"
 
 namespace ash {
 
@@ -19,7 +20,8 @@ namespace {
 // The desk preview border size in dips.
 constexpr int kBorderSize = 2;
 
-constexpr std::array<uint32_t, 4> kCornerRadius = {2, 2, 2, 2};
+// The rounded corner radii, also in dips.
+constexpr gfx::RoundedCornersF kCornerRadii(2);
 
 // Holds data about the original desk's layers to determine what we should do
 // when we attempt to mirror those layers.
@@ -113,13 +115,13 @@ DeskPreviewView::DeskPreviewView(DeskMiniView* mini_view)
 
   background_view_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
   auto* background_layer = background_view_->layer();
-  background_layer->SetRoundedCornerRadius(kCornerRadius);
+  background_layer->SetRoundedCornerRadius(kCornerRadii);
   background_layer->SetIsFastRoundedCorner(true);
   AddChildView(background_view_);
 
   wallpaper_preview_->SetPaintToLayer();
   auto* wallpaper_preview_layer = wallpaper_preview_->layer();
-  wallpaper_preview_layer->SetRoundedCornerRadius(kCornerRadius);
+  wallpaper_preview_layer->SetRoundedCornerRadius(kCornerRadii);
   wallpaper_preview_layer->SetIsFastRoundedCorner(true);
   AddChildView(wallpaper_preview_);
 

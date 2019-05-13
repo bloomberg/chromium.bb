@@ -54,9 +54,7 @@ DropTargetView::DropTargetView(bool has_plus_icon) {
   background_view_->layer()->SetColor(kDropTargetBackgroundColor);
   background_view_->layer()->SetOpacity(kDropTargetBackgroundOpacity);
   if (ash::features::ShouldUseShaderRoundedCorner()) {
-    const std::array<uint32_t, 4> kRadii = {
-        kOverviewWindowRoundingDp, kOverviewWindowRoundingDp,
-        kOverviewWindowRoundingDp, kOverviewWindowRoundingDp};
+    constexpr gfx::RoundedCornersF kRadii(kOverviewWindowRoundingDp);
     background_view_->layer()->SetRoundedCornerRadius(kRadii);
     background_view_->layer()->SetIsFastRoundedCorner(true);
   }

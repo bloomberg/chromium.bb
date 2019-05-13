@@ -211,10 +211,8 @@ static bool HasRoundedCorner(LayerImpl* layer) {
 }
 
 static gfx::RRectF RoundedCornerBounds(Layer* layer) {
-  const std::array<uint32_t, 4> radii = layer->corner_radii();
-  return gfx::RRectF(gfx::RectF(gfx::Rect(layer->bounds())), radii[0], radii[0],
-                     radii[1], radii[1], radii[2], radii[2], radii[3],
-                     radii[3]);
+  return gfx::RRectF(gfx::RectF(gfx::Rect(layer->bounds())),
+                     layer->corner_radii());
 }
 
 static gfx::RRectF RoundedCornerBounds(LayerImpl* layer) {

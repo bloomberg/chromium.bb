@@ -38,9 +38,8 @@ class RoundedLabelView : public views::View {
     layer()->SetFillsBoundsOpaquely(false);
 
     if (ash::features::ShouldUseShaderRoundedCorner()) {
-      const std::array<uint32_t, 4> kRadii = {rounding_dp, rounding_dp,
-                                              rounding_dp, rounding_dp};
-      layer()->SetRoundedCornerRadius(kRadii);
+      const gfx::RoundedCornersF radii(rounding_dp);
+      layer()->SetRoundedCornerRadius(radii);
       layer()->SetIsFastRoundedCorner(true);
     }
 
