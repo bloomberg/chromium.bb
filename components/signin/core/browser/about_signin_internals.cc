@@ -690,7 +690,7 @@ AboutSigninInternals::SigninStatus::ToValue(
   } else {
     for (const CoreAccountInfo& account_info : accounts_with_refresh_tokens) {
       auto entry = std::make_unique<base::DictionaryValue>();
-      entry->SetString("accountId", account_info.account_id);
+      entry->SetString("accountId", account_info.account_id.id);
       // TODO(https://crbug.com/919793): Remove this field once the token
       // service is internally consistent on all platforms.
       entry->SetBoolean("hasRefreshToken",

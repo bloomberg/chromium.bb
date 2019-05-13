@@ -84,6 +84,8 @@ config("key_defines") {
 template("google_apis_tmpl") {
   source_set(target_name) {
     sources = [
+      "gaia/core_account_id.cc",
+      "gaia/core_account_id.h",
       "gaia/gaia_auth_consumer.cc",
       "gaia/gaia_auth_consumer.h",
       "gaia/gaia_auth_fetcher.cc",

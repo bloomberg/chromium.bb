@@ -572,12 +572,12 @@ void AccountTrackerService::SaveToPrefs(const AccountInfo& account_info) {
     return;
 
   base::DictionaryValue* dict = nullptr;
-  base::string16 account_id_16 = base::UTF8ToUTF16(account_info.account_id);
   ListPrefUpdate update(pref_service_, prefs::kAccountInfo);
   for (size_t i = 0; i < update->GetSize(); ++i, dict = nullptr) {
     if (update->GetDictionary(i, &dict)) {
-      base::string16 value;
-      if (dict->GetString(kAccountKeyPath, &value) && value == account_id_16)
+      std::string value;
+      if (dict->GetString(kAccountKeyPath, &value) &&
+          value == account_info.account_id.id)
         break;
     }
   }
@@ -587,7 +587,7 @@ void AccountTrackerService::SaveToPrefs(const AccountInfo& account_info) {
     update->Append(base::WrapUnique(dict));
     // |dict| is invalidated at this point, so it needs to be reset.
     update->GetDictionary(update->GetSize() - 1, &dict);
-    dict->SetString(kAccountKeyPath, account_id_16);
+    dict->SetString(kAccountKeyPath, account_info.account_id.id);
   }
 
   dict->SetString(kAccountEmailPath, account_info.email);
@@ -607,13 +607,13 @@ void AccountTrackerService::RemoveFromPrefs(const AccountInfo& account_info) {
   if (!pref_service_)
     return;
 
-  base::string16 account_id_16 = base::UTF8ToUTF16(account_info.account_id);
   ListPrefUpdate update(pref_service_, prefs::kAccountInfo);
   for (size_t i = 0; i < update->GetSize(); ++i) {
     base::DictionaryValue* dict = nullptr;
     if (update->GetDictionary(i, &dict)) {
-      base::string16 value;
-      if (dict->GetString(kAccountKeyPath, &value) && value == account_id_16) {
+      std::string value;
+      if (dict->GetString(kAccountKeyPath, &value) &&
+          value == account_info.account_id.id) {
         update->Remove(i, nullptr);
         break;
       }

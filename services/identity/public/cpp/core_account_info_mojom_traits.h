@@ -16,7 +16,7 @@ template <>
 struct StructTraits<identity::mojom::CoreAccountInfo::DataView,
                     ::CoreAccountInfo> {
   static const std::string& account_id(const ::CoreAccountInfo& r) {
-    return r.account_id;
+    return r.account_id.id;
   }
 
   static const std::string& gaia(const ::CoreAccountInfo& r) { return r.gaia; }

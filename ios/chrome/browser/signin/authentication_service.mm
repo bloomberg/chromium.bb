@@ -274,7 +274,7 @@ void AuthenticationService::StoreAccountsInPrefs() {
       identity_manager_->GetAccountsWithRefreshTokens());
   std::vector<base::Value> accounts_pref_value;
   for (const CoreAccountInfo& account_info : accounts)
-    accounts_pref_value.emplace_back(account_info.account_id);
+    accounts_pref_value.emplace_back(account_info.account_id.id);
   pref_service_->Set(prefs::kSigninLastAccounts,
                      base::Value(std::move(accounts_pref_value)));
 }

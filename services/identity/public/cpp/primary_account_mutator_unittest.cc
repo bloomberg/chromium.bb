@@ -187,9 +187,9 @@ void RunClearPrimaryAccountTest(
       EXPECT_TRUE(identity_manager->HasAccountWithRefreshToken(
           secondary_account_info.account_id));
       EXPECT_TRUE(base::ContainsKey(observed_removals,
-                                    former_primary_account.account_id));
+                                    former_primary_account.account_id.id));
       EXPECT_FALSE(base::ContainsKey(observed_removals,
-                                     secondary_account_info.account_id));
+                                     secondary_account_info.account_id.id));
       break;
     case RemoveAccountExpectation::kRemoveAll:
       EXPECT_FALSE(identity_manager->HasAccountWithRefreshToken(
@@ -197,9 +197,9 @@ void RunClearPrimaryAccountTest(
       EXPECT_FALSE(identity_manager->HasAccountWithRefreshToken(
           secondary_account_info.account_id));
       EXPECT_TRUE(base::ContainsKey(observed_removals,
-                                    former_primary_account.account_id));
+                                    former_primary_account.account_id.id));
       EXPECT_TRUE(base::ContainsKey(observed_removals,
-                                    secondary_account_info.account_id));
+                                    secondary_account_info.account_id.id));
       break;
   }
 }

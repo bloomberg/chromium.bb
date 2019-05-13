@@ -541,9 +541,9 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
   account_tracker_service_.SeedAccountInfo(secondary_account);
 
   ResetObserverCounts();
-  AddAuthTokenManually("AccountId-" + primary_account.account_id,
+  AddAuthTokenManually("AccountId-" + primary_account.account_id.id,
                        "refresh_token");
-  AddAuthTokenManually("AccountId-" + secondary_account.account_id,
+  AddAuthTokenManually("AccountId-" + secondary_account.account_id.id,
                        "refresh_token");
   oauth2_service_delegate_->LoadCredentials(primary_account.account_id);
   base::RunLoop().RunUntilIdle();
@@ -582,9 +582,9 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
   account_tracker_service_.SeedAccountInfo(secondary_account);
 
   ResetObserverCounts();
-  AddAuthTokenManually("AccountId-" + primary_account.account_id,
+  AddAuthTokenManually("AccountId-" + primary_account.account_id.id,
                        "refresh_token");
-  AddAuthTokenManually("AccountId-" + secondary_account.account_id,
+  AddAuthTokenManually("AccountId-" + secondary_account.account_id.id,
                        "refresh_token");
   oauth2_service_delegate_->LoadCredentials(primary_account.account_id);
   base::RunLoop().RunUntilIdle();
@@ -623,9 +623,9 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
   account_tracker_service_.SeedAccountInfo(secondary_account);
 
   ResetObserverCounts();
-  AddAuthTokenManually("AccountId-" + primary_account.account_id,
+  AddAuthTokenManually("AccountId-" + primary_account.account_id.id,
                        "refresh_token");
-  AddAuthTokenManually("AccountId-" + secondary_account.account_id,
+  AddAuthTokenManually("AccountId-" + secondary_account.account_id.id,
                        "refresh_token");
   oauth2_service_delegate_->LoadCredentials(primary_account.account_id);
   base::RunLoop().RunUntilIdle();
@@ -659,7 +659,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
   account_tracker_service_.SeedAccountInfo(primary_account);
 
   ResetObserverCounts();
-  AddAuthTokenManually("AccountId-" + primary_account.account_id,
+  AddAuthTokenManually("AccountId-" + primary_account.account_id.id,
                        "refresh_token");
   oauth2_service_delegate_->LoadCredentials(primary_account.account_id);
   base::RunLoop().RunUntilIdle();

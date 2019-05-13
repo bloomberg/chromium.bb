@@ -69,7 +69,7 @@ std::vector<AccountIds> AccountTracker::GetAccounts() const {
 void AccountTracker::OnRefreshTokenUpdatedForAccount(
     const CoreAccountInfo& account_info) {
   TRACE_EVENT1("identity", "AccountTracker::OnRefreshTokenUpdatedForAccount",
-               "account_id", account_info.account_id);
+               "account_id", account_info.account_id.id);
 
   // Ignore refresh tokens if there is no active account ID at all.
   if (!identity_manager_->HasPrimaryAccount())
