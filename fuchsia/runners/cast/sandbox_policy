@@ -5,6 +5,7 @@
       "fuchsia.fonts.Provider",
       "fuchsia.logger.LogSink",
       "fuchsia.media.Audio",
+      "fuchsia.mediacodec.CodecFactory",
       "fuchsia.net.SocketProvider",
       "fuchsia.netstack.Netstack",
       "fuchsia.process.Launcher",
