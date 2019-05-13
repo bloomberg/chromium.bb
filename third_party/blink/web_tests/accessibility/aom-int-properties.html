@@ -25,7 +25,9 @@ test(function(t) {
     node.accessibleNode.level = 3;
 
     // For historical reasons intValue returns the heading level.
-    assert_equals(axNode.intValue, 3);
+    // Default heading level for role=heading is 2, AccessibleNode should
+    // not override this value.
+    assert_equals(axNode.intValue, 2);
 }, "AOM level property");
 </script>
 
@@ -39,7 +41,7 @@ test(function(t) {
     var axNode = accessibilityController.accessibleElementById("listitem");
     node.accessibleNode.posInSet = 9;
     node.accessibleNode.setSize = 10;
-    assert_equals(axNode.posInSet, 9);
-    assert_equals(axNode.setSize, 10);
+    assert_equals(axNode.posInSet, 0);
+    assert_equals(axNode.setSize, 0);
 }, "AOM posInSet and setSize");
 </script>

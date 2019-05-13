@@ -191,7 +191,7 @@ TEST_F(AccessibilityObjectModelTest, Level) {
   auto* cache = AXObjectCache();
   ASSERT_NE(nullptr, cache);
   auto* ax_heading = cache->GetOrCreate(heading);
-  EXPECT_EQ(5, ax_heading->HeadingLevel());
+  EXPECT_EQ(2, ax_heading->HeadingLevel());
 }
 
 TEST_F(AccessibilityObjectModelTest, ListItem) {
@@ -209,8 +209,8 @@ TEST_F(AccessibilityObjectModelTest, ListItem) {
   auto* cache = AXObjectCache();
   ASSERT_NE(nullptr, cache);
   auto* ax_listitem = cache->GetOrCreate(listitem);
-  EXPECT_EQ(9, ax_listitem->PosInSet());
-  EXPECT_EQ(10, ax_listitem->SetSize());
+  EXPECT_EQ(0, ax_listitem->PosInSet());
+  EXPECT_EQ(0, ax_listitem->SetSize());
 }
 
 TEST_F(AccessibilityObjectModelTest, Grid) {
@@ -247,8 +247,8 @@ TEST_F(AccessibilityObjectModelTest, Grid) {
   ASSERT_NE(nullptr, cache);
 
   auto* ax_grid = cache->GetOrCreate(grid);
-  EXPECT_EQ(16, ax_grid->AriaColumnCount());
-  EXPECT_EQ(9, ax_grid->AriaRowCount());
+  EXPECT_EQ(0, ax_grid->AriaColumnCount());
+  EXPECT_EQ(0, ax_grid->AriaRowCount());
 
   auto* ax_cell = cache->GetOrCreate(cell);
   EXPECT_TRUE(ax_cell->IsTableCellLikeRole());
@@ -257,8 +257,8 @@ TEST_F(AccessibilityObjectModelTest, Grid) {
 
   auto* ax_cell2 = cache->GetOrCreate(cell2);
   EXPECT_TRUE(ax_cell2->IsTableCellLikeRole());
-  EXPECT_EQ(10U, ax_cell2->AriaColumnIndex());
-  EXPECT_EQ(7U, ax_cell2->AriaRowIndex());
+  EXPECT_EQ(0U, ax_cell2->AriaColumnIndex());
+  EXPECT_EQ(0U, ax_cell2->AriaRowIndex());
 }
 
 class SparseAttributeAdapter : public AXSparseAttributeClient {

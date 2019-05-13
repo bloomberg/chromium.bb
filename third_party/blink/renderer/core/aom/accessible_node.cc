@@ -466,10 +466,6 @@ uint32_t AccessibleNode::GetPropertyOrARIAAttribute(Element* element,
   if (!element)
     return 0;
 
-  int32_t result = GetProperty(element, property, is_null);
-  if (!is_null)
-    return result;
-
   // Fall back on the equivalent ARIA attribute.
   QualifiedName attribute = GetCorrespondingARIAAttribute(property);
   AtomicString attr_value = element->FastGetAttribute(attribute);
@@ -484,10 +480,6 @@ int32_t AccessibleNode::GetPropertyOrARIAAttribute(Element* element,
   is_null = true;
   if (!element)
     return 0;
-
-  int32_t result = GetProperty(element, property, is_null);
-  if (!is_null)
-    return result;
 
   // Fall back on the equivalent ARIA attribute.
   QualifiedName attribute = GetCorrespondingARIAAttribute(property);
