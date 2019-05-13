@@ -123,6 +123,18 @@ std::string GetWifiSSID() {
           base::android::AttachCurrentThread()));
 }
 
+base::Optional<int32_t> GetWifiSignalLevel() {
+  const int count_buckets = 5;
+  int signal_strength = Java_AndroidNetworkLibrary_getWifiSignalLevel(
+      base::android::AttachCurrentThread(), count_buckets);
+  if (signal_strength < 0)
+    return base::nullopt;
+  DCHECK_LE(0, signal_strength);
+  DCHECK_GE(count_buckets - 1, signal_strength);
+
+  return signal_strength;
+}
+
 internal::ConfigParsePosixResult GetDnsServers(
     std::vector<IPEndPoint>* dns_servers) {
   JNIEnv* env = AttachCurrentThread();

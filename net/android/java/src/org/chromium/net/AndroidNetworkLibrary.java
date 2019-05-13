@@ -290,6 +290,34 @@ class AndroidNetworkLibrary {
         return "";
     }
 
+    /**
+     * Gets the signal strength from the currently associated WiFi access point if there is one, and
+     * it is available. Signal strength may not be available if the app does not have permissions to
+     * access it.
+     * @return -1 if value is unavailable, otherwise, a value between 0 and {@code countBuckets-1}
+     *         (both inclusive).
+     */
+    @CalledByNative
+    public static int getWifiSignalLevel(int countBuckets) {
+        final Intent intent = ContextUtils.getApplicationContext().registerReceiver(
+                null, new IntentFilter(WifiManager.RSSI_CHANGED_ACTION));
+        if (intent == null) {
+            return -1;
+        }
+
+        final int rssi = intent.getIntExtra(WifiManager.EXTRA_NEW_RSSI, Integer.MIN_VALUE);
+        if (rssi == Integer.MIN_VALUE) {
+            return -1;
+        }
+
+        final int signalLevel = WifiManager.calculateSignalLevel(rssi, countBuckets);
+        if (signalLevel < 0 || signalLevel >= countBuckets) {
+            return -1;
+        }
+
+        return signalLevel;
+    }
+
     public static class NetworkSecurityPolicyProxy {
         private static NetworkSecurityPolicyProxy sInstance = new NetworkSecurityPolicyProxy();
 

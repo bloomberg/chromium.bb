@@ -507,6 +507,10 @@ NetworkQualityEstimatorParams::NetworkQualityEstimatorParams(
               params_,
               "upper_bound_typical_kbps_multiplier",
               3.5)),
+      get_wifi_signal_strength_(GetStringValueForVariationParamWithDefaultValue(
+                                    params_,
+                                    "get_wifi_signal_strength",
+                                    "true") != "false"),
       use_small_responses_(false) {
   DCHECK(hanging_request_http_rtt_upper_bound_transport_rtt_multiplier_ == -1 ||
          hanging_request_http_rtt_upper_bound_transport_rtt_multiplier_ > 0);
