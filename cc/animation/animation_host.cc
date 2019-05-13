@@ -47,6 +47,19 @@ AnimationWorkletMutationState ToAnimationWorkletMutationState(
   }
 }
 
+bool TickAnimationsIf(AnimationHost::AnimationsList animations,
+                      base::TimeTicks monotonic_time,
+                      bool (*predicate)(const Animation&)) {
+  bool did_tick = false;
+  for (auto& it : animations) {
+    if (predicate(*it)) {
+      it->Tick(monotonic_time);
+      did_tick = true;
+    }
+  }
+  return did_tick;
+}
+
 }  // namespace
 
 std::unique_ptr<AnimationHost> AnimationHost::CreateMainInstance() {
@@ -354,19 +367,6 @@ bool AnimationHost::ActivateAnimations() {
     it->ActivateKeyframeEffects();
 
   return true;
-}
-
-bool TickAnimationsIf(AnimationHost::AnimationsList animations,
-                      base::TimeTicks monotonic_time,
-                      bool (*predicate)(const Animation&)) {
-  bool did_tick = false;
-  for (auto& it : animations) {
-    if (predicate(*it)) {
-      it->Tick(monotonic_time);
-      did_tick = true;
-    }
-  }
-  return did_tick;
 }
 
 bool AnimationHost::TickAnimations(base::TimeTicks monotonic_time,
