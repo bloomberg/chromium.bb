@@ -12,7 +12,7 @@ import android.support.annotation.Nullable;
 import android.support.annotation.StyleRes;
 import android.support.v7.app.AppCompatActivity;
 
-import org.chromium.chrome.browser.night_mode.GlobalNightModeStateController;
+import org.chromium.chrome.browser.night_mode.GlobalNightModeStateProviderHolder;
 import org.chromium.chrome.browser.night_mode.NightModeStateProvider;
 import org.chromium.chrome.browser.night_mode.NightModeUtils;
 
@@ -90,7 +90,7 @@ public class ChromeBaseAppCompatActivity
      *         of this class.
      */
     protected NightModeStateProvider createNightModeStateProvider() {
-        return GlobalNightModeStateController.getInstance();
+        return GlobalNightModeStateProviderHolder.getInstance();
     }
 
     /**

@@ -14,6 +14,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.UserManager;
 import android.speech.RecognizerIntent;
+import android.support.annotation.Nullable;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
@@ -533,6 +534,15 @@ public class FeatureUtilities {
                     ChromePreferenceManager.NIGHT_MODE_AVAILABLE_KEY, false);
         }
         return sIsNightModeAvailable;
+    }
+
+    /**
+     * Toggles whether the night mode experiment is enabled for testing. Should be reset back to
+     * null after the test has finished.
+     */
+    @VisibleForTesting
+    public static void setNightModeAvailableForTesting(@Nullable Boolean available) {
+        sIsNightModeAvailable = available;
     }
 
     /**
