@@ -212,10 +212,11 @@ class DatarateTestLarge
           << " The datarate for the file is lower than target by too much!";
       ASSERT_LE(effective_datarate_, cfg_.rc_target_bitrate * 1.15)
           << " The datarate for the file is greater than target by too much!";
-      ASSERT_LE(first_drop_, last_drop)
-          << " The first dropped frame for drop_thresh " << i
-          << " > first dropped frame for drop_thresh "
-          << i - kDropFrameThreshTestStep;
+      if (last_drop > 0)
+        ASSERT_LE(first_drop_, last_drop)
+            << " The first dropped frame for drop_thresh " << i
+            << " > first dropped frame for drop_thresh "
+            << i - kDropFrameThreshTestStep;
       ASSERT_GE(num_drops_, last_num_drops * 0.85)
           << " The number of dropped frames for drop_thresh " << i
           << " < number of dropped frames for drop_thresh "
