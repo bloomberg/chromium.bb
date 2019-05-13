@@ -219,7 +219,7 @@
   },
   {
     "failure": {
-      "humanReason": "Infra Failure: Step('my repo rebase') returned 1"
+      "humanReason": "Infra Failure: Step('my repo rebase') (retcode: 1)"
     },
     "name": "$result"
   }
