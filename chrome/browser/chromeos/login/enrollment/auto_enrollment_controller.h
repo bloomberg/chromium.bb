@@ -143,8 +143,6 @@ class AutoEnrollmentController {
   void SetAutoEnrollmentClientFactoryForTesting(
       policy::AutoEnrollmentClient::Factory* auto_enrollment_client_factory);
 
-  void FireSafeguardTimerForTesting();
-
  private:
   class SystemClockSyncWaiter;
 
@@ -285,6 +283,9 @@ class AutoEnrollmentController {
   // This is only triggered once in the lifetime of |AutoEnrollmentController|,
   // it's never set back to |false|.
   bool system_clock_sync_wait_requested_ = false;
+
+  // Keeps track of number of tries to request state keys.
+  int request_state_keys_tries_ = 0;
 
   // TODO(igorcov): Merge the two weak_ptr factories in one.
   base::WeakPtrFactory<AutoEnrollmentController> client_start_weak_factory_{

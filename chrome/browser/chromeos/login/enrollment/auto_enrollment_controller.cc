@@ -46,6 +46,8 @@ constexpr int kInitialEnrollmentModulusPowerLimit = 6;
 // (https://crbug.com/846645).
 const int kInitialEnrollmentModulusPowerOutdatedServer = 14;
 
+const int kMaxRequestStateKeysTries = 10;
+
 // Maximum time to wait for the auto-enrollment check to reach a decision.
 // Note that this encompasses all steps |AutoEnrollmentController| performs in
 // order to determine if the device should be auto-enrolled.
@@ -427,6 +429,7 @@ void AutoEnrollmentController::Start() {
   safeguard_timer_.Start(FROM_HERE, kSafeguardTimeout,
                          base::BindRepeating(&AutoEnrollmentController::Timeout,
                                              weak_ptr_factory_.GetWeakPtr()));
+  request_state_keys_tries_ = 0;
 
   // The system clock sync state is not known yet, and this
   // |AutoEnrollmentController| could wait for it if requested.
@@ -479,11 +482,6 @@ AutoEnrollmentController::RegisterProgressCallback(
 void AutoEnrollmentController::SetAutoEnrollmentClientFactoryForTesting(
     policy::AutoEnrollmentClient::Factory* auto_enrollment_client_factory) {
   testing_auto_enrollment_client_factory_ = auto_enrollment_client_factory;
-}
-
-void AutoEnrollmentController::FireSafeguardTimerForTesting() {
-  DCHECK(safeguard_timer_.IsRunning());
-  safeguard_timer_.FireNow();
 }
 
 AutoEnrollmentController::InitialEnrollmentRequirement
@@ -639,6 +637,7 @@ void AutoEnrollmentController::OnOwnershipStatusCheckDone(
     case DeviceSettingsService::OWNERSHIP_NONE:
       switch (auto_enrollment_check_type_) {
         case AutoEnrollmentCheckType::kFRE:
+          ++request_state_keys_tries_;
           // For FRE, request state keys first.
           g_browser_process->platform_part()
               ->browser_policy_connector_chromeos()
@@ -675,6 +674,13 @@ void AutoEnrollmentController::StartClientForFRE(
   if (state_keys.empty()) {
     LOG(ERROR) << "No state keys available";
     if (fre_requirement_ == FRERequirement::kExplicitlyRequired) {
+      if (request_state_keys_tries_ >= kMaxRequestStateKeysTries) {
+        if (safeguard_timer_.IsRunning())
+          safeguard_timer_.Stop();
+        Timeout();
+        return;
+      }
+      ++request_state_keys_tries_;
       // Retry to fetch the state keys. For devices where FRE is required to be
       // checked, we can't proceed with empty state keys.
       g_browser_process->platform_part()

@@ -545,12 +545,7 @@ void FakeSessionManagerClient::SetFlagsForUser(
 void FakeSessionManagerClient::GetServerBackedStateKeys(
     StateKeysCallback callback) {
   if (force_state_keys_missing_) {
-    // Need delay to prevent excessive warning output in tests caused by being
-    // retried in a tight loop.
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE,
-        base::BindOnce(std::move(callback), std::vector<std::string>()),
-        base::TimeDelta::FromSeconds(1));
+    PostReply(FROM_HERE, std::move(callback), std::vector<std::string>());
     return;
   }
 

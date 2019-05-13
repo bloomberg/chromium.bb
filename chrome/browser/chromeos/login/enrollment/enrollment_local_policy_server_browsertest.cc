@@ -137,12 +137,6 @@ class AutoEnrollmentLocalPolicyServer : public EnrollmentLocalPolicyServerBase {
         ->GetStateKeysBroker();
   }
 
-  void FireSafeguardTimer() {
-    WizardController::default_controller()
-        ->GetAutoEnrollmentController()
-        ->FireSafeguardTimerForTesting();
-  }
-
  private:
   DISALLOW_COPY_AND_ASSIGN(AutoEnrollmentLocalPolicyServer);
 };
@@ -533,9 +527,6 @@ IN_PROC_BROWSER_TEST_F(AutoEnrollmentNoStateKeys, FREExplicitlyRequired) {
   SetFRERequiredKey("1");
   host()->StartWizard(AutoEnrollmentCheckScreenView::kScreenId);
   OobeScreenWaiter(AutoEnrollmentCheckScreenView::kScreenId).Wait();
-
-  // Chrome waits for state keys to be available, force a timeout.
-  FireSafeguardTimer();
 
   OobeScreenWaiter(ErrorScreenView::kScreenId).Wait();
   test::OobeJS().ExpectHasNoClass("allow-guest-signin", {"error-message"});
