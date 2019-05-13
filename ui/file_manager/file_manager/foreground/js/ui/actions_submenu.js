@@ -38,8 +38,9 @@ class ActionsSubmenu {
 
   /**
    * @param {ActionsModel} actionsModel
+   * @param {Element} element The target element.
    */
-  setActionsModel(actionsModel) {
+  setActionsModel(actionsModel, element) {
     this.items_.forEach(item => {
       item.parentNode.removeChild(item);
     });
@@ -61,7 +62,8 @@ class ActionsSubmenu {
       menuItem.classList.toggle('hide-on-toolbar', true);
       delete remainingActions[ActionsModel.CommonActionId.SHARE];
     }
-    util.queryDecoratedElement('#share', cr.ui.Command).canExecuteChange();
+    util.queryDecoratedElement('#share', cr.ui.Command)
+        .canExecuteChange(element);
 
     // Then add the Manage in Drive item (if available).
     const manageInDriveAction =
@@ -73,13 +75,13 @@ class ActionsSubmenu {
       delete remainingActions[ActionsModel.InternalActionId.MANAGE_IN_DRIVE];
     }
     util.queryDecoratedElement('#manage-in-drive', cr.ui.Command)
-        .canExecuteChange();
+        .canExecuteChange(element);
 
     // Removing shortcuts is not rendered in the submenu to keep the previous
     // behavior. Shortcuts can be removed in the left nav using the roots menu.
     // TODO(mtomasz): Consider rendering the menu item here for consistency.
     util.queryDecoratedElement('#remove-folder-shortcut', cr.ui.Command)
-        .canExecuteChange();
+        .canExecuteChange(element);
 
     // Both save-for-offline and offline-not-necessary are handled by the single
     // #toggle-pinned command.
@@ -99,7 +101,7 @@ class ActionsSubmenu {
       }
     }
     util.queryDecoratedElement('#toggle-pinned', cr.ui.Command)
-        .canExecuteChange();
+        .canExecuteChange(element);
 
     // Process all the rest as custom actions.
     Object.keys(remainingActions).forEach(key => {

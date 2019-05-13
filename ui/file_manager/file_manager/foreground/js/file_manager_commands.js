@@ -348,6 +348,32 @@ CommandUtil.shouldIgnoreEvents = function(doc) {
 };
 
 /**
+ * Returns true if all entries is inside Drive volume, which includes all Drive
+ * parts (Shared Drives, My Drive, Shared with me, etc).
+ *
+ * @param {!Array<!Entry|!FilesAppEntry>} entries
+ * @param {!VolumeManager} volumeManager
+ * @return {boolean}
+ */
+CommandUtil.isDriveEntries = (entries, volumeManager) => {
+  if (!entries.length) {
+    return false;
+  }
+
+  const volumeInfo = volumeManager.getVolumeInfo(entries[0]);
+  if (!volumeInfo) {
+    return false;
+  }
+
+  if (volumeInfo.volumeType === VolumeManagerCommon.VolumeType.DRIVE &&
+      util.isSameVolume(entries, volumeManager)) {
+    return true;
+  }
+
+  return false;
+};
+
+/**
  * Handle of the command events.
  * @param {!CommandHandlerDeps} fileManager Classes |CommandHalder| depends.
  * @param {!FileSelectionHandler} selectionHandler
@@ -380,15 +406,11 @@ const CommandHandler = function(fileManager, selectionHandler) {
   fileManager.document.addEventListener('command', this.onCommand_.bind(this));
   fileManager.document.addEventListener(
       'canExecute', this.onCanExecute_.bind(this));
-  fileManager.directoryModel.addEventListener(
-      'directory-change', this.updateAvailability.bind(this));
-  fileManager.volumeManager.addEventListener(
-      'drive-connection-changed', this.updateAvailability.bind(this));
+
+  // TODO(lucmult): Try to remove this event listener to avoid flickering.
   selectionHandler.addEventListener(
       FileSelectionHandler.EventType.CHANGE_THROTTLED,
       this.updateAvailability.bind(this));
-  fileManager.metadataModel.addEventListener(
-      'update', this.updateAvailability.bind(this));
 
   chrome.commandLinePrivate.hasSwitch(
       'disable-zip-archiver-packer', disabled => {
@@ -1671,20 +1693,24 @@ CommandHandler.COMMANDS_['toggle-pinned'] = /** @type {Command} */ ({
    * @param {!CommandHandlerDeps} fileManager
    */
   execute: function(event, fileManager) {
-    const actionsModel =
-        fileManager.actionsController.getActionsModelFor(event.target);
-    const saveForOfflineAction = actionsModel ?
-        actionsModel.getAction(ActionsModel.CommonActionId.SAVE_FOR_OFFLINE) :
-        null;
-    const offlineNotNeededAction = actionsModel ?
-        actionsModel.getAction(
-            ActionsModel.CommonActionId.OFFLINE_NOT_NECESSARY) :
-        null;
-    // Saving for offline has a priority if both actions are available.
-    const action = saveForOfflineAction || offlineNotNeededAction;
-    if (action) {
-      action.execute();
-    }
+    const entries = CommandUtil.getCommandEntries(fileManager, event.target);
+    const actionsController = fileManager.actionsController;
+
+    actionsController.getActionsForEntries(entries).then(
+        (/** ?ActionsModel */ actionsModel) => {
+          if (!actionsModel) {
+            return;
+          }
+          const saveForOfflineAction = actionsModel.getAction(
+              ActionsModel.CommonActionId.SAVE_FOR_OFFLINE);
+          const offlineNotNeededAction = actionsModel.getAction(
+              ActionsModel.CommonActionId.OFFLINE_NOT_NECESSARY);
+          // Saving for offline has a priority if both actions are available.
+          const action = saveForOfflineAction || offlineNotNeededAction;
+          if (action) {
+            actionsController.executeAction(action);
+          }
+        });
   },
 
   /**
@@ -1692,24 +1718,43 @@ CommandHandler.COMMANDS_['toggle-pinned'] = /** @type {Command} */ ({
    * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
    */
   canExecute: function(event, fileManager) {
-    const actionsModel =
-        fileManager.actionsController.getActionsModelFor(event.target);
-    const saveForOfflineAction = actionsModel ?
-        actionsModel.getAction(ActionsModel.CommonActionId.SAVE_FOR_OFFLINE) :
-        null;
-    const offlineNotNeededAction = actionsModel ?
-        actionsModel.getAction(
-            ActionsModel.CommonActionId.OFFLINE_NOT_NECESSARY) :
-        null;
-    const action = saveForOfflineAction || offlineNotNeededAction;
+    const entries = CommandUtil.getCommandEntries(fileManager, event.target);
+    const command = event.command;
+    const actionsController = fileManager.actionsController;
 
-    event.canExecute = action && action.canExecute();
-    // If model is not computed yet, then keep the previous visibility to avoid
-    // flickering.
-    if (actionsModel) {
-      event.command.setHidden(actionsModel && !action);
-      event.command.checked = !!offlineNotNeededAction && !saveForOfflineAction;
+    // Avoid flickering menu height: synchronously define command visibility.
+    if (!CommandUtil.isDriveEntries(entries, fileManager.volumeManager_)) {
+      command.setHidden(true);
+      return;
     }
+
+    command.setHidden(false);
+
+    function canExecutePinned_(/** ?ActionsModel */ actionsModel) {
+      if (!actionsModel) {
+        return;
+      }
+      const saveForOfflineAction =
+          actionsModel.getAction(ActionsModel.CommonActionId.SAVE_FOR_OFFLINE);
+      const offlineNotNeededAction = actionsModel.getAction(
+          ActionsModel.CommonActionId.OFFLINE_NOT_NECESSARY);
+      const action = saveForOfflineAction || offlineNotNeededAction;
+      command.checked = !!offlineNotNeededAction && !saveForOfflineAction;
+      event.canExecute = action && action.canExecute();
+      command.disabled = !event.canExecute;
+    }
+
+    // Run synchrounously if possible.
+    const actionsModel =
+        actionsController.getInitializedActionsForEntries(entries);
+    if (actionsModel) {
+      canExecutePinned_(actionsModel);
+      return;
+    }
+
+    event.canExecute = true;
+    // Run async, otherwise.
+    actionsController.getActionsForEntries(entries).then(canExecutePinned_);
   }
 });
 
@@ -1791,36 +1836,60 @@ CommandHandler.COMMANDS_['share'] = /** @type {Command} */ ({
    * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
    */
   execute: function(event, fileManager) {
-    // To toolbar buttons are always related to the file list, even though the
-    // focus is on the navigation list. This assumption will break once we add
-    // Share to the context menu on the navigation list. crbug.com/530418
-    const actionsModel =
-        fileManager.actionsController.getActionsModelForContext(
-            ActionsController.Context.FILE_LIST);
-    const action = actionsModel ?
-        actionsModel.getAction(ActionsModel.CommonActionId.SHARE) :
-        null;
-    if (action) {
-      action.execute();
-    }
+    const entries = CommandUtil.getCommandEntries(fileManager, event.target);
+
+    fileManager.actionsController.getActionsForEntries(entries).then(
+        (/** ?ActionsModel */ actionsModel) => {
+          if (!actionsModel) {
+            return;
+          }
+          const action =
+              actionsModel.getAction(ActionsModel.CommonActionId.SHARE);
+          if (action) {
+            action.execute();
+          }
+        });
   },
+
   /**
    * @param {!Event} event Command event.
    * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
    */
   canExecute: function(event, fileManager) {
-    const actionsModel =
-        fileManager.actionsController.getActionsModelForContext(
-            ActionsController.Context.FILE_LIST);
-    const action = actionsModel ?
-        actionsModel.getAction(ActionsModel.CommonActionId.SHARE) :
-        null;
-    event.canExecute = action && action.canExecute();
-    // If model is not computed yet, then keep the previous visibility to avoid
-    // flickering.
-    if (actionsModel) {
-      event.command.setHidden(actionsModel && !action);
+    const entries = CommandUtil.getCommandEntries(fileManager, event.target);
+    const command = event.command;
+    const actionsController = fileManager.actionsController;
+
+    // Avoid flickering menu height: synchronously define command visibility.
+    if (!CommandUtil.isDriveEntries(entries, fileManager.volumeManager_)) {
+      command.setHidden(true);
+      return;
     }
+
+    command.setHidden(false);
+
+    function canExecuteShare_(/** ?ActionsModel */ actionsModel) {
+      if (!actionsModel) {
+        return;
+      }
+      const action = actionsModel.getAction(ActionsModel.CommonActionId.SHARE);
+      event.canExecute = action && action.canExecute();
+      command.disabled = !event.canExecute;
+      command.setHidden(!action);
+    }
+
+    // Run synchrounously if possible.
+    const actionsModel =
+        actionsController.getInitializedActionsForEntries(entries);
+    if (actionsModel) {
+      canExecuteShare_(actionsModel);
+      return;
+    }
+
+    event.canExecute = true;
+    command.setHidden(false);
+    // Run async, otherwise.
+    actionsController.getActionsForEntries(entries).then(canExecuteShare_);
   }
 });
 
@@ -1834,29 +1903,63 @@ CommandHandler.COMMANDS_['manage-in-drive'] = /** @type {Command} */ ({
    * @param {!CommandHandlerDeps} fileManager The file manager instance.
    */
   execute: function(event, fileManager) {
-    const actionsModel =
-        fileManager.actionsController.getActionsModelFor(event.target);
-    const action = actionsModel ?
-        actionsModel.getAction(ActionsModel.InternalActionId.MANAGE_IN_DRIVE) :
-        null;
-    if (action) {
-      action.execute();
-    }
+    const entries = CommandUtil.getCommandEntries(fileManager, event.target);
+
+    fileManager.actionsController.getActionsForEntries(entries).then(
+        (/** ?ActionsModel */ actionsModel) => {
+          if (!actionsModel) {
+            return;
+          }
+          const action = actionsModel.getAction(
+              ActionsModel.InternalActionId.MANAGE_IN_DRIVE);
+          if (action) {
+            action.execute();
+          }
+        });
   },
+
   /**
    * @param {!Event} event Command event.
    * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
    */
   canExecute: function(event, fileManager) {
-    const actionsModel =
-        fileManager.actionsController.getActionsModelFor(event.target);
-    const action = actionsModel ?
-        actionsModel.getAction(ActionsModel.InternalActionId.MANAGE_IN_DRIVE) :
-        null;
-    event.canExecute = action && action.canExecute();
-    if (actionsModel) {
-      event.command.setHidden(!action);
+    const entries = CommandUtil.getCommandEntries(fileManager, event.target);
+    const command = event.command;
+    const actionsController = fileManager.actionsController;
+
+    // Avoid flickering menu height: synchronously define command visibility.
+    if (!CommandUtil.isDriveEntries(entries, fileManager.volumeManager_)) {
+      command.setHidden(true);
+      return;
     }
+
+    command.setHidden(false);
+
+    function canExecuteManageInDrive_(/** ?ActionsModel */ actionsModel) {
+      if (!actionsModel) {
+        return;
+      }
+      const action =
+          actionsModel.getAction(ActionsModel.InternalActionId.MANAGE_IN_DRIVE);
+      if (action) {
+        command.setHidden(!action);
+        event.canExecute = action && action.canExecute();
+        command.disabled = !event.canExecute;
+      }
+    }
+
+    // Run synchronously if possible.
+    const actionsModel =
+        actionsController.getInitializedActionsForEntries(entries);
+    if (actionsModel) {
+      canExecuteManageInDrive_(actionsModel);
+      return;
+    }
+
+    event.canExecute = true;
+    // Run async, otherwise.
+    actionsController.getActionsForEntries(entries).then(
+        canExecuteManageInDrive_);
   }
 });
 
@@ -2144,31 +2247,61 @@ CommandHandler.COMMANDS_['create-folder-shortcut'] = /** @type {Command} */ ({
    * @param {!CommandHandlerDeps} fileManager The file manager instance.
    */
   execute: function(event, fileManager) {
-    const actionsModel =
-        fileManager.actionsController.getActionsModelFor(event.target);
-    const action = actionsModel ?
-        actionsModel.getAction(
-            ActionsModel.InternalActionId.CREATE_FOLDER_SHORTCUT) :
-        null;
-    if (action) {
-      action.execute();
-    }
+    const entries = CommandUtil.getCommandEntries(fileManager, event.target);
+    fileManager.actionsController.getActionsForEntries(entries).then(
+        (/** ?ActionsModel */ actionsModel) => {
+          if (!actionsModel) {
+            return;
+          }
+          const action = actionsModel.getAction(
+              ActionsModel.InternalActionId.CREATE_FOLDER_SHORTCUT);
+          if (action) {
+            action.execute();
+          }
+        });
   },
+
   /**
    * @param {!Event} event Command event.
    * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
    */
   canExecute: function(event, fileManager) {
-    const actionsModel =
-        fileManager.actionsController.getActionsModelFor(event.target);
-    const action = actionsModel ?
-        actionsModel.getAction(
-            ActionsModel.InternalActionId.CREATE_FOLDER_SHORTCUT) :
-        null;
-    event.canExecute = action && action.canExecute();
-    if (actionsModel) {
-      event.command.setHidden(!action);
+    const entries = CommandUtil.getCommandEntries(fileManager, event.target);
+    const command = event.command;
+    const actionsController = fileManager.actionsController;
+
+    // Avoid flickering menu height: synchronously define command visibility.
+    if (!CommandUtil.isDriveEntries(entries, fileManager.volumeManager_)) {
+      command.setHidden(true);
+      return;
     }
+
+    command.setHidden(false);
+
+    function canExecuteCreateShortcut_(/** ?ActionsModel */ actionsModel) {
+      if (!actionsModel) {
+        return;
+      }
+      const action = actionsModel.getAction(
+          ActionsModel.InternalActionId.CREATE_FOLDER_SHORTCUT);
+      event.canExecute = action && action.canExecute();
+      command.disabled = !event.canExecute;
+      command.setHidden(!action);
+    }
+
+    // Run synchrounously if possible.
+    const actionsModel =
+        actionsController.getInitializedActionsForEntries(entries);
+    if (actionsModel) {
+      canExecuteCreateShortcut_(actionsModel);
+      return;
+    }
+
+    event.canExecute = true;
+    command.setHidden(false);
+    // Run async, otherwise.
+    actionsController.getActionsForEntries(entries).then(
+        canExecuteCreateShortcut_);
   }
 });
 
@@ -2182,31 +2315,62 @@ CommandHandler.COMMANDS_['remove-folder-shortcut'] = /** @type {Command} */ ({
    * @param {!CommandHandlerDeps} fileManager The file manager instance.
    */
   execute: function(event, fileManager) {
-    const actionsModel =
-        fileManager.actionsController.getActionsModelFor(event.target);
-    const action = actionsModel ?
-        actionsModel.getAction(
-            ActionsModel.InternalActionId.REMOVE_FOLDER_SHORTCUT) :
-        null;
-    if (action) {
-      action.execute();
-    }
+    const entries = CommandUtil.getCommandEntries(fileManager, event.target);
+
+    fileManager.actionsController.getActionsForEntries(entries).then(
+        (/** ?ActionsModel */ actionsModel) => {
+          if (!actionsModel) {
+            return;
+          }
+          const action = actionsModel.getAction(
+              ActionsModel.InternalActionId.REMOVE_FOLDER_SHORTCUT);
+          if (action) {
+            action.execute();
+          }
+        });
   },
+
   /**
    * @param {!Event} event Command event.
    * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
    */
   canExecute: function(event, fileManager) {
-    const actionsModel =
-        fileManager.actionsController.getActionsModelFor(event.target);
-    const action = actionsModel ?
-        actionsModel.getAction(
-            ActionsModel.InternalActionId.REMOVE_FOLDER_SHORTCUT) :
-        null;
-    event.canExecute = action && action.canExecute();
-    if (actionsModel) {
-      event.command.setHidden(!action);
+    const entries = CommandUtil.getCommandEntries(fileManager, event.target);
+    const command = event.command;
+    const actionsController = fileManager.actionsController;
+
+    // Avoid flickering menu height: synchronously define command visibility.
+    if (!CommandUtil.isDriveEntries(entries, fileManager.volumeManager_)) {
+      command.setHidden(true);
+      return;
     }
+
+    command.setHidden(false);
+
+    function canExecuteRemoveShortcut_(/** ?ActionsModel */ actionsModel) {
+      if (!actionsModel) {
+        return;
+      }
+      const action = actionsModel.getAction(
+          ActionsModel.InternalActionId.REMOVE_FOLDER_SHORTCUT);
+      command.setHidden(!action);
+      event.canExecute = action && action.canExecute();
+      command.disabled = !event.canExecute;
+    }
+
+    // Run synchrounously if possible.
+    const actionsModel =
+        actionsController.getInitializedActionsForEntries(entries);
+    if (actionsModel) {
+      canExecuteRemoveShortcut_(actionsModel);
+      return;
+    }
+
+    event.canExecute = true;
+    command.setHidden(false);
+    // Run async, otherwise.
+    actionsController.getActionsForEntries(entries).then(
+        canExecuteRemoveShortcut_);
   }
 });
 
@@ -2499,6 +2663,7 @@ CommandHandler.COMMANDS_['refresh'] = /** @type {Command} */ ({
     const volumeInfo = currentDirEntry &&
         fileManager.volumeManager.getVolumeInfo(currentDirEntry);
     event.canExecute = volumeInfo && !volumeInfo.watchable;
+    console.log('****** refresh command canExecute: ' + event.canExecute);
     event.command.setHidden(
         !event.canExecute ||
         fileManager.directoryModel.getFileListSelection().getCheckSelectMode());
