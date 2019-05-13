@@ -70,6 +70,19 @@ using testing::Field;
 // Provide a BackendImpl object to macros from histogram_macros.h.
 #define CACHE_UMA_BACKEND_IMPL_OBJ backend_
 
+// TODO(crbug.com/949811): Fix memory leaks in tests and re-enable on LSAN.
+#ifdef LEAK_SANITIZER
+#define MAYBE_BlockFileOpenOrCreateEntry DISABLED_BlockFileOpenOrCreateEntry
+#define MAYBE_NonEmptyCorruptSimpleCacheDoesNotRecover \
+  DISABLED_NonEmptyCorruptSimpleCacheDoesNotRecover
+#define MAYBE_SimpleOpenOrCreateEntry DISABLED_SimpleOpenOrCreateEntry
+#else
+#define MAYBE_BlockFileOpenOrCreateEntry BlockFileOpenOrCreateEntry
+#define MAYBE_NonEmptyCorruptSimpleCacheDoesNotRecover \
+  NonEmptyCorruptSimpleCacheDoesNotRecover
+#define MAYBE_SimpleOpenOrCreateEntry SimpleOpenOrCreateEntry
+#endif
+
 using base::Time;
 
 namespace {
@@ -4843,11 +4856,11 @@ TEST_F(DiskCacheBackendTest, InMemoryOnlyOpenOrCreateEntry) {
   BackendOpenOrCreateEntry();
 }
 
-TEST_F(DiskCacheBackendTest, BlockFileOpenOrCreateEntry) {
+TEST_F(DiskCacheBackendTest, MAYBE_BlockFileOpenOrCreateEntry) {
   BackendOpenOrCreateEntry();
 }
 
-TEST_F(DiskCacheBackendTest, SimpleOpenOrCreateEntry) {
+TEST_F(DiskCacheBackendTest, MAYBE_SimpleOpenOrCreateEntry) {
   SetSimpleCacheMode();
   BackendOpenOrCreateEntry();
 }
@@ -4955,7 +4968,7 @@ TEST_F(DiskCacheBackendTest, EmptyCorruptSimpleCacheRecovery) {
   EXPECT_THAT(cb.GetResult(rv), IsOk());
 }
 
-TEST_F(DiskCacheBackendTest, NonEmptyCorruptSimpleCacheDoesNotRecover) {
+TEST_F(DiskCacheBackendTest, MAYBE_NonEmptyCorruptSimpleCacheDoesNotRecover) {
   SetSimpleCacheMode();
   BackendOpenOrCreateEntry();
 
