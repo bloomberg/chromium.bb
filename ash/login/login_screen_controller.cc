@@ -485,6 +485,16 @@ void LoginScreenController::SetPublicSessionShowFullManagementDisclosure(
   }
 }
 
+void LoginScreenController::SetKioskApps(
+    std::vector<mojom::KioskAppInfoPtr> kiosk_apps,
+    SetKioskAppsCallback callback) {
+  Shelf::ForWindow(Shell::Get()->GetPrimaryRootWindow())
+      ->shelf_widget()
+      ->login_shelf_view()
+      ->SetKioskApps(std::move(kiosk_apps));
+  std::move(callback).Run(true);
+}
+
 void LoginScreenController::ShowKioskAppError(const std::string& message) {
   ToastData toast_data(
       "KioskAppError", base::UTF8ToUTF16(message), -1 /*duration_ms*/,
@@ -542,15 +552,6 @@ void LoginScreenController::FocusLoginShelf(bool reverse) {
   }
 }
 
-void LoginScreenController::SetKioskApps(
-    const std::vector<KioskAppMenuEntry>& kiosk_apps,
-    const base::RepeatingCallback<void(const KioskAppMenuEntry&)>& launch_app) {
-  Shelf::ForWindow(Shell::Get()->GetPrimaryRootWindow())
-      ->shelf_widget()
-      ->login_shelf_view()
-      ->SetKioskApps(kiosk_apps, launch_app);
-}
-
 void LoginScreenController::SetAddUserButtonEnabled(bool enable) {
   Shelf::ForWindow(Shell::Get()->GetPrimaryRootWindow())
       ->shelf_widget()
@@ -563,6 +564,14 @@ void LoginScreenController::SetShutdownButtonEnabled(bool enable) {
       ->shelf_widget()
       ->login_shelf_view()
       ->SetShutdownButtonEnabled(enable);
+}
+
+void LoginScreenController::LaunchKioskApp(const std::string& app_id) {
+  login_screen_client_->LaunchKioskApp(app_id);
+}
+
+void LoginScreenController::LaunchArcKioskApp(const AccountId& account_id) {
+  login_screen_client_->LaunchArcKioskApp(account_id);
 }
 
 void LoginScreenController::ShowResetScreen() {

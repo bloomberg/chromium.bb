@@ -269,7 +269,7 @@ void LoginDisplayHostCommon::ShutdownDisplayHost() {
 }
 
 void LoginDisplayHostCommon::OnStartSignInScreenCommon() {
-  kiosk_app_menu_controller_.SendKioskApps();
+  kiosk_updater_.SendKioskApps();
 }
 
 void LoginDisplayHostCommon::ShowGaiaDialogCommon(
