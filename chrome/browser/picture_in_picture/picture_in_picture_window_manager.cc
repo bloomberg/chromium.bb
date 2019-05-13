@@ -26,12 +26,10 @@ class PictureInPictureWindowManager::ContentsObserver
         navigation_handle->IsSameDocument()) {
       return;
     }
-    owner_->CloseWindowInternal(true /* should_reset_pip_player */);
+    owner_->CloseWindowInternal();
   }
 
-  void WebContentsDestroyed() final {
-    owner_->CloseWindowInternal(true /* should_reset_pip_player */);
-  }
+  void WebContentsDestroyed() final { owner_->CloseWindowInternal(); }
 
  private:
   // Owns |this|.
@@ -47,7 +45,7 @@ void PictureInPictureWindowManager::EnterPictureInPictureWithController(
   // If there was already a controller, close the existing window before
   // creating the next one.
   if (pip_window_controller_)
-    CloseWindowInternal(false /* should_reset_pip_player */);
+    CloseWindowInternal();
 
   pip_window_controller_ = pip_window_controller;
 
@@ -58,16 +56,15 @@ gfx::Size PictureInPictureWindowManager::EnterPictureInPicture(
     content::WebContents* web_contents,
     const viz::SurfaceId& surface_id,
     const gfx::Size& natural_size) {
-  // If there was already a controller, close the existing window before
-  // creating the next one.
-  if (pip_window_controller_)
-    CloseWindowInternal(false /* should_reset_pip_player */);
-
   // Create or update |pip_window_controller_| for the current WebContents, if
   // it is a WebContents based PIP.
   if (!pip_window_controller_ ||
-      (pip_window_controller_->GetInitiatorWebContents() != nullptr &&
-       pip_window_controller_->GetInitiatorWebContents() != web_contents)) {
+      pip_window_controller_->GetInitiatorWebContents() != web_contents) {
+    // If there was already a controller, close the existing window before
+    // creating the next one.
+    if (pip_window_controller_)
+      CloseWindowInternal();
+
     CreateWindowInternal(web_contents);
   }
 
@@ -77,7 +74,7 @@ gfx::Size PictureInPictureWindowManager::EnterPictureInPicture(
 
 void PictureInPictureWindowManager::ExitPictureInPicture() {
   if (pip_window_controller_)
-    CloseWindowInternal(true /* should_reset_pip_player */);
+    CloseWindowInternal();
 }
 
 content::WebContents* PictureInPictureWindowManager::GetWebContents() {
@@ -95,13 +92,11 @@ void PictureInPictureWindowManager::CreateWindowInternal(
           web_contents);
 }
 
-void PictureInPictureWindowManager::CloseWindowInternal(
-    bool should_reset_pip_player) {
+void PictureInPictureWindowManager::CloseWindowInternal() {
   DCHECK(pip_window_controller_);
 
   contents_observer_.reset();
-  pip_window_controller_->Close(false /* should_pause_video */,
-                                should_reset_pip_player);
+  pip_window_controller_->Close(false /* should_pause_video */);
   pip_window_controller_ = nullptr;
 }
 

@@ -19,6 +19,20 @@
 
 namespace content {
 
+class DummyPictureInPictureSessionObserver
+    : public blink::mojom::PictureInPictureSessionObserver {
+ public:
+  DummyPictureInPictureSessionObserver() = default;
+  ~DummyPictureInPictureSessionObserver() final = default;
+
+  // Implementation of PictureInPictureSessionObserver.
+  void OnWindowSizeChanged(const gfx::Size&) final {}
+  void OnStopped() final {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DummyPictureInPictureSessionObserver);
+};
+
 class PictureInPictureDelegate : public WebContentsDelegate {
  public:
   PictureInPictureDelegate() = default;
@@ -113,9 +127,14 @@ class PictureInPictureServiceImplTest : public RenderViewHostImplTestHarness {
 TEST_F(PictureInPictureServiceImplTest, EnterPictureInPicture) {
   const int kPlayerVideoOnlyId = 30;
 
-  // If Picture-in-Picture was never triggered, the media player id would not be
-  // set.
-  EXPECT_FALSE(service().player_id().has_value());
+  DummyPictureInPictureSessionObserver observer;
+  mojo::Binding<blink::mojom::PictureInPictureSessionObserver>
+      observer_bindings(&observer);
+  blink::mojom::PictureInPictureSessionObserverPtr observer_ptr;
+  observer_bindings.Bind(mojo::MakeRequest(&observer_ptr));
+
+  // If Picture-in-Picture there shouldn't be an active session.
+  EXPECT_FALSE(service().active_session_for_testing());
 
   viz::SurfaceId surface_id =
       viz::SurfaceId(viz::FrameSinkId(1, 1),
@@ -127,9 +146,9 @@ TEST_F(PictureInPictureServiceImplTest, EnterPictureInPicture) {
 
   service().StartSession(kPlayerVideoOnlyId, surface_id, gfx::Size(42, 42),
                          true /* show_play_pause_button */,
-                         true /* show_mute_button */, base::DoNothing());
-  EXPECT_TRUE(service().player_id().has_value());
-  EXPECT_EQ(kPlayerVideoOnlyId, service().player_id()->delegate_id);
+                         true /* show_mute_button */, std::move(observer_ptr),
+                         base::DoNothing());
+  EXPECT_TRUE(service().active_session_for_testing());
 
   // Picture-in-Picture media player id should not be reset when the media is
   // destroyed (e.g. video stops playing). This allows the Picture-in-Picture
@@ -137,7 +156,7 @@ TEST_F(PictureInPictureServiceImplTest, EnterPictureInPicture) {
   contents()->GetMainFrame()->OnMessageReceived(
       MediaPlayerDelegateHostMsg_OnMediaDestroyed(
           contents()->GetMainFrame()->GetRoutingID(), kPlayerVideoOnlyId));
-  EXPECT_TRUE(service().player_id().has_value());
+  EXPECT_TRUE(service().active_session_for_testing());
 }
 
 }  // namespace content

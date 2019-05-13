@@ -17,10 +17,32 @@
 
 namespace blink {
 
+// The VideoWakeLockPictureInPictureSession implements a PictureInPicture
+// session in the same process as the test and guarantees that the callbacks are
+// called in order for the events to be fired.
+class VideoWakeLockPictureInPictureSession
+    : public mojom::blink::PictureInPictureSession {
+ public:
+  explicit VideoWakeLockPictureInPictureSession(
+      mojo::InterfaceRequest<mojom::blink::PictureInPictureSession> request)
+      : binding_(this, std::move(request)) {}
+  ~VideoWakeLockPictureInPictureSession() override = default;
+
+  void Stop(StopCallback callback) final { std::move(callback).Run(); }
+
+  void Update(uint32_t player_id,
+              const base::Optional<viz::SurfaceId>&,
+              const blink::WebSize&,
+              bool show_play_pause_button,
+              bool show_mute_button) final {}
+
+ private:
+  mojo::Binding<mojom::blink::PictureInPictureSession> binding_;
+};
+
 // The VideoWakeLockPictureInPictureService implements the PictureInPicture
 // service in the same process as the test and guarantees that the callbacks are
-// called in order for the events to be fired. set_run_loop() MUST be called
-// before each attempt to enter/leave Picture-in-Picture.
+// called in order for the events to be fired.
 class VideoWakeLockPictureInPictureService
     : public mojom::blink::PictureInPictureService {
  public:
@@ -37,23 +59,18 @@ class VideoWakeLockPictureInPictureService
                     const blink::WebSize&,
                     bool,
                     bool,
+                    mojom::blink::PictureInPictureSessionObserverPtr,
                     StartSessionCallback callback) final {
-    std::move(callback).Run(WebSize());
-  }
+    mojom::blink::PictureInPictureSessionPtr session_ptr;
+    session_.reset(new VideoWakeLockPictureInPictureSession(
+        mojo::MakeRequest(&session_ptr)));
 
-  void EndSession(EndSessionCallback callback) final {
-    std::move(callback).Run();
+    std::move(callback).Run(std::move(session_ptr), WebSize());
   }
-
-  void UpdateSession(uint32_t,
-                     const base::Optional<viz::SurfaceId>&,
-                     const blink::WebSize&,
-                     bool,
-                     bool) final {}
-  void SetDelegate(mojom::blink::PictureInPictureDelegatePtr) final {}
 
  private:
   mojo::Binding<mojom::blink::PictureInPictureService> binding_;
+  std::unique_ptr<VideoWakeLockPictureInPictureSession> session_;
 };
 
 class VideoWakeLockMediaPlayer final : public EmptyWebMediaPlayer {

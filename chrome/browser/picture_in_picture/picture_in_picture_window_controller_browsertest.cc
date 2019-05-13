@@ -70,7 +70,7 @@ class MockPictureInPictureWindowController
 
   // PictureInPictureWindowController:
   MOCK_METHOD0(Show, gfx::Size());
-  MOCK_METHOD2(Close, void(bool, bool));
+  MOCK_METHOD1(Close, void(bool));
   MOCK_METHOD0(CloseAndFocusInitiator, void());
   MOCK_METHOD0(OnWindowDestroyed, void());
   MOCK_METHOD2(EmbedSurface, void(const viz::SurfaceId&, const gfx::Size&));
@@ -396,8 +396,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   EXPECT_TRUE(active_web_contents->HasPictureInPictureVideo());
 
   // Stop video being played Picture-in-Picture and check if that's tracked.
-  window_controller()->Close(true /* should_pause_video */,
-                             true /* should_reset_pip_player */);
+  window_controller()->Close(true /* should_pause_video */);
   EXPECT_FALSE(active_web_contents->HasPictureInPictureVideo());
 
   // Reload page should not crash.
@@ -469,8 +468,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
       active_web_contents, "isInPictureInPicture();", &in_picture_in_picture));
   EXPECT_TRUE(in_picture_in_picture);
 
-  window_controller()->Close(true /* should_pause_video */,
-                             true /* should_reset_pip_player */);
+  window_controller()->Close(true /* should_pause_video */);
 
   base::string16 expected_title = base::ASCIIToUTF16("left");
   EXPECT_EQ(expected_title,
@@ -509,8 +507,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   EXPECT_TRUE(in_picture_in_picture);
 
   ASSERT_TRUE(window_controller());
-  window_controller()->Close(true /* should_pause_video */,
-                             true /* should_reset_pip_player */);
+  window_controller()->Close(true /* should_pause_video */);
 
   base::string16 expected_title = base::ASCIIToUTF16("left");
   EXPECT_EQ(expected_title,
@@ -548,8 +545,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   EXPECT_TRUE(in_picture_in_picture);
 
   ASSERT_TRUE(window_controller());
-  window_controller()->Close(true /* should_pause_video */,
-                             true /* should_reset_pip_player */);
+  window_controller()->Close(true /* should_pause_video */);
 
   base::string16 expected_title =
       base::ASCIIToUTF16("failed to enter Picture-in-Picture after leaving");
@@ -706,6 +702,8 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   OverlayWindowViews* overlay_window = static_cast<OverlayWindowViews*>(
       window_controller()->GetWindowForTesting());
 
+  EXPECT_TRUE(overlay_window->IsVisible());
+
   EXPECT_EQ(overlay_window->playback_state_for_testing(),
             OverlayWindowViews::PlaybackState::kPaused);
 }
@@ -858,8 +856,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
       active_web_contents, "enterPictureInPicture();", &result));
   EXPECT_TRUE(result);
 
-  window_controller()->Close(true /* should_pause_video */,
-                             true /* should_reset_pip_player */);
+  window_controller()->Close(true /* should_pause_video */);
 
   // Wait for the window to close.
   base::string16 expected_title = base::ASCIIToUTF16("left");
@@ -881,8 +878,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   EXPECT_FALSE(video_paused);
 
   // This should be a no-op because the window is not visible.
-  window_controller()->Close(true /* should_pause_video */,
-                             true /* should_reset_pip_player */);
+  window_controller()->Close(true /* should_pause_video */);
 
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
       active_web_contents, "isPaused();", &video_paused));
@@ -939,6 +935,146 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   }
 
   ASSERT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
+}
+
+// Closing a tab that lost Picture-in-Picture because a new tab entered it
+// should not close the current Picture-in-Picture window.
+IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
+                       PictureInPictureDoNotCloseAfterClosingTab) {
+  GURL test_page_url = ui_test_utils::GetTestUrl(
+      base::FilePath(base::FilePath::kCurrentDirectory),
+      base::FilePath(
+          FILE_PATH_LITERAL("media/picture-in-picture/window-size.html")));
+  ui_test_utils::NavigateToURL(browser(), test_page_url);
+
+  content::WebContents* initial_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(initial_web_contents != nullptr);
+
+  SetUpWindowController(initial_web_contents);
+
+  {
+    bool result = false;
+    ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+        initial_web_contents, "enterPictureInPicture();", &result));
+    EXPECT_TRUE(result);
+  }
+
+  EXPECT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
+
+  // Open a new tab in the browser and starts Picture-in-Picture.
+  AddTabAtIndex(1, test_page_url, ui::PAGE_TRANSITION_TYPED);
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
+  EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
+
+  content::WebContents* new_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(new_web_contents != nullptr);
+
+  {
+    content::PictureInPictureWindowController* pip_window_controller =
+        content::PictureInPictureWindowController::GetOrCreateForWebContents(
+            new_web_contents);
+
+    bool result = false;
+    ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+        new_web_contents, "enterPictureInPicture();", &result));
+    EXPECT_TRUE(result);
+
+    EXPECT_TRUE(pip_window_controller->GetWindowForTesting()->IsVisible());
+
+    // 'left' is sent when the first tab leaves Picture-in-Picture.
+    base::string16 expected_title = base::ASCIIToUTF16("left");
+    EXPECT_EQ(expected_title,
+              content::TitleWatcher(initial_web_contents, expected_title)
+                  .WaitAndGetTitle());
+  }
+
+  // Closing the initial tab should not get the new tab to leave
+  // Picture-in-Picture.
+  browser()->tab_strip_model()->CloseWebContentsAt(0, 0);
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
+  EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
+
+  base::RunLoop().RunUntilIdle();
+
+  bool in_picture_in_picture = false;
+  ASSERT_TRUE(ExecuteScriptAndExtractBool(
+      new_web_contents, "isInPictureInPicture();", &in_picture_in_picture));
+  EXPECT_TRUE(in_picture_in_picture);
+}
+
+// Killing an iframe that lost Picture-in-Picture because the main frame entered
+// it should not close the current Picture-in-Picture window.
+IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
+                       PictureInPictureDoNotCloseAfterKillingFrame) {
+  GURL test_page_url = ui_test_utils::GetTestUrl(
+      base::FilePath(base::FilePath::kCurrentDirectory),
+      base::FilePath(
+          FILE_PATH_LITERAL("media/picture-in-picture/iframe-test.html")));
+  ui_test_utils::NavigateToURL(browser(), test_page_url);
+
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(active_web_contents != nullptr);
+
+  SetUpWindowController(active_web_contents);
+
+  std::vector<content::RenderFrameHost*> render_frame_hosts =
+      active_web_contents->GetAllFrames();
+  ASSERT_EQ(2u, render_frame_hosts.size());
+
+  content::RenderFrameHost* iframe =
+      render_frame_hosts[0] == active_web_contents->GetMainFrame()
+          ? render_frame_hosts[1]
+          : render_frame_hosts[0];
+
+  {
+    bool result = false;
+    ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+        iframe, "enterPictureInPicture();", &result));
+    EXPECT_TRUE(result);
+  }
+
+  EXPECT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
+
+  bool result = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      active_web_contents, "enterPictureInPicture();", &result));
+  EXPECT_TRUE(result);
+
+  EXPECT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
+
+  base::RunLoop().RunUntilIdle();
+
+  {
+    bool in_picture_in_picture = false;
+    ASSERT_TRUE(
+        ExecuteScriptAndExtractBool(iframe,
+                                    "window.domAutomationController.send(!!"
+                                    "document.pictureInPictureElement);",
+                                    &in_picture_in_picture));
+    EXPECT_FALSE(in_picture_in_picture);
+  }
+
+  // Removing the iframe should not lead to the main frame leaving
+  // Picture-in-Picture.
+  ASSERT_TRUE(content::ExecuteScript(active_web_contents, "removeFrame();"));
+
+  EXPECT_EQ(1u, active_web_contents->GetAllFrames().size());
+  EXPECT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
+
+  base::RunLoop().RunUntilIdle();
+
+  {
+    bool in_picture_in_picture = false;
+    ASSERT_TRUE(
+        ExecuteScriptAndExtractBool(active_web_contents,
+                                    "window.domAutomationController.send(!!"
+                                    "document.pictureInPictureElement);",
+                                    &in_picture_in_picture));
+    EXPECT_TRUE(in_picture_in_picture);
+  }
 }
 
 // Checks setting disablePictureInPicture on video just after requesting
@@ -1321,12 +1457,14 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   ASSERT_NE(nullptr, pip_window_manager);
 
   // Show the non-WebContents based Picture-in-Picture window controller.
+  EXPECT_CALL(mock_controller(), GetInitiatorWebContents())
+      .WillOnce(testing::Return(nullptr));
   EXPECT_CALL(mock_controller(), Show());
   pip_window_manager->EnterPictureInPictureWithController(&mock_controller());
 
   // Now show the WebContents based Picture-in-Picture window controller.
   // This should close the existing window and show the new one.
-  EXPECT_CALL(mock_controller(), Close(_, _));
+  EXPECT_CALL(mock_controller(), Close(_));
   LoadTabAndEnterPictureInPicture(browser());
 
   OverlayWindowViews* overlay_window = static_cast<OverlayWindowViews*>(
@@ -1368,8 +1506,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
       active_web_contents, "changeSrcAndLoad();", &result));
   ASSERT_TRUE(result);
 
-  window_controller()->Close(true /* should_pause_video */,
-                             true /* should_reset_pip_player */);
+  window_controller()->Close(true /* should_pause_video */);
 
   result = false;
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(

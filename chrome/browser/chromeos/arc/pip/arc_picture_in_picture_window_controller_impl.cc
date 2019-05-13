@@ -14,7 +14,7 @@ ArcPictureInPictureWindowControllerImpl::
 
 ArcPictureInPictureWindowControllerImpl::
     ~ArcPictureInPictureWindowControllerImpl() {
-  Close(false, false);
+  Close(false);
 }
 
 gfx::Size ArcPictureInPictureWindowControllerImpl::Show() {
@@ -22,9 +22,7 @@ gfx::Size ArcPictureInPictureWindowControllerImpl::Show() {
   return gfx::Size();
 }
 
-void ArcPictureInPictureWindowControllerImpl::Close(
-    bool should_pause_video,
-    bool should_reset_pip_player) {
+void ArcPictureInPictureWindowControllerImpl::Close(bool should_pause_video) {
   // TODO(edcourtney): Currently, |should_pause_video| will always be false
   // here, but if that changes, we should pause the video on the Android side.
   arc_pip_bridge_->ClosePip();

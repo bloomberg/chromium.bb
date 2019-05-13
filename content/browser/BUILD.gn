@@ -1365,6 +1365,8 @@ jumbo_source_set("browser") {
     "permissions/permission_service_impl.h",
     "picture_in_picture/picture_in_picture_service_impl.cc",
     "picture_in_picture/picture_in_picture_service_impl.h",
+    "picture_in_picture/picture_in_picture_session.cc",
+    "picture_in_picture/picture_in_picture_session.h",
     "picture_in_picture/picture_in_picture_window_controller_impl.cc",
     "picture_in_picture/picture_in_picture_window_controller_impl.h",
     "portal/portal.cc",

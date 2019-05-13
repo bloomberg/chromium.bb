@@ -9,7 +9,7 @@
 #include "components/viz/common/surfaces/surface_id.h"
 #include "content/browser/media/media_web_contents_observer.h"
 #include "content/browser/media/session/media_session_impl.h"
-#include "content/browser/picture_in_picture/picture_in_picture_service_impl.h"
+#include "content/browser/picture_in_picture/picture_in_picture_session.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/media/media_player_delegate_messages.h"
 #include "content/public/browser/content_browser_client.h"
@@ -50,8 +50,7 @@ PictureInPictureWindowControllerImpl::~PictureInPictureWindowControllerImpl() {
     return;
 
   initiator_->SetHasPictureInPictureVideo(false);
-  OnLeavingPictureInPicture(true /* should_pause_video */,
-                            true /* should_reset_pip_player */);
+  OnLeavingPictureInPicture(true /* should_pause_video */);
 }
 
 PictureInPictureWindowControllerImpl::PictureInPictureWindowControllerImpl(
@@ -95,24 +94,22 @@ gfx::Size PictureInPictureWindowControllerImpl::Show() {
   return window_->GetBounds().size();
 }
 
-void PictureInPictureWindowControllerImpl::Close(bool should_pause_video,
-                                                 bool should_reset_pip_player) {
+void PictureInPictureWindowControllerImpl::Close(bool should_pause_video) {
   if (!window_ || !window_->IsVisible())
     return;
 
   window_->Hide();
-  CloseInternal(should_pause_video, should_reset_pip_player);
+  CloseInternal(should_pause_video);
 }
 
 void PictureInPictureWindowControllerImpl::CloseAndFocusInitiator() {
-  Close(false /* should_pause_video */, true /* should_reset_pip_player */);
+  Close(false /* should_pause_video */);
   initiator_->Activate();
 }
 
 void PictureInPictureWindowControllerImpl::OnWindowDestroyed() {
   window_ = nullptr;
-  CloseInternal(true /* should_pause_video */,
-                true /* should_reset_pip_player */);
+  CloseInternal(true /* should_pause_video */);
 }
 
 void PictureInPictureWindowControllerImpl::EmbedSurface(
@@ -140,15 +137,16 @@ OverlayWindow* PictureInPictureWindowControllerImpl::GetWindowForTesting() {
 }
 
 void PictureInPictureWindowControllerImpl::UpdateLayerBounds() {
-  if (media_player_id_.has_value() && service_ && window_ &&
+  if (media_player_id_.has_value() && active_session_ && window_ &&
       window_->IsVisible()) {
-    service_->NotifyWindowResized(window_->GetBounds().size());
+    active_session_->NotifyWindowResized(window_->GetBounds().size());
   }
 }
 
 bool PictureInPictureWindowControllerImpl::IsPlayerActive() {
   if (!media_player_id_.has_value())
-    media_player_id_ = service_ ? service_->player_id() : base::nullopt;
+    media_player_id_ =
+        active_session_ ? active_session_->player_id() : base::nullopt;
 
   // At creation time, the player id may not be set.
   if (!media_player_id_.has_value())
@@ -229,9 +227,21 @@ bool PictureInPictureWindowControllerImpl::ToggleMute() {
 }
 
 void PictureInPictureWindowControllerImpl::UpdateMediaPlayerId() {
-  media_player_id_ = service_ ? service_->player_id() : base::nullopt;
+  media_player_id_ =
+      active_session_ ? active_session_->player_id() : base::nullopt;
   UpdatePlaybackState(IsPlayerActive(), !media_player_id_.has_value());
   UpdateMutedState();
+}
+
+void PictureInPictureWindowControllerImpl::SetActiveSession(
+    PictureInPictureSession* session) {
+  if (active_session_ == session)
+    return;
+
+  if (active_session_)
+    active_session_->Shutdown();
+
+  active_session_ = session;
 }
 
 void PictureInPictureWindowControllerImpl::SetAlwaysHidePlayPauseButton(
@@ -376,8 +386,7 @@ bool PictureInPictureWindowControllerImpl::IsPlayerMuted() {
 }
 
 void PictureInPictureWindowControllerImpl::OnLeavingPictureInPicture(
-    bool should_pause_video,
-    bool should_reset_pip_player) {
+    bool should_pause_video) {
   if (IsPlayerActive() && should_pause_video) {
     // Pause the current video so there is only one video playing at a time.
     media_player_id_->render_frame_host->Send(new MediaPlayerDelegateMsg_Pause(
@@ -386,27 +395,19 @@ void PictureInPictureWindowControllerImpl::OnLeavingPictureInPicture(
   }
 
   if (media_player_id_.has_value()) {
-    media_player_id_->render_frame_host->Send(
-        new MediaPlayerDelegateMsg_EndPictureInPictureMode(
-            media_player_id_->render_frame_host->GetRoutingID(),
-            media_player_id_->delegate_id));
-
-    if (should_reset_pip_player) {
-      DCHECK(service_);
-      service_->ResetPlayerId();
-      media_player_id_.reset();
-    }
+    active_session_->Shutdown();
+    active_session_ = nullptr;
+    media_player_id_.reset();
   }
 }
 
 void PictureInPictureWindowControllerImpl::CloseInternal(
-    bool should_pause_video,
-    bool should_reset_pip_player) {
+    bool should_pause_video) {
   if (initiator_->IsBeingDestroyed())
     return;
 
   initiator_->SetHasPictureInPictureVideo(false);
-  OnLeavingPictureInPicture(should_pause_video, should_reset_pip_player);
+  OnLeavingPictureInPicture(should_pause_video);
   surface_id_ = viz::SurfaceId();
 }
 

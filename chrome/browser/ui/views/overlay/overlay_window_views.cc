@@ -867,8 +867,7 @@ void OverlayWindowViews::OnKeyEvent(ui::KeyEvent* event) {
 #if defined(OS_WIN)
   if (event->type() == ui::ET_KEY_PRESSED && event->IsAltDown() &&
       event->key_code() == ui::VKEY_F4) {
-    controller_->Close(true /* should_pause_video */,
-                       true /* should_reset_pip_player */);
+    controller_->Close(true /* should_pause_video */);
     event->SetHandled();
   }
 #endif  // OS_WIN
@@ -933,8 +932,7 @@ void OverlayWindowViews::OnGestureEvent(ui::GestureEvent* event) {
     RecordTapGesture(OverlayWindowControl::kSkipAd);
     event->SetHandled();
   } else if (GetCloseControlsBounds().Contains(event->location())) {
-    controller_->Close(true /* should_pause_video */,
-                       true /* should_reset_pip_player */);
+    controller_->Close(true /* should_pause_video */);
     RecordTapGesture(OverlayWindowControl::kClose);
     event->SetHandled();
   } else if (GetPlayPauseControlsBounds().Contains(event->location())) {
@@ -970,8 +968,7 @@ void OverlayWindowViews::ButtonPressed(views::Button* sender,
   }
 
   if (sender == close_controls_view_.get()) {
-    controller_->Close(true /* should_pause_video */,
-                       true /* should_reset_pip_player */);
+    controller_->Close(true /* should_pause_video */);
     RecordButtonPressed(OverlayWindowControl::kClose);
   }
 
