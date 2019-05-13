@@ -16,7 +16,6 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/decoder_buffer.h"
-#include "media/base/limits.h"
 #include "media/base/media_log.h"
 #include "media/base/video_util.h"
 
@@ -26,36 +25,13 @@ extern "C" {
 
 namespace media {
 
-static int GetDecoderTileThreadCount(const VideoDecoderConfig& config) {
-  // Values based on currently available content. Recommended by YouTube.
-  int tile_threads;
-
-  const int height = config.coded_size().height();
-  if (height >= 1000)
-    tile_threads = 8;
-  else if (height >= 700)
-    tile_threads = 5;
-  else if (height >= 300)
-    tile_threads = 3;
-  else
-    tile_threads = 2;
-
-  return tile_threads;
-}
-
-static int GetDecoderFrameThreadCount(const VideoDecoderConfig& config) {
-  // Values based on currently available content.
-  int frame_threads;
-
-  const int height = config.coded_size().height();
-  if (height >= 1000)
-    frame_threads = 8;
-  else if (height >= 700)
-    frame_threads = 4;
-  else
-    frame_threads = 2;
-
-  return frame_threads;
+// Returns the number of threads.
+static int GetDecoderThreadCount(const VideoDecoderConfig& config) {
+  // For AV1 decode when using the default thread count, increase the number
+  // of decode threads to equal the maximum number of tiles possible for
+  // higher resolution streams.
+  return VideoDecoder::GetRecommendedThreadCount(config.coded_size().width() /
+                                                 256);
 }
 
 static VideoPixelFormat Dav1dImgFmtToVideoPixelFormat(
@@ -173,31 +149,11 @@ void Dav1dVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   Dav1dSettings s;
   dav1d_default_settings(&s);
+  s.n_tile_threads = GetDecoderThreadCount(config);
 
-  // Compute the ideal thread count values. We'll then clamp these based on the
-  // maximum number of recommended threads (using number of processors, etc).
-  s.n_tile_threads = GetDecoderTileThreadCount(config);
-  s.n_frame_threads = GetDecoderFrameThreadCount(config);
-  const int max_threads = VideoDecoder::GetRecommendedThreadCount(
-      s.n_tile_threads + s.n_frame_threads);
-
-  // First clamp tile threads to the allowed maximum. We prefer tile threads
-  // over frame threads since dav1d folk indicate they are more efficient. In an
-  // ideal world this would be auto-detected by dav1d from the content.
-  //
-  // https://bugzilla.mozilla.org/show_bug.cgi?id=1536783#c0
-  s.n_tile_threads = std::min(max_threads, s.n_tile_threads);
-
-  // Now clamp frame threads based on the number of remaining threads after tile
-  // threads have been allocated. A thread count of 1 generates no additional
-  // threads since the calling thread (this thread) is counted as a thread.
-  //
-  // We only want 1 frame thread in low delay mode, since otherwise we'll
-  // require at least two buffers before the first frame can be output.
-  if (low_delay)
-    s.n_frame_threads = 1;
-  else if (s.n_frame_threads > max_threads - s.n_tile_threads)
-    s.n_frame_threads = std::max(1, max_threads - s.n_tile_threads);
+  // Use only 1 frame thread in low delay mode, otherwise we'll require at least
+  // two buffers before the first frame can be output.
+  s.n_frame_threads = low_delay ? 1 : 2;
 
   // Route dav1d internal logs through Chrome's DLOG system.
   s.logger = {nullptr, &LogDav1dMessage};
