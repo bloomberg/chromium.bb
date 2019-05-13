@@ -66,9 +66,12 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
     DISALLOW_COPY_AND_ASSIGN(ScopedPause);
   };
 
-  // Forces the occlusion state of a window and all its descendants to VISIBLE.
-  // Ignores the window that is forced VISIBLE and its descendants when
-  // computing the occlusion state of other windows is the tree.
+  // Used to exclude a window and all descendants from occlusion calculation.
+  // The occlusion state of the window and all descendants is set from the
+  // the drawn state of the window, *not* based on what windows may be stacked
+  // above them. Further, ignores the window that is excluded and its
+  // descendants when computing the occlusion state of other windows in the
+  // tree.
   //
   // This is useful for a window being dragged or resized to avoid unnecessary
   // occlusion state change triggered by these operation, because the window
@@ -92,11 +95,12 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
     DISALLOW_COPY_AND_ASSIGN(ScopedExclude);
   };
 
-  // Forces the occlusion state of a window to VISIBLE. Causes the occlusion
-  // state of descendants of the window that is forced VISIBLE to be computed
-  // as if they were in an isolated tree with a root that is drawn. Ignores the
-  // window that is forced VISIBLE and its descendants when computing the
-  // occlusion state of other windows is the tree.
+  // Forces the occlusion state of a window to VISIBLE regardless of the drawn
+  // state of the window. Causes the occlusion state of descendants of the
+  // window that is forced VISIBLE to be computed as if they were in an
+  // isolated tree with a root that is drawn. Ignores the window that is forced
+  // VISIBLE and its descendants when computing the occlusion state of other
+  // windows in the tree.
   //
   // This function is primarily useful for situations that show the contents of
   // a hidden window, such as overview mode on ChromeOS.
