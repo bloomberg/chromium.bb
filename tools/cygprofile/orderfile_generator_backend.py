@@ -834,36 +834,40 @@ class OrderfileGenerator(object):
 
       out_file_path = os.path.join(out_dir, 'results-chart.json')
       if not os.path.exists(out_file_path):
-        raise Exception('orderfile.memory_mobile results file not found!')
+        raise Exception('Results file not found!')
 
       with open(out_file_path, 'r') as f:
         json_results = json.load(f)
 
       if not json_results:
-        raise Exception('orderfile.memory_mobile results file is empty')
+        raise Exception('Results file is empty')
+
+      if not 'charts' in json_results:
+        raise Exception('charts can not be found in results!')
+
+      charts = json_results['charts']
+      results = dict()
+      for story in charts:
+        if not story.endswith("NativeCodeResidentMemory_avg"):
+          continue
+
+        results[story] = dict()
+        for substory in charts[story]:
+          if substory == 'summary':
+            continue
+          if not 'values' in charts[story][substory]:
+            raise Exception(
+              'Values can not be found in charts:%s:%s' % (story, substory))
+
+          results[story][substory] = charts[story][substory]['values']
+      return results
+
+    except Exception as e:
+      return 'Error: ' + str(e)
 
     finally:
       shutil.rmtree(out_dir)
 
-    if not 'charts' in json_results:
-      raise Exception('charts can not be found in results!')
-
-    charts = json_results['charts']
-    results = dict()
-    for story in charts:
-      if not story.endswith("NativeCodeResidentMemory_avg"):
-        continue
-
-      results[story] = dict()
-      for substory in charts[story]:
-        if substory == 'summary':
-          continue
-        if not 'values' in charts[story][substory]:
-          raise Exception(
-              'Values can not be found in charts:%s:%s' % (story, substory))
-
-        results[story][substory] = charts[story][substory]['values']
-    return results
 
   def _PerformanceBenchmark(self, apk):
     """Runs Speedometer2.0 to assess performance.
@@ -881,32 +885,34 @@ class OrderfileGenerator(object):
                                   '--device={}'.format(
                                       self._profiler._device.serial),
                                   '--browser=exact',
-                                  '--output-format=chartjson',
+                                  '--output-format=histograms',
                                   '--output-dir={}'.format(out_dir),
                                   '--reset-results',
                                   '--browser-executable={}'.format(apk),
                                   'speedometer2'])
 
-      out_file_path = os.path.join(out_dir, 'results-chart.json')
+      out_file_path = os.path.join(out_dir, 'histograms.json')
       if not os.path.exists(out_file_path):
-        raise Exception('speedometer2 results file not found!')
+        raise Exception('Results file not found!')
 
       with open(out_file_path, 'r') as f:
         results = json.load(f)
 
       if not results:
-        raise Exception('speedometer2 results file is empty.')
+        raise Exception('Results file is empty.')
+
+      for el in results:
+        if 'name' in el and el['name'] == 'Total' and 'sampleValues' in el:
+          return el['sampleValues']
+
+      raise Exception('Unexpected results format.')
+
+    except Exception as e:
+      return 'Error: ' + str(e)
 
     finally:
       shutil.rmtree(out_dir)
 
-    keys = ['charts', 'Total', 'Speedometer2', 'values']
-    for key in keys:
-      if not key in results:
-        raise Exception('Unexpected results format, %s can not be found.' % key)
-      results = results[key]
-
-    return results
 
   def RunBenchmark(self, out_directory, no_orderfile=False):
     """Builds chrome apk and runs performance and memory benchmarks.
@@ -945,6 +951,10 @@ class OrderfileGenerator(object):
           self._compiler.chrome_apk)
       benchmark_results['orderfile.memory_mobile'] = (
           self._NativeCodeMemoryBenchmark(self._compiler.chrome_apk))
+
+    except Exception as e:
+      benchmark_results['Error'] = str(e)
+
     finally:
       if no_orderfile and os.path.exists(backup_orderfile):
         shutil.move(backup_orderfile, orderfile_path)
