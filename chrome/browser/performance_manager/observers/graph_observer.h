@@ -33,59 +33,106 @@ class SystemNodeImpl;
 // const Node* rather then mutable NodeImpl* types for external consumers.
 class GraphObserver {
  public:
-  GraphObserver();
-  virtual ~GraphObserver();
+  virtual ~GraphObserver() = 0;
 
   // Invoked when an observer is added to or removed from the graph. This is a
   // convenient place for observers to initialize any necessary state, validate
   // graph invariants, etc.
-  virtual void OnRegistered() {}
-  virtual void OnUnregistered() {}
+  virtual void OnRegistered() = 0;
+  virtual void OnUnregistered() = 0;
 
   // Determines whether or not the observer should be registered with, and
   // invoked for, the |node|.
   virtual bool ShouldObserve(const NodeBase* node) = 0;
 
   // Called whenever a node has been added to the graph.
-  virtual void OnNodeAdded(NodeBase* node) {}
+  virtual void OnNodeAdded(NodeBase* node) = 0;
 
   // Called when the |node| is about to be removed from the graph.
-  virtual void OnBeforeNodeRemoved(NodeBase* node) {}
+  virtual void OnBeforeNodeRemoved(NodeBase* node) = 0;
 
   // FrameNodeImpl notifications.
-  virtual void OnIsCurrentChanged(FrameNodeImpl* frame_node) {}
-  virtual void OnNetworkAlmostIdleChanged(FrameNodeImpl* frame_node) {}
-  virtual void OnLifecycleStateChanged(FrameNodeImpl* frame_node) {}
-  virtual void OnNonPersistentNotificationCreated(FrameNodeImpl* frame_node) {}
+  virtual void OnIsCurrentChanged(FrameNodeImpl* frame_node) = 0;
+  virtual void OnNetworkAlmostIdleChanged(FrameNodeImpl* frame_node) = 0;
+  virtual void OnLifecycleStateChanged(FrameNodeImpl* frame_node) = 0;
+  virtual void OnNonPersistentNotificationCreated(
+      FrameNodeImpl* frame_node) = 0;
 
   // PageNodeImpl notifications.
-  virtual void OnIsVisibleChanged(PageNodeImpl* page_node) {}
-  virtual void OnIsLoadingChanged(PageNodeImpl* page_node) {}
-  virtual void OnUkmSourceIdChanged(PageNodeImpl* page_node) {}
-  virtual void OnLifecycleStateChanged(PageNodeImpl* page_node) {}
-  virtual void OnPageAlmostIdleChanged(PageNodeImpl* page_node) {}
-  virtual void OnFaviconUpdated(PageNodeImpl* page_node) {}
-  virtual void OnTitleUpdated(PageNodeImpl* page_node) {}
-  virtual void OnMainFrameNavigationCommitted(PageNodeImpl* page_node) {}
+  virtual void OnIsVisibleChanged(PageNodeImpl* page_node) = 0;
+  virtual void OnIsLoadingChanged(PageNodeImpl* page_node) = 0;
+  virtual void OnUkmSourceIdChanged(PageNodeImpl* page_node) = 0;
+  virtual void OnLifecycleStateChanged(PageNodeImpl* page_node) = 0;
+  virtual void OnPageAlmostIdleChanged(PageNodeImpl* page_node) = 0;
+  virtual void OnFaviconUpdated(PageNodeImpl* page_node) = 0;
+  virtual void OnTitleUpdated(PageNodeImpl* page_node) = 0;
+  virtual void OnMainFrameNavigationCommitted(PageNodeImpl* page_node) = 0;
 
   // ProcessNodeImpl notifications.
   virtual void OnExpectedTaskQueueingDurationSample(
-      ProcessNodeImpl* process_node) {}
-  virtual void OnMainThreadTaskLoadIsLow(ProcessNodeImpl* process_node) {}
-  virtual void OnRendererIsBloated(ProcessNodeImpl* process_node) {}
-  virtual void OnAllFramesInProcessFrozen(ProcessNodeImpl* process_node) {}
+      ProcessNodeImpl* process_node) = 0;
+  virtual void OnMainThreadTaskLoadIsLow(ProcessNodeImpl* process_node) = 0;
+  virtual void OnRendererIsBloated(ProcessNodeImpl* process_node) = 0;
+  virtual void OnAllFramesInProcessFrozen(ProcessNodeImpl* process_node) = 0;
 
   // SystemNodeImpl notifications.
-  virtual void OnProcessCPUUsageReady(SystemNodeImpl* system_node) {}
+  virtual void OnProcessCPUUsageReady(SystemNodeImpl* system_node) = 0;
 
-  void set_node_graph(GraphImpl* graph) { node_graph_ = graph; }
+  virtual void SetNodeGraph(GraphImpl* graph) = 0;
+};
+
+// An empty implementation of the interface.
+class GraphObserverDefaultImpl : public GraphObserver {
+ public:
+  GraphObserverDefaultImpl();
+  ~GraphObserverDefaultImpl() override;
+
+  // Invoked when an observer is added to or removed from the graph. This is a
+  // convenient place for observers to initialize any necessary state, validate
+  // graph invariants, etc.
+  void OnRegistered() override {}
+  void OnUnregistered() override {}
+
+  // Called whenever a node has been added to the graph.
+  void OnNodeAdded(NodeBase* node) override {}
+
+  // Called when the |node| is about to be removed from the graph.
+  void OnBeforeNodeRemoved(NodeBase* node) override {}
+
+  // FrameNodeImpl notifications.
+  void OnIsCurrentChanged(FrameNodeImpl* frame_node) override {}
+  void OnNetworkAlmostIdleChanged(FrameNodeImpl* frame_node) override {}
+  void OnLifecycleStateChanged(FrameNodeImpl* frame_node) override {}
+  void OnNonPersistentNotificationCreated(FrameNodeImpl* frame_node) override {}
+
+  // PageNodeImpl notifications.
+  void OnIsVisibleChanged(PageNodeImpl* page_node) override {}
+  void OnIsLoadingChanged(PageNodeImpl* page_node) override {}
+  void OnUkmSourceIdChanged(PageNodeImpl* page_node) override {}
+  void OnLifecycleStateChanged(PageNodeImpl* page_node) override {}
+  void OnPageAlmostIdleChanged(PageNodeImpl* page_node) override {}
+  void OnFaviconUpdated(PageNodeImpl* page_node) override {}
+  void OnTitleUpdated(PageNodeImpl* page_node) override {}
+  void OnMainFrameNavigationCommitted(PageNodeImpl* page_node) override {}
+
+  // ProcessNodeImpl notifications.
+  void OnExpectedTaskQueueingDurationSample(
+      ProcessNodeImpl* process_node) override {}
+  void OnMainThreadTaskLoadIsLow(ProcessNodeImpl* process_node) override {}
+  void OnRendererIsBloated(ProcessNodeImpl* process_node) override {}
+  void OnAllFramesInProcessFrozen(ProcessNodeImpl* process_node) override {}
+
+  // SystemNodeImpl notifications.
+  void OnProcessCPUUsageReady(SystemNodeImpl* system_node) override {}
+
+  void SetNodeGraph(GraphImpl* graph) override;
 
   GraphImpl* graph() const { return node_graph_; }
 
  private:
   GraphImpl* node_graph_ = nullptr;
 
-  DISALLOW_COPY_AND_ASSIGN(GraphObserver);
+  DISALLOW_COPY_AND_ASSIGN(GraphObserverDefaultImpl);
 };
 
 }  // namespace performance_manager

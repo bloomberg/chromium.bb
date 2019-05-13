@@ -29,7 +29,7 @@ extern const base::TimeDelta kMetricsReportDelayTimeout;
 extern const int kDefaultFrequencyUkmEQTReported;
 
 // The MetricsCollector is a graph observer that reports UMA/UKM.
-class MetricsCollector : public GraphObserver {
+class MetricsCollector : public GraphObserverDefaultImpl {
  public:
   MetricsCollector();
   ~MetricsCollector() override;

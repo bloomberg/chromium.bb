@@ -147,6 +147,10 @@ void WebUIGraphDumpImpl::OnRendererIsBloated(ProcessNodeImpl* process_node) {
   SendProcessNotification(process_node, false);
 }
 
+void WebUIGraphDumpImpl::SetNodeGraph(GraphImpl* graph) {
+  DCHECK_EQ(graph_, graph);
+}
+
 void WebUIGraphDumpImpl::SendFrameNotification(FrameNodeImpl* frame,
                                                bool created) {
   // TODO(https://crbug.com/961785): Add more frame properties.

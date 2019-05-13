@@ -16,7 +16,7 @@ class ProcessNodeImpl;
 
 // The FrozenFrameAggregator is responsible for tracking frame frozen states,
 // and aggregating this property to the page and process nodes.
-class FrozenFrameAggregator : public GraphObserver {
+class FrozenFrameAggregator : public GraphObserverDefaultImpl {
  public:
   struct Data;
 

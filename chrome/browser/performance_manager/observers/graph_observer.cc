@@ -6,8 +6,14 @@
 
 namespace performance_manager {
 
-GraphObserver::GraphObserver() = default;
-
 GraphObserver::~GraphObserver() = default;
+
+GraphObserverDefaultImpl::GraphObserverDefaultImpl() = default;
+
+GraphObserverDefaultImpl::~GraphObserverDefaultImpl() = default;
+
+void GraphObserverDefaultImpl::SetNodeGraph(GraphImpl* graph) {
+  node_graph_ = graph;
+}
 
 }  // namespace performance_manager

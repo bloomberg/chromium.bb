@@ -20,7 +20,7 @@ namespace performance_manager {
 namespace {
 
 // Observer used to make sure that signals are dispatched correctly.
-class SystemAndProcessObserver : public GraphObserver {
+class SystemAndProcessObserver : public GraphObserverDefaultImpl {
  public:
   // GraphObserver implementation:
   bool ShouldObserve(const NodeBase* node) override {

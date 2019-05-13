@@ -45,7 +45,7 @@ GraphImpl::~GraphImpl() {
 
 void GraphImpl::RegisterObserver(GraphObserver* observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  observer->set_node_graph(this);
+  observer->SetNodeGraph(this);
   observers_.push_back(observer);
   observer->OnRegistered();
 }

@@ -27,6 +27,8 @@ class WebUIGraphDumpImpl : public mojom::WebUIGraphDump, public GraphObserver {
       mojom::WebUIGraphChangeStreamPtr change_subscriber) override;
 
   // GraphObserver implementation.
+  void OnRegistered() override {}
+  void OnUnregistered() override {}
   bool ShouldObserve(const NodeBase* node) override;
   void OnNodeAdded(NodeBase* node) override;
   void OnBeforeNodeRemoved(NodeBase* node) override;
@@ -54,6 +56,11 @@ class WebUIGraphDumpImpl : public mojom::WebUIGraphDump, public GraphObserver {
   void OnRendererIsBloated(ProcessNodeImpl* process_node) override;
   // Event notification.
   void OnAllFramesInProcessFrozen(ProcessNodeImpl* process_node) override {}
+
+  // Ignored
+  void OnProcessCPUUsageReady(SystemNodeImpl* system_node) override {}
+
+  void SetNodeGraph(GraphImpl* graph) override;
 
  private:
   void SendFrameNotification(FrameNodeImpl* frame, bool created);
