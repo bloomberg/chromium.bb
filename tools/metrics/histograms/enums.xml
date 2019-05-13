@@ -23267,6 +23267,7 @@ Called by update_net_error_codes.py.-->
   <int value="49" label="DownloadsWithoutUserActivation"/>
   <int value="50" label="ExecutionWhileOutOfViewport"/>
   <int value="51" label="ExecutionWhileNotRendered"/>
+  <int value="52" label="FocusWithoutUserActivation"/>
 </enum>
 
 <enum name="FeaturePolicyImageCompressionFormat">

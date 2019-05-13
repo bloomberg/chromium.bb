@@ -138,6 +138,9 @@ enum FeaturePolicyFeature {
   // Allow execution while not rendered.
   kExecutionWhileNotRendered = 51,
 
+  // When disallowed, a frame without user activation cannot acquire focus.
+  kFocusWithoutUserActivation = 52,
+
   // Don't change assigned numbers of any item, and don't reuse removed slots.
   // Add new features at the end of the enum.
   // Also, run update_feature_policy_enum.py in

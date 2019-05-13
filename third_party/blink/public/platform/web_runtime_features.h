@@ -84,6 +84,8 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableBackgroundFetch(bool);
   BLINK_PLATFORM_EXPORT static void EnableBlinkHeapIncrementalMarking(bool);
   BLINK_PLATFORM_EXPORT static void EnableBloatedRendererDetection(bool);
+  BLINK_PLATFORM_EXPORT static void EnableBlockingFocusWithoutUserActivation(
+      bool);
   BLINK_PLATFORM_EXPORT static void EnableCacheInlineScriptCode(bool);
   BLINK_PLATFORM_EXPORT static void EnableIsolatedCodeCache(bool);
   BLINK_PLATFORM_EXPORT static void EnableWasmCodeCache(bool);
