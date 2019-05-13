@@ -38,8 +38,6 @@ version="${3}"
 
 script_dir="$(dirname "${0}")"
 in_files=(
-  "${script_dir}/sign_app.sh.in"
-  "${script_dir}/sign_versioned_dir.sh.in"
   "${script_dir}/app_resource_rules.plist.in"
 )
 

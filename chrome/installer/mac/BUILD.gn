@@ -23,22 +23,14 @@ action("make_signers") {
   script = "//build/gn_run_binary.py"
   shell_script = "//chrome/installer/mac/make_signers.sh"
 
-  deps = [
-    ":copy_variables",
-  ]
-
   inputs = [
     script,
     shell_script,
-    "sign_app.sh.in",
-    "sign_versioned_dir.sh.in",
     "app_resource_rules.plist.in",
     "//chrome/VERSION",
   ]
 
   outputs = [
-    "$_packaging_dir/sign_app.sh",
-    "$_packaging_dir/sign_versioned_dir.sh",
     "$_packaging_dir/app_resource_rules.plist",
   ]
 
@@ -47,19 +39,6 @@ action("make_signers") {
     rebase_path(_packaging_dir, root_build_dir),
     chrome_product_full_name,
     chrome_version_full,
-  ]
-}
-
-copy("copy_variables") {
-  visibility = [
-    ":make_signers",
-    ":copies",
-  ]
-  sources = [
-    "variables.sh",
-  ]
-  outputs = [
-    "$_packaging_dir/{{source_file_part}}",
   ]
 }
 
@@ -111,7 +90,6 @@ copy("copies") {
 
   deps = [
     ":copy_signing",
-    ":copy_variables",
     "//chrome:entitlements",
     "//chrome/installer/mac/third_party/bsdiff:goobsdiff",
     "//chrome/installer/mac/third_party/bsdiff:goobspatch",
@@ -132,7 +110,6 @@ copy("copies") {
     "dmgdiffer.sh",
     "pkg-dmg",
     "sign_chrome.py",
-    "sign_installer_tools.sh",
   ]
 
   if (is_chrome_branded) {
@@ -150,8 +127,6 @@ copy("copies") {
       "internal/chrome_dmg_background.png",
       "internal/chrome_dmg_dsstore",
       "internal/chrome_dmg_icon.icns",
-      "internal/generate_dmgs",
-      "internal/signing_common.sh",
     ]
   }
 
