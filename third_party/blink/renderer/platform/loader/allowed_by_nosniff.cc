@@ -11,7 +11,6 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
@@ -121,12 +120,8 @@ bool AllowMimeTypeAsScript(const String& mime_type,
     counter = kTextXmlFeatures[same_origin][is_worker_global_scope];
   }
 
-  // Depending on RuntimeEnabledFeatures, we'll allow, allow-but-warn, or block
-  // these types when we're in a worker.
-  bool allow = mime_type_check_mode == MimeTypeCheck::kLax ||
-               !RuntimeEnabledFeatures::WorkerNosniffBlockEnabled();
-  warn = allow && mime_type_check_mode == MimeTypeCheck::kStrict &&
-         RuntimeEnabledFeatures::WorkerNosniffWarnEnabled();
+  bool allow = mime_type_check_mode == MimeTypeCheck::kLax;
+  warn = false;
   return allow;
 }
 

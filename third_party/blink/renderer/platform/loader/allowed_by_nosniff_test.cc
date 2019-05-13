@@ -12,7 +12,6 @@
 #include "third_party/blink/renderer/platform/loader/testing/mock_fetch_context.h"
 #include "third_party/blink/renderer/platform/loader/testing/test_loader_factory.h"
 #include "third_party/blink/renderer/platform/loader/testing/test_resource_fetcher_properties.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -115,31 +114,6 @@ TEST_F(AllowedByNosniffTest, AllowedOrNot) {
     ResourceResponse response(url);
     response.SetHttpHeaderField("Content-Type", testcase.mimetype);
 
-    // Nosniff 'legacy' setting: Both worker + non-worker obey the 'allowed'
-    // setting. Warnings for any blocked script.
-    RuntimeEnabledFeatures::SetWorkerNosniffBlockEnabled(false);
-    RuntimeEnabledFeatures::SetWorkerNosniffWarnEnabled(false);
-    EXPECT_CALL(*context, CountUsage(_)).Times(::testing::AnyNumber());
-    if (!testcase.allowed)
-      EXPECT_CALL(*logger, AddConsoleMessage(_, _, _));
-    EXPECT_EQ(testcase.allowed,
-              AllowedByNosniff::MimeTypeAsScript(*context, logger, response,
-                                                 MimeTypeCheck::kLax, false));
-    ::testing::Mock::VerifyAndClear(context);
-
-    EXPECT_CALL(*context, CountUsage(_)).Times(::testing::AnyNumber());
-    if (!testcase.allowed)
-      EXPECT_CALL(*logger, AddConsoleMessage(_, _, _));
-    EXPECT_EQ(testcase.allowed,
-              AllowedByNosniff::MimeTypeAsScript(
-                  *context, logger, response, MimeTypeCheck::kStrict, false));
-    ::testing::Mock::VerifyAndClear(context);
-
-    // Nosniff worker blocked: Workers follow the 'strict_allow' setting.
-    // Warnings for any blocked scripts.
-    RuntimeEnabledFeatures::SetWorkerNosniffBlockEnabled(true);
-    RuntimeEnabledFeatures::SetWorkerNosniffWarnEnabled(false);
-
     EXPECT_CALL(*context, CountUsage(_)).Times(::testing::AnyNumber());
     if (!testcase.allowed)
       EXPECT_CALL(*logger, AddConsoleMessage(_, _, _));
@@ -152,27 +126,6 @@ TEST_F(AllowedByNosniffTest, AllowedOrNot) {
     if (!testcase.strict_allowed)
       EXPECT_CALL(*logger, AddConsoleMessage(_, _, _));
     EXPECT_EQ(testcase.strict_allowed,
-              AllowedByNosniff::MimeTypeAsScript(
-                  *context, logger, response, MimeTypeCheck::kStrict, false));
-    ::testing::Mock::VerifyAndClear(context);
-
-    // Nosniff 'legacy', but with warnings. The allowed setting follows the
-    // 'allowed' setting, but the warnings follow the 'strict' setting.
-    RuntimeEnabledFeatures::SetWorkerNosniffBlockEnabled(false);
-    RuntimeEnabledFeatures::SetWorkerNosniffWarnEnabled(true);
-
-    EXPECT_CALL(*context, CountUsage(_)).Times(::testing::AnyNumber());
-    if (!testcase.allowed)
-      EXPECT_CALL(*logger, AddConsoleMessage(_, _, _));
-    EXPECT_EQ(testcase.allowed,
-              AllowedByNosniff::MimeTypeAsScript(*context, logger, response,
-                                                 MimeTypeCheck::kLax, false));
-    ::testing::Mock::VerifyAndClear(context);
-
-    EXPECT_CALL(*context, CountUsage(_)).Times(::testing::AnyNumber());
-    if (!testcase.strict_allowed)
-      EXPECT_CALL(*logger, AddConsoleMessage(_, _, _));
-    EXPECT_EQ(testcase.allowed,
               AllowedByNosniff::MimeTypeAsScript(
                   *context, logger, response, MimeTypeCheck::kStrict, false));
     ::testing::Mock::VerifyAndClear(context);
