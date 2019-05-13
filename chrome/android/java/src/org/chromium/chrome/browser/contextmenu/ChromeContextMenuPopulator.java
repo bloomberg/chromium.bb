@@ -223,33 +223,19 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
      */
     public static String createHeaderText(ContextMenuParams params) {
         if (!isEmptyUrl(params.getLinkUrl())) {
-            return getUrlText(params);
+            // The context menu can be created without native library
+            // being loaded. Only use native URL formatting methods
+            // if the native libraries have been loaded.
+            if (BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
+                            .isStartupSuccessfullyCompleted()) {
+                return UrlFormatter.formatUrlForDisplayOmitHTTPScheme(params.getLinkUrl());
+            } else {
+                return params.getLinkUrl();
+            }
         } else if (!TextUtils.isEmpty(params.getTitleText())) {
             return params.getTitleText();
         }
         return "";
-    }
-
-    /**
-     * Gets the link of the item or empty text if the Url is empty.
-     * @return A string with the link or an empty string.
-     */
-    public static String createUrlText(ContextMenuParams params) {
-        if (!isEmptyUrl(params.getLinkUrl())) {
-            return getUrlText(params);
-        }
-        return "";
-    }
-
-    private static String getUrlText(ContextMenuParams params) {
-        // The context menu can be created without native library
-        // being loaded. Only use native URL formatting methods
-        // if the native libraries have been loaded.
-        if (BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                        .isStartupSuccessfullyCompleted()) {
-            return UrlFormatter.formatUrlForDisplayOmitHTTPScheme(params.getLinkUrl());
-        }
-        return params.getLinkUrl();
     }
 
     @Override
