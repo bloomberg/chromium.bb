@@ -234,7 +234,7 @@ void TranslateBubbleView::ButtonPressed(views::Button* sender,
     case BUTTON_ID_ALWAYS_TRANSLATE: {
       views::Checkbox* always_checkbox = GetAlwaysTranslateCheckbox();
       DCHECK(always_checkbox);
-      should_always_translate_ = always_checkbox->checked();
+      should_always_translate_ = always_checkbox->GetChecked();
       translate::ReportUiAction(should_always_translate_
                                     ? translate::ALWAYS_TRANSLATE_CHECKED
                                     : translate::ALWAYS_TRANSLATE_UNCHECKED);

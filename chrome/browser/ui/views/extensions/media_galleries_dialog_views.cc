@@ -286,7 +286,7 @@ void MediaGalleriesDialogViews::ButtonPressed(views::Button* sender,
        iter != checkbox_map_.end(); ++iter) {
     if (sender == iter->second->checkbox()) {
       controller_->DidToggleEntry(iter->first,
-                                  iter->second->checkbox()->checked());
+                                  iter->second->checkbox()->GetChecked());
       return;
     }
   }

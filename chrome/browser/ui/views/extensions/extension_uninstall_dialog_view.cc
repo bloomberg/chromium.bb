@@ -259,7 +259,7 @@ base::string16 ExtensionUninstallDialogDelegateView::GetDialogButtonLabel(
 
 bool ExtensionUninstallDialogDelegateView::Accept() {
   if (dialog_)
-    dialog_->DialogAccepted(checkbox_ && checkbox_->checked());
+    dialog_->DialogAccepted(checkbox_ && checkbox_->GetChecked());
   return true;
 }
 

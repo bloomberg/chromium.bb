@@ -111,10 +111,10 @@ views::View* FirstRunDialog::CreateExtraView() {
 bool FirstRunDialog::Accept() {
   GetWidget()->Hide();
 
-  ChangeMetricsReportingStateWithReply(report_crashes_->checked(),
+  ChangeMetricsReportingStateWithReply(report_crashes_->GetChecked(),
                                        base::Bind(&InitCrashReporterIfEnabled));
 
-  if (make_default_->checked())
+  if (make_default_->GetChecked())
     shell_integration::SetAsDefaultBrowser();
 
   Done();

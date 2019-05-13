@@ -88,7 +88,7 @@ void FlexLayoutExample::ContentsChanged(Textfield* sender,
 
 void FlexLayoutExample::ButtonPressedImpl(Button* sender) {
   if (sender == collapse_margins_)
-    layout_->SetCollapseMargins(collapse_margins_->checked());
+    layout_->SetCollapseMargins(collapse_margins_->GetChecked());
   RefreshLayoutPanel(false);
 }
 

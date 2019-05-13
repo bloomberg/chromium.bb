@@ -207,9 +207,8 @@ void IntentPickerBubbleView::CloseBubble() {
 }
 
 bool IntentPickerBubbleView::Accept() {
-  bool should_persist = remember_selection_checkbox_
-                            ? remember_selection_checkbox_->checked()
-                            : false;
+  bool should_persist = remember_selection_checkbox_ &&
+                        remember_selection_checkbox_->GetChecked();
   RunCallback(app_info_[selected_app_tag_].launch_name,
               app_info_[selected_app_tag_].type,
               apps::IntentPickerCloseReason::OPEN_APP, should_persist);
@@ -223,9 +222,8 @@ bool IntentPickerBubbleView::Cancel() {
 #else
       kInvalidLaunchName;
 #endif
-  bool should_persist = remember_selection_checkbox_
-                            ? remember_selection_checkbox_->checked()
-                            : false;
+  bool should_persist = remember_selection_checkbox_ &&
+                        remember_selection_checkbox_->GetChecked();
   RunCallback(launch_name, apps::mojom::AppType::kUnknown,
               apps::IntentPickerCloseReason::STAY_IN_CHROME, should_persist);
   return true;

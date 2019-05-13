@@ -410,7 +410,7 @@ void ContentSettingBubbleContents::OnListItemRemovedAt(int index) {
 int ContentSettingBubbleContents::GetSelectedRadioOption() {
   for (RadioGroup::const_iterator i(radio_group_.begin());
        i != radio_group_.end(); ++i) {
-    if ((*i)->checked())
+    if ((*i)->GetChecked())
       return i - radio_group_.begin();
   }
   NOTREACHED();
@@ -646,7 +646,7 @@ void ContentSettingBubbleContents::ButtonPressed(views::Button* sender,
   DCHECK(content_setting_bubble_model_);
   if (sender == manage_checkbox_) {
     content_setting_bubble_model_->OnManageCheckboxChecked(
-        manage_checkbox_->checked());
+        manage_checkbox_->GetChecked());
 
     // Toggling the check state may change the dialog button text.
     DialogModelChanged();

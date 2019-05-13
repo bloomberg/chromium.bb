@@ -74,7 +74,7 @@ MigratableCardView::MigratableCardView(
 MigratableCardView::~MigratableCardView() = default;
 
 bool MigratableCardView::IsSelected() {
-  return !checkbox_ || checkbox_->checked();
+  return !checkbox_ || checkbox_->GetChecked();
 }
 
 std::string MigratableCardView::GetGuid() {
@@ -201,7 +201,7 @@ void MigratableCardView::ButtonPressed(views::Button* sender,
     // button if needed.
     parent_dialog_->DialogModelChanged();
     // The warning text will be visible only when user unchecks the checkbox.
-    checkbox_uncheck_text_container_->SetVisible(!checkbox_->checked());
+    checkbox_uncheck_text_container_->SetVisible(!checkbox_->GetChecked());
     InvalidateLayout();
     parent_dialog_->UpdateLayout();
   } else {

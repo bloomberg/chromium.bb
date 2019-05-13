@@ -44,7 +44,7 @@ View* RadioButton::GetSelectedViewForGroup(int group) {
   for (Views::const_iterator i(views.begin()); i != views.end(); ++i) {
     // REVIEW: why don't we check the runtime type like is done above?
     RadioButton* radio_button = static_cast<RadioButton*>(*i);
-    if (radio_button->checked())
+    if (radio_button->GetChecked())
       return radio_button;
   }
   return nullptr;
@@ -76,7 +76,7 @@ void RadioButton::RequestFocusFromEvent() {
 void RadioButton::NotifyClick(const ui::Event& event) {
   // Set the checked state to true only if we are unchecked, since we can't
   // be toggled on and off like a checkbox.
-  if (!checked())
+  if (!GetChecked())
     SetChecked(true);
   LabelButton::NotifyClick(event);
 }
@@ -86,7 +86,7 @@ ui::NativeTheme::Part RadioButton::GetThemePart() const {
 }
 
 void RadioButton::SetChecked(bool checked) {
-  if (checked == RadioButton::checked())
+  if (checked == RadioButton::GetChecked())
     return;
   if (checked) {
     // We can't start from the root view because other parts of the UI might use
@@ -110,7 +110,7 @@ void RadioButton::SetChecked(bool checked) {
 }
 
 const gfx::VectorIcon& RadioButton::GetVectorIcon() const {
-  return checked() ? kRadioButtonActiveIcon : kRadioButtonNormalIcon;
+  return GetChecked() ? kRadioButtonActiveIcon : kRadioButtonNormalIcon;
 }
 
 SkPath RadioButton::GetFocusRingPath() const {

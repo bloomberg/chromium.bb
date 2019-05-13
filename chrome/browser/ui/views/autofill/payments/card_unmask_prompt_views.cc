@@ -310,7 +310,7 @@ bool CardUnmaskPromptViews::Accept() {
       year_input_->visible()
           ? year_input_->GetTextForRow(year_input_->GetSelectedIndex())
           : base::string16(),
-      storage_checkbox_ ? storage_checkbox_->checked() : false);
+      storage_checkbox_ ? storage_checkbox_->GetChecked() : false);
   return false;
 }
 

@@ -127,7 +127,7 @@ void BookmarkAppConfirmationView::WindowClosing() {
 bool BookmarkAppConfirmationView::Accept() {
   web_app_info_.title = GetTrimmedTitle();
   web_app_info_.open_as_window =
-      open_as_window_checkbox_ && open_as_window_checkbox_->checked();
+      open_as_window_checkbox_ && open_as_window_checkbox_->GetChecked();
   std::move(callback_).Run(true,
                            std::make_unique<WebApplicationInfo>(web_app_info_));
   return true;

@@ -51,7 +51,7 @@ void ImeWarningBubbleView::ShowBubble(
 }
 
 bool ImeWarningBubbleView::Accept() {
-  if (never_show_checkbox_->checked()) {
+  if (never_show_checkbox_->GetChecked()) {
     std::move(response_callback_)
         .Run(ImeWarningBubblePermissionStatus::GRANTED_AND_NEVER_SHOW);
   } else {

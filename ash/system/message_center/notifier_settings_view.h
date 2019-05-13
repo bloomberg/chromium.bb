@@ -61,7 +61,7 @@ class ASH_EXPORT NotifierSettingsView
 
     void UpdateIconImage(const gfx::ImageSkia& icon);
     void SetChecked(bool checked);
-    bool checked() const;
+    bool GetChecked() const;
     const message_center::NotifierId& notifier_id() const {
       return notifier_id_;
     }

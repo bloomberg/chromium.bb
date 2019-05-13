@@ -332,8 +332,8 @@ void NotifierSettingsView::NotifierButton::SetChecked(bool checked) {
   checkbox_->SetChecked(checked);
 }
 
-bool NotifierSettingsView::NotifierButton::checked() const {
-  return checkbox_->checked();
+bool NotifierSettingsView::NotifierButton::GetChecked() const {
+  return checkbox_->GetChecked();
 }
 
 void NotifierSettingsView::NotifierButton::ButtonPressed(
@@ -343,7 +343,7 @@ void NotifierSettingsView::NotifierButton::ButtonPressed(
   // The checkbox state has already changed at this point, but we'll update
   // the state on NotifierSettingsView::ButtonPressed() too, so here change
   // back to the previous state.
-  checkbox_->SetChecked(!checkbox_->checked());
+  checkbox_->SetChecked(!checkbox_->GetChecked());
   Button::NotifyClick(event);
 }
 
@@ -611,9 +611,9 @@ void NotifierSettingsView::ButtonPressed(views::Button* sender,
     return;
 
   NotifierButton* button = *iter;
-  button->SetChecked(!button->checked());
+  button->SetChecked(!button->GetChecked());
   Shell::Get()->message_center_controller()->SetNotifierEnabled(
-      button->notifier_id(), button->checked());
+      button->notifier_id(), button->GetChecked());
   Shell::Get()->message_center_controller()->RequestNotifierSettingsUpdate();
 }
 

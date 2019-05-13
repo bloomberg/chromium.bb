@@ -338,7 +338,7 @@ bool DesktopMediaPickerDialogView::Accept() {
   DesktopMediaID source = source_optional.value();
   source.audio_share = audio_share_checkbox_ &&
                        audio_share_checkbox_->visible() &&
-                       audio_share_checkbox_->checked();
+                       audio_share_checkbox_->GetChecked();
 
   if (source.type == DesktopMediaID::TYPE_WEB_CONTENTS) {
     // Activate the selected tab and bring the browser window for the selected

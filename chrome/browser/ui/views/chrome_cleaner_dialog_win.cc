@@ -193,7 +193,7 @@ void ChromeCleanerDialog::ButtonPressed(views::Button* sender,
   if (sender == details_button_) {
     if (dialog_controller_) {
       dialog_controller_->DetailsButtonClicked(
-          /*logs_enabled=*/logs_permission_checkbox_->checked());
+          /*logs_enabled=*/logs_permission_checkbox_->GetChecked());
       dialog_controller_ = nullptr;
     }
     GetWidget()->Close();
@@ -203,7 +203,7 @@ void ChromeCleanerDialog::ButtonPressed(views::Button* sender,
   DCHECK_EQ(logs_permission_checkbox_, sender);
 
   if (dialog_controller_)
-    dialog_controller_->SetLogsEnabled(logs_permission_checkbox_->checked());
+    dialog_controller_->SetLogsEnabled(logs_permission_checkbox_->GetChecked());
 }
 
 // safe_browsing::ChromeCleanerController::Observer overrides
@@ -240,7 +240,7 @@ void ChromeCleanerDialog::HandleDialogInteraction(
   switch (result) {
     case DialogInteractionResult::kAccept:
       dialog_controller_->Accept(
-          /*logs_enabled=*/logs_permission_checkbox_->checked());
+          /*logs_enabled=*/logs_permission_checkbox_->GetChecked());
       break;
     case DialogInteractionResult::kCancel:
       dialog_controller_->Cancel();

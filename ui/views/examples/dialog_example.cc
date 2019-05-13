@@ -62,7 +62,7 @@ class DialogExample::Delegate : public virtual DialogType {
   // TODO(crbug.com/961660): CreateExtraView should return std::unique_ptr<View>
   // DialogDelegate:
   View* CreateExtraView() override {
-    if (!parent_->has_extra_button_->checked())
+    if (!parent_->has_extra_button_->GetChecked())
       return nullptr;
     auto view = MdTextButton::CreateSecondaryUiButton(
         nullptr, parent_->extra_button_label_->text());
@@ -91,7 +91,7 @@ class DialogExample::Bubble : public Delegate<BubbleDialogDelegateView> {
   Bubble(DialogExample* parent, View* anchor)
       : BubbleDialogDelegateView(anchor, BubbleBorder::TOP_LEFT),
         Delegate(parent) {
-    set_close_on_deactivate(!parent->persistent_bubble_->checked());
+    set_close_on_deactivate(!parent->persistent_bubble_->GetChecked());
   }
 
   // BubbleDialogDelegateView:
@@ -228,9 +228,9 @@ ui::ModalType DialogExample::GetModalType() const {
 
 int DialogExample::GetDialogButtons() const {
   int buttons = 0;
-  if (has_ok_button_->checked())
+  if (has_ok_button_->GetChecked())
     buttons |= ui::DIALOG_BUTTON_OK;
-  if (has_cancel_button_->checked())
+  if (has_cancel_button_->GetChecked())
     buttons |= ui::DIALOG_BUTTON_CANCEL;
   return buttons;
 }
@@ -259,7 +259,7 @@ void DialogExample::ResizeDialog() {
 
 void DialogExample::ButtonPressed(Button* sender, const ui::Event& event) {
   if (sender == show_) {
-    if (bubble_->checked()) {
+    if (bubble_->GetChecked()) {
       Bubble* bubble = new Bubble(this, sender);
       last_dialog_ = bubble;
       BubbleDialogDelegateView::CreateBubble(bubble);
@@ -282,14 +282,14 @@ void DialogExample::ButtonPressed(Button* sender, const ui::Event& event) {
   }
 
   if (sender == bubble_) {
-    if (bubble_->checked() && GetModalType() != ui::MODAL_TYPE_CHILD) {
+    if (bubble_->GetChecked() && GetModalType() != ui::MODAL_TYPE_CHILD) {
       mode_->SetSelectedIndex(ui::MODAL_TYPE_CHILD);
       PrintStatus("You nearly always want Child Modal for bubbles.");
     }
-    persistent_bubble_->SetEnabled(bubble_->checked());
+    persistent_bubble_->SetEnabled(bubble_->GetChecked());
     OnPerformAction(mode_);  // Validate the modal type.
 
-    if (!bubble_->checked() && GetModalType() == ui::MODAL_TYPE_CHILD) {
+    if (!bubble_->GetChecked() && GetModalType() == ui::MODAL_TYPE_CHILD) {
       // Do something reasonable when simply unchecking bubble and re-enable.
       mode_->SetSelectedIndex(ui::MODAL_TYPE_WINDOW);
       OnPerformAction(mode_);
@@ -324,7 +324,7 @@ void DialogExample::ContentsChanged(Textfield* sender,
 }
 
 void DialogExample::OnPerformAction(Combobox* combobox) {
-  bool enable = bubble_->checked() || GetModalType() != ui::MODAL_TYPE_CHILD;
+  bool enable = bubble_->GetChecked() || GetModalType() != ui::MODAL_TYPE_CHILD;
 #if defined(OS_MACOSX)
   enable = enable && GetModalType() != ui::MODAL_TYPE_SYSTEM;
 #endif

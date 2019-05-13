@@ -115,7 +115,7 @@ void BoxLayoutExample::UpdateLayoutManager() {
       orientation_->GetSelectedIndex() == 0
           ? BoxLayout::Orientation::kHorizontal
           : BoxLayout::Orientation::kVertical,
-      gfx::Insets(0, 0), child_spacing, collapse_margins_->checked());
+      gfx::Insets(0, 0), child_spacing, collapse_margins_->GetChecked());
   layout->set_cross_axis_alignment(static_cast<BoxLayout::CrossAxisAlignment>(
       cross_axis_alignment_->GetSelectedIndex()));
   layout->set_main_axis_alignment(static_cast<BoxLayout::MainAxisAlignment>(

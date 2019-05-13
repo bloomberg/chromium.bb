@@ -65,7 +65,7 @@ constexpr gfx::Font::Weight kFontWeights[]{
 
 // Toggles bit |flag| on |flags| based on state of |checkbox|.
 void SetFlagFromCheckbox(Checkbox* checkbox, int* flags, int flag) {
-  if (checkbox->checked())
+  if (checkbox->GetChecked())
     *flags |= flag;
   else
     *flags &= ~flag;

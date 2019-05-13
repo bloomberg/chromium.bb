@@ -63,9 +63,9 @@ void RadioButtonExample::ButtonPressed(Button* sender, const ui::Event& event) {
   } else if (sender == status_) {
     // Show the state of radio buttons.
     PrintStatus("Group: 1:%s, 2:%s, 3:%s",
-                BoolToOnOff(radio_buttons_[0]->checked()),
-                BoolToOnOff(radio_buttons_[1]->checked()),
-                BoolToOnOff(radio_buttons_[2]->checked()));
+                BoolToOnOff(radio_buttons_[0]->GetChecked()),
+                BoolToOnOff(radio_buttons_[1]->GetChecked()),
+                BoolToOnOff(radio_buttons_[2]->GetChecked()));
   }
 }
 
