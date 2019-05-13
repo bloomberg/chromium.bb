@@ -1099,7 +1099,7 @@ html[dir=rtl] #menu-back {
   width: 100%;
 }
 
-.bg-sel-tile .selected-circle {
+#customization-menu .bg-sel-tile .selected-circle {
   height: 20px;
   left: initial;
   right: 10px;
@@ -1107,12 +1107,12 @@ html[dir=rtl] #menu-back {
   width: 20px;
 }
 
-html[dir=rtl] .bg-sel-tile .selected-circle {
+html[dir=rtl] #customization-menu .bg-sel-tile .selected-circle {
   left: 10px;
   right: initial;
 }
 
-.bg-sel-tile .selected-check {
+#customization-menu .bg-sel-tile .selected-check {
   height: 24px;
   left: initial;
   right: 0;
@@ -1120,7 +1120,7 @@ html[dir=rtl] .bg-sel-tile .selected-circle {
   width: 24px;
 }
 
-html[dir=rtl] .bg-sel-tile .selected-check {
+html[dir=rtl] #customization-menu .bg-sel-tile .selected-check {
   left: 0;
   right: initial;
 }
