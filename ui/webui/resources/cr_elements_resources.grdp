@@ -388,6 +388,14 @@
              file="cr_elements/shared_vars_css.html"
              type="chrome_html"
              compress="gzip" />
+  <structure name="IDR_CR_ELEMENTS_CR_TABS_HTML"
+             file="cr_elements/cr_tabs/cr_tabs.html"
+             type="chrome_html"
+             compress="gzip" />
+  <structure name="IDR_CR_ELEMENTS_CR_TABS_JS"
+             file="cr_elements/cr_tabs/cr_tabs.js"
+             type="chrome_html"
+             compress="gzip" />
   <structure name="IDR_CR_ELEMENTS_CR_TOOLBAR_HTML"
              file="cr_elements/cr_toolbar/cr_toolbar.html"
              type="chrome_html"

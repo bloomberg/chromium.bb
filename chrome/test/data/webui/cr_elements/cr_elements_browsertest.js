@@ -383,6 +383,29 @@ TEST_F('CrElementsSliderTest', 'All', function() {
  * @constructor
  * @extends {CrElementsBrowserTest}
  */
+function CrElementsTabsTest() {}
+
+CrElementsTabsTest.prototype = {
+  __proto__: CrElementsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://resources/cr_elements/cr_tabs/cr_tabs.html',
+
+  /** @override */
+  extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
+    '../settings/test_util.js',
+    'cr_tabs_test.js',
+  ]),
+};
+
+TEST_F('CrElementsTabsTest', 'All', function() {
+  mocha.run();
+});
+
+/**
+ * @constructor
+ * @extends {CrElementsBrowserTest}
+ */
 function CrElementsToastTest() {}
 
 CrElementsToastTest.prototype = {
