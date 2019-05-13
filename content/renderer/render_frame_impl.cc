@@ -5010,8 +5010,11 @@ void RenderFrameImpl::AbortClientNavigation() {
   browser_side_navigation_pending_ = false;
   sync_navigation_callback_.Cancel();
   mhtml_body_loader_client_.reset();
-  if (!IsPerNavigationMojoInterfaceEnabled())
+  if (!IsPerNavigationMojoInterfaceEnabled()) {
     Send(new FrameHostMsg_AbortNavigation(routing_id_));
+  } else {
+    navigation_client_impl_.reset();
+  }
 }
 
 void RenderFrameImpl::DidChangeSelection(bool is_empty_selection) {
