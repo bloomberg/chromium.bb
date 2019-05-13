@@ -234,7 +234,9 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   bool IsSweepingInProgress() const { return gc_phase_ == GCPhase::kSweeping; }
   bool IsUnifiedGCMarkingInProgress() const {
     return IsMarkingInProgress() &&
-           (current_gc_data_.reason == BlinkGC::GCReason::kUnifiedHeapGC);
+           (current_gc_data_.reason == BlinkGC::GCReason::kUnifiedHeapGC ||
+            current_gc_data_.reason ==
+                BlinkGC::GCReason::kUnifiedHeapForMemoryReductionGC);
   }
 
   void EnableCompactionForNextGCForTesting();

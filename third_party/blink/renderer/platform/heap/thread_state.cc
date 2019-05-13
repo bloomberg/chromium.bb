@@ -1067,6 +1067,7 @@ void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
     COUNT_BY_GC_REASON(ThreadTerminationGC)
     COUNT_BY_GC_REASON(IncrementalV8FollowupGC)
     COUNT_BY_GC_REASON(UnifiedHeapGC)
+    COUNT_BY_GC_REASON(UnifiedHeapForMemoryReductionGC)
 
 #undef COUNT_BY_GC_REASON
   }
@@ -1405,6 +1406,7 @@ void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,
     COUNT_BY_GC_REASON(ThreadTerminationGC)
     COUNT_BY_GC_REASON(IncrementalV8FollowupGC)
     COUNT_BY_GC_REASON(UnifiedHeapGC)
+    COUNT_BY_GC_REASON(UnifiedHeapForMemoryReductionGC)
   }
 #undef COUNT_BY_GC_REASON
 

@@ -36,7 +36,7 @@ class PLATFORM_EXPORT UnifiedHeapController final
   explicit UnifiedHeapController(ThreadState*);
 
   // v8::EmbedderHeapTracer implementation.
-  void TracePrologue() final;
+  void TracePrologue(v8::EmbedderHeapTracer::TraceFlags) final;
   void TraceEpilogue() final;
   void EnterFinalPause(EmbedderStackState) final;
   void RegisterV8References(const std::vector<std::pair<void*, void*>>&) final;

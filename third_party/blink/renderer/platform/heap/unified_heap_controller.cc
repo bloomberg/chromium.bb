@@ -28,7 +28,8 @@ constexpr BlinkGC::StackState ToBlinkGCStackState(
 UnifiedHeapController::UnifiedHeapController(ThreadState* thread_state)
     : thread_state_(thread_state) {}
 
-void UnifiedHeapController::TracePrologue() {
+void UnifiedHeapController::TracePrologue(
+    v8::EmbedderHeapTracer::TraceFlags v8_flags) {
   VLOG(2) << "UnifiedHeapController::TracePrologue";
   ThreadHeapStatsCollector::BlinkGCInV8Scope nested_scope(
       thread_state_->Heap().stats_collector());
@@ -40,8 +41,11 @@ void UnifiedHeapController::TracePrologue() {
 
   // Reset any previously scheduled garbage collections.
   thread_state_->SetGCState(ThreadState::kNoGCScheduled);
-  // Start incremental marking with unified tracing.
-  thread_state_->IncrementalMarkingStart(BlinkGC::GCReason::kUnifiedHeapGC);
+  BlinkGC::GCReason gc_reason =
+      (v8_flags & v8::EmbedderHeapTracer::TraceFlags::kReduceMemory)
+          ? BlinkGC::GCReason::kUnifiedHeapForMemoryReductionGC
+          : BlinkGC::GCReason::kUnifiedHeapGC;
+  thread_state_->IncrementalMarkingStart(gc_reason);
 
   is_tracing_done_ = false;
 }
@@ -59,9 +63,9 @@ void UnifiedHeapController::EnterFinalPause(EmbedderStackState stack_state) {
     ThreadHeapStatsCollector::Scope mark_prologue_scope(
         thread_state_->Heap().stats_collector(),
         ThreadHeapStatsCollector::kUnifiedMarkingAtomicPrologue);
-    thread_state_->AtomicPauseMarkPrologue(ToBlinkGCStackState(stack_state),
-                                           BlinkGC::kIncrementalMarking,
-                                           BlinkGC::GCReason::kUnifiedHeapGC);
+    thread_state_->AtomicPauseMarkPrologue(
+        ToBlinkGCStackState(stack_state), BlinkGC::kIncrementalMarking,
+        thread_state_->current_gc_data_.reason);
   }
 }
 

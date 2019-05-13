@@ -346,11 +346,13 @@ bool HeapCompact::ShouldCompact(BlinkGC::StackState stack_state,
     return true;
   }
 
-  // TODO(mlippautz): Only enable compaction when doing garbage collections that
-  // should aggressively reduce memory footprint.
-  return gc_count_since_last_compaction_ >
-             kGCCountSinceLastCompactionThreshold &&
-         free_list_size_ > kFreeListSizeThreshold;
+  // Only enable compaction when in a memory reduction garbage collection as it
+  // may significantly increase the final garbage collection pause.
+  if (reason == BlinkGC::GCReason::kUnifiedHeapForMemoryReductionGC) {
+    return free_list_size_ > kFreeListSizeThreshold;
+  }
+
+  return false;
 }
 
 void HeapCompact::Initialize(ThreadState* state) {

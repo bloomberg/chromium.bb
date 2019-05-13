@@ -100,7 +100,8 @@ class PLATFORM_EXPORT BlinkGC final {
     // kIncrementalIdleGC = 8,
     kIncrementalV8FollowupGC = 9,
     kUnifiedHeapGC = 10,
-    kMaxValue = kUnifiedHeapGC,
+    kUnifiedHeapForMemoryReductionGC = 11,
+    kMaxValue = kUnifiedHeapForMemoryReductionGC,
   };
 
   enum ArenaIndices {

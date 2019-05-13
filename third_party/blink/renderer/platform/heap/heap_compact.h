@@ -118,9 +118,6 @@ class PLATFORM_EXPORT HeapCompact final {
  private:
   class MovableObjectFixups;
 
-  // Number of GCs that must have passed since last compaction GC.
-  static const int kGCCountSinceLastCompactionThreshold = 10;
-
   // Freelist size threshold that must be exceeded before compaction
   // should be considered.
   static const size_t kFreeListSizeThreshold = 512 * 1024;
