@@ -2,20 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/chrome_build.gni")
-import("//third_party/protobuf/proto_library.gni")
-
-assert(is_win)
-
-# Note: Most of the files in this directory are directly added as source files
-#       to the //chrome/browser target (chrome/browser/BUILD.gn).
-
-proto_library("module_list_proto") {
-  sources = [
-    "proto/module_list.proto",
-  ]
-}
-
 source_set("module_info") {
   sources = [
     "module_info_util_win.cc",
@@ -33,75 +19,4 @@ source_set("module_info") {
     "//base:i18n",
     "//chrome/common/safe_browsing:binary_feature_extractor",
   ]
-}
-
-loadable_module("conflicts_dll") {
-  testonly = true
-  sources = [
-    "test/conflicts_dll.cc",
-  ]
-}
-
-source_set("unit_tests") {
-  testonly = true
-  sources = [
-    "enumerate_input_method_editors_win_unittest.cc",
-    "enumerate_shell_extensions_win_unittest.cc",
-    "inspection_results_cache_win_unittest.cc",
-    "module_database_win_unittest.cc",
-    "module_event_sink_impl_win_unittest.cc",
-    "module_info_util_win_unittest.cc",
-    "module_info_win_unittest.cc",
-    "module_inspector_win_unittest.cc",
-  ]
-
-  deps = [
-    ":conflicts_dll",
-    ":module_info",
-    "//chrome/browser",
-    "//chrome/services/util_win:lib",
-    "//chrome/test:test_support",
-    "//content/test:test_support",
-    "//services/service_manager/public/cpp/test:test_support",
-    "//testing/gtest",
-  ]
-
-  if (is_chrome_branded) {
-    sources += [
-      "incompatible_applications_updater_win_unittest.cc",
-      "installed_applications_win_unittest.cc",
-      "module_blacklist_cache_updater_win_unittest.cc",
-      "module_blacklist_cache_util_win_unittest.cc",
-      "module_list_filter_win_unittest.cc",
-      "module_load_attempt_log_listener_win_unittest.cc",
-      "registry_key_watcher_win_unittest.cc",
-      "third_party_conflicts_manager_win_unittest.cc",
-    ]
-
-    deps += [
-      ":module_list_proto",
-      "//chrome_elf:third_party_shared_defines",
-    ]
-  }
-}
-
-if (is_chrome_branded) {
-  source_set("browser_tests") {
-    defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
-
-    testonly = true
-    sources = [
-      "incompatible_applications_browsertest.cc",
-      "third_party_blocking_browsertest.cc",
-    ]
-
-    deps = [
-      ":conflicts_dll",
-      ":module_list_proto",
-      "//chrome/browser",
-      "//chrome/test:test_support_ui",
-      "//chrome_elf:third_party_shared_defines",
-      "//testing/gtest",
-    ]
-  }
 }
