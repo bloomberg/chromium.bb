@@ -113,10 +113,6 @@ void TestLoginScreen::SetPublicSessionKeyboardLayouts(
 void TestLoginScreen::SetPublicSessionShowFullManagementDisclosure(
     bool show_full_management_disclosure) {}
 
-void TestLoginScreen::SetKioskApps(
-    std::vector<::ash::mojom::KioskAppInfoPtr> kiosk_apps,
-    SetKioskAppsCallback callback) {}
-
 void TestLoginScreen::ShowKioskAppError(const std::string& message) {}
 
 void TestLoginScreen::NotifyOobeDialogState(ash::mojom::OobeDialogState state) {

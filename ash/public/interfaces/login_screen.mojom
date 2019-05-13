@@ -6,7 +6,6 @@ module ash.mojom;
 
 import "ash/public/interfaces/user_info.mojom";
 import "ash/public/interfaces/login_user_info.mojom";
-import "ash/public/interfaces/kiosk_app_info.mojom";
 import "chromeos/components/proximity_auth/public/interfaces/auth_type.mojom";
 import "components/account_id/interfaces/account_id.mojom";
 import "mojo/public/mojom/base/string16.mojom";
@@ -218,10 +217,6 @@ interface LoginScreen {
   SetPublicSessionShowFullManagementDisclosure(
       bool show_full_management_disclosure);
 
-  // Update the kiosk app data for the login screen.
-  // Returns true on success.
-  SetKioskApps(array<KioskAppInfo> kiosk_apps) => (bool success);
-
   // Display a toast describing the latest kiosk app launch error.
   ShowKioskAppError(string message);
 
@@ -364,12 +359,6 @@ interface LoginScreenClient {
 
   // Request to show a feedback report dialog in chrome.
   ShowFeedback();
-
-  // Launch the specific kiosk app.
-  LaunchKioskApp(string app_id);
-
-  // Launch the specific ARC++ kiosk app.
-  LaunchArcKioskApp(signin.mojom.AccountId account_id);
 
   // Show the powerwash (device reset) dialog.
   ShowResetScreen();

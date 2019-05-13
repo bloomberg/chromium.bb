@@ -14,7 +14,7 @@
 #include "ash/login/mock_login_screen_client.h"
 #include "ash/login/ui/login_test_base.h"
 #include "ash/login/ui/views_utils.h"
-#include "ash/public/interfaces/kiosk_app_info.mojom.h"
+#include "ash/public/cpp/kiosk_app_menu.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/session/test_session_controller_client.h"
@@ -264,15 +264,13 @@ TEST_F(LoginShelfViewTest, ShouldUpdateUiAfterKioskAppsLoaded) {
                                  LoginShelfView::kBrowseAsGuest,
                                  LoginShelfView::kAddUser}));
 
-  std::vector<mojom::KioskAppInfoPtr> kiosk_apps;
-  kiosk_apps.push_back(mojom::KioskAppInfo::New());
-  kiosk_apps.push_back(mojom::KioskAppInfo::New());
-  login_shelf_view_->SetKioskApps(std::move(kiosk_apps));
+  std::vector<KioskAppMenuEntry> kiosk_apps(2);
+  login_shelf_view_->SetKioskApps(kiosk_apps, {});
   EXPECT_TRUE(ShowsShelfButtons(
       {LoginShelfView::kShutdown, LoginShelfView::kBrowseAsGuest,
        LoginShelfView::kAddUser, LoginShelfView::kApps}));
 
-  login_shelf_view_->SetKioskApps(std::vector<mojom::KioskAppInfoPtr>());
+  login_shelf_view_->SetKioskApps({}, {});
   EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown,
                                  LoginShelfView::kBrowseAsGuest,
                                  LoginShelfView::kAddUser}));
@@ -349,9 +347,8 @@ TEST_F(LoginShelfViewTest, ShouldUpdateUiAfterDialogStateChange) {
   // Kiosk app button is visible when dialog state == OobeDialogState::HIDDEN
   // or GAIA_SIGNIN.
   login_shelf_view_->SetLoginDialogState(mojom::OobeDialogState::GAIA_SIGNIN);
-  std::vector<mojom::KioskAppInfoPtr> kiosk_apps;
-  kiosk_apps.push_back(mojom::KioskAppInfo::New());
-  login_shelf_view_->SetKioskApps(std::move(kiosk_apps));
+  std::vector<KioskAppMenuEntry> kiosk_apps(1);
+  login_shelf_view_->SetKioskApps(kiosk_apps, {});
   EXPECT_TRUE(
       ShowsShelfButtons({LoginShelfView::kShutdown, LoginShelfView::kApps}));
 
@@ -365,7 +362,7 @@ TEST_F(LoginShelfViewTest, ShouldUpdateUiAfterDialogStateChange) {
                          LoginShelfView::kApps}));
 
   // Kiosk app button is hidden when no app exists.
-  login_shelf_view_->SetKioskApps(std::vector<mojom::KioskAppInfoPtr>());
+  login_shelf_view_->SetKioskApps({}, {});
   EXPECT_TRUE(
       ShowsShelfButtons({LoginShelfView::kShutdown, LoginShelfView::kAddUser}));
 }

@@ -9,8 +9,8 @@
 
 #include "ash/ash_export.h"
 #include "ash/login/login_screen_controller_observer.h"
+#include "ash/public/cpp/kiosk_app_menu.h"
 #include "ash/public/cpp/system_tray_focus_observer.h"
-#include "ash/public/interfaces/kiosk_app_info.mojom.h"
 #include "ash/public/interfaces/login_screen.mojom.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -30,6 +30,7 @@ class SystemTrayNotifier;
 // This could send requests to LoginScreenClient and also handle requests from
 // LoginScreenClient through mojo.
 class ASH_EXPORT LoginScreenController : public mojom::LoginScreen,
+                                         public KioskAppMenu,
                                          public SystemTrayFocusObserver {
  public:
   // The current authentication stage. Used to get more verbose logging.
@@ -95,8 +96,6 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen,
   void RequestPublicSessionKeyboardLayouts(const AccountId& account_id,
                                            const std::string& locale);
   void ShowFeedback();
-  void LaunchKioskApp(const std::string& app_id);
-  void LaunchArcKioskApp(const AccountId& account_id);
   void ShowResetScreen();
   void ShowAccountAccessHelpApp();
   void FocusOobeDialog();
@@ -160,8 +159,6 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen,
       std::vector<mojom::InputMethodItemPtr> keyboard_layouts) override;
   void SetPublicSessionShowFullManagementDisclosure(
       bool is_full_management_disclosure_needed) override;
-  void SetKioskApps(std::vector<mojom::KioskAppInfoPtr> kiosk_apps,
-                    SetKioskAppsCallback callback) override;
   void ShowKioskAppError(const std::string& message) override;
   void NotifyOobeDialogState(mojom::OobeDialogState state) override;
   void SetAddUserButtonEnabled(bool enable) override;
@@ -171,6 +168,12 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen,
   void SetShowParentAccessButton(bool show) override;
   void SetShowParentAccessDialog(bool show) override;
   void FocusLoginShelf(bool reverse) override;
+
+  // KioskAppMenu:
+  void SetKioskApps(
+      const std::vector<KioskAppMenuEntry>& kiosk_apps,
+      const base::RepeatingCallback<void(const KioskAppMenuEntry&)>& launch_app)
+      override;
 
   // Flushes the mojo pipes - to be used in tests.
   void FlushForTesting();
