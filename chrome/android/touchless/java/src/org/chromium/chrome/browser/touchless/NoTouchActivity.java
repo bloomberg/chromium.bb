@@ -10,12 +10,10 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.SystemClock;
-import android.view.KeyEvent;
 import android.view.ViewGroup;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeInactivityTracker;
 import org.chromium.chrome.browser.IntentHandler;
@@ -26,7 +24,6 @@ import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
-import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.tab.TabState;
@@ -34,7 +31,6 @@ import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.ui.base.PageTransition;
-import org.chromium.ui.modaldialog.ModalDialogManager;
 
 /**
  * An Activity used to display WebContents on devices that don't support touch.
@@ -209,11 +205,6 @@ public class NoTouchActivity extends SingleTabActivity {
     protected void initializeToolbar() {}
 
     @Override
-    public ModalDialogManager createModalDialogManager() {
-        return getUiCoordinator().createModalDialogManager();
-    }
-
-    @Override
     protected ChromeFullscreenManager createFullscreenManager() {
         return new ChromeFullscreenManager(this, ChromeFullscreenManager.ControlsPosition.NONE);
     }
@@ -250,12 +241,6 @@ public class NoTouchActivity extends SingleTabActivity {
     @Override
     public void performPreInflationStartup() {
         super.performPreInflationStartup();
-        getUiCoordinator();
-    }
-
-    @Override
-    public boolean dispatchKeyEvent(KeyEvent event) {
-        return getUiCoordinator().dispatchKeyEvent(event) || super.dispatchKeyEvent(event);
     }
 
     @Override
@@ -271,27 +256,8 @@ public class NoTouchActivity extends SingleTabActivity {
         getFullscreenManager().exitPersistentFullscreenMode();
     }
 
-    private TouchlessUiCoordinator getUiCoordinator() {
-        if (mUiCoordinator == null) {
-            mUiCoordinator = AppHooks.get().createTouchlessUiCoordinator(this);
-        }
-        return mUiCoordinator;
-    }
-
-    @Override
-    public SnackbarManager getSnackbarManager() {
-        return getUiCoordinator().getSnackbarManager();
-    }
-
     @Override
     protected TabDelegate createTabDelegate(boolean incognito) {
         return new TouchlessTabDelegate(incognito);
-    }
-
-    /**
-     * TODO(mthiesse): Delete this, it's to keep downstream compiling with a 3-sided patch.
-     */
-    public TouchlessUiController getTouchlessUiController() {
-        return null;
     }
 }

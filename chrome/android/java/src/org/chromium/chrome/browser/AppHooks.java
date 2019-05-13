@@ -54,7 +54,6 @@ import org.chromium.chrome.browser.survey.SurveyController;
 import org.chromium.chrome.browser.tab.AuthenticatorNavigationInterceptor;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.touchless.TouchlessModelCoordinator;
-import org.chromium.chrome.browser.touchless.TouchlessUiController;
 import org.chromium.chrome.browser.touchless.TouchlessUiCoordinator;
 import org.chromium.chrome.browser.ui.ImmersiveModeManager;
 import org.chromium.chrome.browser.usage_stats.DigitalWellbeingClient;
@@ -396,28 +395,6 @@ public abstract class AppHooks {
     }
 
     /**
-     * Do not use, in the process of being deleted.
-     */
-    @Deprecated
-    public void attachTouchlessMenuCoordinator(ChromeActivity activity) {}
-
-    /**
-     * Do not use, in the process of being deleted.
-     */
-    @Deprecated
-    public TouchlessUiController createTouchlessUiController(ChromeActivity activity) {
-        return null;
-    }
-
-    /**
-     * Do not use, in the process of being deleted.
-     */
-    @Deprecated
-    public TouchlessUiController getTouchlessUiControllerForActivity(ChromeActivity activity) {
-        return null;
-    }
-
-    /**
      * Checks the Google Play services availability on the this device.
      *
      * This is a workaround for the
@@ -501,9 +478,4 @@ public abstract class AppHooks {
      * ChromeActivity initialization.
      */
     public void startSystemSettingsObserver() {}
-
-    /**
-     * Initializes the lifecycle tracker for Touchless mode.
-     */
-    public void initTouchlessLifecycleTracker() {}
 }
