@@ -1244,7 +1244,7 @@ public class VrShellDelegate
         if (mActivity.getCompositorViewHolder() != null) {
             mActivity.getCompositorViewHolder().onEnterVr();
         }
-        ScreenOrientationProvider.setOrientationDelegate(this);
+        ScreenOrientationProvider.getInstance().setOrientationDelegate(this);
 
         // Hide system UI.
         VrModuleProvider.getDelegate().setSystemUiVisibilityForVr(mActivity);
@@ -1263,7 +1263,7 @@ public class VrShellDelegate
 
     @TargetApi(Build.VERSION_CODES.KITKAT)
     private void restoreWindowMode() {
-        ScreenOrientationProvider.setOrientationDelegate(null);
+        ScreenOrientationProvider.getInstance().setOrientationDelegate(null);
         mActivity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         // Restore orientation.

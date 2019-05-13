@@ -18,6 +18,9 @@ public class WebApkSplashscreenMetrics implements SplashscreenObserver {
     }
 
     @Override
+    public void onTranslucencyRemoved() {}
+
+    @Override
     public void onSplashscreenHidden(long startTimestamp, long endTimestamp) {
         if (mShellApkLaunchTimeMs == -1) return;
 

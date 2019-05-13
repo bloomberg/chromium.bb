@@ -126,7 +126,7 @@ public class ArImmersiveOverlay implements SurfaceHolder.Callback2,
         }
 
         // Save current orientation mode, and then lock current orientation.
-        ScreenOrientationProvider.setOrientationDelegate(this);
+        ScreenOrientationProvider.getInstance().setOrientationDelegate(this);
         if (mRestoreOrientation == null) {
             mRestoreOrientation = mActivity.getRequestedOrientation();
         }
@@ -160,7 +160,7 @@ public class ArImmersiveOverlay implements SurfaceHolder.Callback2,
         mCleanupInProgress = true;
 
         // Restore orientation.
-        ScreenOrientationProvider.setOrientationDelegate(null);
+        ScreenOrientationProvider.getInstance().setOrientationDelegate(null);
         if (mRestoreOrientation != null) mActivity.setRequestedOrientation(mRestoreOrientation);
         mRestoreOrientation = null;
 

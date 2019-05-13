@@ -8,6 +8,9 @@ package org.chromium.chrome.browser.webapps;
  * Observer interface for WebApp activity splashscreen.
  */
 public interface SplashscreenObserver {
+    /** Called when the activity's translucency is removed. */
+    void onTranslucencyRemoved();
+
     /**
      * Called when the splash screen is hidden.
      * @param startTimestamp Time that the splash screen was shown.
