@@ -26,14 +26,14 @@
     "name": "fail",
     "~followup_annotations": [
       "@@@STEP_TEXT@foo@@@",
-      "@@@STEP_FAILURE@@@",
-      "@@@SET_BUILD_PROPERTY@failure_hash@\"c2311ad770732eade3d2f48247abd147e40a70e7\"@@@"
+      "@@@SET_BUILD_PROPERTY@failure_hash@\"622c0c52e65e6d0dc78957dd113ad343e57ae6d2\"@@@",
+      "@@@STEP_FAILURE@@@"
     ]
   },
   {
     "failure": {
       "failure": {},
-      "humanReason": "Step('fail') failed with return_code 1"
+      "humanReason": "Step('fail') (retcode: 1)"
     },
     "name": "$result"
   }
