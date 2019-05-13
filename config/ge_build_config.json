@@ -650,18 +650,6 @@
       ]
     },
     {
-      "name": "jecht",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": false,
-          "leader_board": true,
-          "board_group": "jecht",
-          "arch": "UNKNOWN"
-        }
-      ]
-    },
-    {
       "name": "kefka",
       "configs": [
         {

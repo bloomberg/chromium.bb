@@ -468,7 +468,6 @@
     hana-postsubmit
     hatch-postsubmit
     heli-postsubmit
-    jecht-postsubmit
     kalista-postsubmit
     kefka-postsubmit
     kevin-arcnext-postsubmit
@@ -616,7 +615,6 @@
     hana-release
     hatch-release
     heli-release
-    jecht-release
     kalista-release
     kefka-release
     kevin-arcnext-release
@@ -2769,7 +2767,6 @@
     hana-postsubmit-tryjob
     hatch-postsubmit-tryjob
     heli-postsubmit-tryjob
-    jecht-postsubmit-tryjob
     kalista-postsubmit-tryjob
     kefka-postsubmit-tryjob
     kevin-arcnext-postsubmit-tryjob
@@ -2911,7 +2908,6 @@
     hana-release-tryjob
     hatch-release-tryjob
     heli-release-tryjob
-    jecht-release-tryjob
     kalista-release-tryjob
     kefka-release-tryjob
     kevin-arcnext-release-tryjob
