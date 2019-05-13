@@ -2604,8 +2604,6 @@ jumbo_source_set("browser") {
       "compositor/browser_compositor_output_surface.h",
       "compositor/gpu_browser_compositor_output_surface.cc",
       "compositor/gpu_browser_compositor_output_surface.h",
-      "compositor/gpu_output_surface_mac.cc",
-      "compositor/gpu_output_surface_mac.h",
       "compositor/gpu_process_transport_factory.cc",
       "compositor/gpu_process_transport_factory.h",
       "compositor/gpu_surfaceless_browser_compositor_output_surface.cc",
@@ -2630,16 +2628,6 @@ jumbo_source_set("browser") {
       "renderer_host/delegated_frame_host.cc",
       "renderer_host/delegated_frame_host.h",
     ]
-    if (is_mac) {
-      jumbo_excluded_sources = [
-        # Both Mac SDK headers and third_party/khronos/GLES2/gl2ext.h
-        # declare macros GL_LINES_ADJACENCY_EXT, GL_LINE_STRIP_ADJACENCY_EXT,
-        # GL_TRIANGLES_ADJACENCY_EXT and GL_TRIANGLE_STRIP_ADJACENCY_EXT. They
-        # get the same values but with different formatting (0xD vs 0x000D).
-        # https://crbug.com/783666
-        "compositor/gpu_output_surface_mac.cc",
-      ]
-    }
     deps += [
       "//components/viz/service",
       "//ui/compositor",

@@ -76,19 +76,7 @@
 #include "ui/gfx/switches.h"
 #include "ui/gl/gl_switches.h"
 
-#if defined(USE_AURA)
-#include "content/public/common/service_manager_connection.h"
-#include "ui/aura/env.h"
-#include "ui/aura/window_tree_host.h"
-#endif
-
-#if defined(OS_WIN)
-#include "base/win/windows_version.h"
-#include "components/viz/service/display_embedder/compositor_overlay_candidate_validator_win.h"
-#include "components/viz/service/display_embedder/output_device_backing.h"
-#include "components/viz/service/display_embedder/software_output_device_win.h"
-#include "ui/gfx/win/rendering_window_manager.h"
-#elif defined(USE_OZONE)
+#if defined(USE_OZONE)
 #include "components/viz/service/display_embedder/compositor_overlay_candidate_validator_ozone.h"
 #include "components/viz/service/display_embedder/software_output_device_ozone.h"
 #include "ui/ozone/public/overlay_candidates_ozone.h"
@@ -100,12 +88,6 @@
 #include "ui/ozone/public/surface_ozone_canvas.h"
 #elif defined(USE_X11)
 #include "components/viz/service/display_embedder/software_output_device_x11.h"
-#elif defined(OS_MACOSX)
-#include "components/viz/service/display_embedder/compositor_overlay_candidate_validator_mac.h"
-#include "components/viz/service/display_embedder/software_output_device_mac.h"
-#include "content/browser/compositor/gpu_output_surface_mac.h"
-#include "ui/base/cocoa/remote_layer_api.h"
-#include "ui/base/ui_base_switches.h"
 #endif
 #if !defined(GPU_SURFACE_HANDLE_IS_ACCELERATED_WINDOW)
 #include "gpu/ipc/common/gpu_surface_tracker.h"
@@ -130,13 +112,6 @@ constexpr char kIdentityUrl[] =
 // All browser contexts get the same stream id and priority.
 constexpr gpu::SchedulingPriority kStreamPriority =
     content::kGpuStreamPriorityUI;
-
-#if defined(OS_MACOSX)
-bool IsCALayersDisabledFromCommandLine() {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  return command_line->HasSwitch(switches::kDisableMacOverlays);
-}
-#endif
 
 }  // namespace
 
@@ -187,9 +162,6 @@ GpuProcessTransportFactory::GpuProcessTransportFactory(
 
   task_graph_runner_->Start("CompositorTileWorker1",
                             base::SimpleThread::Options());
-#if defined(OS_WIN)
-  software_backing_ = std::make_unique<viz::OutputDeviceBacking>();
-#endif
 
   if (command_line->HasSwitch(switches::kDisableGpu) ||
       command_line->HasSwitch(switches::kDisableGpuCompositing)) {
@@ -218,9 +190,7 @@ GpuProcessTransportFactory::CreateSoftwareOutputDevice(
     return base::WrapUnique(new viz::SoftwareOutputDevice);
 
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-#if defined(OS_WIN)
-  return CreateSoftwareOutputDeviceWinBrowser(widget, software_backing_.get());
-#elif defined(USE_OZONE)
+#if defined(USE_OZONE)
   ui::SurfaceFactoryOzone* factory =
       ui::OzonePlatform::GetInstance()->GetSurfaceFactoryOzone();
   std::unique_ptr<ui::PlatformWindowSurface> platform_window_surface =
@@ -232,8 +202,6 @@ GpuProcessTransportFactory::CreateSoftwareOutputDevice(
       std::move(platform_window_surface), std::move(surface_ozone));
 #elif defined(USE_X11)
   return std::make_unique<viz::SoftwareOutputDeviceX11>(widget);
-#elif defined(OS_MACOSX)
-  return std::make_unique<viz::SoftwareOutputDeviceMac>(std::move(task_runner));
 #else
   NOTREACHED();
   return std::unique_ptr<viz::SoftwareOutputDevice>();
@@ -241,13 +209,7 @@ GpuProcessTransportFactory::CreateSoftwareOutputDevice(
 }
 
 std::unique_ptr<viz::CompositorOverlayCandidateValidator>
-CreateOverlayCandidateValidator(
-#if defined(OS_MACOSX)
-    gfx::AcceleratedWidget widget,
-    bool disable_overlay_ca_layers) {
-#else
-    gfx::AcceleratedWidget widget) {
-#endif
+CreateOverlayCandidateValidator(gfx::AcceleratedWidget widget) {
   std::unique_ptr<viz::CompositorOverlayCandidateValidator> validator;
 #if defined(USE_OZONE)
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -269,18 +231,6 @@ CreateOverlayCandidateValidator(
         std::move(overlay_candidates),
         viz::ParseOverlayStategies(enable_overlay_flag)));
   }
-#elif defined(OS_MACOSX)
-  // Overlays are only supported through the remote layer API.
-  if (ui::RemoteLayerAPISupported()) {
-    static bool overlays_disabled_at_command_line =
-        IsCALayersDisabledFromCommandLine();
-    const bool ca_layers_disabled =
-        overlays_disabled_at_command_line || disable_overlay_ca_layers;
-    validator.reset(
-        new viz::CompositorOverlayCandidateValidatorMac(ca_layers_disabled));
-  }
-#elif defined(OS_WIN)
-  validator = std::make_unique<viz::CompositorOverlayCandidateValidatorWin>();
 #endif
 
   return validator;
@@ -298,11 +248,6 @@ void GpuProcessTransportFactory::CreateLayerTreeFrameSink(
     // LayerTreeFrameSink before calling back here.
     data->display_output_surface = nullptr;
   }
-
-#if defined(OS_WIN)
-  gfx::RenderingWindowManager::GetInstance()->UnregisterParent(
-      compositor->widget());
-#endif
 
   const bool use_gpu_compositing =
       !compositor->force_software_compositor() && !is_gpu_compositing_disabled_;
@@ -348,11 +293,6 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
   // but instead on a workstation for development, then stencil support is
   // useful as it allows the overdraw feedback debugging feature to be used.
   support_stencil = true;
-#endif
-
-#if defined(OS_WIN)
-  gfx::RenderingWindowManager::GetInstance()->RegisterParent(
-      compositor->widget());
 #endif
 
   scoped_refptr<ws::ContextProviderCommandBuffer> context_provider;
@@ -455,16 +395,6 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
               context_provider,
               std::unique_ptr<viz::CompositorOverlayCandidateValidator>());
     } else if (capabilities.surfaceless) {
-#if defined(OS_MACOSX)
-      const auto& gpu_feature_info = context_provider->GetGpuFeatureInfo();
-      bool disable_overlay_ca_layers =
-          gpu_feature_info.IsWorkaroundEnabled(gpu::DISABLE_OVERLAY_CA_LAYERS);
-      display_output_surface = std::make_unique<GpuOutputSurfaceMac>(
-          context_provider, data->surface_handle,
-          CreateOverlayCandidateValidator(compositor->widget(),
-                                          disable_overlay_ca_layers),
-          GetGpuMemoryBufferManager());
-#else
       DCHECK(capabilities.texture_format_bgra8888);
       auto gpu_output_surface =
           std::make_unique<GpuSurfacelessBrowserCompositorOutputSurface>(
@@ -473,20 +403,9 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
               display::DisplaySnapshot::PrimaryFormat(),
               GetGpuMemoryBufferManager());
       display_output_surface = std::move(gpu_output_surface);
-#endif
     } else {
-      std::unique_ptr<viz::CompositorOverlayCandidateValidator> validator;
-#if defined(OS_WIN)
-      const bool use_overlays_for_sw_protected_video =
-          base::FeatureList::IsEnabled(
-              features::kUseDCOverlaysForSoftwareProtectedVideo);
-      if (capabilities.dc_layers && (capabilities.use_dc_overlays_for_video ||
-                                     use_overlays_for_sw_protected_video))
-        validator = CreateOverlayCandidateValidator(compositor->widget());
-#elif !defined(OS_MACOSX)
-      // Overlays are only supported on surfaceless output surfaces on Mac.
-      validator = CreateOverlayCandidateValidator(compositor->widget());
-#endif
+      std::unique_ptr<viz::CompositorOverlayCandidateValidator> validator =
+          CreateOverlayCandidateValidator(compositor->widget());
       auto gpu_output_surface =
           std::make_unique<GpuBrowserCompositorOutputSurface>(
               context_provider, std::move(validator));
@@ -684,10 +603,6 @@ void GpuProcessTransportFactory::RemoveCompositor(ui::Compositor* compositor) {
     for (auto& observer : observer_list_)
       observer.OnLostSharedContext();
   }
-#if defined(OS_WIN)
-  gfx::RenderingWindowManager::GetInstance()->UnregisterParent(
-      compositor->widget());
-#endif
 }
 
 gpu::GpuMemoryBufferManager*

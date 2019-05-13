@@ -493,9 +493,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // Send updated vsync parameters to the top level display.
   void UpdateDisplayVSyncParameters();
 
-  // Adds/Removes frame observer based on state.
-  void UpdateNeedsBeginFramesInternal();
-
   void SendSyntheticWheelEventWithPhaseEnded(
       blink::WebMouseWheelEvent wheel_event,
       bool should_route_event);
@@ -574,9 +571,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   // Display link for getting vsync info.
   scoped_refptr<ui::DisplayLinkMac> display_link_;
-
-  // Whether a request for begin frames has been issued.
-  bool needs_begin_frames_;
 
   // Whether or not the background is opaque as determined by calls to
   // SetBackgroundColor. The default value is opaque.

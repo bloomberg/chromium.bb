@@ -244,8 +244,8 @@ OutputSurfaceProviderImpl::CreateSoftwareOutputDeviceForPlatform(
     return std::make_unique<SoftwareOutputDevice>();
 
 #if defined(OS_WIN)
-  return CreateSoftwareOutputDeviceWinGpu(
-      surface_handle, &output_device_backing_, display_client);
+  return CreateSoftwareOutputDeviceWin(surface_handle, &output_device_backing_,
+                                       display_client);
 #elif defined(OS_MACOSX)
   return std::make_unique<SoftwareOutputDeviceMac>(task_runner_);
 #elif defined(OS_ANDROID)

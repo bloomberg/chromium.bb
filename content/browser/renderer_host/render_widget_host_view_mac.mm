@@ -87,7 +87,6 @@ void RenderWidgetHostViewMac::BrowserCompositorMacOnBeginFrame(
   // ProgressFling must get called for middle click autoscroll fling on Mac.
   if (host())
     host()->ProgressFlingIfNeeded(frame_time);
-  UpdateNeedsBeginFramesInternal();
 }
 
 void RenderWidgetHostViewMac::OnFrameTokenChanged(uint32_t frame_token) {
@@ -212,8 +211,6 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
         GetFrameSinkId(), this);
   }
 
-  bool needs_begin_frames = true;
-
   RenderWidgetHostOwnerDelegate* owner_delegate = host()->owner_delegate();
   if (owner_delegate) {
     // TODO(mostynb): actually use prefs.  Landing this as a separate CL
@@ -221,29 +218,12 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
     // NOTE: This will not be run for child frame widgets, which do not have
     // an owner delegate and won't get a RenderViewHost here.
     ignore_result(owner_delegate->GetWebkitPreferencesForWidget());
-    needs_begin_frames = !owner_delegate->IsNeverVisible();
   }
 
   cursor_manager_.reset(new CursorManager(this));
 
   if (GetTextInputManager())
     GetTextInputManager()->AddObserver(this);
-
-  // When Viz Display Compositor is not active, RenderWidgetHostViewMac is
-  // responsible for handling BeginFrames.
-  //
-  // Because of the way Mac pumps messages during resize, SetNeedsBeginFrame
-  // messages are not delayed on Mac.  This leads to creation-time raciness
-  // where renderer sends a SetNeedsBeginFrame(true) before the renderer host is
-  // created to receive it.
-  //
-  // Any renderer that will produce frames needs to have begin frames sent to
-  // it. So unless it is never visible, start this value at true here to avoid
-  // startup raciness and decrease latency.
-  if (!features::IsVizDisplayCompositorEnabled()) {
-    needs_begin_frames_ = needs_begin_frames;
-    UpdateNeedsBeginFramesInternal();
-  }
 }
 
 RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
@@ -869,12 +849,7 @@ void RenderWidgetHostViewMac::EnsureSurfaceSynchronizedForWebTest() {
 }
 
 void RenderWidgetHostViewMac::SetNeedsBeginFrames(bool needs_begin_frames) {
-  needs_begin_frames_ = needs_begin_frames;
-  UpdateNeedsBeginFramesInternal();
-}
-
-void RenderWidgetHostViewMac::UpdateNeedsBeginFramesInternal() {
-  browser_compositor_->SetNeedsBeginFrames(needs_begin_frames_);
+  NOTREACHED();
 }
 
 void RenderWidgetHostViewMac::OnDidUpdateVisualPropertiesComplete(
