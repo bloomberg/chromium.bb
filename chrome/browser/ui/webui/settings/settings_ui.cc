@@ -64,9 +64,9 @@
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_field_trial_win.h"
 #include "chrome/browser/ui/webui/settings/chrome_cleanup_handler.h"
 #if defined(GOOGLE_CHROME_BUILD)
-#include "chrome/browser/conflicts/incompatible_applications_updater_win.h"
-#include "chrome/browser/conflicts/token_util_win.h"
 #include "chrome/browser/ui/webui/settings/incompatible_applications_handler_win.h"
+#include "chrome/browser/win/conflicts/incompatible_applications_updater.h"
+#include "chrome/browser/win/conflicts/token_util.h"
 #endif
 #endif  // defined(OS_WIN)
 

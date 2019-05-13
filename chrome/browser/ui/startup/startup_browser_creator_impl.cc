@@ -77,7 +77,7 @@
 
 #if defined(OS_WIN)
 #if defined(GOOGLE_CHROME_BUILD)
-#include "chrome/browser/conflicts/incompatible_applications_updater_win.h"
+#include "chrome/browser/win/conflicts/incompatible_applications_updater.h"
 #endif  // defined(GOOGLE_CHROME_BUILD)
 #include "chrome/browser/notifications/notification_platform_bridge_win.h"
 #include "chrome/browser/shell_integration_win.h"

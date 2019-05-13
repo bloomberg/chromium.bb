@@ -15,9 +15,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/win/registry.h"
-#include "chrome/browser/conflicts/incompatible_applications_updater_win.h"
-#include "chrome/browser/conflicts/registry_key_watcher_win.h"
-#include "chrome/browser/conflicts/uninstall_application_win.h"
+#include "chrome/browser/win/conflicts/incompatible_applications_updater.h"
+#include "chrome/browser/win/conflicts/registry_key_watcher.h"
+#include "chrome/browser/win/conflicts/uninstall_application.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 

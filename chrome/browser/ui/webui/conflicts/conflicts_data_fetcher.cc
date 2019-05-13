@@ -9,15 +9,15 @@
 
 #include "base/task/post_task.h"
 #include "base/win/windows_version.h"
-#include "chrome/browser/conflicts/module_database_win.h"
+#include "chrome/browser/win/conflicts/module_database.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
 #if defined(GOOGLE_CHROME_BUILD)
 #include "base/enterprise_util.h"
 #include "base/win/win_util.h"
-#include "chrome/browser/conflicts/incompatible_applications_updater_win.h"
-#include "chrome/browser/conflicts/module_blacklist_cache_updater_win.h"
+#include "chrome/browser/win/conflicts/incompatible_applications_updater.h"
+#include "chrome/browser/win/conflicts/module_blacklist_cache_updater.h"
 #endif
 
 namespace {
