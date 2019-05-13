@@ -6159,6 +6159,73 @@
       'label': '''Allow merging list policies from different sources''',
     },
     {
+      'name': 'PolicyDictionaryMultipleSourceMergeList',
+      'type': 'string-enum-list',
+      'schema': {
+        'type': 'array',
+        'items': {
+          'type': 'string',
+          'enum': [ 'ContentPackManualBehaviorURLs', 'ExtensionSettings', 'DeviceLoginScreenPowerManagement', 'KeyPermissions', 'PowerManagementIdleSettings', 'ScreenBrightnessPercent', 'ScreenLockDelays' ],
+        }
+      },
+      'items': [
+        {
+          'name': 'ContentPackManualBehaviorURLs',
+          'value': 'ContentPackManualBehaviorURLs',
+          'caption': '''Managed user manual exception URLs''',
+        },
+        {
+          'name': 'DeviceLoginScreenPowerManagement',
+          'value': 'DeviceLoginScreenPowerManagement',
+          'caption': '''Power management on the login screen''',
+        },
+        {
+          'name': 'ExtensionSettings',
+          'value': 'ExtensionSettings',
+          'caption': '''Extension management settings''',
+        },
+        {
+          'name': 'KeyPermissions',
+          'value': 'KeyPermissions',
+          'caption': '''Key Permissions''',
+        },
+        {
+          'name': 'PowerManagementIdleSettings',
+          'value': 'PowerManagementIdleSettings',
+          'caption': '''Power management settings when the user becomes idle''',
+        },
+        {
+          'name': 'ScreenBrightnessPercent',
+          'value': 'ScreenBrightnessPercent',
+          'caption': '''Screen brightness percent''',
+        },
+        {
+          'name': 'ScreenLockDelays',
+          'value': 'ScreenLockDelays',
+          'caption': '''Screen lock delays''',
+        },
+      ],
+      'supported_on': ['chrome.*:76-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': ['ExtensionSettings'],
+      'id': 565,
+      'caption': '''Allow merging dictionary policies from different sources''',
+      'tags': [],
+      'desc': '''Allows the selected policies to be merged when they come from different sources, with the same scopes and level.
+
+        The merging consists in merging the first level keys of the dictionary from each source. In case of conflict between keys, the key coming from the highest priority source will be applied.
+
+        If a policy is in the list, in case there is conflict between two sources, given that they have the same scopes and level, the values will be merged into a new policy dictionary.
+
+        If a policy is in the list, in case there is conflict between two sources but also between different scopes and/or level, the policy with the highest priority will be applied.
+
+        If a policy is not in the list, in case there is any conflict between sources, scopes and/or level, the policy with the highest priority will be applied.''',
+      'label': '''Allow merging dictionary policies from different sources''',
+    },
+    {
       'name': 'OpenNetworkConfiguration',
       'type': 'string',
       'schema': { 'type': 'string' },
@@ -16653,5 +16720,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546],
-  'highest_id_currently_used':  564
+  'highest_id_currently_used':  565
 }

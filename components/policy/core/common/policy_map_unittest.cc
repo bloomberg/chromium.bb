@@ -513,6 +513,224 @@ TEST_F(PolicyMapTest, MergeValuesList) {
   EXPECT_TRUE(list_merged_wildcard.Equals(expected_list_merged_wildcard));
 }
 
+TEST_F(PolicyMapTest, MergeDictionaryValues) {
+  base::Value dict_a(base::Value::Type::DICTIONARY);
+  dict_a.SetBoolKey("keyA", true);
+
+  base::Value dict_b(base::Value::Type::DICTIONARY);
+  dict_b.SetStringKey("keyB", "ValueB2");
+  dict_b.SetStringKey("keyC", "ValueC2");
+  dict_b.SetStringKey("keyD", "ValueD2");
+
+  base::Value dict_c(base::Value::Type::DICTIONARY);
+  dict_c.SetStringKey("keyA", "ValueA");
+  dict_c.SetStringKey("keyB", "ValueB");
+  dict_c.SetStringKey("keyC", "ValueC");
+  dict_c.SetStringKey("keyD", "ValueD");
+  dict_c.SetStringKey("keyZ", "ValueZ");
+
+  base::Value dict_d(base::Value::Type::DICTIONARY);
+  dict_d.SetStringKey("keyC", "ValueC3");
+
+  base::Value dict_e(base::Value::Type::DICTIONARY);
+  dict_e.SetStringKey("keyD", "ValueD4");
+  dict_e.SetIntKey("keyE", 123);
+
+  base::Value dict_f(base::Value::Type::DICTIONARY);
+  dict_f.SetStringKey("keyX", "ValueX");
+  dict_f.SetStringKey("keyE", "ValueE5");
+
+  // Case 1: kTestPolicyName1 - Merging should only keep keys with the highest
+  // priority
+  PolicyMap::Entry case1(POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                         POLICY_SOURCE_PRIORITY_CLOUD,
+                         base::Value::ToUniquePtrValue(dict_a.Clone()),
+                         nullptr);
+  case1.AddConflictingPolicy(PolicyMap::Entry(
+      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE, POLICY_SOURCE_PLATFORM,
+      base::Value::ToUniquePtrValue(dict_b.Clone()), nullptr));
+  case1.AddConflictingPolicy(
+      PolicyMap::Entry(POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                       POLICY_SOURCE_DEVICE_LOCAL_ACCOUNT_OVERRIDE,
+                       base::Value::ToUniquePtrValue(dict_c.Clone()), nullptr));
+  case1.AddConflictingPolicy(
+      PolicyMap::Entry(POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                       POLICY_SOURCE_ACTIVE_DIRECTORY,
+                       base::Value::ToUniquePtrValue(dict_d.Clone()), nullptr));
+  case1.AddConflictingPolicy(
+      PolicyMap::Entry(POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                       POLICY_SOURCE_ACTIVE_DIRECTORY,
+                       base::Value::ToUniquePtrValue(dict_f.Clone()), nullptr));
+
+  base::Value merged_dict_case1(base::Value::Type::DICTIONARY);
+  merged_dict_case1.MergeDictionary(&dict_f);
+  merged_dict_case1.MergeDictionary(&dict_d);
+  merged_dict_case1.MergeDictionary(&dict_c);
+  merged_dict_case1.MergeDictionary(&dict_b);
+  merged_dict_case1.MergeDictionary(&dict_a);
+
+  PolicyMap::Entry case1_merged(
+      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE, POLICY_SOURCE_MERGED,
+      base::Value::ToUniquePtrValue(merged_dict_case1.Clone()), nullptr);
+  case1_merged.AddConflictingPolicy(case1);
+
+  // Case  - kTestPolicyName2
+  // Policies should only be merged with other policies with the same target,
+  // level and scope.
+  PolicyMap::Entry case2(POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_MACHINE,
+                         POLICY_SOURCE_PRIORITY_CLOUD,
+                         base::Value::ToUniquePtrValue(dict_e.Clone()),
+                         nullptr);
+
+  case2.AddConflictingPolicy(PolicyMap::Entry(
+      POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_MACHINE, POLICY_SOURCE_PLATFORM,
+      base::Value::ToUniquePtrValue(dict_f.Clone()), nullptr));
+
+  case2.AddConflictingPolicy(PolicyMap::Entry(
+      POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER, POLICY_SOURCE_PLATFORM,
+      base::Value::ToUniquePtrValue(dict_a.Clone()), nullptr));
+
+  base::Value merged_dict_case2(base::Value::Type::DICTIONARY);
+  merged_dict_case2.MergeDictionary(&dict_f);
+  merged_dict_case2.MergeDictionary(&dict_e);
+
+  PolicyMap::Entry case2_merged(
+      POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_MACHINE, POLICY_SOURCE_MERGED,
+      base::Value::ToUniquePtrValue(merged_dict_case2.Clone()), nullptr);
+  case2_merged.AddConflictingPolicy(case2);
+
+  // Case 3 - kTestPolicyName3
+  // Enterprise default policies should not be merged with other sources.
+  PolicyMap::Entry case3(
+      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_PLATFORM,
+      base::Value::ToUniquePtrValue(dict_a.Clone()), nullptr);
+
+  case3.AddConflictingPolicy(PolicyMap::Entry(
+      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_ACTIVE_DIRECTORY,
+      base::Value::ToUniquePtrValue(dict_b.Clone()), nullptr));
+
+  case3.AddConflictingPolicy(
+      PolicyMap::Entry(POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                       POLICY_SOURCE_ENTERPRISE_DEFAULT,
+                       base::Value::ToUniquePtrValue(dict_e.Clone()), nullptr));
+
+  case3.AddConflictingPolicy(
+      PolicyMap::Entry(POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
+                       POLICY_SOURCE_ENTERPRISE_DEFAULT,
+                       base::Value::ToUniquePtrValue(dict_f.Clone()), nullptr));
+
+  base::Value merged_dict_case3(base::Value::Type::DICTIONARY);
+  merged_dict_case3.MergeDictionary(&dict_b);
+  merged_dict_case3.MergeDictionary(&dict_a);
+
+  PolicyMap::Entry case3_merged(
+      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_MERGED,
+      base::Value::ToUniquePtrValue(merged_dict_case3.Clone()), nullptr);
+  case3_merged.AddConflictingPolicy(case3);
+
+  // Case 4 - kTestPolicyName4
+  // Policies with a single source should stay the same.
+  PolicyMap::Entry case4(POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                         POLICY_SOURCE_ACTIVE_DIRECTORY,
+                         base::Value::ToUniquePtrValue(dict_a.Clone()),
+                         nullptr);
+
+  // Case 5 - kTestPolicyName5
+  // Policies that are not dictionaries should not be merged.
+  // If such a policy is explicitly in the list of policies to merge, an error
+  // is added to the entry and the policy stays intact.
+  PolicyMap::Entry case5(POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                         POLICY_SOURCE_ACTIVE_DIRECTORY,
+                         std::make_unique<base::Value>("bad stuff"), nullptr);
+
+  PolicyMap::Entry expected_case5(POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                                  POLICY_SOURCE_ACTIVE_DIRECTORY,
+                                  std::make_unique<base::Value>("bad stuff"),
+                                  nullptr);
+  expected_case5.AddError(
+      IDS_POLICY_DICTIONARY_MERGING_WRONG_POLICY_TYPE_SPECIFIED);
+
+  // Case 6 - kTestPolicyName6
+  // User cloud policies should not be merged with other sources.
+  PolicyMap::Entry case6(
+      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_PLATFORM,
+      base::Value::ToUniquePtrValue(dict_a.Clone()), nullptr);
+  case6.AddConflictingPolicy(PolicyMap::Entry(
+      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+      base::Value::ToUniquePtrValue(dict_e.Clone()), nullptr));
+  case6.AddConflictingPolicy(PolicyMap::Entry(
+      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_PRIORITY_CLOUD,
+      base::Value::ToUniquePtrValue(dict_f.Clone()), nullptr));
+
+  // Case 7 - kTestPolicyName7
+  // Policies that are not dictionaries should not be merged.
+  // If such a policy is explicitly in the list of policies to merge, an error
+  // is added to the entry and the policy stays intact.
+  PolicyMap::Entry case7(POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                         POLICY_SOURCE_ACTIVE_DIRECTORY,
+                         base::Value::ToUniquePtrValue(dict_a.Clone()),
+                         nullptr);
+
+  PolicyMap::Entry expected_case7 = case7.DeepCopy();
+
+  expected_case7.AddError(IDS_POLICY_DICTIONARY_MERGING_POLICY_NOT_ALLOWED);
+
+  PolicyMap policy_not_merged;
+  policy_not_merged.Set(kTestPolicyName1, case1.DeepCopy());
+  policy_not_merged.Set(kTestPolicyName2, case2.DeepCopy());
+  policy_not_merged.Set(kTestPolicyName3, case3.DeepCopy());
+  policy_not_merged.Set(kTestPolicyName4, case4.DeepCopy());
+  policy_not_merged.Set(kTestPolicyName5, case5.DeepCopy());
+  policy_not_merged.Set(kTestPolicyName6, case6.DeepCopy());
+  policy_not_merged.Set(kTestPolicyName7, case7.DeepCopy());
+
+  PolicyMap expected_list_merged;
+  expected_list_merged.Set(kTestPolicyName1, case1_merged.DeepCopy());
+  expected_list_merged.Set(kTestPolicyName2, case2_merged.DeepCopy());
+  expected_list_merged.Set(kTestPolicyName3, case3_merged.DeepCopy());
+  expected_list_merged.Set(kTestPolicyName4, case4.DeepCopy());
+  expected_list_merged.Set(kTestPolicyName5, expected_case5.DeepCopy());
+  expected_list_merged.Set(kTestPolicyName6, case6.DeepCopy());
+  expected_list_merged.Set(kTestPolicyName7, expected_case7.DeepCopy());
+
+  PolicyMap list_merged;
+  list_merged.CopyFrom(policy_not_merged);
+
+  PolicyMap list_merged_wildcard;
+  list_merged_wildcard.CopyFrom(policy_not_merged);
+
+  // Merging with no restrictions specified
+  PolicyDictionaryMerger empty_policy_list({});
+  list_merged.MergeValues({&empty_policy_list});
+  EXPECT_TRUE(list_merged.Equals(policy_not_merged));
+
+  PolicyDictionaryMerger bad_policy_list({"unknown"});
+  // Merging with wrong restrictions specified
+  list_merged.MergeValues({&bad_policy_list});
+  EXPECT_TRUE(list_merged.Equals(policy_not_merged));
+
+  // Merging lists restrictions specified
+  PolicyDictionaryMerger good_policy_list(
+      {kTestPolicyName1, kTestPolicyName2, kTestPolicyName3, kTestPolicyName4,
+       kTestPolicyName5, kTestPolicyName6, kTestPolicyName7});
+  good_policy_list.SetAllowedPoliciesForTesting(
+      {kTestPolicyName1, kTestPolicyName2, kTestPolicyName3, kTestPolicyName4,
+       kTestPolicyName5, kTestPolicyName6});
+  PolicyDictionaryMerger wildcard_policy_list({"*"});
+  wildcard_policy_list.SetAllowedPoliciesForTesting(
+      {kTestPolicyName1, kTestPolicyName2, kTestPolicyName3, kTestPolicyName4,
+       kTestPolicyName5, kTestPolicyName6});
+  list_merged.MergeValues({&good_policy_list});
+  EXPECT_TRUE(list_merged.Equals(expected_list_merged));
+
+  PolicyMap expected_list_merged_wildcard;
+  expected_list_merged_wildcard.CopyFrom(expected_list_merged);
+  expected_list_merged_wildcard.Set(kTestPolicyName5, case5.DeepCopy());
+  expected_list_merged_wildcard.Set(kTestPolicyName7, case7.DeepCopy());
+  list_merged_wildcard.MergeValues({&wildcard_policy_list});
+  EXPECT_TRUE(list_merged_wildcard.Equals(expected_list_merged_wildcard));
+}
+
 TEST_F(PolicyMapTest, MergeValuesGroup) {
   std::vector<base::Value> abc = GetListStorage<std::string>({"a", "b", "c"});
   std::vector<base::Value> ab = GetListStorage<std::string>({"a", "b"});

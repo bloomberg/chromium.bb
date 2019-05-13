@@ -735,6 +735,64 @@ TEST_F(PolicyServiceTest, SeparateProxyPoliciesMerging) {
   EXPECT_TRUE(VerifyPolicies(chrome_namespace, expected_chrome));
   EXPECT_TRUE(VerifyPolicies(extension_namespace, expected_extension));
 }
+TEST_F(PolicyServiceTest, DictionaryPoliciesMerging) {
+  const PolicyNamespace chrome_namespace(POLICY_DOMAIN_CHROME, std::string());
+
+  std::unique_ptr<base::Value> dict1 =
+      std::make_unique<base::Value>(base::Value::Type::DICTIONARY);
+  dict1->SetBoolKey("google.com", false);
+  dict1->SetBoolKey("gmail.com", true);
+  std::unique_ptr<base::Value> dict2 =
+      std::make_unique<base::Value>(base::Value::Type::DICTIONARY);
+  dict2->SetBoolKey("example.com", true);
+  dict2->SetBoolKey("gmail.com", false);
+  std::unique_ptr<base::Value> result =
+      std::make_unique<base::Value>(base::Value::Type::DICTIONARY);
+  result->SetBoolKey("google.com", false);
+  result->SetBoolKey("gmail.com", false);
+  result->SetBoolKey("example.com", true);
+
+  std::unique_ptr<base::Value> policy =
+      std::make_unique<base::Value>(base::Value::Type::LIST);
+  policy->GetList().push_back(
+      base::Value(policy::key::kContentPackManualBehaviorURLs));
+
+  auto policy_bundle1 = std::make_unique<PolicyBundle>();
+  PolicyMap& policy_map1 = policy_bundle1->Get(chrome_namespace);
+  policy_map1.Set(key::kPolicyDictionaryMultipleSourceMergeList,
+                  POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                  POLICY_SOURCE_PLATFORM,
+                  base::Value::ToUniquePtrValue(policy->Clone()), nullptr);
+  PolicyMap::Entry entry_dict_1(POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                                POLICY_SOURCE_PLATFORM, std::move(dict1),
+                                nullptr);
+  policy_map1.Set(key::kContentPackManualBehaviorURLs, entry_dict_1.DeepCopy());
+
+  auto policy_bundle2 = std::make_unique<PolicyBundle>();
+  PolicyMap& policy_map2 = policy_bundle2->Get(chrome_namespace);
+  PolicyMap::Entry entry_dict_2(POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                                POLICY_SOURCE_PRIORITY_CLOUD, std::move(dict2),
+                                nullptr);
+  policy_map2.Set(key::kContentPackManualBehaviorURLs, entry_dict_2.DeepCopy());
+
+  PolicyMap expected_chrome;
+  expected_chrome.Set(key::kPolicyDictionaryMultipleSourceMergeList,
+                      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                      POLICY_SOURCE_PLATFORM,
+                      base::Value::ToUniquePtrValue(policy->Clone()), nullptr);
+
+  PolicyMap::Entry merged(POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                          POLICY_SOURCE_MERGED, std::move(result), nullptr);
+  merged.AddConflictingPolicy(entry_dict_1.DeepCopy());
+  merged.AddConflictingPolicy(entry_dict_2.DeepCopy());
+  expected_chrome.Set(key::kContentPackManualBehaviorURLs, std::move(merged));
+
+  provider0_.UpdatePolicy(std::move(policy_bundle1));
+  provider1_.UpdatePolicy(std::move(policy_bundle2));
+  RunUntilIdle();
+
+  EXPECT_TRUE(VerifyPolicies(chrome_namespace, expected_chrome));
+}
 
 TEST_F(PolicyServiceTest, ListsPoliciesMerging) {
   const PolicyNamespace chrome_namespace(POLICY_DOMAIN_CHROME, std::string());

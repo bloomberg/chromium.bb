@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -15,6 +16,8 @@
 #include "components/policy/policy_export.h"
 
 namespace policy {
+
+extern const char* const kDictionaryPoliciesToMerge[];
 
 // Abstract class that provides an interface to apply custom merging logic on a
 // set of policies.
@@ -30,7 +33,7 @@ class POLICY_EXPORT PolicyMerger {
 // multiple sources concatenated without duplicates.
 class POLICY_EXPORT PolicyListMerger : public PolicyMerger {
  public:
-  explicit PolicyListMerger(const std::set<std::string> policies_to_merge);
+  explicit PolicyListMerger(std::set<std::string> policies_to_merge);
   ~PolicyListMerger() override;
 
   // Merges the list policies from |policies| that have multiple sources.
@@ -42,14 +45,44 @@ class POLICY_EXPORT PolicyListMerger : public PolicyMerger {
   // target and scope.
   bool CanMerge(const std::string& policy_name, PolicyMap::Entry& policy) const;
 
-  // Returns a new entry that has merged the value from the different
-  // conflicting sources from |policy|. The resulting policy has |policy| and
-  // its conflicts as conflicts.
-  PolicyMap::Entry DoMerge(const PolicyMap::Entry& policy) const;
+  // Merges the values of |policy| if they come from multiple sources. Keeps
+  // track of the original values by leaving them as conflicts. |policy| must
+  // remain unchanged if there is nothing to merge.
+  void DoMerge(PolicyMap::Entry* policy) const;
 
   const std::set<std::string> policies_to_merge_;
 
   DISALLOW_COPY_AND_ASSIGN(PolicyListMerger);
+};
+
+// PolicyDictionaryMerger allows the merging of policy dictionaries that have
+// multiple sources. Each policy that has to be merged will have its first level
+// keys merged into one dictionary, each conflict will be resolved by
+// using the key coming from the highest priority source.
+class POLICY_EXPORT PolicyDictionaryMerger : public PolicyMerger {
+ public:
+  explicit PolicyDictionaryMerger(std::set<std::string> policies_to_merge);
+  ~PolicyDictionaryMerger() override;
+
+  // Merges the dictionary policies from |policies| that have multiple sources.
+  void Merge(PolicyMap::PolicyMapType* policies) const override;
+  void SetAllowedPoliciesForTesting(std::set<std::string> allowed_policies);
+
+ private:
+  // Returns True if |policy_name| is in the list of policies to merge and if
+  // |policy| has values from different sources that share the same level,
+  // target and scope.
+  bool CanMerge(const std::string& policy_name, PolicyMap::Entry& policy) const;
+
+  // Merges the values of |policy| if they come from multiple sources. Keeps
+  // track of the original values by leaving them as conflicts. |policy| stays
+  // intact if there is nothing to merge.
+  void DoMerge(PolicyMap::Entry* policy) const;
+
+  const std::set<std::string> policies_to_merge_;
+  std::set<std::string> allowed_policies_;
+
+  DISALLOW_COPY_AND_ASSIGN(PolicyDictionaryMerger);
 };
 
 // PolicyGroupMerger enforces atomic policy groups. It disables the policies

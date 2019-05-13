@@ -11,6 +11,29 @@
 
 namespace policy {
 
+const char* const kDictionaryPoliciesToMerge[] = {
+    key::kContentPackManualBehaviorURLs,
+    key::kExtensionSettings,
+    key::kDeviceLoginScreenPowerManagement,
+    key::kKeyPermissions,
+    key::kPowerManagementIdleSettings,
+    key::kScreenBrightnessPercent,
+    key::kScreenLockDelays};
+
+bool UseConflictValueInMerging(const PolicyMap::Entry& conflict,
+                               const PolicyMap::Entry& policy) {
+  // On desktop, the user cloud policy potentially comes from a different
+  // domain than e.g. GPO policy or machine-level cloud policy, so prevent
+  // merging user cloud policy with other policy sources.
+  const bool is_conflict_user_cloud_policy =
+      conflict.scope == POLICY_SCOPE_USER &&
+      (conflict.source == POLICY_SOURCE_CLOUD ||
+       conflict.source == POLICY_SOURCE_PRIORITY_CLOUD);
+  return !is_conflict_user_cloud_policy && !conflict.IsBlockedOrIgnored() &&
+         conflict.source != POLICY_SOURCE_ENTERPRISE_DEFAULT &&
+         conflict.level == policy.level && conflict.scope == policy.scope;
+}
+
 PolicyMerger::PolicyMerger() = default;
 PolicyMerger::~PolicyMerger() = default;
 
@@ -19,11 +42,14 @@ PolicyListMerger::PolicyListMerger(
     : policies_to_merge_(std::move(policies_to_merge)) {}
 PolicyListMerger::~PolicyListMerger() = default;
 
+PolicyGroupMerger::PolicyGroupMerger() = default;
+PolicyGroupMerger::~PolicyGroupMerger() = default;
+
 void PolicyListMerger::Merge(PolicyMap::PolicyMapType* policies) const {
   DCHECK(policies);
-  for (auto it = policies->begin(); it != policies->end(); it++) {
-    if (CanMerge(it->first, it->second))
-      (*policies)[it->first] = DoMerge(it->second);
+  for (auto& it : *policies) {
+    if (CanMerge(it.first, it.second))
+      DoMerge(&it.second);
   }
 }
 
@@ -46,9 +72,11 @@ bool PolicyListMerger::CanMerge(const std::string& policy_name,
   return true;
 }
 
-PolicyMap::Entry PolicyListMerger::DoMerge(
-    const PolicyMap::Entry& policy) const {
-  std::vector<const base::Value*> value;
+void PolicyListMerger::DoMerge(PolicyMap::Entry* policy) const {
+  if (policy->conflicts.empty())
+    return;
+
+  std::vector<const base::Value*> merged_values;
   auto compare_value_ptr = [](const base::Value* a, const base::Value* b) {
     return *a < *b;
   };
@@ -56,24 +84,17 @@ PolicyMap::Entry PolicyListMerger::DoMerge(
       compare_value_ptr);
   bool merged = false;
 
-  for (const base::Value& val : policy.value->GetList()) {
+  for (const base::Value& val : policy->value->GetList()) {
     if (duplicates.find(&val) != duplicates.end())
       continue;
     duplicates.insert(&val);
-    value.push_back(&val);
+    merged_values.push_back(&val);
   }
 
-  for (const auto& it : policy.conflicts) {
-    // On desktop, the user cloud policy potentially comes from a different
-    // domain than e.g. GPO policy or machine-level cloud policy, so prevent
-    // merging user cloud policy with other policy sources.
-    const bool is_user_cloud_policy =
-        it.scope == POLICY_SCOPE_USER &&
-        (it.source == POLICY_SOURCE_CLOUD ||
-         it.source == POLICY_SOURCE_PRIORITY_CLOUD);
-    if (it.IsBlockedOrIgnored() ||
-        it.source == POLICY_SOURCE_ENTERPRISE_DEFAULT || is_user_cloud_policy ||
-        it.level != policy.level || it.scope != policy.scope) {
+  // Concatenates the values from accepted conflicting sources to the policy
+  // value while avoiding duplicates.
+  for (const auto& it : policy->conflicts) {
+    if (!UseConflictValueInMerging(it, *policy)) {
       continue;
     }
 
@@ -81,28 +102,117 @@ PolicyMap::Entry PolicyListMerger::DoMerge(
       if (duplicates.find(&val) != duplicates.end())
         continue;
       duplicates.insert(&val);
-      value.push_back(&val);
+      merged_values.push_back(&val);
     }
 
     merged = true;
   }
 
-  auto result = policy.DeepCopy();
-
   if (merged) {
-    result.ClearConflicts();
-    result.AddConflictingPolicy(policy);
-    result.source = POLICY_SOURCE_MERGED;
-    result.value.reset(new base::Value(base::Value::Type::LIST));
-    for (const base::Value* it : value)
-      result.value->GetList().emplace_back(it->Clone());
-  }
+    auto new_conflict = policy->DeepCopy();
 
-  return result;
+    base::ListValue* new_value = new base::ListValue();
+    for (const base::Value* it : merged_values)
+      new_value->GetList().emplace_back(it->Clone());
+
+    policy->value.reset(new_value);
+    policy->ClearConflicts();
+    policy->AddConflictingPolicy(new_conflict);
+    policy->source = POLICY_SOURCE_MERGED;
+  }
 }
 
-PolicyGroupMerger::PolicyGroupMerger() = default;
-PolicyGroupMerger::~PolicyGroupMerger() = default;
+PolicyDictionaryMerger::PolicyDictionaryMerger(
+    std::set<std::string> policies_to_merge)
+    : policies_to_merge_(std::move(policies_to_merge)),
+      allowed_policies_(std::begin(kDictionaryPoliciesToMerge),
+                        std::end(kDictionaryPoliciesToMerge)) {}
+PolicyDictionaryMerger::~PolicyDictionaryMerger() = default;
+
+void PolicyDictionaryMerger::Merge(PolicyMap::PolicyMapType* policies) const {
+  DCHECK(policies);
+  for (auto& it : *policies) {
+    if (CanMerge(it.first, it.second))
+      DoMerge(&it.second);
+  }
+}
+
+void PolicyDictionaryMerger::SetAllowedPoliciesForTesting(
+    std::set<std::string> allowed_policies) {
+  allowed_policies_ = std::move(allowed_policies);
+}
+
+bool PolicyDictionaryMerger::CanMerge(const std::string& policy_name,
+                                      PolicyMap::Entry& policy) const {
+  if (policy.source == POLICY_SOURCE_MERGED)
+    return false;
+
+  const bool allowed_to_merge =
+      allowed_policies_.find(policy_name) != allowed_policies_.end();
+
+  if (policies_to_merge_.find("*") != policies_to_merge_.end())
+    return allowed_to_merge && policy.value->is_dict();
+
+  if (policies_to_merge_.find(policy_name) == policies_to_merge_.end())
+    return false;
+
+  if (!allowed_to_merge) {
+    policy.AddError(IDS_POLICY_DICTIONARY_MERGING_POLICY_NOT_ALLOWED);
+    return false;
+  }
+
+  if (!policy.value->is_dict()) {
+    policy.AddError(IDS_POLICY_DICTIONARY_MERGING_WRONG_POLICY_TYPE_SPECIFIED);
+    return false;
+  }
+
+  return true;
+}
+
+void PolicyDictionaryMerger::DoMerge(PolicyMap::Entry* policy) const {
+  if (policy->conflicts.empty())
+    return;
+
+  bool merged = false;
+  std::vector<const PolicyMap::Entry*> policies;
+  policies.push_back(policy);
+  for (const auto& it : policy->conflicts)
+    policies.push_back(&it);
+
+  std::sort(policies.begin(), policies.end(),
+            [](const PolicyMap::Entry* a, const PolicyMap::Entry* b) {
+              return b->has_higher_priority_than(*a);
+            });
+
+  base::DictionaryValue merged_dictionary;
+  // Merges all the keys from the policies from different sources.
+  for (const auto* it : policies) {
+    if (!UseConflictValueInMerging(*it, *policy)) {
+      continue;
+    }
+
+    base::DictionaryValue* dict = nullptr;
+
+    it->value->GetAsDictionary(&dict);
+    DCHECK(dict);
+
+    for (const auto& pair : *dict) {
+      const auto& key = pair.first;
+      const auto& val = pair.second;
+      merged_dictionary.SetKey(key, val->Clone());
+    }
+
+    merged |= it != policy;
+  }
+
+  if (merged) {
+    auto new_conflict = policy->DeepCopy();
+    policy->ClearConflicts();
+    policy->AddConflictingPolicy(new_conflict);
+    policy->source = POLICY_SOURCE_MERGED;
+    policy->value = base::Value::ToUniquePtrValue(std::move(merged_dictionary));
+  }
+}
 
 void PolicyGroupMerger::Merge(PolicyMap::PolicyMapType* policies) const {
   for (size_t i = 0; i < kPolicyAtomicGroupMappingsLength; ++i) {

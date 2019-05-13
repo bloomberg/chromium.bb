@@ -16834,6 +16834,7 @@ Called by update_net_error_codes.py.-->
   <int value="562" label="DockedMagnifierEnabled"/>
   <int value="563" label="AppRecommendationZeroStateEnabled"/>
   <int value="564" label="BrowserSwitcherExternalGreylistUrl"/>
+  <int value="565" label="PolicyDictionaryMultipleSourceMergeList"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

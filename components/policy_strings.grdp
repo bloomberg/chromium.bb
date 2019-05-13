@@ -444,7 +444,13 @@ Additional details:
     Hide status
   </message>
   <message name="IDS_POLICY_LIST_MERGING_WRONG_POLICY_TYPE_SPECIFIED" desc="Text explaining that a policy specified to be merged as a list is not a list.">
-    Warning: This policy was not merged as specified in PolicyListMultipleSourceMergeList policy because it is not a list.
+    Warning: This policy was not merged as a list as specified by policy because it is not a list.
+  </message>
+  <message name="IDS_POLICY_DICTIONARY_MERGING_WRONG_POLICY_TYPE_SPECIFIED" desc="Text explaining that a policy specified to be merged as a dictionary is not a dictionary.">
+    Warning: This policy was not merged as a dictionary as specified by policy because it is not a dictionary.
+  </message>
+  <message name="IDS_POLICY_DICTIONARY_MERGING_POLICY_NOT_ALLOWED" desc="Text explaining that a policy specified to be merged as a dictionary is not allowed to be merged.">
+    Warning: This policy was not merged as specified in PolicyDictionaryMultipleSourceMergeList policy because it is not part of the dictionary policies that can be merged.
   </message>
   <message name="IDS_POLICY_CONFLICT_SAME_VALUE" desc="Text explaining that a policy had conflicting sources, but with the same values.">
     Warning: More than one source is present for the policy, but the values are the same.
