@@ -1258,7 +1258,7 @@ def RunSkylabHWTest(build, pool, test_name,
                                test_args)
   try:
     result = cros_build_lib.RunCommand(
-        [skylab_path, 'create-test'] + args, capture_output=True)
+        [skylab_path, 'create-test'] + args, redirect_stdout=True)
     return HWTestSuiteResult(None, None)
   except cros_build_lib.RunCommandError as e:
     result = e.result
