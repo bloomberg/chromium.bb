@@ -51,10 +51,4 @@ test("gcp_unittests") {
     "//third_party/pywebsocket/src/mod_pywebsocket/",
     "//third_party/tlslite/",
   ]
-
-  if (is_win) {
-    # TODO(https://crbug.com/958955): Fix dupes and remove this flag.
-    configs -= [ "//build/config/compiler:fatal_linker_warnings_win" ]
-    ldflags = [ "/FORCE:MultipleRes" ]
-  }
 }
