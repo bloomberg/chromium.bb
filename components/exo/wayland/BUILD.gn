@@ -204,8 +204,8 @@ source_set("unit_tests") {
 
   if (is_chromeos) {
     sources += [
-      "server_util_unittest.cc",
       "zaura_shell_unittest.cc",
+      "zcr_remote_shell_unittest.cc",
     ]
     deps += [
       "//ash",

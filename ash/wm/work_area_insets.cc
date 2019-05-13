@@ -71,9 +71,9 @@ gfx::Insets WorkAreaInsets::GetAccessibilityInsets() const {
 
 gfx::Rect WorkAreaInsets::ComputeStableWorkArea() const {
   return CalculateWorkAreaBounds(
-      GetAccessibilityInsets(), keyboard_occluded_bounds_,
+      GetAccessibilityInsets(),
       root_window_controller_->shelf()->GetIdealBounds(),
-      root_window_controller_->GetRootWindow());
+      keyboard_occluded_bounds_, root_window_controller_->GetRootWindow());
 }
 
 bool WorkAreaInsets::IsKeyboardShown() const {
