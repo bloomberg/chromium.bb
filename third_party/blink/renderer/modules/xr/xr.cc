@@ -477,6 +477,9 @@ void XR::AddedEventListener(const AtomicString& event_type,
   EventTargetWithInlineData::AddedEventListener(event_type,
                                                 registered_listener);
 
+  if (!service_)
+    return;
+
   if (event_type == event_type_names::kDevicechange) {
     // Register for notifications if we haven't already.
     //
