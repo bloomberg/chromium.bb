@@ -161,6 +161,7 @@ class Breakpad {
   NSArray *CrashReportsToUpload();
   NSString *NextCrashReportToUpload();
   NSDictionary *NextCrashReportConfiguration();
+  NSDictionary *FixedUpCrashReportConfiguration(NSDictionary *configuration);
   NSDate *DateOfMostRecentCrashReport();
   void UploadNextReport(NSDictionary *server_parameters);
   void UploadReportWithConfiguration(NSDictionary *configuration,
@@ -466,7 +467,18 @@ NSString *Breakpad::NextCrashReportToUpload() {
 
 //=============================================================================
 NSDictionary *Breakpad::NextCrashReportConfiguration() {
-  return [Uploader readConfigurationDataFromFile:NextCrashReportToUpload()];
+  NSDictionary *configuration = [Uploader readConfigurationDataFromFile:NextCrashReportToUpload()];
+  return FixedUpCrashReportConfiguration(configuration);
+}
+
+//=============================================================================
+NSDictionary *Breakpad::FixedUpCrashReportConfiguration(NSDictionary *configuration) {
+  NSMutableDictionary *fixedConfiguration = [[configuration mutableCopy] autorelease];
+  // kReporterMinidumpDirectoryKey can become stale because the app's data container path includes
+  // an UUID that is not guaranteed to stay the same over time.
+  [fixedConfiguration setObject:KeyValue(@BREAKPAD_DUMP_DIRECTORY)
+                    forKey:@kReporterMinidumpDirectoryKey];
+  return fixedConfiguration;
 }
 
 //=============================================================================
