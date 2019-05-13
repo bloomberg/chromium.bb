@@ -394,12 +394,15 @@ unsigned NGInlineLayoutStateStack::UpdateBoxDataFragmentRange(
     const unsigned box_data_index = start->box_data_index;
     if (!box_data_index)
       continue;
+    // |box_data_list_[box_data_index - 1]| is the box for |start| child.
+    // Avoid keeping a pointer to the |BoxData| because it maybe invalidated as
+    // we add to |box_data_list_|.
 
     // As |box_data_index| is converted to start/end of BoxData, update
     // |box_data_index| to the parent box, or to 0 if no parent boxes.
     // This allows including this box to the nested parent box.
-    BoxData* box_data = &box_data_list_[box_data_index - 1];
-    start->box_data_index = box_data->parent_box_data_index;
+    start->box_data_index =
+        box_data_list_[box_data_index - 1].parent_box_data_index;
 
     // Find the end line box item.
     const unsigned start_index = index;
@@ -415,27 +418,32 @@ unsigned NGInlineLayoutStateStack::UpdateBoxDataFragmentRange(
       // because the update is limited only when its |box_data_index| is lower.
       while (end->box_data_index && end->box_data_index < box_data_index) {
         UpdateBoxDataFragmentRange(line_box, index);
-        // Re-compute |box_data| in case |box_data_list_| was reallocated when
-        // |UpdateBoxDataFragmentRange| added new fragments.
-        box_data = &box_data_list_[box_data_index - 1];
       }
 
       if (box_data_index != end->box_data_index)
         break;
-      end->box_data_index = box_data->parent_box_data_index;
+      end->box_data_index =
+          box_data_list_[box_data_index - 1].parent_box_data_index;
     }
 
     // If this is the first range for this BoxData, set it.
-    if (!box_data->fragment_end) {
-      box_data->fragment_start = start_index;
-      box_data->fragment_end = index;
+    if (!box_data_list_[box_data_index - 1].fragment_end) {
+      box_data_list_[box_data_index - 1].SetFragmentRange(start_index, index);
     } else {
       // This box is fragmented by BiDi reordering. Add a new BoxData for the
       // fragmented range.
-      box_data->fragmented_box_data_index = box_data_list_.size();
-      box_data_list_.emplace_back(*box_data, start_index, index);
+      box_data_list_[box_data_index - 1].fragmented_box_data_index =
+          box_data_list_.size();
+      // Do not use `emplace_back()` here because adding to |box_data_list_| may
+      // reallocate the buffer. Create a new instance and |push_back()| instead.
+      BoxData fragmented_box_data(box_data_list_[box_data_index - 1],
+                                  start_index, index);
+      box_data_list_.push_back(fragmented_box_data);
     }
-    return box_data->parent_box_data_index ? start_index : index;
+    // If this box has parent boxes, we need to process it again.
+    if (box_data_list_[box_data_index - 1].parent_box_data_index)
+      return start_index;
+    return index;
   }
   return index;
 }

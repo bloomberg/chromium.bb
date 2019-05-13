@@ -214,6 +214,11 @@ class CORE_EXPORT NGInlineLayoutStateStack {
           size(other.size),
           offset(other.offset) {}
 
+    void SetFragmentRange(unsigned start_index, unsigned end_index) {
+      fragment_start = start_index;
+      fragment_end = end_index;
+    }
+
     // The range of child fragments this box contains.
     unsigned fragment_start;
     unsigned fragment_end;
