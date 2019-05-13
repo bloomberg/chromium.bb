@@ -13,6 +13,6 @@ source_set("module_info") {
   deps = [
     "//base",
     "//base:i18n",
-    "//chrome/common/safe_browsing:binary_feature_extractor",
+    # "//chrome/common/safe_browsing:binary_feature_extractor",
   ]
 }
