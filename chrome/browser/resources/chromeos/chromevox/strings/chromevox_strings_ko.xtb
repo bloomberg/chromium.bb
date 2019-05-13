@@ -214,7 +214,7 @@
 <translation id="2626530649491650971">clickable</translation>
 <translation id="2628764385451019380">이전 콤보 상자가 없습니다.</translation>
 <translation id="2637227747952042642">Math</translation>
-<translation id="2638785836053527382"><ph name="FILE_NAME" /> 다운로드가 다시 시작되었습니다.</translation>
+<translation id="2638785836053527382"><ph name="FILE_NAME" /> 다운로드가 다시 시작되었습니다</translation>
 <translation id="2639750663247012216">ChromeVox 특수키</translation>
 <translation id="2644542693584024604">misspelled</translation>
 <translation id="2661530546602071611">안내문</translation>
@@ -623,7 +623,7 @@
 <translation id="5349770431644471053">뒤로 링크</translation>
 <translation id="536031132345979795">계속 읽고 있는 중에 뒤로 건너뛰기</translation>
 <translation id="5368000168321181111">이어콘 사용 안함</translation>
-<translation id="5368505757342402527"><ph name="FILE_NAME" /> 다운로드가 <ph name="PROGRESS" />% 완료되었습니다. 약 <ph name="TIME" /><ph name="UNITS" /> 남았습니다.</translation>
+<translation id="5368505757342402527"><ph name="FILE_NAME" /> 다운로드가 <ph name="PROGRESS" />% 완료되었으며 약 <ph name="TIME" /><ph name="UNITS" /> 남았습니다</translation>
 <translation id="5374320867641260420">다음 버튼이 없습니다.</translation>
 <translation id="5376407118396657359">셀 단위로 이동하려면 Search + Ctrl + Alt와 함께 화살표를 누르세요.</translation>
 <translation id="5382299583965267720">다음 수준 1 제목이 없습니다.</translation>
@@ -806,7 +806,7 @@
 <translation id="667999046851023355">문서</translation>
 <translation id="6688209025607531203">비모달 알림</translation>
 <translation id="6689672606256159458">다크 살몬</translation>
-<translation id="669617842401078250"><ph name="FILE_NAME" /> 다운로드가 일시중지됨</translation>
+<translation id="669617842401078250"><ph name="FILE_NAME" /> 다운로드가 일시중지되었습니다</translation>
 <translation id="6696967141280706829">머리말</translation>
 <translation id="6697092096875747123">이전 콤보 상자</translation>
 <translation id="6702609185760332517">{COUNT,plural, =1{느낌표}other{느낌표 #개}}</translation>
@@ -960,7 +960,7 @@ Chrome 브라우저 메뉴를 열려면 Alt+F를 누릅니다.</translation>
         <ph name="LINE_THROUGH_STRING" />
         <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="7701196182766842984">autolst</translation>
-<translation id="7763537600611320912"><ph name="FILE_NAME" /> 다운로드가 시작됨</translation>
+<translation id="7763537600611320912"><ph name="FILE_NAME" /> 다운로드가 시작되었습니다</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, 비밀번호 입력란</translation>
 <translation id="7776293189010177726">ChromeVox 메뉴 열기</translation>
 <translation id="7800558923657349506">에필로그</translation>
@@ -1085,7 +1085,7 @@ Chrome 브라우저 메뉴를 열려면 Alt+F를 누릅니다.</translation>
 <translation id="8096975275316362544">민트 크림</translation>
 <translation id="8098587210054821856">슬레이트 그레이</translation>
 <translation id="8110647606445335195">ARIA 랜드마크가 없습니다.</translation>
-<translation id="812886159861361726"><ph name="FILE_NAME" /> 다운로드가 중지됨</translation>
+<translation id="812886159861361726"><ph name="FILE_NAME" /> 다운로드가 중지되었습니다</translation>
 <translation id="8138880386467279117">터치</translation>
 <translation id="8153880621934657047">표 내부가 아닙니다.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{밑줄}other{밑줄 기호 #개}}</translation>
@@ -1155,7 +1155,7 @@ Chrome 브라우저 메뉴를 열려면 Alt+F를 누릅니다.</translation>
 <translation id="8743786158317878347">구조화된 콘텐츠(예: 표) 입력</translation>
 <translation id="8747966237988593539">정렬된 목록</translation>
 <translation id="8749988712346667988">실버</translation>
-<translation id="875769700429317857"><ph name="FILE_NAME" /> 다운로드가 완료됨</translation>
+<translation id="875769700429317857"><ph name="FILE_NAME" /> 다운로드가 완료되었습니다</translation>
 <translation id="8759334257841767240">다음 링크가 없습니다.</translation>
 <translation id="8767968232364267681">다음 수준 4 제목</translation>
 <translation id="8770473310765924354">구조화된 콘텐츠(예: 표) 종료</translation>

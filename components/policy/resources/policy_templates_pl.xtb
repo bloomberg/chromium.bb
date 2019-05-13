@@ -1422,7 +1422,6 @@ Jeśli nie podasz wartości albo wybierzesz ustawienie „Wyłącz”, stosowani
 
         Ta zasada jest używana przez rejestrację zasad chmurowych obejmującą cały komputer na komputerach osobistych. Można ją skonfigurować przy użyciu Rejestru lub obiektu zasad grupy (GPO) w systemie Windows, plist na Macu i pliku zasad JSON na Linuksie.</translation>
 <translation id="3660562134618097814">Prześlij pliki cookie dostawcy tożsamości SAML podczas logowania</translation>
-<translation id="3668151900457104753">Odinstaluj rozszerzenia z czarnej listy</translation>
 <translation id="3701121231485832347">Kontroluje ustawienia urządzeń z systemem <ph name="PRODUCT_OS_NAME" />, którymi zarządza <ph name="MS_AD_NAME" />.</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Pole z jednym wierszem jest nieużywane i zostanie usunięte. Zacznij używać wielowierszowego pola tekstowego poniżej).</translation>
 <translation id="3709266154059827597">Konfiguruj czarną listę instalacji rozszerzeń</translation>
@@ -4172,11 +4171,6 @@ Ta zasada określa listę źródeł (adresów URL) lub wzorców nazw hosta
       Ta zasada dotyczy tylko użytkowników, którzy uwierzytelnili się za pomocą SAML.
 
       Wartość zasady należy podać w sekundach.</translation>
-<translation id="9018338365267278833">Spowoduje usunięcie rozszerzeń znajdujących się na liście <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> lub na liście zasady <ph name="EXTENSION_SETTINGS_POLICY_NAME" />, które mają ustawiony tryb blokowania instalacji. Razem z rozszerzeniami zostaną trwale usunięte lokalne dane użytkownika.  Informacje o tym, co może stać się z danymi użytkownika, które nie są przechowywane lokalnie, znajdziesz w polityce prywatności rozszerzenia lub w polityce retencji danych.
-
-      Gdy ta zasada jest włączona, rozszerzenia znajdujące się na powyższych listach (jeśli są już zainstalowane na urządzeniu) zostaną całkowicie usunięte z tego urządzenia (razem z lokalnymi danymi użytkownika).
-
-      Gdy zasada jest wyłączona lub nieskonfigurowana, rozszerzenia znajdujące się na powyższych listach (jeśli są już zainstalowane na urządzeniu i znajdują się na czarnej liście <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />) zostaną wyłączone na urządzeniu, ale nie odinstalowane.</translation>
 <translation id="9027787254195333560">Ta zasada pozwala wskazać obraz awatara, który oznacza użytkownika na ekranie logowania. Aby ją skonfigurować, podaj URL, z którego <ph name="PRODUCT_OS_NAME" /> może pobrać obraz awatara, oraz hash kryptograficzny używany do weryfikacji poprawności pobranego pliku. Obraz musi być w formacie JPEG, a jego rozmiar nie może przekraczać 512 KB. URL musi być dostępny bez uwierzytelniania.
 
       Po pobraniu obraz awatara jest zapisywany w pamięci podręcznej. Zostanie pobrany ponownie po każdej zmianie adresu URL lub hasha.

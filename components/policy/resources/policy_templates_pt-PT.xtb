@@ -1434,7 +1434,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
         Esta política é utilizada pela inscrição de políticas de nuvem num âmbito automático em computadores e pode ser definida pela Base de dados de registo ou GPO no Windows, pelo plist no Mac e pelo ficheiro da política JSON no Linux.</translation>
 <translation id="3660562134618097814">Transferir cookies SAML IdP durante o início de sessão</translation>
-<translation id="3668151900457104753">Desinstale extensões que estão na lista negra</translation>
 <translation id="3701121231485832347">Controla definições específicas para dispositivos <ph name="PRODUCT_OS_NAME" /> geridos por <ph name="MS_AD_NAME" />.</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (O campo de uma única linha foi descontinuado e será removido no futuro. Comece a utilizar a caixa de texto multilinha abaixo.)</translation>
 <translation id="3709266154059827597">Configurar lista negra de instalação de extensões</translation>
@@ -4200,11 +4199,6 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
       Esta política apenas afeta os utilizadores que efetuaram a autenticação através de SAML.
 
       O valor da política deve ser especificado em segundos.</translation>
-<translation id="9018338365267278833">Esta política remove as extensões que são apresentadas na <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> ou na <ph name="EXTENSION_SETTINGS_POLICY_NAME" /> que tiverem o modo de instalação definido como bloqueado e vai remover completamente os dados do utilizador locais através da mesma.  Consulte a política de privacidade ou a política de retenção de dados das extensões para compreender o que pode acontecer com os dados do utilizador que não estiverem armazenados localmente.
-
-      Quando a política está definida como ativada, as extensões que se enquadrarem nas listas mencionadas anteriormente (se já estiverem instaladas numa máquina) são removidas completamente dessa máquina (incluindo os dados do utilizador locais).
-
-      Quando a política está definida como desativada ou não está definida, as extensões que se enquadrarem nas listas mencionadas anteriormente (se já estiverem instaladas numa máquina e existirem na lista negra <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />) são desativadas na máquina e não são desinstaladas.</translation>
 <translation id="9027787254195333560">Esta política permite-lhe configurar a imagem do avatar que representa o utilizador no ecrã de início de sessão. A política é definida ao especificar o URL a partir do qual o <ph name="PRODUCT_OS_NAME" /> pode transferir a imagem do avatar e um hash criptográfico utilizado para validar a integridade da transferência. A imagem tem de estar no formato JPEG e o tamanho não pode exceder 512 kB. O URL tem de ser acessível sem qualquer autenticação.
 
       A imagem do avatar é transferida e colocada em cache. Será transferida novamente sempre que o URL ou o hash forem alterados.

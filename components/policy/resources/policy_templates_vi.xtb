@@ -1455,7 +1455,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
         Tính năng đăng ký chính sách đám mây trong phạm vi máy sử dụng chính sách này trên máy tính để bàn. Sổ đăng ký hoặc GPO trên Windows, plist trên máy Mac và tệp chính sách JSON trên Linux có thể đặt chính sách này.</translation>
 <translation id="3660562134618097814">Chuyển cookie SAML IdP trong khi đăng nhập</translation>
-<translation id="3668151900457104753">Gỡ cài đặt các tiện ích trong danh sách cấm</translation>
 <translation id="3701121231485832347">Kiểm soát các tùy chọn cài đặt dành riêng cho các thiết bị <ph name="PRODUCT_OS_NAME" /> do <ph name="MS_AD_NAME" /> quản lý.</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Trường một dòng không dùng nữa và sẽ bị xóa trong tương lai. Hãy bắt đầu sử dụng hộp văn bản nhiều dòng bên dưới.)</translation>
 <translation id="3709266154059827597">Định cấu hình danh sách đen cài đặt tiện ích</translation>
@@ -4295,11 +4294,6 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
       Chính sách này chỉ ảnh hưởng đến người dùng đã xác thực bằng Ngôn ngữ đánh dấu xác nhận bảo mật (SAML).
 
       Bạn nên chỉ định giá trị tính bằng giây cho chính sách này.</translation>
-<translation id="9018338365267278833">Thao tác này sẽ xóa các tiện ích xuất hiện trong <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> hoặc các tiện ích xuất hiện trong <ph name="EXTENSION_SETTINGS_POLICY_NAME" /> có chế độ cài đặt được đặt thành chặn, đồng thời cũng xóa hoàn toàn dữ liệu người dùng trên thiết bị.  Hãy tham khảo chính sách quyền riêng tư của tiện ích hoặc chính sách lưu giữ dữ liệu để hiểu rõ những điều có thể xảy ra với dữ liệu người dùng không được lưu trữ trên thiết bị.
-
-      Khi bạn đặt chính sách này thành bật, thì những tiện ích thuộc các danh sách nêu trên (nếu đã cài đặt trên một máy) sẽ bị xóa hoàn toàn khỏi máy đó (bao gồm cả dữ liệu người dùng trên thiết bị).
-
-      Khi bạn không đặt hoặc đặt chính sách này thành tắt, thì những tiện ích thuộc các danh sách nêu trên (nếu đã cài đặt trên một máy và có trong danh sách cấm <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />) sẽ bị tắt trên máy và không bị gỡ cài đặt.</translation>
 <translation id="9027787254195333560">Chính sách này cho phép bạn định cấu hình hình đại diện cho người dùng trên màn hình đăng nhập. Bạn đặt chính sách này bằng cách chỉ định URL mà từ đó <ph name="PRODUCT_OS_NAME" /> có thể tải xuống hình đại diện và một hàm băm mật mã dùng để xác minh tính toàn vẹn của tài nguyên đã tải xuống. Ảnh phải ở định dạng JPEG, kích thước ảnh không được vượt quá 512 kB. URL phải truy cập được mà không cần xác thực.
 
       Hình đại diện được tải xuống và lưu vào bộ nhớ đệm. Hình nền sẽ được tải xuống lại bất cứ khi nào URL hoặc hàm băm thay đổi.

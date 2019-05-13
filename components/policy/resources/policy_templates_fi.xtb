@@ -1432,7 +1432,6 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 
         Tätä käytännön arvoa käytetään laitteen laajuisessa pöytäkoneen rekisteröimisessä pilvikäytäntöön. Arvon voi asettaa Windowsissa rekisteri tai ryhmäkäytäntöobjekti, Macissa plist ja Linuxissa JSON-käytäntötiedosto.</translation>
 <translation id="3660562134618097814">SAML-tunnistuspalvelun evästeiden siirto kirjautumisen aikana</translation>
-<translation id="3668151900457104753">Poista mustalla listalla olevat laajennukset</translation>
 <translation id="3701121231485832347">Määrittää sellaisten laitteiden (<ph name="PRODUCT_OS_NAME" />) asetukset, joita <ph name="MS_AD_NAME" /> ylläpitää</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Yksirivinen kenttä on poistettu käytöstä ja poistetaan pian kokonaan. Siirry käyttämään alla olevaa monirivistä tekstiruutua.)</translation>
 <translation id="3709266154059827597">Määritä, mitä laajennuksia ei saa asentaa</translation>
@@ -4199,11 +4198,6 @@ Jos tämän käytännön arvoksi on määritetty Tosi, käyttäjän on suoritett
       Tämä käytäntö koskee vain SAML-todennusta käyttäviä käyttäjiä.
 
       Määritä käytännön arvo sekunteina.</translation>
-<translation id="9018338365267278833">Tämä poistaa kohteessa <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> tai <ph name="EXTENSION_SETTINGS_POLICY_NAME" /> näkyvät laajennukset, joiden asennustilaksi on määritetty estetty ja tyhjentää samalla paikallisen käyttäjädatan.  Lue laajennusten tietosuojakäytäntö tai datansäilytyskäytäntö ymmärtääksesi, mitä sellaiselle käyttäjädatalle saattaa tapahtua, jota ei ole tallennettu paikallisesti.
-
-      Kun käytännön arvoksi on määritetty käytössä, yllä mainittuihin luetteloihin kuuluvat laajennukset (jos ne on jo asennettu laitteelle) poistetaan laitteelta kokonaan (myös paikallinen käyttäjädata).
-
-      Kun käytännön arvoksi on määritetty ei käytössä tai käytäntöä ei ole määritetty, yllä mainittuihin luetteloihin kuuluvat laajennukset (jos ne on jo asennettu laitteelle ja ovat mustalla listalla <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />) poistetaan käytöstä laitteella eikä poisteta.</translation>
 <translation id="9027787254195333560">Tämän käytännön avulla voit määrittää käyttäjän avatar-kuvan, joka näkyy kirjautumisnäytöllä. Määritä tämän käytännön arvoksi URL-osoite, josta <ph name="PRODUCT_OS_NAME" /> voi ladata avatarin, ja salauksen hajautusarvo, jonka avulla tarkistetaan latauksen eheys. Kuvan on oltava JPEG-muodossa, ja sen sallittu enimmäiskoko on 512 kt. Pääsy URL-osoitteeseen ei saa edellyttää todennusta.
 
       Avatar ladataan ja tallennetaan välimuistiin. Se ladataan uudelleen aina, kun URL-osoite tai hajautusarvo muuttuu.

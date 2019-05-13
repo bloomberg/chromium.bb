@@ -1430,7 +1430,6 @@
 
         Ez a házirend a gépek hatókörére vonatkozó, felhővel kapcsolatos házirend asztali környezetben való regisztrációjánál használható. Beállítása Windows rendszeren beállításjegyzék vagy GPO, Mac rendszeren plist, Linux esetében pedig JSON-házirendfájl használatával lehetséges.</translation>
 <translation id="3660562134618097814">SAML IdP cookie-k átadása a bejelentkezés során</translation>
-<translation id="3668151900457104753">A tiltólistán lévő bővítmények eltávolítása</translation>
 <translation id="3701121231485832347">A(z) <ph name="MS_AD_NAME" /> által kezelt <ph name="PRODUCT_OS_NAME" />-eszközök beállításainak módosítására szolgál.</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Az egysoros mező megszűnt, és a jövőben eltávolítjuk. Kérjük, használja az alábbi többsoros szövegmezőt.)</translation>
 <translation id="3709266154059827597">Bővítménytelepítési feketelista beállítása</translation>
@@ -4203,11 +4202,6 @@ A házirend konfigurálásának ajánlott módja Windows rendszerben a GPO, noha
       Ez a házirend csak azokra a felhasználókra vonatkozik, akik SAML használatával hitelesítik magukat.
 
       A házirend értékét másodpercben kell megadni.</translation>
-<translation id="9018338365267278833">Ez eltávolítja az <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> listán vagy az <ph name="EXTENSION_SETTINGS_POLICY_NAME" /> házirendben szereplő azon bővítményeket, amelyek telepítési módját letiltották, és ezzel együtt törli a helyi felhasználói adatokat is.  A bővítmény adatvédelmi vagy adatmegőrzési irányelvei nyújtanak tájékoztatást arról, mi történik a nem helyben tárolt felhasználói adatokkal.
-
-      Ha a házirend engedélyezve van, akkor a fent említett listákon szereplő bővítményeket (amennyiben már telepítve vannak) a rendszer teljesen eltávolítja az adott eszközről (a helyi felhasználói adatokkal együtt).
-
-      Ha a házirend le van tiltva, vagy ha nincs beállítva, akkor a fent említett listákon szereplő bővítményeket (amennyiben már telepítve vannak, valamint szerepelnek az <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> házirend tiltólistáján) a rendszer letiltja, de nem távolítja el a gépről.</translation>
 <translation id="9027787254195333560">Ez a házirend lehetővé teszi a felhasználó bejelentkezési képernyőn megjelenő avatarképének konfigurálását. A házirend annak az URL-nek a megadásával állítható be, ahonnan a <ph name="PRODUCT_OS_NAME" /> letöltheti az avatarképet és a letöltés integritásának ellenőrzésére szolgáló kriptográfiai hash-értéket. A képnek JPEG-formátumban kell lennie, mérete pedig nem haladhatja meg az 512 kB-ot. Az URL-nek hitelesítés nélkül is hozzáférhetőnek kell lennie.
 
       A letöltés után az avatarkép a gyorsítótárba kerül. Ha az URL vagy a hash megváltozik, a rendszer újra letölti az avatarképet.

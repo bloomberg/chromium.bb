@@ -1447,7 +1447,6 @@ Bu ayar Kapalı değerine getirilirse veya herhangi bir değer belirlenmezse <ph
 
         Bu politika, masaüstünde makine kapsamı bulut politika kaydı tarafından kullanılır ve Windows'da Registry ya da GPO, Mac'te plist, Linux'ta ise JSON politika dosyası tarafından ayarlanabilir.</translation>
 <translation id="3660562134618097814">Giriş sırasında SAML IdP çerezlerini aktar</translation>
-<translation id="3668151900457104753">Kara listeye alınan uzantıların yüklemesini kaldır</translation>
 <translation id="3701121231485832347"><ph name="MS_AD_NAME" /> tarafından yönetilen <ph name="PRODUCT_OS_NAME" /> cihazlara özgü ayarları kontrol eder.</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Tek satırlı alanlar artık kullanılmamaktadır ve yakında kaldırılacaktır. Lütfen aşağıdaki çok satırlı metin kutusunu kullanın.)</translation>
 <translation id="3709266154059827597">Uzantı kurulum kara listesini yapılandır</translation>
@@ -2379,7 +2378,7 @@ Bu politika ayarlanmadan bırakılırsa kullanıcı sistemde yüklü herhangi bi
       Devre dışı bırakılırsa, varsayılan arama motoru içe aktarılmaz.
 
       Ayarlanmazsa, kullanıcıdan içe aktarma işlemini gerçekleştirmesi istenebilir veya içe aktarma otomatik olarak gerçekleşebilir.</translation>
-<translation id="5423197884968724595">Android WebView kısıtlama adı:</translation>
+<translation id="5423197884968724595">Android Web Görünümü kısıtlama adı:</translation>
 <translation id="5424147596523390018">Tüm renk modlarına izin ver</translation>
 <translation id="5437733496511628148">Bu ayar etkinleştirildiğinde, tarayıcının adres çubuğundaki alan adına ait olmayan web sayfası öğelerinin çerez yerleştirmesi engellenir.
 
@@ -2558,7 +2557,7 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
       Bu politika 0 değerine ayarlanırsa, kimlik doğrulama verisi önbelleğe alma devre dışı bırakılır. Her oturum açmada alana özgü verilerin getirilmesi gerektiği için bunu yapmak ilişkili kullanıcıların oturum açmasını önemli ölçüde yavaşlatabilir.
 
       Alan verilerinin geçici kullanıcılar için bile önbelleğe alındığını unutmayın. Geçici kullanıcıların alanının izlenmesini önlemek istiyorsanız önbellek kapatılmalıdır.</translation>
-<translation id="570062449808736508">Bu politika boş olmayan bir dizeye ayarlanırsa WebView, belirtilen yetkili adına sahip içerik sağlayıcıdan URL kısıtlamalarını okur.</translation>
+<translation id="570062449808736508">Bu politika boş olmayan bir dizeye ayarlanırsa Web Görünümü, belirtilen yetkili adına sahip içerik sağlayıcıdan URL kısıtlamalarını okur.</translation>
 <translation id="5701714006401683963">Bu politika yanlış (false) değerine ayarlanırsa, yönetilen misafir oturumu https://support.google.com/chrome/a/answer/3017014, standart "Herkese Açık Oturum"da belirtildiği şekilde davranır.
 
       Politika doğru (true) değerine ayarlanır veya ayarlanmadan bırakılırsa, yönetilen misafir oturumu, normal "Herkese Açık Oturumlar" için geçerli olan kısıtlamaları kaldıran "Yönetilen Oturum" davranışını devralır.
@@ -4248,11 +4247,6 @@ Bu politika "true" (doğru) olarak ayarlanırsa kullanıcının tarayıcıyı ku
       Bu politika sadece SAML kullanarak kimlik doğrulaması yapan kullanıcıları etkiler.
 
       Politika değeri saniye olarak belirtilmelidir.</translation>
-<translation id="9018338365267278833">Bu işlem, <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> içinde veya <ph name="EXTENSION_SETTINGS_POLICY_NAME" /> politikasında görünen, yükleme modu engellenmiş olarak ayarlanmış uzantıları kaldırır ve içerdiği yerel kullanıcı verilerini temizler.  Yerel olarak depolanmamış kullanıcı verilerine ne olacağını anlamak için uzantı gizlilik politikasına veya veri saklama politikasına bakın.
-
-      Politika etkin olarak ayarlandığında, daha önce bahsedilen listelerdeki (bir makineye yüklenmiş durumdaysa) uzantılar (yerel kullanıcı verileri dahil) makineden tümüyle kaldırılır.
-
-      Politika devre dışı olarak ayarlanır veya ayarlanmadan bırakılırsa, daha önce bahsedilen listelerdeki (bir makineye yüklenmiş durumdaysa ve <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> kara listesindeyse) uzantılar makinede devre dışı bırakılır ve yüklenmez.</translation>
 <translation id="9027787254195333560">Bu politika, giriş ekranında kullanıcıyı temsil eden avatar resmini yapılandırmanıza olanak tanır. Politika, avatar resminin <ph name="PRODUCT_OS_NAME" /> tarafından indirilebileceği URL'nin belirtilmesi ve indirme işleminin bütünlüğünü doğrulamak için kullanılacak şifreleme karmasının tanımlanmasıyla ayarlanır. Resim JPEG biçiminde olmalı, boyutu 512 kB'tan fazla olmamalıdır. URL'ye kimlik doğrulaması yapmadan erişilebilmelidir.
 
       Avatar resmi indirilir ve önbelleğe alınır. URL veya karma her değiştiğinde resim tekrar indirilir.

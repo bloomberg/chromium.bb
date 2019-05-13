@@ -1450,7 +1450,6 @@ Ja šim iestatījumam ir izvēlēta vērtība “Izslēgts” vai vērtība nav 
 
         Šo politiku izmanto ierīces tvēruma mākoņa politikas reģistrācijai galddatoros, un to var iestatīt, izmantojot reģistru vai GPO operētājsistēmā Windows, “plist” failu operētājsistēmā Mac un JSON politikas failu operētājsistēmā Linux.</translation>
 <translation id="3660562134618097814">SAML identitātes nodrošinātāja sīkfailu pārsūtīšana pieteikšanās laikā</translation>
-<translation id="3668151900457104753">Atinstalēt melnajā sarakstā iekļautos paplašinājumus</translation>
 <translation id="3701121231485832347">Kontrolē iestatījumus, kas ir raksturīgi <ph name="MS_AD_NAME" /> pārvaldītajām <ph name="PRODUCT_OS_NAME" /> ierīcēm.</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Vienas rindas lauks ir novecojis, un to ir plānots noņemt. Lūdzu, sāciet lietot tālāk esošo vairākrindu tekstlodziņu.)</translation>
 <translation id="3709266154059827597">Konfigurē paplašinājumu instalēšanas melno sarakstu</translation>
@@ -4271,11 +4270,6 @@ Operētājsistēmā Windows politikas konfigurēšanai ieteicams izmantot GPO, t
       Šī politika attiecas tikai uz lietotājiem, kuri tika autentificēti, izmantojot SAML.
 
       Politikas vērtība ir jānorāda sekundēs.</translation>
-<translation id="9018338365267278833">Šādā veidā tiks noņemti paplašinājumi, kas redzami šeit: <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, vai paplašinājumi, kas norādīti politikā <ph name="EXTENSION_SETTINGS_POLICY_NAME" />, kuru instalēšanas režīms ir iestatīts kā bloķēts un ar kuriem tiks notīrīti lietotāja lokālie dati.  Lai saprastu, kas var notikt ar lietotāja datiem, kuri nav saglabāti lokāli, skatiet paplašinājumu konfidencialitātes politiku vai datu uzglabāšanas politiku.
-
-      Ja politika ir iespējota, paplašinājumi, kas ietilpst iepriekš minētajos sarakstos (ja tie jau ir instalēti ierīcē), tiks pilnībā noņemti no šīs ierīces (tostarp lokālie lietotāja dati).
-
-      Ja politika ir atspējota vai nav iestatīta, paplašinājumi, kas ietilpst iepriekš minētajos sarakstos (ja tie jau ir instalēti ierīcē un atrodas melnajā sarakstā <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />), tiks atspējoti ierīcē, bet netiks atinstalēti.</translation>
 <translation id="9027787254195333560">Šī politika ļauj konfigurēt lietotāja iemiesojuma attēlu, kas tiek rādīts pieteikšanās ekrānā. Politika tiek iestatīta, norādot URL, no kura <ph name="PRODUCT_OS_NAME" /> var lejupielādēt iemiesojuma attēlu un šifrēšanas jaukšanu, kas tiek izmantota, lai apstiprinātu lejupielādes integritāti. Attēlam ir jābūt JPEG formātā, un tā lielums nedrīkst pārsniegt 512 KB. URL ir jābūt pieejamam bez autentifikācijas.
 
       Iemiesojuma attēls ir lejupielādēts un saglabāts kešatmiņā. Tas tiks lejupielādēts atkārtoti, kad mainīsies URL vai jaucējkods.

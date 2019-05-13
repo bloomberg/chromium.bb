@@ -1463,7 +1463,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 
         Ta pravilnik uporablja včlanitev v pravilnik oblaka v obsegu naprave v namiznem računalniku in ga je mogoče nastaviti prek registra ali pravilnika skupine v sistemu Windows, prek datoteke plist v sistemu macOS in datoteke pravilnika v obliki zapisa JSON v Linuxu.</translation>
 <translation id="3660562134618097814">Prenesi piškotke SAML IdP pri prijavi</translation>
-<translation id="3668151900457104753">Odmestitev razširitev, uvrščenih na seznam blokiranih</translation>
 <translation id="3701121231485832347">Nadzira nastavitve za naprave s sistemom <ph name="PRODUCT_OS_NAME" />, ki jih upravlja <ph name="MS_AD_NAME" />.</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Enovrstično polje je zastarelo in bo v prihodnje odstranjeno. Začnite uporabljati večvrstično besedilno polje spodaj.)</translation>
 <translation id="3709266154059827597">Nastavi seznam razširitev, katerih namestitev je prepovedana</translation>
@@ -4317,11 +4316,6 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
       Ta pravilnik vpliva samo na uporabnike, katerih pristnost je bila preverjena s SAML-jem.
 
       Vrednost za pravilnik mora biti izražena v sekundah.</translation>
-<translation id="9018338365267278833">S tem bodo odstranjene razširitve, ki se pojavijo v izdelku <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, ali razširitve, ki se pojavijo v pravilniku <ph name="EXTENSION_SETTINGS_POLICY_NAME" />, katerih način namestitve je nastavljen na blokirano in pri katerem so izbrisani lokalni uporabniški podatki.  Preberite pravilnik o zasebnosti za razširitve ali pravilnik o hrambi podatkov, če želite razumeti, kaj se lahko zgodi z uporabniškimi podatki, ki niso shranjeni lokalno.
-
-      Če je pravilnik omogočen, bodo razširitve, ki so uvrščene na prej omenjene sezname (če so že nameščene v napravi), v celoti odstranjene iz te naprave (vključno z lokalnimi uporabniškimi podatki).
-
-      Če je pravilnik onemogočen ali ni nastavljen, bodo razširitve, ki so uvrščene na prej omenjene sezname (če so že nameščene v napravi in uvrščene na seznam blokiranih <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />), v napravi onemogočene in ne bodo odmeščene.</translation>
 <translation id="9027787254195333560">S tem pravilnikom lahko nastavite sliko avatarja, ki na zaslonu za prijavo predstavlja uporabnika. Pravilnik se nastavi z določitvijo URL-ja, s katerega lahko operacijski sistem <ph name="PRODUCT_OS_NAME" />prenese sliko za avatar in kriptografsko zgoščeno vrednost za preverjanje celovitosti prenosa. Slika mora biti v obliki JPEG in njena velikost ne sme presegati 512 KB. URL mora biti dostopen brez preverjanja pristnosti.
 
       Slika za avatar se prenese in shrani v predpomnilnik. Če se spremeni URL ali zgoščena vrednost, se znova prenese.

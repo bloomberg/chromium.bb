@@ -1489,7 +1489,7 @@
 <translation id="3317459757438853210">Magkabilaan</translation>
 <translation id="3317678681329786349">Naka-block ang camera at mikropono</translation>
 <translation id="3319048459796106952">Bagong &amp;incognito window</translation>
-<translation id="3323521181261657960">Bonus! Nadagdagan ang tagal ng paggamit mo</translation>
+<translation id="3323521181261657960">Bonus! Nadagdagan ang tagal ng paggamit</translation>
 <translation id="3325910708063135066">Naka-off ang camera at mikropono sa System Preferences ng Mac</translation>
 <translation id="3331321258768829690">(<ph name="UTCOFFSET" />) <ph name="LONGTZNAME" /> (<ph name="EXEMPLARCITY" />)</translation>
 <translation id="3331974543021145906">Impormasyon ng app</translation>
@@ -1865,7 +1865,7 @@
 <translation id="3869917919960562512">Maling index.</translation>
 <translation id="3870931306085184145">Walang naka-save na password para sa <ph name="DOMAIN" /></translation>
 <translation id="3871092408932389764">Pinakamababa</translation>
-<translation id="3871350334636688135">Pagkalipas ng 24 na oras, magsasagawa ang administrator mo ng isang beses na pag-update na magde-delete sa iyong lokal na data kapag na-restart mo ang device mo. I-save ang anumang lokal na data na kailangan mo sa cloud storage sa loob ng 24 na oras.</translation>
+<translation id="3871350334636688135">Pagkalipas ng 24 na oras, magsasagawa ang administrator mo ng isang beses na pag-update na magde-delete sa iyong lokal na data kapag na-restart mo ang iyong device. I-save ang anumang lokal na data na kailangan mo sa cloud storage sa loob ng 24 na oras.</translation>
 <translation id="3872220884670338524">Higit pang pagkilos, naka-save na account para sa <ph name="USERNAME" /> sa <ph name="DOMAIN" /></translation>
 <translation id="3872991219937722530">Magbakante ng espasyo sa disk o hindi gagana nang maayos ang iyong device.</translation>
 <translation id="3873315167136380065">Para i-on ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph name="END_LINK" /> para alisin ang iyong passphrase sa pag-sync</translation>
@@ -2180,7 +2180,7 @@
 <translation id="438503109373656455">Petra</translation>
 <translation id="4387004326333427325">Remote na tinanggihan ang certificate sa pagpapatunay</translation>
 <translation id="4389091756366370506">User <ph name="VALUE" /></translation>
-<translation id="4390000551125140321">{0,plural, =1{Incognito}one{# bukas na incognito window}other{# na bukas na incognito window}}</translation>
+<translation id="4390000551125140321">{0,plural, =1{Incognito}one{# nakabukas na incognito window}other{# na nakabukas na incognito window}}</translation>
 <translation id="439266289085815679">Ang configuration ng bluetooth ay kinokontrol ni <ph name="USER_EMAIL" />.</translation>
 <translation id="4394049700291259645">Huwag paganahin</translation>
 <translation id="4400367121200150367">Lalabas dito ang mga site na hindi kailanman nagse-save ng mga password</translation>
@@ -2254,6 +2254,7 @@
 <translation id="4524832533047962394">Hindi sinusuportahan ng bersyong ito ng operating system ang ibinigay na mode ng pag-enroll. Pakitiyak na ginagamit mo ang pinakabagong bersyon.</translation>
 <translation id="4525382759303819021">Matanggap ang mga pinakabagong update at rekomendasyon sa mga Play Store app</translation>
 <translation id="4530494379350999373">Pinanggalingan</translation>
+<translation id="4532646538815530781">Gumagamit ang site na ito ng mga sensor ng paggalaw.</translation>
 <translation id="4533846798469727141">Ngayon, sabihin ang "Hey Google"</translation>
 <translation id="4533985347672295764">Oras ng CPU</translation>
 <translation id="4534661889221639075">Subukang muli.</translation>
@@ -2488,6 +2489,7 @@
 <translation id="4892229439761351791">Puwedeng gumamit ng Bluetooth ang site</translation>
 <translation id="4893336867552636863">Permanente nitong ide-delete ang iyong data sa pag-browse sa device na ito.</translation>
 <translation id="4893522937062257019">Sa lock screen</translation>
+<translation id="489454699928748701">Payagan ang mga site na gumamit ng mga sensor ng paggalaw</translation>
 <translation id="4898011734382862273">Kinakatawan ng certificate na "<ph name="CERTIFICATE_NAME" />" ang isang Certification Authority</translation>
 <translation id="489985760463306091">Upang tapusin ang pag-aalis ng mapaminsalang software, i-restart ang iyong computer</translation>
 <translation id="4900392736118574277">Naging <ph name="URL" /> ang iyong pahina sa pagsisimula.</translation>
@@ -2661,7 +2663,7 @@
 <translation id="5187295959347858724">Naka-sign in ka na ngayon sa <ph name="SHORT_PRODUCT_NAME" />. Ang iyong mga bookmark, kasaysayan, at ibang mga setting ay sini-sync sa iyong Google Account.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
 <translation id="51918995459521422">Gustong mag-download ng <ph name="ORIGIN" /> ng maraming file</translation>
-<translation id="5192316339598592690">Mabilis na lumipat ng account at mag-sign sa mga app at website nang sabay-sabay.
+<translation id="5192316339598592690">Mabilis na lumipat ng account at mag-sign in sa mga app at website nang sabay-sabay.
     Puwedeng humiling sa iyo ang mga app at site ng pahintulot na gamitin ang ilan sa impormasyon ng Google Account mo. <ph name="LINK_BEGIN" />Matuto pa<ph name="LINK_END" /></translation>
 <translation id="5204673965307125349">Paki-powerwash ang device at subukang muli.</translation>
 <translation id="5204967432542742771">Ipasok ang password</translation>
@@ -2951,6 +2953,7 @@
 <translation id="5620568081365989559">Humihiling ang DevTools ng ganap na access sa <ph name="FOLDER_PATH" />. Tiyaking hindi ka maglalahad ng anumang sensitibong impormasyon.</translation>
 <translation id="5620612546311710611">mga istatistika sa paggamit</translation>
 <translation id="5620655347161642930">I-export ang mga password...</translation>
+<translation id="5623282979409330487">Ina-access ng site na ito ang iyong mga sensor ng paggalaw.</translation>
 <translation id="5623842676595125836">Log</translation>
 <translation id="5624120631404540903">Pamahalaan ang mga password</translation>
 <translation id="5626134646977739690">Pangalan:</translation>
@@ -3444,6 +3447,7 @@
 <translation id="6390994422085833176">Suriin ang mga feature ng pag-sync at pag-personalize pagkatapos ng pag-set up</translation>
 <translation id="6393156038355142111">Magmungkahi ng malakas na password</translation>
 <translation id="6395423953133416962">Ipadala ang <ph name="BEGIN_LINK1" />impormasyon ng system<ph name="END_LINK1" /> at <ph name="BEGIN_LINK2" />mga sukatan<ph name="END_LINK2" /></translation>
+<translation id="6396988158856674517">I-block ang mga site sa paggamit ng mga sensor ng paggalaw</translation>
 <translation id="6397094776139756010">Mga opsyon sa pag-sync at pag-personalize</translation>
 <translation id="6398715114293939307">Alisin ang Google Play Store</translation>
 <translation id="6398765197997659313">Lumabas sa buong screen</translation>
@@ -3538,6 +3542,7 @@
 <translation id="6531282281159901044">Panatilihin ang mapanganib na file</translation>
 <translation id="6532101170117367231">I-save sa Google Drive</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Tandaan:<ph name="END_BOLD" /> I-enable lang kung alam mo kung ano ang iyong ginagawa o kung hiniling kang gawin ito, dahil maaaring mabawasan ng pagkolekta ng data ang pagganap.</translation>
+<translation id="6541638731489116978">Na-block ang site na ito sa pag-access sa iyong mga sensor ng paggalaw.</translation>
 <translation id="654233263479157500">Gumamit ng serbisyo sa web upang makatulong na malutas ang error sa pag-navigate</translation>
 <translation id="6544215763872433504">Ang web browser ng Google, para sa iyo</translation>
 <translation id="6545665334409411530">Rate ng pag-uulit</translation>
@@ -4278,6 +4283,7 @@
 <translation id="7704628569466676326">Ipares ang iyong security key sa device na ito para magamit mo ito sa pag-sign in sa iyong account</translation>
 <translation id="7705276765467986571">Hindi ma-load ang modelo ng bookmark.</translation>
 <translation id="7705524343798198388">VPN</translation>
+<translation id="7707108266051544351">Na-block ang site na ito sa paggamit ng mga sensor ng paggalaw.</translation>
 <translation id="7707922173985738739">Gumamit ng mobile data</translation>
 <translation id="7709152031285164251">Nabigo - <ph name="INTERRUPT_REASON" /></translation>
 <translation id="7710568461918838723">&amp;Cast...</translation>
@@ -4375,7 +4381,7 @@
     <ph name="BR" />
     <ph name="BEGIN_BOLD" />Tandaan:<ph name="END_BOLD" />  Mare-reboot ang system sa panahon ng proseso.</translation>
 <translation id="7829298379596169484">Ina-access ang input ng audio</translation>
-<translation id="7830594666202422257">Kumonekta sa Linux</translation>
+<translation id="7830594666202422257">Ikonekta sa Linux</translation>
 <translation id="7831491651892296503">Nagkaroon ng error sa pag-configure sa network</translation>
 <translation id="7831754656372780761"><ph name="TAB_TITLE" /> <ph name="EMOJI_MUTING" /></translation>
 <translation id="7832084384634357321">Oras ng pagtatapos</translation>

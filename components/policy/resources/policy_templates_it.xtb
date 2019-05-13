@@ -1397,7 +1397,6 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
 
         Questo criterio viene utilizzato su desktop dalla registrazione con criteri cloud in ambito macchina e può essere impostato tramite il file di criteri registry o GPO su Windows, plist su Mac e JSON su Linux.</translation>
 <translation id="3660562134618097814">Trasferisci i cookie dell'IdP SAML durante l'accesso</translation>
-<translation id="3668151900457104753">Disinstalla le estensioni nella lista nera</translation>
 <translation id="3701121231485832347">Consente di gestire le impostazioni specifiche dei dispositivi <ph name="PRODUCT_OS_NAME" /> gestiti da <ph name="MS_AD_NAME" />.</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Il campo a una sola riga è obsoleto e sarà rimosso a breve. Inizia a usare la casella di testo multiriga qui sotto).</translation>
 <translation id="3709266154059827597">Configura blacklist per l'installazione delle estensioni</translation>
@@ -4099,11 +4098,6 @@ https://www.w3.org/TR/secure-contexts/
       Questa norma viene applicata soltanto per gli utenti che si sono autenticati tramite SAML.
 
       Il valore della norma deve essere specificato in secondi.</translation>
-<translation id="9018338365267278833">Consente di rimuovere le estensioni visualizzate in <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> o quelle visualizzate in <ph name="EXTENSION_SETTINGS_POLICY_NAME" /> la cui modalità di installazione è impostata sul blocco ed elimina tutti i relativi dati utente locali.  Consulta le norme sulla privacy per le estensioni o le norme sulla conservazione dei dati per sapere cosa può accadere se i dati utente non vengono archiviati in locale.
-
-      Se la norma è attivata, le estensioni che rientrano negli elenchi sopra indicati (se già installati su una macchina) verranno rimosse completamente dalla macchina (inclusi i dati utente locali).
-
-      Se la norma è disattivata o non è impostata, le estensioni che rientrano negli elenchi sopra indicati (se già installati su una macchina e presenti nella lista nera <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />) verranno disattivate sulla macchina e non installate.</translation>
 <translation id="9027787254195333560">Questa norma consente di configurare l'immagine avatar che rappresenta l'utente sulla schermata di accesso. La norma viene impostata specificando l'URL da cui <ph name="PRODUCT_OS_NAME" /> può scaricare l'immagine e un hash crittografico per verificare l'integrità del download. L'immagine deve essere in formato JPEG e avere dimensioni non superiori a 512 kB. L'URL deve essere accessibile senza nessuna autenticazione.
 
       L'immagine avatar viene scaricata e memorizzata nella cache. Verrà scaricata nuovamente ogni volta che l'URL o l'hash vengono modificati.

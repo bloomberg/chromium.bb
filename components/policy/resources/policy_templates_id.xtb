@@ -1406,7 +1406,6 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
 
         Kebijakan ini digunakan oleh pendaftaran kebijakan machine scope cloud di desktop dan dapat disetel oleh Registry atau GPO di Windows, plist di Mac, dan file kebijakan JSON di Linux.</translation>
 <translation id="3660562134618097814">Transfer cookie SAML IdP saat proses masuk.</translation>
-<translation id="3668151900457104753">Meng-uninstal ekstensi yang termasuk dalam daftar ekstensi yang tidak diperbolehkan</translation>
 <translation id="3701121231485832347">Mengontrol setelan khusus perangkat <ph name="PRODUCT_OS_NAME" />.yang dikelola <ph name="MS_AD_NAME" />.</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Kolom 1 baris sudah tidak digunakan lagi dan akan dihapus di masa mendatang. Mulai gunakan kotak teks multibaris di bawah.)</translation>
 <translation id="3709266154059827597">Konfigurasikan daftar penginstalan ekstensi yang tidak diizinkan</translation>
@@ -4119,11 +4118,6 @@ Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
       Kebijakan ini hanya memengaruhi pengguna yang menjalankan autentikasi menggunakan SAML.
 
       Nilai kebijakan harus ditentukan dalam detik.</translation>
-<translation id="9018338365267278833">Kebijakan ini akan menghapus ekstensi yang muncul dalam <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> atau <ph name="EXTENSION_SETTINGS_POLICY_NAME" /> yang mode penginstalannya ditetapkan ke diblokir dan akan menghapus data pengguna lokal untuk ekstensi tersebut.  Lihat kebijakan privasi atau kebijakan retensi data ekstensi untuk memahami apa yang akan terjadi dengan data pengguna yang tidak disimpan secara lokal.
-
-      Jika kebijakan ini ditetapkan ke aktif, ekstensi yang termasuk dalam daftar yang disebut sebelumnya (jika sudah terinstal di perangkat) akan dihapus dari perangkat tersebut secara keseluruhan (termasuk data pengguna lokal).
-
-      Jika kebijakan ini ditetapkan ke nonaktif atau tidak ditetapkan, ekstensi yang termasuk dalam daftar yang disebut sebelumnya (jika sudah terinstal di perangkat dan ada dalam daftar ekstensi yang tidak diperbolehkan <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />) akan dinonaktifkan di perangkat dan tidak di-uninstal.</translation>
 <translation id="9027787254195333560">Kebijakan ini memungkinkan Anda mengonfigurasi gambar avatar yang mewakili pengguna di layar login. Kebijakan ini ditetapkan dengan menentukan URL tempat <ph name="PRODUCT_OS_NAME" /> dapat mendownload gambar avatar dan hash kriptografi yang digunakan untuk memverifikasi integritas download. Gambar harus dalam format JPEG dan ukurannya tidak boleh lebih dari 512 kB. URL harus dapat diakses tanpa autentikasi apa pun.
 
       Gambar avatar didownload dan disimpan di cache. Gambar akan didownload ulang setiap kali URL atau hash berubah.

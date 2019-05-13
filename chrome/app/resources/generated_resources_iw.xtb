@@ -459,7 +459,7 @@
 <translation id="1708338024780164500">(לא פעיל)</translation>
 <translation id="1708713382908678956"><ph name="NAME_PH" /> (מזהה: <ph name="ID_PH" />)</translation>
 <translation id="1709106626015023981">‏<ph name="WIDTH" />‏ x ‏<ph name="HEIGHT" />‏ (מקורי)</translation>
-<translation id="1711401317189798723">מתבצע כרגע גיבוי עבור <ph name="CONTAINER_ID" /></translation>
+<translation id="1711401317189798723">מתבצע כרגע גיבוי של <ph name="CONTAINER_ID" /></translation>
 <translation id="1712349894969001173">‏שליחת הסיסמה למכשיר ה-iPhone</translation>
 <translation id="1712552549805331520"><ph name="URL" /> רוצה לאחסן נתונים במחשב המקומי שלך באופן קבוע</translation>
 <translation id="1717218214683051432">חיישני תנועה</translation>
@@ -1085,7 +1085,7 @@
 <translation id="2677748264148917807">יציאה</translation>
 <translation id="2678063897982469759">הפוך מחדש לפעיל</translation>
 <translation id="268053382412112343">הי&amp;סטוריה</translation>
-<translation id="2682498795777673382">בוצע עדכון על ידי הורה</translation>
+<translation id="2682498795777673382">בוצע עדכון על-ידי הורה</translation>
 <translation id="2683638487103917598">התיקיה מוינה</translation>
 <translation id="2684004000387153598">כדי להמשיך יש ללחוץ על 'אישור' ולאחר מכן ללחוץ על 'הוספת משתמש' כדי ליצור פרופיל חדש בשביל כתובת האימייל שלך.</translation>
 <translation id="2688196195245426394">אירעה שגיאה בעת רישום המכשיר בשרת: <ph name="CLIENT_ERROR" />.</translation>
@@ -1706,7 +1706,7 @@
 <translation id="3664511988987167893">סמל התוסף</translation>
 <translation id="3665589677786828986">‏Chrome זיהה שחלק מההגדרות שלך נפגמו על ידי תכנית אחרת ואיפס אותן לברירות המחדל המקוריות.</translation>
 <translation id="3668570675727296296">הגדרות שפה</translation>
-<translation id="366867565525278777">ההתקנה נכשלה כי אין מספיק שטח אחסון. צריך שטח אחסון פנוי של <ph name="INSTALL_SIZE" /> לפחות. כדי לפנות שטח, עליך למחוק קבצים מאחסון המכשיר.</translation>
+<translation id="366867565525278777">ההתקנה נכשלה כי אין מספיק שטח אחסון. צריך שטח אחסון פנוי בגודל <ph name="INSTALL_SIZE" /> לפחות. כדי לפנות שטח, עליך למחוק קבצים מאחסון המכשיר.</translation>
 <translation id="3668801437375206837">‏כדי לשפר את האבחון של בעיות בחיבור Bluetooth, גוגלרים יכולים לכלול יומני Bluetooth נוספים במשובים. אם האפשרות מסומנת, הדוח יכלול את יומני btsnoop ו-HCI מהסשן הנוכחי, והמערכת "תנקה" אותו כדי להסיר כמה שיותר פרטים אישיים מזהים (PII). הגישה ליומנים האלה תוגבל למנהלים של קבוצת מוצרי Chrome OS ב-Listnr. המערכת תמחק לצמיתות את היומנים אחרי 90 ימים.</translation>
 <translation id="3668823961463113931">מטפלים</translation>
 <translation id="3670113805793654926">מכשירים של כל ספק</translation>
@@ -1862,7 +1862,7 @@
 <translation id="3869917919960562512">אינדקס שגוי.</translation>
 <translation id="3870931306085184145">לא נשמרו סיסמאות בשביל <ph name="DOMAIN" /></translation>
 <translation id="3871092408932389764">הנמוך ביותר</translation>
-<translation id="3871350334636688135">כעבור 24 שעות, מנהל המערכת יבצע עדכון חד-פעמי שימחק את הנתונים המקומיים כשהמכשיר יופעל מחדש. חשוב לשמור תוך 24 שעות את הנתונים המקומיים הנחוצים לך באחסון בענן.</translation>
+<translation id="3871350334636688135">כעבור 24 שעות, מנהל המערכת יבצע עדכון חד-פעמי שימחק את הנתונים המקומיים כשהמכשיר יופעל מחדש. חשוב לשמור באחסון בענן תוך 24 שעות את הנתונים המקומיים הנחוצים לך.</translation>
 <translation id="3872220884670338524">עוד פעולות, חשבון שמור של <ph name="USERNAME" /> ב-<ph name="DOMAIN" /></translation>
 <translation id="3872991219937722530">אם לא תפנה שטח אחסון, המכשיר יפסיק להגיב.</translation>
 <translation id="3873315167136380065">כדי להפעיל את האפשרות הזאת, צריך <ph name="BEGIN_LINK" />לאפס את הסנכרון<ph name="END_LINK" /> כדי להסיר את ביטוי הסיסמה של הסנכרון</translation>
@@ -2251,6 +2251,7 @@
 <translation id="4524832533047962394">מצב ההרשמה שסופק לא נתמך על ידי הגרסה הזו של מערכת ההפעלה. כדאי לוודא שמשתמשים בגרסה החדשה ביותר.</translation>
 <translation id="4525382759303819021">‏קבלת העדכונים האחרונים והמלצות לגבי אפליקציות מחנות Play</translation>
 <translation id="4530494379350999373">מקור</translation>
+<translation id="4532646538815530781">באתר הזה נעשה שימוש בחיישני תנועה.</translation>
 <translation id="4533846798469727141">‏עכשיו אומרים "Hey Google"</translation>
 <translation id="4533985347672295764">‏זמן CPU (יחידת עיבוד מרכזית)</translation>
 <translation id="4534661889221639075">יש לנסות שוב.</translation>
@@ -2482,9 +2483,10 @@
 <translation id="488785315393301722">הצג פרטים</translation>
 <translation id="4890773143211625964">הצג אפשרויות מדפסת מתקדמות</translation>
 <translation id="4891089016822695758">פורום ביטא</translation>
-<translation id="4892229439761351791">‏האתר רשאי להשתמש ב-Bluetooth</translation>
+<translation id="4892229439761351791">‏לאתר יש הרשאה להשתמש ב-Bluetooth</translation>
 <translation id="4893336867552636863">הפעולה הזו תמחק לצמיתות את נתוני הגלישה שלך במכשיר הזה.</translation>
 <translation id="4893522937062257019">במסך הנעילה</translation>
+<translation id="489454699928748701">אתרים יוכלו להשתמש בחיישני תנועה</translation>
 <translation id="4898011734382862273">האישור <ph name="CERTIFICATE_NAME" /> מייצג רשות אישורים</translation>
 <translation id="489985760463306091">הפעל מחדש את המחשב כדי לסיים את ההסרה של תוכנות מזיקות</translation>
 <translation id="4900392736118574277">דף הפתיחה השתנה ל-<ph name="URL" />.</translation>
@@ -2948,6 +2950,7 @@
 <translation id="5620568081365989559">‏DevTools מבקש גישה מלאה אל <ph name="FOLDER_PATH" />. ודא שאינך חושף מידע רגיש.</translation>
 <translation id="5620612546311710611">נתונים סטטיסטיים של שימוש</translation>
 <translation id="5620655347161642930">ייצוא סיסמאות...</translation>
+<translation id="5623282979409330487">האתר הזה ניגש לחיישני התנועה.</translation>
 <translation id="5623842676595125836">יומן</translation>
 <translation id="5624120631404540903">נהל סיסמאות</translation>
 <translation id="5626134646977739690">שם:</translation>
@@ -2979,7 +2982,7 @@
 <translation id="5669691691057771421">‏הזן את מספר ה-PIN החדש</translation>
 <translation id="5671641761787789573">תמונות נחסמו</translation>
 <translation id="5671658447180261823">הסרת ההצעה <ph name="SUGGESTION_NAME" /></translation>
-<translation id="567643736130151854">כדי לקבל גישה לסימניות, לסיסמאות ולנתונים נוספים שלך בכל המכשירים, אפשר להיכנס לחשבון ולהפעיל את הסנכרון</translation>
+<translation id="567643736130151854">כדי לקבל גישה לסימניות, לסיסמאות ולנתונים נוספים שלך בכל המכשירים, יש להיכנס לחשבון ולהפעיל את הסנכרון</translation>
 <translation id="5677503058916217575">שפת הדף:</translation>
 <translation id="5677928146339483299">חסום</translation>
 <translation id="5678550637669481956">ניתנה הרשאה לקריאה וכתיבה ב-<ph name="VOLUME_NAME" />.</translation>
@@ -3441,6 +3444,7 @@
 <translation id="6390994422085833176">בדיקת תכונות ההתאמה האישית והסינכרון אחרי ההגדרה</translation>
 <translation id="6393156038355142111">הצעת סיסמה חזקה</translation>
 <translation id="6395423953133416962">שלח <ph name="BEGIN_LINK1" />פרטי מערכת<ph name="END_LINK1" /> ו<ph name="BEGIN_LINK2" />ערכים<ph name="END_LINK2" /></translation>
+<translation id="6396988158856674517">חסימת הגישה של אתרים אל חיישני תנועה</translation>
 <translation id="6397094776139756010">אפשרויות סינכרון והתאמה אישית</translation>
 <translation id="6398715114293939307">‏הסרה של חנות Google Play</translation>
 <translation id="6398765197997659313">צא ממסך מלא</translation>
@@ -3535,6 +3539,7 @@
 <translation id="6531282281159901044">השאר את הקובץ המסוכן</translation>
 <translation id="6532101170117367231">‏שמור ב-Google Drive</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />הערה:<ph name="END_BOLD" /> הפעל אפשרות זו רק אם אתה בטוח בכך, או אם התבקשת לעשות זאת, משום שאיסוף נתונים עלול לפגוע בביצועים.</translation>
+<translation id="6541638731489116978">גישת האתר לחיישני תנועה נחסמה.</translation>
 <translation id="654233263479157500">השתמש בשירות אינטרנט כדי לפתור שגיאות ניווט</translation>
 <translation id="6544215763872433504">‏דפדפן האינטרנט של Google, במיוחד בשבילך</translation>
 <translation id="6545665334409411530">שיעור חזרה</translation>
@@ -3841,7 +3846,7 @@
 <translation id="7022562585984256452">דף הבית שלך הוגדר.</translation>
 <translation id="7025190659207909717">ניהול שירות של נתונים סלולריים</translation>
 <translation id="7029809446516969842">סיסמאות</translation>
-<translation id="7031608529463141342"><ph name="WINDOW_TITLE" /> - חיבור ליציאה טורית</translation>
+<translation id="7031608529463141342"><ph name="WINDOW_TITLE" /> - מחובר ליציאה טורית</translation>
 <translation id="7031962166228839643">‏המערכת מכינה את TPM, אנא המתן (פעולה זו עשויה להימשך מספר דקות)...</translation>
 <translation id="7037509989619051237">טקסט לתצוגה מקדימה</translation>
 <translation id="7039326228527141150">‏גש למכשירי USB של <ph name="VENDOR_NAME" /></translation>
@@ -3947,7 +3952,7 @@
 <translation id="7189234443051076392">צריך לוודא שיש מספיק מקום פנוי במכשיר</translation>
 <translation id="7189965711416741966">טביעת האצבע נוספה.</translation>
 <translation id="7191159667348037">‏מדפסת לא ידועה (USB)</translation>
-<translation id="7193051357671784796">אפליקציה זו נוספה על ידי הארגון שלך. עליך להפעיל מחדש את האפליקציה כדי לסיים את ההתקנה שלה.</translation>
+<translation id="7193051357671784796">אפליקציה זו נוספה על-ידי הארגון שלך. עליך להפעיל מחדש את האפליקציה כדי לסיים את ההתקנה שלה.</translation>
 <translation id="7193374945610105795">לא נשמרו סיסמאות בשביל <ph name="ORIGIN" /></translation>
 <translation id="7196913789568937443">‏גיבוי ב-Google Drive. אפשר לשחזר נתונים או להחליף מכשיר בקלות מתי שרוצים. הגיבוי כולל נתוני אפליקציות. הגיבויים נשמרים ב-Google ומוצפנים באמצעות הסיסמה לחשבון Google שלך. <ph name="BEGIN_LINK1" />מידע נוסף<ph name="END_LINK1" /></translation>
 <translation id="7197190419934240522">‏חיפוש Google וכל היכולות של Google עומדים לרשותך בכל גלישה</translation>
@@ -4018,7 +4023,7 @@
 <translation id="7289225569524511578">פתח את אפליקציית הטפט</translation>
 <translation id="7290242001003353852">שירות הכניסה הזה, המתארח ב-<ph name="SAML_DOMAIN" />, ניגש אל המצלמה שלך.</translation>
 <translation id="7290594223351252791">אישור רישום</translation>
-<translation id="7295614427631867477">‏לתשומת ליבך: על Android, ‏Play ואפליקציות המשויכות אליהם חלות הגדרות מדיניות משלהם בכל הקשור לאיסוף נתונים ושימוש בהם.</translation>
+<translation id="7295614427631867477">‏לתשומת ליבך: על Android, ‏Play ואפליקציות המשויכות אליהם חלות הגדרות מדיניות משלהם לגבי איסוף נתונים ושימוש בהם.</translation>
 <translation id="729583233778673644">‏התרה של הצפנת AES ו-RC4. שימוש באפשרות הזו מגדיל את הסיכון, כי הצפנות RC4 אינן מאובטחות.</translation>
 <translation id="7296774163727375165">תנאים של <ph name="DOMAIN" /></translation>
 <translation id="7297443947353982503">‏שם משתמש/סיסמה שגויים, או שאימות EAP נכשל</translation>
@@ -4273,6 +4278,7 @@
 <translation id="7704628569466676326">יש להתאים את מפתח האבטחה למכשיר הזה כדי שניתן יהיה להיכנס באמצעותו לחשבון</translation>
 <translation id="7705276765467986571">לא ניתן להעלות דגם סימניה.</translation>
 <translation id="7705524343798198388">VPN</translation>
+<translation id="7707108266051544351">גישת האתר הזה אל חיישני התנועה נחסמה.</translation>
 <translation id="7707922173985738739">השתמש בחבילת גלישה</translation>
 <translation id="7709152031285164251">נכשל - <ph name="INTERRUPT_REASON" /></translation>
 <translation id="7710568461918838723">&amp;העבר...</translation>
@@ -5046,7 +5052,7 @@
 <translation id="8877448029301136595">[ספריית אב]</translation>
 <translation id="8879284080359814990">הצ&amp;ג ככרטיסייה</translation>
 <translation id="8883847527783433352">סינכרון עם חשבון אחר</translation>
-<translation id="8884570509232205463">המכשיר שלך יינעל מעכשיו ב-<ph name="UNLOCK_TIME" /></translation>
+<translation id="8884570509232205463">המכשיר שלך יינעל עכשיו ב-<ph name="UNLOCK_TIME" />.</translation>
 <translation id="8885197664446363138">‏Smart Lock אינו זמין</translation>
 <translation id="8888253246822647887">האפליקציה תיפתח בסיום השדרוג. פעולת השדרוג יכולה להימשך כמה דקות.</translation>
 <translation id="8888432776533519951">צבע:</translation>

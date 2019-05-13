@@ -1463,7 +1463,6 @@ IsolateOrigins ja SitePerProcess funktsioonid. Kasutajad saavad reegli SitePerPr
 
         Seda reeglit kasutatakse arvutites seadme ulatuses pilvereegli registreerimiseks ja selle saab määrata failiga Registry või GPO Windowsis, failiga plist Macis ja JSON-i reeglifailiga Linuxis.</translation>
 <translation id="3660562134618097814">SAML IdP küpsisefailide ülekandmine sisselogimisel</translation>
-<translation id="3668151900457104753">Musta nimekirja kantud laienduste desinstallimine</translation>
 <translation id="3701121231485832347">Haldab üksuse <ph name="MS_AD_NAME" /> hallatud operatsioonisüsteemiga <ph name="PRODUCT_OS_NAME" /> seadmete seadeid.</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Üherealist välja enam ei toetata ja tulevikus see eemaldatakse. Hakake kasutama allolevat mitmerealist tekstivälja.)</translation>
 <translation id="3709266154059827597">Laienduste installimise musta nimekirja seadistamine</translation>
@@ -4315,11 +4314,6 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
       See reegel mõjutab ainult neid kasutajad, kes kasutavad autentimiseks SAML-i.
 
       Reegli väärtus tuleb määrata sekundites.</translation>
-<translation id="9018338365267278833">See eemaldab loendisse <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> või reeglisse <ph name="EXTENSION_SETTINGS_POLICY_NAME" /> lisatud laiendused, mille installimisrežiimiks on määratud Blokeeritud, ja kustutab lõplikult ka kasutajate kohalikud andmed.  Vaadake laienduste privaatsuseeskirjadest või andmete säilitamise reeglitest teavet selle kohta, mis võib juhtuda kasutajate andmetega, mis ei ole kohalikult talletatud.
-
-      Kui reegel on seatud väärtusele Lubatud, eemaldatakse eelmainitud loenditesse kuuluvad laiendused (kui need on juba seadmesse installitud) täielikult (koos kasutaja kohalike andmetega).
-
-      Kui reegel on määramata või seatud väärtusele Keelatud, keelatakse seadmes eelmainitud loenditesse kuuluvad laiendused (kui need on juba seadmesse installitud ja kantud keelatud loendisse <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />), ent neid ei desinstallita.</translation>
 <translation id="9027787254195333560">Selle reegliga saate seadistada avatari pildi, mis kujutab kasutajat sisselogimisekraanil. Reegli seadistamiseks määrake URL, kust <ph name="PRODUCT_OS_NAME" /> saab alla laadida avatari pildi, ja krüptograafiline räsiväärtus, mida kasutatakse allalaadimise terviklikkuse kinnitamiseks. Pilt peab olema JPEG-vormingus, mille maksimaalne maht on 512 kB. URL peab olema juurdepääsetav autentimiseta.
 
       Avatari pilt laaditakse alla ja talletatakse vahemällu. URL-i või räsi muutumisel laaditakse pilt uuesti alla.

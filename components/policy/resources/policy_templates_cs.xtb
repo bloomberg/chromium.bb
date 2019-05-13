@@ -1412,7 +1412,6 @@ Tuto zásadu lze nastavit pouze jako doporučenou. Zásada slouží k přesunut
 
         Tato zásada se používá k registraci cloudových zásad pro počítač. V systému Windows ji lze nastavit pomocí registru nebo objektů zásad skupiny, na počítačích Mac pomocí souboru plist a v Linuxu pomocí souboru JSON se zásadami.</translation>
 <translation id="3660562134618097814">Přenos souborů cookie od poskytovatele identity SAML při přihlášení</translation>
-<translation id="3668151900457104753">Odinstalovat rozšíření na seznamu zakázaných</translation>
 <translation id="3701121231485832347">Ovládá nastavení specifická pro zařízení <ph name="PRODUCT_OS_NAME" /> spravovaná službou <ph name="MS_AD_NAME" />.</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Podpora pole s jedním řádkem byla ukončena. Začněte používat níže uvedené textové pole s více řádky.)</translation>
 <translation id="3709266154059827597">Konfigurace seznamu zakázaných položek instalace rozšíření</translation>
@@ -4178,11 +4177,6 @@ POZNÁMKA: Až do verze 45 byla tato zásada podporována pouze v režimu veře
       Tato zásada má vliv pouze na uživatele, kteří provedli ověření pomocí technologie SAML.
 
       Hodnota zásady se zadává v sekundách.</translation>
-<translation id="9018338365267278833">Tato zásada odstraní rozšíření uvedená v zásadě <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> a rozšíření uvedená v zásadě <ph name="EXTENSION_SETTINGS_POLICY_NAME" />, která mají režim instalace nastavený na blokování. Vymaže při tom také místní data uživatele.  Informace o tom, co se může stát s daty uživatele, která nejsou uložena místně, najdete v zásadách ochrany soukromí nebo v zásadách uchovávání dat rozšíření.
-
-      Když je zásada zapnutá a v zařízení již jsou nainstalována některá rozšíření z výše uvedených seznamů, budou z počítače zcela odstraněna (včetně místních dat uživatele).
-
-      Když je tato zásada vypnutá nebo je ponechána nenastavená a v zařízení již jsou nainstalována některá rozšíření z výše uvedených seznamů (uvedená v seznamu zakázaných v zásadě <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />), budou na počítači zakázána, ale neodinstalují se.</translation>
 <translation id="9027787254195333560">Tato zásada umožňuje nakonfigurovat obrázek avatara, který na přihlašovací obrazovce představuje uživatele. Zásadu nastavíte zadáním adresy URL, ze které systém <ph name="PRODUCT_OS_NAME" /> může obrázek avatara stáhnout, a kryptografické hodnoty hash, která slouží k ověření integrity staženého obsahu. Obrázek musí být ve formátu JPEG a jeho velikost nesmí překročit 512 kB. Adresa URL musí být přístupná bez ověření.
 
       Obrázek avatara se stáhne a uloží do mezipaměti. Při každé změně adresy URL nebo hodnoty hash se stáhne znovu.

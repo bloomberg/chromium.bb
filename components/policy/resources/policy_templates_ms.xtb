@@ -1459,7 +1459,6 @@
 
         Dasar ini digunakan oleh pendaftaran dasar awan skop mesin pada desktop dan boleh ditetapkan oleh Daftaran atau GPO pada Windows, plist pada Mac dan fail dasar JSON pada Linux.</translation>
 <translation id="3660562134618097814">Pindahkan kuki IdP SAML semasa log masuk</translation>
-<translation id="3668151900457104753">Menyahpasang sambungan yang disenaraihitamkan</translation>
 <translation id="3701121231485832347">Mengawal tetapan yang khusus untuk peranti <ph name="PRODUCT_OS_NAME" /> yang diurus <ph name="MS_AD_NAME" />.</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Medan satu baris tidak akan digunakan lagi dan akan dialih keluar pada masa akan datang. Sila gunakan kotak teks berbilang baris di bawah.)</translation>
 <translation id="3709266154059827597">Konfigurasi senarai hitam pemasangan sambungan</translation>
@@ -4313,11 +4312,6 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
       Dasar ini mempengaruhi pengguna yang membuat pengesahan menggunakan SAML sahaja.
 
       Nilai dasar harus dinyatakan dalam saat.</translation>
-<translation id="9018338365267278833">Dasar ini akan mengalih keluar sambungan yang dipaparkan dalam <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> atau sambungan yang dipaparkan dalam <ph name="EXTENSION_SETTINGS_POLICY_NAME" /> yang telah menetapkan mod pemasangan kepada disekat dan akan menyingkirkan data pengguna setempat bersama-sama sambungan tersebut.  Rujuk dasar privasi sambungan atau dasar pengekalan data untuk memahami perkara yang mungkin berlaku kepada data pengguna yang tidak disimpan setempat.
-
-      Apabila dasar ini ditetapkan kepada didayakan, sambungan yang terangkum dalam senarai sebelumnya (jika sudah dipasang pada mesin) akan dialih keluar sepenuhnya daripada mesin itu (termasuk data pengguna setempat).
-
-      Apabila dasar ini ditetapkan kepada dilumpuhkan atau dibiarkan tanpa ditetapkan, sambungan yang terangkum dalam senarai sebelumnya (jika sudah dipasang pada mesin dan sedia ada dalam senarai hitam <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />) akan dilumpuhkan pada mesin dan tidak dinyahpasang.</translation>
 <translation id="9027787254195333560">Dasar ini membolehkan anda mengkonfigurasi imej avatar yang mewakili pengguna pada skrin log masuk. Dasar ini ditetapkan dengan menyatakan URL tempat <ph name="PRODUCT_OS_NAME" /> boleh memuat turun imej avatar dan cincangan kriptografi yang digunakan untuk mengesahkan integriti muat turun tersebut. Imej mestilah menggunakan format JPEG dan saiz imej tidak boleh melebihi 512kB. URL mestilah boleh diakses tanpa sebarang pengesahan.
 
       Imej avatar dimuat turun dan dicache. Imej akan dimuat turun semula apabila URL atau cincangan berubah.

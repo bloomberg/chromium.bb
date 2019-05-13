@@ -1461,7 +1461,6 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 
         Cette règle est utilisée pour l'activation de la règle relative au cloud au niveau de la machine (pour les ordinateurs de bureau). Elle peut être définie sur le registre ou les GPO sur Windows, le fichier plist sur Mac, et le fichier de règle JSON sur Linux.</translation>
 <translation id="3660562134618097814">Transférer des cookies de fournisseurs d'identité SAML lors de la connexion</translation>
-<translation id="3668151900457104753">Désinstaller les extensions sur liste noire</translation>
 <translation id="3701121231485832347">Contrôle les paramètres propres aux appareils <ph name="PRODUCT_OS_NAME" /> gérés par <ph name="MS_AD_NAME" />.</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Le champ constitué d'une seule ligne est abandonné et va être supprimé prochainement. Utilisez à la place la zone de texte à plusieurs lignes ci-dessous.)</translation>
 <translation id="3709266154059827597">Configurer la liste noire d'installation des extensions</translation>
@@ -4297,11 +4296,6 @@ indique uniquement les imprimantes qui peuvent être choisies.
       Cette règle n'affecte que les utilisateurs qui se sont authentifiés via SAML.
 
       La valeur doit être indiquée en secondes.</translation>
-<translation id="9018338365267278833">Permet de supprimer les extensions qui figurent dans la règle <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, ou celles de la règle <ph name="EXTENSION_SETTINGS_POLICY_NAME" /> dont le mode d'installation a été bloqué, et de supprimer définitivement les données locales de l'utilisateur qui y sont associées.  Pour savoir ce que deviennent les données de l'utilisateur qui ne sont pas stockées localement, consultez les règles de confidentialité relatives aux extensions ou celles sur la conservation des données.
-
-      Si cette règle est activée, les extensions figurant dans les listes précitées (si elles sont déjà installées sur un appareil) sont supprimées intégralement de cet appareil (y compris les données locales de l'utilisateur).
-
-      Si cette règle est désactivée ou si elle n'est pas définie, les extensions figurant dans les listes précitées (si elles sont déjà installées sur un appareil et répertoriées dans la liste noire <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />) sont désactivées sur l'appareil, sans être toutefois désinstallées.</translation>
 <translation id="9027787254195333560">Cette règle vous permet de configurer l'image d'avatar représentant l'utilisateur sur l'écran de connexion. Pour définir cette règle, indiquez l'URL à laquelle <ph name="PRODUCT_OS_NAME" /> peut télécharger l'image d'avatar, ainsi qu'un hachage chiffré, utilisé pour vérifier l'intégrité du téléchargement. L'image doit être au format JPEG et ne doit pas dépasser 512 Ko. L'URL doit être accessible sans authentification.
 
       L'image d'avatar est téléchargée et mise en cache. Elle sera de nouveau téléchargée à chaque modification de l'URL ou du hachage.

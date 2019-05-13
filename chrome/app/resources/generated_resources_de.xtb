@@ -3712,7 +3712,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6823506025919456619">Melden Sie sich in Chrome an, um Ihre Geräte zu sehen.</translation>
 <translation id="6824564591481349393">E-Mail-Adr&amp;esse kopieren</translation>
 <translation id="6824584962142919697">&amp;Elemente untersuchen</translation>
-<translation id="6825184156888454064">Nach Namen sortieren</translation>
+<translation id="6825184156888454064">Nach Name sortieren</translation>
 <translation id="6826872289184051766">Über USB bestätigen</translation>
 <translation id="6828153365543658583">Anmeldung auf die folgenden Nutzer beschränken:</translation>
 <translation id="6828860976882136098">Automatische Updates für alle Nutzer konnten nicht eingerichtet werden (Preflight-Ausführungsfehler: <ph name="ERROR_NUMBER" />)</translation>
@@ -4749,7 +4749,7 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="8428628598981198790">Ihr Sicherheitsschlüssel kann bei dieser Website nicht verwendet werden</translation>
 <translation id="84297032718407999">Sie werden in <ph name="LOGOUT_TIME_LEFT" /> abgemeldet</translation>
 <translation id="8431190899827883166">Fingertipps anzeigen</translation>
-<translation id="8431909052837336408">PIN der SIM-Karte ändern</translation>
+<translation id="8431909052837336408">PIN für SIM-Karte ändern</translation>
 <translation id="8434480141477525001">NaCl-Debug-Port</translation>
 <translation id="8435395510592618362">Ihre Identität mit <ph name="APP_NAME" /> bestätigen</translation>
 <translation id="843760761634048214">Kreditkarte speichern</translation>
@@ -5069,7 +5069,7 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="8904976895050290827">Google Chrome Sync</translation>
 <translation id="890616557918890486">Quelle ändern</translation>
 <translation id="8909833622202089127">Die Website verfolgt Ihren Standort</translation>
-<translation id="8910146161325739742">Bildschirm freigeben</translation>
+<translation id="8910146161325739742">Bildschirm teilen</translation>
 <translation id="8910222113987937043">Änderungen an Ihrem Verlauf sowie an Ihren Lesezeichen, Passwörtern und sonstigen Einstellungen werden nicht mehr mit Ihrem Google-Konto synchronisiert. Bereits in Ihrem Google-Konto gespeicherte Daten bleiben dort erhalten und können über das <ph name="BEGIN_LINK" />Google Dashboard<ph name="END_LINK" /> verwaltet werden.</translation>
 <translation id="8912362522468806198">Google-Konto</translation>
 <translation id="8912793549644936705">Strecken</translation>

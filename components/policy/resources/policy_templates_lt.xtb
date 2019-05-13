@@ -1461,7 +1461,6 @@
 
         Ši politika naudojama vykdant įrenginio debesies politikos registraciją staliniame kompiuteryje ir gali būti nustatyta naudojant registrą arba GPO sistemoje „Windows“, „plist“ sistemoje „Mac“ ir JSON politikos failą sistemoje „Linux“.</translation>
 <translation id="3660562134618097814">„SAML IdP“ slapukų perkėlimas prisijungiant</translation>
-<translation id="3668151900457104753">Į juodąjį sąrašą įtrauktų plėtinių pašalinimas</translation>
 <translation id="3701121231485832347">Valdomi nustatymai, taikomi „<ph name="MS_AD_NAME" />“ tvarkomiems „<ph name="PRODUCT_OS_NAME" />“ įrenginiams.</translation>
 <translation id="3702647575225525306">„<ph name="POLICY_NAME" />“ (Vienos eilutės laukelis nebenaudojamas ir ateityje bus pašalintas. Pradėkite naudoti toliau pateiktą kelių eilučių teksto laukelį.)</translation>
 <translation id="3709266154059827597">Konfigūruoti plėtinių diegimo juodąjį sąrašą</translation>
@@ -4313,11 +4312,6 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
       Ši politika turi įtakos tik naudotojams, kurie autentifikuoti naudojant SAML.
 
       Politikos vertė turėtų būti nustatyta per kelias sekundes.</translation>
-<translation id="9018338365267278833">Bus pašalinti plėtiniai, rodomi „<ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />“, arba plėtiniai, rodomi „<ph name="EXTENSION_SETTINGS_POLICY_NAME" />“, kurių nustatytas užblokuotas diegimo režimas, ir bus panaikinti vietiniai naudotojo duomenys.  Jei norite sužinoti, kas gali nutikti su naudotojo duomenimis, kurie nėra saugomi vietinėje sistemoje, žr. plėtinių privatumo politiką arba duomenų saugojimo politiką.
-
-      Kai politika nustatyta kaip įgalinta, plėtiniai, kurie įtraukti į anksčiau minėtus sąrašus (jei jau įdiegti įrenginyje), bus visiškai pašalinti iš šio įrenginio (įskaitant vietinius naudotojo duomenis).
-
-      Kai politika nustatyta kaip išjungta arba nenustatyta, plėtiniai, kurie įtraukti į anksčiau minėtus sąrašus (jei jau įdiegti įrenginyje ir pateikti juodajame sąraše „<ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />“), bus išjungti įrenginyje ir nebus pašalinti.</translation>
 <translation id="9027787254195333560">Ši politika suteikia galimybę konfigūruoti prisijungimo ekrane rodomą naudotojo pseudoportreto vaizdą. Politiką reikia nustatyti nurodant URL, iš kurio „<ph name="PRODUCT_OS_NAME" />“ gali atsisiųsti pseudoportreto vaizdą, ir kriptografinę maišos vertę, kuri naudojama atsisiuntimo vientisumui patvirtinti. Vaizdas turi būti JPEG formato, o dydis neturi viršyti 512 KB. URL turi būti galima pasiekti nenustačius tapatybės.
 
       Pseudoportreto vaizdas atsisiunčiamas ir įkeliamas į talpyklą. Jis bus pakartotinai atsisiųstas pakeitus URL ar maišą.

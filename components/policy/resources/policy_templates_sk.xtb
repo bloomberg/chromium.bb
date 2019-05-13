@@ -1439,7 +1439,6 @@ Vzory webových adries v tomto pravidle by nemali byť v konflikte s tými, k
 
         Toto pravidlo využíva registrácia pravidla rozsahu používania cloudu v počítači a je ho možné nastaviť pomocou databázy Registry alebo objektu skupinovej politiky (GPO) v systéme Windows, súboru plist v počítači Mac a súboru s pravidlami JSON v systéme Linux.</translation>
 <translation id="3660562134618097814">Preniesť súbory cookie poskytovateľa identity SAML počas prihlásenia</translation>
-<translation id="3668151900457104753">Odinštalovať položky pridané na zoznam zakázaných rozšírení</translation>
 <translation id="3701121231485832347">Umožňuje ovládať nastavenia špecifické pre zariadenia <ph name="PRODUCT_OS_NAME" />, ktoré spravuje <ph name="MS_AD_NAME" />.</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Podpora poľa s jedným riadkom bola ukončená a v budúcnosti bude odstránené. Začnite používať textové pole s viacerými riadkami nižšie.)</translation>
 <translation id="3709266154059827597">Konfigurovať zoznam rozšírení, ktorých inštalácia je zakázaná</translation>
@@ -4250,11 +4249,6 @@ Podpora tohto pravidla bola ukončená vo verzii M69 a používa sa namiesto n
       Toto pravidlo sa vzťahuje iba na používateľov, ktorých totožnosť bola overená pomocou štandardu SAML.
 
       Hodnota tohto pravidla by mala byť určená v sekundách.</translation>
-<translation id="9018338365267278833">Toto pravidlo odstráni rozšírenia v zozname <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> alebo <ph name="EXTENSION_SETTINGS_POLICY_NAME" />, ktoré majú zablokovaný režim inštalácie, a zároveň vymaže aj miestne údaje používateľa.  Ak chcete zistiť, čo sa môže stať s údajmi používateľa, ktoré nie sú uložené miestne, prečítajte si pravidlá ochrany súkromia rozšírení alebo pravidlá uchovávania údajov.
-
-      Keď je pravidlo povolené, rozšírenia, ktoré spadajú do zoznamov spomenutých vyššie (ak už sú v počítači nainštalované), sa z príslušného počítača úplne odstránia (vrátane miestnych údajov používateľa).
-
-      Keď je pravidlo zakázané alebo nenastavené, rozšírenia, ktoré spadajú do zoznamov spomenutých vyššie (ak už sú v počítači nainštalované a nachádzajú sa v zozname zakázaných rozšírení <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />), sa v príslušnom počítači zakážu a neodinštalujú.</translation>
 <translation id="9027787254195333560">Toto pravidlo umožňuje konfigurovať obrázok avatara, ktorý na prihlasovacej obrazovke predstavuje používateľa. Pravidlo vytvoríte zadaním webovej adresy, z ktorej môže <ph name="PRODUCT_OS_NAME" /> stiahnuť obrázok avatara a kryptografické hašovanie, ktoré slúži na overenie integrity stiahnutého obsahu. Obrázok musí byť vo formáte JPEG a jeho veľkosť nesmie prekročiť 512 kB. Webová adresa musí byť prístupná bez overenia.
 
       Obrázok avatara sa stiahne a uloží do vyrovnávacej pamäte. Pri každej zmene webovej adresy alebo hašovania sa znova stiahne.

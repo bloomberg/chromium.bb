@@ -1414,7 +1414,6 @@ Hvis de to politikker har forskellige værdier, kan der ske forsinkelser ved ops
 
         Denne politik bruges til maskinel massetilmelding til Cloud-politikken på computere og kan angives af registreringsdatabasen eller GPO i Windows, plist på Mac og JSON-politikfilen i Linux.</translation>
 <translation id="3660562134618097814">Overfør SAML-IdP-cookies ved login</translation>
-<translation id="3668151900457104753">Afinstaller sortlistede udvidelser</translation>
 <translation id="3701121231485832347">Styrer indstillinger, der gælder specifikt for <ph name="PRODUCT_OS_NAME" />-enheder, der administreres af <ph name="MS_AD_NAME" />.</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (feltet med en enkelt linje er udfaset og fjernes inden for den nærmeste fremtid. Begynd at bruge tekstfeltet med flere linjer nedenfor).</translation>
 <translation id="3709266154059827597">Konfigurer sortliste for installation af udvidelser</translation>
@@ -4163,11 +4162,6 @@ Du kan få flere oplysninger om sikre kontekster på https://www.w3.org/TR/secur
       Denne politik berører kun brugere, som er godkendt ved hjælp af SAML.
 
       Politikkens værdi skal angives i sekunder.</translation>
-<translation id="9018338365267278833">Dette fjerner udvidelser, der vises i <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, og udvidelser, der vises i<ph name="EXTENSION_SETTINGS_POLICY_NAME" />, hvor installationstilstanden er konfigureret til blokeret. Samtidig ryddes lokale brugerdata.  Se privatlivspolitikken for udvidelser eller politikken for dataopbevaring for at forstå, hvad der kan ske med de brugerdata, der ikke gemmes lokalt.
-
-      Når politikken er angivet som aktiveret, fjernes de udvidelser, der hører under de førnævnte lister (hvis de allerede er installeret på en computer), helt fra den pågældende computer (herunder lokale brugerdata).
-
-      Når politikken er angivet som deaktiveret eller ikke er konfigureret, deaktiveres de udvidelser, der hører under de førnævnte lister (hvis de allerede er installeret på en computer og findes på sortlisten <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />), fra den pågældende computer og afinstalleres ikke.</translation>
 <translation id="9027787254195333560">Denne politik giver dig mulighed for at konfigurere det avatarbillede, der repræsenterer brugeren på loginskærmen. Politikken konfigureres ved at angive den webadresse, hvor <ph name="PRODUCT_OS_NAME" /> kan downloade avatarbilledet og en kryptografisk hash-værdi, som bruges til at bekræfte downloadens integritet. Billedet skal være i .jpeg-format, og dets størrelse må ikke overstige 512 kB. Webadressen skal være tilgængelig uden nogen form for godkendelse.
 
       Avatarbilledet downloades og cachelagres. Det downloades igen, når webadressen eller hash-værdien ændres.

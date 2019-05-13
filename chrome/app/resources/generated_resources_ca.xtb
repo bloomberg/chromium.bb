@@ -283,7 +283,7 @@
 <translation id="143027896309062157">Llegir i canviar totes les dades de l'ordinador i els llocs web que es visitin</translation>
 <translation id="1430915738399379752">Imprimeix</translation>
 <translation id="1432581352905426595">Gestiona els motors de cerca</translation>
-<translation id="1433811987160647649">Demana permís abans d'accedir</translation>
+<translation id="1433811987160647649">Pregunta abans d'accedir</translation>
 <translation id="1434696352799406980">Aquesta funció restablirà la pàgina d'inici, la pàgina Pestanya nova, el motor de cerca i les pestanyes fixades que tingueu configurades. També desactivarà totes les extensions i esborrarà les dades temporals, com ara les galetes. Les adreces d'interès, l'historial i les contrasenyes desades no s'esborraran.</translation>
 <translation id="1434886155212424586">La pàgina d'inici és la pàgina Pestanya nova</translation>
 <translation id="1436671784520050284">Continua amb la configuració</translation>
@@ -3723,7 +3723,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="683373380308365518">Canvia a un navegador intel·ligent i segur</translation>
 <translation id="6835762382653651563">Connecteu-vos a Internet per actualitzar el dispositiu <ph name="DEVICE_TYPE" />.</translation>
 <translation id="6839225236531462745">Error de supressió del certificat</translation>
-<translation id="6840155290835956714">Demana permís abans d'enviar</translation>
+<translation id="6840155290835956714">Pregunta abans d'enviar</translation>
 <translation id="6840184929775541289">No és una entitat emissora de certificats</translation>
 <translation id="6841186874966388268">Errors</translation>
 <translation id="6843423766595476978">Ok Google ja està configurat</translation>

@@ -95,6 +95,7 @@
 <translation id="1671236975893690980">Nakabinbin ang pag-download...</translation>
 <translation id="1672586136351118594">Huwag ipakitang muli</translation>
 <translation id="1692118695553449118">Naka-on ang pag-sync</translation>
+<translation id="169515064810179024">I-block ang mga site sa pag-access sa mga sensor ng paggalaw</translation>
 <translation id="1709438864123551175">Data Saver</translation>
 <translation id="1717218214683051432">Mga sensor ng paggalaw</translation>
 <translation id="1718835860248848330">Huling oras</translation>
@@ -249,6 +250,7 @@
 <translation id="2777555524387840389"><ph name="SECONDS" /> (na) segundo na lang ang natitira</translation>
 <translation id="2779651927720337254">nabigo</translation>
 <translation id="2781151931089541271">1 segundo na lang ang natitira</translation>
+<translation id="2801022321632964776">I-update para makuha ang iyong wika sa pinakabagong bersyon ng Chrome</translation>
 <translation id="2803478378562657435">Ipinapakita ang mga naka-save na password at mga opsyon sa password</translation>
 <translation id="2810645512293415242">Pinasimple ang page upang ma-save ang data at mag-load nang mas mabilis.</translation>
 <translation id="281504910091592009">Tingnan at pamahalaan ang mga naka-save na password sa iyong <ph name="BEGIN_LINK" />Google Account<ph name="END_LINK" /></translation>
@@ -311,6 +313,7 @@
 <translation id="3259831549858767975">Paliitin ang lahat ng nasa page</translation>
 <translation id="3269093882174072735">I-load ang larawan</translation>
 <translation id="3269956123044984603">Upang makuha ang iyong mga tab mula sa iba mo pang mga device, i-on ang "I-auto sync ang data" sa mga setting ng Android account.</translation>
+<translation id="3277252321222022663">Payagan ang mga site na i-access ang mga sensor (inirerekomenda)</translation>
 <translation id="3282568296779691940">Mag-sign in sa Chrome</translation>
 <translation id="3288003805934695103">I-reload ang page</translation>
 <translation id="32895400574683172">Pinapayagan ang mga notification</translation>
@@ -551,6 +554,7 @@ Para baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">Payagan</translation>
 <translation id="5040262127954254034">Privacy</translation>
+<translation id="5048398596102334565">Payagan ang mga site na i-access ang mga sensor ng paggalaw (inirerekomenda)</translation>
 <translation id="5063480226653192405">Paggamit</translation>
 <translation id="5073204694187207510">Itago ang fullscreen grid</translation>
 <translation id="5082793167783849073">Mabilis na paghambing-hambingin ang mga page sa pamamagitan ng paggawa ng pangkat. Para magsimula, pindutin nang matagal ang isang link.</translation>
@@ -744,6 +748,7 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="6406506848690869874">Pag-sync</translation>
 <translation id="641643625718530986">I-print…</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> MB ang na-download</translation>
+<translation id="6427112570124116297">I-translate ang Web</translation>
 <translation id="6433501201775827830">Pumili ng iyong search engine</translation>
 <translation id="6437478888915024427">Impormasyon ng page</translation>
 <translation id="6441734959916820584">Masyadong mahaba ang pangalan</translation>
@@ -859,6 +864,7 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="7189598951263744875">Ibahagi...</translation>
 <translation id="7191430249889272776">Binuksan ang tab sa background.</translation>
 <translation id="723171743924126238">Pumili ng mga larawan</translation>
+<translation id="7233236755231902816">Para makita ang web sa iyong wika, kunin ang pinakabagong bersyon ng Chrome</translation>
 <translation id="7243308994586599757">May mga opsyon malapit sa ibaba ng screen</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> ang napili</translation>
 <translation id="7253272406652746122">Magdagdag ng Google Account mula sa page na Mga Account sa app na Mga Setting ng iyong device.</translation>
@@ -1014,6 +1020,7 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="8310344678080805313">Mga karaniwang tab</translation>
 <translation id="8313455859591948645">I-edit ang page sa pagsisimula</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> at higit pang site</translation>
+<translation id="8327155640814342956">Para sa pinakamagandang karanasan sa pag-browse, buksan para i-update ang Chrome</translation>
 <translation id="8339163506404995330">Hindi isasalin ang mga page na nasa <ph name="LANGUAGE" /></translation>
 <translation id="8349013245300336738">Pagbukud-bukurin ayon sa dami ng data na nagamit</translation>
 <translation id="8372893542064058268">Payagan ang Pag-sync sa Background para sa isang partikular na site.</translation>
@@ -1073,6 +1080,7 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="8788968922598763114">Muling buksan ang huling isinarang tab</translation>
 <translation id="8801436777607969138">I-block ang JavaScript para sa isang partikular na site.</translation>
 <translation id="8812260976093120287">Sa ilang website, maaari kang magbayad sa iyong device gamit ang mga sinusuportahang app sa pagbabayad sa itaas.</translation>
+<translation id="8816026460808729765">I-block ang mga site sa pag-access sa mga sensor</translation>
 <translation id="8816439037877937734">Bubukas ang <ph name="APP_NAME" /> sa Chrome. Sa pamamagitan ng pagpapatuloy, sumasang-ayon ka sa <ph name="BEGIN_LINK1" />Mga Tuntunin ng Serbisyo<ph name="END_LINK1" /> at <ph name="BEGIN_LINK2" />Notification ng Privacy<ph name="END_LINK2" /> ng Chrome, at sa <ph name="BEGIN_LINK3" />Notification ng Privacy para sa Mga Google Account na Pinamamahalaan gamit ang Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">Mga Bookmark</translation>
 <translation id="8833831881926404480">Ibinabahagi ng isang site ang iyong screen</translation>

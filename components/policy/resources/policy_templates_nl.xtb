@@ -1455,7 +1455,6 @@
 
         Dit beleid wordt gebruikt door cloud-beleidsinschrijving voor machinebereik op desktop en kan worden ingesteld via register of GPO op Windows, plist op Mac en JSON-beleidsbestand op Linux.</translation>
 <translation id="3660562134618097814">SAML IdP-cookies overdragen tijdens het inloggen</translation>
-<translation id="3668151900457104753">Extensies op de zwarte lijst verwijderen</translation>
 <translation id="3701121231485832347">Beheert instellingen die specifiek zijn voor <ph name="PRODUCT_OS_NAME" />-apparaten die via <ph name="MS_AD_NAME" /> worden beheerd.</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Het veld met één regel is beëindigd en wordt in de toekomst verwijderd. Gebruik het tekstvak met meerdere regels hieronder.)</translation>
 <translation id="3709266154059827597">Zwarte lijst voor het installeren van extensies configureren</translation>
@@ -4262,11 +4261,6 @@ Als dit beleid niet is ingesteld, worden er geen beperkingen toegepast en kan de
       Dit beleid is alleen van toepassing op gebruikers die zijn geverifieerd met SAML.
 
       De beleidswaarde moet worden gespecificeerd in seconden.</translation>
-<translation id="9018338365267278833">Hiermee verwijder je extensies in <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> of in <ph name="EXTENSION_SETTINGS_POLICY_NAME" /> waarvan de installatiemodus is geblokkeerd. Ook worden lokale gebruikersgegevens definitief verwijderd.  Raadpleeg het privacybeleid voor extensies of het beleid voor gegevensbehoud voor meer informatie over wat er gebeurt met gebruikersgegevens die niet lokaal zijn opgeslagen.
-
-      Als het beleid is ingeschakeld, worden extensies in de genoemde lijsten geheel verwijderd van het apparaat (als ze zijn geïnstalleerd), inclusief lokale gebruikersgegevens.
-
-      Als het beleid is uitgeschakeld of niet is ingesteld, worden extensies in de genoemde lijsten uitgeschakeld op het apparaat (als ze zijn geïnstalleerd en op de zwarte lijst <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> staan) maar worden ze niet verwijderd.</translation>
 <translation id="9027787254195333560">Met dit beleid kun je de avatarafbeelding configureren die voor de gebruiker wordt weergegeven op het inlogscherm. Het beleid wordt ingesteld door de URL op te geven waar <ph name="PRODUCT_OS_NAME" /> de avatarafbeelding kan downloaden, evenals een cryptografische hash die wordt gebruikt om de integriteit van de download te verifiëren. De afbeelding moet de jpeg-indeling hebben en mag niet groter zijn dan 512 KB. De URL moet zonder verificatie toegankelijk zijn.
 
       De avatarafbeelding wordt gedownload en opgeslagen in het cachegeheugen. Deze wordt opnieuw gedownload wanneer de URL of de hash wordt gewijzigd.

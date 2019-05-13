@@ -45,7 +45,7 @@
 <translation id="1285320974508926690">Να μην γίνεται ποτέ μετάφραση αυτού του ιστότοπου</translation>
 <translation id="1291207594882862231">Διαγραφή ιστορικού, cookie, δεδομένων ιστότοπου, κρυφής μνήμης…</translation>
 <translation id="129553762522093515">Έκλεισαν πρόσφατα</translation>
-<translation id="1303507811548703290"><ph name="DOMAIN" /> - Εστάλη από <ph name="DEVICE_NAME" /></translation>
+<translation id="1303507811548703290"><ph name="DOMAIN" /> - Στάλθηκε από <ph name="DEVICE_NAME" /></translation>
 <translation id="1326317727527857210">Για να εμφανίζονται οι καρτέλες από τις άλλες συσκευές σας, συνδεθείτε στο Chrome.</translation>
 <translation id="1331212799747679585">Δεν είναι δυνατή η ενημέρωση του Chrome. Περισσότερες επιλογές</translation>
 <translation id="1332501820983677155">Συντομεύσεις λειτουργιών Google Chrome</translation>
@@ -207,7 +207,7 @@
 <translation id="2450083983707403292">Θέλετε να ξεκινήσετε ξανά τη λήψη του αρχείου <ph name="FILE_NAME" />;</translation>
 <translation id="2476578072172137802">Ρυθμίσεις ιστότοπου</translation>
 <translation id="2482878487686419369">Ειδοποιήσεις</translation>
-<translation id="2490684707762498678">Διαχειρίζεται από την εφαρμογή <ph name="APP_NAME" /></translation>
+<translation id="2490684707762498678">Διαχειριζόμενες από την εφαρμογή <ph name="APP_NAME" /></translation>
 <translation id="2494974097748878569">Βοηθός Google στο Chrome</translation>
 <translation id="2496180316473517155">Ιστορικό περιήγησης</translation>
 <translation id="2498359688066513246">Βοήθεια και σχόλια</translation>
@@ -250,7 +250,7 @@
 <translation id="2777555524387840389">Απομένουν <ph name="SECONDS" /> δευτερόλεπτα</translation>
 <translation id="2779651927720337254">απέτυχε</translation>
 <translation id="2781151931089541271">Απομένει 1 δευτερόλεπτο</translation>
-<translation id="2801022321632964776">Κάντε ενημέρωση για να χρησιμοποιείτε τη γλώσσα σας στην πιο πρόσφατη έκδοση του Chrome</translation>
+<translation id="2801022321632964776">Ενημερώστε για να χρησιμοποιείτε τη γλώσσα σας στην πιο πρόσφατη έκδοση του Chrome</translation>
 <translation id="2803478378562657435">Εμφάνιση αποθηκευμένων κωδικών πρόσβασης και επιλογών κωδικού πρόσβασης</translation>
 <translation id="2810645512293415242">Απλοποιημένη σελίδα για την αποθήκευση δεδομένων και για πιο γρήγορη φόρτωση.</translation>
 <translation id="281504910091592009">Προβολή και διαχείριση αποθηκευμένων κωδικών πρόσβασης στον <ph name="BEGIN_LINK" />Λογαριασμό σας Google<ph name="END_LINK" /></translation>

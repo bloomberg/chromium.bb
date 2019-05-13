@@ -45,7 +45,7 @@
 <translation id="1285320974508926690">איני רוצה לקבל תרגום של אתר זה</translation>
 <translation id="1291207594882862231">‏ניקוי ההיסטוריה, קובצי ה-Cookie, נתוני האתרים, המטמון…</translation>
 <translation id="129553762522093515">נסגרו לאחרונה</translation>
-<translation id="1303507811548703290"><ph name="DOMAIN" /> - נשלחה מ-<ph name="DEVICE_NAME" /></translation>
+<translation id="1303507811548703290"><ph name="DOMAIN" /> — נשלחה מ-<ph name="DEVICE_NAME" /></translation>
 <translation id="1326317727527857210">‏כדי לקבל את הכרטיסיות מהמכשירים האחרים שלך, יש להיכנס ל-Chrome.</translation>
 <translation id="1331212799747679585">‏לא ניתן לעדכן את Chrome. אפשרויות נוספות</translation>
 <translation id="1332501820983677155">‏מקשי קיצור לתכונות של Google Chrome‏</translation>
@@ -95,6 +95,7 @@
 <translation id="1671236975893690980">ההורדה תיכף תתחיל…</translation>
 <translation id="1672586136351118594">אין להציג שוב</translation>
 <translation id="1692118695553449118">סנכרון מופעל</translation>
+<translation id="169515064810179024">חסימת הגישה של אתרים אל חיישני תנועה</translation>
 <translation id="1709438864123551175">Data Saver</translation>
 <translation id="1717218214683051432">חיישני תנועה</translation>
 <translation id="1718835860248848330">מהשעה האחרונה</translation>
@@ -249,6 +250,7 @@
 <translation id="2777555524387840389">נותרו <ph name="SECONDS" /> שניות</translation>
 <translation id="2779651927720337254">נכשל</translation>
 <translation id="2781151931089541271">נותרה שניה אחת</translation>
+<translation id="2801022321632964776">‏עדכון לגרסה האחרונה של Chrome יאפשר לך לקרוא בשפה שלך</translation>
 <translation id="2803478378562657435">הצגת סיסמאות שמורות ואפשרויות סיסמה</translation>
 <translation id="2810645512293415242">דף פשוט יותר שחוסך בנתונים ונטען מהר יותר.</translation>
 <translation id="281504910091592009">‏הצגה וניהול של סיסמאות שמורות ב<ph name="BEGIN_LINK" />חשבון Google<ph name="END_LINK" /></translation>
@@ -311,6 +313,7 @@
 <translation id="3259831549858767975">הקטן את כל מה שמופיע בדף</translation>
 <translation id="3269093882174072735">טען תמונה</translation>
 <translation id="3269956123044984603">‏כדי לקבל את הכרטיסיות מהמכשירים האחרים שלך, הפעל את האפשרות 'סנכרון אוטומטי של נתונים' בהגדרות של חשבון Android.</translation>
+<translation id="3277252321222022663">התרת גישה של אתרים אל החיישנים (מומלץ)</translation>
 <translation id="3282568296779691940">‏כניסה ל-Chrome</translation>
 <translation id="3288003805934695103">לטעון מחדש את הדף</translation>
 <translation id="32895400574683172">יש הרשאה להצגת הודעות</translation>
@@ -551,6 +554,7 @@
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">זה בסדר</translation>
 <translation id="5040262127954254034">פרטיות</translation>
+<translation id="5048398596102334565">התרת גישה של אתרים אל חיישני התנועה (מומלץ)</translation>
 <translation id="5063480226653192405">שימוש</translation>
 <translation id="5073204694187207510">הסתרת רשת מסך מלא</translation>
 <translation id="5082793167783849073">כדי להשוות במהירות בין דפים, אפשר ליצור קבוצה. כדי להתחיל, צריך ללחוץ לחיצה ארוכה על קישור.</translation>
@@ -612,7 +616,7 @@
 <translation id="5512137114520586844">החשבון הזה מנוהל על ידי <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">האפשרות הזו הושבתה על-ידי מנהל המערכת של המכשיר</translation>
 <translation id="5515439363601853141">ביטול הנעילה יציג את הסיסמה</translation>
-<translation id="5516455585884385570">לפתיחת הגדרת ההתראות</translation>
+<translation id="5516455585884385570">פתיחה של הגדרות ההתראות</translation>
 <translation id="5517095782334947753">יש לך סימניות, היסטוריה, סיסמאות והגדרות נוספות מ-<ph name="FROM_ACCOUNT" />.</translation>
 <translation id="5524843473235508879">הפניה לכתובת אתר אחרת נחסמה.</translation>
 <translation id="5527082711130173040">‏כדי לבצע סריקה לאיתור מכשירים, Chrome זקוק לגישה לנתוני מיקום. <ph name="BEGIN_LINK1" />עדכן את ההרשאות<ph name="END_LINK1" />. כמו כן, הגישה למיקום <ph name="BEGIN_LINK2" />כבויה במכשיר הזה<ph name="END_LINK2" />.</translation>
@@ -744,6 +748,7 @@
 <translation id="6406506848690869874">סנכרון</translation>
 <translation id="641643625718530986">הדפסה…</translation>
 <translation id="6416782512398055893">‏בוצעה הורדה של MB <ph name="MBS" /></translation>
+<translation id="6427112570124116297">תרגום התוכן באינטרנט</translation>
 <translation id="6433501201775827830">בחירת מנוע החיפוש</translation>
 <translation id="6437478888915024427">פרטי דף</translation>
 <translation id="6441734959916820584">השם ארוך מדי</translation>
@@ -859,6 +864,7 @@
 <translation id="7189598951263744875">שיתוף...</translation>
 <translation id="7191430249889272776">הכרטיסייה נפתחה ברקע.</translation>
 <translation id="723171743924126238">בחר תמונות</translation>
+<translation id="7233236755231902816">‏כדי לראות באינטרנט תוכן בשפה שלך, יש להוריד את הגרסה האחרונה של Chrome</translation>
 <translation id="7243308994586599757">אפשרויות הזמינות באזור החלק התחתון של המסך</translation>
 <translation id="7250468141469952378">נבחרו <ph name="ITEM_COUNT" /></translation>
 <translation id="7253272406652746122">‏הוסף חשבון Google מהדף 'חשבונות' שבאפליקציית ההגדרות של המכשיר.</translation>
@@ -1010,10 +1016,11 @@
 <translation id="8266862848225348053">מיקום ההורדה</translation>
 <translation id="8274165955039650276">הצגת הורדות</translation>
 <translation id="8283853025636624853">מסנכרן עם <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
-<translation id="8300705686683892304">מנוהלים על ידי אפליקציה</translation>
+<translation id="8300705686683892304">מנוהלים על-ידי אפליקציה</translation>
 <translation id="8310344678080805313">כרטיסיות רגילות</translation>
 <translation id="8313455859591948645">עריכת דף הפתיחה</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> ועוד אתרים</translation>
+<translation id="8327155640814342956">‏כדי ליהנות מחוויית הגלישה הטובה ביותר, יש לפתוח את Chrome כדי לעדכן אותו</translation>
 <translation id="8339163506404995330">דפים ב<ph name="LANGUAGE" /> לא יתורגמו</translation>
 <translation id="8349013245300336738">מיון לפי כמות הנתונים שבהם נעשה שימוש</translation>
 <translation id="8372893542064058268">אפשר סנכרון ברקע לאתר ספציפי.</translation>
@@ -1073,6 +1080,7 @@
 <translation id="8788968922598763114">פתח מחדש את הכרטיסייה האחרונה שנסגרה</translation>
 <translation id="8801436777607969138">‏חסימת JavaScript באתר ספציפי.</translation>
 <translation id="8812260976093120287">באתרים מסוימים ניתן לשלם דרך המכשיר באמצעות אפליקציות התשלום הנתמכות שמופיעות למעלה.</translation>
+<translation id="8816026460808729765">חסימת הגישה של אתרים אל חיישנים</translation>
 <translation id="8816439037877937734">‏האפליקציה <ph name="APP_NAME" /> תיפתח ב-Chrome. המשך השימוש מבטא את הסכמתך ל<ph name="BEGIN_LINK1" />תנאים ולהגבלות<ph name="END_LINK1" /> ול<ph name="BEGIN_LINK2" />הודעת הפרטיות<ph name="END_LINK2" /> של Chrome, וכן ל<ph name="BEGIN_LINK3" />הודעת הפרטיות לחשבונות Google שמנוהלים ב-Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">סימניות</translation>
 <translation id="8833831881926404480">אתר משתף את המסך שלך</translation>

@@ -1415,7 +1415,6 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
 
         Esta política é usada na inscrição no gerenciamento em nuvem do escopo da máquina no computador desktop e pode ser definida por registro ou GPO no Windows, por plist no Mac e por arquivo de política JSON no Linux.</translation>
 <translation id="3660562134618097814">Transferir cookies do IDP de SAML durante o login</translation>
-<translation id="3668151900457104753">Desinstalar extensões da lista de proibições</translation>
 <translation id="3701121231485832347">Controla configurações específicas de dispositivos <ph name="PRODUCT_OS_NAME" /> gerenciados pelo <ph name="MS_AD_NAME" />.</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" />: o campo de linha única é obsoleto e será removido no futuro. Comece a usar a caixa de texto de várias linhas abaixo.</translation>
 <translation id="3709266154059827597">Configurar a lista de proibições de instalação da extensão</translation>
@@ -4160,11 +4159,6 @@ Se você ativar esta configuração, o <ph name="PRODUCT_NAME" /> e os apps ARC 
       Esta política só afeta usuários que fizeram a autenticação com SAML.
 
       O valor da política precisa ser especificado em segundos.</translation>
-<translation id="9018338365267278833">Isso removerá extensões que aparecem na <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> ou <ph name="EXTENSION_SETTINGS_POLICY_NAME" /> que tenham o modo de instalação definido como bloqueado e limpará os dados locais do usuário.  Consulte a política de privacidade ou a política de retenção de dados das extensões para entender o que pode acontecer com os dados do usuário que não são armazenados localmente.
-
-      Quando a política for definida como ativada, as extensões que constam nas listas mencionadas anteriormente, caso já tenham sido instaladas em uma máquina, serão totalmente removidas da máquina, incluindo os dados de usuário locais.
-
-      Quando a política for definida como desativada ou estiver indefinida, as extensões que constam nas listas mencionadas anteriormente, caso já tenham sido instaladas em uma máquina e estejam na lista de proibições <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, serão desativadas na máquina, e não desinstaladas.</translation>
 <translation id="9027787254195333560">Esta política permite que você configure a imagem de avatar que representa o usuário na tela de login. A política é definida pela especificação do URL do qual o <ph name="PRODUCT_OS_NAME" /> pode fazer o download da imagem de avatar e de uma hash criptográfica usada para verificar a integridade do download. A imagem precisa estar no formato JPEG. O tamanho não pode ser superior a 512 KB. É necessário que o URL possa ser acessado sem qualquer tipo de autenticação.
 
       A imagem de avatar será transferida por download e armazenada em cache. O download será refeito sempre que o URL ou a hash mudarem.

@@ -1428,7 +1428,6 @@ Wenn diese Einstellung auf "Aus" oder kein Wert festgelegt wird, wird der einges
 
         Diese Richtlinie wird im Rahmen der Registrierung von Cloud-Richtlinien auf Computern verwendet und kann unter Windows über die Registrierung oder per GPO, auf einem Mac per plist und unter Linux über eine JSON-Richtliniendatei festgelegt werden.</translation>
 <translation id="3660562134618097814">SAML-IdP-Cookies bei der Anmeldung übertragen</translation>
-<translation id="3668151900457104753">Deinstalliert Erweiterungen, die auf der schwarzen Liste stehen</translation>
 <translation id="3701121231485832347">Legt die Einstellungen für mit <ph name="MS_AD_NAME" /> verwaltete <ph name="PRODUCT_OS_NAME" />-Geräte fest.</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> – Das einzeilige Feld ist veraltet und wird in Zukunft entfernt. Bitte nutzen Sie das mehrzeilige Textfeld unten.</translation>
 <translation id="3709266154059827597">Schwarze Liste für Installation von Erweiterungen konfigurieren</translation>
@@ -4153,11 +4152,6 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
       Diese Richtlinie betrifft nur Nutzer, die sich über SAML authentifizieren.
 
       Der Wert sollte in Sekunden angegeben werden.</translation>
-<translation id="9018338365267278833">Hiermit werden Erweiterungen entfernt, die in "<ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />" oder in "<ph name="EXTENSION_SETTINGS_POLICY_NAME" />" erscheinen, für die als Installationsmodus "Blockiert" festgelegt ist. Auch lokale Nutzerdaten werden dabei dauerhaft gelöscht.  Informationen dazu, was mit den Nutzerdaten geschehen kann, die nicht lokal gespeichert werden, finden Sie in der Datenschutzerklärung zu Erweiterungen oder in der Richtlinie zur Datenaufbewahrung.
-
-      Wenn die Richtlinie aktiviert ist, werden Erweiterungen, die auf den oben genannten Listen stehen, vom betreffenden Computer vollständig – d. h. einschließlich lokaler Nutzerdaten – entfernt, soweit sie installiert sind.
-
-      Ist die Richtlinie deaktiviert oder nicht konfiguriert, dann werden Erweiterungen, die auf den oben genannten Listen stehen – soweit sie bereits auf dem Computer installiert sind und auf der schwarzen <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />-Liste stehen –, auf dem Computer deaktiviert, jedoch nicht deinstalliert.</translation>
 <translation id="9027787254195333560">Über diese Richtlinie können Sie das Avatarbild des Nutzers für den Anmeldebildschirm konfigurieren. Zum Festlegen der Richtlinie muss die URL, über die <ph name="PRODUCT_OS_NAME" /> das Avatarbild herunterladen kann, sowie ein kryptografischer Hash angegeben werden, um die Integrität des Downloads zu verifizieren. Das Bild muss im JPEG-Format vorliegen und darf nicht größer als 512 KB sein. Der Zugriff auf die URL muss ohne Authentifizierung möglich sein.
 
       Das Avatarbild wird heruntergeladen und im Cache gespeichert. Sobald sich die URL oder der Hash ändert, wird es noch einmal heruntergeladen.

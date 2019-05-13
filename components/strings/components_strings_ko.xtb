@@ -223,6 +223,7 @@
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">카드</translation>
 <translation id="2114841414352855701"><ph name="POLICY_NAME" />이(가) 우선 적용되었기 때문에 무시됩니다.</translation>
+<translation id="2129079103035905234">움직임 감지 센서</translation>
 <translation id="213826338245044447">모바일 북마크</translation>
 <translation id="214556005048008348">결제 취소</translation>
 <translation id="2147827593068025794">백그라운드 동기화</translation>
@@ -1006,7 +1007,7 @@
 <translation id="6508722015517270189">Chrome 다시 시작하기</translation>
 <translation id="6529602333819889595">삭제 다시 실행(&amp;R)</translation>
 <translation id="6534179046333460208">피지컬 웹 제안</translation>
-<translation id="6554795675067793129"><ph name="ENROLLMENT_DOMAIN" />에서 관리하는 계정입니다.</translation>
+<translation id="6554795675067793129">사용자의 계정은 <ph name="ENROLLMENT_DOMAIN" />에서 관리합니다.</translation>
 <translation id="6556866813142980365">다시실행</translation>
 <translation id="6563469144985748109">관리자가 아직 승인하지 않았습니다.</translation>
 <translation id="6569060085658103619">확장 프로그램 페이지를 보는 중</translation>

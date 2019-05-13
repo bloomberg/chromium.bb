@@ -1416,7 +1416,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
         La inscripción en la política de nube para el alcance de máquinas usa esta política en el escritorio. Se puede configurar mediante el registro o GPO en Windows, plist en Mac y el archivo de políticas JSON en Linux.</translation>
 <translation id="3660562134618097814">Transferir cookies del IdP de SAML durante el acceso</translation>
-<translation id="3668151900457104753">Desinstalar extensiones en la lista negra</translation>
 <translation id="3701121231485832347">Controla la configuración específica de los dispositivos <ph name="PRODUCT_OS_NAME" /> administrados por <ph name="MS_AD_NAME" />.</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Pronto dejará de estar disponible el campo de una línea y desaparecerá. Empieza a usar el cuadro de texto de varias líneas que se encuentra a continuación).</translation>
 <translation id="3709266154059827597">Configurar la lista negra de instalación de extensiones</translation>
@@ -4192,11 +4191,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
       Esta política solo afecta a los usuarios autenticados mediante SAML.
 
       El valor de la política debe especificarse en segundos.</translation>
-<translation id="9018338365267278833">Esta política quitará las extensiones que aparecen en <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> o las que aparecen en <ph name="EXTENSION_SETTINGS_POLICY_NAME" /> que tengan el modo de instalación configurado como bloqueado y borrará definitivamente los datos de usuario locales.  Consulta la Política de Privacidad para extensiones o la política sobre retención de datos para entender qué es lo que puede ocurrir con los datos del usuario que no se almacenan de forma local.
-
-      Cuando se establece la política como habilitada, las extensiones que se incluyen en las listas mencionadas anteriormente (si ya se instalaron en una máquina) se quitarán por completo (incluidos los datos del usuario locales).
-
-      Cuando se establece la política como inhabilitada o no se configura, las extensiones que se incluyen en las listas mencionadas anteriormente (si ya se instalaron en una máquina y se enumeran en la lista negra <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />) se inhabilitarán en la máquina y no se desinstalarán.</translation>
 <translation id="9027787254195333560">Esta política permite configurar la imagen de avatar que identifica al usuario en la pantalla de acceso. Para configurarla, indica la URL desde la cual <ph name="PRODUCT_OS_NAME" /> puede descargar la imagen de avatar y un hash criptográfico que verifique la integridad de la descarga. La imagen debe estar en formato JPEG y no pesar más de 512 kB. Se debe poder acceder a la dirección URL sin autenticación previa.
 
       La imagen de avatar se descarga y queda almacenada en caché. Cada vez que cambie la URL o el hash, la imagen se volverá a descargar.

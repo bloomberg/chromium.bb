@@ -1425,7 +1425,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
         Această politică este folosită de înregistrarea în politica de cloud a domeniului dispozitivului pe desktop și poate fi setată de fișierul de politică Registry sau GPO în Windows, plist în Mac și JSON în Linux.</translation>
 <translation id="3660562134618097814">Transferă cookie-urile unui furnizor de identitate SAML în timpul conectării</translation>
-<translation id="3668151900457104753">Dezinstalează extensiile din lista neagră</translation>
 <translation id="3701121231485832347">Controlează setările specifice dispozitivelor <ph name="PRODUCT_OS_NAME" /> gestionate de <ph name="MS_AD_NAME" />.</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Câmpul cu un singur rând este învechit și va fi eliminat în viitor. Începe să folosești caseta text cu mai multe rânduri de mai jos.)</translation>
 <translation id="3709266154059827597">Configurează lista neagră pentru instalarea extensiilor</translation>
@@ -4184,11 +4183,6 @@ Pentru mai multe informații despre contextele sigure, accesează https://www.w3
       Politica afectează numai utilizatorii care s-au autentificat folosind SAML.
 
       Valoarea politicii trebuie specificată în milisecunde.</translation>
-<translation id="9018338365267278833">Astfel, se vor elimina extensiile care apar în <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> sau în <ph name="EXTENSION_SETTINGS_POLICY_NAME" /> și care au modul de instalare setat la „blocat” și se vor șterge definitiv datele locale ale utilizatorului.  Consultă politica de confidențialitate privind extensiile sau politica de păstrare a datelor pentru a înțelege ce se poate întâmpla cu datele utilizatorului care nu sunt stocate local.
-
-      Când politica este activată, extensiile din listele menționate anterior (dacă sunt deja instalate pe un dispozitiv) vor fi eliminate în întregime de pe acel dispozitiv (inclusiv datele locale ale utilizatorului).
-
-      Când politica este dezactivată sau nu este configurată, extensiile din listele menționate anterior (dacă sunt instalate deja pe un dispozitiv și există în lista neagră <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />) vor fi dezactivate de pe dispozitiv și nu vor fi dezinstalate.</translation>
 <translation id="9027787254195333560">Cu această politică poți configura imaginea avatar a utilizatorului pe ecranul de conectare. Politica este setată prin specificarea adresei URL de la care <ph name="PRODUCT_OS_NAME" /> poate descărca imaginea avatar și a unui cod hash criptografic utilizat pentru a verifica integritatea descărcării. Imaginea trebuie să fie în format JPEG, iar mărimea sa nu trebuie să depășească 512 KB. Adresa URL trebuie să poată fi accesată fără autentificare.
 
       Imaginea avatar este descărcată și salvată în memoria cache. Aceasta va fi descărcată din nou ori de câte ori adresa URL sau codul hash se modifică.

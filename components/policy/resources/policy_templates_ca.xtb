@@ -1286,7 +1286,6 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 
         La inscripció a polítiques al núvol segons l'abast de l'equip utilitza aquesta política als ordinadors. La política es pot definir amb Registry o GPO a Windows, plist a Mac i el fitxer de polítiques JSON a Linux.</translation>
 <translation id="3660562134618097814">Transfereix les galetes del proveïdor d'identitat SAML durant l'inici de sessió</translation>
-<translation id="3668151900457104753">Desinstal·la les extensions que són a la llista negra</translation>
 <translation id="3701121231485832347">Controla la configuració específica dels dispositius <ph name="PRODUCT_OS_NAME" /> gestionats per <ph name="MS_AD_NAME" />.</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> El camp d'una sola línia ja no està disponible i se suprimirà en el futur. Comença a utilitzar el quadre de text amb diverses línies que hi ha més avall.</translation>
 <translation id="3709266154059827597">Configura la llista negra d'instal·lació d'extensions</translation>
@@ -3767,11 +3766,6 @@ per donar prioritat a OverrideSecurityRestrictionsOnInsecureOrigin. Si totes due
 <translation id="8976248126101463034">Permet l'autenticació Gnubby als amfitrions d'accés remot</translation>
 <translation id="8976531594979650914">Utilitza la impressora predeterminada del sistema com a predeterminada</translation>
 <translation id="8992176907758534924">No permetis que cap lloc mostri imatges</translation>
-<translation id="9018338365267278833">Se suprimiran les extensions que apareguin a <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> o les que apareguin a<ph name="EXTENSION_SETTINGS_POLICY_NAME" /> i tinguin el mode d'instal·lació establert en "blocked", i les dades locals de l'usuari se suprimiran permanentment.  Consulta la política de privadesa de les extensions o la política de conservació de dades per entendre què pot passar quan les dades de l'usuari no s'emmagatzemen localment.
-
-      Quan la política s'estableix en "enabled", les extensions que s'inclouen a les llistes mencionades anteriorment (si ja s'han instal·lat en un ordinador) se suprimeixen totalment de l'ordinador en qüestió (incloses les dades locals de l'usuari).
-
-      Quan la política s'estableix en "disabled" o es deixa sense establir, les extensions que s'inclouen a les llistes mencionades anteriorment (si ja s'han instal·lat en un ordinador i són a la llista negra <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />) es desactiven a l'ordinador però no es desinstal·len.</translation>
 <translation id="9035964157729712237">ID de les extensions que s'han d'excloure de la llista negra</translation>
 <translation id="9038058011835642205">Especifica una llista de llocs web que s'instal·len silenciosament, sense la interacció de l'usuari, i que l'usuari no pot desinstal·lar ni desactivar.
 

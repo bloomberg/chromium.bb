@@ -1432,7 +1432,6 @@ Sera hii inatumika tu kama sera ya 'DefaultSearchProviderEnabled' imewashwa.</tr
 
         Sera hii inatumiwa na mpango wa ujumuishaji wa sera ya wingu katika upeo wa mashine kwenye kompyuta ya mezani na inaweza kuwekwa na Sajili au GPO kwenye Windows, faili ya plist kwenye Mac na faili ya sera ya JSON kwenye Linux.</translation>
 <translation id="3660562134618097814">Hamisha vidakuzi vya SAML IdP wakati wa kuingia katika akaunti</translation>
-<translation id="3668151900457104753">Ondoa viendelezi visivyoruhusiwa</translation>
 <translation id="3701121231485832347">Hudhibiti mipangilio ya <ph name="MS_AD_NAME" /> inayodhibitiwa na vifaa vya <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Sehemu ya mstari mmoja iliacha kufanya kazi na itaondolewa katika siku zijazo. Tafadhali anza kutumia kisanduku cha maandishi cha mistari mingi kilicho hapa chini)</translation>
 <translation id="3709266154059827597">Sanidi orodha inayotiliwa shaka ya usakinishaji wa kiendelezi</translation>
@@ -4233,11 +4232,6 @@ kiwekwe kwenye maombi yote ya HTTP na HTTPS katika vikoa vyote vya google.com, j
       Sera hii huathiri watumiaji waliothibitisha kwa kutumia SAML pekee.
 
       Thamani ya sera lazima ibainishwe katika sekunde.</translation>
-<translation id="9018338365267278833">Hatua hii itaondoa viendelezi vinavyoonekana katika <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> au viendelezi vinavyoonekana katika <ph name="EXTENSION_SETTINGS_POLICY_NAME" /> ambavyo vina hali ya usakinishaji iliyowekwa kuwa 'vimezuiwa' na itafuta data ya kifaa cha mtumiaji.  Rejelea sera ya faragha ya viendelezi au sera ya kuhifadhi data ili uelewe ambacho huenda kitafanyika kwenye data ya mtumiaji ambayo haijahifadhiwa katika kifaa.
-
-      Sera ikiwekwa kuwa 'imewashwa', viendelezi vinavyopatikana katika orodha zilizotajwa hapo awali (ikiwa tayari vimesakinishwa kwenye mashine) vitaondolewa kwenye mashine hiyo na mfumo wake wote (ikiwa ni pamoja na data ya kifaa cha mtumiaji).
-
-      Sera ikiwekwa kuwa imezimwa au ikiachwa bila kuwekwa, viendelezi vinavyopatikana katika orodha zilizotajwa hapo awali (ikiwa tayari vimesakinishwa kwenye mashine na vinavyopatikana kwenye orodha ya 'visivyoruhusiwa' <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />) vitazimwa kwenye mashine na havitaondolewa.</translation>
 <translation id="9027787254195333560">Sera hii inakuruhusu kuweka mipangilio ya picha ya ishara inayowakilisha mtumiaji kwenye skrini ya kuingia katika akaunti. Sera inawekwa kwa kubainisha URL ambayo <ph name="PRODUCT_OS_NAME" /> inaweza kupakua picha ya ishara na alama ya reli ya kriptografia inayotumika kuthibitisha kuaminika kwa kipakuliwa. Picha sharti iwe katika muundo wa JPEG, ukubwa wake usizidi kB 512. Ni sharti URL ifikiwe bila uthibitishaji wowote.
 
       Picha ya ishara inapakuliwa na kuwekwa katika akiba. Itapakuliwa upya wakati URL au alama ya reli inabadilika.

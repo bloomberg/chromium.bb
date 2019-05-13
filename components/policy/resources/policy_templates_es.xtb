@@ -1456,7 +1456,6 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 
         El registro automático de políticas de permisos de nube utiliza esta política en el escritorio y se puede configurar mediante el registro o el GPO en Windows, mediante plist en Mac y mediante el archivo de políticas JSON en Linux.</translation>
 <translation id="3660562134618097814">Transferir las cookies del proveedor de identidad SAML durante el inicio de sesión</translation>
-<translation id="3668151900457104753">Desinstala las extensiones incluidas en la lista negra</translation>
 <translation id="3701121231485832347">Controla la configuración específica de los dispositivos con <ph name="PRODUCT_OS_NAME" /> gestionados con <ph name="MS_AD_NAME" />.</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (el campo de una línea está obsoleto y desaparecerá en el futuro; a partir de ahora, debes utilizar el campo de varias líneas que aparece más abajo).</translation>
 <translation id="3709266154059827597">Configurar lista negra de instalación de extensiones</translation>
@@ -4293,11 +4292,6 @@ Los usuarios no pueden cambiar ni anular esta opción.</translation>
       Esta política solo afecta a los usuarios autenticados a través de SAML.
 
       El valor de la política se debe especificar en segundos.</translation>
-<translation id="9018338365267278833">Esta política eliminará las extensiones que aparecen en la <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> o las extensiones que aparecen en <ph name="EXTENSION_SETTINGS_POLICY_NAME" /> cuyo modo de instalación esté bloqueado y eliminará definitivamente los datos locales del usuario.  Consulta la política de privacidad de las extensiones o la política de retención de datos para entender qué puede pasar con los datos de los usuarios que no se hayan almacenado localmente.
-
-      Si se habilita esta política, las extensiones incluidas en las listas mencionadas anteriormente (si ya están instaladas en el equipo) se eliminarán del equipo completamente (incluidos los datos locales del usuario).
-
-      Si se inhabilita esta política, las extensiones incluidas en las listas mencionadas anteriormente (si ya están instaladas en el equipo y están incluidas en la lista negra <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />) se inhabilitarán en el equipo, pero no se desinstalarán.</translation>
 <translation id="9027787254195333560">Esta política permite configurar la imagen del avatar que representa al usuario en la pantalla de inicio de sesión. La política se establece especificando la URL desde la que <ph name="PRODUCT_OS_NAME" /> puede descargar la imagen del avatar y un hash criptográfico que se utiliza para verificar la integridad de la descarga. La imagen debe tener formato JPEG y un tamaño no superior a 512 KB. Se debe poder acceder a la URL sin autenticación.
 
       La imagen del avatar se descarga y se almacena en caché. Se volverá a descargar si se cambian la URL o el hash.

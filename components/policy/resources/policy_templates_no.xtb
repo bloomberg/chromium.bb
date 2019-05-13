@@ -1425,7 +1425,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 
         Denne regelen brukes ved registrering av retningslinjer for nettskyer med maskinomfang på datamaskiner. Den kan angis via registeret eller GPO i Windows, plist på Mac og en JSON-regelfil i Linux.</translation>
 <translation id="3660562134618097814">Overfør SAML IdP-informasjonskapsler ved pålogging</translation>
-<translation id="3668151900457104753">Avinstaller utvidelser på svartelisten</translation>
 <translation id="3701121231485832347">Kontrollerer innstillinger som er spesifikke for <ph name="PRODUCT_OS_NAME" />-enheter som administreres av <ph name="MS_AD_NAME" />.</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Feltet med én linje er avviklet og det fjernes i nær fremtid. Begynn å bruke tekstfeltet med flere linjer nedenfor.)</translation>
 <translation id="3709266154059827597">Konfigurer installasjonssperrelisten for utvidelser</translation>
@@ -4229,11 +4228,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Denne regelen påvirker bare brukere som autentiserer seg via SAML.
 
       Regelverdien skal angis i sekunder.</translation>
-<translation id="9018338365267278833">Dette fjerner utvidelser som vises i <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, eller som vises i <ph name="EXTENSION_SETTINGS_POLICY_NAME" /> og har installasjonsmodus satt til blokkert, og sletter lokale brukerdata sammen med dem permanent.  Se personvernreglene eller dataoppbevaringsreglene for utvidelsene for å forstå hva som kan skje med brukerdata som ikke lagres lokalt.
-
-      Når regelen er satt til «enabled» (slått på), fjernes utvidelser på de ovennevnte listene (hvis de allerede er installert på maskinen) fullstendig fra maskinen (inkludert lokale brukerdata).
-
-      Når regelen er satt til «disabled» (slått av) eller ikke er angitt, blir utvidelser på de ovennevnte listene (hvis de allerede er installert på maskinen og står på svartelisten <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />) slått av på maskinen, men ikke avinstallert.</translation>
 <translation id="9027787254195333560">Med denne regelen kan du konfigurere hvilket brukerbilde som representerer brukeren på påloggingsskjermen. Du angir denne regelen ved å spesifisere nettadressen <ph name="PRODUCT_OS_NAME" /> kan laste ned brukerbildet fra, og en kryptografisk hash som brukes til å bekrefte at ingen har tuklet med nedlastingen. Bildet må være i JPEG-format og ikke større enn 512 kB. Nettadressen må være tilgjengelig uten krav om autentisering.
 
       Brukerbildet blir lastet ned og bufret. Det lastes ned på nytt hver gang nettadressen eller hashen endres.

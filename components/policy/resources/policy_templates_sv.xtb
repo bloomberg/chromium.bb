@@ -1463,7 +1463,6 @@
 
         Principen används på stationära datorer för registrering av datorn för molnhantering och kan ställas in via registret eller gruppolicyobjekt på Windows, plist på Mac och en JSON-principfil på Linux.</translation>
 <translation id="3660562134618097814">Överför SAML-cookies från identitetsleverantörer vid inloggning</translation>
-<translation id="3668151900457104753">Avinstallera svartlistade tillägg</translation>
 <translation id="3701121231485832347">Styr inställningar för <ph name="PRODUCT_OS_NAME" />-enheter som hanteras med <ph name="MS_AD_NAME" />.</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Enradsfältet har fasats ut och tas snart bort. Börja använda flerradsfältet i stället.)</translation>
 <translation id="3709266154059827597">Konfigurera svartlista för tilläggsinstallation</translation>
@@ -4309,11 +4308,6 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
       Den här principen påverkar endast användare som verifieras via SAML.
 
       Principens värde ska anges i sekunder.</translation>
-<translation id="9018338365267278833">Den tar bort tillägg som visas i <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> eller tillägg som visas i <ph name="EXTENSION_SETTINGS_POLICY_NAME" /> vars installationsläge är inställt på blockerat och raderar samtidigt lokal användardata permanent.  Läs tilläggets sekretesspolicy eller datalagringspolicy om du vill veta mer om vad som händer med användardata som inte lagras lokalt.
-
-      När principen är aktiverad tas tilläggen i den ovannämnda listan (om de redan har installerats på datorn) bort från datorn helt (inklusive lokal användardata).
-
-      När principen är inaktiverad eller saknar inställning inaktiveras tilläggen i den ovannämnda listan (om de redan har installerats på datorn och finns med i den svarta listan <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />) på datorn, men avinstalleras inte.</translation>
 <translation id="9027787254195333560">Med den här principen kan du konfigurera den avatarbild som representerar användaren på inloggningsskärmen. Du kan ställa in principen genom att ange en webbadress från vilken <ph name="PRODUCT_OS_NAME" /> kan ladda ned avatarbilden och en kryptografisk hash som används för att verifiera nedladdningens integritet. Bilden måste vara i JPEG-format och får inte vara större än 512 kB. Det måste gå att komma åt webbadressen utan autentisering.
 
       Avatarbilden laddas ned och cachelagras. Den laddas ned på nytt när webbadressen eller hashen ändras.
