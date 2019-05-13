@@ -20,12 +20,11 @@ namespace autofill {
 class AddressContactFormLabelFormatter : public LabelFormatter {
  public:
   AddressContactFormLabelFormatter(
+      const std::vector<AutofillProfile*>& profiles,
       const std::string& app_locale,
       ServerFieldType focused_field_type,
       uint32_t groups,
-      const std::vector<ServerFieldType>& field_types,
-      bool show_phone,
-      bool show_email);
+      const std::vector<ServerFieldType>& field_types);
 
   ~AddressContactFormLabelFormatter() override;
 
@@ -40,11 +39,9 @@ class AddressContactFormLabelFormatter : public LabelFormatter {
   // street addresses should not appear in labels.
   bool form_has_street_address_;
 
-  // True if phone numbers should be included in labels.
-  bool show_phone_;
-
-  // True if email addresses should be included in labels.
-  bool show_email_;
+  // True if the field disambiguates |profiles_|.
+  bool email_disambiguates_;
+  bool phone_disambiguates_;
 };
 
 }  // namespace autofill

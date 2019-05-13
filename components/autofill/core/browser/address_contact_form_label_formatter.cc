@@ -9,16 +9,19 @@
 namespace autofill {
 
 AddressContactFormLabelFormatter::AddressContactFormLabelFormatter(
+    const std::vector<AutofillProfile*>& profiles,
     const std::string& app_locale,
     ServerFieldType focused_field_type,
     uint32_t groups,
-    const std::vector<ServerFieldType>& field_types,
-    bool show_phone,
-    bool show_email)
-    : LabelFormatter(app_locale, focused_field_type, groups, field_types),
+    const std::vector<ServerFieldType>& field_types)
+    : LabelFormatter(profiles,
+                     app_locale,
+                     focused_field_type,
+                     groups,
+                     field_types),
       form_has_street_address_(HasStreetAddress(field_types_for_labels())),
-      show_phone_(show_phone),
-      show_email_(show_email) {}
+      email_disambiguates_(!HaveSameEmailAddresses(profiles, app_locale)),
+      phone_disambiguates_(!HaveSamePhoneNumbers(profiles, app_locale)) {}
 
 AddressContactFormLabelFormatter::~AddressContactFormLabelFormatter() {}
 
@@ -48,11 +51,11 @@ base::string16 AddressContactFormLabelFormatter::GetLabelForProfile(
         &label_parts);
   }
 
-  if (focused_group != PHONE_HOME && show_phone_) {
+  if (focused_group != PHONE_HOME && phone_disambiguates_) {
     AddLabelPartIfNotEmpty(GetLabelPhone(profile, app_locale()), &label_parts);
   }
 
-  if (focused_group != EMAIL && show_email_) {
+  if (focused_group != EMAIL && email_disambiguates_) {
     AddLabelPartIfNotEmpty(GetLabelEmail(profile, app_locale()), &label_parts);
   }
 

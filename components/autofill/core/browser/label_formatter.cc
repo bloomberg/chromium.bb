@@ -24,11 +24,13 @@ using data_util::bit_field_type_groups::kEmail;
 using data_util::bit_field_type_groups::kName;
 using data_util::bit_field_type_groups::kPhone;
 
-LabelFormatter::LabelFormatter(const std::string& app_locale,
+LabelFormatter::LabelFormatter(const std::vector<AutofillProfile*>& profiles,
+                               const std::string& app_locale,
                                ServerFieldType focused_field_type,
                                uint32_t groups,
                                const std::vector<ServerFieldType>& field_types)
-    : app_locale_(app_locale),
+    : profiles_(profiles),
+      app_locale_(app_locale),
       focused_field_type_(focused_field_type),
       groups_(groups) {
   const FieldTypeGroup focused_group = GetFocusedNonBillingGroup();
@@ -60,10 +62,9 @@ LabelFormatter::LabelFormatter(const std::string& app_locale,
 
 LabelFormatter::~LabelFormatter() = default;
 
-std::vector<base::string16> LabelFormatter::GetLabels(
-    const std::vector<AutofillProfile*>& profiles) const {
+std::vector<base::string16> LabelFormatter::GetLabels() const {
   std::vector<base::string16> labels;
-  for (const AutofillProfile* profile : profiles) {
+  for (const AutofillProfile* profile : profiles_) {
     labels.push_back(GetLabelForProfile(*profile, GetFocusedNonBillingGroup()));
   }
   return labels;
@@ -76,32 +77,30 @@ FieldTypeGroup LabelFormatter::GetFocusedNonBillingGroup() const {
 
 // static
 std::unique_ptr<LabelFormatter> LabelFormatter::Create(
+    const std::vector<AutofillProfile*>& profiles,
     const std::string& app_locale,
     ServerFieldType focused_field_type,
-    const std::vector<ServerFieldType>& field_types,
-    const std::vector<AutofillProfile*>& profiles) {
+    const std::vector<ServerFieldType>& field_types) {
   const uint32_t groups = data_util::DetermineGroups(field_types);
 
   switch (groups) {
     case kName | kAddress | kEmail | kPhone:
       return std::make_unique<AddressContactFormLabelFormatter>(
-          app_locale, focused_field_type, groups, field_types,
-          !HaveSamePhoneNumbers(profiles, app_locale),
-          !HaveSameEmailAddresses(profiles, app_locale));
+          profiles, app_locale, focused_field_type, groups, field_types);
     case kName | kAddress | kPhone:
       return std::make_unique<AddressPhoneFormLabelFormatter>(
-          app_locale, focused_field_type, groups, field_types);
+          profiles, app_locale, focused_field_type, groups, field_types);
     case kName | kAddress | kEmail:
       return std::make_unique<AddressEmailFormLabelFormatter>(
-          app_locale, focused_field_type, groups, field_types);
+          profiles, app_locale, focused_field_type, groups, field_types);
     case kName | kAddress:
       return std::make_unique<AddressFormLabelFormatter>(
-          app_locale, focused_field_type, groups, field_types);
+          profiles, app_locale, focused_field_type, groups, field_types);
     case kName | kEmail | kPhone:
     case kName | kEmail:
     case kName | kPhone:
       return std::make_unique<ContactFormLabelFormatter>(
-          app_locale, focused_field_type, groups, field_types);
+          profiles, app_locale, focused_field_type, groups, field_types);
     default:
       return nullptr;
   }

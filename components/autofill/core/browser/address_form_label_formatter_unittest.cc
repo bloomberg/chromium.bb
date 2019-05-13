@@ -32,8 +32,8 @@ std::vector<ServerFieldType> GetFieldTypes() {
 TEST(AddressFormLabelFormatterTest, GetLabelsWithMissingProfiles) {
   const std::vector<AutofillProfile*> profiles{};
   const std::unique_ptr<LabelFormatter> formatter =
-      LabelFormatter::Create("en-US", NAME_FIRST, GetFieldTypes(), profiles);
-  EXPECT_TRUE(formatter->GetLabels(profiles).empty());
+      LabelFormatter::Create(profiles, "en-US", NAME_FIRST, GetFieldTypes());
+  EXPECT_TRUE(formatter->GetLabels().empty());
 }
 
 TEST(AddressFormLabelFormatterTest,
@@ -63,9 +63,9 @@ TEST(AddressFormLabelFormatterTest,
   const std::vector<AutofillProfile*> profiles{&profile1, &profile2, &profile3,
                                                &profile4};
   const std::unique_ptr<LabelFormatter> formatter = LabelFormatter::Create(
-      "en-US", ADDRESS_HOME_LINE1, GetFieldTypes(), profiles);
+      profiles, "en-US", ADDRESS_HOME_LINE1, GetFieldTypes());
 
-  EXPECT_THAT(formatter->GetLabels(profiles),
+  EXPECT_THAT(formatter->GetLabels(),
               ElementsAre(ConstructLabelLine(
                               {base::ASCIIToUTF16("John F Kennedy"),
                                base::ASCIIToUTF16("Brookline, MA 02445")}),
@@ -100,10 +100,10 @@ TEST(AddressFormLabelFormatterTest,
   const std::vector<AutofillProfile*> profiles{&profile1, &profile2, &profile3,
                                                &profile4};
   const std::unique_ptr<LabelFormatter> formatter = LabelFormatter::Create(
-      "en-US", ADDRESS_HOME_CITY, GetFieldTypes(), profiles);
+      profiles, "en-US", ADDRESS_HOME_CITY, GetFieldTypes());
 
   EXPECT_THAT(
-      formatter->GetLabels(profiles),
+      formatter->GetLabels(),
       ElementsAre(ConstructLabelLine({base::ASCIIToUTF16("John F Kennedy"),
                                       base::ASCIIToUTF16("333 Washington St")}),
                   base::ASCIIToUTF16("151 Irving Ave"),
@@ -125,10 +125,10 @@ TEST(AddressFormLabelFormatterTest, GetLabelsForUSProfilesAndFocusedName) {
 
   const std::vector<AutofillProfile*> profiles{&profile1, &profile2};
   const std::unique_ptr<LabelFormatter> formatter =
-      LabelFormatter::Create("en-US", NAME_FIRST, GetFieldTypes(), profiles);
+      LabelFormatter::Create(profiles, "en-US", NAME_FIRST, GetFieldTypes());
 
   EXPECT_THAT(
-      formatter->GetLabels(profiles),
+      formatter->GetLabels(),
       ElementsAre(base::ASCIIToUTF16("333 Washington St, Brookline, MA 02445"),
                   base::ASCIIToUTF16("151 Irving Ave, Hyannis, MA 02601")));
 }
@@ -143,10 +143,10 @@ TEST(AddressFormLabelFormatterTest,
 
   const std::vector<AutofillProfile*> profiles{&profile};
   const std::unique_ptr<LabelFormatter> formatter = LabelFormatter::Create(
-      "pt-BR", ADDRESS_HOME_LINE1, GetFieldTypes(), profiles);
+      profiles, "pt-BR", ADDRESS_HOME_LINE1, GetFieldTypes());
 
   EXPECT_THAT(
-      formatter->GetLabels(profiles),
+      formatter->GetLabels(),
       ElementsAre(ConstructLabelLine(
           {base::ASCIIToUTF16("Tarsila do Amaral"),
            base::UTF8ToUTF16("Vila Mariana, São Paulo-SP, 04094-050")})));
@@ -162,9 +162,9 @@ TEST(AddressFormLabelFormatterTest,
 
   const std::vector<AutofillProfile*> profiles{&profile};
   const std::unique_ptr<LabelFormatter> formatter = LabelFormatter::Create(
-      "pt-BR", ADDRESS_HOME_ZIP, GetFieldTypes(), profiles);
+      profiles, "pt-BR", ADDRESS_HOME_ZIP, GetFieldTypes());
 
-  EXPECT_THAT(formatter->GetLabels(profiles),
+  EXPECT_THAT(formatter->GetLabels(),
               ElementsAre(ConstructLabelLine(
                   {base::ASCIIToUTF16("Tarsila do Amaral"),
                    base::UTF8ToUTF16("Av. Pedro Álvares Cabral, 1301")})));
@@ -179,9 +179,9 @@ TEST(AddressFormLabelFormatterTest, GetLabelsForBRProfilesAndFocusedName) {
 
   const std::vector<AutofillProfile*> profiles{&profile};
   const std::unique_ptr<LabelFormatter> formatter =
-      LabelFormatter::Create("pt-BR", NAME_FIRST, GetFieldTypes(), profiles);
+      LabelFormatter::Create(profiles, "pt-BR", NAME_FIRST, GetFieldTypes());
 
-  EXPECT_THAT(formatter->GetLabels(profiles),
+  EXPECT_THAT(formatter->GetLabels(),
               ElementsAre(base::UTF8ToUTF16(
                   "Av. Pedro Álvares Cabral, 1301, Vila Mariana, São "
                   "Paulo-SP, 04094-050")));

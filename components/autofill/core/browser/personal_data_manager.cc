@@ -1170,18 +1170,19 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
   std::unique_ptr<LabelFormatter> formatter;
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
-  bool use_improved_label_disambiguation = base::FeatureList::IsEnabled(
-      autofill::features::kAutofillUseImprovedLabelDisambiguation);
-  formatter = use_improved_label_disambiguation
-                  ? LabelFormatter::Create(app_locale_, type.GetStorableType(),
-                                           field_types, unique_matched_profiles)
+  // The formatter stores a constant reference to |unique_matched_profiles|.
+  // This is safe since the formatter is destroyed when this function returns.
+  formatter = base::FeatureList::IsEnabled(
+                  autofill::features::kAutofillUseImprovedLabelDisambiguation)
+                  ? LabelFormatter::Create(unique_matched_profiles, app_locale_,
+                                           type.GetStorableType(), field_types)
                   : nullptr;
 #endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
   // Generate disambiguating labels based on the list of matches.
   std::vector<base::string16> labels;
   if (formatter) {
-    labels = formatter->GetLabels(unique_matched_profiles);
+    labels = formatter->GetLabels();
   } else {
     AutofillProfile::CreateInferredLabels(unique_matched_profiles, &field_types,
                                           type.GetStorableType(), 1,

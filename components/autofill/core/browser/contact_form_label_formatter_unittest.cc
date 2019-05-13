@@ -30,8 +30,8 @@ std::vector<ServerFieldType> GetNamePhoneAndEmailFieldTypes() {
 TEST(ContactFormLabelFormatterTest, GetLabelsWithMissingProfiles) {
   const std::vector<AutofillProfile*> profiles{};
   const std::unique_ptr<LabelFormatter> formatter = LabelFormatter::Create(
-      "en-US", NAME_FIRST, GetNamePhoneAndEmailFieldTypes(), profiles);
-  EXPECT_TRUE(formatter->GetLabels(profiles).empty());
+      profiles, "en-US", NAME_FIRST, GetNamePhoneAndEmailFieldTypes());
+  EXPECT_TRUE(formatter->GetLabels().empty());
 }
 
 TEST(ContactFormLabelFormatterTest, GetLabelsForUSProfilesAndFocusedName) {
@@ -61,10 +61,10 @@ TEST(ContactFormLabelFormatterTest, GetLabelsForUSProfilesAndFocusedName) {
   const std::vector<AutofillProfile*> profiles{&profile1, &profile2, &profile3,
                                                &profile4};
   const std::unique_ptr<LabelFormatter> formatter = LabelFormatter::Create(
-      "en-US", NAME_LAST, GetNamePhoneAndEmailFieldTypes(), profiles);
+      profiles, "en-US", NAME_LAST, GetNamePhoneAndEmailFieldTypes());
 
   EXPECT_THAT(
-      formatter->GetLabels(profiles),
+      formatter->GetLabels(),
       ElementsAre(ConstructLabelLine({base::ASCIIToUTF16("(617) 730-2000"),
                                       base::ASCIIToUTF16("jfk@gmail.com")}),
                   base::ASCIIToUTF16("jackie@outlook.com"),
@@ -97,10 +97,10 @@ TEST(ContactFormLabelFormatterTest, GetLabelsForUSProfilesAndFocusedEmail) {
   const std::vector<AutofillProfile*> profiles{&profile1, &profile2, &profile3,
                                                &profile4};
   const std::unique_ptr<LabelFormatter> formatter = LabelFormatter::Create(
-      "en-US", EMAIL_ADDRESS, GetNamePhoneAndEmailFieldTypes(), profiles);
+      profiles, "en-US", EMAIL_ADDRESS, GetNamePhoneAndEmailFieldTypes());
 
   EXPECT_THAT(
-      formatter->GetLabels(profiles),
+      formatter->GetLabels(),
       ElementsAre(ConstructLabelLine({base::ASCIIToUTF16("John F Kennedy"),
                                       base::ASCIIToUTF16("(617) 730-2000")}),
                   base::ASCIIToUTF16("Jackie Kennedy"),
@@ -135,11 +135,11 @@ TEST(ContactFormLabelFormatterTest, GetLabelsForUSProfilesAndFocusedPhone) {
   const std::vector<AutofillProfile*> profiles{&profile1, &profile2, &profile3,
                                                &profile4};
   const std::unique_ptr<LabelFormatter> formatter =
-      LabelFormatter::Create("en-US", PHONE_HOME_WHOLE_NUMBER,
-                             GetNamePhoneAndEmailFieldTypes(), profiles);
+      LabelFormatter::Create(profiles, "en-US", PHONE_HOME_WHOLE_NUMBER,
+                             GetNamePhoneAndEmailFieldTypes());
 
   EXPECT_THAT(
-      formatter->GetLabels(profiles),
+      formatter->GetLabels(),
       ElementsAre(
           ConstructLabelLine({base::ASCIIToUTF16("John F Kennedy"),
                               base::ASCIIToUTF16("jfk@gmail.com")}),
@@ -165,10 +165,10 @@ TEST(ContactFormLabelFormatterTest, GetLabelsForBRProfilesAndFocusedName) {
 
   const std::vector<AutofillProfile*> profiles{&profile1, &profile2};
   const std::unique_ptr<LabelFormatter> formatter = LabelFormatter::Create(
-      "pt-BR", NAME_LAST, GetNamePhoneAndEmailFieldTypes(), profiles);
+      profiles, "pt-BR", NAME_LAST, GetNamePhoneAndEmailFieldTypes());
 
   EXPECT_THAT(
-      formatter->GetLabels(profiles),
+      formatter->GetLabels(),
       ElementsAre(
           ConstructLabelLine({base::ASCIIToUTF16("(11) 2648-0254"),
                               base::ASCIIToUTF16("tarsila@aol.com")}),
@@ -193,10 +193,10 @@ TEST(ContactFormLabelFormatterTest, GetLabelsForBRProfilesAndFocusedEmail) {
 
   const std::vector<AutofillProfile*> profiles{&profile1, &profile2};
   const std::unique_ptr<LabelFormatter> formatter = LabelFormatter::Create(
-      "pt-BR", EMAIL_ADDRESS, GetNamePhoneAndEmailFieldTypes(), profiles);
+      profiles, "pt-BR", EMAIL_ADDRESS, GetNamePhoneAndEmailFieldTypes());
 
   EXPECT_THAT(
-      formatter->GetLabels(profiles),
+      formatter->GetLabels(),
       ElementsAre(ConstructLabelLine({base::ASCIIToUTF16("Tarsila do Amaral"),
                                       base::ASCIIToUTF16("(11) 2648-0254")}),
                   ConstructLabelLine({base::ASCIIToUTF16("Artur Avila"),
@@ -220,11 +220,11 @@ TEST(ContactFormLabelFormatterTest, GetLabelsForBRProfilesAndFocusedPhone) {
 
   const std::vector<AutofillProfile*> profiles{&profile1, &profile2};
   const std::unique_ptr<LabelFormatter> formatter =
-      LabelFormatter::Create("pt-BR", PHONE_HOME_WHOLE_NUMBER,
-                             GetNamePhoneAndEmailFieldTypes(), profiles);
+      LabelFormatter::Create(profiles, "pt-BR", PHONE_HOME_WHOLE_NUMBER,
+                             GetNamePhoneAndEmailFieldTypes());
 
   EXPECT_THAT(
-      formatter->GetLabels(profiles),
+      formatter->GetLabels(),
       ElementsAre(
           ConstructLabelLine({base::ASCIIToUTF16("Tarsila do Amaral"),
                               base::ASCIIToUTF16("tarsila@aol.com")}),
@@ -240,13 +240,13 @@ TEST(ContactFormLabelFormatterTest, GetLabelsForNameAndPhoneWithFocusedName) {
                        "US", "16177302000");
 
   const std::vector<AutofillProfile*> profiles{&profile};
-  const std::unique_ptr<LabelFormatter> formatter = LabelFormatter::Create(
-      "en-US", NAME_LAST, {NAME_FIRST, NAME_LAST, PHONE_HOME_WHOLE_NUMBER},
-      profiles);
+  const std::unique_ptr<LabelFormatter> formatter =
+      LabelFormatter::Create(profiles, "en-US", NAME_LAST,
+                             {NAME_FIRST, NAME_LAST, PHONE_HOME_WHOLE_NUMBER});
 
   // Checks that the email address is excluded when the form does not contain an
   // email field.
-  EXPECT_THAT(formatter->GetLabels(profiles),
+  EXPECT_THAT(formatter->GetLabels(),
               ElementsAre(base::ASCIIToUTF16("(617) 730-2000")));
 }
 
@@ -258,13 +258,13 @@ TEST(ContactFormLabelFormatterTest, GetLabelsForNameAndPhoneWithFocusedPhone) {
                        "US", "16177302000");
 
   const std::vector<AutofillProfile*> profiles{&profile};
-  const std::unique_ptr<LabelFormatter> formatter = LabelFormatter::Create(
-      "en-US", PHONE_HOME_WHOLE_NUMBER,
-      {NAME_FIRST, NAME_LAST, PHONE_HOME_WHOLE_NUMBER}, profiles);
+  const std::unique_ptr<LabelFormatter> formatter =
+      LabelFormatter::Create(profiles, "en-US", PHONE_HOME_WHOLE_NUMBER,
+                             {NAME_FIRST, NAME_LAST, PHONE_HOME_WHOLE_NUMBER});
 
   // Checks that the email address is excluded when the form does not contain an
   // email field.
-  EXPECT_THAT(formatter->GetLabels(profiles),
+  EXPECT_THAT(formatter->GetLabels(),
               ElementsAre(base::ASCIIToUTF16("John F Kennedy")));
 }
 
@@ -277,11 +277,11 @@ TEST(ContactFormLabelFormatterTest, GetLabelsForNameAndEmailWithFocusedName) {
 
   const std::vector<AutofillProfile*> profiles{&profile};
   const std::unique_ptr<LabelFormatter> formatter = LabelFormatter::Create(
-      "en-US", NAME_LAST, {NAME_FIRST, NAME_LAST, EMAIL_ADDRESS}, profiles);
+      profiles, "en-US", NAME_LAST, {NAME_FIRST, NAME_LAST, EMAIL_ADDRESS});
 
   // Checks that the phone number is excluded when the form does not contain a
   // phone field.
-  EXPECT_THAT(formatter->GetLabels(profiles),
+  EXPECT_THAT(formatter->GetLabels(),
               ElementsAre(base::ASCIIToUTF16("jfk@gmail.com")));
 }
 
@@ -294,11 +294,11 @@ TEST(ContactFormLabelFormatterTest, GetLabelsForNameAndEmailWithFocusedEmail) {
 
   const std::vector<AutofillProfile*> profiles{&profile};
   const std::unique_ptr<LabelFormatter> formatter = LabelFormatter::Create(
-      "en-US", EMAIL_ADDRESS, {NAME_FIRST, NAME_LAST, EMAIL_ADDRESS}, profiles);
+      profiles, "en-US", EMAIL_ADDRESS, {NAME_FIRST, NAME_LAST, EMAIL_ADDRESS});
 
   // Checks that the phone number is excluded when the form does not contain a
   // phone field.
-  EXPECT_THAT(formatter->GetLabels(profiles),
+  EXPECT_THAT(formatter->GetLabels(),
               ElementsAre(base::ASCIIToUTF16("John F Kennedy")));
 }
 

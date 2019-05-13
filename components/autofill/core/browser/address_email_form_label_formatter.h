@@ -20,6 +20,7 @@ namespace autofill {
 class AddressEmailFormLabelFormatter : public LabelFormatter {
  public:
   AddressEmailFormLabelFormatter(
+      const std::vector<AutofillProfile*>& profiles,
       const std::string& app_locale,
       ServerFieldType focused_field_type,
       uint32_t groups,

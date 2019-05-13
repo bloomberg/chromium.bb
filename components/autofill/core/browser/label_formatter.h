@@ -18,7 +18,8 @@ namespace autofill {
 // Handles the creation of Suggestions' disambiguating labels.
 class LabelFormatter {
  public:
-  LabelFormatter(const std::string& app_locale,
+  LabelFormatter(const std::vector<AutofillProfile*>& profiles,
+                 const std::string& app_locale,
                  ServerFieldType focused_field_type,
                  uint32_t groups,
                  const std::vector<ServerFieldType>& field_types);
@@ -29,18 +30,17 @@ class LabelFormatter {
   uint32_t groups() const { return groups_; }
 
   // Returns a collection of labels formed by extracting useful disambiguating
-  // information from a collection of |profiles_|.
-  std::vector<base::string16> GetLabels(
-      const std::vector<AutofillProfile*>& profiles) const;
+  // information from |profiles_|.
+  std::vector<base::string16> GetLabels() const;
 
   // Creates a form-specific LabelFormatter according to |field_types|. This
   // formatter has the ability to build labels with disambiguating information
   // from the given |profiles|.
   static std::unique_ptr<LabelFormatter> Create(
+      const std::vector<AutofillProfile*>& profiles,
       const std::string& app_locale,
       ServerFieldType focused_field_type,
-      const std::vector<ServerFieldType>& field_types,
-      const std::vector<AutofillProfile*>& profiles);
+      const std::vector<ServerFieldType>& field_types);
 
  protected:
   // Returns a label to show the user. The elements of the label and their
@@ -65,6 +65,15 @@ class LabelFormatter {
   }
 
  private:
+  // The collection of profiles for which to build labels. Storing this
+  // collection ensures that the profiles for which this formatter is created
+  // are the profiles for which the labels are constructed.
+  //
+  // It is safe to store a reference here because the LabelFormatter is
+  // destroyed when the suggestions for which the labels are constructed are
+  // returned.
+  const std::vector<AutofillProfile*>& profiles_;
+
   // The locale for which to generate labels. This reflects the language and
   // country for which the application is translated, e.g. en-AU for Australian
   // English.
