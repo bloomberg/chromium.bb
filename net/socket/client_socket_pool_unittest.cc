@@ -27,7 +27,6 @@ TEST(ClientSocketPool, GroupIdOperators) {
   const ClientSocketPool::SocketType kSocketTypes[] = {
       ClientSocketPool::SocketType::kHttp,
       ClientSocketPool::SocketType::kSsl,
-      ClientSocketPool::SocketType::kFtp,
   };
 
   const PrivacyMode kPrivacyModes[] = {PrivacyMode::PRIVACY_MODE_DISABLED,
@@ -96,17 +95,6 @@ TEST(ClientSocketPool, GroupIdToString) {
   EXPECT_EQ("pm/ssl/bar:80",
             ClientSocketPool::GroupId(HostPortPair("bar", 80),
                                       ClientSocketPool::SocketType::kSsl,
-                                      PrivacyMode::PRIVACY_MODE_ENABLED)
-                .ToString());
-
-  EXPECT_EQ("ftp/foo:80",
-            ClientSocketPool::GroupId(HostPortPair("foo", 80),
-                                      ClientSocketPool::SocketType::kFtp,
-                                      PrivacyMode::PRIVACY_MODE_DISABLED)
-                .ToString());
-  EXPECT_EQ("pm/ftp/bar:81",
-            ClientSocketPool::GroupId(HostPortPair("bar", 81),
-                                      ClientSocketPool::SocketType::kFtp,
                                       PrivacyMode::PRIVACY_MODE_ENABLED)
                 .ToString());
 }

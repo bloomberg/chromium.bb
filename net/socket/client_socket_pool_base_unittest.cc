@@ -793,7 +793,6 @@ TEST_F(ClientSocketPoolBaseTest, GroupSeparation) {
   const ClientSocketPool::SocketType kSocketTypes[] = {
       ClientSocketPool::SocketType::kHttp,
       ClientSocketPool::SocketType::kSsl,
-      ClientSocketPool::SocketType::kFtp,
   };
 
   const PrivacyMode kPrivacyModes[] = {PrivacyMode::PRIVACY_MODE_DISABLED,

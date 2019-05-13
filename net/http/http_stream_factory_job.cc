@@ -1244,12 +1244,11 @@ int HttpStreamFactory::Job::ReconsiderProxyAfterError(int error) {
 ClientSocketPoolManager::SocketGroupType
 HttpStreamFactory::Job::GetSocketGroup() const {
   std::string scheme = origin_url_.scheme();
+
   if (scheme == url::kHttpsScheme || scheme == url::kWssScheme)
     return ClientSocketPoolManager::SSL_GROUP;
 
-  if (scheme == url::kFtpScheme)
-    return ClientSocketPoolManager::FTP_GROUP;
-
+  DCHECK(scheme == url::kHttpScheme || scheme == url::kWsScheme);
   return ClientSocketPoolManager::NORMAL_GROUP;
 }
 

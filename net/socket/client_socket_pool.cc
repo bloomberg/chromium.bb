@@ -92,10 +92,6 @@ std::string ClientSocketPool::GroupId::ToString() const {
     case ClientSocketPool::SocketType::kSsl:
       result = "ssl/" + result;
       break;
-
-    case ClientSocketPool::SocketType::kFtp:
-      result = "ftp/" + result;
-      break;
   }
   if (privacy_mode_)
     result = "pm/" + result;

@@ -11278,15 +11278,6 @@ TEST_F(HttpNetworkTransactionTest, GroupIdForHTTPProxyConnections) {
                                     PrivacyMode::PRIVACY_MODE_DISABLED),
           true,
       },
-
-      {
-          "http_proxy",
-          "ftp://ftp.google.com/http_proxy_normal",
-          ClientSocketPool::GroupId(HostPortPair("ftp.google.com", 21),
-                                    ClientSocketPool::SocketType::kFtp,
-                                    PrivacyMode::PRIVACY_MODE_DISABLED),
-          false,
-      },
   };
 
   for (size_t i = 0; i < base::size(tests); ++i) {

@@ -43,7 +43,6 @@ class NET_EXPORT_PRIVATE ClientSocketPoolManager {
   enum SocketGroupType {
     SSL_GROUP,     // For all TLS sockets.
     NORMAL_GROUP,  // For normal HTTP sockets.
-    FTP_GROUP      // For FTP sockets (over an HTTP proxy).
   };
 
   ClientSocketPoolManager();

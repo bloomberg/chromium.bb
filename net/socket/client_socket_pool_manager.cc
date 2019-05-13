@@ -71,14 +71,11 @@ ClientSocketPool::GroupId CreateGroupId(
   // Build the string used to uniquely identify connections of this type.
   // Determine the host and port to connect to.
   DCHECK(!endpoint.IsEmpty());
+
   ClientSocketPool::SocketType socket_type =
       ClientSocketPool::SocketType::kHttp;
-
-  if (group_type == ClientSocketPoolManager::FTP_GROUP) {
-    socket_type = ClientSocketPool::SocketType::kFtp;
-  } else if (group_type == ClientSocketPoolManager::SSL_GROUP) {
+  if (group_type == ClientSocketPoolManager::SSL_GROUP)
     socket_type = ClientSocketPool::SocketType::kSsl;
-  }
 
   return ClientSocketPool::GroupId(endpoint, socket_type, privacy_mode);
 }

@@ -102,9 +102,6 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
     // This is a connection that uses an SSL connection to the final
     // destination, though not necessarily to the proxy, if there is one.
     kSsl,
-
-    // This is a connection through an HTTP proxy being used for FTP requests.
-    kFtp,
   };
 
   // Group ID for a socket request. Requests with the same group ID are

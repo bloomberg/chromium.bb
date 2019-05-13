@@ -12445,6 +12445,33 @@ TEST_F(URLRequestTestFTP, RawBodyBytes) {
   EXPECT_EQ(6, req->GetRawBodyBytes());
 }
 
+class URLRequestTestFTPOverHttpProxy : public URLRequestTestFTP {
+ public:
+  // Test interface:
+  void SetUp() override {
+    proxy_resolution_service_ = ProxyResolutionService::CreateFixed(
+        "localhost", TRAFFIC_ANNOTATION_FOR_TESTS);
+    default_context_->set_proxy_resolution_service(
+        proxy_resolution_service_.get());
+    URLRequestTestFTP::SetUp();
+  }
+
+ private:
+  std::unique_ptr<ProxyResolutionService> proxy_resolution_service_;
+};
+
+// Check that FTP is not supported over an HTTP proxy.
+TEST_F(URLRequestTestFTPOverHttpProxy, Fails) {
+  TestDelegate delegate;
+  std::unique_ptr<URLRequest> request(
+      default_context_->CreateRequest(GURL("ftp://foo.test/"), DEFAULT_PRIORITY,
+                                      &delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
+  request->Start();
+  delegate.RunUntilComplete();
+
+  EXPECT_THAT(delegate.request_status(), IsError(ERR_NO_SUPPORTED_PROXIES));
+}
+
 #endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
 
 TEST_F(URLRequestTest, NetworkAccessedClearOnDataRequest) {
