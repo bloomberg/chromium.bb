@@ -21,6 +21,7 @@ class MediaControlsSharedHelpers final {
       HTMLMediaElement& media_element);
 
   static String FormatTime(double time);
+  static bool ShouldShowFullscreenButton(const HTMLMediaElement& media_element);
 };
 
 }  // namespace blink

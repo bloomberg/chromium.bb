@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
+#include "third_party/blink/renderer/core/html/media/html_media_element_controls_list.h"
 #include "third_party/blink/renderer/core/html/media/html_media_test_helper.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/html/time_ranges.h"
@@ -406,14 +407,15 @@ TEST_F(MediaControlsTouchlessImplTest, ContextMenuMojomTest) {
   EXPECT_TRUE(arg_list.video_state->is_fullscreen);
   EXPECT_FALSE(MediaElement().IsFullscreen());
 
-  // Disable download and show mute option.
+  // Disable download and fullscreen, and show mute option.
+  MediaElement().ControlsListInternal()->Add("nofullscreen");
   MediaElement().GetDocument().GetSettings()->SetHideDownloadUI(true);
   SetHasAudio(true);
 
   SetMenuResponseAndShowMenu(mojom::blink::MenuItem::MUTE);
 
-  EXPECT_EQ((int)arg_list.menu_items.size(), 2);
-  EXPECT_EQ(arg_list.menu_items[1], mojom::blink::MenuItem::MUTE);
+  EXPECT_EQ((int)arg_list.menu_items.size(), 1);
+  EXPECT_EQ(arg_list.menu_items[0], mojom::blink::MenuItem::MUTE);
   EXPECT_FALSE(arg_list.video_state->is_muted);
   EXPECT_TRUE(MediaElement().muted());
 
@@ -428,8 +430,8 @@ TEST_F(MediaControlsTouchlessImplTest, ContextMenuMojomTest) {
                                                  ASSERT_NO_EXCEPTION);
   SetMenuResponseAndShowMenu(mojom::blink::MenuItem::CAPTIONS, 0);
 
-  EXPECT_EQ((int)arg_list.menu_items.size(), 2);
-  EXPECT_EQ(arg_list.menu_items[1], mojom::blink::MenuItem::CAPTIONS);
+  EXPECT_EQ((int)arg_list.menu_items.size(), 1);
+  EXPECT_EQ(arg_list.menu_items[0], mojom::blink::MenuItem::CAPTIONS);
   EXPECT_EQ(arg_list.text_tracks[1]->label, "english");
   EXPECT_EQ(track->mode(), TextTrack::ShowingKeyword());
 

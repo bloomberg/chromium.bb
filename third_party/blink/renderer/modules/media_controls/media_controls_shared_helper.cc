@@ -5,7 +5,11 @@
 #include "third_party/blink/renderer/modules/media_controls/media_controls_shared_helper.h"
 
 #include <cmath>
+#include "third_party/blink/public/mojom/web_feature/web_feature.mojom-shared.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
+#include "third_party/blink/renderer/core/html/media/html_media_element_controls_list.h"
 #include "third_party/blink/renderer/core/html/time_ranges.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
@@ -78,6 +82,34 @@ String MediaControlsSharedHelpers::FormatTime(double time) {
   }
 
   return String::Format("%s%d:%02d", negative_sign, minutes, seconds);
+}
+
+bool MediaControlsSharedHelpers::ShouldShowFullscreenButton(
+    const HTMLMediaElement& media_element) {
+  // Unconditionally allow the user to exit fullscreen if we are in it
+  // now.  Especially on android, when we might not yet know if
+  // fullscreen is supported, we sometimes guess incorrectly and show
+  // the button earlier, and we don't want to remove it here if the
+  // user chose to enter fullscreen.  crbug.com/500732 .
+  if (media_element.IsFullscreen())
+    return true;
+
+  if (!media_element.IsHTMLVideoElement())
+    return false;
+
+  if (!media_element.HasVideo())
+    return false;
+
+  if (!Fullscreen::FullscreenEnabled(media_element.GetDocument()))
+    return false;
+
+  if (media_element.ControlsListInternal()->ShouldHideFullscreen()) {
+    UseCounter::Count(media_element.GetDocument(),
+                      WebFeature::kHTMLMediaElementControlsListNoFullscreen);
+    return false;
+  }
+
+  return true;
 }
 
 }  // namespace blink
