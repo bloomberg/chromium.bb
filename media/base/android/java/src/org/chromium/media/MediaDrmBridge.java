@@ -455,10 +455,12 @@ public class MediaDrmBridge {
         }
 
         if (!securityLevel.isEmpty() && !mediaDrmBridge.setSecurityLevel(securityLevel)) {
+            mediaDrmBridge.release();
             return null;
         }
 
         if (!securityOrigin.isEmpty() && !mediaDrmBridge.setOrigin(securityOrigin)) {
+            mediaDrmBridge.release();
             return null;
         }
 
@@ -467,6 +469,7 @@ public class MediaDrmBridge {
         // process, in which case MediaCrypto will be created after provision
         // is finished.
         if (requiresMediaCrypto && !mediaDrmBridge.createMediaCrypto()) {
+            // No need to call release() as createMediaCrypto() does if it fails.
             return null;
         }
 
@@ -519,7 +522,14 @@ public class MediaDrmBridge {
         assert mMediaDrm != null;
         assert !securityLevel.isEmpty();
 
-        String currentSecurityLevel = mMediaDrm.getPropertyString(SECURITY_LEVEL);
+        String currentSecurityLevel;
+        try {
+            currentSecurityLevel = mMediaDrm.getPropertyString(SECURITY_LEVEL);
+        } catch (java.lang.IllegalStateException e) {
+            Log.e(TAG, "Failed to get current security level", e);
+            return false;
+        }
+
         Log.i(TAG, "Security level: current %s, new %s", currentSecurityLevel, securityLevel);
         if (securityLevel.equals(currentSecurityLevel)) {
             // No need to set the same security level again. This is not just
@@ -1124,7 +1134,11 @@ public class MediaDrmBridge {
     }
 
     /**
-     * Return the security level of this DRM object.
+     * Return the security level of this DRM object. In case of failure this
+     * returns the empty string, which is treated by the native side as
+     * "DEFAULT".
+     * TODO(jrummell): Revisit this in the future if the security level gets
+     * used for more things.
      */
     @CalledByNative
     private String getSecurityLevel() {
@@ -1132,7 +1146,13 @@ public class MediaDrmBridge {
             Log.e(TAG, "getSecurityLevel(): MediaDrm is null or security level is not supported.");
             return "";
         }
-        return mMediaDrm.getPropertyString(SECURITY_LEVEL);
+
+        try {
+            return mMediaDrm.getPropertyString(SECURITY_LEVEL);
+        } catch (java.lang.IllegalStateException e) {
+            Log.e(TAG, "Failed to get current security level", e);
+            return "";
+        }
     }
 
     /**
