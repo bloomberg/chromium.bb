@@ -323,16 +323,9 @@ void PluginVmImageManager::OnStartDownload(
 
 bool PluginVmImageManager::VerifyDownload(
     const std::string& downloaded_archive_hash) {
-  // Hash should be there in the common case. However, there are situations,
-  // when hash could not be available, for example, when download is parallel
-  // or the completion of download is reported after restart. Therefore, hash
-  // not being specified should not resolve in download being considered
-  // unsuccessful, but should be logged.
-  // TODO(okalitova): Consider download as unsuccessful once hash should always
-  // be in place.
   if (downloaded_archive_hash.empty()) {
-    LOG(WARNING) << "No hash for downloaded PluginVm image archive";
-    return true;
+    LOG(ERROR) << "No hash found for downloaded PluginVm image archive";
+    return false;
   }
   const base::Value* plugin_vm_image_hash_ptr =
       profile_->GetPrefs()

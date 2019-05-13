@@ -87,6 +87,7 @@ class PluginVmImageManagerTest : public testing::Test {
 
     manager_ = PluginVmImageManagerFactory::GetForProfile(profile_.get());
     download_service_->SetIsReady(true);
+    download_service_->SetHash256(kHash);
     download_service_->set_client(
         new PluginVmImageDownloadClient(profile_.get()));
     manager_->SetDownloadServiceForTesting(download_service_);
@@ -394,6 +395,7 @@ TEST_F(PluginVmImageManagerTest, VerifyDownloadTest) {
   EXPECT_FALSE(manager_->VerifyDownload(kHash2));
   EXPECT_TRUE(manager_->VerifyDownload(kHashUppercase));
   EXPECT_TRUE(manager_->VerifyDownload(kHash));
+  EXPECT_FALSE(manager_->VerifyDownload(std::string()));
 }
 
 }  // namespace plugin_vm
