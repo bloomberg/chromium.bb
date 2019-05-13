@@ -22,9 +22,18 @@ vars = {
 
     'gn_version': 'git_revision:0790d3043387c762a6bacb1ae0a9ebe883188ab2',
     'checkout_chromium_quic_boringssl': False,
+
+    # By default, do not check out openscreen/cast. This can be overridden
+    # by custom_vars in .gclient.
+    'checkout_openscreen_cast_internal': False
 }
 
 deps = {
+    'cast/internal': {
+        'url': 'https://chrome-internal.googlesource.com/openscreen/cast.git' +
+            '@' + '703984f9d1674c2cfc259904a5a7fba4990cca4b',
+        'condition': 'checkout_openscreen_cast_internal',
+    },
     'buildtools': {
         'url': Var('chromium_git')+ '/chromium/src/buildtools' +
             '@' + 'd5c58b84d50d256968271db459cd29b22bff1ba2',
