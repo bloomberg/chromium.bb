@@ -156,21 +156,21 @@ int GetCrashSignalFD(const base::CommandLine& command_line) {
 #endif  // defined(OS_ANDROID)
 
 const service_manager::Manifest& GetContentBrowserOverlayManifest() {
-  static base::NoDestructor<service_manager::Manifest> manifest {
-    service_manager::ManifestBuilder()
-        .ExposeCapability(
-            "renderer",
-            service_manager::Manifest::InterfaceList<
-                mojom::MojoWebTestHelper, mojom::FakeBluetoothChooser,
-                mojom::WebTestBluetoothFakeAdapterSetter,
-                bluetooth::mojom::FakeBluetooth>())
-        .RequireCapability(echo::mojom::kServiceName, "echo")
-        .ExposeInterfaceFilterCapability_Deprecated(
-            "navigation:frame", "renderer",
-            service_manager::Manifest::InterfaceList<
-                mojom::MojoWebTestHelper>())
-        .Build()
-  };
+  static base::NoDestructor<service_manager::Manifest> manifest{
+      service_manager::ManifestBuilder()
+          .ExposeCapability(
+              "renderer",
+              service_manager::Manifest::InterfaceList<
+                  mojom::MojoWebTestHelper, mojom::FakeBluetoothChooser,
+                  mojom::FakeBluetoothChooserFactory,
+                  mojom::WebTestBluetoothFakeAdapterSetter,
+                  bluetooth::mojom::FakeBluetooth>())
+          .RequireCapability(echo::mojom::kServiceName, "echo")
+          .ExposeInterfaceFilterCapability_Deprecated(
+              "navigation:frame", "renderer",
+              service_manager::Manifest::InterfaceList<
+                  mojom::MojoWebTestHelper>())
+          .Build()};
   return *manifest;
 }
 

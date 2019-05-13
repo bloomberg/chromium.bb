@@ -28,6 +28,7 @@
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/web_test/blink_test_controller.h"
 #include "content/shell/browser/web_test/fake_bluetooth_chooser.h"
+#include "content/shell/browser/web_test/fake_bluetooth_chooser_factory.h"
 #include "content/shell/browser/web_test/mojo_web_test_helper.h"
 #include "content/shell/browser/web_test/web_test_bluetooth_fake_adapter_setter_impl.h"
 #include "content/shell/browser/web_test/web_test_browser_context.h"
@@ -114,7 +115,9 @@ void WebTestContentBrowserClient::ResetMockClipboardHost() {
 
 std::unique_ptr<FakeBluetoothChooser>
 WebTestContentBrowserClient::GetNextFakeBluetoothChooser() {
-  return std::move(next_fake_bluetooth_chooser_);
+  if (!fake_bluetooth_chooser_factory_)
+    return nullptr;
+  return fake_bluetooth_chooser_factory_->GetNextFakeBluetoothChooser();
 }
 
 void WebTestContentBrowserClient::RenderProcessWillLaunch(
@@ -148,7 +151,7 @@ void WebTestContentBrowserClient::ExposeInterfacesToRenderer(
   // base::Unretained in all binders.
   registry->AddInterface(
       base::BindRepeating(
-          &WebTestContentBrowserClient::CreateFakeBluetoothChooser,
+          &WebTestContentBrowserClient::CreateFakeBluetoothChooserFactory,
           base::Unretained(this)),
       ui_task_runner);
   registry->AddInterface(base::BindRepeating(&MojoWebTestHelper::Create));
@@ -327,11 +330,11 @@ std::unique_ptr<LoginDelegate> WebTestContentBrowserClient::CreateLoginDelegate(
 }
 
 // private
-void WebTestContentBrowserClient::CreateFakeBluetoothChooser(
-    mojom::FakeBluetoothChooserRequest request) {
-  DCHECK(!next_fake_bluetooth_chooser_);
-  next_fake_bluetooth_chooser_ =
-      FakeBluetoothChooser::Create(std::move(request));
+void WebTestContentBrowserClient::CreateFakeBluetoothChooserFactory(
+    mojom::FakeBluetoothChooserFactoryRequest request) {
+  DCHECK(!fake_bluetooth_chooser_factory_);
+  fake_bluetooth_chooser_factory_ =
+      FakeBluetoothChooserFactory::Create(std::move(request));
 }
 
 }  // namespace content

@@ -39,11 +39,6 @@ enum ChooserEventType {
 // FakeBluetoothChooser allows clients to control the global state of the
 // Bluetooth chooser during a web test.
 interface FakeBluetoothChooser {
-  // Waits until at least |num_of_events| have been recorded before returning
-  // |num_of_events| FakeBluetoothChooserEvents.
-  WaitForEvents(
-      uint32 num_of_events) => (array<FakeBluetoothChooserEvent> events);
-
   // Simulates a user selecting the given |peripheral_address| in the Bluetooth
   // chooser.
   SelectPeripheral(string peripheral_address);
@@ -53,6 +48,13 @@ interface FakeBluetoothChooser {
 
   // Calls the event handler function with the RESCAN event.
   Rescan();
+};
+
+// FakeBluetoothChooserFactory ensures that FakeBluetoothChoosers are created
+// with an associated FakeBluetoothChooserClient.
+interface FakeBluetoothChooserFactory {
+  CreateFakeBluetoothChooser(FakeBluetoothChooser& fake_chooser,
+      associated FakeBluetoothChooserClient client);
 };
 
 // FakeBluetoothChooserEvent describes the type of chooser event that has been
@@ -66,4 +68,9 @@ struct FakeBluetoothChooserEvent {
 
   // Describes the MAC address of the Bluetooth device.
   string? peripheral_address;
+};
+
+// Classes that implement this interface will be notified of chooser events.
+interface FakeBluetoothChooserClient {
+  OnEvent(FakeBluetoothChooserEvent event);
 };

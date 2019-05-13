@@ -166,6 +166,8 @@ jumbo_static_library("content_shell_lib") {
     "browser/web_test/devtools_protocol_test_bindings.h",
     "browser/web_test/fake_bluetooth_chooser.cc",
     "browser/web_test/fake_bluetooth_chooser.h",
+    "browser/web_test/fake_bluetooth_chooser_factory.cc",
+    "browser/web_test/fake_bluetooth_chooser_factory.h",
     "browser/web_test/fake_bluetooth_scanning_prompt.cc",
     "browser/web_test/fake_bluetooth_scanning_prompt.h",
     "browser/web_test/leak_detector.cc",

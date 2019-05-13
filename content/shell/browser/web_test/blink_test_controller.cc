@@ -776,12 +776,16 @@ std::unique_ptr<BluetoothChooser> BlinkTestController::RunBluetoothChooser(
     return bluetooth_chooser_factory_->RunBluetoothChooser(frame,
                                                            event_handler);
   }
+
   auto next_fake_bluetooth_chooser =
       WebTestContentBrowserClient::Get()->GetNextFakeBluetoothChooser();
   if (next_fake_bluetooth_chooser) {
-    next_fake_bluetooth_chooser->SetEventHandler(event_handler);
+    const url::Origin origin = frame->GetLastCommittedOrigin();
+    DCHECK(!origin.opaque());
+    next_fake_bluetooth_chooser->OnRunBluetoothChooser(event_handler, origin);
     return next_fake_bluetooth_chooser;
   }
+
   return std::make_unique<WebTestFirstDeviceBluetoothChooser>(event_handler);
 }
 

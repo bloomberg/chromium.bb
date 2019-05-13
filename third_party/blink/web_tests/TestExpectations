@@ -4628,7 +4628,6 @@ crbug.com/825733 [ Win ] media/color-profile-video-seek-filter.html [ Pass Timeo
 crbug.com/754986 media/video-transformed.html [ Pass Failure ]
 
 # Sheriff 2018-03-29
-crbug.com/827088 bluetooth/requestDevice/chooser/new-scan-device-added.html [ Pass Crash ]
 crbug.com/827209 [ Win ] fast/events/middleClickAutoscroll-latching.html [ Pass Timeout Failure ]
 crbug.com/827209 [ Linux ] fast/events/middleClickAutoscroll-latching.html [ Pass Timeout Failure ]
 crbug.com/827209 [ Win ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-latching.html [ Pass Timeout Failure ]
