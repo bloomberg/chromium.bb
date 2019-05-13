@@ -126,9 +126,9 @@ constexpr int kTextfieldBackgroundColor = 0xf7f7f7;
 
     // Centering
     [self.contentView.centerXAnchor
-        constraintEqualToAnchor:self.view.centerXAnchor],
+        constraintEqualToAnchor:self.view.safeAreaLayoutGuide.centerXAnchor],
     [self.contentView.centerYAnchor
-        constraintEqualToAnchor:self.view.centerYAnchor],
+        constraintEqualToAnchor:self.view.safeAreaLayoutGuide.centerYAnchor],
 
     // Minimum Size
     [self.contentView.heightAnchor
