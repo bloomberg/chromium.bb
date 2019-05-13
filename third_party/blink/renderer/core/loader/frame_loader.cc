@@ -80,6 +80,7 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/frame_tree.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/page/plugin_data.h"
 #include "third_party/blink/renderer/core/page/plugin_script_forbidden_scope.h"
 #include "third_party/blink/renderer/core/page/scrolling/fragment_anchor.h"
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
@@ -99,7 +100,10 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
+#include "third_party/blink/renderer/platform/mhtml/archive_resource.h"
+#include "third_party/blink/renderer/platform/mhtml/mhtml_archive.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
+#include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
 #include "third_party/blink/renderer/platform/network/network_utils.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -197,8 +201,6 @@ void FrameLoader::Init() {
   provisional_document_loader_ = Client()->CreateDocumentLoader(
       frame_, kWebNavigationTypeOther, std::move(navigation_params),
       nullptr /* extra_data */);
-  bool success = provisional_document_loader_->PrepareForLoad();
-  DCHECK(success);
   provisional_document_loader_->StartLoading();
 
   frame_->GetDocument()->CancelParsing();
@@ -796,6 +798,84 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
       std::move(navigation_initiator));
 }
 
+static void FillStaticResponseIfNeeded(WebNavigationParams* params,
+                                       LocalFrame* frame) {
+  if (params->is_static_data)
+    return;
+  const KURL& url = params->url;
+  // See WebNavigationParams for special case explanations.
+  if (url.IsAboutSrcdocURL()) {
+    // TODO(dgozman): instead of reaching to the owner here, we could instead:
+    // - grab the "srcdoc" value when starting a navigation right in the owner;
+    // - pass it around through BeginNavigation to CommitNavigation as |data|;
+    // - use it here instead of re-reading from the owner.
+    // This way we will get rid of extra dependency between starting and
+    // committing navigation.
+    CString encoded_srcdoc;
+    HTMLFrameOwnerElement* owner_element = frame->DeprecatedLocalOwner();
+    if (!IsHTMLIFrameElement(owner_element) ||
+        !owner_element->FastHasAttribute(html_names::kSrcdocAttr)) {
+      // Cannot retrieve srcdoc content anymore (perhaps, the attribute was
+      // cleared) - load empty instead.
+    } else {
+      String srcdoc = owner_element->FastGetAttribute(html_names::kSrcdocAttr);
+      DCHECK(!srcdoc.IsNull());
+      encoded_srcdoc = srcdoc.Utf8();
+    }
+    WebNavigationParams::FillStaticResponse(
+        params, "text/html", "UTF-8",
+        base::make_span(encoded_srcdoc.data(), encoded_srcdoc.length()));
+    return;
+  }
+
+  MHTMLArchive* archive = nullptr;
+  if (auto* parent = DynamicTo<LocalFrame>(frame->Tree().Parent()))
+    archive = parent->Loader().GetDocumentLoader()->Archive();
+  if (archive) {
+    // If we have an archive loaded in some ancestor frame, we should
+    // retrieve document content from that archive. This is different from
+    // loading an archive into this frame, which will be handled separately
+    // once we load the body and parse it as an archive.
+    params->body_loader.reset();
+    ArchiveResource* archive_resource = archive->SubresourceForURL(url);
+    if (archive_resource) {
+      SharedBuffer* archive_data = archive_resource->Data();
+      WebNavigationParams::FillStaticResponse(
+          params, archive_resource->MimeType(),
+          archive_resource->TextEncoding(),
+          base::make_span(archive_data->Data(), archive_data->size()));
+    }
+  }
+}
+
+static bool ShouldNavigate(WebNavigationParams* params, LocalFrame* frame) {
+  if (params->is_static_data)
+    return true;
+  if (DocumentLoader::WillLoadUrlAsEmpty(params->url))
+    return true;
+
+  int status_code = params->response.HttpStatusCode();
+  if (status_code == 204 || status_code == 205) {
+    // The server does not want us to replace the page contents.
+    return false;
+  }
+
+  if (IsContentDispositionAttachment(
+          params->response.HttpHeaderField(http_names::kContentDisposition))) {
+    // The server wants us to download instead of replacing the page contents.
+    // Downloading is handled by the embedder, but we still get the initial
+    // response so that we can ignore it and clean up properly.
+    return false;
+  }
+
+  const String& mime_type = params->response.MimeType();
+  if (MIMETypeRegistry::IsSupportedMIMEType(mime_type))
+    return true;
+  PluginData* plugin_data = frame->GetPluginData();
+  return !mime_type.IsEmpty() && plugin_data &&
+         plugin_data->SupportsMimeType(mime_type);
+}
+
 void FrameLoader::CommitNavigation(
     std::unique_ptr<WebNavigationParams> navigation_params,
     std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
@@ -841,6 +921,12 @@ void FrameLoader::CommitNavigation(
     return;
   }
 
+  FillStaticResponseIfNeeded(navigation_params.get(), frame_);
+  if (!ShouldNavigate(navigation_params.get(), frame_)) {
+    DidFinishNavigation();
+    return;
+  }
+
   // TODO(dgozman): navigation type should probably be passed by the caller.
   // It seems incorrect to pass |false| for |have_event| and then use
   // determined navigation type to update resource request.
@@ -861,11 +947,6 @@ void FrameLoader::CommitNavigation(
       std::move(extra_data));
   if (history_item)
     provisional_document_loader->SetItemForHistoryNavigation(history_item);
-  if (!provisional_document_loader->PrepareForLoad()) {
-    provisional_document_loader->CleanupWithoutStart();
-    DidFinishNavigation();
-    return;
-  }
 
   progress_tracker_->ProgressStarted();
   provisional_document_loader_ = provisional_document_loader;

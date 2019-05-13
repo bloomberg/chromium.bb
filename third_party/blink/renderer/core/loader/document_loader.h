@@ -110,10 +110,6 @@ class CORE_EXPORT DocumentLoader
 
   virtual void DetachFromFrame(bool flush_microtask_queue);
 
-  // Called when we did not start the load, before abandoning this
-  // DocumentLoader.
-  virtual void CleanupWithoutStart();
-
   uint64_t MainResourceIdentifier() const;
 
   void ReplaceDocumentWhileExecutingJavaScriptURL(const KURL&,
@@ -180,10 +176,6 @@ class CORE_EXPORT DocumentLoader
 
   void SetItemForHistoryNavigation(HistoryItem* item) { history_item_ = item; }
   HistoryItem* GetHistoryItem() const { return history_item_; }
-
-  // Returns whether the load can proceed. If not, the loader will be detached
-  // already.
-  bool PrepareForLoad();
 
   void StartLoading();
   void StopLoading();

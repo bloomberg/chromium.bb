@@ -137,11 +137,6 @@ void WebDocumentLoaderImpl::DetachFromFrame(bool flush_microtask_queue) {
   extra_data_.reset();
 }
 
-void WebDocumentLoaderImpl::CleanupWithoutStart() {
-  DocumentLoader::CleanupWithoutStart();
-  extra_data_.reset();
-}
-
 void WebDocumentLoaderImpl::SetSubresourceFilter(
     WebDocumentSubresourceFilter* subresource_filter) {
   DocumentLoader::SetSubresourceFilter(SubresourceFilter::Create(

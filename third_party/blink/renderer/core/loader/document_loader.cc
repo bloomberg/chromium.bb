@@ -75,7 +75,6 @@
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/page/frame_tree.h"
 #include "third_party/blink/renderer/core/page/page.h"
-#include "third_party/blink/renderer/core/page/plugin_data.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
@@ -99,7 +98,6 @@
 #include "third_party/blink/renderer/platform/network/encoded_form_data.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
-#include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
 #include "third_party/blink/renderer/platform/network/network_utils.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
@@ -168,45 +166,6 @@ DocumentLoader::DocumentLoader(
   error_code_ = params_->error_code;
   previews_state_ = params_->previews_state;
 
-  // See WebNavigationParams for special case explanations.
-  if (!params_->is_static_data && url_.IsAboutSrcdocURL()) {
-    loading_srcdoc_ = true;
-    // TODO(dgozman): instead of reaching to the owner here, we could instead:
-    // - grab the "srcdoc" value when starting a navigation right in the owner;
-    // - pass it around through BeginNavigation to CommitNavigation as |data|;
-    // - use it here instead of re-reading from the owner.
-    // This way we will get rid of extra dependency between starting and
-    // committing navigation.
-    CString encoded_srcdoc;
-    HTMLFrameOwnerElement* owner_element = frame_->DeprecatedLocalOwner();
-    if (!IsHTMLIFrameElement(owner_element) ||
-        !owner_element->FastHasAttribute(html_names::kSrcdocAttr)) {
-      // Cannot retrieve srcdoc content anymore (perhaps, the attribute was
-      // cleared) - load empty instead.
-    } else {
-      String srcdoc = owner_element->FastGetAttribute(html_names::kSrcdocAttr);
-      DCHECK(!srcdoc.IsNull());
-      encoded_srcdoc = srcdoc.Utf8();
-    }
-    WebNavigationParams::FillStaticResponse(
-        params_.get(), "text/html", "UTF-8",
-        base::make_span(encoded_srcdoc.data(), encoded_srcdoc.length()));
-  } else if (!params_->is_static_data && archive_) {
-    // If we have an archive loaded in some ancestor frame, we should
-    // retrieve document content from that archive. This is different from
-    // loading an archive into this frame, which will be handled separately
-    // once we load the body and parse it as an archive.
-    params_->body_loader.reset();
-    ArchiveResource* archive_resource = archive_->SubresourceForURL(url_);
-    if (archive_resource) {
-      SharedBuffer* archive_data = archive_resource->Data();
-      WebNavigationParams::FillStaticResponse(
-          params_.get(), archive_resource->MimeType(),
-          archive_resource->TextEncoding(),
-          base::make_span(archive_data->Data(), archive_data->size()));
-    }
-  }
-
   WebNavigationTimings& timings = params_->navigation_timings;
   if (!timings.input_start.is_null())
     document_load_timing_.SetInputStart(timings.input_start);
@@ -246,6 +205,7 @@ DocumentLoader::DocumentLoader(
 
   loading_url_as_empty_document_ =
       !params_->is_static_data && WillLoadUrlAsEmpty(url_);
+  loading_srcdoc_ = url_.IsAboutSrcdocURL();
 
   if (!loading_url_as_empty_document_) {
     content_security_policy_ =
@@ -739,14 +699,6 @@ void DocumentLoader::HandleRedirect(const KURL& current_request_url) {
   // in embedder to fix https://crbug.com/671276.
 }
 
-static bool CanShowMIMEType(const String& mime_type, LocalFrame* frame) {
-  if (MIMETypeRegistry::IsSupportedMIMEType(mime_type))
-    return true;
-  PluginData* plugin_data = frame->GetPluginData();
-  return !mime_type.IsEmpty() && plugin_data &&
-         plugin_data->SupportsMimeType(mime_type);
-}
-
 bool DocumentLoader::ShouldReportTimingInfoToParent() {
   DCHECK(frame_);
   // <iframe>s should report the initial navigation requested by the parent
@@ -1128,13 +1080,6 @@ void DocumentLoader::DetachFromFrame(bool flush_microtask_queue) {
   frame_ = nullptr;
 }
 
-void DocumentLoader::CleanupWithoutStart() {
-  DCHECK(!application_cache_host_);
-  frame_ = nullptr;
-  params_ = nullptr;
-  state_ = kSentDidFinishLoad;
-}
-
 const KURL& DocumentLoader::UnreachableURL() const {
   return unreachable_url_;
 }
@@ -1165,38 +1110,6 @@ void DocumentLoader::LoadEmpty() {
   if (!frame_)
     return;
   FinishedLoading(CurrentTimeTicks());
-}
-
-bool DocumentLoader::PrepareForLoad() {
-  if (loading_url_as_empty_document_)
-    return true;
-
-  if (!params_->body_loader) {
-    // TODO(dgozman): we should try to get rid of this case.
-    return false;
-  }
-
-  if (params_->is_static_data)
-    return true;
-
-  int status_code = response_.HttpStatusCode();
-  if (status_code == 204 || status_code == 205) {
-    // The server does not want us to replace the page contents.
-    return false;
-  }
-
-  if (IsContentDispositionAttachment(
-          response_.HttpHeaderField(http_names::kContentDisposition))) {
-    // The server wants us to download instead of replacing the page contents.
-    // Downloading is handled by the embedder, but we still get the initial
-    // response so that we can ignore it and clean up properly.
-    return false;
-  }
-
-  if (!CanShowMIMEType(response_.MimeType(), frame_))
-    return false;
-
-  return true;
 }
 
 void DocumentLoader::StartLoading() {

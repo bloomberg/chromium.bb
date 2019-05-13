@@ -90,7 +90,6 @@ class CORE_EXPORT WebDocumentLoaderImpl final : public DocumentLoader,
  private:
   ~WebDocumentLoaderImpl() override;
   void DetachFromFrame(bool flush_microtask_queue) override;
-  void CleanupWithoutStart() override;
 
   // Mutable because the const getters will magically sync these to the
   // latest version from WebKit.
