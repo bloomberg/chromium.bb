@@ -7,7 +7,6 @@
 #include <cstddef>
 #include <utility>
 
-#include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -15,7 +14,6 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/rand_util.h"
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/signin_metrics.h"
@@ -121,14 +119,6 @@ DataTypeController::TypeMap BuildDataTypeControllerMap(
     type_map[type] = std::move(controller);
   }
   return type_map;
-}
-
-std::string GenerateCacheGUID() {
-  // Generate a GUID with 128 bits of randomness.
-  const int kGuidBytes = 128 / 8;
-  std::string guid;
-  base::Base64Encode(base::RandBytesAsString(kGuidBytes), &guid);
-  return guid;
 }
 
 }  // namespace
@@ -484,25 +474,17 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
   }
   params.sync_manager_factory =
       std::make_unique<SyncManagerFactory>(network_connection_tracker_);
-  params.birthday = sync_prefs_.GetBirthday();
-  params.cache_guid = sync_prefs_.GetCacheGuid();
-  // If either the cache GUID or the birthday are uninitialized, it means we
-  // haven't completed a first sync cycle (OnEngineInitialized()). Theoretically
-  // both or neither should be empty, but just in case, we regenerate the cache
-  // GUID if either of them is missing, to avoid protocol violations (fetching
-  // updates requires that the request either has a birthday, or there should be
-  // no progress marker).
-  // TODO(crbug.com/923285): This looks questionable here for
-  // |!IsFirstSetupComplete()| but it mimics the old behavior of deleting the
-  // directory via Directory::DeleteDirectoryFiles(). One consecuence is that,
-  // for sync the transport users (without sync-the-feature enabled), the cache
-  // GUID and other fields are reset on every restart.
-  if (params.cache_guid.empty() || params.birthday.empty() ||
-      !user_settings_->IsFirstSetupComplete()) {
+  // The first time we start up the engine we want to ensure we have a clean
+  // directory, so delete any old one that might be there.
+  params.delete_sync_data_folder = !user_settings_->IsFirstSetupComplete();
+  if (params.delete_sync_data_folder) {
+    // This looks questionable here but it mimics the old behavior of deleting
+    // the directory via Directory::DeleteDirectoryFiles(). One consecuence is
+    // that, for sync the transport users (without sync-the-feature enabled),
+    // the cache GUID and other fields are reset on every restart.
+    // TODO(crbug.com/923285): Reconsider the lifetime of the cache GUID and
+    // its persistence depending on StorageOption.
     sync_prefs_.ClearDirectoryConsistencyPreferences();
-    params.cache_guid = GenerateCacheGUID();
-    params.birthday.clear();
-    params.delete_sync_data_folder = true;
   }
   params.enable_local_sync_backend = sync_prefs_.IsLocalSyncEnabled();
   params.local_sync_backend_folder = sync_client_->GetLocalSyncBackendFolder();
@@ -510,7 +492,8 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
       sync_prefs_.GetEncryptionBootstrapToken();
   params.restored_keystore_key_for_bootstrapping =
       sync_prefs_.GetKeystoreEncryptionBootstrapToken();
-
+  params.cache_guid = sync_prefs_.GetCacheGuid();
+  params.birthday = sync_prefs_.GetBirthday();
   params.bag_of_chips = sync_prefs_.GetBagOfChips();
   params.engine_components_factory =
       std::make_unique<EngineComponentsFactoryImpl>(
@@ -1211,11 +1194,6 @@ void ProfileSyncService::OnPreferredDataTypesPrefChange() {
 SyncClient* ProfileSyncService::GetSyncClientForTest() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return sync_client_.get();
-}
-
-// static
-std::string ProfileSyncService::GenerateCacheGUIDForTest() {
-  return GenerateCacheGUID();
 }
 
 void ProfileSyncService::AddObserver(SyncServiceObserver* observer) {

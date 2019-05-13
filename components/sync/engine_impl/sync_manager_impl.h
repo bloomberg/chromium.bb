@@ -176,6 +176,8 @@ class SyncManagerImpl
 
   const SyncScheduler* scheduler() const;
 
+  static std::string GenerateCacheGUIDForTest();
+
  protected:
   // Helper functions.  Virtual for testing.
   virtual void NotifyInitializationSuccess();
@@ -217,7 +219,7 @@ class SyncManagerImpl
                                Cryptographer* cryptographer) const;
 
   // Opens the directory.
-  bool OpenDirectory(const InitArgs* args);
+  bool OpenDirectory(InitArgs* args);
 
   void RequestNudgeForDataTypes(const base::Location& nudge_location,
                                 ModelTypeSet type);

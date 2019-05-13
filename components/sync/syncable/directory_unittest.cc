@@ -85,6 +85,8 @@ DirOpenResult SyncableDirectoryTest::ReopenDirectory() {
 
   if (open_result != OPENED_NEW && open_result != OPENED_EXISTING) {
     dir_.reset();
+  } else {
+    dir_->set_cache_guid(dir_->legacy_cache_guid());
   }
 
   return open_result;
@@ -1825,10 +1827,13 @@ TEST_F(SyncableDirectoryTest, SaveChangesSnapshot_HasUnsavedMetahandleChanges) {
 // DirectoryBackingStore error is detected.
 TEST_F(SyncableDirectoryTest, CatastrophicError) {
   MockUnrecoverableErrorHandler unrecoverable_error_handler;
-  Directory dir(std::make_unique<InMemoryDirectoryBackingStore>(
-                    "catastrophic_error", "test_cache_guid"),
-                MakeWeakHandle(unrecoverable_error_handler.GetWeakPtr()),
-                base::Closure(), nullptr, nullptr);
+  Directory dir(
+      std::make_unique<InMemoryDirectoryBackingStore>(
+          "catastrophic_error", base::BindRepeating([]() -> std::string {
+            return "test_cache_guid";
+          })),
+      MakeWeakHandle(unrecoverable_error_handler.GetWeakPtr()),
+      base::RepeatingClosure(), nullptr, nullptr);
   ASSERT_EQ(OPENED_NEW, dir.Open(kDirectoryName, directory_change_delegate(),
                                  NullTransactionObserver()));
   ASSERT_EQ(0, unrecoverable_error_handler.invocation_count());

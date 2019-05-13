@@ -33,6 +33,10 @@ namespace {
 
 const char kTestCacheGuid[] = "test_cache_guid";
 
+base::RepeatingCallback<std::string()> TestCacheGuidGenerator() {
+  return base::BindRepeating([]() -> std::string { return kTestCacheGuid; });
+}
+
 // A handler that simply sets |catastrophic_error_handler_was_called| to true.
 void CatastrophicErrorHandler(bool* catastrophic_error_handler_was_called) {
   *catastrophic_error_handler_was_called = true;
@@ -3961,7 +3965,7 @@ TEST_P(MigrationTest, ToCurrentVersion) {
   MetahandleSet metahandles_to_purge;
 
   {
-    OnDiskDirectoryBackingStore dbs(GetUsername(), kTestCacheGuid,
+    OnDiskDirectoryBackingStore dbs(GetUsername(), TestCacheGuidGenerator(),
                                     GetDatabasePath());
     ASSERT_EQ(OPENED_EXISTING, dbs.Load(&handles_map, &delete_journals,
                                         &metahandles_to_purge, &dir_info));
@@ -4262,7 +4266,9 @@ class OnDiskDirectoryBackingStoreForTest : public OnDiskDirectoryBackingStore {
 OnDiskDirectoryBackingStoreForTest::OnDiskDirectoryBackingStoreForTest(
     const std::string& dir_name,
     const base::FilePath& backing_filepath)
-    : OnDiskDirectoryBackingStore(dir_name, kTestCacheGuid, backing_filepath),
+    : OnDiskDirectoryBackingStore(dir_name,
+                                  TestCacheGuidGenerator(),
+                                  backing_filepath),
       first_open_failed_(false) {}
 
 OnDiskDirectoryBackingStoreForTest::~OnDiskDirectoryBackingStoreForTest() { }
@@ -4286,7 +4292,7 @@ bool OnDiskDirectoryBackingStoreForTest::DidFailFirstOpenAttempt() {
 // due to read-only file system), is not tested here.
 TEST_F(DirectoryBackingStoreTest, MinorCorruption) {
   {
-    OnDiskDirectoryBackingStore dbs(GetUsername(), kTestCacheGuid,
+    OnDiskDirectoryBackingStore dbs(GetUsername(), TestCacheGuidGenerator(),
                                     GetDatabasePath());
     EXPECT_TRUE(LoadAndIgnoreReturnedData(&dbs));
   }
@@ -4309,7 +4315,7 @@ TEST_F(DirectoryBackingStoreTest, MinorCorruption) {
 
 TEST_F(DirectoryBackingStoreTest, MinorCorruptionAndUpgrade) {
   {
-    OnDiskDirectoryBackingStore dbs(GetUsername(), kTestCacheGuid,
+    OnDiskDirectoryBackingStore dbs(GetUsername(), TestCacheGuidGenerator(),
                                     GetDatabasePath());
     EXPECT_TRUE(LoadAndIgnoreReturnedData(&dbs));
   }

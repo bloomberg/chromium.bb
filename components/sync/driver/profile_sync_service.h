@@ -257,8 +257,6 @@ class ProfileSyncService : public SyncService,
 
   SyncClient* GetSyncClientForTest();
 
-  static std::string GenerateCacheGUIDForTest();
-
  private:
   friend class TestProfileSyncService;
 

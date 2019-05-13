@@ -1200,13 +1200,5 @@ TEST_F(ProfileSyncServiceTest, ConfigureDataTypeManagerReason) {
   ShutdownAndDeleteService();
 }
 
-TEST_F(ProfileSyncServiceTest, GenerateCacheGUID) {
-  const std::string guid1 = ProfileSyncService::GenerateCacheGUIDForTest();
-  const std::string guid2 = ProfileSyncService::GenerateCacheGUIDForTest();
-  EXPECT_EQ(24U, guid1.size());
-  EXPECT_EQ(24U, guid2.size());
-  EXPECT_NE(guid1, guid2);
-}
-
 }  // namespace
 }  // namespace syncer
