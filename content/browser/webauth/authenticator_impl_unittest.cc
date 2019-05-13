@@ -27,6 +27,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
+#include "components/autofill/content/browser/webauthn/internal_authenticator_impl.h"
 #include "components/cbor/reader.h"
 #include "components/cbor/values.h"
 #include "content/browser/webauth/authenticator_common.h"
@@ -77,6 +78,7 @@ using blink::mojom::AuthenticatorTransport;
 using blink::mojom::CableAuthentication;
 using blink::mojom::CableAuthenticationPtr;
 using blink::mojom::GetAssertionAuthenticatorResponsePtr;
+using blink::mojom::InternalAuthenticatorPtr;
 using blink::mojom::MakeCredentialAuthenticatorResponsePtr;
 using blink::mojom::PublicKeyCredentialCreationOptions;
 using blink::mojom::PublicKeyCredentialCreationOptionsPtr;
@@ -3753,5 +3755,175 @@ TEST_F(ResidentKeyAuthenticatorImplTest, WinCredProtectApiVersion) {
   }
 }
 #endif  // defined(OS_WIN)
+
+class InternalAuthenticatorImplTest
+    : public content::RenderViewHostTestHarness {
+ public:
+  InternalAuthenticatorImplTest() = default;
+
+ protected:
+  void TearDown() override {
+    // The |RenderFrameHost| must outlive |AuthenticatorImpl|.
+    internal_authenticator_impl_.reset();
+    content::RenderViewHostTestHarness::TearDown();
+  }
+
+  void NavigateAndCommit(const GURL& url) {
+    // The |RenderFrameHost| must outlive |AuthenticatorImpl|.
+    internal_authenticator_impl_.reset();
+    content::RenderViewHostTestHarness::NavigateAndCommit(url);
+  }
+
+  InternalAuthenticatorPtr ConnectToAuthenticator(GURL effective_origin_url) {
+    internal_authenticator_impl_ = std::make_unique<InternalAuthenticatorImpl>(
+        main_rfh(), url::Origin::Create(effective_origin_url));
+    InternalAuthenticatorPtr authenticator;
+    internal_authenticator_impl_->Bind(mojo::MakeRequest(&authenticator));
+    return authenticator;
+  }
+
+  InternalAuthenticatorPtr ConnectToAuthenticator(
+      GURL effective_origin_url,
+      service_manager::Connector* connector,
+      std::unique_ptr<base::OneShotTimer> timer) {
+    internal_authenticator_impl_.reset(new InternalAuthenticatorImpl(
+        main_rfh(), url::Origin::Create(effective_origin_url),
+        std::make_unique<AuthenticatorCommon>(main_rfh(), connector,
+                                              std::move(timer))));
+    InternalAuthenticatorPtr authenticator;
+    internal_authenticator_impl_->Bind(mojo::MakeRequest(&authenticator));
+    return authenticator;
+  }
+
+  InternalAuthenticatorPtr ConstructAuthenticatorWithTimer(
+      GURL effective_origin_url,
+      scoped_refptr<base::TestMockTimeTaskRunner> task_runner) {
+    connector_ = service_manager::Connector::Create(&request_);
+    fake_hid_manager_ = std::make_unique<device::FakeHidManager>();
+    connector_->OverrideBinderForTesting(
+        service_manager::ServiceFilter::ByName(device::mojom::kServiceName),
+        device::mojom::HidManager::Name_,
+        base::BindRepeating(&device::FakeHidManager::AddBinding,
+                            base::Unretained(fake_hid_manager_.get())));
+
+    // Set up a timer for testing.
+    auto timer =
+        std::make_unique<base::OneShotTimer>(task_runner->GetMockTickClock());
+    timer->SetTaskRunner(task_runner);
+    return ConnectToAuthenticator(effective_origin_url, connector_.get(),
+                                  std::move(timer));
+  }
+
+ protected:
+  std::unique_ptr<InternalAuthenticatorImpl> internal_authenticator_impl_;
+  service_manager::mojom::ConnectorRequest request_;
+  std::unique_ptr<service_manager::Connector> connector_;
+  std::unique_ptr<device::FakeHidManager> fake_hid_manager_;
+};
+
+// Verify behavior for various combinations of origins and RP IDs.
+TEST_F(InternalAuthenticatorImplTest, MakeCredentialOriginAndRpIds) {
+  // These instances should return security errors (for circumstances
+  // that would normally crash the renderer).
+  for (auto test_case : kInvalidRelyingPartyTestCases) {
+    SCOPED_TRACE(std::string(test_case.claimed_authority) + " " +
+                 std::string(test_case.origin));
+
+    GURL origin = GURL(test_case.origin);
+    if (url::Origin::Create(origin).opaque()) {
+      // Opaque origins will cause DCHECK to fail.
+      continue;
+    }
+
+    NavigateAndCommit(origin);
+    InternalAuthenticatorPtr authenticator = ConnectToAuthenticator(origin);
+    PublicKeyCredentialCreationOptionsPtr options =
+        GetTestPublicKeyCredentialCreationOptions();
+    options->relying_party->id = test_case.claimed_authority;
+    TestMakeCredentialCallback callback_receiver;
+    authenticator->MakeCredential(std::move(options),
+                                  callback_receiver.callback());
+    callback_receiver.WaitForCallback();
+    EXPECT_EQ(AuthenticatorStatus::INVALID_DOMAIN, callback_receiver.status());
+  }
+
+  // These instances should bypass security errors, by setting the effective
+  // origin to a valid one.
+  for (auto test_case : kValidRelyingPartyTestCases) {
+    SCOPED_TRACE(std::string(test_case.claimed_authority) + " " +
+                 std::string(test_case.origin));
+
+    NavigateAndCommit(GURL("https://this.isthewrong.origin"));
+    auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
+        base::Time::Now(), base::TimeTicks::Now());
+    auto authenticator =
+        ConstructAuthenticatorWithTimer(GURL(test_case.origin), task_runner);
+    PublicKeyCredentialCreationOptionsPtr options =
+        GetTestPublicKeyCredentialCreationOptions();
+    options->relying_party->id = test_case.claimed_authority;
+
+    device::test::ScopedVirtualFidoDevice virtual_device;
+    TestMakeCredentialCallback callback_receiver;
+    authenticator->MakeCredential(std::move(options),
+                                  callback_receiver.callback());
+    callback_receiver.WaitForCallback();
+    EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+  }
+}
+
+// Verify behavior for various combinations of origins and RP IDs.
+TEST_F(InternalAuthenticatorImplTest, GetAssertionOriginAndRpIds) {
+  // These instances should return security errors (for circumstances
+  // that would normally crash the renderer).
+  for (const OriginClaimedAuthorityPair& test_case :
+       kInvalidRelyingPartyTestCases) {
+    SCOPED_TRACE(std::string(test_case.claimed_authority) + " " +
+                 std::string(test_case.origin));
+
+    GURL origin = GURL(test_case.origin);
+    if (url::Origin::Create(origin).opaque()) {
+      // Opaque origins will cause DCHECK to fail.
+      continue;
+    }
+
+    NavigateAndCommit(origin);
+    InternalAuthenticatorPtr authenticator = ConnectToAuthenticator(origin);
+    PublicKeyCredentialRequestOptionsPtr options =
+        GetTestPublicKeyCredentialRequestOptions();
+    options->relying_party_id = test_case.claimed_authority;
+
+    TestGetAssertionCallback callback_receiver;
+    authenticator->GetAssertion(std::move(options),
+                                callback_receiver.callback());
+    callback_receiver.WaitForCallback();
+    EXPECT_EQ(AuthenticatorStatus::INVALID_DOMAIN, callback_receiver.status());
+  }
+
+  // These instances should bypass security errors, by setting the effective
+  // origin to a valid one.
+  for (const OriginClaimedAuthorityPair& test_case :
+       kValidRelyingPartyTestCases) {
+    SCOPED_TRACE(std::string(test_case.claimed_authority) + " " +
+                 std::string(test_case.origin));
+
+    NavigateAndCommit(GURL("https://this.isthewrong.origin"));
+    auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
+        base::Time::Now(), base::TimeTicks::Now());
+    auto authenticator =
+        ConstructAuthenticatorWithTimer(GURL(test_case.origin), task_runner);
+    PublicKeyCredentialRequestOptionsPtr options =
+        GetTestPublicKeyCredentialRequestOptions();
+    options->relying_party_id = test_case.claimed_authority;
+
+    device::test::ScopedVirtualFidoDevice virtual_device;
+    ASSERT_TRUE(virtual_device.mutable_state()->InjectRegistration(
+        options->allow_credentials[0]->id, test_case.claimed_authority));
+    TestGetAssertionCallback callback_receiver;
+    authenticator->GetAssertion(std::move(options),
+                                callback_receiver.callback());
+    callback_receiver.WaitForCallback();
+    EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+  }
+}
 
 }  // namespace content

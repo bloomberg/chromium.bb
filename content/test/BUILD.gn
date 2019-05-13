@@ -2229,6 +2229,7 @@ test("content_unittests") {
   if (!is_linux_without_udev && !is_android) {
     sources += [ "../browser/webauth/authenticator_impl_unittest.cc" ]
     deps += [
+      "//components/autofill/content/browser/webauthn",
       "//device/base",
       "//device/fido",
       "//device/fido:mocks",

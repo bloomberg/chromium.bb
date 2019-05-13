@@ -23,6 +23,7 @@ jumbo_source_set("browser") {
   # internal content ones) should depend on the public one.
   visibility = [
     ":for_content_tests",  # See top of //content/BUILD.gn for why.
+    ":for_internal_webauthn",
     "//content/app:*",
     "//content/public/browser:browser_sources",
     "//content/test/fuzzer:appcache_fuzzer",
@@ -2710,6 +2711,16 @@ group("for_content_tests") {
   } else {
     public_deps = [
       "//third_party/leveldatabase",
+    ]
+  }
+}
+
+# Meant for internal components to facilitate WebAuthn.
+group("for_internal_webauthn") {
+  visibility = [ "//components/autofill/content/browser/webauthn" ]
+  if (!is_component_build) {
+    public_deps = [
+      ":browser",
     ]
   }
 }
