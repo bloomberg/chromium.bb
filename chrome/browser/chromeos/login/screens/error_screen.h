@@ -40,6 +40,7 @@ class ErrorScreen : public BaseScreen,
   static const char kUserActionLocalStateErrorPowerwashButtonClicked[];
   static const char kUserActionRebootButtonClicked[];
   static const char kUserActionShowCaptivePortalClicked[];
+  static const char kUserActionNetworkConnected[];
 
   explicit ErrorScreen(ErrorScreenView* view);
   ~ErrorScreen() override;

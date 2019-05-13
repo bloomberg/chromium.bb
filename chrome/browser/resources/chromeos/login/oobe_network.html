@@ -19,6 +19,7 @@
       </div>
       <div slot="footer" class="layout vertical">
         <network-select-login id="networkSelectLogin"
+            on-selected-network-connected="onNetworkConnected_"
             is-connected="{{isConnected_}}">
         </network-select-login>
       </div>

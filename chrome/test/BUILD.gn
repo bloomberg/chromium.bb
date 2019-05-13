@@ -1850,6 +1850,7 @@ test("browser_tests") {
         "../browser/chromeos/login/enrollment/mock_auto_enrollment_check_screen.cc",
         "../browser/chromeos/login/enrollment/mock_auto_enrollment_check_screen.h",
         "../browser/chromeos/login/enterprise_enrollment_browsertest.cc",
+        "../browser/chromeos/login/error_screen_browsertest.cc",
         "../browser/chromeos/login/eula_browsertest.cc",
         "../browser/chromeos/login/existing_user_controller_browsertest.cc",
         "../browser/chromeos/login/guest_login_browsertest.cc",

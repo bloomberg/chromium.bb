@@ -72,6 +72,8 @@ constexpr const char
 constexpr const char ErrorScreen::kUserActionRebootButtonClicked[] = "reboot";
 constexpr const char ErrorScreen::kUserActionShowCaptivePortalClicked[] =
     "show-captive-portal";
+constexpr const char ErrorScreen::kUserActionNetworkConnected[] =
+    "network-connected";
 
 ErrorScreen::ErrorScreen(ErrorScreenView* view)
     : BaseScreen(ErrorScreenView::kScreenId), view_(view), weak_factory_(this) {
@@ -222,6 +224,8 @@ void ErrorScreen::OnUserAction(const std::string& action_id) {
     OnLocalStateErrorPowerwashButtonClicked();
   else if (action_id == kUserActionRebootButtonClicked)
     OnRebootButtonClicked();
+  else if (action_id == kUserActionNetworkConnected)
+    Hide();
   else
     BaseScreen::OnUserAction(action_id);
 }

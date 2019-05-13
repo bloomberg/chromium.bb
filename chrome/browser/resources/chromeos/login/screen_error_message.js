@@ -13,6 +13,7 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
   var USER_ACTION_LOCAL_STATE_POWERWASH = 'local-state-error-powerwash';
   var USER_ACTION_REBOOT = 'reboot';
   var USER_ACTION_SHOW_CAPTIVE_PORTAL = 'show-captive-portal';
+  var USER_ACTION_NETWORK_CONNECTED = 'network-connected';
 
   // Link which starts guest session for captive portal fixing.
   /** @const */ var FIX_CAPTIVE_PORTAL_ID = 'captive-portal-fix-link';
@@ -136,6 +137,12 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
                 login.Screen.CALLBACK_USER_ACTED,
                 USER_ACTION_LOCAL_STATE_POWERWASH);
             e.stopPropagation();
+          });
+      $('offline-network-control')
+          .addEventListener('selected-network-connected', function(e) {
+            self.send(
+                login.Screen.CALLBACK_USER_ACTED,
+                USER_ACTION_NETWORK_CONNECTED);
           });
     },
 
