@@ -905,7 +905,8 @@ void AccessibilityController::UpdateAutoclickFromPref() {
 
   NotifyAccessibilityStatusChanged();
 
-  Shell::Get()->autoclick_controller()->SetEnabled(enabled);
+  Shell::Get()->autoclick_controller()->SetEnabled(
+      enabled, true /* show confirmation dialog */);
 }
 
 void AccessibilityController::UpdateAutoclickDelayFromPref() {

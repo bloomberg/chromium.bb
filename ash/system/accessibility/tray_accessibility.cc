@@ -191,9 +191,6 @@ void AccessibilityDetailedView::AppendAccessibilityList() {
       kSystemMenuAccessibilityAutoClickIcon,
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ACCESSIBILITY_AUTOCLICK),
       autoclick_enabled_);
-  autoclick_view_->SetID(ash::VIEW_ID_ACCESSIBILITY_AUTOCLICK);
-  autoclick_view_->right_view()->SetID(
-      ash::VIEW_ID_ACCESSIBILITY_AUTOCLICK_ENABLED);
 
   virtual_keyboard_enabled_ = controller->virtual_keyboard_enabled();
   virtual_keyboard_view_ = AddScrollListCheckableItem(
@@ -201,6 +198,9 @@ void AccessibilityDetailedView::AppendAccessibilityList() {
       l10n_util::GetStringUTF16(
           IDS_ASH_STATUS_TRAY_ACCESSIBILITY_VIRTUAL_KEYBOARD),
       virtual_keyboard_enabled_);
+  virtual_keyboard_view_->SetID(ash::VIEW_ID_ACCESSIBILITY_VIRTUAL_KEYBOARD);
+  virtual_keyboard_view_->right_view()->SetID(
+      ash::VIEW_ID_ACCESSIBILITY_VIRTUAL_KEYBOARD_ENABLED);
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableExperimentalAccessibilitySwitchAccess)) {

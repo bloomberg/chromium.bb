@@ -24,6 +24,7 @@ class Widget;
 
 namespace ash {
 
+class AccessibilityFeatureDisableDialog;
 class AutoclickDragEventRewriter;
 class AutoclickRingHandler;
 class AutoclickMenuBubbleController;
@@ -38,8 +39,10 @@ class ASH_EXPORT AutoclickController : public ui::EventHandler,
   AutoclickController();
   ~AutoclickController() override;
 
-  // Set whether autoclicking is enabled.
-  void SetEnabled(bool enabled);
+  // Set whether autoclicking is enabled. If |show_confirmation_dialog|, a
+  // confirmation dialog will be shown when disabling autoclick to ensure
+  // the user doesn't accidentally lock themselves out of the feature.
+  void SetEnabled(bool enabled, bool show_confirmation_dialog);
 
   // Returns true if autoclicking is enabled.
   bool IsEnabled() const;
@@ -84,6 +87,9 @@ class ASH_EXPORT AutoclickController : public ui::EventHandler,
   static float GetStartGestureDelayRatioForTesting();
   AutoclickMenuBubbleController* GetMenuBubbleControllerForTesting() {
     return menu_bubble_controller_.get();
+  }
+  AccessibilityFeatureDisableDialog* GetDisableDialogForTesting() {
+    return disable_dialog_.get();
   }
 
  private:
@@ -156,6 +162,9 @@ class ASH_EXPORT AutoclickController : public ui::EventHandler,
   std::unique_ptr<AutoclickRingHandler> autoclick_ring_handler_;
   std::unique_ptr<AutoclickDragEventRewriter> drag_event_rewriter_;
   std::unique_ptr<AutoclickMenuBubbleController> menu_bubble_controller_;
+
+  // Holds a weak pointer to the dialog shown when autoclick is being disabled.
+  base::WeakPtr<AccessibilityFeatureDisableDialog> disable_dialog_;
 
   DISALLOW_COPY_AND_ASSIGN(AutoclickController);
 };

@@ -74,9 +74,11 @@ TEST_F(AutoclickMenuBubbleControllerTest, ExistsOnlyWhenAutoclickIsRunning) {
   for (int i = 0; i < 2; i++) {
     EXPECT_TRUE(GetBubbleController());
     EXPECT_TRUE(GetMenuView());
-    Shell::Get()->accessibility_controller()->SetAutoclickEnabled(false);
+    Shell::Get()->autoclick_controller()->SetEnabled(
+        false, false /* do not show dialog */);
     EXPECT_FALSE(GetBubbleController());
-    Shell::Get()->accessibility_controller()->SetAutoclickEnabled(true);
+    Shell::Get()->autoclick_controller()->SetEnabled(
+        true, false /* do not show dialog */);
   }
 }
 

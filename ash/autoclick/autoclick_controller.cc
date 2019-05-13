@@ -10,6 +10,8 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
+#include "ash/strings/grit/ash_strings.h"
+#include "ash/system/accessibility/accessibility_feature_disable_dialog.h"
 #include "ash/system/accessibility/autoclick_menu_bubble_controller.h"
 #include "ash/wm/root_window_finder.h"
 #include "base/bind.h"
@@ -90,12 +92,12 @@ void AutoclickController::SetTapDownTarget(aura::Window* target) {
     tap_down_target_->AddObserver(this);
 }
 
-void AutoclickController::SetEnabled(bool enabled) {
+void AutoclickController::SetEnabled(bool enabled,
+                                     bool show_confirmation_dialog) {
   if (enabled_ == enabled)
     return;
-  enabled_ = enabled;
 
-  if (enabled_) {
+  if (enabled) {
     Shell::Get()->AddPreTargetHandler(this, ui::EventTarget::Priority::kSystem);
 
     // Only create the bubble controller when needed. Most users will not enable
@@ -107,9 +109,36 @@ void AutoclickController::SetEnabled(bool enabled) {
           std::make_unique<AutoclickMenuBubbleController>();
       menu_bubble_controller_->ShowBubble(event_type_, menu_position_);
     }
+    enabled_ = enabled;
   } else {
-    Shell::Get()->RemovePreTargetHandler(this);
-    menu_bubble_controller_ = nullptr;
+    if (show_confirmation_dialog) {
+      // If a dialog exists already, no need to show it again.
+      if (disable_dialog_)
+        return;
+      // Show a confirmation dialog before disabling autoclick.
+      auto* dialog = new AccessibilityFeatureDisableDialog(
+          IDS_ASH_AUTOCLICK_DISABLE_CONFIRMATION_TITLE,
+          IDS_ASH_AUTOCLICK_DISABLE_CONFIRMATION_BODY,
+          // Callback for if the user accepts the dialog
+          base::BindOnce([]() {
+            // If they accept, actually disable autoclick.
+            Shell::Get()->autoclick_controller()->SetEnabled(
+                false, false /* do not show the dialog */);
+          }),
+          // Callback for if the user cancels the dialog - marks the
+          // feature as enabled again in prefs.
+          base::BindOnce([]() {
+            AccessibilityController* controller =
+                Shell::Get()->accessibility_controller();
+            // If they cancel, ensure autoclick is enabled.
+            controller->SetAutoclickEnabled(true);
+          }));
+      disable_dialog_ = dialog->GetWeakPtr();
+    } else {
+      Shell::Get()->RemovePreTargetHandler(this);
+      menu_bubble_controller_ = nullptr;
+      enabled_ = enabled;
+    }
   }
 
   CancelAutoclickAction();

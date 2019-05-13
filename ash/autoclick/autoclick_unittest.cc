@@ -6,6 +6,7 @@
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
+#include "ash/system/accessibility/accessibility_feature_disable_dialog.h"
 #include "ash/system/accessibility/autoclick_menu_bubble_controller.h"
 #include "ash/system/accessibility/autoclick_menu_view.h"
 #include "ash/test/ash_test_base.h"
@@ -25,6 +26,7 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/views/window/dialog_client_view.h"
 
 namespace ash {
 
@@ -176,7 +178,7 @@ TEST_F(AutoclickTest, ToggleEnabled) {
 
   // Enable autoclick, and we should see a mouse pressed and
   // a mouse released event, simulating a click.
-  GetAutoclickController()->SetEnabled(true);
+  GetAutoclickController()->SetEnabled(true, false /* do not show dialog */);
   GetEventGenerator()->MoveMouseTo(0, 0);
   EXPECT_TRUE(GetAutoclickController()->IsEnabled());
   events = WaitForMouseEvents();
@@ -198,7 +200,7 @@ TEST_F(AutoclickTest, ToggleEnabled) {
   EXPECT_TRUE(ui::EF_LEFT_MOUSE_BUTTON & events[1].flags());
 
   // Disable autoclick, and we should see the original behaviour.
-  GetAutoclickController()->SetEnabled(false);
+  GetAutoclickController()->SetEnabled(false, false /* do not show dialog */);
   EXPECT_FALSE(GetAutoclickController()->IsEnabled());
   events = WaitForMouseEvents();
   EXPECT_EQ(0u, events.size());
@@ -206,7 +208,7 @@ TEST_F(AutoclickTest, ToggleEnabled) {
 
 TEST_F(AutoclickTest, MouseMovement) {
   std::vector<ui::MouseEvent> events;
-  GetAutoclickController()->SetEnabled(true);
+  GetAutoclickController()->SetEnabled(true, false /* do not show dialog */);
 
   gfx::Point p1(0, 0);
   gfx::Point p2(20, 20);
@@ -255,7 +257,8 @@ TEST_F(AutoclickTest, MovementThreshold) {
     for (auto* root_window : root_windows) {
       gfx::Point center = root_window->GetBoundsInScreen().CenterPoint();
 
-      GetAutoclickController()->SetEnabled(true);
+      GetAutoclickController()->SetEnabled(true,
+                                           false /* do not show dialog */);
       GetEventGenerator()->MoveMouseTo(center);
       ClearMouseEvents();
       EXPECT_EQ(2u, WaitForMouseEvents().size());
@@ -314,7 +317,7 @@ TEST_F(AutoclickTest, MovementThreshold) {
 }
 
 TEST_F(AutoclickTest, MovementWithinThresholdWhileTimerRunning) {
-  GetAutoclickController()->SetEnabled(true);
+  GetAutoclickController()->SetEnabled(true, false /* do not show dialog */);
   GetAutoclickController()->SetMovementThreshold(20);
   int animation_delay = 5;
   int full_delay = UpdateAnimationDelayAndGetFullDelay(animation_delay);
@@ -362,7 +365,7 @@ TEST_F(AutoclickTest, MovementWithinThresholdWhileTimerRunning) {
 }
 
 TEST_F(AutoclickTest, SingleKeyModifier) {
-  GetAutoclickController()->SetEnabled(true);
+  GetAutoclickController()->SetEnabled(true, false /* do not show dialog */);
   MoveMouseWithFlagsTo(20, 20, ui::EF_SHIFT_DOWN);
   std::vector<ui::MouseEvent> events = WaitForMouseEvents();
   EXPECT_EQ(2u, events.size());
@@ -371,7 +374,7 @@ TEST_F(AutoclickTest, SingleKeyModifier) {
 }
 
 TEST_F(AutoclickTest, MultipleKeyModifiers) {
-  GetAutoclickController()->SetEnabled(true);
+  GetAutoclickController()->SetEnabled(true, false /* do not show dialog */);
   ui::EventFlags modifier_flags = static_cast<ui::EventFlags>(
       ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN);
   MoveMouseWithFlagsTo(30, 30, modifier_flags);
@@ -382,7 +385,7 @@ TEST_F(AutoclickTest, MultipleKeyModifiers) {
 }
 
 TEST_F(AutoclickTest, KeyModifiersReleased) {
-  GetAutoclickController()->SetEnabled(true);
+  GetAutoclickController()->SetEnabled(true, false /* do not show dialog */);
 
   ui::EventFlags modifier_flags = static_cast<ui::EventFlags>(
       ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN);
@@ -403,7 +406,7 @@ TEST_F(AutoclickTest, KeyModifiersReleased) {
 }
 
 TEST_F(AutoclickTest, UserInputCancelsAutoclick) {
-  GetAutoclickController()->SetEnabled(true);
+  GetAutoclickController()->SetEnabled(true, false /* do not show dialog */);
   std::vector<ui::MouseEvent> events;
 
   // Pressing a normal key should cancel the autoclick.
@@ -459,7 +462,7 @@ TEST_F(AutoclickTest, UserInputCancelsAutoclick) {
 }
 
 TEST_F(AutoclickTest, SynthesizedMouseMovesIgnored) {
-  GetAutoclickController()->SetEnabled(true);
+  GetAutoclickController()->SetEnabled(true, false /* do not show dialog */);
   std::vector<ui::MouseEvent> events;
   GetEventGenerator()->MoveMouseTo(100, 100);
   events = WaitForMouseEvents();
@@ -478,7 +481,7 @@ TEST_F(AutoclickTest, SynthesizedMouseMovesIgnored) {
 }
 
 TEST_F(AutoclickTest, AutoclickChangeEventTypes) {
-  GetAutoclickController()->SetEnabled(true);
+  GetAutoclickController()->SetEnabled(true, false /* do not show dialog */);
   GetAutoclickController()->set_revert_to_left_click(false);
   GetAutoclickController()->SetAutoclickEventType(
       mojom::AutoclickEventType::kRightClick);
@@ -542,7 +545,7 @@ TEST_F(AutoclickTest, AutoclickChangeEventTypes) {
 }
 
 TEST_F(AutoclickTest, AutoclickDragAndDropEvents) {
-  GetAutoclickController()->SetEnabled(true);
+  GetAutoclickController()->SetEnabled(true, false /* do not show dialog */);
   GetAutoclickController()->set_revert_to_left_click(false);
   GetAutoclickController()->SetAutoclickEventType(
       mojom::AutoclickEventType::kDragAndDrop);
@@ -574,7 +577,7 @@ TEST_F(AutoclickTest, AutoclickDragAndDropEvents) {
 }
 
 TEST_F(AutoclickTest, AutoclickRevertsToLeftClick) {
-  GetAutoclickController()->SetEnabled(true);
+  GetAutoclickController()->SetEnabled(true, false /* do not show dialog */);
   GetAutoclickController()->set_revert_to_left_click(true);
   GetAutoclickController()->SetAutoclickEventType(
       mojom::AutoclickEventType::kRightClick);
@@ -635,7 +638,7 @@ TEST_F(AutoclickTest, AutoclickRevertsToLeftClick) {
 TEST_F(AutoclickTest, WaitsToDrawAnimationAfterDwellBegins) {
   int animation_delay = 5;
   int full_delay = UpdateAnimationDelayAndGetFullDelay(animation_delay);
-  GetAutoclickController()->SetEnabled(true);
+  GetAutoclickController()->SetEnabled(true, false /* do not show dialog */);
   std::vector<ui::MouseEvent> events;
 
   // Start a dwell at (210, 210).
@@ -788,9 +791,6 @@ TEST_F(AutoclickTest, DoesActionOnBubbleWhenInDifferentModes) {
     EXPECT_EQ(mojom::AutoclickEventType::kLeftClick,
               accessibility_controller->GetAutoclickEventType());
   }
-
-  // Reset state.
-  accessibility_controller->SetAutoclickEnabled(false);
 }
 
 TEST_F(AutoclickTest,
@@ -834,14 +834,10 @@ TEST_F(AutoclickTest,
   FastForwardBy(full_delay);
   events = GetMouseEvents();
   ASSERT_EQ(0u, events.size());
-
-  // Reset state.
-  Shell::Get()->accessibility_controller()->SetAutoclickEnabled(false);
 }
 
 // The autoclick tray shouldn't stop the shelf from auto-hiding.
 TEST_F(AutoclickTest, ShelfAutohidesWithAutoclickBubble) {
-  Shell::Get()->accessibility_controller()->SetAutoclickEnabled(false);
   Shelf* shelf = GetPrimaryShelf();
 
   // Create a visible window so auto-hide behavior is enforced.
@@ -860,9 +856,6 @@ TEST_F(AutoclickTest, ShelfAutohidesWithAutoclickBubble) {
   ASSERT_TRUE(menu);
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
-
-  // Reset state.
-  Shell::Get()->accessibility_controller()->SetAutoclickEnabled(false);
 }
 
 TEST_F(AutoclickTest, BubbleMovesWithShelfPositionChange) {
@@ -912,8 +905,43 @@ TEST_F(AutoclickTest, BubbleMovesWithShelfPositionChange) {
                 shelf->GetIdealBounds().width());
 
   // Reset state.
-  Shell::Get()->accessibility_controller()->SetAutoclickEnabled(false);
   shelf->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
+}
+
+TEST_F(AutoclickTest, ConfirmationDialogShownWhenDisablingFeature) {
+  // Enable and disable with the AccessibilityController to get real use-case
+  // of the dialog.
+
+  // No dialog shown at start-up.
+  EXPECT_FALSE(GetAutoclickController()->GetDisableDialogForTesting());
+
+  // No dialog shown when enabling the feature.
+  Shell::Get()->accessibility_controller()->SetAutoclickEnabled(true);
+  EXPECT_FALSE(GetAutoclickController()->GetDisableDialogForTesting());
+
+  // A dialog should be shown when disabling the feature.
+  Shell::Get()->accessibility_controller()->SetAutoclickEnabled(false);
+  AccessibilityFeatureDisableDialog* dialog =
+      GetAutoclickController()->GetDisableDialogForTesting();
+  EXPECT_TRUE(dialog);
+
+  // Canceling the dialog will cause the feature to continue to be enabled.
+  dialog->GetDialogClientView()->CancelWindow();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(GetAutoclickController()->GetDisableDialogForTesting());
+  EXPECT_TRUE(Shell::Get()->accessibility_controller()->autoclick_enabled());
+  EXPECT_TRUE(GetAutoclickController()->IsEnabled());
+
+  // Try to disable it again, and this time accept the dialog to actually
+  // disable the feature.
+  Shell::Get()->accessibility_controller()->SetAutoclickEnabled(false);
+  dialog = GetAutoclickController()->GetDisableDialogForTesting();
+  EXPECT_TRUE(dialog);
+  dialog->GetDialogClientView()->AcceptWindow();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(GetAutoclickController()->GetDisableDialogForTesting());
+  EXPECT_FALSE(Shell::Get()->accessibility_controller()->autoclick_enabled());
+  EXPECT_FALSE(GetAutoclickController()->IsEnabled());
 }
 
 }  // namespace ash

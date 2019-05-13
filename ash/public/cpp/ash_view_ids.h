@@ -13,10 +13,10 @@ enum ViewID {
   // Ash IDs start above the range used in Chrome (c/b/ui/view_ids.h).
   VIEW_ID_ASH_START = 10000,
 
-  // Row for auto click feature in accessibility detailed view.
-  VIEW_ID_ACCESSIBILITY_AUTOCLICK,
-  // Icon that indicates auto click is enabled.
-  VIEW_ID_ACCESSIBILITY_AUTOCLICK_ENABLED,
+  // Row for the virtual keyboard feature in accessibility detailed view.
+  VIEW_ID_ACCESSIBILITY_VIRTUAL_KEYBOARD,
+  // Icon that indicates the virtual keyboard is enabled.
+  VIEW_ID_ACCESSIBILITY_VIRTUAL_KEYBOARD_ENABLED,
   // Accessibility feature pod button in main view.
   VIEW_ID_ACCESSIBILITY_TRAY_ITEM,
   VIEW_ID_BLUETOOTH_DEFAULT_VIEW,

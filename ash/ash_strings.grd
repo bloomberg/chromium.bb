@@ -491,6 +491,12 @@ This file contains the strings for ash.
       <message name="IDS_ASH_AUTOCLICK_OPTION_CHANGE_POSITION" desc="The tooltip text for a menu option for automatic clicks menu that results in the menu changing position on the screen. The menu will toggle through several pre-set positions.">
         Toggle menu position
       </message>
+      <message name="IDS_ASH_AUTOCLICK_DISABLE_CONFIRMATION_TITLE" desc="The title for the modal dialog shown when the user disables automatic clicks, to confirm they meant to disable the feature.">
+        Disable automatic clicks?
+      </message>
+      <message name="IDS_ASH_AUTOCLICK_DISABLE_CONFIRMATION_BODY" desc="The message in the modal dialog shown when the user disables automatic clicks, to confirm they meant to disable the feature">
+        Are you sure you want to disable automatic clicks?
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_VIRTUAL_KEYBOARD" desc="The label used in the accessibility menu of the system tray to toggle on/off the onscreen keyboard.">
         On-screen keyboard
       </message>
@@ -1378,6 +1384,10 @@ This file contains the strings for ash.
       <message name="IDS_ASH_CONTINUE_BUTTON" desc="The text for continue button on accessibility confirmation dialogs.">
         Continue
       </message>
+      <message name="IDS_ASH_DISABLE_BUTTON" desc="The text for the button on a dialog to confirm disabling a feature.">
+        Disable
+      </message>
+
 
       <message name="IDS_ASH_IME_MENU_ACCESSIBLE_NAME" desc="The accessible text for opt-in IME menu icon in status tray.">
         IME menu button

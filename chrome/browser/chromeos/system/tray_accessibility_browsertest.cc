@@ -194,16 +194,17 @@ class TrayAccessibilityTest
     return is_open;
   }
 
-  void ClickAutoclickOnDetailMenu() {
+  void ClickVirtualKeyboardOnDetailMenu() {
     ash::mojom::SystemTrayTestApiAsyncWaiter wait_for(tray_test_api_.get());
-    wait_for.ClickBubbleView(ash::VIEW_ID_ACCESSIBILITY_AUTOCLICK);
+    wait_for.ClickBubbleView(ash::VIEW_ID_ACCESSIBILITY_VIRTUAL_KEYBOARD);
   }
 
-  bool IsAutoclickEnabledOnDetailMenu() const {
+  bool IsVirtualKeyboardEnabledOnDetailMenu() const {
     ash::mojom::SystemTrayTestApiAsyncWaiter wait_for(tray_test_api_.get());
     bool visible = false;
-    wait_for.IsBubbleViewVisible(ash::VIEW_ID_ACCESSIBILITY_AUTOCLICK_ENABLED,
-                                 false /* open_tray */, &visible);
+    wait_for.IsBubbleViewVisible(
+        ash::VIEW_ID_ACCESSIBILITY_VIRTUAL_KEYBOARD_ENABLED,
+        false /* open_tray */, &visible);
     return visible;
   }
 
@@ -497,19 +498,21 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, KeepMenuVisibilityOnLockScreen) {
 
 // Verify that the accessiblity system detailed menu remains open when an item
 // is selected or deselected.
+// Do not use a feature which requires an enable/disable confirmation dialog
+// here, as the dialogs change focus and close the detail menu.
 IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, DetailMenuRemainsOpen) {
   CreateDetailedMenu();
 
-  ClickAutoclickOnDetailMenu();
-  EXPECT_TRUE(IsAutoclickEnabledOnDetailMenu());
+  ClickVirtualKeyboardOnDetailMenu();
+  EXPECT_TRUE(IsVirtualKeyboardEnabledOnDetailMenu());
   {
     base::RunLoop run_loop;
     run_loop.RunUntilIdle();
   }
   EXPECT_TRUE(IsBubbleOpen());
 
-  ClickAutoclickOnDetailMenu();
-  EXPECT_FALSE(IsAutoclickEnabledOnDetailMenu());
+  ClickVirtualKeyboardOnDetailMenu();
+  EXPECT_FALSE(IsVirtualKeyboardEnabledOnDetailMenu());
   {
     base::RunLoop run_loop;
     run_loop.RunUntilIdle();
