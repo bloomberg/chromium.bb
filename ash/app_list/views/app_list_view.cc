@@ -211,6 +211,10 @@ class AppListView::StateAnimationMetricsReporter
 
   void Report(int value) override {
     UMA_HISTOGRAM_PERCENTAGE("Apps.StateTransition.AnimationSmoothness", value);
+    // It can't ensure the target transition is properly set. Simply give up
+    // reporting per-state metrics in that case. See https://crbug.com/954907.
+    if (!target_state_)
+      return;
     switch (*target_state_) {
       case ash::mojom::AppListViewState::kClosed:
         UMA_HISTOGRAM_PERCENTAGE(
