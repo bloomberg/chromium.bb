@@ -1062,6 +1062,32 @@ void RTCPeerConnection::MaybeWarnAboutUnsafeSdp(
   }
 }
 
+std::set<RTCIceTransport*> RTCPeerConnection::ActiveIceTransports() const {
+  std::set<RTCIceTransport*> active_transports;
+  for (auto transceiver : transceivers_) {
+    auto* sender = transceiver->sender();
+    if (sender) {
+      auto* dtls_transport = transceiver->sender()->transport();
+      if (dtls_transport) {
+        auto* ice_transport = dtls_transport->iceTransport();
+        if (ice_transport) {
+          active_transports.insert(ice_transport);
+        }
+      }
+    }
+  }
+  if (sctp_transport_) {
+    auto* dtls_transport = sctp_transport_->transport();
+    if (dtls_transport) {
+      auto* ice_transport = dtls_transport->iceTransport();
+      if (ice_transport) {
+        active_transports.insert(ice_transport);
+      }
+    }
+  }
+  return active_transports;
+}
+
 const CallSetupStateTracker& RTCPeerConnection::call_setup_state_tracker()
     const {
   return call_setup_state_tracker_;
@@ -3038,7 +3064,7 @@ RTCPeerConnection::ComputeIceConnectionState() {
 }
 
 bool RTCPeerConnection::HasAnyFailedIceTransport() const {
-  for (auto transport : ice_transports_by_native_transport_.Values()) {
+  for (auto* transport : ActiveIceTransports()) {
     if (transport->GetState() == webrtc::IceTransportState::kFailed)
       return true;
   }
@@ -3046,7 +3072,7 @@ bool RTCPeerConnection::HasAnyFailedIceTransport() const {
 }
 
 bool RTCPeerConnection::HasAnyDisconnectedIceTransport() const {
-  for (auto transport : ice_transports_by_native_transport_.Values()) {
+  for (auto* transport : ActiveIceTransports()) {
     if (transport->GetState() == webrtc::IceTransportState::kDisconnected)
       return true;
   }
@@ -3054,7 +3080,7 @@ bool RTCPeerConnection::HasAnyDisconnectedIceTransport() const {
 }
 
 bool RTCPeerConnection::HasAllNewOrClosedIceTransports() const {
-  for (auto transport : ice_transports_by_native_transport_.Values()) {
+  for (auto* transport : ActiveIceTransports()) {
     if (transport->GetState() != webrtc::IceTransportState::kNew &&
         transport->GetState() != webrtc::IceTransportState::kClosed)
       return false;
@@ -3063,7 +3089,7 @@ bool RTCPeerConnection::HasAllNewOrClosedIceTransports() const {
 }
 
 bool RTCPeerConnection::HasAnyNewOrCheckingIceTransport() const {
-  for (auto transport : ice_transports_by_native_transport_.Values()) {
+  for (auto* transport : ActiveIceTransports()) {
     if (transport->GetState() == webrtc::IceTransportState::kNew ||
         transport->GetState() == webrtc::IceTransportState::kChecking)
       return true;
@@ -3072,7 +3098,7 @@ bool RTCPeerConnection::HasAnyNewOrCheckingIceTransport() const {
 }
 
 bool RTCPeerConnection::HasAllCompletedOrClosedIceTransports() const {
-  for (auto transport : ice_transports_by_native_transport_.Values()) {
+  for (auto* transport : ActiveIceTransports()) {
     if (transport->GetState() != webrtc::IceTransportState::kCompleted &&
         transport->GetState() != webrtc::IceTransportState::kClosed)
       return false;
@@ -3081,7 +3107,7 @@ bool RTCPeerConnection::HasAllCompletedOrClosedIceTransports() const {
 }
 
 bool RTCPeerConnection::HasAllConnectedCompletedOrClosedIceTransports() const {
-  for (auto transport : ice_transports_by_native_transport_.Values()) {
+  for (auto* transport : ActiveIceTransports()) {
     if (transport->GetState() != webrtc::IceTransportState::kConnected &&
         transport->GetState() != webrtc::IceTransportState::kCompleted &&
         transport->GetState() != webrtc::IceTransportState::kClosed)
