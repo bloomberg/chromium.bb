@@ -503,7 +503,6 @@ void InlineLoginHandlerImpl::SetExtraInitParams(base::DictionaryValue& params) {
   HandlerSigninReason reason = GetHandlerSigninReason(current_url);
 
   const GURL& url = GaiaUrls::GetInstance()->embedded_signin_url();
-  params.SetBoolean("isNewGaiaFlow", true);
   params.SetString("clientId",
                    GaiaUrls::GetInstance()->oauth2_chrome_client_id());
   params.SetString("gaiaPath", url.path().substr(1));

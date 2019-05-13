@@ -711,7 +711,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
           params[name] = data[name];
       }
 
-      params.isNewGaiaFlow = true;
       params.doSamlRedirect =
           (this.screenMode_ == ScreenMode.SAML_INTERSTITIAL);
       params.menuGuestMode = data.guestSignin;

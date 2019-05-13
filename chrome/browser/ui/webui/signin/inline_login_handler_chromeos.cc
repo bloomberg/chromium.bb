@@ -116,7 +116,6 @@ void InlineLoginHandlerChromeOS::RegisterMessages() {
 void InlineLoginHandlerChromeOS::SetExtraInitParams(
     base::DictionaryValue& params) {
   const GaiaUrls* const gaia_urls = GaiaUrls::GetInstance();
-  params.SetKey("isNewGaiaFlow", base::Value(true));
   params.SetKey("clientId", base::Value(gaia_urls->oauth2_chrome_client_id()));
 
   const GURL& url = gaia_urls->embedded_setup_chromeos_url(2U);

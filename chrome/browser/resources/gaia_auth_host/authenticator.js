@@ -21,7 +21,6 @@ cr.define('cr.login', function() {
   // of hardcoding the prod URL here.  As is, this does not work with staging
   // environments.
   const IDP_ORIGIN = 'https://accounts.google.com/';
-  const IDP_PATH = 'ServiceLogin?skipvpage=true&sarp=1&rm=hide';
   const CONTINUE_URL =
       'chrome-extension://mfffpogegjflfpflabcdkioaeobkgjik/success.html';
   const SIGN_IN_HEADER = 'google-accounts-signin';
@@ -292,7 +291,6 @@ cr.define('cr.login', function() {
           this.continueUrl_.substring(0, this.continueUrl_.indexOf('?')) ||
           this.continueUrl_;
       this.isConstrainedWindow_ = data.constrained == '1';
-      this.isNewGaiaFlow = data.isNewGaiaFlow;
       this.clientId_ = data.clientId;
       this.dontResizeNonEmbeddedPages = data.dontResizeNonEmbeddedPages;
 
@@ -306,11 +304,9 @@ cr.define('cr.login', function() {
           data.extractSamlPasswordAttributes;
       this.needPassword = !('needPassword' in data) || data.needPassword;
 
-      if (this.isNewGaiaFlow) {
-        this.webview_.contextMenus.onShow.addListener(function(e) {
-          e.preventDefault();
-        });
-      }
+      this.webview_.contextMenus.onShow.addListener(function(e) {
+        e.preventDefault();
+      });
 
       this.webview_.src = this.reloadUrl_;
       this.isLoaded_ = true;
@@ -346,60 +342,53 @@ cr.define('cr.login', function() {
       let url;
       if (data.gaiaPath) {
         url = this.idpOrigin_ + data.gaiaPath;
-      } else if (this.isNewGaiaFlow) {
-        url = this.constructChromeOSAPIUrl_();
       } else {
-        url = this.idpOrigin_ + IDP_PATH;
+        url = this.constructChromeOSAPIUrl_();
       }
 
-      if (this.isNewGaiaFlow) {
-        if (data.chromeType) {
-          url = appendParam(url, 'chrometype', data.chromeType);
-        }
-        if (data.clientId) {
-          url = appendParam(url, 'client_id', data.clientId);
-        }
-        if (data.enterpriseDisplayDomain) {
-          url = appendParam(url, 'manageddomain', data.enterpriseDisplayDomain);
-        }
-        if (data.clientVersion) {
-          url = appendParam(url, 'client_version', data.clientVersion);
-        }
-        if (data.platformVersion) {
-          url = appendParam(url, 'platform_version', data.platformVersion);
-        }
-        if (data.releaseChannel) {
-          url = appendParam(url, 'release_channel', data.releaseChannel);
-        }
-        if (data.endpointGen) {
-          url = appendParam(url, 'endpoint_gen', data.endpointGen);
-        }
-        let mi = '';
-        if (data.menuGuestMode) {
-          mi += 'gm,';
-        }
-        if (data.menuKeyboardOptions) {
-          mi += 'ko,';
-        }
-        if (data.menuEnterpriseEnrollment) {
-          mi += 'ee,';
-        }
-        if (mi.length) {
-          url = appendParam(url, 'mi', mi);
-        }
+      if (data.chromeType) {
+        url = appendParam(url, 'chrometype', data.chromeType);
+      }
+      if (data.clientId) {
+        url = appendParam(url, 'client_id', data.clientId);
+      }
+      if (data.enterpriseDisplayDomain) {
+        url = appendParam(url, 'manageddomain', data.enterpriseDisplayDomain);
+      }
+      if (data.clientVersion) {
+        url = appendParam(url, 'client_version', data.clientVersion);
+      }
+      if (data.platformVersion) {
+        url = appendParam(url, 'platform_version', data.platformVersion);
+      }
+      if (data.releaseChannel) {
+        url = appendParam(url, 'release_channel', data.releaseChannel);
+      }
+      if (data.endpointGen) {
+        url = appendParam(url, 'endpoint_gen', data.endpointGen);
+      }
+      let mi = '';
+      if (data.menuGuestMode) {
+        mi += 'gm,';
+      }
+      if (data.menuKeyboardOptions) {
+        mi += 'ko,';
+      }
+      if (data.menuEnterpriseEnrollment) {
+        mi += 'ee,';
+      }
+      if (mi.length) {
+        url = appendParam(url, 'mi', mi);
+      }
 
-        if (data.lsbReleaseBoard) {
-          url = appendParam(url, 'chromeos_board', data.lsbReleaseBoard);
-        }
-        if (data.isFirstUser) {
-          url = appendParam(url, 'is_first_user', true);
-        }
-        if (data.obfuscatedOwnerId) {
-          url = appendParam(url, 'obfuscated_owner_id', data.obfuscatedOwnerId);
-        }
-      } else {
-        url = appendParam(url, 'continue', this.continueUrl_);
-        url = appendParam(url, 'service', data.service || SERVICE_ID);
+      if (data.lsbReleaseBoard) {
+        url = appendParam(url, 'chromeos_board', data.lsbReleaseBoard);
+      }
+      if (data.isFirstUser) {
+        url = appendParam(url, 'is_first_user', true);
+      }
+      if (data.obfuscatedOwnerId) {
+        url = appendParam(url, 'obfuscated_owner_id', data.obfuscatedOwnerId);
       }
       if (data.hl) {
         url = appendParam(url, 'hl', data.hl);
@@ -447,16 +436,6 @@ cr.define('cr.login', function() {
      */
     onRequestCompleted_(details) {
       const currentUrl = details.url;
-
-      if (!this.isNewGaiaFlow &&
-          currentUrl.lastIndexOf(this.continueUrlWithoutParams_, 0) == 0) {
-        if (currentUrl.indexOf('ntp=1') >= 0) {
-          this.skipForNow_ = true;
-        }
-
-        this.maybeCompleteAuth_();
-        return;
-      }
 
       if (!currentUrl.startsWith('https')) {
         this.trusted_ = false;
