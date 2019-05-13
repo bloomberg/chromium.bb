@@ -307,31 +307,29 @@ WebDragData DropDataToWebDragData(const DropData& drop_data) {
     item_list.push_back(item);
   }
 
-  for (auto it = drop_data.filenames.begin(); it != drop_data.filenames.end();
-       ++it) {
+  for (const ui::FileInfo& filename : drop_data.filenames) {
     WebDragData::Item item;
     item.storage_type = WebDragData::Item::kStorageTypeFilename;
-    item.filename_data = blink::FilePathToWebString(it->path);
+    item.filename_data = blink::FilePathToWebString(filename.path);
     item.display_name_data =
-        blink::FilePathToWebString(base::FilePath(it->display_name));
+        blink::FilePathToWebString(base::FilePath(filename.display_name));
     item_list.push_back(item);
   }
 
-  for (auto it = drop_data.file_system_files.begin();
-       it != drop_data.file_system_files.end(); ++it) {
+  for (const DropData::FileSystemFileInfo& file : drop_data.file_system_files) {
     WebDragData::Item item;
     item.storage_type = WebDragData::Item::kStorageTypeFileSystemFile;
-    item.file_system_url = it->url;
-    item.file_system_file_size = it->size;
-    item.file_system_id = blink::WebString::FromASCII(it->filesystem_id);
+    item.file_system_url = file.url;
+    item.file_system_file_size = file.size;
+    item.file_system_id = blink::WebString::FromASCII(file.filesystem_id);
     item_list.push_back(item);
   }
 
-  for (const auto& it : drop_data.custom_data) {
+  for (const auto& data : drop_data.custom_data) {
     WebDragData::Item item;
     item.storage_type = WebDragData::Item::kStorageTypeString;
-    item.string_type = WebString::FromUTF16(it.first);
-    item.string_data = WebString::FromUTF16(it.second);
+    item.string_type = WebString::FromUTF16(data.first);
+    item.string_data = WebString::FromUTF16(data.second);
     item_list.push_back(item);
   }
 
