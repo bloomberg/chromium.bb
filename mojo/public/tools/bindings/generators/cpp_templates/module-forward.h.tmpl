@@ -100,7 +100,12 @@ using {{enum|get_name_for_kind(flatten_nested_kind=True)}} = mojo::NativeEnum;
 {%- from "enum_macros.tmpl" import enum_hash_blink_forward%}
 {%- if for_blink %}
 {%-   if all_enums %}
-#include "third_party/blink/renderer/platform/wtf/hash_functions.h"
+
+namespace WTF {
+template <typename T>
+struct DefaultHash;
+}
+
 {%-   endif %}
 
 {%-   for enum in all_enums %}
