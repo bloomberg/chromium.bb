@@ -10,17 +10,22 @@
 
 #include "base/files/file.h"
 #include "base/files/memory_mapped_file.h"
-#include "base/win/windows_version.h"
 
 void PreReadFile(const base::FilePath& file_path) {
-  // On Win10 RS6 and higher with the increased prefetch limit we don't need
-  // to do in process prefetch. On OS releases Win8/Server 2012 to Win10 RS5
-  // use ::PrefetchVirtualMemory(). This is better than a simple data file
-  // read, more from a RAM perspective than CPU. This is because reading the
-  // file as data results in double mapping to Image/executable pages for all
-  // pages of code executed. On Win7 just do a simple file read as data.
+  // On Win8 and higher use ::PrefetchVirtualMemory(). This is better than
+  // a simple data file read, more from a RAM perspective than CPU. This is
+  // because reading the file as data results in double mapping to
+  // Image/executable pages for all pages of code executed. On Win7 just do a
+  // simple file read as data.
 
-  if (base::win::GetVersion() == base::win::Version::WIN7) {
+  // ::PrefetchVirtualMemory() isn't available on Win7.
+  HMODULE kernel32_library = GetModuleHandleA("kernel32.dll");
+
+  auto prefetch_virtual_memory =
+      reinterpret_cast<decltype(&::PrefetchVirtualMemory)>(
+          GetProcAddress(kernel32_library, "PrefetchVirtualMemory"));
+
+  if (!prefetch_virtual_memory) {
     // On Win7 read in the file as data since the OS doesn't have
     // the support for better options.
 
@@ -54,13 +59,6 @@ void PreReadFile(const base::FilePath& file_path) {
 
       _WIN32_MEMORY_RANGE_ENTRY address_range = {mapped_file.data(),
                                                  mapped_file.length() / 2};
-
-      // ::PrefetchVirtualMemory() isn't available on Win7.
-      HMODULE kernel32_library = GetModuleHandleA("kernel32.dll");
-
-      auto prefetch_virtual_memory =
-          reinterpret_cast<decltype(&::PrefetchVirtualMemory)>(
-              GetProcAddress(kernel32_library, "PrefetchVirtualMemory"));
 
       // NB: PrefetchVirtualMemory requires the file to be opened with
       // only read access or it will fail.
