@@ -40,7 +40,7 @@ class SequenceManagerTaskEnvironment : public base::Thread::TaskEnvironment {
         BrowserUIThreadScheduler::CreateForTesting(
             sequence_manager_.get(), sequence_manager_->GetRealTimeDomain());
 
-    default_task_runner_ = browser_ui_thread_scheduler->GetTaskRunnerForTesting(
+    default_task_runner_ = browser_ui_thread_scheduler->GetHandle().task_runner(
         BrowserUIThreadScheduler::QueueType::kDefault);
 
     sequence_manager_->SetDefaultTaskRunner(default_task_runner_);

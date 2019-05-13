@@ -155,7 +155,7 @@ class BrowserTaskExecutorWithCustomSchedulerTest : public testing::Test {
           BrowserUIThreadScheduler::CreateForTesting(sequence_manager(),
                                                      GetTimeDomain());
       DeferredInitFromSubclass(
-          browser_ui_thread_scheduler->GetTaskRunnerForTesting(
+          browser_ui_thread_scheduler->GetHandle().task_runner(
               QueueType::kDefault));
       browser_ui_thread_scheduler_ = browser_ui_thread_scheduler.get();
       BrowserTaskExecutor::CreateWithBrowserUIThreadSchedulerForTesting(
@@ -171,7 +171,7 @@ class BrowserTaskExecutorWithCustomSchedulerTest : public testing::Test {
   };
 
  public:
-  using QueueType = BrowserUIThreadTaskQueue::QueueType;
+  using QueueType = BrowserUIThreadScheduler::QueueType;
 
   ~BrowserTaskExecutorWithCustomSchedulerTest() override {
     BrowserTaskExecutor::ResetForTesting();
@@ -185,7 +185,8 @@ TEST_F(BrowserTaskExecutorWithCustomSchedulerTest,
        EnsureUIThreadTraitPointsToExpectedQueue) {
   EXPECT_EQ(base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}),
             scoped_task_environment_.browser_ui_thread_scheduler()
-                ->GetTaskRunnerForTesting(QueueType::kDefault));
+                ->GetHandle()
+                .task_runner(QueueType::kDefault));
   EXPECT_EQ(base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}),
             scoped_task_environment_.GetMainThreadTaskRunner());
 }

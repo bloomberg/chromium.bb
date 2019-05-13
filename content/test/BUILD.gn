@@ -1677,6 +1677,7 @@ test("content_unittests") {
     "../browser/resolve_proxy_msg_helper_unittest.cc",
     "../browser/sandbox_mac_unittest.mm",
     "../browser/scheduler/browser_task_executor_unittest.cc",
+    "../browser/scheduler/browser_task_queues_unittest.cc",
     "../browser/scheduler/browser_ui_thread_scheduler_unittest.cc",
     "../browser/scheduler/responsiveness/calculator_unittest.cc",
     "../browser/scheduler/responsiveness/watcher_unittest.cc",

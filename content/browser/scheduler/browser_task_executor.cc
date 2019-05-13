@@ -12,6 +12,7 @@
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/browser_thread_impl.h"
+#include "content/browser/scheduler/browser_task_queues.h"
 #include "content/browser/scheduler/browser_ui_thread_scheduler.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -23,7 +24,7 @@
 namespace content {
 namespace {
 
-using QueueType = content::BrowserUIThreadTaskQueue::QueueType;
+using QueueType = content::BrowserTaskQueues::QueueType;
 
 // |g_browser_task_executor| is intentionally leaked on shutdown.
 BrowserTaskExecutor* g_browser_task_executor = nullptr;
@@ -157,7 +158,8 @@ scoped_refptr<AfterStartupTaskRunner> GetAfterStartupTaskRunnerForThreadImpl(
 
 BrowserTaskExecutor::BrowserTaskExecutor(
     std::unique_ptr<BrowserUIThreadScheduler> browser_ui_thread_scheduler)
-    : browser_ui_thread_scheduler_(std::move(browser_ui_thread_scheduler)) {}
+    : browser_ui_thread_scheduler_(std::move(browser_ui_thread_scheduler)),
+      browser_ui_thread_handle_(browser_ui_thread_scheduler_->GetHandle()) {}
 
 BrowserTaskExecutor::~BrowserTaskExecutor() = default;
 
@@ -190,7 +192,8 @@ void BrowserTaskExecutor::CreateWithBrowserUIThreadSchedulerForTesting(
 // static
 void BrowserTaskExecutor::PostFeatureListSetup() {
   DCHECK(g_browser_task_executor);
-  g_browser_task_executor->browser_ui_thread_scheduler_->PostFeatureListSetup();
+  g_browser_task_executor->browser_ui_thread_handle_
+      .PostFeatureListInitializationSetup();
 }
 
 // static
@@ -199,15 +202,14 @@ void BrowserTaskExecutor::Shutdown() {
     return;
 
   DCHECK(g_browser_task_executor->browser_ui_thread_scheduler_);
-  // We don't delete either |g_browser_task_executor| or the
-  // BrowserUIThreadScheduler it owns because other threads may PostTask or call
-  // BrowserTaskExecutor::GetTaskRunner while we're tearing things down. We
-  // don't want to add locks so we just leak instead of dealing with that.
-  // For similar reasons we don't need to call
+  // We don't delete either |g_browser_task_executor| because other threads may
+  // PostTask or call BrowserTaskExecutor::GetTaskRunner while we're tearing
+  // things down. We don't want to add locks so we just leak instead of dealing
+  // with that. For similar reasons we don't need to call
   // PostTaskAndroid::SignalNativeSchedulerShutdown on Android. In tests however
   // we need to clean up, so BrowserTaskExecutor::ResetForTesting should be
   // called.
-  g_browser_task_executor->browser_ui_thread_scheduler_->Shutdown();
+  g_browser_task_executor->browser_ui_thread_scheduler_.reset();
 }
 
 // static
@@ -232,29 +234,27 @@ void BrowserTaskExecutor::ResetForTesting() {
 void BrowserTaskExecutor::RunAllPendingTasksOnThreadForTesting(
     BrowserThread::ID identifier) {
   DCHECK(g_browser_task_executor);
-  DCHECK(g_browser_task_executor->browser_ui_thread_scheduler_);
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
 
   switch (identifier) {
     case BrowserThread::UI:
-      g_browser_task_executor->browser_ui_thread_scheduler_
-          ->RunAllPendingTasksForTesting();
+      g_browser_task_executor->browser_ui_thread_handle_
+          .ScheduleRunAllPendingTasksForTesting(run_loop.QuitClosure());
       break;
 
-    case BrowserThread::IO: {
+    case BrowserThread::IO:
       // TODO(https://crbug/863341): Do something more clever once we have a
       // scheduler
-      base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
       base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
                                run_loop.QuitClosure());
-      run_loop.Run();
       break;
-    }
 
     case BrowserThread::ID_COUNT:
       NOTREACHED();
       break;
   }
+  run_loop.Run();
 }
 
 bool BrowserTaskExecutor::PostDelayedTaskWithTraits(
@@ -328,13 +328,13 @@ scoped_refptr<base::SingleThreadTaskRunner> BrowserTaskExecutor::GetTaskRunner(
   switch (task_type) {
     case BrowserTaskType::kBootstrap:
       // Note we currently ignore the priority for bootstrap tasks.
-      return browser_ui_thread_scheduler_->GetTaskRunner(QueueType::kBootstrap);
+      return browser_ui_thread_handle_.task_runner(QueueType::kBootstrap);
 
     case BrowserTaskType::kNavigation:
     case BrowserTaskType::kPreconnect:
       // Note we currently ignore the priority for navigation and preconnection
       // tasks.
-      return browser_ui_thread_scheduler_->GetTaskRunner(
+      return browser_ui_thread_handle_.task_runner(
           QueueType::kNavigationAndPreconnection);
 
     case BrowserTaskType::kDefault:
@@ -347,15 +347,13 @@ scoped_refptr<base::SingleThreadTaskRunner> BrowserTaskExecutor::GetTaskRunner(
 
   switch (traits.priority()) {
     case base::TaskPriority::BEST_EFFORT:
-      return browser_ui_thread_scheduler_->GetTaskRunner(
-          QueueType::kBestEffort);
+      return browser_ui_thread_handle_.task_runner(QueueType::kBestEffort);
 
     case base::TaskPriority::USER_VISIBLE:
-      return browser_ui_thread_scheduler_->GetTaskRunner(QueueType::kDefault);
+      return browser_ui_thread_handle_.task_runner(QueueType::kDefault);
 
     case base::TaskPriority::USER_BLOCKING:
-      return browser_ui_thread_scheduler_->GetTaskRunner(
-          QueueType::kUserBlocking);
+      return browser_ui_thread_handle_.task_runner(QueueType::kUserBlocking);
   }
 }
 
@@ -374,8 +372,7 @@ BrowserTaskExecutor::GetAfterStartupTaskRunnerForThread(BrowserThread::ID id) {
 // static
 void BrowserTaskExecutor::EnableBestEffortQueues() {
   DCHECK(g_browser_task_executor);
-  g_browser_task_executor->browser_ui_thread_scheduler_
-      ->EnableBestEffortQueues();
+  g_browser_task_executor->browser_ui_thread_handle_.EnableBestEffortQueues();
 }
 
 }  // namespace content

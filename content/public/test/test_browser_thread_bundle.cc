@@ -91,7 +91,7 @@ void TestBrowserThreadBundle::Init() {
       BrowserUIThreadScheduler::CreateForTesting(sequence_manager(),
                                                  GetTimeDomain());
   scoped_refptr<base::SingleThreadTaskRunner> default_task_runner =
-      browser_ui_thread_scheduler->GetTaskRunnerForTesting(
+      browser_ui_thread_scheduler->GetHandle().task_runner(
           BrowserUIThreadScheduler::QueueType::kDefault);
   BrowserTaskExecutor::CreateWithBrowserUIThreadSchedulerForTesting(
       std::move(browser_ui_thread_scheduler));
@@ -119,6 +119,11 @@ void TestBrowserThreadBundle::Init() {
   // Consider startup complete such that after-startup-tasks always run in
   // the scope of the test they were posted from (http://crbug.com/732018).
   SetBrowserStartupIsCompleteForTesting();
+  // Some unittests check the number of pending tasks, which will include the
+  // one that enables the best effort queues, so run everything pending before
+  // we hand control over to the test.
+  // TODO(carlscab): Maybe find a better way to not expose control tasks
+  BrowserTaskExecutor::RunAllPendingTasksOnThreadForTesting(BrowserThread::UI);
 }
 
 void TestBrowserThreadBundle::RunIOThreadUntilIdle() {

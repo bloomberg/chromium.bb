@@ -10,7 +10,7 @@
 #include "base/containers/flat_map.h"
 #include "base/message_loop/message_loop.h"
 #include "base/task/sequence_manager/task_queue.h"
-#include "content/browser/scheduler/browser_ui_thread_task_queue.h"
+#include "content/browser/scheduler/browser_task_queues.h"
 #include "content/common/content_export.h"
 
 namespace base {
@@ -27,6 +27,8 @@ class BrowserTaskExecutor;
 // implement scheduling policy. This class is never deleted in production.
 class CONTENT_EXPORT BrowserUIThreadScheduler {
  public:
+  using Handle = BrowserTaskQueues::Handle;
+
   BrowserUIThreadScheduler();
   ~BrowserUIThreadScheduler();
 
@@ -35,25 +37,9 @@ class CONTENT_EXPORT BrowserUIThreadScheduler {
       base::sequence_manager::SequenceManager* sequence_manager,
       base::sequence_manager::TimeDomain* time_domain);
 
-  // Initializes any scheduler experiments.
-  void PostFeatureListSetup();
+  using QueueType = BrowserTaskQueues::QueueType;
 
-  // Releases the scheduler although GetTaskRunner() continues to operate
-  // however no tasks will be executed after this point.
-  void Shutdown();
-
-  void EnableBestEffortQueues();
-
-  using QueueType = BrowserUIThreadTaskQueue::QueueType;
-
-  // Can be called from any thread.
-  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunnerForTesting(
-      QueueType queue_type);
-
-  // Adds a fence to all queues, runs all tasks until idle, and finally removes
-  // the fences. Note that the run loop will eventually become idle, as new
-  // tasks will not be scheduled due to the fence.
-  void RunAllPendingTasksForTesting();
+  Handle GetHandle() const { return handle_; }
 
  private:
   friend class BrowserTaskExecutor;
@@ -62,36 +48,16 @@ class CONTENT_EXPORT BrowserUIThreadScheduler {
       base::sequence_manager::SequenceManager* sequence_manager,
       base::sequence_manager::TimeDomain* time_domain);
 
-  // Note this will be called before the FeatureList has been initialized.
-  void InitialiseTaskQueues();
-
-  // Creates all well known task queues (BrowserUIThreadTaskQueue::QueueType).
-  void CreateTaskQueuesAndRunners();
-
-  void InitialiseBestEffortQueue();
-
-  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(
-      QueueType queue_type);
+  void CommonSequenceManagerSetup(
+      base::sequence_manager::SequenceManager* sequence_manager);
 
   // In production the BrowserUIThreadScheduler will own its SequenceManager,
   // but in tests it may not.
   std::unique_ptr<base::sequence_manager::SequenceManager>
       owned_sequence_manager_;
 
-  base::sequence_manager::SequenceManager* sequence_manager_;
-  base::sequence_manager::TimeDomain* time_domain_;
-
-  // The |task_queues_| and |task_runners_| are eagerly constructed and are
-  // immutable after InitialiseTaskQueues() has run. If we ever change that e.g.
-  // for per-frame scheduling then we will need to protect this with a lock.
-  // NB |task_runners_| outlive the SequenceManager, but |task_queues_| do not.
-  base::flat_map<QueueType, scoped_refptr<BrowserUIThreadTaskQueue>>
-      task_queues_;
-  base::flat_map<QueueType, scoped_refptr<base::SingleThreadTaskRunner>>
-      task_runners_;
-
-  std::unique_ptr<base::sequence_manager::TaskQueue::QueueEnabledVoter>
-      best_effort_voter_;
+  BrowserTaskQueues task_queues_;
+  Handle handle_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserUIThreadScheduler);
 };

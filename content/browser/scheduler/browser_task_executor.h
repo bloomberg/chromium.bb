@@ -11,6 +11,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/task/task_executor.h"
 #include "build/build_config.h"
+#include "content/browser/scheduler/browser_ui_thread_scheduler.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -18,7 +19,6 @@
 namespace content {
 
 class BrowserTaskExecutorTest;
-class BrowserUIThreadScheduler;
 
 // This class's job is to map base::TaskTraits to actual task queues for the
 // browser process.
@@ -112,6 +112,7 @@ class CONTENT_EXPORT BrowserTaskExecutor : public base::TaskExecutor {
   GetAfterStartupTaskRunnerForThread(BrowserThread::ID id);
 
   std::unique_ptr<BrowserUIThreadScheduler> browser_ui_thread_scheduler_;
+  BrowserUIThreadScheduler::Handle browser_ui_thread_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserTaskExecutor);
 };
