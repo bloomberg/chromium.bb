@@ -10,12 +10,12 @@ from core import benchmark_finders
 _SHARD_MAP_DIR = os.path.join(os.path.dirname(__file__), 'shard_maps')
 
 
-_ALL_TELEMETRY_BENCHMARKS_BY_NAMES= dict(
+_ALL_BENCHMARKS_BY_NAMES= dict(
     (b.Name(), b) for b in benchmark_finders.GetAllBenchmarks())
 
 
-_ALL_PERF_WATERFALL_TELEMETRY_BENCHMARKS = frozenset(
-    benchmark_finders.GetAllPerfBenchmarks())
+_OFFICIAL_BENCHMARKS = frozenset(
+    benchmark_finders.GetOfficialBenchmarks())
 
 
 def _IsPlatformSupported(benchmark, platform):
@@ -38,10 +38,10 @@ class PerfPlatform(object):
     if benchmarks_names_to_run:
       benchmarks = []
       for benchmark_name in benchmarks_names_to_run:
-        benchmarks.append(_ALL_TELEMETRY_BENCHMARKS_BY_NAMES[benchmark_name])
+        benchmarks.append(_ALL_BENCHMARKS_BY_NAMES[benchmark_name])
       benchmarks_to_run = frozenset(benchmarks)
     else:
-      benchmarks_to_run = _ALL_PERF_WATERFALL_TELEMETRY_BENCHMARKS
+      benchmarks_to_run = _OFFICIAL_BENCHMARKS
     platform = self._sort_key.split(' ', 1)[0]
     self._benchmarks_to_run = frozenset([
         b for b in benchmarks_to_run if _IsPlatformSupported(b, platform)])
@@ -203,12 +203,12 @@ ALL_PLATFORMS = {
     p for p in locals().values() if isinstance(p, PerfPlatform)
 }
 
-ALL_PERF_FYI_PLATFORMS = {
+FYI_PLATFORMS = {
     p for p in ALL_PLATFORMS if p.is_fyi
 }
 
 
-ALL_PERF_PLATFORMS = {
+OFFICIAL_PLATFORMS = {
     p for p in ALL_PLATFORMS if not p.is_fyi
 }
 
@@ -218,6 +218,6 @@ ALL_PLATFORM_NAMES = {
 }
 
 
-ALL_PERF_PLATFORM_NAMES = {
-    p.name for p in ALL_PERF_PLATFORMS
+OFFICIAL_PLATFORM_NAMES = {
+    p.name for p in OFFICIAL_PLATFORMS
 }

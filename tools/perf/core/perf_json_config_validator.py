@@ -161,14 +161,14 @@ def ValidatePerfConfigFile(file_handle, is_main_perf_waterfall):
     else:
       raise ValueError('%s has unrecognizable type: %s' % key)
   if (is_main_perf_waterfall and
-      perf_testing_builder_names != bot_platforms.ALL_PERF_PLATFORM_NAMES):
+      perf_testing_builder_names != bot_platforms.OFFICIAL_PLATFORM_NAMES):
     raise ValueError(
         'Found mismatches between actual perf waterfall builders and platforms '
         'in core.bot_platforms. Please update the platforms in '
         'bot_platforms.py.\nPlatforms should be aded to core.bot_platforms:%s'
         '\nPlatforms should be removed from core.bot_platforms:%s' % (
-          perf_testing_builder_names - bot_platforms.ALL_PERF_PLATFORM_NAMES,
-          bot_platforms.ALL_PERF_PLATFORM_NAMES - perf_testing_builder_names))
+          perf_testing_builder_names - bot_platforms.OFFICIAL_PLATFORM_NAMES,
+          bot_platforms.OFFICIAL_PLATFORM_NAMES - perf_testing_builder_names))
 
 
 def main(args):

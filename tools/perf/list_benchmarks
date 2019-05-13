@@ -28,7 +28,7 @@ def main(args):
   if options.include_contrib:
     benchmarks = benchmark_finders.GetAllBenchmarks()
   else:
-    benchmarks = benchmark_finders.GetAllPerfBenchmarks()
+    benchmarks = benchmark_finders.GetOfficialBenchmarks()
 
   for b in benchmarks:
     print '{:<60}'.format(b.Name())

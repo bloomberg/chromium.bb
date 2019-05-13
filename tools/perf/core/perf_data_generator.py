@@ -791,7 +791,7 @@ NON_WATERFALL_BENCHMARKS = {
 
 def _get_telemetry_perf_benchmarks_metadata():
   metadata = {}
-  benchmark_list = benchmark_finders.GetAllPerfBenchmarks()
+  benchmark_list = benchmark_finders.GetOfficialBenchmarks()
 
   for benchmark in benchmark_list:
     emails = decorators.GetEmails(benchmark)

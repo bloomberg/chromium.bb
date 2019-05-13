@@ -34,11 +34,11 @@ def GetPerfStorySetsDir():
   return os.path.join(GetPerfDir(), 'page_sets')
 
 
-def GetPerfBenchmarksDir():
+def GetOfficialBenchmarksDir():
   return os.path.join(GetPerfDir(), 'benchmarks')
 
 
-def GetPerfContribDir():
+def GetContribDir():
   return os.path.join(GetPerfDir(), 'contrib')
 
 

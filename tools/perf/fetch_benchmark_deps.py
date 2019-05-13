@@ -128,7 +128,7 @@ def main(args):
       raw_input(
           'No benchmark name is specified. Fetching all benchmark deps. '
           'Press enter to continue...')
-    for b in benchmark_finders.GetAllPerfBenchmarks():
+    for b in benchmark_finders.GetOfficialBenchmarks():
       deps[b.Name()] = _FetchDepsForBenchmark(b)
 
   if options.output_deps:
