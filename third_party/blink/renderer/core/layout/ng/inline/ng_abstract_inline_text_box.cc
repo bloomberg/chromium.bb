@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_abstract_inline_text_box.h"
 
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
@@ -68,12 +69,6 @@ void NGAbstractInlineTextBox::Detach() {
   fragment_ = nullptr;
 }
 
-bool NGAbstractInlineTextBox::HasSoftWrapToNextLine() const {
-  return To<NGPhysicalLineBoxFragment>(
-             fragment_->ContainerLineBox()->PhysicalFragment())
-      .HasSoftWrapToNextLine();
-}
-
 const NGPhysicalTextFragment& NGAbstractInlineTextBox::PhysicalTextFragment()
     const {
   return To<NGPhysicalTextFragment>(fragment_->PhysicalFragment());
@@ -84,13 +79,22 @@ bool NGAbstractInlineTextBox::NeedsLayout() const {
 }
 
 bool NGAbstractInlineTextBox::NeedsTrailingSpace() const {
-  if (!HasSoftWrapToNextLine())
+  if (!fragment_->Style().CollapseWhiteSpace())
     return false;
-  const NGPaintFragment* next_fragment = NextTextFragmentForSameLayoutObject();
-  if (!next_fragment)
+  const NGPaintFragment& line_box = *fragment_->ContainerLineBox();
+  if (!To<NGPhysicalLineBoxFragment>(line_box.PhysicalFragment())
+           .HasSoftWrapToNextLine())
     return false;
-  return To<NGPhysicalTextFragment>(next_fragment->PhysicalFragment())
-             .StartOffset() != PhysicalTextFragment().EndOffset();
+  const NGPhysicalTextFragment& text_fragment = PhysicalTextFragment();
+  if (text_fragment.EndOffset() >= text_fragment.TextContent().length())
+    return false;
+  if (text_fragment.TextContent()[text_fragment.EndOffset()] != ' ')
+    return false;
+  const NGInlineBreakToken& break_token =
+      *To<NGInlineBreakToken>(line_box.PhysicalFragment().BreakToken());
+  // TODO(yosin): We should support OOF fragments between |fragment_| and
+  // break token.
+  return break_token.TextOffset() == text_fragment.EndOffset() + 1;
 }
 
 const NGPaintFragment*
