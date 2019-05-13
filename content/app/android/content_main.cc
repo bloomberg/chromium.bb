@@ -57,4 +57,9 @@ void SetContentMainDelegate(ContentMainDelegate* delegate) {
   g_content_main_delegate.Get().reset(delegate);
 }
 
+ContentMainDelegate* GetContentMainDelegateForTesting() {
+  DCHECK(g_content_main_delegate.Get().get());
+  return g_content_main_delegate.Get().get();
+}
+
 }  // namespace content

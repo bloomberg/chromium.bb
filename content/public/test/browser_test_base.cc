@@ -58,6 +58,18 @@
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_switches.h"
 
+#if defined(OS_ANDROID)
+#include "content/app/mojo/mojo_init.h"
+#include "content/common/url_schemes.h"
+#include "content/public/app/content_main_delegate.h"
+#include "content/public/common/content_paths.h"
+#include "ui/base/ui_base_paths.h"
+
+#ifdef V8_USE_EXTERNAL_STARTUP_DATA
+#include "gin/v8_initializer.h"
+#endif
+#endif
+
 #if defined(OS_MACOSX)
 #include "ui/events/test/event_generator.h"
 #include "ui/views/test/event_generator_delegate_mac.h"
@@ -330,17 +342,65 @@ void BrowserTestBase::SetUp() {
           &BrowserTestBase::CreatedBrowserMainParts, base::Unretained(this)));
 
 #if defined(OS_ANDROID)
-  MainFunctionParams params(*command_line);
-  params.ui_task = ui_task.release();
-  params.created_main_parts_closure = created_main_parts_closure.release();
-  base::ThreadPool::Create("Browser");
-  DCHECK(!field_trial_list_);
-  field_trial_list_ = SetUpFieldTrialsAndFeatureList();
-  StartBrowserThreadPool();
-  BrowserTaskExecutor::Create();
-  BrowserTaskExecutor::PostFeatureListSetup();
-  // TODO(phajdan.jr): Check return code, http://crbug.com/374738 .
-  BrowserMain(params);
+  // For all other platforms, we call ContentMain for browser tests which goes
+  // through the normal browser initialization paths. For Android, we must set
+  // things up manually. A meager re-implementation of ContentMainRunnerImpl
+  // follows.
+
+  base::i18n::AllowMultipleInitializeCallsForTesting();
+  base::i18n::InitializeICU();
+
+#ifdef V8_USE_EXTERNAL_STARTUP_DATA
+  gin::V8Initializer::LoadV8Snapshot();
+  gin::V8Initializer::LoadV8Natives();
+#endif
+
+  ContentMainDelegate* delegate = GetContentMainDelegateForTesting();
+  // The delegate should have been set by JNI_OnLoad for the test target.
+  DCHECK(delegate);
+
+  bool startup_error = delegate->BasicStartupComplete(/*exit_code=*/nullptr);
+  DCHECK(!startup_error);
+
+  InitializeMojo();
+
+  {
+    SetBrowserClientForTesting(delegate->CreateContentBrowserClient());
+    if (command_line->HasSwitch(switches::kSingleProcess))
+      SetRendererClientForTesting(delegate->CreateContentRendererClient());
+
+    content::RegisterPathProvider();
+    content::RegisterContentSchemes(false);
+    ui::RegisterPathProvider();
+
+    delegate->PreSandboxStartup();
+
+    DCHECK(!field_trial_list_);
+    if (delegate->ShouldCreateFeatureList()) {
+      field_trial_list_ = SetUpFieldTrialsAndFeatureList();
+      delegate->PostFieldTrialInitialization();
+    }
+
+    base::ThreadPool::Create("Browser");
+
+    delegate->PreCreateMainMessageLoop();
+    BrowserTaskExecutor::Create();
+    delegate->PostEarlyInitialization(/*is_running_tests=*/true);
+
+    StartBrowserThreadPool();
+    BrowserTaskExecutor::PostFeatureListSetup();
+    delegate->PostTaskSchedulerStart();
+  }
+
+  // Run BrowserMain which ContentMain would normally run.
+  {
+    MainFunctionParams params(*command_line);
+    params.ui_task = ui_task.release();
+    params.created_main_parts_closure = created_main_parts_closure.release();
+    int exit_code = BrowserMain(params);
+    DCHECK_EQ(exit_code, 0);
+  }
+
   BrowserTaskExecutor::ResetForTesting();
 #else
   GetContentMainParams()->ui_task = ui_task.release();

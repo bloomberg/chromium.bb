@@ -140,6 +140,7 @@ class CONTENT_EXPORT ContentMainDelegate {
 
  protected:
   friend class ContentClientInitializer;
+  friend class BrowserTestBase;
 
   // Called once per relevant process type to allow the embedder to customize
   // content. If an embedder wants the default (empty) implementation, don't

@@ -22,10 +22,6 @@
 #include "content/test/test_content_client.h"
 #include "ui/events/platform/platform_event_source.h"
 
-#if defined(OS_ANDROID)
-#include "content/shell/app/shell_main_delegate.h"
-#endif
-
 #if defined(OS_MACOSX)
 #include "base/mac/foundation_util.h"
 #endif
@@ -66,21 +62,7 @@ void ContentBrowserTest::SetUp() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   SetUpCommandLine(command_line);
 
-#if defined(OS_ANDROID)
-  shell_main_delegate_.reset(new ShellMainDelegate);
-  shell_main_delegate_->PreSandboxStartup();
-  if (command_line->HasSwitch(switches::kSingleProcess)) {
-    // We explicitly leak the new ContentRendererClient as we're
-    // setting a global that may be used after ContentBrowserTest is
-    // destroyed.
-    ContentRendererClient* old_client =
-        switches::IsRunWebTestsSwitchPresent()
-            ? SetRendererClientForTesting(new WebTestContentRendererClient)
-            : SetRendererClientForTesting(new ShellContentRendererClient);
-    // No-one should have set this value before we did.
-    DCHECK(!old_client);
-  }
-#elif defined(OS_MACOSX)
+#if defined(OS_MACOSX)
   // See InProcessBrowserTest::PrepareTestCommandLine().
   base::FilePath subprocess_path;
   base::PathService::Get(base::FILE_EXE, &subprocess_path);
@@ -115,10 +97,6 @@ void ContentBrowserTest::TearDown() {
   // LinuxInputMethodContextFactory has to be shutdown.
 #if !defined(OS_CHROMEOS) && defined(OS_LINUX)
   ui::ShutdownInputMethodForTesting();
-#endif
-
-#if defined(OS_ANDROID)
-  shell_main_delegate_.reset();
 #endif
 }
 
