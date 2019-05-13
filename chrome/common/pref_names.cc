@@ -2226,6 +2226,9 @@ const char kMediaGalleriesRememberedGalleries[] =
 
 #if defined(OS_CHROMEOS)
 const char kPolicyPinnedLauncherApps[] = "policy_pinned_launcher_apps";
+// Keeps names of rolled default pin layouts for shelf in order not to apply
+// this twice. Names are separated by comma.
+const char kShelfDefaultPinLayoutRolls[] = "shelf_default_pin_layout_rolls";
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN)
