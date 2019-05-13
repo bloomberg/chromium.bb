@@ -277,10 +277,6 @@ jumbo_static_library("renderer") {
     sources += [
       "extensions/app_hooks_delegate.cc",
       "extensions/app_hooks_delegate.h",
-      "extensions/automation_ax_tree_wrapper.cc",
-      "extensions/automation_ax_tree_wrapper.h",
-      "extensions/automation_internal_custom_bindings.cc",
-      "extensions/automation_internal_custom_bindings.h",
       "extensions/chrome_extensions_dispatcher_delegate.cc",
       "extensions/chrome_extensions_dispatcher_delegate.h",
       "extensions/chrome_extensions_renderer_client.cc",
@@ -327,7 +323,6 @@ jumbo_static_library("renderer") {
       "media/cast_transport_ipc.h",
       "media/cast_udp_transport.cc",
       "media/cast_udp_transport.h",
-      "resources/extensions/automation_custom_bindings.js",
       "resources/extensions/browser_action_custom_bindings.js",
       "resources/extensions/declarative_content_custom_bindings.js",
       "resources/extensions/enterprise_platform_keys_custom_bindings.js",

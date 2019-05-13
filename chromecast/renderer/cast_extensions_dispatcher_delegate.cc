@@ -8,7 +8,6 @@
 
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
-#include "chromecast/renderer/extensions/automation_internal_custom_bindings.h"
 #include "chromecast/renderer/extensions/extension_hooks_delegate.h"
 #include "chromecast/renderer/extensions/tabs_hooks_delegate.h"
 #include "chromecast/renderer/grit/extensions_renderer_resources.h"
@@ -39,21 +38,15 @@
 
 using extensions::NativeHandler;
 
-CastExtensionsDispatcherDelegate::CastExtensionsDispatcherDelegate() {
-}
+CastExtensionsDispatcherDelegate::CastExtensionsDispatcherDelegate() {}
 
-CastExtensionsDispatcherDelegate::~CastExtensionsDispatcherDelegate() {
-}
+CastExtensionsDispatcherDelegate::~CastExtensionsDispatcherDelegate() {}
 
 void CastExtensionsDispatcherDelegate::RegisterNativeHandlers(
     extensions::Dispatcher* dispatcher,
     extensions::ModuleSystem* module_system,
     extensions::NativeExtensionBindingsSystem* bindings_system,
     extensions::ScriptContext* context) {
-  module_system->RegisterNativeHandler(
-      "automationInternal",
-      std::make_unique<extensions::cast::AutomationInternalCustomBindings>(
-          context, bindings_system));
   module_system->RegisterNativeHandler(
       "lazy_background_page",
       std::make_unique<extensions::LazyBackgroundPageNativeHandler>(context));
@@ -62,9 +55,6 @@ void CastExtensionsDispatcherDelegate::RegisterNativeHandlers(
 void CastExtensionsDispatcherDelegate::PopulateSourceMap(
     extensions::ResourceBundleSourceMap* source_map) {
   // Custom bindings.
-  source_map->RegisterSource("automation", IDR_AUTOMATION_CUSTOM_BINDINGS_JS);
-  source_map->RegisterSource("automationEvent", IDR_AUTOMATION_EVENT_JS);
-  source_map->RegisterSource("automationNode", IDR_AUTOMATION_NODE_JS);
   source_map->RegisterSource("tts", IDR_TTS_CUSTOM_BINDINGS_JS);
 }
 

@@ -13,7 +13,6 @@
 #include "chrome/common/crash_keys.h"
 #include "chrome/grit/renderer_resources.h"
 #include "chrome/renderer/extensions/app_hooks_delegate.h"
-#include "chrome/renderer/extensions/automation_internal_custom_bindings.h"
 #include "chrome/renderer/extensions/cast_streaming_native_handler.h"
 #include "chrome/renderer/extensions/extension_hooks_delegate.h"
 #include "chrome/renderer/extensions/media_galleries_custom_bindings.h"
@@ -52,11 +51,9 @@
 
 using extensions::NativeHandler;
 
-ChromeExtensionsDispatcherDelegate::ChromeExtensionsDispatcherDelegate() {
-}
+ChromeExtensionsDispatcherDelegate::ChromeExtensionsDispatcherDelegate() {}
 
-ChromeExtensionsDispatcherDelegate::~ChromeExtensionsDispatcherDelegate() {
-}
+ChromeExtensionsDispatcherDelegate::~ChromeExtensionsDispatcherDelegate() {}
 
 void ChromeExtensionsDispatcherDelegate::RegisterNativeHandlers(
     extensions::Dispatcher* dispatcher,
@@ -96,10 +93,6 @@ void ChromeExtensionsDispatcherDelegate::RegisterNativeHandlers(
       "cast_streaming_natives",
       std::make_unique<extensions::CastStreamingNativeHandler>(
           context, bindings_system));
-  module_system->RegisterNativeHandler(
-      "automationInternal",
-      std::make_unique<extensions::AutomationInternalCustomBindings>(
-          context, bindings_system));
 
   // The following are native handlers that are defined in //extensions, but
   // are only used for APIs defined in Chrome.
@@ -118,9 +111,6 @@ void ChromeExtensionsDispatcherDelegate::RegisterNativeHandlers(
 void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
     extensions::ResourceBundleSourceMap* source_map) {
   // Custom bindings.
-  source_map->RegisterSource("automation", IDR_AUTOMATION_CUSTOM_BINDINGS_JS);
-  source_map->RegisterSource("automationEvent", IDR_AUTOMATION_EVENT_JS);
-  source_map->RegisterSource("automationNode", IDR_AUTOMATION_NODE_JS);
   source_map->RegisterSource("browserAction",
                              IDR_BROWSER_ACTION_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("declarativeContent",

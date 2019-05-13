@@ -53,6 +53,7 @@
 #include "extensions/common/switches.h"
 #include "extensions/common/view_type.h"
 #include "extensions/grit/extensions_renderer_resources.h"
+#include "extensions/renderer/api/automation/automation_internal_custom_bindings.h"
 #include "extensions/renderer/api_activity_logger.h"
 #include "extensions/renderer/api_definitions_natives.h"
 #include "extensions/renderer/app_window_custom_bindings.h"
@@ -688,6 +689,9 @@ std::vector<Dispatcher::JsResourceInfo> Dispatcher::GetJsResources() {
       {"extensions/common/mojo/keep_alive.mojom", IDR_KEEP_ALIVE_MOJOM_JS},
 
       // Custom bindings.
+      {"automation", IDR_AUTOMATION_CUSTOM_BINDINGS_JS},
+      {"automationEvent", IDR_AUTOMATION_EVENT_JS},
+      {"automationNode", IDR_AUTOMATION_NODE_JS},
       {"app.runtime", IDR_APP_RUNTIME_CUSTOM_BINDINGS_JS},
       {"app.window", IDR_APP_WINDOW_CUSTOM_BINDINGS_JS},
       {"declarativeWebRequest", IDR_DECLARATIVE_WEBREQUEST_CUSTOM_BINDINGS_JS},
@@ -784,6 +788,10 @@ void Dispatcher::RegisterNativeHandlers(
   module_system->RegisterNativeHandler(
       "display_source",
       std::make_unique<DisplaySourceCustomBindings>(context, bindings_system));
+  module_system->RegisterNativeHandler(
+      "automationInternal",
+      std::make_unique<extensions::AutomationInternalCustomBindings>(
+          context, bindings_system));
 }
 
 bool Dispatcher::OnControlMessageReceived(const IPC::Message& message) {
