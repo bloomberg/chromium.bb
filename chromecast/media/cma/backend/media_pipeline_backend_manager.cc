@@ -63,7 +63,7 @@ MediaPipelineBackendManager::MediaPipelineBackendManager(
                                   {AudioContentType::kCommunication, 1.0f},
                                   {AudioContentType::kOther, 1.0f}},
                                  base::KEEP_FIRST_OF_DUPES),
-      active_backend_wrapper_(nullptr),
+      backend_wrapper_using_video_decoder_(nullptr),
       buffer_delegate_(nullptr),
       weak_factory_(this) {
   DCHECK(media_task_runner_);
@@ -85,26 +85,28 @@ MediaPipelineBackendManager::~MediaPipelineBackendManager() {
 std::unique_ptr<CmaBackend> MediaPipelineBackendManager::CreateCmaBackend(
     const media::MediaPipelineDeviceParams& params) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
-
-  // TODO(guohuideng): Because we now allow multiple CmaBackends to exist,
-  // we can no longer revoke |active_backend_wrapper_| here unconditionally.
-  // We will need to only revoke the old |backend_wrapper| if it has active
-  // video decoder and it has a different |session_id| within its
-  // MediaPipelineDeviceParams.
-
-  std::unique_ptr<MediaPipelineBackendWrapper> backend_wrapper =
-      std::make_unique<MediaPipelineBackendWrapper>(params, this);
-
-  active_backend_wrapper_ = backend_wrapper.get();
-  return backend_wrapper;
+  return std::make_unique<MediaPipelineBackendWrapper>(params, this);
 }
 
 void MediaPipelineBackendManager::BackendDestroyed(
     MediaPipelineBackendWrapper* backend_wrapper) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
-  if (active_backend_wrapper_ == backend_wrapper) {
-    active_backend_wrapper_ = nullptr;
+  if (backend_wrapper_using_video_decoder_ == backend_wrapper) {
+    backend_wrapper_using_video_decoder_ = nullptr;
   }
+}
+
+void MediaPipelineBackendManager::BackendUseVideoDecoder(
+    MediaPipelineBackendWrapper* backend_wrapper) {
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
+  DCHECK(backend_wrapper);
+  if (backend_wrapper_using_video_decoder_ &&
+      backend_wrapper_using_video_decoder_ != backend_wrapper) {
+    LOG(INFO) << __func__ << " revoke old backend : "
+              << backend_wrapper_using_video_decoder_;
+    backend_wrapper_using_video_decoder_->Revoke();
+  }
+  backend_wrapper_using_video_decoder_ = backend_wrapper;
 }
 
 bool MediaPipelineBackendManager::IncrementDecoderCount(DecoderType type) {
