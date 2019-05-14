@@ -82,9 +82,6 @@ extern const char kAutomaticPasswordGenerationDescription[];
 extern const char kEnableBloatedRendererDetectionName[];
 extern const char kEnableBloatedRendererDetectionDescription[];
 
-extern const char kAsyncImageDecodingName[];
-extern const char kAsyncImageDecodingDescription[];
-
 extern const char kAutofillAlwaysShowServerCardsInSyncTransportName[];
 extern const char kAutofillAlwaysShowServerCardsInSyncTransportDescription[];
 

@@ -94,10 +94,6 @@ const char kEnableBloatedRendererDetectionName[] = "Bloated renderer detection";
 const char kEnableBloatedRendererDetectionDescription[] =
     "Enable bloated renderer detection";
 
-const char kAsyncImageDecodingName[] = "AsyncImageDecoding";
-const char kAsyncImageDecodingDescription[] =
-    "Enables asynchronous decoding of images from raster for web content";
-
 extern const char kAutofillAlwaysShowServerCardsInSyncTransportName[] =
     "AlwaysShowServerCardsInSyncTransport";
 extern const char kAutofillAlwaysShowServerCardsInSyncTransportDescription[] =

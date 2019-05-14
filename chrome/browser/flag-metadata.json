@@ -769,11 +769,6 @@
     "expiry_milestone": 81
   },
   {
-    "name": "enable-async-image-decoding",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-audio-focus-enforcement",
     "owners": [ "beccahughes", "media-dev" ],
     "expiry_milestone": 76

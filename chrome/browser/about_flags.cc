@@ -757,12 +757,6 @@ const FeatureEntry::FeatureVariation kOmniboxUIVerticalMarginVariations[] = {
      base::size(kOmniboxUIVerticalMargin10px), nullptr},
 };
 
-const FeatureEntry::Choice kAsyncImageDecodingChoices[] = {
-    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
-    {flags_ui::kGenericExperimentChoiceDisabled,
-     cc::switches::kDisableCheckerImaging, ""},
-};
-
 const FeatureEntry::FeatureParam kMarkHttpAsDangerous[] = {
     {security_state::features::kMarkHttpAsFeatureParameterName,
      security_state::features::kMarkHttpAsParameterDangerous}};
@@ -2627,10 +2621,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxSpareRendererDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kOmniboxSpareRenderer)},
 #endif
-
-    {"enable-async-image-decoding", flag_descriptions::kAsyncImageDecodingName,
-     flag_descriptions::kAsyncImageDecodingDescription, kOsAll,
-     MULTI_VALUE_TYPE(kAsyncImageDecodingChoices)},
 
 #if defined(OS_CHROMEOS)
     {"double-tap-to-zoom-in-tablet-mode",
