@@ -8,6 +8,7 @@
 
 #include "ui/views/controls/menu/menu_runner_handler.h"
 #include "ui/views/controls/menu/menu_runner_impl.h"
+#include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
@@ -33,6 +34,13 @@ void MenuRunner::RunMenuAt(Widget* parent,
                            const gfx::Rect& bounds,
                            MenuAnchorPosition anchor,
                            ui::MenuSourceType source_type) {
+  // Do not attempt to show the menu if the application is currently shutting
+  // down. MenuDelegate::OnMenuClosed would not be called.
+  if (ViewsDelegate::GetInstance() &&
+      ViewsDelegate::GetInstance()->IsShuttingDown()) {
+    return;
+  }
+
   // If we are shown on mouse press, we will eat the subsequent mouse down and
   // the parent widget will not be able to reset its state (it might have mouse
   // capture from the mouse down). So we clear its state here.

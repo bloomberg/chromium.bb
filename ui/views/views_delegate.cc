@@ -96,6 +96,10 @@ NonClientFrameView* ViewsDelegate::CreateDefaultNonClientFrameView(
   return nullptr;
 }
 
+bool ViewsDelegate::IsShuttingDown() const {
+  return false;
+}
+
 void ViewsDelegate::AddRef() {}
 
 void ViewsDelegate::ReleaseRef() {}

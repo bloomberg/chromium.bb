@@ -9,6 +9,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_window_state.h"
+#include "components/keep_alive_registry/keep_alive_registry.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "components/prefs/pref_service.h"
@@ -130,6 +131,10 @@ bool ChromeViewsDelegate::GetSavedWindowPlacement(
   AdjustSavedWindowPlacementChromeOS(widget, bounds);
 #endif
   return true;
+}
+
+bool ChromeViewsDelegate::IsShuttingDown() const {
+  return KeepAliveRegistry::GetInstance()->IsShuttingDown();
 }
 
 void ChromeViewsDelegate::AddRef() {

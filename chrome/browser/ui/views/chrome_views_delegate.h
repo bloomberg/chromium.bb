@@ -51,6 +51,7 @@ class ChromeViewsDelegate : public views::ViewsDelegate {
 
   void AddRef() override;
   void ReleaseRef() override;
+  bool IsShuttingDown() const override;
   void OnBeforeWidgetInit(
       views::Widget::InitParams* params,
       views::internal::NativeWidgetDelegate* delegate) override;

@@ -141,6 +141,9 @@ class VIEWS_EXPORT ViewsDelegate {
   // ensure we don't attempt to exit while a menu is showing.
   virtual void AddRef();
   virtual void ReleaseRef();
+  // Returns true if the application is shutting down. AddRef/Release should not
+  // be called in this situation.
+  virtual bool IsShuttingDown() const;
 
   // Gives the platform a chance to modify the properties of a Widget.
   virtual void OnBeforeWidgetInit(Widget::InitParams* params,
