@@ -24,7 +24,8 @@ mr.DialAnalytics.Metric = {
   DEVICE_DESCRIPTION_FROM_CACHE: 'MediaRouter.Dial.Device.Description.Cached',
   DIAL_CREATE_ROUTE: 'MediaRouter.Dial.CreateRoute',
   DIAL_TERMINATE_ROUTE: 'MediaRouter.Dial.TerminateRoute',
-  NON_CAST_DISCOVERY: 'MediaRouter.Dial.Sink.Discovered.NonCast'
+  NON_CAST_DISCOVERY: 'MediaRouter.Dial.Sink.Discovered.NonCast',
+  PARSE_MESSAGE: 'MediaRouter.Dial.ParseMessage'
 };
 
 
@@ -59,6 +60,14 @@ mr.DialAnalytics.DeviceDescriptionFailures = {
   ERROR: 0,
   PARSE: 1,
   EMPTY: 2
+};
+
+
+/** @enum {number} */
+mr.DialAnalytics.DialParseMessageResult = {
+  SUCCESS: 0,
+  PARSE_ERROR: 1,
+  INVALID_MESSAGE: 2
 };
 
 
@@ -107,6 +116,14 @@ mr.DialAnalytics.recordDeviceDescriptionFromCache = function() {
  */
 mr.DialAnalytics.recordNonCastDiscovery = function() {
   mr.Analytics.recordEvent(mr.DialAnalytics.Metric.NON_CAST_DISCOVERY);
+};
+
+
+/** @param {!mr.DialAnalytics.DialParseMessageResult} value */
+mr.DialAnalytics.recordParseMessageResult = function(value) {
+  mr.Analytics.recordEnum(
+      mr.DialAnalytics.Metric.PARSE_MESSAGE, value,
+      mr.DialAnalytics.DialParseMessageResult);
 };
 
 
