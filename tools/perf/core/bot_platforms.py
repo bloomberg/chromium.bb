@@ -9,14 +9,11 @@ from core import benchmark_finders
 
 _SHARD_MAP_DIR = os.path.join(os.path.dirname(__file__), 'shard_maps')
 
-
 _ALL_BENCHMARKS_BY_NAMES= dict(
     (b.Name(), b) for b in benchmark_finders.GetAllBenchmarks())
 
-
 _OFFICIAL_BENCHMARKS = frozenset(
     benchmark_finders.GetOfficialBenchmarks())
-
 
 def _IsPlatformSupported(benchmark, platform):
     supported = benchmark.GetSupportedPlatformNames(
@@ -24,10 +21,9 @@ def _IsPlatformSupported(benchmark, platform):
     return 'all' in supported or platform in supported
 
 
-# TODO(crbug.com/937715): Give this class and this file more meaningful names.
 class PerfPlatform(object):
-  def __init__(self, name, description, is_fyi=False,
-               benchmarks_names_to_run=None, num_shards=None):
+  def __init__(self, name, description, benchmark_names,
+               is_fyi=False, num_shards=None):
     self._name = name
     self._description = description
     # For sorting ignore case and "segments" in the bot name.
@@ -35,16 +31,15 @@ class PerfPlatform(object):
     self._is_fyi = is_fyi
     assert num_shards
     self._num_shards = num_shards
-    if benchmarks_names_to_run:
-      benchmarks = []
-      for benchmark_name in benchmarks_names_to_run:
-        benchmarks.append(_ALL_BENCHMARKS_BY_NAMES[benchmark_name])
-      benchmarks_to_run = frozenset(benchmarks)
-    else:
-      benchmarks_to_run = _OFFICIAL_BENCHMARKS
+    benchmarks = []
+    for benchmark_name in benchmark_names:
+      benchmarks.append(_ALL_BENCHMARKS_BY_NAMES[benchmark_name])
+    benchmarks_to_run = frozenset(benchmarks)
     platform = self._sort_key.split(' ', 1)[0]
+    # pylint: disable=redefined-outer-name
     self._benchmarks_to_run = frozenset([
         b for b in benchmarks_to_run if _IsPlatformSupported(b, platform)])
+    # pylint: enable=redefined-outer-name
 
     base_file_name = name.replace(' ', '_').lower()
     self._timing_file_path = os.path.join(
@@ -96,50 +91,11 @@ class PerfPlatform(object):
     return ('https://ci.chromium.org/p/chrome/builders/luci.chrome.ci/%s' %
              urllib.quote(self._name))
 
-# Linux
-LINUX = PerfPlatform(
-    'linux-perf', 'Ubuntu-14.04, 8 core, NVIDIA Quadro P400',
-    num_shards=26)
 
-# Mac
-MAC_HIGH_END = PerfPlatform(
-    'mac-10_13_laptop_high_end-perf',
-    'MacBook Pro, Core i7 2.8 GHz, 16GB RAM, 256GB SSD, Radeon 55',
-    num_shards=26)
+_OFFICIAL_BENCHMARK_NAMES = frozenset(
+    [b.Name() for b in _OFFICIAL_BENCHMARKS])
 
-MAC_LOW_END = PerfPlatform(
-    'mac-10_12_laptop_low_end-perf',
-    'MacBook Air, Core i5 1.8 GHz, 8GB RAM, 128GB SSD, HD Graphics',
-    num_shards=26)
-
-# Win
-WIN_10 = PerfPlatform(
-    'win-10-perf',
-    'Windows Intel HD 630 towers, Core i7-7700 3.6 GHz, 16GB RAM,'
-    ' Intel Kaby Lake HD Graphics 630',
-    num_shards=26)
-
-WIN_7 = PerfPlatform(
-    'Win 7 Perf', 'N/A',
-    num_shards=5)
-
-WIN_7_GPU = PerfPlatform(
-    'Win 7 Nvidia GPU Perf', 'N/A',
-    num_shards=5)
-
-# Android
-
-ANDROID_ARM_BUILDER = PerfPlatform(
-    'android-builder-perf',
-    'Static analysis of 32-bit ARM Android build products',
-    num_shards=1)
-
-ANDROID_ARM64_BUILDER = PerfPlatform(
-    'android_arm64-builder-perf',
-    'Static analysis of 64-bit ARM Android build products.',
-    num_shards=1)
-
-_ANDROID_GO_BENCHMARK_NAMES = {
+_ANDROID_GO_BENCHMARK_NAMES = frozenset([
     'memory.top_10_mobile',
     'system_health.memory_mobile',
     'system_health.common_mobile',
@@ -148,56 +104,96 @@ _ANDROID_GO_BENCHMARK_NAMES = {
     'system_health.webview_startup',
     'v8.browsing_mobile',
     'speedometer',
-    'speedometer2'
-}
+    'speedometer2'])
+
+_ANDROID_NEXUS5X_FYI_BENCHMARK_NAMES = frozenset([
+    'heap_profiling.mobile.disabled',
+    'heap_profiling.mobile.native',
+    'heap_profiling.mobile.pseudo'])
+
+# Linux
+LINUX = PerfPlatform(
+    'linux-perf', 'Ubuntu-14.04, 8 core, NVIDIA Quadro P400',
+    _OFFICIAL_BENCHMARK_NAMES, num_shards=26)
+
+# Mac
+MAC_HIGH_END = PerfPlatform(
+    'mac-10_13_laptop_high_end-perf',
+    'MacBook Pro, Core i7 2.8 GHz, 16GB RAM, 256GB SSD, Radeon 55',
+    _OFFICIAL_BENCHMARK_NAMES, num_shards=26)
+
+MAC_LOW_END = PerfPlatform(
+    'mac-10_12_laptop_low_end-perf',
+    'MacBook Air, Core i5 1.8 GHz, 8GB RAM, 128GB SSD, HD Graphics',
+    _OFFICIAL_BENCHMARK_NAMES, num_shards=26)
+
+# Win
+WIN_10 = PerfPlatform(
+    'win-10-perf',
+    'Windows Intel HD 630 towers, Core i7-7700 3.6 GHz, 16GB RAM,'
+    ' Intel Kaby Lake HD Graphics 630', _OFFICIAL_BENCHMARK_NAMES,
+    num_shards=26)
+
+WIN_7 = PerfPlatform(
+    'Win 7 Perf', 'N/A', _OFFICIAL_BENCHMARK_NAMES,
+    num_shards=5)
+
+WIN_7_GPU = PerfPlatform(
+    'Win 7 Nvidia GPU Perf', 'N/A', _OFFICIAL_BENCHMARK_NAMES,
+    num_shards=5)
+
+# Android
+ANDROID_ARM_BUILDER = PerfPlatform(
+    'android-builder-perf',
+    'Static analysis of 32-bit ARM Android build products',
+    _OFFICIAL_BENCHMARK_NAMES, num_shards=1)
+
+ANDROID_ARM64_BUILDER = PerfPlatform(
+    'android_arm64-builder-perf',
+    'Static analysis of 64-bit ARM Android build products.',
+    _OFFICIAL_BENCHMARK_NAMES, num_shards=1)
 
 ANDROID_GO = PerfPlatform(
-    'android-go-perf', 'Android O (gobo)',
-    num_shards=19,
-    benchmarks_names_to_run=_ANDROID_GO_BENCHMARK_NAMES)
+    'android-go-perf', 'Android O (gobo)', _ANDROID_GO_BENCHMARK_NAMES,
+    num_shards=19)
 
 ANDROID_GO_WEBVIEW = PerfPlatform(
     'android-go_webview-perf', 'Android OPM1.171019.021 (gobo)',
-    num_shards=25, benchmarks_names_to_run=_ANDROID_GO_BENCHMARK_NAMES)
+    _ANDROID_GO_BENCHMARK_NAMES, num_shards=25)
 
 ANDROID_NEXUS_5 = PerfPlatform(
-    'Android Nexus5 Perf', 'Android KOT49H',
+    'Android Nexus5 Perf', 'Android KOT49H', _OFFICIAL_BENCHMARK_NAMES,
     num_shards=16)
 
 ANDROID_NEXUS_5X = PerfPlatform(
-    'android-nexus5x-perf', 'Android MMB29Q',
+    'android-nexus5x-perf', 'Android MMB29Q', _OFFICIAL_BENCHMARK_NAMES,
     num_shards=16)
 
 ANDROID_NEXUS_5X_WEBVIEW = PerfPlatform(
     'Android Nexus5X WebView Perf', 'Android AOSP MOB30K',
-    num_shards=16)
-
+    _OFFICIAL_BENCHMARK_NAMES, num_shards=16)
 
 ANDROID_NEXUS_6_WEBVIEW = PerfPlatform(
     'Android Nexus6 WebView Perf', 'Android AOSP MOB30K',
+    _OFFICIAL_BENCHMARK_NAMES,
     num_shards=12)  # Reduced from 16 per crbug.com/891848.
-
 
 # FYI bots
 ANDROID_PIXEL2 = PerfPlatform(
-    'android-pixel2-perf', 'Android OPM1.171019.021', is_fyi=True,
-    num_shards=7)
+    'android-pixel2-perf', 'Android OPM1.171019.021',
+    _OFFICIAL_BENCHMARK_NAMES, num_shards=7, is_fyi=True)
 
 ANDROID_PIXEL2_WEBVIEW = PerfPlatform(
-    'android-pixel2_webview-perf', 'Android OPM1.171019.021', is_fyi=True,
-    num_shards=7)
+    'android-pixel2_webview-perf', 'Android OPM1.171019.021',
+    _OFFICIAL_BENCHMARK_NAMES, num_shards=7, is_fyi=True)
 
 ANDROID_NEXUS5X_PERF_FYI =  PerfPlatform(
-    'android-nexus5x-perf-fyi', 'Android MMB29Q', is_fyi=True,
-    num_shards=3, benchmarks_names_to_run={
-      'heap_profiling.mobile.disabled',
-      'heap_profiling.mobile.native',
-      'heap_profiling.mobile.pseudo',
-    })
+    'android-nexus5x-perf-fyi', 'Android MMB29Q',
+    _ANDROID_NEXUS5X_FYI_BENCHMARK_NAMES,
+    num_shards=3, is_fyi=True)
 
 # TODO(crbug.com/902089): Add linux-perf-fyi once the bot is configured to use
 # the sharding map.
-
 
 ALL_PLATFORMS = {
     p for p in locals().values() if isinstance(p, PerfPlatform)
@@ -207,16 +203,13 @@ FYI_PLATFORMS = {
     p for p in ALL_PLATFORMS if p.is_fyi
 }
 
-
 OFFICIAL_PLATFORMS = {
     p for p in ALL_PLATFORMS if not p.is_fyi
 }
 
-
 ALL_PLATFORM_NAMES = {
     p.name for p in ALL_PLATFORMS
 }
-
 
 OFFICIAL_PLATFORM_NAMES = {
     p.name for p in OFFICIAL_PLATFORMS
