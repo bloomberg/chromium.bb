@@ -47,7 +47,17 @@ TEST_F(ServiceDirectoryTest, ConnectDisconnect) {
   run_loop.Run();
 }
 
-// Verifies that we can connect to the service service more than once.
+// Verify that we can connect to a service through both "public" and "svc".
+TEST_F(ServiceDirectoryTest, ConnectNewAndLegacyServices) {
+  auto stub = public_service_directory_client_
+                  ->ConnectToService<testfidl::TestInterface>();
+  auto stub2 = legacy_public_service_directory_client_
+                   ->ConnectToService<testfidl::TestInterface>();
+  VerifyTestInterface(&stub, ZX_OK);
+  VerifyTestInterface(&stub2, ZX_OK);
+}
+
+// Verify that we can connect to the same service more than once.
 TEST_F(ServiceDirectoryTest, ConnectMulti) {
   auto stub = public_service_directory_client_
                   ->ConnectToService<testfidl::TestInterface>();

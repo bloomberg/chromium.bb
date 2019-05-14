@@ -22,13 +22,23 @@ ServiceDirectoryTestBase::ServiceDirectoryTestBase() {
       std::make_unique<ScopedServiceBinding<testfidl::TestInterface>>(
           service_directory_.get(), &test_service_);
 
-  // Create the ServiceDirectoryClient, connected to the "public" sub-directory.
+  // Create the ServiceDirectoryClient, connected to the "svc" sub-directory.
+  fidl::InterfaceHandle<::fuchsia::io::Directory> svc_directory;
+  CHECK_EQ(fdio_service_connect_at(
+               directory.channel().get(), "/svc/.",
+               svc_directory.NewRequest().TakeChannel().release()),
+           ZX_OK);
+  public_service_directory_client_ =
+      std::make_unique<ServiceDirectoryClient>(std::move(svc_directory));
+
+  // Create the ServiceDirectoryClient, connected to the "public" sub-directory
+  // (same contents as "svc", provided for compatibility).
   fidl::InterfaceHandle<::fuchsia::io::Directory> public_directory;
   CHECK_EQ(fdio_service_connect_at(
                directory.channel().get(), "/public/.",
                public_directory.NewRequest().TakeChannel().release()),
            ZX_OK);
-  public_service_directory_client_ =
+  legacy_public_service_directory_client_ =
       std::make_unique<ServiceDirectoryClient>(std::move(public_directory));
 
   // Create a ServiceDirectoryClient for the "private" part of the directory.

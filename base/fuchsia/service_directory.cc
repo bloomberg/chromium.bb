@@ -60,9 +60,15 @@ void ServiceDirectory::AddServiceUnsafe(
   std::string name_str = name.as_string();
   services_[name_str] = connect_callback;
 
+  // Publish to "svc".
   zx_status_t status =
-      svc_dir_add_service(svc_dir_, "public", name_str.c_str(), this,
+      svc_dir_add_service(svc_dir_, "svc", name_str.c_str(), this,
                           &ServiceDirectory::HandleConnectRequest);
+  ZX_DCHECK(status == ZX_OK, status);
+
+  // Publish to "public" for compatibility.
+  status = svc_dir_add_service(svc_dir_, "public", name_str.c_str(), this,
+                               &ServiceDirectory::HandleConnectRequest);
   ZX_DCHECK(status == ZX_OK, status);
 
   // Publish to the legacy "flat" namespace, which is required by some clients.
@@ -81,11 +87,12 @@ void ServiceDirectory::RemoveService(StringPiece name) {
   DCHECK(it != services_.end());
   services_.erase(it);
 
+  // Unregister from "svc", "public", and flat namespace.
   zx_status_t status =
-      svc_dir_remove_service(svc_dir_, "public", name_str.c_str());
+      svc_dir_remove_service(svc_dir_, "svc", name_str.c_str());
   ZX_DCHECK(status == ZX_OK, status);
-
-  // Unregister from the legacy "flat" namespace.
+  status = svc_dir_remove_service(svc_dir_, "public", name_str.c_str());
+  ZX_DCHECK(status == ZX_OK, status);
   status = svc_dir_remove_service(svc_dir_, nullptr, name_str.c_str());
   ZX_DCHECK(status == ZX_OK, status);
 }
