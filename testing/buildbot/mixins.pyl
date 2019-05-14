@@ -281,7 +281,7 @@
       'dimensions': {
         # Defined in bot_config.py in internal infradata/config workspace
         'gpu': 'nvidia-quadro-p400-ubuntu-stable',
-        'os': 'Ubuntu',
+        'os': 'Ubuntu-14.04',
         'pool': 'Chrome-GPU',
       }
     }
