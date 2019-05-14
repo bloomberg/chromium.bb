@@ -71,8 +71,6 @@ constexpr int kOOBEWindowWidth = 768;
 constexpr int kOOBEWindowHeight = 640 - 48;
 constexpr int kLinuxIllustrationWidth = 448;
 constexpr int kLinuxIllustrationHeight = 180;
-constexpr base::FilePath::CharType kHomeDirectory[] =
-    FILE_PATH_LITERAL("/home");
 
 constexpr char kCrostiniSetupResultHistogram[] = "Crostini.SetupResult";
 constexpr char kCrostiniSetupSourceHistogram[] = "Crostini.SetupSource";
@@ -147,7 +145,7 @@ void CrostiniInstallerView::Show(Profile* profile) {
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&base::SysInfo::AmountOfFreeDiskSpace,
-                     base::FilePath(kHomeDirectory)),
+                     base::FilePath(crostini::kHomeDirectory)),
       base::BindOnce(
           &CrostiniInstallerView::OnAvailableDiskSpace,
           g_crostini_installer_view->weak_ptr_factory_.GetWeakPtr()));

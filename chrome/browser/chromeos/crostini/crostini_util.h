@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/files/file_path.h"
 #include "base/optional.h"
 #include "ui/base/resource/scale_factor.h"
 
@@ -149,6 +150,8 @@ constexpr char kCrostiniFolderId[] = "ddolnhmblagmcagkedkbfejapapdimlk";
 constexpr char kCrostiniDefaultImageServerUrl[] =
     "https://storage.googleapis.com/cros-containers/%d";
 constexpr char kCrostiniDefaultImageAlias[] = "debian/stretch";
+constexpr base::FilePath::CharType kHomeDirectory[] =
+    FILE_PATH_LITERAL("/home");
 
 // Whether running Crostini is allowed for unaffiliated users per enterprise
 // policy.

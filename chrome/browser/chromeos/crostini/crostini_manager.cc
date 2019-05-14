@@ -65,8 +65,6 @@
 namespace crostini {
 
 namespace {
-constexpr base::FilePath::CharType kHomeDirectory[] =
-    FILE_PATH_LITERAL("/home");
 const char kSeparator[] = "--";
 
 chromeos::CiceroneClient* GetCiceroneClient() {
