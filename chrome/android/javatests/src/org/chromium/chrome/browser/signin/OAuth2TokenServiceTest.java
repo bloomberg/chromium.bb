@@ -15,6 +15,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.AdvancedMockContext;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.signin.AccountManagerFacade;
@@ -93,6 +94,7 @@ public class OAuth2TokenServiceTest {
     @Test
     @SmallTest
     @Feature({"Sync"})
+    @DisabledTest(message = "https://crbug.com/962976")
     public void testGetOAuth2AccessTokenWithTimeoutOnSuccess() {
         String authToken = "someToken";
         // Auth token should be successfully received.
@@ -102,6 +104,7 @@ public class OAuth2TokenServiceTest {
     @Test
     @SmallTest
     @Feature({"Sync"})
+    @DisabledTest(message = "https://crbug.com/962976")
     public void testGetOAuth2AccessTokenWithTimeoutOnError() {
         String authToken = null;
         // Should not crash when auth token is null.
