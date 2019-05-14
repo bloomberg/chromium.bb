@@ -454,7 +454,8 @@ ANDROID_WATERFALL = """\
         'swarming': {
           'dimension_sets': [
             {
-              'device_os': 'KTU84P',
+              'device_os': 'LMY41U',
+              'device_os_type': 'user',
               'device_type': 'hammerhead',
             },
           ],
@@ -1487,6 +1488,7 @@ ANDROID_WATERFALL_OUTPUT = """\
           "dimension_sets": [
             {
               "device_os": "KTU84P",
+              "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "integrity": "high"
             }
@@ -1530,7 +1532,8 @@ ANDROID_WATERFALL_OUTPUT = """\
           ],
           "dimension_sets": [
             {
-              "device_os": "KTU84P",
+              "device_os": "LMY41U",
+              "device_os_type": "user",
               "device_type": "hammerhead",
               "integrity": "high"
             }
@@ -3245,7 +3248,8 @@ TEST_QUERY_BOTS_OUTPUT = {
           ],
           "dimension_sets":[
             {
-              "device_os": "KTU84P",
+              "device_os": "LMY41U",
+              "device_os_type": "user",
               "device_type": "hammerhead"
             }
           ],
@@ -3279,6 +3283,7 @@ TEST_QUERY_BOTS_OUTPUT = {
           "dimension_sets": [
             {
               "device_os": "KTU84P",
+              "device_os_type": "userdebug",
               "device_type": "hammerhead"
             }
           ],
@@ -3333,7 +3338,8 @@ TEST_QUERY_BOTS_TESTS_OUTPUT = {
         ],
         "dimension_sets": [
           {
-            "device_os": "KTU84P",
+            "device_os": "LMY41U",
+            "device_os_type": "user",
             "device_type": "hammerhead"
           }
         ],
@@ -3364,6 +3370,7 @@ TEST_QUERY_BOTS_TESTS_OUTPUT = {
         "dimension_sets": [
           {
             "device_os": "KTU84P",
+            "device_os_type": "userdebug",
             "device_type": "hammerhead"
           }
         ],
@@ -3407,6 +3414,7 @@ TEST_QUERY_BOT_OUTPUT = {
         "dimension_sets": [
           {
             "device_os": "KTU84P",
+          "device_os_type": "userdebug",
             "device_type": "hammerhead"
           }
         ],
@@ -3445,7 +3453,8 @@ TEST_QUERY_BOT_TESTS_OUTPUT = [
       ],
       "dimension_sets": [
         {
-          "device_os": "KTU84P",
+          "device_os": "LMY41U",
+          "device_os_type": "user",
           "device_type": "hammerhead"
         }
       ],

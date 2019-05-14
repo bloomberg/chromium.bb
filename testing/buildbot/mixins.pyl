@@ -183,6 +183,7 @@
     # NVIDIA SHIELD TV
     'swarming': {
       'dimensions': {
+        'device_os_type': 'user',
         'device_type': 'foster',
         'os': 'Android',
       },

@@ -440,6 +440,13 @@ class BBJSONGenerator(object):
       test = self.dictionary_merge(test, modifications)
     if 'swarming' in test:
       self.clean_swarming_dictionary(test['swarming'])
+    # Ensure all Android Swarming tests run only on userdebug builds if another
+    # build type was not specified.
+    if 'swarming' in test and self.is_android(tester_config):
+      for d in test['swarming'].get('dimension_sets', []):
+        if not d.get('device_os_type'):
+          d['device_os_type'] = 'userdebug'
+
     return test
 
   def add_common_test_properties(self, test, tester_config):
