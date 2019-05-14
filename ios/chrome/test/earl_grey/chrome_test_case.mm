@@ -16,7 +16,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/signin/core/browser/signin_switches.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
-#include "ios/chrome/test/app/settings_test_util.h"
 #include "ios/chrome/test/app/signin_test_util.h"
 #import "ios/chrome/test/app/sync_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
@@ -168,7 +167,8 @@ const CFTimeInterval kDrainTimeout = 5;
   // ensure the UI is in a clean state.
   [self removeAnyOpenMenusAndInfoBars];
   [self closeAllTabs];
-  chrome_test_util::SetContentSettingsBlockPopups(CONTENT_SETTING_DEFAULT);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey setContentSettings:CONTENT_SETTING_DEFAULT]);
 
   [CoverageUtils configureCoverageReportPath];
 }

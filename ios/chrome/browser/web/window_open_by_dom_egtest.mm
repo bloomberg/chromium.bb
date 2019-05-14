@@ -12,7 +12,6 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
-#include "ios/chrome/test/app/settings_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/app/web_view_interaction_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -60,12 +59,14 @@ id<GREYMatcher> PopupBlocker() {
 
 + (void)setUp {
   [super setUp];
-  chrome_test_util::SetContentSettingsBlockPopups(CONTENT_SETTING_ALLOW);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey setContentSettings:CONTENT_SETTING_ALLOW]);
   web::test::SetUpFileBasedHttpServer();
 }
 
 + (void)tearDown {
-  chrome_test_util::SetContentSettingsBlockPopups(CONTENT_SETTING_DEFAULT);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey setContentSettings:CONTENT_SETTING_DEFAULT]);
   [super tearDown];
 }
 
@@ -122,7 +123,8 @@ id<GREYMatcher> PopupBlocker() {
 
 // Tests executing script that clicks a link with target="_blank".
 - (void)testLinkWithBlankTargetWithoutUserGesture {
-  chrome_test_util::SetContentSettingsBlockPopups(CONTENT_SETTING_BLOCK);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey setContentSettings:CONTENT_SETTING_BLOCK]);
   NSError* error = nil;
   ExecuteJavaScript(
       @"document.getElementById('webScenarioWindowOpenRegularLink').click()",
@@ -286,7 +288,8 @@ id<GREYMatcher> PopupBlocker() {
 // Tests that popup blocking works when a popup is injected into a window before
 // its initial load is committed.
 - (void)testBlockPopupInjectedIntoOpenedWindow {
-  chrome_test_util::SetContentSettingsBlockPopups(CONTENT_SETTING_BLOCK);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey setContentSettings:CONTENT_SETTING_BLOCK]);
   GREYAssert(TapWebViewElementWithId("webScenarioOpenWindowAndInjectPopup"),
              @"Failed to tap \"webScenarioOpenWindowAndInjectPopup\"");
   [[EarlGrey selectElementWithMatcher:PopupBlocker()]

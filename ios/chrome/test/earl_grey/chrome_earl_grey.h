@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#import "components/content_settings/core/common/content_settings.h"
 #include "url/gurl.h"
 
 @class ElementSelector;
@@ -152,6 +153,11 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // Waits for the matcher to return an element that is sufficiently visible.
 + (NSError*)waitForElementWithMatcherSufficientlyVisible:
     (id<GREYMatcher>)matcher WARN_UNUSED_RESULT;
+
+#pragma mark - Settings Utilities
+
+// Sets value for content setting.
++ (NSError*)setContentSettings:(ContentSetting)setting WARN_UNUSED_RESULT;
 
 @end
 

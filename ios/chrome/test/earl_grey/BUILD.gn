@@ -386,6 +386,7 @@ source_set("eg_test_support+eg2") {
   deps = [
     "//base",
     "//base/test:test_support",
+    "//components/content_settings/core/common:common",
     "//ios/testing:nserror_support",
     "//ios/testing/earl_grey:eg_test_support+eg2",
     "//ios/third_party/earl_grey2:test_lib",

@@ -15,7 +15,6 @@
 #import "base/test/ios/wait_util.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
-#import "ios/chrome/test/app/settings_test_util.h"
 #import "ios/chrome/test/app/web_view_interaction_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
@@ -310,7 +309,8 @@ void AssertURLIs(const GURL& expectedURL) {
       kPageHeightEM, javaScript.c_str());
 
   web::test::SetUpSimpleHttpServer(responses);
-  chrome_test_util::SetContentSettingsBlockPopups(CONTENT_SETTING_ALLOW);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey setContentSettings:CONTENT_SETTING_ALLOW]);
 
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
   CHROME_EG_ASSERT_NO_ERROR(
