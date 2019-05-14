@@ -9,9 +9,9 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/system/sys_info.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
+#include "chrome/browser/chromeos/scoped_set_running_on_chromeos_for_testing.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -28,14 +28,20 @@ class PluginVmFilesTest : public testing::Test {
 
   void SetUp() override {
     profile_ = std::make_unique<TestingProfile>();
-    base::SysInfo::SetChromeOSVersionInfoForTest(kLsbRelease, base::Time());
+    fake_release_ =
+        std::make_unique<chromeos::ScopedSetRunningOnChromeOSForTesting>(
+            kLsbRelease, base::Time());
   }
 
-  void TearDown() override { profile_.reset(); }
+  void TearDown() override {
+    fake_release_.reset();
+    profile_.reset();
+  }
 
  protected:
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<TestingProfile> profile_;
+  std::unique_ptr<chromeos::ScopedSetRunningOnChromeOSForTesting> fake_release_;
 };
 
 TEST_F(PluginVmFilesTest, DirNotExists) {
