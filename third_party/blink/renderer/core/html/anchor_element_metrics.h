@@ -32,6 +32,12 @@ class CORE_EXPORT AnchorElementMetrics {
   // elements and sends to the browser process.
   static void MaybeReportViewportMetricsOnLoad(Document& document);
 
+  // Called when OnLoad occurs. Subscribes |document|'s
+  // AnchorElementMetricsSender to document lifecycle events until the layout is
+  // clean. The sender is expected to call |MaybeReportViewportMetricsOnLoad()|
+  // one time.
+  static void NotifyOnLoad(Document& document);
+
   // Getters of anchor element features.
   float GetRatioArea() const { return ratio_area_; }
   float GetRatioVisibleArea() const { return ratio_visible_area_; }

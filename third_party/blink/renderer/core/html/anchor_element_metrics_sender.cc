@@ -120,4 +120,21 @@ AnchorElementMetricsSender::AnchorElementMetricsSender(Document& document)
   DCHECK(!document.ParentDocument());
 }
 
+void AnchorElementMetricsSender::DidFinishLifecycleUpdate(
+    const LocalFrameView& local_frame_view) {
+  // Check that layout is stable. If it is, we can perform the onload update and
+  // stop observing future events.
+  Document* document = local_frame_view.GetFrame().GetDocument();
+  if (document->Lifecycle().GetState() <
+      DocumentLifecycle::kAfterPerformLayout) {
+    return;
+  }
+
+  // Stop listening to updates, as the onload report can be sent now.
+  document->View()->UnregisterFromLifecycleNotifications(this);
+
+  // Send onload report.
+  AnchorElementMetrics::MaybeReportViewportMetricsOnLoad(*document);
+}
+
 }  // namespace blink
