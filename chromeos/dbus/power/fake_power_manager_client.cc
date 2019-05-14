@@ -53,6 +53,18 @@ power_manager::BacklightBrightnessChange_Cause RequestCauseToChangeCause(
   return power_manager::BacklightBrightnessChange_Cause_USER_REQUEST;
 }
 
+// Copied from Chrome's //base/time/time_now_posix.cc.
+// Returns count of |clk_id| in the form of a time delta. Returns an empty
+// time delta if |clk_id| isn't present on the system.
+base::TimeDelta ClockNow(clockid_t clk_id) {
+  struct timespec ts;
+  if (clock_gettime(clk_id, &ts) != 0) {
+    NOTREACHED() << "clock_gettime(" << clk_id << ") failed.";
+    return base::TimeDelta();
+  }
+  return base::TimeDelta::FromTimeSpec(ts);
+}
+
 }  // namespace
 
 // static
@@ -62,7 +74,7 @@ FakePowerManagerClient* FakePowerManagerClient::Get() {
 }
 
 FakePowerManagerClient::FakePowerManagerClient()
-    : props_(power_manager::PowerSupplyProperties()) {
+    : props_(power_manager::PowerSupplyProperties()), tick_clock_(nullptr) {
   CHECK(!g_instance);
   g_instance = this;
 
@@ -323,8 +335,13 @@ void FakePowerManagerClient::StartArcTimer(
   // Post task to write to |clock_id|'s expiration fd. This will simulate the
   // timer expiring to the caller. Ignore delaying by
   // |absolute_expiration_time| for test purposes.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&ArcTimerExpirationCallback, it->second.get()));
+  base::TimeTicks current_ticks = GetCurrentBootTime();
+  base::TimeDelta task_delay;
+  if (absolute_expiration_time > current_ticks)
+    task_delay = absolute_expiration_time - current_ticks;
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::BindOnce(&ArcTimerExpirationCallback, it->second.get()),
+      task_delay);
 }
 
 void FakePowerManagerClient::DeleteArcTimers(const std::string& tag,
@@ -457,6 +474,13 @@ bool FakePowerManagerClient::ApplyPendingScreenBrightnessChange() {
   screen_brightness_percent_ = change.percent();
   SendScreenBrightnessChanged(change);
   return true;
+}
+
+// Returns time ticks from boot including time ticks spent during sleeping.
+base::TimeTicks FakePowerManagerClient::GetCurrentBootTime() {
+  if (tick_clock_)
+    return tick_clock_->NowTicks();
+  return base::TimeTicks() + ClockNow(CLOCK_BOOTTIME);
 }
 
 }  // namespace chromeos

@@ -19,6 +19,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
+#include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/power_manager/backlight.pb.h"
@@ -175,6 +176,9 @@ class COMPONENT_EXPORT(DBUS_POWER) FakePowerManagerClient
   // return false if there are no pending brightness changes.
   bool ApplyPendingScreenBrightnessChange();
 
+  // Returns time ticks from boot including time ticks spent during sleeping.
+  base::TimeTicks GetCurrentBootTime();
+
   // Sets the screen brightness percent to be returned.
   // The nullopt |percent| means an error. In case of success,
   // |percent| must be in the range of [0, 100].
@@ -184,6 +188,11 @@ class COMPONENT_EXPORT(DBUS_POWER) FakePowerManagerClient
 
   void set_keyboard_brightness_percent(const base::Optional<double>& percent) {
     keyboard_brightness_percent_ = percent;
+  }
+
+  // Sets |tick_clock| to |tick_clock_|.
+  void set_tick_clock(const base::TickClock* tick_clock) {
+    tick_clock_ = tick_clock;
   }
 
  private:
@@ -278,6 +287,9 @@ class COMPONENT_EXPORT(DBUS_POWER) FakePowerManagerClient
 
   // If non-empty, called by NotifyUserActivity().
   base::RepeatingClosure user_activity_callback_;
+
+  // Clock to use to calculate time ticks. Used for ArcTimer related APIs.
+  const base::TickClock* tick_clock_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
