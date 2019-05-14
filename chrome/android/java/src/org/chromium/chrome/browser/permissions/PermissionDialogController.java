@@ -45,7 +45,7 @@ public class PermissionDialogController
         int REQUEST_ANDROID_PERMISSIONS = 5;
     }
 
-    private PermissionAppModalDialogView mAppModalDialogView;
+    private PropertyModel mDialogModel;
     private PermissionDialogDelegate mDialogDelegate;
     private ModalDialogManager mModalDialogManager;
 
@@ -189,9 +189,8 @@ public class PermissionDialogController
         }
 
         mModalDialogManager = mDialogDelegate.getTab().getActivity().getModalDialogManager();
-        mAppModalDialogView = new PermissionAppModalDialogView(this, mDialogDelegate);
-        mModalDialogManager.showDialog(
-                mAppModalDialogView.getDialogModel(), ModalDialogManager.ModalDialogType.TAB);
+        mDialogModel = PermissionDialogModel.getModel(this, mDialogDelegate);
+        mModalDialogManager.showDialog(mDialogModel, ModalDialogManager.ModalDialogType.TAB);
         mState = State.PROMPT_OPEN;
     }
 
@@ -202,8 +201,8 @@ public class PermissionDialogController
             // may be called after onClick and before onDismiss, or before both of those listeners.
             mDialogDelegate = null;
             if (mState == State.PROMPT_OPEN) {
-                mModalDialogManager.dismissDialog(mAppModalDialogView.getDialogModel(),
-                        DialogDismissalCause.DISMISSED_BY_NATIVE);
+                mModalDialogManager.dismissDialog(
+                        mDialogModel, DialogDismissalCause.DISMISSED_BY_NATIVE);
             } else {
                 assert mState == State.PROMPT_PENDING || mState == State.REQUEST_ANDROID_PERMISSIONS
                         || mState == State.PROMPT_DENIED || mState == State.PROMPT_ACCEPTED;
@@ -221,7 +220,7 @@ public class PermissionDialogController
         // call this handler after the primary/secondary handler.
         // When the dialog is dismissed, the delegate's native pointers are
         // freed, and the next queued dialog (if any) is displayed.
-        mAppModalDialogView = null;
+        mDialogModel = null;
         if (mDialogDelegate == null) {
             // We get into here if a tab navigates or is closed underneath the
             // prompt.
@@ -286,6 +285,6 @@ public class PermissionDialogController
 
     @VisibleForTesting
     public void clickButtonForTest(@ModalDialogProperties.ButtonType int buttonType) {
-        onClick(mAppModalDialogView.getDialogModel(), buttonType);
+        onClick(mDialogModel, buttonType);
     }
 }

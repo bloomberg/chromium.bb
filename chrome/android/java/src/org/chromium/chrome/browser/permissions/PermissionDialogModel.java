@@ -12,17 +12,21 @@ import android.view.View;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.touchless.TouchlessDelegate;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /**
- * The Permission dialog that is app modal.
+ * This class creates the model for permission dialog.
  */
-class PermissionAppModalDialogView {
-    private final PropertyModel mDialogModel;
-
-    PermissionAppModalDialogView(
+class PermissionDialogModel {
+    public static PropertyModel getModel(
             ModalDialogProperties.Controller controller, PermissionDialogDelegate delegate) {
+        if (FeatureUtilities.isNoTouchModeEnabled()) {
+            return TouchlessDelegate.getTouchlessPermissionDialogModel(controller, delegate);
+        }
+
         Context context = delegate.getTab().getActivity();
         LayoutInflater inflater = LayoutInflater.from(context);
         View customView = inflater.inflate(R.layout.permission_dialog, null);
@@ -35,23 +39,15 @@ class PermissionAppModalDialogView {
         TextViewCompat.setCompoundDrawablesRelativeWithIntrinsicBounds(
                 messageTextView, delegate.getDrawableId(), 0, 0, 0);
 
-        mDialogModel =
-                new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
-                        .with(ModalDialogProperties.CONTROLLER, controller)
-                        .with(ModalDialogProperties.CUSTOM_VIEW, customView)
-                        .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT,
-                                delegate.getPrimaryButtonText())
-                        .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT,
-                                delegate.getSecondaryButtonText())
-                        .with(ModalDialogProperties.CONTENT_DESCRIPTION, delegate.getMessageText())
-                        .with(ModalDialogProperties.FILTER_TOUCH_FOR_SECURITY, true)
-                        .build();
-    }
-
-    /**
-     * @return The dialog model for the permission dialog.
-     */
-    PropertyModel getDialogModel() {
-        return mDialogModel;
+        return new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
+                .with(ModalDialogProperties.CONTROLLER, controller)
+                .with(ModalDialogProperties.CUSTOM_VIEW, customView)
+                .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT,
+                        delegate.getPrimaryButtonText())
+                .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT,
+                        delegate.getSecondaryButtonText())
+                .with(ModalDialogProperties.CONTENT_DESCRIPTION, delegate.getMessageText())
+                .with(ModalDialogProperties.FILTER_TOUCH_FOR_SECURITY, true)
+                .build();
     }
 }
