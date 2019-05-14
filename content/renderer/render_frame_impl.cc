@@ -489,6 +489,12 @@ void FillNavigationParamsRequest(
   }
 
   navigation_params->was_discarded = commit_params.was_discarded;
+
+  if (!commit_params.prefetched_signed_exchanges.empty()) {
+    DCHECK(base::FeatureList::IsEnabled(
+        features::kSignedExchangeSubresourcePrefetch));
+    // TODO(crbug.com/935267): Pass the prefetched signed exchanges to Blink.
+  }
 #if defined(OS_ANDROID)
   navigation_params->had_transient_activation = common_params.has_user_gesture;
 #endif

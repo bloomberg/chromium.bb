@@ -209,6 +209,8 @@ source_set("common") {
     "possibly_associated_interface_ptr.h",
     "possibly_associated_interface_ptr_info.h",
     "possibly_associated_wrapper_shared_url_loader_factory.h",
+    "prefetched_signed_exchange_info.cc",
+    "prefetched_signed_exchange_info.h",
     "process_type.cc",
     "render_widget_surface_properties.cc",
     "render_widget_surface_properties.h",

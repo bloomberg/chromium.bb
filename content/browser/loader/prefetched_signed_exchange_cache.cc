@@ -208,15 +208,70 @@ class InnerResponseURLLoader : public network::mojom::URLLoader {
   DISALLOW_COPY_AND_ASSIGN(InnerResponseURLLoader);
 };
 
+// A URLLoaderFactory which handles a signed exchange subresource request from
+// renderer process.
+class SubresourceSignedExchangeURLLoaderFactory
+    : public network::mojom::URLLoaderFactory {
+ public:
+  SubresourceSignedExchangeURLLoaderFactory(
+      network::mojom::URLLoaderFactoryRequest request,
+      std::unique_ptr<const PrefetchedSignedExchangeCache::Entry> entry)
+      : entry_(std::move(entry)) {
+    bindings_.AddBinding(this, std::move(request));
+    bindings_.set_connection_error_handler(base::BindRepeating(
+        &SubresourceSignedExchangeURLLoaderFactory::OnConnectionError,
+        base::Unretained(this)));
+  }
+  ~SubresourceSignedExchangeURLLoaderFactory() override {}
+
+  // network::mojom::URLLoaderFactory implementation.
+  void CreateLoaderAndStart(network::mojom::URLLoaderRequest loader,
+                            int32_t routing_id,
+                            int32_t request_id,
+                            uint32_t options,
+                            const network::ResourceRequest& request,
+                            network::mojom::URLLoaderClientPtr client,
+                            const net::MutableNetworkTrafficAnnotationTag&
+                                traffic_annotation) override {
+    // TODO(crbug.com/935267): Implement CORS check.
+    DCHECK_EQ(request.url, entry_->inner_url());
+    mojo::MakeStrongBinding(
+        std::make_unique<InnerResponseURLLoader>(
+            *entry_->inner_response(),
+            std::make_unique<const storage::BlobDataHandle>(
+                *entry_->blob_data_handle()),
+            *entry_->completion_status(), std::move(client)),
+        std::move(loader));
+  }
+  void Clone(network::mojom::URLLoaderFactoryRequest request) override {
+    bindings_.AddBinding(this, std::move(request));
+  }
+
+ private:
+  void OnConnectionError() {
+    if (!bindings_.empty())
+      return;
+    delete this;
+  }
+
+  std::unique_ptr<const PrefetchedSignedExchangeCache::Entry> entry_;
+  mojo::BindingSet<network::mojom::URLLoaderFactory> bindings_;
+
+  DISALLOW_COPY_AND_ASSIGN(SubresourceSignedExchangeURLLoaderFactory);
+};
+
 // A NavigationLoaderInterceptor which handles a request which matches the
 // prefetched signed exchange that has been stored to a
 // PrefetchedSignedExchangeCache.
 class PrefetchedNavigationLoaderInterceptor
     : public NavigationLoaderInterceptor {
  public:
-  explicit PrefetchedNavigationLoaderInterceptor(
-      std::unique_ptr<const PrefetchedSignedExchangeCache::Entry> exchange)
-      : exchange_(std::move(exchange)), weak_factory_(this) {}
+  PrefetchedNavigationLoaderInterceptor(
+      std::unique_ptr<const PrefetchedSignedExchangeCache::Entry> exchange,
+      std::vector<PrefetchedSignedExchangeInfo> info_list)
+      : exchange_(std::move(exchange)),
+        info_list_(std::move(info_list)),
+        weak_factory_(this) {}
 
   ~PrefetchedNavigationLoaderInterceptor() override {}
 
@@ -229,15 +284,17 @@ class PrefetchedNavigationLoaderInterceptor
     // header (eg: HttpVaryData::MatchesRequest()) and Cache-Control header.
     // And also we shuold check the expires parameter of the signed exchange's
     // signature. TODO(crbug.com/935267): Implement these checking logic.
-    if (!outer_request_handled_ &&
+    if (state_ == State::kInitial &&
         tentative_resource_request.url == exchange_->outer_url()) {
-      outer_request_handled_ = true;
+      state_ = State::kOuterRequestRequested;
       std::move(callback).Run(base::BindOnce(
           &PrefetchedNavigationLoaderInterceptor::StartRedirectResponse,
           weak_factory_.GetWeakPtr()));
       return;
     }
     if (tentative_resource_request.url == exchange_->inner_url()) {
+      DCHECK_EQ(State::kOuterRequestRequested, state_);
+      state_ = State::kInnerResponseRequested;
       std::move(callback).Run(base::BindOnce(
           &PrefetchedNavigationLoaderInterceptor::StartInnerResponse,
           weak_factory_.GetWeakPtr()));
@@ -248,12 +305,21 @@ class PrefetchedNavigationLoaderInterceptor
 
   base::Optional<SubresourceLoaderParams> MaybeCreateSubresourceLoaderParams()
       override {
-    // TODO(crbug.com/935267): Implement this to pass the prefetched signed
-    // exchanges of subresources to the renderer process.
-    return base::nullopt;
+    if (state_ != State::kInnerResponseRequested)
+      return base::nullopt;
+
+    SubresourceLoaderParams params;
+    params.prefetched_signed_exchanges = std::move(info_list_);
+    return base::make_optional(std::move(params));
   }
 
  private:
+  enum class State {
+    kInitial,
+    kOuterRequestRequested,
+    kInnerResponseRequested
+  };
+
   void StartRedirectResponse(const network::ResourceRequest& resource_request,
                              network::mojom::URLLoaderRequest request,
                              network::mojom::URLLoaderClientPtr client) {
@@ -263,6 +329,7 @@ class PrefetchedNavigationLoaderInterceptor
             *exchange_->outer_response(), std::move(client)),
         std::move(request));
   }
+
   void StartInnerResponse(const network::ResourceRequest& resource_request,
                           network::mojom::URLLoaderRequest request,
                           network::mojom::URLLoaderClientPtr client) {
@@ -275,9 +342,9 @@ class PrefetchedNavigationLoaderInterceptor
         std::move(request));
   }
 
+  State state_ = State::kInitial;
   std::unique_ptr<const PrefetchedSignedExchangeCache::Entry> exchange_;
-
-  bool outer_request_handled_ = false;
+  std::vector<PrefetchedSignedExchangeInfo> info_list_;
 
   base::WeakPtrFactory<PrefetchedNavigationLoaderInterceptor> weak_factory_;
 
@@ -374,7 +441,24 @@ PrefetchedSignedExchangeCache::MaybeCreateInterceptor(const GURL& outer_url) {
   if (it == exchanges_.end())
     return nullptr;
   return std::make_unique<PrefetchedNavigationLoaderInterceptor>(
-      it->second->Clone());
+      it->second->Clone(), GetInfoList());
+}
+
+std::vector<PrefetchedSignedExchangeInfo>
+PrefetchedSignedExchangeCache::GetInfoList() const {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  std::vector<PrefetchedSignedExchangeInfo> info_list;
+
+  for (const auto& exchange : exchanges_) {
+    network::mojom::URLLoaderFactoryPtrInfo loader_factory_info;
+    new SubresourceSignedExchangeURLLoaderFactory(
+        mojo::MakeRequest(&loader_factory_info), exchange.second->Clone());
+    info_list.emplace_back(
+        exchange.second->outer_url(), *exchange.second->header_integrity(),
+        exchange.second->inner_url(), *exchange.second->inner_response(),
+        std::move(loader_factory_info).PassHandle().release());
+  }
+  return info_list;
 }
 
 }  // namespace content

@@ -9,6 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
+#include "content/common/prefetched_signed_exchange_info.h"
 #include "net/base/hash_value.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
@@ -108,6 +109,7 @@ class CONTENT_EXPORT PrefetchedSignedExchangeCache
   using EntryMap = std::map<GURL /* outer_url */, std::unique_ptr<const Entry>>;
 
   ~PrefetchedSignedExchangeCache();
+  std::vector<PrefetchedSignedExchangeInfo> GetInfoList() const;
 
   EntryMap exchanges_;
 

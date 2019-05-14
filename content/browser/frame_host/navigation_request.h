@@ -753,7 +753,8 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   base::Closure on_start_checks_complete_closure_;
 
   // Used in the network service world to pass the subressource loader params
-  // to the renderer. Used by AppCache and ServiceWorker.
+  // to the renderer. Used by AppCache and ServiceWorker, and
+  // SignedExchangeSubresourcePrefetch.
   base::Optional<SubresourceLoaderParams> subresource_loader_params_;
 
   // See comment on accessor.

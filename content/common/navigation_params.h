@@ -19,6 +19,7 @@
 #include "content/common/content_security_policy/content_security_policy.h"
 #include "content/common/content_security_policy/csp_disposition_enum.h"
 #include "content/common/frame_message_enums.h"
+#include "content/common/prefetched_signed_exchange_info.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/navigation_policy.h"
 #include "content/public/common/page_state.h"
@@ -331,6 +332,10 @@ struct CONTENT_EXPORT CommitNavigationParams {
   // TODO(clamy): Remove this once NavigationClient has shipped and
   // same-document browser-initiated navigations are properly handled as well.
   base::UnguessableToken navigation_token;
+
+  // Prefetched signed exchanges. Used when SignedExchangeSubresourcePrefetch
+  // feature is enabled.
+  std::vector<PrefetchedSignedExchangeInfo> prefetched_signed_exchanges;
 
 #if defined(OS_ANDROID)
   // The real content of the data: URL. Only used in Android WebView for

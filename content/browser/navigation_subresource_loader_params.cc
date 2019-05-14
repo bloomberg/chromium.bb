@@ -21,6 +21,7 @@ SubresourceLoaderParams& SubresourceLoaderParams::operator=(
       std::move(other.controller_service_worker_info);
   controller_service_worker_object_host =
       other.controller_service_worker_object_host;
+  prefetched_signed_exchanges = std::move(other.prefetched_signed_exchanges);
   return *this;
 }
 

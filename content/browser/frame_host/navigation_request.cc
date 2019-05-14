@@ -2037,6 +2037,13 @@ void NavigationRequest::CommitNavigation() {
         render_frame_host_->GetProcess()->GetID(),
         render_frame_host_->GetRoutingID(), &service_worker_provider_info);
   }
+  if (subresource_loader_params_ &&
+      !subresource_loader_params_->prefetched_signed_exchanges.empty()) {
+    DCHECK(base::FeatureList::IsEnabled(
+        features::kSignedExchangeSubresourcePrefetch));
+    commit_params_.prefetched_signed_exchanges =
+        std::move(subresource_loader_params_->prefetched_signed_exchanges);
+  }
   render_frame_host_->CommitNavigation(
       this, response_.get(), std::move(url_loader_client_endpoints_),
       common_params_, commit_params_, is_view_source_,

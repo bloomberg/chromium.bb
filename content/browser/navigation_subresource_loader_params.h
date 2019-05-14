@@ -7,6 +7,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
+#include "content/common/prefetched_signed_exchange_info.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom.h"
 
@@ -41,6 +42,14 @@ struct CONTENT_EXPORT SubresourceLoaderParams {
   // ServiceWorkerObjectHost::CreateIncompleteObjectInfo() for details.
   blink::mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info;
   base::WeakPtr<ServiceWorkerObjectHost> controller_service_worker_object_host;
+
+  // For SignedExchangeSubresourcePrefetch.
+  // When signed exchanges were prefetched in the previous page and were stored
+  // to the PrefetchedSignedExchangeCache, and the main resource for the
+  // navigation was served from the cache, |prefetched_signed_exchanges|
+  // contains the all prefetched signed exchanges and they will be passed to the
+  // renderer.
+  std::vector<PrefetchedSignedExchangeInfo> prefetched_signed_exchanges;
 };
 
 }  // namespace content
