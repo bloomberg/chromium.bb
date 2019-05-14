@@ -341,8 +341,7 @@ class CORE_EXPORT Document : public ContainerNode,
   Attr* createAttribute(const AtomicString& name, ExceptionState&);
   Attr* createAttributeNS(const AtomicString& namespace_uri,
                           const AtomicString& qualified_name,
-                          ExceptionState&,
-                          bool should_ignore_namespace_checks = false);
+                          ExceptionState&);
   Node* importNode(Node* imported_node, bool deep, ExceptionState&);
 
   // "create an element" defined in DOM standard. This supports both of
