@@ -64,9 +64,10 @@ scoped_refptr<VideoFrame> CreateMappedVideoFrame(
                << ", plane_size=" << plane_size;
       return nullptr;
     }
-    video_frame = VideoFrame::WrapExternalData(
-        layout.format(), layout.coded_size(), visible_rect, visible_rect.size(),
-        plane_addrs[0], plane_size, src_video_frame->timestamp());
+
+    video_frame = VideoFrame::WrapExternalDataWithLayout(
+        layout, visible_rect, visible_rect.size(), plane_addrs[0], plane_size,
+        src_video_frame->timestamp());
   }
   if (!video_frame) {
     return nullptr;
@@ -80,10 +81,10 @@ scoped_refptr<VideoFrame> CreateMappedVideoFrame(
 
 bool IsFormatSupported(VideoPixelFormat format) {
   constexpr VideoPixelFormat supported_formats[] = {
+      PIXEL_FORMAT_ARGB,
       PIXEL_FORMAT_I420,
-      PIXEL_FORMAT_YV12,
       PIXEL_FORMAT_NV12,
-      PIXEL_FORMAT_RGB32,
+      PIXEL_FORMAT_YV12,
   };
   return std::find(std::cbegin(supported_formats), std::cend(supported_formats),
                    format);

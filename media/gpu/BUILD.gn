@@ -293,15 +293,13 @@ source_set("image_processor") {
   ]
 
   deps = [
+    ":video_frame_mapper",
     "//third_party/libyuv",
     "//ui/gl",
   ]
 
   if (use_v4l2_codec) {
     deps += [ "//media/gpu/v4l2" ]
-  }
-  if (is_linux) {
-    deps += [ ":video_frame_mapper" ]
   }
 }
 
