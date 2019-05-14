@@ -4,8 +4,8 @@
 
 #include "chromeos/components/proximity_auth/remote_status_update.h"
 
-#include "base/logging.h"
 #include "base/values.h"
+#include "chromeos/components/multidevice/logging/logging.h"
 
 namespace {
 
@@ -40,9 +40,9 @@ std::unique_ptr<RemoteStatusUpdate> RemoteStatusUpdate::Deserialize(
     const base::DictionaryValue& serialized_value) {
   std::string type;
   if (!serialized_value.GetString(kType, &type) || type != kStatusUpdateType) {
-    VLOG(1) << "Unable to parse remote status update: unexpected type. "
-            << "Expected: '" << kStatusUpdateType << "', "
-            << "Saw: '" << type << "'.";
+    PA_LOG(ERROR) << "Unable to parse remote status update: unexpected type. "
+                  << "Expected: '" << kStatusUpdateType << "', "
+                  << "Saw: '" << type << "'.";
     return nullptr;
   }
 
@@ -51,9 +51,9 @@ std::unique_ptr<RemoteStatusUpdate> RemoteStatusUpdate::Deserialize(
       !serialized_value.GetString(kSecureScreenLock,
                                   &secure_screen_lock_state) ||
       !serialized_value.GetString(kTrustAgent, &trust_agent_state)) {
-    VLOG(1) << "Unable to parse remote status update: missing data value. "
-            << "Status update:\n"
-            << serialized_value;
+    PA_LOG(ERROR) << "Unable to parse remote status update: missing data value."
+                  << " Status update:\n"
+                  << serialized_value;
     return nullptr;
   }
 
@@ -65,8 +65,9 @@ std::unique_ptr<RemoteStatusUpdate> RemoteStatusUpdate::Deserialize(
   } else if (user_presence == kUserPresenceUnknown) {
     parsed_update->user_presence = USER_PRESENCE_UNKNOWN;
   } else {
-    VLOG(1) << "Unable to parse remote status update: invalid user presence: '"
-            << user_presence << "'.";
+    PA_LOG(ERROR)
+        << "Unable to parse remote status update: invalid user presence: '"
+        << user_presence << "'.";
     return nullptr;
   }
 
@@ -77,8 +78,8 @@ std::unique_ptr<RemoteStatusUpdate> RemoteStatusUpdate::Deserialize(
   } else if (secure_screen_lock_state == kSecureScreenLockStateUnknown) {
     parsed_update->secure_screen_lock_state = SECURE_SCREEN_LOCK_STATE_UNKNOWN;
   } else {
-    VLOG(1) << "Unable to parse remote status update: invalid secure screen "
-            << "lock state: '" << secure_screen_lock_state << "'.";
+    PA_LOG(ERROR) << "Unable to parse remote status update: invalid secure "
+                  << "screen lock state: '" << secure_screen_lock_state << "'.";
     return nullptr;
   }
 
@@ -89,8 +90,8 @@ std::unique_ptr<RemoteStatusUpdate> RemoteStatusUpdate::Deserialize(
   } else if (trust_agent_state == kTrustAgentUnsupported) {
     parsed_update->trust_agent_state = TRUST_AGENT_UNSUPPORTED;
   } else {
-    VLOG(1) << "Unable to parse remote status update: invalid trust agent "
-            << "state: '" << trust_agent_state << "'.";
+    PA_LOG(ERROR) << "Unable to parse remote status update: invalid trust "
+                  << "agent state: '" << trust_agent_state << "'.";
     return nullptr;
   }
 
