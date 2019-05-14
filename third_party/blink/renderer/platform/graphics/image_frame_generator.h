@@ -103,7 +103,10 @@ class PLATFORM_EXPORT ImageFrameGenerator final
   SkISize GetSupportedDecodeSize(const SkISize& requested_size) const;
 
   bool IsMultiFrame() const { return is_multi_frame_; }
-  bool DecodeFailed() const { return decode_failed_; }
+  bool DecodeFailed() const {
+    MutexLocker lock(generator_mutex_);
+    return decode_failed_;
+  }
 
   bool HasAlpha(size_t index);
 
@@ -149,7 +152,7 @@ class PLATFORM_EXPORT ImageFrameGenerator final
   const std::vector<SkISize> supported_sizes_;
 
   // Prevents concurrent access to all variables below.
-  Mutex generator_mutex_;
+  mutable Mutex generator_mutex_;
 
   bool decode_failed_ = false;
   bool yuv_decoding_failed_ = false;
