@@ -19,10 +19,15 @@
 
 namespace content {
 
-// Represents a ServiceWorker Cache as seen in
-// https://slightlyoff.github.io/ServiceWorker/spec/service_worker/ The
-// asynchronous methods are executed serially. Callbacks to the public functions
-// will be called so long as the cache object lives.
+// Represents a ServiceWorker Cache as seen in:
+//
+//  https://w3c.github.io/ServiceWorker/#cache-interface
+//
+// The asynchronous methods are executed serially. Callbacks to the public
+// functions will be called so long as the cache object lives. It is important
+// to for client code hold a |CacheStorageCacheHandle| to the cache for the
+// duration of any operations. Otherwise it is possible the operation may
+// get cancelled in some circumstances.
 class CONTENT_EXPORT CacheStorageCache {
  public:
   using CacheEntry = std::pair<blink::mojom::FetchAPIRequestPtr,
@@ -51,6 +56,14 @@ class CONTENT_EXPORT CacheStorageCache {
   // additional data, such as response side blobs or request bodies.
   enum EntryIndex { INDEX_HEADERS = 0, INDEX_RESPONSE_BODY, INDEX_SIDE_DATA };
 
+  // Create a handle that will hold the CacheStorageCache alive. Client code
+  // should hold one of these handles while waiting for operation callbacks to
+  // be invoked.
+  //
+  // Note, its still possible for the CacheStorageCache to be deleted even if
+  // there are outstanding handle references. This can occur when the user
+  // triggers a storage wipe, for example. The handle value should be treated
+  // as a weak pointer.
   virtual CacheStorageCacheHandle CreateHandle() = 0;
   virtual void AddHandleRef() = 0;
   virtual void DropHandleRef() = 0;

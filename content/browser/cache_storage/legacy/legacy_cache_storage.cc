@@ -830,6 +830,40 @@ void LegacyCacheStorage::CacheSizeUpdated(
     ScheduleWriteIndex();
 }
 
+void LegacyCacheStorage::ReleaseUnreferencedCaches() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  for (auto& entry : cache_map_) {
+    if (entry.second && entry.second->IsUnreferenced())
+      entry.second.reset();
+  }
+}
+
+void LegacyCacheStorage::CacheUnreferenced(LegacyCacheStorageCache* cache) {
+  DCHECK(cache);
+  DCHECK(cache->IsUnreferenced());
+  auto doomed_caches_it = doomed_caches_.find(cache);
+  if (doomed_caches_it != doomed_caches_.end()) {
+    // The last reference to a doomed cache is gone, perform clean up.
+    DeleteCacheFinalize(cache);
+    return;
+  }
+
+  // Opportunistically keep warmed caches open when the CacheStorage is
+  // still actively referenced.  Repeatedly opening and closing simple
+  // disk_cache backends can be quite slow.  This is easy to trigger when
+  // a site uses caches.match() frequently because the a Cache object is
+  // never exposed to script to explicitly hold the backend open.
+  if (handle_ref_count_)
+    return;
+
+  // The CacheStorage is not actively being referenced.  Close the cache
+  // immediately.
+  auto cache_map_it = cache_map_.find(cache->cache_name());
+  DCHECK(cache_map_it != cache_map_.end());
+
+  cache_map_it->second.reset();
+}
+
 void LegacyCacheStorage::StartAsyncOperationForTesting() {
   scheduler_->ScheduleOperation(CacheStorageSchedulerOp::kTest,
                                 base::DoNothing());
@@ -1317,40 +1351,6 @@ void LegacyCacheStorage::SizeImpl(SizeCallback callback) {
                               weak_factory_.GetWeakPtr(),
                               std::move(cache_handle), barrier_closure,
                               accumulator_ptr));
-  }
-}
-
-void LegacyCacheStorage::CacheUnreferenced(LegacyCacheStorageCache* cache) {
-  DCHECK(cache);
-  DCHECK(cache->IsUnreferenced());
-  auto doomed_caches_it = doomed_caches_.find(cache);
-  if (doomed_caches_it != doomed_caches_.end()) {
-    // The last reference to a doomed cache is gone, perform clean up.
-    DeleteCacheFinalize(cache);
-    return;
-  }
-
-  // Opportunistically keep warmed caches open when the CacheStorage is
-  // still actively referenced.  Repeatedly opening and closing simple
-  // disk_cache backends can be quite slow.  This is easy to trigger when
-  // a site uses caches.match() frequently because the a Cache object is
-  // never exposed to script to explicitly hold the backend open.
-  if (handle_ref_count_)
-    return;
-
-  // The CacheStorage is not actively being referenced.  Close the cache
-  // immediately.
-  auto cache_map_it = cache_map_.find(cache->cache_name());
-  DCHECK(cache_map_it != cache_map_.end());
-
-  cache_map_it->second.reset();
-}
-
-void LegacyCacheStorage::ReleaseUnreferencedCaches() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  for (auto& entry : cache_map_) {
-    if (entry.second && entry.second->IsUnreferenced())
-      entry.second.reset();
   }
 }
 

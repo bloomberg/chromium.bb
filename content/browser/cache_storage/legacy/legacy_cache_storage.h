@@ -136,6 +136,10 @@ class CONTENT_EXPORT LegacyCacheStorage : public CacheStorage,
     return static_cast<LegacyCacheStorage*>(handle.value());
   }
 
+ protected:
+  // Virtual for testing
+  virtual void CacheUnreferenced(LegacyCacheStorageCache* cache);
+
  private:
   friend class LegacyCacheStorageCache;
   friend class cache_storage_manager_unittest::CacheStorageManagerTest;
@@ -253,8 +257,6 @@ class CONTENT_EXPORT LegacyCacheStorage : public CacheStorage,
   // scheduled, or false if not.
   bool InitiateScheduledIndexWriteForTest(
       base::OnceCallback<void(bool)> callback);
-
-  void CacheUnreferenced(LegacyCacheStorageCache* cache);
 
   // Whether or not we've loaded the list of cache names into memory.
   bool initialized_;
