@@ -19,6 +19,8 @@ const char kUserDataAuthServicePath[] = "/org/chromium/UserDataAuth";
 const char kUserDataAuthInterface[] = "org.chromium.UserDataAuthInterface";
 const char kCryptohomePkcs11Interface[] =
     "org.chromium.CryptohomePkcs11Interface";
+const char kInstallAttributesInterface[] =
+    "org.chromium.InstallAttributesInterface";
 
 // Methods of the |kCryptohomeInterface| interface:
 const char kCryptohomeMigrateKey[] = "MigrateKey";
