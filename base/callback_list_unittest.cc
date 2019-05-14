@@ -342,5 +342,21 @@ TEST(CallbackList, RemovalCallback) {
   EXPECT_TRUE(cb_reg.empty());
 }
 
+TEST(CallbackList, AbandonSubscriptions) {
+  Listener listener;
+  std::unique_ptr<CallbackList<void(void)>::Subscription> subscription;
+  {
+    CallbackList<void(void)> cb_reg;
+    subscription = cb_reg.Add(
+        BindRepeating(&Listener::IncrementTotal, Unretained(&listener)));
+    // Make sure the callback is signaled while cb_reg is in scope.
+    cb_reg.Notify();
+    // Exiting this scope and running the cb_reg destructor shouldn't fail.
+  }
+  EXPECT_EQ(1, listener.total());
+  // The subscription from the destroyed callback list should be cancelled now.
+  EXPECT_TRUE(subscription->IsCancelled());
+}
+
 }  // namespace
 }  // namespace base
