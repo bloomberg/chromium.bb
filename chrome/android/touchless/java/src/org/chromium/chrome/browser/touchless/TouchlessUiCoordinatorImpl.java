@@ -76,9 +76,10 @@ public class TouchlessUiCoordinatorImpl
     }
 
     @Override
-    public boolean dispatchKeyEvent(KeyEvent event) {
+    public KeyEvent processKeyEvent(KeyEvent event) {
         if (mProgressBarCoordinator != null) mProgressBarCoordinator.onKeyEvent();
-        return mModelCoordinator != null ? mModelCoordinator.onKeyEvent(event) : false;
+        if (mModelCoordinator == null) return event;
+        return mModelCoordinator.onKeyEvent(event);
     }
 
     @Override

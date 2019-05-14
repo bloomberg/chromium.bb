@@ -2605,11 +2605,11 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
-        if (getTouchlessUiCoordinator() != null
-                && getTouchlessUiCoordinator().dispatchKeyEvent(event)) {
-            return true;
-        }
-        return super.dispatchKeyEvent(event);
+        KeyEvent toPropagate = getTouchlessUiCoordinator() != null
+                ? getTouchlessUiCoordinator().processKeyEvent(event)
+                : event;
+
+        return toPropagate == null || super.dispatchKeyEvent(toPropagate);
     }
 
     /** Returns {@link BottomSheetController}, if present. */

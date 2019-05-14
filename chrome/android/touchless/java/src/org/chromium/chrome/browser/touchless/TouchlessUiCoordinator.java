@@ -13,9 +13,11 @@ import org.chromium.ui.modaldialog.ModalDialogManager;
 public interface TouchlessUiCoordinator {
     /**
      * @param event The KeyEvent.
-     * @return Whether the KeyEvent was handled by the Touchless UI.
+     * @return The KeyEvent to be further propagated; may be different than the
+     * given event. The return value is null if the event is handled and no
+     * further propagation is required.
      */
-    boolean dispatchKeyEvent(KeyEvent event);
+    KeyEvent processKeyEvent(KeyEvent event);
 
     /**
      * @return The SnackbarManager for touchless mode.

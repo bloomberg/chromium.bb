@@ -25,9 +25,9 @@ public interface TouchlessModelCoordinator {
     /**
      * A notification that a key event occurred.
      * @param event The event object.
-     * @return Whether the event was consumed.
+     * @return null if event was consumed; the event to propagate, otherwise.
      */
-    boolean onKeyEvent(KeyEvent event);
+    KeyEvent onKeyEvent(KeyEvent event);
 
     /**
      * Clean up anything that needs to be.
