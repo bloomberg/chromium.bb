@@ -558,3 +558,69 @@ message SetFirmwareManagementParametersReply {
   // If there's a problem setting the FWMP, then this will be set.
   CryptohomeErrorCode error = 1;
 }
+
+// Input parameters to GetSystemSalt()
+message GetSystemSaltRequest {
+  // No parameter is needed to retrieve the system salt.
+}
+
+// Output parameters for GetSystemSalt()
+message GetSystemSaltReply {
+  // The system salt.
+  // Note that the caller should not expect the system salt to be a particular
+  // size. The length is defined by the CRYPTOHOME_DEFAULT_SALT_LENGTH
+  // constant.
+  bytes salt = 1;
+}
+
+// Input parameters to UpdateCurrentUserActivityTimestamp()
+message UpdateCurrentUserActivityTimestampRequest {
+  // This is the time, expressed in number of seconds since the last
+  // user activity.
+  // For instance, if the unix timestamp now is x, if this value is 5,
+  // then the last user activity happened at x-5 unix timestamp.
+  int32 time_shift_sec = 1;
+}
+
+// Output parameters for UpdateCurrentUserActivityTimestamp()
+message UpdateCurrentUserActivityTimestampReply {
+  // Always successful.
+}
+
+// Input parameters to GetSanitizedUsername()
+message GetSanitizedUsernameRequest {
+  // The username to sanitize.
+  string username = 1;
+}
+
+// Output parameters for GetSanitizedUsername()
+message GetSanitizedUsernameReply {
+  // The sanitized username, this is basically a hashed representation
+  // of the username used in the paths of user's home directory.
+  string sanitized_username = 1;
+}
+
+// Input parameters to GetLoginStatus()
+message GetLoginStatusRequest {}
+
+// Output parameters for GetLoginStatus()
+message GetLoginStatusReply {
+  // This will be set if there's a problem getting login status.
+  CryptohomeErrorCode error = 1;
+
+  // This is set to false if device policy is loaded.
+  bool owner_user_exists = 2;
+
+  // Set to true if the bootlockbox for this user has been finalized.
+  bool boot_lockbox_finalized = 3;
+}
+
+// Input parameters to GetStatusString()
+message GetStatusStringRequest {}
+
+// Output parameters for GetStatusString()
+message GetStatusStringReply {
+  // Contains a JSON string that includes some tpm status, mount status and
+  // install attributes status information.
+  string status = 1;
+}

@@ -21,6 +21,7 @@ const char kCryptohomePkcs11Interface[] =
     "org.chromium.CryptohomePkcs11Interface";
 const char kInstallAttributesInterface[] =
     "org.chromium.InstallAttributesInterface";
+const char kCryptohomeMiscInterface[] = "org.chromium.CryptohomeMiscInterface";
 
 // Methods of the |kCryptohomeInterface| interface:
 const char kCryptohomeMigrateKey[] = "MigrateKey";
