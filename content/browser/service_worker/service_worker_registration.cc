@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/debug/crash_logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
@@ -406,6 +407,30 @@ void ServiceWorkerRegistration::ActivateWaitingVersion(bool delay) {
   if (activating_version->skip_waiting()) {
     for (auto& observer : listeners_)
       observer.OnSkippedWaiting(this);
+  }
+
+  // TODO(crbug.com/951571): Remove this instrumentation logic once the bug is
+  // debugged.
+  if (exiting_version.get()) {
+    int skip_waiting = activating_version->skip_waiting();
+    static auto* key = base::debug::AllocateCrashKeyString(
+        "swv_skip_waiting", base::debug::CrashKeySize::Size32);
+    base::debug::ScopedCrashKeyString(key, base::NumberToString(skip_waiting));
+    CHECK(!exiting_version->HasControllee());
+    for (std::unique_ptr<ServiceWorkerContextCore::ProviderHostIterator> it =
+             context_->GetClientProviderHostIterator(
+                 scope_.GetOrigin(), false /* include_reserved_clients */);
+         !it->IsAtEnd(); it->Advance()) {
+      ServiceWorkerProviderHost* host = it->GetProviderHost();
+      if (!host->IsContextSecureForServiceWorker())
+        continue;
+      if (host->MatchRegistration() != this)
+        continue;
+      ServiceWorkerVersion* controller = host->controller();
+      if (!controller)
+        continue;
+      CHECK(controller != exiting_version);
+    }
   }
 
   // "10. Queue a task to fire an event named activate..."
