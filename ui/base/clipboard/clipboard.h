@@ -146,8 +146,8 @@ class COMPONENT_EXPORT(BASE_CLIPBOARD) Clipboard : public base::ThreadChecker {
  protected:
   static Clipboard* Create();
 
-  Clipboard() {}
-  virtual ~Clipboard() {}
+  Clipboard() = default;
+  virtual ~Clipboard() = default;
 
   // ObjectType designates the type of data to be stored in the clipboard. This
   // designation is shared across all OSes. The system-specific designation

@@ -50,7 +50,7 @@ class ClipboardData {
       : web_smart_paste_(false),
         format_(0) {}
 
-  virtual ~ClipboardData() {}
+  virtual ~ClipboardData() = default;
 
   // Bitmask of AuraClipboardFormat types.
   int format() const { return format_; }
@@ -164,7 +164,7 @@ class AuraClipboard {
   AuraClipboard() : sequence_number_(0) {
   }
 
-  ~AuraClipboard() {}
+  ~AuraClipboard() = default;
 
   void Clear() {
     sequence_number_++;

@@ -15,7 +15,7 @@
 namespace ui {
 
 // ClipboardFormatType implementation.
-ClipboardFormatType::ClipboardFormatType() {}
+ClipboardFormatType::ClipboardFormatType() = default;
 
 ClipboardFormatType::ClipboardFormatType(UINT native_format) {
   // There's no good way to actually initialize this in the constructor in
@@ -47,7 +47,7 @@ ClipboardFormatType::ClipboardFormatType(UINT native_format,
   data_.tymed = tymed;
 }
 
-ClipboardFormatType::~ClipboardFormatType() {}
+ClipboardFormatType::~ClipboardFormatType() = default;
 
 std::string ClipboardFormatType::Serialize() const {
   return base::NumberToString(data_.cfFormat);
