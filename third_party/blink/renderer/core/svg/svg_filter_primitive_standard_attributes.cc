@@ -190,13 +190,12 @@ void SVGFilterPrimitiveStandardAttributes::PrimitiveAttributeChanged(
 }
 
 void InvalidateFilterPrimitiveParent(SVGElement& element) {
-  Element* parent = element.parentElement();
-  if (!parent || !parent->IsSVGElement())
+  auto* svg_parent = DynamicTo<SVGElement>(element.parentElement());
+  if (!svg_parent)
     return;
-  SVGElement& svgparent = ToSVGElement(*parent);
-  if (!IsSVGFilterPrimitiveStandardAttributes(svgparent))
+  if (!IsSVGFilterPrimitiveStandardAttributes(*svg_parent))
     return;
-  ToSVGFilterPrimitiveStandardAttributes(svgparent).Invalidate();
+  ToSVGFilterPrimitiveStandardAttributes(*svg_parent).Invalidate();
 }
 
 }  // namespace blink

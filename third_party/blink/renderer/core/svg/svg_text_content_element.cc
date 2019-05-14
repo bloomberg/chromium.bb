@@ -280,7 +280,7 @@ SVGTextContentElement* SVGTextContentElement::ElementFromLineLayoutItem(
       (!line_layout_item.IsSVGText() && !line_layout_item.IsSVGInline()))
     return nullptr;
 
-  SVGElement* element = ToSVGElement(line_layout_item.GetNode());
+  auto* element = To<SVGElement>(line_layout_item.GetNode());
   DCHECK(element);
   return IsSVGTextContentElement(*element) ? ToSVGTextContentElement(element)
                                            : nullptr;

@@ -99,8 +99,8 @@ void SVGAElement::SvgAttributeChanged(const QualifiedName& attr_name) {
 
 LayoutObject* SVGAElement::CreateLayoutObject(const ComputedStyle&,
                                               LegacyLayout) {
-  if (parentNode() && parentNode()->IsSVGElement() &&
-      ToSVGElement(parentNode())->IsTextContent())
+  auto* svg_element = DynamicTo<SVGElement>(parentNode());
+  if (svg_element && svg_element->IsTextContent())
     return new LayoutSVGInline(this);
 
   return new LayoutSVGTransformableContainer(this);

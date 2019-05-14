@@ -317,9 +317,9 @@ SVGPropertyBase* SVGAnimateElement::AdjustForInheritance(
   // value type directly to avoid the String parsing.
   DCHECK(targetElement());
   Element* parent = targetElement()->parentElement();
-  if (!parent || !parent->IsSVGElement())
+  auto* svg_parent = DynamicTo<SVGElement>(parent);
+  if (!svg_parent)
     return property_value;
-  SVGElement* svg_parent = ToSVGElement(parent);
   // Replace 'inherit' by its computed property value.
   String value = ComputeCSSPropertyValue(svg_parent, css_property_id_);
   return CreatePropertyForAnimation(value);

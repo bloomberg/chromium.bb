@@ -89,7 +89,7 @@ FloatRect FEImage::MapInputs(const FloatRect&) const {
   FloatRect src_rect;
   if (layout_object) {
     src_rect = GetLayoutObjectRepaintRect(layout_object);
-    SVGElement* context_node = ToSVGElement(layout_object->GetNode());
+    auto* context_node = To<SVGElement>(layout_object->GetNode());
 
     if (context_node->HasRelativeLengths()) {
       // FIXME: This fixes relative lengths but breaks non-relative ones (see
@@ -146,7 +146,7 @@ sk_sp<PaintFilter> FEImage::CreateImageFilterForLayoutObject(
   FloatRect dst_rect = FilterPrimitiveSubregion();
 
   AffineTransform transform;
-  SVGElement* context_node = ToSVGElement(layout_object.GetNode());
+  auto* context_node = To<SVGElement>(layout_object.GetNode());
 
   if (context_node->HasRelativeLengths()) {
     SVGLengthContext length_context(context_node);

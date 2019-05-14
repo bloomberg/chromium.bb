@@ -131,7 +131,7 @@ void SVGTextPathElement::BuildPendingResource() {
     // Register us with the target in the dependencies map. Any change of
     // hrefElement that leads to relayout/repainting now informs us, so we can
     // react to it.
-    AddReferenceTo(ToSVGElement(target));
+    AddReferenceTo(To<SVGElement>(target));
   }
 
   if (LayoutObject* layout_object = GetLayoutObject())

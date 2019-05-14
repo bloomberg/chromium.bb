@@ -97,11 +97,11 @@ void SVGFEImageElement::BuildPendingResource() {
   if (!target) {
     if (!SVGURLReferenceResolver(HrefString(), GetDocument()).IsLocal())
       FetchImageResource();
-  } else if (target->IsSVGElement()) {
+  } else if (auto* svg_element = DynamicTo<SVGElement>(target)) {
     // Register us with the target in the dependencies map. Any change of
     // hrefElement that leads to relayout/repainting now informs us, so we can
     // react to it.
-    AddReferenceTo(ToSVGElement(target));
+    AddReferenceTo(svg_element);
   }
 
   Invalidate();

@@ -65,12 +65,11 @@ AffineTransform SVGGraphicsElement::ComputeCTM(
 
   for (const Element* current_element = this; current_element && !done;
        current_element = current_element->ParentOrShadowHostElement()) {
-    if (!current_element->IsSVGElement())
+    auto* svg_element = DynamicTo<SVGElement>(current_element);
+    if (!svg_element)
       break;
 
-    ctm = ToSVGElement(current_element)
-              ->LocalCoordinateSpaceTransform(mode)
-              .Multiply(ctm);
+    ctm = svg_element->LocalCoordinateSpaceTransform(mode).Multiply(ctm);
 
     switch (mode) {
       case kNearestViewportScope:
@@ -149,7 +148,7 @@ SVGElement* SVGGraphicsElement::nearestViewportElement() const {
   for (Element* current = ParentOrShadowHostElement(); current;
        current = current->ParentOrShadowHostElement()) {
     if (IsViewportElement(*current))
-      return ToSVGElement(current);
+      return To<SVGElement>(current);
   }
 
   return nullptr;
@@ -160,7 +159,7 @@ SVGElement* SVGGraphicsElement::farthestViewportElement() const {
   for (Element* current = ParentOrShadowHostElement(); current;
        current = current->ParentOrShadowHostElement()) {
     if (IsViewportElement(*current))
-      farthest = ToSVGElement(current);
+      farthest = To<SVGElement>(current);
   }
   return farthest;
 }

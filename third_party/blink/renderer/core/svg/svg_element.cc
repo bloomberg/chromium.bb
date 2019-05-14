@@ -328,7 +328,7 @@ FloatRect ComputeSVGTransformReferenceBox(const LayoutObject& layout_object) {
   } else {
     DCHECK_EQ(style.TransformBox(), ETransformBox::kViewBox);
     SVGLengthContext length_context(
-        ToSVGElementOrNull(layout_object.GetNode()));
+        DynamicTo<SVGElement>(layout_object.GetNode()));
     FloatSize viewport_size;
     length_context.DetermineViewport(viewport_size);
     reference_box.SetSize(viewport_size);
@@ -401,24 +401,24 @@ Node::InsertionNotificationRequest SVGElement::InsertedInto(
 
 void SVGElement::RemovedFrom(ContainerNode& root_parent) {
   bool was_in_document = root_parent.isConnected();
-
+  auto* root_parent_svg_element = DynamicTo<SVGElement>(root_parent);
   if (was_in_document && HasRelativeLengths()) {
     // The root of the subtree being removed should take itself out from its
     // parent's relative length set. For the other nodes in the subtree we don't
     // need to do anything: they will get their own removedFrom() notification
     // and just clear their sets.
-    if (root_parent.IsSVGElement() && !parentNode()) {
-      DCHECK(ToSVGElement(root_parent)
-                 .elements_with_relative_lengths_.Contains(this));
-      ToSVGElement(root_parent).UpdateRelativeLengthsInformation(false, this);
+    if (root_parent_svg_element && !parentNode()) {
+      DCHECK(root_parent_svg_element->elements_with_relative_lengths_.Contains(
+          this));
+      root_parent_svg_element->UpdateRelativeLengthsInformation(false, this);
     }
 
     elements_with_relative_lengths_.clear();
   }
 
-  SECURITY_DCHECK(!root_parent.IsSVGElement() ||
-                  !ToSVGElement(root_parent)
-                       .elements_with_relative_lengths_.Contains(this));
+  SECURITY_DCHECK(
+      !root_parent_svg_element ||
+      !root_parent_svg_element->elements_with_relative_lengths_.Contains(this));
 
   Element::RemovedFrom(root_parent);
 
@@ -540,25 +540,25 @@ void SVGElement::UpdateRelativeLengthsInformation(
   // relative length map.  Register the parent in the grandparents map, etc.
   // Repeat procedure until the root of the SVG tree.
   for (Node& current_node : NodeTraversal::InclusiveAncestorsOf(*this)) {
-    if (!current_node.IsSVGElement())
+    auto* current_element = DynamicTo<SVGElement>(current_node);
+    if (!current_element)
       break;
-    SVGElement& current_element = ToSVGElement(current_node);
 #if DCHECK_IS_ON()
-    DCHECK(!current_element.in_relative_length_clients_invalidation_);
+    DCHECK(!current_element->in_relative_length_clients_invalidation_);
 #endif
 
-    bool had_relative_lengths = current_element.HasRelativeLengths();
+    bool had_relative_lengths = current_element->HasRelativeLengths();
     if (client_has_relative_lengths)
-      current_element.elements_with_relative_lengths_.insert(client_element);
+      current_element->elements_with_relative_lengths_.insert(client_element);
     else
-      current_element.elements_with_relative_lengths_.erase(client_element);
+      current_element->elements_with_relative_lengths_.erase(client_element);
 
     // If the relative length state hasn't changed, we can stop propagating the
     // notification.
-    if (had_relative_lengths == current_element.HasRelativeLengths())
+    if (had_relative_lengths == current_element->HasRelativeLengths())
       return;
 
-    client_element = &current_element;
+    client_element = current_element;
     client_has_relative_lengths = client_element->HasRelativeLengths();
   }
 
@@ -620,7 +620,7 @@ SVGElement* SVGElement::viewportElement() const {
   ContainerNode* n = ParentOrShadowHostNode();
   while (n) {
     if (IsSVGSVGElement(*n) || IsSVGImageElement(*n) || IsSVGSymbolElement(*n))
-      return ToSVGElement(n);
+      return To<SVGElement>(n);
 
     n = n->ParentOrShadowHostNode();
   }
@@ -939,10 +939,11 @@ void SVGElement::SendSVGLoadEventToSelfAndAncestorChainIfPossible() {
   if (GetDocument().LoadEventFinished())
     return;
 
-  if (!parent || !parent->IsSVGElement())
+  auto* svg_element = DynamicTo<SVGElement>(parent);
+  if (!svg_element)
     return;
 
-  ToSVGElement(parent)->SendSVGLoadEventToSelfAndAncestorChainIfPossible();
+  svg_element->SendSVGLoadEventToSelfAndAncestorChainIfPossible();
 }
 
 void SVGElement::AttributeChanged(const AttributeModificationParams& params) {
