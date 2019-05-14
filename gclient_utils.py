@@ -433,10 +433,20 @@ class Annotated(Wrapper):
 
     # Continue lockless.
     obj[0] += out
-    while '\n' in obj[0]:
-      line, remaining = obj[0].split('\n', 1)
-      if line:
-        self._wrapped.write('%d>%s\n' % (index, line))
+    while True:
+      # TODO(agable): find both of these with a single pass.
+      cr_loc = obj[0].find('\r')
+      lf_loc = obj[0].find('\n')
+      if cr_loc == lf_loc == -1:
+        break
+      elif cr_loc == -1 or (lf_loc >= 0 and lf_loc < cr_loc):
+        line, remaining = obj[0].split('\n', 1)
+        if line:
+          self._wrapped.write('%d>%s\n' % (index, line))
+      elif lf_loc == -1 or (cr_loc >= 0 and cr_loc < lf_loc):
+        line, remaining = obj[0].split('\r', 1)
+        if line:
+          self._wrapped.write('%d>%s\r' % (index, line))
       obj[0] = remaining
 
   def flush(self):
