@@ -11,6 +11,7 @@ import mock
 import os
 
 from chromite.api.gen.chromite.api import image_pb2
+from chromite.api.gen.chromiumos import common_pb2
 from chromite.api.controller import image as image_controller
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
@@ -46,13 +47,13 @@ class CreateTest(cros_test_lib.MockTempDirTestCase):
                                    board=u'board', config=mock.ANY)
 
     # Should be using a value that's provided.
-    input_proto.image_types.append(image_pb2.Image.DEV)
+    input_proto.image_types.append(common_pb2.DEV)
     image_controller.Create(input_proto, output_proto)
     build_patch.assert_called_with(images=[constants.IMAGE_TYPE_DEV],
                                    board=u'board', config=mock.ANY)
 
-    input_proto.image_types.append(image_pb2.Image.BASE)
-    input_proto.image_types.append(image_pb2.Image.TEST)
+    input_proto.image_types.append(common_pb2.BASE)
+    input_proto.image_types.append(common_pb2.TEST)
     expected_images = [constants.IMAGE_TYPE_BASE, constants.IMAGE_TYPE_DEV,
                        constants.IMAGE_TYPE_TEST]
     image_controller.Create(input_proto, output_proto)
@@ -98,7 +99,7 @@ class CreateVmTest(cros_test_lib.MockTestCase):
 
   def testNoBuildTargetFails(self):
     """Make sure it fails with no build target."""
-    request = self._GetInput(image_type=image_pb2.Image.TEST)
+    request = self._GetInput(image_type=common_pb2.TEST)
     response = self._GetOutput()
 
     with self.assertRaises(cros_build_lib.DieSystemExit):
@@ -114,7 +115,7 @@ class CreateVmTest(cros_test_lib.MockTestCase):
 
   def testTestImage(self):
     """Make sure the test image identification works properly."""
-    request = self._GetInput(board='board', image_type=image_pb2.Image.TEST)
+    request = self._GetInput(board='board', image_type=common_pb2.TEST)
     response = self._GetOutput()
     create_patch = self.PatchObject(image_service, 'CreateVm',
                                     return_value='/vm/path')
@@ -125,7 +126,7 @@ class CreateVmTest(cros_test_lib.MockTestCase):
 
   def testNonTestImage(self):
     """Make sure the test image identification works properly."""
-    request = self._GetInput(board='board', image_type=image_pb2.Image.BASE)
+    request = self._GetInput(board='board', image_type=common_pb2.BASE)
     response = self._GetOutput()
     create_patch = self.PatchObject(image_service, 'CreateVm',
                                     return_value='/vm/path')
