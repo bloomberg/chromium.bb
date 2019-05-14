@@ -26,7 +26,6 @@ class Node;
 class NGFragmentBuilder;
 class NGBreakToken;
 class NGInlineItem;
-struct NGPixelSnappedPhysicalBoxStrut;
 class PaintLayer;
 
 class NGPhysicalFragment;
@@ -157,10 +156,6 @@ class CORE_EXPORT NGPhysicalFragment
   // (0, 0).
   PhysicalRect LocalRect() const { return {{}, size_}; }
 
-  // Bitmask for border edges, see NGBorderEdges::Physical.
-  unsigned BorderEdges() const { return border_edge_; }
-  NGPixelSnappedPhysicalBoxStrut BorderWidths() const;
-
   NGBreakToken* BreakToken() const { return break_token_.get(); }
   NGStyleVariant StyleVariant() const {
     return static_cast<NGStyleVariant>(style_variant_);
@@ -270,9 +265,12 @@ class CORE_EXPORT NGPhysicalFragment
   // The following bitfields are only to be used by NGPhysicalBoxFragment
   // (it's defined here to save memory, since that class has no bitfields).
   unsigned children_inline_ : 1;
+  unsigned border_edge_ : 4;  // NGBorderEdges::Physical
+
+  // The following are only used by NGPhysicalBoxFragment but are initialized
+  // for all types to allow methods using them to be inlined.
   unsigned is_fieldset_container_ : 1;
   unsigned is_legacy_layout_root_ : 1;
-  unsigned border_edge_ : 4;  // NGBorderEdges::Physical
 
   // The following bitfields are only to be used by NGPhysicalTextFragment
   // (it's defined here to save memory, since that class has no bitfields).

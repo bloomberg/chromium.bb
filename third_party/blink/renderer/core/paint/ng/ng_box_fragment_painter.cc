@@ -942,7 +942,8 @@ LayoutRect NGBoxFragmentPainter::AdjustRectForScrolledContent(
 
 LayoutRectOutsets NGBoxFragmentPainter::ComputeBorders() const {
   return BoxStrutToLayoutRectOutsets(
-      box_fragment_.PhysicalFragment().BorderWidths());
+      To<NGPhysicalBoxFragment>(box_fragment_.PhysicalFragment())
+          .BorderWidths());
 }
 
 LayoutRectOutsets NGBoxFragmentPainter::ComputePadding() const {
@@ -1064,16 +1065,6 @@ bool NGBoxFragmentPainter::HitTestTextFragment(
       To<NGPhysicalTextFragment>(text_paint_fragment.PhysicalFragment());
   LayoutSize size(text_fragment.Size().width, text_fragment.Size().height);
   LayoutRect border_rect(physical_offset, size);
-  const ComputedStyle& style = text_fragment.Style();
-
-  if (style.HasBorderRadius()) {
-    FloatRoundedRect border = style.GetRoundedBorderFor(
-        border_rect,
-        text_fragment.BorderEdges() & NGBorderEdges::Physical::kLeft,
-        text_fragment.BorderEdges() & NGBorderEdges::Physical::kRight);
-    if (!location_in_container.Intersects(border))
-      return false;
-  }
 
   // TODO(layout-dev): Clip to line-top/bottom.
   LayoutRect rect = LayoutRect(PixelSnappedIntRect(border_rect));

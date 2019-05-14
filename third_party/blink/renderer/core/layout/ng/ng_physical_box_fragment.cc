@@ -34,6 +34,10 @@ bool HasControlClip(const NGPhysicalBoxFragment& self) {
   return box && box->HasControlClip();
 }
 
+LayoutUnit BorderWidth(unsigned edges, unsigned edge, float border_width) {
+  return (edges & edge) ? LayoutUnit(border_width) : LayoutUnit();
+}
+
 }  // namespace
 
 scoped_refptr<const NGPhysicalBoxFragment> NGPhysicalBoxFragment::Create(
@@ -222,6 +226,16 @@ UBiDiLevel NGPhysicalBoxFragment::BidiLevel() const {
   DCHECK(self_item);
   DCHECK_NE(self_item, inline_items.end());
   return self_item->BidiLevel();
+}
+
+NGPixelSnappedPhysicalBoxStrut NGPhysicalBoxFragment::BorderWidths() const {
+  unsigned edges = BorderEdges();
+  NGPhysicalBoxStrut box_strut(
+      BorderWidth(edges, NGBorderEdges::kTop, Style().BorderTopWidth()),
+      BorderWidth(edges, NGBorderEdges::kRight, Style().BorderRightWidth()),
+      BorderWidth(edges, NGBorderEdges::kBottom, Style().BorderBottomWidth()),
+      BorderWidth(edges, NGBorderEdges::kLeft, Style().BorderLeftWidth()));
+  return box_strut.SnapToDevicePixels();
 }
 
 }  // namespace blink

@@ -66,6 +66,10 @@ class CORE_EXPORT NGPhysicalBoxFragment final
 
   UBiDiLevel BidiLevel() const;
 
+  // Bitmask for border edges, see NGBorderEdges::Physical.
+  unsigned BorderEdges() const { return border_edge_; }
+  NGPixelSnappedPhysicalBoxStrut BorderWidths() const;
+
  private:
   NGPhysicalBoxFragment(NGBoxFragmentBuilder* builder,
                         WritingMode block_or_line_writing_mode);

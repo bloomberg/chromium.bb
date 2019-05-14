@@ -209,10 +209,6 @@ void AppendFragmentToString(const NGPhysicalFragment* fragment,
   builder->Append("\n");
 }
 
-LayoutUnit BorderWidth(unsigned edges, unsigned edge, float border_width) {
-  return (edges & edge) ? LayoutUnit(border_width) : LayoutUnit();
-}
-
 }  // namespace
 
 // static
@@ -349,16 +345,6 @@ bool NGPhysicalFragment::IsPlacedByLayoutNG() const {
   if (!container)
     return false;
   return container->IsLayoutNGMixin() || container->IsLayoutNGFlexibleBox();
-}
-
-NGPixelSnappedPhysicalBoxStrut NGPhysicalFragment::BorderWidths() const {
-  unsigned edges = BorderEdges();
-  NGPhysicalBoxStrut box_strut(
-      BorderWidth(edges, NGBorderEdges::kTop, Style().BorderTopWidth()),
-      BorderWidth(edges, NGBorderEdges::kRight, Style().BorderRightWidth()),
-      BorderWidth(edges, NGBorderEdges::kBottom, Style().BorderBottomWidth()),
-      BorderWidth(edges, NGBorderEdges::kLeft, Style().BorderLeftWidth()));
-  return box_strut.SnapToDevicePixels();
 }
 
 #if DCHECK_IS_ON()

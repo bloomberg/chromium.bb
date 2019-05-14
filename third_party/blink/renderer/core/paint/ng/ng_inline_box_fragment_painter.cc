@@ -31,7 +31,9 @@ NGInlineBoxFragmentPainter::NGInlineBoxFragmentPainter(
                            line_style),
       inline_box_fragment_(inline_box_fragment),
       border_edges_(NGBorderEdges::FromPhysical(
-          inline_box_fragment.PhysicalFragment().BorderEdges(),
+          static_cast<const NGPhysicalBoxFragment&>(
+              inline_box_fragment.PhysicalFragment())
+              .BorderEdges(),
           style.GetWritingMode())) {}
 
 NGInlineBoxFragmentPainter::NGInlineBoxFragmentPainter(
