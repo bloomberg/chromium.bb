@@ -17,15 +17,42 @@ circumstances.
       // always null.
       window.addEventListener("gamepadconnected", function(e) {});
 
+      // TODO(https://crbug.com/961774): On some Windows machines, a phantom
+      // gamepad shows up in the navigator.getGamepads() array once a WebXR
+      // gamepad sends any input. Until that's fixed, filter out such devices
+      // when checking if the number of gamepads on the navigator array matches
+      // expectations.
+      function isPhantomGamepad(gamepad) {
+        return gamepad.id == "Unknown Gamepad (Vendor: 0000 Product: 0000)";
+      }
+
       function assertNumNavigatorGamepadsMatchesExpectation(numExpectedGamepads) {
         let numGamepads = 0;
         for (gamepad of navigator.getGamepads()) {
-          if (gamepad !== null) {
+          if ((gamepad !== null) && !isPhantomGamepad(gamepad)) {
             numGamepads++;
           }
         }
         assert_equals(numGamepads, numExpectedGamepads,
             "Number of returned gamepads matches expectation");
+      }
+
+      function assertNumInputSourceGamepadsMatchesExpectation(numExpectedGamepads) {
+        let currentSession = sessionInfos[sessionTypes.IMMERSIVE].currentSession;
+        let numGamepads = 0;
+        for (source of currentSession.getInputSources()) {
+          if (source.gamepad !== null) {
+            numGamepads++;
+          }
+        }
+        assert_equals(numGamepads, numExpectedGamepads,
+            "Number of XRInputSources with Gamepads on XRSession matches expectation");
+      }
+
+      function assertNumInputSourcesMatchesExpectation(numExpectedSources) {
+        let currentSession = sessionInfos[sessionTypes.IMMERSIVE].currentSession;
+        assert_equals(currentSession.getInputSources().length, numExpectedSources,
+            "Number of XRInputSources on XRSession matches expectation");
       }
 
       function validateInputSourceHasNoGamepad() {
@@ -41,11 +68,11 @@ circumstances.
           // We don't expect to have attached any non-vr gamepads, and vr
           // gamepads shouldn't show up in navigator.getGamepads()
           assertNumNavigatorGamepadsMatchesExpectation(0);
-          let input_sources = session.getInputSources();
-          assert_equals(input_sources.length, 1, "There should only be one input source");
-          assert_equals(input_sources[0].gamepad, null,
-              "There should not be enough data to make a gamepad");
 
+          // There should only be one input source, but there should not be
+          // enough data to make a gamepad.
+          assertNumInputSourcesMatchesExpectation(1);
+          assertNumInputSourceGamepadsMatchesExpectation(0);
           finishJavaScriptStep();
         }
       }
@@ -63,17 +90,26 @@ circumstances.
           // We don't expect to have attached any non-vr gamepads, and vr
           // gamepads shouldn't show up in navigator.getGamepads()
           assertNumNavigatorGamepadsMatchesExpectation(0);
-          let input_sources = session.getInputSources();
-          assert_equals(input_sources.length, 1, "There should only be one input source");
-          assert_not_equals(input_sources[0].gamepad, null,
-              "There should be enough data to make a gamepad");
-          assert_equals(input_sources[0].gamepad.mapping, "xr-standard");
+
+          // There should only be one input source and it should have a gamepad.
+          assertNumInputSourcesMatchesExpectation(1);
+          assertNumInputSourceGamepadsMatchesExpectation(1);
+
+          let gamepad = session.getInputSources()[0].gamepad;
           if (validationFunction) {
-            validationFunction(input_sources[0].gamepad);
+            validationFunction(gamepad);
           }
 
           finishJavaScriptStep();
         }
+      }
+
+      function validateMapping(expected_mapping) {
+        let validationFunction = function(gamepad) {
+          assert_equals(gamepad.mapping, expected_mapping);
+        }
+
+        validateFirstGamepad(validationFunction);
       }
 
       function validateButtonNotPressed(button_index) {

@@ -312,6 +312,7 @@ IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard, TestGamepadMinimumData) {
 
   // The trigger should be button 0, and the first set of axes should have it's
   // value set.
+  ExecuteStepAndWait("validateMapping('xr-standard')");
   ExecuteStepAndWait("validateButtonPressed(0)");
   ExecuteStepAndWait("validateAxesValues(0, 0.5, -0.5)");
   RunJavaScriptOrFail("done()");
@@ -358,6 +359,9 @@ IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard, TestGamepadCompleteData) {
   // Set the grip button to be pressed.
   my_mock.ToggleButtons(controller_index,
                         vr::ButtonMaskFromId(vr::k_EButton_Grip));
+
+  // Controller should meet the requirements for the 'xr-standard' mapping.
+  ExecuteStepAndWait("validateMapping('xr-standard')");
 
   // The secondary set of axes should be set appropriately.
   ExecuteStepAndWait("validateAxesValues(1, 0.25, -0.25)");
@@ -408,6 +412,7 @@ IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard, TestGamepadReservedData) {
   // Index 2 and 3 are reserved for the grip and secondary joystick.
   // As our controller doesn't support them, they should be present but not
   // pressed, and our "extra" button should be index 4 and should be pressed.
+  ExecuteStepAndWait("validateMapping('xr-standard')");
   ExecuteStepAndWait("validateButtonPressed(0)");
   ExecuteStepAndWait("validateButtonPressed(1)");
   ExecuteStepAndWait("validateButtonNotPressed(2)");

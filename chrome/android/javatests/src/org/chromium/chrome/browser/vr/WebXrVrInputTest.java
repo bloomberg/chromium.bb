@@ -565,9 +565,9 @@ public class WebXrVrInputTest {
     }
 
     /**
-     * Verifies that a Gamepad API gamepad is not returned when using WebXR and a Daydream headset
-     * if WebXRGamepadSupport is not explicitly enabled. Correctness testing for
-     * https://crbug.com/830935.
+     * Verifies that a Gamepad API gamepad is returned on the XRSession's input
+     * source instead of the navigator array when using WebXR and a Daydream
+     * headset.
      */
     @Test
     @MediumTest
@@ -576,16 +576,14 @@ public class WebXrVrInputTest {
             .Remove({"enable-webvr"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-            public void testWebXrGamepadNotReturnedWithoutGamepadSupport()
-            throws InterruptedException {
-        webxrGamepadSupportImpl(
-                0 /* numExpectedGamepads */, true /* webxrPresent */, true /* daydream */);
+            public void testWebXrInputSourceHasGamepad() throws InterruptedException {
+        webxrGamepadSupportImpl(true /* daydream */);
     }
 
     /**
-     * Verifies that a Gamepad API gamepad is not returned when using WebXR and Cardboard if
-     * WebXRGamepadSupport is not explicitly enabled. Correctness testing for
-     * https://crbug.com/830935.
+     * Verifies that the XRSession has an input source when using WebXR and
+     * Cardboard. There should be no gamepads on the input source or navigator
+     * array.
      */
     @Test
     @MediumTest
@@ -594,95 +592,15 @@ public class WebXrVrInputTest {
             .Remove({"enable-webvr"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
             @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-            public void testWebXrGamepadNotReturnedWithoutGamepadSupport_Cardboard()
-            throws InterruptedException {
-        webxrGamepadSupportImpl(
-                0 /* numExpectedGamepads */, true /* webxrPresent */, false /* daydream */);
+            public void testWebXrInputSourceWithoutGamepad_Cardboard() throws InterruptedException {
+        webxrGamepadSupportImpl(false /* daydream */);
     }
 
-    /**
-     * Verifies that a Gamepad API gamepad is returned when using WebXR and a Daydream headset if
-     * WebXRGamepadSupport is explicitly enabled. Correctness testing for https://crbug.com/830935.
-     */
-    @Test
-    @MediumTest
-    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
-    @CommandLineFlags
-            .Remove({"enable-webvr"})
-            @CommandLineFlags.Add({"enable-features=WebXR,WebXRGamepadSupport"})
-            @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-            public void testWebXrGamepadReturnedWithGamepadSupport() throws InterruptedException {
-        webxrGamepadSupportImpl(
-                1 /* numExpectedGamepads */, true /* webxrPresent */, true /* daydream */);
-    }
-
-    /**
-     * Verifies that a Gamepad API gamepad is returned when using WebXR and Cardboard if
-     * WebXRGamepadSupport is explicitly enabled. Correctness testing for https://crbug.com/830935.
-     */
-    @Test
-    @MediumTest
-    @Restriction(RESTRICTION_TYPE_VIEWER_NON_DAYDREAM)
-    @CommandLineFlags
-            .Remove({"enable-webvr"})
-            @CommandLineFlags.Add({"enable-features=WebXR,WebXRGamepadSupport"})
-            @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-            public void testWebXrGamepadReturnedWithGamepadSupport_Cardboard()
-            throws InterruptedException {
-        webxrGamepadSupportImpl(
-                1 /* numExpectedGamepads */, true /* webxrPresent */, false /* daydream */);
-    }
-
-    /**
-     * Verifies that a Gamepad API gamepad is not returned when not using WebXR, WebVR, or the
-     * WebXRGamepadSupport feature with a Daydream headset. Correctness testing for
-     * https://crbug.com/830935.
-     */
-    @Test
-    @MediumTest
-    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
-    @CommandLineFlags.Remove({"enable-webvr"})
-    @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-    public void testWebXrGamepadNotReturnedWithoutAnyFeatures() throws InterruptedException {
-        webxrGamepadSupportImpl(
-                0 /* numExpectedGamepads */, false /* webxrPresent */, true /* daydream */);
-    }
-
-    /**
-     * Verifies that a Gamepad API gamepad is not returned when not using WebXR, WebVR, or the
-     * WebXRGamepadSupport feature with Cardboard. Correctness testing for https://crbug.com/830935.
-     */
-    @Test
-    @MediumTest
-    @Restriction(RESTRICTION_TYPE_VIEWER_NON_DAYDREAM)
-    @CommandLineFlags.Remove({"enable-webvr"})
-    @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-    public void testWebXrGamepadNotReturnedWithoutAnyFeatures_Cardboard()
-            throws InterruptedException {
-        webxrGamepadSupportImpl(
-                0 /* numExpectedGamepads */, false /* webxrPresent */, false /* daydream */);
-    }
-
-    private void webxrGamepadSupportImpl(int numExpectedGamepads, boolean webxrPresent,
-            boolean daydream) throws InterruptedException {
-        if (webxrPresent) {
-            // TODO(https://crbug.com/947581): Update the test and remove this when Gamepads are
-            // supported by WebXR again. getGamepads() should always return 0, and the test should
-            // check that too. For now, change the expected value rather than disabling the tests
-            // since we actually expect 0 gamepads in all cases after removing WebXRGamepadSupport
-            // (https://crbug.com/920025).
-            numExpectedGamepads = 0;
-
-            mWebXrVrTestFramework.loadUrlAndAwaitInitialization(
-                    WebXrVrTestFramework.getFileUrlForHtmlTestFile("test_webxr_gamepad_support"),
-                    PAGE_LOAD_TIMEOUT_S);
-            mWebXrVrTestFramework.enterSessionWithUserGestureOrFail();
-        } else {
-            mWebXrVrTestFramework.loadUrlAndAwaitInitialization(
-                    WebXrVrTestFramework.getFileUrlForHtmlTestFile(
-                            "test_webxr_gamepad_support_nowebxr"),
-                    PAGE_LOAD_TIMEOUT_S);
-        }
+    private void webxrGamepadSupportImpl(boolean daydream) throws InterruptedException {
+        mWebXrVrTestFramework.loadUrlAndAwaitInitialization(
+                WebXrVrTestFramework.getFileUrlForHtmlTestFile("test_webxr_gamepad_support"),
+                PAGE_LOAD_TIMEOUT_S);
+        mWebXrVrTestFramework.enterSessionWithUserGestureOrFail();
 
         // Spam input to make sure the Gamepad API registers the gamepad if it should.
         int numIterations = 10;
@@ -691,24 +609,21 @@ public class WebXrVrInputTest {
             for (int i = 0; i < numIterations; i++) {
                 controller.performControllerClick();
             }
+
+            // Verify that there is a gamepad on the XRInputSource and that it
+            // has the expected mapping of '' (the Daydream controller does not
+            // meet the 'xr-standard' mapping requirements).
+            mWebXrVrTestFramework.executeStepAndWait("validateMapping('')");
         } else {
             int x = mWebXrVrTestFramework.getCurrentContentView().getWidth() / 2;
             int y = mWebXrVrTestFramework.getCurrentContentView().getHeight() / 2;
-
-            View presentationView;
-            if (webxrPresent) {
-                presentationView =
-                        TestVrShellDelegate.getVrShellForTesting().getPresentationViewForTesting();
-            } else {
-                presentationView = mTestRule.getActivity().getWindow().getDecorView();
-            }
-
+            View presentationView =
+                    TestVrShellDelegate.getVrShellForTesting().getPresentationViewForTesting();
             spamScreenTaps(presentationView, x, y, numIterations);
+
+            mWebXrVrTestFramework.executeStepAndWait("validateInputSourceHasNoGamepad()");
         }
 
-        mWebXrVrTestFramework.runJavaScriptOrFail("assertNumNavigatorGamepadsMatchesExpectation("
-                        + String.valueOf(numExpectedGamepads) + ")",
-                POLL_TIMEOUT_SHORT_MS);
         mWebVrTestFramework.runJavaScriptOrFail("done()", POLL_TIMEOUT_SHORT_MS);
         mWebXrVrTestFramework.endTest();
     }
