@@ -11,6 +11,7 @@ import android.text.TextUtils;
 import android.util.Pair;
 import android.view.ContextMenu;
 import android.webkit.MimeTypeMap;
+import android.webkit.URLUtil;
 
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.RecordHistogram;
@@ -431,7 +432,11 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             mDelegate.onOpenImageInNewTab(params.getSrcUrl(), params.getReferrer());
         } else if (itemId == R.id.contextmenu_open_image_in_ephemeral_tab) {
             ContextMenuUma.record(params, ContextMenuUma.Action.OPEN_IMAGE_IN_EPHEMERAL_TAB);
-            mDelegate.onOpenInEphemeralTab(params.getSrcUrl(), params.getTitleText());
+            String title = params.getTitleText();
+            if (TextUtils.isEmpty(title)) {
+                title = URLUtil.guessFileName(params.getSrcUrl(), null, null);
+            }
+            mDelegate.onOpenInEphemeralTab(params.getSrcUrl(), title);
         } else if (itemId == R.id.contextmenu_load_original_image) {
             ContextMenuUma.record(params, ContextMenuUma.Action.LOAD_ORIGINAL_IMAGE);
             DataReductionProxyUma.previewsLoFiContextMenuAction(
