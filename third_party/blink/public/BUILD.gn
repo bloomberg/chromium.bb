@@ -64,7 +64,6 @@ buildflag_header("buildflags") {
   header = "public_buildflags.h"
   flags = [
     "DEBUG_DEVTOOLS=$debug_devtools",
-    "USE_DEFAULT_RENDER_THEME=$use_default_render_theme",
     "USE_MINIKIN_HYPHENATION=$use_minikin_hyphenation",
     "ENABLE_UNHANDLED_TAP=$enable_unhandled_tap",
   ]

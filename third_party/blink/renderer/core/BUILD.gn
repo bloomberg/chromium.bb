@@ -2221,7 +2221,7 @@ jumbo_source_set("unit_tests") {
     sources += [ "scroll/scroll_animator_test.cc" ]
   }
 
-  if (use_default_render_theme) {
+  if (use_aura) {
     sources += [ "scroll/scrollbar_theme_aura_test.cc" ]
   }
 

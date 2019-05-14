@@ -109,7 +109,7 @@ void UpdateFromSystemSettings(blink::mojom::RendererPreferences* prefs,
   ParsePortRange(webrtc_udp_port_range, &prefs->webrtc_udp_min_port,
                  &prefs->webrtc_udp_max_port);
 
-#if BUILDFLAG(USE_DEFAULT_RENDER_THEME)
+#if defined(USE_AURA)
   prefs->focus_ring_color = SkColorSetRGB(0x4D, 0x90, 0xFE);
 #if defined(OS_CHROMEOS)
   // This color is 0x544d90fe modulated with 0xffffff.
@@ -118,6 +118,8 @@ void UpdateFromSystemSettings(blink::mojom::RendererPreferences* prefs,
   prefs->inactive_selection_bg_color = SkColorSetRGB(0xEA, 0xEA, 0xEA);
   prefs->inactive_selection_fg_color = SK_ColorBLACK;
 #endif
+#else
+  prefs->use_custom_colors = false;
 #endif
 
 #if defined(TOOLKIT_VIEWS)
