@@ -21,9 +21,9 @@ let requestSessionModes = ['immersive-vr'];
 
 let testFunction = function(session, t, fakeDeviceController) {
   let eventWatcher = new EventWatcher(
-    t, session, ["selectstart", "selectend", "select", "watcherdone"]);
+    t, session, ["selectstart", "select", "selectend", "watcherdone"]);
   let eventPromise = eventWatcher.wait_for(
-    ["selectstart", "selectend", "select", "watcherdone"]);
+    ["selectstart", "select", "selectend", "watcherdone"]);
 
   // Need to have a valid pose or input event's don't process.
   fakeDeviceController.setXRPresentationFrameData(VALID_POSE_MATRIX, [{
@@ -64,6 +64,7 @@ let testFunction = function(session, t, fakeDeviceController) {
       assert_equals(event.inputSource, input_sources[0]);
       tryCallingFrameMethods(event.frame);
     });
+    session.dispatchEvent(watcherDone);
   }
 
   function onSessionSelect(event) {
@@ -73,8 +74,8 @@ let testFunction = function(session, t, fakeDeviceController) {
       assert_equals(event.inputSource, input_sources[0]);
       tryCallingFrameMethods(event.frame);
     });
-    session.dispatchEvent(watcherDone);
   }
+
   session.addEventListener("selectstart", onSessionSelectStart, false);
   session.addEventListener("selectend", onSessionSelectEnd, false);
   session.addEventListener("select", onSessionSelect, false);

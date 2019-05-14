@@ -857,9 +857,6 @@ void XRSession::OnSelect(XRInputSource* input_source) {
     OnSelectStart(input_source);
   }
 
-  // Make sure we end the selection prior to firing the select event.
-  OnSelectEnd(input_source);
-
   if (!input_source->selection_cancelled) {
     XRInputSourceEvent* event =
         CreateInputSourceEvent(event_type_names::kSelect, input_source);
@@ -868,6 +865,8 @@ void XRSession::OnSelect(XRInputSource* input_source) {
     // Ensure the frame cannot be used outside of the event handler.
     event->frame()->Deactivate();
   }
+
+  OnSelectEnd(input_source);
 }
 
 void XRSession::OnPoseReset() {
