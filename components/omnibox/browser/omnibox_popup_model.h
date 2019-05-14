@@ -154,6 +154,8 @@ class OmniboxPopupModel {
   bool popup_closes_on_blur() const { return popup_closes_on_blur_; }
   void set_popup_closes_on_blur(bool closes) { popup_closes_on_blur_ = closes; }
 
+  OmniboxEditModel* edit_model() { return edit_model_; }
+
   // The token value for selected_line_ and functions dealing with a "line
   // number" that indicates "no line".
   static const size_t kNoMatch;

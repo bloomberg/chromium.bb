@@ -42,6 +42,8 @@
 #include "base/win/atl.h"
 #endif
 
+static size_t kKeywordSuggestionIndent = 70;
+
 ////////////////////////////////////////////////////////////////////////////////
 // OmniboxResultView, public:
 
@@ -326,8 +328,15 @@ void OmniboxResultView::Layout() {
       suggestion_tab_switch_button_->SetVisible(false);
     }
   }
-  keyword_view_->SetBounds(suggestion_width, 0, width(), height());
-  suggestion_view_->SetBounds(0, 0, suggestion_width, height());
+  keyword_view_->SetBounds(suggestion_width, 0, width() - suggestion_width,
+                           height());
+  if (popup_contents_view_->InExplicitExperimentalKeywordMode()) {
+    suggestion_view_->SetBounds(kKeywordSuggestionIndent, 0,
+                                suggestion_width - kKeywordSuggestionIndent,
+                                height());
+  } else {
+    suggestion_view_->SetBounds(0, 0, suggestion_width, height());
+  }
 }
 
 bool OmniboxResultView::OnMousePressed(const ui::MouseEvent& event) {

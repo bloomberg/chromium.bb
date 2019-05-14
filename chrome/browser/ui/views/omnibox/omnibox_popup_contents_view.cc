@@ -219,6 +219,15 @@ void OmniboxPopupContentsView::UnselectButton() {
   model_->SetSelectedLineState(OmniboxPopupModel::NORMAL);
 }
 
+void OmniboxPopupContentsView::ProvideButtonFocusHint(size_t line) {
+  OmniboxResultView* result = result_view_at(line);
+  result->ProvideButtonFocusHint();
+}
+
+bool OmniboxPopupContentsView::InExplicitExperimentalKeywordMode() {
+  return model_->edit_model()->InExplicitExperimentalKeywordMode();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // OmniboxPopupContentsView, OmniboxPopupView overrides:
 
@@ -320,11 +329,6 @@ void OmniboxPopupContentsView::OnMatchIconUpdated(size_t match_index) {
 
 void OmniboxPopupContentsView::OnDragCanceled() {
   SetMouseHandler(nullptr);
-}
-
-void OmniboxPopupContentsView::ProvideButtonFocusHint(size_t line) {
-  OmniboxResultView* result = result_view_at(line);
-  result->ProvideButtonFocusHint();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

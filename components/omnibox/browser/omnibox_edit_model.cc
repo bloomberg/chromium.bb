@@ -850,6 +850,11 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
     client_->OnBookmarkLaunched();
 }
 
+bool OmniboxEditModel::InExplicitExperimentalKeywordMode() {
+  return AutocompleteProvider::InExplicitExperimentalKeywordMode(input_,
+                                                                 keyword_);
+}
+
 bool OmniboxEditModel::AcceptKeyword(
     OmniboxEventProto::KeywordModeEntryMethod entry_method) {
   DCHECK(is_keyword_hint_ && !keyword_.empty());

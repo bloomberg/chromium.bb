@@ -66,6 +66,10 @@ class OmniboxPopupContentsView : public views::View, public OmniboxPopupView {
   // Called to inform result view of button focus.
   void ProvideButtonFocusHint(size_t line);
 
+  // Returns whether we're in experimental keyword mode and the input gives
+  // sufficient confidence that the user wants keyword mode.
+  bool InExplicitExperimentalKeywordMode();
+
   // OmniboxPopupView:
   bool IsOpen() const override;
   void InvalidateLine(size_t line) override;
