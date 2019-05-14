@@ -35,13 +35,26 @@ from blinkpy.web_tests.builder_list import BuilderList
 
 class BotTestExpectationsFactoryTest(unittest.TestCase):
 
+    # pylint: disable=protected-access
+
     def fake_builder_list(self):
         return BuilderList({
-            'Dummy builder name': {'port_name': 'dummy-port', 'specifiers': ['dummy', 'release']},
+            'Dummy builder name': {
+                'master': 'dummy.master',
+                'port_name': 'dummy-port',
+                'specifiers': ['dummy', 'release'],
+            },
         })
 
     def fake_results_json_for_builder(self, builder):
         return bot_test_expectations.ResultsJSON(builder, 'Dummy content')
+
+    def test_results_url_for_builder(self):
+        factory = bot_test_expectations.BotTestExpectationsFactory(self.fake_builder_list())
+
+        self.assertEqual(factory._results_url_for_builder('Dummy builder name'),
+                         'https://test-results.appspot.com/testfile?testtype=webkit_layout_tests'
+                         '&name=results-small.json&master=dummy.master&builder=Dummy%20builder%20name')
 
     def test_expectations_for_builder(self):
         factory = bot_test_expectations.BotTestExpectationsFactory(self.fake_builder_list())
@@ -73,7 +86,8 @@ class BotTestExpectationsTest(unittest.TestCase):
         if expected:
             results_entry[bot_test_expectations.ResultsJSON.EXPECTATIONS_KEY] = expected
 
-        num_actual_results = len(expectations._flaky_types_in_results(results_entry, only_ignore_very_flaky))
+        num_actual_results = len(expectations._flaky_types_in_results(  # pylint: disable=protected-access
+            results_entry, only_ignore_very_flaky))
         if should_be_flaky:
             self.assertGreater(num_actual_results, 1)
         else:
@@ -201,7 +215,6 @@ class BotTestExpectationsTest(unittest.TestCase):
                 }
             }
         }
-        self.maxDiff = None
         self._assert_unexpected_results(test_data, {
             'foo/pass1.html': sorted(['FAIL', 'PASS']),
             'foo/pass2.html': sorted(['IMAGE', 'PASS']),
