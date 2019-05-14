@@ -161,6 +161,7 @@ public abstract class TabModelFilter extends EmptyTabModelObserver implements Ta
 
     @Override
     public void didMoveTab(Tab tab, int newIndex, int curIndex) {
+        reorder();
         for (TabModelObserver observer : mFilteredObservers) {
             observer.didMoveTab(tab, newIndex, curIndex);
         }

@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
+import org.chromium.chrome.browser.util.MathUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -153,6 +154,32 @@ public class TabGroupModelFilter extends TabModelFilter {
             int sessionsCount = updateAndGetSessionsCount(groupId);
             RecordHistogram.recordCountHistogram("TabGroups.SessionsPerGroup", sessionsCount);
         });
+    }
+
+    /**
+     * This method moves the TabGroup which contains the Tab with TabId {@code id} to
+     * {@code newIndex} in TabModel.
+     * @param id         The id of the tab whose related tabs are being moved.
+     * @param newIndex   The new index in TabModel that these tabs are being moved to.
+     */
+    public void moveRelatedTabs(int id, int newIndex) {
+        List<Tab> tabs = getRelatedTabList(id);
+        TabModel tabModel = getTabModel();
+        newIndex = MathUtils.clamp(newIndex, 0, tabModel.getCount());
+        int curIndex = TabModelUtils.getTabIndexById(tabModel, tabs.get(0).getId());
+
+        if (curIndex == INVALID_TAB_INDEX || curIndex == newIndex) {
+            return;
+        }
+
+        int offset = 0;
+        for (Tab tab : tabs) {
+            if (tabModel.indexOf(tab) == -1) {
+                assert false : "Tried to close a tab from another model!";
+                continue;
+            }
+            tabModel.moveTab(tab.getId(), newIndex >= curIndex ? newIndex : newIndex + offset++);
+        }
     }
 
     // TODO(crbug.com/951608): follow up with sessions count histogram for TabGroups.

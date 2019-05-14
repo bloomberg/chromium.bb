@@ -14,12 +14,15 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
+import org.chromium.chrome.browser.tasks.tabgroup.TabGroupModelFilter;
 import org.chromium.chrome.browser.widget.textbubble.TextBubble;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.widget.ViewRectProvider;
+
+import java.util.List;
 
 /**
  * Helper class to handle tab groups related utilities.
@@ -91,5 +94,41 @@ public class TabGroupUtils {
                 }
             }
         };
+    }
+
+    /**
+     * This method gets the selected tab of the group where {@code tab} is in.
+     * @param selector   The selector that owns the {@code tab}.
+     * @param tab        {@link Tab}
+     * @return The selected tab of the group which contains the {@code tab}
+     */
+    public static Tab getSelectedTabInGroupForTab(TabModelSelector selector, Tab tab) {
+        TabGroupModelFilter filter = (TabGroupModelFilter) selector.getTabModelFilterProvider()
+                                             .getCurrentTabModelFilter();
+        return filter.getTabAt(filter.indexOf(tab));
+    }
+
+    /**
+     * This method gets the index in TabModel of the first tab in {@code tabs}.
+     * @param selector   The selector that owns the {@code tab}.
+     * @param tabs       The list of tabs among which we need to find the first tab index.
+     * @return The index in TabModel of the first tab in {@code tabs}
+     */
+    public static int getFirstTabModelIndexForList(TabModelSelector selector, List<Tab> tabs) {
+        assert tabs != null && tabs.size() != 0;
+
+        return selector.getCurrentModel().indexOf(tabs.get(0));
+    }
+
+    /**
+     * This method gets the index in TabModel of the last tab in {@code tabs}.
+     * @param selector   The selector that owns the {@code tab}.
+     * @param tabs       The list of tabs among which we need to find the last tab index.
+     * @return The index in TabModel of the last tab in {@code tabs}
+     */
+    public static int getLastTabModelIndexForList(TabModelSelector selector, List<Tab> tabs) {
+        assert tabs != null && tabs.size() != 0;
+
+        return selector.getCurrentModel().indexOf(tabs.get(tabs.size() - 1));
     }
 }
