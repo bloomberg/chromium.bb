@@ -62,7 +62,10 @@ enum class ErrorRetryCommand {
   kReload,
   // WebView should rewrite its URL (assumed to be a placeholder URL) to the
   // navigation item's URL to prepare for reload.
-  kRewriteWebViewURL,
+  kRewriteToWebViewURL,
+  // WebView should rewrite its URL to a placeholder URL to prepare for loading
+  // the error view.
+  kRewriteToPlaceholderURL,
   // WebView doesn't need to do anything.
   kDoNothing,
 };

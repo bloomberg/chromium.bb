@@ -161,6 +161,33 @@ TEST_P(ErrorPageTest, MAYBE_BackForwardErrorPage) {
   ASSERT_TRUE(test::WaitForWebViewContainingText(web_state(), "Echo"));
 }
 
+// Tests that reloading a page that is no longer accessible doesn't destroy
+// forward history.
+TEST_P(ErrorPageTest, ReloadOfflinePage) {
+  server_responds_with_content_ = true;
+
+  test::LoadUrl(web_state(), server_.GetURL("/echo-query?foo"));
+  ASSERT_TRUE(test::WaitForWebViewContainingText(web_state(), "foo"));
+
+  test::LoadUrl(web_state(), server_.GetURL("/echoall?bar"));
+  ASSERT_TRUE(test::WaitForWebViewContainingText(web_state(), "bar"));
+
+  web_state()->GetNavigationManager()->GoBack();
+  ASSERT_TRUE(test::WaitForWebViewContainingText(web_state(), "foo"));
+
+  server_responds_with_content_ = false;
+  web_state()->GetNavigationManager()->Reload(ReloadType::NORMAL,
+                                              /*check_for_repost=*/false);
+
+  ASSERT_TRUE(WaitForErrorText(web_state(), server_.GetURL("/echo-query?foo")));
+  server_responds_with_content_ = true;
+
+  // Make sure that forward history hasn't been destroyed.
+  ASSERT_TRUE(web_state()->GetNavigationManager()->CanGoForward());
+  web_state()->GetNavigationManager()->GoForward();
+  ASSERT_TRUE(test::WaitForWebViewContainingText(web_state(), "bar"));
+}
+
 // Loads the URL which fails to load, then sucessfully reloads the page.
 TEST_P(ErrorPageTest, ReloadErrorPage) {
   // No response leads to -1005 error code.

@@ -2390,7 +2390,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
       [self.webView reload];
       break;
 
-    case web::ErrorRetryCommand::kRewriteWebViewURL: {
+    case web::ErrorRetryCommand::kRewriteToWebViewURL: {
       std::unique_ptr<web::NavigationContextImpl> navigationContext =
           [self registerLoadRequestForURL:item->GetURL()
                    sameDocumentNavigation:NO
@@ -2404,6 +2404,21 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
       navigationContext->SetIsPost(context->IsPost());
       [self.navigationHandler.navigationStates
              setContext:std::move(navigationContext)
+          forNavigation:navigation];
+    } break;
+
+    case web::ErrorRetryCommand::kRewriteToPlaceholderURL: {
+      std::unique_ptr<web::NavigationContextImpl> originalContext =
+          [self.navigationHandler.navigationStates
+              removeNavigation:originalNavigation];
+      originalContext->SetPlaceholderNavigation(YES);
+      GURL placeholderURL = CreatePlaceholderUrlForUrl(item->GetURL());
+
+      WKNavigation* navigation =
+          [self.webView loadHTMLString:@""
+                               baseURL:net::NSURLWithGURL(placeholderURL)];
+      [self.navigationHandler.navigationStates
+             setContext:std::move(originalContext)
           forNavigation:navigation];
     } break;
 
