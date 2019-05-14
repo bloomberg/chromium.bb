@@ -565,6 +565,7 @@
     betty-arcnext-release
     betty-release
     bob-release
+    buddy-cfm-release
     buddy-release
     candy-release
     capri-release
@@ -598,6 +599,7 @@
     falco-release
     falco_li-release
     fizz-accelerator-release
+    fizz-cfm-release
     fizz-labstation-release
     fizz-moblab-release
     fizz-release
@@ -608,6 +610,7 @@
     gnawty-release
     gonzo-release
     grunt-release
+    guado-cfm-release
     guado-macrophage-release
     guado-release
     guado_labstation-release
@@ -1057,6 +1060,18 @@
   bob-tot-chrome-pfq-informational-tryjob
   bob-tot-chromium-pfq-informational-tryjob
   bob-unittest-stress
+  buddy-cfm-chromium-pfq-tryjob
+  buddy-cfm-compile-only-pre-cq
+  buddy-cfm-full-tryjob
+  buddy-cfm-llvm-next-toolchain-tryjob
+  buddy-cfm-llvm-toolchain-tryjob
+  buddy-cfm-no-vmtest-pre-cq
+  buddy-cfm-paladin-tryjob
+  buddy-cfm-postsubmit-tryjob
+  buddy-cfm-pre-cq
+  buddy-cfm-release-tryjob
+  buddy-cfm-tot-chromium-pfq-informational-tryjob
+  buddy-cfm-unittest-stress
   buddy-chrome-pfq-tryjob
   buddy-chromium-pfq-tryjob
   buddy-compile-only-pre-cq
@@ -1890,6 +1905,18 @@
   fizz-accelerator-release-afdo-use-tryjob
   fizz-accelerator-release-tryjob
   fizz-accelerator-unittest-stress
+  fizz-cfm-chromium-pfq-tryjob
+  fizz-cfm-compile-only-pre-cq
+  fizz-cfm-full-tryjob
+  fizz-cfm-llvm-next-toolchain-tryjob
+  fizz-cfm-llvm-toolchain-tryjob
+  fizz-cfm-no-vmtest-pre-cq
+  fizz-cfm-paladin-tryjob
+  fizz-cfm-postsubmit-tryjob
+  fizz-cfm-pre-cq
+  fizz-cfm-release-tryjob
+  fizz-cfm-tot-chromium-pfq-informational-tryjob
+  fizz-cfm-unittest-stress
   fizz-chrome-pfq-tryjob
   fizz-chromium-pfq-tryjob
   fizz-compile-only-pre-cq
@@ -2100,6 +2127,18 @@
   guado-accelerator-release-afdo-use-tryjob
   guado-accelerator-release-tryjob
   guado-accelerator-unittest-stress
+  guado-cfm-chromium-pfq-tryjob
+  guado-cfm-compile-only-pre-cq
+  guado-cfm-full-tryjob
+  guado-cfm-llvm-next-toolchain-tryjob
+  guado-cfm-llvm-toolchain-tryjob
+  guado-cfm-no-vmtest-pre-cq
+  guado-cfm-paladin-tryjob
+  guado-cfm-postsubmit-tryjob
+  guado-cfm-pre-cq
+  guado-cfm-release-tryjob
+  guado-cfm-tot-chromium-pfq-informational-tryjob
+  guado-cfm-unittest-stress
   guado-chrome-pfq-tryjob
   guado-chromium-pfq-tryjob
   guado-compile-only-pre-cq
@@ -2858,6 +2897,7 @@
     betty-arcnext-release-tryjob
     betty-release-tryjob
     bob-release-tryjob
+    buddy-cfm-release-tryjob
     buddy-release-tryjob
     candy-release-tryjob
     capri-release-tryjob
@@ -2891,6 +2931,7 @@
     falco-release-tryjob
     falco_li-release-tryjob
     fizz-accelerator-release-tryjob
+    fizz-cfm-release-tryjob
     fizz-labstation-release-tryjob
     fizz-moblab-release-tryjob
     fizz-release-tryjob
@@ -2901,6 +2942,7 @@
     gnawty-release-tryjob
     gonzo-release-tryjob
     grunt-release-tryjob
+    guado-cfm-release-tryjob
     guado-macrophage-release-tryjob
     guado-release-tryjob
     guado_labstation-release-tryjob

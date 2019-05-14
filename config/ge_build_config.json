@@ -194,6 +194,18 @@
       ]
     },
     {
+      "name": "buddy-cfm",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": "",
+          "arch": "X86_INTERNAL"
+        }
+      ]
+    },
+    {
       "name": "candy",
       "configs": [
         {
@@ -518,6 +530,18 @@
       ]
     },
     {
+      "name": "fizz-cfm",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": "",
+          "arch": "X86_INTERNAL"
+        }
+      ]
+    },
+    {
       "name": "gale",
       "configs": [
         {
@@ -585,6 +609,18 @@
           "experimental": true,
           "leader_board": false,
           "board_group": "jecht",
+          "arch": "X86_INTERNAL"
+        }
+      ]
+    },
+    {
+      "name": "guado-cfm",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": "",
           "arch": "X86_INTERNAL"
         }
       ]
