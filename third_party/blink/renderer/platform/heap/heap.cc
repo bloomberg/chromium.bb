@@ -597,31 +597,6 @@ bool ThreadHeap::AdvanceLazySweep(TimeTicks deadline) {
   return true;
 }
 
-void ThreadHeap::WriteBarrier(void* value) {
-  DCHECK(thread_state_->IsIncrementalMarking());
-  DCHECK(value);
-  // '-1' is used to indicate deleted values.
-  DCHECK_NE(value, reinterpret_cast<void*>(-1));
-
-  HeapObjectHeader* const header = HeapObjectHeader::FromInnerAddress(
-      reinterpret_cast<Address>(const_cast<void*>(value)));
-  if (header->IsMarked())
-    return;
-
-  if (header->IsInConstruction()) {
-    not_fully_constructed_worklist_->Push(WorklistTaskId::MainThread,
-                                          header->Payload());
-    return;
-  }
-
-  // Mark and push trace callback.
-  header->Mark();
-  marking_worklist_->Push(
-      WorklistTaskId::MainThread,
-      {header->Payload(),
-       GCInfoTable::Get().GCInfoFromIndex(header->GcInfoIndex())->trace});
-}
-
 ThreadHeap* ThreadHeap::main_thread_heap_ = nullptr;
 
 }  // namespace blink

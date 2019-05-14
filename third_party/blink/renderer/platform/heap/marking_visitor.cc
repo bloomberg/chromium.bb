@@ -17,7 +17,8 @@ ALWAYS_INLINE bool IsHashTableDeleteValue(const void* value) {
 
 }  // namespace
 
-MarkingVisitor::MarkingVisitor(ThreadState* state, MarkingMode marking_mode)
+MarkingVisitorBase::MarkingVisitorBase(ThreadState* state,
+                                       MarkingMode marking_mode)
     : Visitor(state),
       marking_worklist_(Heap().GetMarkingWorklist(),
                         WorklistTaskId::MainThread),
@@ -32,7 +33,96 @@ MarkingVisitor::MarkingVisitor(ThreadState* state, MarkingMode marking_mode)
 #endif  // DCHECK_IS_ON
 }
 
-MarkingVisitor::~MarkingVisitor() = default;
+void MarkingVisitorBase::RegisterWeakCallback(void* object,
+                                              WeakCallback callback) {
+  // We don't want to run weak processings when taking a snapshot.
+  if (marking_mode_ == kSnapshotMarking)
+    return;
+  weak_callback_worklist_.Push({object, callback});
+}
+
+void MarkingVisitorBase::RegisterBackingStoreReference(void** slot) {
+  if (marking_mode_ != kGlobalMarkingWithCompaction)
+    return;
+  // TODO(mlippautz): Do not call into heap directly but rather use a Worklist
+  // as temporary storage.
+  Heap().RegisterMovingObjectReference(
+      reinterpret_cast<MovableReference*>(slot));
+}
+
+void MarkingVisitorBase::RegisterBackingStoreCallback(
+    void** slot,
+    MovingObjectCallback callback,
+    void* callback_data) {
+  if (marking_mode_ != kGlobalMarkingWithCompaction)
+    return;
+  // TODO(mlippautz): Do not call into heap directly but rather use a Worklist
+  // as temporary storage.
+  Heap().RegisterMovingObjectCallback(reinterpret_cast<MovableReference*>(slot),
+                                      callback, callback_data);
+}
+
+bool MarkingVisitorBase::RegisterWeakTable(
+    const void* closure,
+    EphemeronCallback iteration_callback) {
+  // TODO(mlippautz): Do not call into heap directly but rather use a Worklist
+  // as temporary storage.
+  Heap().RegisterWeakTable(const_cast<void*>(closure), iteration_callback);
+  return true;
+}
+
+void MarkingVisitor::WriteBarrierSlow(void* value) {
+  if (!value || IsHashTableDeleteValue(value))
+    return;
+
+  ThreadState* const thread_state = ThreadState::Current();
+  if (!thread_state->IsIncrementalMarking())
+    return;
+
+  HeapObjectHeader* const header = HeapObjectHeader::FromInnerAddress(
+      reinterpret_cast<Address>(const_cast<void*>(value)));
+  if (header->IsMarked())
+    return;
+
+  if (header->IsInConstruction()) {
+    thread_state->CurrentVisitor()->not_fully_constructed_worklist_.Push(
+        header->Payload());
+    return;
+  }
+
+  // Mark and push trace callback.
+  header->Mark();
+  thread_state->CurrentVisitor()->marking_worklist_.Push(
+      {header->Payload(),
+       GCInfoTable::Get().GCInfoFromIndex(header->GcInfoIndex())->trace});
+}
+
+void MarkingVisitor::TraceMarkedBackingStoreSlow(void* value) {
+  if (!value)
+    return;
+
+  ThreadState* const thread_state = ThreadState::Current();
+  if (!thread_state->IsIncrementalMarking())
+    return;
+
+  // |value| is pointing to the start of a backing store.
+  HeapObjectHeader* header = HeapObjectHeader::FromPayload(value);
+  CHECK(header->IsMarked());
+  DCHECK(thread_state->CurrentVisitor());
+  // No weak handling for write barriers. Modifying weakly reachable objects
+  // strongifies them for the current cycle.
+  GCInfoTable::Get()
+      .GCInfoFromIndex(header->GcInfoIndex())
+      ->trace(thread_state->CurrentVisitor(), value);
+}
+
+MarkingVisitor::MarkingVisitor(ThreadState* state, MarkingMode marking_mode)
+    : MarkingVisitorBase(state, marking_mode) {
+  DCHECK(state->InAtomicMarkingPause());
+#if DCHECK_IS_ON()
+  DCHECK(state->CheckThread());
+#endif  // DCHECK_IS_ON()
+}
 
 void MarkingVisitor::DynamicallyMarkAddress(Address address) {
   HeapObjectHeader* const header = HeapObjectHeader::FromInnerAddress(address);
@@ -90,65 +180,6 @@ void MarkingVisitor::ConservativelyMarkAddress(BasePage* page,
     if (maybe_ptr)
       Heap().CheckAndMarkPointer(this, maybe_ptr);
   }
-}
-
-void MarkingVisitor::RegisterWeakCallback(void* object, WeakCallback callback) {
-  // We don't want to run weak processings when taking a snapshot.
-  if (marking_mode_ == kSnapshotMarking)
-    return;
-  weak_callback_worklist_.Push({object, callback});
-}
-
-void MarkingVisitor::RegisterBackingStoreReference(void** slot) {
-  if (marking_mode_ != kGlobalMarkingWithCompaction)
-    return;
-  Heap().RegisterMovingObjectReference(
-      reinterpret_cast<MovableReference*>(slot));
-}
-
-void MarkingVisitor::RegisterBackingStoreCallback(void** slot,
-                                                  MovingObjectCallback callback,
-                                                  void* callback_data) {
-  if (marking_mode_ != kGlobalMarkingWithCompaction)
-    return;
-  Heap().RegisterMovingObjectCallback(reinterpret_cast<MovableReference*>(slot),
-                                      callback, callback_data);
-}
-
-bool MarkingVisitor::RegisterWeakTable(const void* closure,
-                                       EphemeronCallback iteration_callback) {
-  Heap().RegisterWeakTable(const_cast<void*>(closure), iteration_callback);
-  return true;
-}
-
-void MarkingVisitor::WriteBarrierSlow(void* value) {
-  if (!value || IsHashTableDeleteValue(value))
-    return;
-
-  ThreadState* const thread_state = ThreadState::Current();
-  if (!thread_state->IsIncrementalMarking())
-    return;
-
-  thread_state->Heap().WriteBarrier(value);
-}
-
-void MarkingVisitor::TraceMarkedBackingStoreSlow(void* value) {
-  if (!value)
-    return;
-
-  ThreadState* const thread_state = ThreadState::Current();
-  if (!thread_state->IsIncrementalMarking())
-    return;
-
-  // |value| is pointing to the start of a backing store.
-  HeapObjectHeader* header = HeapObjectHeader::FromPayload(value);
-  CHECK(header->IsMarked());
-  DCHECK(thread_state->CurrentVisitor());
-  // No weak handling for write barriers. Modifying weakly reachable objects
-  // strongifies them for the current cycle.
-  GCInfoTable::Get()
-      .GCInfoFromIndex(header->GcInfoIndex())
-      ->trace(thread_state->CurrentVisitor(), value);
 }
 
 }  // namespace blink
