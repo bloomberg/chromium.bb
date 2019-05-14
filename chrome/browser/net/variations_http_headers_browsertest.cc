@@ -34,8 +34,6 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_delegate.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
@@ -256,24 +254,6 @@ class VariationsHttpHeadersBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(VariationsHttpHeadersBrowserTest);
 };
 
-class BlockingURLFetcherDelegate : public net::URLFetcherDelegate {
- public:
-  BlockingURLFetcherDelegate() = default;
-  ~BlockingURLFetcherDelegate() override = default;
-
-  void OnURLFetchComplete(const net::URLFetcher* source) override {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  run_loop_.QuitClosure());
-  }
-
-  void AwaitResponse() { run_loop_.Run(); }
-
- private:
-  base::RunLoop run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(BlockingURLFetcherDelegate);
-};
-
 std::unique_ptr<net::test_server::HttpResponse>
 VariationsHttpHeadersBrowserTest::RequestHandler(
     const net::test_server::HttpRequest& request) {
@@ -332,8 +312,7 @@ IN_PROC_BROWSER_TEST_F(VariationsHttpHeadersBrowserTest,
 }
 
 // Verify in an integration that that the variations header (X-Client-Data) is
-// correctly attached and stripped from network requests that are triggered via
-// a URLFetcher.
+// correctly attached and stripped from network requests.
 IN_PROC_BROWSER_TEST_F(VariationsHttpHeadersBrowserTest,
                        TestStrippingHeadersFromSubresourceRequest) {
   GURL url = server()->GetURL("/simple_page.html");
