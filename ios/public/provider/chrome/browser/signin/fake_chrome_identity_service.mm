@@ -29,15 +29,6 @@ UIImage* FakeGetCachedAvatarForIdentity(ChromeIdentity*) {
   return provider ? provider->GetDefaultAvatar() : nil;
 }
 
-void FakeGetAvatarForIdentity(ChromeIdentity* identity,
-                              ios::GetAvatarCallback callback) {
-  // |GetAvatarForIdentity| is normally an asynchronous operation, this is
-  // replicated here by dispatching it.
-  dispatch_async(dispatch_get_main_queue(), ^{
-    callback(FakeGetCachedAvatarForIdentity(identity));
-  });
-}
-
 void FakeGetHostedDomainForIdentity(ChromeIdentity* identity,
                                     ios::GetHostedDomainCallback callback) {
   NSString* domain = base::SysUTF8ToNSString(gaia::ExtractDomainName(
@@ -230,7 +221,14 @@ UIImage* FakeChromeIdentityService::GetCachedAvatarForIdentity(
 void FakeChromeIdentityService::GetAvatarForIdentity(
     ChromeIdentity* identity,
     GetAvatarCallback callback) {
-  FakeGetAvatarForIdentity(identity, callback);
+  if (!callback) {
+    return;
+  }
+  // |GetAvatarForIdentity| is normally an asynchronous operation, this is
+  // replicated here by dispatching it.
+  dispatch_async(dispatch_get_main_queue(), ^{
+    callback(FakeGetCachedAvatarForIdentity(identity));
+  });
 }
 
 void FakeChromeIdentityService::GetHostedDomainForIdentity(

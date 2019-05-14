@@ -167,7 +167,7 @@ class ChromeIdentityService {
 
   // Fetches the profile avatar, from the cache or the network.
   // For high resolution iPads, returns large images (200 x 200) to avoid
-  // pixelization. Calls back on the main thread.
+  // pixelization. Calls back on the main thread. |callback| may be nil.
   virtual void GetAvatarForIdentity(ChromeIdentity* identity,
                                     GetAvatarCallback callback);
 
