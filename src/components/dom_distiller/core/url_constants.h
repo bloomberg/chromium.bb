@@ -7,7 +7,11 @@
 
 namespace dom_distiller {
 
+
+#if defined(USE_DOM_DISTILLER)
 extern const char kDomDistillerScheme[];
+#endif
+
 extern const char kEntryIdKey[];
 extern const char kUrlKey[];
 extern const char kTimeKey[];

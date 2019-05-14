@@ -475,6 +475,7 @@ RenderWidget::RenderWidget(int32_t widget_routing_id,
       was_shown_time_(base::TimeTicks::Now()),
       current_content_source_id_(0),
       widget_binding_(this, std::move(widget_request)),
+      bb_OnHandleInputEvent_no_ack_(false),
       warmup_weak_ptr_factory_(this),
       weak_ptr_factory_(this) {
   DCHECK_NE(routing_id_, MSG_ROUTING_NONE);
@@ -1203,6 +1204,14 @@ void RenderWidget::SetShowFPSCounter(bool show) {
   cc::LayerTreeDebugState debug_state = host->GetDebugState();
   debug_state.show_fps_counter = show;
   host->SetDebugState(debug_state);
+}
+
+void RenderWidget::bbHandleInputEvent(const blink::WebInputEvent& event) {
+  ui::LatencyInfo latency_info;
+  bb_OnHandleInputEvent_no_ack_ = true;
+  input_handler_->HandleInputEvent(blink::WebCoalescedInputEvent(event),
+                                   latency_info, {});
+  bb_OnHandleInputEvent_no_ack_ = false;
 }
 
 void RenderWidget::SetShowPaintRects(bool show) {

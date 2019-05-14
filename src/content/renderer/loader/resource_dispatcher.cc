@@ -24,9 +24,11 @@
 #include "content/common/mime_sniffing_throttle.h"
 #include "content/common/navigation_params.h"
 #include "content/common/throttling_url_loader.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/navigation_policy.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/url_utils.h"
+#include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/fixed_received_data.h"
 #include "content/public/renderer/request_peer.h"
 #include "content/public/renderer/resource_dispatcher_delegate.h"
@@ -343,6 +345,9 @@ bool ResourceDispatcher::RemovePendingRequest(
   // process.
   info->url_loader_client = nullptr;
 
+  if (it->second.get()->bridge)
+    it->second.get()->bridge.reset(nullptr);
+
   // Always delete the pending_request asyncly so that cancelling the request
   // doesn't delete the request context info while its response is still being
   // handled.
@@ -358,6 +363,11 @@ void ResourceDispatcher::Cancel(
   auto it = pending_requests_.find(request_id);
   if (it == pending_requests_.end()) {
     DLOG(ERROR) << "unknown request";
+    return;
+  }
+
+  if (it->second.get()->bridge) {
+    it->second.get()->bridge->Cancel();
     return;
   }
 
@@ -392,7 +402,12 @@ void ResourceDispatcher::DidChangePriority(int request_id,
     return;
   }
 
-  request_info->url_loader->SetPriority(new_priority, intra_priority_value);
+  // blpwtk2: Null-check before we attempt to use the throttling loader. This
+  // check is needed because we bail out very early in the StartAsync function
+  // if the embedder's URL loader is used, and we never give the chance for
+  // the throttling loader to be installed later in the function.
+  if (request_info->url_loader)
+    request_info->url_loader->SetPriority(new_priority, intra_priority_value);
 }
 
 void ResourceDispatcher::OnTransferSizeUpdated(int request_id,
@@ -415,12 +430,14 @@ void ResourceDispatcher::OnTransferSizeUpdated(int request_id,
 
 ResourceDispatcher::PendingRequestInfo::PendingRequestInfo(
     std::unique_ptr<RequestPeer> peer,
+    std::unique_ptr<ResourceLoaderBridge> bridge,
     ResourceType resource_type,
     int render_frame_id,
     const GURL& request_url,
     std::unique_ptr<NavigationResponseOverrideParameters>
         navigation_response_override_params)
     : peer(std::move(peer)),
+      bridge(std::move(bridge)),
       resource_type(resource_type),
       render_frame_id(render_frame_id),
       url(request_url),
@@ -442,6 +459,14 @@ void ResourceDispatcher::StartSync(
     base::TimeDelta timeout,
     blink::mojom::BlobRegistryPtrInfo download_to_blob_registry,
     std::unique_ptr<RequestPeer> peer) {
+  std::unique_ptr<ResourceLoaderBridge> bridge(
+      GetContentClient()->renderer()->OverrideResourceLoaderBridge(
+          request.get()));
+  if (bridge.get()) {
+    bridge->SyncLoad(response);
+    return;
+  }
+
   CheckSchemeForReferrerPolicy(*request);
 
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> factory_info =
@@ -521,8 +546,29 @@ int ResourceDispatcher::StartAsync(
 
   // Compute a unique request_id for this renderer process.
   int request_id = MakeRequestID();
+
+  std::unique_ptr<ResourceLoaderBridge> bridge(
+      GetContentClient()->renderer()->OverrideResourceLoaderBridge(
+          request.get()));
+
+  if (bridge) {
+    bridge->Start(peer.get());
+    pending_requests_[request_id] = std::make_unique<PendingRequestInfo>(
+        std::move(peer), std::move(bridge), static_cast<ResourceType>(request->resource_type),
+        request->render_frame_id, request->url, request->method,
+        request->referrer, std::move(response_override_params));
+
+    pending_requests_[request_id]->url_loader_client =
+        std::make_unique<URLLoaderClientImpl>(
+            request_id, this, loading_task_runner,
+            true /* bypass_redirect_checks */, request->url);
+    return request_id;
+  }
+
+  CheckSchemeForReferrerPolicy(*request);
+
   pending_requests_[request_id] = std::make_unique<PendingRequestInfo>(
-      std::move(peer), static_cast<ResourceType>(request->resource_type),
+      std::move(peer), std::move(bridge), static_cast<ResourceType>(request->resource_type),
       request->render_frame_id, request->url,
       std::move(response_override_params));
   PendingRequestInfo* pending_request = pending_requests_[request_id].get();

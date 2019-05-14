@@ -104,7 +104,7 @@ if (is_component_build) {
   }
 } else {
   group("content") {
-    public_deps = content_shared_components
+    public_deps = content_shared_components + [ "//content/public/app:both" ]
   }
 }
 
@@ -117,6 +117,8 @@ grit("resources") {
   outputs = [
     "grit/content_resources.h",
     "content_resources.pak",
+    # needed by blpwtk2
+    "content_resources.rc",
   ]
   grit_flags = [
     "-E",

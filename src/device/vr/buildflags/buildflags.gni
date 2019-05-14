@@ -54,8 +54,7 @@ declare_args() {
   # When enabled, host Desktop VR devices (OpenVR and Oculus) in a separate
   # process.  When disabled, and Oculus/OpenVR are enabled, they are hosted
   # in the browser process.
-  enable_isolated_xr_service =
-      enable_oculus_vr || enable_openvr || enable_windows_mr
+  enable_isolated_xr_service = false
 }
 
 declare_args() {

@@ -111,6 +111,7 @@ component("media") {
     ":media_buildflags",
     ":shared_memory_support",
     "//ui/gfx:color_space",
+    "//blpwtk2:blpwtk2_generate_sources"
   ]
 
   # This must be included here since it actually depends on //media/base.

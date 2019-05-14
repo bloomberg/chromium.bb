@@ -289,8 +289,10 @@ ChromeContentUtilityClient::MaybeCreateMainThreadService(
   if (service_name == patch::mojom::kServiceName)
     return std::make_unique<patch::PatchService>(std::move(request));
 
+#if !defined(BLPWTK2_IMPLEMENTATION)
   if (service_name == chrome::mojom::kProfileImportServiceName)
     return std::make_unique<ProfileImportService>(std::move(request));
+#endif
 
   if (base::FeatureList::IsEnabled(mirroring::features::kMirroringService) &&
       base::FeatureList::IsEnabled(features::kAudioServiceAudioStreams) &&
