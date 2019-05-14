@@ -5,6 +5,11 @@
 
 '''Unit tests for ChromeScaledImage.'''
 
+import os
+import sys
+if __name__ == '__main__':
+  sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                               '../..')))
 
 import re
 import struct
@@ -38,7 +43,8 @@ _PNG_FOOTER = (
 
 def _MakePNG(chunks):
   pack_int32 = struct.Struct('>i').pack
-  chunks = [pack_int32(len(payload)) + type + payload + pack_int32(zlib.crc32(type + payload))
+  chunks = [pack_int32(len(payload)) + type + payload +
+            pack_int32(zlib.crc32(type + payload))
             for type, payload in chunks]
   return _PNG_HEADER + ''.join(chunks) + _PNG_FOOTER
 
@@ -79,7 +85,8 @@ def _If(expr, *body):
   return '<if expr="%s">\n%s\n</if>' % (expr, '\n'.join(body))
 
 
-def _RunBuildTest(self, structures, inputs, expected_outputs, skip_rc=False, layout_fallback=''):
+def _RunBuildTest(self, structures, inputs, expected_outputs, skip_rc=False,
+                  layout_fallback=''):
   outputs = '\n'.join('<output filename="out/%s%s" type="%s" context="%s"%s />'
                               % (context, ext, type, context, layout_fallback)
                       for ext, type in _OUTFILETYPES
@@ -191,3 +198,6 @@ class ChromeScaledImageUnittest(unittest.TestCase):
          'tactile_123_percent': set([t123a]),
         },
         layout_fallback=' fallback_to_default_layout="false"')
+
+if __name__ == '__main__':
+  unittest.main()
