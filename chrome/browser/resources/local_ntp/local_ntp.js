@@ -1235,7 +1235,10 @@ function init() {
 
   if (searchboxApiHandle.rtl) {
     $(IDS.NOTIFICATION).dir = 'rtl';
-    // Grabbing the root HTML element.
+    // Grabbing the root HTML element. TODO(dbeam): could this just be <html ...
+    // dir="$i18n{textdirection}"> in the .html file instead? It could result in
+    // less flicker for RTL users (as HTML/CSS can render before JavaScript has
+    // the chance to run).
     document.documentElement.setAttribute('dir', 'rtl');
     // Add class for setting alignments based on language directionality.
     document.documentElement.classList.add(CLASSES.RTL);

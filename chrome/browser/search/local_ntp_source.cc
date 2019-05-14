@@ -24,6 +24,7 @@
 #include "base/task/post_task.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/background/ntp_background_data.h"
 #include "chrome/browser/search/background/ntp_background_service.h"
@@ -970,6 +971,10 @@ void LocalNtpSource::StartDataRequest(
     // TODO(dbeam): rewrite this class to WebUIDataSource instead of
     // URLDataSource, and get magical $i18n{} replacement for free.
     ui::TemplateReplacements replacements;
+
+    const std::string& app_locale = g_browser_process->GetApplicationLocale();
+    webui::SetLoadTimeDataDefaults(app_locale, &replacements);
+
     replacements["animationsIntegrity"] =
         base::StrCat({kSha256, ANIMATIONS_JS_INTEGRITY});
     replacements["configDataIntegrity"] = base::StrCat(
