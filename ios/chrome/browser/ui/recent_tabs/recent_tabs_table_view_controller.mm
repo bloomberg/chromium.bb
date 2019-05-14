@@ -899,7 +899,14 @@ const int kRecentlyClosedTabsSectionIndex = 0;
       base::UserMetricsAction("MobileRecentTabManagerRecentTabOpened"));
   new_tab_page_uma::RecordAction(
       self.browserState, new_tab_page_uma::ACTION_OPENED_RECENTLY_CLOSED_ENTRY);
-  RestoreTab(entry->id, self.restoredTabDisposition, self.browserState);
+
+  // If RecentTabs is being displayed from incognito, the resulting tab will
+  // open in the corresponding normal BVC. Change the disposition to avoid
+  // clobbering any tabs.
+  WindowOpenDisposition disposition =
+      self.isIncognito ? WindowOpenDisposition::NEW_FOREGROUND_TAB
+                       : self.restoredTabDisposition;
+  RestoreTab(entry->id, disposition, self.browserState);
   [self.presentationDelegate showActiveRegularTabFromRecentTabs];
 }
 

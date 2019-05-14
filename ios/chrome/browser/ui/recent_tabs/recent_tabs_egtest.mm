@@ -10,6 +10,8 @@
 
 #include "base/test/scoped_feature_list.h"
 #include "components/strings/grit/components_strings.h"
+#import "ios/chrome/app/main_controller.h"
+#import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
 #import "ios/chrome/browser/ui/history/history_ui_constants.h"
@@ -18,6 +20,7 @@
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
+#import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
@@ -40,11 +43,23 @@ const char kHTMLOfTestPage[] =
     "<head><title>TestPageTitle</title></head><body>hello</body>";
 NSString* const kTitleOfTestPage = @"TestPageTitle";
 
+// Closes all tabs in the normal TabModel.
+void CloseAllNormalTabs() {
+  TabModel* tabModel = chrome_test_util::GetMainController()
+                           .interfaceProvider.mainInterface.tabModel;
+  [tabModel closeAllTabs];
+}
+
 // Makes sure at least one tab is opened and opens the recent tab panel.
 void OpenRecentTabsPanel() {
   // At least one tab is needed to be able to open the recent tabs panel.
-  if (chrome_test_util::GetMainTabCount() == 0)
-    [ChromeEarlGrey openNewTab];
+  if (chrome_test_util::IsIncognitoMode()) {
+    if (chrome_test_util::GetIncognitoTabCount() == 0)
+      [ChromeEarlGrey openNewIncognitoTab];
+  } else {
+    if (chrome_test_util::GetMainTabCount() == 0)
+      [ChromeEarlGrey openNewTab];
+  }
 
   [ChromeEarlGreyUI openToolsMenu];
   [ChromeEarlGreyUI tapToolsMenuButton:RecentTabsMenuButton()];
@@ -119,6 +134,34 @@ id<GREYMatcher> TitleOfTestPage() {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       assertWithMatcher:chrome_test_util::OmniboxText(
                             testPageURL.GetContent())];
+}
+
+// Tests restoring a tab from incognito when the normal WebStateList is empty.
+- (void)testRestoreTabFromIncognitoWithNoNormalTabsOpen {
+  const GURL testPageURL = web::test::HttpServer::MakeUrl(kURLOfTestPage);
+
+  // Open the test page in a new tab.
+  [ChromeEarlGrey loadURL:testPageURL];
+  [ChromeEarlGrey waitForWebViewContainingText:"hello"];
+
+  // Open a new incognito tab, then close the non-OTR tab.
+  [ChromeEarlGrey openNewIncognitoTab];
+  CloseAllNormalTabs();
+
+  // Open the Recent Tabs panel and check that the test page is present.
+  OpenRecentTabsPanel();
+  [[EarlGrey selectElementWithMatcher:TitleOfTestPage()]
+      assertWithMatcher:grey_notNil()];
+
+  // Tap on the entry for the test page in the Recent Tabs panel and check that
+  // a tab containing the test page was opened in the main WebStateList.
+  GREYAssertTrue(chrome_test_util::GetMainTabCount() == 0,
+                 @"Unexpected tabs in the main WebStateList");
+  [[EarlGrey selectElementWithMatcher:TitleOfTestPage()]
+      performAction:grey_tap()];
+  [ChromeEarlGrey waitForMainTabCount:1];
+  GREYAssertTrue(chrome_test_util::GetIncognitoTabCount() == 1,
+                 @"Unexpected tab added to the incognito WebStateList");
 }
 
 // Tests that tapping "Show Full History" open the history.
