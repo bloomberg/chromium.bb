@@ -660,11 +660,22 @@ public class ChildProcessConnection {
         assert isRunningOnLauncherThread();
         assert !mUnbound;
         assert mWaivedBinding.isBound();
+        assert group != 0 || importanceInGroup == 0;
         if (mGroup != group || mImportanceInGroup != importanceInGroup) {
             mGroup = group;
             mImportanceInGroup = importanceInGroup;
             mWaivedBinding.updateGroupImportance(group, importanceInGroup);
         }
+    }
+
+    public int getGroup() {
+        assert isRunningOnLauncherThread();
+        return mGroup;
+    }
+
+    public int getImportanceInGroup() {
+        assert isRunningOnLauncherThread();
+        return mImportanceInGroup;
     }
 
     public boolean isStrongBindingBound() {

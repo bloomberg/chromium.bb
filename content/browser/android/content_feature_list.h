@@ -13,6 +13,7 @@ namespace android {
 // Alphabetical:
 extern const base::Feature kEnhancedSelectionInsertionHandle;
 extern const base::Feature kRequestUnbufferedDispatch;
+extern const base::Feature kServiceGroupImportance;
 
 }  // namespace android
 }  // namespace content

@@ -62,6 +62,9 @@ public final class ChildProcessLauncherHelperImpl {
     private static final String PRIVILEGED_SERVICES_NAME =
             "org.chromium.content.app.PrivilegedProcessService";
 
+    // Flag to check features after native is initialized.
+    private static boolean sCheckedFeatures;
+
     // A warmed-up connection to a sandboxed service.
     private static SpareChildConnection sSpareSandboxedConnection;
 
@@ -230,6 +233,14 @@ public final class ChildProcessLauncherHelperImpl {
         ChildProcessLauncherHelperImpl helper = new ChildProcessLauncherHelperImpl(nativePointer,
                 commandLine, filesToBeMapped, sandboxed, canUseWarmUpConnection, binderCallback);
         helper.start();
+
+        if (!sCheckedFeatures) {
+            sCheckedFeatures = true;
+            if (sSandboxedChildConnectionRanking != null
+                    && ContentFeatureList.isEnabled(ContentFeatureList.SERVICE_GROUP_IMPORTANCE)) {
+                sSandboxedChildConnectionRanking.enableServiceGroupImportance();
+            }
+        }
         return helper;
     }
 

@@ -467,6 +467,8 @@ public class ChildProcessConnectionTest {
         ChildProcessConnection connection = createDefaultTestConnection();
         connection.start(false /* useStrongBinding */, null /* serviceCallback */);
         connection.updateGroupImportance(1, 2);
+        assertEquals(1, connection.getGroup());
+        assertEquals(2, connection.getImportanceInGroup());
         // Expect a important, moderate and waived bindings.
         assertEquals(3, mMockConnections.size());
         // Group should be set on the wavied (last) binding.

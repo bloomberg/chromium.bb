@@ -36,6 +36,8 @@ public abstract class ContentFeatureList {
     public static final String BACKGROUND_MEDIA_RENDERER_HAS_MODERATE_BINDING =
             "BackgroundMediaRendererHasModerateBinding";
 
+    public static final String SERVICE_GROUP_IMPORTANCE = "ServiceGroupImportance";
+
     public static final String SERVICE_WORKER_FOREGROUND_PRIORITY =
             "ServiceWorkerForegroundPriority";
 
