@@ -884,7 +884,8 @@ html[dir=rtl] .menu-option {
   background-color: rgba(var(--GB900-rgb), .1);
 }
 
-.menu-option:active {
+.menu-option:active,
+.menu-option.selected {
   background-color: rgb(232, 240, 254);
   color: rgb(var(--GB600-rgb));
 }
@@ -909,7 +910,8 @@ html[dir=rtl] .menu-option {
   width: 20px;
 }
 
-.menu-option:active .menu-option-icon-wrapper .menu-option-icon {
+.menu-option:active .menu-option-icon-wrapper .menu-option-icon,
+.menu-option.selected .menu-option-icon-wrapper .menu-option-icon {
   background-color: rgb(var(--GB600-rgb));
 }
 

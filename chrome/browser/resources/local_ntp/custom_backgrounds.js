@@ -208,6 +208,12 @@ customBackgrounds.showErrorNotification = null;
  */
 customBackgrounds.hideCustomLinkNotification = null;
 
+/*
+ * The currently selected option in the richer picker.
+ * @type {?Element}
+ * @private
+ */
+customBackgrounds.richerPicker_selectedOption = null;
 
 /**
  * Sets the visibility of the settings menu and individual options depending on
@@ -298,6 +304,22 @@ customBackgrounds.resetSelectionDialog = function() {
     tileContainer.removeChild(tileContainer.firstChild);
   }
   customBackgrounds.unselectTile();
+};
+
+/**
+ * Apply selected styling to |elem| and remove it from the previously selected
+ * element.
+ * @param {?Element} elem The element to apply styling to.
+ */
+customBackgrounds.richerPicker_toggleSelectedOption = function(elem) {
+  if (!elem) {
+    return;
+  }
+  customBackgrounds.richerPicker_selectedOption.classList.toggle(
+      customBackgrounds.CLASSES.SELECTED, false);
+  elem.classList.toggle(customBackgrounds.CLASSES.SELECTED, true);
+
+  customBackgrounds.richerPicker_selectedOption = elem;
 };
 
 /**
@@ -929,6 +951,9 @@ customBackgrounds.init = function(
   $(customBackgrounds.IDS.MENU_TITLE).dataset.mainTitle =
       $(customBackgrounds.IDS.MENU_TITLE).textContent;
 
+  customBackgrounds.richerPicker_selectedOption =
+      $(customBackgrounds.IDS.BACKGROUNDS_BUTTON);
+
   $(customBackgrounds.IDS.EDIT_BG_ICON)
       .setAttribute(
           'aria-label', configData.translatedStrings.customizeThisPage);
@@ -1345,19 +1370,40 @@ customBackgrounds.initCustomBackgrounds = function(showErrorNotification) {
     customBackgrounds.richerPicker_selectTile(tile);
   };
 
-  $(customBackgrounds.IDS.BACKGROUNDS_BUTTON).onclick = function() {
+  const richerPickerOpenBackgrounds = function() {
     $(customBackgrounds.IDS.BACKGROUNDS_MENU)
         .classList.toggle(customBackgrounds.CLASSES.MENU_SHOWN, true);
     $(customBackgrounds.IDS.SHORTCUTS_MENU)
         .classList.toggle(customBackgrounds.CLASSES.MENU_SHOWN, false);
+    customBackgrounds.richerPicker_toggleSelectedOption(
+        $(customBackgrounds.IDS.BACKGROUNDS_BUTTON));
   };
 
-  $(customBackgrounds.IDS.SHORTCUTS_BUTTON).onclick = function() {
+  $(customBackgrounds.IDS.BACKGROUNDS_BUTTON).onclick =
+      richerPickerOpenBackgrounds;
+  $(customBackgrounds.IDS.BACKGROUNDS_BUTTON).onkeydown = function(event) {
+    if (event.keyCode === customBackgrounds.KEYCODES.ENTER ||
+        event.keyCode === customBackgrounds.KEYCODES.SPACE) {
+      richerPickerOpenBackgrounds();
+    }
+  };
+
+  const richerPickerOpenShortcuts = function() {
     customBackgrounds.richerPicker_resetImageMenu(false);
     $(customBackgrounds.IDS.BACKGROUNDS_MENU)
         .classList.toggle(customBackgrounds.CLASSES.MENU_SHOWN, false);
     $(customBackgrounds.IDS.SHORTCUTS_MENU)
         .classList.toggle(customBackgrounds.CLASSES.MENU_SHOWN, true);
+    customBackgrounds.richerPicker_toggleSelectedOption(
+        $(customBackgrounds.IDS.SHORTCUTS_BUTTON));
+  };
+
+  $(customBackgrounds.IDS.SHORTCUTS_BUTTON).onclick = richerPickerOpenShortcuts;
+  $(customBackgrounds.IDS.SHORTCUTS_BUTTON).onkeydown = function(event) {
+    if (event.keyCode === customBackgrounds.KEYCODES.ENTER ||
+        event.keyCode === customBackgrounds.KEYCODES.SPACE) {
+      richerPickerOpenShortcuts();
+    }
   };
 
   $(customBackgrounds.IDS.COLORS_BUTTON).onclick = function() {
