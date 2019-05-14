@@ -507,7 +507,7 @@ class DirMerger(Merger):
             # If we're only 'merging' one file, don't output to the log. Not a
             # very useful message.
             if len(to_merge) > 1:
-              _log.debug("Creating merged %s from %s", out_path, to_merge)
+                _log.debug("Creating merged %s from %s", out_path, to_merge)
 
             for match_func, merge_func in reversed(self.helpers):
 
@@ -781,11 +781,6 @@ directory. The script will be given the arguments plus
                 assert (result_key, build_prop_key) in RESULTS_JSON_VALUE_OVERRIDE_WITH_BUILD_PROPERTY, (
                     "%s not in %s" % (result_key, RESULTS_JSON_VALUE_OVERRIDE_WITH_BUILD_PROPERTY))
 
-        if not args.output_directory:
-            args.output_directory = os.getcwd()
-            args.allow_existing_output_directory = True
-            args.remove_existing_output_directory = True
-
         assert not args.input_directories
         args.input_directories = [os.path.dirname(f) for f in args.positional]
         args.positional = []
@@ -797,6 +792,7 @@ directory. The script will be given the arguments plus
 
     if not args.output_directory:
         args.output_directory = tempfile.mkdtemp(suffix='webkit_layout_test_results.')
+        args.allow_existing_output_directory = True
 
     assert args.output_directory
     assert args.input_directories
