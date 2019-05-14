@@ -173,7 +173,7 @@ class SuicideOnChannelErrorFilter : public IPC::MessageFilter {
 
 #endif  // OS(POSIX)
 
-base::Optional<mojo::IncomingInvitation> InitializeMojoIPCChannel() {
+base::Optional<mojo::IncomingInvitation> InitializeMojoIPCChannel(int file_descriptor) {
   TRACE_EVENT0("startup", "InitializeMojoIPCChannel");
   mojo::PlatformChannelEndpoint endpoint;
 #if defined(OS_WIN)
@@ -181,6 +181,10 @@ base::Optional<mojo::IncomingInvitation> InitializeMojoIPCChannel() {
           mojo::PlatformChannel::kHandleSwitch)) {
     endpoint = mojo::PlatformChannel::RecoverPassedEndpointFromCommandLine(
         *base::CommandLine::ForCurrentProcess());
+  } else if (file_descriptor) {
+    endpoint = mojo::PlatformChannelEndpoint(mojo::PlatformHandle(
+        base::win::ScopedHandle(LongToHandle(file_descriptor))));
+    DCHECK(endpoint.is_valid());
   } else {
     // If this process is elevated, it will have a pipe path passed on the
     // command line.
@@ -237,7 +241,9 @@ ChildThread* ChildThread::Get() {
 }
 
 ChildThreadImpl::Options::Options()
-    : auto_start_service_manager_connection(true), connect_to_browser(false) {}
+    : auto_start_service_manager_connection(true),
+      connect_to_browser(false),
+      mojo_controller_handle(0) {}
 
 ChildThreadImpl::Options::Options(const Options& other) = default;
 
@@ -253,6 +259,7 @@ ChildThreadImpl::Options::Builder::InBrowserProcess(
   options_.browser_process_io_runner = params.io_runner();
   options_.in_process_service_request_token = params.service_request_token();
   options_.mojo_invitation = params.mojo_invitation();
+  options_.mojo_controller_handle = params.mojo_controller_handle();
   return *this;
 }
 
@@ -388,7 +395,7 @@ void ChildThreadImpl::Init(const Options& options) {
     mojo_ipc_support_.reset(new mojo::core::ScopedIPCSupport(
         GetIOTaskRunner(), mojo::core::ScopedIPCSupport::ShutdownPolicy::FAST));
     base::Optional<mojo::IncomingInvitation> invitation =
-        InitializeMojoIPCChannel();
+        InitializeMojoIPCChannel(options.mojo_controller_handle);
 
     std::string service_request_token =
         base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(

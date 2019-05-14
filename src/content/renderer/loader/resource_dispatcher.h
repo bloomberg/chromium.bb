@@ -60,6 +60,15 @@ struct SyncLoadResponse;
 class ThrottlingURLLoader;
 class URLLoaderClientImpl;
 
+// TODO(shez): Move this into its own header.
+class ResourceLoaderBridge {
+ public:
+  virtual ~ResourceLoaderBridge() {}
+  virtual bool Start(content::RequestPeer* peer) = 0;
+  virtual void Cancel() = 0;
+  virtual void SyncLoad(content::SyncLoadResponse* response) = 0;
+};
+
 // This class serves as a communication interface to the ResourceDispatcherHost
 // in the browser process. It can be used from any child process.
 // Virtual methods are for tests.
@@ -176,6 +185,7 @@ class CONTENT_EXPORT ResourceDispatcher {
 
   struct PendingRequestInfo {
     PendingRequestInfo(std::unique_ptr<RequestPeer> peer,
+                       std::unique_ptr<ResourceLoaderBridge> bridge,
                        ResourceType resource_type,
                        int render_frame_id,
                        const GURL& request_url,
@@ -185,6 +195,7 @@ class CONTENT_EXPORT ResourceDispatcher {
     ~PendingRequestInfo();
 
     std::unique_ptr<RequestPeer> peer;
+    std::unique_ptr<ResourceLoaderBridge> bridge;
     ResourceType resource_type;
     int render_frame_id;
     bool is_deferred = false;

@@ -24,6 +24,8 @@ grit("ui_resources_grd") {
     "ui_resources_100_percent.pak",
     "ui_resources_200_percent.pak",
     "ui_resources_300_percent.pak",
+    # needed by blpwtk2
+    "ui_resources.rc",
   ]
 }
 

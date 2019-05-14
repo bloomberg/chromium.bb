@@ -6,6 +6,9 @@
     </output>
     <output filename="content_resources_100_percent.pak" type="data_package" context="default_100_percent" />
     <output filename="content_resources_200_percent.pak" type="data_package" context="default_200_percent" />
+
+    <!-- SHEZ: This doesn't exist upstream, but it is needed for blpwtk2 -->
+    <output filename="content_resources.rc" type="rc_all" context="default_100_percent" />
   </outputs>
   <release seq="1">
     <structures fallback_to_low_resolution="true">
