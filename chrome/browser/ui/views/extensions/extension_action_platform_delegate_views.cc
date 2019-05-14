@@ -80,13 +80,12 @@ void ExtensionActionPlatformDelegateViews::ShowPopup(
   // performs the flipping in RTL cases.
   views::BubbleBorder::Arrow arrow = views::BubbleBorder::TOP_RIGHT;
 
-  views::View* reference_view = GetDelegateViews()->GetReferenceViewForPopup();
-
   ExtensionPopup::ShowAction popup_show_action =
       show_action == ExtensionActionViewController::SHOW_POPUP ?
           ExtensionPopup::SHOW : ExtensionPopup::SHOW_AND_INSPECT;
-  ExtensionPopup::ShowPopup(std::move(host), reference_view, arrow,
-                            popup_show_action);
+  ExtensionPopup::ShowPopup(std::move(host),
+                            GetDelegateViews()->GetReferenceButtonForPopup(),
+                            arrow, popup_show_action);
 }
 
 void ExtensionActionPlatformDelegateViews::ShowContextMenu() {

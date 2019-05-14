@@ -14,6 +14,7 @@
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 
 namespace views {
+class Button;
 class MenuButton;
 class MenuModelAdapter;
 class MenuRunner;
@@ -38,7 +39,7 @@ class ExtensionsMenuButton : public HoverButton,
   // ToolbarActionViewDelegateViews:
   views::View* GetAsView() override;
   views::FocusManager* GetFocusManagerForAccelerator() override;
-  views::View* GetReferenceViewForPopup() override;
+  views::Button* GetReferenceButtonForPopup() override;
   content::WebContents* GetCurrentWebContents() const override;
   void UpdateState() override;
   bool IsMenuRunning() const override;

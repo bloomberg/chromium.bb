@@ -13,6 +13,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/layout/box_layout.h"
@@ -71,7 +72,7 @@ views::FocusManager* ExtensionsMenuButton::GetFocusManagerForAccelerator() {
   return GetFocusManager();
 }
 
-views::View* ExtensionsMenuButton::GetReferenceViewForPopup() {
+views::Button* ExtensionsMenuButton::GetReferenceButtonForPopup() {
   return BrowserView::GetBrowserViewForBrowser(browser_)
       ->toolbar()
       ->GetExtensionsButton();

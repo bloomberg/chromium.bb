@@ -113,7 +113,7 @@ class ToolbarActionView : public views::MenuButton,
   // ToolbarActionViewDelegateViews:
   views::View* GetAsView() override;
   views::FocusManager* GetFocusManagerForAccelerator() override;
-  views::View* GetReferenceViewForPopup() override;
+  views::Button* GetReferenceButtonForPopup() override;
   bool IsMenuRunning() const override;
   void OnPopupShown(bool by_user) override;
   void OnPopupClosed() override;

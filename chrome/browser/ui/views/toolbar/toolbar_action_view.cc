@@ -28,6 +28,7 @@
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/image/image_skia_source.h"
 #include "ui/views/animation/ink_drop_impl.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
@@ -286,10 +287,10 @@ views::FocusManager* ToolbarActionView::GetFocusManagerForAccelerator() {
   return GetFocusManager();
 }
 
-views::View* ToolbarActionView::GetReferenceViewForPopup() {
+views::Button* ToolbarActionView::GetReferenceButtonForPopup() {
   // Browser actions in the overflow menu can still show popups, so we may need
   // a reference view other than this button's parent. If so, use the overflow
-  // view.
+  // view which is a BrowserAppMenuButton.
   return visible() ? this : delegate_->GetOverflowReferenceView();
 }
 
@@ -300,13 +301,13 @@ bool ToolbarActionView::IsMenuRunning() const {
 void ToolbarActionView::OnPopupShown(bool by_user) {
   // If this was through direct user action, we press the menu button.
   if (by_user) {
-    // We set the state of the menu button we're using as a reference view,
-    // which is either this or the overflow reference view.
-    // This cast is safe because GetReferenceViewForPopup returns either |this|
-    // or delegate_->GetOverflowReferenceView(), which returns a MenuButton.
-    views::MenuButton* reference_view =
-        static_cast<views::MenuButton*>(GetReferenceViewForPopup());
-    pressed_lock_ = reference_view->button_controller()->TakeLock();
+    // GetReferenceButtonForPopup returns either |this| or
+    // delegate_->GetOverflowReferenceView() which is a BrowserAppMenuButton.
+    // This cast is safe because both will have a MenuButtonController.
+    views::MenuButtonController* reference_view_controller =
+        static_cast<views::MenuButtonController*>(
+            GetReferenceButtonForPopup()->button_controller());
+    pressed_lock_ = reference_view_controller->TakeLock();
   }
 }
 

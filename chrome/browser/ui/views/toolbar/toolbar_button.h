@@ -33,8 +33,6 @@ class MenuRunner;
 
 // This class provides basic drawing and mouse-over behavior for buttons
 // appearing in the toolbar.
-// TODO(cyan): Consider making ToolbarButton and AppMenuButton share a common
-// base class https://crbug.com/819854.
 class ToolbarButton : public views::LabelButton,
                       public views::ContextMenuController {
  public:
