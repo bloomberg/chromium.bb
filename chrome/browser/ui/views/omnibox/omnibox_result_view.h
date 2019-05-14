@@ -105,14 +105,10 @@ class OmniboxResultView : public views::View,
                                   ui::MenuSourceType source_type) override;
 
   // ui::SimpleMenuModel::Delegate overrides:
-  bool IsItemForCommandIdDynamic(int command_id) const override;
-  base::string16 GetLabelForCommandId(int command_id) const override;
+  bool IsCommandIdVisible(int command_id) const override;
   void ExecuteCommand(int command_id, int event_flags) override;
 
  private:
-  // TODO(tommycli): This will be removed once we get final strings from UX.
-  enum CommandID { COMMAND_REMOVE_SUGGESTION };
-
   // Returns the height of the text portion of the result view.
   int GetTextHeight() const;
 

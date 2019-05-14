@@ -4915,6 +4915,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Search or type web address
         </message>
       </if>
+      <message name="IDS_OMNIBOX_WHY_THIS_SUGGESTION" desc="The title of a menu entry and bubble that explains why this suggestion appears in the omnibox popup.">
+        Why this suggestion?
+      </message>
+      <message name="IDS_OMNIBOX_REMOVE_SUGGESTION" desc="The title of a menu entry and bubble used to delete omnibox suggestions.">
+        Remove suggestion
+      </message>
 
       <!-- NTP -->
       <message name="IDS_GOOGLE_SEARCH_BOX_EMPTY_HINT" desc="The text displayed in the fakebox (on the New Tab page) when it is empty, and Google is the default search engine.">

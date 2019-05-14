@@ -65,9 +65,10 @@ OmniboxResultView::OmniboxResultView(
 
   if (base::FeatureList::IsEnabled(
           omnibox::kOmniboxSuggestionTransparencyOptions)) {
-    // TODO(tommycli): Replace this with the real translated string from UX.
-    context_menu_contents_.AddItem(COMMAND_REMOVE_SUGGESTION,
-                                   base::ASCIIToUTF16("Remove suggestion..."));
+    context_menu_contents_.AddItemWithStringId(IDS_OMNIBOX_WHY_THIS_SUGGESTION,
+                                               IDS_OMNIBOX_WHY_THIS_SUGGESTION);
+    context_menu_contents_.AddItemWithStringId(IDS_OMNIBOX_REMOVE_SUGGESTION,
+                                               IDS_OMNIBOX_REMOVE_SUGGESTION);
     set_context_menu_controller(this);
   }
 }
@@ -446,21 +447,15 @@ void OmniboxResultView::ShowContextMenuForViewImpl(
 }
 
 // ui::SimpleMenuModel::Delegate overrides:
-bool OmniboxResultView::IsItemForCommandIdDynamic(int command_id) const {
-  DCHECK_EQ(COMMAND_REMOVE_SUGGESTION, command_id);
+bool OmniboxResultView::IsCommandIdVisible(int command_id) const {
+  if (command_id == IDS_OMNIBOX_REMOVE_SUGGESTION)
+    return match_.SupportsDeletion();
+
+  DCHECK(command_id == IDS_OMNIBOX_WHY_THIS_SUGGESTION);
   return true;
 }
 
-base::string16 OmniboxResultView::GetLabelForCommandId(int command_id) const {
-  DCHECK_EQ(COMMAND_REMOVE_SUGGESTION, command_id);
-  // TODO(tommycli): Replace this with the real translated string from UX.
-  return base::ASCIIToUTF16(match_.SupportsDeletion() ? "More info / Remove..."
-                                                      : "More info...");
-}
-
 void OmniboxResultView::ExecuteCommand(int command_id, int event_flags) {
-  DCHECK_EQ(COMMAND_REMOVE_SUGGESTION, command_id);
-
   // Temporarily inhibit the popup closing on blur while we open the remove
   // suggestion confirmation bubble.
   popup_contents_view_->model()->set_popup_closes_on_blur(false);
@@ -470,9 +465,14 @@ void OmniboxResultView::ExecuteCommand(int command_id, int event_flags) {
   // class, and we don't want that for the bubble. We should improve this.
   AutocompleteMatch raw_match =
       popup_contents_view_->model()->result().match_at(model_index_);
-  ShowRemoveSuggestion(this, raw_match,
-                       base::BindOnce(&OmniboxResultView::RemoveSuggestion,
-                                      weak_factory_.GetWeakPtr()));
+
+  if (command_id == IDS_OMNIBOX_REMOVE_SUGGESTION) {
+    ShowRemoveSuggestion(this, raw_match,
+                         base::BindOnce(&OmniboxResultView::RemoveSuggestion,
+                                        weak_factory_.GetWeakPtr()));
+  } else if (command_id == IDS_OMNIBOX_WHY_THIS_SUGGESTION) {
+    ShowWhyThisSuggestion(this, raw_match);
+  }
 
   popup_contents_view_->model()->set_popup_closes_on_blur(true);
 }
