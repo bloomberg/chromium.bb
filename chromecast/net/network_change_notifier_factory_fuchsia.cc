@@ -15,7 +15,7 @@ namespace chromecast {
 net::NetworkChangeNotifier*
 NetworkChangeNotifierFactoryFuchsia::CreateInstance() {
   uint32_t required_features =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kRequireWlan)
+      GetSwitchValueBoolean(switches::kRequireWlan, false)
           ? fuchsia::hardware::ethernet::INFO_FEATURE_WLAN
           : 0;
 
