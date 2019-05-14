@@ -76,7 +76,7 @@ void V4L2H264Accelerator::H264DPBToV4L2DPB(
     int index = VIDEO_MAX_FRAME;
     if (!pic->nonexisting) {
       scoped_refptr<V4L2DecodeSurface> dec_surface =
-          H264PictureToV4L2DecodeSurface(pic);
+          H264PictureToV4L2DecodeSurface(pic.get());
       index = dec_surface->GetReferenceID();
       ref_surfaces->push_back(dec_surface);
     }
@@ -99,7 +99,7 @@ H264Decoder::H264Accelerator::Status V4L2H264Accelerator::SubmitFrameMetadata(
     const H264Picture::Vector& ref_pic_listp0,
     const H264Picture::Vector& ref_pic_listb0,
     const H264Picture::Vector& ref_pic_listb1,
-    const scoped_refptr<H264Picture>& pic) {
+    scoped_refptr<H264Picture> pic) {
   struct v4l2_ext_control ctrl;
   std::vector<struct v4l2_ext_control> ctrls;
 
@@ -251,7 +251,7 @@ H264Decoder::H264Accelerator::Status V4L2H264Accelerator::SubmitFrameMetadata(
   ctrls.push_back(ctrl);
 
   scoped_refptr<V4L2DecodeSurface> dec_surface =
-      H264PictureToV4L2DecodeSurface(pic);
+      H264PictureToV4L2DecodeSurface(pic.get());
 
   struct v4l2_ext_controls ext_ctrls;
   memset(&ext_ctrls, 0, sizeof(ext_ctrls));
@@ -282,7 +282,7 @@ H264Decoder::H264Accelerator::Status V4L2H264Accelerator::SubmitSlice(
     const H264SliceHeader* slice_hdr,
     const H264Picture::Vector& ref_pic_list0,
     const H264Picture::Vector& ref_pic_list1,
-    const scoped_refptr<H264Picture>& pic,
+    scoped_refptr<H264Picture> pic,
     const uint8_t* data,
     size_t size,
     const std::vector<SubsampleEntry>& subsamples) {
@@ -384,7 +384,7 @@ H264Decoder::H264Accelerator::Status V4L2H264Accelerator::SubmitSlice(
                                   v4l2_slice_param.ref_pic_list1);
 
   scoped_refptr<V4L2DecodeSurface> dec_surface =
-      H264PictureToV4L2DecodeSurface(pic);
+      H264PictureToV4L2DecodeSurface(pic.get());
 
   v4l2_decode_param_.nal_ref_idc = slice_hdr->nal_ref_idc;
 
@@ -402,9 +402,9 @@ H264Decoder::H264Accelerator::Status V4L2H264Accelerator::SubmitSlice(
 }
 
 H264Decoder::H264Accelerator::Status V4L2H264Accelerator::SubmitDecode(
-    const scoped_refptr<H264Picture>& pic) {
+    scoped_refptr<H264Picture> pic) {
   scoped_refptr<V4L2DecodeSurface> dec_surface =
-      H264PictureToV4L2DecodeSurface(pic);
+      H264PictureToV4L2DecodeSurface(pic.get());
 
   v4l2_decode_param_.num_slices = num_slices_;
   v4l2_decode_param_.idr_pic_flag = pic->idr;
@@ -443,9 +443,9 @@ H264Decoder::H264Accelerator::Status V4L2H264Accelerator::SubmitDecode(
   return Status::kOk;
 }
 
-bool V4L2H264Accelerator::OutputPicture(const scoped_refptr<H264Picture>& pic) {
+bool V4L2H264Accelerator::OutputPicture(scoped_refptr<H264Picture> pic) {
   // TODO(crbug.com/647725): Insert correct color space.
-  surface_handler_->SurfaceReady(H264PictureToV4L2DecodeSurface(pic),
+  surface_handler_->SurfaceReady(H264PictureToV4L2DecodeSurface(pic.get()),
                                  pic->bitstream_id(), pic->visible_rect(),
                                  VideoColorSpace());
   return true;
@@ -458,8 +458,7 @@ void V4L2H264Accelerator::Reset() {
 }
 
 scoped_refptr<V4L2DecodeSurface>
-V4L2H264Accelerator::H264PictureToV4L2DecodeSurface(
-    const scoped_refptr<H264Picture>& pic) {
+V4L2H264Accelerator::H264PictureToV4L2DecodeSurface(H264Picture* pic) {
   V4L2H264Picture* v4l2_pic = pic->AsV4L2H264Picture();
   CHECK(v4l2_pic);
   return v4l2_pic->dec_surface();
