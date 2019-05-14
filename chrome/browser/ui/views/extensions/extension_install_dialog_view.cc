@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/i18n/message_formatter.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_install_prompt_show_params.h"
@@ -270,13 +271,18 @@ gfx::Size ExtensionInstallDialogView::CalculatePreferredSize() const {
 
 void ExtensionInstallDialogView::VisibilityChanged(views::View* starting_from,
                                                    bool is_visible) {
-  if (is_visible && !install_button_enabled_) {
-    // This base::Unretained is safe because the task is owned by the timer,
-    // which is in turn owned by this object.
-    timer_.Start(FROM_HERE,
-                 base::TimeDelta::FromMilliseconds(g_install_delay_in_ms),
-                 base::Bind(&ExtensionInstallDialogView::EnableInstallButton,
-                            base::Unretained(this)));
+  if (is_visible) {
+    DCHECK(!install_result_timer_);
+    install_result_timer_ = base::ElapsedTimer();
+
+    if (!install_button_enabled_) {
+      // This base::Unretained is safe because the task is owned by the timer,
+      // which is in turn owned by this object.
+      enable_install_timer_.Start(
+          FROM_HERE, base::TimeDelta::FromMilliseconds(g_install_delay_in_ms),
+          base::BindOnce(&ExtensionInstallDialogView::EnableInstallButton,
+                         base::Unretained(this)));
+    }
   }
 }
 
@@ -544,8 +550,18 @@ void ExtensionInstallDialogView::EnableInstallButton() {
 
 void ExtensionInstallDialogView::UpdateInstallResultHistogram(bool accepted)
     const {
-  if (prompt_->type() == ExtensionInstallPrompt::INSTALL_PROMPT)
-    UMA_HISTOGRAM_BOOLEAN("Extensions.InstallPrompt.Accepted", accepted);
+  // Only update histograms if |install_result_timer_| was initialized in
+  // |VisibilityChanged|.
+  if (prompt_->type() == ExtensionInstallPrompt::INSTALL_PROMPT &&
+      install_result_timer_) {
+    if (accepted) {
+      UmaHistogramMediumTimes("Extensions.InstallPrompt.TimeToInstall",
+                              install_result_timer_->Elapsed());
+    } else {
+      UmaHistogramMediumTimes("Extensions.InstallPrompt.TimeToCancel",
+                              install_result_timer_->Elapsed());
+    }
+  }
 }
 
 
