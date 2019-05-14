@@ -258,6 +258,9 @@ bool ExtensionActionViewController::ExecuteAction(PopupShowAction show_action,
   if (!action_runner)
     return false;
 
+  if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu))
+    extensions_container_->CloseOverflowMenuIfOpen();
+
   if (action_runner->RunAction(extension(), grant_tab_permissions) ==
       ExtensionAction::ACTION_SHOW_POPUP) {
     GURL popup_url = extension_action_->GetPopupUrl(

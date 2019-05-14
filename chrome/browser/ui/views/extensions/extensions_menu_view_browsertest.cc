@@ -19,6 +19,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/webui_url_constants.h"
 #include "ui/views/test/button_test_api.h"
+#include "ui/views/test/widget_test.h"
 
 class ExtensionsMenuViewBrowserTest : public DialogBrowserTest {
  protected:
@@ -73,6 +74,15 @@ class ExtensionsMenuViewBrowserTest : public DialogBrowserTest {
     return views;
   }
 
+  void TriggerSingleExtensionButton() {
+    auto buttons = GetExtensionMenuButtons();
+    ASSERT_EQ(1u, buttons.size());
+    ui::MouseEvent click_event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                               base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, 0);
+    views::test::ButtonTestApi test_api(buttons[0]);
+    test_api.NotifyClick(click_event);
+  }
+
   base::test::ScopedFeatureList scoped_feature_list_;
   std::vector<scoped_refptr<const extensions::Extension>> extensions_;
 };
@@ -101,12 +111,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest, TriggerPopup) {
   EXPECT_EQ(nullptr, extensions_container->GetPoppedOutAction());
   EXPECT_TRUE(GetVisibleToolbarActionViews().empty());
 
-  auto buttons = GetExtensionMenuButtons();
-  ASSERT_EQ(1u, buttons.size());
-  ui::MouseEvent click_event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
-                             base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, 0);
-  views::test::ButtonTestApi test_api(buttons[0]);
-  test_api.NotifyClick(click_event);
+  TriggerSingleExtensionButton();
 
   // After triggering an extension with a popup, there should a popped-out
   // action and show the view.
@@ -122,6 +127,32 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest, TriggerPopup) {
   // and the icon should no longer be visible in the extensions container.
   EXPECT_EQ(nullptr, extensions_container->GetPoppedOutAction());
   EXPECT_TRUE(GetVisibleToolbarActionViews().empty());
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
+                       TriggeringExtensionClosesMenu) {
+  LoadTestExtension("extensions/trigger_actions/browser_action");
+  ShowUi("");
+  VerifyUi();
+
+  EXPECT_TRUE(ExtensionsMenuView::IsShowing());
+
+  views::test::WidgetDestroyedWaiter destroyed_waiter(
+      ExtensionsMenuView::GetExtensionsMenuViewForTesting()->GetWidget());
+  TriggerSingleExtensionButton();
+
+  destroyed_waiter.Wait();
+
+  ExtensionsContainer* const extensions_container =
+      BrowserView::GetBrowserViewForBrowser(browser())
+          ->toolbar()
+          ->extensions_container();
+
+  // This test should not use a popped-out action, as we want to make sure that
+  // the menu closes on its own and not because a popup dialog replaces it.
+  EXPECT_EQ(nullptr, extensions_container->GetPoppedOutAction());
+
+  EXPECT_FALSE(ExtensionsMenuView::IsShowing());
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,

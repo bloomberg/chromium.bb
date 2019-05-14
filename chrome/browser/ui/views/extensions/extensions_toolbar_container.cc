@@ -7,6 +7,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
+#include "chrome/browser/ui/views/extensions/extensions_menu_view.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_button.h"
 
 ExtensionsToolbarContainer::ExtensionsToolbarContainer(Browser* browser)
@@ -69,6 +70,10 @@ void ExtensionsToolbarContainer::HideActivePopup() {
 }
 
 bool ExtensionsToolbarContainer::CloseOverflowMenuIfOpen() {
+  if (ExtensionsMenuView::IsShowing()) {
+    ExtensionsMenuView::Hide();
+    return true;
+  }
   return false;
 }
 
