@@ -23,7 +23,7 @@ class BookmarkAppConfirmationView : public views::DialogDelegateView,
                                     public views::TextfieldController {
  public:
   BookmarkAppConfirmationView(
-      const WebApplicationInfo& web_app_info,
+      std::unique_ptr<WebApplicationInfo> web_app_info,
       chrome::AppInstallationAcceptanceCallback callback);
   ~BookmarkAppConfirmationView() override;
 
@@ -48,7 +48,8 @@ class BookmarkAppConfirmationView : public views::DialogDelegateView,
   base::string16 GetTrimmedTitle() const;
 
   // The WebApplicationInfo that the user is editing.
-  WebApplicationInfo web_app_info_;
+  // Cleared when the dialog completes (Accept/WindowClosing).
+  std::unique_ptr<WebApplicationInfo> web_app_info_;
 
   // The callback to be invoked when the dialog is completed.
   chrome::AppInstallationAcceptanceCallback callback_;

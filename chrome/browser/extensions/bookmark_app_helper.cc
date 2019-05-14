@@ -204,13 +204,14 @@ class BookmarkAppInstaller : public base::RefCounted<BookmarkAppInstaller>,
 
 }  // namespace
 
-BookmarkAppHelper::BookmarkAppHelper(Profile* profile,
-                                     WebApplicationInfo web_app_info,
-                                     content::WebContents* contents,
-                                     WebappInstallSource install_source)
+BookmarkAppHelper::BookmarkAppHelper(
+    Profile* profile,
+    std::unique_ptr<WebApplicationInfo> web_app_info,
+    content::WebContents* contents,
+    WebappInstallSource install_source)
     : profile_(profile),
       contents_(contents),
-      web_app_info_(web_app_info),
+      web_app_info_(*web_app_info),
       crx_installer_(CrxInstaller::CreateSilent(
           ExtensionSystem::Get(profile)->extension_service())),
       for_installable_site_(web_app::ForInstallableSite::kUnknown),
@@ -361,18 +362,18 @@ void BookmarkAppHelper::OnIconsDownloaded(
     web_app_info_.open_as_window = true;
     if (install_source_ == WebappInstallSource::OMNIBOX_INSTALL_ICON) {
       chrome::ShowPWAInstallBubble(
-          contents_, web_app_info_,
+          contents_, std::make_unique<WebApplicationInfo>(web_app_info_),
           base::BindOnce(&BookmarkAppHelper::OnBubbleCompleted,
                          weak_factory_.GetWeakPtr()));
     } else {
       chrome::ShowPWAInstallDialog(
-          contents_, web_app_info_,
+          contents_, std::make_unique<WebApplicationInfo>(web_app_info_),
           base::BindOnce(&BookmarkAppHelper::OnBubbleCompleted,
                          weak_factory_.GetWeakPtr()));
     }
   } else {
     chrome::ShowBookmarkAppDialog(
-        contents_, web_app_info_,
+        contents_, std::make_unique<WebApplicationInfo>(web_app_info_),
         base::BindOnce(&BookmarkAppHelper::OnBubbleCompleted,
                        weak_factory_.GetWeakPtr()));
   }

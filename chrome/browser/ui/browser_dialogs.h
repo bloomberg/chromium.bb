@@ -104,7 +104,7 @@ using AppInstallationAcceptanceCallback =
 //
 // |web_app_info| is the WebApplicationInfo being converted into an app.
 void ShowBookmarkAppDialog(content::WebContents* web_contents,
-                           const WebApplicationInfo& web_app_info,
+                           std::unique_ptr<WebApplicationInfo> web_app_info,
                            AppInstallationAcceptanceCallback callback);
 
 // Sets whether |ShowBookmarkAppDialog| should accept immediately without any
@@ -115,7 +115,7 @@ void SetAutoAcceptBookmarkAppDialogForTesting(bool auto_accept);
 //
 // |web_app_info| is the WebApplicationInfo to be installed.
 void ShowPWAInstallDialog(content::WebContents* web_contents,
-                          const WebApplicationInfo& web_app_info,
+                          std::unique_ptr<WebApplicationInfo> web_app_info,
                           AppInstallationAcceptanceCallback callback);
 
 // Shows the PWA installation confirmation bubble anchored off the PWA install
@@ -123,7 +123,7 @@ void ShowPWAInstallDialog(content::WebContents* web_contents,
 //
 // |web_app_info| is the WebApplicationInfo to be installed.
 void ShowPWAInstallBubble(content::WebContents* web_contents,
-                          const WebApplicationInfo& web_app_info,
+                          std::unique_ptr<WebApplicationInfo> web_app_info,
                           AppInstallationAcceptanceCallback callback);
 
 // Sets whether |ShowPWAInstallDialog| and |ShowPWAInstallBubble| should accept

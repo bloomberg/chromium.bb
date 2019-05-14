@@ -14,9 +14,9 @@
 #include "url/origin.h"
 
 PWAConfirmationDialogView::PWAConfirmationDialogView(
-    const WebApplicationInfo& web_app_info,
+    std::unique_ptr<WebApplicationInfo> web_app_info,
     chrome::AppInstallationAcceptanceCallback callback)
-    : pwa_confirmation_(this, web_app_info, std::move(callback)) {}
+    : pwa_confirmation_(this, std::move(web_app_info), std::move(callback)) {}
 
 PWAConfirmationDialogView::~PWAConfirmationDialogView() {}
 
@@ -58,10 +58,11 @@ base::string16 PWAConfirmationDialogView::GetDialogButtonLabel(
 namespace chrome {
 
 void ShowPWAInstallDialog(content::WebContents* web_contents,
-                          const WebApplicationInfo& web_app_info,
+                          std::unique_ptr<WebApplicationInfo> web_app_info,
                           AppInstallationAcceptanceCallback callback) {
   constrained_window::ShowWebModalDialogViews(
-      new PWAConfirmationDialogView(web_app_info, std::move(callback)),
+      new PWAConfirmationDialogView(std::move(web_app_info),
+                                    std::move(callback)),
       web_contents);
 }
 

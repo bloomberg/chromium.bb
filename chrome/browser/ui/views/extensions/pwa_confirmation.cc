@@ -94,15 +94,16 @@ void InitializeDialogView(views::DialogDelegateView* dialog,
 
 PWAConfirmation::PWAConfirmation(
     views::DialogDelegateView* dialog,
-    const WebApplicationInfo& web_app_info,
+    std::unique_ptr<WebApplicationInfo> web_app_info,
     chrome::AppInstallationAcceptanceCallback callback)
-    : web_app_info_(web_app_info), callback_(std::move(callback)) {
-  base::TrimWhitespace(web_app_info_.title, base::TRIM_ALL,
-                       &web_app_info_.title);
+    : web_app_info_(std::move(web_app_info)), callback_(std::move(callback)) {
+  DCHECK(web_app_info_);
+  base::TrimWhitespace(web_app_info_->title, base::TRIM_ALL,
+                       &web_app_info_->title);
   // PWAs should always be configured to open in a window.
-  DCHECK(web_app_info_.open_as_window);
+  DCHECK(web_app_info_->open_as_window);
 
-  InitializeDialogView(dialog, web_app_info_);
+  InitializeDialogView(dialog, *web_app_info_);
 
   chrome::RecordDialogCreation(chrome::DialogIdentifier::PWA_CONFIRMATION);
 
@@ -124,14 +125,14 @@ base::string16 PWAConfirmation::GetDialogButtonLabel(ui::DialogButton button) {
 }
 
 void PWAConfirmation::Accept() {
-  std::move(callback_).Run(true,
-                           std::make_unique<WebApplicationInfo>(web_app_info_));
+  DCHECK(web_app_info_);
+  std::move(callback_).Run(true, std::move(web_app_info_));
 }
 
 void PWAConfirmation::WindowClosing() {
   if (callback_) {
-    std::move(callback_).Run(
-        false, std::make_unique<WebApplicationInfo>(web_app_info_));
+    DCHECK(web_app_info_);
+    std::move(callback_).Run(false, std::move(web_app_info_));
   }
 }
 

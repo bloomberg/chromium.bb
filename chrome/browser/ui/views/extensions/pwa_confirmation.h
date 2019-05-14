@@ -18,7 +18,7 @@ class PWAConfirmation {
   static base::string16 GetDialogButtonLabel(ui::DialogButton button);
 
   PWAConfirmation(views::DialogDelegateView* dialog,
-                  const WebApplicationInfo& web_app_info,
+                  std::unique_ptr<WebApplicationInfo> web_app_info,
                   chrome::AppInstallationAcceptanceCallback callback);
   ~PWAConfirmation();
 
@@ -26,7 +26,9 @@ class PWAConfirmation {
   void WindowClosing();
 
  private:
-  WebApplicationInfo web_app_info_;
+  // The WebApplicationInfo that the user is confirming.
+  // Cleared when the dialog completes (Accept/WindowClosing).
+  std::unique_ptr<WebApplicationInfo> web_app_info_;
   chrome::AppInstallationAcceptanceCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(PWAConfirmation);

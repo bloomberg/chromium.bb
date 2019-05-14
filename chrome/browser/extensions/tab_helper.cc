@@ -267,8 +267,6 @@ void TabHelper::OnDidGetWebApplicationInfo(
     chrome::mojom::ChromeRenderFrameAssociatedPtr chrome_render_frame,
     bool shortcut_app_requested,
     const WebApplicationInfo& info) {
-  web_app_info_ = info;
-
   content::WebContents* contents = web_contents();
   NavigationEntry* entry = contents->GetController().GetLastCommittedEntry();
   if (!entry || last_committed_nav_entry_unique_id_ != entry->GetUniqueID())
@@ -277,16 +275,17 @@ void TabHelper::OnDidGetWebApplicationInfo(
 
   switch (pending_web_app_action_) {
     case CREATE_HOSTED_APP: {
-      if (web_app_info_.app_url.is_empty())
-        web_app_info_.app_url = contents->GetLastCommittedURL();
+      auto web_app_info = std::make_unique<WebApplicationInfo>(info);
+      if (web_app_info->app_url.is_empty())
+        web_app_info->app_url = contents->GetLastCommittedURL();
 
-      if (web_app_info_.title.empty())
-        web_app_info_.title = contents->GetTitle();
-      if (web_app_info_.title.empty())
-        web_app_info_.title = base::UTF8ToUTF16(web_app_info_.app_url.spec());
+      if (web_app_info->title.empty())
+        web_app_info->title = contents->GetTitle();
+      if (web_app_info->title.empty())
+        web_app_info->title = base::UTF8ToUTF16(web_app_info->app_url.spec());
 
       bookmark_app_helper_.reset(
-          new BookmarkAppHelper(profile_, web_app_info_, contents,
+          new BookmarkAppHelper(profile_, std::move(web_app_info), contents,
                                 InstallableMetrics::GetInstallSource(
                                     contents, InstallTrigger::MENU)));
       if (shortcut_app_requested)

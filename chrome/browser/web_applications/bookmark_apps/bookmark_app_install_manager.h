@@ -67,7 +67,7 @@ class BookmarkAppInstallManager final : public web_app::InstallManager {
   using BookmarkAppHelperFactory =
       base::RepeatingCallback<std::unique_ptr<BookmarkAppHelper>(
           Profile*,
-          const WebApplicationInfo&,
+          std::unique_ptr<WebApplicationInfo>,
           content::WebContents*,
           WebappInstallSource)>;
 

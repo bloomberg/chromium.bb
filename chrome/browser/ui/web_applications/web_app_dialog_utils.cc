@@ -32,6 +32,7 @@ void WebAppInstallDialogCallback(
     ForInstallableSite for_installable_site,
     InstallManager::WebAppInstallationAcceptanceCallback
         web_app_acceptance_callback) {
+  DCHECK(web_app_info);
   // This is a copy paste of BookmarkAppHelper::OnIconsDownloaded().
   // TODO(https://crbug.com/915043): Delete
   // BookmarkAppHelper::OnIconsDownloaded().
@@ -39,14 +40,17 @@ void WebAppInstallDialogCallback(
       for_installable_site == ForInstallableSite::kYes) {
     web_app_info->open_as_window = true;
     if (install_source == WebappInstallSource::OMNIBOX_INSTALL_ICON) {
-      chrome::ShowPWAInstallBubble(initiator_web_contents, *web_app_info,
+      chrome::ShowPWAInstallBubble(initiator_web_contents,
+                                   std::move(web_app_info),
                                    std::move(web_app_acceptance_callback));
     } else {
-      chrome::ShowPWAInstallDialog(initiator_web_contents, *web_app_info,
+      chrome::ShowPWAInstallDialog(initiator_web_contents,
+                                   std::move(web_app_info),
                                    std::move(web_app_acceptance_callback));
     }
   } else {
-    chrome::ShowBookmarkAppDialog(initiator_web_contents, *web_app_info,
+    chrome::ShowBookmarkAppDialog(initiator_web_contents,
+                                  std::move(web_app_info),
                                   std::move(web_app_acceptance_callback));
   }
 }

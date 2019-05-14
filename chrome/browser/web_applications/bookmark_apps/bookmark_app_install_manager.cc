@@ -236,7 +236,7 @@ void OnGetWebApplicationInfo(const BookmarkAppInstallManager* install_manager,
   DCHECK(profile);
 
   auto bookmark_app_helper = install_manager->bookmark_app_helper_factory().Run(
-      profile, *web_app_info, install_task->web_contents(),
+      profile, std::move(web_app_info), install_task->web_contents(),
       metrics_install_source);
 
   BookmarkAppHelper* helper_ptr = bookmark_app_helper.get();
@@ -256,11 +256,11 @@ BookmarkAppInstallManager::BookmarkAppInstallManager(
     web_app::InstallFinalizer* finalizer)
     : InstallManager(profile), finalizer_(finalizer) {
   bookmark_app_helper_factory_ = base::BindRepeating(
-      [](Profile* profile, const WebApplicationInfo& web_app_info,
+      [](Profile* profile, std::unique_ptr<WebApplicationInfo> web_app_info,
          content::WebContents* web_contents,
          WebappInstallSource install_source) {
         return std::make_unique<BookmarkAppHelper>(
-            profile, web_app_info, web_contents, install_source);
+            profile, std::move(web_app_info), web_contents, install_source);
       });
 
   data_retriever_factory_ = base::BindRepeating(
@@ -308,10 +308,10 @@ void BookmarkAppInstallManager::InstallWebAppFromManifest(
 
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  WebApplicationInfo web_app_info;
 
   auto bookmark_app_helper = std::make_unique<BookmarkAppHelper>(
-      profile, web_app_info, web_contents, install_source);
+      profile, std::make_unique<WebApplicationInfo>(), web_contents,
+      install_source);
 
   BookmarkAppHelper* helper = bookmark_app_helper.get();
 
@@ -331,7 +331,7 @@ void BookmarkAppInstallManager::InstallWebAppFromInfo(
     WebappInstallSource install_source,
     OnceInstallCallback callback) {
   auto bookmark_app_helper = std::make_unique<BookmarkAppHelper>(
-      profile(), *web_application_info, /*web_contents=*/nullptr,
+      profile(), std::move(web_application_info), /*web_contents=*/nullptr,
       install_source);
 
   if (no_network_install) {

@@ -20,7 +20,7 @@ class PWAConfirmationDialogView : public views::DialogDelegateView {
  public:
   // Constructs a PWAConfirmationDialogView. |web_app_info| contains information
   // about a web app that has passed the PWA check.
-  PWAConfirmationDialogView(const WebApplicationInfo& web_app_info,
+  PWAConfirmationDialogView(std::unique_ptr<WebApplicationInfo> web_app_info,
                             chrome::AppInstallationAcceptanceCallback callback);
   ~PWAConfirmationDialogView() override;
 

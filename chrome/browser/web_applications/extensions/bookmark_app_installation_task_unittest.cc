@@ -70,11 +70,7 @@ bool IsPlaceholderApp(Profile* profile, const GURL& url) {
 
 class TestBookmarkAppHelper : public BookmarkAppHelper {
  public:
-  TestBookmarkAppHelper(Profile* profile,
-                        WebApplicationInfo web_app_info,
-                        content::WebContents* contents,
-                        WebappInstallSource install_source)
-      : BookmarkAppHelper(profile, web_app_info, contents, install_source) {}
+  using BookmarkAppHelper::BookmarkAppHelper;
   ~TestBookmarkAppHelper() override {}
 
   void CompleteInstallation() {
@@ -288,11 +284,13 @@ class BookmarkAppInstallationTaskTest : public ChromeRenderViewHostTestHarness {
 
     install_manager->SetBookmarkAppHelperFactoryForTesting(
         base::BindLambdaForTesting(
-            [this](Profile* profile, const WebApplicationInfo& web_app_info,
+            [this](Profile* profile,
+                   std::unique_ptr<WebApplicationInfo> web_app_info,
                    content::WebContents* web_contents,
                    WebappInstallSource install_source) {
               auto test_helper = std::make_unique<TestBookmarkAppHelper>(
-                  profile, web_app_info, web_contents, install_source);
+                  profile, std::move(web_app_info), web_contents,
+                  install_source);
               test_helper_ = test_helper.get();
 
               return std::unique_ptr<BookmarkAppHelper>(std::move(test_helper));

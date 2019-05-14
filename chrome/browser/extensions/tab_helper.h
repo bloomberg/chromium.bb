@@ -178,9 +178,6 @@ class TabHelper : public content::WebContentsObserver,
   // non-extension apps.
   SkBitmap extension_app_icon_;
 
-  // Cached web app info data.
-  WebApplicationInfo web_app_info_;
-
   // Which deferred action to perform when OnDidGetWebApplicationInfo is
   // notified from a WebContents.
   WebAppAction pending_web_app_action_;

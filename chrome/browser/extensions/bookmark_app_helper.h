@@ -57,7 +57,7 @@ class BookmarkAppHelper : public content::NotificationObserver {
   // will have a chance to cancel the operation.
   // |install_source| indicates how the installation was triggered.
   BookmarkAppHelper(Profile* profile,
-                    WebApplicationInfo web_app_info,
+                    std::unique_ptr<WebApplicationInfo> web_app_info,
                     content::WebContents* contents,
                     WebappInstallSource install_source);
   ~BookmarkAppHelper() override;

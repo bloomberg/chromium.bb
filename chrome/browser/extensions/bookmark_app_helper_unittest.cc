@@ -121,10 +121,10 @@ WebApplicationInfo::IconInfo CreateIconInfoWithBitmap(int size, SkColor color) {
 class TestBookmarkAppHelper : public BookmarkAppHelper {
  public:
   TestBookmarkAppHelper(ExtensionService* service,
-                        WebApplicationInfo web_app_info,
+                        const WebApplicationInfo& web_app_info,
                         content::WebContents* contents)
       : BookmarkAppHelper(service->profile(),
-                          web_app_info,
+                          std::make_unique<WebApplicationInfo>(web_app_info),
                           contents,
                           WebappInstallSource::MENU_BROWSER_TAB),
         bitmap_(CreateSquareBitmapWithColor(32, SK_ColorRED)) {}

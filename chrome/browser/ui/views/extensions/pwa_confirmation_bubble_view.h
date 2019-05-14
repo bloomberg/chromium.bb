@@ -17,7 +17,7 @@ class PWAConfirmationBubbleView : public LocationBarBubbleDelegateView {
  public:
   PWAConfirmationBubbleView(views::View* anchor_view,
                             views::Button* highlight_button,
-                            const WebApplicationInfo& web_app_info,
+                            std::unique_ptr<WebApplicationInfo> web_app_info,
                             chrome::AppInstallationAcceptanceCallback callback);
 
   // LocationBarBubbleDelegateView:

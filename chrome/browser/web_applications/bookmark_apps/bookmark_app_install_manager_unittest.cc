@@ -186,15 +186,16 @@ TEST_F(BookmarkAppInstallManagerTest,
       }));
 
   install_manager_->SetBookmarkAppHelperFactoryForTesting(
-      base::BindLambdaForTesting([&](Profile* profile,
-                                     const WebApplicationInfo& web_app_info,
-                                     content::WebContents* web_contents,
-                                     WebappInstallSource install_source) {
-        data_retrieval_passed = true;
-        retrieval_run_loop.Quit();
-        return std::make_unique<BookmarkAppHelper>(
-            profile, web_app_info, web_contents, install_source);
-      }));
+      base::BindLambdaForTesting(
+          [&](Profile* profile,
+              std::unique_ptr<WebApplicationInfo> web_app_info,
+              content::WebContents* web_contents,
+              WebappInstallSource install_source) {
+            data_retrieval_passed = true;
+            retrieval_run_loop.Quit();
+            return std::make_unique<BookmarkAppHelper>(
+                profile, std::move(web_app_info), web_contents, install_source);
+          }));
 
   base::RunLoop install_run_loop;
   bool callback_called = false;
@@ -278,15 +279,16 @@ TEST_F(BookmarkAppInstallManagerTest,
       }));
 
   install_manager_->SetBookmarkAppHelperFactoryForTesting(
-      base::BindLambdaForTesting([&](Profile* profile,
-                                     const WebApplicationInfo& web_app_info,
-                                     content::WebContents* web_contents,
-                                     WebappInstallSource install_source) {
-        data_retrieval_passed = true;
-        retrieval_run_loop.Quit();
-        return std::make_unique<BookmarkAppHelper>(
-            profile, web_app_info, web_contents, install_source);
-      }));
+      base::BindLambdaForTesting(
+          [&](Profile* profile,
+              std::unique_ptr<WebApplicationInfo> web_app_info,
+              content::WebContents* web_contents,
+              WebappInstallSource install_source) {
+            data_retrieval_passed = true;
+            retrieval_run_loop.Quit();
+            return std::make_unique<BookmarkAppHelper>(
+                profile, std::move(web_app_info), web_contents, install_source);
+          }));
 
   base::RunLoop install_run_loop;
   bool callback_called = false;

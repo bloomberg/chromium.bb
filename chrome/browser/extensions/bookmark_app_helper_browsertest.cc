@@ -37,11 +37,14 @@ namespace {
 class TestBookmarkAppHelper : public BookmarkAppHelper {
  public:
   TestBookmarkAppHelper(Profile* profile,
-                        WebApplicationInfo web_app_info,
+                        const WebApplicationInfo& web_app_info,
                         content::WebContents* contents,
                         base::Closure on_icons_downloaded_closure,
                         WebappInstallSource install_source)
-      : BookmarkAppHelper(profile, web_app_info, contents, install_source),
+      : BookmarkAppHelper(profile,
+                          std::make_unique<WebApplicationInfo>(web_app_info),
+                          contents,
+                          install_source),
         on_icons_downloaded_closure_(on_icons_downloaded_closure) {}
 
   // TestBookmarkAppHelper:

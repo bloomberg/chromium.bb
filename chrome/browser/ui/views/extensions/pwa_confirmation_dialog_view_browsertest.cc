@@ -28,27 +28,29 @@ class PWAConfirmationDialogViewTest : public DialogBrowserTest {
     icon_info.width = kIconSize;
     icon_info.height = kIconSize;
 
-    WebApplicationInfo web_app_info;
-    web_app_info.icons.push_back(icon_info);
-    web_app_info.open_as_window = true;
+    std::unique_ptr<WebApplicationInfo> web_app_info =
+        std::make_unique<WebApplicationInfo>();
+    web_app_info->icons.push_back(icon_info);
+    web_app_info->open_as_window = true;
     if (name == "short_text") {
-      web_app_info.title = base::ASCIIToUTF16("Title");
-      web_app_info.app_url = GURL("https://www.example.com:9090/path");
+      web_app_info->title = base::ASCIIToUTF16("Title");
+      web_app_info->app_url = GURL("https://www.example.com:9090/path");
     } else if (name == "long_text") {
-      web_app_info.title =
+      web_app_info->title =
           base::ASCIIToUTF16("abcd\n1234567890123456789012345678901234567890");
 
-      web_app_info.app_url = GURL(
+      web_app_info->app_url = GURL(
           "https://www"
           ".1234567890123456789012345678901234567890"
           ".com:443/path");
     } else if (name == "rtl") {
-      web_app_info.title = base::UTF8ToUTF16("דוגמא");
-      web_app_info.app_url = GURL("https://דוגמא.דוגמא.דוגמא.אחד.example.com");
+      web_app_info->title = base::UTF8ToUTF16("דוגמא");
+      web_app_info->app_url = GURL("https://דוגמא.דוגמא.דוגמא.אחד.example.com");
     }
     constrained_window::ShowWebModalDialogViews(
         new PWAConfirmationDialogView(
-            web_app_info, chrome::AppInstallationAcceptanceCallback()),
+            std::move(web_app_info),
+            chrome::AppInstallationAcceptanceCallback()),
         browser()->tab_strip_model()->GetActiveWebContents());
   }
 
