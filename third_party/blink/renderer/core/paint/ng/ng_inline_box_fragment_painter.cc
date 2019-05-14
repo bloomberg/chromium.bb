@@ -34,7 +34,12 @@ NGInlineBoxFragmentPainter::NGInlineBoxFragmentPainter(
           static_cast<const NGPhysicalBoxFragment&>(
               inline_box_fragment.PhysicalFragment())
               .BorderEdges(),
-          style.GetWritingMode())) {}
+          style.GetWritingMode())) {
+  DCHECK_EQ(inline_box_fragment.PhysicalFragment().Type(),
+            NGPhysicalFragment::NGFragmentType::kFragmentBox);
+  DCHECK_EQ(inline_box_fragment.PhysicalFragment().BoxType(),
+            NGPhysicalFragment::NGBoxType::kInlineBox);
+}
 
 NGInlineBoxFragmentPainter::NGInlineBoxFragmentPainter(
     const NGPaintFragment& inline_box_fragment)

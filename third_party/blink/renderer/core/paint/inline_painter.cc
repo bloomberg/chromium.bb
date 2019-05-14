@@ -6,9 +6,11 @@
 
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "third_party/blink/renderer/core/paint/line_box_list_painter.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_inline_box_fragment_painter.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_text_fragment_painter.h"
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
@@ -36,10 +38,25 @@ void InlinePainter::Paint(const PaintInfo& paint_info) {
   if (layout_inline_.IsInLayoutNGInlineFormattingContext()) {
     for (const NGPaintFragment* fragment :
          NGPaintFragment::InlineFragmentsFor(&layout_inline_)) {
-      NGInlineBoxFragmentPainter(*fragment).Paint(
-          paint_info, paint_offset + (fragment->InlineOffsetToContainerBox() -
-                                      fragment->Offset())
-                                         .ToLayoutPoint());
+      auto child_offset =
+          paint_offset +
+          (fragment->InlineOffsetToContainerBox() - fragment->Offset())
+              .ToLayoutPoint();
+
+      if (fragment->PhysicalFragment().IsText()) {
+        const auto& text_fragment =
+            To<NGPhysicalTextFragment>(fragment->PhysicalFragment());
+        NodeHolder holder;
+        if (auto* node = text_fragment.GetNode()) {
+          if (node->GetLayoutObject()->IsText())
+            holder = ToLayoutText(node->GetLayoutObject())->EnsureNodeHolder();
+        }
+        NGTextFragmentPainter(*fragment).Paint(paint_info, child_offset,
+                                               holder);
+
+      } else {
+        NGInlineBoxFragmentPainter(*fragment).Paint(paint_info, child_offset);
+      }
     }
     return;
   }
