@@ -123,10 +123,6 @@ COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kEnableOzoneDrmMojo;
 COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsOzoneDrmMojo();
 
-// Whether default UI should use a dark mode color scheme, if enabled on
-// macOS Mojave/Windows 10.
-COMPONENT_EXPORT(UI_BASE_FEATURES) extern const base::Feature kDarkMode;
-
 #if defined(OS_CHROMEOS)
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kHandwritingGesture;

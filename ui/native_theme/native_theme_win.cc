@@ -12,9 +12,9 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/scoped_hdc.h"
 #include "base/win/scoped_select_object.h"
@@ -255,7 +255,11 @@ NativeThemeWin::NativeThemeWin()
   }
 
   if (!IsForcedDarkMode() && !IsForcedHighContrast() &&
-      base::FeatureList::IsEnabled(features::kDarkMode)) {
+      base::SequencedTaskRunnerHandle::IsSet()) {
+    // If there's no sequenced task runner handle, we can't be called back for
+    // dark mode changes. This generally happens in tests. As a result, ignore
+    // dark mode in this case.
+
     // Dark Mode currently targets UWP apps, which means Win32 apps need to use
     // alternate, less reliable means of detecting the state. The following
     // can break in future Windows versions.

@@ -16,7 +16,6 @@ class ChromeBrowserMainPartsMac : public ChromeBrowserMainPartsPosix {
 
   // BrowserParts overrides.
   int PreEarlyInitialization() override;
-  void PostEarlyInitialization() override;
   void PreMainMessageLoopStart() override;
   void PostMainMessageLoopStart() override;
   void PreProfileInit() override;

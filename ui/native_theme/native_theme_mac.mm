@@ -173,21 +173,6 @@ SkColor NativeThemeMac::ApplySystemControlTint(SkColor color) {
   return color;
 }
 
-// static
-void NativeThemeMac::MaybeUpdateBrowserAppearance() {
-  if (@available(macOS 10.14, *)) {
-    if (!base::FeatureList::IsEnabled(features::kDarkMode)) {
-      NSAppearanceName new_appearance_name =
-          base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kForceDarkMode)
-              ? NSAppearanceNameDarkAqua
-              : NSAppearanceNameAqua;
-
-      [NSApp setAppearance:[NSAppearance appearanceNamed:new_appearance_name]];
-    }
-  }
-}
-
 SkColor NativeThemeMac::GetSystemColor(ColorId color_id) const {
   // Empirically, currentAppearance is incorrect when switching
   // appearances. It's unclear exactly why right now, so work
@@ -277,15 +262,8 @@ void NativeThemeMac::PaintMenuItemBackground(
 }
 
 NativeThemeMac::NativeThemeMac() {
-  if (base::FeatureList::IsEnabled(features::kDarkMode)) {
-    __block auto theme = this;
-    set_dark_mode(IsDarkMode());
-    appearance_observer_.reset(
-        [[NativeThemeEffectiveAppearanceObserver alloc] initWithHandler:^{
-          theme->set_dark_mode(IsDarkMode());
-          theme->NotifyObservers();
-        }]);
-  }
+  InitializeDarkModeStateAndObserver();
+
   if (!IsForcedHighContrast()) {
     set_high_contrast(IsHighContrast());
     __block auto theme = this;
@@ -313,6 +291,16 @@ void NativeThemeMac::PaintSelectedMenuItem(cc::PaintCanvas* canvas,
   cc::PaintFlags flags;
   flags.setColor(GetSystemColor(kColorId_FocusedMenuItemBackgroundColor));
   canvas->drawRect(gfx::RectToSkRect(rect), flags);
+}
+
+void NativeThemeMac::InitializeDarkModeStateAndObserver() {
+  __block auto theme = this;
+  set_dark_mode(IsDarkMode());
+  appearance_observer_.reset(
+      [[NativeThemeEffectiveAppearanceObserver alloc] initWithHandler:^{
+        theme->set_dark_mode(IsDarkMode());
+        theme->NotifyObservers();
+      }]);
 }
 
 }  // namespace ui

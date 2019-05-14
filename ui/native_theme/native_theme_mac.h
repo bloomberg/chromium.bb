@@ -36,13 +36,6 @@ class NATIVE_THEME_EXPORT NativeThemeMac : public NativeThemeBase {
   // an appropriate gray.
   static SkColor ApplySystemControlTint(SkColor color);
 
-  // If the system is not running Mojave, or not forcing dark/light mode, do
-  // nothing. Otherwise, set the correct appearance on NSApp, adjusting for High
-  // Contrast if necessary.
-  // TODO(lgrey): Remove this when we're no longer suppressing dark mode by
-  // default.
-  static void MaybeUpdateBrowserAppearance();
-
   // Overridden from NativeTheme:
   SkColor GetSystemColor(ColorId color_id) const override;
 
@@ -81,6 +74,8 @@ class NATIVE_THEME_EXPORT NativeThemeMac : public NativeThemeBase {
   // high contrast.
   void PaintSelectedMenuItem(cc::PaintCanvas* canvas,
                              const gfx::Rect& rect) const;
+
+  void InitializeDarkModeStateAndObserver();
 
   base::scoped_nsobject<NativeThemeEffectiveAppearanceObserver>
       appearance_observer_;
