@@ -37,12 +37,14 @@ constexpr auto kUserDomain = kMACaptionAppearanceDomainUser;
 //   4) The only useful domain to retrieve attributes from is kUserDomain; the
 //      system domain's values never change.
 
-std::string GetMAForegroundColorAsCSSColor() {
+std::string GetMAForegroundColorAndOpacityAsCSSColor() {
   base::ScopedCFTypeRef<CGColorRef> cg_color(
       MACaptionAppearanceCopyForegroundColor(kUserDomain, nullptr));
+  float opacity = MACaptionAppearanceGetForegroundOpacity(kUserDomain, nullptr);
 
-  return color_utils::SkColorToRgbaString(
-      skia::CGColorRefToSkColor(cg_color.get()));
+  SkColor rgba_color =
+      SkColorSetA(skia::CGColorRefToSkColor(cg_color.get()), 0xff * opacity);
+  return color_utils::SkColorToRgbaString(rgba_color);
 }
 
 std::string GetMABackgroundColorAndOpacityAsCSSColor() {
@@ -124,7 +126,7 @@ void GetMAFontAsCSSFontSpecifiers(std::string* font_family,
 CaptionStyle CaptionStyle::FromSystemSettings() {
   CaptionStyle style;
 
-  style.text_color = GetMAForegroundColorAsCSSColor();
+  style.text_color = GetMAForegroundColorAndOpacityAsCSSColor();
   style.background_color = GetMABackgroundColorAndOpacityAsCSSColor();
   style.text_size = GetMATextScaleAsCSSPercent();
   style.text_shadow = GetMATextEdgeStyleAsCSSShadow();
