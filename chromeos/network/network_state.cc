@@ -39,7 +39,7 @@ std::string GetStringFromDictionary(const base::Value* dict, const char* key) {
 bool IsCaptivePortalState(const base::Value& properties, bool log) {
   std::string state =
       GetStringFromDictionary(&properties, shill::kStateProperty);
-  if (state != shill::kStatePortal)
+  if (!chromeos::NetworkState::StateIsPortalled(state))
     return false;
   if (!properties.FindKey(shill::kPortalDetectionFailedPhaseProperty) ||
       !properties.FindKey(shill::kPortalDetectionFailedStatusProperty)) {
@@ -58,7 +58,9 @@ bool IsCaptivePortalState(const base::Value& properties, bool log) {
   // returned and ignore other reasons.
   bool is_captive_portal =
       portal_detection_phase == shill::kPortalDetectionPhaseContent &&
-      portal_detection_status == shill::kPortalDetectionStatusFailure;
+      (portal_detection_status == shill::kPortalDetectionStatusSuccess ||
+       portal_detection_status == shill::kPortalDetectionStatusFailure ||
+       portal_detection_status == shill::kPortalDetectionStatusRedirect);
 
   if (log) {
     std::string name =
@@ -560,7 +562,7 @@ network_config::mojom::SecurityType NetworkState::GetMojoSecurity() const {
 bool NetworkState::StateIsConnected(const std::string& connection_state) {
   return (connection_state == shill::kStateReady ||
           connection_state == shill::kStateOnline ||
-          connection_state == shill::kStatePortal);
+          StateIsPortalled(connection_state));
 }
 
 // static
@@ -568,6 +570,14 @@ bool NetworkState::StateIsConnecting(const std::string& connection_state) {
   return (connection_state == shill::kStateAssociation ||
           connection_state == shill::kStateConfiguration ||
           connection_state == shill::kStateCarrier);
+}
+
+// static
+bool NetworkState::StateIsPortalled(const std::string& connection_state) {
+  return (connection_state == shill::kStatePortal ||
+          connection_state == shill::kStateNoConnectivity ||
+          connection_state == shill::kStateRedirectFound ||
+          connection_state == shill::kStatePortalSuspected);
 }
 
 // static

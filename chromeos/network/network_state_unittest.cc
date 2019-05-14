@@ -172,7 +172,8 @@ TEST_F(NetworkStateTest, CaptivePortalState) {
   EXPECT_FALSE(network_state_.is_captive_portal());
 
   // State == portal, kPortalDetection* not set -> is_captive_portal = true
-  EXPECT_TRUE(SetStringProperty(shill::kStateProperty, shill::kStatePortal));
+  EXPECT_TRUE(
+      SetStringProperty(shill::kStateProperty, shill::kStateNoConnectivity));
   SignalInitialPropertiesReceived();
   EXPECT_TRUE(network_state_.is_captive_portal());
 

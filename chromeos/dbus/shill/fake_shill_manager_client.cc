@@ -70,13 +70,19 @@ std::string GetStringValue(const base::Value& dict, const char* key) {
   return value ? value->GetString() : std::string();
 }
 
+bool IsPortalledState(const std::string& state) {
+  return state == shill::kStatePortal || state == shill::kStateNoConnectivity ||
+         state == shill::kStateRedirectFound ||
+         state == shill::kStatePortalSuspected;
+}
+
 int GetStateOrder(const base::Value& dict) {
   std::string state = GetStringValue(dict, shill::kStateProperty);
   if (state == shill::kStateOnline)
     return 1;
   if (state == shill::kStateReady)
     return 2;
-  if (state == shill::kStatePortal)
+  if (IsPortalledState(state))
     return 3;
   if (state == shill::kStateAssociation || state == shill::kStateConfiguration)
     return 4;
@@ -180,13 +186,14 @@ void LogErrorCallback(const std::string& error_name,
 }
 
 bool IsConnectedState(const std::string& state) {
-  return state == shill::kStateOnline || state == shill::kStatePortal ||
+  return state == shill::kStateOnline || IsPortalledState(state) ||
          state == shill::kStateReady;
 }
 
 void UpdatePortaledWifiState(const std::string& service_path) {
   ShillServiceClient::Get()->GetTestInterface()->SetServiceProperty(
-      service_path, shill::kStateProperty, base::Value(shill::kStatePortal));
+      service_path, shill::kStateProperty,
+      base::Value(shill::kStateNoConnectivity));
 }
 
 bool IsCellularTechnology(const std::string& type) {
@@ -731,7 +738,7 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
   state = GetInitialStateForType(shill::kTypeWifi, &enabled);
   if (state != kTechnologyUnavailable) {
     bool portaled = false;
-    if (state == shill::kStatePortal) {
+    if (IsPortalledState(state)) {
       portaled = true;
       state = shill::kStateIdle;
     }
@@ -1216,7 +1223,7 @@ bool FakeShillManagerClient::SetInitialNetworkState(
     state = kTechnologyInitializing;
   } else if (state_arg == "portal") {
     // Technology is enabled, a service is connected and in Portal state.
-    state = shill::kStatePortal;
+    state = shill::kStateNoConnectivity;
   } else if (state_arg == "active" || state_arg == "activated") {
     // Technology is enabled, a service is connected and Activated.
     state = kNetworkActivated;
@@ -1277,7 +1284,7 @@ std::string FakeShillManagerClient::GetInitialStateForType(
       *enabled = true;
       result = state;
     }
-    if ((state == shill::kStatePortal && type != shill::kTypeWifi) ||
+    if ((IsPortalledState(state) && type != shill::kTypeWifi) ||
         (state == kNetworkActivated && type != shill::kTypeCellular)) {
       LOG(WARNING) << "Invalid state: " << state << " for " << type;
       result = shill::kStateIdle;

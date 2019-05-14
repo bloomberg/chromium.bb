@@ -236,6 +236,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkState : public ManagedState {
   // Helpers (used e.g. when a state, error, or shill dictionary is cached)
   static bool StateIsConnected(const std::string& connection_state);
   static bool StateIsConnecting(const std::string& connection_state);
+  static bool StateIsPortalled(const std::string& connection_state);
   static bool NetworkStateIsCaptivePortal(const base::Value& shill_properties);
   static bool ErrorIsValid(const std::string& error);
   static std::unique_ptr<NetworkState> CreateDefaultCellular(

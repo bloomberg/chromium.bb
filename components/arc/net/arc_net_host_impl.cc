@@ -232,7 +232,7 @@ arc::mojom::ConnectionStateType TranslateConnectionState(
   if ((state == shill::kStateIdle) || (state == shill::kStateFailure) ||
       (state == ""))
     return arc::mojom::ConnectionStateType::NOT_CONNECTED;
-  if (state == shill::kStatePortal)
+  if (chromeos::NetworkState::StateIsPortalled(state))
     return arc::mojom::ConnectionStateType::PORTAL;
   if (state == shill::kStateOnline)
     return arc::mojom::ConnectionStateType::ONLINE;
