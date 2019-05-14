@@ -18,13 +18,15 @@ namespace extensions {
 
 class BookmarkAppUninstaller {
  public:
+  using UninstallCallback = base::OnceCallback<void(bool uninstalled)>;
+
   BookmarkAppUninstaller(Profile* profile, web_app::AppRegistrar* registrar);
   virtual ~BookmarkAppUninstaller();
 
-  // Returns true if the app with |app_url| was successfully uninstalled.
-  // Returns false if the app doesn't not exist, or the app failed to be
-  // uninstalled.
-  virtual bool UninstallApp(const GURL& app_url);
+  // Runs |callback| with true if the app with |app_url| was successfully
+  // uninstalled. Runs callback with false if the app doesn't not exist, or the
+  // app failed to be uninstalled.
+  virtual void UninstallApp(const GURL& app_url, UninstallCallback callback);
 
  private:
   Profile* profile_;

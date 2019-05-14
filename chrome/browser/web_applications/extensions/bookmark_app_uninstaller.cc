@@ -5,6 +5,7 @@
 #include "chrome/browser/web_applications/extensions/bookmark_app_uninstaller.h"
 
 #include "base/optional.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
@@ -21,19 +22,24 @@ BookmarkAppUninstaller::BookmarkAppUninstaller(Profile* profile,
 
 BookmarkAppUninstaller::~BookmarkAppUninstaller() = default;
 
-bool BookmarkAppUninstaller::UninstallApp(const GURL& app_url) {
+void BookmarkAppUninstaller::UninstallApp(const GURL& app_url,
+                                          UninstallCallback callback) {
   base::Optional<web_app::AppId> app_id =
       externally_installed_app_prefs_.LookupAppId(app_url);
   if (!app_id.has_value()) {
     LOG(WARNING) << "Couldn't uninstall app with url " << app_url
                  << "; No corresponding extension for url.";
-    return false;
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), false));
+    return;
   }
 
   if (!registrar_->IsInstalled(app_id.value())) {
     LOG(WARNING) << "Couldn't uninstall app with url " << app_url
                  << "; Extension not installed.";
-    return false;
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), false));
+    return;
   }
 
   base::string16 error;
@@ -45,7 +51,8 @@ bool BookmarkAppUninstaller::UninstallApp(const GURL& app_url) {
     LOG(WARNING) << "Couldn't uninstall app with url " << app_url << ". "
                  << error;
   }
-  return uninstalled;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), uninstalled));
 }
 
 }  // namespace extensions

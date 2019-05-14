@@ -168,19 +168,24 @@ class TestBookmarkAppUninstaller : public BookmarkAppUninstaller {
   }
 
   // BookmarkAppUninstaller
-  bool UninstallApp(const GURL& app_url) override {
+  void UninstallApp(const GURL& app_url, UninstallCallback callback) override {
     DCHECK(base::ContainsKey(next_result_map_, app_url));
 
     ++uninstall_call_count_;
     uninstalled_app_urls_.push_back(app_url);
 
-    bool result = next_result_map_[app_url];
-    next_result_map_.erase(app_url);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(base::BindLambdaForTesting(
+                                      [&, app_url](UninstallCallback callback) {
+                                        bool result = next_result_map_[app_url];
+                                        next_result_map_.erase(app_url);
 
-    if (result)
-      registrar_->RemoveAsInstalled(GenerateFakeAppId(app_url));
-
-    return result;
+                                        if (result)
+                                          registrar_->RemoveAsInstalled(
+                                              GenerateFakeAppId(app_url));
+                                        std::move(callback).Run(result);
+                                      }),
+                                  std::move(callback)));
   }
 
  private:

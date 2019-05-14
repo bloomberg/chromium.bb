@@ -85,14 +85,15 @@ class PendingBookmarkAppManager final : public web_app::PendingAppManager {
 
   void MaybeStartNextInstallation();
 
-  bool UninstallPlaceholderIfNecessary(
-      const web_app::InstallOptions install_options);
-
   void StartInstallationTask(std::unique_ptr<TaskAndCallback> task);
 
   void CreateWebContentsIfNecessary();
 
   void OnUrlLoaded(web_app::WebAppUrlLoader::Result result);
+
+  void UninstallPlaceholderIfNecessary();
+
+  void OnPlaceholderUninstalled(bool succeeded);
 
   void OnInstalled(BookmarkAppInstallationTask::Result result);
 
