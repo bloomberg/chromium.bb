@@ -41,7 +41,7 @@ class ArcIntentPickerAppFetcher : content::WebContentsObserver {
   // the preferred app (if it exists) will be automatically launched.
   static bool WillGetArcAppsForNavigation(content::NavigationHandle* handle,
                                           apps::AppsNavigationCallback callback,
-                                          bool should_aunch_preferred_app);
+                                          bool should_launch_preferred_app);
 
   // Called to launch an ARC app if it was selected by the user, and persist the
   // preference to launch or stay in Chrome if |should_persist| is true. Returns

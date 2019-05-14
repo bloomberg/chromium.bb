@@ -184,7 +184,7 @@ bool ArcIntentPickerAppFetcher::IsAppAvailableForTesting(
 // static
 size_t ArcIntentPickerAppFetcher::FindPreferredAppForTesting(
     const std::vector<mojom::IntentHandlerInfoPtr>& app_candidates) {
-  return FindPreferredApp(app_candidates, GURL());
+  return FindPreferredApp(app_candidates, /*url_for_logging=*/GURL());
 }
 
 ArcIntentPickerAppFetcher::~ArcIntentPickerAppFetcher() = default;
@@ -234,7 +234,7 @@ void ArcIntentPickerAppFetcher::OnAppCandidatesReceivedForNavigation(
     // created iff there are ARC apps which can actually handle the given URL.
     DVLOG(1) << "There are no app candidates for this URL: " << url;
     chromeos::ChromeOsAppsNavigationThrottle::RecordUma(
-        std::string(), apps::mojom::AppType::kUnknown,
+        /*selected_app_package=*/std::string(), apps::mojom::AppType::kUnknown,
         apps::IntentPickerCloseReason::PICKER_ERROR,
         /*should_persist=*/false);
     std::move(callback).Run(apps::AppsNavigationAction::RESUME, {});
@@ -339,7 +339,7 @@ void ArcIntentPickerAppFetcher::GetArcAppIcons(
   if (!intent_helper_bridge) {
     LOG(ERROR) << "Cannot get an instance of ArcIntentHelperBridge";
     chromeos::ChromeOsAppsNavigationThrottle::RecordUma(
-        std::string(), apps::mojom::AppType::kUnknown,
+        /*selected_app_package=*/std::string(), apps::mojom::AppType::kUnknown,
         apps::IntentPickerCloseReason::PICKER_ERROR,
         /*should_persist=*/false);
     std::move(callback).Run({});
