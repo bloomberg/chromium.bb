@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "media/base/video_types.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/video_frame_mapper.h"
 
@@ -17,11 +18,13 @@ namespace media {
 class MEDIA_GPU_EXPORT VideoFrameMapperFactory {
  public:
   // Create an instance of the frame mapper.
-  static std::unique_ptr<VideoFrameMapper> CreateMapper();
+  static std::unique_ptr<VideoFrameMapper> CreateMapper(
+      VideoPixelFormat format);
 
   // |linear_buffer_mapper| stands for a created mapper type. If true, the
   // mapper will expect frames passed to it to be in linear format.
   static std::unique_ptr<VideoFrameMapper> CreateMapper(
+      VideoPixelFormat format,
       bool force_linear_buffer_mapper);
 };
 

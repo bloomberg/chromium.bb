@@ -65,12 +65,6 @@ std::unique_ptr<VideoFrameFileWriter> VideoFrameFileWriter::Create(
 }
 
 bool VideoFrameFileWriter::Initialize() {
-  video_frame_mapper_ = VideoFrameMapperFactory::CreateMapper();
-  if (!video_frame_mapper_) {
-    LOG(ERROR) << "Failed to create VideoFrameMapper";
-    return false;
-  }
-
   if (!frame_writer_thread_.Start()) {
     LOG(ERROR) << "Failed to start file writer thread";
     return false;
@@ -111,6 +105,16 @@ void VideoFrameFileWriter::ProcessVideoFrameTask(
   base::SStringPrintf(&filename, FILE_PATH_LITERAL("frame_%04zu_%dx%d"),
                       frame_index, visible_size.width(), visible_size.height());
 
+  // Create VideoFrameMapper if not yet created. The decoder's output pixel
+  // format is not known yet when creating the VideoFrameWriter. We can only
+  // create the VideoFrameMapper upon receiving the first video frame.
+  if (!video_frame_mapper_) {
+    video_frame_mapper_ =
+        VideoFrameMapperFactory::CreateMapper(video_frame->format());
+    LOG_ASSERT(video_frame_mapper_) << "Failed to create VideoFrameMapper";
+    return;
+  }
+
   switch (output_format_) {
     case OutputFormat::kPNG:
       WriteVideoFramePNG(video_frame, base::FilePath(filename));
@@ -129,6 +133,7 @@ void VideoFrameFileWriter::WriteVideoFramePNG(
     scoped_refptr<const VideoFrame> video_frame,
     const base::FilePath& filename) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(writer_thread_sequence_checker_);
+  DCHECK(video_frame_mapper_);
 
   auto mapped_frame = video_frame_mapper_->Map(std::move(video_frame));
   if (!mapped_frame) {
@@ -165,6 +170,8 @@ void VideoFrameFileWriter::WriteVideoFrameYUV(
     scoped_refptr<const VideoFrame> video_frame,
     const base::FilePath& filename) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(writer_thread_sequence_checker_);
+  DCHECK(video_frame_mapper_);
+
   auto mapped_frame = video_frame_mapper_->Map(std::move(video_frame));
   if (!mapped_frame) {
     LOG(ERROR) << "Failed to map video frame";

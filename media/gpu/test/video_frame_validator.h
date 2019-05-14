@@ -72,7 +72,6 @@ class VideoFrameValidator : public VideoFrameProcessor {
 
  private:
   VideoFrameValidator(std::vector<std::string> expected_frame_checksums,
-                      std::unique_ptr<VideoFrameMapper> video_frame_mapper,
                       VideoPixelFormat validation_format);
 
   // Start the frame validation thread.
@@ -94,7 +93,7 @@ class VideoFrameValidator : public VideoFrameProcessor {
   // The list of expected MD5 frame checksums.
   const std::vector<std::string> expected_frame_checksums_;
 
-  const std::unique_ptr<VideoFrameMapper> video_frame_mapper_;
+  std::unique_ptr<VideoFrameMapper> video_frame_mapper_;
 
   // VideoPixelFormat the VideoFrame will be converted to for validation.
   const VideoPixelFormat validation_format_;

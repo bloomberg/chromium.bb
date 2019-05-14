@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "media/gpu/macros.h"
 
 namespace media {
@@ -90,6 +91,20 @@ bool IsFormatSupported(VideoPixelFormat format) {
 
 }  // namespace
 
+// static
+std::unique_ptr<GenericDmaBufVideoFrameMapper>
+GenericDmaBufVideoFrameMapper::Create(VideoPixelFormat format) {
+  if (!IsFormatSupported(format)) {
+    VLOGF(1) << "Unsupported format: " << format;
+    return nullptr;
+  }
+  return base::WrapUnique(new GenericDmaBufVideoFrameMapper(format));
+}
+
+GenericDmaBufVideoFrameMapper::GenericDmaBufVideoFrameMapper(
+    VideoPixelFormat format)
+    : format_(format) {}
+
 scoped_refptr<VideoFrame> GenericDmaBufVideoFrameMapper::Map(
     scoped_refptr<const VideoFrame> video_frame) const {
   if (video_frame->storage_type() != VideoFrame::StorageType::STORAGE_DMABUFS) {
@@ -98,10 +113,9 @@ scoped_refptr<VideoFrame> GenericDmaBufVideoFrameMapper::Map(
     return nullptr;
   }
 
-  // TODO(crbug.com/952147): Create GenericDmaBufVideoFrameMapper with pixel
-  // format, and only the format should be acceptable here.
-  if (!IsFormatSupported(video_frame->format())) {
-    VLOGF(1) << "Unsupported format: " << video_frame->format();
+  if (video_frame->format() != format_) {
+    VLOGF(1) << "Unexpected format: " << video_frame->format()
+             << ", expected: " << format_;
     return nullptr;
   }
 

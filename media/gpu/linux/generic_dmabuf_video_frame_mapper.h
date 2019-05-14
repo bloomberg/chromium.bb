@@ -14,12 +14,20 @@ namespace media {
 // backed video frames into memory.
 class MEDIA_GPU_EXPORT GenericDmaBufVideoFrameMapper : public VideoFrameMapper {
  public:
-  GenericDmaBufVideoFrameMapper() = default;
-  ~GenericDmaBufVideoFrameMapper() override = default;
+  static std::unique_ptr<GenericDmaBufVideoFrameMapper> Create(
+      VideoPixelFormat format);
 
+  ~GenericDmaBufVideoFrameMapper() override = default;
   // VideoFrameMapper implementation.
   scoped_refptr<VideoFrame> Map(
       scoped_refptr<const VideoFrame> video_frame) const override;
+
+ private:
+  explicit GenericDmaBufVideoFrameMapper(VideoPixelFormat format);
+
+  // The pixel format of mapped VideoFrame.
+  VideoPixelFormat format_;
+
   DISALLOW_COPY_AND_ASSIGN(GenericDmaBufVideoFrameMapper);
 };
 
