@@ -498,7 +498,7 @@ TEST_F(RecommendAppsFetcherImplTest, HasHardKeyboard) {
       std::string("test external touch device"), gfx::Size(1920, 1200), 1)});
   input_device_client_test_api_.SetKeyboardDevices(std::vector<ui::InputDevice>{
       {1, ui::INPUT_DEVICE_INTERNAL, "internal keyboard", "phys",
-       base::FilePath("sys_path"), 0, 0}});
+       base::FilePath("sys_path"), 0, 0, 0}});
   SetDisplaySize(gfx::Size(1920, 1200));
 
   recommend_apps_fetcher_->Start();

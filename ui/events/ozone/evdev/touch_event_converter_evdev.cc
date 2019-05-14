@@ -126,7 +126,8 @@ TouchEventConverterEvdev::TouchEventConverterEvdev(
                           devinfo.name(),
                           devinfo.phys(),
                           devinfo.vendor_id(),
-                          devinfo.product_id()),
+                          devinfo.product_id(),
+                          devinfo.version()),
       input_device_fd_(std::move(fd)),
       dispatcher_(dispatcher) {
   touch_evdev_debug_buffer_.Initialize(devinfo);

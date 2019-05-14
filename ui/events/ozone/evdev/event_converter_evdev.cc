@@ -26,7 +26,8 @@ EventConverterEvdev::EventConverterEvdev(int fd,
                                          const std::string& name,
                                          const std::string& phys,
                                          uint16_t vendor_id,
-                                         uint16_t product_id)
+                                         uint16_t product_id,
+                                         uint16_t version)
     : fd_(fd),
       path_(path),
       input_device_(id,
@@ -35,7 +36,8 @@ EventConverterEvdev::EventConverterEvdev(int fd,
                     phys,
                     GetInputPathInSys(path),
                     vendor_id,
-                    product_id),
+                    product_id,
+                    version),
       controller_(FROM_HERE) {
   input_device_.enabled = false;
 }
