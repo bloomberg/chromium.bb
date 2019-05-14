@@ -94,18 +94,27 @@ public class TouchlessDialogProperties {
     public static final WritableObjectPropertyKey<OnClickListener> CANCEL_ACTION =
             new WritableObjectPropertyKey<>();
 
+    /** True if the action is handled externally to the dialog */
+    public static final WritableBooleanPropertyKey IS_CANCEL_ACTION_EXTERNAL =
+            new WritableBooleanPropertyKey();
+
     /** What will happen when alternative action is triggered. */
     public static final WritableObjectPropertyKey<OnClickListener> ALT_ACTION =
             new WritableObjectPropertyKey<>();
 
+    /** True if the action is handled externally to the dialog */
+    public static final WritableBooleanPropertyKey IS_ALT_ACTION_EXTERNAL =
+            new WritableBooleanPropertyKey();
+
     /** The priority for this set of properties. */
     public static final WritableIntPropertyKey PRIORITY = new WritableIntPropertyKey();
 
-    public static final PropertyKey[] MINIMAL_DIALOG_KEYS = {
-            ModalDialogProperties.TITLE, ACTION_NAMES, CANCEL_ACTION, ALT_ACTION, PRIORITY};
+    public static final PropertyKey[] MINIMAL_DIALOG_KEYS = {ModalDialogProperties.TITLE,
+            ACTION_NAMES, CANCEL_ACTION, IS_CANCEL_ACTION_EXTERNAL, ALT_ACTION,
+            IS_ALT_ACTION_EXTERNAL, PRIORITY};
 
-    public static final PropertyKey[] ALL_DIALOG_KEYS =
-            PropertyModel.concatKeys(ModalDialogProperties.ALL_KEYS,
-                    new PropertyKey[] {ACTION_NAMES, CANCEL_ACTION, ALT_ACTION, PRIORITY,
-                            IS_FULLSCREEN, LIST_MODELS});
+    public static final PropertyKey[] ALL_DIALOG_KEYS = PropertyModel.concatKeys(
+            ModalDialogProperties.ALL_KEYS,
+            new PropertyKey[] {ACTION_NAMES, CANCEL_ACTION, IS_CANCEL_ACTION_EXTERNAL, ALT_ACTION,
+                    IS_ALT_ACTION_EXTERNAL, PRIORITY, IS_FULLSCREEN, LIST_MODELS});
 }

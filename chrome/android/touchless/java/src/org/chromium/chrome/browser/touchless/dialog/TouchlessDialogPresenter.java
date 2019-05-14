@@ -87,7 +87,8 @@ public class TouchlessDialogPresenter extends Presenter {
         // notify change if the property is not set during initialization.
         mDialog.setCanceledOnTouchOutside(false);
         mDialog.setOnKeyListener((dialog, keyCode, event) -> {
-            return mModelCoordinator != null ? mModelCoordinator.onKeyEvent(event) : false;
+            return mModelCoordinator != null ? (mModelCoordinator.onKeyEvent(event) == null)
+                                             : false;
         });
         ViewGroup dialogView = (ViewGroup) LayoutInflater.from(mDialog.getContext())
                 .inflate(R.layout.touchless_dialog_view, null);
