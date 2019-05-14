@@ -2716,6 +2716,9 @@ crbug.com/939181 external/wpt/html/browsers/origin/cross-origin-objects/cross-or
 crbug.com/939181 virtual/not-site-per-process/external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Failure Timeout ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/css-flexbox/flexbox_stf-fixpos.html [ Failure ]
+crbug.com/626703 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-direction-row-vertical.html [ Failure ]
+crbug.com/626703 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_stf-fixpos.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-multicol/multicol-span-all-fieldset-002.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-pseudo/marker-content-006.html [ Failure ]
 crbug.com/626703 external/wpt/html/rendering/widgets/button-layout/anonymous-button-content-box.html [ Failure ]
