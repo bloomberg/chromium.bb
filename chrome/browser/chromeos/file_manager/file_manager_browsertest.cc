@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 
+#include "ash/keyboard/ui/public/keyboard_switches.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
@@ -16,7 +17,6 @@
 #include "components/user_manager/user_manager_base.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/cpp/identity_test_utils.h"
-#include "ui/keyboard/public/keyboard_switches.h"
 
 namespace file_manager {
 

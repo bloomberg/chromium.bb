@@ -4,6 +4,10 @@
 
 #include "ash/shelf/shelf_widget.h"
 
+#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_util.h"
+#include "ash/keyboard/ui/public/keyboard_switches.h"
+#include "ash/keyboard/ui/test/keyboard_test_util.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/root_window_controller.h"
@@ -26,10 +30,6 @@
 #include "ui/display/display.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
-#include "ui/keyboard/keyboard_controller.h"
-#include "ui/keyboard/keyboard_util.h"
-#include "ui/keyboard/public/keyboard_switches.h"
-#include "ui/keyboard/test/keyboard_test_util.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 

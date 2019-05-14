@@ -393,7 +393,7 @@ static_library("common") {
       ]
 
       # This dependency is for a header used only by extensions code.
-      public_deps += [ "//ui/keyboard" ]
+      public_deps += [ "//ash/keyboard/ui" ]
     }
   }
 

@@ -322,6 +322,9 @@
   "ash/components/resources/ash_components_resources.grd": {
     "structures": [24350],
   },
+  "ash/keyboard/ui/keyboard_resources.grd": {
+    "includes": [26800],
+  },
   "ash/login/resources/login_resources.grd": {
     "structures": [24360],
   },
@@ -416,9 +419,6 @@
   },
   "ui/file_manager/file_manager_resources.grd": {
     "includes": [26550],
-  },
-  "ui/keyboard/keyboard_resources.grd": {
-    "includes": [26800],
   },
   "ui/login/login_resources.grd": {
     "includes": [26900],

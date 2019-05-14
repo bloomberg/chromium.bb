@@ -15,7 +15,7 @@
 // a remote client. This is intended to be passed to the overrides of
 // ui::InputMethod::SetFocusedTextInputClient().
 // NOTE: Under SingleProcessMash this is used by ash code, for example by the
-// virtual keyboard controller in //ui/keyboard.
+// virtual keyboard controller in //ash/keyboard/ui.
 class RemoteTextInputClient : public ui::TextInputClient,
                               public ui::internal::InputMethodDelegate {
  public:

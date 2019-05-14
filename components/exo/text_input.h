@@ -5,12 +5,12 @@
 #ifndef COMPONENTS_EXO_TEXT_INPUT_H_
 #define COMPONENTS_EXO_TEXT_INPUT_H_
 
+#include "ash/keyboard/ui/keyboard_controller_observer.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ime/text_input_flags.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/keyboard/keyboard_controller_observer.h"
 
 namespace ui {
 class InputMethod;

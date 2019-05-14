@@ -64,6 +64,7 @@ mojom("interfaces_internal") {
   ]
 
   public_deps = [
+    "//ash/keyboard/ui:mojom",
     "//chromeos/components/proximity_auth/public/interfaces",
     "//chromeos/services/assistant/public/mojom",
     "//components/account_id/interfaces",
@@ -81,7 +82,6 @@ mojom("interfaces_internal") {
     "//ui/gfx/geometry/mojo",
     "//ui/gfx/image/mojo:interfaces",
     "//ui/gfx/range/mojo",
-    "//ui/keyboard:mojom",
     "//ui/message_center/public/mojo:mojo",
     "//url/mojom:url_mojom_gurl",
   ]

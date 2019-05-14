@@ -24,6 +24,7 @@
 #include "ash/focus_cycler.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/ime/ime_switch_type.h"
+#include "ash/keyboard/ui/keyboard_controller.h"
 #include "ash/kiosk_next/kiosk_next_shell_controller.h"
 #include "ash/magnifier/docked_magnifier_controller.h"
 #include "ash/magnifier/magnification_controller.h"
@@ -92,7 +93,6 @@
 #include "ui/events/devices/input_device.h"
 #include "ui/events/devices/input_device_manager.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/keyboard/keyboard_controller.h"
 #include "ui/message_center/message_center.h"
 
 namespace ash {

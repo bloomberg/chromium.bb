@@ -11,6 +11,7 @@
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/app_list/views/contents_view.h"
 #include "ash/app_list/views/search_box_view.h"
+#include "ash/keyboard/ui/keyboard_controller.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shelf_types.h"
@@ -31,7 +32,6 @@
 #include "ui/display/manager/display_manager.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
-#include "ui/keyboard/keyboard_controller.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
 

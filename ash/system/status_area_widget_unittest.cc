@@ -5,6 +5,10 @@
 #include "ash/system/status_area_widget.h"
 
 #include "ash/focus_cycler.h"
+#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_util.h"
+#include "ash/keyboard/ui/public/keyboard_switches.h"
+#include "ash/keyboard/ui/test/keyboard_test_util.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/system_tray_focus_observer.h"
 #include "ash/session/session_controller_impl.h"
@@ -26,10 +30,6 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/session_manager/session_manager_types.h"
 #include "ui/events/test/event_generator.h"
-#include "ui/keyboard/keyboard_controller.h"
-#include "ui/keyboard/keyboard_util.h"
-#include "ui/keyboard/public/keyboard_switches.h"
-#include "ui/keyboard/test/keyboard_test_util.h"
 
 using session_manager::SessionState;
 

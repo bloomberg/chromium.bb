@@ -7,6 +7,7 @@
 #include <cmath>
 #include <memory>
 
+#include "ash/keyboard/ui/keyboard_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
@@ -16,7 +17,6 @@
 #include "base/stl_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
-#include "ui/keyboard/keyboard_controller.h"
 #include "ui/wm/core/window_util.h"
 
 namespace ash {

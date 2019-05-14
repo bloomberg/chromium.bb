@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <memory>
 
+#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_controller_observer.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
@@ -31,8 +33,6 @@
 #include "ui/compositor/layer.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
-#include "ui/keyboard/keyboard_controller.h"
-#include "ui/keyboard/keyboard_controller_observer.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/window_properties.h"
 #include "ui/wm/public/activation_client.h"

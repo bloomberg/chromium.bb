@@ -10,10 +10,10 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/keyboard/ui/keyboard_controller_observer.h"
 #include "ash/wm/wm_snap_to_pixel_layout_manager.h"
 #include "base/macros.h"
 #include "ui/aura/window_observer.h"
-#include "ui/keyboard/keyboard_controller_observer.h"
 
 namespace gfx {
 class Rect;

@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "ash/accessibility/accessibility_controller.h"
+#include "ash/keyboard/ui/keyboard_controller.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
@@ -23,7 +24,6 @@
 #include "ui/events/event.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/keyboard/keyboard_controller.h"
 #include "ui/views/controls/image_view.h"
 
 namespace ash {

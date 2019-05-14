@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "ash/keyboard/ui/keyboard_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
@@ -17,7 +18,6 @@
 #include "base/logging.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/geometry/insets.h"
-#include "ui/keyboard/keyboard_controller.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {

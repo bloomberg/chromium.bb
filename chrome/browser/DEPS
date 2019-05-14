@@ -107,17 +107,15 @@ include_rules = [
   # interfaces in //ash/public/interfaces. See //ash/README.md.
   "-ash",
   "+ash/public",
+  "+ash/keyboard/ui/public",
+  "+ash/keyboard/ui/grit",
+  "+ash/keyboard/ui/public",
+  "+ash/keyboard/ui/resources",
   "+ash/components/shortcut_viewer",
 
   # The message center may not exist, or may run out of process (in mash).
   "-ui/message_center",
   "+ui/message_center/public",
-
-  # KeyboardController and related classes are part of Ash.
-  "-ui/keyboard",
-  "+ui/keyboard/grit",
-  "+ui/keyboard/public",
-  "+ui/keyboard/resources",
 
   # chrome only needs switches from cc. All usage of the compositor is from
   # content. Definitely don't include generic stuff from cc/base here, if this
@@ -243,5 +241,8 @@ specific_include_rules = {
   # To share values of UMA enums between product code and tests.
   "translate_manager_browsertest.cc": [
     "+services/network/initiator_lock_compatibility.h",
+  ],
+  "input_method_manager_impl.cc": [
+    "+ash/keyboard/ui/keyboard_controller.h",
   ],
 }

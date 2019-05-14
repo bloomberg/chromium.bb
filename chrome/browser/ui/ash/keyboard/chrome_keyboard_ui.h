@@ -7,9 +7,9 @@
 
 #include <memory>
 
+#include "ash/keyboard/ui/keyboard_ui.h"
 #include "base/macros.h"
 #include "ui/aura/window_observer.h"
-#include "ui/keyboard/keyboard_ui.h"
 
 class ChromeKeyboardWebContents;
 

@@ -15,6 +15,7 @@
 #include "chrome/grit/theme_resources.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/keyboard/ui/resources/keyboard_resource_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/file_manager/file_manager_string_util.h"
 #include "chrome/grit/component_extension_resources.h"
@@ -23,7 +24,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/file_manager/file_manager_resource_util.h"
 #include "ui/file_manager/grit/file_manager_resources.h"
-#include "ui/keyboard/resources/keyboard_resource_util.h"
 #endif
 
 #if defined(KIOSK_NEXT) && defined(GOOGLE_CHROME_BUILD)

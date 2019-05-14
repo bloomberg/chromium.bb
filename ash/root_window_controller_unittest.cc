@@ -6,6 +6,11 @@
 
 #include <memory>
 
+#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_ui.h"
+#include "ash/keyboard/ui/keyboard_util.h"
+#include "ash/keyboard/ui/public/keyboard_switches.h"
+#include "ash/keyboard/ui/test/keyboard_test_util.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/session/test_session_controller_client.h"
@@ -37,11 +42,6 @@
 #include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/events/test/test_event_handler.h"
-#include "ui/keyboard/keyboard_controller.h"
-#include "ui/keyboard/keyboard_ui.h"
-#include "ui/keyboard/keyboard_util.h"
-#include "ui/keyboard/public/keyboard_switches.h"
-#include "ui/keyboard/test/keyboard_test_util.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"

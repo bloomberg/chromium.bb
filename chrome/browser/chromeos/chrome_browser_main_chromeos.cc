@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "ash/events/event_rewriter_controller.h"
+#include "ash/keyboard/ui/resources/keyboard_resource_util.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/event_rewriter_controller.mojom.h"
 #include "ash/shell.h"
@@ -194,7 +195,6 @@
 #include "ui/chromeos/events/event_rewriter_chromeos.h"
 #include "ui/chromeos/events/pref_names.h"
 #include "ui/events/event_utils.h"
-#include "ui/keyboard/resources/keyboard_resource_util.h"
 
 #if BUILDFLAG(ENABLE_RLZ)
 #include "components/rlz/rlz_tracker.h"

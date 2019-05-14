@@ -9,6 +9,9 @@
 #include <tuple>
 #include <vector>
 
+#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/public/keyboard_switches.h"
+#include "ash/keyboard/ui/test/keyboard_test_util.h"
 #include "ash/root_window_controller.h"
 #include "ash/scoped_root_window_for_new_windows.h"
 #include "ash/shelf/shelf.h"
@@ -22,9 +25,6 @@
 #include "base/command_line.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/geometry/insets.h"
-#include "ui/keyboard/keyboard_controller.h"
-#include "ui/keyboard/public/keyboard_switches.h"
-#include "ui/keyboard/test/keyboard_test_util.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {

@@ -9,6 +9,7 @@
 #include <set>
 #include <vector>
 
+#include "ash/keyboard/ui/public/keyboard_config.mojom.h"
 #include "ash/public/interfaces/keyboard_controller.mojom.h"
 #include "base/callback_forward.h"
 #include "base/macros.h"
@@ -18,7 +19,6 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/session_manager/core/session_manager_observer.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
-#include "ui/keyboard/public/keyboard_config.mojom.h"
 #include "url/gurl.h"
 
 class ChromeKeyboardWebContents;

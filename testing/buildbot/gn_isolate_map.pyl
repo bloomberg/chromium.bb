@@ -1359,7 +1359,7 @@
     "type": "junit_test",
   },
   "keyboard_unittests": {
-    "label": "//ui/keyboard:keyboard_unittests",
+    "label": "//ash/keyboard/ui:keyboard_unittests",
     "type": "windowed_test_launcher",
   },
   "language_detection_fuzzer": {

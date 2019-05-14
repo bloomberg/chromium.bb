@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "ash/keyboard/ui/keyboard_controller_observer.h"
 #include "base/macros.h"
 #include "components/arc/ime/arc_ime_bridge.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -16,7 +17,6 @@
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/keyboard/keyboard_controller_observer.h"
 
 namespace aura {
 class Window;

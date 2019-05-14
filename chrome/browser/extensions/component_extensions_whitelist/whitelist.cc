@@ -16,9 +16,9 @@
 #include "printing/buildflags/buildflags.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/keyboard/ui/grit/keyboard_resources.h"
 #include "chrome/browser/chromeos/input_method/component_extension_ime_manager_impl.h"
 #include "ui/file_manager/grit/file_manager_resources.h"
-#include "ui/keyboard/grit/keyboard_resources.h"
 #endif
 
 namespace extensions {

@@ -9,6 +9,7 @@
 #include <set>
 #include <utility>
 
+#include "ash/keyboard/ui/public/keyboard_switches.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/base_switches.h"
 #include "base/bind.h"
@@ -143,7 +144,6 @@
 #include "ui/gfx/switches.h"
 #include "ui/gl/buildflags.h"
 #include "ui/gl/gl_switches.h"
-#include "ui/keyboard/public/keyboard_switches.h"
 #include "ui/native_theme/native_theme_features.h"
 
 #include "services/service_manager/sandbox/features.h"

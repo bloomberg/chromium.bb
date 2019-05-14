@@ -4,6 +4,8 @@
 
 #include "components/exo/keyboard.h"
 
+#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_util.h"
 #include "ash/public/cpp/app_types.h"
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -19,8 +21,6 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
-#include "ui/keyboard/keyboard_controller.h"
-#include "ui/keyboard/keyboard_util.h"
 #include "ui/views/widget/widget.h"
 
 namespace exo {

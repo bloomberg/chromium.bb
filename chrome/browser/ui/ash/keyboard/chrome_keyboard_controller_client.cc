@@ -6,6 +6,9 @@
 
 #include <utility>
 
+#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/public/keyboard_switches.h"
+#include "ash/keyboard/ui/resources/keyboard_resource_util.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -32,9 +35,6 @@
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/keyboard/keyboard_controller.h"
-#include "ui/keyboard/public/keyboard_switches.h"
-#include "ui/keyboard/resources/keyboard_resource_util.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
 namespace virtual_keyboard_private = extensions::api::virtual_keyboard_private;

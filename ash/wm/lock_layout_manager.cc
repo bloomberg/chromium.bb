@@ -4,6 +4,7 @@
 
 #include "ash/wm/lock_layout_manager.h"
 
+#include "ash/keyboard/ui/keyboard_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/wm/lock_window_state.h"
@@ -12,7 +13,6 @@
 #include "ui/aura/env.h"
 #include "ui/events/event.h"
 #include "ui/events/gestures/gesture_recognizer.h"
-#include "ui/keyboard/keyboard_controller.h"
 
 namespace ash {
 

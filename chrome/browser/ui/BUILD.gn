@@ -1808,6 +1808,8 @@ jumbo_split_static_library("ui") {
     deps += [
       "//ash",
       "//ash/components/shortcut_viewer",
+      "//ash/keyboard/ui",
+      "//ash/keyboard/ui:mojom",
       "//ash/public/cpp",
       "//ash/public/cpp/resources:ash_public_unscaled_resources",
       "//ash/public/cpp/vector_icons",
@@ -1869,8 +1871,6 @@ jumbo_split_static_library("ui") {
       "//ui/chromeos",
       "//ui/chromeos/events",
       "//ui/compositor_extra",
-      "//ui/keyboard",
-      "//ui/keyboard:mojom",
     ]
     allow_circular_includes_from += [ "//chrome/browser/chromeos" ]
 

@@ -5,6 +5,10 @@
 #include "ash/wm/overview/overview_controller.h"
 
 #include "ash/app_list/test/app_list_test_helper.h"
+#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_util.h"
+#include "ash/keyboard/ui/public/keyboard_switches.h"
+#include "ash/keyboard/ui/test/keyboard_test_util.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
@@ -17,10 +21,6 @@
 #include "ui/base/hit_test.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/test/event_generator.h"
-#include "ui/keyboard/keyboard_controller.h"
-#include "ui/keyboard/keyboard_util.h"
-#include "ui/keyboard/public/keyboard_switches.h"
-#include "ui/keyboard/test/keyboard_test_util.h"
 
 namespace ash {
 namespace {

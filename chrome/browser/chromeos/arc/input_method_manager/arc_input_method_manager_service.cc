@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "ash/keyboard/ui/public/keyboard_switches.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "base/bind.h"
 #include "base/logging.h"
@@ -31,7 +32,6 @@
 #include "ui/base/ime/chromeos/input_method_util.h"
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/input_method_observer.h"
-#include "ui/keyboard/public/keyboard_switches.h"
 
 namespace arc {
 

@@ -16,6 +16,9 @@
 #include "ash/app_list/views/contents_view.h"
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/app_list/views/test/apps_grid_view_test_api.h"
+#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/public/keyboard_switches.h"
+#include "ash/keyboard/ui/test/keyboard_test_util.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
@@ -57,9 +60,6 @@
 #include "ui/display/screen.h"
 #include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/test/event_generator.h"
-#include "ui/keyboard/keyboard_controller.h"
-#include "ui/keyboard/public/keyboard_switches.h"
-#include "ui/keyboard/test/keyboard_test_util.h"
 #include "ui/views/controls/textfield/textfield.h"
 
 namespace ash {

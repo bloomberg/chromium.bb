@@ -269,12 +269,12 @@ source_set("test_support") {
 
   deps = [
     ":cpp",
+    "//ash/keyboard/ui:mojom",
     "//base",
     "//services/service_manager/public/cpp",
     "//ui/aura",
     "//ui/aura:test_support",
     "//ui/gfx",
-    "//ui/keyboard:mojom",
     "//ui/views",
   ]
 }

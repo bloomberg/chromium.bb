@@ -4,6 +4,8 @@
 
 #include "ash/magnifier/magnification_controller.h"
 
+#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_util.h"
 #include "ash/magnifier/magnifier_test_utils.h"
 #include "ash/magnifier/magnifier_utils.h"
 #include "ash/public/cpp/ash_switches.h"
@@ -21,8 +23,6 @@
 #include "ui/events/event_handler.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/rect_conversions.h"
-#include "ui/keyboard/keyboard_controller.h"
-#include "ui/keyboard/keyboard_util.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"

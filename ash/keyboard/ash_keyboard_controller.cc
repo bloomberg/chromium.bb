@@ -4,6 +4,9 @@
 
 #include "ash/keyboard/ash_keyboard_controller.h"
 
+#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_ui_factory.h"
+#include "ash/keyboard/ui/public/keyboard_switches.h"
 #include "ash/keyboard/virtual_keyboard_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller_impl.h"
@@ -12,9 +15,6 @@
 #include "base/command_line.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/keyboard/keyboard_controller.h"
-#include "ui/keyboard/keyboard_ui_factory.h"
-#include "ui/keyboard/public/keyboard_switches.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
 using keyboard::mojom::KeyboardConfig;

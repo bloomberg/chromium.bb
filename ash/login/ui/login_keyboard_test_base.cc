@@ -5,6 +5,10 @@
 #include "ash/login/ui/login_keyboard_test_base.h"
 
 #include "ash/keyboard/ash_keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_ui.h"
+#include "ash/keyboard/ui/public/keyboard_switches.h"
+#include "ash/keyboard/ui/test/keyboard_test_util.h"
 #include "ash/login/mock_login_screen_client.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/login_test_utils.h"
@@ -14,10 +18,6 @@
 #include "ash/wallpaper/wallpaper_controller.h"
 #include "base/command_line.h"
 #include "base/strings/strcat.h"
-#include "ui/keyboard/keyboard_controller.h"
-#include "ui/keyboard/keyboard_ui.h"
-#include "ui/keyboard/public/keyboard_switches.h"
-#include "ui/keyboard/test/keyboard_test_util.h"
 
 namespace ash {
 

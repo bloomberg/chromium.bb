@@ -978,6 +978,7 @@ jumbo_static_library("extensions") {
     }
     deps += [
       "//ash",
+      "//ash/keyboard/ui:resources_grit_grit",
       "//ash/public/cpp",
       "//chrome/browser/resources/chromeos/camera:chrome_camera_app",
       "//chromeos",
@@ -1012,8 +1013,6 @@ jumbo_static_library("extensions") {
       "//ui/chromeos",
       "//ui/chromeos/events",
       "//ui/file_manager",
-      "//ui/keyboard",
-      "//ui/keyboard:resources",
       "//ui/ozone",
       "//ui/views",
     ]

@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "ash/ime/ime_controller.h"
+#include "ash/keyboard/ui/keyboard_util.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -23,7 +24,6 @@
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/keyboard/keyboard_util.h"
 #include "ui/views/controls/image_view.h"
 
 namespace ash {

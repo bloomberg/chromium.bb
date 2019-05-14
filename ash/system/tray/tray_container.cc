@@ -6,10 +6,10 @@
 
 #include <utility>
 
+#include "ash/keyboard/ui/keyboard_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ui/gfx/geometry/insets.h"
-#include "ui/keyboard/keyboard_controller.h"
 #include "ui/views/border.h"
 #include "ui/views/layout/box_layout.h"
 

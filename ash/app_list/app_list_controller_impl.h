@@ -20,6 +20,7 @@
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/home_screen/home_launcher_gesture_handler_observer.h"
 #include "ash/home_screen/home_screen_delegate.h"
+#include "ash/keyboard/ui/keyboard_controller_observer.h"
 #include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/interfaces/app_list.mojom.h"
@@ -35,7 +36,6 @@
 #include "components/sync/model/string_ordinal.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
-#include "ui/keyboard/keyboard_controller_observer.h"
 
 class PrefRegistrySimple;
 

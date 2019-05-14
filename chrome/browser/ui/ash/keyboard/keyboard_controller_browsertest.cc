@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/public/keyboard_switches.h"
+#include "ash/keyboard/ui/resources/keyboard_resource_util.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -27,9 +30,6 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/test/event_generator.h"
-#include "ui/keyboard/keyboard_controller.h"
-#include "ui/keyboard/public/keyboard_switches.h"
-#include "ui/keyboard/resources/keyboard_resource_util.h"
 
 namespace {
 

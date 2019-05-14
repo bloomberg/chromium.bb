@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "ash/keyboard/ui/resources/keyboard_resource_util.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/feature_list.h"
@@ -31,7 +32,6 @@
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/keyboard/resources/keyboard_resource_util.h"
 
 namespace {
 

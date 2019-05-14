@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/keyboard/ui/public/keyboard_switches.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
@@ -34,7 +35,6 @@
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/mock_ime_input_context_handler.h"
 #include "ui/base/ime/mock_input_method.h"
-#include "ui/keyboard/public/keyboard_switches.h"
 
 namespace arc {
 namespace {

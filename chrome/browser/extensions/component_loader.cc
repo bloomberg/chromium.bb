@@ -48,6 +48,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/keyboard/ui/grit/keyboard_resources.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/site_instance.h"
@@ -56,7 +57,6 @@
 #include "storage/browser/fileapi/file_system_context.h"
 #include "ui/chromeos/devicetype_utils.h"
 #include "ui/file_manager/grit/file_manager_resources.h"
-#include "ui/keyboard/grit/keyboard_resources.h"
 #endif
 
 #if BUILDFLAG(ENABLE_PDF)

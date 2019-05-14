@@ -6,6 +6,8 @@
 #define ASH_WM_LOCK_LAYOUT_MANAGER_H_
 
 #include "ash/ash_export.h"
+#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_controller_observer.h"
 #include "ash/shelf/shelf_observer.h"
 #include "ash/shell_observer.h"
 #include "ash/wm/wm_snap_to_pixel_layout_manager.h"
@@ -13,8 +15,6 @@
 #include "base/scoped_observer.h"
 #include "ui/aura/window_observer.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/keyboard/keyboard_controller.h"
-#include "ui/keyboard/keyboard_controller_observer.h"
 
 namespace ash {
 

@@ -11,6 +11,8 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_controller_observer.h"
 #include "ash/login/login_screen_controller.h"
 #include "ash/login/login_screen_controller_observer.h"
 #include "ash/login/ui/lock_screen.h"
@@ -29,8 +31,6 @@
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "ui/display/display_observer.h"
 #include "ui/display/screen.h"
-#include "ui/keyboard/keyboard_controller.h"
-#include "ui/keyboard/keyboard_controller_observer.h"
 #include "ui/views/controls/styled_label_listener.h"
 #include "ui/views/view.h"
 

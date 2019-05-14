@@ -8,6 +8,7 @@
 
 #include "ash/animation/animation_change_type.h"
 #include "ash/app_list/app_list_controller_impl.h"
+#include "ash/keyboard/ui/keyboard_controller_observer.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -24,7 +25,6 @@
 #include "base/logging.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/keyboard/keyboard_controller_observer.h"
 
 namespace ash {
 

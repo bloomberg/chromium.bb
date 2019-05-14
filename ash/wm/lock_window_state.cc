@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/keyboard/ui/keyboard_controller.h"
 #include "ash/public/cpp/window_animation_types.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
@@ -19,7 +20,6 @@
 #include "ash/wm/work_area_insets.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/keyboard/keyboard_controller.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {

@@ -8,6 +8,8 @@
 #include <string>
 #include <utility>
 
+#include "ash/keyboard/ui/public/keyboard_controller_types.mojom.h"
+#include "ash/keyboard/ui/public/keyboard_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
@@ -43,8 +45,6 @@
 #include "ui/events/keycodes/dom/dom_key.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
-#include "ui/keyboard/public/keyboard_controller_types.mojom.h"
-#include "ui/keyboard/public/keyboard_switches.h"
 
 namespace keyboard_api = extensions::api::virtual_keyboard_private;
 

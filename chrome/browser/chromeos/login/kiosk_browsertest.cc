@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "apps/test/app_window_waiter.h"
+#include "ash/keyboard/ui/public/keyboard_switches.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/interfaces/login_screen_test_api.test-mojom-test-utils.h"
 #include "ash/public/interfaces/wallpaper.mojom.h"
@@ -100,7 +101,6 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/aura/window.h"
 #include "ui/base/accelerators/accelerator.h"
-#include "ui/keyboard/public/keyboard_switches.h"
 
 namespace em = enterprise_management;
 

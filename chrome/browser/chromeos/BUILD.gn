@@ -226,6 +226,7 @@ source_set("chromeos") {
     "//net",
 
     # TODO: care about enable_basic_printing and enable_print_preview.
+    "//ash/keyboard/ui",
     "//printing",
     "//remoting/host/it2me:chrome_os_host",
     "//services/audio/public/cpp",
@@ -268,7 +269,6 @@ source_set("chromeos") {
     "//ui/events/platform",
     "//ui/file_manager",
     "//ui/gfx:gfx_switches",
-    "//ui/keyboard",
     "//ui/message_center",
     "//ui/message_center/public/cpp",
     "//ui/ozone",

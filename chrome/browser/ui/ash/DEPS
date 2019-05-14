@@ -1,4 +1,6 @@
 include_rules = [
+  "+ash/keyboard/ui",
+
   # ash depends on views, so code in ui/ash is allowed to depend on ui/views.
   "+chrome/browser/ui/views",
 
@@ -9,6 +11,7 @@ specific_include_rules = {
   ".*test.*": [
    "!ash",
    "+ash/components/shortcut_viewer",
+   "+ash/keyboard/ui",
    "+ash/public",
    "+ash/shelf/shelf_constants.h",
   ],

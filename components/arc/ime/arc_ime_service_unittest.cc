@@ -8,6 +8,7 @@
 #include <set>
 #include <utility>
 
+#include "ash/keyboard/ui/keyboard_controller.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/arc/common/ime.mojom.h"
@@ -22,7 +23,6 @@
 #include "ui/events/event.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/keyboard_codes.h"
-#include "ui/keyboard/keyboard_controller.h"
 
 namespace arc {
 

@@ -6,6 +6,7 @@
 #define ASH_SYSTEM_IME_MENU_IME_MENU_TRAY_H_
 
 #include "ash/ash_export.h"
+#include "ash/keyboard/ui/keyboard_controller_observer.h"
 #include "ash/public/interfaces/ime_controller.mojom.h"
 #include "ash/public/interfaces/ime_info.mojom.h"
 #include "ash/system/ime/ime_observer.h"
@@ -15,7 +16,6 @@
 #include "ash/system/virtual_keyboard/virtual_keyboard_observer.h"
 #include "base/macros.h"
 #include "ui/base/ime/chromeos/public/interfaces/ime_keyset.mojom.h"
-#include "ui/keyboard/keyboard_controller_observer.h"
 
 namespace views {
 class ImageView;

@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "ash/keyboard/ui/keyboard_controller.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -24,7 +25,6 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor_extra/shadow.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/keyboard/keyboard_controller.h"
 #include "ui/wm/core/shadow_types.h"
 
 namespace {

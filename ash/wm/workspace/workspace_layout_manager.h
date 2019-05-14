@@ -9,6 +9,7 @@
 #include <set>
 
 #include "ash/ash_export.h"
+#include "ash/keyboard/ui/keyboard_controller_observer.h"
 #include "ash/shelf/shelf_observer.h"
 #include "ash/shell_observer.h"
 #include "ash/wm/window_state_observer.h"
@@ -18,7 +19,6 @@
 #include "ui/aura/window_observer.h"
 #include "ui/display/display_observer.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/keyboard/keyboard_controller_observer.h"
 #include "ui/wm/public/activation_change_observer.h"
 
 namespace ash {

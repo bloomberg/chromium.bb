@@ -24,6 +24,7 @@
 #include "ash/ime/ime_controller.h"
 #include "ash/ime/ime_engine_factory_registry.h"
 #include "ash/keyboard/ash_keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_controller.h"
 #include "ash/kiosk_next/kiosk_next_shell_controller.h"
 #include "ash/login/login_screen_controller.h"
 #include "ash/magnifier/docked_magnifier_controller.h"
@@ -52,7 +53,6 @@
 #include "base/single_thread_task_runner.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "services/ws/common/switches.h"
-#include "ui/keyboard/keyboard_controller.h"
 
 namespace ash {
 namespace mojo_interface_factory {

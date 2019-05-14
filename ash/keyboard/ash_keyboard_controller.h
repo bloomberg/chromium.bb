@@ -8,12 +8,12 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/keyboard/ui/keyboard_controller_observer.h"
 #include "ash/public/interfaces/keyboard_controller.mojom.h"
 #include "ash/session/session_observer.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
-#include "ui/keyboard/keyboard_controller_observer.h"
 
 namespace gfx {
 class Rect;

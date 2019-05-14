@@ -7,6 +7,9 @@
 #include <memory>
 #include <vector>
 
+#include "ash/keyboard/ui/container_behavior.h"
+#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/test/keyboard_test_util.h"
 #include "ash/public/cpp/test/test_keyboard_controller_observer.h"
 #include "ash/public/interfaces/keyboard_controller.mojom.h"
 #include "ash/shell.h"
@@ -21,9 +24,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/window.h"
 #include "ui/display/manager/display_manager.h"
-#include "ui/keyboard/container_behavior.h"
-#include "ui/keyboard/keyboard_controller.h"
-#include "ui/keyboard/test/keyboard_test_util.h"
 
 using keyboard::mojom::KeyboardConfig;
 using keyboard::mojom::KeyboardConfigPtr;

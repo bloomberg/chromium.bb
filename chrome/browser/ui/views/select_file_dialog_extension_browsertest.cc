@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/keyboard/ui/public/keyboard_switches.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/shell_test_api.test-mojom-test-utils.h"
 #include "ash/public/interfaces/shell_test_api.test-mojom.h"
@@ -47,7 +48,6 @@
 #include "extensions/test/extension_test_message_listener.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "ui/keyboard/public/keyboard_switches.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 #include "ui/shell_dialogs/select_file_policy.h"
 #include "ui/shell_dialogs/selected_file_info.h"
