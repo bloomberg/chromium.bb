@@ -20,6 +20,7 @@
   "background": {
     "scripts": [
       "chrome://resources/js/assert.js",
+      "piex/piex.js.wasm",
       "background_scripts.js"
     ],
     "persistent": false
