@@ -238,11 +238,11 @@ class PLATFORM_EXPORT Font {
   bool LoadingCustomFonts() const;
   bool IsFallbackValid() const;
 
- private:
   bool ShouldSkipDrawing() const {
     return font_fallback_list_ && font_fallback_list_->ShouldSkipDrawing();
   }
 
+ private:
   FontDescription font_description_;
   mutable scoped_refptr<FontFallbackList> font_fallback_list_;
   mutable unsigned can_shape_word_by_word_ : 1;

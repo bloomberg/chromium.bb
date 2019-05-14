@@ -430,7 +430,8 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
     context.ConcatCTM(TextPainterBase::Rotation(
         box_rect, TextPainterBase::kCounterclockwise));
   }
-  if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled()) {
+  if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled() &&
+      !font.ShouldSkipDrawing()) {
     PaintTimingDetector::NotifyTextPaint(
         InlineLayoutObject(),
         paint_info.context.GetPaintController().CurrentPaintChunkProperties());
