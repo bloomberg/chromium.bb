@@ -391,6 +391,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "compositor-threaded-scrollbar-scrolling",
+    "owners": [ "arakeri@microsoft.com" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "contextual-search",
     "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/OWNERS" ],
     "expiry_milestone": 74
@@ -1157,11 +1162,6 @@
     "name": "enable-hosted-app-quit-notification",
     "owners": [ "ccameron" ],
     "expiry_milestone": 77
-  },
-  {
-    "name": "enable-compositor-threaded-scrollbar-scrolling",
-    "owners": [ "arakeri@microsoft.com" ],
-    "expiry_milestone": 80
   },
   {
     "name": "identity-disc",

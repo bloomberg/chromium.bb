@@ -3265,7 +3265,7 @@ const FeatureEntry kFeatureEntries[] = {
                                     kResamplingInputEventsFeatureVariations,
                                     "ResamplingScrollEvents")},
 
-    {"enable-compositor-threaded-scrollbar-scrolling",
+    {"compositor-threaded-scrollbar-scrolling",
      flag_descriptions::kCompositorThreadedScrollbarScrollingName,
      flag_descriptions::kCompositorThreadedScrollbarScrollingDescription,
      kOsAll,

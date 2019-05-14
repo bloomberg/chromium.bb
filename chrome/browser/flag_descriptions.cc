@@ -736,7 +736,7 @@ const char kVizHitTestDescription[] =
     "with hit-test data computed from the CompositorFrame or the SurfaceLayer.";
 
 const char kCompositorThreadedScrollbarScrollingName[] =
-    "Enable compositor threaded scrollbar scrolling";
+    "Compositor threaded scrollbar scrolling";
 const char kCompositorThreadedScrollbarScrollingDescription[] =
     "Enables pointer-based scrollbar scrolling on the compositor thread "
     "instead of the main thread";
