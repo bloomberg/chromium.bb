@@ -3604,7 +3604,7 @@ jumbo_split_static_library("browser") {
 
     if (is_chrome_branded) {
       deps += [
-        ":conflicts_module_list_proto",
+        "//chrome/browser/conflicts:module_list_proto",
         "//chrome/chrome_elf:sha1",
         "//chrome/chrome_elf:third_party_shared_defines",
         "//google_update",
@@ -5009,12 +5009,6 @@ if (is_win) {
       "//base",
       "//chrome/browser/policy:path_parser",
       "//chrome/common:constants",
-    ]
-  }
-
-  proto_library("conflicts_module_list_proto") {
-    sources = [
-      "conflicts/proto/module_list.proto",
     ]
   }
 }
