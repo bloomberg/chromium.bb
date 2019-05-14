@@ -23,7 +23,5 @@ enum XRTargetRayMode {
   readonly attribute XRTargetRayMode targetRayMode;
   [SameObject] readonly attribute XRSpace targetRaySpace;
   [SameObject] readonly attribute XRSpace? gripSpace;
-
-  // TODO(https://crbug.com/955101): This should be tagged [SameObject].
-  readonly attribute Gamepad? gamepad;
+  [SameObject] readonly attribute Gamepad? gamepad;
 };

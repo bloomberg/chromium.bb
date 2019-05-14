@@ -762,28 +762,34 @@ void XRSession::OnInputStateChange(
     int16_t frame_id,
     const WTF::Vector<device::mojom::blink::XRInputSourceStatePtr>&
         input_states) {
-  bool devices_changed = false;
+  bool input_sources_changed = false;
 
   // Update any input sources with new state information. Any updated input
   // sources are marked as active.
   for (const auto& input_state : input_states) {
-    XRInputSource* input_source = input_sources_.at(input_state->source_id);
-    if (!input_source) {
-      input_source =
-          MakeGarbageCollected<XRInputSource>(this, input_state->source_id);
+    XRInputSource* stored_input_source =
+        input_sources_.at(input_state->source_id);
+    XRInputSource* input_source = XRInputSource::CreateOrUpdateFrom(
+        stored_input_source, this, input_state);
+
+    // Using pointer equality to determine if the pointer needs to be set.
+    if (stored_input_source != input_source) {
       input_sources_.Set(input_state->source_id, input_source);
-      devices_changed = true;
+      input_sources_changed = true;
     }
+
     input_source->active_frame_id = frame_id;
-    UpdateInputSourceState(input_source, input_state);
+    UpdateSelectState(input_source, input_state);
   }
 
-  // Remove any input sources that are inactive..
+  // Remove any input sources that are inactive.  Note that this is done in
+  // two passes because HeapHashMap makes no guarantees about iterators on
+  // removal.
   std::vector<uint32_t> inactive_sources;
   for (const auto& input_source : input_sources_.Values()) {
     if (input_source->active_frame_id != frame_id) {
       inactive_sources.push_back(input_source->source_id());
-      devices_changed = true;
+      input_sources_changed = true;
     }
   }
 
@@ -793,7 +799,7 @@ void XRSession::OnInputStateChange(
     }
   }
 
-  if (devices_changed) {
+  if (input_sources_changed) {
     DispatchEvent(
         *XRSessionEvent::Create(event_type_names::kInputsourceschange, this));
   }
@@ -870,46 +876,11 @@ void XRSession::OnPoseReset() {
   }
 }
 
-void XRSession::UpdateInputSourceState(
+void XRSession::UpdateSelectState(
     XRInputSource* input_source,
     const device::mojom::blink::XRInputSourceStatePtr& state) {
   if (!input_source || !state)
     return;
-
-  input_source->SetGamepad(state->gamepad);
-
-  // Update the input source's description if this state update
-  // includes them.
-  if (state->description) {
-    const device::mojom::blink::XRInputSourceDescriptionPtr& desc =
-        state->description;
-
-    input_source->SetTargetRayMode(
-        static_cast<XRInputSource::TargetRayMode>(desc->target_ray_mode));
-
-    input_source->SetHandedness(
-        static_cast<XRInputSource::Handedness>(desc->handedness));
-
-    input_source->SetEmulatedPosition(desc->emulated_position);
-
-    if (desc->pointer_offset && desc->pointer_offset->matrix.has_value()) {
-      const WTF::Vector<float>& m = desc->pointer_offset->matrix.value();
-      std::unique_ptr<TransformationMatrix> pointer_matrix =
-          std::make_unique<TransformationMatrix>(
-              m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8], m[9], m[10],
-              m[11], m[12], m[13], m[14], m[15]);
-      input_source->SetPointerTransformMatrix(std::move(pointer_matrix));
-    }
-  }
-
-  if (state->grip && state->grip->matrix.has_value()) {
-    const Vector<float>& m = state->grip->matrix.value();
-    std::unique_ptr<TransformationMatrix> grip_matrix =
-        std::make_unique<TransformationMatrix>(
-            m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8], m[9], m[10],
-            m[11], m[12], m[13], m[14], m[15]);
-    input_source->SetBasePoseMatrix(std::move(grip_matrix));
-  }
 
   // Handle state change of the primary input, which may fire events
   if (state->primary_input_clicked)

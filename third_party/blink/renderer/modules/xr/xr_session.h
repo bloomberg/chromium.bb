@@ -192,9 +192,8 @@ class XRSession final : public EventTargetWithInlineData,
   void UpdateCanvasDimensions(Element*);
   void ApplyPendingRenderState();
 
-  void UpdateInputSourceState(
-      XRInputSource*,
-      const device::mojom::blink::XRInputSourceStatePtr&);
+  void UpdateSelectState(XRInputSource*,
+                         const device::mojom::blink::XRInputSourceStatePtr&);
   XRInputSourceEvent* CreateInputSourceEvent(const AtomicString&,
                                              XRInputSource*);
 
