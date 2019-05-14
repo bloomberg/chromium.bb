@@ -81,7 +81,7 @@ public class NavigationRecorder extends EmptyTabObserver {
 
     @Override
     public void onDestroyed(Tab tab) {
-        endRecording(null, null);
+        endRecording(tab, null);
     }
 
     @Override
