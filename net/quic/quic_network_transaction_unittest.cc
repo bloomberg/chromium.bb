@@ -278,6 +278,7 @@ class QuicNetworkTransactionTest
             kDefaultServerHostName,
             quic::Perspective::IS_SERVER,
             false),
+        quic_task_runner_(new TestTaskRunner(&clock_)),
         cert_transparency_verifier_(new MultiLogCTVerifier()),
         ssl_config_service_(new SSLConfigServiceDefaults),
         proxy_resolution_service_(ProxyResolutionService::CreateDirect()),
@@ -958,6 +959,7 @@ class QuicNetworkTransactionTest
   quic::test::MockRandom random_generator_;
   QuicTestPacketMaker client_maker_;
   QuicTestPacketMaker server_maker_;
+  scoped_refptr<TestTaskRunner> quic_task_runner_;
   std::unique_ptr<HttpNetworkSession> session_;
   MockClientSocketFactory socket_factory_;
   ProofVerifyDetailsChromium verify_details_;
@@ -2253,10 +2255,6 @@ TEST_P(QuicNetworkTransactionTest, GoAwayWithConnectionMigrationOnPortsOnly) {
 // alternate network as well, QUIC is marked as broken and the brokenness will
 // not expire when default network changes.
 TEST_P(QuicNetworkTransactionTest, QuicFailsOnBothNetworksWhileTCPSucceeds) {
-  if (version_.transport_version >= quic::QUIC_VERSION_47) {
-    // TODO(nharper): reenable once MakeDummyCHLOPacket() fixed
-    return;
-  }
   SetUpTestForRetryConnectionOnAlternateNetwork();
 
   std::string request_data;
@@ -2317,7 +2315,6 @@ TEST_P(QuicNetworkTransactionTest, QuicFailsOnBothNetworksWhileTCPSucceeds) {
   CreateSession();
   session_->quic_stream_factory()->set_require_confirmation(true);
   // Use a TestTaskRunner to avoid waiting in real time for timeouts.
-  scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(&clock_));
   QuicStreamFactoryPeer::SetAlarmFactory(
       session_->quic_stream_factory(),
       std::make_unique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
@@ -2373,10 +2370,6 @@ TEST_P(QuicNetworkTransactionTest, QuicFailsOnBothNetworksWhileTCPSucceeds) {
 // alternate network, QUIC is marked as broken. The brokenness will expire when
 // the default network changes.
 TEST_P(QuicNetworkTransactionTest, RetryOnAlternateNetworkWhileTCPSucceeds) {
-  if (version_.transport_version >= quic::QUIC_VERSION_47) {
-    // TODO(nharper): reenable once MakeDummyCHLOPacket() fixed
-    return;
-  }
   SetUpTestForRetryConnectionOnAlternateNetwork();
 
   std::string request_data;
@@ -2444,7 +2437,6 @@ TEST_P(QuicNetworkTransactionTest, RetryOnAlternateNetworkWhileTCPSucceeds) {
   CreateSession();
   session_->quic_stream_factory()->set_require_confirmation(true);
   // Use a TestTaskRunner to avoid waiting in real time for timeouts.
-  scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(&clock_));
   QuicStreamFactoryPeer::SetAlarmFactory(
       session_->quic_stream_factory(),
       std::make_unique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
@@ -2507,10 +2499,6 @@ TEST_P(QuicNetworkTransactionTest, RetryOnAlternateNetworkWhileTCPSucceeds) {
 // before handshake is confirmed. If TCP doesn't succeed but QUIC on the
 // alternative network succeeds, QUIC is not marked as broken.
 TEST_P(QuicNetworkTransactionTest, RetryOnAlternateNetworkWhileTCPHanging) {
-  if (version_.transport_version >= quic::QUIC_VERSION_47) {
-    // TODO(nharper): reenable once MakeDummyCHLOPacket() fixed
-    return;
-  }
   SetUpTestForRetryConnectionOnAlternateNetwork();
 
   std::string request_data;
@@ -2584,7 +2572,6 @@ TEST_P(QuicNetworkTransactionTest, RetryOnAlternateNetworkWhileTCPHanging) {
   CreateSession();
   session_->quic_stream_factory()->set_require_confirmation(true);
   // Use a TestTaskRunner to avoid waiting in real time for timeouts.
-  scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(&clock_));
   QuicStreamFactoryPeer::SetAlarmFactory(
       session_->quic_stream_factory(),
       std::make_unique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
@@ -2724,7 +2711,6 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmed) {
 
   CreateSession();
   // Use a TestTaskRunner to avoid waiting in real time for timeouts.
-  scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(&clock_));
   QuicStreamFactoryPeer::SetAlarmFactory(
       session_->quic_stream_factory(),
       std::make_unique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
@@ -2852,7 +2838,6 @@ TEST_P(QuicNetworkTransactionTest, TooManyRtosAfterHandshakeConfirmed) {
 
   CreateSession();
   // Use a TestTaskRunner to avoid waiting in real time for timeouts.
-  scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(&clock_));
   QuicStreamFactoryPeer::SetAlarmFactory(
       session_->quic_stream_factory(),
       std::make_unique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
@@ -2982,7 +2967,6 @@ TEST_P(QuicNetworkTransactionTest,
 
   CreateSession();
   // Use a TestTaskRunner to avoid waiting in real time for timeouts.
-  scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(&clock_));
   QuicStreamFactoryPeer::SetAlarmFactory(
       session_->quic_stream_factory(),
       std::make_unique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
@@ -3184,7 +3168,6 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmedThenBroken) {
 
   CreateSession();
   // Use a TestTaskRunner to avoid waiting in real time for timeouts.
-  scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(&clock_));
   QuicStreamFactoryPeer::SetAlarmFactory(
       session_->quic_stream_factory(),
       std::make_unique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
@@ -3326,7 +3309,6 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmedThenBroken2) {
 
   CreateSession();
   // Use a TestTaskRunner to avoid waiting in real time for timeouts.
-  scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(&clock_));
   QuicStreamFactoryPeer::SetAlarmFactory(
       session_->quic_stream_factory(),
       std::make_unique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
@@ -3480,7 +3462,6 @@ TEST_P(QuicNetworkTransactionTest,
 
   CreateSession();
   // Use a TestTaskRunner to avoid waiting in real time for timeouts.
-  scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(&clock_));
   QuicStreamFactoryPeer::SetAlarmFactory(
       session_->quic_stream_factory(),
       std::make_unique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
@@ -3635,7 +3616,6 @@ TEST_P(QuicNetworkTransactionTest,
 
   CreateSession();
   // Use a TestTaskRunner to avoid waiting in real time for timeouts.
-  scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(&clock_));
   QuicStreamFactoryPeer::SetAlarmFactory(
       session_->quic_stream_factory(),
       std::make_unique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
@@ -3776,7 +3756,6 @@ TEST_P(QuicNetworkTransactionTest,
 
   CreateSession();
   // Use a TestTaskRunner to avoid waiting in real time for timeouts.
-  scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(&clock_));
   QuicStreamFactoryPeer::SetAlarmFactory(
       session_->quic_stream_factory(),
       std::make_unique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
@@ -4149,7 +4128,6 @@ TEST_P(QuicNetworkTransactionTest,
   socket_factory_.AddSSLSocketDataProvider(&ssl_data_);
 
   CreateSession();
-  scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(&clock_));
   QuicStreamFactoryPeer::SetAlarmFactory(
       session_->quic_stream_factory(),
       std::make_unique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
@@ -4283,7 +4261,6 @@ TEST_P(QuicNetworkTransactionTest, UseExistingAlternativeServiceForQuic) {
 
   AddHangingNonAlternateProtocolSocketData();
   CreateSession();
-  scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(&clock_));
   QuicStreamFactoryPeer::SetAlarmFactory(
       session_->quic_stream_factory(),
       std::make_unique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
@@ -4365,7 +4342,6 @@ TEST_P(QuicNetworkTransactionTest, UseExistingQUICAlternativeProxy) {
   request_.url = GURL("http://mail.example.org/");
 
   CreateSession();
-  scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(&clock_));
   QuicStreamFactoryPeer::SetAlarmFactory(
       session_->quic_stream_factory(),
       std::make_unique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
@@ -4436,7 +4412,6 @@ TEST_P(QuicNetworkTransactionTest, PoolByOrigin) {
   AddHangingNonAlternateProtocolSocketData();
 
   CreateSession();
-  scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(&clock_));
   QuicStreamFactoryPeer::SetAlarmFactory(
       session_->quic_stream_factory(),
       std::make_unique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
@@ -4530,7 +4505,6 @@ TEST_P(QuicNetworkTransactionTest, PoolByDestination) {
   AddHangingNonAlternateProtocolSocketData();
 
   CreateSession();
-  scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(&clock_));
   QuicStreamFactoryPeer::SetAlarmFactory(
       session_->quic_stream_factory(),
       std::make_unique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
@@ -4661,7 +4635,6 @@ TEST_P(QuicNetworkTransactionTest,
 
   AddHangingNonAlternateProtocolSocketData();
   CreateSession();
-  scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(&clock_));
   QuicStreamFactoryPeer::SetAlarmFactory(
       session_->quic_stream_factory(),
       std::make_unique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
@@ -5142,7 +5115,6 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithTooEarlyResponse) {
   AddHangingNonAlternateProtocolSocketData();
   CreateSession();
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
-  scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(&clock_));
   QuicStreamFactoryPeer::SetAlarmFactory(
       session_->quic_stream_factory(),
       std::make_unique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
@@ -5233,7 +5205,6 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithMultipleTooEarlyResponse) {
   AddHangingNonAlternateProtocolSocketData();
   CreateSession();
   AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
-  scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(&clock_));
   QuicStreamFactoryPeer::SetAlarmFactory(
       session_->quic_stream_factory(),
       std::make_unique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
@@ -5814,10 +5785,6 @@ TEST_P(QuicNetworkTransactionTest, BrokenAlternateProtocolOnConnectFailure) {
 }
 
 TEST_P(QuicNetworkTransactionTest, ConnectionCloseDuringConnect) {
-  if (version_.transport_version >= quic::QUIC_VERSION_47) {
-    // TODO(nharper): reenable once MakeDummyCHLOPacket() fixed
-    return;
-  }
   MockQuicData mock_quic_data;
   mock_quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeDummyCHLOPacket(1));
   mock_quic_data.AddRead(ASYNC, ConstructServerConnectionClosePacket(1));
@@ -6176,7 +6143,6 @@ TEST_P(QuicNetworkTransactionTest, MaxRetriesAfterAsyncNoBufferSpace) {
 
   CreateSession();
   // Use a TestTaskRunner to avoid waiting in real time for timeouts.
-  scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(&clock_));
   QuicStreamFactoryPeer::SetTaskRunner(session_->quic_stream_factory(),
                                        quic_task_runner_.get());
 
@@ -6214,7 +6180,6 @@ TEST_P(QuicNetworkTransactionTest, MaxRetriesAfterSynchronousNoBufferSpace) {
 
   CreateSession();
   // Use a TestTaskRunner to avoid waiting in real time for timeouts.
-  scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(&clock_));
   QuicStreamFactoryPeer::SetTaskRunner(session_->quic_stream_factory(),
                                        quic_task_runner_.get());
 
@@ -7180,10 +7145,10 @@ TEST_P(QuicNetworkTransactionWithDestinationTest, PoolIfCertificateValid) {
   AddHangingSocketData();
   AddHangingSocketData();
 
-  scoped_refptr<TestTaskRunner> quic_task_runner_(new TestTaskRunner(&clock_));
+  scoped_refptr<TestTaskRunner> quic_task_runner(new TestTaskRunner(&clock_));
   QuicStreamFactoryPeer::SetAlarmFactory(
       session_->quic_stream_factory(),
-      std::make_unique<QuicChromiumAlarmFactory>(quic_task_runner_.get(),
+      std::make_unique<QuicChromiumAlarmFactory>(quic_task_runner.get(),
                                                  &clock_));
 
   SendRequestAndExpectQuicResponse(origin1_);

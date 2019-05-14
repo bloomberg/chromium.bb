@@ -1557,10 +1557,6 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocketReadError) {
 }
 
 TEST_P(QuicChromiumClientSessionTest, DetectPathDegradingDuringHandshake) {
-  if (version_.transport_version >= quic::QUIC_VERSION_47) {
-    // TODO(nharper): reenable once MakeDummyCHLOPacket() fixed
-    return;
-  }
   migrate_session_early_v2_ = true;
 
   MockQuicData quic_data;
