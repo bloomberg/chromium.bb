@@ -148,6 +148,12 @@ def parse_args():
     required='-x' not in sys.argv and '--xcode-parallelization' not in sys.argv,
   )
   parser.add_argument(
+    '--host-app',
+    help='Compiled host .app to run.',
+    metavar='host_app',
+    required='-x' not in sys.argv and '--xcode-parallelization' not in sys.argv,
+  )
+  parser.add_argument(
     '-b',
     '--xcode-build-version',
     help='Xcode build version to install.',
