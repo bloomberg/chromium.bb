@@ -23212,6 +23212,11 @@ Called by update_net_error_codes.py.-->
   <int value="2891" label="VTTCueParser"/>
   <int value="2892" label="MediaElementTextTrackContainer"/>
   <int value="2893" label="MediaElementTextTrackList"/>
+  <int value="2894" label="PaymentRequestInitialized"/>
+  <int value="2895" label="PaymentRequestShow"/>
+  <int value="2896" label="PaymentRequestShippingAddressChange"/>
+  <int value="2897" label="PaymentRequestShippingOptionChange"/>
+  <int value="2898" label="PaymentRequestPaymentMethodChange"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">

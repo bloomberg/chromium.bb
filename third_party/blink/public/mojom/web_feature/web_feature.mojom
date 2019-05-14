@@ -2286,6 +2286,11 @@ enum WebFeature {
   kVTTCueParser = 2891,
   kMediaElementTextTrackContainer = 2892,
   kMediaElementTextTrackList = 2893,
+  kPaymentRequestInitialized = 2894,
+  kPaymentRequestShow = 2895,
+  kPaymentRequestShippingAddressChange = 2896,
+  kPaymentRequestShippingOptionChange = 2897,
+  kPaymentRequestPaymentMethodChange = 2898,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

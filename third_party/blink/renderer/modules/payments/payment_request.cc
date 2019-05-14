@@ -718,6 +718,8 @@ ScriptPromise PaymentRequest::show(ScriptState* script_state,
                                            "Page popups are suppressed"));
   }
 
+  UseCounter::Count(GetExecutionContext(), WebFeature::kPaymentRequestShow);
+
   is_waiting_for_show_promise_to_resolve_ = !details_promise.IsEmpty();
   payment_provider_->Show(is_user_gesture,
                           is_waiting_for_show_promise_to_resolve_);
@@ -1116,6 +1118,7 @@ PaymentRequest::PaymentRequest(
       WTF::Bind(&PaymentRequest::OnError, WrapWeakPersistent(this),
                 PaymentErrorReason::UNKNOWN));
 
+  UseCounter::Count(execution_context, WebFeature::kPaymentRequestInitialized);
   payments::mojom::blink::PaymentRequestClientPtr client;
   client_binding_.Bind(mojo::MakeRequest(&client, task_runner), task_runner);
   payment_provider_->Init(std::move(client), std::move(validated_method_data),
@@ -1137,6 +1140,9 @@ void PaymentRequest::OnPaymentMethodChange(const String& method_name,
     payment_provider_->NoUpdatedPaymentDetails();
     return;
   }
+
+  UseCounter::Count(GetExecutionContext(),
+                    WebFeature::kPaymentRequestPaymentMethodChange);
 
   ScriptState* script_state =
       GetPendingAcceptPromiseResolver()->GetScriptState();
@@ -1178,6 +1184,9 @@ void PaymentRequest::OnShippingAddressChange(PaymentAddressPtr address) {
     return;
   }
 
+  UseCounter::Count(GetExecutionContext(),
+                    WebFeature::kPaymentRequestShippingAddressChange);
+
   shipping_address_ = MakeGarbageCollected<PaymentAddress>(std::move(address));
 
   PaymentRequestUpdateEvent* event = PaymentRequestUpdateEvent::Create(
@@ -1188,8 +1197,11 @@ void PaymentRequest::OnShippingAddressChange(PaymentAddressPtr address) {
 void PaymentRequest::OnShippingOptionChange(const String& shipping_option_id) {
   DCHECK(GetPendingAcceptPromiseResolver());
   DCHECK(!complete_resolver_);
-  shipping_option_ = shipping_option_id;
 
+  UseCounter::Count(GetExecutionContext(),
+                    WebFeature::kPaymentRequestShippingOptionChange);
+
+  shipping_option_ = shipping_option_id;
   PaymentRequestUpdateEvent* event = PaymentRequestUpdateEvent::Create(
       GetExecutionContext(), event_type_names::kShippingoptionchange);
   DispatchPaymentRequestUpdateEvent(this, event);
