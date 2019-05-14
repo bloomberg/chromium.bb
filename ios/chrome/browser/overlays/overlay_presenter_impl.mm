@@ -184,14 +184,15 @@ void OverlayPresenterImpl::PresentOverlayForActiveRequest() {
 
   OverlayDismissalCallback dismissal_callback = base::BindOnce(
       &OverlayPresenterImpl::OverlayWasDismissed, weak_factory_.GetWeakPtr(),
-      ui_delegate_, request, GetActiveQueue());
+      ui_delegate_, request, GetActiveQueue()->GetWeakPtr());
   ui_delegate_->ShowOverlayUI(this, request, std::move(dismissal_callback));
 }
 
-void OverlayPresenterImpl::OverlayWasDismissed(UIDelegate* ui_delegate,
-                                               OverlayRequest* request,
-                                               OverlayRequestQueueImpl* queue,
-                                               OverlayDismissalReason reason) {
+void OverlayPresenterImpl::OverlayWasDismissed(
+    UIDelegate* ui_delegate,
+    OverlayRequest* request,
+    base::WeakPtr<OverlayRequestQueueImpl> queue,
+    OverlayDismissalReason reason) {
   // If the UI delegate is reset while presenting an overlay, that overlay will
   // be cancelled and dismissed.  The presenter is now using the new UI
   // delegate's presentation context, so this dismissal should not trigger
@@ -199,13 +200,14 @@ void OverlayPresenterImpl::OverlayWasDismissed(UIDelegate* ui_delegate,
   if (ui_delegate_ != ui_delegate)
     return;
 
-  // If the overlay was dismissed for user interaction, pop it from the queue
-  // since it will never be shown again.
-  // TODO(crbug.com/941745): Prevent the queue from being accessed if deleted.
-  // This is possible if a WebState is closed during an overlay dismissal
-  // animation triggered by user interaction.
-  if (reason == OverlayDismissalReason::kUserInteraction)
+  // Pop the request for overlays dismissed by the user.  The check against the
+  // queue's front request prevents popping the request twice in the event that
+  // the front request was cancelled by the queue during a user-triggered
+  // dismissal.
+  if (reason == OverlayDismissalReason::kUserInteraction && queue &&
+      queue->front_request() == request) {
     queue->PopFrontRequest();
+  }
 
   presenting_ = false;
 
@@ -257,7 +259,13 @@ void OverlayPresenterImpl::RequestAddedToQueue(OverlayRequestQueueImpl* queue,
     PresentOverlayForActiveRequest();
 }
 
-#pragma mark WebStateListObserver
+void OverlayPresenterImpl::QueuedRequestCancelled(
+    OverlayRequestQueueImpl* queue,
+    OverlayRequest* request) {
+  CancelOverlayUIForRequest(request);
+}
+
+#pragma mark - WebStateListObserver
 
 void OverlayPresenterImpl::WebStateInsertedAt(WebStateList* web_state_list,
                                               web::WebState* web_state,

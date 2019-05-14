@@ -81,10 +81,10 @@ class OverlayPresenterImpl : public BrowserObserver,
   // delegate is executed.
   void OverlayWasDismissed(UIDelegate* ui_delegate,
                            OverlayRequest* request,
-                           OverlayRequestQueueImpl* queue,
+                           base::WeakPtr<OverlayRequestQueueImpl> queue,
                            OverlayDismissalReason reason);
 
-  // Cancels all overlays for |queue|.
+  // Cancels all overlays for |request|.
   void CancelOverlayUIForRequest(OverlayRequest* request);
 
   // Cancels all overlays for the Browser.
@@ -96,6 +96,8 @@ class OverlayPresenterImpl : public BrowserObserver,
   // OverlayRequestQueueImpl::Observer:
   void RequestAddedToQueue(OverlayRequestQueueImpl* queue,
                            OverlayRequest* request) override;
+  void QueuedRequestCancelled(OverlayRequestQueueImpl* queue,
+                              OverlayRequest* request) override;
 
   // WebStateListObserver:
   void WebStateInsertedAt(WebStateList* web_state_list,
@@ -115,6 +117,13 @@ class OverlayPresenterImpl : public BrowserObserver,
                            int active_index,
                            int reason) override;
 
+  // Whether the UI delegate is presenting overlay UI for this presenter.  Stays
+  // true from the beginning of the presentation until the end of the
+  // dismissal.
+  bool presenting_ = false;
+  // Whether the active WebState is being detached.
+  bool detaching_active_web_state_ = false;
+
   OverlayModality modality_;
   WebStateList* web_state_list_ = nullptr;
   web::WebState* active_web_state_ = nullptr;
@@ -122,8 +131,6 @@ class OverlayPresenterImpl : public BrowserObserver,
   base::ObserverList<OverlayPresenter::Observer,
                      /* check_empty= */ true>
       observers_;
-  bool presenting_ = false;
-  bool detaching_active_web_state_ = false;
   base::WeakPtrFactory<OverlayPresenterImpl> weak_factory_;
 };
 

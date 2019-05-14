@@ -24,6 +24,8 @@ class MockOverlayRequestQueueImplObserver
 
   MOCK_METHOD2(RequestAddedToQueue,
                void(OverlayRequestQueueImpl*, OverlayRequest*));
+  MOCK_METHOD2(QueuedRequestCancelled,
+               void(OverlayRequestQueueImpl*, OverlayRequest*));
 };
 }  // namespace
 
@@ -45,6 +47,15 @@ class OverlayRequestQueueImplTest : public PlatformTest {
   }
   MockOverlayRequestQueueImplObserver& observer() { return observer_; }
 
+  OverlayRequest* AddRequest() {
+    std::unique_ptr<OverlayRequest> passed_request =
+        OverlayRequest::CreateWithConfig<FakeOverlayUserData>(nullptr);
+    OverlayRequest* request = passed_request.get();
+    EXPECT_CALL(observer(), RequestAddedToQueue(queue(), request));
+    queue()->AddRequest(std::move(passed_request));
+    return request;
+  }
+
  private:
   web::TestWebState web_state_;
   MockOverlayRequestQueueImplObserver observer_;
@@ -53,22 +64,10 @@ class OverlayRequestQueueImplTest : public PlatformTest {
 // Tests that state is updated correctly and observer callbacks are received
 // when adding requests to the back of the queue.
 TEST_F(OverlayRequestQueueImplTest, AddRequest) {
-  std::unique_ptr<OverlayRequest> first_request =
-      OverlayRequest::CreateWithConfig<FakeOverlayUserData>(nullptr);
-  OverlayRequest* first_request_ptr = first_request.get();
-  std::unique_ptr<OverlayRequest> second_request =
-      OverlayRequest::CreateWithConfig<FakeOverlayUserData>(nullptr);
-  OverlayRequest* second_request_ptr = second_request.get();
+  OverlayRequest* first_request = AddRequest();
+  AddRequest();
 
-  // Add two requests and pop the first, verifying that the size and front
-  // requests are updated.
-  EXPECT_CALL(observer(), RequestAddedToQueue(queue(), first_request_ptr));
-  queue()->AddRequest(std::move(first_request));
-
-  EXPECT_CALL(observer(), RequestAddedToQueue(queue(), second_request_ptr));
-  queue()->AddRequest(std::move(second_request));
-
-  EXPECT_EQ(first_request_ptr, queue()->front_request());
+  EXPECT_EQ(first_request, queue()->front_request());
   EXPECT_EQ(2U, queue()->size());
 }
 
@@ -76,23 +75,9 @@ TEST_F(OverlayRequestQueueImplTest, AddRequest) {
 // when popping the requests.
 TEST_F(OverlayRequestQueueImplTest, PopRequests) {
   // Add three requests to the queue.
-  std::unique_ptr<OverlayRequest> passed_request =
-      OverlayRequest::CreateWithConfig<FakeOverlayUserData>(nullptr);
-  OverlayRequest* first_request = passed_request.get();
-  EXPECT_CALL(observer(), RequestAddedToQueue(queue(), first_request));
-  queue()->AddRequest(std::move(passed_request));
-
-  passed_request =
-      OverlayRequest::CreateWithConfig<FakeOverlayUserData>(nullptr);
-  OverlayRequest* second_request = passed_request.get();
-  EXPECT_CALL(observer(), RequestAddedToQueue(queue(), second_request));
-  queue()->AddRequest(std::move(passed_request));
-
-  passed_request =
-      OverlayRequest::CreateWithConfig<FakeOverlayUserData>(nullptr);
-  OverlayRequest* third_request = passed_request.get();
-  EXPECT_CALL(observer(), RequestAddedToQueue(queue(), third_request));
-  queue()->AddRequest(std::move(passed_request));
+  OverlayRequest* first_request = AddRequest();
+  OverlayRequest* second_request = AddRequest();
+  AddRequest();
 
   ASSERT_EQ(first_request, queue()->front_request());
   ASSERT_EQ(3U, queue()->size());
@@ -108,4 +93,20 @@ TEST_F(OverlayRequestQueueImplTest, PopRequests) {
   queue()->PopBackRequest();
   EXPECT_EQ(second_request, queue()->front_request());
   EXPECT_EQ(1U, queue()->size());
+}
+
+// Tests that state is updated correctly and observer callbacks are received
+// when popping the requests.
+TEST_F(OverlayRequestQueueImplTest, CancelAllRequests) {
+  // Add two requests to the queue then cancel all requests, verifying that
+  // the observer callback is received for each.
+  OverlayRequest* first_request = AddRequest();
+  OverlayRequest* second_request = AddRequest();
+
+  EXPECT_CALL(observer(), QueuedRequestCancelled(queue(), first_request));
+  EXPECT_CALL(observer(), QueuedRequestCancelled(queue(), second_request));
+  queue()->CancelAllRequests();
+
+  EXPECT_EQ(0U, queue()->size());
+  EXPECT_TRUE(queue()->empty());
 }

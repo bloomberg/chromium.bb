@@ -54,6 +54,6 @@ void FakeOverlayPresenterUIDelegate::CancelOverlayUI(
   if (state == PresentationState::kPresented) {
     SimulateDismissalForRequest(request, OverlayDismissalReason::kCancellation);
   } else {
-    state = PresentationState::kNotPresented;
+    state = PresentationState::kCancelled;
   }
 }

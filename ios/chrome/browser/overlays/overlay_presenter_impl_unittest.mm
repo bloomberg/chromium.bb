@@ -272,3 +272,25 @@ TEST_F(OverlayPresenterImplTest, DismissForUserInteraction) {
   EXPECT_EQ(second_request, queue->front_request());
   EXPECT_EQ(1U, queue->size());
 }
+
+// Tests cancelling the requests.
+TEST_F(OverlayPresenterImplTest, CancelRequests) {
+  // Add a WebState to the list and a request to that WebState's queue.
+  presenter().SetUIDelegate(&ui_delegate());
+  web_state_list().InsertWebState(0, std::make_unique<web::TestWebState>(),
+                                  WebStateList::InsertionFlags::INSERT_ACTIVATE,
+                                  WebStateOpener());
+  OverlayRequestQueueImpl* queue = GetQueueForWebState(active_web_state());
+  OverlayRequest* active_request = AddRequest(active_web_state());
+  OverlayRequest* queued_request = AddRequest(active_web_state());
+
+  EXPECT_EQ(FakeOverlayPresenterUIDelegate::PresentationState::kPresented,
+            ui_delegate().GetPresentationState(active_request));
+
+  // Cancel the queue's requests and verify that the UI is also cancelled.
+  queue->CancelAllRequests();
+  EXPECT_EQ(FakeOverlayPresenterUIDelegate::PresentationState::kCancelled,
+            ui_delegate().GetPresentationState(active_request));
+  EXPECT_EQ(FakeOverlayPresenterUIDelegate::PresentationState::kCancelled,
+            ui_delegate().GetPresentationState(queued_request));
+}
