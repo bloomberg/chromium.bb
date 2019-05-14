@@ -94,7 +94,19 @@ bool NGAbstractInlineTextBox::NeedsTrailingSpace() const {
       *To<NGInlineBreakToken>(line_box.PhysicalFragment().BreakToken());
   // TODO(yosin): We should support OOF fragments between |fragment_| and
   // break token.
-  return break_token.TextOffset() == text_fragment.EndOffset() + 1;
+  if (break_token.TextOffset() != text_fragment.EndOffset() + 1)
+    return false;
+  // Check a character in text content after |fragment_| comes from same
+  // layout text of |fragment_|.
+  const NGOffsetMapping& mapping =
+      *NGOffsetMapping::GetFor(fragment_->GetLayoutObject());
+  const NGMappingUnitRange& mapping_units =
+      mapping.GetMappingUnitsForTextContentOffsetRange(
+          text_fragment.EndOffset(), text_fragment.EndOffset() + 1);
+  if (mapping_units.begin() == mapping_units.end())
+    return false;
+  const NGOffsetMappingUnit* const mapping_unit = mapping_units.begin();
+  return mapping_unit->GetLayoutObject() == fragment_->GetLayoutObject();
 }
 
 const NGPaintFragment*
