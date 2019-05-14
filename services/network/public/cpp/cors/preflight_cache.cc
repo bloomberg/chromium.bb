@@ -16,7 +16,8 @@ namespace network {
 namespace cors {
 
 namespace {
-constexpr size_t kMaxCacheEntries = 4096;
+constexpr size_t kMaxCacheEntries = 1024u;
+constexpr size_t kMaxKeyLength = 512u;
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
@@ -44,12 +45,16 @@ void PreflightCache::AppendEntry(
     std::unique_ptr<PreflightResult> preflight_result) {
   DCHECK(preflight_result);
 
+  // Do not cache |preflight_result| if |url| is too long.
+  const std::string& key = url.spec();
+  if (key.length() >= kMaxKeyLength)
+    return;
+
   // Since one new entry is always added below, let's purge one cache entry
   // if cache size is larger than kMaxCacheEntries - 1 so that the size to be
   // kMaxCacheEntries at maximum.
   MayPurge(kMaxCacheEntries - 1);
 
-  const std::string& key = url.spec();
   UMA_HISTOGRAM_COUNTS_1000("Net.Cors.PreflightCacheKeySize", key.length());
   UMA_HISTOGRAM_COUNTS_10000("Net.Cors.PreflightCacheValueSize",
                              preflight_result->EstimateMemoryPressureInBytes());
