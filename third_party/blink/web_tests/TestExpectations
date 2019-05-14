@@ -5556,3 +5556,4 @@ crbug.com/865432 [ Linux ] virtual/omt-worker-fetch/external/wpt/workers/modules
 crbug.com/867532 [ Linux ] virtual/omt-worker-fetch/external/wpt/workers/modules/dedicated-worker-import-data-url.any.worker.html [ Timeout Pass ]
 crbug.com/867532 [ Linux ] virtual/omt-worker-fetch/external/wpt/workers/modules/dedicated-worker-import.any.worker.html [ Timeout Pass ]
 crbug.com/962726 [ Linux Win ] external/wpt/event-timing/timingconditions.html [ Crash Pass ]
+crbug.com/937170 [ Linux Win7 ] external/wpt/IndexedDB/interleaved-cursors-large.html [ Pass Timeout ]
