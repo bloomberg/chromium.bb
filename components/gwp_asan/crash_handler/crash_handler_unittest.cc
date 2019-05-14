@@ -270,15 +270,13 @@ class CrashHandlerTest : public base::MultiProcessTest,
 
     EXPECT_TRUE(proto_.has_allocation());
     EXPECT_TRUE(proto_.allocation().has_thread_id());
-    EXPECT_NE(proto_.allocation().thread_id(),
-              static_cast<uint64_t>(base::kInvalidThreadId));
+    EXPECT_NE(proto_.allocation().thread_id(), base::kInvalidThreadId);
     EXPECT_GT(proto_.allocation().stack_trace_size(), 0);
 
     EXPECT_EQ(proto_.has_deallocation(), has_deallocation);
     if (has_deallocation) {
       EXPECT_TRUE(proto_.deallocation().has_thread_id());
-      EXPECT_NE(proto_.deallocation().thread_id(),
-                static_cast<uint64_t>(base::kInvalidThreadId));
+      EXPECT_NE(proto_.deallocation().thread_id(), base::kInvalidThreadId);
       EXPECT_EQ(proto_.allocation().thread_id(),
                 proto_.deallocation().thread_id());
       EXPECT_GT(proto_.deallocation().stack_trace_size(), 0);
