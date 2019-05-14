@@ -209,8 +209,8 @@ void CreateOrAppendSiteGroupEntry(
 
 // Update the storage data in |origin_size_map|.
 void UpdateDataForOrigin(const GURL& url,
-                         const int size,
-                         std::map<std::string, int>* origin_size_map) {
+                         const int64_t size,
+                         std::map<std::string, int64_t>* origin_size_map) {
   if (size > 0)
     (*origin_size_map)[url.spec()] += size;
 }
@@ -295,7 +295,7 @@ bool IsPatternValidForType(const std::string& pattern_string,
 
 void UpdateDataFromCookiesTree(
     std::map<std::string, std::set<std::string>>* all_sites_map,
-    std::map<std::string, int>* origin_size_map,
+    std::map<std::string, int64_t>* origin_size_map,
     const GURL& origin,
     int64_t size) {
   UpdateDataForOrigin(origin, size, origin_size_map);
@@ -764,7 +764,7 @@ void SiteSettingsHandler::HandleGetAllSites(const base::ListValue* args) {
 }
 
 base::Value SiteSettingsHandler::PopulateCookiesAndUsageData(Profile* profile) {
-  std::map<std::string, int> origin_size_map;
+  std::map<std::string, int64_t> origin_size_map;
   std::map<std::string, int> origin_cookie_map;
   base::Value list_value(base::Value::Type::LIST);
 
@@ -789,7 +789,7 @@ base::Value SiteSettingsHandler::PopulateCookiesAndUsageData(Profile* profile) {
       const std::string& origin = origin_info.FindKey("origin")->GetString();
       const auto& size_info_it = origin_size_map.find(origin);
       if (size_info_it != origin_size_map.end())
-        origin_info.SetKey("usage", base::Value(size_info_it->second));
+        origin_info.SetKey("usage", base::Value(double(size_info_it->second)));
       const auto& origin_cookie_num_it =
           origin_cookie_map.find(GURL(origin).host());
       if (origin_cookie_num_it != origin_cookie_map.end()) {
@@ -817,10 +817,10 @@ void SiteSettingsHandler::HandleGetFormattedBytes(const base::ListValue* args) {
   CHECK_EQ(2U, args->GetSize());
   const base::Value* callback_id;
   CHECK(args->Get(0, &callback_id));
-  int num_bytes;
-  CHECK(args->GetInteger(1, &num_bytes));
+  double num_bytes;
+  CHECK(args->GetDouble(1, &num_bytes));
 
-  const base::string16 string = ui::FormatBytes(num_bytes);
+  const base::string16 string = ui::FormatBytes(int64_t(num_bytes));
   ResolveJavascriptCallback(*callback_id, base::Value(string));
 }
 
@@ -1419,7 +1419,7 @@ void SiteSettingsHandler::TreeModelEndBatch(CookiesTreeModel* model) {
 
 void SiteSettingsHandler::GetOriginStorage(
     std::map<std::string, std::set<std::string>>* all_sites_map,
-    std::map<std::string, int>* origin_size_map) {
+    std::map<std::string, int64_t>* origin_size_map) {
   CHECK(cookies_tree_model_.get());
 
   const CookieTreeNode* root = cookies_tree_model_->GetRoot();

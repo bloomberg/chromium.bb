@@ -121,6 +121,7 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, ZoomLevels);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest,
                            HandleClearEtldPlus1DataAndCookies);
+  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, HandleGetFormattedBytes);
 
   // Creates the CookiesTreeModel if necessary.
   void EnsureCookiesTreeModelCreated();
@@ -134,7 +135,7 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
   // stores the information in the |all_sites_map| and |origin_size_map|.
   void GetOriginStorage(
       std::map<std::string, std::set<std::string>>* all_sites_map,
-      std::map<std::string, int>* origin_size_map);
+      std::map<std::string, int64_t>* origin_size_map);
 
   // Calculates the number of cookies for each etld+1 and each origin, and
   // stores the information in the |all_sites_map| and |origin_cookie_map|.
