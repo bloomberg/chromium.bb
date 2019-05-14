@@ -112,6 +112,7 @@ constexpr int kTextfieldBackgroundColor = 0xf7f7f7;
   [super loadView];
   self.view.backgroundColor =
       [[UIColor blackColor] colorWithAlphaComponent:kBackgroundAlpha];
+  self.view.accessibilityViewIsModal = YES;
 
   self.tapRecognizer = [[UITapGestureRecognizer alloc]
       initWithTarget:self
