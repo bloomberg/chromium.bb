@@ -211,4 +211,12 @@
   self.contentViewProxy.contentView = self.webViewContentView;
 }
 
+- (void)disconnectScrollProxy {
+  [self.contentViewProxy disconnectScrollProxy];
+}
+
+- (void)reconnectScrollProxy {
+  [self.contentViewProxy reconnectScrollProxy];
+}
+
 @end
