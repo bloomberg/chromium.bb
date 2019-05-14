@@ -81,11 +81,12 @@ class CertVerifierWithTrustAnchorsTest : public testing::Test {
       net::CompletionOnceCallback test_callback,
       net::CertVerifyResult* verify_result,
       std::unique_ptr<net::CertVerifier::Request>* request) {
-    return cert_verifier_->Verify(
-        net::CertVerifier::RequestParams(test_server_cert_.get(), "127.0.0.1",
-                                         0, std::string()),
-        verify_result, std::move(test_callback), request,
-        net::NetLogWithSource());
+    return cert_verifier_->Verify(net::CertVerifier::RequestParams(
+                                      test_server_cert_.get(), "127.0.0.1", 0,
+                                      /*ocsp_response=*/std::string(),
+                                      /*sct_list=*/std::string()),
+                                  verify_result, std::move(test_callback),
+                                  request, net::NetLogWithSource());
   }
 
   bool SupportsAdditionalTrustAnchors() {

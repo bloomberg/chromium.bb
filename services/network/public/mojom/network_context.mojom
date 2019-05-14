@@ -910,7 +910,8 @@ interface NetworkContext {
   // Verifies the given certificate using the context's CertVerifier.
   VerifyCertificateForTesting(X509Certificate certificate,
                               string hostname,
-                              string ocsp_response) => (int32 error_code);
+                              string ocsp_response,
+                              string sct_list) => (int32 error_code);
 
   [Sync]
   // Adds a Domain Reliability Context.

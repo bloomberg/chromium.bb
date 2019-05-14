@@ -1357,7 +1357,8 @@ void NetworkContext::VerifyCertForSignedExchange(
                                   : url_request_context_->cert_verifier();
   int result = cert_verifier->Verify(
       net::CertVerifier::RequestParams(certificate, url.host(),
-                                       0 /* cert_verify_flags */, ocsp_result),
+                                       0 /* cert_verify_flags */, ocsp_result,
+                                       sct_list),
       pending_cert_verify->result.get(),
       base::BindOnce(&NetworkContext::OnCertVerifyForSignedExchangeComplete,
                      base::Unretained(this), cert_verify_id),
@@ -1546,6 +1547,7 @@ void NetworkContext::VerifyCertificateForTesting(
     const scoped_refptr<net::X509Certificate>& certificate,
     const std::string& hostname,
     const std::string& ocsp_response,
+    const std::string& sct_list,
     VerifyCertificateForTestingCallback callback) {
   net::CertVerifier* cert_verifier = url_request_context_->cert_verifier();
 
@@ -1553,12 +1555,13 @@ void NetworkContext::VerifyCertificateForTesting(
   auto* request = &state->request;
   auto* result = &state->result;
 
-  cert_verifier->Verify(net::CertVerifier::RequestParams(
-                            certificate.get(), hostname, 0, ocsp_response),
-                        result,
-                        base::BindOnce(TestVerifyCertCallback, std::move(state),
-                                       std::move(callback)),
-                        request, net::NetLogWithSource());
+  cert_verifier->Verify(
+      net::CertVerifier::RequestParams(certificate.get(), hostname, 0,
+                                       ocsp_response, sct_list),
+      result,
+      base::BindOnce(TestVerifyCertCallback, std::move(state),
+                     std::move(callback)),
+      request, net::NetLogWithSource());
 }
 
 void NetworkContext::PreconnectSockets(uint32_t num_streams,

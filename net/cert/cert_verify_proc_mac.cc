@@ -27,6 +27,7 @@
 #include "net/cert/cert_verifier.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/crl_set.h"
+#include "net/cert/ct_serialization.h"
 #include "net/cert/ev_root_ca_metadata.h"
 #include "net/cert/internal/certificate_policies.h"
 #include "net/cert/internal/parsed_certificate.h"
@@ -45,6 +46,14 @@
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 
 using base::ScopedCFTypeRef;
+
+extern "C" {
+// Declared in <Security/SecTrust.h>, available in 10.14.2+
+// TODO(mattm): Remove this weak_import once chromium compiles against the
+// macOS 10.14 SDK.
+OSStatus SecTrustSetSignedCertificateTimestamps(SecTrustRef, CFArrayRef)
+    __attribute__((weak_import));
+}  // extern "C"
 
 namespace net {
 
@@ -512,6 +521,7 @@ CRLSetResult CheckRevocationWithCRLSet(CFArrayRef chain, CRLSet* crl_set) {
 int BuildAndEvaluateSecTrustRef(CFArrayRef cert_array,
                                 CFArrayRef trust_policies,
                                 CFDataRef ocsp_response_ref,
+                                CFArrayRef sct_array_ref,
                                 int flags,
                                 CFArrayRef keychain_search_list,
                                 ScopedCFTypeRef<SecTrustRef>* trust_ref,
@@ -541,6 +551,14 @@ int BuildAndEvaluateSecTrustRef(CFArrayRef cert_array,
     status = SecTrustSetOCSPResponse(tmp_trust, ocsp_response_ref);
     if (status)
       return NetErrorFromOSStatus(status);
+  }
+
+  if (sct_array_ref && SecTrustSetSignedCertificateTimestamps) {
+    if (__builtin_available(macOS 10.14.2, *)) {
+      status = SecTrustSetSignedCertificateTimestamps(tmp_trust, sct_array_ref);
+      if (status)
+        return NetErrorFromOSStatus(status);
+    }
   }
 
   CSSM_APPLE_TP_ACTION_DATA tp_action_data;
@@ -615,6 +633,7 @@ int BuildAndEvaluateSecTrustRef(CFArrayRef cert_array,
 int VerifyWithGivenFlags(X509Certificate* cert,
                          const std::string& hostname,
                          const std::string& ocsp_response,
+                         const std::string& sct_list,
                          const int flags,
                          CRLSet* crl_set,
                          CertVerifyResult* verify_result,
@@ -634,6 +653,28 @@ int VerifyWithGivenFlags(X509Certificate* cert,
                      base::checked_cast<CFIndex>(ocsp_response.size())));
     if (!ocsp_response_ref)
       return ERR_OUT_OF_MEMORY;
+  }
+
+  ScopedCFTypeRef<CFMutableArrayRef> sct_array_ref;
+  if (!sct_list.empty()) {
+    if (__builtin_available(macOS 10.14.2, *)) {
+      std::vector<base::StringPiece> decoded_sct_list;
+      if (ct::DecodeSCTList(sct_list, &decoded_sct_list)) {
+        sct_array_ref.reset(CFArrayCreateMutable(kCFAllocatorDefault,
+                                                 decoded_sct_list.size(),
+                                                 &kCFTypeArrayCallBacks));
+        if (!sct_array_ref)
+          return ERR_OUT_OF_MEMORY;
+        for (const auto& sct : decoded_sct_list) {
+          ScopedCFTypeRef<CFDataRef> sct_ref(CFDataCreate(
+              kCFAllocatorDefault, reinterpret_cast<const UInt8*>(sct.data()),
+              base::checked_cast<CFIndex>(sct.size())));
+          if (!sct_ref)
+            return ERR_OUT_OF_MEMORY;
+          CFArrayAppendValue(sct_array_ref.get(), sct_ref.get());
+        }
+      }
+    }
   }
 
   // Serialize all calls that may use the Keychain, to work around various
@@ -772,7 +813,8 @@ int VerifyWithGivenFlags(X509Certificate* cert,
       CSSM_TP_APPLE_EVIDENCE_INFO* temp_chain_info = NULL;
 
       int rv = BuildAndEvaluateSecTrustRef(
-          cert_array, trust_policies, ocsp_response_ref.get(), flags,
+          cert_array, trust_policies, ocsp_response_ref.get(),
+          sct_array_ref.get(), flags,
           scoped_alternate_keychain_search_list.get(), &temp_ref,
           &temp_trust_result, &temp_chain, &temp_chain_info);
       if (rv != OK)
@@ -1003,6 +1045,7 @@ int CertVerifyProcMac::VerifyInternal(
     X509Certificate* cert,
     const std::string& hostname,
     const std::string& ocsp_response,
+    const std::string& sct_list,
     int flags,
     CRLSet* crl_set,
     const CertificateList& additional_trust_anchors,
@@ -1016,8 +1059,9 @@ int CertVerifyProcMac::VerifyInternal(
   GetCandidateEVPolicy(cert, &candidate_ev_policy_oid);
 
   CRLSetResult completed_chain_crl_result;
-  int rv = VerifyWithGivenFlags(cert, hostname, ocsp_response, flags, crl_set,
-                                verify_result, &completed_chain_crl_result);
+  int rv =
+      VerifyWithGivenFlags(cert, hostname, ocsp_response, sct_list, flags,
+                           crl_set, verify_result, &completed_chain_crl_result);
   if (rv != OK)
     return rv;
 
@@ -1035,7 +1079,7 @@ int CertVerifyProcMac::VerifyInternal(
       // re-verification starts with a clean slate.
       *verify_result = input_verify_result;
       int tmp_rv = VerifyWithGivenFlags(
-          verify_result->verified_cert.get(), hostname, ocsp_response,
+          verify_result->verified_cert.get(), hostname, ocsp_response, sct_list,
           flags | VERIFY_REV_CHECKING_ENABLED, crl_set, verify_result,
           &completed_chain_crl_result);
       // If re-verification failed, return those results without setting EV

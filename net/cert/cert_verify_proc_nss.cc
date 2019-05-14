@@ -1006,6 +1006,7 @@ int CertVerifyProcNSS::VerifyInternal(
     X509Certificate* cert,
     const std::string& hostname,
     const std::string& ocsp_response,
+    const std::string& sct_list,
     int flags,
     CRLSet* crl_set,
     const CertificateList& additional_trust_anchors,

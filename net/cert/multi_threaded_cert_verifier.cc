@@ -196,6 +196,7 @@ std::unique_ptr<ResultHelper> DoVerifyOnWorkerThread(
     const scoped_refptr<X509Certificate>& cert,
     const std::string& hostname,
     const std::string& ocsp_response,
+    const std::string& sct_list,
     int flags,
     const scoped_refptr<CRLSet>& crl_set,
     const CertificateList& additional_trust_anchors) {
@@ -204,7 +205,7 @@ std::unique_ptr<ResultHelper> DoVerifyOnWorkerThread(
   MultiThreadedCertVerifierScopedAllowBaseSyncPrimitives
       allow_base_sync_primitives;
   verify_result->error = verify_proc->Verify(
-      cert.get(), hostname, ocsp_response, flags, crl_set.get(),
+      cert.get(), hostname, ocsp_response, sct_list, flags, crl_set.get(),
       additional_trust_anchors, &verify_result->result);
   return verify_result;
 }
@@ -248,8 +249,8 @@ class CertVerifierJob {
         FROM_HERE,
         {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
         base::BindOnce(&DoVerifyOnWorkerThread, verify_proc, key_.certificate(),
-                       key_.hostname(), key_.ocsp_response(), flags,
-                       config.crl_set, config.additional_trust_anchors),
+                       key_.hostname(), key_.ocsp_response(), key_.sct_list(),
+                       flags, config.crl_set, config.additional_trust_anchors),
         base::BindOnce(&CertVerifierJob::OnJobCompleted,
                        weak_ptr_factory_.GetWeakPtr(), config_id));
   }

@@ -80,6 +80,9 @@ class NET_EXPORT CertVerifyProc
   //
   // |ocsp_response|, if non-empty, is a stapled OCSP response to use.
   //
+  // |sct_list|, if non-empty, is a SignedCertificateTimestampList from the TLS
+  // extension as described in RFC6962 section 3.3.1.
+  //
   // |flags| is bitwise OR'd of VerifyFlags:
   //
   // If VERIFY_REV_CHECKING_ENABLED is set in |flags|, online certificate
@@ -97,6 +100,7 @@ class NET_EXPORT CertVerifyProc
   int Verify(X509Certificate* cert,
              const std::string& hostname,
              const std::string& ocsp_response,
+             const std::string& sct_list,
              int flags,
              CRLSet* crl_set,
              const CertificateList& additional_trust_anchors,
@@ -153,6 +157,7 @@ class NET_EXPORT CertVerifyProc
   virtual int VerifyInternal(X509Certificate* cert,
                              const std::string& hostname,
                              const std::string& ocsp_response,
+                             const std::string& sct_list,
                              int flags,
                              CRLSet* crl_set,
                              const CertificateList& additional_trust_anchors,

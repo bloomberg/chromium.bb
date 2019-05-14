@@ -262,9 +262,9 @@ class TrialComparisonCertVerifier::TrialVerificationJob {
       }
       // Chains were different, reverify the trial_result_.verified_cert chain
       // using the platform verifier and compare results again.
-      RequestParams reverification_params(trial_result_.verified_cert,
-                                          params_.hostname(), params_.flags(),
-                                          params_.ocsp_response());
+      RequestParams reverification_params(
+          trial_result_.verified_cert, params_.hostname(), params_.flags(),
+          params_.ocsp_response(), params_.sct_list());
 
       int rv = cert_verifier_->primary_reverifier()->Verify(
           reverification_params, &reverification_result_,
