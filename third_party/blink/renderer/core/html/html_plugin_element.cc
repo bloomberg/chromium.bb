@@ -178,16 +178,16 @@ bool HTMLPlugInElement::RequestObjectInternal(
     return false;
 
   ObjectContentType object_type = GetObjectContentType();
-  handled_externally_ =
+  bool handled_externally =
       object_type == ObjectContentType::kMimeHandlerViewPlugin &&
       GetDocument().GetFrame()->Client()->MaybeCreateMimeHandlerView(
           *this, completed_url,
           service_type_.IsEmpty() ? GetMIMETypeFromURL(completed_url)
                                   : service_type_);
-  if (handled_externally_)
+  if (handled_externally)
     ResetInstance();
   if (object_type == ObjectContentType::kFrame ||
-      object_type == ObjectContentType::kImage || handled_externally_) {
+      object_type == ObjectContentType::kImage || handled_externally) {
     if (ContentFrame() && ContentFrame()->IsRemoteFrame()) {
       // During lazy reattaching, the plugin element loses EmbeddedContentView.
       // Since the ContentFrame() is not torn down the options here are to
@@ -414,7 +414,7 @@ v8::Local<v8::Object> HTMLPlugInElement::PluginWrapper() {
 
     if (plugin) {
       plugin_wrapper_.Reset(isolate, plugin->ScriptableObject(isolate));
-    } else if (handled_externally_) {
+    } else {
       // It is important to check for |handled_externally_| after calling
       // PluginEmbeddedContentView(). Note that calling
       // PluginEmbeddedContentView() leads to synchronously updating style and

@@ -11,6 +11,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
+#include "base/strings/string_util.h"
 #include "content/public/common/mime_handler_view_mode.h"
 #include "content/public/common/webplugininfo.h"
 #include "content/public/renderer/render_frame.h"
@@ -103,6 +104,11 @@ bool MimeHandlerViewContainerManager::CreateFrameContainer(
 v8::Local<v8::Object> MimeHandlerViewContainerManager::GetScriptableObject(
     const blink::WebElement& plugin_element,
     v8::Isolate* isolate) {
+  if (plugin_element.HasAttribute("internalid") &&
+      base::ToUpperASCII(plugin_element.GetAttribute("internalid").Utf8()) ==
+          internal_id_) {
+    return GetPostMessageSupport()->GetScriptableObject(isolate);
+  }
   if (auto* frame_container = GetFrameContainer(plugin_element)) {
     return frame_container->post_message_support()->GetScriptableObject(
         isolate);
@@ -121,6 +127,11 @@ void MimeHandlerViewContainerManager::OnDestruct() {
   bindings_.CloseAllBindings();
   // This will delete the class.
   GetRenderFrameMap()->erase(routing_id());
+}
+
+void MimeHandlerViewContainerManager::SetInternalId(
+    const std::string& token_id) {
+  internal_id_ = token_id;
 }
 
 void MimeHandlerViewContainerManager::CreateBeforeUnloadControl(

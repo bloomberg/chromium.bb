@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
 #include "base/task/post_task.h"
+#include "base/unguessable_token.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
@@ -41,10 +42,11 @@ namespace {
 // post messaging support for PDF viewer (https://crbug.com/659750).
 const char kFullPageMimeHandlerViewHTML[] =
     "<!doctype html><html><body style='height: 100%%; width: 100%%; overflow: "
-    "hidden; margin:0px; background-color: rgb(%d, %d, %d);'><iframe "
+    "hidden; margin:0px; background-color: rgb(%d, %d, %d);'><embed "
     "style='position:absolute; left: 0; top: 0;'width='100%%' height='100%%'"
-    "></iframe></body></html>";
-const uint32_t kFullPageMimeHandlerViewDataPipeSize = 256U;
+    " src='about:blank' type='text/html' "
+    "internalid='%s'></embed></body></html>";
+const uint32_t kFullPageMimeHandlerViewDataPipeSize = 512U;
 
 SkColor GetBackgroundColorStringForMimeType(const GURL& url,
                                             const std::string& mime_type) {
@@ -100,16 +102,17 @@ bool MimeHandlerViewAttachHelper::OverrideBodyForInterceptedResponse(
   if (!content::MimeHandlerViewMode::UsesCrossProcessFrame())
     return false;
   auto color = GetBackgroundColorStringForMimeType(resource_url, mime_type);
+  std::string token = base::UnguessableToken::Create().ToString();
   auto html_str =
       base::StringPrintf(kFullPageMimeHandlerViewHTML, SkColorGetR(color),
-                         SkColorGetG(color), SkColorGetB(color));
+                         SkColorGetG(color), SkColorGetB(color), token.c_str());
   payload->assign(html_str);
   *data_pipe_size = kFullPageMimeHandlerViewDataPipeSize;
   base::PostTaskWithTraitsAndReply(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(CreateFullPageMimeHandlerView,
                      navigating_frame_tree_node_id, resource_url, mime_type,
-                     stream_id),
+                     stream_id, token),
       std::move(resume_load));
   return true;
 }
@@ -147,9 +150,10 @@ void MimeHandlerViewAttachHelper::CreateFullPageMimeHandlerView(
     int32_t frame_tree_node_id,
     const GURL& resource_url,
     const std::string& mime_type,
-    const std::string& stream_id) {
+    const std::string& stream_id,
+    const std::string& token) {
   MimeHandlerViewEmbedder::Create(frame_tree_node_id, resource_url, mime_type,
-                                  stream_id);
+                                  stream_id, token);
 }
 
 MimeHandlerViewAttachHelper::MimeHandlerViewAttachHelper(

@@ -36,25 +36,28 @@ EmbedderMap* GetMimeHandlerViewEmbeddersMap() {
 void MimeHandlerViewEmbedder::Create(int32_t frame_tree_node_id,
                                      const GURL& resource_url,
                                      const std::string& mime_type,
-                                     const std::string& stream_id) {
+                                     const std::string& stream_id,
+                                     const std::string& internal_id) {
   DCHECK(!base::ContainsKey(*GetMimeHandlerViewEmbeddersMap(),
                             frame_tree_node_id));
   GetMimeHandlerViewEmbeddersMap()->insert_or_assign(
-      frame_tree_node_id,
-      base::WrapUnique(new MimeHandlerViewEmbedder(
-          frame_tree_node_id, resource_url, mime_type, stream_id)));
+      frame_tree_node_id, base::WrapUnique(new MimeHandlerViewEmbedder(
+                              frame_tree_node_id, resource_url, mime_type,
+                              stream_id, internal_id)));
 }
 
 MimeHandlerViewEmbedder::MimeHandlerViewEmbedder(int32_t frame_tree_node_id,
                                                  const GURL& resource_url,
                                                  const std::string& mime_type,
-                                                 const std::string& stream_id)
+                                                 const std::string& stream_id,
+                                                 const std::string& internal_id)
     : content::WebContentsObserver(
           content::WebContents::FromFrameTreeNodeId(frame_tree_node_id)),
       frame_tree_node_id_(frame_tree_node_id),
       resource_url_(resource_url),
       mime_type_(mime_type),
       stream_id_(stream_id),
+      internal_id_(internal_id),
       weak_factory_(this) {}
 
 MimeHandlerViewEmbedder::~MimeHandlerViewEmbedder() {}
@@ -74,15 +77,10 @@ void MimeHandlerViewEmbedder::ReadyToCommitNavigation(
       !render_frame_host_) {
     DCHECK_EQ(handle->GetURL(), resource_url_);
     render_frame_host_ = handle->GetRenderFrameHost();
-    if (render_frame_host_->GetFrameOwnerElementType() ==
-            blink::FrameOwnerElementType::kNone &&
-        render_frame_host_->GetFrameOwnerElementType() ==
-            blink::FrameOwnerElementType::kIframe) {
       // In such cases the print helper might need to postMessage to the frame
       // container and we should ensure one exists already. Note that in general
       // <embed> and <object> navigations
-      GetContainerManager();
-    }
+    GetContainerManager()->SetInternalId(internal_id_);
   }
 }
 

@@ -37,6 +37,11 @@ interface GuestView {
 // and is used by the browser to ask the renderer to start the MimeHandlerView
 // creation process (by creating a MimeHandlerViewFrameContainer).
 interface MimeHandlerViewContainerManager {
+  // Sets the expected |internal_id| of the plugin element that will be used
+  // to attach the MimeHandlerViewGuest. This is only used for wiring up
+  // postMessaging.
+  SetInternalId(string token_id);
+
   // Called by the browser to request a BeforeUnloadControl interface pointer
   // which will later be connected to the request from the extension page to
   // provide the beforeunload API (to setup beforeunload in the embedder

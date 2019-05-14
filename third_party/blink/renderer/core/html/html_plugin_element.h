@@ -230,8 +230,6 @@ class CORE_EXPORT HTMLPlugInElement
   // being displayed.
   Member<WebPluginContainerImpl> persisted_plugin_;
 
-  bool handled_externally_ = false;
-
   // True when the element has changed in such a way (new URL, for instance)
   // that we cannot re-use the old view when re-attaching.
   bool dispose_view_ = false;

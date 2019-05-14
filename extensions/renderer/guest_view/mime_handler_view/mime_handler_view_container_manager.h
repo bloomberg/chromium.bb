@@ -84,6 +84,7 @@ class MimeHandlerViewContainerManager
   void OnDestruct() override;
 
   // mojom::MimeHandlerViewContainerManager overrides.
+  void SetInternalId(const std::string& token_id) override;
   void CreateBeforeUnloadControl(
       CreateBeforeUnloadControlCallback callback) override;
   void DestroyFrameContainer(int32_t element_instance_id) override;
@@ -114,6 +115,12 @@ class MimeHandlerViewContainerManager
 
   // Contains all the MimeHandlerViewFrameContainers under |render-frame()|.
   std::vector<std::unique_ptr<MimeHandlerViewFrameContainer>> frame_containers_;
+
+  // Used to match against plugin elements that request a scriptable object. The
+  // one that matches is the one inserted in the HTML string injected by the
+  // MimeHandlerViewAttachHelper (and hence requires a scriptable object to for
+  // postMessage purposes).
+  std::string internal_id_;
 
   mojo::BindingSet<mojom::MimeHandlerViewContainerManager> bindings_;
   mojo::Binding<mime_handler::BeforeUnloadControl>

@@ -35,7 +35,8 @@ class MimeHandlerViewEmbedder : public content::WebContentsObserver {
   static void Create(int32_t frame_tree_node_id,
                      const GURL& resource_url,
                      const std::string& mime_type,
-                     const std::string& stream_id);
+                     const std::string& stream_id,
+                     const std::string& internal_id);
 
   ~MimeHandlerViewEmbedder() override;
 
@@ -49,7 +50,8 @@ class MimeHandlerViewEmbedder : public content::WebContentsObserver {
   MimeHandlerViewEmbedder(int32_t frame_tree_node_id,
                           const GURL& resource_url,
                           const std::string& mime_type,
-                          const std::string& stream_id);
+                          const std::string& stream_id,
+                          const std::string& internal_id);
   void CreateMimeHandlerViewGuest(
       mime_handler::BeforeUnloadControlPtr before_unload_control_ptr);
   void DidCreateMimeHandlerViewGuest(content::WebContents* guest_web_contents);
@@ -77,6 +79,8 @@ class MimeHandlerViewEmbedder : public content::WebContentsObserver {
   mime_handler::BeforeUnloadControlPtrInfo pending_before_unload_control_;
 
   mojom::MimeHandlerViewContainerManagerPtr container_manager_;
+
+  const std::string internal_id_;
 
   base::WeakPtrFactory<MimeHandlerViewEmbedder> weak_factory_;
 
