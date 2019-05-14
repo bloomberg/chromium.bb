@@ -36,7 +36,7 @@ void MunmapBuffers(const std::vector<std::pair<uint8_t*, size_t>>& chunks,
   }
 }
 
-// Create VideoFrame whose dtor deallocates memory in mapped planes referred
+// Create VideoFrame whose dtor unmaps memory in mapped planes referred
 // by |plane_addrs|. |plane_addrs| are addresses to (Y, U, V) in this order.
 // |chunks| is the vector of pair of (address, size) to be called in munmap().
 // |src_video_frame| is the video frame that owns dmabufs to the mapped planes.
