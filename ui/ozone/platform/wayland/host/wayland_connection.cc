@@ -160,8 +160,10 @@ WaylandWindow* WaylandConnection::GetCurrentKeyboardFocusedWindow() const {
 
 void WaylandConnection::AddWindow(gfx::AcceleratedWidget widget,
                                   WaylandWindow* window) {
-  DCHECK(buffer_manager_);
-  buffer_manager_->OnWindowAdded(window);
+  if (buffer_manager_) {
+    DCHECK(zwp_dmabuf_);
+    buffer_manager_->OnWindowAdded(window);
+  }
 
   window_map_[widget] = window;
 }
@@ -170,8 +172,8 @@ void WaylandConnection::RemoveWindow(gfx::AcceleratedWidget widget) {
   if (touch_)
     touch_->RemoveTouchPoints(window_map_[widget]);
 
-  DCHECK(buffer_manager_);
-  buffer_manager_->OnWindowRemoved(window_map_[widget]);
+  if (buffer_manager_)
+    buffer_manager_->OnWindowRemoved(window_map_[widget]);
 
   window_map_.erase(widget);
 }
