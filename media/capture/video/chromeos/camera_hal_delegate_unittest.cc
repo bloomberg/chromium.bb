@@ -12,7 +12,9 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "media/capture/video/chromeos/mock_camera_module.h"
+#include "media/capture/video/chromeos/mock_vendor_tag_ops.h"
 #include "media/capture/video/chromeos/video_capture_device_factory_chromeos.h"
 #include "media/capture/video/mock_gpu_memory_buffer_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -21,14 +23,13 @@
 using testing::_;
 using testing::A;
 using testing::Invoke;
+using testing::Return;
 
 namespace media {
 
 class CameraHalDelegateTest : public ::testing::Test {
  public:
-  CameraHalDelegateTest()
-      : message_loop_(new base::MessageLoop),
-        hal_delegate_thread_("HalDelegateThread") {}
+  CameraHalDelegateTest() : hal_delegate_thread_("HalDelegateThread") {}
 
   void SetUp() override {
     VideoCaptureDeviceFactoryChromeOS::SetGpuBufferManager(
@@ -51,12 +52,13 @@ class CameraHalDelegateTest : public ::testing::Test {
   }
 
  protected:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   scoped_refptr<CameraHalDelegate> camera_hal_delegate_;
   testing::StrictMock<unittest_internal::MockCameraModule> mock_camera_module_;
+  testing::StrictMock<unittest_internal::MockVendorTagOps> mock_vendor_tag_ops_;
   unittest_internal::MockGpuMemoryBufferManager mock_gpu_memory_buffer_manager_;
 
  private:
-  std::unique_ptr<base::MessageLoop> message_loop_;
   base::Thread hal_delegate_thread_;
   std::unique_ptr<base::RunLoop> run_loop_;
   DISALLOW_COPY_AND_ASSIGN(CameraHalDelegateTest);
@@ -118,6 +120,12 @@ TEST_F(CameraHalDelegateTest, GetBuiltinCameraInfo) {
     std::move(cb).Run(0, std::move(camera_info));
   };
 
+  auto get_vendor_tag_ops_cb =
+      [&](cros::mojom::VendorTagOpsRequest& vendor_tag_ops_request,
+          cros::mojom::CameraModule::GetVendorTagOpsCallback& cb) {
+        mock_vendor_tag_ops_.Bind(std::move(vendor_tag_ops_request));
+      };
+
   EXPECT_CALL(mock_camera_module_, DoGetNumberOfCameras(_))
       .Times(1)
       .WillOnce(Invoke(get_number_of_cameras_cb));
@@ -126,6 +134,12 @@ TEST_F(CameraHalDelegateTest, GetBuiltinCameraInfo) {
       DoSetCallbacks(A<cros::mojom::CameraModuleCallbacksPtr&>(),
                      A<cros::mojom::CameraModule::SetCallbacksCallback&>()))
       .Times(1);
+  EXPECT_CALL(mock_camera_module_,
+              DoGetVendorTagOps(
+                  A<cros::mojom::VendorTagOpsRequest&>(),
+                  A<cros::mojom::CameraModule::GetVendorTagOpsCallback&>()))
+      .Times(1)
+      .WillOnce(Invoke(get_vendor_tag_ops_cb));
   EXPECT_CALL(mock_camera_module_,
               DoGetCameraInfo(
                   0, A<cros::mojom::CameraModule::GetCameraInfoCallback&>()))
@@ -137,6 +151,29 @@ TEST_F(CameraHalDelegateTest, GetBuiltinCameraInfo) {
       .Times(1)
       .WillOnce(Invoke(get_camera_info_cb));
 
+  EXPECT_CALL(mock_vendor_tag_ops_, DoGetTagCount())
+      .Times(1)
+      .WillOnce(Return(1));
+
+  const uint32_t kFakeTag = 0x80000000;
+
+  EXPECT_CALL(mock_vendor_tag_ops_, DoGetAllTags())
+      .Times(1)
+      .WillOnce(Return(std::vector<uint32_t>{kFakeTag}));
+
+  EXPECT_CALL(mock_vendor_tag_ops_, DoGetSectionName(kFakeTag))
+      .Times(1)
+      .WillOnce(Return("com.google"));
+
+  EXPECT_CALL(mock_vendor_tag_ops_, DoGetTagName(kFakeTag))
+      .Times(1)
+      .WillOnce(Return("fake.foo.bar"));
+
+  EXPECT_CALL(mock_vendor_tag_ops_, DoGetTagType(kFakeTag))
+      .Times(1)
+      .WillOnce(
+          Return(static_cast<int32_t>(cros::mojom::EntryType::TYPE_BYTE)));
+
   VideoCaptureDeviceDescriptors descriptors;
   camera_hal_delegate_->GetDeviceDescriptors(&descriptors);
 
@@ -147,6 +184,9 @@ TEST_F(CameraHalDelegateTest, GetBuiltinCameraInfo) {
   ASSERT_EQ(std::to_string(0), descriptors[1].device_id);
   ASSERT_EQ(VideoFacingMode::MEDIA_VIDEO_FACING_ENVIRONMENT,
             descriptors[1].facing);
+
+  // TODO(shik): Test external camera. Check the fields |display_name| and
+  // |model_id| are set properly according to the vendor tags.
 
   EXPECT_CALL(mock_gpu_memory_buffer_manager_,
               CreateGpuMemoryBuffer(_, gfx::BufferFormat::YUV_420_BIPLANAR,

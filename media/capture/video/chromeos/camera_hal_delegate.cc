@@ -14,6 +14,7 @@
 #include "base/bind_helpers.h"
 #include "base/posix/safe_strerror.h"
 #include "base/process/launch.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/system/system_monitor.h"
@@ -99,7 +100,8 @@ CameraHalDelegate::CameraHalDelegate(
       num_builtin_cameras_(0),
       camera_buffer_factory_(new CameraBufferFactory()),
       ipc_task_runner_(std::move(ipc_task_runner)),
-      camera_module_callbacks_(this) {
+      camera_module_callbacks_(this),
+      vendor_tag_ops_delegate_(ipc_task_runner_) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
@@ -248,12 +250,32 @@ void CameraHalDelegate::GetDeviceDescriptors(
         desc.facing = VideoFacingMode::MEDIA_VIDEO_FACING_USER;
         desc.set_display_name("Front Camera");
         break;
-      case cros::mojom::CameraFacing::CAMERA_FACING_EXTERNAL:
+      case cros::mojom::CameraFacing::CAMERA_FACING_EXTERNAL: {
         desc.facing = VideoFacingMode::MEDIA_VIDEO_FACING_NONE;
-        desc.set_display_name("External Camera");
+
+        auto get_vendor_string = [&](const std::string& key) -> const char* {
+          const VendorTagInfo* info =
+              vendor_tag_ops_delegate_.GetInfoByName(key);
+          if (info == nullptr) {
+            return nullptr;
+          }
+          auto val = GetMetadataEntryAsSpan<char>(
+              camera_info->static_camera_characteristics, info->tag);
+          return val.empty() ? nullptr : val.data();
+        };
+
+        auto* name = get_vendor_string("com.google.usb.modelName");
+        desc.set_display_name(name != nullptr ? name : "External Camera");
+
+        auto* vid = get_vendor_string("com.google.usb.vendorId");
+        auto* pid = get_vendor_string("com.google.usb.productId");
+        if (vid != nullptr && pid != nullptr) {
+          desc.model_id = base::StrCat({vid, ":", pid});
+        }
         break;
         // Mojo validates the input parameters for us so we don't need to worry
         // about malformed values.
+      }
     }
     device_descriptors->push_back(desc);
   }
@@ -309,6 +331,7 @@ void CameraHalDelegate::ResetMojoInterfaceOnIpcThread() {
   if (camera_module_callbacks_.is_bound()) {
     camera_module_callbacks_.Close();
   }
+  vendor_tag_ops_delegate_.Reset();
   builtin_camera_info_updated_.Reset();
   camera_module_has_been_set_.Reset();
   has_camera_connected_.Reset();
@@ -365,6 +388,10 @@ void CameraHalDelegate::OnGotNumberOfCamerasOnIpcThread(int32_t num_cameras) {
   camera_module_->SetCallbacks(
       std::move(camera_module_callbacks_ptr),
       base::BindOnce(&CameraHalDelegate::OnSetCallbacksOnIpcThread, this));
+
+  camera_module_->GetVendorTagOps(
+      vendor_tag_ops_delegate_.MakeRequest(),
+      base::BindOnce(&CameraHalDelegate::OnGotVendorTagOpsOnIpcThread, this));
 }
 
 void CameraHalDelegate::OnSetCallbacksOnIpcThread(int32_t result) {
@@ -388,6 +415,11 @@ void CameraHalDelegate::OnSetCallbacksOnIpcThread(int32_t result) {
         base::BindOnce(&CameraHalDelegate::OnGotCameraInfoOnIpcThread, this,
                        camera_id));
   }
+}
+
+void CameraHalDelegate::OnGotVendorTagOpsOnIpcThread() {
+  DCHECK(ipc_task_runner_->BelongsToCurrentThread());
+  vendor_tag_ops_delegate_.Initialize();
 }
 
 void CameraHalDelegate::GetCameraInfoOnIpcThread(
