@@ -552,7 +552,7 @@ ServiceWorker* ServiceWorkerGlobalScope::GetOrCreateServiceWorker(
     return nullptr;
   ServiceWorker* worker = service_worker_objects_.at(info.version_id);
   if (!worker) {
-    worker = MakeGarbageCollected<ServiceWorker>(this, std::move(info));
+    worker = ServiceWorker::Create(this, std::move(info));
     service_worker_objects_.Set(info.version_id, worker);
   }
   return worker;

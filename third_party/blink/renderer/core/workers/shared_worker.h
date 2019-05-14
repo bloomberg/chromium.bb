@@ -67,6 +67,7 @@ class CORE_EXPORT SharedWorker final
 
   bool HasPendingActivity() const final;
 
+  void ContextLifecycleStateChanged(mojom::FrameLifecycleState state) override;
   void Trace(blink::Visitor*) override;
 
  private:

@@ -578,8 +578,7 @@ ServiceWorker* ServiceWorkerContainer::GetOrCreateServiceWorker(
     return nullptr;
   ServiceWorker* worker = service_worker_objects_.at(info.version_id);
   if (!worker) {
-    worker = MakeGarbageCollected<ServiceWorker>(GetSupplementable(),
-                                                 std::move(info));
+    worker = ServiceWorker::Create(GetSupplementable(), std::move(info));
     service_worker_objects_.Set(info.version_id, worker);
   }
   return worker;

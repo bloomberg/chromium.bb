@@ -171,6 +171,9 @@ bool ServiceWorker::HasPendingActivity() const {
   return state_ != mojom::blink::ServiceWorkerState::kRedundant;
 }
 
+void ServiceWorker::ContextLifecycleStateChanged(
+    mojom::FrameLifecycleState state) {}
+
 void ServiceWorker::ContextDestroyed(ExecutionContext*) {
   was_stopped_ = true;
 }

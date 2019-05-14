@@ -101,7 +101,6 @@ void WorkerThreadDebugger::WorkerThreadDestroyed(WorkerThread* worker_thread) {
   worker_threads_.erase(worker_context_group_id);
   if (worker_context_group_id == paused_context_group_id_) {
     paused_context_group_id_ = kInvalidContextGroupId;
-    nested_runner_->QuitNow();
   }
 }
 
@@ -179,11 +178,7 @@ void WorkerThreadDebugger::runMessageLoopOnPause(int context_group_id) {
   WorkerThread* thread = worker_threads_.at(context_group_id);
   DCHECK(!thread->GlobalScope()->IsClosing());
   thread->GetWorkerInspectorController()->FlushProtocolNotifications();
-  thread->GlobalScope()->SetLifecycleState(mojom::FrameLifecycleState::kPaused);
-  auto pause_handle = thread->GetScheduler()->Pause();
-  if (!nested_runner_)
-    nested_runner_ = Platform::Current()->CreateNestedMessageLoopRunner();
-  nested_runner_->Run();
+  thread->Pause();
 }
 
 void WorkerThreadDebugger::quitMessageLoopOnPause() {
@@ -193,10 +188,7 @@ void WorkerThreadDebugger::quitMessageLoopOnPause() {
   WorkerThread* thread = worker_threads_.at(paused_context_group_id_);
   paused_context_group_id_ = kInvalidContextGroupId;
   DCHECK(!thread->GlobalScope()->IsClosing());
-
-  nested_runner_->QuitNow();
-  thread->GlobalScope()->SetLifecycleState(
-      mojom::FrameLifecycleState::kRunning);
+  thread->Resume();
 }
 
 void WorkerThreadDebugger::muteMetrics(int context_group_id) {

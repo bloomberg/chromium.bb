@@ -532,4 +532,116 @@ TEST_F(WorkerThreadTest, TerminateWhileWorkerPausedByDebugger) {
   EXPECT_EQ(ExitCode::kAsyncForciblyTerminated, GetExitCode());
 }
 
+TEST_F(WorkerThreadTest, TerminateFrozenScript) {
+  constexpr TimeDelta kDelay = TimeDelta::FromMilliseconds(10);
+  SetForcibleTerminationDelay(kDelay);
+
+  ExpectReportingCallsForWorkerForciblyTerminated();
+  StartWithSourceCodeNotToFinish();
+  reporting_proxy_->WaitUntilScriptEvaluation();
+
+  base::WaitableEvent child_waitable;
+  PostCrossThreadTask(*worker_thread_->GetTaskRunner(TaskType::kInternalTest),
+                      FROM_HERE,
+                      CrossThreadBind(&base::WaitableEvent::Signal,
+                                      CrossThreadUnretained(&child_waitable)));
+
+  // Freeze() enters a nested event loop where the kInternalTest should run.
+  worker_thread_->Freeze();
+  child_waitable.Wait();
+
+  // Terminate() schedules a forcible termination task.
+  worker_thread_->Terminate();
+  EXPECT_TRUE(IsForcibleTerminationTaskScheduled());
+  EXPECT_EQ(ExitCode::kNotTerminated, GetExitCode());
+
+  test::RunDelayedTasks(kDelay);
+  worker_thread_->WaitForShutdownForTesting();
+  EXPECT_EQ(ExitCode::kAsyncForciblyTerminated, GetExitCode());
+}
+
+TEST_F(WorkerThreadTest, NestedPauseFreeze) {
+  constexpr TimeDelta kDelay = TimeDelta::FromMilliseconds(10);
+  SetForcibleTerminationDelay(kDelay);
+
+  ExpectReportingCallsForWorkerForciblyTerminated();
+  StartWithSourceCodeNotToFinish();
+  reporting_proxy_->WaitUntilScriptEvaluation();
+
+  base::WaitableEvent child_waitable;
+  PostCrossThreadTask(*worker_thread_->GetTaskRunner(TaskType::kInternalTest),
+                      FROM_HERE,
+                      CrossThreadBind(&base::WaitableEvent::Signal,
+                                      CrossThreadUnretained(&child_waitable)));
+
+  // Pause() enters a nested event loop where the kInternalTest should run.
+  worker_thread_->Pause();
+  worker_thread_->Freeze();
+  child_waitable.Wait();
+
+  // Resume Freeze.
+  worker_thread_->Resume();
+
+  // Resume Pause.
+  worker_thread_->Resume();
+
+  // Ensure an extra Resume does nothing. Since this is called from
+  // the javascript debugger API.
+  worker_thread_->Resume();
+
+  // Terminate() schedules a forcible termination task.
+  worker_thread_->Terminate();
+  EXPECT_TRUE(IsForcibleTerminationTaskScheduled());
+  EXPECT_EQ(ExitCode::kNotTerminated, GetExitCode());
+
+  test::RunDelayedTasks(kDelay);
+  worker_thread_->WaitForShutdownForTesting();
+  EXPECT_EQ(ExitCode::kAsyncForciblyTerminated, GetExitCode());
+}
+
+TEST_F(WorkerThreadTest, NestedPauseFreezeNoInterrupts) {
+  constexpr TimeDelta kDelay = TimeDelta::FromMilliseconds(10);
+  SetForcibleTerminationDelay(kDelay);
+
+  ExpectReportingCalls();
+  Start();
+
+  base::WaitableEvent child_waitable;
+  PostCrossThreadTask(*worker_thread_->GetTaskRunner(TaskType::kInternalTest),
+                      FROM_HERE,
+                      CrossThreadBind(&base::WaitableEvent::Signal,
+                                      CrossThreadUnretained(&child_waitable)));
+
+  child_waitable.Wait();
+  base::WaitableEvent child_waitable2;
+  PostCrossThreadTask(*worker_thread_->GetTaskRunner(TaskType::kInternalTest),
+                      FROM_HERE,
+                      CrossThreadBind(&base::WaitableEvent::Signal,
+                                      CrossThreadUnretained(&child_waitable2)));
+
+  // Pause() enters a nested event loop where the kInternalTest should run.
+  worker_thread_->Pause();
+  worker_thread_->Freeze();
+  child_waitable2.Wait();
+
+  // Resume for Freeze.
+  worker_thread_->Resume();
+
+  // Resume for Pause.
+  worker_thread_->Resume();
+
+  // Ensure an extra Resume does nothing. Since this is called from
+  // the javascript debugger API.
+  worker_thread_->Resume();
+
+  // Terminate() schedules a forcible termination task.
+  worker_thread_->Terminate();
+  EXPECT_TRUE(IsForcibleTerminationTaskScheduled());
+  EXPECT_EQ(ExitCode::kNotTerminated, GetExitCode());
+
+  test::RunDelayedTasks(kDelay);
+  worker_thread_->WaitForShutdownForTesting();
+  EXPECT_EQ(ExitCode::kGracefullyTerminated, GetExitCode());
+}
+
 }  // namespace blink

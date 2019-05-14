@@ -110,6 +110,31 @@ class WorkerThread::RefCountedWaitableEvent
   DISALLOW_COPY_AND_ASSIGN(RefCountedWaitableEvent);
 };
 
+// A class that is passed into V8 Interrupt and via a PostTask. Once both have
+// run this object will be destroyed in
+// PauseOrFreezeWithInterruptDataOnWorkerThread. The V8 API only takes a raw ptr
+// otherwise this could have been done with base::Bind and ref counted objects.
+class WorkerThread::InterruptData {
+ public:
+  InterruptData(WorkerThread* worker_thread, mojom::FrameLifecycleState state)
+      : worker_thread_(worker_thread), state_(state) {}
+
+  bool ShouldRemoveFromList() { return seen_interrupt_ && seen_post_task_; }
+  void MarkPostTaskCalled() { seen_post_task_ = true; }
+  void MarkInterruptCalled() { seen_interrupt_ = true; }
+
+  mojom::FrameLifecycleState state() { return state_; }
+  WorkerThread* worker_thread() { return worker_thread_; }
+
+ private:
+  WorkerThread* worker_thread_;
+  mojom::FrameLifecycleState state_;
+  bool seen_interrupt_ = false;
+  bool seen_post_task_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(InterruptData);
+};
+
 WorkerThread::~WorkerThread() {
   MutexLocker lock(ThreadSetMutex());
   DCHECK(WorkerThreads().Contains(this));
@@ -198,6 +223,25 @@ void WorkerThread::FetchAndRunModuleScript(
           WTF::Passed(outside_settings_object.CopyData()),
           WrapCrossThreadPersistent(&outside_resource_timing_notifier),
           credentials_mode));
+}
+
+void WorkerThread::Pause() {
+  PauseOrFreeze(mojom::FrameLifecycleState::kPaused);
+}
+
+void WorkerThread::Freeze() {
+  PauseOrFreeze(mojom::FrameLifecycleState::kFrozen);
+}
+
+void WorkerThread::Resume() {
+  // Might be called from any thread.
+  if (IsCurrentThread()) {
+    ResumeOnWorkerThread();
+  } else {
+    GetWorkerBackingThread().BackingThread().PostTask(
+        FROM_HERE, CrossThreadBind(&WorkerThread::ResumeOnWorkerThread,
+                                   CrossThreadUnretained(this)));
+  }
 }
 
 void WorkerThread::Terminate() {
@@ -590,6 +634,12 @@ void WorkerThread::PrepareForShutdownOnWorkerThread() {
     SetThreadState(ThreadState::kReadyToShutdown);
   }
 
+  if (pause_or_freeze_count_ > 0) {
+    DCHECK(nested_runner_);
+    pause_or_freeze_count_ = 0;
+    nested_runner_->QuitNow();
+  }
+
   if (WorkerThreadDebugger* debugger = WorkerThreadDebugger::From(GetIsolate()))
     debugger->WorkerThreadDestroyed(this);
 
@@ -678,6 +728,113 @@ void WorkerThread::SetExitCode(ExitCode exit_code) {
 bool WorkerThread::CheckRequestedToTerminate() {
   MutexLocker lock(mutex_);
   return requested_to_terminate_;
+}
+
+void WorkerThread::PauseOrFreeze(mojom::FrameLifecycleState state) {
+  if (IsCurrentThread()) {
+    PauseOrFreezeOnWorkerThread(state);
+  } else {
+    // We send a V8 interrupt to break active JS script execution because
+    // workers might not yield. Likewise we might not be in JS and the
+    // interrupt might not fire right away, so we post a task as well.
+    // Use a token to mitigate both the interrupt and post task firing.
+    MutexLocker lock(mutex_);
+
+    InterruptData* interrupt_data = new InterruptData(this, state);
+    pending_interrupts_.insert(std::unique_ptr<InterruptData>(interrupt_data));
+
+    if (auto* isolate = GetIsolate()) {
+      isolate->RequestInterrupt(&PauseOrFreezeInsideV8InterruptOnWorkerThread,
+                                interrupt_data);
+    }
+    GetWorkerBackingThread().BackingThread().PostTask(
+        FROM_HERE, CrossThreadBind(
+                       &WorkerThread::PauseOrFreezeInsidePostTaskOnWorkerThread,
+                       CrossThreadUnretained(interrupt_data)));
+  }
+}
+
+void WorkerThread::PauseOrFreezeOnWorkerThread(
+    mojom::FrameLifecycleState state) {
+  DCHECK(IsCurrentThread());
+  DCHECK(state == mojom::FrameLifecycleState::kFrozen ||
+         state == mojom::FrameLifecycleState::kPaused);
+  pause_or_freeze_count_++;
+  GlobalScope()->SetLifecycleState(state);
+
+  // If already paused return early.
+  if (pause_or_freeze_count_ > 1)
+    return;
+
+  std::unique_ptr<scheduler::WorkerScheduler::PauseHandle> pause_handle =
+      GetScheduler()->Pause();
+  {
+    // Since the nested message loop runner needs to be created an destroyed on
+    // the same thread we allocate and destroy a new message loop runner each
+    // time we pause or freeze. The AutoReset allows a raw ptr to be stored in
+    // the worker thread such that the resume/terminate can quit this runner.
+    std::unique_ptr<Platform::NestedMessageLoopRunner> nested_runner =
+        Platform::Current()->CreateNestedMessageLoopRunner();
+    base::AutoReset<Platform::NestedMessageLoopRunner*> nested_runner_autoreset(
+        &nested_runner_, nested_runner.get());
+    nested_runner->Run();
+  }
+  GlobalScope()->SetLifecycleState(mojom::FrameLifecycleState::kRunning);
+}
+
+void WorkerThread::ResumeOnWorkerThread() {
+  DCHECK(IsCurrentThread());
+  if (pause_or_freeze_count_ > 0) {
+    DCHECK(nested_runner_);
+    pause_or_freeze_count_--;
+    if (pause_or_freeze_count_ == 0)
+      nested_runner_->QuitNow();
+  }
+}
+
+void WorkerThread::PauseOrFreezeWithInterruptDataOnWorkerThread(
+    InterruptData* interrupt_data) {
+  DCHECK(IsCurrentThread());
+  bool should_execute = false;
+  mojom::FrameLifecycleState state;
+  {
+    MutexLocker lock(mutex_);
+    state = interrupt_data->state();
+    // If both the V8 interrupt and PostTask have executed we can remove
+    // the matching InterruptData from the |pending_interrupts_| as it is
+    // no longer used.
+    if (interrupt_data->ShouldRemoveFromList()) {
+      auto iter = pending_interrupts_.begin();
+      while (iter != pending_interrupts_.end()) {
+        if (iter->get() == interrupt_data) {
+          pending_interrupts_.erase(iter);
+          break;
+        }
+        ++iter;
+      }
+    } else {
+      should_execute = true;
+    }
+  }
+
+  if (should_execute) {
+    PauseOrFreezeOnWorkerThread(state);
+  }
+}
+
+void WorkerThread::PauseOrFreezeInsideV8InterruptOnWorkerThread(v8::Isolate*,
+                                                                void* data) {
+  InterruptData* interrupt_data = static_cast<InterruptData*>(data);
+  interrupt_data->MarkInterruptCalled();
+  interrupt_data->worker_thread()->PauseOrFreezeWithInterruptDataOnWorkerThread(
+      interrupt_data);
+}
+
+void WorkerThread::PauseOrFreezeInsidePostTaskOnWorkerThread(
+    InterruptData* interrupt_data) {
+  interrupt_data->MarkPostTaskCalled();
+  interrupt_data->worker_thread()->PauseOrFreezeWithInterruptDataOnWorkerThread(
+      interrupt_data);
 }
 
 }  // namespace blink

@@ -131,6 +131,22 @@ void DedicatedWorkerMessagingProxy::DidFailToFetchScript() {
   worker_object_->DispatchErrorEventForScriptFetchFailure();
 }
 
+void DedicatedWorkerMessagingProxy::Freeze() {
+  DCHECK(IsParentContextThread());
+  auto* worker_thread = GetWorkerThread();
+  if (AskedToTerminate() || !worker_thread)
+    return;
+  worker_thread->Freeze();
+}
+
+void DedicatedWorkerMessagingProxy::Resume() {
+  DCHECK(IsParentContextThread());
+  auto* worker_thread = GetWorkerThread();
+  if (AskedToTerminate() || !worker_thread)
+    return;
+  worker_thread->Resume();
+}
+
 void DedicatedWorkerMessagingProxy::DidEvaluateScript(bool success) {
   DCHECK(IsParentContextThread());
   was_script_evaluated_ = true;
