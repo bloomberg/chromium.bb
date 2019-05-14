@@ -45,6 +45,7 @@
 using autofill::FillingStatus;
 using autofill::FormTracker;
 using autofill::PasswordForm;
+using autofill::mojom::FocusedFieldType;
 using base::ASCIIToUTF16;
 using base::UTF16ToUTF8;
 using blink::WebAutofillState;
@@ -3031,25 +3032,45 @@ TEST_F(PasswordAutofillAgentTest,
 }
 
 TEST_F(PasswordAutofillAgentTest, DriverIsInformedAboutUnfillableField) {
-  EXPECT_FALSE(fake_driver_.last_focused_element_was_fillable());
+  EXPECT_EQ(FocusedFieldType::kUnknown, fake_driver_.last_focused_field_type());
   SimulateElementClick(kPasswordName);
   fake_driver_.Flush();
-  EXPECT_TRUE(fake_driver_.last_focused_element_was_fillable());
+  EXPECT_EQ(FocusedFieldType::kFillablePasswordField,
+            fake_driver_.last_focused_field_type());
 
+  // Even though the focused element is a username field, it should be treated
+  // as unfillable, since it is read-only.
   SetElementReadOnly(username_element_, true);
   FocusElement(kUsernameName);
   fake_driver_.Flush();
-  EXPECT_FALSE(fake_driver_.last_focused_element_was_fillable());
+  EXPECT_EQ(FocusedFieldType::kUnfillableElement,
+            fake_driver_.last_focused_field_type());
 }
 
-TEST_F(PasswordAutofillAgentTest, DriverIsInformedAboutPasswordFields) {
+TEST_F(PasswordAutofillAgentTest, DriverIsInformedAboutFillableFields) {
+  SimulateElementClick("random_field");
+  fake_driver_.Flush();
+  EXPECT_EQ(FocusedFieldType::kFillableTextField,
+            fake_driver_.last_focused_field_type());
+
+  // A username field without fill data is indistinguishable from any other text
+  // field.
   SimulateElementClick(kUsernameName);
   fake_driver_.Flush();
-  EXPECT_FALSE(fake_driver_.last_focused_input_was_password());
+  EXPECT_EQ(FocusedFieldType::kFillableTextField,
+            fake_driver_.last_focused_field_type());
 
   SimulateElementClick(kPasswordName);
   fake_driver_.Flush();
-  EXPECT_TRUE(fake_driver_.last_focused_input_was_password());
+  EXPECT_EQ(FocusedFieldType::kFillablePasswordField,
+            fake_driver_.last_focused_field_type());
+
+  // A username field with fill data should be detected.
+  SimulateOnFillPasswordForm(fill_data_);
+  SimulateElementClick(kUsernameName);
+  fake_driver_.Flush();
+  EXPECT_EQ(FocusedFieldType::kFillableUsernameField,
+            fake_driver_.last_focused_field_type());
 }
 
 // Tests that credential suggestions are autofilled on a password (and change

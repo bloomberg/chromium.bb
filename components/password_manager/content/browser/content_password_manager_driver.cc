@@ -27,6 +27,8 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "ui/base/page_transition_types.h"
 
+using autofill::mojom::FocusedFieldType;
+
 namespace {
 
 gfx::RectF TransformToRootCoordinates(
@@ -298,8 +300,14 @@ void ContentPasswordManagerDriver::CheckSafeBrowsingReputation(
 #endif
 }
 
-void ContentPasswordManagerDriver::FocusedInputChanged(bool is_fillable,
-                                                       bool is_password_field) {
+void ContentPasswordManagerDriver::FocusedInputChanged(
+    FocusedFieldType focused_field_type) {
+  // TODO(crbug.com/957532): Forward the full focused field type to the client.
+  const bool is_fillable =
+      focused_field_type != FocusedFieldType::kUnknown &&
+      focused_field_type != FocusedFieldType::kUnfillableElement;
+  const bool is_password_field =
+      focused_field_type == FocusedFieldType::kFillablePasswordField;
   client_->FocusedInputChanged(this, is_fillable, is_password_field);
 }
 

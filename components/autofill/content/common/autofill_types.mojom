@@ -95,6 +95,14 @@ enum LabelSource {
   VALUE,
 };
 
+enum FocusedFieldType {
+  kUnknown,
+  kUnfillableElement,
+  kFillableTextField,
+  kFillableUsernameField,
+  kFillablePasswordField,
+};
+
 // autofill::FillingStatus
 enum FillingStatus {
   SUCCESS,

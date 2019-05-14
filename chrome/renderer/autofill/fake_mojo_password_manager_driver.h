@@ -127,12 +127,8 @@ class FakeMojoPasswordManagerDriver
     return called_show_manual_fallback_for_saving_count_;
   }
 
-  bool last_focused_input_was_password() const {
-    return last_focused_input_was_password_;
-  }
-
-  bool last_focused_element_was_fillable() const {
-    return last_focused_element_was_fillable_;
+  autofill::mojom::FocusedFieldType last_focused_field_type() const {
+    return last_focused_field_type_;
   }
 
  private:
@@ -165,7 +161,8 @@ class FakeMojoPasswordManagerDriver
   void ShowManualFallbackForSaving(
       const autofill::PasswordForm& password_form) override;
   void HideManualFallbackForSaving() override;
-  void FocusedInputChanged(bool is_fillable, bool is_password_field) override;
+  void FocusedInputChanged(
+      autofill::mojom::FocusedFieldType focused_field_type) override;
   void LogFirstFillingResult(uint32_t form_renderer_id,
                              int32_t result) override {}
 
@@ -209,13 +206,10 @@ class FakeMojoPasswordManagerDriver
   // If it is zero, the fallback is not available.
   int called_show_manual_fallback_for_saving_count_ = 0;
 
-  // Records wether a password field was the last input that InputChanged() was
-  // called for.
-  bool last_focused_input_was_password_ = false;
-
-  // Records wether the last input that InputChanged() was called for was
-  // fillable.
-  bool last_focused_element_was_fillable_ = false;
+  // Records the last focused field type that FocusedInputChanged() was called
+  // with.
+  autofill::mojom::FocusedFieldType last_focused_field_type_ =
+      autofill::mojom::FocusedFieldType::kUnknown;
 
   mojo::AssociatedBinding<autofill::mojom::PasswordManagerDriver> binding_;
 };

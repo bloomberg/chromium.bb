@@ -23,6 +23,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "components/autofill/content/common/autofill_types.mojom.h"
 #include "components/autofill/content/renderer/form_autofill_util.h"
 #include "components/autofill/content/renderer/password_form_conversion_utils.h"
 #include "components/autofill/content/renderer/password_generation_agent.h"
@@ -58,16 +59,20 @@ using blink::WebAutofillState;
 using blink::WebDocument;
 using blink::WebElement;
 using blink::WebElementCollection;
-using blink::WebFormElement;
 using blink::WebFormControlElement;
+using blink::WebFormElement;
 using blink::WebFrame;
 using blink::WebInputElement;
 using blink::WebLocalFrame;
+using blink::WebNode;
 using blink::WebString;
 using blink::WebVector;
 using blink::WebView;
 
 namespace autofill {
+
+using mojom::FocusedFieldType;
+
 namespace {
 
 // The size above which we stop triggering autocomplete.
@@ -628,22 +633,21 @@ PasswordAutofillAgent::FormStructureInfo::operator=(
 
 PasswordAutofillAgent::FocusStateNotifier::FocusStateNotifier(
     PasswordAutofillAgent* agent)
-    : was_fillable_(false), was_password_field_(false), agent_(agent) {}
+    : agent_(agent) {}
 
 PasswordAutofillAgent::FocusStateNotifier::~FocusStateNotifier() = default;
 
 void PasswordAutofillAgent::FocusStateNotifier::FocusedInputChanged(
-    bool is_fillable,
-    bool is_password_field) {
-  // Forward the request, if the field is valid or the request is different.
-  if (!is_fillable && !was_fillable_ && !is_password_field &&
-      !was_password_field_) {
-    return;  // A previous request already reported this exact state.
+    FocusedFieldType focused_field_type) {
+  // Forward the request if the type changed or the field is fillable.
+  if (focused_field_type != focused_field_type_ ||
+      focused_field_type == FocusedFieldType::kFillableTextField ||
+      focused_field_type == FocusedFieldType::kFillableUsernameField ||
+      focused_field_type == FocusedFieldType::kFillablePasswordField) {
+    agent_->GetPasswordManagerDriver()->FocusedInputChanged(focused_field_type);
   }
-  was_fillable_ = is_fillable;
-  was_password_field_ = is_password_field;
-  agent_->GetPasswordManagerDriver()->FocusedInputChanged(is_fillable,
-                                                          is_password_field);
+
+  focused_field_type_ = focused_field_type;
 }
 
 PasswordAutofillAgent::PasswordValueGatekeeper::PasswordValueGatekeeper()
@@ -702,7 +706,7 @@ bool PasswordAutofillAgent::TextDidChangeInTextField(
 }
 
 void PasswordAutofillAgent::DidEndTextFieldEditing() {
-  focus_state_notifier_.FocusedInputChanged(false, false);
+  focus_state_notifier_.FocusedInputChanged(FocusedFieldType::kUnknown);
 }
 
 void PasswordAutofillAgent::UpdateStateForTextChange(
@@ -1531,34 +1535,36 @@ void PasswordAutofillAgent::GetFillableElementFromFormData(
 }
 
 void PasswordAutofillAgent::FocusedNodeHasChanged(const blink::WebNode& node) {
+  DCHECK(!node.IsNull());
   focused_input_element_.Reset();
-  if (node.IsNull() || !node.IsElementNode()) {  // Not a valid WebElement.
-    focus_state_notifier_.FocusedInputChanged(
-        /*is_fillable=*/false, /*is_password_field=*/false);
+  if (!node.IsElementNode()) {
+    focus_state_notifier_.FocusedInputChanged(FocusedFieldType::kUnknown);
     return;
   }
 
-  WebElement web_element = node.ToConst<WebElement>();
-  const WebInputElement* input = ToWebInputElement(&web_element);
-  if (!input) {
+  auto element = node.ToConst<WebElement>();
+  auto* input_element = ToWebInputElement(&element);
+  if (!input_element) {
     focus_state_notifier_.FocusedInputChanged(
-        /*is_fillable=*/false, /*is_password_field=*/false);
-    return;  // If the node isn't an element, don't even try to convert.
-  }
-  bool is_password = false;
-  bool is_fillable = input->IsTextField() && IsElementEditable(*input);
-  if (is_fillable) {
-    focused_input_element_ = *input;
-    is_password = focused_input_element_.IsPasswordFieldForAutofill();
-  }
-  focus_state_notifier_.FocusedInputChanged(is_fillable, is_password);
-
-  if (!web_element.IsFormControlElement())
+        FocusedFieldType::kUnfillableElement);
     return;
-  const WebFormControlElement control_element =
-      web_element.ToConst<WebFormControlElement>();
+  }
+
+  auto focused_field_type = FocusedFieldType::kUnfillableElement;
+  if (input_element->IsTextField() && IsElementEditable(*input_element)) {
+    focused_input_element_ = *input_element;
+
+    if (input_element->IsPasswordFieldForAutofill())
+      focused_field_type = FocusedFieldType::kFillablePasswordField;
+    else if (base::ContainsKey(web_input_to_password_info_, *input_element))
+      focused_field_type = FocusedFieldType::kFillableUsernameField;
+    else
+      focused_field_type = FocusedFieldType::kFillableTextField;
+  }
+
+  focus_state_notifier_.FocusedInputChanged(focused_field_type);
   field_data_manager_.UpdateFieldDataMapWithNullValue(
-      control_element, FieldPropertiesFlags::HAD_FOCUS);
+      *input_element, FieldPropertiesFlags::HAD_FOCUS);
 }
 
 std::unique_ptr<PasswordForm> PasswordAutofillAgent::GetPasswordFormFromWebForm(
