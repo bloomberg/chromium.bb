@@ -1236,17 +1236,18 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest, WelcomePages) {
   // Open the two profiles.
   base::FilePath dest_path = profile_manager->user_data_dir();
 
-  Profile* profile1 = nullptr;
+  std::unique_ptr<Profile> profile1;
   {
     base::ScopedAllowBlockingForTesting allow_blocking;
     profile1 = Profile::CreateProfile(
         dest_path.Append(FILE_PATH_LITERAL("New Profile 1")), nullptr,
         Profile::CreateMode::CREATE_MODE_SYNCHRONOUS);
   }
-  ASSERT_TRUE(profile1);
-  profile_manager->RegisterTestingProfile(profile1, true, false);
+  Profile* profile1_ptr = profile1.get();
+  ASSERT_TRUE(profile1_ptr);
+  profile_manager->RegisterTestingProfile(profile1.release(), true, false);
 
-  Browser* browser = OpenNewBrowser(profile1);
+  Browser* browser = OpenNewBrowser(profile1_ptr);
   ASSERT_TRUE(browser);
 
   TabStripModel* tab_strip = browser->tab_strip_model();
@@ -1256,14 +1257,14 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest, WelcomePages) {
   // standard welcome URL should still be used.
   bool is_navi_enabled = false;
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
-  is_navi_enabled = nux::IsNuxOnboardingEnabled(profile1);
+  is_navi_enabled = nux::IsNuxOnboardingEnabled(profile1_ptr);
 #endif
   if (IsWindows10OrNewer() && !is_navi_enabled) {
     ASSERT_EQ(1, tab_strip->count());
     EXPECT_EQ(chrome::kChromeUIWelcomeWin10URL,
               tab_strip->GetWebContentsAt(0)->GetURL().possibly_invalid_spec());
 
-    browser = CloseBrowserAndOpenNew(browser, profile1);
+    browser = CloseBrowserAndOpenNew(browser, profile1_ptr);
     ASSERT_TRUE(browser);
     tab_strip = browser->tab_strip_model();
   }
@@ -1274,7 +1275,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest, WelcomePages) {
   EXPECT_EQ(chrome::kChromeUIWelcomeURL,
             tab_strip->GetWebContentsAt(0)->GetURL().possibly_invalid_spec());
 
-  browser = CloseBrowserAndOpenNew(browser, profile1);
+  browser = CloseBrowserAndOpenNew(browser, profile1_ptr);
   ASSERT_TRUE(browser);
   tab_strip = browser->tab_strip_model();
 
@@ -1309,17 +1310,18 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
   // Open the two profiles.
   base::FilePath dest_path = profile_manager->user_data_dir();
 
-  Profile* profile1 = nullptr;
+  std::unique_ptr<Profile> profile1;
   {
     base::ScopedAllowBlockingForTesting allow_blocking;
     profile1 = Profile::CreateProfile(
         dest_path.Append(FILE_PATH_LITERAL("New Profile 1")), nullptr,
         Profile::CreateMode::CREATE_MODE_SYNCHRONOUS);
   }
-  ASSERT_TRUE(profile1);
-  profile_manager->RegisterTestingProfile(profile1, true, false);
+  Profile* profile1_ptr = profile1.get();
+  ASSERT_TRUE(profile1_ptr);
+  profile_manager->RegisterTestingProfile(profile1.release(), true, false);
 
-  Browser* browser = OpenNewBrowser(profile1);
+  Browser* browser = OpenNewBrowser(profile1_ptr);
   ASSERT_TRUE(browser);
 
   TabStripModel* tab_strip = browser->tab_strip_model();
@@ -1331,7 +1333,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
     EXPECT_EQ("title1.html",
               tab_strip->GetWebContentsAt(0)->GetURL().ExtractFileName());
 
-    browser = CloseBrowserAndOpenNew(browser, profile1);
+    browser = CloseBrowserAndOpenNew(browser, profile1_ptr);
     ASSERT_TRUE(browser);
     tab_strip = browser->tab_strip_model();
   }
@@ -1342,7 +1344,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
   EXPECT_EQ("title1.html",
             tab_strip->GetWebContentsAt(0)->GetURL().ExtractFileName());
 
-  browser = CloseBrowserAndOpenNew(browser, profile1);
+  browser = CloseBrowserAndOpenNew(browser, profile1_ptr);
   ASSERT_TRUE(browser);
   tab_strip = browser->tab_strip_model();
 

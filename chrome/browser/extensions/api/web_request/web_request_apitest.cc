@@ -1847,10 +1847,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
   chromeos::ProfileHelper::SetAlwaysReturnPrimaryUserForTesting(true);
 #endif  // defined(OS_CHROMEOS)
   ProfileManager* profile_manager = g_browser_process->profile_manager();
-  Profile* temp_profile = Profile::CreateProfile(
-      profile_manager->user_data_dir().AppendASCII("profile"), nullptr,
-      Profile::CreateMode::CREATE_MODE_SYNCHRONOUS);
-
+  Profile* temp_profile =
+      Profile::CreateProfile(
+          profile_manager->user_data_dir().AppendASCII("profile"), nullptr,
+          Profile::CreateMode::CREATE_MODE_SYNCHRONOUS)
+          .release();
   // Create a WebRequestAPI instance that we can control the lifetime of.
   auto api = std::make_unique<WebRequestAPI>(temp_profile);
   // Make sure we are proxying for |temp_profile|.

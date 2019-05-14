@@ -7,6 +7,7 @@
 #ifndef CHROME_BROWSER_PROFILES_PROFILE_H_
 #define CHROME_BROWSER_PROFILES_PROFILE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/logging.h"
@@ -117,9 +118,9 @@ class Profile : public content::BrowserContext {
   // CREATE_MODE_ASYNCHRONOUS then the profile is initialized asynchronously.
   // Can return null if |create_mode| is CREATE_MODE_SYNCHRONOUS and the
   // creation of the profile directory fails.
-  static Profile* CreateProfile(const base::FilePath& path,
-                                Delegate* delegate,
-                                CreateMode create_mode);
+  static std::unique_ptr<Profile> CreateProfile(const base::FilePath& path,
+                                                Delegate* delegate,
+                                                CreateMode create_mode);
 
   // Returns the profile corresponding to the given browser context.
   static Profile* FromBrowserContext(content::BrowserContext* browser_context);

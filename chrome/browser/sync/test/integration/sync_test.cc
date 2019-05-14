@@ -397,10 +397,10 @@ Profile* SyncTest::MakeTestProfile(base::FilePath profile_path, int index) {
     }
   }
 
-  Profile* profile =
+  std::unique_ptr<Profile> profile =
       Profile::CreateProfile(profile_path, profile_delegates_[index].get(),
                              Profile::CREATE_MODE_SYNCHRONOUS);
-  return profile;
+  return profile.release();
 }
 
 Profile* SyncTest::GetProfile(int index) {

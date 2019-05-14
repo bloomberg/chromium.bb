@@ -1395,14 +1395,15 @@ Profile* ProfileManager::CreateProfileHelper(const base::FilePath& path) {
   TRACE_EVENT0("browser", "ProfileManager::CreateProfileHelper");
   SCOPED_UMA_HISTOGRAM_TIMER("Profile.CreateProfileHelperTime");
 
-  return Profile::CreateProfile(path, NULL, Profile::CREATE_MODE_SYNCHRONOUS);
+  return Profile::CreateProfile(path, NULL, Profile::CREATE_MODE_SYNCHRONOUS)
+      .release();
 }
 
 Profile* ProfileManager::CreateProfileAsyncHelper(const base::FilePath& path,
                                                   Delegate* delegate) {
-  return Profile::CreateProfile(path,
-                                delegate,
-                                Profile::CREATE_MODE_ASYNCHRONOUS);
+  return Profile::CreateProfile(path, delegate,
+                                Profile::CREATE_MODE_ASYNCHRONOUS)
+      .release();
 }
 
 Profile* ProfileManager::GetActiveUserOrOffTheRecordProfileFromPath(
@@ -1442,23 +1443,24 @@ Profile* ProfileManager::GetActiveUserOrOffTheRecordProfileFromPath(
 #endif
 }
 
-bool ProfileManager::AddProfile(Profile* profile) {
+bool ProfileManager::AddProfile(std::unique_ptr<Profile> profile) {
   TRACE_EVENT0("browser", "ProfileManager::AddProfile");
 
   DCHECK(profile);
+  Profile* profile_ptr = profile.get();
 
   // Make sure that we're not loading a profile with the same ID as a profile
   // that's already loaded.
-  if (GetProfileByPathInternal(profile->GetPath())) {
-    NOTREACHED() << "Attempted to add profile with the same path (" <<
-                    profile->GetPath().value() <<
-                    ") as an already-loaded profile.";
+  if (GetProfileByPathInternal(profile_ptr->GetPath())) {
+    NOTREACHED() << "Attempted to add profile with the same path ("
+                 << profile_ptr->GetPath().value()
+                 << ") as an already-loaded profile.";
     return false;
   }
 
-  RegisterProfile(profile, true);
-  InitProfileUserPrefs(profile);
-  DoFinalInit(profile, ShouldGoOffTheRecord(profile));
+  RegisterProfile(profile.release(), true);
+  InitProfileUserPrefs(profile_ptr);
+  DoFinalInit(profile_ptr, ShouldGoOffTheRecord(profile_ptr));
   return true;
 }
 
@@ -1474,7 +1476,7 @@ Profile* ProfileManager::CreateAndInitializeProfile(
   CHECK(!GetProfileByPathInternal(profile_dir));
   Profile* profile = CreateProfileHelper(profile_dir);
   if (profile) {
-    bool result = AddProfile(profile);
+    bool result = AddProfile(base::WrapUnique(profile));
     DCHECK(result);
   }
   return profile;

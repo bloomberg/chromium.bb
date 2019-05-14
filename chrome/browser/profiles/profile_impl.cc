@@ -329,9 +329,9 @@ bool LocaleNotChanged(const std::string& pref_locale,
 }  // namespace
 
 // static
-Profile* Profile::CreateProfile(const base::FilePath& path,
-                                Delegate* delegate,
-                                CreateMode create_mode) {
+std::unique_ptr<Profile> Profile::CreateProfile(const base::FilePath& path,
+                                                Delegate* delegate,
+                                                CreateMode create_mode) {
   TRACE_EVENT1("browser,startup", "Profile::CreateProfile", "profile_path",
                path.AsUTF8Unsafe());
 
@@ -350,7 +350,7 @@ Profile* Profile::CreateProfile(const base::FilePath& path,
       // write to the profile directory.  We should eventually be able to run in
       // this situation.
       if (!base::CreateDirectory(path))
-        return NULL;
+        return nullptr;
 
       CreateProfileReadme(path);
     }
@@ -358,14 +358,14 @@ Profile* Profile::CreateProfile(const base::FilePath& path,
     NOTREACHED();
   }
 
-  auto profile = base::WrapUnique(
+  std::unique_ptr<Profile> profile = base::WrapUnique(
       new ProfileImpl(path, delegate, create_mode, io_task_runner));
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS) && !defined(OS_ANDROID) && \
     !defined(OS_CHROMEOS)
   if (create_mode == CREATE_MODE_SYNCHRONOUS && profile->IsLegacySupervised())
     return nullptr;
 #endif
-  return profile.release();
+  return profile;
 }
 
 // static

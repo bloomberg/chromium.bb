@@ -106,8 +106,9 @@ TestingProfile* TestingProfileManager::CreateTestingProfile(
     builder.AddTestingFactory(pair.first, std::move(pair.second));
   testing_factories.clear();
 
-  TestingProfile* profile = builder.Build().release();
-  profile_manager_->AddProfile(profile);  // Takes ownership.
+  std::unique_ptr<TestingProfile> profile = builder.Build();
+  TestingProfile* profile_ptr = profile.get();
+  profile_manager_->AddProfile(std::move(profile));
 
   // Update the user metadata.
   ProfileAttributesEntry* entry;
@@ -118,9 +119,9 @@ TestingProfile* TestingProfileManager::CreateTestingProfile(
   entry->SetSupervisedUserId(supervised_user_id);
   entry->SetName(user_name);
 
-  testing_profiles_.insert(std::make_pair(profile_name, profile));
+  testing_profiles_.insert(std::make_pair(profile_name, profile_ptr));
 
-  return profile;
+  return profile_ptr;
 }
 
 TestingProfile* TestingProfileManager::CreateTestingProfile(
@@ -141,20 +142,21 @@ TestingProfile* TestingProfileManager::CreateGuestProfile() {
   builder.SetPath(ProfileManager::GetGuestProfilePath());
 
   // Add the guest profile to the profile manager, but not to the info cache.
-  TestingProfile* profile = builder.Build().release();
-  profile->set_profile_name(kGuestProfileName);
+  std::unique_ptr<TestingProfile> profile = builder.Build();
+  TestingProfile* profile_ptr = profile.get();
+  profile_ptr->set_profile_name(kGuestProfileName);
 
   // Set up a profile with an off the record profile.
   TestingProfile::Builder off_the_record_builder;
   off_the_record_builder.SetGuestSession();
-  off_the_record_builder.BuildIncognito(profile);
+  off_the_record_builder.BuildIncognito(profile_ptr);
 
-  profile_manager_->AddProfile(profile);  // Takes ownership.
-  profile_manager_->SetNonPersonalProfilePrefs(profile);
+  profile_manager_->AddProfile(std::move(profile));
+  profile_manager_->SetNonPersonalProfilePrefs(profile_ptr);
 
-  testing_profiles_.insert(std::make_pair(kGuestProfileName, profile));
+  testing_profiles_.insert(std::make_pair(kGuestProfileName, profile_ptr));
 
-  return profile;
+  return profile_ptr;
 }
 
 TestingProfile* TestingProfileManager::CreateSystemProfile() {
@@ -165,14 +167,15 @@ TestingProfile* TestingProfileManager::CreateSystemProfile() {
   builder.SetPath(ProfileManager::GetSystemProfilePath());
 
   // Add the system profile to the profile manager, but not to the info cache.
-  TestingProfile* profile = builder.Build().release();
-  profile->set_profile_name(kSystemProfileName);
+  std::unique_ptr<TestingProfile> profile = builder.Build();
+  TestingProfile* profile_ptr = profile.get();
+  profile_ptr->set_profile_name(kSystemProfileName);
 
-  profile_manager_->AddProfile(profile);  // Takes ownership.
+  profile_manager_->AddProfile(std::move(profile));
 
-  testing_profiles_.insert(std::make_pair(kSystemProfileName, profile));
+  testing_profiles_.insert(std::make_pair(kSystemProfileName, profile_ptr));
 
-  return profile;
+  return profile_ptr;
 }
 
 void TestingProfileManager::DeleteTestingProfile(const std::string& name) {
