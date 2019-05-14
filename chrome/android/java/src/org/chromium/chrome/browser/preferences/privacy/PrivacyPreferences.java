@@ -163,9 +163,6 @@ public class PrivacyPreferences extends PreferenceFragment
         } else if (PREF_CAN_MAKE_PAYMENT.equals(key)) {
             PrefServiceBridge.getInstance().setBoolean(
                     Pref.CAN_MAKE_PAYMENT_ENABLED, (boolean) newValue);
-        } else if (PREF_USAGE_STATS.equals(key)) {
-            PrefServiceBridge.getInstance().setBoolean(
-                    Pref.USAGE_STATS_ENABLED, (boolean) newValue);
         }
 
         return true;
@@ -248,7 +245,14 @@ public class PrivacyPreferences extends PreferenceFragment
         if (usageStatsPref != null) {
             if (BuildInfo.isAtLeastQ() && prefServiceBridge.getBoolean(Pref.USAGE_STATS_ENABLED)) {
                 usageStatsPref.setOnPreferenceClickListener(preference -> {
-                    UsageStatsConsentDialog.create(getActivity(), true, false).show();
+                    UsageStatsConsentDialog
+                            .create(getActivity(), true,
+                                    (didConfirm) -> {
+                                        if (didConfirm) {
+                                            updateSummaries();
+                                        }
+                                    })
+                            .show();
                     return true;
                 });
             } else {

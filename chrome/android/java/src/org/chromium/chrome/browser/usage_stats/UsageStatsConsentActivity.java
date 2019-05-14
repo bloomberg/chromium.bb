@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.usage_stats;
 
+import android.app.Activity;
 import android.content.ComponentName;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -37,6 +38,12 @@ public class UsageStatsConsentActivity extends SynchronousInitializationActivity
     public void onAttachedToWindow() {
         String action = getIntent().getAction();
         boolean isRevocation = TextUtils.equals(action, UNAUTHORIZE_ACTION);
-        UsageStatsConsentDialog.create(this, isRevocation, true).show();
+        UsageStatsConsentDialog
+                .create(this, isRevocation,
+                        (didConfirm) -> {
+                            setResult(didConfirm ? Activity.RESULT_OK : Activity.RESULT_CANCELED);
+                            finish();
+                        })
+                .show();
     }
 }
