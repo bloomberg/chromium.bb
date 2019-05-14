@@ -35,7 +35,7 @@ GbmPixmapWayland::GbmPixmapWayland(WaylandSurfaceFactory* surface_manager,
       widget_(widget) {}
 
 GbmPixmapWayland::~GbmPixmapWayland() {
-  if (gbm_bo_)
+  if (gbm_bo_ && widget_ != gfx::kNullAcceleratedWidget)
     connection_->DestroyZwpLinuxDmabuf(widget_, GetUniqueId());
 }
 
@@ -80,7 +80,10 @@ bool GbmPixmapWayland::InitializeBuffer(gfx::Size size,
     return false;
   }
 
-  CreateZwpLinuxDmabuf();
+  // The pixmap can be created as a staging buffer and not be mapped to any of
+  // the existing widgets.
+  if (widget_ != gfx::kNullAcceleratedWidget)
+    CreateZwpLinuxDmabuf();
   return true;
 }
 
