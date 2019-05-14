@@ -86,10 +86,10 @@ class WTF_EXPORT StringImpl {
   void* operator new(size_t, void* ptr) { return ptr; }
   void operator delete(void*);
 
-  // Used to construct static strings, which have an special refCount that can
-  // never hit zero.  This means that the static string will never be
-  // destroyed, which is important because static strings will be shared
-  // across threads & ref-counted in a non-threadsafe manner.
+  // Used to construct static strings, which have a special ref_count_ that can
+  // never hit zero. This means that the static string will never be destroyed,
+  // which is important because static strings will be shared across threads &
+  // ref-counted in a non-threadsafe manner.
   enum ConstructEmptyStringTag { kConstructEmptyString };
   explicit StringImpl(ConstructEmptyStringTag)
       : ref_count_(1),
@@ -279,7 +279,8 @@ class WTF_EXPORT StringImpl {
 #if DCHECK_IS_ON()
     DCHECK(IsStatic() || verifier_.OnRef(ref_count_)) << AsciiForDebugging();
 #endif
-    ++ref_count_;
+    if (!IsStatic())
+      ref_count_ = base::CheckAdd(ref_count_, 1).ValueOrDie();
   }
 
   ALWAYS_INLINE void Release() const {
@@ -287,7 +288,9 @@ class WTF_EXPORT StringImpl {
     DCHECK(IsStatic() || verifier_.OnDeref(ref_count_))
         << AsciiForDebugging() << " " << CurrentThread();
 #endif
-    if (!--ref_count_)
+    if (!IsStatic())
+      ref_count_ = base::CheckSub(ref_count_, 1).ValueOrDie();
+    if (ref_count_ == 0)
       DestroyIfNotStatic();
   }
 
