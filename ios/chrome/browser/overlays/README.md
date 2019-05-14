@@ -1,7 +1,7 @@
-# OverlayManager
+# OverlayPresenter
 
-OverlayManager is used to schedule the display of UI alongside the content area
-of a WebState.
+OverlayPresenter is used to schedule the display of UI alongside the content
+area of a WebState.
 
 ## Classes of note:
 
@@ -15,7 +15,7 @@ requested UI.
 ##### OverlayResponse
 
 OverlayResponses are provided to each OverlayRequest to describe the user's
-interaction with the overlay UI.  Cients should create OverlayResponses with an
+interaction with the overlay UI.  Clients should create OverlayResponses with an
 OverlayUserData subclass with the overlay UI user interaction information
 necessary to execute the callback for that overlay.
 
@@ -27,29 +27,34 @@ area.  When a client wishes to schedule the display of an overlay, it should
 add an OverlayRequest to the desired WebState's queue.  This will trigger the
 scheduling logic for that request's corresponding overlay UI.
 
-##### OverlayManager
+##### OverlayPresenter
 
-OverlayManager aggregates the scheduling logic for the OverlayRequests in the
-queues for the WebStates in a particular Browser.  Clients must provide a UI
-delegate to a Browser's manager that handles the presentation of overlay UI for
-that manager's modality and Browser.
+OverlayPresenter drives the presentation of the UI for OverlayRequests added to
+queues for WebStates in a Browser.
 
-##### OverlayManagerObserver
+#### OverlayPresenter::UIDelegate
 
-OverlayManagerObserver notifies interested classes of when overlay UI is
-presented or dismissed.
+Clients must provide a UI delegate to a Browser's OverlayPresenter that handles
+the presentation of overlay UI for that presenter's modality and Browser.
 
-## Setting up OverlayManager:
+#### OverlayPresenter::Observer
 
-Multiple OverlayManagers may be active for a single Browser to manage overlay UI
-at different levels of modality (i.e. modal over WebState content area, modal
-over entire browser, etc).  In order to use the manager, clients must retrieve
-the OverlayManager associated with that OverlayModality.
+Objects that care about the presentation and dismissal of overlay UI by the
+presenter should add themselves as observers to the presenter.  This can be used
+to respond to update UI for UI presentation, for example to update the location
+bar text while a dialog is displayed.
 
-Each instance of OverlayManager must be provided with an OverlayUIDelegate that
-manages the overlay UI at the modality associated with the manager.
+## Setting up OverlayPresenterr:
 
-## Example usage of manager:
+Multiple OverlayPresenters may be active for a single Browser to manage overlay
+UI at different levels of modality (i.e. modal over WebState content area, modal
+over entire browser, etc).
+
+Each instance of OverlayPresenter must be provided with an OverlayPresenter::
+UIDelegate that manages the overlay UI at the modality associated with the
+presenter.
+
+## Example usage of presenter:
 
 ### Showing an alert with a title, message, an OK button, and a Cancel button
 
@@ -113,6 +118,3 @@ created and supplied to that request.
     OverlayRequestQueue::FromWebState(web_state, modality)->front_request()->
         set_response(OverlayResponse::CreateWithInfo<AlertInfo>(0));
 
-*NOTE: this manager is a work-in-progress, and this file only outlines how to
-use the files currently in the repository.  It will be updated with more
-complete instructions as more of the manager lands.*

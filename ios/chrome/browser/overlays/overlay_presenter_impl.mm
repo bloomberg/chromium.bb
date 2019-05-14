@@ -2,20 +2,54 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/overlays/overlay_presenter.h"
+#import "ios/chrome/browser/overlays/overlay_presenter_impl.h"
 
 #include "base/logging.h"
+#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-OverlayPresenter::OverlayPresenter(OverlayModality modality,
-                                   WebStateList* web_state_list)
+#pragma mark - Factory method
+
+// static
+OverlayPresenter* OverlayPresenter::FromBrowser(Browser* browser,
+                                                OverlayModality modality) {
+  OverlayPresenterImpl::Container::CreateForUserData(browser, browser);
+  return OverlayPresenterImpl::Container::FromUserData(browser)
+      ->PresenterForModality(modality);
+}
+
+#pragma mark - OverlayPresenterImpl::Container
+
+OVERLAY_USER_DATA_SETUP_IMPL(OverlayPresenterImpl::Container);
+
+OverlayPresenterImpl::Container::Container(Browser* browser)
+    : browser_(browser) {
+  DCHECK(browser_);
+}
+
+OverlayPresenterImpl::Container::~Container() = default;
+
+OverlayPresenterImpl* OverlayPresenterImpl::Container::PresenterForModality(
+    OverlayModality modality) {
+  auto& presenter = presenters_[modality];
+  if (!presenter) {
+    presenter = base::WrapUnique(new OverlayPresenterImpl(browser_, modality));
+  }
+  return presenter.get();
+}
+
+#pragma mark - OverlayPresenterImpl
+
+OverlayPresenterImpl::OverlayPresenterImpl(Browser* browser,
+                                           OverlayModality modality)
     : modality_(modality),
-      web_state_list_(web_state_list),
+      web_state_list_(browser->GetWebStateList()),
       weak_factory_(this) {
+  browser->AddObserver(this);
   DCHECK(web_state_list_);
   web_state_list_->AddObserver(this);
   for (int i = 0; i < web_state_list_->count(); ++i) {
@@ -24,15 +58,18 @@ OverlayPresenter::OverlayPresenter(OverlayModality modality,
   SetActiveWebState(web_state_list_->GetActiveWebState(), CHANGE_REASON_NONE);
 }
 
-OverlayPresenter::~OverlayPresenter() {
-  // Disconnect() must be called before destruction.
+OverlayPresenterImpl::~OverlayPresenterImpl() {
+  // The presenter should be disconnected from WebStateList changes before
+  // destruction.
   DCHECK(!ui_delegate_);
   DCHECK(!web_state_list_);
 }
 
 #pragma mark - Public
 
-void OverlayPresenter::SetUIDelegate(OverlayUIDelegate* ui_delegate) {
+#pragma mark OverlayPresenter
+
+void OverlayPresenterImpl::SetUIDelegate(UIDelegate* ui_delegate) {
   // When the UI delegate is reset, the presenter will begin showing overlays in
   // the new delegate's presentation context.  Cancel overlay state from the
   // previous delegate since this Browser's overlays will no longer be presented
@@ -49,28 +86,26 @@ void OverlayPresenter::SetUIDelegate(OverlayUIDelegate* ui_delegate) {
     PresentOverlayForActiveRequest();
 }
 
-void OverlayPresenter::Disconnect() {
-  SetUIDelegate(nullptr);
-  SetActiveWebState(nullptr, CHANGE_REASON_NONE);
-
-  for (int i = 0; i < web_state_list_->count(); ++i) {
-    GetQueueForWebState(web_state_list_->GetWebStateAt(i))
-        ->RemoveObserver(this);
-  }
-  web_state_list_->RemoveObserver(this);
-  web_state_list_ = nullptr;
+void OverlayPresenterImpl::AddObserver(OverlayPresenter::Observer* observer) {
+  observers_.AddObserver(observer);
 }
 
-#pragma mark -
+void OverlayPresenterImpl::RemoveObserver(
+    OverlayPresenter::Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+#pragma mark - Private
+
 #pragma mark Accessors
 
-void OverlayPresenter::SetActiveWebState(
+void OverlayPresenterImpl::SetActiveWebState(
     web::WebState* web_state,
     WebStateListObserver::ChangeReason reason) {
   if (active_web_state_ == web_state)
     return;
 
-  web::WebState* previously_active_web_state = active_web_state_;
+  OverlayRequest* previously_active_request = GetActiveRequest();
 
   // The UI should be cancelled instead of hidden if the presenter does not
   // expect to show any more overlay UI for previously active WebState in the UI
@@ -97,18 +132,17 @@ void OverlayPresenter::SetActiveWebState(
   // presented UI needs to be dismissed before the next overlay for the new
   // active WebState can be shown.  The new active WebState's overlays will be
   // presented when the previous overlay's dismissal callback is executed.
-  DCHECK(previously_active_web_state);
+  DCHECK(previously_active_request);
   if (should_cancel_ui) {
-    CancelOverlayUIForWebState(previously_active_web_state);
+    CancelOverlayUIForRequest(previously_active_request);
   } else {
     // For WebState activations, the overlay UI for the previously active
     // WebState should be hidden, as it may be shown again upon reactivating.
-    ui_delegate_->HideOverlayUIForWebState(previously_active_web_state,
-                                           modality_);
+    ui_delegate_->HideOverlayUI(this, previously_active_request);
   }
 }
 
-OverlayRequestQueueImpl* OverlayPresenter::GetQueueForWebState(
+OverlayRequestQueueImpl* OverlayPresenterImpl::GetQueueForWebState(
     web::WebState* web_state) const {
   if (!web_state)
     return nullptr;
@@ -117,18 +151,23 @@ OverlayRequestQueueImpl* OverlayPresenter::GetQueueForWebState(
       ->QueueForModality(modality_);
 }
 
-OverlayRequestQueueImpl* OverlayPresenter::GetActiveQueue() const {
+OverlayRequest* OverlayPresenterImpl::GetFrontRequestForWebState(
+    web::WebState* web_state) const {
+  OverlayRequestQueueImpl* queue = GetQueueForWebState(web_state);
+  return queue ? queue->front_request() : nullptr;
+}
+
+OverlayRequestQueueImpl* OverlayPresenterImpl::GetActiveQueue() const {
   return GetQueueForWebState(active_web_state_);
 }
 
-OverlayRequest* OverlayPresenter::GetActiveRequest() const {
-  OverlayRequestQueueImpl* queue = GetActiveQueue();
-  return queue ? queue->front_request() : nullptr;
+OverlayRequest* OverlayPresenterImpl::GetActiveRequest() const {
+  return GetFrontRequestForWebState(active_web_state_);
 }
 
 #pragma mark UI Presentation and Dismissal helpers
 
-void OverlayPresenter::PresentOverlayForActiveRequest() {
+void OverlayPresenterImpl::PresentOverlayForActiveRequest() {
   // Overlays cannot be presented if one is already presented.
   DCHECK(!presenting_);
 
@@ -144,16 +183,15 @@ void OverlayPresenter::PresentOverlayForActiveRequest() {
   presenting_ = true;
 
   OverlayDismissalCallback dismissal_callback = base::BindOnce(
-      &OverlayPresenter::OverlayWasDismissed, weak_factory_.GetWeakPtr(),
+      &OverlayPresenterImpl::OverlayWasDismissed, weak_factory_.GetWeakPtr(),
       ui_delegate_, request, GetActiveQueue());
-  ui_delegate_->ShowOverlayUIForWebState(active_web_state_, modality_,
-                                         std::move(dismissal_callback));
+  ui_delegate_->ShowOverlayUI(this, request, std::move(dismissal_callback));
 }
 
-void OverlayPresenter::OverlayWasDismissed(OverlayUIDelegate* ui_delegate,
-                                           OverlayRequest* request,
-                                           OverlayRequestQueueImpl* queue,
-                                           OverlayDismissalReason reason) {
+void OverlayPresenterImpl::OverlayWasDismissed(UIDelegate* ui_delegate,
+                                               OverlayRequest* request,
+                                               OverlayRequestQueueImpl* queue,
+                                               OverlayDismissalReason reason) {
   // If the UI delegate is reset while presenting an overlay, that overlay will
   // be cancelled and dismissed.  The presenter is now using the new UI
   // delegate's presentation context, so this dismissal should not trigger
@@ -180,68 +218,86 @@ void OverlayPresenter::OverlayWasDismissed(OverlayUIDelegate* ui_delegate,
 
 #pragma mark Cancellation helpers
 
-void OverlayPresenter::CancelOverlayUIForWebState(web::WebState* web_state) {
-  if (ui_delegate_)
-    ui_delegate_->CancelOverlayUIForWebState(web_state, modality_);
+void OverlayPresenterImpl::CancelOverlayUIForRequest(OverlayRequest* request) {
+  if (!ui_delegate_ || !request)
+    return;
+  ui_delegate_->CancelOverlayUI(this, request);
 }
 
-void OverlayPresenter::CancelAllOverlayUI() {
+void OverlayPresenterImpl::CancelAllOverlayUI() {
   for (int i = 0; i < web_state_list_->count(); ++i) {
-    CancelOverlayUIForWebState(web_state_list_->GetWebStateAt(i));
+    CancelOverlayUIForRequest(
+        GetFrontRequestForWebState(web_state_list_->GetWebStateAt(i)));
   }
 }
 
-#pragma mark - OverlayRequestQueueImpl::Observer
+#pragma mark -
+#pragma mark BrowserObserver
 
-void OverlayPresenter::RequestAddedToQueue(OverlayRequestQueueImpl* queue,
-                                           OverlayRequest* request) {
+void OverlayPresenterImpl::BrowserDestroyed(Browser* browser) {
+  SetUIDelegate(nullptr);
+  SetActiveWebState(nullptr, CHANGE_REASON_NONE);
+
+  for (int i = 0; i < web_state_list_->count(); ++i) {
+    GetQueueForWebState(web_state_list_->GetWebStateAt(i))
+        ->RemoveObserver(this);
+  }
+  web_state_list_->RemoveObserver(this);
+  web_state_list_ = nullptr;
+  browser->RemoveObserver(this);
+}
+
+#pragma mark OverlayRequestQueueImpl::Observer
+
+void OverlayPresenterImpl::RequestAddedToQueue(OverlayRequestQueueImpl* queue,
+                                               OverlayRequest* request) {
   // If |queue| is active and the added request is the front request, trigger
   // the UI presentation for that request.
   if (queue == GetActiveQueue() && request == queue->front_request())
     PresentOverlayForActiveRequest();
 }
 
-#pragma mark - WebStateListObserver
+#pragma mark WebStateListObserver
 
-void OverlayPresenter::WebStateInsertedAt(WebStateList* web_state_list,
-                                          web::WebState* web_state,
-                                          int index,
-                                          bool activating) {
+void OverlayPresenterImpl::WebStateInsertedAt(WebStateList* web_state_list,
+                                              web::WebState* web_state,
+                                              int index,
+                                              bool activating) {
   GetQueueForWebState(web_state)->AddObserver(this);
 }
 
-void OverlayPresenter::WebStateReplacedAt(WebStateList* web_state_list,
-                                          web::WebState* old_web_state,
-                                          web::WebState* new_web_state,
-                                          int index) {
+void OverlayPresenterImpl::WebStateReplacedAt(WebStateList* web_state_list,
+                                              web::WebState* old_web_state,
+                                              web::WebState* new_web_state,
+                                              int index) {
   GetQueueForWebState(old_web_state)->RemoveObserver(this);
   GetQueueForWebState(new_web_state)->AddObserver(this);
   if (old_web_state != active_web_state_) {
     // If the active WebState is being replaced, its overlay UI will be
     // cancelled later when |new_web_state| is activated.  For inactive WebState
     // replacements, the overlay UI can be cancelled immediately.
-    CancelOverlayUIForWebState(old_web_state);
+    CancelOverlayUIForRequest(GetFrontRequestForWebState(old_web_state));
   }
 }
 
-void OverlayPresenter::WillDetachWebStateAt(WebStateList* web_state_list,
-                                            web::WebState* web_state,
-                                            int index) {
+void OverlayPresenterImpl::WillDetachWebStateAt(WebStateList* web_state_list,
+                                                web::WebState* web_state,
+                                                int index) {
   GetQueueForWebState(web_state)->RemoveObserver(this);
   detaching_active_web_state_ = web_state == active_web_state_;
   if (!detaching_active_web_state_) {
     // If the active WebState is being detached, its overlay UI will be
     // cancelled later when the active WebState is reset.  For inactive WebState
     // replacements, the overlay UI can be cancelled immediately.
-    CancelOverlayUIForWebState(web_state);
+    CancelOverlayUIForRequest(GetFrontRequestForWebState(web_state));
   }
 }
 
-void OverlayPresenter::WebStateActivatedAt(WebStateList* web_state_list,
-                                           web::WebState* old_web_state,
-                                           web::WebState* new_web_state,
-                                           int active_index,
-                                           int reason) {
+void OverlayPresenterImpl::WebStateActivatedAt(WebStateList* web_state_list,
+                                               web::WebState* old_web_state,
+                                               web::WebState* new_web_state,
+                                               int active_index,
+                                               int reason) {
   SetActiveWebState(new_web_state,
                     static_cast<WebStateListObserver::ChangeReason>(reason));
 }

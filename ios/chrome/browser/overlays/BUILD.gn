@@ -4,20 +4,17 @@
 
 source_set("overlays") {
   public = [
-    "public/overlay_manager.h",
-    "public/overlay_manager_observer.h",
+    "public/overlay_dismissal_callback.h",
     "public/overlay_modality.h",
+    "public/overlay_presenter.h",
     "public/overlay_request.h",
     "public/overlay_request_queue.h",
     "public/overlay_response.h",
-    "public/overlay_ui_delegate.h",
     "public/overlay_user_data.h",
   ]
   sources = [
-    "overlay_manager_impl.h",
-    "overlay_manager_impl.mm",
-    "overlay_presenter.h",
-    "overlay_presenter.mm",
+    "overlay_presenter_impl.h",
+    "overlay_presenter_impl.mm",
     "overlay_request_impl.cc",
     "overlay_request_impl.h",
     "overlay_request_queue_impl.h",
@@ -41,8 +38,7 @@ source_set("overlays") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "overlay_manager_impl_unittest.mm",
-    "overlay_presenter_unittest.mm",
+    "overlay_presenter_impl_unittest.mm",
     "overlay_request_impl_unittest.cc",
     "overlay_request_queue_impl_unittest.mm",
     "overlay_request_unittest.cc",
