@@ -4,10 +4,13 @@
 
 #include "ash/system/unified/feature_pods_container_view.h"
 
+#include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/pagination/pagination_model.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/feature_pod_button.h"
 #include "ash/system/unified/feature_pod_controller_base.h"
 #include "ash/test/ash_test_base.h"
+#include "base/test/scoped_feature_list.h"
 #include "ui/views/view_observer.h"
 
 namespace ash {
@@ -22,10 +25,13 @@ class FeaturePodsContainerViewTest : public AshTestBase,
   // AshTestBase:
   void SetUp() override {
     AshTestBase::SetUp();
+    pagination_model_ = std::make_unique<PaginationModel>();
     container_ = std::make_unique<FeaturePodsContainerView>(
-        true /* initially_expanded */);
+        pagination_model_.get(), true /* initially_expanded */);
     container_->AddObserver(this);
     preferred_size_changed_count_ = 0;
+
+    scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
   }
 
   // FeaturePodControllerBase:
@@ -41,6 +47,11 @@ class FeaturePodsContainerViewTest : public AshTestBase,
   }
 
  protected:
+  void EnablePagination() {
+    scoped_feature_list_->InitAndEnableFeature(
+        features::kSystemTrayFeaturePodsPagination);
+  }
+
   void AddButtons(int count) {
     for (int i = 0; i < count; ++i) {
       buttons_.push_back(new FeaturePodButton(this));
@@ -52,6 +63,8 @@ class FeaturePodsContainerViewTest : public AshTestBase,
 
   FeaturePodsContainerView* container() { return container_.get(); }
 
+  PaginationModel* pagination_model() { return pagination_model_.get(); }
+
   int preferred_size_changed_count() const {
     return preferred_size_changed_count_;
   }
@@ -59,7 +72,9 @@ class FeaturePodsContainerViewTest : public AshTestBase,
   std::vector<FeaturePodButton*> buttons_;
 
  private:
+  std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
   std::unique_ptr<FeaturePodsContainerView> container_;
+  std::unique_ptr<PaginationModel> pagination_model_;
   int preferred_size_changed_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(FeaturePodsContainerViewTest);
@@ -162,6 +177,61 @@ TEST_F(FeaturePodsContainerViewTest, SizeChangeByVisibility) {
   // The first button becomes visible.
   buttons_.front()->SetVisible(true);
   EXPECT_EQ(2, preferred_size_changed_count());
+}
+
+TEST_F(FeaturePodsContainerViewTest, NumberOfPagesChanged) {
+  const int kNumberOfPages = 8;
+
+  EnablePagination();
+  AddButtons(kUnifiedFeaturePodItemsInRow * kUnifiedFeaturePodItemsRows *
+             kNumberOfPages);
+
+  // Adding buttons to fill kNumberOfPages should cause the the same number of
+  // pages to be created.
+  EXPECT_EQ(kNumberOfPages, pagination_model()->total_pages());
+
+  // Adding an additional button causes a new page to be added.
+  AddButtons(1);
+  EXPECT_EQ(pagination_model()->total_pages(), kNumberOfPages + 1);
+}
+
+TEST_F(FeaturePodsContainerViewTest, PaginationTransition) {
+  const int kNumberOfPages = 8;
+
+  EnablePagination();
+  AddButtons(kUnifiedFeaturePodItemsInRow * kUnifiedFeaturePodItemsRows *
+             kNumberOfPages);
+
+  // Position of a button should slide to the left during a page
+  // transition to the next page.
+  gfx::Rect current_bounds;
+  gfx::Rect initial_bounds = buttons_[0]->bounds();
+  gfx::Rect previous_bounds = initial_bounds;
+
+  PaginationModel::Transition transition(
+      pagination_model()->selected_page() + 1, 0);
+
+  for (double i = 0.1; i <= 1.0; i += 0.1) {
+    transition.progress = i;
+    pagination_model()->SetTransition(transition);
+
+    current_bounds = buttons_[0]->bounds();
+
+    EXPECT_LT(current_bounds.x(), previous_bounds.x());
+    EXPECT_EQ(current_bounds.y(), previous_bounds.y());
+
+    previous_bounds = current_bounds;
+  }
+
+  // Button Position after page switch should move to the left by a page offset.
+  int page_offset = container()->CalculatePreferredSize().width() +
+                    kUnifiedFeaturePodsPageSpacing;
+  gfx::Rect final_bounds =
+      gfx::Rect(initial_bounds.x() - page_offset, initial_bounds.y(),
+                initial_bounds.width(), initial_bounds.height());
+  pagination_model()->SelectPage(1, false);
+  container()->Layout();
+  EXPECT_EQ(final_bounds, buttons_[0]->bounds());
 }
 
 }  // namespace ash

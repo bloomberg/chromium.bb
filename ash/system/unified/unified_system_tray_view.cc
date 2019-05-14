@@ -16,6 +16,7 @@
 #include "ash/system/unified/feature_pod_button.h"
 #include "ash/system/unified/feature_pods_container_view.h"
 #include "ash/system/unified/notification_hidden_view.h"
+#include "ash/system/unified/page_indicator_view.h"
 #include "ash/system/unified/top_shortcuts_view.h"
 #include "ash/system/unified/unified_system_info_view.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
@@ -220,7 +221,11 @@ UnifiedSystemTrayView::UnifiedSystemTrayView(
       controller_(controller),
       notification_hidden_view_(new NotificationHiddenView()),
       top_shortcuts_view_(new TopShortcutsView(controller_)),
-      feature_pods_container_(new FeaturePodsContainerView(initially_expanded)),
+      feature_pods_container_(
+          new FeaturePodsContainerView(controller_->model()->pagination_model(),
+                                       initially_expanded)),
+      page_indicator_view_(
+          new PageIndicatorView(controller_, initially_expanded)),
       sliders_container_(new UnifiedSlidersContainerView(initially_expanded)),
       system_info_view_(new UnifiedSystemInfoView(controller_)),
       system_tray_container_(new SystemTrayContainer()),
@@ -255,6 +260,7 @@ UnifiedSystemTrayView::UnifiedSystemTrayView(
 
   system_tray_container_->AddChildView(top_shortcuts_view_);
   system_tray_container_->AddChildView(feature_pods_container_);
+  system_tray_container_->AddChildView(page_indicator_view_);
   system_tray_container_->AddChildView(sliders_container_);
   system_tray_container_->AddChildView(system_info_view_);
 
@@ -288,7 +294,7 @@ void UnifiedSystemTrayView::SetMaxHeight(int max_height) {
 }
 
 void UnifiedSystemTrayView::AddFeaturePodButton(FeaturePodButton* button) {
-  feature_pods_container_->AddChildView(button);
+  feature_pods_container_->AddFeaturePodButton(button);
 }
 
 void UnifiedSystemTrayView::AddSliderView(views::View* slider_view) {
@@ -335,6 +341,7 @@ void UnifiedSystemTrayView::SetExpandedAmount(double expanded_amount) {
 
   top_shortcuts_view_->SetExpandedAmount(expanded_amount);
   feature_pods_container_->SetExpandedAmount(expanded_amount);
+  page_indicator_view_->SetExpandedAmount(expanded_amount);
   sliders_container_->SetExpandedAmount(expanded_amount);
 
   if (!IsTransformEnabled()) {
@@ -358,6 +365,7 @@ int UnifiedSystemTrayView::GetExpandedSystemTrayHeight() const {
               : 0) +
          top_shortcuts_view_->GetPreferredSize().height() +
          feature_pods_container_->GetExpandedHeight() +
+         page_indicator_view_->GetPreferredSize().height() +
          sliders_container_->GetExpandedHeight() +
          system_info_view_->GetPreferredSize().height();
 }
