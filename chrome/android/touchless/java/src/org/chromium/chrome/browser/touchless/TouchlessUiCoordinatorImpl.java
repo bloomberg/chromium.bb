@@ -53,6 +53,8 @@ public class TouchlessUiCoordinatorImpl
 
     @Override
     public void onPostInflationStartup() {
+        // Only NoTouchActivity wants the progress bar and tooltips.
+        if (!(mActivity instanceof NoTouchActivity)) return;
         ViewGroup coordinatorLayout = (ViewGroup) mActivity.findViewById(R.id.coordinator);
         mTooltipView = new TooltipView(mActivity);
         mProgressBarView = new ProgressBarView(mActivity);
@@ -65,8 +67,11 @@ public class TouchlessUiCoordinatorImpl
 
     @Override
     public void onFinishNativeInitialization() {
-        mKeyFunctionsIPHCoordinator =
-                new KeyFunctionsIPHCoordinator(mTooltipView, mActivity.getActivityTabProvider());
+        // Only NoTouchActivity wants the tooltips.
+        if (mActivity instanceof NoTouchActivity) {
+            mKeyFunctionsIPHCoordinator = new KeyFunctionsIPHCoordinator(
+                    mTooltipView, mActivity.getActivityTabProvider());
+        }
         mTouchlessZoomHelper = new TouchlessZoomHelper(mActivity.getActivityTabProvider());
     }
 
