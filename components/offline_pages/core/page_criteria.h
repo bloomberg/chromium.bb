@@ -48,6 +48,8 @@ struct PageCriteria {
   bool supported_by_downloads = false;
   // Whether to restrict pages to those removed on cache reset.
   bool removed_on_cache_reset = false;
+  // Whether to restrict pages to those requested by users for download.
+  bool user_requested_download = false;
   // If set, the page's file_size must match.
   base::Optional<int64_t> file_size;
   // If non-empty, the page's digest must match.

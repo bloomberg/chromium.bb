@@ -51,6 +51,10 @@ bool MeetsCriteria(const ClientPolicyController& policy_controller,
       !policy_controller.IsRemovedOnCacheReset(client_id.name_space)) {
     return false;
   }
+  if (criteria.user_requested_download &&
+      !policy_controller.IsUserRequestedDownload(client_id.name_space)) {
+    return false;
+  }
   if (!criteria.guid.empty() && client_id.id != criteria.guid)
     return false;
 

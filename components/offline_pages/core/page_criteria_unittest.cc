@@ -110,6 +110,20 @@ TEST_F(PageCriteriaTest, MeetsCriteria_SupportedByDownloads) {
   EXPECT_FALSE(MeetsCriteria(policy_controller_, criteria, item.client_id));
 }
 
+TEST_F(PageCriteriaTest, MeetsCriteria_UserRequestedDownload) {
+  PageCriteria criteria;
+  criteria.user_requested_download = true;
+
+  OfflinePageItem item;
+  item.client_id.name_space = kDownloadNamespace;
+  EXPECT_TRUE(MeetsCriteria(policy_controller_, criteria, item));
+  EXPECT_TRUE(MeetsCriteria(policy_controller_, criteria, item.client_id));
+
+  item.client_id.name_space = kLastNNamespace;
+  EXPECT_FALSE(MeetsCriteria(policy_controller_, criteria, item));
+  EXPECT_FALSE(MeetsCriteria(policy_controller_, criteria, item.client_id));
+}
+
 TEST_F(PageCriteriaTest, MeetsCriteria_RemovedOnCacheReset) {
   PageCriteria criteria;
   criteria.removed_on_cache_reset = true;
