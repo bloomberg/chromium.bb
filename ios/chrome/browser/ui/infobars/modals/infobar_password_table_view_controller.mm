@@ -59,6 +59,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 // Used to build and record metrics specific to passwords.
 @property(nonatomic, strong)
     IOSChromePasswordInfobarMetricsRecorder* passwordMetricsRecorder;
+// Whether the current password being shown is masked or not.
+@property(nonatomic, assign) BOOL passwordMasked;
 @end
 
 @implementation InfobarPasswordTableViewController
@@ -169,8 +171,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
   self.passwordItem.textFieldName =
       l10n_util::GetNSString(IDS_IOS_SHOW_PASSWORD_VIEW_PASSWORD);
   self.passwordItem.textFieldValue = self.maskedPassword;
+  self.passwordItem.identifyingIcon =
+      [UIImage imageNamed:@"infobar_reveal_password_icon"];
+  self.passwordItem.identifyingIconEnabled = YES;
   [model addItem:self.passwordItem
       toSectionWithIdentifier:SectionIdentifierContent];
+
+  self.passwordMasked = YES;
 
   self.saveCredentialsItem =
       [[TableViewTextButtonItem alloc] initWithType:ItemTypeSaveCredentials];
@@ -231,18 +238,24 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [editCell.textField addTarget:self
                              action:@selector(updateSaveCredentialsButtonState)
                    forControlEvents:UIControlEventEditingChanged];
+      editCell.selectionStyle = UITableViewCellSelectionStyleNone;
+      editCell.textField.delegate = self;
       break;
     }
     case ItemTypePassword: {
       TableViewTextEditCell* editCell =
           base::mac::ObjCCast<TableViewTextEditCell>(cell);
-      editCell.textField.delegate = self;
       [editCell.textField addTarget:self
                              action:@selector(updateSaveCredentialsButtonState)
                    forControlEvents:UIControlEventEditingChanged];
+      [editCell.identifyingIconButton addTarget:self
+                                         action:@selector(togglePasswordMasking)
+                               forControlEvents:UIControlEventTouchUpInside];
+      editCell.selectionStyle = UITableViewCellSelectionStyleNone;
       break;
     }
     case ItemTypeURL:
+      cell.selectionStyle = UITableViewCellSelectionStyleNone;
       break;
   }
 
@@ -320,6 +333,20 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)usernameEditDidBegin {
   [self.passwordMetricsRecorder
       recordModalEvent:MobileMessagesPasswordsModalEvent::EditedUserName];
+}
+
+- (void)togglePasswordMasking {
+  self.passwordMasked = !self.passwordMasked;
+  if (self.passwordMasked) {
+    self.passwordItem.identifyingIcon =
+        [UIImage imageNamed:@"infobar_reveal_password_icon"];
+    self.passwordItem.textFieldValue = self.maskedPassword;
+  } else {
+    self.passwordItem.identifyingIcon =
+        [UIImage imageNamed:@"infobar_hide_password_icon"];
+    self.passwordItem.textFieldValue = self.unmaskedPassword;
+  }
+  [self reconfigureCellsForItems:@[ self.passwordItem ]];
 }
 
 @end

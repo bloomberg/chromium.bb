@@ -40,6 +40,22 @@ imageset("infobar_passwords_icon") {
   ]
 }
 
+imageset("infobar_reveal_password_icon") {
+  sources = [
+    "infobar_reveal_password_icon.imageset/Contents.json",
+    "infobar_reveal_password_icon.imageset/infobar_reveal_password_icon@2x.png",
+    "infobar_reveal_password_icon.imageset/infobar_reveal_password_icon@3x.png",
+  ]
+}
+
+imageset("infobar_hide_password_icon") {
+  sources = [
+    "infobar_hide_password_icon.imageset/Contents.json",
+    "infobar_hide_password_icon.imageset/infobar_hide_password_icon@2x.png",
+    "infobar_hide_password_icon.imageset/infobar_hide_password_icon@3x.png",
+  ]
+}
+
 imageset("infobar_settings_icon") {
   sources = [
     "infobar_settings_icon.imageset/Contents.json",
