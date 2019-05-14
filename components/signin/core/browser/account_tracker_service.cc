@@ -46,27 +46,11 @@ const char kAccountChildAccountStatusPath[] = "is_child_account";
 const char kAdvancedProtectionAccountStatusPath[] =
     "is_under_advanced_protection";
 
-// TODO(knn): Remove once deprecated service flags have been migrated from
-// preferences.
-const char kChildAccountServiceFlag[] = "uca";
-
 // Account folders used for storing account related data at disk.
 const base::FilePath::CharType kAccountsFolder[] =
     FILE_PATH_LITERAL("Accounts");
 const base::FilePath::CharType kAvatarImagesFolder[] =
     FILE_PATH_LITERAL("Avatar Images");
-
-// TODO(M48): Remove deprecated preference migration.
-const char kAccountServiceFlagsPath[] = "service_flags";
-
-void RemoveDeprecatedServiceFlags(PrefService* pref_service) {
-  ListPrefUpdate update(pref_service, prefs::kAccountInfo);
-  for (size_t i = 0; i < update->GetSize(); ++i) {
-    base::DictionaryValue* dict = nullptr;
-    if (update->GetDictionary(i, &dict))
-      dict->RemoveWithoutPathExpansion(kAccountServiceFlagsPath, nullptr);
-  }
-}
 
 // Reads a PNG image from disk and decodes it. If the reading/decoding attempt
 // was unsuccessful, an empty image is returned.
@@ -464,7 +448,6 @@ void AccountTrackerService::RemoveAccountImageFromDisk(
 void AccountTrackerService::LoadFromPrefs() {
   const base::ListValue* list = pref_service_->GetList(prefs::kAccountInfo);
   std::set<std::string> to_remove;
-  bool contains_deprecated_service_flags = false;
   for (size_t i = 0; i < list->GetSize(); ++i) {
     const base::DictionaryValue* dict;
     if (list->GetDictionary(i, &dict)) {
@@ -498,20 +481,6 @@ void AccountTrackerService::LoadFromPrefs() {
           account_info.picture_url = base::UTF16ToUTF8(value);
 
         bool is_child_account = false;
-        // Migrate deprecated service flag preference.
-        const base::ListValue* service_flags_list;
-        if (dict->GetList(kAccountServiceFlagsPath, &service_flags_list)) {
-          contains_deprecated_service_flags = true;
-          std::string flag_string;
-          for (const auto& flag : *service_flags_list) {
-            if (flag.GetAsString(&flag_string) &&
-                flag_string == kChildAccountServiceFlag) {
-              is_child_account = true;
-              break;
-            }
-          }
-          account_info.is_child_account = is_child_account;
-        }
         if (dict->GetBoolean(kAccountChildAccountStatusPath, &is_child_account))
           account_info.is_child_account = is_child_account;
 
@@ -527,12 +496,6 @@ void AccountTrackerService::LoadFromPrefs() {
       }
     }
   }
-
-  UMA_HISTOGRAM_BOOLEAN("Signin.AccountTracker.DeprecatedServiceFlagDeleted",
-                        contains_deprecated_service_flags);
-
-  if (contains_deprecated_service_flags)
-    RemoveDeprecatedServiceFlags(pref_service_);
 
   // Remove any obsolete prefs.
   for (auto account_id : to_remove) {

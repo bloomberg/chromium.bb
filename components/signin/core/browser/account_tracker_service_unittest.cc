@@ -962,48 +962,6 @@ TEST_F(AccountTrackerServiceTest, LegacyDottedAccountIds) {
   EXPECT_EQ(AccountKeyToEmail(kAccountKeyFooBar), infos[0].email);
 }
 
-TEST_F(AccountTrackerServiceTest, NoDeprecatedServiceFlags) {
-  const std::string email_alpha = AccountKeyToEmail(kAccountKeyAlpha);
-  const std::string gaia_alpha = AccountKeyToGaiaId(kAccountKeyAlpha);
-
-  ListPrefUpdate update(prefs(), prefs::kAccountInfo);
-
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetString("account_id", email_alpha);
-  dict->SetString("email", email_alpha);
-  dict->SetString("gaia", gaia_alpha);
-  update->Append(std::move(dict));
-
-  base::HistogramTester tester;
-
-  ResetAccountTracker();
-  tester.ExpectBucketCount("Signin.AccountTracker.DeprecatedServiceFlagDeleted",
-                           false, 1);
-}
-
-TEST_F(AccountTrackerServiceTest, MigrateDeprecatedServiceFlags) {
-  const std::string email_alpha = AccountKeyToEmail(kAccountKeyAlpha);
-  const std::string gaia_alpha = AccountKeyToGaiaId(kAccountKeyAlpha);
-
-  ListPrefUpdate update(prefs(), prefs::kAccountInfo);
-
-  std::unique_ptr<base::ListValue> service_flags(new base::ListValue());
-  service_flags->Append(std::make_unique<base::Value>("uca"));
-
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetString("account_id", email_alpha);
-  dict->SetString("email", email_alpha);
-  dict->SetString("gaia", gaia_alpha);
-  dict->SetList("service_flags", std::move(service_flags));
-  update->Append(std::move(dict));
-
-  base::HistogramTester tester;
-
-  ResetAccountTracker();
-  tester.ExpectBucketCount("Signin.AccountTracker.DeprecatedServiceFlagDeleted",
-                           true, 1);
-}
-
 TEST_F(AccountTrackerServiceTest, MigrateAccountIdToGaiaId) {
   if (!AccountTrackerService::IsMigrationSupported())
     return;
