@@ -177,6 +177,8 @@ public class SplashController extends EmptyTabObserver implements InflationObser
         }
         mParentView = (ViewGroup) mActivity.findViewById(android.R.id.content);
         mParentView.addView(mSplashView);
+
+        recordTraceEventsShowedSplash();
     }
 
     private boolean canHideSplashScreen() {
