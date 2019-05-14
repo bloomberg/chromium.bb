@@ -1114,23 +1114,19 @@ class TestGitCl(TestCase):
     calls += [
         # Write a description with context for the current trace.
         ((['FileWrite', 'TRACES_DIR/20170316T200041.000000-README',
-           'Date: Thu Mar 16 20:00:41 2017\n\n'
-           'Change: https://%(short_hostname)s-review.googlesource.com/'
-           'q/%(change_id)s\n'
-           'Title: %(title)s\n\n'
-           '%(description)s\n\n'
-           'Execution time: 1000\n'
-           'Exit code: 0\n\n'
-           'When filing a bug for this push, be sure to include the traces '
-           'found at:\n'
-           '  TRACES_DIR/20170316T200041.000000-traces.zip\n'
-           'Consider including the git config and gitcookies, which we have '
-           'packed for \nyou at:\n'
-           '  TRACES_DIR/20170316T200041.000000-git-info.zip\n' % {
+           'Thu Mar 16 20:00:41 2017\n'
+           '%(short_hostname)s-review.googlesource.com\n'
+           '%(change_id)s\n'
+           '%(title)s\n'
+           '%(description)s\n'
+           '1000\n'
+           '0\n'
+           '%(trace_name)s' % {
              'short_hostname': short_hostname,
              'change_id': change_id,
              'description': final_description,
              'title': original_title,
+             'trace_name': 'TRACES_DIR/20170316T200041.000000',
            }],),
          None,
         ),
@@ -1255,6 +1251,15 @@ class TestGitCl(TestCase):
              lambda: datetime.datetime(2017, 3, 16, 20, 0, 41, 0))
     self.mock(git_cl.tempfile, 'mkdtemp', lambda: 'TEMP_DIR')
     self.mock(git_cl, 'TRACES_DIR', 'TRACES_DIR')
+    self.mock(git_cl, 'TRACES_README_FORMAT',
+              '%(now)s\n'
+              '%(gerrit_host)s\n'
+              '%(change_id)s\n'
+              '%(title)s\n'
+              '%(description)s\n'
+              '%(execution_time)s\n'
+              '%(exit_code)s\n'
+              '%(trace_name)s')
     self.mock(git_cl.shutil, 'make_archive',
               lambda *args: self._mocked_call(['make_archive'] + list(args)))
     self.mock(os.path, 'isfile',
