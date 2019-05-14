@@ -607,10 +607,10 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest, TestScrollTo) {
       R"HTML(<!DOCTYPE html>
       <html>
       <body>
+        <div style="height: 5000px; width: 5000px;"></div>
+        <img style="display: relative; left: 1000px;" alt="Target1">
         <div style="height: 5000px;"></div>
-        <img src="" alt="Target1">
-        <div style="height: 5000px;"></div>
-        <img src="" alt="Target2">
+        <img style="display: relative; left: 1000px;" alt="Target2">
         <div style="height: 5000px;"></div>
         <span>Target 3</span>
         <div style="height: 5000px;"></div>
@@ -626,7 +626,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest, TestScrollTo) {
   atk_component_get_extents(ATK_COMPONENT(document), &doc_x, &doc_y, &doc_width,
                             &doc_height, ATK_XY_SCREEN);
 
-  // The document should only have two children, both with a role of GRAPHIC.
+  // The document should only have three children, two img elements
+  // and a single span element.
   ASSERT_EQ(3, atk_object_get_n_accessible_children(document));
 
   AtkObject* target = atk_object_ref_accessible_child(document, 0);
@@ -635,41 +636,56 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest, TestScrollTo) {
 
   ASSERT_TRUE(ATK_IS_COMPONENT(target));
   ASSERT_TRUE(ATK_IS_COMPONENT(target2));
+  ASSERT_TRUE(ATK_IS_COMPONENT(target3));
 
   ASSERT_EQ(ATK_ROLE_IMAGE, atk_object_get_role(target));
   ASSERT_EQ(ATK_ROLE_IMAGE, atk_object_get_role(target2));
 
-  // Call atk_component_scroll_to on the first target. Ensure it ends up very
-  // near the center of the window.
   AccessibilityNotificationWaiter waiter(
       shell()->web_contents(), ui::kAXModeComplete,
       ax::mojom::Event::kScrollPositionChanged);
-  ASSERT_TRUE(scroll_to(ATK_COMPONENT(target), ATK_SCROLL_ANYWHERE));
+  ASSERT_TRUE(scroll_to(ATK_COMPONENT(target), ATK_SCROLL_TOP_EDGE));
   waiter.WaitForNotification();
-
-  // Don't assume anything about the font size or the exact centering
-  // behavior, just assert that the object is (roughly) centered by
-  // checking that its top coordinate is between 40% and 60% of the
-  // document's height.
-  int x, y, width, height;
-  atk_component_get_extents(ATK_COMPONENT(target), &x, &y, &width, &height,
+  int x, y;
+  atk_component_get_extents(ATK_COMPONENT(target), &x, &y, nullptr, nullptr,
                             ATK_XY_SCREEN);
-  EXPECT_GT(y + height / 2, doc_y + 0.4 * doc_height);
-  EXPECT_LT(y + height / 2, doc_y + 0.6 * doc_height);
+  EXPECT_EQ(y, doc_y);
+  EXPECT_NE(x, doc_x);
 
-  // Now call atk_component_scroll_to on the second target. Ensure it ends up
-  // very near the center of the window.
-  AccessibilityNotificationWaiter waiter2(
-      shell()->web_contents(), ui::kAXModeComplete,
-      ax::mojom::Event::kScrollPositionChanged);
-  ASSERT_TRUE(scroll_to(ATK_COMPONENT(target2), ATK_SCROLL_ANYWHERE));
-  waiter2.WaitForNotification();
-
-  // Same as above, make sure it's roughly centered.
-  atk_component_get_extents(ATK_COMPONENT(target2), &x, &y, &width, &height,
+  ASSERT_TRUE(scroll_to(ATK_COMPONENT(target), ATK_SCROLL_TOP_LEFT));
+  waiter.WaitForNotification();
+  atk_component_get_extents(ATK_COMPONENT(target), &x, &y, nullptr, nullptr,
                             ATK_XY_SCREEN);
-  EXPECT_GT(y + height / 2, doc_y + 0.4 * doc_height);
-  EXPECT_LT(y + height / 2, doc_y + 0.6 * doc_height);
+  EXPECT_EQ(y, doc_y);
+  EXPECT_EQ(x, doc_x);
+
+  ASSERT_TRUE(scroll_to(ATK_COMPONENT(target), ATK_SCROLL_BOTTOM_EDGE));
+  waiter.WaitForNotification();
+  atk_component_get_extents(ATK_COMPONENT(target), &x, &y, nullptr, nullptr,
+                            ATK_XY_SCREEN);
+  EXPECT_NE(y, doc_y);
+  EXPECT_EQ(x, doc_x);
+
+  ASSERT_TRUE(scroll_to(ATK_COMPONENT(target), ATK_SCROLL_RIGHT_EDGE));
+  waiter.WaitForNotification();
+  atk_component_get_extents(ATK_COMPONENT(target), &x, &y, nullptr, nullptr,
+                            ATK_XY_SCREEN);
+  EXPECT_NE(y, doc_y);
+  EXPECT_NE(x, doc_x);
+
+  ASSERT_TRUE(scroll_to(ATK_COMPONENT(target2), ATK_SCROLL_LEFT_EDGE));
+  waiter.WaitForNotification();
+  atk_component_get_extents(ATK_COMPONENT(target2), &x, &y, nullptr, nullptr,
+                            ATK_XY_SCREEN);
+  EXPECT_NE(y, doc_y);
+  EXPECT_EQ(x, doc_x);
+
+  ASSERT_TRUE(scroll_to(ATK_COMPONENT(target2), ATK_SCROLL_TOP_LEFT));
+  waiter.WaitForNotification();
+  atk_component_get_extents(ATK_COMPONENT(target2), &x, &y, nullptr, nullptr,
+                            ATK_XY_SCREEN);
+  EXPECT_EQ(y, doc_y);
+  EXPECT_EQ(x, doc_x);
 
   // Orca expects atk_text_set_caret_offset to operate like scroll to the
   // target node like atk_component_scroll_to, so we test that here.
@@ -680,7 +696,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest, TestScrollTo) {
   atk_text_set_caret_offset(ATK_TEXT(target3), 0);
   waiter3.WaitForNotification();
 
-  // Same as above, make sure it's roughly centered.
+  // Same as above, make sure the node is roughly centered.
+  int width, height;
   atk_component_get_extents(ATK_COMPONENT(target3), &x, &y, &width, &height,
                             ATK_XY_SCREEN);
   EXPECT_GT(y + height / 2, doc_y + 0.4 * doc_height);

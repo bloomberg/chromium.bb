@@ -77,6 +77,9 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   // AtkHyperlink helpers
   AtkHyperlink* GetAtkHyperlink();
 
+  void ScrollToPoint(AtkCoordType atk_coord_type, int x, int y);
+  base::Optional<gfx::Point> CalculateScrollToPoint(AtkScrollType scroll_type);
+
   // Misc helpers
   void GetFloatAttributeInGValue(ax::mojom::FloatAttribute attr, GValue* value);
 
@@ -170,6 +173,10 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
 
   // The AtkStateType for a checkable node can vary depending on the role.
   AtkStateType GetAtkStateTypeForCheckableNode();
+
+  // Find the topmost document that is an ancestor of this node. Returns
+  // null if there is no ancestor which is a document.`
+  AXPlatformNodeAuraLinux* FindTopmostDocumentAncestor();
 
   // Keep information of latest AtkInterfaces mask to refresh atk object
   // interfaces accordingly if needed.

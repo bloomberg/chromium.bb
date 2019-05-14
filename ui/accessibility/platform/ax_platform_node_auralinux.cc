@@ -555,29 +555,14 @@ gboolean ScrollTo(AtkComponent* component, AtkScrollType scroll_type) {
   if (!obj)
     return FALSE;
 
-  switch (scroll_type) {
-    case ATK_SCROLL_TOP_LEFT:
-      obj->ScrollToNode(AXPlatformNodeBase::ScrollType::TopLeft);
-      break;
-    case ATK_SCROLL_BOTTOM_RIGHT:
-      obj->ScrollToNode(AXPlatformNodeBase::ScrollType::BottomRight);
-      break;
-    case ATK_SCROLL_TOP_EDGE:
-      obj->ScrollToNode(AXPlatformNodeBase::ScrollType::TopEdge);
-      break;
-    case ATK_SCROLL_BOTTOM_EDGE:
-      obj->ScrollToNode(AXPlatformNodeBase::ScrollType::BottomEdge);
-      break;
-    case ATK_SCROLL_LEFT_EDGE:
-      obj->ScrollToNode(AXPlatformNodeBase::ScrollType::LeftEdge);
-      break;
-    case ATK_SCROLL_RIGHT_EDGE:
-      obj->ScrollToNode(AXPlatformNodeBase::ScrollType::RightEdge);
-      break;
-    case ATK_SCROLL_ANYWHERE:
-      obj->ScrollToNode(AXPlatformNodeBase::ScrollType::Anywhere);
+  base::Optional<gfx::Point> scroll_to_point =
+      obj->CalculateScrollToPoint(scroll_type);
+  if (!scroll_to_point.has_value()) {
+    obj->ScrollToNode(AXPlatformNodeBase::ScrollType::TopLeft);
+    return TRUE;
   }
 
+  obj->ScrollToPoint(ATK_XY_SCREEN, scroll_to_point->x(), scroll_to_point->y());
   return TRUE;
 }
 
@@ -590,24 +575,7 @@ gboolean ScrollToPoint(AtkComponent* component,
   if (!obj)
     return FALSE;
 
-  gfx::Point scroll_to(x, y);
-  switch (atk_coord_type) {
-    case ATK_XY_SCREEN:
-      break;
-    case ATK_XY_WINDOW:
-      scroll_to += obj->GetParentFrameOriginInScreenCoordinates();
-      break;
-    case ATK_XY_PARENT:
-      scroll_to += obj->GetParentOriginInScreenCoordinates();
-      break;
-  }
-
-  ui::AXActionData action_data;
-  action_data.target_node_id = obj->GetData().id;
-  action_data.action = ax::mojom::Action::kScrollToPoint;
-  action_data.target_point = scroll_to;
-  obj->GetDelegate()->AccessibilityPerformAction(action_data);
-
+  obj->ScrollToPoint(atk_coord_type, x, y);
   return TRUE;
 }
 #endif
@@ -3810,6 +3778,73 @@ gchar* AXPlatformNodeAuraLinux::GetSelection(int* start_offset,
 bool AXPlatformNodeAuraLinux::IsInLiveRegion() {
   return GetData().HasStringAttribute(
       ax::mojom::StringAttribute::kContainerLiveStatus);
+}
+
+void AXPlatformNodeAuraLinux::ScrollToPoint(AtkCoordType atk_coord_type,
+                                            int x,
+                                            int y) {
+  gfx::Point scroll_to(x, y);
+  switch (atk_coord_type) {
+    case ATK_XY_SCREEN:
+      break;
+    case ATK_XY_WINDOW:
+      scroll_to += GetParentFrameOriginInScreenCoordinates();
+      break;
+    case ATK_XY_PARENT:
+      scroll_to += GetParentOriginInScreenCoordinates();
+      break;
+  }
+
+  ui::AXActionData action_data;
+  action_data.target_node_id = GetData().id;
+  action_data.action = ax::mojom::Action::kScrollToPoint;
+  action_data.target_point = scroll_to;
+  GetDelegate()->AccessibilityPerformAction(action_data);
+}
+
+AXPlatformNodeAuraLinux*
+AXPlatformNodeAuraLinux::FindTopmostDocumentAncestor() {
+  AXPlatformNodeAuraLinux* document = nullptr;
+  AXPlatformNodeAuraLinux* current = this;
+  while (current) {
+    if (current->IsDocument())
+      document = current;
+    current = AtkObjectToAXPlatformNodeAuraLinux(current->GetParent());
+  }
+  return document;
+}
+
+base::Optional<gfx::Point> AXPlatformNodeAuraLinux::CalculateScrollToPoint(
+    AtkScrollType scroll_type) {
+  AXPlatformNodeAuraLinux* document = FindTopmostDocumentAncestor();
+  if (!document)
+    return base::nullopt;
+
+  gfx::Rect document_rect = document->GetDelegate()->GetBoundsRect(
+      AXCoordinateSystem::kScreen, AXClippingBehavior::kClipped);
+  gfx::Rect node_rect = GetExtentsRelativeToAtkCoordinateType(ATK_XY_SCREEN);
+
+  switch (scroll_type) {
+    case ATK_SCROLL_ANYWHERE:
+    case ATK_SCROLL_TOP_LEFT:
+      return document_rect.origin();
+    case ATK_SCROLL_BOTTOM_RIGHT:
+      return gfx::Point(document_rect.right() - node_rect.width(),
+                        document_rect.bottom() - node_rect.height());
+    case ATK_SCROLL_TOP_EDGE:
+      return gfx::Point(node_rect.x(), document_rect.y());
+    case ATK_SCROLL_BOTTOM_EDGE:
+      return gfx::Point(node_rect.x(),
+                        document_rect.bottom() - node_rect.height());
+    case ATK_SCROLL_LEFT_EDGE:
+      return gfx::Point(document_rect.x(), node_rect.y());
+    case ATK_SCROLL_RIGHT_EDGE:
+      return gfx::Point(document_rect.right() - node_rect.width(),
+                        node_rect.y());
+  }
+
+  NOTREACHED();
+  return base::nullopt;
 }
 
 }  // namespace ui
