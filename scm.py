@@ -118,7 +118,7 @@ class GIT(object):
     env = GIT.ApplyEnvVars(kwargs)
     output = subprocess2.check_output(
         ['git'] + args, cwd=cwd, stderr=subprocess2.PIPE, env=env,
-        **kwargs).decode('utf-8')
+        **kwargs).decode('utf-8', 'replace')
     return output.strip() if strip_out else output
 
   @staticmethod
