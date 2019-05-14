@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "media/base/audio_parameters.h"
 #include "media/base/decrypt_config.h"
 #include "media/base/eme_constants.h"
 #include "media/base/key_systems.h"
@@ -271,6 +272,9 @@ class TestMediaClient : public MediaClient {
   // test the key system update case.
   void DisableExternalKeySystemSupport();
 
+  base::Optional<::media::AudioRendererAlgorithmParameters>
+  GetAudioRendererAlgorithmParameters(AudioParameters audio_parameters) final;
+
  private:
   bool is_update_needed_;
   bool supports_external_key_system_;
@@ -315,6 +319,12 @@ void TestMediaClient::SetKeySystemsUpdateNeeded() {
 
 void TestMediaClient::DisableExternalKeySystemSupport() {
   supports_external_key_system_ = false;
+}
+
+base::Optional<::media::AudioRendererAlgorithmParameters>
+TestMediaClient::GetAudioRendererAlgorithmParameters(
+    AudioParameters audio_parameters) {
+  return base::nullopt;
 }
 
 }  // namespace

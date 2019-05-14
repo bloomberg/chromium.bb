@@ -14,6 +14,7 @@
 #include "chromecast/common/mojom/application_media_capabilities.mojom.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "media/base/audio_codecs.h"
+#include "media/base/audio_parameters.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace extensions {
@@ -71,6 +72,9 @@ class CastContentRendererClient
   std::unique_ptr<content::URLLoaderThrottleProvider>
   CreateURLLoaderThrottleProvider(
       content::URLLoaderThrottleProviderType type) override;
+  base::Optional<::media::AudioRendererAlgorithmParameters>
+  GetAudioRendererAlgorithmParameters(
+      ::media::AudioParameters audio_parameters) override;
 
  protected:
   CastContentRendererClient();

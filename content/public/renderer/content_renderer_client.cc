@@ -271,4 +271,10 @@ bool ContentRendererClient::RequiresHtmlImports(const GURL& url) {
   return false;
 }
 
+base::Optional<::media::AudioRendererAlgorithmParameters>
+ContentRendererClient::GetAudioRendererAlgorithmParameters(
+    media::AudioParameters audio_parameters) {
+  return base::nullopt;
+}
+
 }  // namespace content

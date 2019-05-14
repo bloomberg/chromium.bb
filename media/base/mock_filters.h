@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "media/base/audio_decoder.h"
 #include "media/base/audio_decoder_config.h"
+#include "media/base/audio_parameters.h"
 #include "media/base/audio_renderer.h"
 #include "media/base/cdm_config.h"
 #include "media/base/cdm_context.h"
@@ -622,6 +623,9 @@ class MockMediaClient : public media::MediaClient {
   MOCK_METHOD1(IsSupportedAudioType, bool(const media::AudioType& type));
   MOCK_METHOD1(IsSupportedVideoType, bool(const media::VideoType& type));
   MOCK_METHOD1(IsSupportedBitstreamAudioCodec, bool(media::AudioCodec codec));
+  MOCK_METHOD1(GetAudioRendererAlgorithmParameters,
+               base::Optional<::media::AudioRendererAlgorithmParameters>(
+                   media::AudioParameters audio_parameters));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockMediaClient);

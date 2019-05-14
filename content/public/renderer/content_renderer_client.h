@@ -22,6 +22,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/renderer/url_loader_throttle_provider.h"
 #include "content/public/renderer/websocket_handshake_throttle_provider.h"
+#include "media/base/audio_parameters.h"
 #include "media/base/supported_types.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
@@ -431,6 +432,11 @@ class CONTENT_EXPORT ContentRendererClient {
   // TODO(https://crbug.com/937747): Remove this function, when all WebUIs have
   // been migrated to use the HTML Imports Polyfill.
   virtual bool RequiresHtmlImports(const GURL& url);
+
+  // Optionally returns audio renderer algorithm parameters.
+  virtual base::Optional<::media::AudioRendererAlgorithmParameters>
+  GetAudioRendererAlgorithmParameters(
+      ::media::AudioParameters audio_parameters);
 };
 
 }  // namespace content

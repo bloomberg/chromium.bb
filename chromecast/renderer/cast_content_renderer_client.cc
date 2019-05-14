@@ -24,6 +24,7 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
+#include "media/base/audio_parameters.h"
 #include "media/base/media.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -304,6 +305,12 @@ std::unique_ptr<content::URLLoaderThrottleProvider>
 CastContentRendererClient::CreateURLLoaderThrottleProvider(
     content::URLLoaderThrottleProviderType type) {
   return std::make_unique<CastURLLoaderThrottleProvider>(type);
+}
+
+base::Optional<::media::AudioRendererAlgorithmParameters>
+CastContentRendererClient::GetAudioRendererAlgorithmParameters(
+    ::media::AudioParameters audio_parameters) {
+  return base::nullopt;
 }
 
 }  // namespace shell

@@ -613,7 +613,16 @@ void AudioRendererImpl::OnAudioDecoderStreamInitialized(bool success) {
 
   // We're all good! Continue initializing the rest of the audio renderer
   // based on the decoder format.
-  algorithm_.reset(new AudioRendererAlgorithm());
+  auto* media_client = GetMediaClient();
+  auto params =
+      (media_client ? media_client->GetAudioRendererAlgorithmParameters(
+                          audio_parameters_)
+                    : base::nullopt);
+  if (params) {
+    algorithm_ = std::make_unique<AudioRendererAlgorithm>(params.value());
+  } else {
+    algorithm_ = std::make_unique<AudioRendererAlgorithm>();
+  }
   algorithm_->Initialize(audio_parameters_, is_encrypted_);
   ConfigureChannelMask();
 
