@@ -144,13 +144,10 @@ class WaylandGamingSeatDelegate : public GamingSeatDelegate {
         &WaylandGamepadDelegate::ResetGamepadResource);
 
     if (base::FeatureList::IsEnabled(kRawGamepadInfoFeature)) {
-      // The version is temporarily set to 0 because the information is not
-      // available in ui::InputDevice.
-      // TODO(tetsui): Add version field to ui::InputDevice
       zcr_gaming_seat_v2_send_gamepad_added_with_device_info(
           gaming_seat_resource_, gamepad_resource, device.name.c_str(),
           GetGamepadBusType(device.type), device.vendor_id, device.product_id,
-          /*version=*/0);
+          device.version);
 
       // TODO(tetsui): Send joystick motion range.
     } else {
