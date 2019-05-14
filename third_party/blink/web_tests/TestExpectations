@@ -1852,12 +1852,16 @@ crbug.com/626703 external/wpt/css/css-text/word-break/word-break-normal-my-000.h
 crbug.com/626703 [ Linux ] external/wpt/css/css-text/word-break/word-break-normal-lo-000.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-text/word-break/word-break-normal-lo-000.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/word-break/word-break-normal-tdd-000.html [ Failure ]
-crbug.com/952254 external/wpt/css/css-text/white-space/break-spaces-008.html [ Failure ]
 crbug.com/40634 external/wpt/css/css-text/white-space/trailing-space-before-br-001.html [ Failure ]
 
 # The 'line-break: anywhere' feature is not implemented yet
 crbug.com/720205 external/wpt/css/css-text/line-break/line-break-anywhere-001.html [ Skip ]
 crbug.com/720205 external/wpt/css/css-text/line-break/line-break-anywhere-002.html [ Skip ]
+crbug.com/720205 external/wpt/css/css-text/white-space/break-spaces-before-first-char-007.html [ Skip ]
+crbug.com/720205 external/wpt/css/css-text/white-space/break-spaces-before-first-char-008.html [ Skip ]
+crbug.com/720205 external/wpt/css/css-text/white-space/break-spaces-before-first-char-009.html [ Skip ]
+crbug.com/720205 external/wpt/css/css-text/white-space/break-spaces-before-first-char-010.html [ Skip ]
+crbug.com/720205 external/wpt/css/css-text/white-space/break-spaces-before-first-char-011.html [ Skip ]
 
 # The 'overflow-wrap: anywhere' feature is not implemented yet
 crbug.com/905315 external/wpt/css/css-text/overflow-wrap/overflow-wrap-anywhere-001.html [ Skip ]
@@ -1873,6 +1877,9 @@ crbug.com/905315 external/wpt/css/css-text/overflow-wrap/overflow-wrap-min-conte
 crbug.com/905315 external/wpt/css/css-text/overflow-wrap/overflow-wrap-min-content-size-003.html [ Skip ]
 crbug.com/905315 external/wpt/css/css-text/overflow-wrap/overflow-wrap-min-content-size-004.html [ Skip ]
 crbug.com/905315 external/wpt/css/css-text/word-break/word-break-break-word-overflow-wrap-interactions.html [ Skip ]
+crbug.com/905315 external/wpt/css/css-text/white-space/break-spaces-before-first-char-003.html [ Skip ]
+crbug.com/905315 external/wpt/css/css-text/white-space/break-spaces-before-first-char-006.html [ Skip ]
+crbug.com/905315 external/wpt/css/css-text/white-space/break-spaces-before-first-char-013.html [ Skip ]
 
 crbug.com/6122 external/wpt/css/css-text/shaping/shaping-000.html [ Failure ]
 crbug.com/6122 external/wpt/css/css-text/shaping/shaping-001.html [ Failure ]
@@ -1904,6 +1911,10 @@ crbug.com/6122 external/wpt/css/css-text/boundary-shaping/boundary-shaping-010.h
 crbug.com/6122 external/wpt/css/css-text/text-transform/text-transform-shaping-001.html [ Failure ]
 crbug.com/6122 external/wpt/css/css-text/text-transform/text-transform-shaping-002.html [ Failure ]
 crbug.com/6122 external/wpt/css/css-text/text-transform/text-transform-shaping-003.html [ Failure ]
+
+crbug.com/952254 external/wpt/css/css-text/white-space/break-spaces-008.html [ Failure ]
+crbug.com/952254 external/wpt/css/css-text/white-space/break-spaces-before-first-char-004.html [ Failure ]
+crbug.com/952254 external/wpt/css/css-text/white-space/break-spaces-before-first-char-005.html [ Failure ]
 
 # These are added to W3CImportExpectations as Skip, remove when next import is done.
 crbug.com/666657 external/wpt/css/css-text/hanging-punctuation [ Skip ]

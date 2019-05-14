@@ -1055,7 +1055,7 @@ inline bool BreakingContext::HandleText(WordMeasurements& word_measurements,
     // to avoid breaking in the middle of the word.
     if (at_start_ && current_character_is_space_ &&
         !previous_character_is_space_) {
-      has_former_opportunity_ = can_break_mid_word;
+      has_former_opportunity_ = true;
       break_words = false;
       can_break_mid_word = break_all;
     }
@@ -1237,7 +1237,7 @@ inline bool BreakingContext::HandleText(WordMeasurements& word_measurements,
       width_from_last_breaking_opportunity = 0;
       line_break_.MoveTo(current_.GetLineLayoutItem(), current_.Offset(),
                          current_.NextBreakablePosition());
-      has_former_opportunity_ = can_break_mid_word;
+      has_former_opportunity_ = true;
       break_words = false;
       can_break_mid_word = break_all;
       width_measurement_at_last_break_opportunity = last_width_measurement;
@@ -1423,7 +1423,7 @@ inline void BreakingContext::TrailingSpacesHang(bool can_break_mid_word) {
   DCHECK(curr_ws_ == EWhiteSpace::kBreakSpaces);
   // Avoid breaking before the first white-space after a word if there is a
   // breaking opportunity before.
-  if (has_former_opportunity_)
+  if (has_former_opportunity_ && !previous_character_is_space_)
     return;
 
   line_break_.MoveTo(current_.GetLineLayoutItem(), current_.Offset(),
