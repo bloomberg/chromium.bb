@@ -67,7 +67,7 @@ namespace {{variant}} {
 #include "mojo/public/cpp/bindings/lib/native_struct_serialization.h"
 {%- endif %}
 
-{%- if export_header %}
+{%- if export_header and module.constants|length %}
 #include "{{export_header}}"
 {%- endif %}
 
