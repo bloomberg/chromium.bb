@@ -188,6 +188,14 @@ Polymer({
   },
 
   /**
+   * Handler for tapping the "External storage preferences" item.
+   * @private
+   */
+  onExternalStoragePreferencesTap_: function() {
+    settings.navigateTo(settings.routes.EXTERNAL_STORAGE_PREFERENCES);
+  },
+
+  /**
    * @param {!settings.StorageSizeStat} sizeStat
    * @private
    */

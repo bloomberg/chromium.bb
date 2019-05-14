@@ -398,6 +398,12 @@
       <structure name="IDR_OS_SETTINGS_DEVICE_STORAGE_JS"
                  file="device_page/storage.js"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_DEVICE_STORAGE_EXTERNAL_HTML"
+                 file="device_page/storage_external.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_DEVICE_STORAGE_EXTERNAL_JS"
+                 file="device_page/storage_external.js"
+                 type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_DEVICE_STYLUS_HTML"
                  file="device_page/stylus.html"
                  type="chrome_html" />

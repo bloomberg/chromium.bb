@@ -4445,6 +4445,15 @@
     <message name="IDS_SETTINGS_STORAGE_DELETE_ALL_BUTTON_TITLE" desc="In storage manager confirmation dialog, label for the button to delete offline files.">
       Delete files
     </message>
+    <message name="IDS_SETTINGS_STORAGE_EXTERNAL" desc="In Device Settings > Storage, label for the subpage for setting preferences for external storage.">
+      External storage preferences
+    </message>
+    <message name="IDS_SETTINGS_STORAGE_ANDROID_APPS_ACCESS_EXTERNAL_DRIVES" desc="Label for the control to allow Android apps to access external drives.">
+      Allow Play Store applications to access external drives
+    </message>
+    <message name="IDS_SETTINGS_STORAGE_ANDROID_APPS_ACCESS_EXTERNAL_DRIVES_NOTE" desc="Label for the additional note for the subpage for setting preferences for external storage.">
+      Google Play Store applications may require access to external storage devices in order to read and write files and folders on them.
+    </message>
 
     <!-- Power -->
     <message name="IDS_SETTINGS_POWER_TITLE" desc="In Device Settings, the title for power management.">

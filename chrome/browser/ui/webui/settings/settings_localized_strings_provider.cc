@@ -932,7 +932,12 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
       {"storageClearDriveCacheDialogDescription",
        IDS_SETTINGS_STORAGE_CLEAR_DRIVE_CACHE_DESCRIPTION},
       {"storageDeleteAllButtonTitle",
-       IDS_SETTINGS_STORAGE_DELETE_ALL_BUTTON_TITLE}};
+       IDS_SETTINGS_STORAGE_DELETE_ALL_BUTTON_TITLE},
+      {"storageExternal", IDS_SETTINGS_STORAGE_EXTERNAL},
+      {"storageAndroidAppsExternalDrives",
+       IDS_SETTINGS_STORAGE_ANDROID_APPS_ACCESS_EXTERNAL_DRIVES},
+      {"storageAndroidAppsExternalDrivesNote",
+       IDS_SETTINGS_STORAGE_ANDROID_APPS_ACCESS_EXTERNAL_DRIVES_NOTE}};
   AddLocalizedStringsBulk(html_source, kStorageStrings,
                           base::size(kStorageStrings));
 

@@ -40,6 +40,7 @@
  *   DISPLAY: (undefined|!settings.Route),
  *   DOWNLOADS: (undefined|!settings.Route),
  *   EDIT_DICTIONARY: (undefined|!settings.Route),
+ *   EXTERNAL_STORAGE_PREFERENCES: (undefined|!settings.Route),
  *   FINGERPRINT: (undefined|!settings.Route),
  *   FONTS: (undefined|!settings.Route),
  *   GOOGLE_ASSISTANT: (undefined|!settings.Route),
@@ -334,6 +335,8 @@ cr.define('settings', function() {
     r.STYLUS = r.DEVICE.createChild('/stylus');
     r.DISPLAY = r.DEVICE.createChild('/display');
     r.STORAGE = r.DEVICE.createChild('/storage');
+    r.EXTERNAL_STORAGE_PREFERENCES =
+        r.DEVICE.createChild('/storage/externalStoragePreferences');
     r.POWER = r.DEVICE.createChild('/power');
     // </if>
 

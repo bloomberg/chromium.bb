@@ -88,11 +88,22 @@ Polymer({
         if (settings.routes.STORAGE) {
           map.set(settings.routes.STORAGE.path, '#storageRow');
         }
+        if (settings.routes.EXTERNAL_STORAGE_PREFERENCES) {
+          map.set(
+              settings.routes.EXTERNAL_STORAGE_PREFERENCES.path,
+              '#externalStoragePreferencesRow');
+        }
         if (settings.routes.POWER) {
           map.set(settings.routes.POWER.path, '#powerRow');
         }
         return map;
       },
+    },
+
+    /** @private */
+    androidRunning_: {
+      type: Boolean,
+      value: false,
     },
   },
 
@@ -111,6 +122,10 @@ Polymer({
     this.addWebUIListener(
         'has-stylus-changed', this.set.bind(this, 'hasStylus_'));
     settings.DevicePageBrowserProxyImpl.getInstance().initializeStylus();
+
+    this.addWebUIListener(
+        'storage-android-running-changed',
+        this.set.bind(this, 'androidRunning_'));
   },
 
   /**

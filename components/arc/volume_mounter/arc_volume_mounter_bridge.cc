@@ -120,10 +120,7 @@ void ArcVolumeMounterBridge::SendMountEventForMyFiles() {
 
 bool ArcVolumeMounterBridge::HasAccessToRemovableMedia() const {
   DCHECK(pref_service_);
-  return pref_service_->GetBoolean(prefs::kArcHasAccessToRemovableMedia)
-         // TODO(yusukes): Once the UI for controlling the pref is ready, remove
-         // the condition below.
-         || true;
+  return pref_service_->GetBoolean(prefs::kArcHasAccessToRemovableMedia);
 }
 
 void ArcVolumeMounterBridge::OnPrefChanged() {
