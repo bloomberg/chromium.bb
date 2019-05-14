@@ -945,6 +945,7 @@ class BBJSONGenerator(object):
     # are defined only to be mirrored into trybots, and don't actually
     # exist on any of the waterfalls or consoles.
     return [
+      'GPU FYI Fuchsia Builder',
       'ANGLE GPU Linux Release (Intel HD 630)',
       'ANGLE GPU Linux Release (NVIDIA)',
       'ANGLE GPU Mac Release (Intel)',

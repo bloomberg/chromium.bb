@@ -6787,6 +6787,12 @@
       }
     ]
   },
+  "GPU FYI Fuchsia Builder": {
+    "additional_compile_targets": [
+      "angle_end2end_tests",
+      "angle_unittests"
+    ]
+  },
   "GPU FYI Linux Builder": {},
   "GPU FYI Linux Builder (dbg)": {},
   "GPU FYI Linux Ozone Builder": {},
