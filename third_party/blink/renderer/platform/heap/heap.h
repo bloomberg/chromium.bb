@@ -255,8 +255,6 @@ class PLATFORM_EXPORT ThreadHeap {
                                const char* type_name);
   template <typename T>
   static Address Allocate(size_t, bool eagerly_sweep = false);
-  template <typename T>
-  static Address Reallocate(void* previous, size_t);
 
   void WeakProcessing(Visitor*);
 
@@ -613,56 +611,6 @@ Address ThreadHeap::Allocate(size_t size, bool eagerly_sweep) {
       eagerly_sweep ? BlinkGC::kEagerSweepArenaIndex
                     : ThreadHeap::ArenaIndexForObjectSize(size),
       GCInfoTrait<T>::Index(), type_name);
-}
-
-template <typename T>
-Address ThreadHeap::Reallocate(void* previous, size_t size) {
-  // Not intended to be a full C realloc() substitute;
-  // realloc(nullptr, size) is not a supported alias for malloc(size).
-
-  // TODO(sof): promptly free the previous object.
-  if (!size) {
-    // If the new size is 0 this is considered equivalent to free(previous).
-    return nullptr;
-  }
-
-  ThreadState* state = ThreadStateFor<ThreadingTrait<T>::kAffinity>::GetState();
-  HeapObjectHeader* previous_header = HeapObjectHeader::FromPayload(previous);
-  BasePage* page = PageFromObject(previous_header);
-  DCHECK(page);
-
-  // Determine arena index of new allocation.
-  int arena_index;
-  if (size >= kLargeObjectSizeThreshold) {
-    arena_index = BlinkGC::kLargeObjectArenaIndex;
-  } else {
-    arena_index = page->Arena()->ArenaIndex();
-    if (IsNormalArenaIndex(arena_index) ||
-        arena_index == BlinkGC::kLargeObjectArenaIndex)
-      arena_index = ArenaIndexForObjectSize(size);
-  }
-
-  uint32_t gc_info_index = GCInfoTrait<T>::Index();
-  // TODO(haraken): We don't support reallocate() for finalizable objects.
-  DCHECK(!GCInfoTable::Get()
-              .GCInfoFromIndex(previous_header->GcInfoIndex())
-              ->finalize);
-  DCHECK_EQ(previous_header->GcInfoIndex(), gc_info_index);
-  HeapAllocHooks::FreeHookIfEnabled(static_cast<Address>(previous));
-  Address address;
-  if (arena_index == BlinkGC::kLargeObjectArenaIndex) {
-    address = page->Arena()->AllocateLargeObject(AllocationSizeFromSize(size),
-                                                 gc_info_index);
-  } else {
-    const char* type_name = WTF_HEAP_PROFILER_TYPE_NAME(T);
-    address = state->Heap().AllocateOnArenaIndex(state, size, arena_index,
-                                                 gc_info_index, type_name);
-  }
-  size_t copy_size = previous_header->PayloadSize();
-  if (copy_size > size)
-    copy_size = size;
-  memcpy(address, previous, copy_size);
-  return address;
 }
 
 template <typename T>

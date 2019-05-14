@@ -1768,27 +1768,6 @@ TEST(HeapTest, BasicFunctionality) {
     delete persistents[i];
     persistents[i] = nullptr;
   }
-
-  uint8_t* address = reinterpret_cast<uint8_t*>(
-      ThreadHeap::Allocate<DynamicallySizedObject>(100));
-  for (int i = 0; i < 100; i++)
-    address[i] = i;
-  address = reinterpret_cast<uint8_t*>(
-      ThreadHeap::Reallocate<DynamicallySizedObject>(address, 100000));
-  for (int i = 0; i < 100; i++)
-    EXPECT_EQ(address[i], i);
-  address = reinterpret_cast<uint8_t*>(
-      ThreadHeap::Reallocate<DynamicallySizedObject>(address, 50));
-  for (int i = 0; i < 50; i++)
-    EXPECT_EQ(address[i], i);
-  // This should be equivalent to free(address).
-  EXPECT_EQ(reinterpret_cast<uintptr_t>(
-                ThreadHeap::Reallocate<DynamicallySizedObject>(address, 0)),
-            0ul);
-  // This should be equivalent to malloc(0).
-  EXPECT_EQ(reinterpret_cast<uintptr_t>(
-                ThreadHeap::Reallocate<DynamicallySizedObject>(nullptr, 0)),
-            0ul);
 }
 
 TEST(HeapTest, SimpleAllocation) {
