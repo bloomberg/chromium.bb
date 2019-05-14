@@ -104,6 +104,7 @@ customBackgrounds.IDS = {
   RESTORE_DEFAULT: 'edit-bg-restore-default',
   RESTORE_DEFAULT_TEXT: 'edit-bg-restore-default-text',
   SHORTCUTS_BUTTON: 'shortcuts-button',
+  SHORTCUTS_MENU: 'shortcuts-menu',
   UPLOAD_IMAGE: 'edit-bg-upload-image',
   UPLOAD_IMAGE_TEXT: 'edit-bg-upload-image-text',
   TILES: 'bg-sel-tiles',
@@ -1346,10 +1347,15 @@ customBackgrounds.initCustomBackgrounds = function(showErrorNotification) {
   $(customBackgrounds.IDS.BACKGROUNDS_BUTTON).onclick = function() {
     $(customBackgrounds.IDS.BACKGROUNDS_MENU)
         .classList.toggle(customBackgrounds.CLASSES.MENU_SHOWN, true);
+    $(customBackgrounds.IDS.SHORTCUTS_MENU)
+        .classList.toggle(customBackgrounds.CLASSES.MENU_SHOWN, false);
   };
 
   $(customBackgrounds.IDS.SHORTCUTS_BUTTON).onclick = function() {
-    customBackgrounds.richerPicker_resetImageMenu(false);
+    $(customBackgrounds.IDS.BACKGROUNDS_MENU)
+        .classList.toggle(customBackgrounds.CLASSES.MENU_SHOWN, false);
+    $(customBackgrounds.IDS.SHORTCUTS_MENU)
+        .classList.toggle(customBackgrounds.CLASSES.MENU_SHOWN, true);
   };
 
   $(customBackgrounds.IDS.COLORS_BUTTON).onclick = function() {

@@ -913,6 +913,10 @@ html[dir=rtl] .menu-option {
   background-color: rgb(var(--GB600-rgb));
 }
 
+#shortcuts-icon {
+  -webkit-mask-image: url(icons/link.svg);
+}
+
 .menu-option-label {
   display: inline-block;
   height: 32px;
@@ -1132,4 +1136,116 @@ html[dir=rtl] #customization-menu .bg-sel-tile .selected-check {
   height: 174px;
   opacity: 1;
   width: 174px;
+}
+
+#shortcuts-menu {
+  line-height: 20px;
+  overflow-y: unset;
+  width: calc(100% - 24px);
+}
+
+#sh-options {
+  display: flex;
+}
+
+.sh-option {
+  width: 268px;
+}
+
+#sh-option-cl {
+  margin-inline-end: 9px;
+}
+
+.sh-option-select {
+  position: absolute;
+  visibility: none;
+}
+
+.sh-option-image {
+  background-color: white;
+  border: 1px solid rgb(var(--GG300-rgb));
+  border-radius: 4px;
+  height: 176px;
+  position: relative;
+  width: 268px;
+}
+
+.sh-option-mini {
+  background-color: white;
+  border: 1px solid rgb(var(--GG300-rgb));
+  border-radius: 4px;
+  height: 144px;
+  position: absolute;
+  right: 40px;
+  top: 16px;
+  width: 144px;
+}
+
+html[dir=rtl] .sh-option-mini {
+  left: 40px;
+  right: unset;
+}
+
+.sh-option-icon {
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 100%;
+  background: 96px 96px rgb(var(--GG200-rgb));
+  height: 96px;
+  left: 16px;
+  position: absolute;
+  top: 48px;
+  width: 96px;
+}
+
+#sh-option-cl .sh-option-icon {
+  -webkit-mask-image: url(../../../../ui/webui/resources/images/account_circle.svg);
+}
+
+#sh-option-mv .sh-option-icon {
+  -webkit-mask-image: url(../../../../components/neterror/resources/images/generic-globe.svg);
+}
+
+html[dir=rtl] .sh-option-icon {
+  right: 16px;
+}
+
+.sh-title {
+  font-weight: bold;
+  margin: 8px 0;
+}
+
+#sh-hide {
+  background-color: white;
+  border: 1px solid rgb(var(--GG300-rgb));
+  border-radius: 4px;
+  display: flex;
+  height: 64px;
+  margin-top: 24px;
+  max-width: 544px;
+  width: 100%;
+}
+
+#sh-hide > div {
+  margin-bottom: auto;
+  margin-top: auto;
+}
+
+#sh-hide-icon {
+  -webkit-mask-image: url(../../../../ui/webui/resources/images/icon_visibility_off.svg);
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 100%;
+  background: 24px 24px rgb(var(--GG700-rgb));
+  height: 24px;
+  margin-inline-end: 20px;
+  margin-inline-start: 24px;
+  width: 24px;
+}
+
+#sh-hide-title {
+  font-weight: bold;
+}
+
+#sh-hide-toggle {
+  margin-inline-end: 20px;
+  margin-inline-start: auto;
 }
