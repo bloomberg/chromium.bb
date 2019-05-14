@@ -266,6 +266,17 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model addItem:textEditItemBothIcons
       toSectionWithIdentifier:SectionIdentifierText];
 
+  TableViewTextEditItem* textEditItemIconButton =
+      [[TableViewTextEditItem alloc] initWithType:ItemTypeTextEditItem];
+  textEditItemIconButton.textFieldName = @"Edit Text Item";
+  textEditItemIconButton.textFieldValue = @" icon is a button.";
+  textEditItemIconButton.identifyingIcon =
+      [UIImage imageNamed:@"table_view_cell_check_mark"];
+  textEditItemIconButton.identifyingIconEnabled = YES;
+  textEditItemIconButton.textFieldEnabled = NO;
+  [model addItem:textEditItemIconButton
+      toSectionWithIdentifier:SectionIdentifierText];
+
   TableViewMultiDetailTextItem* tableViewMultiDetailTextItem =
       [[TableViewMultiDetailTextItem alloc]
           initWithType:ItemTypeMultiDetailText];

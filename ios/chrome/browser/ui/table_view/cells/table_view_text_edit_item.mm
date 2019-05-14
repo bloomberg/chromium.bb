@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_edit_item.h"
 
+#import "ios/chrome/browser/ui/elements/extended_touch_target_button.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/ui/util/rtl_geometry.h"
@@ -78,6 +79,7 @@ const CGFloat kEditIconLength = 18;
   cell.textField.keyboardType = self.keyboardType;
   cell.textField.autocapitalizationType = self.autoCapitalizationType;
   [cell setIdentifyingIcon:self.identifyingIcon];
+  cell.identifyingIconButton.enabled = self.identifyingIconEnabled;
 }
 
 #pragma mark Actions
@@ -96,7 +98,6 @@ const CGFloat kEditIconLength = 18;
 @property(nonatomic, strong) NSLayoutConstraint* iconWidthConstraint;
 @property(nonatomic, strong) NSLayoutConstraint* textFieldTrailingConstraint;
 @property(nonatomic, strong) NSLayoutConstraint* textLabelTrailingConstraint;
-
 @property(nonatomic, strong) NSLayoutConstraint* editIconHeightConstraint;
 @property(nonatomic, strong) NSLayoutConstraint* iconTrailingConstraint;
 
@@ -107,10 +108,6 @@ const CGFloat kEditIconLength = 18;
 // another line. They conflict with the |standardConstraints|.
 @property(nonatomic, strong)
     NSArray<NSLayoutConstraint*>* accessibilityConstraints;
-
-// UIImageView containing the icon identifying |textField| or its current value.
-@property(nonatomic, readonly, strong) UIImageView* identifyingIconView;
-
 // UIImageView containing the icon indicating that |textField| is editable.
 @property(nonatomic, strong) UIImageView* editIconView;
 
@@ -150,10 +147,11 @@ const CGFloat kEditIconLength = 18;
     _textField.contentVerticalAlignment =
         UIControlContentVerticalAlignmentCenter;
 
-    // Trailing con.
-    _identifyingIconView = [[UIImageView alloc] initWithFrame:CGRectZero];
-    _identifyingIconView.translatesAutoresizingMaskIntoConstraints = NO;
-    [contentView addSubview:_identifyingIconView];
+    // Trailing icon button.
+    _identifyingIconButton =
+        [ExtendedTouchTargetButton buttonWithType:UIButtonTypeCustom];
+    _identifyingIconButton.translatesAutoresizingMaskIntoConstraints = NO;
+    [contentView addSubview:_identifyingIconButton];
 
     // Edit icon.
     UIImage* editImage = [[UIImage imageNamed:@"table_view_cell_edit_icon"]
@@ -167,9 +165,9 @@ const CGFloat kEditIconLength = 18;
     // Set up the icons size constraints. They are activated here and updated in
     // layoutSubviews.
     _iconHeightConstraint =
-        [_identifyingIconView.heightAnchor constraintEqualToConstant:0];
+        [_identifyingIconButton.heightAnchor constraintEqualToConstant:0];
     _iconWidthConstraint =
-        [_identifyingIconView.widthAnchor constraintEqualToConstant:0];
+        [_identifyingIconButton.widthAnchor constraintEqualToConstant:0];
     _editIconHeightConstraint =
         [_editIconView.heightAnchor constraintEqualToConstant:0];
 
@@ -178,7 +176,7 @@ const CGFloat kEditIconLength = 18;
     _textLabelTrailingConstraint = [_textLabel.trailingAnchor
         constraintEqualToAnchor:_editIconView.leadingAnchor];
     _iconTrailingConstraint = [_editIconView.trailingAnchor
-        constraintEqualToAnchor:_identifyingIconView.leadingAnchor];
+        constraintEqualToAnchor:_identifyingIconButton.leadingAnchor];
 
     _standardConstraints = @[
       [_textField.firstBaselineAnchor
@@ -203,10 +201,10 @@ const CGFloat kEditIconLength = 18;
           constraintEqualToAnchor:contentView.leadingAnchor
                          constant:kTableViewHorizontalSpacing],
       _textFieldTrailingConstraint,
-      [_identifyingIconView.trailingAnchor
+      [_identifyingIconButton.trailingAnchor
           constraintEqualToAnchor:contentView.trailingAnchor
                          constant:-kTableViewHorizontalSpacing],
-      [_identifyingIconView.centerYAnchor
+      [_identifyingIconButton.centerYAnchor
           constraintEqualToAnchor:contentView.centerYAnchor],
       [_editIconView.centerYAnchor
           constraintEqualToAnchor:contentView.centerYAnchor],
@@ -251,7 +249,14 @@ const CGFloat kEditIconLength = 18;
 }
 
 - (void)setIdentifyingIcon:(UIImage*)icon {
-  self.identifyingIconView.image = icon;
+  // Set Image as UIImageRenderingModeAlwaysTemplate to allow the Button tint
+  // color to propagate.
+  [self.identifyingIconButton
+      setImage:[icon imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]
+      forState:UIControlStateNormal];
+  // Set the same image for the button's disable state so it's not grayed out
+  // when disabled.
+  [self.identifyingIconButton setImage:icon forState:UIControlStateDisabled];
   if (icon) {
     self.iconTrailingConstraint.constant = -kLabelAndFieldGap;
 
@@ -296,7 +301,8 @@ const CGFloat kEditIconLength = 18;
   [self.textField removeTarget:nil
                         action:nil
               forControlEvents:UIControlEventAllEvents];
-  self.identifyingIconView.image = nil;
+  [self setIdentifyingIcon:nil];
+  self.identifyingIconButton.enabled = NO;
 }
 
 #pragma mark Accessibility
