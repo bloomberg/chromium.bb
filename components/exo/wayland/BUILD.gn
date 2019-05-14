@@ -81,6 +81,8 @@ source_set("wayland") {
       "wayland_keyboard_delegate.h",
       "wayland_pointer_delegate.cc",
       "wayland_pointer_delegate.h",
+      "wayland_positioner.cc",
+      "wayland_positioner.h",
       "wl_shell.cc",
       "wl_shell.h",
       "zaura_shell.cc",
@@ -205,6 +207,7 @@ source_set("unit_tests") {
 
   if (is_chromeos) {
     sources += [
+      "wayland_positioner_unittest.cc",
       "zaura_shell_unittest.cc",
       "zcr_remote_shell_unittest.cc",
     ]
@@ -212,6 +215,7 @@ source_set("unit_tests") {
       "//ash",
       "//ash:test_support",
       "//ash/public/cpp",
+      "//third_party/wayland-protocols:xdg_shell_protocol",
       "//ui/compositor",
       "//ui/compositor:test_support",
       "//ui/display",
