@@ -89,10 +89,8 @@ ExtensionAction::ExtensionAction(const extensions::Extension& extension,
     : extension_id_(extension.id()),
       extension_name_(extension.name()),
       action_type_(manifest_data.type) {
-  // Page/script actions are hidden/disabled by default, and browser actions are
-  // visible/enabled by default.
-  SetIsVisible(kDefaultTabId,
-               action_type_ == extensions::ActionInfo::TYPE_BROWSER);
+  SetIsVisible(kDefaultTabId, manifest_data.default_state ==
+                                  extensions::ActionInfo::STATE_ENABLED);
   Populate(extension, manifest_data);
 }
 

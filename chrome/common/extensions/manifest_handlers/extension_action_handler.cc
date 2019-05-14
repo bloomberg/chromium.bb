@@ -70,19 +70,16 @@ bool ExtensionActionHandler::Parse(Extension* extension,
     if (!action_info)
       return false;  // Failed to parse extension action definition.
 
-    if (key == manifest_keys::kAction) {
-      ActionInfo::SetExtensionActionInfo(extension, std::move(action_info));
-    } else {
-      if (dict->HasKey(manifest_keys::kActionDefaultState)) {
-        *error =
-            base::ASCIIToUTF16(manifest_errors::kDefaultStateShouldNotBeSet);
-        return false;
-      }
-
-      if (key == manifest_keys::kPageAction)
+    switch (type) {
+      case ActionInfo::TYPE_ACTION:
+        ActionInfo::SetExtensionActionInfo(extension, std::move(action_info));
+        break;
+      case ActionInfo::TYPE_PAGE:
         ActionInfo::SetPageActionInfo(extension, std::move(action_info));
-      else
+        break;
+      case ActionInfo::TYPE_BROWSER:
         ActionInfo::SetBrowserActionInfo(extension, std::move(action_info));
+        break;
     }
   } else {  // No key, used for synthesizing an action for extensions with none.
     if (Manifest::IsComponentLocation(extension->location()))

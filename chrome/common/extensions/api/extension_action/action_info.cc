@@ -49,7 +49,17 @@ static const ActionInfo* GetActionInfo(const Extension* extension,
 
 }  // namespace
 
-ActionInfo::ActionInfo(Type type) : type(type), synthesized(false) {}
+ActionInfo::ActionInfo(Type type) : type(type), synthesized(false) {
+  switch (type) {
+    case TYPE_PAGE:
+      default_state = STATE_DISABLED;
+      break;
+    case TYPE_BROWSER:
+    case TYPE_ACTION:
+      default_state = STATE_ENABLED;
+      break;
+  }
+}
 
 ActionInfo::ActionInfo(const ActionInfo& other) = default;
 
@@ -119,18 +129,24 @@ std::unique_ptr<ActionInfo> ActionInfo::Load(const Extension* extension,
     }
   }
 
-  std::string default_state;
   if (dict->HasKey(keys::kActionDefaultState)) {
+    // The default_state key is only valid for TYPE_ACTION; throw an error for
+    // others.
+    if (type != TYPE_ACTION) {
+      *error = base::ASCIIToUTF16(errors::kDefaultStateShouldNotBeSet);
+      return nullptr;
+    }
+
+    std::string default_state;
     if (!dict->GetString(keys::kActionDefaultState, &default_state) ||
         !(default_state == kEnabled || default_state == kDisabled)) {
       *error = base::ASCIIToUTF16(errors::kInvalidActionDefaultState);
       return nullptr;
     }
+    result->default_state = default_state == kEnabled
+                                ? ActionInfo::STATE_ENABLED
+                                : ActionInfo::STATE_DISABLED;
   }
-
-  result->default_state = default_state == kEnabled
-                              ? ActionInfo::STATE_ENABLED
-                              : ActionInfo::STATE_DISABLED;
 
   return result;
 }
