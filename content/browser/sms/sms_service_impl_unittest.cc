@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/sms/sms_manager.h"
+#include "content/browser/sms/sms_service_impl.h"
 
 #include <utility>
 
@@ -14,8 +14,8 @@
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_browser_context.h"
+#include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_service_manager_context.h"
-#include "content/test/test_render_frame_host.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
@@ -49,20 +49,20 @@ class MockSmsProvider : public SmsProvider {
   DISALLOW_COPY_AND_ASSIGN(MockSmsProvider);
 };
 
-class SmsManagerTest : public RenderViewHostImplTestHarness {
+class SmsServiceImplTest : public RenderViewHostTestHarness {
  protected:
-  SmsManagerTest() {}
+  SmsServiceImplTest() {}
 
-  ~SmsManagerTest() override {}
+  ~SmsServiceImplTest() override {}
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(SmsManagerTest);
+  DISALLOW_COPY_AND_ASSIGN(SmsServiceImplTest);
 };
 
 }  // namespace
 
-TEST_F(SmsManagerTest, AddMonitor) {
-  auto impl = std::make_unique<SmsManager>();
+TEST_F(SmsServiceImplTest, AddMonitor) {
+  auto impl = std::make_unique<SmsServiceImpl>();
   auto mock = std::make_unique<NiceMock<MockSmsProvider>>();
   blink::mojom::SmsManagerPtr service_ptr;
   GURL url("http://google.com");
@@ -96,8 +96,8 @@ TEST_F(SmsManagerTest, AddMonitor) {
   loop.Run();
 }
 
-TEST_F(SmsManagerTest, InvalidArguments) {
-  auto impl = std::make_unique<SmsManager>();
+TEST_F(SmsServiceImplTest, InvalidArguments) {
+  auto impl = std::make_unique<SmsServiceImpl>();
   auto mock = std::make_unique<NiceMock<MockSmsProvider>>();
   impl->SetSmsProviderForTest(std::move(mock));
   blink::mojom::SmsManagerPtr service_ptr;

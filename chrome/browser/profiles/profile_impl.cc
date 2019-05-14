@@ -88,6 +88,8 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/site_isolation/site_isolation_policy.h"
+#include "chrome/browser/sms/sms_keyed_service.h"
+#include "chrome/browser/sms/sms_service_factory.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate_factory.h"
 #include "chrome/browser/startup_data.h"
@@ -1378,6 +1380,10 @@ std::string ProfileImpl::GetMediaDeviceIDSalt() {
 download::InProgressDownloadManager*
 ProfileImpl::RetriveInProgressDownloadManager() {
   return DownloadManagerUtils::RetrieveInProgressDownloadManager(this);
+}
+
+content::SmsService* ProfileImpl::GetSmsService() {
+  return SmsServiceFactory::GetForProfile(this)->Get();
 }
 
 bool ProfileImpl::IsSameProfile(Profile* profile) {

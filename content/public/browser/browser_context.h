@@ -86,6 +86,7 @@ class PermissionControllerDelegate;
 class PushMessagingService;
 class ResourceContext;
 class ServiceManagerConnection;
+class SmsService;
 class SharedCorsOriginAccessList;
 class SiteInstance;
 class StoragePartition;
@@ -365,6 +366,10 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // available
   virtual download::InProgressDownloadManager*
   RetriveInProgressDownloadManager();
+
+  // Returns the SmsService associated with this context if any,
+  // nullptr otherwise.
+  virtual SmsService* GetSmsService();
 
  private:
   const std::string unique_id_;

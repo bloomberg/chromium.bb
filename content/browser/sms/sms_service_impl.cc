@@ -4,35 +4,41 @@
 
 #include <utility>
 
-#include "content/browser/sms/sms_manager.h"
+#include "content/browser/sms/sms_service_impl.h"
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "content/public/browser/permission_controller.h"
-#include "content/public/browser/permission_type.h"
 
 namespace content {
 
-SmsManager::SmsManager() : sms_provider_(SmsProvider::Create()) {}
+// static
+std::unique_ptr<SmsService> SmsService::Create() {
+  return std::make_unique<SmsServiceImpl>();
+}
 
-SmsManager::~SmsManager() {
+SmsServiceImpl::SmsServiceImpl() {}
+
+SmsServiceImpl::~SmsServiceImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-void SmsManager::CreateService(blink::mojom::SmsManagerRequest request,
-                               const url::Origin& origin) {
+void SmsServiceImpl::CreateService(blink::mojom::SmsManagerRequest request,
+                                   const url::Origin& origin) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   bindings_.AddBinding(this, std::move(request));
 }
 
-void SmsManager::GetNextMessage(base::TimeDelta timeout,
-                                GetNextMessageCallback callback) {
+void SmsServiceImpl::GetNextMessage(base::TimeDelta timeout,
+                                    GetNextMessageCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (timeout <= base::TimeDelta::FromSeconds(0)) {
     bindings_.ReportBadMessage("Invalid timeout.");
     return;
   }
+
+  if (!sms_provider_)
+    sms_provider_ = SmsProvider::Create();
 
   sms_provider_->Retrieve(
       timeout, base::BindOnce(
@@ -49,7 +55,7 @@ void SmsManager::GetNextMessage(base::TimeDelta timeout,
                    std::move(callback)));
 }
 
-void SmsManager::SetSmsProviderForTest(
+void SmsServiceImpl::SetSmsProviderForTest(
     std::unique_ptr<SmsProvider> sms_provider) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   sms_provider_ = std::move(sms_provider);

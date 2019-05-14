@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/time/time.h"
-#include "content/browser/renderer_host/render_process_host_impl.h"
-#include "content/browser/storage_partition_impl.h"
+#include "content/browser/sms/sms_provider.h"
+#include "content/browser/sms/sms_service_impl.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -54,11 +55,8 @@ IN_PROC_BROWSER_TEST_F(SmsTest, Start) {
   NavigateToURL(shell(), GetTestUrl(nullptr, "simple_page.html"));
 
   auto mock_sms_provider = std::make_unique<NiceMock<MockSmsProvider>>();
-  auto* rph = static_cast<RenderProcessHostImpl*>(
-      shell()->web_contents()->GetMainFrame()->GetProcess());
-  SmsManager* sms_mgr =
-      static_cast<StoragePartitionImpl*>(rph->GetStoragePartition())
-          ->GetSmsManager();
+  auto* sms_service = static_cast<SmsServiceImpl*>(
+      shell()->web_contents()->GetBrowserContext()->GetSmsService());
 
   // Test that SMS content can be retrieved after SmsManager.start().
   std::string script = R"(
@@ -80,7 +78,7 @@ IN_PROC_BROWSER_TEST_F(SmsTest, Start) {
              base::OnceCallback<void(bool, base::Optional<std::string>)>*
                  callback) { std::move(*callback).Run(true, "hello"); }));
 
-  sms_mgr->SetSmsProviderForTest(std::move(mock_sms_provider));
+  sms_service->SetSmsProviderForTest(std::move(mock_sms_provider));
 
   EXPECT_EQ("hello", EvalJs(shell(), script));
 }

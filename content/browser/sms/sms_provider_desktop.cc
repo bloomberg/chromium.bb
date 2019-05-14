@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <utility>
+#include "content/browser/sms/sms_provider_desktop.h"
 
 #include "base/callback.h"
-#include "content/browser/sms/sms_provider_desktop.h"
 
 namespace content {
 

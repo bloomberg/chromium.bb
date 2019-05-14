@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_SMS_SMS_MANAGER_H_
-#define CONTENT_BROWSER_SMS_SMS_MANAGER_H_
+#ifndef CONTENT_BROWSER_SMS_SMS_SERVICE_IMPL_H_
+#define CONTENT_BROWSER_SMS_SMS_SERVICE_IMPL_H_
 
 #include <memory>
 
@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "content/browser/sms/sms_provider.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/sms_service.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "third_party/blink/public/mojom/sms/sms_manager.mojom.h"
 
@@ -23,16 +24,18 @@ class Origin;
 
 namespace content {
 
-// The SmsManager is responsible for taking the incoming mojo calls from the
+// The SmsServiceImpl is responsible for taking the incoming mojo calls from the
 // renderer process and dispatching them to the SmsProvider platform-specific
 // implementation.
-class CONTENT_EXPORT SmsManager : public blink::mojom::SmsManager {
+class CONTENT_EXPORT SmsServiceImpl : public blink::mojom::SmsManager,
+                                      public content::SmsService {
  public:
-  SmsManager();
-  ~SmsManager() override;
+  SmsServiceImpl();
+  ~SmsServiceImpl() override;
 
+  // content::SmsService
   void CreateService(blink::mojom::SmsManagerRequest request,
-                     const url::Origin& origin);
+                     const url::Origin& origin) override;
 
   // blink.mojom.SmsManager:
   void GetNextMessage(base::TimeDelta timeout,
@@ -48,9 +51,9 @@ class CONTENT_EXPORT SmsManager : public blink::mojom::SmsManager {
   mojo::BindingSet<blink::mojom::SmsManager> bindings_;
   SEQUENCE_CHECKER(sequence_checker_);
 
-  DISALLOW_COPY_AND_ASSIGN(SmsManager);
+  DISALLOW_COPY_AND_ASSIGN(SmsServiceImpl);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_SMS_SMS_MANAGER_H_
+#endif  // CONTENT_BROWSER_SMS_SMS_SERVICE_IMPL_H_

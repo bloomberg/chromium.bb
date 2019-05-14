@@ -5,12 +5,13 @@
 #ifndef CONTENT_BROWSER_SMS_SMS_PROVIDER_ANDROID_H_
 #define CONTENT_BROWSER_SMS_SMS_PROVIDER_ANDROID_H_
 
-#include "sms_provider.h"
+#include <utility>
 
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
 #include "base/macros.h"
+#include "content/browser/sms/sms_provider.h"
 
 namespace content {
 

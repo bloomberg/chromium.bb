@@ -822,4 +822,8 @@ BrowserContext::GetSharedCorsOriginAccessList() const {
   return empty_list->get();
 }
 
+SmsService* BrowserContext::GetSmsService() {
+  return nullptr;
+}
+
 }  // namespace content
