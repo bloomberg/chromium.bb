@@ -71,7 +71,7 @@ using chrome_test_util::SettingsDoneButton;
 }
 
 + (void)selectIdentityWithEmail:(NSString*)userEmail {
-  if (base::FeatureList::IsEnabled(unified_consent::kUnifiedConsent)) {
+  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
     // Assumes that the identity chooser is visible.
     [[EarlGrey
         selectElementWithMatcher:grey_allOf(grey_accessibilityID(userEmail),
@@ -110,7 +110,7 @@ using chrome_test_util::SettingsDoneButton;
   // Once to the bottom, the consent can be confirmed.
   id<GREYMatcher> confirmationScrollViewMatcher = nil;
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
-  if (base::FeatureList::IsEnabled(unified_consent::kUnifiedConsent)) {
+  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
     confirmationScrollViewMatcher =
         grey_accessibilityID(kUnifiedConsentScrollViewIdentifier);
   } else {

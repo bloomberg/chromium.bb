@@ -347,7 +347,7 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibility_id,
 }
 
 + (id<GREYMatcher>)accountConsistencyConfirmationOKButton {
-  int labelID = base::FeatureList::IsEnabled(unified_consent::kUnifiedConsent)
+  int labelID = unified_consent::IsUnifiedConsentFeatureEnabled()
                     ? IDS_IOS_ACCOUNT_UNIFIED_CONSENT_OK_BUTTON
                     : IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_OK_BUTTON;
   return [ChromeMatchersAppInterface buttonWithAccessibilityLabelID:(labelID)];
