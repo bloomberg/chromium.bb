@@ -614,6 +614,8 @@ void LayoutInline::SplitInlines(LayoutBlockFlow* from_block,
   Vector<LayoutInline*> inlines_to_clone;
   LayoutInline* top_most_inline = this;
   for (LayoutObject* o = this; o != from_block; o = o->Parent()) {
+    if (o->IsAnonymous())
+      continue;
     top_most_inline = ToLayoutInline(o);
     if (inlines_to_clone.size() < kCMaxSplitDepth)
       inlines_to_clone.push_back(top_most_inline);
