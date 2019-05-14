@@ -107,6 +107,7 @@ class CORE_EXPORT NGExclusionSpaceInternal {
     if (!other.derived_geometry_)
       return;
 
+    track_shape_exclusions_ = other.track_shape_exclusions_;
     derived_geometry_ = std::move(other.derived_geometry_);
     other.derived_geometry_ = nullptr;
 
