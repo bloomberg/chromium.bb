@@ -167,15 +167,15 @@ class TabStripModel {
   // All append/insert methods end up in this method.
   //
   // NOTE: adding a tab using this method does NOT query the order controller,
-  // as such the ADD_FORCE_INDEX AddTabTypes is meaningless here.  The only time
+  // as such the ADD_FORCE_INDEX AddTabTypes is meaningless here. The only time
   // the |index| is changed is if using the index would result in breaking the
-  // constraint that all pinned tabs occur before non-pinned tabs.
-  // See also AddWebContents.
-  void InsertWebContentsAt(int index,
-                           std::unique_ptr<content::WebContents> contents,
-                           int add_types,
-                           base::Optional<int> group = base::nullopt);
-
+  // constraint that all pinned tabs occur before non-pinned tabs. It returns
+  // the index the web contents is actually inserted to. See also
+  // AddWebContents.
+  int InsertWebContentsAt(int index,
+                          std::unique_ptr<content::WebContents> contents,
+                          int add_types,
+                          base::Optional<int> group = base::nullopt);
   // Closes the WebContents at the specified index. This causes the
   // WebContents to be destroyed, but it may not happen immediately.
   // |close_types| is a bitmask of CloseTypes. Returns true if the
@@ -224,8 +224,8 @@ class TabStripModel {
   // WebContents inline and sends a Moved notification instead.
   // If |select_after_move| is false, whatever tab was selected before the move
   // will still be selected, but its index may have incremented or decremented
-  // one slot.
-  void MoveWebContentsAt(int index, int to_position, bool select_after_move);
+  // one slot. It returns the index the web contents is actually moved to.
+  int MoveWebContentsAt(int index, int to_position, bool select_after_move);
 
   // Moves the selected tabs to |index|. |index| is treated as if the tab strip
   // did not contain any of the selected tabs. For example, if the tabstrip
@@ -529,14 +529,15 @@ class TabStripModel {
   // All append/insert methods end up in this method.
   //
   // NOTE: adding a tab using this method does NOT query the order controller,
-  // as such the ADD_FORCE_INDEX AddTabTypes is meaningless here.  The only time
+  // as such the ADD_FORCE_INDEX AddTabTypes is meaningless here. The only time
   // the |index| is changed is if using the index would result in breaking the
-  // constraint that all pinned tabs occur before non-pinned tabs.
-  // See also AddWebContents.
-  void InsertWebContentsAtImpl(int index,
-                               std::unique_ptr<content::WebContents> contents,
-                               int add_types,
-                               base::Optional<int> group);
+  // constraint that all pinned tabs occur before non-pinned tabs. It returns
+  // the index the web contents is actually inserted to. See also
+  // AddWebContents.
+  int InsertWebContentsAtImpl(int index,
+                              std::unique_ptr<content::WebContents> contents,
+                              int add_types,
+                              base::Optional<int> group);
 
   // Closes the WebContentses at the specified indices. This causes the
   // WebContentses to be destroyed, but it may not happen immediately. If

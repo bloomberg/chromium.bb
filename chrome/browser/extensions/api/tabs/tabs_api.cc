@@ -1505,8 +1505,9 @@ bool TabsMoveFunction::MoveTab(int tab_id,
         *new_index = target_tab_strip->count();
 
       content::WebContents* web_contents_raw = web_contents.get();
-      target_tab_strip->InsertWebContentsAt(*new_index, std::move(web_contents),
-                                            TabStripModel::ADD_NONE);
+
+      *new_index = target_tab_strip->InsertWebContentsAt(
+          *new_index, std::move(web_contents), TabStripModel::ADD_NONE);
 
       if (has_callback()) {
         tab_values->Append(ExtensionTabUtil::CreateTabObject(
@@ -1527,7 +1528,8 @@ bool TabsMoveFunction::MoveTab(int tab_id,
     *new_index = source_tab_strip->count() - 1;
 
   if (*new_index != tab_index)
-    source_tab_strip->MoveWebContentsAt(tab_index, *new_index, false);
+    *new_index =
+        source_tab_strip->MoveWebContentsAt(tab_index, *new_index, false);
 
   if (has_callback()) {
     tab_values->Append(ExtensionTabUtil::CreateTabObject(

@@ -329,14 +329,14 @@ void TabStripModel::AppendWebContents(std::unique_ptr<WebContents> contents,
       foreground ? (ADD_INHERIT_OPENER | ADD_ACTIVE) : ADD_NONE);
 }
 
-void TabStripModel::InsertWebContentsAt(int index,
-                                        std::unique_ptr<WebContents> contents,
-                                        int add_types,
-                                        base::Optional<int> group) {
+int TabStripModel::InsertWebContentsAt(int index,
+                                       std::unique_ptr<WebContents> contents,
+                                       int add_types,
+                                       base::Optional<int> group) {
   DCHECK(!reentrancy_guard_);
   base::AutoReset<bool> resetter(&reentrancy_guard_, true);
 
-  InsertWebContentsAtImpl(index, std::move(contents), add_types, group);
+  return InsertWebContentsAtImpl(index, std::move(contents), add_types, group);
 }
 
 std::unique_ptr<content::WebContents> TabStripModel::ReplaceWebContentsAt(
@@ -536,9 +536,9 @@ void TabStripModel::ActivateTabAt(int index, UserGestureDetails user_gesture) {
                /*triggered_by_other_operation=*/false);
 }
 
-void TabStripModel::MoveWebContentsAt(int index,
-                                      int to_position,
-                                      bool select_after_move) {
+int TabStripModel::MoveWebContentsAt(int index,
+                                     int to_position,
+                                     bool select_after_move) {
   DCHECK(!reentrancy_guard_);
   base::AutoReset<bool> resetter(&reentrancy_guard_, true);
 
@@ -549,10 +549,10 @@ void TabStripModel::MoveWebContentsAt(int index,
   to_position = IsTabPinned(index)
                     ? std::min(first_non_pinned_tab - 1, to_position)
                     : std::max(first_non_pinned_tab, to_position);
-  if (index == to_position)
-    return;
 
-  MoveWebContentsAtImpl(index, to_position, select_after_move);
+  if (index != to_position)
+    MoveWebContentsAtImpl(index, to_position, select_after_move);
+  return to_position;
 }
 
 void TabStripModel::MoveSelectedTabsTo(int index) {
@@ -1424,7 +1424,7 @@ std::vector<content::WebContents*> TabStripModel::GetWebContentsesByIndices(
   return items;
 }
 
-void TabStripModel::InsertWebContentsAtImpl(
+int TabStripModel::InsertWebContentsAtImpl(
     int index,
     std::unique_ptr<content::WebContents> contents,
     int add_types,
@@ -1484,6 +1484,8 @@ void TabStripModel::InsertWebContentsAtImpl(
   TabStripModelChange change(std::move(insert));
   for (auto& observer : observers_)
     observer.OnTabStripModelChanged(this, change, selection);
+
+  return index;
 }
 
 bool TabStripModel::InternalCloseTabs(
