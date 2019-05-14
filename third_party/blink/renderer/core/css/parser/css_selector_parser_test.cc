@@ -132,7 +132,7 @@ TEST(CSSSelectorParserTest, ShadowDomPseudoInCompound) {
         CSSParserContext::Create(kHTMLStandardMode,
                                  SecureContextMode::kInsecureContext),
         nullptr);
-    EXPECT_STREQ(test_case[1], list.SelectorsText().Ascii().data());
+    EXPECT_EQ(test_case[1], list.SelectorsText());
   }
 }
 
@@ -311,7 +311,7 @@ TEST(CSSSelectorParserTest, SerializedUniversal) {
     CSSSelectorList list =
         CSSSelectorParser::ParseSelector(range, context, sheet);
     EXPECT_TRUE(list.IsValid());
-    EXPECT_STREQ(test_case[1], list.SelectorsText().Ascii().data());
+    EXPECT_EQ(test_case[1], list.SelectorsText());
   }
 }
 
@@ -560,7 +560,7 @@ TEST(CSSSelectorParserTest, ShadowPartPseudoElementValid) {
         CSSParserContext::Create(kHTMLStandardMode,
                                  SecureContextMode::kInsecureContext),
         nullptr);
-    EXPECT_STREQ(test_case, list.SelectorsText().Ascii().data());
+    EXPECT_EQ(test_case, list.SelectorsText());
   }
 }
 
@@ -580,7 +580,7 @@ TEST(CSSSelectorParserTest, ShadowPartAndBeforeAfterPseudoElementValid) {
         CSSParserContext::Create(kHTMLStandardMode,
                                  SecureContextMode::kInsecureContext),
         nullptr);
-    EXPECT_STREQ(test_case, list.SelectorsText().Ascii().data());
+    EXPECT_EQ(test_case, list.SelectorsText());
   }
 }
 
