@@ -23,8 +23,7 @@ namespace {
 base::OnceClosure RunOnDestruction(base::OnceClosure task) {
   return base::BindOnce(
       [](std::unique_ptr<base::ScopedClosureRunner>) {},
-      base::Passed(
-          std::make_unique<base::ScopedClosureRunner>(std::move(task))));
+      std::make_unique<base::ScopedClosureRunner>(std::move(task)));
 }
 
 base::OnceClosure PostOnDestruction(
@@ -35,7 +34,7 @@ base::OnceClosure PostOnDestruction(
          scoped_refptr<base::SingleThreadTaskRunner> task_queue) {
         task_queue->PostTask(FROM_HERE, std::move(task));
       },
-      base::Passed(std::move(task)), task_queue));
+      std::move(task), task_queue));
 }
 
 TEST(BrowserUIThreadSchedulerTest, DestructorPostChainDuringShutdown) {
