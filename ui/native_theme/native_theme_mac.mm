@@ -19,6 +19,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/native_theme/common_theme.h"
+#include "ui/native_theme/native_theme_aura.h"
 
 namespace {
 
@@ -152,6 +153,8 @@ namespace ui {
 
 // static
 NativeTheme* NativeTheme::GetInstanceForWeb() {
+  if (features::IsFormControlsRefreshEnabled())
+    return NativeThemeAura::web_instance();
   return NativeThemeMac::instance();
 }
 

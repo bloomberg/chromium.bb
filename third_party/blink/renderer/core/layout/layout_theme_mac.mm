@@ -32,6 +32,7 @@
 #import "third_party/blink/renderer/core/fileapi/file_list.h"
 #import "third_party/blink/renderer/core/html_names.h"
 #import "third_party/blink/renderer/core/layout/layout_progress.h"
+#import "third_party/blink/renderer/core/layout/layout_theme_default.h"
 #import "third_party/blink/renderer/core/layout/layout_view.h"
 #import "third_party/blink/renderer/core/style/shadow_list.h"
 #import "third_party/blink/renderer/platform/data_resource_helper.h"
@@ -137,6 +138,13 @@
 namespace blink {
 
 namespace {
+
+class LayoutThemeMacRefresh final : public LayoutThemeDefault {
+ public:
+  static scoped_refptr<LayoutTheme> Create() {
+    return base::AdoptRef(new LayoutThemeMacRefresh());
+  }
+};
 
 // Inflate an IntRect to account for specific padding around margins.
 enum { kTopMargin = 0, kRightMargin = 1, kBottomMargin = 2, kLeftMargin = 3 };
@@ -1011,8 +1019,14 @@ NSView* FlippedView() {
 }
 
 LayoutTheme& LayoutTheme::NativeTheme() {
-  DEFINE_STATIC_REF(LayoutTheme, layout_theme, (LayoutThemeMac::Create()));
-  return *layout_theme;
+  if (RuntimeEnabledFeatures::FormControlsRefreshEnabled()) {
+    DEFINE_STATIC_REF(LayoutTheme, layout_theme,
+                      (LayoutThemeMacRefresh::Create()));
+    return *layout_theme;
+  } else {
+    DEFINE_STATIC_REF(LayoutTheme, layout_theme, (LayoutThemeMac::Create()));
+    return *layout_theme;
+  }
 }
 
 scoped_refptr<LayoutTheme> LayoutThemeMac::Create() {
