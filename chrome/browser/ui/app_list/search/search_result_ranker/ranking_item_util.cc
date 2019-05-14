@@ -76,10 +76,8 @@ RankingItemType RankingItemTypeFromSearchResult(
     case ash::SearchResultType::kUnknown:
     case ash::SearchResultType::kPlayStoreApp:
     case ash::SearchResultType::kInstantApp:
-    case ash::SearchResultType::kWebStoreApp:
     case ash::SearchResultType::kAnswerCard:
     case ash::SearchResultType::kPlayStoreReinstallApp:
-    case ash::SearchResultType::kWebStoreSearch:
       return RankingItemType::kIgnored;
     case ash::SearchResultType::kArcAppShortcut:
       return RankingItemType::kArcAppShortcut;

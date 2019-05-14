@@ -49,8 +49,6 @@ enum class SearchResultType {
   kPlayStoreApp,    // Installable apps from PlayStore.
   kInstantApp,      // Instant apps.
   kInternalApp,     // Chrome OS apps.
-  kWebStoreApp,     // Installable apps from WebStore.
-  kWebStoreSearch,  // A search query in WebStore.
   kOmnibox,         // Results from Omnibox.
   kLauncher,        // Results from launcher search (currently only from Files).
   kAnswerCard,      // WebContents based answer card.

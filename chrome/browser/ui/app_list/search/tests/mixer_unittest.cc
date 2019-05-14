@@ -35,7 +35,7 @@ using ResultType = ash::SearchResultType;
 // Maximum number of results to show in each mixer group.
 const size_t kMaxAppsGroupResults = 4;
 const size_t kMaxOmniboxResults = 4;
-const size_t kMaxWebstoreResults = 2;
+const size_t kMaxPlaystoreResults = 2;
 
 class TestSearchResult : public ChromeSearchResult {
  public:
@@ -136,7 +136,7 @@ class MixerTest : public testing::Test {
     providers_.push_back(
         std::make_unique<TestSearchProvider>("omnibox", ResultType::kOmnibox));
     providers_.push_back(std::make_unique<TestSearchProvider>(
-        "webstore", ResultType::kWebStoreApp));
+        "playstore", ResultType::kPlayStoreApp));
   }
 
   void CreateMixer() {
@@ -146,11 +146,12 @@ class MixerTest : public testing::Test {
     // to test answer card/apps group having relevance boost.
     size_t apps_group_id = mixer_->AddGroup(kMaxAppsGroupResults, 1.0, 0.0);
     size_t omnibox_group_id = mixer_->AddGroup(kMaxOmniboxResults, 1.0, 0.0);
-    size_t webstore_group_id = mixer_->AddGroup(kMaxWebstoreResults, 0.5, 0.0);
+    size_t playstore_group_id =
+        mixer_->AddGroup(kMaxPlaystoreResults, 0.5, 0.0);
 
     mixer_->AddProviderToGroup(apps_group_id, providers_[0].get());
     mixer_->AddProviderToGroup(omnibox_group_id, providers_[1].get());
-    mixer_->AddProviderToGroup(webstore_group_id, providers_[2].get());
+    mixer_->AddProviderToGroup(playstore_group_id, providers_[2].get());
   }
 
   void RunQuery() {
@@ -181,7 +182,7 @@ class MixerTest : public testing::Test {
   Mixer* mixer() { return mixer_.get(); }
   TestSearchProvider* app_provider() { return providers_[0].get(); }
   TestSearchProvider* omnibox_provider() { return providers_[1].get(); }
-  TestSearchProvider* webstore_provider() { return providers_[2].get(); }
+  TestSearchProvider* playstore_provider() { return providers_[2].get(); }
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -206,43 +207,43 @@ TEST_F(MixerTest, Basic) {
   struct TestCase {
     const size_t app_results;
     const size_t omnibox_results;
-    const size_t webstore_results;
+    const size_t playstore_results;
     const char* expected;
   } kTestCases[] = {
       {0, 0, 0, ""},
       {10, 0, 0, "app0,app1,app2,app3,app4,app5,app6,app7,app8,app9"},
       {0, 0, 10,
-       "webstore0,webstore1,webstore2,webstore3,webstore4,webstore5,webstore6,"
-       "webstore7,webstore8,webstore9"},
+       "playstore0,playstore1,playstore2,playstore3,playstore4,playstore5,"
+       "playstore6,playstore7,playstore8,playstore9"},
       {4, 6, 0, "app0,omnibox0,app1,omnibox1,app2,omnibox2,app3,omnibox3"},
       {4, 6, 2,
-       "app0,omnibox0,app1,omnibox1,app2,omnibox2,app3,omnibox3,webstore0,"
-       "webstore1"},
+       "app0,omnibox0,app1,omnibox1,app2,omnibox2,app3,omnibox3,playstore0,"
+       "playstore1"},
       {10, 10, 10,
-       "app0,omnibox0,app1,omnibox1,app2,omnibox2,app3,omnibox3,webstore0,"
-       "webstore1"},
+       "app0,omnibox0,app1,omnibox1,app2,omnibox2,app3,omnibox3,playstore0,"
+       "playstore1"},
       {0, 10, 0,
        "omnibox0,omnibox1,omnibox2,omnibox3,omnibox4,omnibox5,omnibox6,"
        "omnibox7,omnibox8,omnibox9"},
       {0, 10, 1,
-       "omnibox0,omnibox1,omnibox2,omnibox3,webstore0,omnibox4,omnibox5,"
+       "omnibox0,omnibox1,omnibox2,omnibox3,playstore0,omnibox4,omnibox5,"
        "omnibox6,omnibox7,omnibox8,omnibox9"},
-      {0, 10, 2, "omnibox0,omnibox1,omnibox2,omnibox3,webstore0,webstore1"},
+      {0, 10, 2, "omnibox0,omnibox1,omnibox2,omnibox3,playstore0,playstore1"},
       {1, 10, 0,
        "app0,omnibox0,omnibox1,omnibox2,omnibox3,omnibox4,omnibox5,omnibox6,"
        "omnibox7,omnibox8,omnibox9"},
       {2, 10, 0, "app0,omnibox0,app1,omnibox1,omnibox2,omnibox3"},
-      {2, 10, 1, "app0,omnibox0,app1,omnibox1,omnibox2,omnibox3,webstore0"},
+      {2, 10, 1, "app0,omnibox0,app1,omnibox1,omnibox2,omnibox3,playstore0"},
       {2, 10, 2,
-       "app0,omnibox0,app1,omnibox1,omnibox2,omnibox3,webstore0,webstore1"},
-      {2, 0, 2, "app0,app1,webstore0,webstore1"},
+       "app0,omnibox0,app1,omnibox1,omnibox2,omnibox3,playstore0,playstore1"},
+      {2, 0, 2, "app0,app1,playstore0,playstore1"},
       {0, 0, 0, ""},
   };
 
   for (size_t i = 0; i < base::size(kTestCases); ++i) {
     app_provider()->set_count(kTestCases[i].app_results);
     omnibox_provider()->set_count(kTestCases[i].omnibox_results);
-    webstore_provider()->set_count(kTestCases[i].webstore_results);
+    playstore_provider()->set_count(kTestCases[i].playstore_results);
     RunQuery();
 
     EXPECT_EQ(kTestCases[i].expected, GetResults()) << "Case " << i;
@@ -263,8 +264,8 @@ TEST_F(MixerTest, RemoveDuplicates) {
   omnibox_provider()->set_count(2);
 
   // This gives "dup0".
-  webstore_provider()->set_prefix(dup);
-  webstore_provider()->set_count(1);
+  playstore_provider()->set_prefix(dup);
+  playstore_provider()->set_count(1);
 
   RunQuery();
 
