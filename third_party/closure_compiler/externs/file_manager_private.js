@@ -395,7 +395,9 @@ chrome.fileManagerPrivate.FileWatchEvent;
  *   cellularDisabled: boolean,
  *   searchSuggestEnabled: boolean,
  *   use24hourClock: boolean,
- *   timezone: string
+ *   timezone: string,
+ *   arcEnabled: boolean,
+ *   arcRemovableMediaAccessEnabled: boolean
  * }}
  */
 chrome.fileManagerPrivate.Preferences;

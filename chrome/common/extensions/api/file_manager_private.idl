@@ -559,6 +559,8 @@ dictionary Preferences {
   boolean searchSuggestEnabled;
   boolean use24hourClock;
   DOMString timezone;
+  boolean arcEnabled;
+  boolean arcRemovableMediaAccessEnabled;
 };
 
 dictionary PreferencesChange {

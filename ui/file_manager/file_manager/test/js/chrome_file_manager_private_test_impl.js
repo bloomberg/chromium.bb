@@ -30,6 +30,8 @@ chrome.fileManagerPrivate = {
     searchSuggestEnabled: true,
     timezone: 'Australia/Sydney',
     use24hourClock: false,
+    arcEnabled: false,
+    arcRemovableMediaAccessEnabled: false,
   },
   profiles_: [{
     displayName: 'Test User',

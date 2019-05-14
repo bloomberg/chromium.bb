@@ -1727,11 +1727,20 @@
   <message name="IDS_REMOVABLE_DEVICE_NAVIGATION_MESSAGE" desc="Text of notification message to navigate users to the Files app. If user clicks a button in the notification, the Files app opens.">
     Explore the device's content in the Files app.
   </message>
+  <message name="IDS_REMOVABLE_DEVICE_ALLOW_PLAY_STORE_ACCESS_MESSAGE" desc="Text of notification message to navigate users to the ARC settings page. If user clicks a button in the notification, the page opens.">
+    Allow Play Store applications to access this device via Settings.
+  </message>
+  <message name="IDS_REMOVABLE_DEVICE_PLAY_STORE_APPS_HAVE_ACCESS_MESSAGE" desc="Text of notification message to navigate users to the ARC settings page. If user clicks a button in the notification, the page opens.">
+    Play Store applications have access to this device.
+  </message>
   <message name="IDS_REMOVABLE_DEVICE_NAVIGATION_MESSAGE_READONLY_POLICY" desc="Text of notification message to navigate users to the Files app when attaching a removable media, but the administrator's poilcy forbids writing data to them. If user clicks a button in the notification, the Files app opens.">
     Explore the device's content in the Files app. The content is restricted by an admin and can’t be modified.
   </message>
   <message name="IDS_REMOVABLE_DEVICE_NAVIGATION_BUTTON_LABEL" desc="Text of a button label in a notification to navigate users to the Files app. If user clicks the button, the Files app opens.">
     Open Files app
+  </message>
+  <message name="IDS_REMOVABLE_DEVICE_OPEN_SETTTINGS_BUTTON_LABEL" desc="Text of a button label in a notification to navigate users to the ARC settings page. If user clicks the button, the page opens.">
+    Open settings
   </message>
   <message name="IDS_REMOVABLE_DEVICE_IMPORT_MESSAGE" desc="Text of notification message to start the media import flow. If user clicks a button in the notification, the import flow begins.">
     Back up media from the device using the Files app.

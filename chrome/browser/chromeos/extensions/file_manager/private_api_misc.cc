@@ -57,6 +57,7 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/settings/timezone_settings.h"
 #include "components/account_id/account_id.h"
+#include "components/arc/arc_prefs.h"
 #include "components/drive/drive_pref_names.h"
 #include "components/drive/event_logger.h"
 #include "components/prefs/pref_service.h"
@@ -232,6 +233,9 @@ FileManagerPrivateGetPreferencesFunction::Run() {
   result.timezone =
       base::UTF16ToUTF8(chromeos::system::TimezoneSettings::GetInstance()
                             ->GetCurrentTimezoneID());
+  result.arc_enabled = service->GetBoolean(arc::prefs::kArcEnabled);
+  result.arc_removable_media_access_enabled =
+      service->GetBoolean(arc::prefs::kArcHasAccessToRemovableMedia);
 
   return RespondNow(OneArgument(result.ToValue()));
 }
