@@ -1599,9 +1599,12 @@
           "board_name": "coral",
           "name": "blacktiplte",
           "test_suites": [
+            "sanity",
             "bvt-inline",
             "bvt-tast-cq",
+            "bvt-installer",
             "bvt-arc",
+            "au",
             "bvt-cq",
             "bvt-perbuild",
             "bvt-tast-informational"
