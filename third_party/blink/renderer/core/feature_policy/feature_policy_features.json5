@@ -64,6 +64,12 @@
       feature_policy_name: "encrypted-media",
     },
     {
+    {
+      name: "FocusWithoutUserActivation",
+      feature_policy_name: "focus-without-user-activation",
+      depends_on: ["BlockingFocusWithoutUserActivation"],
+    },
+    {
       name: "FontDisplay",
       feature_policy_name: "font-display-late-swap",
       depends_on: ["ExperimentalProductivityFeatures"],
