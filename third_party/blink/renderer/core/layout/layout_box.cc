@@ -2866,13 +2866,13 @@ static float GetMaxWidthListMarker(const LayoutBox* layout_object) {
 DISABLE_CFI_PERF
 void LayoutBox::ComputeLogicalWidth(
     LogicalExtentComputedValues& computed_values) const {
-  if (DisplayLockInducesSizeContainment()) {
+  if (ShouldApplySizeContainment()) {
+    computed_values.extent_ =
+        BorderAndPaddingLogicalWidth() + ScrollbarLogicalWidth();
+  } else if (DisplayLockInducesSizeContainment()) {
     computed_values.extent_ =
         BorderAndPaddingLogicalWidth() + ScrollbarLogicalWidth() +
         GetDisplayLockContext()->GetLockedContentLogicalWidth();
-  } else if (ShouldApplySizeContainment()) {
-    computed_values.extent_ =
-        BorderAndPaddingLogicalWidth() + ScrollbarLogicalWidth();
   } else {
     computed_values.extent_ = LogicalWidth();
   }
@@ -3369,11 +3369,14 @@ static inline const Length& HeightForDocumentElement(const Document& document) {
 void LayoutBox::ComputeLogicalHeight(
     LogicalExtentComputedValues& computed_values) const {
   LayoutUnit height;
-  if (DisplayLockInducesSizeContainment()) {
+  // TODO(962979): Implement grid layout with display locking. We need to figure
+  // out what happens here if IsLayoutGrid() is true and size containment is
+  // specified while the box is locked.
+  if (ShouldApplySizeContainment() && !IsLayoutGrid()) {
+    height = BorderAndPaddingLogicalHeight() + ScrollbarLogicalHeight();
+  } else if (DisplayLockInducesSizeContainment()) {
     height = BorderAndPaddingLogicalHeight() + ScrollbarLogicalHeight() +
              GetDisplayLockContext()->GetLockedContentLogicalHeight();
-  } else if (ShouldApplySizeContainment() && !IsLayoutGrid()) {
-    height = BorderAndPaddingLogicalHeight() + ScrollbarLogicalHeight();
   } else {
     height = LogicalHeight();
   }
@@ -3511,7 +3514,8 @@ void LayoutBox::ComputeLogicalHeight(
 LayoutUnit LayoutBox::ComputeLogicalHeightWithoutLayout() const {
   LogicalExtentComputedValues computed_values;
 
-  if (!SelfNeedsLayout() && DisplayLockInducesSizeContainment()) {
+  if (!SelfNeedsLayout() && !ShouldApplySizeContainment() &&
+      DisplayLockInducesSizeContainment()) {
     ComputeLogicalHeight(
         BorderAndPaddingLogicalHeight() +
             GetDisplayLockContext()->GetLockedContentLogicalHeight(),

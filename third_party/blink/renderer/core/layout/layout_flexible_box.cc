@@ -68,15 +68,15 @@ void LayoutFlexibleBox::ComputeIntrinsicLogicalWidths(
     LayoutUnit& min_logical_width,
     LayoutUnit& max_logical_width) const {
   LayoutUnit scrollbar_width(ScrollbarLogicalWidth());
+  if (ShouldApplySizeContainment()) {
+    max_logical_width = scrollbar_width;
+    min_logical_width = scrollbar_width;
+    return;
+  }
   if (DisplayLockInducesSizeContainment()) {
     min_logical_width = max_logical_width =
         scrollbar_width +
         GetDisplayLockContext()->GetLockedContentLogicalWidth();
-    return;
-  }
-  if (ShouldApplySizeContainment()) {
-    max_logical_width = scrollbar_width;
-    min_logical_width = scrollbar_width;
     return;
   }
 
@@ -504,12 +504,14 @@ LayoutUnit LayoutFlexibleBox::ChildUnstretchedLogicalHeight(
   DCHECK(MainAxisIsInlineAxis(child));
   if (NeedToStretchChildLogicalHeight(child)) {
     LayoutUnit child_intrinsic_content_logical_height;
-    if (child.DisplayLockInducesSizeContainment()) {
-      child_intrinsic_content_logical_height =
-          child.GetDisplayLockContext()->GetLockedContentLogicalHeight();
-    } else if (!child.ShouldApplySizeContainment()) {
-      child_intrinsic_content_logical_height =
-          child.IntrinsicContentLogicalHeight();
+    if (!child.ShouldApplySizeContainment()) {
+      if (child.DisplayLockInducesSizeContainment()) {
+        child_intrinsic_content_logical_height =
+            child.GetDisplayLockContext()->GetLockedContentLogicalHeight();
+      } else {
+        child_intrinsic_content_logical_height =
+            child.IntrinsicContentLogicalHeight();
+      }
     }
 
     LayoutUnit child_intrinsic_logical_height =

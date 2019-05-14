@@ -1445,13 +1445,6 @@ void LayoutBlock::ComputeIntrinsicLogicalWidths(
     LayoutUnit& max_logical_width) const {
   int scrollbar_width = ScrollbarLogicalWidth();
 
-  if (DisplayLockInducesSizeContainment()) {
-    min_logical_width = max_logical_width =
-        LayoutUnit(scrollbar_width) +
-        GetDisplayLockContext()->GetLockedContentLogicalWidth();
-    return;
-  }
-
   // Size-contained elements don't consider their contents for preferred sizing.
   if (ShouldApplySizeContainment()) {
     // For multicol containers we need the column gaps. So allow descending into
@@ -1462,6 +1455,11 @@ void LayoutBlock::ComputeIntrinsicLogicalWidths(
       min_logical_width = LayoutUnit(scrollbar_width);
       return;
     }
+  } else if (DisplayLockInducesSizeContainment()) {
+    min_logical_width = max_logical_width =
+        LayoutUnit(scrollbar_width) +
+        GetDisplayLockContext()->GetLockedContentLogicalWidth();
+    return;
   }
 
   if (ChildrenInline()) {
