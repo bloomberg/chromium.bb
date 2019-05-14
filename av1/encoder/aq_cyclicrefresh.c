@@ -429,13 +429,7 @@ void av1_cyclic_refresh_setup(AV1_COMP *const cpi) {
   int resolution_change =
       cm->prev_frame && (cm->width != cm->prev_frame->width ||
                          cm->height != cm->prev_frame->height);
-  if (resolution_change) {
-    memset(cpi->segmentation_map, 0, cm->mi_rows * cm->mi_cols);
-    av1_clearall_segfeatures(seg);
-    aom_clear_system_state();
-    av1_disable_segmentation(seg);
-    return;
-  }
+  if (resolution_change) av1_cyclic_refresh_reset_resize(cpi);
   if (cm->current_frame.frame_number == 0) cr->low_content_avg = 0.0;
   if (!cr->apply_cyclic_refresh) {
     // Set segmentation map to 0 and disable.
@@ -505,7 +499,7 @@ void av1_cyclic_refresh_setup(AV1_COMP *const cpi) {
   }
 }
 
-int av1_cyclic_refresh_get_rdmult(const CYCLIC_REFRESH *cr) {
+INLINE int av1_cyclic_refresh_get_rdmult(const CYCLIC_REFRESH *cr) {
   return cr->rdmult;
 }
 
