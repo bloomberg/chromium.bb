@@ -66,8 +66,8 @@ std::unique_ptr<download::Client> CreatePluginVmImageDownloadClient(
 #endif
 
 // Called on profile created to retrieve the BlobStorageContextGetter.
-void OnProfileCreated(download::BlobContextGetterCallback callback,
-                      Profile* profile) {
+void DownloadOnProfileCreated(download::BlobContextGetterCallback callback,
+                              Profile* profile) {
   auto blob_context_getter =
       content::BrowserContext::GetBlobStorageContext(profile);
   DCHECK(callback);
@@ -89,7 +89,8 @@ class DownloadBlobContextGetterFactory
   void RetrieveBlobContextGetter(
       download::BlobContextGetterCallback callback) override {
     FullBrowserTransitionManager::Get()->RegisterCallbackOnProfileCreation(
-        profile_key_, base::BindOnce(&OnProfileCreated, std::move(callback)));
+        profile_key_,
+        base::BindOnce(&DownloadOnProfileCreated, std::move(callback)));
   }
 
   ProfileKey* profile_key_;
