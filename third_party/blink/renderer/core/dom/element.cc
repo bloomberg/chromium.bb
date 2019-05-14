@@ -3579,6 +3579,16 @@ void Element::SetShouldForceLegacyLayoutForChildInternal(bool force) {
 
 void Element::UpdateForceLegacyLayout(const ComputedStyle& new_style,
                                       const ComputedStyle* old_style) {
+  // ::first-letter may cause structure discrepancies between DOM and layout
+  //  tree (in layout the layout object will be wrapped around the actual text
+  //  layout object, which may be deep down in the tree somewhere, while in DOM,
+  //  the pseudo element will be a direct child of the node that matched the
+  //  ::first-letter selector). Because of that, it's going to be tricky to
+  //  determine whether we need to force legacy layout or not. Luckily, the
+  //  ::first-letter pseudo element cannot introduce the need for legacy layout
+  //  on its own, so just bail. We'll do whatever the parent layout object does.
+  if (IsFirstLetterPseudoElement())
+    return;
   bool old_force = old_style && ShouldForceLegacyLayout();
   SetStyleShouldForceLegacyLayout(
       CalculateStyleShouldForceLegacyLayout(*this, new_style));
