@@ -601,22 +601,15 @@ int HttpCache::GetBackendForTransaction(Transaction* transaction) {
 
 // Generate a key that can be used inside the cache.
 std::string HttpCache::GenerateCacheKey(const HttpRequestInfo* request) {
-  // Strip out the reference, username, and password sections of the URL.
-  std::string url;
+  // TODO(crbug.com/950069): Sending an empty initiator origin now.
+  // This call will eventually be removed and ComputeCacheKey will be invoked at
+  // a higher layer before we start using the initiator.
+  std::string cache_key = HttpUtil::ComputeCacheKey(
+      request->top_frame_origin, base::Optional<url::Origin>());
 
-  // If we're splitting the cache by top frame origin, then prefix the key with
-  // the origin.
-  if (request->top_frame_origin &&
-      base::FeatureList::IsEnabled(features::kSplitCacheByTopFrameOrigin)) {
-    // Prepend the key with "_dk_" to mark it as double keyed (and makes it an
-    // invalid url so that it doesn't get confused with a single-keyed
-    // entry). Separate the origin and url with invalid whitespace and control
-    // characters.
-    url = base::StrCat({"_dk_", request->top_frame_origin->Serialize(), " \n",
-                        HttpUtil::SpecForRequest(request->url)});
-  } else {
-    url = HttpUtil::SpecForRequest(request->url);
-  }
+  // Strip out the reference, username, and password sections of the URL and
+  // concatenate with the cache_key if we are splitting the cache.
+  std::string url = cache_key + HttpUtil::SpecForRequest(request->url);
 
   DCHECK_NE(DISABLE, mode_);
   // No valid URL can begin with numerals, so we should not have to worry

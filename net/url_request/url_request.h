@@ -335,6 +335,10 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // This method may only be called before Start().
   void set_initiator(const base::Optional<url::Origin>& initiator);
 
+  // The key used to partition resources in the HTTP cache.
+  const std::string& cache_key() const { return cache_key_; }
+  void set_cache_key(const std::string& cache_key);
+
   // The request method, as an uppercase string.  "GET" is the default value.
   // The request method may only be changed before Start() is called and
   // should only be assigned an uppercase value.
@@ -868,6 +872,7 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
 
   bool attach_same_site_cookies_;
   base::Optional<url::Origin> initiator_;
+  std::string cache_key_;
   GURL delegate_redirect_url_;
   std::string method_;  // "GET", "POST", etc. Should be all uppercase.
   std::string referrer_;

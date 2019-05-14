@@ -21,6 +21,7 @@
 #include "net/http/http_byte_range.h"
 #include "net/http/http_version.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 // This is a macro to support extending this string literal at compile time.
 // Please excuse me polluting your global namespace!
@@ -250,6 +251,12 @@ class NET_EXPORT HttpUtil {
   // 3.5 of RFC 2616.
   static bool ParseContentEncoding(const std::string& content_encoding,
                                    std::set<std::string>* used_encodings);
+
+  // Computes the partitioning http cache key given the top frame and initiator
+  // origins. Returns empty string if split cache is not enabled.
+  static std::string ComputeCacheKey(
+      const base::Optional<url::Origin>& top_frame_origin,
+      const base::Optional<url::Origin>& initiator_origin);
 
   // Used to iterate over the name/value pairs of HTTP headers.  To iterate
   // over the values in a multi-value header, use ValuesIterator.

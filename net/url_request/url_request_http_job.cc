@@ -362,6 +362,8 @@ void URLRequestHttpJob::Start() {
 
   AddExtraHeaders();
   AddCookieHeaderAndStart();
+
+  request_info_.cache_key = request_->cache_key();
 }
 
 void URLRequestHttpJob::Kill() {

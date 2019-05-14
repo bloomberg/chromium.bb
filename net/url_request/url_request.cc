@@ -484,6 +484,10 @@ void URLRequest::set_initiator(const base::Optional<url::Origin>& initiator) {
   initiator_ = initiator;
 }
 
+void URLRequest::set_cache_key(const std::string& cache_key) {
+  cache_key_ = cache_key;
+}
+
 void URLRequest::set_method(const std::string& method) {
   DCHECK(!is_pending_);
   method_ = method;

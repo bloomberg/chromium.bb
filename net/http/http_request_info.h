@@ -60,6 +60,9 @@ struct NET_EXPORT HttpRequestInfo {
   // If the request is a Reporting upload, the depth is the max of the depth
   // of the requests reported within it plus 1.
   int reporting_upload_depth;
+
+  // Key to be used for partitioning the HTTP cache.
+  std::string cache_key;
 };
 
 }  // namespace net
