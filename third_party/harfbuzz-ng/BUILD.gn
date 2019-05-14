@@ -87,6 +87,7 @@ if (use_system_harfbuzz) {
       "src/src/hb-cff1-interp-cs.hh",
       "src/src/hb-cff2-interp-cs.hh",
       "src/src/hb-common.cc",
+      "src/src/hb-config.hh",
       "src/src/hb-debug.hh",
       "src/src/hb-dispatch.hh",
       "src/src/hb-face.cc",
@@ -132,7 +133,7 @@ if (use_system_harfbuzz) {
       "src/src/hb-ot-math-table.hh",
       "src/src/hb-ot-math.cc",
       "src/src/hb-ot-maxp-table.hh",
-      "src/src/hb-ot-name-language.cc",
+      "src/src/hb-ot-name-language-static.hh",
       "src/src/hb-ot-name-language.hh",
       "src/src/hb-ot-name-table.hh",
       "src/src/hb-ot-name.cc",
@@ -175,6 +176,7 @@ if (use_system_harfbuzz) {
       "src/src/hb-ot-var-hvar-table.hh",
       "src/src/hb-ot-var-mvar-table.hh",
       "src/src/hb-ot-var.cc",
+      "src/src/hb-pool.hh",
       "src/src/hb-sanitize.hh",
       "src/src/hb-serialize.hh",
       "src/src/hb-set-digest.hh",
@@ -215,6 +217,10 @@ if (use_system_harfbuzz) {
       "HAVE_ICU_BUILTIN",
       "HAVE_INTEL_ATOMIC_PRIMITIVES",
       "HB_NO_MMAP",
+
+      # SkPDF needs subsetting but does not require subsetting of layout or CFF tables.
+      "HB_NO_SUBSET_LAYOUT",
+      "HB_NO_SUBSET_CFF",
 
       # TODO(https://crbug.com/949962): Remove once this is fixed upstream.
       "U_DISABLE_VERSION_SUFFIX=0",
