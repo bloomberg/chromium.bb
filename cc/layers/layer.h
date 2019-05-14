@@ -316,7 +316,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   }
 
   void SetBackdropFilterBounds(const gfx::RRectF& backdrop_filter_bounds);
-  const gfx::RRectF& backdrop_filter_bounds() const {
+  void ClearBackdropFilterBounds();
+  const base::Optional<gfx::RRectF>& backdrop_filter_bounds() const {
     return inputs_.backdrop_filter_bounds;
   }
 
@@ -952,7 +953,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
     FilterOperations filters;
     FilterOperations backdrop_filters;
-    gfx::RRectF backdrop_filter_bounds;
+    base::Optional<gfx::RRectF> backdrop_filter_bounds;
     gfx::PointF filters_origin;
     float backdrop_filter_quality;
 

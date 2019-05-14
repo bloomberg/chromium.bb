@@ -276,8 +276,12 @@ TEST_P(LayerTreeHostFiltersPixelTestGL, BackdropFilterBlurOffAxis) {
   filters.Append(FilterOperation::CreateBlurFilter(
       2.f, SkBlurImageFilter::kClamp_TileMode));
   blur->SetBackdropFilters(filters);
-  // TODO(916311): Fix clipping for 3D transformed elements.
-  blur->SetBackdropFilterBounds(gfx::RRectF());
+  // TODO(916311): We should be able to set the bounds like this, but the
+  // resulting output is clipped incorrectly.
+  // gfx::RRectF
+  // backdrop_filter_bounds(gfx::RectF(gfx::SizeF(blur->bounds())),0);
+  // blur->SetBackdropFilterBounds(backdrop_filter_bounds);
+  blur->ClearBackdropFilterBounds();
 
 #if defined(OS_WIN) || defined(ARCH_CPU_ARM64)
 #if defined(OS_WIN)
@@ -496,7 +500,7 @@ TEST_P(LayerTreeHostFiltersPixelTestNonSkia, ImageFilterScaled) {
   FilterOperations filters;
   filters.Append(FilterOperation::CreateGrayscaleFilter(1.0f));
   filter->SetBackdropFilters(filters);
-  filter->SetBackdropFilterBounds(gfx::RRectF());
+  filter->ClearBackdropFilterBounds();
 
 #if defined(OS_WIN) || defined(_MIPS_ARCH_LOONGSON) || defined(ARCH_CPU_ARM64)
 #if defined(OS_WIN)
@@ -560,12 +564,9 @@ TEST_P(LayerTreeHostFiltersPixelTestNonSkia, BackdropFilterRotated) {
   filters.Append(FilterOperation::CreateBlurFilter(
       5.0f, SkBlurImageFilter::kClamp_TileMode));
   filter_layer->SetBackdropFilters(filters);
-  // TODO(916311): Adding filter bounds here should work, but it clips
-  // the corner of the red box.
-  // gfx::RectF backdrop_filter_bounds(gfx::SizeF(filter_layer->bounds()));
-  gfx::RRectF backdrop_filter_bounds;
+  gfx::RRectF backdrop_filter_bounds(
+      gfx::RectF(gfx::SizeF(filter_layer->bounds())), 0);
   filter_layer->SetBackdropFilterBounds(backdrop_filter_bounds);
-
   background->AddChild(filter_layer);
 
   // Allow some fuzziness so that this doesn't fail when Skia makes minor
@@ -997,7 +998,7 @@ class BackdropFilterWithDeviceScaleFactorTest
     filters.Append(FilterOperation::CreateReferenceFilter(
         sk_make_sp<OffsetPaintFilter>(0, 80, nullptr)));
     filtered->SetBackdropFilters(filters);
-    filtered->SetBackdropFilterBounds(gfx::RRectF());
+    filtered->ClearBackdropFilterBounds();
     root->AddChild(filtered);
 
     // This should appear as a grid of 4 100x100 squares which are:

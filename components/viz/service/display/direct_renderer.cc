@@ -351,12 +351,8 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
       render_pass_filters_[pass->id] = &pass->filters;
     if (!pass->backdrop_filters.IsEmpty()) {
       render_pass_backdrop_filters_[pass->id] = &pass->backdrop_filters;
-      // |backdrop_filter_bounds| only apply if there is a non-empty
-      // backdrop-filter to apply.
-      if (!pass->backdrop_filters.IsEmpty()) {
-        render_pass_backdrop_filter_bounds_[pass->id] =
-            &pass->backdrop_filter_bounds;
-      }
+      render_pass_backdrop_filter_bounds_[pass->id] =
+          pass->backdrop_filter_bounds;
     }
   }
 
@@ -533,10 +529,12 @@ const cc::FilterOperations* DirectRenderer::BackdropFiltersForPass(
   return it == render_pass_backdrop_filters_.end() ? nullptr : it->second;
 }
 
-const gfx::RRectF* DirectRenderer::BackdropFilterBoundsForPass(
+const base::Optional<gfx::RRectF> DirectRenderer::BackdropFilterBoundsForPass(
     RenderPassId render_pass_id) const {
   auto it = render_pass_backdrop_filter_bounds_.find(render_pass_id);
-  return it == render_pass_backdrop_filter_bounds_.end() ? nullptr : it->second;
+  return it == render_pass_backdrop_filter_bounds_.end()
+             ? base::Optional<gfx::RRectF>()
+             : it->second;
 }
 
 void DirectRenderer::FlushPolygons(

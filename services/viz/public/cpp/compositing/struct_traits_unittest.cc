@@ -747,8 +747,8 @@ TEST_F(StructTraitsTest, RenderPass) {
   backdrop_filters.Append(cc::FilterOperation::CreateSaturateFilter(4.f));
   backdrop_filters.Append(cc::FilterOperation::CreateZoomFilter(2.0f, 1));
   backdrop_filters.Append(cc::FilterOperation::CreateSaturateFilter(2.f));
-  gfx::RRectF backdrop_filter_bounds =
-      gfx::RRectF(10, 20, 130, 140, 1, 2, 3, 4, 5, 6, 7, 8);
+  base::Optional<gfx::RRectF> backdrop_filter_bounds(
+      {10, 20, 130, 140, 1, 2, 3, 4, 5, 6, 7, 8});
   gfx::ColorSpace color_space = gfx::ColorSpace::CreateXYZD50();
   const bool has_transparent_background = true;
   const bool cache_render_pass = true;
@@ -900,8 +900,9 @@ TEST_F(StructTraitsTest, RenderPassWithEmptySharedQuadStateList) {
   const bool generate_mipmap = false;
   std::unique_ptr<RenderPass> input = RenderPass::Create();
   input->SetAll(render_pass_id, output_rect, damage_rect, transform_to_root,
-                cc::FilterOperations(), cc::FilterOperations(), gfx::RRectF(),
-                color_space, has_transparent_background, cache_render_pass,
+                cc::FilterOperations(), cc::FilterOperations(),
+                base::Optional<gfx::RRectF>(), color_space,
+                has_transparent_background, cache_render_pass,
                 has_damage_from_contributing_content, generate_mipmap);
 
   // Unlike the previous test, don't add any quads to the list; we need to

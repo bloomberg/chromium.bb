@@ -795,11 +795,13 @@ static inline const FilterOperations& BackdropFilters(LayerImpl* layer) {
   return layer->test_properties()->backdrop_filters;
 }
 
-static inline const gfx::RRectF& BackdropFilterBounds(Layer* layer) {
+static inline const base::Optional<gfx::RRectF>& BackdropFilterBounds(
+    Layer* layer) {
   return layer->backdrop_filter_bounds();
 }
 
-static inline const gfx::RRectF& BackdropFilterBounds(LayerImpl* layer) {
+static inline const base::Optional<gfx::RRectF>& BackdropFilterBounds(
+    LayerImpl* layer) {
   return layer->test_properties()->backdrop_filter_bounds;
 }
 

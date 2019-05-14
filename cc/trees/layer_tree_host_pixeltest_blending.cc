@@ -320,9 +320,8 @@ TEST_P(LayerTreeHostBlendingPixelTestNonSkia, BlendingWithBackdropFilter) {
   background->AddChild(green_lane);
   FilterOperations filters;
   filters.Append(FilterOperation::CreateGrayscaleFilter(.75));
-  gfx::RRectF backdrop_filter_bounds;
   green_lane->SetBackdropFilters(filters);
-  green_lane->SetBackdropFilterBounds(backdrop_filter_bounds);
+  green_lane->ClearBackdropFilterBounds();
   green_lane->SetBlendMode(current_blend_mode());
 
   SkBitmap expected;

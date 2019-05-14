@@ -2906,7 +2906,7 @@ class RendererPixelTestWithBackdropFilter
 
   RenderPassList pass_list_;
   cc::FilterOperations backdrop_filters_;
-  gfx::RRectF backdrop_filter_bounds_;
+  base::Optional<gfx::RRectF> backdrop_filter_bounds_;
   gfx::Transform filter_pass_to_target_transform_;
   gfx::Rect filter_pass_layer_rect_;
 };

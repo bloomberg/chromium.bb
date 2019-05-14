@@ -1634,7 +1634,7 @@ SkiaRenderer::DrawRPDQParams SkiaRenderer::CalculateRPDQParams(
   // Determine if the backdrop filter has its own clip (which only needs to be
   // checked when we have a backdrop filter to apply)
   if (rpdq_params.backdrop_filter) {
-    const gfx::RRectF* backdrop_filter_bounds =
+    const base::Optional<gfx::RRectF> backdrop_filter_bounds =
         BackdropFilterBoundsForPass(quad->render_pass_id);
     if (backdrop_filter_bounds) {
       // Map this into the same coordinate system as the quad.

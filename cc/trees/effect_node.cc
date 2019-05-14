@@ -43,6 +43,8 @@ EffectNode::EffectNode()
 
 EffectNode::EffectNode(const EffectNode& other) = default;
 
+EffectNode::~EffectNode() = default;
+
 bool EffectNode::operator==(const EffectNode& other) const {
   return id == other.id && parent_id == other.parent_id &&
          stable_id == other.stable_id && opacity == other.opacity &&

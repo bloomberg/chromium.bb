@@ -159,7 +159,7 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   const cc::FilterOperations* FiltersForPass(RenderPassId render_pass_id) const;
   const cc::FilterOperations* BackdropFiltersForPass(
       RenderPassId render_pass_id) const;
-  const gfx::RRectF* BackdropFilterBoundsForPass(
+  const base::Optional<gfx::RRectF> BackdropFilterBoundsForPass(
       RenderPassId render_pass_id) const;
 
   // Private interface implemented by subclasses for use by DirectRenderer.
@@ -242,7 +242,7 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   base::flat_map<RenderPassId, cc::FilterOperations*> render_pass_filters_;
   base::flat_map<RenderPassId, cc::FilterOperations*>
       render_pass_backdrop_filters_;
-  base::flat_map<RenderPassId, gfx::RRectF*>
+  base::flat_map<RenderPassId, base::Optional<gfx::RRectF>>
       render_pass_backdrop_filter_bounds_;
 
   bool visible_ = false;

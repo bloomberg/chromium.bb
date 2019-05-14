@@ -617,7 +617,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // EffectPaintPropertyNode.
   void UpdateCompositorFilterOperationsForBackdropFilter(
       CompositorFilterOperations& operations,
-      gfx::RRectF* backdrop_filter_bounds) const;
+      base::Optional<gfx::RRectF>* backdrop_filter_bounds) const;
   CompositorFilterOperations CreateCompositorFilterOperationsForBackdropFilter()
       const;
 

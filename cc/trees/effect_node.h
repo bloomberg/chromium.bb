@@ -50,6 +50,7 @@ CC_EXPORT const char* RenderSurfaceReasonToString(RenderSurfaceReason);
 struct CC_EXPORT EffectNode {
   EffectNode();
   EffectNode(const EffectNode& other);
+  ~EffectNode();
 
   enum StableIdLabels { INVALID_STABLE_ID = 0 };
 
@@ -68,7 +69,7 @@ struct CC_EXPORT EffectNode {
 
   FilterOperations filters;
   FilterOperations backdrop_filters;
-  gfx::RRectF backdrop_filter_bounds;
+  base::Optional<gfx::RRectF> backdrop_filter_bounds;
   float backdrop_filter_quality;
   gfx::PointF filters_origin;
 

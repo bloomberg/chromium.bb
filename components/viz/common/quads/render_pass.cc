@@ -184,18 +184,19 @@ void RenderPass::SetNew(uint64_t id,
   DCHECK(shared_quad_state_list.empty());
 }
 
-void RenderPass::SetAll(uint64_t id,
-                        const gfx::Rect& output_rect,
-                        const gfx::Rect& damage_rect,
-                        const gfx::Transform& transform_to_root_target,
-                        const cc::FilterOperations& filters,
-                        const cc::FilterOperations& backdrop_filters,
-                        const gfx::RRectF& backdrop_filter_bounds,
-                        const gfx::ColorSpace& color_space,
-                        bool has_transparent_background,
-                        bool cache_render_pass,
-                        bool has_damage_from_contributing_content,
-                        bool generate_mipmap) {
+void RenderPass::SetAll(
+    uint64_t id,
+    const gfx::Rect& output_rect,
+    const gfx::Rect& damage_rect,
+    const gfx::Transform& transform_to_root_target,
+    const cc::FilterOperations& filters,
+    const cc::FilterOperations& backdrop_filters,
+    const base::Optional<gfx::RRectF>& backdrop_filter_bounds,
+    const gfx::ColorSpace& color_space,
+    bool has_transparent_background,
+    bool cache_render_pass,
+    bool has_damage_from_contributing_content,
+    bool generate_mipmap) {
   DCHECK(id);
 
   this->id = id;
@@ -237,8 +238,10 @@ void RenderPass::AsValueInto(base::trace_event::TracedValue* value) const {
   backdrop_filters.AsValueInto(value);
   value->EndArray();
 
-  cc::MathUtil::AddToTracedValue("backdrop_filter_bounds",
-                                 backdrop_filter_bounds, value);
+  if (backdrop_filter_bounds.has_value()) {
+    cc::MathUtil::AddToTracedValue("backdrop_filter_bounds",
+                                   backdrop_filter_bounds.value(), value);
+  }
 
   value->BeginArray("shared_quad_state_list");
   for (auto* shared_quad_state : shared_quad_state_list) {

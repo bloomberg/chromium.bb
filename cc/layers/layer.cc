@@ -601,6 +601,10 @@ void Layer::SetBackdropFilterBounds(const gfx::RRectF& backdrop_filter_bounds) {
   inputs_.backdrop_filter_bounds = backdrop_filter_bounds;
 }
 
+void Layer::ClearBackdropFilterBounds() {
+  inputs_.backdrop_filter_bounds.reset();
+}
+
 void Layer::SetBackdropFilterQuality(const float quality) {
   inputs_.backdrop_filter_quality = quality;
 }
