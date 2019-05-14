@@ -53,7 +53,9 @@ import org.chromium.chrome.browser.signin.GoogleActivityController;
 import org.chromium.chrome.browser.survey.SurveyController;
 import org.chromium.chrome.browser.tab.AuthenticatorNavigationInterceptor;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.touchless.TouchlessModelCoordinator;
 import org.chromium.chrome.browser.touchless.TouchlessUiController;
+import org.chromium.chrome.browser.touchless.TouchlessUiCoordinator;
 import org.chromium.chrome.browser.ui.ImmersiveModeManager;
 import org.chromium.chrome.browser.usage_stats.DigitalWellbeingClient;
 import org.chromium.chrome.browser.webapps.GooglePlayWebApkInstallDelegate;
@@ -379,22 +381,38 @@ public abstract class AppHooks {
 
     /**
      * @param activity An activity for access to different features.
+     * @return A new {@link TouchlessModelCoordinator} instance.
      */
-    public void attachTouchlessMenuCoordinator(ChromeActivity activity) {}
+    public TouchlessModelCoordinator createTouchlessModelCoordinator(Activity activity) {
+        return null;
+    }
 
     /**
      * @param activity An activity for access to different features.
-     * @return A new {@link TouchlessUiController} instance.
+     * @return A new {@link TouchlessUiCoordinator} instance.
      */
+    public TouchlessUiCoordinator createTouchlessUiCoordinator(ChromeActivity activity) {
+        return null;
+    }
+
+    /**
+     * Do not use, in the process of being deleted.
+     */
+    @Deprecated
+    public void attachTouchlessMenuCoordinator(ChromeActivity activity) {}
+
+    /**
+     * Do not use, in the process of being deleted.
+     */
+    @Deprecated
     public TouchlessUiController createTouchlessUiController(ChromeActivity activity) {
         return null;
     }
 
     /**
-     * Get the UI controller from the activity if it exists.
-     * @param activity The activity to get the UI controller from.
-     * @return The UI controller or null.
+     * Do not use, in the process of being deleted.
      */
+    @Deprecated
     public TouchlessUiController getTouchlessUiControllerForActivity(ChromeActivity activity) {
         return null;
     }
