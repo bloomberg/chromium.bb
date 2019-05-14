@@ -1965,10 +1965,14 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
     // Disable |allowsBackForwardNavigationGestures| during restore. Otherwise,
     // WebKit will trigger a snapshot for each (blank) page, and quickly
-    // overload system memory.
+    // overload system memory.  Also disables the scroll proxy during session
+    // restoration.
     if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
         self.navigationManagerImpl->IsRestoreSessionInProgress()) {
       _webView.allowsBackForwardNavigationGestures = NO;
+      if (base::FeatureList::IsEnabled(
+              web::features::kDisconnectScrollProxyDuringRestore))
+        [_containerView disconnectScrollProxy];
     }
 
     WKNavigation* navigation = nil;
@@ -2199,13 +2203,20 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   if (self.navigationState == web::WKNavigationState::FINISHED)
     return;
 
-  // Restore allowsBackForwardNavigationGestures once restoration is complete.
+  // Restore allowsBackForwardNavigationGestures and the scroll proxy once
+  // restoration is complete.
   if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
       !self.navigationManagerImpl->IsRestoreSessionInProgress()) {
     if (_webView.allowsBackForwardNavigationGestures !=
-        _allowsBackForwardNavigationGestures)
+        _allowsBackForwardNavigationGestures) {
       _webView.allowsBackForwardNavigationGestures =
           _allowsBackForwardNavigationGestures;
+    }
+
+    if (base::FeatureList::IsEnabled(
+            web::features::kDisconnectScrollProxyDuringRestore)) {
+      [_containerView reconnectScrollProxy];
+    }
   }
 
   BOOL success = !context || !context->GetError();
@@ -3802,6 +3813,13 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
       [[CRWWebViewContentView alloc] initWithWebView:self.webView
                                           scrollView:self.webScrollView];
   [_containerView displayWebViewContentView:webViewContentView];
+
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
+      self.navigationManagerImpl->IsRestoreSessionInProgress() &&
+      base::FeatureList::IsEnabled(
+          web::features::kDisconnectScrollProxyDuringRestore)) {
+    [_containerView disconnectScrollProxy];
+  }
 }
 
 - (void)removeWebView {

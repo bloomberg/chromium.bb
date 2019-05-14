@@ -23,6 +23,11 @@
 // Init with a weak reference of web controller, used for passing through calls.
 - (instancetype)initWithWebController:(CRWWebController*)webController;
 
+// Disconnects and reconnects the scroll proxy to prevent extra calls to
+// WKebView.
+- (void)disconnectScrollProxy;
+- (void)reconnectScrollProxy;
+
 @end
 
 #endif  // IOS_WEB_WEB_STATE_UI_CRW_WEB_VIEW_PROXY_IMPL_H_

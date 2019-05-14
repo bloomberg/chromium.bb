@@ -69,6 +69,11 @@
 // Removes all subviews and resets state to default.
 - (void)resetContent;
 
+// Disconnects and reconnects the scroll proxy to prevent extra calls to
+// WKebView.
+- (void)disconnectScrollProxy;
+- (void)reconnectScrollProxy;
+
 // Replaces the currently displayed content with |webViewContentView|.
 - (void)displayWebViewContentView:(CRWWebViewContentView*)webViewContentView;
 
