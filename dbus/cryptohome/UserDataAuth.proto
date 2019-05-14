@@ -64,6 +64,7 @@ enum CryptohomeErrorCode {
   CRYPTOHOME_ERROR_MOUNT_PREVIOUS_MIGRATION_INCOMPLETE = 30;
   CRYPTOHOME_ERROR_MIGRATE_KEY_FAILED = 31;
   CRYPTOHOME_ERROR_REMOVE_FAILED = 32;
+  CRYPTOHOME_ERROR_INVALID_ARGUMENT = 33;
 }
 
 // This is used by MountRequest to store details about the mount to create
@@ -75,10 +76,13 @@ message CreateRequest {
   // are creating. Currently, only one key is supported.
   // TODO(b/133212955): Change the name of this to "key".
   repeated cryptohome.Key keys = 1;
+
   // Explicitly use the |key| from the AuthorizationRequest.
-  // Setting this value means that the KeyData is filled as it
-  // would be with a Key above or in an AddKeyRequest.
+  // Setting this value means that the |keys| above would be populated with
+  // the |key| specified in MountRequest, so that we can spare the trouble
+  // of specifying |keys| above.
   bool copy_authorization_key = 2;
+
   // If set to true, always use eCryptfs as the encryption method.
   bool force_ecryptfs = 3;
 }
