@@ -42,7 +42,17 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
       const GURL& url);
   static scoped_refptr<SiteInstanceImpl> CreateForServiceWorker(
       BrowserContext* browser_context,
+      const GURL& url,
+      bool can_reuse_process = false);
+
+  // Creates a SiteInstance for |url| like CreateForURL() would except the
+  // instance that is returned has its process_reuse_policy set to
+  // REUSE_PENDING_OR_COMMITTED_SITE and the default SiteInstance will never
+  // be returned.
+  static scoped_refptr<SiteInstanceImpl> CreateReusableInstanceForTesting(
+      BrowserContext* browser_context,
       const GURL& url);
+
   static bool ShouldAssignSiteForURL(const GURL& url);
 
   // Returns whether |lock_url| is at least at the granularity of a site (i.e.,
@@ -106,6 +116,7 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   };
 
   void set_process_reuse_policy(ProcessReusePolicy policy) {
+    DCHECK(!IsDefaultSiteInstance());
     process_reuse_policy_ = policy;
   }
   ProcessReusePolicy process_reuse_policy() const {

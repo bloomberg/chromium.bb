@@ -1100,9 +1100,8 @@ IN_PROC_BROWSER_TEST_F(
   // not reuse the unsuitable first process.
   scoped_refptr<SiteInstanceImpl> sw_site_instance =
       SiteInstanceImpl::CreateForServiceWorker(
-          web_contents()->GetBrowserContext(), hung_isolated_url);
-  sw_site_instance->set_process_reuse_policy(
-      SiteInstanceImpl::ProcessReusePolicy::REUSE_PENDING_OR_COMMITTED_SITE);
+          web_contents()->GetBrowserContext(), hung_isolated_url,
+          /* can_reuse_process */ true);
   RenderProcessHost* sw_host = sw_site_instance->GetProcess();
   EXPECT_NE(new_shell->web_contents()->GetMainFrame()->GetProcess(), sw_host);
 

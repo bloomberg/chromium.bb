@@ -97,7 +97,8 @@ scoped_refptr<SiteInstanceImpl> SiteInstanceImpl::CreateForURL(
 // static
 scoped_refptr<SiteInstanceImpl> SiteInstanceImpl::CreateForServiceWorker(
     BrowserContext* browser_context,
-    const GURL& url) {
+    const GURL& url,
+    bool can_reuse_process) {
   // This will create a new SiteInstance and BrowsingInstance.
   scoped_refptr<BrowsingInstance> instance(
       new BrowsingInstance(browser_context));
@@ -107,6 +108,35 @@ scoped_refptr<SiteInstanceImpl> SiteInstanceImpl::CreateForServiceWorker(
   scoped_refptr<SiteInstanceImpl> site_instance =
       instance->GetSiteInstanceForURL(url, /* allow_default_instance */ false);
   site_instance->is_for_service_worker_ = true;
+
+  // Attempt to reuse a renderer process if possible. Note that in the
+  // <webview> case, process reuse isn't currently supported and a new
+  // process will always be created (https://crbug.com/752667).
+  DCHECK(site_instance->process_reuse_policy() ==
+             SiteInstanceImpl::ProcessReusePolicy::DEFAULT ||
+         site_instance->process_reuse_policy() ==
+             SiteInstanceImpl::ProcessReusePolicy::PROCESS_PER_SITE);
+  if (can_reuse_process) {
+    site_instance->set_process_reuse_policy(
+        SiteInstanceImpl::ProcessReusePolicy::REUSE_PENDING_OR_COMMITTED_SITE);
+  }
+  return site_instance;
+}
+
+// static
+scoped_refptr<SiteInstanceImpl>
+SiteInstanceImpl::CreateReusableInstanceForTesting(
+    BrowserContext* browser_context,
+    const GURL& url) {
+  DCHECK(browser_context);
+  // This will create a new SiteInstance and BrowsingInstance.
+  scoped_refptr<BrowsingInstance> instance(
+      new BrowsingInstance(browser_context));
+  auto site_instance =
+      instance->GetSiteInstanceForURL(url,
+                                      /* allow_default_instance */ false);
+  site_instance->set_process_reuse_policy(
+      SiteInstanceImpl::ProcessReusePolicy::REUSE_PENDING_OR_COMMITTED_SITE);
   return site_instance;
 }
 

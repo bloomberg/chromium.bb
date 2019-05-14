@@ -1241,7 +1241,9 @@ RenderFrameHostManager::GetSiteInstanceForNavigation(
   // consolidated into existing processes for that site.
   SiteInstanceImpl* new_instance_impl =
       static_cast<SiteInstanceImpl*>(new_instance.get());
-  if (!frame_tree_node_->IsMainFrame() && !new_instance_impl->HasProcess() &&
+  if (!frame_tree_node_->IsMainFrame() &&
+      !new_instance_impl->IsDefaultSiteInstance() &&
+      !new_instance_impl->HasProcess() &&
       new_instance_impl->RequiresDedicatedProcess()) {
     // Also give the embedder a chance to override this decision.  Certain
     // frames have different enough workloads so that it's better to avoid
