@@ -25,7 +25,6 @@ import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityS
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ui.DisableAnimationsTestRule;
 
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -43,8 +42,7 @@ public class PaymentRequestShippingAddressChangeTest implements MainActivityStar
             new PaymentRequestTestRule("payment_request_shipping_address_change_test.html", this);
 
     @Override
-    public void onMainActivityStarted()
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public void onMainActivityStarted() throws InterruptedException, TimeoutException {
         AutofillTestHelper helper = new AutofillTestHelper();
         // The user has a shipping address on disk.
         String billingAddressId = helper.setProfile(new AutofillProfile("", "https://example.com",
@@ -65,8 +63,7 @@ public class PaymentRequestShippingAddressChangeTest implements MainActivityStar
     @DisabledTest(message = "https://crbug.com/894011")
     @CommandLineFlags.
     Add({"disable-features=" + ChromeFeatureList.WEB_PAYMENTS_REDACT_SHIPPING_ADDRESS})
-    public void testShippingAddressChangeFormat()
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public void testShippingAddressChangeFormat() throws InterruptedException, TimeoutException {
         // Select a shipping address and cancel out.
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickInShippingAddressAndWait(
@@ -91,7 +88,7 @@ public class PaymentRequestShippingAddressChangeTest implements MainActivityStar
     @CommandLineFlags.
     Add({"enable-features=" + ChromeFeatureList.WEB_PAYMENTS_REDACT_SHIPPING_ADDRESS})
     public void testAddressRedactionInShippingAddressChange()
-            throws InterruptedException, ExecutionException, TimeoutException {
+            throws InterruptedException, TimeoutException {
         // Select a shipping address and cancel out.
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickInShippingAddressAndWait(

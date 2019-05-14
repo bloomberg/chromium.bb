@@ -27,7 +27,6 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ui.DisableAnimationsTestRule;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -46,8 +45,7 @@ public class PaymentRequestPayerDetailChangeTest implements MainActivityStartCal
             new PaymentRequestTestRule("payment_request_onpayerdetailchange.html", this);
 
     @Override
-    public void onMainActivityStarted()
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public void onMainActivityStarted() throws InterruptedException, TimeoutException {
         AutofillTestHelper helper = new AutofillTestHelper();
 
         String billing_address_id = helper.setProfile(new AutofillProfile("", "https://example.com",
@@ -67,8 +65,7 @@ public class PaymentRequestPayerDetailChangeTest implements MainActivityStartCal
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testPayerDetailChangeEvent()
-            throws InterruptedException, ExecutionException, TimeoutException {
+    public void testPayerDetailChangeEvent() throws InterruptedException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.button_primary, mPaymentRequestTestRule.getReadyForUnmaskInput());
