@@ -71,13 +71,6 @@ def main():
     print r'Sample: %s chrome.dll original\chrome.dll' % sys.argv[0]
     return 0
 
-  # Add to the path so that dumpbin can run.
-  vs_dir = r'C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\amd64'
-  if not os.path.exists(os.path.join(vs_dir, 'dumpbin.exe')):
-    print "Couldn't find dumpbin.exe. Visual Studio 2015 must be installed."
-    return 0
-  os.environ['PATH'] = vs_dir + ';' + os.environ["PATH"]
-
   # Track the name of the last PE (Portable Executable) file to be processed -
   # file name only, without the path.
   last_pe_filepart = ""
@@ -92,32 +85,43 @@ def main():
     print '%10s:  %9s  ,  %9s' % ('name', 'mem size', 'disk size')
 
     sections = None
-    command = 'dumpbin.exe /headers "%s"' % pe_path
-    for line in subprocess.check_output(command).splitlines():
-      if line.startswith('SECTION HEADER #'):
-        sections = []
-      elif type(sections) == type([]):
-        # We must be processing a section header.
-        sections.append(line.strip())
-        # When we've accumulated four lines of data, process them.
-        if len(sections) == 4:
-          name, memory_size, _, disk_size = sections
-          assert name.count('name') == 1
-          assert memory_size.count('virtual size') == 1
-          assert disk_size.count('size of raw data') == 1
-          name = name.split()[0]
-          memory_size = int(memory_size.split()[0], 16)
-          disk_size = int(disk_size.split()[0], 16)
-          # Print the sizes in decimal MB. This makes large numbers easier to
-          # understand - 33.199959 is easier to read than 33199959. Decimal MB
-          # is used to allow simple conversions to a precise number of bytes.
-          if abs(memory_size - disk_size) < 512:
-            print '%10s: %9.6f MB' % (name, memory_size / 1e6)
-          else:
-            print '%10s: %9.6f MB, %9.6f MB' % (name, memory_size / 1e6,
-                                                disk_size / 1e6)
-          results.append((name, memory_size))
-          sections = None
+    # Pass the undocumented /nopdb header to avoid hitting symbol servers for
+    # the entrypoint name.
+    command = 'dumpbin.exe /nopdb /headers "%s"' % pe_path
+    try:
+      for line in subprocess.check_output(command).splitlines():
+        if line.startswith('SECTION HEADER #'):
+          sections = []
+        elif type(sections) == type([]):
+          # We must be processing a section header.
+          sections.append(line.strip())
+          # When we've accumulated four lines of data, process them.
+          if len(sections) == 4:
+            name, memory_size, _, disk_size = sections
+            assert name.count('name') == 1
+            assert memory_size.count('virtual size') == 1
+            assert disk_size.count('size of raw data') == 1
+            name = name.split()[0]
+            memory_size = int(memory_size.split()[0], 16)
+            disk_size = int(disk_size.split()[0], 16)
+            # Print the sizes in decimal MB. This makes large numbers easier to
+            # understand - 33.199959 is easier to read than 33199959. Decimal MB
+            # is used to allow simple conversions to a precise number of bytes.
+            if abs(memory_size - disk_size) < 512:
+              print '%10s: %9.6f MB' % (name, memory_size / 1e6)
+            else:
+              print '%10s: %9.6f MB, %9.6f MB' % (name, memory_size / 1e6,
+                                                  disk_size / 1e6)
+            results.append((name, memory_size))
+            sections = None
+    except WindowsError as error:
+      if error.winerror == 2:
+        print (r'Cannot find dumpbin. Run "C:\Program Files (x86)\Microsoft '
+               r'Visual Studio\2017\Professional\VC\Auxiliary\Build'
+               r'\vcvarsall.bat amd64" or similar to add dumpbin to the path.')
+      else:
+        print error
+      break
 
     print
     pe_filepart = os.path.split(pe_path)[1]
