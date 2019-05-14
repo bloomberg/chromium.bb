@@ -316,6 +316,7 @@ customBackgrounds.richerPicker_resetImageMenu = function(showMenu) {
   menu.classList.toggle(customBackgrounds.CLASSES.ON_IMAGE_MENU, false);
   backgroundMenu.classList.toggle(
       customBackgrounds.CLASSES.MENU_SHOWN, showMenu);
+  backgroundMenu.scrollTop = 0;
 
   // Reset done button state.
   $(customBackgrounds.IDS.MENU_DONE).disabled = true;
