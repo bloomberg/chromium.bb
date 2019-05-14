@@ -2143,18 +2143,28 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   base::win::ScopedSafearray rectangles;
   EXPECT_HRESULT_SUCCEEDED(
       text_range_provider->GetBoundingRectangles(rectangles.Receive()));
-
   std::vector<double> expected_values = {100, 150, 200, 200};
   EXPECT_UIA_DOUBLE_SAFEARRAY_EQ(rectangles.Get(), expected_values);
+  rectangles.Reset();
 
   ComPtr<ITextRangeProvider> document_textrange;
   GetTextRangeProviderFromTextNode(document_textrange, root_node);
 
-  base::win::ScopedSafearray body_rectangles;
   EXPECT_HRESULT_SUCCEEDED(
-      document_textrange->GetBoundingRectangles(body_rectangles.Receive()));
+      document_textrange->GetBoundingRectangles(rectangles.Receive()));
   expected_values = {100, 150, 200, 200, 200, 250, 100, 100};
-  EXPECT_UIA_DOUBLE_SAFEARRAY_EQ(body_rectangles.Get(), expected_values);
+  EXPECT_UIA_DOUBLE_SAFEARRAY_EQ(rectangles.Get(), expected_values);
+  rectangles.Reset();
+
+  EXPECT_UIA_MOVE(document_textrange, TextUnit_Character,
+                  /*count*/ 9,
+                  /*expected_text*/ L"m",
+                  /*expected_count*/ 9);
+
+  EXPECT_HRESULT_SUCCEEDED(
+      document_textrange->GetBoundingRectangles(rectangles.Receive()));
+  expected_values = {200, 250, 100, 100};
+  EXPECT_UIA_DOUBLE_SAFEARRAY_EQ(rectangles.Get(), expected_values);
 
   AXTreeManagerMap::GetInstance().RemoveTreeManager(tree_data.tree_id);
 }
