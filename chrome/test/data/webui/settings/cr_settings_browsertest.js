@@ -2300,7 +2300,7 @@ CrSettingsCrostiniPageTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsCrostiniPageTest', 'All', function() {
+TEST_F('CrSettingsCrostiniPageTest', 'DISABLED_All', function() {
   mocha.run();
 });
 
