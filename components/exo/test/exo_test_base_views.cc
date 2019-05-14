@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/exo/test/exo_test_base_aura.h"
+#include "components/exo/test/exo_test_base_views.h"
 
 #include "components/exo/vsync_timing_manager.h"
 #include "components/exo/wm_helper.h"
@@ -90,12 +90,12 @@ class WMHelperTester : public WMHelper, public VSyncTimingManager::Delegate {
 
 }  // namespace
 
-ExoTestBaseAura::ExoTestBaseAura() {}
-ExoTestBaseAura::~ExoTestBaseAura() {}
+ExoTestBaseViews::ExoTestBaseViews() {}
+ExoTestBaseViews::~ExoTestBaseViews() {}
 
-void ExoTestBaseAura::SetUp() {
+void ExoTestBaseViews::SetUp() {
   ui::SetUpInputMethodFactoryForTesting();
-  aura::test::AuraTestBase::SetUp();
+  views::ViewsTestBase::SetUp();
   // Takes care of its own lifetime.
   new wm::DefaultActivationClient(root_window());
 
@@ -104,11 +104,11 @@ void ExoTestBaseAura::SetUp() {
   WMHelper::SetInstance(wm_helper_.get());
 }
 
-void ExoTestBaseAura::TearDown() {
+void ExoTestBaseViews::TearDown() {
   WMHelper::SetInstance(nullptr);
   wm_helper_.reset();
 
-  aura::test::AuraTestBase::TearDown();
+  views::ViewsTestBase::TearDown();
 }
 
 }  // namespace test

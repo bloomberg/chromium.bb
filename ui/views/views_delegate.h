@@ -79,7 +79,9 @@ class VIEWS_EXPORT ViewsDelegate {
 
   virtual ~ViewsDelegate();
 
-  // Returns the ViewsDelegate instance if there is one, or nullptr otherwise.
+  // Returns the ViewsDelegate instance.  This should never return non-null
+  // unless the binary has not yet initialized the delegate, so callers should
+  // not generally null-check.
   static ViewsDelegate* GetInstance();
 
   // Call this method to set a factory callback that will be used to construct

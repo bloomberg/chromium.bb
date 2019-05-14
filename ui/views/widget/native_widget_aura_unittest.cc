@@ -14,13 +14,13 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
-#include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/test/views_test_base.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -64,7 +64,7 @@ class TestFocusRules : public wm::BaseFocusRules {
   DISALLOW_COPY_AND_ASSIGN(TestFocusRules);
 };
 
-class NativeWidgetAuraTest : public aura::test::AuraTestBase {
+class NativeWidgetAuraTest : public ViewsTestBase {
  public:
   NativeWidgetAuraTest() = default;
   ~NativeWidgetAuraTest() override = default;
@@ -73,7 +73,7 @@ class NativeWidgetAuraTest : public aura::test::AuraTestBase {
 
   // testing::Test overrides:
   void SetUp() override {
-    AuraTestBase::SetUp();
+    ViewsTestBase::SetUp();
     test_focus_rules_ = new TestFocusRules;
     focus_controller_ =
         std::make_unique<wm::FocusController>(test_focus_rules_);

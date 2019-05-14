@@ -70,10 +70,9 @@ NativeWidget* CreateNativeWidget(const Widget::InitParams& params,
   if (params.native_widget)
     return params.native_widget;
 
-  ViewsDelegate* views_delegate = ViewsDelegate::GetInstance();
-  if (views_delegate && !views_delegate->native_widget_factory().is_null()) {
-    NativeWidget* native_widget =
-        views_delegate->native_widget_factory().Run(params, delegate);
+  const auto& factory = ViewsDelegate::GetInstance()->native_widget_factory();
+  if (!factory.is_null()) {
+    NativeWidget* native_widget = factory.Run(params, delegate);
     if (native_widget)
       return native_widget;
   }
@@ -320,8 +319,7 @@ void Widget::Init(const InitParams& in_params) {
     params.opacity = views::Widget::InitParams::OPAQUE_WINDOW;
   }
 
-  if (ViewsDelegate::GetInstance())
-    ViewsDelegate::GetInstance()->OnBeforeWidgetInit(&params, this);
+  ViewsDelegate::GetInstance()->OnBeforeWidgetInit(&params, this);
 
   if (params.opacity == views::Widget::InitParams::INFER_OPACITY)
     params.opacity = views::Widget::InitParams::OPAQUE_WINDOW;
@@ -916,7 +914,7 @@ NonClientFrameView* Widget::CreateNonClientFrameView() {
       widget_delegate_->CreateNonClientFrameView(this);
   if (!frame_view)
     frame_view = native_widget_->CreateNonClientFrameView();
-  if (!frame_view && ViewsDelegate::GetInstance()) {
+  if (!frame_view) {
     frame_view =
         ViewsDelegate::GetInstance()->CreateDefaultNonClientFrameView(this);
   }

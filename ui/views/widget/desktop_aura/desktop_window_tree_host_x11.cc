@@ -1585,9 +1585,7 @@ void DesktopWindowTreeHostX11::InitX11Window(
   // If we have a delegate which is providing a default window icon, use that
   // icon.
   gfx::ImageSkia* window_icon =
-      ViewsDelegate::GetInstance()
-          ? ViewsDelegate::GetInstance()->GetDefaultWindowIcon()
-          : nullptr;
+      ViewsDelegate::GetInstance()->GetDefaultWindowIcon();
   if (window_icon) {
     SetWindowIcons(gfx::ImageSkia(), *window_icon);
   }

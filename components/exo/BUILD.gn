@@ -132,8 +132,8 @@ source_set("test_support") {
   testonly = true
 
   sources = [
-    "test/exo_test_base_aura.cc",
-    "test/exo_test_base_aura.h",
+    "test/exo_test_base_views.cc",
+    "test/exo_test_base_views.h",
     "test/exo_test_suite_aura.cc",
     "test/exo_test_suite_aura.h",
   ]
@@ -146,7 +146,6 @@ source_set("test_support") {
     "//skia",
     "//testing/gtest",
     "//ui/aura",
-    "//ui/aura:test_support",
     "//ui/base/ime/init",
     "//ui/compositor",
     "//ui/compositor:test_support",
@@ -154,6 +153,7 @@ source_set("test_support") {
     "//ui/gfx/geometry",
     "//ui/gl:test_support",
     "//ui/views",
+    "//ui/views:test_support",
     "//ui/wm",
   ]
 

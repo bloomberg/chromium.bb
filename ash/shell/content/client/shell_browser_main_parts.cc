@@ -75,7 +75,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
 
   // A ViewsDelegate is required.
   if (!views::ViewsDelegate::GetInstance())
-    views_delegate_.reset(new ShellViewsDelegate);
+    views_delegate_ = std::make_unique<ShellViewsDelegate>();
 
   // Create CrasAudioHandler for testing since g_browser_process
   // is absent.

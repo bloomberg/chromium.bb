@@ -13,17 +13,17 @@
 #include "chrome/browser/ui/views/apps/chrome_native_app_window_views_aura.h"
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/events/event_utils.h"
 #include "ui/views/controls/webview/webview.h"
+#include "ui/views/test/views_test_base.h"
 #include "ui/wm/core/default_activation_client.h"
 #include "ui/wm/core/easy_resize_window_targeter.h"
 
 using extensions::AppWindow;
 
-class ShapedAppWindowTargeterTest : public aura::test::AuraTestBase {
+class ShapedAppWindowTargeterTest : public views::ViewsTestBase {
  public:
   ShapedAppWindowTargeterTest()
       : web_view_(NULL) {
@@ -38,7 +38,7 @@ class ShapedAppWindowTargeterTest : public aura::test::AuraTestBase {
 
  protected:
   void SetUp() override {
-    aura::test::AuraTestBase::SetUp();
+    views::ViewsTestBase::SetUp();
     new wm::DefaultActivationClient(root_window());
     widget_.reset(new views::Widget);
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
@@ -56,7 +56,7 @@ class ShapedAppWindowTargeterTest : public aura::test::AuraTestBase {
 
   void TearDown() override {
     widget_.reset();
-    aura::test::AuraTestBase::TearDown();
+    views::ViewsTestBase::TearDown();
   }
 
   void SetWindowResizable(bool resizable) {

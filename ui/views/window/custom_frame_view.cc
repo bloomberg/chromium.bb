@@ -340,15 +340,9 @@ gfx::Rect CustomFrameView::IconBounds() const {
 }
 
 bool CustomFrameView::ShouldShowTitleBarAndBorder() const {
-  if (frame_->IsFullscreen())
-    return false;
-
-  if (ViewsDelegate::GetInstance()) {
-    return !ViewsDelegate::GetInstance()->WindowManagerProvidesTitleBar(
-        frame_->IsMaximized());
-  }
-
-  return true;
+  return !frame_->IsFullscreen() &&
+         !ViewsDelegate::GetInstance()->WindowManagerProvidesTitleBar(
+             frame_->IsMaximized());
 }
 
 bool CustomFrameView::ShouldShowClientEdge() const {

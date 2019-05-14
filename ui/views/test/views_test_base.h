@@ -21,6 +21,10 @@
 #include "ui/base/win/scoped_ole_initializer.h"
 #endif
 
+#if defined(USE_AURA)
+#include "ui/aura/test/aura_test_helper.h"
+#endif
+
 namespace views {
 
 // A base class for views unit test. It creates a message loop necessary
@@ -80,6 +84,20 @@ class ViewsTestBase : public PlatformTest {
     DCHECK(!setup_called_);
     views_delegate_for_setup_.swap(views_delegate);
   }
+
+#if defined(USE_AURA)
+  aura::Window* root_window() {
+    return aura::test::AuraTestHelper::GetInstance()->root_window();
+  }
+
+  ui::EventSink* event_sink() {
+    return aura::test::AuraTestHelper::GetInstance()->event_sink();
+  }
+
+  aura::WindowTreeHost* host() {
+    return aura::test::AuraTestHelper::GetInstance()->host();
+  }
+#endif
 
   // Returns a context view. In aura builds, this will be the
   // RootWindow. Everywhere else, NULL.

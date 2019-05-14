@@ -501,8 +501,7 @@ void MenuController::Run(Widget* parent,
   }
 
   // Make sure Chrome doesn't attempt to shut down while the menu is showing.
-  if (ViewsDelegate::GetInstance())
-    ViewsDelegate::GetInstance()->AddRef();
+  ViewsDelegate::GetInstance()->AddRef();
 }
 
 void MenuController::Cancel(ExitType type) {
@@ -2885,8 +2884,7 @@ MenuItemView* MenuController::ExitTopMostMenu() {
 
   // Release the lock which prevents Chrome from shutting down while the menu is
   // showing.
-  if (ViewsDelegate::GetInstance())
-    ViewsDelegate::GetInstance()->ReleaseRef();
+  ViewsDelegate::GetInstance()->ReleaseRef();
 
   // Releasing the lock can result in Chrome shutting down, deleting this.
   if (!this_ref)

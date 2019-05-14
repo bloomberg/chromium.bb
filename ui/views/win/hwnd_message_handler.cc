@@ -938,19 +938,15 @@ bool HWNDMessageHandler::HasChildRenderingWindow() {
 // HWNDMessageHandler, gfx::WindowImpl overrides:
 
 HICON HWNDMessageHandler::GetDefaultWindowIcon() const {
-  if (use_system_default_icon_)
-    return nullptr;
-  return ViewsDelegate::GetInstance()
-             ? ViewsDelegate::GetInstance()->GetDefaultWindowIcon()
-             : nullptr;
+  return use_system_default_icon_
+             ? nullptr
+             : ViewsDelegate::GetInstance()->GetDefaultWindowIcon();
 }
 
 HICON HWNDMessageHandler::GetSmallWindowIcon() const {
-  if (use_system_default_icon_)
-    return nullptr;
-  return ViewsDelegate::GetInstance()
-             ? ViewsDelegate::GetInstance()->GetSmallWindowIcon()
-             : nullptr;
+  return use_system_default_icon_
+             ? nullptr
+             : ViewsDelegate::GetInstance()->GetSmallWindowIcon();
 }
 
 LRESULT HWNDMessageHandler::OnWndProc(UINT message,
@@ -1222,13 +1218,9 @@ void HWNDMessageHandler::ApplyPanGestureFlingEnd() {
 
 int HWNDMessageHandler::GetAppbarAutohideEdges(HMONITOR monitor) {
   autohide_factory_.InvalidateWeakPtrs();
-  return ViewsDelegate::GetInstance()
-             ? ViewsDelegate::GetInstance()->GetAppbarAutohideEdges(
-                   monitor,
-                   base::BindOnce(
-                       &HWNDMessageHandler::OnAppbarAutohideEdgesChanged,
-                       autohide_factory_.GetWeakPtr()))
-             : ViewsDelegate::EDGE_BOTTOM;
+  return ViewsDelegate::GetInstance()->GetAppbarAutohideEdges(
+      monitor, base::BindOnce(&HWNDMessageHandler::OnAppbarAutohideEdgesChanged,
+                              autohide_factory_.GetWeakPtr()));
 }
 
 void HWNDMessageHandler::OnAppbarAutohideEdgesChanged() {

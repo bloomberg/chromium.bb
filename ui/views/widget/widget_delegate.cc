@@ -139,11 +139,10 @@ std::string WidgetDelegate::GetWindowName() const {
 void WidgetDelegate::SaveWindowPlacement(const gfx::Rect& bounds,
                                          ui::WindowShowState show_state) {
   std::string window_name = GetWindowName();
-  if (!ViewsDelegate::GetInstance() || window_name.empty())
-    return;
-
-  ViewsDelegate::GetInstance()->SaveWindowPlacement(GetWidget(), window_name,
-                                                    bounds, show_state);
+  if (!window_name.empty()) {
+    ViewsDelegate::GetInstance()->SaveWindowPlacement(GetWidget(), window_name,
+                                                      bounds, show_state);
+  }
 }
 
 bool WidgetDelegate::GetSavedWindowPlacement(
@@ -151,11 +150,9 @@ bool WidgetDelegate::GetSavedWindowPlacement(
     gfx::Rect* bounds,
     ui::WindowShowState* show_state) const {
   std::string window_name = GetWindowName();
-  if (!ViewsDelegate::GetInstance() || window_name.empty())
-    return false;
-
-  return ViewsDelegate::GetInstance()->GetSavedWindowPlacement(
-      widget, window_name, bounds, show_state);
+  return !window_name.empty() &&
+         ViewsDelegate::GetInstance()->GetSavedWindowPlacement(
+             widget, window_name, bounds, show_state);
 }
 
 bool WidgetDelegate::ShouldRestoreWindowSize() const {
