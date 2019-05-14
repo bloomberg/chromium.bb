@@ -66,6 +66,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
+#include "content/public/common/mime_handler_view_mode.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/hit_test_region_observer.h"
@@ -1568,13 +1569,13 @@ class PDFExtensionClipboardTest : public PDFExtensionTest {
   }
 
   void ClickLeftSideOfEditableComboBox() {
-    content::SimulateMouseClickAt(GetActiveWebContents(), 0,
+    content::SimulateMouseClickAt(GetWebContentsForInputRouting(), 0,
                                   blink::WebMouseEvent::Button::kLeft,
                                   GetEditableComboBoxLeftPosition());
   }
 
   void TypeHello() {
-    auto* web_contents = GetActiveWebContents();
+    auto* web_contents = GetWebContentsForInputRouting();
     content::SimulateKeyPress(web_contents, ui::DomKey::FromCharacter('H'),
                               ui::DomCode::US_H, ui::VKEY_H, false, false,
                               false, false);
@@ -1595,28 +1596,29 @@ class PDFExtensionClipboardTest : public PDFExtensionTest {
   // Presses the left arrow key.
   void PressLeftArrow() {
     content::SimulateKeyPressWithoutChar(
-        GetActiveWebContents(), ui::DomKey::ARROW_LEFT, ui::DomCode::ARROW_LEFT,
-        ui::VKEY_LEFT, false, false, false, false);
+        GetWebContentsForInputRouting(), ui::DomKey::ARROW_LEFT,
+        ui::DomCode::ARROW_LEFT, ui::VKEY_LEFT, false, false, false, false);
   }
 
   // Presses down shift, presses the left arrow, and lets go of shift.
   void PressShiftLeftArrow() {
-    content::SimulateKeyPressWithoutChar(
-        GetActiveWebContents(), ui::DomKey::ARROW_LEFT, ui::DomCode::ARROW_LEFT,
-        ui::VKEY_LEFT, false, /*shift=*/true, false, false);
+    content::SimulateKeyPressWithoutChar(GetWebContentsForInputRouting(),
+                                         ui::DomKey::ARROW_LEFT,
+                                         ui::DomCode::ARROW_LEFT, ui::VKEY_LEFT,
+                                         false, /*shift=*/true, false, false);
   }
 
   // Presses the right arrow key.
   void PressRightArrow() {
     content::SimulateKeyPressWithoutChar(
-        GetActiveWebContents(), ui::DomKey::ARROW_RIGHT,
+        GetWebContentsForInputRouting(), ui::DomKey::ARROW_RIGHT,
         ui::DomCode::ARROW_RIGHT, ui::VKEY_RIGHT, false, false, false, false);
   }
 
   // Presses down shift, presses the right arrow, and lets go of shift.
   void PressShiftRightArrow() {
     content::SimulateKeyPressWithoutChar(
-        GetActiveWebContents(), ui::DomKey::ARROW_RIGHT,
+        GetWebContentsForInputRouting(), ui::DomKey::ARROW_RIGHT,
         ui::DomCode::ARROW_RIGHT, ui::VKEY_RIGHT, false, /*shift=*/true, false,
         false);
   }
@@ -1633,8 +1635,14 @@ class PDFExtensionClipboardTest : public PDFExtensionTest {
   // SimulateKeyPress(). Using IDC_COPY does not work on Mac in browser_tests.
   void SendCopyCommandAndCheckCopyPasteClipboard(const std::string& expected) {
     content::RunAllPendingInMessageLoop();
-    GetActiveWebContents()->Copy();
+    GetWebContentsForInputRouting()->Copy();
     CheckClipboard(ui::CLIPBOARD_TYPE_COPY_PASTE, expected);
+  }
+
+  content::WebContents* GetWebContentsForInputRouting() {
+    return content::MimeHandlerViewMode::UsesCrossProcessFrame()
+               ? guest_contents_
+               : GetActiveWebContents();
   }
 
  private:
@@ -1745,7 +1753,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionClipboardTest,
   // Press shift + right arrow 3 times. Holding down shift in between.
   {
     content::ScopedSimulateModifierKeyPress hold_shift(
-        GetActiveWebContents(), false, true, false, false);
+        GetWebContentsForInputRouting(), false, true, false, false);
     hold_shift.KeyPressWithoutChar(ui::DomKey::ARROW_RIGHT,
                                    ui::DomCode::ARROW_RIGHT, ui::VKEY_RIGHT);
     CheckSelectionClipboard("H");
@@ -1776,7 +1784,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionClipboardTest, CombinedShiftArrowPresses) {
   // Press shift + left arrow 3 times. Holding down shift in between.
   {
     content::ScopedSimulateModifierKeyPress hold_shift(
-        GetActiveWebContents(), false, true, false, false);
+        GetWebContentsForInputRouting(), false, true, false, false);
     hold_shift.KeyPressWithoutChar(ui::DomKey::ARROW_LEFT,
                                    ui::DomCode::ARROW_LEFT, ui::VKEY_LEFT);
     CheckSelectionClipboard("L");
@@ -1792,7 +1800,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionClipboardTest, CombinedShiftArrowPresses) {
   // Press shift + right arrow 2 times. Holding down shift in between.
   {
     content::ScopedSimulateModifierKeyPress hold_shift(
-        GetActiveWebContents(), false, true, false, false);
+        GetWebContentsForInputRouting(), false, true, false, false);
     hold_shift.KeyPressWithoutChar(ui::DomKey::ARROW_RIGHT,
                                    ui::DomCode::ARROW_RIGHT, ui::VKEY_RIGHT);
     CheckSelectionClipboard("EL");
