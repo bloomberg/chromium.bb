@@ -153,7 +153,7 @@ class GpuTest : public testing::Test {
                          gpu_impl.reset();
                          event->Signal();
                        },
-                       base::Passed(std::move(gpu_impl_)), &event));
+                       std::move(gpu_impl_), &event));
     event.Wait();
   }
 
