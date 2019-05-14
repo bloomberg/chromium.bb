@@ -104,6 +104,11 @@ class MimeHandlerViewGuest
     original_resource_url_ = url;
   }
 
+  // Returns true when the MHVG's embedder frame has a plugin element type of
+  // frame owner. In such a case there might be a MHVFC assigned to MHVG in the
+  // parent frame of the embedder frame (for post message).
+  bool maybe_has_frame_container() const { return maybe_has_frame_container_; }
+
  protected:
   explicit MimeHandlerViewGuest(content::WebContents* owner_web_contents);
   ~MimeHandlerViewGuest() override;

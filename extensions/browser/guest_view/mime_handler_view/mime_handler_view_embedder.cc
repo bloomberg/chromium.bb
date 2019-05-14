@@ -160,10 +160,14 @@ void MimeHandlerViewEmbedder::DidCreateMimeHandlerViewGuest(
       ->AttachGuest(embedder_frame_process_id, element_instance_id_,
                     guest_instance_id,
                     base::DictionaryValue() /* unused attach_params */);
+  // Full page plugin refers to <iframe> or main frame navigations to a
+  // MimeHandlerView resource. In such cases MHVG does not have a frame
+  // container.
+  bool is_full_page = !guest_view->maybe_has_frame_container();
   MimeHandlerViewAttachHelper::Get(embedder_frame_process_id)
       ->AttachToOuterWebContents(guest_view, embedder_frame_process_id,
                                  outer_contents_rfh, element_instance_id_,
-                                 true /* is_full_page_plugin */);
+                                 is_full_page /* is_full_page_plugin */);
   // MHVE is no longer required.
   GetMimeHandlerViewEmbeddersMap()->erase(frame_tree_node_id_);
 }
