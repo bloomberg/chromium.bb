@@ -1617,7 +1617,6 @@ crbug.com/538697 [ Win ] printing/webgl-oversized-printing.html [ Failure Crash 
 crbug.com/497522 css3/filters/backdrop-filter-boundary.html [ Failure ]
 crbug.com/497522 css3/filters/backdrop-filter-bleeding.html [ Failure ]
 crbug.com/497522 css3/filters/backdrop-filter-svg.html [ Failure ]
-crbug.com/497522 external/wpt/css/filter-effects/backdrop-filter-paint-order.html [ Failure ]
 # ====== Backdrop-filter related tests END ======
 
 

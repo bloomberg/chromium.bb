@@ -2615,10 +2615,18 @@ LayoutRect PaintLayer::BoundingBoxForCompositingOverlapTest() const {
   // TODO(trchen): Layer fragmentation is inhibited across compositing boundary.
   // Should we return the unfragmented bounds for overlap testing? Or perhaps
   // assume fragmented layers always overlap?
-  return OverlapBoundsIncludeChildren()
-             ? BoundingBoxForCompositingInternal(
-                   *this, nullptr, kNeverIncludeTransformForAncestorLayer)
-             : FragmentsBoundingBox(this);
+  LayoutRect bounding_box =
+      OverlapBoundsIncludeChildren()
+          ? BoundingBoxForCompositingInternal(
+                *this, nullptr, kNeverIncludeTransformForAncestorLayer)
+          : FragmentsBoundingBox(this);
+  const ComputedStyle& style = GetLayoutObject().StyleRef();
+  if (style.HasBackdropFilter() &&
+      style.BackdropFilter().HasFilterThatMovesPixels()) {
+    bounding_box = EnclosingLayoutRect(
+        style.BackdropFilter().MapRect(FloatRect(bounding_box)));
+  }
+  return bounding_box;
 }
 
 bool PaintLayer::OverlapBoundsIncludeChildren() const {
