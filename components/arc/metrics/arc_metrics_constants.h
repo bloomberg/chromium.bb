@@ -89,7 +89,10 @@ enum class UserInteractionType {
   // User started an app from the Kiosk Next Home app.
   APP_STARTED_FROM_KIOSK_NEXT_HOME = 18,
 
-  kMaxValue = APP_STARTED_FROM_KIOSK_NEXT_HOME,
+  // User interacted with an app using a gamepad.
+  GAMEPAD_INTERACTION = 19,
+
+  kMaxValue = GAMEPAD_INTERACTION,
 };
 
 }  // namespace arc

@@ -123,6 +123,7 @@ static_library("arc") {
     "//ui/display/manager",
     "//ui/events",
     "//ui/events:dom_keycode_converter",
+    "//ui/events/ozone:events_ozone_evdev",
     "//url:url",
   ]
 }
