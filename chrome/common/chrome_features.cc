@@ -172,8 +172,6 @@ const base::Feature kClickToOpenPDFPlaceholder{
     "ClickToOpenPDFPlaceholder", base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if defined(OS_MACOSX)
-const base::Feature kContentFullscreen{"ContentFullscreen",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kImmersiveFullscreen{"ImmersiveFullscreen",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 #endif

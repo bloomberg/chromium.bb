@@ -2764,11 +2764,6 @@ const char kUseWinrtMidiApiDescription[] =
 
 #if defined(OS_MACOSX)
 
-const char kContentFullscreenName[] = "Improved Content Fullscreen";
-const char kContentFullscreenDescription[] =
-    "Fullscreen content window detaches from main browser window and goes to "
-    "a new space without moving or changing the original browser window.";
-
 const char kImmersiveFullscreenName[] = "Immersive Fullscreen Toolbar";
 const char kImmersiveFullscreenDescription[] =
     "Automatically hide and show the toolbar in fullscreen.";

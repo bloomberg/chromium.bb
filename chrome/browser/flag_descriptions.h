@@ -1645,9 +1645,6 @@ extern const char kUseWinrtMidiApiDescription[];
 
 #if defined(OS_MACOSX)
 
-extern const char kContentFullscreenName[];
-extern const char kContentFullscreenDescription[];
-
 extern const char kImmersiveFullscreenName[];
 extern const char kImmersiveFullscreenDescription[];
 

@@ -924,11 +924,6 @@
     "expiry_milestone": -1
   },
   {
-    "name": "enable-content-fullscreen",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-immersive-fullscreen-toolbar",
     "owners": [ "sdy", "chrome/browser/ui/cocoa/OWNERS" ],
     "expiry_milestone": 76

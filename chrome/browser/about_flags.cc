@@ -2070,9 +2070,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kGoogleBrandedContextMenu)},
 #endif  // !OS_ANDROID && GOOGLE_CHROME_BUILD
 #if defined(OS_MACOSX)
-    {"enable-content-fullscreen", flag_descriptions::kContentFullscreenName,
-     flag_descriptions::kContentFullscreenDescription, kOsMac,
-     FEATURE_VALUE_TYPE(features::kContentFullscreen)},
     {"enable-immersive-fullscreen-toolbar",
      flag_descriptions::kImmersiveFullscreenName,
      flag_descriptions::kImmersiveFullscreenDescription, kOsMac,
