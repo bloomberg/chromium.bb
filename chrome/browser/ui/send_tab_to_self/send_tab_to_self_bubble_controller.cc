@@ -1,0 +1,95 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+#include "chrome/browser/ui/send_tab_to_self/send_tab_to_self_bubble_controller.h"
+
+#include <vector>
+
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/send_tab_to_self/send_tab_to_self_desktop_util.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/send_tab_to_self/send_tab_to_self_bubble_view.h"
+#include "chrome/grit/generated_resources.h"
+#include "components/send_tab_to_self/target_device_info.h"
+#include "content/public/browser/web_contents.h"
+#include "ui/base/l10n/l10n_util.h"
+
+namespace send_tab_to_self {
+
+SendTabToSelfBubbleController::~SendTabToSelfBubbleController() {
+  if (send_tab_to_self_bubble_view_) {
+    send_tab_to_self_bubble_view_->Hide();
+  }
+}
+
+// Static:
+SendTabToSelfBubbleController*
+SendTabToSelfBubbleController::CreateOrGetFromWebContents(
+    content::WebContents* web_contents) {
+  SendTabToSelfBubbleController::CreateForWebContents(web_contents);
+  SendTabToSelfBubbleController* controller =
+      SendTabToSelfBubbleController::FromWebContents(web_contents);
+  return controller;
+}
+
+void SendTabToSelfBubbleController::HideBubble() {
+  if (send_tab_to_self_bubble_view_) {
+    send_tab_to_self_bubble_view_->Hide();
+    send_tab_to_self_bubble_view_ = nullptr;
+  }
+}
+
+void SendTabToSelfBubbleController::ShowBubble() {
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
+  send_tab_to_self_bubble_view_ =
+      browser->window()->ShowSendTabToSelfBubble(web_contents_, this, true);
+}
+
+SendTabToSelfBubbleView*
+SendTabToSelfBubbleController::send_tab_to_self_bubble_view() const {
+  return send_tab_to_self_bubble_view_;
+}
+
+base::string16 SendTabToSelfBubbleController::GetWindowTitle() const {
+  return l10n_util::GetStringUTF16(IDS_CONTEXT_MENU_SEND_TAB_TO_SELF);
+}
+
+std::map<std::string, TargetDeviceInfo>
+SendTabToSelfBubbleController::GetValidDevices() const {
+  return valid_devices_;
+}
+
+Profile* SendTabToSelfBubbleController::GetProfile() const {
+  if (!web_contents_) {
+    return nullptr;
+  }
+  return Profile::FromBrowserContext(web_contents_->GetBrowserContext());
+}
+
+void SendTabToSelfBubbleController::OnDeviceSelected(
+    std::string target_device_id) {
+  // TODO(crbug/959698): send current tab to target device; close the bubble
+  // and hide the icon.
+  NOTIMPLEMENTED();
+}
+
+void SendTabToSelfBubbleController::OnBubbleClosed() {
+  send_tab_to_self_bubble_view_ = nullptr;
+}
+
+SendTabToSelfBubbleController::SendTabToSelfBubbleController(
+    content::WebContents* web_contents)
+    : web_contents_(web_contents) {
+  this->FetchDeviceInfo();
+}
+
+void SendTabToSelfBubbleController::FetchDeviceInfo() {
+  // TODO(crbug/960595): get devices info map from SendTabToSelfModel.
+  NOTIMPLEMENTED();
+}
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(SendTabToSelfBubbleController)
+
+}  // namespace send_tab_to_self

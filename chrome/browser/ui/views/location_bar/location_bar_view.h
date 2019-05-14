@@ -57,6 +57,10 @@ class LocalCardMigrationIconView;
 class SaveCardIconView;
 }
 
+namespace send_tab_to_self {
+class SendTabToSelfIconView;
+}
+
 namespace views {
 class ImageButton;
 class Label;
@@ -159,6 +163,12 @@ class LocationBarView : public LocationBar,
 
   autofill::LocalCardMigrationIconView* local_card_migration_icon_view() {
     return local_card_migration_icon_view_;
+  }
+
+  // The send tab to self icon. It may not be visible.  It will be null when
+  // |browser_| is null.
+  send_tab_to_self::SendTabToSelfIconView* send_tab_to_self_icon_view() {
+    return send_tab_to_self_icon_view_;
   }
 
   OmniboxPageActionIconContainerView*
@@ -414,6 +424,10 @@ class LocationBarView : public LocationBar,
 
   // The icon for the local card migration prompt.
   autofill::LocalCardMigrationIconView* local_card_migration_icon_view_ =
+      nullptr;
+
+  // The send tab to self icon. It will be null when |browser_| is null.
+  send_tab_to_self::SendTabToSelfIconView* send_tab_to_self_icon_view_ =
       nullptr;
 
   // The intent picker for accessing apps.  It will be null when

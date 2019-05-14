@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_SEND_TAB_TO_SELF_SHARE_ICON_VIEW_H_
-#define CHROME_BROWSER_UI_VIEWS_SEND_TAB_TO_SELF_SHARE_ICON_VIEW_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_SEND_TAB_TO_SELF_SEND_TAB_TO_SELF_ICON_VIEW_H_
+#define CHROME_BROWSER_UI_VIEWS_SEND_TAB_TO_SELF_SEND_TAB_TO_SELF_ICON_VIEW_H_
 
 #include "base/macros.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
@@ -12,13 +12,15 @@ class CommandUpdater;
 
 namespace send_tab_to_self {
 
+class SendTabToSelfBubbleController;
+
 // The location bar icon to show the send tab to self bubble where the user can
 // choose to share the url to a target device.
-class ShareIconView : public PageActionIconView {
+class SendTabToSelfIconView : public PageActionIconView {
  public:
-  ShareIconView(CommandUpdater* command_updater,
-                PageActionIconView::Delegate* delegate);
-  ~ShareIconView() override;
+  SendTabToSelfIconView(CommandUpdater* command_updater,
+                        PageActionIconView::Delegate* delegate);
+  ~SendTabToSelfIconView() override;
 
   // PageActionIconView:
   views::BubbleDialogDelegateView* GetBubble() const override;
@@ -31,12 +33,13 @@ class ShareIconView : public PageActionIconView {
   const gfx::VectorIcon& GetVectorIcon() const override;
 
  private:
+  SendTabToSelfBubbleController* GetController() const;
   // gfx::AnimationDelegate:
   void AnimationEnded(const gfx::Animation* animation) override;
 
-  DISALLOW_COPY_AND_ASSIGN(ShareIconView);
+  DISALLOW_COPY_AND_ASSIGN(SendTabToSelfIconView);
 };
 
 }  // namespace send_tab_to_self
 
-#endif  // CHROME_BROWSER_UI_VIEWS_SEND_TAB_TO_SELF_SHARE_ICON_VIEW_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_SEND_TAB_TO_SELF_SEND_TAB_TO_SELF_ICON_VIEW_H_

@@ -373,6 +373,10 @@ class BrowserView : public BrowserWindow,
       content::WebContents* contents,
       autofill::SaveCardBubbleController* controller,
       bool is_user_gesture) override;
+  send_tab_to_self::SendTabToSelfBubbleView* ShowSendTabToSelfBubble(
+      content::WebContents* contents,
+      send_tab_to_self::SendTabToSelfBubbleController* controller,
+      bool is_user_gesture) override;
   autofill::LocalCardMigrationBubble* ShowLocalCardMigrationBubble(
       content::WebContents* contents,
       autofill::LocalCardMigrationBubbleController* controller,

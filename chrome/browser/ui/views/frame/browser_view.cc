@@ -59,6 +59,7 @@
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/recently_audible_helper.h"
 #include "chrome/browser/ui/sad_tab_helper.h"
+#include "chrome/browser/ui/send_tab_to_self/send_tab_to_self_bubble_view.h"
 #include "chrome/browser/ui/sync/bubble_sync_promo_delegate.h"
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -99,6 +100,7 @@
 #include "chrome/browser/ui/views/page_action/omnibox_page_action_icon_container_view.h"
 #include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
 #include "chrome/browser/ui/views/profiles/profile_menu_view_base.h"
+#include "chrome/browser/ui/views/send_tab_to_self/send_tab_to_self_bubble_view_impl.h"
 #include "chrome/browser/ui/views/status_bubble_views.h"
 #include "chrome/browser/ui/views/tab_contents/chrome_web_contents_view_focus_helper.h"
 #include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
@@ -1380,6 +1382,32 @@ autofill::SaveCardBubbleView* BrowserView::ShowSaveCreditCardBubble(
   views::BubbleDialogDelegateView::CreateBubble(bubble);
   bubble->Show(user_gesture ? autofill::SaveCardBubbleViews::USER_GESTURE
                             : autofill::SaveCardBubbleViews::AUTOMATIC);
+  return bubble;
+}
+
+send_tab_to_self::SendTabToSelfBubbleView* BrowserView::ShowSendTabToSelfBubble(
+    content::WebContents* web_contents,
+    send_tab_to_self::SendTabToSelfBubbleController* controller,
+    bool is_user_gesture) {
+  if (!is_user_gesture) {
+    return nullptr;
+  }
+
+  LocationBarView* location_bar = GetLocationBarView();
+  PageActionIconView* icon_view =
+      (PageActionIconView*)location_bar->send_tab_to_self_icon_view();
+  views::View* anchor_view = location_bar;
+
+  send_tab_to_self::SendTabToSelfBubbleViewImpl* bubble =
+      new send_tab_to_self::SendTabToSelfBubbleViewImpl(
+          anchor_view, gfx::Point(), web_contents, controller);
+
+  if (icon_view) {
+    bubble->SetHighlightedButton(icon_view);
+  }
+  views::BubbleDialogDelegateView::CreateBubble(bubble);
+  bubble->Show(send_tab_to_self::SendTabToSelfBubbleViewImpl::USER_GESTURE);
+
   return bubble;
 }
 

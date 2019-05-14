@@ -24,7 +24,7 @@ class TranslateIconView;
 class ZoomView;
 
 namespace send_tab_to_self {
-class ShareIconView;
+class SendTabToSelfIconView;
 }
 
 class OmniboxPageActionIconContainerView
@@ -82,7 +82,8 @@ class OmniboxPageActionIconContainerView
   FindBarIcon* find_bar_icon_ = nullptr;
   ManagePasswordsIconViews* manage_passwords_icon_ = nullptr;
   PwaInstallView* pwa_install_view_ = nullptr;
-  send_tab_to_self::ShareIconView* share_icon_view_ = nullptr;
+  send_tab_to_self::SendTabToSelfIconView* send_tab_to_self_icon_view_ =
+      nullptr;
   TranslateIconView* translate_icon_ = nullptr;
   std::vector<PageActionIconView*> page_action_icons_;
 

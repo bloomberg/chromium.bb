@@ -545,8 +545,7 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
       ManagePasswordsForPage(browser_);
       break;
     case IDC_SEND_TAB_TO_SELF:
-      // TODO(crbug/950388): add implementation.
-      NOTIMPLEMENTED();
+      SendTabToSelfFromPageAction(browser_);
       break;
 
     // Clipboard commands
