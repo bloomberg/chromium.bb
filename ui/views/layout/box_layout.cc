@@ -95,7 +95,7 @@ BoxLayout::BoxLayout(BoxLayout::Orientation orientation,
     : orientation_(orientation),
       inside_border_insets_(inside_border_insets),
       between_child_spacing_(between_child_spacing),
-      main_axis_alignment_(MAIN_AXIS_ALIGNMENT_START),
+      main_axis_alignment_(MainAxisAlignment::kStart),
       cross_axis_alignment_(CrossAxisAlignment::kStretch),
       default_flex_(0),
       minimum_cross_axis_size_(0),
@@ -169,13 +169,13 @@ void BoxLayout::Layout(View* host) {
     int size = MainAxisSize(child_area);
     if (!flex_sum) {
       switch (main_axis_alignment_) {
-        case MAIN_AXIS_ALIGNMENT_START:
+        case MainAxisAlignment::kStart:
           break;
-        case MAIN_AXIS_ALIGNMENT_CENTER:
+        case MainAxisAlignment::kCenter:
           main_position += main_free_space / 2;
           size = total_main_axis_size;
           break;
-        case MAIN_AXIS_ALIGNMENT_END:
+        case MainAxisAlignment::kEnd:
           main_position += main_free_space;
           size = total_main_axis_size;
           break;

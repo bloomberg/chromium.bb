@@ -129,7 +129,7 @@ void AssistantOptInView::InitLayout() {
           : views::BoxLayout::CrossAxisAlignment::kEnd);
 
   layout_manager->set_main_axis_alignment(
-      views::BoxLayout::MainAxisAlignment::MAIN_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::MainAxisAlignment::kCenter);
 
   // Container.
   container_ = new AssistantOptInContainer(/*listener=*/this);

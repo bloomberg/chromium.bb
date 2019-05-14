@@ -301,7 +301,7 @@ ScrollableUsersListView::ScrollableUsersListView(
   user_view_host_layout_->set_minimum_cross_axis_size(
       LoginUserView::WidthForLayoutStyle(display_style));
   user_view_host_layout_->set_main_axis_alignment(
-      views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::MainAxisAlignment::kCenter);
   user_view_host_layout_->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
 
@@ -329,7 +329,7 @@ ScrollableUsersListView::ScrollableUsersListView(
   ensure_min_height
       ->SetLayoutManager(
           std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical))
-      ->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
+      ->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kCenter);
   ensure_min_height->AddChildView(user_view_host_);
   SetContents(std::move(ensure_min_height));
   SetBackgroundColor(SK_ColorTRANSPARENT);

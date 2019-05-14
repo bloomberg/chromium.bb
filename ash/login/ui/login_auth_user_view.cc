@@ -331,7 +331,7 @@ class LoginAuthUserView::FingerprintView : public views::View {
         views::BoxLayout::kVertical, gfx::Insets(),
         kSpacingBetweenFingerprintIconAndLabelDp));
     layout->set_main_axis_alignment(
-        views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
+        views::BoxLayout::MainAxisAlignment::kCenter);
 
     icon_ = new AnimatedRoundedImageView(
         gfx::Size(kFingerprintIconSizeDp, kFingerprintIconSizeDp),

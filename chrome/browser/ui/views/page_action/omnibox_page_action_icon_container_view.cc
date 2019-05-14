@@ -29,7 +29,7 @@ OmniboxPageActionIconContainerView::OmniboxPageActionIconContainerView(
           views::BoxLayout::kHorizontal, gfx::Insets(),
           params.between_icon_spacing));
   // Right align to clip the leftmost items first when not enough space.
-  layout.set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_END);
+  layout.set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kEnd);
 
   for (PageActionIconType type : params.types_enabled) {
     switch (type) {

@@ -143,7 +143,7 @@ MediaNotificationView::MediaNotificationView(
       title_artist_row->SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::kVertical, kMediaTitleArtistInsets, 0));
   title_artist_row_layout_->set_main_axis_alignment(
-      views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::MainAxisAlignment::kCenter);
   title_artist_row_layout_->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStart);
   title_artist_row_ = main_row_->AddChildView(std::move(title_artist_row));
@@ -413,7 +413,7 @@ void MediaNotificationView::UpdateViewForExpandedState() {
   // information. If it is collapsed then the buttons will be to the right.
   if (expanded) {
     static_cast<views::BoxLayout*>(button_row_->GetLayoutManager())
-        ->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
+        ->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kStart);
 
     main_row_
         ->SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -425,7 +425,7 @@ void MediaNotificationView::UpdateViewForExpandedState() {
         ->SetDefaultFlex(1);
   } else {
     static_cast<views::BoxLayout*>(button_row_->GetLayoutManager())
-        ->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
+        ->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kCenter);
 
     main_row_
         ->SetLayoutManager(std::make_unique<views::BoxLayout>(

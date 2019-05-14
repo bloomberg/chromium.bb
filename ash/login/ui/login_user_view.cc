@@ -256,7 +256,7 @@ class LoginUserView::UserDomainInfoView : public NonAccessibleView {
     auto layout =
         std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal);
     layout->set_main_axis_alignment(
-        views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
+        views::BoxLayout::MainAxisAlignment::kCenter);
     SetLayoutManager(std::move(layout));
 
     views::ImageView* image = new views::ImageView();

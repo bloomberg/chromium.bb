@@ -89,7 +89,7 @@ FeaturePromoBubbleView::FeaturePromoBubbleView(
   auto box_layout = std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical, kBubbleContentsInsets, 0);
   box_layout->set_main_axis_alignment(
-      views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::MainAxisAlignment::kCenter);
   box_layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
   SetLayoutManager(std::move(box_layout));

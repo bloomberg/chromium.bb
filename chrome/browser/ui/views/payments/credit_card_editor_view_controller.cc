@@ -195,7 +195,7 @@ CreditCardEditorViewController::CreateHeaderView() {
       views::BoxLayout::kVertical,
       gfx::Insets(kRowBottomPadding, kPaymentRequestRowHorizontalInsets),
       kRowVerticalSpacing);
-  layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
+  layout->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kStart);
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStart);
   view->SetLayoutManager(std::move(layout));

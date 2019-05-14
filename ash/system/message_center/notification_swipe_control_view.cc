@@ -32,7 +32,7 @@ NotificationSwipeControlView::NotificationSwipeControlView(
       message_center_style::kSwipeControlButtonHorizontalMargin));
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStart);
-  layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_END);
+  layout->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kEnd);
 
   // Draw on its own layer to round corners
   SetPaintToLayer();
@@ -46,10 +46,10 @@ void NotificationSwipeControlView::ShowButtons(ButtonPosition button_position,
                                                bool show_snooze) {
   views::BoxLayout* layout = static_cast<views::BoxLayout*>(GetLayoutManager());
   if ((button_position == ButtonPosition::RIGHT) != base::i18n::IsRTL()) {
-    layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_END);
+    layout->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kEnd);
   } else {
     layout->set_main_axis_alignment(
-        views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
+        views::BoxLayout::MainAxisAlignment::kStart);
   }
   ShowSettingsButton(show_settings);
   ShowSnoozeButton(show_snooze);

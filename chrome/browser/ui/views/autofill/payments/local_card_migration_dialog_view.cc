@@ -154,7 +154,7 @@ std::unique_ptr<views::ScrollView> CreateCardList(
               : provider->GetDistanceMetric(
                     views::DISTANCE_UNRELATED_CONTROL_VERTICAL)));
   card_list_view_layout->set_main_axis_alignment(
-      views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
+      views::BoxLayout::MainAxisAlignment::kStart);
   for (size_t index = 0; index < migratable_credit_cards.size(); ++index) {
     card_list_view->AddChildView(new MigratableCardView(
         migratable_credit_cards[index], dialog_view, should_show_checkbox));

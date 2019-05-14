@@ -79,7 +79,7 @@ void SuggestionContainerView::InitLayout() {
 
   // We center align when showing conversation starters.
   layout_manager_->set_main_axis_alignment(
-      views::BoxLayout::MainAxisAlignment::MAIN_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::MainAxisAlignment::kCenter);
 }
 
 void SuggestionContainerView::OnConversationStartersChanged(
@@ -97,7 +97,7 @@ void SuggestionContainerView::OnResponseChanged(
 
   // When no longer showing conversation starters, we start align our content.
   layout_manager_->set_main_axis_alignment(
-      views::BoxLayout::MainAxisAlignment::MAIN_AXIS_ALIGNMENT_START);
+      views::BoxLayout::MainAxisAlignment::kStart);
 
   OnSuggestionsChanged(response->GetSuggestions());
 }
@@ -208,7 +208,7 @@ void SuggestionContainerView::OnUiVisibilityChanged(
   // When we start a new session we will be showing conversation starters so
   // we need to center align our content.
   layout_manager_->set_main_axis_alignment(
-      views::BoxLayout::MainAxisAlignment::MAIN_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::MainAxisAlignment::kCenter);
 }
 
 }  // namespace ash

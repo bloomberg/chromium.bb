@@ -44,7 +44,7 @@ SuggestionChipContainerView::SuggestionChipContainerView(
           views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
           kChipSpacing));
   layout_manager->set_main_axis_alignment(
-      views::BoxLayout::MainAxisAlignment::MAIN_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::MainAxisAlignment::kCenter);
 
   for (size_t i = 0; i < static_cast<size_t>(
                              AppListConfig::instance().num_start_page_tiles());

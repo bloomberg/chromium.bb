@@ -1136,7 +1136,7 @@ void NotificationViewMD::CreateOrUpdateInlineSettingsViews(
   auto settings_button_layout = std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal, kSettingsButtonRowPadding, 0);
   settings_button_layout->set_main_axis_alignment(
-      views::BoxLayout::MAIN_AXIS_ALIGNMENT_END);
+      views::BoxLayout::MainAxisAlignment::kEnd);
   settings_button_row->SetLayoutManager(std::move(settings_button_layout));
   settings_button_row->AddChildView(settings_done_button_);
   settings_row_->AddChildView(settings_button_row);

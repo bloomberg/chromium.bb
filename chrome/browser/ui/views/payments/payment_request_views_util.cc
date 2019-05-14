@@ -274,7 +274,7 @@ std::unique_ptr<views::View> CreateProductLogoFooterView() {
 
   auto layout = std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal, gfx::Insets(), 0);
-  layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
+  layout->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kStart);
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStart);
   content_view->SetLayoutManager(std::move(layout));
@@ -431,7 +431,7 @@ std::unique_ptr<views::View> CreateWarningView(const base::string16& message,
       views::BoxLayout::kHorizontal,
       gfx::Insets(0, kPaymentRequestRowHorizontalInsets),
       kRowHorizontalSpacing);
-  layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
+  layout->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kStart);
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStretch);
   header_view->SetLayoutManager(std::move(layout));

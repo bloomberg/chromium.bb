@@ -153,7 +153,7 @@ HostedAppButtonContainer::ContentSettingsContainer::ContentSettingsContainer(
           views::LayoutProvider::Get()->GetDistanceMetric(
               views::DISTANCE_RELATED_CONTROL_HORIZONTAL)));
   // Right align to clip the leftmost items first when not enough space.
-  layout.set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_END);
+  layout.set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kEnd);
 
   std::vector<std::unique_ptr<ContentSettingImageModel>> models =
       ContentSettingImageModel::GenerateContentSettingImageModels();
@@ -196,7 +196,7 @@ HostedAppButtonContainer::HostedAppButtonContainer(
                       right_margin.value_or(HorizontalPaddingBetweenItems())),
           HorizontalPaddingBetweenItems()));
   // Right align to clip the leftmost items first when not enough space.
-  layout.set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_END);
+  layout.set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kEnd);
   layout.set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
 

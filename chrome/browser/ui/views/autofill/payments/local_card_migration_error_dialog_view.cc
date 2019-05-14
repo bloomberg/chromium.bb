@@ -120,7 +120,7 @@ void LocalCardMigrationErrorDialogView::Init() {
           provider->GetDistanceMetric(
               views::DISTANCE_UNRELATED_CONTROL_VERTICAL)));
   horizontal_layout->set_main_axis_alignment(
-      views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::MainAxisAlignment::kCenter);
   error_view->SetBorder(views::CreateEmptyBorder(kMigrationDialogInsets));
   auto* error_image = new views::ImageView();
   error_image->SetImage(

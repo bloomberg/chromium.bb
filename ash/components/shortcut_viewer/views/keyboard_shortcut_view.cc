@@ -71,7 +71,7 @@ void SetupSearchIllustrationView(views::View* illustration_view,
   views::BoxLayout* layout =
       illustration_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::kVertical, gfx::Insets(kTopPadding, 0, 0, 0)));
-  layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
+  layout->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kStart);
   views::ImageView* image_view = new views::ImageView();
   image_view->SetImage(
       gfx::CreateVectorIcon(icon, kSearchIllustrationIconColor));

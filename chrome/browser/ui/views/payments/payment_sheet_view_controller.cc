@@ -943,7 +943,7 @@ std::unique_ptr<views::View> PaymentSheetViewController::CreateDataSourceRow() {
   auto layout = std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical,
       gfx::Insets(0, kPaymentRequestRowHorizontalInsets));
-  layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
+  layout->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kStart);
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStart);
   content_view->SetLayoutManager(std::move(layout));

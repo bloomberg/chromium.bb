@@ -579,7 +579,7 @@ CrostiniInstallerView::CrostiniInstallerView(Profile* profile)
 
   // Make sure the lower_container_view is pinned to the bottom of the dialog.
   lower_container_layout->set_main_axis_alignment(
-      views::BoxLayout::MAIN_AXIS_ALIGNMENT_END);
+      views::BoxLayout::MainAxisAlignment::kEnd);
   layout->SetFlexForView(lower_container_view, 1, true);
 
   chrome::RecordDialogCreation(chrome::DialogIdentifier::CROSTINI_INSTALLER);

@@ -404,7 +404,7 @@ ParentAccessView::ParentAccessView(const AccountId& account_id,
       gfx::Insets(kParentAccessViewVerticalInsetDp,
                   kParentAccessViewHorizontalInsetDp),
       0);
-  layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
+  layout->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kStart);
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
   views::BoxLayout* main_layout = SetLayoutManager(std::move(layout));
@@ -420,7 +420,7 @@ ParentAccessView::ParentAccessView(const AccountId& account_id,
   auto header_layout = std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal, gfx::Insets(), 0);
   header_layout->set_main_axis_alignment(
-      views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
+      views::BoxLayout::MainAxisAlignment::kStart);
   auto* header = new NonAccessibleView();
   header->SetPreferredSize(gfx::Size(child_view_width, 0));
   header->SetLayoutManager(std::move(header_layout));

@@ -126,7 +126,7 @@ ArcAppDialogView::ArcAppDialogView(Profile* profile,
   auto text_container_layout =
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical);
   text_container_layout->set_main_axis_alignment(
-      views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::MainAxisAlignment::kCenter);
   text_container_layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStart);
   text_container->SetLayoutManager(std::move(text_container_layout));

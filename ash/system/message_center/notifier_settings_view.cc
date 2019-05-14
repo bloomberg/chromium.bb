@@ -253,7 +253,7 @@ class EmptyNotifierView : public views::View {
     auto layout = std::make_unique<views::BoxLayout>(
         views::BoxLayout::kVertical, gfx::Insets(), 0);
     layout->set_main_axis_alignment(
-        views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
+        views::BoxLayout::MainAxisAlignment::kCenter);
     layout->set_cross_axis_alignment(
         views::BoxLayout::CrossAxisAlignment::kCenter);
     SetLayoutManager(std::move(layout));

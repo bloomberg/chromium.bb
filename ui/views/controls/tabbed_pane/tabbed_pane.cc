@@ -431,7 +431,7 @@ TabStrip::TabStrip(TabbedPane::Orientation orientation,
         kTabSpacing);
     layout->set_cross_axis_alignment(BoxLayout::CrossAxisAlignment::kStart);
   }
-  layout->set_main_axis_alignment(BoxLayout::MAIN_AXIS_ALIGNMENT_START);
+  layout->set_main_axis_alignment(BoxLayout::MainAxisAlignment::kStart);
   layout->SetDefaultFlex(0);
   SetLayoutManager(std::move(layout));
 
@@ -546,7 +546,7 @@ MdTabStrip::MdTabStrip(TabbedPane::Orientation orientation,
     : TabStrip(orientation, style) {
   if (orientation == TabbedPane::Orientation::kHorizontal) {
     auto layout = std::make_unique<BoxLayout>(BoxLayout::kHorizontal);
-    layout->set_main_axis_alignment(BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
+    layout->set_main_axis_alignment(BoxLayout::MainAxisAlignment::kCenter);
     layout->set_cross_axis_alignment(BoxLayout::CrossAxisAlignment::kStretch);
     layout->SetDefaultFlex(1);
     SetLayoutManager(std::move(layout));

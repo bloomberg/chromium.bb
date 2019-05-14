@@ -38,7 +38,7 @@ void ConfigureTitleTriView(TriView* tri_view, TriView::Container container) {
                                                   gfx::Insets(),
                                                   kUnifiedTopShortcutSpacing);
       layout->set_main_axis_alignment(
-          views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
+          views::BoxLayout::MainAxisAlignment::kCenter);
       layout->set_cross_axis_alignment(
           views::BoxLayout::CrossAxisAlignment::kCenter);
       break;
@@ -47,7 +47,7 @@ void ConfigureTitleTriView(TriView* tri_view, TriView::Container container) {
 
       layout = std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical);
       layout->set_main_axis_alignment(
-          views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
+          views::BoxLayout::MainAxisAlignment::kCenter);
       layout->set_cross_axis_alignment(
           views::BoxLayout::CrossAxisAlignment::kStretch);
       break;

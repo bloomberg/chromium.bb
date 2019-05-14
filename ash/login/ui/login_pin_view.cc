@@ -96,7 +96,7 @@ class BasePinButton : public views::InkDropHostView {
     auto layout =
         std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical);
     layout->set_main_axis_alignment(
-        views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
+        views::BoxLayout::MainAxisAlignment::kCenter);
     SetLayoutManager(std::move(layout));
 
     // Layer rendering is needed for animation. Enable it here for

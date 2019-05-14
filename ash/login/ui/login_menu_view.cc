@@ -149,8 +149,7 @@ LoginMenuView::LoginMenuView(const std::vector<Item>& items,
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
   layout->SetDefaultFlex(1);
   layout->set_minimum_cross_axis_size(kMenuItemWidthDp);
-  layout->set_main_axis_alignment(
-      views::BoxLayout::MainAxisAlignment::MAIN_AXIS_ALIGNMENT_CENTER);
+  layout->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kCenter);
 
   for (size_t i = 0; i < items.size(); i++) {
     const Item& item = items[i];

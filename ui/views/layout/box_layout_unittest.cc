@@ -114,17 +114,17 @@ TEST_F(BoxLayoutTest, Overflow) {
 
   // Clipping of children should occur at the opposite end(s) to the main axis
   // alignment position.
-  layout->set_main_axis_alignment(BoxLayout::MAIN_AXIS_ALIGNMENT_START);
+  layout->set_main_axis_alignment(BoxLayout::MainAxisAlignment::kStart);
   host_->Layout();
   EXPECT_EQ(gfx::Rect(0, 0, 15, 10), v1->bounds());
   EXPECT_EQ(gfx::Rect(0, 0, 0, 0), v2->bounds());
 
-  layout->set_main_axis_alignment(BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
+  layout->set_main_axis_alignment(BoxLayout::MainAxisAlignment::kCenter);
   host_->Layout();
   EXPECT_EQ(gfx::Rect(0, 0, 13, 10), v1->bounds());
   EXPECT_EQ(gfx::Rect(13, 0, 2, 10), v2->bounds());
 
-  layout->set_main_axis_alignment(BoxLayout::MAIN_AXIS_ALIGNMENT_END);
+  layout->set_main_axis_alignment(BoxLayout::MainAxisAlignment::kEnd);
   host_->Layout();
   EXPECT_EQ(gfx::Rect(0, 0, 5, 10), v1->bounds());
   EXPECT_EQ(gfx::Rect(5, 0, 10, 10), v2->bounds());
@@ -242,21 +242,21 @@ TEST_F(BoxLayoutTest, MainAxisAlignmentHorizontal) {
   EXPECT_EQ(gfx::Rect(10, 10, 20, 20).ToString(), v1->bounds().ToString());
   EXPECT_EQ(gfx::Rect(40, 10, 10, 20).ToString(), v2->bounds().ToString());
 
-  // Ensure same results for MAIN_AXIS_ALIGNMENT_START.
-  layout->set_main_axis_alignment(BoxLayout::MAIN_AXIS_ALIGNMENT_START);
+  // Ensure same results for MainAxisAlignment::kStart.
+  layout->set_main_axis_alignment(BoxLayout::MainAxisAlignment::kStart);
   host_->Layout();
   EXPECT_EQ(gfx::Rect(10, 10, 20, 20).ToString(), v1->bounds().ToString());
   EXPECT_EQ(gfx::Rect(40, 10, 10, 20).ToString(), v2->bounds().ToString());
 
   // Aligns children to the center horizontally.
-  layout->set_main_axis_alignment(BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
+  layout->set_main_axis_alignment(BoxLayout::MainAxisAlignment::kCenter);
   host_->Layout();
   EXPECT_EQ(gfx::Rect(30, 10, 20, 20).ToString(), v1->bounds().ToString());
   EXPECT_EQ(gfx::Rect(60, 10, 10, 20).ToString(), v2->bounds().ToString());
 
   // Aligns children to the end of the host horizontally, accounting for the
   // inside border spacing.
-  layout->set_main_axis_alignment(BoxLayout::MAIN_AXIS_ALIGNMENT_END);
+  layout->set_main_axis_alignment(BoxLayout::MainAxisAlignment::kEnd);
   host_->Layout();
   EXPECT_EQ(gfx::Rect(50, 10, 20, 20).ToString(), v1->bounds().ToString());
   EXPECT_EQ(gfx::Rect(80, 10, 10, 20).ToString(), v2->bounds().ToString());
@@ -278,21 +278,21 @@ TEST_F(BoxLayoutTest, MainAxisAlignmentVertical) {
   EXPECT_EQ(gfx::Rect(10, 10, 20, 20).ToString(), v1->bounds().ToString());
   EXPECT_EQ(gfx::Rect(10, 40, 20, 10).ToString(), v2->bounds().ToString());
 
-  // Ensure same results for MAIN_AXIS_ALIGNMENT_START.
-  layout->set_main_axis_alignment(BoxLayout::MAIN_AXIS_ALIGNMENT_START);
+  // Ensure same results for MainAxisAlignment::kStart.
+  layout->set_main_axis_alignment(BoxLayout::MainAxisAlignment::kStart);
   host_->Layout();
   EXPECT_EQ(gfx::Rect(10, 10, 20, 20).ToString(), v1->bounds().ToString());
   EXPECT_EQ(gfx::Rect(10, 40, 20, 10).ToString(), v2->bounds().ToString());
 
   // Aligns children to the center vertically.
-  layout->set_main_axis_alignment(BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
+  layout->set_main_axis_alignment(BoxLayout::MainAxisAlignment::kCenter);
   host_->Layout();
   EXPECT_EQ(gfx::Rect(10, 30, 20, 20).ToString(), v1->bounds().ToString());
   EXPECT_EQ(gfx::Rect(10, 60, 20, 10).ToString(), v2->bounds().ToString());
 
   // Aligns children to the end of the host vertically, accounting for the
   // inside border spacing.
-  layout->set_main_axis_alignment(BoxLayout::MAIN_AXIS_ALIGNMENT_END);
+  layout->set_main_axis_alignment(BoxLayout::MainAxisAlignment::kEnd);
   host_->Layout();
   EXPECT_EQ(gfx::Rect(10, 50, 20, 20).ToString(), v1->bounds().ToString());
   EXPECT_EQ(gfx::Rect(10, 80, 20, 10).ToString(), v2->bounds().ToString());
@@ -422,9 +422,9 @@ TEST_F(BoxLayoutTest, FlexGrowVertical) {
   EXPECT_EQ(gfx::Rect(10, 60, 30, 30).ToString(), v3->bounds().ToString());
 
   std::vector<BoxLayout::MainAxisAlignment> main_alignments;
-  main_alignments.push_back(BoxLayout::MAIN_AXIS_ALIGNMENT_START);
-  main_alignments.push_back(BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
-  main_alignments.push_back(BoxLayout::MAIN_AXIS_ALIGNMENT_END);
+  main_alignments.push_back(BoxLayout::MainAxisAlignment::kStart);
+  main_alignments.push_back(BoxLayout::MainAxisAlignment::kCenter);
+  main_alignments.push_back(BoxLayout::MainAxisAlignment::kEnd);
 
   for (size_t i = 0; i < main_alignments.size(); ++i) {
     layout->set_main_axis_alignment(main_alignments[i]);
@@ -526,9 +526,9 @@ TEST_F(BoxLayoutTest, FlexShrinkHorizontal) {
   EXPECT_EQ(gfx::Rect(60, 10, 15, 30).ToString(), v3->bounds().ToString());
 
   std::vector<BoxLayout::MainAxisAlignment> main_alignments;
-  main_alignments.push_back(BoxLayout::MAIN_AXIS_ALIGNMENT_START);
-  main_alignments.push_back(BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
-  main_alignments.push_back(BoxLayout::MAIN_AXIS_ALIGNMENT_END);
+  main_alignments.push_back(BoxLayout::MainAxisAlignment::kStart);
+  main_alignments.push_back(BoxLayout::MainAxisAlignment::kCenter);
+  main_alignments.push_back(BoxLayout::MainAxisAlignment::kEnd);
 
   for (size_t i = 0; i < main_alignments.size(); ++i) {
     layout->set_main_axis_alignment(main_alignments[i]);
@@ -551,7 +551,7 @@ TEST_F(BoxLayoutTest, FlexShrinkHorizontal) {
     EXPECT_EQ(gfx::Rect(55, 10, 20, 30).ToString(), v3->bounds().ToString());
 
     // Clear the previously set flex values and set the second view to take all
-    // the free space with MAIN_AXIS_ALIGNMENT_END set. This causes the second
+    // the free space with MainAxisAlignment::kEnd set. This causes the second
     // view to shrink to zero and the third view still doesn't fit so it
     // overflows.
     layout->ClearFlexForView(v1);
@@ -577,9 +577,9 @@ TEST_F(BoxLayoutTest, FlexShrinkVerticalWithRemainder) {
   host_->SetBounds(0, 0, 20, 20);
 
   std::vector<BoxLayout::MainAxisAlignment> main_alignments;
-  main_alignments.push_back(BoxLayout::MAIN_AXIS_ALIGNMENT_START);
-  main_alignments.push_back(BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
-  main_alignments.push_back(BoxLayout::MAIN_AXIS_ALIGNMENT_END);
+  main_alignments.push_back(BoxLayout::MainAxisAlignment::kStart);
+  main_alignments.push_back(BoxLayout::MainAxisAlignment::kCenter);
+  main_alignments.push_back(BoxLayout::MainAxisAlignment::kEnd);
 
   for (size_t i = 0; i < main_alignments.size(); ++i) {
     layout->set_main_axis_alignment(main_alignments[i]);

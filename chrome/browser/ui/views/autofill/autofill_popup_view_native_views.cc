@@ -826,7 +826,7 @@ AutofillPopupViewNativeViews::AutofillPopupViewNativeViews(
       controller_(controller) {
   layout_ = SetLayoutManager(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
-  layout_->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
+  layout_->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kStart);
 
   CreateChildViews();
   SetBackground(views::CreateSolidBackground(GetBackgroundColor()));
@@ -916,7 +916,7 @@ void AutofillPopupViewNativeViews::CreateChildViews() {
     views::BoxLayout* body_layout = body_container->SetLayoutManager(
         std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
     body_layout->set_main_axis_alignment(
-        views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
+        views::BoxLayout::MainAxisAlignment::kStart);
     for (auto* row : rows_) {
       body_container->AddChildView(row);
     }
@@ -955,7 +955,7 @@ void AutofillPopupViewNativeViews::CreateChildViews() {
     views::BoxLayout* footer_layout = footer_container->SetLayoutManager(
         std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
     footer_layout->set_main_axis_alignment(
-        views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
+        views::BoxLayout::MainAxisAlignment::kStart);
 
     while (line_number < controller_->GetLineCount()) {
       rows_.push_back(AutofillPopupFooterView::Create(

@@ -147,7 +147,7 @@ class SelectionButtonView : public LoginButton {
     views::BoxLayout* label_layout = label_container->SetLayoutManager(
         std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
     label_layout->set_main_axis_alignment(
-        views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
+        views::BoxLayout::MainAxisAlignment::kStart);
     AddChildView(label_container);
 
     label_ = CreateLabel(text, SK_ColorWHITE);
@@ -158,7 +158,7 @@ class SelectionButtonView : public LoginButton {
     views::BoxLayout* icon_layout = icon_container->SetLayoutManager(
         std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
     icon_layout->set_main_axis_alignment(
-        views::BoxLayout::MAIN_AXIS_ALIGNMENT_END);
+        views::BoxLayout::MainAxisAlignment::kEnd);
     AddChildView(icon_container);
 
     icon_ = new views::ImageView;

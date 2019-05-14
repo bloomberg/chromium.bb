@@ -69,7 +69,7 @@ class ScrollerContentsView : public views::View {
             views::BoxLayout::kHorizontal,
             gfx::Insets(kUnifiedNotificationCenterSpacing), 0));
     button_layout->set_main_axis_alignment(
-        views::BoxLayout::MAIN_AXIS_ALIGNMENT_END);
+        views::BoxLayout::MainAxisAlignment::kEnd);
 
     auto* clear_all_button = new RoundedLabelButton(
         listener, l10n_util::GetStringUTF16(

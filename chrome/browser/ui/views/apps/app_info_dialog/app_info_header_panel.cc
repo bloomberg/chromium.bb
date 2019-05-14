@@ -76,7 +76,7 @@ void AppInfoHeaderPanel::CreateControls() {
   auto vertical_container_layout =
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical);
   vertical_container_layout->set_main_axis_alignment(
-      views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::MainAxisAlignment::kCenter);
   vertical_info_container->SetLayoutManager(
       std::move(vertical_container_layout));
   auto* vertical_info_container_ptr =
