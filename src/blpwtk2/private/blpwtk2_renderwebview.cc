@@ -589,10 +589,12 @@ LRESULT RenderWebView::windowProcedure(UINT   uMsg,
 
             d_lastMouseWheelEvent = event;
 
-            d_inputRouterImpl->SendWheelEvent(
-                content::MouseWheelEventWithLatencyInfo(
-                    event,
-                    ui::LatencyInfo()));
+            if (d_inputRouterImpl) {
+                d_inputRouterImpl->SendWheelEvent(
+                    content::MouseWheelEventWithLatencyInfo(
+                        event,
+                        ui::LatencyInfo()));
+            }
 
             return 0;
         } break;
@@ -928,10 +930,13 @@ void RenderWebView::onQueueWheelEventWithPhaseEnded()
     d_lastMouseWheelEvent.dispatch_type = blink::WebInputEvent::DispatchType::kEventNonBlocking;
 
     d_lastMouseWheelEvent.phase = blink::WebMouseWheelEvent::kPhaseEnded;
-    d_inputRouterImpl->SendWheelEvent(
-        content::MouseWheelEventWithLatencyInfo(
-            d_lastMouseWheelEvent,
-            ui::LatencyInfo()));
+
+    if (d_inputRouterImpl) {
+        d_inputRouterImpl->SendWheelEvent(
+            content::MouseWheelEventWithLatencyInfo(
+                d_lastMouseWheelEvent,
+                ui::LatencyInfo()));
+    }
 }
 
 void RenderWebView::onStartDraggingImpl(
@@ -1691,13 +1696,15 @@ ui::EventDispatchDetails RenderWebView::DispatchKeyEventPostIME(
     base::OnceCallback<void(bool)> ack_callback)
 {
     if (!key_event->handled()) {
-        d_inputRouterImpl->SendKeyboardEvent(
-            content::NativeWebKeyboardEventWithLatencyInfo(
-                content::NativeWebKeyboardEvent(*key_event),
-                ui::LatencyInfo()),
-            base::BindOnce(
-                &RenderWebView::onKeyboardEventAck,
-                base::Unretained(this)));
+        if (d_inputRouterImpl) {
+            d_inputRouterImpl->SendKeyboardEvent(
+                content::NativeWebKeyboardEventWithLatencyInfo(
+                    content::NativeWebKeyboardEvent(*key_event),
+                    ui::LatencyInfo()),
+                base::BindOnce(
+                    &RenderWebView::onKeyboardEventAck,
+                    base::Unretained(this)));
+        }
         CallDispatchKeyEventPostIMEAck(key_event, std::move(ack_callback));
     }
 
@@ -1763,13 +1770,15 @@ void RenderWebView::InsertText(const base::string16& text)
 
 void RenderWebView::InsertChar(const ui::KeyEvent& event)
 {
-    d_inputRouterImpl->SendKeyboardEvent(
-        content::NativeWebKeyboardEventWithLatencyInfo(
-            content::NativeWebKeyboardEvent(event),
-            ui::LatencyInfo()),
-        base::BindOnce(
-            &RenderWebView::onKeyboardEventAck,
-            base::Unretained(this)));
+    if (d_inputRouterImpl) {
+        d_inputRouterImpl->SendKeyboardEvent(
+            content::NativeWebKeyboardEventWithLatencyInfo(
+                content::NativeWebKeyboardEvent(event),
+                ui::LatencyInfo()),
+            base::BindOnce(
+                &RenderWebView::onKeyboardEventAck,
+                base::Unretained(this)));
+    }
 }
 
 ui::TextInputType RenderWebView::GetTextInputType() const
