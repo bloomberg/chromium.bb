@@ -94,44 +94,41 @@ static void ConsiderForBestCandidate(SpatialNavigationDirection direction,
   if (distance == MaxDistance())
     return;
 
-  if (best_candidate->IsNull()) {
-    *best_candidate = candidate;
-    *best_distance = distance;
-    return;
-  }
-
-  LayoutRect intersection_rect = Intersection(
-      candidate.rect_in_root_frame, best_candidate->rect_in_root_frame);
-  if (!intersection_rect.IsEmpty() &&
-      !AreElementsOnSameLine(*best_candidate, candidate) &&
-      intersection_rect == candidate.rect_in_root_frame) {
-    // If 2 nodes are intersecting, do hit test to find which node in on top.
-    LayoutUnit x = intersection_rect.X() + intersection_rect.Width() / 2;
-    LayoutUnit y = intersection_rect.Y() + intersection_rect.Height() / 2;
-    if (!IsA<LocalFrame>(
-            candidate.visible_node->GetDocument().GetPage()->MainFrame()))
-      return;
-    HitTestLocation location(IntPoint(x.ToInt(), y.ToInt()));
-    HitTestResult result =
-        candidate.visible_node->GetDocument()
-            .GetPage()
-            ->DeprecatedLocalMainFrame()
-            ->GetEventHandler()
-            .HitTestResultAtLocation(
-                location, HitTestRequest::kReadOnly | HitTestRequest::kActive |
-                              HitTestRequest::kIgnoreClipping);
-    if (candidate.visible_node->ContainsIncludingHostElements(
-            *result.InnerNode())) {
-      *best_candidate = candidate;
-      *best_distance = distance;
-      return;
+  if (!best_candidate->IsNull()) {
+    LayoutRect intersection_rect = Intersection(
+        candidate.rect_in_root_frame, best_candidate->rect_in_root_frame);
+    if (!intersection_rect.IsEmpty() &&
+        !AreElementsOnSameLine(*best_candidate, candidate) &&
+        intersection_rect == candidate.rect_in_root_frame) {
+      // If 2 nodes are intersecting, do hit test to find which node in on top.
+      LayoutUnit x = intersection_rect.X() + intersection_rect.Width() / 2;
+      LayoutUnit y = intersection_rect.Y() + intersection_rect.Height() / 2;
+      if (!IsA<LocalFrame>(
+              candidate.visible_node->GetDocument().GetPage()->MainFrame()))
+        return;
+      HitTestLocation location(IntPoint(x.ToInt(), y.ToInt()));
+      HitTestResult result =
+          candidate.visible_node->GetDocument()
+              .GetPage()
+              ->DeprecatedLocalMainFrame()
+              ->GetEventHandler()
+              .HitTestResultAtLocation(location,
+                                       HitTestRequest::kReadOnly |
+                                           HitTestRequest::kActive |
+                                           HitTestRequest::kIgnoreClipping);
+      if (candidate.visible_node->ContainsIncludingHostElements(
+              *result.InnerNode())) {
+        *best_candidate = candidate;
+        *best_distance = distance;
+        return;
+      }
+      if (best_candidate->visible_node->ContainsIncludingHostElements(
+              *result.InnerNode()))
+        return;
     }
-    if (best_candidate->visible_node->ContainsIncludingHostElements(
-            *result.InnerNode()))
-      return;
   }
 
-  if (distance < *best_distance) {
+  if (distance < *best_distance && IsUnobscured(candidate)) {
     *best_candidate = candidate;
     *best_distance = distance;
   }
