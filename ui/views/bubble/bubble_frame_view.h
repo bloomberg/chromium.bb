@@ -97,6 +97,11 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
     preferred_arrow_adjustment_ = adjustment;
   }
 
+  bool hit_test_transparent() const { return hit_test_transparent_; }
+  void set_hit_test_transparent(bool hit_test_transparent) {
+    hit_test_transparent_ = hit_test_transparent;
+  }
+
   // Get/set the corner radius of the bubble border.
   int corner_radius() const {
     return bubble_border_ ? bubble_border_->corner_radius() : 0;
@@ -218,6 +223,10 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
   // the available bounds.
   PreferredArrowAdjustment preferred_arrow_adjustment_ =
       PreferredArrowAdjustment::kMirror;
+
+  // If true the view is transparent to all  hit tested events (i.e. click and
+  // hover).
+  bool hit_test_transparent_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(BubbleFrameView);
 };

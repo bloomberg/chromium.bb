@@ -177,6 +177,8 @@ bool BubbleFrameView::GetClientMask(const gfx::Size& size, SkPath* path) const {
 int BubbleFrameView::NonClientHitTest(const gfx::Point& point) {
   if (!bounds().Contains(point))
     return HTNOWHERE;
+  if (hit_test_transparent_)
+    return HTTRANSPARENT;
   if (close_->visible() && close_->GetMirroredBounds().Contains(point))
     return HTCLOSE;
 

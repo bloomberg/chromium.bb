@@ -319,6 +319,7 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
 
   GetBubbleFrameView()->set_preferred_arrow_adjustment(
       views::BubbleFrameView::PreferredArrowAdjustment::kOffset);
+  GetBubbleFrameView()->set_hit_test_transparent(true);
 
   if (CustomShadowsSupported()) {
     GetBubbleFrameView()->SetCornerRadius(
