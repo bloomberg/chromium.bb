@@ -64,6 +64,8 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  using FetchHandlerExistence = mojom::FetchHandlerExistence;
+
   static ServiceWorkerGlobalScope* Create(
       ServiceWorkerThread*,
       std::unique_ptr<GlobalScopeCreationParams>,
@@ -131,6 +133,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
   void BindServiceWorkerHost(mojom::blink::ServiceWorkerHostAssociatedPtrInfo);
 
   void SetRegistration(WebServiceWorkerRegistrationObjectInfo info);
+  void SetFetchHandlerExistence(FetchHandlerExistence fetch_handler_existence);
 
   // Returns the ServiceWorker object described by the given info. Creates a new
   // object if needed, or else returns the existing one.

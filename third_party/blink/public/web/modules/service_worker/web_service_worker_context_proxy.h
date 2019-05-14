@@ -35,6 +35,7 @@
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "third_party/blink/public/common/messaging/transferable_message.h"
 #include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom-shared.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker.mojom-shared.h"
 #include "third_party/blink/public/platform/modules/background_fetch/web_background_fetch_registration.h"
 #include "third_party/blink/public/platform/web_canonical_cookie.h"
 
@@ -58,12 +59,16 @@ class WebURLResponse;
 // All methods of this class must be called on the worker thread.
 class WebServiceWorkerContextProxy {
  public:
+  using FetchHandlerExistence = mojom::FetchHandlerExistence;
+
   virtual ~WebServiceWorkerContextProxy() = default;
 
   virtual void BindServiceWorkerHost(
       mojo::ScopedInterfaceEndpointHandle service_worker_host) = 0;
 
   virtual void SetRegistration(WebServiceWorkerRegistrationObjectInfo) = 0;
+  virtual void SetFetchHandlerExistence(
+      FetchHandlerExistence fetch_handler_existence) = 0;
 
   // Script evaluation does not start until this function is called.
   virtual void ReadyToEvaluateScript() = 0;

@@ -2150,7 +2150,8 @@ void ServiceWorkerVersion::InitializeGlobalScope() {
   service_worker_ptr_->InitializeGlobalScope(
       std::move(service_worker_host_),
       provider_host_->CreateServiceWorkerRegistrationObjectInfo(
-          std::move(registration)));
+          std::move(registration)),
+      fetch_handler_existence_);
 }
 
 }  // namespace content

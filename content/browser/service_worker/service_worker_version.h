@@ -121,6 +121,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
       base::OnceCallback<void(blink::ServiceWorkerStatusCode)>;
   using SimpleEventCallback =
       base::OnceCallback<void(blink::mojom::ServiceWorkerEventStatus)>;
+  using FetchHandlerExistence = blink::mojom::FetchHandlerExistence;
 
   // Current version status; some of the status (e.g. INSTALLED and ACTIVATED)
   // should be persisted unlike running status.
@@ -139,13 +140,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
     KILL_ON_TIMEOUT,     // Kill the worker if this request times out.
     CONTINUE_ON_TIMEOUT  // Keep the worker alive, only abandon the request that
                          // timed out.
-  };
-
-  // Whether the version has fetch handlers or not.
-  enum class FetchHandlerExistence {
-    UNKNOWN,  // This version is a new version and not installed yet.
-    EXISTS,
-    DOES_NOT_EXIST,
   };
 
   class Observer {

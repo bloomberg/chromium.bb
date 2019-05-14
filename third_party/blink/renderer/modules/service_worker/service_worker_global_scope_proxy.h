@@ -83,6 +83,8 @@ class ServiceWorkerGlobalScopeProxy final
   void BindServiceWorkerHost(
       mojo::ScopedInterfaceEndpointHandle service_worker_host) override;
   void SetRegistration(WebServiceWorkerRegistrationObjectInfo info) override;
+  void SetFetchHandlerExistence(
+      FetchHandlerExistence fetch_handler_existence) override;
   // Must be called after the above BindServiceWorkerHost() and
   // SetRegistration() got called.
   void ReadyToEvaluateScript() override;

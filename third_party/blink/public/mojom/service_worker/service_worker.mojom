@@ -114,6 +114,19 @@ struct ExtendableMessageEvent {
   ServiceWorkerObjectInfo? source_info_for_service_worker;
 };
 
+// Indicates whether a service worker has a fetch event handler.  The presence
+// of the fetch event handler is determined when the service worker finishes
+// installing.
+// TODO(crbug.com/945505): Convert enum constants to kUnknown style.
+enum FetchHandlerExistence {
+  // The service worker has not yet finished installing.
+  UNKNOWN,
+  // The service worker finished installing and added a fetch event handler.
+  EXISTS,
+  // The service worker finished installing without a fetch event handler.
+  DOES_NOT_EXIST,
+};
+
 // The number of seconds for which a 'push' event should be allowed to run.
 // This is not in the spec but for a Chrome-specific timeout. Each
 // event dispatched to service workers has a 5 minute timeout in the Chrome
@@ -154,7 +167,8 @@ interface ServiceWorker {
   // service worker does not start until this message is received.
   InitializeGlobalScope(
       associated ServiceWorkerHost service_worker_host,
-      ServiceWorkerRegistrationObjectInfo registration_info);
+      ServiceWorkerRegistrationObjectInfo registration_info,
+      FetchHandlerExistence fetch_handler_existence);
 
   DispatchInstallEvent()
       => (ServiceWorkerEventStatus status, bool has_fetch_handler);
