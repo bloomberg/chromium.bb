@@ -20,6 +20,6 @@ extern const base::Feature kWebAuthPINSupport{"WebAuthenticationPINSupport",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 
 extern const base::Feature kWebAuthResidentKeys{
-    "WebAuthenticationResidentKeys", base::FEATURE_DISABLED_BY_DEFAULT};
+    "WebAuthenticationResidentKeys", base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace device
