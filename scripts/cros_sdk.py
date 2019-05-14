@@ -862,6 +862,7 @@ def main(argv):
       ignore_missing=True)
   sdk_latest_version = conf.get('SDK_LATEST_VERSION', '<unknown>')
   bootstrap_latest_version = conf.get('BOOTSTRAP_LATEST_VERSION', '<unknown>')
+  bootstrap_frozen_version = conf.get('BOOTSTRAP_FROZEN_VERSION', '<unknown>')
   parser, commands = _CreateParser(sdk_latest_version, bootstrap_latest_version)
   options = parser.parse_args(argv)
   chroot_command = options.commands
@@ -880,9 +881,12 @@ def main(argv):
     _ReportMissing(osutils.FindMissingBinaries(PROXY_NEEDED_TOOLS))
   missing_image_tools = osutils.FindMissingBinaries(IMAGE_NEEDED_TOOLS)
 
-  # Use latest SDK for bootstrapping if requested.
+  # Use latest SDK for bootstrapping if requested. Use a frozen version of SDK
+  # for bootstrapping if BOOTSTRAP_FROZEN_VERSION is set.
   if options.self_bootstrap:
-    bootstrap_latest_version = sdk_latest_version
+    bootstrap_latest_version = (
+        sdk_latest_version if bootstrap_frozen_version == '<unknown>' else
+        bootstrap_frozen_version)
 
   if (sdk_latest_version == '<unknown>' or
       bootstrap_latest_version == '<unknown>'):
