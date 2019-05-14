@@ -1033,8 +1033,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, LaunchAppNetworkPortal) {
   WaitForAppLaunchSuccess();
 }
 
-// TODO(crbug.com/961607) Disabled for flakiness. See bug for details.
-IN_PROC_BROWSER_TEST_F(KioskTest, DISABLED_LaunchAppUserCancel) {
+IN_PROC_BROWSER_TEST_F(KioskTest, LaunchAppUserCancel) {
   // Make fake_cws_ return empty update response.
   set_test_app_version("");
   OobeScreenWaiter splash_waiter(AppLaunchSplashScreenView::kScreenId);
