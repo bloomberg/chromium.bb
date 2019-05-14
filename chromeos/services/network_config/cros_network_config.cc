@@ -53,6 +53,8 @@ NetworkTypePattern MojoTypeToPattern(mojom::NetworkType type) {
       return NetworkTypePattern::Cellular();
     case mojom::NetworkType::kEthernet:
       return NetworkTypePattern::Ethernet();
+    case mojom::NetworkType::kMobile:
+      return NetworkTypePattern::Mobile();
     case mojom::NetworkType::kTether:
       return NetworkTypePattern::Tether();
     case mojom::NetworkType::kVPN:
@@ -95,9 +97,11 @@ mojom::VPNType ShillVpnTypeToMojo(const std::string& shill_vpn_type) {
   return mojom::VPNType::kOpenVPN;
 }
 
-base::Optional<mojom::DeviceStateType> GetMojoDeviceStateType(
+mojom::DeviceStateType GetMojoDeviceStateType(
     NetworkStateHandler::TechnologyState technology_state) {
   switch (technology_state) {
+    case NetworkStateHandler::TECHNOLOGY_UNAVAILABLE:
+      return mojom::DeviceStateType::kUnavailable;
     case NetworkStateHandler::TECHNOLOGY_UNINITIALIZED:
       return mojom::DeviceStateType::kUninitialized;
     case NetworkStateHandler::TECHNOLOGY_AVAILABLE:
@@ -108,11 +112,9 @@ base::Optional<mojom::DeviceStateType> GetMojoDeviceStateType(
       return mojom::DeviceStateType::kEnabled;
     case NetworkStateHandler::TECHNOLOGY_PROHIBITED:
       return mojom::DeviceStateType::kProhibited;
-    case NetworkStateHandler::TECHNOLOGY_UNAVAILABLE:
-      return base::nullopt;
   }
   NOTREACHED();
-  return base::nullopt;
+  return mojom::DeviceStateType::kUnavailable;
 }
 
 mojom::NetworkStatePropertiesPtr NetworkStateToMojo(
@@ -135,7 +137,17 @@ mojom::NetworkStatePropertiesPtr NetworkStateToMojo(
   result->guid = network->guid();
   result->name = network->name();
   result->priority = network->priority();
+  result->prohibited_by_policy = network->blocked_by_policy();
   result->source = mojom::ONCSource(network->onc_source());
+
+  const NetworkState::CaptivePortalProviderInfo* captive_portal_provider =
+      network->captive_portal_provider();
+  if (captive_portal_provider) {
+    auto mojo_captive_portal_provider = mojom::CaptivePortalProvider::New();
+    mojo_captive_portal_provider->id = captive_portal_provider->id;
+    mojo_captive_portal_provider->name = captive_portal_provider->name;
+    result->captive_portal_provider = std::move(mojo_captive_portal_provider);
+  }
 
   switch (type) {
     case mojom::NetworkType::kCellular: {
@@ -177,15 +189,11 @@ mojom::NetworkStatePropertiesPtr NetworkStateToMojo(
           network->vpn_provider();
       if (vpn_provider) {
         vpn->type = ShillVpnTypeToMojo(vpn_provider->type);
-        if (vpn->type == mojom::VPNType::kThirdPartyVPN) {
-          auto third_party_vpn = mojom::ThirdPartyVPNProperties::New();
-          third_party_vpn->extension_id = vpn_provider->id;
-          // TODO(stevenjb): Set the provider name in network state.
-          // third_party_vpn->provider_name = vpn_provider->name;
-          vpn->third_party_vpn = std::move(third_party_vpn);
-        }
-        result->vpn = std::move(vpn);
+        vpn->provider_id = vpn_provider->id;
+        // TODO(stevenjb): Set the provider name in network state.
+        // vpn->provider_name = vpn_provider->name;
       }
+      result->vpn = std::move(vpn);
       break;
     }
     case mojom::NetworkType::kWiFi: {
@@ -206,6 +214,7 @@ mojom::NetworkStatePropertiesPtr NetworkStateToMojo(
       break;
     }
     case mojom::NetworkType::kAll:
+    case mojom::NetworkType::kMobile:
     case mojom::NetworkType::kWireless:
       NOTREACHED() << "NetworkStateProperties can not be of type: " << type;
       break;
@@ -223,17 +232,17 @@ mojom::DeviceStatePropertiesPtr DeviceStateToMojo(
     return nullptr;
   }
 
-  base::Optional<mojom::DeviceStateType> state =
+  mojom::DeviceStateType state =
       GetMojoDeviceStateType(network_state_handler->GetTechnologyState(
           NetworkTypePattern::Primitive(device->type())));
-  if (!state) {
+  if (state == mojom::DeviceStateType::kUnavailable) {
     NET_LOG(ERROR) << "Device state unavailable";
     return nullptr;
   }
   auto result = mojom::DeviceStateProperties::New();
   result->type = type;
   result->scanning = device->scanning();
-  result->state = *state;
+  result->state = state;
   result->managed_network_available =
       !device->available_managed_network_path().empty();
 

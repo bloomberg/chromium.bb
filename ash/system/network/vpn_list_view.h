@@ -11,13 +11,9 @@
 #include "ash/system/network/network_state_list_detailed_view.h"
 #include "ash/system/network/vpn_list.h"
 #include "base/macros.h"
-#include "chromeos/network/network_state_handler.h"
+#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 
 class PrefRegistrySimple;
-
-namespace chromeos {
-class NetworkState;
-}
 
 namespace views {
 class View;
@@ -56,12 +52,22 @@ class VPNListView : public NetworkStateListDetailedView,
   // VpnList::Observer:
   void OnVPNProvidersChanged() override;
 
+  chromeos::network_config::mojom::CrosNetworkConfig* cros_network_config() {
+    return cros_network_config_ptr_.get();
+  }
+
   // See Shell::RegisterProfilePrefs().
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
  private:
+  using NetworkStateList =
+      std::vector<chromeos::network_config::mojom::NetworkStatePropertiesPtr>;
+  void BindCrosNetworkConfig();
+  void OnGetNetworkStateList(NetworkStateList networks);
+
   // Adds a network to the list.
-  void AddNetwork(const chromeos::NetworkState* network);
+  void AddNetwork(
+      const chromeos::network_config::mojom::NetworkStateProperties* network);
 
   // Adds the VPN provider identified by |vpn_provider| to the list, along with
   // no networks that belong to this provider.
@@ -69,9 +75,8 @@ class VPNListView : public NetworkStateListDetailedView,
 
   // Adds the VPN provider identified by |vpn_provider| to the list, along with
   // any networks that belong to this provider.
-  void AddProviderAndNetworks(
-      const VPNProvider& vpn_provider,
-      const chromeos::NetworkStateHandler::NetworkStateList& networks);
+  void AddProviderAndNetworks(const VPNProvider& vpn_provider,
+                              const NetworkStateList& networks);
 
   // Finds VPN provider from |providers| that matches given |network|. Then adds
   // the VPN provider along with any networks that belong to this provider. Will
@@ -79,13 +84,15 @@ class VPNListView : public NetworkStateListDetailedView,
   // entry in VPN list view.
   // Returns true if finds a match, returns false otherwise.
   bool ProcessProviderForNetwork(
-      const chromeos::NetworkState* network,
-      const chromeos::NetworkStateHandler::NetworkStateList& networks,
+      const chromeos::network_config::mojom::NetworkStateProperties* network,
+      const NetworkStateList& networks,
       std::vector<VPNProvider>* providers);
 
   // Adds all available VPN providers and networks to the list.
-  void AddProvidersAndNetworks(
-      const chromeos::NetworkStateHandler::NetworkStateList& networks);
+  void AddProvidersAndNetworks(const NetworkStateList& networks);
+
+  chromeos::network_config::mojom::CrosNetworkConfigPtr
+      cros_network_config_ptr_;
 
   // A mapping from each VPN provider's list entry to the provider.
   std::map<const views::View* const, VPNProvider> provider_view_map_;

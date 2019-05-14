@@ -12,10 +12,12 @@ module chromeos.network_config.mojom;
 // Activation state for Cellular networks.
 enum ActivationStateType {
   kUnknown,
-  kActivated,
-  kActivating,
   kNotActivated,
+  kActivating,
   kPartiallyActivated,
+  kActivated,
+  // A cellular modem exists, but no network service is available.
+  kNoService,
 };
 
 // The authentication type for Ethernet networks.
@@ -33,13 +35,15 @@ enum ConnectionStateType {
   kNotConnected,
 };
 
-// Device / Technology state for available devices.
+// Device / Technology state for devices.
 enum DeviceStateType {
   kUninitialized,
   kDisabled,
   kEnabling,
   kEnabled,
   kProhibited,
+  // Not used in DeviceStateProperties, but useful when querying by type.
+  kUnavailable,
 };
 
 // The ONC source for policy or imported networks.
@@ -57,6 +61,8 @@ enum NetworkType {
   kAll,
   kCellular,
   kEthernet,
+  // Mobile includes Cellular, Tether, and WiMAX.
+  kMobile,
   kTether,
   kVPN,
   // Wireles includes Cellular, Tether, WiFi, and WiMAX.
@@ -95,6 +101,13 @@ enum FilterType {
   kAll,
 };
 
+struct CaptivePortalProvider {
+  // Id used to identify the captive portal provider (i.e. an extension id).
+  string id;
+  // Display name for the captive portal provider (i.e. extension name).
+  string name;
+};
+
 // The SIM card lock status for Cellular networks.
 struct SIMLockStatus {
   // The status of SIM lock. Possible values are 'sim-pin', 'sim-puk' or empty.
@@ -103,14 +116,6 @@ struct SIMLockStatus {
   bool lock_enabled;
   // Number of PIN lock tries allowed before PUK is required to unlock the SIM.
   int32 retries_left;
-};
-
-// Additional properties for third party VPNs.
-struct ThirdPartyVPNProperties {
-  // ID of the third-party VPN provider extension.
-  string extension_id;
-  // The VPN provider name.
-  string provider_name;
 };
 
 struct CellularStateProperties {
@@ -145,7 +150,8 @@ struct TetherStateProperties {
 
 struct VPNStateProperties {
   VPNType type;
-  ThirdPartyVPNProperties? third_party_vpn;
+  string provider_id;
+  string provider_name;
 };
 
 struct WiFiStateProperties {
@@ -168,6 +174,7 @@ struct WiMAXStateProperties {
 };
 
 struct NetworkStateProperties {
+  CaptivePortalProvider? captive_portal_provider;
   CellularStateProperties? cellular;
   // True if the network is configured and may be connectable.
   bool connectable = false;
@@ -184,6 +191,8 @@ struct NetworkStateProperties {
   string name;
   // The relative priority of the network. Larger values have higher priority.
   int32 priority;
+  // True for visible networks that are blocked / disallowed by policy.
+  bool prohibited_by_policy = false;
   ONCSource source;
   TetherStateProperties? tether;
   NetworkType type;

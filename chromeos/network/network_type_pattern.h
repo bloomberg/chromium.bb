@@ -12,6 +12,9 @@
 
 namespace chromeos {
 
+// Class to convert Shill network type names to explicit types and do pattern
+// matching for grouped types (e.g. Wireless). Grouped type matching is also
+// implemented for mojo types in cros_network_config_util.cc.
 class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkTypePattern {
  public:
   // Matches any network.

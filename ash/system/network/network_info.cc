@@ -6,26 +6,19 @@
 
 namespace ash {
 
-NetworkInfo::NetworkInfo()
-    : disable(false),
-      connected(false),
-      connecting(false),
-      type(Type::UNKNOWN) {}
+NetworkInfo::NetworkInfo() = default;
 
-NetworkInfo::NetworkInfo(const std::string& guid)
-    : guid(guid),
-      disable(false),
-      connected(false),
-      connecting(false),
-      type(Type::UNKNOWN) {}
+NetworkInfo::NetworkInfo(const std::string& guid) : guid(guid) {}
 
 NetworkInfo::~NetworkInfo() = default;
 
 bool NetworkInfo::operator==(const NetworkInfo& other) const {
   return guid == other.guid && label == other.label &&
          tooltip == other.tooltip && image.BackedBySameObjectAs(other.image) &&
-         disable == other.disable && connected == other.connected &&
-         connecting == other.connecting && type == other.type;
+         type == other.type && disable == other.disable &&
+         connection_state == other.connection_state && source == other.source &&
+         battery_percentage == other.battery_percentage &&
+         captive_portal_provider_name == other.captive_portal_provider_name;
 }
 
 }  // namespace ash

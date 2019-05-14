@@ -14,14 +14,14 @@
 #include "ash/system/network/network_icon_animation_observer.h"
 #include "ash/system/network/network_info.h"
 #include "ash/system/network/network_state_list_detailed_view.h"
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
-#include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/network_type_pattern.h"
+#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 
 namespace views {
 class Separator;
 class View;
-}
+}  // namespace views
 
 namespace ash {
 class HoverHighlightView;
@@ -46,18 +46,13 @@ class NetworkListView : public NetworkStateListDetailedView,
   bool IsNetworkEntry(views::View* view, std::string* guid) const override;
 
  private:
-  // Clears |network_list_| and adds to it |networks| that match |delegate_|'s
-  // network type pattern.
-  void UpdateNetworks(
-      const chromeos::NetworkStateHandler::NetworkStateList& networks);
-
-  // Updates |network_list_| entries and sets |this| to observe network icon
-  // animations when any of the networks are in connecting state.
-  void UpdateNetworkIcons();
-
-  // Orders entries in |network_list_| such that higher priority network types
-  // are at the top of the list.
-  void OrderNetworks();
+  void BindCrosNetworkConfig();
+  void OnGetDeviceStateList(
+      std::vector<chromeos::network_config::mojom::DeviceStatePropertiesPtr>
+          devices);
+  void OnGetNetworkStateList(
+      std::vector<chromeos::network_config::mojom::NetworkStatePropertiesPtr>
+          networks);
 
   // Refreshes a list of child views, updates |network_map_| and
   // |network_guid_map_| and performs layout making sure selected view if any is
@@ -97,7 +92,7 @@ class NetworkListView : public NetworkStateListDetailedView,
   // |child_index|. Returns a set of guids for the added network
   // connections.
   std::unique_ptr<std::set<std::string>> UpdateNetworkChildren(
-      NetworkInfo::Type type,
+      chromeos::network_config::mojom::NetworkType type,
       int child_index);
   void UpdateNetworkChild(int index, const NetworkInfo* info);
 
@@ -119,11 +114,12 @@ class NetworkListView : public NetworkStateListDetailedView,
   // |scroll_content()| placing the |view| at |child_index|. Returns the index
   // where the next child should be inserted, i.e., the index directly after the
   // last inserted child.
-  int UpdateNetworkSectionHeader(chromeos::NetworkTypePattern pattern,
-                                 bool enabled,
-                                 int child_index,
-                                 NetworkSectionHeaderView* view,
-                                 views::Separator** separator_view);
+  int UpdateNetworkSectionHeader(
+      chromeos::network_config::mojom::NetworkType type,
+      bool enabled,
+      int child_index,
+      NetworkSectionHeaderView* view,
+      views::Separator** separator_view);
 
   // network_icon::AnimationObserver:
   void NetworkIconChanged() override;
@@ -131,6 +127,9 @@ class NetworkListView : public NetworkStateListDetailedView,
   // Returns true if the info should be updated to the view for network,
   // otherwise false.
   bool NeedUpdateViewForNetwork(const NetworkInfo& info) const;
+
+  chromeos::network_config::mojom::DeviceStateType GetDeviceState(
+      chromeos::network_config::mojom::NetworkType type) const;
 
   bool needs_relayout_ = false;
 
@@ -142,6 +141,15 @@ class NetworkListView : public NetworkStateListDetailedView,
   views::Separator* mobile_separator_view_ = nullptr;
   views::Separator* wifi_separator_view_ = nullptr;
   TriView* connection_warning_ = nullptr;
+
+  chromeos::network_config::mojom::CrosNetworkConfigPtr
+      cros_network_config_ptr_;
+
+  base::flat_map<chromeos::network_config::mojom::NetworkType,
+                 chromeos::network_config::mojom::DeviceStateType>
+      device_states_;
+  bool vpn_connected_ = false;
+  bool wifi_has_networks_ = false;
 
   // An owned list of network info.
   std::vector<std::unique_ptr<NetworkInfo>> network_list_;

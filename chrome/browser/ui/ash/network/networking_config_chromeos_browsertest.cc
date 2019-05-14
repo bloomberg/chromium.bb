@@ -7,6 +7,7 @@
 #include "ash/public/interfaces/system_tray_test_api.test-mojom-test-utils.h"
 #include "ash/public/interfaces/system_tray_test_api.test-mojom.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
@@ -38,8 +39,9 @@ IN_PROC_BROWSER_TEST_F(NetworkingConfigChromeosTest, SystemTrayItem) {
   // Show the network detail view.
   ash::mojom::SystemTrayTestApiAsyncWaiter wait_for(tray_test_api.get());
   wait_for.ShowDetailedView(ash::mojom::TrayItem::kNetwork);
+  base::RunLoop().RunUntilIdle();
 
-  // Expect that the extension-controlled VPN item appears.
+  // Expect that the extension-controlled item appears.
   base::string16 expected_tooltip = base::UTF8ToUTF16(
       "The extension \"NetworkingConfig test extension\" can help connect to "
       "this network.");

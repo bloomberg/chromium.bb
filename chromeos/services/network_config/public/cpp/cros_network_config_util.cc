@@ -7,26 +7,36 @@
 namespace chromeos {
 namespace network_config {
 
-bool NetworkStateMatchesType(const mojom::NetworkStateProperties* network,
-                             mojom::NetworkType type) {
-  switch (type) {
+// This matches logic in NetworkTypePattern and should be kept in sync.
+bool NetworkTypeMatchesType(mojom::NetworkType network_type,
+                            mojom::NetworkType match_type) {
+  switch (match_type) {
     case mojom::NetworkType::kAll:
       return true;
+    case mojom::NetworkType::kMobile:
+      return network_type == mojom::NetworkType::kCellular ||
+             network_type == mojom::NetworkType::kTether ||
+             network_type == mojom::NetworkType::kWiMAX;
+    case mojom::NetworkType::kWireless:
+      return network_type == mojom::NetworkType::kCellular ||
+             network_type == mojom::NetworkType::kTether ||
+             network_type == mojom::NetworkType::kWiFi ||
+             network_type == mojom::NetworkType::kWiMAX;
     case mojom::NetworkType::kCellular:
     case mojom::NetworkType::kEthernet:
     case mojom::NetworkType::kTether:
     case mojom::NetworkType::kVPN:
     case mojom::NetworkType::kWiFi:
     case mojom::NetworkType::kWiMAX:
-      return network->type == type;
-    case mojom::NetworkType::kWireless:
-      return network->type == mojom::NetworkType::kCellular ||
-             network->type == mojom::NetworkType::kTether ||
-             network->type == mojom::NetworkType::kWiFi ||
-             network->type == mojom::NetworkType::kWiMAX;
+      return network_type == match_type;
   }
   NOTREACHED();
   return false;
+}
+
+bool NetworkStateMatchesType(const mojom::NetworkStateProperties* network,
+                             mojom::NetworkType type) {
+  return NetworkTypeMatchesType(network->type, type);
 }
 
 bool StateIsConnected(mojom::ConnectionStateType connection_state) {

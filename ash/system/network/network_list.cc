@@ -25,9 +25,12 @@
 #include "ash/system/tray/tri_view.h"
 #include "base/i18n/number_formatting.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/network_handler.h"
 #include "chromeos/network/proxy/ui_proxy_config_service.h"
+#include "chromeos/services/network_config/public/cpp/cros_network_config_util.h"
+#include "chromeos/services/network_config/public/mojom/constants.mojom.h"
 #include "components/device_event_log/device_event_log.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -37,9 +40,18 @@
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/separator.h"
 
-using chromeos::NetworkHandler;
-using chromeos::NetworkStateHandler;
-using chromeos::NetworkTypePattern;
+using chromeos::network_config::NetworkTypeMatchesType;
+using chromeos::network_config::StateIsConnected;
+
+using chromeos::network_config::mojom::ActivationStateType;
+using chromeos::network_config::mojom::ConnectionStateType;
+using chromeos::network_config::mojom::DeviceStatePropertiesPtr;
+using chromeos::network_config::mojom::DeviceStateType;
+using chromeos::network_config::mojom::FilterType;
+using chromeos::network_config::mojom::NetworkFilter;
+using chromeos::network_config::mojom::NetworkStatePropertiesPtr;
+using chromeos::network_config::mojom::NetworkType;
+using chromeos::network_config::mojom::ONCSource;
 
 namespace ash {
 namespace tray {
@@ -61,7 +73,9 @@ bool IsSecondaryUser() {
 
 NetworkListView::NetworkListView(DetailedViewDelegate* delegate,
                                  LoginStatus login)
-    : NetworkStateListDetailedView(delegate, LIST_TYPE_NETWORK, login) {}
+    : NetworkStateListDetailedView(delegate, LIST_TYPE_NETWORK, login) {
+  BindCrosNetworkConfig();
+}
 
 NetworkListView::~NetworkListView() {
   network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(this);
@@ -69,14 +83,9 @@ NetworkListView::~NetworkListView() {
 
 void NetworkListView::UpdateNetworkList() {
   CHECK(scroll_content());
-
-  NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
-
-  NetworkStateHandler::NetworkStateList network_list;
-  handler->GetVisibleNetworkList(&network_list);
-  UpdateNetworks(network_list);
-  UpdateNetworkIcons();
-  UpdateNetworkListInternal();
+  DCHECK(cros_network_config_ptr_);
+  cros_network_config_ptr_->GetDeviceStateList(base::BindOnce(
+      &NetworkListView::OnGetDeviceStateList, base::Unretained(this)));
 }
 
 bool NetworkListView::IsNetworkEntry(views::View* view,
@@ -89,71 +98,106 @@ bool NetworkListView::IsNetworkEntry(views::View* view,
   return true;
 }
 
-void NetworkListView::UpdateNetworks(
-    const NetworkStateHandler::NetworkStateList& networks) {
-  SCOPED_NET_LOG_IF_SLOW();
+void NetworkListView::BindCrosNetworkConfig() {
+  // Ensure binding is reset in case this is called after a failure.
+  cros_network_config_ptr_.reset();
+
+  service_manager::Connector* connector = Shell::Get()->connector();
+  if (!connector)
+    return;
+  connector->BindInterface(chromeos::network_config::mojom::kServiceName,
+                           &cros_network_config_ptr_);
+
+  // If the connection is lost (e.g. due to a crash), attempt to rebind it.
+  cros_network_config_ptr_.set_connection_error_handler(base::BindOnce(
+      &NetworkListView::BindCrosNetworkConfig, base::Unretained(this)));
+}
+
+void NetworkListView::OnGetDeviceStateList(
+    std::vector<DeviceStatePropertiesPtr> devices) {
+  device_states_.clear();
+  for (auto& device : devices)
+    device_states_[device->type] = device->state;
+
+  cros_network_config_ptr_->GetNetworkStateList(
+      NetworkFilter::New(FilterType::kVisible, NetworkType::kAll,
+                         chromeos::network_config::mojom::kNoLimit),
+      base::BindOnce(&NetworkListView::OnGetNetworkStateList,
+                     base::Unretained(this)));
+}
+
+void NetworkListView::OnGetNetworkStateList(
+    std::vector<NetworkStatePropertiesPtr> networks) {
   // |network_list_| contains all the info and is going to be cleared and
   // recreated. Save them to |last_network_info_map_|.
   last_network_info_map_.clear();
   for (auto& info : network_list_)
     last_network_info_map_[info->guid] = std::move(info);
 
-  bool cellular_enabled =
-      NetworkHandler::Get()->network_state_handler()->IsTechnologyEnabled(
-          NetworkTypePattern::Cellular());
-  network_list_.clear();
-  for (const auto* network : networks) {
-    if (!NetworkTypePattern::NonVirtual().MatchesType(network->type()))
-      continue;
-    // If cellular is disabled, skip the default cellular service.
-    if (network->IsDefaultCellular() && !cellular_enabled)
-      continue;
-    network_list_.push_back(std::make_unique<NetworkInfo>(network->guid()));
-  }
-}
-
-void NetworkListView::UpdateNetworkIcons() {
-  SCOPED_NET_LOG_IF_SLOW();
-  NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
-
   bool animating = false;
-  for (auto& info : network_list_) {
-    const chromeos::NetworkState* network =
-        handler->GetNetworkStateFromGuid(info->guid);
-    if (!network)
+  network_list_.clear();
+  vpn_connected_ = false;
+  wifi_has_networks_ = false;
+  for (auto& network : networks) {
+    ConnectionStateType connection_state = network->connection_state;
+    if (network->type == NetworkType::kVPN) {
+      if (chromeos::network_config::StateIsConnected(connection_state))
+        vpn_connected_ = true;
       continue;
-    bool prohibited_by_policy = network->blocked_by_policy();
-    network_icon::NetworkIconState network_icon_state(network);
+    }
+    // If cellular is not enabled, skip cellular networks with no service.
+    ActivationStateType activation_state =
+        network->cellular ? network->cellular->activation_state
+                          : ActivationStateType::kUnknown;
+    if (network->type == NetworkType::kCellular &&
+        GetDeviceState(NetworkType::kCellular) != DeviceStateType::kEnabled &&
+        activation_state == ActivationStateType::kNoService) {
+      continue;
+    }
+    if (network->type == NetworkType::kWiFi)
+      wifi_has_networks_ = true;
+
+    auto info = std::make_unique<NetworkInfo>(network->guid);
+
+    network_icon::NetworkIconState network_icon_state(network.get());
     info->label = network_icon::GetLabelForNetwork(
         network_icon_state, network_icon::ICON_TYPE_MENU_LIST);
     // |network_list_| only contains non virtual networks.
     info->image = network_icon::GetImageForNonVirtualNetwork(
         network_icon_state, network_icon::ICON_TYPE_LIST,
         false /* badge_vpn */);
-    info->disable =
-        (network->activation_state() == shill::kActivationStateActivating) ||
-        prohibited_by_policy;
-    info->connected = network->IsConnectedState();
-    info->connecting = network->IsConnectingState();
-    if (network->Matches(NetworkTypePattern::WiFi()))
-      info->type = NetworkInfo::Type::WIFI;
-    else if (network->Matches(NetworkTypePattern::Mobile()))
-      info->type = NetworkInfo::Type::MOBILE;
-    if (prohibited_by_policy) {
+    info->disable = activation_state == ActivationStateType::kActivating ||
+                    network->prohibited_by_policy;
+    if (network->prohibited_by_policy) {
       info->tooltip =
           l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NETWORK_PROHIBITED);
     }
-    if (!animating && network->IsConnectingState())
+
+    info->connection_state = connection_state;
+
+    if (network->tether)
+      info->battery_percentage = network->tether->battery_percentage;
+    if (network->captive_portal_provider) {
+      info->captive_portal_provider_name =
+          network->captive_portal_provider->name;
+    }
+
+    info->type = network->type;
+    info->source = network->source;
+
+    if (!animating && connection_state == ConnectionStateType::kConnecting)
       animating = true;
+    network_list_.push_back(std::move(info));
   }
   if (animating)
     network_icon::NetworkIconAnimation::GetInstance()->AddObserver(this);
   else
     network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(this);
+
+  UpdateNetworkListInternal();
 }
 
 void NetworkListView::UpdateNetworkListInternal() {
-  SCOPED_NET_LOG_IF_SLOW();
   // Get the updated list entries.
   needs_relayout_ = false;
   network_map_.clear();
@@ -191,34 +235,29 @@ void NetworkListView::UpdateNetworkListInternal() {
 
 std::unique_ptr<std::set<std::string>>
 NetworkListView::UpdateNetworkListEntries() {
-  NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
-
   // Keep an index where the next child should be inserted.
   int index = 0;
 
-  // Show a warning that the connection might be monitored if connected to a VPN
-  // or if the default network has a proxy installed.
-  const bool using_vpn =
-      !!NetworkHandler::Get()->network_state_handler()->ConnectedNetworkByType(
-          NetworkTypePattern::VPN());
   bool using_proxy = false;
-  // TODO(jamescook): Create UIProxyConfigService under mash. This will require
-  // the mojo pref service to work with prefs in Local State.
-  // http://crbug.com/718072
+  // TODO(https://crbug.com/718072): Create UIProxyConfigService under mash, or
+  // provide this via network_config.mojom.
   if (!::features::IsMultiProcessMash()) {
-    using_proxy = NetworkHandler::Get()
+    using_proxy = chromeos::NetworkHandler::Get()
                       ->ui_proxy_config_service()
                       ->HasDefaultNetworkProxyConfigured();
   }
-  if (using_vpn || using_proxy) {
+
+  // Show a warning that the connection might be monitored if connected to a VPN
+  // or if the default network has a proxy installed.
+  if (vpn_connected_ || using_proxy) {
     if (!connection_warning_)
       connection_warning_ = CreateConnectionWarning();
     PlaceViewAtIndex(connection_warning_, index++);
   }
 
-  // First add high-priority networks (neither Wi-Fi nor Mobile).
+  // First add Ethernet networks.
   std::unique_ptr<std::set<std::string>> new_guids =
-      UpdateNetworkChildren(NetworkInfo::Type::UNKNOWN, index);
+      UpdateNetworkChildren(NetworkType::kEthernet, index);
   index += new_guids->size();
 
   if (ShouldMobileDataSectionBeShown()) {
@@ -226,11 +265,11 @@ NetworkListView::UpdateNetworkListEntries() {
       mobile_header_view_ = new MobileSectionHeaderView();
 
     index = UpdateNetworkSectionHeader(
-        NetworkTypePattern::Mobile(), false /* enabled */, index,
-        mobile_header_view_, &mobile_separator_view_);
+        NetworkType::kMobile, false /* enabled */, index, mobile_header_view_,
+        &mobile_separator_view_);
 
     std::unique_ptr<std::set<std::string>> new_cellular_guids =
-        UpdateNetworkChildren(NetworkInfo::Type::MOBILE, index);
+        UpdateNetworkChildren(NetworkType::kMobile, index);
     int mobile_status_message =
         mobile_header_view_->UpdateToggleAndGetStatusMessage();
     // |mobile_status_message| may be zero. Passing zero to UpdateInfoLabel
@@ -245,20 +284,19 @@ NetworkListView::UpdateNetworkListEntries() {
   if (!wifi_header_view_)
     wifi_header_view_ = new WifiSectionHeaderView();
 
-  index = UpdateNetworkSectionHeader(
-      NetworkTypePattern::WiFi(),
-      handler->IsTechnologyEnabled(NetworkTypePattern::WiFi()), index,
-      wifi_header_view_, &wifi_separator_view_);
+  bool wifi_enabled =
+      GetDeviceState(NetworkType::kWiFi) == DeviceStateType::kEnabled;
+  index = UpdateNetworkSectionHeader(NetworkType::kWiFi, wifi_enabled, index,
+                                     wifi_header_view_, &wifi_separator_view_);
 
-  // "Wifi Enabled / Disabled".
-  if (!handler->IsTechnologyEnabled(NetworkTypePattern::WiFi())) {
+  if (!wifi_enabled) {
     UpdateInfoLabel(IDS_ASH_STATUS_TRAY_NETWORK_WIFI_DISABLED, index,
                     &wifi_status_message_);
     return new_guids;
   }
 
   bool should_clear_info_label = true;
-  if (!handler->FirstNetworkByType(NetworkTypePattern::WiFi())) {
+  if (!wifi_has_networks_) {
     UpdateInfoLabel(IDS_ASH_STATUS_TRAY_NETWORK_WIFI_ENABLED, index,
                     &wifi_status_message_);
     ++index;
@@ -267,7 +305,7 @@ NetworkListView::UpdateNetworkListEntries() {
 
   // Add Wi-Fi networks.
   std::unique_ptr<std::set<std::string>> new_wifi_guids =
-      UpdateNetworkChildren(NetworkInfo::Type::WIFI, index);
+      UpdateNetworkChildren(NetworkType::kWiFi, index);
   index += new_wifi_guids->size();
   new_guids->insert(new_wifi_guids->begin(), new_wifi_guids->end());
 
@@ -284,26 +322,23 @@ NetworkListView::UpdateNetworkListEntries() {
 }
 
 bool NetworkListView::ShouldMobileDataSectionBeShown() {
-  NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
-
   // The section should always be shown if Cellular networks are available.
-  if (handler->IsTechnologyAvailable(NetworkTypePattern::Cellular()))
+  if (GetDeviceState(NetworkType::kCellular) != DeviceStateType::kUnavailable)
     return true;
 
+  DeviceStateType tether_state = GetDeviceState(NetworkType::kTether);
   // Hide the section if both Cellular and Tether are UNAVAILABLE.
-  if (!handler->IsTechnologyAvailable(NetworkTypePattern::Tether()))
+  if (tether_state == DeviceStateType::kUnavailable)
     return false;
 
   // Hide the section if Tether is PROHIBITED.
-  if (handler->IsTechnologyProhibited(NetworkTypePattern::Tether()))
+  if (tether_state == DeviceStateType::kProhibited)
     return false;
 
   // Secondary users cannot enable Bluetooth, and Tether is only UNINITIALIZED
   // if Bluetooth is disabled. Hide the section in this case.
-  if (handler->IsTechnologyUninitialized(NetworkTypePattern::Tether()) &&
-      IsSecondaryUser()) {
+  if (tether_state == DeviceStateType::kUninitialized && IsSecondaryUser())
     return false;
-  }
 
   return true;
 }
@@ -312,8 +347,8 @@ void NetworkListView::UpdateViewForNetwork(HoverHighlightView* view,
                                            const NetworkInfo& info) {
   view->Reset();
   gfx::ImageSkia network_image;
-  if (info.type == NetworkInfo::Type::MOBILE &&
-      (!info.connected && !info.connecting)) {
+  if (NetworkTypeMatchesType(info.type, NetworkType::kMobile) &&
+      info.connection_state == ConnectionStateType::kNotConnected) {
     // Mobile icons which are not connecting or connected should display a small
     // "X" icon superimposed so that it is clear that they are disconnected.
     network_image = gfx::ImageSkiaOperations::CreateSuperimposedImage(
@@ -324,9 +359,9 @@ void NetworkListView::UpdateViewForNetwork(HoverHighlightView* view,
     network_image = info.image;
   }
   view->AddIconAndLabel(network_image, info.label);
-  if (info.connected)
+  if (StateIsConnected(info.connection_state))
     SetupConnectedScrollListItem(view);
-  else if (info.connecting)
+  else if (info.connection_state == ConnectionStateType::kConnecting)
     SetupConnectingScrollListItem(view);
   view->SetTooltipText(info.tooltip);
 
@@ -350,36 +385,30 @@ void NetworkListView::UpdateViewForNetwork(HoverHighlightView* view,
 
 views::View* NetworkListView::CreatePowerStatusView(const NetworkInfo& info) {
   // Mobile can be Cellular or Tether.
-  if (info.type != NetworkInfo::Type::MOBILE)
+  if (!NetworkTypeMatchesType(info.type, NetworkType::kMobile))
     return nullptr;
 
-  const chromeos::NetworkState* network =
-      NetworkHandler::Get()->network_state_handler()->GetNetworkStateFromGuid(
-          info.guid);
-
   // Only return a battery icon for Tether network type.
-  if (!NetworkTypePattern::Tether().MatchesType(network->type()))
+  if (info.type != NetworkType::kTether)
     return nullptr;
 
   views::ImageView* icon = TrayPopupUtils::CreateMoreImageView();
   PowerStatus::BatteryImageInfo icon_info;
-  icon_info.charge_percent = network->battery_percentage();
+  icon_info.charge_percent = info.battery_percentage;
   icon->SetImage(
       PowerStatus::GetBatteryImage(icon_info, kMobileNetworkBatteryIconSize,
                                    kMenuIconColorDisabled, kMenuIconColor));
 
   // Show the numeric battery percentage on hover.
-  icon->set_tooltip_text(base::FormatPercent(network->battery_percentage()));
+  icon->set_tooltip_text(base::FormatPercent(info.battery_percentage));
 
   return icon;
 }
 
 views::View* NetworkListView::CreatePolicyView(const NetworkInfo& info) {
   // Check if the network is managed by policy.
-  const chromeos::NetworkState* network =
-      NetworkHandler::Get()->network_state_handler()->GetNetworkStateFromGuid(
-          info.guid);
-  if (!network || !network->IsManagedByPolicy())
+  ONCSource source = info.source;
+  if (source != ONCSource::kDevicePolicy && source != ONCSource::kUserPolicy)
     return nullptr;
 
   views::ImageView* controlled_icon = TrayPopupUtils::CreateMainImageView();
@@ -390,10 +419,7 @@ views::View* NetworkListView::CreatePolicyView(const NetworkInfo& info) {
 
 views::View* NetworkListView::CreateControlledByExtensionView(
     const NetworkInfo& info) {
-  const chromeos::NetworkState* network =
-      NetworkHandler::Get()->network_state_handler()->GetNetworkStateFromGuid(
-          info.guid);
-  if (!network || !network->captive_portal_provider())
+  if (info.captive_portal_provider_name.empty())
     return nullptr;
 
   views::ImageView* controlled_icon = TrayPopupUtils::CreateMainImageView();
@@ -401,17 +427,17 @@ views::View* NetworkListView::CreateControlledByExtensionView(
       gfx::CreateVectorIcon(kCaptivePortalIcon, kMenuIconColor));
   controlled_icon->set_tooltip_text(l10n_util::GetStringFUTF16(
       IDS_ASH_STATUS_TRAY_EXTENSION_CONTROLLED_WIFI,
-      base::UTF8ToUTF16(network->captive_portal_provider()->name)));
+      base::UTF8ToUTF16(info.captive_portal_provider_name)));
   controlled_icon->SetID(VIEW_ID_EXTENSION_CONTROLLED_WIFI);
   return controlled_icon;
 }
 
 std::unique_ptr<std::set<std::string>> NetworkListView::UpdateNetworkChildren(
-    NetworkInfo::Type type,
+    NetworkType type,
     int index) {
   std::unique_ptr<std::set<std::string>> new_guids(new std::set<std::string>);
   for (const auto& info : network_list_) {
-    if (info->type != type)
+    if (!NetworkTypeMatchesType(info->type, type))
       continue;
     UpdateNetworkChild(index++, info.get());
     new_guids->insert(info->guid);
@@ -473,7 +499,7 @@ void NetworkListView::UpdateInfoLabel(int message_id,
 }
 
 int NetworkListView::UpdateNetworkSectionHeader(
-    NetworkTypePattern pattern,
+    chromeos::network_config::mojom::NetworkType type,
     bool enabled,
     int child_index,
     NetworkSectionHeaderView* view,
@@ -492,7 +518,7 @@ int NetworkListView::UpdateNetworkSectionHeader(
 
   bool default_toggle_enabled = !IsSecondaryUser();
   // Mobile updates its toggle state independently.
-  if (!pattern.MatchesPattern(NetworkTypePattern::Mobile()))
+  if (!NetworkTypeMatchesType(type, NetworkType::kMobile))
     view->SetToggleState(default_toggle_enabled, enabled /* is_on */);
   PlaceViewAtIndex(view, child_index++);
   return child_index;
@@ -540,6 +566,13 @@ TriView* NetworkListView::CreateConnectionWarning() {
   // Nothing to the right of the text.
   connection_warning->SetContainerVisible(TriView::Container::END, false);
   return connection_warning;
+}
+
+DeviceStateType NetworkListView::GetDeviceState(NetworkType type) const {
+  auto iter = device_states_.find(type);
+  if (iter == device_states_.end())
+    return DeviceStateType::kUnavailable;
+  return iter->second;
 }
 
 }  // namespace tray

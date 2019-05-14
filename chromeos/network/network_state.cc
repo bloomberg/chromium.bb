@@ -527,6 +527,8 @@ std::string NetworkState::GetErrorState() const {
 network_config::mojom::ActivationStateType
 NetworkState::GetMojoActivationState() const {
   using network_config::mojom::ActivationStateType;
+  if (IsDefaultCellular())
+    return ActivationStateType::kNoService;
   if (activation_state_.empty())
     return ActivationStateType::kUnknown;
   if (activation_state_ == shill::kActivationStateActivated)

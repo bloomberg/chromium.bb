@@ -10,8 +10,12 @@
 namespace chromeos {
 namespace network_config {
 
-// Returns true if network->type matches |type|, which may include kAll or
-// kWireless.
+// Returns true if |network_type| matches |match_type|, which may include kAll
+// or kWireless.
+bool NetworkTypeMatchesType(mojom::NetworkType network_type,
+                            mojom::NetworkType match_type);
+
+// Calls NetworkTypeMatchesType with |network_type| = |network|->type.
 bool NetworkStateMatchesType(const mojom::NetworkStateProperties* network,
                              mojom::NetworkType type);
 
