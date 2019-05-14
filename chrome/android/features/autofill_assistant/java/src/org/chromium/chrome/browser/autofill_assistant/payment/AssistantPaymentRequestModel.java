@@ -32,11 +32,12 @@ public class AssistantPaymentRequestModel extends PropertyModel {
     @CalledByNative
     private void setOptions(String defaultEmail, boolean requestShipping,
             boolean requestPaymentMethod, boolean requestPayerName, boolean requestPayerPhone,
-            boolean requestPayerEmail, String[] supportedBasicCardNetworks) {
+            boolean requestPayerEmail, String[] supportedBasicCardNetworks,
+            @AssistantTermsAndConditionsState int initialTermsState) {
         set(OPTIONS,
                 new AssistantPaymentRequestOptions(requestPayerName, requestPayerEmail,
                         requestPayerPhone, requestShipping, requestPaymentMethod,
-                        supportedBasicCardNetworks, defaultEmail));
+                        supportedBasicCardNetworks, defaultEmail, initialTermsState));
     }
 
     @CalledByNative

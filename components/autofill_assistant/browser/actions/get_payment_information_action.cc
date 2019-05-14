@@ -52,6 +52,17 @@ void GetPaymentInformationAction::InternalProcessAction(
       !get_payment_information.shipping_address_name().empty();
   payment_options->request_payment_method =
       get_payment_information.ask_for_payment();
+  switch (get_payment_information.terms_and_conditions_state()) {
+    case GetPaymentInformationProto::NOT_SELECTED:
+      payment_options->initial_terms_and_conditions = NOT_SELECTED;
+      break;
+    case GetPaymentInformationProto::ACCEPTED:
+      payment_options->initial_terms_and_conditions = ACCEPTED;
+      break;
+    case GetPaymentInformationProto::REVIEW_REQUIRED:
+      payment_options->initial_terms_and_conditions = REQUIRES_REVIEW;
+      break;
+  }
 
   payment_options->callback =
       base::BindOnce(&GetPaymentInformationAction::OnGetPaymentInformation,

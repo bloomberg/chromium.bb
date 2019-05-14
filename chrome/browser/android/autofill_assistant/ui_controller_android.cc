@@ -588,7 +588,8 @@ void UiControllerAndroid::OnPaymentRequestChanged(
       payment_options->request_payer_name, payment_options->request_payer_phone,
       payment_options->request_payer_email,
       base::android::ToJavaArrayOfStrings(
-          env, payment_options->supported_basic_card_networks));
+          env, payment_options->supported_basic_card_networks),
+      payment_options->initial_terms_and_conditions);
 }
 
 // Details related method.

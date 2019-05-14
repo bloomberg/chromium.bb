@@ -864,6 +864,15 @@ message ContactDetailsProto {
 // Asks to provide the data used by UseAddressAction and
 // UseCreditCardAction.
 message GetPaymentInformationProto {
+  enum TermsAndConditionsState {
+    // No choice has been made yet.
+    NOT_SELECTED = 0;
+    // The 'accept' radio button is toggled.
+    ACCEPTED = 1;
+    // The 'review' radio button is toggled.
+    REVIEW_REQUIRED = 2;
+  }
+
   optional string prompt = 1;
   // NOTE: Payment request does not ask separately for billing address.
   // The billing address is associated with the credit card that was picked.
@@ -879,6 +888,8 @@ message GetPaymentInformationProto {
   repeated string supported_basic_card_networks = 6;
   // Contact details that should be gathered.
   optional ContactDetailsProto contact_details = 5;
+  // The initial state of the terms & conditions choice.
+  optional TermsAndConditionsState terms_and_conditions_state = 8;
 }
 
 // Resets Autofill Assistant: clears any state and server payload.

@@ -128,7 +128,7 @@ public class AssistantPaymentRequestCoordinator implements AssistantPaymentReque
                 options.mRequestShipping, options.mRequestPaymentMethod,
                 options.mRequestPayerName || options.mRequestPayerPhone
                         || options.mRequestPayerEmail,
-                new ShippingStrings(PaymentShippingType.SHIPPING));
+                new ShippingStrings(PaymentShippingType.SHIPPING), options.mInitialTermsState);
         setVisible(true);
 
         // Notify initial selections.

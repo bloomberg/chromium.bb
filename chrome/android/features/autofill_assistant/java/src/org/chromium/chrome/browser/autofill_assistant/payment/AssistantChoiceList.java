@@ -179,6 +179,22 @@ public class AssistantChoiceList extends GridLayout {
         mItemSelectedListener = listener;
     }
 
+    /**
+     * Selects the specified item and de-selects all other items in the UI.
+     *
+     * @param content The content view to select, as specified in |addItem|. Can be null to indicate
+     * that all items should be de-selected.
+     */
+    public void setCheckedItem(@Nullable View content) {
+        for (int i = 0; i < mItems.size(); i++) {
+            Item item = mItems.get(i);
+            if (item.mContent == content) {
+                setCheckedItem(item);
+                break;
+            }
+        }
+    }
+
     @Override
     public LayoutParams generateLayoutParams(AttributeSet attrs) {
         return new AssistantChoiceList.LayoutParams(getContext(), attrs);

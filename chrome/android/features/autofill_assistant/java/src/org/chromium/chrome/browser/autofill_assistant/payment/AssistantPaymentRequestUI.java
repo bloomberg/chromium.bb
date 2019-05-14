@@ -198,7 +198,8 @@ public class AssistantPaymentRequestUI
      *
      */
     public void show(String origin, boolean requestShipping, boolean requestPaymentMethod,
-            boolean requestContact, ShippingStrings shippingStrings) {
+            boolean requestContact, ShippingStrings shippingStrings,
+            @AssistantTermsAndConditionsState int initialTermsState) {
         mRequestShipping = requestShipping;
         mRequestPaymentMethod = requestPaymentMethod;
         mRequestContactDetails = requestContact;
@@ -208,10 +209,11 @@ public class AssistantPaymentRequestUI
         mRequestView = (ViewGroup) LayoutInflater.from(mActivity).inflate(
                 R.layout.autofill_assistant_payment_request, null);
         mRequestViewSrollView.addView(mRequestView);
-        prepareRequestView(origin);
+        prepareRequestView(origin, initialTermsState);
     }
 
-    private void prepareRequestView(String origin) {
+    private void prepareRequestView(
+            String origin, @AssistantTermsAndConditionsState int initialTermsState) {
         // Set terms & conditions text.
         AssistantChoiceList thirdPartyTermsList =
                 mRequestView.findViewById(R.id.third_party_terms_list);
@@ -233,6 +235,11 @@ public class AssistantPaymentRequestUI
                 mClient.onCheckReviewTermsAndConditions(true);
             }
         });
+        if (initialTermsState == AssistantTermsAndConditionsState.ACCEPTED) {
+            thirdPartyTermsList.setCheckedItem(acceptThirdPartyConditions);
+        } else if (initialTermsState == AssistantTermsAndConditionsState.REQUIRES_REVIEW) {
+            thirdPartyTermsList.setCheckedItem(reviewThirdPartyConditions);
+        }
 
         // Set 3rd party privacy notice text.
         TextView thirdPartyPrivacyNotice =

@@ -54,6 +54,7 @@ struct PaymentRequestOptions {
   bool request_payment_method = false;
   std::vector<std::string> supported_basic_card_networks;
   std::string default_email;
+  TermsAndConditionsState initial_terms_and_conditions = NOT_SELECTED;
 
   base::OnceCallback<void(std::unique_ptr<PaymentInformation>)> callback;
 };
