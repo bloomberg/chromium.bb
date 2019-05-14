@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/core/layout/layout_theme_touchless.h"
 
+#include "third_party/blink/renderer/platform/data_resource_helper.h"
+
 namespace blink {
 
 scoped_refptr<LayoutTheme> LayoutThemeTouchless::Create() {
@@ -17,6 +19,11 @@ LayoutTheme& LayoutTheme::NativeTheme() {
 }
 
 LayoutThemeTouchless::~LayoutThemeTouchless() {}
+
+String LayoutThemeTouchless::ExtraDefaultStyleSheet() {
+  return LayoutThemeMobile::ExtraDefaultStyleSheet() +
+         GetDataResourceAsASCIIString("touchless.css");
+}
 
 bool LayoutThemeTouchless::IsFocusRingOutset() const {
   return true;

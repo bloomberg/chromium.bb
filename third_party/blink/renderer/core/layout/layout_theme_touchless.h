@@ -14,6 +14,7 @@ class LayoutThemeTouchless final : public LayoutThemeMobile {
   static scoped_refptr<LayoutTheme> Create();
   bool DelegatesMenuListRendering() const override { return true; }
 
+  String ExtraDefaultStyleSheet() override;
   bool IsFocusRingOutset() const override;
 
  private:
