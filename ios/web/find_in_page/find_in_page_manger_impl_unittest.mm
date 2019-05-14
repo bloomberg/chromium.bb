@@ -647,4 +647,33 @@ TEST_F(FindInPageManagerImplTest, FindInPageCanStopFind) {
   EXPECT_FALSE(fake_delegate_.state()->query);
 }
 
+// Tests that Find in Page responds with an updated match count when calling
+// FindInPageNext after the visible match count in a frame changes following a
+// FindInPageSearch. This simulates a once hidden match becoming visible between
+// a FindInPageSearch and a FindInPageNext.
+TEST_F(FindInPageManagerImplTest, FindInPageNextUpdatesMatchCount) {
+  auto frame_with_hidden_match = CreateMainWebFrameWithJsResultForFind(
+      std::make_unique<base::Value>(2.0), "frame_with_hidden_match");
+  FakeWebFrame* frame_with_hidden_match_ptr = frame_with_hidden_match.get();
+  test_web_state_->AddWebFrame(std::move(frame_with_hidden_match));
+
+  GetFindInPageManager()->Find(@"foo", FindInPageOptions::FindInPageSearch);
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^bool {
+    base::RunLoop().RunUntilIdle();
+    return fake_delegate_.state() && fake_delegate_.state()->match_count == 2;
+  }));
+  auto select_and_scroll_result = std::make_unique<base::DictionaryValue>();
+  select_and_scroll_result->SetDouble("matches", 3.0);
+  select_and_scroll_result->SetDouble("index", 1.0);
+  frame_with_hidden_match_ptr->AddJsResultForFunctionCall(
+      std::move(select_and_scroll_result), kFindInPageSelectAndScrollToMatch);
+
+  GetFindInPageManager()->Find(@"foo", FindInPageOptions::FindInPageNext);
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^bool {
+    base::RunLoop().RunUntilIdle();
+    return fake_delegate_.state() && fake_delegate_.state()->match_count == 3;
+  }));
+  EXPECT_EQ(1, fake_delegate_.state()->index);
+}
+
 }  // namespace web

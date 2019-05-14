@@ -492,4 +492,108 @@ TEST_F(FindInPageJsTest, StopFindInPage) {
   EXPECT_FALSE([inner_html containsString:@"chrome_find"]);
 }
 
+// Tests that FindInPage only selects the visible match when there is also a
+// hidden match.
+TEST_F(FindInPageJsTest, HiddenMatch) {
+  ASSERT_TRUE(
+      LoadHtml("<span style='display:none'>foo</span><span>foo bar</span>"));
+  const base::TimeDelta kCallJavascriptFunctionTimeout =
+      base::TimeDelta::FromSeconds(kWaitForJSCompletionTimeout);
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
+    return frames_manager()->GetAllWebFrames().size() == 1;
+  }));
+  __block bool message_received = false;
+  std::vector<base::Value> params;
+  params.push_back(base::Value(kFindStringFoo));
+  params.push_back(base::Value(kPumpSearchTimeout));
+  main_web_frame()->CallJavaScriptFunction(
+      kFindInPageSearch, params, base::BindOnce(^(const base::Value* result) {
+        ASSERT_TRUE(result);
+        ASSERT_TRUE(result->is_double());
+        double count = result->GetDouble();
+        ASSERT_EQ(1.0, count);
+        message_received = true;
+      }),
+      kCallJavascriptFunctionTimeout);
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
+    return message_received;
+  }));
+
+  message_received = false;
+  std::vector<base::Value> highlight_params;
+  highlight_params.push_back(base::Value(0));
+  main_web_frame()->CallJavaScriptFunction(
+      kFindInPageSelectAndScrollToMatch, highlight_params,
+      base::BindOnce(^(const base::Value* result) {
+        message_received = true;
+      }),
+      kCallJavascriptFunctionTimeout);
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
+    base::RunLoop().RunUntilIdle();
+    return message_received;
+  }));
+
+  id inner_html = ExecuteJavaScript(@"document.body.innerHTML");
+  ASSERT_TRUE([inner_html isKindOfClass:[NSString class]]);
+  NSRange visible_match =
+      [inner_html rangeOfString:@"find_in_page find_selected"];
+  NSRange hidden_match = [inner_html rangeOfString:@"find_in_page"];
+  // Assert that the selected match comes after the first match in the DOM since
+  // it is expected the hidden match is skipped.
+  EXPECT_GT(visible_match.location, hidden_match.location);
+}
+
+// Tests that FindInPage is responds with an updated match count when a once
+// hidden match becomes visible after a search finishes.
+TEST_F(FindInPageJsTest, HiddenMatchBecomesVisible) {
+  ASSERT_TRUE(
+      LoadHtml("<span id=\"hidden_match\" style='display:none'>foo</span>"));
+  const base::TimeDelta kCallJavascriptFunctionTimeout =
+      base::TimeDelta::FromSeconds(kWaitForJSCompletionTimeout);
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
+    return frames_manager()->GetAllWebFrames().size() == 1;
+  }));
+  __block bool message_received = false;
+  std::vector<base::Value> params;
+  params.push_back(base::Value(kFindStringFoo));
+  params.push_back(base::Value(kPumpSearchTimeout));
+  main_web_frame()->CallJavaScriptFunction(
+      kFindInPageSearch, params, base::BindOnce(^(const base::Value* result) {
+        ASSERT_TRUE(result);
+        ASSERT_TRUE(result->is_double());
+        double count = result->GetDouble();
+        ASSERT_EQ(0.0, count);
+        message_received = true;
+      }),
+      kCallJavascriptFunctionTimeout);
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
+    return message_received;
+  }));
+
+  ExecuteJavaScript(
+      @"document.getElementById('hidden_match').removeAttribute('style')");
+  message_received = false;
+  std::vector<base::Value> highlight_params;
+  highlight_params.push_back(base::Value(0));
+  main_web_frame()->CallJavaScriptFunction(
+      kFindInPageSelectAndScrollToMatch, highlight_params,
+      base::BindOnce(^(const base::Value* result) {
+        ASSERT_TRUE(result);
+        ASSERT_TRUE(result->is_dict());
+        const base::Value* count =
+            result->FindKey(kSelectAndScrollResultMatches);
+        ASSERT_TRUE(count->is_double());
+        ASSERT_EQ(1.0, count->GetDouble());
+        const base::Value* index = result->FindKey(kSelectAndScrollResultIndex);
+        ASSERT_TRUE(index->is_double());
+        ASSERT_EQ(0.0, index->GetDouble());
+        message_received = true;
+      }),
+      kCallJavascriptFunctionTimeout);
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
+    base::RunLoop().RunUntilIdle();
+    return message_received;
+  }));
+}
+
 }  // namespace web

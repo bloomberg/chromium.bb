@@ -19,8 +19,7 @@
 #error "This file requires ARC support."
 #endif
 
-namespace web {
-
+namespace {
 // Timeout for the find within JavaScript in milliseconds.
 const double kFindInPageFindTimeout = 100.0;
 
@@ -32,6 +31,9 @@ const int kFindInPagePending = -1;
 // restart again. If this timeout hits, then something went wrong with the find
 // and find in page should not continue.
 const double kJavaScriptFunctionCallTimeout = 200.0;
+}  // namespace
+
+namespace web {
 
 // static
 FindInPageManagerImpl::FindInPageManagerImpl(WebState* web_state)
@@ -97,6 +99,10 @@ int FindInPageManagerImpl::FindRequest::GetCurrentSelectedMatchIndex() {
     total_match_index += frame_match_count[*it];
   }
   return total_match_index;
+}
+
+int FindInPageManagerImpl::FindRequest::GetMatchCountForSelectedFrame() {
+  return frame_match_count[*selected_frame_id];
 }
 
 bool FindInPageManagerImpl::FindRequest::GoToFirstMatch() {
@@ -185,6 +191,11 @@ void FindInPageManagerImpl::FindRequest::RemoveFrame(WebFrame* web_frame) {
   }
   frame_order.remove(web_frame->GetFrameId());
   frame_match_count.erase(web_frame->GetFrameId());
+}
+
+void FindInPageManagerImpl::FindRequest::SetMatchCountForSelectedFrame(
+    int match_count) {
+  frame_match_count[*selected_frame_id] = match_count;
 }
 
 bool FindInPageManagerImpl::FindRequest::IsSelectedFrame(WebFrame* web_frame) {
@@ -360,8 +371,28 @@ void FindInPageManagerImpl::LastFindRequestCompleted() {
   }
 }
 
-void FindInPageManagerImpl::NotifyDelegateDidSelectMatch(
-    const base::Value* result) {
+void FindInPageManagerImpl::SelectDidFinish(const base::Value* result) {
+  if (result && result->is_dict()) {
+    // Get updated match count.
+    const base::Value* matches = result->FindKey(kSelectAndScrollResultMatches);
+    if (matches && matches->is_double()) {
+      int match_count = static_cast<int>(matches->GetDouble());
+      if (match_count != last_find_request_.GetMatchCountForSelectedFrame()) {
+        last_find_request_.SetMatchCountForSelectedFrame(match_count);
+        if (delegate_) {
+          delegate_->DidHighlightMatches(
+              web_state_, last_find_request_.GetTotalMatchCount(),
+              last_find_request_.query);
+        }
+      }
+    }
+    // Get updated currently selected index.
+    const base::Value* index = result->FindKey(kSelectAndScrollResultIndex);
+    if (index && index->is_double()) {
+      int current_index = static_cast<int>(index->GetDouble());
+      last_find_request_.selected_match_index_in_selected_frame = current_index;
+    }
+  }
   if (delegate_) {
     delegate_->DidSelectMatch(
         web_state_, last_find_request_.GetCurrentSelectedMatchIndex());
@@ -389,7 +420,7 @@ void FindInPageManagerImpl::SelectCurrentMatch() {
         base::Value(last_find_request_.selected_match_index_in_selected_frame));
     frame->CallJavaScriptFunction(
         kFindInPageSelectAndScrollToMatch, params,
-        base::BindOnce(&FindInPageManagerImpl::NotifyDelegateDidSelectMatch,
+        base::BindOnce(&FindInPageManagerImpl::SelectDidFinish,
                        weak_factory_.GetWeakPtr()),
         base::TimeDelta::FromMilliseconds(kJavaScriptFunctionCallTimeout));
   }

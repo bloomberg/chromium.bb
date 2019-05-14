@@ -47,6 +47,8 @@ class FindInPageManagerImpl : public FindInPageManager,
     // Returns the index of the currently selected match for all matches on the
     // page. If no match is selected, then returns -1.
     int GetCurrentSelectedMatchIndex();
+    // Gets the number of matches in |selected_frame_id|.
+    int GetMatchCountForSelectedFrame();
     // Sets |selected_frame_id| and |selected_match_index_in_selected_frame| to
     // the first match on the page. No-op if no known matches exist. Returns
     // true if selected a match, false otherwise.
@@ -64,6 +66,8 @@ class FindInPageManagerImpl : public FindInPageManager,
     // |web_frame| contains currently selected match. |web_frame| must not be
     // null.
     void RemoveFrame(WebFrame* web_frame);
+    // Sets |match_count| for |selected_frame_id|.
+    void SetMatchCountForSelectedFrame(int match_count);
     // Unique identifier for each find used to check that it is the most recent
     // find. This ensures that an old find doesn't decrement
     // |pending_frame_calls_count| after it has been reset by the new find.
@@ -113,7 +117,7 @@ class FindInPageManagerImpl : public FindInPageManager,
   // Calls delegate DidSelectMatch() method to pass back index selected if
   // |delegate_| is set. |result| is a byproduct of using base::BindOnce() to
   // call this method after making a web_frame->CallJavaScriptFunction() call.
-  void NotifyDelegateDidSelectMatch(const base::Value* result);
+  void SelectDidFinish(const base::Value* result);
   // Executes highlightResult() JavaScript function in frame which contains the
   // currently selected match.
   void SelectCurrentMatch();
