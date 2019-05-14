@@ -38,7 +38,7 @@ class ProxyConnection(IntegrationTest):
       self.assertTrue(t.SleepUntilHistogramHasEntry('DataReductionProxy.'
         'InvalidResponseHeadersReceived.NetError'))
 
-  @ChromeVersionEqualOrAfterM(63)
+  @ChromeVersionEqualOrAfterM(75)
   def testTCPReset(self):
     port = common.GetOpenPort()
     with TestDriver() as t:
@@ -60,8 +60,12 @@ class ProxyConnection(IntegrationTest):
       self.assertEqual(2, len(responses))
       for response in responses:
         self.assertNotHasChromeProxyViaHeader(response)
-      self.assertTrue(t.SleepUntilHistogramHasEntry('DataReductionProxy.'
-        'InvalidResponseHeadersReceived.NetError'))
+      self.assertTrue(
+        t.SleepUntilHistogramHasEntry('DataReductionProxy.WarmupURL.NetError',
+          sleep_intervals=10))
+      histogram = t.GetBrowserHistogram('DataReductionProxy.'
+        'WarmupURLFetcherCallback.SuccessfulFetch.InsecureProxy.Core')
+      self.assertEqual(1, histogram['count'])
 
   @ChromeVersionEqualOrAfterM(63)
   def testTLSReset(self):
@@ -86,6 +90,7 @@ class ProxyConnection(IntegrationTest):
       for response in responses:
         self.assertNotHasChromeProxyViaHeader(response)
 
+  @ChromeVersionEqualOrAfterM(75)
   def testTCPBlackhole(self):
     port = common.GetOpenPort()
     with TestDriver() as t:
@@ -106,16 +111,15 @@ class ProxyConnection(IntegrationTest):
         '--data-reduction-proxy-http-proxies=http://127.0.0.1:%d' % port)
 
       t.UseEmulationServer(BlackHoleHandler, port=port)
-      # Start Chrome and wait for the proxy timeout to fail. At ECT=4G, this
-      # will take about 8 seconds.
+      # Start Chrome and wait for the warmup fetcher timeout (30 seconds).
       t.LoadURL('data:,')
       self.assertTrue(
         t.SleepUntilHistogramHasEntry('DataReductionProxy.WarmupURL.NetError',
-          sleep_intervals=10))
+          sleep_intervals=40))
 
       # Check the WarmupURL Callback was called.
-      histogram = t.GetHistogram('DataReductionProxy.WarmupURLFetcherCallback.'
-        'SuccessfulFetch.InsecureProxy.NonCore')
+      histogram = t.GetBrowserHistogram('DataReductionProxy.'
+        'WarmupURLFetcherCallback.SuccessfulFetch.InsecureProxy.Core')
       self.assertEqual(1, histogram['count'])
 
       # Verify DRP was not used.
