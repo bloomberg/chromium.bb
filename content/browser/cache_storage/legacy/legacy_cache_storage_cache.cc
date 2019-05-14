@@ -2196,8 +2196,8 @@ void LegacyCacheStorageCache::CreateBackend(ErrorCallback callback) {
 
   // The maximum size of each cache. Ultimately, cache size
   // is controlled per-origin by the QuotaManager.
-  uint64_t max_bytes = memory_only_ ? std::numeric_limits<int>::max()
-                                    : std::numeric_limits<int64_t>::max();
+  int64_t max_bytes = memory_only_ ? std::numeric_limits<int>::max()
+                                   : std::numeric_limits<int64_t>::max();
 
   std::unique_ptr<ScopedBackendPtr> backend_ptr(new ScopedBackendPtr());
 

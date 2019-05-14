@@ -49,7 +49,6 @@ constexpr const int kMB = 1024 * 1024;
 // Hard coded default when not using quota management.
 constexpr const int kDefaultQuota = 5 * kMB;
 
-constexpr const int kMaxAppCacheDiskCacheSize = 250 * kMB;
 constexpr const int kMaxAppCacheMemDiskCacheSize = 10 * kMB;
 
 constexpr base::FilePath::CharType kDiskCacheDirectoryName[] =
@@ -1893,8 +1892,7 @@ AppCacheDiskCache* AppCacheStorageImpl::disk_cache() {
       expecting_cleanup_complete_on_disable_ = true;
 
       rv = disk_cache_->InitWithDiskBackend(
-          cache_directory_.Append(kDiskCacheDirectoryName),
-          kMaxAppCacheDiskCacheSize, false,
+          cache_directory_.Append(kDiskCacheDirectoryName), false,
           base::BindOnce(&AppCacheStorageImpl::OnDiskCacheCleanupComplete,
                          weak_factory_.GetWeakPtr()),
           base::BindOnce(&AppCacheStorageImpl::OnDiskCacheInitialized,

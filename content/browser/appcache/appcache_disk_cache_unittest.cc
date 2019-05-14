@@ -55,7 +55,7 @@ TEST_F(AppCacheDiskCacheTest, DisablePriorToInitCompletion) {
   // one of each kind of "entry" function.
   std::unique_ptr<AppCacheDiskCache> disk_cache(new AppCacheDiskCache);
   EXPECT_FALSE(disk_cache->is_disabled());
-  disk_cache->InitWithDiskBackend(directory_.GetPath(), k10MBytes, false,
+  disk_cache->InitWithDiskBackend(directory_.GetPath(), false,
                                   base::OnceClosure(), completion_callback_);
   disk_cache->CreateEntry(1, &entry, completion_callback_);
   disk_cache->OpenEntry(2, &entry, completion_callback_);
@@ -85,7 +85,7 @@ TEST_F(AppCacheDiskCacheTest, DisableAfterInitted) {
   // Create an instance and let it fully init.
   std::unique_ptr<AppCacheDiskCache> disk_cache(new AppCacheDiskCache);
   EXPECT_FALSE(disk_cache->is_disabled());
-  disk_cache->InitWithDiskBackend(directory_.GetPath(), k10MBytes, false,
+  disk_cache->InitWithDiskBackend(directory_.GetPath(), false,
                                   base::OnceClosure(), completion_callback_);
   FlushCacheTasks();
   EXPECT_EQ(1u, completion_results_.size());
@@ -120,7 +120,7 @@ TEST_F(AppCacheDiskCacheTest, DISABLED_DisableWithEntriesOpen) {
   // Create an instance and let it fully init.
   std::unique_ptr<AppCacheDiskCache> disk_cache(new AppCacheDiskCache);
   EXPECT_FALSE(disk_cache->is_disabled());
-  disk_cache->InitWithDiskBackend(directory_.GetPath(), k10MBytes, false,
+  disk_cache->InitWithDiskBackend(directory_.GetPath(), false,
                                   base::OnceClosure(), completion_callback_);
   FlushCacheTasks();
   EXPECT_EQ(1u, completion_results_.size());
@@ -187,7 +187,7 @@ TEST_F(AppCacheDiskCacheTest, CleanupCallback) {
   net::TestCompletionCallback init_done;
   std::unique_ptr<AppCacheDiskCache> disk_cache(new AppCacheDiskCache);
   EXPECT_FALSE(disk_cache->is_disabled());
-  disk_cache->InitWithDiskBackend(directory_.GetPath(), k10MBytes, false,
+  disk_cache->InitWithDiskBackend(directory_.GetPath(), false,
                                   cleanup_done.closure(), init_done.callback());
   EXPECT_EQ(net::OK, init_done.WaitForResult());
 
