@@ -51,9 +51,9 @@ static INLINE int aom_get_qmlevel(int qindex, int first, int last) {
   return first + (qindex * (last + 1 - first)) / QINDEX_RANGE;
 }
 void av1_qm_init(struct AV1Common *cm);
-const qm_val_t *av1_iqmatrix(struct AV1Common *cm, int qindex, int comp,
+const qm_val_t *av1_iqmatrix(struct AV1Common *cm, int qmlevel, int plane,
                              TX_SIZE tx_size);
-const qm_val_t *av1_qmatrix(struct AV1Common *cm, int qindex, int comp,
+const qm_val_t *av1_qmatrix(struct AV1Common *cm, int qmlevel, int plane,
                             TX_SIZE tx_size);
 
 #ifdef __cplusplus
