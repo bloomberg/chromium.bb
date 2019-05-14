@@ -112,7 +112,7 @@ void PasswordManagerInternalsUI::UnregisterFromLoggingServiceIfNecessary() {
 
 void PasswordManagerInternalsUI::ResetAutoSignInFirstRunExperience() {
   Profile* profile = Profile::FromWebUI(web_ui());
-  if (profile->GetProfileType() == Profile::REGULAR_PROFILE) {
+  if (profile->IsRegularProfile()) {
     profile->GetPrefs()->SetBoolean(
         password_manager::prefs::kWasAutoSignInFirstRunExperienceShown, false);
 

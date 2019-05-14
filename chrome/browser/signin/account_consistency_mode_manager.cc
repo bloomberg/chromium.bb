@@ -188,8 +188,10 @@ bool AccountConsistencyModeManager::ShouldBuildServiceForProfile(
   // profiles. This profile manually sets the kSigninAllowed prference, which
   // causes crashes if the AccountConsistencyModeManager is instantiated. See
   // https://crbug.com/940026
-  return profile->GetProfileType() == Profile::ProfileType::REGULAR_PROFILE &&
-         !profile->IsGuestSession() && !profile->IsSystemProfile();
+  // TODO(https://crbug.com/947933): IsRegularProfile implies !IsGuestSession,
+  // update the code and documentation.
+  return profile->IsRegularProfile() && !profile->IsGuestSession() &&
+         !profile->IsSystemProfile();
 }
 
 AccountConsistencyMethod

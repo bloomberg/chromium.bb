@@ -735,7 +735,7 @@ bool BrowserNonClientFrameViewAsh::ShouldShowProfileIndicatorIcon() const {
   // between multi-user sessions. Note that you can't teleport an incognito
   // window.
   Browser* browser = browser_view()->browser();
-  if (browser->profile()->GetProfileType() == Profile::INCOGNITO_PROFILE)
+  if (browser->profile()->IsIncognito())
     return false;
 
   if (!browser->is_type_tabbed() && !browser->is_app())

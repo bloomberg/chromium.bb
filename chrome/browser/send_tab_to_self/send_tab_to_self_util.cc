@@ -53,8 +53,7 @@ bool IsSyncingOnMultipleDevices(Profile* profile) {
 bool IsContentRequirementsMet(const GURL& url, Profile* profile) {
   bool is_http_or_https = url.SchemeIsHTTPOrHTTPS();
   bool is_native_page = url.SchemeIs(content::kChromeUIScheme);
-  bool is_incognito_mode =
-      profile->GetProfileType() == Profile::INCOGNITO_PROFILE;
+  bool is_incognito_mode = profile->IsIncognito();
   return is_http_or_https && !is_native_page && !is_incognito_mode;
 }
 

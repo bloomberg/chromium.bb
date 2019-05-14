@@ -337,8 +337,7 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
   // If being started for credential provider logon purpose, only show the
   // signin page.
   if (command_line_.HasSwitch(credential_provider::kGcpwSigninSwitch)) {
-    DCHECK_EQ(Profile::ProfileType::INCOGNITO_PROFILE,
-              profile_->GetProfileType());
+    DCHECK(profile_->IsIncognito());
     // NOTE: All launch urls are ignored when running with --gcpw-logon since
     // this mode only loads Google's sign in page.
     StartGCPWSignin(command_line_, profile_);
@@ -574,8 +573,7 @@ void StartupBrowserCreatorImpl::DetermineURLsAndLaunch(
   StartupTabs cmd_line_tabs;
   UrlsToTabs(cmd_line_urls, &cmd_line_tabs);
 
-  bool is_incognito_or_guest =
-      profile_->GetProfileType() != Profile::ProfileType::REGULAR_PROFILE;
+  const bool is_incognito_or_guest = profile_->IsOffTheRecord();
   bool is_post_crash_launch = HasPendingUncleanExit(profile_);
   bool has_incompatible_applications = false;
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)

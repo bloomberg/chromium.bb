@@ -1227,10 +1227,8 @@ OmniboxTint LocationBarView::GetTint() {
   ThemeService* theme_service = ThemeServiceFactory::GetForProfile(profile());
   bool is_dark_mode = GetNativeTheme()->SystemDarkModeEnabled();
   if (theme_service->UsingDefaultTheme()) {
-    return profile()->GetProfileType() == Profile::INCOGNITO_PROFILE ||
-                   is_dark_mode
-               ? OmniboxTint::DARK
-               : OmniboxTint::LIGHT;
+    return (profile()->IsIncognito() || is_dark_mode) ? OmniboxTint::DARK
+                                                      : OmniboxTint::LIGHT;
   }
 
   // Check for GTK on Desktop Linux.

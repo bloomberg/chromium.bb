@@ -573,7 +573,7 @@ bool BrowserView::IsTabStripVisible() const {
 }
 
 bool BrowserView::IsIncognito() const {
-  return browser_->profile()->GetProfileType() == Profile::INCOGNITO_PROFILE;
+  return browser_->profile()->IsIncognito();
 }
 
 bool BrowserView::IsGuestSession() const {
@@ -1906,10 +1906,12 @@ base::string16 BrowserView::GetAccessibleWindowTitleForChannelAndProfile(
   // Finally annotate with the user - add Incognito if it's an incognito
   // window, otherwise use the avatar name.
   ProfileManager* profile_manager = g_browser_process->profile_manager();
+  // TODO(https://crbug.com/947933): Comment and title text are about incognito
+  // mode but the |IsOffTheRecord| function covers both guest and incognito.
   if (profile->IsOffTheRecord()) {
     title = l10n_util::GetStringFUTF16(
         IDS_ACCESSIBLE_INCOGNITO_WINDOW_TITLE_FORMAT, title);
-  } else if (profile->GetProfileType() == Profile::REGULAR_PROFILE &&
+  } else if (profile->IsRegularProfile() &&
              profile_manager->GetNumberOfProfiles() > 1) {
     base::string16 profile_name =
         profiles::GetAvatarNameForProfile(profile->GetPath());

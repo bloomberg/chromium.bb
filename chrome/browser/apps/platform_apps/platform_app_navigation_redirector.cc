@@ -93,7 +93,7 @@ PlatformAppNavigationRedirector::MaybeCreateThrottleFor(
   // supported in incognito, but that may change in future.
   // See crbug.com/240879, which tracks incognito support for v2 apps.
   Profile* profile = Profile::FromBrowserContext(browser_context);
-  if (profile->GetProfileType() == Profile::INCOGNITO_PROFILE) {
+  if (profile->IsIncognito()) {
     DVLOG(1) << "Skip redirection: unsupported in incognito";
     return nullptr;
   }

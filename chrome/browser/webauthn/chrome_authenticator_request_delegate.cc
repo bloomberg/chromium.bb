@@ -352,8 +352,7 @@ void ChromeAuthenticatorRequestDelegate::OnTransportAvailabilityEnumerated(
   }
 
   weak_dialog_model_->set_incognito_mode(
-      Profile::FromBrowserContext(browser_context())->GetProfileType() ==
-      Profile::ProfileType::INCOGNITO_PROFILE);
+      Profile::FromBrowserContext(browser_context())->IsIncognito());
 
   weak_dialog_model_->StartFlow(std::move(data), GetLastTransportUsed(),
                                 GetPreviouslyPairedFidoBleDeviceIds());

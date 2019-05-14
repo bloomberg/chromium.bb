@@ -105,7 +105,7 @@ const std::string& ChromePaymentRequestDelegate::GetApplicationLocale() const {
 bool ChromePaymentRequestDelegate::IsIncognito() const {
   Profile* profile =
       Profile::FromBrowserContext(web_contents_->GetBrowserContext());
-  return profile && profile->GetProfileType() == Profile::INCOGNITO_PROFILE;
+  return profile && profile->IsIncognito();
 }
 
 bool ChromePaymentRequestDelegate::IsSslCertificateValid() {

@@ -216,8 +216,7 @@ const ui::ThemeProvider* BrowserFrame::GetThemeProvider() const {
 
 const ui::NativeTheme* BrowserFrame::GetNativeTheme() const {
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
-  if (browser_view_->browser()->profile()->GetProfileType() ==
-          Profile::INCOGNITO_PROFILE &&
+  if (browser_view_->browser()->profile()->IsIncognito() &&
       ThemeServiceFactory::GetForProfile(browser_view_->browser()->profile())
           ->UsingDefaultTheme()) {
     return ui::NativeThemeDarkAura::instance();
