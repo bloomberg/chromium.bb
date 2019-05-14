@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/cpp/window_state_type.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/ui/ash/ash_test_util.h"
 #include "chrome/browser/ui/ash/tablet_mode_client_test_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -132,8 +132,8 @@ IN_PROC_BROWSER_TEST_P(OverviewWindowDragTest, NormalDrag) {
                             /*shift=*/false,
                             /*alt=*/false,
                             /*command=*/false);
-  test::WaitForOverviewAnimationState(
-      ash::mojom::OverviewAnimationState::kEnterAnimationComplete);
+  ash::ShellTestApi().WaitForOverviewAnimationState(
+      ash::OverviewAnimationState::kEnterAnimationComplete);
   gfx::Size display_size = GetDisplaySize(browser_window);
   gfx::Point start_point = GetStartLocation(display_size);
   gfx::Point end_point(start_point);
@@ -155,8 +155,8 @@ IN_PROC_BROWSER_TEST_P(OverviewWindowDragTest, DISABLED_DragToClose) {
                             /*shift=*/false,
                             /*alt=*/false,
                             /*command=*/false);
-  test::WaitForOverviewAnimationState(
-      ash::mojom::OverviewAnimationState::kEnterAnimationComplete);
+  ash::ShellTestApi().WaitForOverviewAnimationState(
+      ash::OverviewAnimationState::kEnterAnimationComplete);
 
   content::WindowedNotificationObserver waiter(
       chrome::NOTIFICATION_BROWSER_CLOSED,
@@ -185,8 +185,8 @@ IN_PROC_BROWSER_TEST_P(OverviewWindowDragTest, DragToSnap) {
                             /*shift=*/false,
                             /*alt=*/false,
                             /*command=*/false);
-  test::WaitForOverviewAnimationState(
-      ash::mojom::OverviewAnimationState::kEnterAnimationComplete);
+  ash::ShellTestApi().WaitForOverviewAnimationState(
+      ash::OverviewAnimationState::kEnterAnimationComplete);
 
   gfx::Point start_point = GetStartLocation(GetDisplaySize(browser_window));
   gfx::Point end_point(start_point);

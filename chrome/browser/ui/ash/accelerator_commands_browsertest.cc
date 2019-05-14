@@ -4,10 +4,8 @@
 
 #include "ash/accelerators/accelerator_commands.h"
 
+#include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/public/cpp/window_properties.h"
-#include "ash/public/interfaces/constants.mojom.h"
-#include "ash/public/interfaces/shell_test_api.test-mojom-test-utils.h"
-#include "ash/public/interfaces/shell_test_api.test-mojom.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "build/build_config.h"
@@ -54,12 +52,7 @@ class MaximizableWidgetDelegate : public views::WidgetDelegateView {
 // Tells Ash to toggle fullscreen as if the user had pressed the hardware
 // fullscreen key.
 void ToggleFullscreen() {
-  ash::mojom::ShellTestApiPtr shell_test_api;
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(ash::mojom::kServiceName, &shell_test_api);
-  ash::mojom::ShellTestApiAsyncWaiter waiter(shell_test_api.get());
-  waiter.ToggleFullscreen();
+  ash::ShellTestApi().ToggleFullscreen();
   aura::test::WaitForAllChangesToComplete();
 }
 

@@ -9,11 +9,11 @@
 
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
-#include "ash/shell_test_api.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wallpaper/wallpaper_controller_observer.h"
 #include "ash/wallpaper/wallpaper_utils/wallpaper_resizer.h"

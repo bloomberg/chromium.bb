@@ -4,9 +4,7 @@
 
 #include "chrome/browser/ui/webui/chromeos/system_web_dialog_delegate.h"
 
-#include "ash/public/interfaces/constants.mojom.h"
-#include "ash/public/interfaces/shell_test_api.test-mojom-test-utils.h"
-#include "ash/public/interfaces/shell_test_api.test-mojom.h"
+#include "ash/public/cpp/test/shell_test_api.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
@@ -42,15 +40,7 @@ bool IsSystemModalWindowOpen() {
   // Wait for window visibility to stabilize.
   aura::test::WaitForAllChangesToComplete();
 
-  // Connect to the ash test interface.
-  ash::mojom::ShellTestApiPtr shell_test_api;
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(ash::mojom::kServiceName, &shell_test_api);
-  ash::mojom::ShellTestApiAsyncWaiter waiter(shell_test_api.get());
-  bool modal_open = false;
-  waiter.IsSystemModalWindowOpen(&modal_open);
-  return modal_open;
+  return ash::ShellTestApi().IsSystemModalWindowOpen();
 }
 
 class MockSystemWebDialog : public SystemWebDialogDelegate {

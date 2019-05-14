@@ -7,9 +7,9 @@
 #include <memory>
 
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
-#include "ash/shell_test_api.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/window_factory.h"
 #include "base/run_loop.h"
@@ -30,8 +30,7 @@ namespace ash {
 namespace {
 
 ScreenPositionController* GetScreenPositionController() {
-  ShellTestApi test_api(Shell::Get());
-  return test_api.screen_position_controller();
+  return ShellTestApi().screen_position_controller();
 }
 
 class ScreenPositionControllerTest : public AshTestBase {

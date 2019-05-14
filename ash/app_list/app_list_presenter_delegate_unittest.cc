@@ -27,6 +27,7 @@
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/public/interfaces/app_list_view.mojom.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
@@ -34,7 +35,6 @@
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shell.h"
-#include "ash/shell_test_api.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wallpaper/wallpaper_controller_test_api.h"
@@ -1813,8 +1813,7 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest,
 
 // Test backdrop exists for active non-fullscreen window in tablet mode.
 TEST_F(AppListPresenterDelegateHomeLauncherTest, BackdropTest) {
-  WorkspaceControllerTestApi test_helper(
-      ShellTestApi(Shell::Get()).workspace_controller());
+  WorkspaceControllerTestApi test_helper(ShellTestApi().workspace_controller());
   EnableTabletMode(true);
   GetAppListTestHelper()->CheckVisibility(true);
   EXPECT_FALSE(test_helper.GetBackdropWindow());

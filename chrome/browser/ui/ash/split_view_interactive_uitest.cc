@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/shell.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "base/macros.h"
@@ -10,7 +11,6 @@
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
-#include "chrome/browser/ui/ash/ash_test_util.h"
 #include "chrome/browser/ui/ash/tablet_mode_client_test_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -66,7 +66,7 @@ class WidgetResizeWaiter : public views::WidgetObserver {
         run_loop_->Run();
         EXPECT_FALSE(waiting_for_frame_);
       }
-      test::WaitForNoPointerHoldLock();
+      ash::ShellTestApi().WaitForNoPointerHoldLock();
     } while (waiting_for_frame_);
   }
 
@@ -130,7 +130,7 @@ IN_PROC_BROWSER_TEST_F(SplitViewTest, SplitViewResize) {
   shell->split_view_controller()->SnapWindow(browser_widget->GetNativeWindow(),
                                              ash::SplitViewController::RIGHT);
 
-  test::WaitForNoPointerHoldLock();
+  ash::ShellTestApi().WaitForNoPointerHoldLock();
 
   const gfx::Size display_size =
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds().size();

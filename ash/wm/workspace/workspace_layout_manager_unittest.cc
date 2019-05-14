@@ -19,6 +19,7 @@
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
@@ -29,7 +30,6 @@
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/shell_observer.h"
-#include "ash/shell_test_api.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wallpaper/wallpaper_controller_test_api.h"
@@ -1315,7 +1315,7 @@ TEST_F(WorkspaceLayoutManagerBackdropTest,
 }
 
 TEST_F(WorkspaceLayoutManagerBackdropTest, BackdropTest) {
-  WorkspaceController* wc = ShellTestApi(Shell::Get()).workspace_controller();
+  WorkspaceController* wc = ShellTestApi().workspace_controller();
   WorkspaceControllerTestApi test_helper(wc);
 
   std::unique_ptr<aura::Window> window1(
@@ -1475,7 +1475,7 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, BackdropTest) {
 
 TEST_F(WorkspaceLayoutManagerBackdropTest,
        DoNotShowBackdropDuringWallpaperPreview) {
-  WorkspaceController* wc = ShellTestApi(Shell::Get()).workspace_controller();
+  WorkspaceController* wc = ShellTestApi().workspace_controller();
   WorkspaceControllerTestApi test_helper(wc);
   WallpaperControllerTestApi wallpaper_test_api(
       Shell::Get()->wallpaper_controller());
@@ -1512,7 +1512,7 @@ TEST_F(WorkspaceLayoutManagerBackdropTest,
 }
 
 TEST_F(WorkspaceLayoutManagerBackdropTest, SpokenFeedbackFullscreenBackground) {
-  WorkspaceController* wc = ShellTestApi(Shell::Get()).workspace_controller();
+  WorkspaceController* wc = ShellTestApi().workspace_controller();
   WorkspaceControllerTestApi test_helper(wc);
   AccessibilityController* controller =
       Shell::Get()->accessibility_controller();
@@ -1571,7 +1571,7 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, SpokenFeedbackFullscreenBackground) {
 // TODO(crbug.com/803286): The npot texture check failed on asan tests bot.
 // TODO(crbug.com/838756): Very flaky on mash_ash_unittests.
 TEST_F(WorkspaceLayoutManagerBackdropTest, DISABLED_OpenAppListInOverviewMode) {
-  WorkspaceController* wc = ShellTestApi(Shell::Get()).workspace_controller();
+  WorkspaceController* wc = ShellTestApi().workspace_controller();
   WorkspaceControllerTestApi test_helper(wc);
 
   std::unique_ptr<aura::Window> window(
@@ -1596,7 +1596,7 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, DISABLED_OpenAppListInOverviewMode) {
 }
 
 TEST_F(WorkspaceLayoutManagerBackdropTest, SpokenFeedbackForArc) {
-  WorkspaceController* wc = ShellTestApi(Shell::Get()).workspace_controller();
+  WorkspaceController* wc = ShellTestApi().workspace_controller();
   WorkspaceControllerTestApi test_helper(wc);
   AccessibilityController* controller =
       Shell::Get()->accessibility_controller();
@@ -2051,7 +2051,7 @@ TEST_F(WorkspaceLayoutManagerSystemUiAreaTest,
 
 TEST_F(WorkspaceLayoutManagerBackdropTest,
        BackdropWindowIsNotReparentedFromAlwaysOnTopContainer) {
-  WorkspaceController* wc = ShellTestApi(Shell::Get()).workspace_controller();
+  WorkspaceController* wc = ShellTestApi().workspace_controller();
   WorkspaceControllerTestApi test_helper(wc);
   RootWindowController* controller = Shell::GetPrimaryRootWindowController();
   AlwaysOnTopController* always_on_top_controller =

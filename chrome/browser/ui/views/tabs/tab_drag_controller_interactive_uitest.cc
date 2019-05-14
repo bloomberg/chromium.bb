@@ -70,10 +70,8 @@
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
+#include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/public/cpp/window_properties.h"
-#include "ash/public/interfaces/constants.mojom.h"
-#include "ash/public/interfaces/shell_test_api.test-mojom-test-utils.h"
-#include "ash/public/interfaces/shell_test_api.test-mojom.h"
 #include "ash/shell.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/window_state.h"
@@ -425,7 +423,8 @@ class DetachToBrowserTabDragControllerTest
     root_ = browser()->window()->GetNativeWindow()->GetRootWindow();
     // Disable flings which might otherwise inadvertently be generated from
     // tests' touch events.
-    SetMinFlingVelocity(std::numeric_limits<float>::max());
+    ui::GestureConfiguration::GetInstance()->set_min_fling_velocity(
+        std::numeric_limits<float>::max());
     aura::test::WaitForAllChangesToComplete();
 #endif
 #if defined(OS_MACOSX)
@@ -440,18 +439,6 @@ class DetachToBrowserTabDragControllerTest
     return strstr(GetParam(), "mouse") ?
         INPUT_SOURCE_MOUSE : INPUT_SOURCE_TOUCH;
   }
-
-#if defined(OS_CHROMEOS)
-  void SetMinFlingVelocity(float velocity) {
-    ui::GestureConfiguration::GetInstance()->set_min_fling_velocity(velocity);
-    ash::mojom::ShellTestApiPtr shell_test_api;
-    content::ServiceManagerConnection::GetForProcess()
-        ->GetConnector()
-        ->BindInterface(ash::mojom::kServiceName, &shell_test_api);
-    shell_test_api->SetMinFlingVelocity(velocity);
-    shell_test_api.FlushForTesting();
-  }
-#endif
 
 #if defined(OS_CHROMEOS)
   bool SendTouchEventsSync(int action, int id, const gfx::Point& location) {
@@ -2795,11 +2782,7 @@ void CancelDragTabToWindowInSeparateDisplayStep3(
   ASSERT_EQ(2u, browser_list->size());
 
   // Switching display mode should cancel the drag operation.
-  ash::mojom::ShellTestApiPtr shell_test_api;
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(ash::mojom::kServiceName, &shell_test_api);
-  shell_test_api->AddRemoveDisplay();
+  ash::ShellTestApi().AddRemoveDisplay();
 }
 
 // Invoked from the nested run loop.
@@ -3075,7 +3058,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestTouch,
   // Reduce the minimum fling velocity for this specific test case to cause the
   // fling-down gesture in the middle of tab-dragging. This should end up with
   // minimizing the window. See https://crbug.com/902897 for the details.
-  SetMinFlingVelocity(1);
+  ui::GestureConfiguration::GetInstance()->set_min_fling_velocity(1);
 
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
   const gfx::Point tab_0_center =
@@ -3107,7 +3090,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestTouch,
 
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestTouch,
                        FlingOnStartingDrag) {
-  SetMinFlingVelocity(1);
+  ui::GestureConfiguration::GetInstance()->set_min_fling_velocity(1);
   AddTabAndResetBrowser(browser());
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
   const gfx::Point tab_0_center =

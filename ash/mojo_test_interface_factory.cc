@@ -10,12 +10,10 @@
 #include "ash/metrics/time_to_first_present_recorder_test_api.h"
 #include "ash/public/interfaces/login_screen_test_api.test-mojom.h"
 #include "ash/public/interfaces/shelf_test_api.test-mojom.h"
-#include "ash/public/interfaces/shell_test_api.test-mojom.h"
 #include "ash/public/interfaces/status_area_widget_test_api.test-mojom.h"
 #include "ash/public/interfaces/system_tray_test_api.test-mojom.h"
 #include "ash/public/interfaces/time_to_first_present_recorder_test_api.test-mojom.h"
 #include "ash/shelf/shelf_test_api.h"
-#include "ash/shell_test_api.h"
 #include "ash/system/status_area_widget_test_api.h"
 #include "ash/system/unified/unified_system_tray_test_api.h"
 #include "base/bind.h"
@@ -35,10 +33,6 @@ void BindLoginScreenTestApiOnMainThread(
 
 void BindShelfTestApiOnMainThread(mojom::ShelfTestApiRequest request) {
   ShelfTestApi::BindRequest(std::move(request));
-}
-
-void BindShellTestApiOnMainThread(mojom::ShellTestApiRequest request) {
-  ShellTestApi::BindRequest(std::move(request));
 }
 
 void BindStatusAreaWidgetTestApiOnMainThread(
@@ -64,8 +58,6 @@ void RegisterInterfaces(
   registry->AddInterface(base::Bind(&BindLoginScreenTestApiOnMainThread),
                          main_thread_task_runner);
   registry->AddInterface(base::Bind(&BindShelfTestApiOnMainThread),
-                         main_thread_task_runner);
-  registry->AddInterface(base::Bind(&BindShellTestApiOnMainThread),
                          main_thread_task_runner);
   registry->AddInterface(base::Bind(&BindStatusAreaWidgetTestApiOnMainThread),
                          main_thread_task_runner);

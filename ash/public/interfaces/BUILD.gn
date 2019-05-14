@@ -98,7 +98,6 @@ mojom("test_interfaces") {
   sources = [
     "login_screen_test_api.test-mojom",
     "shelf_test_api.test-mojom",
-    "shell_test_api.test-mojom",
     "status_area_widget_test_api.test-mojom",
     "system_tray_test_api.test-mojom",
     "time_to_first_present_recorder_test_api.test-mojom",

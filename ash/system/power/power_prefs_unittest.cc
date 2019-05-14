@@ -10,10 +10,10 @@
 #include <vector>
 
 #include "ash/public/cpp/ash_pref_names.h"
+#include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
-#include "ash/shell_test_api.h"
 #include "ash/test/ash_test_base.h"
 #include "base/json/json_reader.h"
 #include "base/macros.h"
@@ -187,7 +187,7 @@ class PowerPrefsTest : public NoSessionAshTestBase {
     NoSessionAshTestBase::SetUp();
 
     power_policy_controller_ = chromeos::PowerPolicyController::Get();
-    power_prefs_ = ShellTestApi(Shell::Get()).power_prefs();
+    power_prefs_ = ShellTestApi().power_prefs();
 
     // Advance the clock an arbitrary amount of time so it won't report zero.
     tick_clock_.Advance(base::TimeDelta::FromSeconds(1));

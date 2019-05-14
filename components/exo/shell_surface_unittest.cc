@@ -7,8 +7,8 @@
 #include "ash/accessibility/accessibility_delegate.h"
 #include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/shell.h"
-#include "ash/shell_test_api.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
@@ -46,8 +46,7 @@ namespace {
 using ShellSurfaceTest = test::ExoTestBase;
 
 bool HasBackdrop() {
-  ash::WorkspaceController* wc =
-      ash::ShellTestApi(ash::Shell::Get()).workspace_controller();
+  ash::WorkspaceController* wc = ash::ShellTestApi().workspace_controller();
   return !!ash::WorkspaceControllerTestApi(wc).GetBackdropWindow();
 }
 

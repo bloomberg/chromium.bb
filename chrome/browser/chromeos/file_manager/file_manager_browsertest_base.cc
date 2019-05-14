@@ -10,9 +10,7 @@
 #include <memory>
 #include <utility>
 
-#include "ash/public/interfaces/constants.mojom.h"
-#include "ash/public/interfaces/shell_test_api.test-mojom-test-utils.h"
-#include "ash/public/interfaces/shell_test_api.test-mojom.h"
+#include "ash/public/cpp/test/shell_test_api.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/containers/circular_deque.h"
@@ -2292,13 +2290,7 @@ base::FilePath FileManagerBrowserTestBase::MaybeMountCrostini(
 
 void FileManagerBrowserTestBase::EnableVirtualKeyboard() {
   CHECK(IsTabletModeTest());
-
-  ash::mojom::ShellTestApiPtr shell_test_api;
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(ash::mojom::kServiceName, &shell_test_api);
-  ash::mojom::ShellTestApiAsyncWaiter waiter(shell_test_api.get());
-  waiter.EnableVirtualKeyboard();
+  ash::ShellTestApi().EnableVirtualKeyboard();
 }
 
 }  // namespace file_manager

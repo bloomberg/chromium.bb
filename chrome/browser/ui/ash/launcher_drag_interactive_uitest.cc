@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/public/cpp/app_list/app_list_config.h"
+#include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/public/interfaces/app_list_view.mojom.h"
 #include "ash/shelf/shelf_constants.h"
 #include "base/macros.h"
@@ -10,7 +11,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/ui/app_list/test/chrome_app_list_test_support.h"
-#include "chrome/browser/ui/ash/ash_test_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/test/base/perf/drag_event_generator.h"
@@ -60,11 +60,7 @@ class LauncherDragTest : public UIPerformanceTest {
 IN_PROC_BROWSER_TEST_F(LauncherDragTest, Open) {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   aura::Window* browser_window = browser_view->GetWidget()->GetNativeWindow();
-  ash::mojom::ShellTestApiPtr shell_test_api = test::GetShellTestApi();
-
-  base::RunLoop waiter;
-  shell_test_api->WaitForLauncherAnimationState(
-      ash::mojom::AppListViewState::kFullscreenAllApps, waiter.QuitClosure());
+  ash::ShellTestApi shell_test_api;
 
   gfx::Rect display_bounds = GetDisplayBounds(browser_window);
   gfx::Point start_point =
@@ -78,29 +74,22 @@ IN_PROC_BROWSER_TEST_F(LauncherDragTest, Open) {
       /*touch=*/true);
   generator.Wait();
 
-  waiter.Run();
+  shell_test_api.WaitForLauncherAnimationState(
+      ash::mojom::AppListViewState::kFullscreenAllApps);
 }
 
 // Drag to close the launcher.
 IN_PROC_BROWSER_TEST_F(LauncherDragTest, Close) {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   aura::Window* browser_window = browser_view->GetWidget()->GetNativeWindow();
-  ash::mojom::ShellTestApiPtr shell_test_api = test::GetShellTestApi();
-  {
-    base::RunLoop waiter;
-    shell_test_api->WaitForLauncherAnimationState(
-        ash::mojom::AppListViewState::kFullscreenAllApps, waiter.QuitClosure());
-    ui_controls::SendKeyPress(browser_window, ui::VKEY_BROWSER_SEARCH,
-                              /*control=*/false,
-                              /*shift=*/true,
-                              /*alt=*/false,
-                              /*command=*/false);
-    waiter.Run();
-  }
-
-  base::RunLoop waiter;
-  shell_test_api->WaitForLauncherAnimationState(
-      ash::mojom::AppListViewState::kClosed, waiter.QuitClosure());
+  ash::ShellTestApi shell_test_api;
+  ui_controls::SendKeyPress(browser_window, ui::VKEY_BROWSER_SEARCH,
+                            /*control=*/false,
+                            /*shift=*/true,
+                            /*alt=*/false,
+                            /*command=*/false);
+  shell_test_api.WaitForLauncherAnimationState(
+      ash::mojom::AppListViewState::kFullscreenAllApps);
 
   gfx::Rect display_bounds = GetDisplayBounds(browser_window);
   gfx::Point start_point = gfx::Point(display_bounds.width() / 4, 10);
@@ -112,5 +101,6 @@ IN_PROC_BROWSER_TEST_F(LauncherDragTest, Close) {
       /*touch=*/true);
   generator.Wait();
 
-  waiter.Run();
+  shell_test_api.WaitForLauncherAnimationState(
+      ash::mojom::AppListViewState::kClosed);
 }

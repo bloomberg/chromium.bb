@@ -6,7 +6,6 @@
 
 #include "ash/note_taking_controller.h"
 #include "ash/shell.h"
-#include "ash/shell_test_api.h"
 #include "ash/system/palette/mock_palette_tool_delegate.h"
 #include "ash/system/palette/palette_ids.h"
 #include "ash/system/palette/palette_tool.h"

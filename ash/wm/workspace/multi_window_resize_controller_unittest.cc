@@ -6,9 +6,9 @@
 
 #include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/public/cpp/ash_constants.h"
+#include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
-#include "ash/shell_test_api.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
@@ -60,7 +60,7 @@ class MultiWindowResizeControllerTest : public AshTestBase {
 
   void SetUp() override {
     AshTestBase::SetUp();
-    WorkspaceController* wc = ShellTestApi(Shell::Get()).workspace_controller();
+    WorkspaceController* wc = ShellTestApi().workspace_controller();
     WorkspaceEventHandler* event_handler =
         WorkspaceControllerTestApi(wc).GetEventHandler();
     resize_controller_ =

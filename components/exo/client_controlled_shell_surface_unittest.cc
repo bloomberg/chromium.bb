@@ -10,10 +10,10 @@
 #include "ash/frame/wide_frame_view.h"
 #include "ash/public/cpp/caption_buttons/caption_button_model.h"
 #include "ash/public/cpp/caption_buttons/frame_caption_button_container_view.h"
+#include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "ash/shell.h"
-#include "ash/shell_test_api.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/overview/overview_controller.h"
@@ -65,8 +65,7 @@ namespace {
 using ClientControlledShellSurfaceTest = test::ExoTestBase;
 
 bool HasBackdrop() {
-  ash::WorkspaceController* wc =
-      ash::ShellTestApi(ash::Shell::Get()).workspace_controller();
+  ash::WorkspaceController* wc = ash::ShellTestApi().workspace_controller();
   return !!ash::WorkspaceControllerTestApi(wc).GetBackdropWindow();
 }
 

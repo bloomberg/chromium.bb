@@ -17,6 +17,7 @@
 #include "ash/keyboard/ui/public/keyboard_switches.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/root_window_controller.h"
 #include "ash/scoped_root_window_for_new_windows.h"
 #include "ash/session/session_controller_impl.h"
@@ -24,7 +25,6 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
-#include "ash/shell_test_api.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/test_shell_delegate.h"
@@ -556,7 +556,7 @@ TEST_F(ShellTest, ToggleAutoHide) {
 TEST_F(ShellTest, TestPreTargetHandlerOrder) {
   Shell* shell = Shell::Get();
   ui::EventTargetTestApi test_api(shell);
-  ShellTestApi shell_test_api(shell);
+  ShellTestApi shell_test_api;
 
   ui::EventHandlerList handlers = test_api.GetPreTargetHandlers();
   ui::EventHandlerList::const_iterator cursor_filter =
@@ -690,7 +690,7 @@ using ShellLoginTest = NoSessionAshTestBase;
 
 TEST_F(ShellLoginTest, DragAndDropDisabledBeforeLogin) {
   DragDropController* drag_drop_controller =
-      ShellTestApi(Shell::Get()).drag_drop_controller();
+      ShellTestApi().drag_drop_controller();
   DragDropControllerTestApi drag_drop_controller_test_api(drag_drop_controller);
   EXPECT_FALSE(drag_drop_controller_test_api.enabled());
 

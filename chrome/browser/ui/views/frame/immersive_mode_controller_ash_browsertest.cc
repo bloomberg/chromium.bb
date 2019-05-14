@@ -4,8 +4,6 @@
 
 #include "ash/public/cpp/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
-#include "ash/public/interfaces/constants.mojom.h"
-#include "ash/public/interfaces/shell_test_api.test-mojom.h"
 #include "base/macros.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "chrome/browser/extensions/extension_browsertest.h"

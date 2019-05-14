@@ -7,9 +7,7 @@
 #include <memory>
 
 #include "ash/keyboard/ui/public/keyboard_switches.h"
-#include "ash/public/interfaces/constants.mojom.h"
-#include "ash/public/interfaces/shell_test_api.test-mojom-test-utils.h"
-#include "ash/public/interfaces/shell_test_api.test-mojom.h"
+#include "ash/public/cpp/test/shell_test_api.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -464,12 +462,7 @@ IN_PROC_BROWSER_TEST_P(SelectFileDialogExtensionBrowserTest,
   test::SetAndWaitForTabletMode(true);
 
   // Enable the virtual keyboard.
-  ash::mojom::ShellTestApiPtr shell_test_api;
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(ash::mojom::kServiceName, &shell_test_api);
-  ash::mojom::ShellTestApiAsyncWaiter waiter(shell_test_api.get());
-  waiter.EnableVirtualKeyboard();
+  ash::ShellTestApi().EnableVirtualKeyboard();
 
   auto* client = ChromeKeyboardControllerClient::Get();
   EXPECT_FALSE(client->is_keyboard_visible());

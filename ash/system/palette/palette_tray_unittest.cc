@@ -19,7 +19,6 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
-#include "ash/shell_test_api.h"
 #include "ash/system/palette/palette_tray_test_api.h"
 #include "ash/system/palette/palette_utils.h"
 #include "ash/system/palette/palette_welcome_bubble.h"
