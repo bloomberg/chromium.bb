@@ -435,13 +435,17 @@ WebHTTPHeaderSet ExtractCorsExposedHeaderNamesList(
 bool IsCorsSafelistedResponseHeader(const String& name) {
   // https://fetch.spec.whatwg.org/#cors-safelisted-response-header-name
   // TODO(dcheng): Consider using a flat_set here with a transparent comparator.
-  // TODO(toyoshim): This set is missing "content-length".
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      WebHTTPHeaderSet, allowed_cross_origin_response_headers,
-      ({
-          "cache-control", "content-language", "content-type", "expires",
-          "last-modified", "pragma",
-      }));
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(WebHTTPHeaderSet,
+                                  allowed_cross_origin_response_headers,
+                                  ({
+                                      "cache-control",
+                                      "content-language",
+                                      "content-length",
+                                      "content-type",
+                                      "expires",
+                                      "last-modified",
+                                      "pragma",
+                                  }));
   return allowed_cross_origin_response_headers.find(name.Ascii().data()) !=
          allowed_cross_origin_response_headers.end();
 }
