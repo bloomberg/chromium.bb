@@ -92,12 +92,6 @@ class AshTestBase : public testing::Test {
   // some environments. Use this to destroy it.
   void DestroyScopedTaskEnvironment();
 
-  // Call this only if this code is being run outside of ash, for example, in
-  // browser tests that use AshTestBase. This disables CHECKs that are
-  // applicable only when used inside ash.
-  // TODO: remove this and ban usage of AshTestBase outside of ash.
-  void SetRunningOutsideAsh();
-
   // Update the display configuration as given in |display_specs|.
   // See ash::DisplayManagerTestApi::UpdateDisplay for more details.
   void UpdateDisplay(const std::string& display_specs);

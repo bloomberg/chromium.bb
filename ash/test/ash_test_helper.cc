@@ -75,13 +75,6 @@ AshTestHelper::~AshTestHelper() {
 }
 
 void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
-#if !defined(NDEBUG)
-  aura::Window::SetEnvArgRequired(
-      "Within ash you must supply a non-null aura::Env when creating a Window, "
-      "use window_factory, or supply the Env obtained from "
-      "Shell::Get()->aura_env()");
-#endif
-
   // TODO(jamescook): Can we do this without changing command line?
   // Use the origin (1,1) so that it doesn't over
   // lap with the native mouse cursor.
@@ -238,21 +231,11 @@ void AshTestHelper::TearDown() {
   display::Display::ResetForceDeviceScaleFactorForTesting();
 
   CHECK(!::wm::CaptureController::Get());
-#if !defined(NDEBUG)
-  aura::Window::SetEnvArgRequired(nullptr);
-#endif
 
   ui::test::EventGeneratorDelegate::SetFactoryFunction(
       ui::test::EventGeneratorDelegate::FactoryFunction());
 
   statistics_provider_.reset();
-}
-
-void AshTestHelper::SetRunningOutsideAsh() {
-  test_views_delegate_->set_running_outside_ash();
-#if DCHECK_IS_ON()
-  aura::Window::SetEnvArgRequired(nullptr);
-#endif
 }
 
 PrefService* AshTestHelper::GetLocalStatePrefService() {

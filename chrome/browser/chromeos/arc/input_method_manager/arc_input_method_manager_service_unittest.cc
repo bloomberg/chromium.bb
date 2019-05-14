@@ -189,7 +189,6 @@ class ArcInputMethodManagerServiceTest : public ChromeAshTestBase {
 
   void SetUp() override {
     ChromeAshTestBase::SetUp();
-    SetRunningOutsideAsh();
     ui::IMEBridge::Initialize();
     input_method_manager_ = new TestInputMethodManager();
     chromeos::input_method::InputMethodManager::Initialize(

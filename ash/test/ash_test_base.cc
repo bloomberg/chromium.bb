@@ -223,10 +223,6 @@ void AshTestBase::UpdateDisplay(const std::string& display_specs) {
       .UpdateNaturalOrientation();
 }
 
-void AshTestBase::SetRunningOutsideAsh() {
-  ash_test_helper_->SetRunningOutsideAsh();
-}
-
 aura::Window* AshTestBase::CurrentContext() {
   return ash_test_helper_->CurrentContext();
 }

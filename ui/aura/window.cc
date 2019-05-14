@@ -53,12 +53,6 @@
 #include "ui/gfx/scoped_canvas.h"
 
 namespace aura {
-namespace {
-#if DCHECK_IS_ON()
-const char* g_env_arg_required_string = nullptr;
-#endif
-
-}  // namespace
 
 Window::Window(WindowDelegate* delegate, client::WindowType type, Env* env)
     : Window(delegate, nullptr, type, env) {}
@@ -86,10 +80,6 @@ Window::Window(WindowDelegate* delegate,
       // notification (such as the workspace code).
       observers_(base::ObserverListPolicy::EXISTING_ONLY) {
   SetTargetHandler(delegate_);
-#if DCHECK_IS_ON()
-  // NOTE: at the time of adding this this function is only called from ash.
-  DCHECK(env || !g_env_arg_required_string) << g_env_arg_required_string;
-#endif
 }
 
 Window::~Window() {
@@ -1244,13 +1234,6 @@ void Window::NotifyResizeLoopEnded() {
   for (auto& observer : observers_)
     observer.OnResizeLoopEnded(this);
 }
-
-#if DCHECK_IS_ON()
-// static
-void Window::SetEnvArgRequired(const char* error_string) {
-  g_env_arg_required_string = error_string;
-}
-#endif
 
 void Window::OnPaintLayer(const ui::PaintContext& context) {
   Paint(context);
