@@ -104,8 +104,8 @@ Polymer({
       value: false,
     },
 
-    /** @private {!Array<!print_preview.Destination>} */
-    recentDestinationList_: Array,
+    /** @private {!Array<!print_preview.RecentDestination>} */
+    displayedDestinations_: Array,
 
     /** @private */
     shouldHideSpinner_: {
@@ -202,18 +202,7 @@ Polymer({
 
     // Load docs, in case the user was not signed in previously and signed in
     // from the destinations dialog.
-    this.destinationStore_.startLoadCookieDestination(
-        print_preview.Destination.GooglePromotedId.DOCS);
-
-    // Load any recent cloud destinations for the dropdown.
-    const recentDestinations = this.getSettingValue('recentDestinations');
-    recentDestinations.forEach(destination => {
-      if (destination.origin === print_preview.DestinationOrigin.COOKIES &&
-          (destination.account === this.activeUser_ ||
-           destination.account === '')) {
-        this.destinationStore_.startLoadCookieDestination(destination.id);
-      }
-    });
+    this.destinationStore_.startLoadDriveDestination();
 
     if (this.destinationState === print_preview.DestinationState.SELECTED &&
         this.destination.origin === print_preview.DestinationOrigin.COOKIES) {
@@ -243,22 +232,20 @@ Polymer({
     this.destination = destination;
     this.updateRecentDestinations_();
     if (this.cloudPrintState_ === print_preview.CloudPrintState.ENABLED) {
-      // Only try to load the docs destination for now. If this request
-      // succeeds, it will trigger a transition to SIGNED_IN, and we can
-      // load the remaining destinations. Otherwise, it will transition to
-      // NOT_SIGNED_IN, so we will not do this more than once.
-      this.destinationStore_.startLoadCookieDestination(
-          print_preview.Destination.GooglePromotedId.DOCS);
+      // Try to load the docs destination. This will trigger a response from
+      // the cloud print server that will tell Print Preview whether the user is
+      // signed in.
+      this.destinationStore_.startLoadDriveDestination();
     }
   },
 
   /** @private */
   onDestinationCapabilitiesReady_: function() {
     this.notifyPath('destination.capabilities');
+    this.updateRecentDestinations_();
     if (this.destinationState === print_preview.DestinationState.SET) {
       this.destinationState = print_preview.DestinationState.UPDATED;
     }
-    this.updateRecentDestinations_();
   },
 
   /**
@@ -334,7 +321,9 @@ Polymer({
     // and where in the array it is located.
     const newDestination =
         print_preview.makeRecentDestination(assert(this.destination));
-    const recentDestinations = this.getSettingValue('recentDestinations');
+    const recentDestinations =
+        /** @type {!Array<!print_preview.RecentDestination>} */ (
+            this.getSettingValue('recentDestinations'));
     let indexFound = recentDestinations.findIndex(function(recent) {
       return (
           newDestination.id == recent.id &&
@@ -366,19 +355,14 @@ Polymer({
 
   /** @private */
   updateDropdownDestinations_: function() {
-    const recentDestinations = this.getSettingValue('recentDestinations');
-
-    const dropdownDestinations = [];
-    recentDestinations.forEach(recentDestination => {
-      const key = print_preview.createRecentDestinationKey(recentDestination);
-      const destination = this.destinationStore_.getDestinationByKey(key);
-      if (destination && !this.destinationIsDriveOrPdf_(recentDestination) &&
-          (!destination.account || destination.account == this.activeUser_)) {
-        dropdownDestinations.push(destination);
-      }
-    });
-
-    this.recentDestinationList_ = dropdownDestinations;
+    this.displayedDestinations_ =
+        /** @type {!Array<!print_preview.RecentDestination>} */ (
+            this.getSettingValue('recentDestinations'))
+            .filter(d => {
+              return !this.destinationIsDriveOrPdf_(d) &&
+                  (d.origin !== print_preview.DestinationOrigin.COOKIES ||
+                   d.account === this.activeUser_);
+            });
   },
 
   /**
@@ -428,7 +412,8 @@ Polymer({
   // </if>
 
   /**
-   * @param {!CustomEvent<string>} e Event containing the new selected value.
+   * @param {!CustomEvent<string>} e Event containing the key of the recent
+   *     destination that was selected, or "seeMore".
    * @private
    */
   onSelectedDestinationOptionChange_: function(e) {
@@ -440,7 +425,11 @@ Polymer({
       }
       this.$.destinationDialog.get().show();
     } else {
-      this.destinationStore_.selectDestinationByKey(value);
+      const success = this.destinationStore_.selectRecentDestinationByKey(
+          value, this.displayedDestinations_);
+      if (!success) {
+        this.error = print_preview.Error.INVALID_PRINTER;
+      }
     }
   },
 

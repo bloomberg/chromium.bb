@@ -146,9 +146,9 @@ cr.define('destination_select_test', function() {
     });
 
     /**
-     * Tests that if the user has multiple valid recent destination the most
-     * recent destination is automatically reselected and the remaining
-     * destinations are prefetched.
+     * Tests that if the user has multiple valid recent destinations the most
+     * recent destination is automatically reselected and its capabilities are
+     * fetched.
      */
     test(assert(TestNames.MultipleRecentDestinations), function() {
       const recentDestinations = destinations.slice(0, 3).map(
@@ -169,14 +169,14 @@ cr.define('destination_select_test', function() {
             return assertPrinterDisplay('One', false);
           })
           .then(function() {
-            // Verify the correct printers are marked as recent in the store.
+            // Only the most recent printer should have been added to the store.
             const reportedPrinters =
                 destinationSettings.destinationStore_.destinations();
             destinations.forEach((destination, index) => {
               const match = reportedPrinters.find((reportedPrinter) => {
                 return reportedPrinter.id == destination.id;
               });
-              assertEquals(index >= 3, typeof match === 'undefined');
+              assertEquals(index > 0, typeof match === 'undefined');
             });
           });
     });
@@ -204,14 +204,13 @@ cr.define('destination_select_test', function() {
             assertEquals(print_preview.PrinterType.LOCAL, args.type);
             assertEquals('ID1', destinationSettings.destination.id);
 
-            // The other recent destinations should be prefetched, but only one
-            // should have been selected so there was only one preview request.
+            // Most recent printer + Save as PDF are in the store automatically.
             const reportedPrinters =
                 destinationSettings.destinationStore_.destinations();
-            assertEquals(4, reportedPrinters.length);
+            assertEquals(2, reportedPrinters.length);
             destinations.forEach((destination, index) => {
               assertEquals(
-                  index < 3,
+                  index === 0,
                   reportedPrinters.some(p => p.id == destination.id));
             });
             assertEquals(1, numPrintersSelected);
@@ -411,14 +410,13 @@ cr.define('destination_select_test', function() {
                 destinationSettings.destination.id);
             assertPrinterDisplay('Save to Google Drive', false);
 
-            // Only the other cloud destination for the same user account should
-            // have been prefetched.
+            // Only the most recent printer + Save as PDF are in the store.
             const loadedPrinters =
                 destinationSettings.destinationStore_.destinations();
-            assertEquals(3, loadedPrinters.length);
+            assertEquals(2, loadedPrinters.length);
             cloudDestinations.forEach((destination) => {
               assertEquals(
-                  destination.account === account1,
+                  destination === driveUser1,
                   loadedPrinters.some(p => p.key == destination.key));
             });
             assertEquals(1, numPrintersSelected);

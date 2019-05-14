@@ -43,7 +43,7 @@
         disabled$="[[disabled]]"
         value="{{selectedValue::change}}">
       <template is="dom-repeat" items="[[recentDestinationList]]">
-        <option value="[[item.key]]">[[item.displayName]]</option>
+        <option value="[[getKey_(item)]]">[[item.displayName]]</option>
       </template>
       <option value="[[getPdfDestinationKey_()]]" hidden$="[[appKioskMode]]">
         $i18n{printToPDF}

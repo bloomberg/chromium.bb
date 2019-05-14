@@ -538,7 +538,7 @@ cr.define('destination_settings_test', function() {
 
       const dropdown = destinationSettings.$.destinationSelect;
 
-      return nativeLayer.whenCalled('getPrinterCapabilities')
+      return cloudPrintInterface.whenCalled('printer')
           .then(() => {
             // This will result in the destination store setting the most recent
             // destination.
@@ -602,30 +602,54 @@ cr.define('destination_settings_test', function() {
     test(assert(TestNames.UpdateRecentDestinations), function() {
       // Recent destinations start out empty.
       assertRecentDestinations([]);
+      assertEquals(0, nativeLayer.getCallCount('getPrinterCapabilities'));
 
       initialize();
 
-      // Recent destinations start out empty.
-      assertRecentDestinations(['Save as PDF']);
+      return nativeLayer.whenCalled('getPrinterCapabilities')
+          .then(() => {
+            assertRecentDestinations(['Save as PDF']);
+            assertEquals(1, nativeLayer.getCallCount('getPrinterCapabilities'));
 
-      // Simulate setting a destination.
-      selectDestination(destinations[0]);
-      assertRecentDestinations(['ID1', 'Save as PDF']);
+            // Simulate setting a destination.
+            nativeLayer.resetResolver('getPrinterCapabilities');
+            selectDestination(destinations[0]);
+            return nativeLayer.whenCalled('getPrinterCapabilities');
+          })
+          .then(() => {
+            assertRecentDestinations(['ID1', 'Save as PDF']);
+            assertEquals(1, nativeLayer.getCallCount('getPrinterCapabilities'));
 
-      // Reselect a recent destination. Still 2 destinations, but in a
-      // different order.
-      selectDestination(
-          destinationSettings.destinationStore_.getDestinationByKey(
-              'Save as PDF/local/')),
-          assertRecentDestinations(['Save as PDF', 'ID1']);
+            // Reselect a recent destination. Still 2 destinations, but in a
+            // different order.
+            nativeLayer.resetResolver('getPrinterCapabilities');
+            destinationSettings.$.destinationSelect.dispatchEvent(
+                new CustomEvent('selected-option-change', {
+                  detail: 'Save as PDF/local/',
+                }));
+            Polymer.dom.flush();
+            assertRecentDestinations(['Save as PDF', 'ID1']);
+            // No additional capabilities call, since the destination was
+            // previously selected.
+            assertEquals(0, nativeLayer.getCallCount('getPrinterCapabilities'));
 
-      // Select a third destination
-      selectDestination(destinations[1]);
-      assertRecentDestinations(['ID2', 'Save as PDF', 'ID1']);
+            // Select a third destination
+            selectDestination(destinations[1]);
+            return nativeLayer.whenCalled('getPrinterCapabilities');
+          })
+          .then(() => {
+            assertRecentDestinations(['ID2', 'Save as PDF', 'ID1']);
+            assertEquals(1, nativeLayer.getCallCount('getPrinterCapabilities'));
 
-      // Select a fourth destination. List does not grow.
-      selectDestination(destinations[2]);
-      assertRecentDestinations(['ID3', 'ID2', 'Save as PDF']);
+            // Select a fourth destination. List does not grow.
+            nativeLayer.resetResolver('getPrinterCapabilities');
+            selectDestination(destinations[2]);
+            return nativeLayer.whenCalled('getPrinterCapabilities');
+          })
+          .then(() => {
+            assertRecentDestinations(['ID3', 'ID2', 'Save as PDF']);
+            assertEquals(1, nativeLayer.getCallCount('getPrinterCapabilities'));
+          });
     });
   });
 

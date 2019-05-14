@@ -24,7 +24,7 @@ Polymer({
 
     noDestinations: Boolean,
 
-    /** @type {!Array<!print_preview.Destination>} */
+    /** @type {!Array<!print_preview.RecentDestination>} */
     recentDestinationList: Array,
 
     /** @private {boolean} */
@@ -99,5 +99,14 @@ Polymer({
   /** @private */
   onProcessSelectChange: function(value) {
     this.fire('selected-option-change', value);
+  },
+
+  /**
+   * @param {!print_preview.RecentDestination} recentDestination
+   * @return {string} Key for the recent destination
+   * @private
+   */
+  getKey_: function(recentDestination) {
+    return print_preview.createRecentDestinationKey(recentDestination);
   },
 });
