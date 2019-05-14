@@ -352,7 +352,7 @@ public class LocationBarModel implements ToolbarDataProvider {
         if (isPreview) {
             return R.drawable.preview_pin_round;
         } else if (isOfflinePage) {
-            return R.drawable.ic_offline_pin_24dp;
+            return R.drawable.offline_pin_round;
         }
 
         switch (securityLevel) {

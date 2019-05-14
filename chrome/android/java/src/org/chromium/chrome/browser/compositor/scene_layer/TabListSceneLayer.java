@@ -103,7 +103,7 @@ public class TabListSceneLayer extends SceneLayer {
 
             int closeButtonColor = useIncognitoColors
                     ? Color.WHITE
-                    : ApiCompatibilityUtils.getColor(res, R.color.default_icon_color_secondary);
+                    : ApiCompatibilityUtils.getColor(res, R.color.light_icon_color);
             float closeButtonSizePx =
                     res.getDimensionPixelSize(R.dimen.tab_switcher_close_button_size);
 

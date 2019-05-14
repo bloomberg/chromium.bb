@@ -73,11 +73,11 @@ public final class ToolbarSecurityIconTest {
     public void testGetSecurityIconResource() {
         for (int securityLevel : SECURITY_LEVELS) {
             assertEquals("Wrong phone resource for security level " + securityLevel,
-                    R.drawable.ic_offline_pin_24dp,
+                    R.drawable.offline_pin_round,
                     LocationBarModel.getSecurityIconResource(
                             securityLevel, IS_SMALL_DEVICE, IS_OFFLINE_PAGE, !IS_PREVIEW));
             assertEquals("Wrong tablet resource for security level " + securityLevel,
-                    R.drawable.ic_offline_pin_24dp,
+                    R.drawable.offline_pin_round,
                     LocationBarModel.getSecurityIconResource(
                             securityLevel, !IS_SMALL_DEVICE, IS_OFFLINE_PAGE, !IS_PREVIEW));
             assertEquals("Wrong phone resource for security level " + securityLevel,

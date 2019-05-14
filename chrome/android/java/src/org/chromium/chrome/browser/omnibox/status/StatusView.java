@@ -14,7 +14,6 @@ import android.support.annotation.DrawableRes;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.support.v4.view.ViewCompat;
-import android.support.v7.content.res.AppCompatResources;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewStub;
@@ -25,7 +24,7 @@ import android.widget.TextView;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
-import org.chromium.ui.UiUtils;
+import org.chromium.chrome.browser.widget.TintedDrawable;
 
 /**
  * StatusView is a location bar's view displaying status (icons and/or text).
@@ -72,9 +71,10 @@ public class StatusView extends LinearLayout {
         boolean wantIconHidden = false;
 
         if (mIconRes != 0 && mIconTintRes != 0) {
-            targetIcon = UiUtils.getTintedDrawable(getContext(), mIconRes, mIconTintRes);
+            targetIcon =
+                    TintedDrawable.constructTintedDrawable(getContext(), mIconRes, mIconTintRes);
         } else if (mIconRes != 0) {
-            targetIcon = AppCompatResources.getDrawable(getContext(), mIconRes);
+            targetIcon = ApiCompatibilityUtils.getDrawable(getContext().getResources(), mIconRes);
         } else {
             // Do not specify any icon here and do not replace existing icon, either.
             // TransitionDrawable uses different timing mechanism than Animations, and that may,
