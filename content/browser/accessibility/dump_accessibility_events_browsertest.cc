@@ -286,6 +286,21 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
+                       AccessibilityEventsAriaPosinsetChanged) {
+  RunEventTest(FILE_PATH_LITERAL("aria-posinset-changed.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
+                       AccessibilityEventsAriaReadonlyChanged) {
+  RunEventTest(FILE_PATH_LITERAL("aria-readonly-changed.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
+                       AccessibilityEventsAriaRelevantChanged) {
+  RunEventTest(FILE_PATH_LITERAL("aria-relevant-changed.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
                        AccessibilityEventsAriaTreeCollapse) {
   RunEventTest(FILE_PATH_LITERAL("aria-tree-collapse.html"));
 }
@@ -532,6 +547,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
                        DISABLED_AccessibilityEventsMenuListPopup) {
   RunEventTest(FILE_PATH_LITERAL("menulist-popup.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
+                       AccessibilityEventsMultipleAriaPropertiesChanged) {
+  RunEventTest(FILE_PATH_LITERAL("multiple-aria-properties-changed.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,

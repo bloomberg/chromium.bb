@@ -281,6 +281,7 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
     case ui::AXEventGenerator::Event::LAYOUT_INVALIDATED:
       FireUiaAccessibilityEvent(UIA_LayoutInvalidatedEventId, node);
       break;
+    case ui::AXEventGenerator::Event::LIVE_RELEVANT_CHANGED:
     case ui::AXEventGenerator::Event::MULTILINE_STATE_CHANGED:
       aria_properties_events_.insert(node);
       break;
@@ -297,12 +298,14 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
       break;
     case ui::AXEventGenerator::Event::POSITION_IN_SET_CHANGED:
       FireUiaPropertyChangedEvent(UIA_PositionInSetPropertyId, node);
+      aria_properties_events_.insert(node);
       break;
     case ui::AXEventGenerator::Event::READONLY_CHANGED:
       if (ui::IsRangeValueSupported(node->GetData()))
         FireUiaPropertyChangedEvent(UIA_RangeValueIsReadOnlyPropertyId, node);
       else if (ui::IsValuePatternSupported(node))
         FireUiaPropertyChangedEvent(UIA_ValueIsReadOnlyPropertyId, node);
+      aria_properties_events_.insert(node);
       break;
     case ui::AXEventGenerator::Event::REQUIRED_STATE_CHANGED:
       FireUiaPropertyChangedEvent(UIA_IsRequiredForFormPropertyId, node);

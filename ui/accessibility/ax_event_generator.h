@@ -52,6 +52,7 @@ class AX_EXPORT AXEventGenerator : public AXTreeObserver {
     LIVE_REGION_CHANGED,  // Fired on the root of a live region.
     LIVE_REGION_CREATED,
     LIVE_REGION_NODE_CHANGED,  // Fired on a node within a live region.
+    LIVE_RELEVANT_CHANGED,
     LIVE_STATUS_CHANGED,
     LOAD_COMPLETE,
     LOAD_START,

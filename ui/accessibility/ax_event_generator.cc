@@ -208,6 +208,9 @@ void AXEventGenerator::OnStringAttributeChanged(AXTree* tree,
     case ax::mojom::StringAttribute::kLanguage:
       AddEvent(node, Event::LANGUAGE_CHANGED);
       break;
+    case ax::mojom::StringAttribute::kLiveRelevant:
+      AddEvent(node, Event::LIVE_RELEVANT_CHANGED);
+      break;
     case ax::mojom::StringAttribute::kLiveStatus:
       AddEvent(node, Event::LIVE_STATUS_CHANGED);
 

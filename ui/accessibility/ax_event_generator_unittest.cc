@@ -107,6 +107,9 @@ std::string DumpEvents(AXEventGenerator* generator) {
       case AXEventGenerator::Event::LIVE_REGION_NODE_CHANGED:
         event_name = "LIVE_REGION_NODE_CHANGED";
         break;
+      case AXEventGenerator::Event::LIVE_RELEVANT_CHANGED:
+        event_name = "LIVE_RELEVANT_CHANGED";
+        break;
       case AXEventGenerator::Event::LIVE_STATUS_CHANGED:
         event_name = "LIVE_STATUS_CHANGED";
         break;
@@ -1286,7 +1289,7 @@ TEST(AXEventGeneratorTest, AtomicChanged) {
   EXPECT_EQ("ATOMIC_CHANGED on 1", DumpEvents(&event_generator));
 }
 
-TEST(AXEventGeneratorTest, PopupChanged) {
+TEST(AXEventGeneratorTest, HasPopupChanged) {
   AXTreeUpdate initial_state;
   initial_state.root_id = 1;
   initial_state.nodes.resize(1);
@@ -1299,6 +1302,22 @@ TEST(AXEventGeneratorTest, PopupChanged) {
   update.nodes[0].SetHasPopup(ax::mojom::HasPopup::kTrue);
   EXPECT_TRUE(tree.Unserialize(update));
   EXPECT_EQ("HASPOPUP_CHANGED on 1", DumpEvents(&event_generator));
+}
+
+TEST(AXEventGeneratorTest, LiveRelevantChanged) {
+  AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(1);
+  initial_state.nodes[0].id = 1;
+
+  AXTree tree(initial_state);
+  AXEventGenerator event_generator(&tree);
+  AXTreeUpdate update = initial_state;
+
+  update.nodes[0].AddStringAttribute(ax::mojom::StringAttribute::kLiveRelevant,
+                                     "all");
+  EXPECT_TRUE(tree.Unserialize(update));
+  EXPECT_EQ("LIVE_RELEVANT_CHANGED on 1", DumpEvents(&event_generator));
 }
 
 TEST(AXEventGeneratorTest, MultilineStateChanged) {
