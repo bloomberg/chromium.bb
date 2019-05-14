@@ -82,6 +82,10 @@ message Battery {
     // The path of this battery in system. It is useful if caller needs to
     // correlate with other information
     string path = 13;
+    // Smart Manufacture Date is defined in
+    // http://sbs-forum.org/specs/sbdat110.pdf.
+    // The value is calculated by ((year-1980) * 512 + month * 32 + day).
+    int32 manufacture_date_smart = 14;
   }
   string name = 1;    // Component alias
   Fields values = 2;  // Component's details
