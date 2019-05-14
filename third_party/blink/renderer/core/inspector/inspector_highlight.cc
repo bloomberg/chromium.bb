@@ -639,17 +639,11 @@ void InspectorHighlight::AppendNodeHighlight(
   if (!layout_object)
     return;
 
-  // Just for testing, invert the content color for nodes rendered by LayoutNG.
-  // TODO(layout-dev): Stop munging the color before NG ships. crbug.com/869866
-  Color content_color =
-      layout_object->IsLayoutNGObject() && !WebTestSupport::IsRunningWebTest()
-          ? Color(highlight_config.content.Rgb() ^ 0x00ffffff)
-          : highlight_config.content;
-
   Vector<FloatQuad> svg_quads;
   if (BuildSVGQuads(node, svg_quads)) {
     for (wtf_size_t i = 0; i < svg_quads.size(); ++i) {
-      AppendQuad(svg_quads[i], content_color, highlight_config.content_outline);
+      AppendQuad(svg_quads[i], highlight_config.content,
+                 highlight_config.content_outline);
     }
     return;
   }
@@ -657,8 +651,8 @@ void InspectorHighlight::AppendNodeHighlight(
   FloatQuad content, padding, border, margin;
   if (!BuildNodeQuads(node, &content, &padding, &border, &margin))
     return;
-  AppendQuad(content, content_color, highlight_config.content_outline,
-             "content");
+  AppendQuad(content, highlight_config.content,
+             highlight_config.content_outline, "content");
   AppendQuad(padding, highlight_config.padding, Color::kTransparent, "padding");
   AppendQuad(border, highlight_config.border, Color::kTransparent, "border");
   AppendQuad(margin, highlight_config.margin, Color::kTransparent, "margin");
