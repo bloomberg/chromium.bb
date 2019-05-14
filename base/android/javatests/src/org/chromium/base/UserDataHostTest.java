@@ -122,18 +122,6 @@ public class UserDataHostTest {
     }
 
     /**
-     * Verifies operation on a different thread is not allowed.
-     */
-    @Test
-    @SmallTest
-    @DisabledTest
-    public void testSingleThreadPolicy() {
-        TestObjectA obj = new TestObjectA();
-        mHost.setUserData(TestObjectA.class, obj);
-        ThreadUtils.runOnUiThreadBlocking(() -> assertGetUserData(TestObjectA.class));
-    }
-
-    /**
      * Verifies {@link UserHostData#destroy()} detroyes each {@link UserData} object.
      */
     @Test
