@@ -69,6 +69,10 @@ void SetIndividualRuntimeFeatures(
   if (base::FeatureList::IsEnabled(features::kBloatedRendererDetection))
     WebRuntimeFeatures::EnableBloatedRendererDetection(true);
 
+  WebRuntimeFeatures::EnableBlockingFocusWithoutUserActivation(
+      base::FeatureList::IsEnabled(
+          blink::features::kBlockingFocusWithoutUserActivation));
+
   if (command_line.HasSwitch(switches::kDisableDatabases))
     WebRuntimeFeatures::EnableDatabase(false);
 
