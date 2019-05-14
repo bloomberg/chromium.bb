@@ -44,6 +44,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/gfx/text_elider.h"
@@ -73,6 +74,54 @@ v8::Local<v8::Value> RGBAColorToArray(v8::Isolate* isolate,
 // UI elements can be adjusted. Light text implies dark theme.
 bool IsNtpBackgroundDark(SkColor ntp_text) {
   return !color_utils::IsDark(ntp_text);
+}
+
+// Calculate icon color for given background color.
+SkColor CalculateIconColor(SkColor bg_color) {
+  color_utils::HSL hsl;
+  SkColorToHSL(bg_color, &hsl);
+
+  // If luminosity is 0, it means |bg_color| color is black. Use white icon
+  // color for black backgrounds.
+  if (hsl.l == 0)
+    return SK_ColorWHITE;
+
+  // Decrease luminosity by 20%, unless color is already dark.
+  float change = -0.2;
+  if (hsl.l <= 0.15)
+    change = 0.2;
+
+  hsl.l *= 1 + change;
+  if (hsl.l >= 0.0f && hsl.l <= 1.0f)
+    return HSLToSkColor(hsl, 255);
+  return bg_color;
+}
+
+// TODO(gayane): Consider removing RGBAColor struct and replacing it with
+// SkColor.
+// Converts RGBAColor to SkColor.
+SkColor RGBAColorToSkColor(const RGBAColor& color) {
+  return SkColorSetARGB(color.a, color.r, color.g, color.b);
+}
+
+// Use dark icon when in dark mode and no background. Otherwise, use
+// light icon for NTPs with images, and themed icon for NTPs with solid color.
+SkColor GetIconColor(const ThemeBackgroundInfo& theme_info) {
+  bool has_background_image =
+      crx_file::id_util::IdIsValid(theme_info.theme_id) ||
+      !theme_info.custom_background_url.is_empty();
+  if (has_background_image)
+    return gfx::kGoogleGrey100;
+
+  if (theme_info.using_dark_mode && theme_info.using_default_theme)
+    return gfx::kGoogleGrey900;
+
+  SkColor bg_color = RGBAColorToSkColor(theme_info.background_color);
+  SkColor icon_color = gfx::kGoogleGrey100;
+  if (!theme_info.using_default_theme && bg_color != SK_ColorWHITE)
+    icon_color = CalculateIconColor(bg_color);
+
+  return icon_color;
 }
 
 }  // namespace internal
@@ -199,15 +248,16 @@ base::Optional<int> CoerceToInt(v8::Isolate* isolate, v8::Value* value) {
   return maybe_int.ToLocalChecked()->Value();
 }
 
-// TODO(gayane): Consider removing RGBAColor struct and replacing it with
-// SkColor.
-// Converts RGBAColor to SkColor.
-SkColor RGBAColorToSkColor(const RGBAColor& color) {
-  return SkColorSetARGB(color.a, color.r, color.g, color.b);
+// Converts SkColor to RGBAColor
+RGBAColor SkColorToRGBAColor(const SkColor& sKColor) {
+  RGBAColor color;
+  color.r = SkColorGetR(sKColor);
+  color.g = SkColorGetG(sKColor);
+  color.b = SkColorGetB(sKColor);
+  color.a = SkColorGetA(sKColor);
+  return color;
 }
 
-// TODO(gayane): Consider moving any non-trivial logic up to |InstantService|
-// and do only mapping here.
 v8::Local<v8::Object> GenerateThemeBackgroundInfo(
     v8::Isolate* isolate,
     const ThemeBackgroundInfo& theme_info) {
@@ -332,10 +382,17 @@ v8::Local<v8::Object> GenerateThemeBackgroundInfo(
   builder.Set("textColorRgba", internal::RGBAColorToArray(isolate, ntp_text));
 
   // Generate fields for themeing NTP elements.
-  builder.Set("isNtpBackgroundDark",
-              internal::IsNtpBackgroundDark(RGBAColorToSkColor(ntp_text)));
+  builder.Set(
+      "isNtpBackgroundDark",
+      internal::IsNtpBackgroundDark(internal::RGBAColorToSkColor(ntp_text)));
   builder.Set("useTitleContainer",
               crx_file::id_util::IdIsValid(theme_info.theme_id));
+
+  SkColor icon_color = internal::GetIconColor(theme_info);
+  builder.Set(
+      "iconBackgroundColor",
+      internal::RGBAColorToArray(isolate, SkColorToRGBAColor(icon_color)));
+  builder.Set("useWhiteAddIcon", color_utils::IsDark(icon_color));
 
   return builder.Build();
 }

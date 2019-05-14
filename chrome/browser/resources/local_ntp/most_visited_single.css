@@ -25,6 +25,7 @@ html {
   --md-title-max-height: 28px;
 
   /* May be overridden by themes (on the body element). */
+  --icon-background-color: rgb(var(--GG100-rgb));
   --tile-title-color: rgb(var(--GG800-rgb));
 }
 
@@ -217,16 +218,12 @@ body.dark-theme:not(.reordering) .md-tile-container:active + .md-menu::after {
 
 .md-icon-background {
   align-items: center;
-  background-color: rgb(var(--GG100-rgb));
+  background-color: var(--icon-background-color);
   border-radius: 50%;
   display: flex;
   height: var(--md-icon-size);
   justify-content: center;
   width: var(--md-icon-size);
-}
-
-html[darkmode=true] .md-icon-background {
-  background-color: rgb(var(--GG900-rgb));
 }
 
 .md-add-icon {
@@ -235,7 +232,7 @@ html[darkmode=true] .md-icon-background {
   width: var(--md-add-size);
 }
 
-html[darkmode=true] .md-add-icon {
+.use-white-add-icon .md-add-icon {
   background: url(chrome-search://most-visited/add_link_white.svg) no-repeat center;
 }
 

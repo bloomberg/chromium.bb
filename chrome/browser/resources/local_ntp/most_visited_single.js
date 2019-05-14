@@ -807,9 +807,12 @@ function showTiles(info) {
  */
 function updateTheme(info) {
   document.body.style.setProperty('--tile-title-color', info.tileTitleColor);
+  document.body.style.setProperty(
+      '--icon-background-color', info.iconBackgroundColor);
   document.body.classList.toggle('dark-theme', info.isThemeDark);
   document.body.classList.toggle('use-title-container', info.useTitleContainer);
   document.body.classList.toggle('custom-background', info.customBackground);
+  document.body.classList.toggle('use-white-add-icon', info.useWhiteAddIcon);
   document.documentElement.setAttribute('darkmode', info.isDarkMode);
 
   // Reduce font weight on the default(white) background for Mac and CrOS.
@@ -959,8 +962,6 @@ function addTile(args) {
     }
 
     data.tid = data.rid;
-    // Use a dark icon if dark mode is enabled.
-    data.dark = args.darkMode;
     if (!data.faviconUrl) {
       data.faviconUrl = 'chrome-search://favicon/size/16@' +
           window.devicePixelRatio + 'x/' + data.renderViewId + '/' + data.tid;
@@ -1199,7 +1200,8 @@ function renderMaterialDesignTile(data) {
   mdTileInner.className = CLASSES.MD_TILE_INNER;
 
   const mdIcon = document.createElement('div');
-  mdIcon.className = CLASSES.MD_ICON;
+  mdIcon.classList.add(CLASSES.MD_ICON);
+  mdIcon.classList.add(CLASSES.MD_ICON_BACKGROUND);
 
   if (data.isAddButton) {
     const mdAdd = document.createElement('div');
@@ -1215,7 +1217,6 @@ function renderMaterialDesignTile(data) {
     fi.title = '';
     fi.alt = '';
     const url = new URL('chrome-search://ntpicon/');
-    url.searchParams.set('dark', data.dark);
     url.searchParams.set('size', '24@' + window.devicePixelRatio + 'x');
     url.searchParams.set('url', data.url);
     fi.src = url.toString();

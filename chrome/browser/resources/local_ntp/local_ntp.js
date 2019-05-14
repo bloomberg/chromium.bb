@@ -484,6 +484,8 @@ function sendThemeInfoToMostVisitedIframe() {
   message.customBackground = info.customBackgroundConfigured;
   message.useTitleContainer = info.useTitleContainer;
   message.isDarkMode = getUseDarkChips(info);
+  message.iconBackgroundColor = convertToRGBAColor(info.iconBackgroundColor);
+  message.useWhiteAddIcon = info.useWhiteAddIcon;
 
   let titleColor = NTP_DESIGN.titleColor;
   if (!info.usingDefaultTheme && info.textColorRgba) {

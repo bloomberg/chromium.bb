@@ -65,9 +65,6 @@ const char kImageFetcherUmaClientName[] = "NtpIconSource";
 // changing the algorithm in RenderIconBitmap() that guarantees contrast.
 constexpr SkColor kFallbackIconLetterColor = SK_ColorWHITE;
 
-// Whether or not the requested icon is being rendered on a dark background.
-const char kDarkModeParameter[] = "dark";
-
 // The requested size of the icon.
 const char kSizeParameter[] = "size";
 
@@ -98,9 +95,6 @@ struct ParsedNtpIconPath {
 
   // The device scale factor of the requested icon.
   float device_scale_factor = 1.0;
-
-  // True if a dark mode icon should be used.
-  bool is_dark_mode = false;
 };
 
 float GetMaxDeviceScaleFactor() {
@@ -127,9 +121,7 @@ const ParsedNtpIconPath ParseNtpIconPath(const std::string& path) {
 
   for (net::QueryIterator it(request); !it.IsAtEnd(); it.Advance()) {
     std::string key = it.GetKey();
-    if (key == kDarkModeParameter) {
-      parsed.is_dark_mode = it.GetValue() == "true";
-    } else if (key == kSizeParameter) {
+    if (key == kSizeParameter) {
       std::vector<std::string> pieces =
           base::SplitString(it.GetUnescapedValue(), "@", base::TRIM_WHITESPACE,
                             base::SPLIT_WANT_NONEMPTY);
@@ -221,24 +213,18 @@ SkColor GetBackgroundColorForUrl(const GURL& icon_url) {
   return SkColorSetRGB(hash[0], hash[1], hash[2]);
 }
 
-// For the given |icon_url|, will render |favicon| within a gray, circular
-// background (dark gray if |is_dark_mode|). If |favicon| is not specifed, will
-// use a colored circular monogram instead.
+// For the given |icon_url|, will render |favicon|. If |favicon| is not
+// specified, will use a colored circular monogram instead.
 std::vector<unsigned char> RenderIconBitmap(const GURL& icon_url,
                                             const SkBitmap& favicon,
                                             int icon_size,
-                                            int fallback_size,
-                                            bool is_dark_mode) {
+                                            int fallback_size) {
   SkBitmap bitmap;
   bitmap.allocN32Pixels(icon_size, icon_size, false);
   cc::SkiaPaintCanvas paint_canvas(bitmap);
   gfx::Canvas canvas(&paint_canvas, 1.f);
   canvas.DrawColor(SK_ColorTRANSPARENT, SkBlendMode::kSrc);
 
-  // Draw the gray background.
-  SkColor favicon_bg = is_dark_mode ? gfx::kGoogleGrey900 : gfx::kGoogleGrey100;
-  DrawCircleInCanvas(&canvas, icon_size, /*offset=*/0,
-                     /*background_color=*/favicon_bg);
   DrawFavicon(favicon, &canvas, icon_size);
 
   // If necessary, draw the colored fallback monogram.
@@ -263,13 +249,11 @@ struct NtpIconSource::NtpIconRequest {
   NtpIconRequest(const content::URLDataSource::GotDataCallback& cb,
                  const GURL& path,
                  int icon_size_in_pixels,
-                 float scale,
-                 bool is_dark_mode)
+                 float scale)
       : callback(cb),
         path(path),
         icon_size_in_pixels(icon_size_in_pixels),
-        device_scale_factor(scale),
-        is_dark_mode(is_dark_mode) {}
+        device_scale_factor(scale) {}
   NtpIconRequest(const NtpIconRequest& other) = default;
   ~NtpIconRequest() {}
 
@@ -277,7 +261,6 @@ struct NtpIconSource::NtpIconRequest {
   GURL path;
   int icon_size_in_pixels;
   float device_scale_factor;
-  bool is_dark_mode;
 };
 
 NtpIconSource::NtpIconSource(Profile* profile)
@@ -308,7 +291,7 @@ void NtpIconSource::StartDataRequest(
     int icon_size_in_pixels =
         std::ceil(parsed.size_in_dip * parsed.device_scale_factor);
     NtpIconRequest request(callback, parsed.url, icon_size_in_pixels,
-                           parsed.device_scale_factor, parsed.is_dark_mode);
+                           parsed.device_scale_factor);
 
     // Check if the requested URL is part of the prepopulated pages (currently,
     // only the Web Store).
@@ -478,6 +461,6 @@ void NtpIconSource::ReturnRenderedIconForRequest(const NtpIconRequest& request,
       std::round(kFallbackSizeDip * request.device_scale_factor * 0.5) * 2.0;
   std::vector<unsigned char> bitmap_data =
       RenderIconBitmap(request.path, bitmap, desired_overall_size_in_pixel,
-                       desired_fallback_size_in_pixel, request.is_dark_mode);
+                       desired_fallback_size_in_pixel);
   request.callback.Run(base::RefCountedBytes::TakeVector(&bitmap_data));
 }

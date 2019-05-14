@@ -675,15 +675,11 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDarkModeTest, ToggleDarkMode) {
   content::RenderFrameHost* cl_iframe =
       GetIframe(active_tab, kEditCustomLinkIframe);
 
-  // Dark mode should not be applied to the main page, iframes, and Most Visited
-  // icons.
+  // Dark mode should not be applied to the main page and iframes.
   ASSERT_FALSE(GetIsDarkModeApplied(active_tab));
   ASSERT_FALSE(GetIsDarkModeApplied(mv_iframe));
   ASSERT_FALSE(GetIsDarkModeApplied(cl_iframe));
   ASSERT_TRUE(GetIsLightChipsApplied(active_tab));
-  for (int i = 0; i < kDefaultMostVisitedItemCount; ++i) {
-    ASSERT_FALSE(GetIsDarkTile(mv_iframe, i));
-  }
 
   // Enable dark mode and wait until the MV tiles have updated.
   content::DOMMessageQueue msg_queue(active_tab);
@@ -697,9 +693,6 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDarkModeTest, ToggleDarkMode) {
   EXPECT_TRUE(GetIsDarkModeApplied(mv_iframe));
   EXPECT_TRUE(GetIsDarkModeApplied(cl_iframe));
   EXPECT_FALSE(GetIsLightChipsApplied(active_tab));
-  for (int i = 0; i < kDefaultMostVisitedItemCount; ++i) {
-    EXPECT_TRUE(GetIsDarkTile(mv_iframe, i));
-  }
 
   // Disable dark mode and wait until the MV tiles have updated.
   msg_queue.ClearQueue();
@@ -713,9 +706,6 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDarkModeTest, ToggleDarkMode) {
   EXPECT_FALSE(GetIsDarkModeApplied(mv_iframe));
   EXPECT_FALSE(GetIsDarkModeApplied(cl_iframe));
   EXPECT_TRUE(GetIsLightChipsApplied(active_tab));
-  for (int i = 0; i < kDefaultMostVisitedItemCount; ++i) {
-    EXPECT_FALSE(GetIsDarkTile(mv_iframe, i));
-  }
 }
 
 // Tests that dark mode styling is properly applied to the local NTP on start-
@@ -751,13 +741,10 @@ IN_PROC_BROWSER_TEST_P(LocalNTPDarkModeStartupTest, DarkModeApplied) {
       GetIframe(active_tab, kEditCustomLinkIframe);
 
   // Check that dark mode, if enabled, has been properly applied to the main
-  // page, iframes, and Most Visited icons.
+  // page and iframes.
   EXPECT_EQ(kDarkModeEnabled, GetIsDarkModeApplied(active_tab));
   EXPECT_EQ(kDarkModeEnabled, GetIsDarkModeApplied(mv_iframe));
   EXPECT_EQ(kDarkModeEnabled, GetIsDarkModeApplied(cl_iframe));
-  for (int i = 0; i < kDefaultMostVisitedItemCount; ++i) {
-    EXPECT_EQ(kDarkModeEnabled, GetIsDarkTile(mv_iframe, i));
-  }
 }
 
 INSTANTIATE_TEST_SUITE_P(, LocalNTPDarkModeStartupTest, testing::Bool());
