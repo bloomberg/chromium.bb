@@ -61,9 +61,11 @@ class EVENTS_OZONE_EVDEV_EXPORT GamepadEventConverterEvdev
   void ResyncGamepad();
 
   void OnButtonChange(unsigned int code,
+                      unsigned int raw_code,
                       double value,
                       const base::TimeTicks& timestamp);
   void OnAbsChange(unsigned int code,
+                   unsigned int raw_code,
                    double value,
                    const base::TimeTicks& timestamp);
   void OnSync(const base::TimeTicks& timestamp);

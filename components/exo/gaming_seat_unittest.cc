@@ -66,7 +66,7 @@ class GamingSeatTest : public test::ExoTestBase {
 
   void SendFrameToGamepads(const std::vector<int>& gamepad_device_ids) {
     for (auto& id : gamepad_device_ids) {
-      ui::GamepadEvent event(id, ui::GamepadEventType::FRAME, 0, 0,
+      ui::GamepadEvent event(id, ui::GamepadEventType::FRAME, 0, 0, 0,
                              base::TimeTicks());
       ui::GamepadProviderOzone::GetInstance()->DispatchGamepadEvent(event);
     }
