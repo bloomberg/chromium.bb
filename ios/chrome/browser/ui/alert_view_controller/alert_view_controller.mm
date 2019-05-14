@@ -314,6 +314,8 @@ constexpr int kTextfieldBackgroundColor = 0xf7f7f7;
           textFieldConfiguration.accessibilityIdentifier;
       textField.translatesAutoresizingMaskIntoConstraints = NO;
       textField.delegate = self;
+      textField.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
+
       [fieldStack addArrangedSubview:textField];
       ChromeDirectionalEdgeInsets fieldInsets = ChromeDirectionalEdgeInsetsMake(
           0.0, kTextfieldInset, 0.0, kTextfieldInset);
