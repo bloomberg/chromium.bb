@@ -309,13 +309,9 @@ void ShellSurface::OnSetParent(Surface* parent, const gfx::Point& position) {
 
 void ShellSurface::InitializeWindowState(ash::wm::WindowState* window_state) {
   window_state->AddObserver(this);
-  // Sommelier sets the null application id for override redirect windows,
-  // which controls its bounds by itself.
-  bool emulate_x11_override_redirect =
-      (GetShellApplicationId(window_state->window()) == nullptr) && !!parent_;
-  window_state->set_allow_set_bounds_direct(emulate_x11_override_redirect);
-  widget_->set_movement_disabled(movement_disabled_);
+  window_state->set_allow_set_bounds_direct(movement_disabled_);
   window_state->set_ignore_keyboard_bounds_change(movement_disabled_);
+  widget_->set_movement_disabled(movement_disabled_);
 
   // If this window is a child of some window, it should be made transient.
   MaybeMakeTransient();
@@ -572,22 +568,18 @@ void ShellSurface::Configure(bool ends_drag) {
   gfx::Vector2d origin_offset = pending_origin_offset_accumulator_;
   pending_origin_offset_accumulator_ = gfx::Vector2d();
 
+  auto* window_state =
+      widget_ ? ash::wm::GetWindowState(widget_->GetNativeWindow()) : nullptr;
   int resize_component = HTCAPTION;
-  if (widget_) {
-    ash::wm::WindowState* window_state =
-        ash::wm::GetWindowState(widget_->GetNativeWindow());
-
-    // If surface is being resized, save the resize direction.
-    if (window_state->is_dragged() && !ends_drag)
-      resize_component = window_state->drag_details()->window_component;
-  }
+  // If surface is being resized, save the resize direction.
+  if (window_state && window_state->is_dragged() && !ends_drag)
+    resize_component = window_state->drag_details()->window_component;
 
   uint32_t serial = 0;
   if (!configure_callback_.is_null()) {
-    if (widget_) {
+    if (window_state) {
       serial = configure_callback_.Run(
-          GetClientViewBounds().size(),
-          ash::wm::GetWindowState(widget_->GetNativeWindow())->GetStateType(),
+          GetClientViewBounds().size(), window_state->GetStateType(),
           IsResizing(), widget_->IsActive(), origin_offset);
     } else {
       serial =

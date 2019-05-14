@@ -318,7 +318,12 @@ TEST_F(ShellSurfaceTest, EmulateOverrideRedirect) {
   child_surface->Commit();
   aura::Window* child_window =
       child_shell_surface->GetWidget()->GetNativeWindow();
+
+  // The window will not have a window state, thus will no be managed by window
+  // manager.
   EXPECT_TRUE(ash::wm::GetWindowState(child_window)->allow_set_bounds_direct());
+  EXPECT_EQ(ash::kShellWindowId_ShelfBubbleContainer,
+            child_window->parent()->id());
 }
 
 TEST_F(ShellSurfaceTest, SetStartupId) {

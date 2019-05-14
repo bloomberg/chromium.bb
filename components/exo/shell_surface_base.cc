@@ -249,7 +249,6 @@ class CustomWindowTargeter : public aura::WindowTargeter {
         !widget_->widget_delegate()->CanResize()) {
       return false;
     }
-
     // Use ash's resize handle detection logic if
     // a) ClientControlledShellSurface uses server side resize or
     // b) xdg shell is using the server side decoration.
@@ -861,22 +860,45 @@ void ShellSurfaceBase::CreateShellSurfaceWidget(
   DCHECK(enabled());
   DCHECK(!widget_);
 
+  // Sommelier sets the null application id for override redirect windows,
+  // which controls its bounds by itself.
+  bool emulate_x11_override_redirect =
+      !is_popup_ && parent_ && ash::desks_util::IsDeskContainerId(container_) &&
+      !application_id_.has_value();
+
+  if (emulate_x11_override_redirect) {
+    // override redirect is used for menu, tooltips etc, which should be placed
+    // above normal windows, but below lock screen. Specify the container here
+    // to avoid using parent_ in params.parent.
+    container_ = ash::kShellWindowId_ShelfBubbleContainer;
+    // X11 override redirect should not be activatable.
+    activatable_ = false;
+    DisableMovement();
+  }
+
   views::Widget::InitParams params;
-  params.type = is_popup_ ? views::Widget::InitParams::TYPE_POPUP
-                          : views::Widget::InitParams::TYPE_WINDOW;
+  params.type = emulate_x11_override_redirect
+                    ? views::Widget::InitParams::TYPE_MENU
+                    : (is_popup_ ? views::Widget::InitParams::TYPE_POPUP
+                                 : views::Widget::InitParams::TYPE_WINDOW);
   params.ownership = views::Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET;
   params.delegate = this;
   params.shadow_type = views::Widget::InitParams::SHADOW_TYPE_NONE;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.show_state = show_state;
-  // Make shell surface a transient child if |parent_| has been set.
-  params.parent =
-      parent_ ? parent_
-              : ash::Shell::GetContainer(
-                    WMHelper::GetInstance()->GetRootWindowForNewWindows(),
-                    container_);
+  // Make shell surface a transient child if |parent_| has been set and
+  // container_ isn't specified.
+  if (ash::desks_util::IsDeskContainerId(container_) && parent_) {
+    params.parent = parent_;
+  } else {
+    params.parent = ash::Shell::GetContainer(
+        WMHelper::GetInstance()->GetRootWindowForNewWindows(), container_);
+  }
   params.bounds = gfx::Rect(origin_, gfx::Size());
   bool activatable = activatable_;
+  if (container_ == ash::kShellWindowId_SystemModalContainer)
+    activatable &= HasHitTestRegion();
+
   // ShellSurfaces in system modal container are only activatable if input
   // region is non-empty. See OnCommitSurface() for more details.
   if (container_ == ash::kShellWindowId_SystemModalContainer)
@@ -907,7 +929,8 @@ void ShellSurfaceBase::CreateShellSurfaceWidget(
   InitializeWindowState(window_state);
 
   // AutoHide shelf in fullscreen state.
-  window_state->SetHideShelfWhenFullscreen(false);
+  if (window_state)
+    window_state->SetHideShelfWhenFullscreen(false);
 
   // Fade visibility animations for non-activatable windows.
   if (!CanActivate()) {
