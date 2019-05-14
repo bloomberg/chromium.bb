@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/strings/stringprintf.h"
-#include "build/build_config.h"  // For OS_ANDROID used to disable a test.
 #include "sql/database.h"
 #include "sql/statement.h"
 #include "sql/test/database_test_peer.h"
@@ -819,15 +818,7 @@ TEST_F(RecoverModuleTest, RowidAlias) {
   EXPECT_FALSE(statement.Step());
 }
 
-#if OS_ANDROID
-// The SQLite patch fails this test on Android. The rewritten recovery code
-// passes this test. So, the test will be unconditionally enabled when
-// https://crrev.com/c/1546942 lands.
-#define MAYBE_IntegerEncodings DISABLED_IntegerEncodings
-#else
-#define MAYBE_IntegerEncodings IntegerEncodings
-#endif
-TEST_F(RecoverModuleTest, MAYBE_IntegerEncodings) {
+TEST_F(RecoverModuleTest, IntegerEncodings) {
   ASSERT_TRUE(db().Execute("CREATE TABLE integers(value)"));
 
   const std::vector<int64_t> values = {

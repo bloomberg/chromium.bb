@@ -279,14 +279,11 @@ component("chromium_sqlite3") {
   visibility = [ ":*" ]
 
   public = [
-    "patched/src/recover.h",
     "sqlite3.h",
   ]
 
   sources = [
     "amalgamation/sqlite3.h",
-    "patched/src/recover.c",
-    "patched/src/recover_varint.c",
     "sqlite3_shim.c",
   ]
 

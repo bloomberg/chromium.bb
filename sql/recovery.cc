@@ -14,11 +14,9 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "sql/database.h"
+#include "sql/recover_module/module.h"
 #include "sql/statement.h"
 #include "third_party/sqlite/sqlite3.h"
-
-// Needs to be included after "third_party/sqlite/sqlite.h".
-#include "third_party/sqlite/patched/src/recover.h"
 
 namespace sql {
 
@@ -800,7 +798,7 @@ bool Recovery::ShouldRecover(int extended_error) {
 
 // static
 int Recovery::EnableRecoveryExtension(Database* db, InternalApiToken) {
-  return chrome_sqlite3_recoverVtableInit(db->db(InternalApiToken()));
+  return sql::recover::RegisterRecoverExtension(db->db(InternalApiToken()));
 }
 
 }  // namespace sql
