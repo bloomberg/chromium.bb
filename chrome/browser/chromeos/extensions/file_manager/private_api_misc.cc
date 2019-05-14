@@ -54,6 +54,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/services/file_util/public/cpp/zip_file_creator.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/settings/timezone_settings.h"
 #include "components/account_id/account_id.h"
 #include "components/drive/drive_pref_names.h"
@@ -516,7 +517,10 @@ void FileManagerPrivateInternalGetMimeTypeFunction::OnGetMimeType(
 ExtensionFunction::ResponseAction
 FileManagerPrivateIsPiexLoaderEnabledFunction::Run() {
 #if defined(OFFICIAL_BUILD)
-  return RespondNow(OneArgument(std::make_unique<base::Value>(true)));
+  bool piex_nacl_enabled = !base::FeatureList::IsEnabled(
+      chromeos::features::kEnableFileManagerPiexWasm);
+  return RespondNow(
+      OneArgument(std::make_unique<base::Value>(piex_nacl_enabled)));
 #else
   return RespondNow(OneArgument(std::make_unique<base::Value>(false)));
 #endif

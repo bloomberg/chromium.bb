@@ -3105,6 +3105,10 @@ const char kFileManagerFeedbackPanelDescription[] =
     "Enable new feedback panel in the Files app.";
 const char kFileManagerFeedbackPanelName[] = "Files App. feedback panel";
 
+const char kFileManagerPiexWasmName[] = "Enable FilesApp piex-wasm module";
+const char kFileManagerPiexWasmDescription[] =
+    "Enable the FilesApp piex-wasm raw image extractor module.";
+
 const char kFileManagerTouchModeName[] = "Files App. touch mode";
 const char kFileManagerTouchModeDescription[] =
     "Touchscreen-specific interactions of the Files app.";
