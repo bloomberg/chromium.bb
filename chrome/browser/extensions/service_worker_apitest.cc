@@ -306,6 +306,13 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, OnInstalledEvent) {
       << message_;
 }
 
+// Tests chrome.runtime.id and chrome.runtime.getURL().
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, RuntimeMisc) {
+  ASSERT_TRUE(
+      RunExtensionTest("service_worker/worker_based_background/runtime_misc"))
+      << message_;
+}
+
 // Tests chrome.storage APIs.
 IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, StorageSetAndGet) {
   ASSERT_TRUE(
