@@ -272,9 +272,13 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
      */
     public static boolean isCustomTabIntent(Intent intent) {
         if (intent == null) return false;
+        // CCT is disabled in noTouch mode except for some Chrome-internal exceptions.
+        if (FeatureUtilities.isNoTouchModeEnabled()
+                && !IntentHandler.wasIntentSenderChrome(intent)) {
+            return false;
+        }
         if (CustomTabsIntent.shouldAlwaysUseBrowserUI(intent)
-                || !intent.hasExtra(CustomTabsIntent.EXTRA_SESSION)
-                || FeatureUtilities.isNoTouchModeEnabled()) {
+                || !intent.hasExtra(CustomTabsIntent.EXTRA_SESSION)) {
             return false;
         }
         return IntentHandler.getUrlFromIntent(intent) != null;
