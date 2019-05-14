@@ -43,7 +43,7 @@ const base::Feature kAndroidSurfaceControl{"AndroidSurfaceControl",
 // Enable GPU Rasterization by default. This can still be overridden by
 // --force-gpu-rasterization or --disable-gpu-rasterization.
 #if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_CHROMEOS) || \
-    defined(OS_ANDROID)
+    defined(OS_ANDROID) || defined(OS_FUCHSIA)
 // DefaultEnableGpuRasterization has launched on Mac, Windows, ChromeOS, and
 // Android.
 const base::Feature kDefaultEnableGpuRasterization{
