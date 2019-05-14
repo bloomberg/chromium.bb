@@ -8,7 +8,8 @@
 var test = test || {};
 
 // Update paths for testing.
-constants.FILES_QUICK_VIEW_HTML = 'test/gen/foreground/elements/files_quick_view.html';
+constants.FILES_QUICK_VIEW_HTML =
+    'test/gen/foreground/elements/files_quick_view.html';
 constants.DRIVE_WELCOME_CSS = FILE_MANAGER_ROOT + constants.DRIVE_WELCOME_CSS;
 
 test.FILE_MANAGER_EXTENSION_ID = 'hhaomjibdihmijegdhdafkllkbggdgoj';
@@ -78,15 +79,9 @@ test.SharedOption = {
  * @param {string} typeText Type name to be shown in the type column.
  * @constructor
  */
-test.TestEntryInfo = function(type,
-                       sourceFileName,
-                       targetPath,
-                       mimeType,
-                       sharedOption,
-                       lastModifiedTime,
-                       nameText,
-                       sizeText,
-                       typeText) {
+test.TestEntryInfo = function(
+    type, sourceFileName, targetPath, mimeType, sharedOption, lastModifiedTime,
+    nameText, sizeText, typeText) {
   this.type = type;
   this.sourceFileName = sourceFileName || '';
   this.targetPath = targetPath;
@@ -284,7 +279,7 @@ test.BASIC_DRIVE_ENTRY_SET = [
   test.ENTRIES.photos,
   test.ENTRIES.unsupported,
   test.ENTRIES.testDocument,
-  test.ENTRIES.testSharedDocument
+  test.ENTRIES.testSharedDocument,
 ];
 
 /**
@@ -333,11 +328,15 @@ test.pending = function(message, var_args) {
   var args = arguments;
   var formattedMessage = message.replace(/%[sdj]/g, function(pattern) {
     var arg = args[index++];
-    switch(pattern) {
-      case '%s': return String(arg);
-      case '%d': return Number(arg);
-      case '%j': return JSON.stringify(arg);
-      default: return pattern;
+    switch (pattern) {
+      case '%s':
+        return String(arg);
+      case '%d':
+        return Number(arg);
+      case '%j':
+        return JSON.stringify(arg);
+      default:
+        return pattern;
     }
   });
   var pendingMarker = Object.create(test.pending.prototype);
@@ -572,7 +571,7 @@ test.setupAndWaitUntilReady =
   if (!myFiles.parentElement.hasAttribute('selected')) {
     assertTrue(test.fakeMouseClick(myFilesElement), 'click MyFiles');
   }
-  assertTrue(test.fakeMouseClick('#refresh-button'), 'click refresh');
+  test.refreshFileList();
   const filesShown = entriesMyFiles.concat([test.ENTRIES.linuxFiles]);
   return test.waitForFiles(test.TestEntryInfo.getExpectedRows(filesShown));
 };
@@ -583,4 +582,14 @@ test.setupAndWaitUntilReady =
  */
 test.done = function(opt_failed) {
   window.endTests(!opt_failed);
+};
+
+/**
+ * Forces current directory to rescan the entries, which refreshes the file
+ * list.
+ */
+test.refreshFileList = function() {
+  assertTrue(
+      test.fakeKeyDown('#file-list', 'b', true, false, false),
+      'refresh file list failed');
 };

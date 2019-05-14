@@ -135,8 +135,6 @@ class ToolbarController {
   updateCurrentDirectoryButtons_() {
     const volumeInfo = this.directoryModel_.getCurrentVolumeInfo();
     this.refreshCommand_.disabled = !!volumeInfo && volumeInfo.watchable;
-    console.log(
-        '****** toolbar controller.disabled: ' + this.refreshCommand_.disabled);
     this.refreshCommand_.setHidden(
         volumeInfo && volumeInfo.watchable ||
         this.directoryModel_.getFileListSelection().getCheckSelectMode());

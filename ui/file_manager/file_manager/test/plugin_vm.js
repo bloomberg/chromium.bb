@@ -57,10 +57,7 @@ pluginVm.testLabelIconContextMenu = async (done) => {
   await test.setupAndWaitUntilReady([], [], []);
   test.addEntries(
       [test.ENTRIES.pluginVm, test.ENTRIES.photosInPluginVm], [], []);
-  console.log('**** refreshing file list...');
-  assertTrue(
-      test.fakeKeyDown('#file-list', 'b', true, false, false),
-      'refresh file list');
+  test.refreshFileList();
   await test.waitForFiles(test.TestEntryInfo.getExpectedRows(
       [test.ENTRIES.pluginVm, test.ENTRIES.linuxFiles]));
 

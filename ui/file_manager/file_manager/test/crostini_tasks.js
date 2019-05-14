@@ -50,7 +50,7 @@ crostiniTasks.testShareBeforeOpeningDownloadsWithCrostiniApp = async (done) => {
 
   // Add '/A', and '/A/hello.txt', refresh, 'A' is shown.
   test.addEntries([test.ENTRIES.directoryA, test.ENTRIES.helloInA], [], []);
-  assertTrue(test.fakeMouseClick('#refresh-button'), 'click refresh');
+  test.refreshFileList();
   await test.waitForFiles(test.TestEntryInfo.getExpectedRows(
       [test.ENTRIES.directoryA, test.ENTRIES.linuxFiles]));
 

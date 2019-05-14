@@ -2663,7 +2663,6 @@ CommandHandler.COMMANDS_['refresh'] = /** @type {Command} */ ({
     const volumeInfo = currentDirEntry &&
         fileManager.volumeManager.getVolumeInfo(currentDirEntry);
     event.canExecute = volumeInfo && !volumeInfo.watchable;
-    console.log('****** refresh command canExecute: ' + event.canExecute);
     event.command.setHidden(
         !event.canExecute ||
         fileManager.directoryModel.getFileListSelection().getCheckSelectMode());
