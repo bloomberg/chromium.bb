@@ -4765,6 +4765,29 @@
             ]
         }
     ],
+    "SkipTouchEventFilter": [
+        {
+            "platforms": [
+                "linux",
+                "windows",
+                "mac",
+                "android",
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "EnabledDiscreteEventsRendererProcess_20190507",
+                    "params": {
+                        "skip_filtering_process": "browser_and_renderer",
+                        "type": "discrete"
+                    },
+                    "enable_features": [
+                        "SkipTouchEventFilter"
+                    ]
+                }
+            ]
+        }
+    ],
     "SqlTempStoreMemory": [
         {
             "platforms": [
