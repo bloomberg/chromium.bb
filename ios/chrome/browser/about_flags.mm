@@ -589,6 +589,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"identity-disc", flag_descriptions::kIdentityDiscName,
      flag_descriptions::kIdentityDiscDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kIdentityDisc)},
+    {"enable-send-tab-to-self-history",
+     flag_descriptions::kSendTabToSelfHistoryName,
+     flag_descriptions::kSendTabToSelfHistoryDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(send_tab_to_self::kSendTabToSelfHistory)},
 };
 
 // Add all switches from experimental flags to |command_line|.

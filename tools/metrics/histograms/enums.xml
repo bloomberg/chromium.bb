@@ -32627,6 +32627,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-2133892372" label="ResamplingInputEvents:disabled"/>
   <int value="-2133277113" label="CCTModuleCustomHeader:disabled"/>
   <int value="-2132591642" label="enable-input-view"/>
+  <int value="-2132161378" label="SendTabToSelfHistory:disabled"/>
   <int value="-2131746498"
       label="AutofillUseImprovedLabelDisambiguation:enabled"/>
   <int value="-2129940395" label="WebAssemblySimd:disabled"/>
@@ -33481,6 +33482,7 @@ from previous Chrome versions.
       label="AutofillRationalizeRepeatedServerPredictions:disabled"/>
   <int value="-928138978" label="IPH_DemoMode:disabled"/>
   <int value="-926422468" label="disable-embedded-shared-worker"/>
+  <int value="-926236394" label="SendTabToSelfHistory:enabled"/>
   <int value="-920204598" label="ScrollAnchorSerialization:enabled"/>
   <int value="-918900957" label="AutofillCreditCardAssist:disabled"/>
   <int value="-918618075" label="enable-service-worker"/>

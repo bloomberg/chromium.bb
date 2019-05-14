@@ -16,6 +16,9 @@ const base::Feature kSendTabToSelfShowSendingUI{
 const base::Feature kSendTabToSelfBroadcast{"SendTabToSelfBroadcast",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kSendTabToSelfHistory{"SendTabToSelfHistory",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kSendTabToSelfWhenSignedIn{
     "SendTabToSelfWhenSignedIn", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -28,6 +31,11 @@ bool IsReceivingEnabledByUserOnThisDevice(PrefService* prefs) {
 bool EnabledOnSignIn() {
   return base::FeatureList::IsEnabled(switches::kSyncSendTabToSelf) &&
          base::FeatureList::IsEnabled(kSendTabToSelfWhenSignedIn);
+}
+
+bool HistoryViewEnabled() {
+  return base::FeatureList::IsEnabled(switches::kSyncSendTabToSelf) &&
+         base::FeatureList::IsEnabled(kSendTabToSelfHistory);
 }
 
 }  // namespace send_tab_to_self

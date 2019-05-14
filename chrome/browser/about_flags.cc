@@ -3400,6 +3400,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSendTabToSelfDescription, kOsAll,
      FEATURE_VALUE_TYPE(switches::kSyncSendTabToSelf)},
 
+    {"enable-send-tab-to-self-history",
+     flag_descriptions::kSendTabToSelfHistoryName,
+     flag_descriptions::kSendTabToSelfHistoryDescription, kOsAll,
+     FEATURE_VALUE_TYPE(send_tab_to_self::kSendTabToSelfHistory)},
+
     {"enable-send-tab-to-self-show-sending-ui",
      flag_descriptions::kSendTabToSelfShowSendingUIName,
      flag_descriptions::kSendTabToSelfShowSendingUIDescription, kOsAll,
