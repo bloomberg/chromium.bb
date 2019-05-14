@@ -1416,8 +1416,8 @@
   },
   {
     "name": "enable-quic",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "rch" ],
+    "expiry_milestone": 78
   },
   {
     "name": "enable-reader-mode",
