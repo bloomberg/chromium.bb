@@ -200,8 +200,7 @@
             [[i18nDynamic(locale, 'a11ySettingToggleOptionOff')]]
           </span>
         </oobe-a11y-option>
-        <oobe-a11y-option id="accessibility-screen-docked-magnifier"
-            checked="[[a11yStatus.dockedMagnifierEnabled]]"
+        <oobe-a11y-option checked="[[a11yStatus.dockedMagnifierEnabled]]"
             on-change="onA11yOptionChanged_"
             chrome-message="enableDockedMagnifier"
             label-for-aria="[[i18nDynamic(locale, 'dockedMagnifierOption')]]"
@@ -217,7 +216,8 @@
             [[i18nDynamic(locale, 'a11ySettingToggleOptionOff')]]
           </span>
         </oobe-a11y-option>
-        <oobe-a11y-option checked="[[a11yStatus.virtualKeyboardEnabled]]"
+        <oobe-a11y-option id="accessibility-virtual-keyboard"
+            checked="[[a11yStatus.virtualKeyboardEnabled]]"
             on-change="onA11yOptionChanged_"
             chrome-message="enableVirtualKeyboard"
             label-for-aria="[[i18nDynamic(locale, 'virtualKeyboardOption')]]">

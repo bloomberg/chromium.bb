@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/welcome_screen_handler.h"
 #include "chromeos/dbus/constants/dbus_switches.h"
+#include "ui/accessibility/accessibility_switches.h"
 
 namespace chromeos {
 
@@ -96,10 +97,24 @@ class WelcomeScreenSystemDevModeBrowserTest : public WelcomeScreenBrowserTest {
   WelcomeScreenSystemDevModeBrowserTest() = default;
   ~WelcomeScreenSystemDevModeBrowserTest() override = default;
 
-  // InProcessBrowserTest:
+  // WelcomeScreenBrowserTest:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     WelcomeScreenBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(chromeos::switches::kSystemDevMode);
+  }
+};
+
+class WelcomeScreenWithExperimentalAccessibilityFeaturesTest
+    : public WelcomeScreenBrowserTest {
+ public:
+  WelcomeScreenWithExperimentalAccessibilityFeaturesTest() = default;
+  ~WelcomeScreenWithExperimentalAccessibilityFeaturesTest() override = default;
+
+  // WelcomeScreenBrowserTest:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(
+        ::switches::kEnableExperimentalAccessibilityFeatures);
+    WelcomeScreenBrowserTest::SetUpCommandLine(command_line);
   }
 };
 
@@ -292,6 +307,41 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
 
   ToggleAccessibilityFeature("accessibility-screen-magnifier", false);
   ASSERT_FALSE(MagnificationManager::Get()->IsMagnifierEnabled());
+}
+
+IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest, A11yDockedMagnifierDisabled) {
+  welcome_screen_->Show();
+  OobeScreenWaiter(WelcomeView::kScreenId).Wait();
+  test::OobeJS().ExpectHiddenPath({"connect", "dockedMagnifierOobeOption"});
+}
+
+IN_PROC_BROWSER_TEST_F(WelcomeScreenWithExperimentalAccessibilityFeaturesTest,
+                       A11yDockedMagnifierEnabled) {
+  welcome_screen_->Show();
+  OobeScreenWaiter(WelcomeView::kScreenId).Wait();
+  test::OobeJS().TapOnPath(
+      {"connect", "welcomeScreen", "accessibilitySettingsButton"});
+
+  ASSERT_FALSE(MagnificationManager::Get()->IsDockedMagnifierEnabled());
+  ToggleAccessibilityFeature("dockedMagnifierOobeOption", true);
+  ASSERT_TRUE(MagnificationManager::Get()->IsDockedMagnifierEnabled());
+
+  ToggleAccessibilityFeature("dockedMagnifierOobeOption", false);
+  ASSERT_FALSE(MagnificationManager::Get()->IsDockedMagnifierEnabled());
+}
+
+IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest, A11yVirtualKeyboard) {
+  welcome_screen_->Show();
+  OobeScreenWaiter(WelcomeView::kScreenId).Wait();
+  test::OobeJS().TapOnPath(
+      {"connect", "welcomeScreen", "accessibilitySettingsButton"});
+
+  ASSERT_FALSE(AccessibilityManager::Get()->IsVirtualKeyboardEnabled());
+  ToggleAccessibilityFeature("accessibility-virtual-keyboard", true);
+  ASSERT_TRUE(AccessibilityManager::Get()->IsVirtualKeyboardEnabled());
+
+  ToggleAccessibilityFeature("accessibility-virtual-keyboard", false);
+  ASSERT_FALSE(AccessibilityManager::Get()->IsVirtualKeyboardEnabled());
 }
 
 IN_PROC_BROWSER_TEST_F(WelcomeScreenSystemDevModeBrowserTest,
