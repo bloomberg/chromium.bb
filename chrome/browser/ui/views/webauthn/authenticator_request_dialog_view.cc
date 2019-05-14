@@ -26,6 +26,10 @@
 #include "ui/views/vector_icons.h"
 #include "ui/views/window/dialog_client_view.h"
 
+#if defined(USE_AURA)
+#include "ui/wm/core/window_animations.h"
+#endif
+
 // static
 void ShowAuthenticatorRequestDialog(
     content::WebContents* web_contents,
@@ -256,6 +260,21 @@ void AuthenticatorRequestDialogView::Show() {
   if (!first_shown_) {
     constrained_window::ShowWebModalDialogViews(this, web_contents());
     DCHECK(GetWidget());
+
+#if defined(USE_AURA)
+    // TODO(agl): remove this to revert back to the default "rotate" animations.
+    //
+    // It appears that the rotate animation fails to handle layer visibility
+    // correctly and thus triggers DCHECKs and other issues. Using "fade" works
+    // around this until "rotate" can be fixed.
+    // https://chromium-review.googlesource.com/c/chromium/src/+/1610462
+    //
+    // When removing this, also remove the #include of window_animations.h.
+    wm::SetWindowVisibilityAnimationType(
+        GetWidget()->GetNativeWindow(),
+        wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
+#endif
+
     first_shown_ = true;
   } else {
     GetWidget()->Show();
