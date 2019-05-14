@@ -215,6 +215,13 @@ bool CorsURLLoaderFactory::IsSane(const NetworkContext* context,
     }
   }
 
+  // Disallow setting the Host header over mojo::URLLoaderFactory interface
+  // because it can conflict with specified URL and make servers confused.
+  if (request.headers.HasHeader(net::HttpRequestHeaders::kHost)) {
+    LOG(WARNING) << "Host header should be set inside the network service";
+    return false;
+  }
+
   // TODO(yhirano): If the request mode is "no-cors", the redirect mode should
   // be "follow".
   return true;
