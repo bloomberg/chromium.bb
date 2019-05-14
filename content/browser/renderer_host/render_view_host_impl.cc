@@ -227,7 +227,6 @@ RenderViewHostImpl::RenderViewHostImpl(
       main_frame_routing_id_(main_frame_routing_id),
       is_waiting_for_close_ack_(false),
       sudden_termination_allowed_(false),
-      render_view_termination_status_(base::TERMINATION_STATUS_STILL_RUNNING),
       updating_web_preferences_(false),
       has_notified_about_creation_(false),
       weak_factory_(this) {

@@ -2565,12 +2565,6 @@ void RenderFrameHostImpl::OnRenderProcessGone(int status, int exit_code) {
   base::TerminationStatus termination_status =
       static_cast<base::TerminationStatus>(status);
 
-  if (frame_tree_node_->IsMainFrame()) {
-    // Keep the termination status so we can get at it later when we
-    // need to know why it died.
-    render_view_host_->render_view_termination_status_ = termination_status;
-  }
-
   if (base::FeatureList::IsEnabled(features::kCrashReporting))
     MaybeGenerateCrashReport(termination_status, exit_code);
 
