@@ -23,7 +23,7 @@ OSExchangeData::DownloadFileInfo::DownloadFileInfo(
       downloader(downloader) {
 }
 
-OSExchangeData::DownloadFileInfo::~DownloadFileInfo() {}
+OSExchangeData::DownloadFileInfo::~DownloadFileInfo() = default;
 
 OSExchangeData::OSExchangeData()
     : provider_(OSExchangeDataProviderFactory::CreateProvider()) {
