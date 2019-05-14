@@ -200,7 +200,7 @@
           <span id="domain">[[item.domain]]</span>
         </div>
         <div id="star-container">
-          <template is="dom-if" if="[[item.starred]]" notify-dom-change>
+          <template is="dom-if" if="[[item.starred]]">
             <cr-icon-button id="bookmark-star" iron-icon="cr:star"
                 focus-row-control focus-type="star"
                 title="$i18n{removeBookmark}" on-click="onRemoveBookmarkTap_">

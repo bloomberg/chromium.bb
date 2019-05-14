@@ -83,7 +83,6 @@ cr.define('custom_margins_test', function() {
     function finishSetup() {
       // Wait for the control elements to be created before updating the state.
       document.body.appendChild(container);
-      container.$$('template').notifyDomChange = true;
       let controlsAdded = test_util.eventToPromise('dom-change', container);
       return controlsAdded.then(() => {
         // 8.5 x 11, in pixels
