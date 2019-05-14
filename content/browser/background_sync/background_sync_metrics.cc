@@ -87,14 +87,19 @@ void BackgroundSyncMetrics::CountRegisterSuccess(
                         registration_could_fire == REGISTRATION_COULD_FIRE);
   UMA_HISTOGRAM_BOOLEAN("BackgroundSync.Registration.OneShot.IsDuplicate",
                         registration_is_duplicate == REGISTRATION_IS_DUPLICATE);
-  return;
 }
 
 // static
 void BackgroundSyncMetrics::CountRegisterFailure(BackgroundSyncStatus result) {
   UMA_HISTOGRAM_ENUMERATION("BackgroundSync.Registration.OneShot", result,
                             BACKGROUND_SYNC_STATUS_MAX + 1);
-  return;
+}
+
+// static
+void BackgroundSyncMetrics::CountUnregisterPeriodicSync(
+    BackgroundSyncStatus status) {
+  UMA_HISTOGRAM_ENUMERATION("BackgroundSync.Unregistration.Periodic", status,
+                            BACKGROUND_SYNC_STATUS_MAX + 1);
 }
 
 }  // namespace content

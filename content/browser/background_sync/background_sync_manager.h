@@ -58,6 +58,7 @@ class CONTENT_EXPORT BackgroundSyncManager
     : public ServiceWorkerContextCoreObserver {
  public:
   using BoolCallback = base::OnceCallback<void(bool)>;
+  using StatusCallback = base::OnceCallback<void(BackgroundSyncStatus)>;
   using StatusAndRegistrationCallback =
       base::OnceCallback<void(BackgroundSyncStatus,
                               std::unique_ptr<BackgroundSyncRegistration>)>;
@@ -82,6 +83,13 @@ class CONTENT_EXPORT BackgroundSyncManager
   void Register(int64_t sw_registration_id,
                 blink::mojom::SyncRegistrationOptions options,
                 StatusAndRegistrationCallback callback);
+
+  // Removes the Periodic Background Sync registration identified by |tag| for
+  // the service worker identified by |sw_registration_id|. Calls |callback|
+  // with BACKGROUND_SYNC_STATUS_OK on success.
+  void UnregisterPeriodicSync(int64_t sw_registration_id,
+                              const std::string& tag,
+                              StatusCallback callback);
 
   // Called after the client has resolved its registration promise. At this
   // point it's safe to fire any pending registrations.
@@ -252,6 +260,11 @@ class CONTENT_EXPORT BackgroundSyncManager
                         const BackgroundSyncRegistration& new_registration,
                         StatusAndRegistrationCallback callback,
                         blink::ServiceWorkerStatusCode status);
+  void UnregisterPeriodicSyncImpl(int64_t sw_registration_id,
+                                  const std::string& tag,
+                                  StatusCallback callback);
+  void UnregisterPeriodicSyncDidStore(StatusCallback callback,
+                                      blink::ServiceWorkerStatusCode status);
 
   // DidResolveRegistration callbacks
   void DidResolveRegistrationImpl(

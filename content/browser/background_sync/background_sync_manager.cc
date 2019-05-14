@@ -331,6 +331,26 @@ void BackgroundSyncManager::Register(
   }
 }
 
+void BackgroundSyncManager::UnregisterPeriodicSync(
+    int64_t sw_registration_id,
+    const std::string& tag,
+    BackgroundSyncManager::StatusCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (disabled_) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  BACKGROUND_SYNC_STATUS_STORAGE_ERROR));
+    return;
+  }
+
+  op_scheduler_.ScheduleOperation(
+      CacheStorageSchedulerOp::kBackgroundSync,
+      base::BindOnce(&BackgroundSyncManager::UnregisterPeriodicSyncImpl,
+                     weak_ptr_factory_.GetWeakPtr(), sw_registration_id, tag,
+                     op_scheduler_.WrapCallbackToRunNext(std::move(callback))));
+}
+
 void BackgroundSyncManager::DidResolveRegistration(
     blink::mojom::BackgroundSyncRegistrationInfoPtr registration_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -752,6 +772,48 @@ void BackgroundSyncManager::RegisterDidGetDelay(
       base::BindOnce(&BackgroundSyncManager::RegisterDidStore,
                      weak_ptr_factory_.GetWeakPtr(), sw_registration_id,
                      new_registration, std::move(callback)));
+}
+
+void BackgroundSyncManager::UnregisterPeriodicSyncImpl(
+    int64_t sw_registration_id,
+    const std::string& tag,
+    BackgroundSyncManager::StatusCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  auto registration_info = blink::mojom::BackgroundSyncRegistrationInfo(
+      sw_registration_id, tag, BackgroundSyncType::PERIODIC);
+
+  if (!LookupActiveRegistration(registration_info)) {
+    // It's okay to not find a matching tag.
+    UnregisterPeriodicSyncDidStore(std::move(callback),
+                                   blink::ServiceWorkerStatusCode::kOk);
+    return;
+  }
+
+  RemoveActiveRegistration(std::move(registration_info));
+  StoreRegistrations(
+      sw_registration_id,
+      base::BindOnce(&BackgroundSyncManager::UnregisterPeriodicSyncDidStore,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void BackgroundSyncManager::UnregisterPeriodicSyncDidStore(
+    BackgroundSyncManager::StatusCallback callback,
+    blink::ServiceWorkerStatusCode status) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (status != blink::ServiceWorkerStatusCode::kOk) {
+    BackgroundSyncMetrics::CountUnregisterPeriodicSync(
+        BACKGROUND_SYNC_STATUS_STORAGE_ERROR);
+    DisableAndClearManager(base::BindOnce(
+        std::move(callback), BACKGROUND_SYNC_STATUS_STORAGE_ERROR));
+    return;
+  }
+
+  BackgroundSyncMetrics::CountUnregisterPeriodicSync(BACKGROUND_SYNC_STATUS_OK);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), BACKGROUND_SYNC_STATUS_OK));
 }
 
 void BackgroundSyncManager::DisableAndClearManager(base::OnceClosure callback) {

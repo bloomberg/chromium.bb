@@ -279,6 +279,11 @@ class BackgroundSyncManagerTest
                                        std::move(sync_options));
   }
 
+  bool Unregister(blink::mojom::SyncRegistrationOptions sync_options) {
+    return UnregisterWithServiceWorkerId(sw_registration_id_1_,
+                                         std::move(sync_options));
+  }
+
   bool RegisterWithServiceWorkerId(
       int64_t sw_registration_id,
       blink::mojom::SyncRegistrationOptions options) {
@@ -299,6 +304,26 @@ class BackgroundSyncManagerTest
               sw_registration_id, options.tag, GetBackgroundSyncType(options)));
       base::RunLoop().RunUntilIdle();
     }
+
+    return callback_status_ == BACKGROUND_SYNC_STATUS_OK;
+  }
+
+  bool UnregisterWithServiceWorkerId(
+      int64_t sw_registration_id,
+      blink::mojom::SyncRegistrationOptions options) {
+    if (GetBackgroundSyncType(options) ==
+        blink::mojom::BackgroundSyncType::ONE_SHOT) {
+      // Not supported for one-shot sync.
+      return false;
+    }
+
+    bool was_called = false;
+    background_sync_manager_->UnregisterPeriodicSync(
+        sw_registration_id, options.tag,
+        base::BindOnce(&BackgroundSyncManagerTest::StatusCallback,
+                       base::Unretained(this), &was_called));
+    base::RunLoop().RunUntilIdle();
+    EXPECT_TRUE(was_called);
 
     return callback_status_ == BACKGROUND_SYNC_STATUS_OK;
   }
@@ -511,6 +536,55 @@ TEST_F(BackgroundSyncManagerTest, Register) {
 TEST_F(BackgroundSyncManagerTest, FailToRegisterWithInvalidOptions) {
   sync_options_1_.min_interval = -2000;
   EXPECT_FALSE(Register(sync_options_1_));
+}
+
+TEST_F(BackgroundSyncManagerTest, Unregister) {
+  // Not supported for One-shot syncs.
+  EXPECT_TRUE(Register(sync_options_1_));
+  EXPECT_FALSE(Unregister(sync_options_1_));
+
+  sync_options_1_.min_interval = 36000;
+  EXPECT_TRUE(Register(sync_options_1_));
+
+  // Don't fail for non-existent Periodic Sync registrations.
+  sync_options_2_.min_interval = 36000;
+  EXPECT_TRUE(Unregister(sync_options_2_));
+
+  // Unregistering one periodic sync doesn't affect another.
+  EXPECT_TRUE(Register(sync_options_2_));
+  EXPECT_TRUE(Unregister(sync_options_1_));
+  EXPECT_FALSE(GetRegistration(sync_options_1_));
+  EXPECT_TRUE(GetRegistration(sync_options_2_));
+
+  // Disable manager. Unregister should fail.
+  test_background_sync_manager_->set_corrupt_backend(true);
+  EXPECT_FALSE(Unregister(sync_options_2_));
+  SetupBackgroundSyncManager();
+  EXPECT_TRUE(Unregister(sync_options_2_));
+}
+
+TEST_F(BackgroundSyncManagerTest, UnregistrationStopsPeriodicTasks) {
+  InitPeriodicSyncEventTest();
+  int thirteen_hours_ms = 13 * 60 * 60 * 1000;
+  sync_options_2_.min_interval = thirteen_hours_ms;
+
+  EXPECT_TRUE(Register(sync_options_2_));
+  EXPECT_EQ(0, periodic_sync_events_called_);
+
+  // Advance clock.
+  test_clock_.Advance(base::TimeDelta::FromMilliseconds(thirteen_hours_ms));
+  FireReadyEvents();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(1, periodic_sync_events_called_);
+
+  EXPECT_TRUE(Unregister(sync_options_2_));
+
+  // Advance clock. Expect no increase in periodicSync events fired.
+  test_clock_.Advance(base::TimeDelta::FromMilliseconds(thirteen_hours_ms));
+  FireReadyEvents();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, periodic_sync_events_called_);
 }
 
 TEST_F(BackgroundSyncManagerTest, RegisterAndWaitToFireUntilResolved) {
