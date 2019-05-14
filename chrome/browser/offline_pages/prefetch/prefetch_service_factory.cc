@@ -15,6 +15,7 @@
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/image_fetcher/image_fetcher_service_factory.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/ntp_snippets/content_suggestions_service_factory.h"
 #include "chrome/browser/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/offline_pages/prefetch/offline_metrics_collector_impl.h"
@@ -105,9 +106,21 @@ KeyedService* PrefetchServiceFactory::BuildServiceInstanceFor(
   auto prefetch_dispatcher =
       std::make_unique<PrefetchDispatcherImpl>(profile->GetPrefs());
 
+  auto* system_network_context_manager =
+      SystemNetworkContextManager::GetInstance();
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory;
+  if (system_network_context_manager) {
+    url_loader_factory =
+        system_network_context_manager->GetSharedURLLoaderFactory();
+  } else {
+    // In unit_tests, NetworkService might not be available and
+    // |system_network_context_manager| would be null.
+    url_loader_factory = nullptr;
+  }
+
   auto prefetch_network_request_factory =
       std::make_unique<PrefetchNetworkRequestFactoryImpl>(
-          profile->GetURLLoaderFactory(), chrome::GetChannel(), GetUserAgent(),
+          url_loader_factory, chrome::GetChannel(), GetUserAgent(),
           profile->GetPrefs());
 
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
