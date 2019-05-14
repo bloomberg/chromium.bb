@@ -91,7 +91,8 @@ TEST_F('SettingsUIBrowserTest', 'MAYBE_All', function() {
       assertTrue(!!floatingMenu);
 
       assertFalse(!!ui.$$('cr-drawer settings-menu'));
-      assertFalse(ui.advancedOpened_);
+      assertFalse(ui.advancedOpenedInMain_);
+      assertFalse(ui.advancedOpenedInMenu_);
       assertFalse(floatingMenu.advancedOpened);
       assertFalse(main.advancedToggleExpanded);
 
@@ -99,7 +100,8 @@ TEST_F('SettingsUIBrowserTest', 'MAYBE_All', function() {
       Polymer.dom.flush();
 
       assertFalse(!!ui.$$('cr-drawer settings-menu'));
-      assertTrue(ui.advancedOpened_);
+      assertTrue(ui.advancedOpenedInMain_);
+      assertTrue(ui.advancedOpenedInMenu_);
       assertTrue(floatingMenu.advancedOpened);
       assertTrue(main.advancedToggleExpanded);
 
@@ -111,14 +113,29 @@ TEST_F('SettingsUIBrowserTest', 'MAYBE_All', function() {
       assertTrue(floatingMenu.advancedOpened);
       assertTrue(drawerMenu.advancedOpened);
 
+      // Collapse 'Advanced' in the menu
       drawerMenu.$.advancedButton.click();
       Polymer.dom.flush();
 
-      // Check that all values are updated in unison.
+      // Collapsing it in the menu should not collapse it in the main area
       assertFalse(drawerMenu.advancedOpened);
       assertFalse(floatingMenu.advancedOpened);
-      assertFalse(ui.advancedOpened_);
-      assertFalse(main.advancedToggleExpanded);
+      assertFalse(ui.advancedOpenedInMenu_);
+      assertTrue(main.advancedToggleExpanded);
+      assertTrue(ui.advancedOpenedInMain_);
+
+      // Expand both 'Advanced's again
+      drawerMenu.$.advancedButton.click();
+
+      // Collapse 'Advanced' in the main area
+      main.advancedToggleExpanded = false;
+      Polymer.dom.flush();
+
+      // Collapsing it in the main area should not collapse it in the menu
+      assertFalse(ui.advancedOpenedInMain_);
+      assertTrue(drawerMenu.advancedOpened);
+      assertTrue(floatingMenu.advancedOpened);
+      assertTrue(ui.advancedOpenedInMenu_);
     });
 
     test('URL initiated search propagates to search box', function() {
