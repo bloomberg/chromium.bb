@@ -488,6 +488,8 @@ TEST_F(NGPaintFragmentTest, OutOfFlow) {
 }
 
 TEST_F(NGPaintFragmentTest, MarkLineBoxesDirtyByRemoveBr) {
+  if (!RuntimeEnabledFeatures::LayoutNGLineCacheEnabled())
+    return;
   SetBodyInnerHTML(
       "<div id=container>line 1<br>line 2<br id=target>line 3<br>"
       "</div>");
@@ -500,6 +502,8 @@ TEST_F(NGPaintFragmentTest, MarkLineBoxesDirtyByRemoveBr) {
 }
 
 TEST_F(NGPaintFragmentTest, MarkLineBoxesDirtyByRemoveChild) {
+  if (!RuntimeEnabledFeatures::LayoutNGLineCacheEnabled())
+    return;
   SetBodyInnerHTML(
       "<div id=container>line 1<br><b id=target>line 2</b><br>line 3<br>"
       "</div>");
@@ -513,6 +517,8 @@ TEST_F(NGPaintFragmentTest, MarkLineBoxesDirtyByRemoveChild) {
 }
 
 TEST_F(NGPaintFragmentTest, MarkLineBoxesDirtyByRemoveSpanWithBr) {
+  if (!RuntimeEnabledFeatures::LayoutNGLineCacheEnabled())
+    return;
   SetBodyInnerHTML(
       "<div id=container>line 1<br>line 2<span id=target><br></span>line 3<br>"
       "</div>");
@@ -529,6 +535,8 @@ TEST_F(NGPaintFragmentTest, MarkLineBoxesDirtyByRemoveSpanWithBr) {
 // to update |IsDirty|, but NGPaintFragment maybe re-used during the layout. In
 // such case, the result is not deterministic.
 TEST_F(NGPaintFragmentTest, DISABLED_MarkLineBoxesDirtyByInsertAtStart) {
+  if (!RuntimeEnabledFeatures::LayoutNGLineCacheEnabled())
+    return;
   SetBodyInnerHTML(
       "<div id=container>line 1<br><b id=target>line 2</b><br>line 3<br>"
       "</div>");
@@ -555,6 +563,8 @@ TEST_F(NGPaintFragmentTest, DISABLED_MarkLineBoxesDirtyByInsertAtStart) {
 // to update |IsDirty|, but NGPaintFragment maybe re-used during the layout. In
 // such case, the result is not deterministic.
 TEST_F(NGPaintFragmentTest, DISABLED_MarkLineBoxesDirtyByInsertAtLast) {
+  if (!RuntimeEnabledFeatures::LayoutNGLineCacheEnabled())
+    return;
   SetBodyInnerHTML(
       "<div id=container>line 1<br><b id=target>line 2</b><br>line 3<br>"
       "</div>");
@@ -580,6 +590,8 @@ TEST_F(NGPaintFragmentTest, DISABLED_MarkLineBoxesDirtyByInsertAtLast) {
 // to update |IsDirty|, but NGPaintFragment maybe re-used during the layout. In
 // such case, the result is not deterministic.
 TEST_F(NGPaintFragmentTest, DISABLED_MarkLineBoxesDirtyByInsertAtMiddle) {
+  if (!RuntimeEnabledFeatures::LayoutNGLineCacheEnabled())
+    return;
   SetBodyInnerHTML(
       "<div id=container>line 1<br><b id=target>line 2</b><br>line 3<br>"
       "</div>");
@@ -603,6 +615,8 @@ TEST_F(NGPaintFragmentTest, DISABLED_MarkLineBoxesDirtyByInsertAtMiddle) {
 }
 
 TEST_F(NGPaintFragmentTest, MarkLineBoxesDirtyByTextSetData) {
+  if (!RuntimeEnabledFeatures::LayoutNGLineCacheEnabled())
+    return;
   SetBodyInnerHTML(
       "<div id=container>line 1<br><b id=target>line 2</b><br>line "
       "3<br></div>");
@@ -616,6 +630,8 @@ TEST_F(NGPaintFragmentTest, MarkLineBoxesDirtyByTextSetData) {
 }
 
 TEST_F(NGPaintFragmentTest, MarkLineBoxesDirtyWrappedLine) {
+  if (!RuntimeEnabledFeatures::LayoutNGLineCacheEnabled())
+    return;
   SetBodyInnerHTML(R"HTML(
     <style>
     #container {
@@ -638,6 +654,8 @@ TEST_F(NGPaintFragmentTest, MarkLineBoxesDirtyWrappedLine) {
 }
 
 TEST_F(NGPaintFragmentTest, MarkLineBoxesDirtyInsideInlineBlock) {
+  if (!RuntimeEnabledFeatures::LayoutNGLineCacheEnabled())
+    return;
   SetBodyInnerHTML(R"HTML(
     <div id=container>
       <div id="inline-block" style="display: inline-block">

@@ -347,10 +347,12 @@ void NGInlineNode::PrepareLayoutIfNeeded() {
     block_flow->ResetNGInlineNodeData();
   }
 
-  if (NGPaintFragment* fragment = block_flow->PaintFragment()) {
-    NGDirtyLines dirty_lines(fragment);
-    PrepareLayout(std::move(previous_data), &dirty_lines);
-    return;
+  if (RuntimeEnabledFeatures::LayoutNGLineCacheEnabled()) {
+    if (NGPaintFragment* fragment = block_flow->PaintFragment()) {
+      NGDirtyLines dirty_lines(fragment);
+      PrepareLayout(std::move(previous_data), &dirty_lines);
+      return;
+    }
   }
   PrepareLayout(std::move(previous_data), /* dirty_lines */ nullptr);
 }
@@ -946,6 +948,7 @@ scoped_refptr<const NGLayoutResult> NGInlineNode::Layout(
 
 const NGPaintFragment* NGInlineNode::ReusableLineBoxContainer(
     const NGConstraintSpace& constraint_space) {
+  DCHECK(RuntimeEnabledFeatures::LayoutNGLineCacheEnabled());
   // |SelfNeedsLayout()| is the most common reason that we check it earlier.
   LayoutBlockFlow* block_flow = GetLayoutBlockFlow();
   DCHECK(!block_flow->SelfNeedsLayout());
@@ -1012,6 +1015,7 @@ const NGPaintFragment* NGInlineNode::ReusableLineBoxContainer(
 // marked yet.
 bool NGInlineNode::MarkLineBoxesDirty(LayoutBlockFlow* block_flow,
                                       NGPaintFragment* paint_fragment) {
+  DCHECK(RuntimeEnabledFeatures::LayoutNGLineCacheEnabled());
   NGDirtyLines dirty_lines(paint_fragment);
   if (block_flow->NeedsCollectInlines()) {
     std::unique_ptr<NGInlineNodeData> previous_data;

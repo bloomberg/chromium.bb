@@ -704,6 +704,7 @@ const NGInlineBreakToken* NGBlockLayoutAlgorithm::TryReuseFragmentsFromCache(
     NGInlineNode inline_node,
     NGPreviousInflowPosition* previous_inflow_position,
     bool* aborted_out) {
+  DCHECK(RuntimeEnabledFeatures::LayoutNGLineCacheEnabled());
   LayoutBox* layout_box = inline_node.GetLayoutBox();
   if (layout_box->SelfNeedsLayout())
     return nullptr;
@@ -1195,7 +1196,8 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
   DCHECK(!child.CreatesNewFormattingContext());
 
   auto* child_inline_node = DynamicTo<NGInlineNode>(child);
-  if (child_inline_node && !child_break_token) {
+  if (child_inline_node && !child_break_token &&
+      RuntimeEnabledFeatures::LayoutNGLineCacheEnabled()) {
     DCHECK(!*previous_inline_break_token);
     bool aborted = false;
     *previous_inline_break_token = TryReuseFragmentsFromCache(

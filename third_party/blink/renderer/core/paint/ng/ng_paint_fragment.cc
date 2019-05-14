@@ -717,6 +717,9 @@ NGPaintFragment* NGPaintFragment::FirstLineBox() const {
 }
 
 void NGPaintFragment::DirtyLinesFromChangedChild(LayoutObject* child) {
+  if (!RuntimeEnabledFeatures::LayoutNGLineCacheEnabled())
+    return;
+
   // This function should be called on every child that has
   // |IsInLayoutNGInlineFormattingContext()|, meaning it was once collected into
   // |NGInlineNode|.
@@ -729,6 +732,7 @@ void NGPaintFragment::DirtyLinesFromChangedChild(LayoutObject* child) {
 }
 
 void NGPaintFragment::MarkLineBoxesDirtyFor(const LayoutObject& layout_object) {
+  DCHECK(RuntimeEnabledFeatures::LayoutNGLineCacheEnabled());
   DCHECK(layout_object.IsInline() ||
          layout_object.IsFloatingOrOutOfFlowPositioned())
       << layout_object;
@@ -768,6 +772,7 @@ void NGPaintFragment::MarkLineBoxesDirtyFor(const LayoutObject& layout_object) {
 }
 
 void NGPaintFragment::MarkContainingLineBoxDirty() {
+  DCHECK(RuntimeEnabledFeatures::LayoutNGLineCacheEnabled());
   DCHECK(PhysicalFragment().IsInline() || PhysicalFragment().IsLineBox());
   for (NGPaintFragment* fragment :
        NGPaintFragmentTraversal::InclusiveAncestorsOf(*this)) {

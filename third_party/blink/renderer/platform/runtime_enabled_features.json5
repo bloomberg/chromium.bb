@@ -744,7 +744,7 @@
     },
     {
       name: "LayoutNG",
-      implied_by: ["LayoutNGBlockFragmentation", "LayoutNGFieldset", "LayoutNGFlexBox", "EditingNG", "BidiCaretAffinity"],
+      implied_by: ["LayoutNGBlockFragmentation", "LayoutNGFieldset", "LayoutNGFlexBox", "LayoutNGLineCache", "EditingNG", "BidiCaretAffinity"],
     },
     {
       name: "LayoutNGBlockFragmentation",
@@ -758,6 +758,9 @@
     {
       name: "LayoutNGFragmentCaching",
       implied_by: ["LayoutNG"],
+    },
+    {
+      name: "LayoutNGLineCache",
     },
     {
       name: "LazyFrameLoading",

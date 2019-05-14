@@ -664,7 +664,8 @@ TEST_P(StyleChangeTest, NeedsCollectInlinesOnStyle) {
   EXPECT_FALSE(previous->GetLayoutObject()->NeedsCollectInlines());
   EXPECT_FALSE(next->GetLayoutObject()->NeedsCollectInlines());
 
-  if (data.is_line_dirty) {
+  if (data.is_line_dirty &&
+      RuntimeEnabledFeatures::LayoutNGLineCacheEnabled()) {
     layout_block_flow_ = ToLayoutNGBlockFlow(container->GetLayoutObject());
     auto lines = MarkLineBoxesDirty();
     EXPECT_EQ(*data.is_line_dirty, lines[0]->IsDirty());
@@ -982,6 +983,8 @@ TEST_F(NGInlineNodeTest, SpaceRestoredByInsertingWord) {
 
 // Test marking line boxes when inserting a span before the first child.
 TEST_P(NodeInsertTest, MarkLineBoxesDirtyOnInsert) {
+  if (!RuntimeEnabledFeatures::LayoutNGLineCacheEnabled())
+    return;
   SetupHtml("container", R"HTML(
     <style>
     .abspos { position: absolute; }
@@ -1002,6 +1005,8 @@ TEST_P(NodeInsertTest, MarkLineBoxesDirtyOnInsert) {
 
 // Test marking line boxes when appending a span.
 TEST_P(NodeInsertTest, MarkLineBoxesDirtyOnAppend) {
+  if (!RuntimeEnabledFeatures::LayoutNGLineCacheEnabled())
+    return;
   SetupHtml("container", R"HTML(
     <style>
     .abspos { position: absolute; }
@@ -1021,6 +1026,8 @@ TEST_P(NodeInsertTest, MarkLineBoxesDirtyOnAppend) {
 
 // Test marking line boxes when appending a span on 2nd line.
 TEST_P(NodeInsertTest, MarkLineBoxesDirtyOnAppend2) {
+  if (!RuntimeEnabledFeatures::LayoutNGLineCacheEnabled())
+    return;
   SetupHtml("container", R"HTML(
     <style>
     .abspos { position: absolute; }
@@ -1042,6 +1049,8 @@ TEST_P(NodeInsertTest, MarkLineBoxesDirtyOnAppend2) {
 
 // Test marking line boxes when appending a span on 2nd line.
 TEST_P(NodeInsertTest, MarkLineBoxesDirtyOnAppendAfterBR) {
+  if (!RuntimeEnabledFeatures::LayoutNGLineCacheEnabled())
+    return;
   SetupHtml("container", R"HTML(
     <style>
     .abspos { position: absolute; }
@@ -1063,6 +1072,8 @@ TEST_P(NodeInsertTest, MarkLineBoxesDirtyOnAppendAfterBR) {
 
 // Test marking line boxes when removing a span.
 TEST_F(NGInlineNodeTest, MarkLineBoxesDirtyOnRemove) {
+  if (!RuntimeEnabledFeatures::LayoutNGLineCacheEnabled())
+    return;
   SetupHtml("container", R"HTML(
     <div id=container style="font-size: 10px; width: 10ch">
       1234<span id=t>5678</span>
@@ -1078,6 +1089,8 @@ TEST_F(NGInlineNodeTest, MarkLineBoxesDirtyOnRemove) {
 
 // Test marking line boxes when removing a span.
 TEST_P(NodeParameterTest, MarkLineBoxesDirtyOnRemoveFirst) {
+  if (!RuntimeEnabledFeatures::LayoutNGLineCacheEnabled())
+    return;
   SetupHtml("container", String(R"HTML(
     <div id=container style="font-size: 10px; width: 10ch">)HTML") +
                              GetParam() + R"HTML(<span>after</span>
@@ -1095,6 +1108,8 @@ TEST_P(NodeParameterTest, MarkLineBoxesDirtyOnRemoveFirst) {
 
 // Test marking line boxes when removing a span on 2nd line.
 TEST_F(NGInlineNodeTest, MarkLineBoxesDirtyOnRemove2) {
+  if (!RuntimeEnabledFeatures::LayoutNGLineCacheEnabled())
+    return;
   SetupHtml("container", R"HTML(
     <div id=container style="font-size: 10px; width: 10ch">
       12345678
@@ -1112,6 +1127,8 @@ TEST_F(NGInlineNodeTest, MarkLineBoxesDirtyOnRemove2) {
 
 // Test marking line boxes when removing a text node on 2nd line.
 TEST_P(NodeParameterTest, MarkLineBoxesDirtyOnRemoveAfterBR) {
+  if (!RuntimeEnabledFeatures::LayoutNGLineCacheEnabled())
+    return;
   SetupHtml("container", String(R"HTML(
     <div id=container style="font-size: 10px; width: 10ch">
       line 1
@@ -1132,6 +1149,8 @@ TEST_P(NodeParameterTest, MarkLineBoxesDirtyOnRemoveAfterBR) {
 }
 
 TEST_F(NGInlineNodeTest, MarkLineBoxesDirtyOnEndSpaceCollapsed) {
+  if (!RuntimeEnabledFeatures::LayoutNGLineCacheEnabled())
+    return;
   SetupHtml("container", R"HTML(
     <style>
     div {
@@ -1166,6 +1185,8 @@ TEST_F(NGInlineNodeTest, MarkLineBoxesDirtyOnEndSpaceCollapsed) {
 // Test marking line boxes when the first span has NeedsLayout. The span is
 // culled.
 TEST_F(NGInlineNodeTest, MarkLineBoxesDirtyOnNeedsLayoutFirst) {
+  if (!RuntimeEnabledFeatures::LayoutNGLineCacheEnabled())
+    return;
   SetupHtml("container", R"HTML(
     <div id=container style="font-size: 10px; width: 10ch">
       <span id=t>1234</span>5678
@@ -1182,6 +1203,8 @@ TEST_F(NGInlineNodeTest, MarkLineBoxesDirtyOnNeedsLayoutFirst) {
 // Test marking line boxes when the first span has NeedsLayout. The span has a
 // box fragment.
 TEST_F(NGInlineNodeTest, MarkLineBoxesDirtyOnNeedsLayoutFirstWithBox) {
+  if (!RuntimeEnabledFeatures::LayoutNGLineCacheEnabled())
+    return;
   SetupHtml("container", R"HTML(
     <div id=container style="font-size: 10px; width: 10ch">
       <span id=t style="background: blue">1234</span>5678
@@ -1197,6 +1220,8 @@ TEST_F(NGInlineNodeTest, MarkLineBoxesDirtyOnNeedsLayoutFirstWithBox) {
 
 // Test marking line boxes when a span has NeedsLayout. The span is culled.
 TEST_F(NGInlineNodeTest, MarkLineBoxesDirtyOnNeedsLayout) {
+  if (!RuntimeEnabledFeatures::LayoutNGLineCacheEnabled())
+    return;
   SetupHtml("container", R"HTML(
     <div id=container style="font-size: 10px; width: 10ch">
       12345678
@@ -1215,6 +1240,8 @@ TEST_F(NGInlineNodeTest, MarkLineBoxesDirtyOnNeedsLayout) {
 // Test marking line boxes when a span has NeedsLayout. The span has a box
 // fragment.
 TEST_F(NGInlineNodeTest, MarkLineBoxesDirtyOnNeedsLayoutWithBox) {
+  if (!RuntimeEnabledFeatures::LayoutNGLineCacheEnabled())
+    return;
   SetupHtml("container", R"HTML(
     <div id=container style="font-size: 10px; width: 10ch">
       12345678
@@ -1234,6 +1261,8 @@ TEST_F(NGInlineNodeTest, MarkLineBoxesDirtyOnNeedsLayoutWithBox) {
 // The parent span has a box fragment, and wraps, so that its fragment
 // is seen earlier in pre-order DFS.
 TEST_F(NGInlineNodeTest, MarkLineBoxesDirtyOnChildOfWrappedBox) {
+  if (!RuntimeEnabledFeatures::LayoutNGLineCacheEnabled())
+    return;
   SetupHtml("container", R"HTML(
     <div id=container style="font-size: 10px">
       <span style="background: yellow">
@@ -1254,6 +1283,8 @@ TEST_F(NGInlineNodeTest, MarkLineBoxesDirtyOnChildOfWrappedBox) {
 // Test marking line boxes when a span has NeedsLayout. The span has a box
 // fragment.
 TEST_F(NGInlineNodeTest, MarkLineBoxesDirtyInInlineBlock) {
+  if (!RuntimeEnabledFeatures::LayoutNGLineCacheEnabled())
+    return;
   SetupHtml("container", R"HTML(
     <div id=container style="display: inline-block; font-size: 10px">
       12345678<br>
