@@ -1492,7 +1492,7 @@ static void rc_set_frame_target(AV1_COMP *cpi, int target, int width,
 
   // Target rate per SB64 (including partial SB64s.
   rc->sb64_target_rate =
-      (int)((int64_t)rc->this_frame_target * 64 * 64) / (width * height);
+      (int)(((int64_t)rc->this_frame_target << 12) / (width * height));
 }
 
 static void update_alt_ref_frame_stats(AV1_COMP *cpi) {
