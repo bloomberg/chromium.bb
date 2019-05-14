@@ -84,7 +84,7 @@ void GamingSeat::OnGamepadDevicesUpdated() {
   // Add each new connected gamepad.
   for (auto& device : gamepad_devices) {
     if (new_gamepads.find(device.id) == new_gamepads.end())
-      new_gamepads[device.id] = delegate_->GamepadAdded();
+      new_gamepads[device.id] = delegate_->GamepadAdded(device);
   }
 
   new_gamepads.swap(gamepads_);

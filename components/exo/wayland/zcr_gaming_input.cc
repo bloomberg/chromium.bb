@@ -9,16 +9,33 @@
 #include <wayland-server-core.h>
 #include <wayland-server-protocol-core.h>
 
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "components/exo/gamepad_delegate.h"
 #include "components/exo/gaming_seat.h"
 #include "components/exo/gaming_seat_delegate.h"
 #include "components/exo/wayland/server_util.h"
+#include "ui/events/devices/input_device.h"
 
 namespace exo {
 namespace wayland {
 
 namespace {
+
+// Expose raw gamepad device information to the client.
+// TODO(tetsui): Remove when the change becomes default.
+const base::Feature kRawGamepadInfoFeature{"ExoRawGamepadInfo",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
+unsigned int GetGamepadBusType(ui::InputDeviceType type) {
+  switch (type) {
+    case ui::INPUT_DEVICE_BLUETOOTH:
+      return ZCR_GAMING_SEAT_V2_BUS_TYPE_BLUETOOTH;
+    default:
+      // Internal and unknown types also default to USB.
+      return ZCR_GAMING_SEAT_V2_BUS_TYPE_USB;
+  }
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // gaming_input_interface:
@@ -113,7 +130,7 @@ class WaylandGamingSeatDelegate : public GamingSeatDelegate {
            wl_resource_get_client(surface_resource) ==
                wl_resource_get_client(gaming_seat_resource_);
   }
-  GamepadDelegate* GamepadAdded() override {
+  GamepadDelegate* GamepadAdded(const ui::InputDevice& device) override {
     wl_resource* gamepad_resource =
         wl_resource_create(wl_resource_get_client(gaming_seat_resource_),
                            &zcr_gamepad_v2_interface,
@@ -126,8 +143,20 @@ class WaylandGamingSeatDelegate : public GamingSeatDelegate {
         gamepad_resource, &gamepad_implementation, gamepad_delegate,
         &WaylandGamepadDelegate::ResetGamepadResource);
 
-    zcr_gaming_seat_v2_send_gamepad_added(gaming_seat_resource_,
-                                          gamepad_resource);
+    if (base::FeatureList::IsEnabled(kRawGamepadInfoFeature)) {
+      // The version is temporarily set to 0 because the information is not
+      // available in ui::InputDevice.
+      // TODO(tetsui): Add version field to ui::InputDevice
+      zcr_gaming_seat_v2_send_gamepad_added_with_device_info(
+          gaming_seat_resource_, gamepad_resource, device.name.c_str(),
+          GetGamepadBusType(device.type), device.vendor_id, device.product_id,
+          /*version=*/0);
+
+      // TODO(tetsui): Send joystick motion range.
+    } else {
+      zcr_gaming_seat_v2_send_gamepad_added(gaming_seat_resource_,
+                                            gamepad_resource);
+    }
     wl_client_flush(wl_resource_get_client(gaming_seat_resource_));
 
     return gamepad_delegate;

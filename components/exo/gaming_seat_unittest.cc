@@ -25,7 +25,7 @@ namespace {
 class MockGamingSeatDelegate : public GamingSeatDelegate {
  public:
   MOCK_CONST_METHOD1(CanAcceptGamepadEventsForSurface, bool(Surface*));
-  MOCK_METHOD0(GamepadAdded, GamepadDelegate*());
+  MOCK_METHOD1(GamepadAdded, GamepadDelegate*(const ui::InputDevice&));
   MOCK_METHOD0(Die, void());
   void OnGamingSeatDestroying(GamingSeat*) override { delete this; }
   ~MockGamingSeatDelegate() { Die(); }
@@ -99,14 +99,14 @@ TEST_F(GamingSeatTest, ConnectionChange) {
   {  // Test sequence
     testing::InSequence s;
     // Connect 2 gamepads.
-    EXPECT_CALL(*gaming_seat_delegate, GamepadAdded())
+    EXPECT_CALL(*gaming_seat_delegate, GamepadAdded(testing::_))
         .WillOnce(testing::Return(&gamepad_delegate[0]))
         .WillOnce(testing::Return(&gamepad_delegate[1]));
     // Send frame to connected gamepad.
     EXPECT_CALL(gamepad_delegate[0], OnFrame()).Times(1);
     EXPECT_CALL(gamepad_delegate[1], OnFrame()).Times(1);
     // Connect 3 more.
-    EXPECT_CALL(*gaming_seat_delegate, GamepadAdded())
+    EXPECT_CALL(*gaming_seat_delegate, GamepadAdded(testing::_))
         .WillOnce(testing::Return(&gamepad_delegate[2]))
         .WillOnce(testing::Return(&gamepad_delegate[3]))
         .WillOnce(testing::Return(&gamepad_delegate[4]));
@@ -120,7 +120,7 @@ TEST_F(GamingSeatTest, ConnectionChange) {
     EXPECT_CALL(gamepad_delegate[0], OnRemoved()).Times(1);
     EXPECT_CALL(gamepad_delegate[2], OnRemoved()).Times(1);
     EXPECT_CALL(gamepad_delegate[4], OnRemoved()).Times(1);
-    EXPECT_CALL(*gaming_seat_delegate, GamepadAdded())
+    EXPECT_CALL(*gaming_seat_delegate, GamepadAdded(testing::_))
         .WillOnce(testing::Return(&gamepad_delegate[5]));
     // Send frame to all gamepads.
     EXPECT_CALL(gamepad_delegate[1], OnFrame()).Times(1);
