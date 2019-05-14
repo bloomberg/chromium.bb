@@ -124,6 +124,8 @@ class ScriptsSmokeTest(unittest.TestCase):
         '--test-shard-map-filename=smoke_test_benchmark_shard_map.json '
         '--browser=%s '
         '--run-ref-build '
+        '--isolated-script-test-filter=dummy_benchmark.noisy_benchmark_1/'
+        'dummy_page.html::dummy_benchmark.stable_benchmark_1/dummy_page.html '
         '--isolated-script-test-repeat=2 '
         '--isolated-script-test-also-run-disabled-tests '
         '--isolated-script-test-output=%s' % (
@@ -160,7 +162,6 @@ class ScriptsSmokeTest(unittest.TestCase):
       self.fail('KeyError: ' + stdout + str(e))
     finally:
       shutil.rmtree(tempdir)
-
 
   # Windows: ".exe" is auto-added which breaks Windows.
   # ChromeOS: crbug.com/754913.

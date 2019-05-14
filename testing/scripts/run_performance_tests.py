@@ -233,6 +233,11 @@ def execute_gtest_perf_test(command_generator, output_paths, use_xvfb=False):
   return return_code
 
 
+class _TelemetryFilterArgument(object):
+  def __init__(self, filter_string):
+    self.benchmark, self.story = filter_string.split('/')
+
+
 class TelemetryCommandGenerator(object):
   def __init__(self, benchmark, options,
                stories=None, is_reference=False):
@@ -270,8 +275,11 @@ class TelemetryCommandGenerator(object):
     if self._options.isolated_script_test_filter:
       filter_list = common.extract_filter_list(
           self._options.isolated_script_test_filter)
+      filter_arguments = [_TelemetryFilterArgument(f) for f in filter_list]
+      applicable_stories = [
+          f.story for f in filter_arguments if f.benchmark == self.benchmark]
       # Need to convert this to a valid regex.
-      filter_regex = '(' + '|'.join(filter_list) + ')'
+      filter_regex = '(' + '|'.join(applicable_stories) + ')'
       return ['--story-filter=' + filter_regex]
     return []
 
