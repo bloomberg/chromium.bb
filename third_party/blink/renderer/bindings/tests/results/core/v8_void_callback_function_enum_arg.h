@@ -65,13 +65,6 @@ class V8PersistentCallbackFunction<V8VoidCallbackFunctionEnumArg> final : public
   ToV8PersistentCallbackFunction(V8CallbackFunction*);
 };
 
-// V8VoidCallbackFunctionEnumArg is designed to be used with wrapper-tracing.
-// As blink::Persistent does not perform wrapper-tracing, use of
-// |WrapPersistent| for callback functions is likely (if not always) misuse.
-// Thus, this code prohibits such a use case. The call sites should explicitly
-// use WrapPersistent(V8PersistentCallbackFunction<T>*).
-Persistent<V8VoidCallbackFunctionEnumArg> WrapPersistent(V8VoidCallbackFunctionEnumArg*) = delete;
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_CORE_V8_VOID_CALLBACK_FUNCTION_ENUM_ARG_H_

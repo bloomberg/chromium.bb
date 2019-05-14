@@ -99,13 +99,6 @@ class V8PersistentCallbackInterface<V8TestCallbackInterface> final : public V8Pe
   ToV8PersistentCallbackInterface(V8CallbackInterface*);
 };
 
-// V8TestCallbackInterface is designed to be used with wrapper-tracing.
-// As blink::Persistent does not perform wrapper-tracing, use of
-// |WrapPersistent| for callback interfaces is likely (if not always) misuse.
-// Thus, this code prohibits such a use case. The call sites should explicitly
-// use WrapPersistent(V8PersistentCallbackInterface<T>*).
-Persistent<V8TestCallbackInterface> WrapPersistent(V8TestCallbackInterface*) = delete;
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_TESTS_RESULTS_CORE_V8_TEST_CALLBACK_INTERFACE_H_

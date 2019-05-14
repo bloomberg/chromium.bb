@@ -544,14 +544,6 @@ class CrossThreadWeakPersistent
 
 template <typename T>
 Persistent<T> WrapPersistent(T* value) {
-  // There is no technical need to require a complete type here. However, types
-  // that support wrapper-tracing are not suitable with WrapPersistent because
-  // Persistent<T> does not perform wrapper-tracing. We'd like to delete such
-  // overloads for sure. Thus, we require a complete type here so that it makes
-  // sure that an appropriate header is included and such an overload is
-  // deleted.
-  static_assert(sizeof(T), "T must be fully defined");
-
   return Persistent<T>(value);
 }
 

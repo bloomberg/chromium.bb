@@ -161,13 +161,6 @@ ToV8PersistentCallbackFunction(V8CallbackFunction* callback_function) {
              : nullptr;
 }
 
-// CallbackFunctionBase is designed to be used with wrapper-tracing. As
-// blink::Persistent does not perform wrapper-tracing, use of |WrapPersistent|
-// for callback functions is likely (if not always) misuse. Thus, this code
-// prohibits such a use case. The call sites should explicitly use
-// WrapPersistent(V8PersistentCallbackFunction<T>*).
-Persistent<CallbackFunctionBase> WrapPersistent(CallbackFunctionBase*) = delete;
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_CALLBACK_FUNCTION_BASE_H_

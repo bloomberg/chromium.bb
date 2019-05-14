@@ -103,13 +103,6 @@ class V8PersistentCallbackInterface<{{v8_class}}> final : public V8PersistentCal
   ToV8PersistentCallbackInterface(V8CallbackInterface*);
 };
 
-// {{v8_class}} is designed to be used with wrapper-tracing.
-// As blink::Persistent does not perform wrapper-tracing, use of
-// |WrapPersistent| for callback interfaces is likely (if not always) misuse.
-// Thus, this code prohibits such a use case. The call sites should explicitly
-// use WrapPersistent(V8PersistentCallbackInterface<T>*).
-Persistent<{{v8_class}}> WrapPersistent({{v8_class}}*) = delete;
-
 }  // namespace blink
 
 #endif  // {{header_guard}}
