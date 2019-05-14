@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/html/media/media_controls.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/resize_observer/resize_observer.h"
 #include "third_party/blink/renderer/core/resize_observer/resize_observer_entry.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -147,6 +148,11 @@ void PictureInPictureInterstitial::NotifyElementSizeChanged(
   message_element_->setAttribute(
       "class", MediaControls::GetSizingCSSClass(
                    MediaControls::GetSizingClass(new_size.width())));
+
+  // Force a layout since |LayoutMedia::UpdateLayout()| will sometimes miss a
+  // layout otherwise.
+  if (GetLayoutObject())
+    GetLayoutObject()->SetNeedsLayout(layout_invalidation_reason::kSizeChanged);
 }
 
 void PictureInPictureInterstitial::ToggleInterstitialTimerFired(TimerBase*) {
