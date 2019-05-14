@@ -1746,7 +1746,7 @@ void ServiceWorkerContextClient::SetupNavigationPreload(
   // |context_| is valid because it's valid in our callsite.
   DCHECK(context_);
   auto preload_request = std::make_unique<NavigationPreloadRequest>(
-      GetWeakPtr(), fetch_event_id, url, std::move(preload_handle));
+      this, fetch_event_id, url, std::move(preload_handle));
   context_->preload_requests.AddWithID(std::move(preload_request),
                                        fetch_event_id);
 }
