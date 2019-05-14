@@ -107,10 +107,17 @@ namespace {
 // Ensures that - if we have not popped up an infobar to prompt the user to e.g.
 // reload the current page - that the content pane of the browser is refocused.
 void AppInfoDialogClosedCallback(content::WebContents* web_contents,
-                                 views::Widget::ClosedReason /* unused */,
+                                 views::Widget::ClosedReason closed_reason,
                                  bool reload_prompt) {
   if (reload_prompt)
     return;
+
+  // If the user clicked on something specific or focus was changed, don't
+  // override the focus.
+  if (closed_reason != views::Widget::ClosedReason::kEscKeyPressed &&
+      closed_reason != views::Widget::ClosedReason::kCloseButtonClicked) {
+    return;
+  }
 
   // Ensure that the web contents handle we have is still valid. It's possible
   // (though unlikely) that either the browser or web contents has been pulled
