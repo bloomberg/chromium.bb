@@ -28,6 +28,14 @@ suite('ExtensionsActivityLogTest', function() {
 
   const testActivities = {activities: []};
 
+  const activity1 = {
+    extensionId: EXTENSION_ID,
+    activityType: chrome.activityLogPrivate.ExtensionActivityType.API_CALL,
+    time: 1550101623113,
+    args: JSON.stringify([null]),
+    apiCall: 'testAPI.testMethod',
+  };
+
   // Initialize an extension activity log before each test.
   setup(function() {
     PolymerTest.clearBody();
@@ -55,6 +63,14 @@ suite('ExtensionsActivityLogTest', function() {
     activityLog.remove();
   });
 
+  // Returns a list of visible stream items. The not([hidden]) selector is
+  // needed for iron-list as it reuses components but hides them when not in
+  // use.
+  function getStreamItems() {
+    return activityLog.$$('activity-log-stream')
+        .shadowRoot.querySelectorAll('activity-log-stream-item:not([hidden])');
+  }
+
   test('clicking on back button navigates to the details page', function() {
     Polymer.dom.flush();
 
@@ -76,7 +92,13 @@ suite('ExtensionsActivityLogTest', function() {
     // Navigate to the activity log stream.
     activityLog.$$('#real-time-tab').click();
     Polymer.dom.flush();
+
+    // One activity is recorded and should appear in the stream.
+    proxyDelegate.getOnExtensionActivity().callListeners(activity1);
+
+    Polymer.dom.flush();
     testVisible('activity-log-stream', true);
+    expectEquals(1, getStreamItems().length);
 
     // Navigate back to the activity log history tab.
     activityLog.$$('#history-tab').click();
@@ -85,6 +107,17 @@ suite('ExtensionsActivityLogTest', function() {
     proxyDelegate.whenCalled('getExtensionActivityLog').then(() => {
       Polymer.dom.flush();
       testVisible('activity-log-history', true);
+
+      // Another activity is recorded, but should not appear in the stream as
+      // the stream is inactive.
+      proxyDelegate.getOnExtensionActivity().callListeners(activity1);
+
+      activityLog.$$('#real-time-tab').click();
+      Polymer.dom.flush();
+
+      // The one activity in the stream should have persisted between tab
+      // switches.
+      expectEquals(1, getStreamItems().length);
     });
   });
 });

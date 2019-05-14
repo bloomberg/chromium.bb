@@ -41,6 +41,7 @@ cr.define('extensions', function() {
       selectedSubpage_: {
         type: Number,
         value: ActivityLogSubpage.NONE,
+        observer: 'onSelectedSubpageChanged_',
       },
     },
 
@@ -66,6 +67,11 @@ cr.define('extensions', function() {
      */
     onViewExitFinish_: function() {
       this.selectedSubpage_ = ActivityLogSubpage.NONE;
+      // clear the stream if the user is exiting the activity log page.
+      const activityLogStream = this.$$('activity-log-stream');
+      if (activityLogStream) {
+        activityLogStream.clearStream();
+      }
     },
 
     /**
@@ -82,6 +88,28 @@ cr.define('extensions', function() {
      */
     isStreamTabSelected_: function() {
       return this.selectedSubpage_ === ActivityLogSubpage.STREAM;
+    },
+
+    /**
+     * @private
+     * @param {!ActivityLogSubpage} newTab
+     * @param {!ActivityLogSubpage} oldTab
+     */
+    onSelectedSubpageChanged_: function(newTab, oldTab) {
+      const activityLogStream = this.$$('activity-log-stream');
+      if (activityLogStream) {
+        if (newTab === ActivityLogSubpage.STREAM) {
+          // Start the stream if the user is switching to the real-time tab.
+          // This will not handle the first tab switch to the real-time tab as
+          // the stream has not been attached to the DOM yet, and is handled
+          // instead by the stream's |attached| method.
+          activityLogStream.startStream();
+        } else if (oldTab === ActivityLogSubpage.STREAM) {
+          // Pause the stream if the user is navigating away from the real-time
+          // tab.
+          activityLogStream.pauseStream();
+        }
+      }
     },
 
     /** @private */

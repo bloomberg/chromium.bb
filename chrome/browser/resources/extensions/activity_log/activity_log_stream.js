@@ -98,14 +98,10 @@ cr.define('extensions', function() {
 
     /** @override */
     attached: function() {
+      // Since this component is not restamped, this will only be called once
+      // in its lifecycle.
       this.listenerInstance_ = this.extensionActivityListener_.bind(this);
-      this.startStream_();
-    },
-
-    /** @override */
-    detached: function() {
-      this.pauseStream_();
-      this.clearStream_();
+      this.startStream();
     },
 
     /** @private */
@@ -113,13 +109,11 @@ cr.define('extensions', function() {
       this.$$('iron-list').notifyResize();
     },
 
-    /** @private */
-    clearStream_: function() {
+    clearStream: function() {
       this.splice('activityStream_', 0, this.activityStream_.length);
     },
 
-    /** @private */
-    startStream_: function() {
+    startStream: function() {
       if (this.isStreamOn_) {
         return;
       }
@@ -129,8 +123,7 @@ cr.define('extensions', function() {
           this.listenerInstance_);
     },
 
-    /** @private */
-    pauseStream_: function() {
+    pauseStream: function() {
       if (!this.isStreamOn_) {
         return;
       }
@@ -143,9 +136,9 @@ cr.define('extensions', function() {
     /** @private */
     onToggleButtonClick_: function() {
       if (this.isStreamOn_) {
-        this.pauseStream_();
+        this.pauseStream();
       } else {
-        this.startStream_();
+        this.startStream();
       }
     },
 
