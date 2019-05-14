@@ -48,7 +48,8 @@ enum class CastMessageType {
   kReceiverStatus,
   kMediaStatus,
   kLaunchError,
-  kOther  // Add new types above |kOther|.
+  kOther,  // Add new types above |kOther|.
+  kMaxValue = kOther,
 };
 
 enum class V2MessageType {
@@ -69,7 +70,8 @@ enum class V2MessageType {
   kSetVolume,
   kStop,
   kStopMedia,
-  kOther  // Add new types above |kOther|.
+  kOther,  // Add new types above |kOther|.
+  kMaxValue = kOther,
 };
 
 // Checks if the contents of |message_proto| are valid.
@@ -198,6 +200,7 @@ enum class GetAppAvailabilityResult {
   kAvailable,
   kUnavailable,
   kUnknown,
+  kMaxValue = kUnknown,
 };
 
 const char* ToString(GetAppAvailabilityResult result);
@@ -213,7 +216,7 @@ GetAppAvailabilityResult GetAppAvailabilityResultFromResponse(
 
 // Result of a session launch.
 struct LaunchSessionResponse {
-  enum Result { kOk, kError, kTimedOut, kUnknown };
+  enum Result { kOk, kError, kTimedOut, kUnknown, kMaxValue = kUnknown };
 
   LaunchSessionResponse();
   LaunchSessionResponse(LaunchSessionResponse&& other);

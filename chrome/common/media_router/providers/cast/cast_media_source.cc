@@ -27,17 +27,21 @@ using media_router::AutoJoinPolicy;
 using media_router::DefaultActionPolicy;
 
 template <>
-const EnumTable<AutoJoinPolicy> EnumTable<AutoJoinPolicy>::instance({
-    {AutoJoinPolicy::kPageScoped, "page_scoped"},
-    {AutoJoinPolicy::kTabAndOriginScoped, "tab_and_origin_scoped"},
-    {AutoJoinPolicy::kOriginScoped, "origin_scoped"},
-});
+const EnumTable<AutoJoinPolicy> EnumTable<AutoJoinPolicy>::instance(
+    {
+        {AutoJoinPolicy::kPageScoped, "page_scoped"},
+        {AutoJoinPolicy::kTabAndOriginScoped, "tab_and_origin_scoped"},
+        {AutoJoinPolicy::kOriginScoped, "origin_scoped"},
+    },
+    AutoJoinPolicy::kMaxValue);
 
 template <>
-const EnumTable<DefaultActionPolicy> EnumTable<DefaultActionPolicy>::instance({
-    {DefaultActionPolicy::kCreateSession, "create_session"},
-    {DefaultActionPolicy::kCastThisTab, "cast_this_tab"},
-});
+const EnumTable<DefaultActionPolicy> EnumTable<DefaultActionPolicy>::instance(
+    {
+        {DefaultActionPolicy::kCreateSession, "create_session"},
+        {DefaultActionPolicy::kCastThisTab, "cast_this_tab"},
+    },
+    DefaultActionPolicy::kMaxValue);
 
 template <>
 const EnumTable<CastDeviceCapability> EnumTable<CastDeviceCapability>::instance(
@@ -50,7 +54,7 @@ const EnumTable<CastDeviceCapability> EnumTable<CastDeviceCapability>::instance(
         {CastDeviceCapability::VIDEO_OUT, "video_out"},
         // NONE deliberately omitted
     },
-    UnsortedEnumTable);
+    NonConsecutiveEnumTable);
 
 }  // namespace cast_util
 

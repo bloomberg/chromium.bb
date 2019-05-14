@@ -24,34 +24,41 @@ using media_router::CastInternalMessage;
 
 template <>
 const EnumTable<CastInternalMessage::Type>
-    EnumTable<CastInternalMessage::Type>::instance({
-        {CastInternalMessage::Type::kClientConnect, "client_connect"},
-        {CastInternalMessage::Type::kAppMessage, "app_message"},
-        {CastInternalMessage::Type::kV2Message, "v2_message"},
-        {CastInternalMessage::Type::kLeaveSession, "leave_session"},
-        {CastInternalMessage::Type::kReceiverAction, "receiver_action"},
-        {CastInternalMessage::Type::kNewSession, "new_session"},
-        {CastInternalMessage::Type::kUpdateSession, "update_session"},
-        {CastInternalMessage::Type::kError, "error"},
-        // kOther deliberately omitted
-    });
+    EnumTable<CastInternalMessage::Type>::instance(
+        {
+            {CastInternalMessage::Type::kClientConnect, "client_connect"},
+            {CastInternalMessage::Type::kAppMessage, "app_message"},
+            {CastInternalMessage::Type::kV2Message, "v2_message"},
+            {CastInternalMessage::Type::kLeaveSession, "leave_session"},
+            {CastInternalMessage::Type::kReceiverAction, "receiver_action"},
+            {CastInternalMessage::Type::kNewSession, "new_session"},
+            {CastInternalMessage::Type::kUpdateSession, "update_session"},
+            {CastInternalMessage::Type::kError, "error"},
+            {CastInternalMessage::Type::kOther},
+        },
+        CastInternalMessage::Type::kMaxValue);
 
 template <>
-const EnumTable<CastInternalMessage::ErrorCode> EnumTable<
-    CastInternalMessage::ErrorCode>::instance({
-    {CastInternalMessage::ErrorCode::kInternalError, "internal_error"},
-    {CastInternalMessage::ErrorCode::kCancel, "cancel"},
-    {CastInternalMessage::ErrorCode::kTimeout, "timeout"},
-    {CastInternalMessage::ErrorCode::kApiNotInitialized, "api_not_initialized"},
-    {CastInternalMessage::ErrorCode::kInvalidParameter, "invalid_parameter"},
-    {CastInternalMessage::ErrorCode::kExtensionNotCompatible,
-     "extension_not_compatible"},
-    {CastInternalMessage::ErrorCode::kReceiverUnavailable,
-     "receiver_unavailable"},
-    {CastInternalMessage::ErrorCode::kSessionError, "session_error"},
-    {CastInternalMessage::ErrorCode::kChannelError, "channel_error"},
-    {CastInternalMessage::ErrorCode::kLoadMediaFailed, "load_media_failed"},
-});
+const EnumTable<CastInternalMessage::ErrorCode>
+    EnumTable<CastInternalMessage::ErrorCode>::instance(
+        {
+            {CastInternalMessage::ErrorCode::kInternalError, "internal_error"},
+            {CastInternalMessage::ErrorCode::kCancel, "cancel"},
+            {CastInternalMessage::ErrorCode::kTimeout, "timeout"},
+            {CastInternalMessage::ErrorCode::kApiNotInitialized,
+             "api_not_initialized"},
+            {CastInternalMessage::ErrorCode::kInvalidParameter,
+             "invalid_parameter"},
+            {CastInternalMessage::ErrorCode::kExtensionNotCompatible,
+             "extension_not_compatible"},
+            {CastInternalMessage::ErrorCode::kReceiverUnavailable,
+             "receiver_unavailable"},
+            {CastInternalMessage::ErrorCode::kSessionError, "session_error"},
+            {CastInternalMessage::ErrorCode::kChannelError, "channel_error"},
+            {CastInternalMessage::ErrorCode::kLoadMediaFailed,
+             "load_media_failed"},
+        },
+        CastInternalMessage::ErrorCode::kMaxValue);
 
 }  // namespace cast_util
 

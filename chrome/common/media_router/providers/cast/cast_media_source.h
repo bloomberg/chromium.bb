@@ -75,12 +75,16 @@ struct CastAppInfo {
 enum class AutoJoinPolicy {
   // No automatic connection.  This is the default when no policy is specified.
   kPageScoped,
+
   // Automatically connects when the session was started with the same app ID,
   // in the same tab and page origin.
   kTabAndOriginScoped,
+
   // Automatically connects when the session was started with the same app ID
   // and the same page origin (regardless of tab).
   kOriginScoped,
+
+  kMaxValue = kOriginScoped,
 };
 
 // Default action policy determines when the SDK will automatically create a
@@ -96,6 +100,8 @@ enum class DefaultActionPolicy {
   // being cast.  The Cast dialog prompts the user to mirror the tab (mirror,
   // not cast, despite the name).
   kCastThisTab,
+
+  kMaxValue = kCastThisTab,
 };
 
 // Tests whether a sender specified by (origin1, tab_id1) is allowed by |policy|

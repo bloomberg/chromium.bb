@@ -24,48 +24,57 @@ namespace cast_util {
 using namespace cast_channel;
 
 template <>
-const EnumTable<CastMessageType> EnumTable<CastMessageType>::instance({
-    {CastMessageType::kPing, "PING"},
-    {CastMessageType::kPong, "PONG"},
-    {CastMessageType::kGetAppAvailability, "GET_APP_AVAILABILITY"},
-    {CastMessageType::kReceiverStatusRequest, "GET_STATUS"},
-    {CastMessageType::kConnect, "CONNECT"},
-    {CastMessageType::kCloseConnection, "CLOSE"},
-    {CastMessageType::kBroadcast, "APPLICATION_BROADCAST"},
-    {CastMessageType::kLaunch, "LAUNCH"},
-    {CastMessageType::kStop, "STOP"},
-    {CastMessageType::kReceiverStatus, "RECEIVER_STATUS"},
-    {CastMessageType::kMediaStatus, "MEDIA_STATUS"},
-    {CastMessageType::kLaunchError, "LAUNCH_ERROR"},
-});
+const EnumTable<CastMessageType> EnumTable<CastMessageType>::instance(
+    {
+        {CastMessageType::kPing, "PING"},
+        {CastMessageType::kPong, "PONG"},
+        {CastMessageType::kGetAppAvailability, "GET_APP_AVAILABILITY"},
+        {CastMessageType::kReceiverStatusRequest, "GET_STATUS"},
+        {CastMessageType::kConnect, "CONNECT"},
+        {CastMessageType::kCloseConnection, "CLOSE"},
+        {CastMessageType::kBroadcast, "APPLICATION_BROADCAST"},
+        {CastMessageType::kLaunch, "LAUNCH"},
+        {CastMessageType::kStop, "STOP"},
+        {CastMessageType::kReceiverStatus, "RECEIVER_STATUS"},
+        {CastMessageType::kMediaStatus, "MEDIA_STATUS"},
+        {CastMessageType::kLaunchError, "LAUNCH_ERROR"},
+        {CastMessageType::kOther},
+    },
+    CastMessageType::kMaxValue);
 
 template <>
-const EnumTable<V2MessageType> EnumTable<V2MessageType>::instance({
-    {V2MessageType::kEditTracksInfo, "EDIT_TRACKS_INFO"},
-    {V2MessageType::kGetStatus, "GET_STATUS"},
-    {V2MessageType::kLoad, "LOAD"},
-    {V2MessageType::kMediaGetStatus, "MEDIA_GET_STATUS"},
-    {V2MessageType::kMediaSetVolume, "MEDIA_SET_VOLUME"},
-    {V2MessageType::kPause, "PAUSE"},
-    {V2MessageType::kPlay, "PLAY"},
-    {V2MessageType::kPrecache, "PRECACHE"},
-    {V2MessageType::kQueueInsert, "QUEUE_INSERT"},
-    {V2MessageType::kQueueLoad, "QUEUE_LOAD"},
-    {V2MessageType::kQueueRemove, "QUEUE_REMOVE"},
-    {V2MessageType::kQueueReorder, "QUEUE_REORDER"},
-    {V2MessageType::kQueueUpdate, "QUEUE_UPDATE"},
-    {V2MessageType::kSeek, "SEEK"},
-    {V2MessageType::kSetVolume, "SET_VOLUME"},
-    {V2MessageType::kStop, "STOP"},
-    {V2MessageType::kStopMedia, "STOP_MEDIA"},
-});
+const EnumTable<V2MessageType> EnumTable<V2MessageType>::instance(
+    {
+        {V2MessageType::kEditTracksInfo, "EDIT_TRACKS_INFO"},
+        {V2MessageType::kGetStatus, "GET_STATUS"},
+        {V2MessageType::kLoad, "LOAD"},
+        {V2MessageType::kMediaGetStatus, "MEDIA_GET_STATUS"},
+        {V2MessageType::kMediaSetVolume, "MEDIA_SET_VOLUME"},
+        {V2MessageType::kPause, "PAUSE"},
+        {V2MessageType::kPlay, "PLAY"},
+        {V2MessageType::kPrecache, "PRECACHE"},
+        {V2MessageType::kQueueInsert, "QUEUE_INSERT"},
+        {V2MessageType::kQueueLoad, "QUEUE_LOAD"},
+        {V2MessageType::kQueueRemove, "QUEUE_REMOVE"},
+        {V2MessageType::kQueueReorder, "QUEUE_REORDER"},
+        {V2MessageType::kQueueUpdate, "QUEUE_UPDATE"},
+        {V2MessageType::kSeek, "SEEK"},
+        {V2MessageType::kSetVolume, "SET_VOLUME"},
+        {V2MessageType::kStop, "STOP"},
+        {V2MessageType::kStopMedia, "STOP_MEDIA"},
+        {V2MessageType::kOther},
+    },
+    V2MessageType::kMaxValue);
 
 template <>
 const EnumTable<GetAppAvailabilityResult>
-    EnumTable<GetAppAvailabilityResult>::instance({
-        {GetAppAvailabilityResult::kAvailable, "APP_AVAILABLE"},
-        {GetAppAvailabilityResult::kUnavailable, "APP_UNAVAILABLE"},
-    });
+    EnumTable<GetAppAvailabilityResult>::instance(
+        {
+            {GetAppAvailabilityResult::kAvailable, "APP_AVAILABLE"},
+            {GetAppAvailabilityResult::kUnavailable, "APP_UNAVAILABLE"},
+            {GetAppAvailabilityResult::kUnknown},
+        },
+        GetAppAvailabilityResult::kMaxValue);
 
 }  // namespace cast_util
 
@@ -485,7 +494,7 @@ LaunchSessionResponse GetLaunchSessionResponse(const base::Value& payload) {
   if (!type_value)
     return LaunchSessionResponse();
 
-  CastMessageType type = CastMessageTypeFromString(type_value->GetString());
+  const auto type = CastMessageTypeFromString(type_value->GetString());
   if (type != CastMessageType::kReceiverStatus &&
       type != CastMessageType::kLaunchError)
     return LaunchSessionResponse();

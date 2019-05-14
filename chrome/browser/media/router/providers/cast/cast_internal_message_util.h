@@ -36,8 +36,9 @@ class CastInternalMessage {
     kUpdateSession,   // Message sent by MRP to inform SDK client of updated
                       // session.
     kError,
-    kOther  // All other types of messages which are not considered
-            // part of communication with Cast SDK.
+    kOther,  // All other types of messages which are not considered
+             // part of communication with Cast SDK.
+    kMaxValue = kOther,
   };
 
   // Errors that may be returned by the SDK.
@@ -54,6 +55,7 @@ class CastInternalMessage {
     kSessionError,  // A session could not be created, or a session was invalid.
     kChannelError,  // A channel to the receiver is not available.
     kLoadMediaFailed,  // Load media failed.
+    kMaxValue = kLoadMediaFailed,
   };
 
   // Returns a CastInternalMessage for |message|, or nullptr is |message| is not
