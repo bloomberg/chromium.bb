@@ -66,9 +66,14 @@ void MimeHandlerViewEmbedder::DidStartNavigation(
     content::NavigationHandle* handle) {
   // This observer is created after the observed |frame_tree_node_id_| started
   // its navigation to the |resource_url|. If any new navigations start then
-  // we should stop now and do not create a MHVG.
-  if (handle->GetFrameTreeNodeId() == frame_tree_node_id_)
+  // we should stop now and do not create a MHVG. Same document navigations
+  // could occur for {replace,push}State among other reasons and should not
+  // lead to deleting the MVHE (e.g., the test
+  // PDFExtensionLinkClickTest.OpenPDFWithReplaceState reaches here).
+  if (handle->GetFrameTreeNodeId() == frame_tree_node_id_ &&
+      !handle->IsSameDocument()) {
     GetMimeHandlerViewEmbeddersMap()->erase(frame_tree_node_id_);
+  }
 }
 
 void MimeHandlerViewEmbedder::ReadyToCommitNavigation(
