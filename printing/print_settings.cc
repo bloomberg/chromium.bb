@@ -182,6 +182,12 @@ void PrintSettings::Clear() {
 #endif
   is_modifiable_ = true;
   pages_per_sheet_ = 1;
+#if defined(OS_CHROMEOS)
+  send_user_info_ = false;
+  username_.clear();
+  job_title_.clear();
+  pin_value_.clear();
+#endif  // defined(OS_CHROMEOS)
 }
 
 void PrintSettings::SetPrinterPrintableArea(
