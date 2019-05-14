@@ -264,7 +264,8 @@ void PrefetchDispatcherImpl::QueueActionTasks() {
 
   std::unique_ptr<Task> generate_page_bundle_task =
       std::make_unique<GeneratePageBundleTask>(
-          this, service_->GetPrefetchStore(), service_->GetCachedGCMToken(),
+          this, service_->GetPrefetchStore(), service_->GetPrefetchGCMHandler(),
+          service_->GetCachedGCMToken(),
           service_->GetPrefetchNetworkRequestFactory(),
           base::BindOnce(
               &PrefetchDispatcherImpl::DidGenerateBundleOrGetOperationRequest,

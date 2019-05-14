@@ -84,8 +84,6 @@ class PrefetchService : public KeyedService {
   // suggestion from the Prefetching pipeline and/or the Offline Pages database.
   virtual void RemoveSuggestion(GURL url) = 0;
 
-  // Returns a pointer to the PrefetchGCMHandler. It is not available in reduced
-  // mode.
   virtual PrefetchGCMHandler* GetPrefetchGCMHandler() = 0;
 
   // Obtains the current GCM token from the PrefetchGCMHandler

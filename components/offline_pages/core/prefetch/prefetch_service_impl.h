@@ -25,6 +25,7 @@ class PrefetchServiceImpl : public PrefetchService {
   PrefetchServiceImpl(
       std::unique_ptr<OfflineMetricsCollector> offline_metrics_collector,
       std::unique_ptr<PrefetchDispatcher> dispatcher,
+      std::unique_ptr<PrefetchGCMHandler> gcm_handler,
       std::unique_ptr<PrefetchNetworkRequestFactory> network_request_factory,
       OfflinePageModel* offline_page_model,
       std::unique_ptr<PrefetchStore> prefetch_store,
@@ -63,16 +64,12 @@ class PrefetchServiceImpl : public PrefetchService {
   PrefetchImporter* GetPrefetchImporter() override;
   PrefetchBackgroundTaskHandler* GetPrefetchBackgroundTaskHandler() override;
 
-  void SetPrefetchGCMHandler(std::unique_ptr<PrefetchGCMHandler> handler);
-
   // Thumbnail fetchers. With Feed, GetImageFetcher() is available
   // and GetThumbnailFetcher() is null.
   ThumbnailFetcher* GetThumbnailFetcher() override;
   image_fetcher::ImageFetcher* GetImageFetcher() override;
 
   SuggestedArticlesObserver* GetSuggestedArticlesObserverForTesting() override;
-
-  base::WeakPtr<PrefetchServiceImpl> GetWeakPtr();
 
   // KeyedService implementation:
   void Shutdown() override;
@@ -84,10 +81,10 @@ class PrefetchServiceImpl : public PrefetchService {
 
   OfflineEventLogger logger_;
   std::string gcm_token_;
-  std::unique_ptr<PrefetchGCMHandler> prefetch_gcm_handler_;
 
   std::unique_ptr<OfflineMetricsCollector> offline_metrics_collector_;
   std::unique_ptr<PrefetchDispatcher> prefetch_dispatcher_;
+  std::unique_ptr<PrefetchGCMHandler> prefetch_gcm_handler_;
   std::unique_ptr<PrefetchNetworkRequestFactory> network_request_factory_;
   OfflinePageModel* offline_page_model_;
   std::unique_ptr<PrefetchStore> prefetch_store_;
