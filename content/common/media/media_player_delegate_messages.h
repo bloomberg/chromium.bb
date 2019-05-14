@@ -13,7 +13,6 @@
 
 #include <stdint.h>
 
-#include "components/viz/common/surfaces/surface_id.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_message_macros.h"
 #include "media/base/media_content_type.h"
@@ -60,9 +59,6 @@ IPC_MESSAGE_ROUTED2(MediaPlayerDelegateMsg_UpdateVolumeMultiplier,
 IPC_MESSAGE_ROUTED2(MediaPlayerDelegateMsg_BecamePersistentVideo,
                     int /* delegate_id, distinguishes instances */,
                     double /* is_persistent */)
-
-IPC_MESSAGE_ROUTED1(MediaPlayerDelegateMsg_EndPictureInPictureMode,
-                    int /* delegate_id, distinguishes instances */)
 
 // ----------------------------------------------------------------------------
 // Messages from the renderer notifying the browser of playback state changes.

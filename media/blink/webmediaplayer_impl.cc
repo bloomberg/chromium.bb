@@ -2357,15 +2357,6 @@ void WebMediaPlayerImpl::OnBecamePersistentVideo(bool value) {
   MaybeSendOverlayInfoToDecoder();
 }
 
-void WebMediaPlayerImpl::OnPictureInPictureModeEnded() {
-  // It is possible for this method to be called when the player is no longer in
-  // Picture-in-Picture mode.
-  if (!client_ || !IsInPictureInPicture())
-    return;
-
-  client_->PictureInPictureStopped();
-}
-
 void WebMediaPlayerImpl::SendBytesReceivedUpdate() {
   media_metrics_provider_->AddBytesReceived(bytes_received_since_last_update_);
   bytes_received_since_last_update_ = 0;
