@@ -203,11 +203,12 @@ IN_PROC_BROWSER_TEST_F(GuestErrorScreenTest, PRE_GuestLogin) {
 
   OobeScreenWaiter(ErrorScreenView::kScreenId).Wait();
   test::OobeJS().ExpectVisiblePath({"error-guest-signin-link"});
-  test::OobeJS().ClickOnPath({"error-guest-signin-link"});
 
   base::RunLoop restart_job_waiter;
   FakeSessionManagerClient::Get()->set_restart_job_callback(
       restart_job_waiter.QuitClosure());
+
+  test::OobeJS().ClickOnPath({"error-guest-signin-link"});
   restart_job_waiter.Run();
 }
 
