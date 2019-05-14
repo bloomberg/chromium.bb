@@ -177,69 +177,86 @@ std::string ReadCPUStatistics() {
   return std::string();
 }
 
-// Read system temperature sensors from
+// Read system temperature sensor data into |out_contents| from
 //
-// /sys/class/hwmon/hwmon*/(device/)?temp*_input
+// |sensor_dir|/temp*_input
 //
 // which contains millidegree Celsius temperature and
 //
-// /sys/class/hwmon/hwmon*/(device/)?temp*_label or
-// /sys/class/hwmon/hwmon*/name
+// |sensor_dir|/temp*_label or
+// |sensor_dir|/name
 //
 // which contains an appropriate label name for the given sensor.
+// Returns |true| iff there was at least one sensor value in given |sensor_dir|.
+bool ReadTemperatureSensorInfo(const base::FilePath& sensor_dir,
+                               std::vector<em::CPUTempInfo>& out_contents) {
+  bool has_data = false;
+
+  base::FileEnumerator enumerator(
+      sensor_dir, false, base::FileEnumerator::FILES, kCPUTempFilePattern);
+  for (base::FilePath temperature_path = enumerator.Next();
+       !temperature_path.empty(); temperature_path = enumerator.Next()) {
+    // Get appropriate temp*_label file.
+    std::string label_path = temperature_path.MaybeAsASCII();
+    if (label_path.empty()) {
+      LOG(WARNING) << "Unable to parse a path to temp*_input file as ASCII";
+      continue;
+    }
+    base::ReplaceSubstringsAfterOffset(&label_path, 0, "input", "label");
+    base::FilePath name_path = sensor_dir.Append("name");
+
+    // Get the label describing this temperature. Use temp*_label
+    // if present, fall back on name file or blank.
+    std::string label;
+    if (base::PathExists(base::FilePath(label_path))) {
+      base::ReadFileToString(base::FilePath(label_path), &label);
+    } else if (base::PathExists(base::FilePath(name_path))) {
+      base::ReadFileToString(name_path, &label);
+    } else {
+      label = std::string();
+    }
+
+    // Read temperature in millidegree Celsius.
+    std::string temperature_string;
+    int32_t temperature = 0;
+    if (base::ReadFileToString(temperature_path, &temperature_string) &&
+        sscanf(temperature_string.c_str(), "%d", &temperature) == 1) {
+      has_data = false;
+      // CPU temp in millidegree Celsius to Celsius
+      temperature /= 1000;
+
+      em::CPUTempInfo info;
+      info.set_cpu_label(label);
+      info.set_cpu_temp(temperature);
+      out_contents.push_back(info);
+    } else {
+      LOG(WARNING) << "Unable to read CPU temp from "
+                   << temperature_path.MaybeAsASCII();
+    }
+  }
+  return has_data;
+}
+
+// Read system temperature sensors from
+//
+// /sys/class/hwmon/hwmon*/(device/)?
 std::vector<em::CPUTempInfo> ReadCPUTempInfo() {
   std::vector<em::CPUTempInfo> contents;
   // Get directories /sys/class/hwmon/hwmon*
   base::FileEnumerator hwmon_enumerator(base::FilePath(kHwmonDir), false,
                                         base::FileEnumerator::DIRECTORIES,
                                         kHwmonDirectoryPattern);
-
   for (base::FilePath hwmon_path = hwmon_enumerator.Next(); !hwmon_path.empty();
        hwmon_path = hwmon_enumerator.Next()) {
     // Get temp*_input files in hwmon*/ and hwmon*/device/
-    if (base::PathExists(hwmon_path.Append(kDeviceDir))) {
-      hwmon_path = hwmon_path.Append(kDeviceDir);
-    }
-    base::FileEnumerator enumerator(
-        hwmon_path, false, base::FileEnumerator::FILES, kCPUTempFilePattern);
-    for (base::FilePath temperature_path = enumerator.Next();
-         !temperature_path.empty(); temperature_path = enumerator.Next()) {
-      // Get appropriate temp*_label file.
-      std::string label_path = temperature_path.MaybeAsASCII();
-      if (label_path.empty()) {
-        LOG(WARNING) << "Unable to parse a path to temp*_input file as ASCII";
-        continue;
+    base::FilePath device_path = hwmon_path.Append(kDeviceDir);
+    if (base::PathExists(device_path)) {
+      // We might have hwmon*/device/, but sensor values are still in hwmon*/
+      if (!ReadTemperatureSensorInfo(device_path, contents)) {
+        ReadTemperatureSensorInfo(hwmon_path, contents);
       }
-      base::ReplaceSubstringsAfterOffset(&label_path, 0, "input", "label");
-      base::FilePath name_path = hwmon_path.Append("name");
-
-      // Get the label describing this temperature. Use temp*_label
-      // if present, fall back on name file or blank.
-      std::string label;
-      if (base::PathExists(base::FilePath(label_path))) {
-        base::ReadFileToString(base::FilePath(label_path), &label);
-      } else if (base::PathExists(base::FilePath(name_path))) {
-        base::ReadFileToString(name_path, &label);
-      } else {
-        label = std::string();
-      }
-
-      // Read temperature in millidegree Celsius.
-      std::string temperature_string;
-      int32_t temperature = 0;
-      if (base::ReadFileToString(temperature_path, &temperature_string) &&
-          sscanf(temperature_string.c_str(), "%d", &temperature) == 1) {
-        // CPU temp in millidegree Celsius to Celsius
-        temperature /= 1000;
-
-        em::CPUTempInfo info;
-        info.set_cpu_label(label);
-        info.set_cpu_temp(temperature);
-        contents.push_back(info);
-      } else {
-        LOG(WARNING) << "Unable to read CPU temp from "
-                     << temperature_path.MaybeAsASCII();
-      }
+    } else {
+      ReadTemperatureSensorInfo(hwmon_path, contents);
     }
   }
   return contents;
