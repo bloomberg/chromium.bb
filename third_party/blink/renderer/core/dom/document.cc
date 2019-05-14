@@ -6277,17 +6277,7 @@ void Document::ApplyFeaturePolicy(const ParsedFeaturePolicy& declared_policy) {
     opener_feature_state = &frame_->OpenerFeatureState();
   }
 
-  auto container_policy = GetOwnerContainerPolicy();
-  if (RuntimeEnabledFeatures::BlockingFocusWithoutUserActivationEnabled() &&
-      frame_ && frame_->Tree().Parent() &&
-      IsSandboxed(WebSandboxFlags::kNavigation)) {
-    // Enforcing the policy for sandbox frames (for context see
-    // https://crbug.com/954349).
-    DisallowFeatureIfNotPresent(
-        mojom::FeaturePolicyFeature::kFocusWithoutUserActivation,
-        container_policy);
-  }
-  InitializeFeaturePolicy(declared_policy, container_policy,
+  InitializeFeaturePolicy(declared_policy, GetOwnerContainerPolicy(),
                           GetParentFeaturePolicy(), opener_feature_state);
 
   // At this point, the document will not have been installed in the frame's
@@ -7762,7 +7752,8 @@ bool Document::IsFocusAllowed() const {
   if (!frame_ || frame_->IsMainFrame() ||
       LocalFrame::HasTransientUserActivation(frame_)) {
     // 'autofocus' runs Element::focus asynchronously at which point the
-    // document might not have a frame (see https://crbug.com/960224).
+    // document might actually does not have a frame (see
+    // https://crbug.com/960224).
     return true;
   }
 
@@ -7778,10 +7769,11 @@ bool Document::IsFocusAllowed() const {
            : WebFeature::kFocusWithoutUserActivationNotSandboxedNotAdFrame;
   }
   UseCounter::Count(*this, uma_type);
-  if (!RuntimeEnabledFeatures::BlockingFocusWithoutUserActivationEnabled())
+  if (!base::FeatureList::IsEnabled(
+          features::kBlockingFocusWithoutUserActivation)) {
     return true;
-  return IsFeatureEnabled(
-      mojom::FeaturePolicyFeature::kFocusWithoutUserActivation);
+  }
+  return !sandboxed;
 }
 
 LazyLoadImageObserver& Document::EnsureLazyLoadImageObserver() {

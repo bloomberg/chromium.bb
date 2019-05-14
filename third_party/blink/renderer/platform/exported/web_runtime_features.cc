@@ -43,10 +43,6 @@ void WebRuntimeFeatures::EnableBloatedRendererDetection(bool enable) {
   RuntimeEnabledFeatures::SetBloatedRendererDetectionEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableBlockingFocusWithoutUserActivation(bool enable) {
-  RuntimeEnabledFeatures::SetBlockingFocusWithoutUserActivationEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableExperimentalFeatures(bool enable) {
   RuntimeEnabledFeatures::SetExperimentalFeaturesEnabled(enable);
 }

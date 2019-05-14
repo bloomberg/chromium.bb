@@ -185,9 +185,6 @@
       status: "test",
     },
     {
-      name: "BlockingFocusWithoutUserActivation",
-    },
-    {
       name: "BlockMetaSetCookie",
       status: "stable"
     },
