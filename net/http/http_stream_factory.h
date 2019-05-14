@@ -26,7 +26,6 @@
 #include "net/base/request_priority.h"
 #include "net/http/http_request_info.h"
 #include "net/http/http_server_properties.h"
-#include "net/http/http_stream_factory.h"
 #include "net/http/http_stream_request.h"
 #include "net/log/net_log_source.h"
 #include "net/log/net_log_with_source.h"
