@@ -319,7 +319,7 @@ TestingProfile::TestingProfile(
       user_cloud_policy_manager_(std::move(policy_manager)),
       delegate_(delegate),
       profile_name_(profile_name),
-      policy_service_(policy_service.release()) {
+      policy_service_(std::move(policy_service)) {
   if (parent)
     parent->SetOffTheRecordProfile(std::unique_ptr<Profile>(this));
 
