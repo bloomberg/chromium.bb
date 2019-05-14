@@ -61,6 +61,9 @@ class ProducerHost : public tracing::mojom::ProducerHost,
   void Flush(perfetto::FlushRequestID,
              const perfetto::DataSourceInstanceID* raw_data_source_ids,
              size_t num_data_sources) override;
+  void ClearIncrementalState(
+      const perfetto::DataSourceInstanceID* data_source_ids,
+      size_t num_data_sources) override;
 
   // mojom::ProducerHost implementation.
   // This interface gets called by the per-process ProducerClients

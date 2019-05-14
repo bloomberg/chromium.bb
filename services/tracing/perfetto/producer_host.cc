@@ -127,6 +127,9 @@ void ProducerHost::Flush(
   producer_client_->Flush(id, data_source_ids);
 }
 
+void ProducerHost::ClearIncrementalState(const perfetto::DataSourceInstanceID*,
+                                         size_t) {}
+
 // This data can come from a malicious child process. We don't do any
 // sanitization here because ProducerEndpoint::CommitData() (And any other
 // ProducerEndpoint methods) are designed to deal with malformed / malicious
