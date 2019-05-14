@@ -29,6 +29,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/mime_handler_view_mode.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/find_test_utils.h"
 #include "content/public/test/hit_test_region_observer.h"
@@ -252,6 +253,11 @@ class FocusChangeWaiter {
 // from the unattached guest. For more context see https://crbug.com/897465.
 IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewBrowserPluginTest,
                        NoFindInPageForUnattachedGuest) {
+  if (content::MimeHandlerViewMode::UsesCrossProcessFrame()) {
+    // This test requires BrowserPlugin which does not exist in frame-based
+    // MimeHandlerView.
+    return;
+  }
   InitializeTestPage(embedded_test_server()->GetURL("/testBasic.csv"));
   auto* main_frame = embedder_web_contents()->GetMainFrame();
   auto* attached_guest_main_frame = guest_web_contents()->GetMainFrame();
@@ -295,6 +301,11 @@ IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewBrowserPluginTest,
 
 IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewBrowserPluginTest,
                        UnderChildFrame) {
+  if (content::MimeHandlerViewMode::UsesCrossProcessFrame()) {
+    // This test requires BrowserPlugin which does not exist in frame-based
+    // MimeHandlerView.
+    return;
+  }
   // Create this frame tree structure.
   // main_frame_node
   //   |
@@ -328,6 +339,11 @@ IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewBrowserPluginTest,
 #endif
 IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewBrowserPluginTest,
                        MAYBE_BP_AutoResizeMessages) {
+  if (content::MimeHandlerViewMode::UsesCrossProcessFrame()) {
+    // This test requires BrowserPlugin which does not exist in frame-based
+    // MimeHandlerView.
+    return;
+  }
   InitializeTestPage(embedded_test_server()->GetURL("/testBasic.csv"));
 
   // Helper function as this test requires inspecting a number of content::
@@ -350,6 +366,11 @@ IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewBrowserPluginTest,
 #endif
 IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewBrowserPluginTest,
                        MAYBE_TouchFocusesEmbedder) {
+  if (content::MimeHandlerViewMode::UsesCrossProcessFrame()) {
+    // This test requires BrowserPlugin which does not exist in frame-based
+    // MimeHandlerView.
+    return;
+  }
   InitializeTestPage(embedded_test_server()->GetURL("/testBasic.csv"));
 
   content::RenderViewHost* embedder_rvh =
@@ -445,6 +466,11 @@ IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewBrowserPluginTest,
 
 IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewBrowserPluginTest,
                        TouchFocusesBrowserPluginInEmbedder) {
+  if (content::MimeHandlerViewMode::UsesCrossProcessFrame()) {
+    // This test requires BrowserPlugin which does not exist in frame-based
+    // MimeHandlerView.
+    return;
+  }
   InitializeTestPage(embedded_test_server()->GetURL("/test_embedded.html"));
 
   auto embedder_rect = embedder_web_contents()->GetContainerBounds();
@@ -506,6 +532,11 @@ class ChromeMimeHandlerViewBrowserPluginScrollTest
 #endif
 IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewBrowserPluginScrollTest,
                        MAYBE_ScrollGuestContent) {
+  if (content::MimeHandlerViewMode::UsesCrossProcessFrame()) {
+    // This test requires BrowserPlugin which does not exist in frame-based
+    // MimeHandlerView.
+    return;
+  }
   InitializeTestPage(embedded_test_server()->GetURL("/test_embedded.html"));
 
   ASSERT_TRUE(ExecuteScript(guest_web_contents(), "ensurePageIsScrollable();"));
