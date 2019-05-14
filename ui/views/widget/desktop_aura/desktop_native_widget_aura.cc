@@ -447,14 +447,6 @@ void DesktopNativeWidgetAura::InitNativeWidget(
   if (!desktop_window_tree_host_) {
     if (params.desktop_window_tree_host) {
       desktop_window_tree_host_ = params.desktop_window_tree_host;
-    } else if (!ViewsDelegate::GetInstance()
-                    ->desktop_window_tree_host_factory()
-                    .is_null()) {
-      desktop_window_tree_host_ =
-          ViewsDelegate::GetInstance()
-              ->desktop_window_tree_host_factory()
-              .Run(params, native_widget_delegate_, this)
-              .release();
     } else {
       desktop_window_tree_host_ =
           DesktopWindowTreeHost::Create(native_widget_delegate_, this);

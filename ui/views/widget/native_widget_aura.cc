@@ -102,13 +102,9 @@ void SetIcon(aura::Window* window,
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetAura, public:
 
-NativeWidgetAura::NativeWidgetAura(internal::NativeWidgetDelegate* delegate,
-                                   bool is_parallel_widget_in_window_manager,
-                                   aura::Env* env)
+NativeWidgetAura::NativeWidgetAura(internal::NativeWidgetDelegate* delegate)
     : delegate_(delegate),
-      is_parallel_widget_in_window_manager_(
-          is_parallel_widget_in_window_manager),
-      window_(new aura::Window(this, aura::client::WINDOW_TYPE_UNKNOWN, env)),
+      window_(new aura::Window(this, aura::client::WINDOW_TYPE_UNKNOWN)),
       ownership_(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET),
       destroying_(false),
       cursor_(gfx::kNullCursor),
@@ -357,7 +353,7 @@ ui::InputMethod* NativeWidgetAura::GetInputMethod() {
 }
 
 void NativeWidgetAura::CenterWindow(const gfx::Size& size) {
-  if (!window_ || is_parallel_widget_in_window_manager_)
+  if (!window_)
     return;
 
   window_->SetProperty(aura::client::kPreferredSize, new gfx::Size(size));
@@ -419,7 +415,7 @@ void NativeWidgetAura::GetWindowPlacement(
 }
 
 bool NativeWidgetAura::SetWindowTitle(const base::string16& title) {
-  if (!window_ || is_parallel_widget_in_window_manager_)
+  if (!window_)
     return false;
   if (window_->GetTitle() == title)
     return false;
@@ -429,8 +425,7 @@ bool NativeWidgetAura::SetWindowTitle(const base::string16& title) {
 
 void NativeWidgetAura::SetWindowIcons(const gfx::ImageSkia& window_icon,
                                       const gfx::ImageSkia& app_icon) {
-  if (!is_parallel_widget_in_window_manager_)
-    AssignIconToAuraWindow(window_, window_icon, app_icon);
+  AssignIconToAuraWindow(window_, window_icon, app_icon);
 }
 
 void NativeWidgetAura::InitModalType(ui::ModalType modal_type) {
@@ -610,7 +605,7 @@ bool NativeWidgetAura::IsActive() const {
 }
 
 void NativeWidgetAura::SetAlwaysOnTop(bool on_top) {
-  if (window_ && !is_parallel_widget_in_window_manager_)
+  if (window_)
     window_->SetProperty(aura::client::kAlwaysOnTopKey, on_top);
 }
 
@@ -813,9 +808,6 @@ ui::GestureRecognizer* NativeWidgetAura::GetGestureRecognizer() {
 }
 
 void NativeWidgetAura::OnSizeConstraintsChanged() {
-  if (is_parallel_widget_in_window_manager_)
-    return;
-
   int32_t behavior = ws::mojom::kResizeBehaviorNone;
   if (GetWidget()->widget_delegate())
     behavior = GetWidget()->widget_delegate()->GetResizeBehavior();
@@ -1123,15 +1115,8 @@ namespace internal {
 
 // static
 NativeWidgetPrivate* NativeWidgetPrivate::CreateNativeWidget(
-    const Widget::InitParams& init_params,
     internal::NativeWidgetDelegate* delegate) {
-  aura::Env* env = nullptr;
-  if (init_params.parent)
-    env = init_params.parent->env();
-  else if (init_params.context)
-    env = init_params.context->env();
-  return new NativeWidgetAura(
-      delegate, /*is_parallel_widget_in_window_manager*/ false, env);
+  return new NativeWidgetAura(delegate);
 }
 
 // static

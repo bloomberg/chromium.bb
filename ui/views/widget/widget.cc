@@ -76,7 +76,7 @@ NativeWidget* CreateNativeWidget(const Widget::InitParams& params,
     if (native_widget)
       return native_widget;
   }
-  return internal::NativeWidgetPrivate::CreateNativeWidget(params, delegate);
+  return internal::NativeWidgetPrivate::CreateNativeWidget(delegate);
 }
 
 void NotifyCaretBoundsChanged(ui::InputMethod* input_method) {
