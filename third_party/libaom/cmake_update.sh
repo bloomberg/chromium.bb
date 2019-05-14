@@ -77,7 +77,6 @@ function gen_config_files {
   cp config/aom_config.{h,c,asm} "${CFG}/${1}/config/"
 
   cp config/*_rtcd.h "${CFG}/${1}/config/"
-  clang-format -i "${CFG}/${1}/config/"*_rtcd.h
 }
 
 function update_readme {
