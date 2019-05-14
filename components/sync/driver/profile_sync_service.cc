@@ -1289,8 +1289,7 @@ void ProfileSyncService::ConfigureDataTypeManager(ConfigureReason reason) {
   if (use_transport_only_mode) {
     ModelTypeSet allowed_types = {USER_CONSENTS};
 
-    if (autofill_enable_account_wallet_storage_ &&
-        base::FeatureList::IsEnabled(switches::kSyncUSSAutofillWalletData)) {
+    if (autofill_enable_account_wallet_storage_) {
       if (!GetUserSettings()->IsUsingSecondaryPassphrase() ||
           base::FeatureList::IsEnabled(
               switches::

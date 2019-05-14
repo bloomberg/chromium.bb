@@ -336,8 +336,7 @@ class SingleClientWalletWithAccountStorageSyncTest
  public:
   SingleClientWalletWithAccountStorageSyncTest() {
     InitWithFeatures(
-        /*enabled_features=*/{switches::kSyncUSSAutofillWalletData,
-                              autofill::features::
+        /*enabled_features=*/{autofill::features::
                                   kAutofillEnableAccountWalletStorage},
         /*disabled_features=*/{});
   }
@@ -1417,7 +1416,6 @@ class SingleClientWalletSecondaryAccountSyncTest
   SingleClientWalletSecondaryAccountSyncTest() {
     InitWithFeatures(
         /*enabled_features=*/{switches::kSyncSupportSecondaryAccount,
-                              switches::kSyncUSSAutofillWalletData,
                               autofill::features::
                                   kAutofillEnableAccountWalletStorage},
         /*disabled_features=*/{});

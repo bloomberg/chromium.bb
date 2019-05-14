@@ -1763,11 +1763,6 @@ const char kSyncUSSAutofillProfileName[] = "Enable USS for autofill profile";
 const char kSyncUSSAutofillProfileDescription[] =
     "Enables the new implementation of autofill profile sync";
 
-const char kSyncUSSAutofillWalletDataName[] =
-    "Enable USS for autofill wallet data";
-const char kSyncUSSAutofillWalletDataDescription[] =
-    "Enables the new implementation of autofill walet data sync";
-
 const char kSyncUSSAutofillWalletMetadataName[] =
     "Enable USS for autofill wallet metadata";
 const char kSyncUSSAutofillWalletMetadataDescription[] =

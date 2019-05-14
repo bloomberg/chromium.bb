@@ -34,7 +34,6 @@ extern const base::Feature kSyncSupportSecondaryAccount;
 extern const base::Feature kSyncUSSBookmarks;
 extern const base::Feature kSyncUSSPasswords;
 extern const base::Feature kSyncUSSAutofillProfile;
-extern const base::Feature kSyncUSSAutofillWalletData;
 extern const base::Feature kSyncUSSAutofillWalletMetadata;
 
 }  // namespace switches

@@ -1058,9 +1058,6 @@ extern const char kSyncSupportSecondaryAccountDescription[];
 extern const char kSyncUSSAutofillProfileName[];
 extern const char kSyncUSSAutofillProfileDescription[];
 
-extern const char kSyncUSSAutofillWalletDataName[];
-extern const char kSyncUSSAutofillWalletDataDescription[];
-
 extern const char kSyncUSSAutofillWalletMetadataName[];
 extern const char kSyncUSSAutofillWalletMetadataDescription[];
 
