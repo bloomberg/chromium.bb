@@ -7,11 +7,17 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/threading/thread_restrictions.h"
+#include "chrome/browser/chromeos/login/users/mock_user_manager.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_pref_names.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
+#include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/account_id/account_id.h"
 #include "components/download/public/background_service/download_metadata.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -49,7 +55,8 @@ class PluginVmLauncherViewForTesting : public PluginVmLauncherView {
   void OnStateUpdated() override {
     PluginVmLauncherView::OnStateUpdated();
 
-    if (state_ == State::FINISHED || state_ == State::ERROR) {
+    if (state_ == State::FINISHED || state_ == State::ERROR ||
+        state_ == State::NOT_ALLOWED) {
       if (setup_is_finished_callback_for_testing_)
         setup_is_finished_callback_for_testing_.Run();
     }
@@ -97,7 +104,9 @@ class PluginVmLauncherViewBrowserTest : public DialogBrowserTest {
   }
 
  protected:
+  chromeos::MockUserManager user_manager_;
   PluginVmLauncherViewForTesting* view_;
+  chromeos::ScopedTestingCrosSettings scoped_testing_cros_settings_;
   SetupObserver* setup_observer_;
 
   bool HasAcceptButton() {
@@ -108,6 +117,17 @@ class PluginVmLauncherViewBrowserTest : public DialogBrowserTest {
     return view_->GetDialogClientView()->cancel_button() != nullptr;
   }
 
+  void CheckSetupNotAllowed() {
+    EXPECT_FALSE(HasAcceptButton());
+    EXPECT_TRUE(HasCancelButton());
+    EXPECT_EQ(view_->GetBigMessage(),
+              l10n_util::GetStringUTF16(IDS_PLUGIN_VM_LAUNCHER_ERROR_TITLE));
+    EXPECT_EQ(
+        view_->GetMessage(),
+        l10n_util::GetStringUTF16(IDS_PLUGIN_VM_LAUNCHER_NOT_ALLOWED_MESSAGE));
+    CheckNoPluginVmImageDirExists();
+  }
+
   void CheckSetupFailed() {
     EXPECT_TRUE(HasAcceptButton());
     EXPECT_TRUE(HasCancelButton());
@@ -115,7 +135,12 @@ class PluginVmLauncherViewBrowserTest : public DialogBrowserTest {
               l10n_util::GetStringUTF16(IDS_PLUGIN_VM_LAUNCHER_RETRY_BUTTON));
     EXPECT_EQ(view_->GetBigMessage(),
               l10n_util::GetStringUTF16(IDS_PLUGIN_VM_LAUNCHER_ERROR_TITLE));
+    EXPECT_EQ(view_->GetMessage(),
+              l10n_util::GetStringUTF16(IDS_PLUGIN_VM_LAUNCHER_ERROR_MESSAGE));
+    CheckNoPluginVmImageDirExists();
+  }
 
+  void CheckNoPluginVmImageDirExists() {
     base::FilePath plugin_vm_image_dir =
         browser()
             ->profile()
@@ -147,6 +172,22 @@ class PluginVmLauncherViewBrowserTest : public DialogBrowserTest {
     EXPECT_TRUE(base::PathExists(plugin_vm_image_dir.AppendASCII(kZippedFile)));
   }
 
+  void SetPluginVmDevicePolicies() {
+    scoped_testing_cros_settings_.device_settings()->Set(
+        chromeos::kPluginVmAllowed, base::Value(true));
+    scoped_testing_cros_settings_.device_settings()->Set(
+        chromeos::kPluginVmLicenseKey, base::Value("LICENSE_KEY"));
+  }
+
+  void SetUserWithAffiliation() {
+    const AccountId account_id(AccountId::FromUserEmailGaiaId(
+        browser()->profile()->GetProfileUserName(), "id"));
+    user_manager_.AddUserWithAffiliationAndType(
+        account_id, true, user_manager::USER_TYPE_REGULAR);
+    chromeos::ProfileHelper::Get()->SetProfileToUserMappingForTesting(
+        user_manager_.GetActiveUser());
+  }
+
   void SetPluginVmImagePref(std::string url, std::string hash) {
     DictionaryPrefUpdate update(browser()->profile()->GetPrefs(),
                                 plugin_vm::prefs::kPluginVmImage);
@@ -166,6 +207,8 @@ IN_PROC_BROWSER_TEST_F(PluginVmLauncherViewBrowserTest, InvokeUi_default) {
 
 IN_PROC_BROWSER_TEST_F(PluginVmLauncherViewBrowserTest,
                        SetupShouldFinishSuccessfully) {
+  SetPluginVmDevicePolicies();
+  SetUserWithAffiliation();
   SetPluginVmImagePref(embedded_test_server()->GetURL(kZipFile).spec(),
                        kZipFileHash);
 
@@ -179,6 +222,8 @@ IN_PROC_BROWSER_TEST_F(PluginVmLauncherViewBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(PluginVmLauncherViewBrowserTest,
                        SetupShouldFailAsHashesDoNotMatch) {
+  SetPluginVmDevicePolicies();
+  SetUserWithAffiliation();
   SetPluginVmImagePref(embedded_test_server()->GetURL(kZipFile).spec(),
                        kNonMatchingHash);
 
@@ -192,6 +237,8 @@ IN_PROC_BROWSER_TEST_F(PluginVmLauncherViewBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(PluginVmLauncherViewBrowserTest,
                        SetupShouldFailAsUnzippingFails) {
+  SetPluginVmDevicePolicies();
+  SetUserWithAffiliation();
   SetPluginVmImagePref(embedded_test_server()->GetURL(kJpgFile).spec(),
                        kJpgFileHash);
 
@@ -205,6 +252,8 @@ IN_PROC_BROWSER_TEST_F(PluginVmLauncherViewBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(PluginVmLauncherViewBrowserTest,
                        CouldRetryAfterFailedSetup) {
+  SetPluginVmDevicePolicies();
+  SetUserWithAffiliation();
   SetPluginVmImagePref(embedded_test_server()->GetURL(kZipFile).spec(),
                        kNonMatchingHash);
 
@@ -224,4 +273,15 @@ IN_PROC_BROWSER_TEST_F(PluginVmLauncherViewBrowserTest,
   setup_observer_->WaitForSetupToFinish();
 
   CheckSetupIsFinishedSuccessfully();
+}
+
+IN_PROC_BROWSER_TEST_F(
+    PluginVmLauncherViewBrowserTest,
+    SetupShouldShowDisallowedMessageIfPluginVmIsNotAllowedToRun) {
+  ShowUi("default");
+  EXPECT_NE(nullptr, view_);
+
+  // We do not have to wait for setup to finish since the NOT_ALLOWED state
+  // is set during dialogue construction.
+  CheckSetupNotAllowed();
 }

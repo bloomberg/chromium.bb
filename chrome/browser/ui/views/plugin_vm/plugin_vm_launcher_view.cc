@@ -62,7 +62,8 @@ void plugin_vm::ShowPluginVmLauncherView(Profile* profile) {
 }
 
 PluginVmLauncherView::PluginVmLauncherView(Profile* profile)
-    : plugin_vm_image_manager_(
+    : profile_(profile),
+      plugin_vm_image_manager_(
           plugin_vm::PluginVmImageManagerFactory::GetForProfile(profile)) {
   // Layout constants from the spec.
   gfx::Insets kDialogInsets(60, 64, 0, 64);
@@ -180,6 +181,8 @@ int PluginVmLauncherView::GetDialogButtons() const {
       return ui::DIALOG_BUTTON_OK;
     case State::ERROR:
       return ui::DIALOG_BUTTON_CANCEL | ui::DIALOG_BUTTON_OK;
+    case State::NOT_ALLOWED:
+      return ui::DIALOG_BUTTON_CANCEL;
   }
 }
 
@@ -201,6 +204,10 @@ base::string16 PluginVmLauncherView::GetDialogButtonLabel(
       return l10n_util::GetStringUTF16(button == ui::DIALOG_BUTTON_OK
                                            ? IDS_PLUGIN_VM_LAUNCHER_RETRY_BUTTON
                                            : IDS_APP_CANCEL);
+    }
+    case State::NOT_ALLOWED: {
+      DCHECK_EQ(button, ui::DIALOG_BUTTON_CANCEL);
+      return l10n_util::GetStringUTF16(IDS_APP_CANCEL);
     }
   }
 }
@@ -340,7 +347,7 @@ void PluginVmLauncherView::OnRegistrationFailed() {
   OnStateUpdated();
 }
 
-base::string16 PluginVmLauncherView::GetBigMessage() {
+base::string16 PluginVmLauncherView::GetBigMessage() const {
   switch (state_) {
     case State::START_DOWNLOADING:
     case State::DOWNLOADING:
@@ -351,7 +358,32 @@ base::string16 PluginVmLauncherView::GetBigMessage() {
     case State::FINISHED:
       return l10n_util::GetStringUTF16(IDS_PLUGIN_VM_LAUNCHER_FINISHED_TITLE);
     case State::ERROR:
+    case State::NOT_ALLOWED:
       return l10n_util::GetStringUTF16(IDS_PLUGIN_VM_LAUNCHER_ERROR_TITLE);
+  }
+}
+
+base::string16 PluginVmLauncherView::GetMessage() const {
+  switch (state_) {
+    case State::START_DOWNLOADING:
+      return l10n_util::GetStringUTF16(
+          IDS_PLUGIN_VM_LAUNCHER_START_DOWNLOADING_MESSAGE);
+    case State::DOWNLOADING:
+      return l10n_util::GetStringUTF16(
+          IDS_PLUGIN_VM_LAUNCHER_DOWNLOADING_MESSAGE);
+    case State::UNZIPPING:
+      return l10n_util::GetStringUTF16(
+          IDS_PLUGIN_VM_LAUNCHER_UNZIPPING_MESSAGE);
+    case State::REGISTERING:
+      return l10n_util::GetStringUTF16(
+          IDS_PLUGIN_VM_LAUNCHER_REGISTERING_MESSAGE);
+    case State::FINISHED:
+      return l10n_util::GetStringUTF16(IDS_PLUGIN_VM_LAUNCHER_FINISHED_MESSAGE);
+    case State::ERROR:
+      return l10n_util::GetStringUTF16(IDS_PLUGIN_VM_LAUNCHER_ERROR_MESSAGE);
+    case State::NOT_ALLOWED:
+      return l10n_util::GetStringUTF16(
+          IDS_PLUGIN_VM_LAUNCHER_NOT_ALLOWED_MESSAGE);
   }
 }
 
@@ -361,7 +393,17 @@ PluginVmLauncherView::~PluginVmLauncherView() {
 }
 
 void PluginVmLauncherView::AddedToWidget() {
-  StartPluginVmImageDownload();
+  // Defensive check that ensures an error message is shown if this
+  // dialogue is reached somehow although PluginVm has been disabled.
+  if (!plugin_vm::IsPluginVmAllowedForProfile(profile_)) {
+    LOG(ERROR) << "PluginVm is disallowed by policy. Showing error screen.";
+    state_ = State::NOT_ALLOWED;
+  }
+
+  if (state_ == State::START_DOWNLOADING)
+    StartPluginVmImageDownload();
+  else
+    OnStateUpdated();
 }
 
 void PluginVmLauncherView::OnStateUpdated() {
@@ -387,27 +429,6 @@ void PluginVmLauncherView::OnStateUpdated() {
 
   DialogModelChanged();
   GetWidget()->GetRootView()->Layout();
-}
-
-base::string16 PluginVmLauncherView::GetMessage() const {
-  switch (state_) {
-    case State::START_DOWNLOADING:
-      return l10n_util::GetStringUTF16(
-          IDS_PLUGIN_VM_LAUNCHER_START_DOWNLOADING_MESSAGE);
-    case State::DOWNLOADING:
-      return l10n_util::GetStringUTF16(
-          IDS_PLUGIN_VM_LAUNCHER_DOWNLOADING_MESSAGE);
-    case State::UNZIPPING:
-      return l10n_util::GetStringUTF16(
-          IDS_PLUGIN_VM_LAUNCHER_UNZIPPING_MESSAGE);
-    case State::REGISTERING:
-      return l10n_util::GetStringUTF16(
-          IDS_PLUGIN_VM_LAUNCHER_REGISTERING_MESSAGE);
-    case State::FINISHED:
-      return l10n_util::GetStringUTF16(IDS_PLUGIN_VM_LAUNCHER_FINISHED_MESSAGE);
-    case State::ERROR:
-      return l10n_util::GetStringUTF16(IDS_PLUGIN_VM_LAUNCHER_ERROR_MESSAGE);
-  }
 }
 
 base::string16 PluginVmLauncherView::GetDownloadProgressMessage(
@@ -465,7 +486,7 @@ void PluginVmLauncherView::SetMessageLabel() {
 }
 
 void PluginVmLauncherView::SetBigImage() {
-  if (state_ == State::ERROR) {
+  if (state_ == State::ERROR || state_ == State::NOT_ALLOWED) {
     big_image_->SetImage(
         ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
             IDR_PLUGIN_VM_LAUNCHER_ERROR));

@@ -11,11 +11,15 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/optional.h"
+#include "chrome/browser/chromeos/login/users/mock_user_manager.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_image_download_client.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_image_manager_factory.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_pref_names.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/account_id/account_id.h"
 #include "components/download/public/background_service/test/test_download_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -44,6 +48,7 @@ const char kPluginVmImageFile2[] = "plugin_vm_image_file_2";
 const char kContent2[] = "This is content #2.";
 const int kContent2Size = strlen(kContent2);
 const int kContentSize = kContent1Size + kContent2Size;
+const char kLicenseKey[] = "LICENSE_KEY";
 
 }  // namespace
 
@@ -73,6 +78,8 @@ class PluginVmImageManagerTest : public testing::Test {
       : download_service_(new download::test::TestDownloadService()) {}
 
  protected:
+  chromeos::MockUserManager user_manager_;
+  chromeos::ScopedCrosSettingsTestHelper settings_helper_;
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
   std::unique_ptr<TestingProfile> profile_;
   PluginVmImageManager* manager_;
@@ -95,11 +102,29 @@ class PluginVmImageManagerTest : public testing::Test {
     manager_->SetObserver(observer_.get());
 
     fake_downloaded_plugin_vm_image_archive_ = CreateZipFile();
+
+    SetPluginVmDevicePolicies();
+    SetUserWithAffiliation();
   }
 
   void TearDown() override {
     profile_.reset();
     observer_.reset();
+  }
+
+  void SetPluginVmDevicePolicies() {
+    settings_helper_.ReplaceDeviceSettingsProviderWithStub();
+    settings_helper_.SetBoolean(chromeos::kPluginVmAllowed, true);
+    settings_helper_.SetString(chromeos::kPluginVmLicenseKey, kLicenseKey);
+  }
+
+  void SetUserWithAffiliation() {
+    const AccountId account_id(
+        AccountId::FromUserEmailGaiaId(profile_->GetProfileUserName(), "id"));
+    user_manager_.AddUserWithAffiliationAndType(
+        account_id, true, user_manager::USER_TYPE_REGULAR);
+    chromeos::ProfileHelper::Get()->SetProfileToUserMappingForTesting(
+        user_manager_.GetActiveUser());
   }
 
   void SetPluginVmImagePref(std::string url, std::string hash) {
@@ -396,6 +421,12 @@ TEST_F(PluginVmImageManagerTest, VerifyDownloadTest) {
   EXPECT_TRUE(manager_->VerifyDownload(kHashUppercase));
   EXPECT_TRUE(manager_->VerifyDownload(kHash));
   EXPECT_FALSE(manager_->VerifyDownload(std::string()));
+}
+
+TEST_F(PluginVmImageManagerTest, CannotStartDownloadIfPluginVmGetsDisabled) {
+  settings_helper_.SetBoolean(chromeos::kPluginVmAllowed, false);
+  EXPECT_CALL(*observer_, OnDownloadFailed());
+  ProcessImageUntilUnzipping();
 }
 
 }  // namespace plugin_vm

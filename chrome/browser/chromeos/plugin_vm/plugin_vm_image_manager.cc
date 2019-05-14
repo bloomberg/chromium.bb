@@ -15,6 +15,7 @@
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_pref_names.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/download/public/background_service/download_metadata.h"
@@ -46,6 +47,16 @@ void PluginVmImageManager::StartDownload() {
     LOG(ERROR) << "Download of a PluginVm image couldn't be started as"
                << " another PluginVm image is currently being processed "
                << "in state " << GetStateName(state_);
+    OnDownloadFailed();
+    return;
+  }
+
+  // Defensive check preventing any download attempts when PluginVm is
+  // not allowed to run (this might happen in rare cases if PluginVm has
+  // been disabled but the installer icon is still visible).
+  if (!IsPluginVmAllowedForProfile(profile_)) {
+    LOG(ERROR) << "Download of PluginVm image cannot be started because "
+               << "the user is not allowed to run PluginVm";
     OnDownloadFailed();
     return;
   }

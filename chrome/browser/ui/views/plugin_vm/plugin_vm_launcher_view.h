@@ -51,7 +51,8 @@ class PluginVmLauncherView : public views::BubbleDialogDelegateView,
   void OnRegistrationFailed() override;
 
   // Public for testing purposes.
-  base::string16 GetBigMessage();
+  base::string16 GetBigMessage() const;
+  base::string16 GetMessage() const;
 
  protected:
   enum class State {
@@ -61,6 +62,7 @@ class PluginVmLauncherView : public views::BubbleDialogDelegateView,
     REGISTERING,        // PluginVm image registering is in progress.
     FINISHED,           // PluginVm environment setting has been finished.
     ERROR,              // Something unexpected happened.
+    NOT_ALLOWED,        // PluginVm is disallowed on the device.
   };
 
   State state_ = State::START_DOWNLOADING;
@@ -71,7 +73,6 @@ class PluginVmLauncherView : public views::BubbleDialogDelegateView,
   void AddedToWidget() override;
 
  private:
-  base::string16 GetMessage() const;
   base::string16 GetDownloadProgressMessage(uint64_t downlaoded_bytes,
                                             int64_t content_length) const;
   // Returns empty string in case time left cannot be estimated.
@@ -84,6 +85,7 @@ class PluginVmLauncherView : public views::BubbleDialogDelegateView,
 
   void StartPluginVmImageDownload();
 
+  Profile* profile_ = nullptr;
   plugin_vm::PluginVmImageManager* plugin_vm_image_manager_ = nullptr;
   views::Label* big_message_label_ = nullptr;
   views::Label* message_label_ = nullptr;

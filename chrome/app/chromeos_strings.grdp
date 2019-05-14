@@ -3868,6 +3868,9 @@
   <message name="IDS_PLUGIN_VM_LAUNCHER_ERROR_MESSAGE" desc="Description of the current state of PluginVm environment setting." translateable="false">
     The <ph name="APP_NAME">Plugin VM</ph> installation failed. Please try again.
   </message>
+  <message name="IDS_PLUGIN_VM_LAUNCHER_NOT_ALLOWED_MESSAGE" desc="Error message to be shown if a setup/launch is attempted although PluginVm is disabled." translateable="false">
+   Please contact your admin to enable <ph name="APP_NAME">Plugin VM</ph> on this device.
+  </message>
   <message name="IDS_PLUGIN_VM_LAUNCHER_DOWNLOAD_PROGRESS_MESSAGE" desc="Text shown in the PluginVm launcher during downloading PluginVm image that shows download progress." translateable="false">
     <ph name="DOWNLOADED_SIZE">$1<ex>1.2</ex></ph>/<ph name="DOWNLOAD_SIZE">$2<ex>3.4 GB</ex></ph>
   </message>
