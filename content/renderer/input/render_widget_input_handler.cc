@@ -216,7 +216,8 @@ RenderWidgetInputHandler::RenderWidgetInputHandler(
       handling_event_overscroll_(nullptr),
       handling_injected_scroll_params_(nullptr),
       handling_event_type_(WebInputEvent::kUndefined),
-      suppress_next_char_events_(false) {
+      suppress_next_char_events_(false),
+      last_injected_gesture_was_begin_(false) {
   DCHECK(delegate);
   DCHECK(widget);
   delegate->SetInputHandler(this);
@@ -441,23 +442,9 @@ void RenderWidgetInputHandler::HandleInputEvent(
   // scroll gestures back into blink, e.g., a mousedown on a scrollbar. We
   // do this here so that we can attribute lateny information from the mouse as
   // a scroll interaction, instead of just classifying as mouse input.
-  if (injected_scroll_params) {
-    // TODO(dlibby): Create a copy of latency_info with new type
-    // and set a new swap promise monitor.
-    WebFloatPoint position = ui::PositionInWidgetFromInputEvent(input_event);
-    for (const InjectScrollGestureParams& params : *injected_scroll_params) {
-      std::unique_ptr<WebGestureEvent> gesture_event =
-          ui::GenerateInjectedScrollGesture(
-              params.type, input_event.TimeStamp(), params.device, position,
-              params.scroll_delta, params.granularity);
-      if (params.type == WebInputEvent::Type::kGestureScrollBegin) {
-        gesture_event->data.scroll_begin.scrollable_area_element_id =
-            params.scrollable_area_element_id.GetInternalValue();
-      }
-
-      widget_->GetWebWidget()->HandleInputEvent(
-          blink::WebCoalescedInputEvent(*gesture_event.get()));
-    }
+  if (injected_scroll_params && injected_scroll_params->size()) {
+    HandleInjectedScrollGestures(*injected_scroll_params, input_event,
+                                 latency_info);
   }
 
   // Send gesture scroll events and their dispositions to the compositor thread,
@@ -600,6 +587,69 @@ void RenderWidgetInputHandler::InjectGestureScrollEvent(
         std::move(web_scoped_gesture_event), latency_info,
         DISPATCH_TYPE_BLOCKING, INPUT_EVENT_ACK_STATE_NOT_CONSUMED,
         std::move(handled_event));
+  }
+}
+
+void RenderWidgetInputHandler::HandleInjectedScrollGestures(
+    std::vector<InjectScrollGestureParams> injected_scroll_params,
+    const WebInputEvent& input_event,
+    const ui::LatencyInfo& original_latency_info) {
+  DCHECK(injected_scroll_params.size());
+
+  base::TimeTicks original_timestamp;
+  bool found_original_component = original_latency_info.FindLatency(
+      ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, &original_timestamp);
+  DCHECK(found_original_component);
+
+  WebFloatPoint position = ui::PositionInWidgetFromInputEvent(input_event);
+  for (const InjectScrollGestureParams& params : injected_scroll_params) {
+    // Set up a new LatencyInfo for the injected scroll - this is the original
+    // LatencyInfo for the input event that was being handled when the scroll
+    // was injected. This new LatencyInfo will have a modified type, and an
+    // additional scroll update component. Also set up a SwapPromiseMonitor that
+    // will cause the LatencyInfo to be sent up with the compositor frame, if
+    // the GSU causes a commit. This allows end to end latency to be logged for
+    // the injected scroll, annotated with the correct type.
+    ui::LatencyInfo scrollbar_latency_info(original_latency_info);
+
+    // Currently only scrollbar is supported - if this DCHECK hits due to a
+    // new type being injected, please modify the type passed to
+    // |set_source_event_type()|.
+    DCHECK(params.device == blink::WebGestureDevice::kScrollbar);
+    scrollbar_latency_info.set_source_event_type(
+        ui::SourceEventType::SCROLLBAR);
+    scrollbar_latency_info.AddLatencyNumber(
+        ui::LatencyComponentType::INPUT_EVENT_LATENCY_RENDERER_MAIN_COMPONENT);
+
+    if (params.type == WebInputEvent::Type::kGestureScrollUpdate) {
+      scrollbar_latency_info.AddLatencyNumberWithTimestamp(
+          last_injected_gesture_was_begin_
+              ? ui::INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT
+              : ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT,
+          original_timestamp, 1);
+    }
+
+    std::unique_ptr<cc::SwapPromiseMonitor> swap_promise_monitor;
+    if (widget_->layer_tree_view()) {
+      swap_promise_monitor =
+          widget_->layer_tree_view()->CreateLatencyInfoSwapPromiseMonitor(
+              &scrollbar_latency_info);
+    }
+
+    std::unique_ptr<WebGestureEvent> gesture_event =
+        ui::GenerateInjectedScrollGesture(
+            params.type, input_event.TimeStamp(), params.device, position,
+            params.scroll_delta, params.granularity);
+    if (params.type == WebInputEvent::Type::kGestureScrollBegin) {
+      gesture_event->data.scroll_begin.scrollable_area_element_id =
+          params.scrollable_area_element_id.GetInternalValue();
+      last_injected_gesture_was_begin_ = true;
+    } else {
+      last_injected_gesture_was_begin_ = false;
+    }
+
+    widget_->GetWebWidget()->HandleInputEvent(
+        blink::WebCoalescedInputEvent(*gesture_event.get()));
   }
 }
 
