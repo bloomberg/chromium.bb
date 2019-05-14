@@ -119,15 +119,15 @@ TEST_F(AllowedByNosniffTest, AllowedOrNot) {
       EXPECT_CALL(*logger, AddConsoleMessage(_, _, _));
     EXPECT_EQ(testcase.allowed,
               AllowedByNosniff::MimeTypeAsScript(*context, logger, response,
-                                                 MimeTypeCheck::kLax, false));
+                                                 MimeTypeCheck::kLax));
     ::testing::Mock::VerifyAndClear(context);
 
     EXPECT_CALL(*context, CountUsage(_)).Times(::testing::AnyNumber());
     if (!testcase.strict_allowed)
       EXPECT_CALL(*logger, AddConsoleMessage(_, _, _));
     EXPECT_EQ(testcase.strict_allowed,
-              AllowedByNosniff::MimeTypeAsScript(
-                  *context, logger, response, MimeTypeCheck::kStrict, false));
+              AllowedByNosniff::MimeTypeAsScript(*context, logger, response,
+                                                 MimeTypeCheck::kStrict));
     ::testing::Mock::VerifyAndClear(context);
   }
 }
@@ -184,7 +184,7 @@ TEST_F(AllowedByNosniffTest, Counters) {
     EXPECT_CALL(*context, CountUsage(::testing::Ne(testcase.expected)))
         .Times(::testing::AnyNumber());
     AllowedByNosniff::MimeTypeAsScript(*context, logger, response,
-                                       MimeTypeCheck::kLax, false);
+                                       MimeTypeCheck::kLax);
     ::testing::Mock::VerifyAndClear(context);
   }
 }
@@ -232,7 +232,7 @@ TEST_F(AllowedByNosniffTest, AllTheSchemes) {
     response.SetHttpHeaderField("X-Content-Type-Options", "nosniff");
     EXPECT_EQ(testcase.allowed,
               AllowedByNosniff::MimeTypeAsScript(*context, logger, response,
-                                                 MimeTypeCheck::kLax, false));
+                                                 MimeTypeCheck::kLax));
   }
 }
 

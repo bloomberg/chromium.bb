@@ -22455,16 +22455,16 @@ Called by update_net_error_codes.py.-->
   <int value="2174" label="CrossOriginTextHtml"/>
   <int value="2175" label="CrossOriginTextPlain"/>
   <int value="2176" label="CrossOriginTextXml"/>
-  <int value="2177" label="SameOriginWorkerApplicationOctetStream"/>
-  <int value="2178" label="SameOriginWorkerApplicationXml"/>
-  <int value="2179" label="SameOriginWorkerTextHtml"/>
-  <int value="2180" label="SameOriginWorkerTextPlain"/>
-  <int value="2181" label="SameOriginWorkerTextXml"/>
-  <int value="2182" label="CrossOriginWorkerApplicationOctetStream"/>
-  <int value="2183" label="CrossOriginWorkerApplicationXml"/>
-  <int value="2184" label="CrossOriginWorkerTextHtml"/>
-  <int value="2185" label="CrossOriginWorkerTextPlain"/>
-  <int value="2186" label="CrossOriginWorkerTextXml"/>
+  <int value="2177" label="OBSOLETE_SameOriginWorkerApplicationOctetStream"/>
+  <int value="2178" label="OBSOLETE_SameOriginWorkerApplicationXml"/>
+  <int value="2179" label="OBSOLETE_SameOriginWorkerTextHtml"/>
+  <int value="2180" label="OBSOLETE_SameOriginWorkerTextPlain"/>
+  <int value="2181" label="OBSOLETE_SameOriginWorkerTextXml"/>
+  <int value="2182" label="OBSOLETE_CrossOriginWorkerApplicationOctetStream"/>
+  <int value="2183" label="OBSOLETE_CrossOriginWorkerApplicationXml"/>
+  <int value="2184" label="OBSOLETE_CrossOriginWorkerTextHtml"/>
+  <int value="2185" label="OBSOLETE_CrossOriginWorkerTextPlain"/>
+  <int value="2186" label="OBSOLETE_CrossOriginWorkerTextXml"/>
   <int value="2187" label="OBSOLETE_ImageCaptureSetOptions"/>
   <int value="2188" label="PerformanceObserverForWindow"/>
   <int value="2189" label="PerformanceObserverForWorker"/>

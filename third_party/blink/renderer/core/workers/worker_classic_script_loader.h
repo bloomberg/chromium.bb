@@ -156,7 +156,6 @@ class CORE_EXPORT WorkerClassicScriptLoader final
   std::unique_ptr<Vector<String>> origin_trial_tokens_;
   String referrer_policy_;
 
-  bool is_worker_global_scope_ = false;
   Member<ResourceFetcher> fetch_client_settings_object_fetcher_;
 };
 

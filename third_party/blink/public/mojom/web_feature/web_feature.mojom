@@ -1618,16 +1618,6 @@ enum WebFeature {
   kCrossOriginTextHtml = 2174,
   kCrossOriginTextPlain = 2175,
   kCrossOriginTextXml = 2176,
-  kSameOriginWorkerApplicationOctetStream = 2177,
-  kSameOriginWorkerApplicationXml = 2178,
-  kSameOriginWorkerTextHtml = 2179,
-  kSameOriginWorkerTextPlain = 2180,
-  kSameOriginWorkerTextXml = 2181,
-  kCrossOriginWorkerApplicationOctetStream = 2182,
-  kCrossOriginWorkerApplicationXml = 2183,
-  kCrossOriginWorkerTextHtml = 2184,
-  kCrossOriginWorkerTextPlain = 2185,
-  kCrossOriginWorkerTextXml = 2186,
   // The above items are available as of the M63 branch.
 
   kPerformanceObserverForWindow = 2188,

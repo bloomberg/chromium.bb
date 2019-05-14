@@ -343,8 +343,7 @@ ClassicScript* ClassicPendingScript::GetSource(const KURL& document_url) const {
   // If the MIME check fails, which is considered as load failure.
   if (!AllowedByNosniff::MimeTypeAsScript(
           fetcher->Context(), &fetcher->GetConsoleLogger(),
-          resource->GetResponse(), AllowedByNosniff::MimeTypeCheck::kLax,
-          false)) {
+          resource->GetResponse(), AllowedByNosniff::MimeTypeCheck::kLax)) {
     return nullptr;
   }
 

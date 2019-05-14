@@ -145,8 +145,6 @@ void WorkerClassicScriptLoader::LoadTopLevelScriptAsynchronously(
   fetch_client_settings_object_fetcher_ = fetch_client_settings_object_fetcher;
   is_top_level_script_ = true;
 
-  is_worker_global_scope_ = execution_context.IsWorkerGlobalScope();
-
   ResourceRequest request(url);
   request.SetHttpMethod(http_names::kGET);
   request.SetExternalRequestStateFromRequestorAddressSpace(
@@ -183,8 +181,7 @@ void WorkerClassicScriptLoader::DidReceiveResponse(
           &fetch_client_settings_object_fetcher_->GetConsoleLogger(), response,
           fetch_client_settings_object_fetcher_->GetProperties()
               .GetFetchClientSettingsObject()
-              .MimeTypeCheckForClassicWorkerScript(),
-          is_worker_global_scope_)) {
+              .MimeTypeCheckForClassicWorkerScript())) {
     NotifyError();
     return;
   }
