@@ -43,8 +43,8 @@ enum PolicySource {
   POLICY_SOURCE_ACTIVE_DIRECTORY,
 
   // Any non-platform policy was overridden because we are running in a
-  // public session.
-  POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE,
+  // public session or kiosk mode.
+  POLICY_SOURCE_DEVICE_LOCAL_ACCOUNT_OVERRIDE,
 
   // The policy was set by a platform source.
   POLICY_SOURCE_PLATFORM,
