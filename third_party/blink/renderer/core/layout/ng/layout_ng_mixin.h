@@ -52,7 +52,13 @@ class LayoutNGMixin : public Base {
 
   PositionWithAffinity PositionForPoint(const LayoutPoint&) const final;
 
-  NGPaintFragment* PaintFragment() const final { return paint_fragment_.get(); }
+  NGPaintFragment* PaintFragment() const final {
+    // TODO(layout-dev) crbug.com/963103
+    // Safer option here is to return nullptr only if
+    // Lifecycle > DocumentLifecycle::kAfterPerformLayout, but this breaks
+    // some layout tests.
+    return Base::NeedsLayout() ? nullptr : paint_fragment_.get();
+  }
   void SetPaintFragment(const NGBlockBreakToken*,
                         scoped_refptr<const NGPhysicalFragment>) final;
 
