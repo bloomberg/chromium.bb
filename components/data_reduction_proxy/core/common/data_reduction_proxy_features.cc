@@ -61,5 +61,11 @@ const base::Feature kDataReductionProxyDisableProxyFailedWarmup{
     "DataReductionProxyDisableProxyFailedWarmup",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables server experiments run jointly with Chrome. The experiment
+// id should be specified using the finch parameter
+// params::GetDataSaverServerExperimentsOptionName().
+const base::Feature kDataReductionProxyServerExperiments{
+    "DataReductionProxyServerExperiments", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace data_reduction_proxy

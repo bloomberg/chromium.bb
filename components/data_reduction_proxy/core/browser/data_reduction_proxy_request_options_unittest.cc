@@ -14,10 +14,12 @@
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/variations/variations_associated_data.h"
@@ -260,7 +262,6 @@ TEST_F(DataReductionProxyRequestOptionsTest, ParseExperiments) {
 
 TEST_F(DataReductionProxyRequestOptionsTest, ParseExperimentsFromFieldTrial) {
   const char kFieldTrialGroupFoo[] = "enabled_foo";
-  const char kFieldTrialGroupBar[] = "enabled_bar";
   const char kExperimentFoo[] = "foo";
   const char kExperimentBar[] = "bar";
   const struct {
@@ -274,36 +275,36 @@ TEST_F(DataReductionProxyRequestOptionsTest, ParseExperimentsFromFieldTrial) {
       {"disabled_group", kExperimentFoo, false, kExperimentFoo},
       // Valid field trial groups should pick from field trial.
       {kFieldTrialGroupFoo, std::string(), false, kExperimentFoo},
-      {kFieldTrialGroupBar, std::string(), false, kExperimentBar},
       {kFieldTrialGroupFoo, std::string(), true, std::string()},
-      {kFieldTrialGroupBar, std::string(), true, std::string()},
       // Experiments from command line switch should override.
       {kFieldTrialGroupFoo, kExperimentBar, false, kExperimentBar},
-      {kFieldTrialGroupBar, kExperimentFoo, false, kExperimentFoo},
       {kFieldTrialGroupFoo, kExperimentBar, false, kExperimentBar},
-      {kFieldTrialGroupBar, kExperimentFoo, false, kExperimentFoo},
       {kFieldTrialGroupFoo, kExperimentBar, true, std::string()},
-      {kFieldTrialGroupBar, kExperimentFoo, true, std::string()},
   };
 
-  std::map<std::string, std::string> server_experiment_foo,
-      server_experiment_bar;
+  std::map<std::string, std::string> server_experiment_foo;
 
   server_experiment_foo[params::GetDataSaverServerExperimentsOptionName()] =
       kExperimentFoo;
-  server_experiment_bar[params::GetDataSaverServerExperimentsOptionName()] =
-      kExperimentBar;
-  ASSERT_TRUE(variations::AssociateVariationParams(
-      params::GetDataSaverServerExperimentsFieldTrialNameForTesting(),
-      kFieldTrialGroupFoo, server_experiment_foo));
-  ASSERT_TRUE(variations::AssociateVariationParams(
-      params::GetDataSaverServerExperimentsFieldTrialNameForTesting(),
-      kFieldTrialGroupBar, server_experiment_bar));
 
   for (const auto& test : tests) {
+    // Remove all related switches first to reset the test state.
+    base::CommandLine::ForCurrentProcess()->RemoveSwitch(
+        data_reduction_proxy::switches::kDataReductionProxyExperiment);
+    base::CommandLine::ForCurrentProcess()->RemoveSwitch(
+        switches::kDataReductionProxyServerExperimentsDisabled);
+
     std::string expected_experiments;
 
-    base::CommandLine::ForCurrentProcess()->InitFromArgv(0, nullptr);
+    base::test::ScopedFeatureList scoped_feature_list;
+
+    if (test.field_trial_group != "disabled_group") {
+      scoped_feature_list.InitWithFeaturesAndParameters(
+          {{data_reduction_proxy::features::
+                kDataReductionProxyServerExperiments,
+            {server_experiment_foo}}},
+          {});
+    }
 
     if (test.disable_server_experiments_via_flag) {
       base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
@@ -312,15 +313,9 @@ TEST_F(DataReductionProxyRequestOptionsTest, ParseExperimentsFromFieldTrial) {
       base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
           data_reduction_proxy::switches::kDataReductionProxyExperiment,
           test.command_line_experiment);
-      base::CommandLine::ForCurrentProcess()->RemoveSwitch(
-          switches::kDataReductionProxyServerExperimentsDisabled);
     }
 
     std::string expected_header;
-    base::FieldTrialList field_trial_list(nullptr);
-    base::FieldTrialList::CreateFieldTrial(
-        params::GetDataSaverServerExperimentsFieldTrialNameForTesting(),
-        test.field_trial_group);
 
     if (!test.expected_experiment.empty())
       expected_experiments = test.expected_experiment;
@@ -342,14 +337,13 @@ TEST_F(DataReductionProxyRequestOptionsTest, TestExperimentPrecedence) {
   // Field trial has the lowest priority.
   std::map<std::string, std::string> server_experiment;
   server_experiment[params::GetDataSaverServerExperimentsOptionName()] = "foo";
-  ASSERT_TRUE(variations::AssociateVariationParams(
-      params::GetDataSaverServerExperimentsFieldTrialNameForTesting(),
-      "enabled", server_experiment));
 
-  base::FieldTrialList field_trial_list(nullptr);
-  base::FieldTrialList::CreateFieldTrial(
-      params::GetDataSaverServerExperimentsFieldTrialNameForTesting(),
-      "enabled");
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeaturesAndParameters(
+      {{data_reduction_proxy::features::kDataReductionProxyServerExperiments,
+        {server_experiment}}},
+      {});
+
   std::string expected_experiments = "foo";
   std::string expected_header;
   SetHeaderExpectations(std::string(), kClientStr, kExpectedBuild,

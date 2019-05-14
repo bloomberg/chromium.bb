@@ -146,9 +146,8 @@ TEST_F(DataReductionProxyParamsTest, AreServerExperimentsEnabled) {
   };
 
   for (const auto& test : tests) {
-    base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
+    base::test::ScopedFeatureList scoped_feature_list;
 
-    base::FieldTrialList field_trial_list(nullptr);
     std::map<std::string, std::string> variation_params;
     std::string exp_name;
 
@@ -156,12 +155,12 @@ TEST_F(DataReductionProxyParamsTest, AreServerExperimentsEnabled) {
       exp_name = "foobar";
       variation_params[params::GetDataSaverServerExperimentsOptionName()] =
           exp_name;
-      ASSERT_TRUE(base::AssociateFieldTrialParams(
-          params::GetDataSaverServerExperimentsFieldTrialNameForTesting(),
-          test.trial_group_value, variation_params));
-      base::FieldTrialList::CreateFieldTrial(
-          params::GetDataSaverServerExperimentsFieldTrialNameForTesting(),
-          test.trial_group_value);
+
+      scoped_feature_list.InitWithFeaturesAndParameters(
+          {{data_reduction_proxy::features::
+                kDataReductionProxyServerExperiments,
+            {variation_params}}},
+          {});
     }
 
     base::CommandLine::ForCurrentProcess()->InitFromArgv(0, nullptr);

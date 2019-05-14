@@ -307,6 +307,8 @@ class DataReductionProxyBrowsertestBase : public InProcessBrowserTest {
 
   size_t count_proxy_server_requests_received_ = 0u;
 
+  base::test::ScopedFeatureList scoped_feature_list_;
+
  private:
   std::unique_ptr<net::test_server::HttpResponse> GetConfigResponse(
       const net::test_server::HttpRequest& request) {
@@ -320,7 +322,6 @@ class DataReductionProxyBrowsertestBase : public InProcessBrowserTest {
 
   ClientConfig config_;
   std::unique_ptr<base::RunLoop> config_run_loop_;
-  base::test::ScopedFeatureList scoped_feature_list_;
   base::test::ScopedFeatureList param_feature_list_;
   net::EmbeddedTestServer secure_proxy_check_server_;
   net::EmbeddedTestServer config_server_;
@@ -678,6 +679,49 @@ class DataReductionProxyExpBrowsertest : public DataReductionProxyBrowsertest {
 IN_PROC_BROWSER_TEST_F(DataReductionProxyExpBrowsertest,
                        ChromeProxyExpHeaderSet) {
   expect_exp_value_in_request_header_ = "foo_experiment";
+
+  net::EmbeddedTestServer proxy_server;
+  proxy_server.RegisterRequestMonitor(base::BindRepeating(
+      &DataReductionProxyBrowsertest::MonitorAndVerifyRequestsToProxyServer,
+      base::Unretained(this)));
+  proxy_server.RegisterRequestHandler(
+      base::BindRepeating(&BasicResponse, kPrimaryResponse));
+  ASSERT_TRUE(proxy_server.Start());
+  SetConfig(CreateConfigForServer(proxy_server));
+  // A network change forces the config to be fetched.
+  SimulateNetworkChange(network::mojom::ConnectionType::CONNECTION_3G);
+  WaitForConfig();
+
+  ui_test_utils::NavigateToURL(browser(), GURL("http://does.not.resolve/foo"));
+  EXPECT_LE(1u, count_proxy_server_requests_received_);
+}
+
+class DataReductionProxyExpFeatureBrowsertest
+    : public DataReductionProxyBrowsertest {
+ public:
+  void SetUp() override {
+    std::map<std::string, std::string> field_trial_params;
+    field_trial_params[data_reduction_proxy::params::
+                           GetDataSaverServerExperimentsOptionName()] =
+        experiment_name;
+
+    scoped_feature_list_.InitWithFeaturesAndParameters(
+        {{data_reduction_proxy::features::kDataReductionProxyServerExperiments,
+          {field_trial_params}},
+         {data_reduction_proxy::features::
+              kDataReductionProxyEnabledWithNetworkService,
+          {}}},
+        {});
+
+    InProcessBrowserTest::SetUp();
+  }
+
+  const std::string experiment_name = "foo_feature_experiment";
+};
+
+IN_PROC_BROWSER_TEST_F(DataReductionProxyExpFeatureBrowsertest,
+                       ChromeProxyExpHeaderSet) {
+  expect_exp_value_in_request_header_ = experiment_name;
 
   net::EmbeddedTestServer proxy_server;
   proxy_server.RegisterRequestMonitor(base::BindRepeating(

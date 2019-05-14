@@ -50,10 +50,6 @@ const char kClientConfigURL[] =
 const char kPingbackURL[] =
     "https://datasaver.googleapis.com/v1/metrics:recordPageloadMetrics";
 
-// The name of the server side experiment field trial.
-const char kServerExperimentsFieldTrial[] =
-    "DataReductionProxyServerExperiments";
-
 // LitePage black list version.
 const char kLitePageBlackListVersion[] = "lite-page-blacklist-version";
 
@@ -84,13 +80,6 @@ bool CanShowAndroidLowMemoryDevicePromo() {
                  kDataReductionProxyLowMemoryDevicePromo);
 #endif
   return false;
-}
-
-// Returns true if this client is part of the field trial that should enable
-// server experiments for the data reduction proxy.
-bool IsIncludedInServerExperimentsFieldTrial() {
-  return base::FieldTrialList::FindFullName(kServerExperimentsFieldTrial)
-             .find(kDisabled) != 0;
 }
 
 }  // namespace
@@ -364,16 +353,15 @@ std::string GetDataSaverServerExperiments() {
   if (!cmd_line_experiment.empty())
     return cmd_line_experiment;
 
-  // Next, check if the experiment is set using the field trial.
-  if (!IsIncludedInServerExperimentsFieldTrial())
+  // First check if the feature is enabled.
+  if (!base::FeatureList::IsEnabled(
+          features::kDataReductionProxyServerExperiments)) {
     return std::string();
-  return variations::GetVariationParamValue(kServerExperimentsFieldTrial,
-                                            kExperimentsOption);
+  }
+  return base::GetFieldTrialParamValueByFeature(
+      features::kDataReductionProxyServerExperiments, kExperimentsOption);
 }
 
-const char* GetDataSaverServerExperimentsFieldTrialNameForTesting() {
-  return kServerExperimentsFieldTrial;
-}
 
 GURL GetSecureProxyCheckURL() {
   std::string secure_proxy_check_url =

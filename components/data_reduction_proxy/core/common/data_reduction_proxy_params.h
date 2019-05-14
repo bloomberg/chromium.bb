@@ -110,9 +110,6 @@ std::string GetDataSaverServerExperimentsOptionName();
 // experiment is enabled.
 std::string GetDataSaverServerExperiments();
 
-// Returns the name of the server side experiment field trial.
-const char* GetDataSaverServerExperimentsFieldTrialNameForTesting();
-
 // Returns the URL to check to decide if the secure proxy origin should be
 // used.
 GURL GetSecureProxyCheckURL();
