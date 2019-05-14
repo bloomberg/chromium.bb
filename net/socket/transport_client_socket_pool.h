@@ -126,16 +126,7 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
     // request with a job.
     ConnectJob* ReleaseJob();
 
-    // TODO(eroman): Temporary until crbug.com/467797 is solved.
-    void CrashIfInvalid() const;
-
    private:
-    // TODO(eroman): Temporary until crbug.com/467797 is solved.
-    enum Liveness {
-      ALIVE = 0xCA11AB13,
-      DEAD = 0xDEADBEEF,
-    };
-
     ClientSocketHandle* const handle_;
     CompletionOnceCallback callback_;
     const ProxyAuthCallback proxy_auth_callback_;
@@ -147,9 +138,6 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
     const NetLogWithSource net_log_;
     const SocketTag socket_tag_;
     ConnectJob* job_;
-
-    // TODO(eroman): Temporary until crbug.com/467797 is solved.
-    Liveness liveness_ = ALIVE;
 
     DISALLOW_COPY_AND_ASSIGN(Request);
   };

@@ -117,9 +117,7 @@ TransportClientSocketPool::Request::Request(
     DCHECK_EQ(priority_, MAXIMUM_PRIORITY);
 }
 
-TransportClientSocketPool::Request::~Request() {
-  liveness_ = DEAD;
-}
+TransportClientSocketPool::Request::~Request() {}
 
 void TransportClientSocketPool::Request::AssignJob(ConnectJob* job) {
   DCHECK(job);
@@ -134,10 +132,6 @@ ConnectJob* TransportClientSocketPool::Request::ReleaseJob() {
   ConnectJob* job = job_;
   job_ = nullptr;
   return job;
-}
-
-void TransportClientSocketPool::Request::CrashIfInvalid() const {
-  CHECK_EQ(liveness_, ALIVE);
 }
 
 TransportClientSocketPool::TransportClientSocketPool(
@@ -1842,7 +1836,6 @@ TransportClientSocketPool::Group::RemoveUnboundRequest(
   if (unbound_requests_.empty())
     backup_job_timer_.Stop();
 
-  request->CrashIfInvalid();
   SanityCheck();
   return request;
 }

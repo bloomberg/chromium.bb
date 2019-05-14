@@ -69,27 +69,15 @@ class NET_EXPORT NetLogWithSource {
   //  the case of NULL net_log.
   static NetLogWithSource Make(NetLog* net_log, NetLogSourceType source_type);
 
-  // TODO(eroman): Temporary until crbug.com/467797 is solved.
-  void CrashIfInvalid() const;
-
   const NetLogSource& source() const { return source_; }
   NetLog* net_log() const { return net_log_; }
 
  private:
-  // TODO(eroman): Temporary until crbug.com/467797 is solved.
-  enum Liveness {
-    ALIVE = 0xCA11AB13,
-    DEAD = 0xDEADBEEF,
-  };
-
   NetLogWithSource(const NetLogSource& source, NetLog* net_log)
       : source_(source), net_log_(net_log) {}
 
   NetLogSource source_;
   NetLog* net_log_;
-
-  // TODO(eroman): Temporary until crbug.com/467797 is solved.
-  Liveness liveness_ = ALIVE;
 };
 
 }  // namespace net
