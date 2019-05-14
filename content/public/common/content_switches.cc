@@ -711,6 +711,10 @@ const char kRendererStartupDialog[]         = "renderer-startup-dialog";
 // Causes the process to run as a sandbox IPC subprocess.
 const char kSandboxIPCProcess[]             = "sandbox-ipc";
 
+// Visibly render a border around layout shift rects in the web page to help
+// debug and study layout shifts.
+const char kShowLayoutShiftRegions[] = "show-layout-shift-regions";
+
 // Visibly render a border around paint rects in the web page to help debug
 // and study painting behavior.
 const char kShowPaintRects[]                = "show-paint-rects";

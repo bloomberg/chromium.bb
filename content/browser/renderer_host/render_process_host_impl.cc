@@ -3018,6 +3018,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kRegisterPepperPlugins,
     switches::kRendererStartupDialog,
     switches::kReportVp9AsAnUnsupportedMimeType,
+    switches::kShowLayoutShiftRegions,
     switches::kShowPaintRects,
     switches::kStatsCollectionController,
     switches::kSkiaFontCacheLimitMb,

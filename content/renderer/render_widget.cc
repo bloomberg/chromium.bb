@@ -2953,6 +2953,8 @@ cc::LayerTreeSettings RenderWidget::GenerateLayerTreeSettings(
       cmd.HasSwitch(cc::switches::kShowLayerAnimationBounds);
   settings.initial_debug_state.show_paint_rects =
       cmd.HasSwitch(switches::kShowPaintRects);
+  settings.initial_debug_state.show_layout_shift_regions =
+      cmd.HasSwitch(switches::kShowLayoutShiftRegions);
   settings.initial_debug_state.show_property_changed_rects =
       cmd.HasSwitch(cc::switches::kShowPropertyChangedRects);
   settings.initial_debug_state.show_surface_damage_rects =
