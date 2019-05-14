@@ -1911,9 +1911,6 @@ const FeatureEntry kFeatureEntries[] = {
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableInputImeAPI,
                                switches::kDisableInputImeAPI)},
 #endif  // OS_WIN || OS_LINUX
-    {"enable-brotli", flag_descriptions::kEnableBrotliName,
-     flag_descriptions::kEnableBrotliDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kBrotliEncoding)},
 #if defined(OS_ANDROID)
     {"force-update-menu-type", flag_descriptions::kUpdateMenuTypeName,
      flag_descriptions::kUpdateMenuTypeDescription, kOsAndroid,

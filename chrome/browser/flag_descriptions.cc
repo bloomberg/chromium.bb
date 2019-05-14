@@ -472,10 +472,6 @@ const char kEnableAutofillSendExperimentIdsInPaymentsRPCsDescription[] =
     "If enabled, adds the status of certain experiment variations when making "
     "calls to Google Payments.";
 
-const char kEnableBrotliName[] = "Brotli Content-Encoding.";
-const char kEnableBrotliDescription[] =
-    "Enable Brotli Content-Encoding support.";
-
 const char kEnableSaveDataName[] = "Enables save data feature";
 const char kEnableSaveDataDescription[] =
     "Enables save data feature. May cause user's traffic to be proxied via "

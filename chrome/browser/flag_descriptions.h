@@ -305,9 +305,6 @@ extern const char kEnableAutofillNativeDropdownViewsDescription[];
 extern const char kEnableAutofillSendExperimentIdsInPaymentsRPCsName[];
 extern const char kEnableAutofillSendExperimentIdsInPaymentsRPCsDescription[];
 
-extern const char kEnableBrotliName[];
-extern const char kEnableBrotliDescription[];
-
 extern const char kEnableSaveDataName[];
 extern const char kEnableSaveDataDescription[];
 

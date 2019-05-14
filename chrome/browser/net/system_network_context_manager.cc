@@ -595,8 +595,7 @@ SystemNetworkContextManager::CreateDefaultNetworkContextParams() {
   content::UpdateCorsExemptHeader(network_context_params.get());
   variations::UpdateCorsExemptHeaderForVariations(network_context_params.get());
 
-  network_context_params->enable_brotli =
-      base::FeatureList::IsEnabled(features::kBrotliEncoding);
+  network_context_params->enable_brotli = true;
 
   network_context_params->user_agent = GetUserAgent();
 

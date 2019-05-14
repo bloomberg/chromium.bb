@@ -88,11 +88,6 @@ const base::Feature kTouchpadOverscrollHistoryNavigation {
 const base::Feature kBlockCredentialedSubresources{
     "BlockCredentialedSubresources", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables brotli "Accept-Encoding" advertising and "Content-Encoding" support.
-// Brotli format specification: http://www.ietf.org/id/draft-alakuijala-brotli
-const base::Feature kBrotliEncoding{"brotli-encoding",
-                                    base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables code caching for inline scripts.
 const base::Feature kCacheInlineScriptCode{"CacheInlineScriptCode",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
