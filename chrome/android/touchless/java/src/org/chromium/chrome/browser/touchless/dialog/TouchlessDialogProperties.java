@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.touchless.dialog;
 
 import android.graphics.drawable.Drawable;
 import android.support.annotation.IntDef;
+import android.support.annotation.StringRes;
 import android.view.View.OnClickListener;
 
 import org.chromium.ui.modaldialog.ModalDialogProperties;
@@ -67,9 +68,9 @@ public class TouchlessDialogProperties {
      * Struct-like class for holding the Names for the dialog actions.
      */
     public static class ActionNames {
-        public String cancel;
-        public String select;
-        public String alt;
+        public @StringRes int cancel;
+        public @StringRes int select;
+        public @StringRes int alt;
     }
 
     /**

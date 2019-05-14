@@ -135,9 +135,9 @@ public abstract class InfoBar implements InfoBarView {
         }
 
         ActionNames names = new ActionNames();
-        names.cancel = mContext.getResources().getString(R.string.cancel);
-        names.select = mContext.getResources().getString(R.string.select);
-        names.alt = "";
+        names.cancel = R.string.cancel;
+        names.select = R.string.select;
+        names.alt = 0;
         PropertyModel model =
                 new PropertyModel.Builder(TouchlessDialogProperties.ALL_DIALOG_KEYS)
                         .with(TouchlessDialogProperties.IS_FULLSCREEN, false)
