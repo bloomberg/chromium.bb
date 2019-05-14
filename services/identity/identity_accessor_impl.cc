@@ -64,7 +64,7 @@ void IdentityAccessorImpl::GetPrimaryAccountWhenAvailable(
   std::move(callback).Run(account_info, account_state);
 }
 
-void IdentityAccessorImpl::GetAccessToken(const std::string& account_id,
+void IdentityAccessorImpl::GetAccessToken(const CoreAccountId& account_id,
                                           const ScopeSet& scopes,
                                           const std::string& consumer_id,
                                           GetAccessTokenCallback callback) {

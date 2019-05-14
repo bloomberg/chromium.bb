@@ -108,7 +108,7 @@ class FakeIdentityService
     std::move(callback).Run(account_info, {});
   }
 
-  void GetAccessToken(const std::string& account_id,
+  void GetAccessToken(const CoreAccountId& account_id,
                       const ::identity::ScopeSet& scopes,
                       const std::string& consumer_id,
                       GetAccessTokenCallback callback) override {

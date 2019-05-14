@@ -4,6 +4,8 @@
 
 #include "services/identity/public/cpp/core_account_info_mojom_traits.h"
 
+#include "services/identity/public/cpp/core_account_id_mojom_traits.h"
+
 namespace mojo {
 
 // static
@@ -11,7 +13,7 @@ bool StructTraits<
     identity::mojom::CoreAccountInfo::DataView,
     ::CoreAccountInfo>::Read(identity::mojom::CoreAccountInfo::DataView data,
                              ::CoreAccountInfo* out) {
-  std::string account_id;
+  CoreAccountId account_id;
   std::string gaia;
   std::string email;
 

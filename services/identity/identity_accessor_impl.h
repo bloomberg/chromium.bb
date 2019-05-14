@@ -11,6 +11,7 @@
 #include "base/callback_list.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
+#include "google_apis/gaia/core_account_id.h"
 #include "services/identity/public/cpp/account_state.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/cpp/scope_set.h"
@@ -42,7 +43,7 @@ class IdentityAccessorImpl : public mojom::IdentityAccessor,
   void GetPrimaryAccountInfo(GetPrimaryAccountInfoCallback callback) override;
   void GetPrimaryAccountWhenAvailable(
       GetPrimaryAccountWhenAvailableCallback callback) override;
-  void GetAccessToken(const std::string& account_id,
+  void GetAccessToken(const CoreAccountId& account_id,
                       const ScopeSet& scopes,
                       const std::string& consumer_id,
                       GetAccessTokenCallback callback) override;
