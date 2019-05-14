@@ -640,6 +640,7 @@
     // normal
     "strict",
     "after-white-space",
+    "anywhere",
 
     // hyphens
     "manual",

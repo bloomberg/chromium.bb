@@ -3612,7 +3612,7 @@
       inherited: true,
       field_group: "*",
       field_template: "keyword",
-      keywords: ["auto", "loose", "normal", "strict", "after-white-space"],
+      keywords: ["auto", "loose", "normal", "strict", "after-white-space", "anywhere"],
       default_value: "auto",
       type_name: "LineBreak",
     },
@@ -3621,7 +3621,7 @@
       property_methods: ["CSSValueFromComputedStyleInternal"],
       inherited: true,
       type_name: "LineBreak",
-      keywords: ["auto", "loose", "normal", "strict"],
+      keywords: ["auto", "loose", "normal", "strict", "anywhere"],
       typedom_types: ["Keyword"]
     },
     // An Apple extension.

@@ -62,6 +62,9 @@ crbug.com/591099 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 crbug.com/591099 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/sizing/hori-block-size-small-or-larger-than-container-with-min-or-max-content-2b.html [ Pass ]
 crbug.com/591099 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/sizing/vert-block-size-small-or-larger-than-container-with-min-or-max-content-2a.html [ Pass ]
 
+crbug.com/952254 external/wpt/css/css-text/word-break/word-break-break-all-017.html [ Failure ]
+crbug.com/952254 external/wpt/css/css-text/word-break/word-break-break-all-022.html [ Failure ]
+
 # New failures are appended below by the script.
 crbug.com/591099 css3/filters/composited-layer-child-bounds-after-composited-to-sw-shadow-change.html [ Failure ]
 crbug.com/591099 css3/filters/effect-drop-shadow-hw.html [ Pass ]

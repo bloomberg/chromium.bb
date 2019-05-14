@@ -1622,8 +1622,10 @@ void NGLineBreaker::SetCurrentStyle(const ComputedStyle& style) {
         line_break_type = LineBreakType::kKeepAll;
         break;
     }
-    if (UNLIKELY(override_break_anywhere_ && break_anywhere_if_overflow_))
+    if (UNLIKELY((override_break_anywhere_ && break_anywhere_if_overflow_) ||
+                 style.GetLineBreak() == LineBreak::kAnywhere)) {
       line_break_type = LineBreakType::kBreakCharacter;
+    }
     break_iterator_.SetBreakType(line_break_type);
 
     enable_soft_hyphen_ = style.GetHyphens() != Hyphens::kNone;

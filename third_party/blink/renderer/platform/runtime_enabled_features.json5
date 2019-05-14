@@ -296,6 +296,10 @@
       status: "experimental",
     },
     {
+      name: "CSS3TextBreakAnywhere",
+      status: "experimental",
+    },
+    {
       name: "CSSAdditiveAnimations",
       depends_on: ["StackedCSSPropertyAnimations"],
       status: "experimental",

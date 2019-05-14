@@ -1395,6 +1395,7 @@ AtomicString ComputedStyle::LocaleForLineBreakIterator() const {
   switch (GetLineBreak()) {
     case LineBreak::kAuto:
     case LineBreak::kAfterWhiteSpace:
+    case LineBreak::kAnywhere:
       return Locale();
     case LineBreak::kNormal:
       mode = LineBreakIteratorMode::kNormal;
