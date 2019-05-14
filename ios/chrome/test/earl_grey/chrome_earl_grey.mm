@@ -26,6 +26,7 @@
 #import "ios/chrome/test/app/history_test_util.h"                  // nogncheck
 #include "ios/chrome/test/app/navigation_test_util.h"              // nogncheck
 #import "ios/chrome/test/app/settings_test_util.h"                 // nogncheck
+#import "ios/chrome/test/app/signin_test_util.h"                   // nogncheck
 #import "ios/chrome/test/app/static_html_view_test_util.h"         // nogncheck
 #import "ios/chrome/test/app/tab_test_util.h"                      // nogncheck
 #import "ios/web/public/test/earl_grey/js_test_util.h"             // nogncheck
@@ -421,8 +422,20 @@ id ExecuteJavaScript(NSString* javascript,
 }
 
 #pragma mark - Settings Utilities
+
 + (NSError*)setContentSettings:(ContentSetting)setting {
   chrome_test_util::SetContentSettingsBlockPopups(setting);
+  return nil;
+}
+
+#pragma mark - Sign Utilities
+
++ (NSError*)signOutAndClearAccounts {
+  bool success = chrome_test_util::SignOutAndClearAccounts();
+  if (!success) {
+    return testing::NSErrorWithLocalizedDescription(
+        @"Real accounts couldn't be cleared.");
+  }
   return nil;
 }
 

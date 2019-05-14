@@ -159,6 +159,13 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // Sets value for content setting.
 + (NSError*)setContentSettings:(ContentSetting)setting WARN_UNUSED_RESULT;
 
+#pragma mark - Sign Utilities
+
+// Signs the user out, clears the known accounts entirely and checks whether
+// the accounts were correctly removed from the keychain. Returns nil on
+// success, or else an NSError indicating why the operation failed.
++ (NSError*)signOutAndClearAccounts WARN_UNUSED_RESULT;
+
 @end
 
 #endif  // IOS_CHROME_TEST_EARL_GREY_CHROME_EARL_GREY_H_
