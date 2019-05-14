@@ -97,8 +97,11 @@ class ToolbarActionView : public views::MenuButton,
 
   views::MenuItemView* menu_for_testing() { return menu_; }
 
+  static const char kClassName[];
+
  private:
   // views::MenuButton:
+  const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;

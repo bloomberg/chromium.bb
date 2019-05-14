@@ -355,10 +355,6 @@ ExtensionActionViewController::GetIconImageSourceForTesting(
 
 ExtensionActionViewController*
 ExtensionActionViewController::GetPreferredPopupViewController() {
-  // TODO(pbos): Remove this guard when implementing GetActionForId() in
-  // ExtensionsToolbarContainer.
-  if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu))
-    return this;
   return static_cast<ExtensionActionViewController*>(
       extensions_container_->GetActionForId(GetId()));
 }

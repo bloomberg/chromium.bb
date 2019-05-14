@@ -48,6 +48,8 @@ const int kBorderInset = 0;
 ////////////////////////////////////////////////////////////////////////////////
 // ToolbarActionView
 
+const char ToolbarActionView::kClassName[] = "ToolbarActionView";
+
 ToolbarActionView::ToolbarActionView(
     ToolbarActionViewController* view_controller,
     ToolbarActionView::Delegate* delegate)
@@ -75,6 +77,10 @@ ToolbarActionView::ToolbarActionView(
 
 ToolbarActionView::~ToolbarActionView() {
   view_controller_->SetDelegate(nullptr);
+}
+
+const char* ToolbarActionView::GetClassName() const {
+  return kClassName;
 }
 
 void ToolbarActionView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
