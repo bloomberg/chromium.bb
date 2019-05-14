@@ -3712,7 +3712,9 @@ static int get_rdmult_delta(AV1_COMP *cpi, BLOCK_SIZE bsize, int mi_row,
                             int mi_col, int orig_rdmult) {
   assert(IMPLIES(cpi->twopass.gf_group.size > 0,
                  cpi->twopass.gf_group.index < cpi->twopass.gf_group.size));
-  TplDepFrame *tpl_frame = &cpi->tpl_stats[cpi->twopass.gf_group.index];
+  const int tpl_idx =
+      cpi->twopass.gf_group.frame_disp_idx[cpi->twopass.gf_group.index];
+  TplDepFrame *tpl_frame = &cpi->tpl_stats[tpl_idx];
   TplDepStats *tpl_stats = tpl_frame->tpl_stats_ptr;
   int tpl_stride = tpl_frame->stride;
   int64_t intra_cost = 0;
