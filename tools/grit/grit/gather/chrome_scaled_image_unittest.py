@@ -60,7 +60,7 @@ def _GetFilesInRc(rcname, tmp_dir, contents):
   '''
   data = util.ReadFile(rcname, util.BINARY).decode('utf-16')
   contents = dict((tmp_dir.GetPath(k), v) for k, v in contents.items())
-  return set(contents[m.group(1)]
+  return set(contents[os.path.normpath(m.group(1))]
              for m in re.finditer(ur'(?m)^\w+\s+BINDATA\s+"([^"]+)"$', data))
 
 
@@ -105,7 +105,8 @@ def _RunBuildTest(self, structures, inputs, expected_outputs, skip_rc=False,
       ''' % (outputs, structures),
   }
   for pngpath, pngdata in inputs.items():
-    infiles['in/' + pngpath] = pngdata
+    normpath = os.path.normpath('in/' + pngpath)
+    infiles[normpath] = pngdata
   class Options(object):
     pass
   with util.TempDir(infiles) as tmp_dir:
