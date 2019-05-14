@@ -96,6 +96,12 @@ static void RegionToTracedValue(const JankRegion& region,
   RegionToTracedValue(old_region, granularity_scale, value);
 }
 
+#if DCHECK_IS_ON()
+static bool ShouldLog(const LocalFrame& frame) {
+  return !frame.GetDocument()->Url().GetString().StartsWith("chrome-devtools:");
+}
+#endif
+
 JankTracker::JankTracker(LocalFrameView* frame_view)
     : frame_view_(frame_view),
       score_(0.0),
@@ -145,8 +151,15 @@ void JankTracker::AccumulateJank(const LayoutObject& source,
   if (!old_rect.Intersects(viewport) && !new_rect.Intersects(viewport))
     return;
 
-  DVLOG(2) << source.DebugName() << " moved from " << old_rect.ToString()
-           << " to " << new_rect.ToString();
+#if DCHECK_IS_ON()
+  LocalFrame& frame = frame_view_->GetFrame();
+  if (ShouldLog(frame)) {
+    DVLOG(2) << "in " << (frame.IsMainFrame() ? "" : "subframe ")
+             << frame.GetDocument()->Url().GetString() << ", "
+             << source.DebugName() << " moved from " << old_rect.ToString()
+             << " to " << new_rect.ToString();
+  }
+#endif
 
   max_distance_ =
       std::max(max_distance_, GetMoveDistance(old_rect, new_rect, source));
@@ -249,10 +262,15 @@ void JankTracker::NotifyPrePaintFinished() {
 
   score_ += jank_fraction;
 
-  DVLOG(1) << "viewport " << (jank_fraction * 100)
-           << "% janked, raising score to " << score_;
-
   LocalFrame& frame = frame_view_->GetFrame();
+#if DCHECK_IS_ON()
+  if (ShouldLog(frame)) {
+    DVLOG(1) << "in " << (frame.IsMainFrame() ? "" : "subframe ")
+             << frame.GetDocument()->Url().GetString() << ", viewport was "
+             << (jank_fraction * 100) << "% janked; raising score to "
+             << score_;
+  }
+#endif
 
   TRACE_EVENT_INSTANT2("loading", "FrameLayoutJank", TRACE_EVENT_SCOPE_THREAD,
                        "data",
