@@ -998,18 +998,6 @@
       ]
     },
     {
-      "name": "oak",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": false,
-          "leader_board": true,
-          "board_group": "oak",
-          "arch": "ARM_INTERNAL"
-        }
-      ]
-    },
-    {
       "name": "octavius",
       "configs": [
         {

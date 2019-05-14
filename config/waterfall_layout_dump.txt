@@ -648,7 +648,6 @@
     nyan_big-release
     nyan_blaze-release
     nyan_kitty-release
-    oak-release
     octavius-release
     octopus-release
     orco-release
@@ -2980,7 +2979,6 @@
     nyan_big-release-tryjob
     nyan_blaze-release-tryjob
     nyan_kitty-release-tryjob
-    oak-release-tryjob
     octavius-release-tryjob
     octopus-release-tryjob
     orco-release-tryjob
