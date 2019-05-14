@@ -39,10 +39,30 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeVmPluginDispatcherClient
   void WaitForServiceToBeAvailable(
       dbus::ObjectProxy::WaitForServiceToBeAvailableCallback callback) override;
 
+  // Helper functions for testing interaction with the VmPluginDispatcherClient.
+  bool start_vm_called() const { return start_vm_called_; }
+  bool list_vms_called() const { return list_vms_called_; }
+  bool stop_vm_called() const { return stop_vm_called_; }
+  bool suspend_vm_called() const { return suspend_vm_called_; }
+  bool show_vm_called() const { return show_vm_called_; }
+
+  void set_list_vms_response(
+      const vm_tools::plugin_dispatcher::ListVmResponse& response) {
+    list_vms_response_ = response;
+  }
+
  protected:
   void Init(dbus::Bus* bus) override {}
 
  private:
+  bool start_vm_called_ = false;
+  bool list_vms_called_ = false;
+  bool stop_vm_called_ = false;
+  bool suspend_vm_called_ = false;
+  bool show_vm_called_ = false;
+
+  vm_tools::plugin_dispatcher::ListVmResponse list_vms_response_;
+
   DISALLOW_COPY_AND_ASSIGN(FakeVmPluginDispatcherClient);
 };
 

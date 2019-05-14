@@ -20,6 +20,7 @@ FakeVmPluginDispatcherClient::~FakeVmPluginDispatcherClient() = default;
 void FakeVmPluginDispatcherClient::StartVm(
     const StartVmRequest& request,
     DBusMethodCallback<StartVmResponse> callback) {
+  start_vm_called_ = true;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), StartVmResponse()));
 }
@@ -27,15 +28,15 @@ void FakeVmPluginDispatcherClient::StartVm(
 void FakeVmPluginDispatcherClient::ListVms(
     const ListVmRequest& request,
     DBusMethodCallback<ListVmResponse> callback) {
-  ListVmResponse response;
-  response.add_vm_info()->set_name("vm");
+  list_vms_called_ = true;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), response));
+      FROM_HERE, base::BindOnce(std::move(callback), list_vms_response_));
 }
 
 void FakeVmPluginDispatcherClient::StopVm(
     const StopVmRequest& request,
     DBusMethodCallback<StopVmResponse> callback) {
+  stop_vm_called_ = true;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), StopVmResponse()));
 }
@@ -43,6 +44,7 @@ void FakeVmPluginDispatcherClient::StopVm(
 void FakeVmPluginDispatcherClient::SuspendVm(
     const SuspendVmRequest& request,
     DBusMethodCallback<SuspendVmResponse> callback) {
+  suspend_vm_called_ = true;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), SuspendVmResponse()));
 }
@@ -50,6 +52,7 @@ void FakeVmPluginDispatcherClient::SuspendVm(
 void FakeVmPluginDispatcherClient::ShowVm(
     const ShowVmRequest& request,
     DBusMethodCallback<ShowVmResponse> callback) {
+  show_vm_called_ = true;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), ShowVmResponse()));
 }
