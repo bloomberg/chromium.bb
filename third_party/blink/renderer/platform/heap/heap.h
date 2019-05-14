@@ -566,11 +566,6 @@ inline bool ThreadHeap::IsNormalArenaIndex(int index) {
          index <= BlinkGC::kNormalPage4ArenaIndex;
 }
 
-#define DEFINE_INLINE_EAGER_FINALIZATION_OPERATOR_NEW() \
- public:                                                \
-  GC_PLUGIN_IGNORE("491488")                            \
-  void* operator new(size_t size) { return AllocateObject(size, true); }
-
 #define IS_EAGERLY_FINALIZED()                    \
   (PageFromObject(this)->Arena()->ArenaIndex() == \
    BlinkGC::kEagerSweepArenaIndex)
@@ -580,14 +575,6 @@ class VerifyEagerFinalization {
 
  public:
   ~VerifyEagerFinalization() {
-    // If this assert triggers, the class annotated as eagerly
-    // finalized ended up not being allocated on the heap
-    // set aside for eager finalization. The reason is most
-    // likely that the effective 'operator new' overload for
-    // this class' leftmost base is for a class that is not
-    // eagerly finalized. Declaring and defining an 'operator new'
-    // for this class is what's required -- consider using
-    // DEFINE_INLINE_EAGER_FINALIZATION_OPERATOR_NEW().
     DCHECK(IS_EAGERLY_FINALIZED());
   }
 };

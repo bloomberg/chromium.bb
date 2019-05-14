@@ -192,7 +192,6 @@ class CORE_EXPORT Scrollbar : public GarbageCollectedFinalized<Scrollbar>,
   // Promptly unregister from the theme manager + run finalizers of derived
   // Scrollbars.
   EAGERLY_FINALIZE();
-  DEFINE_INLINE_EAGER_FINALIZATION_OPERATOR_NEW()
   virtual void Trace(blink::Visitor*);
 
  protected:

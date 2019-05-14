@@ -89,7 +89,6 @@ class WebGLObject : public ScriptWrappable {
   // refer back to their owning context in their destructor to delete their
   // resources if they are GC'd before the context is.
   EAGERLY_FINALIZE();
-  DEFINE_INLINE_EAGER_FINALIZATION_OPERATOR_NEW()
 
  protected:
   explicit WebGLObject(WebGLRenderingContextBase*);
