@@ -171,11 +171,11 @@ TEST_F(AccessibilityObjectModelTest, RangeProperties) {
   auto* ax_slider = cache->GetOrCreate(slider);
   float value = 0.0f;
   EXPECT_TRUE(ax_slider->MinValueForRange(&value));
-  EXPECT_EQ(-0.5f, value);
+  EXPECT_EQ(0.0f, value);
   EXPECT_TRUE(ax_slider->MaxValueForRange(&value));
-  EXPECT_EQ(0.5f, value);
+  EXPECT_EQ(100.0f, value);
   EXPECT_TRUE(ax_slider->ValueForRange(&value));
-  EXPECT_EQ(0.1f, value);
+  EXPECT_EQ(50.0f, value);
 }
 
 TEST_F(AccessibilityObjectModelTest, Level) {
