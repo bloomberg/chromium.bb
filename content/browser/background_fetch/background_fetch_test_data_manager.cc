@@ -71,7 +71,7 @@ void BackgroundFetchTestDataManager::InitializeOnIOThread() {
 
   cache_manager_ = CacheStorageManager::Create(
       storage_partition_->GetPath(), base::ThreadTaskRunnerHandle::Get(),
-      quota_manager_proxy_);
+      base::ThreadTaskRunnerHandle::Get(), quota_manager_proxy_);
   DCHECK(cache_manager_);
 
   cache_manager_->SetBlobParametersForCache(

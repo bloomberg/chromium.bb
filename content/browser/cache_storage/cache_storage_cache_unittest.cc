@@ -341,6 +341,7 @@ class TestCacheStorageCache : public LegacyCacheStorageCache {
                                 cache_name,
                                 path,
                                 cache_storage,
+                                base::ThreadTaskRunnerHandle::Get(),
                                 quota_manager_proxy,
                                 blob_context,
                                 0 /* cache_size */,
@@ -401,6 +402,7 @@ class MockLegacyCacheStorage : public LegacyCacheStorage {
       const base::FilePath& origin_path,
       bool memory_only,
       base::SequencedTaskRunner* cache_task_runner,
+      scoped_refptr<base::SequencedTaskRunner> scheduler_task_runner,
       scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
       base::WeakPtr<storage::BlobStorageContext> blob_context,
       CacheStorageManager* cache_storage_manager,
@@ -409,6 +411,7 @@ class MockLegacyCacheStorage : public LegacyCacheStorage {
       : LegacyCacheStorage(origin_path,
                            memory_only,
                            cache_task_runner,
+                           std::move(scheduler_task_runner),
                            std::move(quota_manager_proxy),
                            std::move(blob_context),
                            cache_storage_manager,
@@ -475,7 +478,8 @@ class CacheStorageCacheTest : public testing::Test {
     // must be present to be notified when a cache becomes unreferenced.
     mock_cache_storage_ = std::make_unique<MockLegacyCacheStorage>(
         temp_dir_path_, MemoryOnly(), base::ThreadTaskRunnerHandle::Get().get(),
-        quota_manager_proxy_, blob_storage_context_->AsWeakPtr(),
+        base::ThreadTaskRunnerHandle::Get(), quota_manager_proxy_,
+        blob_storage_context_->AsWeakPtr(),
         /* cache_storage_manager = */ nullptr, kOrigin,
         CacheStorageOwner::kCacheAPI);
 

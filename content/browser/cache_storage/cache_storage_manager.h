@@ -64,6 +64,7 @@ class CONTENT_EXPORT CacheStorageManager
   static scoped_refptr<CacheStorageManager> Create(
       const base::FilePath& path,
       scoped_refptr<base::SequencedTaskRunner> cache_task_runner,
+      scoped_refptr<base::SequencedTaskRunner> scheduler_task_runner,
       scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy);
 
   static scoped_refptr<CacheStorageManager> Create(
@@ -120,6 +121,7 @@ class CONTENT_EXPORT CacheStorageManager
   CacheStorageManager(
       const base::FilePath& path,
       scoped_refptr<base::SequencedTaskRunner> cache_task_runner,
+      scoped_refptr<base::SequencedTaskRunner> scheduler_task_runner,
       scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy);
 
   virtual ~CacheStorageManager();
@@ -157,6 +159,10 @@ class CONTENT_EXPORT CacheStorageManager
     return cache_task_runner_;
   }
 
+  scoped_refptr<base::SequencedTaskRunner> scheduler_task_runner() const {
+    return scheduler_task_runner_;
+  }
+
   bool IsMemoryBacked() const { return root_path_.empty(); }
 
   // MemoryPressureListener callback
@@ -165,6 +171,7 @@ class CONTENT_EXPORT CacheStorageManager
 
   base::FilePath root_path_;
   scoped_refptr<base::SequencedTaskRunner> cache_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> scheduler_task_runner_;
 
   scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
 

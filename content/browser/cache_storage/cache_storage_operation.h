@@ -9,7 +9,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/single_thread_task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "content/browser/cache_storage/cache_storage_scheduler_types.h"
 #include "content/common/content_export.h"
@@ -20,11 +20,10 @@ namespace content {
 // to run plus a bunch of metrics data.
 class CONTENT_EXPORT CacheStorageOperation {
  public:
-  CacheStorageOperation(
-      base::OnceClosure closure,
-      CacheStorageSchedulerClient client_type,
-      CacheStorageSchedulerOp op_type,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  CacheStorageOperation(base::OnceClosure closure,
+                        CacheStorageSchedulerClient client_type,
+                        CacheStorageSchedulerOp op_type,
+                        scoped_refptr<base::SequencedTaskRunner> task_runner);
 
   ~CacheStorageOperation();
 
@@ -54,7 +53,7 @@ class CONTENT_EXPORT CacheStorageOperation {
 
   const CacheStorageSchedulerClient client_type_;
   const CacheStorageSchedulerOp op_type_;
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
   base::WeakPtrFactory<CacheStorageOperation> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CacheStorageOperation);

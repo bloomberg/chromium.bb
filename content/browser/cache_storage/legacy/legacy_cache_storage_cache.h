@@ -68,6 +68,7 @@ class CONTENT_EXPORT LegacyCacheStorageCache : public CacheStorageCache {
       CacheStorageOwner owner,
       const std::string& cache_name,
       LegacyCacheStorage* cache_storage,
+      scoped_refptr<base::SequencedTaskRunner> scheduler_task_runner,
       scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
       base::WeakPtr<storage::BlobStorageContext> blob_context,
       std::unique_ptr<crypto::SymmetricKey> cache_padding_key);
@@ -77,6 +78,7 @@ class CONTENT_EXPORT LegacyCacheStorageCache : public CacheStorageCache {
       const std::string& cache_name,
       LegacyCacheStorage* cache_storage,
       const base::FilePath& path,
+      scoped_refptr<base::SequencedTaskRunner> scheduler_task_runner,
       scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
       base::WeakPtr<storage::BlobStorageContext> blob_context,
       int64_t cache_size,
@@ -240,6 +242,7 @@ class CONTENT_EXPORT LegacyCacheStorageCache : public CacheStorageCache {
       const std::string& cache_name,
       const base::FilePath& path,
       LegacyCacheStorage* cache_storage,
+      scoped_refptr<base::SequencedTaskRunner> scheduler_task_runner,
       scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
       base::WeakPtr<storage::BlobStorageContext> blob_context,
       int64_t cache_size,

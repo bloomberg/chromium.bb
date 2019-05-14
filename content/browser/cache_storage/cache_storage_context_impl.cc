@@ -8,6 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/public/browser/browser_context.h"
@@ -47,7 +48,7 @@ void CacheStorageContextImpl::Init(
   // posted task can register the quota client.
   // TODO: Fix the tests to let the quota manager initialize normally.
   if (BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    CreateCacheStorageManager(user_data_directory, cache_task_runner,
+    CreateCacheStorageManager(user_data_directory, std::move(cache_task_runner),
                               std::move(quota_manager_proxy));
     return;
   }
@@ -55,7 +56,7 @@ void CacheStorageContextImpl::Init(
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&CacheStorageContextImpl::CreateCacheStorageManager, this,
-                     user_data_directory, cache_task_runner,
+                     user_data_directory, std::move(cache_task_runner),
                      std::move(quota_manager_proxy)));
 }
 
@@ -124,9 +125,13 @@ void CacheStorageContextImpl::CreateCacheStorageManager(
     scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
+  scoped_refptr<base::SequencedTaskRunner> scheduler_task_runner =
+      base::ThreadTaskRunnerHandle::Get();
+
   DCHECK(!cache_manager_);
   cache_manager_ = CacheStorageManager::Create(
-      user_data_directory, cache_task_runner, std::move(quota_manager_proxy));
+      user_data_directory, std::move(cache_task_runner),
+      std::move(scheduler_task_runner), std::move(quota_manager_proxy));
 }
 
 void CacheStorageContextImpl::ShutdownOnIO() {

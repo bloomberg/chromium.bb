@@ -318,7 +318,7 @@ class CacheStorageManagerTest : public testing::Test {
 
     cache_manager_ = CacheStorageManager::Create(
         temp_dir_path, base::ThreadTaskRunnerHandle::Get(),
-        quota_manager_proxy_);
+        base::ThreadTaskRunnerHandle::Get(), quota_manager_proxy_);
 
     cache_manager_->SetBlobParametersForCache(
         blob_storage_context->context()->AsWeakPtr());

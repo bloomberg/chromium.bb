@@ -454,7 +454,8 @@ void BackgroundSyncManager::EmulateServiceWorkerOffline(
 BackgroundSyncManager::BackgroundSyncManager(
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
     scoped_refptr<DevToolsBackgroundServicesContextImpl> devtools_context)
-    : op_scheduler_(CacheStorageSchedulerClient::kBackgroundSync),
+    : op_scheduler_(CacheStorageSchedulerClient::kBackgroundSync,
+                    base::ThreadTaskRunnerHandle::Get()),
       service_worker_context_(std::move(service_worker_context)),
       devtools_context_(std::move(devtools_context)),
       parameters_(std::make_unique<BackgroundSyncParameters>()),

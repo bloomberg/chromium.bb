@@ -158,6 +158,7 @@ void OneOriginSizeReported(base::OnceClosure callback,
 scoped_refptr<CacheStorageManager> CacheStorageManager::Create(
     const base::FilePath& path,
     scoped_refptr<base::SequencedTaskRunner> cache_task_runner,
+    scoped_refptr<base::SequencedTaskRunner> scheduler_task_runner,
     scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy) {
   base::FilePath root_path = path;
   if (!path.empty()) {
@@ -166,7 +167,8 @@ scoped_refptr<CacheStorageManager> CacheStorageManager::Create(
   }
 
   return base::WrapRefCounted(new CacheStorageManager(
-      root_path, std::move(cache_task_runner), std::move(quota_manager_proxy)));
+      root_path, std::move(cache_task_runner), std::move(scheduler_task_runner),
+      std::move(quota_manager_proxy)));
 }
 
 // static
@@ -174,6 +176,7 @@ scoped_refptr<CacheStorageManager> CacheStorageManager::Create(
     CacheStorageManager* old_manager) {
   scoped_refptr<CacheStorageManager> manager(new CacheStorageManager(
       old_manager->root_path(), old_manager->cache_task_runner(),
+      old_manager->scheduler_task_runner(),
       old_manager->quota_manager_proxy_.get()));
   // These values may be NULL, in which case this will be called again later by
   // the dispatcher host per usual.
@@ -201,8 +204,8 @@ CacheStorageHandle CacheStorageManager::OpenCacheStorage(
   if (it == cache_storage_map_.end()) {
     LegacyCacheStorage* cache_storage = new LegacyCacheStorage(
         ConstructOriginPath(root_path_, origin, owner), IsMemoryBacked(),
-        cache_task_runner_.get(), quota_manager_proxy_, blob_context_, this,
-        origin, owner);
+        cache_task_runner_.get(), scheduler_task_runner_, quota_manager_proxy_,
+        blob_context_, this, origin, owner);
     cache_storage_map_[{origin, owner}] = base::WrapUnique(cache_storage);
     return cache_storage->CreateHandle();
   }
@@ -444,9 +447,11 @@ void CacheStorageManager::DeleteOriginDidClose(
 CacheStorageManager::CacheStorageManager(
     const base::FilePath& path,
     scoped_refptr<base::SequencedTaskRunner> cache_task_runner,
+    scoped_refptr<base::SequencedTaskRunner> scheduler_task_runner,
     scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy)
     : root_path_(path),
       cache_task_runner_(std::move(cache_task_runner)),
+      scheduler_task_runner_(std::move(scheduler_task_runner)),
       quota_manager_proxy_(std::move(quota_manager_proxy)),
       weak_ptr_factory_(this) {
   if (quota_manager_proxy_.get()) {

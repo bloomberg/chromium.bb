@@ -458,13 +458,15 @@ LegacyCacheStorageCache::CreateMemoryCache(
     CacheStorageOwner owner,
     const std::string& cache_name,
     LegacyCacheStorage* cache_storage,
+    scoped_refptr<base::SequencedTaskRunner> scheduler_task_runner,
     scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
     base::WeakPtr<storage::BlobStorageContext> blob_context,
     std::unique_ptr<crypto::SymmetricKey> cache_padding_key) {
   LegacyCacheStorageCache* cache = new LegacyCacheStorageCache(
       origin, owner, cache_name, base::FilePath(), cache_storage,
-      std::move(quota_manager_proxy), blob_context, 0 /* cache_size */,
-      0 /* cache_padding */, std::move(cache_padding_key));
+      std::move(scheduler_task_runner), std::move(quota_manager_proxy),
+      blob_context, 0 /* cache_size */, 0 /* cache_padding */,
+      std::move(cache_padding_key));
   cache->SetObserver(cache_storage);
   cache->InitBackend();
   return base::WrapUnique(cache);
@@ -478,6 +480,7 @@ LegacyCacheStorageCache::CreatePersistentCache(
     const std::string& cache_name,
     LegacyCacheStorage* cache_storage,
     const base::FilePath& path,
+    scoped_refptr<base::SequencedTaskRunner> scheduler_task_runner,
     scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
     base::WeakPtr<storage::BlobStorageContext> blob_context,
     int64_t cache_size,
@@ -485,8 +488,8 @@ LegacyCacheStorageCache::CreatePersistentCache(
     std::unique_ptr<crypto::SymmetricKey> cache_padding_key) {
   LegacyCacheStorageCache* cache = new LegacyCacheStorageCache(
       origin, owner, cache_name, path, cache_storage,
-      std::move(quota_manager_proxy), blob_context, cache_size, cache_padding,
-      std::move(cache_padding_key));
+      std::move(scheduler_task_runner), std::move(quota_manager_proxy),
+      blob_context, cache_size, cache_padding, std::move(cache_padding_key));
   cache->SetObserver(cache_storage);
   cache->InitBackend();
   return base::WrapUnique(cache);
@@ -904,6 +907,7 @@ LegacyCacheStorageCache::LegacyCacheStorageCache(
     const std::string& cache_name,
     const base::FilePath& path,
     LegacyCacheStorage* cache_storage,
+    scoped_refptr<base::SequencedTaskRunner> scheduler_task_runner,
     scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
     base::WeakPtr<storage::BlobStorageContext> blob_context,
     int64_t cache_size,
@@ -916,8 +920,8 @@ LegacyCacheStorageCache::LegacyCacheStorageCache(
       cache_storage_(cache_storage),
       quota_manager_proxy_(std::move(quota_manager_proxy)),
       blob_storage_context_(blob_context),
-      scheduler_(
-          new CacheStorageScheduler(CacheStorageSchedulerClient::kCache)),
+      scheduler_(new CacheStorageScheduler(CacheStorageSchedulerClient::kCache,
+                                           std::move(scheduler_task_runner))),
       cache_size_(cache_size),
       cache_padding_(cache_padding),
       cache_padding_key_(std::move(cache_padding_key)),
