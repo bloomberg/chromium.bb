@@ -271,6 +271,16 @@ bool WebViewGuest::GetGuestPartitionConfigForSite(
   if (!site.SchemeIs(content::kGuestScheme))
     return false;
 
+  // The partition name is user supplied value, which we have encoded when the
+  // URL was created, so it needs to be decoded. Since it was created via
+  // EscapeQueryParamValue(), it should have no path separators or control codes
+  // when unescaped, but safest to check for that and fail if it does.
+  if (!net::UnescapeBinaryURLComponentSafe(site.query_piece(),
+                                           true /* fail_on_path_separators */,
+                                           partition_name)) {
+    return false;
+  }
+
   // Since guest URLs are only used for packaged apps, there must be an app
   // id in the URL.
   CHECK(site.has_host());
@@ -278,10 +288,6 @@ bool WebViewGuest::GetGuestPartitionConfigForSite(
   // Since persistence is optional, the path must either be empty or the
   // literal string.
   *in_memory = (site.path() != "/persist");
-  // The partition name is user supplied value, which we have encoded when the
-  // URL was created, so it needs to be decoded.
-  *partition_name =
-      net::UnescapeURLComponent(site.query(), net::UnescapeRule::NORMAL);
   return true;
 }
 
