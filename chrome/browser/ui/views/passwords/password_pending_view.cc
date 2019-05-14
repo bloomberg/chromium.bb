@@ -177,15 +177,19 @@ std::unique_ptr<views::EditableCombobox> CreatePasswordEditableCombobox(
     const autofill::PasswordForm& form,
     bool are_passwords_revealed) {
   DCHECK(!form.IsFederatedCredential());
-  const std::vector<base::string16> passwords =
+  std::vector<base::string16> passwords =
       form.all_possible_passwords.empty()
           ? std::vector<base::string16>(/*n=*/1, form.password_value)
           : ToValues(form.all_possible_passwords);
+  base::EraseIf(passwords, [](const base::string16& password) {
+    return password.empty();
+  });
+  bool display_arrow = !passwords.empty();
   auto combobox = std::make_unique<views::EditableCombobox>(
       std::make_unique<ui::SimpleComboboxModel>(passwords),
       /*filter_on_edit=*/false, /*show_on_empty=*/true,
       views::EditableCombobox::Type::kPassword, views::style::CONTEXT_BUTTON,
-      STYLE_PRIMARY_MONOSPACED);
+      STYLE_PRIMARY_MONOSPACED, display_arrow);
   combobox->SetText(form.password_value);
   combobox->RevealPasswords(are_passwords_revealed);
   combobox->SetAccessibleName(
