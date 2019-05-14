@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/web_applications/components/install_options.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "url/gurl.h"
@@ -130,6 +131,8 @@ class PendingAppManager {
   void OnAppSynchronized(InstallSource source, bool succeeded);
 
   base::flat_map<InstallSource, SynchronizeRequest> synchronize_requests_;
+
+  base::WeakPtrFactory<PendingAppManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PendingAppManager);
 };

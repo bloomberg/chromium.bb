@@ -73,6 +73,8 @@ class TestPendingAppManager : public PendingAppManager {
   std::map<GURL, InstallSource> installed_apps_;
   InstallResultCode install_result_code_ = InstallResultCode::kSuccess;
 
+  base::WeakPtrFactory<TestPendingAppManager> weak_ptr_factory_{this};
+
   DISALLOW_COPY_AND_ASSIGN(TestPendingAppManager);
 };
 

@@ -73,11 +73,11 @@ void PendingAppManager::SynchronizeInstalledApps(
   UninstallApps(
       urls_to_remove,
       base::BindRepeating(&PendingAppManager::UninstallForSynchronizeCallback,
-                          base::Unretained(this), install_source));
+                          weak_ptr_factory_.GetWeakPtr(), install_source));
   InstallApps(
       std::move(desired_apps_install_options),
       base::BindRepeating(&PendingAppManager::InstallForSynchronizeCallback,
-                          base::Unretained(this), install_source));
+                          weak_ptr_factory_.GetWeakPtr(), install_source));
 }
 
 void PendingAppManager::InstallForSynchronizeCallback(InstallSource source,
