@@ -17,6 +17,8 @@ source_set("earl_grey_support") {
   sources = [
     "base_earl_grey_test_case.h",
     "base_earl_grey_test_case.mm",
+    "base_eg_test_helper_impl.h",
+    "base_eg_test_helper_impl.mm",
     "coverage_utils.h",
     "coverage_utils.mm",
     "disabled_test_macros.h",
@@ -58,6 +60,8 @@ source_set("eg_test_support+eg2") {
   sources = [
     "base_earl_grey_test_case.h",
     "base_earl_grey_test_case.mm",
+    "base_eg_test_helper_impl.h",
+    "base_eg_test_helper_impl.mm",
     "coverage_utils.h",
     "coverage_utils_stub.mm",
     "disabled_test_macros.h",
