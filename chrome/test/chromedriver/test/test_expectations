@@ -18,9 +18,6 @@ _NEGATIVE_FILTER = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2653
     'ReferrerTest.navigationWhenProxyInterceptsASpecificUrl',
 
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2661
-    'WindowTest.testSetsTheSizeOfTheCurrentWindowFromIframe',
-
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2854
     'ChromeOptionsFunctionalTest.canSetAcceptInsecureCerts',
 
@@ -51,27 +48,14 @@ _READY_TO_RUN_FILTER = [
 
 _OS_NEGATIVE_FILTER = {}
 _OS_NEGATIVE_FILTER['win'] = [
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2855
-    'WindowTest.canFullscreenTheWindow',
-    'WindowTest.canFullscreenTheWindowFromIframe',
-    'WindowTest.testCanMaximizeTheWindowFromIframe',
-    'WindowTest.testCanMaximizeTheWindow',
-    'BasicMouseInterfaceTest.testMovingMouseByRelativeOffset',
 ]
 _OS_NEGATIVE_FILTER['linux'] = [
 ]
 _OS_NEGATIVE_FILTER['mac'] = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2663
-    'WindowTest.canFullscreenTheWindow',
+    # Test 'WindowTest.testSetsTheSizeOfTheCurrentWindowFromIframe' passes while it is run
+    # standalone and fails in a test suit run
     'WindowTest.testSetsTheSizeOfTheCurrentWindowFromIframe',
-    'WindowTest.testSetsTheSizeOfTheCurrentWindowFromFrame',
-    'WindowTest.canFullscreenTheWindowFromFrame',
-    'WindowTest.canFullscreenTheWindowFromIframe',
-    'WindowTest.testSetsTheSizeOfTheCurrentWindow',
-    'WindowTest.testCanMaximizeTheWindowFromFrame',
-    'WindowTest.testCanMaximizeTheWindowFromIframe',
-    'WindowTest.testCanMaximizeTheWindow',
-    'BasicMouseInterfaceTest.testMovingMouseByRelativeOffset',
 
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2856
     'ClickScrollingTest.testShouldBeAbleToClickElementThatIsOutOfViewInANestedFrameThatIsOutOfView',
