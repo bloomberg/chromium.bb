@@ -145,9 +145,7 @@ class CORE_EXPORT TextPaintTimingDetector final
  private:
   void AggregateTextToClosestBlock(const LayoutObject&,
                                    const PropertyTreeState&);
-  void PopulateTraceValue(TracedValue&,
-                          const TextRecord& first_text_paint,
-                          unsigned candidate_index) const;
+  void PopulateTraceValue(TracedValue&, const TextRecord& first_text_paint);
   void TimerFired(TimerBase*);
   void UpdateCandidate();
   void RecordAggregatedText(const LayoutObject& aggregating_object,
@@ -156,7 +154,8 @@ class CORE_EXPORT TextPaintTimingDetector final
   void ReportSwapTime(WebWidgetClient::SwapResult result,
                       base::TimeTicks timestamp);
   void RegisterNotifySwapTime(ReportTimeCallback callback);
-  void OnLargestTextDetected(const TextRecord&);
+  void ReportCandidateToTrace(const TextRecord&);
+  void ReportNoCandidateToTrace();
 
   TextRecordsManager records_manager_;
 
@@ -172,8 +171,6 @@ class CORE_EXPORT TextPaintTimingDetector final
 
   Vector<BlockInfo> walking_block_stack_;
 
-  base::TimeTicks largest_text_paint_;
-  uint64_t largest_text_paint_size_ = 0;
   TaskRunnerTimer<TextPaintTimingDetector> timer_;
   Member<LocalFrameView> frame_view_;
 

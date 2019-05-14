@@ -174,33 +174,47 @@ void PaintTimingDetector::NotifyScroll(ScrollType scroll_type) {
     image_paint_timing_detector_->StopRecordEntries();
 }
 
-bool PaintTimingDetector::NeedToNotifyInputOrScroll() {
+bool PaintTimingDetector::NeedToNotifyInputOrScroll() const {
   return (text_paint_timing_detector_ &&
           text_paint_timing_detector_->IsRecording()) ||
          (image_paint_timing_detector_ &&
           image_paint_timing_detector_->IsRecording());
 }
 
-void PaintTimingDetector::NotifyLargestImagePaintChange(
+bool PaintTimingDetector::NotifyIfChangedLargestImagePaint(
     base::TimeTicks image_paint_time,
     uint64_t image_paint_size) {
-  DCHECK(HasLargestImagePaintChanged(image_paint_time, image_paint_size));
+  if (!HasLargestImagePaintChanged(image_paint_time, image_paint_size))
+    return false;
   largest_image_paint_time_ = image_paint_time;
   largest_image_paint_size_ = image_paint_size;
   DidChangePerformanceTiming();
+  return true;
+}
+
+bool PaintTimingDetector::NotifyIfChangedLargestTextPaint(
+    base::TimeTicks text_paint_time,
+    uint64_t text_paint_size) {
+  if (!HasLargestTextPaintChanged(text_paint_time, text_paint_size))
+    return false;
+  largest_text_paint_time_ = text_paint_time;
+  largest_text_paint_size_ = text_paint_size;
+  DidChangePerformanceTiming();
+  return true;
 }
 
 bool PaintTimingDetector::HasLargestImagePaintChanged(
     base::TimeTicks largest_image_paint_time,
-    uint64_t largest_image_paint_size) {
+    uint64_t largest_image_paint_size) const {
   return largest_image_paint_time != largest_image_paint_time_ ||
          largest_image_paint_size != largest_image_paint_size_;
 }
 
-void PaintTimingDetector::NotifyLargestText(base::TimeTicks text_paint_time,
-                                            uint64_t text_paint_size) {
-  largest_text_paint_time_ = text_paint_time;
-  largest_text_paint_size_ = text_paint_size;
+bool PaintTimingDetector::HasLargestTextPaintChanged(
+    base::TimeTicks largest_text_paint_time,
+    uint64_t largest_text_paint_size) const {
+  return largest_text_paint_time != largest_text_paint_time_ ||
+         largest_text_paint_size != largest_text_paint_size_;
 }
 
 void PaintTimingDetector::DidChangePerformanceTiming() {

@@ -77,8 +77,7 @@ ImagePaintTimingDetector::ImagePaintTimingDetector(LocalFrameView* frame_view)
 
 void ImagePaintTimingDetector::PopulateTraceValue(
     TracedValue& value,
-    const ImageRecord& first_image_paint,
-    unsigned candidate_index) const {
+    const ImageRecord& first_image_paint) {
   value.SetInteger("DOMNodeId", static_cast<int>(first_image_paint.node_id));
   // The cached_image could have been deleted when this is called.
   value.SetString("imageUrl",
@@ -86,7 +85,7 @@ void ImagePaintTimingDetector::PopulateTraceValue(
                       ? String(first_image_paint.cached_image->Url())
                       : "(deleted)");
   value.SetInteger("size", static_cast<int>(first_image_paint.first_size));
-  value.SetInteger("candidateIndex", candidate_index);
+  value.SetInteger("candidateIndex", ++count_candidates_);
   value.SetBoolean("isMainFrame", frame_view_->GetFrame().IsMainFrame());
   value.SetBoolean("isOOPIF",
                    !frame_view_->GetFrame().LocalFrameRoot().IsMainFrame());
@@ -96,11 +95,22 @@ void ImagePaintTimingDetector::ReportCandidateToTrace(
     ImageRecord& largest_image_record) {
   DCHECK(!largest_image_record.paint_time.is_null());
   auto value = std::make_unique<TracedValue>();
-  PopulateTraceValue(*value, largest_image_record, ++count_candidates_);
+  PopulateTraceValue(*value, largest_image_record);
   TRACE_EVENT_MARK_WITH_TIMESTAMP2("loading", "LargestImagePaint::Candidate",
                                    largest_image_record.paint_time, "data",
                                    std::move(value), "frame",
                                    ToTraceValue(&frame_view_->GetFrame()));
+}
+
+void ImagePaintTimingDetector::ReportNoCandidateToTrace() {
+  auto value = std::make_unique<TracedValue>();
+  value->SetInteger("candidateIndex", ++count_candidates_);
+  value->SetBoolean("isMainFrame", frame_view_->GetFrame().IsMainFrame());
+  value->SetBoolean("isOOPIF",
+                    !frame_view_->GetFrame().LocalFrameRoot().IsMainFrame());
+  TRACE_EVENT2("loading", "LargestImagePaint::NoCandidate", "data",
+               std::move(value), "frame",
+               ToTraceValue(&frame_view_->GetFrame()));
 }
 
 void ImagePaintTimingDetector::UpdateCandidate() {
@@ -112,21 +122,17 @@ void ImagePaintTimingDetector::UpdateCandidate() {
   const uint64_t size =
       largest_image_record ? largest_image_record->first_size : 0;
   bool changed =
-      frame_view_->GetPaintTimingDetector().HasLargestImagePaintChanged(time,
-                                                                        size);
+      frame_view_->GetPaintTimingDetector().NotifyIfChangedLargestImagePaint(
+          time, size);
   if (!changed)
     return;
   if (largest_image_record && !largest_image_record->paint_time.is_null()) {
     // If an image has paint time, it must have been loaded.
     DCHECK(largest_image_record->loaded);
-    // TODO(crbug.com/960365): we need to figure out how to communicate to the
-    // trace (devtools/trace-viewer/benchmarks) that the largest image is still
-    // loading (when paint_time is null). Before we decide how to handle it, we
-    // do not notify the trace about this specific case for now.
     ReportCandidateToTrace(*largest_image_record);
+  } else {
+    ReportNoCandidateToTrace();
   }
-  frame_view_->GetPaintTimingDetector().NotifyLargestImagePaintChange(time,
-                                                                      size);
 }
 
 void ImagePaintTimingDetector::OnPaintFinished() {

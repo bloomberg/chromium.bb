@@ -71,9 +71,7 @@ class TextPaintTimingDetectorTest
   }
 
   TimeTicks LargestPaintStoredResult() {
-    return GetPaintTimingDetector()
-        .GetTextPaintTimingDetector()
-        ->largest_text_paint_;
+    return GetPaintTimingDetector().largest_text_paint_time_;
   }
 
   // This only triggers ReportSwapTime in main frame.

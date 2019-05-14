@@ -184,15 +184,14 @@ class CORE_EXPORT ImagePaintTimingDetector final
  private:
   ImageRecord* FindLargestPaintCandidate() const;
 
-  void PopulateTraceValue(TracedValue&,
-                          const ImageRecord& first_image_paint,
-                          unsigned report_count) const;
+  void PopulateTraceValue(TracedValue&, const ImageRecord& first_image_paint);
   // This is provided for unit test to force invoking swap promise callback.
   void ReportSwapTime(unsigned last_queued_frame_index,
                       WebWidgetClient::SwapResult,
                       base::TimeTicks);
   void RegisterNotifySwapTime();
   void ReportCandidateToTrace(ImageRecord&);
+  void ReportNoCandidateToTrace();
   void Deactivate();
   void HandleTooManyNodes();
 

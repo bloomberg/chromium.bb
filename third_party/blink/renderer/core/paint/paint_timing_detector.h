@@ -31,6 +31,7 @@ class TextPaintTimingDetector;
 class CORE_EXPORT PaintTimingDetector
     : public GarbageCollected<PaintTimingDetector> {
   friend class ImagePaintTimingDetectorTest;
+  friend class TextPaintTimingDetectorTest;
 
  public:
   PaintTimingDetector(LocalFrameView*);
@@ -52,20 +53,21 @@ class CORE_EXPORT PaintTimingDetector
                                     const ImageResourceContent*);
   void NotifyPaintFinished();
   void NotifyInputEvent(WebInputEvent::Type);
-  bool NeedToNotifyInputOrScroll();
+  bool NeedToNotifyInputOrScroll() const;
   void NotifyScroll(ScrollType);
-  void NotifyLargestImagePaintChange(base::TimeTicks, uint64_t size);
-  void NotifyLargestText(base::TimeTicks, uint64_t size);
-  bool HasLargestImagePaintChanged(base::TimeTicks, uint64_t size);
+  // The returned value indicates whether the candidates have changed.
+  bool NotifyIfChangedLargestImagePaint(base::TimeTicks, uint64_t size);
+  bool NotifyIfChangedLargestTextPaint(base::TimeTicks, uint64_t size);
+
   void DidChangePerformanceTiming();
 
   FloatRect CalculateVisualRect(const IntRect& visual_rect,
                                 const PropertyTreeState&) const;
 
-  TextPaintTimingDetector* GetTextPaintTimingDetector() {
+  TextPaintTimingDetector* GetTextPaintTimingDetector() const {
     return text_paint_timing_detector_;
   }
-  ImagePaintTimingDetector* GetImagePaintTimingDetector() {
+  ImagePaintTimingDetector* GetImagePaintTimingDetector() const {
     return image_paint_timing_detector_;
   }
   base::TimeTicks LargestImagePaint() const {
@@ -77,6 +79,8 @@ class CORE_EXPORT PaintTimingDetector
   void Trace(Visitor* visitor);
 
  private:
+  bool HasLargestImagePaintChanged(base::TimeTicks, uint64_t size) const;
+  bool HasLargestTextPaintChanged(base::TimeTicks, uint64_t size) const;
   Member<LocalFrameView> frame_view_;
   // This member lives until the end of the paint phase after the largest text
   // paint is found.

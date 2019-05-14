@@ -48,28 +48,37 @@ TextPaintTimingDetector::TextPaintTimingDetector(LocalFrameView* frame_view)
 
 void TextPaintTimingDetector::PopulateTraceValue(
     TracedValue& value,
-    const TextRecord& first_text_paint,
-    unsigned candidate_index) const {
+    const TextRecord& first_text_paint) {
   value.SetInteger("DOMNodeId", static_cast<int>(first_text_paint.node_id));
 #ifndef NDEBUG
   value.SetString("text", first_text_paint.text);
 #endif
   value.SetInteger("size", static_cast<int>(first_text_paint.first_size));
-  value.SetInteger("candidateIndex", candidate_index);
+  value.SetInteger("candidateIndex", ++count_candidates_);
   value.SetBoolean("isMainFrame", frame_view_->GetFrame().IsMainFrame());
   value.SetBoolean("isOOPIF",
                    !frame_view_->GetFrame().LocalFrameRoot().IsMainFrame());
 }
 
-void TextPaintTimingDetector::OnLargestTextDetected(
+void TextPaintTimingDetector::ReportCandidateToTrace(
     const TextRecord& largest_text_record) {
-  largest_text_paint_ = largest_text_record.paint_time;
-  largest_text_paint_size_ = largest_text_record.first_size;
   auto value = std::make_unique<TracedValue>();
-  PopulateTraceValue(*value, largest_text_record, count_candidates_++);
-  TRACE_EVENT_MARK_WITH_TIMESTAMP2(
-      "loading", "LargestTextPaint::Candidate", largest_text_paint_, "data",
-      std::move(value), "frame", ToTraceValue(&frame_view_->GetFrame()));
+  PopulateTraceValue(*value, largest_text_record);
+  TRACE_EVENT_MARK_WITH_TIMESTAMP2("loading", "LargestTextPaint::Candidate",
+                                   largest_text_record.paint_time, "data",
+                                   std::move(value), "frame",
+                                   ToTraceValue(&frame_view_->GetFrame()));
+}
+
+void TextPaintTimingDetector::ReportNoCandidateToTrace() {
+  auto value = std::make_unique<TracedValue>();
+  value->SetInteger("candidateIndex", ++count_candidates_);
+  value->SetBoolean("isMainFrame", frame_view_->GetFrame().IsMainFrame());
+  value->SetBoolean("isOOPIF",
+                    !frame_view_->GetFrame().LocalFrameRoot().IsMainFrame());
+  TRACE_EVENT2("loading", "LargestTextPaint::NoCandidate", "data",
+               std::move(value), "frame",
+               ToTraceValue(&frame_view_->GetFrame()));
 }
 
 void TextPaintTimingDetector::TimerFired(TimerBase* time) {
@@ -79,17 +88,21 @@ void TextPaintTimingDetector::TimerFired(TimerBase* time) {
 }
 
 void TextPaintTimingDetector::UpdateCandidate() {
-  TextRecord* candidate = records_manager_.FindLargestPaintCandidate();
-  if (!candidate) {
-    largest_text_paint_ = base::TimeTicks();
-    largest_text_paint_size_ = 0;
-    frame_view_->GetPaintTimingDetector().DidChangePerformanceTiming();
-  } else if (candidate->paint_time != largest_text_paint_) {
-    OnLargestTextDetected(*candidate);
-    frame_view_->GetPaintTimingDetector().DidChangePerformanceTiming();
-  }
-  frame_view_->GetPaintTimingDetector().NotifyLargestText(
-      largest_text_paint_, largest_text_paint_size_);
+  TextRecord* largest_text_record =
+      records_manager_.FindLargestPaintCandidate();
+  const base::TimeTicks time =
+      largest_text_record ? largest_text_record->paint_time : base::TimeTicks();
+  const uint64_t size =
+      largest_text_record ? largest_text_record->first_size : 0;
+  bool changed =
+      frame_view_->GetPaintTimingDetector().NotifyIfChangedLargestTextPaint(
+          time, size);
+  if (!changed)
+    return;
+  if (largest_text_record && !largest_text_record->paint_time.is_null())
+    ReportCandidateToTrace(*largest_text_record);
+  else
+    ReportNoCandidateToTrace();
 }
 
 void TextPaintTimingDetector::OnPaintFinished() {
