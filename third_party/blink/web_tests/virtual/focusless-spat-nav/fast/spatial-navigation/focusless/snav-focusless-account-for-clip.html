@@ -32,7 +32,7 @@
   }
 
 </style>
-<div tabindex="0">
+<div tabindex="0" id="outer">
   Outer Target
   <div id="clip" tabindex="0">
     Clip
@@ -41,16 +41,30 @@
 </div>
 
 <script>
+  const outer = document.getElementById("outer");
+  const clip = document.getElementById("clip");
   const target = document.getElementById("target");
 
   // This test checks that the spatial navigation overlap testing works
   // correctly in the presence of clipping. The spatial navigation algorithm
-  // attempts to prioritize the inner element when one valid target is fully
-  // contained by another valid target. This test ensures the inner is
-  // considered fully contained even if it has clipped overflow that would
-  // spill outside the outer target.
+  // attempts to prioritize inner elements that are fully contained by another
+  // valid target.
+  //
+  // The spatial navigation algorithm focuses "containers" from the outside and
+  // in. This test ensures that also clipped "insiders" are reachable.
   test(() => {
     assert_true(!!window.internals);
+
+    snav.triggerMove('Down');
+    assert_equals(window.internals.interestedElement,
+                  outer,
+                  "Expected interest to move to |outer| element.");
+
+    snav.triggerMove('Down');
+    assert_equals(window.internals.interestedElement,
+                  clip,
+                  "Expected interest to move to |clip| element.");
+
     snav.triggerMove('Down');
     assert_equals(window.internals.interestedElement,
                   target,

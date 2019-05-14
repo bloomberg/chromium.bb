@@ -91,42 +91,9 @@ static void ConsiderForBestCandidate(SpatialNavigationDirection direction,
 
   double distance =
       ComputeDistanceDataForNode(direction, current_interest, candidate);
-  if (distance == MaxDistance())
+  if (distance == kMaxDistance)
     return;
 
-  if (!best_candidate->IsNull()) {
-    LayoutRect intersection_rect = Intersection(
-        candidate.rect_in_root_frame, best_candidate->rect_in_root_frame);
-    if (!intersection_rect.IsEmpty() &&
-        !AreElementsOnSameLine(*best_candidate, candidate) &&
-        intersection_rect == candidate.rect_in_root_frame) {
-      // If 2 nodes are intersecting, do hit test to find which node in on top.
-      LayoutUnit x = intersection_rect.X() + intersection_rect.Width() / 2;
-      LayoutUnit y = intersection_rect.Y() + intersection_rect.Height() / 2;
-      if (!IsA<LocalFrame>(
-              candidate.visible_node->GetDocument().GetPage()->MainFrame()))
-        return;
-      HitTestLocation location(IntPoint(x.ToInt(), y.ToInt()));
-      HitTestResult result =
-          candidate.visible_node->GetDocument()
-              .GetPage()
-              ->DeprecatedLocalMainFrame()
-              ->GetEventHandler()
-              .HitTestResultAtLocation(location,
-                                       HitTestRequest::kReadOnly |
-                                           HitTestRequest::kActive |
-                                           HitTestRequest::kIgnoreClipping);
-      if (candidate.visible_node->ContainsIncludingHostElements(
-              *result.InnerNode())) {
-        *best_candidate = candidate;
-        *best_distance = distance;
-        return;
-      }
-      if (best_candidate->visible_node->ContainsIncludingHostElements(
-              *result.InnerNode()))
-        return;
-    }
-  }
 
   if (distance < *best_distance && IsUnobscured(candidate)) {
     *best_candidate = candidate;
@@ -303,7 +270,7 @@ FocusCandidate SpatialNavigationController::FindNextCandidateInContainer(
   current_interest.visible_node = interest_child_in_container;
 
   FocusCandidate best_candidate;
-  double best_distance = MaxDistance();
+  double best_distance = kMaxDistance;
   for (; element;
        element =
            IsScrollableAreaOrDocument(element)
