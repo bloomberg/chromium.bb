@@ -67,6 +67,10 @@ message MountOptionsProto {
 
   // Mount options set by the client.
   optional MountConfigProto mount_config = 4;
+
+  // Skip attempting to connect to the share, and instead just register the
+  // mount.
+  optional bool skip_connect = 5;
 }
 
 message MountConfigProto {
