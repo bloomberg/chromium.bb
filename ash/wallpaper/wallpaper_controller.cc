@@ -860,6 +860,10 @@ void WallpaperController::Init(
     const base::FilePath& device_policy_wallpaper_path) {
   DCHECK(!wallpaper_controller_client_.get());
   wallpaper_controller_client_ = std::move(client);
+
+  DCHECK(local_state_);
+  wallpaper_controller_client_->OnReadyToSetWallpaper();
+
   SetGlobalUserDataDir(user_data_path);
   SetGlobalChromeOSWallpapersDir(chromeos_wallpapers_path);
   SetGlobalChromeOSCustomWallpapersDir(chromeos_custom_wallpapers_path);
@@ -1364,13 +1368,8 @@ void WallpaperController::OnRootWindowAdded(aura::Window* root_window) {
 
 void WallpaperController::OnLocalStatePrefServiceInitialized(
     PrefService* pref_service) {
+  DCHECK(!wallpaper_controller_client_);
   local_state_ = pref_service;
-  if (wallpaper_controller_client_) {
-    wallpaper_controller_client_->OnReadyToSetWallpaper();
-  } else {
-    // Ensure unit tests have a wallpaper as placeholder.
-    CreateEmptyWallpaperForTesting();
-  }
 }
 
 void WallpaperController::OnShellInitialized() {

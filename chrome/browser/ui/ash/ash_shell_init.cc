@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "ash/display/display_prefs.h"
 #include "ash/shell.h"
 #include "ash/shell_init_params.h"
 #include "chrome/browser/browser_process.h"
@@ -28,13 +27,7 @@ void CreateShell() {
   shell_init_params.connector =
       content::ServiceManagerConnection::GetForProcess()->GetConnector();
   DCHECK(shell_init_params.connector);
-  // Pass the initial display prefs to ash::Shell as a Value dictionary.
-  // This is done this way to avoid complexities with registering the display
-  // prefs in multiple places (i.e. in g_browser_process->local_state() and
-  // ash::Shell::local_state_). See https://crbug.com/834775 for details.
-  shell_init_params.initial_display_prefs =
-      ash::DisplayPrefs::GetInitialDisplayPrefsFromPrefService(
-          g_browser_process->local_state());
+  shell_init_params.local_state = g_browser_process->local_state();
   shell_init_params.keyboard_ui_factory =
       std::make_unique<ChromeKeyboardUIFactory>();
   shell_init_params.dbus_bus =
@@ -44,13 +37,6 @@ void CreateShell() {
 }
 
 }  // namespace
-
-// static
-void AshShellInit::RegisterDisplayPrefs(PrefRegistrySimple* registry) {
-  // DisplayPrefs must be registered here so that the initial display prefs can
-  // be passed synchronously to ash::Shell.
-  ash::DisplayPrefs::RegisterLocalStatePrefs(registry);
-}
 
 AshShellInit::AshShellInit() {
   CreateShell();

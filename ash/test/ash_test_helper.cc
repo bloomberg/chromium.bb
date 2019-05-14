@@ -15,6 +15,7 @@
 #include "ash/keyboard/ash_keyboard_controller.h"
 #include "ash/keyboard/test_keyboard_ui.h"
 #include "ash/mojo_test_interface_factory.h"
+#include "ash/public/cpp/ash_prefs.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/test/test_keyboard_controller_observer.h"
 #include "ash/session/test_pref_service_provider.h"
@@ -24,6 +25,7 @@
 #include "ash/system/screen_layout_observer.h"
 #include "ash/test/ash_test_views_delegate.h"
 #include "ash/test_shell_delegate.h"
+#include "ash/wallpaper/wallpaper_controller.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "base/bind.h"
 #include "base/run_loop.h"
@@ -134,7 +136,7 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
 
   ui::MaterialDesignController::Initialize();
 
-  CreateShell();
+  CreateShell(provide_local_state);
 
   // Reset aura::Env to eliminate test dependency (https://crbug.com/586514).
   aura::test::EnvTestHelper env_helper(Shell::Get()->aura_env());
@@ -150,12 +152,6 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
   // CursorManager is null on MASH.
   if (shell->cursor_manager())
     shell->cursor_manager()->ShowCursor();
-
-  if (provide_local_state) {
-    auto pref_service = std::make_unique<TestingPrefServiceSimple>();
-    Shell::RegisterLocalStatePrefs(pref_service->registry(), true);
-    Shell::Get()->OnLocalStatePrefServiceInitialized(std::move(pref_service));
-  }
 
   prefs_provider_ = std::make_unique<TestPrefServiceProvider>();
   session_controller_client_.reset(new TestSessionControllerClient(
@@ -187,6 +183,9 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
   // Remove the app dragging animations delay for testing purposes.
   shell->overview_controller()->set_delayed_animation_task_delay_for_test(
       base::TimeDelta());
+
+  // Ensure tests have a wallpaper as placeholder.
+  shell->wallpaper_controller()->CreateEmptyWallpaperForTesting();
 }
 
 void AshTestHelper::TearDown() {
@@ -257,7 +256,7 @@ void AshTestHelper::SetRunningOutsideAsh() {
 }
 
 PrefService* AshTestHelper::GetLocalStatePrefService() {
-  return Shell::Get()->local_state_.get();
+  return Shell::Get()->local_state_;
 }
 
 aura::Window* AshTestHelper::CurrentContext() {
@@ -272,7 +271,7 @@ display::Display AshTestHelper::GetSecondaryDisplay() {
   return Shell::Get()->display_manager()->GetSecondaryDisplay();
 }
 
-void AshTestHelper::CreateShell() {
+void AshTestHelper::CreateShell(bool provide_local_state) {
   const bool enable_pixel_output = false;
   context_factories_ =
       std::make_unique<ui::TestContextFactories>(enable_pixel_output);
@@ -282,6 +281,15 @@ void AshTestHelper::CreateShell() {
   init_params.context_factory_private =
       context_factories_->GetContextFactoryPrivate();
   init_params.keyboard_ui_factory = std::make_unique<TestKeyboardUIFactory>();
+
+  if (provide_local_state) {
+    auto pref_service = std::make_unique<TestingPrefServiceSimple>();
+    RegisterLocalStatePrefs(pref_service->registry(), true);
+
+    local_state_ = std::move(pref_service);
+    init_params.local_state = local_state_.get();
+  }
+
   Shell::CreateInstance(std::move(init_params));
 }
 

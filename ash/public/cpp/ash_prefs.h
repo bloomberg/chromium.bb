@@ -11,6 +11,10 @@ class PrefRegistrySimple;
 
 namespace ash {
 
+// Registers all ash related local state prefs to the given |registry|.
+ASH_EXPORT void RegisterLocalStatePrefs(PrefRegistrySimple* registry,
+                                        bool for_test = false);
+
 // Register ash related sign-in/user profile prefs to |registry|. When
 // |for_test| is true this registers foreign user profile prefs (e.g. chrome
 // prefs) as if they are owned by ash. This allows test code to read the pref

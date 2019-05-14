@@ -9,6 +9,7 @@
 
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/ash_pref_names.h"
+#include "ash/public/cpp/ash_prefs.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/cros_display_config.mojom.h"
 #include "base/bind.h"
@@ -34,7 +35,6 @@
 #include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
-#include "chrome/browser/ui/ash/ash_shell_init.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
@@ -180,7 +180,7 @@ void Preferences::RegisterPrefs(PrefRegistrySimple* registry) {
   // Carrier deal notification shown count defaults to 0.
   registry->RegisterIntegerPref(prefs::kCarrierDealPromoShown, 0);
 
-  AshShellInit::RegisterDisplayPrefs(registry);
+  ash::RegisterLocalStatePrefs(registry);
 }
 
 // static

@@ -7,6 +7,8 @@
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/assistant/assistant_controller.h"
+#include "ash/detachable_base/detachable_base_handler.h"
+#include "ash/display/display_prefs.h"
 #include "ash/kiosk_next/kiosk_next_shell_controller.h"
 #include "ash/login/login_screen_controller.h"
 #include "ash/magnifier/docked_magnifier_controller.h"
@@ -21,6 +23,7 @@
 #include "ash/system/power/power_prefs.h"
 #include "ash/system/session/logout_button_tray.h"
 #include "ash/touch/touch_devices_controller.h"
+#include "ash/wallpaper/wallpaper_controller.h"
 
 namespace ash {
 
@@ -47,6 +50,15 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
 }
 
 }  // namespace
+
+void RegisterLocalStatePrefs(PrefRegistrySimple* registry, bool for_test) {
+  PaletteTray::RegisterLocalStatePrefs(registry);
+  WallpaperController::RegisterLocalStatePrefs(registry);
+  BluetoothPowerController::RegisterLocalStatePrefs(registry);
+  DetachableBaseHandler::RegisterPrefs(registry);
+  PowerPrefs::RegisterLocalStatePrefs(registry);
+  DisplayPrefs::RegisterLocalStatePrefs(registry);
+}
 
 void RegisterSigninProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
   RegisterProfilePrefs(registry, for_test);

@@ -104,10 +104,10 @@
 #include "ash/system/locale/locale_update_controller.h"
 #include "ash/system/message_center/message_center_controller.h"
 #include "ash/system/model/system_tray_model.h"
+#include "ash/system/model/virtual_keyboard_model.h"
 #include "ash/system/network/sms_observer.h"
 #include "ash/system/network/vpn_list.h"
 #include "ash/system/night_light/night_light_controller.h"
-#include "ash/system/palette/palette_tray.h"
 #include "ash/system/power/backlights_forced_off_setter.h"
 #include "ash/system/power/notification_reporter.h"
 #include "ash/system/power/peripheral_battery_notifier.h"
@@ -177,8 +177,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "dbus/bus.h"
-#include "services/preferences/public/cpp/pref_service_factory.h"
-#include "services/preferences/public/mojom/preferences.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
@@ -251,10 +249,10 @@ Shell* Shell::instance_ = nullptr;
 Shell* Shell::CreateInstance(ShellInitParams init_params) {
   CHECK(!instance_);
   instance_ = new Shell(std::move(init_params.delegate), init_params.connector);
-  instance_->Init(
-      init_params.context_factory, init_params.context_factory_private,
-      std::move(init_params.initial_display_prefs),
-      std::move(init_params.keyboard_ui_factory), init_params.dbus_bus);
+  instance_->Init(init_params.context_factory,
+                  init_params.context_factory_private, init_params.local_state,
+                  std::move(init_params.keyboard_ui_factory),
+                  init_params.dbus_bus);
   return instance_;
 }
 
@@ -360,22 +358,6 @@ int Shell::GetOpenSystemModalWindowContainerId() {
 // static
 bool Shell::IsSystemModalWindowOpen() {
   return GetOpenSystemModalWindowContainerId() >= 0;
-}
-
-// static
-void Shell::RegisterLocalStatePrefs(PrefRegistrySimple* registry,
-                                    bool for_test) {
-  PaletteTray::RegisterLocalStatePrefs(registry);
-  WallpaperController::RegisterLocalStatePrefs(registry);
-  BluetoothPowerController::RegisterLocalStatePrefs(registry);
-  DetachableBaseHandler::RegisterPrefs(registry);
-  PowerPrefs::RegisterLocalStatePrefs(registry);
-  // Note: DisplayPrefs are registered in chrome in AshShellInit::RegisterPrefs
-  // (see comment there for details).
-  if (for_test)
-    DisplayPrefs::RegisterLocalStatePrefs(registry);
-  else
-    DisplayPrefs::RegisterForeignPrefs(registry);
 }
 
 display::DisplayConfigurator* Shell::display_configurator() {
@@ -886,7 +868,6 @@ Shell::~Shell() {
   // Destroys the MessageCenter singleton, so must happen late.
   message_center_controller_.reset();
 
-  local_state_.reset();
   shell_delegate_.reset();
 
   if (!::features::IsMultiProcessMash()) {
@@ -904,7 +885,7 @@ Shell::~Shell() {
 void Shell::Init(
     ui::ContextFactory* context_factory,
     ui::ContextFactoryPrivate* context_factory_private,
-    std::unique_ptr<base::Value> initial_display_prefs,
+    PrefService* local_state,
     std::unique_ptr<keyboard::KeyboardUIFactory> keyboard_ui_factory,
     scoped_refptr<dbus::Bus> dbus_bus) {
   // Required by DetachableBaseHandler.
@@ -932,17 +913,6 @@ void Shell::Init(
     multidevice_notification_presenter_ =
         std::make_unique<MultiDeviceNotificationPresenter>(
             message_center::MessageCenter::Get(), connector_);
-
-    // Connect to local state prefs now, but wait for an active user before
-    // connecting to the profile pref service. The login screen has a temporary
-    // user profile that is not associated with a real user.
-    auto pref_registry = base::MakeRefCounted<PrefRegistrySimple>();
-    RegisterLocalStatePrefs(pref_registry.get(), false);
-    prefs::ConnectToPrefService(
-        connector_, std::move(pref_registry),
-        base::Bind(&Shell::OnLocalStatePrefServiceInitialized,
-                   weak_factory_.GetWeakPtr()),
-        prefs::mojom::kLocalStateServiceName);
   }
   kiosk_next_shell_controller_ = std::make_unique<KioskNextShellController>();
   tablet_mode_controller_ = std::make_unique<TabletModeController>();
@@ -970,12 +940,7 @@ void Shell::Init(
 
   InitializeDisplayManager();
 
-  // In CLASSIC mode, |initial_display_prefs| contains the synchronously
-  // loaded display pref values. Otherwise |initial_display_prefs| is null and
-  // the pref values will be loaded once |local_state_| is available. (Any store
-  // requests in the meanwhile will be queued).
-  display_prefs_ =
-      std::make_unique<DisplayPrefs>(std::move(initial_display_prefs));
+  display_prefs_ = std::make_unique<DisplayPrefs>(local_state);
 
   // This will initialize aura::Env which requires |display_manager_| to
   // be initialized first.
@@ -1217,6 +1182,10 @@ void Shell::Init(
   // By this point ash shell should have initialized its D-Bus signal
   // listeners, so inform the session manager that Ash is initialized.
   session_controller_->EmitAshInitialized();
+
+  // Associates with local state.
+  if (local_state)
+    OnLocalStatePrefServiceInitialized(local_state);
 }
 
 void Shell::InitializeDisplayManager() {
@@ -1373,19 +1342,14 @@ void Shell::OnLockStateChanged(bool locked) {
 #endif
 }
 
-void Shell::OnLocalStatePrefServiceInitialized(
-    std::unique_ptr<::PrefService> pref_service) {
+void Shell::OnLocalStatePrefServiceInitialized(PrefService* pref_service) {
   DCHECK(!local_state_);
-  // |pref_service| is null if can't connect to Chrome (as happens when
-  // running mash outside of chrome --enable-features=Mash and chrome isn't
-  // built).
-  if (!pref_service)
-    return;
+  DCHECK(pref_service);
 
-  local_state_ = std::move(pref_service);
+  local_state_ = pref_service;
 
   for (auto& observer : shell_observers_)
-    observer.OnLocalStatePrefServiceInitialized(local_state_.get());
+    observer.OnLocalStatePrefServiceInitialized(local_state_);
 }
 
 }  // namespace ash

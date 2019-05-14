@@ -167,8 +167,8 @@ PowerPrefs* ShellTestApi::power_prefs() {
 }
 
 void ShellTestApi::OnLocalStatePrefServiceInitialized(
-    std::unique_ptr<PrefService> pref_service) {
-  shell_->OnLocalStatePrefServiceInitialized(std::move(pref_service));
+    PrefService* pref_service) {
+  shell_->OnLocalStatePrefServiceInitialized(pref_service);
 }
 
 void ShellTestApi::ResetPowerButtonControllerForTest() {

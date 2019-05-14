@@ -31,7 +31,6 @@
 #include "base/test/bind_test_util.h"
 #include "base/time/time_override.h"
 #include "chromeos/constants/chromeos_switches.h"
-#include "components/prefs/testing_pref_service.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -2560,75 +2559,6 @@ TEST_F(WallpaperControllerTest, AlwaysOnTopWallpaper) {
   EXPECT_EQ(3, GetWallpaperCount());
   EXPECT_EQ(controller_->GetWallpaperType(), DEFAULT);
   EXPECT_EQ(kShellWindowId_WallpaperContainer, GetWallpaperContainerId());
-}
-
-// A test wallpaper controller client class.
-class TestWallpaperControllerClient : public mojom::WallpaperControllerClient {
- public:
-  TestWallpaperControllerClient() : binding_(this) {}
-  ~TestWallpaperControllerClient() override = default;
-
-  int ready_to_set_wallpaper_count() const {
-    return ready_to_set_wallpaper_count_;
-  }
-
-  mojom::WallpaperControllerClientPtr CreateInterfacePtr() {
-    mojom::WallpaperControllerClientPtr ptr;
-    binding_.Bind(mojo::MakeRequest(&ptr));
-    return ptr;
-  }
-
-  // mojom::WallpaperControllerClient:
-  void OnReadyToSetWallpaper() override { ++ready_to_set_wallpaper_count_; }
-  void OpenWallpaperPicker() override {}
-  void OnFirstWallpaperAnimationFinished() override {}
-
- private:
-  int ready_to_set_wallpaper_count_ = 0;
-  mojo::Binding<mojom::WallpaperControllerClient> binding_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestWallpaperControllerClient);
-};
-
-// Tests for cases when local state is not available.
-class WallpaperControllerDisableLocalStateTest
-    : public WallpaperControllerTest {
- public:
-  WallpaperControllerDisableLocalStateTest() = default;
-  ~WallpaperControllerDisableLocalStateTest() override = default;
-
-  void SetUp() override {
-    disable_provide_local_state();
-    WallpaperControllerTest::SetUp();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WallpaperControllerDisableLocalStateTest);
-};
-
-TEST_F(WallpaperControllerDisableLocalStateTest, IgnoreShowUserWallpaper) {
-  TestWallpaperControllerClient client;
-  controller_->SetClientForTesting(client.CreateInterfacePtr());
-  SimulateUserLogin(kUser1);
-
-  // When local state is not available, verify |ShowUserWallpaper| request is
-  // ignored.
-  controller_->ShowUserWallpaper(InitializeUser(account_id_1));
-  RunAllTasksUntilIdle();
-  EXPECT_EQ(0, GetWallpaperCount());
-  EXPECT_EQ(0, client.ready_to_set_wallpaper_count());
-
-  // Make local state available, verify |ShowUserWallpaper| successfully shows
-  // the wallpaper, and |OnReadyToSetWallpaper| is invoked.
-  std::unique_ptr<TestingPrefServiceSimple> local_state =
-      std::make_unique<TestingPrefServiceSimple>();
-  Shell::RegisterLocalStatePrefs(local_state->registry(), true);
-  ShellTestApi().OnLocalStatePrefServiceInitialized(std::move(local_state));
-
-  controller_->ShowUserWallpaper(InitializeUser(account_id_1));
-  RunAllTasksUntilIdle();
-  EXPECT_EQ(1, GetWallpaperCount());
-  EXPECT_EQ(1, client.ready_to_set_wallpaper_count());
 }
 
 }  // namespace ash

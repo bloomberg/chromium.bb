@@ -44,8 +44,7 @@ class ASH_EXPORT ShellTestApi {
   PowerPrefs* power_prefs();
 
   // Calls the private method.
-  void OnLocalStatePrefServiceInitialized(
-      std::unique_ptr<PrefService> pref_service);
+  void OnLocalStatePrefServiceInitialized(PrefService* pref_service);
 
   // Resets |shell_->power_button_controller_| to hold a new object to simulate
   // Chrome starting.

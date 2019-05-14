@@ -16,6 +16,7 @@
 #include "ash/keyboard/ui/keyboard_util.h"
 #include "ash/keyboard/ui/public/keyboard_switches.h"
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/ash_prefs.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/root_window_controller.h"
@@ -668,6 +669,9 @@ TEST_F(ShellTest3, DontCrashWhenWindowDeletedSingleProcess) {
 class ShellLocalStateTest : public AshTestBase {
  public:
   ShellLocalStateTest() { disable_provide_local_state(); }
+
+ protected:
+  std::unique_ptr<TestingPrefServiceSimple> local_state_;
 };
 
 TEST_F(ShellLocalStateTest, LocalState) {
@@ -675,11 +679,10 @@ TEST_F(ShellLocalStateTest, LocalState) {
   Shell::Get()->AddShellObserver(&observer);
 
   // Prefs service wrapper code creates a PrefService.
-  std::unique_ptr<TestingPrefServiceSimple> local_state =
-      std::make_unique<TestingPrefServiceSimple>();
-  Shell::RegisterLocalStatePrefs(local_state->registry(), true);
-  TestingPrefServiceSimple* local_state_ptr = local_state.get();
-  ShellTestApi().OnLocalStatePrefServiceInitialized(std::move(local_state));
+  local_state_ = std::make_unique<TestingPrefServiceSimple>();
+  RegisterLocalStatePrefs(local_state_->registry(), true);
+  TestingPrefServiceSimple* local_state_ptr = local_state_.get();
+  ShellTestApi().OnLocalStatePrefServiceInitialized(local_state_ptr);
   EXPECT_EQ(local_state_ptr, observer.last_local_state_);
   EXPECT_EQ(local_state_ptr, ash_test_helper()->GetLocalStatePrefService());
 

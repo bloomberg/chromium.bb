@@ -11,9 +11,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "dbus/bus.h"
 
-namespace base {
-class Value;
-}
+class PrefService;
 
 namespace keyboard {
 class KeyboardUIFactory;
@@ -40,9 +38,7 @@ struct ASH_EXPORT ShellInitParams {
   std::unique_ptr<ShellDelegate> delegate;
   ui::ContextFactory* context_factory = nullptr;                 // Non-owning.
   ui::ContextFactoryPrivate* context_factory_private = nullptr;  // Non-owning.
-  // Dictionary of pref values used by DisplayPrefs before
-  // ShellObserver::OnLocalStatePrefServiceInitialized is called.
-  std::unique_ptr<base::Value> initial_display_prefs;
+  PrefService* local_state = nullptr;                            // Non-owning.
 
   // Connector used by Shell to establish connections.
   service_manager::Connector* connector = nullptr;

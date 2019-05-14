@@ -107,7 +107,7 @@ class AshTestHelper {
 
  private:
   // Called when running in ash to create Shell.
-  void CreateShell();
+  void CreateShell(bool provide_local_state);
 
   std::unique_ptr<chromeos::system::ScopedFakeStatisticsProvider>
       statistics_provider_;
@@ -133,6 +133,8 @@ class AshTestHelper {
 
   std::unique_ptr<TestKeyboardControllerObserver>
       test_keyboard_controller_observer_;
+
+  std::unique_ptr<PrefService> local_state_;
 
   DISALLOW_COPY_AND_ASSIGN(AshTestHelper);
 };

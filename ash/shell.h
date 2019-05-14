@@ -26,7 +26,6 @@
 #include "ui/wm/core/cursor_manager.h"
 #include "ui/wm/public/activation_change_observer.h"
 
-class PrefRegistrySimple;
 class PrefService;
 
 namespace aura {
@@ -272,10 +271,6 @@ class ASH_EXPORT Shell : public SessionObserver,
 
   // Returns true if a system-modal dialog window is currently open.
   static bool IsSystemModalWindowOpen();
-
-  // Registers all ash related local state prefs to the given |registry|.
-  static void RegisterLocalStatePrefs(PrefRegistrySimple* registry,
-                                      bool for_test);
 
   // If necessary, initializes the Wayland server.
   void InitWaylandServer(std::unique_ptr<exo::FileHelper> file_helper);
@@ -633,7 +628,7 @@ class ASH_EXPORT Shell : public SessionObserver,
 
   void Init(ui::ContextFactory* context_factory,
             ui::ContextFactoryPrivate* context_factory_private,
-            std::unique_ptr<base::Value> initial_display_prefs,
+            PrefService* local_state,
             std::unique_ptr<keyboard::KeyboardUIFactory> keyboard_ui_factory,
             scoped_refptr<dbus::Bus> dbus_bus);
 
@@ -666,9 +661,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   void OnLoginStatusChanged(LoginStatus login_status) override;
   void OnLockStateChanged(bool locked) override;
 
-  // Callback for prefs::ConnectToPrefService.
-  void OnLocalStatePrefServiceInitialized(
-      std::unique_ptr<::PrefService> pref_service);
+  void OnLocalStatePrefServiceInitialized(PrefService* pref_service);
 
   static Shell* instance_;
 
@@ -754,7 +747,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<::wm::ShadowController> shadow_controller_;
   std::unique_ptr<::wm::VisibilityController> visibility_controller_;
   std::unique_ptr<::wm::WindowModalityController> window_modality_controller_;
-  std::unique_ptr<PrefService> local_state_;
+  PrefService* local_state_ = nullptr;
   std::unique_ptr<views::corewm::TooltipController> tooltip_controller_;
   std::unique_ptr<PowerButtonController> power_button_controller_;
   std::unique_ptr<LockStateController> lock_state_controller_;
