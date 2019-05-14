@@ -84,13 +84,20 @@ class CrashAnalyzer {
       const crashpad::ProcessSnapshot& process_snapshot,
       const char* annotation_name);
 
+  // Given a snapshot and crash key, returns true if there was a valid
+  // AllocatorState for the given allocator or false otherwise.
+  static bool GetAllocatorState(
+      const crashpad::ProcessSnapshot& process_snapshot,
+      const char* crash_key,
+      AllocatorState* state);
+
   // This method implements the underlying logic for GetExceptionInfo(). It
   // analyzes the AllocatorState of the crashing process, if the exception is
   // related to GWP-ASan it fills out the |proto| parameter and returns true.
   static bool AnalyzeCrashedAllocator(
-      const crashpad::ProcessMemory& memory,
-      const crashpad::ExceptionSnapshot& exception,
-      crashpad::VMAddress gpa_addr,
+      const crashpad::ProcessSnapshot& process_snapshot,
+      const char* crash_key,
+      Crash_Allocator allocator,
       gwp_asan::Crash* proto);
 
   // This method fills out an AllocationInfo protobuf from a stack trace

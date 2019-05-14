@@ -33,55 +33,14 @@ using GetMetadataReturnType = AllocatorState::GetMetadataReturnType;
 bool CrashAnalyzer::GetExceptionInfo(
     const crashpad::ProcessSnapshot& process_snapshot,
     gwp_asan::Crash* proto) {
-  crashpad::VMAddress malloc_key =
-      GetAllocatorAddress(process_snapshot, kMallocCrashKey);
-  crashpad::VMAddress partitionalloc_key =
-      GetAllocatorAddress(process_snapshot, kPartitionAllocCrashKey);
-  // If the annotations weren't present, GWP-ASan wasn't enabled.
-  if (!malloc_key && !partitionalloc_key)
-    return false;
-
-  const crashpad::ExceptionSnapshot* exception = process_snapshot.Exception();
-  if (!exception)
-    return false;
-
-  if (!exception->Context()) {
-    ReportHistogram(GwpAsanCrashAnalysisResult::kErrorNullCpuContext);
-    return false;
+  if (AnalyzeCrashedAllocator(process_snapshot, kMallocCrashKey,
+                              Crash_Allocator_MALLOC, proto)) {
+    return true;
   }
 
-#if defined(ARCH_CPU_64_BITS)
-  constexpr bool is_64_bit = true;
-#else
-  constexpr bool is_64_bit = false;
-#endif
-
-  // TODO(vtsyrklevich): Look at using crashpad's process_types to read the GPA
-  // state bitness-independently.
-  if (exception->Context()->Is64Bit() != is_64_bit) {
-    ReportHistogram(GwpAsanCrashAnalysisResult::kErrorMismatchedBitness);
-    return false;
-  }
-
-  if (!process_snapshot.Memory()) {
-    ReportHistogram(GwpAsanCrashAnalysisResult::kErrorNullProcessMemory);
-    return false;
-  }
-
-  if (malloc_key) {
-    if (AnalyzeCrashedAllocator(*process_snapshot.Memory(), *exception,
-                                malloc_key, proto)) {
-      proto->set_allocator(Crash_Allocator_MALLOC);
-      return true;
-    }
-  }
-
-  if (partitionalloc_key) {
-    if (AnalyzeCrashedAllocator(*process_snapshot.Memory(), *exception,
-                                partitionalloc_key, proto)) {
-      proto->set_allocator(Crash_Allocator_PARTITIONALLOC);
-      return true;
-    }
+  if (AnalyzeCrashedAllocator(process_snapshot, kPartitionAllocCrashKey,
+                              Crash_Allocator_PARTITIONALLOC, proto)) {
+    return true;
   }
 
   return false;
@@ -113,27 +72,75 @@ crashpad::VMAddress CrashAnalyzer::GetAllocatorAddress(
   return 0;
 }
 
-bool CrashAnalyzer::AnalyzeCrashedAllocator(
-    const crashpad::ProcessMemory& memory,
-    const crashpad::ExceptionSnapshot& exception,
-    crashpad::VMAddress gpa_addr,
-    gwp_asan::Crash* proto) {
-  AllocatorState unsafe_state;
-  if (!memory.Read(gpa_addr, sizeof(unsafe_state), &unsafe_state)) {
+bool CrashAnalyzer::GetAllocatorState(
+    const crashpad::ProcessSnapshot& process_snapshot,
+    const char* crash_key,
+    AllocatorState* state) {
+  crashpad::VMAddress gpa_addr =
+      GetAllocatorAddress(process_snapshot, crash_key);
+  // If the annotation isn't present, GWP-ASan wasn't enabled for this
+  // allocator.
+  if (!gpa_addr)
+    return false;
+
+  const crashpad::ExceptionSnapshot* exception = process_snapshot.Exception();
+  if (!exception)
+    return false;
+
+  if (!exception->Context()) {
+    DLOG(ERROR) << "Missing crash CPU context information.";
+    ReportHistogram(GwpAsanCrashAnalysisResult::kErrorNullCpuContext);
+    return false;
+  }
+
+#if defined(ARCH_CPU_64_BITS)
+  constexpr bool is_64_bit = true;
+#else
+  constexpr bool is_64_bit = false;
+#endif
+
+  // TODO(vtsyrklevich): Look at using crashpad's process_types to read the GPA
+  // state bitness-independently.
+  if (exception->Context()->Is64Bit() != is_64_bit) {
+    DLOG(ERROR) << "Mismatched process bitness.";
+    ReportHistogram(GwpAsanCrashAnalysisResult::kErrorMismatchedBitness);
+    return false;
+  }
+
+  const crashpad::ProcessMemory* memory = process_snapshot.Memory();
+  if (!memory) {
+    DLOG(ERROR) << "Null ProcessMemory.";
+    ReportHistogram(GwpAsanCrashAnalysisResult::kErrorNullProcessMemory);
+    return false;
+  }
+
+  if (!memory->Read(gpa_addr, sizeof(*state), state)) {
     DLOG(ERROR) << "Failed to read AllocatorState from process.";
     ReportHistogram(GwpAsanCrashAnalysisResult::kErrorFailedToReadAllocator);
     return false;
   }
 
-  if (!unsafe_state.IsValid()) {
+  if (!state->IsValid()) {
     DLOG(ERROR) << "Allocator sanity check failed!";
     ReportHistogram(
         GwpAsanCrashAnalysisResult::kErrorAllocatorFailedSanityCheck);
     return false;
   }
-  const AllocatorState& valid_state = unsafe_state;
 
-  crashpad::VMAddress exception_addr = GetAccessAddress(exception);
+  return true;
+}
+
+bool CrashAnalyzer::AnalyzeCrashedAllocator(
+    const crashpad::ProcessSnapshot& process_snapshot,
+    const char* crash_key,
+    Crash_Allocator allocator,
+    gwp_asan::Crash* proto) {
+  AllocatorState valid_state;
+  if (!GetAllocatorState(process_snapshot, crash_key, &valid_state))
+    return false;
+
+  crashpad::VMAddress exception_addr =
+      GetAccessAddress(*process_snapshot.Exception());
   if (valid_state.double_free_address)
     exception_addr = valid_state.double_free_address;
   else if (valid_state.free_invalid_address)
@@ -152,11 +159,12 @@ bool CrashAnalyzer::AnalyzeCrashedAllocator(
     proto->set_free_invalid_address(valid_state.free_invalid_address);
   // We overwrite this later if it should be false.
   proto->set_missing_metadata(true);
+  proto->set_allocator(allocator);
 
   // Read the allocator's entire metadata array.
   auto metadata_arr = std::make_unique<AllocatorState::SlotMetadata[]>(
       valid_state.num_metadata);
-  if (!memory.Read(
+  if (!process_snapshot.Memory()->Read(
           valid_state.metadata_addr,
           sizeof(AllocatorState::SlotMetadata) * valid_state.num_metadata,
           metadata_arr.get())) {
@@ -168,7 +176,7 @@ bool CrashAnalyzer::AnalyzeCrashedAllocator(
   // Read the allocator's slot_to_metadata mapping.
   auto slot_to_metadata =
       std::make_unique<AllocatorState::MetadataIdx[]>(valid_state.total_pages);
-  if (!memory.Read(
+  if (!process_snapshot.Memory()->Read(
           valid_state.slot_to_metadata_addr,
           sizeof(AllocatorState::MetadataIdx) * valid_state.total_pages,
           slot_to_metadata.get())) {
