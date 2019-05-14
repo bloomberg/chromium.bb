@@ -253,6 +253,7 @@ bool ChromeClientImpl::AcceptsLoadDrops() const {
 Page* ChromeClientImpl::CreateWindowDelegate(
     LocalFrame* frame,
     const FrameLoadRequest& r,
+    const AtomicString& name,
     const WebWindowFeatures& features,
     WebSandboxFlags sandbox_flags,
     const FeaturePolicy::FeatureState& opener_feature_state,
@@ -265,8 +266,7 @@ Page* ChromeClientImpl::CreateWindowDelegate(
 
   NotifyPopupOpeningObservers();
   const AtomicString& frame_name =
-      !EqualIgnoringASCIICase(r.FrameName(), "_blank") ? r.FrameName()
-                                                       : g_empty_atom;
+      !EqualIgnoringASCIICase(name, "_blank") ? name : g_empty_atom;
   WebViewImpl* new_view =
       static_cast<WebViewImpl*>(web_view_->Client()->CreateView(
           WebLocalFrameImpl::FromFrame(frame),

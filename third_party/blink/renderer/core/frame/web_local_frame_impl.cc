@@ -2000,9 +2000,7 @@ WebLocalFrameImpl* WebLocalFrameImpl::LocalRoot() {
 }
 
 WebFrame* WebLocalFrameImpl::FindFrameByName(const WebString& name) {
-  FrameLoadRequest request(nullptr, ResourceRequest(), name);
-  Frame* result = GetFrame()->Tree().FindFrameForNavigation(request).frame;
-  return WebFrame::FromFrame(result);
+  return WebFrame::FromFrame(GetFrame()->Tree().FindFrameByName(name));
 }
 
 bool WebLocalFrameImpl::ScrollTo(const gfx::Point& scrollPosition,

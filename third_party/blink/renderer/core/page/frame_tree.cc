@@ -180,19 +180,19 @@ unsigned FrameTree::ChildCount() const {
   return count;
 }
 
-FrameTree::FindResult FrameTree::FindFrameForNavigation(
-    FrameLoadRequest& request) const {
+Frame* FrameTree::FindFrameByName(const AtomicString& name) const {
   // Named frame lookup should always be relative to a local frame.
   DCHECK(IsA<LocalFrame>(this_frame_.Get()));
 
-  Frame* frame = FindFrameForNavigationInternal(request);
+  Frame* frame = FindFrameForNavigationInternal(name, KURL());
   if (frame && !To<LocalFrame>(this_frame_.Get())->CanNavigate(*frame))
     frame = nullptr;
-  return FindResult(frame, false);
+  return frame;
 }
 
 FrameTree::FindResult FrameTree::FindOrCreateFrameForNavigation(
-    FrameLoadRequest& request) const {
+    FrameLoadRequest& request,
+    const AtomicString& name) const {
   // Named frame lookup should always be relative to a local frame.
   DCHECK(IsA<LocalFrame>(this_frame_.Get()));
   LocalFrame* current_frame = To<LocalFrame>(this_frame_.Get());
@@ -200,15 +200,14 @@ FrameTree::FindResult FrameTree::FindOrCreateFrameForNavigation(
   // A GetNavigationPolicy() value other than kNavigationPolicyCurrentTab at
   // this point indicates that a user event modified the navigation policy
   // (e.g., a ctrl-click). Let the user's action override any target attribute.
-  if (request.GetNavigationPolicy() != kNavigationPolicyCurrentTab) {
-    request.ClearFrameName();
+  if (request.GetNavigationPolicy() != kNavigationPolicyCurrentTab)
     return FindResult(current_frame, false);
-  }
 
-  Frame* frame = FindFrameForNavigationInternal(request);
+  Frame* frame =
+      FindFrameForNavigationInternal(name, request.GetResourceRequest().Url());
   bool new_window = false;
   if (!frame) {
-    frame = CreateNewWindow(*current_frame, request);
+    frame = CreateNewWindow(*current_frame, request, name);
     new_window = true;
     // CreateNewWindow() might have modified NavigationPolicy.
     // Set it back now that the new window is known to be the right one.
@@ -217,7 +216,6 @@ FrameTree::FindResult FrameTree::FindOrCreateFrameForNavigation(
     frame = nullptr;
   }
 
-  request.ClearFrameName();
   if (frame && !new_window) {
     if (frame->GetPage() == current_frame->GetPage())
       frame->GetPage()->GetFocusController().SetFocusedFrame(frame);
@@ -230,10 +228,8 @@ FrameTree::FindResult FrameTree::FindOrCreateFrameForNavigation(
   return FindResult(frame, new_window);
 }
 
-Frame* FrameTree::FindFrameForNavigationInternal(
-    FrameLoadRequest& request) const {
-  const AtomicString& name = request.FrameName();
-
+Frame* FrameTree::FindFrameForNavigationInternal(const AtomicString& name,
+                                                 const KURL& url) const {
   if (EqualIgnoringASCIICase(name, "_current")) {
     UseCounter::Count(
         blink::DynamicTo<blink::LocalFrame>(this_frame_.Get())->GetDocument(),
@@ -255,7 +251,6 @@ Frame* FrameTree::FindFrameForNavigationInternal(
   if (EqualIgnoringASCIICase(name, "_blank"))
     return nullptr;
 
-  const KURL& url = request.GetResourceRequest().Url();
   // Search subtree starting with this frame first.
   for (Frame* frame = this_frame_; frame;
        frame = frame->Tree().TraverseNext(this_frame_)) {

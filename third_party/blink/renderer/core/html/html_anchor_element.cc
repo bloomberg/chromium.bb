@@ -426,9 +426,7 @@ void HTMLAnchorElement::HandleClick(Event& event) {
 
   request.SetRequestContext(mojom::RequestContextType::HYPERLINK);
   const AtomicString& target = getAttribute(kTargetAttr);
-  FrameLoadRequest frame_request(
-      &GetDocument(), request,
-      target.IsEmpty() ? GetDocument().BaseTarget() : target);
+  FrameLoadRequest frame_request(&GetDocument(), request);
   frame_request.SetNavigationPolicy(NavigationPolicyFromEvent(&event));
   if (HasRel(kRelationNoReferrer)) {
     frame_request.SetNoReferrer();
@@ -450,7 +448,11 @@ void HTMLAnchorElement::HandleClick(Event& event) {
   frame->MaybeLogAdClickNavigation();
 
   Frame* target_frame =
-      frame->Tree().FindOrCreateFrameForNavigation(frame_request).frame;
+      frame->Tree()
+          .FindOrCreateFrameForNavigation(
+              frame_request,
+              target.IsEmpty() ? GetDocument().BaseTarget() : target)
+          .frame;
   if (target_frame)
     target_frame->Navigate(frame_request, WebFrameLoadType::kStandard);
 }

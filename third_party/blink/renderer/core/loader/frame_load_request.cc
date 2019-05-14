@@ -43,14 +43,9 @@ static void SetReferrerForRequest(Document* origin_document,
 
 FrameLoadRequest::FrameLoadRequest(Document* origin_document,
                                    const ResourceRequest& resource_request)
-    : FrameLoadRequest(origin_document, resource_request, AtomicString()) {}
 
-FrameLoadRequest::FrameLoadRequest(Document* origin_document,
-                                   const ResourceRequest& resource_request,
-                                   const AtomicString& frame_name)
     : origin_document_(origin_document),
       resource_request_(resource_request),
-      frame_name_(frame_name),
       client_redirect_(ClientRedirectPolicy::kNotClientRedirect),
       should_send_referrer_(kMaybeSendReferrer) {
   // These flags are passed to a service worker which controls the page.

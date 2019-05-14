@@ -3494,8 +3494,9 @@ TEST_F(WebViewTest, DoNotFocusCurrentFrameOnNavigateFromLocalFrame) {
           ->GetFrame();
   FrameLoadRequest request_with_target_start(
       local_frame->GetDocument(),
-      web_url_request_with_target_start.ToResourceRequest(), "_top");
-  local_frame->Tree().FindOrCreateFrameForNavigation(request_with_target_start);
+      web_url_request_with_target_start.ToResourceRequest());
+  local_frame->Tree().FindOrCreateFrameForNavigation(request_with_target_start,
+                                                     "_top");
   EXPECT_FALSE(client.DidFocusCalled());
 
   web_view_helper.Reset();  // Remove dependency on locally scoped client.
@@ -3510,11 +3511,10 @@ TEST_F(WebViewTest, FocusExistingFrameOnNavigate) {
 
   // Make a request that will open a new window
   WebURLRequest web_url_request(KURL("about:blank"));
-  FrameLoadRequest request(nullptr, web_url_request.ToResourceRequest(),
-                           "_blank");
+  FrameLoadRequest request(nullptr, web_url_request.ToResourceRequest());
   To<LocalFrame>(web_view_impl->GetPage()->MainFrame())
       ->Tree()
-      .FindOrCreateFrameForNavigation(request);
+      .FindOrCreateFrameForNavigation(request, "_blank");
   ASSERT_TRUE(client.CreatedWebView());
   EXPECT_FALSE(client.DidFocusCalled());
 
@@ -3522,12 +3522,12 @@ TEST_F(WebViewTest, FocusExistingFrameOnNavigate) {
   // The original window should be focused.
   WebURLRequest web_url_request_with_target_start(KURL("about:blank"));
   FrameLoadRequest request_with_target_start(
-      nullptr, web_url_request_with_target_start.ToResourceRequest(), "_start");
+      nullptr, web_url_request_with_target_start.ToResourceRequest());
   To<LocalFrame>(static_cast<WebViewImpl*>(client.CreatedWebView())
                      ->GetPage()
                      ->MainFrame())
       ->Tree()
-      .FindOrCreateFrameForNavigation(request_with_target_start);
+      .FindOrCreateFrameForNavigation(request_with_target_start, "_start");
   EXPECT_TRUE(client.DidFocusCalled());
 
   web_view_helper.Reset();  // Remove dependency on locally scoped client.
@@ -3568,9 +3568,9 @@ TEST_F(WebViewTest,
   // return the current window.
   WebURLRequest web_url_request(KURL("about:blank"));
   FrameLoadRequest request(frame->GetDocument(),
-                           web_url_request.ToResourceRequest(), "_blank");
+                           web_url_request.ToResourceRequest());
   FrameTree::FindResult result =
-      frame->Tree().FindOrCreateFrameForNavigation(request);
+      frame->Tree().FindOrCreateFrameForNavigation(request, "_blank");
   EXPECT_EQ(frame, result.frame);
   EXPECT_EQ(kNavigationPolicyCurrentTab, request.GetNavigationPolicy());
 }

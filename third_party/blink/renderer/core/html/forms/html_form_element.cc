@@ -488,19 +488,7 @@ void HTMLFormElement::ScheduleFormSubmission(FormSubmission* submission) {
                       WebFeature::kFormDisabledAttributePresentAndSubmit);
   }
 
-  FrameLoadRequest frame_load_request =
-      submission->CreateFrameLoadRequest(&GetDocument());
-  frame_load_request.SetNavigationPolicy(submission->GetNavigationPolicy());
-  frame_load_request.GetResourceRequest().SetHasUserGesture(
-      LocalFrame::HasTransientUserActivation(GetDocument().GetFrame()));
-
-  Frame* target_frame = GetDocument()
-                            .GetFrame()
-                            ->Tree()
-                            .FindOrCreateFrameForNavigation(frame_load_request)
-                            .frame;
-  if (target_frame)
-    target_frame->Navigate(frame_load_request, WebFrameLoadType::kStandard);
+  submission->Navigate();
 }
 
 void HTMLFormElement::reset() {

@@ -163,6 +163,7 @@ class CORE_EXPORT ChromeClient
   // request could be fulfilled. The ChromeClient should not load the request.
   Page* CreateWindow(LocalFrame*,
                      const FrameLoadRequest&,
+                     const AtomicString& frame_name,
                      const WebWindowFeatures&,
                      WebSandboxFlags,
                      const FeaturePolicy::FeatureState&,
@@ -447,6 +448,7 @@ class CORE_EXPORT ChromeClient
   virtual void PrintDelegate(LocalFrame*) = 0;
   virtual Page* CreateWindowDelegate(LocalFrame*,
                                      const FrameLoadRequest&,
+                                     const AtomicString& frame_name,
                                      const WebWindowFeatures&,
                                      WebSandboxFlags,
                                      const FeaturePolicy::FeatureState&,

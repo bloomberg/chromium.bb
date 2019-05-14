@@ -133,8 +133,7 @@ void SVGAElement::DefaultEventHandler(Event& event) {
       event.SetDefaultHandled();
 
       FrameLoadRequest frame_request(
-          &GetDocument(), ResourceRequest(GetDocument().CompleteURL(url)),
-          target);
+          &GetDocument(), ResourceRequest(GetDocument().CompleteURL(url)));
       frame_request.SetNavigationPolicy(NavigationPolicyFromEvent(&event));
       frame_request.SetTriggeringEventInfo(
           event.isTrusted() ? WebTriggeringEventInfo::kFromTrustedEvent
@@ -144,7 +143,7 @@ void SVGAElement::DefaultEventHandler(Event& event) {
       Frame* frame = GetDocument()
                          .GetFrame()
                          ->Tree()
-                         .FindOrCreateFrameForNavigation(frame_request)
+                         .FindOrCreateFrameForNavigation(frame_request, target)
                          .frame;
       if (!frame)
         return;

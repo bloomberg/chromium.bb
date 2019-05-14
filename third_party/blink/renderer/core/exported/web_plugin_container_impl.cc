@@ -546,9 +546,9 @@ void WebPluginContainerImpl::LoadFrameRequest(const WebURLRequest& request,
     return;  // FIXME: send a notification in this case?
 
   FrameLoadRequest frame_request(frame->GetDocument(),
-                                 request.ToResourceRequest(), target);
+                                 request.ToResourceRequest());
   Frame* target_frame =
-      frame->Tree().FindOrCreateFrameForNavigation(frame_request).frame;
+      frame->Tree().FindOrCreateFrameForNavigation(frame_request, target).frame;
   if (target_frame)
     target_frame->Navigate(frame_request, WebFrameLoadType::kStandard);
 }

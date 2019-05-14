@@ -33,6 +33,7 @@
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/forms/form_data.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
@@ -282,8 +283,7 @@ KURL FormSubmission::RequestURL() const {
   return request_url;
 }
 
-FrameLoadRequest FormSubmission::CreateFrameLoadRequest(
-    Document* origin_document) {
+void FormSubmission::Navigate() {
   ResourceRequest resource_request(RequestURL());
   ClientNavigationReason reason = ClientNavigationReason::kFormSubmissionGet;
   if (method_ == FormSubmission::kPostMethod) {
@@ -299,14 +299,23 @@ FrameLoadRequest FormSubmission::CreateFrameLoadRequest(
                                           "; boundary=" + boundary_);
     }
   }
+  resource_request.SetHasUserGesture(
+      LocalFrame::HasTransientUserActivation(form_->GetDocument().GetFrame()));
 
-  FrameLoadRequest frame_request(
-      origin_document, resource_request,
-      target_.IsEmpty() ? origin_document->BaseTarget() : target_);
+  FrameLoadRequest frame_request(&form_->GetDocument(), resource_request);
+  frame_request.SetNavigationPolicy(navigation_policy_);
   frame_request.SetClientRedirectReason(reason);
   frame_request.SetForm(form_);
   frame_request.SetTriggeringEventInfo(triggering_event_info_);
-  return frame_request;
+
+  Frame* target_frame =
+      form_->GetDocument()
+          .GetFrame()
+          ->Tree()
+          .FindOrCreateFrameForNavigation(frame_request, target_)
+          .frame;
+  if (target_frame)
+    target_frame->Navigate(frame_request, WebFrameLoadType::kStandard);
 }
 
 }  // namespace blink

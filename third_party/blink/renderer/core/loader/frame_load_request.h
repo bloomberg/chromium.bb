@@ -46,9 +46,6 @@ struct CORE_EXPORT FrameLoadRequest {
 
  public:
   FrameLoadRequest(Document* origin_document, const ResourceRequest&);
-  FrameLoadRequest(Document* origin_document,
-                   const ResourceRequest&,
-                   const AtomicString& frame_name);
 
   Document* OriginDocument() const { return origin_document_.Get(); }
 
@@ -63,9 +60,6 @@ struct CORE_EXPORT FrameLoadRequest {
   const ResourceRequest& GetResourceRequest() const {
     return resource_request_;
   }
-
-  const AtomicString& FrameName() const { return frame_name_; }
-  void ClearFrameName() { frame_name_ = AtomicString(); }
 
   ClientRedirectPolicy ClientRedirect() const { return client_redirect_; }
 
@@ -147,7 +141,6 @@ struct CORE_EXPORT FrameLoadRequest {
  private:
   Member<Document> origin_document_;
   ResourceRequest resource_request_;
-  AtomicString frame_name_;
   AtomicString href_translate_;
   // TODO(caseq): merge ClientRedirectPolicy and ClientNavigationReason.
   // Currently, client_navigation_reason_ is set iff ClientRedirectPolicy

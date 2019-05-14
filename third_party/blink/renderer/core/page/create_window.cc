@@ -220,7 +220,9 @@ static void MaybeLogWindowOpen(LocalFrame& opener_frame) {
   }
 }
 
-Frame* CreateNewWindow(LocalFrame& opener_frame, FrameLoadRequest& request) {
+Frame* CreateNewWindow(LocalFrame& opener_frame,
+                       FrameLoadRequest& request,
+                       const AtomicString& frame_name) {
   DCHECK(request.GetResourceRequest().RequestorOrigin() ||
          opener_frame.GetDocument()->Url().IsEmpty());
   DCHECK_EQ(kNavigationPolicyCurrentTab, request.GetNavigationPolicy());
@@ -254,8 +256,7 @@ Frame* CreateNewWindow(LocalFrame& opener_frame, FrameLoadRequest& request) {
 
   const WebWindowFeatures& features = request.GetWindowFeatures();
   request.SetNavigationPolicy(NavigationPolicyForCreateWindow(features));
-  probe::WindowOpen(opener_frame.GetDocument(), url, request.FrameName(),
-                    features,
+  probe::WindowOpen(opener_frame.GetDocument(), url, frame_name, features,
                     LocalFrame::HasTransientUserActivation(&opener_frame));
 
   // Sandboxed frames cannot open new auxiliary browsing contexts.
@@ -296,8 +297,8 @@ Frame* CreateNewWindow(LocalFrame& opener_frame, FrameLoadRequest& request) {
   }
 
   Page* page = old_page->GetChromeClient().CreateWindow(
-      &opener_frame, request, features, sandbox_flags, opener_feature_state,
-      new_namespace_id);
+      &opener_frame, request, frame_name, features, sandbox_flags,
+      opener_feature_state, new_namespace_id);
   if (!page)
     return nullptr;
 

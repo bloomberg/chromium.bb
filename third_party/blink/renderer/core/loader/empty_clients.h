@@ -134,6 +134,7 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
 
   Page* CreateWindowDelegate(LocalFrame*,
                              const FrameLoadRequest&,
+                             const AtomicString&,
                              const WebWindowFeatures&,
                              WebSandboxFlags,
                              const FeaturePolicy::FeatureState&,

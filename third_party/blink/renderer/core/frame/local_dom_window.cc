@@ -1495,8 +1495,7 @@ DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
   WebWindowFeatures window_features = GetWindowFeaturesFromString(features);
 
   FrameLoadRequest frame_request(active_document,
-                                 ResourceRequest(completed_url),
-                                 target.IsEmpty() ? "_blank" : target);
+                                 ResourceRequest(completed_url));
   frame_request.SetFeaturesForWindowOpen(window_features);
 
   // Normally, FrameLoader would take care of setting the referrer for a
@@ -1518,7 +1517,8 @@ DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
   GetFrame()->MaybeLogAdClickNavigation();
 
   FrameTree::FindResult result =
-      GetFrame()->Tree().FindOrCreateFrameForNavigation(frame_request);
+      GetFrame()->Tree().FindOrCreateFrameForNavigation(
+          frame_request, target.IsEmpty() ? "_blank" : target);
   if (!result.frame)
     return nullptr;
 

@@ -94,7 +94,7 @@ TEST_F(CreateWindowTest, CreateWindowFromPausedPage) {
   request.SetNavigationPolicy(kNavigationPolicyNewForegroundTab);
   WebWindowFeatures features;
   EXPECT_EQ(nullptr, chrome_client_impl_->CreateWindow(
-                         frame, request, features, WebSandboxFlags::kNone,
+                         frame, request, "", features, WebSandboxFlags::kNone,
                          FeaturePolicy::FeatureState(), ""));
 }
 

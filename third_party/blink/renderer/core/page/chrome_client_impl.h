@@ -79,6 +79,7 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   bool AcceptsLoadDrops() const override;
   Page* CreateWindowDelegate(LocalFrame*,
                              const FrameLoadRequest&,
+                             const AtomicString& name,
                              const WebWindowFeatures&,
                              WebSandboxFlags,
                              const FeaturePolicy::FeatureState&,
