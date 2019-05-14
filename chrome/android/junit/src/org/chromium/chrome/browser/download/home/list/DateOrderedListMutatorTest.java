@@ -736,6 +736,56 @@ public class DateOrderedListMutatorTest {
     }
 
     /**
+     * Action                               List
+     * 1. Set()                             [ ]
+     *
+     * 2. Add(item3 @ 4:00 1/1/2018)        [ DATE    @ 0:00 1/1/2018,
+     *                                        SECTION   @ Video,
+     *                                        item3  @ 4:00 1/1/2018 ]
+     *
+     * 3. Add(item1 @ 4:00 1/1/2018)        [ DATE    @ 0:00 1/1/2018,
+     *                                        SECTION   @ Video,
+     *                                        item1  @ 4:00 1/1/2018,
+     *                                        item3  @ 4:00 1/1/2018 ]
+     *
+     * 4. Add(item2 @ 4:00 1/1/2018)        [ DATE    @ 0:00 1/1/2018,
+     *                                        SECTION   @ Video,
+     *                                        item1  @ 4:00 1/1/2018,
+     *                                        item2  @ 4:00 1/1/2018,
+     *                                        item3  @ 4:00 1/1/2018 ]
+     */
+    @Test
+    public void testAddMultipleItemsSameTimestamp() {
+        when(mSource.getItems()).thenReturn(Collections.emptySet());
+        DateOrderedListMutator list = createMutatorWithoutJustNowProvider();
+        mModel.addObserver(mObserver);
+
+        OfflineItem item3 = buildItem("3", buildCalendar(2018, 1, 1, 4), OfflineItemFilter.VIDEO);
+        when(mSource.getItems()).thenReturn(CollectionUtil.newArrayList(item3));
+        list.onItemsAdded(CollectionUtil.newArrayList(item3));
+
+        Assert.assertEquals(2, mModel.size());
+        assertOfflineItem(mModel.get(1), buildCalendar(2018, 1, 1, 4), item3);
+
+        OfflineItem item1 = buildItem("1", buildCalendar(2018, 1, 1, 4), OfflineItemFilter.VIDEO);
+        when(mSource.getItems()).thenReturn(CollectionUtil.newArrayList(item3, item1));
+        list.onItemsAdded(CollectionUtil.newArrayList(item1));
+
+        Assert.assertEquals(3, mModel.size());
+        assertOfflineItem(mModel.get(1), buildCalendar(2018, 1, 1, 4), item1);
+        assertOfflineItem(mModel.get(2), buildCalendar(2018, 1, 1, 4), item3);
+
+        OfflineItem item2 = buildItem("2", buildCalendar(2018, 1, 1, 4), OfflineItemFilter.VIDEO);
+        when(mSource.getItems()).thenReturn(CollectionUtil.newArrayList(item3, item1, item2));
+        list.onItemsAdded(CollectionUtil.newArrayList(item2));
+
+        Assert.assertEquals(4, mModel.size());
+        assertOfflineItem(mModel.get(1), buildCalendar(2018, 1, 1, 4), item1);
+        assertOfflineItem(mModel.get(2), buildCalendar(2018, 1, 1, 4), item2);
+        assertOfflineItem(mModel.get(3), buildCalendar(2018, 1, 1, 4), item3);
+    }
+
+    /**
      * Action                                          List
      * 1. Set(item1 @ 6:00 IN_PROGRESS 1/1/2018)       [ DATE    @ 0:00 1/1/2018,
      *                                                   SECTION @ Video,
