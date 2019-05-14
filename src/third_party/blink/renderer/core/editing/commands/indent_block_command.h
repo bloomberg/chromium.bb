@@ -37,13 +37,13 @@ class CORE_EXPORT IndentBlockCommand : public BlockCommand {
 public:
     static IndentBlockCommand* create(Document& document)
     {
-        return new IndentBlockCommand(document);
+        return MakeGarbageCollected<IndentBlockCommand>(document);
     }
 
     bool PreservesTypingStyle() const override { return true; }
 
-private:
     explicit IndentBlockCommand(Document&);
+private:
 
     Element* CreateIndentBlock(const QualifiedName& tagName) const;
     void IndentSiblings(Node* prpFirstSibling, Node* prpLastSibling, Node* lastNode, EditingState *editingState);
