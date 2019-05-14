@@ -85,7 +85,9 @@ void ChromeContentGpuClient::GpuServiceInitialized(
 
   // This doesn't work in single-process mode.
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSingleProcess)) {
+          switches::kSingleProcess) &&
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kInProcessGPU)) {
     main_thread_profiler_->SetMainThreadTaskRunner(
         base::ThreadTaskRunnerHandle::Get());
     ThreadProfiler::SetServiceManagerConnectorForChildProcess(
