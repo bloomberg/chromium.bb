@@ -905,6 +905,7 @@ modules_dependency_idl_files =
           "locks/navigator_locks.idl",
           "locks/worker_navigator_locks.idl",
           "media_capabilities/navigator_media_capabilities.idl",
+          "media_capabilities/worker_navigator_media_capabilities.idl",
           "mediacapturefromelement/html_canvas_element_capture.idl",
           "mediacapturefromelement/html_media_element_capture.idl",
           "mediasession/navigator_media_session.idl",

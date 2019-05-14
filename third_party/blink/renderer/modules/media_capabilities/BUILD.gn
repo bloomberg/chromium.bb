@@ -10,5 +10,7 @@ blink_modules_sources("media_capabilities") {
     "media_capabilities.h",
     "navigator_media_capabilities.cc",
     "navigator_media_capabilities.h",
+    "worker_navigator_media_capabilities.cc",
+    "worker_navigator_media_capabilities.h",
   ]
 }

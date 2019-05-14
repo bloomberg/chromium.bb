@@ -723,6 +723,11 @@ interface LockManager
     method constructor
     method query
     method request
+interface MediaCapabilities
+    attribute @@toStringTag
+    method constructor
+    method decodingInfo
+    method encodingInfo
 interface MessageChannel
     attribute @@toStringTag
     getter port1
@@ -3563,6 +3568,7 @@ interface WorkerNavigator
     getter language
     getter languages
     getter locks
+    getter mediaCapabilities
     getter onLine
     getter permissions
     getter platform

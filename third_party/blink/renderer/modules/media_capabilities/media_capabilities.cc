@@ -249,7 +249,7 @@ WebAudioConfiguration ToWebAudioConfiguration(
   DCHECK(parsed_content_type.IsValid());
   DCHECK(!parsed_content_type.GetParameters().HasDuplicatedNames());
 
-  DEFINE_STATIC_LOCAL(const String, codecs, ("codecs"));
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(const String, codecs, ("codecs"));
   web_configuration.mime_type = parsed_content_type.MimeType().LowerASCII();
   web_configuration.codec = parsed_content_type.ParameterValueForName(codecs);
 
@@ -277,7 +277,7 @@ WebVideoConfiguration ToWebVideoConfiguration(
   DCHECK(parsed_content_type.IsValid());
   DCHECK(!parsed_content_type.GetParameters().HasDuplicatedNames());
 
-  DEFINE_STATIC_LOCAL(const String, codecs, ("codecs"));
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(const String, codecs, ("codecs"));
   web_configuration.mime_type = parsed_content_type.MimeType().LowerASCII();
   web_configuration.codec = parsed_content_type.ParameterValueForName(codecs);
 
