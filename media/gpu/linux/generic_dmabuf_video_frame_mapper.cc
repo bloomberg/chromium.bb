@@ -81,7 +81,12 @@ scoped_refptr<VideoFrame> CreateMappedVideoFrame(
 
 bool IsFormatSupported(VideoPixelFormat format) {
   constexpr VideoPixelFormat supported_formats[] = {
+      // RGB pixel formats.
+      PIXEL_FORMAT_ABGR,
       PIXEL_FORMAT_ARGB,
+      PIXEL_FORMAT_XBGR,
+
+      // YUV pixel formats.
       PIXEL_FORMAT_I420,
       PIXEL_FORMAT_NV12,
       PIXEL_FORMAT_YV12,
