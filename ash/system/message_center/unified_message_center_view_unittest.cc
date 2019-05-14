@@ -227,10 +227,20 @@ TEST_F(UnifiedMessageCenterViewTest, AddAndRemoveNotification) {
             GetScrollerContents()->height() -
                 GetScroller()->GetVisibleRect().bottom());
 
+  // The notification first slides out of the list.
   MessageCenter::Get()->RemoveNotification(id0, true /* by_user */);
   AnimateMessageListToEnd();
+
+  // After all the last notifiation slides out, the message center and list
+  // should collapse.
+  auto* collapse_animation = GetMessageCenterAnimation();
+  collapse_animation->SetCurrentValue(0.5);
+  message_center_view()->AnimationProgressed(collapse_animation);
   AnimateMessageListToMiddle();
   EXPECT_TRUE(message_center_view()->visible());
+
+  // The message center is now hidden after all animations complete.
+  collapse_animation->End();
   AnimateMessageListToEnd();
   EXPECT_FALSE(message_center_view()->visible());
 }

@@ -43,6 +43,8 @@ namespace {
 
 constexpr base::TimeDelta kHideStackingBarAnimationDuration =
     base::TimeDelta::FromMilliseconds(330);
+constexpr base::TimeDelta kCollapseAnimationDuration =
+    base::TimeDelta::FromMilliseconds(640);
 
 enum ClearAllButtonTag {
   kStackingBarClearAllButtonTag,
@@ -338,6 +340,8 @@ void UnifiedMessageCenterView::OnNotificationSlidOut() {
   if (stacking_counter_->visible() &&
       message_list_view_->GetTotalNotificationCount() <= 1) {
     StartHideStackingBarAnimation();
+  } else if (!message_list_view_->GetTotalNotificationCount()) {
+    StartCollapseAnimation();
   }
 }
 
@@ -409,6 +413,12 @@ gfx::Size UnifiedMessageCenterView::CalculatePreferredSize() const {
 
   // Hide Clear All button at the buttom from initial viewport.
   preferred_size.set_height(preferred_size.height() - kClearAllButtonRowHeight);
+
+  if (animation_state_ == UnifiedMessageCenterAnimationState::COLLAPSE) {
+    int height = preferred_size.height() * (1.0 - GetAnimationValue());
+    preferred_size.set_height(height);
+  }
+
   return preferred_size;
 }
 
@@ -474,12 +484,12 @@ void UnifiedMessageCenterView::AnimationEnded(const gfx::Animation* animation) {
     case UnifiedMessageCenterAnimationState::HIDE_STACKING_BAR:
       break;
     case UnifiedMessageCenterAnimationState::COLLAPSE:
-      NOTIMPLEMENTED();
       break;
   }
 
   animation_state_ = UnifiedMessageCenterAnimationState::IDLE;
   stacking_counter_->SetAnimationState(animation_state_);
+  UpdateVisibility();
 }
 
 void UnifiedMessageCenterView::AnimationProgressed(
@@ -505,6 +515,14 @@ void UnifiedMessageCenterView::StartHideStackingBarAnimation() {
   animation_->Start();
 }
 
+void UnifiedMessageCenterView::StartCollapseAnimation() {
+  animation_->End();
+  animation_state_ = UnifiedMessageCenterAnimationState::COLLAPSE;
+  stacking_counter_->SetAnimationState(animation_state_);
+  animation_->SetDuration(kCollapseAnimationDuration);
+  animation_->Start();
+}
+
 double UnifiedMessageCenterView::GetAnimationValue() const {
   return gfx::Tween::CalculateValue(gfx::Tween::FAST_OUT_SLOW_IN,
                                     animation_->GetCurrentValue());
@@ -513,11 +531,13 @@ double UnifiedMessageCenterView::GetAnimationValue() const {
 void UnifiedMessageCenterView::UpdateVisibility() {
   SessionControllerImpl* session_controller =
       Shell::Get()->session_controller();
-  SetVisible(available_height_ >= kUnifiedNotificationMinimumHeight &&
-             message_list_view_->GetPreferredSize().height() > 0 &&
-             session_controller->ShouldShowNotificationTray() &&
-             (!session_controller->IsScreenLocked() ||
-              AshMessageCenterLockScreenController::IsEnabled()));
+  SetVisible(
+      available_height_ >= kUnifiedNotificationMinimumHeight &&
+      (animation_state_ == UnifiedMessageCenterAnimationState::COLLAPSE ||
+       message_list_view_->GetPreferredSize().height() > 0) &&
+      session_controller->ShouldShowNotificationTray() &&
+      (!session_controller->IsScreenLocked() ||
+       AshMessageCenterLockScreenController::IsEnabled()));
 
   // When notification list went invisible, the last notification should be
   // targeted next time.

@@ -152,6 +152,9 @@ class ASH_EXPORT UnifiedMessageCenterView
   // Starts the animation to hide the notification stacking bar.
   void StartHideStackingBarAnimation();
 
+  // Starts the animation to collapse the message center.
+  void StartCollapseAnimation();
+
   // Returns the current animation value after tweening.
   double GetAnimationValue() const;
 
