@@ -115,9 +115,9 @@ scoped_refptr<VideoFrame> ImageProcessorClient::CreateInputFrame(
 #if defined(OS_CHROMEOS)
     LOG_ASSERT(image_processor_->input_storage_type() ==
                VideoFrame::STORAGE_DMABUFS);
+    return CloneVideoFrame(CreateVideoFrameFromImage(input_image).get(),
+                           input_layout, VideoFrame::STORAGE_DMABUFS);
 #endif
-    // TODO(crbug.com/917951): Support Dmabuf.
-    NOTIMPLEMENTED();
     return nullptr;
   }
 }
@@ -130,13 +130,13 @@ scoped_refptr<VideoFrame> ImageProcessorClient::CreateOutputFrame(
 
   const auto& output_layout = image_processor_->output_layout();
   if (VideoFrame::IsStorageTypeMappable(
-          image_processor_->input_storage_type())) {
+          image_processor_->output_storage_type())) {
     return VideoFrame::CreateFrameWithLayout(
         output_layout, gfx::Rect(output_image.Size()), output_image.Size(),
         base::TimeDelta(), false /* zero_initialize_memory*/);
   } else {
 #if defined(OS_CHROMEOS)
-    LOG_ASSERT(image_processor_->input_storage_type() ==
+    LOG_ASSERT(image_processor_->output_storage_type() ==
                VideoFrame::STORAGE_DMABUFS);
 #endif
     // TODO(crbug.com/917951): Support Dmabuf.
