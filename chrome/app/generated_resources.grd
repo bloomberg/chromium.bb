@@ -4918,8 +4918,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OMNIBOX_WHY_THIS_SUGGESTION" desc="The title of a menu entry and bubble that explains why this suggestion appears in the omnibox popup.">
         Why this suggestion?
       </message>
-      <message name="IDS_OMNIBOX_REMOVE_SUGGESTION" desc="The title of a menu entry and bubble used to delete omnibox suggestions.">
+      <message name="IDS_OMNIBOX_REMOVE_SUGGESTION" desc="The text of a context menu entry to delete an omnibox suggestion.">
         Remove suggestion
+      </message>
+      <message name="IDS_OMNIBOX_REMOVE_SUGGESTION_BUBBLE_TITLE" desc="The title of a bubble to delete an omnibox suggestion.">
+        Remove suggestion?
+      </message>
+      <message name="IDS_OMNIBOX_REMOVE_SUGGESTION_BUBBLE_DESCRIPTION" desc="The description of a bubble to delete an omnibox suggestion.">
+        This page will also be removed from your history and <ph name="SEARCH_ENGINE">$1<ex>Google</ex></ph> activity.
       </message>
 
       <!-- NTP -->

@@ -64,6 +64,7 @@ class OmniboxPopupModel {
   bool IsOpen() const;
 
   OmniboxPopupView* view() const { return view_; }
+  OmniboxEditModel* edit_model() const { return edit_model_; }
 
   // Returns the AutocompleteController used by this popup.
   AutocompleteController* autocomplete_controller() const {

@@ -476,7 +476,11 @@ void OmniboxResultView::ExecuteCommand(int command_id, int event_flags) {
       popup_contents_view_->model()->result().match_at(model_index_);
 
   if (command_id == IDS_OMNIBOX_REMOVE_SUGGESTION) {
-    ShowRemoveSuggestion(this, raw_match,
+    TemplateURLService* template_url_service = popup_contents_view_->model()
+                                                   ->edit_model()
+                                                   ->client()
+                                                   ->GetTemplateURLService();
+    ShowRemoveSuggestion(template_url_service, this, raw_match,
                          base::BindOnce(&OmniboxResultView::RemoveSuggestion,
                                         weak_factory_.GetWeakPtr()));
   } else if (command_id == IDS_OMNIBOX_WHY_THIS_SUGGESTION) {
