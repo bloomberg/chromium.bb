@@ -175,11 +175,15 @@ void PaintController::ShowDebugDataInternal(
                     .data();
 }
 
-void PaintController::ShowDebugData() const {
-  return ShowDebugDataInternal(DisplayItemList::kDefault);
+void PaintController::ShowCompactDebugData() const {
+  ShowDebugDataInternal(DisplayItemList::kCompact);
 }
 
-void PaintController::ShowDebugDataWithRecords() const {
+void PaintController::ShowDebugData() const {
+  ShowDebugDataInternal(DisplayItemList::kDefault);
+}
+
+void PaintController::ShowDebugDataWithPaintRecords() const {
   return ShowDebugDataInternal(DisplayItemList::kShowPaintRecords);
 }
 

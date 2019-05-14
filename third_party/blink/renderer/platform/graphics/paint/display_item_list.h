@@ -78,10 +78,12 @@ class PLATFORM_EXPORT DisplayItemList
 #if DCHECK_IS_ON()
   enum JsonOptions {
     kDefault = 0,
-    kShowPaintRecords = 1,
-    kSkipNonDrawings = 1 << 1,
-    kClientKnownToBeAlive = 1 << 2,
-    kShownOnlyDisplayItemTypes = 1 << 3
+    kClientKnownToBeAlive = 1,
+    // Only show a compact representation of the display item list. This flag
+    // cannot be used with additional flags such as kShowPaintRecords.
+    kCompact = 1 << 1,
+    kShowPaintRecords = 1 << 2,
+    kShowOnlyDisplayItemTypes = 1 << 3
   };
   typedef unsigned JsonFlags;
 
