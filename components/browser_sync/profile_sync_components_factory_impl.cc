@@ -185,30 +185,18 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
       }
     }
 
-    // Wallet data sync is enabled by default, but behind a syncer experiment
-    // enforced by the datatype controller. Register unless explicitly disabled.
-    bool wallet_disabled = disabled_types.Has(syncer::AUTOFILL_WALLET_DATA);
-    if (!wallet_disabled) {
-      if (base::FeatureList::IsEnabled(switches::kSyncUSSAutofillWalletData)) {
-        controllers.push_back(
-            CreateWalletModelTypeControllerWithInMemorySupport(
-                syncer::AUTOFILL_WALLET_DATA,
-                base::BindRepeating(&AutofillWalletDelegateFromDataService),
-                sync_service));
-      } else {
-        controllers.push_back(
-            std::make_unique<AutofillWalletDataTypeController>(
-                syncer::AUTOFILL_WALLET_DATA, db_thread_, dump_stack,
-                sync_service, sync_client_,
-                base::BindRepeating(&BrowserSyncClient::GetPersonalDataManager,
-                                    base::Unretained(sync_client_)),
-                web_data_service_on_disk_));
-      }
+    // Wallet data sync is enabled by default. Register unless explicitly
+    // disabled.
+    if (!disabled_types.Has(syncer::AUTOFILL_WALLET_DATA)) {
+      controllers.push_back(CreateWalletModelTypeControllerWithInMemorySupport(
+          syncer::AUTOFILL_WALLET_DATA,
+          base::BindRepeating(&AutofillWalletDelegateFromDataService),
+          sync_service));
     }
 
-    // Wallet metadata sync depends on Wallet data sync. Register if Wallet data
-    // is syncing and metadata sync is not explicitly disabled.
-    if (!wallet_disabled &&
+    // Wallet metadata sync depends on Wallet data sync. Register if neither
+    // Wallet data nor Wallet metadata sync is explicitly disabled.
+    if (!disabled_types.Has(syncer::AUTOFILL_WALLET_DATA) &&
         !disabled_types.Has(syncer::AUTOFILL_WALLET_METADATA)) {
       if (base::FeatureList::IsEnabled(
               switches::kSyncUSSAutofillWalletMetadata)) {

@@ -247,8 +247,6 @@ jumbo_static_library("browser") {
     "webdata/autofill_wallet_metadata_syncable_service.h",
     "webdata/autofill_wallet_sync_bridge.cc",
     "webdata/autofill_wallet_sync_bridge.h",
-    "webdata/autofill_wallet_syncable_service.cc",
-    "webdata/autofill_wallet_syncable_service.h",
     "webdata/autofill_webdata_backend.h",
     "webdata/autofill_webdata_backend_impl.cc",
     "webdata/autofill_webdata_backend_impl.h",
@@ -557,7 +555,6 @@ source_set("unit_tests") {
     "webdata/autofill_wallet_metadata_sync_bridge_unittest.cc",
     "webdata/autofill_wallet_metadata_syncable_service_unittest.cc",
     "webdata/autofill_wallet_sync_bridge_unittest.cc",
-    "webdata/autofill_wallet_syncable_service_unittest.cc",
     "webdata/web_data_service_unittest.cc",
   ]
 

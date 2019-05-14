@@ -49,7 +49,6 @@
 #include "components/autofill/core/browser/webdata/autofill_wallet_metadata_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autofill_wallet_metadata_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_wallet_sync_bridge.h"
-#include "components/autofill/core/browser/webdata/autofill_wallet_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/browser_sync/browser_sync_switches.h"
@@ -440,14 +439,6 @@ ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
             ->AsWeakPtr();
       }
       return base::WeakPtr<syncer::SyncableService>();
-    case syncer::AUTOFILL_WALLET_DATA: {
-      if (profile_web_data_service_) {
-        return autofill::AutofillWalletSyncableService::FromWebDataService(
-                   profile_web_data_service_.get())
-            ->AsWeakPtr();
-      }
-      return base::WeakPtr<syncer::SyncableService>();
-    }
     case syncer::AUTOFILL_WALLET_METADATA: {
       if (profile_web_data_service_) {
         return autofill::AutofillWalletMetadataSyncableService::

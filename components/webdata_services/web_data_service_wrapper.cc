@@ -20,7 +20,6 @@
 #include "components/autofill/core/browser/webdata/autofill_wallet_metadata_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autofill_wallet_metadata_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_wallet_sync_bridge.h"
-#include "components/autofill/core/browser/webdata/autofill_wallet_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/search_engines/keyword_table.h"
@@ -73,7 +72,6 @@ void InitSyncableProfileServicesOnDBSequence(
 // related functions.
 void InitSyncableAccountServicesOnDBSequence(
     scoped_refptr<base::SingleThreadTaskRunner> db_task_runner,
-    const syncer::SyncableService::StartSyncFlare& sync_flare,
     const scoped_refptr<autofill::AutofillWebDataService>& autofill_web_data,
     const base::FilePath& context_path,
     const std::string& app_locale,
@@ -103,20 +101,9 @@ void InitSyncableAccountServicesOnDBSequence(
             ->GetWeakPtr());
   }
 
-  if (base::FeatureList::IsEnabled(switches::kSyncUSSAutofillWalletData)) {
-    autofill::AutofillWalletSyncBridge::CreateForWebDataServiceAndBackend(
-        app_locale, wallet_active_callback, autofill_backend,
-        autofill_web_data.get());
-  } else {
-    autofill::AutofillWalletSyncableService::CreateForWebDataServiceAndBackend(
-        autofill_web_data.get(), autofill_backend, app_locale);
-    autofill::AutofillWalletSyncableService::FromWebDataService(
-        autofill_web_data.get())
-        ->InjectStartSyncFlare(sync_flare);
-    // For non-USS wallet, the metadata is always checking the existence of
-    // wallet data to add/remove metadata entries.
-    wallet_active_callback.Run(true);
-  }
+  autofill::AutofillWalletSyncBridge::CreateForWebDataServiceAndBackend(
+      app_locale, wallet_active_callback, autofill_backend,
+      autofill_web_data.get());
 }
 
 }  // namespace
@@ -177,9 +164,9 @@ WebDataServiceWrapper::WebDataServiceWrapper(
   profile_autofill_web_data_->GetAutofillBackend(base::Bind(
       &InitSyncableProfileServicesOnDBSequence, db_task_runner, flare,
       profile_autofill_web_data_, context_path, application_locale));
-  profile_autofill_web_data_->GetAutofillBackend(base::Bind(
-      &InitSyncableAccountServicesOnDBSequence, db_task_runner, flare,
-      profile_autofill_web_data_, context_path, application_locale));
+  profile_autofill_web_data_->GetAutofillBackend(
+      base::Bind(&InitSyncableAccountServicesOnDBSequence, db_task_runner,
+                 profile_autofill_web_data_, context_path, application_locale));
 
   if (base::FeatureList::IsEnabled(
           autofill::features::kAutofillEnableAccountWalletStorage)) {
@@ -194,7 +181,7 @@ WebDataServiceWrapper::WebDataServiceWrapper(
         base::Bind(show_error_callback, ERROR_LOADING_ACCOUNT_AUTOFILL));
     account_autofill_web_data_->Init();
     account_autofill_web_data_->GetAutofillBackend(base::Bind(
-        &InitSyncableAccountServicesOnDBSequence, db_task_runner, flare,
+        &InitSyncableAccountServicesOnDBSequence, db_task_runner,
         account_autofill_web_data_, context_path, application_locale));
   }
 }

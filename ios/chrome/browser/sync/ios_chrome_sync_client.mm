@@ -18,7 +18,6 @@
 #include "components/autofill/core/browser/webdata/autofill_wallet_metadata_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autofill_wallet_metadata_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_wallet_sync_bridge.h"
-#include "components/autofill/core/browser/webdata/autofill_wallet_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/browser_sync/browser_sync_switches.h"
@@ -222,23 +221,19 @@ IOSChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
       return browser_state_->GetSyncablePrefs()
           ->GetSyncableService(syncer::PRIORITY_PREFERENCES)
           ->AsWeakPtr();
-    case syncer::AUTOFILL_PROFILE:
-    case syncer::AUTOFILL_WALLET_DATA:
+    case syncer::AUTOFILL_PROFILE: {
+      if (!profile_web_data_service_)
+        return base::WeakPtr<syncer::SyncableService>();
+      return autofill::AutofillProfileSyncableService::FromWebDataService(
+                 profile_web_data_service_.get())
+          ->AsWeakPtr();
+    }
     case syncer::AUTOFILL_WALLET_METADATA: {
       if (!profile_web_data_service_)
         return base::WeakPtr<syncer::SyncableService>();
-      if (type == syncer::AUTOFILL_PROFILE) {
-        return autofill::AutofillProfileSyncableService::FromWebDataService(
-                   profile_web_data_service_.get())
-            ->AsWeakPtr();
-      } else if (type == syncer::AUTOFILL_WALLET_METADATA) {
-        return autofill::AutofillWalletMetadataSyncableService::
-            FromWebDataService(profile_web_data_service_.get())
-                ->AsWeakPtr();
-      }
-      return autofill::AutofillWalletSyncableService::FromWebDataService(
-                 profile_web_data_service_.get())
-          ->AsWeakPtr();
+      return autofill::AutofillWalletMetadataSyncableService::
+          FromWebDataService(profile_web_data_service_.get())
+              ->AsWeakPtr();
     }
     case syncer::HISTORY_DELETE_DIRECTIVES: {
       history::HistoryService* history =

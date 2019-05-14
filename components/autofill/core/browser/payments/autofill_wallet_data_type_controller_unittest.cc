@@ -102,7 +102,7 @@ class AutofillWalletDataTypeControllerTest : public testing::Test {
         base::ThreadTaskRunnerHandle::Get(),
         base::ThreadTaskRunnerHandle::Get());
     autofill_wallet_dtc_ = std::make_unique<AutofillWalletDataTypeController>(
-        syncer::AUTOFILL_WALLET_DATA, base::ThreadTaskRunnerHandle::Get(),
+        syncer::AUTOFILL_WALLET_METADATA, base::ThreadTaskRunnerHandle::Get(),
         /*dump_stack=*/base::DoNothing(), &sync_service_, &sync_client_,
         AutofillWalletDataTypeController::PersonalDataManagerProvider(),
         web_data_service_);
@@ -115,7 +115,7 @@ class AutofillWalletDataTypeControllerTest : public testing::Test {
     // Make sure WebDataService is shutdown properly on DB thread before we
     // destroy it.
     // Must be done before we pump the loop.
-    syncable_service_.StopSyncing(syncer::AUTOFILL_WALLET_DATA);
+    syncable_service_.StopSyncing(syncer::AUTOFILL_WALLET_METADATA);
   }
 
  protected:
@@ -123,7 +123,7 @@ class AutofillWalletDataTypeControllerTest : public testing::Test {
     autofill_wallet_dtc_->SetGenericChangeProcessorFactoryForTest(
         std::make_unique<syncer::FakeGenericChangeProcessorFactory>(
             std::make_unique<syncer::FakeGenericChangeProcessor>(
-                syncer::AUTOFILL_WALLET_DATA)));
+                syncer::AUTOFILL_WALLET_METADATA)));
   }
 
   bool Start() {
@@ -172,7 +172,7 @@ TEST_F(AutofillWalletDataTypeControllerTest, StartDatatypeEnabled) {
             autofill_wallet_dtc_->state());
   Start();
   EXPECT_FALSE(last_error_.IsSet());
-  EXPECT_EQ(syncer::AUTOFILL_WALLET_DATA, last_type_);
+  EXPECT_EQ(syncer::AUTOFILL_WALLET_METADATA, last_type_);
   EXPECT_EQ(syncer::DataTypeController::RUNNING, autofill_wallet_dtc_->state());
 }
 
@@ -188,10 +188,10 @@ TEST_F(AutofillWalletDataTypeControllerTest,
   Start();
   EXPECT_EQ(syncer::DataTypeController::RUNNING, autofill_wallet_dtc_->state());
   EXPECT_FALSE(last_error_.IsSet());
-  EXPECT_EQ(syncer::AUTOFILL_WALLET_DATA, last_type_);
+  EXPECT_EQ(syncer::AUTOFILL_WALLET_METADATA, last_type_);
 
   EXPECT_CALL(sync_service_,
-              ReadyForStartChanged(syncer::AUTOFILL_WALLET_DATA));
+              ReadyForStartChanged(syncer::AUTOFILL_WALLET_METADATA));
   autofill::prefs::SetPaymentsIntegrationEnabled(&prefs_, false);
   autofill::prefs::SetCreditCardAutofillEnabled(&prefs_, true);
   EXPECT_FALSE(autofill_wallet_dtc_->ReadyForStart());
@@ -210,10 +210,10 @@ TEST_F(AutofillWalletDataTypeControllerTest,
   Start();
   EXPECT_EQ(syncer::DataTypeController::RUNNING, autofill_wallet_dtc_->state());
   EXPECT_FALSE(last_error_.IsSet());
-  EXPECT_EQ(syncer::AUTOFILL_WALLET_DATA, last_type_);
+  EXPECT_EQ(syncer::AUTOFILL_WALLET_METADATA, last_type_);
 
   EXPECT_CALL(sync_service_,
-              ReadyForStartChanged(syncer::AUTOFILL_WALLET_DATA));
+              ReadyForStartChanged(syncer::AUTOFILL_WALLET_METADATA));
   autofill::prefs::SetPaymentsIntegrationEnabled(&prefs_, true);
   autofill::prefs::SetCreditCardAutofillEnabled(&prefs_, false);
   EXPECT_FALSE(autofill_wallet_dtc_->ReadyForStart());
