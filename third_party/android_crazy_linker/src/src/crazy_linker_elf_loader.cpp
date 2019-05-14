@@ -107,7 +107,7 @@ InternalElfLoader::~InternalElfLoader() {
 
 bool InternalElfLoader::LoadAt(const LoadParams& params, Error* error) {
   const char* lib_path = params.library_path.c_str();
-  LOG("lib_path='%s', file_fd=%d, file_offset=%p, load_address=%lx"
+  LOG("lib_path='%s', file_fd=%d, file_offset=%p, load_address=%lx "
       "reserved_size=%lx reserved_load_fallback=%s",
       lib_path, params.library_fd, params.library_offset,
       static_cast<unsigned long>(params.wanted_address),
@@ -165,26 +165,8 @@ bool InternalElfLoader::LoadAt(const LoadParams& params, Error* error) {
   path_ = lib_path;
 
   if (!ReadElfHeader(error) || !ReadProgramHeader(error) ||
-      !ReserveAddressSpace(params, error)) {
-    return false;
-  }
-
-  bool success = LoadSegments(error);
-  if (!success) {
-    // If loading the segments fail, but |reserved_size| was not 0, and
-    // |reserved_size_load_fallback| is true, then try again at a not-fixed
-    // address.
-    if (params.reserved_size > 0 && params.reserved_load_fallback) {
-      LOG("Loading to reserved mapping failed, falling back to random one");
-      LoadParams params2 = params;
-      params2.wanted_address = 0;
-      params2.reserved_size = 0;
-      params2.reserved_load_fallback = false;
-      success = ReserveAddressSpace(params2, error) && LoadSegments(error);
-    }
-  }
-  success = success && FindPhdr(error);
-  if (!success) {
+      !ReserveAddressSpace(params, error) || !LoadSegments(error) ||
+      !FindPhdr(error)) {
     reserved_map_.Deallocate();
     return false;
   }
@@ -296,6 +278,16 @@ bool InternalElfLoader::ReserveAddressSpace(const LoadParams& params,
 
   void* start = reinterpret_cast<void*>(params.wanted_address);
   size_t reserved_size = params.reserved_size;
+
+  if (reserved_size > 0 && reserved_size < load_size_ &&
+      params.reserved_load_fallback) {
+    LOG("Reserved size is too small (%ld < %ld), allocating new mapping!",
+        static_cast<unsigned long>(reserved_size),
+        static_cast<unsigned long>(load_size_));
+    reserved_size = 0;
+    addr = nullptr;
+    mmap_flags = MAP_PRIVATE | MAP_ANONYMOUS;
+  }
 
   if (!reserved_size) {
     // Reserve the area ourselves.

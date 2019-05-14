@@ -29,6 +29,7 @@ if (is_android) {
       ":crazy_linker_test_dl_wrappers",
       ":crazy_linker_test_dl_wrappers_recursive",
       ":crazy_linker_test_dl_wrappers_valid_handles",
+      ":crazy_linker_test_dl_wrappers_with_android_dlopen_ext",
       ":crazy_linker_test_dl_wrappers_with_system_handle",
       ":crazy_linker_test_jni_hooks",
       ":crazy_linker_test_load_library",
@@ -312,6 +313,14 @@ if (is_android) {
     ]
   }
 
+  crazy_linker_test_library(
+      "crazy_linker_tests_libzoo_with_android_dlopen_ext") {
+    sources = [
+      "src/tests/zoo_with_android_dlopen_ext.cpp",
+    ]
+    libs = [ "dl" ]
+  }
+
   crazy_linker_test_library("crazy_linker_tests_libzoo_with_dlopen_handle") {
     sources = [
       "src/tests/zoo_with_dlopen_handle.cpp",
@@ -498,6 +507,18 @@ if (is_android) {
     ]
     data_deps = [
       ":crazy_linker_tests_libzoo_with_dlopen_handle",
+    ]
+    deps = [
+      ":android_crazy_linker",
+    ]
+  }
+
+  executable("crazy_linker_test_dl_wrappers_with_android_dlopen_ext") {
+    sources = [
+      "src/tests/test_dl_wrappers_with_android_dlopen_ext.cpp",
+    ]
+    data_deps = [
+      ":crazy_linker_tests_libzoo_with_android_dlopen_ext",
     ]
     deps = [
       ":android_crazy_linker",
