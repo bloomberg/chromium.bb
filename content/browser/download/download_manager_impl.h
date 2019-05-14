@@ -91,7 +91,7 @@ class CONTENT_EXPORT DownloadManagerImpl
       const base::Callback<bool(const GURL&)>& url_filter,
       base::Time remove_begin,
       base::Time remove_end) override;
-  bool DownloadUrl(
+  void DownloadUrl(
       std::unique_ptr<download::DownloadUrlParameters> parameters) override;
   void DownloadUrl(std::unique_ptr<download::DownloadUrlParameters> params,
                    std::unique_ptr<storage::BlobDataHandle> blob_data_handle,

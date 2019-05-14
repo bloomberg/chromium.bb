@@ -26,9 +26,8 @@ class MockSimpleDownloadManager : public SimpleDownloadManager {
   // Notifies observers that downloads is initialized.
   void NotifyOnDownloadInitialized();
 
-  bool DownloadUrl(std::unique_ptr<DownloadUrlParameters> params) override {
+  void DownloadUrl(std::unique_ptr<DownloadUrlParameters> params) override {
     DownloadUrlMock(params.get());
-    return true;
   }
 
   MOCK_METHOD1(DownloadUrlMock, void(DownloadUrlParameters*));

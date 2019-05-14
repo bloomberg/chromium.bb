@@ -12,11 +12,15 @@
 
 namespace download {
 
-SimpleDownloadManagerCoordinator::SimpleDownloadManagerCoordinator()
+SimpleDownloadManagerCoordinator::SimpleDownloadManagerCoordinator(
+    const DownloadWhenFullManagerStartsCallBack&
+        download_when_full_manager_starts_cb)
     : simple_download_manager_(nullptr),
       has_all_history_downloads_(false),
       current_manager_has_all_history_downloads_(false),
       initialized_(false),
+      download_when_full_manager_starts_cb_(
+          download_when_full_manager_starts_cb),
       weak_factory_(this) {}
 
 SimpleDownloadManagerCoordinator::~SimpleDownloadManagerCoordinator() {
@@ -55,8 +59,16 @@ void SimpleDownloadManagerCoordinator::RemoveObserver(Observer* observer) {
 
 void SimpleDownloadManagerCoordinator::DownloadUrl(
     std::unique_ptr<DownloadUrlParameters> parameters) {
-  if (simple_download_manager_)
+  bool result = simple_download_manager_
+                    ? simple_download_manager_->CanDownload(parameters.get())
+                    : false;
+  if (result) {
     simple_download_manager_->DownloadUrl(std::move(parameters));
+    return;
+  }
+
+  if (!current_manager_has_all_history_downloads_)
+    download_when_full_manager_starts_cb_.Run(std::move(parameters));
 }
 
 void SimpleDownloadManagerCoordinator::GetAllDownloads(

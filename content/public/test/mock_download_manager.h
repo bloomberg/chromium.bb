@@ -118,10 +118,9 @@ class MockDownloadManager : public DownloadManager {
                    base::Time remove_begin,
                    base::Time remove_end));
   MOCK_METHOD1(DownloadUrlMock, void(download::DownloadUrlParameters*));
-  bool DownloadUrl(
+  void DownloadUrl(
       std::unique_ptr<download::DownloadUrlParameters> params) override {
     DownloadUrl(std::move(params), nullptr, nullptr);
-    return true;
   }
   void DownloadUrl(std::unique_ptr<download::DownloadUrlParameters> params,
                    std::unique_ptr<storage::BlobDataHandle> blob_data_handle,

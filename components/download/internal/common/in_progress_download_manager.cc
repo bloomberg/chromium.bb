@@ -209,9 +209,21 @@ void InProgressDownloadManager::OnUrlDownloadHandlerCreated(
     url_download_handlers_.push_back(std::move(downloader));
 }
 
-bool InProgressDownloadManager::DownloadUrl(
+void InProgressDownloadManager::DownloadUrl(
     std::unique_ptr<DownloadUrlParameters> params) {
-  DCHECK(params->is_transient());
+  if (!CanDownload(params.get()))
+    return;
+
+  // Start the new download, the download should be saved to the file path
+  // specifcied in the |params|.
+  BeginDownload(std::move(params), url_loader_factory_getter_,
+                true /* is_new_download */, GURL() /* site_url */,
+                GURL() /* tab_url */, GURL() /* tab_referral_url */);
+}
+
+bool InProgressDownloadManager::CanDownload(DownloadUrlParameters* params) {
+  if (!params->is_transient())
+    return false;
 
   if (!url_loader_factory_getter_)
     return false;
@@ -222,11 +234,6 @@ bool InProgressDownloadManager::DownloadUrl(
   if (params->file_path().empty())
     return false;
 
-  // Start the new download, the download should be saved to the file path
-  // specifcied in the |params|.
-  BeginDownload(std::move(params), url_loader_factory_getter_,
-                true /* is_new_download */, GURL() /* site_url */,
-                GURL() /* tab_url */, GURL() /* tab_referral_url */);
   return true;
 }
 

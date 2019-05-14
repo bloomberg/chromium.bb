@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "components/download/public/common/download_export.h"
@@ -42,7 +43,10 @@ class COMPONENTS_DOWNLOAD_EXPORT SimpleDownloadManagerCoordinator
     DISALLOW_COPY_AND_ASSIGN(Observer);
   };
 
-  SimpleDownloadManagerCoordinator();
+  using DownloadWhenFullManagerStartsCallBack =
+      base::RepeatingCallback<void(std::unique_ptr<DownloadUrlParameters>)>;
+  SimpleDownloadManagerCoordinator(const DownloadWhenFullManagerStartsCallBack&
+                                       download_when_full_manager_starts_cb);
   ~SimpleDownloadManagerCoordinator() override;
 
   void AddObserver(Observer* observer);
@@ -88,6 +92,9 @@ class COMPONENTS_DOWNLOAD_EXPORT SimpleDownloadManagerCoordinator
   // Whether this object is initialized and active downloads are ready to be
   // retrieved.
   bool initialized_;
+
+  // Callback to download the url when full manager becomes ready.
+  DownloadWhenFullManagerStartsCallBack download_when_full_manager_starts_cb_;
 
   // Observers that want to be notified of changes to the set of downloads.
   base::ObserverList<Observer>::Unchecked observers_;

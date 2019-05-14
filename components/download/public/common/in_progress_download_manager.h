@@ -92,7 +92,8 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
   ~InProgressDownloadManager() override;
 
   // SimpleDownloadManager implementation.
-  bool DownloadUrl(std::unique_ptr<DownloadUrlParameters> params) override;
+  void DownloadUrl(std::unique_ptr<DownloadUrlParameters> params) override;
+  bool CanDownload(DownloadUrlParameters* params) override;
   void GetAllDownloads(
       SimpleDownloadManager::DownloadVector* downloads) override;
   DownloadItem* GetDownloadByGuid(const std::string& guid) override;

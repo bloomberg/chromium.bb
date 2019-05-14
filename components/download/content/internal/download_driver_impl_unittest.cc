@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 
+#include "base/bind_helpers.h"
 #include "base/guid.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -52,7 +53,9 @@ MATCHER_P(DriverEntryEqual, entry, "") {
 class DownloadDriverImplTest : public testing::Test {
  public:
   DownloadDriverImplTest()
-      : task_runner_(new base::TestSimpleTaskRunner), handle_(task_runner_) {}
+      : coordinator_(base::NullCallback()),
+        task_runner_(new base::TestSimpleTaskRunner),
+        handle_(task_runner_) {}
 
   ~DownloadDriverImplTest() override = default;
 

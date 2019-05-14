@@ -4,6 +4,7 @@
 
 #include "components/download/public/common/all_download_event_notifier.h"
 
+#include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "components/download/public/common/mock_download_item.h"
 #include "components/download/public/common/mock_simple_download_manager.h"
@@ -44,7 +45,7 @@ class MockNotifierObserver : public AllDownloadEventNotifier::Observer {
 
 class AllDownloadEventNotifierTest : public testing::Test {
  public:
-  AllDownloadEventNotifierTest() = default;
+  AllDownloadEventNotifierTest() : coordinator_(base::NullCallback()) {}
 
   ~AllDownloadEventNotifierTest() override = default;
 
