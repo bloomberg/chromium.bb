@@ -1188,6 +1188,7 @@ MST_ANDROID_PFQ_MASTER = 'master-mst-android-pfq'
 NYC_ANDROID_PFQ_MASTER = 'master-nyc-android-pfq'
 PI_ANDROID_PFQ_MASTER = 'master-pi-android-pfq'
 VMPI_ANDROID_PFQ_MASTER = 'master-vmpi-android-pfq'
+QT_ANDROID_PFQ_MASTER = 'master-qt-android-pfq'
 TOOLCHAIN_MASTTER = 'master-toolchain'
 
 
