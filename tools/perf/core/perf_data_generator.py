@@ -1211,7 +1211,9 @@ def main(args):
     if (validate_waterfall(BUILDERS, perf_waterfall_file)
         and validate_waterfall(FYI_BUILDERS, fyi_waterfall_file)
         and validate_benchmark_csv(benchmark_file)
-        and validate_docs(labs_docs_file)):
+        and validate_docs(labs_docs_file)
+        and is_perf_benchmarks_scheduling_valid(
+            perf_waterfall_file, outstream=sys.stderr)):
       print 'All the perf config files are up-to-date. \\o/'
       return 0
     else:
