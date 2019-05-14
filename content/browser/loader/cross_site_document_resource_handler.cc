@@ -125,8 +125,13 @@ void CrossSiteDocumentResourceHandler::LogBlockedResponse(
       UMA_HISTOGRAM_ENUMERATION("SiteIsolation.XSD.Browser.Blocked.Others",
                                 resource_type);
       break;
-    default:
+
+    case MimeType::kNeverSniffed:
+      break;
+
+    case MimeType::kInvalidMimeType:
       NOTREACHED();
+      break;
   }
   if (analyzer_->found_parser_breaker()) {
     UMA_HISTOGRAM_ENUMERATION(

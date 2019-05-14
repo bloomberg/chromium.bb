@@ -39,13 +39,33 @@ struct ResourceResponse;
 
 class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
  public:
+  // This enum describes how CORB should decide whether to block a given
+  // no-cors, cross-origin response.
+  //
+  // Note that these values are used in histograms, and must not change.
   enum class MimeType {
-    // Note that these values are used in histograms, and must not change.
+    // Blocked if served with `X-Content-Type-Options: nosniff` or if this is a
+    // 206 range response or if sniffing confirms that the body matches
+    // `Content-Type`.
     kHtml = 0,
     kXml = 1,
     kJson = 2,
+
+    // Blocked if served with `X-Content-Type-Options: nosniff` or
+    // sniffing detects that this is HTML, JSON or XML.  For example, this
+    // behavior is used for `Content-Type: text/plain`.
     kPlain = 3,
+
+    // Blocked if sniffing finds a JSON security prefix.  Used for an otherwise
+    // unrecognized type (i.e. type that isn't explicitly recognized as
+    // belonging to one of the other categories).
     kOthers = 4,
+
+    // Always blocked.  Used for content types that are unlikely to be
+    // incorrectly applied to images, scripts and other legacy no-cors
+    // resources.  For example, `Content-Type: application/zip` is blocked
+    // without any confirmation sniffing.
+    kNeverSniffed = 5,
 
     kMax,
     kInvalidMimeType = kMax,

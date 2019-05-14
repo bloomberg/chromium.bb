@@ -1558,10 +1558,15 @@ TEST_P(CrossSiteDocumentResourceHandlerTest, ResponseBlocking) {
     case MimeType::kOthers:
       bucket = "Others";
       break;
+    case MimeType::kNeverSniffed:
+      DCHECK_EQ(Verdict::kBlock, scenario.verdict);
+      DCHECK_EQ(-1, scenario.verdict_packet);
+      bucket = "Blocked without sniffing / no bucket";
+      break;
     case MimeType::kInvalidMimeType:
       DCHECK_EQ(Verdict::kAllow, scenario.verdict);
       DCHECK_EQ(-1, scenario.verdict_packet);
-      bucket = "No blocking = no bucket";
+      bucket = "Allowed without considering the MIME type / no bucket";
       break;
   }
   int start_action = static_cast<int>(

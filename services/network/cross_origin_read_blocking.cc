@@ -10,8 +10,10 @@
 #include <set>
 #include <string>
 #include <unordered_set>
+#include <vector>
 
 #include "base/command_line.h"
+#include "base/containers/flat_set.h"
 #include "base/feature_list.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -216,6 +218,47 @@ void RecordCorbResultVsInitiatorLockCompatibility(
   }
 }
 
+const base::flat_set<std::string>& GetNeverSniffedMimeTypes() {
+  // The types below may be blocked by CORB without any confirmation sniffing
+  // (in contrast to HTML/JSON/XML which require confirmation sniffing because
+  // images, scripts, etc. are frequently mislabelled by http servers as
+  // HTML/JSON/XML).
+  //
+  // The list below has been populated based on most commonly used content types
+  // according to HTTP Archive - see:
+  // https://github.com/whatwg/fetch/issues/860#issuecomment-457330454
+  //
+  // TODO(lukasza): https://crbug.com/802836: Add application/msword,
+  // application/pdf and text/csv to the list of content types below after
+  // https://crbug.com/929300 is resolved.  See also the CR comment in
+  // https://crrev.com/c/1604244/3/services/network/cross_origin_read_blocking.cc#229
+  //
+  // TODO(lukasza): https://crbug.com/802836#c11: Add
+  // application/signed-exchange.
+  static const base::NoDestructor<base::flat_set<std::string>> s_types([] {
+    const char* kMimeTypes[] = {
+        "application/x-gzip",
+        "application/x-protobuf",
+        "application/zip",
+    };
+    std::vector<std::string> types;
+    types.reserve(base::size(kMimeTypes));
+    for (const char* type : kMimeTypes)
+      types.push_back(std::string(type));
+
+    // All items need to be lower-case, to support case-insensitive comparisons
+    // later.
+    DCHECK(std::all_of(types.begin(), types.end(), [](const std::string& s) {
+      return s == base::ToLowerASCII(s);
+    }));
+
+    base::flat_set<std::string> result(types);
+    result.shrink_to_fit();
+    return result;
+  }());
+  return *s_types;
+}
+
 }  // namespace
 
 MimeType CrossOriginReadBlocking::GetCanonicalMimeType(
@@ -249,6 +292,11 @@ MimeType CrossOriginReadBlocking::GetCanonicalMimeType(
 
   if (base::LowerCaseEqualsASCII(mime_type, kTextPlain))
     return MimeType::kPlain;
+
+  if (base::ContainsKey(GetNeverSniffedMimeTypes(),
+                        base::ToLowerASCII(mime_type))) {
+    return MimeType::kNeverSniffed;
+  }
 
   return MimeType::kOthers;
 }
@@ -700,6 +748,10 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
   canonical_mime_type_ =
       network::CrossOriginReadBlocking::GetCanonicalMimeType(mime_type);
 
+  // Some types (e.g. ZIP) are protected without any confirmation sniffing.
+  if (canonical_mime_type_ == MimeType::kNeverSniffed)
+    return kBlock;
+
   // CORS is currently implemented in the renderer process, so it's useful for
   // CORB to filter failed "cors" mode fetches to avoid leaking the responses to
   // the renderer when possible (e.g., depending on MIME type and sniffing).
@@ -748,7 +800,8 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
       case MimeType::kJson:
       case MimeType::kXml:
         return kBlock;
-      case MimeType::kMax:
+      case MimeType::kInvalidMimeType:
+      case MimeType::kNeverSniffed:  // Handled much earlier.
         NOTREACHED();
         return kBlock;
     }
@@ -776,6 +829,7 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
       break;
 
     case MimeType::kInvalidMimeType:
+    case MimeType::kNeverSniffed:  // Handled much earlier.
       NOTREACHED();
       return kBlock;
   }

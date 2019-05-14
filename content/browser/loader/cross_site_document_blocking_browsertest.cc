@@ -158,6 +158,12 @@ void InspectHistograms(
     bucket = "JSON";
   } else if (base::MatchPattern(resource_name, "*.txt")) {
     bucket = "Plain";
+  } else if (base::MatchPattern(resource_name, "*.zip")) {
+    // SiteIsolation.XSD.Browser.Blocked* histograms are only logged from the
+    // pre-kNetworkService code.  Because of this we did not add
+    // SiteIsolation.XSD.Browser.Blocked.NonSniffed histogram.  An empty
+    // |bucket| value indicates that the test should not expect a histogram.
+    bucket = "";
   } else {
     bucket = "Others";
   }
@@ -176,7 +182,8 @@ void InspectHistograms(
     expected_counts[base + ".BytesReadForSniffing"] = 1;
   if (0 != (expectations & kShouldBeBlocked && !is_restricted_uma_expected)) {
     expected_counts[base + ".Blocked"] = 1;
-    expected_counts[base + ".Blocked." + bucket] = 1;
+    if (!bucket.empty())
+      expected_counts[base + ".Blocked." + bucket] = 1;
   }
   if (0 != (expectations & kShouldBeBlocked)) {
     expected_counts[base + ".Blocked.ContentLength.WasAvailable"] = 1;
@@ -202,10 +209,12 @@ void InspectHistograms(
         histograms.GetAllSamples(base + ".Blocked"),
         testing::ElementsAre(base::Bucket(static_cast<int>(resource_type), 1)))
         << "The wrong Blocked bucket was incremented.";
-    EXPECT_THAT(
-        histograms.GetAllSamples(base + ".Blocked." + bucket),
-        testing::ElementsAre(base::Bucket(static_cast<int>(resource_type), 1)))
-        << "The wrong Blocked bucket was incremented.";
+    if (!bucket.empty()) {
+      EXPECT_THAT(histograms.GetAllSamples(base + ".Blocked." + bucket),
+                  testing::ElementsAre(
+                      base::Bucket(static_cast<int>(resource_type), 1)))
+          << "The wrong Blocked bucket was incremented.";
+    }
   }
 
   // SiteIsolation.XSD.Browser.Action should always include kResponseStarted.
@@ -599,8 +608,8 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, BlockImages) {
 
   // These files should be disallowed without sniffing.
   //   nosniff.*   - Won't sniff correctly, but blocked because of nosniff.
-  const char* nosniff_blocked_resources[] = {"nosniff.html", "nosniff.xml",
-                                             "nosniff.json", "nosniff.txt"};
+  const char* nosniff_blocked_resources[] = {
+      "nosniff.html", "nosniff.xml", "nosniff.json", "nosniff.txt", "fake.zip"};
   for (const char* resource : nosniff_blocked_resources) {
     SCOPED_TRACE(base::StringPrintf("... while testing page: %s", resource));
     VerifyImgRequest(resource, kShouldBeBlockedWithoutSniffing);
