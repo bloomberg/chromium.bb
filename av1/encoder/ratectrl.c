@@ -558,7 +558,7 @@ int av1_rc_regulate_q(const AV1_COMP *cpi, int target_bits_per_frame,
   const double correction_factor =
       get_rate_correction_factor(cpi, width, height);
   const int target_bits_per_mb =
-      (int)((uint64_t)(target_bits_per_frame) << BPER_MB_NORMBITS) / MBs;
+      (int)(((uint64_t)target_bits_per_frame << BPER_MB_NORMBITS) / MBs);
 
   int q =
       find_closest_qindex_by_rate(target_bits_per_mb, cpi, correction_factor,
