@@ -1352,6 +1352,7 @@ customBackgrounds.initCustomBackgrounds = function(showErrorNotification) {
   };
 
   $(customBackgrounds.IDS.SHORTCUTS_BUTTON).onclick = function() {
+    customBackgrounds.richerPicker_resetImageMenu(false);
     $(customBackgrounds.IDS.BACKGROUNDS_MENU)
         .classList.toggle(customBackgrounds.CLASSES.MENU_SHOWN, false);
     $(customBackgrounds.IDS.SHORTCUTS_MENU)
