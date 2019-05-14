@@ -3163,8 +3163,7 @@ void LayoutBlockFlow::AddChild(LayoutObject* new_child,
                         NeedsAnonymousInlineWrapper())) {
       LayoutObject* after_child =
           before_child ? before_child->PreviousSibling() : LastChild();
-      if (after_child && after_child->IsAnonymous() &&
-          after_child->IsLayoutInline()) {
+      if (after_child && after_child->IsFirstLineAnonymous()) {
         after_child->AddChild(new_child);
         return;
       }

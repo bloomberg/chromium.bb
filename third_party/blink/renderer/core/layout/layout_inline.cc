@@ -104,16 +104,14 @@ LayoutInline* LayoutInline::CreateAnonymous(Document* document) {
   return layout_inline;
 }
 
-bool LayoutInline::IsFirstLineAnonymous() const {
-  return false;
-}
-
 // A private class to distinguish anonymous inline box for ::first-line from
 // other inline boxes.
 class LayoutInlineForFirstLine : public LayoutInline {
  public:
   LayoutInlineForFirstLine(Element* element) : LayoutInline(element) {}
-  bool IsFirstLineAnonymous() const final { return true; }
+
+ protected:
+  bool VirtualIsFirstLineAnonymous() const final { return true; }
 };
 
 LayoutInline* LayoutInline::CreateAnonymousForFirstLine(Document* document) {

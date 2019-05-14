@@ -338,6 +338,10 @@ bool LayoutObject::IsDescendantOf(const LayoutObject* obj) const {
   return false;
 }
 
+bool LayoutObject::VirtualIsFirstLineAnonymous() const {
+  return false;
+}
+
 bool LayoutObject::IsHR() const {
   return IsHTMLHRElement(GetNode());
 }

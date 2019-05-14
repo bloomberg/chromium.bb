@@ -293,6 +293,8 @@ void LayoutNGListItem::UpdateMarkerContentIfNeeded() {
   DCHECK(marker_);
 
   LayoutObject* child = marker_->SlowFirstChild();
+  // There should be at most one child.
+  DCHECK(!child || !child->SlowFirstChild());
   if (IsMarkerImage()) {
     StyleImage* list_style_image = StyleRef().ListStyleImage();
     if (child) {

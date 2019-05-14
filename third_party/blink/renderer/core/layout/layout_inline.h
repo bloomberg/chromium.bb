@@ -143,10 +143,6 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
     return ToElement(LayoutBoxModelObject::GetNode());
   }
 
-  // True if this is an anonymous inline box for ::first-line that wraps the
-  // whole inline formatting context.
-  virtual bool IsFirstLineAnonymous() const;
-
   LayoutUnit MarginLeft() const final;
   LayoutUnit MarginRight() const final;
   LayoutUnit MarginTop() const final;

@@ -876,6 +876,11 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
            !IsListMarker() && !IsLayoutFlowThread() &&
            !IsLayoutMultiColumnSet();
   }
+  // True if this is an anonymous inline box for ::first-line that wraps the
+  // whole inline formatting context.
+  bool IsFirstLineAnonymous() const {
+    return IsAnonymous() && VirtualIsFirstLineAnonymous();
+  }
   // If node has been split into continuations, it returns the first layout
   // object generated for the node.
   const LayoutObject* ContinuationRoot() const {
@@ -2398,6 +2403,11 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     kLayoutObjectSVGResourceFilterPrimitive,
   };
   virtual bool IsOfType(LayoutObjectType type) const { return false; }
+
+  // True if this is an anonymous inline box for ::first-line that wraps the
+  // whole inline formatting context. This is for subclasses to override.
+  // Callers should use |IsFirstLineAnonymous()|.
+  virtual bool VirtualIsFirstLineAnonymous() const;
 
   // Updates only the local style ptr of the object.  Does not update the state
   // of the object, and so only should be called when the style is known not to

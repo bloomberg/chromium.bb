@@ -20,6 +20,14 @@ class CORE_EXPORT LayoutNGInsideListMarker final : public LayoutInline {
 
   const char* GetName() const override { return "LayoutNGInsideListMarker"; }
 
+#if DCHECK_IS_ON()
+  void AddChild(LayoutObject* new_child, LayoutObject* before_child) override {
+    // List marker should have at most one child.
+    DCHECK(!FirstChild());
+    LayoutInline::AddChild(new_child, before_child);
+  }
+#endif
+
  private:
   bool IsOfType(LayoutObjectType) const override;
 };
