@@ -913,8 +913,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
             resource_request_->resource_type ==
                 static_cast<int>(ResourceType::kMainFrame),
             static_cast<ui::PageTransition>(resource_request_->transition_type),
-            resource_request_->has_user_gesture, resource_request_->method,
-            resource_request_->headers, &proxied_factory_request_,
+            resource_request_->has_user_gesture, &proxied_factory_request_,
             external_protocol_factory);
 
         if (external_protocol_factory) {

@@ -213,8 +213,6 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       bool is_main_frame,
       ui::PageTransition page_transition,
       bool has_user_gesture,
-      const std::string& method,
-      const net::HttpRequestHeaders& headers,
       network::mojom::URLLoaderFactoryRequest* factory_request,
       network::mojom::URLLoaderFactory*& out_factory) override;
   void RegisterOutOfProcessServices(OutOfProcessServiceMap* services) override;
