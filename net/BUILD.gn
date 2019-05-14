@@ -6160,6 +6160,17 @@ fuzzer_test("net_get_domain_and_registry_fuzzer") {
   dict = "data/fuzzer_dictionaries/net_get_domain_and_registry_fuzzer.dict"
 }
 
+fuzzer_test("net_cert_ct_decode_signed_certificate_timestamp_fuzzer") {
+  sources = [
+    "cert/decode_signed_certificate_timestamp_fuzzer.cc",
+  ]
+  deps = [
+    ":net_fuzzer_test_support",
+    "//base",
+    "//net",
+  ]
+}
+
 fuzzer_test("net_cert_verify_name_match_fuzzer") {
   sources = [
     "cert/internal/verify_name_match_fuzzer.cc",
