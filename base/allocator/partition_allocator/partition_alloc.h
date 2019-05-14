@@ -82,6 +82,16 @@
 #include <stdlib.h>
 #endif
 
+// We use this to make MEMORY_TOOL_REPLACES_ALLOCATOR behave the same for max
+// size as other alloc code.
+#define CHECK_MAX_SIZE_OR_RETURN_NULLPTR(size, flags) \
+  if (size > kGenericMaxDirectMapped) {               \
+    if (flags & PartitionAllocReturnNull) {           \
+      return nullptr;                                 \
+    }                                                 \
+    CHECK(false);                                     \
+  }
+
 namespace base {
 
 class PartitionStatsDumper;
@@ -289,14 +299,12 @@ ALWAYS_INLINE void* PartitionRoot::AllocFlags(int flags,
                                               size_t size,
                                               const char* type_name) {
 #if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
-  // Make MEMORY_TOOL_REPLACES_ALLOCATOR behave the same for max size
-  // as other alloc code.
-  if (size > kGenericMaxDirectMapped)
-    return nullptr;
+  CHECK_MAX_SIZE_OR_RETURN_NULLPTR(size, flags);
   void* result = malloc(size);
   CHECK(result);
   return result;
 #else
+  DCHECK(max_allocation == 0 || size <= max_allocation);
   void* result;
   const bool hooks_enabled = PartitionAllocHooks::AreHooksEnabled();
   if (UNLIKELY(hooks_enabled)) {
@@ -388,16 +396,15 @@ ALWAYS_INLINE void* PartitionAllocGenericFlags(PartitionRootGeneric* root,
   DCHECK_LT(flags, PartitionAllocLastFlag << 1);
 
 #if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
-  // Make MEMORY_TOOL_REPLACES_ALLOCATOR behave the same for max size
-  // as other alloc code.
-  if (size > kGenericMaxDirectMapped)
-    return nullptr;
+  CHECK_MAX_SIZE_OR_RETURN_NULLPTR(size, flags);
   const bool zero_fill = flags & PartitionAllocZeroFill;
   void* result = zero_fill ? calloc(1, size) : malloc(size);
   CHECK(result || flags & PartitionAllocReturnNull);
   return result;
 #else
   DCHECK(root->initialized);
+  // Only SizeSpecificPartitionAllocator should use max_allocation.
+  DCHECK(root->max_allocation == 0);
   void* result;
   const bool hooks_enabled = PartitionAllocHooks::AreHooksEnabled();
   if (UNLIKELY(hooks_enabled)) {

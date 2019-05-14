@@ -198,13 +198,9 @@ void PartitionRoot::Init(size_t num_buckets, size_t max_allocation) {
 
   this->num_buckets = num_buckets;
   this->max_allocation = max_allocation;
-  size_t i;
-  for (i = 0; i < this->num_buckets; ++i) {
+  for (size_t i = 0; i < this->num_buckets; ++i) {
     internal::PartitionBucket* bucket = &this->buckets()[i];
-    if (!i)
-      bucket->Init(kAllocationGranularity);
-    else
-      bucket->Init(i << kBucketShift);
+    bucket->Init(i == 0 ? kAllocationGranularity : (i << kBucketShift));
   }
 }
 
