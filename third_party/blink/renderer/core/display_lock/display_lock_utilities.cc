@@ -80,7 +80,8 @@ DisplayLockUtilities::ScopedChainForcedUpdate::ScopedChainForcedUpdate(
   }
 }
 
-Element* DisplayLockUtilities::NearestLockedInclusiveAncestor(Node& node) {
+const Element* DisplayLockUtilities::NearestLockedInclusiveAncestor(
+    const Node& node) {
   if (!RuntimeEnabledFeatures::DisplayLockingEnabled() ||
       node.GetDocument().LockedDisplayLockCount() == 0 ||
       !node.CanParticipateInFlatTree()) {
@@ -93,6 +94,11 @@ Element* DisplayLockUtilities::NearestLockedInclusiveAncestor(Node& node) {
       return &ToElement(node);
   }
   return NearestLockedExclusiveAncestor(node);
+}
+
+Element* DisplayLockUtilities::NearestLockedInclusiveAncestor(Node& node) {
+  return const_cast<Element*>(
+      NearestLockedInclusiveAncestor(static_cast<const Node&>(node)));
 }
 
 Element* DisplayLockUtilities::NearestLockedExclusiveAncestor(

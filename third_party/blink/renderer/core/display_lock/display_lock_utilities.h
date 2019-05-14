@@ -44,6 +44,7 @@ class CORE_EXPORT DisplayLockUtilities {
       Element& element);
 
   // Returns the nearest inclusive ancestor of |node| that is display locked.
+  static const Element* NearestLockedInclusiveAncestor(const Node& node);
   static Element* NearestLockedInclusiveAncestor(Node& node);
 
   // Returns the nearest non-inclusive ancestor of |node| that is display
