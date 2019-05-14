@@ -1378,11 +1378,6 @@
     "expiry_milestone": -1
   },
   {
-    "name": "enable-oobe-recommend-apps-screen",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-oop-rasterization",
     "owners": [ "enne", "khushalsagar" ],
     "expiry_milestone": 76

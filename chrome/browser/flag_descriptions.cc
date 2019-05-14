@@ -3066,12 +3066,6 @@ const char kEnableMyFilesVolumeDescription[] =
     "Enables use of MyFiles as a read/write volume. This should be only "
     "used for testing or for trying to restore the previous Downloads content.";
 
-const char kEnableOobeRecommendAppsScreenName[] =
-    "Enable OOBE Recommend Apps Screen";
-const char kEnableOobeRecommendAppsScreenDescription[] =
-    "Enable the Recommend Apps Screen in OOBE which allows user to install apps"
-    "from other devices";
-
 const char kEnablePlayStoreSearchName[] = "Enable Play Store search";
 const char kEnablePlayStoreSearchDescription[] =
     "Enable Play Store search in launcher.";

@@ -298,11 +298,6 @@ COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kNtlmV2Enabled;
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kOomIntervention;
 #endif
 
-#if defined(OS_CHROMEOS)
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kOobeRecommendAppsScreen;
-#endif
-
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kUseNewAcceptLanguageHeader;
 

@@ -2870,13 +2870,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kBundledConnectionHelpDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kBundledConnectionHelpFeature)},
 
-#if defined(OS_CHROMEOS)
-    {"enable-oobe-recommend-apps-screen",
-     flag_descriptions::kEnableOobeRecommendAppsScreenName,
-     flag_descriptions::kEnableOobeRecommendAppsScreenDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kOobeRecommendAppsScreen)},
-#endif  // OS_CHROMEOS
-
     {"enable-query-in-omnibox", flag_descriptions::kQueryInOmniboxName,
      flag_descriptions::kQueryInOmniboxDescription, kOsAll,
      FEATURE_VALUE_TYPE(omnibox::kQueryInOmnibox)},

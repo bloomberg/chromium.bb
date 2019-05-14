@@ -16,7 +16,6 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
-#include "base/feature_list.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -126,7 +125,6 @@
 #include "chrome/browser/ui/webui/chromeos/login/wrong_hwid_screen_handler.h"
 #include "chrome/browser/ui/webui/help/help_utils_chromeos.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/constants/chromeos_constants.h"
@@ -264,8 +262,7 @@ bool ShouldShowRecommendAppsScreen() {
                                 ->GetProfilePolicyConnector()
                                 ->IsManaged();
   bool is_child_account = user_manager->IsLoggedInAsChildUser();
-  return !is_managed_account && !is_child_account &&
-         base::FeatureList::IsEnabled(features::kOobeRecommendAppsScreen);
+  return !is_managed_account && !is_child_account;
 }
 
 chromeos::LoginDisplayHost* GetLoginDisplayHost() {
