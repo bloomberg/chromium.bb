@@ -16,6 +16,7 @@ import android.os.UserManager;
 import android.speech.RecognizerIntent;
 import android.support.annotation.Nullable;
 
+import org.chromium.base.BuildInfo;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.SysUtils;
@@ -517,9 +518,11 @@ public class FeatureUtilities {
      * next startup, the value can be made available immediately.
      */
     public static void cacheNightModeAvailable() {
+        boolean available = ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_NIGHT_MODE)
+                || (BuildInfo.isAtLeastQ()
+                        && ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_NIGHT_MODE_FOR_Q));
         ChromePreferenceManager.getInstance().writeBoolean(
-                ChromePreferenceManager.NIGHT_MODE_AVAILABLE_KEY,
-                ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_NIGHT_MODE));
+                ChromePreferenceManager.NIGHT_MODE_AVAILABLE_KEY, available);
     }
 
     /**
