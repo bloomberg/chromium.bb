@@ -2377,6 +2377,9 @@ void RenderFrameHostImpl::SwapOut(
     web_ui()->RenderFrameHostSwappingOut();
 
   web_bluetooth_services_.clear();
+#if !defined(OS_ANDROID)
+  serial_service_.reset();
+#endif
 }
 
 void RenderFrameHostImpl::DetachFromProxy() {
