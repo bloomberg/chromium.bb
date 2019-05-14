@@ -110,7 +110,7 @@ TEST_F(LayoutThemeTest, RootElementColorChange) {
       PreferredColorScheme::kDark);
   ColorSchemeSet color_schemes;
   color_schemes.Set(ColorScheme::kDark);
-  GetDocument().GetStyleEngine().SetMetaColorScheme(color_schemes);
+  GetDocument().SetMetaColorScheme(color_schemes);
   UpdateAllLifecyclePhasesForTest();
 
   document_element_style = GetDocument().documentElement()->GetComputedStyle();

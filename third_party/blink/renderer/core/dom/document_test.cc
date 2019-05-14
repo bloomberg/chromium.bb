@@ -41,6 +41,8 @@
 #include "third_party/blink/renderer/bindings/core/v8/isolated_world_csp.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/core/css/media_query_list_listener.h"
+#include "third_party/blink/renderer/core/css/media_query_matcher.h"
 #include "third_party/blink/renderer/core/dom/document_fragment.h"
 #include "third_party/blink/renderer/core/dom/node_with_index.h"
 #include "third_party/blink/renderer/core/dom/range.h"
@@ -341,6 +343,15 @@ class MockWebApplicationCacheHost : public blink::WebApplicationCacheHost {
 
   bool with_manifest_was_called_ = false;
   bool without_manifest_was_called_ = false;
+};
+
+class PrefersColorSchemeTestListener final : public MediaQueryListListener {
+ public:
+  void NotifyMediaQueryChanged() override { notified_ = true; }
+  bool IsNotified() const { return notified_; }
+
+ private:
+  bool notified_ = false;
 };
 
 }  // anonymous namespace
@@ -1189,6 +1200,24 @@ TEST_F(DocumentTest, ElementFromPointWithPageZoom) {
   EXPECT_EQ(GetDocument().ElementFromPoint(1, 8), content);
   // A hit test below the content div should not hit it.
   EXPECT_EQ(GetDocument().ElementFromPoint(1, 12), GetDocument().body());
+}
+
+TEST_F(DocumentTest, PrefersColorSchemeChanged) {
+  UpdateAllLifecyclePhasesForTest();
+
+  auto* list = GetDocument().GetMediaQueryMatcher().MatchMedia(
+      "(prefers-color-scheme: dark)");
+  auto* listener = MakeGarbageCollected<PrefersColorSchemeTestListener>();
+  list->AddListener(listener);
+
+  EXPECT_FALSE(listener->IsNotified());
+
+  GetDocument().GetSettings()->SetPreferredColorScheme(
+      PreferredColorScheme::kDark);
+
+  GetDocument().ServiceScriptedAnimations(base::TimeTicks());
+
+  EXPECT_TRUE(listener->IsNotified());
 }
 
 /**

@@ -82,7 +82,7 @@ TEST_F(ApplyDarkModeCheckTest, MetaColorSchemeDark) {
       PreferredColorScheme::kDark);
   ColorSchemeSet schemes;
   schemes.Set(ColorScheme::kDark);
-  GetDocument().GetStyleEngine().SetMetaColorScheme(schemes);
+  GetDocument().SetMetaColorScheme(schemes);
   UpdateAllLifecyclePhasesForTest();
 
   // Opting out of forced darkening when dark is among the supported color

@@ -8010,6 +8010,16 @@ TrustedTypePolicyFactory* Document::GetTrustedTypes() const {
   return ExecutingWindow() ? ExecutingWindow()->trustedTypes() : nullptr;
 }
 
+void Document::SetMetaColorScheme(const ColorSchemeSet& meta_color_scheme) {
+  GetStyleEngine().SetMetaColorScheme(meta_color_scheme);
+  MediaQueryAffectingValueChanged();
+}
+
+void Document::ColorSchemeChanged() {
+  GetStyleEngine().ColorSchemeChanged();
+  MediaQueryAffectingValueChanged();
+}
+
 template class CORE_TEMPLATE_EXPORT Supplement<Document>;
 
 }  // namespace blink

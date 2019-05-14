@@ -1798,7 +1798,6 @@ void StyleEngine::UpdateLayoutTreeRebuildRoot(ContainerNode* ancestor,
 void StyleEngine::UpdateColorScheme() {
   auto* settings = GetDocument().GetSettings();
   DCHECK(settings);
-  PreferredColorScheme old_preferred_scheme = preferred_color_scheme_;
   ColorScheme old_color_scheme = color_scheme_;
 
   preferred_color_scheme_ = settings->GetPreferredColorScheme();
@@ -1824,8 +1823,6 @@ void StyleEngine::UpdateColorScheme() {
       }
     }
   }
-  if (preferred_color_scheme_ != old_preferred_scheme)
-    MediaQueryAffectingValueChanged();
 }
 
 void StyleEngine::ColorSchemeChanged() {

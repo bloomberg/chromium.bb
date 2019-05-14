@@ -716,7 +716,7 @@ void Page::SettingsChanged(SettingsDelegate::ChangeType change_type) {
       for (Frame* frame = MainFrame(); frame;
            frame = frame->Tree().TraverseNext()) {
         if (auto* local_frame = DynamicTo<LocalFrame>(frame))
-          local_frame->GetDocument()->GetStyleEngine().ColorSchemeChanged();
+          local_frame->GetDocument()->ColorSchemeChanged();
       }
       break;
     case SettingsDelegate::kSpatialNavigationChange:

@@ -1545,6 +1545,9 @@ class CORE_EXPORT Document : public ContainerNode,
 
   TrustedTypePolicyFactory* GetTrustedTypes() const override;
 
+  void SetMetaColorScheme(const ColorSchemeSet&);
+  void ColorSchemeChanged();
+
  protected:
   void DidUpdateSecurityOrigin() final;
 

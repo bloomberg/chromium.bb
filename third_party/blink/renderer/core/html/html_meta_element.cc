@@ -490,7 +490,7 @@ void HTMLMetaElement::ProcessColorScheme(const AtomicString& content) {
       color_scheme_set.Set(ColorScheme::kDark);
     }
   }
-  GetDocument().GetStyleEngine().SetMetaColorScheme(color_scheme_set);
+  GetDocument().SetMetaColorScheme(color_scheme_set);
 }
 
 void HTMLMetaElement::NameRemoved(const AtomicString& name_value) {
