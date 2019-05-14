@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.appmenu;
 
 import android.annotation.SuppressLint;
-import android.content.ComponentCallbacks;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
@@ -25,6 +24,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
+import org.chromium.chrome.browser.lifecycle.ConfigurationChangedObserver;
 import org.chromium.chrome.browser.lifecycle.StartStopWithNativeObserver;
 import org.chromium.chrome.browser.widget.textbubble.TextBubble;
 
@@ -34,8 +34,8 @@ import java.util.ArrayList;
  * Object responsible for handling the creation, showing, hiding of the AppMenu and notifying the
  * AppMenuObservers about these actions.
  */
-public class AppMenuHandler
-        implements StartStopWithNativeObserver, OverviewModeBehavior.OverviewModeObserver {
+public class AppMenuHandler implements StartStopWithNativeObserver, ConfigurationChangedObserver,
+                                       OverviewModeBehavior.OverviewModeObserver {
     private AppMenu mAppMenu;
     private AppMenuDragHelper mAppMenuDragHelper;
     private Menu mMenu;
@@ -47,7 +47,6 @@ public class AppMenuHandler
     private final AppMenuCoordinator.AppMenuDelegate mAppMenuDelegate;
     private final View mDecorView;
     private final ActivityLifecycleDispatcher mActivityLifecycleDispatcher;
-    private final ComponentCallbacks mComponentCallbacks;
     private OverviewModeBehavior mOverviewModeBehavior;
 
     /**
@@ -86,17 +85,6 @@ public class AppMenuHandler
         mActivityLifecycleDispatcher = activityLifecycleDispatcher;
         mActivityLifecycleDispatcher.register(this);
 
-        mComponentCallbacks = new ComponentCallbacks() {
-            @Override
-            public void onConfigurationChanged(Configuration configuration) {
-                hideAppMenu();
-            }
-
-            @Override
-            public void onLowMemory() {}
-        };
-        mDecorView.getContext().registerComponentCallbacks(mComponentCallbacks);
-
         assert mHardwareButtonMenuAnchor != null
                 : "Using AppMenu requires to have menu_anchor_stub view";
     }
@@ -113,7 +101,6 @@ public class AppMenuHandler
             mOverviewModeBehavior.removeOverviewModeObserver(this);
         }
 
-        mDecorView.getContext().unregisterComponentCallbacks(mComponentCallbacks);
     }
 
     /**
@@ -311,6 +298,11 @@ public class AppMenuHandler
 
     @Override
     public void onStopWithNative() {
+        hideAppMenu();
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
         hideAppMenu();
     }
 

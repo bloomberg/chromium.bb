@@ -5,9 +5,8 @@
 package org.chromium.chrome.browser.lifecycle;
 
 /**
- * Implement this interface and register in {@link
- * org.chromium.chrome.browser.init.ActivityLifecycleDispatcher} to receive inflation-related
- * events.
+ * Implement this interface and register in {@link ActivityLifecycleDispatcher} to receive
+ * inflation-related events.
  */
 public interface InflationObserver extends LifecycleObserver {
     /**

@@ -7,8 +7,8 @@ package org.chromium.chrome.browser.lifecycle;
 import android.content.Intent;
 
 /**
- * Implement this interface and register in {@link
- * org.chromium.chrome.browser.init.ActivityLifecycleDispatcher} to receive activity result methods.
+ * Implement this interface and register in {@link ActivityLifecycleDispatcher} to receive
+ * activity result methods.
  */
 public interface ActivityResultWithNativeObserver extends LifecycleObserver {
     /**

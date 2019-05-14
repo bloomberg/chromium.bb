@@ -555,6 +555,12 @@ public abstract class AsyncInitializationActivity
     }
 
     @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        mLifecycleDispatcher.dispatchOnConfigurationChanged(newConfig);
+    }
+
+    @Override
     public abstract boolean shouldStartGpuProcess();
 
     @CallSuper

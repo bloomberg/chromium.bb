@@ -5,9 +5,8 @@
 package org.chromium.chrome.browser.lifecycle;
 
 /**
- * Implement this interface and register in {@link
- * org.chromium.chrome.browser.init.ActivityLifecycleDispatcher} to get notified of native having
- * been loaded.
+ * Implement this interface and register in {@link ActivityLifecycleDispatcher} to get notified of
+ * native having been loaded.
  */
 public interface NativeInitObserver extends LifecycleObserver {
     /**

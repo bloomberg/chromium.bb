@@ -5,9 +5,8 @@
 package org.chromium.chrome.browser.lifecycle;
 
 /**
- * Implement this interface and register in {@link
- * org.chromium.chrome.browser.init.ActivityLifecycleDispatcher} to receive onWindowFocusChange
- * events.
+ * Implement this interface and register in {@link ActivityLifecycleDispatcher} to receive
+ * onWindowFocusChange events.
  */
 public interface WindowFocusChangedObserver extends LifecycleObserver {
     /**
