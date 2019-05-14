@@ -313,7 +313,6 @@ shared_library("blpwtk2") {
     "//skia",
     "//storage/common",
     "//services/service_manager",
-    "//services/service_manager/runner/common",
     "//third_party/blink/public:blink",
     "//third_party/blink/public:resources",
     "//ui/aura",
