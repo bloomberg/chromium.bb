@@ -10,6 +10,12 @@
 @class AdvancedSigninSettingsCoordinator;
 @protocol ApplicationCommands;
 
+// The accessibility identifier for the navigation "Confirm" button.
+extern NSString* const kSyncSettingsConfirmButtonId;
+
+// The accessibility identifier for the navigation "Cancel" button.
+extern NSString* const kSyncSettingsCancelButtonId;
+
 // AdvancedSigninSettingsCoordinator delegate.
 @protocol AdvancedSigninSettingsCoordinatorDelegate <NSObject>
 

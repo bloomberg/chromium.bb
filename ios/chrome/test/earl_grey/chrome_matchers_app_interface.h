@@ -154,6 +154,10 @@
 // Returns matcher for the "Done" button in the settings' navigation bar.
 + (id<GREYMatcher>)settingsDoneButton;
 
+// Returns matcher for the "Confirm" button in the Sync and Google services
+// settings' navigation bar.
++ (id<GREYMatcher>)syncSettingsConfirmButton;
+
 // Returns matcher for the tools menu table view.
 + (id<GREYMatcher>)toolsMenuView;
 
@@ -181,6 +185,10 @@
 
 // Returns matcher for the Keep Data Separate cell in switch sync account view.
 + (id<GREYMatcher>)settingsImportDataKeepSeparateButton;
+
+// Returns matcher for the Continue navigation button in switch sync account
+// view.
++ (id<GREYMatcher>)settingsImportDataContinueButton;
 
 // Returns matcher for the Manage Synced Data button in sync setting view.
 + (id<GREYMatcher>)settingsSyncManageSyncedDataButton;

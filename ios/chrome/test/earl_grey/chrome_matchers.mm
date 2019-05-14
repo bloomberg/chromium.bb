@@ -197,6 +197,10 @@ id<GREYMatcher> SettingsDoneButton() {
   return [ChromeMatchersAppInterface settingsDoneButton];
 }
 
+id<GREYMatcher> SyncSettingsConfirmButton() {
+  return [ChromeMatchersAppInterface syncSettingsConfirmButton];
+}
+
 id<GREYMatcher> ToolsMenuView() {
   return [ChromeMatchersAppInterface toolsMenuView];
 }
@@ -227,6 +231,10 @@ id<GREYMatcher> SettingsImportDataImportButton() {
 
 id<GREYMatcher> SettingsImportDataKeepSeparateButton() {
   return [ChromeMatchersAppInterface settingsImportDataKeepSeparateButton];
+}
+
+id<GREYMatcher> SettingsImportDataContinueButton() {
+  return [ChromeMatchersAppInterface settingsImportDataContinueButton];
 }
 
 id<GREYMatcher> SettingsSyncManageSyncedDataButton() {

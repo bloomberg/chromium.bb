@@ -31,6 +31,11 @@
 
 using l10n_util::GetNSString;
 
+NSString* const kSyncSettingsConfirmButtonId =
+    @"kAdvancedSyncSettingsConfirmButtonId";
+NSString* const kSyncSettingsCancelButtonId =
+    @"kAdvancedSyncSettingsCancelButtonId";
+
 // Advanced sign-in settings result.
 typedef NS_ENUM(NSInteger, AdvancedSigninSettingsCoordinatorResult) {
   // The user confirmed the advanced sync settings.
@@ -151,6 +156,7 @@ typedef NS_ENUM(NSInteger, AdvancedSigninSettingsCoordinatorResult) {
       initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
                            target:self
                            action:@selector(navigationCancelButtonAction)];
+  cancelButton.accessibilityIdentifier = kSyncSettingsCancelButtonId;
   return cancelButton;
 }
 
@@ -162,6 +168,7 @@ typedef NS_ENUM(NSInteger, AdvancedSigninSettingsCoordinatorResult) {
               style:UIBarButtonItemStyleDone
              target:self
              action:@selector(navigationConfirmButtonAction)];
+  confirmButton.accessibilityIdentifier = kSyncSettingsConfirmButtonId;
   return confirmButton;
 }
 

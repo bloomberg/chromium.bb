@@ -25,6 +25,7 @@
 #import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_ui_constants.h"
 #import "ios/chrome/browser/ui/settings/google_services/accounts_table_view_controller.h"
+#import "ios/chrome/browser/ui/settings/google_services/advanced_signin_settings_coordinator.h"
 #import "ios/chrome/browser/ui/settings/import_data_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/sync/sync_settings_table_view_controller.h"
@@ -389,6 +390,10 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibility_id,
   return grey_accessibilityID(kSettingsDoneButtonId);
 }
 
++ (id<GREYMatcher>)syncSettingsConfirmButton {
+  return grey_accessibilityID(kSyncSettingsConfirmButtonId);
+}
+
 + (id<GREYMatcher>)toolsMenuView {
   return grey_accessibilityID(kPopupMenuToolsMenuTableViewId);
 }
@@ -419,6 +424,10 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibility_id,
 
 + (id<GREYMatcher>)settingsImportDataKeepSeparateButton {
   return grey_accessibilityID(kImportDataKeepSeparateCellId);
+}
+
++ (id<GREYMatcher>)settingsImportDataContinueButton {
+  return grey_accessibilityID(kImportDataContinueButtonId);
 }
 
 + (id<GREYMatcher>)settingsSyncManageSyncedDataButton {
