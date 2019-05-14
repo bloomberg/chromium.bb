@@ -29,6 +29,12 @@ from utils import authenticators
 from utils import oauth
 from utils import tools
 
+
+# Disable warnings. https://crbug.com/958933
+# https://urllib3.readthedocs.org/en/latest/security.html#ssl-warnings
+urllib3.disable_warnings()
+
+
 # TODO(vadimsh): Refactor this stuff to be less magical, less global and less
 # bad.
 
