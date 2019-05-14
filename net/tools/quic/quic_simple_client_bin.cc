@@ -96,6 +96,9 @@ int32_t FLAGS_quic_ietf_draft = 0;
 // If true, a version mismatch in the handshake is not considered a failure.
 // Useful for probing a server to determine if it speaks any version of QUIC.
 bool FLAGS_version_mismatch_ok = false;
+// If true, start by proposing a version that is reserved for version
+// negotiation.
+bool FLAGS_force_version_negotiation = false;
 // If true, an HTTP response code of 3xx is considered to be a successful
 // response, otherwise a failure.
 bool FLAGS_redirect_is_success = true;
@@ -169,6 +172,8 @@ int main(int argc, char* argv[]) {
         "This also enables required internal QUIC flags.\n"
         "--version_mismatch_ok       if specified a version mismatch in the "
         "handshake is not considered a failure\n"
+        "--force_version_negotiation if specified start by proposing a version "
+        "that is reserved for version negotiation\n"
         "--redirect_is_success       if specified an HTTP response code of 3xx "
         "is considered to be a successful response, otherwise a failure\n"
         "--initial_mtu=<initial_mtu> specify the initial MTU of the connection"
@@ -211,6 +216,9 @@ int main(int argc, char* argv[]) {
   if (line->HasSwitch("version_mismatch_ok")) {
     FLAGS_version_mismatch_ok = true;
   }
+  if (line->HasSwitch("force_version_negotiation")) {
+    FLAGS_force_version_negotiation = true;
+  }
   if (line->HasSwitch("redirect_is_success")) {
     FLAGS_redirect_is_success = true;
   }
@@ -228,6 +236,7 @@ int main(int argc, char* argv[]) {
           << " quic_version: " << FLAGS_quic_version
           << " quic_ietf_draft: " << FLAGS_quic_ietf_draft
           << " version_mismatch_ok: " << FLAGS_version_mismatch_ok
+          << " force_version_negotiation: " << FLAGS_force_version_negotiation
           << " redirect_is_success: " << FLAGS_redirect_is_success
           << " initial_mtu: " << FLAGS_initial_mtu;
 
@@ -288,6 +297,11 @@ int main(int argc, char* argv[]) {
     versions.clear();
     versions.push_back(parsed_quic_version);
     quic::QuicEnableVersion(parsed_quic_version);
+  }
+
+  if (FLAGS_force_version_negotiation) {
+    versions.insert(versions.begin(),
+                    quic::QuicVersionReservedForNegotiation());
   }
 
   // For secure QUIC we need to verify the cert chain.
