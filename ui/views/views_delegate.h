@@ -40,6 +40,8 @@ class NonClientFrameView;
 class Widget;
 
 #if defined(USE_AURA)
+class DesktopNativeWidgetAura;
+class DesktopWindowTreeHost;
 class TouchSelectionMenuRunnerViews;
 #endif
 
@@ -58,6 +60,14 @@ class VIEWS_EXPORT ViewsDelegate {
   using NativeWidgetFactory =
       base::RepeatingCallback<NativeWidget*(const Widget::InitParams&,
                                             internal::NativeWidgetDelegate*)>;
+#if defined(USE_AURA)
+  using DesktopWindowTreeHostFactory =
+      base::RepeatingCallback<std::unique_ptr<DesktopWindowTreeHost>(
+          const Widget::InitParams&,
+          internal::NativeWidgetDelegate*,
+          DesktopNativeWidgetAura*)>;
+#endif
+
 #if defined(OS_WIN)
   enum AppbarAutohideEdge {
     EDGE_TOP    = 1 << 0,
@@ -93,6 +103,15 @@ class VIEWS_EXPORT ViewsDelegate {
     return native_widget_factory_;
   }
 
+#if defined(USE_AURA)
+  void set_desktop_window_tree_host_factory(
+      DesktopWindowTreeHostFactory factory) {
+    desktop_window_tree_host_factory_ = std::move(factory);
+  }
+  const DesktopWindowTreeHostFactory& desktop_window_tree_host_factory() const {
+    return desktop_window_tree_host_factory_;
+  }
+#endif
   // Saves the position, size and "show" state for the window with the
   // specified name.
   virtual void SaveWindowPlacement(const Widget* widget,
@@ -191,6 +210,8 @@ class VIEWS_EXPORT ViewsDelegate {
 
 #if defined(USE_AURA)
   std::unique_ptr<TouchSelectionMenuRunnerViews> touch_selection_menu_runner_;
+
+  DesktopWindowTreeHostFactory desktop_window_tree_host_factory_;
 #endif
 
   NativeWidgetFactory native_widget_factory_;
