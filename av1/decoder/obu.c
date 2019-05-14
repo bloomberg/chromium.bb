@@ -533,127 +533,129 @@ static uint32_t read_and_decode_one_tile_list(AV1Decoder *pbi,
   return tile_list_payload_size;
 }
 
-static void read_metadata_itut_t35(const uint8_t *data, size_t sz) {
-  struct aom_read_bit_buffer rb = { data, data + sz, 0, NULL, NULL };
-  for (size_t i = 0; i < sz; i++) {
-    aom_rb_read_literal(&rb, 8);
+static void read_metadata_itut_t35(struct aom_read_bit_buffer *rb) {
+  const int itu_t_t35_country_code = aom_rb_read_literal(rb, 8);
+  if (itu_t_t35_country_code == 0xFF) {
+    aom_rb_read_literal(rb, 8);
   }
+  // Ignore itu_t_t35_payload_bytes, whose exact syntax is not defined in the
+  // spec.
 }
 
-static void read_metadata_hdr_cll(const uint8_t *data, size_t sz) {
-  struct aom_read_bit_buffer rb = { data, data + sz, 0, NULL, NULL };
-  aom_rb_read_literal(&rb, 16);  // max_cll
-  aom_rb_read_literal(&rb, 16);  // max_fall
+static void read_metadata_hdr_cll(struct aom_read_bit_buffer *rb) {
+  aom_rb_read_literal(rb, 16);  // max_cll
+  aom_rb_read_literal(rb, 16);  // max_fall
 }
 
-static void read_metadata_hdr_mdcv(const uint8_t *data, size_t sz) {
-  struct aom_read_bit_buffer rb = { data, data + sz, 0, NULL, NULL };
+static void read_metadata_hdr_mdcv(struct aom_read_bit_buffer *rb) {
   for (int i = 0; i < 3; i++) {
-    aom_rb_read_literal(&rb, 16);  // primary_i_chromaticity_x
-    aom_rb_read_literal(&rb, 16);  // primary_i_chromaticity_y
+    aom_rb_read_literal(rb, 16);  // primary_chromaticity_x[ i ]
+    aom_rb_read_literal(rb, 16);  // primary_chromaticity_y[ i ]
   }
 
-  aom_rb_read_literal(&rb, 16);  // white_point_chromaticity_x
-  aom_rb_read_literal(&rb, 16);  // white_point_chromaticity_y
+  aom_rb_read_literal(rb, 16);  // white_point_chromaticity_x
+  aom_rb_read_literal(rb, 16);  // white_point_chromaticity_y
 
-  aom_rb_read_unsigned_literal(&rb, 32);  // luminance_max
-  aom_rb_read_unsigned_literal(&rb, 32);  // luminance_min
+  aom_rb_read_unsigned_literal(rb, 32);  // luminance_max
+  aom_rb_read_unsigned_literal(rb, 32);  // luminance_min
 }
 
 static void scalability_structure(struct aom_read_bit_buffer *rb) {
-  int spatial_layers_cnt = aom_rb_read_literal(rb, 2);
-  int spatial_layer_dimensions_present_flag = aom_rb_read_bit(rb);
-  int spatial_layer_description_present_flag = aom_rb_read_bit(rb);
-  int temporal_group_description_present_flag = aom_rb_read_bit(rb);
+  const int spatial_layers_cnt_minus_1 = aom_rb_read_literal(rb, 2);
+  const int spatial_layer_dimensions_present_flag = aom_rb_read_bit(rb);
+  const int spatial_layer_description_present_flag = aom_rb_read_bit(rb);
+  const int temporal_group_description_present_flag = aom_rb_read_bit(rb);
   aom_rb_read_literal(rb, 3);  // reserved
 
   if (spatial_layer_dimensions_present_flag) {
-    int i;
-    for (i = 0; i < spatial_layers_cnt + 1; i++) {
+    for (int i = 0; i <= spatial_layers_cnt_minus_1; i++) {
       aom_rb_read_literal(rb, 16);
       aom_rb_read_literal(rb, 16);
     }
   }
   if (spatial_layer_description_present_flag) {
-    int i;
-    for (i = 0; i < spatial_layers_cnt + 1; i++) {
+    for (int i = 0; i <= spatial_layers_cnt_minus_1; i++) {
       aom_rb_read_literal(rb, 8);
     }
   }
   if (temporal_group_description_present_flag) {
-    int i, j, temporal_group_size;
-    temporal_group_size = aom_rb_read_literal(rb, 8);
-    for (i = 0; i < temporal_group_size; i++) {
+    const int temporal_group_size = aom_rb_read_literal(rb, 8);
+    for (int i = 0; i < temporal_group_size; i++) {
       aom_rb_read_literal(rb, 3);
       aom_rb_read_bit(rb);
       aom_rb_read_bit(rb);
-      int temporal_group_ref_cnt = aom_rb_read_literal(rb, 3);
-      for (j = 0; j < temporal_group_ref_cnt; j++) {
+      const int temporal_group_ref_cnt = aom_rb_read_literal(rb, 3);
+      for (int j = 0; j < temporal_group_ref_cnt; j++) {
         aom_rb_read_literal(rb, 8);
       }
     }
   }
 }
 
-static void read_metadata_scalability(const uint8_t *data, size_t sz) {
-  struct aom_read_bit_buffer rb = { data, data + sz, 0, NULL, NULL };
-  int scalability_mode_idc = aom_rb_read_literal(&rb, 8);
+static void read_metadata_scalability(struct aom_read_bit_buffer *rb) {
+  const int scalability_mode_idc = aom_rb_read_literal(rb, 8);
   if (scalability_mode_idc == SCALABILITY_SS) {
-    scalability_structure(&rb);
+    scalability_structure(rb);
   }
 }
 
-static void read_metadata_timecode(const uint8_t *data, size_t sz) {
-  struct aom_read_bit_buffer rb = { data, data + sz, 0, NULL, NULL };
-  aom_rb_read_literal(&rb, 5);                     // counting_type f(5)
-  int full_timestamp_flag = aom_rb_read_bit(&rb);  // full_timestamp_flag f(1)
-  aom_rb_read_bit(&rb);                            // discontinuity_flag (f1)
-  aom_rb_read_bit(&rb);                            // cnt_dropped_flag f(1)
-  aom_rb_read_literal(&rb, 9);                     // n_frames f(9)
+static void read_metadata_timecode(struct aom_read_bit_buffer *rb) {
+  aom_rb_read_literal(rb, 5);  // counting_type f(5)
+  const int full_timestamp_flag =
+      aom_rb_read_bit(rb);     // full_timestamp_flag f(1)
+  aom_rb_read_bit(rb);         // discontinuity_flag (f1)
+  aom_rb_read_bit(rb);         // cnt_dropped_flag f(1)
+  aom_rb_read_literal(rb, 9);  // n_frames f(9)
   if (full_timestamp_flag) {
-    aom_rb_read_literal(&rb, 6);  // seconds_value f(6)
-    aom_rb_read_literal(&rb, 6);  // minutes_value f(6)
-    aom_rb_read_literal(&rb, 5);  // hours_value f(5)
+    aom_rb_read_literal(rb, 6);  // seconds_value f(6)
+    aom_rb_read_literal(rb, 6);  // minutes_value f(6)
+    aom_rb_read_literal(rb, 5);  // hours_value f(5)
   } else {
-    int seconds_flag = aom_rb_read_bit(&rb);  // seconds_flag f(1)
+    const int seconds_flag = aom_rb_read_bit(rb);  // seconds_flag f(1)
     if (seconds_flag) {
-      aom_rb_read_literal(&rb, 6);              // seconds_value f(6)
-      int minutes_flag = aom_rb_read_bit(&rb);  // minutes_flag f(1)
+      aom_rb_read_literal(rb, 6);                    // seconds_value f(6)
+      const int minutes_flag = aom_rb_read_bit(rb);  // minutes_flag f(1)
       if (minutes_flag) {
-        aom_rb_read_literal(&rb, 6);            // minutes_value f(6)
-        int hours_flag = aom_rb_read_bit(&rb);  // hours_flag f(1)
+        aom_rb_read_literal(rb, 6);                  // minutes_value f(6)
+        const int hours_flag = aom_rb_read_bit(rb);  // hours_flag f(1)
         if (hours_flag) {
-          aom_rb_read_literal(&rb, 5);  // hours_value f(5)
+          aom_rb_read_literal(rb, 5);  // hours_value f(5)
         }
       }
     }
   }
   // time_offset_length f(5)
-  int time_offset_length = aom_rb_read_literal(&rb, 5);
+  const int time_offset_length = aom_rb_read_literal(rb, 5);
   if (time_offset_length) {
-    aom_rb_read_literal(&rb, time_offset_length);  // f(time_offset_length)
+    // time_offset_value f(time_offset_length)
+    aom_rb_read_literal(rb, time_offset_length);
   }
 }
 
-// Not fully implemented. Always succeeds and returns sz.
-static size_t read_metadata(const uint8_t *data, size_t sz) {
+// Checks the metadata for correct syntax but ignores the parsed metadata.
+//
+// On success, returns sz. On failure, sets pbi->common.error.error_code and
+// returns 0, or calls aom_internal_error() and does not return.
+static size_t read_metadata(AV1Decoder *pbi, const uint8_t *data, size_t sz) {
   size_t type_length;
   uint64_t type_value;
-  OBU_METADATA_TYPE metadata_type;
   if (aom_uleb_decode(data, sz, &type_value, &type_length) < 0) {
-    return sz;
+    pbi->common.error.error_code = AOM_CODEC_CORRUPT_FRAME;
+    return 0;
   }
-  metadata_type = (OBU_METADATA_TYPE)type_value;
+  struct aom_read_bit_buffer rb;
+  av1_init_read_bit_buffer(pbi, &rb, data + type_length, data + sz);
+  const OBU_METADATA_TYPE metadata_type = (OBU_METADATA_TYPE)type_value;
   if (metadata_type == OBU_METADATA_TYPE_ITUT_T35) {
-    read_metadata_itut_t35(data + type_length, sz - type_length);
+    read_metadata_itut_t35(&rb);
   } else if (metadata_type == OBU_METADATA_TYPE_HDR_CLL) {
-    read_metadata_hdr_cll(data + type_length, sz - type_length);
+    read_metadata_hdr_cll(&rb);
   } else if (metadata_type == OBU_METADATA_TYPE_HDR_MDCV) {
-    read_metadata_hdr_mdcv(data + type_length, sz - type_length);
+    read_metadata_hdr_mdcv(&rb);
   } else if (metadata_type == OBU_METADATA_TYPE_SCALABILITY) {
-    read_metadata_scalability(data + type_length, sz - type_length);
+    read_metadata_scalability(&rb);
   } else if (metadata_type == OBU_METADATA_TYPE_TIMECODE) {
-    read_metadata_timecode(data + type_length, sz - type_length);
+    read_metadata_timecode(&rb);
   }
 
   return sz;
@@ -825,7 +827,8 @@ int aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
         if (frame_decoding_finished) pbi->seen_frame_header = 0;
         break;
       case OBU_METADATA:
-        decoded_payload_size = read_metadata(data, payload_size);
+        decoded_payload_size = read_metadata(pbi, data, payload_size);
+        if (cm->error.error_code != AOM_CODEC_OK) return -1;
         break;
       case OBU_TILE_LIST:
         if (CONFIG_NORMAL_TILE_MODE) {
