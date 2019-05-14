@@ -12,8 +12,6 @@ import "url/mojom/url.mojom";
 
 // Describes a Response in terms of the concept from the Fetch spec.
 // https://fetch.spec.whatwg.org/#response-class
-// It is currently used by Cache Storage and Service Worker, and the plan is to
-// use it also in Background Fetch to replace content::ServiceWorkerResponse.
 // Note: Be sure to update CacheStorageCache::EstimatedResponseSizeWithoutBlob()
 // when adding or removing members.
 struct FetchAPIResponse {
@@ -34,7 +32,7 @@ struct FetchAPIResponse {
   // Corresponds to response types from the Fetch spec:
   // https://fetch.spec.whatwg.org/#concept-response-type
   network.mojom.FetchResponseType response_type =
-    network.mojom.FetchResponseType.kOpaque;
+    network.mojom.FetchResponseType.kDefault;
 
   // The source of this response, e.g. network, CacheStorage.
   network.mojom.FetchResponseSource response_source =
