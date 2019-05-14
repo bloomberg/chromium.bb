@@ -35,13 +35,14 @@ enum class AccessorySheetTrigger {
 
 // Used to record metrics specific to a tab types (e.g. passwords, payments).
 // These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused. Must be kept in sync with the enum
-// in enums.xml. A java IntDef@ is generated from this.
+// numeric values should never be reused. Must be kept in sync with the suffix
+// AccessorySheetType in histogram.xml. A java IntDef@ is generated from this.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.keyboard_accessory
 enum class AccessoryTabType {
   ALL = 0,
   PASSWORDS = 1,
   CREDIT_CARDS = 2,
+  ADDRESSES = 3,
   COUNT,
 };
 

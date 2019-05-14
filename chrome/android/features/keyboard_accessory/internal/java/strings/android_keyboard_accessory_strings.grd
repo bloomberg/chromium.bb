@@ -121,6 +121,15 @@
       <message name="IDS_PASSWORD_ACCESSORY_SHEET_OPENED" desc="Accessibility announcement when opening a password bottom sheet containing saved credentials and options like managing and generating passwords.">
           Showing saved passwords and password options
       </message>
+      <message name="IDS_ADDRESS_ACCESSORY_SHEET_TITLE" desc="Text used as title for the address accessory sheet.">
+          Addresses
+      </message>
+      <message name="IDS_ADDRESS_ACCESSORY_SHEET_TOGGLE" desc="Description for the icon button used to open and close the address accessory sheet.">
+          Show Addresses
+      </message>
+      <message name="IDS_ADDRESS_ACCESSORY_SHEET_OPENED" desc="Accessibility announcement when opening an address bottom sheet containing saved addresses.">
+          Showing saved addresses
+      </message>
     </messages>
   </release>
 </grit>

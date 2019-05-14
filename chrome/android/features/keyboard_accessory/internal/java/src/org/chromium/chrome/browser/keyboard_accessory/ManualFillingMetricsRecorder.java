@@ -19,6 +19,7 @@ public class ManualFillingMetricsRecorder {
     private static final String UMA_KEYBOARD_ACCESSORY_SHEET_SUGGESTION_SELECTED =
             "KeyboardAccessory.AccessorySheetSuggestionsSelected";
     private static final String UMA_KEYBOARD_ACCESSORY_SHEET_TYPE_SUFFIX_PASSWORDS = "Passwords";
+    private static final String UMA_KEYBOARD_ACCESSORY_SHEET_TYPE_SUFFIX_ADDRESSES = "Addresses";
 
     /**
      * The Recorder itself should be stateless and have no need for an instance.
@@ -37,6 +38,8 @@ public class ManualFillingMetricsRecorder {
                 return baseHistogram;
             case AccessoryTabType.PASSWORDS:
                 return baseHistogram + "." + UMA_KEYBOARD_ACCESSORY_SHEET_TYPE_SUFFIX_PASSWORDS;
+            case AccessoryTabType.ADDRESSES:
+                return baseHistogram + "." + UMA_KEYBOARD_ACCESSORY_SHEET_TYPE_SUFFIX_ADDRESSES;
         }
         assert false : "Undefined histogram for tab type " + tabType + " !";
         return "";
