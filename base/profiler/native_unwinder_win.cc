@@ -4,6 +4,8 @@
 
 #include "base/profiler/native_unwinder_win.h"
 
+#include <winnt.h>
+
 #include "base/profiler/native_unwinder.h"
 #include "base/profiler/win32_stack_frame_unwinder.h"
 
@@ -49,8 +51,7 @@ UnwindResult NativeUnwinderWin::TryUnwind(RegisterContext* thread_context,
       return UnwindResult::UNRECOGNIZED_FRAME;
     }
 
-    const uintptr_t prev_stack_pointer =
-        RegisterContextStackPointer(thread_context);
+    uintptr_t prev_stack_pointer = RegisterContextStackPointer(thread_context);
     if (!frame_unwinder.TryUnwind(stack->size() == 1u, thread_context,
                                   stack->back().module)) {
       return UnwindResult::ABORTED;
@@ -60,6 +61,13 @@ UnwindResult NativeUnwinderWin::TryUnwind(RegisterContext* thread_context,
       return UnwindResult::COMPLETED;
 
     // Abort if the unwind produced an invalid stack pointer.
+#if defined(ARCH_CPU_ARM64)
+    // Leaf frames on Arm can re-use the stack pointer, so they can validly have
+    // the same stack pointer as the previous frame.
+    if (stack->size() == 1u) {
+      prev_stack_pointer--;
+    }
+#endif
     if (RegisterContextStackPointer(thread_context) <= prev_stack_pointer ||
         RegisterContextStackPointer(thread_context) >= stack_top) {
       return UnwindResult::ABORTED;

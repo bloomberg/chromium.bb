@@ -16,7 +16,7 @@ std::unique_ptr<StackSampler> StackSampler::Create(
     PlatformThreadId thread_id,
     ModuleCache* module_cache,
     StackSamplerTestDelegate* test_delegate) {
-#if defined(ARCH_CPU_X86_64)
+#if defined(ARCH_CPU_X86_64) || defined(ARCH_CPU_ARM64)
   return std::make_unique<StackSamplerImpl>(
       std::make_unique<ThreadDelegateWin>(thread_id),
       std::make_unique<NativeUnwinderWin>(), module_cache, test_delegate);
