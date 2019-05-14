@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "chrome/browser/chromeos/attestation/certificate_uploader.h"
+#include "chrome/browser/chromeos/attestation/machine_certificate_uploader.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -16,7 +16,7 @@ namespace chromeos {
 namespace attestation {
 
 AttestationPolicyObserver::AttestationPolicyObserver(
-    CertificateUploader* certificate_uploader)
+    MachineCertificateUploader* certificate_uploader)
     : cros_settings_(CrosSettings::Get()),
       certificate_uploader_(certificate_uploader) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);

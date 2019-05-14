@@ -17,7 +17,7 @@
 namespace chromeos {
 namespace attestation {
 
-class CertificateUploader;
+class MachineCertificateUploader;
 
 // A class which observes policy changes and uploads a certificate if necessary.
 class AttestationPolicyObserver {
@@ -25,7 +25,8 @@ class AttestationPolicyObserver {
   // The observer immediately connects with CrosSettings to listen for policy
   // changes.  The CertificateUploader is used to obtain and upload a
   // certificate. This class does not take ownership of |certificate_uploader|.
-  explicit AttestationPolicyObserver(CertificateUploader* certificate_uploader);
+  explicit AttestationPolicyObserver(
+      MachineCertificateUploader* certificate_uploader);
 
   ~AttestationPolicyObserver();
 
@@ -37,7 +38,7 @@ class AttestationPolicyObserver {
   void Start();
 
   CrosSettings* cros_settings_;
-  CertificateUploader* certificate_uploader_;
+  MachineCertificateUploader* certificate_uploader_;
 
   std::unique_ptr<CrosSettings::ObserverSubscription> attestation_subscription_;
 

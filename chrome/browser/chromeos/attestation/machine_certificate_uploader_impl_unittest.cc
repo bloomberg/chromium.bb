@@ -14,7 +14,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/attestation/attestation_key_payload.pb.h"
 #include "chrome/browser/chromeos/attestation/fake_certificate.h"
-#include "chrome/browser/chromeos/attestation/machine_certificate_uploader.h"
+#include "chrome/browser/chromeos/attestation/machine_certificate_uploader_impl.h"
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chromeos/attestation/mock_attestation_flow.h"
 #include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
@@ -116,8 +116,8 @@ class MachineCertificateUploaderTest : public ::testing::TestWithParam<bool> {
   }
 
   void Run() {
-    MachineCertificateUploader uploader(&policy_client_, &cryptohome_client_,
-                                        &attestation_flow_);
+    MachineCertificateUploaderImpl uploader(
+        &policy_client_, &cryptohome_client_, &attestation_flow_);
     uploader.set_retry_limit(3);
     uploader.set_retry_delay(0);
     if (GetParam())

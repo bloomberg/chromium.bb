@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/attestation/machine_certificate_uploader.h"
+#include "chrome/browser/chromeos/attestation/machine_certificate_uploader_impl.h"
 
 #include <string>
 #include <utility>
@@ -109,7 +109,7 @@ void DBusPrivacyCACallback(
 namespace chromeos {
 namespace attestation {
 
-MachineCertificateUploader::MachineCertificateUploader(
+MachineCertificateUploaderImpl::MachineCertificateUploaderImpl(
     policy::CloudPolicyClient* policy_client)
     : policy_client_(policy_client),
       cryptohome_client_(nullptr),
@@ -121,7 +121,7 @@ MachineCertificateUploader::MachineCertificateUploader(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
-MachineCertificateUploader::MachineCertificateUploader(
+MachineCertificateUploaderImpl::MachineCertificateUploaderImpl(
     policy::CloudPolicyClient* policy_client,
     CryptohomeClient* cryptohome_client,
     AttestationFlow* attestation_flow)
@@ -134,11 +134,11 @@ MachineCertificateUploader::MachineCertificateUploader(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
-MachineCertificateUploader::~MachineCertificateUploader() {
+MachineCertificateUploaderImpl::~MachineCertificateUploaderImpl() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
-void MachineCertificateUploader::UploadCertificateIfNeeded(
+void MachineCertificateUploaderImpl::UploadCertificateIfNeeded(
     UploadCallback callback) {
   refresh_certificate_ = false;
   callback_ = std::move(callback);
@@ -146,7 +146,7 @@ void MachineCertificateUploader::UploadCertificateIfNeeded(
   Start();
 }
 
-void MachineCertificateUploader::RefreshAndUploadCertificate(
+void MachineCertificateUploaderImpl::RefreshAndUploadCertificate(
     UploadCallback callback) {
   refresh_certificate_ = true;
   callback_ = std::move(callback);
@@ -154,10 +154,10 @@ void MachineCertificateUploader::RefreshAndUploadCertificate(
   Start();
 }
 
-void MachineCertificateUploader::Start() {
+void MachineCertificateUploaderImpl::Start() {
   // We expect a registered CloudPolicyClient.
   if (!policy_client_->is_registered()) {
-    LOG(ERROR) << "MachineCertificateUploader: Invalid CloudPolicyClient.";
+    LOG(ERROR) << "MachineCertificateUploaderImpl: Invalid CloudPolicyClient.";
     return;
   }
 
@@ -181,23 +181,23 @@ void MachineCertificateUploader::Start() {
 
   // Start a dbus call to check if an Enterprise Machine Key already exists.
   base::RepeatingClosure on_does_not_exist =
-      base::BindRepeating(&MachineCertificateUploader::GetNewCertificate,
+      base::BindRepeating(&MachineCertificateUploaderImpl::GetNewCertificate,
                           weak_factory_.GetWeakPtr());
-  base::RepeatingClosure on_does_exist =
-      base::BindRepeating(&MachineCertificateUploader::GetExistingCertificate,
-                          weak_factory_.GetWeakPtr());
+  base::RepeatingClosure on_does_exist = base::BindRepeating(
+      &MachineCertificateUploaderImpl::GetExistingCertificate,
+      weak_factory_.GetWeakPtr());
   cryptohome_client_->TpmAttestationDoesKeyExist(
       KEY_DEVICE,
       cryptohome::AccountIdentifier(),  // Not used.
       kEnterpriseMachineKey,
       base::BindOnce(
           DBusBoolRedirectCallback, on_does_exist, on_does_not_exist,
-          base::BindRepeating(&MachineCertificateUploader::Reschedule,
+          base::BindRepeating(&MachineCertificateUploaderImpl::Reschedule,
                               weak_factory_.GetWeakPtr()),
           FROM_HERE));
 }
 
-void MachineCertificateUploader::GetNewCertificate() {
+void MachineCertificateUploaderImpl::GetNewCertificate() {
   // We can reuse the dbus callback handler logic.
   attestation_flow_->GetCertificate(
       PROFILE_ENTERPRISE_MACHINE_CERTIFICATE,
@@ -212,15 +212,16 @@ void MachineCertificateUploader::GetNewCertificate() {
             DBusPrivacyCACallback(on_success, on_failure, from_here, status,
                                   std::move(data));
           },
-          base::BindRepeating(&MachineCertificateUploader::UploadCertificate,
-                              weak_factory_.GetWeakPtr()),
           base::BindRepeating(
-              &MachineCertificateUploader::HandleGetCertificateFailure,
+              &MachineCertificateUploaderImpl::UploadCertificate,
+              weak_factory_.GetWeakPtr()),
+          base::BindRepeating(
+              &MachineCertificateUploaderImpl::HandleGetCertificateFailure,
               weak_factory_.GetWeakPtr()),
           FROM_HERE));
 }
 
-void MachineCertificateUploader::GetExistingCertificate() {
+void MachineCertificateUploaderImpl::GetExistingCertificate() {
   cryptohome_client_->TpmAttestationGetCertificate(
       KEY_DEVICE,
       cryptohome::AccountIdentifier(),  // Not used.
@@ -228,14 +229,14 @@ void MachineCertificateUploader::GetExistingCertificate() {
       base::BindRepeating(
           DBusStringCallback,
           base::BindRepeating(
-              &MachineCertificateUploader::CheckCertificateExpiry,
+              &MachineCertificateUploaderImpl::CheckCertificateExpiry,
               weak_factory_.GetWeakPtr()),
-          base::BindRepeating(&MachineCertificateUploader::Reschedule,
+          base::BindRepeating(&MachineCertificateUploaderImpl::Reschedule,
                               weak_factory_.GetWeakPtr()),
           FROM_HERE));
 }
 
-void MachineCertificateUploader::CheckCertificateExpiry(
+void MachineCertificateUploaderImpl::CheckCertificateExpiry(
     const std::string& pem_certificate_chain) {
   int num_certificates = 0;
   net::PEMTokenizer pem_tokenizer(pem_certificate_chain, {"CERTIFICATE"});
@@ -268,21 +269,21 @@ void MachineCertificateUploader::CheckCertificateExpiry(
   }
   // Get the payload and check if the certificate has already been uploaded.
   GetKeyPayload(
-      base::BindRepeating(&MachineCertificateUploader::CheckIfUploaded,
+      base::BindRepeating(&MachineCertificateUploaderImpl::CheckIfUploaded,
                           weak_factory_.GetWeakPtr(), pem_certificate_chain),
-      base::BindRepeating(&MachineCertificateUploader::Reschedule,
+      base::BindRepeating(&MachineCertificateUploaderImpl::Reschedule,
                           weak_factory_.GetWeakPtr()));
 }
 
-void MachineCertificateUploader::UploadCertificate(
+void MachineCertificateUploaderImpl::UploadCertificate(
     const std::string& pem_certificate_chain) {
   policy_client_->UploadEnterpriseMachineCertificate(
       pem_certificate_chain,
-      base::BindRepeating(&MachineCertificateUploader::OnUploadComplete,
+      base::BindRepeating(&MachineCertificateUploaderImpl::OnUploadComplete,
                           weak_factory_.GetWeakPtr()));
 }
 
-void MachineCertificateUploader::CheckIfUploaded(
+void MachineCertificateUploaderImpl::CheckIfUploaded(
     const std::string& pem_certificate_chain,
     const std::string& key_payload) {
   AttestationKeyPayload payload_pb;
@@ -294,7 +295,7 @@ void MachineCertificateUploader::CheckIfUploaded(
   UploadCertificate(pem_certificate_chain);
 }
 
-void MachineCertificateUploader::GetKeyPayload(
+void MachineCertificateUploaderImpl::GetKeyPayload(
     base::RepeatingCallback<void(const std::string&)> callback,
     base::RepeatingCallback<void()> on_failure) {
   cryptohome_client_->TpmAttestationGetKeyPayload(
@@ -304,18 +305,18 @@ void MachineCertificateUploader::GetKeyPayload(
       base::BindRepeating(DBusStringCallback, callback, on_failure, FROM_HERE));
 }
 
-void MachineCertificateUploader::OnUploadComplete(bool status) {
+void MachineCertificateUploaderImpl::OnUploadComplete(bool status) {
   if (status) {
     VLOG(1) << "Enterprise Machine Certificate uploaded to DMServer.";
     GetKeyPayload(
-        base::BindRepeating(&MachineCertificateUploader::MarkAsUploaded,
+        base::BindRepeating(&MachineCertificateUploaderImpl::MarkAsUploaded,
                             weak_factory_.GetWeakPtr()),
         base::DoNothing());
   }
   std::move(callback_).Run(status);
 }
 
-void MachineCertificateUploader::MarkAsUploaded(
+void MachineCertificateUploaderImpl::MarkAsUploaded(
     const std::string& key_payload) {
   AttestationKeyPayload payload_pb;
   if (!key_payload.empty())
@@ -335,7 +336,7 @@ void MachineCertificateUploader::MarkAsUploaded(
                           FROM_HERE));
 }
 
-void MachineCertificateUploader::HandleGetCertificateFailure(
+void MachineCertificateUploaderImpl::HandleGetCertificateFailure(
     AttestationStatus status) {
   if (status != ATTESTATION_SERVER_BAD_REQUEST_FAILURE)
     Reschedule();
@@ -343,15 +344,15 @@ void MachineCertificateUploader::HandleGetCertificateFailure(
     std::move(callback_).Run(false);
 }
 
-void MachineCertificateUploader::Reschedule() {
+void MachineCertificateUploaderImpl::Reschedule() {
   if (++num_retries_ < retry_limit_) {
     base::PostDelayedTaskWithTraits(
         FROM_HERE, {content::BrowserThread::UI},
-        base::BindRepeating(&MachineCertificateUploader::Start,
+        base::BindRepeating(&MachineCertificateUploaderImpl::Start,
                             weak_factory_.GetWeakPtr()),
         base::TimeDelta::FromSeconds(retry_delay_));
   } else {
-    LOG(WARNING) << "MachineCertificateUploader: Retry limit exceeded.";
+    LOG(WARNING) << "MachineCertificateUploaderImpl: Retry limit exceeded.";
     std::move(callback_).Run(false);
   }
 }

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/attestation/mock_certificate_uploader.h"
+#include "chrome/browser/chromeos/attestation/mock_machine_certificate_uploader.h"
 
 namespace chromeos {
 namespace attestation {
 
-MockCertificateUploader::MockCertificateUploader() = default;
+MockMachineCertificateUploader::MockMachineCertificateUploader() = default;
 
-MockCertificateUploader::~MockCertificateUploader() = default;
+MockMachineCertificateUploader::~MockMachineCertificateUploader() = default;
 
 }  // namespace attestation
 }  // namespace chromeos

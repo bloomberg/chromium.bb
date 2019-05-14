@@ -13,7 +13,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/attestation/attestation_policy_observer.h"
-#include "chrome/browser/chromeos/attestation/mock_certificate_uploader.h"
+#include "chrome/browser/chromeos/attestation/mock_machine_certificate_uploader.h"
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -40,7 +40,7 @@ class AttestationPolicyObserverTest : public ::testing::Test {
 
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
   ScopedCrosSettingsTestHelper settings_helper_;
-  StrictMock<MockCertificateUploader> certificate_uploader_;
+  StrictMock<MockMachineCertificateUploader> certificate_uploader_;
 };
 
 TEST_F(AttestationPolicyObserverTest, FeatureEnabled) {
