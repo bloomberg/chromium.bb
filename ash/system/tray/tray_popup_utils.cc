@@ -50,7 +50,7 @@ std::unique_ptr<views::LayoutManager> CreateDefaultCenterLayoutManager() {
   box_layout->set_main_axis_alignment(
       views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
   box_layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
+      views::BoxLayout::CrossAxisAlignment::kStretch);
   return std::move(box_layout);
 }
 
@@ -62,7 +62,7 @@ std::unique_ptr<views::LayoutManager> CreateDefaultEndsLayoutManager() {
   box_layout->set_main_axis_alignment(
       views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
   box_layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::CrossAxisAlignment::kCenter);
   return std::move(box_layout);
 }
 

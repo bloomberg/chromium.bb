@@ -116,7 +116,7 @@ void CaptionBar::InitLayout() {
           gfx::Insets(0, kSpacingDip), kSpacingDip));
 
   layout_manager->set_cross_axis_alignment(
-      views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::CrossAxisAlignment::kCenter);
 
   // Back.
   AddChildView(CreateCaptionButton(kWindowControlBackIcon, IDS_APP_LIST_BACK,

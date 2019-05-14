@@ -31,7 +31,7 @@ NotificationSwipeControlView::NotificationSwipeControlView(
                   message_center_style::kSwipeControlButtonHorizontalMargin),
       message_center_style::kSwipeControlButtonHorizontalMargin));
   layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
+      views::BoxLayout::CrossAxisAlignment::kStart);
   layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_END);
 
   // Draw on its own layer to round corners

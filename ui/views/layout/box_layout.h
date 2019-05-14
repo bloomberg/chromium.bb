@@ -45,14 +45,14 @@ class VIEWS_EXPORT BoxLayout : public LayoutManager {
   };
 
   // This specifies where along the cross axis the children should be laid out.
-  // e.g. a horizontal layout of CROSS_AXIS_ALIGNMENT_END will result in the
-  // child views being bottom-aligned.
-  enum CrossAxisAlignment {
+  // e.g. a horizontal layout of kEnd will result in the child views being
+  // bottom-aligned.
+  enum class CrossAxisAlignment {
     // This causes the child view to stretch to fit the host in the cross axis.
-    CROSS_AXIS_ALIGNMENT_STRETCH,
-    CROSS_AXIS_ALIGNMENT_START,
-    CROSS_AXIS_ALIGNMENT_CENTER,
-    CROSS_AXIS_ALIGNMENT_END,
+    kStretch,
+    kStart,
+    kCenter,
+    kEnd,
   };
 
   // Use |inside_border_insets| to add additional space between the child
@@ -317,7 +317,7 @@ class VIEWS_EXPORT BoxLayout : public LayoutManager {
   MainAxisAlignment main_axis_alignment_;
 
   // The alignment of children in the cross axis. This is
-  // CROSS_AXIS_ALIGNMENT_STRETCH by default.
+  // kStretch by default.
   CrossAxisAlignment cross_axis_alignment_;
 
   // A map of views to their flex weights.

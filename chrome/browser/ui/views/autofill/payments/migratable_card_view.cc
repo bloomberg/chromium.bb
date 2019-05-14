@@ -55,7 +55,7 @@ MigratableCardView::MigratableCardView(
           provider->GetDistanceMetric(
               views::DISTANCE_RELATED_CONTROL_HORIZONTAL)));
   layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
+      views::BoxLayout::CrossAxisAlignment::kStart);
 
   views::Label* checkbox_uncheck_text_ = new views::Label(
       l10n_util::GetStringUTF16(

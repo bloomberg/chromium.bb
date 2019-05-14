@@ -143,7 +143,7 @@ MediaNotificationView::MediaNotificationView(
   title_artist_row_layout_->set_main_axis_alignment(
       views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
   title_artist_row_layout_->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
+      views::BoxLayout::CrossAxisAlignment::kStart);
   title_artist_row_ = main_row_->AddChildView(std::move(title_artist_row));
 
   auto title_label = std::make_unique<views::Label>(
@@ -168,7 +168,7 @@ MediaNotificationView::MediaNotificationView(
           views::BoxLayout::kHorizontal, gfx::Insets(),
           kMediaButtonRowSeparator));
   button_row_layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::CrossAxisAlignment::kCenter);
   button_row->SetPreferredSize(kMediaNotificationButtonRowSize);
   button_row_ = main_row_->AddChildView(std::move(button_row));
 

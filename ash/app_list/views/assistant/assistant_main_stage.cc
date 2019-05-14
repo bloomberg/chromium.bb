@@ -134,7 +134,7 @@ void AssistantMainStage::InitLayout() {
           views::BoxLayout::Orientation::kVertical));
   layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
   layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::CrossAxisAlignment::kCenter);
 
   // The children of AssistantMainStage will be animated on their own layers and
   // we want them to be clipped by their parent layer.

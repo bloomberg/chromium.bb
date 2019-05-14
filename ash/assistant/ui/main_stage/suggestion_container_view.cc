@@ -74,8 +74,8 @@ void SuggestionContainerView::InitLayout() {
 
   layout_manager_->set_cross_axis_alignment(
       app_list_features::IsEmbeddedAssistantUIEnabled()
-          ? views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER
-          : views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_END);
+          ? views::BoxLayout::CrossAxisAlignment::kCenter
+          : views::BoxLayout::CrossAxisAlignment::kEnd);
 
   // We center align when showing conversation starters.
   layout_manager_->set_main_axis_alignment(

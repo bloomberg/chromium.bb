@@ -303,7 +303,7 @@ ScrollableUsersListView::ScrollableUsersListView(
   user_view_host_layout_->set_main_axis_alignment(
       views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
   user_view_host_layout_->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::CrossAxisAlignment::kCenter);
 
   for (std::size_t i = 1u; i < users.size(); ++i) {
     auto* view = new LoginUserView(

@@ -255,7 +255,7 @@ class EmptyNotifierView : public views::View {
     layout->set_main_axis_alignment(
         views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
     layout->set_cross_axis_alignment(
-        views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
+        views::BoxLayout::CrossAxisAlignment::kCenter);
     SetLayoutManager(std::move(layout));
 
     views::ImageView* icon = new views::ImageView();

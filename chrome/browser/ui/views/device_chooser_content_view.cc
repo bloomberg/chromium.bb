@@ -342,7 +342,7 @@ std::unique_ptr<views::View> DeviceChooserContentView::CreateExtraView() {
       ChromeLayoutProvider::Get()->GetDistanceMetric(
           views::DISTANCE_RELATED_CONTROL_HORIZONTAL));
   layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::CrossAxisAlignment::kCenter);
   container->SetLayoutManager(std::move(layout));
 
   for (auto& view : extra_views)

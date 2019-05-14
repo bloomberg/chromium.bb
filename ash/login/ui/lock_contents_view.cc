@@ -414,7 +414,7 @@ LockContentsView::LockContentsView(
       system_info_->SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::kVertical, gfx::Insets(6, 8)));
   system_info_layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_END);
+      views::BoxLayout::CrossAxisAlignment::kEnd);
   system_info_->SetVisible(false);
   top_header_->AddChildView(system_info_);
 
@@ -642,7 +642,7 @@ void LockContentsView::OnUsersChanged(
   main_layout->set_main_axis_alignment(
       views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
   main_layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::CrossAxisAlignment::kCenter);
   primary_big_view_ = AllocateLoginBigUserView(users[0], true /*is_primary*/);
 
   // Build layout for additional users.

@@ -72,7 +72,7 @@ void AssistantMiniView::InitLayout() {
           2 * kSpacingDip));
 
   layout_manager->set_cross_axis_alignment(
-      views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::CrossAxisAlignment::kCenter);
 
   // Molecule icon.
   LogoView* molecule_icon = LogoView::Create();

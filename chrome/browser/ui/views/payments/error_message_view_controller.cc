@@ -53,7 +53,7 @@ void ErrorMessageViewController::FillContentView(views::View* content_view) {
       gfx::Insets(0, kPaymentRequestRowHorizontalInsets), 0);
   layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
   layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
+      views::BoxLayout::CrossAxisAlignment::kStart);
   content_view->SetLayoutManager(std::move(layout));
 
   std::unique_ptr<views::Label> label = std::make_unique<views::Label>(

@@ -86,7 +86,7 @@ class TitleView : public views::View, public views::ButtonListener {
     auto box_layout =
         std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal);
     box_layout->set_cross_axis_alignment(
-        views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
+        views::BoxLayout::CrossAxisAlignment::kCenter);
     views::BoxLayout* layout_ptr = SetLayoutManager(std::move(box_layout));
 
     auto* title_label =

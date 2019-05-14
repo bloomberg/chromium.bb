@@ -163,7 +163,7 @@ void OrderSummaryViewController::FillContentView(views::View* content_view) {
   auto layout = std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical);
   layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
   layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
+      views::BoxLayout::CrossAxisAlignment::kStretch);
   content_view->SetLayoutManager(std::move(layout));
 
   bool is_mixed_currency = spec()->IsMixedCurrency();

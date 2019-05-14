@@ -257,7 +257,7 @@ SearchBoxViewBase::SearchBoxViewBase(SearchBoxViewDelegate* delegate)
               views::LayoutProvider::Get()->GetDistanceMetric(
                   views::DISTANCE_TEXTFIELD_HORIZONTAL_TEXT_PADDING)));
   box_layout_->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::CrossAxisAlignment::kCenter);
   box_layout_->set_minimum_cross_axis_size(kSearchBoxPreferredHeight);
 
   search_box_->SetBorder(views::NullBorder());

@@ -40,7 +40,7 @@ void ConfigureTitleTriView(TriView* tri_view, TriView::Container container) {
       layout->set_main_axis_alignment(
           views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
       layout->set_cross_axis_alignment(
-          views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
+          views::BoxLayout::CrossAxisAlignment::kCenter);
       break;
     case TriView::Container::CENTER:
       tri_view->SetFlexForContainer(TriView::Container::CENTER, 1.f);
@@ -49,7 +49,7 @@ void ConfigureTitleTriView(TriView* tri_view, TriView::Container container) {
       layout->set_main_axis_alignment(
           views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
       layout->set_cross_axis_alignment(
-          views::BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
+          views::BoxLayout::CrossAxisAlignment::kStretch);
       break;
   }
 

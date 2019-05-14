@@ -945,7 +945,7 @@ std::unique_ptr<views::View> PaymentSheetViewController::CreateDataSourceRow() {
       gfx::Insets(0, kPaymentRequestRowHorizontalInsets));
   layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
   layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
+      views::BoxLayout::CrossAxisAlignment::kStart);
   content_view->SetLayoutManager(std::move(layout));
 
   base::string16 data_source;

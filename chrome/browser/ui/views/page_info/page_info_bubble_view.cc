@@ -832,7 +832,7 @@ void PageInfoBubbleView::SetPageFeatureInfo(const PageFeatureInfo& info) {
   auto* layout = page_feature_info_view_->SetLayoutManager(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
   layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
+      views::BoxLayout::CrossAxisAlignment::kStretch);
 
   auto icon = std::make_unique<NonAccessibleImageView>();
   icon->SetImage(PageInfoUI::GetVrSettingsIcon(GetRelatedTextColor()));
@@ -945,7 +945,7 @@ views::View* PageInfoBubbleView::CreateSiteSettingsView() {
   auto* box_layout = site_settings_view->SetLayoutManager(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
   box_layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
+      views::BoxLayout::CrossAxisAlignment::kStretch);
 
   return site_settings_view;
 }

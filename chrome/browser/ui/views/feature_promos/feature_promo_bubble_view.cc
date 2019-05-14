@@ -91,7 +91,7 @@ FeaturePromoBubbleView::FeaturePromoBubbleView(
   box_layout->set_main_axis_alignment(
       views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
   box_layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::CrossAxisAlignment::kCenter);
   SetLayoutManager(std::move(box_layout));
 
   auto* label = new views::Label(body_text);

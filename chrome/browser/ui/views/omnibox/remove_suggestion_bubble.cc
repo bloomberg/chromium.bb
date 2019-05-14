@@ -31,7 +31,7 @@ class RemoveSuggestionBubbleDialogDelegateView
     auto* layout_manager = SetLayoutManager(
         std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
     layout_manager->set_cross_axis_alignment(
-        views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
+        views::BoxLayout::CrossAxisAlignment::kStart);
     // TODO(tommycli): Replace this with the real spacing from UX.
     layout_manager->set_between_child_spacing(16);
     // TODO(tommycli): Replace this with the real translated string from UX.

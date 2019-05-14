@@ -58,7 +58,7 @@ class ScrollerContentsView : public views::View {
     auto* contents_layout = SetLayoutManager(
         std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
     contents_layout->set_cross_axis_alignment(
-        views::BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
+        views::BoxLayout::CrossAxisAlignment::kStretch);
     AddChildView(message_list_view);
 
     views::View* button_container = new views::View;
@@ -177,7 +177,7 @@ StackingNotificationCounterView::StackingNotificationCounterView(
       gfx::Insets(0, kStackingNotificationClearAllButtonPadding.left(), 0, 0),
       0));
   layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
+      views::BoxLayout::CrossAxisAlignment::kStretch);
 
   count_label_ = new views::Label();
   count_label_->SetEnabledColor(kStackingNotificationCounterLabelColor);

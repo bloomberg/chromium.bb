@@ -73,7 +73,7 @@ void AssistantQueryView::InitLayout() {
       views::BoxLayout::MainAxisAlignment::MAIN_AXIS_ALIGNMENT_CENTER);
 
   layout_manager->set_cross_axis_alignment(
-      views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::CrossAxisAlignment::kCenter);
 
   // Label.
   label_ = new views::StyledLabel(base::string16(), /*listener=*/nullptr);

@@ -46,7 +46,7 @@ class VectorIconGallery : public View,
     image_view_container_->AddChildView(image_view_);
     auto image_layout = std::make_unique<BoxLayout>(BoxLayout::kHorizontal);
     image_layout->set_cross_axis_alignment(
-        BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
+        BoxLayout::CrossAxisAlignment::kCenter);
     image_layout->set_main_axis_alignment(
         BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
     image_view_container_->SetLayoutManager(std::move(image_layout));

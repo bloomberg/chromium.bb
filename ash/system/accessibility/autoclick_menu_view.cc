@@ -176,7 +176,7 @@ AutoclickMenuView::AutoclickMenuView(mojom::AutoclickEventType type,
 
   std::unique_ptr<views::BoxLayout> layout = std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal, gfx::Insets(), 0);
-  layout->set_cross_axis_alignment(views::BoxLayout::CROSS_AXIS_ALIGNMENT_END);
+  layout->set_cross_axis_alignment(views::BoxLayout::CrossAxisAlignment::kEnd);
   SetLayoutManager(std::move(layout));
 
   // The action control buttons all have the same spacing.

@@ -118,7 +118,7 @@ class PaymentMethodListItem : public PaymentRequestItemList::Item {
         views::BoxLayout::kVertical,
         gfx::Insets(kPaymentRequestRowVerticalInsets, 0));
     box_layout->set_cross_axis_alignment(
-        views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
+        views::BoxLayout::CrossAxisAlignment::kStart);
     card_info_container->SetLayoutManager(std::move(box_layout));
 
     base::string16 label = instrument_->GetLabel();
@@ -212,7 +212,7 @@ void PaymentMethodViewController::FillContentView(views::View* content_view) {
   auto layout = std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical);
   layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
   layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
+      views::BoxLayout::CrossAxisAlignment::kStretch);
   content_view->SetLayoutManager(std::move(layout));
 
   base::string16 sub_header =

@@ -157,7 +157,7 @@ TopShortcutsView::TopShortcutsView(UnifiedSystemTrayController* controller)
       views::BoxLayout::kHorizontal, kUnifiedTopShortcutPadding,
       kUnifiedTopShortcutSpacing));
   layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
+      views::BoxLayout::CrossAxisAlignment::kStart);
   container_ = new TopShortcutButtonContainer();
   AddChildView(container_);
 

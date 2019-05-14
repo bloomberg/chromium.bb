@@ -197,7 +197,7 @@ CreditCardEditorViewController::CreateHeaderView() {
       kRowVerticalSpacing);
   layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
   layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
+      views::BoxLayout::CrossAxisAlignment::kStart);
   view->SetLayoutManager(std::move(layout));
 
   // "Cards accepted" label is "hint" grey.

@@ -251,7 +251,7 @@ void SearchResultSuggestionChipView::InitLayout() {
       gfx::Insets(0, kPaddingDip, 0, kPaddingDip), kIconMarginDip));
 
   layout_manager_->set_cross_axis_alignment(
-      views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::CrossAxisAlignment::kCenter);
 
   // Icon.
   const int icon_size =

@@ -157,7 +157,7 @@ FrameCaptionButtonContainerView::FrameCaptionButtonContainerView(
   auto layout =
       std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal);
   layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::CrossAxisAlignment::kCenter);
   layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_END);
   SetLayoutManager(std::move(layout));
   tablet_mode_animation_.reset(new gfx::SlideAnimation(this));

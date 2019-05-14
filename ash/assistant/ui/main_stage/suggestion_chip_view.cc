@@ -81,7 +81,7 @@ void SuggestionChipView::InitLayout(const Params& params) {
       gfx::Insets(0, padding_left_dip, 0, kChipPaddingDip), kIconMarginDip));
 
   layout_manager_->set_cross_axis_alignment(
-      views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::CrossAxisAlignment::kCenter);
 
   // Icon.
   const int icon_size =

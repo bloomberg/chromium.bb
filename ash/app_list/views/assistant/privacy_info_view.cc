@@ -119,7 +119,7 @@ void PrivacyInfoView::InitLayout() {
                       kRightPaddingDip),
           kCellSpacingDip));
   layout_manager->set_cross_axis_alignment(
-      views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::CrossAxisAlignment::kCenter);
   row_container_->SetBorder(views::CreateRoundedRectBorder(
       /*thickness=*/1, /*corner_radius=*/4, gfx::kGoogleGrey300));
 

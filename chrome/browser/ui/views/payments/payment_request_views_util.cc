@@ -71,7 +71,7 @@ std::unique_ptr<views::View> GetBaseProfileLabel(
   std::unique_ptr<views::BoxLayout> layout = std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical, gfx::Insets(), 0);
   layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
+      views::BoxLayout::CrossAxisAlignment::kStart);
   container->SetLayoutManager(std::move(layout));
 
   if (!s1.empty()) {
@@ -276,7 +276,7 @@ std::unique_ptr<views::View> CreateProductLogoFooterView() {
       views::BoxLayout::kHorizontal, gfx::Insets(), 0);
   layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
   layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
+      views::BoxLayout::CrossAxisAlignment::kStart);
   content_view->SetLayoutManager(std::move(layout));
 
   // Adds the Chrome logo image.
@@ -391,7 +391,7 @@ std::unique_ptr<views::View> CreateShippingOptionLabel(
   auto layout = std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical,
                                                    gfx::Insets(), 0);
   layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
+      views::BoxLayout::CrossAxisAlignment::kStart);
   container->SetLayoutManager(std::move(layout));
 
   if (shipping_option) {
@@ -433,7 +433,7 @@ std::unique_ptr<views::View> CreateWarningView(const base::string16& message,
       kRowHorizontalSpacing);
   layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
   layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
+      views::BoxLayout::CrossAxisAlignment::kStretch);
   header_view->SetLayoutManager(std::move(layout));
 
   auto label = std::make_unique<views::Label>(message);

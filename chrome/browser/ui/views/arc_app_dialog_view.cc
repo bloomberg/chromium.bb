@@ -128,7 +128,7 @@ ArcAppDialogView::ArcAppDialogView(Profile* profile,
   text_container_layout->set_main_axis_alignment(
       views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
   text_container_layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
+      views::BoxLayout::CrossAxisAlignment::kStart);
   text_container->SetLayoutManager(std::move(text_container_layout));
 
   auto* text_container_ptr = AddChildView(std::move(text_container));

@@ -18,7 +18,7 @@ views::View* WrapViewForPreferredSize(views::View* view) {
   auto layout_manager =
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical);
   layout_manager->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
+      views::BoxLayout::CrossAxisAlignment::kStart);
   proxy->SetLayoutManager(std::move(layout_manager));
   proxy->AddChildView(view);
   return proxy;

@@ -406,7 +406,7 @@ ParentAccessView::ParentAccessView(const AccountId& account_id,
       0);
   layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
   layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::CrossAxisAlignment::kCenter);
   views::BoxLayout* main_layout = SetLayoutManager(std::move(layout));
 
   SetPreferredSize(GetParentAccessViewSize());

@@ -384,7 +384,7 @@ void AutofillPopupItemView::CreateContent() {
       views::BoxLayout::kHorizontal, gfx::Insets(0, GetHorizontalMargin())));
 
   layout_manager->set_cross_axis_alignment(
-      views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::CrossAxisAlignment::kCenter);
 
   const gfx::ImageSkia icon =
       controller->layout_model().GetIconImage(line_number_);
@@ -623,7 +623,7 @@ void AutofillPopupFooterView::CreateContent() {
           gfx::Insets(0, GetHorizontalMargin())));
 
   layout_manager->set_cross_axis_alignment(
-      views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_STRETCH);
+      views::BoxLayout::CrossAxisAlignment::kStretch);
 
   const gfx::ImageSkia icon =
       controller->layout_model().GetIconImage(line_number_);

@@ -39,7 +39,7 @@ void ButtonExample::CreateExampleView(View* container) {
   container->SetBackground(CreateSolidBackground(SK_ColorWHITE));
   auto layout =
       std::make_unique<BoxLayout>(BoxLayout::kVertical, gfx::Insets(10), 10);
-  layout->set_cross_axis_alignment(BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
+  layout->set_cross_axis_alignment(BoxLayout::CrossAxisAlignment::kCenter);
   container->SetLayoutManager(std::move(layout));
 
   label_button_ = new LabelButton(this, ASCIIToUTF16(kLabelButton));

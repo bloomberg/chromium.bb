@@ -70,7 +70,7 @@ void AssistantMainView::InitLayout() {
       SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kVertical));
   layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::CrossAxisAlignment::kCenter);
 
   // Dialog plate.
   dialog_plate_ = new DialogPlate(delegate_);

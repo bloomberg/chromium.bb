@@ -198,7 +198,7 @@ HostedAppButtonContainer::HostedAppButtonContainer(
   // Right align to clip the leftmost items first when not enough space.
   layout.set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_END);
   layout.set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::CrossAxisAlignment::kCenter);
 
   hosted_app_origin_text_ = AddChildView(
       std::make_unique<HostedAppOriginText>(browser_view->browser()));

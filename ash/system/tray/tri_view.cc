@@ -67,7 +67,7 @@ TriView::TriView(Orientation orientation, int padding_between_containers) {
   auto layout = std::make_unique<views::BoxLayout>(
       GetOrientation(orientation), gfx::Insets(), padding_between_containers);
   layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
+      views::BoxLayout::CrossAxisAlignment::kStart);
   box_layout_ = SetLayoutManager(std::move(layout));
 
   enable_hierarchy_changed_dcheck_ = true;

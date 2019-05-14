@@ -129,7 +129,7 @@ void InvertBubbleView::Init() {
   views::BoxLayout* layout = SetLayoutManager(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
   layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
+      views::BoxLayout::CrossAxisAlignment::kStart);
 
   AddChildView(std::make_unique<views::Label>(
       l10n_util::GetStringUTF16(IDS_HIGH_CONTRAST_HEADER),

@@ -96,7 +96,7 @@ BoxLayout::BoxLayout(BoxLayout::Orientation orientation,
       inside_border_insets_(inside_border_insets),
       between_child_spacing_(between_child_spacing),
       main_axis_alignment_(MAIN_AXIS_ALIGNMENT_START),
-      cross_axis_alignment_(CROSS_AXIS_ALIGNMENT_STRETCH),
+      cross_axis_alignment_(CrossAxisAlignment::kStretch),
       default_flex_(0),
       minimum_cross_axis_size_(0),
       collapse_margins_spacing_(collapse_margins_spacing),
@@ -214,25 +214,25 @@ void BoxLayout::Layout(View* host) {
       child_margins = child.margins();
     }
 
-    if (cross_axis_alignment_ == CROSS_AXIS_ALIGNMENT_STRETCH ||
-        cross_axis_alignment_ == CROSS_AXIS_ALIGNMENT_CENTER) {
+    if (cross_axis_alignment_ == CrossAxisAlignment::kStretch ||
+        cross_axis_alignment_ == CrossAxisAlignment::kCenter) {
       InsetCrossAxis(&min_child_area, CrossAxisLeadingInset(child_margins),
                      CrossAxisTrailingInset(child_margins));
     }
 
     SetMainAxisPosition(main_position, &bounds);
-    if (cross_axis_alignment_ != CROSS_AXIS_ALIGNMENT_STRETCH) {
+    if (cross_axis_alignment_ != CrossAxisAlignment::kStretch) {
       int cross_axis_margin_size = CrossAxisMarginSizeForView(child);
       int view_cross_axis_size =
           CrossAxisSizeForView(child) - cross_axis_margin_size;
       int free_space = CrossAxisSize(bounds) - view_cross_axis_size;
       int position = CrossAxisPosition(bounds);
-      if (cross_axis_alignment_ == CROSS_AXIS_ALIGNMENT_CENTER) {
+      if (cross_axis_alignment_ == CrossAxisAlignment::kCenter) {
         if (view_cross_axis_size > CrossAxisSize(min_child_area))
           view_cross_axis_size = CrossAxisSize(min_child_area);
         position += free_space / 2;
         position = std::max(position, CrossAxisLeadingEdge(min_child_area));
-      } else if (cross_axis_alignment_ == CROSS_AXIS_ALIGNMENT_END) {
+      } else if (cross_axis_alignment_ == CrossAxisAlignment::kEnd) {
         position += free_space - CrossAxisTrailingInset(max_cross_axis_margin);
         if (!collapse_margins_spacing_)
           InsetCrossAxis(&min_child_area,
@@ -320,11 +320,11 @@ gfx::Size BoxLayout::GetPreferredSize(const View* host) const {
 
       // The value of |cross_axis_alignment_| will determine how the view's
       // margins interact with each other or the |inside_border_insets_|.
-      if (cross_axis_alignment_ == CROSS_AXIS_ALIGNMENT_START) {
+      if (cross_axis_alignment_ == CrossAxisAlignment::kStart) {
         leading = std::max(leading, CrossAxisLeadingInset(child_margins));
         width = std::max(
             width, child_size.width() + CrossAxisTrailingInset(child_margins));
-      } else if (cross_axis_alignment_ == CROSS_AXIS_ALIGNMENT_END) {
+      } else if (cross_axis_alignment_ == CrossAxisAlignment::kEnd) {
         trailing = std::max(trailing, CrossAxisTrailingInset(child_margins));
         width = std::max(
             width, child_size.width() + CrossAxisLeadingInset(child_margins));
@@ -429,7 +429,7 @@ int BoxLayout::MainAxisSizeForView(const ViewWrapper& view,
   return orientation_ == kHorizontal
              ? view.GetPreferredSize().width()
              : view.GetHeightForWidth(cross_axis_alignment_ ==
-                                              CROSS_AXIS_ALIGNMENT_STRETCH
+                                              CrossAxisAlignment::kStretch
                                           ? child_area_width
                                           : view.GetPreferredSize().width());
 }
@@ -567,11 +567,11 @@ gfx::Size BoxLayout::GetPreferredSizeForChildWidth(const View* host,
       else
         child_margins = child.margins();
 
-      if (cross_axis_alignment_ == CROSS_AXIS_ALIGNMENT_START) {
+      if (cross_axis_alignment_ == CrossAxisAlignment::kStart) {
         child_bounds.Inset(0, -CrossAxisLeadingInset(max_margins), 0,
                            -child_margins.bottom());
         child_bounds.set_origin(gfx::Point(position, 0));
-      } else if (cross_axis_alignment_ == CROSS_AXIS_ALIGNMENT_END) {
+      } else if (cross_axis_alignment_ == CrossAxisAlignment::kEnd) {
         child_bounds.Inset(0, -child_margins.top(), 0,
                            -CrossAxisTrailingInset(max_margins));
         child_bounds.set_origin(gfx::Point(position, 0));

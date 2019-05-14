@@ -242,7 +242,7 @@ FeaturePodButton::FeaturePodButton(FeaturePodControllerBase* controller)
   auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical, gfx::Insets(), kUnifiedFeaturePodSpacing));
   layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::CrossAxisAlignment::kCenter);
 
   AddChildView(icon_button_);
   AddChildView(label_button_);

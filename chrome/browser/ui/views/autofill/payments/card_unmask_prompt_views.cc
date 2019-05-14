@@ -420,7 +420,7 @@ void CardUnmaskPromptViews::InitIfNecessary() {
           provider->GetDistanceMetric(
               views::DISTANCE_RELATED_LABEL_HORIZONTAL)));
   temporary_error_layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::CrossAxisAlignment::kCenter);
 
   const SkColor warning_text_color = views::style::GetColor(
       *instructions_, ChromeTextContext::CONTEXT_BODY_TEXT_SMALL, STYLE_RED);

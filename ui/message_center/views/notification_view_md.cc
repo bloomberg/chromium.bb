@@ -536,7 +536,7 @@ NotificationViewMD::NotificationViewMD(const Notification& notification)
       content_row_->SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::kHorizontal, kContentRowPadding, 0));
   content_row_layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
+      views::BoxLayout::CrossAxisAlignment::kStart);
   AddChildView(content_row_);
 
   // |left_content_| contains most contents like title, message, etc...

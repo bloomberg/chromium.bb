@@ -368,7 +368,7 @@ UnifiedSystemInfoView::UnifiedSystemInfoView(
       views::BoxLayout::kHorizontal, kUnifiedSystemInfoViewPadding,
       kUnifiedSystemInfoSpacing));
   layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::CrossAxisAlignment::kCenter);
 
   AddChildView(new DateView(controller));
 

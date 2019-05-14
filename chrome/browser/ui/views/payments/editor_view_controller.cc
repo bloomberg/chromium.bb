@@ -53,7 +53,7 @@ std::unique_ptr<views::View> CreateErrorLabelView(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical);
   layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
   layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
+      views::BoxLayout::CrossAxisAlignment::kStretch);
   // This is the space between the input field and the error label.
   constexpr int kErrorLabelTopPadding = 6;
   layout->set_inside_border_insets(gfx::Insets(kErrorLabelTopPadding, 0, 0, 0));
@@ -146,7 +146,7 @@ void EditorViewController::FillContentView(views::View* content_view) {
   auto layout = std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical);
   layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
   layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
+      views::BoxLayout::CrossAxisAlignment::kStretch);
   content_view->SetLayoutManager(std::move(layout));
   // No insets. Child views below are responsible for their padding.
 

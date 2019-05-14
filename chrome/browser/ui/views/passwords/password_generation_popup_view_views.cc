@@ -161,7 +161,7 @@ void PasswordGenerationPopupViewViews::CreateLayoutAndChildren() {
       SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::kVertical, gfx::Insets(), 1));
   box_layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
+      views::BoxLayout::CrossAxisAlignment::kStretch);
 
   const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   const int kVerticalPadding =

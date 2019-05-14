@@ -385,7 +385,7 @@ void ZoomBubbleView::Init() {
   box_layout->set_main_axis_alignment(
       views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
   box_layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::CrossAxisAlignment::kCenter);
   SetLayoutManager(std::move(box_layout));
 
   // Calculate child views margins in |this| client view.

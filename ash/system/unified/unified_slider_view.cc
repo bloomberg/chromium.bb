@@ -130,7 +130,7 @@ UnifiedSliderView::UnifiedSliderView(UnifiedSliderListener* listener,
   slider_->SetPreferredSize(gfx::Size(0, kTrayItemSize));
   layout->SetFlexForView(slider_, 1);
   layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::CrossAxisAlignment::kCenter);
 }
 
 void UnifiedSliderView::SetSliderValue(float value, bool by_user) {

@@ -157,7 +157,7 @@ void AssistantProgressIndicator::InitLayout() {
           kSpacingDip));
 
   layout_manager->set_cross_axis_alignment(
-      views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::CrossAxisAlignment::kCenter);
 
   // Initialize dots.
   for (int i = 0; i < kDotCount; ++i) {

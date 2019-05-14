@@ -169,7 +169,7 @@ void PresentationReceiverWindowView::Init() {
   auto box_owner =
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical);
   box_owner->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
+      views::BoxLayout::CrossAxisAlignment::kStretch);
   auto* box = SetLayoutManager(std::move(box_owner));
   AddChildView(location_bar_view_);
   box->SetFlexForView(location_bar_view_, 0);

@@ -194,7 +194,7 @@ UserItemButton::UserItemButton(int user_index,
       views::BoxLayout::kHorizontal, gfx::Insets(0, kUnifiedTopShortcutSpacing),
       kUnifiedTopShortcutSpacing));
   layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::CrossAxisAlignment::kCenter);
   layout->set_minimum_cross_axis_size(kUnifiedUserChooserRowHeight);
   AddChildView(CreateUserAvatarView(user_index));
 
@@ -203,7 +203,7 @@ UserItemButton::UserItemButton(int user_index,
   auto* vertical_layout = vertical_labels->SetLayoutManager(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
   vertical_layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
+      views::BoxLayout::CrossAxisAlignment::kStart);
 
   const UserSession* const user_session =
       Shell::Get()->session_controller()->GetUserSession(user_index);

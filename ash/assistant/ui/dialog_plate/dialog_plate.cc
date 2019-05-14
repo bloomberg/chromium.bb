@@ -260,7 +260,7 @@ void DialogPlate::InitLayout() {
           gfx::Insets(0, 0, 0, kRightPaddingDip)));
 
   layout_manager->set_cross_axis_alignment(
-      views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::CrossAxisAlignment::kCenter);
 
   // Input modality layout container.
   input_modality_layout_container_ = new views::View();
@@ -302,7 +302,7 @@ void DialogPlate::InitKeyboardLayoutContainer() {
               gfx::Insets(0, kHorizontalPaddingDip)));
 
   layout_manager->set_cross_axis_alignment(
-      views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::CrossAxisAlignment::kCenter);
 
   gfx::FontList font_list =
       assistant::ui::GetDefaultFontList().DeriveWithSizeDelta(2);
@@ -348,7 +348,7 @@ void DialogPlate::InitVoiceLayoutContainer() {
           gfx::Insets(0, kLeftPaddingDip, 0, 0)));
 
   layout_manager->set_cross_axis_alignment(
-      views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::CrossAxisAlignment::kCenter);
 
   // Keyboard input toggle.
   keyboard_input_toggle_ =
