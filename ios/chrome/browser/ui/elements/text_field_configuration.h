@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_UI_ELEMENTS_TEXT_FIELD_CONFIGURATION_H_
 #define IOS_CHROME_BROWSER_UI_ELEMENTS_TEXT_FIELD_CONFIGURATION_H_
 
-#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
 
 // Holds the configurable options for a UITextField.
 //
@@ -13,9 +13,9 @@
 // documentation of each in UITextField.h.
 @interface TextFieldConfiguration : NSObject
 
-@property(nonatomic, strong, readonly) NSString* text;
-@property(nonatomic, strong, readonly) NSString* placeholder;
-@property(nonatomic, strong, readonly) NSString* accessibilityIdentifier;
+@property(nonatomic, copy, readonly) NSString* text;
+@property(nonatomic, copy, readonly) NSString* placeholder;
+@property(nonatomic, copy, readonly) NSString* accessibilityIdentifier;
 @property(nonatomic, readonly, getter=isSecureTextEntry) BOOL secureTextEntry;
 
 - (instancetype)init NS_UNAVAILABLE;
