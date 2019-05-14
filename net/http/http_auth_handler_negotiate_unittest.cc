@@ -402,6 +402,25 @@ TEST_F(HttpAuthHandlerNegotiateTest, MissingGSSAPI) {
 }
 #endif  // defined(DLOPEN_KERBEROS)
 
+// AllowGssapiLibraryLoad() is only supported on Chrome OS.
+#if defined(OS_CHROMEOS)
+TEST_F(HttpAuthHandlerNegotiateTest, AllowGssapiLibraryLoad) {
+  // Disabling allow_gssapi_library_load should prevent handler creation.
+  SetupMocks(AuthLibrary());
+  http_auth_preferences()->set_allow_gssapi_library_load(false);
+  std::unique_ptr<HttpAuthHandlerNegotiate> auth_handler;
+  int rv = CreateHandler(true, false, true, "http://alias:500", &auth_handler);
+  EXPECT_THAT(rv, IsError(ERR_UNSUPPORTED_AUTH_SCHEME));
+  EXPECT_FALSE(auth_handler);
+
+  // Handler creation can be dynamically re-enabled.
+  http_auth_preferences()->set_allow_gssapi_library_load(true);
+  rv = CreateHandler(true, false, true, "http://alias:500", &auth_handler);
+  EXPECT_EQ(OK, rv);
+  EXPECT_TRUE(auth_handler);
+}
+#endif  // defined(OS_CHROMEOS)
+
 #endif  // defined(OS_POSIX)
 
 class TestAuthSystem : public HttpNegotiateAuthSystem {

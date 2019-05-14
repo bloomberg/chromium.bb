@@ -500,10 +500,8 @@ void NetworkService::SetUpHttpAuth(
 
   http_auth_handler_factory_ = net::HttpAuthHandlerRegistryFactory::Create(
       &http_auth_preferences_, http_auth_static_params->supported_schemes
-#if defined(OS_CHROMEOS)
-      ,
-      http_auth_static_params->allow_gssapi_library_load
-#elif (defined(OS_POSIX) && !defined(OS_ANDROID)) || defined(OS_FUCHSIA)
+#if (defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)) || \
+    defined(OS_FUCHSIA)
       ,
       http_auth_static_params->gssapi_library_name
 #endif
@@ -535,6 +533,11 @@ void NetworkService::ConfigureHttpAuthPrefs(
 #if defined(OS_ANDROID)
   http_auth_preferences_.set_auth_android_negotiate_account_type(
       http_auth_dynamic_params->android_negotiate_account_type);
+#endif
+
+#if defined(OS_CHROMEOS)
+  http_auth_preferences_.set_allow_gssapi_library_load(
+      http_auth_dynamic_params->allow_gssapi_library_load);
 #endif
 }
 

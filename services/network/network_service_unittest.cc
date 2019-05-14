@@ -167,10 +167,7 @@ TEST_F(NetworkServiceTest, AuthDefaultParams) {
 
 #if BUILDFLAG(USE_KERBEROS) && !defined(OS_ANDROID)
   ASSERT_TRUE(GetNegotiateFactory(&network_context));
-#if defined(OS_CHROMEOS)
-  EXPECT_TRUE(GetNegotiateFactory(&network_context)
-                  ->allow_gssapi_library_load_for_testing());
-#elif defined(OS_POSIX)
+#if defined(OS_POSIX) && !defined(OS_CHROMEOS)
   EXPECT_EQ("",
             GetNegotiateFactory(&network_context)->GetLibraryNameForTesting());
 #endif
@@ -229,25 +226,6 @@ TEST_F(NetworkServiceTest, AuthSchemesNone) {
   EXPECT_FALSE(auth_handler_factory->GetSchemeFactory(net::kDigestAuthScheme));
   EXPECT_FALSE(auth_handler_factory->GetSchemeFactory(net::kNtlmAuthScheme));
 }
-
-// |allow_gssapi_library_load| is only supported on ChromeOS.
-#if defined(OS_CHROMEOS)
-TEST_F(NetworkServiceTest, AuthGssapiLibraryDisabled) {
-  mojom::HttpAuthStaticParamsPtr auth_params =
-      mojom::HttpAuthStaticParams::New();
-  auth_params->supported_schemes.push_back("negotiate");
-  auth_params->allow_gssapi_library_load = false;
-  service()->SetUpHttpAuth(std::move(auth_params));
-
-  mojom::NetworkContextPtr network_context_ptr;
-  NetworkContext network_context(service(),
-                                 mojo::MakeRequest(&network_context_ptr),
-                                 CreateContextParams());
-  ASSERT_TRUE(GetNegotiateFactory(&network_context));
-  EXPECT_FALSE(GetNegotiateFactory(&network_context)
-                   ->allow_gssapi_library_load_for_testing());
-}
-#endif  // defined(OS_CHROMEOS)
 
 // |gssapi_library_name| is only supported on certain POSIX platforms.
 #if BUILDFLAG(USE_KERBEROS) && defined(OS_POSIX) && !defined(OS_ANDROID) && \

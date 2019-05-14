@@ -35,8 +35,8 @@ class NetLogWithSource;
 class NET_EXPORT HttpAuthHandlerFactory {
  public:
   enum CreateReason {
-    CREATE_CHALLENGE,     // Create a handler in response to a challenge.
-    CREATE_PREEMPTIVE,    // Create a handler preemptively.
+    CREATE_CHALLENGE,   // Create a handler in response to a challenge.
+    CREATE_PREEMPTIVE,  // Create a handler preemptively.
   };
 
   HttpAuthHandlerFactory() : http_auth_preferences_(nullptr) {}
@@ -142,10 +142,8 @@ class NET_EXPORT HttpAuthHandlerFactory {
   // used by the Negotiate authentication handler.
   static std::unique_ptr<HttpAuthHandlerRegistryFactory> CreateDefault(
       const HttpAuthPreferences* prefs = nullptr
-#if defined(OS_CHROMEOS)
-      ,
-      bool allow_gssapi_library_load = true
-#elif (defined(OS_POSIX) && !defined(OS_ANDROID)) || defined(OS_FUCHSIA)
+#if (defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)) || \
+    defined(OS_FUCHSIA)
       ,
       const std::string& gssapi_library_name = ""
 #endif
@@ -207,10 +205,8 @@ class NET_EXPORT HttpAuthHandlerRegistryFactory
   static std::unique_ptr<HttpAuthHandlerRegistryFactory> Create(
       const HttpAuthPreferences* prefs,
       const std::vector<std::string>& auth_schemes
-#if defined(OS_CHROMEOS)
-      ,
-      bool allow_gssapi_library_load = true
-#elif (defined(OS_POSIX) && !defined(OS_ANDROID)) || defined(OS_FUCHSIA)
+#if (defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)) || \
+    defined(OS_FUCHSIA)
       ,
       const std::string& gssapi_library_name = ""
 #endif

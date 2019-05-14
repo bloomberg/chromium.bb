@@ -103,10 +103,8 @@ HttpAuthHandlerFactory* HttpAuthHandlerRegistryFactory::GetSchemeFactory(
 std::unique_ptr<HttpAuthHandlerRegistryFactory>
 HttpAuthHandlerFactory::CreateDefault(
     const HttpAuthPreferences* prefs
-#if defined(OS_CHROMEOS)
-    ,
-    bool allow_gssapi_library_load
-#elif (defined(OS_POSIX) && !defined(OS_ANDROID)) || defined(OS_FUCHSIA)
+#if (defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)) || \
+    defined(OS_FUCHSIA)
     ,
     const std::string& gssapi_library_name
 #endif
@@ -122,10 +120,6 @@ HttpAuthHandlerFactory::CreateDefault(
                                                 ,
                                                 gssapi_library_name
 #endif
-#if defined(OS_CHROMEOS)
-                                                ,
-                                                allow_gssapi_library_load
-#endif
 #if BUILDFLAG(USE_KERBEROS)
                                                 ,
                                                 negotiate_auth_system_factory
@@ -138,10 +132,8 @@ std::unique_ptr<HttpAuthHandlerRegistryFactory>
 HttpAuthHandlerRegistryFactory::Create(
     const HttpAuthPreferences* prefs,
     const std::vector<std::string>& auth_schemes
-#if defined(OS_CHROMEOS)
-    ,
-    bool allow_gssapi_library_load
-#elif (defined(OS_POSIX) && !defined(OS_ANDROID)) || defined(OS_FUCHSIA)
+#if (defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)) || \
+    defined(OS_FUCHSIA)
     ,
     const std::string& gssapi_library_name
 #endif
@@ -185,7 +177,6 @@ HttpAuthHandlerRegistryFactory::Create(
         std::make_unique<GSSAPISharedLibrary>(gssapi_library_name));
 #elif defined(OS_CHROMEOS)
     negotiate_factory->set_library(std::make_unique<GSSAPISharedLibrary>(""));
-    negotiate_factory->set_allow_gssapi_library_load(allow_gssapi_library_load);
 #endif
     registry_factory->RegisterSchemeFactory(kNegotiateAuthScheme,
                                             negotiate_factory);

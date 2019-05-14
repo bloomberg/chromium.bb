@@ -123,8 +123,14 @@ int HttpAuthHandlerNegotiate::Factory::CreateAuthHandler(
       CreateAuthSystem(http_auth_preferences(), negotiate_auth_system_factory_),
       http_auth_preferences(), host_resolver));
 #elif defined(OS_POSIX)
-  if (is_unsupported_ || !allow_gssapi_library_load_)
+  if (is_unsupported_)
     return ERR_UNSUPPORTED_AUTH_SCHEME;
+#if defined(OS_CHROMEOS)
+  // Note: Don't set is_unsupported_ = true here. AllowGssapiLibraryLoad()
+  // might change to true during a session.
+  if (!http_auth_preferences()->AllowGssapiLibraryLoad())
+    return ERR_UNSUPPORTED_AUTH_SCHEME;
+#endif
   if (!auth_library_->Init()) {
     is_unsupported_ = true;
     return ERR_UNSUPPORTED_AUTH_SCHEME;

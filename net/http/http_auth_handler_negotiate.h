@@ -56,13 +56,6 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerNegotiate : public HttpAuthHandler {
 
 #if defined(OS_POSIX)
     const std::string& GetLibraryNameForTesting() const;
-
-    void set_allow_gssapi_library_load(bool allow_gssapi_library_load) {
-      allow_gssapi_library_load_ = allow_gssapi_library_load;
-    }
-    bool allow_gssapi_library_load_for_testing() const {
-      return allow_gssapi_library_load_;
-    }
 #endif  // defined(OS_POSIX)
 #endif  // !defined(OS_ANDROID)
 
@@ -85,9 +78,6 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerNegotiate : public HttpAuthHandler {
     bool is_unsupported_ = false;
 #if !defined(OS_ANDROID)
     std::unique_ptr<AuthLibrary> auth_library_;
-#if defined(OS_POSIX)
-    bool allow_gssapi_library_load_ = true;
-#endif  // defined(OS_POSIX)
 #endif  // !defined(OS_ANDROID)
   };
 

@@ -173,14 +173,6 @@ network::mojom::HttpAuthStaticParamsPtr CreateHttpAuthStaticParams(
       local_state->GetString(prefs::kGSSAPILibraryName);
 #endif
 
-#if defined(OS_CHROMEOS)
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  auth_static_params->allow_gssapi_library_load =
-      connector->IsActiveDirectoryManaged() ||
-      local_state->GetBoolean(prefs::kKerberosEnabled);
-#endif
-
   return auth_static_params;
 }
 
@@ -213,6 +205,14 @@ network::mojom::HttpAuthDynamicParamsPtr CreateHttpAuthDynamicParams(
   auth_dynamic_params->android_negotiate_account_type =
       local_state->GetString(prefs::kAuthAndroidNegotiateAccountType);
 #endif  // defined(OS_ANDROID)
+
+#if defined(OS_CHROMEOS)
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  auth_dynamic_params->allow_gssapi_library_load =
+      connector->IsActiveDirectoryManaged() ||
+      local_state->GetBoolean(prefs::kKerberosEnabled);
+#endif
 
   return auth_dynamic_params;
 }
@@ -447,6 +447,10 @@ SystemNetworkContextManager::SystemNetworkContextManager(
   pref_change_registrar_.Add(prefs::kAuthAndroidNegotiateAccountType,
                              auth_pref_callback);
 #endif  // defined(OS_ANDROID)
+
+#if defined(OS_CHROMEOS)
+  pref_change_registrar_.Add(prefs::kKerberosEnabled, auth_pref_callback);
+#endif  // defined(OS_CHROMEOS)
 
   enable_referrers_.Init(
       prefs::kEnableReferrers, local_state_,
