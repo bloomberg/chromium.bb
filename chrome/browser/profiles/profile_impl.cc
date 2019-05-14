@@ -551,10 +551,7 @@ void ProfileImpl::TakePrefsFromStartupData() {
   key_ = startup_data->TakeProfileKey();
   prefs_ = startup_data->TakeProfilePrefService();
   schema_registry_service_ = startup_data->TakeSchemaRegistryService();
-  configuration_policy_provider_ =
-      startup_data->TakeConfigurationPolicyProvider();
-  user_cloud_policy_manager_ = static_cast<policy::UserCloudPolicyManager*>(
-      configuration_policy_provider_.get());
+  user_cloud_policy_manager_ = startup_data->TakeUserCloudPolicyManager();
   profile_policy_connector_ = startup_data->TakeProfilePolicyConnector();
   pref_registry_ = startup_data->TakePrefRegistrySyncable();
 
@@ -575,25 +572,23 @@ void ProfileImpl::LoadPrefsForNormalStartup(bool async_prefs) {
   // policy data immediately.
   bool force_immediate_policy_load = !async_prefs;
 
+  policy::UserCloudPolicyManager* user_cloud_policy_manager;
 #if defined(OS_CHROMEOS)
   if (force_immediate_policy_load)
     chromeos::DeviceSettingsService::Get()->LoadImmediately();
-  configuration_policy_provider_ =
+  configuration_policy_provider_chromeos_ =
       policy::UserPolicyManagerFactoryChromeOS::CreateForProfile(
           this, force_immediate_policy_load, io_task_runner_);
-  user_cloud_policy_manager_ = nullptr;
+  user_cloud_policy_manager = nullptr;
 #else
-  std::unique_ptr<policy::UserCloudPolicyManager> user_cloud_policy_manager =
-      CreateUserCloudPolicyManager(
-          GetPath(), GetPolicySchemaRegistryService()->registry(),
-          force_immediate_policy_load, io_task_runner_);
-  user_cloud_policy_manager_ = user_cloud_policy_manager.get();
-
-  configuration_policy_provider_ = std::move(user_cloud_policy_manager);
+  user_cloud_policy_manager_ = CreateUserCloudPolicyManager(
+      GetPath(), GetPolicySchemaRegistryService()->registry(),
+      force_immediate_policy_load, io_task_runner_);
+  user_cloud_policy_manager = user_cloud_policy_manager_.get();
 #endif
   profile_policy_connector_ =
       policy::CreateProfilePolicyConnectorForBrowserContext(
-          schema_registry_service_->registry(), user_cloud_policy_manager_,
+          schema_registry_service_->registry(), user_cloud_policy_manager,
           g_browser_process->browser_policy_connector(),
           force_immediate_policy_load, this);
 
@@ -833,7 +828,7 @@ ProfileImpl::~ProfileImpl() {
   // condition.
 #if !defined(OS_CHROMEOS)
   profile_policy_connector_->Shutdown();
-  configuration_policy_provider_->Shutdown();
+  configuration_policy_provider()->Shutdown();
 #endif
 
   // This causes the Preferences file to be written to disk.
@@ -1125,9 +1120,18 @@ policy::SchemaRegistryService* ProfileImpl::GetPolicySchemaRegistryService() {
 
 #if !defined(OS_CHROMEOS)
 policy::UserCloudPolicyManager* ProfileImpl::GetUserCloudPolicyManager() {
-  return user_cloud_policy_manager_;
+  return user_cloud_policy_manager_.get();
 }
 #endif
+
+policy::ConfigurationPolicyProvider*
+ProfileImpl::configuration_policy_provider() {
+#if defined(OS_CHROMEOS)
+  return configuration_policy_provider_chromeos_.get();
+#else
+  return user_cloud_policy_manager_.get();
+#endif
+}
 
 policy::ProfilePolicyConnector* ProfileImpl::GetProfilePolicyConnector() {
   return profile_policy_connector_.get();

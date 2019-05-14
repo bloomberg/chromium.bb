@@ -225,6 +225,8 @@ class ProfileImpl : public Profile {
 
   void GetMediaCacheParameters(base::FilePath* cache_path, int* max_size);
 
+  policy::ConfigurationPolicyProvider* configuration_policy_provider();
+
   PrefChangeRegistrar pref_change_registrar_;
 
   base::FilePath path_;
@@ -242,12 +244,17 @@ class ProfileImpl : public Profile {
   // PolicyService that the |prefs_| depend on, and must outlive |prefs_|. This
   // can be removed once |prefs_| becomes a KeyedService too.
   // |profile_policy_connector_| in turn depends on
-  // |configuration_policy_provider_|, which depends on
-  // |schema_registry_service_|.
+  // |user_cloud_policy_manager_| or |configuration_policy_provider_chromeos_|,
+  // which depend on |schema_registry_service_|.
   std::unique_ptr<policy::SchemaRegistryService> schema_registry_service_;
+
+#if defined(OS_CHROMEOS)
   std::unique_ptr<policy::ConfigurationPolicyProvider>
-      configuration_policy_provider_;
-  policy::UserCloudPolicyManager* user_cloud_policy_manager_;
+      configuration_policy_provider_chromeos_;
+#else
+  std::unique_ptr<policy::UserCloudPolicyManager> user_cloud_policy_manager_;
+#endif
+
   std::unique_ptr<policy::ProfilePolicyConnector> profile_policy_connector_;
 
   // Keep |prefs_| on top for destruction order because |extension_prefs_|,

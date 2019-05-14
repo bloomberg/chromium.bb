@@ -16,9 +16,9 @@ class PrefRegistrySyncable;
 }
 
 namespace policy {
-class ConfigurationPolicyProvider;
 class ProfilePolicyConnector;
 class SchemaRegistryService;
+class UserCloudPolicyManager;
 }  // namespace policy
 
 namespace sync_preferences {
@@ -53,9 +53,8 @@ class StartupData {
   // Passes ownership of the |schema_registry_service_| to the caller.
   std::unique_ptr<policy::SchemaRegistryService> TakeSchemaRegistryService();
 
-  // Passes ownership of the |configuration_policy_provider_| to the caller.
-  std::unique_ptr<policy::ConfigurationPolicyProvider>
-  TakeConfigurationPolicyProvider();
+  // Passes ownership of the |user_cloud_policy_manager_| to the caller.
+  std::unique_ptr<policy::UserCloudPolicyManager> TakeUserCloudPolicyManager();
 
   // Passes ownership of the |profile_policy_connector_| to the caller.
   std::unique_ptr<policy::ProfilePolicyConnector> TakeProfilePolicyConnector();
@@ -80,8 +79,7 @@ class StartupData {
   std::unique_ptr<ProfileKey> key_;
 
   std::unique_ptr<policy::SchemaRegistryService> schema_registry_service_;
-  std::unique_ptr<policy::ConfigurationPolicyProvider>
-      configuration_policy_provider_;
+  std::unique_ptr<policy::UserCloudPolicyManager> user_cloud_policy_manager_;
   std::unique_ptr<policy::ProfilePolicyConnector> profile_policy_connector_;
 
   scoped_refptr<user_prefs::PrefRegistrySyncable> pref_registry_;

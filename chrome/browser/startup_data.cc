@@ -86,9 +86,9 @@ StartupData::TakeSchemaRegistryService() {
   return std::move(schema_registry_service_);
 }
 
-std::unique_ptr<policy::ConfigurationPolicyProvider>
-StartupData::TakeConfigurationPolicyProvider() {
-  return std::move(configuration_policy_provider_);
+std::unique_ptr<policy::UserCloudPolicyManager>
+StartupData::TakeUserCloudPolicyManager() {
+  return std::move(user_cloud_policy_manager_);
 }
 
 std::unique_ptr<policy::ProfilePolicyConnector>
@@ -136,17 +136,16 @@ void StartupData::CreateProfilePrefServiceInternal() {
       std::move(schema_registry), browser_policy_connector->GetChromeSchema(),
       browser_policy_connector->GetSchemaRegistry());
 
-  configuration_policy_provider_ = CreateUserCloudPolicyManager(
+  user_cloud_policy_manager_ = CreateUserCloudPolicyManager(
       path, schema_registry_service_->registry(),
       true /* force_immediate_policy_load */, io_task_runner);
 
-  auto* user_cloud_policy_manager = static_cast<policy::CloudPolicyManager*>(
-      configuration_policy_provider_.get());
   profile_policy_connector_ = policy::CreateAndInitProfilePolicyConnector(
       schema_registry_service_->registry(),
       static_cast<policy::ChromeBrowserPolicyConnector*>(
           browser_policy_connector),
-      user_cloud_policy_manager, user_cloud_policy_manager->core()->store(),
+      user_cloud_policy_manager_.get(),
+      user_cloud_policy_manager_->core()->store(),
       true /* force_immediate_policy_load*/, nullptr /* user */);
 
   RegisterProfilePrefs(false /* is_signin_profile */,
