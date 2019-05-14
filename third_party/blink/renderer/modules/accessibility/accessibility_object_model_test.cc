@@ -355,18 +355,19 @@ TEST_F(AccessibilityObjectModelTest, SparseAttributes) {
   SparseAttributeAdapter sparse_attributes2;
   ax_target->GetSparseAXAttributes(sparse_attributes2);
 
-  ASSERT_EQ("Ctrl+L", sparse_attributes2.string_attributes.at(
+  ASSERT_EQ("Ctrl+K", sparse_attributes2.string_attributes.at(
                           AXStringAttribute::kAriaKeyShortcuts));
-  ASSERT_EQ("Object", sparse_attributes2.string_attributes.at(
+  ASSERT_EQ("Widget", sparse_attributes2.string_attributes.at(
                           AXStringAttribute::kAriaRoleDescription));
-  ASSERT_EQ(ax::mojom::Role::kCell,
+  ASSERT_EQ(ax::mojom::Role::kListBoxOption,
             sparse_attributes2.object_attributes
                 .at(AXObjectAttribute::kAriaActiveDescendant)
                 ->RoleValue());
-  ASSERT_EQ(ax::mojom::Role::kForm, sparse_attributes2.object_attributes
-                                        .at(AXObjectAttribute::kAriaDetails)
-                                        ->RoleValue());
-  ASSERT_EQ(ax::mojom::Role::kBanner,
+  ASSERT_EQ(
+      ax::mojom::Role::kContentInfo,
+      sparse_attributes2.object_attributes.at(AXObjectAttribute::kAriaDetails)
+          ->RoleValue());
+  ASSERT_EQ(ax::mojom::Role::kArticle,
             sparse_attributes2.object_attributes
                 .at(AXObjectAttribute::kAriaErrorMessage)
                 ->RoleValue());

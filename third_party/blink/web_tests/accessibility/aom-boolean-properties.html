@@ -47,15 +47,12 @@ test(function(t) {
 <div role="status" id="busy"></div>
 
 <script>
-// The busy property forms part of the sparse attributes set, so still allows
-// modification of the accessibility tree. This will be fixed in a later CL.
-// TODO(meredithl): Remove AOM reflection for sparse attributes.
 test(function(t) {
     var node = document.getElementById("busy");
     var axNode = accessibilityController.accessibleElementById("busy");
     assert_equals(axNode.isBusy, false);
     node.accessibleNode.busy = true;
-    assert_equals(axNode.isBusy, true);
+    assert_equals(axNode.isBusy, false);
 }, "AccessibleNode.busy");
 </script>
 

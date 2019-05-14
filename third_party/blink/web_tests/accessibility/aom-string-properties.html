@@ -89,15 +89,12 @@ test(function(t) {
 <div role="button" id="keyShortcuts"></div>
 
 <script>
-// The keyShortcuts property is part of the sparse attributes set, so still allows
-// modification of the accessibility tree. This will be fixed in a later CL.
-// TODO(meredithl): Remove AOM reflection for sparse attributes.
 test(function(t) {
     var node = document.getElementById("keyShortcuts");
     var axNode = accessibilityController.accessibleElementById("keyShortcuts");
     assert_equals(axNode.keyShortcuts, "");
     node.accessibleNode.keyShortcuts = "Ctrl+F";
-    assert_equals(axNode.keyShortcuts, "Ctrl+F");
+    assert_equals(axNode.keyShortcuts, "");
 }, "AccessibleNode.keyShortcuts");
 </script>
 
@@ -188,7 +185,7 @@ test(function(t) {
     var axNode = accessibilityController.accessibleElementById("roleDescription");
     assert_equals(axNode.roleDescription, "");
     node.accessibleNode.roleDescription = "Push Button";
-    assert_equals(axNode.roleDescription, "Push Button");
+    assert_equals(axNode.roleDescription, "");
 }, "AccessibleNode.roleDescription");
 </script>
 

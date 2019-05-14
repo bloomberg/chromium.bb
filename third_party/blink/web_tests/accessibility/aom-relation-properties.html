@@ -35,9 +35,12 @@ test(function(t) {
 
     listbox.accessibleNode.activeDescendant = option1.accessibleNode;
 
-    assert_true(axListbox.ariaActiveDescendantElement().isEqual(axOption1));
-    // Active Descendant also makes the option selected.
-    assert_true(axOption1.isSelected);
+    assert_equals(axListbox.ariaActiveDescendantElement(), undefined);
+
+    // Previously, Active Descendant also makes the option selected. This check
+    // is here to verify that this no longer happens now that AccessibleNode is
+    // becoming uncoupled from the Accessibility Tree.
+    assert_false(axOption1.isSelected);
 }, "AccessibleNode.activeDescendant");
 </script>
 
@@ -54,7 +57,7 @@ test(function(t) {
 
     input1.accessibleNode.details = details.accessibleNode;
 
-    assert_true(axInput1.ariaDetailsElement().isEqual(axDetails));
+    assert_equals(axInput1.ariaDetailsElement(), undefined);
 }, "AccessibleNode.details");
 </script>
 
@@ -71,6 +74,6 @@ test(function(t) {
 
     input2.accessibleNode.errorMessage = errorMessage.accessibleNode;
 
-    assert_true(axInput2.ariaErrorMessageElement().isEqual(axErrorMessage));
+    assert_equals(axInput2.ariaErrorMessageElement(), undefined);
 }, "AccessibleNode.errorMessage");
 </script>

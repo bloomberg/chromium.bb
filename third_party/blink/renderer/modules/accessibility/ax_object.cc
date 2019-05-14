@@ -649,12 +649,12 @@ void AXObject::GetSparseAXAttributes(
   AXSparseAttributeAOMPropertyClient property_client(*ax_object_cache_,
                                                      sparse_attribute_client);
   HashSet<QualifiedName> shadowed_aria_attributes;
-
   AccessibleNode* accessible_node = GetAccessibleNode();
-  if (accessible_node) {
+
+  // Virtual nodes for AOM are still tied to the AXTree.
+  if (accessible_node && IsVirtualObject())
     accessible_node->GetAllAOMProperties(&property_client,
                                          shadowed_aria_attributes);
-  }
 
   Element* element = GetElement();
   if (!element)

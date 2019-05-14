@@ -390,8 +390,6 @@ Element* AccessibleNode::GetPropertyOrARIAAttribute(
     AOMRelationProperty property) {
   if (!element)
     return nullptr;
-  if (AccessibleNode* result = GetProperty(element, property))
-    return result->element();
   QualifiedName attribute = GetCorrespondingARIAAttribute(property);
   AtomicString value = element->FastGetAttribute(attribute);
   return element->GetTreeScope().getElementById(value);
