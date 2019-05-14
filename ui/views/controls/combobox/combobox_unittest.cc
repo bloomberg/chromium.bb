@@ -14,6 +14,7 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/models/combobox_model.h"
+#include "ui/base/models/combobox_model_observer.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
@@ -100,13 +101,30 @@ class TestComboboxModel : public ui::ComboboxModel {
     return 0;
   }
 
-  void SetSeparators(const std::set<int>& separators) {
-    separators_ = separators;
+  void AddObserver(ui::ComboboxModelObserver* observer) override {
+    observers_.AddObserver(observer);
+  }
+  void RemoveObserver(ui::ComboboxModelObserver* observer) override {
+    observers_.RemoveObserver(observer);
   }
 
-  void set_item_count(int item_count) { item_count_ = item_count; }
+  void SetSeparators(const std::set<int>& separators) {
+    separators_ = separators;
+    OnModelChanged();
+  }
+
+  void set_item_count(int item_count) {
+    item_count_ = item_count;
+    OnModelChanged();
+  }
 
  private:
+  void OnModelChanged() {
+    for (auto& observer : observers_)
+      observer.OnComboboxModelChanged(this);
+  }
+
+  base::ObserverList<ui::ComboboxModelObserver>::Unchecked observers_;
   std::set<int> separators_;
   int item_count_ = kItemCount;
 
@@ -131,10 +149,22 @@ class VectorComboboxModel : public ui::ComboboxModel {
   }
   bool IsItemSeparatorAt(int index) override { return false; }
   int GetDefaultIndex() const override { return default_index_; }
+  void AddObserver(ui::ComboboxModelObserver* observer) override {
+    observers_.AddObserver(observer);
+  }
+  void RemoveObserver(ui::ComboboxModelObserver* observer) override {
+    observers_.RemoveObserver(observer);
+  }
+
+  void ValuesChanged() {
+    for (auto& observer : observers_)
+      observer.OnComboboxModelChanged(this);
+  }
 
  private:
-  std::vector<std::string>* values_;
+  base::ObserverList<ui::ComboboxModelObserver>::Unchecked observers_;
   int default_index_ = 0;
+  std::vector<std::string>* const values_;
 
   DISALLOW_COPY_AND_ASSIGN(VectorComboboxModel);
 };
@@ -693,19 +723,19 @@ TEST_F(ComboboxTest, ContentWidth) {
 
   values.resize(1);
   values[0] = long_item;
-  combobox.ModelChanged();
+  model.ValuesChanged();
 
   const int long_item_width = test_api.content_size().width();
 
   values[0] = short_item;
-  combobox.ModelChanged();
+  model.ValuesChanged();
 
   const int short_item_width = test_api.content_size().width();
 
   values.resize(2);
   values[0] = short_item;
   values[1] = long_item;
-  combobox.ModelChanged();
+  model.ValuesChanged();
 
   // The width will fit with the longest item.
   EXPECT_EQ(long_item_width, test_api.content_size().width());
@@ -724,12 +754,10 @@ TEST_F(ComboboxTest, ModelChanged) {
   EXPECT_EQ(4, combobox_->GetSelectedRow());
 
   model_->set_item_count(5);
-  combobox_->ModelChanged();
   EXPECT_EQ(5, combobox_->GetRowCount());
   EXPECT_EQ(4, combobox_->GetSelectedRow());  // Unchanged.
 
   model_->set_item_count(4);
-  combobox_->ModelChanged();
   EXPECT_EQ(4, combobox_->GetRowCount());
   EXPECT_EQ(0, combobox_->GetSelectedRow());  // Resets.
 
@@ -741,7 +769,6 @@ TEST_F(ComboboxTest, ModelChanged) {
   std::set<int> separators;
   separators.insert(2);
   model_->SetSeparators(separators);
-  combobox_->ModelChanged();
   EXPECT_EQ(4, combobox_->GetRowCount());
   EXPECT_EQ(0, combobox_->GetSelectedRow());  // Resets.
 
@@ -751,7 +778,6 @@ TEST_F(ComboboxTest, ModelChanged) {
 
   // Test an empty model.
   model_->set_item_count(0);
-  combobox_->ModelChanged();
   EXPECT_EQ(0, combobox_->GetRowCount());
   EXPECT_EQ(0, combobox_->GetSelectedRow());  // Resets.
 }

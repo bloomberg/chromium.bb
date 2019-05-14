@@ -144,12 +144,11 @@ class ExamplesWindowContents : public WidgetDelegateView,
         on_close_(std::move(on_close)) {
     auto combobox_model = std::make_unique<ComboboxModelExampleList>();
     combobox_model_ = combobox_model.get();
+    combobox_model_->SetExamples(std::move(examples));
     combobox_ = new Combobox(std::move(combobox_model));
 
     instance_ = this;
     combobox_->set_listener(this);
-    combobox_model_->SetExamples(std::move(examples));
-    combobox_->ModelChanged();
 
     SetBackground(CreateStandardPanelBackground());
     GridLayout* layout =

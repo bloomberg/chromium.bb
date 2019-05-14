@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "ui/base/models/combobox_model_observer.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/prefix_delegate.h"
 #include "ui/views/style/typography.h"
@@ -35,7 +36,8 @@ class PrefixSelector;
 // Combobox has two distinct parts, the drop down arrow and the text.
 class VIEWS_EXPORT Combobox : public View,
                               public PrefixDelegate,
-                              public ButtonListener {
+                              public ButtonListener,
+                              public ui::ComboboxModelObserver {
  public:
   METADATA_HEADER(Combobox);
 
@@ -58,9 +60,6 @@ class VIEWS_EXPORT Combobox : public View,
 
   // Sets the listener which will be called when a selection has been made.
   void set_listener(ComboboxListener* listener) { listener_ = listener; }
-
-  // Informs the combobox that its model changed.
-  void ModelChanged();
 
   // Gets/Sets the selected index.
   int GetSelectedIndex() const { return selected_index_; }
@@ -111,6 +110,9 @@ class VIEWS_EXPORT Combobox : public View,
   void set_size_to_largest_label(bool size_to_largest_label) {
     size_to_largest_label_ = size_to_largest_label;
   }
+
+  // Overridden from ComboboxModelObserver:
+  void OnComboboxModelChanged(ui::ComboboxModel* model) override;
 
  private:
   friend class test::ComboboxTestApi;

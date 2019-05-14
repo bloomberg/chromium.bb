@@ -121,15 +121,11 @@ int GetAdjacentIndex(ui::ComboboxModel* model, int increment, int index) {
 const char Combobox::kViewClassName[] = "views/Combobox";
 
 // Adapts a ui::ComboboxModel to a ui::MenuModel.
-class Combobox::ComboboxMenuModel : public ui::MenuModel,
-                                    public ui::ComboboxModelObserver {
+class Combobox::ComboboxMenuModel : public ui::MenuModel {
  public:
   ComboboxMenuModel(Combobox* owner, ui::ComboboxModel* model)
-      : owner_(owner), model_(model) {
-    model_->AddObserver(this);
-  }
-
-  ~ComboboxMenuModel() override { model_->RemoveObserver(this); }
+      : owner_(owner), model_(model) {}
+  ~ComboboxMenuModel() override = default;
 
  private:
   bool UseCheckmarks() const {
@@ -201,11 +197,6 @@ class Combobox::ComboboxMenuModel : public ui::MenuModel,
 
   MenuModel* GetSubmenuModelAt(int index) const override { return nullptr; }
 
-  // Overridden from ComboboxModelObserver:
-  void OnComboboxModelChanged(ui::ComboboxModel* model) override {
-    owner_->ModelChanged();
-  }
-
   Combobox* owner_;           // Weak. Owns this.
   ui::ComboboxModel* model_;  // Weak.
 
@@ -232,7 +223,8 @@ Combobox::Combobox(ui::ComboboxModel* model, int text_context, int text_style)
       menu_model_(new ComboboxMenuModel(this, model)),
       arrow_button_(new TransparentButton(this)),
       size_to_largest_label_(true) {
-  ModelChanged();
+  model_->AddObserver(this);
+  OnComboboxModelChanged(model_);
 #if defined(OS_MACOSX)
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
 #else
@@ -257,24 +249,11 @@ Combobox::~Combobox() {
     // Combobox should have been blurred before destroy.
     DCHECK(selector_.get() != GetInputMethod()->GetTextInputClient());
   }
+  model_->RemoveObserver(this);
 }
 
 const gfx::FontList& Combobox::GetFontList() const {
   return style::GetFont(text_context_, text_style_);
-}
-
-void Combobox::ModelChanged() {
-  // If the selection is no longer valid (or the model is empty), restore the
-  // default index.
-  if (selected_index_ >= model_->GetItemCount() ||
-      model_->GetItemCount() == 0 ||
-      model_->IsItemSeparatorAt(selected_index_)) {
-    selected_index_ = model_->GetDefaultIndex();
-  }
-
-  content_size_ = GetContentSize();
-  PreferredSizeChanged();
-  SchedulePaint();
 }
 
 void Combobox::SetSelectedIndex(int index) {
@@ -539,6 +518,22 @@ void Combobox::ButtonPressed(Button* sender, const ui::Event& event) {
   else if (event.IsGestureEvent() || event.IsTouchEvent())
     source_type = ui::MENU_SOURCE_TOUCH;
   ShowDropDownMenu(source_type);
+}
+
+void Combobox::OnComboboxModelChanged(ui::ComboboxModel* model) {
+  DCHECK_EQ(model_, model);
+
+  // If the selection is no longer valid (or the model is empty), restore the
+  // default index.
+  if (selected_index_ >= model_->GetItemCount() ||
+      model_->GetItemCount() == 0 ||
+      model_->IsItemSeparatorAt(selected_index_)) {
+    selected_index_ = model_->GetDefaultIndex();
+  }
+
+  content_size_ = GetContentSize();
+  PreferredSizeChanged();
+  SchedulePaint();
 }
 
 void Combobox::UpdateBorder() {
