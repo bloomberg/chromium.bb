@@ -52,6 +52,8 @@ static const char* const kCookieExperimentName = "EXP_COOKIE";
 // set when the cookie experiment is active.
 static const char* const kWebsiteVisitedBeforeParameterName =
     "WEBSITE_VISITED_BEFORE";
+// Parameter that allows setting the color of the overlay.
+static const char* const kOverlayColorParameterName = "OVERLAY_COLORS";
 
 static const char* const kTrueValue = "true";
 }  // namespace
@@ -292,6 +294,22 @@ bool Controller::GetResizeViewport() {
 
 ConfigureBottomSheetProto::PeekMode Controller::GetPeekMode() {
   return peek_mode_;
+}
+
+void Controller::SetOverlayColors(std::unique_ptr<OverlayColors> colors) {
+  overlay_colors_ = std::move(colors);
+  if (overlay_colors_) {
+    GetUiController()->OnOverlayColorsChanged(*overlay_colors_);
+  } else {
+    OverlayColors default_colors;
+    GetUiController()->OnOverlayColorsChanged(default_colors);
+  }
+}
+
+void Controller::GetOverlayColors(OverlayColors* colors) const {
+  if (!overlay_colors_)
+    return;
+  *colors = *overlay_colors_;
 }
 
 void Controller::ReportNavigationStateChanged() {
@@ -579,7 +597,6 @@ void Controller::OnSetCookie(bool result) {
 void Controller::FinishStart() {
   started_ = true;
   if (allow_autostart_) {
-    MaybeSetInitialDetails();
     SetStatusMessage(
         l10n_util::GetStringFUTF8(IDS_AUTOFILL_ASSISTANT_LOADING,
                                   base::UTF8ToUTF16(initial_url_.host())));
@@ -588,10 +605,28 @@ void Controller::FinishStart() {
   GetOrCheckScripts();
 }
 
-void Controller::MaybeSetInitialDetails() {
+void Controller::InitFromParameters() {
   auto details = std::make_unique<Details>();
   if (details->UpdateFromParameters(trigger_context_->script_parameters))
     SetDetails(std::move(details));
+
+  const auto iter =
+      trigger_context_->script_parameters.find(kOverlayColorParameterName);
+  if (iter != trigger_context_->script_parameters.end()) {
+    std::unique_ptr<OverlayColors> colors = std::make_unique<OverlayColors>();
+    std::vector<std::string> color_strings = base::SplitString(
+        iter->second, ":", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+    if (color_strings.size() > 0) {
+      colors->background = color_strings[0];
+    }
+    if (color_strings.size() > 1) {
+      colors->highlight_border = color_strings[1];
+    }
+    // Ignore other colors, to allow future versions of the client to support
+    // setting more colors.
+
+    SetOverlayColors(std::move(colors));
+  }
 }
 
 bool Controller::NeedsUI() const {
@@ -606,6 +641,7 @@ void Controller::Start(const GURL& initial_url,
     return;
   }
   trigger_context_ = std::move(trigger_context);
+  InitFromParameters();
   initial_url_ = initial_url;
   EnterState(AutofillAssistantState::STARTING);
   client_->ShowUI();

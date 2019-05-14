@@ -53,8 +53,8 @@ class AssistantOverlayDrawable extends Drawable
         implements FullscreenListener, GestureStateListener, CompositorViewResizer.Observer {
     private static final int FADE_DURATION_MS = 250;
 
-    /** Alpha value of the background, used for animations. */
-    private static final int BACKGROUND_ALPHA = 0x42;
+    /** Default background color and alpha. */
+    private static final int DEFAULT_BACKGROUND_COLOR = Color.argb(0x42, 0, 0, 0);
 
     /** Width of the line drawn around the boxes. */
     private static final int BOX_STROKE_WIDTH_DP = 2;
@@ -65,6 +65,7 @@ class AssistantOverlayDrawable extends Drawable
     /** Box corner. */
     private static final int BOX_CORNER_DP = 8;
 
+    private final Context mContext;
     private final ChromeFullscreenManager mFullscreenManager;
 
     /**
@@ -73,7 +74,9 @@ class AssistantOverlayDrawable extends Drawable
     private final CompositorViewResizer mViewResizer;
 
     private final Paint mBackground;
+    private int mBackgroundAlpha;
     private final Paint mBoxStroke;
+    private int mBoxStrokeAlpha;
     private final Paint mBoxClear;
     private final Paint mBoxFill;
 
@@ -138,14 +141,13 @@ class AssistantOverlayDrawable extends Drawable
 
     AssistantOverlayDrawable(Context context, ChromeFullscreenManager fullscreenManager,
             CompositorViewResizer viewResizer) {
+        mContext = context;
         mFullscreenManager = fullscreenManager;
         mViewResizer = viewResizer;
 
         DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
 
         mBackground = new Paint();
-        mBackground.setColor(Color.BLACK);
-        mBackground.setAlpha(BACKGROUND_ALPHA);
         mBackground.setStyle(Paint.Style.FILL);
 
         mBoxClear = new Paint();
@@ -154,12 +156,9 @@ class AssistantOverlayDrawable extends Drawable
         mBoxClear.setStyle(Paint.Style.FILL);
 
         mBoxFill = new Paint();
-        mBoxFill.setColor(Color.BLACK);
         mBoxFill.setStyle(Paint.Style.FILL);
 
         mBoxStroke = new Paint(Paint.ANTI_ALIAS_FLAG);
-        mBoxStroke.setColor(
-                ApiCompatibilityUtils.getColor(context.getResources(), R.color.modern_blue_600));
         mBoxStroke.setStyle(Paint.Style.STROKE);
         mBoxStroke.setStrokeWidth(TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP, BOX_STROKE_WIDTH_DP, displayMetrics));
@@ -172,6 +171,32 @@ class AssistantOverlayDrawable extends Drawable
 
         mFullscreenManager.addListener(this);
         mViewResizer.addObserver(this);
+
+        // Sets colors to default.
+        setBackgroundColor(null);
+        setHighlightBorderColor(null);
+    }
+
+    /** Sets the overlay color or {@code null} to use the default color. */
+    void setBackgroundColor(@Nullable Integer color) {
+        if (color == null) {
+            color = DEFAULT_BACKGROUND_COLOR;
+        }
+        mBackgroundAlpha = Color.alpha(color);
+        mBackground.setColor(color);
+        mBoxFill.setColor(color);
+        invalidateSelf();
+    }
+
+    /** Sets the color of the border or {@code null} to use the default color. */
+    void setHighlightBorderColor(@Nullable Integer color) {
+        if (color == null) {
+            color = ApiCompatibilityUtils.getColor(
+                    mContext.getResources(), R.color.modern_blue_600);
+        }
+        mBoxStrokeAlpha = Color.alpha(color);
+        mBoxStroke.setColor(color);
+        invalidateSelf();
     }
 
     void setDelegate(AssistantOverlayDelegate delegate) {
@@ -293,8 +318,8 @@ class AssistantOverlayDrawable extends Drawable
                 continue;
             }
             // At visibility=1, stroke is fully opaque and box fill is fully transparent
-            mBoxStroke.setAlpha((int) (0xff * box.getVisibility()));
-            int fillAlpha = (int) (BACKGROUND_ALPHA * (1f - box.getVisibility()));
+            mBoxStroke.setAlpha((int) (mBoxStrokeAlpha * box.getVisibility()));
+            int fillAlpha = (int) (mBackgroundAlpha * (1f - box.getVisibility()));
             mBoxFill.setAlpha(fillAlpha);
 
             mDrawRect.left = rect.left * width - mPaddingPx;

@@ -81,6 +81,9 @@ class UiController {
 
   // Called when the peek mode has changed.
   virtual void OnPeekModeChanged(ConfigureBottomSheetProto::PeekMode peek_mode);
+
+  // Called when the overlay colors have changed.
+  virtual void OnOverlayColorsChanged(const UiDelegate::OverlayColors& colors);
 };
 }  // namespace autofill_assistant
 #endif  // COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_UI_CONTROLLER_H_

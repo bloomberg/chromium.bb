@@ -20,6 +20,15 @@ namespace autofill_assistant {
 // UI delegate called for script executions.
 class UiDelegate {
  public:
+  // Colors of the overlay. Empty string to use the default.
+  struct OverlayColors {
+    // Overlay background color.
+    std::string background;
+
+    // Color of the border around the highlighted portions of the overlay.
+    std::string highlight_border;
+  };
+
   virtual ~UiDelegate() = default;
 
   // Returns the current state of the controller.
@@ -106,6 +115,9 @@ class UiDelegate {
   virtual bool GetResizeViewport() = 0;
 
   virtual ConfigureBottomSheetProto::PeekMode GetPeekMode() = 0;
+
+  // Fills in the overlay colors.
+  virtual void GetOverlayColors(OverlayColors* colors) const = 0;
 
  protected:
   UiDelegate() = default;

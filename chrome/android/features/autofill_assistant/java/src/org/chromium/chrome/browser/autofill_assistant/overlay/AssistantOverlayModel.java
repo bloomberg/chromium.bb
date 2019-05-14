@@ -4,7 +4,9 @@
 
 package org.chromium.chrome.browser.autofill_assistant.overlay;
 
+import android.graphics.Color;
 import android.graphics.RectF;
+import android.support.annotation.ColorInt;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -32,8 +34,15 @@ public class AssistantOverlayModel extends PropertyModel {
     public static final WritableObjectPropertyKey<WebContents> WEB_CONTENTS =
             new WritableObjectPropertyKey<>();
 
+    public static final WritableObjectPropertyKey<Integer> BACKGROUND_COLOR =
+            new WritableObjectPropertyKey<>();
+
+    public static final WritableObjectPropertyKey<Integer> HIGHLIGHT_BORDER_COLOR =
+            new WritableObjectPropertyKey<>();
+
     public AssistantOverlayModel() {
-        super(STATE, TOUCHABLE_AREA, DELEGATE, WEB_CONTENTS);
+        super(STATE, TOUCHABLE_AREA, DELEGATE, WEB_CONTENTS, BACKGROUND_COLOR,
+                HIGHLIGHT_BORDER_COLOR);
     }
 
     @CalledByNative
@@ -59,5 +68,38 @@ public class AssistantOverlayModel extends PropertyModel {
     @CalledByNative
     private void setWebContents(WebContents webContents) {
         set(WEB_CONTENTS, webContents);
+    }
+
+    @CalledByNative
+    private boolean setBackgroundColor(String colorString) {
+        return setColor(BACKGROUND_COLOR, colorString);
+    }
+
+    @CalledByNative
+    private boolean setHighlightBorderColor(String colorString) {
+        return setColor(HIGHLIGHT_BORDER_COLOR, colorString);
+    }
+
+    /**
+     * Sets the given color property.
+     *
+     * @param property property to set
+     * @param colorString color value as a property. The empty string means use the default color
+     * @return true if the color string was parsed and set properly
+     */
+    private boolean setColor(WritableObjectPropertyKey<Integer> property, String colorString) {
+        if (colorString.isEmpty()) {
+            set(property, null);
+            return true;
+        }
+        @ColorInt
+        int colorInt;
+        try {
+            set(property, Color.parseColor(colorString));
+            return true;
+        } catch (IllegalArgumentException e) {
+            set(property, null);
+            return false;
+        }
     }
 }

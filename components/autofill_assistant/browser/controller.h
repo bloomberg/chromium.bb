@@ -123,6 +123,7 @@ class Controller : public ScriptExecutorDelegate,
                     Metrics::DropOutReason reason) override;
   bool GetResizeViewport() override;
   ConfigureBottomSheetProto::PeekMode GetPeekMode() override;
+  void GetOverlayColors(OverlayColors* colors) const override;
 
  private:
   friend ControllerTest;
@@ -166,7 +167,7 @@ class Controller : public ScriptExecutorDelegate,
   void OnGetCookie(bool has_cookie);
   void OnSetCookie(bool result);
   void FinishStart();
-  void MaybeSetInitialDetails();
+  void InitFromParameters();
 
   // Called when a script is selected.
   void OnScriptSelected(const std::string& script_path);
@@ -195,6 +196,7 @@ class Controller : public ScriptExecutorDelegate,
   void OnTouchableAreaChanged(const std::vector<RectF>& areas);
 
   void SelectChip(std::vector<Chip>* chips, int chip_index);
+  void SetOverlayColors(std::unique_ptr<OverlayColors> colors);
   void ReportNavigationStateChanged();
 
   // Clear out visible state and enter the stopped state.
@@ -277,6 +279,8 @@ class Controller : public ScriptExecutorDelegate,
   // Current peek mode.
   ConfigureBottomSheetProto::PeekMode peek_mode_ =
       ConfigureBottomSheetProto::HANDLE;
+
+  std::unique_ptr<OverlayColors> overlay_colors_;
 
   // Flag indicates whether it is ready to fetch and execute scripts.
   bool started_ = false;

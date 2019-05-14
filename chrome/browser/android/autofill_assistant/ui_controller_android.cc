@@ -130,8 +130,13 @@ void UiControllerAndroid::Attach(content::WebContents* web_contents,
     OnResizeViewportChanged(ui_delegate->GetResizeViewport());
     OnPeekModeChanged(ui_delegate->GetPeekMode());
 
+    UiDelegate::OverlayColors colors;
+    ui_delegate->GetOverlayColors(&colors);
+    OnOverlayColorsChanged(colors);
+
     OnStateChanged(ui_delegate->GetState());
   }
+
   SetVisible(true);
 }
 
@@ -246,6 +251,25 @@ void UiControllerAndroid::OnPeekModeChanged(
     ConfigureBottomSheetProto::PeekMode peek_mode) {
   Java_AutofillAssistantUiController_setPeekMode(AttachCurrentThread(),
                                                  java_object_, peek_mode);
+}
+
+void UiControllerAndroid::OnOverlayColorsChanged(
+    const UiDelegate::OverlayColors& colors) {
+  JNIEnv* env = AttachCurrentThread();
+  auto overlay_model = GetOverlayModel();
+  if (!Java_AssistantOverlayModel_setBackgroundColor(
+          env, overlay_model,
+          base::android::ConvertUTF8ToJavaString(env, colors.background))) {
+    DVLOG(1) << __func__
+             << ": Ignoring invalid overlay color: " << colors.background;
+  }
+  if (!Java_AssistantOverlayModel_setHighlightBorderColor(
+          env, overlay_model,
+          base::android::ConvertUTF8ToJavaString(env,
+                                                 colors.highlight_border))) {
+    DVLOG(1) << __func__ << ": Ignoring invalid highlight border color: "
+             << colors.highlight_border;
+  }
 }
 
 void UiControllerAndroid::AllowShowingSoftKeyboard(bool enabled) {

@@ -72,6 +72,7 @@ class UiControllerAndroid : public UiController {
   void OnResizeViewportChanged(bool resize_viewport) override;
   void OnPeekModeChanged(
       ConfigureBottomSheetProto::PeekMode peek_mode) override;
+  void OnOverlayColorsChanged(const UiDelegate::OverlayColors& colors) override;
 
   // Called by AssistantOverlayDelegate:
   void OnUnexpectedTaps();

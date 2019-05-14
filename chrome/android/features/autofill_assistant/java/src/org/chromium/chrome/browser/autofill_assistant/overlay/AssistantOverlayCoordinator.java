@@ -49,6 +49,11 @@ public class AssistantOverlayCoordinator {
                 mDrawable.setDelegate(delegate);
             } else if (AssistantOverlayModel.WEB_CONTENTS == propertyKey) {
                 mDrawable.setWebContents(model.get(AssistantOverlayModel.WEB_CONTENTS));
+            } else if (AssistantOverlayModel.BACKGROUND_COLOR == propertyKey) {
+                mDrawable.setBackgroundColor(model.get(AssistantOverlayModel.BACKGROUND_COLOR));
+            } else if (AssistantOverlayModel.HIGHLIGHT_BORDER_COLOR == propertyKey) {
+                mDrawable.setHighlightBorderColor(
+                        model.get(AssistantOverlayModel.HIGHLIGHT_BORDER_COLOR));
             }
         });
     }
