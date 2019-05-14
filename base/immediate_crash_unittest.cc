@@ -8,10 +8,12 @@
 
 #include <algorithm>
 
+#include "base/base_paths.h"
 #include "base/containers/span.h"
 #include "base/files/file_path.h"
 #include "base/native_library.h"
 #include "base/optional.h"
+#include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -29,11 +31,18 @@ TEST(ImmediateCrashTest, ExpectedOpcodeSequence) {
   // TestFunction1() and TestFunction2() are defined in a shared library in an
   // attempt to guarantee that they are located next to each other.
   NativeLibraryLoadError load_error;
+  FilePath helper_library_path;
+#if !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
+  // On Android M, DIR_EXE == /system/bin when running base_unittests.
+  // On Fuchsia, NativeLibrary understands the native convention that libraries
+  // are not colocated with the binary.
+  ASSERT_TRUE(PathService::Get(DIR_EXE, &helper_library_path));
+#endif
+  helper_library_path = helper_library_path.AppendASCII(
+      GetNativeLibraryName("immediate_crash_test_helper"));
   // TODO(dcheng): Shouldn't GetNativeLibraryName just return a FilePath?
-  NativeLibrary helper_library = LoadNativeLibrary(
-      FilePath::FromUTF8Unsafe(
-          GetNativeLibraryName("immediate_crash_test_helper")),
-      &load_error);
+  NativeLibrary helper_library =
+      LoadNativeLibrary(helper_library_path, &load_error);
   ASSERT_TRUE(helper_library)
       << "shared library load failed: " << load_error.ToString();
 
