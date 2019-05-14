@@ -44,7 +44,7 @@ std::unique_ptr<WMRTimestamp> WMRHolographicFramePredictionImpl::Timestamp() {
   ComPtr<IPerceptionTimestamp> timestamp;
   HRESULT hr = prediction_->get_Timestamp(&timestamp);
   DCHECK(SUCCEEDED(hr));
-  return std::make_unique<WMRTimestamp>(timestamp);
+  return std::make_unique<WMRTimestampImpl>(timestamp);
 }
 
 std::vector<std::unique_ptr<WMRCameraPose>>
@@ -62,7 +62,7 @@ WMRHolographicFramePredictionImpl::CameraPoses() {
   for (uint32_t i = 0; i < num; i++) {
     ComPtr<IHolographicCameraPose> pose;
     poses->GetAt(i, &pose);
-    ret_val.push_back(std::make_unique<WMRCameraPose>(pose));
+    ret_val.push_back(std::make_unique<WMRCameraPoseImpl>(pose));
   }
 
   return ret_val;
@@ -92,7 +92,7 @@ WMRHolographicFrameImpl::TryGetRenderingParameters(const WMRCameraPose* pose) {
                                                           &rendering_params);
   if (FAILED(hr))
     return nullptr;
-  return std::make_unique<WMRRenderingParameters>(rendering_params);
+  return std::make_unique<WMRRenderingParametersImpl>(rendering_params);
 }
 
 bool WMRHolographicFrameImpl::TryPresentUsingCurrentPrediction() {

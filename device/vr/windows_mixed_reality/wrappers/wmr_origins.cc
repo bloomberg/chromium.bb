@@ -40,6 +40,8 @@ using Microsoft::WRL::ComPtr;
 namespace device {
 // WMRCoordinateSystem
 ISpatialCoordinateSystem* WMRCoordinateSystem::GetRawPtr() const {
+  // This should only ever be used by the real implementation, so by default
+  // make sure it's not called.
   NOTREACHED();
   return nullptr;
 }

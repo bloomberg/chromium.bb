@@ -15,6 +15,7 @@ class MockWMRTimestamp : public WMRTimestamp {
 
   ABI::Windows::Foundation::DateTime TargetTime() const override;
   ABI::Windows::Foundation::TimeSpan PredictionAmount() const override;
+  ABI::Windows::Perception::IPerceptionTimestamp* GetRawPtr() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockWMRTimestamp);

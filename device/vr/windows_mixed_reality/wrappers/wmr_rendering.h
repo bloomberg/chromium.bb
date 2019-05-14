@@ -18,76 +18,98 @@ class WMRCoordinateSystem;
 
 class WMRCamera {
  public:
-  explicit WMRCamera(
+  virtual ~WMRCamera() = default;
+
+  virtual ABI::Windows::Foundation::Size RenderTargetSize() = 0;
+  virtual bool IsStereo() = 0;
+};
+
+class WMRCameraImpl : public WMRCamera {
+ public:
+  explicit WMRCameraImpl(
       Microsoft::WRL::ComPtr<
           ABI::Windows::Graphics::Holographic::IHolographicCamera> camera);
-  virtual ~WMRCamera();
+  ~WMRCameraImpl() override;
 
-  virtual ABI::Windows::Foundation::Size RenderTargetSize();
-  virtual bool IsStereo();
-
- protected:
-  // Necessary so subclasses don't call the explicit constructor.
-  WMRCamera();
+  ABI::Windows::Foundation::Size RenderTargetSize() override;
+  bool IsStereo() override;
 
  private:
   Microsoft::WRL::ComPtr<
       ABI::Windows::Graphics::Holographic::IHolographicCamera>
       camera_;
 
-  DISALLOW_COPY_AND_ASSIGN(WMRCamera);
+  DISALLOW_COPY_AND_ASSIGN(WMRCameraImpl);
 };
 
 class WMRCameraPose {
  public:
-  explicit WMRCameraPose(
-      Microsoft::WRL::ComPtr<
-          ABI::Windows::Graphics::Holographic::IHolographicCameraPose> pose);
-  virtual ~WMRCameraPose();
+  virtual ~WMRCameraPose() = default;
 
-  virtual ABI::Windows::Foundation::Rect Viewport();
-  virtual std::unique_ptr<WMRCamera> HolographicCamera();
+  virtual ABI::Windows::Foundation::Rect Viewport() = 0;
+  virtual std::unique_ptr<WMRCamera> HolographicCamera() = 0;
   virtual ABI::Windows::Graphics::Holographic::HolographicStereoTransform
-  ProjectionTransform();
+  ProjectionTransform() = 0;
   virtual bool TryGetViewTransform(
       const WMRCoordinateSystem* origin,
       ABI::Windows::Graphics::Holographic::HolographicStereoTransform*
-          transform);
-  ABI::Windows::Graphics::Holographic::IHolographicCameraPose* GetRawPtr()
-      const;
+          transform) = 0;
+  virtual ABI::Windows::Graphics::Holographic::IHolographicCameraPose*
+  GetRawPtr() const;
+};
 
- protected:
-  // Necessary so subclasses don't call the explicit constructor.
-  WMRCameraPose();
+class WMRCameraPoseImpl : public WMRCameraPose {
+ public:
+  explicit WMRCameraPoseImpl(
+      Microsoft::WRL::ComPtr<
+          ABI::Windows::Graphics::Holographic::IHolographicCameraPose> pose);
+  ~WMRCameraPoseImpl() override;
+
+  ABI::Windows::Foundation::Rect Viewport() override;
+  std::unique_ptr<WMRCamera> HolographicCamera() override;
+  ABI::Windows::Graphics::Holographic::HolographicStereoTransform
+  ProjectionTransform() override;
+  bool TryGetViewTransform(
+      const WMRCoordinateSystem* origin,
+      ABI::Windows::Graphics::Holographic::HolographicStereoTransform*
+          transform) override;
+  ABI::Windows::Graphics::Holographic::IHolographicCameraPose* GetRawPtr()
+      const override;
 
  private:
   Microsoft::WRL::ComPtr<
       ABI::Windows::Graphics::Holographic::IHolographicCameraPose>
       pose_;
 
-  DISALLOW_COPY_AND_ASSIGN(WMRCameraPose);
+  DISALLOW_COPY_AND_ASSIGN(WMRCameraPoseImpl);
 };
 
 class WMRRenderingParameters {
  public:
-  explicit WMRRenderingParameters(
+  virtual ~WMRRenderingParameters() = default;
+
+  virtual Microsoft::WRL::ComPtr<ID3D11Texture2D>
+  TryGetBackbufferAsTexture2D() = 0;
+};
+
+class WMRRenderingParametersImpl : public WMRRenderingParameters {
+ public:
+  explicit WMRRenderingParametersImpl(
       Microsoft::WRL::ComPtr<ABI::Windows::Graphics::Holographic::
                                  IHolographicCameraRenderingParameters>
           rendering_params);
-  virtual ~WMRRenderingParameters();
+  ~WMRRenderingParametersImpl() override;
 
-  virtual Microsoft::WRL::ComPtr<ID3D11Texture2D> TryGetBackbufferAsTexture2D();
-
- protected:
-  // Necessary so subclasses don't call the explicit constructor.
-  WMRRenderingParameters();
+  Microsoft::WRL::ComPtr<ID3D11Texture2D> TryGetBackbufferAsTexture2D()
+      override;
 
  private:
   Microsoft::WRL::ComPtr<ABI::Windows::Graphics::Holographic::
                              IHolographicCameraRenderingParameters>
       rendering_params_;
 
-  DISALLOW_COPY_AND_ASSIGN(WMRRenderingParameters);
+  DISALLOW_COPY_AND_ASSIGN(WMRRenderingParametersImpl);
 };
+
 }  // namespace device
 #endif  // DEVICE_VR_WINDOWS_MIXED_REALITY_WRAPPERS_WMR_RENDERING_H_

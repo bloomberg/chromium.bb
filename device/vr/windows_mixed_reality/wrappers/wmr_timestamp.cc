@@ -14,30 +14,29 @@ using ABI::Windows::Perception::IPerceptionTimestamp;
 using Microsoft::WRL::ComPtr;
 
 namespace device {
-WMRTimestamp::WMRTimestamp(ComPtr<IPerceptionTimestamp> timestamp)
+
+WMRTimestampImpl::WMRTimestampImpl(ComPtr<IPerceptionTimestamp> timestamp)
     : timestamp_(timestamp) {
   DCHECK(timestamp_);
 }
 
-WMRTimestamp::WMRTimestamp() {}
+WMRTimestampImpl::~WMRTimestampImpl() = default;
 
-WMRTimestamp::~WMRTimestamp() = default;
-
-DateTime WMRTimestamp::TargetTime() const {
+DateTime WMRTimestampImpl::TargetTime() const {
   DateTime val;
   HRESULT hr = timestamp_->get_TargetTime(&val);
   DCHECK(SUCCEEDED(hr));
   return val;
 }
 
-TimeSpan WMRTimestamp::PredictionAmount() const {
+TimeSpan WMRTimestampImpl::PredictionAmount() const {
   TimeSpan val;
   HRESULT hr = timestamp_->get_PredictionAmount(&val);
   DCHECK(SUCCEEDED(hr));
   return val;
 }
 
-IPerceptionTimestamp* WMRTimestamp::GetRawPtr() const {
+IPerceptionTimestamp* WMRTimestampImpl::GetRawPtr() const {
   return timestamp_.Get();
 }
 }  // namespace device

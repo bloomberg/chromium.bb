@@ -21,4 +21,9 @@ ABI::Windows::Foundation::TimeSpan MockWMRTimestamp::PredictionAmount() const {
   return ret;
 }
 
+ABI::Windows::Perception::IPerceptionTimestamp* MockWMRTimestamp::GetRawPtr()
+    const {
+  return nullptr;
+}
+
 }  // namespace device

@@ -22,9 +22,6 @@ class WMRCoordinateSystem {
   virtual bool TryGetTransformTo(
       const WMRCoordinateSystem* other,
       ABI::Windows::Foundation::Numerics::Matrix4x4* this_to_other) = 0;
-
-  // This should only ever be used by the real implementation, so by default
-  // make sure it's not called.
   virtual ABI::Windows::Perception::Spatial::ISpatialCoordinateSystem*
   GetRawPtr() const;
 };

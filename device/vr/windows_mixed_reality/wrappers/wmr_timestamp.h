@@ -12,24 +12,33 @@
 namespace device {
 class WMRTimestamp {
  public:
-  explicit WMRTimestamp(
+  virtual ~WMRTimestamp() = default;
+
+  virtual ABI::Windows::Foundation::DateTime TargetTime() const = 0;
+  virtual ABI::Windows::Foundation::TimeSpan PredictionAmount() const = 0;
+  // No default implementation w/ a NOTREACHED like other GetRawPtr()s because
+  // this is expected to be called on both the real and mock implementations in
+  // MixedRealityInputHelper::GetInputState().
+  virtual ABI::Windows::Perception::IPerceptionTimestamp* GetRawPtr() const = 0;
+};
+
+class WMRTimestampImpl : public WMRTimestamp {
+ public:
+  explicit WMRTimestampImpl(
       Microsoft::WRL::ComPtr<ABI::Windows::Perception::IPerceptionTimestamp>
           timestamp);
-  virtual ~WMRTimestamp();
+  ~WMRTimestampImpl() override;
 
-  virtual ABI::Windows::Foundation::DateTime TargetTime() const;
-  virtual ABI::Windows::Foundation::TimeSpan PredictionAmount() const;
-  ABI::Windows::Perception::IPerceptionTimestamp* GetRawPtr() const;
-
- protected:
-  // Necessary so subclasses don't call the explicit constructor.
-  WMRTimestamp();
+  ABI::Windows::Foundation::DateTime TargetTime() const override;
+  ABI::Windows::Foundation::TimeSpan PredictionAmount() const override;
+  ABI::Windows::Perception::IPerceptionTimestamp* GetRawPtr() const override;
 
  private:
   Microsoft::WRL::ComPtr<ABI::Windows::Perception::IPerceptionTimestamp>
       timestamp_;
 
-  DISALLOW_COPY_AND_ASSIGN(WMRTimestamp);
+  DISALLOW_COPY_AND_ASSIGN(WMRTimestampImpl);
 };
+
 }  // namespace device
 #endif  // DEVICE_VR_WINDOWS_MIXED_REALITY_WRAPPERS_WMR_TIMESTAMP_H_

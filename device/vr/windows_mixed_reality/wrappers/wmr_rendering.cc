@@ -26,22 +26,21 @@ using Windows::Graphics::DirectX::Direct3D11::IDirect3DDxgiInterfaceAccess;
 
 namespace device {
 // WMRCamera
-WMRCamera::WMRCamera(ComPtr<IHolographicCamera> camera) : camera_(camera) {
+WMRCameraImpl::WMRCameraImpl(ComPtr<IHolographicCamera> camera)
+    : camera_(camera) {
   DCHECK(camera_);
 }
 
-WMRCamera::WMRCamera() {}
+WMRCameraImpl::~WMRCameraImpl() = default;
 
-WMRCamera::~WMRCamera() = default;
-
-WF::Size WMRCamera::RenderTargetSize() {
+WF::Size WMRCameraImpl::RenderTargetSize() {
   WF::Size val;
   HRESULT hr = camera_->get_RenderTargetSize(&val);
   DCHECK(SUCCEEDED(hr));
   return val;
 }
 
-bool WMRCamera::IsStereo() {
+bool WMRCameraImpl::IsStereo() {
   boolean val;
   HRESULT hr = camera_->get_IsStereo(&val);
   DCHECK(SUCCEEDED(hr));
@@ -49,38 +48,45 @@ bool WMRCamera::IsStereo() {
 }
 
 // WMRCameraPose
-WMRCameraPose::WMRCameraPose(ComPtr<IHolographicCameraPose> pose)
+ABI::Windows::Graphics::Holographic::IHolographicCameraPose*
+WMRCameraPose::GetRawPtr() const {
+  // This should only ever be used by the real implementation, so by default
+  // make sure it's not called.
+  NOTREACHED();
+  return nullptr;
+}
+
+WMRCameraPoseImpl::WMRCameraPoseImpl(ComPtr<IHolographicCameraPose> pose)
     : pose_(pose) {
   DCHECK(pose_);
 }
 
-WMRCameraPose::WMRCameraPose() {}
+WMRCameraPoseImpl::~WMRCameraPoseImpl() = default;
 
-WMRCameraPose::~WMRCameraPose() = default;
-
-WF::Rect WMRCameraPose::Viewport() {
+WF::Rect WMRCameraPoseImpl::Viewport() {
   WF::Rect val;
   HRESULT hr = pose_->get_Viewport(&val);
   DCHECK(SUCCEEDED(hr));
   return val;
 }
 
-std::unique_ptr<WMRCamera> WMRCameraPose::HolographicCamera() {
+std::unique_ptr<WMRCamera> WMRCameraPoseImpl::HolographicCamera() {
   ComPtr<IHolographicCamera> camera;
   HRESULT hr = pose_->get_HolographicCamera(&camera);
   DCHECK(SUCCEEDED(hr));
-  return std::make_unique<WMRCamera>(camera);
+  return std::make_unique<WMRCameraImpl>(camera);
 }
 
-HolographicStereoTransform WMRCameraPose::ProjectionTransform() {
+HolographicStereoTransform WMRCameraPoseImpl::ProjectionTransform() {
   HolographicStereoTransform val;
   HRESULT hr = pose_->get_ProjectionTransform(&val);
   DCHECK(SUCCEEDED(hr));
   return val;
 }
 
-bool WMRCameraPose::TryGetViewTransform(const WMRCoordinateSystem* origin,
-                                        HolographicStereoTransform* transform) {
+bool WMRCameraPoseImpl::TryGetViewTransform(
+    const WMRCoordinateSystem* origin,
+    HolographicStereoTransform* transform) {
   ComPtr<IReference<HolographicStereoTransform>> transform_ref;
   if (FAILED(pose_->TryGetViewTransform(origin->GetRawPtr(), &transform_ref)) ||
       !transform_ref)
@@ -90,22 +96,21 @@ bool WMRCameraPose::TryGetViewTransform(const WMRCoordinateSystem* origin,
   return SUCCEEDED(hr);
 }
 
-IHolographicCameraPose* WMRCameraPose::GetRawPtr() const {
+IHolographicCameraPose* WMRCameraPoseImpl::GetRawPtr() const {
   return pose_.Get();
 }
 
 // WMRRenderingParameters
-WMRRenderingParameters::WMRRenderingParameters(
+WMRRenderingParametersImpl::WMRRenderingParametersImpl(
     ComPtr<IHolographicCameraRenderingParameters> rendering_params)
     : rendering_params_(rendering_params) {
   DCHECK(rendering_params_);
 }
 
-WMRRenderingParameters::WMRRenderingParameters() {}
+WMRRenderingParametersImpl::~WMRRenderingParametersImpl() = default;
 
-WMRRenderingParameters::~WMRRenderingParameters() = default;
-
-ComPtr<ID3D11Texture2D> WMRRenderingParameters::TryGetBackbufferAsTexture2D() {
+ComPtr<ID3D11Texture2D>
+WMRRenderingParametersImpl::TryGetBackbufferAsTexture2D() {
   ComPtr<IDirect3DSurface> surface;
   if (FAILED(rendering_params_->get_Direct3D11BackBuffer(&surface)))
     return nullptr;
