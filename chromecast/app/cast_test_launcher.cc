@@ -7,6 +7,7 @@
 #include "base/system/sys_info.h"
 #include "base/test/launcher/test_launcher.h"
 #include "base/test/test_suite.h"
+#include "build/build_config.h"
 #include "chromecast/app/cast_main_delegate.h"
 #include "content/public/test/test_launcher.h"
 #include "ipc/ipc_channel.h"
@@ -34,9 +35,11 @@ class CastTestLauncherDelegate : public content::TestLauncherDelegate {
   }
 
  protected:
+#if !defined(OS_ANDROID)
   content::ContentMainDelegate* CreateContentMainDelegate() override {
     return new CastMainDelegate();
   }
+#endif  // defined(OS_ANDROID)
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CastTestLauncherDelegate);
