@@ -1218,7 +1218,8 @@ class GetTryMastersExecuter(object):
     """
     context = {}
     try:
-      exec script_text in context
+      exec(compile(script_text, 'PRESUBMIT.py', 'exec', dont_inherit=True),
+           context)
     except Exception, e:
       raise PresubmitFailure('"%s" had an exception.\n%s'
                              % (presubmit_path, e))
@@ -1249,7 +1250,8 @@ class GetPostUploadExecuter(object):
     """
     context = {}
     try:
-      exec script_text in context
+      exec(compile(script_text, 'PRESUBMIT.py', 'exec', dont_inherit=True),
+           context)
     except Exception, e:
       raise PresubmitFailure('"%s" had an exception.\n%s'
                              % (presubmit_path, e))
@@ -1414,7 +1416,8 @@ class PresubmitExecuter(object):
     output_api = OutputApi(self.committing)
     context = {}
     try:
-      exec script_text in context
+      exec(compile(script_text, 'PRESUBMIT.py', 'exec', dont_inherit=True),
+           context)
     except Exception, e:
       raise PresubmitFailure('"%s" had an exception.\n%s' % (presubmit_path, e))
 
