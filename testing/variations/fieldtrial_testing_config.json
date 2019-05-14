@@ -1315,13 +1315,47 @@
             ],
             "experiments": [
                 {
-                    "name": "CerseiFakeboxOnNtp",
+                    "name": "EnabledAlt",
+                    "enable_features": [
+                        "UseAlternateFakeboxOnNtp"
+                    ]
+                },
+                {
+                    "name": "EnabledAltWithIcon",
+                    "enable_features": [
+                        "FakeboxSearchIconOnNtp"
+                    ]
+                },
+                {
+                    "name": "EnabledAltWithIconColor",
+                    "enable_features": [
+                        "FakeboxSearchIconColorOnNtp"
+                    ]
+                },
+                {
+                    "name": "EnabledAltRect",
+                    "enable_features": [
+                        "UseAlternateFakeboxRectOnNtp"
+                    ]
+                },
+                {
+                    "name": "EnabledAltRectWithIcon",
+                    "enable_features": [
+                        "FakeboxSearchIconOnNtp",
+                        "UseAlternateFakeboxRectOnNtp"
+                    ]
+                },
+                {
+                    "name": "EnabledAltRectWithIconColor",
                     "enable_features": [
                         "FakeboxSearchIconColorOnNtp",
-                        "FakeboxSearchIconOnNtp",
-                        "FakeboxShortHintTextOnNtp",
-                        "UseAlternateFakeboxOnNtp",
                         "UseAlternateFakeboxRectOnNtp"
+                    ]
+                },
+                {
+                    "name": "EnabledShortString",
+                    "enable_features": [
+                        "FakeboxShortHintTextOnNtp"
                     ]
                 }
             ]
