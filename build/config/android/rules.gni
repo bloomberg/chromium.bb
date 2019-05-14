@@ -3136,6 +3136,9 @@ if (enable_java_templates) {
           data_deps = [
             "//build/android/stacktrace:java_deobfuscate",
           ]
+          data = [
+            "$_final_apk_path.mapping",
+          ]
         }
         args = [
           "--script-output-path",
@@ -4727,6 +4730,8 @@ if (enable_java_templates) {
           "--proguard-mapping-path",
           rebase_path(_sync_proguard_mapping_path, root_build_dir),
         ]
+        data_deps += [ "//build/android/stacktrace:java_deobfuscate" ]
+        data += [ _sync_proguard_mapping_path ]
       }
     }
 
