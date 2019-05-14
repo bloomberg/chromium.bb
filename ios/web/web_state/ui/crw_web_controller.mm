@@ -229,6 +229,7 @@ bool RequiresContentFilterBlockingWorkaround() {
 }  // namespace
 
 @interface CRWWebController () <BrowsingDataRemoverObserver,
+                                CRWWKNavigationHandlerDelegate,
                                 CRWContextMenuDelegate,
                                 CRWNativeContentDelegate,
                                 CRWSSLStatusUpdaterDataSource,
@@ -331,6 +332,8 @@ bool RequiresContentFilterBlockingWorkaround() {
 // The WKNavigationDelegate handler class.
 @property(nonatomic, readonly, strong)
     CRWWKNavigationHandler* navigationHandler;
+// YES if in the process of closing.
+@property(nonatomic, readwrite, assign) BOOL beingDestroyed;
 
 // If |contentView_| contains a web view, this is the web view it contains.
 // If not, it's nil. When setting the property, it performs basic setup.
@@ -617,6 +620,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
              object:nil];
 
     _navigationHandler = [[CRWWKNavigationHandler alloc] init];
+    _navigationHandler.delegate = self;
   }
   return self;
 }
@@ -4039,7 +4043,9 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     decidePolicyForNavigationAction:(WKNavigationAction*)action
                     decisionHandler:
                         (void (^)(WKNavigationActionPolicy))decisionHandler {
-  [self didReceiveWebViewNavigationDelegateCallback];
+  [self.navigationHandler webView:webView
+      decidePolicyForNavigationAction:action
+                      decisionHandler:decisionHandler];
 
   _webProcessCrashed = NO;
   if (_isBeingDestroyed) {
@@ -4354,7 +4360,9 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     decidePolicyForNavigationResponse:(WKNavigationResponse*)WKResponse
                       decisionHandler:
                           (void (^)(WKNavigationResponsePolicy))handler {
-  [self didReceiveWebViewNavigationDelegateCallback];
+  [self.navigationHandler webView:webView
+      decidePolicyForNavigationResponse:WKResponse
+                        decisionHandler:handler];
 
   // If this is a placeholder navigation, pass through.
   GURL responseURL = net::GURLWithNSURL(WKResponse.response.URL);
@@ -4416,7 +4424,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
 - (void)webView:(WKWebView*)webView
     didStartProvisionalNavigation:(WKNavigation*)navigation {
-  [self didReceiveWebViewNavigationDelegateCallback];
+  [self.navigationHandler webView:webView
+      didStartProvisionalNavigation:navigation];
 
   GURL webViewURL = net::GURLWithNSURL(webView.URL);
 
@@ -4534,7 +4543,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
 - (void)webView:(WKWebView*)webView
     didReceiveServerRedirectForProvisionalNavigation:(WKNavigation*)navigation {
-  [self didReceiveWebViewNavigationDelegateCallback];
+  [self.navigationHandler webView:webView
+      didReceiveServerRedirectForProvisionalNavigation:navigation];
 
   GURL webViewURL = net::GURLWithNSURL(webView.URL);
 
@@ -4554,7 +4564,10 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (void)webView:(WKWebView*)webView
     didFailProvisionalNavigation:(WKNavigation*)navigation
                        withError:(NSError*)error {
-  [self didReceiveWebViewNavigationDelegateCallback];
+  [self.navigationHandler webView:webView
+      didFailProvisionalNavigation:navigation
+                         withError:error];
+
   [self.navigationHandler.navigationStates
            setState:web::WKNavigationState::PROVISIONALY_FAILED
       forNavigation:navigation];
@@ -4622,7 +4635,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
 - (void)webView:(WKWebView*)webView
     didCommitNavigation:(WKNavigation*)navigation {
-  [self didReceiveWebViewNavigationDelegateCallback];
+  [self.navigationHandler webView:webView didCommitNavigation:navigation];
 
   // For reasons not yet fully understood, sometimes WKWebView triggers
   // |webView:didFinishNavigation| before |webView:didCommitNavigation|. If a
@@ -4844,7 +4857,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
 - (void)webView:(WKWebView*)webView
     didFinishNavigation:(WKNavigation*)navigation {
-  [self didReceiveWebViewNavigationDelegateCallback];
+  [self.navigationHandler webView:webView didFinishNavigation:navigation];
 
   // Sometimes |webView:didFinishNavigation| arrives before
   // |webView:didCommitNavigation|. Explicitly trigger post-commit processing.
@@ -4996,7 +5009,9 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (void)webView:(WKWebView*)webView
     didFailNavigation:(WKNavigation*)navigation
             withError:(NSError*)error {
-  [self didReceiveWebViewNavigationDelegateCallback];
+  [self.navigationHandler webView:webView
+                didFailNavigation:navigation
+                        withError:error];
 
   [self.navigationHandler.navigationStates
            setState:web::WKNavigationState::FAILED
@@ -5014,7 +5029,9 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
                     completionHandler:
                         (void (^)(NSURLSessionAuthChallengeDisposition,
                                   NSURLCredential*))completionHandler {
-  [self didReceiveWebViewNavigationDelegateCallback];
+  [self.navigationHandler webView:webView
+      didReceiveAuthenticationChallenge:challenge
+                      completionHandler:completionHandler];
 
   NSString* authMethod = challenge.protectionSpace.authenticationMethod;
   if ([authMethod isEqual:NSURLAuthenticationMethodHTTPBasic] ||
@@ -5053,7 +5070,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 }
 
 - (void)webViewWebContentProcessDidTerminate:(WKWebView*)webView {
-  [self didReceiveWebViewNavigationDelegateCallback];
+  [self.navigationHandler webViewWebContentProcessDidTerminate:webView];
 
   _certVerificationErrors->Clear();
   [self removeAllWebFrames];
@@ -5385,18 +5402,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     return NO;
 
   return provisionalLoad;
-}
-
-// This method should be called on receiving WKNavigationDelegate callbacks. It
-// will log a metric if the callback occurs after the reciever has already been
-// closed. It also stops the SafeBrowsing warning detection timer, since after
-// this point it's too late for a SafeBrowsing warning to be displayed for the
-// navigation for which the timer was started.
-- (void)didReceiveWebViewNavigationDelegateCallback {
-  if (_isBeingDestroyed) {
-    UMA_HISTOGRAM_BOOLEAN("Renderer.WKWebViewCallbackAfterDestroy", true);
-  }
-  self.navigationHandler.safeBrowsingWarningDetectionTimer->Stop();
 }
 
 // Returns YES if response should be rendered in WKWebView.
@@ -6095,6 +6100,13 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     [self updateSSLStatusForCurrentNavigationItem];
     [self didFinishNavigation:navigationContext];
   }
+}
+
+#pragma mark - CRWWKNavigationHandlerDelegate
+
+- (BOOL)navigationHandlerWebViewBeingDestroyed:
+    (CRWWKNavigationHandler*)navigationHandler {
+  return _beingDestroyed;
 }
 
 #pragma mark - Testing-Only Methods

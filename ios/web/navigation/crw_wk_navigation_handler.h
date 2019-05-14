@@ -10,6 +10,7 @@
 
 @class CRWPendingNavigationInfo;
 @class CRWWKNavigationStates;
+@class CRWWKNavigationHandler;
 
 namespace base {
 class RepeatingTimer;
@@ -18,11 +19,17 @@ class RepeatingTimer;
 // CRWWKNavigationHandler uses this protocol to interact with its owner.
 @protocol CRWWKNavigationHandlerDelegate <NSObject>
 
+// Returns YES if WKWebView was deallocated or is being deallocated.
+- (BOOL)navigationHandlerWebViewBeingDestroyed:
+    (CRWWKNavigationHandler*)navigationHandler;
+
 @end
 
 // Handler class for WKNavigationDelegate, deals with navigation callbacks from
 // WKWebView and maintains page loading state.
 @interface CRWWKNavigationHandler : NSObject <WKNavigationDelegate>
+
+@property(nonatomic, weak) id<CRWWKNavigationHandlerDelegate> delegate;
 
 // Pending information for an in-progress page navigation. The lifetime of
 // this object starts at |decidePolicyForNavigationAction| where the info is
