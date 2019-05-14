@@ -10,7 +10,7 @@ class GpuIntegrationTestAdapater(common.BaseIsolatedScriptArgsAdapter):
     return ['--write-full-results-to', output]
 
   def generate_test_also_run_disabled_tests_args(self):
-    return ['--also-run-disabled-tests']
+    return ['--all']
 
   def generate_test_filter_args(self, test_filter_str):
     filter_list = common.extract_filter_list(test_filter_str)
