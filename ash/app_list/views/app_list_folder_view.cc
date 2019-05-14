@@ -403,10 +403,11 @@ class ContentsContainerAnimation : public AppListFolderView::Animation,
       folder_view_->SetVisible(false);
 
     // Set the view bounds to a small rect, so that it won't overlap the root
-    // level apps grid view during folder item reprenting transitional period.
+    // level apps grid view during folder item reparenting transitional period.
     if (hide_for_reparent_) {
       gfx::Rect rect(folder_view_->bounds());
       folder_view_->SetBoundsRect(gfx::Rect(rect.x(), rect.y(), 1, 1));
+      folder_view_->UpdateBackgroundMaskBounds();
     }
 
     // Reset the transform after animation so that the following folder's
@@ -655,6 +656,10 @@ void AppListFolderView::UpdateBackgroundMask(int corner_radius,
   background_mask_->layer()->SetFillsBoundsOpaquely(false);
   background_mask_->layer()->SetBounds(background_view_->GetLocalBounds());
   background_view_->layer()->SetMaskLayer(background_mask_->layer());
+}
+
+void AppListFolderView::UpdateBackgroundMaskBounds() {
+  background_mask_->layer()->SetBounds(background_view_->GetLocalBounds());
 }
 
 void AppListFolderView::OnTabletModeChanged(bool started) {
