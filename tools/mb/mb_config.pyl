@@ -683,6 +683,7 @@
       'android_angle_deqp_rel_ng': 'deqp_android_release_trybot_arm64',
       'android_angle_vk32_deqp_rel_ng': 'deqp_android_vulkan_release_trybot',
       'android_angle_vk64_deqp_rel_ng': 'deqp_android_vulkan_release_trybot_arm64',
+      'fuchsia-angle-rel': 'gpu_fyi_tests_release_trybot',
       'linux-angle-rel': 'gpu_fyi_tests_release_trybot',
       'linux_angle_ozone_rel_ng': 'gpu_fyi_tests_ozone_linux_system_gbm_libdrm_release_trybot',
       'linux_angle_deqp_rel_ng': 'deqp_release_trybot',
