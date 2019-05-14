@@ -55,7 +55,10 @@ Polymer({
     },
 
     /** @private */
-    narrow_: Boolean,
+    narrow_: {
+      type: Boolean,
+      observer: 'onNarrowChanged_',
+    },
 
     /**
      * @private {!PageVisibility}
@@ -342,6 +345,13 @@ Polymer({
   onAdvancedOpenedInMenuChanged_: function() {
     if (this.advancedOpenedInMenu_) {
       this.advancedOpenedInMain_ = true;
+    }
+  },
+
+  /** @private */
+  onNarrowChanged_: function() {
+    if (this.$.drawer.open && !this.narrow_) {
+      this.$.drawer.close();
     }
   },
 });

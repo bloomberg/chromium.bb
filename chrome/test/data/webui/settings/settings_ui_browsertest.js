@@ -84,6 +84,22 @@ TEST_F('SettingsUIBrowserTest', 'MAYBE_All', function() {
           });
     });
 
+    test('app drawer closes when exiting narrow mode', async () => {
+      const drawer = ui.$.drawer;
+      const toolbar = ui.$$('cr-toolbar');
+
+      // Mimic narrow mode and open the drawer
+      toolbar.narrow = true;
+      drawer.openDrawer();
+      Polymer.dom.flush();
+      await test_util.eventToPromise('cr-drawer-opened', drawer);
+
+      toolbar.narrow = false;
+      Polymer.dom.flush();
+      await test_util.eventToPromise('close', drawer);
+      assertFalse(drawer.open);
+    });
+
     test('advanced UIs stay in sync', function() {
       const main = ui.$$('settings-main');
       const floatingMenu = ui.$$('#left settings-menu');
