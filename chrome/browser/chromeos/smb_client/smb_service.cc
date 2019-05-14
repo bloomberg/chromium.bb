@@ -210,6 +210,7 @@ void SmbService::OnUpdateSharePathResponse(
   if (error != smbprovider::ERROR_OK) {
     LOG(ERROR) << "Failed to update the share path for mount id " << mount_id;
     std::move(reply).Run(false /* should_retry_start_read_dir */);
+    return;
   }
   std::move(reply).Run(true /* should_retry_start_read_dir */);
 }
