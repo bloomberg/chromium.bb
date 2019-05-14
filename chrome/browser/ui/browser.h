@@ -21,8 +21,6 @@
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "chrome/browser/devtools/devtools_toggle_action.h"
-#include "chrome/browser/ui/bookmarks/bookmark_bar.h"
-#include "chrome/browser/ui/bookmarks/bookmark_tab_helper_observer.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/chrome_bubble_manager.h"
@@ -52,6 +50,8 @@
 #include "ui/shell_dialogs/select_file_dialog.h"
 
 #if !defined(OS_ANDROID)
+#include "chrome/browser/ui/bookmarks/bookmark_bar.h"
+#include "chrome/browser/ui/bookmarks/bookmark_tab_helper_observer.h"
 #include "components/zoom/zoom_observer.h"
 #endif  // !defined(OS_ANDROID)
 
@@ -114,8 +114,8 @@ class AppBrowserController;
 class Browser : public TabStripModelObserver,
                 public content::WebContentsDelegate,
                 public ChromeWebModalDialogManagerDelegate,
-                public BookmarkTabHelperObserver,
 #if !defined(OS_ANDROID)
+                public BookmarkTabHelperObserver,
                 public zoom::ZoomObserver,
 #endif  // !defined(OS_ANDROID)
                 public content::PageNavigator,
@@ -346,8 +346,10 @@ class Browser : public TabStripModelObserver,
   // Returns true if a FindBarController exists for this browser.
   bool HasFindBarController() const;
 
+#if !defined(OS_ANDROID)
   // Returns the state of the bookmark bar.
   BookmarkBar::State bookmark_bar_state() const { return bookmark_bar_state_; }
+#endif
 
   // State Storage and Retrieval for UI ///////////////////////////////////////
 
@@ -784,11 +786,11 @@ class Browser : public TabStripModelObserver,
   web_modal::WebContentsModalDialogHost* GetWebContentsModalDialogHost()
       override;
 
+#if !defined(OS_ANDROID)
   // Overridden from BookmarkTabHelperObserver:
   void URLStarredChanged(content::WebContents* web_contents,
                          bool starred) override;
 
-#if !defined(OS_ANDROID)
   // Overridden from ZoomObserver:
   void OnZoomChanged(
       const zoom::ZoomController::ZoomChangedEventData& data) override;
@@ -1087,7 +1089,9 @@ class Browser : public TabStripModelObserver,
   // set of commands are enabled.
   std::unique_ptr<web_app::AppBrowserController> app_controller_;
 
+#if !defined(OS_ANDROID)
   BookmarkBar::State bookmark_bar_state_;
+#endif
 
   std::unique_ptr<ExclusiveAccessManager> exclusive_access_manager_;
 

@@ -2977,15 +2977,11 @@ test("unit_tests") {
     "../browser/ui/android/tab_model/tab_model_list_unittest.cc",
     "../browser/ui/android/tab_model/tab_model_unittest.cc",
     "../browser/ui/autofill/autofill_popup_layout_model_unittest.cc",
-    "../browser/ui/autofill/payments/autofill_dialog_models_unittest.cc",
     "../browser/ui/autofill/popup_view_common_unittest.cc",
     "../browser/ui/autofill/popup_view_test_helpers.cc",
     "../browser/ui/autofill/popup_view_test_helpers.h",
     "../browser/ui/blocked_content/popup_opener_tab_helper_unittest.cc",
     "../browser/ui/blocked_content/safe_browsing_triggered_popup_blocker_unittest.cc",
-    "../browser/ui/bookmarks/bookmark_editor_unittest.cc",
-    "../browser/ui/bookmarks/bookmark_ui_utils_desktop_unittest.cc",
-    "../browser/ui/bookmarks/recently_used_folders_combo_model_unittest.cc",
     "../browser/ui/chrome_select_file_policy_unittest.cc",
     "../browser/ui/find_bar/find_backend_unittest.cc",
     "../browser/ui/login/login_handler_unittest.cc",
@@ -2996,8 +2992,6 @@ test("unit_tests") {
     "../browser/ui/passwords/settings/password_manager_porter_unittest.cc",
     "../browser/ui/passwords/settings/password_manager_presenter_unittest.cc",
     "../browser/ui/search_engines/keyword_editor_controller_unittest.cc",
-    "../browser/ui/sync/profile_signin_confirmation_helper_unittest.cc",
-    "../browser/ui/sync/sync_promo_ui_unittest.cc",
     "../browser/ui/sync/tab_contents_synced_tab_delegate_unittest.cc",
     "../browser/ui/webui/favicon_source_unittest.cc",
     "../browser/ui/webui/fileicon_source_unittest.cc",
@@ -3085,11 +3079,17 @@ test("unit_tests") {
   }
 
   if (!is_android) {
-    # CRLSets are not supported on Android or iOS, but available on all other
-    # platforms.
     sources += [
+      # CRLSets are not supported on Android or iOS, but available on all other
+      # platforms.
       "../browser/component_updater/crl_set_component_installer_unittest.cc",
+      "../browser/ui/autofill/payments/autofill_dialog_models_unittest.cc",
+      "../browser/ui/bookmarks/bookmark_editor_unittest.cc",
+      "../browser/ui/bookmarks/bookmark_ui_utils_desktop_unittest.cc",
+      "../browser/ui/bookmarks/recently_used_folders_combo_model_unittest.cc",
       "../browser/ui/hats/hats_unittest.cc",
+      "../browser/ui/sync/profile_signin_confirmation_helper_unittest.cc",
+      "../browser/ui/sync/sync_promo_ui_unittest.cc",
       "../browser/ui/thumbnails/thumbnail_utils_unittest.cc",
       "../browser/ui/toolbar/app_menu_icon_controller_unittest.cc",
     ]
@@ -4586,13 +4586,6 @@ test("unit_tests") {
     if (is_chrome_branded) {
       sources += [ "../browser/google/google_update_win_unittest.cc" ]
     }
-  }
-  if (is_android) {
-    sources -= [
-      "../browser/ui/bookmarks/bookmark_ui_utils_desktop_unittest.cc",
-      "../browser/ui/sync/sync_promo_ui_unittest.cc",
-      "../browser/ui/sync/tab_contents_synced_tab_delegate_unittest.cc",
-    ]
   }
   if (!is_android && !is_chromeos) {
     sources += [

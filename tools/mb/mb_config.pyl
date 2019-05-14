@@ -635,7 +635,7 @@
       # shared library loading is fixed.
       'android-cronet-arm-dbg': 'android_cronet_debug_static_bot_arm_no_neon',
       'android-kitkat-arm-rel': 'android_release_trybot',
-      'android-marshmallow-arm64-rel': 'gpu_tests_android_release_trybot_arm64_no_symbols',
+      'android-marshmallow-arm64-rel': 'gpu_tests_android_release_trybot_arm64_minimal_symbols',
       'android-oreo-arm64-cts-networkservice-dbg': 'android_debug_trybot_arm64',
       'android_archive_rel_ng': 'android_release_trybot',
       'android_arm64_dbg_recipe': 'android_debug_trybot_compile_only_arm64',
@@ -1519,7 +1519,7 @@
 
     'gpu_tests_android_release_bot_minimal_symbols_arm64': [
       'android', 'release_bot', 'minimal_symbols', 'arm64',
-      'strip_debug_info', 'static_angle',
+      'resource_whitelisting', 'static_angle',
     ],
 
     'gpu_tests_android_release_trybot': [
@@ -1530,8 +1530,9 @@
       'gpu_tests', 'android', 'release_trybot', 'arm64', 'static_angle',
     ],
 
-    'gpu_tests_android_release_trybot_arm64_no_symbols': [
-      'android', 'release_trybot', 'arm64', 'no_symbols', 'static_angle',
+    'gpu_tests_android_release_trybot_arm64_minimal_symbols': [
+      'android', 'release_trybot', 'arm64', 'minimal_symbols', 'static_angle',
+      'resource_whitelisting',
     ],
 
     'gpu_tests_android_vulkan_release_trybot': [
