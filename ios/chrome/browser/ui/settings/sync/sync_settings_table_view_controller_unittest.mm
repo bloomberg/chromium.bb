@@ -16,6 +16,7 @@
 #include "components/sync_preferences/pref_service_mock_factory.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/unified_consent/feature.h"
+#include "components/unified_consent/scoped_unified_consent.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
@@ -91,7 +92,9 @@ class SyncSetupServiceMockThatSucceeds : public SyncSetupServiceMockThatFails {
 class SyncSettingsTableViewControllerTest
     : public ChromeTableViewControllerTest {
  public:
-  SyncSettingsTableViewControllerTest() {}
+  SyncSettingsTableViewControllerTest()
+      : unified_consent_disabled_(
+            unified_consent::UnifiedConsentFeatureState::kDisabled) {}
 
   static std::unique_ptr<KeyedService> CreateSyncSetupService(
       web::BrowserState* context) {
@@ -201,6 +204,7 @@ class SyncSettingsTableViewControllerTest
     EXPECT_EQ(expectedShouldDisplayError, hasImage);
   }
 
+  unified_consent::ScopedUnifiedConsent unified_consent_disabled_;
   web::TestWebThreadBundle thread_bundle_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   // Weak, owned by |profile_|.

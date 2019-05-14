@@ -72,6 +72,7 @@ source_set("unit_tests") {
     "//components/sync_preferences",
     "//components/sync_preferences:test_support",
     "//components/unified_consent",
+    "//components/unified_consent:test_support",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
     "//ios/chrome/browser",
