@@ -254,11 +254,6 @@ static void set_good_speed_features_framesize_independent(
     sf->prune_comp_search_by_single_result = 1;
     sf->skip_repeated_newmv = 1;
     sf->obmc_full_pixel_search_level = 1;
-    // TODO(jianj): Following speed feature will be further explored to
-    // identify the appropriate tradeoff between encoder performance and its
-    // speed.
-    sf->prune_single_motion_modes_by_simple_trans = 1;
-
     sf->simple_motion_search_split = 1;
     sf->simple_motion_search_early_term_none = 1;
 
@@ -778,6 +773,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->use_hash_based_trellis = 0;
   sf->prune_comp_search_by_single_result = 0;
   sf->skip_repeated_newmv = 0;
+  // TODO(any) Cleanup this speed feature
   sf->prune_single_motion_modes_by_simple_trans = 0;
 
   // Set decoder side speed feature to use less dual sgr modes
