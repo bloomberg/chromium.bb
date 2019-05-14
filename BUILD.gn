@@ -785,6 +785,10 @@ group("gn_all") {
     "//third_party/pffft:pffft_benchmark",
     "//third_party/pffft:pffft_unittest",
   ]
+
+  if (is_linux) {
+    deps += [ "//third_party/openscreen/src:gn_all" ]
+  }
 }
 
 if ((is_linux || is_win) && enable_remoting && !use_ozone) {
