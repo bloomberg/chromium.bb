@@ -535,7 +535,7 @@ void Animation::SetStartTimeInternal(base::Optional<double> new_start_time) {
   double previous_current_time = CurrentTimeInternal();
   start_time_ = new_start_time;
   if (hold_time_ && playback_rate_) {
-    // If held, the start time would still be derrived from the hold time.
+    // If held, the start time would still be derived from the hold time.
     // Force a new, limited, current time.
     hold_time_ = base::nullopt;
     double current_time = CalculateCurrentTime();
@@ -655,7 +655,16 @@ bool Animation::pending() const {
   return pending_pause_ || pending_play_;
 }
 
+// https://drafts.csswg.org/web-animations-1/#reset-an-animations-pending-tasks.
 void Animation::ResetPendingTasks() {
+  // We use an active playback rate instead of a pending playback rate to
+  // sidestep complications of maintaining correct sequencing for updating
+  // properties like current time and start time. Our implementation performs
+  // calculations based on what will happen rather than waiting on a scheduled
+  // task to commit the changes.
+  // TODO(crbug.com/960944): Bring implementation into closer alignment with the
+  // spec.
+  active_playback_rate_.reset();
   pending_pause_ = false;
   pending_play_ = false;
 }
@@ -713,6 +722,7 @@ void Animation::UnpauseInternal() {
   SetCurrentTimeInternal(CurrentTimeInternal(), kTimingUpdateOnDemand);
 }
 
+// https://drafts.csswg.org/web-animations/#playing-an-animation-section
 void Animation::play(ExceptionState& exception_state) {
   PlayStateUpdateScope update_scope(*this, kTimingUpdateOnDemand);
 
@@ -749,13 +759,23 @@ void Animation::play(ExceptionState& exception_state) {
   }
 }
 
+// https://drafts.csswg.org/web-animations/#reversing-an-animation-section
 void Animation::reverse(ExceptionState& exception_state) {
   if (!playback_rate_) {
     return;
   }
 
+  if (!active_playback_rate_.has_value()) {
+    active_playback_rate_ = playback_rate_;
+  }
+
+  double stored_playback_rate = playback_rate_;
   SetPlaybackRateInternal(-playback_rate_);
   play(exception_state);
+
+  if (exception_state.HadException()) {
+    SetPlaybackRateInternal(stored_playback_rate);
+  }
 }
 
 // https://drafts.csswg.org/web-animations/#finishing-an-animation-section
@@ -793,6 +813,26 @@ void Animation::finish(ExceptionState& exception_state) {
   }
   // Resolve finished event immediately.
   QueueFinishedEvent();
+}
+
+// https://drafts.csswg.org/web-animations/#setting-the-playback-rate-of-an-animation
+void Animation::updatePlaybackRate(double playback_rate) {
+  // The implementation differs from the spec; however, the end result is
+  // consistent. Whereas Animation.playbackRate updates the playback rate
+  // immediately, updatePlaybackRate is to take effect on the next async cycle.
+  // From an implementation perspective, the difference lies in what gets
+  // reported by the playbackRate getter ahead of the async update cycle, as the
+  // Blink implementation guards against a discontinuity in current time even
+  // when updating via the playbackRate setter.
+  double stored_playback_rate = active_playback_rate_.value_or(playback_rate_);
+  AnimationPlayState play_state = CalculateAnimationPlayState();
+  if (play_state == kRunning)
+    pending_play_ = true;
+
+  setPlaybackRate(playback_rate);
+
+  if (pending())
+    active_playback_rate_ = stored_playback_rate;
 }
 
 ScriptPromise Animation::finished(ScriptState* script_state) {
@@ -847,10 +887,14 @@ DispatchEventResult Animation::DispatchEventInternal(Event& event) {
 }
 
 double Animation::playbackRate() const {
-  return playback_rate_;
+  // TODO(crbug.com/960944): Deviates from spec implementation, which instead
+  // uses an 'effective playback rate' to be forward looking and 'playback rate'
+  // for its current value.
+  return active_playback_rate_.value_or(playback_rate_);
 }
 
 void Animation::setPlaybackRate(double playback_rate) {
+  active_playback_rate_.reset();
   if (playback_rate == playback_rate_)
     return;
 
@@ -1049,6 +1093,17 @@ bool Animation::HasActiveAnimationsOnCompositor() {
 bool Animation::Update(TimingUpdateReason reason) {
   if (!timeline_)
     return false;
+
+  if (reason == kTimingUpdateForAnimationFrame) {
+    // Pending tasks are committed when the animation is 'ready'. This can be
+    // at the time of promise resolution or after a frame tick.  Whereas the
+    // spec calls for creating scheduled tasks to commit pending changes, in the
+    // Blink implementation, this is an acknowledgment that the changes have
+    // taken affect.
+    // TODO(crbug.com/960944): Consider restructuring implementation to more
+    // closely align with the recommended algorithm in the spec.
+    ResetPendingTasks();
+  }
 
   PlayStateUpdateScope update_scope(*this, reason, kDoNotSetCompositorPending);
 

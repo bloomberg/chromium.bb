@@ -188,6 +188,7 @@ interface Animation : EventTarget
     method pause
     method play
     method reverse
+    method updatePlaybackRate
     setter currentTime
     setter effect
     setter id

@@ -443,8 +443,12 @@ TEST_F(AnimationAnimationTest, Reverse) {
   animation->pause();
   animation->reverse();
   EXPECT_FALSE(animation->Paused());
-  EXPECT_EQ(-1, animation->playbackRate());
+  EXPECT_TRUE(animation->pending());
+  EXPECT_EQ(1, animation->playbackRate());
   EXPECT_EQ(10, animation->CurrentTimeInternal());
+  SimulateFrame(0);
+  EXPECT_FALSE(animation->pending());
+  EXPECT_EQ(-1, animation->playbackRate());
 }
 
 TEST_F(AnimationAnimationTest, ReverseDoesNothingWithPlaybackRateZero) {
@@ -616,6 +620,67 @@ TEST_F(AnimationAnimationTest, SetPlaybackRateMax) {
   EXPECT_EQ(0, animation->CurrentTimeInternal());
   SimulateFrame(1);
   EXPECT_EQ(30, animation->CurrentTimeInternal());
+}
+
+TEST_F(AnimationAnimationTest, UpdatePlaybackRate) {
+  animation->updatePlaybackRate(2);
+  EXPECT_EQ(1, animation->playbackRate());
+
+  SimulateFrame(0);
+  EXPECT_EQ(2, animation->playbackRate());
+  EXPECT_EQ(0, animation->CurrentTimeInternal());
+
+  SimulateFrame(10);
+  EXPECT_EQ(20, animation->CurrentTimeInternal());
+}
+
+TEST_F(AnimationAnimationTest, UpdatePlaybackRateWhilePaused) {
+  animation->pause();
+
+  // Pending playback rate on pending-paused animation is picked up after async
+  // tick.
+  EXPECT_TRUE(animation->Paused());
+  EXPECT_TRUE(animation->pending());
+  animation->updatePlaybackRate(2);
+  EXPECT_EQ(1, animation->playbackRate());
+
+  SimulateFrame(1);
+  EXPECT_FALSE(animation->pending());
+  EXPECT_EQ(2, animation->playbackRate());
+
+  // Pending playback rate on a paused animation is resolved immediately.
+  animation->updatePlaybackRate(3);
+  EXPECT_FALSE(animation->pending());
+  EXPECT_EQ(3, animation->playbackRate());
+}
+
+TEST_F(AnimationAnimationTest, UpdatePlaybackRateWhileLimited) {
+  NonThrowableExceptionState exception_state;
+  animation->finish(exception_state);
+  EXPECT_EQ(30, animation->CurrentTimeInternal());
+
+  // Updating playback rate does not affect current time.
+  animation->updatePlaybackRate(2);
+  EXPECT_EQ(30, animation->CurrentTimeInternal());
+
+  // Updating payback rate is resolved immediately for an animation in the
+  // finished state.
+  EXPECT_EQ(2, animation->playbackRate());
+}
+
+TEST_F(AnimationAnimationTest, UpdatePlaybackRateWhileRunning) {
+  animation->play();
+  SimulateFrame(1);
+  animation->updatePlaybackRate(2);
+
+  // Updating playback rate triggers pending state for the play state.
+  // Pending playback rate is not resolved until next async tick.
+  EXPECT_TRUE(animation->pending());
+  EXPECT_EQ(1, animation->playbackRate());
+
+  SimulateFrame(1);
+  EXPECT_FALSE(animation->pending());
+  EXPECT_EQ(2, animation->playbackRate());
 }
 
 TEST_F(AnimationAnimationTest, SetEffect) {

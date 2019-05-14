@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-FAIL All property keys are recognized assert_in_array: Test property 'updatePlaybackRate' should be one of the properties on  Animation value "updatePlaybackRate" not in array ["effect", "startTime", "currentTime", "playbackRate", "playState", "pending", "id", "onfinish", "oncancel", "finish", "play", "pause", "reverse", "cancel", "finished", "ready", "timeline", "Animation constructor"]
+PASS All property keys are recognized
 PASS Animation.effect does NOT trigger a style change event
 PASS Animation.startTime does NOT trigger a style change event
 PASS Animation.currentTime does NOT trigger a style change event
@@ -13,6 +13,7 @@ PASS Animation.finish does NOT trigger a style change event
 PASS Animation.play does NOT trigger a style change event
 PASS Animation.pause does NOT trigger a style change event
 PASS Animation.reverse does NOT trigger a style change event
+PASS Animation.updatePlaybackRate does NOT trigger a style change event
 PASS Animation.cancel does NOT trigger a style change event
 PASS Animation.finished does NOT trigger a style change event
 PASS Animation.ready does NOT trigger a style change event

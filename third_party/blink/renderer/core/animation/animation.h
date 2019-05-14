@@ -135,6 +135,7 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
   void play(ExceptionState& = ASSERT_NO_EXCEPTION);
   void reverse(ExceptionState& = ASSERT_NO_EXCEPTION);
   void finish(ExceptionState& = ASSERT_NO_EXCEPTION);
+  void updatePlaybackRate(double playback_rate);
 
   ScriptPromise finished(ScriptState*);
   ScriptPromise ready(ScriptState*);
@@ -241,6 +242,12 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
   double EffectEnd() const;
   bool Limited(double current_time) const;
 
+  // Playback rate that will take effect once any pending tasks are resolved.
+  // If there are no pending tasks, then the effective playback rate equals the
+  // active playback rate.
+  double EffectivePlaybackRate() const;
+  void ResolvePendingPlaybackRate();
+
   // https://drafts.csswg.org/web-animations/#play-states
   // Per spec the viable states are: idle, running, paused and finished.
   // Our implementation has an additional state called 'pending' which serves a
@@ -297,6 +304,14 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
   // Web exposed play state, which does not have pending state.
   AnimationPlayState animation_play_state_;
   double playback_rate_;
+  // Playback rate that is currently in effect if differing from playback_rate_.
+  // When playback_rate_ is modified, the new rate takes effect on the next
+  // async tick. The currently active value is stored for use by the
+  // Animation.playbackRate method.
+  // TODO(crbug.com/960944): Switch to using pending_playback_rate_ once the
+  // web-animations implementation is more closely aligned with the spec (i.e.
+  // supports scheduling of pending tasks).
+  base::Optional<double> active_playback_rate_;
   base::Optional<double> start_time_;
   base::Optional<double> hold_time_;
 

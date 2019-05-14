@@ -51,6 +51,7 @@ enum AnimationPlayState { "idle", "pending", "running", "paused", "finished" };
     [Measure, RaisesException] void play();
     [Measure, RaisesException] void pause();
     [Measure, RaisesException] void reverse();
+    [Measure] void updatePlaybackRate(double playback_rate);
     [Measure] attribute DOMString id;
     [Measure] void cancel();
     [Measure] attribute EventHandler onfinish;

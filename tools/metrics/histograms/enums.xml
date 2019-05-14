@@ -23217,6 +23217,7 @@ Called by update_net_error_codes.py.-->
   <int value="2896" label="PaymentRequestShippingAddressChange"/>
   <int value="2897" label="PaymentRequestShippingOptionChange"/>
   <int value="2898" label="PaymentRequestPaymentMethodChange"/>
+  <int value="2899" label="V8Animation_UpdatePlaybackRate_Method"/>
 </enum>
 
 <enum name="FeaturePolicyFeature">
