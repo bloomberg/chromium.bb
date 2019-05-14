@@ -63,15 +63,6 @@ LocalCaretRect LocalCaretRectOfPositionTemplate(
     if (NGInlineFormattingContextOf(adjusted.GetPosition()))
       return ComputeNGLocalCaretRect(adjusted);
 
-    // TODO(editing-dev): This DCHECK is for ensuring the correctness of
-    // breaking |ComputeInlineBoxPosition| into |ComputeInlineAdjustedPosition|
-    // and |ComputeInlineBoxPositionForInlineAdjustedPosition|. If there is any
-    // DCHECK hit, we should pass primary direction to the latter function.
-    // TODO(crbug.com/793098): Fix it so that we don't need to bother about
-    // primary direction.
-    DCHECK_EQ(
-        PrimaryDirectionOf(*position.GetPosition().ComputeContainerNode()),
-        PrimaryDirectionOf(*adjusted.GetPosition().ComputeContainerNode()));
     const InlineBoxPosition& box_position =
         ComputeInlineBoxPositionForInlineAdjustedPosition(adjusted);
 
@@ -114,14 +105,6 @@ LocalCaretRect LocalSelectionRectOfPositionTemplate(
     return ComputeNGLocalSelectionRect(adjusted);
   }
 
-  // TODO(editing-dev): This DCHECK is for ensuring the correctness of
-  // breaking |ComputeInlineBoxPosition| into |ComputeInlineAdjustedPosition|
-  // and |ComputeInlineBoxPositionForInlineAdjustedPosition|. If there is any
-  // DCHECK hit, we should pass primary direction to the latter function.
-  // TODO(crbug.com/793098): Fix it so that we don't need to bother about
-  // primary direction.
-  DCHECK_EQ(PrimaryDirectionOf(*position.GetPosition().ComputeContainerNode()),
-            PrimaryDirectionOf(*adjusted.GetPosition().ComputeContainerNode()));
   const InlineBoxPosition& box_position =
       ComputeInlineBoxPositionForInlineAdjustedPosition(adjusted);
 
