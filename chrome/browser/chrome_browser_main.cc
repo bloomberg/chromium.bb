@@ -312,6 +312,7 @@
 #include "chrome/browser/component_updater/vr_assets_component_installer.h"
 #include "chrome/browser/vr/service/vr_service_impl.h"
 #if defined(OS_WIN)
+#include "chrome/browser/vr/service/xr_session_request_consent_manager_impl.h"
 #include "chrome/browser/vr/ui_host/vr_ui_host_impl.h"
 #endif
 #endif
@@ -1083,6 +1084,8 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
 
 #if defined(OS_WIN)
   vr::VRUiHost::SetFactory(&vr::VRUiHostImpl::Create);
+  vr::XRSessionRequestConsentManager::SetInstance(
+      new vr::XRSessionRequestConsentManagerImpl());
 #endif  // defined(OS_WIN)
 #endif  // BUILDFLAG(ENABLE_VR)
 

@@ -7,11 +7,23 @@
 #include "chrome/browser/vr/test/webxr_vr_browser_test.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
+#include "testing/gmock/include/gmock/gmock.h"
+
+using testing::_;
+using testing::Invoke;
 
 namespace vr {
 
 void WebXrVrBrowserTestBase::EnterSessionWithUserGesture(
     content::WebContents* web_contents) {
+#if defined(OS_WIN)
+  XRSessionRequestConsentManager::SetInstanceForTesting(&consent_manager_);
+  ON_CALL(consent_manager_, ShowDialogAndGetConsent(_, _))
+      .WillByDefault(Invoke(
+          [](content::WebContents*, base::OnceCallback<void(bool)> callback) {
+            std::move(callback).Run(true);
+          }));
+#endif
   // ExecuteScript runs with a user gesture, so we can just directly call
   // requestSession instead of having to do the hacky workaround the
   // instrumentation tests use of actually sending a click event to the canvas.
@@ -27,6 +39,9 @@ void WebXrVrBrowserTestBase::EnterSessionWithUserGestureOrFail(
 }
 
 void WebXrVrBrowserTestBase::EndSession(content::WebContents* web_contents) {
+#if defined(OS_WIN)
+  XRSessionRequestConsentManager::SetInstanceForTesting(nullptr);
+#endif
   RunJavaScriptOrFail(
       "sessionInfos[sessionTypes.IMMERSIVE].currentSession.end()",
       web_contents);

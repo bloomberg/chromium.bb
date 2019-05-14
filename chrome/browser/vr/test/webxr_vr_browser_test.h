@@ -16,6 +16,7 @@
 #include "device/vr/buildflags/buildflags.h"
 
 #if defined(OS_WIN)
+#include "chrome/browser/vr/test/mock_xr_session_request_consent_manager.h"
 #include "services/service_manager/sandbox/features.h"
 #endif
 
@@ -37,6 +38,10 @@ class WebXrVrBrowserTestBase : public WebXrBrowserTestBase {
   using WebXrBrowserTestBase::EnterSessionWithUserGestureOrFail;
   using WebXrBrowserTestBase::EndSession;
   using WebXrBrowserTestBase::EndSessionOrFail;
+
+#if defined(OS_WIN)
+  MockXRSessionRequestConsentManager consent_manager_;
+#endif
 };
 
 // Test class with OpenVR disabled.

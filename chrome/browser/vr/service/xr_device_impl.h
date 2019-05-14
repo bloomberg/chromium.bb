@@ -83,6 +83,10 @@ class XRDeviceImpl : public device::mojom::XRDevice {
   void OnSessionCreated(
       device::mojom::XRDevice::RequestSessionCallback callback,
       device::mojom::XRSessionPtr session);
+  void OnUserConsent(device::mojom::XRSessionOptionsPtr options,
+                     bool triggered_by_displayactive,
+                     device::mojom::XRDevice::RequestSessionCallback callback,
+                     bool allowed);
 
   // TODO(https://crbug.com/837538): Instead, check before returning this
   // object.

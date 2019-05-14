@@ -17,6 +17,7 @@ import("//components/feed/features.gni")
 import("//components/nacl/features.gni")
 import("//components/offline_pages/buildflags/features.gni")
 import("//components/signin/features.gni")
+import("//device/vr/buildflags/buildflags.gni")
 import("//extensions/buildflags/buildflags.gni")
 import("//ppapi/buildflags/buildflags.gni")
 import("//printing/buildflags/buildflags.gni")
@@ -338,6 +339,15 @@ jumbo_split_static_library("ui") {
     "webui/webui_util.cc",
     "webui/webui_util.h",
   ]
+
+  if (enable_vr) {
+    if (is_win) {
+      sources += [
+        "xr/xr_session_request_consent_dialog_delegate.cc",
+        "xr/xr_session_request_consent_dialog_delegate.h",
+      ]
+    }
+  }
 
   if (safe_browsing_mode == 1) {
     sources += [

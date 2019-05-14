@@ -4,9 +4,12 @@
 
 #include "chrome/browser/vr/service/xr_device_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/trace_event/common/trace_event_common.h"
+#include "build/build_config.h"
 #include "chrome/browser/vr/metrics/session_metrics_helper.h"
 #include "chrome/browser/vr/mode.h"
 #include "chrome/browser/vr/service/browser_xr_runtime.h"
@@ -20,6 +23,10 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/origin_util.h"
 #include "device/vr/vr_display_impl.h"
+
+#if defined(OS_WIN)
+#include "chrome/browser/vr/service/xr_session_request_consent_manager.h"
+#endif
 
 namespace vr {
 
@@ -119,6 +126,40 @@ void XRDeviceImpl::RequestSession(
     return;
   }
 
+  if (XRRuntimeManager::GetInstance()->IsOtherDevicePresenting(this)) {
+    // Can't create sessions while an immersive session exists.
+    std::move(callback).Run(nullptr);
+    return;
+  }
+
+#if defined(OS_WIN)
+  if (!options->environment_integration &&  // disable consent dialog for AR
+      options->immersive) {
+    // Present a consent dialog.
+    XRSessionRequestConsentManager::Instance()->ShowDialogAndGetConsent(
+        GetWebContents(),
+        base::BindOnce(&XRDeviceImpl::OnUserConsent,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(options),
+                       triggered_by_displayactive, std::move(callback)));
+    return;
+  }
+#endif
+
+  OnUserConsent(std::move(options), triggered_by_displayactive,
+                std::move(callback), true);
+}
+
+void XRDeviceImpl::OnUserConsent(
+    device::mojom::XRSessionOptionsPtr options,
+    bool triggered_by_displayactive,
+    device::mojom::XRDevice::RequestSessionCallback callback,
+    bool allowed) {
+  if (!allowed) {
+    std::move(callback).Run(nullptr);
+    return;
+  }
+
+  // Re-check for another device instance after a potential user consent.
   if (XRRuntimeManager::GetInstance()->IsOtherDevicePresenting(this)) {
     // Can't create sessions while an immersive session exists.
     std::move(callback).Run(nullptr);

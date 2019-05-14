@@ -15,6 +15,7 @@
 #include "device/vr/buildflags/buildflags.h"
 
 #if defined(OS_WIN)
+#include "chrome/browser/vr/test/mock_xr_session_request_consent_manager.h"
 #include "services/service_manager/sandbox/features.h"
 #endif
 

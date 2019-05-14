@@ -4889,6 +4889,8 @@ jumbo_split_static_library("browser") {
       # window shows alongside the head-mounted display is only supported on
       # Windows, and that's the only situation where we need the UI host.
       sources += [
+        "vr/service/xr_session_request_consent_manager_impl.cc",
+        "vr/service/xr_session_request_consent_manager_impl.h",
         "vr/ui_host/vr_ui_host_impl.cc",
         "vr/ui_host/vr_ui_host_impl.h",
       ]
