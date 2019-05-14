@@ -58,8 +58,8 @@ class MEDIA_GPU_EXPORT V4L2JpegEncodeAccelerator
   size_t GetMaxCodedBufferSize(const gfx::Size& picture_size) override;
   void Encode(scoped_refptr<media::VideoFrame> video_frame,
               int quality,
-              const BitstreamBuffer* exif_buffer,
-              const BitstreamBuffer& output_buffer) override;
+              BitstreamBuffer* exif_buffer,
+              BitstreamBuffer output_buffer) override;
 
   void EncodeWithDmaBuf(scoped_refptr<VideoFrame> input_frame,
                         scoped_refptr<VideoFrame> output_frame,
@@ -99,8 +99,8 @@ class MEDIA_GPU_EXPORT V4L2JpegEncodeAccelerator
   struct JobRecord {
     JobRecord(scoped_refptr<VideoFrame> input_frame,
               int quality,
-              const BitstreamBuffer* exif_buffer,
-              const BitstreamBuffer& output_buffer);
+              BitstreamBuffer* exif_buffer,
+              BitstreamBuffer output_buffer);
     ~JobRecord();
 
     // Input frame buffer.

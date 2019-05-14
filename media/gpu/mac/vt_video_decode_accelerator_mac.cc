@@ -1113,7 +1113,7 @@ void VTVideoDecodeAccelerator::FlushDone(TaskType type) {
   ProcessWorkQueues();
 }
 
-void VTVideoDecodeAccelerator::Decode(const BitstreamBuffer& bitstream) {
+void VTVideoDecodeAccelerator::Decode(BitstreamBuffer bitstream) {
   Decode(bitstream.ToDecoderBuffer(), bitstream.id());
 }
 

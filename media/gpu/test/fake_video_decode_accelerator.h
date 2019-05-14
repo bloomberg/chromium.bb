@@ -27,7 +27,7 @@ class FakeVideoDecodeAccelerator : public VideoDecodeAccelerator {
   ~FakeVideoDecodeAccelerator() override;
 
   bool Initialize(const Config& config, Client* client) override;
-  void Decode(const BitstreamBuffer& bitstream_buffer) override;
+  void Decode(BitstreamBuffer bitstream_buffer) override;
   void AssignPictureBuffers(const std::vector<PictureBuffer>& buffers) override;
   void ReusePictureBuffer(int32_t picture_buffer_id) override;
   void Flush() override;

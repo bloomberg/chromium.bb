@@ -1044,8 +1044,7 @@ bool V4L2SliceVideoDecodeAccelerator::StopDevicePoll(bool keep_input_state) {
   return true;
 }
 
-void V4L2SliceVideoDecodeAccelerator::Decode(
-    const BitstreamBuffer& bitstream_buffer) {
+void V4L2SliceVideoDecodeAccelerator::Decode(BitstreamBuffer bitstream_buffer) {
   Decode(bitstream_buffer.ToDecoderBuffer(), bitstream_buffer.id());
 }
 

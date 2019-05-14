@@ -909,7 +909,7 @@ bool VideoDecoderShim::Initialize(const Config& vda_config, Client* client) {
   return true;
 }
 
-void VideoDecoderShim::Decode(const media::BitstreamBuffer& bitstream_buffer) {
+void VideoDecoderShim::Decode(media::BitstreamBuffer bitstream_buffer) {
   DCHECK(RenderThreadImpl::current());
   DCHECK_EQ(state_, DECODING);
 

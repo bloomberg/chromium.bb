@@ -42,8 +42,8 @@ class MEDIA_GPU_EXPORT VaapiJpegEncodeAccelerator
   // Currently only I420 format is supported for |video_frame|.
   void Encode(scoped_refptr<VideoFrame> video_frame,
               int quality,
-              const BitstreamBuffer* exif_buffer,
-              const BitstreamBuffer& output_buffer) override;
+              BitstreamBuffer* exif_buffer,
+              BitstreamBuffer output_buffer) override;
 
   void EncodeWithDmaBuf(scoped_refptr<VideoFrame> input_frame,
                         scoped_refptr<VideoFrame> output_frame,

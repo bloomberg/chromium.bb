@@ -68,15 +68,14 @@ class MEDIA_EXPORT DecoderBuffer
                                                size_t side_data_size);
 
   // Create a DecoderBuffer where data() of |size| bytes resides within the
-  // memory referred to by |handle| at non-negative offset |offset|. The
+  // memory referred to by |region| at non-negative offset |offset|. The
   // buffer's |is_key_frame_| will default to false.
   //
   // The shared memory will be mapped read-only.
   //
-  // If mapping fails, nullptr will be returned. In all cases |handle| is
-  // consumed.
-  static scoped_refptr<DecoderBuffer> FromSharedMemoryHandle(
-      const base::SharedMemoryHandle& handle,
+  // If mapping fails, nullptr will be returned.
+  static scoped_refptr<DecoderBuffer> FromSharedMemoryRegion(
+      base::subtle::PlatformSharedMemoryRegion region,
       off_t offset,
       size_t size);
 

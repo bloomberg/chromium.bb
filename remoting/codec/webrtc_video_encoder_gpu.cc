@@ -239,9 +239,8 @@ void WebrtcVideoEncoderGpu::UseOutputBitstreamBufferId(
     int32_t bitstream_buffer_id) {
   DVLOG(3) << __func__ << " id=" << bitstream_buffer_id;
   video_encode_accelerator_->UseOutputBitstreamBuffer(media::BitstreamBuffer(
-      bitstream_buffer_id,
-      output_buffers_[bitstream_buffer_id]->handle().Duplicate(),
-      output_buffer_size_));
+      bitstream_buffer_id, output_buffers_[bitstream_buffer_id]->handle(),
+      false /* read_only */, output_buffer_size_));
 }
 
 void WebrtcVideoEncoderGpu::RunAnyPendingEncode() {

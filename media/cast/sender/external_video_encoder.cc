@@ -409,6 +409,7 @@ class ExternalVideoEncoder::VEAClientImpl
           media::BitstreamBuffer(
               bitstream_buffer_id,
               output_buffers_[bitstream_buffer_id]->handle(),
+              false /* read_only */,
               output_buffers_[bitstream_buffer_id]->mapped_size()));
     }
   }
@@ -453,9 +454,9 @@ class ExternalVideoEncoder::VEAClientImpl
     // Immediately provide all output buffers to the VEA.
     for (size_t i = 0; i < output_buffers_.size(); ++i) {
       video_encode_accelerator_->UseOutputBitstreamBuffer(
-          media::BitstreamBuffer(static_cast<int32_t>(i),
-                                 output_buffers_[i]->handle(),
-                                 output_buffers_[i]->mapped_size()));
+          media::BitstreamBuffer(
+              static_cast<int32_t>(i), output_buffers_[i]->handle(),
+              false /* read_only */, output_buffers_[i]->mapped_size()));
     }
   }
 

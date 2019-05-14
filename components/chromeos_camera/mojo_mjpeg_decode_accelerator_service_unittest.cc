@@ -76,12 +76,13 @@ TEST_F(MojoMjpegDecodeAcceleratorServiceTest, InitializeAndDecode) {
 
   media::BitstreamBuffer bitstream_buffer(
       kArbitraryBitstreamBufferId,
-      base::SharedMemory::DuplicateHandle(shm.handle()),
+      base::SharedMemory::DuplicateHandle(shm.handle()), false /* read_only */,
       kInputBufferSizeInBytes);
   bitstream_buffer.SetDecryptionSettings(kKeyId, kIv, subsamples);
 
   jpeg_decoder->Decode(
-      bitstream_buffer, kDummyFrameCodedSize, std::move(output_frame_handle),
+      std::move(bitstream_buffer), kDummyFrameCodedSize,
+      std::move(output_frame_handle),
       base::checked_cast<uint32_t>(kOutputFrameSizeInBytes),
       base::Bind(&MojoMjpegDecodeAcceleratorServiceTest::OnDecodeAck,
                  base::Unretained(this), run_loop2.QuitClosure()));

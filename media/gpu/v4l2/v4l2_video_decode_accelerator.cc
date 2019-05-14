@@ -335,8 +335,7 @@ bool V4L2VideoDecodeAccelerator::CheckConfig(const Config& config) {
   return true;
 }
 
-void V4L2VideoDecodeAccelerator::Decode(
-    const BitstreamBuffer& bitstream_buffer) {
+void V4L2VideoDecodeAccelerator::Decode(BitstreamBuffer bitstream_buffer) {
   Decode(bitstream_buffer.ToDecoderBuffer(), bitstream_buffer.id());
 }
 

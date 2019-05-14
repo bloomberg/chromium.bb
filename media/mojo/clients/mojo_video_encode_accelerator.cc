@@ -162,18 +162,15 @@ void MojoVideoEncodeAccelerator::Encode(const scoped_refptr<VideoFrame>& frame,
 }
 
 void MojoVideoEncodeAccelerator::UseOutputBitstreamBuffer(
-    const BitstreamBuffer& buffer) {
+    BitstreamBuffer buffer) {
   DVLOG(2) << __func__ << " buffer.id()= " << buffer.id()
            << " buffer.size()= " << buffer.size() << "B";
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  DCHECK(buffer.handle().IsValid());
+  DCHECK(buffer.region().IsValid());
 
-  // TODO(https://crbug.com/793446): Only wrap read-only handles here and change
-  // the protection status to kReadOnly.
-  mojo::ScopedSharedBufferHandle buffer_handle = mojo::WrapSharedMemoryHandle(
-      buffer.handle().Duplicate(), buffer.size(),
-      mojo::UnwrappedSharedMemoryHandleProtection::kReadWrite);
+  auto buffer_handle =
+      mojo::WrapPlatformSharedMemoryRegion(buffer.TakeRegion());
 
   vea_->UseOutputBitstreamBuffer(buffer.id(), std::move(buffer_handle));
 }

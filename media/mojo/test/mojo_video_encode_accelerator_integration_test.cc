@@ -187,8 +187,8 @@ TEST_F(MojoVideoEncodeAcceleratorIntegrationTest,
               NotifyError(VideoEncodeAccelerator::kInvalidArgumentError));
 
   mojo_vea()->UseOutputBitstreamBuffer(
-      BitstreamBuffer(17 /* id */, shmem.handle(), kInvalidShMemSize,
-                      0 /* offset */, base::TimeDelta()));
+      BitstreamBuffer(17 /* id */, shmem.handle(), false /* read_only */,
+                      kInvalidShMemSize, 0 /* offset */, base::TimeDelta()));
   base::RunLoop().RunUntilIdle();
 }
 
@@ -207,9 +207,9 @@ TEST_F(MojoVideoEncodeAcceleratorIntegrationTest,
   EXPECT_CALL(*mock_vea_client,
               NotifyError(VideoEncodeAccelerator::kInvalidArgumentError));
 
-  mojo_vea()->UseOutputBitstreamBuffer(
-      BitstreamBuffer(kInvalidBistreamBufferId, shmem.handle(), kShMemSize,
-                      0 /* offset */, base::TimeDelta()));
+  mojo_vea()->UseOutputBitstreamBuffer(BitstreamBuffer(
+      kInvalidBistreamBufferId, shmem.handle(), false /* read_only */,
+      kShMemSize, 0 /* offset */, base::TimeDelta()));
   base::RunLoop().RunUntilIdle();
 }
 
@@ -224,9 +224,9 @@ TEST_F(MojoVideoEncodeAcceleratorIntegrationTest, EncodeOneFrame) {
     const uint64_t kShMemSize = fake_vea()->minimum_output_buffer_size();
     base::SharedMemory shmem;
     shmem.CreateAnonymous(kShMemSize);
-    mojo_vea()->UseOutputBitstreamBuffer(
-        BitstreamBuffer(kBistreamBufferId, shmem.handle(), kShMemSize,
-                        0 /* offset */, base::TimeDelta()));
+    mojo_vea()->UseOutputBitstreamBuffer(BitstreamBuffer(
+        kBistreamBufferId, shmem.handle(), false /* read_only */, kShMemSize,
+        0 /* offset */, base::TimeDelta()));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -263,8 +263,8 @@ TEST_F(MojoVideoEncodeAcceleratorIntegrationTest,
     base::SharedMemory shmem;
     shmem.CreateAnonymous(kShMemSize);
     mojo_vea()->UseOutputBitstreamBuffer(
-        BitstreamBuffer(17 /* id */, shmem.handle(), kShMemSize, 0 /* offset */,
-                        base::TimeDelta()));
+        BitstreamBuffer(17 /* id */, shmem.handle(), false /* read_only */,
+                        kShMemSize, 0 /* offset */, base::TimeDelta()));
     base::RunLoop().RunUntilIdle();
   }
 
