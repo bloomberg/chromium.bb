@@ -813,8 +813,9 @@ String Internals::visiblePlaceholder(Element* element) {
 
 bool Internals::isValidationMessageVisible(Element* element) {
   DCHECK(element);
-  return IsHTMLFormControlElement(element) &&
-         ToHTMLFormControlElement(element)->IsValidationMessageVisible();
+  if (auto* control = ListedElement::From(*element))
+    return control->IsValidationMessageVisible();
+  return false;
 }
 
 void Internals::selectColorInColorChooser(Element* element,

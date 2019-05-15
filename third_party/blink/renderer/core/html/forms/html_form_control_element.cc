@@ -366,15 +366,6 @@ bool HTMLFormControlElement::IsValidElement() {
   return ListedElement::IsValidElement();
 }
 
-void HTMLFormControlElement::DispatchBlurEvent(
-    Element* new_focused_element,
-    WebFocusType type,
-    InputDeviceCapabilities* source_capabilities) {
-  HTMLElement::DispatchBlurEvent(new_focused_element, type,
-                                 source_capabilities);
-  HideVisibleValidationMessage();
-}
-
 bool HTMLFormControlElement::IsSuccessfulSubmitButton() const {
   return CanBeSuccessfulSubmitButton() && !IsDisabledFormControl();
 }

@@ -92,6 +92,7 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/popup_opening_observer.h"
+#include "third_party/blink/renderer/core/page/validation_message_client.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation_timeline.h"
 #include "third_party/blink/renderer/platform/cursor.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
@@ -217,6 +218,8 @@ void ChromeClientImpl::TakeFocus(WebFocusType type) {
 }
 
 void ChromeClientImpl::FocusedNodeChanged(Node* from_node, Node* to_node) {
+  web_view_->GetPage()->GetValidationMessageClient().DidChangeFocusTo(to_node);
+
   if (!web_view_->Client())
     return;
 

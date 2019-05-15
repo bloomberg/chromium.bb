@@ -58,6 +58,7 @@ class ValidationMessageClient : public GarbageCollectedMixin {
   virtual bool IsValidationMessageVisible(const Element& anchor) = 0;
 
   virtual void DocumentDetached(const Document&) = 0;
+  virtual void DidChangeFocusTo(const Node* new_node) = 0;
 
   virtual void WillBeDestroyed() = 0;
 
