@@ -49,11 +49,11 @@ using base::test::ios::WaitUntilConditionOrTimeout;
 GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
 #endif  // defined(CHROME_EARL_GREY_2)
 
-@implementation ChromeEarlGrey
+@implementation ChromeEarlGreyImpl
 
 #pragma mark - History Utilities
 
-+ (NSError*)clearBrowsingHistory {
+- (NSError*)clearBrowsingHistory {
   NSError* error = [ChromeEarlGreyAppInterface clearBrowsingHistory];
 
   // After clearing browsing history via code, wait for the UI to be done
@@ -100,11 +100,11 @@ id ExecuteJavaScript(NSString* javascript,
 
 }  // namespace chrome_test_util
 
-@implementation ChromeEarlGrey (EG1)
+@implementation ChromeEarlGreyImpl (EG1)
 
 #pragma mark - Cookie Utilities
 
-+ (NSDictionary*)cookies {
+- (NSDictionary*)cookies {
   NSString* const kGetCookiesScript =
       @"document.cookie ? document.cookie.split(/;\\s*/) : [];";
 
@@ -129,7 +129,7 @@ id ExecuteJavaScript(NSString* javascript,
 
 #pragma mark - Navigation Utilities
 
-+ (NSError*)loadURL:(const GURL&)URL {
+- (NSError*)loadURL:(const GURL&)URL {
   chrome_test_util::LoadUrl(URL);
   NSError* loadingError = [ChromeEarlGrey waitForPageToFinishLoading];
   if (loadingError) {
@@ -147,24 +147,24 @@ id ExecuteJavaScript(NSString* javascript,
   return nil;
 }
 
-+ (NSError*)reload {
+- (NSError*)reload {
   [chrome_test_util::BrowserCommandDispatcherForMainBVC() reload];
   return [ChromeEarlGrey waitForPageToFinishLoading];
 }
 
-+ (NSError*)goBack {
+- (NSError*)goBack {
   [chrome_test_util::BrowserCommandDispatcherForMainBVC() goBack];
 
   return [ChromeEarlGrey waitForPageToFinishLoading];
 }
 
-+ (NSError*)goForward {
+- (NSError*)goForward {
   [chrome_test_util::BrowserCommandDispatcherForMainBVC() goForward];
 
   return [ChromeEarlGrey waitForPageToFinishLoading];
 }
 
-+ (NSError*)openNewTab {
+- (NSError*)openNewTab {
   chrome_test_util::OpenNewTab();
   NSError* error = [ChromeEarlGrey waitForPageToFinishLoading];
   if (!error) {
@@ -173,7 +173,7 @@ id ExecuteJavaScript(NSString* javascript,
   return error;
 }
 
-+ (NSError*)openNewIncognitoTab {
+- (NSError*)openNewIncognitoTab {
   chrome_test_util::OpenNewIncognitoTab();
   NSError* error = [ChromeEarlGrey waitForPageToFinishLoading];
   if (!error) {
@@ -182,12 +182,12 @@ id ExecuteJavaScript(NSString* javascript,
   return error;
 }
 
-+ (void)closeAllTabsInCurrentMode {
+- (void)closeAllTabsInCurrentMode {
   chrome_test_util::CloseAllTabsInCurrentMode();
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 }
 
-+ (NSError*)closeAllIncognitoTabs {
+- (NSError*)closeAllIncognitoTabs {
   if (!chrome_test_util::CloseAllIncognitoTabs()) {
     return testing::NSErrorWithLocalizedDescription(@"Tabs did not close");
   }
@@ -196,12 +196,12 @@ id ExecuteJavaScript(NSString* javascript,
   return nil;
 }
 
-+ (void)closeCurrentTab {
+- (void)closeCurrentTab {
   chrome_test_util::CloseCurrentTab();
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 }
 
-+ (NSError*)waitForPageToFinishLoading {
+- (NSError*)waitForPageToFinishLoading {
   if (!chrome_test_util::WaitForPageToFinishLoading()) {
     return testing::NSErrorWithLocalizedDescription(
         @"Page did not complete loading.");
@@ -210,7 +210,7 @@ id ExecuteJavaScript(NSString* javascript,
   return nil;
 }
 
-+ (NSError*)tapWebViewElementWithID:(NSString*)elementID {
+- (NSError*)tapWebViewElementWithID:(NSString*)elementID {
   BOOL success =
       web::test::TapWebViewElementWithId(chrome_test_util::GetCurrentWebState(),
                                          base::SysNSStringToUTF8(elementID));
@@ -224,13 +224,13 @@ id ExecuteJavaScript(NSString* javascript,
   return nil;
 }
 
-+ (NSError*)waitForErrorPage {
+- (NSError*)waitForErrorPage {
   NSString* const kErrorPageText =
       l10n_util::GetNSString(IDS_ERRORPAGES_HEADING_NOT_AVAILABLE);
   return [self waitForStaticHTMLViewContainingText:kErrorPageText];
 }
 
-+ (NSError*)waitForStaticHTMLViewContainingText:(NSString*)text {
+- (NSError*)waitForStaticHTMLViewContainingText:(NSString*)text {
   bool success = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^bool {
     return chrome_test_util::StaticHtmlViewContainingText(
         chrome_test_util::GetCurrentWebState(), base::SysNSStringToUTF8(text));
@@ -246,7 +246,7 @@ id ExecuteJavaScript(NSString* javascript,
   return nil;
 }
 
-+ (NSError*)waitForStaticHTMLViewNotContainingText:(NSString*)text {
+- (NSError*)waitForStaticHTMLViewNotContainingText:(NSString*)text {
   bool success = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^bool {
     return !chrome_test_util::StaticHtmlViewContainingText(
         chrome_test_util::GetCurrentWebState(), base::SysNSStringToUTF8(text));
@@ -262,7 +262,7 @@ id ExecuteJavaScript(NSString* javascript,
   return nil;
 }
 
-+ (NSError*)waitForWebViewContainingText:(std::string)text {
+- (NSError*)waitForWebViewContainingText:(std::string)text {
   bool success = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^bool {
     return web::test::IsWebViewContainingText(
         chrome_test_util::GetCurrentWebState(), text);
@@ -278,7 +278,7 @@ id ExecuteJavaScript(NSString* javascript,
   return nil;
 }
 
-+ (NSError*)waitForWebViewContainingElement:(ElementSelector*)selector {
+- (NSError*)waitForWebViewContainingElement:(ElementSelector*)selector {
   bool success = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^bool {
     return web::test::IsWebViewContainingElement(
         chrome_test_util::GetCurrentWebState(), selector);
@@ -294,7 +294,7 @@ id ExecuteJavaScript(NSString* javascript,
   return nil;
 }
 
-+ (NSError*)waitForWebViewNotContainingText:(std::string)text {
+- (NSError*)waitForWebViewNotContainingText:(std::string)text {
   bool success = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^bool {
     return !web::test::IsWebViewContainingText(
         chrome_test_util::GetCurrentWebState(), text);
@@ -310,7 +310,7 @@ id ExecuteJavaScript(NSString* javascript,
   return nil;
 }
 
-+ (NSError*)waitForMainTabCount:(NSUInteger)count {
+- (NSError*)waitForMainTabCount:(NSUInteger)count {
   // Allow the UI to become idle, in case any tabs are being opened or closed.
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
   bool success = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^bool {
@@ -328,7 +328,7 @@ id ExecuteJavaScript(NSString* javascript,
   return nil;
 }
 
-+ (NSError*)waitForIncognitoTabCount:(NSUInteger)count {
+- (NSError*)waitForIncognitoTabCount:(NSUInteger)count {
   // Allow the UI to become idle, in case any tabs are being opened or closed.
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
   bool success = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^bool {
@@ -346,7 +346,7 @@ id ExecuteJavaScript(NSString* javascript,
   return nil;
 }
 
-+ (NSError*)waitForWebViewContainingBlockedImageElementWithID:
+- (NSError*)waitForWebViewContainingBlockedImageElementWithID:
     (std::string)imageID {
   bool success = web::test::WaitForWebViewContainingImage(
       imageID, chrome_test_util::GetCurrentWebState(),
@@ -362,7 +362,7 @@ id ExecuteJavaScript(NSString* javascript,
   return nil;
 }
 
-+ (NSError*)waitForWebViewContainingLoadedImageElementWithID:
+- (NSError*)waitForWebViewContainingLoadedImageElementWithID:
     (std::string)imageID {
   bool success = web::test::WaitForWebViewContainingImage(
       imageID, chrome_test_util::GetCurrentWebState(),
@@ -378,7 +378,7 @@ id ExecuteJavaScript(NSString* javascript,
   return nil;
 }
 
-+ (NSError*)waitForBookmarksToFinishLoading {
+- (NSError*)waitForBookmarksToFinishLoading {
   bool success = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^{
     return chrome_test_util::BookmarksLoaded();
   });
@@ -391,7 +391,7 @@ id ExecuteJavaScript(NSString* javascript,
   return nil;
 }
 
-+ (NSError*)clearBookmarks {
+- (NSError*)clearBookmarks {
   bool success = chrome_test_util::ClearBookmarks();
   if (!success) {
     return testing::NSErrorWithLocalizedDescription(
@@ -400,7 +400,7 @@ id ExecuteJavaScript(NSString* javascript,
   return nil;
 }
 
-+ (NSError*)waitForElementWithMatcherSufficientlyVisible:
+- (NSError*)waitForElementWithMatcherSufficientlyVisible:
     (id<GREYMatcher>)matcher {
   bool success = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^bool {
     NSError* error = nil;
@@ -423,14 +423,14 @@ id ExecuteJavaScript(NSString* javascript,
 
 #pragma mark - Settings Utilities
 
-+ (NSError*)setContentSettings:(ContentSetting)setting {
+- (NSError*)setContentSettings:(ContentSetting)setting {
   chrome_test_util::SetContentSettingsBlockPopups(setting);
   return nil;
 }
 
 #pragma mark - Sign Utilities
 
-+ (NSError*)signOutAndClearAccounts {
+- (NSError*)signOutAndClearAccounts {
   bool success = chrome_test_util::SignOutAndClearAccounts();
   if (!success) {
     return testing::NSErrorWithLocalizedDescription(
