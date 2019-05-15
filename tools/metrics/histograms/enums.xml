@@ -1747,6 +1747,9 @@ Unknown properties are collapsed to zero. -->
 </enum>
 
 <enum name="AndroidWebViewVariationsEnableState">
+  <obsolete>
+    Removed from code July 2018. Variations in WebView has launched.
+  </obsolete>
   <int value="0" label="DEFAULT_ENABLED"/>
   <int value="1" label="CONTROL_DISABLED"/>
   <int value="2" label="EXPERIMENT_ENABLED"/>
