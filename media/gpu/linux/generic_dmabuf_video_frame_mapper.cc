@@ -132,9 +132,9 @@ scoped_refptr<VideoFrame> GenericDmaBufVideoFrameMapper::Map(
   std::vector<std::pair<uint8_t*, size_t>> chunks;
   const auto& buffer_sizes = layout.buffer_sizes();
   std::vector<uint8_t*> buffer_addrs(buffer_sizes.size(), nullptr);
-  DCHECK_EQ(buffer_addrs.size(), dmabuf_fds.size());
+  DCHECK_LE(buffer_addrs.size(), dmabuf_fds.size());
   DCHECK_LE(buffer_addrs.size(), VideoFrame::kMaxPlanes);
-  for (size_t i = 0; i < dmabuf_fds.size(); i++) {
+  for (size_t i = 0; i < buffer_sizes.size(); i++) {
     buffer_addrs[i] = Mmap(buffer_sizes[i], dmabuf_fds[i].get());
     if (!buffer_addrs[i]) {
       MunmapBuffers(chunks, std::move(video_frame));
@@ -149,14 +149,10 @@ scoped_refptr<VideoFrame> GenericDmaBufVideoFrameMapper::Map(
   const auto& planes = layout.planes();
   const size_t num_of_planes = layout.num_planes();
   uint8_t* plane_addrs[VideoFrame::kMaxPlanes] = {};
-  if (dmabuf_fds.size() == 1) {
-    for (size_t i = 0; i < num_of_planes; i++) {
-      plane_addrs[i] = buffer_addrs[0] + planes[i].offset;
-    }
-  } else {
-    for (size_t i = 0; i < num_of_planes; i++) {
-      plane_addrs[i] = buffer_addrs[i] + planes[i].offset;
-    }
+  for (size_t i = 0; i < num_of_planes; i++) {
+    uint8_t* buffer =
+        i < buffer_addrs.size() ? buffer_addrs[i] : buffer_addrs.back();
+    plane_addrs[i] = buffer + planes[i].offset;
   }
   return CreateMappedVideoFrame(std::move(video_frame), plane_addrs, chunks);
 }
