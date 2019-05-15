@@ -311,6 +311,11 @@ const char kInProductHelpDemoModeDescription[] =
     "an individual promotion causes that promotion but no other promotions to "
     "occur.";
 
+const char kLockBottomToolbarName[] = "Lock bottom toolbar";
+const char kLockBottomToolbarDescription[] =
+    "When enabled, the bottom toolbar will not get collapsed when scrolling "
+    "into fullscreen mode.";
+
 const char kMarkHttpAsName[] = "Mark non-secure origins as non-secure";
 const char kMarkHttpAsDescription[] = "Change the UI treatment for HTTP pages";
 

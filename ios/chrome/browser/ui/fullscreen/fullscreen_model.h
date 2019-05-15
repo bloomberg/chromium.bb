@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #import "ios/chrome/browser/ui/broadcaster/chrome_broadcast_observer_bridge.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/fullscreen/scoped_fullscreen_disabler.h"
 
 class FullscreenModelObserver;
@@ -72,10 +73,14 @@ class FullscreenModel : public ChromeBroadcastObserverInterface {
 
   // Returns the toolbar insets at |progress|.
   UIEdgeInsets GetToolbarInsetsAtProgress(CGFloat progress) const {
+    const CGFloat kBottomToolbarProgress =
+        base::FeatureList::IsEnabled(fullscreen::features::kLockBottomToolbar)
+            ? 1.0
+            : progress;
     return UIEdgeInsetsMake(
         collapsed_toolbar_height_ +
             progress * (expanded_toolbar_height_ - collapsed_toolbar_height_),
-        0, progress * bottom_toolbar_height_, 0);
+        0, kBottomToolbarProgress * bottom_toolbar_height_, 0);
   }
 
   // Increments and decrements |disabled_counter_| for features that require the

@@ -609,6 +609,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSendTabToSelfBroadcastName,
      flag_descriptions::kSendTabToSelfBroadcastDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(send_tab_to_self::kSendTabToSelfBroadcast)},
+    {"lock-bottom-toolbar", flag_descriptions::kLockBottomToolbarName,
+     flag_descriptions::kLockBottomToolbarDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(fullscreen::features::kLockBottomToolbar)},
 };
 
 // Add all switches from experimental flags to |command_line|.
