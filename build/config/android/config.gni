@@ -57,7 +57,8 @@ if (is_android || is_chromeos) {
   } else {
     import("//build/config/android/sdk.gni")
     declare_args() {
-      # Android SDK release. Currently, only "o_mr1" is publicly supported.
+      # Android SDK release. Currently, only "o_mr1" and "p" are publicly
+      # supported.
       android_sdk_release = default_android_sdk_release
     }
   }
