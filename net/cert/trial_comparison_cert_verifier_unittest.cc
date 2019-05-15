@@ -120,6 +120,7 @@ class FakeCertVerifyProc : public CertVerifyProc {
   int VerifyInternal(X509Certificate* cert,
                      const std::string& hostname,
                      const std::string& ocsp_response,
+                     const std::string& sct_list,
                      int flags,
                      CRLSet* crl_set,
                      const CertificateList& additional_trust_anchors,
@@ -137,6 +138,7 @@ int FakeCertVerifyProc::VerifyInternal(
     X509Certificate* cert,
     const std::string& hostname,
     const std::string& ocsp_response,
+    const std::string& sct_list,
     int flags,
     CRLSet* crl_set,
     const CertificateList& additional_trust_anchors,
@@ -161,6 +163,7 @@ class NotCalledCertVerifyProc : public CertVerifyProc {
   int VerifyInternal(X509Certificate* cert,
                      const std::string& hostname,
                      const std::string& ocsp_response,
+                     const std::string& sct_list,
                      int flags,
                      CRLSet* crl_set,
                      const CertificateList& additional_trust_anchors,
@@ -173,6 +176,7 @@ int NotCalledCertVerifyProc::VerifyInternal(
     X509Certificate* cert,
     const std::string& hostname,
     const std::string& ocsp_response,
+    const std::string& sct_list,
     int flags,
     CRLSet* crl_set,
     const CertificateList& additional_trust_anchors,
@@ -190,10 +194,11 @@ class MockCertVerifyProc : public CertVerifyProc {
   MockCertVerifyProc() = default;
   // CertVerifyProc implementation:
   bool SupportsAdditionalTrustAnchors() const override { return false; }
-  MOCK_METHOD7(VerifyInternal,
+  MOCK_METHOD8(VerifyInternal,
                int(X509Certificate* cert,
                    const std::string& hostname,
                    const std::string& ocsp_response,
+                   const std::string& sct_list,
                    int flags,
                    CRLSet* crl_set,
                    const CertificateList& additional_trust_anchors,
@@ -283,8 +288,9 @@ TEST_F(TrialComparisonCertVerifierTest, InitiallyDisallowed) {
       base::MakeRefCounted<FakeCertVerifyProc>(OK, dummy_result),
       base::MakeRefCounted<NotCalledCertVerifyProc>(),
       base::BindRepeating(&RecordTrialReport, &reports));
-  CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1", 0 /* flags */,
-                                     std::string() /* ocsp_response */);
+  CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1", /*flags=*/0,
+                                     /*ocsp_response=*/std::string(),
+                                     /*sct_list=*/std::string());
   CertVerifyResult result;
   TestCompletionCallback callback;
   std::unique_ptr<CertVerifier::Request> request;
@@ -344,8 +350,9 @@ TEST_F(TrialComparisonCertVerifierTest, InitiallyDisallowedThenAllowed) {
       false /* initial_allowed */, verify_proc1, verify_proc2,
       base::BindRepeating(&RecordTrialReport, &reports));
 
-  CertVerifier::RequestParams params(leaf, "t0.test", 0 /* flags */,
-                                     std::string() /* ocsp_response */);
+  CertVerifier::RequestParams params(leaf, "t0.test", /*flags=*/0,
+                                     /*ocsp_response=*/std::string(),
+                                     /*sct_list=*/std::string());
   CertVerifyResult result;
   TestCompletionCallback callback;
   std::unique_ptr<CertVerifier::Request> request;
@@ -358,8 +365,9 @@ TEST_F(TrialComparisonCertVerifierTest, InitiallyDisallowedThenAllowed) {
 
   // Enable the trial and do another verification.
   verifier.set_trial_allowed(true);
-  CertVerifier::RequestParams params2(leaf, "t1.test", 0 /* flags */,
-                                      std::string() /* ocsp_response */);
+  CertVerifier::RequestParams params2(leaf, "t1.test", /*flags=*/0,
+                                      /*ocsp_response=*/std::string(),
+                                      /*sct_list=*/std::string());
   CertVerifyResult result2;
   TestCompletionCallback callback2;
   std::unique_ptr<CertVerifier::Request> request2;
@@ -424,8 +432,9 @@ TEST_F(TrialComparisonCertVerifierTest, InitiallyAllowedThenDisallowed) {
       true /* initial_allowed */, verify_proc1, verify_proc2,
       base::BindRepeating(&RecordTrialReport, &reports));
 
-  CertVerifier::RequestParams params(leaf, "t0.test", 0 /* flags */,
-                                     std::string() /* ocsp_response */);
+  CertVerifier::RequestParams params(leaf, "t0.test", /*flags=*/0,
+                                     /*ocsp_response=*/std::string(),
+                                     /*sct_list=*/std::string());
   CertVerifyResult result;
   TestCompletionCallback callback;
   std::unique_ptr<CertVerifier::Request> request;
@@ -438,8 +447,9 @@ TEST_F(TrialComparisonCertVerifierTest, InitiallyAllowedThenDisallowed) {
 
   // Disable the trial and do another verification.
   verifier.set_trial_allowed(false);
-  CertVerifier::RequestParams params2(leaf, "t1.test", 0 /* flags */,
-                                      std::string() /* ocsp_response */);
+  CertVerifier::RequestParams params2(leaf, "t1.test", /*flags=*/0,
+                                      /*ocsp_response=*/std::string(),
+                                      /*sct_list=*/std::string());
   CertVerifyResult result2;
   TestCompletionCallback callback2;
   std::unique_ptr<CertVerifier::Request> request2;
@@ -482,8 +492,9 @@ TEST_F(TrialComparisonCertVerifierTest,
       base::MakeRefCounted<NotCalledCertVerifyProc>(),
       base::BindRepeating(&RecordTrialReport, &reports));
 
-  CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1", 0 /* flags */,
-                                     std::string() /* ocsp_response */);
+  CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1", /*flags=*/0,
+                                     /*ocsp_response=*/std::string(),
+                                     /*sct_list=*/std::string());
   CertVerifyResult result;
   TestCompletionCallback callback;
   std::unique_ptr<CertVerifier::Request> request;
@@ -532,8 +543,9 @@ TEST_F(TrialComparisonCertVerifierTest, ConfigChangedDuringTrialVerification) {
       true /* initial_allowed */, verify_proc1, verify_proc2,
       base::BindRepeating(&RecordTrialReport, &reports));
 
-  CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1", 0 /* flags */,
-                                     std::string() /* ocsp_response */);
+  CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1", /*flags=*/0,
+                                     /*ocsp_response=*/std::string(),
+                                     /*sct_list=*/std::string());
   CertVerifyResult result;
   TestCompletionCallback callback;
   std::unique_ptr<CertVerifier::Request> request;
@@ -586,8 +598,9 @@ TEST_F(TrialComparisonCertVerifierTest, SameResult) {
       true /* initial_allowed */, verify_proc1, verify_proc2,
       base::BindRepeating(&RecordTrialReport, &reports));
 
-  CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1", 0 /* flags */,
-                                     std::string() /* ocsp_response */);
+  CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1", /*flags=*/0,
+                                     /*ocsp_response=*/std::string(),
+                                     /*sct_list=*/std::string());
   CertVerifyResult result;
   TestCompletionCallback callback;
   std::unique_ptr<CertVerifier::Request> request;
@@ -632,8 +645,9 @@ TEST_F(TrialComparisonCertVerifierTest, PrimaryVerifierErrorSecondaryOk) {
       true /* initial_allowed */, verify_proc1, verify_proc2,
       base::BindRepeating(&RecordTrialReport, &reports));
 
-  CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1", 0 /* flags */,
-                                     std::string() /* ocsp_response */);
+  CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1", /*flags=*/0,
+                                     /*ocsp_response=*/std::string(),
+                                     /*sct_list=*/std::string());
   CertVerifyResult result;
   TestCompletionCallback callback;
   std::unique_ptr<CertVerifier::Request> request;
@@ -694,8 +708,9 @@ TEST_F(TrialComparisonCertVerifierTest, PrimaryVerifierOkSecondaryError) {
       true /* initial_allowed */, verify_proc1, verify_proc2,
       base::BindRepeating(&RecordTrialReport, &reports));
 
-  CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1", 0 /* flags */,
-                                     std::string() /* ocsp_response */);
+  CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1", /*flags=*/0,
+                                     /*ocsp_response=*/std::string(),
+                                     /*sct_list=*/std::string());
   CertVerifyResult result;
   TestCompletionCallback callback;
   std::unique_ptr<CertVerifier::Request> request;
@@ -754,8 +769,9 @@ TEST_F(TrialComparisonCertVerifierTest, BothVerifiersDifferentErrors) {
       true /* initial_allowed */, verify_proc1, verify_proc2,
       base::BindRepeating(&RecordTrialReport, &reports));
 
-  CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1", 0 /* flags */,
-                                     std::string() /* ocsp_response */);
+  CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1", /*flags=*/0,
+                                     /*ocsp_response=*/std::string(),
+                                     /*sct_list=*/std::string());
   CertVerifyResult result;
   TestCompletionCallback callback;
   std::unique_ptr<CertVerifier::Request> request;
@@ -811,8 +827,9 @@ TEST_F(TrialComparisonCertVerifierTest,
       true /* initial_allowed */, verify_proc1, verify_proc2,
       base::BindRepeating(&RecordTrialReport, &reports));
 
-  CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1", 0 /* flags */,
-                                     std::string() /* ocsp_response */);
+  CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1", /*flags=*/0,
+                                     /*ocsp_response=*/std::string(),
+                                     /*sct_list=*/std::string());
   CertVerifyResult result;
   TestCompletionCallback callback;
   std::unique_ptr<CertVerifier::Request> request;
@@ -864,12 +881,12 @@ TEST_F(TrialComparisonCertVerifierTest,
       base::MakeRefCounted<MockCertVerifyProc>();
   // Primary verifier returns ok status and chain1 if verifying the leaf alone.
   EXPECT_CALL(*verify_proc1,
-              VerifyInternal(leaf_cert_1_.get(), _, _, _, _, _, _))
-      .WillRepeatedly(DoAll(SetArgPointee<6>(chain1_result), Return(OK)));
+              VerifyInternal(leaf_cert_1_.get(), _, _, _, _, _, _, _))
+      .WillRepeatedly(DoAll(SetArgPointee<7>(chain1_result), Return(OK)));
   // Primary verifier returns ok status and chain2 if verifying chain2.
   EXPECT_CALL(*verify_proc1,
-              VerifyInternal(cert_chain_2_.get(), _, _, _, _, _, _))
-      .WillRepeatedly(DoAll(SetArgPointee<6>(chain2_result), Return(OK)));
+              VerifyInternal(cert_chain_2_.get(), _, _, _, _, _, _, _))
+      .WillRepeatedly(DoAll(SetArgPointee<7>(chain2_result), Return(OK)));
 
   // Trial verifier returns ok status and chain2.
   scoped_refptr<FakeCertVerifyProc> verify_proc2 =
@@ -880,8 +897,9 @@ TEST_F(TrialComparisonCertVerifierTest,
       true /* initial_allowed */, verify_proc1, verify_proc2,
       base::BindRepeating(&RecordTrialReport, &reports));
 
-  CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1", 0 /* flags */,
-                                     std::string() /* ocsp_response */);
+  CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1", /*flags=*/0,
+                                     /*ocsp_response=*/std::string(),
+                                     /*sct_list=*/std::string());
   CertVerifyResult result;
   TestCompletionCallback callback;
   std::unique_ptr<CertVerifier::Request> request;
@@ -965,13 +983,14 @@ TEST_F(TrialComparisonCertVerifierTest,
       base::MakeRefCounted<MockCertVerifyProc>();
   // Primary verifier returns ok status and different_chain if verifying leaf
   // alone.
-  EXPECT_CALL(*verify_proc1, VerifyInternal(leaf.get(), _, _, _, _, _, _))
+  EXPECT_CALL(*verify_proc1, VerifyInternal(leaf.get(), _, _, _, _, _, _, _))
       .WillRepeatedly(
-          DoAll(SetArgPointee<6>(different_chain_result), Return(OK)));
+          DoAll(SetArgPointee<7>(different_chain_result), Return(OK)));
   // Primary verifier returns ok status and nonev_chain_result if verifying
   // cert_chain.
-  EXPECT_CALL(*verify_proc1, VerifyInternal(cert_chain.get(), _, _, _, _, _, _))
-      .WillRepeatedly(DoAll(SetArgPointee<6>(nonev_chain_result), Return(OK)));
+  EXPECT_CALL(*verify_proc1,
+              VerifyInternal(cert_chain.get(), _, _, _, _, _, _, _))
+      .WillRepeatedly(DoAll(SetArgPointee<7>(nonev_chain_result), Return(OK)));
 
   // Trial verifier returns ok status and ev_chain_result.
   scoped_refptr<FakeCertVerifyProc> verify_proc2 =
@@ -982,8 +1001,9 @@ TEST_F(TrialComparisonCertVerifierTest,
       true /* initial_allowed */, verify_proc1, verify_proc2,
       base::BindRepeating(&RecordTrialReport, &reports));
 
-  CertVerifier::RequestParams params(leaf, "test.example", 0 /* flags */,
-                                     std::string() /* ocsp_response */);
+  CertVerifier::RequestParams params(leaf, "test.example", /*flags=*/0,
+                                     /*ocsp_response=*/std::string(),
+                                     /*sct_list=*/std::string());
   CertVerifyResult result;
   TestCompletionCallback callback;
   std::unique_ptr<CertVerifier::Request> request;
@@ -1040,7 +1060,8 @@ TEST_F(TrialComparisonCertVerifierTest, BothVerifiersOkDifferentCertStatus) {
   verifier.SetConfig(config);
 
   CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1", 0,
-                                     std::string() /* ocsp_response */);
+                                     /*ocsp_response=*/std::string(),
+                                     /*sct_list=*/std::string());
   CertVerifyResult result;
   TestCompletionCallback callback;
   std::unique_ptr<CertVerifier::Request> request;
@@ -1103,8 +1124,9 @@ TEST_F(TrialComparisonCertVerifierTest, Coalescing) {
       true /* initial_allowed */, verify_proc1, verify_proc2,
       base::BindRepeating(&RecordTrialReport, &reports));
 
-  CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1", 0 /* flags */,
-                                     std::string() /* ocsp_response */);
+  CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1", /*flags=*/0,
+                                     /*ocsp_response=*/std::string(),
+                                     /*sct_list=*/std::string());
 
   // Start first verification request.
   CertVerifyResult result_1;
@@ -1178,8 +1200,9 @@ TEST_F(TrialComparisonCertVerifierTest, CancelledDuringPrimaryVerification) {
       true /* initial_allowed */, verify_proc1, verify_proc2,
       base::BindRepeating(&RecordTrialReport, &reports));
 
-  CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1", 0 /* flags */,
-                                     std::string() /* ocsp_response */);
+  CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1", /*flags=*/0,
+                                     /*ocsp_response=*/std::string(),
+                                     /*sct_list=*/std::string());
   CertVerifyResult result;
   std::unique_ptr<CertVerifier::Request> request;
   int error =
@@ -1235,8 +1258,9 @@ TEST_F(TrialComparisonCertVerifierTest, DeletedDuringPrimaryVerification) {
       base::MakeRefCounted<NotCalledCertVerifyProc>(),
       base::BindRepeating(&RecordTrialReport, &reports));
 
-  CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1", 0 /* flags */,
-                                     std::string() /* ocsp_response */);
+  CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1", /*flags=*/0,
+                                     /*ocsp_response=*/std::string(),
+                                     /*sct_list=*/std::string());
   CertVerifyResult result;
   std::unique_ptr<CertVerifier::Request> request;
   int error =
@@ -1286,8 +1310,9 @@ TEST_F(TrialComparisonCertVerifierTest, DeletedAfterTrialVerificationStarted) {
       true /* initial_allowed */, verify_proc1, verify_proc2,
       base::BindRepeating(&RecordTrialReport, &reports));
 
-  CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1", 0 /* flags */,
-                                     std::string() /* ocsp_response */);
+  CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1", /*flags=*/0,
+                                     /*ocsp_response=*/std::string(),
+                                     /*sct_list=*/std::string());
   CertVerifyResult result;
   TestCompletionCallback callback;
   std::unique_ptr<CertVerifier::Request> request;
@@ -1339,23 +1364,24 @@ TEST_F(TrialComparisonCertVerifierTest, MacUndesiredRevocationChecking) {
   scoped_refptr<MockCertVerifyProc> verify_proc2 =
       base::MakeRefCounted<MockCertVerifyProc>();
   // Secondary verifier returns ok status...
-  EXPECT_CALL(*verify_proc2, VerifyInternal(_, _, _, _, _, _, _))
-      .WillRepeatedly(DoAll(SetArgPointee<6>(ok_result), Return(OK)));
+  EXPECT_CALL(*verify_proc2, VerifyInternal(_, _, _, _, _, _, _, _))
+      .WillRepeatedly(DoAll(SetArgPointee<7>(ok_result), Return(OK)));
   // ...unless it was called with REV_CHECKING_ENABLED.
   EXPECT_CALL(
       *verify_proc2,
-      VerifyInternal(_, _, _, CertVerifyProc::VERIFY_REV_CHECKING_ENABLED, _, _,
-                     _))
+      VerifyInternal(_, _, _, _, CertVerifyProc::VERIFY_REV_CHECKING_ENABLED, _,
+                     _, _))
       .WillRepeatedly(
-          DoAll(SetArgPointee<6>(revoked_result), Return(ERR_CERT_REVOKED)));
+          DoAll(SetArgPointee<7>(revoked_result), Return(ERR_CERT_REVOKED)));
 
   std::vector<TrialReportInfo> reports;
   TrialComparisonCertVerifier verifier(
       true /* initial_allowed */, verify_proc1, verify_proc2,
       base::BindRepeating(&RecordTrialReport, &reports));
 
-  CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1", 0 /* flags */,
-                                     std::string() /* ocsp_response */);
+  CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1", /*flags=*/0,
+                                     /*ocsp_response=*/std::string(),
+                                     /*sct_list=*/std::string());
   CertVerifyResult result;
   TestCompletionCallback callback;
   std::unique_ptr<CertVerifier::Request> request;
@@ -1410,16 +1436,17 @@ TEST_F(TrialComparisonCertVerifierTest, PrimaryRevokedSecondaryOk) {
   // REV_CHECKING_ENABLED was passed.
   scoped_refptr<MockCertVerifyProc> verify_proc2 =
       base::MakeRefCounted<MockCertVerifyProc>();
-  EXPECT_CALL(*verify_proc2, VerifyInternal(_, _, _, _, _, _, _))
-      .WillRepeatedly(DoAll(SetArgPointee<6>(ok_result), Return(OK)));
+  EXPECT_CALL(*verify_proc2, VerifyInternal(_, _, _, _, _, _, _, _))
+      .WillRepeatedly(DoAll(SetArgPointee<7>(ok_result), Return(OK)));
 
   std::vector<TrialReportInfo> reports;
   TrialComparisonCertVerifier verifier(
       true /* initial_allowed */, verify_proc1, verify_proc2,
       base::BindRepeating(&RecordTrialReport, &reports));
 
-  CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1", 0 /* flags */,
-                                     std::string() /* ocsp_response */);
+  CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1", /*flags=*/0,
+                                     /*ocsp_response=*/std::string(),
+                                     /*sct_list=*/std::string());
   CertVerifyResult result;
   TestCompletionCallback callback;
   std::unique_ptr<CertVerifier::Request> request;
@@ -1494,8 +1521,9 @@ TEST_F(TrialComparisonCertVerifierTest, MultipleEVPolicies) {
       true /* initial_allowed */, verify_proc1, verify_proc2,
       base::BindRepeating(&RecordTrialReport, &reports));
 
-  CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1", 0 /* flags */,
-                                     std::string() /* ocsp_response */);
+  CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1", /*flags=*/0,
+                                     /*ocsp_response=*/std::string(),
+                                     /*sct_list=*/std::string());
   CertVerifyResult result;
   TestCompletionCallback callback;
   std::unique_ptr<CertVerifier::Request> request;
@@ -1557,8 +1585,9 @@ TEST_F(TrialComparisonCertVerifierTest, MultipleEVPoliciesNoneValidForRoot) {
       true /* initial_allowed */, verify_proc1, verify_proc2,
       base::BindRepeating(&RecordTrialReport, &reports));
 
-  CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1", 0 /* flags */,
-                                     std::string() /* ocsp_response */);
+  CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1", /*flags=*/0,
+                                     /*ocsp_response=*/std::string(),
+                                     /*sct_list=*/std::string());
   CertVerifyResult result;
   TestCompletionCallback callback;
   std::unique_ptr<CertVerifier::Request> request;
@@ -1623,8 +1652,9 @@ TEST_F(TrialComparisonCertVerifierTest, MultiplePoliciesOnlyOneIsEV) {
       true /* initial_allowed */, verify_proc1, verify_proc2,
       base::BindRepeating(&RecordTrialReport, &reports));
 
-  CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1", 0 /* flags */,
-                                     std::string() /* ocsp_response */);
+  CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1", /*flags=*/0,
+                                     /*ocsp_response=*/std::string(),
+                                     /*sct_list=*/std::string());
   CertVerifyResult result;
   TestCompletionCallback callback;
   std::unique_ptr<CertVerifier::Request> request;
@@ -1671,8 +1701,9 @@ TEST_F(TrialComparisonCertVerifierTest, LocallyTrustedLeaf) {
       true /* initial_allowed */, verify_proc1, verify_proc2,
       base::BindRepeating(&RecordTrialReport, &reports));
 
-  CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1", 0 /* flags */,
-                                     std::string() /* ocsp_response */);
+  CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1", /*flags=*/0,
+                                     /*ocsp_response=*/std::string(),
+                                     /*sct_list=*/std::string());
   CertVerifyResult result;
   TestCompletionCallback callback;
   std::unique_ptr<CertVerifier::Request> request;

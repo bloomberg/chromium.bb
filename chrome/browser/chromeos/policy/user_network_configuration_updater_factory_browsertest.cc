@@ -262,8 +262,9 @@ int VerifyTestServerCert(
   int result = net::OK;
   content::BrowserContext::GetDefaultStoragePartition(profile)
       ->GetNetworkContext()
-      ->VerifyCertificateForTesting(certificate, "127.0.0.1", std::string(),
-                                    &result);
+      ->VerifyCertificateForTesting(certificate, "127.0.0.1",
+                                    /*ocsp_response=*/std::string(),
+                                    /*sct_list=*/std::string(), &result);
   return result;
 }
 
