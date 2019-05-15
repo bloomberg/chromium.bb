@@ -725,7 +725,7 @@ class FileTransferController {
   /**
    * Preloads an image thumbnail for the specified file entry.
    *
-   * @param {Entry} entry Entry to preload a thumbnail for.
+   * @param {!Entry} entry Entry to preload a thumbnail for.
    * @private
    */
   preloadThumbnailImage_(entry) {
