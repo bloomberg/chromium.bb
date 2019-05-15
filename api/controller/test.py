@@ -12,6 +12,7 @@ from __future__ import print_function
 
 import os
 
+from chromite.api import controller
 from chromite.api.controller import controller_util
 from chromite.api.gen.chromite.api import test_pb2
 from chromite.api.gen.chromiumos import common_pb2
@@ -42,7 +43,10 @@ def DebugInfoTest(input_proto, _output_proto):
   if not sysroot.Exists():
     cros_build_lib.Die('The provided sysroot does not exist.')
 
-  return 0 if test.DebugInfoTest(sysroot_path) else 1
+  if test.DebugInfoTest(sysroot_path):
+    return controller.RETURN_CODE_SUCCESS
+  else:
+    return controller.RETURN_CODE_COMPLETED_UNSUCCESSFULLY
 
 
 def BuildTargetUnitTest(input_proto, output_proto):
@@ -100,15 +104,22 @@ def BuildTargetUnitTest(input_proto, output_proto):
         package_info = output_proto.failed_packages.add()
         controller_util.CPVToPackageInfo(cpv, package_info)
 
-      return 1
+      if e.failed_packages:
+        return controller.RETURN_CODE_UNSUCCESSFUL_RESPONSE_AVAILABLE
+      else:
+        return controller.RETURN_CODE_COMPLETED_UNSUCCESSFULLY
     except failures_lib.BuildScriptFailure:
       # Check our status file for failed packages in case the calling code's
       # file didn't get set.
-      for cpv in portage_util.ParseParallelEmergeStatusFile(full_sf_path):
+      failed_packages = portage_util.ParseParallelEmergeStatusFile(full_sf_path)
+      for cpv in failed_packages:
         package_info = output_proto.failed_packages.add()
         controller_util.CPVToPackageInfo(cpv, package_info)
 
-      return 1
+      if failed_packages:
+        return controller.RETURN_CODE_UNSUCCESSFUL_RESPONSE_AVAILABLE
+      else:
+        return controller.RETURN_CODE_COMPLETED_UNSUCCESSFULLY
 
     tarball = _BuildUnittestTarball(chroot, board, result_path)
     if tarball:
@@ -133,7 +144,10 @@ def ChromiteUnitTest(_input_proto, _output_proto):
   """Run the chromite unit tests."""
   cmd = [os.path.join(constants.CHROMITE_DIR, 'scripts', 'run_tests')]
   result = cros_build_lib.RunCommand(cmd, error_code_ok=True)
-  return result.returncode
+  if result.returncode == 0:
+    return controller.RETURN_CODE_SUCCESS
+  else:
+    return controller.RETURN_CODE_COMPLETED_UNSUCCESSFULLY
 
 
 def VmTest(input_proto, _output_proto):
@@ -177,4 +191,4 @@ def VmTest(input_proto, _output_proto):
 
   with osutils.TempDir(prefix='vm-test-results.') as results_dir:
     cmd.extend(['--results-dir', results_dir])
-    return cros_build_lib.RunCommand(cmd, kill_timeout=10 * 60).returncode
+    cros_build_lib.RunCommand(cmd, kill_timeout=10 * 60)

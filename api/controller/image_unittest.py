@@ -10,9 +10,10 @@ from __future__ import print_function
 import mock
 import os
 
+from chromite.api import controller
+from chromite.api.controller import image as image_controller
 from chromite.api.gen.chromite.api import image_pb2
 from chromite.api.gen.chromiumos import common_pb2
-from chromite.api.controller import image as image_controller
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
@@ -100,7 +101,8 @@ class CreateTest(cros_test_lib.MockTempDirTestCase):
     input_proto.build_target.name = 'board'
     output_proto = image_pb2.CreateImageResult()
 
-    image_controller.Create(input_proto, output_proto)
+    rc = image_controller.Create(input_proto, output_proto)
+    self.assertEqual(controller.RETURN_CODE_UNSUCCESSFUL_RESPONSE_AVAILABLE, rc)
     for package in output_proto.failed_packages:
       self.assertIn((package.category, package.package_name), expected_packages)
 

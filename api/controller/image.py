@@ -12,6 +12,7 @@ from __future__ import print_function
 
 import os
 
+from chromite.api import controller
 from chromite.api.gen.chromiumos import common_pb2
 from chromite.api.controller import controller_util
 from chromite.lib import cros_build_lib
@@ -76,7 +77,7 @@ def Create(input_proto, output_proto):
       if package.version:
         current.version = package.version
 
-    return 1
+    return controller.RETURN_CODE_UNSUCCESSFUL_RESPONSE_AVAILABLE
 
   if not vm_types:
     # No VMs to build, we can exit now.
@@ -209,5 +210,10 @@ def Test(input_proto, output_proto):
     cros_build_lib.Die(
         'The image.path must be an existing image file with a .bin extension.')
 
-  output_proto.success = image.Test(board, result_directory,
-                                    image_dir=image_path)
+  success = image.Test(board, result_directory, image_dir=image_path)
+  output_proto.success = success
+
+  if success:
+    return controller.RETURN_CODE_SUCCESS
+  else:
+    return controller.RETURN_CODE_COMPLETED_UNSUCCESSFULLY

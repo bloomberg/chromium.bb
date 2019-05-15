@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import mock
 
+from chromite.api import controller
 from chromite.api.controller import test as test_controller
 from chromite.api.gen.chromiumos import common_pb2
 from chromite.api.gen.chromite.api import image_pb2
@@ -83,7 +84,7 @@ class BuildTargetUnitTestTest(cros_test_lib.MockTempDirTestCase):
 
     rc = test_controller.BuildTargetUnitTest(input_msg, output_msg)
 
-    self.assertNotEqual(0, rc)
+    self.assertEqual(controller.RETURN_CODE_UNSUCCESSFUL_RESPONSE_AVAILABLE, rc)
     self.assertTrue(output_msg.failed_packages)
     failed = []
     for pi in output_msg.failed_packages:
@@ -110,7 +111,7 @@ class BuildTargetUnitTestTest(cros_test_lib.MockTempDirTestCase):
 
     rc = test_controller.BuildTargetUnitTest(input_msg, output_msg)
 
-    self.assertNotEqual(0, rc)
+    self.assertEqual(controller.RETURN_CODE_UNSUCCESSFUL_RESPONSE_AVAILABLE, rc)
     self.assertTrue(output_msg.failed_packages)
     failed = []
     for pi in output_msg.failed_packages:
@@ -137,7 +138,7 @@ class BuildTargetUnitTestTest(cros_test_lib.MockTempDirTestCase):
 
     rc = test_controller.BuildTargetUnitTest(input_msg, output_msg)
 
-    self.assertNotEqual(0, rc)
+    self.assertEqual(controller.RETURN_CODE_COMPLETED_UNSUCCESSFULLY, rc)
     self.assertFalse(output_msg.failed_packages)
     patch.assert_called_with(constants.SOURCE_ROOT, 'board', extra_env=mock.ANY,
                              chroot_args=mock.ANY, build_stage=False,

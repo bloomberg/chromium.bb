@@ -232,7 +232,7 @@ class Router(object):
     # Successfully located; call and return.
     return_code = method_impl(input_msg, output_msg)
     if return_code is None:
-      return_code = 0
+      return_code = controller.RETURN_CODE_SUCCESS
 
     try:
       osutils.WriteFile(output_path, json_format.MessageToJson(output_msg))

@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import os
 
+from chromite.api import controller
 from chromite.api.controller import sysroot as sysroot_controller
 from chromite.api.gen.chromite.api import sysroot_pb2
 from chromite.lib import build_target_util
@@ -181,7 +182,7 @@ class InstallToolchainTest(cros_test_lib.MockTempDirTestCase):
     self.PatchObject(sysroot_service, 'InstallToolchain', side_effect=err)
 
     rc = sysroot_controller.InstallToolchain(in_proto, out_proto)
-    self.assertTrue(rc)
+    self.assertEqual(controller.RETURN_CODE_UNSUCCESSFUL_RESPONSE_AVAILABLE, rc)
     self.assertTrue(out_proto.failed_packages)
     for package in out_proto.failed_packages:
       cat_pkg = (package.category, package.package_name)

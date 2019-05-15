@@ -7,6 +7,7 @@
 
 from __future__ import print_function
 
+from chromite.api import controller
 from chromite.api.controller import controller_util
 from chromite.lib import build_target_util
 from chromite.lib import cros_build_lib
@@ -14,9 +15,6 @@ from chromite.lib import sysroot_lib
 from chromite.service import sysroot
 
 _ACCEPTED_LICENSES = '@CHROMEOS'
-
-# Return codes.
-RC_ERROR = 1
 
 
 def Create(input_proto, output_proto):
@@ -71,7 +69,7 @@ def InstallToolchain(input_proto, output_proto):
       package_info = output_proto.failed_packages.add()
       controller_util.CPVToPackageInfo(package, package_info)
 
-    return RC_ERROR
+    return controller.RETURN_CODE_UNSUCCESSFUL_RESPONSE_AVAILABLE
 
 
 def InstallPackages(input_proto, output_proto):
@@ -105,4 +103,4 @@ def InstallPackages(input_proto, output_proto):
       package_info = output_proto.failed_packages.add()
       controller_util.CPVToPackageInfo(package, package_info)
 
-    return RC_ERROR
+    return controller.RETURN_CODE_UNSUCCESSFUL_RESPONSE_AVAILABLE
