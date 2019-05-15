@@ -352,7 +352,8 @@ void RemotePlayback::StateChanged(
     DispatchEvent(*Event::Create(event_type_names::kConnecting));
     if (media_element_->IsHTMLVideoElement()) {
       // TODO(xjz): Pass the remote device name.
-      ToHTMLVideoElement(media_element_)->MediaRemotingStarted(WebString());
+      ToHTMLVideoElement(media_element_.Get())
+          ->MediaRemotingStarted(WebString());
     }
     media_element_->FlingingStarted();
   } else if (state_ == mojom::blink::PresentationConnectionState::CONNECTED) {
@@ -360,7 +361,7 @@ void RemotePlayback::StateChanged(
   } else if (state_ == mojom::blink::PresentationConnectionState::CLOSED) {
     DispatchEvent(*Event::Create(event_type_names::kDisconnect));
     if (media_element_->IsHTMLVideoElement()) {
-      ToHTMLVideoElement(media_element_)
+      ToHTMLVideoElement(media_element_.Get())
           ->MediaRemotingStopped(WebLocalizedString::kMediaRemotingStopNoText);
     }
     CleanupConnections();

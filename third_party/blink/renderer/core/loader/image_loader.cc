@@ -786,7 +786,7 @@ void ImageLoader::ImageNotifyFinished(ImageResourceContent* resource) {
   // crbug.com/930281
   if (CheckForUnoptimizedImagePolicy(element_->GetDocument(), image_content_) &&
       IsHTMLImageElement(element_))
-    ToHTMLImageElement(element_)->SetImagePolicyViolated();
+    ToHTMLImageElement(element_.Get())->SetImagePolicyViolated();
 
   DispatchDecodeRequestsIfComplete();
 

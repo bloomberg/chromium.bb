@@ -1677,7 +1677,7 @@ void Document::setTitle(const String& title) {
       title_element_ = MakeGarbageCollected<SVGTitleElement>(*this);
       element->InsertBefore(title_element_.Get(), element->firstChild());
     }
-    if (auto* svg_title = ToSVGTitleElementOrNull(title_element_))
+    if (auto* svg_title = ToSVGTitleElementOrNull(title_element_.Get()))
       svg_title->SetText(title);
   } else if (element && element->IsHTMLElement()) {
     if (!title_element_) {
@@ -1687,7 +1687,7 @@ void Document::setTitle(const String& title) {
       title_element_ = MakeGarbageCollected<HTMLTitleElement>(*this);
       head_element->AppendChild(title_element_.Get());
     }
-    if (auto* html_title = ToHTMLTitleElementOrNull(title_element_))
+    if (auto* html_title = ToHTMLTitleElementOrNull(title_element_.Get()))
       html_title->setText(title);
   }
 }
@@ -1712,9 +1712,9 @@ void Document::SetTitleElement(Element* title_element) {
     }
   }
 
-  if (auto* html_title = ToHTMLTitleElementOrNull(title_element_))
+  if (auto* html_title = ToHTMLTitleElementOrNull(title_element_.Get()))
     UpdateTitle(html_title->text());
-  else if (auto* svg_title = ToSVGTitleElementOrNull(title_element_))
+  else if (auto* svg_title = ToSVGTitleElementOrNull(title_element_.Get()))
     UpdateTitle(svg_title->textContent());
 }
 
@@ -6905,7 +6905,7 @@ void Document::RemoveFromTopLayer(Element* element) {
 HTMLDialogElement* Document::ActiveModalDialog() const {
   for (auto it = top_layer_elements_.rbegin(); it != top_layer_elements_.rend();
        ++it) {
-    if (auto* dialog = ToHTMLDialogElementOrNull(*it))
+    if (auto* dialog = ToHTMLDialogElementOrNull(*it->Get()))
       return dialog;
   }
 

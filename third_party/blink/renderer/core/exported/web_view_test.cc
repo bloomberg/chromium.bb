@@ -2931,9 +2931,10 @@ TEST_F(WebViewTest, TouchDoesntSelectEmptyTextarea) {
   web_view->MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(event));
   EXPECT_TRUE(frame->SelectionAsText().IsEmpty());
 
-  HTMLTextAreaElement* text_area_element = ToHTMLTextAreaElement(
-      web_view->MainFrameImpl()->GetDocument().GetElementById(
-          blanklinestextbox));
+  HTMLTextAreaElement* text_area_element =
+      ToHTMLTextAreaElement(static_cast<Node*>(
+          web_view->MainFrameImpl()->GetDocument().GetElementById(
+              blanklinestextbox)));
   text_area_element->setValue("hello");
 
   // Long-press past last word of textbox.

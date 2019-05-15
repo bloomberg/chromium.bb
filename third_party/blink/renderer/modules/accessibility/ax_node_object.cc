@@ -1402,7 +1402,7 @@ AXObject* AXNodeObject::InPageLinkTarget() const {
   if (!node_ || !IsHTMLAnchorElement(node_) || !GetDocument())
     return AXObject::InPageLinkTarget();
 
-  HTMLAnchorElement* anchor = ToHTMLAnchorElement(node_);
+  HTMLAnchorElement* anchor = ToHTMLAnchorElement(node_.Get());
   DCHECK(anchor);
   KURL link_url = anchor->Href();
   if (!link_url.IsValid())
@@ -1468,7 +1468,7 @@ AXObject::AXObjectVector AXNodeObject::RadioButtonsInGroup() const {
   if (!node_ || RoleValue() != ax::mojom::Role::kRadioButton)
     return radio_buttons;
 
-  if (auto* node_radio_button = ToHTMLInputElementOrNull(node_)) {
+  if (auto* node_radio_button = ToHTMLInputElementOrNull(node_.Get())) {
     HeapVector<Member<HTMLInputElement>> html_radio_buttons =
         FindAllRadioButtonsWithSameName(node_radio_button);
     for (HTMLInputElement* radio_button : html_radio_buttons) {

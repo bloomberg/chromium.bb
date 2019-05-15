@@ -138,7 +138,7 @@ bool HTMLSelectElement::HasPlaceholderLabelOption() const {
   // listItems() might have performance impact.
   if (GetListItems().size() == 0 || !IsHTMLOptionElement(GetListItems()[0]))
     return false;
-  return ToHTMLOptionElement(GetListItems()[0])->value().IsEmpty();
+  return ToHTMLOptionElement(GetListItems()[0].Get())->value().IsEmpty();
 }
 
 String HTMLSelectElement::validationMessage() const {
@@ -456,7 +456,7 @@ HTMLOptionElement* HTMLSelectElement::OptionAtListIndex(int list_index) const {
   const ListItems& items = GetListItems();
   if (static_cast<wtf_size_t>(list_index) >= items.size())
     return nullptr;
-  return ToHTMLOptionElementOrNull(items[list_index]);
+  return ToHTMLOptionElementOrNull(items[list_index].Get());
 }
 
 // Returns the 1st valid OPTION |skip| items from |listIndex| in direction
@@ -569,7 +569,7 @@ void HTMLSelectElement::SaveLastSelection() {
   for (auto& element : GetListItems()) {
     last_on_change_selection_.push_back(
         IsHTMLOptionElement(*element) &&
-        ToHTMLOptionElement(element)->Selected());
+        ToHTMLOptionElement(element.Get())->Selected());
   }
 }
 
@@ -864,7 +864,8 @@ void HTMLSelectElement::setSelectedIndex(int index) {
 int HTMLSelectElement::SelectedListIndex() const {
   int index = 0;
   for (const auto& item : GetListItems()) {
-    if (IsHTMLOptionElement(item) && ToHTMLOptionElement(item)->Selected())
+    if (IsHTMLOptionElement(item) &&
+        ToHTMLOptionElement(item.Get())->Selected())
       return index;
     ++index;
   }
@@ -1130,7 +1131,7 @@ FormControlState HTMLSelectElement::SaveFormControlState() const {
   for (wtf_size_t i = 0; i < length; ++i) {
     if (!IsHTMLOptionElement(*items[i]))
       continue;
-    HTMLOptionElement* option = ToHTMLOptionElement(items[i]);
+    HTMLOptionElement* option = ToHTMLOptionElement(items[i].Get());
     if (!option->Selected())
       continue;
     state.Append(option->value());
@@ -1150,7 +1151,7 @@ wtf_size_t HTMLSelectElement::SearchOptionsForValue(
   for (wtf_size_t i = list_index_start; i < loop_end_index; ++i) {
     if (!IsHTMLOptionElement(items[i]))
       continue;
-    if (ToHTMLOptionElement(items[i])->value() == value)
+    if (ToHTMLOptionElement(items[i].Get())->value() == value)
       return i;
   }
   return kNotFound;
@@ -1171,16 +1172,16 @@ void HTMLSelectElement::RestoreFormControlState(const FormControlState& state) {
   if (!IsMultiple()) {
     unsigned index = state[1].ToUInt();
     if (index < items_size && IsHTMLOptionElement(items[index]) &&
-        ToHTMLOptionElement(items[index])->value() == state[0]) {
-      ToHTMLOptionElement(items[index])->SetSelectedState(true);
-      ToHTMLOptionElement(items[index])->SetDirty(true);
-      last_on_change_option_ = ToHTMLOptionElement(items[index]);
+        ToHTMLOptionElement(items[index].Get())->value() == state[0]) {
+      ToHTMLOptionElement(items[index].Get())->SetSelectedState(true);
+      ToHTMLOptionElement(items[index].Get())->SetDirty(true);
+      last_on_change_option_ = ToHTMLOptionElement(items[index].Get());
     } else {
       wtf_size_t found_index = SearchOptionsForValue(state[0], 0, items_size);
       if (found_index != kNotFound) {
-        ToHTMLOptionElement(items[found_index])->SetSelectedState(true);
-        ToHTMLOptionElement(items[found_index])->SetDirty(true);
-        last_on_change_option_ = ToHTMLOptionElement(items[found_index]);
+        ToHTMLOptionElement(items[found_index].Get())->SetSelectedState(true);
+        ToHTMLOptionElement(items[found_index].Get())->SetDirty(true);
+        last_on_change_option_ = ToHTMLOptionElement(items[found_index].Get());
       }
     }
   } else {
@@ -1189,9 +1190,9 @@ void HTMLSelectElement::RestoreFormControlState(const FormControlState& state) {
       const String& value = state[i];
       const unsigned index = state[i + 1].ToUInt();
       if (index < items_size && IsHTMLOptionElement(items[index]) &&
-          ToHTMLOptionElement(items[index])->value() == value) {
-        ToHTMLOptionElement(items[index])->SetSelectedState(true);
-        ToHTMLOptionElement(items[index])->SetDirty(true);
+          ToHTMLOptionElement(items[index].Get())->value() == value) {
+        ToHTMLOptionElement(items[index].Get())->SetSelectedState(true);
+        ToHTMLOptionElement(items[index].Get())->SetDirty(true);
         start_index = index + 1;
       } else {
         wtf_size_t found_index =
@@ -1200,8 +1201,8 @@ void HTMLSelectElement::RestoreFormControlState(const FormControlState& state) {
           found_index = SearchOptionsForValue(value, 0, start_index);
         if (found_index == kNotFound)
           continue;
-        ToHTMLOptionElement(items[found_index])->SetSelectedState(true);
-        ToHTMLOptionElement(items[found_index])->SetDirty(true);
+        ToHTMLOptionElement(items[found_index].Get())->SetSelectedState(true);
+        ToHTMLOptionElement(items[found_index].Get())->SetDirty(true);
         start_index = found_index + 1;
       }
     }
