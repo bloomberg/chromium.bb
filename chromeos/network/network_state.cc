@@ -385,7 +385,27 @@ bool NetworkState::SecurityRequiresPassphraseOnly() const {
 
 std::string NetworkState::connection_state() const {
   if (!visible())
-    return shill::kStateDisconnect;
+    return shill::kStateIdle;
+  DCHECK(connection_state_ == shill::kStateIdle ||
+         connection_state_ == shill::kStateAssociation ||
+         connection_state_ == shill::kStateConfiguration ||
+         connection_state_ == shill::kStateReady ||
+         connection_state_ == shill::kStatePortal ||
+         connection_state_ == shill::kStateNoConnectivity ||
+         connection_state_ == shill::kStateRedirectFound ||
+         connection_state_ == shill::kStatePortalSuspected ||
+         // TODO(https://crbug.com/552190): Remove kStateOffline from this list
+         // when occurrences in chromium code have been eliminated.
+         connection_state_ == shill::kStateOffline ||
+         connection_state_ == shill::kStateOnline ||
+         connection_state_ == shill::kStateFailure ||
+         // TODO(https://crbug.com/552190): Remove kStateActivationFailure from
+         // this list when occurrences in chromium code have been eliminated.
+         connection_state_ == shill::kStateActivationFailure ||
+         // TODO(https://crbug.com/552190): Empty should not be a valid state,
+         // but e.g. new tether NetworkStates and unit tests use it currently.
+         connection_state_.empty());
+
   return connection_state_;
 }
 
@@ -570,8 +590,7 @@ bool NetworkState::StateIsConnected(const std::string& connection_state) {
 // static
 bool NetworkState::StateIsConnecting(const std::string& connection_state) {
   return (connection_state == shill::kStateAssociation ||
-          connection_state == shill::kStateConfiguration ||
-          connection_state == shill::kStateCarrier);
+          connection_state == shill::kStateConfiguration);
 }
 
 // static

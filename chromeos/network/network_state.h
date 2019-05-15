@@ -82,7 +82,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkState : public ManagedState {
   void clear_last_error() { last_error_.clear(); }
   ::onc::ONCSource onc_source() const { return onc_source_; }
 
-  // Returns |connection_state_| if visible, kStateDisconnect otherwise.
+  // Returns |connection_state_| if visible, kStateIdle otherwise.
   std::string connection_state() const;
 
   // Updates the connection state and saves the previous connection state.

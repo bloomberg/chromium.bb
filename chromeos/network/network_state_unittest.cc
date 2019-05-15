@@ -309,15 +309,15 @@ TEST_F(NetworkStateTest, ConnectionStateNotVisible) {
   network_state_.set_visible(false);
 
   network_state_.SetConnectionState(shill::kStateConfiguration);
-  EXPECT_EQ(network_state_.connection_state(), shill::kStateDisconnect);
+  EXPECT_EQ(network_state_.connection_state(), shill::kStateIdle);
   EXPECT_FALSE(network_state_.IsConnectingState());
 
   network_state_.SetConnectionState(shill::kStateOnline);
-  EXPECT_EQ(network_state_.connection_state(), shill::kStateDisconnect);
+  EXPECT_EQ(network_state_.connection_state(), shill::kStateIdle);
   EXPECT_FALSE(network_state_.IsConnectedState());
 
   network_state_.SetConnectionState(shill::kStateConfiguration);
-  EXPECT_EQ(network_state_.connection_state(), shill::kStateDisconnect);
+  EXPECT_EQ(network_state_.connection_state(), shill::kStateIdle);
   EXPECT_FALSE(network_state_.IsConnectingState());
 }
 

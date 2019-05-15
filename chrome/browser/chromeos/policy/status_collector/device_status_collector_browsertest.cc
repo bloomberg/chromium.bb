@@ -1963,6 +1963,7 @@ struct FakeNetworkState {
   int expected_state;
   const char* address;
   const char* gateway;
+  bool visible;
 };
 
 // List of fake networks - primarily used to make sure that signal strength
@@ -1971,32 +1972,31 @@ struct FakeNetworkState {
 // network, so we use 1 below.
 static const FakeNetworkState kFakeNetworks[] = {
     {"offline", "/device/wifi", shill::kTypeWifi, 35, -85, shill::kStateOffline,
-     em::NetworkState::OFFLINE, "", ""},
+     em::NetworkState::OFFLINE, "", "", true},
     {"ethernet", "/device/ethernet", shill::kTypeEthernet, 0, 0,
-     shill::kStateOnline, em::NetworkState::ONLINE, "192.168.0.1", "8.8.8.8"},
+     shill::kStateOnline, em::NetworkState::ONLINE, "192.168.0.1", "8.8.8.8",
+     true},
     {"wifi", "/device/wifi", shill::kTypeWifi, 23, -97,
-     shill::kStateNoConnectivity, em::NetworkState::PORTAL, "", ""},
+     shill::kStateNoConnectivity, em::NetworkState::PORTAL, "", "", true},
     {"idle", "/device/cellular1", shill::kTypeCellular, 0, 0, shill::kStateIdle,
-     em::NetworkState::IDLE, "", ""},
-    {"carrier", "/device/cellular1", shill::kTypeCellular, 0, 0,
-     shill::kStateCarrier, em::NetworkState::CARRIER, "", ""},
+     em::NetworkState::IDLE, "", "", true},
+    {"not_visible", "/device/wifi", shill::kTypeWifi, 0, 0, shill::kStateIdle,
+     em::NetworkState::IDLE, "", "", false},
     {"association", "/device/cellular1", shill::kTypeCellular, 0, 0,
-     shill::kStateAssociation, em::NetworkState::ASSOCIATION, "", ""},
+     shill::kStateAssociation, em::NetworkState::ASSOCIATION, "", "", true},
     {"config", "/device/cellular1", shill::kTypeCellular, 0, 0,
-     shill::kStateConfiguration, em::NetworkState::CONFIGURATION, "", ""},
+     shill::kStateConfiguration, em::NetworkState::CONFIGURATION, "", "", true},
     // Set signal strength for this network to -20, but expected strength to 0
     // to test that we only report signal_strength for wifi connections.
     {"ready", "/device/cellular1", shill::kTypeCellular, -20, 0,
-     shill::kStateReady, em::NetworkState::READY, "", ""},
-    {"disconnect", "/device/wifi", shill::kTypeWifi, 1, -119,
-     shill::kStateDisconnect, em::NetworkState::DISCONNECT, "", ""},
+     shill::kStateReady, em::NetworkState::READY, "", "", true},
     {"failure", "/device/wifi", shill::kTypeWifi, 1, -119, shill::kStateFailure,
-     em::NetworkState::FAILURE, "", ""},
+     em::NetworkState::FAILURE, "", "", true},
     {"activation-failure", "/device/cellular1", shill::kTypeCellular, 0, 0,
      shill::kStateActivationFailure, em::NetworkState::ACTIVATION_FAILURE, "",
-     ""},
-    {"unknown", "", shill::kTypeWifi, 1, -119, "unknown",
-     em::NetworkState::UNKNOWN, "", ""},
+     "", true},
+    {"unknown", "", shill::kTypeWifi, 1, -119, shill::kStateIdle,
+     em::NetworkState::IDLE, "", "", true},
 };
 
 static const FakeNetworkState kUnconfiguredNetwork = {
@@ -2279,8 +2279,7 @@ class DeviceStatusCollectorNetworkInterfacesTest
     // Now add services for every fake network.
     for (const FakeNetworkState& fake_network : kFakeNetworks) {
       // Shill forces non-visible networks to report a disconnected state.
-      bool is_visible =
-          fake_network.connection_status != shill::kStateDisconnect;
+      bool is_visible = fake_network.connection_status != shill::kStateIdle;
       service_client->AddService(fake_network.name /* service_path */,
                                  fake_network.name /* guid */,
                                  fake_network.name, fake_network.type,

@@ -751,6 +751,8 @@ message NetworkInterface {
 // any specific interface, or may be visible across multiple interfaces.
 message NetworkState {
   // The current state of this network.
+  // CARRIER (1), DISCONNECT (8) and ACTIVATION_FAILURE (10) are not used by the
+  // client.
   enum ConnectionState {
     IDLE = 0;
     CARRIER = 1;

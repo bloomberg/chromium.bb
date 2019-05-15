@@ -93,7 +93,7 @@ class NetworkErrorScreenTest : public InProcessBrowserTest {
         "/device/stub_wifi_device", shill::kTypeWifi, "stub_wifi_device");
     network_helper_->service_test()->AddService(
         kWifiServiceName, "wifi_guid", kWifiNetworkName, shill::kTypeWifi,
-        shill::kStateDisconnect, true);
+        shill::kStateIdle, true);
     network_helper_->service_test()->SetServiceProperty(
         kWifiServiceName, shill::kConnectableProperty, base::Value(true));
     network_helper_->profile_test()->AddService(

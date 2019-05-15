@@ -44,12 +44,9 @@ bool ConnectionStateChanged(const NetworkState* network,
   if (network->is_captive_portal() != prev_is_captive_portal)
     return true;
   std::string connection_state = network->connection_state();
-  // Treat 'idle' and 'disconnect' the same.
   bool prev_idle = prev_connection_state.empty() ||
-                   prev_connection_state == shill::kStateIdle ||
-                   prev_connection_state == shill::kStateDisconnect;
-  bool cur_idle = connection_state == shill::kStateIdle ||
-                  connection_state == shill::kStateDisconnect;
+                   prev_connection_state == shill::kStateIdle;
+  bool cur_idle = connection_state == shill::kStateIdle;
   if (prev_idle || cur_idle)
     return prev_idle != cur_idle;
   return connection_state != prev_connection_state;
@@ -858,7 +855,7 @@ bool NetworkStateHandler::AssociateTetherNetworkStateWithWifiNetwork(
 
 void NetworkStateHandler::SetTetherNetworkStateDisconnected(
     const std::string& guid) {
-  SetTetherNetworkStateConnectionState(guid, shill::kStateDisconnect);
+  SetTetherNetworkStateConnectionState(guid, shill::kStateIdle);
 }
 
 void NetworkStateHandler::SetTetherNetworkStateConnecting(
