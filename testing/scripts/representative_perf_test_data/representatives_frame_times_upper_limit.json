@@ -1,45 +1,162 @@
 {
   "win": {
-    "css_value_type_shadow": 33.30775,
-    "yahoo_sports_2018": 18.20989,
-    "mix_10k": 461.59862,
-    "microsoft_fish_ie_tank": 19.00327225,
-    "css_animations_staggered_infinite_iterations": 16.68411,
-    "pinterest_2018": 19.0722844,
-    "background_color_animation_with_gradient": 24.91983336,
-    "motion_mark_canvas_fill_shapes": 31.59578218,
-    "particles": 16.7502048,
-    "second_batch_js_light": 18.46476,
-    "microsoft_video_city": 18.01405,
-    "infinite_scroll_root_fixed_n_layers_99": 17.95172,
-    "css_value_type_length_complex": 38.44199,
-    "css_opacity_plus_n_layers_99": 16.681,
-    "canvas_90000_pixels_per_second": 18.09894,
-    "google_web_search_2018": 17.33381844,
-    "aquarium": 16.684
+    "css_value_type_shadow": {
+      "avg": 51.69078,
+      "ci_095": 8.021214076
+    },
+    "yahoo_sports_2018": {
+      "avg": 17.91754,
+      "ci_095": 1.7831799
+    },
+    "mix_10k": {
+      "avg": 29.339723,
+      "ci_095": 3.462980077
+    },
+    "microsoft_fish_ie_tank": {
+      "avg": 17.15968,
+      "ci_095": 2.448468729
+    },
+    "css_animations_staggered_infinite_iterations": {
+      "avg": 17.53428,
+      "ci_095": 1.15466265
+    },
+    "pinterest_2018": {
+      "avg": 17.17876,
+      "ci_095": 1.990684136
+    },
+    "background_color_animation_with_gradient": {
+      "avg": 18.91196,
+      "ci_095": 5.3955209
+    },
+    "motion_mark_canvas_fill_shapes": {
+      "avg": 35.30084,
+      "ci_095": 3.092656437
+    },
+    "particles": {
+      "avg": 16.683,
+      "ci_095": 0.4367177926
+    },
+    "second_batch_js_light": {
+      "avg": 19.81702,
+      "ci_095": 10.392606
+    },
+    "microsoft_video_city": {
+      "avg": 17.49898,
+      "ci_095": 1.506935193
+    },
+    "infinite_scroll_root_fixed_n_layers_99": {
+      "avg": 16.80068,
+      "ci_095": 0.9999470106
+    },
+    "css_value_type_length_complex": {
+      "avg": 36.60576,
+      "ci_095": 3.783401913
+    },
+    "css_opacity_plus_n_layers_99": {
+      "avg": 16.681,
+      "ci_095": 0.49490275
+    },
+    "canvas_90000_pixels_per_second": {
+      "avg": 16.68387,
+      "ci_095": 2.985124255
+    },
+    "google_web_search_2018": {
+      "avg": 16.95106,
+      "ci_095": 1.387013433
+    },
+    "aquarium": {
+      "avg": 17.68626,
+      "ci_095": 1.080606843
+    }
   },
   "mac": {
-    "yuv_decoding": 50.90241,
-    "canvas_animation_no_clear": 45.635,
-    "compositor_heavy_animation": 38.55816,
-    "web_animation_value_type_length_3d": 39.5491,
-    "stroke_shapes": 57.83637,
-    "wordpress_2018": 32.75465,
-    "web_animation_value_type_path": 43.3278,
-    "web_animations_many_keyframes": 30.47611,
-    "twitter_pinch_2018": 37.893,
-    "web_animation_value_type_length_complex": 54.9078,
-    "smash_cat": 52.30218,
-    "cc_poster_circle": 36.9494588,
-    "infinite_scroll_root_fixed_n_layers_99": 28.3575593,
-    "amazon_pinch_2018": 30.332,
-    "youtube_pinch_2018": 40.28703,
-    "earth": 63.3204628,
-    "css_value_type_shadow": 58.59559,
-    "js_opacity_plus_n_layers_99": 56.53884,
-    "fill_shapes": 30.02325,
-    "raf": 35.76062,
-    "canvas_lines": 41.84306,
-    "megi_dish": 83.855
+    "yuv_decoding": {
+      "avg": 92.46526,
+      "ci_095": 36.59964771
+    },
+    "canvas_animation_no_clear": {
+      "avg": 82.66825,
+      "ci_095": 31.47239679
+    },
+    "compositor_heavy_animation": {
+      "avg": 45.44503,
+      "ci_095": 7.873983832
+    },
+    "web_animation_value_type_length_3d": {
+      "avg": 58.05317,
+      "ci_095": 10.82881398
+    },
+    "stroke_shapes": {
+      "avg": 105.85164,
+      "ci_095": 25.0567076
+    },
+    "wordpress_2018": {
+      "avg": 51.67935,
+      "ci_095": 14.68141661
+    },
+    "web_animation_value_type_path": {
+      "avg": 41.64474,
+      "ci_095": 7.552948532
+    },
+    "web_animations_many_keyframes": {
+      "avg": 57.72545,
+      "ci_095": 10.48590654
+    },
+    "twitter_pinch_2018": {
+      "avg": 48.67861,
+      "ci_095": 19.28639067
+    },
+    "web_animation_value_type_length_complex": {
+      "avg": 73.5468,
+      "ci_095": 16.22147971
+    },
+    "smash_cat": {
+      "avg": 84.24052,
+      "ci_095": 34.49607228
+    },
+    "cc_poster_circle": {
+      "avg": 75.5703894,
+      "ci_095": 15.79465651
+    },
+    "infinite_scroll_root_fixed_n_layers_99": {
+      "avg": 53.85195,
+      "ci_095": 13.26379689
+    },
+    "amazon_pinch_2018": {
+      "avg": 49.48324,
+      "ci_095": 18.7335
+    },
+    "youtube_pinch_2018": {
+      "avg": 71.17898,
+      "ci_095": 38.2194225
+    },
+    "earth": {
+      "avg": 128.93808,
+      "ci_095": 46.65654204
+    },
+    "css_value_type_shadow": {
+      "avg": 81.94442,
+      "ci_095": 7.637740595
+    },
+    "js_opacity_plus_n_layers_99": {
+      "avg": 103.80365,
+      "ci_095": 28.24108565
+    },
+    "fill_shapes": {
+      "avg": 59.11515,
+      "ci_095": 13.24700621
+    },
+    "raf": {
+      "avg": 67.09458,
+      "ci_095": 16.95612612
+    },
+    "canvas_lines": {
+      "avg": 86.43255,
+      "ci_095": 23.91080237
+    },
+    "megi_dish": {
+      "avg": 108.1556,
+      "ci_095": 37.21160235
+    }
   }
 }

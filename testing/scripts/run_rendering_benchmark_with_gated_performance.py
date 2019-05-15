@@ -26,7 +26,13 @@ import common
 import run_performance_tests
 
 BENCHMARK = 'rendering.desktop'
-ERROR_MARGIN = 2.0
+# AVG_ERROR_MARGIN determines how much more the value of frame times can be
+# compared to the recorded value
+AVG_ERROR_MARGIN = 2.0
+# CI stands for comfidence intrevals. "ci_095"s recorded in the data is the
+# reocrded range between upper and lower CIs. CI_ERROR_MARGIN is the maximum
+# acceptable ratio of calculated ci_095 to the recorded ones.
+CI_ERROR_MARGIN = 2.0
 
 class ResultRecorder(object):
   def __init__(self):
@@ -89,19 +95,19 @@ def main():
   result_recorder = ResultRecorder()
 
   # The values used as the upper limit are the 99th percentile of the
-  # average frame_times recorded by dashboard in the past 400 revisions.
+  # avg and ci_095 frame_times recorded by dashboard in the past 200 revisions.
   # If the value measured here would be higher than this value at least by
-  # 2ms [ERROR_MARGIN], that would be considered a failure.
+  # 2ms [AVG_ERROR_MARGIN], that would be considered a failure.
   # crbug.com/953895
   with open(
     os.path.join(os.path.dirname(__file__),
     'representative_perf_test_data',
     'representatives_frame_times_upper_limit.json')
   ) as bound_data:
-    frame_times_upper_limit = json.load(bound_data)
+    upper_limit_data = json.load(bound_data)
 
   out_dir_path = os.path.dirname(options.isolated_script_test_output)
-  test_count = len(frame_times_upper_limit[platform])
+  test_count = len(upper_limit_data[platform])
 
   output_path = os.path.join(out_dir_path, BENCHMARK, 'test_results.json')
 
@@ -120,17 +126,22 @@ def main():
           continue
         story_name = row['stories']
         if (story_name in marked_stories or story_name not in
-          frame_times_upper_limit[platform]):
+          upper_limit_data[platform]):
           continue
         marked_stories.add(story_name)
+
         if row['avg'] == '' or row['count'] == 0:
           print "No values for " + story_name
           result_recorder.addFailure(story_name)
+        elif (float(row['ci_095']) >
+          upper_limit_data[platform][story_name]['ci_095'] * CI_ERROR_MARGIN):
+          print "Noisy data on frame_times for " + story_name + ".\n"
+          result_recorder.addFailure(story_name)
         elif (float(row['avg']) >
-          frame_times_upper_limit[platform][story_name] + ERROR_MARGIN):
+          upper_limit_data[platform][story_name]['avg'] + AVG_ERROR_MARGIN):
           print (story_name + ": average frame_times is higher than 99th " +
-            "percentile of the past 400 recorded frame_times(" +
-            row['avg'] + ")")
+            "percentile of the past 200 recorded frame_times(" +
+            row['avg'] + ")" + ".\n")
           result_recorder.addFailure(story_name)
 
     (
