@@ -5582,3 +5582,4 @@ crbug.com/937991 [ Win7 Release ] http/tests/devtools/cache-storage/cache-data.j
 # https://webrtc-review.googlesource.com/c/src/+/135948
 crbug.com/943975 external/wpt/webrtc/RTCDataChannel-send.html [ Pass Failure ]
 crbug.com/943975 external/wpt/webrtc/RTCSctpTransport-maxMessageSize.html [ Pass Failure ]
+crbug.com/943975 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCSctpTransport-maxMessageSize.html [ Pass Failure ]
