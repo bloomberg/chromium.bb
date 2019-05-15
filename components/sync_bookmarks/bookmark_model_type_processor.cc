@@ -144,6 +144,10 @@ void BookmarkModelTypeProcessor::GetLocalChanges(
   BookmarkLocalChangesBuilder builder(bookmark_tracker_.get(), bookmark_model_);
   syncer::CommitRequestDataList local_changes =
       builder.BuildCommitRequests(max_entries);
+  for (const std::unique_ptr<syncer::CommitRequestData>& local_change :
+       local_changes) {
+    bookmark_tracker_->MarkCommitMayHaveStarted(local_change->entity->id);
+  }
   std::move(callback).Run(std::move(local_changes));
 }
 

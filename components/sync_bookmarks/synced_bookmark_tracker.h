@@ -76,6 +76,11 @@ class SyncedBookmarkTracker {
       return metadata_.get();
     }
 
+    bool commit_may_have_started() const { return commit_may_have_started_; }
+    void set_commit_may_have_started(bool value) {
+      commit_may_have_started_ = value;
+    }
+
     // Returns the estimate of dynamically allocated memory in bytes.
     size_t EstimateMemoryUsage() const;
 
@@ -85,6 +90,14 @@ class SyncedBookmarkTracker {
 
     // Serializable Sync metadata.
     const std::unique_ptr<sync_pb::EntityMetadata> metadata_;
+
+    // Whether there could be a commit sent to the server for this entity. It's
+    // used to protect against sending tombstones for entities that have never
+    // been sent to the server. It's only briefly false between the time was
+    // first added to the tracker until the first commit request is sent to the
+    // server. The tracker sets it to true in the constructor because this code
+    // path is only executed in production when loading from disk.
+    bool commit_may_have_started_ = false;
 
     DISALLOW_COPY_AND_ASSIGN(Entity);
   };
@@ -130,8 +143,12 @@ class SyncedBookmarkTracker {
   // Updates the server version of an existing entry for the |sync_id|.
   void UpdateServerVersion(const std::string& sync_id, int64_t server_version);
 
+  // Marks an existing entry for |sync_id| that a commit request might have been
+  // sent to the server.
+  void MarkCommitMayHaveStarted(const std::string& sync_id);
+
   // This class maintains the order of calls to this method and the same order
-  // is gauaranteed when returning local changes in
+  // is guaranteed when returning local changes in
   // GetEntitiesWithLocalChanges() as well as in BuildBookmarkModelMetadata().
   void MarkDeleted(const std::string& sync_id);
 

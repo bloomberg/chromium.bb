@@ -681,6 +681,37 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest, E2E_ONLY(SanitySetup)) {
   ASSERT_TRUE(SetupSync()) <<  "SetupSync() failed.";
 }
 
+IN_PROC_BROWSER_TEST_P(
+    SingleClientBookmarksSyncTest,
+    RemoveRightAfterAddShouldNotSendCommitRequestsOrTombstones) {
+  base::HistogramTester histogram_tester;
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  // Add a folder and directly remove it.
+  ASSERT_NE(nullptr,
+            AddFolder(kSingleProfileIndex,
+                      /*parent=*/GetBookmarkBarNode(kSingleProfileIndex),
+                      /*index=*/0, "folder name"));
+  Remove(kSingleProfileIndex,
+         /*parent=*/GetBookmarkBarNode(kSingleProfileIndex), 0);
+
+  // Add another bookmark to make sure a full sync cycle completion.
+  ASSERT_NE(nullptr, AddURL(kSingleProfileIndex,
+                            /*parent=*/GetOtherNode(kSingleProfileIndex),
+                            /*index=*/0, "title", GURL("http://www.url.com")));
+  ASSERT_TRUE(
+      UpdatedProgressMarkerChecker(GetSyncService(kSingleProfileIndex)).Wait());
+  EXPECT_TRUE(ModelMatchesVerifier(kSingleProfileIndex));
+
+  // There should have been one creation and no deletions.
+  EXPECT_EQ(
+      1, histogram_tester.GetBucketCount("Sync.ModelTypeEntityChange3.BOOKMARK",
+                                         /*LOCAL_CREATION=*/1));
+  EXPECT_EQ(
+      0, histogram_tester.GetBucketCount("Sync.ModelTypeEntityChange3.BOOKMARK",
+                                         /*LOCAL_DELETION=*/0));
+}
+
 IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
                        PRE_PersistProgressMarkerOnRestart) {
   const std::string title = "Seattle Sounders FC";
