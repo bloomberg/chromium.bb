@@ -12,6 +12,11 @@ import("//build/config/android/rules.gni")
 # generate an empty factory that will be swapped out at build time by the real
 # factory.
 #
+# A good way to limit the number of dependencies for these factory files is to
+# encapsulate the creation logic into either the constructor of the internal
+# Impl classes or a static create method in the Impl classes. See the sample
+# code below as an example.
+#
 # Specific requirements for the java factory files are listed in the script:
 # //chrome/android/features/create_stripped_java_factory.py
 #
@@ -30,15 +35,17 @@ import("//build/config/android/rules.gni")
 #   }
 #
 #   //android/org/chromium/foo/FooFactory.java:
+#   package org.chromium.foo;
 #   public class FooFactory {
 #     private FooFactory () {}
 #
 #     public static Foo createFoo() {
-#       return new FooImpl();
+#       return FooImpl.create();
 #     }
 #   }
 #
-#   //generated/org/chromium/foo/FooFactory.java:
+#   //out/Default/.../generated/org/chromium/foo/FooFactory.java:
+#   package org.chromium.foo;
 #   public class FooFactory {
 #     private FooFactory () {}
 #
@@ -46,6 +53,18 @@ import("//build/config/android/rules.gni")
 #       return null;
 #     }
 #   }
+#
+#   //android/org/chromium/foo/FooImpl.java:
+#   package org.chromium.foo;
+#   import org.chromium.foo.internal.Parameter;
+#   public class FooImpl implements Foo {
+#     FooImpl(Parameter parameter) {}
+#
+#     static Foo create() {
+#       return new FooImpl(new Parameter());
+#     }
+#   }
+#
 template("android_library_factory") {
   forward_variables_from(invoker, [ "testonly" ])
 

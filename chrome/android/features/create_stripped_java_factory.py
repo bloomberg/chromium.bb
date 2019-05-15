@@ -27,10 +27,13 @@ sufficient to have the build pass with simple modifications.
 
 We require that these factory files to:
   - Contain exactly one top-level class.
-  - Avoid inner classes.
-  - Avoid explicitly importing internal classes.
-    - One option is to be in the same package as internal classes.
-  - Only contain public static methods apart from the constructor.
+    - No inner classes.
+  - Contain a private constructor with no arguments (it won't be used).
+  - Contain only public static methods apart from the constructor.
+    - Only void and object return types are supported (no primitives).
+  - Avoid explicitly importing internal classes and their dependencies.
+    - The factory should be in the same package as the internal classes it
+      instantiates.
 """
 
 import argparse
