@@ -78,7 +78,8 @@ class LeakDetectionStorySet(story_module.StorySet):
       'https://www.alipay.com/',
       'https://www.twitch.tv/',
       'https://www.ebay.com/',
-      'https://www.microsoft.com/',
+      # TODO(keishi): Memory dump fails flakily crbug.com/963273
+      #'https://www.microsoft.com/',
       'https://www.xvideos.com/',
       'https://mail.ru/',
       'https://www.bing.com/',
@@ -90,7 +91,8 @@ class LeakDetectionStorySet(story_module.StorySet):
       'https://news.google.com/',
       'https://www.theguardian.com/',
       'https://www.indiatimes.com/',
-      'http://www.foxnews.com/',
+      # TODO(keishi): Memory dump fails flakily crbug.com/963273
+      #'http://www.foxnews.com/',
       'https://weather.com/',
       'https://www.shutterstock.com/',
       'https://docs.google.com/',
@@ -107,7 +109,8 @@ class LeakDetectionStorySet(story_module.StorySet):
       'https://www.ikea.com/',
       'https://www.bestbuy.com/',
       'https://www.homedepot.com/',
-      'https://www.target.com/',
+      # TODO(keishi): Memory dump fails flakily crbug.com/963273
+      #'https://www.target.com/',
       'https://www.booking.com/',
       'https://www.tripadvisor.com/',
       'https://9gag.com/',
@@ -115,7 +118,8 @@ class LeakDetectionStorySet(story_module.StorySet):
       'https://www.roblox.com/',
       'https://www.gamespot.com/',
       'https://www.blizzard.com',
-      'https://ign.com/',
+      # TODO(keishi): Memory dump fails flakily crbug.com/963273
+      #'https://ign.com/',
       'https://www.yelp.com/',
       # Times out waiting for HasReachedQuiescence - crbug.com/927427
       # 'https://gizmodo.com/',
@@ -167,7 +171,8 @@ class LeakDetectionStorySet(story_module.StorySet):
       #'http://www.espn.com/',
       'https://edition.cnn.com/',
       'https://www.pinterest.com/',
-      'https://www.nytimes.com/',
+      # TODO(keishi): Memory dump fails flakily crbug.com/963273
+      #'https://www.nytimes.com/',
       'https://github.com/',
       'https://www.salesforce.com/',
       # Japan Alexa top websites
@@ -180,7 +185,8 @@ class LeakDetectionStorySet(story_module.StorySet):
       'https://www.pixiv.net/',
       # websites which were found to be leaking in the past
       'https://www.prezi.com',
-      'http://www.time.com',
+      # TODO(keishi): Memory dump fails flakily crbug.com/963273
+      #'http://www.time.com',
       'http://www.cheapoair.com',
       'http://www.onlinedown.net',
       'http://www.dailypost.ng',
