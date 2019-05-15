@@ -48,12 +48,15 @@ AccountManagerWelcomeUI::AccountManagerWelcomeUI(content::WebUI* web_ui)
                                IDR_ACCOUNT_MANAGER_WELCOME_CSS);
   html_source->AddResourcePath("account_manager_welcome.js",
                                IDR_ACCOUNT_MANAGER_WELCOME_JS);
+#if defined(GOOGLE_CHROME_BUILD)
   html_source->AddResourcePath("account_manager_welcome_1x.png",
                                IDR_ACCOUNT_MANAGER_WELCOME_1X_PNG);
   html_source->AddResourcePath("account_manager_welcome_2x.png",
                                IDR_ACCOUNT_MANAGER_WELCOME_2X_PNG);
   html_source->AddResourcePath("googleg.svg",
                                IDR_ACCOUNT_MANAGER_WELCOME_GOOGLE_LOGO_SVG);
+#endif
+
   html_source->SetDefaultResource(IDR_ACCOUNT_MANAGER_WELCOME_HTML);
 
   Profile* profile = Profile::FromWebUI(web_ui);

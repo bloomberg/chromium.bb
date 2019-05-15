@@ -1,5 +1,6 @@
 <!doctype html>
 <html dir="$i18n{textdirection}" lang="$i18n{language}">
+
 <head>
   <meta charset="utf-8">
   <link rel="import" href="chrome://resources/html/polymer.html">
@@ -16,17 +17,22 @@
   <script src="strings.js"></script>
   <script src="account_manager_welcome.js"></script>
 </head>
+
 <body>
   <div id="content">
-    <img id="google-logo" src="googleg.svg">
+    <if expr="_google_chrome">
+      <img id="google-logo" src="googleg.svg">
+    </if>
     <h1>$i18n{welcomeTitle}</h1>
     <p>$i18nRaw{welcomeMessage}</p>
-    <img id="welcome-image"
-          srcset="account_manager_welcome_1x.png 1x,
-                  account_manager_welcome_2x.png 2x">
+    <if expr="_google_chrome">
+      <img id="welcome-image" srcset="account_manager_welcome_1x.png 1x,
+                account_manager_welcome_2x.png 2x">
+    </if>
     <paper-button raised id="ok-button">$i18n{okButton}</paper-button>
   </div>
 
   <script src="chrome://resources/js/i18n_template.js"></script>
 </body>
+
 </html>
