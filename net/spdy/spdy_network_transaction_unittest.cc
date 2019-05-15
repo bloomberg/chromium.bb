@@ -1645,7 +1645,10 @@ TEST_F(SpdyNetworkTransactionTest, ThreeGetsWithMaxConcurrentSocketClose) {
       // third streams are waiting in the SPDY stream request queue.
       MockRead(ASYNC, ERR_IO_PENDING, 4), CreateMockRead(fin_body, 5),
       CreateMockRead(resp2, 8),
-      MockRead(ASYNC, ERR_CONNECTION_RESET, 9),  // Abort!
+      // The exact error does not matter, but some errors, such as
+      // ERR_CONNECTION_RESET, may trigger a retry, which this test does not
+      // account for.
+      MockRead(ASYNC, ERR_SSL_BAD_RECORD_MAC_ALERT, 9),  // Abort!
   };
 
   SequencedSocketData data(reads, writes);
@@ -1685,7 +1688,7 @@ TEST_F(SpdyNetworkTransactionTest, ThreeGetsWithMaxConcurrentSocketClose) {
   data.Resume();
 
   out.rv = callback3.WaitForResult();
-  EXPECT_THAT(out.rv, IsError(ERR_ABORTED));
+  EXPECT_THAT(out.rv, IsError(ERR_SSL_BAD_RECORD_MAC_ALERT));
 
   const HttpResponseInfo* response1 = trans1.GetResponseInfo();
   ASSERT_TRUE(response1);
@@ -1701,7 +1704,7 @@ TEST_F(SpdyNetworkTransactionTest, ThreeGetsWithMaxConcurrentSocketClose) {
   out.status_line = response2->headers->GetStatusLine();
   out.response_info = *response2;
   out.rv = ReadTransaction(&trans2, &out.response_data);
-  EXPECT_THAT(out.rv, IsError(ERR_CONNECTION_RESET));
+  EXPECT_THAT(out.rv, IsError(ERR_SSL_BAD_RECORD_MAC_ALERT));
 
   helper.VerifyDataConsumed();
 }

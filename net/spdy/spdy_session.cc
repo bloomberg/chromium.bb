@@ -1384,6 +1384,8 @@ void SpdySession::MakeUnavailable() {
 void SpdySession::StartGoingAway(spdy::SpdyStreamId last_good_stream_id,
                                  Error status) {
   DCHECK_GE(availability_state_, STATE_GOING_AWAY);
+  DCHECK_NE(OK, status);
+  DCHECK_NE(ERR_IO_PENDING, status);
 
   // The loops below are carefully written to avoid reentrancy problems.
 
@@ -1396,7 +1398,7 @@ void SpdySession::StartGoingAway(spdy::SpdyStreamId last_good_stream_id,
     // No new stream requests should be added while the session is
     // going away.
     DCHECK_GT(old_size, GetTotalSize(pending_create_stream_queues_));
-    pending_request->OnRequestCompleteFailure(ERR_ABORTED);
+    pending_request->OnRequestCompleteFailure(status);
   }
 
   while (true) {
