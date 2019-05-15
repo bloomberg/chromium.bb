@@ -5,7 +5,6 @@
 #include "cc/paint/image_transfer_cache_entry.h"
 
 #include <utility>
-#include <vector>
 
 #include "base/bind_helpers.h"
 #include "base/logging.h"
@@ -16,6 +15,8 @@
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/core/SkPixmap.h"
+#include "third_party/skia/include/core/SkYUVAIndex.h"
+#include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/GrTypes.h"
 
@@ -143,29 +144,67 @@ ServiceImageTransferCacheEntry::ServiceImageTransferCacheEntry(
 ServiceImageTransferCacheEntry& ServiceImageTransferCacheEntry::operator=(
     ServiceImageTransferCacheEntry&& other) = default;
 
-bool ServiceImageTransferCacheEntry::BuildFromDecodedData(
+bool ServiceImageTransferCacheEntry::BuildFromHardwareDecodedImage(
     GrContext* context,
-    base::span<const uint8_t> decoded_image,
-    size_t row_bytes,
-    const SkImageInfo& image_info,
+    std::vector<sk_sp<SkImage>> plane_images,
+    size_t buffer_byte_size,
     bool needs_mips,
     sk_sp<SkColorSpace> target_color_space) {
   context_ = context;
-  has_mips_ = needs_mips;
-  size_ = image_info.computeByteSize(row_bytes);
-  if (size_ == SIZE_MAX)
-    return false;
-  DCHECK_LE(size_, decoded_image.size());
 
-  uint32_t width;
-  uint32_t height;
-  if (!base::CheckedNumeric<int>(image_info.width()).AssignIfValid(&width) ||
-      !base::CheckedNumeric<int>(image_info.height()).AssignIfValid(&height)) {
+  // 1) Extract the planar textures from |plane_images|.
+  std::vector<GrBackendTexture> plane_backend_textures(3u);
+  DCHECK_EQ(3u, plane_images.size());
+  for (size_t plane = 0; plane < 3u; plane++) {
+    plane_backend_textures[plane] = plane_images[plane]->getBackendTexture(
+        true /* flushPendingGrContextIO */);
+    if (!plane_backend_textures[plane].isValid()) {
+      DLOG(ERROR) << "Invalid backend texture found";
+      return false;
+    }
+    if (needs_mips) {
+      // TODO(andrescj): generate mipmaps when requested. This will require some
+      // resource management: we either let Skia own the new textures or we take
+      // ownership and delete them in |destroy_callback|.
+      NOTIMPLEMENTED();
+    }
+  }
+  plane_images_ = std::move(plane_images);
+
+  // 2) Create a SkImage backed by the YUV textures extracted above. There are
+  //    two assumptions here:
+  //
+  //    - SkYUVColorSpace::kJPEG_SkYUVColorSpace is used for the YUV-to-RGB
+  //      matrix.
+  //    - The color space of the resulting image is sRGB.
+  //
+  // TODO(andrescj): support other YUV-to-RGB conversions and embedded color
+  // profiles.
+  SkYUVAIndex plane_indices[] = {
+      SkYUVAIndex{0, SkColorChannel::kR}, SkYUVAIndex{1, SkColorChannel::kR},
+      SkYUVAIndex{2, SkColorChannel::kR}, SkYUVAIndex{-1, SkColorChannel::kR}};
+  image_ = SkImage::MakeFromYUVATextures(
+      context_, SkYUVColorSpace::kJPEG_SkYUVColorSpace,
+      plane_backend_textures.data(), plane_indices,
+      plane_images_[0]->dimensions(), kTopLeft_GrSurfaceOrigin);
+  if (!image_) {
+    DLOG(ERROR) << "Could not create YUV SkImage";
     return false;
   }
 
-  return MakeSkImage(SkPixmap(image_info, decoded_image.data(), row_bytes),
-                     width, height, target_color_space);
+  // 3) Perform color space conversion if necessary.
+  if (target_color_space)
+    image_ = image_->makeColorSpace(target_color_space);
+  if (!image_) {
+    DLOG(ERROR) << "Could not do color space conversion";
+    return false;
+  }
+
+  // 4) Fill out the rest of the information.
+  has_mips_ = false;
+  size_ = buffer_byte_size;
+  fits_on_gpu_ = true;
+  return true;
 }
 
 size_t ServiceImageTransferCacheEntry::CachedSize() const {
@@ -275,6 +314,14 @@ bool ServiceImageTransferCacheEntry::MakeSkImage(
 void ServiceImageTransferCacheEntry::EnsureMips() {
   if (has_mips_)
     return;
+
+  if (!plane_images_.empty()) {
+    // TODO(andrescj): generate mipmaps for hardware-accelerated decodes when
+    // requested. This will require some resource management: we either let Skia
+    // own the new textures or we take ownership and delete them in
+    // |destroy_callback_|.
+    NOTIMPLEMENTED();
+  }
 
   has_mips_ = true;
   // TODO(ericrk): consider adding in the DeleteSkImageAndPreventCaching
