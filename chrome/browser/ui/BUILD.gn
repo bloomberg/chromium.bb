@@ -3293,8 +3293,6 @@ jumbo_split_static_library("ui") {
       "app_list/search/arc/arc_playstore_search_result.h",
       "app_list/search/chrome_search_result.cc",
       "app_list/search/chrome_search_result.h",
-      "app_list/search/common/json_response_fetcher.cc",
-      "app_list/search/common/json_response_fetcher.h",
       "app_list/search/common/url_icon_source.cc",
       "app_list/search/common/url_icon_source.h",
       "app_list/search/crostini/crostini_repository_search_provider.cc",
