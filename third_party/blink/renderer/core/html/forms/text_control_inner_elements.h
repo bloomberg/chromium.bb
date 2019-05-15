@@ -40,6 +40,7 @@ class TextControlInnerContainer final : public HTMLDivElement {
 
  protected:
   LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout) override;
+  bool TypeShouldForceLegacyLayout() const final { return true; }
 };
 
 class EditingViewPortElement final : public HTMLDivElement {
@@ -52,6 +53,7 @@ class EditingViewPortElement final : public HTMLDivElement {
   scoped_refptr<ComputedStyle> CustomStyleForLayoutObject() override;
 
  private:
+  bool TypeShouldForceLegacyLayout() const final { return true; }
   bool SupportsFocus() const override { return false; }
 };
 
@@ -68,6 +70,7 @@ class TextControlInnerEditorElement final : public HTMLDivElement {
 
  private:
   LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout) override;
+  bool TypeShouldForceLegacyLayout() const final { return true; }
   scoped_refptr<ComputedStyle> CustomStyleForLayoutObject() override;
   bool SupportsFocus() const override { return false; }
   bool is_visible_ = true;
@@ -83,6 +86,7 @@ class SearchFieldCancelButtonElement final : public HTMLDivElement {
   bool WillRespondToMouseClickEvents() override;
 
  private:
+  bool TypeShouldForceLegacyLayout() const final { return true; }
   bool SupportsFocus() const override { return false; }
 };
 
