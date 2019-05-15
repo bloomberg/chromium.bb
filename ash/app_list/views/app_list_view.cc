@@ -458,9 +458,9 @@ class PeekingResetAnimation : public ui::LayerAnimationElement {
             gfx::PointF(0, y_offset),
             gfx::PointF())),
         view_(view) {
-    DCHECK(view_->is_in_drag() &&
-           view_->app_list_state() == ash::mojom::AppListViewState::kPeeking &&
-           !view_->is_tablet_mode());
+    DCHECK(view_->is_in_drag());
+    DCHECK_EQ(view_->app_list_state(), ash::mojom::AppListViewState::kPeeking);
+    DCHECK(!view_->is_tablet_mode());
   }
 
   ~PeekingResetAnimation() override = default;
