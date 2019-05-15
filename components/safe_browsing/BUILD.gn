@@ -16,6 +16,16 @@ proto_library("webui_proto") {
   ]
 }
 
+proto_library("realtimeapi_proto") {
+  sources = [
+    "proto/realtimeapi.proto",
+  ]
+
+  deps = [
+    ":csd_proto",
+  ]
+}
+
 source_set("safe_browsing") {
   sources = [
     "base_blocking_page.cc",
