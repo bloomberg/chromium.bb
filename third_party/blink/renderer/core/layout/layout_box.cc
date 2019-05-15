@@ -1814,14 +1814,15 @@ bool LayoutBox::ForegroundIsKnownToBeOpaqueInRect(
     LayoutBox* child_box = ToLayoutBox(child);
     if (!IsCandidateForOpaquenessTest(*child_box))
       continue;
-    LayoutPoint child_location = child_box->Location();
+    LayoutPoint child_location = child_box->PhysicalLocation();
     if (child_box->IsInFlowPositioned())
       child_location.Move(child_box->OffsetForInFlowPosition());
     LayoutRect child_local_rect = local_rect;
     child_local_rect.MoveBy(-child_location);
     if (child_local_rect.Y() < 0 || child_local_rect.X() < 0) {
       // If there is unobscured area above/left of a static positioned box then
-      // the rect is probably not covered.
+      // the rect is probably not covered. This can cause false-negative in
+      // non-horizontal-tb writing mode but is allowed.
       if (!child_box->IsPositioned())
         return false;
       continue;

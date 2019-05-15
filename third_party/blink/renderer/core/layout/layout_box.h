@@ -1795,6 +1795,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // LayoutBoxUtils is used for the LayoutNG code querying protected methods on
   // this class, e.g. determining the static-position of OOF elements.
   friend class LayoutBoxUtils;
+  friend class LayoutBoxTest;
 
  private:
   LogicalToPhysicalSetter<LayoutUnit, LayoutBox> LogicalMarginToPhysicalSetter(

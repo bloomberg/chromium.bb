@@ -25,11 +25,16 @@ class LayoutBoxTest : public testing::WithParamInterface<bool>,
   LayoutBox* GetLayoutBoxByElementId(const char* id) const {
     return ToLayoutBox(GetLayoutObjectByElementId(id));
   }
+
+  bool ForegroundIsKnownToBeOpaqueInRect(const LayoutBox& box,
+                                         const LayoutRect& rect) {
+    return box.ForegroundIsKnownToBeOpaqueInRect(rect, 10);
+  }
 };
 
 INSTANTIATE_TEST_SUITE_P(All, LayoutBoxTest, testing::Bool());
 
-TEST_P(LayoutBoxTest, BackgroundObscuredInRect) {
+TEST_P(LayoutBoxTest, BackgroundIsKnownToBeObscured) {
   SetBodyInnerHTML(R"HTML(
     <style>.column { width: 295.4px; padding-left: 10.4px; }
     .white-background { background: red; position: relative; overflow:
@@ -109,6 +114,75 @@ TEST_P(LayoutBoxTest, BackgroundNotObscuredWithCssClippedGrandChild) {
 
   auto* parent = GetLayoutBoxByElementId("parent");
   EXPECT_FALSE(parent->BackgroundIsKnownToBeObscured());
+}
+
+TEST_P(LayoutBoxTest, ForegroundIsKnownToBeOpaqueInRect) {
+  SetBodyInnerHTML(R"HTML(
+    <div id="target" style="width: 30px; height: 30px">
+      <div style="width: 10px; height: 10px; background: blue"></div>
+      <div>
+        <div style="width: 10px; height: 10px; opacity: 0.5; background: red">
+        </div>
+        <div style="width: 10px; height: 10px; background: green;
+                    position: relative; left: 20px">
+      </div>
+    </div>
+  )HTML");
+
+  auto& target = *GetLayoutBoxByElementId("target");
+  // Covered by the first child which is opaque.
+  EXPECT_TRUE(
+      ForegroundIsKnownToBeOpaqueInRect(target, LayoutRect(0, 0, 10, 10)));
+  // Covered by the first child of the second child is translucent.
+  EXPECT_FALSE(
+      ForegroundIsKnownToBeOpaqueInRect(target, LayoutRect(0, 10, 10, 10)));
+  // Covered by the second child of the second child which is opaque.
+  EXPECT_TRUE(
+      ForegroundIsKnownToBeOpaqueInRect(target, LayoutRect(20, 20, 10, 10)));
+  // Not covered by any child.
+  EXPECT_FALSE(
+      ForegroundIsKnownToBeOpaqueInRect(target, LayoutRect(0, 20, 10, 10)));
+  // Partly covered by opaque children.
+  EXPECT_FALSE(
+      ForegroundIsKnownToBeOpaqueInRect(target, LayoutRect(0, 0, 30, 30)));
+  EXPECT_FALSE(
+      ForegroundIsKnownToBeOpaqueInRect(target, LayoutRect(0, 0, 10, 30)));
+}
+
+TEST_P(LayoutBoxTest, ForegroundIsKnownToBeOpaqueInRectVerticalRL) {
+  SetBodyInnerHTML(R"HTML(
+    <div id="target"
+         style="width: 30px; height: 30px; writing-mode: vertical-rl">
+      <div style="width: 10px; height: 10px; background: blue"></div>
+      <div>
+        <div style="width: 10px; height: 10px; opacity: 0.5; background: red">
+        </div>
+        <div style="width: 10px; height: 10px; background: green;
+                    position: relative; top: 20px">
+      </div>
+    </div>
+  )HTML");
+
+  auto& target = *GetLayoutBoxByElementId("target");
+  // Covered by the first child which is opaque.
+  EXPECT_TRUE(
+      ForegroundIsKnownToBeOpaqueInRect(target, LayoutRect(20, 0, 10, 10)));
+  // Covered by the first child of the second child is translucent.
+  EXPECT_FALSE(
+      ForegroundIsKnownToBeOpaqueInRect(target, LayoutRect(10, 0, 10, 10)));
+  // Covered by the second child of the second child which is opaque.
+  // However, the algorithm is optimized for horizontal-tb writing mode and has
+  // false-negative (which is allowed) in this case.
+  EXPECT_FALSE(
+      ForegroundIsKnownToBeOpaqueInRect(target, LayoutRect(0, 20, 10, 10)));
+  // Not covered by any child.
+  EXPECT_FALSE(
+      ForegroundIsKnownToBeOpaqueInRect(target, LayoutRect(0, 0, 10, 10)));
+  // Partly covered by opaque children.
+  EXPECT_FALSE(
+      ForegroundIsKnownToBeOpaqueInRect(target, LayoutRect(0, 0, 30, 30)));
+  EXPECT_FALSE(
+      ForegroundIsKnownToBeOpaqueInRect(target, LayoutRect(20, 0, 30, 10)));
 }
 
 TEST_P(LayoutBoxTest, BackgroundRect) {
