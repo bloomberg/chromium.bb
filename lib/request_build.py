@@ -15,7 +15,7 @@ from chromite.lib import buildbucket_lib
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging
-from chromite.lib import tree_status
+from chromite.lib import uri_lib
 
 
 class RemoteRequestFailure(Exception):
@@ -205,7 +205,7 @@ class RequestBuild(object):
            buildbucket_lib.GetErrorMessage(content)))
 
     buildbucket_id = buildbucket_lib.GetBuildId(content)
-    url = tree_status.ConstructMiloBuildURL(buildbucket_id)
+    url = uri_lib.ConstructMiloBuildUri(buildbucket_id)
     created_ts = buildbucket_lib.GetBuildCreated_ts(content)
 
     result = ScheduledBuild(

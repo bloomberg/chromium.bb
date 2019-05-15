@@ -40,7 +40,7 @@ from chromite.lib import path_util
 from chromite.lib import portage_util
 from chromite.lib import retry_util
 from chromite.lib import timeout_util
-from chromite.lib import tree_status
+from chromite.lib import uri_lib
 
 from chromite.lib.paygen import filelib
 from chromite.lib.paygen import partition_lib
@@ -970,7 +970,7 @@ def RunHWTestSuite(
     if job_id:
       if wait_for_results:
         pass_hwtest = _HWTestWait(cmd, job_id, **swarming_args)
-      suite_details_link = tree_status.ConstructGoldenEyeSuiteDetailsURL(
+      suite_details_link = uri_lib.ConstructGoldenEyeSuiteDetailsUri(
           job_id=job_id)
       logging.PrintBuildbotLink('Suite details', suite_details_link)
       if wait_for_results:

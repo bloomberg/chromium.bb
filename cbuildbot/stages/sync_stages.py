@@ -44,7 +44,7 @@ from chromite.lib import metrics
 from chromite.lib import osutils
 from chromite.lib import patch as cros_patch
 from chromite.lib import timeout_util
-from chromite.lib import tree_status
+from chromite.lib import uri_lib
 from chromite.scripts import cros_mark_android_as_stable
 from chromite.scripts import cros_mark_chrome_as_stable
 
@@ -1760,7 +1760,7 @@ class PreCQLauncherStage(SyncStage):
           continue
 
         msg = PRECQ_EARLY_CRASH_MSG % (config,
-                                       tree_status.ConstructMiloBuildURL(
+                                       uri_lib.ConstructMiloBuildUri(
                                            progress.buildbucket_id))
         pool.SendNotification(change, '%(details)s', details=msg)
         pool.RemoveReady(change, reason=config)
@@ -2083,7 +2083,7 @@ class PreCQLauncherStage(SyncStage):
         build_dicts = self.buildstore.GetBuildStatuses(build_ids=build_ids)
         lines = []
         for b in build_dicts:
-          url = tree_status.ConstructMiloBuildURL(b['buildbucket_id'])
+          url = uri_lib.ConstructMiloBuildUri(b['buildbucket_id'])
           lines.append('(%s) : %s ' % (b['build_config'], url))
 
         # Send notifications.

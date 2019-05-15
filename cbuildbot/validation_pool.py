@@ -33,8 +33,8 @@ from chromite.lib import metrics
 from chromite.lib import parallel
 from chromite.lib import patch as cros_patch
 from chromite.lib import timeout_util
-from chromite.lib import tree_status
 from chromite.lib import triage_lib
+from chromite.lib import uri_lib
 from chromite.lib.buildstore import BuildStore
 
 
@@ -297,7 +297,7 @@ class ValidationPool(object):
 
   @property
   def build_log(self):
-    return tree_status.ConstructMiloBuildURL(self._buildbucket_id)
+    return uri_lib.ConstructMiloBuildUri(self._buildbucket_id)
 
   @staticmethod
   def GetGerritHelpersForOverlays(overlays):
