@@ -21,7 +21,7 @@ class BackgroundTracingTest : public testing::Test {
   BackgroundTracingTest() = default;
 
   void TearDown() override {
-    content::BackgroundTracingManager::GetInstance()->AbortScenario();
+    content::BackgroundTracingManager::GetInstance()->AbortScenarioForTesting();
   }
 
  private:
