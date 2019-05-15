@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ui/views_bridge_mac/native_widget_mac_nswindow.h"
+#import "components/remote_cocoa/app_shim/native_widget_mac_nswindow.h"
 
 #include "base/mac/foundation_util.h"
 #import "base/mac/sdk_forward_declarations.h"
+#include "components/remote_cocoa/app_shim/bridged_native_widget_host_helper.h"
+#import "components/remote_cocoa/app_shim/bridged_native_widget_impl.h"
+#import "components/remote_cocoa/app_shim/views_nswindow_delegate.h"
+#import "components/remote_cocoa/app_shim/window_touch_bar_delegate.h"
 #include "components/remote_cocoa/common/bridged_native_widget_host.mojom.h"
 #import "ui/base/cocoa/user_interface_item_command_handler.h"
 #import "ui/base/cocoa/window_size_constants.h"
-#include "ui/views_bridge_mac/bridged_native_widget_host_helper.h"
-#import "ui/views_bridge_mac/bridged_native_widget_impl.h"
-#import "ui/views_bridge_mac/views_nswindow_delegate.h"
-#import "ui/views_bridge_mac/window_touch_bar_delegate.h"
 
 @interface NSWindow (Private)
 + (Class)frameViewClassForStyleMask:(NSWindowStyleMask)windowStyle;

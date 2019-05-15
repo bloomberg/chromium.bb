@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_BRIDGE_MAC_DRAG_DROP_CLIENT_H_
-#define UI_VIEWS_BRIDGE_MAC_DRAG_DROP_CLIENT_H_
+#ifndef COMPONENTS_REMOTE_COCOA_APP_SHIM_DRAG_DROP_CLIENT_H_
+#define COMPONENTS_REMOTE_COCOA_APP_SHIM_DRAG_DROP_CLIENT_H_
 
 #import <Cocoa/Cocoa.h>
 
-#include "ui/views_bridge_mac/views_bridge_mac_export.h"
+#include "components/remote_cocoa/app_shim/remote_cocoa_app_shim_export.h"
 
 namespace views_bridge_mac {
 
@@ -15,7 +15,7 @@ namespace views_bridge_mac {
 // DragDropClientMac in the browser process. This interface should eventually
 // become mojo-ified, but at the moment only passes raw pointers (consequently,
 // drag-drop behavior does not work in RemoteMacViews).
-class VIEWS_BRIDGE_MAC_EXPORT DragDropClient {
+class REMOTE_COCOA_APP_SHIM_EXPORT DragDropClient {
  public:
   virtual ~DragDropClient() {}
 
@@ -34,4 +34,4 @@ class VIEWS_BRIDGE_MAC_EXPORT DragDropClient {
 
 }  // namespace views_bridge_mac
 
-#endif  // UI_VIEWS_BRIDGE_MAC_DRAG_DROP_CLIENT_H_
+#endif  // COMPONENTS_REMOTE_COCOA_APP_SHIM_DRAG_DROP_CLIENT_H_

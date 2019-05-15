@@ -4,7 +4,7 @@
 
 #include "ui/views/widget/widget_utils_mac.h"
 
-#import "ui/views_bridge_mac/bridged_native_widget_impl.h"
+#import "components/remote_cocoa/app_shim/bridged_native_widget_impl.h"
 
 namespace views {
 

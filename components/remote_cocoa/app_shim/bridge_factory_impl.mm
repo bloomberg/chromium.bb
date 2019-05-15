@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views_bridge_mac/bridge_factory_impl.h"
+#include "components/remote_cocoa/app_shim/bridge_factory_impl.h"
 
 #include "base/bind.h"
 #include "base/no_destructor.h"
+#include "components/remote_cocoa/app_shim/alert.h"
+#include "components/remote_cocoa/app_shim/bridged_native_widget_host_helper.h"
+#include "components/remote_cocoa/app_shim/bridged_native_widget_impl.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #include "ui/base/cocoa/remote_accessibility_api.h"
-#include "ui/views_bridge_mac/alert.h"
-#include "ui/views_bridge_mac/bridged_native_widget_host_helper.h"
-#include "ui/views_bridge_mac/bridged_native_widget_impl.h"
 
 namespace views_bridge_mac {
 

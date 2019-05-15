@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ui/views_bridge_mac/cocoa_mouse_capture.h"
+#import "components/remote_cocoa/app_shim/mouse_capture.h"
 
 #import <Cocoa/Cocoa.h>
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
+#import "components/remote_cocoa/app_shim/mouse_capture_delegate.h"
 #import "ui/base/test/cocoa_helper.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
-#import "ui/views_bridge_mac/cocoa_mouse_capture_delegate.h"
 
 // Simple test view that counts calls to -[NSView mouseDown:].
 @interface CocoaMouseCaptureTestView : NSView {

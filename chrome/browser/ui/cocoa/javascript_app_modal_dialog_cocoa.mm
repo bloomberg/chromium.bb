@@ -17,6 +17,7 @@
 #include "components/app_modal/javascript_app_modal_dialog.h"
 #include "components/app_modal/javascript_dialog_manager.h"
 #include "components/app_modal/javascript_native_dialog_factory.h"
+#include "components/remote_cocoa/app_shim/alert.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -26,7 +27,6 @@
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/cocoa/bridge_factory_host.h"
 #include "ui/views/cocoa/bridged_native_widget_host_impl.h"
-#include "ui/views_bridge_mac/alert.h"
 
 using views_bridge_mac::mojom::AlertDisposition;
 

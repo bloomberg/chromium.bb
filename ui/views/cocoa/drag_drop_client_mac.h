@@ -11,11 +11,11 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "components/remote_cocoa/app_shim/drag_drop_client.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/views/views_export.h"
 #include "ui/views/widget/drop_helper.h"
-#include "ui/views_bridge_mac/drag_drop_client.h"
 
 namespace gfx {
 class Point;

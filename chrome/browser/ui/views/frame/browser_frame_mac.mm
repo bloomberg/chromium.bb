@@ -23,6 +23,9 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
+#import "components/remote_cocoa/app_shim/bridged_native_widget_impl.h"
+#import "components/remote_cocoa/app_shim/native_widget_mac_nswindow.h"
+#import "components/remote_cocoa/app_shim/window_touch_bar_delegate.h"
 #include "components/remote_cocoa/common/bridge_factory.mojom.h"
 #include "components/remote_cocoa/common/bridged_native_widget.mojom.h"
 #include "components/remote_cocoa/common/bridged_native_widget_host.mojom.h"
@@ -31,9 +34,6 @@
 #import "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #import "ui/views/cocoa/bridged_native_widget_host_impl.h"
-#import "ui/views_bridge_mac/bridged_native_widget_impl.h"
-#import "ui/views_bridge_mac/native_widget_mac_nswindow.h"
-#import "ui/views_bridge_mac/window_touch_bar_delegate.h"
 
 namespace {
 

@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_BRIDGE_MAC_ALERT_H_
-#define UI_VIEWS_BRIDGE_MAC_ALERT_H_
+#ifndef COMPONENTS_REMOTE_COCOA_APP_SHIM_ALERT_H_
+#define COMPONENTS_REMOTE_COCOA_APP_SHIM_ALERT_H_
 
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/scoped_nsobject.h"
+#include "components/remote_cocoa/app_shim/remote_cocoa_app_shim_export.h"
 #include "components/remote_cocoa/common/alert.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/gfx/text_elider.h"
-#include "ui/views_bridge_mac/views_bridge_mac_export.h"
 
 @class AlertBridgeHelper;
 
@@ -19,7 +19,7 @@ namespace views_bridge_mac {
 
 // Class that displays an NSAlert with associated UI as described by the mojo
 // AlertBridge interface.
-class VIEWS_BRIDGE_MAC_EXPORT AlertBridge
+class REMOTE_COCOA_APP_SHIM_EXPORT AlertBridge
     : public views_bridge_mac::mojom::AlertBridge {
  public:
   // Creates a new alert which controls its own lifetime. It will destroy itself
@@ -62,4 +62,4 @@ class VIEWS_BRIDGE_MAC_EXPORT AlertBridge
 
 }  // namespace views_bridge_mac
 
-#endif  // UI_VIEWS_BRIDGE_MAC_ALERT_H_
+#endif  // COMPONENTS_REMOTE_COCOA_APP_SHIM_ALERT_H_

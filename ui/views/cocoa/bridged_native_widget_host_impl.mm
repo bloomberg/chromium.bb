@@ -8,6 +8,9 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
+#include "components/remote_cocoa/app_shim/bridged_native_widget_impl.h"
+#include "components/remote_cocoa/app_shim/mouse_capture.h"
+#include "components/remote_cocoa/app_shim/native_widget_mac_nswindow.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #include "ui/base/cocoa/animation_utils.h"
@@ -33,9 +36,6 @@
 #include "ui/views/window/dialog_client_view.h"
 #include "ui/views/window/dialog_delegate.h"
 #include "ui/views/word_lookup_client.h"
-#include "ui/views_bridge_mac/bridged_native_widget_impl.h"
-#include "ui/views_bridge_mac/cocoa_mouse_capture.h"
-#include "ui/views_bridge_mac/native_widget_mac_nswindow.h"
 
 using views_bridge_mac::mojom::BridgedNativeWidgetInitParams;
 using views_bridge_mac::mojom::WindowVisibilityState;

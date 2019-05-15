@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_BRIDGE_MAC_BRIDGED_NATIVE_WIDGET_HOST_HELPER_H_
-#define UI_VIEWS_BRIDGE_MAC_BRIDGED_NATIVE_WIDGET_HOST_HELPER_H_
+#ifndef COMPONENTS_REMOTE_COCOA_APP_SHIM_BRIDGED_NATIVE_WIDGET_HOST_HELPER_H_
+#define COMPONENTS_REMOTE_COCOA_APP_SHIM_BRIDGED_NATIVE_WIDGET_HOST_HELPER_H_
 
+#include "components/remote_cocoa/app_shim/remote_cocoa_app_shim_export.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/decorated_text.h"
 #include "ui/gfx/geometry/point.h"
-#include "ui/views_bridge_mac/views_bridge_mac_export.h"
 
 @class NSView;
 
@@ -25,7 +25,7 @@ class DragDropClient;
 // This provides an easier-to-use interface than the mojo for selected
 // functions. It also is temporarily exposing functionality that is not yet
 // implemented over mojo.
-class VIEWS_BRIDGE_MAC_EXPORT BridgedNativeWidgetHostHelper {
+class REMOTE_COCOA_APP_SHIM_EXPORT BridgedNativeWidgetHostHelper {
  public:
   virtual ~BridgedNativeWidgetHostHelper() = default;
 
@@ -63,4 +63,4 @@ class VIEWS_BRIDGE_MAC_EXPORT BridgedNativeWidgetHostHelper {
 
 }  // namespace views_bridge_mac
 
-#endif  // UI_VIEWS_BRIDGE_MAC_BRIDGED_NATIVE_WIDGET_HOST_HELPER_H_
+#endif  // COMPONENTS_REMOTE_COCOA_APP_SHIM_BRIDGED_NATIVE_WIDGET_HOST_HELPER_H_

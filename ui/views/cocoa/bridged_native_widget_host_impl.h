@@ -10,6 +10,7 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
+#include "components/remote_cocoa/app_shim/bridged_native_widget_host_helper.h"
 #include "components/remote_cocoa/common/bridged_native_widget.mojom.h"
 #include "components/remote_cocoa/common/bridged_native_widget_host.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
@@ -25,7 +26,6 @@
 #include "ui/views/views_export.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_observer.h"
-#include "ui/views_bridge_mac/bridged_native_widget_host_helper.h"
 
 @class NativeWidgetMacNSWindow;
 @class NSAccessibilityRemoteUIElement;

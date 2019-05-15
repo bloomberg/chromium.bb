@@ -2,23 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_BRIDGE_MAC_BRIDGE_FACTORY_IMPL_H_
-#define UI_VIEWS_BRIDGE_MAC_BRIDGE_FACTORY_IMPL_H_
+#ifndef COMPONENTS_REMOTE_COCOA_APP_SHIM_BRIDGE_FACTORY_IMPL_H_
+#define COMPONENTS_REMOTE_COCOA_APP_SHIM_BRIDGE_FACTORY_IMPL_H_
 
+#include "components/remote_cocoa/app_shim/remote_cocoa_app_shim_export.h"
 #include "components/remote_cocoa/common/alert.mojom.h"
 #include "components/remote_cocoa/common/bridge_factory.mojom.h"
 #include "components/remote_cocoa/common/bridged_native_widget.mojom.h"
 #include "components/remote_cocoa/common/bridged_native_widget_host.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
-#include "ui/views_bridge_mac/views_bridge_mac_export.h"
 
-// TODO(ccameron): This file is to be moved to /ui/views_bridge_mac when
-// possible. For now, put it in the namespace of that path.
+// TODO(ccameron): This file is to be moved to /components/remote_cocoa/app_shim
+// when possible. For now, put it in the namespace of that path.
 namespace views_bridge_mac {
 
 // The factory that creates BridgedNativeWidget instances. This object is to
 // be instantiated in app shim processes.
-class VIEWS_BRIDGE_MAC_EXPORT BridgeFactoryImpl : public mojom::BridgeFactory {
+class REMOTE_COCOA_APP_SHIM_EXPORT BridgeFactoryImpl
+    : public mojom::BridgeFactory {
  public:
   static BridgeFactoryImpl* Get();
   void BindRequest(mojom::BridgeFactoryAssociatedRequest request);
@@ -41,4 +42,4 @@ class VIEWS_BRIDGE_MAC_EXPORT BridgeFactoryImpl : public mojom::BridgeFactory {
 
 }  // namespace views_bridge_mac
 
-#endif  // UI_VIEWS_BRIDGE_MAC_BRIDGE_FACTORY_IMPL_H_
+#endif  // COMPONENTS_REMOTE_COCOA_APP_SHIM_BRIDGE_FACTORY_IMPL_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ui/views_bridge_mac/bridged_native_widget_impl.h"
+#import "components/remote_cocoa/app_shim/bridged_native_widget_impl.h"
 
 #import <objc/runtime.h>
 #include <stddef.h>
@@ -18,6 +18,14 @@
 #include "base/no_destructor.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
+#import "components/remote_cocoa/app_shim/bridged_content_view.h"
+#import "components/remote_cocoa/app_shim/bridged_native_widget_host_helper.h"
+#import "components/remote_cocoa/app_shim/browser_native_widget_window_mac.h"
+#import "components/remote_cocoa/app_shim/mouse_capture.h"
+#import "components/remote_cocoa/app_shim/native_widget_mac_frameless_nswindow.h"
+#import "components/remote_cocoa/app_shim/native_widget_mac_nswindow.h"
+#import "components/remote_cocoa/app_shim/views_nswindow_delegate.h"
+#import "components/remote_cocoa/app_shim/window_move_loop.h"
 #include "components/remote_cocoa/common/bridged_native_widget_host.mojom.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
@@ -32,14 +40,6 @@
 #include "ui/gfx/geometry/dip_util.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
 #import "ui/gfx/mac/nswindow_frame_controls.h"
-#import "ui/views_bridge_mac/bridged_content_view.h"
-#import "ui/views_bridge_mac/bridged_native_widget_host_helper.h"
-#import "ui/views_bridge_mac/browser_native_widget_window_mac.h"
-#import "ui/views_bridge_mac/cocoa_mouse_capture.h"
-#import "ui/views_bridge_mac/cocoa_window_move_loop.h"
-#import "ui/views_bridge_mac/native_widget_mac_frameless_nswindow.h"
-#import "ui/views_bridge_mac/native_widget_mac_nswindow.h"
-#import "ui/views_bridge_mac/views_nswindow_delegate.h"
 
 using views_bridge_mac::mojom::VisibilityTransition;
 using views_bridge_mac::mojom::WindowVisibilityState;
@@ -62,7 +62,7 @@ constexpr auto kUIPaintTimeout = base::TimeDelta::FromSeconds(5);
 
 // Self-owning animation delegate that starts a hide animation, then calls
 // -[NSWindow close] when the animation ends, releasing itself.
-@interface ViewsNSWindowCloseAnimator : NSObject<NSAnimationDelegate> {
+@interface ViewsNSWindowCloseAnimator : NSObject <NSAnimationDelegate> {
  @private
   base::scoped_nsobject<NSWindow> window_;
   base::scoped_nsobject<NSAnimation> animation_;
@@ -106,7 +106,7 @@ constexpr auto kUIPaintTimeout = base::TimeDelta::FromSeconds(5);
 // animation: in that case, the shadow is never invalidated so retains the
 // shadow calculated before a translate is applied.
 @interface ModalShowAnimationWithLayer
-    : ConstrainedWindowAnimationShow<NSAnimationDelegate>
+    : ConstrainedWindowAnimationShow <NSAnimationDelegate>
 @end
 
 @implementation ModalShowAnimationWithLayer {
@@ -533,8 +533,8 @@ void BridgedNativeWidgetImpl::CreateContentView(uint64_t ns_view_id,
                                                 const gfx::Rect& bounds) {
   DCHECK(!bridged_view_);
 
-  bridged_view_.reset(
-      [[BridgedContentView alloc] initWithBridge:this bounds:bounds]);
+  bridged_view_.reset([[BridgedContentView alloc] initWithBridge:this
+                                                          bounds:bounds]);
   bridged_view_id_mapping_ = std::make_unique<ui::ScopedNSViewIdMapping>(
       ns_view_id, bridged_view_.get());
 

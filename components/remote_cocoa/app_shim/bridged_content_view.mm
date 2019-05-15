@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ui/views_bridge_mac/bridged_content_view.h"
+#import "components/remote_cocoa/app_shim/bridged_content_view.h"
 
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
@@ -11,6 +11,9 @@
 #import "base/mac/sdk_forward_declarations.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
+#include "components/remote_cocoa/app_shim/bridged_native_widget_host_helper.h"
+#import "components/remote_cocoa/app_shim/bridged_native_widget_impl.h"
+#import "components/remote_cocoa/app_shim/drag_drop_client.h"
 #include "components/remote_cocoa/common/bridged_native_widget_host.mojom.h"
 #import "ui/base/cocoa/appkit_utils.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
@@ -30,9 +33,6 @@
 #import "ui/gfx/mac/coordinate_conversion.h"
 #import "ui/gfx/path_mac.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
-#include "ui/views_bridge_mac/bridged_native_widget_host_helper.h"
-#import "ui/views_bridge_mac/bridged_native_widget_impl.h"
-#import "ui/views_bridge_mac/drag_drop_client.h"
 
 namespace {
 
@@ -1248,8 +1248,8 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 }
 
 - (BOOL)readSelectionFromPasteboard:(NSPasteboard*)pboard {
-  NSArray* objects =
-      [pboard readObjectsForClasses:@[ [NSString class] ] options:0];
+  NSArray* objects = [pboard readObjectsForClasses:@ [[NSString class]]
+      options:0];
   DCHECK([objects count] == 1);
   [self insertText:[objects lastObject]];
   return YES;
@@ -1468,7 +1468,7 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   if (!bridge_)
     return nil;
   return [bridge_->host_helper()->GetNativeViewAccessible()
-              accessibilityFocusedUIElement];
+      accessibilityFocusedUIElement];
 }
 
 @end

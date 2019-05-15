@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_BRIDGE_MAC_BRIDGED_CONTENT_VIEW_H_
-#define UI_VIEWS_BRIDGE_MAC_BRIDGED_CONTENT_VIEW_H_
+#ifndef COMPONENTS_REMOTE_COCOA_APP_SHIM_BRIDGED_CONTENT_VIEW_H_
+#define COMPONENTS_REMOTE_COCOA_APP_SHIM_BRIDGED_CONTENT_VIEW_H_
 
 #import <Cocoa/Cocoa.h>
 
 #include "base/strings/string16.h"
+#include "components/remote_cocoa/app_shim/remote_cocoa_app_shim_export.h"
 #import "ui/base/cocoa/tool_tip_base_view.h"
 #import "ui/base/cocoa/tracking_area.h"
-#include "ui/views_bridge_mac/views_bridge_mac_export.h"
 
 namespace ui {
 class TextInputClient;
@@ -23,11 +23,11 @@ class BridgedNativeWidgetImpl;
 // The NSView that sits as the root contentView of the NSWindow, whilst it has
 // a views::RootView present. Bridges requests from Cocoa to the hosted
 // views::View.
-VIEWS_BRIDGE_MAC_EXPORT
-@interface BridgedContentView : ToolTipBaseView<NSTextInputClient,
-                                                NSUserInterfaceValidations,
-                                                NSDraggingSource,
-                                                NSServicesMenuRequestor> {
+REMOTE_COCOA_APP_SHIM_EXPORT
+@interface BridgedContentView : ToolTipBaseView <NSTextInputClient,
+                                                 NSUserInterfaceValidations,
+                                                 NSDraggingSource,
+                                                 NSServicesMenuRequestor> {
  @private
   // Weak, reset by clearView.
   views::BridgedNativeWidgetImpl* bridge_;
@@ -83,4 +83,4 @@ VIEWS_BRIDGE_MAC_EXPORT
 
 @end
 
-#endif  // UI_VIEWS_BRIDGE_MAC_BRIDGED_CONTENT_VIEW_H_
+#endif  // COMPONENTS_REMOTE_COCOA_APP_SHIM_BRIDGED_CONTENT_VIEW_H_

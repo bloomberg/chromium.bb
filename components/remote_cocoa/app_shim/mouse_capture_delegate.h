@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_BRIDGE_MAC_COCOA_MOUSE_CAPTURE_DELEGATE_H_
-#define UI_VIEWS_BRIDGE_MAC_COCOA_MOUSE_CAPTURE_DELEGATE_H_
+#ifndef COMPONENTS_REMOTE_COCOA_APP_SHIM_MOUSE_CAPTURE_DELEGATE_H_
+#define COMPONENTS_REMOTE_COCOA_APP_SHIM_MOUSE_CAPTURE_DELEGATE_H_
 
 @class NSEvent;
 @class NSWindow;
@@ -28,4 +28,4 @@ class CocoaMouseCaptureDelegate {
 
 }  // namespace views_bridge_mac
 
-#endif  // UI_VIEWS_BRIDGE_MAC_COCOA_MOUSE_CAPTURE_DELEGATE_H_
+#endif  // COMPONENTS_REMOTE_COCOA_APP_SHIM_MOUSE_CAPTURE_DELEGATE_H_

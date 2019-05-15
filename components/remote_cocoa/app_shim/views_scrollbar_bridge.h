@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_BRIDGE_MAC_VIEWS_SCROLLBAR_BRIDGE_H_
-#define UI_VIEWS_BRIDGE_MAC_VIEWS_SCROLLBAR_BRIDGE_H_
+#ifndef COMPONENTS_REMOTE_COCOA_APP_SHIM_VIEWS_SCROLLBAR_BRIDGE_H_
+#define COMPONENTS_REMOTE_COCOA_APP_SHIM_VIEWS_SCROLLBAR_BRIDGE_H_
 
 #import <Cocoa/Cocoa.h>
 
 #import "base/mac/scoped_nsobject.h"
-#include "ui/views_bridge_mac/views_bridge_mac_export.h"
+#include "components/remote_cocoa/app_shim/remote_cocoa_app_shim_export.h"
 
 // The delegate set to ViewsScrollbarBridge.
-class VIEWS_BRIDGE_MAC_EXPORT ViewsScrollbarBridgeDelegate {
+class REMOTE_COCOA_APP_SHIM_EXPORT ViewsScrollbarBridgeDelegate {
  public:
   // Invoked by ViewsScrollbarBridge when the system informs the process that
   // the preferred scroller style has changed
@@ -20,7 +20,7 @@ class VIEWS_BRIDGE_MAC_EXPORT ViewsScrollbarBridgeDelegate {
 
 // A bridge to NSScroller managed by NativeCocoaScrollbar. Serves as a helper
 // class to bridge NSScroller notifications and functions to CocoaScrollbar.
-VIEWS_BRIDGE_MAC_EXPORT
+REMOTE_COCOA_APP_SHIM_EXPORT
 @interface ViewsScrollbarBridge : NSObject {
  @private
   ViewsScrollbarBridgeDelegate* delegate_;  // Weak. Owns this.

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_BRIDGE_MAC_BRIDGED_NATIVE_WIDGET_IMPL_H_
-#define UI_VIEWS_BRIDGE_MAC_BRIDGED_NATIVE_WIDGET_IMPL_H_
+#ifndef COMPONENTS_REMOTE_COCOA_APP_SHIM_BRIDGED_NATIVE_WIDGET_IMPL_H_
+#define COMPONENTS_REMOTE_COCOA_APP_SHIM_BRIDGED_NATIVE_WIDGET_IMPL_H_
 
 #import <Cocoa/Cocoa.h>
 
@@ -12,6 +12,8 @@
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
+#import "components/remote_cocoa/app_shim/mouse_capture_delegate.h"
+#include "components/remote_cocoa/app_shim/remote_cocoa_app_shim_export.h"
 #include "components/remote_cocoa/common/bridged_native_widget.mojom.h"
 #include "components/remote_cocoa/common/text_input_host.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
@@ -21,8 +23,6 @@
 #include "ui/base/cocoa/ns_view_ids.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/display/display_observer.h"
-#import "ui/views_bridge_mac/cocoa_mouse_capture_delegate.h"
-#include "ui/views_bridge_mac/views_bridge_mac_export.h"
 
 @class BridgedContentView;
 @class ModalShowAnimationWithLayer;
@@ -57,7 +57,7 @@ using views_bridge_mac::CocoaMouseCaptureDelegate;
 // A bridge to an NSWindow managed by an instance of NativeWidgetMac or
 // DesktopNativeWidgetMac. Serves as a helper class to bridge requests from the
 // NativeWidgetMac to the Cocoa window. Behaves a bit like an aura::Window.
-class VIEWS_BRIDGE_MAC_EXPORT BridgedNativeWidgetImpl
+class REMOTE_COCOA_APP_SHIM_EXPORT BridgedNativeWidgetImpl
     : public views_bridge_mac::mojom::BridgedNativeWidget,
       public display::DisplayObserver,
       public ui::CATransactionCoordinator::PreCommitObserver,
@@ -376,4 +376,4 @@ class VIEWS_BRIDGE_MAC_EXPORT BridgedNativeWidgetImpl
 
 }  // namespace views
 
-#endif  // UI_VIEWS_BRIDGE_MAC_BRIDGED_NATIVE_WIDGET_IMPL_H_
+#endif  // COMPONENTS_REMOTE_COCOA_APP_SHIM_BRIDGED_NATIVE_WIDGET_IMPL_H_

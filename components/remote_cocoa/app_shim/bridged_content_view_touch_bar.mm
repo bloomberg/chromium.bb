@@ -6,10 +6,10 @@
 #import "base/mac/scoped_nsobject.h"
 #import "base/mac/sdk_forward_declarations.h"
 #include "base/strings/sys_string_conversions.h"
+#import "components/remote_cocoa/app_shim/bridged_content_view.h"
+#import "components/remote_cocoa/app_shim/bridged_native_widget_impl.h"
 #include "components/remote_cocoa/common/bridged_native_widget_host.mojom.h"
 #import "ui/base/cocoa/touch_bar_forward_declarations.h"
-#import "ui/views_bridge_mac/bridged_content_view.h"
-#import "ui/views_bridge_mac/bridged_native_widget_impl.h"
 
 namespace {
 
@@ -20,7 +20,7 @@ NSString* const kTouchBarCancelId = @"com.google.chrome-CANCEL";
 
 }  // namespace
 
-@interface BridgedContentView (TouchBarAdditions)<NSTouchBarDelegate>
+@interface BridgedContentView (TouchBarAdditions) <NSTouchBarDelegate>
 - (void)touchBarButtonAction:(id)sender;
 @end
 

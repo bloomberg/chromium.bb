@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views_bridge_mac/alert.h"
+#include "components/remote_cocoa/app_shim/alert.h"
 
 #include "base/bind.h"
 #include "base/i18n/rtl.h"

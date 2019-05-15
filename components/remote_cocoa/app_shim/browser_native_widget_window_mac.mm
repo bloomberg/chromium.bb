@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ui/views_bridge_mac/browser_native_widget_window_mac.h"
+#import "components/remote_cocoa/app_shim/browser_native_widget_window_mac.h"
 
 #import <AppKit/AppKit.h>
 
+#include "components/remote_cocoa/app_shim/bridged_native_widget_impl.h"
 #include "components/remote_cocoa/common/bridged_native_widget_host.mojom.h"
-#include "ui/views_bridge_mac/bridged_native_widget_impl.h"
 
 @interface NSWindow (PrivateBrowserNativeWidgetAPI)
 + (Class)frameViewClassForStyleMask:(NSUInteger)windowStyle;

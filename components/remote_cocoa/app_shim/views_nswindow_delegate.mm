@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ui/views_bridge_mac/views_nswindow_delegate.h"
+#import "components/remote_cocoa/app_shim/views_nswindow_delegate.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#import "components/remote_cocoa/app_shim/bridged_content_view.h"
+#include "components/remote_cocoa/app_shim/bridged_native_widget_host_helper.h"
+#import "components/remote_cocoa/app_shim/bridged_native_widget_impl.h"
 #include "components/remote_cocoa/common/bridged_native_widget_host.mojom.h"
-#import "ui/views_bridge_mac/bridged_content_view.h"
-#include "ui/views_bridge_mac/bridged_native_widget_host_helper.h"
-#import "ui/views_bridge_mac/bridged_native_widget_impl.h"
 
 @implementation ViewsNSWindowDelegate
 
@@ -62,7 +62,7 @@
         break;
       currentWindow = parentWindow;
       if ([currentWindow isKeyWindow]) {
-        [(newCursor ? newCursor : [NSCursor arrowCursor])set];
+        [(newCursor ? newCursor : [NSCursor arrowCursor]) set];
         break;
       }
     }
@@ -211,8 +211,7 @@
   int32_t sheetPositionY = 0;
   parent_->host()->GetSheetOffsetY(&sheetPositionY);
   NSView* view = [window contentView];
-  NSPoint pointInView =
-      NSMakePoint(0, NSMaxY([view bounds]) - sheetPositionY);
+  NSPoint pointInView = NSMakePoint(0, NSMaxY([view bounds]) - sheetPositionY);
   NSPoint pointInWindow = [view convertPoint:pointInView toView:nil];
 
   // As per NSWindowDelegate documentation, the origin indicates the top left

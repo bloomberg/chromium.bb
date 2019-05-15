@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views_bridge_mac/cocoa_window_move_loop.h"
+#include "components/remote_cocoa/app_shim/window_move_loop.h"
 
 #include "base/debug/stack_trace.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "components/crash/core/common/crash_key.h"
+#import "components/remote_cocoa/app_shim/bridged_native_widget_impl.h"
 #include "ui/display/screen.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
-#import "ui/views_bridge_mac/bridged_native_widget_impl.h"
 
 // When event monitors process the events the full list of monitors is cached,
 // and if we unregister the event monitor that's at the end of the list while
@@ -113,8 +113,8 @@ bool CocoaWindowMoveLoop::Run() {
     strong->quit_closure_.Run();
     return event;  // Process the MouseUp.
   };
-  id monitor =
-      [NSEvent addLocalMonitorForEventsMatchingMask:mask handler:handler];
+  id monitor = [NSEvent addLocalMonitorForEventsMatchingMask:mask
+                                                     handler:handler];
 
   run_loop.Run();
   [NSEvent removeMonitor:monitor];

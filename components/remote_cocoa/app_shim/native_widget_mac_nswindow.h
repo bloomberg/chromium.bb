@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_BRIDGE_MAC_NATIVE_WIDGET_MAC_NSWINDOW_H_
-#define UI_VIEWS_BRIDGE_MAC_NATIVE_WIDGET_MAC_NSWINDOW_H_
+#ifndef COMPONENTS_REMOTE_COCOA_APP_SHIM_NATIVE_WIDGET_MAC_NSWINDOW_H_
+#define COMPONENTS_REMOTE_COCOA_APP_SHIM_NATIVE_WIDGET_MAC_NSWINDOW_H_
 
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/foundation_util.h"
+#include "components/remote_cocoa/app_shim/remote_cocoa_app_shim_export.h"
 #import "ui/base/cocoa/command_dispatcher.h"
-#include "ui/views_bridge_mac/views_bridge_mac_export.h"
 
 namespace views {
 class BridgedNativeWidgetImpl;
@@ -26,18 +26,18 @@ WEAK_IMPORT_ATTRIBUTE
 @interface NSThemeFrame : NSView
 @end
 
-VIEWS_BRIDGE_MAC_EXPORT
+REMOTE_COCOA_APP_SHIM_EXPORT
 @interface NativeWidgetMacNSWindowBorderlessFrame : NSNextStepFrame
 @end
 
-VIEWS_BRIDGE_MAC_EXPORT
+REMOTE_COCOA_APP_SHIM_EXPORT
 @interface NativeWidgetMacNSWindowTitledFrame : NSThemeFrame
 @end
 
 // The NSWindow used by BridgedNativeWidget. Provides hooks into AppKit that
 // can only be accomplished by overriding methods.
-VIEWS_BRIDGE_MAC_EXPORT
-@interface NativeWidgetMacNSWindow : NSWindow<CommandDispatchingWindow>
+REMOTE_COCOA_APP_SHIM_EXPORT
+@interface NativeWidgetMacNSWindow : NSWindow <CommandDispatchingWindow>
 
 // Set a CommandDispatcherDelegate, i.e. to implement key event handling.
 - (void)setCommandDispatcherDelegate:(id<CommandDispatcherDelegate>)delegate;
@@ -61,4 +61,4 @@ VIEWS_BRIDGE_MAC_EXPORT
 @property(assign, nonatomic) views::BridgedNativeWidgetImpl* bridgeImpl;
 @end
 
-#endif  // UI_VIEWS_BRIDGE_MAC_NATIVE_WIDGET_MAC_NSWINDOW_H_
+#endif  // COMPONENTS_REMOTE_COCOA_APP_SHIM_NATIVE_WIDGET_MAC_NSWINDOW_H_

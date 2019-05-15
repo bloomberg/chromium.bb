@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ui/views_bridge_mac/cocoa_mouse_capture.h"
+#import "components/remote_cocoa/app_shim/mouse_capture.h"
 
 #import <Cocoa/Cocoa.h>
 
 #include "base/logging.h"
 #include "base/macros.h"
+#import "components/remote_cocoa/app_shim/mouse_capture_delegate.h"
 #include "ui/base/cocoa/weak_ptr_nsobject.h"
-#import "ui/views_bridge_mac/cocoa_mouse_capture_delegate.h"
 
 namespace views_bridge_mac {
 

@@ -25,6 +25,8 @@
 #include "chrome/browser/ui/cocoa/main_menu_builder.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/mac/app_mode_common.h"
+#include "components/remote_cocoa/app_shim/bridge_factory_impl.h"
+#include "components/remote_cocoa/app_shim/bridged_native_widget_impl.h"
 #include "components/remote_cocoa/common/bridge_factory.mojom.h"
 #include "content/public/browser/ns_view_bridge_factory_impl.h"
 #include "content/public/common/ns_view_bridge_factory.mojom.h"
@@ -34,8 +36,6 @@
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/views_bridge_mac/bridge_factory_impl.h"
-#include "ui/views_bridge_mac/bridged_native_widget_impl.h"
 
 namespace {
 // The maximum amount of time to wait for Chrome's AppShimHostManager to be

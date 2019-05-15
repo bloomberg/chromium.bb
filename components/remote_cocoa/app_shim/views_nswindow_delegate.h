@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_BRIDGE_MAC_VIEWS_NSWINDOW_DELEGATE_H_
-#define UI_VIEWS_BRIDGE_MAC_VIEWS_NSWINDOW_DELEGATE_H_
+#ifndef COMPONENTS_REMOTE_COCOA_APP_SHIM_VIEWS_NSWINDOW_DELEGATE_H_
+#define COMPONENTS_REMOTE_COCOA_APP_SHIM_VIEWS_NSWINDOW_DELEGATE_H_
 
 #import <Cocoa/Cocoa.h>
 
 #import "base/mac/scoped_nsobject.h"
-#include "ui/views_bridge_mac/views_bridge_mac_export.h"
+#include "components/remote_cocoa/app_shim/remote_cocoa_app_shim_export.h"
 
 namespace views {
 class BridgedNativeWidgetImpl;
@@ -16,8 +16,8 @@ class BridgedNativeWidgetImpl;
 
 // The delegate set on the NSWindow when a views::BridgedNativeWidgetImpl is
 // initialized.
-VIEWS_BRIDGE_MAC_EXPORT
-@interface ViewsNSWindowDelegate : NSObject<NSWindowDelegate> {
+REMOTE_COCOA_APP_SHIM_EXPORT
+@interface ViewsNSWindowDelegate : NSObject <NSWindowDelegate> {
  @private
   views::BridgedNativeWidgetImpl* parent_;  // Weak. Owns this.
   base::scoped_nsobject<NSCursor> cursor_;
@@ -48,4 +48,4 @@ VIEWS_BRIDGE_MAC_EXPORT
 
 @end
 
-#endif  // UI_VIEWS_BRIDGE_MAC_VIEWS_NSWINDOW_DELEGATE_H_
+#endif  // COMPONENTS_REMOTE_COCOA_APP_SHIM_VIEWS_NSWINDOW_DELEGATE_H_

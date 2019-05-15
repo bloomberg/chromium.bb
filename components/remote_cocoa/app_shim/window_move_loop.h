@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_BRIDGE_MAC_COCOA_WINDOW_MOVE_LOOP_H_
-#define UI_VIEWS_BRIDGE_MAC_COCOA_WINDOW_MOVE_LOOP_H_
+#ifndef COMPONENTS_REMOTE_COCOA_APP_SHIM_WINDOW_MOVE_LOOP_H_
+#define COMPONENTS_REMOTE_COCOA_APP_SHIM_WINDOW_MOVE_LOOP_H_
 
 #import <Cocoa/Cocoa.h>
 
@@ -50,4 +50,4 @@ class CocoaWindowMoveLoop {
 
 }  // namespace views
 
-#endif  // UI_VIEWS_BRIDGE_MAC_COCOA_WINDOW_MOVE_LOOP_H_
+#endif  // COMPONENTS_REMOTE_COCOA_APP_SHIM_WINDOW_MOVE_LOOP_H_
