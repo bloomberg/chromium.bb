@@ -153,6 +153,7 @@ RequestParams::RequestParams(const WebRequestInfo& info)
 }
 
 RequestParams::RequestParams() = default;
+RequestParams::~RequestParams() = default;
 
 // static
 RulesetMatcher::LoadRulesetResult RulesetMatcher::CreateVerifiedMatcher(

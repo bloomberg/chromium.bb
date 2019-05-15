@@ -38,6 +38,14 @@ bool AreSortedPrioritiesUnique(const CompositeMatcher::MatcherList& matchers) {
   return true;
 }
 
+bool HasMatchingAllowRule(const RulesetMatcher* matcher,
+                          const RequestParams& params) {
+  if (!params.allow_rule_cache.contains(matcher))
+    params.allow_rule_cache[matcher] = matcher->HasMatchingAllowRule(params);
+
+  return params.allow_rule_cache[matcher];
+}
+
 }  // namespace
 
 CompositeMatcher::CompositeMatcher(MatcherList matchers)
@@ -80,11 +88,12 @@ bool CompositeMatcher::ShouldBlockRequest(const RequestParams& params) const {
       "SingleExtension");
 
   for (const auto& matcher : matchers_) {
-    if (matcher->HasMatchingAllowRule(params))
+    if (HasMatchingAllowRule(matcher.get(), params))
       return false;
     if (matcher->HasMatchingBlockRule(params))
       return true;
   }
+
   return false;
 }
 
@@ -96,6 +105,8 @@ bool CompositeMatcher::ShouldRedirectRequest(const RequestParams& params,
       "SingleExtension");
 
   for (const auto& matcher : matchers_) {
+    if (HasMatchingAllowRule(matcher.get(), params))
+      return false;
     if (matcher->HasMatchingRedirectRule(params, redirect_url))
       return true;
   }
@@ -106,8 +117,12 @@ bool CompositeMatcher::ShouldRedirectRequest(const RequestParams& params,
 uint8_t CompositeMatcher::GetRemoveHeadersMask(const RequestParams& params,
                                                uint8_t current_mask) const {
   uint8_t mask = current_mask;
-  for (const auto& matcher : matchers_)
+  for (const auto& matcher : matchers_) {
+    // The allow rule will override lower priority remove header rules.
+    if (HasMatchingAllowRule(matcher.get(), params))
+      return mask;
     mask |= matcher->GetRemoveHeadersMask(params, mask);
+  }
   return mask;
 }
 

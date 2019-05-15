@@ -46,8 +46,8 @@ namespace declarativeNetRequest {
     block,
     // Redirect the network request.
     redirect,
-    // Allow the network request. The request won't be blocked even if there
-    // is a blocking rule which matches it.
+    // Allow the network request. The request won't be intercepted if there is
+    // an allow rule which matches it.
     allow,
     // Remove request/response headers from the network request.
     removeHeaders

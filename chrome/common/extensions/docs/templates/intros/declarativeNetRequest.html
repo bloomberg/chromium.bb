@@ -216,7 +216,10 @@ chrome.declarativeNetRequest.addDynamicRules</a> API method.
 
 [2] An extension wants to redirect a request, if all the following are true:
 <ul>
-  <li>The extension has a matching <code>redirect</code> rule.</li>
+  <li>
+      The extension has a matching redirect rule. Note the priority order
+      between the different redirect/allow actions: <br/>dynamic allow > dynamic redirect > static allow > static redirect.
+  </li>
   <li>
     The page from which the request originated is not allow-listed by the
     extension using <a href="#method-addAllowedPages">
@@ -227,7 +230,10 @@ chrome.declarativeNetRequest.addDynamicRules</a> API method.
 [3] An extension wants to remove a header from a request, if all the following
 are true:
 <ul>
-  <li>The extension has a matching <code>removeHeaders</code> rule.</li>
+  <li>
+      The extension has a matching removeHeaders rule. Note the priority order
+      between the different removeHeaders/allow actions: <br/>dynamic allow > dynamic removeHeaders > static allow > static removeHeaders.
+  </li>
   <li>
     The page from which the request originated is not allow-listed by the
     extension using <a href="#method-addAllowedPages">
@@ -328,8 +334,8 @@ are true:
   <li>
     Consider a navigation to <code>"http://google.com/1234"</code>. Rules with
     id (1), (2), and (3) match. Because the request has a matching
-    <code>allow</code> rule, the request is not blocked and instead redirected
-    to <code>"https://example.com"</code>.
+    <code>allow</code> rule, the request is not blocked nor redirected and
+    continues to <code>"http://google.com/1234"</code>.
   </li>
   <li>
     Consider a navigation to <code>"http://abcd.com"</code>. The rule with id

@@ -871,8 +871,8 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   }
 }
 
-// Tests allowing rules.
-IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, Allow) {
+// Tests allowing rules for blocks.
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, AllowBlock) {
   const int kNumRequests = 6;
 
   TestRule rule = CreateGenericRule();
@@ -913,6 +913,103 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, Allow) {
     content::PageType expected_page_type =
         page_should_load ? content::PAGE_TYPE_NORMAL : content::PAGE_TYPE_ERROR;
     EXPECT_EQ(expected_page_type, GetPageType());
+  }
+}
+
+// Tests allowing rules for redirects.
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, AllowRedirect) {
+  set_has_background_script(true);
+
+  const GURL static_redirect_url = embedded_test_server()->GetURL(
+      "example.com", base::StringPrintf("/pages_with_script/page2.html"));
+
+  const GURL dynamic_redirect_url = embedded_test_server()->GetURL(
+      "abc.com", base::StringPrintf("/pages_with_script/page.html"));
+
+  // Create 2 static and 2 dynamic rules.
+  struct {
+    std::string url_filter;
+    int id;
+    std::string action_type;
+    base::Optional<std::string> redirect_url;
+  } rules_data[] = {
+      {"google.com", 1, "redirect", static_redirect_url.spec()},
+      {"num=1|", 2, "allow", base::nullopt},
+      {"1|", 3, "redirect", dynamic_redirect_url.spec()},
+      {"num=21|", 4, "allow", base::nullopt},
+  };
+
+  std::vector<TestRule> rules;
+  for (const auto& rule_data : rules_data) {
+    TestRule rule = CreateGenericRule();
+    rule.id = rule_data.id;
+    rule.priority = kMinValidPriority;
+    rule.condition->url_filter = rule_data.url_filter;
+    rule.condition->resource_types = std::vector<std::string>({"main_frame"});
+    rule.action->type = rule_data.action_type;
+    rule.action->redirect_url = rule_data.redirect_url;
+    rules.push_back(rule);
+  }
+
+  std::vector<TestRule> static_rules;
+  static_rules.push_back(rules[0]);
+  static_rules.push_back(rules[1]);
+
+  std::vector<TestRule> dynamic_rules;
+  dynamic_rules.push_back(rules[2]);
+  dynamic_rules.push_back(rules[3]);
+
+  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(
+      static_rules, "test_extension", {URLPattern::kAllUrlsPattern}));
+
+  auto get_url = [this](int i) {
+    return embedded_test_server()->GetURL(
+        "google.com",
+        base::StringPrintf("/pages_with_script/page.html?num=%d", i));
+  };
+
+  struct {
+    GURL initial_url;
+    GURL expected_final_url;
+  } static_test_cases[] = {
+      {get_url(0), static_redirect_url},
+      {get_url(1), get_url(1)},
+  };
+
+  for (const auto& test_case : static_test_cases) {
+    GURL url = test_case.initial_url;
+    SCOPED_TRACE(base::StringPrintf("Testing %s", url.spec().c_str()));
+
+    ui_test_utils::NavigateToURL(browser(), url);
+    EXPECT_TRUE(WasFrameWithScriptLoaded(GetMainFrame()));
+
+    GURL final_url = web_contents()->GetLastCommittedURL();
+    EXPECT_EQ(test_case.expected_final_url, final_url);
+  }
+
+  // Now add dynamic rules. These should override static rules in priority.
+  const ExtensionId& extension_id = last_loaded_extension_id();
+  ASSERT_NO_FATAL_FAILURE(AddDynamicRules(extension_id, dynamic_rules));
+
+  // Test that rules follow the priority of: dynamic allow > dynamic redirect >
+  // static allow > static redirect.
+  struct {
+    GURL initial_url;
+    GURL expected_final_url;
+  } dynamic_test_cases[] = {
+      {get_url(1), dynamic_redirect_url},
+      {get_url(21), get_url(21)},
+  };
+
+  for (const auto& test_case : dynamic_test_cases) {
+    GURL url = test_case.initial_url;
+    SCOPED_TRACE(base::StringPrintf("Testing %s", url.spec().c_str()));
+
+    ui_test_utils::NavigateToURL(browser(), url);
+    EXPECT_TRUE(WasFrameWithScriptLoaded(GetMainFrame()));
+
+    GURL final_url = web_contents()->GetLastCommittedURL();
+    EXPECT_EQ(test_case.expected_final_url, final_url);
   }
 }
 

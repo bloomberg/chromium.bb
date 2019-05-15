@@ -227,6 +227,15 @@ function checkAddWebRequestSetCookie(expectRemoved) {
   });
 }
 
+// Clears the current state by removing rules specified in |ruleIds| and
+// clearing all cookies.
+function clearState(ruleIds, callback) {
+  chrome.declarativeNetRequest.removeDynamicRules(ruleIds, function() {
+    chrome.test.assertNoLastError();
+    checkAndResetCookies().then(callback);
+  });
+}
+
 var removeCookieRule = {
   id: 1,
   condition: {urlFilter: host, resourceTypes: ['main_frame']},
@@ -236,6 +245,11 @@ var removeSetCookieRule = {
   id: 2,
   condition: {urlFilter: host, resourceTypes: ['main_frame']},
   action: {type: 'removeHeaders', removeHeadersList: ['setCookie']}
+};
+var allowRule = {
+  id: 3,
+  condition: {urlFilter: host, resourceTypes: ['main_frame']},
+  action: {type: 'allow'}
 };
 
 var tests = [
@@ -265,15 +279,11 @@ var tests = [
     });
   },
 
-  function clearState() {
-    chrome.declarativeNetRequest.removeDynamicRules([1, 2], function() {
-      chrome.test.assertNoLastError();
-      checkAndResetCookies().then(chrome.test.succeed);
-    });
-  },
-
   function testAddWebRequestCookie() {
-    checkAddWebRequestCookie(false);
+    // First clear the rules and cookies.
+    clearState([1, 2], () => {
+      checkAddWebRequestCookie(false);
+    });
   },
 
   function testAddWebRequestCookieWithRules() {
@@ -292,7 +302,13 @@ var tests = [
     chrome.declarativeNetRequest.addDynamicRules(rules, function() {
       checkAddWebRequestSetCookie(true);
     });
-  }
+  },
+
+  function testAddWebRequestCookieWithAllowRule() {
+    chrome.declarativeNetRequest.addDynamicRules([allowRule], () => {
+       checkAddWebRequestSetCookie(false);
+    });
+  },
 ];
 
 chrome.test.getConfig(function(config) {
