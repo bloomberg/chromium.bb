@@ -2979,39 +2979,3 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   EXPECT_EQ(overlay_window->muted_state_for_testing(),
             OverlayWindowViews::MutedState::kNoAudio);
 }
-
-// Tests that when closing the window after the player was reset, the <video>
-// element is still notified.
-IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
-                       ResetPlayerCloseWindowNotifiesElement) {
-  LoadTabAndEnterPictureInPicture(browser());
-  content::WebContents* active_web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-
-  // Video should be in Picture-in-Picture.
-  {
-    bool in_picture_in_picture = false;
-    ASSERT_TRUE(ExecuteScriptAndExtractBool(active_web_contents,
-                                            "isInPictureInPicture();",
-                                            &in_picture_in_picture));
-    EXPECT_TRUE(in_picture_in_picture);
-  }
-
-  // Reset video source and wait for the notification.
-  ASSERT_TRUE(content::ExecuteScript(active_web_contents, "resetVideo();"));
-  base::string16 expected_title = base::ASCIIToUTF16("emptied");
-  EXPECT_EQ(expected_title,
-            content::TitleWatcher(active_web_contents, expected_title)
-                .WaitAndGetTitle());
-
-  window_controller()->Close(true /* should_pause_video */);
-
-  // Video should no longer be in Picture-in-Picture.
-  {
-    bool in_picture_in_picture = false;
-    ASSERT_TRUE(ExecuteScriptAndExtractBool(active_web_contents,
-                                            "isInPictureInPicture();",
-                                            &in_picture_in_picture));
-    EXPECT_FALSE(in_picture_in_picture);
-  }
-}

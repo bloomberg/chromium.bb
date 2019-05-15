@@ -235,6 +235,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void OnSeekBackward(double seconds) override;
   void OnVolumeMultiplierUpdate(double multiplier) override;
   void OnBecamePersistentVideo(bool value) override;
+  void OnPictureInPictureModeEnded() override;
 
   // Callback for when bytes are received by |chunk_demuxer_| or the UrlData
   // being loaded.

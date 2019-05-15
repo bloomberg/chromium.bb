@@ -730,6 +730,11 @@ bool HTMLVideoElement::SupportsPictureInPicture() const {
          PictureInPictureController::Status::kEnabled;
 }
 
+void HTMLVideoElement::PictureInPictureStopped() {
+  PictureInPictureController::From(GetDocument())
+      .OnExitedPictureInPicture(nullptr);
+}
+
 WebMediaPlayer::DisplayType HTMLVideoElement::DisplayType() const {
   if (is_auto_picture_in_picture_ ||
       PictureInPictureController::IsElementInPictureInPicture(this)) {

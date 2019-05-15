@@ -182,6 +182,7 @@ class CONTENT_EXPORT WebMediaPlayerMS
   void OnSeekBackward(double seconds) override;
   void OnVolumeMultiplierUpdate(double multiplier) override;
   void OnBecamePersistentVideo(bool value) override;
+  void OnPictureInPictureModeEnded() override;
 
   void OnFirstFrameReceived(media::VideoRotation video_rotation,
                             bool is_opaque);

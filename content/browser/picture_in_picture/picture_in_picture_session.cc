@@ -7,6 +7,7 @@
 #include "content/browser/picture_in_picture/picture_in_picture_service_impl.h"
 #include "content/browser/picture_in_picture/picture_in_picture_window_controller_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/media/media_player_delegate_messages.h"
 
 namespace content {
 
@@ -76,7 +77,7 @@ void PictureInPictureSession::Shutdown() {
   if (is_stopping_)
     return;
 
-  StopInternal(base::NullCallback());
+  StopInternal(base::DoNothing());
 }
 
 void PictureInPictureSession::StopInternal(StopCallback callback) {
@@ -86,12 +87,13 @@ void PictureInPictureSession::StopInternal(StopCallback callback) {
 
   GetWebContentsImpl()->ExitPictureInPicture();
 
-  // `OnStopped()` should only be called if there is no callback to run, as a
-  // contract in the API.
-  if (callback)
-    std::move(callback).Run();
-  else
-    observer_->OnStopped();
+  std::move(callback).Run();
+
+  // TODO(mlamouri): move to observer_->Stop();
+  player_id_->render_frame_host->Send(
+      new MediaPlayerDelegateMsg_EndPictureInPictureMode(
+          player_id_->render_frame_host->GetRoutingID(),
+          player_id_->delegate_id));
 
   if (auto* controller = GetController())
     controller->SetActiveSession(nullptr);
@@ -102,7 +104,7 @@ void PictureInPictureSession::StopInternal(StopCallback callback) {
 
 void PictureInPictureSession::OnConnectionError() {
   // StopInternal() will self destruct which will close the bindings.
-  StopInternal(base::NullCallback());
+  StopInternal(base::DoNothing());
 }
 
 WebContentsImpl* PictureInPictureSession::GetWebContentsImpl() {
