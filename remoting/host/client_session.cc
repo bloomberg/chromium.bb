@@ -252,6 +252,8 @@ void ClientSession::SelectDesktopDisplay(
       id = webrtc::kFullDesktopScreenId;
     }
   }
+  LOG(INFO) << "SelectDesktopDisplay " << id << " from '" << select_display.id()
+            << "'";
   video_stream_->SelectSource(id);
   show_display_id_ = id;
 }
