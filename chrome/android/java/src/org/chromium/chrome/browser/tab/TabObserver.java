@@ -354,4 +354,16 @@ public interface TabObserver {
      * @param result Detail information on the matched rects.
      */
     void onFindMatchRectsAvailable(FindMatchRectsDetails result);
+
+    /**
+     * Invoked when a child view is added or removed to Tab's content view.
+     */
+    void onContentViewChildrenStateUpdated(Tab tab);
+
+    /**
+     * Invoked when the status bar changes visibility.
+     * @param visibility Flags indicating the global state of the UI visibility.
+     * @see View#setSystemUiVisibility(int)
+     */
+    void onContentViewSystemUiVisibilityChanged(Tab tab, int visibility);
 }

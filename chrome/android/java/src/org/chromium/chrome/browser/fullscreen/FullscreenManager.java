@@ -8,10 +8,11 @@ import android.support.annotation.Nullable;
 import android.view.View;
 import android.view.Window;
 
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.fullscreen.FullscreenHtmlApiHandler.FullscreenHtmlApiDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabBrowserControlsOffsetHelper;
-import org.chromium.chrome.browser.tab.TabFullscreenHandler;
+import org.chromium.chrome.browser.tab.TabBrowserControlsState;
 
 /**
  * Manages the basic fullscreen functionality required by a Tab.
@@ -24,6 +25,20 @@ public abstract class FullscreenManager {
     private final FullscreenHtmlApiHandler mHtmlApiHandler;
     private boolean mOverlayVideoMode;
     @Nullable private Tab mTab;
+
+    /**
+     * @return {@link FullscreenManager} instance which a given {@link Tab}
+     *         is associated with as the active tab; {@code null} if the tab
+     *         is not an active one.
+     * TODO(jinsukim): Look into removing this method.
+     */
+    public static FullscreenManager from(Tab tab) {
+        if (tab == null) return null;
+        ChromeActivity activity = tab.getActivity();
+        if (activity == null) return null;
+        FullscreenManager manager = activity.getFullscreenManager();
+        return manager.getTab() == tab ? manager : null;
+    }
 
     /**
      * Constructs the basic ChromeTab oriented FullscreenManager.
@@ -121,19 +136,8 @@ public abstract class FullscreenManager {
     public void setTab(@Nullable Tab tab) {
         if (mTab == tab) return;
 
-        // Remove the fullscreen manager from the old tab before setting the new tab.
-        setFullscreenManager(null);
-
         mTab = tab;
-
-        // Initialize the new tab with the correct fullscreen manager reference.
-        setFullscreenManager(this);
-    }
-
-    private void setFullscreenManager(FullscreenManager manager) {
-        if (mTab == null) return;
-        mTab.setFullscreenManager(manager);
-        TabBrowserControlsOffsetHelper.from(mTab).resetPositions();
+        if (mTab != null) TabBrowserControlsOffsetHelper.from(mTab).resetPositions();
     }
 
     /**
@@ -147,9 +151,9 @@ public abstract class FullscreenManager {
      * Enters persistent fullscreen mode.  In this mode, the browser controls will be
      * permanently hidden until this mode is exited.
      */
-    public void enterPersistentFullscreenMode(FullscreenOptions options) {
+    protected void enterPersistentFullscreenMode(FullscreenOptions options) {
         mHtmlApiHandler.enterPersistentFullscreenMode(options);
-        TabFullscreenHandler.updateEnabledState(getTab());
+        TabBrowserControlsState.updateEnabledState(getTab());
     }
 
     /**
@@ -158,7 +162,7 @@ public abstract class FullscreenManager {
      */
     public void exitPersistentFullscreenMode() {
         mHtmlApiHandler.exitPersistentFullscreenMode();
-        TabFullscreenHandler.updateEnabledState(getTab());
+        TabBrowserControlsState.updateEnabledState(getTab());
     }
 
     /**

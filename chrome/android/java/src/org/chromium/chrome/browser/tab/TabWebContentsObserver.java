@@ -17,7 +17,6 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.SwipeRefreshHandler;
 import org.chromium.chrome.browser.display_cutout.DisplayCutoutController;
-import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.media.MediaCaptureNotificationService;
 import org.chromium.chrome.browser.policy.PolicyAuditor;
@@ -264,12 +263,6 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
                 }
             }
 
-            FullscreenManager fullscreenManager = mTab.getFullscreenManager();
-            if (navigation.isInMainFrame() && !navigation.isSameDocument()
-                    && fullscreenManager != null) {
-                fullscreenManager.exitPersistentFullscreenMode();
-            }
-
             if (navigation.isInMainFrame()) {
                 // Stop swipe-to-refresh animation.
                 SwipeRefreshHandler handler = SwipeRefreshHandler.get(mTab);
@@ -302,7 +295,7 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
                 observers.next().onDidAttachInterstitialPage(mTab);
             }
             mTab.notifyLoadProgress(mTab.getProgress());
-            TabFullscreenHandler.updateEnabledState(mTab);
+            TabBrowserControlsState.updateEnabledState(mTab);
             PolicyAuditor auditor = AppHooks.get().getPolicyAuditor();
             auditor.notifyCertificateFailure(
                     PolicyAuditor.nativeGetCertificateFailure(mTab.getWebContents()),
@@ -318,7 +311,7 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
                 observers.next().onDidDetachInterstitialPage(mTab);
             }
             mTab.notifyLoadProgress(mTab.getProgress());
-            TabFullscreenHandler.updateEnabledState(mTab);
+            TabBrowserControlsState.updateEnabledState(mTab);
             if (!mTab.maybeShowNativePage(mTab.getUrl(), false)) {
                 mTab.showRenderedPage();
             }

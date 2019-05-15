@@ -5,7 +5,10 @@
 package org.chromium.chrome.browser.tab;
 
 import org.chromium.base.ObserverList.RewindableIterator;
-import org.chromium.base.UserData;
+import org.chromium.chrome.browser.fullscreen.FullscreenManager;
+import org.chromium.content_public.browser.GestureListenerManager;
+import org.chromium.content_public.browser.ImeAdapter;
+import org.chromium.content_public.browser.ImeEventObserver;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.BrowserControlsState;
 
@@ -13,7 +16,7 @@ import org.chromium.content_public.common.BrowserControlsState;
  * Manages the state of tab browser controls. Instantiation is done by
  * {@link TabDelegateFactory#createBrowserControlsState()}.
  */
-public class TabBrowserControlsState implements UserData {
+public class TabBrowserControlsState extends TabWebContentsUserData implements ImeEventObserver {
     private static final Class<TabBrowserControlsState> USER_DATA_KEY =
             TabBrowserControlsState.class;
 
@@ -46,6 +49,15 @@ public class TabBrowserControlsState implements UserData {
     }
 
     /**
+     * Push state about whether or not the browser controls can show or hide to the renderer.
+     * @param tab Tab object.
+     */
+    public static void updateEnabledState(Tab tab) {
+        if (tab == null || get(tab) == null) return;
+        get(tab).updateEnabledState();
+    }
+
+    /**
      * Updates the browser controls state for this tab.  As these values are set at the renderer
      * level, there is potential for this impacting other tabs that might share the same
      * process.
@@ -63,17 +75,79 @@ public class TabBrowserControlsState implements UserData {
 
     /** Constructor */
     private TabBrowserControlsState(Tab tab, BrowserControlsVisibilityDelegate delegate) {
+        super(tab);
         mTab = tab;
         mVisibilityDelegate = delegate;
         mNativeTabBrowserControlsState = nativeInit();
+        mTab.addObserver(new EmptyTabObserver() {
+            @Override
+            public void onSSLStateUpdated(Tab tab) {
+                updateEnabledState();
+            }
+
+            @Override
+            public void onRendererResponsiveStateChanged(Tab tab, boolean isResponsive) {
+                if (FullscreenManager.from(mTab) == null) return;
+                if (isResponsive) {
+                    updateEnabledState();
+                } else {
+                    update(BrowserControlsState.SHOWN, false);
+                }
+            }
+
+            @Override
+            public void onPageLoadFinished(Tab tab, String url) {
+                updateEnabledState();
+            }
+
+            @Override
+            public void onDestroyed(Tab tab) {
+                tab.removeObserver(this);
+            }
+        });
     }
 
     @Override
-    public void destroy() {
+    public void destroyInternal() {
         nativeOnDestroyed(mNativeTabBrowserControlsState);
     }
 
-    private void update(int current, boolean animate) {
+    @Override
+    public void initWebContents(WebContents webContents) {
+        ImeAdapter.fromWebContents(webContents).addEventObserver(this);
+    }
+
+    @Override
+    public void cleanupWebContents(WebContents webContents) {}
+
+    private void updateEnabledState() {
+        if (mTab.isFrozen()) return;
+
+        update(BrowserControlsState.BOTH, getConstraints() != BrowserControlsState.HIDDEN);
+
+        WebContents webContents = mTab.getWebContents();
+        if (webContents != null) {
+            GestureListenerManager gestureManager =
+                    GestureListenerManager.fromWebContents(webContents);
+            FullscreenManager fullscreenManager = FullscreenManager.from(mTab);
+            if (gestureManager != null && fullscreenManager != null) {
+                gestureManager.updateMultiTouchZoomSupport(
+                        !fullscreenManager.getPersistentFullscreenMode());
+            }
+        }
+    }
+
+    /**
+     * Updates the browser controls state for this tab.  As these values are set at the renderer
+     * level, there is potential for this impacting other tabs that might share the same
+     * process.
+     *
+     * @param current The desired current state for the controls.  Pass
+     *                {@link BrowserControlsState#BOTH} to preserve the current position.
+     * @param animate Whether the controls should animate to the specified ending condition or
+     *                should jump immediately.
+     */
+    public void update(int current, boolean animate) {
         int constraints = getConstraints();
 
         // Do nothing if current and constraints conflict to avoid error in renderer.
@@ -118,6 +192,14 @@ public class TabBrowserControlsState implements UserData {
             constraints = BrowserControlsState.SHOWN;
         }
         return constraints;
+    }
+
+    // ImeEventObserver
+
+    @Override
+    public void onNodeAttributeUpdated(boolean editable, boolean password) {
+        if (FullscreenManager.from(mTab) == null) return;
+        updateEnabledState();
     }
 
     private native long nativeInit();

@@ -127,6 +127,21 @@ public class ManualFillingControllerTest {
     private final PropertyModel mModel = mMediator.getModelForTesting();
     private final UserDataHost mUserDataHost = new UserDataHost();
 
+    private static class MockActivityTabProvider extends ActivityTabProvider {
+        public Tab mTab;
+
+        public void set(Tab tab) {
+            mTab = tab;
+        }
+
+        @Override
+        public Tab get() {
+            return mTab;
+        }
+    };
+
+    private final MockActivityTabProvider mActivityTabProvider = new MockActivityTabProvider();
+
     /**
      * Helper class that provides shortcuts to providing and observing AccessorySheetData and
      * Actions.
@@ -268,7 +283,7 @@ public class ManualFillingControllerTest {
         when(mMockWindow.getActivity()).thenReturn(new WeakReference<>(mMockActivity));
         when(mMockKeyboard.calculateKeyboardHeight(any())).thenReturn(0);
         when(mMockActivity.getTabModelSelector()).thenReturn(mMockTabModelSelector);
-        when(mMockActivity.getActivityTabProvider()).thenReturn(mock(ActivityTabProvider.class));
+        when(mMockActivity.getActivityTabProvider()).thenReturn(mActivityTabProvider);
         ChromeFullscreenManager fullscreenManager = new ChromeFullscreenManager(mMockActivity, 0);
         when(mMockActivity.getFullscreenManager()).thenReturn(fullscreenManager);
         when(mMockActivity.getCompositorViewHolder()).thenReturn(mMockCompositorViewHolder);
@@ -1019,8 +1034,8 @@ public class ManualFillingControllerTest {
         when(tab.getWebContents()).thenReturn(mLastMockWebContents);
         mCache.getStateFor(tab).getWebContentsObserverForTesting().wasShown();
         when(tab.getContentView()).thenReturn(mMockContentView);
-        when(mMockActivity.getActivityTabProvider().get()).thenReturn(tab);
         when(mMockTabModelSelector.getCurrentTab()).thenReturn(tab);
+        mActivityTabProvider.set(tab);
         mediator.getTabModelObserverForTesting().didAddTab(tab, FROM_BROWSER_ACTIONS);
         mediator.getTabObserverForTesting().onShown(tab, FROM_NEW);
         mediator.getTabModelObserverForTesting().didSelectTab(tab, FROM_NEW, lastId);

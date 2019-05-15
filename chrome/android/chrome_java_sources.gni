@@ -1466,7 +1466,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/tab/TabContextMenuPopulator.java",
   "java/src/org/chromium/chrome/browser/tab/TabDelegateFactory.java",
   "java/src/org/chromium/chrome/browser/tab/TabFavicon.java",
-  "java/src/org/chromium/chrome/browser/tab/TabFullscreenHandler.java",
   "java/src/org/chromium/chrome/browser/tab/TabGestureStateListener.java",
   "java/src/org/chromium/chrome/browser/tab/TabIdManager.java",
   "java/src/org/chromium/chrome/browser/tab/TabImportanceManager.java",

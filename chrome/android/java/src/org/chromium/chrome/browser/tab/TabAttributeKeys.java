@@ -28,4 +28,7 @@ public @interface TabAttributeKeys {
      * Parent Tab Root Task Id. See ContextRecordTaskId (context_record_task_id.h) for definition
      */
     public static final String PARENT_TAB_ROOT_TASK_ID = "ParentRootTaskId";
+
+    /** A runnable to delay the enabling of fullscreen mode if necessary. */
+    public static final String ENTER_FULLSCREEN = "EnterFullscreen";
 }

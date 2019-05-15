@@ -34,6 +34,7 @@ import org.chromium.chrome.browser.document.DocumentWebContentsDelegate;
 import org.chromium.chrome.browser.findinpage.FindMatchRectsDetails;
 import org.chromium.chrome.browser.findinpage.FindNotificationDetails;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.media.MediaCaptureNotificationService;
 import org.chromium.chrome.browser.policy.PolicyAuditor;
@@ -250,8 +251,8 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
 
     @Override
     public boolean isFullscreenForTabOrPending() {
-        return mTab.getFullscreenManager() == null
-                ? false : mTab.getFullscreenManager().getPersistentFullscreenMode();
+        FullscreenManager manager = FullscreenManager.from(mTab);
+        return manager != null ? manager.getPersistentFullscreenMode() : false;
     }
 
     protected TabModel getTabModel() {
@@ -472,30 +473,22 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
         mTab.getActivity().setOverlayMode(useOverlayMode);
     }
 
-    private ChromeFullscreenManager getFullscreenManager() {
-        // Following get* methods use this method instead of |Tab.getFullscreenManager|
-        // because the latter can return null if invoked while the tab is in detached state.
-        ChromeActivity activity = mTab.getActivity();
-        return activity != null && !activity.isActivityFinishingOrDestroyed() ?
-                activity.getFullscreenManager() : null;
-    }
-
     @Override
     public int getTopControlsHeight() {
-        ChromeFullscreenManager manager = getFullscreenManager();
+        FullscreenManager manager = FullscreenManager.from(mTab);
         return manager != null ? manager.getTopControlsHeight() : 0;
     }
 
     @Override
     public int getBottomControlsHeight() {
-        ChromeFullscreenManager manager = getFullscreenManager();
+        FullscreenManager manager = FullscreenManager.from(mTab);
         return manager != null ? manager.getBottomControlsHeight() : 0;
     }
 
     @Override
     public boolean controlsResizeView() {
-        ChromeFullscreenManager manager = getFullscreenManager();
-        return manager != null ? manager.controlsResizeView() : false;
+        FullscreenManager manager = FullscreenManager.from(mTab);
+        return manager != null ? ((ChromeFullscreenManager) manager).controlsResizeView() : false;
     }
 
     /**

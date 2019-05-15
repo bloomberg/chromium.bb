@@ -33,7 +33,6 @@ public final class TabHelpers {
     static void initTabHelpers(Tab tab, Tab parentTab, @TabCreationState Integer creationState) {
         if (creationState != null) TabUma.create(tab, creationState);
         TabThemeColorHelper.createForTab(tab);
-        TabFullscreenHandler.createForTab(tab);
         InterceptNavigationDelegateImpl.createForTab(tab);
         ContextualSearchTabHelper.createForTab(tab);
         if (ChromeFeatureList.isInitialized()
@@ -59,7 +58,7 @@ public final class TabHelpers {
         InfoBarContainer.from(tab);
 
         TabWebContentsObserver.from(tab);
-        TabGestureStateListener.from(tab, tab::getFullscreenManager);
+        TabGestureStateListener.from(tab);
         SwipeRefreshHandler.from(tab);
         TabFavicon.from(tab);
         TrustedCdn.from(tab);

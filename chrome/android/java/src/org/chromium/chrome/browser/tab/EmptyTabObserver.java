@@ -160,4 +160,10 @@ public class EmptyTabObserver implements TabObserver {
 
     @Override
     public void onFindMatchRectsAvailable(FindMatchRectsDetails result) {}
+
+    @Override
+    public void onContentViewChildrenStateUpdated(Tab tab) {}
+
+    @Override
+    public void onContentViewSystemUiVisibilityChanged(Tab tab, int visibility) {}
 }

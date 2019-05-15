@@ -42,7 +42,6 @@ import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.content.ContentUtils;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
-import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.native_page.FrozenNativePage;
 import org.chromium.chrome.browser.native_page.NativePage;
@@ -250,8 +249,6 @@ public class Tab
      * didCommitProvisionalLoadForFrame().
      */
     private boolean mIsNativePageCommitPending;
-
-    private FullscreenManager mFullscreenManager;
 
     private TabDelegateFactory mDelegateFactory;
 
@@ -790,11 +787,6 @@ public class Tab
 
             if (getWebContents() != null) getWebContents().onHide();
 
-            // Clean up any fullscreen state that might impact other tabs.
-            if (mFullscreenManager != null) {
-                mFullscreenManager.exitPersistentFullscreenMode();
-            }
-
             // Allow this tab's NativePage to be frozen if it stays hidden for a while.
             NativePageAssassin.getInstance().tabHidden(this);
 
@@ -1019,8 +1011,6 @@ public class Tab
         assert isDetached();
         updateWindowAndroid(activity.getWindowAndroid());
 
-        // Update for the controllers that need the Compositor from the new Activity.
-        mFullscreenManager = activity.getFullscreenManager();
         // Update the delegate factory, then recreate and propagate all delegates.
         mDelegateFactory = tabDelegateFactory;
         mWebContentsDelegate = mDelegateFactory.createWebContentsDelegate(this);
@@ -1792,33 +1782,21 @@ public class Tab
     }
 
     /**
-     * @return An instance of a {@link FullscreenManager}.
-     */
-    public FullscreenManager getFullscreenManager() {
-        return mFullscreenManager;
-    }
-
-    /**
      * Enters fullscreen mode. If enabling fullscreen while the tab is not interactable, fullscreen
      * will be delayed until the tab is interactable.
      * @param options Options to adjust fullscreen mode.
      */
     public void enterFullscreenMode(FullscreenOptions options) {
         RewindableIterator<TabObserver> observers = getTabObservers();
-        while (observers.hasNext()) {
-            observers.next().onEnterFullscreenMode(this, options);
-        }
+        while (observers.hasNext()) observers.next().onEnterFullscreenMode(this, options);
     }
 
     /**
-     * Exits fullscreen mode. If enabling fullscreen while the tab is not interactable, fullscreen
-     * will be delayed until the tab is interactable.
+     * Exits fullscreen mode.
      */
     public void exitFullscreenMode() {
         RewindableIterator<TabObserver> observers = getTabObservers();
-        while (observers.hasNext()) {
-            observers.next().onExitFullscreenMode(this);
-        }
+        while (observers.hasNext()) observers.next().onExitFullscreenMode(this);
     }
 
     /**
@@ -1833,14 +1811,6 @@ public class Tab
     }
 
     /**
-     * @param manager The fullscreen manager that should be notified of changes to this tab (if
-     *                set to null, no more updates will come from this tab).
-     */
-    public void setFullscreenManager(FullscreenManager manager) {
-        mFullscreenManager = manager;
-    }
-
-    /**
      * Add a new navigation entry for the current URL and page title.
      */
     void pushNativePageStateToNavigationEntry() {
@@ -1851,25 +1821,28 @@ public class Tab
 
     @Override
     public void onChildViewRemoved(View parent, View child) {
-        FullscreenManager fullscreenManager = getFullscreenManager();
-        if (fullscreenManager != null) {
-            fullscreenManager.updateContentViewChildrenState();
-        }
+        // TODO(jinsukkim): Consider updating |ContentView| to allow multiple
+        //         OnHierarchyChangeListener and OnSystemUiVisibilityChangeListener
+        //         to be added to not allow FullscreenManager to get the contentview
+        //         and add its own observers as needed.
+        updateContentViewChildrenState();
     }
 
     @Override
     public void onChildViewAdded(View parent, View child) {
-        FullscreenManager fullscreenManager = getFullscreenManager();
-        if (fullscreenManager != null) {
-            fullscreenManager.updateContentViewChildrenState();
-        }
+        updateContentViewChildrenState();
+    }
+
+    private void updateContentViewChildrenState() {
+        RewindableIterator<TabObserver> observers = getTabObservers();
+        while (observers.hasNext()) observers.next().onContentViewChildrenStateUpdated(this);
     }
 
     @Override
     public void onSystemUiVisibilityChange(int visibility) {
-        FullscreenManager fullscreenManager = getFullscreenManager();
-        if (fullscreenManager != null) {
-            fullscreenManager.onContentViewSystemUiVisibilityChange(visibility);
+        RewindableIterator<TabObserver> observers = getTabObservers();
+        while (observers.hasNext()) {
+            observers.next().onContentViewSystemUiVisibilityChanged(this, visibility);
         }
     }
 
