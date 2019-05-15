@@ -137,11 +137,6 @@ def _IsBuilderName(name):
   return not name.startswith('AAA')
 
 
-def _IsCompilingBuilder(builder_name, builder_data):
-  del builder_name  # unused
-  return 'isolated_scripts' not in builder_data
-
-
 def _IsTestingBuilder(builder_name, builder_data):
   del builder_name  # unused
   return 'isolated_scripts' in builder_data
@@ -153,13 +148,15 @@ def ValidatePerfConfigFile(file_handle, is_main_perf_waterfall):
   for key, value in perf_data.iteritems():
     if not _IsBuilderName(key):
       continue
-    if _IsCompilingBuilder(builder_name=key, builder_data=value):
-      pass
-    elif _IsTestingBuilder(builder_name=key, builder_data=value):
+    if _IsTestingBuilder(builder_name=key, builder_data=value):
       ValidateTestingBuilder(builder_name=key, builder_data=value)
-      perf_testing_builder_names.add(key)
-    else:
-      raise ValueError('%s has unrecognizable type: %s' % key)
+      try:
+        trigger_script = value['isolated_scripts'][-1]['trigger_script'][
+            'script']
+      except KeyError:
+        continue
+      if trigger_script ==  '//testing/trigger_scripts/perf_device_trigger.py':
+        perf_testing_builder_names.add(key)
   if (is_main_perf_waterfall and
       perf_testing_builder_names != bot_platforms.OFFICIAL_PLATFORM_NAMES):
     raise ValueError(

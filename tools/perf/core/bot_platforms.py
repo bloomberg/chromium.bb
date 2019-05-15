@@ -143,16 +143,6 @@ WIN_7_GPU = PerfPlatform(
     num_shards=5)
 
 # Android
-ANDROID_ARM_BUILDER = PerfPlatform(
-    'android-builder-perf',
-    'Static analysis of 32-bit ARM Android build products',
-    _OFFICIAL_BENCHMARK_NAMES, num_shards=1)
-
-ANDROID_ARM64_BUILDER = PerfPlatform(
-    'android_arm64-builder-perf',
-    'Static analysis of 64-bit ARM Android build products.',
-    _OFFICIAL_BENCHMARK_NAMES, num_shards=1)
-
 ANDROID_GO = PerfPlatform(
     'android-go-perf', 'Android O (gobo)', _ANDROID_GO_BENCHMARK_NAMES,
     num_shards=19)
