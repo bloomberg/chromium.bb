@@ -464,11 +464,16 @@ bool GetFallbackFont(const Font& font, base::StringPiece16 text, Font* result) {
   // renderer should instead use the font proxy.
   DCHECK(base::MessageLoopCurrentForUI::IsSet());
 
+  // The text passed must be at least length 1.
+  if (text.empty())
+    return false;
+
   // Check that we have at least as much text as was claimed. If we have less
   // text than expected then DirectWrite will become confused and crash. This
   // shouldn't happen, but crbug.com/624905 shows that it happens sometimes.
-  DCHECK_GE(wcslen(text.data()), text.length());
-  size_t text_length = std::min(wcslen(text.data()), text.length());
+  constexpr base::char16 kNulCharacter = '\0';
+  if (text.find(kNulCharacter) != base::StringPiece16::npos)
+    return false;
 
   Microsoft::WRL::ComPtr<IDWriteFactory> factory;
   gfx::win::CreateDWriteFactory(factory.GetAddressOf());
@@ -500,7 +505,7 @@ bool GetFallbackFont(const Font& font, base::StringPiece16 text, Font* result) {
       base::i18n::IsRTL() ? DWRITE_READING_DIRECTION_RIGHT_TO_LEFT
                           : DWRITE_READING_DIRECTION_LEFT_TO_RIGHT;
   if (FAILED(gfx::win::TextAnalysisSource::Create(
-          &text_analysis, base::string16(text.data(), text_length),
+          &text_analysis, base::string16(text.data(), text.length()),
           locale.c_str(), number_substitution.Get(), reading_direction))) {
     return false;
   }
@@ -509,7 +514,7 @@ bool GetFallbackFont(const Font& font, base::StringPiece16 text, Font* result) {
   if (font.GetStyle() & Font::ITALIC)
     font_style = DWRITE_FONT_STYLE_ITALIC;
   if (FAILED(fallback->MapCharacters(
-          text_analysis.Get(), 0, text_length, nullptr, original_name.c_str(),
+          text_analysis.Get(), 0, text.length(), nullptr, original_name.c_str(),
           static_cast<DWRITE_FONT_WEIGHT>(font.GetWeight()), font_style,
           DWRITE_FONT_STRETCH_NORMAL, &mapped_length, &mapped_font, &scale))) {
     return false;

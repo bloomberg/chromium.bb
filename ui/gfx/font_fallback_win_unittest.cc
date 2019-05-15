@@ -200,16 +200,38 @@ TEST_F(FontFallbackWinTest, ParseFontFamilyString) {
 TEST_F(FontFallbackWinTest, EmptyStringUniscribeFallback) {
   Font base_font;
   Font fallback_font;
-  bool result =
-      internal::GetUniscribeFallbackFont(base_font, L"", &fallback_font);
+  bool result = internal::GetUniscribeFallbackFont(
+      base_font, base::StringPiece16(), &fallback_font);
   EXPECT_FALSE(result);
 }
 
 TEST_F(FontFallbackWinTest, EmptyStringFallback) {
   Font base_font;
   Font fallback_font;
-  bool result = GetFallbackFont(base_font, L"", &fallback_font);
+  bool result =
+      GetFallbackFont(base_font, base::StringPiece16(), &fallback_font);
   EXPECT_FALSE(result);
+}
+
+TEST_F(FontFallbackWinTest, NulTerminatedStringPiece) {
+  Font base_font;
+  Font fallback_font;
+  // Multiple ending NUL characters.
+  const wchar_t kTest1[] = {0x0540, 0x0541, 0, 0, 0};
+  EXPECT_FALSE(GetFallbackFont(base_font,
+                               base::StringPiece16(kTest1, ARRAYSIZE(kTest1)),
+                               &fallback_font));
+  // No ending NUL character.
+  const wchar_t kTest2[] = {0x0540, 0x0541};
+  EXPECT_TRUE(GetFallbackFont(base_font,
+                              base::StringPiece16(kTest2, ARRAYSIZE(kTest2)),
+                              &fallback_font));
+
+  // NUL only characters.
+  const wchar_t kTest3[] = {0, 0, 0};
+  EXPECT_FALSE(GetFallbackFont(base_font,
+                               base::StringPiece16(kTest3, ARRAYSIZE(kTest3)),
+                               &fallback_font));
 }
 
 // This test ensures the font fallback work correctly. It will ensures that
