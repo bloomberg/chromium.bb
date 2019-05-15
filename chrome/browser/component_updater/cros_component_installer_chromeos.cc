@@ -21,6 +21,7 @@
 #include "chromeos/dbus/image_loader_client.h"
 #include "components/component_updater/component_updater_paths.h"
 #include "components/crx_file/id_util.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/sha2.h"
 
@@ -60,6 +61,13 @@ const ComponentConfig* FindConfig(const std::string& name) {
 
 // TODO(xiaochu): add metrics for component usage (https://crbug.com/793052).
 void LogCustomUninstall(base::Optional<bool> result) {}
+
+void FinishCustomUninstallOnUIThread(const std::string& name) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  chromeos::DBusThreadManager::Get()->GetImageLoaderClient()->UnmountComponent(
+      name, base::BindOnce(&LogCustomUninstall));
+}
 
 std::string GenerateId(const std::string& sha2hashstr) {
   // kIdSize is the count of a pair of hex in the sha2hash array.
@@ -144,8 +152,9 @@ CrOSComponentInstallerPolicy::OnCustomInstall(
 void CrOSComponentInstallerPolicy::OnCustomUninstall() {
   cros_component_installer_->UnregisterCompatiblePath(name_);
 
-  chromeos::DBusThreadManager::Get()->GetImageLoaderClient()->UnmountComponent(
-      name_, base::BindOnce(&LogCustomUninstall));
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
+      base::BindOnce(&FinishCustomUninstallOnUIThread, name_));
 }
 
 void CrOSComponentInstallerPolicy::ComponentReady(
