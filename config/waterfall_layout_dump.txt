@@ -605,6 +605,7 @@
     gonzo-release
     grunt-release
     guado-cfm-release
+    guado-kernelnext-release
     guado-macrophage-release
     guado-release
     guado_labstation-release
@@ -2137,6 +2138,18 @@
   guado-compile-only-pre-cq
   guado-factory-auron-6772.B-factorybranch-tryjob
   guado-full-tryjob
+  guado-kernelnext-chromium-pfq-tryjob
+  guado-kernelnext-compile-only-pre-cq
+  guado-kernelnext-full-tryjob
+  guado-kernelnext-llvm-next-toolchain-tryjob
+  guado-kernelnext-llvm-toolchain-tryjob
+  guado-kernelnext-no-vmtest-pre-cq
+  guado-kernelnext-paladin-tryjob
+  guado-kernelnext-postsubmit-tryjob
+  guado-kernelnext-pre-cq
+  guado-kernelnext-release-tryjob
+  guado-kernelnext-tot-chromium-pfq-informational-tryjob
+  guado-kernelnext-unittest-stress
   guado-llvm-next-toolchain-tryjob
   guado-llvm-toolchain-tryjob
   guado-macrophage-chromium-pfq-tryjob
@@ -2930,6 +2943,7 @@
     gonzo-release-tryjob
     grunt-release-tryjob
     guado-cfm-release-tryjob
+    guado-kernelnext-release-tryjob
     guado-macrophage-release-tryjob
     guado-release-tryjob
     guado_labstation-release-tryjob
