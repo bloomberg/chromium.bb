@@ -235,8 +235,6 @@ IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard, TestInputGamepadSameObject) {
       GetFileUrlForHtmlTestFile("test_webxr_input_same_object"));
   EnterSessionWithUserGestureOrFail();
 
-  RunJavaScriptOrFail("setupListeners()");
-
   // We should only have seen the first change indicating we have input sources.
   PollJavaScriptBooleanOrFail("inputChangeEvents === 1", kPollTimeoutShort);
 

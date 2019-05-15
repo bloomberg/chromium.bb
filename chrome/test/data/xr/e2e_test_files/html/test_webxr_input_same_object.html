@@ -18,9 +18,10 @@ sources for the same object tests.
         inputChangeEvents++;
       }
 
-      function setupListeners() {
-        let currentSession = sessionInfos[sessionTypes.IMMERSIVE].currentSession;
-        currentSession.addEventListener('inputsourceschange', onInputSourcesChange, false);
+      onSessionStartedCallback = function(session) {
+        if (session.mode === "immersive-vr") {
+          session.addEventListener('inputsourceschange', onInputSourcesChange, false);
+        }
       }
 
       function getCurrentInputSources() {

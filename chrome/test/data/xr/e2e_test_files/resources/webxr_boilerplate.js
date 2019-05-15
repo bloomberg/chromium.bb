@@ -19,6 +19,7 @@ var glAttribs = {
 var gl = null;
 var onMagicWindowXRFrameCallback = null;
 var onImmersiveXRFrameCallback = null;
+var onSessionStartedCallback = null;
 var onPoseCallback = null;
 var shouldSubmitFrame = true;
 var hasPresentedFrame = false;
@@ -127,6 +128,10 @@ function onSessionStarted(session) {
     gl.enable(gl.DEPTH_TEST);
     gl.enable(gl.CULL_FACE);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+  }
+
+  if (onSessionStartedCallback) {
+    onSessionStartedCallback(session);
   }
 
   session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl) });
