@@ -265,6 +265,7 @@ class QuicStreamFactory::CertVerifierJob {
       verify_callback_->Cancel();
   }
 
+  // TODO(mattm): pass |ocsp_response| and |cert_sct|.
   // Starts verification of certs cached in the |crypto_config|.
   quic::QuicAsyncStatus Run(quic::QuicCryptoClientConfig* crypto_config,
                             CompletionOnceCallback callback) {
@@ -275,8 +276,9 @@ class QuicStreamFactory::CertVerifierJob {
     quic::QuicAsyncStatus status =
         crypto_config->proof_verifier()->VerifyCertChain(
             server_id_.host(), cached->certs(),
-            /*ocsp_response=*/std::string(), cached->cert_sct(),
-            verify_context_.get(), &verify_error_details_, &verify_details_,
+            /*ocsp_response=*/std::string(),
+            /*cert_sct=*/std::string(), verify_context_.get(),
+            &verify_error_details_, &verify_details_,
             std::move(verify_callback));
     if (status == quic::QUIC_PENDING) {
       verify_callback_ = verify_callback_ptr;

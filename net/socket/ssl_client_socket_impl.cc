@@ -1138,16 +1138,10 @@ ssl_verify_result_t SSLClientSocketImpl::VerifyCert() {
   base::StringPiece ocsp_response(
       reinterpret_cast<const char*>(ocsp_response_raw), ocsp_response_len);
 
-  const uint8_t* sct_list_raw;
-  size_t sct_list_len;
-  SSL_get0_signed_cert_timestamp_list(ssl_.get(), &sct_list_raw, &sct_list_len);
-  base::StringPiece sct_list(reinterpret_cast<const char*>(sct_list_raw),
-                             sct_list_len);
-
   cert_verification_result_ = cert_verifier_->Verify(
-      CertVerifier::RequestParams(
-          server_cert_, host_and_port_.host(), ssl_config_.GetCertVerifyFlags(),
-          ocsp_response.as_string(), sct_list.as_string()),
+      CertVerifier::RequestParams(server_cert_, host_and_port_.host(),
+                                  ssl_config_.GetCertVerifyFlags(),
+                                  ocsp_response.as_string()),
       &server_cert_verify_result_,
       base::BindOnce(&SSLClientSocketImpl::OnVerifyComplete,
                      base::Unretained(this)),

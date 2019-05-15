@@ -107,17 +107,12 @@ class NET_EXPORT CertVerifier {
   // |ocsp_response| is optional, but if non-empty, should contain an OCSP
   // response obtained via OCSP stapling. It may be ignored by the
   // CertVerifier.
-  //
-  // |sct_list| is optional, but if non-empty, should contain a
-  // SignedCertificateTimestampList from the TLS extension as described in
-  // RFC6962 section 3.3.1. It may be ignored by the CertVerifier.
   class NET_EXPORT RequestParams {
    public:
     RequestParams(scoped_refptr<X509Certificate> certificate,
                   const std::string& hostname,
                   int flags,
-                  const std::string& ocsp_response,
-                  const std::string& sct_list);
+                  const std::string& ocsp_response);
     RequestParams(const RequestParams& other);
     ~RequestParams();
 
@@ -127,7 +122,6 @@ class NET_EXPORT CertVerifier {
     const std::string& hostname() const { return hostname_; }
     int flags() const { return flags_; }
     const std::string& ocsp_response() const { return ocsp_response_; }
-    const std::string& sct_list() const { return sct_list_; }
 
     bool operator==(const RequestParams& other) const;
     bool operator<(const RequestParams& other) const;
@@ -137,7 +131,6 @@ class NET_EXPORT CertVerifier {
     std::string hostname_;
     int flags_;
     std::string ocsp_response_;
-    std::string sct_list_;
 
     // Used to optimize sorting/indexing comparisons.
     std::string key_;

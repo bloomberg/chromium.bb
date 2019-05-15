@@ -12,7 +12,6 @@
 #include "net/base/net_errors.h"
 #include "net/cert/asn1_util.h"
 #include "net/cert/cert_verify_result.h"
-#include "net/cert/ct_serialization.h"
 #include "net/cert/known_roots.h"
 #include "net/cert/test_root_certs.h"
 #include "net/cert/x509_certificate.h"
@@ -20,14 +19,6 @@
 #include "net/cert/x509_util_ios_and_mac.h"
 
 using base::ScopedCFTypeRef;
-
-extern "C" {
-// Declared in <Security/SecTrust.h>, available in iOS 12.1.1+
-// TODO(mattm): Remove this weak_import once chromium requires a new enough
-// iOS SDK.
-OSStatus SecTrustSetSignedCertificateTimestamps(SecTrustRef, CFArrayRef)
-    __attribute__((weak_import));
-}  // extern "C"
 
 namespace net {
 
@@ -78,7 +69,6 @@ OSStatus CreateTrustPolicies(ScopedCFTypeRef<CFArrayRef>* policies) {
 int BuildAndEvaluateSecTrustRef(CFArrayRef cert_array,
                                 CFArrayRef trust_policies,
                                 CFDataRef ocsp_response_ref,
-                                CFArrayRef sct_array_ref,
                                 ScopedCFTypeRef<SecTrustRef>* trust_ref,
                                 ScopedCFTypeRef<CFArrayRef>* verified_chain,
                                 SecTrustResultType* trust_result) {
@@ -99,14 +89,6 @@ int BuildAndEvaluateSecTrustRef(CFArrayRef cert_array,
     status = SecTrustSetOCSPResponse(tmp_trust, ocsp_response_ref);
     if (status)
       return NetErrorFromOSStatus(status);
-  }
-
-  if (sct_array_ref) {
-    if (__builtin_available(iOS 12.1.1, *)) {
-      status = SecTrustSetSignedCertificateTimestamps(tmp_trust, sct_array_ref);
-      if (status)
-        return NetErrorFromOSStatus(status);
-    }
   }
 
   SecTrustResultType tmp_trust_result;
@@ -279,7 +261,6 @@ int CertVerifyProcIOS::VerifyInternal(
     X509Certificate* cert,
     const std::string& hostname,
     const std::string& ocsp_response,
-    const std::string& sct_list,
     int flags,
     CRLSet* crl_set,
     const CertificateList& additional_trust_anchors,
@@ -307,35 +288,13 @@ int CertVerifyProcIOS::VerifyInternal(
       return ERR_OUT_OF_MEMORY;
   }
 
-  ScopedCFTypeRef<CFMutableArrayRef> sct_array_ref;
-  if (!sct_list.empty()) {
-    if (__builtin_available(iOS 12.1.1, *)) {
-      std::vector<base::StringPiece> decoded_sct_list;
-      if (ct::DecodeSCTList(sct_list, &decoded_sct_list)) {
-        sct_array_ref.reset(CFArrayCreateMutable(kCFAllocatorDefault,
-                                                 decoded_sct_list.size(),
-                                                 &kCFTypeArrayCallBacks));
-        if (!sct_array_ref)
-          return ERR_OUT_OF_MEMORY;
-        for (const auto& sct : decoded_sct_list) {
-          ScopedCFTypeRef<CFDataRef> sct_ref(CFDataCreate(
-              kCFAllocatorDefault, reinterpret_cast<const UInt8*>(sct.data()),
-              base::checked_cast<CFIndex>(sct.size())));
-          if (!sct_ref)
-            return ERR_OUT_OF_MEMORY;
-          CFArrayAppendValue(sct_array_ref.get(), sct_ref.get());
-        }
-      }
-    }
-  }
-
   ScopedCFTypeRef<SecTrustRef> trust_ref;
   SecTrustResultType trust_result = kSecTrustResultDeny;
   ScopedCFTypeRef<CFArrayRef> final_chain;
 
-  status = BuildAndEvaluateSecTrustRef(
-      cert_array, trust_policies, ocsp_response_ref.get(), sct_array_ref.get(),
-      &trust_ref, &final_chain, &trust_result);
+  status = BuildAndEvaluateSecTrustRef(cert_array, trust_policies,
+                                       ocsp_response_ref.get(), &trust_ref,
+                                       &final_chain, &trust_result);
   if (status)
     return NetErrorFromOSStatus(status);
 

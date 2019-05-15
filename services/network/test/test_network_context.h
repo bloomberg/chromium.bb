@@ -182,7 +182,6 @@ class TestNetworkContext : public mojom::NetworkContext {
       const scoped_refptr<net::X509Certificate>& certificate,
       const std::string& hostname,
       const std::string& ocsp_response,
-      const std::string& sct_list,
       VerifyCertificateForTestingCallback callback) override {}
   void PreconnectSockets(uint32_t num_streams,
                          const GURL& url,

@@ -173,9 +173,8 @@ bool VerifyUsingCertVerifyProc(
   net::CertVerifyResult result;
   int rv =
       cert_verify_proc->Verify(x509_target_and_intermediates.get(), hostname,
-                               /*ocsp_response=*/std::string(),
-                               /*sct_list=*/std::string(), flags, crl_set,
-                               x509_additional_trust_anchors, &result);
+                               std::string() /* ocsp_response */, flags,
+                               crl_set, x509_additional_trust_anchors, &result);
 
   // Remove any temporary trust anchors.
   test_root_certs->Clear();

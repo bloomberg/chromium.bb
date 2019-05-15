@@ -477,7 +477,6 @@ CertVerifyProc::~CertVerifyProc() = default;
 int CertVerifyProc::Verify(X509Certificate* cert,
                            const std::string& hostname,
                            const std::string& ocsp_response,
-                           const std::string& sct_list,
                            int flags,
                            CRLSet* crl_set,
                            const CertificateList& additional_trust_anchors,
@@ -495,8 +494,8 @@ int CertVerifyProc::Verify(X509Certificate* cert,
   verify_result->verified_cert = cert;
 
   DCHECK(crl_set);
-  int rv = VerifyInternal(cert, hostname, ocsp_response, sct_list, flags,
-                          crl_set, additional_trust_anchors, verify_result);
+  int rv = VerifyInternal(cert, hostname, ocsp_response, flags, crl_set,
+                          additional_trust_anchors, verify_result);
 
   // Check for mismatched signature algorithms and unknown signature algorithms
   // in the chain. Also fills in the has_* booleans for the digest algorithms

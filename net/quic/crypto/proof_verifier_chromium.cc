@@ -80,8 +80,6 @@ class ProofVerifierChromium::Job {
   quic::QuicAsyncStatus VerifyCertChain(
       const std::string& hostname,
       const std::vector<std::string>& certs,
-      const std::string& ocsp_response,
-      const std::string& cert_sct,
       std::string* error_details,
       std::unique_ptr<quic::ProofVerifyDetails>* verify_details,
       std::unique_ptr<quic::ProofVerifierCallback> callback);
@@ -103,8 +101,6 @@ class ProofVerifierChromium::Job {
   quic::QuicAsyncStatus VerifyCert(
       const string& hostname,
       const uint16_t port,
-      const std::string& ocsp_response,
-      const std::string& cert_sct,
       std::string* error_details,
       std::unique_ptr<quic::ProofVerifyDetails>* verify_details,
       std::unique_ptr<quic::ProofVerifierCallback> callback);
@@ -137,10 +133,6 @@ class ProofVerifierChromium::Job {
   std::string hostname_;
   // |port| specifies the target port for the connection.
   uint16_t port_;
-  // Encoded stapled OCSP response for |certs|.
-  std::string ocsp_response_;
-  // Encoded SignedCertificateTimestampList for |certs|.
-  std::string cert_sct_;
 
   std::unique_ptr<quic::ProofVerifierCallback> callback_;
   std::unique_ptr<ProofVerifyDetailsChromium> verify_details_;
@@ -250,15 +242,13 @@ quic::QuicAsyncStatus ProofVerifierChromium::Job::VerifyProof(
   }
 
   DCHECK(enforce_policy_checking_);
-  return VerifyCert(hostname, port, /*ocsp_response=*/std::string(), cert_sct,
-                    error_details, verify_details, std::move(callback));
+  return VerifyCert(hostname, port, error_details, verify_details,
+                    std::move(callback));
 }
 
 quic::QuicAsyncStatus ProofVerifierChromium::Job::VerifyCertChain(
     const string& hostname,
     const std::vector<string>& certs,
-    const std::string& ocsp_response,
-    const std::string& cert_sct,
     std::string* error_details,
     std::unique_ptr<quic::ProofVerifyDetails>* verify_details,
     std::unique_ptr<quic::ProofVerifierCallback> callback) {
@@ -282,8 +272,8 @@ quic::QuicAsyncStatus ProofVerifierChromium::Job::VerifyCertChain(
 
   enforce_policy_checking_ = false;
   // |port| is not needed because |enforce_policy_checking_| is false.
-  return VerifyCert(hostname, /*port=*/0, ocsp_response, cert_sct,
-                    error_details, verify_details, std::move(callback));
+  return VerifyCert(hostname, /*port=*/0, error_details, verify_details,
+                    std::move(callback));
 }
 
 bool ProofVerifierChromium::Job::GetX509Certificate(
@@ -317,15 +307,11 @@ bool ProofVerifierChromium::Job::GetX509Certificate(
 quic::QuicAsyncStatus ProofVerifierChromium::Job::VerifyCert(
     const string& hostname,
     const uint16_t port,
-    const std::string& ocsp_response,
-    const std::string& cert_sct,
     std::string* error_details,
     std::unique_ptr<quic::ProofVerifyDetails>* verify_details,
     std::unique_ptr<quic::ProofVerifierCallback> callback) {
   hostname_ = hostname;
   port_ = port;
-  ocsp_response_ = ocsp_response;
-  cert_sct_ = cert_sct;
 
   next_state_ = STATE_VERIFY_CERT;
   switch (DoLoop(OK)) {
@@ -383,7 +369,7 @@ int ProofVerifierChromium::Job::DoVerifyCert(int result) {
 
   return verifier_->Verify(
       CertVerifier::RequestParams(cert_, hostname_, cert_verify_flags_,
-                                  ocsp_response_, cert_sct_),
+                                  std::string()),
       &verify_details_->cert_verify_result,
       base::Bind(&ProofVerifierChromium::Job::OnIOComplete,
                  base::Unretained(this)),
@@ -630,15 +616,15 @@ quic::QuicAsyncStatus ProofVerifierChromium::VerifyCertChain(
     *error_details = "Missing context";
     return quic::QUIC_FAILURE;
   }
+  // TODO(mattm): use |ocsp_response| and |cert_sct|.
   const ProofVerifyContextChromium* chromium_context =
       reinterpret_cast<const ProofVerifyContextChromium*>(verify_context);
   std::unique_ptr<Job> job = std::make_unique<Job>(
       this, cert_verifier_, ct_policy_enforcer_, transport_security_state_,
       cert_transparency_verifier_, chromium_context->cert_verify_flags,
       chromium_context->net_log);
-  quic::QuicAsyncStatus status =
-      job->VerifyCertChain(hostname, certs, ocsp_response, cert_sct,
-                           error_details, verify_details, std::move(callback));
+  quic::QuicAsyncStatus status = job->VerifyCertChain(
+      hostname, certs, error_details, verify_details, std::move(callback));
   if (status == quic::QUIC_PENDING) {
     Job* job_ptr = job.get();
     active_jobs_[job_ptr] = std::move(job);
