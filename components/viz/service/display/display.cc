@@ -133,8 +133,7 @@ Display::Display(
       scheduler_(std::move(scheduler)),
       current_task_runner_(std::move(current_task_runner)),
       swapped_trace_id_(GetStartingTraceId()),
-      last_acked_trace_id_(swapped_trace_id_),
-      last_presented_trace_id_(last_acked_trace_id_) {
+      last_presented_trace_id_(swapped_trace_id_) {
   DCHECK(output_surface_);
   DCHECK(frame_sink_id_.is_valid());
   if (scheduler_)
@@ -525,7 +524,7 @@ bool Display::DrawAndSwap() {
       scheduler_->DidSwapBuffers();
     TRACE_EVENT_ASYNC_STEP_INTO0("viz,benchmark",
                                  "Graphics.Pipeline.DrawAndSwap",
-                                 swapped_trace_id_, "WaitForAck");
+                                 swapped_trace_id_, "WaitForPresentation");
   } else {
     TRACE_EVENT_INSTANT0("viz", "Swap skipped.", TRACE_EVENT_SCOPE_THREAD);
 
@@ -567,9 +566,6 @@ bool Display::DrawAndSwap() {
 }
 
 void Display::DidReceiveSwapBuffersAck() {
-  ++last_acked_trace_id_;
-  TRACE_EVENT_ASYNC_STEP_INTO0("viz,benchmark", "Graphics.Pipeline.DrawAndSwap",
-                               last_acked_trace_id_, "WaitForPresentation");
   if (scheduler_)
     scheduler_->DidReceiveSwapBuffersAck();
   if (renderer_)
