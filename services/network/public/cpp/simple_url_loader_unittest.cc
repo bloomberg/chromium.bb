@@ -990,7 +990,7 @@ TEST_P(SimpleURLLoaderTest, DeleteInOnResponseStartedCallback) {
             EXPECT_TRUE(final_url.is_valid());
             std::move(quit_closure).Run();
           },
-          base::Passed(std::move(test_helper)), run_loop.QuitClosure()));
+          std::move(test_helper), run_loop.QuitClosure()));
 
   unowned_test_helper->StartSimpleLoader(url_loader_factory_.get());
 
