@@ -3002,14 +3002,15 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
   }
 
   int rate_cost = 0;
-  TX_TYPE txk_start = DCT_DCT;
-  TX_TYPE txk_end = TX_TYPES - 1;
+  // if txk_allowed = TX_TYPES, >1 tx types are allowed, else, if txk_allowed <
+  // TX_TYPES, only that specific tx type is allowed.
+  TX_TYPE txk_allowed = TX_TYPES;
   if ((!is_inter && x->use_default_intra_tx_type) ||
       (is_inter && x->use_default_inter_tx_type)) {
-    txk_start = txk_end =
+    txk_allowed =
         get_default_tx_type(0, xd, tx_size, cpi->is_screen_content_type);
   } else if (x->rd_model == LOW_TXFM_RD || x->cb_partition_scan) {
-    if (plane == 0) txk_end = DCT_DCT;
+    if (plane == 0) txk_allowed = DCT_DCT;
   }
 
   uint8_t best_txb_ctx = 0;
@@ -3019,7 +3020,7 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
   TX_TYPE uv_tx_type = DCT_DCT;
   if (plane) {
     // tx_type of PLANE_TYPE_UV should be the same as PLANE_TYPE_Y
-    uv_tx_type = txk_start = txk_end =
+    uv_tx_type = txk_allowed =
         av1_get_tx_type(get_plane_type(plane), xd, blk_row, blk_col, tx_size,
                         cm->reduced_tx_set_used);
   }
@@ -3028,11 +3029,11 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
       ext_tx_used_flag == 0x0001 ||
       (is_inter && cpi->oxcf.use_inter_dct_only) ||
       (!is_inter && cpi->oxcf.use_intra_dct_only)) {
-    txk_start = txk_end = DCT_DCT;
+    txk_allowed = DCT_DCT;
   }
   uint16_t allowed_tx_mask = 0;  // 1: allow; 0: skip.
-  if (txk_start == txk_end) {
-    allowed_tx_mask = 1 << txk_start;
+  if (txk_allowed < TX_TYPES) {
+    allowed_tx_mask = 1 << txk_allowed;
     allowed_tx_mask &= ext_tx_used_flag;
   } else if (fast_tx_search) {
     allowed_tx_mask = 0x0c01;  // V_DCT, H_DCT, DCT_DCT
@@ -3057,8 +3058,8 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
 
   // Need to have at least one transform type allowed.
   if (allowed_tx_mask == 0) {
-    txk_start = txk_end = (plane ? uv_tx_type : DCT_DCT);
-    allowed_tx_mask = (1 << txk_start);
+    txk_allowed = (plane ? uv_tx_type : DCT_DCT);
+    allowed_tx_mask = (1 << txk_allowed);
   }
 
   const BLOCK_SIZE tx_bsize = txsize_to_bsize[tx_size];
@@ -3089,7 +3090,7 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
       use_transform_domain_distortion && x->rd_model != LOW_TXFM_RD &&
       !x->cb_partition_scan;
   if (calc_pixel_domain_distortion_final &&
-      (txk_start == txk_end || allowed_tx_mask == 0x0001))
+      (txk_allowed < TX_TYPES || allowed_tx_mask == 0x0001))
     calc_pixel_domain_distortion_final = use_transform_domain_distortion = 0;
 
   const uint16_t *eobs_ptr = x->plane[plane].eobs;
@@ -3100,7 +3101,7 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
   // TODO(any): Experiment with variance and mean based thresholds
   perform_block_coeff_opt = (block_mse_q8 <= cpi->coeff_opt_dist_threshold);
 
-  for (TX_TYPE tx_type = txk_start; tx_type <= txk_end; ++tx_type) {
+  for (TX_TYPE tx_type = DCT_DCT; tx_type <= H_FLIPADST; ++tx_type) {
     if (!(allowed_tx_mask & (1 << tx_type))) continue;
     if (plane == 0) mbmi->txk_type[txk_type_idx] = tx_type;
     RD_STATS this_rd_stats;
