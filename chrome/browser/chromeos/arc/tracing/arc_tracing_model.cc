@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <inttypes.h>
+
 #include "chrome/browser/chromeos/arc/tracing/arc_tracing_model.h"
 
 #include "base/json/json_reader.h"
@@ -175,7 +177,7 @@ bool HandleCpuIdle(AllCpuEvents* all_cpu_events,
   }
   uint32_t state;
   uint32_t cpu_id_from_event;
-  if (sscanf(&line[event_position], "state=%d cpu_id=%d", &state,
+  if (sscanf(&line[event_position], "state=%" SCNu32 " cpu_id=%" SCNu32, &state,
              &cpu_id_from_event) != 2 ||
       cpu_id != cpu_id_from_event) {
     LOG(ERROR) << "Failed to parse cpu_idle event: " << line;
@@ -211,8 +213,9 @@ bool HandleSchedWakeUp(AllCpuEvents* all_cpu_events,
   {
     static bool use_this = true;
     if (!parsed && use_this) {
-      parsed = sscanf(data, " pid=%d prio=%d target_cpu=%d", &target_tid,
-                      &target_priority, &target_cpu_id) == 3;
+      parsed =
+          sscanf(data, " pid=%" SCNu32 " prio=%" SCNu32 " target_cpu=%" SCNu32,
+                 &target_tid, &target_priority, &target_cpu_id) == 3;
       use_this = parsed;
     }
   }
@@ -221,8 +224,10 @@ bool HandleSchedWakeUp(AllCpuEvents* all_cpu_events,
     static bool use_this = true;
     if (!parsed && use_this) {
       parsed =
-          sscanf(data, " pid=%d prio=%d success=%d target_cpu=%d", &target_tid,
-                 &target_priority, &success, &target_cpu_id) == 4;
+          sscanf(data,
+                 " pid=%" SCNu32 " prio=%" SCNu32 " success=%" SCNu32
+                 " target_cpu=%" SCNu32,
+                 &target_tid, &target_priority, &success, &target_cpu_id) == 4;
       use_this = parsed;
     }
   }
