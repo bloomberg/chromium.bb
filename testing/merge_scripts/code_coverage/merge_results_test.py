@@ -16,7 +16,7 @@ sys.path.insert(
 
 import mock
 
-import merge_profiles
+import merge_results
 import merge_steps
 import merge_lib as merger
 
@@ -49,7 +49,7 @@ class MergeProfilesTest(unittest.TestCase):
     with mock.patch.object(merger, 'merge_profiles') as mock_merge:
       mock_merge.return_value = None
       with mock.patch.object(sys, 'argv', args):
-        merge_profiles.main()
+        merge_results.main()
         self.assertEqual(
             mock_merge.call_args,
             mock.call(task_output_dir, profdata_file, '.profraw',
@@ -115,6 +115,20 @@ class MergeProfilesTest(unittest.TestCase):
               ), mock_exec_cmd.call_args)
 
     self.assertTrue(mock_validate_and_convert_profraws.called)
+
+
+  def test_merge_profraw_skip_if_there_is_no_file(self):
+    mock_input_dir_walk = [
+        ('/b/some/path', ['0', '1', '2', '3'], ['summary.json']),
+    ]
+
+    with mock.patch.object(os, 'walk') as mock_walk:
+      mock_walk.return_value = mock_input_dir_walk
+      with mock.patch.object(subprocess, 'check_output') as mock_exec_cmd:
+        merger.merge_profiles('/b/some/path', 'output/dir/default.profdata',
+                              '.profraw', 'llvm-profdata')
+        self.assertFalse(mock_exec_cmd.called)
+
 
   @mock.patch.object(merger, '_validate_and_convert_profraws')
   def test_merge_profdata(self, mock_validate_and_convert_profraws):
