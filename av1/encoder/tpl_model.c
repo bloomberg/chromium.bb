@@ -125,6 +125,13 @@ static void mode_estimation(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
   xd->mi[0]->sb_type = bsize;
   xd->mi[0]->motion_mode = SIMPLE_TRANSLATION;
 
+  const int q_cur = gf_group->q_val[frame_idx];
+  const int16_t qstep_cur =
+      ROUND_POWER_OF_TWO(av1_ac_quant_Q3(q_cur, 0, xd->bd), xd->bd - 8);
+  const int qstep_cur_noise =
+      use_satd ? ((int)qstep_cur * pix_num + 16) / (4 * 8)
+               : ((int)qstep_cur * (int)qstep_cur * pix_num + 384) / (12 * 64);
+
   // Intra prediction search
   xd->mi[0]->ref_frame[0] = INTRA_FRAME;
   for (mode = DC_PRED; mode <= PAETH_PRED; ++mode) {
@@ -149,9 +156,7 @@ static void mode_estimation(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
         aom_subtract_block(bh, bw, src_diff, bw, src, src_stride, dst,
                            dst_stride);
       }
-
       wht_fwd_txfm(src_diff, bw, coeff, tx_size);
-
       intra_cost = aom_satd(coeff, pix_num);
     } else {
       int64_t sse;
@@ -164,6 +169,7 @@ static void mode_estimation(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
       }
       intra_cost = ROUND_POWER_OF_TWO(sse, (xd->bd - 8) * 2);
     }
+    intra_cost += qstep_cur_noise;
 
     if (intra_cost < best_intra_cost) best_intra_cost = intra_cost;
   }
@@ -178,7 +184,6 @@ static void mode_estimation(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
   int64_t inter_cost_weighted;
   int64_t best_inter_cost_weighted = INT64_MAX;
   int rf_idx;
-  int q_current = gf_group->q_val[frame_idx];
 
   best_mv.as_int = 0;
 
@@ -192,7 +197,13 @@ static void mode_estimation(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
     if (ref_frame[rf_idx] == NULL) continue;
 
     int q_ref = gf_group->q_val[gf_group->ref_frame_gop_idx[frame_idx][rf_idx]];
-    double delta_q = (double)(q_ref - q_current);
+
+    const int16_t qstep_ref =
+        ROUND_POWER_OF_TWO(av1_ac_quant_Q3(q_ref, 0, xd->bd), xd->bd - 8);
+    const int qstep_ref_noise =
+        use_satd
+            ? ((int)qstep_ref * pix_num + 16) / (4 * 8)
+            : ((int)qstep_ref * (int)qstep_ref * pix_num + 384) / (12 * 64);
 
     int mb_y_offset_ref =
         mi_row * MI_SIZE * ref_frame[rf_idx]->y_stride + mi_col * MI_SIZE;
@@ -223,7 +234,6 @@ static void mode_estimation(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
                            xd->cur_buf->y_stride, &predictor[0], bw);
       }
       wht_fwd_txfm(src_diff, bw, coeff, tx_size);
-
       inter_cost = aom_satd(coeff, pix_num);
     } else {
       int64_t sse;
@@ -236,14 +246,8 @@ static void mode_estimation(AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd,
       }
       inter_cost = ROUND_POWER_OF_TWO(sse, (xd->bd - 8) * 2);
     }
+    inter_cost_weighted = inter_cost + qstep_ref_noise;
 
-    const double weight_factor = 0.5;
-    inter_cost_weighted = (int64_t)(
-        (double)inter_cost *
-            (delta_q < 0
-                 ? (1.0 - weight_factor) + weight_factor * exp(delta_q / 16)
-                 : (1.0 + weight_factor * (1.0 - exp(-delta_q / 16)))) +
-        0.5);
     if (inter_cost_weighted < best_inter_cost_weighted) {
       best_rf_idx = rf_idx;
       best_inter_cost_weighted = inter_cost_weighted;

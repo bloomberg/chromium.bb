@@ -3786,6 +3786,8 @@ static int get_q_for_deltaq_objective(AV1_COMP *const cpi, BLOCK_SIZE bsize,
     return cm->base_qindex;
   }
 
+  if (cm->base_qindex > 200) return cm->base_qindex;
+
   if (tpl_frame->is_valid == 0) return cm->base_qindex;
 
   if (cpi->common.show_frame) return cm->base_qindex;
