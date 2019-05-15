@@ -1885,9 +1885,18 @@ void AcceleratorControllerImpl::ParseSideVolumeButtonLocationInfo() {
                           &side_volume_button_location_.side);
 }
 
-bool AcceleratorControllerImpl::IsSideVolumeButton(int source_device_id) const {
+bool AcceleratorControllerImpl::IsInternalKeyboardOrUncategorizedDevice(
+    int source_device_id) const {
   if (source_device_id == ui::ED_UNKNOWN_DEVICE)
     return false;
+
+  for (const ui::InputDevice& keyboard :
+       ui::InputDeviceManager::GetInstance()->GetKeyboardDevices()) {
+    if (keyboard.type == ui::InputDeviceType::INPUT_DEVICE_INTERNAL &&
+        keyboard.id == source_device_id) {
+      return true;
+    }
+  }
 
   for (const ui::InputDevice& uncategorized_device :
        ui::InputDeviceManager::GetInstance()->GetUncategorizedDevices()) {
@@ -1920,7 +1929,7 @@ bool AcceleratorControllerImpl::ShouldSwapSideVolumeButtons(
       !Shell::Get()
            ->tablet_mode_controller()
            ->IsTabletModeWindowManagerEnabled() ||
-      !IsSideVolumeButton(source_device_id)) {
+      !IsInternalKeyboardOrUncategorizedDevice(source_device_id)) {
     return false;
   }
 

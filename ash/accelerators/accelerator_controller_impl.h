@@ -221,8 +221,9 @@ class ASH_EXPORT AcceleratorControllerImpl : public ui::AcceleratorTarget,
       AcceleratorAction action,
       const ui::Accelerator& accelerator) const;
 
-  // Returns true if |source_device_id| corresponds to the side volume buttons.
-  bool IsSideVolumeButton(int source_device_id) const;
+  // Returns true if |source_device_id| corresponds to the internal keyboard or
+  // an internal uncategorized input device.
+  bool IsInternalKeyboardOrUncategorizedDevice(int source_device_id) const;
 
   // Returns true if |side_volume_button_location_| is in agreed format and
   // values.
