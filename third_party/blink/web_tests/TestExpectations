@@ -5575,3 +5575,8 @@ crbug.com/867532 [ Linux ] virtual/omt-worker-fetch/external/wpt/workers/modules
 crbug.com/962726 [ Linux Win ] external/wpt/event-timing/timingconditions.html [ Crash Pass ]
 crbug.com/937170 [ Linux Win7 ] external/wpt/IndexedDB/interleaved-cursors-large.html [ Pass Timeout ]
 crbug.com/937991 [ Win7 Release ] http/tests/devtools/cache-storage/cache-data.js [ Pass Timeout ]
+
+# Disable tests in order to land
+# https://webrtc-review.googlesource.com/c/src/+/135948
+crbug.com/943975 external/wpt/webrtc/RTCDataChannel-send.html [ Pass Failure ]
+crbug.com/943975 external/wpt/webrtc/RTCSctpTransport-maxMessageSize.html [ Pass Failure ]
