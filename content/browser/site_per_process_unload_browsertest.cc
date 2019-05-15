@@ -1199,4 +1199,24 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ(false, EvalJs(node4, kPostMessageResultsScript));
 }
 
+// Test the unload timeout is effective.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, UnloadTimeout) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  RenderFrameHostImpl* A1 = web_contents()->GetMainFrame();
+  RenderFrameHostImpl* B2 = A1->child_at(0)->current_frame_host();
+
+  // Simulate the iframe being slow to unload by dropping the
+  // FrameHostMsg_Detach message sent from B2 to the browser.
+  EXPECT_TRUE(ExecJs(B2, "window.onunload = ()=>{};"));
+  auto detach_filter = base::MakeRefCounted<DropMessageFilter>(
+      FrameMsgStart, FrameHostMsg_Detach::ID);
+  B2->GetProcess()->AddFilter(detach_filter.get());
+
+  RenderFrameDeletedObserver delete_B2(B2);
+  EXPECT_TRUE(ExecJs(A1, "document.querySelector('iframe').remove()"));
+  delete_B2.WaitUntilDeleted();
+}
+
 }  // namespace content

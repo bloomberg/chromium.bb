@@ -1765,15 +1765,22 @@ void RenderFrameHostImpl::DeleteRenderFrame() {
   if (render_frame_created_) {
     Send(new FrameMsg_Delete(routing_id_));
 
-    // If this subframe has an unload handler (and isn't speculative), ensure
-    // that it has a chance to execute by delaying process cleanup. This will
-    // prevent the process from shutting down immediately in the case where this
-    // is the last active frame in the process. See https://crbug.com/852204.
-    if (!frame_tree_node_->IsMainFrame() && IsCurrent() &&
-        GetSuddenTerminationDisablerState(blink::kUnloadHandler)) {
-      RenderProcessHostImpl* process =
-          static_cast<RenderProcessHostImpl*>(GetProcess());
-      process->DelayProcessShutdownForUnload(subframe_unload_timeout_);
+    if (!frame_tree_node_->IsMainFrame() && IsCurrent()) {
+      // If this subframe has an unload handler (and isn't speculative), ensure
+      // that it has a chance to execute by delaying process cleanup. This will
+      // prevent the process from shutting down immediately in the case where
+      // this is the last active frame in the process. See
+      // https://crbug.com/852204.
+      if (GetSuddenTerminationDisablerState(blink::kUnloadHandler)) {
+        RenderProcessHostImpl* process =
+            static_cast<RenderProcessHostImpl*>(GetProcess());
+        process->DelayProcessShutdownForUnload(subframe_unload_timeout_);
+      }
+
+      // If the subframe takes too long to unload, force its removal from the
+      // tree.  See https://crbug.com/950625.
+      subframe_unload_timer_.Start(FROM_HERE, subframe_unload_timeout_, this,
+                                   &RenderFrameHostImpl::OnUnloadTimeout);
     }
   }
 
@@ -4569,6 +4576,11 @@ void RenderFrameHostImpl::ResetNavigationsForPendingDeletion() {
   ResetNavigationRequests();
   frame_tree_node_->ResetNavigationRequest(false, false);
   frame_tree_node_->render_manager()->CleanUpNavigation();
+}
+
+void RenderFrameHostImpl::OnUnloadTimeout() {
+  DCHECK_NE(unload_state_, UnloadState::NotRun);
+  parent_->RemoveChild(frame_tree_node_);
 }
 
 void RenderFrameHostImpl::UpdateOpener() {

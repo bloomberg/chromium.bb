@@ -1584,6 +1584,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // - Speculative RenderFrameHost.
   void ResetNavigationsForPendingDeletion();
 
+  // Called on an unloading frame when its unload timeout is reached. This
+  // immediately deletes the RenderFrameHost.
+  void OnUnloadTimeout();
+
   // Update the frozen state of the frame applying current inputs (visibility,
   // loaded state) to determine the new state.
   void UpdateFrameFrozenState();
@@ -2020,8 +2024,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   std::unique_ptr<KeepAliveHandleFactory> keep_alive_handle_factory_;
   base::TimeDelta keep_alive_timeout_;
 
-  base::TimeDelta subframe_unload_timeout_;
-
   // For observing Network Service connection errors only. Will trigger
   // |OnNetworkServiceConnectionError()| and push updated factories to
   // |RenderFrame|.
@@ -2067,6 +2069,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
     Completed,
   };
   UnloadState unload_state_ = UnloadState::NotRun;
+
+  // If a subframe failed to finish running its unload handler after
+  // |subframe_unload_timeout_| the RenderFrameHost is deleted.
+  base::TimeDelta subframe_unload_timeout_;
+
+  // Call OnUnloadTimeout() when the unload timer expires.
+  base::OneShotTimer subframe_unload_timer_;
 
   // BackForwardCache:
   bool is_in_back_forward_cache_ = false;
