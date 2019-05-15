@@ -152,7 +152,7 @@ class LocalDeviceEnvironment(environment.Environment):
 
     @handle_shard_failures_with(on_failure=self.BlacklistDevice)
     def prepare_device(d):
-      d.WaitUntilFullyBooted()
+      d.WaitUntilFullyBooted(timeout=120)
 
       if self._enable_device_cache:
         cache_path = _DeviceCachePath(d)

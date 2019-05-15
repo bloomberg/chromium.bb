@@ -679,16 +679,16 @@ class _LogcatProcessor(object):
     # pylint:disable=no-self-use
     if dim:
       return ''
-    style = ''
+    style = colorama.Fore.BLACK
     if priority == 'E' or priority == 'F':
-      style = colorama.Back.RED
+      style += colorama.Back.RED
     elif priority == 'W':
-      style = colorama.Back.YELLOW
+      style += colorama.Back.YELLOW
     elif priority == 'I':
-      style = colorama.Back.GREEN
+      style += colorama.Back.GREEN
     elif priority == 'D':
-      style = colorama.Back.BLUE
-    return style + colorama.Fore.BLACK
+      style += colorama.Back.BLUE
+    return style
 
   def _ParseLine(self, line):
     tokens = line.split(None, 6)
@@ -715,7 +715,7 @@ class _LogcatProcessor(object):
         date, invokation_time, pid, tid, priority, tag, original_message)
 
   def _PrintParsedLine(self, parsed_line, dim=False):
-    tid_style = ''
+    tid_style = colorama.Style.NORMAL
     # Make the main thread bright.
     if not dim and parsed_line.pid == parsed_line.tid:
       tid_style = colorama.Style.BRIGHT
