@@ -20,6 +20,7 @@ import android.view.View;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.native_page.NativePageFactory;
@@ -429,13 +430,25 @@ class TabListMediator {
         // Handle move without groups enabled.
         if (mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter()
                         instanceof EmptyTabModelFilter) {
-            if (mModel.indexFromId(tab.getId()) == TabModel.INVALID_TAB_INDEX) return;
-            if (newIndex >= mModel.size() || curIndex >= mModel.size()) return;
+            if (!isValidMovePosition(curIndex) || !isValidMovePosition(newIndex)) return;
             mModel.move(curIndex, newIndex);
             return;
         }
 
         // Handle move with groups enabled.
+        // When move within one group.
+        if (TabGroupUtils.isMoveInSameGroup(tabModel, curIndex, newIndex)) {
+            int curPosition = mModel.indexFromId(tab.getId());
+            if (!isValidMovePosition(curPosition)) return;
+            Tab destinationTab =
+                    tabModel.getTabAt(newIndex > curIndex ? newIndex - 1 : newIndex + 1);
+            int newPosition = mModel.indexFromId(destinationTab.getId());
+            if (!isValidMovePosition(newPosition)) return;
+            mModel.move(curPosition, newPosition);
+            return;
+        }
+
+        // When move between groups.
         // Only proceed when all members of the group are moved to target index in TabModel.
         // Regardless of the size of tab group, one tab(group) only proceeds once here per
         // move.
@@ -446,7 +459,7 @@ class TabListMediator {
         Tab currentGroupSelectedTab =
                 TabGroupUtils.getSelectedTabInGroupForTab(mTabModelSelector, tab);
         int curPosition = mModel.indexFromId(currentGroupSelectedTab.getId());
-        if (curPosition == TabModel.INVALID_TAB_INDEX || curPosition > mModel.size()) return;
+        if (!isValidMovePosition(curPosition)) return;
 
         // Find the tab which was in the destination index before this move. Use that tab to
         // figure out the new position.
@@ -456,9 +469,13 @@ class TabListMediator {
         Tab destinationGroupSelectedTab =
                 TabGroupUtils.getSelectedTabInGroupForTab(mTabModelSelector, destinationTab);
         int newPosition = mModel.indexFromId(destinationGroupSelectedTab.getId());
-        if (newPosition == TabModel.INVALID_TAB_INDEX || newPosition > mModel.size()) return;
+        if (!isValidMovePosition(newPosition)) return;
 
         mModel.move(curPosition, newPosition);
+    }
+
+    private boolean isValidMovePosition(int position) {
+        return position != TabModel.INVALID_TAB_INDEX && position < mModel.size();
     }
 
     /**
@@ -507,10 +524,16 @@ class TabListMediator {
                         toViewHolder.getAdapterPosition() - fromViewHolder.getAdapterPosition();
                 TabModelFilter filter =
                         mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter();
+                TabModel tabModel = mTabModelSelector.getCurrentModel();
                 if (filter instanceof EmptyTabModelFilter) {
-                    mTabModelSelector.getCurrentModel().moveTab(currentTabId,
+                    tabModel.moveTab(currentTabId,
                             mModel.indexFromId(currentTabId)
                                     + (distance > 0 ? distance + 1 : distance));
+                } else if (!mCloseAllRelatedTabs) {
+                    int destinationIndex =
+                            tabModel.indexOf(mTabModelSelector.getTabById(destinationTabId));
+                    tabModel.moveTab(
+                            currentTabId, distance > 0 ? destinationIndex + 1 : destinationIndex);
                 } else {
                     List<Tab> destinationTabGroup = getRelatedTabsForId(destinationTabId);
                     int newIndex = distance >= 0 ? TabGroupUtils.getLastTabModelIndexForList(
@@ -569,6 +592,11 @@ class TabListMediator {
             public void onLowMemory() {}
         };
         ContextUtils.getApplicationContext().registerComponentCallbacks(mComponentCallbacks);
+    }
+
+    @VisibleForTesting
+    void setCloseAllRelatedTabs(boolean flag) {
+        mCloseAllRelatedTabs = flag;
     }
 
     /**
