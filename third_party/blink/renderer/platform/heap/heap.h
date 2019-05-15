@@ -523,10 +523,9 @@ T* MakeGarbageCollected(Args&&... args) {
                 "T needs to be a garbage collected object");
   void* memory = T::AllocateObject(sizeof(T), IsEagerlyFinalizedType<T>::value);
   HeapObjectHeader* header = HeapObjectHeader::FromPayload(memory);
-  header->MarkIsInConstruction();
   // Placement new as regular operator new() is deleted.
   T* object = ::new (memory) T(std::forward<Args>(args)...);
-  header->UnmarkIsInConstruction();
+  header->MarkFullyConstructed();
   return object;
 }
 
@@ -545,10 +544,9 @@ T* MakeGarbageCollected(AdditionalBytes additional_bytes, Args&&... args) {
   void* memory = T::AllocateObject(sizeof(T) + additional_bytes.value,
                                    IsEagerlyFinalizedType<T>::value);
   HeapObjectHeader* header = HeapObjectHeader::FromPayload(memory);
-  header->MarkIsInConstruction();
   // Placement new as regular operator new() is deleted.
   T* object = ::new (memory) T(std::forward<Args>(args)...);
-  header->UnmarkIsInConstruction();
+  header->MarkFullyConstructed();
   return object;
 }
 

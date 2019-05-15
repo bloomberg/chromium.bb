@@ -75,7 +75,7 @@ class PLATFORM_EXPORT HeapAllocator {
     uint32_t gc_info_index = GCInfoTrait<HeapVectorBacking<T>>::Index();
     NormalPageArena* arena = static_cast<NormalPageArena*>(
         state->Heap().VectorBackingArena(gc_info_index));
-    return reinterpret_cast<T*>(arena->AllocateObject(
+    return MarkAsConstructed<T>(arena->AllocateObject(
         ThreadHeap::AllocationSizeFromSize(size), gc_info_index));
   }
   template <typename T>
@@ -86,7 +86,7 @@ class PLATFORM_EXPORT HeapAllocator {
     uint32_t gc_info_index = GCInfoTrait<HeapVectorBacking<T>>::Index();
     NormalPageArena* arena = static_cast<NormalPageArena*>(
         state->Heap().ExpandedVectorBackingArena(gc_info_index));
-    return reinterpret_cast<T*>(arena->AllocateObject(
+    return MarkAsConstructed<T>(arena->AllocateObject(
         ThreadHeap::AllocationSizeFromSize(size), gc_info_index));
   }
   static void FreeVectorBacking(void*);
@@ -100,7 +100,7 @@ class PLATFORM_EXPORT HeapAllocator {
     ThreadState* state =
         ThreadStateFor<ThreadingTrait<T>::kAffinity>::GetState();
     const char* type_name = WTF_HEAP_PROFILER_TYPE_NAME(HeapVectorBacking<T>);
-    return reinterpret_cast<T*>(state->Heap().AllocateOnArenaIndex(
+    return MarkAsConstructed<T>(state->Heap().AllocateOnArenaIndex(
         state, size, BlinkGC::kInlineVectorArenaIndex, gc_info_index,
         type_name));
   }
@@ -118,7 +118,7 @@ class PLATFORM_EXPORT HeapAllocator {
         ThreadStateFor<ThreadingTrait<T>::kAffinity>::GetState();
     const char* type_name =
         WTF_HEAP_PROFILER_TYPE_NAME(HeapHashTableBacking<HashTable>);
-    return reinterpret_cast<T*>(state->Heap().AllocateOnArenaIndex(
+    return MarkAsConstructed<T>(state->Heap().AllocateOnArenaIndex(
         state, size, BlinkGC::kHashTableArenaIndex, gc_info_index, type_name));
   }
   template <typename T, typename HashTable>
@@ -148,7 +148,7 @@ class PLATFORM_EXPORT HeapAllocator {
 
   template <typename Return, typename Metadata>
   static Return Malloc(size_t size, const char* type_name) {
-    return reinterpret_cast<Return>(ThreadHeap::Allocate<Metadata>(
+    return MarkAsConstructed<Return>(ThreadHeap::Allocate<Metadata>(
         size, IsEagerlyFinalizedType<Metadata>::value));
   }
 
@@ -298,6 +298,13 @@ class PLATFORM_EXPORT HeapAllocator {
   }
 
  private:
+  template <typename T>
+  static T* MarkAsConstructed(Address address) {
+    HeapObjectHeader::FromPayload(reinterpret_cast<void*>(address))
+        ->MarkFullyConstructed();
+    return reinterpret_cast<T*>(address);
+  }
+
   static void BackingFree(void*);
   static bool BackingExpand(void*, size_t);
   static bool BackingShrink(void*,

@@ -149,7 +149,7 @@ uint32_t ComputeRandomMagic();
 //
 // | random magic value (32 bits) | Only present on 64-bit platforms.
 // | gc_info_index (14 bits)      |
-// | in construction (1 bit)      |
+// | in construction (1 bit)      | true: bit not set; false bit set
 // | size (14 bits)               | Actually 17 bits because sizes are aligned.
 // | wrapper mark bit (1 bit)     |
 // | unused (1 bit)               |
@@ -227,9 +227,8 @@ class PLATFORM_EXPORT HeapObjectHeader {
   void Unmark();
   bool TryMark();
 
-  void MarkIsInConstruction();
-  void UnmarkIsInConstruction();
   bool IsInConstruction() const;
+  void MarkFullyConstructed();
 
   // The payload starts directly after the HeapObjectHeader, and the payload
   // size does not include the sizeof(HeapObjectHeader).
@@ -931,17 +930,12 @@ NO_SANITIZE_ADDRESS inline void HeapObjectHeader::SetSize(size_t size) {
 }
 
 NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::IsInConstruction() const {
-  return encoded_ & kHeaderIsInConstructionMask;
+  return (encoded_ & kHeaderIsInConstructionMask) == 0;
 }
 
-NO_SANITIZE_ADDRESS inline void HeapObjectHeader::MarkIsInConstruction() {
-  DCHECK(!IsInConstruction());
-  encoded_ = encoded_ | kHeaderIsInConstructionMask;
-}
-
-NO_SANITIZE_ADDRESS inline void HeapObjectHeader::UnmarkIsInConstruction() {
+NO_SANITIZE_ADDRESS inline void HeapObjectHeader::MarkFullyConstructed() {
   DCHECK(IsInConstruction());
-  encoded_ = encoded_ & ~kHeaderIsInConstructionMask;
+  encoded_ |= kHeaderIsInConstructionMask;
 }
 
 NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::IsValid() const {
@@ -1127,9 +1121,9 @@ NO_SANITIZE_ADDRESS inline HeapObjectHeader::HeapObjectHeader(
   magic_ = GetMagic();
 #endif
 
-  DCHECK(gc_info_index < GCInfoTable::kMaxIndex);
+  DCHECK_LT(gc_info_index, GCInfoTable::kMaxIndex);
   DCHECK_LT(size, kNonLargeObjectPageSizeMax);
-  DCHECK(!(size & kAllocationMask));
+  DCHECK_EQ(0u, size & kAllocationMask);
   encoded_ =
       static_cast<uint32_t>((gc_info_index << kHeaderGCInfoIndexShift) | size);
   if (header_location == kNormalPage) {
@@ -1140,6 +1134,7 @@ NO_SANITIZE_ADDRESS inline HeapObjectHeader::HeapObjectHeader(
   } else {
     DCHECK(PageFromObject(this)->IsLargeObjectPage());
   }
+  DCHECK(IsInConstruction());
 }
 
 }  // namespace blink
