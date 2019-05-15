@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/device/public/mojom/fingerprint.mojom.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -27,7 +28,8 @@ class UserActivityDetector;
 class UI_CHROMEOS_EXPORT UserActivityPowerManagerNotifier
     : public InputDeviceEventObserver,
       public UserActivityObserver,
-      public device::mojom::FingerprintObserver {
+      public device::mojom::FingerprintObserver,
+      public chromeos::PowerManagerClient::Observer {
  public:
   // Registers and unregisters itself as an observer of |detector| on
   // construction and destruction.
@@ -52,6 +54,10 @@ class UI_CHROMEOS_EXPORT UserActivityPowerManagerNotifier
                         bool enroll_session_complete,
                         int percent_complete) override;
 
+  // chromeos::PowerManagerClient::Observer:
+  void SuspendImminent(power_manager::SuspendImminent::Reason reason) override;
+  void SuspendDone(const base::TimeDelta& sleep_duration) override;
+
  private:
   // Notifies power manager that the user is active and activity type. No-op if
   // it is within 5 seconds from |last_notify_time_|.
@@ -66,6 +72,10 @@ class UI_CHROMEOS_EXPORT UserActivityPowerManagerNotifier
 
   // Last time that the power manager was notified.
   base::TimeTicks last_notify_time_;
+
+  // True after SuspendImminent has been received and when SuspendDone has not
+  // been received.
+  bool suspending_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(UserActivityPowerManagerNotifier);
 };
