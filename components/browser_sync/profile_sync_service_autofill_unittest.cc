@@ -187,7 +187,6 @@ class FakeAutofillBackend : public autofill::AutofillWebDataBackend {
       autofill::AutofillWebDataServiceObserverOnDBSequence* observer) override {
   }
   void CommitChanges() override {}
-  void RemoveExpiredFormElements() override {}
 
   void NotifyOfAutofillProfileChanged(
       const autofill::AutofillProfileChange& change) override {}

@@ -339,13 +339,6 @@ Optional<syncer::ModelError> AutocompleteSyncBridge::MergeSyncData(
   RETURN_IF_ERROR(tracker.FlushToSync(true, std::move(metadata_change_list),
                                 change_processor()));
 
-  // TODO(crbug.com/920214) Deprecated, clean-up as part of the
-  // Autocomplete Retention Policy flag cleanup.
-  if (!base::FeatureList::IsEnabled(
-          autofill::features::kAutocompleteRetentionPolicyEnabled)) {
-    web_data_backend_->RemoveExpiredFormElements();
-  }
-
   web_data_backend_->CommitChanges();
   web_data_backend_->NotifyThatSyncHasStarted(syncer::AUTOFILL);
   return {};
@@ -370,13 +363,6 @@ Optional<ModelError> AutocompleteSyncBridge::ApplySyncChanges(
   RETURN_IF_ERROR(tracker.FlushToLocal(web_data_backend_));
   RETURN_IF_ERROR(tracker.FlushToSync(false, std::move(metadata_change_list),
                                       change_processor()));
-
-  // TODO(crbug.com/920214) Deprecated, clean-up as part of the
-  // Autocomplete Retention Policy flag cleanup.
-  if (!base::FeatureList::IsEnabled(
-          autofill::features::kAutocompleteRetentionPolicyEnabled)) {
-    web_data_backend_->RemoveExpiredFormElements();
-  }
 
   web_data_backend_->CommitChanges();
   return {};

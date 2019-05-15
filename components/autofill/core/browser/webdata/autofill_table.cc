@@ -52,9 +52,6 @@
 namespace autofill {
 namespace {
 
-// The period after which autocomplete entries should expire in days.
-const int64_t kExpirationPeriodInDays = 60;
-
 // Helper struct for AutofillTable::RemoveFormElementsAddedBetween().
 // Contains all the necessary fields to update a row in the 'autofill' table.
 struct AutofillUpdate {
@@ -699,14 +696,8 @@ bool AutofillTable::RemoveFormElementsAddedBetween(
 
 bool AutofillTable::RemoveExpiredFormElements(
     std::vector<AutofillChange>* changes) {
-  int64_t period = kExpirationPeriodInDays;
-  auto change_type = AutofillChange::REMOVE;
-
-  if (base::FeatureList::IsEnabled(
-          autofill::features::kAutocompleteRetentionPolicyEnabled)) {
-    period = kAutocompleteRetentionPolicyPeriodInDays;
-    change_type = AutofillChange::EXPIRE;
-  }
+  const int64_t period = kAutocompleteRetentionPolicyPeriodInDays;
+  const auto change_type = AutofillChange::EXPIRE;
 
   base::Time expiration_time =
       AutofillClock::Now() - base::TimeDelta::FromDays(period);

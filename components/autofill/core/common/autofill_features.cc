@@ -20,10 +20,6 @@
 namespace autofill {
 namespace features {
 
-// Controls whether the Autocomplete Retention Policy is being enforced or not.
-const base::Feature kAutocompleteRetentionPolicyEnabled{
-    "AutocompleteRetentionPolicyEnabled", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Controls whether the AddressNormalizer is supplied. If available, it may be
 // used to normalize address and will incur fetching rules from the server.
 const base::Feature kAutofillAddressNormalizer{

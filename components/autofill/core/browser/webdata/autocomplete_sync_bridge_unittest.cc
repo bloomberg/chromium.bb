@@ -17,14 +17,12 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/webdata/autofill_entry.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/browser/webdata/mock_autofill_webdata_backend.h"
-#include "components/autofill/core/common/autofill_features.h"
 #include "components/sync/base/hash_util.h"
 #include "components/sync/model/data_batch.h"
 #include "components/sync/model/data_type_activation_request.h"
@@ -452,34 +450,6 @@ TEST_F(AutocompleteSyncBridgeTest, ApplySyncChangesSimple) {
       EntityChange::CreateDelete(GetStorageKey(specifics1)));
   ApplyChanges(std::move(entity_change_list));
   VerifyAllData({specifics2});
-}
-
-// Tests that the function RemoveExpiredFormElements is called when the
-// Autocomplete Retention Policy feature flag is disabled.
-TEST_F(AutocompleteSyncBridgeTest,
-       ApplySyncChangesSimple_FlagOff_Calls_RemoveExpiredFormElements) {
-  base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitAndDisableFeature(
-      features::kAutocompleteRetentionPolicyEnabled);
-
-  EXPECT_CALL(*backend(), RemoveExpiredFormElements);
-
-  AutofillSpecifics specifics1 = CreateSpecifics(1);
-  ApplyAdds({specifics1});
-}
-
-// Tests that the function RemoveExpiredFormElements is not called when the
-// Autocomplete Retention Policy feature flag is enabled.
-TEST_F(AutocompleteSyncBridgeTest,
-       ApplySyncChangesSimple_FlagOn_Not_Calls_RemoveExpiredFormElements) {
-  base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitAndEnableFeature(
-      features::kAutocompleteRetentionPolicyEnabled);
-
-  EXPECT_CALL(*backend(), RemoveExpiredFormElements).Times(0);
-
-  AutofillSpecifics specifics1 = CreateSpecifics(1);
-  ApplyAdds({specifics1});
 }
 
 // Should be resilient to deleting and updating non-existent things, and adding

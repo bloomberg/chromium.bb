@@ -31,9 +31,6 @@ class AutofillWebDataBackend {
   virtual void RemoveObserver(
       AutofillWebDataServiceObserverOnDBSequence* observer) = 0;
 
-  // Remove expired elements from the database and commit if needed.
-  virtual void RemoveExpiredFormElements() = 0;
-
   // Commits the currently open transaction in the database. Should be only used
   // by parties that talk directly to the database and not through the
   // WebDatabase backend (notably Sync reacting to remote changes coming from

@@ -19,7 +19,6 @@
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/browser/webdata/autofill_entry.h"
 #include "components/autofill/core/common/autofill_clock.h"
-#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/prefs/pref_service.h"
@@ -128,9 +127,7 @@ void AutocompleteHistoryManager::Init(
   }
 
   // No need to run the retention policy in OTR.
-  if (!is_off_the_record_ &&
-      base::FeatureList::IsEnabled(
-          autofill::features::kAutocompleteRetentionPolicyEnabled)) {
+  if (!is_off_the_record_) {
     // Upon successful cleanup, the last cleaned-up major version is being
     // stored in this pref.
     int last_cleaned_version = pref_service_->GetInteger(

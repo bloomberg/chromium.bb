@@ -73,11 +73,6 @@ class AutofillWebDataBackendImpl
   void NotifyThatSyncHasStarted(syncer::ModelType model_type) override;
   void CommitChanges() override;
 
-  // TODO(crbug.com/920214): Deprecated, will be removed when
-  // autocomplete retention policy shipped. Replaced by
-  // RemoveExpiredAutocompleteEntries.
-  void RemoveExpiredFormElements() override;
-
   // Returns a SupportsUserData object that may be used to store data accessible
   // from the DB sequence. Should be called only from the DB sequence, and will
   // be destroyed on the DB sequence soon after ShutdownOnUISequence() is
@@ -242,11 +237,6 @@ class AutofillWebDataBackendImpl
   // be used e.g. for SyncableService subclasses that need to be owned
   // by this object. Is created on first call to |GetDBUserData()|.
   std::unique_ptr<SupportsUserDataAggregatable> user_data_;
-
-  // TODO(crbug.com/920214): Deprecated, will be removed when
-  // autocomplete retention policy shipped. Replaced by
-  // RemoveExpiredAutocompleteEntries.
-  WebDatabase::State RemoveExpiredFormElementsImpl(WebDatabase* db);
 
   base::ObserverList<AutofillWebDataServiceObserverOnDBSequence>::Unchecked
       db_observer_list_;

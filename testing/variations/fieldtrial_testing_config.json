@@ -541,26 +541,6 @@
             ]
         }
     ],
-    "AutocompleteRetentionPolicy": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "AutocompleteRetentionPolicyEnabled"
-                    ]
-                }
-            ]
-        }
-    ],
     "AutofillDoNotUploadSaveUnsupportedCards": [
         {
             "platforms": [
