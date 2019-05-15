@@ -63,6 +63,14 @@ Polymer({
     },
 
     /** @private */
+    enableBluetoothScanningContentSetting_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('enableBluetoothScanningContentSetting');
+      }
+    },
+
+    /** @private */
     enableSiteSettings_: {
       type: Boolean,
       value: function() {

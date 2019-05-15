@@ -84,6 +84,7 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {CONTENT_SETTINGS_TYPE_IDLE_DETECTION, "idle-detection"},
     {CONTENT_SETTINGS_TYPE_SERIAL_GUARD, "serial-ports"},
     {CONTENT_SETTINGS_TYPE_SERIAL_CHOOSER_DATA, kSerialChooserDataGroupType},
+    {CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING, "bluetooth-scanning"},
 
     // Add new content settings here if a corresponding Javascript string
     // representation for it is not required. Note some exceptions do have UI in

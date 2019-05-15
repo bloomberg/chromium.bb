@@ -82,6 +82,7 @@
  *   SITE_SETTINGS_ALL: (undefined|!settings.Route),
  *   SITE_SETTINGS_AUTOMATIC_DOWNLOADS: (undefined|!settings.Route),
  *   SITE_SETTINGS_BACKGROUND_SYNC: (undefined|!settings.Route),
+ *   SITE_SETTINGS_BLUETOOTH_SCANNING: (undefined|!settings.Route),
  *   SITE_SETTINGS_CAMERA: (undefined|!settings.Route),
  *   SITE_SETTINGS_CLIPBOARD: (undefined|!settings.Route),
  *   SITE_SETTINGS_COOKIES: (undefined|!settings.Route),
@@ -409,6 +410,10 @@ cr.define('settings', function() {
       if (loadTimeData.getBoolean('enablePaymentHandlerContentSetting')) {
         r.SITE_SETTINGS_PAYMENT_HANDLER =
             r.SITE_SETTINGS.createChild('paymentHandler');
+      }
+      if (loadTimeData.getBoolean('enableBluetoothScanningContentSetting')) {
+        r.SITE_SETTINGS_BLUETOOTH_SCANNING =
+            r.SITE_SETTINGS.createChild('bluetoothScanning');
       }
 
       // <if expr="chromeos">

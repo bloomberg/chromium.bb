@@ -3377,6 +3377,18 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_NO_SITES_FOUND" desc="Explanation shown when there are no matching search results on All Sites page.">
     No sites found
   </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_BLUETOOTH_SCANNING" desc="The label that is used to show the Bluetooth scanning site settings to the user.">
+    Bluetooth scanning
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_BLUETOOTH_SCANNING_ASK" desc="The label that is used to show the Bluetooth scanning setting is set to ask in site settings.">
+    Ask when a site wants to discover nearby Bluetooth devices
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_BLUETOOTH_SCANNING_ASK_RECOMMENDED" desc="The label that is used to show the Bluetooth scanning setting is set to ask (with the 'recommended' suffix) in site settings.">
+    Ask when a site wants to discover nearby Bluetooth devices (recommended)
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_BLUETOOTH_SCANNING_BLOCK" desc="The label that is used to show the Bluetooth scanning setting is set to block in site settings.">
+    Do not allow any site to discover nearby Bluetooth devices
+  </message>
 
   <message name="IDS_SETTINGS_NO_USB_DEVICES_FOUND" desc="Explanation for not showing USB devices in site settings.">
     No USB devices found

@@ -173,6 +173,10 @@ base::span<const PermissionsUIInfo> GetContentSettingsUIInfo() {
     {CONTENT_SETTINGS_TYPE_USB_GUARD, IDS_PAGE_INFO_TYPE_USB},
 #if !defined(OS_ANDROID)
     {CONTENT_SETTINGS_TYPE_SERIAL_GUARD, IDS_PAGE_INFO_TYPE_SERIAL},
+    // TODO(https://crbug.com/960962): Implement Bluetooth scanning API content
+    // settings and page info on Android.
+    {CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING,
+     IDS_PAGE_INFO_TYPE_BLUETOOTH_SCANNING},
 #endif
   };
   return kPermissionsUIInfo;
@@ -557,6 +561,11 @@ const gfx::ImageSkia PageInfoUI::GetPermissionIcon(const PermissionInfo& info,
 #if !defined(OS_ANDROID)
     case CONTENT_SETTINGS_TYPE_SERIAL_GUARD:
       icon = &vector_icons::kSerialPortIcon;
+      break;
+    // TODO(https://crbug.com/960962): Implement Bluetooth scanning API content
+    // settings and page info on Android.
+    case CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING:
+      icon = &vector_icons::kBluetoothScanningIcon;
       break;
 #endif
     default:

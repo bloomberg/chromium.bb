@@ -647,6 +647,26 @@
           </settings-subpage>
        </template>
       </template>
+      <template is="dom-if" if="[[enableBluetoothScanningContentSetting_]]">
+        <template is="dom-if" route-path="/content/bluetoothScanning" no-search>
+          <settings-subpage page-title="$i18n{siteSettingsBluetoothScanning}"
+              search-label="$i18n{siteSettingsAllSitesSearch}"
+              search-term="{{searchFilter_}}">
+            <category-default-setting
+                toggle-off-label="$i18n{siteSettingsBluetoothScanningBlock}"
+                toggle-on-label=
+                    "$i18n{siteSettingsBluetoothScanningAskRecommended}"
+                category="{{ContentSettingsTypes.BLUETOOTH_SCANNING}}">
+            </category-default-setting>
+            <category-setting-exceptions
+                category="{{ContentSettingsTypes.BLUETOOTH_SCANNING}}"
+                read-only-list
+                block-header="$i18n{siteSettingsBlock}"
+                search-filter="[[searchFilter_]]">
+            </category-setting-exceptions>
+          </settings-subpage>
+        </template>
+      </template>
     </settings-animated-pages>
 
     <template is="dom-if" if="[[showSignoutDialog_]]" restamp>

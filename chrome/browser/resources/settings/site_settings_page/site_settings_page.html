@@ -237,6 +237,18 @@
               '$i18nPolymer{siteSettingsPaymentHandlerAllow}',
               '$i18nPolymer{siteSettingsPaymentHandlerBlock}')]]"></cr-link-row>
     </template>
+
+    <template is="dom-if" if="[[enableBluetoothScanningContentSetting_]]">
+      <cr-link-row class="hr two-line"
+          data-route="SITE_SETTINGS_BLUETOOTH_SCANNING"
+          id="bluetooth-scanning" label="$i18n{siteSettingsBluetoothScanning}"
+          on-click="onTapNavigate_" start-icon="settings:bluetooth-scanning"
+          sub-label="[[defaultSettingLabel_(
+              default_.bluetoothScanning,
+              '$i18nPolymer{siteSettingsBluetoothScanningAsk}',
+              '$i18nPolymer{siteSettingsBluetoothScanningBlock}')]]">
+      </cr-link-row>
+    </template>
   </template>
   <script src="site_settings_page.js"></script>
 </dom-module>

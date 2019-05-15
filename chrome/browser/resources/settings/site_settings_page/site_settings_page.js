@@ -76,6 +76,14 @@ Polymer({
       }
     },
 
+    /** @private */
+    enableBluetoothScanningContentSetting_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('enableBluetoothScanningContentSetting');
+      }
+    },
+
     /** @type {!Map<string, (string|Function)>} */
     focusConfig: {
       type: Object,
@@ -128,6 +136,10 @@ Polymer({
 
     if (this.enableExperimentalWebPlatformFeatures_) {
       pairs.push([R.SITE_SETTINGS_SERIAL_PORTS, 'serial-ports']);
+    }
+
+    if (this.enableBluetoothScanningContentSetting_) {
+      pairs.push([R.SITE_SETTINGS_BLUETOOTH_SCANNING, 'bluetooth-scanning']);
     }
 
     pairs.forEach(([route, id]) => {

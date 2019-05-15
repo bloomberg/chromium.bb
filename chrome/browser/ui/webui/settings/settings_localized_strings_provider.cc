@@ -2663,6 +2663,14 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_SITE_SETTINGS_BLOCK_AUTOPLAY},
     {"emptyAllSitesPage", IDS_SETTINGS_SITE_SETTINGS_EMPTY_ALL_SITES_PAGE},
     {"noSitesFound", IDS_SETTINGS_SITE_SETTINGS_NO_SITES_FOUND},
+    {"siteSettingsBluetoothScanning",
+     IDS_SETTINGS_SITE_SETTINGS_BLUETOOTH_SCANNING},
+    {"siteSettingsBluetoothScanningAsk",
+     IDS_SETTINGS_SITE_SETTINGS_BLUETOOTH_SCANNING_ASK},
+    {"siteSettingsBluetoothScanningAskRecommended",
+     IDS_SETTINGS_SITE_SETTINGS_BLUETOOTH_SCANNING_ASK_RECOMMENDED},
+    {"siteSettingsBluetoothScanningBlock",
+     IDS_SETTINGS_SITE_SETTINGS_BLUETOOTH_SCANNING_BLOCK},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings,
                           base::size(kLocalizedStrings));
@@ -2712,6 +2720,10 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
   html_source->AddBoolean(
       "enableExperimentalWebPlatformFeatures",
       cmd.HasSwitch(::switches::kEnableExperimentalWebPlatformFeatures));
+
+  html_source->AddBoolean(
+      "enableBluetoothScanningContentSetting",
+      cmd.HasSwitch(::switches::kEnableWebBluetoothScanning));
 }
 
 #if defined(OS_CHROMEOS)

@@ -11,6 +11,7 @@ aggregate_vector_icons("components_vector_icons") {
     "accessibility.icon",
     "back_arrow.icon",
     "bluetooth_connected.icon",
+    "bluetooth_scanning.icon",
     "business.icon",
     "check_circle.icon",
     "close.icon",

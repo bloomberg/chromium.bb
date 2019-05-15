@@ -138,6 +138,9 @@ suite('SiteDetails', function() {
     optionalSiteDetailsContentSettingsTypes[settings.ContentSettingsTypes
                                                 .SERIAL_PORTS] =
         'enableExperimentalWebPlatformFeatures';
+    optionalSiteDetailsContentSettingsTypes[settings.ContentSettingsTypes
+                                                .BLUETOOTH_SCANNING] =
+        'enableBluetoothScanningContentSetting';
     browserProxy.setPrefs(prefs);
 
     // First, explicitly set all the optional settings to false.

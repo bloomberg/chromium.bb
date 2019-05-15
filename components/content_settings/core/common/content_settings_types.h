@@ -142,6 +142,10 @@ enum ContentSettingsType {
   // is ascertained.
   CONTENT_SETTINGS_TYPE_PERIODIC_BACKGROUND_SYNC,
 
+  // Content setting which stores whether to allow sites to ask for permission
+  // to do Bluetooth scanning.
+  CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING,
+
   CONTENT_SETTINGS_NUM_TYPES,
 };
 

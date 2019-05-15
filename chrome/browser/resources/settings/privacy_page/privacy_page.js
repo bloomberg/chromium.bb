@@ -144,6 +144,14 @@ Polymer({
       }
     },
 
+    /** @private */
+    enableBluetoothScanningContentSetting_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('enableBluetoothScanningContentSetting');
+      }
+    },
+
     /** @private {!Map<string, string>} */
     focusConfig_: {
       type: Object,
