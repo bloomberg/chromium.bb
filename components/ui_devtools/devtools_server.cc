@@ -26,7 +26,7 @@ namespace ui_devtools {
 
 namespace {
 const char kChromeDeveloperToolsPrefix[] =
-    "chrome-devtools://devtools/bundled/devtools_app.html?ws=";
+    "devtools://devtools/bundled/devtools_app.html?ws=";
 }  // namespace
 
 UiDevToolsServer* UiDevToolsServer::devtools_server_ = nullptr;

@@ -34,8 +34,7 @@ WebViewInfo::WebViewInfo(const WebViewInfo& other) = default;
 WebViewInfo::~WebViewInfo() {}
 
 bool WebViewInfo::IsFrontend() const {
-  return base::StartsWith(url, "chrome-devtools://",
-                          base::CompareCase::SENSITIVE);
+  return base::StartsWith(url, "devtools://", base::CompareCase::SENSITIVE);
 }
 
 bool WebViewInfo::IsInactiveBackgroundPage() const {

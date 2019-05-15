@@ -773,7 +773,7 @@ bool ChromeContentBrowserClientExtensionsPart::ShouldAllowOpenURL(
     return true;
   }
 
-  // Navigations from chrome://, chrome-search:// and chrome-devtools:// pages
+  // Navigations from chrome://, chrome-search:// and devtools:// pages
   // need to be allowed, even if |to_url| is not web-accessible. See
   // https://crbug.com/662602.
   //

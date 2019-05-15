@@ -345,12 +345,12 @@ function verifyInterceptedRequests(expectedRequests) {
 };
 
 runTests([
-  // Tests that chrome-devtools://devtools/custom/ is hidden from webRequest.
+  // Tests that devtools://devtools/custom/ is hidden from webRequest.
   function testDevToolsCustomFrontendRequest() {
     // The extension shouldn't be able to observe the requests for the devtools
     // resources. It should also not be able to intercept the request to the
     // completion url, since it doesn't have access to the initiator
-    // chrome-devtools://devtools/.
+    // devtools://devtools/.
     var expectedRequests = [];
 
     addRequestListener();
@@ -359,7 +359,7 @@ runTests([
     // switch to the customfrontend/ subdirectory, so we do not include the path
     // name in the URL again.
     navigateAndWait(
-        'chrome-devtools://devtools/custom/fakedevtools.html#' +
+        'devtools://devtools/custom/fakedevtools.html#' +
             getCompletionURL(),
         chrome.test.callbackPass(() => {
           verifyInterceptedRequests(expectedRequests);
@@ -369,23 +369,23 @@ runTests([
 
   // Tests that the custom front-end URL is visible in non-DevTools requests.
   function testNonDevToolsCustomFrontendRequest() {
-    // The URL that would be loaded by chrome-devtools://devtools/custom/...
+    // The URL that would be loaded by devtools://devtools/custom/...
     var customFrontendUrl = getServerURL(
         'devtoolsfrontend/fakedevtools.html', 'customfrontend.example.com');
     expectNormalTabNavigationEvents(customFrontendUrl);
     navigateAndWait(customFrontendUrl);
   },
 
-  // Tests that chrome-devtools://devtools/remote/ is hidden from webRequest.
+  // Tests that devtools://devtools/remote/ is hidden from webRequest.
   function testDevToolsRemoteFrontendRequest() {
     // The extension shouldn't be able to observe the requests for the devtools
     // resources. It should also not be able to intercept the request to the
     // completion url, since it doesn't have access to the initiator
-    // chrome-devtools://devtools/.
+    // devtools://devtools/.
     var expectedRequests = [];
     addRequestListener();
     navigateAndWait(
-        'chrome-devtools://devtools/remote/devtoolsfrontend/fakedevtools.html' +
+        'devtools://devtools/remote/devtoolsfrontend/fakedevtools.html' +
             '#' + getCompletionURL(),
         chrome.test.callbackPass(() => {
           verifyInterceptedRequests(expectedRequests);
@@ -395,7 +395,7 @@ runTests([
 
   // Tests that the custom front-end URL is visible in non-DevTools requests.
   function testNonDevToolsRemoteFrontendRequest() {
-    // The URL that would be loaded by chrome-devtools://devtools/remote/...
+    // The URL that would be loaded by devtools://devtools/remote/...
     var remoteFrontendUrl = 'https://chrome-devtools-frontend.appspot.com/' +
         'devtoolsfrontend/fakedevtools.html';
     expectMockedTabNavigationEvents(remoteFrontendUrl);

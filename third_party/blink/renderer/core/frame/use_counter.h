@@ -78,7 +78,7 @@ class CORE_EXPORT UseCounter {
     // Context for file:// URLs.
     kFileContext,
     // Context when counters should be disabled (eg, internal pages such as
-    // about, chrome-devtools, etc).
+    // about, devtools, etc).
     kDisabledContext
   };
 

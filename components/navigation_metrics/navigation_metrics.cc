@@ -29,7 +29,7 @@ const char* const kSchemeNames[] = {
     "chrome-native",
     "chrome-search",
     dom_distiller::kDomDistillerScheme,
-    "chrome-devtools",
+    "devtools",
     "chrome-extension",
     "view-source",
     "externalfile",

@@ -134,7 +134,7 @@ class CONTENT_EXPORT URLDataSource {
   // happening, return false. It is OK to return false as needed.
   virtual bool ShouldDenyXFrameOptions() const;
 
-  // By default, only chrome: and chrome-devtools: requests are allowed.
+  // By default, only chrome: and devtools: requests are allowed.
   // Override in specific WebUI data sources to enable for additional schemes or
   // to implement fancier access control.  Typically used in concert with
   // ContentBrowserClient::GetAdditionalWebUISchemes() to permit additional
@@ -147,7 +147,7 @@ class CONTENT_EXPORT URLDataSource {
   // To start sending mime type returned by GetMimeType in HTTP headers,
   // return true. It is useful when tunneling response served from this data
   // source programmatically. Or when AppCache is enabled for this source as it
-  // is for chrome-devtools.
+  // is for devtools.
   virtual bool ShouldServeMimeTypeAsContentTypeHeader() const;
 
   // This method is called when the request contains "Origin:" header. The value

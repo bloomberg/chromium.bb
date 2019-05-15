@@ -52,7 +52,7 @@ const char kChromeUIDevToolsCustomPath[] = "custom";
 const char kChromeUIDevToolsHost[] = "devtools";
 const char kChromeUIDevToolsRemotePath[] = "remote";
 const char kChromeUIDevToolsURL[] =
-    "chrome-devtools://devtools/bundled/inspector.html";
+    "devtools://devtools/bundled/inspector.html";
 const char kChromeUIDeviceLogHost[] = "device-log";
 const char kChromeUIDevicesHost[] = "devices";
 const char kChromeUIDevicesURL[] = "chrome://devices/";

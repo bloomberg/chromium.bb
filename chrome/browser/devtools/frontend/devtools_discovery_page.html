@@ -117,7 +117,7 @@ function customFrontendURL(url) {
   if (hashParams.get("experiments"))
     originalParams += "&experiments=true";
 
-  return "chrome-devtools://devtools/custom/inspector.html?" + originalParams;
+  return "devtools://devtools/custom/inspector.html?" + originalParams;
 }
 
 function appendItem(item_object) {

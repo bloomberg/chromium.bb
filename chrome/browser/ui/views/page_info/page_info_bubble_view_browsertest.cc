@@ -305,7 +305,7 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest, ChromeExtensionURL) {
 
 IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest, ChromeDevtoolsURL) {
   ui_test_utils::NavigateToURL(
-      browser(), GURL("chrome-devtools://devtools/bundled/inspector.html"));
+      browser(), GURL("devtools://devtools/bundled/inspector.html"));
   OpenPageInfoBubble(browser());
   EXPECT_EQ(PageInfoBubbleView::BUBBLE_INTERNAL_PAGE,
             PageInfoBubbleView::GetShownBubbleType());

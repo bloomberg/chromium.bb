@@ -183,7 +183,7 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   using JavaScriptResultCallback = base::OnceCallback<void(base::Value)>;
 
   // This is the default API to run JavaScript in this frame. This API can only
-  // be called on chrome:// or chrome-devtools:// URLs.
+  // be called on chrome:// or devtools:// URLs.
   virtual void ExecuteJavaScript(const base::string16& javascript,
                                  JavaScriptResultCallback callback) = 0;
 

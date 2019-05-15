@@ -16,7 +16,7 @@ TEST(LogWebUIUrlTest, ValidUrls) {
   EXPECT_TRUE(webui::LogWebUIUrl(GURL("chrome://settings/clearBrowserData")));
 
   // Developer tools scheme.
-  EXPECT_TRUE(webui::LogWebUIUrl(GURL("chrome-devtools://devtools")));
+  EXPECT_TRUE(webui::LogWebUIUrl(GURL("devtools://devtools")));
 }
 
 TEST(LogWebUIUrlTest, InvalidUrls) {

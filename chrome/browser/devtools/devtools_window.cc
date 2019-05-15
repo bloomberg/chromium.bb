@@ -87,15 +87,14 @@ base::LazyInstance<std::vector<base::Callback<void(DevToolsWindow*)>>>::Leaky
 static const char kKeyUpEventName[] = "keyup";
 static const char kKeyDownEventName[] = "keydown";
 static const char kDefaultFrontendURL[] =
-    "chrome-devtools://devtools/bundled/devtools_app.html";
+    "devtools://devtools/bundled/devtools_app.html";
 static const char kNodeFrontendURL[] =
-    "chrome-devtools://devtools/bundled/node_app.html";
+    "devtools://devtools/bundled/node_app.html";
 static const char kWorkerFrontendURL[] =
-    "chrome-devtools://devtools/bundled/worker_app.html";
-static const char kJSFrontendURL[] =
-    "chrome-devtools://devtools/bundled/js_app.html";
+    "devtools://devtools/bundled/worker_app.html";
+static const char kJSFrontendURL[] = "devtools://devtools/bundled/js_app.html";
 static const char kFallbackFrontendURL[] =
-    "chrome-devtools://devtools/bundled/inspector.html";
+    "devtools://devtools/bundled/inspector.html";
 
 bool FindInspectedBrowserAndTabIndex(
     WebContents* inspected_web_contents, Browser** browser, int* tab) {

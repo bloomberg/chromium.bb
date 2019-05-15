@@ -21,7 +21,7 @@ class Value;
 
 /**
  * Dispatcher for messages sent from the DevTools frontend running in an
- * isolated renderer (on chrome-devtools://) to the embedder in the browser.
+ * isolated renderer (on devtools://) to the embedder in the browser.
  *
  * The messages are sent via InspectorFrontendHost.sendMessageToEmbedder method.
  */

@@ -92,7 +92,7 @@ class ComponentsTestSuite : public base::TestSuite {
     // autocomplete_input_unittest.cc and content_settings_pattern*
     url::AddStandardScheme("chrome", url::SCHEME_WITH_HOST);
     url::AddStandardScheme("chrome-extension", url::SCHEME_WITH_HOST);
-    url::AddStandardScheme("chrome-devtools", url::SCHEME_WITH_HOST);
+    url::AddStandardScheme("devtools", url::SCHEME_WITH_HOST);
     url::AddStandardScheme("chrome-search", url::SCHEME_WITH_HOST);
 
     ContentSettingsPattern::SetNonWildcardDomainNonPortSchemes(
