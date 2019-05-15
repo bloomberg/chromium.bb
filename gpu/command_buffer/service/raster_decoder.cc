@@ -381,6 +381,8 @@ class RasterDecoderImpl final : public RasterDecoder,
 
   void FlushToWorkAroundMacCrashes() {
 #if defined(OS_MACOSX)
+    if (!shared_context_state_->GrContextIsGL())
+      return;
     // This function does aggressive flushes to work around crashes in the
     // macOS OpenGL driver.
     // https://crbug.com/906453
