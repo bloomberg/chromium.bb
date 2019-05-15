@@ -6,8 +6,6 @@
 
 #include <memory>
 
-#include "base/memory/shared_memory_mapping.h"
-#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/mac/video_frame_mac.h"
 
@@ -73,11 +71,11 @@ struct VTVideoEncodeAccelerator::EncodeOutput {
 
 struct VTVideoEncodeAccelerator::BitstreamBufferRef {
   BitstreamBufferRef(int32_t id,
-                     base::WritableSharedMemoryMapping mapping,
+                     std::unique_ptr<base::SharedMemory> shm,
                      size_t size)
-      : id(id), mapping(std::move(mapping)), size(size) {}
+      : id(id), shm(std::move(shm)), size(size) {}
   const int32_t id;
-  const base::WritableSharedMemoryMapping mapping;
+  const std::unique_ptr<base::SharedMemory> shm;
   const size_t size;
 
  private:
@@ -190,7 +188,7 @@ void VTVideoEncodeAccelerator::Encode(const scoped_refptr<VideoFrame>& frame,
 }
 
 void VTVideoEncodeAccelerator::UseOutputBitstreamBuffer(
-    BitstreamBuffer buffer) {
+    const BitstreamBuffer& buffer) {
   DVLOG(3) << __func__ << ": buffer size=" << buffer.size();
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -201,16 +199,16 @@ void VTVideoEncodeAccelerator::UseOutputBitstreamBuffer(
     return;
   }
 
-  auto mapping =
-      base::UnsafeSharedMemoryRegion::Deserialize(buffer.TakeRegion()).Map();
-  if (!mapping.IsValid()) {
+  std::unique_ptr<base::SharedMemory> shm(
+      new base::SharedMemory(buffer.handle(), false));
+  if (!shm->Map(buffer.size())) {
     DLOG(ERROR) << "Failed mapping shared memory.";
     client_->NotifyError(kPlatformFailureError);
     return;
   }
 
   std::unique_ptr<BitstreamBufferRef> buffer_ref(
-      new BitstreamBufferRef(buffer.id(), std::move(mapping), buffer.size()));
+      new BitstreamBufferRef(buffer.id(), std::move(shm), buffer.size()));
 
   encoder_thread_task_runner_->PostTask(
       FROM_HERE,
@@ -454,7 +452,7 @@ void VTVideoEncodeAccelerator::ReturnBitstreamBuffer(
   size_t used_buffer_size = 0;
   const bool copy_rv = video_toolbox::CopySampleBufferToAnnexBBuffer(
       encode_output->sample_buffer.get(), keyframe, buffer_ref->size,
-      static_cast<char*>(buffer_ref->mapping.memory()), &used_buffer_size);
+      static_cast<char*>(buffer_ref->shm->memory()), &used_buffer_size);
   if (!copy_rv) {
     DLOG(ERROR) << "Cannot copy output from SampleBuffer to AnnexBBuffer.";
     used_buffer_size = 0;

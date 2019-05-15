@@ -103,7 +103,7 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
 
   // VideoDecodeAccelerator implementation.
   bool Initialize(const Config& config, Client* client) override;
-  void Decode(BitstreamBuffer bitstream) override;
+  void Decode(const BitstreamBuffer& bitstream) override;
   void Decode(scoped_refptr<DecoderBuffer> buffer,
               int32_t bitstream_id) override;
   void AssignPictureBuffers(const std::vector<PictureBuffer>& buffers) override;

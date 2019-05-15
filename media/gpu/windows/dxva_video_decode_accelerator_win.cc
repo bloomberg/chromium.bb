@@ -1122,7 +1122,7 @@ bool DXVAVideoDecodeAccelerator::CreateDX11DevManager() {
   return true;
 }
 
-void DXVAVideoDecodeAccelerator::Decode(BitstreamBuffer bitstream) {
+void DXVAVideoDecodeAccelerator::Decode(const BitstreamBuffer& bitstream) {
   Decode(bitstream.ToDecoderBuffer(), bitstream.id());
 }
 

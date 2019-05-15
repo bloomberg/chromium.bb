@@ -270,7 +270,7 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
   // NotifyEndOfBitstreamBuffer() with the bitstream buffer id.
   // Parameters:
   //  |bitstream_buffer| is the input bitstream that is sent for decoding.
-  virtual void Decode(BitstreamBuffer bitstream_buffer) = 0;
+  virtual void Decode(const BitstreamBuffer& bitstream_buffer) = 0;
 
   // Decodes given decoder buffer that contains at most one frame.  Once
   // decoder is done with processing |buffer| it will call

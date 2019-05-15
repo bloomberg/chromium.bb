@@ -296,7 +296,7 @@ class JpegClient : public JpegEncodeAccelerator::Client {
   media::test::ClientStateNotification<ClientState>* note_;
 
   // Output buffer prepared for JpegEncodeAccelerator.
-  media::BitstreamBuffer encoded_buffer_;
+  std::unique_ptr<media::BitstreamBuffer> encoded_buffer_;
 
   // Mapped memory of input file.
   std::unique_ptr<base::SharedMemory> in_shm_;
@@ -387,7 +387,7 @@ void JpegClient::VideoFrameReady(int32_t buffer_id, size_t hw_encoded_size) {
     SetState(ClientState::ENCODE_PASS);
   }
 
-  encoded_buffer_ = {};
+  encoded_buffer_.reset(nullptr);
 }
 
 bool JpegClient::GetSoftwareEncodeResult(int width,
@@ -476,7 +476,7 @@ void JpegClient::NotifyError(int32_t buffer_id,
   LOG(ERROR) << "Notifying of error " << status << " for output buffer id "
              << buffer_id;
   SetState(ClientState::ERROR);
-  encoded_buffer_ = {};
+  encoded_buffer_.reset(nullptr);
 }
 
 TestImage* JpegClient::GetTestImage(int32_t bitstream_buffer_id) {
@@ -556,11 +556,10 @@ void JpegClient::StartEncode(int32_t bitstream_buffer_id) {
       encoder_->GetMaxCodedBufferSize(test_image->visible_size);
   PrepareMemory(bitstream_buffer_id);
 
-  base::SharedMemoryHandle dup_handle =
-      base::SharedMemoryHandle(hw_out_shm_->handle());
-  encoded_buffer_ =
-      media::BitstreamBuffer(bitstream_buffer_id, dup_handle,
-                             false /* read_only */, test_image->output_size);
+  base::SharedMemoryHandle dup_handle;
+  dup_handle = base::SharedMemory::DuplicateHandle(hw_out_shm_->handle());
+  encoded_buffer_ = std::make_unique<media::BitstreamBuffer>(
+      bitstream_buffer_id, dup_handle, test_image->output_size);
   scoped_refptr<media::VideoFrame> input_frame_ =
       media::VideoFrame::WrapExternalSharedMemory(
           media::PIXEL_FORMAT_I420, test_image->visible_size,
@@ -573,7 +572,7 @@ void JpegClient::StartEncode(int32_t bitstream_buffer_id) {
 
   buffer_id_to_start_time_[bitstream_buffer_id] = base::TimeTicks::Now();
   encoder_->Encode(input_frame_, kJpegDefaultQuality, nullptr,
-                   std::move(encoded_buffer_));
+                   *encoded_buffer_);
 }
 
 class JpegEncodeAcceleratorTest : public ::testing::Test {

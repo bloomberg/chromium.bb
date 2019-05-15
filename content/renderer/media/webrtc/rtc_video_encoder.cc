@@ -390,8 +390,8 @@ void RTCVideoEncoder::Impl::UseOutputBitstreamBufferId(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (video_encoder_) {
     video_encoder_->UseOutputBitstreamBuffer(media::BitstreamBuffer(
-        bitstream_buffer_id, output_buffers_[bitstream_buffer_id]->handle(),
-        false /* read_only */,
+        bitstream_buffer_id,
+        output_buffers_[bitstream_buffer_id]->handle(),
         output_buffers_[bitstream_buffer_id]->mapped_size()));
     output_buffers_free_count_++;
   }
@@ -504,8 +504,7 @@ void RTCVideoEncoder::Impl::RequireBitstreamBuffers(
   // Immediately provide all output buffers to the VEA.
   for (size_t i = 0; i < output_buffers_.size(); ++i) {
     video_encoder_->UseOutputBitstreamBuffer(media::BitstreamBuffer(
-        i, output_buffers_[i]->handle(), false /* read_only */,
-        output_buffers_[i]->mapped_size()));
+        i, output_buffers_[i]->handle(), output_buffers_[i]->mapped_size()));
     output_buffers_free_count_++;
   }
   DCHECK_EQ(GetStatus(), WEBRTC_VIDEO_CODEC_UNINITIALIZED);

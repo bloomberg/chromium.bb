@@ -128,10 +128,10 @@ V4L2MjpegDecodeAccelerator::BufferRecord::BufferRecord() : at_device(false) {
 V4L2MjpegDecodeAccelerator::BufferRecord::~BufferRecord() {}
 
 V4L2MjpegDecodeAccelerator::JobRecord::JobRecord(
-    BitstreamBuffer bitstream_buffer,
+    const BitstreamBuffer& bitstream_buffer,
     scoped_refptr<VideoFrame> video_frame)
     : bitstream_buffer_id(bitstream_buffer.id()),
-      shm(bitstream_buffer.TakeRegion(), bitstream_buffer.size(), true),
+      shm(bitstream_buffer.handle(), bitstream_buffer.size(), true),
       offset(bitstream_buffer.offset()),
       out_frame(video_frame) {}
 
@@ -249,7 +249,7 @@ bool V4L2MjpegDecodeAccelerator::Initialize(
 }
 
 void V4L2MjpegDecodeAccelerator::Decode(
-    BitstreamBuffer bitstream_buffer,
+    const BitstreamBuffer& bitstream_buffer,
     const scoped_refptr<VideoFrame>& video_frame) {
   DVLOGF(4) << "input_id=" << bitstream_buffer.id()
             << ", size=" << bitstream_buffer.size();
@@ -257,6 +257,8 @@ void V4L2MjpegDecodeAccelerator::Decode(
 
   if (bitstream_buffer.id() < 0) {
     VLOGF(1) << "Invalid bitstream_buffer, id: " << bitstream_buffer.id();
+    if (base::SharedMemory::IsHandleValid(bitstream_buffer.handle()))
+      base::SharedMemory::CloseHandle(bitstream_buffer.handle());
     PostNotifyError(bitstream_buffer.id(), INVALID_ARGUMENT);
     return;
   }
@@ -267,7 +269,7 @@ void V4L2MjpegDecodeAccelerator::Decode(
   }
 
   std::unique_ptr<JobRecord> job_record(
-      new JobRecord(std::move(bitstream_buffer), video_frame));
+      new JobRecord(bitstream_buffer, video_frame));
 
   decoder_task_runner_->PostTask(
       FROM_HERE,

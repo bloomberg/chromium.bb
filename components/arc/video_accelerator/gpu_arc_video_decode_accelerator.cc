@@ -113,6 +113,37 @@ static bool VerifyDmabuf(media::VideoPixelFormat pixel_format,
 
 namespace arc {
 
+class GpuArcVideoDecodeAccelerator::ScopedBitstreamBuffer {
+ public:
+  ScopedBitstreamBuffer(ScopedBitstreamBuffer&& scoped_bitstream_buffer) {
+    bitstream_buffer_ = scoped_bitstream_buffer.release();
+  }
+  ScopedBitstreamBuffer& operator=(
+      ScopedBitstreamBuffer&& scoped_bitstream_buffer) {
+    CloseIfNeeded();
+    bitstream_buffer_ = scoped_bitstream_buffer.release();
+    return *this;
+  }
+  ~ScopedBitstreamBuffer() { CloseIfNeeded(); }
+  explicit ScopedBitstreamBuffer(const media::BitstreamBuffer& bitstream_buffer)
+      : bitstream_buffer_(bitstream_buffer) {}
+
+  media::BitstreamBuffer release() WARN_UNUSED_RESULT {
+    return std::exchange(bitstream_buffer_, media::BitstreamBuffer());
+  }
+
+ private:
+  void CloseIfNeeded() {
+    if (bitstream_buffer_.handle().IsValid()) {
+      VLOGF(2) << "Handle is not closed yet and closed here, "
+               << "fd=" << bitstream_buffer_.handle().GetHandle();
+      bitstream_buffer_.handle().Close();
+    }
+  }
+  media::BitstreamBuffer bitstream_buffer_;
+  DISALLOW_COPY_AND_ASSIGN(ScopedBitstreamBuffer);
+};
+
 // static
 size_t GpuArcVideoDecodeAccelerator::client_count_ = 0;
 
@@ -271,12 +302,12 @@ void GpuArcVideoDecodeAccelerator::ResetRequest(
 }
 
 void GpuArcVideoDecodeAccelerator::DecodeRequest(
-    media::BitstreamBuffer bitstream_buffer,
+    ScopedBitstreamBuffer scoped_bitstream_buffer,
     PendingCallback cb,
     media::VideoDecodeAccelerator* vda) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(vda);
-  vda->Decode(std::move(bitstream_buffer));
+  vda->Decode(scoped_bitstream_buffer.release());
 }
 
 void GpuArcVideoDecodeAccelerator::ExecuteRequest(
@@ -411,12 +442,11 @@ void GpuArcVideoDecodeAccelerator::Decode(
   // All the callbacks thus should be called or deleted before |this| is
   // invalidated.
   ExecuteRequest(
-      {base::BindOnce(&GpuArcVideoDecodeAccelerator::DecodeRequest,
-                      base::Unretained(this),
-                      media::BitstreamBuffer(bitstream_buffer->bitstream_id,
-                                             shm_handle, false /* read_only */,
-                                             bitstream_buffer->bytes_used,
-                                             bitstream_buffer->offset)),
+      {base::BindOnce(
+           &GpuArcVideoDecodeAccelerator::DecodeRequest, base::Unretained(this),
+           ScopedBitstreamBuffer(media::BitstreamBuffer(
+               bitstream_buffer->bitstream_id, shm_handle,
+               bitstream_buffer->bytes_used, bitstream_buffer->offset))),
        PendingCallback()});
 }
 

@@ -77,6 +77,8 @@ class GpuArcVideoDecodeAccelerator
   using PendingRequest =
       base::OnceCallback<void(PendingCallback, media::VideoDecodeAccelerator*)>;
 
+  class ScopedBitstreamBuffer;
+
   // Initialize GpuArcVDA and create VDA. It returns SUCCESS if they are
   // successful. Otherwise, returns an error status.
   mojom::VideoDecodeAccelerator::Result InitializeTask(
@@ -98,7 +100,7 @@ class GpuArcVideoDecodeAccelerator
   // Requested VDA methods are executed in these functions.
   void FlushRequest(PendingCallback cb, media::VideoDecodeAccelerator* vda);
   void ResetRequest(PendingCallback cb, media::VideoDecodeAccelerator* vda);
-  void DecodeRequest(media::BitstreamBuffer bitstream_buffer,
+  void DecodeRequest(ScopedBitstreamBuffer bitstream_buffer,
                      PendingCallback cb,
                      media::VideoDecodeAccelerator* vda);
 

@@ -101,8 +101,8 @@ class JpegEncodeAccelerator {
   //  called.
   virtual void Encode(scoped_refptr<media::VideoFrame> video_frame,
                       int quality,
-                      media::BitstreamBuffer* exif_buffer,
-                      media::BitstreamBuffer output_buffer) = 0;
+                      const media::BitstreamBuffer* exif_buffer,
+                      const media::BitstreamBuffer& output_buffer) = 0;
 
   // Encodes the given |video_frame| that contains a YUV image. Client will
   // receive the encoded result in Client::VideoFrameReady() callback with the

@@ -37,7 +37,7 @@ class MEDIA_GPU_EXPORT V4L2MjpegDecodeAccelerator
   // MjpegDecodeAccelerator implementation.
   bool Initialize(
       chromeos_camera::MjpegDecodeAccelerator::Client* client) override;
-  void Decode(BitstreamBuffer bitstream_buffer,
+  void Decode(const BitstreamBuffer& bitstream_buffer,
               const scoped_refptr<VideoFrame>& video_frame) override;
   bool IsSupported() override;
 
@@ -60,7 +60,7 @@ class MEDIA_GPU_EXPORT V4L2MjpegDecodeAccelerator
   // the time of submission we may not have one available (and don't need one
   // to submit input to the device).
   struct JobRecord {
-    JobRecord(BitstreamBuffer bitstream_buffer,
+    JobRecord(const BitstreamBuffer& bitstream_buffer,
               scoped_refptr<VideoFrame> video_frame);
     ~JobRecord();
 

@@ -2061,13 +2061,18 @@ void VEAClient::FeedEncoderWithOutput(base::SharedMemory* shm) {
   if (state_ != CS_ENCODING && state_ != CS_FLUSHING)
     return;
 
-  BitstreamBuffer bitstream_buffer(next_output_buffer_id_++, shm->handle(),
-                                   false /* read_only */, output_buffer_size_);
+  base::SharedMemoryHandle dup_handle = shm->handle().Duplicate();
+  LOG_ASSERT(dup_handle.IsValid());
+
+  // TODO(erikchen): This may leak the SharedMemoryHandle.
+  // https://crbug.com/640840.
+  BitstreamBuffer bitstream_buffer(next_output_buffer_id_++, dup_handle,
+                                   output_buffer_size_);
   LOG_ASSERT(output_buffers_at_client_
                  .insert(std::make_pair(bitstream_buffer.id(), shm))
                  .second);
 
-  encoder_->UseOutputBitstreamBuffer(std::move(bitstream_buffer));
+  encoder_->UseOutputBitstreamBuffer(bitstream_buffer);
 }
 
 bool VEAClient::HandleEncodedFrame(bool keyframe,
@@ -2385,8 +2390,8 @@ void SimpleVEAClientBase::FeedEncoderWithOutput(base::SharedMemory* shm,
   LOG_ASSERT(dup_handle.IsValid());
 
   BitstreamBuffer bitstream_buffer(next_output_buffer_id_++, dup_handle,
-                                   false /* read_only */, output_size);
-  encoder_->UseOutputBitstreamBuffer(std::move(bitstream_buffer));
+                                   output_size);
+  encoder_->UseOutputBitstreamBuffer(bitstream_buffer);
 }
 
 // This client is only used to make sure the encoder does not return an encoded

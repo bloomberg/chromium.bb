@@ -9,45 +9,26 @@
 namespace media {
 
 BitstreamBuffer::BitstreamBuffer()
-    : BitstreamBuffer(-1, base::subtle::PlatformSharedMemoryRegion(), 0) {}
-
-BitstreamBuffer::BitstreamBuffer(
-    int32_t id,
-    base::subtle::PlatformSharedMemoryRegion region,
-    size_t size,
-    off_t offset,
-    base::TimeDelta presentation_timestamp)
-    : id_(id),
-      region_(std::move(region)),
-      size_(size),
-      offset_(offset),
-      presentation_timestamp_(presentation_timestamp) {}
+    : BitstreamBuffer(-1, base::SharedMemoryHandle(), 0) {}
 
 BitstreamBuffer::BitstreamBuffer(int32_t id,
                                  base::SharedMemoryHandle handle,
-                                 bool read_only,
                                  size_t size,
                                  off_t offset,
                                  base::TimeDelta presentation_timestamp)
     : id_(id),
-      region_(
-          base::subtle::PlatformSharedMemoryRegion::TakeFromSharedMemoryHandle(
-              handle.Duplicate(),
-              read_only
-                  ? base::subtle::PlatformSharedMemoryRegion::Mode::kReadOnly
-                  : base::subtle::PlatformSharedMemoryRegion::Mode::kUnsafe)),
+      handle_(handle),
       size_(size),
       offset_(offset),
       presentation_timestamp_(presentation_timestamp) {}
 
-BitstreamBuffer::BitstreamBuffer(BitstreamBuffer&&) = default;
-BitstreamBuffer& BitstreamBuffer::operator=(BitstreamBuffer&&) = default;
+BitstreamBuffer::BitstreamBuffer(const BitstreamBuffer& other) = default;
 
 BitstreamBuffer::~BitstreamBuffer() = default;
 
-scoped_refptr<DecoderBuffer> BitstreamBuffer::ToDecoderBuffer() {
+scoped_refptr<DecoderBuffer> BitstreamBuffer::ToDecoderBuffer() const {
   scoped_refptr<DecoderBuffer> buffer =
-      DecoderBuffer::FromSharedMemoryRegion(std::move(region_), offset_, size_);
+      DecoderBuffer::FromSharedMemoryHandle(handle_, offset_, size_);
   if (!buffer)
     return nullptr;
   buffer->set_timestamp(presentation_timestamp_);

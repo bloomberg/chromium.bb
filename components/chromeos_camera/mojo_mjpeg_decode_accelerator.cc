@@ -48,7 +48,7 @@ void MojoMjpegDecodeAccelerator::InitializeAsync(Client* client,
 }
 
 void MojoMjpegDecodeAccelerator::Decode(
-    media::BitstreamBuffer bitstream_buffer,
+    const media::BitstreamBuffer& bitstream_buffer,
     const scoped_refptr<media::VideoFrame>& video_frame) {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(jpeg_decoder_.is_bound());
@@ -71,7 +71,7 @@ void MojoMjpegDecodeAccelerator::Decode(
           mojo::UnwrappedSharedMemoryHandleProtection::kReadWrite);
 
   // base::Unretained is safe because |this| owns |jpeg_decoder_|.
-  jpeg_decoder_->Decode(std::move(bitstream_buffer), video_frame->coded_size(),
+  jpeg_decoder_->Decode(bitstream_buffer, video_frame->coded_size(),
                         std::move(output_frame_handle),
                         base::checked_cast<uint32_t>(output_buffer_size),
                         base::Bind(&MojoMjpegDecodeAccelerator::OnDecodeAck,

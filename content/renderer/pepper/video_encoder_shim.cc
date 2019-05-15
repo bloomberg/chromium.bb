@@ -100,7 +100,8 @@ class VideoEncoderShim::EncoderImpl {
   void Initialize(const media::VideoEncodeAccelerator::Config& config);
   void Encode(const scoped_refptr<media::VideoFrame>& frame,
               bool force_keyframe);
-  void UseOutputBitstreamBuffer(media::BitstreamBuffer buffer, uint8_t* mem);
+  void UseOutputBitstreamBuffer(const media::BitstreamBuffer& buffer,
+                                uint8_t* mem);
   void RequestEncodingParametersChange(uint32_t bitrate, uint32_t framerate);
   void Stop();
 
@@ -116,9 +117,8 @@ class VideoEncoderShim::EncoderImpl {
   };
 
   struct BitstreamBuffer {
-    BitstreamBuffer(media::BitstreamBuffer buffer, uint8_t* mem)
-        : buffer(std::move(buffer)), mem(mem) {}
-    BitstreamBuffer(BitstreamBuffer&&) = default;
+    BitstreamBuffer(const media::BitstreamBuffer buffer, uint8_t* mem)
+        : buffer(buffer), mem(mem) {}
     ~BitstreamBuffer() {}
 
     media::BitstreamBuffer buffer;
@@ -245,9 +245,9 @@ void VideoEncoderShim::EncoderImpl::Encode(
 }
 
 void VideoEncoderShim::EncoderImpl::UseOutputBitstreamBuffer(
-    media::BitstreamBuffer buffer,
+    const media::BitstreamBuffer& buffer,
     uint8_t* mem) {
-  buffers_.emplace_back(std::move(buffer), mem);
+  buffers_.push_back(BitstreamBuffer(buffer, mem));
   DoEncode();
 }
 
@@ -322,7 +322,7 @@ void VideoEncoderShim::EncoderImpl::DoEncode() {
       if (packet->kind != VPX_CODEC_CX_FRAME_PKT)
         continue;
 
-      BitstreamBuffer buffer = std::move(buffers_.front());
+      BitstreamBuffer buffer = buffers_.front();
       buffers_.pop_front();
 
       CHECK(buffer.buffer.size() >= packet->data.frame.sz);
@@ -427,13 +427,14 @@ void VideoEncoderShim::Encode(const scoped_refptr<media::VideoFrame>& frame,
                                 force_keyframe));
 }
 
-void VideoEncoderShim::UseOutputBitstreamBuffer(media::BitstreamBuffer buffer) {
+void VideoEncoderShim::UseOutputBitstreamBuffer(
+    const media::BitstreamBuffer& buffer) {
   DCHECK(RenderThreadImpl::current());
 
   media_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&VideoEncoderShim::EncoderImpl::UseOutputBitstreamBuffer,
-                     base::Unretained(encoder_impl_.get()), std::move(buffer),
+                     base::Unretained(encoder_impl_.get()), buffer,
                      host_->ShmHandleToAddress(buffer.id())));
 }
 

@@ -90,7 +90,7 @@ void VideoCaptureJpegDecoderImpl::DecodeCapturedData(
   // No need to lock for |in_buffer_id_| since IsDecoding_Locked() is false.
   in_buffer_id_ = next_bitstream_buffer_id_;
   media::BitstreamBuffer in_buffer(in_buffer_id_, in_shared_memory_->handle(),
-                                   false /* read_only */, in_buffer_size);
+                                   in_buffer_size);
   // Mask against 30 bits, to avoid (undefined) wraparound on signed integer.
   next_bitstream_buffer_id_ = (next_bitstream_buffer_id_ + 1) & 0x3FFFFFFF;
 
@@ -150,7 +150,7 @@ void VideoCaptureJpegDecoderImpl::DecodeCapturedData(
   decoder_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&chromeos_camera::MjpegDecodeAccelerator::Decode,
-                     base::Unretained(decoder_.get()), std::move(in_buffer),
+                     base::Unretained(decoder_.get()), in_buffer,
                      std::move(out_frame)));
 }
 

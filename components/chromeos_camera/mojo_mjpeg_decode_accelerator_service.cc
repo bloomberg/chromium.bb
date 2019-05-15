@@ -116,7 +116,7 @@ void MojoMjpegDecodeAcceleratorService::Initialize(
 }
 
 void MojoMjpegDecodeAcceleratorService::Decode(
-    media::BitstreamBuffer input_buffer,
+    const media::BitstreamBuffer& input_buffer,
     const gfx::Size& coded_size,
     mojo::ScopedSharedBufferHandle output_handle,
     uint32_t output_buffer_size,
@@ -174,7 +174,7 @@ void MojoMjpegDecodeAcceleratorService::Decode(
       base::Bind(DecodeFinished, base::Passed(&output_shm)));
 
   DCHECK(accelerator_);
-  accelerator_->Decode(std::move(input_buffer), frame);
+  accelerator_->Decode(input_buffer, frame);
 }
 
 void MojoMjpegDecodeAcceleratorService::DecodeWithFD(
@@ -215,7 +215,7 @@ void MojoMjpegDecodeAcceleratorService::DecodeWithFD(
       base::FileDescriptor(output_fd, true), 0u, guid);
 
   media::BitstreamBuffer in_buffer(buffer_id, input_shm_handle,
-                                   false /* read_only */, input_buffer_size);
+                                   input_buffer_size);
   gfx::Size coded_size(coded_size_width, coded_size_height);
 
   mojo::ScopedSharedBufferHandle output_scoped_handle =
@@ -223,7 +223,7 @@ void MojoMjpegDecodeAcceleratorService::DecodeWithFD(
           output_shm_handle, output_buffer_size,
           mojo::UnwrappedSharedMemoryHandleProtection::kReadWrite);
 
-  Decode(std::move(in_buffer), coded_size, std::move(output_scoped_handle),
+  Decode(in_buffer, coded_size, std::move(output_scoped_handle),
          output_buffer_size, std::move(callback));
 #else
   NOTREACHED();

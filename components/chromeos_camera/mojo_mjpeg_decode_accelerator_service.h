@@ -45,7 +45,7 @@ class MojoMjpegDecodeAcceleratorService
 
   // chromeos_camera::mojom::MjpegDecodeAccelerator implementation.
   void Initialize(InitializeCallback callback) override;
-  void Decode(media::BitstreamBuffer input_buffer,
+  void Decode(const media::BitstreamBuffer& input_buffer,
               const gfx::Size& coded_size,
               mojo::ScopedSharedBufferHandle output_handle,
               uint32_t output_buffer_size,

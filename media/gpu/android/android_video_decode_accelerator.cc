@@ -244,16 +244,17 @@ static AVDAManager* GetManager() {
 }
 
 AndroidVideoDecodeAccelerator::BitstreamRecord::BitstreamRecord(
-    BitstreamBuffer bitstream_buffer)
-    : buffer(std::move(bitstream_buffer)) {
+    const BitstreamBuffer& bitstream_buffer)
+    : buffer(bitstream_buffer) {
   if (buffer.id() != -1) {
     memory.reset(
-        new UnalignedSharedMemory(buffer.TakeRegion(), buffer.size(), true));
+        new UnalignedSharedMemory(buffer.handle(), buffer.size(), true));
   }
 }
 
 AndroidVideoDecodeAccelerator::BitstreamRecord::BitstreamRecord(
-    BitstreamRecord&& other) = default;
+    BitstreamRecord&& other)
+    : buffer(std::move(other.buffer)), memory(std::move(other.memory)) {}
 
 AndroidVideoDecodeAccelerator::BitstreamRecord::~BitstreamRecord() {}
 
@@ -637,10 +638,9 @@ bool AndroidVideoDecodeAccelerator::QueueInput() {
 
   DCHECK_NE(input_buf_index, -1);
 
-  BitstreamBuffer* bitstream_buffer =
-      &pending_bitstream_records_.front().buffer;
+  BitstreamBuffer bitstream_buffer = pending_bitstream_records_.front().buffer;
 
-  if (bitstream_buffer->id() == -1) {
+  if (bitstream_buffer.id() == -1) {
     pending_bitstream_records_.pop();
     TRACE_COUNTER1("media", "AVDA::PendingBitstreamBufferCount",
                    pending_bitstream_records_.size());
@@ -653,18 +653,19 @@ bool AndroidVideoDecodeAccelerator::QueueInput() {
 
   if (pending_input_buf_index_ == -1) {
     // When |pending_input_buf_index_| is not -1, the buffer is already dequeued
-    // from MediaCodec and filled with data. The buffer shared memory handle is
-    // held by the front pending bitstream record.
+    // from MediaCodec, filled with data and bitstream_buffer.handle() is
+    // closed.
     shm = std::move(pending_bitstream_records_.front().memory);
+    auto* buffer = &pending_bitstream_records_.front().buffer;
 
-    if (!shm->MapAt(bitstream_buffer->offset(), bitstream_buffer->size())) {
+    if (!shm->MapAt(buffer->offset(), buffer->size())) {
       NOTIFY_ERROR(UNREADABLE_INPUT, "UnalignedSharedMemory::Map() failed");
       return false;
     }
   }
 
   const base::TimeDelta presentation_timestamp =
-      bitstream_buffer->presentation_timestamp();
+      bitstream_buffer.presentation_timestamp();
   DCHECK(presentation_timestamp != kNoTimestamp)
       << "Bitstream buffers must have valid presentation timestamps";
 
@@ -674,27 +675,25 @@ bool AndroidVideoDecodeAccelerator::QueueInput() {
   // buffer id in the returned Pictures to map a bitstream buffer back to a
   // timestamp on their side, so either one of the bitstream buffer ids will
   // result in them finding the right timestamp.
-  bitstream_buffers_in_decoder_[presentation_timestamp] =
-      bitstream_buffer->id();
+  bitstream_buffers_in_decoder_[presentation_timestamp] = bitstream_buffer.id();
 
   // Notice that |memory| will be null if we repeatedly enqueue the same buffer,
   // this happens after MEDIA_CODEC_NO_KEY.
   const uint8_t* memory =
       shm ? static_cast<const uint8_t*>(shm->memory()) : nullptr;
-  const std::string& key_id = bitstream_buffer->key_id();
-  const std::string& iv = bitstream_buffer->iv();
-  const std::vector<SubsampleEntry>& subsamples =
-      bitstream_buffer->subsamples();
+  const std::string& key_id = bitstream_buffer.key_id();
+  const std::string& iv = bitstream_buffer.iv();
+  const std::vector<SubsampleEntry>& subsamples = bitstream_buffer.subsamples();
 
   MediaCodecStatus status;
   if (key_id.empty() || iv.empty()) {
     status = media_codec_->QueueInputBuffer(input_buf_index, memory,
-                                            bitstream_buffer->size(),
+                                            bitstream_buffer.size(),
                                             presentation_timestamp);
   } else {
     // VDAs only support "cenc" encryption scheme.
     status = media_codec_->QueueSecureInputBuffer(
-        input_buf_index, memory, bitstream_buffer->size(), key_id, iv,
+        input_buf_index, memory, bitstream_buffer.size(), key_id, iv,
         subsamples, AesCtrEncryptionScheme(), presentation_timestamp);
   }
 
@@ -712,8 +711,6 @@ bool AndroidVideoDecodeAccelerator::QueueInput() {
   }
 
   pending_input_buf_index_ = -1;
-  // Popping the pending record invalides |bitstream_buffer|.
-  int32_t pending_bitstream_buffer_id = bitstream_buffer->id();
   pending_bitstream_records_.pop();
   TRACE_COUNTER1("media", "AVDA::PendingBitstreamBufferCount",
                  pending_bitstream_records_.size());
@@ -727,9 +724,8 @@ bool AndroidVideoDecodeAccelerator::QueueInput() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&AndroidVideoDecodeAccelerator::NotifyEndOfBitstreamBuffer,
-                     weak_this_factory_.GetWeakPtr(),
-                     pending_bitstream_buffer_id));
-  bitstreams_notified_in_advance_.push_back(pending_bitstream_buffer_id);
+                     weak_this_factory_.GetWeakPtr(), bitstream_buffer.id()));
+  bitstreams_notified_in_advance_.push_back(bitstream_buffer.id());
 
   if (status != MEDIA_CODEC_OK) {
     NOTIFY_ERROR(PLATFORM_FAILURE, "QueueInputBuffer failed:" << status);
@@ -979,7 +975,8 @@ void AndroidVideoDecodeAccelerator::SendDecodedFrameToClient(
                                                          picture_buffer);
 }
 
-void AndroidVideoDecodeAccelerator::Decode(BitstreamBuffer bitstream_buffer) {
+void AndroidVideoDecodeAccelerator::Decode(
+    const BitstreamBuffer& bitstream_buffer) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // If we deferred getting a surface, then start getting one now.
@@ -1003,9 +1000,12 @@ void AndroidVideoDecodeAccelerator::Decode(BitstreamBuffer bitstream_buffer) {
   }
 
   if (bitstream_buffer.id() >= 0 && bitstream_buffer.size() > 0) {
-    DecodeBuffer(std::move(bitstream_buffer));
+    DecodeBuffer(bitstream_buffer);
     return;
   }
+
+  if (base::SharedMemory::IsHandleValid(bitstream_buffer.handle()))
+    base::SharedMemory::CloseHandle(bitstream_buffer.handle());
 
   if (bitstream_buffer.id() < 0) {
     NOTIFY_ERROR(INVALID_ARGUMENT,
@@ -1020,8 +1020,8 @@ void AndroidVideoDecodeAccelerator::Decode(BitstreamBuffer bitstream_buffer) {
 }
 
 void AndroidVideoDecodeAccelerator::DecodeBuffer(
-    BitstreamBuffer bitstream_buffer) {
-  pending_bitstream_records_.push(BitstreamRecord(std::move(bitstream_buffer)));
+    const BitstreamBuffer& bitstream_buffer) {
+  pending_bitstream_records_.push(BitstreamRecord(bitstream_buffer));
   TRACE_COUNTER1("media", "AVDA::PendingBitstreamBufferCount",
                  pending_bitstream_records_.size());
 
@@ -1182,8 +1182,7 @@ void AndroidVideoDecodeAccelerator::StartCodecDrain(DrainType drain_type) {
 
   // Queue EOS if one is not already queued.
   if (!previous_drain_type)
-    DecodeBuffer(BitstreamBuffer(-1, base::SharedMemoryHandle(),
-                                 false /* read_only */, 0));
+    DecodeBuffer(BitstreamBuffer(-1, base::SharedMemoryHandle(), 0));
 }
 
 bool AndroidVideoDecodeAccelerator::IsDrainingForResetOrDestroy() const {

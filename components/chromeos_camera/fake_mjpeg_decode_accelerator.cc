@@ -37,12 +37,12 @@ bool FakeMjpegDecodeAccelerator::Initialize(
 }
 
 void FakeMjpegDecodeAccelerator::Decode(
-    media::BitstreamBuffer bitstream_buffer,
+    const media::BitstreamBuffer& bitstream_buffer,
     const scoped_refptr<media::VideoFrame>& video_frame) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
 
   auto src_shm = std::make_unique<media::UnalignedSharedMemory>(
-      bitstream_buffer.TakeRegion(), bitstream_buffer.size(),
+      bitstream_buffer.handle(), bitstream_buffer.size(),
       false /* read_only */);
   if (!src_shm->MapAt(bitstream_buffer.offset(), bitstream_buffer.size())) {
     DLOG(ERROR) << "Unable to map shared memory in FakeMjpegDecodeAccelerator";
@@ -55,12 +55,12 @@ void FakeMjpegDecodeAccelerator::Decode(
   decoder_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&FakeMjpegDecodeAccelerator::DecodeOnDecoderThread,
-                     base::Unretained(this), bitstream_buffer.id(), video_frame,
+                     base::Unretained(this), bitstream_buffer, video_frame,
                      base::Passed(&src_shm)));
 }
 
 void FakeMjpegDecodeAccelerator::DecodeOnDecoderThread(
-    int32_t bitstream_buffer_id,
+    const media::BitstreamBuffer& bitstream_buffer,
     const scoped_refptr<media::VideoFrame>& video_frame,
     std::unique_ptr<media::UnalignedSharedMemory> src_shm) {
   DCHECK(decoder_task_runner_->BelongsToCurrentThread());
@@ -74,7 +74,7 @@ void FakeMjpegDecodeAccelerator::DecodeOnDecoderThread(
   client_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&FakeMjpegDecodeAccelerator::OnDecodeDoneOnClientThread,
-                     weak_factory_.GetWeakPtr(), bitstream_buffer_id));
+                     weak_factory_.GetWeakPtr(), bitstream_buffer.id()));
 }
 
 bool FakeMjpegDecodeAccelerator::IsSupported() {

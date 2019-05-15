@@ -130,9 +130,9 @@ struct VaapiVideoEncodeAccelerator::InputFrameRef {
 };
 
 struct VaapiVideoEncodeAccelerator::BitstreamBufferRef {
-  BitstreamBufferRef(int32_t id, BitstreamBuffer buffer)
+  BitstreamBufferRef(int32_t id, const BitstreamBuffer& buffer)
       : id(id),
-        shm(std::make_unique<UnalignedSharedMemory>(buffer.TakeRegion(),
+        shm(std::make_unique<UnalignedSharedMemory>(buffer.handle(),
                                                     buffer.size(),
                                                     false)),
         offset(buffer.offset()) {}
@@ -639,7 +639,7 @@ void VaapiVideoEncodeAccelerator::EncodePendingInputs() {
 }
 
 void VaapiVideoEncodeAccelerator::UseOutputBitstreamBuffer(
-    BitstreamBuffer buffer) {
+    const BitstreamBuffer& buffer) {
   DVLOGF(4) << "id: " << buffer.id();
   DCHECK(child_task_runner_->BelongsToCurrentThread());
 
@@ -648,8 +648,7 @@ void VaapiVideoEncodeAccelerator::UseOutputBitstreamBuffer(
     return;
   }
 
-  auto buffer_ref =
-      std::make_unique<BitstreamBufferRef>(buffer.id(), std::move(buffer));
+  auto buffer_ref = std::make_unique<BitstreamBufferRef>(buffer.id(), buffer);
 
   encoder_thread_task_runner_->PostTask(
       FROM_HERE,

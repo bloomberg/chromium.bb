@@ -32,13 +32,13 @@ class FakeMjpegDecodeAccelerator : public MjpegDecodeAccelerator {
 
   // MjpegDecodeAccelerator implementation.
   bool Initialize(MjpegDecodeAccelerator::Client* client) override;
-  void Decode(media::BitstreamBuffer bitstream_buffer,
+  void Decode(const media::BitstreamBuffer& bitstream_buffer,
               const scoped_refptr<media::VideoFrame>& video_frame) override;
   bool IsSupported() override;
 
  private:
   void DecodeOnDecoderThread(
-      int32_t bitstream_buffer_id,
+      const media::BitstreamBuffer& bitstream_buffer,
       const scoped_refptr<media::VideoFrame>& video_frame,
       std::unique_ptr<media::UnalignedSharedMemory> src_shm);
   void NotifyError(int32_t bitstream_buffer_id, Error error);

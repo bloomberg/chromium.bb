@@ -251,7 +251,7 @@ class MEDIA_EXPORT VideoEncodeAccelerator {
   // to be filled once, then returned with BitstreamBufferReady().
   // Parameters:
   //  |buffer| is the bitstream buffer to use for output.
-  virtual void UseOutputBitstreamBuffer(BitstreamBuffer buffer) = 0;
+  virtual void UseOutputBitstreamBuffer(const BitstreamBuffer& buffer) = 0;
 
   // Request a change to the encoding parameters. This is only a request,
   // fulfilled on a best-effort basis.
