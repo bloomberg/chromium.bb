@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/inspector/worker_devtools_params.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/script/script.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/parent_execution_context_task_runners.h"
@@ -57,16 +58,21 @@ class FakeWorkerGlobalScope : public WorkerGlobalScope {
   }
 
   // WorkerGlobalScope
-  void Initialize(
-      const KURL& response_url,
-      network::mojom::ReferrerPolicy response_referrer_policy,
-      mojom::IPAddressSpace response_address_space,
-      const Vector<CSPHeaderAndType>& response_csp_headers) override {
+  void Initialize(const KURL& response_url,
+                  network::mojom::ReferrerPolicy response_referrer_policy,
+                  mojom::IPAddressSpace response_address_space,
+                  const Vector<CSPHeaderAndType>& response_csp_headers,
+                  const Vector<String>* response_origin_trial_tokens) override {
     InitializeURL(response_url);
     SetReferrerPolicy(response_referrer_policy);
     SetAddressSpace(response_address_space);
+
+    // These should be called after SetAddressSpace() to correctly override the
+    // address space by the "treat-as-public-address" CSP directive.
     InitContentSecurityPolicyFromVector(response_csp_headers);
     BindContentSecurityPolicyToExecutionContext();
+
+    OriginTrialContext::AddTokens(this, response_origin_trial_tokens);
   }
   void FetchAndRunClassicScript(
       const KURL& script_url,

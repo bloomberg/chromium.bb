@@ -60,9 +60,11 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
 
   // Do not call this. Use Create() instead. This is public only for
   // MakeGarbageCollected.
-  DedicatedWorkerGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,
-                             DedicatedWorkerThread*,
-                             base::TimeTicks time_origin);
+  DedicatedWorkerGlobalScope(
+      std::unique_ptr<GlobalScopeCreationParams>,
+      DedicatedWorkerThread*,
+      base::TimeTicks time_origin,
+      std::unique_ptr<Vector<String>> outside_origin_trial_tokens);
 
   ~DedicatedWorkerGlobalScope() override;
 
@@ -74,11 +76,11 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
   const AtomicString& InterfaceName() const override;
 
   // Implements WorkerGlobalScope.
-  void Initialize(
-      const KURL& response_url,
-      network::mojom::ReferrerPolicy response_referrer_policy,
-      mojom::IPAddressSpace response_address_space,
-      const Vector<CSPHeaderAndType>& response_csp_headers) override;
+  void Initialize(const KURL& response_url,
+                  network::mojom::ReferrerPolicy response_referrer_policy,
+                  mojom::IPAddressSpace response_address_space,
+                  const Vector<CSPHeaderAndType>& response_csp_headers,
+                  const Vector<String>* response_origin_trial_tokens) override;
   void FetchAndRunClassicScript(
       const KURL& script_url,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,

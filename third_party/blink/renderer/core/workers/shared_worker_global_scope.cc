@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/inspector/worker_thread_debugger.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/workers/shared_worker_thread.h"
 #include "third_party/blink/renderer/core/workers/worker_classic_script_loader.h"
@@ -74,10 +75,13 @@ SharedWorkerGlobalScope* SharedWorkerGlobalScope::Create(
   // off-the-main-thread worker script fetch by default.
   Vector<CSPHeaderAndType> response_csp_headers =
       creation_params->outside_content_security_policy_headers;
+  std::unique_ptr<Vector<String>> response_origin_trial_tokens =
+      std::move(creation_params->origin_trial_tokens);
   auto* global_scope = MakeGarbageCollected<SharedWorkerGlobalScope>(
       std::move(creation_params), thread, time_origin);
   global_scope->Initialize(response_script_url, response_referrer_policy,
-                           response_address_space, response_csp_headers);
+                           response_address_space, response_csp_headers,
+                           response_origin_trial_tokens.get());
   return global_scope;
 }
 
@@ -98,7 +102,8 @@ void SharedWorkerGlobalScope::Initialize(
     const KURL& response_url,
     network::mojom::ReferrerPolicy response_referrer_policy,
     mojom::IPAddressSpace response_address_space,
-    const Vector<CSPHeaderAndType>& response_csp_headers) {
+    const Vector<CSPHeaderAndType>& response_csp_headers,
+    const Vector<String>* response_origin_trial_tokens) {
   // Step 12.3. "Set worker global scope's url to response's url."
   InitializeURL(response_url);
 
@@ -119,6 +124,8 @@ void SharedWorkerGlobalScope::Initialize(
   // address space by the "treat-as-public-address" CSP directive.
   InitContentSecurityPolicyFromVector(response_csp_headers);
   BindContentSecurityPolicyToExecutionContext();
+
+  OriginTrialContext::AddTokens(this, response_origin_trial_tokens);
 }
 
 // https://html.spec.whatwg.org/C/#worker-processing-model
@@ -226,7 +233,8 @@ void SharedWorkerGlobalScope::DidFetchClassicScript(
              classic_script_loader->ResponseAddressSpace(),
              classic_script_loader->GetContentSecurityPolicy()
                  ? classic_script_loader->GetContentSecurityPolicy()->Headers()
-                 : Vector<CSPHeaderAndType>());
+                 : Vector<CSPHeaderAndType>(),
+             classic_script_loader->OriginTrialTokens());
 
   // Step 12.7. "Asynchronously complete the perform the fetch steps with
   // response."

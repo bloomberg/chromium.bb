@@ -6,6 +6,7 @@
 
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/network/content_security_policy_response_headers.h"
@@ -113,10 +114,15 @@ void WorkerModuleScriptFetcher::NotifyFinished(Resource* resource) {
     response_content_security_policy->DidReceiveHeaders(
         ContentSecurityPolicyResponseHeaders(resource->GetResponse()));
 
+    std::unique_ptr<Vector<String>> response_origin_trial_tokens =
+        OriginTrialContext::ParseHeaderValue(
+            resource->GetResponse().HttpHeaderField(http_names::kOriginTrial));
+
     // Step 12.3-12.6 are implemented in Initialize().
     global_scope_->Initialize(response_url, response_referrer_policy,
                               response_address_space,
-                              response_content_security_policy->Headers());
+                              response_content_security_policy->Headers(),
+                              response_origin_trial_tokens.get());
   }
 
   ModuleScriptCreationParams params(

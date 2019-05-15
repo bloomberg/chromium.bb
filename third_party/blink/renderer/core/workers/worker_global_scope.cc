@@ -50,7 +50,6 @@
 #include "third_party/blink/renderer/core/inspector/worker_thread_debugger.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
-#include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_script_url.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_type_policy_factory.h"
@@ -450,8 +449,6 @@ WorkerGlobalScope::WorkerGlobalScope(
   SetOutsideContentSecurityPolicyHeaders(
       creation_params->outside_content_security_policy_headers);
   SetWorkerSettings(std::move(creation_params->worker_settings));
-  OriginTrialContext::AddTokens(this,
-                                creation_params->origin_trial_tokens.get());
 
   // TODO(sammc): Require a valid |creation_params->interface_provider| once all
   // worker types provide a valid |creation_params->interface_provider|.

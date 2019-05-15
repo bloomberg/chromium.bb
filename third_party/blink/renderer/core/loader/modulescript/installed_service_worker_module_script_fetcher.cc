@@ -65,7 +65,8 @@ void InstalledServiceWorkerModuleScriptFetcher::Fetch(
 
     global_scope_->Initialize(response_url, response_referrer_policy,
                               script_data->GetResponseAddressSpace(),
-                              response_content_security_policy->Headers());
+                              response_content_security_policy->Headers(),
+                              script_data->CreateOriginTrialTokens().get());
   }
 
   ModuleScriptCreationParams params(

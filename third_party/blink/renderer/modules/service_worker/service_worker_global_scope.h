@@ -83,11 +83,11 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
   bool ShouldInstallV8Extensions() const final;
 
   // Implements WorkerGlobalScope:
-  void Initialize(
-      const KURL& response_url,
-      network::mojom::ReferrerPolicy response_referrer_policy,
-      mojom::IPAddressSpace response_address_space,
-      const Vector<CSPHeaderAndType>& response_csp_headers) override;
+  void Initialize(const KURL& response_url,
+                  network::mojom::ReferrerPolicy response_referrer_policy,
+                  mojom::IPAddressSpace response_address_space,
+                  const Vector<CSPHeaderAndType>& response_csp_headers,
+                  const Vector<String>* response_origin_trial_tokens) override;
   // Fetches and runs the top-level classic worker script for the 'new' or
   // 'update' service worker cases.
   void FetchAndRunClassicScript(
@@ -206,9 +206,10 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
 
   // https://w3c.github.io/ServiceWorker/#run-service-worker-algorithm
   void RunClassicScript(const KURL& response_url,
-                        network::mojom::ReferrerPolicy,
+                        network::mojom::ReferrerPolicy response_referrer_policy,
                         mojom::IPAddressSpace response_address_space,
-                        const Vector<CSPHeaderAndType>,
+                        const Vector<CSPHeaderAndType> response_csp_headers,
+                        const Vector<String>* response_origin_trial_tokens,
                         const String& source_code,
                         std::unique_ptr<Vector<uint8_t>> cached_meta_data,
                         const v8_inspector::V8StackTraceId&);

@@ -133,6 +133,8 @@ ServiceWorkerGlobalScope* ServiceWorkerGlobalScope::Create(
       creation_params->referrer_policy;
   mojom::IPAddressSpace response_address_space =
       *creation_params->response_address_space;
+  std::unique_ptr<Vector<String>> response_origin_trial_tokens =
+      std::move(creation_params->origin_trial_tokens);
   // Contrary to the name, |outside_content_security_policy_headers| contains
   // worker script's response CSP headers in this case.
   // TODO(nhiroki): Introduce inside's csp headers field in
@@ -144,7 +146,8 @@ ServiceWorkerGlobalScope* ServiceWorkerGlobalScope::Create(
       std::move(creation_params), thread, std::move(cache_storage_info),
       time_origin);
   global_scope->Initialize(response_url, response_referrer_policy,
-                           response_address_space, response_csp_headers);
+                           response_address_space, response_csp_headers,
+                           response_origin_trial_tokens.get());
   return global_scope;
 }
 
@@ -256,10 +259,6 @@ void ServiceWorkerGlobalScope::RunInstalledClassicScript(
   }
   ReportingProxy().DidLoadClassicScript();
 
-  std::unique_ptr<Vector<String>> origin_trial_tokens =
-      script_data->CreateOriginTrialTokens();
-  OriginTrialContext::AddTokens(this, origin_trial_tokens.get());
-
   auto referrer_policy = network::mojom::ReferrerPolicy::kDefault;
   if (!script_data->GetReferrerPolicy().IsNull()) {
     SecurityPolicy::ReferrerPolicyFromHeaderValue(
@@ -276,8 +275,9 @@ void ServiceWorkerGlobalScope::RunInstalledClassicScript(
 
   RunClassicScript(
       script_url, referrer_policy, script_data->GetResponseAddressSpace(),
-      content_security_policy->Headers(), script_data->TakeSourceText(),
-      script_data->TakeMetaData(), stack_id);
+      content_security_policy->Headers(),
+      script_data->CreateOriginTrialTokens().get(),
+      script_data->TakeSourceText(), script_data->TakeMetaData(), stack_id);
 }
 
 void ServiceWorkerGlobalScope::RunInstalledModuleScript(
@@ -427,6 +427,7 @@ void ServiceWorkerGlobalScope::DidFetchClassicScript(
       classic_script_loader->GetContentSecurityPolicy()
           ? classic_script_loader->GetContentSecurityPolicy()->Headers()
           : Vector<CSPHeaderAndType>(),
+      classic_script_loader->OriginTrialTokens(),
       classic_script_loader->SourceText(),
       classic_script_loader->ReleaseCachedMetadata(), stack_id);
 }
@@ -436,7 +437,8 @@ void ServiceWorkerGlobalScope::Initialize(
     const KURL& response_url,
     network::mojom::ReferrerPolicy response_referrer_policy,
     mojom::IPAddressSpace response_address_space,
-    const Vector<CSPHeaderAndType>& response_csp_headers) {
+    const Vector<CSPHeaderAndType>& response_csp_headers,
+    const Vector<String>* response_origin_trial_tokens) {
   // Step 4.5. "Set workerGlobalScope's url to serviceWorker's script url."
   InitializeURL(response_url);
 
@@ -467,6 +469,8 @@ void ServiceWorkerGlobalScope::Initialize(
   InitContentSecurityPolicyFromVector(response_csp_headers);
   BindContentSecurityPolicyToExecutionContext();
 
+  OriginTrialContext::AddTokens(this, response_origin_trial_tokens);
+
   // TODO(nhiroki): Clarify mappings between the steps 4.8-4.11 and
   // implementation.
 }
@@ -477,12 +481,13 @@ void ServiceWorkerGlobalScope::RunClassicScript(
     network::mojom::ReferrerPolicy response_referrer_policy,
     mojom::IPAddressSpace response_address_space,
     const Vector<CSPHeaderAndType> response_csp_headers,
+    const Vector<String>* response_origin_trial_tokens,
     const String& source_code,
     std::unique_ptr<Vector<uint8_t>> cached_meta_data,
     const v8_inspector::V8StackTraceId& stack_id) {
   // Step 4.5-4.11 are implemented in Initialize().
   Initialize(response_url, response_referrer_policy, response_address_space,
-             response_csp_headers);
+             response_csp_headers, response_origin_trial_tokens);
 
   // Step 4.12. "Let evaluationStatus be the result of running the classic
   // script script if script is a classic script, otherwise, the result of

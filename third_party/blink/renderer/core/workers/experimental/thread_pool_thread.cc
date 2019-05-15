@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/workers/experimental/thread_pool_thread.h"
 
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/workers/experimental/task_worklet_global_scope.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/threaded_object_proxy_base.h"
@@ -36,11 +37,11 @@ class ThreadPoolWorkerGlobalScope final : public WorkerGlobalScope {
   }
 
   // WorkerGlobalScope
-  void Initialize(
-      const KURL& response_url,
-      network::mojom::ReferrerPolicy response_referrer_policy,
-      mojom::IPAddressSpace response_address_space,
-      const Vector<CSPHeaderAndType>& response_csp_headers) override {
+  void Initialize(const KURL& response_url,
+                  network::mojom::ReferrerPolicy response_referrer_policy,
+                  mojom::IPAddressSpace response_address_space,
+                  const Vector<CSPHeaderAndType>& response_csp_headers,
+                  const Vector<String>* response_origin_trial_tokens) override {
     InitializeURL(response_url);
     SetReferrerPolicy(response_referrer_policy);
     SetAddressSpace(response_address_space);
@@ -49,6 +50,8 @@ class ThreadPoolWorkerGlobalScope final : public WorkerGlobalScope {
     // address space by the "treat-as-public-address" CSP directive.
     InitContentSecurityPolicyFromVector(response_csp_headers);
     BindContentSecurityPolicyToExecutionContext();
+
+    OriginTrialContext::AddTokens(this, response_origin_trial_tokens);
   }
   void FetchAndRunClassicScript(
       const KURL& script_url,

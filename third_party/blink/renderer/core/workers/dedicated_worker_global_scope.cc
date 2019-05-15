@@ -61,12 +61,16 @@ DedicatedWorkerGlobalScope* DedicatedWorkerGlobalScope::Create(
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
     DedicatedWorkerThread* thread,
     base::TimeTicks time_origin) {
+  std::unique_ptr<Vector<String>> outside_origin_trial_tokens =
+      std::move(creation_params->origin_trial_tokens);
+
   // Off-the-main-thread worker script fetch:
   // Initialize() is called after script fetch.
   if (creation_params->off_main_thread_fetch_option ==
       OffMainThreadWorkerScriptFetchOption::kEnabled) {
     return MakeGarbageCollected<DedicatedWorkerGlobalScope>(
-        std::move(creation_params), thread, time_origin);
+        std::move(creation_params), thread, time_origin,
+        std::move(outside_origin_trial_tokens));
   }
 
   // Legacy on-the-main-thread worker script fetch (to be removed):
@@ -76,19 +80,27 @@ DedicatedWorkerGlobalScope* DedicatedWorkerGlobalScope::Create(
   mojom::IPAddressSpace response_address_space =
       *creation_params->response_address_space;
   auto* global_scope = MakeGarbageCollected<DedicatedWorkerGlobalScope>(
-      std::move(creation_params), thread, time_origin);
-  // A dummy CSP headers is passed here as it is superseded by outside's CSP
-  // headers in Initialize().
+      std::move(creation_params), thread, time_origin,
+      std::move(outside_origin_trial_tokens));
+  // Pass dummy CSP headers here as it is superseded by outside's CSP headers in
+  // Initialize().
+  // Pass dummy origin trial tokens here as it is already set to outside's
+  // origin trial tokens in DedicatedWorkerGlobalScope's constructor.
   global_scope->Initialize(response_script_url, response_referrer_policy,
-                           response_address_space, Vector<CSPHeaderAndType>());
+                           response_address_space, Vector<CSPHeaderAndType>(),
+                           nullptr /* response_origin_trial_tokens */);
   return global_scope;
 }
 
 DedicatedWorkerGlobalScope::DedicatedWorkerGlobalScope(
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
     DedicatedWorkerThread* thread,
-    base::TimeTicks time_origin)
-    : WorkerGlobalScope(std::move(creation_params), thread, time_origin) {}
+    base::TimeTicks time_origin,
+    std::unique_ptr<Vector<String>> outside_origin_trial_tokens)
+    : WorkerGlobalScope(std::move(creation_params), thread, time_origin) {
+  // Inherit the outside's origin trial tokens.
+  OriginTrialContext::AddTokens(this, outside_origin_trial_tokens.get());
+}
 
 DedicatedWorkerGlobalScope::~DedicatedWorkerGlobalScope() = default;
 
@@ -101,7 +113,8 @@ void DedicatedWorkerGlobalScope::Initialize(
     const KURL& response_url,
     network::mojom::ReferrerPolicy response_referrer_policy,
     mojom::IPAddressSpace response_address_space,
-    const Vector<CSPHeaderAndType>& /* not used */) {
+    const Vector<CSPHeaderAndType>& /* response_csp_headers */,
+    const Vector<String>* /* response_origin_trial_tokens */) {
   // Step 12.3. "Set worker global scope's url to response's url."
   InitializeURL(response_url);
 
@@ -118,11 +131,15 @@ void DedicatedWorkerGlobalScope::Initialize(
 
   // Step 12.6. "Execute the Initialize a global object's CSP list algorithm
   // on worker global scope and response. [CSP]"
-  // DedicatedWorkerGlobalScope inherits the outside's CSP instead of the passed
-  // CSP. These should be called after SetAddressSpace() to correctly override
-  // the address space by the "treat-as-public-address" CSP directive.
+  // DedicatedWorkerGlobalScope inherits the outside's CSP instead of the
+  // response CSP headers. These should be called after SetAddressSpace() to
+  // correctly override the address space by the "treat-as-public-address" CSP
+  // directive.
   InitContentSecurityPolicyFromVector(OutsideContentSecurityPolicyHeaders());
   BindContentSecurityPolicyToExecutionContext();
+
+  // DedicatedWorkerGlobalScope inherits the outside's OriginTrialTokens in the
+  // constructor instead of the response origin trial tokens.
 }
 
 // https://html.spec.whatwg.org/C/#worker-processing-model
@@ -260,11 +277,14 @@ void DedicatedWorkerGlobalScope::DidFetchClassicScript(
   }
 
   // Step 12.3-12.6 are implemented in Initialize().
-  // A dummy CSP headers is passed here as it is superseded by outside's CSP
-  // headers in Initialize().
+  // Pass dummy CSP headers here as it is superseded by outside's CSP headers in
+  // Initialize().
+  // Pass dummy origin trial tokens here as it is already set to outside's
+  // origin trial tokens in DedicatedWorkerGlobalScope's constructor.
   Initialize(classic_script_loader->ResponseURL(), response_referrer_policy,
              classic_script_loader->ResponseAddressSpace(),
-             Vector<CSPHeaderAndType>());
+             Vector<CSPHeaderAndType>(),
+             nullptr /* response_origin_trial_tokens */);
 
   // Step 12.7. "Asynchronously complete the perform the fetch steps with
   // response."
