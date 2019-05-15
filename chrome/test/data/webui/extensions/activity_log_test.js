@@ -84,13 +84,13 @@ suite('ExtensionsActivityLogTest', function() {
         currentPage, {page: Page.DETAILS, extensionId: EXTENSION_ID});
   });
 
-  test('tab transitions', function() {
+  test('tab transitions', async () => {
     Polymer.dom.flush();
     // Default view should be the history view.
     testVisible('activity-log-history', true);
 
     // Navigate to the activity log stream.
-    activityLog.$$('#real-time-tab').click();
+    activityLog.$$('cr-tabs').selected = 1;
     Polymer.dom.flush();
 
     // One activity is recorded and should appear in the stream.
@@ -101,23 +101,22 @@ suite('ExtensionsActivityLogTest', function() {
     expectEquals(1, getStreamItems().length);
 
     // Navigate back to the activity log history tab.
-    activityLog.$$('#history-tab').click();
+    activityLog.$$('cr-tabs').selected = 0;
 
     // Expect a refresh of the activity log.
-    proxyDelegate.whenCalled('getExtensionActivityLog').then(() => {
-      Polymer.dom.flush();
-      testVisible('activity-log-history', true);
+    await proxyDelegate.whenCalled('getExtensionActivityLog');
+    Polymer.dom.flush();
+    testVisible('activity-log-history', true);
 
-      // Another activity is recorded, but should not appear in the stream as
-      // the stream is inactive.
-      proxyDelegate.getOnExtensionActivity().callListeners(activity1);
+    // Another activity is recorded, but should not appear in the stream as
+    // the stream is inactive.
+    proxyDelegate.getOnExtensionActivity().callListeners(activity1);
 
-      activityLog.$$('#real-time-tab').click();
-      Polymer.dom.flush();
+    activityLog.$$('cr-tabs').selected = 1;
+    Polymer.dom.flush();
 
-      // The one activity in the stream should have persisted between tab
-      // switches.
-      expectEquals(1, getStreamItems().length);
-    });
+    // The one activity in the stream should have persisted between tab
+    // switches.
+    expectEquals(1, getStreamItems().length);
   });
 });

@@ -43,6 +43,15 @@ cr.define('extensions', function() {
         value: ActivityLogSubpage.NONE,
         observer: 'onSelectedSubpageChanged_',
       },
+
+      /** @private {Array<string>} */
+      tabNames_: {
+        type: Array,
+        value: () => ([
+          loadTimeData.getString('activityLogHistoryTabHeading'),
+          loadTimeData.getString('activityLogStreamTabHeading'),
+        ]),
+      }
     },
 
     listeners: {
