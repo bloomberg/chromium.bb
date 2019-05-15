@@ -98,9 +98,6 @@ RenderFrameProxyHost::RenderFrameProxyHost(SiteInstance* site_instance,
 }
 
 RenderFrameProxyHost::~RenderFrameProxyHost() {
-  if (!destruction_callback_.is_null())
-    std::move(destruction_callback_).Run();
-
   if (GetProcess()->IsInitializedAndNotDead()) {
     // TODO(nasko): For now, don't send this IPC for top-level frames, as
     // the top-level RenderFrame will delete the RenderFrameProxy.
@@ -267,11 +264,6 @@ void RenderFrameProxyHost::BubbleLogicalScroll(
     blink::WebScrollDirection direction,
     blink::WebScrollGranularity granularity) {
   Send(new FrameMsg_BubbleLogicalScroll(routing_id_, direction, granularity));
-}
-
-void RenderFrameProxyHost::SetDestructionCallback(
-    DestructionCallback destruction_callback) {
-  destruction_callback_ = std::move(destruction_callback);
 }
 
 void RenderFrameProxyHost::OnDetach() {
