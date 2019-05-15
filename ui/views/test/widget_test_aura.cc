@@ -6,6 +6,7 @@
 
 #include "build/build_config.h"
 #include "ui/aura/client/focus_client.h"
+#include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/test/aura_test_helper.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"

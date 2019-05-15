@@ -336,7 +336,14 @@ void Shell::PlatformInitialize(const gfx::Size& default_window_size) {
   _setmode(_fileno(stderr), _O_BINARY);
 #endif
 #if defined(OS_CHROMEOS)
-  wm_test_helper_ = new wm::WMTestHelper(default_window_size);
+  ui::ContextFactory* ui_context_factory =
+      aura::Env::GetInstance()->mode() == aura::Env::Mode::LOCAL
+          ? GetContextFactory()
+          : nullptr;
+  wm_test_helper_ = new wm::WMTestHelper(
+      default_window_size,
+      ServiceManagerConnection::GetForProcess()->GetConnector(),
+      ui_context_factory);
 #else
   wm_state_ = new wm::WMState;
   views::InstallDesktopScreenIfNecessary();

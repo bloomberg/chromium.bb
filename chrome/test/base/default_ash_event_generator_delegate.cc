@@ -6,6 +6,7 @@
 
 #include "ash/shell.h"
 #include "base/macros.h"
+#include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/test/default_event_generator_delegate.h"
 #include "ui/base/ui_base_features.h"
 

@@ -9,6 +9,7 @@
 #include "ash/shell.h"
 #include "ash/wm/work_area_insets.h"
 #include "base/macros.h"
+#include "ui/aura/mus/property_converter.h"
 #include "ui/base/class_property.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
