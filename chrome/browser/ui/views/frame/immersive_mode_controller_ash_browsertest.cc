@@ -71,7 +71,7 @@ class ImmersiveModeControllerAshHostedAppBrowserTest
     // which triggers an animation.
     ash::ImmersiveFullscreenControllerTestApi(
         static_cast<ImmersiveModeControllerAsh*>(controller_)->controller())
-        .SetupForTest(/*wait_for_mouse_event=*/wait);
+        .SetupForTest();
 
     browser_->window()->Show();
   }

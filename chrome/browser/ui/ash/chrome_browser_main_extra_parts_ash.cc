@@ -64,8 +64,6 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ws/public/mojom/user_activity_monitor.mojom.h"
-#include "ui/aura/mus/property_converter.h"
-#include "ui/aura/mus/window_tree_client.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/ui_base_features.h"
 
