@@ -1148,7 +1148,7 @@ void ServiceWorkerContextClient::DispatchSyncEvent(
 void ServiceWorkerContextClient::DispatchPeriodicSyncEvent(
     const std::string& tag,
     base::TimeDelta timeout,
-    DispatchSyncEventCallback callback) {
+    DispatchPeriodicSyncEventCallback callback) {
   DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());
   // |context_| is valid because the Mojo binding is on |worker_task_runner_|.
   DCHECK(context_);

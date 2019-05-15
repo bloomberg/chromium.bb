@@ -150,7 +150,7 @@ void FakeServiceWorker::DispatchSyncEvent(const std::string& tag,
 void FakeServiceWorker::DispatchPeriodicSyncEvent(
     const std::string& tag,
     base::TimeDelta timeout,
-    DispatchSyncEventCallback callback) {
+    DispatchPeriodicSyncEventCallback callback) {
   NOTIMPLEMENTED();
 }
 
