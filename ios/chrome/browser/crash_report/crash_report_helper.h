@@ -6,7 +6,6 @@
 #define IOS_CHROME_BROWSER_CRASH_REPORT_CRASH_REPORT_HELPER_H_
 
 @class NSString;
-@class TabModel;
 
 namespace web {
 class WebState;
@@ -30,18 +29,18 @@ void MonitorURLsForWebStateList(WebStateList* web_state_list);
 // Stop monitoring the urls loaded in the |web_state_list|.
 void StopMonitoringURLsForWebStateList(WebStateList* web_state_list);
 
-// Adds the state monitor to |tab_model|. TabModels that are not monitored via
-// this function are still monitored through notifications, but calling this
-// function is mandatory to keep the monitoring of deleted tabs consistent.
-void MonitorTabStateForTabModel(TabModel* tab_model);
+// Adds the state monitor to |web_state_list|. WebStateLists that are not
+// monitored via this function are still monitored through WebStateObserver
+// methods, but calling this function is mandatory to keep the monitoring of
+// deleted tabs consistent.
+void MonitorTabStateForWebStateList(WebStateList* web_state_list);
 
-// Stop the state monitor of |tab_model|.
-void StopMonitoringTabStateForTabModel(TabModel* tab_model);
+// Stop the state monitor of |web_state_list|.
+void StopMonitoringTabStateForWebStateList(WebStateList* web_state_list);
 
 // Clear any state about the urls loaded in the given WebStateList; this should
 // be called when the WebStateList is deactivated.
 void ClearStateForWebStateList(WebStateList* web_state_list);
-
 }  // namespace breakpad
 
 #endif  // IOS_CHROME_BROWSER_CRASH_REPORT_CRASH_REPORT_HELPER_H_

@@ -27,14 +27,6 @@ namespace web {
 class WebState;
 }
 
-// Notification sent by a Tab when it is showing an exportable file (e.g a pdf
-// file.
-extern NSString* const kTabIsShowingExportableNotificationForCrashReporting;
-
-// Notification sent by a Tab when it is closing its current document, to go to
-// another location.
-extern NSString* const kTabClosingCurrentDocumentNotificationForCrashReporting;
-
 // The header name and value for the data reduction proxy to request an image to
 // be reloaded without optimizations.
 extern NSString* const kProxyPassthroughHeaderName;

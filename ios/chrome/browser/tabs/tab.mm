@@ -101,12 +101,6 @@
 #error "This file requires ARC support."
 #endif
 
-NSString* const kTabIsShowingExportableNotificationForCrashReporting =
-    @"kTabIsShowingExportableNotificationForCrashReporting";
-NSString* const kTabClosingCurrentDocumentNotificationForCrashReporting =
-    @"kTabClosingCurrentDocumentNotificationForCrashReporting";
-
-NSString* const kTabUrlKey = @"url";
 
 @interface Tab ()<CRWWebStateObserver> {
   // Browser state associated with this Tab.
@@ -233,9 +227,6 @@ NSString* const kTabUrlKey = @"url";
   if (self.webState->GetContentsMimeType() != "application/pdf")
     return;
 
-  [[NSNotificationCenter defaultCenter]
-      postNotificationName:kTabIsShowingExportableNotificationForCrashReporting
-                    object:self];
   // Try to generate a filename by first looking at |content_disposition_|, then
   // at the last component of WebState's last committed URL and if both of these
   // fail use the default filename "document".

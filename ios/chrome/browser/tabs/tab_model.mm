@@ -799,10 +799,6 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
   }
 
   [self notifyTabChanged:tab];
-  [[NSNotificationCenter defaultCenter]
-      postNotificationName:
-          kTabClosingCurrentDocumentNotificationForCrashReporting
-                    object:tab];
 
   DCHECK(webState->GetNavigationManager());
   web::NavigationItem* navigationItem =

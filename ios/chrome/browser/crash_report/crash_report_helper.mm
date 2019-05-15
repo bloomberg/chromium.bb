@@ -19,15 +19,13 @@
 #include "ios/chrome/browser/chrome_paths.h"
 #include "ios/chrome/browser/crash_report/breakpad_helper.h"
 #import "ios/chrome/browser/crash_report/crash_report_user_application_state.h"
-#import "ios/chrome/browser/tabs/tab.h"
-#import "ios/chrome/browser/tabs/tab_model.h"
-#import "ios/chrome/browser/tabs/tab_model_observer.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #include "ios/chrome/browser/web_state_list/all_web_state_observation_forwarder.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #include "ios/web/public/browser_state.h"
 #import "ios/web/public/navigation_item.h"
+#import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/web_state/navigation_context.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
@@ -80,34 +78,47 @@
 @end
 
 // TabModelObserver that some tabs stats to be sent to the crash server.
-@interface CrashReporterTabStateObserver : NSObject<TabModelObserver> {
+@interface CrashReporterTabStateObserver
+    : NSObject <CRWWebStateObserver, WebStateListObserving> {
  @private
   // Map associating the tab id to an object describing the current state of the
   // tab.
   NSMutableDictionary* tabCurrentStateByTabId_;
+  // The WebStateObserverBridge used to register self as a WebStateObserver
+  std::unique_ptr<web::WebStateObserverBridge> _webStateObserver;
+  // Bridges C++ WebStateListObserver methods to this
+  // CrashReporterTabStateObserver.
+  std::unique_ptr<WebStateListObserverBridge> _webStateListObserver;
+  // Forwards observer methods for all WebStates in each WebStateList monitored
+  // by the CrashReporterTabStateObserver.
+  std::map<WebStateList*, std::unique_ptr<AllWebStateObservationForwarder>>
+      _allWebStateObservationForwarders;
 }
 + (CrashReporterTabStateObserver*)uniqueInstance;
 // Removes the stats for the tab tabId
 - (void)removeTabId:(NSString*)tabId;
-// Callback for the kTabClosingCurrentDocumentNotificationForCrashReporting
-// notification. Removes document related information from
-// tabCurrentStateByTabId_ by calling closingDocumentInTab:tabId.
-- (void)closingDocument:(NSNotification*)notification;
 // Removes document related information from tabCurrentStateByTabId_.
 - (void)closingDocumentInTab:(NSString*)tabId;
-// Callback for the  kTabIsShowingExportableNotificationForCrashReporting
-// notification. Sets the mimeType in tabCurrentStateByTabId_.
-- (void)showingExportableDocument:(NSNotification*)notification;
-
 // Sets a tab |tabId| specific information with key |key| and value |value| in
 // tabCurrentStateByTabId_.
 - (void)setTabInfo:(NSString*)key
-         withValue:(NSString*)value
+         withValue:(const NSString*)value
             forTab:(NSString*)tabId;
 // Retrieves the |key| information for tab |tabId|.
 - (id)getTabInfo:(NSString*)key forTab:(NSString*)tabId;
 // Removes the |key| information for tab |tabId|
 - (void)removeTabInfo:(NSString*)key forTab:(NSString*)tabId;
+// Observes |webState| by this instance of the CrashReporterTabStateObserver.
+- (void)observeWebState:(web::WebState*)webState;
+// Stop Observing |webState| by this instance of the
+// CrashReporterTabStateObserver.
+- (void)stopObservingWebState:(web::WebState*)webState;
+// Observes |webStateList| by this instance of the
+// CrashReporterTabStateObserver.
+- (void)observeWebStateList:(WebStateList*)webStateList;
+// Stop Observing |webStateList| by this instance of the
+// CrashReporterTabStateObserver.
+- (void)stopObservingWebStateList:(WebStateList*)webStateList;
 @end
 
 namespace {
@@ -121,7 +132,10 @@ NSString* PendingURLKeyForKey(NSString* key) {
 // Max number of urls to send. This must be kept low for privacy issue as well
 // as because breakpad does limit the total number of parameters to 64.
 const int kNumberOfURLsToSend = 1;
-}
+
+// Mime type used for PDF documents.
+const NSString* kDocumentMimeType = @"application/pdf";
+}  // namespace
 
 @implementation CrashReporterURLObserver
 
@@ -282,38 +296,21 @@ const int kNumberOfURLsToSend = 1;
 - (id)init {
   if ((self = [super init])) {
     tabCurrentStateByTabId_ = [[NSMutableDictionary alloc] init];
-    // Register for url changed notifications.
-    [[NSNotificationCenter defaultCenter]
-        addObserver:self
-           selector:@selector(closingDocument:)
-               name:kTabClosingCurrentDocumentNotificationForCrashReporting
-             object:nil];
-    [[NSNotificationCenter defaultCenter]
-        addObserver:self
-           selector:@selector(showingExportableDocument:)
-               name:kTabIsShowingExportableNotificationForCrashReporting
-             object:nil];
+    _webStateObserver = std::make_unique<web::WebStateObserverBridge>(self);
+    _webStateListObserver = std::make_unique<WebStateListObserverBridge>(self);
   }
   return self;
 }
 
-- (void)closingDocument:(NSNotification*)notification {
-  Tab* tab = notification.object;
-  NSString* tabID = nil;
-  if (tab.webState)
-    tabID = TabIdTabHelper::FromWebState(tab.webState)->tab_id();
-  [self closingDocumentInTab:tabID];
-}
-
 - (void)closingDocumentInTab:(NSString*)tabId {
   NSString* mime = (NSString*)[self getTabInfo:@"mime" forTab:tabId];
-  if ([mime isEqualToString:@"application/pdf"])
+  if ([kDocumentMimeType isEqualToString:mime])
     breakpad_helper::SetCurrentTabIsPDF(false);
   [self removeTabInfo:@"mime" forTab:tabId];
 }
 
 - (void)setTabInfo:(NSString*)key
-         withValue:(NSString*)value
+         withValue:(const NSString*)value
             forTab:(NSString*)tabId {
   NSMutableDictionary* tabCurrentState =
       [tabCurrentStateByTabId_ objectForKey:tabId];
@@ -335,37 +332,68 @@ const int kNumberOfURLsToSend = 1;
   [[tabCurrentStateByTabId_ objectForKey:tabId] removeObjectForKey:key];
 }
 
-- (void)showingExportableDocument:(NSNotification*)notification {
-  Tab* tab = notification.object;
-  NSString* tabID = nil;
-  if (tab.webState)
-    tabID = TabIdTabHelper::FromWebState(tab.webState)->tab_id();
-  NSString* oldMime = (NSString*)[self getTabInfo:@"mime" forTab:tabID];
-  if ([oldMime isEqualToString:@"application/pdf"])
-    return;
-
-  std::string mime = [tab webState]->GetContentsMimeType();
-  NSString* nsMime = base::SysUTF8ToNSString(mime);
-  [self setTabInfo:@"mime" withValue:nsMime forTab:tabID];
-  breakpad_helper::SetCurrentTabIsPDF(true);
-}
-
 - (void)removeTabId:(NSString*)tabId {
   [self closingDocumentInTab:tabId];
   [tabCurrentStateByTabId_ removeObjectForKey:tabId];
 }
 
-- (void)tabModel:(TabModel*)model
-    didRemoveTab:(Tab*)tab
-         atIndex:(NSUInteger)index {
-  [self removeTabId:TabIdTabHelper::FromWebState(tab.webState)->tab_id()];
+- (void)observeWebState:(web::WebState*)webState {
+  webState->AddObserver(_webStateObserver.get());
 }
 
-- (void)tabModel:(TabModel*)model
-    didReplaceTab:(Tab*)oldTab
-          withTab:(Tab*)newTab
-          atIndex:(NSUInteger)index {
-  [self removeTabId:TabIdTabHelper::FromWebState(oldTab.webState)->tab_id()];
+- (void)stopObservingWebState:(web::WebState*)webState {
+  webState->RemoveObserver(_webStateObserver.get());
+}
+
+- (void)observeWebStateList:(WebStateList*)webStateList {
+  webStateList->AddObserver(_webStateListObserver.get());
+  DCHECK(!_allWebStateObservationForwarders[webStateList]);
+  // Observe all webStates of this webStateList, so that Tab states are saved in
+  // cases of crashing.
+  _allWebStateObservationForwarders[webStateList] =
+      std::make_unique<AllWebStateObservationForwarder>(
+          webStateList, _webStateObserver.get());
+}
+
+- (void)stopObservingWebStateList:(WebStateList*)webStateList {
+  _allWebStateObservationForwarders[webStateList] = nullptr;
+  webStateList->RemoveObserver(_webStateListObserver.get());
+}
+
+#pragma mark - WebStateListObserving protocol
+
+- (void)webStateList:(WebStateList*)webStateList
+    didDetachWebState:(web::WebState*)webState
+              atIndex:(int)atIndex {
+  [self removeTabId:TabIdTabHelper::FromWebState(webState)->tab_id()];
+}
+
+- (void)webStateList:(WebStateList*)webStateList
+    didReplaceWebState:(web::WebState*)oldWebState
+          withWebState:(web::WebState*)newWebState
+               atIndex:(int)atIndex {
+  [self removeTabId:TabIdTabHelper::FromWebState(oldWebState)->tab_id()];
+}
+
+#pragma mark - CRWWebStateObserver protocol
+
+- (void)webState:(web::WebState*)webState
+    didStartNavigation:(web::NavigationContext*)navigation {
+  NSString* tabID = TabIdTabHelper::FromWebState(webState)->tab_id();
+  [self closingDocumentInTab:tabID];
+}
+
+- (void)webState:(web::WebState*)webState
+    didLoadPageWithSuccess:(BOOL)loadSuccess {
+  if (!loadSuccess || webState->GetContentsMimeType() != "application/pdf")
+    return;
+  NSString* tabID = TabIdTabHelper::FromWebState(webState)->tab_id();
+  NSString* oldMime = (NSString*)[self getTabInfo:@"mime" forTab:tabID];
+  if ([kDocumentMimeType isEqualToString:oldMime])
+    return;
+
+  [self setTabInfo:@"mime" withValue:kDocumentMimeType forTab:tabID];
+  breakpad_helper::SetCurrentTabIsPDF(true);
 }
 
 @end
@@ -390,12 +418,14 @@ void StopMonitoringURLsForWebStateList(WebStateList* web_state_list) {
       stopObservingWebStateList:web_state_list];
 }
 
-void MonitorTabStateForTabModel(TabModel* tab_model) {
-  [tab_model addObserver:[CrashReporterTabStateObserver uniqueInstance]];
+void MonitorTabStateForWebStateList(WebStateList* web_state_list) {
+  [[CrashReporterTabStateObserver uniqueInstance]
+      observeWebStateList:web_state_list];
 }
 
-void StopMonitoringTabStateForTabModel(TabModel* tab_model) {
-  [tab_model removeObserver:[CrashReporterTabStateObserver uniqueInstance]];
+void StopMonitoringTabStateForWebStateList(WebStateList* web_state_list) {
+  [[CrashReporterTabStateObserver uniqueInstance]
+      stopObservingWebStateList:web_state_list];
 }
 
 void ClearStateForWebStateList(WebStateList* web_state_list) {

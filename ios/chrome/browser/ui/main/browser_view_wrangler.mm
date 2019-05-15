@@ -164,8 +164,7 @@
 
   // Follow loaded URLs in the main tab model to send those in case of
   // crashes.
-  breakpad::MonitorURLsForWebStateList(
-      self.mainBrowser->GetTabModel().webStateList);
+  breakpad::MonitorURLsForWebStateList(self.mainBrowser->GetWebStateList());
   ios::GetChromeBrowserProvider()->InitializeCastService(
       self.mainBrowser->GetTabModel());
 
@@ -239,7 +238,7 @@
 - (void)setMainBrowser:(std::unique_ptr<Browser>)mainBrowser {
   if (_mainBrowser.get()) {
     TabModel* tabModel = self.mainBrowser->GetTabModel();
-    breakpad::StopMonitoringTabStateForTabModel(tabModel);
+    breakpad::StopMonitoringTabStateForWebStateList(tabModel.webStateList);
     breakpad::StopMonitoringURLsForWebStateList(tabModel.webStateList);
     [tabModel browserStateDestroyed];
     if (_tabModelObserver) {
@@ -254,7 +253,7 @@
 - (void)setOtrBrowser:(std::unique_ptr<Browser>)otrBrowser {
   if (_otrBrowser.get()) {
     TabModel* tabModel = self.otrBrowser->GetTabModel();
-    breakpad::StopMonitoringTabStateForTabModel(tabModel);
+    breakpad::StopMonitoringTabStateForWebStateList(tabModel.webStateList);
     [tabModel browserStateDestroyed];
     if (_tabModelObserver) {
       [tabModel removeObserver:_tabModelObserver];
@@ -313,8 +312,9 @@
   DCHECK(![self.otrBrowser->GetTabModel() count]);
   DCHECK(_browserState);
 
-  // Stop watching the OTR tab model's state for crashes.
-  breakpad::StopMonitoringTabStateForTabModel(self.otrBrowser->GetTabModel());
+  // Stop watching the OTR webStateList's state for crashes.
+  breakpad::StopMonitoringTabStateForWebStateList(
+      self.otrBrowser->GetWebStateList());
 
   // At this stage, a new incognitoBrowserCoordinator shouldn't be lazily
   // constructed by calling the property getter.
@@ -411,7 +411,7 @@
     [tabModel addObserver:_tabModelObserver];
     [tabModel addObserver:self];
   }
-  breakpad::MonitorTabStateForTabModel(tabModel);
+  breakpad::MonitorTabStateForWebStateList(tabModel.webStateList);
 }
 
 - (BrowserCoordinator*)coordinatorForBrowser:(Browser*)browser {
