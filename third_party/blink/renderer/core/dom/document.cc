@@ -2420,9 +2420,22 @@ void Document::NotifyLayoutTreeOfSubtreeChanges() {
 
 bool Document::NeedsLayoutTreeUpdateForNode(const Node& node,
                                             bool ignore_adjacent_style) const {
+  // TODO(rakina): Switch some callers that may need to call
+  // NeedsLayoutTreeUpdateForNodeIncludingDisplayLocked instead of this.
+  if (DisplayLockUtilities::NearestLockedExclusiveAncestor(node)) {
+    // |node| is in a locked-subtree, so we don't need to update it.
+    return false;
+  }
+  return NeedsLayoutTreeUpdateForNodeIncludingDisplayLocked(
+      node, ignore_adjacent_style);
+}
+
+bool Document::NeedsLayoutTreeUpdateForNodeIncludingDisplayLocked(
+    const Node& node,
+    bool ignore_adjacent_style) const {
   if (!node.CanParticipateInFlatTree())
     return false;
-  if (!NeedsLayoutTreeUpdate())
+  if (locked_display_lock_count_ == 0 && !NeedsLayoutTreeUpdate())
     return false;
   if (!node.isConnected())
     return false;
@@ -2442,13 +2455,34 @@ bool Document::NeedsLayoutTreeUpdateForNode(const Node& node,
         (ancestor->NeedsAdjacentStyleRecalc() && !ignore_adjacent_style)) {
       return true;
     }
+    if (!ancestor->IsElementNode())
+      continue;
+    if (auto* context = ToElement(ancestor)->GetDisplayLockContext()) {
+      // Even if the ancestor is style-clean, we might've previously
+      // blocked a style traversal going to the ancestor or its descendants.
+      if (context->StyleTraversalWasBlocked())
+        return true;
+    }
   }
   return false;
 }
 
 void Document::UpdateStyleAndLayoutTreeForNode(const Node* node) {
   DCHECK(node);
-  if (!NeedsLayoutTreeUpdateForNode(*node))
+  if (!node->InActiveDocument()) {
+    // If |node| is not in the active document, we can't update its style or
+    // layout tree.
+    DCHECK_EQ(node->ownerDocument(), this);
+    return;
+  }
+  DCHECK(node->GetDocument().GetPage());
+  DCHECK(!node->GetDocument()
+              .GetPage()
+              ->Animator()
+              .UpdatingLayoutAndStyleForPainting())
+      << "UpdateStyleAndLayoutTreeForNode called from within a lifecycle "
+         "update";
+  if (!NeedsLayoutTreeUpdateForNodeIncludingDisplayLocked(*node))
     return;
 
   DisplayLockUtilities::ScopedChainForcedUpdate scoped_update_forced(node);

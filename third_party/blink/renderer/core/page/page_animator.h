@@ -40,6 +40,9 @@ class CORE_EXPORT PageAnimator final : public GarbageCollected<PageAnimator> {
   void UpdateAllLifecyclePhasesExceptPaint(LocalFrame& root_frame);
   void UpdateLifecycleToLayoutClean(LocalFrame& root_frame);
   AnimationClock& Clock() { return animation_clock_; }
+  bool UpdatingLayoutAndStyleForPainting() {
+    return updating_layout_and_style_for_painting_;
+  }
 
  private:
   Member<Page> page_;

@@ -82,13 +82,13 @@ DisplayLockUtilities::ScopedChainForcedUpdate::ScopedChainForcedUpdate(
 
 const Element* DisplayLockUtilities::NearestLockedInclusiveAncestor(
     const Node& node) {
-  if (!RuntimeEnabledFeatures::DisplayLockingEnabled() ||
+  if (!node.IsElementNode())
+    return NearestLockedExclusiveAncestor(node);
+  if (!RuntimeEnabledFeatures::DisplayLockingEnabled() || !node.isConnected() ||
       node.GetDocument().LockedDisplayLockCount() == 0 ||
       !node.CanParticipateInFlatTree()) {
     return nullptr;
   }
-  if (!node.IsElementNode())
-    return NearestLockedExclusiveAncestor(node);
   if (auto* context = ToElement(node).GetDisplayLockContext()) {
     if (context->IsLocked())
       return &ToElement(node);
@@ -103,7 +103,7 @@ Element* DisplayLockUtilities::NearestLockedInclusiveAncestor(Node& node) {
 
 Element* DisplayLockUtilities::NearestLockedExclusiveAncestor(
     const Node& node) {
-  if (!RuntimeEnabledFeatures::DisplayLockingEnabled() ||
+  if (!RuntimeEnabledFeatures::DisplayLockingEnabled() || !node.isConnected() ||
       node.GetDocument().LockedDisplayLockCount() == 0 ||
       !node.CanParticipateInFlatTree()) {
     return nullptr;

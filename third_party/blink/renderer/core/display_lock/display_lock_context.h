@@ -115,6 +115,12 @@ class CORE_EXPORT DisplayLockContext final
   bool ShouldPaint() const;
   void DidPaint();
 
+  // Returns true if the last style recalc traversal was blocked at this
+  // element, either for itself, its children or its descendants.
+  bool StyleTraversalWasBlocked() {
+    return blocked_style_traversal_type_ != kStyleUpdateNotRequired;
+  }
+
   // Returns true if the contents of the associated element should be visible
   // from and activatable by find-in-page, tab order, anchor links, etc.
   bool IsActivatable() const;

@@ -506,8 +506,15 @@ class CORE_EXPORT Document : public ContainerNode,
   void SetupFontBuilder(ComputedStyle& document_style);
 
   bool NeedsLayoutTreeUpdate() const;
+  // Whether we need layout tree update for this node or not, without
+  // considering nodes in display locked subtrees.
   bool NeedsLayoutTreeUpdateForNode(const Node&,
                                     bool ignore_adjacent_style = false) const;
+  // Whether we need layout tree update for this node or not, including nodes in
+  // display locked subtrees.
+  bool NeedsLayoutTreeUpdateForNodeIncludingDisplayLocked(
+      const Node&,
+      bool ignore_adjacent_style = false) const;
 
   // Update ComputedStyles and attach LayoutObjects if necessary, but don't
   // lay out.
