@@ -861,6 +861,26 @@
             ]
         }
     ],
+    "AutofillRejectCompanyBirthyear": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutofillRejectCompanyBirthyear"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillSaveCreditCardUsesStrikeSystemV2": [
         {
             "platforms": [
