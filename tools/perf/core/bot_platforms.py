@@ -91,10 +91,18 @@ class PerfPlatform(object):
     return ('https://ci.chromium.org/p/chrome/builders/luci.chrome.ci/%s' %
              urllib.quote(self._name))
 
-
 _OFFICIAL_BENCHMARK_NAMES = frozenset(
     [b.Name() for b in _OFFICIAL_BENCHMARKS])
+_DL_BENCHMARK_NAMES = frozenset(['blink_perf.display_locking'])
+_OFFICIAL_EXCEPT_DISPLAY_LOCKING = _OFFICIAL_BENCHMARK_NAMES - frozenset([
+    'blink_perf.display_locking'])
 
+_LINUX_BENCHMARK_NAMES = _OFFICIAL_EXCEPT_DISPLAY_LOCKING
+_MAC_HIGH_END_BENCHMARK_NAMES = _OFFICIAL_EXCEPT_DISPLAY_LOCKING
+_MAC_LOW_END_BENCHMARK_NAMES = _OFFICIAL_BENCHMARK_NAMES
+_WIN_10_BENCHMARK_NAMES = _OFFICIAL_EXCEPT_DISPLAY_LOCKING
+_WIN_7_BENCHMARK_NAMES = _OFFICIAL_EXCEPT_DISPLAY_LOCKING
+_WIN_7_GPU_BENCHMARK_NAMES = _OFFICIAL_EXCEPT_DISPLAY_LOCKING
 _ANDROID_GO_BENCHMARK_NAMES = frozenset([
     'memory.top_10_mobile',
     'system_health.memory_mobile',
@@ -105,7 +113,13 @@ _ANDROID_GO_BENCHMARK_NAMES = frozenset([
     'v8.browsing_mobile',
     'speedometer',
     'speedometer2'])
-
+_ANDROID_GO_WEBVIEW_BENCHMARK_NAMES = _ANDROID_GO_BENCHMARK_NAMES
+_ANDROID_NEXUS_5_BENCHMARK_NAMES = _OFFICIAL_EXCEPT_DISPLAY_LOCKING
+_ANDROID_NEXUS_5X_BENCHMARK_NAMES = _OFFICIAL_EXCEPT_DISPLAY_LOCKING
+_ANDROID_NEXUS_5X_WEBVIEW_BENCHMARK_NAMES = _OFFICIAL_EXCEPT_DISPLAY_LOCKING
+_ANDROID_NEXUS_6_WEBVIEW_BENCHMARK_NAMES = _OFFICIAL_EXCEPT_DISPLAY_LOCKING
+_ANDROID_PIXEL2_BENCHMARK_NAMES = _OFFICIAL_EXCEPT_DISPLAY_LOCKING
+_ANDROID_PIXEL2_WEBVIEW_BENCHMARK_NAMES = _OFFICIAL_EXCEPT_DISPLAY_LOCKING
 _ANDROID_NEXUS5X_FYI_BENCHMARK_NAMES = frozenset([
     'heap_profiling.mobile.disabled',
     'heap_profiling.mobile.native',
@@ -114,69 +128,59 @@ _ANDROID_NEXUS5X_FYI_BENCHMARK_NAMES = frozenset([
 # Linux
 LINUX = PerfPlatform(
     'linux-perf', 'Ubuntu-14.04, 8 core, NVIDIA Quadro P400',
-    _OFFICIAL_BENCHMARK_NAMES, num_shards=26)
+    _LINUX_BENCHMARK_NAMES, num_shards=26)
 
 # Mac
 MAC_HIGH_END = PerfPlatform(
     'mac-10_13_laptop_high_end-perf',
     'MacBook Pro, Core i7 2.8 GHz, 16GB RAM, 256GB SSD, Radeon 55',
-    _OFFICIAL_BENCHMARK_NAMES, num_shards=26)
-
+    _MAC_HIGH_END_BENCHMARK_NAMES, num_shards=26)
 MAC_LOW_END = PerfPlatform(
     'mac-10_12_laptop_low_end-perf',
     'MacBook Air, Core i5 1.8 GHz, 8GB RAM, 128GB SSD, HD Graphics',
-    _OFFICIAL_BENCHMARK_NAMES, num_shards=26)
+    _MAC_LOW_END_BENCHMARK_NAMES, num_shards=26)
 
 # Win
 WIN_10 = PerfPlatform(
     'win-10-perf',
     'Windows Intel HD 630 towers, Core i7-7700 3.6 GHz, 16GB RAM,'
-    ' Intel Kaby Lake HD Graphics 630', _OFFICIAL_BENCHMARK_NAMES,
+    ' Intel Kaby Lake HD Graphics 630', _WIN_10_BENCHMARK_NAMES,
     num_shards=26)
-
 WIN_7 = PerfPlatform(
-    'Win 7 Perf', 'N/A', _OFFICIAL_BENCHMARK_NAMES,
+    'Win 7 Perf', 'N/A', _WIN_7_BENCHMARK_NAMES,
     num_shards=5)
-
 WIN_7_GPU = PerfPlatform(
-    'Win 7 Nvidia GPU Perf', 'N/A', _OFFICIAL_BENCHMARK_NAMES,
+    'Win 7 Nvidia GPU Perf', 'N/A', _WIN_7_GPU_BENCHMARK_NAMES,
     num_shards=5)
 
 # Android
 ANDROID_GO = PerfPlatform(
     'android-go-perf', 'Android O (gobo)', _ANDROID_GO_BENCHMARK_NAMES,
     num_shards=19)
-
 ANDROID_GO_WEBVIEW = PerfPlatform(
     'android-go_webview-perf', 'Android OPM1.171019.021 (gobo)',
-    _ANDROID_GO_BENCHMARK_NAMES, num_shards=25)
-
+    _ANDROID_GO_WEBVIEW_BENCHMARK_NAMES, num_shards=25)
 ANDROID_NEXUS_5 = PerfPlatform(
-    'Android Nexus5 Perf', 'Android KOT49H', _OFFICIAL_BENCHMARK_NAMES,
+    'Android Nexus5 Perf', 'Android KOT49H', _ANDROID_NEXUS_5_BENCHMARK_NAMES,
     num_shards=16)
-
 ANDROID_NEXUS_5X = PerfPlatform(
-    'android-nexus5x-perf', 'Android MMB29Q', _OFFICIAL_BENCHMARK_NAMES,
-    num_shards=16)
-
+    'android-nexus5x-perf', 'Android MMB29Q',
+    _ANDROID_NEXUS_5X_BENCHMARK_NAMES, num_shards=16)
 ANDROID_NEXUS_5X_WEBVIEW = PerfPlatform(
     'Android Nexus5X WebView Perf', 'Android AOSP MOB30K',
-    _OFFICIAL_BENCHMARK_NAMES, num_shards=16)
-
+    _ANDROID_NEXUS_5X_WEBVIEW_BENCHMARK_NAMES, num_shards=16)
 ANDROID_NEXUS_6_WEBVIEW = PerfPlatform(
     'Android Nexus6 WebView Perf', 'Android AOSP MOB30K',
-    _OFFICIAL_BENCHMARK_NAMES,
+    _ANDROID_NEXUS_6_WEBVIEW_BENCHMARK_NAMES,
     num_shards=12)  # Reduced from 16 per crbug.com/891848.
 
 # FYI bots
 ANDROID_PIXEL2 = PerfPlatform(
     'android-pixel2-perf', 'Android OPM1.171019.021',
-    _OFFICIAL_BENCHMARK_NAMES, num_shards=7, is_fyi=True)
-
+    _ANDROID_PIXEL2_BENCHMARK_NAMES, num_shards=7, is_fyi=True)
 ANDROID_PIXEL2_WEBVIEW = PerfPlatform(
     'android-pixel2_webview-perf', 'Android OPM1.171019.021',
-    _OFFICIAL_BENCHMARK_NAMES, num_shards=7, is_fyi=True)
-
+    _ANDROID_PIXEL2_WEBVIEW_BENCHMARK_NAMES, num_shards=7, is_fyi=True)
 ANDROID_NEXUS5X_PERF_FYI =  PerfPlatform(
     'android-nexus5x-perf-fyi', 'Android MMB29Q',
     _ANDROID_NEXUS5X_FYI_BENCHMARK_NAMES,

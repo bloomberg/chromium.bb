@@ -566,7 +566,7 @@ class BlinkPerfDisplayLocking(_BlinkPerfBenchmark):
 
   @classmethod
   def Name(cls):
-    return 'UNSCHEDULED_blink_perf.display_locking'
+    return 'blink_perf.display_locking'
 
   def SetExtraBrowserOptions(self, options):
     options.AppendExtraBrowserArgs(['--enable-blink-features=DisplayLocking'])

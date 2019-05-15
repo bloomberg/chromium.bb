@@ -4,7 +4,8 @@
             "blink_perf.accessibility": {},
             "blink_perf.bindings": {},
             "blink_perf.canvas": {},
-            "blink_perf.css": {}
+            "blink_perf.css": {},
+            "blink_perf.display_locking": {}
         }
     },
     "1": {
