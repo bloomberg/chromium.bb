@@ -17,6 +17,7 @@ source_set("drm") {
     "//base:base",
     "//build/config/linux/libdrm",
     "//ui/gfx:buffer_types",
+    "//ui/gfx:memory_buffer",
   ]
 }
 

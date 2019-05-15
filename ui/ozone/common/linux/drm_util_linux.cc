@@ -6,6 +6,9 @@
 
 #include <drm_fourcc.h>
 
+#include "base/logging.h"
+#include "ui/gfx/buffer_format_util.h"
+
 namespace ui {
 
 int GetFourCCFormatFromBufferFormat(gfx::BufferFormat format) {
@@ -37,7 +40,7 @@ int GetFourCCFormatFromBufferFormat(gfx::BufferFormat format) {
     case gfx::BufferFormat::YUV_420_BIPLANAR:
       return DRM_FORMAT_NV12;
     default:
-      NOTREACHED();
+      NOTREACHED() << gfx::BufferFormatToString(format);
       return 0;
   }
 }
