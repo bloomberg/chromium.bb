@@ -318,7 +318,7 @@ void PaletteTray::OnStylusStateChanged(ui::StylusState stylus_state) {
     return;
 
   // Don't do anything if the palette tray is not shown.
-  if (!visible())
+  if (!GetVisible())
     return;
 
   // Auto show/hide the palette if allowed by the user.

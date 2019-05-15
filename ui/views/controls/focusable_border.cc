@@ -80,9 +80,9 @@ SkColor FocusableBorder::GetCurrentColor(const View& view) const {
     color_id = *override_color_id_;
 
   SkColor color = view.GetNativeTheme()->GetSystemColor(color_id);
-  return view.enabled() ? color
-                        : color_utils::BlendTowardMaxContrast(
-                              color, gfx::kDisabledControlAlpha);
+  return view.GetEnabled() ? color
+                           : color_utils::BlendTowardMaxContrast(
+                                 color, gfx::kDisabledControlAlpha);
 }
 
 }  // namespace views

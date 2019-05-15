@@ -269,15 +269,16 @@ class SaveCardBubbleViewsFullFormBrowserTest
 
   void VerifyExpirationDateDropdownsAreVisible() {
     EXPECT_TRUE(FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)
-                    ->visible());
-    EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->visible());
+                    ->GetVisible());
     EXPECT_TRUE(
-        FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_VIEW)->visible());
+        FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->GetVisible());
+    EXPECT_TRUE(
+        FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_VIEW)->GetVisible());
     EXPECT_TRUE(FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_DROPBOX_YEAR)
-                    ->visible());
+                    ->GetVisible());
     EXPECT_TRUE(
         FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_DROPBOX_MONTH)
-            ->visible());
+            ->GetVisible());
     EXPECT_FALSE(FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_LABEL));
   }
 
@@ -772,8 +773,8 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitForm();
   WaitForObservedEvent();
-  EXPECT_TRUE(
-      FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_LOCAL)->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_LOCAL)
+                  ->GetVisible());
 
   // Clicking [Save] should accept and close it.
   base::HistogramTester histogram_tester;
@@ -787,7 +788,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   // The local save bubble should not be visible, but the card icon should
   // remain visible for the clickable [Manage cards] option.
   EXPECT_EQ(nullptr, GetSaveCardBubbleViews());
-  EXPECT_TRUE(GetSaveCardIconView()->visible());
+  EXPECT_TRUE(GetSaveCardIconView()->GetVisible());
 }
 
 // Tests the local save bubble. Ensures that clicking the [No thanks] button
@@ -809,8 +810,8 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitForm();
   WaitForObservedEvent();
-  EXPECT_TRUE(
-      FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_LOCAL)->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_LOCAL)
+                  ->GetVisible());
 
   // Clicking [No thanks] should cancel and close it.
   base::HistogramTester histogram_tester;
@@ -833,8 +834,8 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitForm();
   WaitForObservedEvent();
-  EXPECT_TRUE(
-      FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_LOCAL)->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_LOCAL)
+                  ->GetVisible());
 
   // Adding an event observer to the controller so we can wait for the bubble to
   // show.
@@ -852,7 +853,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   // Sign-in promo should be showing and user actions should have recorded
   // impression.
   EXPECT_TRUE(
-      FindViewInBubbleById(DialogViewId::SIGN_IN_PROMO_VIEW)->visible());
+      FindViewInBubbleById(DialogViewId::SIGN_IN_PROMO_VIEW)->GetVisible());
 }
 #endif
 
@@ -879,8 +880,8 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitForm();
   WaitForObservedEvent();
-  EXPECT_TRUE(
-      FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_LOCAL)->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_LOCAL)
+                  ->GetVisible());
 
   // Click [Save] should close the offer-to-save bubble
   // but no sign-in promo should show because user is signed in.
@@ -1001,7 +1002,8 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   WaitForObservedEvent();
 
   // Bubble should be showing.
-  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::MANAGE_CARDS_VIEW)->visible());
+  EXPECT_TRUE(
+      FindViewInBubbleById(DialogViewId::MANAGE_CARDS_VIEW)->GetVisible());
   histogram_tester.ExpectUniqueSample("Autofill.ManageCardsPrompt.Local",
                                       AutofillMetrics::MANAGE_CARDS_SHOWN, 1);
 }
@@ -1209,8 +1211,8 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitForm();
   WaitForObservedEvent();
-  EXPECT_TRUE(
-      FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_LOCAL)->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_LOCAL)
+                  ->GetVisible());
 
   // Assert that the cancel button cannot be found.
   EXPECT_FALSE(FindViewInBubbleById(DialogViewId::CANCEL_BUTTON));
@@ -1270,9 +1272,9 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitForm();
   WaitForObservedEvent();
-  EXPECT_TRUE(
-      FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)->visible());
-  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)
+                  ->GetVisible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->GetVisible());
 
   // Clicking [Save] should accept and close it, then send an UploadCardRequest
   // to Google Payments.
@@ -1347,9 +1349,9 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsSyncTransportFullFormBrowserTest,
   NavigateTo(kCreditCardUploadForm);
   FillAndSubmitForm();
   WaitForObservedEvent();
-  EXPECT_TRUE(
-      FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)->visible());
-  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)
+                  ->GetVisible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->GetVisible());
 
   // Clicking [Save] should accept and close it, then send an UploadCardRequest
   // to Google Payments.
@@ -1391,9 +1393,9 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitForm();
   WaitForObservedEvent();
-  EXPECT_TRUE(
-      FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)->visible());
-  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)
+                  ->GetVisible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->GetVisible());
 
   // Clicking [No thanks] should cancel and close it.
   base::HistogramTester histogram_tester;
@@ -1430,9 +1432,9 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitForm();
   WaitForObservedEvent();
-  EXPECT_TRUE(
-      FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)->visible());
-  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)
+                  ->GetVisible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->GetVisible());
 
   // Assert that the cancel button cannot be found.
   EXPECT_FALSE(FindViewInBubbleById(DialogViewId::CANCEL_BUTTON));
@@ -1458,9 +1460,9 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitForm();
   WaitForObservedEvent();
-  EXPECT_TRUE(
-      FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)->visible());
-  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)
+                  ->GetVisible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->GetVisible());
 
   // Clicking the [X] close button should dismiss the bubble.
   ClickOnCloseButton();
@@ -1492,9 +1494,9 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitForm();
   WaitForObservedEvent();
-  EXPECT_TRUE(
-      FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)->visible());
-  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)
+                  ->GetVisible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->GetVisible());
 
   // Assert that cardholder name was not explicitly requested in the bubble.
   EXPECT_FALSE(FindViewInBubbleById(DialogViewId::CARDHOLDER_NAME_TEXTFIELD));
@@ -1528,9 +1530,9 @@ IN_PROC_BROWSER_TEST_F(
   NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitFormWithoutName();
   WaitForObservedEvent();
-  EXPECT_TRUE(
-      FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)->visible());
-  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)
+                  ->GetVisible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->GetVisible());
   EXPECT_TRUE(FindViewInBubbleById(DialogViewId::CARDHOLDER_NAME_TEXTFIELD));
 }
 
@@ -1566,9 +1568,9 @@ IN_PROC_BROWSER_TEST_F(
   FillAndSubmitForm();
 
   WaitForObservedEvent();
-  EXPECT_TRUE(
-      FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)->visible());
-  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)
+                  ->GetVisible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->GetVisible());
   EXPECT_TRUE(FindViewInBubbleById(DialogViewId::CARDHOLDER_NAME_TEXTFIELD));
 }
 
@@ -1600,9 +1602,9 @@ IN_PROC_BROWSER_TEST_F(
   NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitFormWithoutName();
   WaitForObservedEvent();
-  EXPECT_TRUE(
-      FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)->visible());
-  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)
+                  ->GetVisible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->GetVisible());
   EXPECT_TRUE(FindViewInBubbleById(DialogViewId::CARDHOLDER_NAME_TEXTFIELD));
 
   // Clearing out the cardholder name textfield should disable the [Save]
@@ -1649,9 +1651,9 @@ IN_PROC_BROWSER_TEST_F(
   NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitFormWithoutName();
   WaitForObservedEvent();
-  EXPECT_TRUE(
-      FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)->visible());
-  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)
+                  ->GetVisible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->GetVisible());
   EXPECT_TRUE(FindViewInBubbleById(DialogViewId::CARDHOLDER_NAME_TEXTFIELD));
 
   // Entering a cardholder name and clicking [Save] should accept and close
@@ -1927,8 +1929,8 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitForm();
   WaitForObservedEvent();
-  EXPECT_TRUE(
-      FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_LOCAL)->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_LOCAL)
+                  ->GetVisible());
 }
 
 // Tests the upload save logic. Ensures that Chrome offers a local save when the
@@ -1953,8 +1955,8 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitForm();
   WaitForObservedEvent();
-  EXPECT_TRUE(
-      FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_LOCAL)->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_LOCAL)
+                  ->GetVisible());
 }
 
 // Tests the upload save logic. Ensures that Chrome delegates the offer-to-save
@@ -1980,9 +1982,9 @@ IN_PROC_BROWSER_TEST_F(
   NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitFormWithCardDetailsOnly();
   WaitForObservedEvent();
-  EXPECT_TRUE(
-      FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)->visible());
-  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)
+                  ->GetVisible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->GetVisible());
 }
 
 // Tests the upload save logic. Ensures that Chrome offers a upload save for
@@ -2177,9 +2179,9 @@ IN_PROC_BROWSER_TEST_F(
   NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitForm();
   WaitForObservedEvent();
-  EXPECT_TRUE(
-      FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)->visible());
-  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)
+                  ->GetVisible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->GetVisible());
 
   // Clicking the [X] close button should dismiss the bubble.
   ClickOnCloseButton();
@@ -2258,11 +2260,11 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   SetUpForEditableExpirationDate();
   FillAndSubmitForm();
   WaitForObservedEvent();
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)
+                  ->GetVisible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->GetVisible());
   EXPECT_TRUE(
-      FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)->visible());
-  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->visible());
-  EXPECT_TRUE(
-      FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_LABEL)->visible());
+      FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_LABEL)->GetVisible());
 
   // Assert that expiration date was not explicitly requested in the bubble.
   EXPECT_FALSE(FindViewInBubbleById(DialogViewId::EXPIRATION_DATE_VIEW));
@@ -2445,8 +2447,8 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitForm();
   WaitForObservedEvent();
-  EXPECT_TRUE(
-      FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_LOCAL)->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_LOCAL)
+                  ->GetVisible());
 
   base::HistogramTester histogram_tester;
   ClickOnCancelButton();
@@ -2484,9 +2486,9 @@ IN_PROC_BROWSER_TEST_F(
   NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitForm();
   WaitForObservedEvent();
-  EXPECT_TRUE(
-      FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)->visible());
-  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)
+                  ->GetVisible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->GetVisible());
 
   base::HistogramTester histogram_tester;
 
@@ -2517,8 +2519,8 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitForm();
   WaitForObservedEvent();
-  EXPECT_TRUE(
-      FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_LOCAL)->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_LOCAL)
+                  ->GetVisible());
 
   // Clicking the [X] close button should dismiss the bubble.
   ClickOnCloseButton();
@@ -2569,9 +2571,9 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitForm();
   WaitForObservedEvent();
-  EXPECT_TRUE(
-      FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)->visible());
-  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)
+                  ->GetVisible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->GetVisible());
 
   // Clicking the [X] close button should dismiss the bubble.
   ClickOnCloseButton();
@@ -2613,8 +2615,8 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitForm();
   WaitForObservedEvent();
-  EXPECT_TRUE(
-      FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_LOCAL)->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_LOCAL)
+                  ->GetVisible());
 
   // Clicking [No thanks] should cancel and close it.
   base::HistogramTester histogram_tester;
@@ -2653,9 +2655,9 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitForm();
   WaitForObservedEvent();
-  EXPECT_TRUE(
-      FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)->visible());
-  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)
+                  ->GetVisible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->GetVisible());
 
   // Clicking [No thanks] should cancel and close it.
   base::HistogramTester histogram_tester;
@@ -2692,8 +2694,8 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
     NavigateTo(kCreditCardAndAddressUploadForm);
     FillAndSubmitForm();
     WaitForObservedEvent();
-    EXPECT_TRUE(
-        FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_LOCAL)->visible());
+    EXPECT_TRUE(FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_LOCAL)
+                    ->GetVisible());
 
     if (!controller_observer_set) {
       // Add an event observer to the controller.
@@ -2722,15 +2724,15 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitForm();
   WaitForObservedEvent();
-  EXPECT_TRUE(GetSaveCardIconView()->visible());
+  EXPECT_TRUE(GetSaveCardIconView()->GetVisible());
   EXPECT_FALSE(GetSaveCardBubbleViews());
 
   // Click the icon to show the bubble.
   ResetEventWaiterForSequence({DialogEvent::BUBBLE_SHOWN});
   ClickOnView(GetSaveCardIconView());
   WaitForObservedEvent();
-  EXPECT_TRUE(
-      FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_LOCAL)->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_LOCAL)
+                  ->GetVisible());
 
   ClickOnCancelButton();
 
@@ -2783,8 +2785,9 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
     FillAndSubmitForm();
     WaitForObservedEvent();
     EXPECT_TRUE(FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)
-                    ->visible());
-    EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->visible());
+                    ->GetVisible());
+    EXPECT_TRUE(
+        FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->GetVisible());
 
     if (!controller_observer_set) {
       // Add an event observer to the controller.
@@ -2815,16 +2818,16 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   NavigateTo(kCreditCardAndAddressUploadForm);
   FillAndSubmitForm();
   WaitForObservedEvent();
-  EXPECT_TRUE(GetSaveCardIconView()->visible());
+  EXPECT_TRUE(GetSaveCardIconView()->GetVisible());
   EXPECT_FALSE(GetSaveCardBubbleViews());
 
   // Click the icon to show the bubble.
   ResetEventWaiterForSequence({DialogEvent::BUBBLE_SHOWN});
   ClickOnView(GetSaveCardIconView());
   WaitForObservedEvent();
-  EXPECT_TRUE(
-      FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)->visible());
-  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)
+                  ->GetVisible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->GetVisible());
 
   ClickOnCancelButton();
 
@@ -2854,7 +2857,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTestForStatusChip,
   FillAndSubmitForm();
   WaitForObservedEvent();
   EXPECT_TRUE(GetSaveCardIconView());
-  EXPECT_TRUE(GetSaveCardIconView()->visible());
+  EXPECT_TRUE(GetSaveCardIconView()->GetVisible());
 }
 
 // Ensures that the clicking on the credit card icon will reshow bubble.
@@ -2872,7 +2875,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTestForStatusChip,
   WaitForObservedEvent();
 
   EXPECT_TRUE(GetSaveCardBubbleViews());
-  EXPECT_TRUE(GetSaveCardBubbleViews()->visible());
+  EXPECT_TRUE(GetSaveCardBubbleViews()->GetVisible());
 }
 
 #if defined(OS_MACOSX)
@@ -2907,7 +2910,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTestForStatusChip,
                   ->ActivateFirstInactiveBubbleForAccessibility());
 
   // Ensure the bubble's widget refreshed appropriately.
-  EXPECT_TRUE(GetSaveCardIconView()->visible());
+  EXPECT_TRUE(GetSaveCardIconView()->GetVisible());
   EXPECT_TRUE(widget->IsVisible());
   EXPECT_TRUE(widget->IsActive());
 }
@@ -2922,21 +2925,21 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTestForStatusChip,
   WaitForObservedEvent();
 
   // Ensures flow is triggered, and bubble and icon view are visible.
-  EXPECT_TRUE(GetSaveCardIconView()->visible());
-  EXPECT_TRUE(GetSaveCardBubbleViews()->visible());
+  EXPECT_TRUE(GetSaveCardIconView()->GetVisible());
+  EXPECT_TRUE(GetSaveCardBubbleViews()->GetVisible());
 
   AddTabAtIndex(1, GURL("http://example.com/"), ui::PAGE_TRANSITION_TYPED);
   TabStripModel* tab_model = browser()->tab_strip_model();
   tab_model->ActivateTabAt(1, {TabStripModel::GestureType::kOther});
 
   // Ensures bubble and icon go away if user navigates to another tab.
-  EXPECT_FALSE(GetSaveCardIconView()->visible());
+  EXPECT_FALSE(GetSaveCardIconView()->GetVisible());
   EXPECT_FALSE(GetSaveCardBubbleViews());
 
   tab_model->ActivateTabAt(0, {TabStripModel::GestureType::kOther});
 
   // If the user navigates back, shows only the icon not the bubble.
-  EXPECT_TRUE(GetSaveCardIconView()->visible());
+  EXPECT_TRUE(GetSaveCardIconView()->GetVisible());
   EXPECT_FALSE(GetSaveCardBubbleViews());
 }
 #endif  // !defined(OS_CHROMEOS)

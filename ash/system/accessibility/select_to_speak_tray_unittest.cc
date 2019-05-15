@@ -48,7 +48,7 @@ class SelectToSpeakTrayTest : public AshTestBase {
 
  protected:
   // Returns true if the Select to Speak tray is visible.
-  bool IsVisible() { return GetTray()->visible(); }
+  bool IsVisible() { return GetTray()->GetVisible(); }
 
   // Returns true if the background color of the tray is active.
   bool IsTrayBackgroundActive() { return GetTray()->is_active(); }

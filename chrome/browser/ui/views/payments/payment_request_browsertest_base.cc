@@ -763,7 +763,7 @@ bool PaymentRequestBrowserTestBase::IsPayButtonEnabled() {
       static_cast<views::Button*>(delegate_->dialog_view()->GetViewByID(
           static_cast<int>(DialogViewID::PAY_BUTTON)));
   DCHECK(button);
-  return button->enabled();
+  return button->GetEnabled();
 }
 
 void PaymentRequestBrowserTestBase::WaitForAnimation() {

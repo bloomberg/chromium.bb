@@ -73,7 +73,7 @@ bool RequestPinView::Cancel() {
 bool RequestPinView::Accept() {
   DCHECK(!callback_.is_null());
 
-  if (!textfield_->enabled()) {
+  if (!textfield_->GetEnabled()) {
     return true;
   }
   DCHECK(!textfield_->text().empty());
@@ -105,7 +105,7 @@ bool RequestPinView::IsDialogButtonEnabled(ui::DialogButton button) const {
       // Not locked but the |textfield_| is not enabled. It's just a
       // notification to the user and [OK] button can be used to close the
       // dialog.
-      if (!textfield_->enabled()) {
+      if (!textfield_->GetEnabled()) {
         return true;
       }
       return textfield_->text().size() > 0;

@@ -71,7 +71,7 @@ template <class T>
 size_t GetVisibleViews(const std::vector<T*>& tiles) {
   size_t count = 0;
   for (const auto& tile : tiles) {
-    if (tile->visible())
+    if (tile->GetVisible())
       count++;
   }
   return count;
@@ -81,7 +81,7 @@ size_t GetVisibleViews(const std::vector<T*>& tiles) {
 void CheckView(views::View* subview) {
   ASSERT_TRUE(subview);
   EXPECT_TRUE(subview->parent());
-  EXPECT_TRUE(subview->visible());
+  EXPECT_TRUE(subview->GetVisible());
   EXPECT_TRUE(subview->IsDrawn());
   EXPECT_FALSE(subview->bounds().IsEmpty());
 }
@@ -573,7 +573,7 @@ class AppListViewFocusTest : public views::ViewsTestBase,
     std::vector<views::View*> suggestions;
     std::copy_if(children.cbegin(), children.cend(),
                  std::back_inserter(suggestions),
-                 [](const auto* v) { return v->visible(); });
+                 [](const auto* v) { return v->GetVisible(); });
     return suggestions;
   }
 
@@ -2123,7 +2123,7 @@ TEST_F(AppListViewTest, DISABLED_BackTest) {
   EXPECT_TRUE(contents_view->Back());
   contents_view->Layout();
   EXPECT_TRUE(IsStateShown(ash::AppListState::kStateApps));
-  EXPECT_FALSE(search_box_view->back_button()->visible());
+  EXPECT_FALSE(search_box_view->back_button()->GetVisible());
 
   // Show the apps grid again.
   SetAppListState(ash::AppListState::kStateApps);
@@ -2133,7 +2133,7 @@ TEST_F(AppListViewTest, DISABLED_BackTest) {
   view_->AcceleratorPressed(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
   contents_view->Layout();
   EXPECT_TRUE(IsStateShown(ash::AppListState::kStateApps));
-  EXPECT_FALSE(search_box_view->back_button()->visible());
+  EXPECT_FALSE(search_box_view->back_button()->GetVisible());
 
   // Pressing ESC from the start page should close the app list.
   EXPECT_EQ(0, delegate_->dismiss_count());
@@ -2152,7 +2152,7 @@ TEST_F(AppListViewTest, DISABLED_BackTest) {
   EXPECT_TRUE(contents_view->Back());
   contents_view->Layout();
   EXPECT_TRUE(IsStateShown(ash::AppListState::kStateApps));
-  EXPECT_FALSE(search_box_view->back_button()->visible());
+  EXPECT_FALSE(search_box_view->back_button()->GetVisible());
 }
 
 // Tests that even if initialize is called again with a different initial page,

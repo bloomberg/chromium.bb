@@ -337,21 +337,21 @@ TEST_F(AppInfoDialogViewsTest, PinButtonsAreFocusedAfterPinUnpin) {
   views::View* unpin_button = dialog_footer->unpin_from_shelf_button_;
 
   pin_button->RequestFocus();
-  EXPECT_TRUE(pin_button->visible());
-  EXPECT_FALSE(unpin_button->visible());
+  EXPECT_TRUE(pin_button->GetVisible());
+  EXPECT_FALSE(unpin_button->GetVisible());
   EXPECT_TRUE(pin_button->HasFocus());
 
   // Avoid attempting to use sync, it's not initialized in this test.
   auto sync_disabler = chrome_launcher_controller_->GetScopedPinSyncDisabler();
 
   dialog_footer->SetPinnedToShelf(true);
-  EXPECT_FALSE(pin_button->visible());
-  EXPECT_TRUE(unpin_button->visible());
+  EXPECT_FALSE(pin_button->GetVisible());
+  EXPECT_TRUE(unpin_button->GetVisible());
   EXPECT_TRUE(unpin_button->HasFocus());
 
   dialog_footer->SetPinnedToShelf(false);
-  EXPECT_TRUE(pin_button->visible());
-  EXPECT_FALSE(unpin_button->visible());
+  EXPECT_TRUE(pin_button->GetVisible());
+  EXPECT_FALSE(unpin_button->GetVisible());
   EXPECT_TRUE(pin_button->HasFocus());
 }
 #endif

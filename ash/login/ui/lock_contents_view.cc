@@ -845,7 +845,7 @@ void LockContentsView::OnShowEasyUnlockIcon(
   if (!big_user || !big_user->auth_user())
     return;
 
-  if (tooltip_bubble_->visible())
+  if (tooltip_bubble_->GetVisible())
     tooltip_bubble_->Hide();
 
   if (icon->autoshow_tooltip) {
@@ -863,7 +863,7 @@ void LockContentsView::OnShowWarningBanner(const base::string16& message) {
                   "warning banner.";
     return;
   }
-  if (warning_banner_bubble_->visible())
+  if (warning_banner_bubble_->GetVisible())
     warning_banner_bubble_->Hide();
   // Shows warning banner as a persistent error bubble.
   views::Label* label =
@@ -881,7 +881,7 @@ void LockContentsView::OnShowWarningBanner(const base::string16& message) {
 }
 
 void LockContentsView::OnHideWarningBanner() {
-  if (warning_banner_bubble_->visible())
+  if (warning_banner_bubble_->GetVisible())
     warning_banner_bubble_->Hide();
 }
 
@@ -983,7 +983,7 @@ void LockContentsView::OnPublicSessionKeyboardLayoutsChanged(
   // Update expanded view because keyboard layouts is user interactive content.
   // I.e. user selects a language locale and the corresponding keyboard layouts
   // will be changed.
-  if (expanded_view_->visible() &&
+  if (expanded_view_->GetVisible() &&
       expanded_view_->current_user()->basic_user_info->account_id ==
           account_id) {
     mojom::LoginUserInfoPtr user_info = expanded_view_->current_user()->Clone();
@@ -1028,12 +1028,12 @@ void LockContentsView::OnDetachableBasePairingStatusChanged(
       (pairing_status == DetachableBasePairingStatus::kAuthenticated &&
        detachable_base_model_->PairedBaseMatchesLastUsedByUser(
            *CurrentBigUserView()->GetCurrentUser()->basic_user_info))) {
-    if (detachable_base_error_bubble_->visible())
+    if (detachable_base_error_bubble_->GetVisible())
       detachable_base_error_bubble_->Hide();
     return;
   }
 
-  if (auth_error_bubble_->visible())
+  if (auth_error_bubble_->GetVisible())
     auth_error_bubble_->Hide();
 
   base::string16 error_text =
@@ -1400,10 +1400,10 @@ void LockContentsView::SwapActiveAuthBetweenPrimaryAndSecondary(
 
 void LockContentsView::OnAuthenticate(bool auth_success) {
   if (auth_success) {
-    if (auth_error_bubble_->visible())
+    if (auth_error_bubble_->GetVisible())
       auth_error_bubble_->Hide();
 
-    if (detachable_base_error_bubble_->visible())
+    if (detachable_base_error_bubble_->GetVisible())
       detachable_base_error_bubble_->Hide();
 
     // Now that the user has been authenticated, update the user's last used
@@ -1602,7 +1602,7 @@ void LockContentsView::OnBigUserChanged() {
     supervised_user_deprecation_bubble_->SetAnchorView(
         CurrentBigUserView()->auth_user()->password_view());
     supervised_user_deprecation_bubble_->Show();
-  } else if (supervised_user_deprecation_bubble_->visible()) {
+  } else if (supervised_user_deprecation_bubble_->GetVisible()) {
     supervised_user_deprecation_bubble_->Hide();
   }
 
@@ -1611,7 +1611,7 @@ void LockContentsView::OnBigUserChanged() {
   OnDetachableBasePairingStatusChanged(
       detachable_base_model_->GetPairingStatus());
 
-  if (!detachable_base_error_bubble_->visible())
+  if (!detachable_base_error_bubble_->GetVisible())
     CurrentBigUserView()->RequestFocus();
 }
 
@@ -1919,7 +1919,7 @@ void LockContentsView::PerformAction(AcceleratorAction action) {
       FocusPreviousUser();
       break;
     case AcceleratorAction::kShowSystemInfo:
-      if (!system_info_->visible()) {
+      if (!system_info_->GetVisible()) {
         system_info_->SetVisible(true);
         LayoutTopHeader();
       }

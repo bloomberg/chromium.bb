@@ -71,7 +71,7 @@ void TopShortcutButtonContainer::Layout() {
   views::View::Views visible_children;
   std::copy_if(children().cbegin(), children().cend(),
                std::back_inserter(visible_children), [](const auto* v) {
-                 return v->visible() && (v->GetPreferredSize().width() > 0);
+                 return v->GetVisible() && (v->GetPreferredSize().width() > 0);
                });
   if (visible_children.empty())
     return;
@@ -119,7 +119,7 @@ gfx::Size TopShortcutButtonContainer::CalculatePreferredSize() const {
   int total_horizontal_size = 0;
   int num_visible = 0;
   for (const auto* child : children()) {
-    if (!child->visible())
+    if (!child->GetVisible())
       continue;
     int child_horizontal_size = child->GetPreferredSize().width();
     if (child_horizontal_size == 0)

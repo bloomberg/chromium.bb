@@ -519,7 +519,7 @@ void LoginPasswordView::RequestFocus() {
 
 bool LoginPasswordView::OnKeyPressed(const ui::KeyEvent& event) {
   if (event.key_code() == ui::KeyboardCode::VKEY_RETURN &&
-      submit_button_->enabled()) {
+      submit_button_->GetEnabled()) {
     SubmitPassword();
     return true;
   }
@@ -586,7 +586,7 @@ void LoginPasswordView::OnCapsLockChanged(bool enabled) {
 }
 
 void LoginPasswordView::SubmitPassword() {
-  DCHECK(submit_button_->enabled());
+  DCHECK(submit_button_->GetEnabled());
   if (textfield_->read_only())
     return;
   on_submit_.Run(textfield_->text());

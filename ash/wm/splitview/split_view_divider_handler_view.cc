@@ -92,7 +92,7 @@ class SplitViewDividerHandlerView::SpawningAnimation
 
  private:
   void StartAnimation() {
-    DCHECK(!white_handler_view_->visible());
+    DCHECK(!white_handler_view_->GetVisible());
     white_handler_view_->SetVisible(true);
     DCHECK(!is_animating());
     Show();

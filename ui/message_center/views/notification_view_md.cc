@@ -601,7 +601,7 @@ void NotificationViewMD::Layout() {
 
   // The notification background is rounded in MessageView::Layout(),
   // but we also have to round the actions row background here.
-  if (actions_row_->visible()) {
+  if (actions_row_->GetVisible()) {
     constexpr SkScalar kCornerRadius = SkIntToScalar(kNotificationCornerRadius);
 
     // Use vertically larger clip path, so that actions row's top coners will
@@ -661,7 +661,7 @@ void NotificationViewMD::OnMouseReleased(const ui::MouseEvent& event) {
   }
 
   // Ignore clicks of outside region when inline settings is shown.
-  if (settings_row_ && settings_row_->visible())
+  if (settings_row_ && settings_row_->GetVisible())
     return;
 
   MessageView::OnMouseReleased(event);
@@ -715,7 +715,7 @@ void NotificationViewMD::ButtonPressed(views::Button* sender,
   // Tapping anywhere on |header_row_| can expand the notification, though only
   // |expand_button| can be focused by TAB.
   if (sender == header_row_) {
-    if (IsExpandable() && content_row_->visible()) {
+    if (IsExpandable() && content_row_->GetVisible()) {
       SetManuallyExpandedOrCollapsed(true);
       ToggleExpanded();
       Layout();
@@ -1031,7 +1031,7 @@ void NotificationViewMD::CreateOrUpdateActionButtonViews(
   DCHECK_EQ(this, actions_row_->parent());
 
   // Hide inline reply field if it doesn't exist anymore.
-  if (inline_reply_->visible()) {
+  if (inline_reply_->GetVisible()) {
     const size_t index =
         inline_reply_->textfield()->GetProperty(kTextfieldIndexKey);
     if (index >= buttons.size() || !buttons[index].placeholder.has_value()) {
@@ -1150,7 +1150,7 @@ bool NotificationViewMD::IsExpandable() {
     return false;
 
   // Expandable if the message exceeds one line.
-  if (message_view_ && message_view_->visible() &&
+  if (message_view_ && message_view_->GetVisible() &&
       message_view_->GetLinesForWidthAndLimit(message_view_->width(), -1) > 1) {
     return true;
   }
@@ -1202,7 +1202,7 @@ void NotificationViewMD::UpdateViewForExpandedState(bool expanded) {
 
   right_content_->SetVisible(icon_view_ &&
                              (!hide_icon_on_expanded_ || !expanded));
-  if (right_content_->visible()) {
+  if (right_content_->GetVisible()) {
     left_content_->SetBorder(
         views::CreateEmptyBorder(kLeftContentPaddingWithIcon));
 
@@ -1225,9 +1225,9 @@ void NotificationViewMD::ToggleInlineSettings(const ui::Event& event) {
   if (!settings_row_)
     return;
 
-  bool inline_settings_visible = !settings_row_->visible();
+  bool inline_settings_visible = !settings_row_->GetVisible();
   bool disable_notification =
-      settings_row_->visible() && block_all_button_->GetChecked();
+      settings_row_->GetVisible() && block_all_button_->GetChecked();
 
   settings_row_->SetVisible(inline_settings_visible);
   content_row_->SetVisible(!inline_settings_visible);

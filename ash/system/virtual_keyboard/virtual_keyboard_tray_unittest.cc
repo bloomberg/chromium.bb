@@ -42,7 +42,7 @@ TEST_F(VirtualKeyboardTrayTest, PerformActionTogglesVirtualKeyboard) {
   StatusAreaWidget* status = StatusAreaWidgetTestHelper::GetStatusAreaWidget();
   VirtualKeyboardTray* tray = status->virtual_keyboard_tray_for_testing();
   tray->SetVisible(true);
-  ASSERT_TRUE(tray->visible());
+  ASSERT_TRUE(tray->GetVisible());
 
   // First tap should show the virtual keyboard.
   tray->PerformAction(ui::GestureEvent(

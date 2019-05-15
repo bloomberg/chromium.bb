@@ -101,7 +101,7 @@ TEST_F(MetalayerToolTest, PaletteMenuState) {
           std::unique_ptr<views::View> view =
               base::WrapUnique(tool_->CreateView());
           EXPECT_TRUE(view);
-          EXPECT_EQ(selectable, view->enabled());
+          EXPECT_EQ(selectable, view->GetEnabled());
 
           const base::string16 label_text =
               static_cast<HoverHighlightView*>(view.get())

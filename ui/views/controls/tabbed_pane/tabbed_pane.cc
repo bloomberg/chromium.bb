@@ -213,7 +213,7 @@ void Tab::OnStateChanged() {
 }
 
 bool Tab::OnMousePressed(const ui::MouseEvent& event) {
-  if (enabled() && event.IsOnlyLeftMouseButton())
+  if (GetEnabled() && event.IsOnlyLeftMouseButton())
     tabbed_pane_->SelectTab(this);
   return true;
 }

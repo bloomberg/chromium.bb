@@ -198,7 +198,7 @@ bool FocusManager::RotatePaneFocus(Direction direction,
     views::View* pane = panes[index];
     DCHECK(pane);
 
-    if (!pane->visible())
+    if (!pane->GetVisible())
       continue;
 
     pane->RequestFocus();

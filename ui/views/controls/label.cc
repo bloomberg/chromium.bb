@@ -298,7 +298,7 @@ gfx::Size Label::CalculatePreferredSize() const {
   // TODO(munjal): This logic probably belongs to the View class. But for now,
   // put it here since putting it in View class means all inheriting classes
   // need to respect the |collapse_when_hidden_| flag.
-  if (!visible() && collapse_when_hidden_)
+  if (!GetVisible() && collapse_when_hidden_)
     return gfx::Size();
 
   if (multi_line() && fixed_width_ != 0 && !text().empty())
@@ -317,7 +317,7 @@ gfx::Size Label::CalculatePreferredSize() const {
 }
 
 gfx::Size Label::GetMinimumSize() const {
-  if (!visible() && collapse_when_hidden_)
+  if (!GetVisible() && collapse_when_hidden_)
     return gfx::Size();
 
   gfx::Size size(0, font_list().GetHeight());
@@ -344,7 +344,7 @@ gfx::Size Label::GetMinimumSize() const {
 }
 
 int Label::GetHeightForWidth(int w) const {
-  if (!visible() && collapse_when_hidden_)
+  if (!GetVisible() && collapse_when_hidden_)
     return 0;
 
   w -= GetInsets().width();

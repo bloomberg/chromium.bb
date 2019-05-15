@@ -664,7 +664,7 @@ void DownloadItemView::DrawIcon(gfx::Canvas* canvas) {
   int icon_y = progress_y + DownloadShelf::kFiletypeIconOffset;
   cc::PaintFlags flags;
   // Use an alpha to make the image look disabled.
-  if (!enabled())
+  if (!GetEnabled())
     flags.setAlpha(120);
   canvas->DrawImageInt(*icon->ToImageSkia(), icon_x, icon_y, flags);
 }
@@ -746,8 +746,8 @@ void DownloadItemView::UpdateColorsFromTheme() {
 
   // Use a slightly dimmed version of the base text color.
   SkColor dimmed_text_color = SkColorSetA(GetTextColor(), 0xC7);
-  file_name_label_->SetEnabledColor(enabled() ? GetTextColor()
-                                              : dimmed_text_color);
+  file_name_label_->SetEnabledColor(GetEnabled() ? GetTextColor()
+                                                 : dimmed_text_color);
   status_label_->SetEnabledColor(dimmed_text_color);
   SkColor background_color =
       GetThemeProvider()->GetColor(ThemeProperties::COLOR_DOWNLOAD_SHELF);

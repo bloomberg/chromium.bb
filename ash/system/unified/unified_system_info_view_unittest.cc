@@ -47,7 +47,7 @@ class UnifiedSystemInfoViewTest : public AshTestBase {
 
 TEST_F(UnifiedSystemInfoViewTest, EnterpriseManagedVisible) {
   // By default, EnterpriseManagedView is not shown.
-  EXPECT_FALSE(info_view()->enterprise_managed_->visible());
+  EXPECT_FALSE(info_view()->enterprise_managed_->GetVisible());
 
   // Simulate enterprise information becoming available.
   const bool active_directory = false;
@@ -57,7 +57,7 @@ TEST_F(UnifiedSystemInfoViewTest, EnterpriseManagedVisible) {
       ->SetEnterpriseDisplayDomain("example.com", active_directory);
 
   // EnterpriseManagedView should be shown.
-  EXPECT_TRUE(info_view()->enterprise_managed_->visible());
+  EXPECT_TRUE(info_view()->enterprise_managed_->GetVisible());
 }
 
 TEST_F(UnifiedSystemInfoViewTest, EnterpriseManagedVisibleForActiveDirectory) {
@@ -70,7 +70,7 @@ TEST_F(UnifiedSystemInfoViewTest, EnterpriseManagedVisibleForActiveDirectory) {
       ->SetEnterpriseDisplayDomain(empty_domain, active_directory);
 
   // EnterpriseManagedView should be shown.
-  EXPECT_TRUE(info_view()->enterprise_managed_->visible());
+  EXPECT_TRUE(info_view()->enterprise_managed_->GetVisible());
 }
 
 using UnifiedSystemInfoViewNoSessionTest = NoSessionAshTestBase;
@@ -87,7 +87,7 @@ TEST_F(UnifiedSystemInfoViewNoSessionTest, SupervisedVisible) {
   // Before login the supervised user view is invisible.
   std::unique_ptr<UnifiedSystemInfoView> info_view_;
   info_view_ = std::make_unique<UnifiedSystemInfoView>(controller_.get());
-  EXPECT_FALSE(info_view_->supervised_->visible());
+  EXPECT_FALSE(info_view_->supervised_->GetVisible());
   info_view_.reset();
 
   // Simulate a supervised user logging in.
@@ -101,7 +101,7 @@ TEST_F(UnifiedSystemInfoViewNoSessionTest, SupervisedVisible) {
 
   // Now the supervised user view is visible.
   info_view_ = std::make_unique<UnifiedSystemInfoView>(controller_.get());
-  ASSERT_TRUE(info_view_->supervised_->visible());
+  ASSERT_TRUE(info_view_->supervised_->GetVisible());
 }
 
 }  // namespace ash

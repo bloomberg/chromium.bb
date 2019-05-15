@@ -395,8 +395,8 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
             visible_security_state->malicious_content_status);
 
   // Verify these two buttons are showing.
-  EXPECT_TRUE(change_password_button->visible());
-  EXPECT_TRUE(whitelist_password_reuse_button->visible());
+  EXPECT_TRUE(change_password_button->GetVisible());
+  EXPECT_TRUE(whitelist_password_reuse_button->GetVisible());
 
   // Verify clicking on button will increment corresponding bucket of
   // PasswordProtection.PageInfoAction.SyncPasswordEntry histogram.
@@ -462,8 +462,8 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
             visible_security_state->malicious_content_status);
 
   // Verify these two buttons are showing.
-  EXPECT_TRUE(change_password_button->visible());
-  EXPECT_TRUE(whitelist_password_reuse_button->visible());
+  EXPECT_TRUE(change_password_button->GetVisible());
+  EXPECT_TRUE(whitelist_password_reuse_button->GetVisible());
 
   // Verify clicking on button will increment corresponding bucket of
   // PasswordProtection.PageInfoAction.NonGaiaEnterprisePasswordEntry histogram.

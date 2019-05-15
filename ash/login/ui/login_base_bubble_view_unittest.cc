@@ -55,54 +55,54 @@ class LoginBaseBubbleViewTest : public LoginTestBase {
 };
 
 TEST_F(LoginBaseBubbleViewTest, BasicProperties) {
-  EXPECT_FALSE(bubble_->visible());
+  EXPECT_FALSE(bubble_->GetVisible());
 
   bubble_->Show();
-  EXPECT_TRUE(bubble_->visible());
+  EXPECT_TRUE(bubble_->GetVisible());
 
   EXPECT_EQ(bubble_->width(), kBubbleTotalWidthDp);
   EXPECT_EQ(bubble_->background()->get_color(), SK_ColorBLACK);
 
   bubble_->Hide();
-  EXPECT_FALSE(bubble_->visible());
+  EXPECT_FALSE(bubble_->GetVisible());
 }
 
 TEST_F(LoginBaseBubbleViewTest, KeyEventHandling) {
-  EXPECT_FALSE(bubble_->visible());
+  EXPECT_FALSE(bubble_->GetVisible());
 
   // Verify that a random key event won't open the bubble.
   ui::test::EventGenerator* generator = GetEventGenerator();
   container_->RequestFocus();
   generator->PressKey(ui::KeyboardCode::VKEY_A, ui::EF_NONE);
-  EXPECT_FALSE(bubble_->visible());
+  EXPECT_FALSE(bubble_->GetVisible());
 
   // Verify that a key event will close the bubble if it is open.
   bubble_->Show();
-  EXPECT_TRUE(bubble_->visible());
+  EXPECT_TRUE(bubble_->GetVisible());
   generator->PressKey(ui::KeyboardCode::VKEY_A, ui::EF_NONE);
-  EXPECT_FALSE(bubble_->visible());
+  EXPECT_FALSE(bubble_->GetVisible());
 }
 
 TEST_F(LoginBaseBubbleViewTest, MouseEventHandling) {
-  EXPECT_FALSE(bubble_->visible());
+  EXPECT_FALSE(bubble_->GetVisible());
 
   // Verify that a random mouse event won't open the bubble.
   ui::test::EventGenerator* generator = GetEventGenerator();
   generator->MoveMouseTo(container_->GetBoundsInScreen().CenterPoint());
   generator->ClickLeftButton();
-  EXPECT_FALSE(bubble_->visible());
+  EXPECT_FALSE(bubble_->GetVisible());
 
   // Verify that a click event on the bubble won't close it.
   bubble_->Show();
-  EXPECT_TRUE(bubble_->visible());
+  EXPECT_TRUE(bubble_->GetVisible());
   generator->MoveMouseTo(bubble_->GetBoundsInScreen().CenterPoint());
   generator->ClickLeftButton();
-  EXPECT_TRUE(bubble_->visible());
+  EXPECT_TRUE(bubble_->GetVisible());
 
   // Verify that a click event outside the bubble will close it if it is open.
   generator->MoveMouseTo(anchor_->GetBoundsInScreen().CenterPoint());
   generator->ClickLeftButton();
-  EXPECT_FALSE(bubble_->visible());
+  EXPECT_FALSE(bubble_->GetVisible());
 }
 
 }  // namespace ash

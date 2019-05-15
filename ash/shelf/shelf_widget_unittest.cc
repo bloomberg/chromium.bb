@@ -450,17 +450,18 @@ class ShelfWidgetViewsVisibilityTest : public AshTestBase {
               !primary_shelf_widget_->IsVisible());
     if (primary_shelf_visibility != kNone) {
       EXPECT_EQ(primary_shelf_visibility == kLoginShelf,
-                primary_shelf_widget_->login_shelf_view()->visible());
+                primary_shelf_widget_->login_shelf_view()->GetVisible());
       EXPECT_EQ(primary_shelf_visibility == kShelf,
-                primary_shelf_widget_->shelf_view_for_testing()->visible());
+                primary_shelf_widget_->shelf_view_for_testing()->GetVisible());
     }
     EXPECT_EQ(secondary_shelf_visibility == kNone,
               !secondary_shelf_widget_->IsVisible());
     if (secondary_shelf_visibility != kNone) {
       EXPECT_EQ(secondary_shelf_visibility == kLoginShelf,
-                secondary_shelf_widget_->login_shelf_view()->visible());
-      EXPECT_EQ(secondary_shelf_visibility == kShelf,
-                secondary_shelf_widget_->shelf_view_for_testing()->visible());
+                secondary_shelf_widget_->login_shelf_view()->GetVisible());
+      EXPECT_EQ(
+          secondary_shelf_visibility == kShelf,
+          secondary_shelf_widget_->shelf_view_for_testing()->GetVisible());
     }
   }
 

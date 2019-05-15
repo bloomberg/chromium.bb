@@ -85,13 +85,13 @@ void UnifiedSystemTrayTestApi::IsBubbleViewVisible(
   if (open_tray)
     tray_->ShowBubble(false /* show_by_click */);
   views::View* view = GetBubbleView(view_id);
-  std::move(cb).Run(view && view->visible());
+  std::move(cb).Run(view && view->GetVisible());
 }
 
 void UnifiedSystemTrayTestApi::ClickBubbleView(int32_t view_id,
                                                ClickBubbleViewCallback cb) {
   views::View* view = GetBubbleView(view_id);
-  if (view && view->visible()) {
+  if (view && view->GetVisible()) {
     gfx::Point cursor_location(1, 1);
     views::View::ConvertPointToScreen(view, &cursor_location);
 

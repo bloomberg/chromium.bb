@@ -74,7 +74,7 @@ void MediaGalleryCheckboxView::Layout() {
   // up at most half of the space and the checkbox can take up whatever is left.
   int checkbox_width = checkbox_->GetPreferredSize().width();
   int secondary_text_width = secondary_text_->GetPreferredSize().width();
-  if (!secondary_text_->visible())
+  if (!secondary_text_->GetVisible())
     secondary_text_width = 0;
 
   gfx::Rect area(GetLocalBounds());
@@ -87,7 +87,7 @@ void MediaGalleryCheckboxView::Layout() {
   checkbox_width = area.width() - secondary_text_width;
 
   checkbox_->SetBounds(area.x(), area.y(), checkbox_width, area.height());
-  if (secondary_text_->visible()) {
+  if (secondary_text_->GetVisible()) {
     secondary_text_->SetBounds(checkbox_->x() + checkbox_width, area.y(),
                                secondary_text_width, area.height());
   }

@@ -131,14 +131,14 @@ TEST_P(LoginExpandedPublicAccountViewTest, ToggleAdvancedView) {
 
   LoginExpandedPublicAccountView::TestApi test_api(public_account_);
   EXPECT_FALSE(user_->public_account_info->show_advanced_view);
-  EXPECT_FALSE(test_api.advanced_view()->visible());
+  EXPECT_FALSE(test_api.advanced_view()->GetVisible());
 
   // Toggle show_advanced_view.
   user_->public_account_info->show_advanced_view = true;
   public_account_->UpdateForUser(user_);
 
   // Advanced view is shown and the overall size does not change.
-  EXPECT_TRUE(test_api.advanced_view()->visible());
+  EXPECT_TRUE(test_api.advanced_view()->GetVisible());
   EXPECT_EQ(public_account_->width(), kBubbleTotalWidthDp);
   EXPECT_EQ(public_account_->height(), kBubbleTotalHeightDp);
 
@@ -146,7 +146,7 @@ TEST_P(LoginExpandedPublicAccountViewTest, ToggleAdvancedView) {
   TapOnView(test_api.advanced_view_button());
 
   // Advanced view is hidden and the overall size does not change.
-  EXPECT_FALSE(test_api.advanced_view()->visible());
+  EXPECT_FALSE(test_api.advanced_view()->GetVisible());
   EXPECT_EQ(public_account_->width(), kBubbleTotalWidthDp);
   EXPECT_EQ(public_account_->height(), kBubbleTotalHeightDp);
 }
@@ -162,31 +162,31 @@ TEST_P(LoginExpandedPublicAccountViewTest, ShowWarningDialog) {
   views::View* link_view = styled_label_test.link_targets().begin()->first;
   TapOnView(link_view);
   EXPECT_NE(test_api.warning_dialog(), nullptr);
-  EXPECT_TRUE(test_api.warning_dialog()->visible());
+  EXPECT_TRUE(test_api.warning_dialog()->GetVisible());
 
   // When warning dialog is shown, tap outside of public account expanded view
   // should not hide it.
   TapOnView(other_view_);
-  EXPECT_TRUE(public_account_->visible());
+  EXPECT_TRUE(public_account_->GetVisible());
   EXPECT_NE(test_api.warning_dialog(), nullptr);
-  EXPECT_TRUE(test_api.warning_dialog()->visible());
+  EXPECT_TRUE(test_api.warning_dialog()->GetVisible());
 
   // If the warning dialog is shown, escape key should close the waring dialog,
   // but not the public account view.
   GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_ESCAPE, 0);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(test_api.warning_dialog(), nullptr);
-  EXPECT_TRUE(public_account_->visible());
+  EXPECT_TRUE(public_account_->GetVisible());
 
   // Press escape again should hide the public account expanded view.
   GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_ESCAPE, 0);
-  EXPECT_FALSE(public_account_->visible());
+  EXPECT_FALSE(public_account_->GetVisible());
 
   // Warning icon is shown only if full management disclosure flag is set.
   public_account_->SetShowFullManagementDisclosure(true);
-  EXPECT_TRUE(test_api.monitoring_warning_icon()->visible());
+  EXPECT_TRUE(test_api.monitoring_warning_icon()->GetVisible());
   public_account_->SetShowFullManagementDisclosure(false);
-  EXPECT_FALSE(test_api.monitoring_warning_icon()->visible());
+  EXPECT_FALSE(test_api.monitoring_warning_icon()->GetVisible());
 }
 
 // Verifies tap on submit button will try to launch public session.
@@ -214,16 +214,16 @@ TEST_P(LoginExpandedPublicAccountViewTest, LaunchPublicSession) {
 TEST_P(LoginExpandedPublicAccountViewTest, ShowLanguageAndKeyboardMenu) {
   LoginExpandedPublicAccountView::TestApi test_api(public_account_);
   EXPECT_FALSE(user_->public_account_info->show_advanced_view);
-  EXPECT_FALSE(test_api.advanced_view()->visible());
+  EXPECT_FALSE(test_api.advanced_view()->GetVisible());
 
   // Toggle show_advanced_view.
   user_->public_account_info->show_advanced_view = true;
   public_account_->UpdateForUser(user_);
-  EXPECT_TRUE(test_api.advanced_view()->visible());
+  EXPECT_TRUE(test_api.advanced_view()->GetVisible());
 
   // Tap on language selection button should bring up the language menu.
   TapOnView(test_api.language_selection_button());
-  EXPECT_TRUE(test_api.language_menu_view()->visible());
+  EXPECT_TRUE(test_api.language_menu_view()->GetVisible());
 
   // First language item is selected, and selected item should have focus.
   EXPECT_EQ(test_api.selected_language_item().value, kEnglishLanguageCode);
@@ -233,11 +233,11 @@ TEST_P(LoginExpandedPublicAccountViewTest, ShowLanguageAndKeyboardMenu) {
 
   // Select language item should close the language menu.
   GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
-  EXPECT_FALSE(test_api.language_menu_view()->visible());
+  EXPECT_FALSE(test_api.language_menu_view()->GetVisible());
 
   // Tap on keyboard selection button should bring up the keyboard menu.
   TapOnView(test_api.keyboard_selection_button());
-  EXPECT_TRUE(test_api.keyboard_menu_view()->visible());
+  EXPECT_TRUE(test_api.keyboard_menu_view()->GetVisible());
 
   // Second keyboard item is selected, and selected item should have focus.
   EXPECT_EQ(test_api.selected_keyboard_item().value, kKeyboardIdForItem2);
@@ -247,19 +247,19 @@ TEST_P(LoginExpandedPublicAccountViewTest, ShowLanguageAndKeyboardMenu) {
 
   // Select keyboard item should close the keyboard menu.
   GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
-  EXPECT_FALSE(test_api.keyboard_menu_view()->visible());
+  EXPECT_FALSE(test_api.keyboard_menu_view()->GetVisible());
 }
 
 TEST_P(LoginExpandedPublicAccountViewTest, ChangeMenuSelection) {
   LoginExpandedPublicAccountView::TestApi test_api(public_account_);
   user_->public_account_info->show_advanced_view = true;
   public_account_->UpdateForUser(user_);
-  EXPECT_TRUE(test_api.advanced_view()->visible());
+  EXPECT_TRUE(test_api.advanced_view()->GetVisible());
 
   // Try to change language selection.
   // Open language menu.
   TapOnView(test_api.language_selection_button());
-  EXPECT_TRUE(test_api.language_menu_view()->visible());
+  EXPECT_TRUE(test_api.language_menu_view()->GetVisible());
 
   // Select second language item:
   // 1. Language menu will be closed automatically.
@@ -274,14 +274,14 @@ TEST_P(LoginExpandedPublicAccountViewTest, ChangeMenuSelection) {
   EXPECT_EQ(test_api.selected_language_item().value, kEnglishLanguageCode);
   LoginMenuView::TestApi language_test_api(test_api.language_menu_view());
   TapOnView(language_test_api.contents()->children()[1]);
-  EXPECT_FALSE(test_api.language_menu_view()->visible());
+  EXPECT_FALSE(test_api.language_menu_view()->GetVisible());
   EXPECT_EQ(test_api.selected_language_item().value, kFrenchLanguageCode);
   base::RunLoop().RunUntilIdle();
 
   // Try to change keyboard selection.
   // Open keyboard menu.
   TapOnView(test_api.keyboard_selection_button());
-  EXPECT_TRUE(test_api.keyboard_menu_view()->visible());
+  EXPECT_TRUE(test_api.keyboard_menu_view()->GetVisible());
 
   // Select first keyboard item:
   // 1. Keyboard menu will be closed automatically.
@@ -289,7 +289,7 @@ TEST_P(LoginExpandedPublicAccountViewTest, ChangeMenuSelection) {
   EXPECT_EQ(test_api.selected_keyboard_item().value, kKeyboardIdForItem2);
   LoginMenuView::TestApi keyboard_test_api(test_api.keyboard_menu_view());
   TapOnView(keyboard_test_api.contents()->children()[0]);
-  EXPECT_FALSE(test_api.keyboard_menu_view()->visible());
+  EXPECT_FALSE(test_api.keyboard_menu_view()->GetVisible());
   EXPECT_EQ(test_api.selected_keyboard_item().value, kKeyboardIdForItem1);
 }
 

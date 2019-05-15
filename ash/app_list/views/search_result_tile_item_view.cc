@@ -223,13 +223,13 @@ base::string16 SearchResultTileItemView::ComputeAccessibleName() const {
   else
     accessible_name = title_->text();
 
-  if (rating_ && rating_->visible()) {
+  if (rating_ && rating_->GetVisible()) {
     accessible_name +=
         base::UTF8ToUTF16(", ") +
         l10n_util::GetStringFUTF16(IDS_APP_ACCESSIBILITY_STAR_RATING_ARC,
                                    rating_->text());
   }
-  if (price_ && price_->visible())
+  if (price_ && price_->GetVisible())
     accessible_name += base::UTF8ToUTF16(", ") + price_->text();
 
   if (result()->result_type() ==

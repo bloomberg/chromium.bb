@@ -181,7 +181,7 @@ void Tab::AnimationProgressed(const gfx::Animation* animation) {
 }
 
 void Tab::ButtonPressed(views::Button* sender, const ui::Event& event) {
-  if (!alert_indicator_ || !alert_indicator_->visible())
+  if (!alert_indicator_ || !alert_indicator_->GetVisible())
     base::RecordAction(UserMetricsAction("CloseTab_NoAlertIndicator"));
   else if (data_.alert_state == TabAlertState::AUDIO_PLAYING)
     base::RecordAction(UserMetricsAction("CloseTab_AudioIndicator"));

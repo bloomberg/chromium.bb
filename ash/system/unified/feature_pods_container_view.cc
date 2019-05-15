@@ -86,7 +86,7 @@ void FeaturePodsContainerView::Layout() {
 
   int visible_count = 0;
   for (auto* child : children()) {
-    if (!child->visible())
+    if (!child->GetVisible())
       continue;
 
     gfx::Size child_size;

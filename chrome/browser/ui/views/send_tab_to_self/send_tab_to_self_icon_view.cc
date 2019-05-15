@@ -43,7 +43,7 @@ bool SendTabToSelfIconView::Update() {
     return false;
   }
 
-  const bool was_visible = visible();
+  const bool was_visible = GetVisible();
   const OmniboxView* omnibox_view = delegate()->GetOmniboxView();
 
   if (!send_tab_to_self::ShouldOfferFeature(web_contents) && was_visible) {
@@ -56,7 +56,7 @@ bool SendTabToSelfIconView::Update() {
     SetVisible(true);
   }
 
-  return was_visible != visible();
+  return was_visible != GetVisible();
 }
 
 void SendTabToSelfIconView::OnExecuting(

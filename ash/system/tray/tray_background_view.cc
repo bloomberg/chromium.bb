@@ -288,7 +288,7 @@ void TrayBackgroundView::AboutToRequestFocusFromTabTraversal(bool reverse) {
   // * Otherwise (login/lock screen, OOBE), bring focus to the shelf only
   //   if we're going in reverse; if we're going forward, let the system tray
   //   focus observers focus the lock/login view.
-  if (shelf->shelf_widget()->login_shelf_view()->visible()) {
+  if (shelf->shelf_widget()->login_shelf_view()->GetVisible()) {
     // Login/lock screen or OOBE.
     should_focus_shelf = reverse;
   }

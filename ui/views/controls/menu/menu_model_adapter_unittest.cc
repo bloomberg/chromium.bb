@@ -237,10 +237,10 @@ void CheckSubmenu(const RootModel& model,
     }
 
     // Check enabled state.
-    EXPECT_EQ(model_item.enabled, item->enabled());
+    EXPECT_EQ(model_item.enabled, item->GetEnabled());
 
     // Check visibility.
-    EXPECT_EQ(model_item.visible, item->visible());
+    EXPECT_EQ(model_item.visible, item->GetVisible());
 
     // Check activation.
     static_cast<views::MenuDelegate*>(delegate)->ExecuteCommand(id);
@@ -311,10 +311,10 @@ TEST_F(MenuModelAdapterTest, BasicTest) {
     }
 
     // Check enabled state.
-    EXPECT_EQ(model_item.enabled, item->enabled());
+    EXPECT_EQ(model_item.enabled, item->GetEnabled());
 
     // Check visibility.
-    EXPECT_EQ(model_item.visible, item->visible());
+    EXPECT_EQ(model_item.visible, item->GetVisible());
 
     // Check activation.
     static_cast<views::MenuDelegate*>(&delegate)->ExecuteCommand(id);

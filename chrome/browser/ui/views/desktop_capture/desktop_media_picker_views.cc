@@ -337,7 +337,7 @@ bool DesktopMediaPickerDialogView::Accept() {
                                    : GetSelectedController()->GetSelection();
   DesktopMediaID source = source_optional.value();
   source.audio_share = audio_share_checkbox_ &&
-                       audio_share_checkbox_->visible() &&
+                       audio_share_checkbox_->GetVisible() &&
                        audio_share_checkbox_->GetChecked();
 
   if (source.type == DesktopMediaID::TYPE_WEB_CONTENTS) {

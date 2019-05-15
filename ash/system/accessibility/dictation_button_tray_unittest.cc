@@ -82,7 +82,7 @@ TEST_F(DictationButtonTrayTest, BasicConstruction) {
   controller->SetDictationAcceleratorDialogAccepted();
   controller->SetDictationEnabled(true);
   EXPECT_TRUE(GetImageView(GetTray()));
-  EXPECT_TRUE(GetTray()->visible());
+  EXPECT_TRUE(GetTray()->GetVisible());
 }
 
 // Test that clicking the button activates dictation.

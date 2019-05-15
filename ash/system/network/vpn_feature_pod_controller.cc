@@ -64,7 +64,7 @@ void VPNFeaturePodController::Update() {
     return;
 
   button_->SetVisible(vpn_util::IsVPNVisibleInSystemTray());
-  if (!button_->visible())
+  if (!button_->GetVisible())
     return;
 
   button_->SetSubLabel(l10n_util::GetStringUTF16(

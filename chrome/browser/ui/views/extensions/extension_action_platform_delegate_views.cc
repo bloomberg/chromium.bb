@@ -121,7 +121,7 @@ bool ExtensionActionPlatformDelegateViews::AcceleratorPressed(
   // this is a browser action.
   DCHECK(controller_->extension_action()->action_type() ==
              ActionInfo::TYPE_BROWSER ||
-         GetDelegateViews()->GetAsView()->visible());
+         GetDelegateViews()->GetAsView()->GetVisible());
 
   // Normal priority shortcuts must be handled via standard browser commands to
   // be processed at the proper time.
@@ -140,9 +140,9 @@ bool ExtensionActionPlatformDelegateViews::CanHandleAccelerators() const {
   // Page actions can only handle accelerators when they are visible.
   // Browser actions can handle accelerators even when not visible, since they
   // might be hidden in an overflow menu.
-  return controller_->extension_action()->action_type() ==
-      ActionInfo::TYPE_PAGE ? GetDelegateViews()->GetAsView()->visible() :
-          true;
+  return controller_->extension_action()->action_type() == ActionInfo::TYPE_PAGE
+             ? GetDelegateViews()->GetAsView()->GetVisible()
+             : true;
 }
 
 void ExtensionActionPlatformDelegateViews::UnregisterCommand(

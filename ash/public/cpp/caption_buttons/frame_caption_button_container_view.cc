@@ -425,7 +425,7 @@ void FrameCaptionButtonContainerView::ButtonPressed(views::Button* sender,
 }
 
 bool FrameCaptionButtonContainerView::IsMinimizeButtonVisible() const {
-  return minimize_button_->visible();
+  return minimize_button_->GetVisible();
 }
 
 void FrameCaptionButtonContainerView::SetButtonsToNormal(Animate animate) {
@@ -460,7 +460,7 @@ FrameCaptionButtonContainerView::GetButtonClosestTo(
   views::FrameCaptionButton* closest_button = NULL;
   for (size_t i = 0; i < base::size(buttons); ++i) {
     views::FrameCaptionButton* button = buttons[i];
-    if (!button->visible())
+    if (!button->GetVisible())
       continue;
 
     gfx::Point center_point = button->GetLocalBounds().CenterPoint();

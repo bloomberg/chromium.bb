@@ -108,19 +108,19 @@ class LoginShelfViewTest : public LoginTestBase {
   // the specified list must be unique.
   bool ShowsShelfButtons(std::vector<LoginShelfView::ButtonId> ids) {
     for (LoginShelfView::ButtonId id : ids) {
-      if (!login_shelf_view_->GetViewByID(id)->visible())
+      if (!login_shelf_view_->GetViewByID(id)->GetVisible())
         return false;
     }
     const auto& children = login_shelf_view_->children();
     const size_t visible_buttons =
         std::count_if(children.cbegin(), login_shelf_view_->children().cend(),
-                      [](const auto* v) { return v->visible(); });
+                      [](const auto* v) { return v->GetVisible(); });
     return visible_buttons == ids.size();
   }
 
   // Check whether the button is enabled.
   bool IsButtonEnabled(LoginShelfView::ButtonId id) {
-    return login_shelf_view_->GetViewByID(id)->enabled();
+    return login_shelf_view_->GetViewByID(id)->GetEnabled();
   }
 
   TestTrayActionClient tray_action_client_;

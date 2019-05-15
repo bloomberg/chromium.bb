@@ -339,7 +339,7 @@ gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::HitTestSync(int x,
   // do a recursive hit test if we return anything other than |this| or NULL.
   View* v = view();
   const auto is_point_in_child = [point, v](View* child) {
-    if (!child->visible())
+    if (!child->GetVisible())
       return false;
     gfx::Point point_in_child_coords = point;
     v->ConvertPointToTarget(v, child, &point_in_child_coords);

@@ -136,7 +136,7 @@ void ImeWarningBubbleView::InitAnchorView() {
     // Anchors the bubble to the browser action of the extension.
     reference_view = container_->GetViewForId(extension_->id());
   }
-  if (!reference_view || !reference_view->visible()) {
+  if (!reference_view || !reference_view->GetVisible()) {
     // Anchors the bubble to the app menu.
     reference_view =
         browser_view_->toolbar_button_provider()->GetAppMenuButton();

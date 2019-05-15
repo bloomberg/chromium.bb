@@ -269,7 +269,7 @@ void LoginUserMenuView::ButtonPressed(views::Button* sender,
                                       const ui::Event& event) {
   // Show confirmation warning. The user has to click the button again before
   // we actually allow the exit.
-  if (!remove_user_confirm_data_->visible()) {
+  if (!remove_user_confirm_data_->GetVisible()) {
     remove_user_confirm_data_->SetVisible(true);
     remove_user_label_->SetEnabledColor(kRemoveUserConfirmColor);
 

@@ -121,7 +121,7 @@ void DownloadShelfView::AddDownloadView(DownloadItemView* view) {
 
   new_item_animation_.Reset();
   new_item_animation_.Show();
-  if (was_empty && !shelf_animation_.is_animating() && visible()) {
+  if (was_empty && !shelf_animation_.is_animating() && GetVisible()) {
     // Force a re-layout of the parent to adjust height of shelf properly.
     parent_->ToolbarSizeChanged(shelf_animation_.IsShowing());
   }
@@ -344,7 +344,7 @@ void DownloadShelfView::ButtonPressed(
 }
 
 bool DownloadShelfView::IsShowing() const {
-  return visible() && shelf_animation_.IsShowing();
+  return GetVisible() && shelf_animation_.IsShowing();
 }
 
 bool DownloadShelfView::IsClosing() const {

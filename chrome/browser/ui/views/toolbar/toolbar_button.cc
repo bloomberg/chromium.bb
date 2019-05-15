@@ -178,8 +178,8 @@ gfx::Rect ToolbarButton::GetAnchorBoundsInScreen() const {
 }
 
 bool ToolbarButton::OnMousePressed(const ui::MouseEvent& event) {
-  if (trigger_menu_on_long_press_ && IsTriggerableEvent(event) && enabled() &&
-      ShouldShowMenu() && HitTestPoint(event.location())) {
+  if (trigger_menu_on_long_press_ && IsTriggerableEvent(event) &&
+      GetEnabled() && ShouldShowMenu() && HitTestPoint(event.location())) {
     // Store the y pos of the mouse coordinates so we can use them later to
     // determine if the user dragged the mouse down (which should pop up the
     // drag down menu immediately, instead of waiting for the timer)
@@ -248,7 +248,7 @@ void ToolbarButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   Button::GetAccessibleNodeData(node_data);
   node_data->role = ax::mojom::Role::kButton;
   node_data->SetHasPopup(ax::mojom::HasPopup::kMenu);
-  if (enabled())
+  if (GetEnabled())
     node_data->SetDefaultActionVerb(ax::mojom::DefaultActionVerb::kPress);
 }
 
@@ -282,7 +282,7 @@ views::InkDrop* ToolbarButton::GetInkDrop() {
 void ToolbarButton::ShowContextMenuForViewImpl(View* source,
                                                const gfx::Point& point,
                                                ui::MenuSourceType source_type) {
-  if (!enabled())
+  if (!GetEnabled())
     return;
 
   show_menu_factory_.InvalidateWeakPtrs();

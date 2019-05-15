@@ -51,26 +51,26 @@ TEST_F(LogoutButtonTrayTest, Visibility) {
                                  ->GetStatusAreaWidget()
                                  ->logout_button_tray_for_testing();
   ASSERT_TRUE(button);
-  EXPECT_FALSE(button->visible());
+  EXPECT_FALSE(button->GetVisible());
 
   // Button is not visible after simulated login.
-  EXPECT_FALSE(button->visible());
+  EXPECT_FALSE(button->GetVisible());
 
   // Setting the pref makes the button visible.
   pref_service()->SetBoolean(prefs::kShowLogoutButtonInTray, true);
-  EXPECT_TRUE(button->visible());
+  EXPECT_TRUE(button->GetVisible());
 
   // Locking the screen hides the button.
   GetSessionControllerClient()->LockScreen();
-  EXPECT_FALSE(button->visible());
+  EXPECT_FALSE(button->GetVisible());
 
   // Unlocking the screen shows the button.
   GetSessionControllerClient()->UnlockScreen();
-  EXPECT_TRUE(button->visible());
+  EXPECT_TRUE(button->GetVisible());
 
   // Resetting the pref hides the button.
   pref_service()->SetBoolean(prefs::kShowLogoutButtonInTray, false);
-  EXPECT_FALSE(button->visible());
+  EXPECT_FALSE(button->GetVisible());
 }
 
 TEST_F(LogoutButtonTrayTest, ButtonPressed) {

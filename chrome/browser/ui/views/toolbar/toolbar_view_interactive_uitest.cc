@@ -312,18 +312,18 @@ IN_PROC_BROWSER_TEST_F(ToolbarViewTest,
 IN_PROC_BROWSER_TEST_F(ToolbarViewTest, BackButtonUpdate) {
   ToolbarView* toolbar =
       BrowserView::GetBrowserViewForBrowser(browser())->toolbar();
-  EXPECT_FALSE(toolbar->back_button()->enabled());
+  EXPECT_FALSE(toolbar->back_button()->GetEnabled());
 
   // Navigate to title1.html. Back button should be enabled.
   GURL url = ui_test_utils::GetTestUrl(
       base::FilePath(), base::FilePath(FILE_PATH_LITERAL("title1.html")));
   ui_test_utils::NavigateToURL(browser(), url);
-  EXPECT_TRUE(toolbar->back_button()->enabled());
+  EXPECT_TRUE(toolbar->back_button()->GetEnabled());
 
   // Delete old navigations. Back button will be disabled.
   auto& controller =
       browser()->tab_strip_model()->GetActiveWebContents()->GetController();
   controller.DeleteNavigationEntries(base::BindRepeating(
       [&](content::NavigationEntry* entry) { return true; }));
-  EXPECT_FALSE(toolbar->back_button()->enabled());
+  EXPECT_FALSE(toolbar->back_button()->GetEnabled());
 }

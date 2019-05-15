@@ -109,12 +109,12 @@ TEST_F(OverviewButtonTrayTest, BasicConstruction) {
 // OverviewButtonTray should only be visible when TabletMode is enabled.
 // By default the system should not have TabletMode enabled.
 TEST_F(OverviewButtonTrayTest, TabletModeObserverOnTabletModeToggled) {
-  ASSERT_FALSE(GetTray()->visible());
+  ASSERT_FALSE(GetTray()->GetVisible());
   TabletModeControllerTestApi().EnterTabletMode();
-  EXPECT_TRUE(GetTray()->visible());
+  EXPECT_TRUE(GetTray()->GetVisible());
 
   TabletModeControllerTestApi().LeaveTabletMode();
-  EXPECT_FALSE(GetTray()->visible());
+  EXPECT_FALSE(GetTray()->GetVisible());
 }
 
 // Tests that activating this control brings up window selection mode.
@@ -208,16 +208,16 @@ TEST_F(OverviewButtonTrayTest, TrayOverviewUserAction) {
 TEST_F(OverviewButtonTrayTest, DisplaysOnBothDisplays) {
   UpdateDisplay("400x400,200x200");
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(GetTray()->visible());
-  EXPECT_FALSE(GetSecondaryTray()->visible());
+  EXPECT_FALSE(GetTray()->GetVisible());
+  EXPECT_FALSE(GetSecondaryTray()->GetVisible());
   TabletModeControllerTestApi().EnterTabletMode();
   base::RunLoop().RunUntilIdle();
   // DisplayConfigurationObserver enables mirror mode when tablet mode is
   // enabled. Disable mirror mode to test tablet mode with multiple displays.
   display_manager()->SetMirrorMode(display::MirrorMode::kOff, base::nullopt);
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(GetTray()->visible());
-  EXPECT_TRUE(GetSecondaryTray()->visible());
+  EXPECT_TRUE(GetTray()->GetVisible());
+  EXPECT_TRUE(GetSecondaryTray()->GetVisible());
 }
 
 // Tests if Maximize Mode is enabled before a secondary display is attached
@@ -229,7 +229,7 @@ TEST_F(OverviewButtonTrayTest, DISABLED_SecondaryTrayCreatedVisible) {
   TabletModeControllerTestApi().EnterTabletMode();
   UpdateDisplay("400x400,200x200");
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(GetSecondaryTray()->visible());
+  EXPECT_TRUE(GetSecondaryTray()->GetVisible());
 }
 
 // Tests that the tray loses visibility when a user logs out, and that it
@@ -238,16 +238,16 @@ TEST_F(OverviewButtonTrayTest, VisibilityChangesForLoginStatus) {
   TabletModeControllerTestApi().EnterTabletMode();
   ClearLogin();
   Shell::Get()->UpdateAfterLoginStatusChange(LoginStatus::NOT_LOGGED_IN);
-  EXPECT_FALSE(GetTray()->visible());
+  EXPECT_FALSE(GetTray()->GetVisible());
   CreateUserSessions(1);
   Shell::Get()->UpdateAfterLoginStatusChange(LoginStatus::USER);
-  EXPECT_TRUE(GetTray()->visible());
+  EXPECT_TRUE(GetTray()->GetVisible());
   SetUserAddingScreenRunning(true);
   NotifySessionStateChanged();
-  EXPECT_FALSE(GetTray()->visible());
+  EXPECT_FALSE(GetTray()->GetVisible());
   SetUserAddingScreenRunning(false);
   NotifySessionStateChanged();
-  EXPECT_TRUE(GetTray()->visible());
+  EXPECT_TRUE(GetTray()->GetVisible());
 }
 
 // Tests that the tray only renders as active while selection is ongoing. Any
@@ -272,9 +272,9 @@ TEST_F(OverviewButtonTrayTest, ActiveStateOnlyDuringOverviewMode) {
 // Test that a hide animation can complete.
 TEST_F(OverviewButtonTrayTest, HideAnimationAlwaysCompletes) {
   TabletModeControllerTestApi().EnterTabletMode();
-  EXPECT_TRUE(GetTray()->visible());
+  EXPECT_TRUE(GetTray()->GetVisible());
   GetTray()->SetVisible(false);
-  EXPECT_FALSE(GetTray()->visible());
+  EXPECT_FALSE(GetTray()->GetVisible());
 }
 
 // Test that when a hide animation is aborted via deletion, the
@@ -295,7 +295,7 @@ TEST_F(OverviewButtonTrayTest, HideAnimationAlwaysCompletesOnDelete) {
       ::wm::RecreateLayers(root_window);
   old_layer_tree_owner.reset();
 
-  EXPECT_FALSE(GetTray()->visible());
+  EXPECT_FALSE(GetTray()->GetVisible());
 }
 
 // Tests that the overview button becomes visible when the user enters
@@ -313,9 +313,9 @@ TEST_F(OverviewButtonTrayTest, VisibilityChangesForSystemModalWindow) {
 
   ASSERT_TRUE(Shell::IsSystemModalWindowOpen());
   TabletModeControllerTestApi().EnterTabletMode();
-  EXPECT_TRUE(GetTray()->visible());
+  EXPECT_TRUE(GetTray()->GetVisible());
   TabletModeControllerTestApi().LeaveTabletMode();
-  EXPECT_FALSE(GetTray()->visible());
+  EXPECT_FALSE(GetTray()->GetVisible());
 }
 
 // Verify that quick switch works properly when one of the windows has a
@@ -378,11 +378,11 @@ TEST_F(OverviewButtonTrayTest, SplitviewModeQuickSwitch) {
 TEST_F(OverviewButtonTrayTest, LeaveTabletModeBecauseExternalMouse) {
   TabletModeControllerTestApi().OpenLidToAngle(315.0f);
   EXPECT_TRUE(TabletModeControllerTestApi().IsTabletModeStarted());
-  ASSERT_TRUE(GetTray()->visible());
+  ASSERT_TRUE(GetTray()->GetVisible());
 
   TabletModeControllerTestApi().AttachExternalMouse();
   EXPECT_FALSE(TabletModeControllerTestApi().IsTabletModeStarted());
-  EXPECT_TRUE(GetTray()->visible());
+  EXPECT_TRUE(GetTray()->GetVisible());
 }
 
 }  // namespace ash

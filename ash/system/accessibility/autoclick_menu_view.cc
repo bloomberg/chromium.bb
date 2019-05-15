@@ -85,7 +85,7 @@ class AutoclickMenuButton : public TopShortcutButton {
   }
 
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
-    if (!enabled())
+    if (!GetEnabled())
       return;
     TopShortcutButton::GetAccessibleNodeData(node_data);
     node_data->role = ax::mojom::Role::kToggleButton;

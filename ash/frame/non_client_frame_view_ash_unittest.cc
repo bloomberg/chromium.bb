@@ -539,7 +539,7 @@ TEST_F(NonClientFrameViewAshTest, BackButton) {
   model_ptr->SetVisible(views::CAPTION_BUTTON_ICON_BACK, true);
   non_client_frame_view->SizeConstraintsChanged();
   EXPECT_TRUE(header_view->GetBackButton());
-  EXPECT_FALSE(header_view->GetBackButton()->enabled());
+  EXPECT_FALSE(header_view->GetBackButton()->GetEnabled());
 
   // Back button is disabled, so clicking on it should not should
   // generate back key sequence.
@@ -553,7 +553,7 @@ TEST_F(NonClientFrameViewAshTest, BackButton) {
   model_ptr->SetEnabled(views::CAPTION_BUTTON_ICON_BACK, true);
   non_client_frame_view->SizeConstraintsChanged();
   EXPECT_TRUE(header_view->GetBackButton());
-  EXPECT_TRUE(header_view->GetBackButton()->enabled());
+  EXPECT_TRUE(header_view->GetBackButton()->GetEnabled());
 
   // Back button is now enabled, so clicking on it should generate
   // back key sequence.
@@ -588,7 +588,7 @@ TEST_F(NonClientFrameViewAshTest, FrameVisibility) {
   widget->GetRootView()->Layout();
   EXPECT_EQ(gfx::Size(200, 100),
             widget->client_view()->GetLocalBounds().size());
-  EXPECT_FALSE(widget->non_client_view()->frame_view()->visible());
+  EXPECT_FALSE(widget->non_client_view()->frame_view()->GetVisible());
   EXPECT_EQ(
       window_bounds,
       non_client_frame_view->GetClientBoundsForWindowBounds(window_bounds));
@@ -596,7 +596,7 @@ TEST_F(NonClientFrameViewAshTest, FrameVisibility) {
   non_client_frame_view->SetVisible(true);
   widget->GetRootView()->Layout();
   EXPECT_EQ(client_bounds, widget->client_view()->GetLocalBounds().size());
-  EXPECT_TRUE(widget->non_client_view()->frame_view()->visible());
+  EXPECT_TRUE(widget->non_client_view()->frame_view()->GetVisible());
   EXPECT_EQ(32, delegate->GetNonClientFrameViewTopBorderHeight());
   EXPECT_EQ(
       gfx::Rect(gfx::Point(10, 42), client_bounds),
@@ -620,52 +620,52 @@ TEST_F(NonClientFrameViewAshTest, CustomButtonModel) {
 
   // CLOSE buttion is always visible and enabled.
   EXPECT_TRUE(test_api.close_button());
-  EXPECT_TRUE(test_api.close_button()->visible());
-  EXPECT_TRUE(test_api.close_button()->enabled());
+  EXPECT_TRUE(test_api.close_button()->GetVisible());
+  EXPECT_TRUE(test_api.close_button()->GetEnabled());
 
-  EXPECT_FALSE(test_api.minimize_button()->visible());
-  EXPECT_FALSE(test_api.size_button()->visible());
-  EXPECT_FALSE(test_api.menu_button()->visible());
+  EXPECT_FALSE(test_api.minimize_button()->GetVisible());
+  EXPECT_FALSE(test_api.size_button()->GetVisible());
+  EXPECT_FALSE(test_api.menu_button()->GetVisible());
 
   // Back button
   model_ptr->SetVisible(views::CAPTION_BUTTON_ICON_BACK, true);
   non_client_frame_view->SizeConstraintsChanged();
-  EXPECT_TRUE(header_view->GetBackButton()->visible());
-  EXPECT_FALSE(header_view->GetBackButton()->enabled());
+  EXPECT_TRUE(header_view->GetBackButton()->GetVisible());
+  EXPECT_FALSE(header_view->GetBackButton()->GetEnabled());
 
   model_ptr->SetEnabled(views::CAPTION_BUTTON_ICON_BACK, true);
   non_client_frame_view->SizeConstraintsChanged();
-  EXPECT_TRUE(header_view->GetBackButton()->enabled());
+  EXPECT_TRUE(header_view->GetBackButton()->GetEnabled());
 
   // size button
   model_ptr->SetVisible(views::CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE, true);
   non_client_frame_view->SizeConstraintsChanged();
-  EXPECT_TRUE(test_api.size_button()->visible());
-  EXPECT_FALSE(test_api.size_button()->enabled());
+  EXPECT_TRUE(test_api.size_button()->GetVisible());
+  EXPECT_FALSE(test_api.size_button()->GetEnabled());
 
   model_ptr->SetEnabled(views::CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE, true);
   non_client_frame_view->SizeConstraintsChanged();
-  EXPECT_TRUE(test_api.size_button()->enabled());
+  EXPECT_TRUE(test_api.size_button()->GetEnabled());
 
   // minimize button
   model_ptr->SetVisible(views::CAPTION_BUTTON_ICON_MINIMIZE, true);
   non_client_frame_view->SizeConstraintsChanged();
-  EXPECT_TRUE(test_api.minimize_button()->visible());
-  EXPECT_FALSE(test_api.minimize_button()->enabled());
+  EXPECT_TRUE(test_api.minimize_button()->GetVisible());
+  EXPECT_FALSE(test_api.minimize_button()->GetEnabled());
 
   model_ptr->SetEnabled(views::CAPTION_BUTTON_ICON_MINIMIZE, true);
   non_client_frame_view->SizeConstraintsChanged();
-  EXPECT_TRUE(test_api.minimize_button()->enabled());
+  EXPECT_TRUE(test_api.minimize_button()->GetEnabled());
 
   // menu button
   model_ptr->SetVisible(views::CAPTION_BUTTON_ICON_MENU, true);
   non_client_frame_view->SizeConstraintsChanged();
-  EXPECT_TRUE(test_api.menu_button()->visible());
-  EXPECT_FALSE(test_api.menu_button()->enabled());
+  EXPECT_TRUE(test_api.menu_button()->GetVisible());
+  EXPECT_FALSE(test_api.menu_button()->GetEnabled());
 
   model_ptr->SetEnabled(views::CAPTION_BUTTON_ICON_MENU, true);
   non_client_frame_view->SizeConstraintsChanged();
-  EXPECT_TRUE(test_api.menu_button()->enabled());
+  EXPECT_TRUE(test_api.menu_button()->GetEnabled());
 
   // zoom button
   EXPECT_STREQ(views::kWindowControlMaximizeIcon.name,

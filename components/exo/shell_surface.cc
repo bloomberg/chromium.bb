@@ -481,7 +481,7 @@ void ShellSurface::SetWidgetBounds(const gfx::Rect& bounds) {
 }
 
 bool ShellSurface::OnPreWidgetCommit() {
-  if (!widget_ && enabled()) {
+  if (!widget_ && GetEnabled()) {
     // Defer widget creation and commit until surface has contents.
     if (host_window()->bounds().IsEmpty()) {
       Configure();

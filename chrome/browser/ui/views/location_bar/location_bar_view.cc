@@ -123,7 +123,7 @@ base::Feature kOmniboxShowFullUrlOnKeyboardShortcut{
     "OmniboxShowFullUrlOnKeyboardShortcut", base::FEATURE_ENABLED_BY_DEFAULT};
 
 int IncrementalMinimumWidth(const views::View* view) {
-  return (view && view->visible()) ? view->GetMinimumSize().width() : 0;
+  return (view && view->GetVisible()) ? view->GetMinimumSize().width() : 0;
 }
 
 }  // namespace
@@ -548,7 +548,7 @@ void LocationBarView::Layout() {
 
   auto add_trailing_decoration = [&trailing_decorations, vertical_padding,
                                   location_height, edge_padding](View* view) {
-    if (view->visible()) {
+    if (view->GetVisible()) {
       trailing_decorations.AddDecoration(vertical_padding, location_height,
                                          false, 0, edge_padding, view);
     }
@@ -603,7 +603,7 @@ void LocationBarView::Layout() {
   entry_width = location_bounds.width();
 
   // Layout |ime_inline_autocomplete_view_| next to the user input.
-  if (ime_inline_autocomplete_view_->visible()) {
+  if (ime_inline_autocomplete_view_->GetVisible()) {
     int width =
         gfx::GetStringWidth(ime_inline_autocomplete_view_->text(),
                             ime_inline_autocomplete_view_->font_list()) +
@@ -686,7 +686,7 @@ bool LocationBarView::ActivateFirstInactiveBubbleForAccessibility() {
   auto result = std::find_if(
       page_action_icons_.begin(), page_action_icons_.end(),
       [](PageActionIconView* view) {
-        if (!view || !view->visible() || !view->GetBubble())
+        if (!view || !view->GetVisible() || !view->GetBubble())
           return false;
 
         views::Widget* widget = view->GetBubble()->GetWidget();
@@ -872,9 +872,9 @@ bool LocationBarView::RefreshContentSettingViews() {
 
   bool visibility_changed = false;
   for (auto* v : content_setting_views_) {
-    const bool was_visible = v->visible();
+    const bool was_visible = v->GetVisible();
     v->Update();
-    if (was_visible != v->visible())
+    if (was_visible != v->GetVisible())
       visibility_changed = true;
   }
   return visibility_changed;
@@ -1055,7 +1055,7 @@ LocationBarTesting* LocationBarView::GetLocationBarForTesting() {
 
 bool LocationBarView::GetBookmarkStarVisibility() {
   DCHECK(star_view_);
-  return star_view_->visible();
+  return star_view_->GetVisible();
 }
 
 bool LocationBarView::TestContentSettingImagePressed(size_t index) {

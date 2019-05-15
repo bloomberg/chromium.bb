@@ -132,7 +132,7 @@ bool ViewAndLayerTreeAreConsistent(const views::View* view,
     EXPECT_EQ(l->IsDrawn(), v->IsDrawn());
     if (v->IsDrawn() != l->IsDrawn()) {
       for (const views::View* vv = v; vv; vv = vv->parent())
-        LOG(ERROR) << "V: " << vv << " " << vv->visible() << " "
+        LOG(ERROR) << "V: " << vv << " " << vv->GetVisible() << " "
                    << vv->IsDrawn() << " " << vv->layer();
       for (const ui::Layer* ll = l; ll; ll = ll->parent())
         LOG(ERROR) << "L: " << ll << " " << ll->IsDrawn();
@@ -196,7 +196,7 @@ void ScrambleTree(views::View* view) {
     view->SetPaintToLayer();
 
   if (base::RandDouble() < 0.1)
-    view->SetVisible(!view->visible());
+    view->SetVisible(!view->GetVisible());
 }
 
 }  // namespace
@@ -5151,7 +5151,7 @@ TEST_F(ViewObserverTest, ViewVisibilityChanged) {
   reset();
 
   // Ensure setting |parent| not visible also calls the
-  // observer. |view->visible()| should still return true however.
+  // observer. |view->GetVisible()| should still return true however.
   parent->SetVisible(false);
   EXPECT_EQ(view, view_visibility_changed());
   EXPECT_EQ(parent.get(), view_visibility_changed_starting());

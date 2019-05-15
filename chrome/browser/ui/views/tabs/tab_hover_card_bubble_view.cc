@@ -436,7 +436,7 @@ void TabHoverCardBubbleView::UpdateCardContent(TabRendererData data) {
   domain_label_->SetText(domain);
 
   // If the preview image feature is not enabled, |preview_image_| will be null.
-  if (preview_image_ && preview_image_->visible()) {
+  if (preview_image_ && preview_image_->GetVisible()) {
     // If there is no valid thumbnail data, blank out the preview, else wait for
     // the image data to be decoded and update momentarily.
     if (!data.thumbnail.AsImageSkiaAsync(

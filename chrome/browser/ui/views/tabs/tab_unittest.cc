@@ -184,7 +184,7 @@ class TabTest : public ChromeViewsTestBase {
         EXPECT_TRUE(tab.showing_icon_);
         EXPECT_FALSE(tab.showing_alert_indicator_);
       }
-      EXPECT_FALSE(tab.title_->visible());
+      EXPECT_FALSE(tab.title_->GetVisible());
       EXPECT_FALSE(tab.showing_close_button_);
     } else if (tab.IsActive()) {
       EXPECT_TRUE(tab.showing_close_button_);
@@ -241,7 +241,7 @@ class TabTest : public ChromeViewsTestBase {
       } else {
         EXPECT_LE(contents_bounds.x(), tab.icon_->x());
       }
-      if (tab.title_->visible())
+      if (tab.title_->GetVisible())
         EXPECT_LE(tab.icon_->bounds().right(), tab.title_->x());
       EXPECT_LE(contents_bounds.y(), tab.icon_->y());
       EXPECT_LE(tab.icon_->bounds().bottom(), contents_bounds.bottom());
@@ -256,7 +256,7 @@ class TabTest : public ChromeViewsTestBase {
     }
 
     if (tab.showing_alert_indicator_) {
-      if (tab.title_->visible()) {
+      if (tab.title_->GetVisible()) {
         EXPECT_LE(tab.title_->bounds().right(),
                   GetAlertIndicatorBounds(tab).x());
       }
@@ -281,7 +281,7 @@ class TabTest : public ChromeViewsTestBase {
     if (tab.showing_close_button_) {
       // Note: The title bounds can overlap the left-insets of the close box,
       // but should otherwise be to the left of the close button.
-      if (tab.title_->visible()) {
+      if (tab.title_->GetVisible()) {
         EXPECT_LE(tab.title_->bounds().right(),
                   tab.close_button_->bounds().x() +
                       tab.close_button_->GetInsets().left());
@@ -508,7 +508,7 @@ TEST_F(TabTest, TooltipProvidedByTab) {
     for (auto j = tab.children().begin(); j != tab.children().end(); ++j) {
       if (!strcmp((*j)->GetClassName(), "TabCloseButton"))
         continue;  // Close button is excepted.
-      if (!(*j)->visible())
+      if (!(*j)->GetVisible())
         continue;
       SCOPED_TRACE(::testing::Message()
                    << "child " << std::distance(tab.children().begin(), j)
@@ -704,13 +704,13 @@ TEST_F(TabTest, SmallTabsHideCloseButton) {
                     Tab::kMinimumContentsWidthForCloseButtons;
   tab.SetBounds(0, 0, width, 50);
   const views::View* close = GetCloseButton(tab);
-  EXPECT_TRUE(close->visible());
+  EXPECT_TRUE(close->GetVisible());
 
   const views::View* icon = GetTabIcon(tab);
   const int icon_x = icon->x();
   // Shrink the tab. The close button should disappear.
   tab.SetBounds(0, 0, width - 1, 50);
-  EXPECT_FALSE(close->visible());
+  EXPECT_FALSE(close->GetVisible());
   // The favicon moves left because the extra padding disappears too.
   EXPECT_LT(icon->x(), icon_x);
 }
@@ -725,13 +725,13 @@ TEST_F(TabTest, ExtraLeftPaddingNotShownOnSmallActiveTab) {
   widget.GetContentsView()->AddChildView(&tab);
   tab.SetBounds(0, 0, 200, 50);
   const views::View* close = GetCloseButton(tab);
-  EXPECT_TRUE(close->visible());
+  EXPECT_TRUE(close->GetVisible());
 
   const views::View* icon = GetTabIcon(tab);
   const int icon_x = icon->x();
 
   tab.SetBounds(0, 0, 40, 50);
-  EXPECT_TRUE(close->visible());
+  EXPECT_TRUE(close->GetVisible());
   // The favicon moves left because the extra padding disappears.
   EXPECT_LT(icon->x(), icon_x);
 }
@@ -753,7 +753,7 @@ TEST_F(TabTest, ExtraLeftPaddingShownOnSiteWithoutFavicon) {
   data.show_icon = false;
   tab.SetData(data);
   EndTitleAnimation(&tab);
-  EXPECT_FALSE(icon->visible());
+  EXPECT_FALSE(icon->GetVisible());
   // Title should be placed where the favicon was.
   EXPECT_EQ(icon_x, GetTabTitle(tab)->x());
 }
@@ -771,15 +771,15 @@ TEST_F(TabTest, ExtraAlertPaddingNotShownOnSmallActiveTab) {
   tab.SetData(data);
 
   tab.SetBounds(0, 0, 200, 50);
-  EXPECT_TRUE(GetTabIcon(tab)->visible());
+  EXPECT_TRUE(GetTabIcon(tab)->GetVisible());
   const views::View* close = GetCloseButton(tab);
   const views::View* alert = GetAlertIndicator(tab);
   const int original_spacing = close->x() - alert->bounds().right();
 
   tab.SetBounds(0, 0, 70, 50);
-  EXPECT_FALSE(GetTabIcon(tab)->visible());
-  EXPECT_TRUE(close->visible());
-  EXPECT_TRUE(alert->visible());
+  EXPECT_FALSE(GetTabIcon(tab)->GetVisible());
+  EXPECT_TRUE(close->GetVisible());
+  EXPECT_TRUE(alert->GetVisible());
   // The alert indicator moves closer because the extra padding is gone.
   EXPECT_LT(close->x() - alert->bounds().right(), original_spacing);
 }

@@ -68,38 +68,38 @@ IN_PROC_BROWSER_TEST_F(LocationBarViewBrowserTest, LocationBarDecoration) {
   PageActionIconView* zoom_view = GetZoomView();
 
   ASSERT_TRUE(zoom_view);
-  EXPECT_FALSE(zoom_view->visible());
+  EXPECT_FALSE(zoom_view->GetVisible());
   EXPECT_FALSE(ZoomBubbleView::GetZoomBubble());
 
   // Altering zoom should display a bubble. Note ZoomBubbleView closes
   // asynchronously, so precede checks with a run loop flush.
   zoom_controller->SetZoomLevel(content::ZoomFactorToZoomLevel(1.5));
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(zoom_view->visible());
+  EXPECT_TRUE(zoom_view->GetVisible());
   EXPECT_TRUE(ZoomBubbleView::GetZoomBubble());
 
   // Close the bubble at other than 100% zoom. Icon should remain visible.
   ZoomBubbleView::CloseCurrentBubble();
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(zoom_view->visible());
+  EXPECT_TRUE(zoom_view->GetVisible());
   EXPECT_FALSE(ZoomBubbleView::GetZoomBubble());
 
   // Show the bubble again.
   zoom_controller->SetZoomLevel(content::ZoomFactorToZoomLevel(2.0));
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(zoom_view->visible());
+  EXPECT_TRUE(zoom_view->GetVisible());
   EXPECT_TRUE(ZoomBubbleView::GetZoomBubble());
 
   // Remains visible at 100% until the bubble is closed.
   zoom_controller->SetZoomLevel(content::ZoomFactorToZoomLevel(1.0));
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(zoom_view->visible());
+  EXPECT_TRUE(zoom_view->GetVisible());
   EXPECT_TRUE(ZoomBubbleView::GetZoomBubble());
 
   // Closing at 100% hides the icon.
   ZoomBubbleView::CloseCurrentBubble();
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(zoom_view->visible());
+  EXPECT_FALSE(zoom_view->GetVisible());
   EXPECT_FALSE(ZoomBubbleView::GetZoomBubble());
 }
 
@@ -112,11 +112,11 @@ IN_PROC_BROWSER_TEST_F(LocationBarViewBrowserTest, BubblesCloseOnHide) {
   PageActionIconView* zoom_view = GetZoomView();
 
   ASSERT_TRUE(zoom_view);
-  EXPECT_FALSE(zoom_view->visible());
+  EXPECT_FALSE(zoom_view->GetVisible());
 
   zoom_controller->SetZoomLevel(content::ZoomFactorToZoomLevel(1.5));
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(zoom_view->visible());
+  EXPECT_TRUE(zoom_view->GetVisible());
   EXPECT_TRUE(ZoomBubbleView::GetZoomBubble());
 
   chrome::NewTab(browser());
@@ -174,7 +174,7 @@ IN_PROC_BROWSER_TEST_F(TouchLocationBarViewBrowserTest,
   }
   omnibox_view_views->SetText(base::UTF8ToUTF16("谷"));
   GetLocationBarView()->SetImeInlineAutocompletion(base::UTF8ToUTF16("歌"));
-  EXPECT_TRUE(ime_inline_autocomplete_view->visible());
+  EXPECT_TRUE(ime_inline_autocomplete_view->GetVisible());
 
   GetLocationBarView()->Layout();
 

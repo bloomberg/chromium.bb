@@ -156,7 +156,7 @@ class AssistantContainerLayout : public views::LayoutManager {
     // Our preferred width is the width of our largest visible child.
     int preferred_width = 0;
     for (const views::View* child : host->children()) {
-      if (child->visible()) {
+      if (child->GetVisible()) {
         preferred_width =
             std::max(child->GetPreferredSize().width(), preferred_width);
       }
@@ -170,7 +170,7 @@ class AssistantContainerLayout : public views::LayoutManager {
     // Our preferred height is the height of our largest visible child.
     int preferred_height = 0;
     for (const views::View* child : host->children()) {
-      if (child->visible()) {
+      if (child->GetVisible()) {
         preferred_height =
             std::max(child->GetHeightForWidth(width), preferred_height);
       }

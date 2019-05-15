@@ -38,7 +38,7 @@ bool IsSystemTrayForWindowVisible(WindowType index) {
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   RootWindowController* controller =
       RootWindowController::ForWindow(root_windows[index]);
-  return controller->GetStatusAreaWidget()->unified_system_tray()->visible();
+  return controller->GetStatusAreaWidget()->unified_system_tray()->GetVisible();
 }
 
 TEST_F(LoginScreenControllerTest, RequestAuthentication) {

@@ -44,7 +44,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestErrorMessageTest, CompleteFail) {
                                DialogEvent::PROCESSING_SPINNER_HIDDEN,
                                DialogEvent::ERROR_MESSAGE_SHOWN});
   ClickOnDialogViewAndWait(DialogViewID::CVC_PROMPT_CONFIRM_BUTTON);
-  EXPECT_FALSE(dialog_view()->throbber_overlay_for_testing()->visible());
+  EXPECT_FALSE(dialog_view()->throbber_overlay_for_testing()->GetVisible());
 
   // The user can only close the dialog at this point.
   ResetEventWaiter(DialogEvent::DIALOG_CLOSED);

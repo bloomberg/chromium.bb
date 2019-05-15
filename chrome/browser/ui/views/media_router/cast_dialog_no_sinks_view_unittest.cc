@@ -39,7 +39,7 @@ class CastDialogNoSinksViewTest : public ChromeViewsTestBase {
 
 TEST_F(CastDialogNoSinksViewTest, SwitchViews) {
   // Initially, only the throbber view should be shown.
-  EXPECT_TRUE(looking_for_sinks_view()->visible());
+  EXPECT_TRUE(looking_for_sinks_view()->GetVisible());
   EXPECT_FALSE(help_icon_view());
 
   base::RunLoop run_loop;
@@ -48,7 +48,7 @@ TEST_F(CastDialogNoSinksViewTest, SwitchViews) {
   run_loop.Run();
   // After three seconds, only the help icon view should be shown.
   EXPECT_FALSE(looking_for_sinks_view());
-  EXPECT_TRUE(help_icon_view()->visible());
+  EXPECT_TRUE(help_icon_view()->GetVisible());
 }
 
 }  // namespace media_router

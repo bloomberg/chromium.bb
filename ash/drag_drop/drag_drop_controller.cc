@@ -465,7 +465,7 @@ void DragDropController::DragUpdate(aura::Window* target,
   }
 
   DCHECK(drag_image_.get());
-  if (drag_image_->visible()) {
+  if (drag_image_->GetVisible()) {
     gfx::Point root_location_in_screen = event.root_location();
     ::wm::ConvertPointToScreen(target->GetRootWindow(),
                                &root_location_in_screen);

@@ -129,7 +129,7 @@ void OmniboxPageActionIconContainerView::UpdatePageActionIcon(
 bool OmniboxPageActionIconContainerView::
     ActivateFirstInactiveBubbleForAccessibility() {
   for (PageActionIconView* icon : page_action_icons_) {
-    if (!icon->visible() || !icon->GetBubble())
+    if (!icon->GetVisible() || !icon->GetBubble())
       continue;
 
     views::Widget* widget = icon->GetBubble()->GetWidget();

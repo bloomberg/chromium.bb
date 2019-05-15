@@ -317,8 +317,8 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
 
     // Verify the layout triggered by the initial size preserves the overflow
     // state calculated in GetPreferredSizeForContents().
-    EXPECT_TRUE(GetBookmarkButton(5)->visible());
-    EXPECT_FALSE(GetBookmarkButton(6)->visible());
+    EXPECT_TRUE(GetBookmarkButton(5)->GetVisible());
+    EXPECT_FALSE(GetBookmarkButton(6)->GetVisible());
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
     // On desktop Linux, the bookmark bar context menu blocks on retrieving the
@@ -369,7 +369,7 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
       size.set_width(size.width() - 25);
       bb_view_->SetBounds(0, 0, size.width(), size.height());
       bb_view_->Layout();
-    } while (bb_view_->GetBookmarkButton(6)->visible());
+    } while (bb_view_->GetBookmarkButton(6)->GetVisible());
     return size;
   }
 

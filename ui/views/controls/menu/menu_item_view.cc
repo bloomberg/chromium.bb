@@ -1126,7 +1126,7 @@ SkColor MenuItemView::GetTextColor(bool minor, bool render_selection) const {
   ui::NativeTheme::ColorId color_id =
       minor ? ui::NativeTheme::kColorId_MenuItemMinorTextColor
             : ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor;
-  if (enabled()) {
+  if (GetEnabled()) {
     if (render_selection)
       color_id = ui::NativeTheme::kColorId_SelectedMenuItemForegroundColor;
   } else {

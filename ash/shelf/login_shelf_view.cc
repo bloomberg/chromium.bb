@@ -508,13 +508,13 @@ void LoginShelfView::ButtonPressed(views::Button* sender,
 }
 
 bool LoginShelfView::LaunchAppForTesting(const std::string& app_id) {
-  return kiosk_apps_button_->enabled() &&
+  return kiosk_apps_button_->GetEnabled() &&
          kiosk_apps_button_->LaunchAppForTesting(app_id);
 }
 
 bool LoginShelfView::SimulateAddUserButtonForTesting() {
   views::View* add_user_button = GetViewByID(kAddUser);
-  if (!add_user_button->enabled())
+  if (!add_user_button->GetEnabled())
     return false;
 
   StartAddUser();
@@ -523,7 +523,7 @@ bool LoginShelfView::SimulateAddUserButtonForTesting() {
 
 bool LoginShelfView::SimulateGuestButtonForTesting() {
   views::View* guest_login_button = GetViewByID(kBrowseAsGuest);
-  if (!guest_login_button->enabled())
+  if (!guest_login_button->GetEnabled())
     return false;
 
   Shell::Get()->login_screen_controller()->LoginAsGuest();
@@ -732,7 +732,7 @@ void LoginShelfView::UpdateButtonUnionBounds() {
   button_union_bounds_ = gfx::Rect();
   View::Views children = GetChildrenInZOrder();
   for (auto* child : children) {
-    if (child->visible())
+    if (child->GetVisible())
       button_union_bounds_.Union(child->bounds());
   }
 }

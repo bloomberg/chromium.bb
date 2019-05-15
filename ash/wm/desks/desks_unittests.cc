@@ -66,7 +66,7 @@ void CloseDeskFromMiniView(const DeskMiniView* desk_mini_view,
   const gfx::Point mini_view_center =
       desk_mini_view->GetBoundsInScreen().CenterPoint();
   event_generator->MoveMouseTo(mini_view_center);
-  EXPECT_TRUE(desk_mini_view->close_desk_button()->visible());
+  EXPECT_TRUE(desk_mini_view->close_desk_button()->GetVisible());
   // Move to the center of the close button and click.
   event_generator->MoveMouseTo(
       desk_mini_view->close_desk_button()->GetBoundsInScreen().CenterPoint());
@@ -240,7 +240,7 @@ TEST_F(DesksTest, DesksBarViewDeskCreation) {
   // new desk button is enabled.
   DCHECK(desks_bar_view);
   EXPECT_TRUE(desks_bar_view->mini_views().empty());
-  EXPECT_TRUE(desks_bar_view->new_desk_button()->enabled());
+  EXPECT_TRUE(desks_bar_view->new_desk_button()->GetEnabled());
 
   // Click many times on the new desk button and expect only the max number of
   // desks will be created, and the button is no longer enabled.
@@ -257,16 +257,16 @@ TEST_F(DesksTest, DesksBarViewDeskCreation) {
   EXPECT_EQ(controller->desks().size(), desks_bar_view->mini_views().size());
   EXPECT_FALSE(controller->CanCreateDesks());
   EXPECT_TRUE(controller->CanRemoveDesks());
-  EXPECT_FALSE(desks_bar_view->new_desk_button()->enabled());
+  EXPECT_FALSE(desks_bar_view->new_desk_button()->GetEnabled());
 
   // Hover over one of the mini_views, and expect that the close button becomes
   // visible.
   const auto* mini_view = desks_bar_view->mini_views().back().get();
-  EXPECT_FALSE(mini_view->close_desk_button()->visible());
+  EXPECT_FALSE(mini_view->close_desk_button()->GetVisible());
   const gfx::Point mini_view_center =
       mini_view->GetBoundsInScreen().CenterPoint();
   event_generator->MoveMouseTo(mini_view_center);
-  EXPECT_TRUE(mini_view->close_desk_button()->visible());
+  EXPECT_TRUE(mini_view->close_desk_button()->GetVisible());
 
   // Use the close button to close the desk.
   event_generator->MoveMouseTo(
@@ -277,7 +277,7 @@ TEST_F(DesksTest, DesksBarViewDeskCreation) {
   EXPECT_EQ(desks_util::kMaxNumberOfDesks - 1, controller->desks().size());
   EXPECT_EQ(controller->desks().size(), desks_bar_view->mini_views().size());
   EXPECT_TRUE(controller->CanCreateDesks());
-  EXPECT_TRUE(desks_bar_view->new_desk_button()->enabled());
+  EXPECT_TRUE(desks_bar_view->new_desk_button()->GetEnabled());
 
   // Exit overview mode and re-enter. Since we have more than one pre-existing
   // desks, their mini_views should be created upon construction of the desks
@@ -296,7 +296,7 @@ TEST_F(DesksTest, DesksBarViewDeskCreation) {
 
   DCHECK(desks_bar_view);
   EXPECT_EQ(controller->desks().size(), desks_bar_view->mini_views().size());
-  EXPECT_TRUE(desks_bar_view->new_desk_button()->enabled());
+  EXPECT_TRUE(desks_bar_view->new_desk_button()->GetEnabled());
 }
 
 TEST_F(DesksTest, DeskActivation) {
@@ -573,7 +573,7 @@ TEST_F(DesksTest, ActivateDeskFromOverview) {
   EXPECT_FALSE(desk_4->is_active());
   const auto* mini_view = desks_bar_view->mini_views().back().get();
   EXPECT_EQ(desk_4, mini_view->desk());
-  EXPECT_FALSE(mini_view->close_desk_button()->visible());
+  EXPECT_FALSE(mini_view->close_desk_button()->GetVisible());
   const gfx::Point mini_view_center =
       mini_view->GetBoundsInScreen().CenterPoint();
   auto* event_generator = GetEventGenerator();

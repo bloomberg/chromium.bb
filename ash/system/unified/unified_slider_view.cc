@@ -98,7 +98,7 @@ std::unique_ptr<views::InkDropMask> UnifiedSliderButton::CreateInkDropMask()
 }
 
 void UnifiedSliderButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  if (!enabled())
+  if (!GetEnabled())
     return;
   TopShortcutButton::GetAccessibleNodeData(node_data);
   node_data->role = ax::mojom::Role::kToggleButton;

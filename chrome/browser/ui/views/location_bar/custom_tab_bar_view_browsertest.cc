@@ -518,22 +518,22 @@ IN_PROC_BROWSER_TEST_F(CustomTabBarViewBrowserTest,
   content::WebContents* web_contents = app_view->GetActiveWebContents();
 
   // Insecure site, so should show custom tab bar.
-  EXPECT_TRUE(app_view->toolbar()->custom_tab_bar()->visible());
+  EXPECT_TRUE(app_view->toolbar()->custom_tab_bar()->GetVisible());
   // In scope, so don't show close button.
   EXPECT_FALSE(app_view->toolbar()
                    ->custom_tab_bar()
                    ->close_button_for_testing()
-                   ->visible());
+                   ->GetVisible());
 
   NavigateAndWait(web_contents, out_of_scope_url);
 
   // Out of scope, show the custom tab bar.
-  EXPECT_TRUE(app_view->toolbar()->custom_tab_bar()->visible());
+  EXPECT_TRUE(app_view->toolbar()->custom_tab_bar()->GetVisible());
   // Out of scope, show the close button.
   EXPECT_TRUE(app_view->toolbar()
                   ->custom_tab_bar()
                   ->close_button_for_testing()
-                  ->visible());
+                  ->GetVisible());
 
   // Simulate clicking the close button and wait for navigation to finish.
   content::TestNavigationObserver nav_observer(web_contents);
@@ -541,12 +541,12 @@ IN_PROC_BROWSER_TEST_F(CustomTabBarViewBrowserTest,
   nav_observer.Wait();
 
   // Insecure site, show the custom tab bar.
-  EXPECT_TRUE(app_view->toolbar()->custom_tab_bar()->visible());
+  EXPECT_TRUE(app_view->toolbar()->custom_tab_bar()->GetVisible());
   // In scope, hide the close button.
   EXPECT_FALSE(app_view->toolbar()
                    ->custom_tab_bar()
                    ->close_button_for_testing()
-                   ->visible());
+                   ->GetVisible());
 }
 
 IN_PROC_BROWSER_TEST_F(CustomTabBarViewBrowserTest,
@@ -564,22 +564,22 @@ IN_PROC_BROWSER_TEST_F(CustomTabBarViewBrowserTest,
   EXPECT_NE(app_view, browser_view_);
 
   // Insecure site, so should show custom tab bar.
-  EXPECT_TRUE(app_view->toolbar()->custom_tab_bar()->visible());
+  EXPECT_TRUE(app_view->toolbar()->custom_tab_bar()->GetVisible());
   // On origin, so don't show close button.
   EXPECT_FALSE(app_view->toolbar()
                    ->custom_tab_bar()
                    ->close_button_for_testing()
-                   ->visible());
+                   ->GetVisible());
 
   NavigateAndWait(app_view->GetActiveWebContents(), out_of_scope_url);
 
   // Off origin, show the custom tab bar.
-  EXPECT_TRUE(app_view->toolbar()->custom_tab_bar()->visible());
+  EXPECT_TRUE(app_view->toolbar()->custom_tab_bar()->GetVisible());
   // Off origin, show the close button.
   EXPECT_TRUE(app_view->toolbar()
                   ->custom_tab_bar()
                   ->close_button_for_testing()
-                  ->visible());
+                  ->GetVisible());
 }
 
 // Verify that interstitials that hide origin have their preference respected.

@@ -132,7 +132,7 @@ void BrowserActionsContainer::RefreshToolbarActionViews() {
 size_t BrowserActionsContainer::VisibleBrowserActions() const {
   size_t visible_actions = 0;
   for (const auto& view : toolbar_action_views_) {
-    if (view->visible())
+    if (view->GetVisible())
       ++visible_actions;
   }
   return visible_actions;
@@ -295,7 +295,7 @@ void BrowserActionsContainer::ShowToolbarActionBubble(
         GetViewForId(controller->GetAnchorActionId());
     if (action_view) {
       anchor_view =
-          action_view->visible() ? action_view : GetOverflowReferenceView();
+          action_view->GetVisible() ? action_view : GetOverflowReferenceView();
       anchored_to_action_view = true;
     } else {
       anchor_view = BrowserView::GetBrowserViewForBrowser(browser_)
@@ -600,7 +600,7 @@ int BrowserActionsContainer::OnPerformDrop(
     --i;
 
   ToolbarActionsBar::DragType drag_type = ToolbarActionsBar::DRAG_TO_SAME;
-  if (!toolbar_action_views_[data.index()]->visible())
+  if (!toolbar_action_views_[data.index()]->GetVisible())
     drag_type = ShownInsideMenu() ? ToolbarActionsBar::DRAG_TO_OVERFLOW :
         ToolbarActionsBar::DRAG_TO_MAIN;
 

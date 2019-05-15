@@ -51,7 +51,8 @@ ToolbarActionView* GetExtensionAnchorView(const std::string& extension_id,
     return nullptr;
   ToolbarActionView* const reference_view =
       browser_actions_container->GetViewForId(extension_id);
-  return reference_view && reference_view->visible() ? reference_view : nullptr;
+  return reference_view && reference_view->GetVisible() ? reference_view
+                                                        : nullptr;
 }
 
 class ExtensionUninstallDialogDelegateView;

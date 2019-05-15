@@ -382,9 +382,9 @@ gfx::Size SearchBoxViewBase::CalculatePreferredSize() const {
 }
 
 void SearchBoxViewBase::OnEnabledChanged() {
-  search_box_->SetEnabled(enabled());
+  search_box_->SetEnabled(GetEnabled());
   if (close_button_)
-    close_button_->SetEnabled(enabled());
+    close_button_->SetEnabled(GetEnabled());
 }
 
 const char* SearchBoxViewBase::GetClassName() const {
@@ -488,9 +488,9 @@ void SearchBoxViewBase::UpdateButtonsVisisbility() {
   const bool should_show_search_box_right_space =
       !(should_show_close_button || should_show_assistant_button);
 
-  if (close_button_->visible() == should_show_close_button &&
-      assistant_button_->visible() == should_show_assistant_button &&
-      search_box_right_space_->visible() ==
+  if (close_button_->GetVisible() == should_show_close_button &&
+      assistant_button_->GetVisible() == should_show_assistant_button &&
+      search_box_right_space_->GetVisible() ==
           should_show_search_box_right_space) {
     return;
   }

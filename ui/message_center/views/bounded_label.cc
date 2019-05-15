@@ -308,12 +308,12 @@ const gfx::FontList& BoundedLabel::font_list() const {
 }
 
 int BoundedLabel::GetLinesForWidthAndLimit(int width, int limit) {
-  return visible() ? label_->GetLinesForWidthAndLimit(width, limit) : 0;
+  return GetVisible() ? label_->GetLinesForWidthAndLimit(width, limit) : 0;
 }
 
 gfx::Size BoundedLabel::GetSizeForWidthAndLines(int width, int lines) {
-  return visible() ?
-         label_->GetSizeForWidthAndLines(width, lines) : gfx::Size();
+  return GetVisible() ? label_->GetSizeForWidthAndLines(width, lines)
+                      : gfx::Size();
 }
 
 void BoundedLabel::SizeToFit(int fixed_width) {
@@ -326,7 +326,7 @@ int BoundedLabel::GetBaseline() const {
 }
 
 gfx::Size BoundedLabel::CalculatePreferredSize() const {
-  if (!visible())
+  if (!GetVisible())
     return gfx::Size();
   return fixed_width_ != 0
              ? label_->GetSizeForWidthAndLines(fixed_width_, line_limit_)
@@ -334,8 +334,9 @@ gfx::Size BoundedLabel::CalculatePreferredSize() const {
 }
 
 int BoundedLabel::GetHeightForWidth(int width) const {
-  return visible() ?
-         label_->GetSizeForWidthAndLines(width, line_limit_).height() : 0;
+  return GetVisible()
+             ? label_->GetSizeForWidthAndLines(width, line_limit_).height()
+             : 0;
 }
 
 void BoundedLabel::OnPaint(gfx::Canvas* canvas) {

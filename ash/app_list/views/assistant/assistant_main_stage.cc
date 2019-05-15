@@ -279,7 +279,7 @@ void AssistantMainStage::UpdateFooter() {
 
   // The footer is only visible when the progress indicator is not.
   // When it is not visible, it should not process events.
-  bool visible = !progress_indicator_->visible();
+  bool visible = !progress_indicator_->GetVisible();
 
   // Reset visibility to enable animation.
   footer_->SetVisible(true);
@@ -335,7 +335,7 @@ bool AssistantMainStage::OnFooterAnimationEnded(
     const ui::CallbackLayerAnimationObserver& observer) {
   // The footer should only process events when visible. It is only visible when
   // the progress indicator is not visible.
-  bool visible = !progress_indicator_->visible();
+  bool visible = !progress_indicator_->GetVisible();
   footer_->set_can_process_events_within_subtree(visible);
   footer_->SetVisible(visible);
 

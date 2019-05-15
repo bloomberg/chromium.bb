@@ -111,9 +111,9 @@ TEST_F(FrameCaptionButtonContainerViewTest, ButtonVisibility) {
   InitContainer(&container1);
   container1.Layout();
   FrameCaptionButtonContainerView::TestApi t1(&container1);
-  EXPECT_TRUE(t1.minimize_button()->visible());
-  EXPECT_TRUE(t1.size_button()->visible());
-  EXPECT_TRUE(t1.close_button()->visible());
+  EXPECT_TRUE(t1.minimize_button()->GetVisible());
+  EXPECT_TRUE(t1.size_button()->GetVisible());
+  EXPECT_TRUE(t1.close_button()->GetVisible());
   EXPECT_TRUE(CheckButtonsAtEdges(&container1, *t1.minimize_button(),
                                   *t1.close_button()));
 
@@ -124,9 +124,9 @@ TEST_F(FrameCaptionButtonContainerViewTest, ButtonVisibility) {
   InitContainer(&container2);
   container2.Layout();
   FrameCaptionButtonContainerView::TestApi t2(&container2);
-  EXPECT_TRUE(t2.minimize_button()->visible());
-  EXPECT_FALSE(t2.size_button()->visible());
-  EXPECT_TRUE(t2.close_button()->visible());
+  EXPECT_TRUE(t2.minimize_button()->GetVisible());
+  EXPECT_FALSE(t2.size_button()->GetVisible());
+  EXPECT_TRUE(t2.close_button()->GetVisible());
   EXPECT_TRUE(CheckButtonsAtEdges(&container2, *t2.minimize_button(),
                                   *t2.close_button()));
 
@@ -137,9 +137,9 @@ TEST_F(FrameCaptionButtonContainerViewTest, ButtonVisibility) {
   InitContainer(&container3);
   container3.Layout();
   FrameCaptionButtonContainerView::TestApi t3(&container3);
-  EXPECT_FALSE(t3.minimize_button()->visible());
-  EXPECT_FALSE(t3.size_button()->visible());
-  EXPECT_TRUE(t3.close_button()->visible());
+  EXPECT_FALSE(t3.minimize_button()->GetVisible());
+  EXPECT_FALSE(t3.size_button()->GetVisible());
+  EXPECT_TRUE(t3.close_button()->GetVisible());
   EXPECT_TRUE(
       CheckButtonsAtEdges(&container3, *t3.close_button(), *t3.close_button()));
 }
@@ -181,9 +181,9 @@ TEST_F(FrameCaptionButtonContainerViewTest,
   // Parent needs to layout in response to size change.
   container.Layout();
 
-  EXPECT_TRUE(test.minimize_button()->visible());
-  EXPECT_TRUE(test.size_button()->visible());
-  EXPECT_TRUE(test.close_button()->visible());
+  EXPECT_TRUE(test.minimize_button()->GetVisible());
+  EXPECT_TRUE(test.size_button()->GetVisible());
+  EXPECT_TRUE(test.close_button()->GetVisible());
   gfx::Rect extra_button_bounds = extra_button->bounds();
   gfx::Rect minimize_button_bounds = test.minimize_button()->bounds();
   gfx::Rect size_button_bounds = test.size_button()->bounds();
@@ -202,9 +202,9 @@ TEST_F(FrameCaptionButtonContainerViewTest,
   // Calling code needs to layout in response to size change.
   container.Layout();
   test.EndAnimations();
-  EXPECT_TRUE(test.minimize_button()->visible());
-  EXPECT_TRUE(test.size_button()->visible());
-  EXPECT_TRUE(test.close_button()->visible());
+  EXPECT_TRUE(test.minimize_button()->GetVisible());
+  EXPECT_TRUE(test.size_button()->GetVisible());
+  EXPECT_TRUE(test.close_button()->GetVisible());
   EXPECT_EQ(initial_extra_button_bounds, extra_button->bounds());
   EXPECT_EQ(initial_minimize_button_bounds, test.minimize_button()->bounds());
   EXPECT_EQ(initial_size_button_bounds, test.size_button()->bounds());

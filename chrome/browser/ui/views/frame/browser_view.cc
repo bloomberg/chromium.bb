@@ -1198,7 +1198,7 @@ void BrowserView::TabDraggingStatusChanged(bool is_dragging) {
 
 void BrowserView::FocusBookmarksToolbar() {
   DCHECK(!immersive_mode_controller_->IsEnabled());
-  if (bookmark_bar_view_ && bookmark_bar_view_->visible() &&
+  if (bookmark_bar_view_ && bookmark_bar_view_->GetVisible() &&
       bookmark_bar_view_->GetPreferredSize().height() != 0) {
     bookmark_bar_view_->SetPaneFocusAndFocusDefault();
   }
@@ -1318,7 +1318,7 @@ void BrowserView::SetIntentPickerViewVisibility(bool visible) {
   if (!location_bar->intent_picker_view())
     return;
 
-  if (location_bar->intent_picker_view()->visible() != visible) {
+  if (location_bar->intent_picker_view()->GetVisible() != visible) {
     location_bar->intent_picker_view()->SetVisible(visible);
     location_bar->Layout();
   }
@@ -2348,7 +2348,7 @@ void BrowserView::GetAccessiblePanes(std::vector<views::View*>* panes) {
   if (download_shelf_.get())
     panes->push_back(download_shelf_.get());
   panes->push_back(contents_web_view_);
-  if (devtools_web_view_->visible())
+  if (devtools_web_view_->GetVisible())
     panes->push_back(devtools_web_view_);
 }
 

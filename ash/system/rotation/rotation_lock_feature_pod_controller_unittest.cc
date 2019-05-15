@@ -61,7 +61,7 @@ void RotationLockFeaturePodControllerTest::SetUpController() {
 // not visible.
 TEST_F(RotationLockFeaturePodControllerTest, CreateButton) {
   SetUpController();
-  EXPECT_FALSE(button_view()->visible());
+  EXPECT_FALSE(button_view()->GetVisible());
 }
 
 // Tests that when the button is created, while TabletMode is active,
@@ -69,9 +69,9 @@ TEST_F(RotationLockFeaturePodControllerTest, CreateButton) {
 TEST_F(RotationLockFeaturePodControllerTest, CreateButtonDuringTabletMode) {
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
   SetUpController();
-  EXPECT_TRUE(button_view()->visible());
+  EXPECT_TRUE(button_view()->GetVisible());
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
-  EXPECT_FALSE(button_view()->visible());
+  EXPECT_FALSE(button_view()->GetVisible());
 }
 
 // Tests that the enabling of TabletMode affects a previously created default
@@ -80,9 +80,9 @@ TEST_F(RotationLockFeaturePodControllerTest,
        ButtonVisibilityChangesDuringTabletMode) {
   SetUpController();
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
-  EXPECT_TRUE(button_view()->visible());
+  EXPECT_TRUE(button_view()->GetVisible());
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
-  EXPECT_FALSE(button_view()->visible());
+  EXPECT_FALSE(button_view()->GetVisible());
 }
 
 TEST_F(RotationLockFeaturePodControllerTest, OnIconPressed) {
@@ -93,17 +93,17 @@ TEST_F(RotationLockFeaturePodControllerTest, OnIconPressed) {
       Shell::Get()->screen_orientation_controller();
   ASSERT_FALSE(screen_orientation_controller->rotation_locked());
   tablet_mode_controller->EnableTabletModeWindowManager(true);
-  ASSERT_TRUE(button_view()->visible());
+  ASSERT_TRUE(button_view()->GetVisible());
   EXPECT_FALSE(button_view()->IsToggled());
 
   controller()->OnIconPressed();
   EXPECT_TRUE(screen_orientation_controller->rotation_locked());
-  EXPECT_TRUE(button_view()->visible());
+  EXPECT_TRUE(button_view()->GetVisible());
   EXPECT_TRUE(button_view()->IsToggled());
 
   controller()->OnIconPressed();
   EXPECT_FALSE(screen_orientation_controller->rotation_locked());
-  EXPECT_TRUE(button_view()->visible());
+  EXPECT_TRUE(button_view()->GetVisible());
   EXPECT_FALSE(button_view()->IsToggled());
 
   tablet_mode_controller->EnableTabletModeWindowManager(false);

@@ -361,7 +361,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerBrowserTest,
   UpdateResizeArea();
 
   // Resize area should be enabled by default.
-  EXPECT_TRUE(resize_area->enabled());
+  EXPECT_TRUE(resize_area->GetEnabled());
 
   std::vector<std::string> action_ids;
   action_ids.push_back(extension_a()->id());
@@ -372,7 +372,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerBrowserTest,
   UpdateResizeArea();
 
   // Resize area is disabled in highlight mode.
-  EXPECT_FALSE(resize_area->enabled());
+  EXPECT_FALSE(resize_area->GetEnabled());
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserActionsContainerBrowserTest,
@@ -381,13 +381,13 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerBrowserTest,
   UpdateResizeArea();
 
   // Resize area should be enabled by default.
-  EXPECT_TRUE(resize_area->enabled());
+  EXPECT_TRUE(resize_area->GetEnabled());
 
   // Resize area should be enabled when there is enough space for one icon.
   const int required_space = GetMinimumSize();
   test_delegate()->set_max_browser_actions_width(required_space);
   UpdateResizeArea();
-  EXPECT_TRUE(resize_area->enabled());
+  EXPECT_TRUE(resize_area->GetEnabled());
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserActionsContainerBrowserTest,
@@ -396,21 +396,21 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerBrowserTest,
   UpdateResizeArea();
 
   // Resize area should be enabled by default.
-  EXPECT_TRUE(resize_area->enabled());
+  EXPECT_TRUE(resize_area->GetEnabled());
 
   // Resize area should be enabled when there is more than the maximum space
   // requested.
   const int max_space = GetMaximumSize();
   test_delegate()->set_max_browser_actions_width(max_space + 1);
   UpdateResizeArea();
-  EXPECT_TRUE(resize_area->enabled());
+  EXPECT_TRUE(resize_area->GetEnabled());
 
   // Resize area should remain enabled when the space shrinks to the minimum
   // required.
   const int required_space = GetMinimumSize();
   test_delegate()->set_max_browser_actions_width(required_space);
   UpdateResizeArea();
-  EXPECT_TRUE(resize_area->enabled());
+  EXPECT_TRUE(resize_area->GetEnabled());
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserActionsContainerBrowserTest,
@@ -419,18 +419,18 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerBrowserTest,
   UpdateResizeArea();
 
   // Resize area should be enabled by default.
-  EXPECT_TRUE(resize_area->enabled());
+  EXPECT_TRUE(resize_area->GetEnabled());
 
   // Resize area should be disabled when there is zero space available.
   test_delegate()->set_max_browser_actions_width(0);
   UpdateResizeArea();
-  EXPECT_FALSE(resize_area->enabled());
+  EXPECT_FALSE(resize_area->GetEnabled());
 
   // Resize area should be re-enabled when there is enough space.
   const int required_space = GetMinimumSize();
   test_delegate()->set_max_browser_actions_width(required_space);
   UpdateResizeArea();
-  EXPECT_TRUE(resize_area->enabled());
+  EXPECT_TRUE(resize_area->GetEnabled());
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserActionsContainerBrowserTest,
@@ -439,19 +439,19 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerBrowserTest,
   UpdateResizeArea();
 
   // Resize area should be enabled by default.
-  EXPECT_TRUE(resize_area->enabled());
+  EXPECT_TRUE(resize_area->GetEnabled());
 
   // Resize area should be disabled when there is less than the minimum space
   // for one icon.
   const int required_space = GetMinimumSize();
   test_delegate()->set_max_browser_actions_width(required_space - 1);
   UpdateResizeArea();
-  EXPECT_FALSE(resize_area->enabled());
+  EXPECT_FALSE(resize_area->GetEnabled());
 
   // Resize area should be re-enabled when there is enough space.
   test_delegate()->set_max_browser_actions_width(required_space);
   UpdateResizeArea();
-  EXPECT_TRUE(resize_area->enabled());
+  EXPECT_TRUE(resize_area->GetEnabled());
 }
 
 // Test the behavior of the overflow container for Extension Actions.
@@ -536,11 +536,11 @@ BrowserActionsContainerOverflowTest::VerifyVisibleCount(
   // implicitly also guarantees that the proper number are visible).
   for (size_t i = 0; i < overflow_bar_->num_toolbar_actions(); ++i) {
     bool visible = i < expected_visible;
-    if (main_bar_->GetToolbarActionViewAt(i)->visible() != visible) {
+    if (main_bar_->GetToolbarActionViewAt(i)->GetVisible() != visible) {
       return testing::AssertionFailure() << "Index " << i <<
           " has improper visibility in main: " << !visible;
     }
-    if (overflow_bar_->GetToolbarActionViewAt(i)->visible() == visible) {
+    if (overflow_bar_->GetToolbarActionViewAt(i)->GetVisible() == visible) {
       return testing::AssertionFailure() << "Index " << i <<
           " has improper visibility in overflow: " << visible;
     }

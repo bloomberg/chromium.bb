@@ -81,7 +81,7 @@ class MediaRouterUIBrowserTest : public InProcessBrowserTest {
 
   bool ToolbarIconExists() {
     base::RunLoop().RunUntilIdle();
-    return GetCastIcon()->visible();
+    return GetCastIcon()->GetVisible();
   }
 
   void SetAlwaysShowActionPref(bool always_show) {

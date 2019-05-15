@@ -392,7 +392,7 @@ void ScrollableUsersListView::OnPaintBackground(gfx::Canvas* canvas) {
     cc::PaintFlags flags;
 
     // Only draw a gradient if the content can be scrolled.
-    if (vertical_scroll_bar()->visible()) {
+    if (vertical_scroll_bar()->GetVisible()) {
       // Draws symmetrical linear gradient at the top and bottom of the view.
       SkScalar view_height = render_bounds.height();
       SkScalar gradient_height = gradient_params_.height;

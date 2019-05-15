@@ -418,7 +418,7 @@ class RightPaneView : public NonAccessibleView,
           selected_language_item_.value, selected_keyboard_item_.value);
     } else if (sender == language_selection_) {
       DCHECK(language_menu_view_);
-      if (language_menu_view_->visible()) {
+      if (language_menu_view_->GetVisible()) {
         language_menu_view_->Hide();
       } else {
         bool opener_had_focus = language_selection_->HasFocus();
@@ -430,7 +430,7 @@ class RightPaneView : public NonAccessibleView,
       }
     } else if (sender == keyboard_selection_) {
       DCHECK(keyboard_menu_view_);
-      if (keyboard_menu_view_->visible()) {
+      if (keyboard_menu_view_->GetVisible()) {
         keyboard_menu_view_->Hide();
       } else {
         bool opener_had_focus = keyboard_selection_->HasFocus();
@@ -703,7 +703,7 @@ LoginExpandedPublicAccountView::~LoginExpandedPublicAccountView() = default;
 
 void LoginExpandedPublicAccountView::ProcessPressedEvent(
     const ui::LocatedEvent* event) {
-  if (!visible())
+  if (!GetVisible())
     return;
 
   // Keep this view to be visible until warning dialog is dismissed.
@@ -770,7 +770,7 @@ void LoginExpandedPublicAccountView::OnPaint(gfx::Canvas* canvas) {
 }
 
 void LoginExpandedPublicAccountView::OnKeyEvent(ui::KeyEvent* event) {
-  if (!visible() || event->type() != ui::ET_KEY_PRESSED)
+  if (!GetVisible() || event->type() != ui::ET_KEY_PRESSED)
     return;
 
   // Give warning dialog a chance to handle key event.

@@ -35,7 +35,7 @@ constexpr int kButtonGroup = 6666;
 // Returns true if the given view should be shown (i.e. exists and is
 // visible).
 bool ShouldShow(View* view) {
-  return view && view->visible();
+  return view && view->GetVisible();
 }
 
 // Returns the bounding box required to contain |size1| and |size2|, placed one

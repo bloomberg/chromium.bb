@@ -24,9 +24,9 @@ ZoomView::ZoomView(PageActionIconView::Delegate* delegate)
 ZoomView::~ZoomView() {}
 
 bool ZoomView::Update() {
-  bool was_visible = visible();
+  bool was_visible = GetVisible();
   ZoomChangedForActiveTab(false);
-  return visible() != was_visible;
+  return GetVisible() != was_visible;
 }
 
 bool ZoomView::ShouldBeVisible(bool can_show_bubble) const {

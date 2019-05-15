@@ -278,7 +278,7 @@ views::View* ShelfWidget::DelegateView::GetDefaultFocusableChild() {
   if (!IsUsingViewsShelf())
     return GetFirstFocusableChild();
 
-  if (shelf_widget_->login_shelf_view_->visible()) {
+  if (shelf_widget_->login_shelf_view_->GetVisible()) {
     return FindFirstOrLastFocusableChild(shelf_widget_->login_shelf_view_,
                                          default_last_focusable_child_);
   } else {
@@ -304,7 +304,7 @@ bool ShelfWidget::GetHitTestRects(aura::Window* target,
   // calculated higher up in the class hierarchy by |EasyResizeWindowTargeter|.
   // When in OOBE or locked/login screen, let events pass through empty parts
   // of the shelf.
-  DCHECK(login_shelf_view_->visible());
+  DCHECK(login_shelf_view_->GetVisible());
   gfx::Rect login_view_button_bounds =
       login_shelf_view_->ConvertRectToWidget(login_shelf_view_->GetMirroredRect(
           login_shelf_view_->get_button_union_bounds()));
@@ -494,7 +494,7 @@ void ShelfWidget::set_default_last_focusable_child(
 
 void ShelfWidget::FocusFirstOrLastFocusableChild(bool last) {
   // This is only ever called during an active session.
-  if (!shelf_view_->visible())
+  if (!shelf_view_->GetVisible())
     return;
   views::View* to_focus = shelf_view_->FindFirstOrLastFocusableChild(last);
 

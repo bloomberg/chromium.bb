@@ -14,14 +14,14 @@ LabelButtonLabel::~LabelButtonLabel() = default;
 void LabelButtonLabel::SetDisabledColor(SkColor color) {
   requested_disabled_color_ = color;
   disabled_color_set_ = true;
-  if (!enabled())
+  if (!GetEnabled())
     Label::SetEnabledColor(color);
 }
 
 void LabelButtonLabel::SetEnabledColor(SkColor color) {
   requested_enabled_color_ = color;
   enabled_color_set_ = true;
-  if (enabled())
+  if (GetEnabled())
     Label::SetEnabledColor(color);
 }
 
@@ -35,11 +35,11 @@ void LabelButtonLabel::OnEnabledChanged() {
 }
 
 void LabelButtonLabel::SetColorForEnableState() {
-  if (enabled() ? enabled_color_set_ : disabled_color_set_) {
-    Label::SetEnabledColor(enabled() ? requested_enabled_color_
-                                     : requested_disabled_color_);
+  if (GetEnabled() ? enabled_color_set_ : disabled_color_set_) {
+    Label::SetEnabledColor(GetEnabled() ? requested_enabled_color_
+                                        : requested_disabled_color_);
   } else {
-    int style = enabled() ? style::STYLE_PRIMARY : style::STYLE_DISABLED;
+    int style = GetEnabled() ? style::STYLE_PRIMARY : style::STYLE_DISABLED;
     Label::SetEnabledColor(style::GetColor(*this, text_context(), style));
   }
 }

@@ -535,25 +535,25 @@ TEST_F(LockContentsViewUnitTest, NoteActionButtonVisibilityChanges) {
   views::View* note_action_button = test_api.note_action();
 
   // In kAvailable state, the note action button should be visible.
-  EXPECT_TRUE(note_action_button->visible());
+  EXPECT_TRUE(note_action_button->GetVisible());
 
   // In kLaunching state, the note action button should not be visible.
   DataDispatcher()->SetLockScreenNoteState(mojom::TrayActionState::kLaunching);
-  EXPECT_FALSE(note_action_button->visible());
+  EXPECT_FALSE(note_action_button->GetVisible());
 
   // In kActive state, the note action button should not be visible.
   DataDispatcher()->SetLockScreenNoteState(mojom::TrayActionState::kActive);
-  EXPECT_FALSE(note_action_button->visible());
+  EXPECT_FALSE(note_action_button->GetVisible());
 
   // When moved back to kAvailable state, the note action button should become
   // visible again.
   DataDispatcher()->SetLockScreenNoteState(mojom::TrayActionState::kAvailable);
-  EXPECT_TRUE(note_action_button->visible());
+  EXPECT_TRUE(note_action_button->GetVisible());
 
   // In kNotAvailable state, the note action button should not be visible.
   DataDispatcher()->SetLockScreenNoteState(
       mojom::TrayActionState::kNotAvailable);
-  EXPECT_FALSE(note_action_button->visible());
+  EXPECT_FALSE(note_action_button->GetVisible());
 }
 
 // Verifies note action view bounds.
@@ -569,12 +569,12 @@ TEST_F(LockContentsViewUnitTest, NoteActionButtonBounds) {
 
   // The note action button should not be visible if the note action is not
   // available.
-  EXPECT_FALSE(test_api.note_action()->visible());
+  EXPECT_FALSE(test_api.note_action()->GetVisible());
 
   // When the note action becomes available, the note action button should be
   // shown.
   DataDispatcher()->SetLockScreenNoteState(mojom::TrayActionState::kAvailable);
-  EXPECT_TRUE(test_api.note_action()->visible());
+  EXPECT_TRUE(test_api.note_action()->GetVisible());
 
   // Verify the bounds of the note action button are as expected.
   gfx::Rect widget_bounds = widget->GetWindowBoundsInScreen();
@@ -588,7 +588,7 @@ TEST_F(LockContentsViewUnitTest, NoteActionButtonBounds) {
   // hidden.
   DataDispatcher()->SetLockScreenNoteState(
       mojom::TrayActionState::kNotAvailable);
-  EXPECT_FALSE(test_api.note_action()->visible());
+  EXPECT_FALSE(test_api.note_action()->GetVisible());
 }
 
 // Verifies the note action view bounds when note action is available at lock
@@ -605,7 +605,7 @@ TEST_F(LockContentsViewUnitTest, NoteActionButtonBoundsInitiallyAvailable) {
 
   // Verify the note action button is visible and positioned in the top right
   // corner of the screen.
-  EXPECT_TRUE(test_api.note_action()->visible());
+  EXPECT_TRUE(test_api.note_action()->GetVisible());
   gfx::Rect widget_bounds = widget->GetWindowBoundsInScreen();
   gfx::Size note_action_size = test_api.note_action()->GetPreferredSize();
   EXPECT_EQ(gfx::Rect(widget_bounds.top_right() -
@@ -616,7 +616,7 @@ TEST_F(LockContentsViewUnitTest, NoteActionButtonBoundsInitiallyAvailable) {
   // If the note action is disabled, the note action button should be hidden.
   DataDispatcher()->SetLockScreenNoteState(
       mojom::TrayActionState::kNotAvailable);
-  EXPECT_FALSE(test_api.note_action()->visible());
+  EXPECT_FALSE(test_api.note_action()->GetVisible());
 }
 
 // Verifies the system info view bounds interaction with the note-taking button.
@@ -631,14 +631,14 @@ TEST_F(LockContentsViewUnitTest, SystemInfoViewBounds) {
   gfx::Rect widget_bounds = widget->GetWindowBoundsInScreen();
   LockContentsView::TestApi test_api(contents);
   // Verify that the system info view is hidden by default.
-  EXPECT_FALSE(test_api.system_info()->visible());
+  EXPECT_FALSE(test_api.system_info()->GetVisible());
 
   // Verify that the system info view becomes visible and it doesn't block the
   // note action button.
   DataDispatcher()->SetSystemInfo(true /*show_if_hidden*/, "Best version ever",
                                   "Asset ID: 6666", "Bluetooth adapter");
-  EXPECT_TRUE(test_api.system_info()->visible());
-  EXPECT_TRUE(test_api.note_action()->visible());
+  EXPECT_TRUE(test_api.system_info()->GetVisible());
+  EXPECT_TRUE(test_api.note_action()->GetVisible());
   gfx::Size note_action_size = test_api.note_action()->GetPreferredSize();
   EXPECT_GE(widget_bounds.right() -
                 test_api.system_info()->GetBoundsInScreen().right(),
@@ -648,7 +648,7 @@ TEST_F(LockContentsViewUnitTest, SystemInfoViewBounds) {
   // the right to fill the empty space.
   DataDispatcher()->SetLockScreenNoteState(
       mojom::TrayActionState::kNotAvailable);
-  EXPECT_FALSE(test_api.note_action()->visible());
+  EXPECT_FALSE(test_api.note_action()->GetVisible());
   EXPECT_LT(widget_bounds.right() -
                 test_api.system_info()->GetBoundsInScreen().right(),
             note_action_size.width());
@@ -665,23 +665,23 @@ TEST_F(LockContentsViewUnitTest, AltVShowsHiddenSystemInfo) {
   std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
   LockContentsView::TestApi test_api(contents);
   // Verify that the system info view is hidden by default.
-  EXPECT_FALSE(test_api.system_info()->visible());
+  EXPECT_FALSE(test_api.system_info()->GetVisible());
 
   // Verify that the system info view does not become visible when given data
   // but show is false.
   DataDispatcher()->SetSystemInfo(false /*show_if_hidden*/, "Best version ever",
                                   "Asset ID: 6666", "Bluetooth adapter");
-  EXPECT_FALSE(test_api.system_info()->visible());
+  EXPECT_FALSE(test_api.system_info()->GetVisible());
 
   // Alt-V shows hidden system info.
   GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_V, ui::EF_ALT_DOWN);
-  EXPECT_TRUE(test_api.system_info()->visible());
+  EXPECT_TRUE(test_api.system_info()->GetVisible());
   // System info is not empty, ie, it is actually being displayed.
   EXPECT_FALSE(test_api.system_info()->bounds().IsEmpty());
 
   // Alt-V again does nothing.
   GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_V, ui::EF_ALT_DOWN);
-  EXPECT_TRUE(test_api.system_info()->visible());
+  EXPECT_TRUE(test_api.system_info()->GetVisible());
 }
 
 // Updating existing system info and setting show_if_hidden=true later will
@@ -703,15 +703,15 @@ TEST_F(LockContentsViewUnitTest, ShowRevealsHiddenSystemInfo) {
 
   // Start with hidden system info.
   set_system_info(false);
-  EXPECT_FALSE(test_api.system_info()->visible());
+  EXPECT_FALSE(test_api.system_info()->GetVisible());
 
   // Update system info but request it be shown.
   set_system_info(true);
-  EXPECT_TRUE(test_api.system_info()->visible());
+  EXPECT_TRUE(test_api.system_info()->GetVisible());
 
   // Trying to hide system info from mojom call doesn't do anything.
   set_system_info(false);
-  EXPECT_TRUE(test_api.system_info()->visible());
+  EXPECT_TRUE(test_api.system_info()->GetVisible());
 }
 
 // Verifies the easy unlock tooltip is automatically displayed when requested.
@@ -726,7 +726,7 @@ TEST_F(LockContentsViewUnitTest, EasyUnlockForceTooltipCreatesTooltipWidget) {
 
   LockContentsView::TestApi test_api(lock);
   // Creating lock screen does not show tooltip bubble.
-  EXPECT_FALSE(test_api.tooltip_bubble()->visible());
+  EXPECT_FALSE(test_api.tooltip_bubble()->GetVisible());
 
   // Show an icon with |autoshow_tooltip| is false. Tooltip bubble is not
   // activated.
@@ -735,13 +735,13 @@ TEST_F(LockContentsViewUnitTest, EasyUnlockForceTooltipCreatesTooltipWidget) {
   icon->autoshow_tooltip = false;
   DataDispatcher()->ShowEasyUnlockIcon(users()[0]->basic_user_info->account_id,
                                        icon);
-  EXPECT_FALSE(test_api.tooltip_bubble()->visible());
+  EXPECT_FALSE(test_api.tooltip_bubble()->GetVisible());
 
   // Show icon with |autoshow_tooltip| set to true. Tooltip bubble is shown.
   icon->autoshow_tooltip = true;
   DataDispatcher()->ShowEasyUnlockIcon(users()[0]->basic_user_info->account_id,
                                        icon);
-  EXPECT_TRUE(test_api.tooltip_bubble()->visible());
+  EXPECT_TRUE(test_api.tooltip_bubble()->GetVisible());
 }
 
 // Verifies that easy unlock icon state persists when changing auth user.
@@ -767,7 +767,7 @@ TEST_F(LockContentsViewUnitTest, EasyUnlockIconUpdatedDuringUserSwap) {
         LoginPasswordView::TestApi(
             LoginAuthUserView::TestApi(view->auth_user()).password_view())
             .easy_unlock_icon();
-    return icon->visible();
+    return icon->GetVisible();
   };
 
   // Enables easy unlock icon for |view|.
@@ -860,12 +860,12 @@ TEST_F(LockContentsViewUnitTest, ShowErrorBubbleOnAuthFailure) {
   generator->PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(test_api.auth_error_bubble()->visible());
+  EXPECT_TRUE(test_api.auth_error_bubble()->GetVisible());
 
   // The error bubble is expected to close on a user action - e.g. if they start
   // typing the password again.
   generator->PressKey(ui::KeyboardCode::VKEY_B, 0);
-  EXPECT_FALSE(test_api.auth_error_bubble()->visible());
+  EXPECT_FALSE(test_api.auth_error_bubble()->GetVisible());
 }
 
 TEST_F(LockContentsViewUnitTest, AuthErrorButtonClickable) {
@@ -887,7 +887,7 @@ TEST_F(LockContentsViewUnitTest, AuthErrorButtonClickable) {
                   users()[0]->basic_user_info->account_id, _, false, _));
 
   // AuthErrorButton should not be visible yet.
-  EXPECT_FALSE(test_api.auth_error_bubble()->visible());
+  EXPECT_FALSE(test_api.auth_error_bubble()->GetVisible());
 
   // Submit password.
   ui::test::EventGenerator* generator = GetEventGenerator();
@@ -896,7 +896,7 @@ TEST_F(LockContentsViewUnitTest, AuthErrorButtonClickable) {
   base::RunLoop().RunUntilIdle();
 
   // Auth Error button should be visible as an incorrect password was given.
-  EXPECT_TRUE(test_api.auth_error_bubble()->visible());
+  EXPECT_TRUE(test_api.auth_error_bubble()->GetVisible());
 
   // Find button in auth_error_bubble children.
   views::View* button = FindTopButton(test_api.auth_error_bubble());
@@ -912,7 +912,7 @@ TEST_F(LockContentsViewUnitTest, AuthErrorButtonClickable) {
   Shell::Get()->login_screen_controller()->FlushForTesting();
 
   // AuthErrorButton should go away after button press.
-  EXPECT_FALSE(test_api.auth_error_bubble()->visible());
+  EXPECT_FALSE(test_api.auth_error_bubble()->GetVisible());
 }
 
 // Gaia is never shown on lock, no mater how many times auth fails.
@@ -1004,17 +1004,17 @@ TEST_F(LockContentsViewUnitTest, ErrorBubbleOnUntrustedDetachableBase) {
   LockContentsView::TestApi test_api(contents);
   ui::test::EventGenerator* generator = GetEventGenerator();
 
-  EXPECT_FALSE(test_api.detachable_base_error_bubble()->visible());
+  EXPECT_FALSE(test_api.detachable_base_error_bubble()->GetVisible());
 
   // Change detachable base to a base different than the one previously used by
   // the user - verify that a detachable base error bubble is shown.
   detachable_base_model->SetPairingStatus(
       DetachableBasePairingStatus::kAuthenticated, "5678");
-  EXPECT_TRUE(test_api.detachable_base_error_bubble()->visible());
+  EXPECT_TRUE(test_api.detachable_base_error_bubble()->GetVisible());
 
   // Verify that the bubble is not hidden if the user starts typing.
   generator->PressKey(ui::KeyboardCode::VKEY_B, 0);
-  EXPECT_TRUE(test_api.detachable_base_error_bubble()->visible());
+  EXPECT_TRUE(test_api.detachable_base_error_bubble()->GetVisible());
 
   // Switching to the user that doesn't have previously used detachable base
   // (and should thus not be warned about the detachable base missmatch) should
@@ -1025,7 +1025,7 @@ TEST_F(LockContentsViewUnitTest, ErrorBubbleOnUntrustedDetachableBase) {
       secondary_test_api.user_view()->GetBoundsInScreen().CenterPoint());
   generator->ClickLeftButton();
 
-  EXPECT_FALSE(test_api.detachable_base_error_bubble()->visible());
+  EXPECT_FALSE(test_api.detachable_base_error_bubble()->GetVisible());
 
   // The error should be shown again when switching back to the primary user.
   LoginAuthUserView::TestApi primary_test_api(
@@ -1034,7 +1034,7 @@ TEST_F(LockContentsViewUnitTest, ErrorBubbleOnUntrustedDetachableBase) {
       primary_test_api.user_view()->GetBoundsInScreen().CenterPoint());
   generator->ClickLeftButton();
 
-  EXPECT_TRUE(test_api.detachable_base_error_bubble()->visible());
+  EXPECT_TRUE(test_api.detachable_base_error_bubble()->GetVisible());
   EXPECT_FALSE(primary_test_api.password_view()->HasFocus());
 
   EXPECT_EQ("1234",
@@ -1083,16 +1083,16 @@ TEST_F(LockContentsViewUnitTest, ErrorBubbleForUnauthenticatedDetachableBase) {
   LockContentsView::TestApi test_api(contents);
   ui::test::EventGenerator* generator = GetEventGenerator();
 
-  EXPECT_FALSE(test_api.detachable_base_error_bubble()->visible());
+  EXPECT_FALSE(test_api.detachable_base_error_bubble()->GetVisible());
 
   // Show notification if unauthenticated base is attached.
   detachable_base_model->SetPairingStatus(
       DetachableBasePairingStatus::kNotAuthenticated, "");
-  EXPECT_TRUE(test_api.detachable_base_error_bubble()->visible());
+  EXPECT_TRUE(test_api.detachable_base_error_bubble()->GetVisible());
 
   // Verify that the bubble is not hidden if the user starts typing.
   generator->PressKey(ui::KeyboardCode::VKEY_B, 0);
-  EXPECT_TRUE(test_api.detachable_base_error_bubble()->visible());
+  EXPECT_TRUE(test_api.detachable_base_error_bubble()->GetVisible());
 
   // Switching to another user should not hide the error bubble.
   LoginAuthUserView::TestApi secondary_test_api(
@@ -1101,7 +1101,7 @@ TEST_F(LockContentsViewUnitTest, ErrorBubbleForUnauthenticatedDetachableBase) {
       secondary_test_api.user_view()->GetBoundsInScreen().CenterPoint());
   generator->ClickLeftButton();
 
-  EXPECT_TRUE(test_api.detachable_base_error_bubble()->visible());
+  EXPECT_TRUE(test_api.detachable_base_error_bubble()->GetVisible());
   EXPECT_FALSE(secondary_test_api.password_view()->HasFocus());
 
   // The last trusted detachable used by the user should not be overriden by
@@ -1150,12 +1150,12 @@ TEST_F(LockContentsViewUnitTest,
   // the user - verify that a detachable base error bubble is shown.
   detachable_base_model->SetPairingStatus(
       DetachableBasePairingStatus::kAuthenticated, "5678");
-  EXPECT_TRUE(test_api.detachable_base_error_bubble()->visible());
+  EXPECT_TRUE(test_api.detachable_base_error_bubble()->GetVisible());
 
   // The notification should be hidden if the base gets detached.
   detachable_base_model->SetPairingStatus(DetachableBasePairingStatus::kNone,
                                           "");
-  EXPECT_FALSE(test_api.detachable_base_error_bubble()->visible());
+  EXPECT_FALSE(test_api.detachable_base_error_bubble()->GetVisible());
 }
 
 TEST_F(LockContentsViewUnitTest, DetachableBaseErrorClearsAuthError) {
@@ -1183,7 +1183,7 @@ TEST_F(LockContentsViewUnitTest, DetachableBaseErrorClearsAuthError) {
   LockContentsView::TestApi test_api(contents);
   ui::test::EventGenerator* generator = GetEventGenerator();
 
-  EXPECT_FALSE(test_api.detachable_base_error_bubble()->visible());
+  EXPECT_FALSE(test_api.detachable_base_error_bubble()->GetVisible());
 
   // Attempt and fail user auth - an auth error is expected to be shown.
   std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
@@ -1196,8 +1196,8 @@ TEST_F(LockContentsViewUnitTest, DetachableBaseErrorClearsAuthError) {
   generator->PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(test_api.auth_error_bubble()->visible());
-  EXPECT_FALSE(test_api.detachable_base_error_bubble()->visible());
+  EXPECT_TRUE(test_api.auth_error_bubble()->GetVisible());
+  EXPECT_FALSE(test_api.detachable_base_error_bubble()->GetVisible());
 
   // Change detachable base to a base different than the one previously used by
   // the user - verify that a detachable base error bubble is shown, and the
@@ -1205,8 +1205,8 @@ TEST_F(LockContentsViewUnitTest, DetachableBaseErrorClearsAuthError) {
   detachable_base_model->SetPairingStatus(
       DetachableBasePairingStatus::kAuthenticated, "5678");
 
-  EXPECT_TRUE(test_api.detachable_base_error_bubble()->visible());
-  EXPECT_FALSE(test_api.auth_error_bubble()->visible());
+  EXPECT_TRUE(test_api.detachable_base_error_bubble()->GetVisible());
+  EXPECT_FALSE(test_api.auth_error_bubble()->GetVisible());
 }
 
 TEST_F(LockContentsViewUnitTest, AuthErrorDoesNotRemoveDetachableBaseError) {
@@ -1234,7 +1234,7 @@ TEST_F(LockContentsViewUnitTest, AuthErrorDoesNotRemoveDetachableBaseError) {
   LockContentsView::TestApi test_api(contents);
   ui::test::EventGenerator* generator = GetEventGenerator();
 
-  EXPECT_FALSE(test_api.detachable_base_error_bubble()->visible());
+  EXPECT_FALSE(test_api.detachable_base_error_bubble()->GetVisible());
 
   // Change detachable base to a base different than the one previously used by
   // the user - verify that a detachable base error bubble is shown, and the
@@ -1242,7 +1242,7 @@ TEST_F(LockContentsViewUnitTest, AuthErrorDoesNotRemoveDetachableBaseError) {
   detachable_base_model->SetPairingStatus(
       DetachableBasePairingStatus::kAuthenticated, "5678");
 
-  EXPECT_TRUE(test_api.detachable_base_error_bubble()->visible());
+  EXPECT_TRUE(test_api.detachable_base_error_bubble()->GetVisible());
 
   // Attempt and fail user auth - an auth error is expected to be shown.
   // Detachable base error should not be hidden.
@@ -1259,15 +1259,15 @@ TEST_F(LockContentsViewUnitTest, AuthErrorDoesNotRemoveDetachableBaseError) {
   generator->PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(test_api.auth_error_bubble()->visible());
-  EXPECT_TRUE(test_api.detachable_base_error_bubble()->visible());
+  EXPECT_TRUE(test_api.auth_error_bubble()->GetVisible());
+  EXPECT_TRUE(test_api.detachable_base_error_bubble()->GetVisible());
 
   // User action, like pressing a key should close the auth error bubble, but
   // not the detachable base error bubble.
   generator->PressKey(ui::KeyboardCode::VKEY_A, 0);
 
-  EXPECT_TRUE(test_api.detachable_base_error_bubble()->visible());
-  EXPECT_FALSE(test_api.auth_error_bubble()->visible());
+  EXPECT_TRUE(test_api.detachable_base_error_bubble()->GetVisible());
+  EXPECT_FALSE(test_api.auth_error_bubble()->GetVisible());
 }
 
 TEST_F(LockContentsViewKeyboardUnitTest, SwitchPinAndVirtualKeyboard) {
@@ -1289,13 +1289,13 @@ TEST_F(LockContentsViewKeyboardUnitTest, SwitchPinAndVirtualKeyboard) {
   // shown.
   LoginPinView* pin_view =
       LoginAuthUserView::TestApi(big_view->auth_user()).pin_view();
-  EXPECT_TRUE(pin_view->visible());
+  EXPECT_TRUE(pin_view->GetVisible());
 
   ASSERT_NO_FATAL_FAILURE(ShowKeyboard());
-  EXPECT_FALSE(pin_view->visible());
+  EXPECT_FALSE(pin_view->GetVisible());
 
   ASSERT_NO_FATAL_FAILURE(HideKeyboard());
-  EXPECT_TRUE(pin_view->visible());
+  EXPECT_TRUE(pin_view->GetVisible());
 }
 
 TEST_F(LockContentsViewKeyboardUnitTest,
@@ -1420,9 +1420,9 @@ TEST_F(LockContentsViewKeyboardUnitTest, PinSubmitWithVirtualKeyboardShown) {
   // Hide the PIN keyboard.
   LoginPinView* pin_view =
       LoginAuthUserView::TestApi(big_view->auth_user()).pin_view();
-  EXPECT_TRUE(pin_view->visible());
+  EXPECT_TRUE(pin_view->GetVisible());
   ASSERT_NO_FATAL_FAILURE(ShowKeyboard());
-  EXPECT_FALSE(pin_view->visible());
+  EXPECT_FALSE(pin_view->GetVisible());
 
   // Submit a password.
   LoginAuthUserView::TestApi(big_view->auth_user())
@@ -1769,8 +1769,8 @@ TEST_F(LockContentsViewUnitTest, ExpandedPublicSessionView) {
 
   views::View* main_view = lock_contents.main_view();
   LoginExpandedPublicAccountView* expanded_view = lock_contents.expanded_view();
-  EXPECT_TRUE(main_view->visible());
-  EXPECT_FALSE(expanded_view->visible());
+  EXPECT_TRUE(main_view->GetVisible());
+  EXPECT_FALSE(expanded_view->GetVisible());
 
   LoginBigUserView* primary_big_view = lock_contents.primary_big_view();
   AccountId primary_id =
@@ -1780,8 +1780,8 @@ TEST_F(LockContentsViewUnitTest, ExpandedPublicSessionView) {
   ui::test::EventGenerator* generator = GetEventGenerator();
   generator->PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
 
-  EXPECT_FALSE(main_view->visible());
-  EXPECT_TRUE(expanded_view->visible());
+  EXPECT_FALSE(main_view->GetVisible());
+  EXPECT_TRUE(expanded_view->GetVisible());
   EXPECT_EQ(expanded_view->current_user()->basic_user_info->account_id,
             primary_id);
 
@@ -1815,9 +1815,9 @@ TEST_F(LockContentsViewUnitTest, OnAuthEnabledForUserChanged) {
   views::View* disabled_auth_message = auth_test_api.disabled_auth_message();
 
   // The password field is shown by default.
-  EXPECT_TRUE(password_view->visible());
-  EXPECT_FALSE(pin_view->visible());
-  EXPECT_FALSE(disabled_auth_message->visible());
+  EXPECT_TRUE(password_view->GetVisible());
+  EXPECT_FALSE(pin_view->GetVisible());
+  EXPECT_FALSE(disabled_auth_message->GetVisible());
   // Setting auth disabled will hide the password field and show the message.
   DataDispatcher()->DisableAuthForUser(
       kFirstUserAccountId,
@@ -1825,14 +1825,14 @@ TEST_F(LockContentsViewUnitTest, OnAuthEnabledForUserChanged) {
           ash::mojom::AuthDisabledReason::TIME_WINDOW_LIMIT,
           base::Time::Now() + base::TimeDelta::FromHours(8),
           base::TimeDelta::FromHours(1)));
-  EXPECT_FALSE(password_view->visible());
-  EXPECT_FALSE(pin_view->visible());
-  EXPECT_TRUE(disabled_auth_message->visible());
+  EXPECT_FALSE(password_view->GetVisible());
+  EXPECT_FALSE(pin_view->GetVisible());
+  EXPECT_TRUE(disabled_auth_message->GetVisible());
   // Setting auth enabled will hide the message and show the password field.
   DataDispatcher()->EnableAuthForUser(kFirstUserAccountId);
-  EXPECT_TRUE(password_view->visible());
-  EXPECT_FALSE(pin_view->visible());
-  EXPECT_FALSE(disabled_auth_message->visible());
+  EXPECT_TRUE(password_view->GetVisible());
+  EXPECT_FALSE(pin_view->GetVisible());
+  EXPECT_FALSE(disabled_auth_message->GetVisible());
 
   // Set auth disabled again.
   DataDispatcher()->DisableAuthForUser(
@@ -1841,19 +1841,19 @@ TEST_F(LockContentsViewUnitTest, OnAuthEnabledForUserChanged) {
           ash::mojom::AuthDisabledReason::TIME_WINDOW_LIMIT,
           base::Time::Now() + base::TimeDelta::FromHours(8),
           base::TimeDelta::FromHours(1)));
-  EXPECT_FALSE(password_view->visible());
-  EXPECT_FALSE(pin_view->visible());
-  EXPECT_TRUE(disabled_auth_message->visible());
+  EXPECT_FALSE(password_view->GetVisible());
+  EXPECT_FALSE(pin_view->GetVisible());
+  EXPECT_TRUE(disabled_auth_message->GetVisible());
   // Enable PIN. There's no UI change because auth is currently disabled.
   DataDispatcher()->SetPinEnabledForUser(kFirstUserAccountId, true);
-  EXPECT_FALSE(password_view->visible());
-  EXPECT_FALSE(pin_view->visible());
-  EXPECT_TRUE(disabled_auth_message->visible());
+  EXPECT_FALSE(password_view->GetVisible());
+  EXPECT_FALSE(pin_view->GetVisible());
+  EXPECT_TRUE(disabled_auth_message->GetVisible());
   // Set auth enabled again. Both password field and PIN keyboard are shown.
   DataDispatcher()->EnableAuthForUser(kFirstUserAccountId);
-  EXPECT_TRUE(password_view->visible());
-  EXPECT_TRUE(pin_view->visible());
-  EXPECT_FALSE(disabled_auth_message->visible());
+  EXPECT_TRUE(password_view->GetVisible());
+  EXPECT_TRUE(pin_view->GetVisible());
+  EXPECT_FALSE(disabled_auth_message->GetVisible());
 }
 
 TEST_F(LockContentsViewUnitTest,
@@ -1874,7 +1874,7 @@ TEST_F(LockContentsViewUnitTest,
   LockContentsView::TestApi contents_test_api(contents);
   views::View* note_action_button = contents_test_api.note_action();
 
-  EXPECT_TRUE(note_action_button->visible());
+  EXPECT_TRUE(note_action_button->GetVisible());
   // Setting auth disabled hides the note action button.
   DataDispatcher()->DisableAuthForUser(
       kFirstUserAccountId,
@@ -1882,10 +1882,10 @@ TEST_F(LockContentsViewUnitTest,
           ash::mojom::AuthDisabledReason::TIME_WINDOW_LIMIT,
           base::Time::Now() + base::TimeDelta::FromHours(8),
           base::TimeDelta::FromHours(1)));
-  EXPECT_FALSE(note_action_button->visible());
+  EXPECT_FALSE(note_action_button->GetVisible());
   // Setting auth enabled shows the note action button.
   DataDispatcher()->EnableAuthForUser(kFirstUserAccountId);
-  EXPECT_TRUE(note_action_button->visible());
+  EXPECT_TRUE(note_action_button->GetVisible());
 
   // Set auth disabled again.
   DataDispatcher()->DisableAuthForUser(
@@ -1894,13 +1894,13 @@ TEST_F(LockContentsViewUnitTest,
           ash::mojom::AuthDisabledReason::TIME_WINDOW_LIMIT,
           base::Time::Now() + base::TimeDelta::FromHours(8),
           base::TimeDelta::FromHours(1)));
-  EXPECT_FALSE(note_action_button->visible());
+  EXPECT_FALSE(note_action_button->GetVisible());
   // Set the lock screen note state to |kNotAvailable| while the note action
   // button is hidden.
   tray_action->UpdateLockScreenNoteState(mojom::TrayActionState::kNotAvailable);
   DataDispatcher()->EnableAuthForUser(kFirstUserAccountId);
   // The note action button remains hidden after setting auth enabled.
-  EXPECT_FALSE(note_action_button->visible());
+  EXPECT_FALSE(note_action_button->GetVisible());
 }
 
 TEST_F(LockContentsViewUnitTest, DisabledAuthMessageFocusBehavior) {
@@ -1926,7 +1926,7 @@ TEST_F(LockContentsViewUnitTest, DisabledAuthMessageFocusBehavior) {
           ash::mojom::AuthDisabledReason::TIME_WINDOW_LIMIT,
           base::Time::Now() + base::TimeDelta::FromHours(8),
           base::TimeDelta::FromHours(1)));
-  EXPECT_TRUE(disabled_auth_message->visible());
+  EXPECT_TRUE(disabled_auth_message->GetVisible());
   EXPECT_TRUE(HasFocusInAnyChildView(disabled_auth_message));
   // Tabbing from the message will move focus to the user view.
   ASSERT_TRUE(TabThroughView(GetEventGenerator(), disabled_auth_message,
@@ -2161,7 +2161,7 @@ TEST_F(LockContentsViewUnitTest, UsersChangedRetainsExistingState) {
   EXPECT_TRUE(
       LoginAuthUserView::TestApi(test_api.primary_big_view()->auth_user())
           .pin_view()
-          ->visible());
+          ->GetVisible());
 }
 
 TEST_F(LockContentsViewUnitTest, ShowHideWarningBannerBubble) {
@@ -2179,19 +2179,19 @@ TEST_F(LockContentsViewUnitTest, ShowHideWarningBannerBubble) {
   ui::test::EventGenerator* generator = GetEventGenerator();
 
   // Creating lock screen does not show warning banner bubble.
-  EXPECT_FALSE(test_api.warning_banner_bubble()->visible());
+  EXPECT_FALSE(test_api.warning_banner_bubble()->GetVisible());
 
   // Verifies that a warning banner is shown by giving a non-empty message.
   DataDispatcher()->ShowWarningBanner(base::ASCIIToUTF16("foo"));
-  EXPECT_TRUE(test_api.warning_banner_bubble()->visible());
+  EXPECT_TRUE(test_api.warning_banner_bubble()->GetVisible());
 
   // Verifies that a warning banner is hidden by HideWarningBanner().
   DataDispatcher()->HideWarningBanner();
-  EXPECT_FALSE(test_api.warning_banner_bubble()->visible());
+  EXPECT_FALSE(test_api.warning_banner_bubble()->GetVisible());
 
   // Shows a warning banner again.
   DataDispatcher()->ShowWarningBanner(base::ASCIIToUTF16("foo"));
-  EXPECT_TRUE(test_api.warning_banner_bubble()->visible());
+  EXPECT_TRUE(test_api.warning_banner_bubble()->GetVisible());
 
   // Attempt and fail user auth - an auth error is expected to be shown.
   // The warning banner should not be hidden.
@@ -2208,8 +2208,8 @@ TEST_F(LockContentsViewUnitTest, ShowHideWarningBannerBubble) {
   generator->PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(test_api.auth_error_bubble()->visible());
-  EXPECT_TRUE(test_api.warning_banner_bubble()->visible());
+  EXPECT_TRUE(test_api.auth_error_bubble()->GetVisible());
+  EXPECT_TRUE(test_api.warning_banner_bubble()->GetVisible());
 }
 
 TEST_F(LockContentsViewUnitTest, RemoveUserFocusMovesBackToPrimaryUser) {

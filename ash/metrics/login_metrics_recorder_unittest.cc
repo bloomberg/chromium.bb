@@ -91,7 +91,7 @@ TEST_F(LoginMetricsRecorderTest, NoteActionButtonClick) {
   std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
 
   LockContentsView::TestApi test_api(contents);
-  EXPECT_TRUE(test_api.note_action()->visible());
+  EXPECT_TRUE(test_api.note_action()->GetVisible());
 
   ui::test::EventGenerator* generator = GetEventGenerator();
   generator->MoveMouseTo(

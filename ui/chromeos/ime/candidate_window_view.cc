@@ -204,8 +204,8 @@ views::Widget* CandidateWindowView::InitWidget() {
 }
 
 void CandidateWindowView::UpdateVisibility() {
-  if (candidate_area_->visible() || auxiliary_text_->visible() ||
-      preedit_->visible()) {
+  if (candidate_area_->GetVisible() || auxiliary_text_->GetVisible() ||
+      preedit_->GetVisible()) {
     SizeToContents();
   } else {
     GetWidget()->Close();

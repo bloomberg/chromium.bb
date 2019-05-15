@@ -207,7 +207,7 @@ void NonClientFrameViewAsh::OverlayView::Layout() {
   int onscreen_height = header_height_
                             ? *header_height_
                             : header_view_->GetPreferredOnScreenHeight();
-  if (onscreen_height == 0 || !visible()) {
+  if (onscreen_height == 0 || !GetVisible()) {
     header_view_->SetVisible(false);
   } else {
     const int height =
@@ -364,7 +364,7 @@ gfx::Size NonClientFrameViewAsh::CalculatePreferredSize() const {
 }
 
 void NonClientFrameViewAsh::Layout() {
-  if (!enabled())
+  if (!GetEnabled())
     return;
   views::NonClientFrameView::Layout();
   aura::Window* frame_window = frame_->GetNativeWindow();
@@ -377,7 +377,7 @@ const char* NonClientFrameViewAsh::GetClassName() const {
 }
 
 gfx::Size NonClientFrameViewAsh::GetMinimumSize() const {
-  if (use_empty_minimum_size_for_test_ || !enabled())
+  if (use_empty_minimum_size_for_test_ || !GetEnabled())
     return gfx::Size();
 
   gfx::Size min_client_view_size(frame_->client_view()->GetMinimumSize());
@@ -492,7 +492,7 @@ NonClientFrameViewAsh::GetFrameCaptionButtonContainerViewForTest() {
 int NonClientFrameViewAsh::NonClientTopBorderHeight() const {
   // The frame should not occupy the window area when it's in fullscreen,
   // not visible or disabled.
-  if (frame_->IsFullscreen() || !visible() || !enabled() ||
+  if (frame_->IsFullscreen() || !GetVisible() || !GetEnabled() ||
       header_view_->in_immersive_mode()) {
     return 0;
   }

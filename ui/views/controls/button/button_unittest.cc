@@ -736,7 +736,7 @@ TEST_F(ButtonTest, InkDropStaysHiddenWhileDragging) {
 TEST_F(ButtonTest, NoLayerAddedForWidgetVisibilityChanges) {
   CreateButtonWithRealInkDrop();
 
-  EXPECT_TRUE(button()->visible());
+  EXPECT_TRUE(button()->GetVisible());
   EXPECT_FALSE(button()->layer());
 
   widget()->Hide();

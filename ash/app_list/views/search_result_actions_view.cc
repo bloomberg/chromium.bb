@@ -112,7 +112,7 @@ SearchResultImageButton::SearchResultImageButton(
 void SearchResultImageButton::OnFocus() {
   parent_->ActionButtonStateChanged();
   SchedulePaint();
-  if (visible())
+  if (GetVisible())
     NotifyAccessibilityEvent(ax::mojom::Event::kFocus, true);
 }
 

@@ -54,7 +54,7 @@ AccessiblePaneView::~AccessiblePaneView() {
 }
 
 bool AccessiblePaneView::SetPaneFocus(views::View* initial_focus) {
-  if (!visible())
+  if (!GetVisible())
     return false;
 
   if (!focus_manager_)
@@ -66,10 +66,8 @@ bool AccessiblePaneView::SetPaneFocus(views::View* initial_focus) {
 
   // Use the provided initial focus if it's visible and enabled, otherwise
   // use the first focusable child.
-  if (!initial_focus ||
-      !ContainsForFocusSearch(this, initial_focus) ||
-      !initial_focus->visible() ||
-      !initial_focus->enabled()) {
+  if (!initial_focus || !ContainsForFocusSearch(this, initial_focus) ||
+      !initial_focus->GetVisible() || !initial_focus->GetEnabled()) {
     initial_focus = GetFirstFocusableChild();
   }
 
@@ -198,7 +196,7 @@ bool AccessiblePaneView::AcceleratorPressed(
 }
 
 void AccessiblePaneView::SetVisible(bool flag) {
-  if (visible() && !flag && pane_has_focus_) {
+  if (GetVisible() && !flag && pane_has_focus_) {
     RemovePaneFocus();
     focus_manager_->RestoreFocusedView();
   }

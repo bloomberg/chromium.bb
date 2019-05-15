@@ -140,7 +140,7 @@ void CaptionBar::InitLayout() {
 }
 
 void CaptionBar::HandleButton(AssistantButtonId id) {
-  if (!GetViewByID(static_cast<int>(id))->visible())
+  if (!GetViewByID(static_cast<int>(id))->GetVisible())
     return;
 
   // If the delegate returns |true| it has handled the event and wishes to

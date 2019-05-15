@@ -99,7 +99,7 @@ void TestSystemTrayIsVisible(bool otr) {
   SCOPED_TRACE(testing::Message()
                << "ShelfVisibilityState=" << shelf->GetVisibilityState()
                << " ShelfAutoHideBehavior=" << shelf->auto_hide_behavior());
-  EXPECT_TRUE(tray->visible());
+  EXPECT_TRUE(tray->GetVisible());
 
   // This check flakes for LoginGuestTest: https://crbug.com/693106.
   // This check is suppressed for Mash since the warning button of Mash changes

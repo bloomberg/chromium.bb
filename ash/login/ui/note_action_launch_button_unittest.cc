@@ -77,7 +77,7 @@ class NoteActionLaunchButtonTest : public LoginTestBase {
 TEST_F(NoteActionLaunchButtonTest, VisibilityActionNotAvailable) {
   auto note_action_button = std::make_unique<NoteActionLaunchButton>(
       mojom::TrayActionState::kNotAvailable);
-  EXPECT_FALSE(note_action_button->visible());
+  EXPECT_FALSE(note_action_button->GetVisible());
 }
 
 // Verifies that note action button is shown and enabled if lock screen note
@@ -87,12 +87,12 @@ TEST_F(NoteActionLaunchButtonTest, VisibilityActionAvailable) {
       mojom::TrayActionState::kAvailable);
   NoteActionLaunchButton::TestApi test_api(note_action_button.get());
 
-  EXPECT_TRUE(note_action_button->visible());
-  EXPECT_TRUE(note_action_button->enabled());
+  EXPECT_TRUE(note_action_button->GetVisible());
+  EXPECT_TRUE(note_action_button->GetEnabled());
 
-  EXPECT_TRUE(test_api.ActionButtonView()->visible());
-  EXPECT_TRUE(test_api.ActionButtonView()->enabled());
-  EXPECT_TRUE(test_api.BackgroundView()->visible());
+  EXPECT_TRUE(test_api.ActionButtonView()->GetVisible());
+  EXPECT_TRUE(test_api.ActionButtonView()->GetEnabled());
+  EXPECT_TRUE(test_api.BackgroundView()->GetVisible());
 }
 
 // Tests that clicking Enter while lock screen action button is focused requests

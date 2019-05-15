@@ -291,7 +291,7 @@ views::Button* ToolbarActionView::GetReferenceButtonForPopup() {
   // Browser actions in the overflow menu can still show popups, so we may need
   // a reference view other than this button's parent. If so, use the overflow
   // view which is a BrowserAppMenuButton.
-  return visible() ? this : delegate_->GetOverflowReferenceView();
+  return GetVisible() ? this : delegate_->GetOverflowReferenceView();
 }
 
 bool ToolbarActionView::IsMenuRunning() const {
@@ -332,7 +332,8 @@ void ToolbarActionView::DoShowContextMenu(ui::MenuSourceType source_type) {
   if (!context_menu_model)
     return;
 
-  DCHECK(visible());  // We should never show a context menu for a hidden item.
+  DCHECK(
+      GetVisible());  // We should never show a context menu for a hidden item.
 
   int run_types =
       views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU;

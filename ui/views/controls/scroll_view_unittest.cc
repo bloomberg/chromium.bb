@@ -152,9 +152,9 @@ void CheckScrollbarVisibility(const ScrollView* scroll_view,
                                    : scroll_view->vertical_scroll_bar();
   if (should_be_visible) {
     ASSERT_TRUE(scrollbar);
-    EXPECT_TRUE(scrollbar->visible());
+    EXPECT_TRUE(scrollbar->GetVisible());
   } else {
-    EXPECT_TRUE(!scrollbar || !scrollbar->visible());
+    EXPECT_TRUE(!scrollbar || !scrollbar->GetVisible());
   }
 }
 
@@ -466,8 +466,8 @@ TEST_F(ScrollViewTest, VerticalScrollbarDoesNotAppearUnnecessarily) {
   scroll_view_->SetContents(std::make_unique<VerticalResizingView>());
   scroll_view_->SetBoundsRect(default_outer_bounds);
   scroll_view_->Layout();
-  EXPECT_FALSE(scroll_view_->vertical_scroll_bar()->visible());
-  EXPECT_TRUE(scroll_view_->horizontal_scroll_bar()->visible());
+  EXPECT_FALSE(scroll_view_->vertical_scroll_bar()->GetVisible());
+  EXPECT_TRUE(scroll_view_->horizontal_scroll_bar()->GetVisible());
 }
 
 // Verifies the scrollbars are added as necessary.
@@ -484,9 +484,9 @@ TEST_F(ScrollViewTest, ScrollBars) {
   CheckScrollbarVisibility(scroll_view_.get(), VERTICAL, true);
   CheckScrollbarVisibility(scroll_view_.get(), HORIZONTAL, false);
   EXPECT_TRUE(!scroll_view_->horizontal_scroll_bar() ||
-              !scroll_view_->horizontal_scroll_bar()->visible());
+              !scroll_view_->horizontal_scroll_bar()->GetVisible());
   ASSERT_TRUE(scroll_view_->vertical_scroll_bar() != nullptr);
-  EXPECT_TRUE(scroll_view_->vertical_scroll_bar()->visible());
+  EXPECT_TRUE(scroll_view_->vertical_scroll_bar()->GetVisible());
 
   // Size the contents such that horizontal scrollbar is needed.
   contents->SetBounds(0, 0, 400, 50);
@@ -521,9 +521,9 @@ TEST_F(ScrollViewTest, ScrollBars) {
             contents->parent()->width());
   EXPECT_EQ(100 - kTopPadding - kBottomPadding, contents->parent()->height());
   EXPECT_TRUE(!scroll_view_->horizontal_scroll_bar() ||
-              !scroll_view_->horizontal_scroll_bar()->visible());
+              !scroll_view_->horizontal_scroll_bar()->GetVisible());
   ASSERT_TRUE(scroll_view_->vertical_scroll_bar() != nullptr);
-  EXPECT_TRUE(scroll_view_->vertical_scroll_bar()->visible());
+  EXPECT_TRUE(scroll_view_->vertical_scroll_bar()->GetVisible());
   gfx::Rect bounds = scroll_view_->vertical_scroll_bar()->bounds();
   EXPECT_EQ(100 - VerticalScrollBarWidth() - kRightPadding, bounds.x());
   EXPECT_EQ(100 - kRightPadding, bounds.right());
@@ -538,9 +538,9 @@ TEST_F(ScrollViewTest, ScrollBars) {
                 kBottomPadding,
             contents->parent()->height());
   ASSERT_TRUE(scroll_view_->horizontal_scroll_bar() != nullptr);
-  EXPECT_TRUE(scroll_view_->horizontal_scroll_bar()->visible());
+  EXPECT_TRUE(scroll_view_->horizontal_scroll_bar()->GetVisible());
   EXPECT_TRUE(!scroll_view_->vertical_scroll_bar() ||
-              !scroll_view_->vertical_scroll_bar()->visible());
+              !scroll_view_->vertical_scroll_bar()->GetVisible());
   bounds = scroll_view_->horizontal_scroll_bar()->bounds();
   EXPECT_EQ(kLeftPadding, bounds.x());
   EXPECT_EQ(100 - kRightPadding, bounds.right());
@@ -559,7 +559,7 @@ TEST_F(ScrollViewTest, ScrollBars) {
   bounds = scroll_view_->horizontal_scroll_bar()->bounds();
   // Check horiz.
   ASSERT_TRUE(scroll_view_->horizontal_scroll_bar() != nullptr);
-  EXPECT_TRUE(scroll_view_->horizontal_scroll_bar()->visible());
+  EXPECT_TRUE(scroll_view_->horizontal_scroll_bar()->GetVisible());
   bounds = scroll_view_->horizontal_scroll_bar()->bounds();
   EXPECT_EQ(kLeftPadding, bounds.x());
   EXPECT_EQ(100 - kRightPadding - VerticalScrollBarWidth(), bounds.right());
@@ -567,7 +567,7 @@ TEST_F(ScrollViewTest, ScrollBars) {
   EXPECT_EQ(100 - kBottomPadding, bounds.bottom());
   // Check vert.
   ASSERT_TRUE(scroll_view_->vertical_scroll_bar() != nullptr);
-  EXPECT_TRUE(scroll_view_->vertical_scroll_bar()->visible());
+  EXPECT_TRUE(scroll_view_->vertical_scroll_bar()->GetVisible());
   bounds = scroll_view_->vertical_scroll_bar()->bounds();
   EXPECT_EQ(100 - VerticalScrollBarWidth() - kRightPadding, bounds.x());
   EXPECT_EQ(100 - kRightPadding, bounds.right());
@@ -639,9 +639,9 @@ TEST_F(ScrollViewTest, ScrollBarsWithHeader) {
             header->parent()->width());
   EXPECT_EQ(20, header->parent()->height());
   EXPECT_TRUE(!scroll_view_->horizontal_scroll_bar() ||
-              !scroll_view_->horizontal_scroll_bar()->visible());
+              !scroll_view_->horizontal_scroll_bar()->GetVisible());
   ASSERT_TRUE(scroll_view_->vertical_scroll_bar() != nullptr);
-  EXPECT_TRUE(scroll_view_->vertical_scroll_bar()->visible());
+  EXPECT_TRUE(scroll_view_->vertical_scroll_bar()->GetVisible());
   // Make sure the vertical scrollbar overlaps the header for traditional
   // scrollbars and doesn't overlap the header for overlay scrollbars.
   const int expected_scrollbar_y =
@@ -664,9 +664,9 @@ TEST_F(ScrollViewTest, ScrollBarsWithHeader) {
   EXPECT_EQ(100, header->parent()->width());
   EXPECT_EQ(20, header->parent()->height());
   ASSERT_TRUE(scroll_view_->horizontal_scroll_bar() != nullptr);
-  EXPECT_TRUE(scroll_view_->horizontal_scroll_bar()->visible());
+  EXPECT_TRUE(scroll_view_->horizontal_scroll_bar()->GetVisible());
   EXPECT_TRUE(!scroll_view_->vertical_scroll_bar() ||
-              !scroll_view_->vertical_scroll_bar()->visible());
+              !scroll_view_->vertical_scroll_bar()->GetVisible());
 
   // Both horizontal and vertical.
   contents->SetBounds(0, 0, 300, 400);
@@ -683,9 +683,9 @@ TEST_F(ScrollViewTest, ScrollBarsWithHeader) {
             header->parent()->width());
   EXPECT_EQ(20, header->parent()->height());
   ASSERT_TRUE(scroll_view_->horizontal_scroll_bar() != nullptr);
-  EXPECT_TRUE(scroll_view_->horizontal_scroll_bar()->visible());
+  EXPECT_TRUE(scroll_view_->horizontal_scroll_bar()->GetVisible());
   ASSERT_TRUE(scroll_view_->vertical_scroll_bar() != nullptr);
-  EXPECT_TRUE(scroll_view_->vertical_scroll_bar()->visible());
+  EXPECT_TRUE(scroll_view_->vertical_scroll_bar()->GetVisible());
 }
 
 // Verifies the header scrolls horizontally with the content.
@@ -727,7 +727,7 @@ TEST_F(ScrollViewTest, ScrollToPositionUpdatesScrollBar) {
   scroll_view_->Layout();
   auto* scroll_bar = test_api.GetScrollBar(HORIZONTAL);
   ASSERT_TRUE(scroll_bar);
-  EXPECT_TRUE(scroll_bar->visible());
+  EXPECT_TRUE(scroll_bar->GetVisible());
   EXPECT_EQ(0, scroll_bar->GetPosition());
   scroll_view_->ScrollToPosition(scroll_bar, 20);
   EXPECT_GT(scroll_bar->GetPosition(), 0);
@@ -737,7 +737,7 @@ TEST_F(ScrollViewTest, ScrollToPositionUpdatesScrollBar) {
   scroll_view_->Layout();
   scroll_bar = test_api.GetScrollBar(VERTICAL);
   ASSERT_TRUE(scroll_bar);
-  EXPECT_TRUE(scroll_bar->visible());
+  EXPECT_TRUE(scroll_bar->GetVisible());
   EXPECT_EQ(0, scroll_bar->GetPosition());
   scroll_view_->ScrollToPosition(scroll_bar, 20);
   EXPECT_GT(scroll_bar->GetPosition(), 0);
@@ -901,7 +901,7 @@ TEST_F(ScrollViewTest, CornerViewVisibility) {
 
   // Corner view should be visible when both scrollbars are visible.
   EXPECT_EQ(scroll_view_.get(), corner_view->parent());
-  EXPECT_TRUE(corner_view->visible());
+  EXPECT_TRUE(corner_view->GetVisible());
 
   // Corner view should be aligned to the scrollbars.
   EXPECT_EQ(scroll_view_->vertical_scroll_bar()->x(), corner_view->x());
@@ -928,7 +928,7 @@ TEST_F(ScrollViewTest, CornerViewVisibility) {
   contents->SetBounds(0, 0, 200, 200);
   scroll_view_->Layout();
   EXPECT_EQ(scroll_view_.get(), corner_view->parent());
-  EXPECT_TRUE(corner_view->visible());
+  EXPECT_TRUE(corner_view->GetVisible());
 }
 
 TEST_F(ScrollViewTest, ChildWithLayerTest) {
@@ -1205,14 +1205,14 @@ TEST_F(ScrollViewTest, VerticalOverflowIndicators) {
   CheckScrollbarVisibility(scroll_view_.get(), HORIZONTAL, false);
 
   // The overflow indicator on the bottom should be visible.
-  EXPECT_TRUE(test_api.more_content_bottom()->visible());
+  EXPECT_TRUE(test_api.more_content_bottom()->GetVisible());
 
   // The overflow indicator on the top should not be visible.
-  EXPECT_FALSE(test_api.more_content_top()->visible());
+  EXPECT_FALSE(test_api.more_content_top()->GetVisible());
 
   // No other overflow indicators should be visible.
-  EXPECT_FALSE(test_api.more_content_left()->visible());
-  EXPECT_FALSE(test_api.more_content_right()->visible());
+  EXPECT_FALSE(test_api.more_content_left()->GetVisible());
+  EXPECT_FALSE(test_api.more_content_right()->GetVisible());
 
   // Now scroll the view to someplace in the middle of the scrollable region.
   int offset = kMaxHeight * 2;
@@ -1221,12 +1221,12 @@ TEST_F(ScrollViewTest, VerticalOverflowIndicators) {
 
   // At this point, both overflow indicators on the top and bottom should be
   // visible.
-  EXPECT_TRUE(test_api.more_content_top()->visible());
-  EXPECT_TRUE(test_api.more_content_bottom()->visible());
+  EXPECT_TRUE(test_api.more_content_top()->GetVisible());
+  EXPECT_TRUE(test_api.more_content_bottom()->GetVisible());
 
   // The left and right overflow indicators should still not be visible.
-  EXPECT_FALSE(test_api.more_content_left()->visible());
-  EXPECT_FALSE(test_api.more_content_right()->visible());
+  EXPECT_FALSE(test_api.more_content_left()->GetVisible());
+  EXPECT_FALSE(test_api.more_content_right()->GetVisible());
 
   // Finally scroll the view to end of the scrollable region.
   offset = kMaxHeight * 4;
@@ -1234,14 +1234,14 @@ TEST_F(ScrollViewTest, VerticalOverflowIndicators) {
   EXPECT_EQ(gfx::ScrollOffset(0, offset), test_api.CurrentOffset());
 
   // The overflow indicator on the bottom should not be visible.
-  EXPECT_FALSE(test_api.more_content_bottom()->visible());
+  EXPECT_FALSE(test_api.more_content_bottom()->GetVisible());
 
   // The overflow indicator on the top should be visible.
-  EXPECT_TRUE(test_api.more_content_top()->visible());
+  EXPECT_TRUE(test_api.more_content_top()->GetVisible());
 
   // As above, no other overflow indicators should be visible.
-  EXPECT_FALSE(test_api.more_content_left()->visible());
-  EXPECT_FALSE(test_api.more_content_right()->visible());
+  EXPECT_FALSE(test_api.more_content_left()->GetVisible());
+  EXPECT_FALSE(test_api.more_content_right()->GetVisible());
 }
 
 TEST_F(ScrollViewTest, HorizontalOverflowIndicators) {
@@ -1269,14 +1269,14 @@ TEST_F(ScrollViewTest, HorizontalOverflowIndicators) {
   CheckScrollbarVisibility(scroll_view_.get(), VERTICAL, false);
 
   // The overflow indicator on the right should be visible.
-  EXPECT_TRUE(test_api.more_content_right()->visible());
+  EXPECT_TRUE(test_api.more_content_right()->GetVisible());
 
   // The overflow indicator on the left should not be visible.
-  EXPECT_FALSE(test_api.more_content_left()->visible());
+  EXPECT_FALSE(test_api.more_content_left()->GetVisible());
 
   // No other overflow indicators should be visible.
-  EXPECT_FALSE(test_api.more_content_top()->visible());
-  EXPECT_FALSE(test_api.more_content_bottom()->visible());
+  EXPECT_FALSE(test_api.more_content_top()->GetVisible());
+  EXPECT_FALSE(test_api.more_content_bottom()->GetVisible());
 
   // Now scroll the view to someplace in the middle of the scrollable region.
   int offset = kWidth * 2;
@@ -1285,12 +1285,12 @@ TEST_F(ScrollViewTest, HorizontalOverflowIndicators) {
 
   // At this point, both overflow indicators on the left and right should be
   // visible.
-  EXPECT_TRUE(test_api.more_content_left()->visible());
-  EXPECT_TRUE(test_api.more_content_right()->visible());
+  EXPECT_TRUE(test_api.more_content_left()->GetVisible());
+  EXPECT_TRUE(test_api.more_content_right()->GetVisible());
 
   // The top and bottom overflow indicators should still not be visible.
-  EXPECT_FALSE(test_api.more_content_top()->visible());
-  EXPECT_FALSE(test_api.more_content_bottom()->visible());
+  EXPECT_FALSE(test_api.more_content_top()->GetVisible());
+  EXPECT_FALSE(test_api.more_content_bottom()->GetVisible());
 
   // Finally scroll the view to end of the scrollable region.
   offset = kWidth * 4;
@@ -1298,14 +1298,14 @@ TEST_F(ScrollViewTest, HorizontalOverflowIndicators) {
   EXPECT_EQ(gfx::ScrollOffset(offset, 0), test_api.CurrentOffset());
 
   // The overflow indicator on the right should not be visible.
-  EXPECT_FALSE(test_api.more_content_right()->visible());
+  EXPECT_FALSE(test_api.more_content_right()->GetVisible());
 
   // The overflow indicator on the left should be visible.
-  EXPECT_TRUE(test_api.more_content_left()->visible());
+  EXPECT_TRUE(test_api.more_content_left()->GetVisible());
 
   // As above, no other overflow indicators should be visible.
-  EXPECT_FALSE(test_api.more_content_top()->visible());
-  EXPECT_FALSE(test_api.more_content_bottom()->visible());
+  EXPECT_FALSE(test_api.more_content_top()->GetVisible());
+  EXPECT_FALSE(test_api.more_content_bottom()->GetVisible());
 }
 
 TEST_F(ScrollViewTest, HorizontalVerticalOverflowIndicators) {
@@ -1331,12 +1331,12 @@ TEST_F(ScrollViewTest, HorizontalVerticalOverflowIndicators) {
 
   // The overflow indicators on the right and bottom should not be visible since
   // they are against the scrollbars.
-  EXPECT_FALSE(test_api.more_content_right()->visible());
-  EXPECT_FALSE(test_api.more_content_bottom()->visible());
+  EXPECT_FALSE(test_api.more_content_right()->GetVisible());
+  EXPECT_FALSE(test_api.more_content_bottom()->GetVisible());
 
   // The overflow indicators on the left and top should not be visible.
-  EXPECT_FALSE(test_api.more_content_left()->visible());
-  EXPECT_FALSE(test_api.more_content_top()->visible());
+  EXPECT_FALSE(test_api.more_content_left()->GetVisible());
+  EXPECT_FALSE(test_api.more_content_top()->GetVisible());
 
   // Now scroll the view to someplace in the middle of the horizontal scrollable
   // region.
@@ -1346,12 +1346,12 @@ TEST_F(ScrollViewTest, HorizontalVerticalOverflowIndicators) {
 
   // Since there is a vertical scrollbar only the overflow indicator on the left
   // should be visible and the one on the right should still not be visible.
-  EXPECT_TRUE(test_api.more_content_left()->visible());
-  EXPECT_FALSE(test_api.more_content_right()->visible());
+  EXPECT_TRUE(test_api.more_content_left()->GetVisible());
+  EXPECT_FALSE(test_api.more_content_right()->GetVisible());
 
   // The top and bottom overflow indicators should still not be visible.
-  EXPECT_FALSE(test_api.more_content_top()->visible());
-  EXPECT_FALSE(test_api.more_content_bottom()->visible());
+  EXPECT_FALSE(test_api.more_content_top()->GetVisible());
+  EXPECT_FALSE(test_api.more_content_bottom()->GetVisible());
 
   // Next, scroll the view to end of the scrollable region.
   offset_x = kWidth * 4;
@@ -1359,16 +1359,16 @@ TEST_F(ScrollViewTest, HorizontalVerticalOverflowIndicators) {
   EXPECT_EQ(gfx::ScrollOffset(offset_x, 0), test_api.CurrentOffset());
 
   // The overflow indicator on the right should still not be visible.
-  EXPECT_FALSE(test_api.more_content_right()->visible());
+  EXPECT_FALSE(test_api.more_content_right()->GetVisible());
 
   // The overflow indicator on the left should be visible.
-  EXPECT_TRUE(test_api.more_content_left()->visible());
+  EXPECT_TRUE(test_api.more_content_left()->GetVisible());
 
   // As above, the other overflow indicators should not be visible because the
   // view hasn't scrolled vertically and the bottom indicator is against the
   // horizontal scrollbar.
-  EXPECT_FALSE(test_api.more_content_top()->visible());
-  EXPECT_FALSE(test_api.more_content_bottom()->visible());
+  EXPECT_FALSE(test_api.more_content_top()->GetVisible());
+  EXPECT_FALSE(test_api.more_content_bottom()->GetVisible());
 
   // Return the view back to the horizontal origin.
   scroll_view_->ScrollToPosition(test_api.GetScrollBar(HORIZONTAL), 0);
@@ -1376,13 +1376,13 @@ TEST_F(ScrollViewTest, HorizontalVerticalOverflowIndicators) {
 
   // The overflow indicators on the right and bottom should not be visible since
   // they are against the scrollbars.
-  EXPECT_FALSE(test_api.more_content_right()->visible());
-  EXPECT_FALSE(test_api.more_content_bottom()->visible());
+  EXPECT_FALSE(test_api.more_content_right()->GetVisible());
+  EXPECT_FALSE(test_api.more_content_bottom()->GetVisible());
 
   // The overflow indicators on the left and top should not be visible since the
   // is at the origin.
-  EXPECT_FALSE(test_api.more_content_left()->visible());
-  EXPECT_FALSE(test_api.more_content_top()->visible());
+  EXPECT_FALSE(test_api.more_content_left()->GetVisible());
+  EXPECT_FALSE(test_api.more_content_top()->GetVisible());
 
   // Now scroll the view to somplace in the middle of the vertical scrollable
   // region.
@@ -1393,12 +1393,12 @@ TEST_F(ScrollViewTest, HorizontalVerticalOverflowIndicators) {
   // Similar to the above, since there is a horizontal scrollbar only the
   // overflow indicator on the top should be visible and the one on the bottom
   // should still not be visible.
-  EXPECT_TRUE(test_api.more_content_top()->visible());
-  EXPECT_FALSE(test_api.more_content_bottom()->visible());
+  EXPECT_TRUE(test_api.more_content_top()->GetVisible());
+  EXPECT_FALSE(test_api.more_content_bottom()->GetVisible());
 
   // The left and right overflow indicators should still not be visible.
-  EXPECT_FALSE(test_api.more_content_left()->visible());
-  EXPECT_FALSE(test_api.more_content_right()->visible());
+  EXPECT_FALSE(test_api.more_content_left()->GetVisible());
+  EXPECT_FALSE(test_api.more_content_right()->GetVisible());
 
   // Finally, for the vertical test scroll the region all the way to the end.
   offset_y = kHeight * 4;
@@ -1406,16 +1406,16 @@ TEST_F(ScrollViewTest, HorizontalVerticalOverflowIndicators) {
   EXPECT_EQ(gfx::ScrollOffset(0, offset_y), test_api.CurrentOffset());
 
   // The overflow indicator on the bottom should still not be visible.
-  EXPECT_FALSE(test_api.more_content_bottom()->visible());
+  EXPECT_FALSE(test_api.more_content_bottom()->GetVisible());
 
   // The overflow indicator on the top should still be visible.
-  EXPECT_TRUE(test_api.more_content_top()->visible());
+  EXPECT_TRUE(test_api.more_content_top()->GetVisible());
 
   // As above, the other overflow indicators should not be visible because the
   // view hasn't scrolled horizontally and the right indicator is against the
   // vertical scrollbar.
-  EXPECT_FALSE(test_api.more_content_left()->visible());
-  EXPECT_FALSE(test_api.more_content_right()->visible());
+  EXPECT_FALSE(test_api.more_content_left()->GetVisible());
+  EXPECT_FALSE(test_api.more_content_right()->GetVisible());
 
   // Back to the horizontal. Scroll all the way to the end in the horizontal
   // direction.
@@ -1424,12 +1424,12 @@ TEST_F(ScrollViewTest, HorizontalVerticalOverflowIndicators) {
   EXPECT_EQ(gfx::ScrollOffset(offset_x, offset_y), test_api.CurrentOffset());
 
   // The overflow indicator on the bottom and right should still not be visible.
-  EXPECT_FALSE(test_api.more_content_bottom()->visible());
-  EXPECT_FALSE(test_api.more_content_right()->visible());
+  EXPECT_FALSE(test_api.more_content_bottom()->GetVisible());
+  EXPECT_FALSE(test_api.more_content_right()->GetVisible());
 
   // The overflow indicators on the top and left should now be visible.
-  EXPECT_TRUE(test_api.more_content_top()->visible());
-  EXPECT_TRUE(test_api.more_content_left()->visible());
+  EXPECT_TRUE(test_api.more_content_top()->GetVisible());
+  EXPECT_TRUE(test_api.more_content_left()->GetVisible());
 }
 
 TEST_F(ScrollViewTest, VerticalWithHeaderOverflowIndicators) {
@@ -1460,14 +1460,14 @@ TEST_F(ScrollViewTest, VerticalWithHeaderOverflowIndicators) {
   CheckScrollbarVisibility(scroll_view_.get(), HORIZONTAL, false);
 
   // The overflow indicator on the bottom should be visible.
-  EXPECT_TRUE(test_api.more_content_bottom()->visible());
+  EXPECT_TRUE(test_api.more_content_bottom()->GetVisible());
 
   // The overflow indicator on the top should not be visible.
-  EXPECT_FALSE(test_api.more_content_top()->visible());
+  EXPECT_FALSE(test_api.more_content_top()->GetVisible());
 
   // No other overflow indicators should be visible.
-  EXPECT_FALSE(test_api.more_content_left()->visible());
-  EXPECT_FALSE(test_api.more_content_right()->visible());
+  EXPECT_FALSE(test_api.more_content_left()->GetVisible());
+  EXPECT_FALSE(test_api.more_content_right()->GetVisible());
 
   // Now scroll the view to someplace in the middle of the scrollable region.
   int offset = kMaxHeight * 2;
@@ -1477,12 +1477,12 @@ TEST_F(ScrollViewTest, VerticalWithHeaderOverflowIndicators) {
   // At this point, only the overflow indicator on the bottom should be visible
   // because the top indicator never comes on because of the presence of the
   // header.
-  EXPECT_FALSE(test_api.more_content_top()->visible());
-  EXPECT_TRUE(test_api.more_content_bottom()->visible());
+  EXPECT_FALSE(test_api.more_content_top()->GetVisible());
+  EXPECT_TRUE(test_api.more_content_bottom()->GetVisible());
 
   // The left and right overflow indicators should still not be visible.
-  EXPECT_FALSE(test_api.more_content_left()->visible());
-  EXPECT_FALSE(test_api.more_content_right()->visible());
+  EXPECT_FALSE(test_api.more_content_left()->GetVisible());
+  EXPECT_FALSE(test_api.more_content_right()->GetVisible());
 
   // Finally scroll the view to end of the scrollable region.
   offset = test_api.GetScrollBar(VERTICAL)->GetMaxPosition();
@@ -1490,14 +1490,14 @@ TEST_F(ScrollViewTest, VerticalWithHeaderOverflowIndicators) {
   EXPECT_EQ(gfx::ScrollOffset(0, offset), test_api.CurrentOffset());
 
   // The overflow indicator on the bottom should not be visible now.
-  EXPECT_FALSE(test_api.more_content_bottom()->visible());
+  EXPECT_FALSE(test_api.more_content_bottom()->GetVisible());
 
   // The overflow indicator on the top should still not be visible.
-  EXPECT_FALSE(test_api.more_content_top()->visible());
+  EXPECT_FALSE(test_api.more_content_top()->GetVisible());
 
   // As above, no other overflow indicators should be visible.
-  EXPECT_FALSE(test_api.more_content_left()->visible());
-  EXPECT_FALSE(test_api.more_content_right()->visible());
+  EXPECT_FALSE(test_api.more_content_left()->GetVisible());
+  EXPECT_FALSE(test_api.more_content_right()->GetVisible());
 }
 
 // Ensure ScrollView::Layout succeeds if a hidden scrollbar's overlap style

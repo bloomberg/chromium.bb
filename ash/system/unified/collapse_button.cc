@@ -95,8 +95,8 @@ std::unique_ptr<views::InkDropMask> CustomShapeButton::CreateInkDropMask()
 void CustomShapeButton::PaintCustomShapePath(gfx::Canvas* canvas) {
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
-  flags.setColor(enabled() ? kUnifiedMenuButtonColor
-                           : kUnifiedMenuButtonColorDisabled);
+  flags.setColor(GetEnabled() ? kUnifiedMenuButtonColor
+                              : kUnifiedMenuButtonColorDisabled);
   flags.setStyle(cc::PaintFlags::kFill_Style);
 
   canvas->DrawPath(CreateCustomShapePath(GetLocalBounds()), flags);
@@ -148,8 +148,8 @@ void CollapseButton::PaintButtonContents(gfx::Canvas* canvas) {
 void CollapseButton::OnEnabledChanged() {
   SetImage(views::Button::STATE_NORMAL,
            gfx::CreateVectorIcon(kUnifiedMenuExpandIcon,
-                                 enabled() ? kUnifiedMenuIconColor
-                                           : kUnifiedMenuIconColorDisabled));
+                                 GetEnabled() ? kUnifiedMenuIconColor
+                                              : kUnifiedMenuIconColorDisabled));
 }
 
 }  // namespace ash

@@ -160,7 +160,7 @@ class CustomTabBarTitleOriginView : public views::View {
   }
 
   bool IsShowingOriginForTesting() const {
-    return location_label_ != nullptr && location_label_->visible();
+    return location_label_ != nullptr && location_label_->GetVisible();
   }
 
  private:

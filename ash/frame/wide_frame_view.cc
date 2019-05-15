@@ -128,7 +128,7 @@ void WideFrameView::DeleteDelegate() {
 
 void WideFrameView::Layout() {
   int onscreen_height = header_view_->GetPreferredOnScreenHeight();
-  if (onscreen_height == 0 || !visible()) {
+  if (onscreen_height == 0 || !GetVisible()) {
     header_view_->SetVisible(false);
   } else {
     const int height = header_view_->GetPreferredHeight();

@@ -428,7 +428,7 @@ void OmniboxPopupContentsView::LayoutChildren() {
   gfx::Rect contents_rect = GetContentsBounds();
   int top = contents_rect.y();
   for (View* v : children()) {
-    if (v->visible()) {
+    if (v->GetVisible()) {
       v->SetBounds(contents_rect.x(), top, contents_rect.width(),
                    v->GetPreferredSize().height());
       top = v->bounds().bottom();
@@ -455,7 +455,7 @@ size_t OmniboxPopupContentsView::GetIndexForPoint(const gfx::Point& point) {
     views::View* child = children()[i];
     gfx::Point point_in_child_coords(point);
     View::ConvertPointToTarget(this, child, &point_in_child_coords);
-    if (child->visible() && child->HitTestPoint(point_in_child_coords))
+    if (child->GetVisible() && child->HitTestPoint(point_in_child_coords))
       return i;
   }
   return OmniboxPopupModel::kNoMatch;

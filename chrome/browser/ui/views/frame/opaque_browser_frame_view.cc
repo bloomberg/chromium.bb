@@ -261,16 +261,16 @@ int OpaqueBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
     return frame_component;
 
   // Then see if the point is within any of the window controls.
-  if (close_button_ && close_button_->visible() &&
+  if (close_button_ && close_button_->GetVisible() &&
       close_button_->GetMirroredBounds().Contains(point))
     return HTCLOSE;
-  if (restore_button_ && restore_button_->visible() &&
+  if (restore_button_ && restore_button_->GetVisible() &&
       restore_button_->GetMirroredBounds().Contains(point))
     return HTMAXBUTTON;
-  if (maximize_button_ && maximize_button_->visible() &&
+  if (maximize_button_ && maximize_button_->GetVisible() &&
       maximize_button_->GetMirroredBounds().Contains(point))
     return HTMAXBUTTON;
-  if (minimize_button_ && minimize_button_->visible() &&
+  if (minimize_button_ && minimize_button_->GetVisible() &&
       minimize_button_->GetMirroredBounds().Contains(point))
     return HTMINBUTTON;
 

@@ -65,7 +65,7 @@ void SuggestionChipView::ChildVisibilityChanged(views::View* child) {
   // When icon visibility is modified we need to update layout padding.
   if (child == icon_view_) {
     const int padding_left_dip =
-        icon_view_->visible() ? kIconMarginDip : kChipPaddingDip;
+        icon_view_->GetVisible() ? kIconMarginDip : kChipPaddingDip;
     layout_manager_->set_inside_border_insets(
         gfx::Insets(0, padding_left_dip, 0, kChipPaddingDip));
   }

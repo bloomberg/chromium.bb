@@ -472,7 +472,7 @@ TEST_F(NotificationViewMDTest, UpdateButtonsStateTest) {
   EXPECT_FALSE(notification_view()->expanded_);
   notification->set_buttons(CreateButtons(2));
   notification_view()->CreateOrUpdateViews(*notification);
-  EXPECT_FALSE(notification_view()->actions_row_->visible());
+  EXPECT_FALSE(notification_view()->actions_row_->GetVisible());
 
   // Adding buttons when expanded makes action buttons visible.
   // Reset back to zero buttons first.
@@ -483,7 +483,7 @@ TEST_F(NotificationViewMDTest, UpdateButtonsStateTest) {
   EXPECT_TRUE(notification_view()->expanded_);
   notification->set_buttons(CreateButtons(2));
   notification_view()->CreateOrUpdateViews(*notification);
-  EXPECT_TRUE(notification_view()->actions_row_->visible());
+  EXPECT_TRUE(notification_view()->actions_row_->GetVisible());
 
   EXPECT_EQ(views::Button::STATE_NORMAL,
             notification_view()->action_buttons_[0]->state());
@@ -525,7 +525,7 @@ TEST_F(NotificationViewMDTest, UpdateButtonCountTest) {
   // Action buttons are hidden by collapsed state.
   if (!notification_view()->expanded_)
     notification_view()->ToggleExpanded();
-  EXPECT_TRUE(notification_view()->actions_row_->visible());
+  EXPECT_TRUE(notification_view()->actions_row_->GetVisible());
 
   EXPECT_EQ(views::Button::STATE_NORMAL,
             notification_view()->action_buttons_[0]->state());
@@ -577,7 +577,7 @@ TEST_F(NotificationViewMDTest, TestActionButtonClick) {
   // Action buttons are hidden by collapsed state.
   if (!notification_view()->expanded_)
     notification_view()->ToggleExpanded();
-  EXPECT_TRUE(notification_view()->actions_row_->visible());
+  EXPECT_TRUE(notification_view()->actions_row_->GetVisible());
 
   // Now construct a mouse click event 1 pixel inside the boundary of the action
   // button.
@@ -605,7 +605,7 @@ TEST_F(NotificationViewMDTest, TestInlineReply) {
   // Action buttons are hidden by collapsed state.
   if (!notification_view()->expanded_)
     notification_view()->ToggleExpanded();
-  EXPECT_TRUE(notification_view()->actions_row_->visible());
+  EXPECT_TRUE(notification_view()->actions_row_->GetVisible());
 
   // Now construct a mouse click event 1 pixel inside the boundary of the action
   // button.
@@ -619,15 +619,15 @@ TEST_F(NotificationViewMDTest, TestInlineReply) {
   EXPECT_EQ(-1, delegate_->clicked_button_index());
 
   // Toggling should hide the inline textfield.
-  EXPECT_TRUE(notification_view()->inline_reply_->visible());
+  EXPECT_TRUE(notification_view()->inline_reply_->GetVisible());
   notification_view()->ToggleExpanded();
   notification_view()->ToggleExpanded();
-  EXPECT_FALSE(notification_view()->inline_reply_->visible());
+  EXPECT_FALSE(notification_view()->inline_reply_->GetVisible());
 
   // Click the button again and the inline textfield should be focused.
   generator.ClickLeftButton();
-  EXPECT_TRUE(notification_view()->inline_reply_->visible());
-  EXPECT_TRUE(notification_view()->inline_reply_->textfield()->visible());
+  EXPECT_TRUE(notification_view()->inline_reply_->GetVisible());
+  EXPECT_TRUE(notification_view()->inline_reply_->textfield()->GetVisible());
   EXPECT_TRUE(notification_view()->inline_reply_->textfield()->HasFocus());
 
   // Type the text.
@@ -692,7 +692,7 @@ TEST_F(NotificationViewMDTest, TestInlineReplyRemovedByUpdate) {
   // Action buttons are hidden by collapsed state.
   if (!notification_view()->expanded_)
     notification_view()->ToggleExpanded();
-  EXPECT_TRUE(notification_view()->actions_row_->visible());
+  EXPECT_TRUE(notification_view()->actions_row_->GetVisible());
 
   // Now construct a mouse click event 1 pixel inside the boundary of the action
   // button.
@@ -705,15 +705,15 @@ TEST_F(NotificationViewMDTest, TestInlineReplyRemovedByUpdate) {
   // Nothing should be submitted at this point.
   EXPECT_EQ(-1, delegate_->clicked_button_index());
 
-  EXPECT_TRUE(notification_view()->inline_reply_->visible());
-  EXPECT_FALSE(notification_view()->action_buttons_row_->visible());
+  EXPECT_TRUE(notification_view()->inline_reply_->GetVisible());
+  EXPECT_FALSE(notification_view()->action_buttons_row_->GetVisible());
 
   buttons[1].placeholder = base::nullopt;
   notification->set_buttons(buttons);
   UpdateNotificationViews(*notification);
 
-  EXPECT_FALSE(notification_view()->inline_reply_->visible());
-  EXPECT_TRUE(notification_view()->action_buttons_row_->visible());
+  EXPECT_FALSE(notification_view()->inline_reply_->GetVisible());
+  EXPECT_TRUE(notification_view()->action_buttons_row_->GetVisible());
 
   // Now it emits click event.
   delegate_->set_expecting_button_click(true);
@@ -724,7 +724,7 @@ TEST_F(NotificationViewMDTest, TestInlineReplyRemovedByUpdate) {
   notification->set_buttons(buttons);
   UpdateNotificationViews(*notification);
 
-  EXPECT_FALSE(notification_view()->actions_row_->visible());
+  EXPECT_FALSE(notification_view()->actions_row_->GetVisible());
 }
 
 TEST_F(NotificationViewMDTest, TestInlineReplyActivateWithKeyPress) {
@@ -748,7 +748,7 @@ TEST_F(NotificationViewMDTest, TestInlineReplyActivateWithKeyPress) {
   generator.PressKey(ui::VKEY_SPACE, ui::EF_NONE);
   generator.ReleaseKey(ui::VKEY_SPACE, ui::EF_NONE);
 
-  EXPECT_TRUE(notification_view()->inline_reply_->visible());
+  EXPECT_TRUE(notification_view()->inline_reply_->GetVisible());
 }
 
 // Synthetic scroll events are not supported on Mac in the views
@@ -861,7 +861,7 @@ TEST_F(NotificationViewMDTest, Pinned) {
 
   // Visible at the initial state.
   EXPECT_TRUE(GetCloseButton());
-  EXPECT_TRUE(GetCloseButton()->visible());
+  EXPECT_TRUE(GetCloseButton()->GetVisible());
 
   // Pin.
   notification->set_pinned(true);
@@ -872,7 +872,7 @@ TEST_F(NotificationViewMDTest, Pinned) {
   notification->set_pinned(false);
   UpdateNotificationViews(*notification);
   EXPECT_TRUE(GetCloseButton());
-  EXPECT_TRUE(GetCloseButton()->visible());
+  EXPECT_TRUE(GetCloseButton()->GetVisible());
 
   // Pin again.
   notification->set_pinned(true);
@@ -981,7 +981,7 @@ TEST_F(NotificationViewMDTest, TestAccentColor) {
   // Action buttons are hidden by collapsed state.
   if (!notification_view()->expanded_)
     notification_view()->ToggleExpanded();
-  EXPECT_TRUE(notification_view()->actions_row_->visible());
+  EXPECT_TRUE(notification_view()->actions_row_->GetVisible());
 
   // By default, header does not have accent color (default grey), and
   // buttons have default accent color.
@@ -1020,14 +1020,14 @@ TEST_F(NotificationViewMDTest, UseImageAsIcon) {
   // Test normal notification.
   UpdateNotificationViews(*notification);
   EXPECT_FALSE(notification_view()->expanded_);
-  EXPECT_TRUE(notification_view()->icon_view_->visible());
-  EXPECT_TRUE(notification_view()->right_content_->visible());
+  EXPECT_TRUE(notification_view()->icon_view_->GetVisible());
+  EXPECT_TRUE(notification_view()->right_content_->GetVisible());
 
   // Icon on the right side is still visible when expanded.
   notification_view()->ToggleExpanded();
   EXPECT_TRUE(notification_view()->expanded_);
-  EXPECT_TRUE(notification_view()->icon_view_->visible());
-  EXPECT_TRUE(notification_view()->right_content_->visible());
+  EXPECT_TRUE(notification_view()->icon_view_->GetVisible());
+  EXPECT_TRUE(notification_view()->right_content_->GetVisible());
 
   notification_view()->ToggleExpanded();
   EXPECT_FALSE(notification_view()->expanded_);
@@ -1035,14 +1035,14 @@ TEST_F(NotificationViewMDTest, UseImageAsIcon) {
   // Test notification with |use_image_for_icon| e.g. screenshot preview.
   notification->set_icon(gfx::Image());
   UpdateNotificationViews(*notification);
-  EXPECT_TRUE(notification_view()->icon_view_->visible());
-  EXPECT_TRUE(notification_view()->right_content_->visible());
+  EXPECT_TRUE(notification_view()->icon_view_->GetVisible());
+  EXPECT_TRUE(notification_view()->right_content_->GetVisible());
 
   // Icon on the right side is not visible when expanded.
   notification_view()->ToggleExpanded();
   EXPECT_TRUE(notification_view()->expanded_);
-  EXPECT_TRUE(notification_view()->icon_view_->visible());
-  EXPECT_FALSE(notification_view()->right_content_->visible());
+  EXPECT_TRUE(notification_view()->icon_view_->GetVisible());
+  EXPECT_FALSE(notification_view()->right_content_->GetVisible());
 }
 
 TEST_F(NotificationViewMDTest, NotificationWithoutIcon) {
@@ -1053,12 +1053,12 @@ TEST_F(NotificationViewMDTest, NotificationWithoutIcon) {
 
   // If the notification has no icon, |icon_view_| shouldn't be created.
   EXPECT_FALSE(notification_view()->icon_view_);
-  EXPECT_FALSE(notification_view()->right_content_->visible());
+  EXPECT_FALSE(notification_view()->right_content_->GetVisible());
 
   // Toggling should not affect the icon.
   notification_view()->ToggleExpanded();
   EXPECT_FALSE(notification_view()->icon_view_);
-  EXPECT_FALSE(notification_view()->right_content_->visible());
+  EXPECT_FALSE(notification_view()->right_content_->GetVisible());
 }
 
 TEST_F(NotificationViewMDTest, UpdateAddingIcon) {
@@ -1079,8 +1079,8 @@ TEST_F(NotificationViewMDTest, UpdateAddingIcon) {
   UpdateNotificationViews(*notification);
 
   // Notification should now have an icon.
-  EXPECT_TRUE(notification_view()->icon_view_->visible());
-  EXPECT_TRUE(notification_view()->right_content_->visible());
+  EXPECT_TRUE(notification_view()->icon_view_->GetVisible());
+  EXPECT_TRUE(notification_view()->right_content_->GetVisible());
 
   // There should be some space now to show the icon.
   EXPECT_LT(notification_view()->left_content_->width(), left_content_width);
@@ -1094,24 +1094,24 @@ TEST_F(NotificationViewMDTest, InlineSettings) {
   ui::test::EventGenerator generator(GetRootWindow(widget()));
 
   // Inline settings will be shown by clicking settings button.
-  EXPECT_FALSE(notification_view()->settings_row_->visible());
+  EXPECT_FALSE(notification_view()->settings_row_->GetVisible());
   gfx::Point settings_cursor_location(1, 1);
   views::View::ConvertPointToTarget(
       notification_view()->control_buttons_view_->settings_button(),
       notification_view(), &settings_cursor_location);
   generator.MoveMouseTo(settings_cursor_location);
   generator.ClickLeftButton();
-  EXPECT_TRUE(notification_view()->settings_row_->visible());
+  EXPECT_TRUE(notification_view()->settings_row_->GetVisible());
 
 #if !defined(OS_CHROMEOS)
   // By clicking settings button again, it will toggle. Skip this on ChromeOS as
   // the control_buttons_view gets hidden when the inline settings are shown.
   generator.ClickLeftButton();
-  EXPECT_FALSE(notification_view()->settings_row_->visible());
+  EXPECT_FALSE(notification_view()->settings_row_->GetVisible());
 
   // Show inline settings again.
   generator.ClickLeftButton();
-  EXPECT_TRUE(notification_view()->settings_row_->visible());
+  EXPECT_TRUE(notification_view()->settings_row_->GetVisible());
 #endif
 
   // Construct a mouse click event 1 pixel inside the done button.
@@ -1122,12 +1122,12 @@ TEST_F(NotificationViewMDTest, InlineSettings) {
   generator.ClickLeftButton();
 
   // Just clicking Done button should not change the setting.
-  EXPECT_FALSE(notification_view()->settings_row_->visible());
+  EXPECT_FALSE(notification_view()->settings_row_->GetVisible());
   EXPECT_FALSE(delegate_->disable_notification_called());
 
   generator.MoveMouseTo(settings_cursor_location);
   generator.ClickLeftButton();
-  EXPECT_TRUE(notification_view()->settings_row_->visible());
+  EXPECT_TRUE(notification_view()->settings_row_->GetVisible());
 
   // Construct a mouse click event 1 pixel inside the block all button.
   gfx::Point block_cursor_location(1, 1);
@@ -1139,7 +1139,7 @@ TEST_F(NotificationViewMDTest, InlineSettings) {
   generator.MoveMouseTo(done_cursor_location);
   generator.ClickLeftButton();
 
-  EXPECT_FALSE(notification_view()->settings_row_->visible());
+  EXPECT_FALSE(notification_view()->settings_row_->GetVisible());
   EXPECT_TRUE(delegate_->disable_notification_called());
 }
 
@@ -1153,14 +1153,14 @@ TEST_F(NotificationViewMDTest, InlineSettingsInkDropAnimation) {
   ui::test::EventGenerator generator(GetRootWindow(widget()));
 
   // Inline settings will be shown by clicking settings button.
-  EXPECT_FALSE(notification_view()->settings_row_->visible());
+  EXPECT_FALSE(notification_view()->settings_row_->GetVisible());
   gfx::Point settings_cursor_location(1, 1);
   views::View::ConvertPointToTarget(
       notification_view()->control_buttons_view_->settings_button(),
       notification_view(), &settings_cursor_location);
   generator.MoveMouseTo(settings_cursor_location);
   generator.ClickLeftButton();
-  EXPECT_TRUE(notification_view()->settings_row_->visible());
+  EXPECT_TRUE(notification_view()->settings_row_->GetVisible());
 
   notification_view()->GetInkDrop()->AddObserver(this);
 
@@ -1188,7 +1188,7 @@ TEST_F(NotificationViewMDTest, TestClick) {
   // Collapse the notification if it's expanded.
   if (notification_view()->expanded_)
     notification_view()->ToggleExpanded();
-  EXPECT_FALSE(notification_view()->actions_row_->visible());
+  EXPECT_FALSE(notification_view()->actions_row_->GetVisible());
 
   // Now construct a mouse click event 2 pixel inside from the bottom.
   gfx::Point cursor_location(notification_view()->size().width() / 2,
@@ -1211,7 +1211,7 @@ TEST_F(NotificationViewMDTest, TestClickExpanded) {
   // Expand the notification if it's collapsed.
   if (!notification_view()->expanded_)
     notification_view()->ToggleExpanded();
-  EXPECT_FALSE(notification_view()->actions_row_->visible());
+  EXPECT_FALSE(notification_view()->actions_row_->GetVisible());
 
   // Now construct a mouse click event 2 pixel inside from the bottom.
   gfx::Point cursor_location(notification_view()->size().width() / 2,

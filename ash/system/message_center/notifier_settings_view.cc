@@ -151,7 +151,7 @@ void NotifierButtonWrapperView::Layout() {
   contents_->SetBounds(0, y, contents_width, contents_height);
 
   // Since normally we don't show |disabled_filter_|, initialize it lazily.
-  if (!contents_->enabled()) {
+  if (!contents_->GetEnabled()) {
     if (!disabled_filter_)
       CreateDisabledFilter();
     disabled_filter_->SetVisible(true);
@@ -162,8 +162,8 @@ void NotifierButtonWrapperView::Layout() {
     disabled_filter_->SetVisible(false);
   }
 
-  SetFocusBehavior(contents_->enabled() ? FocusBehavior::ALWAYS
-                                        : FocusBehavior::NEVER);
+  SetFocusBehavior(contents_->GetEnabled() ? FocusBehavior::ALWAYS
+                                           : FocusBehavior::NEVER);
 }
 
 gfx::Size NotifierButtonWrapperView::CalculatePreferredSize() const {
@@ -381,7 +381,7 @@ void NotifierSettingsView::NotifierButton::GridChanged() {
   layout->AddView(icon_view_);
   layout->AddView(name_view_);
 
-  if (!enabled()) {
+  if (!GetEnabled()) {
     views::ImageView* policy_enforced_icon = new views::ImageView();
     policy_enforced_icon->SetImage(gfx::CreateVectorIcon(
         kSystemMenuBusinessIcon, kEntryIconSize, kUnifiedMenuIconColor));
@@ -578,7 +578,7 @@ gfx::Size NotifierSettingsView::CalculatePreferredSize() const {
   gfx::Size header_size = header_view_->GetPreferredSize();
   gfx::Size content_size = scroller_->contents()->GetPreferredSize();
   int no_notifiers_height = 0;
-  if (no_notifiers_view_->visible())
+  if (no_notifiers_view_->GetVisible())
     no_notifiers_height = no_notifiers_view_->GetPreferredSize().height();
   return gfx::Size(
       std::max(header_size.width(), content_size.width()),

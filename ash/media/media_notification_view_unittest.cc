@@ -202,7 +202,7 @@ class MediaNotificationViewTest : public AshTestBase {
   }
 
   bool IsActionButtonVisible(MediaSessionAction action) const {
-    return GetButtonForAction(action)->visible();
+    return GetButtonForAction(action)->GetVisible();
   }
 
   MediaNotificationItem* GetItem() const {
@@ -221,14 +221,14 @@ class MediaNotificationViewTest : public AshTestBase {
   }
 
   bool expand_button_enabled() const {
-    return header_row()->expand_button()->visible();
+    return header_row()->expand_button()->GetVisible();
   }
 
   bool IsActuallyExpanded() const { return view_->IsActuallyExpanded(); }
 
   void SimulateButtonClick(MediaSessionAction action) {
     views::Button* button = GetButtonForAction(action);
-    EXPECT_TRUE(button->visible());
+    EXPECT_TRUE(button->GetVisible());
 
     view_->ButtonPressed(
         button, ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
@@ -312,7 +312,7 @@ TEST_F(MediaNotificationViewTest, ShowControlsOnHover) {
 TEST_F(MediaNotificationViewTest, ButtonsSanityCheck) {
   EnableAllActions();
 
-  EXPECT_TRUE(button_row()->visible());
+  EXPECT_TRUE(button_row()->GetVisible());
   EXPECT_GT(button_row()->width(), 0);
   EXPECT_GT(button_row()->height(), 0);
 
@@ -321,7 +321,7 @@ TEST_F(MediaNotificationViewTest, ButtonsSanityCheck) {
   for (auto* child : button_row()->children()) {
     ASSERT_TRUE(IsMediaButtonType(child->GetClassName()));
 
-    EXPECT_TRUE(child->visible());
+    EXPECT_TRUE(child->GetVisible());
     EXPECT_LT(kMediaButtonIconSize, child->width());
     EXPECT_LT(kMediaButtonIconSize, child->height());
     EXPECT_FALSE(views::Button::AsButton(child)->GetAccessibleName().empty());
@@ -575,9 +575,9 @@ TEST_F(MediaNotificationViewTest, PlayToggle_FromObserver_PlaybackState) {
 TEST_F(MediaNotificationViewTest, MetadataIsDisplayed) {
   EnableAllActions();
 
-  EXPECT_TRUE(title_artist_row()->visible());
-  EXPECT_TRUE(title_label()->visible());
-  EXPECT_TRUE(artist_label()->visible());
+  EXPECT_TRUE(title_artist_row()->GetVisible());
+  EXPECT_TRUE(title_label()->GetVisible());
+  EXPECT_TRUE(artist_label()->GetVisible());
 
   EXPECT_EQ(base::ASCIIToUTF16("title"), title_label()->text());
   EXPECT_EQ(base::ASCIIToUTF16("artist"), artist_label()->text());
@@ -593,7 +593,7 @@ TEST_F(MediaNotificationViewTest, UpdateMetadata_FromObserver) {
   ExpectHistogramMetadataRecorded(MediaNotificationView::Metadata::kAlbum, 0);
   ExpectHistogramMetadataRecorded(MediaNotificationView::Metadata::kCount, 1);
 
-  EXPECT_FALSE(header_row()->summary_text_for_testing()->visible());
+  EXPECT_FALSE(header_row()->summary_text_for_testing()->GetVisible());
 
   media_session::MediaMetadata metadata;
   metadata.title = base::ASCIIToUTF16("title2");
@@ -602,10 +602,10 @@ TEST_F(MediaNotificationViewTest, UpdateMetadata_FromObserver) {
 
   GetItem()->MediaSessionMetadataChanged(metadata);
 
-  EXPECT_TRUE(title_artist_row()->visible());
-  EXPECT_TRUE(title_label()->visible());
-  EXPECT_TRUE(artist_label()->visible());
-  EXPECT_TRUE(header_row()->summary_text_for_testing()->visible());
+  EXPECT_TRUE(title_artist_row()->GetVisible());
+  EXPECT_TRUE(title_label()->GetVisible());
+  EXPECT_TRUE(artist_label()->GetVisible());
+  EXPECT_TRUE(header_row()->summary_text_for_testing()->GetVisible());
 
   EXPECT_EQ(metadata.title, title_label()->text());
   EXPECT_EQ(metadata.artist, artist_label()->text());

@@ -219,7 +219,7 @@ const ui::AXNodeData& AXVirtualView::GetData() const {
 
   node_data.id = GetUniqueId().Get();
 
-  if (!GetOwnerView() || !GetOwnerView()->enabled())
+  if (!GetOwnerView() || !GetOwnerView()->GetEnabled())
     node_data.SetRestriction(ax::mojom::Restriction::kDisabled);
 
   if (!GetOwnerView() || !GetOwnerView()->IsDrawn())

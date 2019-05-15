@@ -94,7 +94,7 @@ int ImeWindowFrameView::NonClientHitTest(const gfx::Point& point) {
   if (client_component != HTNOWHERE)
     return client_component;
 
-  if (close_button_ && close_button_->visible() &&
+  if (close_button_ && close_button_->GetVisible() &&
       close_button_->GetMirroredBounds().Contains(point))
     return HTCLOSE;
 

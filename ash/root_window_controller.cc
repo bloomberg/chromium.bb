@@ -516,7 +516,7 @@ StatusAreaWidget* RootWindowController::GetStatusAreaWidget() {
 
 bool RootWindowController::IsSystemTrayVisible() {
   TrayBackgroundView* tray = GetStatusAreaWidget()->unified_system_tray();
-  return tray && tray->GetWidget()->IsVisible() && tray->visible();
+  return tray && tray->GetWidget()->IsVisible() && tray->GetVisible();
 }
 
 bool RootWindowController::CanWindowReceiveEvents(aura::Window* window) {

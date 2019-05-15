@@ -137,9 +137,9 @@ TEST_F(LoginAuthUserViewUnittest, OnlineSignInMessage) {
   // When auth method is |AUTH_ONLINE_SIGN_IN|, the online sign-in message is
   // visible. The password field and PIN keyboard are invisible.
   SetAuthMethods(LoginAuthUserView::AUTH_ONLINE_SIGN_IN);
-  EXPECT_TRUE(online_sign_in_message->visible());
-  EXPECT_FALSE(password_view->visible());
-  EXPECT_FALSE(pin_view->visible());
+  EXPECT_TRUE(online_sign_in_message->GetVisible());
+  EXPECT_FALSE(password_view->GetVisible());
+  EXPECT_FALSE(pin_view->GetVisible());
 
   // Clicking the message triggers |ShowGaiaSignin|.
   EXPECT_CALL(*client,
@@ -154,13 +154,13 @@ TEST_F(LoginAuthUserViewUnittest, OnlineSignInMessage) {
 
   // The online sign-in message is invisible for all other auth methods.
   SetAuthMethods(LoginAuthUserView::AUTH_NONE);
-  EXPECT_FALSE(online_sign_in_message->visible());
+  EXPECT_FALSE(online_sign_in_message->GetVisible());
   SetAuthMethods(LoginAuthUserView::AUTH_PASSWORD);
-  EXPECT_FALSE(online_sign_in_message->visible());
+  EXPECT_FALSE(online_sign_in_message->GetVisible());
   SetAuthMethods(LoginAuthUserView::AUTH_PIN);
-  EXPECT_FALSE(online_sign_in_message->visible());
+  EXPECT_FALSE(online_sign_in_message->GetVisible());
   SetAuthMethods(LoginAuthUserView::AUTH_TAP);
-  EXPECT_FALSE(online_sign_in_message->visible());
+  EXPECT_FALSE(online_sign_in_message->GetVisible());
 }
 
 // Verifies that password is cleared after AUTH_PASSWORD is disabled.

@@ -832,7 +832,7 @@ void ClientControlledShellSurface::SetWidgetBounds(const gfx::Rect& bounds) {
 gfx::Rect ClientControlledShellSurface::GetShadowBounds() const {
   gfx::Rect shadow_bounds = ShellSurfaceBase::GetShadowBounds();
   const ash::NonClientFrameViewAsh* frame_view = GetFrameView();
-  if (frame_view->visible()) {
+  if (frame_view->GetVisible()) {
     // The client controlled geometry is only for the client
     // area. When the chrome side frame is enabled, the shadow height
     // has to include the height of the frame, and the total height is
@@ -869,7 +869,7 @@ float ClientControlledShellSurface::GetScale() const {
 base::Optional<gfx::Rect> ClientControlledShellSurface::GetWidgetBounds()
     const {
   const ash::NonClientFrameViewAsh* frame_view = GetFrameView();
-  if (frame_view->visible()) {
+  if (frame_view->GetVisible()) {
     // The client's geometry uses entire display area in client
     // controlled in maximized, and the surface is placed under the
     // frame. Just use the visible bounds (geometry) for the widget
@@ -1004,7 +1004,7 @@ void ClientControlledShellSurface::UpdateFrame() {
           .work_area();
 
   ash::wm::WindowState* window_state = GetWindowState();
-  bool enable_wide_frame = GetFrameView()->visible() &&
+  bool enable_wide_frame = GetFrameView()->GetVisible() &&
                            window_state->IsMaximizedOrFullscreenOrPinned() &&
                            work_area.width() != geometry().width();
 

@@ -119,7 +119,7 @@ void ToolbarPageActionIconContainerView::OnThemeChanged() {
 
 bool ToolbarPageActionIconContainerView::FocusInactiveBubbleForIcon(
     PageActionIconView* icon_view) {
-  if (!icon_view->visible() || !icon_view->GetBubble())
+  if (!icon_view->GetVisible() || !icon_view->GetBubble())
     return false;
 
   views::Widget* widget = icon_view->GetBubble()->GetWidget();

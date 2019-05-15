@@ -478,7 +478,7 @@ void Combobox::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 
   node_data->SetName(accessible_name_);
   node_data->SetValue(model_->GetItemAt(selected_index_));
-  if (enabled()) {
+  if (GetEnabled()) {
     node_data->SetDefaultActionVerb(ax::mojom::DefaultActionVerb::kOpen);
   }
   node_data->AddIntAttribute(ax::mojom::IntAttribute::kPosInSet,
@@ -495,7 +495,7 @@ bool Combobox::HandleAccessibleAction(const ui::AXActionData& action_data) {
   // mouse event it generates to |arrow_button_| to have it forward back to
   // |this| (as its ButtonListener), just handle the action explicitly here and
   // bypass View.
-  if (enabled() && action_data.action == ax::mojom::Action::kDoDefault) {
+  if (GetEnabled() && action_data.action == ax::mojom::Action::kDoDefault) {
     ShowDropDownMenu(ui::MENU_SOURCE_KEYBOARD);
     return true;
   }
@@ -503,7 +503,7 @@ bool Combobox::HandleAccessibleAction(const ui::AXActionData& action_data) {
 }
 
 void Combobox::ButtonPressed(Button* sender, const ui::Event& event) {
-  if (!enabled())
+  if (!GetEnabled())
     return;
 
   // TODO(hajimehoshi): Fix the problem that the arrow button blinks when
@@ -558,7 +558,7 @@ void Combobox::PaintText(gfx::Canvas* canvas) {
   int x = insets.left();
   int y = insets.top();
   int text_height = height() - insets.height();
-  SkColor text_color = GetTextColorForEnableState(*this, enabled());
+  SkColor text_color = GetTextColorForEnableState(*this, GetEnabled());
   DCHECK_GE(selected_index_, 0);
   DCHECK_LT(selected_index_, model()->GetItemCount());
   if (selected_index_ < 0 || selected_index_ > model()->GetItemCount())

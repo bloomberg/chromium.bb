@@ -1946,7 +1946,7 @@ views::View* TabStrip::GetTooltipHandlerForPoint(const gfx::Point& point) {
     if (tab)
       return tab;
   } else {
-    if (new_tab_button_->visible()) {
+    if (new_tab_button_->GetVisible()) {
       views::View* view =
           ConvertPointToViewAndGetTooltipHandler(this, new_tab_button_, point);
       if (view)
@@ -2197,7 +2197,7 @@ int TabStrip::GetNewTabButtonIdealX() const {
 const Tab* TabStrip::GetLastVisibleTab() const {
   for (int i = tab_count() - 1; i >= 0; --i) {
     const Tab* tab = tab_at(i);
-    if (tab->visible())
+    if (tab->GetVisible())
       return tab;
   }
   // While in normal use the tabstrip should always be wide enough to have at
@@ -2620,7 +2620,7 @@ void TabStrip::StartPinnedTabAnimation() {
 
 bool TabStrip::IsPointInTab(Tab* tab,
                             const gfx::Point& point_in_tabstrip_coords) {
-  if (!tab->visible())
+  if (!tab->GetVisible())
     return false;
   gfx::Point point_in_tab_coords(point_in_tabstrip_coords);
   View::ConvertPointToTarget(this, tab, &point_in_tab_coords);
@@ -2923,7 +2923,7 @@ views::View* TabStrip::TargetForRect(views::View* root, const gfx::Rect& rect) {
     if (tab)
       return tab;
   } else {
-    if (new_tab_button_->visible()) {
+    if (new_tab_button_->GetVisible()) {
       views::View* view =
           ConvertPointToViewAndGetEventHandler(this, new_tab_button_, point);
       if (view)

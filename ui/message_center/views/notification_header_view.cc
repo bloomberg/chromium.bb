@@ -335,7 +335,7 @@ void NotificationHeaderView::SetTimestampVisible(bool visible) {
 void NotificationHeaderView::SetExpandButtonEnabled(bool enabled) {
   // SetInkDropMode iff. the visibility changed.
   // Otherwise, the ink drop animation cannot finish.
-  if (expand_button_->visible() != enabled)
+  if (expand_button_->GetVisible() != enabled)
     SetInkDropMode(enabled ? InkDropMode::ON : InkDropMode::OFF);
 
   expand_button_->SetVisible(enabled);
@@ -374,7 +374,7 @@ void NotificationHeaderView::SetBackgroundColor(SkColor color) {
 }
 
 bool NotificationHeaderView::IsExpandButtonEnabled() {
-  return expand_button_->visible();
+  return expand_button_->GetVisible();
 }
 
 void NotificationHeaderView::SetSubpixelRenderingEnabled(bool enabled) {

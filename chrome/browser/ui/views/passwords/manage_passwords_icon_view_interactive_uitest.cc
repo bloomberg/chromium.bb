@@ -74,13 +74,13 @@ class ManagePasswordsIconViewTest : public ManagePasswordsTest,
 
 IN_PROC_BROWSER_TEST_P(ManagePasswordsIconViewTest, DefaultStateIsInactive) {
   EXPECT_EQ(password_manager::ui::INACTIVE_STATE, ViewState());
-  EXPECT_FALSE(GetView()->visible());
+  EXPECT_FALSE(GetView()->GetVisible());
 }
 
 IN_PROC_BROWSER_TEST_P(ManagePasswordsIconViewTest, PendingState) {
   SetupPendingPassword();
   EXPECT_EQ(password_manager::ui::PENDING_PASSWORD_STATE, ViewState());
-  EXPECT_TRUE(GetView()->visible());
+  EXPECT_TRUE(GetView()->GetVisible());
   // No tooltip because the bubble is showing.
   EXPECT_EQ(base::string16(), GetTooltipText());
   const gfx::ImageSkia active_image = GetImage();
@@ -89,14 +89,14 @@ IN_PROC_BROWSER_TEST_P(ManagePasswordsIconViewTest, PendingState) {
 IN_PROC_BROWSER_TEST_P(ManagePasswordsIconViewTest, ManageState) {
   SetupManagingPasswords();
   EXPECT_EQ(password_manager::ui::MANAGE_STATE, ViewState());
-  EXPECT_TRUE(GetView()->visible());
+  EXPECT_TRUE(GetView()->GetVisible());
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_TOOLTIP_MANAGE),
             GetTooltipText());
 }
 
 IN_PROC_BROWSER_TEST_P(ManagePasswordsIconViewTest, CloseOnClick) {
   SetupPendingPassword();
-  EXPECT_TRUE(GetView()->visible());
+  EXPECT_TRUE(GetView()->GetVisible());
   ui::MouseEvent mouse_down(ui::ET_MOUSE_PRESSED, gfx::Point(10, 10),
                             gfx::Point(900, 60), ui::EventTimeForNow(),
                             ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);

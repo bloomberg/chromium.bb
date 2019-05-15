@@ -50,7 +50,7 @@ IN_PROC_BROWSER_TEST_P(IntentPickerBubbleViewBrowserTest,
       BrowserView::GetBrowserViewForBrowser(browser())
           ->GetLocationBarView()
           ->intent_picker_view();
-  EXPECT_TRUE(intent_picker_view->visible());
+  EXPECT_TRUE(intent_picker_view->GetVisible());
 
   IntentPickerBubbleView* intent_picker =
       IntentPickerBubbleView::intent_picker_bubble();

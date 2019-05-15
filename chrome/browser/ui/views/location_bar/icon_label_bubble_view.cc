@@ -82,7 +82,7 @@ void IconLabelBubbleView::SeparatorView::OnPaint(gfx::Canvas* canvas) {
 }
 
 void IconLabelBubbleView::SeparatorView::UpdateOpacity() {
-  if (!visible())
+  if (!GetVisible())
     return;
 
   // When using focus rings are visible we should hide the separator instantly
@@ -159,7 +159,7 @@ void IconLabelBubbleView::InkDropRippleAnimationEnded(
 bool IconLabelBubbleView::ShouldShowLabel() const {
   if (slide_animation_.is_animating() || is_animation_paused_)
     return !IsShrinking() || (width() > image()->GetPreferredSize().width());
-  return label()->visible() && !label()->text().empty();
+  return label()->GetVisible() && !label()->text().empty();
 }
 
 void IconLabelBubbleView::SetLabel(const base::string16& label_text) {
@@ -355,7 +355,7 @@ void IconLabelBubbleView::OnTouchUiChanged() {
 
   // PreferredSizeChanged() incurs an expensive layout of the location bar, so
   // only call it when this view is showing.
-  if (visible())
+  if (GetVisible())
     PreferredSizeChanged();
 }
 
@@ -427,7 +427,7 @@ void IconLabelBubbleView::SetUpForInOutAnimation() {
 }
 
 void IconLabelBubbleView::AnimateIn(base::Optional<int> string_id) {
-  if (!label()->visible()) {
+  if (!label()->GetVisible()) {
     if (string_id)
       SetLabel(l10n_util::GetStringUTF16(string_id.value()));
     label()->SetVisible(true);
@@ -436,7 +436,7 @@ void IconLabelBubbleView::AnimateIn(base::Optional<int> string_id) {
 }
 
 void IconLabelBubbleView::AnimateOut() {
-  if (label()->visible()) {
+  if (label()->GetVisible()) {
     label()->SetVisible(false);
     HideAnimation();
   }

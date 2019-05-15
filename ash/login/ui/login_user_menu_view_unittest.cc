@@ -44,7 +44,7 @@ TEST_F(LoginUserMenuViewTest, RemoveUserRequiresTwoActivations) {
 
   bubble->Show();
 
-  EXPECT_TRUE(bubble->visible());
+  EXPECT_TRUE(bubble->GetVisible());
 
   // Focus the remove user button (the menu should forward focus to the remove
   // button).
@@ -79,7 +79,7 @@ TEST_F(LoginUserMenuViewTest, LongUserNameAndEmailLaidOutCorrectly) {
   anchor->AddChildView(bubble);
   bubble->Show();
 
-  EXPECT_TRUE(bubble->visible());
+  EXPECT_TRUE(bubble->GetVisible());
 
   LoginUserMenuView::TestApi test_api(bubble);
   views::View* remove_user_button = test_api.remove_user_button();
@@ -88,15 +88,15 @@ TEST_F(LoginUserMenuViewTest, LongUserNameAndEmailLaidOutCorrectly) {
 
   EXPECT_TRUE(bubble->GetBoundsInScreen().Contains(
       remove_user_button->GetBoundsInScreen()));
-  EXPECT_FALSE(remove_user_confirm_data->visible());
-  EXPECT_TRUE(username_label->visible());
+  EXPECT_FALSE(remove_user_confirm_data->GetVisible());
+  EXPECT_TRUE(username_label->GetVisible());
 
   bubble->RequestFocus();
   EXPECT_TRUE(remove_user_button->HasFocus());
 
   GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
-  EXPECT_TRUE(username_label->visible());
-  EXPECT_TRUE(remove_user_confirm_data->visible());
+  EXPECT_TRUE(username_label->GetVisible());
+  EXPECT_TRUE(remove_user_confirm_data->GetVisible());
   EXPECT_TRUE(remove_user_button->GetBoundsInScreen().y() >=
               remove_user_confirm_data->GetBoundsInScreen().y() +
                   remove_user_confirm_data->GetBoundsInScreen().height());
@@ -130,14 +130,14 @@ TEST_F(LoginUserMenuViewTest, LoginButtonRipple) {
   container->AddChildView(bubble);
 
   bubble->Show();
-  EXPECT_TRUE(bubble->visible());
+  EXPECT_TRUE(bubble->GetVisible());
   EXPECT_TRUE(ink_drop_api.HasInkDrop());
   EXPECT_EQ(ink_drop_api.GetInkDrop()->GetTargetInkDropState(),
             views::InkDropState::ACTIVATED);
   EXPECT_TRUE(ink_drop_api.GetInkDrop()->IsHighlightFadingInOrVisible());
 
   bubble->Hide();
-  EXPECT_FALSE(bubble->visible());
+  EXPECT_FALSE(bubble->GetVisible());
   EXPECT_EQ(ink_drop_api.GetInkDrop()->GetTargetInkDropState(),
             views::InkDropState::HIDDEN);
   EXPECT_FALSE(ink_drop_api.GetInkDrop()->IsHighlightFadingInOrVisible());
@@ -158,14 +158,14 @@ TEST_F(LoginUserMenuViewTest, ResetStateHidesConfirmData) {
   bubble->Show();
 
   LoginUserMenuView::TestApi test_api(bubble);
-  EXPECT_FALSE(test_api.remove_user_confirm_data()->visible());
+  EXPECT_FALSE(test_api.remove_user_confirm_data()->GetVisible());
 
   test_api.remove_user_button()->RequestFocus();
   GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
-  EXPECT_TRUE(test_api.remove_user_confirm_data()->visible());
+  EXPECT_TRUE(test_api.remove_user_confirm_data()->GetVisible());
 
   bubble->ResetState();
-  EXPECT_FALSE(test_api.remove_user_confirm_data()->visible());
+  EXPECT_FALSE(test_api.remove_user_confirm_data()->GetVisible());
 }
 
 }  // namespace ash

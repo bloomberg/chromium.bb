@@ -71,7 +71,7 @@ DropTargetView::DropTargetView(bool has_plus_icon) {
 }
 
 void DropTargetView::UpdateBackgroundVisibility(bool visible) {
-  if (background_view_->visible() == visible)
+  if (background_view_->GetVisible() == visible)
     return;
   background_view_->SetVisible(visible);
 }

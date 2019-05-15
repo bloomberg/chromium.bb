@@ -381,11 +381,11 @@ TEST_F(BookmarkContextMenuTest, ShowManagedBookmarks) {
       controller->IsCommandVisible(IDC_BOOKMARK_BAR_SHOW_MANAGED_BOOKMARKS));
   views::MenuItemView* menu = controller->menu();
   EXPECT_FALSE(menu->GetMenuItemByID(IDC_BOOKMARK_BAR_SHOW_MANAGED_BOOKMARKS)
-                   ->visible());
+                   ->GetVisible());
 
   // Other options are not affected.
   EXPECT_TRUE(controller->IsCommandVisible(IDC_BOOKMARK_BAR_NEW_FOLDER));
-  EXPECT_TRUE(menu->GetMenuItemByID(IDC_BOOKMARK_BAR_NEW_FOLDER)->visible());
+  EXPECT_TRUE(menu->GetMenuItemByID(IDC_BOOKMARK_BAR_NEW_FOLDER)->GetVisible());
 
   // Now set the managed bookmarks policy.
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
@@ -405,7 +405,7 @@ TEST_F(BookmarkContextMenuTest, ShowManagedBookmarks) {
   EXPECT_TRUE(
       controller->IsCommandVisible(IDC_BOOKMARK_BAR_SHOW_MANAGED_BOOKMARKS));
   menu = controller->menu();
-  EXPECT_TRUE(menu->GetMenuItemByID(IDC_BOOKMARK_BAR_NEW_FOLDER)->visible());
+  EXPECT_TRUE(menu->GetMenuItemByID(IDC_BOOKMARK_BAR_NEW_FOLDER)->GetVisible());
   EXPECT_TRUE(menu->GetMenuItemByID(IDC_BOOKMARK_BAR_SHOW_MANAGED_BOOKMARKS)
-                  ->visible());
+                  ->GetVisible());
 }

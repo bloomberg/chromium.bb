@@ -85,7 +85,7 @@ void BoxLayout::ViewWrapper::SetBoundsRect(const gfx::Rect& bounds) {
 }
 
 bool BoxLayout::ViewWrapper::visible() const {
-  return view_->visible();
+  return view_->GetVisible();
 }
 
 BoxLayout::BoxLayout(BoxLayout::Orientation orientation,
@@ -628,7 +628,7 @@ gfx::Size BoxLayout::NonChildSize(const View* host) const {
 
 View* BoxLayout::NextVisibleView(View::Views::const_iterator pos) const {
   const auto i = std::find_if(pos, host_->children().cend(),
-                              [](const View* v) { return v->visible(); });
+                              [](const View* v) { return v->GetVisible(); });
   return (i == host_->children().cend()) ? nullptr : *i;
 }
 
@@ -639,7 +639,7 @@ View* BoxLayout::FirstVisibleView() const {
 View* BoxLayout::LastVisibleView() const {
   const auto& children = host_->children();
   const auto i = std::find_if(children.crbegin(), children.crend(),
-                              [](const View* v) { return v->visible(); });
+                              [](const View* v) { return v->GetVisible(); });
   return (i == children.crend()) ? nullptr : *i;
 }
 

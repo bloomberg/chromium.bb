@@ -48,7 +48,7 @@ bool SaveCardIconView::Update() {
   if (!GetWebContents())
     return false;
 
-  const bool was_visible = visible();
+  const bool was_visible = GetVisible();
 
   // |controller| may be nullptr due to lazy initialization.
   SaveCardBubbleControllerImpl* controller = GetController();
@@ -60,7 +60,7 @@ bool SaveCardIconView::Update() {
   if (enabled && controller->ShouldShowCardSavedAnimation())
     AnimateIn(IDS_AUTOFILL_CARD_SAVED);
 
-  return was_visible != visible();
+  return was_visible != GetVisible();
 }
 
 void SaveCardIconView::OnExecuting(

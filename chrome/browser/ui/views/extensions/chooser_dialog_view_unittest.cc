@@ -133,7 +133,7 @@ TEST_F(ChooserDialogViewTest, CancelButtonFocusedWhenReScanIsPressed) {
   re_scan_button()->OnMousePressed(event);
   re_scan_button()->OnMouseReleased(event);
 
-  EXPECT_FALSE(re_scan_button()->visible());
+  EXPECT_FALSE(re_scan_button()->GetVisible());
   EXPECT_EQ(dialog_->GetDialogClientView()->cancel_button(),
             dialog_->GetFocusManager()->GetFocusedView());
 }

@@ -186,7 +186,7 @@ TEST_F(BubbleFrameViewTest, RemoveFootnoteView) {
   View* container_view = footnote_dummy_view->parent();
   delete footnote_dummy_view;
   footnote_dummy_view = nullptr;
-  EXPECT_FALSE(container_view->visible());
+  EXPECT_FALSE(container_view->GetVisible());
   EXPECT_EQ(nullptr, frame.footnote_container_);
 }
 
@@ -197,11 +197,11 @@ TEST_F(BubbleFrameViewTest,
   footnote_dummy_view->SetVisible(false);
   frame.SetFootnoteView(footnote_dummy_view);
   View* footnote_container_view = footnote_dummy_view->parent();
-  EXPECT_FALSE(footnote_container_view->visible());
+  EXPECT_FALSE(footnote_container_view->GetVisible());
   footnote_dummy_view->SetVisible(true);
-  EXPECT_TRUE(footnote_container_view->visible());
+  EXPECT_TRUE(footnote_container_view->GetVisible());
   footnote_dummy_view->SetVisible(false);
-  EXPECT_FALSE(footnote_container_view->visible());
+  EXPECT_FALSE(footnote_container_view->GetVisible());
 }
 
 // Tests that the arrow is mirrored as needed to better fit the screen.

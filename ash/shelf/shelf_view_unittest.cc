@@ -530,7 +530,7 @@ class ShelfViewTest : public AshTestBase {
 
   void AddButtonsUntilOverflow() {
     int items_added = 0;
-    while (!shelf_view_->GetOverflowButton()->visible()) {
+    while (!shelf_view_->GetOverflowButton()->GetVisible()) {
       AddAppShortcut();
       ++items_added;
       ASSERT_LT(items_added, 10000);
@@ -774,9 +774,9 @@ TEST_F(ShelfViewTest, AddBrowserUntilOverflow) {
   // Add platform app button until overflow.
   int items_added = 0;
   ShelfID last_added = AddApp();
-  while (!shelf_view_->GetOverflowButton()->visible()) {
+  while (!shelf_view_->GetOverflowButton()->GetVisible()) {
     // Added button is visible after animation while in this loop.
-    EXPECT_TRUE(GetButtonByID(last_added)->visible());
+    EXPECT_TRUE(GetButtonByID(last_added)->GetVisible());
 
     last_added = AddApp();
     ++items_added;
@@ -784,12 +784,12 @@ TEST_F(ShelfViewTest, AddBrowserUntilOverflow) {
   }
 
   // The last added button should be invisible.
-  EXPECT_FALSE(GetButtonByID(last_added)->visible());
+  EXPECT_FALSE(GetButtonByID(last_added)->GetVisible());
 }
 
 TEST_F(ShelfViewTest, OverflowVisibleIndex) {
   AddButtonsUntilOverflow();
-  ASSERT_TRUE(shelf_view_->GetOverflowButton()->visible());
+  ASSERT_TRUE(shelf_view_->GetOverflowButton()->GetVisible());
   const int last_visible_index = shelf_view_->last_visible_index();
 
   test_api_->ShowOverflowBubble();
@@ -824,9 +824,9 @@ TEST_F(ShelfViewTest, AddAppShortcutWithBrowserButtonUntilOverflow) {
   // Add app shortcut until overflow.
   int items_added = 0;
   ShelfID last_added = AddAppShortcut();
-  while (!shelf_view_->GetOverflowButton()->visible()) {
+  while (!shelf_view_->GetOverflowButton()->GetVisible()) {
     // Added button is visible after animation while in this loop.
-    EXPECT_TRUE(GetButtonByID(last_added)->visible());
+    EXPECT_TRUE(GetButtonByID(last_added)->GetVisible());
 
     last_added = AddAppShortcut();
     ++items_added;
@@ -834,7 +834,7 @@ TEST_F(ShelfViewTest, AddAppShortcutWithBrowserButtonUntilOverflow) {
   }
 
   // And the platform app button is invisible.
-  EXPECT_FALSE(GetButtonByID(browser_button_id)->visible());
+  EXPECT_FALSE(GetButtonByID(browser_button_id)->GetVisible());
 }
 
 // Making sure that no buttons on the shelf will ever overlap after adding many
@@ -842,7 +842,7 @@ TEST_F(ShelfViewTest, AddAppShortcutWithBrowserButtonUntilOverflow) {
 TEST_F(ShelfViewTest, AssertNoButtonsOverlap) {
   std::vector<ShelfID> button_ids;
   // Add app icons until the overflow button is visible.
-  while (!shelf_view_->GetOverflowButton()->visible()) {
+  while (!shelf_view_->GetOverflowButton()->GetVisible()) {
     ShelfID id = AddApp();
     button_ids.push_back(id);
   }
@@ -855,8 +855,8 @@ TEST_F(ShelfViewTest, AssertNoButtonsOverlap) {
     RemoveByID(id);
     button_ids.pop_back();
   }
-  EXPECT_FALSE(shelf_view_->GetOverflowButton()->visible());
-  EXPECT_TRUE(GetButtonByID(button_ids.back())->visible());
+  EXPECT_FALSE(shelf_view_->GetOverflowButton()->GetVisible());
+  EXPECT_TRUE(GetButtonByID(button_ids.back())->GetVisible());
 
   // Add 20 app icons, and expect to have overflow.
   for (int i = 0; i < 20; ++i) {
@@ -864,7 +864,7 @@ TEST_F(ShelfViewTest, AssertNoButtonsOverlap) {
     button_ids.push_back(id);
   }
   ASSERT_LT(button_ids.size(), 10000U);
-  EXPECT_TRUE(shelf_view_->GetOverflowButton()->visible());
+  EXPECT_TRUE(shelf_view_->GetOverflowButton()->GetVisible());
 
   // Test that any two successive visible icons never overlap in all shelf
   // alignment types.
@@ -878,8 +878,8 @@ TEST_F(ShelfViewTest, AssertNoButtonsOverlap) {
     // For every 2 successive visible icons, expect that their bounds don't
     // intersect.
     for (int i = 2; i < test_api_->GetButtonCount() - 1; ++i) {
-      if (!(test_api_->GetButton(i)->visible() &&
-            test_api_->GetButton(i + 1)->visible())) {
+      if (!(test_api_->GetButton(i)->GetVisible() &&
+            test_api_->GetButton(i + 1)->GetVisible())) {
         continue;
       }
 
@@ -901,7 +901,7 @@ TEST_F(ShelfViewTest, RemoveButtonRevealsOverflowed) {
   int items_added = 0;
   ShelfID first_added = AddApp();
   ShelfID last_added = first_added;
-  while (!shelf_view_->GetOverflowButton()->visible()) {
+  while (!shelf_view_->GetOverflowButton()->GetVisible()) {
     last_added = AddApp();
     ++items_added;
     ASSERT_LT(items_added, 10000);
@@ -909,16 +909,16 @@ TEST_F(ShelfViewTest, RemoveButtonRevealsOverflowed) {
 
   // Expect add more than 1 button. First added is visible and last is not.
   EXPECT_NE(first_added, last_added);
-  EXPECT_TRUE(GetButtonByID(first_added)->visible());
-  EXPECT_FALSE(GetButtonByID(last_added)->visible());
+  EXPECT_TRUE(GetButtonByID(first_added)->GetVisible());
+  EXPECT_FALSE(GetButtonByID(last_added)->GetVisible());
 
   // Remove first added.
   RemoveByID(first_added);
 
   // Last added button becomes visible and overflow chevron is gone.
-  EXPECT_TRUE(GetButtonByID(last_added)->visible());
+  EXPECT_TRUE(GetButtonByID(last_added)->GetVisible());
   EXPECT_EQ(1.0f, GetButtonByID(last_added)->layer()->opacity());
-  EXPECT_FALSE(shelf_view_->GetOverflowButton()->visible());
+  EXPECT_FALSE(shelf_view_->GetOverflowButton()->GetVisible());
 }
 
 // Verifies that remove last overflowed button should hide overflow chevron.
@@ -929,14 +929,14 @@ TEST_F(ShelfViewTest, RemoveLastOverflowed) {
   // Add platform app button until overflow.
   int items_added = 0;
   ShelfID last_added = AddApp();
-  while (!shelf_view_->GetOverflowButton()->visible()) {
+  while (!shelf_view_->GetOverflowButton()->GetVisible()) {
     last_added = AddApp();
     ++items_added;
     ASSERT_LT(items_added, 10000);
   }
 
   RemoveByID(last_added);
-  EXPECT_FALSE(shelf_view_->GetOverflowButton()->visible());
+  EXPECT_FALSE(shelf_view_->GetOverflowButton()->GetVisible());
 }
 
 // Tests the visiblity of certain shelf items when the overflow bubble is open
@@ -948,7 +948,7 @@ TEST_F(ShelfViewTest, OverflowVisibleItemsInTabletMode) {
     return shelf_test_api->shelf_view()
         ->view_model_for_test()
         ->view_at(index)
-        ->visible();
+        ->GetVisible();
   };
 
   // Setup the shelf so the overflow bubble is visible.
@@ -991,7 +991,7 @@ TEST_F(ShelfViewTest, AddButtonQuickly) {
 
   // Add a few platform buttons quickly without wait for animation.
   int added_count = 0;
-  while (!shelf_view_->GetOverflowButton()->visible()) {
+  while (!shelf_view_->GetOverflowButton()->GetVisible()) {
     AddAppNoWait();
     ++added_count;
     ASSERT_LT(added_count, 10000);
@@ -1008,7 +1008,7 @@ TEST_F(ShelfViewTest, AddButtonQuickly) {
   for (int i = 1; i <= shelf_view_->last_visible_index(); ++i) {
     ShelfAppButton* button = test_api_->GetButton(i);
     if (button) {
-      EXPECT_TRUE(button->visible()) << "button index=" << i;
+      EXPECT_TRUE(button->GetVisible()) << "button index=" << i;
       EXPECT_EQ(1.0f, button->layer()->opacity()) << "button index=" << i;
     }
   }
@@ -1603,7 +1603,7 @@ TEST_F(ShelfViewTest, ResizeDuringOverflowAddAnimation) {
   // leave the last running.
   int items_added = 0;
   AddAppNoWait();
-  while (!shelf_view_->GetOverflowButton()->visible()) {
+  while (!shelf_view_->GetOverflowButton()->GetVisible()) {
     test_api_->RunMessageLoopUntilAnimationsDone();
     AddAppNoWait();
     ++items_added;
@@ -1614,7 +1614,7 @@ TEST_F(ShelfViewTest, ResizeDuringOverflowAddAnimation) {
   gfx::Rect bounds = shelf_view_->bounds();
   bounds.set_width(bounds.width() - ShelfConstants::shelf_size());
   shelf_view_->SetBoundsRect(bounds);
-  ASSERT_TRUE(shelf_view_->GetOverflowButton()->visible());
+  ASSERT_TRUE(shelf_view_->GetOverflowButton()->GetVisible());
 
   // Finish the animation.
   test_api_->RunMessageLoopUntilAnimationsDone();
@@ -1914,13 +1914,13 @@ TEST_F(ShelfViewTest, CheckOverflowStatusPinOpenedAppToShelf) {
 
   // Add a running Platform app.
   ShelfID platform_app_id = AddApp();
-  EXPECT_FALSE(GetButtonByID(platform_app_id)->visible());
+  EXPECT_FALSE(GetButtonByID(platform_app_id)->GetVisible());
 
   // Make the added running platform app to be an app shortcut.
   // This app shortcut should be a swapped view in overflow bubble, which is
   // invisible.
   SetShelfItemTypeToAppShortcut(platform_app_id);
-  EXPECT_FALSE(GetButtonByID(platform_app_id)->visible());
+  EXPECT_FALSE(GetButtonByID(platform_app_id)->GetVisible());
 }
 
 // Verifies that Launcher_ButtonPressed_* UMA user actions are recorded when an
@@ -2056,13 +2056,13 @@ TEST_F(ShelfViewTest, UnpinningCancelsOverflow) {
   const ShelfID first_shelf_id = AddAppShortcut();
   AddButtonsUntilOverflow();
   test_api_->ShowOverflowBubble();
-  EXPECT_TRUE(shelf_view_->GetOverflowButton()->visible());
+  EXPECT_TRUE(shelf_view_->GetOverflowButton()->GetVisible());
   EXPECT_TRUE(shelf_view_->IsShowingOverflowBubble());
 
   // Unpinning an item should hide the overflow button and close the bubble.
   model_->UnpinAppWithID(first_shelf_id.app_id);
   test_api_->RunMessageLoopUntilAnimationsDone();
-  EXPECT_FALSE(shelf_view_->GetOverflowButton()->visible());
+  EXPECT_FALSE(shelf_view_->GetOverflowButton()->GetVisible());
   EXPECT_FALSE(shelf_view_->IsShowingOverflowBubble());
 }
 
@@ -2353,11 +2353,11 @@ TEST_F(ShelfViewTest, IconCenteringTest) {
   }
 
   // Now add apps until the overflow button appears.
-  while (!shelf_view_->GetOverflowButton()->visible()) {
+  while (!shelf_view_->GetOverflowButton()->GetVisible()) {
     app_buttons.push_back(GetButtonByID(AddApp()));
     n_buttons = app_buttons.size();
   }
-  EXPECT_TRUE(shelf_view_->GetOverflowButton()->visible());
+  EXPECT_TRUE(shelf_view_->GetOverflowButton()->GetVisible());
   // Now that the apps + overflow button are centered over the available space
   // on the shelf, check that the the distance between the left app and the
   // app list button is equal to the distance between the overflow button
@@ -2390,7 +2390,7 @@ TEST_F(ShelfViewTest, FirstAndLastVisibleIndex) {
   ShelfID last_added_item_id;
   while (true) {
     last_added_item_id = AddApp();
-    if (shelf_view_->GetOverflowButton()->visible()) {
+    if (shelf_view_->GetOverflowButton()->GetVisible()) {
       last_visible_index_before_overflow = last_visible_index;
       break;
     }
@@ -2402,7 +2402,7 @@ TEST_F(ShelfViewTest, FirstAndLastVisibleIndex) {
   // The overflow button is now visible. Check that the last visible index is
   // one less than before, because the overflow button replaces the last visible
   // app.
-  EXPECT_TRUE(shelf_view_->GetOverflowButton()->visible());
+  EXPECT_TRUE(shelf_view_->GetOverflowButton()->GetVisible());
   EXPECT_EQ(last_visible_index_before_overflow - 1,
             shelf_view_->last_visible_index());
 
@@ -2415,7 +2415,7 @@ TEST_F(ShelfViewTest, FirstAndLastVisibleIndex) {
 
   // Adding another app should let the overflow button appear again.
   AddApp();
-  EXPECT_TRUE(shelf_view_->GetOverflowButton()->visible());
+  EXPECT_TRUE(shelf_view_->GetOverflowButton()->GetVisible());
   EXPECT_EQ(last_visible_index_before_overflow - 1,
             shelf_view_->last_visible_index());
   // And now adding more apps shouldn't change the last visible index.
@@ -2584,7 +2584,7 @@ class ShelfViewVisibleBoundsTest : public ShelfViewTest,
     EXPECT_TRUE(shelf_bounds.Contains(visible_bounds));
     for (int i = 0; i < test_api_->GetButtonCount(); ++i)
       if (ShelfAppButton* button = test_api_->GetButton(i)) {
-        if (button->visible())
+        if (button->GetVisible())
           EXPECT_TRUE(visible_bounds.Contains(button->GetBoundsInScreen()));
       }
     CheckAppListButtonIsInBounds();
@@ -2610,10 +2610,10 @@ TEST_P(ShelfViewVisibleBoundsTest, ItemsAreInBounds) {
     AddAppShortcut();
   }
   test_api_->RunMessageLoopUntilAnimationsDone();
-  EXPECT_FALSE(shelf_view_->GetOverflowButton()->visible());
+  EXPECT_FALSE(shelf_view_->GetOverflowButton()->GetVisible());
   CheckAllItemsAreInBounds();
   // Same for overflow case.
-  while (!shelf_view_->GetOverflowButton()->visible()) {
+  while (!shelf_view_->GetOverflowButton()->GetVisible()) {
     AddAppShortcut();
   }
   test_api_->RunMessageLoopUntilAnimationsDone();
@@ -3176,7 +3176,7 @@ class OverflowButtonInkDropTest : public ShelfViewInkDropTest {
         .SetInkDrop(std::move(overflow_button_ink_drop));
 
     AddButtonsUntilOverflow();
-    EXPECT_TRUE(shelf_view_->GetOverflowButton()->visible());
+    EXPECT_TRUE(shelf_view_->GetOverflowButton()->GetVisible());
     EXPECT_FALSE(shelf_view_->IsShowingOverflowBubble());
   }
 
@@ -3781,7 +3781,7 @@ class ShelfViewOverflowFocusTest : public ShelfViewFocusTest {
 // Tests that the overflow button is visible and that not all the items are
 // visible on the main shelf.
 TEST_F(ShelfViewOverflowFocusTest, Basic) {
-  EXPECT_TRUE(shelf_view_->GetOverflowButton()->visible());
+  EXPECT_TRUE(shelf_view_->GetOverflowButton()->GetVisible());
   EXPECT_FALSE(shelf_view_->IsShowingOverflowBubble());
 
   EXPECT_EQ(last_item_on_main_shelf_index_, items_ - 5);
@@ -3964,14 +3964,14 @@ TEST_F(KioskNextShelfViewTest, AppButtonHidden) {
   LogInKioskNextUser(GetSessionControllerClient());
 
   // The home and back buttons are always visible.
-  EXPECT_TRUE(shelf_view_->GetAppListButton()->visible());
-  EXPECT_TRUE(shelf_view_->GetBackButton()->visible());
+  EXPECT_TRUE(shelf_view_->GetAppListButton()->GetVisible());
+  EXPECT_TRUE(shelf_view_->GetBackButton()->GetVisible());
 
   // Adding app items doesn't add them to the visible shelf, and the overflow
   // button remains hidden.
   AddApp();
   AddApp();
-  ASSERT_FALSE(shelf_view_->GetOverflowButton()->visible());
+  ASSERT_FALSE(shelf_view_->GetOverflowButton()->GetVisible());
   EXPECT_EQ(1, shelf_view_->last_visible_index());
 }
 

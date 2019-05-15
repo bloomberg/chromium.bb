@@ -53,7 +53,7 @@ void shell_surface_set_transient(wl_client* client,
                                  int y,
                                  uint32_t flags) {
   ShellSurface* shell_surface = GetUserDataAs<ShellSurface>(resource);
-  if (shell_surface->enabled())
+  if (shell_surface->GetEnabled())
     return;
 
   if (flags & WL_SHELL_SURFACE_TRANSIENT_INACTIVE) {
@@ -70,7 +70,7 @@ void shell_surface_set_fullscreen(wl_client* client,
                                   uint32_t framerate,
                                   wl_resource* output_resource) {
   ShellSurface* shell_surface = GetUserDataAs<ShellSurface>(resource);
-  if (shell_surface->enabled())
+  if (shell_surface->GetEnabled())
     return;
 
   shell_surface->SetEnabled(true);
@@ -92,7 +92,7 @@ void shell_surface_set_maximized(wl_client* client,
                                  wl_resource* resource,
                                  wl_resource* output_resource) {
   ShellSurface* shell_surface = GetUserDataAs<ShellSurface>(resource);
-  if (shell_surface->enabled())
+  if (shell_surface->GetEnabled())
     return;
 
   shell_surface->SetEnabled(true);

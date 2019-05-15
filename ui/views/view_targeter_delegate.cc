@@ -50,7 +50,7 @@ View* ViewTargeterDelegate::TargetForRect(View* root, const gfx::Rect& rect) {
       continue;
 
     // Ignore any children which are invisible or do not intersect |rect|.
-    if (!child->visible())
+    if (!child->GetVisible())
       continue;
     gfx::RectF rect_in_child_coords_f(rect);
     View::ConvertRectToTarget(root, child, &rect_in_child_coords_f);

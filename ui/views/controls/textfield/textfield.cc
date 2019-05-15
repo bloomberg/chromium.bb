@@ -417,7 +417,7 @@ SkColor Textfield::GetBackgroundColor() const {
     return background_color_;
 
   return GetNativeTheme()->GetSystemColor(
-      read_only() || !enabled()
+      read_only() || !GetEnabled()
           ? ui::NativeTheme::kColorId_TextfieldReadOnlyBackground
           : ui::NativeTheme::kColorId_TextfieldDefaultBackground);
 }
@@ -523,7 +523,7 @@ void Textfield::SetHorizontalAlignment(gfx::HorizontalAlignment alignment) {
 
 void Textfield::ShowVirtualKeyboardIfEnabled() {
   // GetInputMethod() may return nullptr in tests.
-  if (enabled() && !read_only() && GetInputMethod())
+  if (GetEnabled() && !read_only() && GetInputMethod())
     GetInputMethod()->ShowVirtualKeyboardIfEnabled();
 }
 
@@ -900,7 +900,7 @@ bool Textfield::SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) {
 bool Textfield::GetDropFormats(
     int* formats,
     std::set<ui::ClipboardFormatType>* format_types) {
-  if (!enabled() || read_only())
+  if (!GetEnabled() || read_only())
     return false;
   // TODO(msw): Can we support URL, FILENAME, etc.?
   *formats = ui::OSExchangeData::STRING;
@@ -913,7 +913,8 @@ bool Textfield::CanDrop(const OSExchangeData& data) {
   int formats;
   std::set<ui::ClipboardFormatType> format_types;
   GetDropFormats(&formats, &format_types);
-  return enabled() && !read_only() && data.HasAnyFormat(formats, format_types);
+  return GetEnabled() && !read_only() &&
+         data.HasAnyFormat(formats, format_types);
 }
 
 int Textfield::OnDragUpdated(const ui::DropTargetEvent& event) {
@@ -1003,7 +1004,7 @@ void Textfield::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   // Editable state indicates support of editable interface, and is always set
   // for a textfield, even if disabled or readonly.
   node_data->AddState(ax::mojom::State::kEditable);
-  if (enabled()) {
+  if (GetEnabled()) {
     node_data->SetDefaultActionVerb(ax::mojom::DefaultActionVerb::kActivate);
     // Only readonly if enabled. Don't overwrite the disabled restriction.
     if (read_only())
@@ -1214,7 +1215,7 @@ void Textfield::WriteDragDataForView(View* sender,
 
 int Textfield::GetDragOperationsForView(View* sender, const gfx::Point& p) {
   int drag_operations = ui::DragDropTypes::DRAG_COPY;
-  if (!enabled() || text_input_type_ == ui::TEXT_INPUT_TYPE_PASSWORD ||
+  if (!GetEnabled() || text_input_type_ == ui::TEXT_INPUT_TYPE_PASSWORD ||
       !GetRenderText()->IsPointInSelection(p)) {
     drag_operations = ui::DragDropTypes::DRAG_NONE;
   } else if (sender == this && !read_only()) {
@@ -1485,7 +1486,7 @@ void Textfield::InsertChar(const ui::KeyEvent& event) {
 }
 
 ui::TextInputType Textfield::GetTextInputType() const {
-  if (read_only() || !enabled())
+  if (read_only() || !GetEnabled())
     return ui::TEXT_INPUT_TYPE_NONE;
   return text_input_type_;
 }
@@ -2150,8 +2151,8 @@ void Textfield::UpdateCursorViewPosition() {
 }
 
 int Textfield::GetTextStyle() const {
-  return (read_only() || !enabled()) ? style::STYLE_DISABLED
-                                     : style::STYLE_PRIMARY;
+  return (read_only() || !GetEnabled()) ? style::STYLE_DISABLED
+                                        : style::STYLE_PRIMARY;
 }
 
 void Textfield::PaintTextAndCursor(gfx::Canvas* canvas) {
@@ -2328,7 +2329,7 @@ void Textfield::OnEditFailed() {
 }
 
 bool Textfield::ShouldShowCursor() const {
-  return HasFocus() && !HasSelection() && enabled() && !read_only() &&
+  return HasFocus() && !HasSelection() && GetEnabled() && !read_only() &&
          !drop_cursor_visible_ && GetRenderText()->cursor_enabled();
 }
 
@@ -2349,7 +2350,7 @@ void Textfield::StopBlinkingCursor() {
 void Textfield::OnCursorBlinkTimerFired() {
   DCHECK(ShouldBlinkCursor());
   UpdateCursorViewPosition();
-  cursor_view_.SetVisible(!cursor_view_.visible());
+  cursor_view_.SetVisible(!cursor_view_.GetVisible());
 }
 
 void Textfield::OnEnabledChanged() {

@@ -477,7 +477,7 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateFooterView() {
 }
 
 views::View* PaymentRequestSheetController::GetFirstFocusedView() {
-  if (primary_button_ && primary_button_->enabled())
+  if (primary_button_ && primary_button_->GetEnabled())
     return primary_button_.get();
 
   if (secondary_button_)
@@ -500,7 +500,7 @@ bool PaymentRequestSheetController::PerformPrimaryButtonAction() {
   if (!dialog()->IsInteractive())
     return true;
 
-  if (primary_button_ && primary_button_->enabled())
+  if (primary_button_ && primary_button_->GetEnabled())
     ButtonPressed(primary_button_.get(), DummyEvent());
   return true;
 }

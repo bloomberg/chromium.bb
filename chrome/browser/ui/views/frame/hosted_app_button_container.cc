@@ -113,7 +113,7 @@ class HostedAppButtonContainer::ContentSettingsContainer : public views::View {
   }
 
   void FadeIn() {
-    if (visible())
+    if (GetVisible())
       return;
     SetVisible(true);
     DCHECK_EQ(layer()->opacity(), 0);

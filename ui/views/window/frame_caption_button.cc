@@ -253,7 +253,7 @@ void FrameCaptionButton::PaintButtonContents(gfx::Canvas* canvas) {
 }
 
 int FrameCaptionButton::GetAlphaForIcon(int base_alpha) const {
-  if (!enabled())
+  if (!GetEnabled())
     return base_alpha * kDisabledButtonAlphaRatio;
 
   if (paint_as_active_)

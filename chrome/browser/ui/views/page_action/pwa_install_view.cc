@@ -47,9 +47,9 @@ bool PwaInstallView::Update() {
   else
     ResetSlideAnimation(false);
 
-  bool was_visible = visible();
+  bool was_visible = GetVisible();
   SetVisible(show_install_button);
-  return visible() != was_visible;
+  return GetVisible() != was_visible;
 }
 
 void PwaInstallView::OnExecuting(PageActionIconView::ExecuteSource source) {

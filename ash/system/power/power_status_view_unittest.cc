@@ -39,11 +39,11 @@ class PowerStatusViewTest : public AshTestBase {
   }
 
   bool IsPercentageVisible() const {
-    return view_->percentage_label_->visible();
+    return view_->percentage_label_->GetVisible();
   }
 
   bool IsTimeStatusVisible() const {
-    return view_->time_status_label_->visible();
+    return view_->time_status_label_->GetVisible();
   }
 
   base::string16 RemainingTimeInView() const {

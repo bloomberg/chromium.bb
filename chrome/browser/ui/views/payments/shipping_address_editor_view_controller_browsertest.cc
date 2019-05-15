@@ -897,7 +897,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   // Expect that the save button is disabled.
   views::View* save_button = dialog_view()->GetViewByID(
       static_cast<int>(DialogViewID::SAVE_ADDRESS_BUTTON));
-  EXPECT_FALSE(save_button->enabled());
+  EXPECT_FALSE(save_button->GetEnabled());
 }
 
 // TODO(crbug.com/730652): This address should be invalid.
@@ -972,7 +972,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   // Expect that the save button is disabled.
   views::View* save_button = dialog_view()->GetViewByID(
       static_cast<int>(DialogViewID::SAVE_ADDRESS_BUTTON));
-  EXPECT_FALSE(save_button->enabled());
+  EXPECT_FALSE(save_button->GetEnabled());
 }
 
 // Tests that if the a profile has no country and an invalid state for the
@@ -1022,7 +1022,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   // Expect that the save button is disabled.
   views::View* save_button = dialog_view()->GetViewByID(
       static_cast<int>(DialogViewID::SAVE_ADDRESS_BUTTON));
-  EXPECT_FALSE(save_button->enabled());
+  EXPECT_FALSE(save_button->GetEnabled());
 }
 
 // TODO(crbug.com/730165): The profile should be considered valid.
@@ -1073,7 +1073,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   // Expect that the save button is enabled, since the profile is now valid.
   views::View* save_button = dialog_view()->GetViewByID(
       static_cast<int>(DialogViewID::SAVE_ADDRESS_BUTTON));
-  EXPECT_TRUE(save_button->enabled());
+  EXPECT_TRUE(save_button->GetEnabled());
 }
 
 // TODO(crbug.com/730165): The profile should be considered valid.
@@ -1126,7 +1126,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   // Expect that the save button is enabled, since the profile is now valid.
   views::View* save_button = dialog_view()->GetViewByID(
       static_cast<int>(DialogViewID::SAVE_ADDRESS_BUTTON));
-  EXPECT_TRUE(save_button->enabled());
+  EXPECT_TRUE(save_button->GetEnabled());
 }
 
 // Tests that the state dropdown is set to the right value if the value from the

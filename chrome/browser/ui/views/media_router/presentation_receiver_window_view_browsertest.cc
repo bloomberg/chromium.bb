@@ -141,7 +141,7 @@ IN_PROC_BROWSER_TEST_F(PresentationReceiverWindowViewBrowserTest,
 
    private:
     void OnViewVisibilityChanged(views::View* observed_view) {
-      bool fullscreen = !observed_view->visible();
+      bool fullscreen = !observed_view->GetVisible();
       EXPECT_EQ(fullscreen, receiver_view_->IsFullscreen());
       if (fullscreen == (await_type_ == AwaitType::kIntoFullscreen))
         std::move(fullscreen_callback_).Run();
@@ -164,7 +164,7 @@ IN_PROC_BROWSER_TEST_F(PresentationReceiverWindowViewBrowserTest,
     fullscreen_loop.Run();
 
     ASSERT_TRUE(receiver_view_->IsFullscreen());
-    EXPECT_FALSE(receiver_view_->location_bar_view()->visible());
+    EXPECT_FALSE(receiver_view_->location_bar_view()->GetVisible());
   }
 
   {
@@ -175,7 +175,7 @@ IN_PROC_BROWSER_TEST_F(PresentationReceiverWindowViewBrowserTest,
     receiver_view_->GetWidget()->SetFullscreen(false);
     fullscreen_loop.Run();
     ASSERT_FALSE(receiver_view_->IsFullscreen());
-    EXPECT_TRUE(receiver_view_->location_bar_view()->visible());
+    EXPECT_TRUE(receiver_view_->location_bar_view()->GetVisible());
   }
 
   // Back to fullscreen with the hardware button.
@@ -187,7 +187,7 @@ IN_PROC_BROWSER_TEST_F(PresentationReceiverWindowViewBrowserTest,
     receiver_view_->GetWidget()->SetFullscreen(true);
     fullscreen_loop.Run();
     ASSERT_TRUE(receiver_view_->IsFullscreen());
-    EXPECT_FALSE(receiver_view_->location_bar_view()->visible());
+    EXPECT_FALSE(receiver_view_->location_bar_view()->GetVisible());
   }
 }
 #endif

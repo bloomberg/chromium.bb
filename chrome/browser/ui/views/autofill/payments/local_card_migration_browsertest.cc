@@ -610,7 +610,7 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(
       FindViewInDialogById(DialogViewId::MAIN_CONTENT_VIEW_MIGRATION_BUBBLE,
                            GetLocalCardMigrationOfferBubbleViews())
-          ->visible());
+          ->GetVisible());
   // Metrics
   EXPECT_THAT(
       histogram_tester.GetAllSamples(
@@ -654,7 +654,7 @@ IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,
   EXPECT_TRUE(
       FindViewInDialogById(DialogViewId::MAIN_CONTENT_VIEW_MIGRATION_BUBBLE,
                            GetLocalCardMigrationOfferBubbleViews())
-          ->visible());
+          ->GetVisible());
   // Metrics
   EXPECT_THAT(
       histogram_tester.GetAllSamples(
@@ -693,8 +693,8 @@ IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,
   SaveLocalCard(kSecondCardNumber);
   UseCardAndWaitForMigrationOffer(kFirstCardNumber);
 
-  EXPECT_TRUE(
-      GetLocalCardMigrationIconView(/*icon_in_status_chip=*/false)->visible());
+  EXPECT_TRUE(GetLocalCardMigrationIconView(/*icon_in_status_chip=*/false)
+                  ->GetVisible());
 }
 
 // Ensures that clicking on the credit card icon in the omnibox reopens the
@@ -714,7 +714,7 @@ IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,
   EXPECT_TRUE(
       FindViewInDialogById(DialogViewId::MAIN_CONTENT_VIEW_MIGRATION_BUBBLE,
                            GetLocalCardMigrationOfferBubbleViews())
-          ->visible());
+          ->GetVisible());
   // Metrics
   EXPECT_THAT(
       histogram_tester.GetAllSamples(
@@ -744,7 +744,7 @@ IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,
   EXPECT_TRUE(FindViewInDialogById(
                   DialogViewId::MAIN_CONTENT_VIEW_MIGRATION_OFFER_DIALOG,
                   GetLocalCardMigrationMainDialogView())
-                  ->visible());
+                  ->GetVisible());
   // Intermediate bubble should be gone.
   EXPECT_EQ(nullptr, GetLocalCardMigrationOfferBubbleViews());
   // Metrics
@@ -777,7 +777,7 @@ IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,
   ClickOnOkButton(GetLocalCardMigrationOfferBubbleViews());
 
   views::View* card_list_view = GetCardListView();
-  EXPECT_TRUE(card_list_view->visible());
+  EXPECT_TRUE(card_list_view->GetVisible());
   ASSERT_EQ(2u, card_list_view->children().size());
   // Cards will be added to database in a reversed order.
   EXPECT_EQ(static_cast<MigratableCardView*>(card_list_view->children()[0])
@@ -927,7 +927,7 @@ IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,
   EXPECT_TRUE(
       FindViewInDialogById(DialogViewId::MAIN_CONTENT_VIEW_MIGRATION_BUBBLE,
                            GetLocalCardMigrationOfferBubbleViews())
-          ->visible());
+          ->GetVisible());
 
   ClickOnDialogViewAndWait(GetCloseButton(),
                            GetLocalCardMigrationOfferBubbleViews());
@@ -947,8 +947,8 @@ IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTestForStatusChip,
   SaveLocalCard(kSecondCardNumber);
   UseCardAndWaitForMigrationOffer(kFirstCardNumber);
 
-  EXPECT_TRUE(
-      GetLocalCardMigrationIconView(/*icon_in_status_chip=*/true)->visible());
+  EXPECT_TRUE(GetLocalCardMigrationIconView(/*icon_in_status_chip=*/true)
+                  ->GetVisible());
 }
 
 // Ensures that clicking on the credit card icon in the status chip reopens the
@@ -968,7 +968,7 @@ IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTestForStatusChip,
   EXPECT_TRUE(
       FindViewInDialogById(DialogViewId::MAIN_CONTENT_VIEW_MIGRATION_BUBBLE,
                            GetLocalCardMigrationOfferBubbleViews())
-          ->visible());
+          ->GetVisible());
   // Metrics
   EXPECT_THAT(
       histogram_tester.GetAllSamples(
@@ -1013,8 +1013,8 @@ IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTestForStatusChip,
                   ->ActivateFirstInactiveBubbleForAccessibility());
 
   // Ensure the bubble's widget refreshed appropriately.
-  EXPECT_TRUE(
-      GetLocalCardMigrationIconView(/*icon_in_status_chip=*/true)->visible());
+  EXPECT_TRUE(GetLocalCardMigrationIconView(/*icon_in_status_chip=*/true)
+                  ->GetVisible());
   EXPECT_TRUE(widget->IsVisible());
   EXPECT_TRUE(widget->IsActive());
 }
@@ -1028,24 +1028,24 @@ IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTestForStatusChip,
   UseCardAndWaitForMigrationOffer(kFirstCardNumber);
 
   // Ensures flow is triggered, and bubble and icon view are visible.
-  EXPECT_TRUE(
-      GetLocalCardMigrationIconView(/*icon_in_status_chip=*/true)->visible());
-  EXPECT_TRUE(GetLocalCardMigrationOfferBubbleViews()->visible());
+  EXPECT_TRUE(GetLocalCardMigrationIconView(/*icon_in_status_chip=*/true)
+                  ->GetVisible());
+  EXPECT_TRUE(GetLocalCardMigrationOfferBubbleViews()->GetVisible());
 
   AddTabAtIndex(1, GURL("http://example.com/"), ui::PAGE_TRANSITION_TYPED);
   TabStripModel* tab_model = browser()->tab_strip_model();
   tab_model->ActivateTabAt(1, {TabStripModel::GestureType::kOther});
 
   // Ensures bubble and icon go away if user navigates to another tab.
-  EXPECT_FALSE(
-      GetLocalCardMigrationIconView(/*icon_in_status_chip=*/true)->visible());
+  EXPECT_FALSE(GetLocalCardMigrationIconView(/*icon_in_status_chip=*/true)
+                   ->GetVisible());
   EXPECT_FALSE(GetLocalCardMigrationOfferBubbleViews());
 
   tab_model->ActivateTabAt(0, {TabStripModel::GestureType::kOther});
 
   // If the user navigates back, shows only the icon not the bubble.
-  EXPECT_TRUE(
-      GetLocalCardMigrationIconView(/*icon_in_status_chip=*/true)->visible());
+  EXPECT_TRUE(GetLocalCardMigrationIconView(/*icon_in_status_chip=*/true)
+                  ->GetVisible());
   EXPECT_FALSE(GetLocalCardMigrationOfferBubbleViews());
 }
 #endif  // !defined(OS_CHROMEOS)

@@ -203,10 +203,10 @@ void ViewAccessibility::GetAccessibleNodeData(ui::AXNodeData* data) const {
   if (view_->IsAccessibilityFocusable())
     data->AddState(ax::mojom::State::kFocusable);
 
-  if (!view_->enabled())
+  if (!view_->GetEnabled())
     data->SetRestriction(ax::mojom::Restriction::kDisabled);
 
-  if (!view_->visible() && data->role != ax::mojom::Role::kAlert)
+  if (!view_->GetVisible() && data->role != ax::mojom::Role::kAlert)
     data->AddState(ax::mojom::State::kInvisible);
 
   if (view_->context_menu_controller())

@@ -56,13 +56,13 @@ TEST_F(LocaleFeaturePodControllerTest, ButtonVisibility) {
   // The button is invisible if the locale list is unset.
   std::unique_ptr<FeaturePodButton> button;
   button.reset(controller_->CreateButton());
-  EXPECT_FALSE(button->visible());
+  EXPECT_FALSE(button->GetVisible());
 
   // The button is invisible if the locale list is empty.
   Shell::Get()->system_tray_model()->SetLocaleList(
       std::vector<mojom::LocaleInfoPtr>(), kDefaultLocaleIsoCode);
   button.reset(controller_->CreateButton());
-  EXPECT_FALSE(button->visible());
+  EXPECT_FALSE(button->GetVisible());
 
   // The button is visible if the locale list is non-empty.
   std::vector<mojom::LocaleInfoPtr> locale_list;
@@ -72,7 +72,7 @@ TEST_F(LocaleFeaturePodControllerTest, ButtonVisibility) {
   Shell::Get()->system_tray_model()->SetLocaleList(std::move(locale_list),
                                                    kDefaultLocaleIsoCode);
   button.reset(controller_->CreateButton());
-  EXPECT_TRUE(button->visible());
+  EXPECT_TRUE(button->GetVisible());
 }
 
 }  // namespace

@@ -393,7 +393,7 @@ void ToolbarView::ShowIntentPickerBubble(
     IntentPickerResponse callback) {
   IntentPickerView* intent_picker_view = location_bar()->intent_picker_view();
   if (intent_picker_view) {
-    if (!intent_picker_view->visible()) {
+    if (!intent_picker_view->GetVisible()) {
       intent_picker_view->SetVisible(true);
       location_bar()->Layout();
     }

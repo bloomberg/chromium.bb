@@ -103,7 +103,7 @@ void Checkbox::GetAccessibleNodeData(ui::AXNodeData* node_data) {
       GetChecked() ? ax::mojom::CheckedState::kTrue
                    : ax::mojom::CheckedState::kFalse;
   node_data->SetCheckedState(checked_state);
-  if (enabled()) {
+  if (GetEnabled()) {
     node_data->SetDefaultActionVerb(GetChecked()
                                         ? ax::mojom::DefaultActionVerb::kUncheck
                                         : ax::mojom::DefaultActionVerb::kCheck);

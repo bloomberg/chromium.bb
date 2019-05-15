@@ -96,7 +96,7 @@ void TestOverflowedToolbarAction(Browser* browser,
   ASSERT_TRUE(overflow_container);
   ToolbarActionView* action_view =
       overflow_container->GetToolbarActionViewAt(0);
-  EXPECT_TRUE(action_view->visible());
+  EXPECT_TRUE(action_view->GetVisible());
 
   // Click on the toolbar action to activate it.
   gfx::Point action_view_loc =
@@ -124,7 +124,7 @@ void TestWhileContextMenuOpen(Browser* browser,
   // Make sure we're showing the right context menu.
   EXPECT_EQ(base::UTF8ToUTF16("Browser Action Popup"),
             first_menu_item->title());
-  EXPECT_TRUE(first_menu_item->enabled());
+  EXPECT_TRUE(first_menu_item->GetEnabled());
 
   // Get the overflow container.
   auto* app_menu_button = GetAppMenuButtonFromBrowser(browser);
@@ -144,8 +144,8 @@ void TestWhileContextMenuOpen(Browser* browser,
   ToolbarActionView* second_row_action =
       overflow_container->GetToolbarActionViewAt(second_row_index);
 
-  EXPECT_TRUE(second_row_action->visible());
-  EXPECT_TRUE(second_row_action->enabled());
+  EXPECT_TRUE(second_row_action->GetVisible());
+  EXPECT_TRUE(second_row_action->GetEnabled());
 
   gfx::Point action_view_loc =
       ui_test_utils::GetCenterInScreenCoordinates(second_row_action);

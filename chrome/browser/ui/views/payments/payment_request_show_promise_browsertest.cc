@@ -63,7 +63,7 @@ class PaymentRequestShowPromiseTest : public PaymentRequestBrowserTestBase {
   void ExpectNoDisplayItems() {
     views::View* view = dialog_view()->GetViewByID(
         static_cast<int>(DialogViewID::ORDER_SUMMARY_LINE_ITEM_1));
-    EXPECT_TRUE(!view || !view->visible() ||
+    EXPECT_TRUE(!view || !view->GetVisible() ||
                 static_cast<views::Label*>(view)->text().empty())
         << "Found unexpected display item: "
         << static_cast<views::Label*>(view)->text();
@@ -74,7 +74,7 @@ class PaymentRequestShowPromiseTest : public PaymentRequestBrowserTestBase {
   void ExpectNoShippingWarningMessage() {
     views::View* view = dialog_view()->GetViewByID(
         static_cast<int>(DialogViewID::WARNING_LABEL));
-    if (!view || !view->visible())
+    if (!view || !view->GetVisible())
       return;
 
     EXPECT_EQ(base::string16(), static_cast<views::Label*>(view)->text());

@@ -140,7 +140,7 @@ gfx::Rect BubbleFrameView::GetBoundsForClientView() const {
   client_bounds.Inset(GetClientInsetsForFrameWidth(client_bounds.width()));
   // Only account for footnote_container_'s height if it's visible, because
   // content_margins_ adds extra padding even if all child views are invisible.
-  if (footnote_container_ && footnote_container_->visible()) {
+  if (footnote_container_ && footnote_container_->GetVisible()) {
     client_bounds.set_height(client_bounds.height() -
                              footnote_container_->height());
   }
@@ -179,7 +179,7 @@ int BubbleFrameView::NonClientHitTest(const gfx::Point& point) {
     return HTNOWHERE;
   if (hit_test_transparent_)
     return HTTRANSPARENT;
-  if (close_->visible() && close_->GetMirroredBounds().Contains(point))
+  if (close_->GetVisible() && close_->GetMirroredBounds().Contains(point))
     return HTCLOSE;
 
   // Convert to RRectF to accurately represent the rounded corners of the
@@ -316,7 +316,7 @@ void BubbleFrameView::Layout() {
   // The title margins may not be set, but make sure that's only the case when
   // there's no title.
   DCHECK(!title_margins_.IsEmpty() ||
-         (!custom_title_ && !default_title_->visible()));
+         (!custom_title_ && !default_title_->GetVisible()));
 
   const gfx::Rect contents_bounds = GetContentsBounds();
   gfx::Rect bounds = contents_bounds;
@@ -325,7 +325,7 @@ void BubbleFrameView::Layout() {
     return;
 
   int title_label_right = bounds.right();
-  if (close_->visible()) {
+  if (close_->GetVisible()) {
     // The close button is positioned somewhat closer to the edge of the bubble.
     const int close_margin =
         LayoutProvider::Get()->GetDistanceMetric(DISTANCE_CLOSE_BUTTON_MARGIN);
@@ -366,7 +366,7 @@ void BubbleFrameView::Layout() {
 
   // Only account for footnote_container_'s height if it's visible, because
   // content_margins_ adds extra padding even if all child views are invisible.
-  if (footnote_container_ && footnote_container_->visible()) {
+  if (footnote_container_ && footnote_container_->GetVisible()) {
     const int width = contents_bounds.width();
     const int height = footnote_container_->GetHeightForWidth(width);
     footnote_container_->SetBounds(
@@ -539,7 +539,7 @@ bool BubbleFrameView::ExtendClientIntoTitle() const {
 }
 
 bool BubbleFrameView::IsCloseButtonVisible() const {
-  return close_->visible();
+  return close_->GetVisible();
 }
 
 gfx::Rect BubbleFrameView::GetCloseButtonMirroredBounds() const {
@@ -650,7 +650,7 @@ gfx::Size BubbleFrameView::GetFrameSizeForClientSize(
 
   // Only account for footnote_container_'s height if it's visible, because
   // content_margins_ adds extra padding even if all child views are invisible.
-  if (footnote_container_ && footnote_container_->visible())
+  if (footnote_container_ && footnote_container_->GetVisible())
     size.Enlarge(0, footnote_container_->GetHeightForWidth(size.width()));
 
   return size;

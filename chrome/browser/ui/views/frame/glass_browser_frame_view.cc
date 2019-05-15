@@ -259,7 +259,7 @@ namespace {
 
 bool HitTestCaptionButton(Windows10CaptionButton* button,
                           const gfx::Point& point) {
-  return button && button->visible() &&
+  return button && button->GetVisible() &&
          button->GetMirroredBounds().Contains(point);
 }
 

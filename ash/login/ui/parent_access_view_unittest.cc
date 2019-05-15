@@ -89,7 +89,7 @@ class ParentAccessViewTest : public LoginTestBase {
 // Tests that back button works.
 TEST_F(ParentAccessViewTest, BackButton) {
   ParentAccessView::TestApi test_api(view_);
-  EXPECT_TRUE(test_api.back_button()->enabled());
+  EXPECT_TRUE(test_api.back_button()->GetEnabled());
   EXPECT_EQ(0, back_action_);
 
   SimulateButtonPress(test_api.back_button());
@@ -101,14 +101,14 @@ TEST_F(ParentAccessViewTest, BackButton) {
 // Tests that submit button submits code from code input.
 TEST_F(ParentAccessViewTest, SubmitButton) {
   ParentAccessView::TestApi test_api(view_);
-  EXPECT_FALSE(test_api.submit_button()->enabled());
+  EXPECT_FALSE(test_api.submit_button()->GetEnabled());
 
   ui::test::EventGenerator* generator = GetEventGenerator();
   for (int i = 0; i < 6; ++i) {
     generator->PressKey(ui::KeyboardCode(ui::KeyboardCode::VKEY_0 + i),
                         ui::EF_NONE);
   }
-  EXPECT_TRUE(test_api.submit_button()->enabled());
+  EXPECT_TRUE(test_api.submit_button()->GetEnabled());
 
   login_client_->set_validate_parent_access_code_result(true);
   EXPECT_CALL(*login_client_,
@@ -127,7 +127,7 @@ TEST_F(ParentAccessViewTest, Numpad) {
   ui::test::EventGenerator* generator = GetEventGenerator();
   for (int i = 0; i < 6; ++i)
     generator->PressKey(ui::KeyboardCode(ui::VKEY_NUMPAD0 + i), ui::EF_NONE);
-  EXPECT_TRUE(test_api.submit_button()->enabled());
+  EXPECT_TRUE(test_api.submit_button()->GetEnabled());
 
   login_client_->set_validate_parent_access_code_result(true);
   EXPECT_CALL(*login_client_,
@@ -142,14 +142,14 @@ TEST_F(ParentAccessViewTest, Numpad) {
 // Tests that access code can be submitted with press of 'enter' key.
 TEST_F(ParentAccessViewTest, SubmitWithEnter) {
   ParentAccessView::TestApi test_api(view_);
-  EXPECT_FALSE(test_api.submit_button()->enabled());
+  EXPECT_FALSE(test_api.submit_button()->GetEnabled());
 
   ui::test::EventGenerator* generator = GetEventGenerator();
   for (int i = 0; i < 6; ++i) {
     generator->PressKey(ui::KeyboardCode(ui::KeyboardCode::VKEY_0 + i),
                         ui::EF_NONE);
   }
-  EXPECT_TRUE(test_api.submit_button()->enabled());
+  EXPECT_TRUE(test_api.submit_button()->GetEnabled());
 
   login_client_->set_validate_parent_access_code_result(true);
   EXPECT_CALL(*login_client_,
@@ -164,7 +164,7 @@ TEST_F(ParentAccessViewTest, SubmitWithEnter) {
 // Tests that 'enter' key does not submit incomplete code.
 TEST_F(ParentAccessViewTest, PressEnterOnIncompleteCode) {
   ParentAccessView::TestApi test_api(view_);
-  EXPECT_FALSE(test_api.submit_button()->enabled());
+  EXPECT_FALSE(test_api.submit_button()->GetEnabled());
 
   // Enter incomplete code.
   ui::test::EventGenerator* generator = GetEventGenerator();
@@ -172,7 +172,7 @@ TEST_F(ParentAccessViewTest, PressEnterOnIncompleteCode) {
     generator->PressKey(ui::KeyboardCode(ui::KeyboardCode::VKEY_0 + i),
                         ui::EF_NONE);
   }
-  EXPECT_FALSE(test_api.submit_button()->enabled());
+  EXPECT_FALSE(test_api.submit_button()->GetEnabled());
 
   login_client_->set_validate_parent_access_code_result(true);
   EXPECT_CALL(*login_client_, ValidateParentAccessCode_).Times(0);
@@ -184,7 +184,7 @@ TEST_F(ParentAccessViewTest, PressEnterOnIncompleteCode) {
 
   // Fill in last digit of the code.
   generator->PressKey(ui::KeyboardCode(ui::KeyboardCode::VKEY_9), ui::EF_NONE);
-  EXPECT_TRUE(test_api.submit_button()->enabled());
+  EXPECT_TRUE(test_api.submit_button()->GetEnabled());
 
   login_client_->set_validate_parent_access_code_result(true);
   EXPECT_CALL(*login_client_,
@@ -200,29 +200,29 @@ TEST_F(ParentAccessViewTest, PressEnterOnIncompleteCode) {
 // Tests that backspace button works.
 TEST_F(ParentAccessViewTest, Backspace) {
   ParentAccessView::TestApi test_api(view_);
-  EXPECT_FALSE(test_api.submit_button()->enabled());
+  EXPECT_FALSE(test_api.submit_button()->GetEnabled());
 
   ui::test::EventGenerator* generator = GetEventGenerator();
   for (int i = 0; i < 6; ++i)
     generator->PressKey(ui::KeyboardCode::VKEY_1, ui::EF_NONE);
-  EXPECT_TRUE(test_api.submit_button()->enabled());
+  EXPECT_TRUE(test_api.submit_button()->GetEnabled());
 
   // Active field has content - backspace clears the content, but does not move
   // focus.
   generator->PressKey(ui::KeyboardCode::VKEY_BACK, ui::EF_NONE);
-  EXPECT_FALSE(test_api.submit_button()->enabled());
+  EXPECT_FALSE(test_api.submit_button()->GetEnabled());
 
   // Active Field is empty - backspace moves focus to before last field.
   generator->PressKey(ui::KeyboardCode::VKEY_BACK, ui::EF_NONE);
-  EXPECT_FALSE(test_api.submit_button()->enabled());
+  EXPECT_FALSE(test_api.submit_button()->GetEnabled());
 
   // Change value in before last field.
   generator->PressKey(ui::KeyboardCode::VKEY_2, ui::EF_NONE);
-  EXPECT_FALSE(test_api.submit_button()->enabled());
+  EXPECT_FALSE(test_api.submit_button()->GetEnabled());
 
   // Fill in value in last field.
   generator->PressKey(ui::KeyboardCode::VKEY_3, ui::EF_NONE);
-  EXPECT_TRUE(test_api.submit_button()->enabled());
+  EXPECT_TRUE(test_api.submit_button()->GetEnabled());
 
   login_client_->set_validate_parent_access_code_result(true);
   EXPECT_CALL(*login_client_,
@@ -240,11 +240,11 @@ TEST_F(ParentAccessViewTest, PinKeyboard) {
 
   ParentAccessView::TestApi test_api(view_);
   LoginPinView::TestApi test_pin_keyboard(test_api.pin_keyboard_view());
-  EXPECT_FALSE(test_api.submit_button()->enabled());
+  EXPECT_FALSE(test_api.submit_button()->GetEnabled());
 
   for (int i = 0; i < 6; ++i)
     SimulatePinKeyboardPress(test_pin_keyboard.GetButton(i));
-  EXPECT_TRUE(test_api.submit_button()->enabled());
+  EXPECT_TRUE(test_api.submit_button()->GetEnabled());
 
   login_client_->set_validate_parent_access_code_result(true);
   EXPECT_CALL(*login_client_,
@@ -260,13 +260,13 @@ TEST_F(ParentAccessViewTest, PinKeyboard) {
 TEST_F(ParentAccessViewTest, PinKeyboardVisibilityChange) {
   ParentAccessView::TestApi test_api(view_);
   LoginPinView::TestApi test_pin_keyboard(test_api.pin_keyboard_view());
-  EXPECT_FALSE(test_api.pin_keyboard_view()->visible());
+  EXPECT_FALSE(test_api.pin_keyboard_view()->GetVisible());
 
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
-  EXPECT_TRUE(test_api.pin_keyboard_view()->visible());
+  EXPECT_TRUE(test_api.pin_keyboard_view()->GetVisible());
 
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
-  EXPECT_FALSE(test_api.pin_keyboard_view()->visible());
+  EXPECT_FALSE(test_api.pin_keyboard_view()->GetVisible());
 }
 
 // Tests that error state is shown and cleared when neccesary.

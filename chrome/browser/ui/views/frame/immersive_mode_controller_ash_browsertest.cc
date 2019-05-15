@@ -164,8 +164,8 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest, Layout) {
   ASSERT_FALSE(controller()->IsEnabled());
 
   // The tabstrip is not visible for hosted apps.
-  EXPECT_FALSE(tabstrip->visible());
-  EXPECT_TRUE(toolbar->visible());
+  EXPECT_FALSE(tabstrip->GetVisible());
+  EXPECT_TRUE(toolbar->GetVisible());
 
   // The window header should be above the web contents.
   int header_height = GetBoundsInWidget(contents_web_view).y();
@@ -178,8 +178,8 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest, Layout) {
   // Entering immersive fullscreen should make the web contents flush with the
   // top of the widget. The popup browser type doesn't support tabstrip and
   // toolbar feature, thus invisible.
-  EXPECT_FALSE(tabstrip->visible());
-  EXPECT_FALSE(toolbar->visible());
+  EXPECT_FALSE(tabstrip->GetVisible());
+  EXPECT_FALSE(toolbar->GetVisible());
   EXPECT_TRUE(top_container->GetVisibleBounds().IsEmpty());
   EXPECT_EQ(0, GetBoundsInWidget(contents_web_view).y());
 
@@ -188,8 +188,8 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest, Layout) {
 
   // The tabstrip should still be hidden and the web contents should still be
   // flush with the top of the screen.
-  EXPECT_FALSE(tabstrip->visible());
-  EXPECT_TRUE(toolbar->visible());
+  EXPECT_FALSE(tabstrip->GetVisible());
+  EXPECT_TRUE(toolbar->GetVisible());
   EXPECT_EQ(0, GetBoundsInWidget(contents_web_view).y());
 
   // During an immersive reveal, the window header should be painted to the
@@ -204,8 +204,8 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest, Layout) {
   ToggleFullscreen();
   EXPECT_FALSE(browser_view()->GetWidget()->IsFullscreen());
   EXPECT_FALSE(controller()->IsEnabled());
-  EXPECT_FALSE(tabstrip->visible());
-  EXPECT_TRUE(toolbar->visible());
+  EXPECT_FALSE(tabstrip->GetVisible());
+  EXPECT_TRUE(toolbar->GetVisible());
   EXPECT_EQ(header_height, GetBoundsInWidget(contents_web_view).y());
 }
 
@@ -272,13 +272,13 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest,
   ash::FrameCaptionButtonContainerView::TestApi frame_test_api(
       caption_button_container);
 
-  EXPECT_TRUE(frame_test_api.size_button()->visible());
+  EXPECT_TRUE(frame_test_api.size_button()->GetVisible());
 
   // Verify the size button is hidden in tablet mode.
   test::SetAndWaitForTabletMode(true);
   frame_test_api.EndAnimations();
 
-  EXPECT_TRUE(frame_test_api.size_button()->visible());
+  EXPECT_TRUE(frame_test_api.size_button()->GetVisible());
 
   VerifyButtonsInImmersiveMode(frame_view);
 
@@ -287,7 +287,7 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest,
   test::SetAndWaitForTabletMode(false);
   frame_test_api.EndAnimations();
 
-  EXPECT_TRUE(frame_test_api.size_button()->visible());
+  EXPECT_TRUE(frame_test_api.size_button()->GetVisible());
   EXPECT_FALSE(frame_test_api.size_button()->GetBoundsInScreen().Intersects(
       frame_test_api.close_button()->GetBoundsInScreen()));
   EXPECT_FALSE(frame_test_api.size_button()->GetBoundsInScreen().Intersects(

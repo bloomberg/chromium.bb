@@ -72,8 +72,9 @@ class PreEventDispatchHandler : public ui::EventHandler {
 // macOS doesn't have keyboard-triggered context menus.
 #if !defined(OS_MACOSX)
     // Special case to handle keyboard-triggered context menus.
-    if (v && v->enabled() && ((event->key_code() == ui::VKEY_APPS) ||
-       (event->key_code() == ui::VKEY_F10 && event->IsShiftDown()))) {
+    if (v && v->GetEnabled() &&
+        ((event->key_code() == ui::VKEY_APPS) ||
+         (event->key_code() == ui::VKEY_F10 && event->IsShiftDown()))) {
       // Clamp the menu location within the visible bounds of each ancestor view
       // to avoid showing the menu over a completely different view or window.
       gfx::Point location = v->GetKeyboardContextMenuLocation();
@@ -320,7 +321,7 @@ Widget* RootView::GetWidget() {
 }
 
 bool RootView::IsDrawn() const {
-  return visible();
+  return GetVisible();
 }
 
 const char* RootView::GetClassName() const {
@@ -364,7 +365,7 @@ bool RootView::OnMousePressed(const ui::MouseEvent& event) {
        mouse_pressed_handler_ = mouse_pressed_handler_->parent()) {
     DVLOG(1) << "OnMousePressed testing "
         << mouse_pressed_handler_->GetClassName();
-    if (!mouse_pressed_handler_->enabled()) {
+    if (!mouse_pressed_handler_->GetEnabled()) {
       // Disabled views should eat events instead of propagating them upwards.
       hit_disabled_view = true;
       break;
@@ -482,7 +483,7 @@ void RootView::OnMouseMoved(const ui::MouseEvent& event) {
   // first.  The check for the existing handler is because if a view becomes
   // disabled while handling moves, it's wrong to suddenly send ET_MOUSE_EXITED
   // and ET_MOUSE_ENTERED events, because the mouse hasn't actually exited yet.
-  while (v && !v->enabled() && (v != mouse_move_handler_))
+  while (v && !v->GetEnabled() && (v != mouse_move_handler_))
     v = v->parent();
   if (v && v != this) {
     if (v != mouse_move_handler_) {
@@ -722,7 +723,7 @@ ui::EventDispatchDetails RootView::PreDispatchEvent(ui::EventTarget* target,
     // Disabled views are permitted to be targets of gesture events, but
     // gesture events should never actually be dispatched to them. Prevent
     // dispatch by marking the event as handled.
-    if (!view->enabled())
+    if (!view->GetEnabled())
       event->SetHandled();
   }
 

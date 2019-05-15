@@ -45,7 +45,7 @@ FeaturePodButton* QuietModeFeaturePodController::CreateButton() {
   button_->ShowDetailedViewArrow();
   OnQuietModeChanged(MessageCenter::Get()->IsQuietMode());
 
-  if (button_->visible()) {
+  if (button_->GetVisible()) {
     Shell::Get()->message_center_controller()->AddNotifierSettingsListener(
         this);
     Shell::Get()->message_center_controller()->RequestNotifierSettingsUpdate();

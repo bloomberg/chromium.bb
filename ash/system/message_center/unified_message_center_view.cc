@@ -337,7 +337,7 @@ void UnifiedMessageCenterView::SetAvailableHeight(int available_height) {
 }
 
 void UnifiedMessageCenterView::OnNotificationSlidOut() {
-  if (stacking_counter_->visible() &&
+  if (stacking_counter_->GetVisible() &&
       message_list_view_->GetTotalNotificationCount() <= 1) {
     StartHideStackingBarAnimation();
   } else if (!message_list_view_->GetTotalNotificationCount()) {
@@ -375,7 +375,7 @@ void UnifiedMessageCenterView::RemovedFromWidget() {
 void UnifiedMessageCenterView::Layout() {
   stacking_counter_->SetCount(message_list_view_->GetTotalNotificationCount(),
                               GetStackedNotificationCount());
-  if (stacking_counter_->visible()) {
+  if (stacking_counter_->GetVisible()) {
     gfx::Rect counter_bounds(GetContentsBounds());
 
     int stacking_counter_height = GetStackingNotificationCounterHeight();
@@ -403,7 +403,7 @@ void UnifiedMessageCenterView::Layout() {
 gfx::Size UnifiedMessageCenterView::CalculatePreferredSize() const {
   gfx::Size preferred_size = scroller_->GetPreferredSize();
 
-  if (stacking_counter_->visible()) {
+  if (stacking_counter_->GetVisible()) {
     int bar_height = GetStackingNotificationCounterHeight();
     if (animation_state_ ==
         UnifiedMessageCenterAnimationState::HIDE_STACKING_BAR)
@@ -541,7 +541,7 @@ void UnifiedMessageCenterView::UpdateVisibility() {
 
   // When notification list went invisible, the last notification should be
   // targeted next time.
-  if (!visible()) {
+  if (!GetVisible()) {
     model_->set_notification_target_mode(
         UnifiedSystemTrayModel::NotificationTargetMode::LAST_NOTIFICATION);
     NotifyRectBelowScroll();
@@ -551,7 +551,7 @@ void UnifiedMessageCenterView::UpdateVisibility() {
 void UnifiedMessageCenterView::ScrollToTarget() {
   // Following logic doesn't work when the view is invisible, because it uses
   // the height of |scroller_|.
-  if (!visible())
+  if (!GetVisible())
     return;
 
   auto target_mode = model_->notification_target_mode();
@@ -619,7 +619,7 @@ int UnifiedMessageCenterView::GetStackedNotificationCount() const {
 
 void UnifiedMessageCenterView::NotifyRectBelowScroll() {
   // If the message center is hidden, make sure rounded corners are not drawn.
-  if (!visible()) {
+  if (!GetVisible()) {
     SetNotificationRectBelowScroll(gfx::Rect());
     return;
   }

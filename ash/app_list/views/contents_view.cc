@@ -226,7 +226,7 @@ AppsContainerView* ContentsView::GetAppsContainerView() {
 void ContentsView::SetActiveStateInternal(int page_index,
                                           bool show_search_or_assistant_results,
                                           bool animate) {
-  if (!GetPageView(page_index)->visible())
+  if (!GetPageView(page_index)->GetVisible())
     return;
 
   if (!show_search_or_assistant_results)
@@ -636,7 +636,7 @@ float ContentsView::GetAppListMainViewScale() const {
 }
 
 void ContentsView::SetExpandArrowViewVisibility(bool show) {
-  if (expand_arrow_view_->visible() == show)
+  if (expand_arrow_view_->GetVisible() == show)
     return;
 
   expand_arrow_view_->SetVisible(show);

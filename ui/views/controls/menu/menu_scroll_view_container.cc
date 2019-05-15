@@ -214,7 +214,7 @@ void MenuScrollViewContainer::Layout() {
   int width = View::width() - insets.width();
   int content_height = height() - insets.height();
   MenuItemView* footnote = GetFootnote();
-  if (!scroll_up_button_->visible()) {
+  if (!scroll_up_button_->GetVisible()) {
     if (footnote)
       footnote->SetCornerRadius(corner_radius_);
     scroll_view_->SetBounds(x, y, width, content_height);

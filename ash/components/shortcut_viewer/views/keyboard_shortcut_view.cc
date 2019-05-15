@@ -234,7 +234,7 @@ void KeyboardShortcutView::Layout() {
   search_box_bounds.set_y(top + kSearchBoxTopPadding);
   search_box_view_->SetBoundsRect(search_box_bounds);
 
-  views::View* content_view = categories_tabbed_pane_->visible()
+  views::View* content_view = categories_tabbed_pane_->GetVisible()
                                   ? categories_tabbed_pane_
                                   : search_results_container_;
   const int search_box_used_height = search_box_bounds.height() +
@@ -459,7 +459,7 @@ void KeyboardShortcutView::UpdateViewsLayout(bool is_search_box_active) {
     // Remove all child views, including horizontal separator lines, to prepare
     // for showing search results next time.
     search_results_container_->RemoveAllChildViews(true);
-    if (!categories_tabbed_pane_->visible()) {
+    if (!categories_tabbed_pane_->GetVisible()) {
       // Repopulate |categories_tabbed_pane_| child views, which were removed
       // when they were added to |search_results_container_|.
       InitCategoriesTabbedPane(kAllCategories);

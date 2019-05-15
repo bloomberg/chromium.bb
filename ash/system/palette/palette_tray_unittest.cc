@@ -101,13 +101,13 @@ class PaletteTrayTest : public AshTestBase {
 // Verify the palette tray button exists and but is not visible initially.
 TEST_F(PaletteTrayTest, PaletteTrayIsInvisible) {
   ASSERT_TRUE(palette_tray_);
-  EXPECT_FALSE(palette_tray_->visible());
+  EXPECT_FALSE(palette_tray_->GetVisible());
 }
 
 // Verify if the has seen stylus pref is not set initially, the palette tray
 // should become visible after seeing a stylus event.
 TEST_F(PaletteTrayTest, PaletteTrayVisibleAfterStylusSeen) {
-  ASSERT_FALSE(palette_tray_->visible());
+  ASSERT_FALSE(palette_tray_->GetVisible());
   ASSERT_FALSE(local_state_pref_service()->GetBoolean(prefs::kHasSeenStylus));
 
   // Send a stylus event.
@@ -117,16 +117,16 @@ TEST_F(PaletteTrayTest, PaletteTrayVisibleAfterStylusSeen) {
   generator->ReleaseTouch();
   generator->ExitPenPointerMode();
 
-  EXPECT_TRUE(palette_tray_->visible());
+  EXPECT_TRUE(palette_tray_->GetVisible());
 }
 
 // Verify if the has seen stylus pref is initially set, the palette tray is
 // visible.
 TEST_F(PaletteTrayTest, StylusSeenPrefInitiallySet) {
-  ASSERT_FALSE(palette_tray_->visible());
+  ASSERT_FALSE(palette_tray_->GetVisible());
   local_state_pref_service()->SetBoolean(prefs::kHasSeenStylus, true);
 
-  EXPECT_TRUE(palette_tray_->visible());
+  EXPECT_TRUE(palette_tray_->GetVisible());
 }
 
 // Verify taps on the palette tray button results in expected behaviour.
@@ -204,15 +204,15 @@ TEST_F(PaletteTrayTest, EnableStylusPref) {
   // kEnableStylusTools is true by default
   ASSERT_TRUE(
       active_user_pref_service()->GetBoolean(prefs::kEnableStylusTools));
-  EXPECT_TRUE(palette_tray_->visible());
+  EXPECT_TRUE(palette_tray_->GetVisible());
 
   // Resetting the pref hides the palette tray.
   active_user_pref_service()->SetBoolean(prefs::kEnableStylusTools, false);
-  EXPECT_FALSE(palette_tray_->visible());
+  EXPECT_FALSE(palette_tray_->GetVisible());
 
   // Setting the pref again shows the palette tray.
   active_user_pref_service()->SetBoolean(prefs::kEnableStylusTools, true);
-  EXPECT_TRUE(palette_tray_->visible());
+  EXPECT_TRUE(palette_tray_->GetVisible());
 }
 
 TEST_F(PaletteTrayTest, WelcomeBubbleVisibility) {
@@ -554,13 +554,13 @@ class PaletteTrayTestWithInternalStylus : public PaletteTrayTest {
 // internal stylus.
 TEST_F(PaletteTrayTestWithInternalStylus, Visible) {
   ASSERT_TRUE(palette_tray_);
-  EXPECT_TRUE(palette_tray_->visible());
+  EXPECT_TRUE(palette_tray_->GetVisible());
 }
 
 // Verify that when entering or exiting the lock screen, the behavior of the
 // palette tray button is as expected.
 TEST_F(PaletteTrayTestWithInternalStylus, PaletteTrayOnLockScreenBehavior) {
-  ASSERT_TRUE(palette_tray_->visible());
+  ASSERT_TRUE(palette_tray_->GetVisible());
 
   PaletteToolManager* manager = test_api_->palette_tool_manager();
   manager->ActivateTool(PaletteToolId::LASER_POINTER);
@@ -570,19 +570,19 @@ TEST_F(PaletteTrayTestWithInternalStylus, PaletteTrayOnLockScreenBehavior) {
   // hidden, and the tool that was active is no longer active.
   GetSessionControllerClient()->LockScreen();
   EXPECT_FALSE(manager->IsToolActive(PaletteToolId::LASER_POINTER));
-  EXPECT_FALSE(palette_tray_->visible());
+  EXPECT_FALSE(palette_tray_->GetVisible());
 
   // Verify that when logging back in the tray is visible, but the tool that was
   // active before locking the screen is still inactive.
   GetSessionControllerClient()->UnlockScreen();
-  EXPECT_TRUE(palette_tray_->visible());
+  EXPECT_TRUE(palette_tray_->GetVisible());
   EXPECT_FALSE(manager->IsToolActive(PaletteToolId::LASER_POINTER));
 }
 
 // Verify a tool deactivates when the palette bubble is opened while the tool
 // is active.
 TEST_F(PaletteTrayTestWithInternalStylus, ToolDeactivatesWhenOpeningBubble) {
-  ASSERT_TRUE(palette_tray_->visible());
+  ASSERT_TRUE(palette_tray_->GetVisible());
 
   palette_tray_->ShowBubble(false /* show_by_click */);
   EXPECT_TRUE(test_api_->tray_bubble_wrapper());
@@ -747,8 +747,8 @@ TEST_F(PaletteTrayNoSessionTestWithInternalStylus,
       controllers[1]->GetStatusAreaWidget()->palette_tray();
 
   // The palette tray on the external monitor is not visible.
-  EXPECT_TRUE(main_tray->visible());
-  EXPECT_FALSE(external_tray->visible());
+  EXPECT_TRUE(main_tray->GetVisible());
+  EXPECT_FALSE(external_tray->GetVisible());
 
   // Removing the stylus shows the bubble only on the main palette tray.
   fake_stylus_event_on_all_trays(ui::StylusState::REMOVED);

@@ -483,7 +483,7 @@ void xdg_surface_v6_get_toplevel(wl_client* client,
                                  wl_resource* resource,
                                  uint32_t id) {
   ShellSurface* shell_surface = GetUserDataAs<ShellSurface>(resource);
-  if (shell_surface->enabled()) {
+  if (shell_surface->GetEnabled()) {
     wl_resource_post_error(resource, ZXDG_SURFACE_V6_ERROR_ALREADY_CONSTRUCTED,
                            "surface has already been constructed");
     return;
@@ -506,7 +506,7 @@ void xdg_surface_v6_get_popup(wl_client* client,
                               wl_resource* parent_resource,
                               wl_resource* positioner_resource) {
   XdgShellSurface* shell_surface = GetUserDataAs<XdgShellSurface>(resource);
-  if (shell_surface->enabled()) {
+  if (shell_surface->GetEnabled()) {
     wl_resource_post_error(resource, ZXDG_SURFACE_V6_ERROR_ALREADY_CONSTRUCTED,
                            "surface has already been constructed");
     return;

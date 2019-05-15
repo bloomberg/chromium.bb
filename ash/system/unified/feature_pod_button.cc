@@ -60,7 +60,7 @@ void FeaturePodIconButton::PaintButtonContents(gfx::Canvas* canvas) {
   flags.setAntiAlias(true);
 
   SkColor color = kUnifiedMenuButtonColor;
-  if (enabled()) {
+  if (GetEnabled()) {
     if (toggled_)
       color = kUnifiedMenuButtonColorActive;
   } else {
@@ -140,7 +140,7 @@ void FeaturePodLabelButton::Layout() {
   LayoutInCenter(label_, GetContentsBounds().y());
   LayoutInCenter(sub_label_, GetContentsBounds().CenterPoint().y());
 
-  if (!detailed_view_arrow_->visible())
+  if (!detailed_view_arrow_->GetVisible())
     return;
 
   // We need custom Layout() because |label_| is first laid out in the center
@@ -156,7 +156,7 @@ void FeaturePodLabelButton::Layout() {
 gfx::Size FeaturePodLabelButton::CalculatePreferredSize() const {
   // Minimum width of the button
   int width = kUnifiedFeaturePodLabelWidth + GetInsets().width();
-  if (detailed_view_arrow_->visible()) {
+  if (detailed_view_arrow_->GetVisible()) {
     const int label_width = std::min(kUnifiedFeaturePodLabelWidth,
                                      label_->GetPreferredSize().width());
     // Symmetrically increase the width to accommodate the arrow
@@ -168,7 +168,7 @@ gfx::Size FeaturePodLabelButton::CalculatePreferredSize() const {
   }
 
   int height = label_->GetPreferredSize().height() + GetInsets().height();
-  if (sub_label_->visible())
+  if (sub_label_->GetVisible())
     height += sub_label_->GetPreferredSize().height();
 
   return gfx::Size(width, height);
@@ -216,13 +216,13 @@ void FeaturePodLabelButton::ShowDetailedViewArrow() {
 }
 
 void FeaturePodLabelButton::OnEnabledChanged() {
-  label_->SetEnabledColor(enabled() ? kUnifiedMenuTextColor
-                                    : kUnifiedMenuTextColorDisabled);
-  sub_label_->SetEnabledColor(enabled() ? kUnifiedMenuSecondaryTextColor
-                                        : kUnifiedMenuTextColorDisabled);
+  label_->SetEnabledColor(GetEnabled() ? kUnifiedMenuTextColor
+                                       : kUnifiedMenuTextColorDisabled);
+  sub_label_->SetEnabledColor(GetEnabled() ? kUnifiedMenuSecondaryTextColor
+                                           : kUnifiedMenuTextColorDisabled);
   detailed_view_arrow_->SetImage(gfx::CreateVectorIcon(
       kUnifiedMenuMoreIcon,
-      enabled() ? kUnifiedMenuIconColor : kUnifiedMenuIconColorDisabled));
+      GetEnabled() ? kUnifiedMenuIconColor : kUnifiedMenuIconColorDisabled));
 }
 
 void FeaturePodLabelButton::LayoutInCenter(views::View* child, int y) {
@@ -324,8 +324,8 @@ void FeaturePodButton::RequestFocus() {
 }
 
 void FeaturePodButton::OnEnabledChanged() {
-  icon_button_->SetEnabled(enabled());
-  label_button_->SetEnabled(enabled());
+  icon_button_->SetEnabled(GetEnabled());
+  label_button_->SetEnabled(GetEnabled());
 }
 
 void FeaturePodButton::ButtonPressed(views::Button* sender,

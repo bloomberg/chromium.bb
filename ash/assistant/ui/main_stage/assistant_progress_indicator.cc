@@ -81,7 +81,7 @@ int AssistantProgressIndicator::GetHeightForWidth(int width) const {
 }
 
 void AssistantProgressIndicator::AddedToWidget() {
-  VisibilityChanged(/*starting_from=*/this, /*is_visible=*/visible());
+  VisibilityChanged(/*starting_from=*/this, /*is_visible=*/GetVisible());
 }
 
 void AssistantProgressIndicator::RemovedFromWidget() {
@@ -91,7 +91,7 @@ void AssistantProgressIndicator::RemovedFromWidget() {
 void AssistantProgressIndicator::OnLayerOpacityChanged(
     ui::PropertyChangeReason reason) {
   VisibilityChanged(/*starting_from=*/this,
-                    /*is_visible=*/visible());
+                    /*is_visible=*/GetVisible());
 }
 
 void AssistantProgressIndicator::VisibilityChanged(views::View* starting_from,

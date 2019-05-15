@@ -181,7 +181,7 @@ void PaymentRequestDialogView::ShowProcessingSpinner() {
 }
 
 bool PaymentRequestDialogView::IsInteractive() const {
-  return !throbber_overlay_.visible();
+  return !throbber_overlay_.GetVisible();
 }
 
 void PaymentRequestDialogView::ShowPaymentHandlerScreen(

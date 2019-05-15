@@ -281,7 +281,7 @@ bool CardUnmaskPromptViews::IsDialogButtonEnabled(
 
   DCHECK_EQ(ui::DIALOG_BUTTON_OK, button);
 
-  return cvc_input_->enabled() &&
+  return cvc_input_->GetEnabled() &&
          controller_->InputCvcIsValid(cvc_input_->text()) &&
          ExpirationDateIsValid();
 }
@@ -304,10 +304,10 @@ bool CardUnmaskPromptViews::Accept() {
 
   controller_->OnUnmaskResponse(
       cvc_input_->text(),
-      month_input_->visible()
+      month_input_->GetVisible()
           ? month_input_->GetTextForRow(month_input_->GetSelectedIndex())
           : base::string16(),
-      year_input_->visible()
+      year_input_->GetVisible()
           ? year_input_->GetTextForRow(year_input_->GetSelectedIndex())
           : base::string16(),
       storage_checkbox_ ? storage_checkbox_->GetChecked() : false);

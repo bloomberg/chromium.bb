@@ -541,7 +541,7 @@ void LoginUserView::ButtonPressed(views::Button* sender,
     DCHECK(menu_);
 
     // If menu is showing, just close it
-    if (menu_->visible()) {
+    if (menu_->GetVisible()) {
       menu_->Hide();
       return;
     }

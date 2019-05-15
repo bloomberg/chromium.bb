@@ -127,16 +127,16 @@ TEST_F(UnifiedSystemTrayControllerTest, ToggleExpanded) {
 
 TEST_F(UnifiedSystemTrayControllerTest, EnsureExpanded_UserChooserShown) {
   InitializeView();
-  EXPECT_FALSE(view()->detailed_view_for_testing()->visible());
+  EXPECT_FALSE(view()->detailed_view_for_testing()->GetVisible());
 
   // Show the user chooser view.
   controller()->ShowUserChooserView();
-  EXPECT_TRUE(view()->detailed_view_for_testing()->visible());
+  EXPECT_TRUE(view()->detailed_view_for_testing()->GetVisible());
 
   // Calling EnsureExpanded() should hide the detailed view (e.g. this can
   // happen when changing the brightness or volume).
   controller()->EnsureExpanded();
-  EXPECT_FALSE(view()->detailed_view_for_testing()->visible());
+  EXPECT_FALSE(view()->detailed_view_for_testing()->GetVisible());
 }
 
 TEST_F(UnifiedSystemTrayControllerTest, PreferredSizeChanged) {
@@ -162,7 +162,7 @@ TEST_F(UnifiedSystemTrayControllerTest, NotificationHiddenView_ModeShow) {
 
   EXPECT_TRUE(AshMessageCenterLockScreenController::IsAllowed());
   EXPECT_TRUE(AshMessageCenterLockScreenController::IsEnabled());
-  EXPECT_FALSE(view()->notification_hidden_view_for_testing()->visible());
+  EXPECT_FALSE(view()->notification_hidden_view_for_testing()->GetVisible());
 }
 
 TEST_F(UnifiedSystemTrayControllerTest, NotificationHiddenView_ModeHide) {
@@ -173,7 +173,7 @@ TEST_F(UnifiedSystemTrayControllerTest, NotificationHiddenView_ModeHide) {
 
   EXPECT_TRUE(AshMessageCenterLockScreenController::IsAllowed());
   EXPECT_FALSE(AshMessageCenterLockScreenController::IsEnabled());
-  EXPECT_TRUE(view()->notification_hidden_view_for_testing()->visible());
+  EXPECT_TRUE(view()->notification_hidden_view_for_testing()->GetVisible());
   EXPECT_NE(nullptr, view()
                          ->notification_hidden_view_for_testing()
                          ->change_button_for_testing());
@@ -188,7 +188,7 @@ TEST_F(UnifiedSystemTrayControllerTest,
 
   EXPECT_TRUE(AshMessageCenterLockScreenController::IsAllowed());
   EXPECT_TRUE(AshMessageCenterLockScreenController::IsEnabled());
-  EXPECT_FALSE(view()->notification_hidden_view_for_testing()->visible());
+  EXPECT_FALSE(view()->notification_hidden_view_for_testing()->GetVisible());
 }
 
 TEST_F(UnifiedSystemTrayControllerTest, NotificationHiddenView_ModeProhibited) {
@@ -199,7 +199,7 @@ TEST_F(UnifiedSystemTrayControllerTest, NotificationHiddenView_ModeProhibited) {
 
   EXPECT_FALSE(AshMessageCenterLockScreenController::IsAllowed());
   EXPECT_FALSE(AshMessageCenterLockScreenController::IsEnabled());
-  EXPECT_TRUE(view()->notification_hidden_view_for_testing()->visible());
+  EXPECT_TRUE(view()->notification_hidden_view_for_testing()->GetVisible());
   EXPECT_EQ(nullptr, view()
                          ->notification_hidden_view_for_testing()
                          ->change_button_for_testing());

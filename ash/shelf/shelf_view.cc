@@ -210,7 +210,7 @@ class ShelfFocusSearch : public views::FocusSearch {
       if (view != main_shelf->GetBackButton() || IsTabletModeEnabled())
         focusable_views.push_back(view);
     }
-    if (main_shelf->GetOverflowButton()->visible())
+    if (main_shelf->GetOverflowButton()->GetVisible())
       focusable_views.push_back(main_shelf->GetOverflowButton());
     const int overflow_cutoff = static_cast<int>(focusable_views.size());
     if (main_shelf->IsShowingOverflowBubble() && overflow_shelf) {
@@ -503,7 +503,7 @@ void ShelfView::UpdateVisibleShelfItemBoundsUnion() {
       visible_shelf_item_bounds_union_.Union(child->GetMirroredBounds());
   }
   // Also include the overflow button if it is visible.
-  if (overflow_button_->visible()) {
+  if (overflow_button_->GetVisible()) {
     visible_shelf_item_bounds_union_.Union(
         overflow_button_->GetMirroredBounds());
   }
@@ -553,7 +553,7 @@ gfx::Size ShelfView::CalculatePreferredSize() const {
   CalculateIdealBounds();
 
   int last_button_index = last_visible_index_;
-  if (!is_overflow_mode() && overflow_button_ && overflow_button_->visible())
+  if (!is_overflow_mode() && overflow_button_ && overflow_button_->GetVisible())
     ++last_button_index;
 
   // When an item is dragged off from the overflow bubble, it is moved to last
@@ -627,7 +627,7 @@ View* ShelfView::GetTooltipHandlerForPoint(const gfx::Point& point) {
   // child's subviews.
   View::Views children = GetChildrenInZOrder();
   for (auto* child : base::Reversed(children)) {
-    if (!child->visible())
+    if (!child->GetVisible())
       continue;
 
     gfx::Point point_in_child_coords(point);
@@ -887,7 +887,7 @@ views::View* ShelfView::FindFirstFocusableChild() {
 views::View* ShelfView::FindLastFocusableChild() {
   if (IsShowingOverflowBubble())
     return overflow_shelf()->FindLastFocusableChild();
-  return overflow_button_->visible()
+  return overflow_button_->GetVisible()
              ? overflow_button_
              : view_model_->view_at(last_visible_index());
 }
@@ -1968,7 +1968,7 @@ void ShelfView::OnFadeOutAnimationEnded() {
 void ShelfView::StartFadeInLastVisibleItem() {
   // If overflow button is visible and there is a valid new last item, fading
   // the new last item in after sliding animation is finished.
-  if (overflow_button_->visible() && last_visible_index_ >= 0) {
+  if (overflow_button_->GetVisible() && last_visible_index_ >= 0) {
     views::View* last_visible_view = view_model_->view_at(last_visible_index_);
     last_visible_view->layer()->SetOpacity(0);
     bounds_animator_->SetAnimationDelegate(
@@ -2060,7 +2060,7 @@ gfx::Rect ShelfView::GetBoundsForDragInsertInScreen() {
     const int last_button_index = view_model_->view_size() - 1;
     gfx::Rect last_button_bounds =
         view_model_->view_at(last_button_index)->bounds();
-    if (overflow_button_->visible()) {
+    if (overflow_button_->GetVisible()) {
       // When overflow button is visible, last_button_bounds should be
       // overflow button's bounds.
       last_button_bounds = overflow_button_->bounds();
@@ -2204,7 +2204,7 @@ void ShelfView::ShelfItemRemoved(int model_index, const ShelfItem& old_item) {
     UpdateOverflowRange(overflow_bubble_->bubble_view()->shelf_view());
   }
 
-  if (view->visible()) {
+  if (view->GetVisible()) {
     // The first animation fades out the view. When done we'll animate the rest
     // of the views to their target location.
     bounds_animator_->AnimateViewTo(view, view->bounds());
@@ -2246,7 +2246,7 @@ void ShelfView::ShelfItemChanged(int model_index, const ShelfItem& old_item) {
     view_model_->set_ideal_bounds(model_index, old_ideal_bounds);
 
     new_view->SetBoundsRect(old_view->bounds());
-    if (overflow_button_ && overflow_button_->visible())
+    if (overflow_button_ && overflow_button_->GetVisible())
       AnimateToIdealBounds();
     else
       bounds_animator_->AnimateViewTo(new_view, old_ideal_bounds);

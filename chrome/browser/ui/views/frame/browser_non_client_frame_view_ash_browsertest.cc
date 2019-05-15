@@ -350,13 +350,13 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
   BrowserNonClientFrameViewAsh* frame_view = GetFrameViewAsh(browser_view);
 
   BookmarkBarView* bookmark_bar = browser_view->GetBookmarkBarView();
-  EXPECT_FALSE(bookmark_bar->visible());
+  EXPECT_FALSE(bookmark_bar->GetVisible());
   const int min_height_no_bookmarks = frame_view->GetMinimumSize().height();
 
   // Setting non-zero bookmark bar preferred size forces it to be visible and
   // triggers BrowserView layout update.
   bookmark_bar->SetPreferredSize(gfx::Size(50, 5));
-  EXPECT_TRUE(bookmark_bar->visible());
+  EXPECT_TRUE(bookmark_bar->GetVisible());
 
   // Minimum window size should grow with the bookmark bar shown.
   // kMinimumSize window property should get updated.
@@ -812,7 +812,7 @@ class HostedAppNonClientFrameViewAshTest
     hosted_app_button_container_ =
         frame_view->hosted_app_button_container_for_testing();
     DCHECK(hosted_app_button_container_);
-    DCHECK(hosted_app_button_container_->visible());
+    DCHECK(hosted_app_button_container_->GetVisible());
 
     content_setting_views_ =
         &hosted_app_button_container_->GetContentSettingViewsForTesting();
@@ -918,12 +918,12 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, FocusableViews) {
 IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
                        ButtonVisibilityInOverviewMode) {
   SetUpHostedApp();
-  EXPECT_TRUE(hosted_app_button_container_->visible());
+  EXPECT_TRUE(hosted_app_button_container_->GetVisible());
 
   ToggleOverview();
-  EXPECT_FALSE(hosted_app_button_container_->visible());
+  EXPECT_FALSE(hosted_app_button_container_->GetVisible());
   ToggleOverview();
-  EXPECT_TRUE(hosted_app_button_container_->visible());
+  EXPECT_TRUE(hosted_app_button_container_->GetVisible());
 }
 
 // Tests that a web app's theme color is set.
@@ -967,7 +967,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
       GetPageActionIcon(PageActionIconType::kManagePasswords);
 
   EXPECT_TRUE(manage_passwords_icon);
-  EXPECT_FALSE(manage_passwords_icon->visible());
+  EXPECT_FALSE(manage_passwords_icon->GetVisible());
 
   autofill::PasswordForm password_form;
   password_form.username_value = base::ASCIIToUTF16("test");
@@ -978,7 +978,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
   chrome::ManagePasswordsForPage(app_browser_);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(manage_passwords_icon->visible());
+  EXPECT_TRUE(manage_passwords_icon->GetVisible());
 }
 
 // Test that the zoom icon appears in the title bar for hosted app windows.
@@ -991,13 +991,13 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, ZoomIcon) {
   PageActionIconView* zoom_icon = GetPageActionIcon(PageActionIconType::kZoom);
 
   EXPECT_TRUE(zoom_icon);
-  EXPECT_FALSE(zoom_icon->visible());
+  EXPECT_FALSE(zoom_icon->GetVisible());
   EXPECT_FALSE(ZoomBubbleView::GetZoomBubble());
 
   zoom_controller->SetZoomLevel(content::ZoomFactorToZoomLevel(1.5));
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(zoom_icon->visible());
+  EXPECT_TRUE(zoom_icon->GetVisible());
   EXPECT_TRUE(ZoomBubbleView::GetZoomBubble());
 }
 
@@ -1007,11 +1007,11 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, FindIcon) {
   PageActionIconView* find_icon = GetPageActionIcon(PageActionIconType::kFind);
 
   EXPECT_TRUE(find_icon);
-  EXPECT_FALSE(find_icon->visible());
+  EXPECT_FALSE(find_icon->GetVisible());
 
   chrome::Find(app_browser_);
 
-  EXPECT_TRUE(find_icon->visible());
+  EXPECT_TRUE(find_icon->GetVisible());
 }
 
 // Test that the find icon appears in the title bar for hosted app windows.
@@ -1021,7 +1021,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, TranslateIcon) {
       GetPageActionIcon(PageActionIconType::kTranslate);
 
   ASSERT_TRUE(translate_icon);
-  EXPECT_FALSE(translate_icon->visible());
+  EXPECT_FALSE(translate_icon->GetVisible());
 
   chrome::Find(app_browser_);
   browser_view_->ShowTranslateBubble(browser_view_->GetActiveWebContents(),
@@ -1029,7 +1029,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, TranslateIcon) {
                                      "en", "fr",
                                      translate::TranslateErrors::NONE, true);
 
-  EXPECT_TRUE(translate_icon->visible());
+  EXPECT_TRUE(translate_icon->GetVisible());
 }
 
 // Tests that the focus toolbar command focuses the app menu button in web app
@@ -1113,13 +1113,13 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
                        ContentSettingIcons) {
   SetUpHostedApp();
   for (auto* view : *content_setting_views_)
-    EXPECT_FALSE(view->visible());
+    EXPECT_FALSE(view->GetVisible());
 
   ContentSettingImageView* geolocation_icon = GrantGeolocationPermission();
 
   for (auto* view : *content_setting_views_) {
     bool is_geolocation_icon = view == geolocation_icon;
-    EXPECT_EQ(is_geolocation_icon, view->visible());
+    EXPECT_EQ(is_geolocation_icon, view->GetVisible());
   }
 
   // Press the geolocation button.
@@ -1215,20 +1215,20 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshBackButtonTest,
   BrowserNonClientFrameViewAsh* app_frame_view =
       GetFrameViewAsh(BrowserView::GetBrowserViewForBrowser(app_browser));
   ASSERT_TRUE(app_frame_view->back_button_);
-  EXPECT_TRUE(app_frame_view->back_button_->visible());
+  EXPECT_TRUE(app_frame_view->back_button_->GetVisible());
   // The back button should be disabled initially.
-  EXPECT_FALSE(app_frame_view->back_button_->enabled());
+  EXPECT_FALSE(app_frame_view->back_button_->GetEnabled());
 
   // Nagivate to a page. The back button should now be enabled.
   const GURL kAppStartURL("http://example.org/");
   NavigateParams nav_params(app_browser, kAppStartURL,
                             ui::PAGE_TRANSITION_LINK);
   ui_test_utils::NavigateToURL(&nav_params);
-  EXPECT_TRUE(app_frame_view->back_button_->enabled());
+  EXPECT_TRUE(app_frame_view->back_button_->GetEnabled());
 
   // Go back to the blank. The back button should be disabled again.
   chrome::GoBack(app_browser, WindowOpenDisposition::CURRENT_TAB);
-  EXPECT_FALSE(app_frame_view->back_button_->enabled());
+  EXPECT_FALSE(app_frame_view->back_button_->GetEnabled());
 }
 
 // Test the normal type browser's kTopViewInset is always 0.
@@ -1274,9 +1274,9 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
   // Test that the header is invisible for the browser window in overview mode
   // and visible when not in overview mode.
   ToggleOverview();
-  EXPECT_FALSE(frame_view->caption_button_container_->visible());
+  EXPECT_FALSE(frame_view->caption_button_container_->GetVisible());
   ToggleOverview();
-  EXPECT_TRUE(frame_view->caption_button_container_->visible());
+  EXPECT_TRUE(frame_view->caption_button_container_->GetVisible());
 
   // Create another browser window.
   Browser::CreateParams params = Browser::CreateParams::CreateForApp(
@@ -1303,22 +1303,22 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
   ToggleOverview();
   split_view_controller->SnapWindow(widget->GetNativeWindow(),
                                     ash::SplitViewController::LEFT);
-  EXPECT_TRUE(frame_view->caption_button_container_->visible());
-  EXPECT_FALSE(frame_view2->caption_button_container_->visible());
+  EXPECT_TRUE(frame_view->caption_button_container_->GetVisible());
+  EXPECT_FALSE(frame_view2->caption_button_container_->GetVisible());
 
   // When both browser windows are snapped, the headers are both visible.
   split_view_controller->SnapWindow(widget2->GetNativeWindow(),
                                     ash::SplitViewController::RIGHT);
-  EXPECT_TRUE(frame_view->caption_button_container_->visible());
-  EXPECT_TRUE(frame_view2->caption_button_container_->visible());
+  EXPECT_TRUE(frame_view->caption_button_container_->GetVisible());
+  EXPECT_TRUE(frame_view2->caption_button_container_->GetVisible());
 
   // Toggle overview mode while splitview mode is active. Test that the header
   // is visible for the snapped browser window but not for the other browser
   // window in overview mode.
   ToggleOverview();
 
-  EXPECT_TRUE(frame_view->caption_button_container_->visible());
-  EXPECT_FALSE(frame_view2->caption_button_container_->visible());
+  EXPECT_TRUE(frame_view->caption_button_container_->GetVisible());
+  EXPECT_FALSE(frame_view2->caption_button_container_->GetVisible());
 }
 
 // Regression test for https://crbug.com/879851.
@@ -1413,17 +1413,17 @@ IN_PROC_BROWSER_TEST_P(HomeLauncherBrowserNonClientFrameViewAshTest,
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   BrowserNonClientFrameViewAsh* frame_view = GetFrameViewAsh(browser_view);
 
-  EXPECT_TRUE(frame_view->caption_button_container_->visible());
+  EXPECT_TRUE(frame_view->caption_button_container_->GetVisible());
   ASSERT_NO_FATAL_FAILURE(test::SetAndWaitForTabletMode(true));
-  EXPECT_FALSE(frame_view->caption_button_container_->visible());
+  EXPECT_FALSE(frame_view->caption_button_container_->GetVisible());
 
   ToggleOverview();
-  EXPECT_FALSE(frame_view->caption_button_container_->visible());
+  EXPECT_FALSE(frame_view->caption_button_container_->GetVisible());
   ToggleOverview();
-  EXPECT_FALSE(frame_view->caption_button_container_->visible());
+  EXPECT_FALSE(frame_view->caption_button_container_->GetVisible());
 
   ASSERT_NO_FATAL_FAILURE(test::SetAndWaitForTabletMode(false));
-  EXPECT_TRUE(frame_view->caption_button_container_->visible());
+  EXPECT_TRUE(frame_view->caption_button_container_->GetVisible());
 }
 
 IN_PROC_BROWSER_TEST_P(HomeLauncherBrowserNonClientFrameViewAshTest,
@@ -1441,20 +1441,20 @@ IN_PROC_BROWSER_TEST_P(HomeLauncherBrowserNonClientFrameViewAshTest,
 
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
   BrowserNonClientFrameViewAsh* frame_view = GetFrameViewAsh(browser_view);
-  EXPECT_TRUE(frame_view->caption_button_container_->visible());
+  EXPECT_TRUE(frame_view->caption_button_container_->GetVisible());
 
   // Tablet mode doesn't affect app's caption button's visibility.
   ASSERT_NO_FATAL_FAILURE(test::SetAndWaitForTabletMode(true));
-  EXPECT_TRUE(frame_view->caption_button_container_->visible());
+  EXPECT_TRUE(frame_view->caption_button_container_->GetVisible());
 
   // However, overview mode does.
   ToggleOverview();
-  EXPECT_FALSE(frame_view->caption_button_container_->visible());
+  EXPECT_FALSE(frame_view->caption_button_container_->GetVisible());
   ToggleOverview();
-  EXPECT_TRUE(frame_view->caption_button_container_->visible());
+  EXPECT_TRUE(frame_view->caption_button_container_->GetVisible());
 
   ASSERT_NO_FATAL_FAILURE(test::SetAndWaitForTabletMode(false));
-  EXPECT_TRUE(frame_view->caption_button_container_->visible());
+  EXPECT_TRUE(frame_view->caption_button_container_->GetVisible());
 }
 
 #define INSTANTIATE_TEST_SUITE(name) \

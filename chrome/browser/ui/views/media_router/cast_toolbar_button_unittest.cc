@@ -152,11 +152,11 @@ class CastToolbarButtonTest : public ChromeViewsTestBase {
 };
 
 TEST_F(CastToolbarButtonTest, ShowAndHideButton) {
-  ASSERT_FALSE(button_->visible());
+  ASSERT_FALSE(button_->GetVisible());
   button_->ShowIcon();
-  EXPECT_TRUE(button_->visible());
+  EXPECT_TRUE(button_->GetVisible());
   button_->HideIcon();
-  EXPECT_FALSE(button_->visible());
+  EXPECT_FALSE(button_->GetVisible());
 }
 
 TEST_F(CastToolbarButtonTest, UpdateIssues) {

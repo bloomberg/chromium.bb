@@ -140,7 +140,7 @@ class InfoThrobberLayout : public views::LayoutManager {
     gfx::Size max_size(GetMaxChildSize(host));
     // Center each child view within |max_size|.
     for (auto* child : host->children()) {
-      if (!child->visible())
+      if (!child->GetVisible())
         continue;
       gfx::Size child_size = child->GetPreferredSize();
       gfx::Point origin;
@@ -163,7 +163,7 @@ class InfoThrobberLayout : public views::LayoutManager {
   gfx::Size GetMaxChildSize(const views::View* host) const {
     gfx::Size max_size;
     for (const auto* child : host->children()) {
-      if (child->visible())
+      if (child->GetVisible())
         max_size.SetToMax(child->GetPreferredSize());
     }
     return max_size;

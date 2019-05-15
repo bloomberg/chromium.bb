@@ -52,7 +52,7 @@ class ImeMenuTrayTest : public AshTestBase {
 
  protected:
   // Returns true if the IME menu tray is visible.
-  bool IsVisible() { return GetTray()->visible(); }
+  bool IsVisible() { return GetTray()->GetVisible(); }
 
   // Returns the label text of the tray.
   const base::string16& GetTrayText() { return GetTray()->label_->text(); }

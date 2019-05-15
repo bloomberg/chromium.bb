@@ -1243,7 +1243,7 @@ TEST_F(TextfieldTest, PasswordTest) {
   InitTextfield();
   textfield_->SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_PASSWORD, textfield_->GetTextInputType());
-  EXPECT_TRUE(textfield_->enabled());
+  EXPECT_TRUE(textfield_->GetEnabled());
   EXPECT_TRUE(textfield_->IsFocusable());
 
   last_contents_.clear();
@@ -1913,7 +1913,7 @@ TEST_F(TextfieldTest, ReadOnlyTest) {
   InitTextfield();
   textfield_->SetText(ASCIIToUTF16("read only"));
   textfield_->SetReadOnly(true);
-  EXPECT_TRUE(textfield_->enabled());
+  EXPECT_TRUE(textfield_->GetEnabled());
   EXPECT_TRUE(textfield_->IsFocusable());
 
   bool shift = false;

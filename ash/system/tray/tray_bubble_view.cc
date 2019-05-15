@@ -107,7 +107,7 @@ class BottomAlignedBoxLayout : public views::BoxLayout {
          i != host->children().rend() && consumed_height < host->height();
          ++i) {
       View* child = *i;
-      if (!child->visible())
+      if (!child->GetVisible())
         continue;
       gfx::Size size = child->GetPreferredSize();
       child->SetBounds(0, host->height() - consumed_height - size.height(),
@@ -430,7 +430,7 @@ gfx::Size TrayBubbleView::CalculatePreferredSize() const {
 int TrayBubbleView::GetHeightForWidth(int width) const {
   width = std::max(width - GetInsets().width(), 0);
   const auto visible_height = [width](int height, const views::View* child) {
-    return height + (child->visible() ? child->GetHeightForWidth(width) : 0);
+    return height + (child->GetVisible() ? child->GetHeightForWidth(width) : 0);
   };
   const int height = std::accumulate(children().cbegin(), children().cend(),
                                      GetInsets().height(), visible_height);

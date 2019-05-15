@@ -174,7 +174,7 @@ void NonClientView::Layout() {
   if (frame_view_->GetClientMask(client_view_->size(), &client_clip))
     client_view_->set_clip_path(client_clip);
 
-  if (overlay_view_ && overlay_view_->visible())
+  if (overlay_view_ && overlay_view_->GetVisible())
     overlay_view_->SetBoundsRect(GetLocalBounds());
 }
 

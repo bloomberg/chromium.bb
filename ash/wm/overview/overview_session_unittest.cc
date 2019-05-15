@@ -2409,9 +2409,9 @@ TEST_F(OverviewSessionTest, Backdrop) {
   // Only very tall and very wide windows will have a backdrop. The backdrop
   // only gets created if we need it once during the overview session.
   ASSERT_TRUE(GetBackdropView(wide_item));
-  EXPECT_TRUE(GetBackdropView(wide_item)->visible());
+  EXPECT_TRUE(GetBackdropView(wide_item)->GetVisible());
   EXPECT_TRUE(GetBackdropView(tall_item));
-  ASSERT_TRUE(GetBackdropView(tall_item)->visible());
+  ASSERT_TRUE(GetBackdropView(tall_item)->GetVisible());
   EXPECT_FALSE(GetBackdropView(normal_item));
 
   display::Screen* screen = display::Screen::GetScreen();
@@ -2423,9 +2423,9 @@ TEST_F(OverviewSessionTest, Backdrop) {
   // After rotation the former wide window will be a normal window and its
   // backdrop will still be there but invisible.
   ASSERT_TRUE(GetBackdropView(wide_item));
-  EXPECT_FALSE(GetBackdropView(wide_item)->visible());
+  EXPECT_FALSE(GetBackdropView(wide_item)->GetVisible());
   EXPECT_TRUE(GetBackdropView(tall_item));
-  ASSERT_TRUE(GetBackdropView(tall_item)->visible());
+  ASSERT_TRUE(GetBackdropView(tall_item)->GetVisible());
   EXPECT_FALSE(GetBackdropView(normal_item));
 
   // Test that leaving overview mode cleans up properly.

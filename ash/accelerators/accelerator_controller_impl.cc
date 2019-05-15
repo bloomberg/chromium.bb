@@ -593,7 +593,7 @@ void HandleShowImeMenuBubble() {
       Shelf::ForWindow(Shell::GetPrimaryRootWindow())->GetStatusAreaWidget();
   if (status_area_widget) {
     ImeMenuTray* ime_menu_tray = status_area_widget->ime_menu_tray();
-    if (ime_menu_tray && ime_menu_tray->visible() &&
+    if (ime_menu_tray && ime_menu_tray->GetVisible() &&
         !ime_menu_tray->GetBubbleView()) {
       ime_menu_tray->ShowBubble(false /* show_by_click */);
     }

@@ -376,7 +376,7 @@ TEST_F(ComboboxTest, DisabilityTest) {
   View* container = new View();
   widget_->SetContentsView(container);
   container->AddChildView(combobox_);
-  EXPECT_FALSE(combobox_->enabled());
+  EXPECT_FALSE(combobox_->GetEnabled());
 }
 
 // On Mac, key events can't change the currently selected index directly for a

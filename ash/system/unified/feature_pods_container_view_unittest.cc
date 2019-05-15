@@ -80,7 +80,7 @@ TEST_F(FeaturePodsContainerViewTest, ExpandedAndCollapsed) {
   EXPECT_LT(buttons_[0]->y(), buttons_[kUnifiedFeaturePodItemsInRow]->y());
   // All buttons are visible.
   for (auto* button : buttons_)
-    EXPECT_TRUE(button->visible());
+    EXPECT_TRUE(button->GetVisible());
 
   container()->SetExpandedAmount(0.0);
 
@@ -91,7 +91,7 @@ TEST_F(FeaturePodsContainerViewTest, ExpandedAndCollapsed) {
   // Buttons exceed kUnifiedFeaturePodMaxItemsInCollapsed are invisible.
   for (int i = 0; i < kNumberOfAddedButtons; ++i) {
     EXPECT_EQ(i < kUnifiedFeaturePodMaxItemsInCollapsed,
-              buttons_[i]->visible());
+              buttons_[i]->GetVisible());
   }
 }
 
@@ -100,9 +100,9 @@ TEST_F(FeaturePodsContainerViewTest, HiddenButtonRemainsHidden) {
   // The button is invisible in expanded state.
   buttons_.front()->SetVisible(false);
   container()->SetExpandedAmount(0.0);
-  EXPECT_FALSE(buttons_.front()->visible());
+  EXPECT_FALSE(buttons_.front()->GetVisible());
   container()->SetExpandedAmount(1.0);
-  EXPECT_FALSE(buttons_.front()->visible());
+  EXPECT_FALSE(buttons_.front()->GetVisible());
 }
 
 TEST_F(FeaturePodsContainerViewTest, BecomeVisibleInCollapsed) {
@@ -113,7 +113,7 @@ TEST_F(FeaturePodsContainerViewTest, BecomeVisibleInCollapsed) {
   // The button becomes visible in collapsed state.
   buttons_.back()->SetVisible(true);
   // As the container still has remaining space, the button will be visible.
-  EXPECT_TRUE(buttons_.back()->visible());
+  EXPECT_TRUE(buttons_.back()->GetVisible());
 }
 
 TEST_F(FeaturePodsContainerViewTest, StillHiddenInCollapsed) {
@@ -124,22 +124,22 @@ TEST_F(FeaturePodsContainerViewTest, StillHiddenInCollapsed) {
   // The button becomes visible in collapsed state.
   buttons_.back()->SetVisible(true);
   // As the container doesn't have remaining space, the button won't be visible.
-  EXPECT_FALSE(buttons_.back()->visible());
+  EXPECT_FALSE(buttons_.back()->GetVisible());
 
   container()->SetExpandedAmount(1.0);
   // The button becomes visible in expanded state.
-  EXPECT_TRUE(buttons_.back()->visible());
+  EXPECT_TRUE(buttons_.back()->GetVisible());
 }
 
 TEST_F(FeaturePodsContainerViewTest, DifferentButtonBecomeVisibleInCollapsed) {
   AddButtons(kUnifiedFeaturePodMaxItemsInCollapsed + 1);
   container()->SetExpandedAmount(0.0);
   // The last button is not visible as it doesn't have enough space.
-  EXPECT_FALSE(buttons_.back()->visible());
+  EXPECT_FALSE(buttons_.back()->GetVisible());
   // The first button becomes invisible.
   buttons_.front()->SetVisible(false);
   // The last button now has the space for it.
-  EXPECT_TRUE(buttons_.back()->visible());
+  EXPECT_TRUE(buttons_.back()->GetVisible());
 }
 
 TEST_F(FeaturePodsContainerViewTest, SizeChangeByExpanding) {

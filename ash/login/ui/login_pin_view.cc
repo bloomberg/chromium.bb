@@ -271,7 +271,7 @@ class LoginPinView::BackspacePinButton : public BasePinButton {
 
   void OnEnabledChanged() {
     SkColor color = login_constants::kButtonEnabledColor;
-    if (!enabled()) {
+    if (!GetEnabled()) {
       color = SkColorSetA(color, login_constants::kButtonDisabledAlpha);
       CancelRepeat();
     }

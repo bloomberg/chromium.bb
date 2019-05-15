@@ -123,7 +123,7 @@ void TriView::SetContainerBorder(Container container,
 }
 
 void TriView::SetContainerVisible(Container container, bool visible) {
-  if (GetContainer(container)->visible() == visible)
+  if (GetContainer(container)->GetVisible() == visible)
     return;
   GetContainer(container)->SetVisible(visible);
   Layout();

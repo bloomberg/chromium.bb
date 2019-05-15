@@ -59,7 +59,7 @@ FootnoteContainerView::FootnoteContainerView(const gfx::Insets& margins,
                                        ? gfx::kGoogleGrey900
                                        : gfx::kGoogleGrey200));
   AddChildView(child_view);
-  SetVisible(child_view->visible());
+  SetVisible(child_view->GetVisible());
 }
 
 FootnoteContainerView::~FootnoteContainerView() = default;
@@ -73,7 +73,7 @@ void FootnoteContainerView::SetCornerRadius(float corner_radius) {
 
 void FootnoteContainerView::ChildVisibilityChanged(View* child) {
   DCHECK_EQ(1u, children().size());
-  SetVisible(child->visible());
+  SetVisible(child->GetVisible());
 }
 
 }  // namespace views

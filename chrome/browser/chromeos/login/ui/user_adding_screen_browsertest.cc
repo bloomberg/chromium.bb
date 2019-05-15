@@ -79,7 +79,7 @@ class UserAddingScreenTest : public LoginManagerTest,
     views::View* web_view = login_view->children().front();
     for (views::View* current_view = web_view; current_view;
          current_view = current_view->parent()) {
-      EXPECT_TRUE(current_view->visible());
+      EXPECT_TRUE(current_view->GetVisible());
       if (current_view->layer())
         EXPECT_EQ(current_view->layer()->GetCombinedOpacity(), 1.f);
     }

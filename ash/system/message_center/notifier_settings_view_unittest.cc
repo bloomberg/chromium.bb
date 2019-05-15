@@ -136,15 +136,15 @@ TEST_F(NotifierSettingsViewTest, TestEmptyNotifierView) {
   InitView();
   // Wait for mojo.
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(GetView()->no_notifiers_view_->visible());
-  EXPECT_TRUE(GetView()->top_label_->visible());
+  EXPECT_FALSE(GetView()->no_notifiers_view_->GetVisible());
+  EXPECT_TRUE(GetView()->top_label_->GetVisible());
 
   SetNoNotifiers(true);
   InitView();
   // Wait for mojo.
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(GetView()->no_notifiers_view_->visible());
-  EXPECT_FALSE(GetView()->top_label_->visible());
+  EXPECT_TRUE(GetView()->no_notifiers_view_->GetVisible());
+  EXPECT_FALSE(GetView()->top_label_->GetVisible());
 }
 
 }  // namespace ash

@@ -353,7 +353,7 @@ void UnifiedSystemTrayView::SetExpandedAmount(double expanded_amount) {
 }
 
 int UnifiedSystemTrayView::GetExpandedSystemTrayHeight() const {
-  return (notification_hidden_view_->visible()
+  return (notification_hidden_view_->GetVisible()
               ? notification_hidden_view_->GetPreferredSize().height()
               : 0) +
          top_shortcuts_view_->GetPreferredSize().height() +
@@ -363,7 +363,7 @@ int UnifiedSystemTrayView::GetExpandedSystemTrayHeight() const {
 }
 
 int UnifiedSystemTrayView::GetCollapsedSystemTrayHeight() const {
-  return (notification_hidden_view_->visible()
+  return (notification_hidden_view_->GetVisible()
               ? notification_hidden_view_->GetPreferredSize().height()
               : 0) +
          top_shortcuts_view_->GetPreferredSize().height() +
@@ -379,7 +379,7 @@ bool UnifiedSystemTrayView::IsTransformEnabled() const {
   // TODO(tetsui): Support animation by transform even when
   // UnifiedMessageCenterview is visible.
   return expanded_amount_ != 0.0 && expanded_amount_ != 1.0 &&
-         !message_center_view_->visible();
+         !message_center_view_->GetVisible();
 }
 
 void UnifiedSystemTrayView::SetNotificationRectBelowScroll(

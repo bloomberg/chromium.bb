@@ -2619,7 +2619,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
   // visible.
   ASSERT_TRUE(immersive_controller2->IsEnabled());
   ASSERT_FALSE(immersive_controller2->IsRevealed());
-  ASSERT_TRUE(tab_strip2->visible());
+  ASSERT_TRUE(tab_strip2->GetVisible());
 
   // Move to the first tab and drag it enough so that it detaches, but not
   // enough that it attaches to browser2.
@@ -2635,7 +2635,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
   // browser2's top chrome should be revealed and the tab strip should be
   // at normal height while user is tragging tabs_strip2's tabs.
   ASSERT_TRUE(immersive_controller2->IsRevealed());
-  ASSERT_TRUE(tab_strip2->visible());
+  ASSERT_TRUE(tab_strip2->GetVisible());
 
   // Release the mouse, stopping the drag session.
   ASSERT_TRUE(ReleaseInput());
@@ -2657,7 +2657,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
 
   EXPECT_TRUE(immersive_controller2->IsEnabled());
   EXPECT_FALSE(immersive_controller2->IsRevealed());
-  EXPECT_TRUE(tab_strip2->visible());
+  EXPECT_TRUE(tab_strip2->GetVisible());
 }
 
 // Subclass of DetachToBrowserTabDragControllerTest that

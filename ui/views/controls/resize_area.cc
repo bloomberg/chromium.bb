@@ -26,8 +26,7 @@ const char* ResizeArea::GetClassName() const {
 }
 
 gfx::NativeCursor ResizeArea::GetCursor(const ui::MouseEvent& event) {
-  return enabled() ? GetNativeEastWestResizeCursor()
-                   : gfx::kNullCursor;
+  return GetEnabled() ? GetNativeEastWestResizeCursor() : gfx::kNullCursor;
 }
 
 void ResizeArea::OnGestureEvent(ui::GestureEvent* event) {

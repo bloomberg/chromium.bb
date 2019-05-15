@@ -1,3 +1,4 @@
+
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -27,7 +28,7 @@ void RoundedImageView::SetImage(const gfx::ImageSkia& image,
   // Try to get the best image quality for the avatar.
   resized_image_ = gfx::ImageSkiaOperations::CreateResizedImage(
       image, skia::ImageOperations::RESIZE_BEST, size);
-  if (GetWidget() && visible()) {
+  if (GetWidget() && GetVisible()) {
     PreferredSizeChanged();
     SchedulePaint();
   }

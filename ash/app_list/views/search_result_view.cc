@@ -248,7 +248,7 @@ void SearchResultView::PaintButtonContents(gfx::Canvas* canvas) {
   gfx::Rect content_rect(rect);
   gfx::Rect text_bounds(rect);
   text_bounds.set_x(kPreferredIconViewWidth);
-  if (actions_view_->visible()) {
+  if (actions_view_->GetVisible()) {
     text_bounds.set_width(
         rect.width() - kPreferredIconViewWidth - kTextTrailPadding -
         actions_view_->bounds().width() -
@@ -319,7 +319,7 @@ void SearchResultView::OnMouseExited(const ui::MouseEvent& event) {
 }
 
 void SearchResultView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  if (!visible())
+  if (!GetVisible())
     return;
 
   // This is a work around to deal with the nested button case(append and remove

@@ -59,11 +59,11 @@ TEST_F(StatusAreaWidgetTest, Basics) {
   EXPECT_TRUE(status->palette_tray());
 
   // Default trays are visible.
-  EXPECT_FALSE(status->overview_button_tray()->visible());
-  EXPECT_TRUE(status->unified_system_tray()->visible());
-  EXPECT_FALSE(status->logout_button_tray_for_testing()->visible());
-  EXPECT_FALSE(status->ime_menu_tray()->visible());
-  EXPECT_FALSE(status->virtual_keyboard_tray_for_testing()->visible());
+  EXPECT_FALSE(status->overview_button_tray()->GetVisible());
+  EXPECT_TRUE(status->unified_system_tray()->GetVisible());
+  EXPECT_FALSE(status->logout_button_tray_for_testing()->GetVisible());
+  EXPECT_FALSE(status->ime_menu_tray()->GetVisible());
+  EXPECT_FALSE(status->virtual_keyboard_tray_for_testing()->GetVisible());
 }
 
 class SystemTrayFocusTestObserver : public SystemTrayFocusObserver {
@@ -144,16 +144,16 @@ TEST_F(StatusAreaWidgetFocusTest, DISABLED_FocusOutObserverUnified) {
   ASSERT_TRUE(status->virtual_keyboard_tray_for_testing());
 
   // Default trays are visible.
-  ASSERT_FALSE(status->overview_button_tray()->visible());
-  ASSERT_TRUE(status->unified_system_tray()->visible());
-  ASSERT_FALSE(status->logout_button_tray_for_testing()->visible());
-  ASSERT_FALSE(status->ime_menu_tray()->visible());
-  ASSERT_FALSE(status->virtual_keyboard_tray_for_testing()->visible());
+  ASSERT_FALSE(status->overview_button_tray()->GetVisible());
+  ASSERT_TRUE(status->unified_system_tray()->GetVisible());
+  ASSERT_FALSE(status->logout_button_tray_for_testing()->GetVisible());
+  ASSERT_FALSE(status->ime_menu_tray()->GetVisible());
+  ASSERT_FALSE(status->virtual_keyboard_tray_for_testing()->GetVisible());
 
   // In Unified, we don't have notification tray, so ImeMenuTray is used for
   // tab testing.
   status->ime_menu_tray()->OnIMEMenuActivationChanged(true);
-  ASSERT_TRUE(status->ime_menu_tray()->visible());
+  ASSERT_TRUE(status->ime_menu_tray()->GetVisible());
 
   // Set focus to status area widget. The first focused view will be the IME
   // tray.

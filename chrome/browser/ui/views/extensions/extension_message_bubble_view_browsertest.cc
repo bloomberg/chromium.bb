@@ -35,7 +35,7 @@ void CheckBubbleAgainstReferenceBounds(views::BubbleDialogDelegateView* bubble,
   EXPECT_FALSE(reference_bounds.x() > bubble_bounds.right());
 
   // And, of course, the bubble should be visible...
-  EXPECT_TRUE(bubble->visible());
+  EXPECT_TRUE(bubble->GetVisible());
   // ... as should its Widget.
   EXPECT_TRUE(bubble->GetWidget()->IsVisible());
 }

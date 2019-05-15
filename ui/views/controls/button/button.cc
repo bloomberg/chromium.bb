@@ -346,7 +346,7 @@ void Button::OnPaint(gfx::Canvas* canvas) {
 void Button::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kButton;
   node_data->SetName(GetAccessibleName());
-  if (!enabled())
+  if (!GetEnabled())
     node_data->SetRestriction(ax::mojom::Restriction::kDisabled);
 
   switch (state_) {
@@ -364,7 +364,7 @@ void Button::GetAccessibleNodeData(ui::AXNodeData* node_data) {
       // No additional accessibility node_data set for this button node_data.
       break;
   }
-  if (enabled())
+  if (GetEnabled())
     node_data->SetDefaultActionVerb(ax::mojom::DefaultActionVerb::kPress);
 
   button_controller_->UpdateAccessibleNodeData(node_data);
@@ -558,7 +558,7 @@ bool Button::ShouldEnterPushedState(const ui::Event& event) {
 void Button::PaintButtonContents(gfx::Canvas* canvas) {}
 
 bool Button::ShouldEnterHoveredState() {
-  if (!visible())
+  if (!GetVisible())
     return false;
 
   bool check_mouse_position = true;

@@ -49,7 +49,7 @@ bool GetExpandArrowViewVisibility() {
       ->app_list_main_view()
       ->contents_view()
       ->expand_arrow_view()
-      ->visible();
+      ->GetVisible();
 }
 
 app_list::SearchBoxView* GetSearchBoxView() {

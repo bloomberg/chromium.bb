@@ -122,8 +122,8 @@ TEST_F(ImmersiveModeControllerAshTest, Layout) {
   ASSERT_FALSE(controller()->IsEnabled());
 
   // By default, the tabstrip and toolbar should be visible.
-  EXPECT_TRUE(tabstrip->visible());
-  EXPECT_TRUE(toolbar->visible());
+  EXPECT_TRUE(tabstrip->GetVisible());
+  EXPECT_TRUE(toolbar->GetVisible());
   EXPECT_EQ(
       0, browser_view()->contents_web_view()->holder()->GetHitTestTopInset());
 
@@ -131,9 +131,9 @@ TEST_F(ImmersiveModeControllerAshTest, Layout) {
   EXPECT_TRUE(browser_view()->GetWidget()->IsFullscreen());
   EXPECT_TRUE(controller()->IsEnabled());
   EXPECT_FALSE(controller()->IsRevealed());
-  EXPECT_FALSE(toolbar->visible());
+  EXPECT_FALSE(toolbar->GetVisible());
   // The browser's top chrome is completely offscreen with tapstrip visible.
-  EXPECT_TRUE(tabstrip->visible());
+  EXPECT_TRUE(tabstrip->GetVisible());
   // Tabstrip and top container view should be completely offscreen.
   EXPECT_EQ(0, GetBoundsInWidget(tabstrip).bottom());
   EXPECT_EQ(0, GetBoundsInWidget(browser_view()->top_container()).bottom());
@@ -148,8 +148,8 @@ TEST_F(ImmersiveModeControllerAshTest, Layout) {
   // normal style and show the toolbar.
   AttemptReveal();
   EXPECT_TRUE(controller()->IsRevealed());
-  EXPECT_TRUE(tabstrip->visible());
-  EXPECT_TRUE(toolbar->visible());
+  EXPECT_TRUE(tabstrip->GetVisible());
+  EXPECT_TRUE(toolbar->GetVisible());
   EXPECT_NE(
       0, browser_view()->contents_web_view()->holder()->GetHitTestTopInset());
 
@@ -171,8 +171,8 @@ TEST_F(ImmersiveModeControllerAshTest, Layout) {
   // The tab strip and toolbar should still be visible and the TopContainerView
   // should still be flush with the top edge of the widget.
   EXPECT_TRUE(controller()->IsRevealed());
-  EXPECT_TRUE(tabstrip->visible());
-  EXPECT_TRUE(toolbar->visible());
+  EXPECT_TRUE(tabstrip->GetVisible());
+  EXPECT_TRUE(toolbar->GetVisible());
   EXPECT_EQ(0, GetBoundsInWidget(browser_view()->top_container()).y());
 
   // The web contents should be flush with the top edge of the widget when in
@@ -182,8 +182,8 @@ TEST_F(ImmersiveModeControllerAshTest, Layout) {
   // Hide the top-of-window views. Tabstrip is still considered as visible.
   AttemptUnreveal();
   EXPECT_FALSE(controller()->IsRevealed());
-  EXPECT_FALSE(toolbar->visible());
-  EXPECT_TRUE(tabstrip->visible());
+  EXPECT_FALSE(toolbar->GetVisible());
+  EXPECT_TRUE(tabstrip->GetVisible());
 
   // The web contents should still be flush with the edge of the widget.
   EXPECT_EQ(0, GetBoundsInWidget(contents_web_view).y());
@@ -196,8 +196,8 @@ TEST_F(ImmersiveModeControllerAshTest, Layout) {
   EXPECT_FALSE(browser_view()->GetWidget()->IsFullscreen());
   EXPECT_FALSE(controller()->IsEnabled());
   EXPECT_FALSE(controller()->IsRevealed());
-  EXPECT_TRUE(tabstrip->visible());
-  EXPECT_TRUE(toolbar->visible());
+  EXPECT_TRUE(tabstrip->GetVisible());
+  EXPECT_TRUE(toolbar->GetVisible());
 }
 
 // Test that the browser commands which are usually disabled in fullscreen are
