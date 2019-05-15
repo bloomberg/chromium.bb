@@ -170,6 +170,7 @@ const struct NonPrintableCodeEntry {
     {DomCode::INSERT, DomKey::INSERT},
     // {DomCode::INTL_RO, DomKey::_}
     {DomCode::KANA_MODE, DomKey::KANA_MODE},
+    {DomCode::KEYBOARD_LAYOUT_SELECT, DomKey::MODE_CHANGE},
     {DomCode::LANG1, DomKey::HANGUL_MODE},
     {DomCode::LANG2, DomKey::HANJA_MODE},
     {DomCode::LANG3, DomKey::KATAKANA},

@@ -586,6 +586,9 @@ USB_KEYMAP_DECLARATION {
   USB_KEYMAP(0x0c028b, 0x00e9, 0x00f1, 0x0000, 0xffff, "MailForward", MAIL_FORWARD),
   // USB#0x0c028c:  AC_Send
   USB_KEYMAP(0x0c028c, 0x00e7, 0x00ef, 0x0000, 0xffff, "MailSend", MAIL_SEND),
+  // USB#0x0c029d:  AC Next Keyboard Layout Select
+  USB_KEYMAP(0x0c029d, 0x0248, 0x0250, 0x0000, 0xffff, "KeyboardLayoutSelect",
+             KEYBOARD_LAYOUT_SELECT),
   USB_KEYMAP(0x0c029f, 0x0078, 0x0080, 0x0000, 0xffff, "ShowAllWindows",
              SHOW_ALL_WINDOWS),  // AC Desktop Show All Windows
 };
