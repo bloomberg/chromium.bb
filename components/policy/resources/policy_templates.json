@@ -16036,6 +16036,25 @@
 
           If this policy is disabled or not set, no accounts are added to the Kerberos Accounts settings and all accounts previously added with this policy are removed. Users may still add accounts manually if the 'Users can add Kerberos accounts' policy is enabled.''',
     },
+    {
+      'name': 'CommandLineFlagSecurityWarningsEnabled',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:76-'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': False,
+      },
+      'example_value': True,
+      'id': 566,
+      'caption': '''Enable security warnings for command-line flags''',
+      'tags': ['system-security'],
+      'desc': '''If disabled, prevents security warnings from appearing when Chrome is launched with some potentially dangerous command-line flags.
+
+          If enabled or unset, security warnings are displayed when some command-line flags are used to launch Chrome.
+
+          On Windows, this policy is only available on instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain or Windows 10 Pro or Enterprise instances that are enrolled for device management.''',
+    },
   ],
 
   'messages': {
@@ -16720,5 +16739,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546],
-  'highest_id_currently_used':  565
+  'highest_id_currently_used': 566
 }

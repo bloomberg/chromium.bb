@@ -2713,6 +2713,16 @@
     "pref_mappings": [{ "pref": "allow_popups_during_page_unload" }]
   },
 
+  "CommandLineFlagSecurityWarningsEnabled": {
+    "os": ["win", "linux", "mac"],
+    "test_policy": { "CommandLineFlagSecurityWarningsEnabled": true },
+    "pref_mappings": [
+      { "pref": "browser.command_line_flag_security_warnings_enabled",
+        "local_state": true
+      }
+    ]
+  },
+
   "----- Chrome OS policies ------------------------------------------------": {},
 
   "ChromeOsLockOnIdleSuspend": {

@@ -859,6 +859,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kPromotionalTabsEnabled,
     prefs::kPromotionalTabsEnabled,
     base::Value::Type::BOOLEAN },
+  { key::kCommandLineFlagSecurityWarningsEnabled,
+    prefs::kCommandLineFlagSecurityWarningsEnabled,
+    base::Value::Type::BOOLEAN },
 #endif  // !OS_CHROMEOS
   { key::kSuppressUnsupportedOSWarning,
     prefs::kSuppressUnsupportedOSWarning,

@@ -66,6 +66,7 @@ const char kBlockedExtensionPrefix[] = "[BLOCKED]";
 const char* kInsecurePolicies[] = {
     key::kChromeCleanupEnabled,
     key::kChromeCleanupReportingEnabled,
+    key::kCommandLineFlagSecurityWarningsEnabled,
     key::kDefaultSearchProviderEnabled,
     key::kHomepageIsNewTabPage,
     key::kHomepageLocation,

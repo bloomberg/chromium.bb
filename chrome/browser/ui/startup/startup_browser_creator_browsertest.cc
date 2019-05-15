@@ -52,6 +52,8 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/infobars/core/infobar.h"
+#include "components/infobars/core/infobar_delegate.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -214,9 +216,6 @@ class StartupBrowserCreatorTest : public extensions::ExtensionBrowserTest {
     EXPECT_EQ(1U, infobar_service->infobar_count());
 #endif  // defined(OS_MACOSX)
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(StartupBrowserCreatorTest);
 };
 
 class OpenURLsPopupObserver : public BrowserListObserver {
@@ -1416,8 +1415,6 @@ class StartupBrowserCreatorWelcomeBackTest : public InProcessBrowserTest {
   std::unique_ptr<ScopedKeepAlive> scoped_keep_alive_;
   StartupBrowserCreator browser_creator_;
   policy::MockConfigurationPolicyProvider provider_;
-
-  DISALLOW_COPY_AND_ASSIGN(StartupBrowserCreatorWelcomeBackTest);
 };
 
 #if defined(OS_WIN)
@@ -1494,8 +1491,6 @@ class StartupBrowserCreatorWasRestartedFlag : public InProcessBrowserTest {
 
  private:
   base::ScopedTempDir temp_dir_;
-
-  DISALLOW_COPY_AND_ASSIGN(StartupBrowserCreatorWasRestartedFlag);
 };
 
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorWasRestartedFlag, Test) {
@@ -1503,3 +1498,116 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorWasRestartedFlag, Test) {
   EXPECT_FALSE(
       g_browser_process->local_state()->GetBoolean(prefs::kWasRestarted));
 }
+
+// The kCommandLineFlagSecurityWarningsEnabled policy doesn't exist on ChromeOS.
+#if !defined(OS_CHROMEOS)
+enum class CommandLineFlagSecurityWarningsPolicy {
+  kNoPolicy,
+  kEnabled,
+  kDisabled,
+};
+
+// Verifies that infobars are displayed (or not) depending on enterprise policy.
+class StartupBrowserCreatorInfobarsTest
+    : public InProcessBrowserTest,
+      public ::testing::WithParamInterface<
+          CommandLineFlagSecurityWarningsPolicy> {
+ public:
+  StartupBrowserCreatorInfobarsTest() : policy_(GetParam()) {}
+
+ protected:
+  InfoBarService* LaunchBrowserAndGetCreatedInfobarService(
+      const base::CommandLine& command_line) {
+    Profile* profile = browser()->profile();
+    StartupBrowserCreatorImpl launch(base::FilePath(), command_line,
+                                     chrome::startup::IS_NOT_FIRST_RUN);
+    EXPECT_TRUE(launch.Launch(profile, std::vector<GURL>(), true));
+
+    // This should have created a new browser window.
+    Browser* new_browser = FindOneOtherBrowser(browser());
+    EXPECT_TRUE(new_browser);
+
+    return InfoBarService::FromWebContents(
+        new_browser->tab_strip_model()->GetWebContentsAt(0));
+  }
+
+  const CommandLineFlagSecurityWarningsPolicy policy_;
+
+ private:
+  void SetUpInProcessBrowserTestFixture() override {
+    EXPECT_CALL(policy_provider_, IsInitializationComplete(_))
+        .WillRepeatedly(Return(true));
+    policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
+        &policy_provider_);
+
+    if (policy_ != CommandLineFlagSecurityWarningsPolicy::kNoPolicy) {
+      bool is_enabled =
+          policy_ == CommandLineFlagSecurityWarningsPolicy::kEnabled;
+      policy::PolicyMap policies;
+      policies.Set(policy::key::kCommandLineFlagSecurityWarningsEnabled,
+                   policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+                   policy::POLICY_SOURCE_PLATFORM,
+                   std::make_unique<base::Value>(is_enabled), nullptr);
+      policy_provider_.UpdateChromePolicy(policies);
+    }
+  }
+
+  policy::MockConfigurationPolicyProvider policy_provider_;
+};
+
+IN_PROC_BROWSER_TEST_P(StartupBrowserCreatorInfobarsTest,
+                       CheckInfobarForEnableAutomation) {
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+  command_line.AppendSwitch(switches::kEnableAutomation);
+  InfoBarService* infobar_service =
+      LaunchBrowserAndGetCreatedInfobarService(command_line);
+  ASSERT_TRUE(infobar_service);
+
+  bool found_automation_infobar = false;
+  for (size_t i = 0; i < infobar_service->infobar_count(); i++) {
+    infobars::InfoBar* infobar = infobar_service->infobar_at(i);
+    if (infobar->delegate()->GetIdentifier() ==
+        infobars::InfoBarDelegate::AUTOMATION_INFOBAR_DELEGATE) {
+      found_automation_infobar = true;
+    }
+  }
+
+  EXPECT_EQ(found_automation_infobar,
+            policy_ != CommandLineFlagSecurityWarningsPolicy::kDisabled);
+}
+
+IN_PROC_BROWSER_TEST_P(StartupBrowserCreatorInfobarsTest,
+                       CheckInfobarForBadFlag) {
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+  // Test one of the flags from |bad_flags_prompt.cc|. Any of the flags should
+  // have the same behavior.
+  command_line.AppendSwitch(switches::kDisableWebSecurity);
+  // BadFlagsPrompt::ShowBadFlagsPrompt uses CommandLine::ForCurrentProcess
+  // instead of the command-line passed to StartupBrowserCreator. In browser
+  // tests, this references the browser test's instead of the new process.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kDisableWebSecurity);
+  InfoBarService* infobar_service =
+      LaunchBrowserAndGetCreatedInfobarService(command_line);
+  ASSERT_TRUE(infobar_service);
+
+  bool found_bad_flags_infobar = false;
+  for (size_t i = 0; i < infobar_service->infobar_count(); i++) {
+    infobars::InfoBar* infobar = infobar_service->infobar_at(i);
+    if (infobar->delegate()->GetIdentifier() ==
+        infobars::InfoBarDelegate::BAD_FLAGS_INFOBAR_DELEGATE) {
+      found_bad_flags_infobar = true;
+    }
+  }
+
+  EXPECT_EQ(found_bad_flags_infobar,
+            policy_ != CommandLineFlagSecurityWarningsPolicy::kDisabled);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    PolicyControl,
+    StartupBrowserCreatorInfobarsTest,
+    ::testing::Values(CommandLineFlagSecurityWarningsPolicy::kNoPolicy,
+                      CommandLineFlagSecurityWarningsPolicy::kEnabled,
+                      CommandLineFlagSecurityWarningsPolicy::kDisabled));
+#endif  // !defined(OS_CHROMEOS)

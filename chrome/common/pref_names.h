@@ -523,6 +523,7 @@ extern const char kRestartLastSessionOnShutdown[];
 #if !defined(OS_ANDROID)
 #if !defined(OS_CHROMEOS)
 extern const char kPromotionalTabsEnabled[];
+extern const char kCommandLineFlagSecurityWarningsEnabled[];
 #endif
 extern const char kSuppressUnsupportedOSWarning[];
 extern const char kWasRestarted[];

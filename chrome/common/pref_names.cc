@@ -1524,6 +1524,12 @@ const char kRestartLastSessionOnShutdown[] = "restart.last.session.on.shutdown";
 // Pref name for the policy controlling presentation of full-tab promotional
 // and/or educational content.
 const char kPromotionalTabsEnabled[] = "browser.promotional_tabs_enabled";
+
+// Boolean that specifies whether or not to show security warnings for some
+// potentially bad command-line flags. True by default. Controlled by the
+// CommandLineFlagSecurityWarningsEnabled policy setting.
+const char kCommandLineFlagSecurityWarningsEnabled[] =
+    "browser.command_line_flag_security_warnings_enabled";
 #endif  // !defined(OS_CHROMEOS)
 
 // Boolean that specifies whether or not showing the unsupported OS warning is
@@ -1534,7 +1540,6 @@ const char kSuppressUnsupportedOSWarning[] =
 
 // Set before autorestarting Chrome, cleared on clean exit.
 const char kWasRestarted[] = "was.restarted";
-
 #endif  // !defined(OS_ANDROID)
 
 // Whether Extensions are enabled.

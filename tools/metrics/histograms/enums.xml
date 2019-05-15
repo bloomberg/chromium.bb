@@ -16840,6 +16840,7 @@ Called by update_net_error_codes.py.-->
   <int value="563" label="AppRecommendationZeroStateEnabled"/>
   <int value="564" label="BrowserSwitcherExternalGreylistUrl"/>
   <int value="565" label="PolicyDictionaryMultipleSourceMergeList"/>
+  <int value="566" label="CommandLineFlagSecurityWarningsEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

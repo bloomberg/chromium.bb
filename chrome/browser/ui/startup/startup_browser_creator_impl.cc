@@ -21,6 +21,7 @@
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/apps/apps_launch.h"
 #include "chrome/browser/apps/platform_apps/install_chrome_app.h"
@@ -54,6 +55,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/prefs/pref_service.h"
 #include "components/rappor/public/rappor_utils.h"
 #include "components/rappor/rappor_service_impl.h"
 #include "content/public/browser/child_process_security_policy.h"
@@ -284,6 +286,23 @@ std::vector<GURL> TabsToUrls(const StartupTabs& tabs) {
 void AppendTabs(const StartupTabs& from, StartupTabs* to) {
   if (!from.empty())
     to->insert(to->end(), from.begin(), from.end());
+}
+
+bool ShouldShowBadFlagsSecurityWarnings() {
+#if !defined(OS_CHROMEOS)
+  PrefService* local_state = g_browser_process->local_state();
+  if (!local_state)
+    return true;
+
+  const auto* pref = local_state->FindPreference(
+      prefs::kCommandLineFlagSecurityWarningsEnabled);
+  DCHECK(pref);
+
+  // The warnings can only be disabled by policy. Default to show warnings.
+  if (pref->IsManaged())
+    return pref->GetValue()->GetBool();
+#endif
+  return true;
 }
 
 }  // namespace
@@ -799,8 +818,11 @@ void StartupBrowserCreatorImpl::AddInfoBarsIfNecessary(
     SessionCrashedBubble::Show(browser);
   }
 
-  if (command_line_.HasSwitch(switches::kEnableAutomation))
+  bool show_bad_flags_security_warnings = ShouldShowBadFlagsSecurityWarnings();
+  if (command_line_.HasSwitch(switches::kEnableAutomation) &&
+      show_bad_flags_security_warnings) {
     AutomationInfoBarDelegate::Create();
+  }
 
   // The below info bars are only added to the first profile which is launched.
   // Other profiles might be restoring the browsing sessions asynchronously,
@@ -815,19 +837,24 @@ void StartupBrowserCreatorImpl::AddInfoBarsIfNecessary(
     content::WebContents* web_contents =
         browser->tab_strip_model()->GetActiveWebContents();
     DCHECK(web_contents);
-    chrome::ShowBadFlagsPrompt(web_contents);
+
+    if (show_bad_flags_security_warnings)
+      chrome::ShowBadFlagsPrompt(web_contents);
+
     InfoBarService* infobar_service =
         InfoBarService::FromWebContents(web_contents);
     if (!google_apis::HasAPIKeyConfigured() ||
         !google_apis::HasOAuthClientConfigured()) {
       GoogleApiKeysInfoBarDelegate::Create(infobar_service);
     }
+
     if (ObsoleteSystem::IsObsoleteNowOrSoon()) {
       PrefService* local_state = g_browser_process->local_state();
       if (!local_state ||
           !local_state->GetBoolean(prefs::kSuppressUnsupportedOSWarning))
         ObsoleteSystemInfoBarDelegate::Create(infobar_service);
     }
+
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS) && !defined(OS_ANDROID) && \
     !defined(OS_CHROMEOS)
     if (profile_->IsLegacySupervised())
