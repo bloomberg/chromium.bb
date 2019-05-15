@@ -55,6 +55,7 @@ android_library("internal_java") {
     "java/src/org/chromium/chrome/browser/keyboard_accessory/sheet_tabs/AccessorySheetTabViewBinder.java",
     "java/src/org/chromium/chrome/browser/keyboard_accessory/sheet_tabs/AddressAccessoryInfoView.java",
     "java/src/org/chromium/chrome/browser/keyboard_accessory/sheet_tabs/AddressAccessorySheetCoordinator.java",
+    "java/src/org/chromium/chrome/browser/keyboard_accessory/sheet_tabs/AddressAccessorySheetMediator.java",
     "java/src/org/chromium/chrome/browser/keyboard_accessory/sheet_tabs/AddressAccessorySheetViewBinder.java",
     "java/src/org/chromium/chrome/browser/keyboard_accessory/sheet_tabs/CreditCardAccessorySheetCoordinator.java",
     "java/src/org/chromium/chrome/browser/keyboard_accessory/sheet_tabs/PasswordAccessoryInfoView.java",

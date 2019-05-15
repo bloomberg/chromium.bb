@@ -91,7 +91,8 @@ class FooterCommand {
 enum class FallbackSheetType {
   // Indicates the data type to which an AccessorySheetData object corresponds.
   PASSWORD,
-  CREDIT_CARD
+  CREDIT_CARD,
+  ADDRESS
 };
 
 // Represents the contents of a bottom sheet tab below the keyboard accessory,

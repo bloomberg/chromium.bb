@@ -10,8 +10,11 @@ import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.RecyclerView;
 import android.view.ViewGroup;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.keyboard_accessory.AccessoryTabType;
 import org.chromium.chrome.browser.keyboard_accessory.R;
+import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.AccessorySheetData;
+import org.chromium.chrome.browser.keyboard_accessory.data.Provider;
 import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AccessorySheetTabModel.AccessorySheetDataPiece;
 import org.chromium.ui.modelutil.RecyclerViewAdapter;
 import org.chromium.ui.modelutil.SimpleRecyclerViewMcp;
@@ -22,6 +25,8 @@ import org.chromium.ui.modelutil.SimpleRecyclerViewMcp;
  */
 public class AddressAccessorySheetCoordinator extends AccessorySheetTabCoordinator {
     private final AccessorySheetTabModel mModel = new AccessorySheetTabModel();
+    private final AddressAccessorySheetMediator mMediator =
+            new AddressAccessorySheetMediator(mModel);
 
     /**
      * Creates the address tab.
@@ -44,7 +49,18 @@ public class AddressAccessorySheetCoordinator extends AccessorySheetTabCoordinat
     }
 
     @Override
-    public void onTabShown() {}
+    public void onTabShown() {
+        mMediator.onTabShown();
+    }
+
+    /**
+     * Registers the provider pushing a complete new instance of {@link AccessorySheetData} that
+     * should be displayed as sheet for this tab.
+     * @param accessorySheetDataProvider A {@link Provider <AccessorySheetData>}.
+     */
+    public void registerDataProvider(Provider<AccessorySheetData> accessorySheetDataProvider) {
+        accessorySheetDataProvider.addObserver(mMediator);
+    }
 
     /**
      * Creates an adapter to an {@link AddressAccessorySheetViewBinder} that is wired
@@ -58,5 +74,10 @@ public class AddressAccessorySheetCoordinator extends AccessorySheetTabCoordinat
                 new SimpleRecyclerViewMcp<>(model, AccessorySheetDataPiece::getType,
                         AccessorySheetTabViewBinder.ElementViewHolder::bind),
                 AddressAccessorySheetViewBinder::create);
+    }
+
+    @VisibleForTesting
+    AccessorySheetTabModel getSheetDataPiecesForTesting() {
+        return mModel;
     }
 }
