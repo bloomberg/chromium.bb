@@ -101,7 +101,7 @@ Polymer({
     },
 
     /** @private */
-    androidRunning_: {
+    androidEnabled_: {
       type: Boolean,
       value: false,
     },
@@ -124,8 +124,8 @@ Polymer({
     settings.DevicePageBrowserProxyImpl.getInstance().initializeStylus();
 
     this.addWebUIListener(
-        'storage-android-running-changed',
-        this.set.bind(this, 'androidRunning_'));
+        'storage-android-enabled-changed',
+        this.set.bind(this, 'androidEnabled_'));
   },
 
   /**

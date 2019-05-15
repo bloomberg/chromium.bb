@@ -19,6 +19,7 @@
 #include "components/arc/common/storage_manager.mojom.h"
 #include "components/arc/session/connection_observer.h"
 #include "components/arc/storage_manager/arc_storage_manager.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "components/user_manager/user.h"
 
 class Profile;
@@ -110,6 +111,9 @@ class StorageHandler
   // Callback to save the fetched user sizes and update the UI.
   void OnGetOtherUserSize(base::Optional<cryptohome::BaseReply> reply);
 
+  // Callback to update ARC related UI.
+  void OnArcEnabledChanged();
+
   // Total size of cache data in browsing data.
   int64_t browser_cache_size_;
 
@@ -145,6 +149,10 @@ class StorageHandler
   bool is_android_running_;
 
   Profile* const profile_;
+
+  // Used to watch ARC prefs for changes so the UI can be notified.
+  PrefChangeRegistrar pref_change_registrar_;
+
   base::WeakPtrFactory<StorageHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(StorageHandler);

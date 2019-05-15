@@ -233,7 +233,7 @@
           label="$i18n{storageItemOtherUsers}"
           sub-label="$i18n{storageSizeComputing}"></cr-link-row>
     </template>
-    <template is="dom-if" if="[[androidRunning_]]">
+    <template is="dom-if" if="[[androidEnabled_]]">
       <cr-link-row id="externalStoragePreferences" class="hr"
           on-click="onExternalStoragePreferencesTap_"
           label="$i18n{storageExternal}"></cr-link-row>

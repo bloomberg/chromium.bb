@@ -34,6 +34,7 @@
 #include "chromeos/cryptohome/cryptohome_util.h"
 #include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "components/arc/arc_prefs.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/session/arc_bridge_service.h"
@@ -111,6 +112,13 @@ void StorageHandler::RegisterMessages() {
 }
 
 void StorageHandler::OnJavascriptAllowed() {
+  pref_change_registrar_.Init(profile_->GetPrefs());
+  pref_change_registrar_.Add(
+      arc::prefs::kArcEnabled,
+      base::BindRepeating(&StorageHandler::OnArcEnabledChanged,
+                          // |this| always outlives |pref_change_registrar_|.
+                          base::Unretained(this)));
+
   // Start observing the mojo connection UpdateAndroidSize() relies on. Note
   // that OnConnectionReady() will be called immediately if the connection has
   // already been established.
@@ -131,6 +139,9 @@ void StorageHandler::OnJavascriptDisallowed() {
       ->arc_bridge_service()
       ->storage_manager()
       ->RemoveObserver(this);
+
+  // Stop observing the pref changes for the same reason.
+  pref_change_registrar_.RemoveAll();
 }
 
 void StorageHandler::HandleUpdateStorageInfo(const base::ListValue* args) {
@@ -143,6 +154,7 @@ void StorageHandler::HandleUpdateStorageInfo(const base::ListValue* args) {
   UpdateAndroidSize();
   UpdateCrostiniSize();
   UpdateOtherUsersSize();
+  OnArcEnabledChanged();
 }
 
 void StorageHandler::HandleOpenDownloads(
@@ -426,6 +438,12 @@ void StorageHandler::OnConnectionReady() {
 void StorageHandler::OnConnectionClosed() {
   is_android_running_ = false;
   FireWebUIListener("storage-android-running-changed", base::Value(false));
+}
+
+void StorageHandler::OnArcEnabledChanged() {
+  FireWebUIListener(
+      "storage-android-enabled-changed",
+      base::Value(arc::IsArcPlayStoreEnabledForProfile(profile_)));
 }
 
 }  // namespace settings
