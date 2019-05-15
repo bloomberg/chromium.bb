@@ -1,4 +1,6 @@
 caseq@chromium.org
 alph@chromium.org
 
+per-file *background_services*=rayankans@chromium.org
+
 # COMPONENT: Platform>DevTools
