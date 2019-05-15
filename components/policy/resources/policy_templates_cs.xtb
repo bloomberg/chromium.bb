@@ -130,6 +130,15 @@ Pokud je nastavena na hodnotu true nebo nastavena není, statistiky hlášeny bu
       Pokud je tato zásada nastavena na hodnotu false, stav přepínače režimu pro vývojáře se hlásit nebude.</translation>
 <translation id="1160479894929412407">Povolit protokol QUIC</translation>
 <translation id="1160939557934457296">Zakázat pokračování ze stránky s upozorněním Bezpečného prohlížení</translation>
+<translation id="1171342272070128466">Zapnout zadokovanou lupu (funkce pro usnadnění přístupu).
+
+          Pokud je tato zásada nastavená na hodnotu true, bude zadokovaná lupa vždy zapnutá.
+
+          Pokud je tato zásada nastavená na hodnotu false, bude zadokovaná lupa vždy vypnutá.
+
+          Pokud tuto zásadu nastavíte, uživatelé ji nebudou moci změnit ani přepsat.
+
+          Pokud ji ponecháte nenastavenou, zadokovaná lupa bude ve výchozím nastavení vypnutá, ale uživatel ji bude moci kdykoli zapnout.</translation>
 <translation id="1189817621108632689">Umožňuje nastavit seznam vzorů adres URL webových stránek, které nemají povoleno zobrazovat obrázky.
 
           Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky globální výchozí hodnota buď ze zásady DefaultImageSetting (pokud je nastavena), nebo z osobního nastavení uživatele.
@@ -426,6 +435,7 @@ Pokud je toto nastavení zakázáno nebo není nakonfigurováno, firemní uživa
       Pokud je tato zásada aktivovaná, uživatelé se nebudou moci odhlásit z výchozího chování, v němž je každý web spuštěn v samostatném procesu.
       Pokud tato zásada není nakonfigurovaná nebo je deaktivovaná, uživatel toto nastavení bude moci změnit (např. pomocí možnosti Disable site isolation (Vypnout izolaci webů) na stránce chrome://flags).
       </translation>
+<translation id="1767673020408652620">Povolit doporučení aplikací ve spouštěči při prázdném vyhledávacím poli</translation>
 <translation id="1781356041596378058">Tato zásada také ovládá přístup k možnostem Pro vývojáře v systému Android. Pokud tuto zásadu nastavíte na hodnotu True, uživatelé nebudou mít přístup k sekci Pro vývojáře. Pokud tuto zásadu nastavíte na hodnotu False nebo ji nenastavíte, uživatelé budou moci možnosti Pro vývojáře otevřít tak, že v aplikaci Nastavení Android sedmkrát klepnou na číslo sestavení.</translation>
 <translation id="1793346220873697538">Ve výchozím nastavení vypnout tisk s kódem PIN</translation>
 <translation id="1797233582739332495">Zobrazovat uživateli opakovaně výzvu s oznámením, že je vyžadován restart</translation>
@@ -953,6 +963,15 @@ Pokud je zásada nastavena na hodnotu False nebo nastavena není, budou ikony vi
 
       Každá položka v seznamu uvádí identifikátor, který se používá k internímu rozlišení různých místních účtů v zařízení.</translation>
 <translation id="2769952903507981510">Konfigurovat povinný název domény pro hostitele vzdáleného přístupu</translation>
+<translation id="2783078941107212091">Povolit doporučení aplikací ve spouštěči při prázdném stavu vyhledávacího pole.
+
+          Pokud je tato zásada nastavená na hodnotu true, mohou se ve vyhledávání v prázdném stavu zobrazovat doporučení aplikací.
+
+          Pokud je tato zásada nastavená na hodnotu false, doporučení aplikací se ve vyhledávání v prázdném stavu zobrazovat nebudou.
+
+          Pokud tuto zásadu nastavíte, uživatelé ji nebudou moci změnit ani přepsat.
+
+          Pokud tuto zásadu ponecháte nenastavenou, jako výchozí nastavení se na spravovaných zařízeních použije hodnota False.</translation>
 <translation id="2787173078141616821">Hlásit informace o stavu systému Android</translation>
 <translation id="2799297758492717491">Povolit automatické přehrávání médií zahrnutých v seznamu vzorů povolených adres URL</translation>
 <translation id="2801155097555584385">Nastavit vlastní úroveň nabití baterie pro zahájení nabíjení v procentech</translation>
@@ -1147,6 +1166,24 @@ Pokud je tato zásada zakázána nebo není nakonfigurována, funkce WebDriver n
       Je-li tato zásada nastavena na hodnotu false, je optimalizace WPAD zakázána, a <ph name="PRODUCT_NAME" /> proto bude na servery WPAD založené na DNS čekat déle. Pokud tato zásada není nastavena, je optimalizace WPAD povolena.
 
       Nezávisle na tom, zda je tato zásada nastavena nebo jak je nastavena, uživatelé nastavení optimalizace WPAD nemohou změnit.</translation>
+<translation id="3071839057966069710">Konfiguruje seznam tiskáren.
+
+      Tato zásada administrátorům umožňuje poskytnout uživatelům konfigurace tiskáren.
+
+      Hodnoty <ph name="PRINTER_DISPLAY_NAME" /> a <ph name="PRINTER_DESCRIPTION" /> jsou volně upravitelné textové řetězce, pomocí kterých lze usnadnit výběr tiskárny. Hodnoty <ph name="PRINTER_MANUFACTURER" /> a <ph name="PRINTER_MODEL" /> koncovým uživatelům umožní snáze tiskárnu rozpoznat. Představují výrobce a model tiskárny. Hodnotou <ph name="PRINTER_URI" /> by měla být adresa přístupná z klientského počítače, včetně údajů <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> a <ph name="URI_QUEUE" />. Hodnota <ph name="PRINTER_UUID" /> je volitelná. Pokud je zadána, slouží k odebrání duplicitních tiskáren <ph name="ZEROCONF_DISCOVERY" />.
+
+      Hodnota <ph name="PRINTER_EFFECTIVE_MODEL" /> musí odpovídat jednomu z řetězců, které představují tiskárny podporované systémem <ph name="PRODUCT_NAME" />. Řetězec se použije k identifikaci a instalaci vhodného souboru PPD pro tiskárnu. Další informace naleznete na stránce https://support.google.com/chrome?p=noncloudprint.
+
+      <ph name="PRINTER_AUTOCONF" /> je logický příznak, který udává, zda se má k nastavení tiskárny použít technologie IPP Everywhere. Tento příznak je podporován ve verzi 76 a novějších verzích systému <ph name="PRODUCT_OS_NAME" />.
+
+      Je vyžadováno, aby buď pole <ph name="PRINTER_EFFECTIVE_MODEL" /> obsahovalo název tiskárny, nebo byl příznak <ph name="PRINTER_AUTOCONF" /> nastavený na hodnotu true. Tiskárny s oběma těmito nastaveními nebo bez žádného z nich budou ignorovány.
+
+      Nastavení tiskárny se dokončí při jejím prvním použití.  Soubory PPD se stáhnou až při použití tiskárny.  Často používané soubory PPD budou následně uloženy do mezipaměti.
+
+      Tato zásada nemá vliv na to, zda uživatelé mohou konfigurovat tiskárny na jednotlivých zařízeních.  Je zamýšlena jako doplněk ke konfiguraci tiskáren ze strany jednotlivých uživatelů.
+
+      U zařízení spravovaných pomocí služby Active Directory tato zásada podporuje rozšíření <ph name="MACHINE_NAME_VARIABLE" /> na název počítače ve službě Active Directory nebo jeho podřetězec. V případě názvu počítače <ph name="MACHINE_NAME_EXAMPLE" /> by byl řetězec <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> nahrazen čtyřmi znaky po šesté pozici, tj. <ph name="MACHINE_NAME_PART_EXAMPLE" />. Pozice se počítají od nuly.
+      </translation>
 <translation id="3072045631333522102">Spořič obrazovky, který bude použit na přihlašovací obrazovce v režimu pro obchody</translation>
 <translation id="3072847235228302527">Nastavit smluvní podmínky pro účet v zařízení</translation>
 <translation id="3077183141551274418">Povolí nebo zakáže životní cykly karet</translation>
@@ -1925,7 +1962,6 @@ Samotná zásada je na výše uvedených platformách podporována. Funkce, kter
 <translation id="4591366717022345234">Poskytnout uživatelům sestavení Quick Fix Build</translation>
 <translation id="4600786265870346112">Aktivovat velký kurzor</translation>
 <translation id="4604931264910482931">Konfigurace seznamu zakázaných položek zasílání nativních zpráv</translation>
-<translation id="4613508646038788144">Je-li tato zásada nastavena na hodnotu false, bude software třetích stran moci vkládat spustitelný kód do procesů prohlížeče Chrome. Pokud tato zásada není nastavena nebo je nastavena na hodnotu true, bude mít software třetích stran vkládání spustitelného kódu do procesů prohlížeče Chrome zakázáno.</translation>
 <translation id="4617338332148204752">Přeskočení kontroly metaznaček ve službě <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="4625915093043961294">Konfigurovat seznam povolených pro instalaci rozšíření</translation>
 <translation id="4632343302005518762">Umožnit pluginu <ph name="PRODUCT_FRAME_NAME" /> zpracovávat uvedené typy obsahu</translation>
@@ -2113,15 +2149,6 @@ Pokud tuto zásadu nenastavíte, bude aktivován výchozí poskytovatel vyhledá
       Když je tato zásada nastavená na hodnotu false, Chrome kartu po přepnutí na alternativní prohlížeč zavře, i kdyby byla poslední. Tím se Chrome zcela ukončí.</translation>
 <translation id="5105313908130842249">Prodleva uzamčení obrazovky při napájení z baterie</translation>
 <translation id="5108031557082757679">Zakázané podnikové tiskárny pro zařízení</translation>
-<translation id="5113732180192599620">Tato zásada určuje seznam webů, které nikdy nezpůsobí přepnutí prohlížeče.
-
-      Položky lze do tohoto seznamu přidat také pomocí zásad <ph name="USE_IE_SITELIST_POLICY_NAME" /> a <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />.
-
-      Pokud tato zásada není nastavená, nepřidají se do seznamu žádné weby.
-
-      Pokud je tato zásada nastavená, každá položka se považuje za pravidlo, podobně jako v případě zásady <ph name="URL_LIST_POLICY_NAME" />. Logika je však opačná: při shodě s pravidlem se alternativní prohlížeč neotevře.
-
-      Na rozdíl od zásady <ph name="URL_LIST_POLICY_NAME" /> fungují pravidla oběma směry, tj. když je přítomen a zapnut doplněk prohlížeče Internet Explorer, tato zásada také určuje, zda má <ph name="IE_PRODUCT_NAME" /> tyto adresy URL otevírat v prohlížeči <ph name="PRODUCT_NAME" />.</translation>
 <translation id="5124368997194894978">Zapnout spuštění při připojení k napájení ze sítě</translation>
 <translation id="5131211790949066746">Umožňuje sloučení zásad se seznamy pro instalaci rozšíření <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" /> a <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />.
 
@@ -2397,6 +2424,7 @@ Tato zásada se nevztahuje na přepínání mezi kanály.</translation>
 
      Pokud zásada stanovena není, adresa URL počáteční hodnoty variace se nezmění.</translation>
 <translation id="5561811616825571914">Automatický výběr certifikátů klienta pro uvedené weby na přihlašovací obrazovce</translation>
+<translation id="5565178130821694365">Heslo je potřeba zadat každé dva dny (48 hodin)</translation>
 <translation id="5566210228171064229">Povolit tisk s kódem PIN i bez něj</translation>
 <translation id="556865034069957245">Tato zásada řídí dostupnost režimu celé obrazovky, ve kterém je veškeré uživatelské rozhraní prohlížeče <ph name="PRODUCT_NAME" /> skryto a zobrazuje se pouze obsah na webu.
 

@@ -74,13 +74,11 @@
 <translation id="1952728750904661634">পরিচালিত অ্যাকাউন্ট দিয়ে সাইন-ইন করুন</translation>
 <translation id="1974060860693918893">উন্নত</translation>
 <translation id="1989112275319619282">ব্রাউজ করুন</translation>
-<translation id="2000419248597011803">অ্যাড্রেস বার এবং সার্চ বক্স থেকে সার্চের তথ্য এবং কিছু কুকি আপনার ডিফল্ট সার্চ ইঞ্জিনে পাঠায়</translation>
 <translation id="2015722694326466240">পাসওয়ার্ড দেখার জন্য আপনার ডিভাইসে আপনাকে অবশ্যই একটি পাসকোড সেট করতে হবে।</translation>
 <translation id="2068952045031577364">গত সপ্তাহ</translation>
 <translation id="2074131957428911366"><ph name="BEGIN_LINK" />সেটিংসে<ph name="END_LINK" /> কী সিঙ্ক করা হবে তা আপনি সবসময় বেছে নিতে পারেন।</translation>
 <translation id="2079545284768500474">আগের অবস্থায় ফিরুন</translation>
 <translation id="209018056901015185">ডেস্কটপ সাইট অনুরোধ করুন</translation>
-<translation id="2096012225669085171">বিভিন্ন ডিভাইস জুড়ে সিঙ্ক এবং ব্যক্তিগতকৃত করুন</translation>
 <translation id="2103075008456228677">history.google.com খুলুন</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" />টি আইটেম সরানো হয়েছে</translation>
 <translation id="213900355088104901">গোপনে ব্রাউজ করার জন্য ছদ্মবেশী ট্যাব খুলুন</translation>
@@ -107,7 +105,6 @@
 <translation id="2435457462613246316">পাসওয়ার্ড দেখান</translation>
 <translation id="2481538920734869610">অ্যাকাউন্ট যোগ করুন</translation>
 <translation id="2497852260688568942">আপনার প্রশাসকের দ্বারা সিঙ্ক অক্ষম করা হয়েছে</translation>
-<translation id="2523184218357549926">আপনার দেখা পৃষ্ঠাগুলির ইউআরএল Google-এ পাঠায়</translation>
 <translation id="2523363575747517183">এই ওয়েবসাইটটি ক্রমাগত অন্য অ্যাপ্লিকেশন খোলার চেষ্টা করছে।</translation>
 <translation id="2529021024822217800">সবকটি খুলুন</translation>
 <translation id="2572712655377361602">একটি ডিভাইস নীতি আপনার ফটোতে অ্যাক্সেস অবরুদ্ধ করেছে</translation>
@@ -137,6 +134,7 @@
 <translation id="2871695793448672541">লুকানো, পাসওয়ার্ড</translation>
 <translation id="288655811176831528">ট্যাব বন্ধ করুন</translation>
 <translation id="2898963176829412617">নতুন ফোল্ডার...</translation>
+<translation id="2916171785467530738">সার্চ এবং ইউআরএলগুলি নিজে থেকে সম্পূর্ণ হতে দিন</translation>
 <translation id="291754862089661335">এই ফ্রেমের মধ্যে QR কোড বা বারকোড স্থাপন করুন</translation>
 <translation id="2921219216347069551">পৃষ্ঠা শেয়ার করা যায়নি</translation>
 <translation id="2923448633003185837">পেস্ট করে শুরু করুন</translation>
@@ -307,7 +305,6 @@
 <translation id="5857090052475505287">নতুন ফোল্ডার</translation>
 <translation id="5857770089550859117">সিঙ্ক শুরু করতে পাসফ্রেজ প্রয়োজন।</translation>
 <translation id="5860033963881614850">বন্ধ করুন</translation>
-<translation id="5865733239029070421">ব্যবহারের পরিসংখ্যান এবং ক্র্যাশ রিপোর্ট নিজে থেকেই Google-কে পাঠায়</translation>
 <translation id="5869029295770560994">ঠিক আছে, বুঝেছি</translation>
 <translation id="5871497086027727873">১টি আইটেম সরানো হয়েছে</translation>
 <translation id="5897956970858271241">কপি করা লিঙ্কে যান</translation>
@@ -413,7 +410,6 @@
 <translation id="722055596168483966">Google পরিষেবাগুলিকে নিজের মতো করুন</translation>
 <translation id="7265758999917665941">এই সাইটের জন্য কখনই নয়</translation>
 <translation id="7272437679830969316">আপনার পরিচয় যাচাই করা যাবে না। পাসওয়ার্ড কপি করা হয়নি।</translation>
-<translation id="7280856130494094142">সিঙ্ক শুরু করতে পাসফ্রেজ লিখুন</translation>
 <translation id="7285236536143823449">হ্যাঁ, আমি রাজি</translation>
 <translation id="7291368939935408496">পাসওয়ার্ড তৈরি করা হচ্ছে...</translation>
 <translation id="7293171162284876153">সিঙ্ক চালু করতে "আপনার Chrome ডেটা সিঙ্ক করুন" বিকল্পটি চালু করুন।</translation>
@@ -435,12 +431,10 @@
 <translation id="7554791636758816595">নতুন ট্যাব</translation>
 <translation id="7561196759112975576">সবসময়</translation>
 <translation id="7603852183842204213">পপ-আপ ব্লক (<ph name="NUMBER_OF_BLOCKED_POPUPS" />টি)</translation>
-<translation id="7605594153474022051">সিঙ্ক কাজ করছে না</translation>
 <translation id="7638584964844754484">ত্রুটিপূর্ণ পাসফ্রেজ</translation>
 <translation id="7658239707568436148">বাতিল</translation>
 <translation id="766891008101699113">ব্যক্তিগতভাবে ওয়েব ব্রাউজ করতে, একটি নতুন ট্যাব যোগ করুন।</translation>
 <translation id="7671141431838911305">ইনস্টল করুন</translation>
-<translation id="7704317875155739195">সার্চ এবং ইউআরএলগুলি নিজে থেকে সম্পূর্ণ হতে দিন</translation>
 <translation id="7765158879357617694">সরান</translation>
 <translation id="7769602470925380267">স্বীকার করে সাইন-আউট করুন</translation>
 <translation id="7772032839648071052">পাসফ্রেজ নিশ্চিত করুন</translation>
@@ -478,7 +472,6 @@
 <translation id="842017693807136194">এটি দিয়ে সাইন-ইন করেছেন</translation>
 <translation id="8428045167754449968">নগর / ছোট শহর</translation>
 <translation id="8428213095426709021">সেটিংস</translation>
-<translation id="8438566539970814960">সার্চ এবং ব্রাউজিং অভিজ্ঞতা আরও উন্নত করুন</translation>
 <translation id="8458397775385147834">১টি আইটেম মোছা হয়েছে</translation>
 <translation id="8487700953926739672">অফলাইনে উপলব্ধ</translation>
 <translation id="8503813439785031346">ইউজারনেম</translation>

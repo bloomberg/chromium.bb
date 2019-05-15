@@ -474,6 +474,7 @@
 <translation id="3484560055331845446">Anda dapat kehilangan akses ke Akun Google Anda. Chrome merekomendasikan untuk mengubah sandi Anda sekarang. Anda akan diminta untuk login.</translation>
 <translation id="3495081129428749620">Cari pada halaman <ph name="PAGE_TITLE" /></translation>
 <translation id="3498215018399854026">Orang tua Anda saat ini tidak dapat dihubungi. Coba lagi.</translation>
+<translation id="3512163584740124171">Kebijakan ini diabaikan karena kebijakan lain dari grup kebijakan yang sama memiliki prioritas lebih tinggi.</translation>
 <translation id="3528171143076753409">Sertifikat server tidak dipercaya.</translation>
 <translation id="3528485271872257980">Cokelat Tua</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Minimal 1 item pada perangkat yang disinkronkan}=1{1 item (dan beberapa di perangkat yang disinkronkan)}other{# item (dan beberapa di perangkat yang disinkronkan)}}</translation>
@@ -1087,7 +1088,6 @@
 <translation id="7062635574500127092">Hijau kebiruan</translation>
 <translation id="7064851114919012435">Info kontak</translation>
 <translation id="7079718277001814089">Situs ini berisi malware</translation>
-<translation id="7081564429925484109">Peringatan: Kebijakan ini tidak digabung sebagaimana yang ditetapkan dalam kebijakan PolicyListMultipleSourceMergeList karena tidak tercantum dalam daftar.</translation>
 <translation id="7087282848513945231">Wilayah</translation>
 <translation id="7090678807593890770">Telusuri <ph name="LINK" /> di Google</translation>
 <translation id="7108338896283013870">Sembunyikan</translation>
@@ -1145,7 +1145,6 @@
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">Tidak</translation>
 <translation id="7378810950367401542">/</translation>
-<translation id="7381288752349550461">Penggantian sesi terkelola</translation>
 <translation id="7390545607259442187">Konfirmasi Kartu</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7403591733719184120"><ph name="DEVICE_NAME" /> Anda dikelola</translation>

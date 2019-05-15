@@ -74,13 +74,11 @@
 <translation id="1952728750904661634">登录受管理的帐号</translation>
 <translation id="1974060860693918893">高级</translation>
 <translation id="1989112275319619282">浏览</translation>
-<translation id="2000419248597011803">将一些 Cookie 以及地址栏和搜索框中的搜索字词发送给您的默认搜索引擎</translation>
 <translation id="2015722694326466240">要想查看密码，您必须先在设备上设置密码。</translation>
 <translation id="2068952045031577364">过去 1 周</translation>
 <translation id="2074131957428911366">您始终可在<ph name="BEGIN_LINK" />设置<ph name="END_LINK" />中选择要同步的内容。</translation>
 <translation id="2079545284768500474">撤消</translation>
 <translation id="209018056901015185">请求切换到桌面版网站</translation>
-<translation id="2096012225669085171">在所有设备上保持同步并进行个性化设置</translation>
 <translation id="2103075008456228677">打开 history.google.com</translation>
 <translation id="2116625576999540962">移动了<ph name="NUMBER_OF_SELECTED_BOOKMARKS" />项</translation>
 <translation id="213900355088104901">要想私密地浏览，请打开一个无痕式标签页</translation>
@@ -107,7 +105,6 @@
 <translation id="2435457462613246316">显示密码</translation>
 <translation id="2481538920734869610">添加帐号</translation>
 <translation id="2497852260688568942">您的管理员已停用同步</translation>
-<translation id="2523184218357549926">将您所访问的网页的网址发送给 Google</translation>
 <translation id="2523363575747517183">该网站屡次尝试打开其他应用。</translation>
 <translation id="2529021024822217800">全部打开</translation>
 <translation id="2572712655377361602">设备政策已禁用对您的照片的访问权限</translation>
@@ -137,6 +134,7 @@
 <translation id="2871695793448672541">目前为隐藏状态的密码</translation>
 <translation id="288655811176831528">关闭标签页</translation>
 <translation id="2898963176829412617">新建文件夹…</translation>
+<translation id="2916171785467530738">自动填充搜索字词和网址</translation>
 <translation id="291754862089661335">将 QR 码或条形码放到此框内</translation>
 <translation id="2921219216347069551">无法分享网页</translation>
 <translation id="2923448633003185837">粘贴并转到</translation>
@@ -306,7 +304,6 @@
 <translation id="5857090052475505287">新文件夹</translation>
 <translation id="5857770089550859117">必须输入密码才能开始同步。</translation>
 <translation id="5860033963881614850">关闭</translation>
-<translation id="5865733239029070421">自动将使用情况统计信息和崩溃报告发送至 Google</translation>
 <translation id="5869029295770560994">知道了</translation>
 <translation id="5871497086027727873">移动了1项</translation>
 <translation id="5897956970858271241">访问复制的链接</translation>
@@ -412,7 +409,6 @@
 <translation id="722055596168483966">对 Google 服务进行个性化设置</translation>
 <translation id="7265758999917665941">此网站一律不保存密码</translation>
 <translation id="7272437679830969316">无法验证您的身份。未复制密码。</translation>
-<translation id="7280856130494094142">输入密码即可开始同步</translation>
 <translation id="7285236536143823449">立即启用</translation>
 <translation id="7291368939935408496">正在准备密码…</translation>
 <translation id="7293171162284876153">要开始同步，请开启“同步 Chrome 数据”。</translation>
@@ -434,12 +430,10 @@
 <translation id="7554791636758816595">新标签页</translation>
 <translation id="7561196759112975576">永远</translation>
 <translation id="7603852183842204213">拦截了弹出式窗口（<ph name="NUMBER_OF_BLOCKED_POPUPS" /> 个）</translation>
-<translation id="7605594153474022051">同步功能无法正常运行</translation>
 <translation id="7638584964844754484">密码不正确</translation>
 <translation id="7658239707568436148">取消</translation>
 <translation id="766891008101699113">要以私密方式浏览网页，请添加新标签页。</translation>
 <translation id="7671141431838911305">安装</translation>
-<translation id="7704317875155739195">自动填充搜索字词和网址</translation>
 <translation id="7765158879357617694">移动</translation>
 <translation id="7769602470925380267">接受并退出</translation>
 <translation id="7772032839648071052">确认密码</translation>
@@ -477,7 +471,6 @@
 <translation id="842017693807136194">所用登录身份</translation>
 <translation id="8428045167754449968">市/镇</translation>
 <translation id="8428213095426709021">设置</translation>
-<translation id="8438566539970814960">改善搜索和浏览体验</translation>
 <translation id="8458397775385147834">删除了1项</translation>
 <translation id="8487700953926739672">可离线使用</translation>
 <translation id="8503813439785031346">用户名</translation>

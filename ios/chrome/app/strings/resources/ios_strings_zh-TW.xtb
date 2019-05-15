@@ -74,13 +74,11 @@
 <translation id="1952728750904661634">使用受管理的帳戶登入</translation>
 <translation id="1974060860693918893">進階</translation>
 <translation id="1989112275319619282">瀏覽</translation>
-<translation id="2000419248597011803">將網址列和搜尋框中的部分 Cookie 和搜尋字詞傳送給你的預設搜尋引擎</translation>
 <translation id="2015722694326466240">你必須先在裝置上設定通行碼，才能查看密碼。</translation>
 <translation id="2068952045031577364">過去 1 週</translation>
 <translation id="2074131957428911366">你隨時可以在<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />中選擇要同步處理的資料。</translation>
 <translation id="2079545284768500474">復原</translation>
 <translation id="209018056901015185">切換為電腦版網站</translation>
-<translation id="2096012225669085171">讓多部裝置保持同步，並提供人化體驗</translation>
 <translation id="2103075008456228677">開啟 history.google.com</translation>
 <translation id="2116625576999540962">已移動 <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> 個項目</translation>
 <translation id="213900355088104901">如要進行私密瀏覽，請開啟無痕式分頁</translation>
@@ -107,7 +105,6 @@
 <translation id="2435457462613246316">顯示密碼</translation>
 <translation id="2481538920734869610">新增帳戶</translation>
 <translation id="2497852260688568942">你的管理員停用了同步功能</translation>
-<translation id="2523184218357549926">將你造訪的網頁網址傳送給 Google</translation>
 <translation id="2523363575747517183">這個網站不斷嘗試開啟其他應用程式。</translation>
 <translation id="2529021024822217800">全部開啟</translation>
 <translation id="2572712655377361602">裝置政策禁止您存取相片</translation>
@@ -137,6 +134,7 @@
 <translation id="2871695793448672541">目前為隱藏狀態的密碼</translation>
 <translation id="288655811176831528">關閉分頁</translation>
 <translation id="2898963176829412617">新資料夾…</translation>
+<translation id="2916171785467530738">自動完成搜尋字詞與網址</translation>
 <translation id="291754862089661335">將這個方框對準 QR 圖碼或條碼</translation>
 <translation id="2921219216347069551">無法分享網頁</translation>
 <translation id="2923448633003185837">貼上並前往</translation>
@@ -306,7 +304,6 @@
 <translation id="5857090052475505287">新資料夾</translation>
 <translation id="5857770089550859117">必須輸入通關密語，才能開始進行同步處理。</translation>
 <translation id="5860033963881614850">關閉</translation>
-<translation id="5865733239029070421">自動將使用統計資料和當機報告傳送給 Google</translation>
 <translation id="5869029295770560994">好，我知道了</translation>
 <translation id="5871497086027727873">已移動 1 個項目</translation>
 <translation id="5897956970858271241">前往複製的連結</translation>
@@ -412,7 +409,6 @@
 <translation id="722055596168483966">享有個人化的 Google 服務</translation>
 <translation id="7265758999917665941">一律不儲存這個網站的密碼</translation>
 <translation id="7272437679830969316">無法驗證你的身分，因此未複製密碼。</translation>
-<translation id="7280856130494094142">輸入通關密語即可開始同步處理</translation>
 <translation id="7285236536143823449">是，我同意</translation>
 <translation id="7291368939935408496">正在準備匯出密碼...</translation>
 <translation id="7293171162284876153">如要開始同步處理，請開啟「同步處理你的 Chrome 資料」。</translation>
@@ -434,12 +430,10 @@
 <translation id="7554791636758816595">新增分頁</translation>
 <translation id="7561196759112975576">一律使用</translation>
 <translation id="7603852183842204213">已封鎖彈出式視窗 (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
-<translation id="7605594153474022051">同步處理功能無法正常運作</translation>
 <translation id="7638584964844754484">通關密語不正確</translation>
 <translation id="7658239707568436148">取消</translation>
 <translation id="766891008101699113">如要以私密模式瀏覽網頁，請開啟新分頁。</translation>
 <translation id="7671141431838911305">安裝</translation>
-<translation id="7704317875155739195">自動完成搜尋字詞與網址</translation>
 <translation id="7765158879357617694">移動</translation>
 <translation id="7769602470925380267">接受並登出</translation>
 <translation id="7772032839648071052">確認通關密語</translation>
@@ -477,7 +471,6 @@
 <translation id="842017693807136194">目前登入身分</translation>
 <translation id="8428045167754449968">鄉/鎮/市/區</translation>
 <translation id="8428213095426709021">設定</translation>
-<translation id="8438566539970814960">改善搜尋和瀏覽體驗</translation>
 <translation id="8458397775385147834">已刪除 1 個項目</translation>
 <translation id="8487700953926739672">可離線使用</translation>
 <translation id="8503813439785031346">使用者名稱</translation>

@@ -132,6 +132,15 @@
       Politika yanlış değerine ayarlanmışsa geliştirici anahtarının durumu rapor edilmez.</translation>
 <translation id="1160479894929412407">QUIC protokolüne izin verin</translation>
 <translation id="1160939557934457296">Güvenli Tarama uyarı sayfasından ilerlemeyi devre dışı bırak</translation>
+<translation id="1171342272070128466">Yuvaya yerleştirilmiş büyüteç erişilebilirlik özelliğini etkinleştirin.
+
+          Bu politika true (doğru) değerine ayarlanırsa, yuvaya yerleştirilmiş büyüteç her zaman etkin olur.
+
+          Bu politika false (yanlış) değerine ayarlanırsa, yuvaya yerleştirilmiş büyüteç her zaman devre dışı olur.
+
+          Bu politikayı ayarlarsanız kullanıcılar değiştiremez veya geçersiz kılamazlar.
+
+          Bu politika ayarlanmadan bırakılırsa, yuvaya yerleştirilmiş büyüteç başlangıçta devre dışıdır, ancak istenildiğinde kullanıcı tarafından etkinleştirilebilir.</translation>
 <translation id="1189817621108632689">Bildirim görüntülemelerine izin verilmeyen sitelerin belirtildiği bir URL kalıpları listesi ayarlamanıza olanak tanır.
 
           Bu politika ayarlanmadan bırakılırsa, "DefaultImagesSetting" politikası ayarlandıysa buradaki değer, aksi takdirde kullanıcının kişisel yapılandırması tüm siteler için genel varsayılan değer olarak kullanılır.
@@ -447,6 +456,7 @@
       Bu politika etkinleştirilirse kullanıcılar her sitenin kendi işleminde çalıştığı varsayılan davranışı devre dışı bırakamazlar.
       Politika yapılandırılmaz veya devre dışı bırakılırsa, kullanıcı bu ayarı değiştirebilir (ör. chrome://flags'de "Site izolasyonunu devre dışı bırak" seçeneğini kullanarak).
       </translation>
+<translation id="1767673020408652620">Arama Kutusunun Sıfır Durumunda Uygulama Önerileri Politikasını Etkinleştir</translation>
 <translation id="1781356041596378058">Ayrıca bu politika Android Geliştirici Seçenekleri'ne erişimi de kontrol eder. Bu politikayı doğru (true) seçeneğine ayarlarsanız kullanıcılar Geliştirici Seçenekleri'ne erişemez. Bu politikayı yanlış (false) seçeneğine ayarlar veya ayarlamadan bırakırsanız kullanıcılar, Android ayarları uygulamasında derleme numarasına yedi kez dokunarak Geliştirici Seçenekleri'ne erişebilir.</translation>
 <translation id="1793346220873697538">Varsayılan olarak PIN ile yazdırmayı devre dışı bırak</translation>
 <translation id="1797233582739332495">Kullanıcıya yeniden başlatmanın gerektiğini belirten yinelenen bir istem gösterme</translation>
@@ -983,6 +993,15 @@
 
       Her liste girişi, farklı cihaz-yerel hesaplarını ayırt etmek için dahili olarak kullanılan bir tanımlayıcıyı belirtir.</translation>
 <translation id="2769952903507981510">Uzaktan erişim ana makineleri için gerekli alan adını yapılandır</translation>
+<translation id="2783078941107212091">Başlatıcıda, arama kutusunun Sıfır Durumunda Uygulama Önerisi politikasını etkinleştirin.
+
+          Bu politika true (doğru) değerine ayarlanırsa, sıfır durumu aramalarında Uygulama önerileri görülebilir.
+
+          Bu politika false (yanlış) değerine ayarlanırsa, sıfır durumu aramalarında Uygulama önerileri görünmez.
+
+          Bu politikayı ayarlarsanız kullanıcılar değiştiremez veya geçersiz kılamazlar.
+
+          Bu politika ayarlanmadan bırakılırsa, yönetilen cihazlar için False (Yanlış) varsayılan değerdir.</translation>
 <translation id="2787173078141616821">Android'in durumu hakkında rapor bilgileri</translation>
 <translation id="2799297758492717491">URL kalıpları beyaz listesinde medyanın otomatik olarak oynatılmasına izin ver</translation>
 <translation id="2801155097555584385">Pil şarjı için özel şarj başlatma değerini yüzde olarak ayarla</translation>
@@ -1179,6 +1198,25 @@
       Bu politika yanlış seçeneğine ayarlanırsa WPAD optimizasyonu devre dışı kalır ve <ph name="PRODUCT_NAME" /> ürününün DNS tabanlı WPAD sunucuları için daha uzun süre beklemesine neden olur. Politika ayarlanmazsa veya etkinleştirilirse WPAD optimizasyonu etkinleştirilir.
 
       Bu politikanın ayarlansa da ayarlanmasa da, WPAD optimizasyonu ayarı kullanıcılar tarafından değiştirilemez.</translation>
+<translation id="3071839057966069710">Yazıcılar listesini yapılandırır.
+
+      Bu politika, yöneticilerin kendi kullanıcıları için yazıcı yapılandırmaları
+      sunmalarına izin verir.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> ve <ph name="PRINTER_DESCRIPTION" />, yazıcı seçimini kolaylaştıracak şekilde özelleştirilebilen serbest biçimli dizelerdir. <ph name="PRINTER_MANUFACTURER" /> ve <ph name="PRINTER_MODEL" />, son kullanıcıların yazıcıyı tanımasını kolaylaştırmayı amaçlar. Bu ibareler yazıcının üreticisini ve modelini temsil eder. <ph name="PRINTER_URI" />, istemci bilgisayardan ulaşabilen ve <ph name="URI_SCHEME" />, <ph name="URI_PORT" />, <ph name="URI_QUEUE" /> bilgilerini içeren bir adres olmalıdır. <ph name="PRINTER_UUID" /> isteğe bağlıdır. Sağlandığı takdirde, <ph name="ZEROCONF_DISCOVERY" /> yazıcıların tekilleştirilmesine yardımcı olmak için kullanılır.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" />, <ph name="PRODUCT_NAME" /> tarafından desteklenen bir yazıcıyı temsil eden dizelerden biriyle eşleşmelidir. Dize, yazıcıya uygun PPD'yi tanımlamak ve yüklemek için kullanılır. Daha fazla bilgiye https://support.google.com/chrome?p=noncloudprint. adresinden ulaşılabilir.
+
+      <ph name="PRINTER_AUTOCONF" />, yazıcıyı kurmak için IPP Everywhere kullanılması gerekip gerekmediğini belirten bir boole işaretidir. Bu işaret, <ph name="PRODUCT_OS_NAME" /> sürüm 76 ve sonrasındaki sürümlerde desteklenir.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> yazıcının adını içermelidir veya <ph name="PRINTER_AUTOCONF" /> politikası true (doğru) değerine ayarlanmalıdır. Her iki özelliği de taşıyan veya hiçbir özellik taşımayan yazıcılar yok sayılır.
+
+      Yazıcı ilk kez kullanıldığında kurulum tamamlanmış olur.  Yazıcı kullanılana kadar PPD'ler indirilmez.  Bundan sonra sık kullanılan PPD'ler ön belleğe alınır.
+
+      Bu politika, kullanıcıların yazıcıları ayrı ayrı cihazlarda yapılandırıp yapılandıramayacağı konusunu etkilemez.  Ayrı ayrı kullanıcılar tarafından yazıcıların yapılandırılması konusunda tamamlayıcı olacak şekilde tasarlanmıştır.
+
+      Active Directory tarafından yönetilen cihazlarda bu politika, <ph name="MACHINE_NAME_VARIABLE" /> değişkeninin Active Directory makine adına veya bunun bir alt dizesine genişletilmesini destekler. Örneğin, makine adı <ph name="MACHINE_NAME_EXAMPLE" /> ise <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" />, 6. konumdan sonra başlayan 4 karakterle değiştirilir (<ph name="MACHINE_NAME_PART_EXAMPLE" /> gibi). Konumun sıfır tabanlı olduğuna dikkat edin.
+      </translation>
 <translation id="3072045631333522102">Perakende modunda oturum açma ekranında kullanılacak ekran koruyucu</translation>
 <translation id="3072847235228302527">Bir cihaz yerel hesabı için Hizmet Şartları'nı ayarlama</translation>
 <translation id="3077183141551274418">Sekme yaşam döngülerini etkinleştirir veya devre dışı bırakır</translation>
@@ -1770,7 +1808,7 @@ False (yanlış) olarak ayarlanırsa veya hiç ayarlanmazsa, hiçbir sertifika o
 
           Bu politika true (doğru) değerine ayarlanırsa yapışkan tuşlar her zaman etkin olur.
 
-          Bu politika false (yanlış) değerine ayarlanırsa,yapışkan tuşlar her zaman devre dışı olur.
+          Bu politika false (yanlış) değerine ayarlanırsa yapışkan tuşlar her zaman devre dışı olur.
 
           Bu politikayı ayarlarsanız kullanıcılar değiştiremez veya geçersiz kılamazlarlar.
 
@@ -1969,7 +2007,6 @@ politikayı geçersiz kılamaz.
 <translation id="4591366717022345234">Kullanıcılara Hızlı Düzeltme Derlemesi sağlayın.</translation>
 <translation id="4600786265870346112">Büyük imleci etkinleştir</translation>
 <translation id="4604931264910482931">Yerel mesajlaşma kara listesini yapılandır</translation>
-<translation id="4613508646038788144">Bu politika false (yanlış) değerine ayarlanırsa üçüncü taraf yazılımlarının Chrome işlemlerine çalıştırılabilir kod yerleştirmelerine izin verilir. Politika ayarlanmazsa veya true (doğru) değerine ayarlanırsa üçüncü taraf yazılımlarının Chrome işlemlerine çalıştırılabilir kod yerleştirmeleri engellenir.</translation>
 <translation id="4617338332148204752"><ph name="PRODUCT_FRAME_NAME" /> cihazında meta etiket kontrolünü atla</translation>
 <translation id="4625915093043961294">Uzantı yükleme beyaz listesini yapılandır</translation>
 <translation id="4632343302005518762"><ph name="PRODUCT_FRAME_NAME" /> için listelenen içerik türlerini işlemeye izin ver</translation>
@@ -2161,15 +2198,6 @@ politikayı geçersiz kılamaz.
       Bu politika false (yanlış) değerine ayarlanırsa, başka bir tarayıcıya son sekmeden geçilmiş olsa bile Chrome o sekmeyi kapatır. Bu da Chrome'dan tamamen çıkılmasına neden olur.</translation>
 <translation id="5105313908130842249">Pil gücüyle çalışırken ekran kilidi gecikmesi</translation>
 <translation id="5108031557082757679">Devre dışı bırakılmış kurumsal cihaz yazıcıları</translation>
-<translation id="5113732180192599620">Bu politika, hiçbir zaman farklı bir tarayıcıya geçişe neden olmayacak web sitelerinin listesini kontrol eder.
-
-      Bu listeye <ph name="USE_IE_SITELIST_POLICY_NAME" /> ve <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />politikası aracılığıyla öğeler eklenebileceğini de unutmayın.
-
-      Bu politika ayarlanmadan bırakılırsa listeye hiçbir web sitesi eklenmez.
-
-      Bu politika ayarlanırsa, <ph name="URL_LIST_POLICY_NAME" /> politikasına benzer şekilde her öğe bir kural olarak değerlendirilir. Ancak mantık tam tersidir: Eşleşen kurallar başka bir tarayıcı açmaz.
-
-      <ph name="URL_LIST_POLICY_NAME" /> politikasının aksine, kurallar iki yönlü olarak uygulanır. Yani, Internet Explorer eklentisi mevcutsa ve etkinse, aynı zamanda <ph name="IE_PRODUCT_NAME" /> tarayıcısının bu URL'leri <ph name="PRODUCT_NAME" /> tarayıcısında açıp açmayacağını da kontrol eder.</translation>
 <translation id="5124368997194894978">AC'de (alternatif akım) başlat özeliğini etkinleştir</translation>
 <translation id="5131211790949066746"><ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" /> ve <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" /> uzantı yükleme listesi politikalarının birleştirilmesini sağlar.
 
@@ -2363,7 +2391,7 @@ Bu politika ayarlanmadan bırakılırsa kullanıcı sistemde yüklü herhangi bi
       Devre dışı bırakılırsa, varsayılan arama motoru içe aktarılmaz.
 
       Ayarlanmazsa, kullanıcıdan içe aktarma işlemini gerçekleştirmesi istenebilir veya içe aktarma otomatik olarak gerçekleşebilir.</translation>
-<translation id="5423197884968724595">Android WebView kısıtlama adı:</translation>
+<translation id="5423197884968724595">Android Web Görünümü kısıtlama adı:</translation>
 <translation id="5424147596523390018">Tüm renk modlarına izin ver</translation>
 <translation id="5437733496511628148">Bu ayar etkinleştirildiğinde, tarayıcının adres çubuğundaki alan adına ait olmayan web sayfası öğelerinin çerez yerleştirmesi engellenir.
 
@@ -2448,6 +2476,7 @@ Bu politika ayarlanmadan bırakılırsa "DisabledPlugins" içindeki kalıplarla 
 
       Belirtilmezse, Varyasyon temeli URL'sinde değişiklik yapılmaz.</translation>
 <translation id="5561811616825571914">Oturum açma ekranında bu siteler için istemci sertifikalarını otomatik olarak seç</translation>
+<translation id="5565178130821694365">Her iki günde bir (48 saat) şifre girişi gerekir</translation>
 <translation id="5566210228171064229">PIN ile ve PIN olmadan yazdırmaya izin ver</translation>
 <translation id="556865034069957245">Bu politika tam ekran modunun kullanımını kontrol eder. Burada, tüm <ph name="PRODUCT_NAME" /> kullanıcı arayüzü gizlenir ve sadece web içeriği görünür.
 
@@ -2544,7 +2573,7 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
       Bu politika 0 değerine ayarlanırsa, kimlik doğrulama verisi önbelleğe alma devre dışı bırakılır. Her oturum açmada alana özgü verilerin getirilmesi gerektiği için bunu yapmak ilişkili kullanıcıların oturum açmasını önemli ölçüde yavaşlatabilir.
 
       Alan verilerinin geçici kullanıcılar için bile önbelleğe alındığını unutmayın. Geçici kullanıcıların alanının izlenmesini önlemek istiyorsanız önbellek kapatılmalıdır.</translation>
-<translation id="570062449808736508">Bu politika boş olmayan bir dizeye ayarlanırsa WebView, belirtilen yetkili adına sahip içerik sağlayıcıdan URL kısıtlamalarını okur.</translation>
+<translation id="570062449808736508">Bu politika boş olmayan bir dizeye ayarlanırsa Web Görünümü, belirtilen yetkili adına sahip içerik sağlayıcıdan URL kısıtlamalarını okur.</translation>
 <translation id="5701714006401683963">Bu politika yanlış (false) değerine ayarlanırsa, yönetilen misafir oturumu https://support.google.com/chrome/a/answer/3017014, standart "Herkese Açık Oturum"da belirtildiği şekilde davranır.
 
       Politika doğru (true) değerine ayarlanır veya ayarlanmadan bırakılırsa, yönetilen misafir oturumu, normal "Herkese Açık Oturumlar" için geçerli olan kısıtlamaları kaldıran "Yönetilen Oturum" davranışını devralır.
@@ -3618,7 +3647,7 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 
           Bu politika etkinleştirilir veya ayarlanırsa kullanıcılar, tekrar girmeleri gerekmesin diye Kerberos şifrelerinin hatırlanıp hatırlanmayacağına karar verebilirler. Ek bir kimlik doğrulama işlemi (iki faktörlü kimlik doğrulama) gerekmedikçe Kerberos biletleri otomatik olarak getirilir.
 
-          Bu politika devre dışı bırakılırsa şifreler hiçbir zaman hatırlanmaz ve daha önce saklanan tüm şifreler silinir. Kullanıcılar, Kerberos sisteminde kimlik doğrulamaları gerektiğinde her zaman şifrelerini girmelidirler. Sunucu ayarlarına bağlı olarak, bu genellikle her 8 saat bir ile birkaç ayda bir arasında olur.</translation>
+          Bu politika devre dışı bırakılırsa şifreler hiçbir zaman hatırlanmaz ve daha önce saklanan tüm şifreler silinir. Kullanıcılar, Kerberos sisteminde kimlik doğrulamaları gerektiğinde her zaman şifrelerini girmelidirler. Sunucu ayarlarına bağlı olarak, bu genellikle her 8 saatte bir ile birkaç ayda bir arasında olur.</translation>
 <translation id="7694807474048279351"><ph name="PRODUCT_OS_NAME" /> güncellemesi uygulandıktan sonra otomatik yeniden başlatma planla.
 
       Bu politika true (doğru) olarak ayarlandığında, <ph name="PRODUCT_OS_NAME" /> güncellemesi uygulandıktan sonra güncelleme işleminin tamamlanması için otomatik yeniden başlatma gerekliyse bir otomatik yeniden başlatma planlanır. Yeniden başlatma derhal planlanır, ancak kullanıcı o an cihazı kullanıyorsa bu işlem cihaz üzerinden 24 saate kadar geciktirilebilir.

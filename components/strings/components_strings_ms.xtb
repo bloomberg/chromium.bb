@@ -468,6 +468,7 @@
 <translation id="3495081129428749620">Cari dalam halaman
     <ph name="PAGE_TITLE" /></translation>
 <translation id="3498215018399854026">Kami tidak dapat menghubungi ibu bapa anda pada masa ini. Sila cuba lagi.</translation>
+<translation id="3512163584740124171">Dasar ini diabaikan kerana dasar lain daripada kumpulan dasar yang sama mempunyai keutamaan yang lebih tinggi.</translation>
 <translation id="3528171143076753409">Sijil pelayan tidak dipercayai.</translation>
 <translation id="3528485271872257980">Coklat Gelap</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Sekurang-kurangnya 1 item pada peranti yang disegerakkan}=1{1 item (dan beberapa lagi pada peranti yang disegerakkan)}other{# item (dan beberapa lagi pada peranti yang disegerakkan)}}</translation>
@@ -1082,7 +1083,6 @@
 <translation id="7062635574500127092">Hijau kebiruan</translation>
 <translation id="7064851114919012435">Maklumat hubungan</translation>
 <translation id="7079718277001814089">Tapak ini mengandungi perisian hasad</translation>
-<translation id="7081564429925484109">Amaran: Dasar ini tidak digabungkan seperti yang dinyatakan dalam dasar PolicyListMultipleSourceMergeList kerana dasar ini bukan senarai.</translation>
 <translation id="7087282848513945231">Daerah</translation>
 <translation id="7090678807593890770">Cari <ph name="LINK" /> di Google</translation>
 <translation id="7108338896283013870">Sembunyikan</translation>
@@ -1139,7 +1139,6 @@ Butiran tambahan:
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">Tidak</translation>
 <translation id="7378810950367401542">/</translation>
-<translation id="7381288752349550461">Pembatalan sesi terurus</translation>
 <translation id="7390545607259442187">Sahkan Kad</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7403591733719184120"><ph name="DEVICE_NAME" /> anda diurus</translation>

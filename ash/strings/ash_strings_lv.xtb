@@ -112,6 +112,7 @@
 <translation id="2597972630681408282">Nakts režīms: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM karte ir bloķēta.</translation>
 <translation id="2653659639078652383">Iesniegt</translation>
+<translation id="2658778018866295321">Noklikšķiniet un velciet</translation>
 <translation id="2700493154570097719">Iestatiet savu tastatūru</translation>
 <translation id="2718395828230677721">Nakts režīms</translation>
 <translation id="2727977024730340865">Pievienots lādētājs ar mazu strāvas padevi. Akumulatora uzlāde var nebūt uzticama.</translation>
@@ -227,6 +228,7 @@
 <translation id="4378551569595875038">Notiek pievienošana...</translation>
 <translation id="4379531060876907730">Šie ir jūsu skārienekrāna pildspalvas rīki</translation>
 <translation id="4389184120735010762">Jūs nospiedāt dokotās lupas īsinājumtaustiņu. Vai vēlaties to ieslēgt?</translation>
+<translation id="4394049700291259645">Atspējot</translation>
 <translation id="4421231901400348175">Ekrāna pārvaldības koplietošana ar <ph name="HELPER_NAME" />, izmantojot attālo palīdzību.</translation>
 <translation id="4430019312045809116">Skaļums</translation>
 <translation id="4450893287417543264">Vairs nerādīt</translation>
@@ -246,7 +248,6 @@
 <translation id="4696813013609194136">Ierīces atbloķēšana, ievadot vecāku kodu</translation>
 <translation id="4731797938093519117">Vecāku piekļuve</translation>
 <translation id="4734965478015604180">Horizontāli</translation>
-<translation id="476166673298332917">Ierīces administrators var novērot visas jūsu pārlūkošanas darbības.</translation>
 <translation id="4774338217796918551">Atgriezieties plkst. <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Parole e-pasta adresei <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">Google asistents nav pieejams demonstrācijas sesijā.</translation>
@@ -354,7 +355,6 @@
 <translation id="6537270692134705506">Uzņemt ekrāna attēlu</translation>
 <translation id="6542521951477560771">Notiek apraide uz ierīci <ph name="RECEIVER_NAME" /></translation>
 <translation id="6559976592393364813">Jautājiet administratoram</translation>
-<translation id="6574601967010742428">Jūsu darbības var pārraudzīt ierīces pārvaldnieks.</translation>
 <translation id="6585808820553845416">Atlikušais laiks līdz šīs sesijas beigām: <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Meklēšana+Shift+K</translation>
 <translation id="6650933572246256093">Bluetooth ierīce “<ph name="DEVICE_NAME" />” vēlas saņemt atļauju, lai izveidotu savienojumu pārī. Lūdzu, ievadiet ierīcē šo ieejas atslēgu: <ph name="PASSKEY" />.</translation>

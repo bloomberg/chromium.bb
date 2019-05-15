@@ -143,6 +143,15 @@
       Als het beleid is ingesteld op 'false', wordt de status van de schakelaar voor de ontwikkelaarsmodus niet gemeld.</translation>
 <translation id="1160479894929412407">QUIC-protocol toestaan</translation>
 <translation id="1160939557934457296">Doorgaan vanaf de waarschuwingspagina van Safe Browsing uitschakelen</translation>
+<translation id="1171342272070128466">Schakel de toegankelijkheidsfunctie 'Gedockt vergrootglas' in.
+
+          Als dit beleid is ingesteld op True, wordt het gedockte vergrootglas altijd ingeschakeld.
+
+          Als dit beleid is ingesteld op False, wordt het gedockte vergrootglas altijd uitgeschakeld.
+
+          Als je dit beleid instelt, kunnen gebruikers dit niet wijzigen of negeren.
+
+          Als dit beleid niet wordt ingesteld, is het gedockte vergrootglas in eerste instantie uitgeschakeld, maar kan de gebruiker dit op elk gewenst moment inschakelen.</translation>
 <translation id="1189817621108632689">Hiermee kun je een lijst met URL's opgeven voor sites die afbeeldingen mogen weergeven.
 
           Als dit beleid niet wordt ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites, op basis van het beleid DefaultImagesSetting (als dit is ingesteld) of anders op basis van de configuratie van de gebruiker.
@@ -454,6 +463,7 @@
       Als het beleid is ingeschakeld, kunnen gebruikers het standaardgedrag niet uitschakelen waarbij elke site wordt uitgevoerd in een eigen proces.
       Als het beleid niet is geconfigureerd of is uitgeschakeld, kan de gebruiker deze instelling wijzigen (bijvoorbeeld met 'Disable site isolation' ('Site-isolatie uitschakelen) in chrome://flags).
       </translation>
+<translation id="1767673020408652620">App-aanbevelingen inschakelen voor de nulstatus van het zoekvak</translation>
 <translation id="1781356041596378058">Met dit beleid wordt ook de toegang tot de ontwikkelaarsopties van Android beheerd. Als je dit beleid instelt op 'True', hebben gebruikers geen toegang tot ontwikkelaarsopties. Als je dit beleid instelt op 'False' of niet instelt, hebben gebruikers toegang tot ontwikkelaarsopties door zeven keer op het buildnummer te tikken in de app Instellingen van Android.</translation>
 <translation id="1793346220873697538">Afdrukken met pincode standaard uitschakelen</translation>
 <translation id="1797233582739332495">Toon de gebruiker een terugkerende prompt om aan te geven dat opnieuw opstarten vereist is</translation>
@@ -990,6 +1000,15 @@
 
       Elke lijstvermelding specificeert een ID die intern wordt gebruikt om de verschillende lokale accounts van het apparaat te onderscheiden.</translation>
 <translation id="2769952903507981510">De vereiste domeinnaam configureren voor hosts voor externe toegang</translation>
+<translation id="2783078941107212091">Schakel app-aanbevelingen in voor de nulstatus van het zoekvak in de Launcher.
+
+          Als dit beleid is ingesteld op True, kunnen er app-aanbevelingen worden weergegeven als het zoekvak de nulstatus heeft.
+
+          Als dit beleid is ingesteld op False, worden er geen app-aanbevelingen weergegeven als het zoekvak de nulstatus heeft.
+
+          Als je dit beleid instelt, kunnen gebruikers dit niet wijzigen of negeren.
+
+          Als dit beleid niet wordt ingesteld, is de standaardwaarde False voor beheerde apparaten.</translation>
 <translation id="2787173078141616821">Informatie over de status van Android rapporteren</translation>
 <translation id="2799297758492717491">Automatisch afspelen van media toestaan op een witte lijst met URL-patronen</translation>
 <translation id="2801155097555584385">Een custom startpunt voor batterijoplading opgeven in procenten</translation>
@@ -1186,6 +1205,24 @@
       Als dit beleid is ingesteld op 'false', wordt WPAD-optimalisatie uitgeschakeld, waardoor <ph name="PRODUCT_NAME" /> langer moet wachten op DNS-gebaseerde WPAD-servers. Als het beleid niet is ingesteld of is ingeschakeld, is WPAD-optimalisatie ingeschakeld.
 
       Onafhankelijk van of en hoe dit beleid is ingesteld, kan de instelling voor WPAD-optimalisatie niet worden gewijzigd door gebruikers.</translation>
+<translation id="3071839057966069710">Hiermee wordt een lijst met printers geconfigureerd.
+
+      Met dit beleid kunnen beheerders hun gebruikers voorzien van printerconfiguraties.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> en <ph name="PRINTER_DESCRIPTION" /> zijn vrije tekenreeksen die kunnen worden aangepast om de printerselectie te vereenvoudigen. <ph name="PRINTER_MANUFACTURER" /> en <ph name="PRINTER_MODEL" /> zijn bedoeld om de printeridentificatie door eindgebruikers te vereenvoudigen. Ze staan voor de fabrikant en het model van de printer. <ph name="PRINTER_URI" /> moet een adres zijn dat bereikbaar is vanaf een clientcomputer, inclusief <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> en <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> is optioneel. Als de waarde is opgegeven, wordt deze gebruikt om <ph name="ZEROCONF_DISCOVERY" />-printers te dedupliceren.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> moet overeenkomen met een van de tekenreeksen die een door <ph name="PRODUCT_NAME" /> ondersteunde printer vertegenwoordigen. De tekenreeks wordt gebruikt om de juiste PPD voor de printer te identificeren en te installeren. Meer informatie hierover vind je op https://support.google.com/chrome?p=noncloudprint.
+
+      <ph name="PRINTER_AUTOCONF" /> is een Booleaanse markering die aangeeft of IPP Everywhere moet worden gebruikt om de printer in te stellen. Deze markering wordt ondersteund in versie 76 en hoger van <ph name="PRODUCT_OS_NAME" />.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> moet de naam van de printer bevatten of <ph name="PRINTER_AUTOCONF" /> moet zijn ingesteld op True. Printers met beide of geen van de eigenschappen worden genegeerd.
+
+      De instellingen van de printer worden voltooid wanneer de printer voor het eerst wordt gebruikt.  PPD's worden pas gedownload wanneer de printer wordt gebruikt.  Daarna worden veelgebruikte PPD's opgeslagen in het cachegeheugen.
+
+      Dit beleid is niet van invloed op de mogelijkheid van gebruikers om printers op afzonderlijke apparaten in te stellen.  Het is bedoeld als aanvulling op de printerinstellingen van afzonderlijke gebruikers.
+
+      Voor apparaten die via Active Directory worden beheerd, ondersteunt dit beleid de uitbreiding van <ph name="MACHINE_NAME_VARIABLE" /> naar de naam van de Active Directory-machine of naar een subtekenreeks daarvan. Als de machinenaam bijvoorbeeld <ph name="MACHINE_NAME_EXAMPLE" /> is, wordt <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> vervangen door de vier tekens vanaf de zesde positie, oftewel <ph name="MACHINE_NAME_PART_EXAMPLE" />. Houd er rekening mee dat de positie op nul is gebaseerd.
+      </translation>
 <translation id="3072045631333522102">Screensaver voor gebruik in het inlogvenster in de winkelmodus</translation>
 <translation id="3072847235228302527">De Servicevoorwaarden instellen voor een apparaat-lokaal account</translation>
 <translation id="3077183141551274418">Hiermee schakel je levenscyclussen voor tabbladen in of uit</translation>
@@ -1971,7 +2008,6 @@
 <translation id="4591366717022345234">Gebruikers Quick Fix Build bieden</translation>
 <translation id="4600786265870346112">Grote muisaanwijzer inschakelen</translation>
 <translation id="4604931264910482931">Zwarte lijst voor systeemeigen berichten configureren</translation>
-<translation id="4613508646038788144">Als het beleid is ingesteld op 'False', is het mogelijk om via software van derden uitvoerbare code te injecteren in de processen van Chrome. Als het beleid niet is ingesteld of is ingesteld op 'True', kan er geen uitvoerbare code via software van derden worden geïnjecteerd in de processen van Chrome.</translation>
 <translation id="4617338332148204752">De metatagcontrole in <ph name="PRODUCT_FRAME_NAME" /> overslaan</translation>
 <translation id="4625915093043961294">Witte lijst voor het installeren van extensies configureren</translation>
 <translation id="4632343302005518762"><ph name="PRODUCT_FRAME_NAME" /> toestaan de vermelde soorten content te verwerken.</translation>
@@ -2162,15 +2198,6 @@
       Wanneer dit beleid is ingesteld op 'false', sluit Chrome het tabblad nadat er is overgeschakeld naar een alternatieve browser, ook als dit het laatste tabblad was. Hiermee wordt Chrome volledig gesloten.</translation>
 <translation id="5105313908130842249">Vertraging van schermvergrendeling wanneer op de batterij wordt gewerkt</translation>
 <translation id="5108031557082757679">Zakelijke apparaatprinters uitgeschakeld</translation>
-<translation id="5113732180192599620">Dit beleid bepaalt de lijst met websites die nooit overschakeling naar een andere browser veroorzaken.
-
-Onthoud dat er ook elementen aan deze lijst kunnen worden toegevoegd via het <ph name="USE_IE_SITELIST_POLICY_NAME" />- en <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />-beleid.
-
-Wanneer dit beleid niet is ingesteld, kunnen er geen websites worden toegevoegd aan de lijst.
-
-Wanneer dit beleid is ingesteld, wordt elk item behandeld als een regel, vergelijkbaar met het beleid <ph name="URL_LIST_POLICY_NAME" />. De logica is echter andersom: regels die overeenkomen, openen geen alternatieve browser.
-
-Anders dan bij <ph name="URL_LIST_POLICY_NAME" /> kunnen regels in twee richtingen worden toegepast. Dat betekent dat wanneer de add-in van Internet Explorer aanwezig en ingeschakeld is, deze optie ook beheert of <ph name="IE_PRODUCT_NAME" /> URL's moet openen in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="5124368997194894978">Opstarten bij netstroom (wisselstroom) inschakelen</translation>
 <translation id="5131211790949066746">Hiermee worden de lijstbeleidsregels <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" /> en <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" /> voor installatie van extensies samengevoegd.
 
@@ -2452,6 +2479,7 @@ Anders dan bij <ph name="URL_LIST_POLICY_NAME" /> kunnen regels in twee richting
 
       Als dit niet is gespecificeerd, wordt de URL voor de seed voor varianten niet aangepast.</translation>
 <translation id="5561811616825571914">Clientcertificaten automatisch selecteren voor deze sites op het inlogscherm</translation>
+<translation id="5565178130821694365">Het wachtwoord moet elke twee dagen (48 uur) worden opgegeven</translation>
 <translation id="5566210228171064229">Afdrukken zowel met als zonder pincode toestaan</translation>
 <translation id="556865034069957245">Dit beleid beheert de beschikbaarheid van de modus voor volledig scherm waarin alle gebruikersinterface voor <ph name="PRODUCT_NAME" /> is verborgen en alleen webcontent zichtbaar is.
 

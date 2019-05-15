@@ -112,6 +112,7 @@
 <translation id="2597972630681408282">«نور شب»: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">سیم‌کارت قفل است</translation>
 <translation id="2653659639078652383">ارائه</translation>
+<translation id="2658778018866295321">کلیک کنید و بکشید</translation>
 <translation id="2700493154570097719">تنظیم صفحه‌کلید</translation>
 <translation id="2718395828230677721">نور شب</translation>
 <translation id="2727977024730340865">باتری به شارژر برق ضعیف متصل است. شارژ باتری ممکن است قابل اطمینان نباشد.</translation>
@@ -228,6 +229,7 @@
 <translation id="4378551569595875038">در حال اتصال...</translation>
 <translation id="4379531060876907730">این‌ها ابزارهای قلم شما هستند</translation>
 <translation id="4389184120735010762">میان‌بر صفحه‌کلید مربوط به ذره‌بین متصل را فشار دادید. می‌خواهید آن را روشن کنید؟</translation>
+<translation id="4394049700291259645">غیر فعال کردن</translation>
 <translation id="4421231901400348175">هم‌رسانی کنترل صفحه‌تان با <ph name="HELPER_NAME" /> از طریق راهنمایی ازراه‌دور.</translation>
 <translation id="4430019312045809116">میزان صدا</translation>
 <translation id="4450893287417543264">دیگر نشان داده نشود</translation>
@@ -247,7 +249,6 @@
 <translation id="4696813013609194136">باز کردن قفل دستگاه با کد والدین</translation>
 <translation id="4731797938093519117">دسترسی والدین</translation>
 <translation id="4734965478015604180">افقی</translation>
-<translation id="476166673298332917">سرپرست دستگاه ممکن است فعالیت مرور شما را پایش کند.</translation>
 <translation id="4774338217796918551">فردا ساعت <ph name="COME_BACK_TIME" /> برگردید.</translation>
 <translation id="4776917500594043016">گذرواژه <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">‏«دستیار Google» در جلسه نمایشی در دسترس نیست.</translation>
@@ -355,7 +356,6 @@
 <translation id="6537270692134705506">ضبط کردن صفحه</translation>
 <translation id="6542521951477560771">ارسال محتوا به <ph name="RECEIVER_NAME" /></translation>
 <translation id="6559976592393364813">سؤال از سرپرست</translation>
-<translation id="6574601967010742428">سرپرست دستگاه ممکن است بر فعالیتتان نظارت داشته باشد.</translation>
 <translation id="6585808820553845416">جلسه در <ph name="SESSION_TIME_REMAINING" /> به پایان می‌رسد.</translation>
 <translation id="6627638273713273709">Search+Shift+K</translation>
 <translation id="6650933572246256093">دستگاه بلوتوث «<ph name="DEVICE_NAME" />» برای مرتبط‌سازی به مجوز نیاز دارد. لطفاً این کلیدواژه را در آن دستگاه وارد کنید: <ph name="PASSKEY" /></translation>

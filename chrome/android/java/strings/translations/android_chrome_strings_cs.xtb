@@ -9,7 +9,6 @@
 <translation id="1067922213147265141">Další služby Google</translation>
 <translation id="1068672505746868501">Stránky v jazyce <ph name="SOURCE_LANGUAGE" /> nikdy nepřekládat</translation>
 <translation id="1080790410959514870">Odhlašujete se z účtu, který je spravován doménou <ph name="DOMAIN_NAME" />. Data prohlížeče Chrome uložená v tomto zařízení touto akcí smažete, avšak v účtu Google tato data zůstanou.</translation>
-<translation id="1099080783256647258">Když je zapnutý Spořič dat, používá Chrome servery Google ke zrychlení a komprimaci stránek při načítání. Velmi pomalé stránky Spořič dat přepisuje, aby se načetl jen zásadní obsah. Spořič dat neoptimalizuje stránky načtené v anonymním režimu.</translation>
 <translation id="1100066534610197918">Otevřít na nové kartě ve skup.</translation>
 <translation id="1105960400813249514">Snímky obrazovky</translation>
 <translation id="1111673857033749125">Zde se objeví záložky, které jste si uložili v ostatních zařízeních.</translation>
@@ -25,6 +24,7 @@
 <translation id="1175310183703641346">Vaše záložky, historie, hesla a další nastavení budou synchronizovány do účtu Google.</translation>
 <translation id="1178581264944972037">Pozastavit</translation>
 <translation id="1181037720776840403">Odebrat</translation>
+<translation id="1188239144602654184">Spustit rozšířenou realitu</translation>
 <translation id="1197267115302279827">Přesunutí záložek</translation>
 <translation id="119944043368869598">Vymazat vše</translation>
 <translation id="1201402288615127009">Další</translation>
@@ -96,7 +96,6 @@
 <translation id="1672586136351118594">Tuto zprávu již nezobrazovat</translation>
 <translation id="1692118695553449118">Synchronizace je zapnuta</translation>
 <translation id="169515064810179024">Blokovat webům přístup k senzorům pohybu</translation>
-<translation id="1709438864123551175">Spořič dat</translation>
 <translation id="1717218214683051432">Pohybová čidla</translation>
 <translation id="1718835860248848330">Poslední hodina</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> – aktualizováno <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -214,7 +213,6 @@
 <translation id="2501278716633472235">Zpět</translation>
 <translation id="2513403576141822879">Další nastavení související s ochranou soukromí, zabezpečením a shromažďováním dat naleznete v části <ph name="BEGIN_LINK" />Synchronizace a služby Google<ph name="END_LINK" /></translation>
 <translation id="2523184218357549926">Odesílá do Googlu adresy URL stránek, které navštěvujete</translation>
-<translation id="2526148617758225454">Spořič dat je zapnut. Můžete jej spravovat v Nastavení.</translation>
 <translation id="2532336938189706096">Webové zobrazení</translation>
 <translation id="2534155362429831547">Byly smazány položky (celkem <ph name="NUMBER_OF_ITEMS" />)</translation>
 <translation id="2536728043171574184">Prohlížíte offline kopii stránky</translation>
@@ -354,14 +352,12 @@
 <translation id="3599863153486145794">Vymaže historii ze všech zařízení, na kterých jste přihlášeni. Na stránce <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> mohou být k dispozici další druhy historie prohlížení zaznamenané ve vašem účtu Google.</translation>
 <translation id="3600792891314830896">Ztlumit weby, které přehrávají zvuky</translation>
 <translation id="3616113530831147358">Zvuk</translation>
-<translation id="3620176948598597475">Resetováním vymažete historii Spořiče dat, včetně seznamu navštívených webů.</translation>
 <translation id="3632295766818638029">Zrušit maskování hesla</translation>
 <translation id="363596933471559332">Přihlašovat se na weby automaticky pomocí uložených identifikačních údajů. Když je tato funkce vypnutá, budete před každým přihlášením na web požádáni o ověření.</translation>
 <translation id="3658159451045945436">Resetováním vymažete historii úspory dat, včetně seznamu navštívených webů.</translation>
 <translation id="3662546969139119822">Zde žádná historie není</translation>
 <translation id="3672452749423051839">Návrhy při chybách navigace</translation>
 <translation id="3692944402865947621">Stažení souboru <ph name="FILE_NAME" /> se nezdařilo, protože umístění úložiště není dostupné.</translation>
-<translation id="3712575778697986964">Resetovat Spořič dat?</translation>
 <translation id="3714981814255182093">Otevřít lištu Najít</translation>
 <translation id="3716182511346448902">Tato stránka využívá příliš mnoho paměti, proto ji Chrome pozastavil.</translation>
 <translation id="3730075448226062617">Chcete-li Chromu umožnit přístup k mikrofonu, zapněte mikrofon také v <ph name="BEGIN_LINK" />Nastavení Android<ph name="END_LINK" />.</translation>
@@ -503,13 +499,11 @@ Na stránce <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> moh
 <translation id="4751476147751820511">Senzory pohybu nebo světla</translation>
 <translation id="4759238208242260848">Stažené soubory</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{Stažení 1 souboru bylo dokončeno.}few{Stažení # souborů bylo dokončeno.}many{Stažení # souboru bylo dokončeno.}other{Stažení # souborů bylo dokončeno.}}</translation>
-<translation id="4766369052440583386">Spořič dat je zapnutý</translation>
 <translation id="4797039098279997504">Klepnutím se vrátíte na kartu <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4802417911091824046">Šifrování pomocí heslové fráze se nevztahuje na platební metody a adresy ze služby Google Pay.
 
 Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<ph name="END_LINK" />.</translation>
 <translation id="4807098396393229769">Jméno na kartě</translation>
-<translation id="4807963036345170158">Spořič dat je vypnutý</translation>
 <translation id="4816465935029283692">Typy dat</translation>
 <translation id="4824958205181053313">Zrušit synchronizaci?</translation>
 <translation id="4837753911714442426">Otevřít možnosti tisku stránky</translation>
@@ -601,6 +595,7 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="5447765697759493033">Tento web nebude přeložen</translation>
 <translation id="545042621069398927">Zrychlování stahování.</translation>
 <translation id="5456381639095306749">Stáhnout stránku</translation>
+<translation id="5475862044948910901">Spustit relaci rozšířené reality?</translation>
 <translation id="548278423535722844">Otevřít v mapové aplikaci</translation>
 <translation id="5487521232677179737">Vymazat data</translation>
 <translation id="5494752089476963479">Blokovat reklamy na webech, které zobrazují obtěžující nebo zavádějící reklamy</translation>
@@ -643,7 +638,6 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="569536719314091526">Pomocí tlačítka Další možnosti můžete tuto stránku přeložit do libovolného jazyka.</translation>
 <translation id="572328651809341494">Nedávno použité karty</translation>
 <translation id="5726692708398506830">Zvětšit veškerý obsah stránky</translation>
-<translation id="5734520971562437809">Uspořte až 60 procent dat a načítejte weby rychleji.</translation>
 <translation id="5748802427693696783">Přepnuto na standardní karty</translation>
 <translation id="5749068826913805084">Aby bylo možné stahovat soubory, Chrome potřebuje přístup k úložišti.</translation>
 <translation id="5763382633136178763">Anonymní karty</translation>
@@ -701,7 +695,6 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="6159335304067198720">Úspora dat: <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Další informace</translation>
 <translation id="6177111841848151710">Pro aktuální vyhledávač blokováno</translation>
-<translation id="6177390657002841081">Zapnutí Spořiče dat</translation>
 <translation id="6181444274883918285">Přidat výjimku pro konkrétní web</translation>
 <translation id="6192333916571137726">Stáhnout soubor</translation>
 <translation id="6192792657125177640">Výjimky</translation>
@@ -867,6 +860,11 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Sdílet 1 vybranou položku}few{Sdílet # vybrané položky}many{Sdílet # vybrané položky}other{Sdílet # vybraných položek}}</translation>
 <translation id="7359002509206457351">Poskytnout přístup k platební metodám</translation>
+<translation id="7365126855094612066">Po dobu trvání této relace bude web moci:
+• vytvářet 3D mapu vašeho prostředí,
+• sledovat pohyb fotoaparátu.
+
+Web NEZÍSKÁ přístup k fotoaparátu. Fotky z fotoaparátu uvidíte pouze vy.</translation>
 <translation id="7375125077091615385">Typ:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">Adresa URL</translation>
@@ -1114,11 +1112,9 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="9188680907066685419">Odhlásit se ze spravovaného účtu</translation>
 <translation id="9204836675896933765">Zbývá 1 soubor</translation>
 <translation id="9206873250291191720">A</translation>
-<translation id="9215534869786664672">Uspořte až 60 procent dat a načítejte weby rychleji. Servery Google budou navštěvované stránky optimalizovat.</translation>
 <translation id="9219103736887031265">Obrázky</translation>
 <translation id="926205370408745186">Odstranit vaši aktivitu v Chromu z digitální rovnováhy</translation>
 <translation id="932327136139879170">Domovská stránka</translation>
-<translation id="932599481871055447">Ušetřete data a surfujte rychleji</translation>
 <translation id="938850635132480979">Chyba: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Přístup k mikrofonu</translation>
 <translation id="951339005376969845">Smazat existující data. Můžete je znovu načíst tím, že přepnete zpět na účet <ph name="FROM_ACCOUNT" />.</translation>

@@ -467,6 +467,7 @@
 <translation id="3495081129428749620">Rechercher sur la page
     <ph name="PAGE_TITLE" /></translation>
 <translation id="3498215018399854026">Impossible de joindre votre parent pour le moment. Veuillez réessayer.</translation>
+<translation id="3512163584740124171">Cette règle est ignorée, car une autre issue du même groupe de règles présente une priorité plus élevée.</translation>
 <translation id="3528171143076753409">Le certificat du serveur n'est pas approuvé.</translation>
 <translation id="3528485271872257980">Marron foncé</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Au moins 1 élément sur les appareils synchronisés}=1{1 élément (et plus sur les appareils synchronisés)}one{# élément (et plus sur les appareils synchronisés)}other{# éléments (et plus sur les appareils synchronisés)}}</translation>
@@ -1080,7 +1081,6 @@
 <translation id="7062635574500127092">Turquoise</translation>
 <translation id="7064851114919012435">Coordonnées</translation>
 <translation id="7079718277001814089">Ce site contient des logiciels malveillants</translation>
-<translation id="7081564429925484109">Avertissement : Cette règle n'a pas été fusionnée comme indiqué dans la règle PolicyListMultipleSourceMergeList, car il ne s'agit pas d'une liste.</translation>
 <translation id="7087282848513945231">Comté</translation>
 <translation id="7090678807593890770">Effectuez une recherche Google sur <ph name="LINK" />.</translation>
 <translation id="7108338896283013870">Masquer</translation>
@@ -1137,7 +1137,6 @@ Informations supplémentaires :
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">Non</translation>
 <translation id="7378810950367401542">/</translation>
-<translation id="7381288752349550461">Contournement dû à la session gérée</translation>
 <translation id="7390545607259442187">Valider la carte</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7403591733719184120">Votre <ph name="DEVICE_NAME" /> est géré</translation>

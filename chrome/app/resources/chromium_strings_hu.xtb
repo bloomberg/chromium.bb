@@ -120,9 +120,7 @@
 <translation id="4987820182225656817">A vendégek úgy használhatják a Chromiumot, hogy nem hagynak hátra semmit.</translation>
 <translation id="4994636714258228724">Adja hozzá magát a Chromiumban</translation>
 <translation id="5021854341188256296">{0,plural, =0{Rendelkezésre áll egy Chromium OS-frissítés}=1{Rendelkezésre áll egy Chromium OS-frissítés}other{# napja rendelkezésre áll egy Chromium OS-frissítés}}</translation>
-<translation id="5032989939245619637">Részletek mentése a Chromiumban</translation>
 <translation id="5045248521775609809">Vigye magával a Chromiumot mindenhova</translation>
-<translation id="5116586539350239523">A Chromium biztonságosan tárolja a személyes adatait, így nem kell újra begépelnie őket.</translation>
 <translation id="5181952534059945058">Ez az oldal túl sok memóriát használ, ezért a Chromium eltávolított egyes tartalmakat.</translation>
 <translation id="5277894862589591112">A módosítások alkalmazásához indítsa újra a Chromiumot</translation>
 <translation id="5358375970380395591">Kezelt fiókkal jelentkezik be, és annak adminisztrátora számára hozzáférést biztosít Chromium-profiljához. Chromium-adatait – például alkalmazásait, könyvjelzőit, előzményeit, jelszavait és más beállításait – a rendszer véglegesen társítja a(z) <ph name="USER_NAME" /> fiókhoz. Ezen adatokat a Google-fiók Irányítópultján törölheti, de más fiókhoz nem társíthatja őket. <ph name="LEARN_MORE" /></translation>

@@ -112,6 +112,7 @@
 <translation id="2597972630681408282">Éjszakai fény: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">A SIM-kártya zárolva van</translation>
 <translation id="2653659639078652383">Elküldés</translation>
+<translation id="2658778018866295321">Kattintás és húzás</translation>
 <translation id="2700493154570097719">Billentyűzetet beállítása</translation>
 <translation id="2718395828230677721">Éjszakai fény</translation>
 <translation id="2727977024730340865">Kis teljesítményű töltőt csatlakoztatott. Az akkumulátor töltése nem megbízható.</translation>
@@ -228,6 +229,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="4378551569595875038">Kapcsolódás folyamatban…</translation>
 <translation id="4379531060876907730">Ezek az érintőceruza-eszközök</translation>
 <translation id="4389184120735010762">Lenyomta a dokkolt nagyító billentyűparancsát. Bekapcsolja a funkciót?</translation>
+<translation id="4394049700291259645">Kikapcsolás</translation>
 <translation id="4421231901400348175">A képernyő irányításának megosztása <ph name="HELPER_NAME" /> segítővel a Távsegítség szolgáltatás keretein belül.</translation>
 <translation id="4430019312045809116">Hangerő</translation>
 <translation id="4450893287417543264">Ne jelenjen meg többé</translation>
@@ -247,7 +249,6 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="4696813013609194136">Zárolás feloldása szülői kóddal</translation>
 <translation id="4731797938093519117">Szülői hozzáférés</translation>
 <translation id="4734965478015604180">Vízszintes</translation>
-<translation id="476166673298332917">Az eszköz rendszergazdája figyelheti a böngészési tevékenységét.</translation>
 <translation id="4774338217796918551">Térjen vissza holnap, ekkor: <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">A(z) <ph name="USER_EMAIL_ADDRESS" /> fiókhoz tartozó jelszó</translation>
 <translation id="4778095205580009397">A Google Segéd nem áll rendelkezésre bemutató munkamenetben.</translation>
@@ -355,7 +356,6 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="6537270692134705506">Képernyőkép rögzítése</translation>
 <translation id="6542521951477560771">Küldés ide: <ph name="RECEIVER_NAME" /></translation>
 <translation id="6559976592393364813">Érdeklődjön a rendszergazdánál</translation>
-<translation id="6574601967010742428">Lehetséges, hogy tevékenységeit megfigyelheti az eszköz adminisztrátora.</translation>
 <translation id="6585808820553845416">A munkamenet <ph name="SESSION_TIME_REMAINING" /> múlva véget ér.</translation>
 <translation id="6627638273713273709">Keresés+Shift+K</translation>
 <translation id="6650933572246256093">A(z) „<ph name="DEVICE_NAME" />” Bluetooth-eszköz engedélyt kér a párosításra. Kérjük, adja meg ezt a biztonsági kódot azon az eszközön: <ph name="PASSKEY" /></translation>

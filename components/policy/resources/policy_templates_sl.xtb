@@ -144,6 +144,15 @@
       Če je pravilnik nastavljen na »False«, se o stanju stikala za razvijalce ne poroča.</translation>
 <translation id="1160479894929412407">Dovoli protokol QUIC</translation>
 <translation id="1160939557934457296">Onemogoči nadaljevanje z opozorilne strani varnega brskanja</translation>
+<translation id="1171342272070128466">Omogočanje funkcije zasidrane lupe za ljudi s posebnimi potrebami.
+
+          Če je ta pravilnik omogočen, je zasidrana lupa vedno omogočena.
+
+          Če je pravilnik onemogočen, je zasidrana lupa vedno onemogočena.
+
+          Če nastavite ta pravilnik, ga uporabniki ne morejo spremeniti ali preglasiti.
+
+          Če tega pravilnika ne nastavite, je zasidrana lupa prvotno onemogočena, vendar jo lahko uporabnik kadar koli omogoči.</translation>
 <translation id="1189817621108632689">Omogoča nastavitev seznama vzorcev URL-jev, s katerim so določena spletna mesta, ki jim ni dovoljeno prikazovati slik.
 
          Če ta pravilnik ni nastavljen, bo za vsa spletna mesta uporabljena globalna privzeta vrednost iz pravilnika »DefaultImagesSetting«, kadar je ta pravilnik nastavljen, sicer pa iz osebnih nastavitev uporabnika.
@@ -458,6 +467,7 @@
       Če je pravilnik omogočen, uporabniki ne bodo mogli onemogočiti privzetega delovanja, pri katerem se vsako spletno mesto izvaja v svojem procesu.
       Če pravilnik ni konfiguriran ali je onemogočen, bo uporabnik lahko spremenil to nastavitev (lahko bo na primer uporabil vnos »Disable site isolation« (onemogoči osamitev spletnih mest) v chrome://flags).
       </translation>
+<translation id="1767673020408652620">Omogočanje priporočil aplikacij v ničelnem stanju iskalnega polja</translation>
 <translation id="1781356041596378058">Ta pravilnik prav tako nadzira dostop do možnosti za razvijalce za Android. Če ta pravilnik omogočite, uporabniki ne morejo dostopati do možnosti za razvijalce. Če ta pravilnik onemogočite ali ga ne nastavite, uporabniki lahko dostopajo do možnosti za razvijalce, tako da se v aplikaciji Nastavitve za Android sedemkrat dotaknejo številke gradnje.</translation>
 <translation id="1793346220873697538">Onemogočanje, da je privzeto tiskanje s kodo PIN</translation>
 <translation id="1797233582739332495">Uporabniku prikaži ponavljajoč se poziv, ki obvešča, da je potreben vnovičen zagon</translation>
@@ -995,6 +1005,15 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 
       Vsak vnos na seznamu določa identifikator, ki se uporablja interno za razlikovanje med lokalnimi računi za napravo.</translation>
 <translation id="2769952903507981510">Nastavitev zahtevanega imena domene za dostop do oddaljenih gostiteljev</translation>
+<translation id="2783078941107212091">Omogočanje priporočil aplikacij v ničelnem stanju iskalnega polja v zaganjalniku.
+
+          Če je ta pravilnik omogočen, so priporočila aplikacij morda prikazana v iskanju ničelnega stanja.
+
+          Če ta pravilnik ni omogočen, priporočila aplikacij niso prikazana v iskanju ničelnega stanja.
+
+          Če nastavite ta pravilnik, ga uporabniki ne morejo spremeniti ali preglasiti.
+
+          Če ta pravilnik ni nastavljen, je za upravljane naprave privzeta nastavitev »False«.</translation>
 <translation id="2787173078141616821">Poročanje podatkov o stanju Androida</translation>
 <translation id="2799297758492717491">Dovoli samodejno predvajanje predstavnosti na seznamu dovoljenih vzorcev URL</translation>
 <translation id="2801155097555584385">Nastavitev prilagojene točke začetka polnjenja akumulatorja v odstotkih</translation>
@@ -1192,6 +1211,25 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Če je ta pravilnik onemogočen, je optimizacija WPAD onemogočena, zaradi česa mora <ph name="PRODUCT_NAME" /> čakati dlje na strežnike WPAD, ki temeljijo na DNS-ju. Če pravilnik ni nastavljen ali je omogočen, je optimizacija WPAD omogočena.
 
       Neodvisno od tega, ali je pravilnik nastavljen oziroma kako je nastavljen, uporabniki ne morejo spremeniti nastavitve optimizacije WPAD.</translation>
+<translation id="3071839057966069710">Konfigurira seznam tiskalnikov.
+
+      Ta pravilnik skrbnikom omogoča navajanje konfiguracij tiskalnikov
+      za uporabnike.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> in <ph name="PRINTER_DESCRIPTION" /> sta poljubno oblikovana niza, ki ju je mogoče prilagoditi za preprostejše izbiranje tiskalnika. <ph name="PRINTER_MANUFACTURER" /> in <ph name="PRINTER_MODEL" /> končnim uporabnikom olajšata prepoznavo tiskalnika, saj predstavljata proizvajalca in model tiskalnika. <ph name="PRINTER_URI" /> mora biti naslov, do katerega je mogoče dostopati iz odjemalskega računalnika, vključno s temi podatki: <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> in <ph name="URI_QUEUE" />. Identifikator <ph name="PRINTER_UUID" /> ni obvezen. Če je naveden, se uporablja za odstranjevanje podvojenih tiskalnikov <ph name="ZEROCONF_DISCOVERY" />.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> se mora ujemati z enim od nizov, ki predstavljajo tiskalnik s podporo za <ph name="PRODUCT_NAME" />. Niz se uporabi za odkrivanje in namestitev ustrezne datoteke PPD za tiskalnik. Več informacij je na voljo na https://support.google.com/chrome?p=noncloudprint.
+
+      <ph name="PRINTER_AUTOCONF" /> je logična zastavica, ki označuje, ali naj se za nastavitev tiskalnika uporabi IPP Everywhere. Ta zastavica je podprta v brskalniku <ph name="PRODUCT_OS_NAME" /> različice 76 in novejših.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> mora vsebovati ime tiskalnika ali mora biti <ph name="PRINTER_AUTOCONF" /> omogočen. Tiskalniki z obema lastnostma ali brez lastnosti bodo prezrti.
+
+      Nastavitev tiskalnika je dokončana ob prvi uporabi tiskalnika.  Datoteke PPD se ne prenesejo, dokler se tiskalnik ne uporablja.  Po tem se pogosto uporabljene datoteke PPD predpomnijo.
+
+      Ta pravilnik ne vpliva na to, ali lahko uporabniki konfigurirajo tiskalnike v posameznih napravah.  Namenjen je kot dodatek konfiguracijam tiskalnikov, ki jih opravijo posamezni uporabniki.
+
+      Za naprave, ki jih upravlja Active Directory, ta pravilnik podpira razširitev <ph name="MACHINE_NAME_VARIABLE" /> na ime naprave za Active Directory ali njegov podniz. Če je ime naprave na primer <ph name="MACHINE_NAME_EXAMPLE" />, potem <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> zamenjajo 4 znaki po 6. mestu, tj. <ph name="MACHINE_NAME_PART_EXAMPLE" />. Položaj temelji na ničli.
+      </translation>
 <translation id="3072045631333522102">Ohranjevalnik zaslona na zaslonu za prijavo v maloprodajnem načinu</translation>
 <translation id="3072847235228302527">Nastavitev pogojev storitve za lokalni račun v napravi.</translation>
 <translation id="3077183141551274418">Omogoči ali onemogoči življenjske cikle zavihkov</translation>
@@ -1987,7 +2025,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="4591366717022345234">Posredovanje delovne različice Quick Fixa uporabnikom</translation>
 <translation id="4600786265870346112">Omogoči velik kazalec</translation>
 <translation id="4604931264910482931">Konfiguracija seznama blokiranih za izvorno pošiljanje sporočil</translation>
-<translation id="4613508646038788144">Če je pravilnik onemogočen, lahko programska oprema tretjih oseb vstavlja izvedljivo kodo v Chromove procese. Če pravilnik ni nastavljen ali je omogočen, programska oprema tretjih oseb ne more vstavljati izvedljive kode v Chromove procese.</translation>
 <translation id="4617338332148204752">Preskoči preverjanje metaoznak v izdelku <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="4625915093043961294">Nastavi seznam razširitev, katerih namestitev je dovoljena</translation>
 <translation id="4632343302005518762">Dovoli, da <ph name="PRODUCT_FRAME_NAME" /> obravnava navedene vrste vsebine.</translation>
@@ -2179,15 +2216,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
       Če je ta pravilnik nastavljen na »false«, bo Chrome po preklopu na drug brskalnik zaprl zavihek, tudi če gre za zadnji zavihek. S tem se bo Chrome povsem zaprl.</translation>
 <translation id="5105313908130842249">Časovni zamik zaklepa zaslona, če se napaja iz akumulatorja</translation>
 <translation id="5108031557082757679">Onemogočeni tiskalniki za naprave v podjetjih</translation>
-<translation id="5113732180192599620">Ta pravilnik nadzira seznam spletnih mest, ki ne bodo nikoli povzročila preklopa brskalnika.
-
-      Upoštevajte, da je mogoče elemente tudi dodati na ta seznam s pravilnikoma <ph name="USE_IE_SITELIST_POLICY_NAME" /> in <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />.
-
-      Če ta pravilnik ni nastavljen, nobeno spletno mesto ni dodano na seznam.
-
-      Če je ta pravilnik nastavljen, se vsak element obravnava kot pravilo, podobno pravilniku <ph name="URL_LIST_POLICY_NAME" />, vendar z obratno logiko: pravila, ki se ujemajo, ne odprejo nadomestnega brskalnika.
-
-      Drugače kot pri pravilniku <ph name="URL_LIST_POLICY_NAME" /> pravila veljajo v obeh smereh. Če je nameščen in omogočen dodatek za Internet Explorer, ta prav tako nadzira, ali naj <ph name="IE_PRODUCT_NAME" /> odpre te URL-je v brskalniku <ph name="PRODUCT_NAME" />.</translation>
 <translation id="5124368997194894978">Omogočanje zagona pri napajanju iz električnega omrežja (izmenični tok)</translation>
 <translation id="5131211790949066746">Omogoča združevanje pravilnikov o seznamu namestitev razširitev <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" /> in <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />.
 
@@ -2469,6 +2497,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
       Če pravilnik ni določen, se URL semen različic ne spremeni.</translation>
 <translation id="5561811616825571914">Samodejni izbor potrdila odjemalcev za ta spletna mesta na zaslonu za prijavo</translation>
+<translation id="5565178130821694365">Vnos gesla je obvezen vsaka dva dneva (48 ur)</translation>
 <translation id="5566210228171064229">Omogočanje tiskanja s kodo PIN in brez nje</translation>
 <translation id="556865034069957245">Ta pravilnik nadzira razpoložljivost celozaslonskega načina, v katerem je celoten uporabniški vmesnik za <ph name="PRODUCT_NAME" /> skrit in je vidna samo spletna vsebina.
 

@@ -181,8 +181,10 @@
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Mer enn 1 ulest varsel}other{Mer enn # uleste varsler}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{om 1 m}other{om # m}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" /> + <ph name="KEY_COMBO_NAME" /></translation>
+<translation id="8098075892845277643">Start talesøk med Google-assistenten</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{For 1 time siden}other{For # timer siden}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 sek igjen}other{# sek igjen}}</translation>
+<translation id="8144660977431427332">Søkene er drevet av Google-assistenten. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, autofullføring</translation>
 <translation id="815598010540052116">Rull ned</translation>
 <translation id="8170087467028567933">Hvis du fjerner dette forslaget, skjules det for kontoen din på alle enhetene dine.</translation>

@@ -9,7 +9,6 @@
 <translation id="1067922213147265141">其他 Google 服務</translation>
 <translation id="1068672505746868501">一律不翻譯<ph name="SOURCE_LANGUAGE" />網頁</translation>
 <translation id="1080790410959514870">您即將登出由 <ph name="DOMAIN_NAME" /> 所管理的帳戶。儲存在這個裝置上的 Chrome 資料將因此遭到刪除，但這些資料仍會保留在您的 Google 帳戶中。</translation>
-<translation id="1099080783256647258">開啟 Data Saver 後，Chrome 會使用 Google 伺服器加快網頁載入速度及壓縮載入的網頁。如果是顯示速度特別緩慢的網頁，Data Saver 會重新改寫網頁，只載入基本內容。在無痕模式下無法透過 Data Saver 為載入的網頁進行最佳化處理。</translation>
 <translation id="1100066534610197918">在群組的新分頁中開啟</translation>
 <translation id="1105960400813249514">螢幕擷取</translation>
 <translation id="1111673857033749125">儲存在您其他裝置上的書籤會顯示在這裡。</translation>
@@ -25,6 +24,7 @@
 <translation id="1175310183703641346">系統會將你的書籤、歷史記錄、密碼和其他設定與你的 Google 帳戶保持同步。</translation>
 <translation id="1178581264944972037">暫停</translation>
 <translation id="1181037720776840403">移除</translation>
+<translation id="1188239144602654184">啟動 AR</translation>
 <translation id="1197267115302279827">移動書籤</translation>
 <translation id="119944043368869598">全部清除</translation>
 <translation id="1201402288615127009">繼續</translation>
@@ -96,7 +96,6 @@
 <translation id="1672586136351118594">不要再顯示</translation>
 <translation id="1692118695553449118">同步功能已啟用</translation>
 <translation id="169515064810179024">禁止網站存取動作感應器</translation>
-<translation id="1709438864123551175">數據節省模式</translation>
 <translation id="1717218214683051432">動作感應器</translation>
 <translation id="1718835860248848330">過去 1 小時</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - 上次更新時間：<ph name="TIME_SINCE_UPDATE" /></translation>
@@ -214,7 +213,6 @@
 <translation id="2501278716633472235">返回</translation>
 <translation id="2513403576141822879">如需更多隱私權、安全性和資料收集的相關設定，請參閱<ph name="BEGIN_LINK" />同步處理和 Google 服務<ph name="END_LINK" /></translation>
 <translation id="2523184218357549926">將你造訪的網頁網址傳送給 Google</translation>
-<translation id="2526148617758225454">Data Saver 已開啟，您可以在 [設定] 中管理這項擴充功能。</translation>
 <translation id="2532336938189706096">網頁檢視</translation>
 <translation id="2534155362429831547">已刪除 <ph name="NUMBER_OF_ITEMS" /> 個項目</translation>
 <translation id="2536728043171574184">目前瀏覽的是這個網頁的離線複本</translation>
@@ -354,14 +352,12 @@
 <translation id="3599863153486145794">將歷史記錄從所有登入帳戶的裝置上清除。你的 Google 帳戶可能會儲存其他形式的瀏覽記錄，請參閱 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />。</translation>
 <translation id="3600792891314830896">將播放音訊的網站設為靜音</translation>
 <translation id="3616113530831147358">音訊</translation>
-<translation id="3620176948598597475">重設之後，瀏覽器會清除 Data Saver 的記錄，包含造訪過的網站清單。</translation>
 <translation id="3632295766818638029">取消密碼遮罩</translation>
 <translation id="363596933471559332">自動使用已儲存的憑證登入網站。如果關閉這項功能，每次在您登入網站之前，網站一律會要求驗證。</translation>
 <translation id="3658159451045945436">如果確認重設，系統會清除你的數據用量節省記錄，包括你造訪過的網站清單。</translation>
 <translation id="3662546969139119822">這裡沒有任何記錄</translation>
 <translation id="3672452749423051839">瀏覽錯誤建議</translation>
 <translation id="3692944402865947621">無法連線至儲存位置，因此無法下載 <ph name="FILE_NAME" />。</translation>
-<translation id="3712575778697986964">確定要重設 Data Saver 嗎？</translation>
 <translation id="3714981814255182093">開啟搜尋列</translation>
 <translation id="3716182511346448902">這個網頁使用了過多記憶體，因此遭到 Chrome 暫停。</translation>
 <translation id="3730075448226062617">如要讓 Chrome 存取你的麥克風，請一併在 <ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />中開啟麥克風。</translation>
@@ -503,13 +499,11 @@
 <translation id="4751476147751820511">動作或光源感應器</translation>
 <translation id="4759238208242260848">下載</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{已完成 1 項下載作業。}other{已完成 # 項下載作業。}}</translation>
-<translation id="4766369052440583386">Data Saver 已開啟</translation>
 <translation id="4797039098279997504">輕觸即可返回 <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4802417911091824046">通關密語加密保護的資料不包括 Google Pay 的付款方式和地址。
 
 如要變更這項設定，請<ph name="BEGIN_LINK" />重設同步功能<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">持卡人姓名</translation>
-<translation id="4807963036345170158">Data Saver 已關閉</translation>
 <translation id="4816465935029283692">資料類型</translation>
 <translation id="4824958205181053313">取消同步處理？</translation>
 <translation id="4837753911714442426">開啟列印網頁的選項</translation>
@@ -601,6 +595,7 @@
 <translation id="5447765697759493033">系統不會翻譯這個網站</translation>
 <translation id="545042621069398927">正在加快下載速度。</translation>
 <translation id="5456381639095306749">下載網頁</translation>
+<translation id="5475862044948910901">要啟動擴增實境工作階段嗎？</translation>
 <translation id="548278423535722844">在地圖應用程式中開啟</translation>
 <translation id="5487521232677179737">清除資料</translation>
 <translation id="5494752089476963479">封鎖干擾性或誤導性的網站廣告</translation>
@@ -643,7 +638,6 @@
 <translation id="569536719314091526">透過 [更多選項] 按鈕將這個網頁翻譯成任何語言</translation>
 <translation id="572328651809341494">最近開啟的分頁</translation>
 <translation id="5726692708398506830">放大網頁上的所有內容</translation>
-<translation id="5734520971562437809">最多可節省百分之 60 的數據用量，並加快網頁載入速度。</translation>
 <translation id="5748802427693696783">已切換成標準分頁</translation>
 <translation id="5749068826913805084">Chrome 必須取得儲存空間的存取權才能下載檔案。</translation>
 <translation id="5763382633136178763">無痕式分頁</translation>
@@ -701,7 +695,6 @@
 <translation id="6159335304067198720">節省 <ph name="PERCENT" /> 的數據流量</translation>
 <translation id="6165508094623778733">瞭解詳情</translation>
 <translation id="6177111841848151710">禁止目前的搜尋引擎存取位置資訊</translation>
-<translation id="6177390657002841081">開啟 Data Saver</translation>
 <translation id="6181444274883918285">新增例外網站</translation>
 <translation id="6192333916571137726">下載檔案</translation>
 <translation id="6192792657125177640">例外</translation>
@@ -867,6 +860,11 @@
 <translation id="7352939065658542140">影片</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{分享 1 個選取的項目}other{分享 # 個選取的項目}}</translation>
 <translation id="7359002509206457351">存取付款方式</translation>
+<translation id="7365126855094612066">在這個工作階段期間，此網站可執行以下作業：
+• 為你的環境建立 3D 地圖
+• 追蹤相機的動作
+
+這個網站無法存取相機。只有你可以看見相機的顯示畫面。</translation>
 <translation id="7375125077091615385">類型：</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />。</translation>
 <translation id="7400418766976504921">網址</translation>
@@ -1114,11 +1112,9 @@
 <translation id="9188680907066685419">登出受管理的帳戶</translation>
 <translation id="9204836675896933765">還剩 1 個檔案</translation>
 <translation id="9206873250291191720">A</translation>
-<translation id="9215534869786664672">最多可節省百分之 60 的數據用量，並加快網頁載入速度。Google 伺服器會針對你造訪的網頁進行最佳化處理。</translation>
 <translation id="9219103736887031265">圖片</translation>
 <translation id="926205370408745186">將你的 Chrome 活動記錄從數位健康中移除</translation>
 <translation id="932327136139879170">首頁</translation>
-<translation id="932599481871055447">節省數據用量，加快瀏覽速度</translation>
 <translation id="938850635132480979">錯誤：<ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">存取您的麥克風</translation>
 <translation id="951339005376969845">刪除現有資料。你可以切換回 <ph name="FROM_ACCOUNT" />，重新取得現有資料。</translation>

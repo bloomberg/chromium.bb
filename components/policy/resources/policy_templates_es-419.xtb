@@ -142,6 +142,15 @@
       Si esta política se establece en "False", no se informará sobre el estado del conmutador de dispositivo.</translation>
 <translation id="1160479894929412407">Permitir el protocolo QUIC</translation>
 <translation id="1160939557934457296">Inhabilita continuar desde la página de advertencia de Navegación segura.</translation>
+<translation id="1171342272070128466">Habilita la función de accesibilidad de la lupa con vista acoplada.
+
+          Si se establece esta política como verdadera, la lupa con vista acoplada estará siempre habilitada.
+
+          Si se establece como falsa, la lupa estará siempre inhabilitada.
+
+          Si la estableces, los usuarios no podrán cambiarla ni anularla.
+
+          Si no la estableces, la lupa estará inicialmente inhabilitada, pero el usuario podrá habilitarla en cualquier momento.</translation>
 <translation id="1189817621108632689">Te permite configurar una lista de patrones de URL con los sitios no autorizados para mostrar imágenes.
 
           Si esta política no se configura, se usará el valor global predeterminado para todos los sitios ya sea de la política "DefaultImagesSetting" (si se establece) o la configuración personal del usuario.
@@ -354,11 +363,11 @@
       Cuando se establece como falsa, no se recopila información de las extensiones ni de los complementos.
 
       Esta política solo es válida si se habilita la extensión <ph name="CHROME_REPORTING_EXTENSION_NAME" />, y la máquina está inscrita en <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
-<translation id="1560205870554624777">Determina si se habilita la funcionalidad de Kerberos. Kerberos es un protocolo de autenticación que puede usarse para autenticar apps web y archivos compartidos.
+<translation id="1560205870554624777">Determina si se habilita la funcionalidad Kerberos. Kerberos es un protocolo de autenticación que puede usarse para autenticar apps web y archivos compartidos.
 
-          Si se habilita esta política, se permitirá la funcionalidad de Kerberos. Podrán agregarse las cuentas de Kerberos mediante la política "Configurar cuentas de Kerberos" o la configuración de las cuentas de Kerberos en la página de configuración de personas.
+          Si se habilita esta política, se permitirá la funcionalidad Kerberos. Podrán agregarse las cuentas de Kerberos mediante la política "Configurar cuentas de Kerberos" o la configuración de las cuentas de Kerberos en la página de configuración de personas.
 
-          Si se inhabilita o no se establece, no se permitirá la configuración de las cuentas de Kerberos. No se podrán agregar cuentas de Kerberos ni usar la autenticación de Kerberos. Se borrarán todas las cuentas de Kerberos existentes y todas las contraseñas almacenadas.</translation>
+          Si se inhabilita o no se establece, no se permitirá la configuración de las cuentas de Kerberos. No se podrán agregar cuentas de Kerberos ni usar la autenticación Kerberos. Se borrarán todas las cuentas de Kerberos existentes y todas las contraseñas almacenadas.</translation>
 <translation id="1561424797596341174">Anulaciones de políticas en compilaciones de depuración del host de acceso remoto</translation>
 <translation id="1561967320164410511">U2F más extensiones para atestación individual</translation>
 <translation id="1574554504290354326">Esta configuración es obsoleta. En su lugar, usa SafeBrowsingExtendedReportingEnabled. Habilitar o inhabilitar SafeBrowsingExtendedReportingEnabled es equivalente a establecer SafeBrowsingExtendedReportingOptInAllowed como falsa.
@@ -447,10 +456,11 @@
 <translation id="1750315445671978749">Bloquear todas las descargas</translation>
 <translation id="1762072363876276024">
       Esta política se aplica a la pantalla de acceso. Consulta también la política <ph name="SITE_PER_PROCESS_POLICY_NAME" />, que se aplica a la sesión de usuario. Se recomienda establecer ambas políticas en el mismo valor. Si los valores no coinciden, es posible que se produzca un retraso al ingresar una sesión de usuario mientras se aplica el valor que especifica la política del usuario.
-      Es posible que esta configuración, DeviceLoginScreenSitePerProcess, se utilice para impedir que los usuarios rechacen el comportamiento predeterminado de aislamiento de todos los sitios. Ten en cuenta que la política DeviceLoginScreenIsolateOrigins también puede ser útil para aislar orígenes adicionales más precisos.
-      Si se inhabilita la política, los usuarios no podrán rechazar el comportamiento predeterminado en el que cada sitio ejecuta su propio proceso.
-      Si se inhabilita la política o no se configura, el usuario podrá cambiar esta configuración (p. ej., mediante la entrada para inhabilitar el aislamiento de sitios en chrome://flags).
+      Esta configuración, DeviceLoginScreenSitePerProcess, se puede utilizar para impedir que los usuarios rechacen el comportamiento predeterminado de aislamiento de todos los sitios. Ten en cuenta que la política DeviceLoginScreenIsolateOrigins también puede ser útil para aislar orígenes adicionales más precisos.
+      Si se habilita la política, los usuarios no podrán rechazar el comportamiento predeterminado en el que cada sitio ejecuta su propio proceso.
+      Si se inhabilita la política o no se configura, el usuario podrá cambiar esta configuración (p. ej., mediante la entrada para inhabilitar el aislamiento de sitios en chrome://flags).
       </translation>
+<translation id="1767673020408652620">Habilitar las recomendaciones de apps cuando el cuadro de búsqueda se encuentra sin estado</translation>
 <translation id="1781356041596378058">Esta política también controla el acceso a las Opciones para programador de Android. Si habilitas esta política, los usuarios no podrán acceder a las Opciones para programador. Si estableces esta política como falsa o no la estableces, los usuarios podrán acceder a las Opciones para programador al presionar siete veces el número de compilación en la app de Configuración de Android.</translation>
 <translation id="1793346220873697538">Desactiva la impresión con PIN de forma predeterminada</translation>
 <translation id="1797233582739332495">Mostrar un mensaje recurrente al usuario para indicarle que se debe realizar un reinicio</translation>
@@ -865,7 +875,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="257788512393330403">Se requiere el ingreso de la contraseña cada 6 horas</translation>
 <translation id="2586162458524426376">
       Esta política se aplica a la pantalla de acceso. Consulta también la política <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, que se aplica a la sesión de usuario.
-      Si se habilita la política, cada origen designado en una lista de elementos separados por comas se ejecutará en su propio proceso. Esta acción también aislará los orígenes designados mediante subdominios; p. ej., al especificar https://ejemplo.com/, también se aislará https://foo.ejemplo.com/ como parte del sitio https://ejemplo.com/.
+      Si se habilita la política, cada origen designado en una lista de elementos separados por comas se ejecutará en su propio proceso. Esta acción también aislará los orígenes designados mediante subdominios; p. ej., al especificar https://example.com/, también se aislará https://foo.example.com/ como parte del sitio https://example.com/.
       Si se inhabilita la política o no se configura, se usará la configuración predeterminada de aislamiento de sitios de la plataforma para la pantalla de acceso.
       </translation>
 <translation id="2587719089023392205">Establecer <ph name="PRODUCT_NAME" /> como navegador predeterminado</translation>
@@ -878,7 +888,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
           Todas las versiones recientes de servidores de Samba y Windows son compatibles con NTLMv2. Esta política solo debe inhabilitarse para garantizar la compatibilidad con versiones anteriores. Además, reduce la seguridad de la autenticación.
 
           Si no se establece esta política, el valor predeterminado es verdadero y se habilita NTLMv2.</translation>
-<translation id="26023406105317310">Configurar las cuentas de Kerberos</translation>
+<translation id="26023406105317310">Configura las cuentas de Kerberos</translation>
 <translation id="2604182581880595781">Configura las políticas relacionadas con la función "Network File Shares".</translation>
 <translation id="2623014935069176671">Esperar actividad inicial del usuario</translation>
 <translation id="262740370354162807">Habilitar el envío de documentos a <ph name="CLOUD_PRINT_NAME" /></translation>
@@ -959,6 +969,15 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
       Cada entrada de la lista especifica un identificador, que se utiliza de forma interna para diferenciar las cuentas locales del dispositivo.</translation>
 <translation id="2769952903507981510">Configura el nombre de dominio requerido para los hosts de acceso remoto.</translation>
+<translation id="2783078941107212091">Habilita las recomendaciones de apps cuando el cuadro de búsqueda del Selector se encuentra sin estado.
+
+          Si se establece esta política como verdadera, las recomendaciones de apps podrán aparecer en el cuadro de búsqueda cuando se encuentre sin estado.
+
+          Si se establece como falsa, las recomendaciones de apps no aparecerán en el cuadro de búsqueda cuando se encuentre sin estado.
+
+          Si la estableces, los usuarios no podrán cambiarla ni anularla.
+
+          Si no la estableces, la configuración predeterminada será falsa en dispositivos administrados.</translation>
 <translation id="2787173078141616821">Informar datos sobre el estado de Android</translation>
 <translation id="2799297758492717491">Permitir la reproducción automática de contenido multimedia en una lista blanca de patrones de URL</translation>
 <translation id="2801155097555584385">Establecer el porcentaje del nivel de la batería en el que debe comenzar la carga</translation>
@@ -1154,6 +1173,25 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Si esta política se establece en false, la optimización de WPAD se inhabilita, lo que hace que <ph name="PRODUCT_NAME" /> espere más tiempo a los servidores de WPAD basados en DNS. Si la política se habilita o no se establece, la optimización de WPAD se habilita.
 
       Independientemente de si se establece esta política o de cómo se configura, los usuarios no pueden cambiar la configuración de optimización de WPAD.</translation>
+<translation id="3071839057966069710">Configura una lista de impresoras.
+
+      Esta política permite que los administradores proporcionen configuraciones de impresoras
+      para sus usuarios.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> y <ph name="PRINTER_DESCRIPTION" /> son strings con formato libre que pueden personalizarse para facilitar la selección de impresoras. <ph name="PRINTER_MANUFACTURER" /> y <ph name="PRINTER_MODEL" /> sirven para que los usuarios finales puedan identificar las impresoras fácilmente y representan al fabricante y el modelo de la impresora. <ph name="PRINTER_URI" /> debe ser una dirección que se pueda contactar desde la computadora cliente (que incluya <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> y <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> es opcional). Si se proporciona, se usa para ayudar con la anulación de las impresoras <ph name="ZEROCONF_DISCOVERY" /> duplicadas.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> debe coincidir con uno de los strings que representan una impresora compatible con <ph name="PRODUCT_NAME" />. El string se usará para identificar e instalar el PPD correspondiente para la impresora. Para obtener más información, visita https://support.google.com/chrome?p=noncloudprint.
+
+      <ph name="PRINTER_AUTOCONF" /> es un indicador booleano que especifica si se debe usar "IPP Everywhere" para configurar la impresora. Este indicador es compatible con <ph name="PRODUCT_OS_NAME" /> 76 y versiones posteriores.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> debe incluir el nombre de la impresora, o debe establecerse <ph name="PRINTER_AUTOCONF" /> como verdadero. Se ignorarán las impresoras que tengan ambas propiedades o ninguna de las dos.
+
+      La configuración de la impresora se completa cuando se usa por primera vez.  Los PPD no se descargan hasta que se usa la impresora.  Luego, los PPD que se usan con mayor frecuencia se almacenan en caché.
+
+      Esta política no afecta la capacidad del usuario para configurar impresoras en dispositivos individuales.  Su objetivo es complementar la configuración de impresoras a cargo de usuarios individuales.
+
+      Para los dispositivos administrados con Active Directory, esta política es compatible con la expansión de <ph name="MACHINE_NAME_VARIABLE" /> al nombre de la máquina de Active Directory o un substring de él. Por ejemplo, si el nombre de la máquina es <ph name="MACHINE_NAME_EXAMPLE" />, entonces <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> se reemplazará con los 4 caracteres a partir de la sexta posición, es decir, <ph name="MACHINE_NAME_PART_EXAMPLE" />. Ten en cuenta que esta posición incluye el cero.
+      </translation>
 <translation id="3072045631333522102">Protector de pantalla que se utilizará en la pantalla de inicio de sesión del modo de venta</translation>
 <translation id="3072847235228302527">Establecer las Condiciones del servicio para la cuenta local del dispositivo</translation>
 <translation id="3077183141551274418">Habilitar o inhabilitar los ciclos de vida de las pestañas</translation>
@@ -1194,7 +1232,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="3159375329008977062">El usuario está habilitado para exportar o importar contenedores de Crostini mediante la IU</translation>
 <translation id="3165808775394012744">Se incluyen estas políticas aquí para que sea más fácil quitarlas.</translation>
 <translation id="316778957754360075">Esta opción se eliminó a partir de la versión 29 de <ph name="PRODUCT_NAME" />. La forma recomendada de configurar colecciones de aplicaciones o extensiones alojadas por una organización es incluir el sitio que aloja los paquetes CRX en la política ExtensionInstallSources y colocar vínculos de descarga directa a los paquetes en una página web. Se puede crear un selector para esa página web con la política ExtensionInstallForcelist.</translation>
-<translation id="3168968618972302728">Las políticas relacionadas con la autenticación de Kerberos.</translation>
+<translation id="3168968618972302728">Las políticas relacionadas con la autenticación Kerberos.</translation>
 <translation id="3171369832001535378">Plantilla para el nombre de host de la red de dispositivos</translation>
 <translation id="3172512016079904926">Permite habilitar la instalación de los hosts de mensajería nativa en el nivel de usuario.
 
@@ -1384,7 +1422,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="3631099945620529777">Si se configura como falsa, se inhabilitará el botón "Finalizar proceso" en el Administrador de tareas.
 
       Si se configura como verdadera o no se configura, el usuario podrá finalizar procesos en el Administrador de tareas.</translation>
-<translation id="3643284063603988867">Habilitar la función "Recordar contraseña"</translation>
+<translation id="3643284063603988867">Habilita la función "Recordar contraseña"</translation>
 <translation id="3646859102161347133">Establece el tipo de lupa.</translation>
 <translation id="3653237928288822292">Ícono del proveedor de búsqueda predeterminado</translation>
 <translation id="3660510274595679517">
@@ -1742,9 +1780,9 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
           Si se establece como falsa, las teclas estarán inhabilitadas.
 
-          Si la estableces, los usuarios no podrán cambiarla ni anularla.
+          Si estableces esta política, los usuarios no podrán cambiarla ni anularla.
 
-          Si no se establece, inicialmente las teclas especiales estarán inhabilitadas, pero el usuario podrá habilitarlas en cualquier momento.</translation>
+          Si no la estableces, inicialmente las teclas especiales estarán inhabilitadas, pero el usuario podrá habilitarlas en cualquier momento.</translation>
 <translation id="4183229833636799228">Configuración predeterminada de <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">URL para la validación del token de autenticación del cliente de acceso remoto</translation>
 <translation id="4203389617541558220">Limita el tiempo de actividad del dispositivo mediante la programación de reinicio automático.
@@ -1927,10 +1965,9 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="4578912515887794133">Si se habilita esta configuración, el host de acceso remoto comparará el nombre del usuario local (con el que está asociado el host) y el nombre de la Cuenta de Google registrada como propietario del host (es decir, "juanperez" si el host pertenece a la Cuenta de Google "juanperez@ejemplo.com").  No se iniciará el host de acceso remoto si el nombre del propietario del host es diferente del nombre del usuario local con el que está asociado el host.  Se debe usar la política RemoteAccessHostMatchUsername junto con RemoteAccessHostDomain para exigir también que la Cuenta de Google del propietario del host esté asociada a un dominio específico (es decir, "ejemplo.com").
 
           Si se inhabilita esta configuración o no se establece, el host de acceso remoto se podrá asociar con cualquier usuario local.</translation>
-<translation id="4591366717022345234">Proporcionarles a los usuarios una versión de corrección rápida</translation>
+<translation id="4591366717022345234">Proporcionarles a los usuarios una versión Quick Fix</translation>
 <translation id="4600786265870346112">Habilita el cursor grande.</translation>
 <translation id="4604931264910482931">Configurar la lista negra de mensajería nativa</translation>
-<translation id="4613508646038788144">Si la política se establece como falsa, se permitirá que el software de terceros introduzca código ejecutable en los procesos de Chrome. Si la política no se establece o se establece como verdadera, el software de terceros no podrá introducir código ejecutable en los procesos de Chrome.</translation>
 <translation id="4617338332148204752">Omitir la comprobación de metaetiquetas en <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="4625915093043961294">Configurar la lista blanca de instalación de extensiones</translation>
 <translation id="4632343302005518762">Permitir que <ph name="PRODUCT_FRAME_NAME" /> gestione los tipos de contenido que figuran en la lista</translation>
@@ -2014,7 +2051,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="487460824085252184">Migra automáticamente y no solicita el consentimiento del usuario.</translation>
 <translation id="4874982543810021567">Bloquea WebUSB en estos sitios</translation>
 <translation id="4876805738539874299">Versión de SSL máxima habilitada</translation>
-<translation id="4887274746092315609">Permitir una página para el cambio de contraseña en la sesión para usuarios de SAML</translation>
+<translation id="4887274746092315609">Habilita una página para cambiar la contraseña dentro de la sesión para usuarios de SAML</translation>
 <translation id="4897928009230106190">Especifica los parámetros utilizados al realizar una búsqueda de sugerencias con POST. Se compone de pares de nombre/valor separados por coma. Si un valor es un parámetro de plantilla, como {searchTerms} en el ejemplo anterior, se reemplazará por datos de términos de búsqueda reales.
 
           Esta política es opcional. Si no se establece, la solicitud de búsqueda de sugerencias se enviará mediante el método GET.
@@ -2115,15 +2152,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Si se establece como falsa, Chrome cerrará la pestaña después de cambiar a un navegador alternativo, incluso si se trata de la última pestaña. Esta acción cerrará Chrome por completo.</translation>
 <translation id="5105313908130842249">Demora de bloqueo de pantalla con batería</translation>
 <translation id="5108031557082757679">Impresoras empresariales inhabilitadas asociadas a dispositivos</translation>
-<translation id="5113732180192599620">Esta política controla la lista de sitios web que nunca provocarán un cambio de navegador.
-
-      Ten en cuenta que los elementos también pueden agregarse a esta lista a través de las políticas <ph name="USE_IE_SITELIST_POLICY_NAME" /> y <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />.
-
-      Cuando no se establece esta política, no se agregan sitios web a la lista.
-
-      Cuando se establece, todos los elementos se tratan como regla, de forma similar a la política <ph name="URL_LIST_POLICY_NAME" />. No obstante, la lógica es inversa; es decir, las reglas que coinciden no abren un navegador alternativo.
-
-      A diferencia de <ph name="URL_LIST_POLICY_NAME" />, las reglas se aplican en ambos sentidos. Cuando el complemento de Internet Explorer está presente y habilitado, también controla si <ph name="IE_PRODUCT_NAME" /> debe abrir estas URL en <ph name="PRODUCT_NAME" />.</translation>
 <translation id="5124368997194894978">Habilitar el inicio mediante CA (corriente alterna)</translation>
 <translation id="5131211790949066746">Permite combinar las políticas de listas de instalación para extensiones <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" /> y <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />.
 
@@ -2348,7 +2376,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Cuando se establece el valor de esta política y este no es 0, la sesión del usuario que haya accedido en ese momento en el modo de demostración se cerrará automáticamente una vez transcurrido el período de inactividad especificado.
 
       El valor de la política se debe especificar en milisegundos.</translation>
-<translation id="5508307164752647432">Habilitar la funcionalidad de Kerberos</translation>
+<translation id="5508307164752647432">Habilitar la funcionalidad Kerberos</translation>
 <translation id="5511702823008968136">Habilitar barra de favoritos</translation>
 <translation id="5512418063782665071">URL de la página principal</translation>
 <translation id="551639594034811656">Esta política define una lista de porcentajes que determinará la fracción de dispositivos <ph name="PRODUCT_OS_NAME" /> en la UO que se actualizará por día a partir del momento en que se descubre la actualización (posterior a la publicación, conforme a lo que tarde el dispositivo en buscar actualizaciones).
@@ -2378,6 +2406,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
       Si no se especifica, no se modificará la URL del valor de inicialización de las variaciones.</translation>
 <translation id="5561811616825571914">Seleccionar automáticamente certificados de cliente para estos sitios en la pantalla de acceso</translation>
+<translation id="5565178130821694365">Se requiere el ingreso de la contraseña cada dos días (48 horas)</translation>
 <translation id="5566210228171064229">Permite la impresión con y sin PIN</translation>
 <translation id="556865034069957245">Esta política controla la disponibilidad del modo de pantalla completa en el que toda la IU de <ph name="PRODUCT_NAME" /> está oculta y solo se muestra el contenido web.
 
@@ -2484,9 +2513,9 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="5711016543513883877">
       Si se habilita la política, cada origen designado en una
       lista de elementos separados por comas se ejecutará en su propio proceso. Esta acción también aislará
-      los orígenes designados mediante subdominios; p. ej., al especificar https://ejemplo.com/,
-      también se aislará https://foo.ejemplo.com/ como parte del
-      sitio https://ejemplo.com/.
+      los orígenes designados mediante subdominios; p. ej., al especificar https://example.com/,
+      también se aislará https://foo.example.com/ como parte del
+      sitio https://example.com/.
       Si se inhabilita la política o no se configura, el usuario podrá cambiar esta configuración.
 
       NOTA: Esta política no se aplica en Android. Para habilitar IsolateOrigins en Android, usa la configuración de la política IsolateOriginsAndroid.
@@ -3526,11 +3555,11 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="7687943045976362719">Si se configura esta política, <ph name="PRODUCT_FRAME_NAME" /> determinará los tipos de contenido especificados.
 
           Si no se configura esta política, se usará el procesador determinado en todos los sitios. (Se puede usar la política <ph name="CHROME_FRAME_RENDERER_SETTINGS_POLICY_NAME" /> para configurar este procesador).</translation>
-<translation id="7694245791806617022">Determina si se habilita la función "Recordar contraseña" en el cuadro de diálogo de autenticación de Kerberos. Las contraseñas se almacenan encriptadas en el disco, y solo puede acceder a ellas el demonio del sistema de Kerberos durante una sesión de usuario.
+<translation id="7694245791806617022">Determina si se habilita la función "Recordar contraseña" en el cuadro de diálogo de la autenticación Kerberos. Las contraseñas se almacenan encriptadas en el disco, y solo puede acceder a ellas el daemon del sistema Kerberos durante la sesión de usuario.
 
           Si se habilita esta política o no se establece, los usuarios podrán decidir si se recuerdan las contraseñas de Kerberos para no tener que ingresarlas de nuevo. Los tickets de Kerberos se recuperan automáticamente a menos que se requiera autenticación adicional (autenticación de dos factores).
 
-          Si se inhabilita esta política, las contraseñas no se recordarán nunca y se quitarán todas las contraseñas previamente almacenadas. Los usuarios deben ingresar su contraseña cada vez que necesiten autenticación en el sistema de Kerberos. Según la configuración del servidor, esta acción debe realizarse cada 8 horas o cada varios meses.</translation>
+          Si se inhabilita esta política, las contraseñas no se recordarán nunca y se quitarán todas las contraseñas previamente almacenadas. Los usuarios deberán ingresar su contraseña cada vez que necesiten autenticación en el sistema Kerberos. Según la configuración del servidor, esta acción debe realizarse cada 8 horas o cada varios meses.</translation>
 <translation id="7694807474048279351">Programa un reinicio automático después de aplicar una actualización de <ph name="PRODUCT_OS_NAME" />.
 
       Si esta política se establece como verdadera, se programa un reinicio automático cuando se aplica una actualización de <ph name="PRODUCT_OS_NAME" /> y se requiere un reinicio para completar el proceso de actualización. El reinicio se programa de inmediato, pero puede demorarse en el dispositivo hasta 24 horas si un usuario está usando el dispositivo en ese momento.
@@ -3565,10 +3594,10 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 
       Si la política no se establece, HTTP/0.9 se inhabilitará para los puertos no predeterminados.</translation>
 <translation id="7726421241038987229">
-      Es posible que esta configuración, SitePerProcess, se use para impedir que los usuarios rechacen el comportamiento predeterminado del aislamiento de todos los sitios. Ten en cuenta que la política IsolateOrigins también puede ser útil para aislar los orígenes adicionales más precisos.
-      Si se inhabilita la política, los usuarios no podrán rechazar el comportamiento predeterminado en el que cada sitio ejecuta su propio proceso.
+      Esta configuración, SitePerProcess, se puede usar para impedir que los usuarios rechacen el comportamiento predeterminado del aislamiento de todos los sitios. Ten en cuenta que la política IsolateOrigins también puede ser útil para aislar los orígenes adicionales más precisos.
+      Si se habilita la política, los usuarios no podrán rechazar el comportamiento predeterminado en el que cada sitio ejecuta su propio proceso.
       Si se inhabilita la política o no se configura, el usuario podrá rechazar el aislamiento de sitios
-      (p. ej., mediante la entrada para inhabilitar el aislamiento de sitios en chrome://flags).  Si se inhabilita la política o no se configura, no se desactivará el aislamiento de sitios.
+      (p. ej., mediante la entrada para inhabilitar el aislamiento de sitios en chrome://flags).  Si se inhabilita la política o no se configura, no se desactivará el aislamiento de sitios.
       En <ph name="PRODUCT_OS_NAME" />, se recomienda también establecer la política de dispositivo <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> en el mismo valor. Si los valores que especifican las dos políticas no coinciden, es posible que se produzca un retraso al ingresar una sesión de usuario mientras se aplica el valor que especifica la política del usuario.
 
       NOTA: Esta política no se aplica en Android. Para habilitar SitePerProcess en Android, usa la configuración de la política SitePerProcessAndroid.
@@ -3642,7 +3671,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 
           Si se habilita esta política o no se establece, los usuarios podrán agregar cuentas de Kerberos mediante la configuración de las cuentas de Kerberos en la página de configuración de personas. Los usuarios tendrán control total de las cuentas que agregan y podrán modificarlas o quitarlas.
 
-          Si se inhabilita esta política, es posible que los usuarios no puedan agregar cuentas de Kerberos. Las cuentas solo se pueden agregar mediante la política "Configurar cuentas de Kerberos". Este es un procedimiento eficaz para proteger las cuentas.</translation>
+          Si se inhabilita esta política, los usuarios no podrán agregar cuentas de Kerberos. Las cuentas solo se pueden agregar mediante la política "Configurar cuentas de Kerberos". Este es un procedimiento eficaz para proteger las cuentas.</translation>
 <translation id="7895553628261067384">Acceso remoto</translation>
 <translation id="7902255855035461275">Los patrones de esta lista se compararán con el origen
       de seguridad de la URL solicitante. Si se encuentra una coincidencia,

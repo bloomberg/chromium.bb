@@ -118,9 +118,7 @@
 <translation id="4987820182225656817">‏אורחים יכולים להשתמש ב-Chromium בלי להשאיר דבר מאחור.</translation>
 <translation id="4994636714258228724">‏הוסף את עצמך ל-Chromium</translation>
 <translation id="5021854341188256296">{0,plural, =0{‏יש עדכון ל-Chromium OS}=1{‏יש עדכון ל-Chromium OS}two{‏עדכון של Chromium OS זמין כבר יומיים}many{‏עדכון של Chromium OS זמין כבר # ימים}other{‏עדכון של Chromium OS זמין כבר # ימים}}</translation>
-<translation id="5032989939245619637">‏שמור פרטים ב-Chromium</translation>
 <translation id="5045248521775609809">‏לוקחים את Chromium לכל מקום</translation>
-<translation id="5116586539350239523">‏Chromium יאחסן את הפרטים האישיים שלך באופן מאובטח כדי שלא תידרש להקליד אותם שוב.</translation>
 <translation id="5181952534059945058">‏הדף הזה מנצל יותר מדי זיכרון, כך שחלק מהתוכן הוסר על ידי Chromium.</translation>
 <translation id="5277894862589591112">‏כדי להחיל את השינויים שביצעת, יש להפעיל מחדש את Chromium</translation>
 <translation id="5358375970380395591">‏אתה נכנס עם חשבון מנוהל ונותן למנהל המערכת שלו שליטה על הפרופיל שלך ב-Chromium. הנתונים שלך ב-Chromium, כגון יישומים, סימניות, היסטוריה, סיסמאות והגדרות אחרות ייקשרו באופן קבוע ל-<ph name="USER_NAME" />. תוכל למחוק את הנתונים האלה באמצעות לוח הבקרה של חשבונות Google, אבל לא תוכל לשייך את הנתונים האלה לחשבון אחר. <ph name="LEARN_MORE" /></translation>
@@ -169,7 +167,7 @@
 <translation id="6334986366598267305">‏קל יותר כעת להשתמש ב-Chromium באמצעות חשבון Google שלך ובמחשבים משותפים.</translation>
 <translation id="6373523479360886564">‏האם אתה בטוח שברצונך להסיר את התקנת Chromium?</translation>
 <translation id="6400072781405947421">‏ייתכן ש-Chromium לא יפעל כראוי כי הוא כבר לא נתמך בגירסה 10.9 של Mac OS X.</translation>
-<translation id="6403826409255603130">‏Chromium הוא דפדפן אינטרנט המפעיל דפי אינטרנט ואפליקציות במהירות הבזק. זהו דפדפן מהיר, יציב וקל לשימוש. תוכל לגלוש באינטרנט בצורה מאובטחת יותר הודות להגנה מפני תוכנות זדוניות ודיוג המובנית ב-Chromium.</translation>
+<translation id="6403826409255603130">‏Chromium הוא דפדפן אינטרנט המפעיל דפי אינטרנט ואפליקציות במהירות הבזק. זהו דפדפן מהיר, יציב וקל לשימוש. תוכל לגלוש באינטרנט בצורה מאובטחת יותר הודות להגנה מפני תוכנות זדוניות ופישינג המובנית ב-Chromium.</translation>
 <translation id="6434250628340475518">‏מערכת Chromium OS</translation>
 <translation id="6457450909262716557">{SECONDS,plural, =1{‏Chromium יבצע אתחול בעוד שנייה אחת}two{‏Chromium יבצע אתחול בעוד # שניות}many{‏Chromium יבצע אתחול בעוד # שניות}other{‏Chromium יבצע אתחול בעוד # שניות}}</translation>
 <translation id="6475912303565314141">‏הגדרה זו גם קובעת איזה דף מוצג כשאתה מפעיל את Chromium.</translation>

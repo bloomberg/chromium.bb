@@ -9,7 +9,6 @@
 <translation id="1067922213147265141">‏خدمات Google الأخرى</translation>
 <translation id="1068672505746868501">عدم ترجمة الصفحات باللغة <ph name="SOURCE_LANGUAGE" /> مُطلقًا</translation>
 <translation id="1080790410959514870">‏أنت بصدد الخروج من حساب تحت إدارة <ph name="DOMAIN_NAME" />. سيؤدي هذا إلى حذف بيانات Chrome المخزنة على هذا الجهاز، إلا أن البيانات ستظل في حسابك على Google.</translation>
-<translation id="1099080783256647258">‏عند تفعيل أداة "توفير البيانات"، يستخدم Chrome خوادم Google لزيادة سرعة تحميل الصفحات وضغطها. وفي الصفحات البطيئة، تعيد أداة "توفير البيانات" كتابة الصفحة لتحميل المحتوى الأساسي فقط. ولا تعمل الأداة على تحسين الصفحات المحمَّلة في وضع التصفُّح المتخفي.</translation>
 <translation id="1100066534610197918">فتح في علامة تبويب جديدة في مجموعة</translation>
 <translation id="1105960400813249514">التقاط الشاشة</translation>
 <translation id="1111673857033749125">ستظهر هنا الإشارات التي تم حفظها على أجهزتك الأخرى.</translation>
@@ -25,6 +24,7 @@
 <translation id="1175310183703641346">‏لن تتم مزامنة الإشارات المرجعية والسجلّ وكلمات المرور والإعدادات الأخرى مع حسابك على Google بعد الآن.</translation>
 <translation id="1178581264944972037">الإيقاف مؤقتًا</translation>
 <translation id="1181037720776840403">إزالة</translation>
+<translation id="1188239144602654184">إدخال الواقع المعزّز</translation>
 <translation id="1197267115302279827">نقل الإشارات المرجعية</translation>
 <translation id="119944043368869598">محو الكل</translation>
 <translation id="1201402288615127009">التالي</translation>
@@ -96,7 +96,6 @@
 <translation id="1672586136351118594">عدم العرض مرة أخرى</translation>
 <translation id="1692118695553449118">المزامنة ممكنة</translation>
 <translation id="169515064810179024">يمكنك حظر مواقع الويب من الوصول إلى مستشعرات الحركة.</translation>
-<translation id="1709438864123551175">توفير البيانات</translation>
 <translation id="1717218214683051432">مستشعرات الحركة</translation>
 <translation id="1718835860248848330">آخر ساعة</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - تم تحديثه منذ <ph name="TIME_SINCE_UPDATE" /> دقائق</translation>
@@ -214,7 +213,6 @@
 <translation id="2501278716633472235">الرجوع</translation>
 <translation id="2513403576141822879">‏لعرض مزيد من الإعدادات المتعلِّقة بالخصوصية والأمان وجمع البيانات، يُرجى الاطِّلاع على <ph name="BEGIN_LINK" />خدمات Google والمزامنة<ph name="END_LINK" /></translation>
 <translation id="2523184218357549926">‏يتم إرسال عناوين URL للصفحات التي تزورها إلى Google.</translation>
-<translation id="2526148617758225454">تم تشغيل توفير البيانات. يمكنك إدارته في الإعدادات.</translation>
 <translation id="2532336938189706096">عرض الويب</translation>
 <translation id="2534155362429831547">تم حذف <ph name="NUMBER_OF_ITEMS" /> من العناصر</translation>
 <translation id="2536728043171574184">عرض نسخة بلا اتصال من هذه الصفحة</translation>
@@ -354,14 +352,12 @@
 <translation id="3599863153486145794">‏يمسح السجل من كل الأجهزة التي تم تسجيل الدخول عليها. وقد يتضمن حسابك في Google نماذج أخرى من سجل التصفح في <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">كتم صوت مواقع الويب التي تشغّل الصوت</translation>
 <translation id="3616113530831147358">المقاطع الصوتية</translation>
-<translation id="3620176948598597475">تؤدي إعادة الضبط إلى محو سجلّ توفير البيانات، بما في ذلك قائمة المواقع الإلكترونية التي تمت زيارتها.</translation>
 <translation id="3632295766818638029">كشف كلمة المرور</translation>
 <translation id="363596933471559332">يمكنك تسجيل الدخول تلقائيًا إلى مواقع الويب باستخدام بيانات الاعتماد المخزّنة. وعندما تكون هذه الميزة غير مفعّلة، سيُطلب منك التحقّق من بيانات الاعتماد في كل مرة قبل تسجيل الدخول إلى موقع ويب.</translation>
 <translation id="3658159451045945436">تؤدي إعادة الضبط إلى محو سِجلّ البيانات المحفوظة، بما في ذلك قائمة المواقع الإلكترونية التي تمت زيارتها.</translation>
 <translation id="3662546969139119822">لا يوجد سجلّ هنا</translation>
 <translation id="3672452749423051839">اقتراحات عن الأخطاء في التنقل</translation>
 <translation id="3692944402865947621">تعذّر تنزيل <ph name="FILE_NAME" /> نظرًا لعدم إمكانية الوصول إلى موقع مساحة التخزين.</translation>
-<translation id="3712575778697986964">هل تريد إعادة ضبط أداة "توفير البيانات"؟</translation>
 <translation id="3714981814255182093">فتح شريط البحث</translation>
 <translation id="3716182511346448902">‏تستهلك هذه الصفحة مساحة كبيرة من الذاكرة، لذلك أوقفها Chrome مؤقتًا.</translation>
 <translation id="3730075448226062617">‏للسماح لمتصفِّح Chrome بالوصول إلى الميكروفون، يُرجى أيضًا تشغيل الميكروفون في <ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" />.</translation>
@@ -503,13 +499,11 @@
 <translation id="4751476147751820511">أجهزة استشعار الإضاءة أو الحركة</translation>
 <translation id="4759238208242260848">التنزيلات</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{اكتملت عملية تنزيل واحدة.}zero{اكتملت # عملية تنزيل.}two{اكتملت عمليتا تنزيل (#).}few{اكتملت # عمليات تنزيل.}many{اكتملت # عملية تنزيل.}other{اكتملت # عملية تنزيل.}}</translation>
-<translation id="4766369052440583386">تفعيل "توفير البيانات"</translation>
 <translation id="4797039098279997504">المس  للعودة إلى <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4802417911091824046">‏لا يتضمّن التشفير باستخدام عبارة المرور طرق الدفع والعناوين من Google Pay.
 
 لتغيير هذا الإعداد، يُرجى <ph name="BEGIN_LINK" />إعادة ضبط المزامنة<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">الاسم كما على البطاقة</translation>
-<translation id="4807963036345170158">ميزة "توفير البيانات" غير مفعّلة</translation>
 <translation id="4816465935029283692">أنواع البيانات</translation>
 <translation id="4824958205181053313">هل تريد إلغاء المزامنة؟</translation>
 <translation id="4837753911714442426">فتح الخيارات لطباعة الصفحة</translation>
@@ -601,6 +595,7 @@
 <translation id="5447765697759493033">لن تتم ترجمة هذا الموقع</translation>
 <translation id="545042621069398927">جارٍ تسريع التنزيل.</translation>
 <translation id="5456381639095306749">تنزيل الصفحة</translation>
+<translation id="5475862044948910901">هل تريد بدء جلسة الواقع المعزّز؟</translation>
 <translation id="548278423535722844">فتح في تطبيق الخرائط</translation>
 <translation id="5487521232677179737">محو البيانات</translation>
 <translation id="5494752089476963479">حظر الإعلانات في المواقع الإلكترونية التي تعرض إعلانات مضلِّلة أو غير مرغوب فيها</translation>
@@ -643,7 +638,6 @@
 <translation id="569536719314091526">ترجمة هذه الصفحة إلى أي لغة من خلال الزر "مزيد من الخيارات"</translation>
 <translation id="572328651809341494">علامات التبويب الأخيرة</translation>
 <translation id="5726692708398506830">تكبير كل محتويات الصفحة</translation>
-<translation id="5734520971562437809">يمكنك خفض استخدام البيانات بنسبة تصل إلى 60 بالمائة، بالإضافة إلى زيادة سرعة الويب.</translation>
 <translation id="5748802427693696783">تم التبديل إلى علامات التبويب القياسية</translation>
 <translation id="5749068826913805084">‏يحتاج Chrome للوصول إلى مساحة التخزين لتنزيل الملفات.</translation>
 <translation id="5763382633136178763">علامات تبويب التصفح المتخفي</translation>
@@ -701,7 +695,6 @@
 <translation id="6159335304067198720">توفير البيانات بنسبة <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">مزيد من المعلومات</translation>
 <translation id="6177111841848151710">تم حظره لمحرك البحث الحالي</translation>
-<translation id="6177390657002841081">تشغيل إضافة "توفير البيانات"</translation>
 <translation id="6181444274883918285">إضافة موقع ويب إلى قائمة الاستثناءات</translation>
 <translation id="6192333916571137726">ملف تحميل</translation>
 <translation id="6192792657125177640">الاستثناءات</translation>
@@ -867,6 +860,11 @@
 <translation id="7352939065658542140">فيديو</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{مشاركة عنصر واحد محدد}zero{مشاركة # عنصر محدد}two{مشاركة عنصرين (#) محددين}few{مشاركة # عناصر محددة}many{مشاركة # عنصرًا محددًا}other{مشاركة # عنصر محدد}}</translation>
 <translation id="7359002509206457351">الوصول إلى طرق الدفع</translation>
+<translation id="7365126855094612066">طوال مدة هذه الجلسة، سيتمكَّن موقع الويب من تنفيذ ما يلي:
+• إنشاء خريطة ثلاثية الأبعاد لبيئتك
+• تتبّع حركة الكاميرا
+
+لا يمكن لموقع الويب الحصول على إذن بالوصول إلى الكاميرا. لا تكون الصور المُلتقطة بالكاميرا مرئية إلا لك.</translation>
 <translation id="7375125077091615385">النوع:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" /></translation>
 <translation id="7400418766976504921">‏عنوان URL</translation>
@@ -1114,11 +1112,9 @@
 <translation id="9188680907066685419">تسجيل الخروج من الحساب المُدار</translation>
 <translation id="9204836675896933765">ملف واحد متبقٍ</translation>
 <translation id="9206873250291191720">A</translation>
-<translation id="9215534869786664672">‏يمكنك خفض استخدام البيانات بنسبة تصل إلى 60 بالمائة، بالإضافة إلى زيادة سرعة الويب. وستعمل خوادم Google على تحسين الصفحات التي تزورها.</translation>
 <translation id="9219103736887031265">الصور</translation>
 <translation id="926205370408745186">‏إزالة نشاط Chrome من الرفاهية الرقمية</translation>
 <translation id="932327136139879170">الصفحة الرئيسية</translation>
-<translation id="932599481871055447">حفظ البيانات والاستمتاع بتصفح أسرع</translation>
 <translation id="938850635132480979">الخطأ: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">الدخول إلى الميكروفون</translation>
 <translation id="951339005376969845">يمكنك حذف البيانات الحالية. يمكنك استرداد هذه البيانات بالتبديل مرة أخرى إلى <ph name="FROM_ACCOUNT" />.</translation>

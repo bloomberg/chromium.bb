@@ -74,13 +74,11 @@
 <translation id="1952728750904661634">Conectează-te cu un cont gestionat</translation>
 <translation id="1974060860693918893">Avansate</translation>
 <translation id="1989112275319619282">Răsfoiește</translation>
-<translation id="2000419248597011803">Trimite anumite cookie-uri și căutări din bara de adrese și din caseta de căutare în motorul de căutare prestabilit</translation>
 <translation id="2015722694326466240">Pentru a vedea parolele, trebuie mai întâi să setezi o parolă pe dispozitiv.</translation>
 <translation id="2068952045031577364">Din ultima săptămână</translation>
 <translation id="2074131957428911366">Poți să alegi oricând ce să sincronizezi în <ph name="BEGIN_LINK" />setări<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Anulează</translation>
 <translation id="209018056901015185">Site desktop</translation>
-<translation id="2096012225669085171">Sincronizează și personalizează pe toate dispozitivele</translation>
 <translation id="2103075008456228677">Deschide history.google.com</translation>
 <translation id="2116625576999540962">Elemente mutate: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="213900355088104901">Pentru a naviga privat, deschide o filă incognito</translation>
@@ -107,7 +105,6 @@
 <translation id="2435457462613246316">Afișați parola</translation>
 <translation id="2481538920734869610">ADAUGĂ UN CONT</translation>
 <translation id="2497852260688568942">Sincronizarea este dezactivată de administrator</translation>
-<translation id="2523184218357549926">Trimite la Google adresele URL ale paginilor pe care le accesezi</translation>
 <translation id="2523363575747517183">Acest site încearcă în mod repetat să deschidă altă aplicație.</translation>
 <translation id="2529021024822217800">Deschide-le pe toate</translation>
 <translation id="2572712655377361602">O politică a dispozitivului a blocat accesul la fotografii</translation>
@@ -137,6 +134,7 @@
 <translation id="2871695793448672541">Parolă ascunsă</translation>
 <translation id="288655811176831528">Închide fila</translation>
 <translation id="2898963176829412617">Dosar nou…</translation>
+<translation id="2916171785467530738">Completează automat căutările și adresele URL</translation>
 <translation id="291754862089661335">Poziționează codul QR sau codul de bare în acest cadru</translation>
 <translation id="2921219216347069551">Pagină netrimisă</translation>
 <translation id="2923448633003185837">Inserează și accesează</translation>
@@ -306,7 +304,6 @@ Trebuie să activezi Handoff în secțiunea General din Setări, iar dispozitive
 <translation id="5857090052475505287">Dosar nou</translation>
 <translation id="5857770089550859117">Pentru a începe sincronizarea este necesară expresia de acces.</translation>
 <translation id="5860033963881614850">Dezactivat</translation>
-<translation id="5865733239029070421">Trimite automat statistici de utilizare și rapoarte de blocare la Google</translation>
 <translation id="5869029295770560994">OK, am înțeles</translation>
 <translation id="5871497086027727873">Un element mutat</translation>
 <translation id="5897956970858271241">Accesează linkul copiat</translation>
@@ -412,7 +409,6 @@ Datele au fost criptate cu expresia de acces pentru sincronizare la <ph name="TI
 <translation id="722055596168483966">Personalizează serviciile Google</translation>
 <translation id="7265758999917665941">Niciodată pentru acest site</translation>
 <translation id="7272437679830969316">Nu ți se poate confirma identitatea. Parola nu a fost copiată.</translation>
-<translation id="7280856130494094142">Introdu expresia de acces pentru a începe sincronizarea</translation>
 <translation id="7285236536143823449">DA, ACCEPT</translation>
 <translation id="7291368939935408496">Se pregătesc parolele...</translation>
 <translation id="7293171162284876153">Pentru a porni sincronizarea, activează „Sincronizează datele din Chrome”.</translation>
@@ -434,12 +430,10 @@ Datele au fost criptate cu expresia de acces pentru sincronizare la <ph name="TI
 <translation id="7554791636758816595">Filă nouă</translation>
 <translation id="7561196759112975576">Întotdeauna</translation>
 <translation id="7603852183842204213">Pop-upuri blocate (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
-<translation id="7605594153474022051">Sincronizarea nu funcționează</translation>
 <translation id="7638584964844754484">Expresie de acces incorectă</translation>
 <translation id="7658239707568436148">Anulează</translation>
 <translation id="766891008101699113">Pentru a răsfoi în privat pe web, adaugă o filă nouă.</translation>
 <translation id="7671141431838911305">INSTALEAZĂ</translation>
-<translation id="7704317875155739195">Completează automat căutările și adresele URL</translation>
 <translation id="7765158879357617694">Mută</translation>
 <translation id="7769602470925380267">Acceptă și deconectează-te</translation>
 <translation id="7772032839648071052">Confirmă expresia de acces</translation>
@@ -477,7 +471,6 @@ Datele au fost criptate cu expresia de acces pentru sincronizare la <ph name="TI
 <translation id="842017693807136194">Conectat(ă) cu</translation>
 <translation id="8428045167754449968">Oraș</translation>
 <translation id="8428213095426709021">Setări</translation>
-<translation id="8438566539970814960">Îmbunătățește căutările și navigarea</translation>
 <translation id="8458397775385147834">Un element șters</translation>
 <translation id="8487700953926739672">Disponibil offline</translation>
 <translation id="8503813439785031346">Nume utilizator</translation>

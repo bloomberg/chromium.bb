@@ -226,6 +226,7 @@
 <translation id="1338950911836659113">Suppression en cours...</translation>
 <translation id="1340527397989195812">Sauvegardez du contenu multimédia en provenance de l'appareil à l'aide de l'application Fichiers.</translation>
 <translation id="1341988552785875222">Le fond d'écran actuel a été défini par <ph name="APP_NAME" />. Vous devrez peut-être désinstaller <ph name="APP_NAME" /> avant de choisir un fond d'écran différent.</translation>
+<translation id="1343865611738742294">Autoriser les applications Linux à accéder aux périphériques USB. Dès qu'un périphérique est déconnecté, il est effacé de la mémoire de Linux.</translation>
 <translation id="1347256498747320987">Installer des mises à jour et des applications. En continuant, vous acceptez que cet appareil télécharge et installe automatiquement des mises à jour et des applications de Google, de votre opérateur et du fabricant de votre appareil, en utilisant si besoin des données mobiles. Certaines applications peuvent proposer des achats intégrés. <ph name="BEGIN_LINK1" />En savoir plus<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">La mise à jour débutera lorsque la batterie atteindra <ph name="BATTERY_LEVEL" /> %.</translation>
 <translation id="1353686479385938207">"<ph name="PROVIDER_NAME" />" : "<ph name="NETWORK_NAME" />"</translation>
@@ -707,6 +708,7 @@
 <translation id="2120297377148151361">Activité et interactions</translation>
 <translation id="2120478168904746065">{NUM_TABS,plural, =1{Réactiver le son de l'onglet}one{Réactiver le son de l'onglet}other{Réactiver le son des onglets}}</translation>
 <translation id="2121825465123208577">Redimensionner</translation>
+<translation id="2122305276694332719">La connexion automatique à un réseau masqué permet à d'autres personnes de voir votre appareil, ainsi que certains paramètres du réseau, ce qui n'est pas recommandé.</translation>
 <translation id="2124930039827422115">{1,plural, =1{Notée <ph name="AVERAGE_RATING" /> par un utilisateur.}one{Notée <ph name="AVERAGE_RATING" /> par # utilisateur.}other{Notée <ph name="AVERAGE_RATING" /> par # utilisateurs.}}</translation>
 <translation id="2126167708562367080">Votre administrateur a désactivé la synchronisation.</translation>
 <translation id="2127372758936585790">Chargeur de faible puissance</translation>
@@ -1303,6 +1305,7 @@
 <translation id="3012917896646559015">Veuillez contacter votre fabricant de matériel dans les plus brefs délais afin de faire réparer votre ordinateur.</translation>
 <translation id="3013291976881901233">Appareils MIDI</translation>
 <translation id="3015639418649705390">Relancer maintenant</translation>
+<translation id="3016329696181678353">Impossible de configurer automatiquement l'imprimante <ph name="PRINTER_NAME" />. Veuillez définir des paramètres avancés pour l'imprimante.</translation>
 <translation id="3016641847947582299">Composant mis à jour</translation>
 <translation id="3016780570757425217">Connaître votre position</translation>
 <translation id="3020183492814296499">Raccourcis</translation>
@@ -1805,7 +1808,6 @@
 <translation id="3789841737615482174">Installer</translation>
 <translation id="379082410132524484">Votre carte est arrivée à expiration</translation>
 <translation id="3792890930871100565">Déconnecter des imprimantes</translation>
-<translation id="3792938779249970121">Sélectionner un compte</translation>
 <translation id="3796648294839530037">Réseaux favoris :</translation>
 <translation id="3797739167230984533">Votre <ph name="BEGIN_LINK" /><ph name="DEVICE_TYPE" /> est géré<ph name="END_LINK" /> par votre organisation</translation>
 <translation id="3797900183766075808">&amp;Rechercher "<ph name="SEARCH_TERMS" />" avec <ph name="SEARCH_ENGINE" /></translation>
@@ -2114,6 +2116,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4268025649754414643">Chiffrement de la clé</translation>
 <translation id="4270393598798225102">Version <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">Aucune correspondance</translation>
+<translation id="4275663329226226506">Médias</translation>
 <translation id="4275830172053184480">Redémarrer l'appareil</translation>
 <translation id="4278101229438943600">L'Assistant est prêt</translation>
 <translation id="4278390842282768270">Autorisé</translation>
@@ -2156,7 +2159,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4354344420232759511">Les sites que vous consultez s'affichent ici</translation>
 <translation id="435527878592612277">Sélectionner votre photo</translation>
 <translation id="4356334633973342967">Vous pouvez également indiquer votre propre pilote :</translation>
-<translation id="4358169392473932247">Le stockage interne d'identifiants a été demandé, mais la clé de sécurité n'est pas compatible avec cette fonctionnalité.</translation>
 <translation id="4359408040881008151">Installée, car une ou plusieurs extensions dépendent de celle-ci.</translation>
 <translation id="4359717112757026264">Paysage urbain</translation>
 <translation id="4361142739114356624">La clé privée de ce certificat client est manquante ou incorrecte</translation>
@@ -2339,7 +2341,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4665014895760275686">Fabricant</translation>
 <translation id="4665446389743427678">Toutes les données stockées par <ph name="SITE" /> seront supprimées.</translation>
 <translation id="4668721319092543482">Cliquez pour activer <ph name="PLUGIN_NAME" />.</translation>
-<translation id="4670688170798478686">Confirmer la réinitialisation</translation>
 <translation id="4672657274720418656">Convertir la page</translation>
 <translation id="4673442866648850031">Ouvrir les outils de stylet lors du retrait du stylet</translation>
 <translation id="4677585247300749148"><ph name="URL" /> souhaite répondre aux événements d'accessibilité</translation>
@@ -2369,7 +2370,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4711638718396952945">Restaurer les paramètres</translation>
 <translation id="4715553623069266137">très court (0,8 s)</translation>
 <translation id="4716483597559580346">Powerwash pour plus de sécurité</translation>
-<translation id="4718490098585891067">Sélectionnez un compte pour vous connecter :</translation>
 <translation id="4720113199587244118">Ajouter des périphériques</translation>
 <translation id="4720185134442950733">Réseau de données mobiles</translation>
 <translation id="4722735765955348426">Mot de passe associé à <ph name="USERNAME" /></translation>
@@ -2400,7 +2400,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4756388243121344051">&amp;Historique</translation>
 <translation id="4759238208242260848">Téléchargements</translation>
 <translation id="4761104368405085019">Utiliser votre micro</translation>
-<translation id="476166673298332917">L'administrateur de cet appareil a accès à toute votre activité de navigation.</translation>
 <translation id="4762718786438001384">Très peu d'espace disque disponible sur l'appareil</translation>
 <translation id="4763408175235639573">Les cookies suivants étaient autorisés lorsque vous avez consulté cette page</translation>
 <translation id="4763830802490665879">Les cookies provenant de plusieurs sites seront effacés lorsque vous quitterez votre session de navigation.</translation>
@@ -3930,7 +3929,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="713888829801648570">Votre mot de passe n'a pas pu être vérifié, car votre appareil est hors connexion.</translation>
 <translation id="7140928199327930795">Aucun autre périphérique disponible</translation>
 <translation id="7141105143012495934">Échec de la connexion, car il est impossible de récupérer les informations relatives à votre compte. Veuillez contacter votre administrateur ou réessayer.</translation>
-<translation id="714285394257538643">Appuyez à nouveau pour confirmer que vous voulez réinitialiser votre clé de sécurité. Tous les identifiants stockés sur la clé de sécurité ainsi que le code de celle-ci seront supprimés.</translation>
 <translation id="7143092389027215216">Lancement du mode démonstration</translation>
 <translation id="7143207342074048698">Connexion en cours</translation>
 <translation id="7144878232160441200">Réessayer</translation>
@@ -4164,6 +4162,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7506541170099744506">Votre <ph name="DEVICE_TYPE" /> a bien été enregistré pour bénéficier de la gestion d'entreprise.</translation>
 <translation id="7507930499305566459">Certificat du répondeur d'état</translation>
 <translation id="7513029293694390567">Permet de se connecter automatiquement aux sites Web à l'aide des identifiants enregistrés. Si cette fonctionnalité est désactivée, vous êtes invité à confirmer chaque connexion à un site Web.</translation>
+<translation id="7514365320538308">Télécharger</translation>
 <translation id="7517786267097410259">Créer un mot de passe –</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">Dites "Ok Google"</translation>
@@ -4504,6 +4503,7 @@ Fichier de clé : <ph name="KEY_FILE" />
 Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la création de nouvelles versions de l'extension.</translation>
 <translation id="8000066093800657092">Aucun réseau détecté</translation>
 <translation id="8000467600002607205">{NUM_TABS,plural, =1{Fermer l'onglet}one{Fermer l'onglet}other{Fermer les onglets}}</translation>
+<translation id="8002274832045662704">Configuration avancée de l'imprimante</translation>
 <translation id="8004582292198964060">Navigateur</translation>
 <translation id="8005600846065423578">Toujours autoriser <ph name="HOST" /> à voir le contenu du presse-papiers</translation>
 <translation id="8008356846765065031">Connexion Internet interrompue. Veuillez vérifier votre connexion.</translation>
@@ -5044,6 +5044,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8850251000316748990">Voir plus…</translation>
 <translation id="885246833287407341">Arguments de fonction API</translation>
 <translation id="8853586775156634952">Cette carte sera enregistrée sur cet appareil uniquement</translation>
+<translation id="885701979325669005">Données stockées</translation>
 <translation id="8859057652521303089">Sélectionnez votre langue :</translation>
 <translation id="8859174528519900719">Sous-cadre : <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8862003515646449717">Passez à un navigateur rapide</translation>

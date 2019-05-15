@@ -149,7 +149,6 @@
 <translation id="4750550185319565338"><ph name="PLUGIN_NAME" />ን ለማንቃት Chromeን ዳግም ያስጀምሩ</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">ይህ ፋይል አደገኛ ሊሆን ስለሚችል Chrome አግዶታል።</translation>
-<translation id="4794050651896644714">ዝርዝሮችን Chrome ውስጥ አስቀምጥ</translation>
 <translation id="4891791193823137474">Google Chrome በጀርባ ውስጥ ይሂድ</translation>
 <translation id="4895437082222824641">አገናኝ በአዲስ የChrome &amp;ትር ውስጥ ክፈት</translation>
 <translation id="4921569541910214635">ኮምፒውተር ይጋራሉ? አሁን Chromeን ልክ እንደሚፈልጉት አድርገው ማዋቀር ይችላሉ።</translation>
@@ -265,7 +264,6 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="8077352834923175128">ይህን ዝማኔ ለመተግበር የእርስዎ አስተዳዳሪ Chrome OSን ዳግም እንዲያስጀምሩ ይጠይቃል</translation>
 <translation id="8129812357326543296">ስለ &amp;Google Chrome</translation>
 <translation id="8179874765710681175">Chromeን በእርስዎ ስልክ ላይ ይጫኑ። አንድ ኤስኤምኤስ ወደ የእርስዎ ስልክ እንልካለን።</translation>
-<translation id="8183957050892517584">Chrome የግል መረጃዎችዎን ዳግም መተየብ እንዳይኖርብዎት በጥንቃቄ ያከማቻቸዋል።</translation>
 <translation id="8226081633851087288">{0,plural, =0{Chrome OS አሁን ዳግም ይጀምራል}=1{Chrome OS በ1 ሰከንድ ውስጥ ዳግም ይጀምራል}one{Chrome OS በ# ሰከንዶች ውስጥ ዳግም ይጀምራል}other{Chrome OS በ# ሰከንዶች ውስጥ ዳግም ይጀምራል}}</translation>
 <translation id="825412236959742607">ይህ ገጽ በጣም ብዙ ማህደረ ትውስታን ይጠቀማል፣ ስለዚህ Chrome አንዳንድ ይዘትን አስወግዷል።</translation>
 <translation id="8255190535488645436">Google Chrome ካሜራዎን እና ማይክሮፎንዎን እየተጠቀመ ነው።</translation>

@@ -226,6 +226,7 @@
 <translation id="1338950911836659113">Удаление…</translation>
 <translation id="1340527397989195812">Создайте резервную копию медиафайлов, размещенных на устройстве, с помощью приложения "Файлы".</translation>
 <translation id="1341988552785875222">Эти обои установлены приложением "<ph name="APP_NAME" />". Возможно, чтобы выбрать другие обои, вам потребуется удалить приложение "<ph name="APP_NAME" />".</translation>
+<translation id="1343865611738742294">Вы можете предоставить приложениям Linux доступ к USB-устройствам. Когда устройство будет отключено, вся информация о нем будет удалена из Linux.</translation>
 <translation id="1347256498747320987">Установка обновлений и приложений. Продолжая, вы разрешаете устройству автоматически скачивать и устанавливать обновления и приложения от производителя устройства, оператора связи и компании Google (в том числе по мобильной сети). Некоторые из этих приложений могут предлагать приобрести платный контент. <ph name="BEGIN_LINK1" />Подробнее…<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">Обновление начнется, когда заряд батареи достигнет <ph name="BATTERY_LEVEL" />%.</translation>
 <translation id="1353686479385938207"><ph name="NETWORK_NAME" /> (<ph name="PROVIDER_NAME" />)</translation>
@@ -706,6 +707,7 @@
 <translation id="2120297377148151361">Действия в браузере</translation>
 <translation id="2120478168904746065">{NUM_TABS,plural, =1{Включить звук на вкладке}one{Включить звук на вкладках}few{Включить звук на вкладках}many{Включить звук на вкладках}other{Включить звук на вкладках}}</translation>
 <translation id="2121825465123208577">Изменить размер</translation>
+<translation id="2122305276694332719">Включать этот параметр не рекомендуется, так как при автоматическом подключении к скрытой сети другие пользователи могут увидеть ваше устройство и некоторые сетевые настройки.</translation>
 <translation id="2124930039827422115">{1,plural, =1{1 пользователь поставил оценку <ph name="AVERAGE_RATING" />.}one{# пользователь поставил оценку <ph name="AVERAGE_RATING" />.}few{# пользователя поставили оценку <ph name="AVERAGE_RATING" />.}many{# пользователей поставили оценку <ph name="AVERAGE_RATING" />.}other{# пользователя поставили оценку <ph name="AVERAGE_RATING" />.}}</translation>
 <translation id="2126167708562367080">Ваш администратор отключил синхронизацию.</translation>
 <translation id="2127372758936585790">Маломощное зарядное устройство</translation>
@@ -1303,6 +1305,7 @@
 <translation id="3012917896646559015">Обратитесь к производителю, чтобы отправить компьютер в сервисный центр.</translation>
 <translation id="3013291976881901233">MIDI-устройства</translation>
 <translation id="3015639418649705390">Перезапустить</translation>
+<translation id="3016329696181678353">Не удалось автоматически настроить принтер "<ph name="PRINTER_NAME" />". Задайте дополнительные параметры.</translation>
 <translation id="3016641847947582299">Компонент обновлен</translation>
 <translation id="3016780570757425217">доступ к данным о вашем местоположении</translation>
 <translation id="3020183492814296499">Ярлыки</translation>
@@ -1805,7 +1808,6 @@
 <translation id="3789841737615482174">Установить</translation>
 <translation id="379082410132524484">Срок действия карты истек</translation>
 <translation id="3792890930871100565">Удалить принтеры</translation>
-<translation id="3792938779249970121">Выбор аккаунта</translation>
 <translation id="3796648294839530037">Избранные сети:</translation>
 <translation id="3797739167230984533">Этим устройством <ph name="BEGIN_LINK" /><ph name="DEVICE_TYPE" /> управляет<ph name="END_LINK" /> ваша организация.</translation>
 <translation id="3797900183766075808">&amp;Найти "<ph name="SEARCH_TERMS" />" в <ph name="SEARCH_ENGINE" /></translation>
@@ -2114,6 +2116,7 @@
 <translation id="4268025649754414643">Шифрование ключей</translation>
 <translation id="4270393598798225102">Версия <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">Ничего не найдено</translation>
+<translation id="4275663329226226506">Камера и микрофон </translation>
 <translation id="4275830172053184480">Перезапуск устройства</translation>
 <translation id="4278101229438943600">Ассистент готов к работе!</translation>
 <translation id="4278390842282768270">Разрешено</translation>
@@ -2156,7 +2159,6 @@
 <translation id="4354344420232759511">Здесь появятся сайты, на которые вы заходили.</translation>
 <translation id="435527878592612277">Выберите фото</translation>
 <translation id="4356334633973342967">Или укажите другой драйвер:</translation>
-<translation id="4358169392473932247">Этот электронный ключ не поддерживает хранение учетных данных, но функция была запрошена.</translation>
 <translation id="4359408040881008151">Установлено, так как есть зависимые расширения.</translation>
 <translation id="4359717112757026264">Городской пейзаж</translation>
 <translation id="4361142739114356624">Закрытый ключ для клиентского сертификата отсутствует или недействителен</translation>
@@ -2339,7 +2341,6 @@
 <translation id="4665014895760275686">Производитель</translation>
 <translation id="4665446389743427678">Все данные, хранящиеся на сайте <ph name="SITE" />, будут удалены.</translation>
 <translation id="4668721319092543482">Нажмите, чтобы включить плагин "<ph name="PLUGIN_NAME" />"</translation>
-<translation id="4670688170798478686">Подтвердите сброс настроек</translation>
 <translation id="4672657274720418656">Сжать страницу</translation>
 <translation id="4673442866648850031">Оставлять открытыми инструменты стилуса при его извлечении</translation>
 <translation id="4677585247300749148">Сайт <ph name="URL" /> запрашивает доступ к специальным возможностям.</translation>
@@ -2369,7 +2370,6 @@
 <translation id="4711638718396952945">Восстановить исходные настройки</translation>
 <translation id="4715553623069266137">очень короткая (0,8 с)</translation>
 <translation id="4716483597559580346">Обновите систему безопасности с помощью Powerwash</translation>
-<translation id="4718490098585891067">Выберите аккаунт для входа:</translation>
 <translation id="4720113199587244118">Добавить устройства</translation>
 <translation id="4720185134442950733">Мобильная сеть</translation>
 <translation id="4722735765955348426">Пароль аккаунта пользователя <ph name="USERNAME" /></translation>
@@ -2400,7 +2400,6 @@
 <translation id="4756388243121344051">&amp;История</translation>
 <translation id="4759238208242260848">Скачанные файлы</translation>
 <translation id="4761104368405085019">Использование микрофона</translation>
-<translation id="476166673298332917">Администратору устройства доступна информация о том, какие страницы вы просматриваете в браузере.</translation>
 <translation id="4762718786438001384">Свободное пространство почти закончилось</translation>
 <translation id="4763408175235639573">При посещении этой страницы на вашем компьютере были сохранены следующие файлы cookie:</translation>
 <translation id="4763830802490665879">Файлы cookie с нескольких сайтов будут удалены при завершении сеанса.</translation>
@@ -3929,7 +3928,6 @@
 <translation id="713888829801648570">Невозможно подтвердить пароль в офлайн-режиме.</translation>
 <translation id="7140928199327930795">Нет других доступных устройств.</translation>
 <translation id="7141105143012495934">Ошибка входа: не удалось получить данные аккаунта. Обратитесь к администратору или повторите попытку.</translation>
-<translation id="714285394257538643">Нажмите кнопку ещё раз, чтобы сбросить настройки электронного ключа. С него будут удалены все учетные данные и установленные PIN-коды.</translation>
 <translation id="7143092389027215216">Запуск демонстрационного режима</translation>
 <translation id="7143207342074048698">Подключение</translation>
 <translation id="7144878232160441200">Повторить попытку</translation>
@@ -4021,7 +4019,7 @@
 <translation id="7282992757463864530">Информационная панель</translation>
 <translation id="7287143125007575591">Доступ запрещен.</translation>
 <translation id="7287411021188441799">Восстановить фон по умолчанию</translation>
-<translation id="7288013116963835700">Удалить Linux для устройства <ph name="DEVICE_TYPE" /></translation>
+<translation id="7288013116963835700">Удалить Linux с устройства <ph name="DEVICE_TYPE" /></translation>
 <translation id="7288676996127329262"><ph name="HORIZONTAL_DPI" /> x <ph name="VERTICAL_DPI" /> dpi</translation>
 <translation id="7289225569524511578">Откройте приложение "Обои"</translation>
 <translation id="7290242001003353852">Сервису входа, размещенному в домене <ph name="SAML_DOMAIN" />, разрешен доступ к вашей камере.</translation>
@@ -4163,6 +4161,7 @@
 <translation id="7506541170099744506">Ваше устройство <ph name="DEVICE_TYPE" /> зарегистрировано для использования в организации.</translation>
 <translation id="7507930499305566459">Сертификат ответчика о состоянии</translation>
 <translation id="7513029293694390567">Автоматически входить на сайты с помощью сохраненного имени пользователя и пароля. Когда функция отключена, эти данные нужно вводить при каждом входе.</translation>
+<translation id="7514365320538308">Скачать</translation>
 <translation id="7517786267097410259">Придумайте пароль –</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">Скажите "Окей, Google"</translation>
@@ -4503,6 +4502,7 @@
 Храните файл ключей в надежном месте. Он потребуется для создания новых версий расширения.</translation>
 <translation id="8000066093800657092">Нет сети</translation>
 <translation id="8000467600002607205">{NUM_TABS,plural, =1{Закрыть вкладку}one{Закрыть вкладки}few{Закрыть вкладки}many{Закрыть вкладки}other{Закрыть вкладки}}</translation>
+<translation id="8002274832045662704">Дополнительные настройки принтера</translation>
 <translation id="8004582292198964060">Браузер</translation>
 <translation id="8005600846065423578">Всегда открывать сайту <ph name="HOST" /> доступ к буферу обмена</translation>
 <translation id="8008356846765065031">Не удалось установить соединение. Проверьте подключение к Интернету.</translation>
@@ -5042,6 +5042,7 @@
 <translation id="8850251000316748990">Ещё...</translation>
 <translation id="885246833287407341">Аргументы функций API</translation>
 <translation id="8853586775156634952">Карта будет сохранена только на этом устройстве.</translation>
+<translation id="885701979325669005">Хранилище</translation>
 <translation id="8859057652521303089">Выберите язык:</translation>
 <translation id="8859174528519900719">Субфрейм: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8862003515646449717">Перейдите на быстрый браузер</translation>

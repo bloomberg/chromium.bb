@@ -112,6 +112,7 @@
 <translation id="2597972630681408282">Nattljus: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM-kortet är låst</translation>
 <translation id="2653659639078652383">Skicka</translation>
+<translation id="2658778018866295321">Klicka och dra</translation>
 <translation id="2700493154570097719">Ställ in tangentbord</translation>
 <translation id="2718395828230677721">Nattljus</translation>
 <translation id="2727977024730340865">Ansluten till en laddare med låg effekt. Batteriet kanske inte laddas ordentligt.</translation>
@@ -227,6 +228,7 @@
 <translation id="4378551569595875038">Ansluter ...</translation>
 <translation id="4379531060876907730">Här är dina verktyg för e-penna</translation>
 <translation id="4389184120735010762">Du tryckte på kortkommandot för dockad skärmförstoring. Vill du aktivera funktionen?</translation>
+<translation id="4394049700291259645">Inaktivera</translation>
 <translation id="4421231901400348175">Dela kontroll över skärmen med <ph name="HELPER_NAME" /> via Fjärrhjälp.</translation>
 <translation id="4430019312045809116">Volym</translation>
 <translation id="4450893287417543264">Visa inte igen</translation>
@@ -246,7 +248,6 @@
 <translation id="4696813013609194136">Lås upp enheten med föräldrakod</translation>
 <translation id="4731797938093519117">Föräldraåtkomst</translation>
 <translation id="4734965478015604180">Horisontell</translation>
-<translation id="476166673298332917">Enhetens administratör kan övervaka din webbhistorik</translation>
 <translation id="4774338217796918551">Prova igen i morgon klockan <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Lösenord för <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">Google-assistenten är inte tillgänglig i en demosession.</translation>
@@ -354,7 +355,6 @@
 <translation id="6537270692134705506">Ta en bild av skärmen</translation>
 <translation id="6542521951477560771">Castar till <ph name="RECEIVER_NAME" /></translation>
 <translation id="6559976592393364813">Fråga administratören</translation>
-<translation id="6574601967010742428">Enhetsadministratören kan ha möjlighet att övervaka det du gör.</translation>
 <translation id="6585808820553845416">Sessionen upphör om <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Söktangenten + Skift + K</translation>
 <translation id="6650933572246256093">Bluetooth-enheten <ph name="DEVICE_NAME" /> har begärt tillstånd för koppling. Ange denna lösenordsnyckel på den enheten: <ph name="PASSKEY" /></translation>

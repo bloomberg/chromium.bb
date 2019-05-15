@@ -112,6 +112,7 @@
 <translation id="2597972630681408282">రాత్రి కాంతి: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM కార్డ్ లాక్ అయింది</translation>
 <translation id="2653659639078652383">సమర్పించు</translation>
+<translation id="2658778018866295321">క్లిక్ చేసి, లాగండి</translation>
 <translation id="2700493154570097719">మీ కీబోర్డ్‌ని సెట్ చేయండి</translation>
 <translation id="2718395828230677721">రాత్రి కాంతి</translation>
 <translation id="2727977024730340865">తక్కువ-పవర్ గల ఛార్జర్‌కు ప్లగిన్ చేయబడింది. బ్యాటరీ ఛార్జింగ్ విశ్వసనీయంగా ఉండకపోవచ్చు.</translation>
@@ -228,6 +229,7 @@
 <translation id="4378551569595875038">కనెక్ట్ అవుతోంది...</translation>
 <translation id="4379531060876907730">ఇవి మీ స్టైలస్ సాధనాలు</translation>
 <translation id="4389184120735010762">మీరు డాక్ చేసిన మాగ్నిఫైయర్‌ కోసం కీబోర్డ్ షార్ట్‌కట్‌ను నొక్కారు. మీరు దీన్ని ఆన్ చేయాలనుకుంటున్నారా?</translation>
+<translation id="4394049700291259645">నిలిపివేయి</translation>
 <translation id="4421231901400348175">రిమోట్ సహాయం విధానంలో మీ స్క్రీన్ నియంత్రణ <ph name="HELPER_NAME" />కి భాగస్వామ్యం చేయబడుతోంది.</translation>
 <translation id="4430019312045809116">వాల్యూమ్</translation>
 <translation id="4450893287417543264">మళ్లీ చూపవద్దు</translation>
@@ -247,7 +249,6 @@
 <translation id="4696813013609194136">తల్లి/తండ్రి కోడ్‌తో పరికరాన్ని అన్‌లాక్ చేయండి</translation>
 <translation id="4731797938093519117">తల్లి/తండ్రి యాక్సెస్</translation>
 <translation id="4734965478015604180">అడ్డంగా ఉంది</translation>
-<translation id="476166673298332917">పరికర నిర్వాహకులు మీ బ్రౌజింగ్ కార్యకలాపాన్ని పర్యవేక్షించవచ్చు.</translation>
 <translation id="4774338217796918551">రేపు <ph name="COME_BACK_TIME" />కి తిరిగి రండి.</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> కోసం పాస్‌వర్డ్</translation>
 <translation id="4778095205580009397">Google అసిస్టెంట్ డెమో సెషన్‌లో అందుబాటులో లేదు.</translation>
@@ -355,7 +356,6 @@
 <translation id="6537270692134705506">స్క్రీన్‌ని సంగ్రహించు</translation>
 <translation id="6542521951477560771"><ph name="RECEIVER_NAME" />కు ప్రసారం చేస్తున్నారు</translation>
 <translation id="6559976592393364813">నిర్వాహకుడిని అడగండి</translation>
-<translation id="6574601967010742428">మీ కార్యకలాపాన్ని పరికర నిర్వాహకులు పర్యవేక్షించవచ్చు.</translation>
 <translation id="6585808820553845416">సెషన్ <ph name="SESSION_TIME_REMAINING" />లో ముగుస్తుంది.</translation>
 <translation id="6627638273713273709">Search+Shift+K</translation>
 <translation id="6650933572246256093">బ్లూటూత్ పరికరం "<ph name="DEVICE_NAME" />" జత కావడానికి అనుమతి కోరుతోంది. దయచేసి ఆ పరికరంలో ఈ పాస్‌కీని నమోదు చేయండి: <ph name="PASSKEY" /></translation>

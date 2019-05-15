@@ -9,7 +9,6 @@
 <translation id="1067922213147265141">Huduma zingine za Google</translation>
 <translation id="1068672505746868501">Usiwahi kutafsiri kurasa katika lugha ya <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1080790410959514870">Unaondoka katika akaunti inayodhibitiwa na <ph name="DOMAIN_NAME" />. Hii itafuta data ya Chrome iliyohifadhiwa kwenye kifaa hiki, lakini data itasalia katika Akaunti yako ya Google.</translation>
-<translation id="1099080783256647258">Wakati Kiokoa Data kimewashwa, Chrome hutumia seva za Google kuongeza kasi na kubana upakiaji wa ukurasa. Hasa katika kurasa zinazopakia polepole, Kiokoa Data huandika upya ukurasa huo ili upakie maudhui muhimu pekee. Kiokoa Data hakiwezi kuboresha kurasa zinazopakiwa katika hali Fiche.</translation>
 <translation id="1100066534610197918">Fungua katika kichupo kipya cha kikundi</translation>
 <translation id="1105960400813249514">Piga Picha ya Skrini</translation>
 <translation id="1111673857033749125">Alamisho zilizohifadhiwa katika vifaa vyako vingine zitaonekana hapa.</translation>
@@ -25,6 +24,7 @@
 <translation id="1175310183703641346">Haitasawazisha tena alamisho, historia, manenosiri na zaidi kwenye Akaunti yako ya Google</translation>
 <translation id="1178581264944972037">Sitisha</translation>
 <translation id="1181037720776840403">Ondoa</translation>
+<translation id="1188239144602654184">Weka Uhalisia Ulioboreshwa</translation>
 <translation id="1197267115302279827">Sogeza alamisho</translation>
 <translation id="119944043368869598">Ondoa vyote</translation>
 <translation id="1201402288615127009">Endelea</translation>
@@ -96,7 +96,6 @@
 <translation id="1672586136351118594">Usionyeshe tena</translation>
 <translation id="1692118695553449118">Usawazishajii umewashwa</translation>
 <translation id="169515064810179024">Zuia tovuti zisifikie vitambuzi vya mwendo</translation>
-<translation id="1709438864123551175">Kiokoa Data</translation>
 <translation id="1717218214683051432">Vitambuzi vya mwendo</translation>
 <translation id="1718835860248848330">Saa iliyopita</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - Imesasishwa <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -214,7 +213,6 @@
 <translation id="2501278716633472235">Rudi nyuma</translation>
 <translation id="2513403576141822879">Ili upate mipangilio zaidi inayohusiana na faragha, usalama na ukusanyaji wa data, angalia <ph name="BEGIN_LINK" />Usawazishaji na huduma za Google<ph name="END_LINK" /></translation>
 <translation id="2523184218357549926">Hutuma URL za kurasa unazotembelea kwa Google</translation>
-<translation id="2526148617758225454">Kiokoa Data kinawaka. Kidhibiti katika Mipangilio.</translation>
 <translation id="2532336938189706096">Mwonekano wa Wavuti</translation>
 <translation id="2534155362429831547">Umefuta vipengee <ph name="NUMBER_OF_ITEMS" /></translation>
 <translation id="2536728043171574184">Unaangalia nakala ya nje ya mtandao ya ukurasa huu</translation>
@@ -354,14 +352,12 @@
 <translation id="3599863153486145794">Hufuta historia kwenye vifaa vyote ulivyotumia kuingia katika akaunti. Huenda Akaunti yako ya Google ikawa na aina nyingine za historia ya kuvinjari kwenye <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Zima sauti katika tovuti</translation>
 <translation id="3616113530831147358">Sauti</translation>
-<translation id="3620176948598597475">Kuweka upya takwimu hufuta historia ya Kiokoa Data ikiwa ni pamoja na orodha ya tovuti ulizotembelea.</translation>
 <translation id="3632295766818638029">Onyesha nenosiri</translation>
 <translation id="363596933471559332">Ingia katika tovuti kiotomatiki kwa kutumia kitambulisho kilichohifadhiwa. Kipengele kikiwa kimezimwa, utaombwa kuthibitisha kila wakati kabla ya kuingia katika tovuti.</translation>
 <translation id="3658159451045945436">Hatua ya kuweka upya hufuta historia ya uokoaji wa data, ikiwa ni pamoja na orodha ya tovuti unazotembelea.</translation>
 <translation id="3662546969139119822">Hamna historia hapa</translation>
 <translation id="3672452749423051839">Mapendekezo ya hitilafu ya kuelekea unapotaka</translation>
 <translation id="3692944402865947621">Imeshindwa kupakua <ph name="FILE_NAME" /> kwa sababu haikupata eneo la kuhifadhi.</translation>
-<translation id="3712575778697986964">Ungependa kuweka upya takwimu za Kiokoa Data?</translation>
 <translation id="3714981814255182093">Fungua Upau wa Kutafuta</translation>
 <translation id="3716182511346448902">Ukurasa huu unatumia hifadhi kubwa zaidi, kwa hivyo Chrome imeusitisha.</translation>
 <translation id="3730075448226062617">Ili uruhusu Chrome ifikie maikrofoni yako, washa maikrofoni pia katika <ph name="BEGIN_LINK" />Mipangilio ya Android<ph name="END_LINK" />.</translation>
@@ -503,13 +499,11 @@ Huenda akaunti yako ya Google ina aina nyingine za historia ya kuvinjari kama vi
 <translation id="4751476147751820511">Vitambuzi vya mwendo au mwangaza</translation>
 <translation id="4759238208242260848">Vipakuliwa</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{Imemaliza kupakua faili 1.}other{Imemaliza kupakua faili #.}}</translation>
-<translation id="4766369052440583386">Kiokoa Data kimewashwa</translation>
 <translation id="4797039098279997504">Gusa ili urudi kwenye <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4802417911091824046">Usimbaji fiche kwa kutumia kauli ya siri haujumuishi njia za kulipa na anwani kutoka Google Pay.
 
 Ili ubadilishe mipangilio hii, <ph name="BEGIN_LINK" />fanya usawazishaji upya<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">Jina kwenye kadi</translation>
-<translation id="4807963036345170158">Kiokoa Data kimezimwa</translation>
 <translation id="4816465935029283692">Aina za data</translation>
 <translation id="4824958205181053313">Ungependa kughairi usawazishaji?</translation>
 <translation id="4837753911714442426">Fungua chaguo za kuchapisha ukurasa</translation>
@@ -601,6 +595,7 @@ Ili ubadilishe mipangilio hii, <ph name="BEGIN_LINK" />fanya usawazishaji upya<p
 <translation id="5447765697759493033">Tovuti hii haitatafsiriwa</translation>
 <translation id="545042621069398927">Inaongeza kasi ya kupakua faili yako.</translation>
 <translation id="5456381639095306749">Pakua ukurasa</translation>
+<translation id="5475862044948910901">Je, ungependa kuanzisha kipindi cha Uhalisia Ulioboreshwa?</translation>
 <translation id="548278423535722844">Fungua katika programu ya ramani</translation>
 <translation id="5487521232677179737">Futa data</translation>
 <translation id="5494752089476963479">Zuia matangazo kwenye tovuti zinazoonyesha matangazo yanayopotosha au yanayokatiza huduma</translation>
@@ -643,7 +638,6 @@ Ili ubadilishe mipangilio hii, <ph name="BEGIN_LINK" />fanya usawazishaji upya<p
 <translation id="569536719314091526">Tafsiri ukurasa huu katika lugha yoyote kutoka kitufe cha Chaguo zaidi</translation>
 <translation id="572328651809341494">Vichupo vya hivi majuzi</translation>
 <translation id="5726692708398506830">Fanya kila kitu kwenye ukurasa kiwe kikubwa zaidi</translation>
-<translation id="5734520971562437809">Okoa hadi asilimia 60 ya data na uongeze kasi ya wavuti.</translation>
 <translation id="5748802427693696783">Imebadilisha kwenda vichupo muundo-msingi</translation>
 <translation id="5749068826913805084">Chrome inahitaji idhini ya kufikia hifadhi ili ipakue faili.</translation>
 <translation id="5763382633136178763">Vichupo fiche</translation>
@@ -701,7 +695,6 @@ Ili ubadilishe mipangilio hii, <ph name="BEGIN_LINK" />fanya usawazishaji upya<p
 <translation id="6159335304067198720"><ph name="PERCENT" /> ya data imeokolewa</translation>
 <translation id="6165508094623778733">Pata maelezo zaidi</translation>
 <translation id="6177111841848151710">Haijaruhusiwa kwa mtambo wa sasa wa kutafuta</translation>
-<translation id="6177390657002841081">Washa Kiokoa Data</translation>
 <translation id="6181444274883918285">Ongeza tovuti mpya kwenye orodha ya vighairi</translation>
 <translation id="6192333916571137726">Pakua faili</translation>
 <translation id="6192792657125177640">Vighairi</translation>
@@ -867,6 +860,10 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Shiriki kipengee 1 kilichochaguliwa}other{Shiriki vipengee # vilivyochaguliwa}}</translation>
 <translation id="7359002509206457351">Ufikiaji wa njia za kulipa</translation>
+<translation id="7365126855094612066">Kwa kipindi hiki, tovuti itaweza:
+• kuunda ramani ya 3D ya mazingira yako
+• kufuatilia mwendo wa kamera
+Tovuti hii HAIPATI idhini ya kufikia kamera. Ni wewe pekee utaona picha hizi za kamera.</translation>
 <translation id="7375125077091615385">Aina:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -1114,11 +1111,9 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="9188680907066685419">Ondoka kwenye akaunti inayodhibitiwa</translation>
 <translation id="9204836675896933765">Imesalia faili 1</translation>
 <translation id="9206873250291191720">A</translation>
-<translation id="9215534869786664672">Okoa hadi asilimia 60 ya data na uongeze kasi ya wavuti. Seva za Google zitaboresha kurasa unazotembelea.</translation>
 <translation id="9219103736887031265">Picha</translation>
 <translation id="926205370408745186">Ondoa shughuli zako za Chrome kwenye mpango wa Nidhamu Dijitali</translation>
 <translation id="932327136139879170">Mwanzo</translation>
-<translation id="932599481871055447">Okoa data na uvinjari haraka zaidi</translation>
 <translation id="938850635132480979">Hitilafu: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Kufikia maikrofoni yako</translation>
 <translation id="951339005376969845">Futa data iliyopo. Unaweza kuirejesha kwa kurudi kwenye <ph name="FROM_ACCOUNT" />.</translation>

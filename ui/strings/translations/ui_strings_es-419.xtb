@@ -181,8 +181,10 @@
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Más de 1 notificación sin leer}other{Más de # notificaciones sin leer}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{en 1 min}other{en # min}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="8098075892845277643">Inicia una búsqueda por voz con el Asistente de Google</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{Hace 1 hora.}other{Hace # horas.}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Falta 1 s.}other{Faltan # s.}}</translation>
+<translation id="8144660977431427332">Tus búsquedas cuentan con la tecnología del Asistente de Google. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />; autocompletar</translation>
 <translation id="815598010540052116">Desplazar hacia abajo</translation>
 <translation id="8170087467028567933">Si quitas esta sugerencia, se ocultará de tu cuenta en todos los dispositivos.</translation>

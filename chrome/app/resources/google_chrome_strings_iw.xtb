@@ -31,7 +31,7 @@
 <translation id="1662639173275167396">‏הפיתוח של Chrome OS אפשרי בזכות <ph name="BEGIN_LINK_CROS_OSS" />תוכנות קוד פתוח<ph name="END_LINK_CROS_OSS" /> נוספות, כמו <ph name="BEGIN_LINK_LINUX_OSS" />Linux (בטא)<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="1674870198290878346">‏פתח את הקישור בחלון &amp;גלישה בסתר של Chrome</translation>
 <translation id="1682634494516646069">‏Google Chrome אינו יכול לקרוא ולכתוב בספריית הנתונים שלו: <ph name="USER_DATA_DIRECTORY" /></translation>
-<translation id="1698376642261615901">‏Google Chrome הוא דפדפן אינטרנט המפעיל דפי אינטרנט ואפליקציות במהירות הבזק. זהו דפדפן מהיר, יציב וקל לשימוש. תוכל לגלוש באינטרנט בצורה בטוחה יותר הודות להגנה מפני תוכנות זדוניות ודיוג, המובנית ב-Google Chrome.</translation>
+<translation id="1698376642261615901">‏Google Chrome הוא דפדפן אינטרנט המפעיל דפי אינטרנט ואפליקציות במהירות הבזק. זהו דפדפן מהיר, יציב וקל לשימוש. תוכל לגלוש באינטרנט בצורה בטוחה יותר הודות להגנה מפני תוכנות זדוניות ופישינג, המובנית ב-Google Chrome.</translation>
 <translation id="1718131156967340976">‏בחר ב-<ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /></translation>
 <translation id="1734234790201236882">‏הסיסמה הזאת תישמר על ידי Chrome בחשבון Google. אין צורך לזכור אותה.</translation>
 <translation id="174539241580958092">‏Google Chrome לא הצליח לסנכרן את הנתונים שלך בשל שגיאת כניסה.</translation>
@@ -145,7 +145,6 @@
 <translation id="4750550185319565338">‏הפעל מחדש את Chrome כדי להפעיל את <ph name="PLUGIN_NAME" /></translation>
 <translation id="4754614261631455953">‏גרסה ניסיונית של Google Chrome‏ (mDNS-In)</translation>
 <translation id="4771048833395599659">‏Chrome‏ חסם את הקובץ הזה כי הוא עלול להיות מסוכן.</translation>
-<translation id="4794050651896644714">‏שמור פרטים ב-Chrome</translation>
 <translation id="4891791193823137474">‏אפשר ל-Google Chrome לפעול ברקע</translation>
 <translation id="4895437082222824641">‏פתח את הקישור ב&amp;כרטיסיית Chrome חדשה</translation>
 <translation id="4921569541910214635">‏משתף את המחשב? עכשיו תוכל להגדיר את Chrome בדיוק כמו שאתה אוהב.</translation>
@@ -257,7 +256,6 @@
 <translation id="8077352834923175128">‏לפי הבקשה של מנהל המערכת, צריך להפעיל מחדש את Chrome OS כדי להחיל את העדכון הזה</translation>
 <translation id="8129812357326543296">‏מידע על Google Chrome&amp;</translation>
 <translation id="8179874765710681175">‏יש להתקין את Chrome בטלפון שלך, לאחר מכן אליו הודעת SMS.</translation>
-<translation id="8183957050892517584">‏Chrome יאחסן את הפרטים האישיים שלך באופן מאובטח כדי שלא תידרש להקליד אותם שוב.</translation>
 <translation id="8226081633851087288">{0,plural, =0{‏Chrome OS תופעל מחדש עכשיו}=1{‏Chrome OS תופעל מחדש בעוד שנייה אחת}two{‏Chrome OS תופעל מחדש בעוד שתי שניות}many{‏Chrome OS תופעל מחדש בעוד # שניות}other{‏Chrome OS תופעל מחדש בעוד # שניות}}</translation>
 <translation id="825412236959742607">‏הדף הזה משתמש בנפח זיכרון גדול מידי, לכן מערכת Chrome הסירה חלק מהתוכן.</translation>
 <translation id="8255190535488645436">‏Google Chrome משתמש במצלמה ובמיקרופון שלך.</translation>

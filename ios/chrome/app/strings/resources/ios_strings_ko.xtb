@@ -74,13 +74,11 @@
 <translation id="1952728750904661634">관리 계정으로 로그인</translation>
 <translation id="1974060860693918893">고급</translation>
 <translation id="1989112275319619282">찾아보기</translation>
-<translation id="2000419248597011803">검색주소창 및 검색창의 검색어 및 일부 쿠키를 기본 검색엔진에 전송</translation>
 <translation id="2015722694326466240">비밀번호를 보려면 먼저 기기에 비밀번호를 설정해야 합니다.</translation>
 <translation id="2068952045031577364">지난주</translation>
 <translation id="2074131957428911366">언제든지 <ph name="BEGIN_LINK" />설정<ph name="END_LINK" />에서 동기화할 항목을 선택할 수 있습니다.</translation>
 <translation id="2079545284768500474">실행취소</translation>
 <translation id="209018056901015185">데스크톱 버전으로 보기</translation>
-<translation id="2096012225669085171">모든 기기 동기화 및 맞춤설정</translation>
 <translation id="2103075008456228677">history.google.com 열기</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" />개 항목 이동함</translation>
 <translation id="213900355088104901">비공개로 탐색하려면 시크릿 탭을 여세요.</translation>
@@ -107,7 +105,6 @@
 <translation id="2435457462613246316">비밀번호 표시</translation>
 <translation id="2481538920734869610">계정 추가</translation>
 <translation id="2497852260688568942">관리자가 동기화를 사용 중지했습니다.</translation>
-<translation id="2523184218357549926">방문한 페이지의 URL을 Google에 전송</translation>
 <translation id="2523363575747517183">다른 애플리케이션을 열려는 반복적인 시도가 실행되는 웹사이트입니다.</translation>
 <translation id="2529021024822217800">모두 열기</translation>
 <translation id="2572712655377361602">기기 정책으로 인해 사진 액세스가 차단되었습니다.</translation>
@@ -137,6 +134,7 @@
 <translation id="2871695793448672541">숨겨진 비밀번호</translation>
 <translation id="288655811176831528">탭 닫기</translation>
 <translation id="2898963176829412617">새 폴더 만들기…</translation>
+<translation id="2916171785467530738">검색어 및 URL 자동 완성</translation>
 <translation id="291754862089661335">프레임 안에 QR 코드나 바코드를 위치시키세요.</translation>
 <translation id="2921219216347069551">페이지를 공유할 수 없음</translation>
 <translation id="2923448633003185837">붙여넣어 바로가기</translation>
@@ -306,7 +304,6 @@
 <translation id="5857090052475505287">새 폴더</translation>
 <translation id="5857770089550859117">동기화를 시작하려면 암호가 필요합니다.</translation>
 <translation id="5860033963881614850">사용 안함</translation>
-<translation id="5865733239029070421">사용 통계 및 비정상 종료 보고서를 Google로 자동 전송</translation>
 <translation id="5869029295770560994">확인</translation>
 <translation id="5871497086027727873">1개 항목 이동함</translation>
 <translation id="5897956970858271241">복사한 링크 방문</translation>
@@ -412,7 +409,6 @@
 <translation id="722055596168483966">Google 서비스 맞춤설정</translation>
 <translation id="7265758999917665941">이 사이트 제외</translation>
 <translation id="7272437679830969316">신원을 인증할 수 없습니다. 비밀번호가 복사되지 않았습니다.</translation>
-<translation id="7280856130494094142">암호를 입력하여 동기화 시작</translation>
 <translation id="7285236536143823449">예</translation>
 <translation id="7291368939935408496">비밀번호 준비 중...</translation>
 <translation id="7293171162284876153">동기화를 시작하려면 'Chrome 데이터 동기화'를 사용 설정하세요.</translation>
@@ -434,12 +430,10 @@
 <translation id="7554791636758816595">새 탭</translation>
 <translation id="7561196759112975576">항상</translation>
 <translation id="7603852183842204213">팝업 차단(<ph name="NUMBER_OF_BLOCKED_POPUPS" />개)</translation>
-<translation id="7605594153474022051">동기화가 작동하지 않음</translation>
 <translation id="7638584964844754484">암호가 잘못되었습니다.</translation>
 <translation id="7658239707568436148">취소</translation>
 <translation id="766891008101699113">비공개로 웹을 탐색하려면 새 탭을 추가하세요.</translation>
 <translation id="7671141431838911305">설치</translation>
-<translation id="7704317875155739195">검색어 및 URL 자동 완성</translation>
 <translation id="7765158879357617694">이동</translation>
 <translation id="7769602470925380267">동의 및 로그아웃</translation>
 <translation id="7772032839648071052">암호 확인</translation>
@@ -477,7 +471,6 @@
 <translation id="842017693807136194">다음을 사용하여 로그인함</translation>
 <translation id="8428045167754449968">시/군/구</translation>
 <translation id="8428213095426709021">설정</translation>
-<translation id="8438566539970814960">검색 및 탐색 기능 개선</translation>
 <translation id="8458397775385147834">1개 항목 삭제함</translation>
 <translation id="8487700953926739672">오프라인으로 사용 가능</translation>
 <translation id="8503813439785031346">사용자이름</translation>

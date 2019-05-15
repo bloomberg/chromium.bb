@@ -112,6 +112,7 @@
 <translation id="2597972630681408282">Nattlys: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM-kortet er låst</translation>
 <translation id="2653659639078652383">Send</translation>
+<translation id="2658778018866295321">Klikk og dra</translation>
 <translation id="2700493154570097719">Velg tastatur</translation>
 <translation id="2718395828230677721">Nattlys</translation>
 <translation id="2727977024730340865">Tilkoblet laveffektslader. Batteriladingen kan være upålitelig.</translation>
@@ -227,6 +228,7 @@
 <translation id="4378551569595875038">Kobler til …</translation>
 <translation id="4379531060876907730">Dette er pekepennverktøyene dine</translation>
 <translation id="4389184120735010762">Du trykket på hurtigtasten for den dokkede lupen. Vil du slå den på?</translation>
+<translation id="4394049700291259645">Slå av</translation>
 <translation id="4421231901400348175">Deler kontroll av skjermen med <ph name="HELPER_NAME" /> via fjernhjelp.</translation>
 <translation id="4430019312045809116">Volum</translation>
 <translation id="4450893287417543264">Ikke vis igjen</translation>
@@ -246,7 +248,6 @@
 <translation id="4696813013609194136">Lås opp enheten med foreldrekode</translation>
 <translation id="4731797938093519117">Foreldretilgang</translation>
 <translation id="4734965478015604180">Horisontal</translation>
-<translation id="476166673298332917">Enhetsadministratoren har tilgang til nettleseraktiviteten din.</translation>
 <translation id="4774338217796918551">Kom tilbake i morgen <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Passord for <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">Google-assistenten er ikke tilgjengelig under demonstrasjonsøkter.</translation>
@@ -354,7 +355,6 @@
 <translation id="6537270692134705506">Ta skjermdump av skjermen</translation>
 <translation id="6542521951477560771">Caster til <ph name="RECEIVER_NAME" /></translation>
 <translation id="6559976592393364813">Spør administratoren</translation>
-<translation id="6574601967010742428">Enhetsadministratoren kan muligens overvåke aktiviteten din.</translation>
 <translation id="6585808820553845416">Økten slutter om <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Søk + Shift + K</translation>
 <translation id="6650933572246256093">Bluetooth-enheten «<ph name="DEVICE_NAME" />» ber om tillatelse til å koble til. Skriv inn denne tilgangskoden på den aktuelle enheten: <ph name="PASSKEY" /></translation>

@@ -181,8 +181,10 @@
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{১টির বেশি অপঠিত বিজ্ঞপ্তি}one{#টির বেশি অপঠিত বিজ্ঞপ্তি}other{#টির বেশি অপঠিত বিজ্ঞপ্তি}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{১ মিনিটের মধ্যে}one{# মিনিটের মধ্যে}other{# মিনিটের মধ্যে}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="8098075892845277643">Google অ্যাসিস্ট্যান্ট ভয়েস কোয়েরি চালু করুন</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{১ ঘণ্টা পূর্বে}one{# ঘণ্টা পূর্বে}other{# ঘণ্টা পূর্বে}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{১ সেকেন্ড বাকি}one{# সেকেন্ড বাকি}other{# সেকেন্ড বাকি}}</translation>
+<translation id="8144660977431427332">Google অ্যাসিস্ট্যান্ট আপনার সার্চ পরিচালনা করে। <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, নিজে থেকে সম্পূর্ন করা</translation>
 <translation id="815598010540052116">নিচে স্ক্রল করুন</translation>
 <translation id="8170087467028567933">এই সাজেশন সরিয়ে দেওয়া হলে, আপনার সব ডিভাইসে অ্যাকাউন্ট থেকে এটি লুকিয়ে রাখা হবে।</translation>

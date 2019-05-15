@@ -226,6 +226,7 @@
 <translation id="1338950911836659113">Memadamkan...</translation>
 <translation id="1340527397989195812">Sandarkan media dari peranti menggunakan apl Fail.</translation>
 <translation id="1341988552785875222">Kertas dinding semasa ditetapkan oleh '<ph name="APP_NAME" />'. Anda mungkin perlu menyahpasang '<ph name="APP_NAME" />' sebelum memilih kertas dinding lain.</translation>
+<translation id="1343865611738742294">Beri Linux kebenaran apl untuk mengakses peranti USB. Linux tidak akan mengingat peranti USB selepas peranti itu dialih keluar.</translation>
 <translation id="1347256498747320987">Pasang kemas kini &amp; apl. Dengan meneruskan, anda bersetuju bahawa peranti ini mungkin memuat turun dan memasang kemas kini serta apl secara automatik daripada Google, pembawa anda dan pengeluar peranti anda juga, mungkin dengan menggunakan data selular. Sesetengah apl ini mungkin menawarkan pembelian dalam apl. <ph name="BEGIN_LINK1" />Ketahui Lebih Lanjut<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">Kemas kini akan bermula apabila bateri mencapai <ph name="BATTERY_LEVEL" />%.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
@@ -707,6 +708,7 @@
 <translation id="2120297377148151361">Aktiviti dan interaksi</translation>
 <translation id="2120478168904746065">{NUM_TABS,plural, =1{Nyahredam Tab}other{Nyahredam Tab}}</translation>
 <translation id="2121825465123208577">Ubah saiz</translation>
+<translation id="2122305276694332719">Tindakan menyambung secara automatik ke rangkaian tersembunyi akan membolehkan orang lain melihat peranti anda dan sesetengah tetapan rangkaian, maka tindakan ini tidak disyorkan.</translation>
 <translation id="2124930039827422115">{1,plural, =1{Dinilai <ph name="AVERAGE_RATING" /> oleh seorang pengguna.}other{Dinilai <ph name="AVERAGE_RATING" /> oleh # pengguna.}}</translation>
 <translation id="2126167708562367080">Penyegerakan dilumpuhkan oleh pentadbir anda.</translation>
 <translation id="2127372758936585790">Pengecas berkuasa rendah</translation>
@@ -1304,6 +1306,7 @@
 <translation id="3012917896646559015">Sila hubungi pengeluar perkakasan anda dengan segera untuk menghantar komputer anda ke kemudahan membaiki.</translation>
 <translation id="3013291976881901233">Peranti MIDI</translation>
 <translation id="3015639418649705390">Lancarkan semula sekarang</translation>
+<translation id="3016329696181678353"><ph name="PRINTER_NAME" /> tidak dapat dikonfigurasi secara automatik. Sila nyatakan butiran terperinci pencetak.</translation>
 <translation id="3016641847947582299">Komponen dikemaskini</translation>
 <translation id="3016780570757425217">Ketahui lokasi anda</translation>
 <translation id="3020183492814296499">Pintasan</translation>
@@ -1806,7 +1809,6 @@
 <translation id="3789841737615482174">Pasang</translation>
 <translation id="379082410132524484">Kad anda telah tamat tempoh</translation>
 <translation id="3792890930871100565">Putuskan sambungan pencetak</translation>
-<translation id="3792938779249970121">Pilih akaun</translation>
 <translation id="3796648294839530037">Rangkaian Kegemaran:</translation>
 <translation id="3797739167230984533"><ph name="BEGIN_LINK" /><ph name="DEVICE_TYPE" /> anda diurus<ph name="END_LINK" /> oleh organisasi anda</translation>
 <translation id="3797900183766075808">&amp;Cari “<ph name="SEARCH_TERMS" />” di <ph name="SEARCH_ENGINE" /></translation>
@@ -2115,6 +2117,7 @@
 <translation id="4268025649754414643">Encipherment Penting</translation>
 <translation id="4270393598798225102">Versi <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">Tiada padanan</translation>
+<translation id="4275663329226226506">Media</translation>
 <translation id="4275830172053184480">Mulakan semula peranti anda</translation>
 <translation id="4278101229438943600">Assistant anda bersedia</translation>
 <translation id="4278390842282768270">Dibenarkan</translation>
@@ -2157,7 +2160,6 @@
 <translation id="4354344420232759511">Tapak yang anda lawati akan dipaparkan di sini</translation>
 <translation id="435527878592612277">Pilih foto anda</translation>
 <translation id="4356334633973342967">Atau, tentukan pemacu anda sendiri:</translation>
-<translation id="4358169392473932247">Kunci keselamatan itu tidak menyokong penyimpanan dalaman bukti kelayakan, tetapi ciri itu diminta.</translation>
 <translation id="4359408040881008151">Dipasang kerana sambungan yang bergantung.</translation>
 <translation id="4359717112757026264">Pandangan bandar</translation>
 <translation id="4361142739114356624">Kunci Peribadi untuk Sijil Pelanggan ini tiada atau tidak sah</translation>
@@ -2340,7 +2342,6 @@
 <translation id="4665014895760275686">Pengeluar</translation>
 <translation id="4665446389743427678">Semua data yang disimpan oleh <ph name="SITE" /> akan dipadamkan.</translation>
 <translation id="4668721319092543482">Klik untuk mendayakan <ph name="PLUGIN_NAME" /></translation>
-<translation id="4670688170798478686">Sahkan tetapan semula</translation>
 <translation id="4672657274720418656">Menyuling Halaman</translation>
 <translation id="4673442866648850031">Buka alatan stilus apabila stilus dialih keluar</translation>
 <translation id="4677585247300749148"><ph name="URL" /> ingin menjawab acara kebolehaksesan</translation>
@@ -2370,7 +2371,6 @@
 <translation id="4711638718396952945">Pulihkan tetapan</translation>
 <translation id="4715553623069266137">sangat pendek (0.8s)</translation>
 <translation id="4716483597559580346">Powerwash untuk keselamatan tambahan</translation>
-<translation id="4718490098585891067">Pilih akaun untuk log masuk:</translation>
 <translation id="4720113199587244118">Tambah Peranti</translation>
 <translation id="4720185134442950733">Rangkaian data mudah alih</translation>
 <translation id="4722735765955348426">Kata laluan untuk <ph name="USERNAME" /></translation>
@@ -2401,7 +2401,6 @@
 <translation id="4756388243121344051">&amp;Sejarah</translation>
 <translation id="4759238208242260848">Muat turun</translation>
 <translation id="4761104368405085019">Gunakan mikrofon anda</translation>
-<translation id="476166673298332917">Pentadbir peranti boleh memantau aktiviti penyemakan imbas anda.</translation>
 <translation id="4762718786438001384">Ruang cakera peranti terlalu rendah</translation>
 <translation id="4763408175235639573">Kuki berikut ditetapkan apabila anda melihat halaman ini</translation>
 <translation id="4763830802490665879">Kuki dari beberapa tapak akan dikosongkan semasa keluar.</translation>
@@ -3930,7 +3929,6 @@
 <translation id="713888829801648570">Maaf, kata laluan anda tidak dapat disahkan kerana anda berada di luar talian.</translation>
 <translation id="7140928199327930795">Tiada peranti lain tersedia.</translation>
 <translation id="7141105143012495934">Log masuk gagal kerana butiran akaun anda tidak boleh didapatkan semula. Sila hubungi pentadbir anda atau cuba lagi.</translation>
-<translation id="714285394257538643">Untuk mengesahkan bahawa anda mahu menetapkan semula kunci keselamatan anda, sentuh sekali lagi. Semua bukti kelayakan yang disimpan pada kunci keselamatan dan PINnya akan dipadamkan.</translation>
 <translation id="7143092389027215216">Memulakan mod tunjuk cara</translation>
 <translation id="7143207342074048698">Menyambung</translation>
 <translation id="7144878232160441200">Cuba semula</translation>
@@ -4164,6 +4162,7 @@
 <translation id="7506541170099744506"><ph name="DEVICE_TYPE" /> anda berjaya didaftarkan untuk pengurusan perusahaan.</translation>
 <translation id="7507930499305566459">Status Pembalas Sijil</translation>
 <translation id="7513029293694390567">Log masuk secara automatik ke tapak web menggunakan bukti kelayakan yang disimpan. Jika dilumpuhkan, anda akan diminta memberikan pengesahan setiap kali sebelum mengelog masuk ke tapak web.</translation>
+<translation id="7514365320538308">Muat Turun</translation>
 <translation id="7517786267097410259">Buat kata laluan -</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">Sebut "Ok Google".</translation>
@@ -4504,6 +4503,7 @@ Fail Kunci: <ph name="KEY_FILE" />
 Simpan fail kunci anda di tempat selamat. Anda akan memerlukannya untuk mencipta versi baharu sambungan anda.</translation>
 <translation id="8000066093800657092">Tiada rangkaian</translation>
 <translation id="8000467600002607205">{NUM_TABS,plural, =1{Tutup Tab}other{Tutup Tab}}</translation>
+<translation id="8002274832045662704">Konfigurasi terperinci pencetak</translation>
 <translation id="8004582292198964060">Penyemak Imbas</translation>
 <translation id="8005600846065423578">Sentiasa benarkan <ph name="HOST" /> untuk melihat papan keratan</translation>
 <translation id="8008356846765065031">Internet terputus sambungan. Sila periksa sambungan internet anda.</translation>
@@ -5045,6 +5045,7 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="8850251000316748990">Lihat lagi...</translation>
 <translation id="885246833287407341">Argumen fungsi API</translation>
 <translation id="8853586775156634952">Kad ini akan disimpan ke peranti ini sahaja</translation>
+<translation id="885701979325669005">Storan</translation>
 <translation id="8859057652521303089">Pilih bahasa anda:</translation>
 <translation id="8859174528519900719">Subbingkai: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8862003515646449717">Tukar kepada penyemak imbas yang pantas</translation>

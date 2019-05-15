@@ -112,6 +112,7 @@
 <translation id="2597972630681408282">夜間モード: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM カードはロックされています</translation>
 <translation id="2653659639078652383">送信</translation>
+<translation id="2658778018866295321">クリックしてドラッグ</translation>
 <translation id="2700493154570097719">キーボードを設定</translation>
 <translation id="2718395828230677721">夜間モード</translation>
 <translation id="2727977024730340865">低電力の充電器に接続しています。バッテリーが充電されない可能性があります。</translation>
@@ -227,6 +228,7 @@
 <translation id="4378551569595875038">接続中...</translation>
 <translation id="4379531060876907730">タッチペン ツール</translation>
 <translation id="4389184120735010762">拡大鏡（ドッキング）のキーボード ショートカットを押しました。この機能をオンにしますか？</translation>
+<translation id="4394049700291259645">無効にする</translation>
 <translation id="4421231901400348175">リモート サポート経由で <ph name="HELPER_NAME" /> と画面の制御を共有しています。</translation>
 <translation id="4430019312045809116">音量</translation>
 <translation id="4450893287417543264">次回から表示しない</translation>
@@ -246,7 +248,6 @@
 <translation id="4696813013609194136">保護者のコードでデバイスをロック解除</translation>
 <translation id="4731797938093519117">保護者によるアクセス</translation>
 <translation id="4734965478015604180">横</translation>
-<translation id="476166673298332917">デバイス管理者が閲覧アクティビティを監視している可能性があります。</translation>
 <translation id="4774338217796918551">明日の <ph name="COME_BACK_TIME" /> になったら利用を再開できます。</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> のパスワード</translation>
 <translation id="4778095205580009397">Google アシスタントは、デモセッションではご利用いただけません。</translation>
@@ -354,7 +355,6 @@
 <translation id="6537270692134705506">画面をキャプチャ</translation>
 <translation id="6542521951477560771"><ph name="RECEIVER_NAME" /> にキャストしています</translation>
 <translation id="6559976592393364813">管理者に問い合わせる</translation>
-<translation id="6574601967010742428">デバイスの管理者によりアクティビティが監視される可能性があります。</translation>
 <translation id="6585808820553845416">セッション終了まであと <ph name="SESSION_TIME_REMAINING" />です。</translation>
 <translation id="6627638273713273709">検索+Shift+K</translation>
 <translation id="6650933572246256093">Bluetooth デバイス「<ph name="DEVICE_NAME" />」がペア設定の権限をリクエストしています。このデバイスに次のパスキーを入力してください: <ph name="PASSKEY" /></translation>

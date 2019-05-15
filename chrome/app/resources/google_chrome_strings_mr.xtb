@@ -18,7 +18,7 @@
 <translation id="1312676208694947750">{0,plural, =0{Chrome OS अपडेट उपलब्ध आहे}=1{Chrome OS अपडेट उपलब्ध आहे}other{Chrome अपडेट # दिवसांसाठी उपलब्ध आहे}}</translation>
 <translation id="137466361146087520">Google Chrome बीटा</translation>
 <translation id="1393853151966637042">Chrome वापरून मदत मिळवा</translation>
-<translation id="1399397803214730675">या काँप्युटरमध्ये आधीपासून Google Chrome ची अगदी अलिकडील आवृत्ती आहे. सॉफ्टवेअर कार्य करत नसल्यास, कृपया Google Chrome अनइंस्टॉल करा आणि पुन्हा प्रयत्न करा.</translation>
+<translation id="1399397803214730675">या कॉंप्युटरत आधीपासून Google Chrome ची अगदी अलिकडील आवृत्ती आहे. सॉफ्टवेअर काम करत नसल्यास, कृपया Google Chrome अनइंस्टॉल करा आणि पुन्हा प्रयत्न करा.</translation>
 <translation id="1434626383986940139">Chrome Canary Apps</translation>
 <translation id="1457721931618994305">Google Chrome अपडेट करीत आहे...</translation>
 <translation id="1469002951682717133">Chrome App लाँचर</translation>
@@ -147,7 +147,6 @@
 <translation id="4750550185319565338"><ph name="PLUGIN_NAME" /> सुरू करण्‍यासाठी Chrome रीस्टार्ट करा</translation>
 <translation id="4754614261631455953">Google Chrome कॅनरी (mDNS-मध्ये)</translation>
 <translation id="4771048833395599659">ही फाईल कदाचित धोकादायक असू शकते, त्यामुळे Chrome ने ती अवरोधित केली आहे.</translation>
-<translation id="4794050651896644714">Chrome मध्ये तपशील सेव्ह करा</translation>
 <translation id="4891791193823137474">बॅकग्राउंडमध्ये Google Chrome चालू द्या</translation>
 <translation id="4895437082222824641">लिंक नवीन Chrome &amp;टॅबमध्ये उघडा</translation>
 <translation id="4921569541910214635">एक कॉंप्युटर शेअर करायचा? तुम्हाला आवडते त्या प्रकारे तुम्ही आता Chrome सेट करू शकता.</translation>
@@ -262,7 +261,6 @@ Google Chrome तुमची सेटिंग्ज पुन्हा मि
 <translation id="8077352834923175128">हे अपडेट लागू करण्यासाठी तुमचा ॲडमिनिस्ट्रेटर तुम्हाला Chrome OS रीस्टार्ट करण्यास सांगेल</translation>
 <translation id="8129812357326543296">&amp;Google Chrome विषयी</translation>
 <translation id="8179874765710681175">तुमच्या फोनवर Chrome इंस्टॉल करा. आम्ही तुमच्या फोनवर एक SMS पाठवू.</translation>
-<translation id="8183957050892517584">Chrome तुमचे वैयक्तिक तपशील सुरक्षितपणे संचयित करेल जेणेकरून तुम्हाला ते पुन्हा टाइप करण्याची आवश्यकता नसेल.</translation>
 <translation id="8226081633851087288">{0,plural, =0{Chrome OS आता रीस्टार्ट होईल}=1{Chrome OS एका सेकंदात रीस्टार्ट होईल}other{Chrome OS # सेकंदामध्ये रीस्टार्ट होईल}}</translation>
 <translation id="825412236959742607">हे पेज खूप जास्त मेमरी वापरत असल्यामुळे, Chrome ने काही आशय काढून टाकला आहे.</translation>
 <translation id="8255190535488645436">Google Chrome तुमचा कॅमेरा आणि मायक्रोफोन वापरत आहे.</translation>

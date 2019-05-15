@@ -112,6 +112,7 @@
 <translation id="2597972630681408282">Ночной режим: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM-карта заблокирована</translation>
 <translation id="2653659639078652383">Отправить</translation>
+<translation id="2658778018866295321">Перетаскивание</translation>
 <translation id="2700493154570097719">Выберите раскладку</translation>
 <translation id="2718395828230677721">Ночной режим</translation>
 <translation id="2727977024730340865">Подключено маломощное зарядное устройство. Возможны проблемы при зарядке.</translation>
@@ -227,6 +228,7 @@
 <translation id="4378551569595875038">Подключение…</translation>
 <translation id="4379531060876907730">Инструменты для работы со стилусом</translation>
 <translation id="4389184120735010762">Вы нажали сочетание клавиш для включения закрепленной лупы. Выполнить это действие?</translation>
+<translation id="4394049700291259645">Отключить</translation>
 <translation id="4421231901400348175">Доступ к экрану для <ph name="HELPER_NAME" /> с помощью удаленного помощника</translation>
 <translation id="4430019312045809116">Объем</translation>
 <translation id="4450893287417543264">Больше не показывать</translation>
@@ -246,7 +248,6 @@
 <translation id="4696813013609194136">Требуется родительский код доступа</translation>
 <translation id="4731797938093519117">Родительский доступ</translation>
 <translation id="4734965478015604180">Горизонтальная ориентация</translation>
-<translation id="476166673298332917">Администратору устройства доступна информация о том, какие страницы вы просматриваете в браузере.</translation>
 <translation id="4774338217796918551">Возвращайтесь завтра в <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Пароль для адреса электронной почты <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">Google Ассистент в демонстрационном сеансе недоступен</translation>
@@ -354,7 +355,6 @@
 <translation id="6537270692134705506">Снимок экрана</translation>
 <translation id="6542521951477560771">Трансляция на устройство "<ph name="RECEIVER_NAME" />"</translation>
 <translation id="6559976592393364813">Обратитесь к администратору</translation>
-<translation id="6574601967010742428">Администратор может отслеживать ваши действия на этом устройстве.</translation>
 <translation id="6585808820553845416">Сеанс закончится через <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Поиск + Shift + K</translation>
 <translation id="6650933572246256093">Устройству <ph name="DEVICE_NAME" /> требуется разрешение на подключение через Bluetooth. Введите на нем код: <ph name="PASSKEY" />.</translation>

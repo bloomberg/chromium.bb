@@ -9,7 +9,6 @@
 <translation id="1067922213147265141">Outros serviços do Google</translation>
 <translation id="1068672505746868501">Nunca traduzir páginas em <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1080790410959514870">Você está se desconectando de uma conta gerenciada por <ph name="DOMAIN_NAME" />. Essa ação excluirá os dados do Google Chrome armazenados neste dispositivo, mas os dados permanecerão na sua Conta do Google.</translation>
-<translation id="1099080783256647258">Quando a Economia de dados está ativada, o Chrome usa os servidores do Google para acelerar e compactar o carregamento de páginas. Em páginas muito lentas, a Economia de dados reescreve a página e carrega apenas o conteúdo essencial. Esse recurso não otimiza as páginas carregadas no modo de navegação anônima.</translation>
 <translation id="1100066534610197918">Abrir em nova guia no grupo</translation>
 <translation id="1105960400813249514">Captura de tela</translation>
 <translation id="1111673857033749125">Favoritos salvos nos seus outros dispositivos serão exibidos aqui.</translation>
@@ -25,6 +24,7 @@
 <translation id="1175310183703641346">Seus favoritos, histórico, senhas e outras configurações não serão mais sincronizados com sua Conta do Google</translation>
 <translation id="1178581264944972037">Pausar</translation>
 <translation id="1181037720776840403">Remover</translation>
+<translation id="1188239144602654184">Entrar na RA</translation>
 <translation id="1197267115302279827">Mover favoritos</translation>
 <translation id="119944043368869598">Limpar tudo</translation>
 <translation id="1201402288615127009">Próxima</translation>
@@ -96,7 +96,6 @@
 <translation id="1672586136351118594">Não mostrar novamente</translation>
 <translation id="1692118695553449118">A sincronização está ativada</translation>
 <translation id="169515064810179024">Impedir que sites acessem os sensores de movimento</translation>
-<translation id="1709438864123551175">Economia de dados</translation>
 <translation id="1717218214683051432">Sensores de movimento</translation>
 <translation id="1718835860248848330">Última hora</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> — Última atualização: <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -214,7 +213,6 @@
 <translation id="2501278716633472235">Voltar</translation>
 <translation id="2513403576141822879">Para ver mais configurações relacionadas à privacidade, segurança e coleta de dados, acesse <ph name="BEGIN_LINK" />Serviços do Google e de sincronização<ph name="END_LINK" /></translation>
 <translation id="2523184218357549926">Envia URLs das páginas que você visita para o Google</translation>
-<translation id="2526148617758225454">A economia de dados está ativada. Gerencie esse recurso em "Configurações".</translation>
 <translation id="2532336938189706096">Visualização da Web</translation>
 <translation id="2534155362429831547">Itens excluídos: <ph name="NUMBER_OF_ITEMS" /></translation>
 <translation id="2536728043171574184">Vendo uma cópia off-line desta página</translation>
@@ -354,14 +352,12 @@
 <translation id="3599863153486145794">Limpa o histórico de todos os dispositivos conectados. Sua Conta do Google pode ter outras formas de histórico de navegação em <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Silenciar sites com áudio</translation>
 <translation id="3616113530831147358">Áudio</translation>
-<translation id="3620176948598597475">A redefinição limpa o histórico da Economia de dados, incluindo a lista de sites visitados.</translation>
 <translation id="3632295766818638029">Reautenticar para ver senha</translation>
 <translation id="363596933471559332">Faça login automaticamente nos websites usando as credenciais armazenadas. Se o recurso estiver desativado, será preciso fazer a verificação sempre antes de fazer login em um website.</translation>
 <translation id="3658159451045945436">A redefinição limpa o histórico da economia de dados, incluindo a lista de sites visitados.</translation>
 <translation id="3662546969139119822">Não há histórico aqui</translation>
 <translation id="3672452749423051839">Sugerir opções quando houver erro de navegação</translation>
 <translation id="3692944402865947621">Falha no download do arquivo <ph name="FILE_NAME" /> porque não foi possível acessar o local do armazenamento.</translation>
-<translation id="3712575778697986964">Redefinir a Economia de dados?</translation>
 <translation id="3714981814255182093">Abrir a barra Localizar</translation>
 <translation id="3716182511346448902">Como esta página usa muita memória, o Chrome a pausou.</translation>
 <translation id="3730075448226062617">Para permitir que o Chrome acesse seu microfone, ative-o nas <ph name="BEGIN_LINK" />configurações do Android<ph name="END_LINK" />.</translation>
@@ -504,13 +500,11 @@ Para ajustar o termo de pesquisa, toque nele e mantenha-o pressionado. Para refi
 <translation id="4751476147751820511">Sensores de luz ou movimento</translation>
 <translation id="4759238208242260848">Downloads</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 download concluído.}one{# download concluído.}other{# downloads concluídos.}}</translation>
-<translation id="4766369052440583386">A Economia de dados está ativada</translation>
 <translation id="4797039098279997504">Toque para voltar a <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4802417911091824046">A criptografia por senha longa não inclui formas de pagamento e endereços do Google Pay.
 
 Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincronização<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">Nome no cartão de crédito</translation>
-<translation id="4807963036345170158">A Economia de dados está desativada</translation>
 <translation id="4816465935029283692">Tipos de dados</translation>
 <translation id="4824958205181053313">Cancelar sincronização?</translation>
 <translation id="4837753911714442426">Abrir opções de impressão de página</translation>
@@ -602,6 +596,7 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="5447765697759493033">Este site não será traduzido</translation>
 <translation id="545042621069398927">Acelerando seu download.</translation>
 <translation id="5456381639095306749">Fazer o download da página</translation>
+<translation id="5475862044948910901">Iniciar sessão de realidade aumentada?</translation>
 <translation id="548278423535722844">Abrir no app de mapa</translation>
 <translation id="5487521232677179737">Limpar dados</translation>
 <translation id="5494752089476963479">Bloquear anúncios em sites com publicidade invasiva ou enganosa</translation>
@@ -644,7 +639,6 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="569536719314091526">Traduza esta página para qualquer idioma com o botão "Mais opções"</translation>
 <translation id="572328651809341494">Guias recentes</translation>
 <translation id="5726692708398506830">Aumentar tudo na página</translation>
-<translation id="5734520971562437809">Diminua o uso de dados em até 60 por cento e deixe a Web mais rápida.</translation>
 <translation id="5748802427693696783">Alternada para guias padrão</translation>
 <translation id="5749068826913805084">O Chrome precisa de acesso para fazer o download e armazenar arquivos.</translation>
 <translation id="5763382633136178763">Guias anônimas</translation>
@@ -702,7 +696,6 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="6159335304067198720">Economia de dados de <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Saiba mais</translation>
 <translation id="6177111841848151710">Bloqueado para o mecanismo de pesquisa atual</translation>
-<translation id="6177390657002841081">Ativar a Economia de dados</translation>
 <translation id="6181444274883918285">Adicionar site às exceções</translation>
 <translation id="6192333916571137726">Fazer o download do arquivo</translation>
 <translation id="6192792657125177640">Exceções</translation>
@@ -868,6 +861,11 @@ Por exemplo, alguns sites podem responder a esse pedido mostrando anúncios que 
 <translation id="7352939065658542140">VÍDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Compartilhar 1 item selecionado}one{Compartilhar # item selecionado}other{Compartilhar # itens selecionados}}</translation>
 <translation id="7359002509206457351">Acessar formas de pagamento</translation>
+<translation id="7365126855094612066">No decorrer desta sessão, o site poderá:
+• criar um mapa 3D do seu ambiente;
+• rastrear o movimento da câmera.
+
+O site NÃO terá acesso à câmera. As imagens da câmera são visíveis apenas para você.</translation>
 <translation id="7375125077091615385">Tipo:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -1115,11 +1113,9 @@ Por exemplo, alguns sites podem responder a esse pedido mostrando anúncios que 
 <translation id="9188680907066685419">Sair da conta gerenciada</translation>
 <translation id="9204836675896933765">1 arquivo restante</translation>
 <translation id="9206873250291191720">A</translation>
-<translation id="9215534869786664672">Diminua o uso de dados em até 60 por cento e deixe a Web mais rápida. Os servidores do Google otimizarão as páginas que você visita.</translation>
 <translation id="9219103736887031265">Imagens</translation>
 <translation id="926205370408745186">Remover sua atividade do Chorme do Bem-estar digital</translation>
 <translation id="932327136139879170">Início</translation>
-<translation id="932599481871055447">Economize dados e navegue mais rápido</translation>
 <translation id="938850635132480979">Erro: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Acessar seu microfone</translation>
 <translation id="951339005376969845">Excluir dados já existentes. É possível recuperá-los voltando para a conta <ph name="FROM_ACCOUNT" />.</translation>

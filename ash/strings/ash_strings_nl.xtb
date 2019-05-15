@@ -112,6 +112,7 @@
 <translation id="2597972630681408282">Nachtverlichting: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">Simkaart is vergrendeld</translation>
 <translation id="2653659639078652383">Verzenden</translation>
+<translation id="2658778018866295321">Klikken en slepen</translation>
 <translation id="2700493154570097719">Je toetsenbord instellen</translation>
 <translation id="2718395828230677721">Nachtverlichting</translation>
 <translation id="2727977024730340865">Aangesloten op een laag-vermogen-lader. Opladen van de batterij mogelijk niet betrouwbaar.</translation>
@@ -227,6 +228,7 @@
 <translation id="4378551569595875038">Verbinden...</translation>
 <translation id="4379531060876907730">Dit zijn je stylustools</translation>
 <translation id="4389184120735010762">Je hebt op de sneltoets voor het gedockte vergrootglas gedrukt. Wil je deze functie inschakelen?</translation>
+<translation id="4394049700291259645">Uitschakelen</translation>
 <translation id="4421231901400348175">De controle over je scherm wordt gedeeld met <ph name="HELPER_NAME" /> via externe ondersteuning.</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="4450893287417543264">Niet meer tonen</translation>
@@ -246,7 +248,6 @@
 <translation id="4696813013609194136">Apparaat ontgrendelen met oudercode</translation>
 <translation id="4731797938093519117">Toegang door ouders</translation>
 <translation id="4734965478015604180">Horizontaal</translation>
-<translation id="476166673298332917">De apparaatbeheerder kan je browseactiviteit controleren.</translation>
 <translation id="4774338217796918551">Kom morgen terug om <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Wachtwoord voor <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">De Google Assistent is niet beschikbaar in een demosessie.</translation>
@@ -354,7 +355,6 @@
 <translation id="6537270692134705506">Screenshot maken</translation>
 <translation id="6542521951477560771">Er wordt gecast naar <ph name="RECEIVER_NAME" /></translation>
 <translation id="6559976592393364813">Vraag het de beheerder</translation>
-<translation id="6574601967010742428">De beheerder van het apparaat kan je activiteit mogelijk bekijken.</translation>
 <translation id="6585808820553845416">Sessie loopt af over <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Zoeken+Shift+K</translation>
 <translation id="6650933572246256093">Bluetooth-apparaat '<ph name="DEVICE_NAME" />' wil toestemming om te koppelen. Voer de volgende toegangscode in op dat apparaat: <ph name="PASSKEY" /></translation>

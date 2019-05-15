@@ -464,6 +464,7 @@
 <translation id="3495081129428749620">Najít na stránce
 <ph name="PAGE_TITLE" /></translation>
 <translation id="3498215018399854026">V tuto chvíli se nám s vaším rodičem nepodařilo spojit. Zkuste to prosím znovu.</translation>
+<translation id="3512163584740124171">Tato zásada se ignoruje, protože jiná zásada ze stejné skupiny zásad má vyšší prioritu.</translation>
 <translation id="3528171143076753409">Certifikát serveru není důvěryhodný.</translation>
 <translation id="3528485271872257980">Tmavě hnědá</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Alespoň jedna položka v synchronizovaných zařízeních}=1{1 položka (a další v synchronizovaných zařízeních)}few{# položky (a další v synchronizovaných zařízeních)}many{# položky (a další v synchronizovaných zařízeních)}other{# položek (a další v synchronizovaných zařízeních)}}</translation>
@@ -1075,7 +1076,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="7062635574500127092">Šedozelená</translation>
 <translation id="7064851114919012435">Kontaktní údaje</translation>
 <translation id="7079718277001814089">Tento web obsahuje malware</translation>
-<translation id="7081564429925484109">Upozornění: Tato zásada nebyla sloučena podle zásady PolicyListMultipleSourceMergeList, protože se nejedná o seznam.</translation>
 <translation id="7087282848513945231">Okres</translation>
 <translation id="7090678807593890770">Vyhledejte na Googlu <ph name="LINK" /></translation>
 <translation id="7108338896283013870">Skrýt</translation>
@@ -1131,7 +1131,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">Ne</translation>
 <translation id="7378810950367401542"> / </translation>
-<translation id="7381288752349550461">Přepsání spravované návštěvy</translation>
 <translation id="7390545607259442187">Ověření karty</translation>
 <translation id="7400418766976504921">Adresa URL</translation>
 <translation id="7403591733719184120">Vaše zařízení <ph name="DEVICE_NAME" /> je spravováno</translation>

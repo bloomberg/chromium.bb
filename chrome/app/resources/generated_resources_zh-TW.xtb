@@ -226,6 +226,7 @@
 <translation id="1338950911836659113">刪除中...</translation>
 <translation id="1340527397989195812">使用「檔案」應用程式備份裝置上的媒體。</translation>
 <translation id="1341988552785875222">目前使用的桌布是由「<ph name="APP_NAME" />」設定。您可能需要先解除安裝「<ph name="APP_NAME" />」，才能選用其他桌布。</translation>
+<translation id="1343865611738742294">請授權 Linux 應用程式存取 USB 裝置。移除後，Linux 將不會記住這部 USB 裝置。</translation>
 <translation id="1347256498747320987">安裝更新和應用程式。如果您選擇繼續，即表示您允許這個裝置自動下載及安裝來自 Google、您的電信業者和裝置製造商的更新內容和應用程式，且下載程序可能會使用行動數據。這類應用程式中，有些可能會提供應用程式內購項目。<ph name="BEGIN_LINK1" />瞭解詳情<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">電池電量達到 <ph name="BATTERY_LEVEL" />% 後便會開始更新。</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />：<ph name="NETWORK_NAME" /></translation>
@@ -707,6 +708,7 @@
 <translation id="2120297377148151361">活動與互動行為</translation>
 <translation id="2120478168904746065">{NUM_TABS,plural, =1{開啟分頁音訊}other{開啟多個分頁的音訊}}</translation>
 <translation id="2121825465123208577">調整大小</translation>
+<translation id="2122305276694332719">自動連線至隱藏網路會讓其他人可以查看你的裝置和部分網路設定，建議你不要啟用這項設定。</translation>
 <translation id="2124930039827422115">{1,plural, =1{平均評分：<ph name="AVERAGE_RATING" /> (評分人數：1)。}other{平均評分：<ph name="AVERAGE_RATING" /> (評分人數：#)。}}</translation>
 <translation id="2126167708562367080">你的管理員停用了同步功能。</translation>
 <translation id="2127372758936585790">低功率充電器</translation>
@@ -1302,6 +1304,7 @@
 <translation id="3012917896646559015">請立即與你的硬體製造商聯絡，將電腦送返維修中心。</translation>
 <translation id="3013291976881901233">MIDI 裝置</translation>
 <translation id="3015639418649705390">立即重新啟動</translation>
+<translation id="3016329696181678353">無法自動設定「<ph name="PRINTER_NAME" />」。請指定印表機的進階詳細資料。</translation>
 <translation id="3016641847947582299">元件已更新</translation>
 <translation id="3016780570757425217">存取您的位置資訊</translation>
 <translation id="3020183492814296499">快速鍵</translation>
@@ -1804,7 +1807,6 @@
 <translation id="3789841737615482174">安裝</translation>
 <translation id="379082410132524484">你的卡片已過期</translation>
 <translation id="3792890930871100565">中斷印表機連線</translation>
-<translation id="3792938779249970121">選取帳戶</translation>
 <translation id="3796648294839530037">慣用的網路：</translation>
 <translation id="3797739167230984533">你的 <ph name="BEGIN_LINK" /><ph name="DEVICE_TYPE" /> 受到貴機構管理<ph name="END_LINK" /></translation>
 <translation id="3797900183766075808">透過 <ph name="SEARCH_ENGINE" /> 搜尋「<ph name="SEARCH_TERMS" />」(&amp;S)</translation>
@@ -2112,6 +2114,7 @@
 <translation id="4268025649754414643">金鑰編密</translation>
 <translation id="4270393598798225102">第 <ph name="NUMBER" /> 版</translation>
 <translation id="4271396100647220620">找不到相符的項目</translation>
+<translation id="4275663329226226506">媒體</translation>
 <translation id="4275830172053184480">重新啟動裝置</translation>
 <translation id="4278101229438943600">你的 Google 助理已準備就緒</translation>
 <translation id="4278390842282768270">允許</translation>
@@ -2154,7 +2157,6 @@
 <translation id="4354344420232759511">這裡會顯示你曾造訪的網站</translation>
 <translation id="435527878592612277">請選取你的相片</translation>
 <translation id="4356334633973342967">或指定你自己的硬碟：</translation>
-<translation id="4358169392473932247">這個安全金鑰不支援將憑證儲存在內部儲存空間，但網站要求執行這項功能。</translation>
 <translation id="4359408040881008151">你已安裝相依的擴充功能，因此必須一併安裝這個擴充功能。</translation>
 <translation id="4359717112757026264">城市景觀</translation>
 <translation id="4361142739114356624">這個用戶端憑證沒有私密金鑰或私密金鑰無效</translation>
@@ -2337,7 +2339,6 @@
 <translation id="4665014895760275686">製造商</translation>
 <translation id="4665446389743427678"><ph name="SITE" /> 儲存的所有資料都將遭到刪除。</translation>
 <translation id="4668721319092543482">按一下即可啟用「<ph name="PLUGIN_NAME" />」</translation>
-<translation id="4670688170798478686">確認重設</translation>
 <translation id="4672657274720418656">提取頁面</translation>
 <translation id="4673442866648850031">移除觸控筆時取出觸控筆工具</translation>
 <translation id="4677585247300749148"><ph name="URL" /> 要求回應協助工具事件</translation>
@@ -2367,7 +2368,6 @@
 <translation id="4711638718396952945">還原設定</translation>
 <translation id="4715553623069266137">很短 (0.8 秒)</translation>
 <translation id="4716483597559580346">執行 Powerwash 以提升安全性</translation>
-<translation id="4718490098585891067">請選取要登入的帳戶：</translation>
 <translation id="4720113199587244118">新增裝置</translation>
 <translation id="4720185134442950733">行動數據網路</translation>
 <translation id="4722735765955348426"><ph name="USERNAME" />的密碼</translation>
@@ -2398,7 +2398,6 @@
 <translation id="4756388243121344051">記錄(&amp;H)</translation>
 <translation id="4759238208242260848">下載</translation>
 <translation id="4761104368405085019">使用你的麥克風</translation>
-<translation id="476166673298332917">裝置管理員可能會監控你的瀏覽活動。</translation>
 <translation id="4762718786438001384">裝置磁碟空間嚴重不足</translation>
 <translation id="4763408175235639573">系統在你瀏覽這個網頁時設定了下列 Cookie</translation>
 <translation id="4763830802490665879">系統將於你退出時將多個網站產生的 Cookie 清除。</translation>
@@ -3927,7 +3926,6 @@
 <translation id="713888829801648570">很抱歉，你目前處於離線狀態，因此無法驗證密碼。</translation>
 <translation id="7140928199327930795">沒有其他可用裝置。</translation>
 <translation id="7141105143012495934">無法擷取您的帳戶詳細資料，導致登入失敗。請與您的管理員聯絡或再試一次。</translation>
-<translation id="714285394257538643">再次輕觸安全金鑰即可確認重設。這個安全金鑰上儲存的所有憑證和 PIN 碼都將遭到清除。</translation>
 <translation id="7143092389027215216">正在啟動示範模式</translation>
 <translation id="7143207342074048698">連線中</translation>
 <translation id="7144878232160441200">重試</translation>
@@ -4161,6 +4159,7 @@
 <translation id="7506541170099744506">你的 <ph name="DEVICE_TYPE" /> 已成功註冊企業管理服務。</translation>
 <translation id="7507930499305566459">狀態回應程式憑證</translation>
 <translation id="7513029293694390567">使用已儲存的憑證自動登入網站。如果停用這項功能，每當你登入網站時，都必須向系統確認你的登入憑證。</translation>
+<translation id="7514365320538308">下載</translation>
 <translation id="7517786267097410259">建立密碼 -</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">說出「Ok Google」</translation>
@@ -4500,6 +4499,7 @@
 請妥善保管你的金鑰檔案；建立新版本的擴充功能時將需要使用該金鑰檔案。</translation>
 <translation id="8000066093800657092">沒有網路</translation>
 <translation id="8000467600002607205">{NUM_TABS,plural, =1{關閉分頁}other{關閉多個分頁}}</translation>
+<translation id="8002274832045662704">進階印表機設定</translation>
 <translation id="8004582292198964060">瀏覽器</translation>
 <translation id="8005600846065423578">一律允許 <ph name="HOST" /> 讀取剪貼簿</translation>
 <translation id="8008356846765065031">網路連線中斷，請檢查你的網際網路連線。</translation>
@@ -5039,6 +5039,7 @@
 <translation id="8850251000316748990">顯示更多...</translation>
 <translation id="885246833287407341">API 函式引數</translation>
 <translation id="8853586775156634952">這張卡片只會儲存在這部裝置上</translation>
+<translation id="885701979325669005">儲存空間</translation>
 <translation id="8859057652521303089">選擇語言：</translation>
 <translation id="8859174528519900719">子頁框：<ph name="SUBFRAME_SITE" /></translation>
 <translation id="8862003515646449717">改用速度飛快的瀏覽器</translation>

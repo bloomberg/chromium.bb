@@ -120,9 +120,7 @@
 <translation id="4987820182225656817">Els convidats poden utilitzar Chromium sense deixar-hi rastre.</translation>
 <translation id="4994636714258228724">Afegeix-me a Chromium</translation>
 <translation id="5021854341188256296">{0,plural, =0{Hi ha una actualització de Chromium OS disponible}=1{Hi ha una actualització de Chromium OS disponible}other{Fa # dies que hi ha una actualització de Chromium OS disponible}}</translation>
-<translation id="5032989939245619637">Desa els detalls a Chromium</translation>
 <translation id="5045248521775609809">Emporta't Chromium on vagis</translation>
-<translation id="5116586539350239523">Chromium emmagatzemarà de manera segura les vostres dades personals perquè no les hàgiu de tornar a escriure</translation>
 <translation id="5181952534059945058">Com que aquesta pàgina fa servir massa memòria, Chromium n'ha suprimit contingut.</translation>
 <translation id="5277894862589591112">Torna a iniciar Chromium perquè s'apliquin els canvis</translation>
 <translation id="5358375970380395591">Esteu a punt d'iniciar la sessió amb un compte gestionat i d'atorgar el control del vostre perfil de Chromium a l'administrador corresponent. Les dades de Chromium, com ara aplicacions, adreces d'interès, historial, contrasenyes i altres configuracions, s'enllaçaran permanentment amb <ph name="USER_NAME" />. Podreu suprimir aquestes dades mitjançant el Tauler de Comptes de Google, però no les podreu associar amb un altre compte. <ph name="LEARN_MORE" /></translation>

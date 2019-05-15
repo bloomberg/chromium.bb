@@ -228,6 +228,7 @@
 <translation id="4378551569595875038">Σύνδεση…</translation>
 <translation id="4379531060876907730">Αυτά είναι τα εργαλεία γραφίδας σας</translation>
 <translation id="4389184120735010762">Πατήσατε τη συντόμευση πληκτρολογίου για τον μεγεθυντικό φακό σε παράθυρο. Θέλετε να τον ενεργοποιήσετε;</translation>
+<translation id="4394049700291259645">Απενεργοποίηση</translation>
 <translation id="4421231901400348175">Κοινόχρηστος έλεγχος της οθόνης σας με το χρήστη <ph name="HELPER_NAME" /> μέσω της απομακρυσμένης βοήθειας.</translation>
 <translation id="4430019312045809116">Ένταση</translation>
 <translation id="4450893287417543264">Να μην εμφανιστεί ξανά</translation>
@@ -247,7 +248,6 @@
 <translation id="4696813013609194136">Ξεκλείδωμα συσκευής με κωδικό γονέα</translation>
 <translation id="4731797938093519117">Γονική πρόσβαση</translation>
 <translation id="4734965478015604180">Οριζόντια περιστροφή</translation>
-<translation id="476166673298332917">Ο διαχειριστής της συσκευής μπορεί να παρακολουθεί τη δραστηριότητα περιήγησής σας.</translation>
 <translation id="4774338217796918551">Επιστρέψτε ξανά αύριο στις <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Κωδικός πρόσβασης για <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">Ο Βοηθός Google δεν είναι διαθέσιμος σε περίοδο λειτουργίας επίδειξης.</translation>
@@ -355,7 +355,6 @@
 <translation id="6537270692134705506">Λήψη στιγμιότυπου οθόνης</translation>
 <translation id="6542521951477560771">Μετάδοση στη συσκευή <ph name="RECEIVER_NAME" /></translation>
 <translation id="6559976592393364813">Απευθυνθείτε στον διαχειριστή</translation>
-<translation id="6574601967010742428">Ο διαχειριστής της συσκευής ίσως έχει τη δυνατότητα να παρακολουθεί τη δραστηριότητά σας.</translation>
 <translation id="6585808820553845416">Η περίοδος σύνδεσης λήγει σε <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Αναζήτηση+Shift+K</translation>
 <translation id="6650933572246256093">Η συσκευή Bluetooth "<ph name="DEVICE_NAME" />" ζητά δικαιώματα σύζευξης. Καταχωρίστε αυτό το κλειδί πρόσβασης στη συγκεκριμένη συσκευή: <ph name="PASSKEY" /></translation>

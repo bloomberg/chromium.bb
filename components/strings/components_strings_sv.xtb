@@ -475,6 +475,7 @@
 <translation id="3495081129428749620">Hitta på sidan
     <ph name="PAGE_TITLE" /></translation>
 <translation id="3498215018399854026">Vi kunde inte nå din förälder just nu. Försök igen.</translation>
+<translation id="3512163584740124171">Den här principen ignoreras eftersom en annan princip i samma principgrupp har högre prioritet.</translation>
 <translation id="3528171143076753409">Servercertifikatet är inte tillförlitligt.</translation>
 <translation id="3528485271872257980">Mörkbrun</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Minst 1 objekt på synkroniserade enheter}=1{1 objekt (och fler på synkroniserade enheter)}other{# objekt (och fler på synkroniserade enheter)}}</translation>
@@ -1088,7 +1089,6 @@
 <translation id="7062635574500127092">Blågrön</translation>
 <translation id="7064851114919012435">Kontaktuppgifter</translation>
 <translation id="7079718277001814089">Webbplatsen innehåller skadlig programvara.</translation>
-<translation id="7081564429925484109">Varning! Den här principen har inte slagits samman enligt specifikationen i principen PolicyListMultipleSourceMergeList eftersom den inte är en lista.</translation>
 <translation id="7087282848513945231">Kommun</translation>
 <translation id="7090678807593890770">Sök efter <ph name="LINK" /> på Google</translation>
 <translation id="7108338896283013870">Dölj</translation>
@@ -1148,7 +1148,6 @@ Mer information.
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">Nej</translation>
 <translation id="7378810950367401542">/</translation>
-<translation id="7381288752349550461">Åsidosätt hanterad session</translation>
 <translation id="7390545607259442187">Bekräfta kort</translation>
 <translation id="7400418766976504921">Webbadress</translation>
 <translation id="7403591733719184120">Din <ph name="DEVICE_NAME" /> hanteras</translation>

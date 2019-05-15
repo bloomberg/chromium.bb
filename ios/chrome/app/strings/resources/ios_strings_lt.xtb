@@ -74,13 +74,11 @@
 <translation id="1952728750904661634">Prisijunkite naudodami valdomą paskyrą</translation>
 <translation id="1974060860693918893">Išplėstiniai</translation>
 <translation id="1989112275319619282">Naršyti</translation>
-<translation id="2000419248597011803">Numatytajam paieškos varikliui siunčiami kai kurie slapukai ir į adreso juostą bei paieškos laukelį įvestos paieškos</translation>
 <translation id="2015722694326466240">Jei norite matyti slaptažodžius, pirmiausia turite nustatyti įrenginio slaptažodį.</translation>
 <translation id="2068952045031577364">Pastaroji savaitė</translation>
 <translation id="2074131957428911366">Bet kada galite pasirinkti, ką norite sinchronizuoti, skiltyje <ph name="BEGIN_LINK" />„Nustatymai“<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Anuliuoti</translation>
 <translation id="209018056901015185">Užkl. dėl svet. v. komp.</translation>
-<translation id="2096012225669085171">Sinchronizuoti ir suasmeninti įrenginiuose</translation>
 <translation id="2103075008456228677">Atidaryti history.google.com</translation>
 <translation id="2116625576999540962">Perkelta elementų: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="213900355088104901">Kad galėtumėte naršyti privačiai, atidarykite inkognito skirtuką</translation>
@@ -107,7 +105,6 @@
 <translation id="2435457462613246316">Rodyti slaptažodį</translation>
 <translation id="2481538920734869610">PRIDĖTI PASKYRĄ</translation>
 <translation id="2497852260688568942">Sinchronizavimą išjungė jūsų administratorius</translation>
-<translation id="2523184218357549926">Siunčiami „Google“ puslapių, kuriuose lankotės, URL</translation>
 <translation id="2523363575747517183">Ši svetainė pakartotinai bando atidaryti kitą programą.</translation>
 <translation id="2529021024822217800">Atidaryti viską</translation>
 <translation id="2572712655377361602">Pagal įrenginio politiką prieiga prie nuotraukų buvo užblokuota</translation>
@@ -137,6 +134,7 @@
 <translation id="2871695793448672541">Paslėptas slaptažodis</translation>
 <translation id="288655811176831528">Uždaryti skirtuką</translation>
 <translation id="2898963176829412617">Naujas aplankas...</translation>
+<translation id="2916171785467530738">Automatiškai užbaigti paieškas ir URL</translation>
 <translation id="291754862089661335">QR arba brūkšninis kodas turėtų būti rodomas šiame rėmelyje</translation>
 <translation id="2921219216347069551">Neįman. bendr. pusl.</translation>
 <translation id="2923448633003185837">Įklijuoti ir eiti</translation>
@@ -306,7 +304,6 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="5857090052475505287">Naujas aplankas</translation>
 <translation id="5857770089550859117">Norint pradėti sinchronizuoti reikalinga slaptafrazė.</translation>
 <translation id="5860033963881614850">Išjungta</translation>
-<translation id="5865733239029070421">Automatiškai siunčia naudojimo statistiką ir strigčių ataskaitas „Google“</translation>
 <translation id="5869029295770560994">Gerai, supratau</translation>
 <translation id="5871497086027727873">Perkelta elementų: 1</translation>
 <translation id="5897956970858271241">Apsilankyti nukopijuotos nuorodos adresu</translation>
@@ -412,10 +409,9 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="722055596168483966">„Google“ paslaugų suasmeninimas</translation>
 <translation id="7265758999917665941">Niekada šioje svetainėje</translation>
 <translation id="7272437679830969316">Nepavyko patvirtinti tapatybės. Slaptažodis nenukopijuotas.</translation>
-<translation id="7280856130494094142">Įvesti slaptažodį, norint pradėti sinchronizuoti</translation>
 <translation id="7285236536143823449">TAIP, NAUDOTI</translation>
 <translation id="7291368939935408496">Ruošiami slaptažodžiai…</translation>
-<translation id="7293171162284876153">Norėdami pradėti sinchronizuoti, įjunkite parinktį „Sinchronizuoti „Chrome“ duomenis“.</translation>
+<translation id="7293171162284876153">Norėdami pradėti sinchronizuoti, įjunkite parinktį „Chrome“ duomenų sinchronizavimas“.</translation>
 <translation id="7336264872878993241">Atsisiųsta <ph name="PERCENT" /> proc.</translation>
 <translation id="7346909386216857016">Gerai, supratau</translation>
 <translation id="7348502496356775519">Žymėti</translation>
@@ -434,12 +430,10 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="7554791636758816595">Naujas skirtukas</translation>
 <translation id="7561196759112975576">Visada</translation>
 <translation id="7603852183842204213">Blokuoti išš. l. (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
-<translation id="7605594153474022051">Sinchronizavimas neveikia</translation>
 <translation id="7638584964844754484">Neteisinga slaptafrazė</translation>
 <translation id="7658239707568436148">Atšaukti</translation>
 <translation id="766891008101699113">Norėdami privačiai naršyti žiniatinklyje, pridėkite naują skirtuką.</translation>
 <translation id="7671141431838911305">ĮDIEGTI</translation>
-<translation id="7704317875155739195">Automatiškai užbaigti paieškas ir URL</translation>
 <translation id="7765158879357617694">Perkelti</translation>
 <translation id="7769602470925380267">Sutikti ir atsijungti</translation>
 <translation id="7772032839648071052">Patvirtinti slaptafrazę</translation>
@@ -477,7 +471,6 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="842017693807136194">Prisijungta naudojant</translation>
 <translation id="8428045167754449968">Didm. / miest.</translation>
 <translation id="8428213095426709021">Nustatymai</translation>
-<translation id="8438566539970814960">Tobulinti paieškas ir naršymą</translation>
 <translation id="8458397775385147834">Ištrinta elementų: 1</translation>
 <translation id="8487700953926739672">Pasiekiama neprisijungus</translation>
 <translation id="8503813439785031346">Vartotojo vardas</translation>

@@ -9,7 +9,6 @@
 <translation id="1067922213147265141">Outros serviços Google</translation>
 <translation id="1068672505746868501">Nunca traduzir páginas em <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1080790410959514870">Está a terminar sessão numa conta gerida por <ph name="DOMAIN_NAME" />. Esta ação elimina os dados do Chrome armazenados neste dispositivo, mas os dados permanecem na sua Conta Google.</translation>
-<translation id="1099080783256647258">Quando a Poupança de dados está ativada, o Chrome utiliza os servidores da Google para acelerar e comprimir os carregamentos de páginas. Em páginas especialmente lentas, a Poupança de dados reescreve a página para carregar apenas o conteúdo essencial. A Poupança de dados não otimiza páginas carregadas no modo de navegação anónima.</translation>
 <translation id="1100066534610197918">Abrir num novo sep. no grupo</translation>
 <translation id="1105960400813249514">Ecrã a ser capturado...</translation>
 <translation id="1111673857033749125">Os marcadores guardados nos seus outros dispositivos são apresentados aqui.</translation>
@@ -25,6 +24,7 @@
 <translation id="1175310183703641346">Os seus marcadores, o histórico, as palavras-passe, entre outros, já não são sincronizados com a sua Conta Google.</translation>
 <translation id="1178581264944972037">Pausa</translation>
 <translation id="1181037720776840403">Remover</translation>
+<translation id="1188239144602654184">Aceder à realidade aumentada</translation>
 <translation id="1197267115302279827">Mover marcadores</translation>
 <translation id="119944043368869598">Limpar tudo</translation>
 <translation id="1201402288615127009">Seguinte</translation>
@@ -96,7 +96,6 @@
 <translation id="1672586136351118594">Não mostrar de novo</translation>
 <translation id="1692118695553449118">A sincronização está ativada</translation>
 <translation id="169515064810179024">Impedir que os sites acedam aos sensores de movimentos</translation>
-<translation id="1709438864123551175">Poupança de dados</translation>
 <translation id="1717218214683051432">Sensores de movimento</translation>
 <translation id="1718835860248848330">Última hora</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> – atualizado <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -214,7 +213,6 @@
 <translation id="2501278716633472235">Voltar</translation>
 <translation id="2513403576141822879">Para obter mais definições relacionadas com privacidade, segurança e recolha de dados, consulte <ph name="BEGIN_LINK" />Sincronização e serviços Google<ph name="END_LINK" />.</translation>
 <translation id="2523184218357549926">Envia para a Google os URLs das páginas que visita.</translation>
-<translation id="2526148617758225454">A Poupança de dados está ativada. Pode geri-la nas Definições.</translation>
 <translation id="2532336938189706096">Visualização na Web</translation>
 <translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" /> itens eliminados</translation>
 <translation id="2536728043171574184">Visualização de uma cópia offline desta página</translation>
@@ -354,14 +352,12 @@
 <translation id="3599863153486145794">Limpa o histórico de todos os dispositivos com sessão iniciada. A sua Conta Google pode ter outras formas do histórico de navegação em <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Desativar o som dos sites que reproduzem som</translation>
 <translation id="3616113530831147358">Áudio</translation>
-<translation id="3620176948598597475">A reposição apaga o histórico da Poupança de dados, incluindo a lista de sites visitados.</translation>
 <translation id="3632295766818638029">Desmascarar palavra-passe</translation>
 <translation id="363596933471559332">Inicie automaticamente sessão em Sites com as credenciais armazenadas. Quando a funcionalidade está desativada, é-lhe sempre pedida validação antes de iniciar sessão num Website.</translation>
 <translation id="3658159451045945436">A reposição apaga o histórico da poupança de dados, incluindo a lista de sites visitados.</translation>
 <translation id="3662546969139119822">Sem histórico</translation>
 <translation id="3672452749423051839">Sugestões de erros de navegação</translation>
 <translation id="3692944402865947621">A transferência de <ph name="FILE_NAME" /> falhou porque o local de armazenamento está fora do alcance.</translation>
-<translation id="3712575778697986964">Pretende repor a Poupança de dados?</translation>
 <translation id="3714981814255182093">Abrir a barra Localizar</translation>
 <translation id="3716182511346448902">Esta página utiliza demasiada memória, pelo que o Chrome a colocou em pausa.</translation>
 <translation id="3730075448226062617">Para permitir que o Chrome aceda ao microfone, ative também o microfone nas <ph name="BEGIN_LINK" />Definições do Android<ph name="END_LINK" />.</translation>
@@ -503,13 +499,11 @@ A sua Conta Google pode ter outras formas do histórico de navegação, como pes
 <translation id="4751476147751820511">Sensores de movimento ou de luz</translation>
 <translation id="4759238208242260848">Transferências</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 transferência concluída.}other{# transferências concluídas.}}</translation>
-<translation id="4766369052440583386">Poupança de dados ativada</translation>
 <translation id="4797039098279997504">Toque para voltar a <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4802417911091824046">A encriptação da frase de acesso não inclui métodos de pagamento nem endereços do Google Pay.
 
 Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização<ph name="END_LINK" />.</translation>
 <translation id="4807098396393229769">Nome no cartão</translation>
-<translation id="4807963036345170158">Poupança de dados desativada</translation>
 <translation id="4816465935029283692">Tipos de dados</translation>
 <translation id="4824958205181053313">Pretende cancelar a sincronização?</translation>
 <translation id="4837753911714442426">Abrir opções para imprimir página</translation>
@@ -601,6 +595,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="5447765697759493033">Este site não será traduzido.</translation>
 <translation id="545042621069398927">A acelerar a transferência…</translation>
 <translation id="5456381639095306749">Transferir página</translation>
+<translation id="5475862044948910901">Pretende iniciar a sessão de realidade aumentada?</translation>
 <translation id="548278423535722844">Abrir na aplicação de mapas</translation>
 <translation id="5487521232677179737">Limpar dados</translation>
 <translation id="5494752089476963479">Bloquear anúncios em sites que apresentam anúncios intrusivos ou enganadores</translation>
@@ -643,7 +638,6 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="569536719314091526">Traduzir esta página para qualquer idioma a partir do botão Mais opções</translation>
 <translation id="572328651809341494">Separadores recentes</translation>
 <translation id="5726692708398506830">Aumentar o tamanho de todos os itens na página</translation>
-<translation id="5734520971562437809">Utilize até menos 60 por cento de dados e acelere a Web.</translation>
 <translation id="5748802427693696783">Mudado para separadores padrão</translation>
 <translation id="5749068826913805084">O Chrome necessita de acesso ao armazenamento para transferir ficheiros.</translation>
 <translation id="5763382633136178763">Separadores de navegação anónima</translation>
@@ -701,7 +695,6 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="6159335304067198720"><ph name="PERCENT" /> de poupança de dados</translation>
 <translation id="6165508094623778733">Saiba mais</translation>
 <translation id="6177111841848151710">Bloqueado para o motor de pesquisa atual</translation>
-<translation id="6177390657002841081">Ativar a Poupança de dados</translation>
 <translation id="6181444274883918285">Adicionar exceção de site</translation>
 <translation id="6192333916571137726">Transferir ficheiro</translation>
 <translation id="6192792657125177640">Excepções</translation>
@@ -867,6 +860,11 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="7352939065658542140">VÍDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Partilhar 1 item selecionado}other{Partilhar # itens selecionados}}</translation>
 <translation id="7359002509206457351">Aceder aos métodos de pagamento</translation>
+<translation id="7365126855094612066">Durante esta sessão, o site será capaz de:
+• criar um mapa 3D do seu ambiente
+• monitorizar movimentos da câmara
+
+O site NÃO fica com acesso à câmara. As imagens da câmara estão visíveis apenas para si.</translation>
 <translation id="7375125077091615385">Tipo:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -1114,11 +1112,9 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="9188680907066685419">Terminar sessão na conta gerida</translation>
 <translation id="9204836675896933765">Falta 1 ficheiro</translation>
 <translation id="9206873250291191720">A</translation>
-<translation id="9215534869786664672">Utilize até menos 60 por cento de dados e acelere a Web. Os servidores da Google otimizam as páginas que visita.</translation>
 <translation id="9219103736887031265">Imagens</translation>
 <translation id="926205370408745186">Remova a atividade do Chrome do Bem-estar digital</translation>
 <translation id="932327136139879170">Página inicial</translation>
-<translation id="932599481871055447">Poupe dados e navegue mais rápido</translation>
 <translation id="938850635132480979">Erro: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Aceder ao microfone</translation>
 <translation id="951339005376969845">Eliminar os dados existentes. Pode obtê-los ao mudar novamente para <ph name="FROM_ACCOUNT" />.</translation>

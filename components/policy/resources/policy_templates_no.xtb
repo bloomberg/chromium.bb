@@ -130,6 +130,15 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Hvis innstillingen angis som «true», rapporteres ikke tilstanden til utviklerbryteren.</translation>
 <translation id="1160479894929412407">Tillat QUIC-protokollen</translation>
 <translation id="1160939557934457296">Deaktiver muligheten til å overse Safe Browsing-advarsler og fortsette til potensielt farlig nettsted</translation>
+<translation id="1171342272070128466">Slå på tilgjengelighetsfunksjonen for dokket forstørrelse.
+
+          Hvis denne regelen er satt til «true» (sann), er dokket forstørrelse alltid slått på.
+
+          Hvis denne regelen er satt til «false» (usann), er dokket forstørrelse alltid slått av.
+
+          Hvis du angir denne regelen, kan ikke brukerne endre eller overstyre den.
+
+          Hvis denne regelen ikke angis, er dokket forstørrelse i utgangspunktet slått av, men brukerne kan når som helst slå funksjonen på.</translation>
 <translation id="1189817621108632689">Lar deg angi en liste over nettadressemønstre som spesifiserer nettsteder som ikke får vise bilder.
 
           Hvis denne regelen ikke angis, brukes den globale standardverdien for alle nettsteder, enten fra DefaultImagesSetting-regelen hvis den er angitt, eller fra brukerens egen konfigurasjon hvis ikke.
@@ -440,6 +449,7 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Hvis regelen er slått på, kan ikke brukerne velge bort standardfunksjonaliteten der alle nettsteder kjører i sine egne prosesser.
       Hvis regelen er slått av eller ikke er konfigurert, kan brukeren velge bort nettstedsisolering (f.eks. ved å bruke oppføringen «Slå av nettstedsisolering» i chrome://flags).
       </translation>
+<translation id="1767673020408652620">Slå på appanbefalinger i nulltilstanden for søkefeltet</translation>
 <translation id="1781356041596378058">Denne regelen kontrollerer også tilgangen til utvikleralternativene for Android. Hvis du angir denne regelen som «true» (sann), fjerner du brukernes tilgang til utvikleralternativene. Hvis du angir denne regelen som «false» (usann) eller ikke angir den, kan brukere få tilgang til utvikleralternativene ved å trykke sju ganger på delversjonsnummeret i appen for Android-innstillinger.</translation>
 <translation id="1793346220873697538">Deaktiver utskrift med PIN-kode som standard</translation>
 <translation id="1797233582739332495">Vis brukeren en gjentakende melding om at omstart kreves</translation>
@@ -966,6 +976,15 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 
       Hvert bidrag på listen spesifiserer en identifikator, som brukes internt for å skille de ulike lokale kontoene på enheten fra hverandre.</translation>
 <translation id="2769952903507981510">Konfigurer det ønskede domenenavnet for verter med ekstern adgang</translation>
+<translation id="2783078941107212091">Slå på appanbefalinger i nulltilstanden for søkefeltet i appoversikten.
+
+          Hvis denne regelen er satt til «true» (sann), kan appanbefalinger vises i nulltilstandssøket.
+
+          Hvis denne regelen er satt til «false» (usann), vises ikke appanbefalinger i nulltilstandssøket.
+
+          Hvis du angir denne regelen, kan ikke brukerne endre eller overstyre den.
+
+          Hvis denne regelen ikke angis, er standardverdien «false» (usann) for administrerte enheter.</translation>
 <translation id="2787173078141616821">Rapportér informasjon om Android-status</translation>
 <translation id="2799297758492717491">Tillat automatisk avspilling av medier fra en godkjenningsliste for nettadressemønstre</translation>
 <translation id="2801155097555584385">Angi egendefinert startverdi for batterilading i prosent</translation>
@@ -1163,6 +1182,24 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Hvis denne regelen er satt til false (usann), er WPAD-optimalisering slått av, noe som fører til at <ph name="PRODUCT_NAME" /> må vente lenger på DNS-baserte WPAD-tjenere. Hvis denne regelen er slått på, eller hvis du ikke har spesifisert den, er WPAD-optimalisering slått på.
 
       Innstillingen for WPAD-optimalisering kan ikke endres av brukerne. Dette gjelder uansett hvordan eller om denne regelen er konfigurert.</translation>
+<translation id="3071839057966069710">Konfigurerer en liste over skrivere.
+
+      Med denne regelen kan administratorer levere skriveroppsett til brukerne sine.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> og <ph name="PRINTER_DESCRIPTION" /> er strenger som kan tilpasses fritt for å gjøre det lett å velge skriver. Formålet med <ph name="PRINTER_MANUFACTURER" /> og <ph name="PRINTER_MODEL" /> er å gjøre det lett for brukere å identifisere skriverne. Strengene representerer skriverprodusenten og -modellen. <ph name="PRINTER_URI" /> skal være en adresse som klientdatamaskiner kan nå, inkludert <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> og <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> er valgfritt. Hvis den angis, kan den bidra til å deduplisere <ph name="ZEROCONF_DISCOVERY" />-skrivere.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> må samsvare med en av strengene som representerer en skriver som støttes av <ph name="PRODUCT_NAME" />. Strengen brukes til å identifisere og installere riktig PPD for skriveren. Du finner mer informasjon på https://support.google.com/chrome?p=noncloudprint.
+
+      <ph name="PRINTER_AUTOCONF" /> er et boolsk flagg som indikerer om IPP Everywhere skal brukes til å sette opp skriveren. Dette flagget støttes i <ph name="PRODUCT_OS_NAME" /> versjon 76 og nyere.
+
+      Enten må <ph name="PRINTER_EFFECTIVE_MODEL" /> inneholde navnet på skriveren, eller så må <ph name="PRINTER_AUTOCONF" /> være satt til «true» (sann). Skrivere med begge eller uten noen av egenskapene ignoreres.
+
+      Skriveroppsettet fullføres første gang en skriver tas i bruk.  PPD-er lastes ikke ned før skriveren tas i bruk.  Deretter blir mye brukte PPD-er bufret.
+
+      Denne regelen har ingen innvirkning på om brukere kan konfigurere skrivere på enhetene sine.  Den er ment å supplere skriveroppsettene til individuelle brukere.
+
+      For enheter som administreres via Active Directory, har denne regelen støtte for å utvide <ph name="MACHINE_NAME_VARIABLE" /> til Active Directory-maskinnavnet eller en delstreng av dette. Hvis maskinnavnet for eksempel er <ph name="MACHINE_NAME_EXAMPLE" />, erstattes <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> med de fire tegnene som kommer etter den sjette posisjonen, dvs. <ph name="MACHINE_NAME_PART_EXAMPLE" />. Legg merke til at posisjonen er nullbasert.
+      </translation>
 <translation id="3072045631333522102">Skjermsparer som skal brukes på påloggingssiden i detaljistmodus</translation>
 <translation id="3072847235228302527">Angi bruksvilkårene for en konto på enheten</translation>
 <translation id="3077183141551274418">Aktiverer eller deaktiverer fanelivssykluser</translation>
@@ -1948,7 +1985,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="4591366717022345234">Gi brukere en hurtigfiks-delversjon</translation>
 <translation id="4600786265870346112">Aktiver stor markør</translation>
 <translation id="4604931264910482931">Konfigurer svarteliste for innebygde meldinger</translation>
-<translation id="4613508646038788144">Hvis regelen er satt til «usann», kan tredjepartsprogramvare sette inn kjørbar kode i Chromes prosesser. Hvis regelen ikke er spesifisert eller er satt til «sann», forhindres tredjepartsprogramvare fra å sette inn kjørbar kode i Chromes prosesser.</translation>
 <translation id="4617338332148204752">Hopp over sjekk av metatag i <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="4625915093043961294">Konfigurer godkjenningslisten for installasjon av utvidelser</translation>
 <translation id="4632343302005518762">Gi <ph name="PRODUCT_FRAME_NAME" /> tillatelse til å håndtere de oppførte innholdstypene</translation>
@@ -2134,15 +2170,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
       Når denne regelen er satt til «false» (usann), lukker Chrome fanen etter å ha byttet til en annen nettleser, selv om det var den siste fanen. Dette gjør at Chrome avsluttes helt.</translation>
 <translation id="5105313908130842249">Forsinkelse for låst skjerm når enheten kjører på batteristrøm</translation>
 <translation id="5108031557082757679">Deaktiverte bedriftsskrivere</translation>
-<translation id="5113732180192599620">Denne regelen kontrollerer listen over nettsteder som aldri fører til bytting av nettleser.
-
-Vær oppmerksom på at elementer også kan legges til på denne listen via reglene <ph name="USE_IE_SITELIST_POLICY_NAME" /> og <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />.
-
-Hvis denne regelen ikke er angitt, blir ingen nettsteder lagt til på listen.
-
-Hvis denne regelen er angitt, blir hvert element behandlet som en regel – på samme måte som regelen <ph name="URL_LIST_POLICY_NAME" />. Men logikken er reversert: Samsvarende regler åpnes ikke i en alternativ nettleser.
-
-I motsetning til <ph name="URL_LIST_POLICY_NAME" /> gjelder denne regelen begge veier. Det betyr at når Internet Explorer-tilleggsprogrammet er installert og aktivert, kontrollerer det også om <ph name="IE_PRODUCT_NAME" /> skal åpne disse nettadressene i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="5124368997194894978">Slå på oppstart ved tilkobling til strømnettet</translation>
 <translation id="5131211790949066746">Slår på sammenslåing av regler for hvilke utvidelser som kan installeres, fra <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" /> og <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />.
 
@@ -2418,6 +2445,7 @@ I motsetning til <ph name="URL_LIST_POLICY_NAME" /> gjelder denne regelen begge 
 
       Hvis ikke angitt, endres ikke nettadressen for startverdien.</translation>
 <translation id="5561811616825571914">Velg klientsertifikater for disse nettstedene automatisk på påloggingsskjermen</translation>
+<translation id="5565178130821694365">Passordet må skrives inn annenhver dag (hver 48. time)</translation>
 <translation id="5566210228171064229">Tillat utskrift både med og uten PIN-kode</translation>
 <translation id="556865034069957245">Denne regelen kontrollerer tilgjengeligheten av fullskjermmodus, hvor UI-et for <ph name="PRODUCT_NAME" /> er skjult og bare nettinnhold er synlig.
 

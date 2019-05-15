@@ -181,8 +181,10 @@
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{1 કરતાં વઘુ વાંચ્યા વગરના નોટિફિકેશન}one{# કરતાં વઘુ વાંચ્યા વગરના નોટિફિકેશન}other{# કરતાં વઘુ વાંચ્યા વગરના નોટિફિકેશન}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{1મિ માં}one{#મિ માં}other{#મિ માં}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="8098075892845277643">Google આસિસ્ટંટ વૉઇસ ક્વેરી શરૂ કરો</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 કલાક પહેલા}one{# કલાક પહેલાં}other{# કલાક પહેલાં}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 સે બાકી}one{# સે બાકી}other{# સે બાકી}}</translation>
+<translation id="8144660977431427332">તમારી શોધ Google આસિસ્ટંટ દ્વારા પૂરી પાડવામાં આવે છે. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, ઑટોમેટિક રીતે પૂર્ણ</translation>
 <translation id="815598010540052116">નીચે સ્ક્રોલ કરો</translation>
 <translation id="8170087467028567933">આ સૂચનને કાઢી નાખવાથી તેને તમારા બધા ડિવાઇસના તમારા એકાઉન્ટમાં બતાવવામાં આવશે નહીં.</translation>

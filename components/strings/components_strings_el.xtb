@@ -620,7 +620,7 @@
 <translation id="4265872034478892965">Επιτρέπεται από τον διαχειριστή σας</translation>
 <translation id="4275830172053184480">Επανεκκινήστε τη συσκευή σας</translation>
 <translation id="4277028893293644418">Επαναφορά κωδικού πρόσβασης</translation>
-<translation id="4279811152705618813">Η συσκευή σας <ph name="DEVICE_TYPE" /> διαχειρίζεται από το <ph name="ENROLLMENT_DOMAIN" /></translation>
+<translation id="4279811152705618813">Η συσκευή <ph name="DEVICE_TYPE" /> είναι διαχειριζόμενη από τον οργανισμό <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{Αυτή η κάρτα αποθηκεύτηκε στον Λογαριασμό σας Google}other{Αυτές οι κάρτες αποθηκεύτηκαν στον Λογαριασμό σας Google}}</translation>
 <translation id="42981349822642051">Επέκταση</translation>
 <translation id="4302965934281694568">Chou3 (Φάκελος)</translation>
@@ -1090,7 +1090,6 @@
 <translation id="7062635574500127092">Γαλαζοπράσινο</translation>
 <translation id="7064851114919012435">Στοιχεία επικοινωνίας</translation>
 <translation id="7079718277001814089">Ο ιστότοπος περιέχει κακόβουλο πρόγραμμα</translation>
-<translation id="7081564429925484109">Προειδοποίηση: Αυτή η πολιτική δεν συγχωνεύτηκε, όπως ορίζεται στην πολιτική PolicyListMultipleSourceMergeList, γιατί δεν είναι λίστα.</translation>
 <translation id="7087282848513945231">Κομητεία</translation>
 <translation id="7090678807593890770">Αναζητήστε στο Google για <ph name="LINK" /></translation>
 <translation id="7108338896283013870">Απόκρυψη</translation>
@@ -1150,7 +1149,6 @@
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">Όχι</translation>
 <translation id="7378810950367401542">/</translation>
-<translation id="7381288752349550461">Παράκαμψη διαχειριζόμενης περιόδου σύνδεσης</translation>
 <translation id="7390545607259442187">Επιβεβαίωση κάρτας</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7403591733719184120">Η συσκευή <ph name="DEVICE_NAME" /> είναι διαχειριζόμενη</translation>

@@ -112,6 +112,7 @@
 <translation id="2597972630681408282">Lumină de noapte: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">Cardul SIM este blocat</translation>
 <translation id="2653659639078652383">Trimite</translation>
+<translation id="2658778018866295321">Dă clic și trage</translation>
 <translation id="2700493154570097719">Setează tastatura</translation>
 <translation id="2718395828230677721">Lumină de noapte</translation>
 <translation id="2727977024730340865">V-ați conectat la un încărcător de putere joasă. Încărcarea bateriei poate fi nesigură.</translation>
@@ -227,6 +228,7 @@
 <translation id="4378551569595875038">Se stabilește conexiunea...</translation>
 <translation id="4379531060876907730">Acestea sunt instrumentele pentru creion</translation>
 <translation id="4389184120735010762">Ai accesat comanda rapidă de la tastatură pentru lupa andocată. Vrei să o activezi?</translation>
+<translation id="4394049700291259645">Dezactivează</translation>
 <translation id="4421231901400348175">În prezent, <ph name="HELPER_NAME" /> îți poate controla ecranul prin Asistență la distanță.</translation>
 <translation id="4430019312045809116">Volum</translation>
 <translation id="4450893287417543264">Nu mai afișa</translation>
@@ -246,7 +248,6 @@
 <translation id="4696813013609194136">Deblochează dispozitivul cu codul părintelui</translation>
 <translation id="4731797938093519117">Acces pentru părinți</translation>
 <translation id="4734965478015604180">Orizontal</translation>
-<translation id="476166673298332917">Administratorul dispozitivului îți poate monitoriza activitatea de navigare.</translation>
 <translation id="4774338217796918551">Revino mâine la <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Parolă pentru <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">Asistentul Google nu este disponibil într-o sesiune demonstrativă.</translation>
@@ -354,7 +355,6 @@
 <translation id="6537270692134705506">Capturează ecranul</translation>
 <translation id="6542521951477560771">Se proiectează conținut la <ph name="RECEIVER_NAME" /></translation>
 <translation id="6559976592393364813">Întreabă administratorul</translation>
-<translation id="6574601967010742428">Administratorul dispozitivului poate să îți monitorizeze activitatea.</translation>
 <translation id="6585808820553845416">Sesiunea se încheie peste <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Tasta de căutare + Shift + K</translation>
 <translation id="6650933572246256093">Dispozitivul Bluetooth „<ph name="DEVICE_NAME" />” solicită permisiunea de a se conecta. Introduceți această parolă pe dispozitivul respectiv: <ph name="PASSKEY" /></translation>

@@ -112,6 +112,7 @@
 <translation id="2597972630681408282">নাইট লাইট: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">সিম কার্ড লক করা আছে</translation>
 <translation id="2653659639078652383">জমা দিন</translation>
+<translation id="2658778018866295321">ক্লিক করে ড্র্যাগ করুন</translation>
 <translation id="2700493154570097719">আপনার কীবোর্ড সেট করুন</translation>
 <translation id="2718395828230677721">নাইট লাইট</translation>
 <translation id="2727977024730340865">একটি নিম্ন শক্তির চার্জার প্লাগইন করা হয়েছে৷ বিশ্বস্ত ব্যাটারি চার্জ নাও হতে পারে৷</translation>
@@ -227,6 +228,7 @@
 <translation id="4378551569595875038">সংযুক্ত হচ্ছে...</translation>
 <translation id="4379531060876907730">এগুলি হল আপনার স্টাইলাস টুল</translation>
 <translation id="4389184120735010762">ডক করা ম্যাগনিফায়ারের জন্য আপনি কীবোর্ড শর্টকাট টিপেছেন। আপনি কি এটি চালু করতে চান?</translation>
+<translation id="4394049700291259645">বন্ধ</translation>
 <translation id="4421231901400348175">রিমোট সহায়কের মাধ্যমে <ph name="HELPER_NAME" />-এর সাথে আপনার স্ক্রিন নিয়ন্ত্রন ভাগ করুন৷</translation>
 <translation id="4430019312045809116">ভলিউম</translation>
 <translation id="4450893287417543264">আর দেখতে চাই না</translation>
@@ -246,7 +248,6 @@
 <translation id="4696813013609194136">অভিভাবকীয় কোড দিয়ে ডিভাইস আনলক করুন</translation>
 <translation id="4731797938093519117">অভিভাবকীয় অ্যাক্সেস</translation>
 <translation id="4734965478015604180">অনুভূমিক</translation>
-<translation id="476166673298332917">ডিভাইস প্রশাসক আপনার ব্রাউজিং অ্যাক্টিভিটি পর্যবেক্ষণ করতে পারেন।</translation>
 <translation id="4774338217796918551">আগামীকাল <ph name="COME_BACK_TIME" />-এ আবার ব্যবহার করতে পারবেন।</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" />-এর জন্য পাসওয়ার্ড</translation>
 <translation id="4778095205580009397">একটি ডেমো সেশনে Google অ্যাসিস্ট্যান্ট উপলভ্য নয়।</translation>
@@ -355,7 +356,6 @@
 <translation id="6537270692134705506">স্ক্রিন ক্যাপচার করুন</translation>
 <translation id="6542521951477560771"><ph name="RECEIVER_NAME" /> এ কাস্ট করা হচ্ছে</translation>
 <translation id="6559976592393364813">অ্যাডমিনিস্ট্রেটরকে জিজ্ঞাসা করুন</translation>
-<translation id="6574601967010742428">ডিভাইস অ্যাডমিনিস্ট্রেটর আপনার অ্যাক্টিভিটি হয়ত মনিটর করতে পারেন।</translation>
 <translation id="6585808820553845416"><ph name="SESSION_TIME_REMAINING" /> এর মধ্যে সেশন শেষ হয়ে যাবে৷</translation>
 <translation id="6627638273713273709">সার্চ+Shift+K</translation>
 <translation id="6650933572246256093">ব্লুটুথ ডিভাইস "<ph name="DEVICE_NAME" />" যুক্ত করার অনুমতি চাইছে। ডিভাইসটিতে এই পাস কীটি দিন: <ph name="PASSKEY" /></translation>

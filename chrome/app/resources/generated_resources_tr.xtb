@@ -226,6 +226,7 @@
 <translation id="1338950911836659113">Siliniyor...</translation>
 <translation id="1340527397989195812">Dosyalar uygulamasını kullanarak cihazdaki medyayı yedekleyin.</translation>
 <translation id="1341988552785875222">Geçerli duvar kağıdı "<ph name="APP_NAME" />" tarafından ayarlandı. Farklı bir duvar kağıdı seçmeden önce "<ph name="APP_NAME" />" uygulamasının yüklemesini kaldırmanız gerekebilir.</translation>
+<translation id="1343865611738742294">Linux uygulamalarına USB cihazlarına erişim izni verin. Linux, kaldırılan USB cihazları daha sonra hatırlamaz.</translation>
 <translation id="1347256498747320987">Güncelleme ve uygulamaları yükleyin. Devam ederek bu cihazın Google'dan, operatörünüzden ve cihazınızın üreticisinden güncelleme ve uygulamaları, muhtemelen hücresel veri üzerinden otomatik olarak indirip yükleyebileceğini kabul etmiş olursunuz. Bu uygulamalardan bazıları uygulama içi satın alma seçenekleri sunabilir. <ph name="BEGIN_LINK1" />Daha Fazla Bilgi<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">Güncelleme işlemi, pil gücü %<ph name="BATTERY_LEVEL" /> düzeyine ulaştığında başlayacak.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
@@ -707,6 +708,7 @@
 <translation id="2120297377148151361">Etkinlik ve etkileşimler</translation>
 <translation id="2120478168904746065">{NUM_TABS,plural, =1{Sekmenin Sesini Aç}other{Sekmelerin Sesini Aç}}</translation>
 <translation id="2121825465123208577">Yeniden Boyutlandır</translation>
+<translation id="2122305276694332719">Gizli bir ağa otomatik olarak bağlanmak başkalarının cihazınızı ve bazı ağ ayarlarını görmesine olanak sağladığından önerilmez.</translation>
 <translation id="2124930039827422115">{1,plural, =1{Bir kullanıcıdan <ph name="AVERAGE_RATING" /> puan aldı.}other{# kullanıcıdan <ph name="AVERAGE_RATING" /> puan aldı.}}</translation>
 <translation id="2126167708562367080">Senkronizasyon, yöneticiniz tarafından devre dışı bırakıldı.</translation>
 <translation id="2127372758936585790">Düşük güçlü şarj cihazı</translation>
@@ -1303,6 +1305,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3012917896646559015">Lütfen bilgisayarınızı bir onarım tesisine göndermek üzere derhal donanım üreticinizle bağlantı kurun.</translation>
 <translation id="3013291976881901233">MIDI cihazlar</translation>
 <translation id="3015639418649705390">Şimdi yeniden başlat</translation>
+<translation id="3016329696181678353"><ph name="PRINTER_NAME" /> otomatik olarak yapılandırılamıyor. Lütfen gelişmiş yazıcı ayrıntılarını belirtin.</translation>
 <translation id="3016641847947582299">Bileşen güncellendi</translation>
 <translation id="3016780570757425217">Konumunuzu bilme</translation>
 <translation id="3020183492814296499">Kısayollar</translation>
@@ -1805,7 +1808,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3789841737615482174">Yükle</translation>
 <translation id="379082410132524484">Kartınızın süresi doldu</translation>
 <translation id="3792890930871100565">Yazıcıların bağlantısını kes</translation>
-<translation id="3792938779249970121">Hesap seçin</translation>
 <translation id="3796648294839530037">Sık Kullanılan Ağlar:</translation>
 <translation id="3797739167230984533"><ph name="BEGIN_LINK" /><ph name="DEVICE_TYPE" /> cihazınız, <ph name="END_LINK" /> kuruluşunuz tarafından yönetilmektedir</translation>
 <translation id="3797900183766075808">"<ph name="SEARCH_TERMS" />" İçin <ph name="SEARCH_ENGINE" /> &amp;Üzerinde Arama Yap</translation>
@@ -2114,6 +2116,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4268025649754414643">Anahtar Şifreleme</translation>
 <translation id="4270393598798225102">Sürüm <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">Eşleşme yok</translation>
+<translation id="4275663329226226506">Medya</translation>
 <translation id="4275830172053184480">Cihazınızı yeniden başlatın</translation>
 <translation id="4278101229438943600">Asistanınız hazır</translation>
 <translation id="4278390842282768270">İzin verilen</translation>
@@ -2156,7 +2159,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4354344420232759511">Ziyaret ettiğiniz siteler burada görünür</translation>
 <translation id="435527878592612277">Fotoğrafınızı seçin</translation>
 <translation id="4356334633973342967">Kendi sürücünüzü de belirtebilirsiniz:</translation>
-<translation id="4358169392473932247">Bu güvenlik anahtarı, kimlik bilgilerinin dahili olarak depolanmasını desteklememesine rağmen bu özellik için istekte bulunuldu.</translation>
 <translation id="4359408040881008151">Bağımlı uzantılar nedeniyle yüklendi.</translation>
 <translation id="4359717112757026264">Şehir manzaraları</translation>
 <translation id="4361142739114356624">Bu İstemci Sertifikası'nın Özel Anahtarı eksik veya geçersiz</translation>
@@ -2339,7 +2341,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4665014895760275686">Üretici</translation>
 <translation id="4665446389743427678"><ph name="SITE" /> web sitesinin depoladığı tüm veriler silinecektir.</translation>
 <translation id="4668721319092543482"><ph name="PLUGIN_NAME" /> eklentisini etkinleştirmek için tıklayın</translation>
-<translation id="4670688170798478686">Sıfırlamayı onayla</translation>
 <translation id="4672657274720418656">Sayfayı Ayrıştır</translation>
 <translation id="4673442866648850031">Ekran kalemi yerinden çıkarıldığında ekran kalemi araçlarını aç</translation>
 <translation id="4677585247300749148"><ph name="URL" />, erişilebilirlikle ilgili etkinliklere yanıt vermek istiyor</translation>
@@ -2369,7 +2370,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4711638718396952945">Ayarları geri yükle</translation>
 <translation id="4715553623069266137">çok kısa (0,8 sn.)</translation>
 <translation id="4716483597559580346">Daha fazla güvenlik için Powerwash işlemini uygulayın</translation>
-<translation id="4718490098585891067">Oturum açmak için bir hesap seçin:</translation>
 <translation id="4720113199587244118">Cihaz Ekle</translation>
 <translation id="4720185134442950733">Mobil veri ağı</translation>
 <translation id="4722735765955348426"><ph name="USERNAME" /> için şifre</translation>
@@ -2400,7 +2400,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4756388243121344051">&amp;Geçmiş</translation>
 <translation id="4759238208242260848">İndirilenler</translation>
 <translation id="4761104368405085019">Mikrofonunuzu kullanma</translation>
-<translation id="476166673298332917">Cihaz yöneticisi göz atma etkinliğinizi izleyebilir.</translation>
 <translation id="4762718786438001384">Cihazdaki boş disk alanı kritik düzeyde</translation>
 <translation id="4763408175235639573">Bu sayfayı görüntülediğinizde aşağıdaki çerezler ayarlandı</translation>
 <translation id="4763830802490665879">Birden fazla siteden gelen çerezler çıkışta silinecek.</translation>
@@ -3930,7 +3929,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="713888829801648570">Çevrimdışı olduğunuz için maalesef şifreniz doğrulanamadı.</translation>
 <translation id="7140928199327930795">Başka kullanılabilir cihaz yok.</translation>
 <translation id="7141105143012495934">Hesap ayrıntılarınız alınamadığı için oturum açma işlemi başarısız oldu. Lütfen yöneticinizle iletişime geçin veya tekrar deneyin.</translation>
-<translation id="714285394257538643">Güvenlik anahtarınızı sıfırlamak istediğinizi onaylamak için tekrar dokunun. Güvenlik anahtarında depolanan tüm kimlik bilgileri ve anahtarın PIN'i silinecek.</translation>
 <translation id="7143092389027215216">Demo modu başlatılıyor</translation>
 <translation id="7143207342074048698">Bağlanıyor</translation>
 <translation id="7144878232160441200">Yeniden Dene</translation>
@@ -4164,6 +4162,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7506541170099744506"><ph name="DEVICE_TYPE" /> cihazınız kurumsal yönetim için başarıyla kaydettirildi.</translation>
 <translation id="7507930499305566459">Durum Yanıtlayıcı Sertifikası</translation>
 <translation id="7513029293694390567">Depolanmış kimlik bilgileriyle web sitelerinde otomatik olarak oturum açın. Bu özellik devre dışı bırakılırsa, bir web sitesinde oturum açmadan önce her defasında işlemi onaylamanız istenir.</translation>
+<translation id="7514365320538308">İndir</translation>
 <translation id="7517786267097410259">Bir şifre oluşturun -</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">"Ok Google" deyin</translation>
@@ -4503,6 +4502,7 @@ Anahtar Dosyası: <ph name="KEY_FILE" />
 Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümlerini oluşturmak için bu dosyaya ihtiyacınız olacak.</translation>
 <translation id="8000066093800657092">Ağ yok</translation>
 <translation id="8000467600002607205">{NUM_TABS,plural, =1{Sekmeyi Kapat}other{Sekmeleri Kapat}}</translation>
+<translation id="8002274832045662704">Gelişmiş yazıcı yapılandırması</translation>
 <translation id="8004582292198964060">Tarayıcı</translation>
 <translation id="8005600846065423578"><ph name="HOST" /> sitesinin panoyu görmesine her zaman izin ver</translation>
 <translation id="8008356846765065031">İnternet bağlantısı kesildi. Lütfen İnternet bağlantınızı kontrol edin.</translation>
@@ -5043,6 +5043,7 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8850251000316748990">Daha fazla göster...</translation>
 <translation id="885246833287407341">API işlevi bağımsız değişkenleri</translation>
 <translation id="8853586775156634952">Bu kart yalnızca bu cihaza kaydedilecek</translation>
+<translation id="885701979325669005">Depolama</translation>
 <translation id="8859057652521303089">Dilinizi seçin:</translation>
 <translation id="8859174528519900719">Alt çerçeve: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8862003515646449717">Hızlı bir tarayıcıya geç</translation>
@@ -5207,7 +5208,7 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="9115675100829699941">&amp;Yer İşaretleri</translation>
 <translation id="9116465289595958864">Son değiştirilme</translation>
 <translation id="9116799625073598554">Not alma uygulaması</translation>
-<translation id="9117030152748022724">Uygulamalarınızı yönetme</translation>
+<translation id="9117030152748022724">Uygulamalarınızı yönetin</translation>
 <translation id="9121814364785106365">İğnelenmiş sekme olarak aç</translation>
 <translation id="9124003689441359348">Kayıtlı şifreleriniz burada görünür</translation>
 <translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (<ph name="LICENSE_COUNT" /> tane kaldı)</translation>

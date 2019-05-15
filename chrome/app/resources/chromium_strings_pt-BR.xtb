@@ -118,9 +118,7 @@
 <translation id="4987820182225656817">Convidados podem usar o Chromium sem deixar nada para trás.</translation>
 <translation id="4994636714258228724">Cadastrar-se no Chromium</translation>
 <translation id="5021854341188256296">{0,plural, =0{Uma atualização do Chromium OS está disponível}=1{Uma atualização do Chromium OS está disponível}one{Uma atualização do Chromium OS está disponível há # dia}other{Uma atualização do Chromium OS está disponível há # dias}}</translation>
-<translation id="5032989939245619637">Salvar detalhes no Chromium</translation>
 <translation id="5045248521775609809">Leve o Chromium para todos os lugares</translation>
-<translation id="5116586539350239523">O Chromium armazenará seus dados pessoais com segurança para que não seja necessário digitá-los novamente.</translation>
 <translation id="5181952534059945058">Como esta página usa muita memória, o Chromium removeu parte do conteúdo.</translation>
 <translation id="5277894862589591112">Para que as alterações sejam aplicadas, reinicie o Chromium</translation>
 <translation id="5358375970380395591">Você está fazendo login com uma conta gerenciada e concedendo ao administrador da conta o controle sobre seu perfil do Chromium. Seus dados do Chromium, como aplicativos, favoritos, histórico, senhas e outras configurações serão permanentemente vinculados a <ph name="USER_NAME" />. Você pode excluir esses dados pelo painel das Contas do Google, mas não pode associá-los a outra conta. <ph name="LEARN_MORE" /></translation>

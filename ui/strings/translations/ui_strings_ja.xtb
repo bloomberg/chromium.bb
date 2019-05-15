@@ -181,8 +181,10 @@
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{1 件以上の未読の通知}other{# 件以上の未読の通知}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{1分}other{#分}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="8098075892845277643">Google アシスタントの音声検索を開始</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 時間前}other{# 時間前}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{残り 1 秒}other{残り # 秒}}</translation>
+<translation id="8144660977431427332">検索は Google アシスタントによって行われます。<ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />、オートコンプリート</translation>
 <translation id="815598010540052116">下にスクロール</translation>
 <translation id="8170087467028567933">この候補を削除すると、お使いのすべてのデバイスでアカウントに表示されなくなります。</translation>

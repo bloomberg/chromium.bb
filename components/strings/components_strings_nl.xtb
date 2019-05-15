@@ -463,6 +463,7 @@
 <translation id="3484560055331845446">Je kunt de toegang tot je Google-account kwijtraken. Chrome raadt je aan je wachtwoord nu te wijzigen. Je wordt gevraagd in te loggen op je account.</translation>
 <translation id="3495081129428749620">Zoeken op pagina <ph name="PAGE_TITLE" /></translation>
 <translation id="3498215018399854026">We kunnen je ouder momenteel niet bereiken. Probeer het opnieuw.</translation>
+<translation id="3512163584740124171">Dit beleid wordt genegeerd omdat een ander beleid in dezelfde beleidsgroep een hogere prioriteit heeft.</translation>
 <translation id="3528171143076753409">Het servercertificaat is niet betrouwbaar.</translation>
 <translation id="3528485271872257980">Donkerbruin</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Ten minste één item op gesynchroniseerde apparaten}=1{1 item (en meer op gesynchroniseerde apparaten)}other{# items (en meer op gesynchroniseerde apparaten)}}</translation>
@@ -1074,7 +1075,6 @@
 <translation id="7062635574500127092">Blauwgroen</translation>
 <translation id="7064851114919012435">Contactgegevens</translation>
 <translation id="7079718277001814089">Deze site bevat malware</translation>
-<translation id="7081564429925484109">Waarschuwing: Dit beleid is niet samengevoegd zoals is gespecificeerd in het beleid PolicyListMultipleSourceMergeList, omdat het geen lijst is.</translation>
 <translation id="7087282848513945231">County</translation>
 <translation id="7090678807593890770">Zoek op Google naar <ph name="LINK" /></translation>
 <translation id="7108338896283013870">Verbergen</translation>
@@ -1131,7 +1131,6 @@ Aanvullende informatie:
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">Nee</translation>
 <translation id="7378810950367401542">/</translation>
-<translation id="7381288752349550461">Overschrijving voor beheerde sessie</translation>
 <translation id="7390545607259442187">Creditcard bevestigen</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7403591733719184120">Je <ph name="DEVICE_NAME" /> wordt beheerd</translation>

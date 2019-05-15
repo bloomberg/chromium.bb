@@ -139,6 +139,15 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
       Wird die Richtlinie auf "False" gesetzt, wird der Status des Entwicklerschalters nicht gemeldet.</translation>
 <translation id="1160479894929412407">QUIC-Protokoll zulassen</translation>
 <translation id="1160939557934457296">Fortfahren von der Safe Browsing-Hinweisseite deaktivieren</translation>
+<translation id="1171342272070128466">Hierdurch wird die angedockte Lupe aktiviert.
+
+          Wird die Richtlinie auf "true" festgelegt, ist die angedockte Lupe immer aktiviert.
+
+          Falls die Richtlinie auf "false" festgelegt wurde, ist die angedockte Lupe immer deaktiviert.
+
+          Wenn Sie diese Richtlinie konfigurieren, kann sie vom Nutzer nicht geändert oder überschrieben werden.
+
+          Ist die Richtlinie nicht konfiguriert, so ist die angedockte Lupe anfangs deaktiviert, kann jedoch vom Nutzer jederzeit aktiviert werden.</translation>
 <translation id="1189817621108632689">Ermöglicht die Erstellung einer Liste mit URL-Mustern, die Websites angeben, denen das Anzeigen von Bildern nicht gestattet ist.
 
           Ist diese Richtlinie nicht konfiguriert, kommt für alle Websites entweder der globale Standardwert der Richtlinie "DefaultImagesSetting", sofern konfiguriert, oder die persönliche Konfiguration des Nutzers zum Einsatz.
@@ -452,6 +461,7 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
       Ist die Richtlinie aktiviert, können Nutzer das Standardverhalten, bei dem jede Website in einem eigenen Prozess ausgeführt wird, nicht deaktivieren.
       Wenn die Richtlinie deaktiviert oder nicht konfiguriert ist, kann der Nutzer diese Einstellung ändern, z. B. mithilfe des Eintrags "Disable site isolation" in chrome://flags.
       </translation>
+<translation id="1767673020408652620">App-Empfehlungen bei Nullstatus des Suchfelds aktivieren</translation>
 <translation id="1781356041596378058">Diese Richtlinie steuert zudem den Zugriff auf Android-Entwickleroptionen. Wenn Sie diese Richtlinie auf "true" setzen, können Nutzer nicht auf die Entwickleroptionen zugreifen. Wenn Sie diese Richtlinie auf "false" setzen oder nicht konfigurieren, können Nutzer auf die Entwickleroptionen zugreifen, indem sie siebenmal auf die Build-Nummer in der Android-App "Einstellungen" tippen.</translation>
 <translation id="1793346220873697538">PIN-Druckmodus standardmäßig deaktivieren</translation>
 <translation id="1797233582739332495">Dem Nutzer eine wiederkehrende Aufforderung anzeigen, dass ein Neustart erforderlich ist</translation>
@@ -972,6 +982,15 @@ Wenn Sie "Letzte Sitzung wiederherstellen" wählen, werden die URLs, die beim le
 
       Jeder Listeneintrag besteht aus einer Kennung, die intern dazu verwendet wird, die verschiedenen lokalen Gerätekonten auseinanderzuhalten.</translation>
 <translation id="2769952903507981510">Erforderlichen Domain-Namen für Remotezugriff-Hosts konfigurieren</translation>
+<translation id="2783078941107212091">Dadurch werden App-Empfehlungen bei Nullstatus des Suchfelds im Launcher aktiviert.
+
+          Ist die Richtlinie auf "true" festgelegt, können App-Empfehlungen in der Suche mit Nullstatus angezeigt werden.
+
+          Falls die Richtlinie auf "false" gesetzt ist, werden keine App-Empfehlungen in der Suche mit Nullstatus angezeigt.
+
+          Wenn Sie diese Richtlinie konfigurieren, kann sie vom Nutzer nicht geändert oder überschrieben werden.
+
+          Wird die Richtlinie nicht konfiguriert, ist sie für verwaltete Geräte standardmäßig auf "false" festgelegt.</translation>
 <translation id="2787173078141616821">Informationen zum Status von Android senden</translation>
 <translation id="2799297758492717491">Autoplay von Medien für eine weiße Liste mit URL-Mustern erlauben</translation>
 <translation id="2801155097555584385">Den Akkuladestand (%) für benutzerdefiniertes Starten des Ladevorgangs festlegen</translation>
@@ -1165,6 +1184,24 @@ Ist die Richtlinie deaktiviert oder nicht konfiguriert, kann WebDriver nicht kom
       Ist diese Richtlinie auf "false" gesetzt, ist die WPAD-Optimierung deaktiviert, sodass <ph name="PRODUCT_NAME" /> länger auf DNS-basierte WPAD-Server warten muss. Wenn die Richtlinie aktiviert oder nicht festgelegt ist, ist die WPAD-Optimierung aktiviert.
 
       Unabhängig davon, ob und wie die Richtlinie festgelegt ist, kann die WPAD-Optimierung nicht von Nutzern verändert werden.</translation>
+<translation id="3071839057966069710">Es wird eine Liste der Drucker konfiguriert.
+
+      Mit dieser Richtlinie können Administratoren den Nutzern Druckerkonfigurationen zur Verfügung stellen.
+
+      "<ph name="PRINTER_DISPLAY_NAME" />" und "<ph name="PRINTER_DESCRIPTION" />" sind Freiform-Strings, die für eine einfachere Druckerauswahl angepasst werden können. "<ph name="PRINTER_MANUFACTURER" />" und "<ph name="PRINTER_MODEL" />" dienen der vereinfachten Druckererkennung durch die Endnutzer. Sie geben den Hersteller und das Modell des Druckers an. Bei "<ph name="PRINTER_URI" />" sollte es sich um eine Adresse, einschließlich <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> und <ph name="URI_QUEUE" /> handeln, auf die über einen Client-Computer zugegriffen werden kann. Die <ph name="PRINTER_UUID" /> ist optional. Bei Angabe wird sie zum Entfernen von Duplikaten bei <ph name="ZEROCONF_DISCOVERY" />-Druckern verwendet.
+
+      "<ph name="PRINTER_EFFECTIVE_MODEL" />" muss mit einem der Strings übereinstimmen, die einen von <ph name="PRODUCT_NAME" /> unterstützten Drucker angeben. Der String wird zur Ermittlung und Installation der korrekten PPD für den Drucker verwendet. Weitere Informationen finden Sie unter https://support.google.com/chrome?p=noncloudprint.
+
+      "<ph name="PRINTER_AUTOCONF" />" ist ein boolescher Parameter, der angibt, ob IPP Everywhere zum Einrichten des Druckers verwendet werden soll. Dieser Parameter wird unter <ph name="PRODUCT_OS_NAME" /> Version 76 und höher unterstützt.
+
+      Entweder sollte "<ph name="PRINTER_EFFECTIVE_MODEL" />" den Namen des Druckers enthalten oder "<ph name="PRINTER_AUTOCONF" />" auf "true" festgelegt sein. Drucker mit beiden oder keiner der Eigenschaften werden ignoriert.
+
+      Die Druckereinrichtung wird bei der ersten Verwendung des Druckers abgeschlossen.  PPDs werden erst heruntergeladen, wenn der Drucker genutzt wird.  Anschließend werden häufig verwendete PPDs im Cache gespeichert.
+
+      Diese Richtlinie hat keinen Einfluss darauf, ob Nutzer Drucker auf ihren individuellen Geräten konfigurieren können.  Sie ist als Ergänzung zu den Druckerkonfigurationen der einzelnen Nutzer gedacht.
+
+      Bei Geräten, die über Active Directory verwaltet werden, unterstützt diese Richtlinie die Erweiterung von "<ph name="MACHINE_NAME_VARIABLE" />" auf den Active Directory-Computernamen oder einen Teilstring davon. Wenn der Computername beispielsweise "<ph name="MACHINE_NAME_EXAMPLE" />" lautet, wird "<ph name="MACHINE_NAME_VARIABLE_EXAMPLE" />" durch die vier Zeichen nach der sechsten Stelle ersetzt, z. B. "<ph name="MACHINE_NAME_PART_EXAMPLE" />". Beachten Sie, dass die Position auf null basiert.
+      </translation>
 <translation id="3072045631333522102">Bildschirmschoner für die Anmeldeseite im Händlermodus</translation>
 <translation id="3072847235228302527">Nutzungsbedingungen für ein lokales Gerätekonto festlegen</translation>
 <translation id="3077183141551274418">Aktiviert oder deaktiviert Tablebenszyklen</translation>
@@ -1930,7 +1967,6 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
 <translation id="4591366717022345234">Nutzern einen Quick-Fix-Build bereitstellen</translation>
 <translation id="4600786265870346112">Großen Cursor aktivieren</translation>
 <translation id="4604931264910482931">Schwarze Liste für natives Messaging konfigurieren</translation>
-<translation id="4613508646038788144">Wenn die Richtlinie auf "false" festgelegt wird, kann Drittanbieter-Software ausführbaren Code in die Prozesse von Chrome einfügen. Wenn die Richtlinie nicht oder auf "true" festgelegt wird, wird verhindert, dass die Drittanbieter-Software ausführbaren Code in die Prozesse von Chrome einfügt.</translation>
 <translation id="4617338332148204752">Metatag-Überprüfung in <ph name="PRODUCT_FRAME_NAME" /> überspringen</translation>
 <translation id="4625915093043961294">Weiße Liste für Installation von Erweiterungen konfigurieren</translation>
 <translation id="4632343302005518762">Verarbeitung der gelisteten Inhaltstypen durch <ph name="PRODUCT_FRAME_NAME" /> zulassen</translation>
@@ -2118,15 +2154,6 @@ Sollte die Richtlinie nicht konfiguriert sein, so wird der Standardsuchanbieter 
       Falls diese Richtlinie auf "false" festgelegt ist, schließt Chrome den Tab nach dem Wechsel zu einem alternativen Browser, selbst wenn es der letzte Tab war. Dadurch wird Chrome vollständig beendet.</translation>
 <translation id="5105313908130842249">Verzögerung für die Bildschirmsperre im Akkubetrieb</translation>
 <translation id="5108031557082757679">Deaktivierte, an Geräte gebundene Unternehmensdrucker</translation>
-<translation id="5113732180192599620">Anhand dieser Richtlinie wird die Liste der Websites verwaltet, die unter keinen Umständen einen Browserwechsel auslösen.
-
-      Elemente können dieser Liste auch über die Richtlinie "<ph name="USE_IE_SITELIST_POLICY_NAME" />" und "<ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />" hinzugefügt werden.
-
-      Wenn die Richtlinie nicht konfiguriert ist, werden der Liste keine Websites hinzugefügt.
-
-      Wenn die Richtlinie konfiguriert ist, wird jedes Element als Regel angesehen, ähnlich wie bei der Richtlinie "<ph name="URL_LIST_POLICY_NAME" />". Die Logik ist jedoch umgedreht: Wenn es eine Übereinstimmung für die Regel gibt, wird kein alternativer Browser geöffnet.
-
-      Im Gegensatz zu "<ph name="URL_LIST_POLICY_NAME" />" gelten die Regeln in beide Richtungen. Wenn das Internet Explorer-Add-in also vorhanden und aktiviert ist, wird damit auch gesteuert, ob <ph name="IE_PRODUCT_NAME" /> diese URLs in <ph name="PRODUCT_NAME" /> öffnen soll.</translation>
 <translation id="5124368997194894978">Starten bei anliegender Netzspannung aktivieren</translation>
 <translation id="5131211790949066746">Ermöglicht das Zusammenführen der folgenden Listen zur Installation von Erweiterungen: <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" /> und <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />.
 
@@ -2390,6 +2417,7 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
 
       Ist die Richtlinie nicht konfiguriert, bleibt die URL zum Abrufen des Varianten-Seeds unverändert.</translation>
 <translation id="5561811616825571914">Clientzertifikate für diese Websites automatisch auf dem Anmeldebildschirm auswählen</translation>
+<translation id="5565178130821694365">Passworteingabe alle zwei Tage (48 Stunden) erforderlich</translation>
 <translation id="5566210228171064229">Drucken mit und ohne PIN zulassen</translation>
 <translation id="556865034069957245">Anhand dieser Richtlinie wird die Verfügbarkeit des Vollbildmodus verwaltet, in dem die gesamte Benutzeroberfläche von <ph name="PRODUCT_NAME" /> ausgeblendet und nur der Webinhalt sichtbar ist.
 
@@ -3382,7 +3410,7 @@ Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSIO
 
           Ist die Richtlinie aktiviert, wird die Liste der Konten, die durch die Richtlinie definiert ist, den Einstellungen für Kerberos-Konten hinzugefügt.
 
-          Wenn die Richtlinie deaktiviert oder nicht konfiguriert ist, werden den Einstellungen für Kerberos-Konten keine Konten hinzugefügt und alle zuvor über diese Richtlinie hinzugefügten Konten werden entfernt. Möglicherweise können Nutzer Konten manuell hinzufügen, sofern die Richtlinie "Nutzer können Kerberos-Konten hinzufügen" aktiviert ist.</translation>
+          Wenn die Richtlinie deaktiviert oder nicht konfiguriert ist, werden den Einstellungen für Kerberos-Konten keine Konten hinzugefügt und alle zuvor über diese Richtlinie hinzugefügten Konten werden entfernt. Nutzer können jedoch trotzdem Konten manuell hinzufügen, wenn die Richtlinie "Nutzer können Kerberos-Konten hinzufügen" aktiviert ist.</translation>
 <translation id="7458437477941640506">Führen Sie kein Rollback auf die Zielversion durch, wenn die Version des Betriebssystems neuer als die der Zielversion ist. Aktualisierungen sind ebenfalls deaktiviert.</translation>
 <translation id="7464991223784276288">Cookies von übereinstimmenden URLs auf die aktuelle Sitzung beschränken</translation>
 <translation id="7469554574977894907">Suchvorschläge aktivieren</translation>
@@ -3627,7 +3655,7 @@ Auf <ph name="PRODUCT_OS_NAME" />-Version 70 und höher unterstützt. Bei älte
 <translation id="7882890448959833986">Warnung für nicht unterstützte Betriebssysteme unterdrücken</translation>
 <translation id="7889788745439330797">Damit wird festgelegt, ob Nutzer Kerberos-Konten hinzufügen können.
 
-          Ist die Richtlinie aktiviert oder nicht konfiguriert, können Kerberos-Konten über die Einstellungen für Kerberos-Konten auf der Seite "Personen" hinzugefügt werden. Die Nutzer haben die vollständige Kontrolle über Konten, die sie hinzufügen, und können diese ändern oder entfernen.
+          Ist die Richtlinie aktiviert oder nicht konfiguriert, können Nutzer Kerberos-Konten über die Einstellungen für Kerberos-Konten auf der Seite "Personen" hinzufügen. Die Nutzer haben die vollständige Kontrolle über Konten, die sie hinzufügen, und können diese ändern oder entfernen.
 
           Wenn die Richtlinie deaktiviert ist, können Nutzer keine Kerberos-Konten hinzufügen. Dies ist dann nur über die Richtlinie "Kerberos-Konten konfigurieren" möglich. So lassen sich Konten effektiv sperren.</translation>
 <translation id="7895553628261067384">Remotezugriff</translation>

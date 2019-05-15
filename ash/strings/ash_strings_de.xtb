@@ -112,6 +112,7 @@
 <translation id="2597972630681408282">Nachtlicht: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM-Karte ist gesperrt</translation>
 <translation id="2653659639078652383">Senden</translation>
+<translation id="2658778018866295321">Klicken und ziehen</translation>
 <translation id="2700493154570097719">Tastatur einrichten</translation>
 <translation id="2718395828230677721">Nachtlicht</translation>
 <translation id="2727977024730340865">Das Gerät ist an ein Schwachstrom-Ladegerät angeschlossen. Möglicherweise kann der Akku nicht zuverlässig aufgeladen werden.</translation>
@@ -227,6 +228,7 @@
 <translation id="4378551569595875038">Verbindung wird hergestellt...</translation>
 <translation id="4379531060876907730">Dies sind Ihre Eingabestift-Tools</translation>
 <translation id="4389184120735010762">Sie haben die Tastenkombination für den Modus "Angedockte Lupe" gedrückt. Möchten Sie ihn aktivieren?</translation>
+<translation id="4394049700291259645">Deaktivieren</translation>
 <translation id="4421231901400348175">Sie teilen sich die Bildschirmsteuerung mit <ph name="HELPER_NAME" /> per Remote-Unterstützung.</translation>
 <translation id="4430019312045809116">Lautstärke</translation>
 <translation id="4450893287417543264">Nicht mehr anzeigen</translation>
@@ -246,7 +248,6 @@
 <translation id="4696813013609194136">Gerät mit Elterncode entsperren</translation>
 <translation id="4731797938093519117">Elternfreigabe</translation>
 <translation id="4734965478015604180">Horizontal</translation>
-<translation id="476166673298332917">Der Geräteadministrator überwacht unter Umständen Ihre Browseraktivitäten.</translation>
 <translation id="4774338217796918551">Du darfst das Gerät um <ph name="COME_BACK_TIME" /> wieder verwenden.</translation>
 <translation id="4776917500594043016">Passwort für <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">In Demositzungen ist Google Assistant nicht verfügbar.</translation>
@@ -354,7 +355,6 @@
 <translation id="6537270692134705506">Screenshot aufnehmen</translation>
 <translation id="6542521951477560771">Inhalte werden an <ph name="RECEIVER_NAME" /> gestreamt</translation>
 <translation id="6559976592393364813">Administrator fragen</translation>
-<translation id="6574601967010742428">Der Geräteadministrator kann Ihre Aktivitäten möglicherweise überwachen.</translation>
 <translation id="6585808820553845416">Sitzung endet in <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Suchtaste + Umschalttaste + K</translation>
 <translation id="6650933572246256093">Das Bluetooth-Gerät "<ph name="DEVICE_NAME" />" bittet um Erlaubnis für Kopplung. Geben Sie auf dem Gerät folgenden Zugangscode ein: <ph name="PASSKEY" />.</translation>

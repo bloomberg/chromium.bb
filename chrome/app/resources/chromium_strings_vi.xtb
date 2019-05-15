@@ -120,9 +120,7 @@
 <translation id="4987820182225656817">Khách có thể sử dụng Chromium mà không phải thoát khỏi bất cứ nội dung nào.</translation>
 <translation id="4994636714258228724">Thêm chính bạn vào Chromium</translation>
 <translation id="5021854341188256296">{0,plural, =0{Đã có bản cập nhật Chromium OS}=1{Đã có bản cập nhật Chromium OS}other{Đã có bản cập nhật Chromium OS từ # ngày trước}}</translation>
-<translation id="5032989939245619637">Lưu chi tiết trong Chromium</translation>
 <translation id="5045248521775609809">Mang Chrome tới mọi nơi</translation>
-<translation id="5116586539350239523">Chromium sẽ lưu trữ an toàn chi tiết cá nhân của bạn nên bạn không cần nhập lại thông tin này.</translation>
 <translation id="5181952534059945058">Trang này sử dụng quá nhiều bộ nhớ nên Chromium đã xóa bớt một số nội dung.</translation>
 <translation id="5277894862589591112">Để áp dụng các mục thay đổi của bạn, hãy chạy lại Chromium</translation>
 <translation id="5358375970380395591">Bạn đang đăng nhập bằng tài khoản được quản lý và cấp cho quản trị viên của tài khoản quyền kiểm soát cấu hình Chromium của bạn. Dữ liệu Chromium của bạn, chẳng hạn như ứng dụng, dấu trang, lịch sử, mật khẩu và các cài đặt khác sẽ vĩnh viễn được liên kết với <ph name="USER_NAME" />. Bạn có thể xóa dữ liệu này thông qua Trang tổng quan của tài khoản Google nhưng không thể liên kết dữ liệu này với tài khoản khác. <ph name="LEARN_MORE" /></translation>

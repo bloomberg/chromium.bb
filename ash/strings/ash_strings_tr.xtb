@@ -112,6 +112,7 @@
 <translation id="2597972630681408282">Gece Işığı: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM kart kilitli</translation>
 <translation id="2653659639078652383">Gönder</translation>
+<translation id="2658778018866295321">Tıkla ve sürükle</translation>
 <translation id="2700493154570097719">Klavyenizi ayarlayın</translation>
 <translation id="2718395828230677721">Gece Işığı</translation>
 <translation id="2727977024730340865">Düşük güçlü bir şarj cihazına takıldı. Şarj durumu güvenilir olmayabilir.</translation>
@@ -227,6 +228,7 @@
 <translation id="4378551569595875038">Bağlanıyor...</translation>
 <translation id="4379531060876907730">Bunlar ekran kalemi araçlarınızdır</translation>
 <translation id="4389184120735010762">Yerleştirilmiş büyüteç klavye kısayoluna bastınız. Bu özelliği açmak istiyor musunuz?</translation>
+<translation id="4394049700291259645">Devre dışı bırak</translation>
 <translation id="4421231901400348175">Ekranınızın kontrolü, Uzaktan Yardım kullanılarak <ph name="HELPER_NAME" /> ile paylaşılıyor.</translation>
 <translation id="4430019312045809116">Ses</translation>
 <translation id="4450893287417543264">Bir daha gösterme</translation>
@@ -246,7 +248,6 @@
 <translation id="4696813013609194136">Kilidi ebeveyn koduyla açın</translation>
 <translation id="4731797938093519117">Ebeveyn erişimi</translation>
 <translation id="4734965478015604180">Yatay</translation>
-<translation id="476166673298332917">Cihaz yöneticisi göz atma etkinliğinizi izleyebilir.</translation>
 <translation id="4774338217796918551">Saat <ph name="COME_BACK_TIME" /> olduğunda geri gelin.</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> için şifre</translation>
 <translation id="4778095205580009397">Google Asistan, demo oturumunda kullanılamaz.</translation>
@@ -355,7 +356,6 @@
 <translation id="6537270692134705506">Ekran görüntüsünü kaydet</translation>
 <translation id="6542521951477560771"><ph name="RECEIVER_NAME" /> alıcısına gönderiliyor</translation>
 <translation id="6559976592393364813">Yöneticiye sorun</translation>
-<translation id="6574601967010742428">Cihaz yöneticisi, etkinliğinizi izleyebilir.</translation>
 <translation id="6585808820553845416">Oturumun süresi <ph name="SESSION_TIME_REMAINING" /> içinde bitiyor.</translation>
 <translation id="6627638273713273709">Ara+Üst Karakter+K</translation>
 <translation id="6650933572246256093">"<ph name="DEVICE_NAME" />" adlı Bluetooth cihaz eşleme izni istiyor. Lütfen söz konusu cihazda bu parolayı girin: <ph name="PASSKEY" /></translation>

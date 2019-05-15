@@ -120,9 +120,7 @@
 <translation id="4987820182225656817">ゲスト ユーザーは、記録を残さずに Chromium を使用できます。</translation>
 <translation id="4994636714258228724">Chromium に自分を追加</translation>
 <translation id="5021854341188256296">{0,plural, =0{Chromium OS のアップデートが利用可能です}=1{Chromium OS のアップデートが利用可能です}other{Chromium OS のアップデートが利用可能になってから # 日経過しています}}</translation>
-<translation id="5032989939245619637">Chromium で詳細を保存する</translation>
 <translation id="5045248521775609809">どのデバイスでも同じ Chromium を使用できます</translation>
-<translation id="5116586539350239523">Chromium でユーザーの情報が安全に保存されるので、再度入力する必要がなくなります。</translation>
 <translation id="5181952534059945058">このページは大量のメモリを使用しているため、Chromium により一部のコンテンツが削除されました。</translation>
 <translation id="5277894862589591112">変更を適用するには Chromium を再起動してください</translation>
 <translation id="5358375970380395591">現在、管理対象アカウントでログインしており、あなたの Chromium プロフィールを管理者が制御できる状態になっています。あなたの Chromium データ（アプリ、ブックマーク、履歴、パスワードなどの設定）は永続的に <ph name="USER_NAME" /> に関連付けられます。このデータは Google アカウントのダッシュボードを介して削除できますが、このデータを別のアカウントに関連付けることはできなくなります。<ph name="LEARN_MORE" /></translation>

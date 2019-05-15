@@ -9,7 +9,6 @@
 <translation id="1067922213147265141">ሌሎች የGoogle አገልግሎቶች</translation>
 <translation id="1068672505746868501">በ<ph name="SOURCE_LANGUAGE" /> ውስጥ ገጾችን በጭራሽ አትተርጉም</translation>
 <translation id="1080790410959514870">በ <ph name="DOMAIN_NAME" />ከሚቀናበር መለያ ዘግተው እየወጡ ነው። ይሄ በዚህ መሣሪያ ላይ የተከማቸውን የChrome ውሂብ ይሰርዘዋል፣ ነገር ግን ውሂቡ በእርስዎ የGoogle መለያ ውስጥ እንዳለ ይቀራል።</translation>
-<translation id="1099080783256647258">ውሂብ ቆጣቢ በሚበራበት ጊዜ Chrome የገጽ ጭነቶችን ለማፍጠን እና ለማመቅ የGoogle አገልጋዮችን ይጠቀማል። በተለይ በዘገምተኛ ገጾች ላይ ውሂብ ቆጣቢ ገጹ አስፈላጊውን ይዘት ብቻ እንዲጭን አድርጎ ገጹን ዳግም ይጽፈዋል። ውሂብ ቆጣቢ ማንነት በማያሳውቅ ሁነታ ላይ የተጫኑ ገጾችን አያተባም።</translation>
 <translation id="1100066534610197918">በቡድን ውስጥ አዲስ ትር ይክፈቱ</translation>
 <translation id="1105960400813249514">የማያ ገጽ ቀረጻ</translation>
 <translation id="1111673857033749125">በሌሎች መሣሪያዎችዎ ላይ የተቀመጡ ዕልባቶችዎ እዚህ ብቅ ይላሉ።</translation>
@@ -25,6 +24,7 @@
 <translation id="1175310183703641346">የእርስዎ እልባቶች፣ ታሪክ፣ የይለፍ ቃላት እና ተጨማሪ ነገሮች ከእንግዲህ ከGoogle መለያዎ ጋር አይሰምሩም።</translation>
 <translation id="1178581264944972037">ለአፍታ አቁም</translation>
 <translation id="1181037720776840403">አስወግድ</translation>
+<translation id="1188239144602654184">AR ያስገቡ</translation>
 <translation id="1197267115302279827">ዕልባቶችን ውሰድ</translation>
 <translation id="119944043368869598">ሁሉንም አጽዳ</translation>
 <translation id="1201402288615127009">ቀጣይ</translation>
@@ -96,7 +96,6 @@
 <translation id="1672586136351118594">ዳግም አታሳይ</translation>
 <translation id="1692118695553449118">አመሳስል በርቷል</translation>
 <translation id="169515064810179024">ጣቢያዎች የእንቅስቃሴ ዳሳሾችን እንዳይደርሱ ያግዱ</translation>
-<translation id="1709438864123551175">የውሂብ አስቀማጭ</translation>
 <translation id="1717218214683051432">የእንቅስቃሴ ዳሳሾች</translation>
 <translation id="1718835860248848330">የመጨረሻው ሰዓት</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - <ph name="TIME_SINCE_UPDATE" /> ላይ ተዘምኗል</translation>
@@ -214,7 +213,6 @@
 <translation id="2501278716633472235">ወደ ኋላ ተመለስ</translation>
 <translation id="2513403576141822879">ከግላዊነት፣ ደህንነት እና የውሂብ ስብስብ ጋር ለሚዛመዱ ተጨማሪ ቅንብሮች <ph name="BEGIN_LINK" />ስምረት እና የGoogle አገልግሎቶች<ph name="END_LINK" /></translation>
 <translation id="2523184218357549926">የሚጎበኙዋቸውን ገጾች ዩአርኤሎች ወደ Google ይልካል</translation>
-<translation id="2526148617758225454">የውሂብ አስቀማጭ በርቷል። በቅንብሮች ውስጥ ያስተዳድሩት።</translation>
 <translation id="2532336938189706096">የድር ዕይታ</translation>
 <translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" /> ንጥሎች ተሰርዟል</translation>
 <translation id="2536728043171574184">የዚህን ገጽ የመስመር ውጭ ቅጂ በመመልከት ላይ</translation>
@@ -354,14 +352,12 @@
 <translation id="3599863153486145794">ታሪክን በመለያ ከገቡ ሁሉም መሣሪያዎች ላይ ያጸዳል። የእርስዎ Google መለያ <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> ላይ ሌሎች የአሰሳ ታሪክ ዓይነቶች ሊኖረው ይችላል</translation>
 <translation id="3600792891314830896">ድምጽን በሚያጫውቱ ጣቢያዎች ላይ ድምጸ-ከል አድርግ</translation>
 <translation id="3616113530831147358">ድምጽ</translation>
-<translation id="3620176948598597475">ዳግም ማስጀመር የተጎበኙ ጣቢያዎች ዝርዝርን ጨምሮ የውሂብ ቆጣቢ ታሪክን ይደመስሳል።</translation>
 <translation id="3632295766818638029">የይለፍ ቃልን ግለጥ</translation>
 <translation id="363596933471559332">የተከማቹ ምስክርነቶችን በመጠቀም በራስ-ሰር ወደ የድር ጣቢያዎች መለያ ይግቡ። ባህሪው ሲጠፋ ወደ አንድ ድር ጣቢያ ከመግባትዎ በፊት ማረጋገጫ ይጠየቃሉ።</translation>
 <translation id="3658159451045945436">ዳግም ማስጀመር የተጎበኙ ጣቢያዎች ዝርዝር ጨምሮ የውሂብ ቁጠባዎን ታሪክ ይደመስሳል።</translation>
 <translation id="3662546969139119822">እዚህ ምንም ታሪክ የለም</translation>
 <translation id="3672452749423051839">የአሰሳ ስህተት ጥቆማ አስተያየቶች</translation>
 <translation id="3692944402865947621">የማከማቻ ቦታው የማይገኝ ስለሆነ <ph name="FILE_NAME" />ን ማውረድ አልተሳካም።</translation>
-<translation id="3712575778697986964">ውሂብ ቆጣቢ ዳግም ይጀመር?</translation>
 <translation id="3714981814255182093">የአግኝ አሞሌን ክፈት</translation>
 <translation id="3716182511346448902">ይህ ገጽ በጣም ብዙ ማህደረ ትውስታን ይጠቀማል፣ ስለዚህ Chrome ባለበት አቁሞታል።</translation>
 <translation id="3730075448226062617">Chrome የእርስዎን ማይክራፎን እንዲደርስ ለማድረግ፣ በ <ph name="BEGIN_LINK" />Android ቅንብሮች<ph name="END_LINK" /> ውስጥ ማይክራፎንን በተጨማሪ ያብሩ።</translation>
@@ -503,13 +499,11 @@
 <translation id="4751476147751820511">የእንቅስቃሴ ወይም የብርሃን ዳሳሾች</translation>
 <translation id="4759238208242260848">የወረዱ</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 ውርድ ተጠናቅቋል}one{# ውርዶች ተጠናቅቀዋል}other{# ውርዶች ተጠናቅቀዋል}}</translation>
-<translation id="4766369052440583386">ውሂብ ቆጣቢ በርቷል</translation>
 <translation id="4797039098279997504">ወደ <ph name="URL_OF_THE_CURRENT_TAB" /> ለመመለስ ይንኩ</translation>
 <translation id="4802417911091824046">የይለፍ ሐረግ ምስጠራ ከGoogle Pay የመክፈያ ዘዴዎችን እና አድራሻዎችን አያካትትም።
 
 ይህን ቅንብር ለመቀየር <ph name="BEGIN_LINK" />ስምረትን ዳግም ያስጀምሩ<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">በካርድ ላይ ያለ ስም</translation>
-<translation id="4807963036345170158">ውሂብ ቆጣቢ ጠፍቷል</translation>
 <translation id="4816465935029283692">የውሂብ ዓይነቶች</translation>
 <translation id="4824958205181053313">ስምረት ይሰረዝ?</translation>
 <translation id="4837753911714442426">ገጽን ለማተም አማራጮችን ክፈት</translation>
@@ -601,6 +595,7 @@
 <translation id="5447765697759493033">ይህ ጣቢያ አይተረጎምም</translation>
 <translation id="545042621069398927">ውርድዎን በማፍጠን ላይ።</translation>
 <translation id="5456381639095306749">ገጽ አውርድ</translation>
+<translation id="5475862044948910901">የሚጨምር የእውነት ክፍለ ጊዜ ይጀመር?</translation>
 <translation id="548278423535722844">በካርታዎች መተግበሪያ ውስጥ ይክፈቱ</translation>
 <translation id="5487521232677179737">ውሂብን አጽዳ</translation>
 <translation id="5494752089476963479">ረባሽ ወይም አሳሳች ማስታወቂያዎችን ከሚያሳዩ ጣቢያዎች የሚመጡ ማስታወቂያዎችን አግድ</translation>
@@ -643,7 +638,6 @@
 <translation id="569536719314091526">ከተጨማሪ አማራጮች አዝራርሩ ይህን ገጽ ወደ ማንኛውም ቋንቋ ያስተርጉሙ</translation>
 <translation id="572328651809341494">የቅርብ ጊዜ ትሮች</translation>
 <translation id="5726692708398506830">በገጹ ላይ ያለውን ሁሉንም ነገር ይበልጥ አተልቅ</translation>
-<translation id="5734520971562437809">እስከ 60 በመቶ ያነሰ ውሂብ ይጠቀሙና ድሩን ያፍጥኑት።</translation>
 <translation id="5748802427693696783">ወደ መደበኛ ትሮች ቀይር</translation>
 <translation id="5749068826913805084">Chrome ፋይሎችን ለማውረድ የማከማቻ መዳረሻ ያስፈልገዋል።</translation>
 <translation id="5763382633136178763">ማንነት የማያሳውቁ ትሮች</translation>
@@ -701,7 +695,6 @@
 <translation id="6159335304067198720"><ph name="PERCENT" /> የውሂብ ቁጠባዎች</translation>
 <translation id="6165508094623778733">የበለጠ ለመረዳት</translation>
 <translation id="6177111841848151710">ለአሁኑ የፍለጋ ፕሮግራም ታግዷል</translation>
-<translation id="6177390657002841081">የውሂብ አስቀማጭን አብራ</translation>
 <translation id="6181444274883918285">ለየት ያለ ጣቢያን አክል</translation>
 <translation id="6192333916571137726">ፋይል ያውርዱ</translation>
 <translation id="6192792657125177640">የተለዩ</translation>
@@ -867,6 +860,11 @@
 <translation id="7352939065658542140">ቪድዮ</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{1 የተመረጠ ንጥል አጋራ}one{# የተመረጡ ንጥሎችን አጋራ}other{# የተመረጡ ንጥሎችን አጋራ}}</translation>
 <translation id="7359002509206457351">የመዳረሻ መክፈያ ዘዴዎች</translation>
+<translation id="7365126855094612066">ለዚህ ወቅት ቆይታ ጊዜ ያህል፣ ጣቢያው የሚከተሉትን ማድረግ ይችላል፦
+• የእርስዎን አካባቢ የ 3D ካርታ መፍጠር
+• የካሜራን እንቅስቃሴ ዱካ መከታተል
+
+ይህ ጣቢያ ወደ ካሜራ መዳረሻ አያገኝም። የካሜራ ምስሎች ለእርስዎ ብቻ የሚታዩ ናቸው።</translation>
 <translation id="7375125077091615385">ዓይነት፦</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />።</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -1114,11 +1112,9 @@
 <translation id="9188680907066685419">ከሚተዳደር መለያ ዘግግተህ ውጣ</translation>
 <translation id="9204836675896933765">1 ፋይል ቀርቷል</translation>
 <translation id="9206873250291191720">አ</translation>
-<translation id="9215534869786664672">እስከ 60 በመቶ ያነሰ ውሂብ ይጠቀሙና ድሩን ያፍጥኑት። የGoogle አገልጋዮች እርስዎ የሚጎበኟቸውን ገጾች ያተባሉ።</translation>
 <translation id="9219103736887031265">ምስሎች</translation>
 <translation id="926205370408745186">የChrome እንቅስቃሴዎን ከዲጂታል ብቁ መሆን ያስወግዱ</translation>
 <translation id="932327136139879170">መነሻ</translation>
-<translation id="932599481871055447">ውሂብ ይቆጥቡና በበለጠ ፍጥነት ያስሱ</translation>
 <translation id="938850635132480979">ስህተት፦ <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">የእርስዎን ማይክሮፎን ይድረሱ</translation>
 <translation id="951339005376969845">ነባሩን ውሂብ ይሰርዙ። ወደ <ph name="FROM_ACCOUNT" /> መልሰው በመቀየር ሰርስረው ሊያወጡት ይችላሉ።</translation>

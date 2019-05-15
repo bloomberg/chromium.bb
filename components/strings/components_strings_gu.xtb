@@ -474,6 +474,7 @@
 <translation id="3495081129428749620">પેજ
     <ph name="PAGE_TITLE" />માં શોધો</translation>
 <translation id="3498215018399854026">અમે આ પળે તમારા વાલી સુધી પહોંચી શક્યાં નથી. કૃપા કરીને ફરી પ્રયાસ કરો.</translation>
+<translation id="3512163584740124171">આ નીતિને અવગણવામાં આવે છે કારણ કે સમાન નીતિ ગ્રૂપની બીજી નીતિ ઉચ્ચ પ્રાથમિકતા ધરાવે છે.</translation>
 <translation id="3528171143076753409">સર્વરનું પ્રમાણપત્ર વિશ્વસનીય નથી.</translation>
 <translation id="3528485271872257980">ઘાટો ભૂરો</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{સિંક કરેલ ઉપકરણો પર ઓછામાં ઓછી 1 આઇટમ}=1{1 આઇટમ (અને સિંક કરેલ ઉપકરણો પર બીજી ઘણી બધી)}one{# આઇટમ (અને સિંક કરેલ ઉપકરણો પર બીજી ઘણી બધી)}other{# આઇટમ (અને સિંક કરેલ ઉપકરણો પર બીજી ઘણી બધી)}}</translation>
@@ -1087,7 +1088,6 @@
 <translation id="7062635574500127092">મોરપીંછ</translation>
 <translation id="7064851114919012435">સંપર્ક માહિતી</translation>
 <translation id="7079718277001814089">આ સાઇટમાં માલવેર છે</translation>
-<translation id="7081564429925484109">ચેતવણી: આ નીતિને ઉલ્લેખ કર્યા મુજબ PolicyListMultipleSourceMergeList નીતિમાં મર્જ કરવામાં આવી ન હતી, કારણ કે તે સૂચિ નથી.</translation>
 <translation id="7087282848513945231">કાઉન્ટિ</translation>
 <translation id="7090678807593890770"><ph name="LINK" /> માટે Google પર શોધો</translation>
 <translation id="7108338896283013870">છુપાવો</translation>
@@ -1147,7 +1147,6 @@
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">ના</translation>
 <translation id="7378810950367401542">/</translation>
-<translation id="7381288752349550461">મેનેજ કરાયેલ સત્ર ઓવરરાઇડ થયું હોય</translation>
 <translation id="7390545607259442187">કાર્ડની પુષ્ટિ કરો</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7403591733719184120">તમારું <ph name="DEVICE_NAME" /> મેનેજ કરવામાં આવે છે</translation>

@@ -120,9 +120,7 @@
 <translation id="4987820182225656817">Vierailijat voivat käyttää Chromiumia jälkiä jättämättä.</translation>
 <translation id="4994636714258228724">Lisää itsesi Chromiumiin</translation>
 <translation id="5021854341188256296">{0,plural, =0{Chromium OS ‑päivitys on saatavilla}=1{Chromium OS ‑päivitys on saatavilla}other{Chromium OS ‑päivitys on ollut saatavilla # vuorokauden ajan}}</translation>
-<translation id="5032989939245619637">Tallenna tiedot Chromiumiin</translation>
 <translation id="5045248521775609809">Ota Chromium mukaan kaikkialle</translation>
-<translation id="5116586539350239523">Chromium tallentaa tietosi turvalliseen paikkaan, jottei sinun tarvitse kirjoittaa tietoja uudelleen.</translation>
 <translation id="5181952534059945058">Tämä sivu käyttää liikaa muistia, joten Chromium poisti osan sisällöstä.</translation>
 <translation id="5277894862589591112">Ota muutokset käyttöön käynnistämällä Chromium uudelleen</translation>
 <translation id="5358375970380395591">Olet kirjautumassa sisään hallinnoidulla tilillä ja antamassa tilin järjestelmänvalvojalle oikeuden hallita Chromium-profiiliasi. Chromium-tietosi, kuten sovelluksesi, kirjanmerkkisi, historiasi, salasanasi ja muut asetuksesi, yhdistetään pysyvästi käyttäjätiliin <ph name="USER_NAME" />. Voit poistaa nämä tiedot Google-tilien Hallintapaneelissa, mutta et voi liittää tietoja toiseen tiliin. <ph name="LEARN_MORE" /></translation>

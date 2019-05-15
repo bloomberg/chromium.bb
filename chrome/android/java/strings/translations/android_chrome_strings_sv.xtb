@@ -9,7 +9,6 @@
 <translation id="1067922213147265141">Andra Google-tjänster</translation>
 <translation id="1068672505746868501">Översätt aldrig sidor på <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1080790410959514870">Du loggar ut från ett konto som hanteras av <ph name="DOMAIN_NAME" />. Chrome-data som lagras på enheten kommer att tas bort, men all data finns kvar i ditt Google-konto.</translation>
-<translation id="1099080783256647258">När Databesparing har aktiverats använder Chrome Googles servrar för att läsa in sidor snabbare och komprimera inläsningarna. Sidor som är långsammare än vanligt skrivs om av Databesparing så att endast det viktigaste innehållet läses in. Sidor som läses in i inkognitoläget optimeras inte med Databesparing.</translation>
 <translation id="1100066534610197918">Öppna på en ny flik i gruppen</translation>
 <translation id="1105960400813249514">Skärmavbildning</translation>
 <translation id="1111673857033749125">Här visas bokmärken som du har sparat på andra enheter.</translation>
@@ -25,6 +24,7 @@
 <translation id="1175310183703641346">Bokmärken, historik, lösenord med mera synkroniseras inte längre med ditt Google-konto</translation>
 <translation id="1178581264944972037">Paus</translation>
 <translation id="1181037720776840403">Ta bort</translation>
+<translation id="1188239144602654184">Starta AR</translation>
 <translation id="1197267115302279827">Flytta bokmärken</translation>
 <translation id="119944043368869598">Ta bort alla</translation>
 <translation id="1201402288615127009">Nästa</translation>
@@ -96,7 +96,6 @@
 <translation id="1672586136351118594">Visa inte igen</translation>
 <translation id="1692118695553449118">Synkronisering är på</translation>
 <translation id="169515064810179024">Blockera webbplatser från att använda enhetens rörelsesensorer</translation>
-<translation id="1709438864123551175">Databesparing</translation>
 <translation id="1717218214683051432">Rörelsesensorer</translation>
 <translation id="1718835860248848330">Senaste timmen</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> – uppdaterades <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -214,7 +213,6 @@
 <translation id="2501278716633472235">Föregående</translation>
 <translation id="2513403576141822879">Fler inställningar som rör sekretess, säkerhet och datainsamling finns under <ph name="BEGIN_LINK" />Synkronisering och Googles tjänster<ph name="END_LINK" /></translation>
 <translation id="2523184218357549926">Skickar webbadresserna till sidor du besöker till Google</translation>
-<translation id="2526148617758225454">Databesparing är på. Hantera funktionen i Inställningar.</translation>
 <translation id="2532336938189706096">Webbvy</translation>
 <translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" /> objekt har tagits bort</translation>
 <translation id="2536728043171574184">En offlinekopia av sidan visas</translation>
@@ -354,14 +352,12 @@
 <translation id="3599863153486145794">Historik rensas från alla inloggade enheter. Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Stäng av ljudet på webbplatser</translation>
 <translation id="3616113530831147358">Ljud</translation>
-<translation id="3620176948598597475">Om du återställer raderas historiken för Databesparing, inklusive listan med besökta webbplatser.</translation>
 <translation id="3632295766818638029">Visa lösenord</translation>
 <translation id="363596933471559332">Logga in automatiskt på webbplatser med hjälp av lagrade inloggningsuppgifter. När funktionen är inaktiverad måste du verifiera dina uppgifter varje gång du besöker webbplatsen innan du kan logga in.</translation>
 <translation id="3658159451045945436">Om du återställer begränsat läge raderas databesparingshistoriken, inklusive listan med webbplatser som du har besökt.</translation>
 <translation id="3662546969139119822">Det finns ingen historik här</translation>
 <translation id="3672452749423051839">Förslag vid navigeringsfel</translation>
 <translation id="3692944402865947621">Det gick inte att ladda ned <ph name="FILE_NAME" /> eftersom det inte gick att nå lagringsplatsen.</translation>
-<translation id="3712575778697986964">Vill du återställa Databesparing?</translation>
 <translation id="3714981814255182093">Öppna sökfältet</translation>
 <translation id="3716182511346448902">Den här sidan har pausats i Chrome eftersom den använder för mycket minne.</translation>
 <translation id="3730075448226062617">Om du vill ge Chrome åtkomst till mikrofonen måste du även aktivera mikrofonen i <ph name="BEGIN_LINK" />inställningarna för Android<ph name="END_LINK" />.</translation>
@@ -503,13 +499,11 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="4751476147751820511">Rörelse- eller ljussensorer</translation>
 <translation id="4759238208242260848">Nedladdningar</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 nedladdning har slutförts.}other{# nedladdningar har slutförts.}}</translation>
-<translation id="4766369052440583386">Databesparing är aktiverat</translation>
 <translation id="4797039098279997504">Tryck här om du vill återgå till <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4802417911091824046">Betalningsmetoder och adresser från Google Pay omfattas inte av kryptering med lösenfras.
 
 <ph name="BEGIN_LINK" />Återställ synkroniseringen<ph name="END_LINK" /> om du vill ändra den här inställningen.</translation>
 <translation id="4807098396393229769">Namn på kort</translation>
-<translation id="4807963036345170158">Databesparing är inaktiverat</translation>
 <translation id="4816465935029283692">Datatyper</translation>
 <translation id="4824958205181053313">Vill du avbryta synkroniseringen?</translation>
 <translation id="4837753911714442426">Öppna utskriftsalternativ</translation>
@@ -601,6 +595,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="5447765697759493033">Den här webbplatsen översätts inte</translation>
 <translation id="545042621069398927">Nedladdningen görs snabbare.</translation>
 <translation id="5456381639095306749">Ladda ned sida</translation>
+<translation id="5475862044948910901">Vill du starta en session med förstärkt verklighet?</translation>
 <translation id="548278423535722844">Öppna i kartapp</translation>
 <translation id="5487521232677179737">Rensa data</translation>
 <translation id="5494752089476963479">Blockera annonser på webbplatser där påträngande eller vilseledande annonser visas</translation>
@@ -643,7 +638,6 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="569536719314091526">Översätt den här sidan till vilket språk som helst via knappen Fler alternativ</translation>
 <translation id="572328651809341494">Senaste flikarna</translation>
 <translation id="5726692708398506830">Gör allt på sidan större</translation>
-<translation id="5734520971562437809">Använd upp till 60 procent mindre data och gör webben snabbare.</translation>
 <translation id="5748802427693696783">Bytte till standardflikar</translation>
 <translation id="5749068826913805084">Chrome måste ha åtkomst till lagringsutrymmet om det ska gå att ladda ned filer.</translation>
 <translation id="5763382633136178763">Inkognitoflikar</translation>
@@ -701,7 +695,6 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="6159335304067198720">Sparat utrymme: <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Läs mer</translation>
 <translation id="6177111841848151710">Blockerad för den nuvarande sökmotorn</translation>
-<translation id="6177390657002841081">Aktivera Databesparing</translation>
 <translation id="6181444274883918285">Lägg till en webbplats i undantagen</translation>
 <translation id="6192333916571137726">Ladda ned fil</translation>
 <translation id="6192792657125177640">Undantag</translation>
@@ -867,6 +860,11 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Dela 1 markerat objekt}other{Dela # markerade objekt}}</translation>
 <translation id="7359002509206457351">Åtkomst till betalningsmetoder</translation>
+<translation id="7365126855094612066">Webbplatsen kan göra följande under återstoden av sessionen:
+• skapa en karta över omgivningen i 3D
+• spåra kamerans rörelser
+
+Webbplatsen får INTE tillgång till kameran. Bara du kan se kamerabilderna.</translation>
 <translation id="7375125077091615385">Typ:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">Webbadress</translation>
@@ -1114,11 +1112,9 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="9188680907066685419">Logga ut från hanterat konto</translation>
 <translation id="9204836675896933765">1 fil återstår</translation>
 <translation id="9206873250291191720">A</translation>
-<translation id="9215534869786664672">Använd upp till 60 procent mindre data och gör webben snabbare. Googles servrar optimerar de sidor du besöker.</translation>
 <translation id="9219103736887031265">Bilder</translation>
 <translation id="926205370408745186">Ta bort din aktivitet i Chrome från Digitalt välmående</translation>
 <translation id="932327136139879170">Startsida</translation>
-<translation id="932599481871055447">Spara data och bläddra snabbare</translation>
 <translation id="938850635132480979">Fel: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Tillgång till din mikrofon</translation>
 <translation id="951339005376969845">Radera befintlig data. Om du byter tillbaka till <ph name="FROM_ACCOUNT" /> finns den kvar där.</translation>

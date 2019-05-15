@@ -475,6 +475,7 @@
 <translation id="3495081129428749620">Encontrar na página
     <ph name="PAGE_TITLE" /></translation>
 <translation id="3498215018399854026">Não foi possível contatar seu pai/mãe no momento. Tente novamente.</translation>
+<translation id="3512163584740124171">Esta política é ignorada porque outra política do mesmo grupo tem uma prioridade mais alta.</translation>
 <translation id="3528171143076753409">O certificado do servidor não é confiável.</translation>
 <translation id="3528485271872257980">Marrom-escuro</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Pelo menos 1 item em dispositivos sincronizados}=1{1 item (e mais em dispositivos sincronizados)}one{# item (e mais em dispositivos sincronizados)}other{# itens (e mais em dispositivos sincronizados)}}</translation>
@@ -1088,7 +1089,6 @@
 <translation id="7062635574500127092">Azul-petróleo</translation>
 <translation id="7064851114919012435">Dados de contato</translation>
 <translation id="7079718277001814089">Este site contém malware</translation>
-<translation id="7081564429925484109">Aviso: esta política não foi mesclada conforme especificado na política PolicyListMultipleSourceMergeList porque não é uma lista.</translation>
 <translation id="7087282848513945231">Condado</translation>
 <translation id="7090678807593890770">Pesquise <ph name="LINK" /> no Google</translation>
 <translation id="7108338896283013870">Ocultar</translation>
@@ -1148,7 +1148,6 @@ Mais detalhes:
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">Não</translation>
 <translation id="7378810950367401542">/</translation>
-<translation id="7381288752349550461">Modificação de sessão gerenciada</translation>
 <translation id="7390545607259442187">Confirmar cartão</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7403591733719184120">Seu <ph name="DEVICE_NAME" /> é gerenciado</translation>

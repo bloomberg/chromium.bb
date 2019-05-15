@@ -74,13 +74,11 @@
 <translation id="1952728750904661634">Bejelentkezés felügyelt fiókkal</translation>
 <translation id="1974060860693918893">Speciális</translation>
 <translation id="1989112275319619282">Böngészés</translation>
-<translation id="2000419248597011803">Bizonyos cookie-kat és kereséseket küld a címsávból és a keresőmezőből az alapértelmezett keresőmotornak</translation>
 <translation id="2015722694326466240">A jelszavak megtekintéséhez előbb be kell állítania az eszközön a biztonsági kódot.</translation>
 <translation id="2068952045031577364">Elmúlt hét</translation>
 <translation id="2074131957428911366">A <ph name="BEGIN_LINK" />beállítások<ph name="END_LINK" /> között bármikor módosíthatja a szinkronizálni kívánt elemeket.</translation>
 <translation id="2079545284768500474">Visszavonás</translation>
 <translation id="209018056901015185">Asztali webhely kérése</translation>
-<translation id="2096012225669085171">Szinkronizálás és személyre szabás az eszközök között</translation>
 <translation id="2103075008456228677">A history.google.com megnyitása</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elem áthelyezve</translation>
 <translation id="213900355088104901">Privát böngészéshez nyisson inkognitólapot</translation>
@@ -107,7 +105,6 @@
 <translation id="2435457462613246316">Jelszó megjelenítése</translation>
 <translation id="2481538920734869610">FIÓK HOZZÁADÁSA</translation>
 <translation id="2497852260688568942">A szinkronizálást letiltotta a rendszergazda</translation>
-<translation id="2523184218357549926">A felkeresett oldalak URL-címének elküldése a Google-nak</translation>
 <translation id="2523363575747517183">Ez a webhely folyamatosan próbál megnyitni egy másik alkalmazást.</translation>
 <translation id="2529021024822217800">Az összes megnyitása</translation>
 <translation id="2572712655377361602">Egy eszközszabályzat letiltotta a fényképeihez való hozzáférést</translation>
@@ -137,6 +134,7 @@
 <translation id="2871695793448672541">Jelszó (rejtett)</translation>
 <translation id="288655811176831528">Lap bezárása</translation>
 <translation id="2898963176829412617">Új mappa...</translation>
+<translation id="2916171785467530738">Keresések és URL-címek automatikus kiegészítése</translation>
 <translation id="291754862089661335">Igazítsa a QR-kódot vagy vonalkódot ehhez a kerethez</translation>
 <translation id="2921219216347069551">Az oldal megosztása sikertelen</translation>
 <translation id="2923448633003185837">Beillesztés és ugrás</translation>
@@ -306,7 +304,6 @@ Az Átadást engedélyezni kell a Beállítások általános részében is, és 
 <translation id="5857090052475505287">Új mappa</translation>
 <translation id="5857770089550859117">A szinkronizálás megkezdéséhez összetett jelszó megadása szükséges.</translation>
 <translation id="5860033963881614850">Kikapcsolva</translation>
-<translation id="5865733239029070421">Automatikusan elküldi a használati statisztikákat és hibajelentéseket a Google-nak</translation>
 <translation id="5869029295770560994">Rendben, értem</translation>
 <translation id="5871497086027727873">1 elem áthelyezve</translation>
 <translation id="5897956970858271241">Másolt link megnyitása</translation>
@@ -412,7 +409,6 @@ Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a
 <translation id="722055596168483966">A Google-szolgáltatások személyre szabása</translation>
 <translation id="7265758999917665941">Ezen a webhelyen soha</translation>
 <translation id="7272437679830969316">Nem sikerült ellenőrizni a személyazonosságát. A jelszó nem lett másolva.</translation>
-<translation id="7280856130494094142">A szinkronizálás megkezdéséhez adja meg az összetett jelszót</translation>
 <translation id="7285236536143823449">BELEEGYEZEM</translation>
 <translation id="7291368939935408496">Jelszavak előkészítése…</translation>
 <translation id="7293171162284876153">A szinkronizálás megkezdéséhez kapcsolja be a „Chrome-adatok szinkronizálása” beállítást.</translation>
@@ -434,12 +430,10 @@ Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a
 <translation id="7554791636758816595">Új lap</translation>
 <translation id="7561196759112975576">Mindig</translation>
 <translation id="7603852183842204213">Pop-up letiltva (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
-<translation id="7605594153474022051">A szinkronizálás nem működik.</translation>
 <translation id="7638584964844754484">Hibás összetett jelszó</translation>
 <translation id="7658239707568436148">Mégse</translation>
 <translation id="766891008101699113">Ha privát módon szeretne böngészni az interneten, adjon hozzá egy új lapot.</translation>
 <translation id="7671141431838911305">TELEPÍTÉS</translation>
-<translation id="7704317875155739195">Keresések és URL-címek automatikus kiegészítése</translation>
 <translation id="7765158879357617694">Áthelyezés</translation>
 <translation id="7769602470925380267">Elfogadás és kijelentkezés</translation>
 <translation id="7772032839648071052">Összetett jelszó megerősítése</translation>
@@ -477,7 +471,6 @@ Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a
 <translation id="842017693807136194">Bejelentkezve a következővel:</translation>
 <translation id="8428045167754449968">Város/helység</translation>
 <translation id="8428213095426709021">Beállítások</translation>
-<translation id="8438566539970814960">Keresések és böngészés javítása</translation>
 <translation id="8458397775385147834">1 elem törölve</translation>
 <translation id="8487700953926739672">Offline elérhető</translation>
 <translation id="8503813439785031346">Felhasználónév</translation>

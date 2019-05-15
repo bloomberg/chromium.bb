@@ -226,6 +226,7 @@
 <translation id="1338950911836659113">Uppgifterna tas bort ...</translation>
 <translation id="1340527397989195812">Säkerhetskopiera media från enheten med appen Filer.</translation>
 <translation id="1341988552785875222">Den aktuella bakgrunden har ställts in av <ph name="APP_NAME" />. Du kan komma att behöva avinstallera <ph name="APP_NAME" /> innan du kan välja en annan bakgrund.</translation>
+<translation id="1343865611738742294">Ge Linux-appar åtkomstbehörighet till USB-enheter. När en USB-enhet tas bort sparas ingen information om den i Linux.</translation>
 <translation id="1347256498747320987">Installera uppdateringar och appar. Genom att fortsätta godkänner du att enheten får ladda ned och installera uppdateringar och appar automatiskt från Google, operatören och enhetstillverkaren, eventuellt genom att använda mobildata. Det kan hända att några av apparna erbjuder köp i appen. <ph name="BEGIN_LINK1" />Läs mer<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">Uppdateringen börjar när batterinivån är på <ph name="BATTERY_LEVEL" /> %.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
@@ -706,6 +707,7 @@
 <translation id="2120297377148151361">Aktivitet och interaktion</translation>
 <translation id="2120478168904746065">{NUM_TABS,plural, =1{Slå på ljud från flik}other{Slå på ljud från flikar}}</translation>
 <translation id="2121825465123208577">Ändra storlek</translation>
+<translation id="2122305276694332719">Med automatisk anslutning till ett dolt nätverk kan andra se enheten och vissa nätverksinställningar. Detta rekommenderas inte.</translation>
 <translation id="2124930039827422115">{1,plural, =1{Fått betyget <ph name="AVERAGE_RATING" /> av en användare.}other{Fått betyget <ph name="AVERAGE_RATING" /> av # användare.}}</translation>
 <translation id="2126167708562367080">Synkronisering har inaktiverats av administratören.</translation>
 <translation id="2127372758936585790">Laddning med låg effekt</translation>
@@ -1302,6 +1304,7 @@
 <translation id="3012917896646559015">Kontakta maskinvarutillverkaren omedelbart om du vill skicka datorn till en reparationsverkstad.</translation>
 <translation id="3013291976881901233">MIDI-enheter</translation>
 <translation id="3015639418649705390">Starta om nu</translation>
+<translation id="3016329696181678353">Det gick inte att konfigurera <ph name="PRINTER_NAME" /> automatiskt. Ange avancerade utskriftsalternativ.</translation>
 <translation id="3016641847947582299">Komponenten har uppdaterats</translation>
 <translation id="3016780570757425217">Veta din plats</translation>
 <translation id="3020183492814296499">Genvägar</translation>
@@ -1804,7 +1807,6 @@
 <translation id="3789841737615482174">Installera</translation>
 <translation id="379082410132524484">Kortets giltighetstid har löpt ut</translation>
 <translation id="3792890930871100565">Koppla från skrivare</translation>
-<translation id="3792938779249970121">Välj konto</translation>
 <translation id="3796648294839530037">Favoritnätverk:</translation>
 <translation id="3797739167230984533">Din <ph name="BEGIN_LINK" /><ph name="DEVICE_TYPE" /> hanteras<ph name="END_LINK" /> av organisationen</translation>
 <translation id="3797900183766075808">&amp;Sök på <ph name="SEARCH_ENGINE" /> efter ”<ph name="SEARCH_TERMS" />”</translation>
@@ -2113,6 +2115,7 @@
 <translation id="4268025649754414643">Nyckelchiffrering</translation>
 <translation id="4270393598798225102">Version <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">Inga träffar</translation>
+<translation id="4275663329226226506">Media</translation>
 <translation id="4275830172053184480">Starta om enheten</translation>
 <translation id="4278101229438943600">Assistenten är redo</translation>
 <translation id="4278390842282768270">Tillåtet</translation>
@@ -2155,7 +2158,6 @@
 <translation id="4354344420232759511">Webbplatser du besöker visas här</translation>
 <translation id="435527878592612277">Välj foto</translation>
 <translation id="4356334633973342967">Eller ange en egen drivrutin:</translation>
-<translation id="4358169392473932247">Den säkerhetsnyckeln har inte stöd för att spara användaruppgifter internt, men en sådan funktion begärdes.</translation>
 <translation id="4359408040881008151">Installerades på grund av ett eller flera tillägg som är beroende av detta tillägg.</translation>
 <translation id="4359717112757026264">Cityscape</translation>
 <translation id="4361142739114356624">Det här klientcertifikatets privata nyckel saknas eller är tom</translation>
@@ -2338,7 +2340,6 @@
 <translation id="4665014895760275686">Tillverkare</translation>
 <translation id="4665446389743427678">All data som lagrats av <ph name="SITE" /> raderas.</translation>
 <translation id="4668721319092543482">Klicka för att aktivera <ph name="PLUGIN_NAME" /></translation>
-<translation id="4670688170798478686">Bekräfta återställning</translation>
 <translation id="4672657274720418656">Skapa Distiller-sida</translation>
 <translation id="4673442866648850031">Öppna verktyg för e-penna när e-pennan tas bort</translation>
 <translation id="4677585247300749148"><ph name="URL" /> vill svara på tillgänglighetshändelser</translation>
@@ -2368,7 +2369,6 @@
 <translation id="4711638718396952945">Återställ inställningarna</translation>
 <translation id="4715553623069266137">mycket kort (0,8 s)</translation>
 <translation id="4716483597559580346">Gör en powerwash för ökad säkerhet</translation>
-<translation id="4718490098585891067">Välj det konto du vill logga in med:</translation>
 <translation id="4720113199587244118">Lägg till enheter</translation>
 <translation id="4720185134442950733">Mobilt datanätverk</translation>
 <translation id="4722735765955348426">Lösenord för <ph name="USERNAME" /></translation>
@@ -2399,7 +2399,6 @@
 <translation id="4756388243121344051">&amp;Historik</translation>
 <translation id="4759238208242260848">Nedladdningar</translation>
 <translation id="4761104368405085019">Använd mikrofonen</translation>
-<translation id="476166673298332917">Enhetens administratör kan övervaka din webbhistorik</translation>
 <translation id="4762718786438001384">Mycket ont om diskutrymme på enheten</translation>
 <translation id="4763408175235639573">Följande cookies sparades när du visade denna sida</translation>
 <translation id="4763830802490665879">Cookies från flera webbplatser kommer att rensas vid avslut.</translation>
@@ -3928,7 +3927,6 @@
 <translation id="713888829801648570">Ditt lösenord kunde tyvärr inte verifieras eftersom du är offline.</translation>
 <translation id="7140928199327930795">Det finns inga andra tillgängliga enheter.</translation>
 <translation id="7141105143012495934">Inloggningen misslyckades eftersom det inte gick att hämta dina kontouppgifter. Kontakta administratören eller försök igen.</translation>
-<translation id="714285394257538643">Bekräfta återställningen av säkerhetsnyckeln genom att trycka på den en gång till. Alla användaruppgifter som sparats på säkerhetsnyckeln och dess pinkod raderas.</translation>
 <translation id="7143092389027215216">Demoläget startas</translation>
 <translation id="7143207342074048698">Ansluter</translation>
 <translation id="7144878232160441200">Försök igen</translation>
@@ -4162,6 +4160,7 @@
 <translation id="7506541170099744506"><ph name="DEVICE_TYPE" /> har registrerats för företagshantering.</translation>
 <translation id="7507930499305566459">Status för svarscertifikat</translation>
 <translation id="7513029293694390567">Logga in automatiskt på webbplatser med hjälp av lagrade inloggningsuppgifter. När funktionen är inaktiverad måste du bekräfta inloggningen varje gång du besöker en webbplats.</translation>
+<translation id="7514365320538308">Ladda ned</translation>
 <translation id="7517786267097410259">Skapa ett lösenord –</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">Säg ”Ok Google”</translation>
@@ -4502,6 +4501,7 @@ Nyckelfil: <ph name="KEY_FILE" />
 Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versioner av ditt tillägg.</translation>
 <translation id="8000066093800657092">Inget nätverk</translation>
 <translation id="8000467600002607205">{NUM_TABS,plural, =1{Stäng fliken}other{Stäng flikar}}</translation>
+<translation id="8002274832045662704">Avancerad skrivarkonfiguration</translation>
 <translation id="8004582292198964060">Webbläsare</translation>
 <translation id="8005600846065423578">Ge alltid <ph name="HOST" /> tillgång till Urklipp</translation>
 <translation id="8008356846765065031">Internetanslutningen har avbrutits. Kontrollera internetanslutningen.</translation>
@@ -5042,6 +5042,7 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8850251000316748990">Visa fler …</translation>
 <translation id="885246833287407341">API-funktionens argument</translation>
 <translation id="8853586775156634952">Det här kortet sparas enbart på den här enheten</translation>
+<translation id="885701979325669005">Lagring</translation>
 <translation id="8859057652521303089">Välj språk:</translation>
 <translation id="8859174528519900719">Underram: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8862003515646449717">Byt till en snabb webbläsare</translation>

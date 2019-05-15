@@ -122,9 +122,7 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="4987820182225656817">Hostia môžu používať prehliadač Chromium bez toho, aby po sebe zanechali akékoľvek informácie.</translation>
 <translation id="4994636714258228724">Pridajte si účet do prehliadača Chromium</translation>
 <translation id="5021854341188256296">{0,plural, =0{Je k dispozícii aktualizácia systému Chromium OS}=1{Je k dispozícii aktualizácia systému Chromium OS}few{Aktualizácia systému Chromium OS je k dispozícii už # dni}many{Aktualizácia systému Chromium OS je k dispozícii už # dňa}other{Aktualizácia systému Chromium OS je k dispozícii už # dní}}</translation>
-<translation id="5032989939245619637">Uložiť podrobnosti v prehliadači Chromium</translation>
 <translation id="5045248521775609809">Vezmite si Chromium všade</translation>
-<translation id="5116586539350239523">Chromium vaše osobné údaje bezpečne uloží, aby ste ich už nemuseli znova zadávať.</translation>
 <translation id="5181952534059945058">Táto stránka využíva príliš veľa pamäte, a preto prehliadač Chromium odstránil časť obsahu.</translation>
 <translation id="5277894862589591112">Ak chcete zmeny použiť, spustite Chromium znova</translation>
 <translation id="5358375970380395591">Prihlasujete sa pomocou spravovaného účtu a jeho správcovi dávate kontrolu nad vaším profilom Chromium. Vaše údaje prehliadača Chromium, ako sú aplikácie, záložky, história, heslá a iné nastavenia, sa natrvalo priradia k účtu <ph name="USER_NAME" />. Tieto údaje budete môcť odstrániť len pomocou panela Dashboard v Účtoch Google, ale nebudete ich môcť priradiť k inému účtu. <ph name="LEARN_MORE" /></translation>

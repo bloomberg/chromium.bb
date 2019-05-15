@@ -9,7 +9,6 @@
 <translation id="1067922213147265141">Alte servicii Google</translation>
 <translation id="1068672505746868501">Nu traduce niciodată paginile în <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1080790410959514870">În prezent, te deconectezi de la un cont gestionat de <ph name="DOMAIN_NAME" />. Astfel, vor fi șterse datele Chrome stocate pe acest dispozitiv, dar datele vor rămâne în Contul Google.</translation>
-<translation id="1099080783256647258">Când este activat Economizorul de date, Chrome folosește serverele Google să accelereze și să comprime încărcările paginilor. La paginile care se încarcă foarte lent, Economizorul de date rescrie pagina pentru a încărca doar conținutul esențial. Economizorul de date nu optimizează paginile încărcate în modul incognito.</translation>
 <translation id="1100066534610197918">Deschide în filă nouă în grup</translation>
 <translation id="1105960400813249514">Captură de ecran</translation>
 <translation id="1111673857033749125">Marcajele salvate pe alte dispozitive vor apărea aici.</translation>
@@ -25,6 +24,7 @@
 <translation id="1175310183703641346">Marcajele, istoricul, parolele și alte setări nu vor mai fi sincronizate cu Contul Google</translation>
 <translation id="1178581264944972037">Întrerupe</translation>
 <translation id="1181037720776840403">Elimină</translation>
+<translation id="1188239144602654184">Intră în RA</translation>
 <translation id="1197267115302279827">Mută marcaje</translation>
 <translation id="119944043368869598">Șterge-le pe toate</translation>
 <translation id="1201402288615127009">Înainte</translation>
@@ -96,7 +96,6 @@
 <translation id="1672586136351118594">Nu mai afișa</translation>
 <translation id="1692118695553449118">Sincronizarea este activată</translation>
 <translation id="169515064810179024">Împiedică site-urile să acceseze senzorii de mișcare</translation>
-<translation id="1709438864123551175">Economizor de date</translation>
 <translation id="1717218214683051432">Senzori de mișcare</translation>
 <translation id="1718835860248848330">Ultima oră</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> – actualizat <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -214,7 +213,6 @@
 <translation id="2501278716633472235">Înapoi</translation>
 <translation id="2513403576141822879">Pentru mai multe setări privind confidențialitatea, securitatea și colectarea datelor, consultă <ph name="BEGIN_LINK" />Sincronizare și servicii Google<ph name="END_LINK" /></translation>
 <translation id="2523184218357549926">Trimite la Google adresele URL ale paginilor pe care le accesezi</translation>
-<translation id="2526148617758225454">Economizorul de date este activat. Gestionează-l din setări.</translation>
 <translation id="2532336938189706096">Vizualizare pe web</translation>
 <translation id="2534155362429831547">Elemente șterse: <ph name="NUMBER_OF_ITEMS" /></translation>
 <translation id="2536728043171574184">Se afișează o versiune offline a acestei pagini</translation>
@@ -354,14 +352,12 @@
 <translation id="3599863153486145794">Șterge istoricul de pe toate dispozitivele conectate. Contul Google poate să ofere alte forme ale istoricului de navigare la <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Dezactivează sunetul pentru site-urile care îl redau</translation>
 <translation id="3616113530831147358">Audio</translation>
-<translation id="3620176948598597475">Prin resetare se șterge istoricul Economizorului de date, inclusiv lista site-urilor accesate.</translation>
 <translation id="3632295766818638029">Afișează parola</translation>
 <translation id="363596933471559332">Te conectezi automat la site-uri folosind datele de conectare stocate. Când funcția este dezactivată, ți se va solicita verificarea de fiecare dată înainte de a te conecta la un site.</translation>
 <translation id="3658159451045945436">Prin resetare se șterge istoricul economisirii de date, inclusiv lista site-urilor vizitate.</translation>
 <translation id="3662546969139119822">Istoric gol</translation>
 <translation id="3672452749423051839">Sugestii pentru erori de navigare</translation>
 <translation id="3692944402865947621">Descărcarea fișierului <ph name="FILE_NAME" /> nu a reușit, deoarece nu se poate contacta locația de stocare.</translation>
-<translation id="3712575778697986964">Resetezi Economizorul de date?</translation>
 <translation id="3714981814255182093">Deschide Bara de căutare</translation>
 <translation id="3716182511346448902">Această pagină folosește prea multă memorie, prin urmare Chrome a întrerupt-o.</translation>
 <translation id="3730075448226062617">Ca să permiți Chrome să acceseze microfonul, activează microfonul și în <ph name="BEGIN_LINK" />Setările Android<ph name="END_LINK" />.</translation>
@@ -503,13 +499,11 @@ Contul Google poate să ofere alte forme ale istoricului de navigare, cum ar fi 
 <translation id="4751476147751820511">Senzori de mișcare sau de lumină</translation>
 <translation id="4759238208242260848">Descărcări</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{O descărcare finalizată.}few{# descărcări finalizate.}other{# de descărcări finalizate.}}</translation>
-<translation id="4766369052440583386">Economizorul de date este activat</translation>
 <translation id="4797039098279997504">Atinge pentru a reveni la <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4802417911091824046">Criptarea expresiei de acces nu include metodele de plată și adresele din Google Pay.
 
 Pentru a modifica această setare, <ph name="BEGIN_LINK" />resetează sincronizarea<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">Numele de pe card</translation>
-<translation id="4807963036345170158">Economizorul de date este dezactivat</translation>
 <translation id="4816465935029283692">Tipuri de date</translation>
 <translation id="4824958205181053313">Anulezi sincronizarea?</translation>
 <translation id="4837753911714442426">Deschide opțiunile pentru a printa pagina</translation>
@@ -601,6 +595,7 @@ Pentru a modifica această setare, <ph name="BEGIN_LINK" />resetează sincroniza
 <translation id="5447765697759493033">Acest site nu va fi tradus</translation>
 <translation id="545042621069398927">Se accelerează descărcarea.</translation>
 <translation id="5456381639095306749">Descarcă pagina</translation>
+<translation id="5475862044948910901">Pornești sesiunea de realitate augmentată?</translation>
 <translation id="548278423535722844">Deschide în aplicația Maps</translation>
 <translation id="5487521232677179737">Șterge datele</translation>
 <translation id="5494752089476963479">Blochează anunțurile pe site-urile care afișează anunțuri deranjante sau înșelătoare</translation>
@@ -643,7 +638,6 @@ Pentru a modifica această setare, <ph name="BEGIN_LINK" />resetează sincroniza
 <translation id="569536719314091526">Tradu această pagină în orice limbă folosind butonul Mai multe opțiuni</translation>
 <translation id="572328651809341494">File recente</translation>
 <translation id="5726692708398506830">Mărește întregul conținut al paginii</translation>
-<translation id="5734520971562437809">Folosește cu până la 60 la sută mai puține date și navighează mai rapid pe web.</translation>
 <translation id="5748802427693696783">Ai comutat la filele standard</translation>
 <translation id="5749068826913805084">Pentru a descărca fișiere, Chrome necesită acces la stocare.</translation>
 <translation id="5763382633136178763">File incognito</translation>
@@ -701,7 +695,6 @@ Pentru a modifica această setare, <ph name="BEGIN_LINK" />resetează sincroniza
 <translation id="6159335304067198720">Economie de date de <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Află mai multe</translation>
 <translation id="6177111841848151710">Blocată pentru motorul de căutare actual</translation>
-<translation id="6177390657002841081">Activează Economizorul de date</translation>
 <translation id="6181444274883918285">Adaugă o excepție privind site-urile</translation>
 <translation id="6192333916571137726">Descarcă fișierul</translation>
 <translation id="6192792657125177640">Excepții</translation>
@@ -867,6 +860,11 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="7352939065658542140">VIDEOCLIP</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Trimite un element selectat}few{Trimite # elemente selectate}other{Trimite # de elemente selectate}}</translation>
 <translation id="7359002509206457351">Acces la metodele de plată</translation>
+<translation id="7365126855094612066">Pe durata acestei sesiuni, site-ul va putea să:
+• creeze o hartă 3D a mediului tău
+• urmărească mișcarea camerei
+
+Acest site NU primește acces la cameră. Imaginile camerei sunt vizibile doar pentru tine.</translation>
 <translation id="7375125077091615385">Tip:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">Adresă URL</translation>
@@ -1114,11 +1112,9 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="9188680907066685419">Deconectează-te de la contul gestionat</translation>
 <translation id="9204836675896933765">1 fișier rămas</translation>
 <translation id="9206873250291191720">A</translation>
-<translation id="9215534869786664672">Folosește cu până la 60 la sută mai puține date și navighează mai rapid pe web. Serverele Google vor optimiza paginile pe care le accesezi.</translation>
 <translation id="9219103736887031265">Imagini</translation>
 <translation id="926205370408745186">Elimină activitatea în Chrome din Bunăstarea digitală</translation>
 <translation id="932327136139879170">Pagina de pornire</translation>
-<translation id="932599481871055447">Economisește date și navighează mai rapid</translation>
 <translation id="938850635132480979">Eroare: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Accesează microfonul</translation>
 <translation id="951339005376969845">Șterge datele existente. Le poți recupera comutând înapoi la <ph name="FROM_ACCOUNT" />.</translation>

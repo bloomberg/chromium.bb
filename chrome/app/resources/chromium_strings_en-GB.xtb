@@ -122,9 +122,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="4987820182225656817">Guests can use Chromium without leaving anything behind.</translation>
 <translation id="4994636714258228724">Add yourself to Chromium</translation>
 <translation id="5021854341188256296">{0,plural, =0{A Chromium OS update is available}=1{A Chromium OS update is available}other{A Chromium OS update has been available for # days}}</translation>
-<translation id="5032989939245619637">Save details in Chromium</translation>
 <translation id="5045248521775609809">Take Chromium everywhere</translation>
-<translation id="5116586539350239523">Chromium will securely store your personal details so that you don't need to type them in again.</translation>
 <translation id="5181952534059945058">This page uses too much memory, so Chromium removed some content.</translation>
 <translation id="5277894862589591112">To apply your changes, relaunch Chromium</translation>
 <translation id="5358375970380395591">You are signing in with a managed account and giving its administrator control over your Chromium profile. Your Chromium data, such as your apps, bookmarks, history, passwords and other settings will become permanently tied to <ph name="USER_NAME" />. You will be able to delete this data via the Google Accounts Dashboard, but you will not be able to associate this data with another account. <ph name="LEARN_MORE" /></translation>

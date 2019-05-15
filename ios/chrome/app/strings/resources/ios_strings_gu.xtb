@@ -74,13 +74,11 @@
 <translation id="1952728750904661634">મેનેજ એકાઉન્ટ સાથે સાઇન ઇન કરો</translation>
 <translation id="1974060860693918893">વિગતવાર</translation>
 <translation id="1989112275319619282">બ્રાઉઝ કરો</translation>
-<translation id="2000419248597011803">ઍડ્રેસ બાર અને શોધ બૉક્સમાંથી કેટલીક કુકી અને શોધને તમારા ડિફૉલ્ટ શોધ એંજિન પર મોકલે છે</translation>
 <translation id="2015722694326466240">પાસવર્ડ જોવા માટે, તમારે સૌથી પહેલા તમારા ઉપકરણ પર એક પાસકોડ સેટ કરવો આવશ્યક છે.</translation>
 <translation id="2068952045031577364">ગત અઠવાડિયા</translation>
 <translation id="2074131957428911366">શું સિંક કરવું તે હંમેશાં તમે <ph name="BEGIN_LINK" />સેટિંગ<ph name="END_LINK" />માં પસંદ કરી શકો છો.</translation>
 <translation id="2079545284768500474">છેલ્લો ફેરફાર રદ કરો</translation>
 <translation id="209018056901015185">ડેસ્કટોપ સાઇટની વિનંતી કરો</translation>
-<translation id="2096012225669085171">સમગ્ર ઉપકરણો પર સિંક કરો અને વ્યક્તિગત બનાવો</translation>
 <translation id="2103075008456228677">history.google.com ખોલો</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> આઇટમ ખસેડી</translation>
 <translation id="213900355088104901">ખાનગી રૂપે બ્રાઉઝ કરવા માટે, છુપું ટૅબ ખોલો</translation>
@@ -107,7 +105,6 @@
 <translation id="2435457462613246316">પાસવર્ડ બતાવો</translation>
 <translation id="2481538920734869610">એકાઉન્ટ ઉમેરો</translation>
 <translation id="2497852260688568942">સમન્વયન, તમારા વ્યવસ્થાપક દ્વારા અક્ષમ કરવામાં આવ્યું છે</translation>
-<translation id="2523184218357549926">તમે મુલાકાત લો તે પેજના URLs Googleને મોકલે છે</translation>
 <translation id="2523363575747517183">આ વેબસાઇટ વારંવાર અન્ય ઍપ્લિકેશન ખોલવાનો પ્રયાસ કરી રહી છે.</translation>
 <translation id="2529021024822217800">બધા ખોલો</translation>
 <translation id="2572712655377361602">ઉપકરણ નીતિએ તમારા ફોટોની ઍક્સેસને અવરોધિત કરી</translation>
@@ -137,6 +134,7 @@
 <translation id="2871695793448672541">છુપાયેલ, પાસવર્ડ</translation>
 <translation id="288655811176831528">ટૅબ બંધ કરો</translation>
 <translation id="2898963176829412617">નવું ફોલ્ડર…</translation>
+<translation id="2916171785467530738">શોધ અને URLsને આપમેળે પૂર્ણ કરો</translation>
 <translation id="291754862089661335">QR કોડ અથવા બારકોડને આ ફ્રેમમાં મૂકો</translation>
 <translation id="2921219216347069551">પૃષ્ઠને શેર કરી શકાતું નથી</translation>
 <translation id="2923448633003185837">પેસ્ટ કરો અને જાઓ</translation>
@@ -306,7 +304,6 @@
 <translation id="5857090052475505287">નવું ફોલ્ડર</translation>
 <translation id="5857770089550859117">સમન્વયનને પ્રારંભ કરવા માટે પાસફ્રેઝ આવશ્યક.</translation>
 <translation id="5860033963881614850">બંધ</translation>
-<translation id="5865733239029070421">Googleને વપરાશના આંકડા અને ક્રૅશ રિપોર્ટ ઑટોમૅટિક રીતે મોકલે છે</translation>
 <translation id="5869029295770560994">બરાબર, સમજાઈ ગયું</translation>
 <translation id="5871497086027727873">1 આઇટમ ખસેડી</translation>
 <translation id="5897956970858271241">કૉપિ કરેલી લિંકની મુલાકાત લો</translation>
@@ -412,7 +409,6 @@
 <translation id="722055596168483966">Google સેવાઓને મનગમતી બનાવો</translation>
 <translation id="7265758999917665941">આ સાઇટ માટે ક્યારેય નહીં</translation>
 <translation id="7272437679830969316">તમારી ઓળખની ચકાસણી કરી શકાતી નથી. પાસવર્ડ કૉપિ કરેલો નથી.</translation>
-<translation id="7280856130494094142">સિંક શરૂ કરવા માટે પાસફ્રેઝ દાખલ કરો</translation>
 <translation id="7285236536143823449">હા, હું સંમત છું</translation>
 <translation id="7291368939935408496">પાસવર્ડ તૈયાર કરી રહ્યાં છીએ…</translation>
 <translation id="7293171162284876153">સિંક કરવાનું શરૂ કરવા માટે, "તમારો Chromeનો ડેટા સિંક કરો"ને ચાલુ કરો.</translation>
@@ -434,12 +430,10 @@
 <translation id="7554791636758816595">નવું ટૅબ</translation>
 <translation id="7561196759112975576">હંમેશાં</translation>
 <translation id="7603852183842204213">(<ph name="NUMBER_OF_BLOCKED_POPUPS" />) અવરોધિત પૉપ-અપ્સ</translation>
-<translation id="7605594153474022051">સમન્વયન કામ કરતું નથી</translation>
 <translation id="7638584964844754484">ખોટો પાસફ્રેઝ</translation>
 <translation id="7658239707568436148">રદ કરો</translation>
 <translation id="766891008101699113">વેબને ખાનગી રીતે બ્રાઉઝ કરવા માટે, નવી ટૅબ ઉમેરો.</translation>
 <translation id="7671141431838911305">ઇન્સ્ટોલ કરો</translation>
-<translation id="7704317875155739195">શોધ અને URLsને આપમેળે પૂર્ણ કરો</translation>
 <translation id="7765158879357617694">સ્થાન</translation>
 <translation id="7769602470925380267">સ્વીકારો અને સાઇન આઉટ કરો</translation>
 <translation id="7772032839648071052">પાસફ્રેઝની પુષ્ટિ કરો</translation>
@@ -477,7 +471,6 @@
 <translation id="842017693807136194">ની સાથે સાઇન ઇન કરેલ</translation>
 <translation id="8428045167754449968">શહેર/નગર</translation>
 <translation id="8428213095426709021">સેટિંગ્સ</translation>
-<translation id="8438566539970814960">શોધ અને બ્રાઉઝિંગ વધુ સારું બનાવો</translation>
 <translation id="8458397775385147834">1 આઇટમ કાઢી નાખી</translation>
 <translation id="8487700953926739672">ઑફલાઇન ઉપલબ્ધ</translation>
 <translation id="8503813439785031346">વપરાશકર્તાનામ</translation>

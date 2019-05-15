@@ -74,13 +74,11 @@
 <translation id="1952728750904661634">ลงชื่อเข้าใช้ด้วยบัญชีที่มีการจัดการ</translation>
 <translation id="1974060860693918893">ขั้นสูง</translation>
 <translation id="1989112275319619282">เล่นเน็ต</translation>
-<translation id="2000419248597011803">ส่งคุกกี้และการค้นหาบางรายการจากแถบที่อยู่และช่องค้นหาไปยังเครื่องมือค้นหาเริ่มต้น</translation>
 <translation id="2015722694326466240">หากต้องการดูรหัสผ่าน คุณต้องตั้งพาสโค้ดในอุปกรณ์ก่อน</translation>
 <translation id="2068952045031577364">สัปดาห์ที่ผ่านมา</translation>
 <translation id="2074131957428911366">คุณเลือกสิ่งที่ต้องการซิงค์ได้เสมอใน<ph name="BEGIN_LINK" />การตั้งค่า<ph name="END_LINK" /></translation>
 <translation id="2079545284768500474">เลิกทำ</translation>
 <translation id="209018056901015185">ขอไซต์สำหรับเดสก์ท็อป</translation>
-<translation id="2096012225669085171">ซิงค์และปรับแต่งในอุปกรณ์ทุกเครื่อง</translation>
 <translation id="2103075008456228677">เปิด history.google.com</translation>
 <translation id="2116625576999540962">ย้ายแล้ว <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> รายการ</translation>
 <translation id="213900355088104901">หากต้องการท่องเว็บแบบส่วนตัว ให้เปิดแท็บไม่ระบุตัวตน</translation>
@@ -107,7 +105,6 @@
 <translation id="2435457462613246316">แสดงรหัสผ่าน</translation>
 <translation id="2481538920734869610">เพิ่มบัญชี</translation>
 <translation id="2497852260688568942">ผู้ดูแลระบบปิดใช้การซิงค์</translation>
-<translation id="2523184218357549926">ส่ง URL ของหน้าที่คุณเข้าชมไปยัง Google</translation>
 <translation id="2523363575747517183">เว็บไซต์นี้พยายามเปิดแอปพลิเคชันอื่นอยู่เรื่อยๆ</translation>
 <translation id="2529021024822217800">เปิดทั้งหมด</translation>
 <translation id="2572712655377361602">นโยบายของอุปกรณ์บล็อกการเข้าถึงรูปภาพของคุณ</translation>
@@ -137,6 +134,7 @@
 <translation id="2871695793448672541">รหัสผ่านแบบซ่อน</translation>
 <translation id="288655811176831528">ปิดแท็บ</translation>
 <translation id="2898963176829412617">โฟลเดอร์ใหม่…</translation>
+<translation id="2916171785467530738">เติมข้อความค้นหาและ URL อัตโนมัติ</translation>
 <translation id="291754862089661335">จัดตำแหน่งโค้ด QR หรือบาร์โค้ดให้อยู่ในกรอบนี้</translation>
 <translation id="2921219216347069551">ไม่สามารถแชร์เว็บ</translation>
 <translation id="2923448633003185837">วางแล้วไป</translation>
@@ -306,7 +304,6 @@
 <translation id="5857090052475505287">โฟลเดอร์ใหม่</translation>
 <translation id="5857770089550859117">ต้องระบุรหัสผ่านเพื่อเริ่มการซิงค์</translation>
 <translation id="5860033963881614850">ปิด</translation>
-<translation id="5865733239029070421">ส่งสถิติการใช้งานและรายงานข้อขัดข้องให้กับ Google โดยอัตโนมัติ</translation>
 <translation id="5869029295770560994">รับทราบ</translation>
 <translation id="5871497086027727873">ย้ายแล้ว 1 รายการ</translation>
 <translation id="5897956970858271241">ไปที่ลิงก์ที่คัดลอก</translation>
@@ -412,7 +409,6 @@
 <translation id="722055596168483966">ปรับเปลี่ยนบริการ Google ในแบบของคุณ</translation>
 <translation id="7265758999917665941">ไม่จดจำสำหรับเว็บไซต์นี้</translation>
 <translation id="7272437679830969316">ยืนยันตัวตนของคุณไม่ได้ คัดลอกรหัสผ่านไม่สำเร็จ</translation>
-<translation id="7280856130494094142">ป้อนรหัสผ่านเพื่อเริ่มซิงค์</translation>
 <translation id="7285236536143823449">ได้สิ ตกลง</translation>
 <translation id="7291368939935408496">กำลังเตรียมรหัสผ่าน...</translation>
 <translation id="7293171162284876153">หากต้องการเริ่มซิงค์ ให้เปิด "ซิงค์ข้อมูล Chrome"</translation>
@@ -434,12 +430,10 @@
 <translation id="7554791636758816595">แท็บใหม่</translation>
 <translation id="7561196759112975576">ทุกครั้ง</translation>
 <translation id="7603852183842204213">ป๊อปอัปที่บล็อก (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
-<translation id="7605594153474022051">การซิงค์ไม่ทำงาน</translation>
 <translation id="7638584964844754484">รหัสผ่านไม่ถูกต้อง</translation>
 <translation id="7658239707568436148">ยกเลิก</translation>
 <translation id="766891008101699113">หากต้องการท่องเว็บแบบเป็นส่วนตัว ให้เพิ่มแท็บใหม่</translation>
 <translation id="7671141431838911305">ติดตั้ง</translation>
-<translation id="7704317875155739195">เติมข้อความค้นหาและ URL อัตโนมัติ</translation>
 <translation id="7765158879357617694">ย้าย</translation>
 <translation id="7769602470925380267">ยอมรับและออกจากระบบ</translation>
 <translation id="7772032839648071052">ยืนยันข้อความรหัสผ่าน</translation>
@@ -477,7 +471,6 @@
 <translation id="842017693807136194">ลงชื่อเข้าใช้ด้วย</translation>
 <translation id="8428045167754449968">เมือง/จังหวัด</translation>
 <translation id="8428213095426709021">การตั้งค่า</translation>
-<translation id="8438566539970814960">ปรับปรุงการค้นหาและการท่องเว็บให้ดียิ่งขึ้น</translation>
 <translation id="8458397775385147834">ลบแล้ว 1 รายการ</translation>
 <translation id="8487700953926739672">ใช้งานแบบออฟไลน์ได้</translation>
 <translation id="8503813439785031346">ชื่อผู้ใช้</translation>

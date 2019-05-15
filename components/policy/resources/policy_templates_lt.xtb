@@ -144,6 +144,15 @@
       Jei ši politika nustatyta kaip „False“, „Dev“ perjungimo būsena nebus pateikta.</translation>
 <translation id="1160479894929412407">Leisti QUIC protokolą</translation>
 <translation id="1160939557934457296">Neleisti tęsti veiksmų iš Saugaus naršymo įspėjimo puslapio</translation>
+<translation id="1171342272070128466">Įjunkite prie doko prijungto didintuvo pritaikymo neįgaliesiems funkciją.
+
+          Jei ši politika nustatyta kaip „Tiesa“, prie doko prijungtas didintuvas visada bus įgalintas.
+
+          Jei ši politika nustatyta kaip „Netiesa“, prie doko prijungtas didintuvas visada bus išjungtas.
+
+          Jums nustačius šią politiką naudotojai negalės jos pakeisti ar nepaisyti.
+
+          Jei ši politika nenustatyta, prie doko prijungtas didintuvas bus išjungtas, bet naudotojas galės jį bet kada įgalinti.</translation>
 <translation id="1189817621108632689">Leidžiama nustatyti URL šablonų, nurodančių svetaines, kuriose neleidžiama pateikti vaizdų, sąrašą.
 
           Nenustačius šios politikos, visose svetainėse naudojama visuotinė numatytoji vertė iš politikos „DefaultImagesSetting“ (jei nustatyta) arba naudotojo asmeninės konfigūracijos.
@@ -458,6 +467,7 @@
       Jei politika įgalinta, naudotojai negalės atsisakyti numatytosios elgsenos, kai vykdomi atskiri kiekvienos svetainės procesai.
       Jei politika nesukonfigūruota ar išjungta, naudotojai galės pakeisti šį nustatymą (pvz., įrašydami „Išjungti svetainių izoliavimą“ adresu chrome://flags).
       </translation>
+<translation id="1767673020408652620">Įgalinamos programos rekomendacijos tuščiame paieškos laukelyje</translation>
 <translation id="1781356041596378058">Ši politika taip pat valdo galimybę pasiekti „Android“ kūrėjo parinktis. Jei šią politiką nustatysite į „Tiesa“, naudotojai negalės pasiekti kūrėjo parinkčių. Jei šią politiką nustatysite į „Netiesa“ arba jos nenustatysite, naudotojai galės pasiekti kūrėjo parinktis palietę versijos numerį septynis kartus „Android“ nustatymų programoje.</translation>
 <translation id="1793346220873697538">Išjungti spausdinimą naudojant PIN kodą pagal numatytuosius nustatymus</translation>
 <translation id="1797233582739332495">Pasikartojančio raginimo, kuriame nurodoma, kad būtina paleisti iš naujo, rodymas naudotojui</translation>
@@ -995,6 +1005,15 @@
 
       Kiekvienas sąrašo įrašas nurodo identifikatorių, naudojamą vidiniais tikslais siekiant atskirti skirtingas vietines įrenginio paskyras.</translation>
 <translation id="2769952903507981510">Konfigūruoti reikiamą nuotolinės prieigos prieglobų domeno pavadinimą</translation>
+<translation id="2783078941107212091">Įgalinama programos rekomendacija tuščiame paleidimo priemonės paieškos laukelyje.
+
+          Jei ši politika nustatyta kaip „Tiesa“, programos rekomendacijos gali būti rodomos tuščiame paieškos laukelyje.
+
+          Jei ši politika nustatyta kaip „Netiesa“, programos rekomendacijos nebus rodomos tuščiame paieškos laukelyje.
+
+          Jums nustačius šią politiką naudotojai negalės jos pakeisti ar nepaisyti.
+
+          Jei ši politika nenustatyta, valdomų įrenginių numatytoji vertė yra „Netiesa“.</translation>
 <translation id="2787173078141616821">Informacijos apie „Android“ būseną ataskaita</translation>
 <translation id="2799297758492717491">Leisti automatinį medijos, atitinkančios į baltąjį sąrašą įtrauktus URL šablonus, paleidimą</translation>
 <translation id="2801155097555584385">Tinkintos akumuliatoriaus krovimo pradžios vertės procentais nustatymas</translation>
@@ -1190,6 +1209,25 @@
       Nustačius šią politiką į „false“, WPAD optimizavimas išjungiamas, todėl „<ph name="PRODUCT_NAME" />“ reikia ilgiau laukti DNS pagrindu veikiančių WPAD serverių. Jei politika nenustatoma arba įgalinama, WPAD optimizavimas įgalinamas.
 
       Neatsižvelgiant į tai, ar ši politika nustatyta ir kaip ji nustatyta, WPAD optimizavimo nustatymo negali keisti naudotojai.</translation>
+<translation id="3071839057966069710">Konfigūruojamas spausdintuvų sąrašas.
+
+      Taikant šią politiką leidžiama administratoriams teikti spausdintuvo konfigūracijas
+      naudotojams.
+
+      „<ph name="PRINTER_DISPLAY_NAME" />“ ir „<ph name="PRINTER_DESCRIPTION" />“ yra laisvos formos eilutės, kurias galima tinkinti, kad būtų lengviau pasirinkti spausdintuvą. „<ph name="PRINTER_MANUFACTURER" />“ ir „<ph name="PRINTER_MODEL" />“ naudojamos siekiant palengvinti spausdintuvo identifikavimą galutiniams naudotojams. Jos nurodo spausdintuvo gamintoją ir modelį. „<ph name="PRINTER_URI" />“ turėtų būti adresas, kurį galima pasiekti iš kliento kompiuterio, įskaitant „<ph name="URI_SCHEME" />“, „<ph name="URI_PORT" />“ ir „<ph name="URI_QUEUE" />“. „<ph name="PRINTER_UUID" />“ yra pasirenkama Jei nurodyta, ji naudojama siekiant panaikinti pasikartojančius „<ph name="ZEROCONF_DISCOVERY" />“ spausdintuvus.
+
+      „<ph name="PRINTER_EFFECTIVE_MODEL" />“ turi atitikti vieną iš eilučių, nurodančių „<ph name="PRODUCT_NAME" />“ palaikomą spausdintuvą. Eilutė bus naudojama siekiant identifikuoti ir įdiegti tinkamą spausdintuvo PPD. Daugiau informacijos galima rasti adresu https://support.google.com/chrome?p=noncloudprint.
+
+      „<ph name="PRINTER_AUTOCONF" />“ yra loginė žyma, nurodanti, ar nustatant spausdintuvą turi būti naudojama „IPP Everywhere“. Ši žyma palaikoma 76 ar naujesnės versijos „<ph name="PRODUCT_OS_NAME" />“.
+
+      „<ph name="PRINTER_EFFECTIVE_MODEL" />“ turi būti spausdintuvo pavadinimas arba „<ph name="PRINTER_AUTOCONF" />“ turi būti nustatyta kaip „Tiesa“. Spausdintuvų su abiem savybėmis arba visai be jų bus nepaisoma.
+
+      Spausdintuvo sąranka užbaigiama pirmą kartą panaudojus spausdintuvą.  PPD neatsisiunčiami, kol spausdintuvas nenaudojamas.  Paskui dažnai naudojami PPD saugomi talpykloje.
+
+      Ši politika neturi įtakos tam, ar naudotojai gali konfigūruoti spausdintuvus atskiruose įrenginiuose.  Ji skirta papildyti atskirų naudotojų spausdintuvų konfigūraciją.
+
+      Jei naudojami „Active Directory“ tvarkomi įrenginiai, ši politika palaiko „Active Directory“ įrenginio pavadinimo „<ph name="MACHINE_NAME_VARIABLE" />“ arba jo poeilučio plėtinį. Pavyzdžiui, jei įrenginio pavadinimas yra „<ph name="MACHINE_NAME_EXAMPLE" />“, tada „<ph name="MACHINE_NAME_VARIABLE_EXAMPLE" />“ turėtų būti pakeistas 4 simboliais nuo 6-osios pozicijos, pvz., „<ph name="MACHINE_NAME_PART_EXAMPLE" />“. Atminkite, kad pozicija nustatoma nuo nulio.
+      </translation>
 <translation id="3072045631333522102">Naudotina prisijungimo ekrano užsklanda dirbant mažmeninės prekybos režimu</translation>
 <translation id="3072847235228302527">Nustatyti vietinės įrenginio paskyros paslaugų teikimo sąlygas</translation>
 <translation id="3077183141551274418">Įgalinama arba išjungiama skirtukų naudojimo trukmė</translation>
@@ -1984,7 +2022,6 @@
 <translation id="4591366717022345234">Suteikite naudotojams „Quick Fix Build“</translation>
 <translation id="4600786265870346112">Įgalinti didelį žymeklį</translation>
 <translation id="4604931264910482931">Savosios susirašinėjimo pranešimais programos juodojo sąrašo konfigūravimas</translation>
-<translation id="4613508646038788144">Jei politika nustatyta į „false“, trečiosios šalies programinei įrangai bus leidžiama įdėti vykdomąjį kodą į „Chrome“ procesus. Jei politika nenustatyta arba nustatyta į „true“, trečiosios šalies programinei įrangai nebus leidžiama įdėti vykdomojo kodo į „Chrome“ procesus.</translation>
 <translation id="4617338332148204752">Praleisti metažymų tikrinimą „<ph name="PRODUCT_FRAME_NAME" />“</translation>
 <translation id="4625915093043961294">Konfigūruoti plėtinių diegimo baltąjį sąrašą</translation>
 <translation id="4632343302005518762">Leisti „<ph name="PRODUCT_FRAME_NAME" />“ naudoti nurodytų tipų turinį</translation>
@@ -2175,15 +2212,6 @@
       Kai ši politika nustatyta kaip „Netiesa“, perjungus į alternatyvią naršyklę, naršyklėje „Chrome“ skirtukas uždaromas, net jei tai yra paskutinis skirtukas. Tada „Chrome“ visiškai išjungiama.</translation>
 <translation id="5105313908130842249">Ekrano užrakto delsa, kai naudojama akumuliatoriaus energija</translation>
 <translation id="5108031557082757679">Išjungti įmonės įrenginių spausdintuvai</translation>
-<translation id="5113732180192599620">Ši politika valdo svetainių, kurios niekada neperjungia naršyklės, sąrašą.
-
-      Atminkite, kad elementų prie šio sąrašo taip pat galima pridėti taikant politiką „<ph name="USE_IE_SITELIST_POLICY_NAME" />“ ir „<ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />“.
-
-      Kai ši politika nenustatyta, jokios svetainės nepridedamos prie sąrašo.
-
-      Kai ši politika nustatyta, kiekvienas elementas laikomas taisykle, panašiai kaip taikant politiką „<ph name="URL_LIST_POLICY_NAME" />“. Tačiau taikoma atvirkštinė logika: nustačius taisyklių atitiktį alternatyvi naršyklė neatidaroma.
-
-      Taisyklės taikomos abiem kryptimis, priešingai nei „<ph name="URL_LIST_POLICY_NAME" />“. T. y., kai pateikiamas ir įgalinamas „Internet Explorer“ priedas, jis taip pat valdo, ar „<ph name="IE_PRODUCT_NAME" />“ turėtų atidaryti šiuos URL sistemoje „<ph name="PRODUCT_NAME" />“.</translation>
 <translation id="5124368997194894978">Kintamosios srovės (KS) šaltinio paleidimo įgalinimas</translation>
 <translation id="5131211790949066746">Galima sujungti plėtinių diegimo įrašų politikos nuostatas iš „<ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />“, „<ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" />“ ir „<ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />“.
 
@@ -2467,6 +2495,7 @@
 
       Jei ši politika nenustatyta, variantų pirminės reikšmės URL keičiamas nebus.</translation>
 <translation id="5561811616825571914">Automatiškai pasirenkami šių svetainių klientų sertifikatai prisijungimo ekrane</translation>
+<translation id="5565178130821694365">Slaptažodį reikia įvesti kas antrą dieną (kas 48 val.)</translation>
 <translation id="5566210228171064229">Leisti spausdinti naudojant PIN kodą ir be jo</translation>
 <translation id="556865034069957245">Pagal šią politiką valdomas viso ekrano režimo, kuriam veikiant visos „<ph name="PRODUCT_NAME" />“ naudotojo sąsajos yra slepiamos ir matomas tik žiniatinklio turinys, pasiekiamumas.
 

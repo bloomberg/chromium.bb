@@ -118,9 +118,7 @@
 <translation id="4987820182225656817">Misafirler Chromium'u geride hiçbir şey bırakmadan kullanabilir.</translation>
 <translation id="4994636714258228724">Kendinizi Chromium'a ekleyin</translation>
 <translation id="5021854341188256296">{0,plural, =0{Bir Chromium OS güncellemesi var}=1{Bir Chromium OS güncellemesi var}other{# gün önce kullanıma sunulmuş bir Chromium OS güncellemesi var}}</translation>
-<translation id="5032989939245619637">Ayrıntıları Chromium'a kaydet</translation>
 <translation id="5045248521775609809">Chromium'u her yere götürün</translation>
-<translation id="5116586539350239523">Chromium, kişisel bilgilerinizi güvenli şekilde depoladığından bu bilgileri tekrar yazmak zorunda kalmazsınız.</translation>
 <translation id="5181952534059945058">Bu sayfa çok fazla bellek kullandığından Chromium bazı içerikleri kaldırdı.</translation>
 <translation id="5277894862589591112">Yaptığınız değişiklikleri uygulamak için Chromium'u yeniden başlatın</translation>
 <translation id="5358375970380395591">Yönetilen bir hesapla oturum açıyor ve hesabın yöneticisine Chromium profilinizi denetleme izni veriyorsunuz. Uygulamalarınız, yer işaretleriniz, geçmişiniz, şifreleriniz ve diğer ayarlarınız gibi Chromium verileriniz kalıcı olarak <ph name="USER_NAME" /> ile bağlantılandırılacaktır. Google Hesapları Hesap Özeti'ni kullanarak bu verileri silebilecek, ancak bu verileri başka bir hesapla ilişkilendiremeyeceksiniz. <ph name="LEARN_MORE" /></translation>

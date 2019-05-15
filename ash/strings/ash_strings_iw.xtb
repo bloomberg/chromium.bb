@@ -112,6 +112,7 @@
 <translation id="2597972630681408282">תאורת לילה: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">‏כרטיס ה-SIM נעול</translation>
 <translation id="2653659639078652383">שלח</translation>
+<translation id="2658778018866295321">לחיצה וגרירה</translation>
 <translation id="2700493154570097719">בחירת מקלדת</translation>
 <translation id="2718395828230677721">תאורת לילה</translation>
 <translation id="2727977024730340865">מחובר למטען בעל מתח נמוך. ייתכן שטעינת הסוללה לא תהיה אמינה.</translation>
@@ -227,6 +228,7 @@
 <translation id="4378551569595875038">מתחבר...</translation>
 <translation id="4379531060876907730">אלה כלי הסטיילוס שלך</translation>
 <translation id="4389184120735010762">הקשת על מקש הקיצור של זכוכית מגדלת במצב עגינה. להפעיל אותה?</translation>
+<translation id="4394049700291259645">השבת</translation>
 <translation id="4421231901400348175">שיתוף השליטה במסך עם <ph name="HELPER_NAME" /> דרך סיוע מרחוק.</translation>
 <translation id="4430019312045809116">עוצמת קול</translation>
 <translation id="4450893287417543264">אין להציג שוב</translation>
@@ -246,7 +248,6 @@
 <translation id="4696813013609194136">ביטול נעילת המכשיר באמצעות קוד הורה</translation>
 <translation id="4731797938093519117">גישת הורים</translation>
 <translation id="4734965478015604180">אופקי</translation>
-<translation id="476166673298332917">מנהל המכשיר עשוי לנטר את פעילות הגלישה שלך.</translation>
 <translation id="4774338217796918551">אפשר לחזור מחר בשעה <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">סיסמה עבור <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">‏Google Assistant אינו זמין בסשן הדגמה.</translation>
@@ -354,7 +355,6 @@
 <translation id="6537270692134705506">צילום מסך</translation>
 <translation id="6542521951477560771">מעביר אל <ph name="RECEIVER_NAME" /></translation>
 <translation id="6559976592393364813">יש לבקש ממנהל המערכת</translation>
-<translation id="6574601967010742428">למנהל המכשיר תהיה יכולת לעקוב אחרי הפעילות שלך.</translation>
 <translation id="6585808820553845416">הפעילות באתר תסתיים בעוד <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">‏חיפוש+Shift‏+K</translation>
 <translation id="6650933572246256093">‏מכשיר ה-Bluetooth ‏"<ph name="DEVICE_NAME" />" מבקש הרשאה לביצוע התאמה. הזן את מפתח הסיסמה הבא במכשיר הזה: <ph name="PASSKEY" /></translation>

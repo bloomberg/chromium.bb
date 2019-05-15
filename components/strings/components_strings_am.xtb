@@ -424,7 +424,7 @@
 <translation id="3287510313208355388">መስመር ላይ ሲሆኑ ያውርዱ</translation>
 <translation id="3293642807462928945">ስለ<ph name="POLICY_NAME" /> መመሪያው ተጨማሪ ይወቁ</translation>
 <translation id="3303855915957856445">ምንም የፍለጋ ውጤቶች አልተገኙም</translation>
-<translation id="3311730110465560799">የመሣሪያ ውቅረትዎን በርቀት ማዋቀር ይይችላል።</translation>
+<translation id="3311730110465560799">የመሣሪያ ውቅረትዎን በርቀት ማዋቀር ይችላል።</translation>
 <translation id="3320021301628644560">የመክፈያ አድራሻ አክል</translation>
 <translation id="3324983252691184275">ክሪምሶን</translation>
 <translation id="3338095232262050444">ደህንነቱ የተጠበቀ ነው</translation>
@@ -468,6 +468,7 @@
 <translation id="3495081129428749620">በገጽ ውስጥ ያግኙ
     <ph name="PAGE_TITLE" /></translation>
 <translation id="3498215018399854026">በዚህ ጊዜ ላይ ወላጅህን ማግኘት አልቻልንም። እባክህ እንደገና ሞክር።</translation>
+<translation id="3512163584740124171">ይህ መመሪያ ከተመሳሳይ የመመሪያ ቡድን የመጣ ሌላ መመሪያ ከፍተኛ ተቀዳሚነት ስላለው ችላ ተብሏል።</translation>
 <translation id="3528171143076753409">የአገልጋይ እውቅና ማረጋገጫ የታመነ አይደለም።</translation>
 <translation id="3528485271872257980">ደማቅ ቡናማ</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{በተሰመሩ መሣሪያዎች ላይ ቢያንስ 1 ንጥል}=1{1 ንጥል (እና ተጨማሪ የተሰመሩ መሣሪያዎች ላይ)}one{# ንጥሎች (እና ተጨማሪ የተሰመሩ መሣሪያዎች ላይ)}other{# ንጥሎች (እና ተጨማሪ የተሰመሩ መሣሪያዎች ላይ)}}</translation>
@@ -1081,7 +1082,6 @@
 <translation id="7062635574500127092">ውሃ አረንጓዴ ሰማያዊ</translation>
 <translation id="7064851114919012435">የእውቂያ መረጃ</translation>
 <translation id="7079718277001814089">ይህ ጣቢያ ተንኮል-አዘል ዌር ይዟል</translation>
-<translation id="7081564429925484109">ማስጠንቀቂያ፦ ይህ መመሪያ ዝርዝር ስላልሆነ በPolicyListMultipleSourceMergeList መመሪያ እንደተገለጸው አልተዋሃደም።</translation>
 <translation id="7087282848513945231">ክፍለ ሀገር</translation>
 <translation id="7090678807593890770"><ph name="LINK" />ን በGoogle ላይ ይፈልጉ</translation>
 <translation id="7108338896283013870">ደብቅ</translation>
@@ -1138,7 +1138,6 @@
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">አይ</translation>
 <translation id="7378810950367401542">/</translation>
-<translation id="7381288752349550461">የሚተዳደር ክፍለ-ጊዜን መሻር</translation>
 <translation id="7390545607259442187">ካርድ ያረጋግጡ</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7403591733719184120">የእርስዎ <ph name="DEVICE_NAME" /> የሚተዳደር ነው</translation>

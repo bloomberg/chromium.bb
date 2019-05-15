@@ -120,9 +120,7 @@
 <translation id="4987820182225656817">Viesi var izmantot Chromium, neatstājot nekādas pēdas.</translation>
 <translation id="4994636714258228724">Pievienot savu kontu pārlūkā Chromium</translation>
 <translation id="5021854341188256296">{0,plural, =0{Ir pieejams Chromium OS atjauninājums}=1{Ir pieejams Chromium OS atjauninājums}zero{Chromium OS atjauninājums ir pieejams # dienas}one{Chromium OS atjauninājums ir pieejams # dienu}other{Chromium OS atjauninājums ir pieejams # dienas}}</translation>
-<translation id="5032989939245619637">Saglabāt informāciju operētājsistēmā Chromium</translation>
 <translation id="5045248521775609809">Paņemiet Chromium sev līdzi</translation>
-<translation id="5116586539350239523">Chromium droši saglabās jūsu privāto informāciju, lai jums vairs nevajadzētu to atkārtoti ievadīt.</translation>
 <translation id="5181952534059945058">Šī lapa izmanto pārāk daudz atmiņas, tādēļ Chromium noņēma daļu satura.</translation>
 <translation id="5277894862589591112">Lai ieviestu veiktās izmaiņas, atkārtoti palaidiet pārlūku Chromium.</translation>
 <translation id="5358375970380395591">Jūs pierakstāties ar pārvaldītu kontu, kura administrators var kontrolēt jūsu profilu. Jūsu Chromium dati, piemēram, lietotnes, grāmatzīmes, vēsture, paroles un citi iestatījumi, tiks neatgriezeniski saistīti ar lietotāju <ph name="USER_NAME" />. Varēsiet dzēst šos datus, izmantojot Google kontu informācijas paneli, taču nevarēsiet šos datus saistīt ar citu kontu. <ph name="LEARN_MORE" /></translation>

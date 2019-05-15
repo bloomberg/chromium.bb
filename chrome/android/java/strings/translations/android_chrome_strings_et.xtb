@@ -9,7 +9,6 @@
 <translation id="1067922213147265141">Muud Google'i teenused</translation>
 <translation id="1068672505746868501">Ära tõlgi kunagi <ph name="SOURCE_LANGUAGE" /> keeles olevaid lehti</translation>
 <translation id="1080790410959514870">Logite välja kontolt, mida haldab <ph name="DOMAIN_NAME" />. Selle tulemusel kustutatakse seadmesse salvestatud Chrome'i andmed, kuid need säilivad teie Google'i kontol.</translation>
-<translation id="1099080783256647258">Kui andmemahu säästja on sisse lülitatud, kasutab Chrome lehtede tihendamiseks ja kiiremaks laadimiseks Google'i servereid. Eriti aeglaste lehtede puhul koostab andmemahu säästja lehed uuesti, et laadida ainult esmatähtis sisu. Andmemahu säästja ei optimeeri inkognito režiimis laaditud lehti.</translation>
 <translation id="1100066534610197918">Ava rühmas uuel vahelehel</translation>
 <translation id="1105960400813249514">Kuva jäädvustamine</translation>
 <translation id="1111673857033749125">Siin kuvatakse teie teistes seadmetes salvestatud järjehoidjad.</translation>
@@ -97,7 +96,6 @@
 <translation id="1672586136351118594">Ära kuva uuesti</translation>
 <translation id="1692118695553449118">Sünkroonimine on sisse lülitatud</translation>
 <translation id="169515064810179024">Blokeeri saitide juurdepääs liikumisanduritele</translation>
-<translation id="1709438864123551175">Andmemahu säästja</translation>
 <translation id="1717218214683051432">Liikumisandurid</translation>
 <translation id="1718835860248848330">Viimase tunni jooksul</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> – värskendati <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -134,7 +132,7 @@
 <translation id="1960290143419248813">Selles Androidi versioonis ei toetata enam Chrome'i värskendusi</translation>
 <translation id="1966710179511230534">Värskendage oma sisselogimisandmeid.</translation>
 <translation id="1974060860693918893">Täpsemad</translation>
-<translation id="1984705450038014246">Sünkroonige oma Chrome'i andmed</translation>
+<translation id="1984705450038014246">Chrome'i andmete sünkroonimine</translation>
 <translation id="1984937141057606926">Lubatud, välja arvatud kolmanda osapoole küpsised</translation>
 <translation id="1986685561493779662">Nimi on juba olemas</translation>
 <translation id="1987739130650180037"><ph name="MESSAGE" /> – nupp <ph name="LINK_NAME" /></translation>
@@ -215,7 +213,6 @@
 <translation id="2501278716633472235">Mine tagasi</translation>
 <translation id="2513403576141822879">Privaatsuse, turvalisuse ning andmete kogumisega seotud lisaseadete nägemiseks avage valik <ph name="BEGIN_LINK" />Sünkroonimine ja Google'i teenused<ph name="END_LINK" /></translation>
 <translation id="2523184218357549926">Saadab Google'ile teie külastatud lehtede URL-id</translation>
-<translation id="2526148617758225454">Andmemahu säästja on sisse lülitatud. Hallake seda jaotises Seaded.</translation>
 <translation id="2532336938189706096">Veebi kuva</translation>
 <translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" /> üksust kustutati</translation>
 <translation id="2536728043171574184">Kuvatakse on lehe võrguühenduseta koopia</translation>
@@ -355,14 +352,12 @@
 <translation id="3599863153486145794">Kustutab ajaloo kõigist sisselogitud seadmetest. Aadressil <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> võib teie Google'i kontol olla muus vormis sirvimisajalugu.</translation>
 <translation id="3600792891314830896">Heli esitavad saidid vaigistatakse</translation>
 <translation id="3616113530831147358">Heli</translation>
-<translation id="3620176948598597475">Lähtestamisel kustutatakse andmemahu säästja ajalugu, sh külastatud saitide loend.</translation>
 <translation id="3632295766818638029">Parooli kuvamine</translation>
 <translation id="363596933471559332">Teid logitakse salvestatud mandaadiga veebisaitidele automaatselt sisse. Kui funktsioon on välja lülitatud, palutakse teilt kinnitust iga kord enne veebisaidile sisselogimist.</translation>
 <translation id="3658159451045945436">Lähtestamisel kustutatakse säästetud andmemahu ajalugu, sh külastatud saitide loend.</translation>
 <translation id="3662546969139119822">Ajalugu puudub</translation>
 <translation id="3672452749423051839">Soovitused navigeerimisvigade korral</translation>
 <translation id="3692944402865947621">Faili <ph name="FILE_NAME" /> allalaadimine nurjus, kuna salvestuskoht ei ole saadaval.</translation>
-<translation id="3712575778697986964">Kas lähtestada andmemahu säästja?</translation>
 <translation id="3714981814255182093">Leiuriba avamine</translation>
 <translation id="3716182511346448902">Chrome peatas selle lehe, kuna see kasutab liiga palju mälu.</translation>
 <translation id="3730075448226062617">Selleks et anda Chrome'ile juurdepääs teie mikrofonile, lülitage mikrofon sisse ka <ph name="BEGIN_LINK" />Androidi seadetes<ph name="END_LINK" />.</translation>
@@ -504,13 +499,11 @@ Veebisaidil <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> 
 <translation id="4751476147751820511">Liikumis- või valgusandurid</translation>
 <translation id="4759238208242260848">Allalaadimised</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 allalaadimine on lõpule viidud.}other{# allalaadimist on lõpule viidud.}}</translation>
-<translation id="4766369052440583386">Andmemahu säästja on sees</translation>
 <translation id="4797039098279997504">Puudutage vahelehele <ph name="URL_OF_THE_CURRENT_TAB" /> naasmiseks</translation>
 <translation id="4802417911091824046">Parooli krüpteerimine ei hõlma Google Pay makseviise ja aadresse.
 
 Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">Kaardil olev nimi</translation>
-<translation id="4807963036345170158">Andmemahu säästja on väljas</translation>
 <translation id="4816465935029283692">Andmetüübid</translation>
 <translation id="4824958205181053313">Kas tühistada sünkroonimine?</translation>
 <translation id="4837753911714442426">Valikute avamine lehe printimiseks</translation>
@@ -645,7 +638,6 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 <translation id="569536719314091526">Tõlkige leht mis tahes keelde nupuga Rohkem valikuid</translation>
 <translation id="572328651809341494">Hiljutised vahelehed</translation>
 <translation id="5726692708398506830">Lehel kuvatud sisu suurendamine</translation>
-<translation id="5734520971562437809">Kasutage kuni 60 protsenti vähem andmemahtu ja muutke veeb kiiremaks.</translation>
 <translation id="5748802427693696783">Tavapärased vahelehed on aktiveeritud</translation>
 <translation id="5749068826913805084">Chrome vajab failide allalaadimiseks juurdepääsu salvestusruumile.</translation>
 <translation id="5763382633136178763">Inkognito režiimi vahekaardid</translation>
@@ -703,7 +695,6 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 <translation id="6159335304067198720">Andmemahu kokkuhoid: <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Lisateave</translation>
 <translation id="6177111841848151710">Praeguse otsingumootori puhul blokeeritud</translation>
-<translation id="6177390657002841081">Lülita andmemahu säästja sisse</translation>
 <translation id="6181444274883918285">Lisa saidi erand</translation>
 <translation id="6192333916571137726">Faili allalaadimine</translation>
 <translation id="6192792657125177640">Erandid</translation>
@@ -1121,11 +1112,9 @@ Sait EI saa juurdepääsu kaamerale. Kaamera jäädvustatud pildid on nähtavad 
 <translation id="9188680907066685419">Hallatud kontolt väljalogimine</translation>
 <translation id="9204836675896933765">Üks fail on jäänud</translation>
 <translation id="9206873250291191720">A</translation>
-<translation id="9215534869786664672">Kasutage kuni 60 protsenti vähem andmemahtu ja muutke veeb kiiremaks. Google'i serverid optimeerivad teie külastatavaid lehti.</translation>
 <translation id="9219103736887031265">Pildid</translation>
 <translation id="926205370408745186">Chrome'i tegevuste eemaldamine teenusest Digitaalne heaolu</translation>
 <translation id="932327136139879170">Kodu</translation>
-<translation id="932599481871055447">Säästke andmemahtu ja sirvige kiiremini</translation>
 <translation id="938850635132480979">Viga: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Juurdepääs mikrofonile</translation>
 <translation id="951339005376969845">Kustutage olemasolevad andmed. Need saate hankida, kui lülitate tagasi kontole <ph name="FROM_ACCOUNT" />.</translation>

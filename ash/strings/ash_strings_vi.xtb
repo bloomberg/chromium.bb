@@ -112,6 +112,7 @@
 <translation id="2597972630681408282">Ánh sáng đêm: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">Thẻ SIM bị khóa</translation>
 <translation id="2653659639078652383">Gửi</translation>
+<translation id="2658778018866295321">Nhấp và kéo</translation>
 <translation id="2700493154570097719">Đặt bàn phím</translation>
 <translation id="2718395828230677721">Ánh sáng đêm</translation>
 <translation id="2727977024730340865">Được cắm vào bộ sạc công suất thấp. Việc sạc pin có thể không được đảm bảo.</translation>
@@ -228,6 +229,7 @@
 <translation id="4378551569595875038">Đang kết nối…</translation>
 <translation id="4379531060876907730">Đây là các công cụ bút dành cho bút cảm ứng</translation>
 <translation id="4389184120735010762">Bạn đã nhấn phím tắt của tính năng phóng to ở vị trí cố định. Bạn có muốn bật tính năng này không?</translation>
+<translation id="4394049700291259645">Vô hiệu hóa</translation>
 <translation id="4421231901400348175">Chia sẻ quyền kiểm soát màn hình của bạn với <ph name="HELPER_NAME" /> qua Trợ giúp từ xa.</translation>
 <translation id="4430019312045809116">Âm lượng</translation>
 <translation id="4450893287417543264">Không hiển thị lại</translation>
@@ -247,7 +249,6 @@
 <translation id="4696813013609194136">Mở khóa thiết bị bằng mã dành cho cha mẹ</translation>
 <translation id="4731797938093519117">Quyền truy cập của cha mẹ</translation>
 <translation id="4734965478015604180">Ngang</translation>
-<translation id="476166673298332917">Quản trị viên thiết bị có thể theo dõi hoạt động duyệt web của bạn.</translation>
 <translation id="4774338217796918551">Hãy quay lại lúc <ph name="COME_BACK_TIME" /> ngày mai.</translation>
 <translation id="4776917500594043016">Mật khẩu cho <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">Bạn không thể sử dụng Trợ lý Google trong phiên minh họa.</translation>
@@ -355,7 +356,6 @@
 <translation id="6537270692134705506">Chụp màn hình</translation>
 <translation id="6542521951477560771">Đang truyền tới <ph name="RECEIVER_NAME" /></translation>
 <translation id="6559976592393364813">Hỏi quản trị viên</translation>
-<translation id="6574601967010742428">Quản trị viên thiết bị có thể theo dõi hoạt động của bạn.</translation>
 <translation id="6585808820553845416">Phiên sẽ kết thúc sau <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Tìm kiếm+Shift+K</translation>
 <translation id="6650933572246256093">Thiết bị Bluetooth "<ph name="DEVICE_NAME" />" muốn được phép ghép nối. Vui lòng nhập mã xác nhận này trên thiết bị đó: <ph name="PASSKEY" /></translation>

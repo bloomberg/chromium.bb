@@ -181,8 +181,10 @@
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Понад 1 непрочитане сповіщення}one{Понад # непрочитане сповіщення}few{Понад # непрочитані сповіщення}many{Понад # непрочитаних сповіщень}other{Понад # непрочитаного сповіщення}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{через 1 хв}one{через # хв}few{через # хв}many{через # хв}other{через # хв}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" /> + <ph name="KEY_COMBO_NAME" /></translation>
+<translation id="8098075892845277643">Ввести голосовий запит Google Асистента</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 годину тому}one{# годину тому}few{# години тому}many{# годин тому}other{# години тому}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Залишилась 1 с}one{Залишилася # с}few{Залишилося # с}many{Залишилося # с}other{Залишилося # с}}</translation>
+<translation id="8144660977431427332">Ваші пошукові запити виконуються за технологією Google Асистента. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />: автозавершення</translation>
 <translation id="815598010540052116">Прокрутка вниз</translation>
 <translation id="8170087467028567933">Якщо видалити цю пропозицію, вона не з’являтиметься в обліковому записі на всіх ваших пристроях.</translation>

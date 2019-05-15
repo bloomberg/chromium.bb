@@ -74,13 +74,11 @@
 <translation id="1952728750904661634">כניסה עם חשבון מנוהל</translation>
 <translation id="1974060860693918893">מתקדם</translation>
 <translation id="1989112275319619282">דפדף</translation>
-<translation id="2000419248597011803">‏שליחה של חלק מקובצי ה-Cookie והחיפושים משורת כתובת האתר ומתיבת החיפוש אל מנוע החיפוש שהוגדר כברירת מחדל</translation>
 <translation id="2015722694326466240">רוצה להציג את הסיסמאות? תחילה עליך להגדיר קוד גישה במכשיר.</translation>
 <translation id="2068952045031577364">מהשבוע האחרון</translation>
 <translation id="2074131957428911366">אפשר לבחור מה לסנכרן בכל שלב דרך <ph name="BEGIN_LINK" />ההגדרות<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">ביטול הפעולה</translation>
 <translation id="209018056901015185">טען גירסת מחשב שולחני</translation>
-<translation id="2096012225669085171">סנכרון והתאמה אישית במכשירים שונים</translation>
 <translation id="2103075008456228677">‏פתח את history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> פריטים הועברו</translation>
 <translation id="213900355088104901">כדי לגלוש באופן פרטי יש לפתוח כרטיסיית גלישה בסתר</translation>
@@ -107,7 +105,6 @@
 <translation id="2435457462613246316">הצג סיסמה</translation>
 <translation id="2481538920734869610">הוספת חשבון</translation>
 <translation id="2497852260688568942">מנהל המערכת שלך השבית את הסנכרון</translation>
-<translation id="2523184218357549926">‏שליחת כתובות אתרים של דפים שבהם ביקרת ל-Google</translation>
 <translation id="2523363575747517183">האתר הזה מנסה שוב ושוב לפתוח אפליקציה אחרת.</translation>
 <translation id="2529021024822217800">פתח הכול</translation>
 <translation id="2572712655377361602">הגישה לתמונות שלך נחסמה עקב מדיניות שהוגדרה למכשיר</translation>
@@ -137,6 +134,7 @@
 <translation id="2871695793448672541">נסתר, סיסמה</translation>
 <translation id="288655811176831528">סגירת הכרטיסייה</translation>
 <translation id="2898963176829412617">תיקייה חדשה…</translation>
+<translation id="2916171785467530738">השלמה אוטומטית של חיפושים וכתובות אתרים</translation>
 <translation id="291754862089661335">‏מקם את קוד ה-QR או הברקוד במסגרת זו</translation>
 <translation id="2921219216347069551">לא ניתן לשתף את הדף</translation>
 <translation id="2923448633003185837">הדבקה וחיפוש</translation>
@@ -306,7 +304,6 @@
 <translation id="5857090052475505287">תיקייה חדשה</translation>
 <translation id="5857770089550859117">יש להזין את ביטוי הסיסמה כדי להפעיל את הסינכרון.</translation>
 <translation id="5860033963881614850">כבוי</translation>
-<translation id="5865733239029070421">‏שליחת דוחות קריסה וסטטיסטיקת שימוש אל Google באופן אוטומטי</translation>
 <translation id="5869029295770560994">בסדר, הבנתי</translation>
 <translation id="5871497086027727873">פריט אחד הועבר</translation>
 <translation id="5897956970858271241">מעבר לקישור שהועתק</translation>
@@ -410,9 +407,8 @@
 <translation id="7192050974311852563">התחלת רישום ביומן</translation>
 <translation id="7203585745079012652">משוב לתשובות על-ידי דיבור</translation>
 <translation id="722055596168483966">‏התאמה אישית של שירותי Google</translation>
-<translation id="7265758999917665941">לעולם לא עבור אתר זה</translation>
+<translation id="7265758999917665941">אף פעם עבור אתר זה</translation>
 <translation id="7272437679830969316">לא ניתן לאמת את הזהות שלך. הסיסמה לא הועתקה.</translation>
-<translation id="7280856130494094142">יש להזין את ביטוי הסיסמה כדי להפעיל את הסנכרון</translation>
 <translation id="7285236536143823449">כן, אני רוצה</translation>
 <translation id="7291368939935408496">מכין סיסמאות...</translation>
 <translation id="7293171162284876153">‏כדי להתחיל לסנכרן צריך להפעיל את האפשרות "סנכרון הנתונים מ-Chrome".</translation>
@@ -434,12 +430,10 @@
 <translation id="7554791636758816595">כרטיסייה חדשה</translation>
 <translation id="7561196759112975576">תמיד</translation>
 <translation id="7603852183842204213">חלונות קופצים שנחסמו (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
-<translation id="7605594153474022051">הסנכרון לא עובד</translation>
 <translation id="7638584964844754484">ביטוי סיסמה שגוי</translation>
 <translation id="7658239707568436148">ביטול</translation>
 <translation id="766891008101699113">כדי לגלוש באינטרנט בפרטיות צריך להוסיף כרטיסייה חדשה.</translation>
 <translation id="7671141431838911305">התקנה</translation>
-<translation id="7704317875155739195">השלמה אוטומטית של חיפושים וכתובות אתרים</translation>
 <translation id="7765158879357617694">העברה</translation>
 <translation id="7769602470925380267">קבל וצא מהחשבון</translation>
 <translation id="7772032839648071052">אשר משפט-סיסמה</translation>
@@ -477,7 +471,6 @@
 <translation id="842017693807136194">מחובר באמצעות</translation>
 <translation id="8428045167754449968">עיר / יישוב</translation>
 <translation id="8428213095426709021">הגדרות</translation>
-<translation id="8438566539970814960">שיפור החיפושים והגלישה</translation>
 <translation id="8458397775385147834">פריט אחד נמחק</translation>
 <translation id="8487700953926739672">זמין במצב לא מקוון</translation>
 <translation id="8503813439785031346">שם משתמש</translation>

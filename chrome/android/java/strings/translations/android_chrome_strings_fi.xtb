@@ -9,7 +9,6 @@
 <translation id="1067922213147265141">Muut Google-palvelut</translation>
 <translation id="1068672505746868501">Älä koskaan käännä kielellä <ph name="SOURCE_LANGUAGE" /> kirjoitettuja sivuja.</translation>
 <translation id="1080790410959514870">Olet kirjautumassa ulos tilistä, jota hallinnoi <ph name="DOMAIN_NAME" />. Laitteelle tallennetut Chrome-tiedot poistetaan, mutta ne säilytetään Google-tililläsi.</translation>
-<translation id="1099080783256647258">Kun Data Saver on käytössä, Chrome nopeuttaa sivujen lataamista ja pakkaa niitä Googlen palvelimien avulla. Jos sivu on erityisen hidas, Data Saver muotoilee sen uudelleen ja lataa vain olennaisen sisällön. Data Saver ei optimoi incognito-tilassa ladattavia sivuja.</translation>
 <translation id="1100066534610197918">Avaa uusi välilehti ja ryhmä</translation>
 <translation id="1105960400813249514">Kuvakaappaus</translation>
 <translation id="1111673857033749125">Muilla laitteilla tallentamasi kirjanmerkit näytetään täällä.</translation>
@@ -25,6 +24,7 @@
 <translation id="1175310183703641346">Kirjanmerkkejäsi, historiaasi, salasanojasi tai muita ei enää synkronoida Google-tilillesi</translation>
 <translation id="1178581264944972037">Tauko</translation>
 <translation id="1181037720776840403">Poista</translation>
+<translation id="1188239144602654184">Lisää AR</translation>
 <translation id="1197267115302279827">Siirrä kirjanmerkkejä</translation>
 <translation id="119944043368869598">Tyhjennä kaikki</translation>
 <translation id="1201402288615127009">Seuraava</translation>
@@ -96,7 +96,6 @@
 <translation id="1672586136351118594">Älä näytä uudelleen</translation>
 <translation id="1692118695553449118">Synkronointi on käytössä.</translation>
 <translation id="169515064810179024">Estä sivustoja käyttämästä liiketunnistimien lukemia</translation>
-<translation id="1709438864123551175">Data Saver</translation>
 <translation id="1717218214683051432">Liiketunnistimet</translation>
 <translation id="1718835860248848330">Viimeinen tunti</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> – päivitettiin <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -214,7 +213,6 @@
 <translation id="2501278716633472235">Takaisin</translation>
 <translation id="2513403576141822879">Näet lisää yksityisyyteen, tietoturvaan ja datankeruuseen liittyviä asetuksia <ph name="BEGIN_LINK" />Synkronointi ja Google-palvelut<ph name="END_LINK" /> ‑kohdassa.</translation>
 <translation id="2523184218357549926">Lähettää avaamiesi sivujen URL-osoitteet Googlelle</translation>
-<translation id="2526148617758225454">Data Saver on käytössä. Hallinnoi sitä asetuksissa.</translation>
 <translation id="2532336938189706096">Verkkonäkymä</translation>
 <translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" /> kohdetta poistettu</translation>
 <translation id="2536728043171574184">Näkyvissä on sivun offline-versio.</translation>
@@ -354,14 +352,12 @@
 <translation id="3599863153486145794">Tyhjentää kaikkien sisäänkirjautuneiden laitteiden historian. Google-tililläsi voi olla muuta toimintaa osoitteessa <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Mykistä ääniä toistavat sivustot</translation>
 <translation id="3616113530831147358">Ääni</translation>
-<translation id="3620176948598597475">Nollaaminen tyhjentää Data Saverin historian, mukaan lukien avattujen sivustojen luettelon.</translation>
 <translation id="3632295766818638029">Paljasta salasana</translation>
 <translation id="363596933471559332">Kirjaudu automaattisesti verkkosivustoille käyttämällä tallennettuja kirjautumistietoja. Jos tämä toiminto ei ole käytössä, sinua pyydetään vahvistamaan kirjautuminen aina, kun kirjaudut sivustolle.</translation>
 <translation id="3658159451045945436">Nollaaminen tyhjentää datansäästöhistoriasi, mukaan lukien luettelon paikoista, joissa olet käynyt.</translation>
 <translation id="3662546969139119822">Ei historiatietoja</translation>
 <translation id="3672452749423051839">Selausvirheiden ehdotukset</translation>
 <translation id="3692944402865947621">Lataus epäonnistui, koska tallennussijainti ei ole saatavilla: <ph name="FILE_NAME" /></translation>
-<translation id="3712575778697986964">Nollataanko Data Saver?</translation>
 <translation id="3714981814255182093">Avaa hakupalkki</translation>
 <translation id="3716182511346448902">Tämä sivu käyttää liikaa muistia, joten Chrome keskeytti sen.</translation>
 <translation id="3730075448226062617">Ota mikrofoni käyttöön myös <ph name="BEGIN_LINK" />Android-asetuksissa<ph name="END_LINK" />, niin Chrome voi käyttää mikrofoniasi.</translation>
@@ -503,13 +499,11 @@ Google-tililläsi voi olla muita selaushistoriatietoja, kuten hakuja ja toiminta
 <translation id="4751476147751820511">Liike- tai valotunnistimet</translation>
 <translation id="4759238208242260848">Lataukset</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 lataus on valmis}other{# latausta on valmiina}}</translation>
-<translation id="4766369052440583386">Data Saver on käytössä.</translation>
 <translation id="4797039098279997504">Palaa osoitteeseen <ph name="URL_OF_THE_CURRENT_TAB" /> koskettamalla.</translation>
 <translation id="4802417911091824046">Google Payn maksutapoja tai osoitteita ei salata tunnuslauseella.
 
 Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name="END_LINK" />.</translation>
 <translation id="4807098396393229769">Kortissa oleva nimi</translation>
-<translation id="4807963036345170158">Data Saver on pois käytöstä.</translation>
 <translation id="4816465935029283692">Tietotyypit</translation>
 <translation id="4824958205181053313">Peruutetaanko synkronointi?</translation>
 <translation id="4837753911714442426">Avaa sivun tulostusvaihtoehdot</translation>
@@ -601,6 +595,7 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="5447765697759493033">Sivustoa ei käännetä.</translation>
 <translation id="545042621069398927">Lataustasi nopeutetaan</translation>
 <translation id="5456381639095306749">Lataa sivu</translation>
+<translation id="5475862044948910901">Aloitetaanko lisätyn todellisuuden käyttökerta?</translation>
 <translation id="548278423535722844">Avaa karttasovelluksessa</translation>
 <translation id="5487521232677179737">Poista tiedot</translation>
 <translation id="5494752089476963479">Estä häiritseviä tai harhaanjohtavia mainoksia näyttävien sivustojen mainokset</translation>
@@ -643,7 +638,6 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="569536719314091526">Käännä sivu mille tahansa kielelle Lisävalinnat-painikkeella</translation>
 <translation id="572328651809341494">Hiljattain suljetut välilehdet</translation>
 <translation id="5726692708398506830">Suurenna sivun kaikki sisältö</translation>
-<translation id="5734520971562437809">Vähennä datankäyttöä jopa 60 prosenttia ja selaa verkkoa nopeammin.</translation>
 <translation id="5748802427693696783">Vaihdettiin näkyviin tavalliset välilehdet.</translation>
 <translation id="5749068826913805084">Chrome tarvitsee tallennustilan käyttöoikeuden tiedostojen lataamiseen.</translation>
 <translation id="5763382633136178763">Incognito-välilehdet</translation>
@@ -701,7 +695,6 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="6159335304067198720"><ph name="PERCENT" /> vähemmän tiedonsiirtoa</translation>
 <translation id="6165508094623778733">Lisätietoja</translation>
 <translation id="6177111841848151710">Estetty nykyiseltä hakukoneelta</translation>
-<translation id="6177390657002841081">Ota Data Saver käyttöön</translation>
 <translation id="6181444274883918285">Lisää sivustopoikkeus</translation>
 <translation id="6192333916571137726">Lataaminen-tiedosto</translation>
 <translation id="6192792657125177640">Poikkeukset</translation>
@@ -867,6 +860,11 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Jaa 1 valittu kohde}other{Jaa # valittua kohdetta}}</translation>
 <translation id="7359002509206457351">Pääsy maksutapoihin</translation>
+<translation id="7365126855094612066">Tämän käyttökerran ajan sivusto voi
+• luoda 3D-kartan ympäristöstäsi
+• seurata kameran liikettä
+
+Sivusto EI saa kameran käyttöoikeutta. Kamerakuvat näkyvät vain sinulle.</translation>
 <translation id="7375125077091615385">Tyyppi:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL-osoite</translation>
@@ -1114,11 +1112,9 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="9188680907066685419">Kirjaudu ulos hallinnoidulta tililtä</translation>
 <translation id="9204836675896933765">1 tiedosto jäljellä</translation>
 <translation id="9206873250291191720">A</translation>
-<translation id="9215534869786664672">Vähennä datankäyttöä jopa 60 prosenttia ja selaa verkkoa nopeammin. Googlen palvelimet optimoivat sivut, joilla käyt.</translation>
 <translation id="9219103736887031265">Kuvat</translation>
 <translation id="926205370408745186">Poista Chrome-toimintasi Digitaalisesta hyvinvoinnista</translation>
 <translation id="932327136139879170">Etusivu</translation>
-<translation id="932599481871055447">Käytä vähemmän dataa ja selaa nopeammin</translation>
 <translation id="938850635132480979">(Virhe: <ph name="ERROR_CODE" />)</translation>
 <translation id="945632385593298557">Mikrofonin käyttöoikeus</translation>
 <translation id="951339005376969845">Poistaa olemassa olevat tiedot. Voit palauttaa nykyiset tiedot kirjautumalla takaisin tilille <ph name="FROM_ACCOUNT" />.</translation>

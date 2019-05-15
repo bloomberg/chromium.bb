@@ -118,9 +118,7 @@
 <translation id="4987820182225656817">Goście mogą korzystać z Chromium, nie pozostawiając żadnych danych.</translation>
 <translation id="4994636714258228724">Dodaj siebie do Chromium</translation>
 <translation id="5021854341188256296">{0,plural, =0{Dostępna jest aktualizacja Chromium OS}=1{Dostępna jest aktualizacja Chromium OS}few{Aktualizacja Chromium OS jest dostępna od # dni}many{Aktualizacja Chromium OS jest dostępna od # dni}other{Aktualizacja Chromium OS jest dostępna od # dnia}}</translation>
-<translation id="5032989939245619637">Zapisz szczegóły w Chromium</translation>
 <translation id="5045248521775609809">Zabierz Chromium ze sobą</translation>
-<translation id="5116586539350239523">Chromium będzie bezpiecznie przechowywać Twoje dane, dzięki czemu nie będzie trzeba wpisywać ich ponownie.</translation>
 <translation id="5181952534059945058">Ta strona używa zbyt dużo pamięci, dlatego przeglądarka Chromium usunęła część jej zawartości.</translation>
 <translation id="5277894862589591112">Aby zastosować zmiany, uruchom ponownie Chromium</translation>
 <translation id="5358375970380395591">Logujesz się na zarządzane konto i przekazujesz jego administratorowi kontrolę nad swoim profilem Chromium. Twoje dane Chromium, takie jak aplikacje, zakładki, historia, hasła i inne ustawienia, zostaną trwale powiązane z użytkownikiem <ph name="USER_NAME" />. Będzie można je usunąć w Panelu kont Google, ale nie będzie można ich powiązać z innym kontem. <ph name="LEARN_MORE" /></translation>

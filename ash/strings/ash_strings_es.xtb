@@ -112,6 +112,7 @@
 <translation id="2597972630681408282">Luz nocturna: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">La tarjeta SIM está bloqueada</translation>
 <translation id="2653659639078652383">Enviar</translation>
+<translation id="2658778018866295321">Hacer clic y arrastrar</translation>
 <translation id="2700493154570097719">Elegir el teclado</translation>
 <translation id="2718395828230677721">Luz nocturna</translation>
 <translation id="2727977024730340865">Conectado a un cargador de baja potencia. Es posible que la carga de la batería no sea fiable.</translation>
@@ -228,6 +229,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="4378551569595875038">Conectando...</translation>
 <translation id="4379531060876907730">Estas son las herramientas del lápiz óptico</translation>
 <translation id="4389184120735010762">Has pulsado la combinación de teclas que activa la lupa fijada. ¿Quieres activarla?</translation>
+<translation id="4394049700291259645">Inhabilitar</translation>
 <translation id="4421231901400348175">Compartiendo control de la pantalla con <ph name="HELPER_NAME" /> a través de Asistencia remota.</translation>
 <translation id="4430019312045809116">Volumen</translation>
 <translation id="4450893287417543264">No volver a mostrar</translation>
@@ -247,7 +249,6 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="4696813013609194136">Desbloquear el dispositivo con código parental</translation>
 <translation id="4731797938093519117">Acceso parental</translation>
 <translation id="4734965478015604180">Horizontal</translation>
-<translation id="476166673298332917">Es posible que el administrador del dispositivo supervise tu actividad de navegación.</translation>
 <translation id="4774338217796918551">Vuelve mañana a las <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Contraseña de <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">El Asistente de Google no está disponible en las sesiones de demostración.</translation>
@@ -355,7 +356,6 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="6537270692134705506">Capturar pantalla</translation>
 <translation id="6542521951477560771">Enviando contenido a <ph name="RECEIVER_NAME" /></translation>
 <translation id="6559976592393364813">Pregunta al administrador</translation>
-<translation id="6574601967010742428">Es posible que el administrador del dispositivo supervise tu actividad.</translation>
 <translation id="6585808820553845416">La sesión finalizará dentro de <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Tecla de búsqueda + Mayús + K</translation>
 <translation id="6650933572246256093">El dispositivo Bluetooth "<ph name="DEVICE_NAME" />" solicita permiso para vincularse. Introduce la clave de contraseña <ph name="PASSKEY" /> en el dispositivo</translation>

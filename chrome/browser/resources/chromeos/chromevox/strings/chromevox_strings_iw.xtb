@@ -806,7 +806,7 @@
 <translation id="667999046851023355">מסמך</translation>
 <translation id="6688209025607531203">התראה שלא מוצגת בחלון קופץ</translation>
 <translation id="6689672606256159458">סלמון כהה</translation>
-<translation id="669617842401078250">ההורדה הושהתה <ph name="FILE_NAME" /></translation>
+<translation id="669617842401078250">ההורדה של <ph name="FILE_NAME" /> הושהתה</translation>
 <translation id="6696967141280706829">הקדמה</translation>
 <translation id="6697092096875747123">התיבה המשולבת הקודמת</translation>
 <translation id="6702609185760332517">{COUNT,plural, =1{סימן קריאה}two{# סימני קריאה}many{# סימני קריאה}other{# סימני קריאה}}</translation>
@@ -960,7 +960,7 @@
         <ph name="LINE_THROUGH_STRING" />
         <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="7701196182766842984">autolst</translation>
-<translation id="7763537600611320912">ההורדה התחילה <ph name="FILE_NAME" /></translation>
+<translation id="7763537600611320912">ההורדה של <ph name="FILE_NAME" /> התחילה</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, תיבת טקסט של סיסמה</translation>
 <translation id="7776293189010177726">‏פתיחת תפריטי ChromeVox</translation>
 <translation id="7800558923657349506">אפילוג</translation>
@@ -1155,7 +1155,7 @@
 <translation id="8743786158317878347">היכנס לתוכן מובנה, כמו טבלאות</translation>
 <translation id="8747966237988593539">רשימה לפי סדר</translation>
 <translation id="8749988712346667988">כסף</translation>
-<translation id="875769700429317857">ההורדה הושלמה <ph name="FILE_NAME" /></translation>
+<translation id="875769700429317857">ההורדהשל <ph name="FILE_NAME" /> הושלמה</translation>
 <translation id="8759334257841767240">אין קישור הבא.</translation>
 <translation id="8767968232364267681">הכותרת הבאה של רמה 4</translation>
 <translation id="8770473310765924354">צא מתוכן מובנה, כמו טבלאות</translation>

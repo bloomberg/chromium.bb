@@ -12,6 +12,7 @@
 <translation id="3442261357327209537">Cliquez ici pour définir un nouveau mot de passe</translation>
 <translation id="3506732833599356229">Mot de passe expiré</translation>
 <translation id="4731797938093519117">Accès parental</translation>
+<translation id="476166673298332917">L'administrateur de cet appareil a accès à toute votre activité de navigation.</translation>
 <translation id="5212543919916444558">Je ne parviens pas à détecter d'éléments sur votre écran pour lesquels je peux vous aider.
 Veuillez appuyer sur le micro pour me poser une question.</translation>
 <translation id="5222676887888702881">Déconnexion</translation>
@@ -19,6 +20,7 @@ Veuillez appuyer sur le micro pour me poser une question.</translation>
 <translation id="54609108002486618">Géré</translation>
 <translation id="5832805196449965646">Ajouter une personne</translation>
 <translation id="5895138241574237353">Redémarrer</translation>
+<translation id="6574601967010742428">Il est possible que l'administrateur de l'appareil puisse surveiller votre activité.</translation>
 <translation id="7467001599725918325">Mot de passe bientôt expiré</translation>
 <translation id="7505377169174526985">{NUM_DAYS,plural, =0{Votre mot de passe actuel est arrivé à expiration !}=1{Votre mot de passe actuel arrive à expiration dans moins d'un jour !}one{Votre mot de passe actuel arrive à expiration dans moins de # jour !}other{Votre mot de passe actuel arrive à expiration dans moins de # jours !}}</translation>
 <translation id="7658239707568436148">Annuler</translation>

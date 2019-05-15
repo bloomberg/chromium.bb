@@ -226,6 +226,7 @@
 <translation id="1338950911836659113">Excluindo...</translation>
 <translation id="1340527397989195812">Fazer backup de mídia do dispositivo usando o aplicativo Arquivos.</translation>
 <translation id="1341988552785875222">O plano de fundo atual está definido por "<ph name="APP_NAME" />". Talvez seja necessário desinstalar "<ph name="APP_NAME" />" antes de selecionar um plano de fundo diferente.</translation>
+<translation id="1343865611738742294">Conceder aos apps Linux permissão para acessar dispositivos USB. O Linux não terá informações do dispositivo USB depois que ele for removido.</translation>
 <translation id="1347256498747320987">Instalar atualizações e apps. Ao continuar, você aceita que este dispositivo também pode fazer automaticamente o download e a instalação de atualizações e apps do Google, da operadora e do fabricante do dispositivo, possivelmente usando dados da rede celular. Alguns desses apps podem oferecer compras dentro deles. <ph name="BEGIN_LINK1" />Saiba mais<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">A atualização é iniciada quando a bateria chega a <ph name="BATTERY_LEVEL" />%.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
@@ -707,6 +708,7 @@
 <translation id="2120297377148151361">Atividade e interações</translation>
 <translation id="2120478168904746065">{NUM_TABS,plural, =1{Ativar som da guia}one{Ativar som da guia}other{Ativar som das guias}}</translation>
 <translation id="2121825465123208577">Redimensionar</translation>
+<translation id="2122305276694332719">A conexão automática a uma rede oculta não é recomendada porque permite que outras pessoas vejam seu dispositivo e algumas configurações de rede.</translation>
 <translation id="2124930039827422115">{1,plural, =1{Classificação de <ph name="AVERAGE_RATING" /> feita por um usuário.}one{Classificação de <ph name="AVERAGE_RATING" /> feita por # usuário.}other{Classificação de <ph name="AVERAGE_RATING" /> feita por # usuários.}}</translation>
 <translation id="2126167708562367080">A sincronização foi desativada pelo administrador.</translation>
 <translation id="2127372758936585790">Carregador de baixa potência</translation>
@@ -1303,6 +1305,7 @@
 <translation id="3012917896646559015">Entre em contato com o fabricante do hardware imediatamente para enviar seu computador para a assistência técnica.</translation>
 <translation id="3013291976881901233">Dispositivos MIDI</translation>
 <translation id="3015639418649705390">Reiniciar agora</translation>
+<translation id="3016329696181678353">Não foi possível configurar <ph name="PRINTER_NAME" /> automaticamente. Especifique os detalhes avançados da impressora.</translation>
 <translation id="3016641847947582299">Componente atualizado</translation>
 <translation id="3016780570757425217">Saber sua localização</translation>
 <translation id="3020183492814296499">Atalhos</translation>
@@ -1805,7 +1808,6 @@
 <translation id="3789841737615482174">Instalar</translation>
 <translation id="379082410132524484">Seu cartão expirou</translation>
 <translation id="3792890930871100565">Desconectar impressoras</translation>
-<translation id="3792938779249970121">Selecionar conta</translation>
 <translation id="3796648294839530037">Redes favoritas:</translation>
 <translation id="3797739167230984533">Seu <ph name="BEGIN_LINK" /><ph name="DEVICE_TYPE" /> é gerenciado<ph name="END_LINK" /> pela sua organização</translation>
 <translation id="3797900183766075808">&amp;Pesquisar “<ph name="SEARCH_TERMS" />” no <ph name="SEARCH_ENGINE" /></translation>
@@ -2114,6 +2116,7 @@
 <translation id="4268025649754414643">Codificação de chaves</translation>
 <translation id="4270393598798225102">Versão <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">Nenhuma correspondência</translation>
+<translation id="4275663329226226506">Mídia</translation>
 <translation id="4275830172053184480">Reiniciar seu dispositivo</translation>
 <translation id="4278101229438943600">O Assistente está pronto</translation>
 <translation id="4278390842282768270">Permitido</translation>
@@ -2156,7 +2159,6 @@
 <translation id="4354344420232759511">Os sites que você visitar serão exibidos aqui</translation>
 <translation id="435527878592612277">Selecione sua foto</translation>
 <translation id="4356334633973342967">Ou especifique seu próprio driver:</translation>
-<translation id="4358169392473932247">Essa chave de segurança não é compatível com armazenamento interno de credenciais, mas esse recurso foi solicitado.</translation>
 <translation id="4359408040881008151">Instalada devido a extensões dependentes.</translation>
 <translation id="4359717112757026264">Paisagem urbana</translation>
 <translation id="4361142739114356624">A chave particular desse certificado do cliente está ausente ou é inválida</translation>
@@ -2339,7 +2341,6 @@
 <translation id="4665014895760275686">Fabricante</translation>
 <translation id="4665446389743427678">Todos os dados armazenados pelo site <ph name="SITE" /> serão excluídos.</translation>
 <translation id="4668721319092543482">Clique para ativar o plug-in <ph name="PLUGIN_NAME" /></translation>
-<translation id="4670688170798478686">Confirmar redefinição</translation>
 <translation id="4672657274720418656">Página de conversão</translation>
 <translation id="4673442866648850031">Abrir ferramentas da stylus quando a stylus for removida</translation>
 <translation id="4677585247300749148"><ph name="URL" /> quer responder a eventos de acessibilidade</translation>
@@ -2369,7 +2370,6 @@
 <translation id="4711638718396952945">Restaurar configurações</translation>
 <translation id="4715553623069266137">muito curto (0,8 seg)</translation>
 <translation id="4716483597559580346">Executar Powerwash para maior segurança</translation>
-<translation id="4718490098585891067">Selecione uma conta para fazer login:</translation>
 <translation id="4720113199587244118">Adicionar dispositivos</translation>
 <translation id="4720185134442950733">Rede de dados móveis</translation>
 <translation id="4722735765955348426">Senha para <ph name="USERNAME" /></translation>
@@ -2400,7 +2400,6 @@
 <translation id="4756388243121344051">&amp;Histórico</translation>
 <translation id="4759238208242260848">Downloads</translation>
 <translation id="4761104368405085019">Usar microfone</translation>
-<translation id="476166673298332917">O administrador deste dispositivo poderá monitorar sua atividade de navegação.</translation>
 <translation id="4762718786438001384">Dispositivo com espaço em disco criticamente baixo</translation>
 <translation id="4763408175235639573">Os cookies a seguir foram definidos quando você visualizou esta página</translation>
 <translation id="4763830802490665879">Os cookies de vários sites serão apagados na saída.</translation>
@@ -3931,7 +3930,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="713888829801648570">Sua senha não pôde ser confirmada porque você está off-line.</translation>
 <translation id="7140928199327930795">Nenhum outro dispositivo disponível.</translation>
 <translation id="7141105143012495934">O login falhou porque não foi possível recuperar detalhes da sua conta. Entre em contato com o administrador ou tente novamente.</translation>
-<translation id="714285394257538643">Toque novamente para confirmar que você quer redefinir a chave de segurança. Todas as credenciais armazenadas na chave de segurança e todos os PINs serão apagados.</translation>
 <translation id="7143092389027215216">Iniciando modo de demonstração</translation>
 <translation id="7143207342074048698">Conectando</translation>
 <translation id="7144878232160441200">Tentar novamente</translation>
@@ -4165,6 +4163,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7506541170099744506">Seu <ph name="DEVICE_TYPE" /> foi inscrito para o gerenciamento empresarial.</translation>
 <translation id="7507930499305566459">Certificado do respondente de status</translation>
 <translation id="7513029293694390567">Faça login automaticamente nos sites que usam credenciais armazenadas. Quando o recurso estiver desativado, será necessário fornecer uma confirmação todas as vezes que fizer login em um site.</translation>
+<translation id="7514365320538308">Fazer o download</translation>
 <translation id="7517786267097410259">Criar uma senha:</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">Diga "Ok Google"</translation>
@@ -4505,6 +4504,7 @@ Chave de arquivo: <ph name="KEY_FILE" />
 Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para criar novas versões da sua extensão.</translation>
 <translation id="8000066093800657092">Sem rede</translation>
 <translation id="8000467600002607205">{NUM_TABS,plural, =1{Fechar guia}one{Fechar guia}other{Fechar guias}}</translation>
+<translation id="8002274832045662704">Configuração avançada de impressora</translation>
 <translation id="8004582292198964060">Navegador</translation>
 <translation id="8005600846065423578">Sempre permitir que <ph name="HOST" /> veja a área de transferência</translation>
 <translation id="8008356846765065031">Internet desconectada. Verifique sua conexão com a Internet.</translation>
@@ -5046,6 +5046,7 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="8850251000316748990">Ver mais…</translation>
 <translation id="885246833287407341">Argumentos de função da API</translation>
 <translation id="8853586775156634952">O card será salvo apenas neste dispositivo</translation>
+<translation id="885701979325669005">Armazenamento</translation>
 <translation id="8859057652521303089">Selecione o seu idioma:</translation>
 <translation id="8859174528519900719">Subquadro: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8862003515646449717">Mudar para um navegador rápido</translation>

@@ -120,9 +120,7 @@
 <translation id="4987820182225656817">Külastajad saavad kasutada Chromiumi jälgi jätmata.</translation>
 <translation id="4994636714258228724">Lisa Chromiumi</translation>
 <translation id="5021854341188256296">{0,plural, =0{Chromium OS-i värskendus on saadaval}=1{Chromium OS-i värskendus on saadaval}other{Chromium OS-i värskendus on olnud saadaval # päeva}}</translation>
-<translation id="5032989939245619637">Salvesta üksikasjad Chromiumi</translation>
 <translation id="5045248521775609809">Võtke Chromium kõikjale kaasa</translation>
-<translation id="5116586539350239523">Chromium salvestab turvaliselt teie isiklikud andmed, et te ei peaks neid uuesti sisestama.</translation>
 <translation id="5181952534059945058">Chromium eemaldas osa sisust, kuna leht kasutab liiga palju mälu.</translation>
 <translation id="5277894862589591112">Muudatuste rakendamiseks käivitage Chromium uuesti</translation>
 <translation id="5358375970380395591">Logite sisse hallatud kontoga ja annate selle administraatorile üle Chromiumi profiili juhtimise. Teie Chromiumi andmed, näiteks rakendused, järjehoidjad, ajalugu, paroolid ja muud seaded seotakse jäädavalt kasutajaga <ph name="USER_NAME" />. Saate need andmed kustutada Google'i kontode juhtpaneeli kaudu, kuid te ei saa neid seostada teise kontoga. <ph name="LEARN_MORE" /></translation>

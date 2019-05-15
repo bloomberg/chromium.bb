@@ -226,6 +226,7 @@
 <translation id="1338950911836659113">Eliminando…</translation>
 <translation id="1340527397989195812">Realizar una copia de seguridad del contenido multimedia desde el dispositivo mediante la aplicación Archivos</translation>
 <translation id="1341988552785875222">"<ph name="APP_NAME" />" estableció el fondo de pantalla actual. Es posible que tengas que desinstalar "<ph name="APP_NAME" />" antes de seleccionar un fondo de pantalla diferente.</translation>
+<translation id="1343865611738742294">Concédeles a las apps de Linux acceso a dispositivos USB. Linux no recuerda los dispositivos USB después de quitarlos.</translation>
 <translation id="1347256498747320987">Instala actualizaciones y apps. Al continuar, aceptas que este dispositivo también descargue e instale automáticamente actualizaciones y apps de Google, tu administrador y el fabricante del dispositivo, posiblemente a través de datos móviles. Es posible que algunas de estas apps ofrezcan compras directas desde la aplicación. <ph name="BEGIN_LINK1" />Más información<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">La actualización comenzará cuando el nivel de la batería alcance el <ph name="BATTERY_LEVEL" />%.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
@@ -704,6 +705,7 @@
 <translation id="2120297377148151361">Interacciones y actividad</translation>
 <translation id="2120478168904746065">{NUM_TABS,plural, =1{Activar sonido de la pestaña}other{Activar sonido de las pestañas}}</translation>
 <translation id="2121825465123208577">Ajustar tamaño</translation>
+<translation id="2122305276694332719">Si permites que tu dispositivo se conecte a una red oculta de forma automática, otras personas podrán ver tu dispositivo y algunas opciones de configuración de red, lo cual no es recomendable.</translation>
 <translation id="2124930039827422115">{1,plural, =1{Calificación de <ph name="AVERAGE_RATING" /> de un usuario}other{Calificación de <ph name="AVERAGE_RATING" /> de # usuarios}}</translation>
 <translation id="2126167708562367080">Tu administrador inhabilitó la sincronización.</translation>
 <translation id="2127372758936585790">Carga lenta</translation>
@@ -808,7 +810,7 @@
 <translation id="2256115617011615191">Reiniciar ahora</translation>
 <translation id="225614027745146050">Bienvenido</translation>
 <translation id="225692081236532131">Estado de activación</translation>
-<translation id="2258855745387252834">Para compartir, haz clic con el botón derecho en una carpeta en la app de Archivos y, luego, selecciona "Compartir con Plugin VM".</translation>
+<translation id="2258855745387252834">Para compartir, haz clic con el botón derecho en una carpeta en la app de Archivos y, luego, selecciona "Compartir con Plugin VM".</translation>
 <translation id="2261323523305321874">Tu administrador hizo un cambio que afecta todo el sistema e inhabilita algunos perfiles antiguos.</translation>
 <translation id="2262332168014443534">El modo lite ahora permite navegar de forma más rápida por todas las páginas, incluidas las que tienen el protocolo HTTPS.</translation>
 <translation id="2262477216570151239">Tiempo para repetición</translation>
@@ -1300,6 +1302,7 @@
 <translation id="3012917896646559015">Comunícate con el fabricante del hardware de inmediato para enviar tu computadora a reparación.</translation>
 <translation id="3013291976881901233">Dispositivos MIDI</translation>
 <translation id="3015639418649705390">Reiniciar ahora</translation>
+<translation id="3016329696181678353">No se pudo configurar <ph name="PRINTER_NAME" /> automáticamente. Especifica los detalles avanzados de la impresora.</translation>
 <translation id="3016641847947582299">Componente actualizado</translation>
 <translation id="3016780570757425217">Determinar tu ubicación</translation>
 <translation id="3020183492814296499">Combinación de teclas</translation>
@@ -1802,7 +1805,6 @@
 <translation id="3789841737615482174">Instalar</translation>
 <translation id="379082410132524484">La tarjeta está vencida</translation>
 <translation id="3792890930871100565">Desconectar impresoras</translation>
-<translation id="3792938779249970121">Selecciona una cuenta</translation>
 <translation id="3796648294839530037">Redes favoritas:</translation>
 <translation id="3797739167230984533">Tu organización <ph name="BEGIN_LINK" />administra tu <ph name="DEVICE_TYPE" /><ph name="END_LINK" /></translation>
 <translation id="3797900183766075808">&amp;Buscar "<ph name="SEARCH_TERMS" />" en <ph name="SEARCH_ENGINE" /></translation>
@@ -2111,6 +2113,7 @@
 <translation id="4268025649754414643">Cifrado de clave</translation>
 <translation id="4270393598798225102">Versión <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">No hay coincidencias</translation>
+<translation id="4275663329226226506">Multimedia</translation>
 <translation id="4275830172053184480">Reiniciar tu dispositivo</translation>
 <translation id="4278101229438943600">Tu Asistente está listo</translation>
 <translation id="4278390842282768270">Permitido</translation>
@@ -2153,7 +2156,6 @@
 <translation id="4354344420232759511">Los sitios que visitas aparecerán aquí</translation>
 <translation id="435527878592612277">Seleccionar tu foto</translation>
 <translation id="4356334633973342967">O especifica tu propio controlador:</translation>
-<translation id="4358169392473932247">Esa llave de seguridad no permite almacenar las credenciales de forma interna, pero se solicitó esa función.</translation>
 <translation id="4359408040881008151">Instalada a causa de las extensiones dependientes</translation>
 <translation id="4359717112757026264">Paisaje urbano</translation>
 <translation id="4361142739114356624">Falta la clave privada para este Certificado de cliente o no es válida</translation>
@@ -2336,7 +2338,6 @@
 <translation id="4665014895760275686">Fabricante</translation>
 <translation id="4665446389743427678">Se borrarán todos los datos que almacene <ph name="SITE" />.</translation>
 <translation id="4668721319092543482">Hacer clic para habilitar <ph name="PLUGIN_NAME" /></translation>
-<translation id="4670688170798478686">Confirmar restablecimiento</translation>
 <translation id="4672657274720418656">Filtrar página</translation>
 <translation id="4673442866648850031">Abrir las herramientas de pluma stylus al quitarla</translation>
 <translation id="4677585247300749148"><ph name="URL" /> desea responder a los eventos de accesibilidad</translation>
@@ -2366,7 +2367,6 @@
 <translation id="4711638718396952945">Restaurar configuración</translation>
 <translation id="4715553623069266137">muy corto (0.8 s)</translation>
 <translation id="4716483597559580346">Powerwash para mejorar la seguridad</translation>
-<translation id="4718490098585891067">Selecciona una cuenta para acceder:</translation>
 <translation id="4720113199587244118">Agregar dispositivos</translation>
 <translation id="4720185134442950733">Red de datos móviles</translation>
 <translation id="4722735765955348426">Contraseña de <ph name="USERNAME" /></translation>
@@ -2397,7 +2397,6 @@
 <translation id="4756388243121344051">&amp;Historial</translation>
 <translation id="4759238208242260848">Descargas</translation>
 <translation id="4761104368405085019">Usar tu micrófono</translation>
-<translation id="476166673298332917">El administrador tiene acceso a toda la actividad, incluidas las contraseñas y comunicaciones.</translation>
 <translation id="4762718786438001384">Hay muy poco espacio en el disco del dispositivo</translation>
 <translation id="4763408175235639573">Se configuraron las siguientes cookies cuando visitaste esta página</translation>
 <translation id="4763830802490665879">Las cookies de varios sitios se borrarán al salir.</translation>
@@ -3926,7 +3925,6 @@
 <translation id="713888829801648570">La contraseña no se pudo verificar porque no tienes conexión a Internet.</translation>
 <translation id="7140928199327930795">No hay otros dispositivos disponibles.</translation>
 <translation id="7141105143012495934">Se produjo un error de acceso porque no se pudieron recuperar los datos de tu cuenta. Comunícate con el administrador o vuelve a intentarlo.</translation>
-<translation id="714285394257538643">Para confirmar que quieres restablecer tu llave de seguridad, vuelve a tocarla. Se borrarán todas las credenciales almacenadas en la llave de seguridad y su PIN.</translation>
 <translation id="7143092389027215216">Iniciar el modo de demostración</translation>
 <translation id="7143207342074048698">Conectando</translation>
 <translation id="7144878232160441200">Volver a intentarlo</translation>
@@ -4160,6 +4158,7 @@
 <translation id="7506541170099744506">Tu dispositivo <ph name="DEVICE_TYPE" /> se inscribió correctamente para la administración empresarial.</translation>
 <translation id="7507930499305566459">Certificado del respondedor de estado</translation>
 <translation id="7513029293694390567">Accede automáticamente a los sitios web con las credenciales almacenadas. Si la función está inhabilitada, deberás confirmar siempre tu identidad para acceder a un sitio web.</translation>
+<translation id="7514365320538308">Descargar</translation>
 <translation id="7517786267097410259">Crear una contraseña:</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">Di "OK Google".</translation>
@@ -4500,6 +4499,7 @@ Archivo de clave: <ph name="KEY_FILE" />
 Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones de tu extensión.</translation>
 <translation id="8000066093800657092">Sin red</translation>
 <translation id="8000467600002607205">{NUM_TABS,plural, =1{Cerrar pestaña}other{Cerrar pestañas}}</translation>
+<translation id="8002274832045662704">Configuración avanzada de la impresora</translation>
 <translation id="8004582292198964060">Navegador</translation>
 <translation id="8005600846065423578">Permitir siempre que <ph name="HOST" /> vea el portapapeles</translation>
 <translation id="8008356846765065031">No hay conexión a Internet. Comprueba la conexión.</translation>
@@ -5041,6 +5041,7 @@ Es posible que los usuarios con conexiones lentas no puedan ver tu contenido.</t
 <translation id="8850251000316748990">Ver más…</translation>
 <translation id="885246833287407341">Argumentos de la función de la API</translation>
 <translation id="8853586775156634952">Esta tarjeta solo se guardará en este dispositivo</translation>
+<translation id="885701979325669005">Almacenamiento</translation>
 <translation id="8859057652521303089">Selecciona tu idioma:</translation>
 <translation id="8859174528519900719">Submarco: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8862003515646449717">Cambia a un navegador rápido</translation>
@@ -5205,7 +5206,7 @@ Es posible que los usuarios con conexiones lentas no puedan ver tu contenido.</t
 <translation id="9115675100829699941">&amp;Favoritos</translation>
 <translation id="9116465289595958864">Última modificación</translation>
 <translation id="9116799625073598554">App para tomar notas</translation>
-<translation id="9117030152748022724">Administrar tus apps</translation>
+<translation id="9117030152748022724">Administra tus apps</translation>
 <translation id="9121814364785106365">Abrir como pestaña anclada</translation>
 <translation id="9124003689441359348">Las contraseñas guardadas aparecerán aquí</translation>
 <translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (quedan <ph name="LICENSE_COUNT" />)</translation>

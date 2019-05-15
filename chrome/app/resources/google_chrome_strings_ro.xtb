@@ -145,7 +145,6 @@ Verifică e-mailul la <ph name="ACCOUNT_EMAIL" /> pentru instrucțiuni supliment
 <translation id="4750550185319565338">Repornește Chrome pentru a activa <ph name="PLUGIN_NAME" /></translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Este posibil ca fișierul să fie periculos, așadar Chrome l-a blocat.</translation>
-<translation id="4794050651896644714">Salvați detaliile în Chrome</translation>
 <translation id="4891791193823137474">Permite ca Google Chrome să ruleze în fundal</translation>
 <translation id="4895437082222824641">Deschide linkul într-o &amp;filă Chrome nouă</translation>
 <translation id="4921569541910214635">Folosești un computer în comun? Acum poți să configurezi Chrome exact cum îți place.</translation>
@@ -257,7 +256,6 @@ Verifică e-mailul la <ph name="ACCOUNT_EMAIL" /> pentru instrucțiuni supliment
 <translation id="8077352834923175128">Administratorul solicită să repornești sistemul de operare Chrome pentru a aplica această actualizare</translation>
 <translation id="8129812357326543296">Despre &amp;Google Chrome</translation>
 <translation id="8179874765710681175">Instalează Chrome pe telefon. Vom trimite un SMS pe telefon.</translation>
-<translation id="8183957050892517584">Chrome va stoca în siguranță detaliile personale, pentru a nu fi necesar să le introduci din nou.</translation>
 <translation id="8226081633851087288">{0,plural, =0{Sistemul de operare Chrome va reporni acum}=1{Sistemul de operare Chrome va reporni într-o secundă}few{Sistemul de operare Chrome va reporni în # secunde}other{Sistemul de operare Chrome va reporni în # de secunde}}</translation>
 <translation id="825412236959742607">Această pagină folosește prea multă memorie, prin urmare Chrome a eliminat o parte din conținut.</translation>
 <translation id="8255190535488645436">Google Chrome utilizează camera foto și microfonul.</translation>

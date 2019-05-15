@@ -9,7 +9,6 @@
 <translation id="1067922213147265141">Altri servizi Google</translation>
 <translation id="1068672505746868501">Non tradurre mai le pagine in <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1080790410959514870">Stai per uscire da un account gestito da <ph name="DOMAIN_NAME" />. Verranno eliminati i dati di Chrome memorizzati su questo dispositivo, ma i dati rimarranno nel tuo Account Google.</translation>
-<translation id="1099080783256647258">Quando Risparmio dati è attivato, Chrome utilizza i server di Google per accelerare e comprimere i caricamenti delle pagine. Nelle pagine particolarmente lente, Risparmio dati riscrive la pagina per caricare solo i contenuti essenziali. Risparmio dati non ottimizza le pagine caricate in modalità di navigazione in incognito.</translation>
 <translation id="1100066534610197918">Apri in nuova scheda in gruppo</translation>
 <translation id="1105960400813249514">Acquisizione schermo</translation>
 <translation id="1111673857033749125">I preferiti salvati sugli altri dispositivi verranno visualizzati qui.</translation>
@@ -25,6 +24,7 @@
 <translation id="1175310183703641346">I preferiti, la cronologia, le password e altre impostazioni non verranno più sincronizzati con il tuo Account Google</translation>
 <translation id="1178581264944972037">Pausa</translation>
 <translation id="1181037720776840403">Rimuovi</translation>
+<translation id="1188239144602654184">Entra in AR</translation>
 <translation id="1197267115302279827">Sposta i Preferiti</translation>
 <translation id="119944043368869598">Cancella tutto</translation>
 <translation id="1201402288615127009">Avanti</translation>
@@ -96,7 +96,6 @@
 <translation id="1672586136351118594">Non visualizzare più</translation>
 <translation id="1692118695553449118">La sincronizzazione è attiva</translation>
 <translation id="169515064810179024">Impedisci ai siti di accedere ai sensori di movimento</translation>
-<translation id="1709438864123551175">Risparmio dati</translation>
 <translation id="1717218214683051432">Sensori di movimento</translation>
 <translation id="1718835860248848330">Ultima ora</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - Aggiornato <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -214,7 +213,6 @@
 <translation id="2501278716633472235">Indietro</translation>
 <translation id="2513403576141822879">Per altre impostazioni relative a privacy, sicurezza e raccolta dei dati, consulta la sezione <ph name="BEGIN_LINK" />Sincronizzazione e servizi Google<ph name="END_LINK" /></translation>
 <translation id="2523184218357549926">Invia a Google gli URL delle pagine che visiti</translation>
-<translation id="2526148617758225454">La funzione Risparmio dati è attiva. Gestiscila nelle Impostazioni.</translation>
 <translation id="2532336938189706096">Visualizzazione web</translation>
 <translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" /> elementi eliminati</translation>
 <translation id="2536728043171574184">È visualizzata una copia offline della pagina</translation>
@@ -354,14 +352,12 @@
 <translation id="3599863153486145794">Consente di cancellare la cronologia da tutti i dispositivi su cui hai eseguito l'accesso. Il tuo Account Google potrebbe avere altri tipi di cronologia di navigazione all'indirizzo <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Disattiva l'audio nei siti che riproducono suoni</translation>
 <translation id="3616113530831147358">Audio</translation>
-<translation id="3620176948598597475">La cronologia del Risparmio dati, incluso l'elenco dei siti visitati, verrà eliminata.</translation>
 <translation id="3632295766818638029">Visualizza password</translation>
 <translation id="363596933471559332">Accedi automaticamente ai siti web utilizzando credenziali memorizzate. Quando la funzione non è attiva, ti viene chiesta la verifica prima di ogni accesso ai siti web.</translation>
 <translation id="3658159451045945436">La reimpostazione elimina la tua cronologia dei dati risparmiati, incluso l'elenco dei siti web visitati.</translation>
 <translation id="3662546969139119822">Nessuna cronologia presente</translation>
 <translation id="3672452749423051839">Suggerimenti per gli errori di navigazione</translation>
 <translation id="3692944402865947621">Download di <ph name="FILE_NAME" /> non riuscito perché non è possibile trovare il percorso di archiviazione.</translation>
-<translation id="3712575778697986964">Vuoi reimpostare il Risparmio dati?</translation>
 <translation id="3714981814255182093">Apri la barra Trova</translation>
 <translation id="3716182511346448902">Questa pagina è stata messa in pausa da Chromium perché utilizza troppa memoria.</translation>
 <translation id="3730075448226062617">Per consentire a Chrome di accedere al tuo microfono, devi attivare il microfono anche nelle <ph name="BEGIN_LINK" />Impostazioni Android<ph name="END_LINK" />.</translation>
@@ -503,13 +499,11 @@ Il tuo Account Google potrebbe avere altre forme di cronologia di navigazione, a
 <translation id="4751476147751820511">Sensori di movimento o della luce</translation>
 <translation id="4759238208242260848">Download</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 download completato.}other{# download completati.}}</translation>
-<translation id="4766369052440583386">Risparmio dati attivato</translation>
 <translation id="4797039098279997504">Tocca per tornare a <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4802417911091824046">La crittografia della passphrase non include metodi di pagamento e indirizzi di Google Pay.
 
 Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincronizzazione<ph name="END_LINK" />.</translation>
 <translation id="4807098396393229769">Nome sulla carta di credito</translation>
-<translation id="4807963036345170158">Risparmio dati disattivato</translation>
 <translation id="4816465935029283692">Tipi di dati</translation>
 <translation id="4824958205181053313">Vuoi annullare la sincronizzazione?</translation>
 <translation id="4837753911714442426">Apri la pagina delle opzioni di stampa</translation>
@@ -601,6 +595,7 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="5447765697759493033">Questo sito non verrà tradotto</translation>
 <translation id="545042621069398927">Accelerazione del download in corso.</translation>
 <translation id="5456381639095306749">Scarica la pagina</translation>
+<translation id="5475862044948910901">Vuoi avviare una sessione di realtà aumentata?</translation>
 <translation id="548278423535722844">Apri nell'app di mappe</translation>
 <translation id="5487521232677179737">Cancella dati</translation>
 <translation id="5494752089476963479">Blocca gli annunci su siti che mostrano annunci invasivi o fuorvianti</translation>
@@ -643,7 +638,6 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="569536719314091526">Traduci questa pagina in una lingua qualsiasi usando il pulsante Altre opzioni</translation>
 <translation id="572328651809341494">Schede recenti</translation>
 <translation id="5726692708398506830">Ingrandisci i contenuti della pagina</translation>
-<translation id="5734520971562437809">Utilizza fino al 60 percento di dati in meno e velocizza il Web.</translation>
 <translation id="5748802427693696783">Schede standard attivate</translation>
 <translation id="5749068826913805084">Chrome deve avere accesso allo spazio di archiviazione per poter scaricare file.</translation>
 <translation id="5763382633136178763">Schede in incognito</translation>
@@ -701,7 +695,6 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="6159335304067198720">Riduzioni dei dati: <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Ulteriori informazioni</translation>
 <translation id="6177111841848151710">Bloccata per il motore di ricerca corrente</translation>
-<translation id="6177390657002841081">Attiva Risparmio dati</translation>
 <translation id="6181444274883918285">Aggiungi eccezione per un sito</translation>
 <translation id="6192333916571137726">Scarica file</translation>
 <translation id="6192792657125177640">Eccezioni</translation>
@@ -867,6 +860,11 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Condividi 1 elemento selezionato}other{Condividi # elementi selezionati}}</translation>
 <translation id="7359002509206457351">Accedi ai metodi di pagamento</translation>
+<translation id="7365126855094612066">Per la durata di questa sessione, il sito potrà:
+• Creare una mappa 3D del tuo ambiente.
+• Monitorare il movimento della videocamera.
+
+Il sito NON ottiene l'accesso alla videocamera. Le immagini della videocamera sono visibili soltanto a te.</translation>
 <translation id="7375125077091615385">Tipo:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -1114,11 +1112,9 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="9188680907066685419">Esci dall'account gestito</translation>
 <translation id="9204836675896933765">1 file rimanente</translation>
 <translation id="9206873250291191720">A</translation>
-<translation id="9215534869786664672">Utilizza fino al 60 percento di dati in meno e velocizza il Web. I server di Google ottimizzeranno le pagine che visiti.</translation>
 <translation id="9219103736887031265">Immagini</translation>
 <translation id="926205370408745186">Rimuovi la tua attività di Chrome da Benessere digitale</translation>
 <translation id="932327136139879170">Home page</translation>
-<translation id="932599481871055447">Risparmia dati e naviga più velocemente</translation>
 <translation id="938850635132480979">Errore: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Accesso al microfono</translation>
 <translation id="951339005376969845">Elimina i dati esistenti. Puoi recuperarli tornando all'account <ph name="FROM_ACCOUNT" />.</translation>

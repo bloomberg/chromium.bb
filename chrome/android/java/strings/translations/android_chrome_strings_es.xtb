@@ -9,7 +9,6 @@
 <translation id="1067922213147265141">Otros servicios de Google</translation>
 <translation id="1068672505746868501">No traducir nunca las páginas en <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1080790410959514870">Vas a salir de una cuenta gestionada por <ph name="DOMAIN_NAME" />. Se eliminarán los datos de Chrome almacenados en este dispositivo, pero los datos permanecerán en tu cuenta de Google.</translation>
-<translation id="1099080783256647258">Cuando la extensión Ahorro de Datos está activada, Chrome usa los servidores de Google para acelerar y comprimir la carga de las páginas. En el caso de las páginas especialmente lentas, Ahorro de Datos vuelve a cargar la página para mostrar solo el contenido básico. Esta extensión no optimiza las páginas que se cargan en modo de incógnito.</translation>
 <translation id="1100066534610197918">Abrir pestaña nueva en grupo</translation>
 <translation id="1105960400813249514">Captura de pantalla</translation>
 <translation id="1111673857033749125">Aquí aparecen los marcadores que hayas guardado en otros dispositivos.</translation>
@@ -25,6 +24,7 @@
 <translation id="1175310183703641346">Tus marcadores, el historial, las contraseñas y otros datos dejarán de sincronizarse con tu cuenta de Google.</translation>
 <translation id="1178581264944972037">Pausar</translation>
 <translation id="1181037720776840403">Quitar</translation>
+<translation id="1188239144602654184">Acceder a RA</translation>
 <translation id="1197267115302279827">Mover marcadores</translation>
 <translation id="119944043368869598">Eliminar todo</translation>
 <translation id="1201402288615127009">Siguiente</translation>
@@ -96,7 +96,6 @@
 <translation id="1672586136351118594">No volver a mostrar</translation>
 <translation id="1692118695553449118">La sincronización está activada</translation>
 <translation id="169515064810179024">No permitir que los sitios web accedan a los sensores de movimiento</translation>
-<translation id="1709438864123551175">Ahorro de Datos</translation>
 <translation id="1717218214683051432">Sensores de movimiento</translation>
 <translation id="1718835860248848330">Última hora</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> (actualizado hace <ph name="TIME_SINCE_UPDATE" />)</translation>
@@ -214,7 +213,6 @@
 <translation id="2501278716633472235">Volver</translation>
 <translation id="2513403576141822879">Para ver más opciones relacionadas con la privacidad, la seguridad y la recogida de datos, accede a <ph name="BEGIN_LINK" />Servicios de Google y sincronización<ph name="END_LINK" /></translation>
 <translation id="2523184218357549926">Envía las URL de las páginas que visitas a Google</translation>
-<translation id="2526148617758225454">El ahorro de datos está activado. Puedes administrarlo en la configuración.</translation>
 <translation id="2532336938189706096">Vista web</translation>
 <translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" /> elementos eliminados</translation>
 <translation id="2536728043171574184">Viendo una copia sin conexión de esta página</translation>
@@ -354,14 +352,12 @@
 <translation id="3599863153486145794">Borra el historial de todos los dispositivos en los que hayas iniciado sesión. Es posible que tu cuenta de Google tenga otros tipos de historial de navegación en <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Silenciar los sitios web que reproducen sonidos</translation>
 <translation id="3616113530831147358">Audio</translation>
-<translation id="3620176948598597475">Se borrará el historial de la extensión Ahorro de Datos, incluidos los sitios web a los que has accedido.</translation>
 <translation id="3632295766818638029">Mostrar contraseña</translation>
 <translation id="363596933471559332">Permite iniciar sesión automáticamente en sitios web con credenciales almacenadas. Si esta función está desactivada, se solicitará la verificación cada vez que se intente iniciar sesión en un sitio web.</translation>
 <translation id="3658159451045945436">Restablecerlo borra tu historial de ahorro de datos, incluidas las listas de los sitios web que has visitado.</translation>
 <translation id="3662546969139119822">Ningún elemento del historial</translation>
 <translation id="3672452749423051839">Sugerencias para errores de navegación</translation>
 <translation id="3692944402865947621">No se ha podido descargar <ph name="FILE_NAME" /> porque no se puede acceder a la ubicación del almacenamiento.</translation>
-<translation id="3712575778697986964">¿Quieres vaciar el historial de ahorro de datos?</translation>
 <translation id="3714981814255182093">Abre la barra de búsqueda</translation>
 <translation id="3716182511346448902">Esta página utiliza demasiada memoria y Chrome la ha pausado.</translation>
 <translation id="3730075448226062617">Para que Chrome pueda acceder a tu micrófono, activa el micrófono en los <ph name="BEGIN_LINK" />ajustes de Android<ph name="END_LINK" />.</translation>
@@ -503,13 +499,11 @@ Es posible que tu cuenta de Google tenga otros tipos de historial de navegación
 <translation id="4751476147751820511">Sensores de luz o movimiento</translation>
 <translation id="4759238208242260848">Descargas</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{Se ha completado 1 descarga.}other{Se han completado # descargas.}}</translation>
-<translation id="4766369052440583386">Ahorro de datos activado</translation>
 <translation id="4797039098279997504">Toca para volver a <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4802417911091824046">El cifrado mediante frase de contraseña no incluye los métodos de pago ni las direcciones de Google Pay.
 
 Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización<ph name="END_LINK" />.</translation>
 <translation id="4807098396393229769">Titular de la tarjeta</translation>
-<translation id="4807963036345170158">Ahorro de datos desactivado</translation>
 <translation id="4816465935029283692">Tipos de datos</translation>
 <translation id="4824958205181053313">¿Quieres cancelar la sincronización?</translation>
 <translation id="4837753911714442426">Abre las opciones para imprimir la página</translation>
@@ -601,6 +595,7 @@ Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización
 <translation id="5447765697759493033">Este sitio web no va a traducirse</translation>
 <translation id="545042621069398927">Acelerando descarga.</translation>
 <translation id="5456381639095306749">Descargar página</translation>
+<translation id="5475862044948910901">¿Quieres iniciar la sesión de realidad aumentada?</translation>
 <translation id="548278423535722844">Abrirla en una aplicación de mapas</translation>
 <translation id="5487521232677179737">Borrar datos</translation>
 <translation id="5494752089476963479">Bloquea anuncios invasivos o engañosos en los sitios web que los muestran</translation>
@@ -643,7 +638,6 @@ Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización
 <translation id="569536719314091526">Traduce esta página a cualquier idioma con el botón Más opciones</translation>
 <translation id="572328651809341494">Pestañas recientes</translation>
 <translation id="5726692708398506830">Amplía todo el contenido de la página</translation>
-<translation id="5734520971562437809">Usa hasta un 60 por ciento de datos y acelera la navegación web.</translation>
 <translation id="5748802427693696783">Se ha cambiado a las pestañas estándares</translation>
 <translation id="5749068826913805084">Chrome necesita acceso de almacenamiento para descargar archivos.</translation>
 <translation id="5763382633136178763">Pestañas de incógnito</translation>
@@ -701,7 +695,6 @@ Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización
 <translation id="6159335304067198720"><ph name="PERCENT" /> de ahorro de datos</translation>
 <translation id="6165508094623778733">Más información</translation>
 <translation id="6177111841848151710">Bloqueado en el motor de búsqueda actual</translation>
-<translation id="6177390657002841081">Activar Ahorro de Datos</translation>
 <translation id="6181444274883918285">Añadir excepción de sitio web</translation>
 <translation id="6192333916571137726">Descargar archivo</translation>
 <translation id="6192792657125177640">Excepciones</translation>
@@ -867,6 +860,11 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="7352939065658542140">VÍDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Compartir 1 elemento seleccionado}other{Compartir # elementos seleccionados}}</translation>
 <translation id="7359002509206457351">Acceso a métodos de pago</translation>
+<translation id="7365126855094612066">Durante esta sesión, el sitio web podrá:
+• crear un mapa 3D de tu entorno
+• hacer un seguimiento del movimiento de la cámara
+
+El sitio web no obtendrá acceso a la cámara. Solo tú puedes ver las imágenes de la cámara.</translation>
 <translation id="7375125077091615385">Tipo:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -1114,11 +1112,9 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="9188680907066685419">Cierra sesión en la cuenta gestionada</translation>
 <translation id="9204836675896933765">1 archivo restante</translation>
 <translation id="9206873250291191720">A</translation>
-<translation id="9215534869786664672">Usa hasta un 60 por ciento menos de datos y acelera la navegación web. Los servidores de Google optimizarán las páginas que visites.</translation>
 <translation id="9219103736887031265">Imágenes</translation>
 <translation id="926205370408745186">Eliminar tu actividad de Chrome de Bienestar digital</translation>
 <translation id="932327136139879170">Página principal</translation>
-<translation id="932599481871055447">Ahorra datos y navega más rápido</translation>
 <translation id="938850635132480979">Error: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Acceder al micrófono</translation>
 <translation id="951339005376969845">Elimina los datos actuales. Para recuperarlos, cambia a <ph name="FROM_ACCOUNT" />.</translation>

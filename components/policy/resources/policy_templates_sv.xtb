@@ -144,6 +144,15 @@
       Om principen anges som False kommer utvecklarväxelns läge inte att redovisas.</translation>
 <translation id="1160479894929412407">Tillåt QUIC-protokoll</translation>
 <translation id="1160939557934457296">Inaktivera möjligheten att fortsätta från varningssidan Säker webbsökning</translation>
+<translation id="1171342272070128466">Aktivera tillgänglighetsfunktionen med dockad skärmförstoring.
+
+          Om principen är inställd på sant är dockad skärmförstoring alltid aktiverat.
+
+          Om principen är inställd på falskt är dockad skärmförstoring alltid inaktiverat.
+
+          Om principen har ställts in kan användarna inte ändra eller åsidosätta den.
+
+          Om principen saknar inställning är dockad skärmförstoring inaktiverat från start, men funktionen kan aktiveras av användaren när som helst.</translation>
 <translation id="1189817621108632689">Låter dig ange en lista med webbadressmönster som styr vilka webbplatser som inte får visa bilder.
 
           Om principen lämnas utan inställning används det globala standardvärdet för alla webbplatser. Standardvärdet hämtas från principen DefaultImagesSetting om den har ställts in och från användarens egna inställningar i annat fall.
@@ -458,6 +467,7 @@
       När principen är aktiverad kan användarna inte välja bort standardbeteendet att varje webbplats körs i en egen process.
       Om principen inte har ställts in eller om den inaktiveras kan användaren ändra inställningen (t.ex. med flaggan Disable site isolation på sidan chrome://flags).
       </translation>
+<translation id="1767673020408652620">Aktivera apprekommendationer i sökrutan när den är nollställd</translation>
 <translation id="1781356041596378058">Den här principen styr även tillgången till Androids utvecklaralternativ. Om principen är inställd på sant kan användarna inte öppna utvecklaralternativen. Om principen är inställd på falskt eller lämnas utan inställning kan användarna öppna utvecklaralternativen genom att trycka sju gånger på versionsnumret i appen Inställningar i Android.</translation>
 <translation id="1793346220873697538">Inaktivera PIN-utskrift som standard</translation>
 <translation id="1797233582739332495">Visa användaren ett återkommande meddelande om att omstart krävs</translation>
@@ -995,6 +1005,15 @@
 
       Alla poster i listan anger en identifierare som används internt för att skilja de olika lokala kontona på enheten från varandra.</translation>
 <translation id="2769952903507981510">Konfigurera det obligatoriska domännamnet för fjärråtkomstvärdar</translation>
+<translation id="2783078941107212091">Aktivera apprekommendationer i sökrutan i översikten när användaren inte har skrivit något.
+
+          När principen är inställd på sant kan apprekommendationer visas i sökrutan innan användaren har skrivit något.
+
+          När principen är inställd på falskt visas inga apprekommendationer i sökrutan innan användaren har skrivit något.
+
+          Om principen har ställts in kan användarna inte ändra eller åsidosätta den.
+
+          Om principen saknar inställning är standardvärdet Falskt för hanterade enheter.</translation>
 <translation id="2787173078141616821">Rapportera information om Android-status</translation>
 <translation id="2799297758492717491">Tillåt att media spelas upp automatiskt på en vitlista över webbadressmallar</translation>
 <translation id="2801155097555584385">Ange anpassad laddningsstart för batteriet i procent</translation>
@@ -1192,6 +1211,25 @@
       Om principen är inställd på falskt är WPAD-optimeringen inaktiverad, vilket innebär att <ph name="PRODUCT_NAME" /> får vänta längre på DNS-baserade WPAD-servrar. Om principen inte har konfigurerats eller har aktiverats är WPAD-optimeringen aktiverad.
 
       Oavsett om eller hur principen har konfigurerats kan inte WPAD-optimeringen ändras av användare.</translation>
+<translation id="3071839057966069710">Konfigurerar en lista över skrivare.
+
+      Med hjälp av den här principen kan administratören tillhandahålla
+      skrivarkonfigurationer åt användarna.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> och <ph name="PRINTER_DESCRIPTION" /> är strängar i fritt format som kan anpassas så att det blir enkelt att välja skrivare. <ph name="PRINTER_MANUFACTURER" /> och <ph name="PRINTER_MODEL" /> gör det enklare för användarna att identifiera skrivaren och står för tillverkare och märke. <ph name="PRINTER_URI" />ska vara en adress som går att nå från en klientdator, inklusive <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> och <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> är valfritt. Om det anges används det för att deduplicera <ph name="ZEROCONF_DISCOVERY" />-skrivare.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> måste matcha någon av strängarna som står för en skrivare som stöds i <ph name="PRODUCT_NAME" />. Strängen används för att identifiera och installera rätt PPD-fil för skrivaren. Mer information finns på https://support.google.com/chrome?p=noncloudprint.
+
+      <ph name="PRINTER_AUTOCONF" /> är en boolesk flagga som anger om skrivaren ska konfigureras med IPP Everywhere. Flaggan stöds i version 76 eller senare av <ph name="PRODUCT_OS_NAME" />.
+
+      Antingen ska <ph name="PRINTER_EFFECTIVE_MODEL" /> innehålla skrivarens namn eller så ska <ph name="PRINTER_AUTOCONF" /> vara inställt på sant. Om en skrivare har båda värdena eller saknar egenskaper ignoreras den.
+
+      Skrivarkonfigureringen slutförs första gången en skrivare används.  Inga PPD-filer laddas ned förrän skrivaren används.  Därefter cachelagras PPD-filer som används ofta.
+
+      Principen påverkar inte om användarna kan konfigurera skrivare på enskilda enheter eller inte.  Den är tänkt att vara ett supplement till de enskilda användarnas skrivarkonfiguration.
+
+      På enheter som hanteras via Active Directory har principen stöd för att utöka <ph name="MACHINE_NAME_VARIABLE" /> till datornamnet i Active Directory eller en delsträng av det. Med datornamnet <ph name="MACHINE_NAME_EXAMPLE" /> skulle till exempel <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> ersättas av de fyra tecknen från och med position nummer sex, d.v.s. <ph name="MACHINE_NAME_PART_EXAMPLE" />. Observera att positionerna räknas från och med noll.
+      </translation>
 <translation id="3072045631333522102">Skärmsläckare att använda på inloggningsskärmen i återförsäljarläge</translation>
 <translation id="3072847235228302527">Ange användarvillkor för ett lokalt enhetskonto</translation>
 <translation id="3077183141551274418">Aktiverar eller inaktiverar en livscykel för flikar</translation>
@@ -1977,7 +2015,6 @@
 <translation id="4591366717022345234">Förse användarna med en snabbkorrigeringsversion</translation>
 <translation id="4600786265870346112">Aktivera den stora markören</translation>
 <translation id="4604931264910482931">Konfigurera svarta listan för Native Messaging</translation>
-<translation id="4613508646038788144">Om principen är inställd på falskt är det tillåtet för programvara från tredje part att injicera körbar kod i Chrome-processer. Om principen har lämnats utan inställning eller ställts in på sant blockeras injicering av körbar kod i Chome-processer från tredjepartsprogram.</translation>
 <translation id="4617338332148204752">Hoppa över kontroll av metataggar i <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="4625915093043961294">Konfigurera vitlista för tilläggsinstallation</translation>
 <translation id="4632343302005518762">Tillåt att <ph name="PRODUCT_FRAME_NAME" /> hanterar innehållstyperna som anges</translation>
@@ -2169,15 +2206,6 @@
       När principen är inställd på falskt stängs fliken i Chrome efter bytet till en annan webbläsare, även om det var den sista öppna fliken. Detta innebär att Chrome avslutas helt.</translation>
 <translation id="5105313908130842249">Skärmlåsningstid när enheten drivs av batteriet</translation>
 <translation id="5108031557082757679">Inaktiverade skrivare för företagsenheter</translation>
-<translation id="5113732180192599620">Med den här principen styrs listan över webbplatser som aldrig ska aktivera ett webbläsarbyte.
-
-      Observera att element även kan läggas till på den här listan via principen <ph name="USE_IE_SITELIST_POLICY_NAME" /> och <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />.
-
-      När den här principen lämnas utan inställning läggs inga webbplatser till på listan.
-
-      När den här principen är inställd behandlas varje objekt som en regel som liknar principen <ph name="URL_LIST_POLICY_NAME" />. Logiken är dock omvänd: om reglerna matchar öppnas inte en alternativ webbläsare.
-
-      Till skillnad från <ph name="URL_LIST_POLICY_NAME" /> gäller reglerna åt båda hållen. Det innebär att när tillägget för Internet Explorer är installerat och aktiverat styr det även huruvida <ph name="IE_PRODUCT_NAME" /> ska öppna dessa webbadresser i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="5124368997194894978">Aktivera växelströmsstart</translation>
 <translation id="5131211790949066746">Tillåter sammanslagning av principerna <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" /> och <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" /> för tilläggsinstallation.
 
@@ -2460,6 +2488,7 @@
 
       Om den inte anges ändras inte webbadressen för startvärdet för Variations.</translation>
 <translation id="5561811616825571914">Välj klientcertifikat automatiskt för dessa webbplatser på inloggningsskärmen</translation>
+<translation id="5565178130821694365">Lösenordet måste anges vartannat dygn (var 48:e timme)</translation>
 <translation id="5566210228171064229">Tillåt utskrift både med och utan pinkod</translation>
 <translation id="556865034069957245">Den här principen styr helskärmsläget där alla användargränssnitt för <ph name="PRODUCT_NAME" /> döljs och endast webbinnehåll är synligt.
 

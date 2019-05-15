@@ -144,6 +144,15 @@
       Nếu chính sách được đặt thành sai, trạng thái của bộ chuyển đổi dành cho nhà phát triển sẽ không được báo cáo.</translation>
 <translation id="1160479894929412407">Cho phép giao thức kết nối Internet nhanh UDP (QUIC)</translation>
 <translation id="1160939557934457296">Vô hiệu hóa khả năng tiếp tục từ trang cảnh báo Duyệt web an toàn</translation>
+<translation id="1171342272070128466">Bật tính năng hỗ trợ tiếp cận cho tùy chọn phóng to ở vị trí cố định.
+
+          Nếu bạn đặt chính sách này thành true, thì tùy chọn phóng to ở vị trí cố định sẽ luôn bật.
+
+          Nếu bạn đặt chính sách này thành false, thì tùy chọn phóng to ở vị trí cố định sẽ luôn tắt.
+
+          Nếu bạn đặt chính sách này, thì người dùng sẽ không thể thay đổi hay ghi đè chính sách.
+
+          Nếu bạn không đặt chính sách này, thì ban đầu, tùy chọn phóng to ở vị trí cố định sẽ tắt nhưng người dùng có thể bật bất cứ lúc nào.</translation>
 <translation id="1189817621108632689">Cho phép bạn đặt danh sách các mẫu url chỉ định những trang web không được phép hiển thị hình ảnh.
 
           Nếu không đặt chính sách này, thì giá trị mặc định chung sẽ được sử dụng cho tất cả các trang web từ chính sách 'DefaultImagesSetting', nếu chính sách đó được đặt, hoặc từ cấu hình cá nhân của người dùng.
@@ -458,6 +467,7 @@
       Nếu bạn bật chính sách này, thì người dùng sẽ không thể chọn không sử dụng hoạt động mặc định, trong đó mỗi trang web chạy ở quy trình riêng.
       Nếu bạn tắt hoặc không định cấu hình chính sách này, thì người dùng có thể thay đổi tùy chọn cài đặt này (ví dụ như sử dụng mục "Tắt tính năng cách ly trang web" trong chrome://flags).
       </translation>
+<translation id="1767673020408652620">Bật Ứng dụng đề xuất khi hộp tìm kiếm ở trạng thái 0</translation>
 <translation id="1781356041596378058">Chính sách này cũng kiểm soát quyền truy cập vào Tùy chọn của nhà phát triển Android. Nếu bạn đặt chính sách này thành true, người dùng sẽ không thể truy cập vào Tùy chọn của nhà phát triển. Nếu bạn đặt chính sách này thành false hoặc không đặt chính sách này thì người dùng có thể truy cập Tùy chọn của nhà phát triển bằng cách nhấn bảy lần trên số bản dựng trong ứng dụng cài đặt Android.</translation>
 <translation id="1793346220873697538">Tắt tính năng in mã PIN theo mặc định</translation>
 <translation id="1797233582739332495">Hiển thị lời nhắc định kỳ cho người dùng cho biết bắt buộc phải chạy lại</translation>
@@ -888,7 +898,7 @@
 <translation id="257788512393330403">Yêu cầu cứ 6 giờ nhập mật khẩu một lần</translation>
 <translation id="2586162458524426376">
       Chính sách này áp dụng cho màn hình đăng nhập. Vui lòng xem cả chính sách <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> áp dụng cho phiên người dùng.
-      Nếu bạn bật chính sách này, thì mỗi nguồn gốc có tên trong danh sách được phân tách bằng dấu phẩy sẽ chạy ở quy trình riêng. Điều này cũng sẽ cách ly các nguồn gốc được đặt tên theo miền phụ. Ví dụ: việc chỉ định https://example.com/ cũng sẽ khiến https://foo.example.com/ bị cách ly dưới dạng một phần của trang web https://example.com/.
+      Nếu bạn bật chính sách này, thì mỗi nguồn gốc có tên trong danh sách được phân tách bằng dấu phẩy sẽ chạy ở quy trình riêng. Điều này cũng sẽ cách ly các nguồn gốc được đặt tên theo miền con. Ví dụ: việc chỉ định https://example.com/ cũng sẽ khiến https://foo.example.com/ bị cách ly vì là một phần của trang web https://example.com/.
       Nếu bạn tắt hoặc không định cấu hình chính sách này, thì các tùy chọn cài đặt cách ly trang web mặc định của nền tảng sẽ được dùng cho màn hình đăng nhập.
       </translation>
 <translation id="2587719089023392205">Đặt <ph name="PRODUCT_NAME" /> làm trình duyệt mặc định</translation>
@@ -988,6 +998,15 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Mỗi mục nhập trong danh sách chỉ định một định danh, được sử dụng nội bộ để cho biết riêng các tài khoản trong thiết bị khác nhau.</translation>
 <translation id="2769952903507981510">Định cấu hình tên miền bắt buộc cho máy chủ truy cập từ xa</translation>
+<translation id="2783078941107212091">Bật Ứng dụng đề xuất khi hộp tìm kiếm ở trạng thái 0 trong trình chạy.
+
+          Nếu bạn đặt chính sách này thành true, thì Ứng dụng đề xuất có thể xuất hiện trong nội dung tìm kiếm ở trạng thái 0.
+
+          Nếu bạn đặt chính sách này thành false, thì Ứng dụng đề xuất sẽ không xuất hiện trong nội dung tìm kiếm ở trạng thái 0.
+
+          Nếu bạn đặt chính sách này, thì người dùng sẽ không thể thay đổi hay ghi đè chính sách.
+
+          Nếu bạn không đặt chính sách này, thì tùy chọn mặc định sẽ là False đối với các thiết bị được quản lý.</translation>
 <translation id="2787173078141616821">Báo cáo thông tin về trạng thái của Android</translation>
 <translation id="2799297758492717491">Cho phép tự động phát nội dung nghe nhìn thuộc danh sách các mẫu URL được phép</translation>
 <translation id="2801155097555584385">Đặt mức phần trăm bắt đầu sạc pin tùy chỉnh</translation>
@@ -1184,6 +1203,25 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu bạn đặt chính sách này thành false, tối ưu hóa WPAD sẽ bị tắt, điều này khiến <ph name="PRODUCT_NAME" /> phải đợi trong khoảng thời gian lâu hơn đối với máy chủ WPAD dựa trên DNS. Nếu bạn không đặt hoặc nếu bạn bật chính sách này, tối ưu hóa WPAD sẽ được bật.
 
       Bất kể bạn có đặt chính sách này hay không hoặc cách bạn đặt chính sách này, người dùng cũng không thể thay đổi cài đặt tối ưu hóa WPAD.</translation>
+<translation id="3071839057966069710">Định cấu hình danh sách máy in.
+
+      Chính sách này cho phép quản trị viên cung cấp cấu hình máy in cho
+      người dùng của mình.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> và <ph name="PRINTER_DESCRIPTION" /> là các chuỗi dạng tự do có thể tùy chỉnh để dễ dàng chọn máy in. <ph name="PRINTER_MANUFACTURER" /> và <ph name="PRINTER_MODEL" /> giúp người dùng cuối dễ dàng nhận diện máy in. Các thông tin này cho biết nhà sản xuất và kiểu máy in. <ph name="PRINTER_URI" /> phải là địa chỉ có thể truy cập từ một máy khách bao gồm cả <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> và <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> là tùy chọn. Nếu được cung cấp, tùy chọn này sẽ dùng để giúp loại bỏ trùng lặp máy in <ph name="ZEROCONF_DISCOVERY" />.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> phải khớp với một trong các chuỗi đại diện cho một máy in được <ph name="PRODUCT_NAME" /> hỗ trợ. Chuỗi này sẽ dùng để nhận diện và cài đặt PPD phù hợp cho máy in. Bạn có thể xem thêm thông tin tại https://support.google.com/chrome?p=noncloudprint.
+
+      <ph name="PRINTER_AUTOCONF" /> là cờ boolean cho biết có nên dùng IPP Everywhere để thiết lập máy in hay không. Cờ này được hỗ trợ trên <ph name="PRODUCT_OS_NAME" /> phiên bản 76 trở lên.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> phải chứa tên của máy in hoặc <ph name="PRINTER_AUTOCONF" /> phải được đặt thành true. Các máy in có cả hai hoặc không có thuộc tính nào đều bị bỏ qua.
+
+      Quá trình thiết lập máy in sẽ hoàn tất trong lần đầu tiên sử dụng máy in.  PPD sẽ không tải xuống cho đến khi máy in được sử dụng.  Sau lần đó, các PPD dùng thường xuyên sẽ được lưu vào bộ nhớ đệm.
+
+      Chính sách này không ảnh hưởng đến việc người dùng có thể định cấu hình máy in trên từng thiết bị hay không.  Chính sách này nhằm bổ sung cho quá trình định cấu hình máy in theo từng người dùng.
+
+      Đối với các thiết bị được quản lý bằng Active Directory, chính sách này hỗ trợ mở rộng <ph name="MACHINE_NAME_VARIABLE" /> thành tên máy Active Directory hoặc chuỗi con của tên máy đó. Chẳng hạn, nếu tên máy là <ph name="MACHINE_NAME_EXAMPLE" />, thì <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> sẽ được thay thế bằng 4 ký tự bắt đầu sau vị trí thứ 6, tức là <ph name="MACHINE_NAME_PART_EXAMPLE" />. Xin lưu ý rằng vị trí này được tính từ đầu.
+      </translation>
 <translation id="3072045631333522102">Trình bảo vệ màn hình được sử dụng trên màn hình đăng nhập ở chế độ bán lẻ</translation>
 <translation id="3072847235228302527">Đặt Điều khoản dịch vụ cho một tài khoản cục bộ trên thiết bị</translation>
 <translation id="3077183141551274418">Bật hoặc tắt tính năng chu kỳ sử dụng tab</translation>
@@ -1978,7 +2016,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="4591366717022345234">Cung cấp Bản dựng Quick Fix cho người dùng</translation>
 <translation id="4600786265870346112">Bật con trỏ lớn</translation>
 <translation id="4604931264910482931">Định cấu hình danh sách cấm nhắn tin gốc</translation>
-<translation id="4613508646038788144">Nếu bạn đặt chính sách thành false thì phần mềm của bên thứ ba sẽ được phép đưa mã thực thi vào các quy trình của Chrome. Nếu bạn không đặt hoặc đặt chính sách thành true thì phần mềm của bên thứ ba sẽ không được đưa đoạn mã thực thi vào các quy trình của Chrome.</translation>
 <translation id="4617338332148204752">Bỏ qua kiểm tra thẻ meta trong <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="4625915093043961294">Định cấu hình danh sách trắng cài đặt tiện ích</translation>
 <translation id="4632343302005518762">Cho phép <ph name="PRODUCT_FRAME_NAME" /> xử lý các loại nội dung được liệt kê</translation>
@@ -2169,15 +2206,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Khi bạn đặt chính sách này thành false, thì Chrome sẽ đóng tab sau khi chuyển sang trình duyệt thay thế, ngay cả khi đó là tab cuối cùng. Điều này sẽ khiến cho Chrome thoát hoàn toàn.</translation>
 <translation id="5105313908130842249">Độ trễ khóa màn hình khi chạy trên nguồn pin</translation>
 <translation id="5108031557082757679">Đã tắt máy in kết nối với thiết bị dành cho doanh nghiệp</translation>
-<translation id="5113732180192599620">Chính sách này kiểm soát danh sách các trang web không bao giờ gây ra tình trạng chuyển đổi trình duyệt.
-
- Lưu ý rằng bạn cũng có thể thêm các thành phần vào danh sách này thông qua chính sách <ph name="USE_IE_SITELIST_POLICY_NAME" /> và <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />.
-      
-Khi bạn không đặt chính sách này thì sẽ không có trang web nào được thêm vào danh sách.
-
-Khi bạn đặt chính sách này thì mỗi mục được coi là một quy tắc, tương tự như chính sách <ph name="URL_LIST_POLICY_NAME" />. Tuy nhiên, logic bị đảo ngược: các quy tắc trùng khớp sẽ không mở một trình duyệt thay thế.
-
-Không giống như <ph name="URL_LIST_POLICY_NAME" />, các quy tắc áp dụng cho cả hai chiều. Tức là, khi có tiện ích bổ trợ Internet Explorer và tiện ích này được bật, thì chính sách này cũng sẽ kiểm soát việc <ph name="IE_PRODUCT_NAME" /> có mở những URL này trong <ph name="PRODUCT_NAME" /> hay không.</translation>
 <translation id="5124368997194894978">Bật tính năng khởi động trên AC (dòng điện xoay chiều)</translation>
 <translation id="5131211790949066746">Cho phép hợp nhất các chính sách trong danh sách cài đặt tiện ích <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" /> và <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />.
 
@@ -2457,6 +2485,7 @@ Không giống như <ph name="URL_LIST_POLICY_NAME" />, các quy tắc áp dụn
 
       Nếu không được chỉ định, sẽ không sửa đổi URL khởi đầu Biến thể.</translation>
 <translation id="5561811616825571914">Tự động chọn chứng chỉ ứng dụng cho những trang web này trên màn hình đăng nhập</translation>
+<translation id="5565178130821694365">Yêu cầu cứ 2 ngày (48 giờ) nhập mật khẩu một lần</translation>
 <translation id="5566210228171064229">Cho phép in khi có và không có mã PIN</translation>
 <translation id="556865034069957245">Chính sách này kiểm soát khả năng sử dụng chế độ toàn màn hình mà ở đó tất cả giao diện người dùng của <ph name="PRODUCT_NAME" /> đều bị ẩn và chỉ nội dung web hiển thị.
 
@@ -2560,16 +2589,14 @@ Không giống như <ph name="URL_LIST_POLICY_NAME" />, các quy tắc áp dụn
 
       Nếu bạn đặt chính sách này, thì người dùng không thể thay đổi hoặc ghi đè chính sách này.</translation>
 <translation id="5708969689202733975">Định cấu hình chế độ mở khóa nhanh được phép</translation>
-<translation id="5711016543513883877">
-      Nếu bạn bật chính sách này, thì mỗi nguồn gốc có tên trong danh sách
+<translation id="5711016543513883877">Nếu bạn bật chính sách này, thì mỗi nguồn gốc có tên trong danh sách
       phân tách bằng dấu phẩy sẽ chạy ở quy trình riêng. Điều này cũng sẽ cách ly
-      các nguồn gốc được đặt tên theo miền phụ. Ví dụ: việc chỉ định https://example.com/
-      cũng sẽ khiến https://foo.example.com/ bị cách ly dưới dạng một phần của trang web
+      các nguồn gốc được đặt tên theo miền con. Ví dụ: việc chỉ định https://example.com/
+      cũng sẽ khiến https://foo.example.com/ bị cách ly vì là một phần của trang web
       https://example.com/.
       Nếu bạn tắt hoặc không định cấu hình chính sách này, thì người dùng có thể thay đổi tùy chọn cài đặt này.
 
-      LƯU Ý: Chính sách này không áp dụng trên Android. Để bật IsolateOrigins trên Android, hãy dùng tùy chọn cài đặt chính sách IsolateOriginsAndroid.
-      </translation>
+      LƯU Ý: Chính sách này không áp dụng trên Android. Để bật IsolateOrigins trên Android, hãy dùng tùy chọn cài đặt chính sách IsolateOriginsAndroid.</translation>
 <translation id="572155275267014074">Cài đặt Android</translation>
 <translation id="5722934961007828462">Khi bật cài đặt này, <ph name="PRODUCT_NAME" /> sẽ luôn thực hiện quá trình kiểm tra thu hồi cho chứng chỉ máy chủ đã xác thực thành công và ký theo chứng chỉ CA được cài đặt cục bộ.
 

@@ -226,6 +226,7 @@
 <translation id="1338950911836659113">በመሰረዝ ላይ...</translation>
 <translation id="1340527397989195812">የፋይሎች መተግበሪያውን በመጠቀም በመሣሪያው ውስጥ ያለ የማህደረመረጃ ምትኬ ያስቀምጡ።</translation>
 <translation id="1341988552785875222">የአሁኑ የግድግዳ ወረቀት የተዋቀረው በ«<ph name="APP_NAME" />» ነው። የተለየ የግድግዳ ወረቀት ከመምረጥዎ በፊት «<ph name="APP_NAME" />» ማራገፍ ያስፈልግዎት ይሆናል።</translation>
+<translation id="1343865611738742294">የዩኤስቢ መተግበሪያዎች እንዲደርስባቸው ለ Linux ፈቃድ ይስጡት። ከተወገደ በኋላ Linux የዩኤስቢ መሣሪያውን አያስታውሰውም።</translation>
 <translation id="1347256498747320987">ዝማኔዎችን እና መተግበሪያዎችን ይጫኑ። በመቀጠልዎ ይህ መሣሪያ እንዲሁም ዝማኔዎችን እና መተግበሪያዎችን ከGoogle፣ ከአገልግሎት አቅራቢዎ እና ከመሣሪያዎ አምራች በራስ-ሰር ሊያወርድና ሊጭን እንደሚችል፣ ምናልባትም የተንቀሳቃሽ ስልክ ውሂብም በመጠቀም፣ ይስማሙበታል። <ph name="BEGIN_LINK1" />የበለጠ ለመረዳት<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">ባትሪው <ph name="BATTERY_LEVEL" />% ሲደርስ ዝማኔ ይጀምራል።</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />፦ <ph name="NETWORK_NAME" /></translation>
@@ -707,6 +708,7 @@
 <translation id="2120297377148151361">እንቅስቃሴ እና መስተጋብሮች</translation>
 <translation id="2120478168904746065">{NUM_TABS,plural, =1{የትር ድምጸ-ከል አንሳ}one{የትሮች ድምጸ-ከል አንሳ}other{የትሮች ድምጸ-ከል አንሳ}}</translation>
 <translation id="2121825465123208577">መጠን ቀይር</translation>
+<translation id="2122305276694332719">ወደ ተደበቀ አውታረ መረብ በራስ ሰር ማገናኘት ሌሎች የእርስዎን መሣሪያ እና አንዳንድ የአውታረ መረብ ቅንብሮችን እንዲመለከቱ ይፈቅድላቸዋል እንዲሁም የሚመከር አይደለም።</translation>
 <translation id="2124930039827422115">{1,plural, =1{በአንድ ተጠቃሚ <ph name="AVERAGE_RATING" /> ደረጃ ተሰጥቶታል።}one{በ# ተጠቃሚዎች <ph name="AVERAGE_RATING" /> ደረጃ ተሰጥቶታል።}other{በ# ተጠቃሚዎች <ph name="AVERAGE_RATING" /> ደረጃ ተሰጥቶታል።}}</translation>
 <translation id="2126167708562367080">ስምረት በእርስዎ አስተዳዳሪ ተሰናክሏል።</translation>
 <translation id="2127372758936585790">አነስተኛ ኃይል ያለው ባትሪ መሙያ</translation>
@@ -1302,6 +1304,7 @@
 <translation id="3012917896646559015">ኮምፒውተርዎን ወደ ጥገና ክፍል ለመላክ እባክዎ የሃርድዌርዎ አምራቹን ወዲያውኑ ያግኙ።</translation>
 <translation id="3013291976881901233">የMIDI መሣሪያዎች</translation>
 <translation id="3015639418649705390">አሁን ዳግም ያስጀምሩ</translation>
+<translation id="3016329696181678353"><ph name="PRINTER_NAME" /> በራስ ሰር ሊዋቀር አልተቻለም። የላቀ አታሚ ዝርዝሮችን እባክዎ ይጥቀሱ።</translation>
 <translation id="3016641847947582299">ክፍለ አካል ተዘምኗል</translation>
 <translation id="3016780570757425217">የእርስዎን መገኛ አካባቢ ይወቁ</translation>
 <translation id="3020183492814296499">አቋራጮች</translation>
@@ -1804,7 +1807,6 @@
 <translation id="3789841737615482174">ጫን  </translation>
 <translation id="379082410132524484">የእርስዎ ካርድ የአገልግሎት ጊዜው አብቅቷል</translation>
 <translation id="3792890930871100565">አታሚዎችን ያላቅቁ</translation>
-<translation id="3792938779249970121">መለያ ይምረጡ</translation>
 <translation id="3796648294839530037">ተወዳጅ አውታረ መረቦች፦</translation>
 <translation id="3797739167230984533">የእርስዎ <ph name="BEGIN_LINK" /><ph name="DEVICE_TYPE" /> የሚተዳደረው<ph name="END_LINK" /> በእርስዎ ድርጅት ነው</translation>
 <translation id="3797900183766075808">«<ph name="SEARCH_TERMS" />»ን በ<ph name="SEARCH_ENGINE" /> ውስጥ &amp;ፈልግ</translation>
@@ -2111,6 +2113,7 @@
 <translation id="4268025649754414643">የቀልፍ ሚስጥራዊነት</translation>
 <translation id="4270393598798225102">ስሪት <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">ምንም ተዛማጆች የሉም</translation>
+<translation id="4275663329226226506">ማህደረ መረጃ</translation>
 <translation id="4275830172053184480">መሣሪያዎን ዳግም ያስጀምሩ</translation>
 <translation id="4278101229438943600">የእርስዎ ረዳት ዝግጁ ነው</translation>
 <translation id="4278390842282768270">ተፈቅዷል</translation>
@@ -2153,7 +2156,6 @@
 <translation id="4354344420232759511">እርስዎ የጎበኙዋቸው ጣቢያዎች እዚህ ላይ ብቅ ይላሉ</translation>
 <translation id="435527878592612277">የእርስዎን ፎቶ ይምረጡ</translation>
 <translation id="4356334633973342967">ወይም የራስዎን ነጂ ይጠቀሱ፦</translation>
-<translation id="4358169392473932247">ይህ የደህንነት ቁልፍ የምስክርነቶች ውስጣዊ ማከማቻን አይደግፍም፣ ነገር ግን ባህሪው ተጠይቋል።</translation>
 <translation id="4359408040881008151">በጥገኛ ቅጥያ(ዎች) ምክንያት ተጭኗል።</translation>
 <translation id="4359717112757026264">ሲቲስኬፕ</translation>
 <translation id="4361142739114356624">የዚህ ደንበኛ የእውቅና ማረጋገጫ የሆነው የግል ቁልፍ ይጎድላል ወይም አይሠራም</translation>
@@ -2336,7 +2338,6 @@
 <translation id="4665014895760275686">አምራች</translation>
 <translation id="4665446389743427678">በ<ph name="SITE" /> የተከማቸ ሁሉም ውሂብ ይሰረዛል።</translation>
 <translation id="4668721319092543482"><ph name="PLUGIN_NAME" />ን ለማንቃት ጠቅ ያድርጉ</translation>
-<translation id="4670688170798478686">ዳግም ማስጀመርን ያረጋግጡ</translation>
 <translation id="4672657274720418656">ገጹን አጣራ</translation>
 <translation id="4673442866648850031">ስቲለስ ሲወገድ የስቲለስ መሣሪያዎችን ክፈት</translation>
 <translation id="4677585247300749148"><ph name="URL" /> ለተደራሽነት ክስተቶች ምላሽ መስጠት ይፈልጋል</translation>
@@ -2366,7 +2367,6 @@
 <translation id="4711638718396952945">ቅንብሮችን ወደነበሩበት መልስ</translation>
 <translation id="4715553623069266137">በጣም አጭር (0.8 ሴ)</translation>
 <translation id="4716483597559580346">Powerwash ለደህንነት ታክሏል</translation>
-<translation id="4718490098585891067">በመለያ ለመግባት መለያ ይምረጡ፦</translation>
 <translation id="4720113199587244118">መሣሪያዎችን አክል</translation>
 <translation id="4720185134442950733">የተንቀሳቃሽ ውሂብ አውታረ መረብ</translation>
 <translation id="4722735765955348426">የ<ph name="USERNAME" /> ይለፍ ቃል</translation>
@@ -2397,7 +2397,6 @@
 <translation id="4756388243121344051">&amp;ታሪክ</translation>
 <translation id="4759238208242260848">የወረዱ</translation>
 <translation id="4761104368405085019">ማይክፎሮንዎን ይጠቀማል</translation>
-<translation id="476166673298332917">የዚህ መሣሪያ አስተዳዳሪ የይለፍ ቃላት እና ግንኙነትን ጨምሮ የሁሉንም እንቅስቃሴ መዳረሻ አለው።</translation>
 <translation id="4762718786438001384">የመሣሪያ የዲስክ ቦታ እጅግ በጣም ዝቅተኛ ነው</translation>
 <translation id="4763408175235639573">ይህን ገጽ ሲመለከቱት የሚከተሉት ኩኪዎች ተቀናብረዋል</translation>
 <translation id="4763830802490665879">ሲወጣ ከበርካታ ጣቢያዎች የመጡ ኩኪዎች ይጸዳሉ።</translation>
@@ -3926,7 +3925,6 @@
 <translation id="713888829801648570">ይቅርታ፣ ከመስመር ውጪ ስለሆነ የይለፍ ቃልዎ ሊረጋገጥ አልቻለም።</translation>
 <translation id="7140928199327930795">ሌሎች የሚገኙ ምንም መሣሪያዎች የሉም።</translation>
 <translation id="7141105143012495934">የእርስዎ መለያ ዝርዝሮች ተመልሰው ሊገኙ ሳላልቻሉ መግባት አልተሳካም። እባክዎ የእርስዎን አስተዳዳሪ ያነጋግሩ ወይም እንደገና ይሞክሩ።</translation>
-<translation id="714285394257538643">የደህንነት ቁልፍዎን ዳግም ማስጀመር እንደሚፈልጉ ለማረጋገጥ እንደገና ይንኩት። በደህንነት ቁልፉ ላይ የተከማቹትን ሁሉንም ምስክርነቶች እና ፒኑ ይደመሰሳሉ።</translation>
 <translation id="7143092389027215216">የማሳያ ሁነታን በመጀመር ላይ</translation>
 <translation id="7143207342074048698">በመያያዝ ላይ</translation>
 <translation id="7144878232160441200">እንደገና ሞክር</translation>
@@ -4160,6 +4158,7 @@
 <translation id="7506541170099744506">የእርስዎ <ph name="DEVICE_TYPE" /> በተሳካ ሁኔታ ለድርጅት አስተዳደር ተመዝግቧል።</translation>
 <translation id="7507930499305566459">የሁኔታ መላሽ ሰርቲፍኬት</translation>
 <translation id="7513029293694390567">የተከማቹ ምስክርነቶችን በመጠቀም በራስ-ሰር ወደ ድር ጣቢያዎች ይግቡ። ከተሰናከለ ወደ አንድ ድር ጣቢያ ከመግባትዎ በፊት ሁልጊዜ ማረጋገጫ እንዲሰጡ ይጠየቃሉ።</translation>
+<translation id="7514365320538308">አውርድ</translation>
 <translation id="7517786267097410259">አንድ የይለፍ ቃል ይፍጠሩ -</translation>
 <translation id="7521387064766892559">ጃቫስክሪፕት</translation>
 <translation id="7522255036471229694">«Ok Google» ይብሉ</translation>
@@ -4505,6 +4504,7 @@ nil
 nil</translation>
 <translation id="8000066093800657092">ምንም አውታረ መረብ የለም</translation>
 <translation id="8000467600002607205">{NUM_TABS,plural, =1{ትርን ዝጋ}one{ትሮችን ዝጋ}other{ትሮችን ዝጋ}}</translation>
+<translation id="8002274832045662704">የላቀ የአታሚ ውቅረት</translation>
 <translation id="8004582292198964060">አሳሽ</translation>
 <translation id="8005600846065423578"><ph name="HOST" /> ሁልጊዜ ቅንጥብ ሰሌዳውን እንዲመለከት ፍቀድ</translation>
 <translation id="8008356846765065031">የበይነመረብ ግንኙነት ተቋርጧል። እባክዎ የበይነመረብዎን ግንኙነት ይፈትሹ።</translation>
@@ -5044,6 +5044,7 @@ nil</translation>
 <translation id="8850251000316748990">ተጨማሪ ይመልከቱ...</translation>
 <translation id="885246833287407341">API ተግባር ክርክሮች</translation>
 <translation id="8853586775156634952">ይህ ካርድ ወደዚህ መሣሪያ ብቻ ይቀመጣል</translation>
+<translation id="885701979325669005">ማከማቻ</translation>
 <translation id="8859057652521303089">ቋንቋዎትን ይምረጡ፦</translation>
 <translation id="8859174528519900719">ንዑስ ክፈፍ፦ <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8862003515646449717">ወደ ፈጣን አሳሽ ቀይር</translation>

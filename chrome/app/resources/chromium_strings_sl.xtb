@@ -123,9 +123,7 @@ Te storitve lahko po želji onemogočite. <ph name="BEGIN_LINK" />Več o tem<ph 
 <translation id="4987820182225656817">Gostje lahko uporabljajo Chromium, ne da bi za seboj pustili kar koli.</translation>
 <translation id="4994636714258228724">Dodajte se v Chromium</translation>
 <translation id="5021854341188256296">{0,plural, =0{Na voljo je posodobitev za OS Chromium}=1{Na voljo je posodobitev za OS Chromium}one{Posodobitev za OS Chromium je na voljo že # dan}two{Posodobitev za OS Chromium je na voljo že # dneva}few{Posodobitev za OS Chromium je na voljo že # dni}other{Posodobitev za OS Chromium je na voljo že # dni}}</translation>
-<translation id="5032989939245619637">Shrani podrobnosti v Chromium</translation>
 <translation id="5045248521775609809">Naj vas Chromium spremlja povsod</translation>
-<translation id="5116586539350239523">Chromium bo varno shranil vaše osebne podatke, tako da vam jih ne bo treba več vnesti.</translation>
 <translation id="5181952534059945058">Ta stran uporablja preveč pomnilnika, zato je Chromium odstranil nekaj vsebine.</translation>
 <translation id="5277894862589591112">Če želite uporabiti spremembe, znova zaženite Chromium</translation>
 <translation id="5358375970380395591">Prijavljate se z upravljanim računom in s tem njegovemu skrbniku omogočate nadzor vašega profila v Chromiumu. Vaši podatki v Chromiumu, kot so aplikacije, zaznamki, zgodovina, gesla in druge nastavitve, bodo postali trajno povezani z uporabnikom <ph name="USER_NAME" />. Te podatke boste lahko izbrisali na nadzorni plošči za Google Račune, vendar jih ne boste mogli povezati z drugim računom. <ph name="LEARN_MORE" /></translation>

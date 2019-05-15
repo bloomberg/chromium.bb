@@ -9,7 +9,6 @@
 <translation id="1067922213147265141">‏שירותי Google אחרים</translation>
 <translation id="1068672505746868501">אף פעם אל תתרגם דפים ב<ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1080790410959514870">‏אתה מתנתק מחשבון המנוהל על ידי <ph name="DOMAIN_NAME" />. הפעולה הזו תמחק את נתוני Chrome המאוחסנים במכשיר הזה, אבל הנתונים יישמרו בחשבון Google שלך.</translation>
-<translation id="1099080783256647258">‏כש-Data Saver מופעל, Chrome משתמש בשרתים של Google כדי להאיץ ולדחוס את טעינות הדפים. אם מדובר בדפים איטיים במיוחד, Data Saver משכתב את הדף כדי לטעון רק תוכן חיוני. Data Saver לא מבצע אופטימיזציה של דפים נטענים במצב גלישה בסתר.</translation>
 <translation id="1100066534610197918">פתיחה בכרטיסייה חדשה בקבוצה</translation>
 <translation id="1105960400813249514">צילום מסך</translation>
 <translation id="1111673857033749125">סימניות שנשמרו במכשירים האחרים שלך יופיעו כאן.</translation>
@@ -25,6 +24,7 @@
 <translation id="1175310183703641346">‏הסנכרון של הסימניות, ההיסטוריה, הסיסמאות ונתונים אחרים שלך עם חשבון Google יופסק</translation>
 <translation id="1178581264944972037">השהה</translation>
 <translation id="1181037720776840403">הסרה</translation>
+<translation id="1188239144602654184">‏כניסה ל-AR</translation>
 <translation id="1197267115302279827">העבר סימניות</translation>
 <translation id="119944043368869598">ניקוי הכל</translation>
 <translation id="1201402288615127009">הבא</translation>
@@ -45,7 +45,7 @@
 <translation id="1285320974508926690">איני רוצה לקבל תרגום של אתר זה</translation>
 <translation id="1291207594882862231">‏ניקוי ההיסטוריה, קובצי ה-Cookie, נתוני האתרים, המטמון…</translation>
 <translation id="129553762522093515">נסגרו לאחרונה</translation>
-<translation id="1303507811548703290"><ph name="DOMAIN" /> - נשלחה מ-<ph name="DEVICE_NAME" /></translation>
+<translation id="1303507811548703290"><ph name="DOMAIN" /> — נשלחה מ-<ph name="DEVICE_NAME" /></translation>
 <translation id="1326317727527857210">‏כדי לקבל את הכרטיסיות מהמכשירים האחרים שלך, יש להיכנס ל-Chrome.</translation>
 <translation id="1331212799747679585">‏לא ניתן לעדכן את Chrome. אפשרויות נוספות</translation>
 <translation id="1332501820983677155">‏מקשי קיצור לתכונות של Google Chrome‏</translation>
@@ -95,7 +95,7 @@
 <translation id="1671236975893690980">ההורדה תיכף תתחיל…</translation>
 <translation id="1672586136351118594">אין להציג שוב</translation>
 <translation id="1692118695553449118">סנכרון מופעל</translation>
-<translation id="1709438864123551175">Data Saver</translation>
+<translation id="169515064810179024">חסימת הגישה של אתרים אל חיישני תנועה</translation>
 <translation id="1717218214683051432">חיישני תנועה</translation>
 <translation id="1718835860248848330">מהשעה האחרונה</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - עודכן <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -213,7 +213,6 @@
 <translation id="2501278716633472235">חזרה</translation>
 <translation id="2513403576141822879">‏אפשר למצוא הגדרות נוספות בנושא פרטיות, אבטחה ואיסוף נתונים בדף <ph name="BEGIN_LINK" />סנכרון ושירותי Google<ph name="END_LINK" /></translation>
 <translation id="2523184218357549926">‏שליחת כתובות אתרים של דפים שבהם ביקרת ל-Google</translation>
-<translation id="2526148617758225454">‏Data Saver פועל. אפשר לנהל אותו ב'הגדרות'.</translation>
 <translation id="2532336938189706096">תצוגת אינטרנט</translation>
 <translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" /> פריטים נמחקו</translation>
 <translation id="2536728043171574184">מציג העתק לא מקוון של עמוד זה</translation>
@@ -248,6 +247,7 @@
 <translation id="2777555524387840389">נותרו <ph name="SECONDS" /> שניות</translation>
 <translation id="2779651927720337254">נכשל</translation>
 <translation id="2781151931089541271">נותרה שניה אחת</translation>
+<translation id="2801022321632964776">‏עדכון לגרסה האחרונה של Chrome יאפשר לך לקרוא בשפה שלך</translation>
 <translation id="2810645512293415242">דף פשוט יותר שחוסך בנתונים ונטען מהר יותר.</translation>
 <translation id="281504910091592009">‏הצגה וניהול של סיסמאות שמורות ב<ph name="BEGIN_LINK" />חשבון Google<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">כדי לקבל גישה אל הסימניות שלך בכל המכשירים, יש להיכנס לחשבון ולהפעיל את הסנכרון</translation>
@@ -308,6 +308,7 @@
 <translation id="3259831549858767975">הקטן את כל מה שמופיע בדף</translation>
 <translation id="3269093882174072735">טען תמונה</translation>
 <translation id="3269956123044984603">‏כדי לקבל את הכרטיסיות מהמכשירים האחרים שלך, הפעל את האפשרות 'סנכרון אוטומטי של נתונים' בהגדרות של חשבון Android.</translation>
+<translation id="3277252321222022663">התרת גישה של אתרים אל החיישנים (מומלץ)</translation>
 <translation id="3282568296779691940">‏כניסה ל-Chrome</translation>
 <translation id="3288003805934695103">לטעון מחדש את הדף</translation>
 <translation id="32895400574683172">יש הרשאה להצגת הודעות</translation>
@@ -351,14 +352,12 @@
 <translation id="3599863153486145794">‏ניקוי ההיסטוריה מכל המכשירים שבהם המשתמש נכנס לחשבון. ייתכן שלחשבון Google שלך יהיו צורות אחרות של היסטוריית גלישה בכתובת <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">השתקת אתרים שמשמיעים צלילים</translation>
 <translation id="3616113530831147358">אודיו</translation>
-<translation id="3620176948598597475">‏האיפוס מוחק את ההיסטוריה של Data Saver, כולל רשימת האתרים שבהם ביקרת.</translation>
 <translation id="3632295766818638029">חשוף סיסמה</translation>
 <translation id="363596933471559332">כניסה אוטומטית לאתרים באמצעות פרטי כניסה מאוחסנים. כשתכונה זו כבויה, יהיה עליך לבצע אימות לפני כל כניסה לאתר.</translation>
 <translation id="3658159451045945436">האיפוס גורם למחיקת ההיסטוריה של החיסכון בנתונים, כולל רשימת האתרים שביקרת בהם.</translation>
 <translation id="3662546969139119822">ההיסטוריה ריקה</translation>
 <translation id="3672452749423051839">הצעות לשגיאת ניווט</translation>
 <translation id="3692944402865947621">ההורדה של <ph name="FILE_NAME" /> נכשלה כי מיקום האחסון לא נגיש.</translation>
-<translation id="3712575778697986964">‏לאפס את Data Saver?</translation>
 <translation id="3714981814255182093">פתח את סרגל החיפוש</translation>
 <translation id="3716182511346448902">‏הדף הזה מנצל יותר מדי זיכרון, כך שהוא הושהה על-ידי Chrome.</translation>
 <translation id="3730075448226062617">‏כדי לאפשר ל-Chrome לגשת אל המיקרופון, צריך להפעיל אותו גם ב<ph name="BEGIN_LINK" />הגדרות Android<ph name="END_LINK" />.</translation>
@@ -500,13 +499,11 @@
 <translation id="4751476147751820511">חיישני תנועה או אור</translation>
 <translation id="4759238208242260848">הורדות</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{הורדה אחת הושלמה.}two{# הורדות הושלמו.}many{# הורדות הושלמו.}other{# הורדות הושלמו.}}</translation>
-<translation id="4766369052440583386">‏Data Saver פועל</translation>
 <translation id="4797039098279997504">גע כדי לחזור אל <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4802417911091824046">‏הצפנה באמצעות ביטוי סיסמה לא כוללת אמצעי תשלום וכתובות מ-Google Pay
 
 כדי לשנות את ההגדרה הזו צריך <ph name="BEGIN_LINK" />לאפס את הסנכרון<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">שם על הכרטיס</translation>
-<translation id="4807963036345170158">‏Data Saver כבוי</translation>
 <translation id="4816465935029283692">סוגי נתונים</translation>
 <translation id="4824958205181053313">לבטל את הסנכרון?</translation>
 <translation id="4837753911714442426">פתח אפשרויות להדפסת דפים</translation>
@@ -546,6 +543,7 @@
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">זה בסדר</translation>
 <translation id="5040262127954254034">פרטיות</translation>
+<translation id="5048398596102334565">התרת גישה של אתרים אל חיישני התנועה (מומלץ)</translation>
 <translation id="5063480226653192405">שימוש</translation>
 <translation id="5073204694187207510">הסתרת רשת מסך מלא</translation>
 <translation id="5082793167783849073">כדי להשוות במהירות בין דפים, אפשר ליצור קבוצה. כדי להתחיל, צריך ללחוץ לחיצה ארוכה על קישור.</translation>
@@ -597,6 +595,7 @@
 <translation id="5447765697759493033">האתר הזה לא יתורגם</translation>
 <translation id="545042621069398927">הדפדפן מאיץ את ההורדה.</translation>
 <translation id="5456381639095306749">הורד דף זה</translation>
+<translation id="5475862044948910901">להתחיל פעילות של מציאות רבודה?</translation>
 <translation id="548278423535722844">פתח יישום מפות</translation>
 <translation id="5487521232677179737">ניקוי נתונים</translation>
 <translation id="5494752089476963479">חסימת מודעות באתרים שמוצגות בהם מודעות מפריעות או מטעות</translation>
@@ -606,7 +605,7 @@
 <translation id="5512137114520586844">החשבון הזה מנוהל על ידי <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">האפשרות הזו הושבתה על-ידי מנהל המערכת של המכשיר</translation>
 <translation id="5515439363601853141">ביטול הנעילה יציג את הסיסמה</translation>
-<translation id="5516455585884385570">לפתיחת הגדרת ההתראות</translation>
+<translation id="5516455585884385570">פתיחה של הגדרות ההתראות</translation>
 <translation id="5517095782334947753">יש לך סימניות, היסטוריה, סיסמאות והגדרות נוספות מ-<ph name="FROM_ACCOUNT" />.</translation>
 <translation id="5524843473235508879">הפניה לכתובת אתר אחרת נחסמה.</translation>
 <translation id="5527082711130173040">‏כדי לבצע סריקה לאיתור מכשירים, Chrome זקוק לגישה לנתוני מיקום. <ph name="BEGIN_LINK1" />עדכן את ההרשאות<ph name="END_LINK1" />. כמו כן, הגישה למיקום <ph name="BEGIN_LINK2" />כבויה במכשיר הזה<ph name="END_LINK2" />.</translation>
@@ -639,7 +638,6 @@
 <translation id="569536719314091526">דרך לחצן האפשרויות הנוספות אפשר לתרגם את הדף הזה לשפה כלשהי</translation>
 <translation id="572328651809341494">כרטיסיות אחרונות</translation>
 <translation id="5726692708398506830">הגדל את כל מה שמופיע בדף</translation>
-<translation id="5734520971562437809">צריכת הנתונים מצטמצמת בשיעור של עד 60 אחוזים והגלישה באינטרנט מהירה יותר.</translation>
 <translation id="5748802427693696783">הוחלף לכרטיסיות רגילות</translation>
 <translation id="5749068826913805084">‏לצורך הורדת קבצים, Chrome זקוק לגישה לאחסון.</translation>
 <translation id="5763382633136178763">כרטיסיות גלישה בסתר</translation>
@@ -697,7 +695,6 @@
 <translation id="6159335304067198720">חיסכון בצריכת נתונים בשיעור של <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">למידע נוסף</translation>
 <translation id="6177111841848151710">חסוּם למנוע החיפוש הנוכחי</translation>
-<translation id="6177390657002841081">‏הפעלת Data Saver</translation>
 <translation id="6181444274883918285">להוספת מקרה חריג של אתר</translation>
 <translation id="6192333916571137726">קובץ הורדה</translation>
 <translation id="6192792657125177640">יוצאי דופן</translation>
@@ -736,6 +733,7 @@
 <translation id="6406506848690869874">סנכרון</translation>
 <translation id="641643625718530986">הדפסה…</translation>
 <translation id="6416782512398055893">‏בוצעה הורדה של MB <ph name="MBS" /></translation>
+<translation id="6427112570124116297">תרגום התוכן באינטרנט</translation>
 <translation id="6433501201775827830">בחירת מנוע החיפוש</translation>
 <translation id="6437478888915024427">פרטי דף</translation>
 <translation id="6441734959916820584">השם ארוך מדי</translation>
@@ -848,6 +846,7 @@
 <translation id="7189598951263744875">שיתוף...</translation>
 <translation id="7191430249889272776">הכרטיסייה נפתחה ברקע.</translation>
 <translation id="723171743924126238">בחר תמונות</translation>
+<translation id="7233236755231902816">‏כדי לראות באינטרנט תוכן בשפה שלך, יש להוריד את הגרסה האחרונה של Chrome</translation>
 <translation id="7243308994586599757">אפשרויות הזמינות באזור החלק התחתון של המסך</translation>
 <translation id="7250468141469952378">נבחרו <ph name="ITEM_COUNT" /></translation>
 <translation id="7253272406652746122">‏הוסף חשבון Google מהדף 'חשבונות' שבאפליקציית ההגדרות של המכשיר.</translation>
@@ -861,6 +860,11 @@
 <translation id="7352939065658542140">סרטון</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{שתף פריט אחד שנבחר}two{שתף # פריטים שנבחרו}many{שתף # פריטים שנבחרו}other{שתף # פריטים שנבחרו}}</translation>
 <translation id="7359002509206457351">גישה לאמצעי תשלום</translation>
+<translation id="7365126855094612066">במהלך כל הסשן, האתר יוכל:
+• ליצור מפה תלת-מימדית של הסביבה שלך
+• לעקוב אחר תנועת המצלמה
+
+האתר לא מקבל גישה למצלמה. צילומי המצלמה גלויים רק לך.</translation>
 <translation id="7375125077091615385">סוג:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">כתובת אתר</translation>
@@ -995,10 +999,11 @@
 <translation id="8266862848225348053">מיקום ההורדה</translation>
 <translation id="8274165955039650276">הצגת הורדות</translation>
 <translation id="8283853025636624853">מסנכרן עם <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
-<translation id="8300705686683892304">מנוהלים על ידי אפליקציה</translation>
+<translation id="8300705686683892304">מנוהלים על-ידי אפליקציה</translation>
 <translation id="8310344678080805313">כרטיסיות רגילות</translation>
 <translation id="8313455859591948645">עריכת דף הפתיחה</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> ועוד אתרים</translation>
+<translation id="8327155640814342956">‏כדי ליהנות מחוויית הגלישה הטובה ביותר, יש לפתוח את Chrome כדי לעדכן אותו</translation>
 <translation id="8339163506404995330">דפים ב<ph name="LANGUAGE" /> לא יתורגמו</translation>
 <translation id="8349013245300336738">מיון לפי כמות הנתונים שבהם נעשה שימוש</translation>
 <translation id="8372893542064058268">אפשר סנכרון ברקע לאתר ספציפי.</translation>
@@ -1056,6 +1061,7 @@
 <translation id="8788968922598763114">פתח מחדש את הכרטיסייה האחרונה שנסגרה</translation>
 <translation id="8801436777607969138">‏חסימת JavaScript באתר ספציפי.</translation>
 <translation id="8812260976093120287">באתרים מסוימים ניתן לשלם דרך המכשיר באמצעות אפליקציות התשלום הנתמכות שמופיעות למעלה.</translation>
+<translation id="8816026460808729765">חסימת הגישה של אתרים אל חיישנים</translation>
 <translation id="8816439037877937734">‏האפליקציה <ph name="APP_NAME" /> תיפתח ב-Chrome. המשך השימוש מבטא את הסכמתך ל<ph name="BEGIN_LINK1" />תנאים ולהגבלות<ph name="END_LINK1" /> ול<ph name="BEGIN_LINK2" />הודעת הפרטיות<ph name="END_LINK2" /> של Chrome, וכן ל<ph name="BEGIN_LINK3" />הודעת הפרטיות לחשבונות Google שמנוהלים ב-Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">סימניות</translation>
 <translation id="8833831881926404480">אתר משתף את המסך שלך</translation>
@@ -1106,11 +1112,9 @@
 <translation id="9188680907066685419">צא מהחשבון המנוהל</translation>
 <translation id="9204836675896933765">נותר קובץ אחד</translation>
 <translation id="9206873250291191720">א</translation>
-<translation id="9215534869786664672">‏צריכת הנתונים מצטמצמת בשיעור של עד 60 אחוזים והגלישה באינטרנט מהירה יותר. כשנכנסים לדפים הם עוברים אופטימיזציה על-ידי השרתים של Google.</translation>
 <translation id="9219103736887031265">תמונות</translation>
 <translation id="926205370408745186">‏הסרת הפעילות שלך ב-Chrome מ'שימוש חכם בדיגיטל'.</translation>
 <translation id="932327136139879170">בית</translation>
-<translation id="932599481871055447">חיסכון בנתונים שמוביל לגלישה מהירה יותר</translation>
 <translation id="938850635132480979">שגיאה: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">גישה למיקרופון שלך</translation>
 <translation id="951339005376969845">מחק נתונים קיימים. כדי לאחזר אותם, חזור אל <ph name="FROM_ACCOUNT" />.</translation>

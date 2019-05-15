@@ -133,6 +133,15 @@
       Ja šai politikai ir norādīta vērtība “False”, netiks ziņots par izstrādes slēdža stāvokli.</translation>
 <translation id="1160479894929412407">QUIC protokola atļaušana</translation>
 <translation id="1160939557934457296">Aizliegums turpināt pārlūkošanu no Drošas pārlūkošanas brīdinājuma lapas</translation>
+<translation id="1171342272070128466">Iespējot dokotas lupas pieejamības funkciju.
+
+          Ja šai politikai ir iestatīta vērtība “true”, dokotā lupa vienmēr būs iespējota.
+
+          Ja šai politikai ir iestatīta vērtība “false”, dokotā lupa vienmēr būs atspējota.
+
+          Ja iestatīsiet šo politiku, lietotāji nevarēs to mainīt un ignorēt.
+
+          Ja šī politika nav iestatīta, dokotā lupa sākotnēji ir atspējota, taču lietotājs var jebkurā brīdī to iespējot.</translation>
 <translation id="1189817621108632689">Ļauj iestatīt URL rakstu sarakstu ar vietnēm, kurām nav atļauts attēlot attēlus.
 
           Ja šī politika nav iestatīta, visām vietnēm tiks izmantota vispārējā noklusējuma vērtība no politikas DefaultImagesSetting (ja tā ir iestatīta) vai no lietotāja personiskās konfigurācijas.
@@ -446,6 +455,7 @@
       Ja politika ir iespējota, lietotāji nevarēs atteikties no noklusējuma rīcības, kad katrai vietnei tiek izpildīts atsevišķs process.
       Ja politika nav konfigurēta vai ir atspējota, lietotājs varēs mainīt iestatījumu (piemēram, izmantojot ierakstu “Atspējot vietnes izolēšanu” vietnē chrome://flags).
       </translation>
+<translation id="1767673020408652620">Iespējot lietotņu ieteikumus meklēšanas lodziņa nulles stāvoklī</translation>
 <translation id="1781356041596378058">Šī politika arī kontrolē piekļuvi Android izstrādātājiem paredzētajām opcijām. Ja iestatīsiet šo politiku kā patiesu, lietotāji nevarēs piekļūt izstrādātājiem paredzētajām opcijām. Ja iestatīsiet šo politiku kā aplamu vai neiestatīsiet politiku, lietotāji varēs piekļūt izstrādātājiem paredzētajām opcijām, septiņas reizes pieskaroties versijas numuram Android iestatījumu lietotnē.</translation>
 <translation id="1793346220873697538">Atspējot drukāšanu ar PIN kodu pēc noklusējuma</translation>
 <translation id="1797233582739332495">Periodiski rādīt lietotājam uzvedni par obligātu atkārtotu palaišanu</translation>
@@ -984,6 +994,15 @@
 
       Katrs saraksta ieraksts apzīmē identifikatoru, kas tiek izmantots iekšēji, lai atšķirtu dažādus ierīces lokālos kontus.</translation>
 <translation id="2769952903507981510">Attālās piekļuves saimniekdatoru obligātā domēna nosaukuma konfigurēšana</translation>
+<translation id="2783078941107212091">Iespējot palaidējā lietotņu ieteikumus meklēšanas lodziņa nulles stāvoklī.
+
+          Ja šai politikai ir iestatīta vērtība “true”, lietotņu ieteikumi var tikt parādīti nulles stāvokļa meklēšanā.
+
+          Ja šai politikai ir iestatīta vērtība “false”, lietotņu ieteikumi netiks parādīti nulles stāvokļa meklēšanā.
+
+          Ja iestatīsiet šo politiku, lietotāji nevarēs to mainīt un ignorēt.
+
+          Ja šī politika nav iestatīta, noklusējuma iestatījums pārvaldītajām ierīcēm ir “false”.</translation>
 <translation id="2787173078141616821">Sniegt informāciju par Android statusu</translation>
 <translation id="2799297758492717491">Atļauja automātiski atskaņot multivides saturu, ja URL paraugs ir iekļauts baltajā sarakstā</translation>
 <translation id="2801155097555584385">Iestatīt pielāgotu akumulatora uzlādes līmeni (procentos), kurā jāsāk uzlāde</translation>
@@ -1181,6 +1200,25 @@
       Ja šai politikai ir iestatīta vērtība Nepatiesa, WPAD optimizācija ir atspējota, tādējādi pārlūkā <ph name="PRODUCT_NAME" /> tiek ilgāk gaidīts uz DNS WPAD serveriem. Ja politika nav iestatīta vai ir iespējota, WPAD optimizācija ir iespējota.
 
       Neatkarīgi no tā, vai šī politika ir iespējota un kā tā ir iespējota, lietotāji nevar mainīt WPAD optimizācijas iestatījumu.</translation>
+<translation id="3071839057966069710">Konfigurē printeru sarakstu.
+
+      Izmantojot šo politiku, administratori var nodrošināt printeru konfigurāciju
+      lietotājiem.
+
+      Parametri <ph name="PRINTER_DISPLAY_NAME" /> un <ph name="PRINTER_DESCRIPTION" /> ir brīva formāta virknes, ko var pielāgot ērtai printera atlasei. Parametri <ph name="PRINTER_MANUFACTURER" /> un <ph name="PRINTER_MODEL" /> ļauj galalietotājiem identificēt printeri. Tie apzīmē printera ražotāju un modeli. Parametram <ph name="PRINTER_URI" /> ir jābūt adresei, ko var sasniegt no klienta datora, tostarp <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> un <ph name="URI_QUEUE" />. Parametrs <ph name="PRINTER_UUID" /> nav norāda obligāti. Ja tas ir norādīts, tas tiek izmantots, lai novērstu <ph name="ZEROCONF_DISCOVERY" /> printeru dublēšanu.
+
+      Parametram <ph name="PRINTER_EFFECTIVE_MODEL" /> ir jāatbilst vienai no virknēm, kas apzīmē pārlūkā <ph name="PRODUCT_NAME" /> atbalstītu printeri. Šī virkne tiks izmantota, lai identificētu un instalētu printerim atbilstošo PPD failu. Plašāku informāciju skatiet vietnē https://support.google.com/chrome?p=noncloudprint.
+
+      <ph name="PRINTER_AUTOCONF" /> ir Būla karogs, kas norāda, vai printera iestatīšanai visur ir jāizmanto IPP. Šis karogs tiek atbalstīts pārlūka <ph name="PRODUCT_OS_NAME" /> versijā 76 un jaunākās.
+
+      Parametram <ph name="PRINTER_EFFECTIVE_MODEL" /> ir jāietver printera nosaukums, vai parametram <ph name="PRINTER_AUTOCONF" /> ir jābūt iestatītam uz “true”. Printeri ar abiem parametriem vai bez tiem tiks ignorēti.
+
+      Printera iestatīšana tiek pabeigta, kad printeris tiek izmantots pirmo reizi.  PPD faili netiek lejupielādēti, kamēr printeris netiek izmantots.  Pēc tam bieži izmantotie PPD faili tiek saglabāti kešatmiņā.
+
+      Šī politika neietekmē to, vai lietotāji var konfigurēt printerus atsevišķās ierīcēs.  Tās mērķis ir papildināt printeru konfigurāciju, ko veic individuāli lietotāji.
+
+      Ierīcēs, kas tiek pārvaldītas pakalpojumā Active Directory, šī politika atbalsta Active Directory ierīces nosaukuma vai tās apakšvirknes iekļaušanu ierīces <ph name="MACHINE_NAME_VARIABLE" /> nosaukumā. Piemēram, ja ierīces nosaukums ir <ph name="MACHINE_NAME_EXAMPLE" />, vērtība <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> pēc sestās pozīcijas tiktu aizstāta ar četrām rakstzīmēm: <ph name="MACHINE_NAME_PART_EXAMPLE" />. Ņemiet vērā, ka pozīciju numurēšana sākas ar nulli.
+      </translation>
 <translation id="3072045631333522102">Ekrānsaudzētājs, kas jāizmanto mazumtirdzniecības režīma pieteikšanās ekrānā</translation>
 <translation id="3072847235228302527">Ierīces lokālā konta pakalpojumu sniegšanas noteikumu iestatīšana</translation>
 <translation id="3077183141551274418">Ciļņu dzīves ciklu iespējošana vai atspējošana</translation>
@@ -1969,7 +2007,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="4591366717022345234">Nodrošināt lietotājiem ātrā risinājuma būvējumu</translation>
 <translation id="4600786265870346112">Lielā kursora iespējošana</translation>
 <translation id="4604931264910482931">Vietējās ziņojumapmaiņas melnā saraksta konfigurēšana</translation>
-<translation id="4613508646038788144">Ja politikai ir iestatīta vērtība “False”, trešās puses programmatūra pārlūka Chrome procesos varēs ievietot izpildāmo kodu. Ja politikai nav iestatīta vērtība vai ir iestatīta vērtība “True”, trešās puses programmatūrai tiek liegta izpildāmā koda ievietošana pārlūka Chrome procesos.</translation>
 <translation id="4617338332148204752">Izlaist metataga pārbaudīšanu spraudnī <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="4625915093043961294">Konfigurē paplašinājumu instalēšanas balto sarakstu</translation>
 <translation id="4632343302005518762">Atļauja produktam <ph name="PRODUCT_FRAME_NAME" /> apstrādāt sarakstā iekļautos satura veidus</translation>
@@ -2161,15 +2198,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Ja šai politikai ir iestatīta vērtība “False”, pārlūks Chrome aizvērs cilni pēc pārslēgšanās uz citu pārlūku, pat ja tā ir pēdējā cilne. Tas pilnībā aizvērs pārlūku Chrome.</translation>
 <translation id="5105313908130842249">Aizkave līdz ekrāna bloķēšanai, ja ierīce darbojas ar akumulatora jaudu</translation>
 <translation id="5108031557082757679">Atspējoti uzņēmuma ierīču printeri</translation>
-<translation id="5113732180192599620">Šī politika kontrolē to vietņu sarakstu, kuras nekad nepārslēgs pārlūkprogrammu.
-
-      Ņemiet vērā, ka šim sarakstam var pievienot elementus, izmantojot arī politiku “<ph name="USE_IE_SITELIST_POLICY_NAME" />” un “<ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />”.
-
-      Ja šī politika nav iestatīta, sarakstam nepievieno nevienu vietni.
-
-      Ja šī politika ir iestatīta, visus vienumus uzskata par kārtulu, kas līdzinās politikai “<ph name="URL_LIST_POLICY_NAME" />”. Tomēr loģika ir pretēja: atbilstošās kārtulas neatver citu pārlūkprogrammu.
-
-      Pretēji politikai “<ph name="URL_LIST_POLICY_NAME" />” kārtulas tiek lietotas abos virzienos: ja pārlūkprogrammas Internet Explorer papildinājums ir iespējots, tas pārvalda arī to, vai pārlūkprogrammai <ph name="IE_PRODUCT_NAME" /> attiecīgie vietrāži URL ir jāatver arī pārlūkprogrammā <ph name="PRODUCT_NAME" />.</translation>
 <translation id="5124368997194894978">Iespējot palaišanu ar maiņstrāvas barošanu</translation>
 <translation id="5131211790949066746">Iespējo paplašinājumu instalēšanas sarakstu politiku <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" /> un <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" /> apvienošanu.
 
@@ -2454,6 +2482,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 
       Ja šīs politikas vērtība nav norādīta, variantu sākotnējās vērtības URL netiks modificēts.</translation>
 <translation id="5561811616825571914">Automātiski atlasa klientu sertifikātus šīm vietnēm pierakstīšanās ekrānā</translation>
+<translation id="5565178130821694365">Parole ir jāievada katru otro dienu (ik pēc 48 stundām)</translation>
 <translation id="5566210228171064229">Atļaut drukāšana gan ar PIN kodu, gan bez tā</translation>
 <translation id="556865034069957245">Šī politika nosaka, vai ir pieejams pilnekrāna režīms, kurā visi <ph name="PRODUCT_NAME" /> lietotāja saskarnes elementi ir paslēpti un ir redzams tikai tīmekļa saturs.
 

@@ -112,6 +112,7 @@
 <translation id="2597972630681408282">नाइट लाइट: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">सिम कार्ड लॉक है</translation>
 <translation id="2653659639078652383">सबमिट करें</translation>
+<translation id="2658778018866295321">क्लिक करके खींचें और छोड़ें</translation>
 <translation id="2700493154570097719">अपना कीबोर्ड सेट करें</translation>
 <translation id="2718395828230677721">नाइट लाइट</translation>
 <translation id="2727977024730340865">कम-शक्ति वाले चार्जर में प्लग इन करें. बैटरी चार्ज करना संभवत: विश्वसनीय नहीं होगा.</translation>
@@ -228,6 +229,7 @@
 <translation id="4378551569595875038">कनेक्ट हो रहा है...</translation>
 <translation id="4379531060876907730">ये आपके स्टाइलस टूल हैं</translation>
 <translation id="4389184120735010762">आपने 'सामग्री को बड़ा दिखाने वाली डॉक की गई सेवा' का कीबोर्ड शॉर्टकट दबाया है. क्या आप इसे चालू करना चाहते हैं?</translation>
+<translation id="4394049700291259645">बंद करें</translation>
 <translation id="4421231901400348175">आपकी स्‍क्रीन का नियंत्रण दूरस्‍थ सहायक के द्वारा <ph name="HELPER_NAME" /> से शेयर किया जा रहा है.</translation>
 <translation id="4430019312045809116">मात्रा</translation>
 <translation id="4450893287417543264">फिर से न दिखाएं</translation>
@@ -247,7 +249,6 @@
 <translation id="4696813013609194136">माता-पिता के कोड से डिवाइस अनलॉक करें</translation>
 <translation id="4731797938093519117">अभिभावक एक्सेस</translation>
 <translation id="4734965478015604180">क्षैतिज</translation>
-<translation id="476166673298332917">इस डिवाइस का एडमिन आपकी ब्राउज़िंग गतिविधि पर नज़र रख सकता है.</translation>
 <translation id="4774338217796918551">कल <ph name="COME_BACK_TIME" /> बजे फिर से देखें.</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> के लिए पासवर्ड</translation>
 <translation id="4778095205580009397">डेमो सत्र में Google Assistant मौजूद नहीं है.</translation>
@@ -355,7 +356,6 @@
 <translation id="6537270692134705506">स्क्रीन कैप्चर करें</translation>
 <translation id="6542521951477560771"><ph name="RECEIVER_NAME" /> पर कास्ट किया जा रहा है</translation>
 <translation id="6559976592393364813">एडमिन से पूछें</translation>
-<translation id="6574601967010742428">डिवाइस का एडमिन आपकी गतिविधि पर नज़र रख सकता है.</translation>
 <translation id="6585808820553845416">सत्र <ph name="SESSION_TIME_REMAINING" /> में खत्म होने वाला है.</translation>
 <translation id="6627638273713273709">Search+Shift+K</translation>
 <translation id="6650933572246256093">ब्लूटूथ डिवाइस "<ph name="DEVICE_NAME" />" युग्मित करने की अनुमति चाहता है. कृपया डिवाइस पर यह पासकुंजी डालें: <ph name="PASSKEY" /></translation>

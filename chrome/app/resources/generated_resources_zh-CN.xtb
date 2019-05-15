@@ -226,6 +226,7 @@
 <translation id="1338950911836659113">正在删除…</translation>
 <translation id="1340527397989195812">使用“文件”应用备份设备上的媒体。</translation>
 <translation id="1341988552785875222">当前壁纸是由“<ph name="APP_NAME" />”设置的。您可能需要先卸载“<ph name="APP_NAME" />”，然后才能选择其他壁纸。</translation>
+<translation id="1343865611738742294">授权 Linux 应用访问 USB 设备。Linux 不会记住已被拔出的 USB 设备。</translation>
 <translation id="1347256498747320987">安装更新和应用。继续操作即表示您同意此设备还可从 Google、您的运营商以及您设备的制造商处自动下载并安装更新和应用（可能会使用移动数据网络）。部分应用可能会提供应用内购商品。<ph name="BEGIN_LINK1" />了解详情<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">当电池电量达到 <ph name="BATTERY_LEVEL" />% 时将开始更新。</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />：<ph name="NETWORK_NAME" /></translation>
@@ -704,6 +705,7 @@
 <translation id="2120297377148151361">活动和互动行为</translation>
 <translation id="2120478168904746065">{NUM_TABS,plural, =1{将这个标签页取消静音}other{将这些标签页取消静音}}</translation>
 <translation id="2121825465123208577">调整大小</translation>
+<translation id="2122305276694332719">自动连接至隐藏的网络会造成其他人能查看您的设备和一些网络设置，因此我们建议不要这样做。</translation>
 <translation id="2124930039827422115">{1,plural, =1{已有一位用户给出了 <ph name="AVERAGE_RATING" /> 的评分。}other{已有 # 位用户给出评分，平均评分为 <ph name="AVERAGE_RATING" />。}}</translation>
 <translation id="2126167708562367080">您的管理员已停用同步。</translation>
 <translation id="2127372758936585790">低功率充电器</translation>
@@ -808,7 +810,7 @@
 <translation id="2256115617011615191">立即重新启动</translation>
 <translation id="225614027745146050">欢迎</translation>
 <translation id="225692081236532131">激活状态</translation>
-<translation id="2258855745387252834">要共享文件夹，请右键点击“文件”应用中的相应文件夹，然后选择“与插件虚拟机共享”。</translation>
+<translation id="2258855745387252834">要共享文件夹，请在“文件”应用中右键点击相应文件夹，然后选择“与插件虚拟机共享”。</translation>
 <translation id="2261323523305321874">您的管理员做出了一项系统级更改，致使一些旧个人资料遭到停用。</translation>
 <translation id="2262332168014443534">现在，精简模式可使所有网页（包括 HTTPS 网页）以更快的速度加载。</translation>
 <translation id="2262477216570151239">重复前的延迟时间</translation>
@@ -1298,6 +1300,7 @@
 <translation id="3012917896646559015">请立即与您的硬件制造商联系，将您的计算机送至维修机构。</translation>
 <translation id="3013291976881901233">MIDI 设备</translation>
 <translation id="3015639418649705390">立即重新启动</translation>
+<translation id="3016329696181678353">无法自动配置<ph name="PRINTER_NAME" />。请指定高级打印机详细信息。</translation>
 <translation id="3016641847947582299">组件已更新</translation>
 <translation id="3016780570757425217">获取您的位置</translation>
 <translation id="3020183492814296499">快捷键</translation>
@@ -1798,7 +1801,6 @@
 <translation id="3789841737615482174">安装</translation>
 <translation id="379082410132524484">您的卡已过期</translation>
 <translation id="3792890930871100565">断开打印机连接</translation>
-<translation id="3792938779249970121">选择帐号</translation>
 <translation id="3796648294839530037">收藏的网络：</translation>
 <translation id="3797739167230984533">您的 <ph name="BEGIN_LINK" /><ph name="DEVICE_TYPE" /> 由所属组织管理<ph name="END_LINK" /></translation>
 <translation id="3797900183766075808">使用<ph name="SEARCH_ENGINE" />搜索“<ph name="SEARCH_TERMS" />”(&amp;S)</translation>
@@ -2106,6 +2108,7 @@
 <translation id="4268025649754414643">密钥加密</translation>
 <translation id="4270393598798225102">版本 <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">找不到相符的结果</translation>
+<translation id="4275663329226226506">媒体</translation>
 <translation id="4275830172053184480">重启您的设备</translation>
 <translation id="4278101229438943600">Google 助理已准备就绪</translation>
 <translation id="4278390842282768270">允许</translation>
@@ -2148,7 +2151,6 @@
 <translation id="4354344420232759511">您访问的网站将显示在此处</translation>
 <translation id="435527878592612277">选择您的照片</translation>
 <translation id="4356334633973342967">或指定您自己的驱动程序：</translation>
-<translation id="4358169392473932247">该安全密钥不支持在内部存储凭据，但网站所请求的功能正是这项。</translation>
 <translation id="4359408040881008151">安装此扩展程序是因为某个/些扩展程序需要安装它才能正常使用。</translation>
 <translation id="4359717112757026264">城市景观</translation>
 <translation id="4361142739114356624">缺少此客户端证书的私钥，或私钥无效</translation>
@@ -2331,7 +2333,6 @@
 <translation id="4665014895760275686">制造商</translation>
 <translation id="4665446389743427678">即将删除 <ph name="SITE" /> 存储的所有数据。</translation>
 <translation id="4668721319092543482">点击即可启用 <ph name="PLUGIN_NAME" /></translation>
-<translation id="4670688170798478686">确认重置</translation>
 <translation id="4672657274720418656">提取页面</translation>
 <translation id="4673442866648850031">取出触控笔时打开触控笔工具</translation>
 <translation id="4677585247300749148"><ph name="URL" /> 想对无障碍事件做出响应</translation>
@@ -2361,7 +2362,6 @@
 <translation id="4711638718396952945">恢复设置</translation>
 <translation id="4715553623069266137">非常短（0.8 秒）</translation>
 <translation id="4716483597559580346">执行 Powerwash 操作以提高安全性</translation>
-<translation id="4718490098585891067">请选择一个帐号以进行登录：</translation>
 <translation id="4720113199587244118">添加设备</translation>
 <translation id="4720185134442950733">移动数据网络</translation>
 <translation id="4722735765955348426"><ph name="USERNAME" /> 的密码</translation>
@@ -2392,7 +2392,6 @@
 <translation id="4756388243121344051">历史记录(&amp;H)</translation>
 <translation id="4759238208242260848">下载内容</translation>
 <translation id="4761104368405085019">使用您的麦克风</translation>
-<translation id="476166673298332917">此设备的管理员可能会监控您的浏览活动。</translation>
 <translation id="4762718786438001384">设备磁盘空间严重不足</translation>
 <translation id="4763408175235639573">以下 Cookie 是系统在您查看此网页时设置的</translation>
 <translation id="4763830802490665879">退出时会清除来自多个网站的 Cookie。</translation>
@@ -3921,7 +3920,6 @@
 <translation id="713888829801648570">抱歉，您目前处于离线状态，因此系统无法验证您的密码。</translation>
 <translation id="7140928199327930795">没有其他可用的设备。</translation>
 <translation id="7141105143012495934">由于无法获取您的帐号详情，因此登录失败了。请与管理员联系或重试。</translation>
-<translation id="714285394257538643">若想确认您要重置安全密钥，请再次触摸它。这会清空该安全密钥上存储的所有凭据以及它的 PIN 码。</translation>
 <translation id="7143092389027215216">正在启动演示模式</translation>
 <translation id="7143207342074048698">正在连接</translation>
 <translation id="7144878232160441200">重试</translation>
@@ -4155,6 +4153,7 @@
 <translation id="7506541170099744506">您的 <ph name="DEVICE_TYPE" /> 已成功注册企业管理服务。</translation>
 <translation id="7507930499305566459">状态响应程序证书</translation>
 <translation id="7513029293694390567">使用存储的凭据自动登录网站。停用该功能后，系统会在您每次登录网站时要求您进行确认。</translation>
+<translation id="7514365320538308">下载</translation>
 <translation id="7517786267097410259">设置密码 -</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">说“Ok Google”</translation>
@@ -4493,6 +4492,7 @@
 请妥善保存您的密钥文件。您还需要使用该文件创建新版扩展程序。</translation>
 <translation id="8000066093800657092">未连接任何网络</translation>
 <translation id="8000467600002607205">{NUM_TABS,plural, =1{关闭这个标签页}other{关闭这些标签页}}</translation>
+<translation id="8002274832045662704">高级打印机配置</translation>
 <translation id="8004582292198964060">浏览器</translation>
 <translation id="8005600846065423578">始终允许 <ph name="HOST" /> 查看剪贴板</translation>
 <translation id="8008356846765065031">网络已断开，请检查您的互联网连接是否正常。</translation>
@@ -5032,6 +5032,7 @@
 <translation id="8850251000316748990">查看更多…</translation>
 <translation id="885246833287407341">API 函数参数</translation>
 <translation id="8853586775156634952">此信用卡信息将仅保存到此设备上</translation>
+<translation id="885701979325669005">存储数据</translation>
 <translation id="8859057652521303089">选择语言：</translation>
 <translation id="8859174528519900719">辅助框架：<ph name="SUBFRAME_SITE" /></translation>
 <translation id="8862003515646449717">改用极速浏览器</translation>

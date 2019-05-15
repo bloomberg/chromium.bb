@@ -74,13 +74,11 @@
 <translation id="1952728750904661634">Σύνδεση με διαχειριζόμενο λογαριασμό</translation>
 <translation id="1974060860693918893">Σύνθετες</translation>
 <translation id="1989112275319619282">Περιήγηση</translation>
-<translation id="2000419248597011803">Στέλνει ορισμένα cookie και αναζητήσεις από τη γραμμή διευθύνσεων και το πλαίσιο αναζήτησης στην προεπιλεγμένη μηχανή αναζήτησης</translation>
 <translation id="2015722694326466240">Για να δείτε τους κωδικούς πρόσβασης, θα πρέπει πρώτα να ορίσετε έναν κωδικό πρόσβασης για τη συσκευή σας.</translation>
 <translation id="2068952045031577364">Τελευταία εβδομάδα</translation>
 <translation id="2074131957428911366">Μπορείτε πάντα να επιλέξετε τα στοιχεία που θέλετε να συγχρονίσετε στις <ph name="BEGIN_LINK" />ρυθμίσεις<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Αναίρεση</translation>
 <translation id="209018056901015185">Αίτηση ιστότ. για υπολογ.</translation>
-<translation id="2096012225669085171">Συγχρονισμός και εξατομίκευση σε όλες τις συσκευές</translation>
 <translation id="2103075008456228677">Ανοίξτε το history.google.com</translation>
 <translation id="2116625576999540962">Μετακινήθηκαν <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> στοιχεία</translation>
 <translation id="213900355088104901">Για να περιηγηθείτε ιδιωτικά, ανοίξτε μια καρτέλα για ανώνυμη περιήγηση</translation>
@@ -107,7 +105,6 @@
 <translation id="2435457462613246316">Εμφάνιση κωδικού πρόσβασης</translation>
 <translation id="2481538920734869610">ΠΡΟΣΘΗΚΗ ΛΟΓΑΡΙΑΣΜΟΥ</translation>
 <translation id="2497852260688568942">Ο συγχρονισμός έχει απενεργοποιηθεί από τον διαχειριστή σας</translation>
-<translation id="2523184218357549926">Αποστέλλει στην Google URL των σελίδων που επισκέπτεστε</translation>
 <translation id="2523363575747517183">Αυτός ο ιστότοπος προσπαθεί επανειλημμένως να ανοίξει κάποια άλλη εφαρμογή.</translation>
 <translation id="2529021024822217800">Άνοιγμα όλων</translation>
 <translation id="2572712655377361602">Μια πολιτική συσκευής απέκλεισε την πρόσβαση στις φωτογραφίες σας</translation>
@@ -137,6 +134,7 @@
 <translation id="2871695793448672541">Κρυφός κωδικός</translation>
 <translation id="288655811176831528">Κλείσιμο καρτέλας</translation>
 <translation id="2898963176829412617">Νέος φάκελος…</translation>
+<translation id="2916171785467530738">Αυτόματη συμπλήρωση αναζητήσεων και URL</translation>
 <translation id="291754862089661335">Τοποθετήστε τον κώδικα QR ή τον γραμμωτό κώδικα σε αυτό το πλαίσιο</translation>
 <translation id="2921219216347069551">Κοιν.χ. σελ. αδύνατη</translation>
 <translation id="2923448633003185837">Επικόλληση και μετάβαση</translation>
@@ -306,7 +304,6 @@
 <translation id="5857090052475505287">Νέος φάκελος</translation>
 <translation id="5857770089550859117">Απαιτείται φράση πρόσβασης για έναρξη του συγχρονισμού.</translation>
 <translation id="5860033963881614850">Απενεργοποιημένη</translation>
-<translation id="5865733239029070421">Αποστέλλει αυτόματα στατιστικά στοιχεία χρήσης και αναφορές σφαλμάτων στην Google</translation>
 <translation id="5869029295770560994">OK, το κατάλαβα!</translation>
 <translation id="5871497086027727873">Μετακινήθηκε 1 στοιχείο</translation>
 <translation id="5897956970858271241">Μετάβαση στον αντιγραμμένο σύνδεσμο</translation>
@@ -413,7 +410,6 @@
 <translation id="722055596168483966">Εξατομίκευση υπηρεσιών Google</translation>
 <translation id="7265758999917665941">Ποτέ για αυτόν τον ιστότοπο</translation>
 <translation id="7272437679830969316">Δεν είναι δυνατή η επαλήθευση της ταυτότητας σας. Ο κωδικός πρόσβασης δεν αντιγράφηκε.</translation>
-<translation id="7280856130494094142">Εισαγάγετε τη φράση πρόσβασης για να ξεκινήσει ο συγχρονισμός.</translation>
 <translation id="7285236536143823449">ΝΑΙ, ΣΥΜΦΩΝΩ</translation>
 <translation id="7291368939935408496">Προετοιμασία κωδικών πρόσβασης…</translation>
 <translation id="7293171162284876153">Για να ξεκινήσετε τον συγχρονισμό, ενεργοποιήστε την επιλογή Συγχρονισμός των δεδομένων σας Chrome.</translation>
@@ -435,12 +431,10 @@
 <translation id="7554791636758816595">Νέα καρτέλα</translation>
 <translation id="7561196759112975576">Πάντα</translation>
 <translation id="7603852183842204213">Αποκλεισμ. αναδ. (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
-<translation id="7605594153474022051">Ο συγχρονισμός δεν λειτουργεί</translation>
 <translation id="7638584964844754484">Εσφαλμένη φράση πρόσβασης</translation>
 <translation id="7658239707568436148">Ακύρωση</translation>
 <translation id="766891008101699113">Για να περιηγηθείτε στον ιστό ιδιωτικά, προσθέστε μια νέα καρτέλα.</translation>
 <translation id="7671141431838911305">ΕΓΚΑΤΑΣΤΑΣΗ</translation>
-<translation id="7704317875155739195">Αυτόματη συμπλήρωση αναζητήσεων και URL</translation>
 <translation id="7765158879357617694">Μεταφορά</translation>
 <translation id="7769602470925380267">Αποδοχή και αποσύνδεση</translation>
 <translation id="7772032839648071052">Επιβεβαίωση φράσης πρόσβασης</translation>
@@ -478,7 +472,6 @@
 <translation id="842017693807136194">Σε σύνδεση με</translation>
 <translation id="8428045167754449968">Πόλη / Κωμόπολη</translation>
 <translation id="8428213095426709021">Ρυθμίσεις</translation>
-<translation id="8438566539970814960">Βελτιώστε τις αναζητήσεις και την περιήγηση</translation>
 <translation id="8458397775385147834">Διαγράφηκε 1 στοιχείο</translation>
 <translation id="8487700953926739672">Διαθέσιμο εκτός σύνδεσης</translation>
 <translation id="8503813439785031346">Όνομα χρήστη</translation>

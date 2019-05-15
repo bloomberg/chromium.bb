@@ -112,6 +112,7 @@
 <translation id="2597972630681408282">Nakties šviesa: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM kortelė užrakinta</translation>
 <translation id="2653659639078652383">Pateikti</translation>
+<translation id="2658778018866295321">Spustelėti ir vilkti</translation>
 <translation id="2700493154570097719">Klaviatūros nustatymas</translation>
 <translation id="2718395828230677721">Nakties šviesa</translation>
 <translation id="2727977024730340865">Prijungtas mažos galios įkroviklis. Akumuliatoriaus įkrovimas gali būti nepatikimas.</translation>
@@ -228,6 +229,7 @@
 <translation id="4378551569595875038">Jungiamasi...</translation>
 <translation id="4379531060876907730">Tai yra jūsų rašiklio įrankiai</translation>
 <translation id="4389184120735010762">Paspaudėte prie doko prijungto didintuvo spartųjį klavišą. Ar norite jį įjungti?</translation>
+<translation id="4394049700291259645">Neleisti</translation>
 <translation id="4421231901400348175"><ph name="HELPER_NAME" /> gali valdyti jūsų ekraną naudodamas (-a) Nuotolinę pagalbą.</translation>
 <translation id="4430019312045809116">Apimtis</translation>
 <translation id="4450893287417543264">Daugiau neberodyti</translation>
@@ -247,7 +249,6 @@
 <translation id="4696813013609194136">Atrakinkite įrenginį naudodami tėvų kodą</translation>
 <translation id="4731797938093519117">Tėvų prieiga</translation>
 <translation id="4734965478015604180">Horizontaliai</translation>
-<translation id="476166673298332917">Šio įrenginio administratorius gali stebėti jūsų naršymo veiklą.</translation>
 <translation id="4774338217796918551">Grįžkite rytoj <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> slaptažodis</translation>
 <translation id="4778095205580009397">„Google“ padėjėjas nepasiekiamas demonstracinėje sesijoje.</translation>
@@ -355,7 +356,6 @@
 <translation id="6537270692134705506">Užfiksuoti ekrano vaizdą</translation>
 <translation id="6542521951477560771">Perduodama į „<ph name="RECEIVER_NAME" />“</translation>
 <translation id="6559976592393364813">Klausti administratoriaus</translation>
-<translation id="6574601967010742428">Įrenginio administratorius gali stebėti jūsų veiklą.</translation>
 <translation id="6585808820553845416">Sesija baigsis po <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Paieškos klavišas + „Shift“ + K</translation>
 <translation id="6650933572246256093">„Bluetooth“ įrenginys „<ph name="DEVICE_NAME" />“ prašo leidimo susieti. Šiame įrenginyje įveskite šį slaptąjį raktą: <ph name="PASSKEY" /></translation>

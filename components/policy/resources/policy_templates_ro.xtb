@@ -131,6 +131,15 @@ Pentru mai multe informații despre contextele sigure, accesează https://www.w3
       Dacă politica este dezactivată, starea comutatorului modului pentru dezvoltatori nu va fi raportată.</translation>
 <translation id="1160479894929412407">Permite protocolul QUIC</translation>
 <translation id="1160939557934457296">Dezactivați continuarea navigării de pe pagina de avertisment Navigare sigură</translation>
+<translation id="1171342272070128466">Activează sau dezactivează funcția de accesibilitate de lupă andocată.
+
+          Dacă politica este activată, lupa andocată va fi activată întotdeauna.
+
+          Dacă politica este dezactivată, lupa andocată va fi dezactivată întotdeauna.
+
+          Dacă setezi această politică, utilizatorii nu pot să o modifice sau să o anuleze.
+
+          Dacă această politică nu este configurată, lupa andocată este inițial dezactivată, dar poate fi activată oricând de utilizator.</translation>
 <translation id="1189817621108632689">Îți permite să setezi o listă de șabloane de adrese URL care specifică site-urile care nu au permisiunea să afișeze imagini.
 
           Dacă această politică nu este setată, valoarea prestabilită la nivel global va fi folosită pentru toate site-urile, fie din politica „DefaultImagesSetting” dacă este setată, fie din configurația personală a utilizatorului, în caz contrar.
@@ -348,9 +357,9 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Politica se aplică doar când este activată extensia <ph name="CHROME_REPORTING_EXTENSION_NAME" />, iar dispozitivul este înregistrat cu politica <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="1560205870554624777">Stabilește dacă funcționalitatea Kerberos este activată. Kerberos este un protocol de autentificare ce poate fi folosit pentru autentificarea în aplicații web și dispozitive de stocare în rețea.
 
-          Dacă politica este activată, funcționalitatea Kerberos este activată. Conturile Kerberos pot fi adăugat fie prin politica „Configurează conturile Kerberos”, fie prin setările contului Kerberos din pagina Setări pentru persoane.
+          Dacă politica este activată, funcționalitatea Kerberos este activată. Conturile Kerberos pot fi adăugate fie prin politica „Configurează conturile Kerberos”, fie prin setările contului Kerberos din pagina Setări pentru persoane.
 
-          Dacă politica este dezactivată sau nu este setată, setările contului Kerberos sunt dezactivate. Nu poate fi adăugat niciun cont Kerberos, iar autentificarea Kerberos nu paote fi folosită. Toate conturile Kerberos existente și toate parolele stocate sunt șterse.</translation>
+          Dacă politica este dezactivată sau nu este setată, setările contului Kerberos sunt dezactivate. Nu poate fi adăugat niciun cont Kerberos, iar autentificarea Kerberos nu poate fi folosită. Toate conturile Kerberos existente și toate parolele stocate sunt șterse.</translation>
 <translation id="1561424797596341174">Suprascrieri de politici pentru versiunile de depanare ale gazdei de acces la distanță</translation>
 <translation id="1561967320164410511">U2F și extensii pentru atestarea individuală</translation>
 <translation id="1574554504290354326">Această setare este învechită; folosește SafeBrowsingExtendedReportingEnabled. Activarea sau dezactivarea SafeBrowsingExtendedReportingEnabled este echivalentă cu dezactivarea SafeBrowsingExtendedReportingOptInAllowed.
@@ -440,9 +449,10 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="1762072363876276024">
       Această politică este valabilă pentru ecranul de conectare. Consultă și politica <ph name="SITE_PER_PROCESS_POLICY_NAME" />, care este valabilă pentru sesiunea de utilizator. Se recomandă să setezi ambele politici la aceeași valoare. Dacă valorile nu se potrivesc, poate apărea o întârziere când intri într-o sesiune de utilizator în timp ce este aplicată valoarea indicată de politica de utilizator.
       Setarea DeviceLoginScreenSitePerProcess poate fi folosită pentru a nu mai permite utilizatorilor să renunțe la comportamentul prestabilit de izolare a tuturor site-urilor. Reține că politica DeviceLoginScreenIsolateOrigins poate fi utilă și pentru izolarea unor origini suplimentare, mai exacte.
-      Dacă politica este activată, utilizatorii nu vor putea să renunța la comportamentul prestabilit, în care fiecare site rulează procesul propriu.
+      Dacă politica este activată, utilizatorii nu vor putea să renunțe la comportamentul prestabilit, în care fiecare site rulează procesul propriu.
       Dacă politica nu este configurată sau este dezactivată, utilizatorul va putea să modifice această setare (de exemplu, folosind intrarea „Dezactivează izolarea site-ului” în chrome://flags).
       </translation>
+<translation id="1767673020408652620">Activează recomandările de aplicații în starea zero a casetei de căutare</translation>
 <translation id="1781356041596378058">Această politică controlează și accesul la Opțiunile pentru dezvoltatori Android. Dacă această politică este activată, utilizatorii nu pot accesa Opțiunile pentru dezvoltatori. Dacă această politică este dezactivată sau nu este configurată, utilizatorii pot accesa Opțiunile pentru dezvoltatori atingând de șapte ori numărul versiunii din aplicația Setări Android.</translation>
 <translation id="1793346220873697538">Dezactivează printarea cu PIN prestabilită</translation>
 <translation id="1797233582739332495">Afișează utilizatorului o solicitare recurentă prin care se indică faptul că relansarea este obligatorie</translation>
@@ -960,6 +970,15 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
       Fiecare intrare de pe listă specifică un identificator, care este utilizat la nivel intern pentru a face diferența între conturile locale de pe gadget.</translation>
 <translation id="2769952903507981510">Configurați numele de domeniu necesar pentru gazdele de acces la distanță</translation>
+<translation id="2783078941107212091">Activează recomandările de aplicații în starea zero a casetei de căutare în lansator.
+
+          Dacă această politică este activată, recomandările de aplicații pot să apară în căutarea de stare zero.
+
+          Dacă această politică este dezactivată, recomandările de aplicații nu vor apărea în căutarea de stare zero.
+
+          Dacă setezi această politică, utilizatorii nu pot să o modifice sau să o anuleze.
+
+          Dacă politica nu este setată, valoarea prestabilită este Fals pentru dispozitivele gestionate.</translation>
 <translation id="2787173078141616821">Raportează informații despre starea Android</translation>
 <translation id="2799297758492717491">Permite redarea automată a conținutului media pentru o listă albă cu șabloane de adrese URL</translation>
 <translation id="2801155097555584385">Setează în procente valoarea personalizată la care bateria începe să se încarce</translation>
@@ -1155,6 +1174,25 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Dacă această politică este dezactivată, optimizarea pentru WPAD este, de asemenea, dezactivată, iar <ph name="PRODUCT_NAME" /> va aștepta mai mult timp un răspuns de la serverele WPAD bazate pe DNS. Dacă politica nu este configurată sau este activată, optimizarea pentru WPAD este activată.
 
       Indiferent dacă politica este configurată sau nu și indiferent de modul în care este configurată, utilizatorii nu pot să modifice setarea privind optimizarea pentru WPAD.</translation>
+<translation id="3071839057966069710">Configurează o listă de imprimante.
+
+      Această politică permite administratorilor să ofere utilizatorilor configurații ale
+      imprimantelor.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> și <ph name="PRINTER_DESCRIPTION" /> sunt șiruri cu formă liberă care pot fi personalizate pentru a selecta mai ușor o imprimantă. <ph name="PRINTER_MANUFACTURER" /> și <ph name="PRINTER_MODEL" /> sunt folosite pentru a simplifica identificarea imprimantei de utilizatorii finali. Acestea reprezintă producătorul și modelul imprimantei. <ph name="PRINTER_URI" /> trebuie să fie o adresă care poate fi accesată de pe computerul unui client, inclusiv <ph name="URI_SCHEME" />, <ph name="URI_PORT" />, și <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> este opțional. Dacă este specificat, acesta este folosit pentru a deduplica imprimantele <ph name="ZEROCONF_DISCOVERY" />.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> trebuie să corespundă unuia dintre șirurile care reprezintă o imprimantă <ph name="PRODUCT_NAME" /> compatibilă. Șirul va fi folosit pentru a identifica și instala PPD-ul corespunzător imprimantei. Mai multe informații sunt disponibile la https://support.google.com/chrome?p=noncloudprint.
+
+      <ph name="PRINTER_AUTOCONF" /> este un semnal boolean care indică dacă IPP Everywhere trebuie folosit pentru configurarea imprimantei. Acest semnal este compatibil cu versiunea 76 și versiunile ulterioare de <ph name="PRODUCT_OS_NAME" />.
+
+      Ori <ph name="PRINTER_EFFECTIVE_MODEL" /> trebuie să conțină numele imprimantei, ori <ph name="PRINTER_AUTOCONF" /> trebuie să fie activat. Imprimantele cu ambele proprietăți sau fără niciuna vor fi ignorate.
+
+      Configurarea imprimantei este finalizată la prima folosire a acesteia.  PPD-urile nu sunt descărcate înainte de folosirea imprimantei.  După aceea, PPD-urile folosite frecvent sunt stocate în memoria cache.
+
+      Această politică nu afectează opțiunea utilizatorilor de a configura imprimantele pe dispozitive individuale.  Este menită să fie suplimentară față de configurarea imprimantelor de utilizatori individuali.
+
+      Pentru dispozitivele gestionate cu Active Directory, această politică acceptă extinderea <ph name="MACHINE_NAME_VARIABLE" /> la numele computerului cu Active Directory sau la un subșir al acestuia. De exemplu, dacă numele computerului este <ph name="MACHINE_NAME_EXAMPLE" />, <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> va fi înlocuit de cele 4 caractere care urmează după cea de-a 6-a poziție, adică <ph name="MACHINE_NAME_PART_EXAMPLE" />. Reține că poziția începe de la zero.
+      </translation>
 <translation id="3072045631333522102">Screen saver setat pentru ecranul de conectare în modul Vânzare</translation>
 <translation id="3072847235228302527">Setați Termenii și condițiile pentru un cont local de pe dispozitiv</translation>
 <translation id="3077183141551274418">Activează sau dezactivează ciclurile de viață ale filelor</translation>
@@ -1934,7 +1972,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="4591366717022345234">Oferă utilizatorilor versiunea de Quick Fix</translation>
 <translation id="4600786265870346112">Activați cursorul mare</translation>
 <translation id="4604931264910482931">Configurați lista neagră a mesageriei native</translation>
-<translation id="4613508646038788144">Dacă politica este setată la false, atunci software-ului de la o terță parte i se va permite să introducă un cod executabil în procesele Chrome. Dacă politica nu este configurată sau este setată la true, atunci software-ul de la o terță parte va fi împiedicat să introducă codul executabil în procesele Chrome.</translation>
 <translation id="4617338332148204752">Ignoră verificarea existenței unor metaetichete în <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="4625915093043961294">Configurează lista albă pentru instalarea extensiilor</translation>
 <translation id="4632343302005518762">Permiteți ca <ph name="PRODUCT_FRAME_NAME" /> să gestioneze tipurile de conținut indicate</translation>
@@ -2122,15 +2159,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Când politica nu este activată, Chrome va închide fila după ce comută la un browser secundar, chiar dacă era ultima filă. Astfel, Chrome se va închide complet.</translation>
 <translation id="5105313908130842249">Interval până la blocarea ecranului la funcționarea pe baterie</translation>
 <translation id="5108031557082757679">Imprimantele dezactivate asociate dispozitivelor companiei</translation>
-<translation id="5113732180192599620">Această politică controlează lista site-urilor care nu declanșează niciodată comutarea browserului.
-
-      Reține că pot fi adăugate elemente pe listă folosind și politicile <ph name="USE_IE_SITELIST_POLICY_NAME" /> și <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />.
-
-      Când această politică nu este configurată, nu sunt adăugate site-uri pe listă.
-
-      Când această politică este activată, fiecare element este considerat o regulă, similar cu politica <ph name="URL_LIST_POLICY_NAME" />. Cu toate acestea, logica este inversată: regulile care se potrivesc nu vor deschide un browser secundar.
-
-      Spre deosebire de politica <ph name="URL_LIST_POLICY_NAME" />, regulile se aplică în ambele direcții: când suplimentul Internet Explorer este prezent și este activat, stabilește și dacă <ph name="IE_PRODUCT_NAME" /> trebuie să deschidă aceste adrese URL în <ph name="PRODUCT_NAME" />.</translation>
 <translation id="5124368997194894978">Activează pornirea pe c.a. (curent alternativ)</translation>
 <translation id="5131211790949066746">Activează îmbinarea politicilor din listă privind extensiile instalate: <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" /> și <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />.
 
@@ -2397,6 +2425,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
       Dacă nu este specificată, politica nu va modifica adresa URL a valorii de bază pentru variante.</translation>
 <translation id="5561811616825571914">Selectează automat certificatele de client pentru aceste site-uri pe ecranul de conectare</translation>
+<translation id="5565178130821694365">Introducerea parolei este necesară o dată la două zile (48 de ore).</translation>
 <translation id="5566210228171064229">Permite printarea cu și fără PIN</translation>
 <translation id="556865034069957245">Politica controlează disponibilitatea modului ecran complet, în care interfața de utilizare a <ph name="PRODUCT_NAME" /> este ascunsă în întregime și este vizibil numai conținutul web.
 
@@ -2503,7 +2532,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="5711016543513883877">
       Dacă politica este activată, fiecare dintre originile denumite într-o
       listă de valori separate prin virgulă va rula propriul proces. Aceasta va izola și
-      originele numite de subdomenii; de exemplu, dacă specifici https://example.com/, va fi
+      originile numite de subdomenii; de exemplu, dacă specifici https://example.com/, va fi
       izolat și https://foo.example.com/ ca parte a
       site-ului https://example.com/.
       Dacă politica nu este configurată sau este dezactivată, utilizatorul va putea să modifice această setare.
@@ -3413,7 +3442,7 @@ nu poate fi stabilit de utilizator din setările browserului.
 
           Dacă politica este activată, lista conturilor definite de politică este adăugată la setările conturilor Kerberos.
 
-          Dacă politica este dezactivată sau nu este setată, niciun cont nu este adăugat la setările conturilor Kerberos, și toate conturile adăugate anterior cu această politică sunt eliminate. Utilizatorii pot încă să adauge conturi manual dacă politica „Utilizatorii pot adăuga conturi Kerberos” este activată.</translation>
+          Dacă politica este dezactivată sau nu este setată, niciun cont nu este adăugat la setările conturilor Kerberos și toate conturile adăugate anterior cu această politică sunt eliminate. Utilizatorii pot încă să adauge conturi manual dacă politica „Utilizatorii pot adăuga conturi Kerberos” este activată.</translation>
 <translation id="7458437477941640506">Nu reveni la versiunea țintă dacă versiunea SO este mai nouă decât ținta. Actualizările sunt, de asemenea, dezactivate.</translation>
 <translation id="7464991223784276288">Limitează cookie-urile de la adresele URL corespunzătoare la sesiunea curentă</translation>
 <translation id="7469554574977894907">Activează sugestiile de căutare</translation>
@@ -3585,7 +3614,7 @@ nu poate fi stabilit de utilizator din setările browserului.
       Dacă politica nu este configurată, HTTP/0.9 se va dezactiva pentru porturile care nu sunt prestabilite.</translation>
 <translation id="7726421241038987229">
       Această setare, SitePerProcess, poate fi folosită pentru a nu permite utilizatorilor să renunțe la comportamentul prestabilit de a izola toate site-urile. Reține că politica IsolateOrigins poate fi utilă și pentru a izola origini suplimentare, mai exacte.
-      Dacă politica este activată, utilizatorii nu vor putea să renunța la comportamentul prestabilit, în care fiecare site rulează procesul propriu.
+      Dacă politica este activată, utilizatorii nu vor putea să renunțe la comportamentul prestabilit, în care fiecare site rulează procesul propriu.
       Dacă politica nu este configurată sau este dezactivată, utilizatorul va putea să renunțe la izolarea site-ului
       (de exemplu, să folosească intrarea „Dezactivează izolarea site-ului” în in chrome://flags).  Dacă dezactivezi și/sau nu configurezi politica, izolarea site-ului nu va fi dezactivată.
       În <ph name="PRODUCT_OS_NAME" />, se recomandă să setezi și politica privind dispozitivele <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> la aceeași valoare. Dacă valorile specificate de cele două politici nu se potrivesc, poate avea loc o întârziere când intri într-o sesiune de utilizator în timp ce se aplică valoarea specificată de politica privind utilizatorii.

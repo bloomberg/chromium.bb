@@ -112,6 +112,7 @@
 <translation id="2597972630681408282">የሌሊት ብርሃን፦ <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">ሲም ካርድ ተዘግቷል</translation>
 <translation id="2653659639078652383">አስገባ</translation>
+<translation id="2658778018866295321">ጠቅ ያድርጉ እና ይጎትቱ</translation>
 <translation id="2700493154570097719">የእርስዎን ቁልፍ ሰሌዳ ያቀናብሩ</translation>
 <translation id="2718395828230677721">የምሽት ብርሃን</translation>
 <translation id="2727977024730340865">አነስተኛ ኃይል ወዳለው ባትሪ መሙያ ተሰክቷል። የባትሪ መሙላት አስተማማኝ ላይሆን ይችላል።</translation>
@@ -227,6 +228,7 @@
 <translation id="4378551569595875038">በመገናኘት ላይ...</translation>
 <translation id="4379531060876907730">እነዚህ የእርስዎ የስታይለስ መሣሪያዎች ናቸው</translation>
 <translation id="4389184120735010762">የተተከለ የማጉያ የቁልፍ ሰሌዳ አቋራጩን ተጭነዋል። ሊያበሩት ይፈልጋሉ?</translation>
+<translation id="4394049700291259645">አሰናክል</translation>
 <translation id="4421231901400348175">የማያ ገጽዎን ቁጥጥር በርቀት እርዳታ በኩል ለ<ph name="HELPER_NAME" /> በማጋራት ላይ።</translation>
 <translation id="4430019312045809116">ድምፅ</translation>
 <translation id="4450893287417543264">ዳግም አታሳይ</translation>
@@ -246,7 +248,6 @@
 <translation id="4696813013609194136">በወላጅ ኮድ መሣሪያን ክፈት</translation>
 <translation id="4731797938093519117">የወላጅ መዳረሻ</translation>
 <translation id="4734965478015604180">አግድማዊ</translation>
-<translation id="476166673298332917">የዚህ መሣሪያ አስተዳዳሪ የይለፍ ቃላት እና ግንኙነትን ጨምሮ የሁሉንም እንቅስቃሴ መዳረሻ አለው።</translation>
 <translation id="4774338217796918551">ነገ <ph name="COME_BACK_TIME" /> ላይ ተመልሰው ይምጡ።</translation>
 <translation id="4776917500594043016">የ<ph name="USER_EMAIL_ADDRESS" /> ይለፍ ቃል</translation>
 <translation id="4778095205580009397">የGoogle ረዳቱ በማሳያ ክፍለ-ጊዜ ውስጥ አይገኝም።</translation>
@@ -354,7 +355,6 @@
 <translation id="6537270692134705506">ማያ ገጽን አንሳ</translation>
 <translation id="6542521951477560771">ወደ <ph name="RECEIVER_NAME" /> cast በማድረግ ላይ</translation>
 <translation id="6559976592393364813">አስተዳዳሪን ይጠይቁ</translation>
-<translation id="6574601967010742428">የመሣሪያው አስተዳዳሪ የእርስዎን እንቅስቃሴ ሊከታተል ይችላል።</translation>
 <translation id="6585808820553845416">ክፍለ-ጊዜ በ<ph name="SESSION_TIME_REMAINING" /> ውስጥ ያበቃል።</translation>
 <translation id="6627638273713273709">Search+Shift+K</translation>
 <translation id="6650933572246256093">የብሉቱዝ መሣሪያ «<ph name="DEVICE_NAME" />» ለመጣመር ፍቃድ ይፈልጋል። እባክዎ ይህን የይለፍ ቁልፍ በዚህ መሣሪያ ላይ ያስገቡ፦ <ph name="PASSKEY" /></translation>

@@ -112,6 +112,7 @@
 <translation id="2597972630681408282">Luminosità notturna: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">La scheda SIM è bloccata</translation>
 <translation id="2653659639078652383">Invia</translation>
+<translation id="2658778018866295321">Fai clic e trascina</translation>
 <translation id="2700493154570097719">Imposta la tastiera</translation>
 <translation id="2718395828230677721">Luminosità notturna</translation>
 <translation id="2727977024730340865">Collegato a un caricabatterie a basso consumo. La carica della batteria potrebbe non essere affidabile.</translation>
@@ -228,6 +229,7 @@
 <translation id="4378551569595875038">Connessione...</translation>
 <translation id="4379531060876907730">Ecco gli strumenti per il tuo stilo</translation>
 <translation id="4389184120735010762">Hai premuto la scorciatoia da tastiera per la lente d'ingrandimento ancorata. Vuoi attivarla?</translation>
+<translation id="4394049700291259645">Disabilita</translation>
 <translation id="4421231901400348175">Condividi il controllo dello schermo con <ph name="HELPER_NAME" /> tramite Assistenza remota.</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="4450893287417543264">Non mostrare più</translation>
@@ -247,7 +249,6 @@
 <translation id="4696813013609194136">Sblocca con codice genitore</translation>
 <translation id="4731797938093519117">Accesso genitore</translation>
 <translation id="4734965478015604180">Orizzontale</translation>
-<translation id="476166673298332917">L'amministratore del dispositivo può controllare l'attività di navigazione.</translation>
 <translation id="4774338217796918551">Puoi riprendere domani alle ore <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Password per <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">L'Assistente Google non è disponibile in una sessione demo.</translation>
@@ -355,7 +356,6 @@
 <translation id="6537270692134705506">Acquisisci schermata</translation>
 <translation id="6542521951477560771">Trasmissione di contenuti a <ph name="RECEIVER_NAME" /> in corso</translation>
 <translation id="6559976592393364813">Rivolgiti all'amministratore</translation>
-<translation id="6574601967010742428">L'amministratore del dispositivo potrebbe essere in grado di monitorare le tue attività.</translation>
 <translation id="6585808820553845416">La sessione terminerà tra <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Tasto per la ricerca + MAIUSC + K</translation>
 <translation id="6650933572246256093">Il dispositivo Bluetooth "<ph name="DEVICE_NAME" />" chiede l'autorizzazione per essere accoppiato. Inserisci questa passkey sul dispositivo: <ph name="PASSKEY" /></translation>

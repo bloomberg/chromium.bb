@@ -74,13 +74,11 @@
 <translation id="1952728750904661634">Prijavite se upravljanim računom</translation>
 <translation id="1974060860693918893">Napredno</translation>
 <translation id="1989112275319619282">Pregledaj</translation>
-<translation id="2000419248597011803">Zadanoj tražilici šalje neke kolačiće i pretraživanja iz adresne trake i okvira za pretraživanje</translation>
 <translation id="2015722694326466240">Da biste vidjeli zaporke, najprije morate postaviti šifru zaporke na uređaju.</translation>
 <translation id="2068952045031577364">Od proteklog tjedna</translation>
 <translation id="2074131957428911366">Uvijek možete odabrati u <ph name="BEGIN_LINK" />postavkama<ph name="END_LINK" /> što će se sinkronizirati.</translation>
 <translation id="2079545284768500474">Poništi</translation>
 <translation id="209018056901015185">Prikaži klasičnu stranicu</translation>
-<translation id="2096012225669085171">Sinkronizacija i prilagodba na svim uređajima</translation>
 <translation id="2103075008456228677">Otvori history.google.com</translation>
 <translation id="2116625576999540962">Broj premještenih stavki: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="213900355088104901">Da biste pregledavali privatno, otvorite anonimnu karticu</translation>
@@ -107,7 +105,6 @@
 <translation id="2435457462613246316">Pokaži zaporku</translation>
 <translation id="2481538920734869610">DODAJ RAČUN</translation>
 <translation id="2497852260688568942">Administrator je onemogućio sinkronizaciju</translation>
-<translation id="2523184218357549926">Šalje Googleu URL-ove stranica koje posjećujete</translation>
 <translation id="2523363575747517183">Ova web-lokacija opetovano pokušava otvoriti neku drugu aplikaciju.</translation>
 <translation id="2529021024822217800">Otvori sve</translation>
 <translation id="2572712655377361602">Pravila za uređaje blokirala su pristup fotografijama</translation>
@@ -137,6 +134,7 @@
 <translation id="2871695793448672541">Sakriveno, zaporka</translation>
 <translation id="288655811176831528">Zatvori karticu</translation>
 <translation id="2898963176829412617">Nova mapa…</translation>
+<translation id="2916171785467530738">Samodovršavanje pretraživanja i URL-ova</translation>
 <translation id="291754862089661335">Postavite QR ili crtični kôd u ovaj okvir</translation>
 <translation id="2921219216347069551">Nije moguće dijeliti stranicu</translation>
 <translation id="2923448633003185837">Zalijepi i idi</translation>
@@ -306,7 +304,6 @@ Handoff mora biti omogućen i u odjeljku Općenito u Postavkama, a vaši uređaj
 <translation id="5857090052475505287">Nova mapa</translation>
 <translation id="5857770089550859117">Za pokretanje sinkronizacije potrebna je zaporka.</translation>
 <translation id="5860033963881614850">Isključeno</translation>
-<translation id="5865733239029070421">Automatski šalje Googleu statistiku upotrebe i izvješća o rušenju</translation>
 <translation id="5869029295770560994">U redu, shvaćam</translation>
 <translation id="5871497086027727873">Premještena je 1 stavka</translation>
 <translation id="5897956970858271241">Otvori kopiranu vezu</translation>
@@ -412,7 +409,6 @@ Vaši su podaci šifrirani vašom šifrom za sinkronizaciju <ph name="TIME" />. 
 <translation id="722055596168483966">Prilagođavanje Googleovih usluga</translation>
 <translation id="7265758999917665941">Nikad za ovu web lokaciju</translation>
 <translation id="7272437679830969316">Potvrda identiteta nije moguća. Zaporka nije kopirana.</translation>
-<translation id="7280856130494094142">Unesite šifru za pokretanje sinkronizacije</translation>
 <translation id="7285236536143823449">DA, U REDU</translation>
 <translation id="7291368939935408496">Priprema zaporki...</translation>
 <translation id="7293171162284876153">Da biste pokrenuli sinkronizaciju, uključite "Sinkroniziraj podatke iz Chromea".</translation>
@@ -434,12 +430,10 @@ Vaši su podaci šifrirani vašom šifrom za sinkronizaciju <ph name="TIME" />. 
 <translation id="7554791636758816595">Nova kartica</translation>
 <translation id="7561196759112975576">Uvijek</translation>
 <translation id="7603852183842204213">Blokirani skočni (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
-<translation id="7605594153474022051">Sinkronizacija ne radi</translation>
 <translation id="7638584964844754484">Pogrešna zaporka</translation>
 <translation id="7658239707568436148">Odustani</translation>
 <translation id="766891008101699113">Da biste privatno pregledavali web, dodajte novu karticu.</translation>
 <translation id="7671141431838911305">INSTALIRANJE</translation>
-<translation id="7704317875155739195">Samodovršavanje pretraživanja i URL-ova</translation>
 <translation id="7765158879357617694">Pomakni</translation>
 <translation id="7769602470925380267">Prihvati i odjavi se</translation>
 <translation id="7772032839648071052">Potvrdi zaporku</translation>
@@ -477,7 +471,6 @@ Vaši su podaci šifrirani vašom šifrom za sinkronizaciju <ph name="TIME" />. 
 <translation id="842017693807136194">Prijavljeni ste na uslugu</translation>
 <translation id="8428045167754449968">Grad/mjesto</translation>
 <translation id="8428213095426709021">Postavke</translation>
-<translation id="8438566539970814960">Poboljšajte pretraživanje i pregledavanje</translation>
 <translation id="8458397775385147834">Izbrisana je 1 stavka</translation>
 <translation id="8487700953926739672">Dostupno izvanmrežno</translation>
 <translation id="8503813439785031346">Korisničko ime</translation>

@@ -229,6 +229,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="4378551569595875038">Ühendamine ...</translation>
 <translation id="4379531060876907730">Need on teie elektronpliiatsi tööriistad</translation>
 <translation id="4389184120735010762">Vajutasite dokitud luubi otseteed. Kas soovite luubi sisse lülitada?</translation>
+<translation id="4394049700291259645">Keela</translation>
 <translation id="4421231901400348175">Ekraani juhtimise jagamine isikuga <ph name="HELPER_NAME" /> kaugabi kaudu.</translation>
 <translation id="4430019312045809116">Helitugevus</translation>
 <translation id="4450893287417543264">Ära kuva uuesti</translation>
@@ -248,7 +249,6 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="4696813013609194136">Avage seade lapsevanema koodiga</translation>
 <translation id="4731797938093519117">Vanema juurdepääs</translation>
 <translation id="4734965478015604180">Horisontaalne</translation>
-<translation id="476166673298332917">Seadme administraator võib jälgida teie sirvimistegevust.</translation>
 <translation id="4774338217796918551">Tulge tagasi homme kell <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Kasutaja <ph name="USER_EMAIL_ADDRESS" /> parool</translation>
 <translation id="4778095205580009397">Google'i assistent ei ole demoseansi puhul saadaval.</translation>
@@ -356,7 +356,6 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="6537270692134705506">Jäädvusta ekraanikuva</translation>
 <translation id="6542521951477560771">Ülekandmine seadmesse <ph name="RECEIVER_NAME" /></translation>
 <translation id="6559976592393364813">Küsige administraatorilt</translation>
-<translation id="6574601967010742428">Seadme haldur võib saada teie tegevust jälgida.</translation>
 <translation id="6585808820553845416">Seansi lõpuni on jäänud <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Otsing + Tõstuklahv + K</translation>
 <translation id="6650933572246256093">Bluetoothi seade „<ph name="DEVICE_NAME" />” küsib luba sidumiseks. Sisestage seadmesse see parool: <ph name="PASSKEY" /></translation>

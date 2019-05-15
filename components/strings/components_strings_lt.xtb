@@ -476,6 +476,7 @@
 <translation id="3495081129428749620">Rasti puslapyje
     „<ph name="PAGE_TITLE" />“</translation>
 <translation id="3498215018399854026">Šiuo metu nepavyko susisiekti su jūsų tėvu. Bandykite dar kartą.</translation>
+<translation id="3512163584740124171">Šios politikos nepaisoma, nes kitos politikos toje pačioje politikos grupėje prioritetas yra didesnis.</translation>
 <translation id="3528171143076753409">Serverio sertifikatas nepatikimas.</translation>
 <translation id="3528485271872257980">Tamsiai ruda</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Mažiausiai 1 elementas sinchronizuotuose įrenginiuose}=1{1 elementas (ir daugiau sinchronizuotuose įrenginiuose)}one{# elementas (ir daugiau sinchronizuotuose įrenginiuose)}few{# elementai (ir daugiau sinchronizuotuose įrenginiuose)}many{# elemento (ir daugiau sinchronizuotuose įrenginiuose)}other{# elementų (ir daugiau sinchronizuotuose įrenginiuose)}}</translation>
@@ -1089,7 +1090,6 @@
 <translation id="7062635574500127092">Žalsvai mėlyna</translation>
 <translation id="7064851114919012435">Kontaktinė informacija</translation>
 <translation id="7079718277001814089">Šioje svetainėje yra kenkėjiškų programų</translation>
-<translation id="7081564429925484109">Įspėjimas: ši politika nebuvo sujungta, kaip nurodyta politikoje „PolicyListMultipleSourceMergeList“, nes ji nėra įrašas.</translation>
 <translation id="7087282848513945231">Apskritis</translation>
 <translation id="7090678807593890770">Sistemoje „Google“ atlikite paiešką pagal užklausą „<ph name="LINK" />“</translation>
 <translation id="7108338896283013870">Slėpti</translation>
@@ -1149,7 +1149,6 @@ Papildoma išsami informacija:
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">Ne</translation>
 <translation id="7378810950367401542">/</translation>
-<translation id="7381288752349550461">Valdomos sesijos nepaisymas</translation>
 <translation id="7390545607259442187">Kortelės patvirtinimas</translation>
 <translation id="7400418766976504921">URL adresas</translation>
 <translation id="7403591733719184120">Jūsų „<ph name="DEVICE_NAME" />“ tvarkomas</translation>

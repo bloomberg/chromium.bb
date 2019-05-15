@@ -120,9 +120,7 @@
 <translation id="4987820182225656817">以訪客身分使用 Chromium 不會留下任何記錄。</translation>
 <translation id="4994636714258228724">新增為 Chromium 使用者</translation>
 <translation id="5021854341188256296">{0,plural, =0{有可用的 Chromium 作業系統更新}=1{有可用的 Chromium 作業系統更新}other{Chromium 作業系統更新已發佈 # 天}}</translation>
-<translation id="5032989939245619637">在 Chromium 中儲存詳細資料</translation>
 <translation id="5045248521775609809">隨時隨地都能使用 Chromium</translation>
-<translation id="5116586539350239523">Chromium 會妥善保存您的個人詳細資料，讓您不必重複輸入相同的資料。</translation>
 <translation id="5181952534059945058">這個網頁佔用了太多記憶體空間，因此 Chromium 移除了部分內容。</translation>
 <translation id="5277894862589591112">如要套用變更，請重新啟動 Chromium</translation>
 <translation id="5358375970380395591">你已登入管理化環境下的帳戶，並將管理控制權授予你的 Chromium 設定檔。你的 Chromium 資料 (例如應用程式、書籤、記錄、密碼和其他設定) 均將永久與 <ph name="USER_NAME" /> 建立關聯。你可以透過 Google 帳戶資訊主頁刪除這些資料，但你無法將這些資料與其他帳戶建立關聯。<ph name="LEARN_MORE" /></translation>

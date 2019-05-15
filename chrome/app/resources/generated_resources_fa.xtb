@@ -226,6 +226,7 @@
 <translation id="1338950911836659113">در حال حذف...</translation>
 <translation id="1340527397989195812">‏با استفاده از برنامه Files از رسانه‌ دستگاه پشتیبان بگیرید.</translation>
 <translation id="1341988552785875222">کاغذدیواری کنونی توسط «<ph name="APP_NAME" />» تنظیم شده است. ممکن است لازم باشد قبل از انتخاب کاغذدیواری دیگری، «<ph name="APP_NAME" />» را حذف نصب کنید.</translation>
+<translation id="1343865611738742294">‏ارائه مجوز به برنامه‌های Linux برای دسترسی به دستگاه‌های USB. Linux بعد از برداشتن دستگاه USB، آن را به خاطر نمی‌سپارد.</translation>
 <translation id="1347256498747320987">‏نصب به‌روزرسانی‌ها و برنامه‌ها. با ادامه دادن، موافقت می‌کنید که این دستگاه نیز بتواند به‌طور خودکار به‌روزرسانی‌ها و برنامه‌ها را از Google، شرکت مخابراتی و سازنده دستگاه (احتمالاً با استفاده از داده شبکه تلفن همراه) بارگیری و نصب کند. بعضی از این برنامه‌ها ممکن است خریدهای درون‌برنامه پیشنهاد دهند. <ph name="BEGIN_LINK1" />بیشتر بدانید<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">وقتی شارژ باتری به <ph name="BATTERY_LEVEL" />% رسید، به‌روزرسانی شروع خواهد شد.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
@@ -704,6 +705,7 @@
 <translation id="2120297377148151361">فعالیت و تعاملات</translation>
 <translation id="2120478168904746065">{NUM_TABS,plural, =1{باصدا کردن برگه}one{باصدا کردن برگه‌ها}other{باصدا کردن برگه‌ها}}</translation>
 <translation id="2121825465123208577">تغییر اندازه</translation>
+<translation id="2122305276694332719">اتصال خودکار به شبکه‌ای پنهان به دیگران امکان می‌دهد دستگاه و برخی تنظیمات شبکه‌تان را ببینند، و توصیه نمی‌شود.</translation>
 <translation id="2124930039827422115">{1,plural, =1{یک کاربر رتبه <ph name="AVERAGE_RATING" /> داده است.}one{‏#‏ کاربر رتبه <ph name="AVERAGE_RATING" /> را داده‌اند.}other{‏#‏ کاربر رتبه <ph name="AVERAGE_RATING" /> را داده‌اند.}}</translation>
 <translation id="2126167708562367080">همگام‌سازی توسط سرپرست شما غیرفعال شده است.</translation>
 <translation id="2127372758936585790">شارژر برق ضعیف</translation>
@@ -1299,6 +1301,7 @@
 <translation id="3012917896646559015">لطفاً برای ارسال رایانه خود به مرکز تعمیر، فوراً با سازنده سخت‌افزار خود تماس بگیرید.</translation>
 <translation id="3013291976881901233">‏دستگاه‌های MIDI</translation>
 <translation id="3015639418649705390">اکنون راه‌اندازی مجدد شود</translation>
+<translation id="3016329696181678353"><ph name="PRINTER_NAME" /> به‌طور خودکار پیکربندی نشد. لطفاً جزئیات پیشرفته چاپگر را مشخص کنید.</translation>
 <translation id="3016641847947582299">مؤلفه به‌روز شد</translation>
 <translation id="3016780570757425217">مکان‌تان را بدانید</translation>
 <translation id="3020183492814296499">میان‌برها</translation>
@@ -1801,7 +1804,6 @@
 <translation id="3789841737615482174">نصب</translation>
 <translation id="379082410132524484">کارتتان منقضی شده است</translation>
 <translation id="3792890930871100565">قطع ارتباط چاپگرها</translation>
-<translation id="3792938779249970121">انتخاب حساب</translation>
 <translation id="3796648294839530037">شبکه‌های دلخواه:</translation>
 <translation id="3797739167230984533">سازمانتان <ph name="BEGIN_LINK" /><ph name="DEVICE_TYPE" /> را مدیریت می‌کند<ph name="END_LINK" /></translation>
 <translation id="3797900183766075808">‏(&amp;S) جستجوی <ph name="SEARCH_ENGINE" /> برای «<ph name="SEARCH_TERMS" />»</translation>
@@ -2110,6 +2112,7 @@
 <translation id="4268025649754414643">به رمز درآوردن کلید</translation>
 <translation id="4270393598798225102">نسخه <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">مورد منطبقی وجود ندارد</translation>
+<translation id="4275663329226226506">رسانه</translation>
 <translation id="4275830172053184480">راه‌اندازی دستگاه خود</translation>
 <translation id="4278101229438943600">«دستیار» آماده است</translation>
 <translation id="4278390842282768270">مجاز است</translation>
@@ -2152,7 +2155,6 @@
 <translation id="4354344420232759511">سایت‌هایی که بازدید می‌کنید اینجا نشان داده می‌شود</translation>
 <translation id="435527878592612277">انتخاب عکس</translation>
 <translation id="4356334633973342967">یا درایور خود را مشخص کنید</translation>
-<translation id="4358169392473932247">این کلید امنیتی فضای ذخیره‌سازی داخلی مربوط به اطلاعات کاربری را پشتیبانی نمی‌کند، اما این ویژگی درخواست شده است.</translation>
 <translation id="4359408040881008151">به دلیل برنامه(های) افزودنی وابسته نصب شد.</translation>
 <translation id="4359717112757026264">نمای شهر</translation>
 <translation id="4361142739114356624">کلید خصوصی برای این گواهی کارخواه موجود نیست یا نامعتبر است</translation>
@@ -2335,7 +2337,6 @@
 <translation id="4665014895760275686">سازنده</translation>
 <translation id="4665446389743427678">همه داده‌های ذخیره‌شده توسط <ph name="SITE" /> حذف خواهد شد.</translation>
 <translation id="4668721319092543482">برای فعال کردن <ph name="PLUGIN_NAME" /> کلیک کنید</translation>
-<translation id="4670688170798478686">تأیید بازنشانی</translation>
 <translation id="4672657274720418656">صفحه فشرده</translation>
 <translation id="4673442866648850031">وقتی قلم برداشته می‌شود، ابزار قلم باز می‌شود</translation>
 <translation id="4677585247300749148"><ph name="URL" /> می‌خواهد به رویدادهای مربوط به دسترس‌پذیری پاسخ دهد</translation>
@@ -2365,7 +2366,6 @@
 <translation id="4711638718396952945">بازیابی تنظیمات</translation>
 <translation id="4715553623069266137">خیلی کوتاه (۰٫۸ ثانیه)</translation>
 <translation id="4716483597559580346">‏Powerwash برای امنیت بیشتر</translation>
-<translation id="4718490098585891067">برای ورود به سیستم، حسابی را انتخاب کنید:</translation>
 <translation id="4720113199587244118">افزودن دستگاه‌ها</translation>
 <translation id="4720185134442950733">شبکه داده تلفن همراه</translation>
 <translation id="4722735765955348426">گذرواژه <ph name="USERNAME" /></translation>
@@ -2396,7 +2396,6 @@
 <translation id="4756388243121344051">&amp;سابقه</translation>
 <translation id="4759238208242260848">بارگیری‌ها</translation>
 <translation id="4761104368405085019">استفاده از میکروفون خود</translation>
-<translation id="476166673298332917">سرپرست دستگاه ممکن است فعالیت مرور شما را پایش کند.</translation>
 <translation id="4762718786438001384">فضای دیسک دستگاه بسیار کم است</translation>
 <translation id="4763408175235639573">وقتی این صفحه را مشاهده کردید، کوکی‌های زیر تنظیم شدند</translation>
 <translation id="4763830802490665879">کوکی‌های سایت‌های مختلف در هنگام خروج پاک خواهند شد.</translation>
@@ -3925,7 +3924,6 @@
 <translation id="713888829801648570">متأسفیم، گذرواژه‌تان قابل تأیید نیست، زیرا آفلاین هستید.</translation>
 <translation id="7140928199327930795">هیچ دستگاه دیگری در دسترس نیست.</translation>
 <translation id="7141105143012495934">به دلیل اینکه جزئيات حساب شما بازیابی نشد، ورود به سیستم ناموفق بود. لطفاً با سرپرستتان تماس بگیرید یا دوباره امتحان کنید.</translation>
-<translation id="714285394257538643">برای تأیید اینکه می‌خواهید کلید امنیتی‌تان را بازنشانی کنید، دوباره آن را لمس کنید. همه اطلاعات کاربری ذخیره‌شده در کلید امنیتی و پین آن پاک‌سازی خواهد شد.</translation>
 <translation id="7143092389027215216">درحال شروع حالت نمایشی</translation>
 <translation id="7143207342074048698">در حال اتصال</translation>
 <translation id="7144878232160441200">سعی مجدد</translation>
@@ -4159,6 +4157,7 @@
 <translation id="7506541170099744506"><ph name="DEVICE_TYPE" /> شما باموفقیت برای مدیریت شرکت ثبت شد.</translation>
 <translation id="7507930499305566459">گواهی وضعیت پاسخگو</translation>
 <translation id="7513029293694390567">با استفاده از اعتبارنامه‌های ذخیره‌شده، به‌طور خودکار به سیستم وب‌سایت‌ها وارد شوید. اگر این قابلیت غیرفعال باشد، هر بار قبل از وارد شدن به وب‌سایت از شما برای تأیید اطلاعات درخواست می‌شود.</translation>
+<translation id="7514365320538308">بارگیری</translation>
 <translation id="7517786267097410259">ایجاد گذرواژه -</translation>
 <translation id="7521387064766892559">جاوا اسکریپت</translation>
 <translation id="7522255036471229694">‏بگویید «Ok Google»</translation>
@@ -4499,6 +4498,7 @@
 فایل کلید خود را در جای امن نگه دارید. برای ایجاد نسخه‌های جدید برنامهٔ افزودنی خود به آن نیاز دارید.</translation>
 <translation id="8000066093800657092">بدون شبکه</translation>
 <translation id="8000467600002607205">{NUM_TABS,plural, =1{بستن برگه}one{بستن برگه‌ها}other{بستن برگه‌ها}}</translation>
+<translation id="8002274832045662704">پیکربندی پیشرفته چاپگر</translation>
 <translation id="8004582292198964060">مرورگر</translation>
 <translation id="8005600846065423578"><ph name="HOST" /> همیشه مجاز باشد به بریده‌دان دسترسی پیدا کند</translation>
 <translation id="8008356846765065031">اینترنت قطع است. لطفاً اتصال اینترنتتان را بررسی کنید.</translation>
@@ -5039,6 +5039,7 @@
 <translation id="8850251000316748990">دیدن موارد بیشتر...</translation>
 <translation id="885246833287407341">‏متغیرهای مستقل عملکرد API</translation>
 <translation id="8853586775156634952">این کارت فقط در این دستگاه ذخیره خواهد شد</translation>
+<translation id="885701979325669005">فضای ذخیره‌سازی</translation>
 <translation id="8859057652521303089">انتخاب زبان:</translation>
 <translation id="8859174528519900719">قاب فرعی: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8862003515646449717">به مرورگر سریعی جابه‌جا شوید</translation>

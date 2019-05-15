@@ -131,6 +131,15 @@
       Ikiwa sera hii itawekwa kuwa uongo, hali ya ubadilishaji wa dev haitaripotiwa.</translation>
 <translation id="1160479894929412407">Ruhusu itifaki ya QUIC</translation>
 <translation id="1160939557934457296">Lemaza kuendelea kutoka kwenye ukurasa wa ilani ya Kuvinjari Salama</translation>
+<translation id="1171342272070128466">Washa kipengele cha walio na matatizo ya kuona na kusikia cha kikuzaji kilichoambatishwa.
+
+          Sera hii ikiwekwa kuwa 'ndivyo', kikuzaji kilichoambatishwa kitabaki kikiwa kimewaka kila wakati.
+
+          Sera hii ikiwekwa kuwa 'sivyo', kikuzaji kilichoambatishwa kitabaki kikiwa kimezima kila wakati.
+
+          Ukiweka sera hii, watumiaji hawawezi kuibadilisha au kuibatilisha.
+
+          Ikiwa sera hii haijawekwa, kikuzaji kilichoambatishwa kinazima mwanzoni lakini kinaweza kuwashwa na mtumiaji wakati wowote.</translation>
 <translation id="1189817621108632689">Inakuruhusu kuweka orodha ya ruwaza za url zinazobainisha tovuti zisizoruhusiwa kuonyesha picha.
          Ikiwa sera hii itaachwa bila kuwekwa, thamani chaguomsingi itatumiwa kwa tovuti zote kutoka kwenye sera ya 'DefaultImagesSetting' endapo itawekwa, au mtumiaji akiweka mipangilio mwenyewe.
 Kumbuka kuwa hapo awali sera hii iliwashwa kimakosa kwenye Android, lakini kipengele hiki hakijawahi kutumika kikamilifu kwenye Android.</translation>
@@ -435,6 +444,7 @@ SafeBrowsingExtendedReportingEnabled. Kisha, Kipengele cha Kusafisha Chrome kita
       Sera ikiwashwa, watumiaji wataweza kujiondoa kwenye utendaji chaguomsingi ambapo kila tovuti hutumia mchakato wake wenyewe.
       Usipoweka mipangilio ya sera hii au ukiizima, mtumiaji ataweza kubadilisha mipangilio hii (kwa mfano kwa kutumia maelezo ya "Zima utengaji wa tovuti" katika chrome://flags).
       </translation>
+<translation id="1767673020408652620">Washa sera ya Mapendekezo ya Programu katika Hali Ombwe ya Kisanduku cha Kutafutia</translation>
 <translation id="1781356041596378058">Sera hii pia inadhibiti idhini ya kufikia Chaguo za Wasanidi Programu wa Android. Ukiweka sera hii kuwa ndivyo, watumiaji hawataweza kufikia Chaguo za Wasanidi Programu. Ukiweka sera hii kuwa sivyo au uiache bila kuiweka, watumiaji wataweza kufikia Chaguo za Wasanidi Programu kwa kugonga mara saba kwenye nambari ya muundo katika programu ya mipangilio ya Android.</translation>
 <translation id="1793346220873697538">Zima uchapishaji kwa kutumia PIN kwa chaguomsingi</translation>
 <translation id="1797233582739332495">Mwonyeshe mtumiaji kidokezo kinachojirudia, kinachoashiria kwamba anatakiwa afungue kivinjari upya</translation>
@@ -964,6 +974,15 @@ Kwa matukio ya Windows ambayo hayajaunganishwa kwenye kikoa cha <ph name="MS_AD_
 
       Kila ingizo la orodha hubainisha kitambulishi, kinachotumiwa ndani kutambua akaunti tofauti za kifaa cha karibu nawe zilizo mbali.</translation>
 <translation id="2769952903507981510">Sanidi jina la kikoa linalohitajika kwa wapangishaji wa ufikivu wa mbali</translation>
+<translation id="2783078941107212091">Washa sera ya Mapendekezo ya Programu katika Hali Ombwe ya kisanduku cha kutafutia kwenye kifungua programu.
+
+          Sera hii ikiwekwa kuwa 'ndivyo', huenda Mapendekezo ya Programu yakaonekana katika utafutaji wa hali ombwe.
+
+          Sera hii ikiwekwa kuwa 'sivyo', Mapendekezo ya Programu hayataonekana katika utafutaji wa hali ombwe.
+
+          Ukiweka sera hii, watumiaji hawawezi kuibadilisha au kuibatilisha.
+
+          Sera hii isipowekwa, hali chaguomsingi itakuwa 'Sivyo' kwenye vifaa vinavyodhibitiwa.</translation>
 <translation id="2787173078141616821">Ripoti maelezo kuhusu hali ya Android</translation>
 <translation id="2799297758492717491">Ruhusu maudhui yacheze kiotomatiki kwenye orodha ya ruwaza za URL zilizoidhinishwa</translation>
 <translation id="2801155097555584385">Weka mapendeleo ya muda wa kuanza kuchaji betri katika asilimia</translation>
@@ -1160,6 +1179,24 @@ Kwa matukio ya Windows ambayo hayajaunganishwa kwenye kikoa cha <ph name="MS_AD_
       Sera hii ikiwekwa kuwa sivyo, uboreshaji wa WPAD utazimwa na kusababisha <ph name="PRODUCT_NAME" /> kusubiri muda mrefu zaidi kwa seva za WPAD zinazotegemea DNS. Sera hii isipowekwa au ikiwashwa, uboreshaji wa WPAD utawashwa.
 
       Kwa kutotogemea ikiwa au jinsi sera hii inavyowekwa, mipangilio ya uboreshaji wa WPAD haiwezi kubadilishwa na watumiaji.</translation>
+<translation id="3071839057966069710">Huweka mipangilio ya orodha ya printa.
+
+      Sera hii huruhusu wasimamizi kuweka mipangilio ya printa kwa ajili ya watumiaji wake.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> na <ph name="PRINTER_DESCRIPTION" /> ni mifuatano huru ambayo inaweza kuwekewa mapendeleo ili kurahisisha shughuli ya kuchagua printa. <ph name="PRINTER_MANUFACTURER" /> na <ph name="PRINTER_MODEL" /> hutumika kurahisisha shughuli ya kutambua printa kwa watumiaji wake wa mwisho. Huwakilisha mtengenezaji na muundo wa printa. <ph name="PRINTER_URI" /> inapaswa kuwa anwani ambayo inafikiwa kutoka kompyuta teja, ikiwa ni pamoja na <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> na <ph name="URI_QUEUE" />. Si lazima <ph name="PRINTER_UUID" /> iwekwe. Ikiwekwa, itasaidia kuondoa nakala za printa za <ph name="ZEROCONF_DISCOVERY" />.
+
+      Ni lazima <ph name="PRINTER_EFFECTIVE_MODEL" /> ilingane na mojawapo ya mifuatano inayowakilisha printa inayotumika ya <ph name="PRODUCT_NAME" />. Mfuatano huo utatumiwa kutambua na kusakinisha PPD inayofaa kwenye printa. Maelezo zaidi yanaweza kupatikana katika https://support.google.com/chrome?p=noncloudprint.
+
+      <ph name="PRINTER_AUTOCONF" /> ni ripoti ya Boolean inayoonyesha ikiwa IPP Everywhere inapaswa kutumika kuweka mipangilio ya printa. Ripoti hii inatumika kwenye <ph name="PRODUCT_OS_NAME" /> toleo la 76 na mapya zaidi.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> inapaswa kuwa na jina la printa au <ph name="PRINTER_AUTOCONF" /> inapaswa kuwekwa kuwa 'ndivyo'. Printa zenye sifa zote mbili au zisizo na sifa yoyote hazitatumika.
+
+      Shughuli ya kuweka mipangilio ya printa hukamilika baada ya kutumia printa mara ya kwanza.  PPD hazipakuliwi mpaka printa itumike.  Baada ya hapo, PPD zinazotumiwa sana huwekwa katika akiba.
+
+      Sera hii haiwezi kubaini iwapo watumiaji wanaweza kuweka mipangilio ya printa kwenye vifaa mahususi.  Inakusudiwa kuwa mbinu ya ziada ya kuweka mipangilio ya printa na watumiaji mahususi.
+
+      Kwa vifaa vinavyodhibitiwa na Saraka Inayotumika, sera hii inatumia upanuzi wa <ph name="MACHINE_NAME_VARIABLE" /> kwenye jina la mashine ya Saraka Inayotumika au kiambishi husika cha msimbo. Kwa mfano, ikiwa jina la mashine ni<ph name="MACHINE_NAME_EXAMPLE" />, inamaanisha kuwa nafasi ya <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> itawekwa herufi 4 baada ya nafasi ya 6, yaani <ph name="MACHINE_NAME_PART_EXAMPLE" />. Kumbuka kwamba nafasi hii inatumia sufuri.
+      </translation>
 <translation id="3072045631333522102">Seva ya skrini kutumiwa kwenye skrini ya kuingia katika modi rejareja</translation>
 <translation id="3072847235228302527">Weka Sheria na Masharti kwa akaunti ya kifaa cha karibu nawe</translation>
 <translation id="3077183141551274418">Huwasha au kuzima muda wa matumizi ya kichupo</translation>
@@ -1955,7 +1992,6 @@ Ikiwa sera hii haijawekwa, thamani ya 2 itatumika.</translation>
 <translation id="4591366717022345234">Huwapa watumiaji Muundo wa Kurekebisha kwa Haraka</translation>
 <translation id="4600786265870346112">Washa kiteuzi kikubwa</translation>
 <translation id="4604931264910482931">Sanidi orodha ya wasioidhinishwa ya ujumbe asili</translation>
-<translation id="4613508646038788144">Kama sera imewekwa kuwa sivyo, programu ya kampuni nyingine itaruhusiwa kuingiza msimbo inayoweza kutekelezwa katika michakato ya Chrome. Kama sera haijawekwa au imewekwa kuwa ndivyo basi programu ya kampuni nyingine itazuiwa kuingiza msimbo unaoweza kutekelezwa katika michakato ya chrome.</translation>
 <translation id="4617338332148204752">Ruka kuingia kwa metatagi katika <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="4625915093043961294">Sanidi orodha iliyoidhinishwa ya usakinishaji kiendelezi</translation>
 <translation id="4632343302005518762">Ruhusu <ph name="PRODUCT_FRAME_NAME" /> kushughulikia aina za maudhui zilizoorodheshwa</translation>
@@ -2143,15 +2179,6 @@ Iwapo sera hii haijawekwa, kiteuzi kikubwa kitazimwa mwanzoni lakini kitawashwa 
       Sera hii ikiwekwa kuwa 'sivyo', Chrome itafunga kichupo baada ya kuhamia kwenye kivinjari mbadala hata kama kilikuwa kichupo cha mwisho. Hali hii itasababisha Chrome kufungwa kabisa.</translation>
 <translation id="5105313908130842249">Ufungaji wa skrini unachelewa wakati wa kuendesha kwa nishati ya betri</translation>
 <translation id="5108031557082757679">Printa za biashara zisizotumia sera</translation>
-<translation id="5113732180192599620">Sera hii inadhibiti orodha ya tovuti ambazo hazitawahi kusababisha kubadilishwa kwa kivinjari.
-
-      Kumbuka kuwa unaweza pia kuongeza vipengee kwenye orodha hii kupitia sera ya <ph name="USE_IE_SITELIST_POLICY_NAME" /> na <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />.
-
-      Iwapo hujaweka mipangilio ya sera hii, hamna tovuti zinazoongezwa kwenye orodha.
-
-      Iwapo umeweka mipangilio ya sera hii, kila kipengee kitashughulikiwa kama masharti, jinsi ilivyo katika sera ya <ph name="URL_LIST_POLICY_NAME" />. Hata hivyo, hali itabadilika: masharti yanayolingana hayatafungua kivinjari mbadala.
-
-      Tofauti na <ph name="URL_LIST_POLICY_NAME" />, masharti yanatumika pande zote mbili. Yaani, wakati programu jalizi ya Internet Explorer inapatikana na imewashwa, inabaini pia iwapo <ph name="IE_PRODUCT_NAME" /> inapaswa kufungua URL hizi katika <ph name="PRODUCT_NAME" />.</translation>
 <translation id="5124368997194894978">Washa nishati ya AC ya kuwasha kifaa (nishati inayobadilikabadilika).</translation>
 <translation id="5131211790949066746">Huruhusu uunganishaji wa sera za orodha ya kusakinisha viendelezi za <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" /> na <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />.
 
@@ -2433,6 +2460,7 @@ Iwapo sera hii haijawekwa, kiteuzi kikubwa kitazimwa mwanzoni lakini kitawashwa 
 
       Isipobainishwa, haitarekebisha URL ya mbegu Tofauti.</translation>
 <translation id="5561811616825571914">Chagua kiotomatiki vyeti vya mteja vya tovuti hizi kwenye skrini ya kuingia katika akaunti</translation>
+<translation id="5565178130821694365">Unahitaji kuweka nenosiri kila baada ya siku mbili (saa 48)</translation>
 <translation id="5566210228171064229">Ruhusu uchapishaji kwa kutumia na kutotumia PIN</translation>
 <translation id="556865034069957245">Sera hii inadhibiti upatikanaji wa hali ya skrini nzima ambayo kiolesura chote cha <ph name="PRODUCT_NAME" /> kimefichwa na ni maudhui ya wavuti tu yanayoonekana.
 

@@ -145,6 +145,15 @@
       Se a política estiver definida como "false", o estado do comutador dev não será comunicado.</translation>
 <translation id="1160479894929412407">Autorizar o protocolo QUIC</translation>
 <translation id="1160939557934457296">Desativar procedimento da página de aviso de Navegação Segura</translation>
+<translation id="1171342272070128466">Ative a funcionalidade de acessibilidade da lupa ancorada.
+
+          Se esta política for definida como verdadeira, a lupa ancorada estará sempre ativada.
+
+          Se esta política for definida como falsa, a lupa ancorada estará sempre desativada.
+
+          Se definir esta política, os utilizadores não a poderão alterar nem substituir.
+
+          Se esta política não for definida, a lupa ancorada estará inicialmente desativada, mas poderá ser ativada pelo utilizador em qualquer altura.</translation>
 <translation id="1189817621108632689">Permite definir uma lista de padrões de URL que especificam os sites não autorizados a apresentar imagens.
 
           Se esta política não for definida, é utilizado o valor global predefinido para todos os sites, seja a partir da política "DefaultImagesSetting", caso esteja definida, ou a partir da configuração pessoal do utilizador.
@@ -457,6 +466,7 @@
       Se a política estiver ativada, os utilizadores não poderão recusar o comportamento predefinido, que prevê que cada site seja executado no seu próprio processo.
       Se a política não for configurada ou estiver desativada, o utilizador poderá alterar esta definição (por exemplo, ao utilizar a entrada "Desativar isolamento de sites" em chrome://flags).
       </translation>
+<translation id="1767673020408652620">Ativar Recomendações de aplicações na caixa de pesquisa Estado zero</translation>
 <translation id="1781356041596378058">Esta política também controla o acesso às Opções de programador do Android. Se definir esta política como verdadeira, os utilizadores não poderão aceder às Opções de programador. Se definir esta política como falsa ou se não a definir, os utilizadores podem aceder às Opções de programador ao tocar sete vezes no número da compilação na aplicação de definições do Android.</translation>
 <translation id="1793346220873697538">Desativar impressão com PIN por predefinição</translation>
 <translation id="1797233582739332495">Apresenta uma mensagem recorrente ao utilizador a indicar que é necessário reiniciar.</translation>
@@ -973,6 +983,15 @@
 
       Cada entrada da lista especifica um identificador, o qual é utilizado internamente para distinguir as diferentes contas locais do dispositivo.</translation>
 <translation id="2769952903507981510">Configurar o nome de domínio necessário para anfitriões de acesso remoto</translation>
+<translation id="2783078941107212091">Ative a Recomendação de aplicações na caixa de pesquisa Estado zero do iniciador.
+
+          Se esta política for definida como verdadeira, as recomendações de aplicações poderão ser apresentadas na pesquisa de estado zero.
+
+          Se esta política for definida como falsa, as recomendações de aplicações não serão apresentadas na pesquisa de estado zero.
+
+          Se definir esta política, os utilizadores não a poderão alterar nem substituir.
+
+          Se esta política não for definida, será tratada por predefinição como falsa para os dispositivos geridos.</translation>
 <translation id="2787173078141616821">Comunicar informações acerca do estado do Android</translation>
 <translation id="2799297758492717491">Permitir a reprodução automática de multimédia numa lista de autorizações de padrões do URL</translation>
 <translation id="2801155097555584385">Defina o início de carregamento personalizado em percentagem</translation>
@@ -1168,6 +1187,25 @@
       Se esta política for definida como falsa, a otimização WPAD estará desativada, o que faz com que o <ph name="PRODUCT_NAME" /> aguarde mais tempo pelos servidores WPAD baseados em DNS. Se a política não for definida ou estiver ativada, a otimização de WPAD estará ativada.
 
       Independentemente de a política estar definida ou de como está definida, a definição da otimização WPAD não pode ser alterada pelos utilizadores.</translation>
+<translation id="3071839057966069710">Configura uma lista de impressoras.
+
+      Esta política permite aos administradores fornecer configurações de impressora para
+      os respetivos utilizadores.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> e <ph name="PRINTER_DESCRIPTION" /> são strings de forma livre que podem ser personalizadas para facilitar a seleção da impressora. <ph name="PRINTER_MANUFACTURER" /> e <ph name="PRINTER_MODEL" /> servem para facilitar a identificação da impressora por parte dos utilizadores finais. Representam o fabricante e o modelo da impressora. <ph name="PRINTER_URI" /> deve ser um endereço acessível a partir de um computador de cliente, incluindo <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> e <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> é opcional. Se fornecido, é utilizado para ajudar a remover duplicados de impressoras <ph name="ZEROCONF_DISCOVERY" />.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> tem de corresponder a uma das strings que representam uma impressora compatível com o <ph name="PRODUCT_NAME" />. A string será utilizada para identificar e instalar o PPD adequado à impressora. Pode encontrar mais informações em https://support.google.com/chrome?p=noncloudprint.
+
+      <ph name="PRINTER_AUTOCONF" /> é um sinalizador booleano que indica se a opção IPP em todas as plataformas deve ser utilizada para configurar a impressora. Este sinalizador é suportado na versão 76 do <ph name="PRODUCT_OS_NAME" /> e superiores.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> deve conter o nome da impressora ou <ph name="PRINTER_AUTOCONF" /> deve ser definida como verdadeira. As impressoras com as duas propriedades ou sem nenhuma delas serão ignoradas.
+
+      A configuração de uma impressora fica concluída com a primeira utilização da mesma.  Os PPDs não são transferidos enquanto a impressora não for utilizada.  Posteriormente, os PPDs utilizados com frequência são colocados em cache.
+
+      Esta política não influencia a possibilidade de os utilizadores configurarem impressoras em dispositivos individuais.  Destina-se a complementar a configuração de impressoras por utilizadores individuais.
+
+      Em dispositivos geridos pelo Active Directory, esta política suporta a expansão de <ph name="MACHINE_NAME_VARIABLE" /> para o nome do computador do Active Directory ou uma substring do mesmo. Por exemplo, se o nome do computador for <ph name="MACHINE_NAME_EXAMPLE" />, então <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> será substituído pelos 4 carateres a partir da 6.ª posição, ou seja, <ph name="MACHINE_NAME_PART_EXAMPLE" />. Tenha em atenção que a posição baseia-se em zero.
+      </translation>
 <translation id="3072045631333522102">Proteção de ecrã a utilizar no ecrã de início de sessão no modo de retalho</translation>
 <translation id="3072847235228302527">Definir os Termos de Utilização para uma conta local do dispositivo</translation>
 <translation id="3077183141551274418">Ativa ou desativa os ciclos de vida dos separadores.</translation>
@@ -1947,7 +1985,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="4591366717022345234">Disponibilizar a Compilação de correção rápida aos utilizadores</translation>
 <translation id="4600786265870346112">Ativar cursor grande</translation>
 <translation id="4604931264910482931">Configurar a lista negra de mensagens nativas</translation>
-<translation id="4613508646038788144">Se a política estiver definida como falsa, o software de terceiros está autorizado a injetar código executável nos processos do Chrome. Se a política não estiver definida ou estiver definida como verdadeira, o software de terceiros é impedido de injetar código executável nos processos do Chrome.</translation>
 <translation id="4617338332148204752">Ignorar a verificação de metatags em <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="4625915093043961294">Configurar lista de permissões de instalação de extensões</translation>
 <translation id="4632343302005518762">Permitir que o <ph name="PRODUCT_FRAME_NAME" /> processe os tipos de conteúdo listados</translation>
@@ -2135,15 +2172,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se esta política for definida como falsa, o Chrome fecha o separador depois de mudar para um navegador alternativo, mesmo que seja o último separador. Desta forma, a execução do Chrome será terminada.</translation>
 <translation id="5105313908130842249">Atraso do bloqueio do ecrã quando o dispositivo está a utilizar a energia da bateria</translation>
 <translation id="5108031557082757679">Impressoras empresariais de dispositivos desativadas</translation>
-<translation id="5113732180192599620">Esta política controla a lista de Websites que nunca irão provocar uma mudança de navegador.
-
-      Tenha em atenção que também é possível adicionar elementos a esta lista através das políticas <ph name="USE_IE_SITELIST_POLICY_NAME" /> e <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />.
-
-      Quando esta política não está definida, não são adicionados Websites à lista.
-
-      Quando esta política está definida, cada item é tratado como uma regra, semelhante à política <ph name="URL_LIST_POLICY_NAME" />. No entanto, a lógica é revertida: as regras correspondentes não abrem um navegador alternativo.
-
-      Ao contrário da política <ph name="URL_LIST_POLICY_NAME" />, as regras são aplicáveis a ambas as direções. Ou seja, quando o suplemento do Internet Explorer estiver presente e ativado, controla também se o <ph name="IE_PRODUCT_NAME" /> deve abrir estes URLs no <ph name="PRODUCT_NAME" />.</translation>
 <translation id="5124368997194894978">Ativar arranque com CA (corrente alternada)</translation>
 <translation id="5131211790949066746">Permite unir as políticas de lista de instalação das extensões <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" /> e <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />.
 
@@ -2406,6 +2434,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
       Se não estiver especificada, não irá modificar o URL da semente Variações.</translation>
 <translation id="5561811616825571914">Selecionar automaticamente certificados de cliente para estes sites no ecrã de início de sessão</translation>
+<translation id="5565178130821694365">A introdução da palavra-passe é obrigatória a cada dois dias (48 horas)</translation>
 <translation id="5566210228171064229">Permitir impressão com e sem PIN</translation>
 <translation id="556865034069957245">Esta política controla a disponibilidade do modo de ecrã inteiro, em que toda a interface do <ph name="PRODUCT_NAME" /> está oculta e apenas o conteúdo Web é visível.
 

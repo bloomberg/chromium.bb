@@ -464,6 +464,7 @@
 <translation id="3484560055331845446">您可能会无法再访问自己的 Google 帐号。Chrome 建议您立即更改密码。系统会要求您登录。</translation>
 <translation id="3495081129428749620">在网页“<ph name="PAGE_TITLE" />”中查找</translation>
 <translation id="3498215018399854026">我们暂时无法与您父母取得联系，请重试。</translation>
+<translation id="3512163584740124171">此政策会被忽略，因为同一政策组中的其他政策具有更高的优先级。</translation>
 <translation id="3528171143076753409">服务器的证书不受信任。</translation>
 <translation id="3528485271872257980">深棕色</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{在已同步的设备上至少有 1 项内容}=1{1 项内容（在已同步的设备上还有更多内容）}other{# 项内容（在已同步的设备上还有更多内容）}}</translation>
@@ -1075,7 +1076,6 @@
 <translation id="7062635574500127092">青色</translation>
 <translation id="7064851114919012435">联系信息</translation>
 <translation id="7079718277001814089">此网站包含恶意软件</translation>
-<translation id="7081564429925484109">警告：系统未按照 PolicyListMultipleSourceMergeList 政策中指定的方式合并此政策，因为此政策不是一个列表。</translation>
 <translation id="7087282848513945231">县</translation>
 <translation id="7090678807593890770">请在 Google 中搜索“<ph name="LINK" />”</translation>
 <translation id="7108338896283013870">隐藏</translation>
@@ -1132,7 +1132,6 @@
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">否</translation>
 <translation id="7378810950367401542">/</translation>
-<translation id="7381288752349550461">受管理自助服务终端替换</translation>
 <translation id="7390545607259442187">确认信用卡</translation>
 <translation id="7400418766976504921">网址</translation>
 <translation id="7403591733719184120">您的 <ph name="DEVICE_NAME" /> 受管理</translation>

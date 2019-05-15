@@ -142,6 +142,15 @@
       Jos käytännön arvo on epätosi, kehittäjätilaa (käytössä / ei käytössä) ei ilmoiteta.</translation>
 <translation id="1160479894929412407">Salli QUIC-protokollan käyttö</translation>
 <translation id="1160939557934457296">Estä eteneminen Selaussuojan varoitussivulta</translation>
+<translation id="1171342272070128466">Ota käyttöön kiinnitetty suurennus ‑esteettömyysominaisuus.
+
+          Jos käytännön arvoksi on asetettu tosi, kiinnitetty suurennus on aina käytössä.
+
+          Jos käytännön arvoksi on asetettu epätosi, kiinnitetty suurennus ei ole koskaan käytössä.
+
+          Jos määrität tämän käytännön, käyttäjät eivät voi muuttaa tai ohittaa sitä.
+
+          Jos tätä käytäntöä ei ole määritetty, kiinnitetty suurennus poistetaan oletuksena käytöstä, mutta käyttäjä voi ottaa sen käyttöön milloin tahansa.</translation>
 <translation id="1189817621108632689">Voit määrittää URL-mallien luettelon, jossa määritetään sivustot, jotka saavat näyttää kuvia.
 
           Jos tätä käytäntöä ei ole määritetty, kaikille sivustoille käytetään joko DefaultImagesSetting-käytännön yleistä oletusarvoa, jos se on asetettu, tai käyttäjän henkilökohtaisia määrityksiä.
@@ -455,6 +464,7 @@
       Jos käytäntö on käytössä, käyttäjä voi lopettaa oletuskäyttäytymisen eli oman prosessin suorittamisen joka sivustolla.
       Jos käytäntöä ei määritetä tai se poistetaan käytöstä, käyttäjä voi muuttaa tätä asetusta (esimerkiksi chrome://flags-valinnalla Älä pidä sivustoja erillään).
       </translation>
+<translation id="1767673020408652620">Ota käyttöön sovellussuositukset hakukentän nollatilassa</translation>
 <translation id="1781356041596378058">Tämä käytäntö hallinnoi myös Android-kehittäjäasetusten käyttöä. Jos tämän käytännön arvoksi määritetään tosi, käyttäjät eivät voi käyttää kehittäjäasetuksia. Jos tämän käytännön arvoksi määritetään epätosi tai sitä ei määritetä ollenkaan, käyttäjät voivat käyttää kehittäjäasetuksia koskettamalla Android-asetukset-sovelluksessa olevaa versionumeroa seitsemän kertaa.</translation>
 <translation id="1793346220873697538">Poista PIN-tulostus oletuksena käytöstä</translation>
 <translation id="1797233582739332495">Näytä käyttäjälle toistuva kehote vaaditusta uudelleenkäynnistyksestä</translation>
@@ -972,6 +982,15 @@ Jos tämä asetus ei ole käytössä, käyttäjät eivät voi tulostaa tuotteest
 
 Kaikki luettelon kohteet ovat tunnuksia, joiden perusteella erotetaan laitteeseen lisätyt tilit toisistaan.</translation>
 <translation id="2769952903507981510">Määritä vaadittu verkkotunnuksen nimi etäisännille</translation>
+<translation id="2783078941107212091">Ota käynnistysohjelmassa käyttöön sovellussuositus hakukentän nollatilassa.
+
+          Jos käytännön arvoksi on asetettu tosi, sovellussuosituksia voi tulla näkyviin nollatilahaussa.
+
+          Jos käytännön arvoksi on asetettu epätosi, sovellussuosituksia ei tule näkyviin nollatilahaussa.
+
+          Jos määrität tämän käytännön, käyttäjät eivät voi muuttaa tai ohittaa sitä.
+
+          Jos tätä käytäntöä ei määritetä, hallinnoitujen laitteiden oletusasetus on epätosi.</translation>
 <translation id="2787173078141616821">Raportoi tietoja Androidin tilasta</translation>
 <translation id="2799297758492717491">Salli mediasisällön automaattinen toisto sallittujen luetteloon kuuluvissa URL-osoitemalleissa</translation>
 <translation id="2801155097555584385">Määritä akun latauksen aloitus tietyn latausprosentin kohdalla</translation>
@@ -1167,6 +1186,25 @@ Kaikki luettelon kohteet ovat tunnuksia, joiden perusteella erotetaan laitteesee
       Jos tämän käytännön arvo on Epätosi, WPAD-optimointi poistetaan käytöstä, jolloin <ph name="PRODUCT_NAME" /> odottaa nimipalveluun perustuvia WPAD-palvelimia kauemmin. Jos käytäntöä ei aseteta tai sen arvo on Tosi, WPAD-optimointia käytetään.
 
       Käyttäjät eivät voi muuttaa WPAD-optimoinnin asetuksia tästä käytännöstä riippumatta.</translation>
+<translation id="3071839057966069710">Määrittää tulostinluettelon.
+
+      Tämän käytännön avulla järjestelmänvalvojat voivat määrittää tulostinasetuksia
+      käyttäjiä varten.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> ja <ph name="PRINTER_DESCRIPTION" /> ovat vapaamuotoisia merkkijonoja, joita voidaan muokata tulostimen valinnan helpottamiseksi. <ph name="PRINTER_MANUFACTURER" /> ja <ph name="PRINTER_MODEL" /> auttavat käyttäjiä tunnistamaan tulostimet. Ne vastaavat tulostimen valmistajaa ja mallia. Määritä kohteen <ph name="PRINTER_URI" /> arvoksi osoite, joka on käytettävissä asiakastietokoneelta ja johon sisältyvät <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> ja <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> on valinnainen arvo. Sen tarkoituksena on auttaa <ph name="ZEROCONF_DISCOVERY" /> ‑tulostinkopioiden poistamisessa.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> on oltava sama kuin jokin <ph name="PRODUCT_NAME" /> ‑yhteensopivia tulostimia edustavista merkkijonoista. Merkkijonoa käytetään oikean PPD:n tunnistamiseen ja asentamiseen tulostinta varten. Saat lisätietoja osoitteesta https://support.google.com/chrome?p=noncloudprint.
+
+      <ph name="PRINTER_AUTOCONF" /> on totuusarvo, joka määrittää, pitäisikö tulostimen määritykseen käyttää IPP Everywhereä. Tätä arvoa tuetaan tuotteen <ph name="PRODUCT_OS_NAME" /> versiossa 76 ja sitä uudemmissa.
+
+      Joko kohteen <ph name="PRINTER_EFFECTIVE_MODEL" /> pitäisi sisältää tulostimen nimen tai kohteen <ph name="PRINTER_AUTOCONF" /> arvoksi pitäisi olla asetettu tosi. Sellaiset tulostimet ohitetaan, joissa on joko molemmat ominaisuudet tai ei kumpaakaan.
+
+      Tulostin määritetään sen ensimmäisen käyttökerran yhteydessä.  PPD:t ladataan vasta, kun tulostinta käytetään.  Tämän jälkeen PPD:t tallennetaan välimuistiin, jos niitä käytetään usein.
+
+      Tämä käytäntö ei vaikuta siihen, voivatko käyttäjät määrittää tulostimia yksittäisillä laitteilla.  Se on tarkoitettu käytettäväksi yksittäisten käyttäjien tekemien tulostinmääritysten lisäksi.
+
+      Jos laitetta hallinnoidaan Active Directoryn avulla, tämä käytäntö sallii, että <ph name="MACHINE_NAME_VARIABLE" /> liitetään Active Directory ‑koneen nimeen tai sen alimerkkijonoon. Jos koneen nimi on esimerkiksi <ph name="MACHINE_NAME_EXAMPLE" />, <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> korvattaisiin kuudennetta kohtaa seuraavilla neljällä merkillä: <ph name="MACHINE_NAME_PART_EXAMPLE" />. Huomaa, että kohtien laskeminen aloitetaan nollasta.
+      </translation>
 <translation id="3072045631333522102">Näytönsäästäjä, jota käytetään kirjautumisruudulla jälleenmyyntitilassa</translation>
 <translation id="3072847235228302527">Aseta laitteen paikallisen tilin käyttöehdot</translation>
 <translation id="3077183141551274418">Ottaa välilehtien elinkaaret käyttöön tai poistaa ne käytöstä</translation>
@@ -1947,7 +1985,6 @@ ylläpitäjän tai SyncDisabled-käytännön estämä. BrowserGuestModeEnabled-k
 <translation id="4591366717022345234">Anna käyttäjille Quick Fix ‑versio</translation>
 <translation id="4600786265870346112">Ota suuri osoitin käyttöön</translation>
 <translation id="4604931264910482931">Määritä kiellettyjen luettelo laitteen omalle viestijärjestelmälle</translation>
-<translation id="4613508646038788144">Jos käytännön arvo on epätosi, kolmannen osapuolen ohjelmistot voivat lisätä suoritettavaa koodia Chromen prosesseihin. Jos käytännölle ei ole määritetty arvoa tai sen arvo on tosi, kolmannen osapuolen ohjelmistoja estetään lisäämästä suoritettavaa koodia Chromen prosesseihin.</translation>
 <translation id="4617338332148204752">Ohita sisällönkuvauskenttien kirjaaminen kohteessa <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="4625915093043961294">Määritä laajennukset, jotka saa asentaa</translation>
 <translation id="4632343302005518762">Anna tuotteen <ph name="PRODUCT_FRAME_NAME" /> käsitellä lueteltuja sisältötyyppejä</translation>
@@ -2134,15 +2171,6 @@ ylläpitäjän tai SyncDisabled-käytännön estämä. BrowserGuestModeEnabled-k
       Jos käytännön arvoksi on asetettu tosi, Chrome sulkee välilehden vaihdettuaan toiseen selaimeen, vaikka se olisi viimeinen välilehti. Tästä seuraa Chromen täysi sulkeminen.</translation>
 <translation id="5105313908130842249">Ruudun lukituksen viive käytettäessä laitetta akkuvirralla</translation>
 <translation id="5108031557082757679">Käytöstä poistetut yrityslaitteiden tulostimet</translation>
-<translation id="5113732180192599620">Tämä käytäntö määrittää luettelon sivustoista, jotka eivät koskaan aiheuta selaimen vaihtoa.
-
-      Huomaa, että tähän luetteloon voidaan lisätä elementtejä myös muiden käytäntöjen kautta (<ph name="USE_IE_SITELIST_POLICY_NAME" /> ja <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />).
-
-      Jos tätä käytäntöä ei ole määritetty, luetteloon ei lisätä sivustoja.
-
-      Jos tämä käytäntö on määritetty, kutakin merkintää käsitellään sääntönä tavalla, joka vastaa käytäntöä <ph name="URL_LIST_POLICY_NAME" />. Soveltamislogiikka on kuitenkin päinvastainen: kun säännölle löytyy vastaavuus, vaihtoehtoista selainta ei avata.
-
-      Toisin kuin käytännön <ph name="URL_LIST_POLICY_NAME" /> tapauksessa, sääntöjä sovelletaan molempiin suuntiin. Tarkemmin sanoen tämä käytäntö määrittää, avaako <ph name="IE_PRODUCT_NAME" /> nämä URL-osoitteet selaimessa <ph name="PRODUCT_NAME" />, kun Internet Explorer ‑laajennus on käytössä.</translation>
 <translation id="5124368997194894978">Ota käyttöön vaihtovirralla käynnistäminen</translation>
 <translation id="5131211790949066746">Ottaa käyttöön laajennusten asennusluettelokäytäntöjen <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" /> ja <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" /> yhdistämisen.
 
@@ -2405,6 +2433,7 @@ ylläpitäjän tai SyncDisabled-käytännön estämä. BrowserGuestModeEnabled-k
 
       Jos käytäntöä ei määritetä, Variations-siemenarvon URL-osoitetta ei muokata.</translation>
 <translation id="5561811616825571914">Valitse automaattisesti näiden sivustojen asiakasvarmenteet kirjautumisnäytöltä</translation>
+<translation id="5565178130821694365">Salasana vaaditaan joka toinen päivä (48 tunnin välein)</translation>
 <translation id="5566210228171064229">Salli tulostus PIN-koodilla ja ilman sitä</translation>
 <translation id="556865034069957245">Tämä käytäntö sallii tai estää koko näytön tilan, jossa <ph name="PRODUCT_NAME" /> piilottaa käyttöliittymän ja näyttää vain verkkosisällön.
 

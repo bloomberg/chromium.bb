@@ -9,7 +9,6 @@
 <translation id="1067922213147265141">Các dịch vụ khác của Google</translation>
 <translation id="1068672505746868501">Không bao giờ dịch các trang viết bằng <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1080790410959514870">Bạn đang đăng xuất tài khoản do <ph name="DOMAIN_NAME" /> quản lý. Thao tác này sẽ xóa dữ liệu Chrome được lưu trữ trên thiết bị này nhưng dữ liệu sẽ vẫn còn trong tài khoản Google của bạn.</translation>
-<translation id="1099080783256647258">Khi bạn bật Trình tiết kiệm dữ liệu, Chrome sẽ sử dụng các máy chủ của Google để tăng tốc và nén hoạt động tải trang. Trên các trang tốc độ đặc biệt chậm, Trình tiết kiệm dữ liệu sẽ ghi lại trang để chỉ tải nội dung cần thiết. Trình tiết kiệm dữ liệu không tối ưu hóa các trang đã tải ở chế độ Ẩn danh.</translation>
 <translation id="1100066534610197918">Mở trong tab mới trong nhóm</translation>
 <translation id="1105960400813249514">Chụp ảnh màn hình</translation>
 <translation id="1111673857033749125">Dấu trang được lưu trên thiết bị khác của bạn sẽ xuất hiện tại đây.</translation>
@@ -25,6 +24,7 @@
 <translation id="1175310183703641346">Dấu trang, lịch sử, mật khẩu và các dữ liệu khác sẽ không còn đồng bộ hóa với Tài khoản Google của bạn nữa</translation>
 <translation id="1178581264944972037">Tạm dừng</translation>
 <translation id="1181037720776840403">Xóa</translation>
+<translation id="1188239144602654184">Chuyển sang thực tế tăng cường</translation>
 <translation id="1197267115302279827">Di chuyển dấu trang</translation>
 <translation id="119944043368869598">Xóa tất cả</translation>
 <translation id="1201402288615127009">Tiếp theo</translation>
@@ -96,7 +96,6 @@
 <translation id="1672586136351118594">Không hiển thị lại</translation>
 <translation id="1692118695553449118">Đồng bộ hóa đang bật</translation>
 <translation id="169515064810179024">Chặn không cho trang web sử dụng cảm biến chuyển động</translation>
-<translation id="1709438864123551175">Trình tiết kiệm dữ liệu</translation>
 <translation id="1717218214683051432">Cảm biến chuyển động</translation>
 <translation id="1718835860248848330">Giờ vừa qua</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - Đã cập nhật <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -214,7 +213,6 @@
 <translation id="2501278716633472235">Quay lại</translation>
 <translation id="2513403576141822879">Bạn có thể xem thêm tùy chọn cài đặt liên quan đến quyền riêng tư, bảo mật và hoạt động thu thập dữ liệu trong phần <ph name="BEGIN_LINK" />Đồng bộ hóa và dịch vụ của Google<ph name="END_LINK" /></translation>
 <translation id="2523184218357549926">Gửi cho Google URL của các trang bạn truy cập</translation>
-<translation id="2526148617758225454">Trình tiết kiệm dữ liệu đang bật. Quản lý tiện ích này trong Cài đặt.</translation>
 <translation id="2532336938189706096">Lượt xem trên web</translation>
 <translation id="2534155362429831547">Đã xóa <ph name="NUMBER_OF_ITEMS" /> mục</translation>
 <translation id="2536728043171574184">Xem bản sao ngoại tuyến của trang này</translation>
@@ -354,14 +352,12 @@
 <translation id="3599863153486145794">Xóa lịch sử khỏi tất cả các thiết bị đã đăng nhập. Tài khoản Google của bạn có thể có các dạng lịch sử duyệt web khác tại <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Tắt tiếng trên các trang web phát âm thanh</translation>
 <translation id="3616113530831147358">Âm thanh</translation>
-<translation id="3620176948598597475">Việc đặt lại sẽ xóa lịch sử của Trình tiết kiệm dữ liệu, bao gồm cả danh sách các trang web đã truy cập.</translation>
 <translation id="3632295766818638029">Hiển thị mật khẩu</translation>
 <translation id="363596933471559332">Tự động đăng nhập vào các trang web bằng thông tin đăng nhập được lưu trữ. Khi tính năng này tắt, bạn sẽ luôn được yêu cầu xác minh trước khi đăng nhập vào trang web.</translation>
 <translation id="3658159451045945436">Việc đặt lại sẽ xóa lịch sử tiết kiệm dữ liệu, bao gồm cả danh sách các trang web bạn đã truy cập.</translation>
 <translation id="3662546969139119822">Không có lịch sử ở đây</translation>
 <translation id="3672452749423051839">Đề xuất cho lỗi điều hướng</translation>
 <translation id="3692944402865947621">Không tải <ph name="FILE_NAME" /> xuống được do không tìm thấy vị trí bộ nhớ.</translation>
-<translation id="3712575778697986964">Đặt lại Trình tiết kiệm dữ liệu?</translation>
 <translation id="3714981814255182093">Mở thanh Tìm kiếm</translation>
 <translation id="3716182511346448902">Chrome đã tạm dừng trang này vì trang dùng quá nhiều bộ nhớ.</translation>
 <translation id="3730075448226062617">Để cho phép Chrome truy cập vào micrô của bạn, hãy bật cả micrô trong phần <ph name="BEGIN_LINK" />Cài đặt của Android<ph name="END_LINK" />.</translation>
@@ -503,13 +499,11 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="4751476147751820511">Cảm biến chuyển động hoặc ánh sáng</translation>
 <translation id="4759238208242260848">Tệp đã tải xuống</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{Đã tải xong 1 tệp xuống.}other{Đã tải xong # tệp xuống.}}</translation>
-<translation id="4766369052440583386">Trình tiết kiệm dữ liệu đang bật</translation>
 <translation id="4797039098279997504">Chạm để quay lại <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4802417911091824046">Việc mã hóa cụm mật khẩu không bao gồm địa chỉ và phương thức thanh toán từ Google Pay.
 
 Để thay đổi tùy chọn cài đặt này, hãy <ph name="BEGIN_LINK" />đặt lại tính năng đồng bộ hóa<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">Tên trên thẻ</translation>
-<translation id="4807963036345170158">Trình tiết kiệm dữ liệu tắt</translation>
 <translation id="4816465935029283692">Loại dữ liệu</translation>
 <translation id="4824958205181053313">Bạn muốn hủy đồng bộ hóa?</translation>
 <translation id="4837753911714442426">Mở tùy chọn để in trang</translation>
@@ -601,6 +595,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="5447765697759493033">Trang web này sẽ không được dịch</translation>
 <translation id="545042621069398927">Đang tăng tốc độ tải xuống.</translation>
 <translation id="5456381639095306749">Tải trang xuống</translation>
+<translation id="5475862044948910901">Bắt đầu phiên đăng nhập thực tế tăng cường?</translation>
 <translation id="548278423535722844">Mở trong ứng dụng bản đồ</translation>
 <translation id="5487521232677179737">Xóa dữ liệu</translation>
 <translation id="5494752089476963479">Chặn quảng cáo trên các trang web hiển thị quảng cáo xâm nhập hoặc quảng cáo gây hiểu nhầm</translation>
@@ -643,7 +638,6 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="569536719314091526">Dịch trang này sang ngôn ngữ bất kỳ từ nút Tùy chọn khác</translation>
 <translation id="572328651809341494">Các tab gần đây</translation>
 <translation id="5726692708398506830">Phóng to mọi nội dung trên trang</translation>
-<translation id="5734520971562437809">Tiết kiệm tới 60 phần trăm dữ liệu và tăng tốc độ tải trang.</translation>
 <translation id="5748802427693696783">Đã chuyển sang tab chuẩn</translation>
 <translation id="5749068826913805084">Chrome cần quyền truy cập vào bộ nhớ để tải tệp xuống.</translation>
 <translation id="5763382633136178763">Tab ẩn danh</translation>
@@ -701,7 +695,6 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="6159335304067198720">Đã tiết kiệm được <ph name="PERCENT" /> dữ liệu</translation>
 <translation id="6165508094623778733">Tìm hiểu thêm</translation>
 <translation id="6177111841848151710">Bị chặn đối với công cụ tìm kiếm hiện tại</translation>
-<translation id="6177390657002841081">Bật Trình tiết kiệm dữ liệu</translation>
 <translation id="6181444274883918285">Thêm ngoại lệ cho trang web</translation>
 <translation id="6192333916571137726">Tải tệp xuống</translation>
 <translation id="6192792657125177640">Ngoại lệ</translation>
@@ -867,6 +860,11 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Chia sẻ 1 mục đã chọn}other{Chia sẻ # mục đã chọn}}</translation>
 <translation id="7359002509206457351">Truy cập vào phương thức thanh toán</translation>
+<translation id="7365126855094612066">Trong suốt thời gian diễn ra phiên đăng nhập này, trang web có thể:
+• tạo bản đồ 3D về môi trường xung quanh bạn
+• theo dõi chuyển động của máy ảnh
+
+Trang web này KHÔNG có quyền truy cập vào máy ảnh. Chỉ bạn mới xem được hình ảnh trong máy ảnh.</translation>
 <translation id="7375125077091615385">Loại:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -1114,11 +1112,9 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="9188680907066685419">Đăng xuất khỏi tài khoản được quản lý</translation>
 <translation id="9204836675896933765">Còn lại 1 tệp</translation>
 <translation id="9206873250291191720">A</translation>
-<translation id="9215534869786664672">Tiết kiệm tới 60 phần trăm dữ liệu và tăng tốc độ tải trang. Máy chủ của Google sẽ tối ưu hóa các trang bạn truy cập.</translation>
 <translation id="9219103736887031265">Hình ảnh</translation>
 <translation id="926205370408745186">Xóa hoạt động của bạn trên Chrome khỏi Digital Wellbeing</translation>
 <translation id="932327136139879170">Trang chủ</translation>
-<translation id="932599481871055447">Tiết kiệm dữ liệu và duyệt web nhanh hơn</translation>
 <translation id="938850635132480979">Lỗi: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Truy cập micrô của bạn</translation>
 <translation id="951339005376969845">Xóa dữ liệu hiện có. Bạn có thể truy xuất dữ liệu bằng cách chuyển về <ph name="FROM_ACCOUNT" />.</translation>

@@ -469,6 +469,7 @@
 <translation id="3495081129428749620">పేజీలో కనుగొను
     <ph name="PAGE_TITLE" /></translation>
 <translation id="3498215018399854026">మేము ప్రస్తుతం మీ తల్లి/తండ్రిని సంప్రదించలేకపోయాము. దయచేసి మళ్లీ ప్రయత్నించండి.</translation>
+<translation id="3512163584740124171">ఈ విధానం విస్మరించబడుతుంది, ఎందుకంటే ఒకే విధాన సమూహం నుండి మరొక విధానం అధిక ప్రాధాన్యతను కలిగి ఉంది.</translation>
 <translation id="3528171143076753409">సర్వర్ ప్రమాణపత్రం విశ్వసనీయమైనది కాదు.</translation>
 <translation id="3528485271872257980">ముదురు గోధుమ రంగు</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{సమకాలీకరించిన పరికరాల్లో కనీసం 1 అంశం}=1{1 అంశం (మరియు సమకాలీకరించిన పరికరాల్లో మరిన్ని)}other{# అంశాలు (మరియు సమకాలీకరించిన పరికరాల్లో మరిన్ని)}}</translation>
@@ -1082,7 +1083,6 @@
 <translation id="7062635574500127092">నీలి పచ్చ రంగు</translation>
 <translation id="7064851114919012435">సంప్రదింపు సమాచారం</translation>
 <translation id="7079718277001814089">ఈ సైట్‌లో మాల్వేర్ ఉంది</translation>
-<translation id="7081564429925484109">హెచ్చరిక: ఈ విధానం ఒక జాబితా కానందున, PolicyListMultipleSourceMergeList విధానంలో పేర్కొన్న విధంగా ఇది విలీనం చేయబడలేదు.</translation>
 <translation id="7087282848513945231">కౌంటి</translation>
 <translation id="7090678807593890770"><ph name="LINK" /> కోసం Googleలో వెతకండి</translation>
 <translation id="7108338896283013870">దాచిపెట్టు</translation>
@@ -1139,7 +1139,6 @@
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">వద్దు</translation>
 <translation id="7378810950367401542">/</translation>
-<translation id="7381288752349550461">నిర్వహిత సెషన్ భర్తీ</translation>
 <translation id="7390545607259442187">కార్డ్‌ని నిర్ధారించండి</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7403591733719184120">మీ <ph name="DEVICE_NAME" /> నిర్వహించబడుతోంది</translation>

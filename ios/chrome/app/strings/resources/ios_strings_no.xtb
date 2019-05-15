@@ -74,13 +74,11 @@
 <translation id="1952728750904661634">Logg på med administrert konto</translation>
 <translation id="1974060860693918893">Avansert</translation>
 <translation id="1989112275319619282">Bla gjennom</translation>
-<translation id="2000419248597011803">Sender noen informasjonskapsler og søk fra adressefeltet og søkefeltet samt noen informasjonskapsler til standardsøkemotoren din</translation>
 <translation id="2015722694326466240">For å se passordene må du først angi en adgangskode på enheten din.</translation>
 <translation id="2068952045031577364">Den siste uken</translation>
 <translation id="2074131957428911366">Du kan når som helst velge hva du vil synkronisere, i <ph name="BEGIN_LINK" />innstillingene<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Angre</translation>
 <translation id="209018056901015185">Bruk skrivebordsversjon</translation>
-<translation id="2096012225669085171">Synkronisering og personlig tilpasning på alle enheter</translation>
 <translation id="2103075008456228677">Åpne history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elementer er flyttet</translation>
 <translation id="213900355088104901">Åpne en inkognitofane for å besøke nettsteder anonymt</translation>
@@ -107,7 +105,6 @@
 <translation id="2435457462613246316">Vis passord</translation>
 <translation id="2481538920734869610">LEGG TIL KONTO</translation>
 <translation id="2497852260688568942">Administratoren din har slått av synkronisering</translation>
-<translation id="2523184218357549926">Sender Google nettadressene til sider du besøker</translation>
 <translation id="2523363575747517183">Dette nettstedet prøver gjentatte ganger å åpne en annen app.</translation>
 <translation id="2529021024822217800">Åpne alle</translation>
 <translation id="2572712655377361602">En enhetsinnstilling har blokkert tilgangen til bildene dine</translation>
@@ -137,6 +134,7 @@
 <translation id="2871695793448672541">Skjult passord</translation>
 <translation id="288655811176831528">Lukk fane</translation>
 <translation id="2898963176829412617">Ny mappe</translation>
+<translation id="2916171785467530738">Autofullfør søk og nettadresser</translation>
 <translation id="291754862089661335">Plassér QR-/strekkoden i denne rammen.</translation>
 <translation id="2921219216347069551">Kan ikke dele siden</translation>
 <translation id="2923448633003185837">Lim inn og gå til</translation>
@@ -306,7 +304,6 @@ Handoff må også være aktivert i Generelt-delen av Innstillinger, og enhetene 
 <translation id="5857090052475505287">Ny mappe</translation>
 <translation id="5857770089550859117">Det kreves en passordfrase for å starte synkroniseringen.</translation>
 <translation id="5860033963881614850">Av</translation>
-<translation id="5865733239029070421">Sender automatisk brukerstatistikk og programstopprapporter til Google</translation>
 <translation id="5869029295770560994">Greit</translation>
 <translation id="5871497086027727873">1 element er flyttet</translation>
 <translation id="5897956970858271241">Besøk den kopierte linken</translation>
@@ -412,7 +409,6 @@ Dataene dine er kryptert med passordfrasen din for synkronisering <ph name="TIME
 <translation id="722055596168483966">Tilpass Google-tjenester</translation>
 <translation id="7265758999917665941">Aldri for dette nettstedet</translation>
 <translation id="7272437679830969316">Kan ikke bekrefte identiteten din. Passordet er ikke kopiert.</translation>
-<translation id="7280856130494094142">Skriv inn passordfrasen for å starte synkroniseringen</translation>
 <translation id="7285236536143823449">JA, JEG BLIR MED</translation>
 <translation id="7291368939935408496">Klargjør passordene …</translation>
 <translation id="7293171162284876153">For å starte synkronisering, slå på «Synkroniser Chrome-dataene dine».</translation>
@@ -434,12 +430,10 @@ Dataene dine er kryptert med passordfrasen din for synkronisering <ph name="TIME
 <translation id="7554791636758816595">Ny fane</translation>
 <translation id="7561196759112975576">Alltid</translation>
 <translation id="7603852183842204213">Blokkerte forgrunnsvinduer (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
-<translation id="7605594153474022051">Synkronisering fungerer ikke</translation>
 <translation id="7638584964844754484">Feil passordfrase</translation>
 <translation id="7658239707568436148">Avbryt</translation>
 <translation id="766891008101699113">For å surfe på nettet privat, legg til en ny fane.</translation>
 <translation id="7671141431838911305">INSTALLER</translation>
-<translation id="7704317875155739195">Autofullfør søk og nettadresser</translation>
 <translation id="7765158879357617694">Flytt</translation>
 <translation id="7769602470925380267">Godta og logg av</translation>
 <translation id="7772032839648071052">Bekreft passord</translation>
@@ -477,7 +471,6 @@ Dataene dine er kryptert med passordfrasen din for synkronisering <ph name="TIME
 <translation id="842017693807136194">Logget på med</translation>
 <translation id="8428045167754449968">By/tettsted</translation>
 <translation id="8428213095426709021">Innstillinger</translation>
-<translation id="8438566539970814960">Gjør søking og surfing bedre</translation>
 <translation id="8458397775385147834">1 element slettet</translation>
 <translation id="8487700953926739672">Tilgjengelig utenfor nettet</translation>
 <translation id="8503813439785031346">Brukernavn</translation>

@@ -226,6 +226,7 @@
 <translation id="1338950911836659113">કાઢી રહ્યું છે ...</translation>
 <translation id="1340527397989195812">Files ઍપનો ઉપયોગ કરીને ડિવાઇસથી મીડિયાનો બૅકઅપ લો.</translation>
 <translation id="1341988552785875222">'<ph name="APP_NAME" />' દ્વારા હમણાંનું વૉલપેપર સેટ કરવામાં આવ્યું છે. એક બીજું વૉલપેપર પસંદ કરતા પહેલાં તમારે '<ph name="APP_NAME" />'ને અનઇન્સ્ટૉલ કરવું પડી શકે.</translation>
+<translation id="1343865611738742294">Linux ઍપ પરવાનગીને USB ડિવાઇસ ઍક્સેસ કરવાની પરવાનગી આપો. USB ડિવાઇસ કાઢી નાખવામાં આવે પછી Linux તેને યાદ રાખશે નહીં.</translation>
 <translation id="1347256498747320987">અપડેટ અને ઍપ ઇન્સ્ટૉલ કરો. આગળ વધીને, તમે સંમત થાઓ છો કે આ ડિવાઇસ સંભવતઃ મોબાઇલ ડેટાનો ઉપયોગ કરીને Google, તમારા કૅરિઅર અને તમારા ડિવાઇસના નિર્માતાના અપડેટ અને ઍપ ઑટોમૅટિક રીતે ડાઉનલોડ અને ઇન્સ્ટૉલ પણ કરી શકે છે. આમાંની અમુક ઍપ ઍપમાંથી ખરીદીની ઑફર કરી શકે છે. <ph name="BEGIN_LINK1" />વધુ જાણો<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">જ્યારે બૅટરી <ph name="BATTERY_LEVEL" />% પર પહોંચી જાય ત્યારે અપડેટ શરૂ થશે.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
@@ -703,6 +704,7 @@
 <translation id="2120297377148151361">પ્રવૃત્તિ અને ક્રિયાપ્રતિક્રિયાઓ</translation>
 <translation id="2120478168904746065">{NUM_TABS,plural, =1{ટૅબને અનમ્યૂટ કરો}one{ટૅબને અનમ્યૂટ કરો}other{ટૅબને અનમ્યૂટ કરો}}</translation>
 <translation id="2121825465123208577">આકાર બદલો</translation>
+<translation id="2122305276694332719">છુપાવેલા નેટવર્ક સાથે ઑટોમૅટિક રીતે કનેક્ટ કરવાથી અન્ય લોકો તમારું ડિવાઇસ અને અન્ય નેટવર્ક સેટિંગ જોઈ શકે છે અને તે માટે સુઝાવ આપેલો નથી.</translation>
 <translation id="2124930039827422115">{1,plural, =1{એક વપરાશકર્તાએ <ph name="AVERAGE_RATING" /> રેટ કરેલું.}one{# વપરાશકર્તાએ <ph name="AVERAGE_RATING" /> રેટ કરેલું.}other{# વપરાશકર્તાએ <ph name="AVERAGE_RATING" /> રેટ કરેલું.}}</translation>
 <translation id="2126167708562367080">સમન્વયન, તમારા વ્યવસ્થાપક દ્વારા અક્ષમ કરવામાં આવ્યું છે.</translation>
 <translation id="2127372758936585790">નિમ્ન-પાવર ચાર્જર</translation>
@@ -1299,6 +1301,7 @@
 <translation id="3012917896646559015">તમારા કમ્પ્યુટરને સમારકામ સગવડ પર મોકલવા માટે તુરંત તમારા હાર્ડવેર નિર્માતાનો સંપર્ક કરો.</translation>
 <translation id="3013291976881901233">MIDI ઉપકરણો</translation>
 <translation id="3015639418649705390">હમણાં ફરીથી લૉન્ચ કરો</translation>
+<translation id="3016329696181678353"><ph name="PRINTER_NAME" />ને ઑટોમૅટિક રીતે ગોઠવી શકાતું નથી. કૃપા કરીને વિગતવાર પ્રિન્ટરની વિગતો જણાવો.</translation>
 <translation id="3016641847947582299">ઘટક અપડેટ કર્યો</translation>
 <translation id="3016780570757425217">તમારું સ્થાન જાણો</translation>
 <translation id="3020183492814296499">શૉર્ટકટ</translation>
@@ -1801,7 +1804,6 @@
 <translation id="3789841737615482174">ઇન્સ્ટોલ કરો</translation>
 <translation id="379082410132524484">તમારા કાર્ડની સમયસીમા સમાપ્ત થઈ ગઈ છે</translation>
 <translation id="3792890930871100565">પ્રિંટર્સ ડિસ્કનેક્ટ કરો</translation>
-<translation id="3792938779249970121">એકાઉન્ટ પસંદ કરો</translation>
 <translation id="3796648294839530037">મનપસંદ નેટવર્ક્સ:</translation>
 <translation id="3797739167230984533">તમારી લિંક તમારી સંસ્થા દ્વારા <ph name="BEGIN_LINK" /><ph name="DEVICE_TYPE" /> મેનેજ કરવામાં આવે છે<ph name="END_LINK" /></translation>
 <translation id="3797900183766075808">“<ph name="SEARCH_TERMS" />” માટે <ph name="SEARCH_ENGINE" /> માં &amp;શોધ કરો</translation>
@@ -2110,6 +2112,7 @@
 <translation id="4268025649754414643">કી ચિહ્નિકરણ</translation>
 <translation id="4270393598798225102">વર્ઝન <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">કોઇ મેળ મળ્યાં નથી</translation>
+<translation id="4275663329226226506">મીડિયા</translation>
 <translation id="4275830172053184480">તમારું ઉપકરણ પુનઃપ્રારંભ કરો</translation>
 <translation id="4278101229438943600">તમારું આસિસ્ટંટ તૈયાર છે</translation>
 <translation id="4278390842282768270">મંજૂર</translation>
@@ -2152,7 +2155,6 @@
 <translation id="4354344420232759511">તમે મુલાકાત લીધેલી સાઇટ અહીં દેખાશે</translation>
 <translation id="435527878592612277">તમારો ફોટો પસંદ કરો</translation>
 <translation id="4356334633973342967">અથવા તમારા પોતાના ડ્રાઇવરનો ઉલ્લેખ કરો:</translation>
-<translation id="4358169392473932247">તે સુરક્ષા કોડ, લૉગ ઇન વિગતના આંતરિક સ્ટોરેજઈપ સપોર્ટ કરતું નથી, પરંતુ તે સુવિધાની વિનંતી કરી હતી.</translation>
 <translation id="4359408040881008151">નિર્ભર એક્સ્ટેન્શન(એક્સ્ટેન્શન્સ)ને લીધે ઇન્સ્ટોલ કર્યું.</translation>
 <translation id="4359717112757026264">સિટિસ્કેપ</translation>
 <translation id="4361142739114356624">આ ક્લાઇન્ટ પ્રમાણપત્ર માટેની ખાનગી કી ખૂટે છે અથવા તો અમાન્ય છે</translation>
@@ -2335,7 +2337,6 @@
 <translation id="4665014895760275686">નિર્માતા</translation>
 <translation id="4665446389743427678"><ph name="SITE" />નો સ્ટોર કરેલો બધો ડેટા ડિલીટ કરવામાં આવશે.</translation>
 <translation id="4668721319092543482"><ph name="PLUGIN_NAME" />ને ચાલુ કરવા માટે ક્લિક કરો</translation>
-<translation id="4670688170798478686">રીસેટ કન્ફર્મ કરો</translation>
 <translation id="4672657274720418656">Distill પૃષ્ઠ</translation>
 <translation id="4673442866648850031">જ્યારે સ્ટાઇલસ દૂર કરવામાં આવ્યું હોય ત્યારે સ્ટાઇલસનાં સાધનો ખોલો</translation>
 <translation id="4677585247300749148"><ph name="URL" /> ઍક્સેસિબિલિટી ઇવેન્ટનો જવાબ આપવા માગે છે</translation>
@@ -2365,7 +2366,6 @@
 <translation id="4711638718396952945">સેટિંગ્સ પુનઃસ્થાપિત કરો</translation>
 <translation id="4715553623069266137">ખૂબ ટૂંકો વિલંબ (0.8 સે)</translation>
 <translation id="4716483597559580346">વધારાની સુરક્ષા માટે પાવરવૉશ</translation>
-<translation id="4718490098585891067">સાઇન ઇન કરવા માટે એકાઉન્ટ પસંદ કરો:</translation>
 <translation id="4720113199587244118">ઉપકરણો ઉમેરો</translation>
 <translation id="4720185134442950733">મોબાઇલ ડેટા નેટવર્ક</translation>
 <translation id="4722735765955348426"><ph name="USERNAME" /> માટેનો પાસવર્ડ</translation>
@@ -2396,7 +2396,6 @@
 <translation id="4756388243121344051">&amp;ઇતિહાસ</translation>
 <translation id="4759238208242260848">ડાઉનલોડ્સ</translation>
 <translation id="4761104368405085019">તમારા માઇક્રોફોનનો ઉપયોગ કરો</translation>
-<translation id="476166673298332917">ડિવાઇસ વ્યવસ્થાપક તમારી બ્રાઉઝિંગ પ્રવૃત્તિને મોનિટર કરી શકે છે.</translation>
 <translation id="4762718786438001384">ઉપકરણ ડિસ્ક સ્થાન અત્યંત ઓછું છે</translation>
 <translation id="4763408175235639573">જ્યારે તમે આ પેજ જોયું, ત્યારે નીચેની કુકી સેટ થઈ હતી</translation>
 <translation id="4763830802490665879">બહુવિધ સાઇટ્સની કૂકીઝને બહાર નીકળવા પર સાફ કરવામાં આવશે.</translation>
@@ -3927,7 +3926,6 @@ USB ડિવાઇસ</translation>
 <translation id="713888829801648570">માફ કરશો, તમારો પાસવર્ડ ચકાસી શકાયો નથી કારણ કે તમે ઑફલાઇન છો.</translation>
 <translation id="7140928199327930795">કોઈ અન્ય ઉપલબ્ધ ઉપકરણો નથી.</translation>
 <translation id="7141105143012495934">સાઇન ઇન નિષ્ફળ થયું કારણ કે તમારી એકાઉન્ટ વિગતો પાછી મેળવી શકાઈ નથી. કૃપા કરીને તમારા એડમિનનો સંપર્ક કરો અથવા ફરી પ્રયાસ કરો.</translation>
-<translation id="714285394257538643">તમે તમારા સુરક્ષા કોડને રીસેટ કરવા માગો તે બાબતને કન્ફર્મ કરવા માટે, તેને ફરી ટચ કરો. સુરક્ષા કોડ પર સ્ટોર કરેલી બધી લૉગ ઇન વિગતો અને તેનો પિન કાઢી નાખવામાં આવશે.</translation>
 <translation id="7143092389027215216">ડેમો મોડ શરૂ કરી રહ્યાં છીએ</translation>
 <translation id="7143207342074048698">કનેક્ટ કરી રહ્યું છે</translation>
 <translation id="7144878232160441200">ફરી પ્રયાસ કરો</translation>
@@ -4161,6 +4159,7 @@ USB ડિવાઇસ</translation>
 <translation id="7506541170099744506">એન્ટરપ્રાઇઝ સંચાલન માટે તમારા <ph name="DEVICE_TYPE" /> ની સફળતાપૂર્વક નોંધણી કરવામાં આવી.</translation>
 <translation id="7507930499305566459">પ્રતિસાદકર્તાની સ્થિતિનું પ્રમાણપત્ર</translation>
 <translation id="7513029293694390567">સંગ્રહિત ઓળખપત્રનો ઉપયોગ કરીને વેબસાઇટ્સમાં આપમેળે સાઇન ઇન કરો. જો અક્ષમ કરેલ હોય, તો વેબસાઇટમાં સાઇન ઇન કરતાં પહેલાં દર વખતે તમને પુષ્ટિકરણ માટે કહેવામાં આવશે.</translation>
+<translation id="7514365320538308">ડાઉનલોડ કરો</translation>
 <translation id="7517786267097410259">એક પાસવર્ડ બનાવો -</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">"Ok Google" કહો</translation>
@@ -4495,6 +4494,7 @@ USB ડિવાઇસ</translation>
 <translation id="7999229196265990314">નીચેની ફાઇલો બનાવાઈ: એક્સટેન્શન: <ph name="EXTENSION_FILE" />કી ફાઇલ: <ph name="KEY_FILE" />તમારી કી ફાઇલને સુરક્ષિત સ્થાન પર મૂકો. તમને તેની જરૂરિયાત તમારા એક્સટેન્શનના નવા સંસ્કરણ બનાવવા માટે પડશે.</translation>
 <translation id="8000066093800657092">નેટવર્ક નથી</translation>
 <translation id="8000467600002607205">{NUM_TABS,plural, =1{ટૅબ બંધ કરો}one{ટૅબ બંધ કરો}other{ટૅબ બંધ કરો}}</translation>
+<translation id="8002274832045662704">વિગતવાર પ્રિન્ટરની ગોઠવણી</translation>
 <translation id="8004582292198964060">બ્રાઉઝર</translation>
 <translation id="8005600846065423578"><ph name="HOST" />ને હંમેશા ક્લિપબોર્ડ જોવા માટે મંજૂરી આપો</translation>
 <translation id="8008356846765065031">ઇન્ટરનેટ ડિસ્કનેક્ટ કર્યું. કૃપા કરીને તમારું ઇન્ટરનેટ કનેક્શન તપાસો.</translation>
@@ -5035,6 +5035,7 @@ USB ડિવાઇસ</translation>
 <translation id="8850251000316748990">વધુ જુઓ...</translation>
 <translation id="885246833287407341">API કાર્યના તર્ક</translation>
 <translation id="8853586775156634952">આ કાર્ડ માત્ર આ ડિવાઇસમાં સચવાશે</translation>
+<translation id="885701979325669005">સ્ટોરેજ</translation>
 <translation id="8859057652521303089">તમારી ભાષા પસંદ કરો:</translation>
 <translation id="8859174528519900719">સબફ્રેમ: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8862003515646449717">એક ઝડપી બ્રાઉઝર પર સ્વિચ કરો</translation>

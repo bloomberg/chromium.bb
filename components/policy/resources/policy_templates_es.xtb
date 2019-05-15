@@ -142,6 +142,15 @@
 Si esta política se establece en False, no se informará sobre el estado del conector de modo de desarrollador.</translation>
 <translation id="1160479894929412407">Permitir protocolo QUIC</translation>
 <translation id="1160939557934457296">Inhabilitar seguir navegando desde la página de advertencia sobre Navegación Segura</translation>
+<translation id="1171342272070128466">Habilita la función de accesibilidad de lupa fijada.
+
+          Si se le asigna el valor "True" a esta política, la lupa fijada siempre estará habilitada.
+
+          Si se le asigna el valor "False" a esta política, la lupa fijada siempre estará inhabilitada.
+
+          Si asignas un valor a esta política, los usuarios no podrán cambiarlo ni anularlo.
+
+          Si no se le asigna ningún valor, la lupa fijada se inhabilitará de forma inicial, pero el usuario podrá habilitarla en cualquier momento.</translation>
 <translation id="1189817621108632689">Permite establecer una lista de patrones de URL para especificar los sitios web que no pueden mostrar imágenes.
 
           Si no se establece esta política, se usará para todos los sitios web el valor general predeterminado que se indique en la política "DefaultImagesSetting" (si se ha establecido) o el valor personalizado que haya definido el usuario (en caso contrario).
@@ -449,6 +458,7 @@ Si esta política está establecida en "false" o no está establecida, se inhabi
       Si se habilita la política, los usuarios podrán inhabilitar el comportamiento predeterminado con el que cada sitio web se ejecuta en su propio proceso.
       Si la política no se configura o se inhabilita, el usuario podrá cambiar esta configuración (por ejemplo, utilizando la entrada "Inhabilitar el aislamiento de sitio web" en chrome://flags).
       </translation>
+<translation id="1767673020408652620">Habilitar la opción Aplicaciones recomendadas en estado cero del cuadro de búsqueda.</translation>
 <translation id="1781356041596378058">Esta política también controla el acceso a las Opciones para Desarrolladores de Android. Si se asigna el valor true a esta política, los usuarios no podrán acceder a las Opciones para Desarrolladores. Si se le asigna el valor false o no se configura, los usuarios podrán tocar siete veces el número de compilación en la aplicación Ajustes de Android para acceder a esas opciones.</translation>
 <translation id="1793346220873697538">Inhabilitar la impresión con PIN de forma predeterminada</translation>
 <translation id="1797233582739332495">Mostrar un mensaje periódico al usuario indicando que es necesario reiniciar el navegador</translation>
@@ -989,6 +999,15 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 
       Cada entrada de la lista especifica un identificador, que se utiliza de forma interna para diferenciar las cuentas locales del dispositivo.</translation>
 <translation id="2769952903507981510">Configurar el nombre de dominio obligatorio para hosts de acceso remoto</translation>
+<translation id="2783078941107212091">Habilita la opción Aplicación recomendada en el estado cero del cuadro de búsqueda en el menú de aplicaciones.
+
+          Si se le asigna el valor "True" a esta política, podrían aparecer aplicaciones recomendadas en la búsqueda en estado cero.
+
+          Si se le asigna el valor "False", no aparecerán aplicaciones recomendadas en la búsqueda en estado cero.
+
+          Si asignas un valor a esta política, los usuarios no podrán cambiarlo ni anularlo.
+
+          Si no se le asigna ningún valor, se le asignará de forma automática el valor "False" para dispositivos gestionados.</translation>
 <translation id="2787173078141616821">Proporcionar información sobre el estado de Android</translation>
 <translation id="2799297758492717491">Permitir reproducción automática de contenido multimedia en una lista blanca de patrones de URL</translation>
 <translation id="2801155097555584385">Define un porcentaje personalizado de inicio de carga de la batería</translation>
@@ -1183,6 +1202,25 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
       Si se asigna el valor false a esta política, la optimización de WPAD se inhabilitará, lo que causará que <ph name="PRODUCT_NAME" /> tenga que esperar más tiempo la respuesta de los servidores WPAD basados en DNS. Si no se configura esta política o se habilita, se habilitará la optimización de WPAD.
 
       Independientemente de cómo se configure esta política o de si se configura o no, los usuarios no podrán cambiar la opción de configuración de WPAD.</translation>
+<translation id="3071839057966069710">Configura una lista de impresoras.
+
+      Esta política permite que los administradores proporcionen opciones de configuración de impresoras
+      a sus usuarios.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> y <ph name="PRINTER_DESCRIPTION" /> son cadenas de formato libre que se pueden personalizar para que la selección de impresoras sea sencilla. <ph name="PRINTER_MANUFACTURER" /> y <ph name="PRINTER_MODEL" /> permiten que la identificación de la impresora sea sencilla para los usuarios finales. Representan el fabricante y el modelo de la impresora. <ph name="PRINTER_URI" /> debería ser una dirección que esté disponible desde un ordenador cliente (incluidos <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> y <ph name="URI_QUEUE" />). <ph name="PRINTER_UUID" /> es opcional. Si se especifica, se utiliza para anular el duplicado de impresoras <ph name="ZEROCONF_DISCOVERY" />.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> debe coincidir con una de las cadenas que representan una impresora <ph name="PRODUCT_NAME" /> compatible. La cadena se usará para identificar e instalar los archivos PPD adecuados para la impresora. Consulta más información en la página https://support.google.com/chrome?p=noncloudprint.
+
+      <ph name="PRINTER_AUTOCONF" /> es un indicador booleano que especifica si se debe usar IPP Everywhere para configurar la impresora. Este indicador es compatible con <ph name="PRODUCT_OS_NAME" /> 76 y versiones posteriores.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> debería incluir el nombre de la impresora o <ph name="PRINTER_AUTOCONF" /> debería tener asignado el valor "True". Se ignorarán las impresoras que tengan ambas propiedades o ninguna.
+
+      La configuración de la impresora se completará la primera vez que se use.  Los archivos PPD no se descargarán hasta que se use la impresora.  A partir de ese momento, los archivos PPD que se usen con frecuencia se almacenarán en caché.
+
+      Esta política no afecta a la capacidad de los usuarios para configurar impresoras en determinados dispositivos.  La política se ha diseñado con el objetivo de ser complementaria a la configuración de impresoras por parte de los usuarios.
+
+      En los dispositivos administrados de Active Directory, esta política admite una expansión de <ph name="MACHINE_NAME_VARIABLE" /> al nombre de máquina de Active Directory o una subcadena de este. Por ejemplo, si el nombre de máquina es <ph name="MACHINE_NAME_EXAMPLE" />, <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> se sustituiría por 4 caracteres después de la sexta posición, es decir, <ph name="MACHINE_NAME_PART_EXAMPLE" />. Ten en cuenta que la posición se basa en cero.
+      </translation>
 <translation id="3072045631333522102">Protector de pantalla a utilizar en la pantalla de inicio de sesión del modo de venta</translation>
 <translation id="3072847235228302527">Establecer las Condiciones de Servicio para una cuenta de dispositivo local</translation>
 <translation id="3077183141551274418">Habilita o inhabilita los ciclos de vida de las pestañas</translation>
@@ -1777,7 +1815,7 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
           Está opción anulará RemoteAccessHostClientDomain si está presente.
 
           Consulta también RemoteAccessHostDomainList.</translation>
-<translation id="4164601239783385546">Habilita la función de accesibilidad teclas persistentes.
+<translation id="4164601239783385546">Habilita la función de accesibilidad de teclas persistentes.
 
           Si se le asigna el valor "True" a esta política, las teclas persistentes siempre estarán habilitadas.
 
@@ -1981,7 +2019,6 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="4591366717022345234">Proporciona a los usuarios una versión Quick Fix</translation>
 <translation id="4600786265870346112">Habilitar cursor grande</translation>
 <translation id="4604931264910482931">Configurar la lista negra de mensajes nativos</translation>
-<translation id="4613508646038788144">Si se le asigna el valor "False" a esta política, el software de terceros podrá insertar código ejecutable en los procesos de Chrome. Si no se asigna ningún valor a esta política o se le asigna el valor "True", el software de terceros no podrá insertar código ejecutable en los procesos de Chrome.</translation>
 <translation id="4617338332148204752">Saltarla comprobación de metaetiquetas en <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="4625915093043961294">Configurar lista de admisión de instalación de extensiones</translation>
 <translation id="4632343302005518762">Permitir que <ph name="PRODUCT_FRAME_NAME" /> procese los tipos de contenido mostrados</translation>
@@ -2173,15 +2210,6 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
       Si se le asigna el valor "False", Chrome cerrará la pestaña (aunque sea la última), al cambiar a otro navegador. Esto hará que Chrome se cierre por completo.</translation>
 <translation id="5105313908130842249">Retraso de bloqueo de pantalla cuando el dispositivo funciona con la batería</translation>
 <translation id="5108031557082757679">Impresoras de dispositivos de empresa inhabilitadas</translation>
-<translation id="5113732180192599620">Esta política controla la lista de sitios web que nunca provocarán que se cambie de navegador.
-
-      Ten en cuenta que también se pueden añadir elementos a la lista a través de las políticas <ph name="USE_IE_SITELIST_POLICY_NAME" /> y <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />.
-
-      Si no se asigna ningún valor a esta política, no se añaden sitios web a la lista.
-
-      Si se le asigna un valor, cada elemento se trata como una regla, como sucede con la política <ph name="URL_LIST_POLICY_NAME" />. Sin embargo, se invierte la lógica: las reglas que coinciden no abren ningún navegador alternativo.
-
-      A diferencia de <ph name="URL_LIST_POLICY_NAME" />, las reglas se aplican en ambas direcciones. De esta forma, si el complemento de Internet Explorer está presente y habilitado, también controla si <ph name="IE_PRODUCT_NAME" /> debe abrir las URL en <ph name="PRODUCT_NAME" />.</translation>
 <translation id="5124368997194894978">Habilitar el inicio con CA (corriente alterna)</translation>
 <translation id="5131211790949066746">Permite combinar las políticas de listas de instalación de extensiones <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" /> y <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />.
 
@@ -2464,6 +2492,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 
       Si no se especifica, no se modificará la URL de la base de las variaciones.</translation>
 <translation id="5561811616825571914">Seleccionar automáticamente certificados de cliente de estos sitios web en la pantalla de inicio de sesión</translation>
+<translation id="5565178130821694365">Es necesario introducir la contraseña cada dos días (48 horas)</translation>
 <translation id="5566210228171064229">Permitir imprimir con y sin PIN</translation>
 <translation id="556865034069957245">Esta política permite controlar la disponibilidad del modo de pantalla completa en el que toda la UI de <ph name="PRODUCT_NAME" /> está oculta y solo se muestra el contenido web.
 

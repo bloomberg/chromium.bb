@@ -1089,7 +1089,6 @@
 <translation id="7062635574500127092">Sinakasroheline</translation>
 <translation id="7064851114919012435">Kontaktteave</translation>
 <translation id="7079718277001814089">See sait sisaldab pahavara</translation>
-<translation id="7081564429925484109">Hoiatus. Reeglit ei liidetud reeglis PolicyListMultipleSourceMergeList määratud viisil, kuna see ei ole loend.</translation>
 <translation id="7087282848513945231">Maakond</translation>
 <translation id="7090678807593890770">Sisestage Google'isse otsing <ph name="LINK" /></translation>
 <translation id="7108338896283013870">Peida</translation>
@@ -1149,7 +1148,6 @@ Lisateave:
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">Ei</translation>
 <translation id="7378810950367401542">/</translation>
-<translation id="7381288752349550461">Hallatud seansi alistamine</translation>
 <translation id="7390545607259442187">Kaardi kinnitamine</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7403591733719184120">Teie seadet <ph name="DEVICE_NAME" /> hallatakse</translation>

@@ -9,7 +9,6 @@
 <translation id="1067922213147265141">Perkhidmatan Google yang lain</translation>
 <translation id="1068672505746868501">Jangan sekali-kali terjemahkan halaman dalam <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1080790410959514870">Anda sedang melog keluar daripada akaun yang diurus oleh <ph name="DOMAIN_NAME" />. Ini akan memadamkan data Chrome pada peranti ini tetapi data masih kekal dalam Akaun Google anda.</translation>
-<translation id="1099080783256647258">Apabila Penjimat Data dihidupkan, Chrome menggunakan pelayan Google untuk mempercepat dan memampatkan halaman. Pada halaman yang sangat perlahan, Penjimat Data menulis semula halaman untuk memuatkan kandungan yang penting sahaja. Penjimat Data tidak mengoptimumkan halaman yang dimuatkan dalam mod Inkognito.</translation>
 <translation id="1100066534610197918">Buka dlm tab baru dlm kumpulan</translation>
 <translation id="1105960400813249514">Tangkapan Skrin</translation>
 <translation id="1111673857033749125">Penanda halaman yang disimpan pada peranti anda yang lain akan dipaparkan di sini.</translation>
@@ -25,6 +24,7 @@
 <translation id="1175310183703641346">Penanda halaman, sejarah, kata laluan dan pelbagai lagi tidak akan disegerakkan ke Akaun Google anda</translation>
 <translation id="1178581264944972037">Jeda</translation>
 <translation id="1181037720776840403">Alih keluar</translation>
+<translation id="1188239144602654184">Masuk ke AR</translation>
 <translation id="1197267115302279827">Alihkan penanda halaman</translation>
 <translation id="119944043368869598">Kosongkan semua</translation>
 <translation id="1201402288615127009">Seterusnya</translation>
@@ -96,7 +96,6 @@
 <translation id="1672586136351118594">Jangan tunjukkan lagi</translation>
 <translation id="1692118695553449118">Penyegerakan dihidupkan</translation>
 <translation id="169515064810179024">Sekat tapak daripada mengakses penderia gerakan</translation>
-<translation id="1709438864123551175">Penjimat Data</translation>
 <translation id="1717218214683051432">Penderia gerakan</translation>
 <translation id="1718835860248848330">Jam terakhir</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - Dikemas kini <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -214,7 +213,6 @@
 <translation id="2501278716633472235">Kembali</translation>
 <translation id="2513403576141822879">Untuk mendapatkan lebih banyak tetapan yang berkaitan dengan privasi, keselamatan dan pengumpulan data, lihat <ph name="BEGIN_LINK" />Penyegerakan dan perkhidmatan Google<ph name="END_LINK" /></translation>
 <translation id="2523184218357549926">Menghantar URL halaman yang anda lawati kepada Google</translation>
-<translation id="2526148617758225454">Penjimat Data dihidupkan. Urus sambungan ini di Tetapan.</translation>
 <translation id="2532336938189706096">Paparan Web</translation>
 <translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" /> item dipadamkan</translation>
 <translation id="2536728043171574184">Melihat salinan luar talian halaman ini</translation>
@@ -354,14 +352,12 @@
 <translation id="3599863153486145794">Mengosongkan sejarah daripada semua peranti yang dilog masuk. Akaun Google anda mungkin mempunyai sejarah penyemakan imbas dalam bentuk lain di <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Redam tapak yang memainkan bunyi</translation>
 <translation id="3616113530831147358">Audio</translation>
-<translation id="3620176948598597475">Penetapan semula akan memadamkan sejarah Penjimat Data, termasuk senarai tapak yang dilawati.</translation>
 <translation id="3632295766818638029">Buka topeng kata laluan</translation>
 <translation id="363596933471559332">Log masuk secara automatik ke tapak web menggunakan bukti kelayakan yang disimpan. Apabila ciri ini dimatikan, anda akan diminta memberikan pengesahan setiap kali sebelum log masuk ke tapak web.</translation>
 <translation id="3658159451045945436">Penetapan semula akan memadamkan sejarah penjimatan data anda, termasuk senarai tapak yang dilawati.</translation>
 <translation id="3662546969139119822">Tiada sejarah di sini</translation>
 <translation id="3672452749423051839">Cadangan ralat navigasi</translation>
 <translation id="3692944402865947621">Muat turun <ph name="FILE_NAME" /> gagal kerana lokasi storan tidak dapat dicapai.</translation>
-<translation id="3712575778697986964">Tetapkan semula Penjimat Data?</translation>
 <translation id="3714981814255182093">Buka Bar Cari</translation>
 <translation id="3716182511346448902">Halaman ini menggunakan terlalu banyak memori, jadi Chrome menjeda halaman ini.</translation>
 <translation id="3730075448226062617">Untuk membenarkan Chrome mengakses mikrofon anda, hidupkan mikrofon dalam <ph name="BEGIN_LINK" />Tetapan Android<ph name="END_LINK" /> juga.</translation>
@@ -503,13 +499,11 @@ Akaun Google anda mungkin mempunyai sejarah penyemakan imbas dalam bentuk lain s
 <translation id="4751476147751820511">Penderia gerakan atau cahaya</translation>
 <translation id="4759238208242260848">Muat turun</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 muat turun selesai.}other{# muat turun selesai.}}</translation>
-<translation id="4766369052440583386">Penjimat Data dihidupkan</translation>
 <translation id="4797039098279997504">Sentuh untuk kembali ke <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4802417911091824046">Penyulitan ungkapan laluan tidak termasuk kaedah pembayaran dan alamat daripada Google Pay.
 
 Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">Nama pada kad</translation>
-<translation id="4807963036345170158">Penjimat Data dimatikan</translation>
 <translation id="4816465935029283692">Jenis data</translation>
 <translation id="4824958205181053313">Batalkan penyegerakan?</translation>
 <translation id="4837753911714442426">Buka pilihan untuk mencetak halaman</translation>
@@ -601,6 +595,7 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="5447765697759493033">Tapak ini tidak akan diterjemah</translation>
 <translation id="545042621069398927">Mempercepatkan muat turun anda.</translation>
 <translation id="5456381639095306749">Muat turun halaman</translation>
+<translation id="5475862044948910901">Mulakan sesi Realiti Tambahan?</translation>
 <translation id="548278423535722844">Buka dalam apl peta</translation>
 <translation id="5487521232677179737">Kosongkan data</translation>
 <translation id="5494752089476963479">Sekat iklan di tapak yang menyiarkan iklan yang mengganggu atau mengelirukan</translation>
@@ -643,7 +638,6 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="569536719314091526">Terjemahkan halaman ini ke dalam sebarang bahasa lain daripada butang Lagi pilihan</translation>
 <translation id="572328651809341494">Tab terbaharu</translation>
 <translation id="5726692708398506830">Jadikan semua yang ada pada halaman lebih besar</translation>
-<translation id="5734520971562437809">Menggunakan sehingga 60 peratus lebih sedikit data dan mempercepat web.</translation>
 <translation id="5748802427693696783">Beralih ke tab standard</translation>
 <translation id="5749068826913805084">Chrome memerlukan akses storan untuk memuat turun fail.</translation>
 <translation id="5763382633136178763">Tab inkognito</translation>
@@ -701,7 +695,6 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="6159335304067198720"><ph name="PERCENT" /> penjimatan data</translation>
 <translation id="6165508094623778733">Ketahui lebih lanjut</translation>
 <translation id="6177111841848151710">Disekat untuk enjin carian semasa</translation>
-<translation id="6177390657002841081">Hidupkan Penjimat Data</translation>
 <translation id="6181444274883918285">Tambah pengecualian tapak</translation>
 <translation id="6192333916571137726">Muat turun fail</translation>
 <translation id="6192792657125177640">Pengecualian</translation>
@@ -867,6 +860,11 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Kongsi 1 item yang dipilih}other{Kongsi # item yang dipilih}}</translation>
 <translation id="7359002509206457351">Akses kaedah pembayaran</translation>
+<translation id="7365126855094612066">Sepanjang tempoh sesi ini, tapak akan dapat:
+• membuat peta 3D persekitaran anda
+• menjejak pergerakan kamera
+
+Tapak TIDAK memperoleh akses kepada kamera. Hanya anda dapat melihat imej kamera.</translation>
 <translation id="7375125077091615385">Jenis:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -1114,11 +1112,9 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="9188680907066685419">Log keluar daripada akaun terurus</translation>
 <translation id="9204836675896933765">1 fail lagi</translation>
 <translation id="9206873250291191720">A</translation>
-<translation id="9215534869786664672">Menggunakan sehingga 60 peratus lebih sedikit data dan mempercepat web. Pelayan Google akan mengoptimumkan halaman yang anda lawati.</translation>
 <translation id="9219103736887031265">Imej</translation>
 <translation id="926205370408745186">Alih keluar aktiviti Chrome anda daripada Kesejahteraan Digital</translation>
 <translation id="932327136139879170">Laman Utama</translation>
-<translation id="932599481871055447">Jimatkan data dan semak imbas dengan lebih pantas</translation>
 <translation id="938850635132480979">Ralat: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Akses mikrofon anda</translation>
 <translation id="951339005376969845">Padam data sedia ada. Anda boleh mendapatkannya semula dengan beralih semula kepada <ph name="FROM_ACCOUNT" />.</translation>

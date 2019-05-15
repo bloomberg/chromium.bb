@@ -144,6 +144,15 @@
       If the policy is set to false, the state of the dev switch will not be reported.</translation>
 <translation id="1160479894929412407">Allow QUIC protocol</translation>
 <translation id="1160939557934457296">Disable proceeding from the Safe Browsing warning page</translation>
+<translation id="1171342272070128466">Enable the docked magnifier accessibility feature.
+
+          If this policy is set to true, the docked magnifier will always be enabled.
+
+          If this policy is set to false, the docked magnifier will always be disabled.
+
+          If you set this policy, users cannot change or override it.
+
+          If this policy is left unset, the docked magnifier is disabled initially but can be enabled by the user at any time.</translation>
 <translation id="1189817621108632689">Allows you to set a list of URL patterns that specify sites which are not allowed to display images.
 
           If this policy is left not set, the global default value will be used for all sites, either from the 'DefaultImagesSetting' policy if it is set, or from the user's personal configuration. 
@@ -455,6 +464,7 @@
       If the policy is enabled, users will be unable to opt out of the default behaviour where each site runs in its own process.
       If the policy is not configured or disabled, the user will be able to change this setting (e.g. using 'Disable site isolation' entry in chrome://flags).
       </translation>
+<translation id="1767673020408652620">Enable App Recommendations in Zero State of Search Box</translation>
 <translation id="1781356041596378058">This policy also controls access to Android Developer Options. If you set this policy to true, users cannot access Developer Options. If you set this policy to false or leave it unset, users can access Developer Options by tapping seven times on the build number in the Android settings app.</translation>
 <translation id="1793346220873697538">Disable PIN printing by default</translation>
 <translation id="1797233582739332495">Show a recurring prompt to the user indicating that a relaunch is required</translation>
@@ -989,6 +999,15 @@
 
       Every list entry specifies an identifier, which is used internally to tell the different device-local accounts apart.</translation>
 <translation id="2769952903507981510">Configure the required domain name for remote access hosts</translation>
+<translation id="2783078941107212091">Enable App Recommendation in Zero State of search box in launcher.
+
+          If this policy is set to true, App recommendations may appear in the zero state search.
+
+          If this policy is set to false, App recommendations will not appear in the zero state search.
+
+          If you set this policy, users cannot change or override it.
+
+          If this policy is left unset, the default is False for managed devices.</translation>
 <translation id="2787173078141616821">Report information about status of Android</translation>
 <translation id="2799297758492717491">Allow media auto-play on a whitelist of URL patterns</translation>
 <translation id="2801155097555584385">Set battery charge custom start charging in per cent</translation>
@@ -1186,6 +1205,24 @@
       If this policy is set to false, WPAD optimisation is disabled causing <ph name="PRODUCT_NAME" /> to wait longer for DNS-based WPAD servers. If the policy is not set or is enabled, WPAD optimisation is enabled.
 
       Independent of whether or how this policy is set, the WPAD optimisation setting cannot be changed by users.</translation>
+<translation id="3071839057966069710">Configures a list of printers.
+
+      This policy allows administrators to provide printer configurations for their users.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> and <ph name="PRINTER_DESCRIPTION" /> are free-form strings that can be customised for ease of printer selection. <ph name="PRINTER_MANUFACTURER" /> and <ph name="PRINTER_MODEL" /> serve to ease printer identification by end users. They represent the manufacturer and model of the printer. <ph name="PRINTER_URI" /> should be an address reachable from a client computer including the <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> and <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> is optional. If provided, it is used to help de-duplicate <ph name="ZEROCONF_DISCOVERY" /> printers.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> must match one of the strings which represent a <ph name="PRODUCT_NAME" /> supported printer. The string will be used to identify and install the appropriate PPD for the printer. More information can be found at https://support.google.com/chrome?p=noncloudprint.
+
+      <ph name="PRINTER_AUTOCONF" /> is a boolean flag indicating whether IPP Everywhere should be used to set up the printer. This flag is supported on <ph name="PRODUCT_OS_NAME" /> version 76 and higher.
+
+      Either <ph name="PRINTER_EFFECTIVE_MODEL" /> should contain the name of the printer or <ph name="PRINTER_AUTOCONF" /> should be set to true. The printers with both or without any properties will be ignored.
+
+      Printer setup is completed upon the first use of a printer.  PPDs are not downloaded until the printer is used.  After that time, frequently used PPDs are cached.
+
+      This policy has no effect on whether users can configure printers on individual devices.  It is intended to be supplementary to the configuration of printers by individual users.
+
+      For Active Directory managed devices this policy supports expansion of <ph name="MACHINE_NAME_VARIABLE" /> to the Active Directory machine name or a substring of it. For example, if the machine name is <ph name="MACHINE_NAME_EXAMPLE" />, then <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> would be replaced by the 4 characters starting after the sixth position, i.e. <ph name="MACHINE_NAME_PART_EXAMPLE" />. Note that the position is zero-based.
+      </translation>
 <translation id="3072045631333522102">Screen saver to be used on the sign-in screen in retail mode</translation>
 <translation id="3072847235228302527">Set the Terms of Service for a device-local account</translation>
 <translation id="3077183141551274418">Enables or disables tab lifecycles</translation>
@@ -1978,7 +2015,6 @@
 <translation id="4591366717022345234">Provide users with Quick Fix Build</translation>
 <translation id="4600786265870346112">Enable large cursor</translation>
 <translation id="4604931264910482931">Configure native messaging blacklist</translation>
-<translation id="4613508646038788144">If the policy is set to false then third-party software will be allowed to inject executable code into Chrome's processes. If the policy is unset or set to true then third-party software will be prevented from injecting executable code into Chrome's processes.</translation>
 <translation id="4617338332148204752">Skip the meta tag check in <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="4625915093043961294">Configure extension installation whitelist</translation>
 <translation id="4632343302005518762">Allow <ph name="PRODUCT_FRAME_NAME" /> to handle the listed content types</translation>
@@ -2167,15 +2203,6 @@
       When this policy is set to false, Chrome will close the tab after switching to an alternative browser, even if it was the last tab. This will cause Chrome to exit completely.</translation>
 <translation id="5105313908130842249">Screen lock delay when running on battery power</translation>
 <translation id="5108031557082757679">Disabled enterprise device printers</translation>
-<translation id="5113732180192599620">This policy controls the list of websites that will never cause a browser switch.
-
-      Note that elements can also be added to this list through the <ph name="USE_IE_SITELIST_POLICY_NAME" /> and <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" /> policies.
-
-      When this policy is left unset, no websites are added to the list.
-
-      When this policy is set, each item is treated as a rule, similar to the <ph name="URL_LIST_POLICY_NAME" /> policy. However, the logic is reversed: rules that match will not open an alternative browser.
-
-      Unlike <ph name="URL_LIST_POLICY_NAME" />, rules apply to both directions. That is, when the Internet Explorer add-in is present and enabled, it also controls whether <ph name="IE_PRODUCT_NAME" /> should open these URLs in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="5124368997194894978">Enable boot on AC (alternating current)</translation>
 <translation id="5131211790949066746">Enables merging of the extension install list policies <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" /> and <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />.
 
@@ -2456,6 +2483,7 @@
 
       If not specified, will not modify the Variations seed URL.</translation>
 <translation id="5561811616825571914">Automatically select client certificates for these sites on the sign-in screen</translation>
+<translation id="5565178130821694365">Password entry is required every two days (48 hours)</translation>
 <translation id="5566210228171064229">Allow printing both with and without PIN</translation>
 <translation id="556865034069957245">This policy controls the availability of full screen mode in which all <ph name="PRODUCT_NAME" /> UI is hidden and only web content is visible.
 

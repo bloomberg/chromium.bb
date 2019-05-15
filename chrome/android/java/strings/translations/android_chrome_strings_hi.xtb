@@ -9,7 +9,6 @@
 <translation id="1067922213147265141">Google की दूसरी सेवाएंं</translation>
 <translation id="1068672505746868501"><ph name="SOURCE_LANGUAGE" /> भाषा के पेज का कभी भी अनुवाद न करें</translation>
 <translation id="1080790410959514870">आप <ph name="DOMAIN_NAME" /> से प्रबंधित खाते से साइन आउट कर रहे हैं. इससे इस डिवाइस पर स्टोर किया गया Chrome डेटा मिट जाएगा, लेकिन डेटा आपके Google खाते में बना रहेगा.</translation>
-<translation id="1099080783256647258">'डेटा बचाने का टूल' चालू होने पर, Chrome पेज लोड होने की गति बढ़ाने और पेज लोड कंप्रेस करने के लिए Google के सर्वर का इस्तेमाल करता है. जो पेज खास तौर पर धीमे हैं उन पर, 'डेटा बचाने का टूल' पेज को फिर से लिखकर सिर्फ़ ज़रूरी सामग्री लोड कर देता है. 'डेटा बचाने का टूल' 'गुप्त मोड' में लोड किए गए पेज ऑप्टिमाइज़ नहीं करता है.</translation>
 <translation id="1100066534610197918">समूह में नए टैब में खोलें</translation>
 <translation id="1105960400813249514">स्‍क्रीन कैप्‍चर</translation>
 <translation id="1111673857033749125">आपके अन्‍य डिवाइस पर सहेजे गए बुकमार्क यहां दिखाई देंगे.</translation>
@@ -25,6 +24,7 @@
 <translation id="1175310183703641346">आपके बुकमार्क, इतिहास, पासवर्ड वगैरह अब आपके Google खाते से समन्‍वयित नहीं किए जाएंगे</translation>
 <translation id="1178581264944972037">रोकें</translation>
 <translation id="1181037720776840403">हटाएं</translation>
+<translation id="1188239144602654184">ऑगमेंटेड रिएलिटी (AR) सत्र शुरू करें</translation>
 <translation id="1197267115302279827">बुकमार्क ले जाएं</translation>
 <translation id="119944043368869598">सारा डेटा साफ़ करें</translation>
 <translation id="1201402288615127009">अगला</translation>
@@ -95,8 +95,7 @@
 <translation id="1671236975893690980">डाउनलोड लंबित…</translation>
 <translation id="1672586136351118594">फिर से न दिखाएं</translation>
 <translation id="1692118695553449118">समन्वयन चालू है</translation>
-<translation id="169515064810179024">साइटों को हलचल पकड़ने वाले सेंसर एक्सेस करने से रोकें</translation>
-<translation id="1709438864123551175">डेटा बचाने का टूल</translation>
+<translation id="169515064810179024">साइटों को हलचल पकड़ने वाले सेंसर एक्सेस करने से रोकें</translation>
 <translation id="1717218214683051432">मोशन सेंसर</translation>
 <translation id="1718835860248848330">अंतिम घंटा</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - <ph name="TIME_SINCE_UPDATE" /> अपडेट किया गया</translation>
@@ -195,7 +194,7 @@
 <translation id="2359808026110333948">जारी रखें</translation>
 <translation id="2369533728426058518">खुले टैब</translation>
 <translation id="2387895666653383613">लेख स्‍केलिंग</translation>
-<translation id="2394602618534698961">आप जिन फ़ाइल को डाउनलोड करते हैं, वे यहां दिखाई देंगी</translation>
+<translation id="2394602618534698961">आप जिन फ़ाइलों को डाउनलोड करते हैं वे यहां दिखाई देंगी</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> एमबी</translation>
 <translation id="2410754283952462441">कोई खाता चुनें</translation>
 <translation id="2414886740292270097">गहरा</translation>
@@ -214,7 +213,6 @@
 <translation id="2501278716633472235">वापस जाएं</translation>
 <translation id="2513403576141822879">निजता, सुरक्षा और डेटा इकट्ठा करने से जुड़ी ज़्यादा सेटिंग के लिए, <ph name="BEGIN_LINK" />सिंक और Google सेवाएं<ph name="END_LINK" /> देखें</translation>
 <translation id="2523184218357549926">आप जिन पेजों पर जाते हैं उनके यूआरएल Google को भेजती है</translation>
-<translation id="2526148617758225454">डेटा सर्वर चालू है. उसे सेटिंग में प्रबंधित करें.</translation>
 <translation id="2532336938189706096">वेब व्यू</translation>
 <translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" /> आइटम मिटाए गए</translation>
 <translation id="2536728043171574184">इस पृष्‍ठ की ऑफ़लाइन कॉपी देख रहे हैं</translation>
@@ -354,14 +352,12 @@
 <translation id="3599863153486145794">साइन इन किए हुए सभी डिवाइसों से इतिहास साफ़ कर देता है. आपके Google खाते में <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> पर अन्य प्रकार के ब्राउज़िंग इतिहास हो सकते हैं.</translation>
 <translation id="3600792891314830896">आवाज़ चलाने वाली साइटों की आवाज़ बंद करें</translation>
 <translation id="3616113530831147358">ऑडियो</translation>
-<translation id="3620176948598597475">रीसेट करने से आपकी देखी गई साइटों की सूची के साथ, डेटा बचाने के टूल का इतिहास हमेशा के लिए मिट जाता है.</translation>
 <translation id="3632295766818638029">पासवर्ड दिखाएं</translation>
 <translation id="363596933471559332">स्टोर किए गए क्रेडेंशियल का इस्तेमाल करके वेबसाइटों में अपने आप साइन इन करें. सुविधा के बंद होने पर, किसी वेबसाइट में साइन इन करने से पहले आपसे हर बार पुष्टि करने को कहा जाएगा.</translation>
 <translation id="3658159451045945436">रीसेट करने से आपकी देखी गई साइटों की सूची के साथ ही, डेटा बचाने का आपका इतिहास हमेशा के लिए मिट जाता है.</translation>
 <translation id="3662546969139119822">यहां कोई इतिहास नहीं है</translation>
 <translation id="3672452749423051839">नेविगेशन की गड़बड़ी से जुड़े सुझाव</translation>
 <translation id="3692944402865947621"><ph name="FILE_NAME" /> डाउनलोड नहीं हो सकी क्योंकि स्टोर करने की जगह नहीं मिली.</translation>
-<translation id="3712575778697986964">डेटा बचाने का टूल रीसेट करें?</translation>
 <translation id="3714981814255182093">ढूंढें बार खोलें</translation>
 <translation id="3716182511346448902">यह पेज बहुत ज़्यादा मेमोरी का इस्तेमाल करता है, इसलिए Chrome ने इसे रोक दिया है.</translation>
 <translation id="3730075448226062617">Chrome को अपना माइक्रोफ़ोन एक्सेस करने देने के लिए, <ph name="BEGIN_LINK" />Android की सेटिंग<ph name="END_LINK" /> में जाकर भी माइक्रोफ़ोन चालू करें.</translation>
@@ -503,13 +499,11 @@
 <translation id="4751476147751820511">गति या लाइट सेंसर</translation>
 <translation id="4759238208242260848">डाउनलोड</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 डाउनलोड पूरा हुआ.}one{# डाउनलोड पूरे हुए.}other{# डाउनलोड पूरे हुए.}}</translation>
-<translation id="4766369052440583386">डेटा बचाने का टूल चालू है</translation>
 <translation id="4797039098279997504"><ph name="URL_OF_THE_CURRENT_TAB" /> पर वापस लौटने के लिए स्पर्श करें</translation>
 <translation id="4802417911091824046">लंबा पासवर्ड सुरक्षित करने में Google Pay से भुगतान करने के तरीके और पते शामिल नहीं हैं.
 
 यह सेटिंग बदलने के लिए, <ph name="BEGIN_LINK" />सिंक रीसेट करें<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">कार्ड पर नाम</translation>
-<translation id="4807963036345170158">डेटा बचाने का टूल बंद है</translation>
 <translation id="4816465935029283692">डेटा प्रकार</translation>
 <translation id="4824958205181053313">सिंक करना रद्द करें?</translation>
 <translation id="4837753911714442426">पेज प्रिंट करने के विकल्प खोलें</translation>
@@ -601,6 +595,7 @@
 <translation id="5447765697759493033">इस साइट का अनुवाद नहीं किया जाएगा</translation>
 <translation id="545042621069398927">आपके डाउनलोड की गति बढ़ाई जा रही है.</translation>
 <translation id="5456381639095306749">पेज डाउनलोड करें</translation>
+<translation id="5475862044948910901">ऑगमेंटेड रिएलिटी (AR) सत्र शुरू करें?</translation>
 <translation id="548278423535722844">मैप ऐप्लिकेशन में खोलें</translation>
 <translation id="5487521232677179737">डेटा साफ़ करें</translation>
 <translation id="5494752089476963479">तंग करने वाले या गुमराह करने वाले विज्ञापन दिखाने वाली साइटों पर विज्ञापन ब्लॉक करें</translation>
@@ -643,7 +638,6 @@
 <translation id="569536719314091526">'ज़्यादा विकल्प' बटन से इस पेज का अनुवाद किसी भी भाषा में करें</translation>
 <translation id="572328651809341494">हाल ही के टैब</translation>
 <translation id="5726692708398506830">पेज पर सब कुछ बड़ा करें</translation>
-<translation id="5734520971562437809">60 प्रतिशत तक कम डेटा का इस्तेमाल करें और वेब की गति तेज़ करें.</translation>
 <translation id="5748802427693696783">मानक टैब पर स्विच कर दिया गया</translation>
 <translation id="5749068826913805084">फ़ाइलें डाउनलोड करने के लिए Chrome को मेमोरी के ऐक्‍सेस की ज़रूरत होगी.</translation>
 <translation id="5763382633136178763">गुप्त टैब</translation>
@@ -701,7 +695,6 @@
 <translation id="6159335304067198720"><ph name="PERCENT" /> डेटा बचत</translation>
 <translation id="6165508094623778733">ज़्यादा जानें</translation>
 <translation id="6177111841848151710">मौजूदा सर्च इंजन के लिए ब्लॉक किया गया है</translation>
-<translation id="6177390657002841081">डेटा बचाने का टूल चालू करना</translation>
 <translation id="6181444274883918285">अपवाद वाली साइट जोड़ें</translation>
 <translation id="6192333916571137726">डाउनलोड फ़ाइल कहां सेव करें</translation>
 <translation id="6192792657125177640">अपवाद</translation>
@@ -867,6 +860,11 @@
 <translation id="7352939065658542140">वीडियो</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{1 चयनित आइटम शेयर करें}one{# चयनित आइटम शेयर करें}other{# चयनित आइटम शेयर करें}}</translation>
 <translation id="7359002509206457351">भुगतान के तरीकों को एक्सेस करें</translation>
+<translation id="7365126855094612066">इस सत्र के दौरान, साइट ये काम करेगी:
+• आपके आस-पास की जगह का 3 डी मैप बनाना
+• कैमरे की गति पर नज़र रखना
+
+साइट आपके कैमरे को एक्सेस नहीं करती है. कैमरे से ली गई इमेज सिर्फ़ आपको दिखाई देंगी.</translation>
 <translation id="7375125077091615385">प्रकार:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -1005,7 +1003,7 @@
 <translation id="8310344678080805313">मानक टैब</translation>
 <translation id="8313455859591948645">शुरुआती पन्ने में बदलाव करें</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> और कई साइटें</translation>
-<translation id="8327155640814342956">सबसे बढ़िया ब्राउज़िंग अनुभव के लिए, अपडेट करने के लिए Chrome खोलें</translation>
+<translation id="8327155640814342956">बेहतरीन ब्राउज़िंग अनुभव के लिए, Chrome अपडेट करें</translation>
 <translation id="8339163506404995330"><ph name="LANGUAGE" /> भाषा के पेज का अनुवाद नहीं किया जाएगा</translation>
 <translation id="8349013245300336738">इस्तेमाल किए गए डेटा की मात्रा के हिसाब से क्रम में लगाएं</translation>
 <translation id="8372893542064058268">किसी विशिष्ट साइट के लिए पृष्ठभूमि समन्वयन की अनुमति दें.</translation>
@@ -1114,11 +1112,9 @@
 <translation id="9188680907066685419">प्रबंधित खाते से प्रस्थान करें</translation>
 <translation id="9204836675896933765">1 फ़ाइल बची है</translation>
 <translation id="9206873250291191720">A</translation>
-<translation id="9215534869786664672">60 प्रतिशत तक कम डेटा का इस्तेमाल करके वेब में तेज़ी लाएं. Google सर्वर उन पेजों को ऑप्टिमाइज़ करेगा जिन पर आप जाते हैं.</translation>
 <translation id="9219103736887031265">इमेज</translation>
 <translation id="926205370408745186">'डिजिटल वेलबीइंग' से अपनी Chrome गतिविधि हटाएं</translation>
 <translation id="932327136139879170">होम बटन</translation>
-<translation id="932599481871055447">डेटा बचाएं और तेज़ी से ब्राउज़ करें</translation>
 <translation id="938850635132480979">गड़बड़ी: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">अपना माइक्रोफ़ोन एक्सेस करें</translation>
 <translation id="951339005376969845">मौजूदा डेटा मिटाएं. आप <ph name="FROM_ACCOUNT" /> पर वापस जाकर उसे वापस ला सकते हैं.</translation>

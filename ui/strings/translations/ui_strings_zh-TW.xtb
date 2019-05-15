@@ -181,8 +181,10 @@
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{超過 1 則未讀通知}other{超過 # 則未讀通知}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{1 分鐘內}other{# 分鐘內}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" /> + <ph name="KEY_COMBO_NAME" /></translation>
+<translation id="8098075892845277643">開啟 Google 助理語音查詢</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 小時前}other{# 小時前}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{還剩 1 秒}other{還剩 # 秒}}</translation>
+<translation id="8144660977431427332">你的搜尋結果由 Google 助理提供。<ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />，自動完成</translation>
 <translation id="815598010540052116">向下捲動</translation>
 <translation id="8170087467028567933">如果移除這項建議，你的帳戶會在所有裝置上隱藏該建議。</translation>

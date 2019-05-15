@@ -226,6 +226,7 @@
 <translation id="1338950911836659113">Sletter …</translation>
 <translation id="1340527397989195812">Sikkerhetskopiér medier fra enheten ved hjelp av Filer-appen.</translation>
 <translation id="1341988552785875222">Den gjeldende bakgrunnen er stilt inn av «<ph name="APP_NAME" />». Det kan hende du må avinstallere «<ph name="APP_NAME" />» før du kan velge en annen bakgrunn.</translation>
+<translation id="1343865611738742294">Gi Linux-apper tilgang til USB-enheter. Linux husker ikke USB-enheter etter at de er fjernet.</translation>
 <translation id="1347256498747320987">Installer oppdateringer og apper. Hvis du fortsetter, godtar du at denne enheten også kan laste ned og installere oppdateringer automatisk fra Google, operatøren din og produsenten av enheten. Dette bruker muligens mobildata. Noen av disse appene kan inneholde kjøp i app-funksjonalitet. <ph name="BEGIN_LINK1" />Finn ut mer<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">Oppdateringen starter når batteriet når <ph name="BATTERY_LEVEL" /> %.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
@@ -704,6 +705,7 @@
 <translation id="2120297377148151361">Aktivitet og interaksjoner</translation>
 <translation id="2120478168904746065">{NUM_TABS,plural, =1{Slå på lyden for fanen}other{Slå på lyden for fanene}}</translation>
 <translation id="2121825465123208577">Endre størrelse</translation>
+<translation id="2122305276694332719">Automatisk tilkobling til skjulte nettverk gjør det mulig for andre å se enheten din og enkelte nettverksinnstillinger, så det anbefales ikke.</translation>
 <translation id="2124930039827422115">{1,plural, =1{Vurdert som <ph name="AVERAGE_RATING" /> av 1 bruker.}other{Vurdert som <ph name="AVERAGE_RATING" /> av # brukere.}}</translation>
 <translation id="2126167708562367080">Administratoren din har slått av synkronisering.</translation>
 <translation id="2127372758936585790">Lading med lav effekt</translation>
@@ -1299,6 +1301,7 @@
 <translation id="3012917896646559015">Kontakt maskinvareprodusenten umiddelbart for å sende datamaskinen til et verksted.</translation>
 <translation id="3013291976881901233">MIDI-enheter</translation>
 <translation id="3015639418649705390">Start på nytt nå</translation>
+<translation id="3016329696181678353"><ph name="PRINTER_NAME" /> kunne ikke konfigureres automatisk. Angi avanserte detaljer om skriveren.</translation>
 <translation id="3016641847947582299">Komponenten er oppdatert</translation>
 <translation id="3016780570757425217">vite hvor du er</translation>
 <translation id="3020183492814296499">Snarveier</translation>
@@ -1800,7 +1803,6 @@
 <translation id="3789841737615482174">Installer</translation>
 <translation id="379082410132524484">Kortet ditt er utløpt</translation>
 <translation id="3792890930871100565">Koble fra skrivere</translation>
-<translation id="3792938779249970121">Velg konto</translation>
 <translation id="3796648294839530037">Favorittnettverk:</translation>
 <translation id="3797739167230984533"><ph name="BEGIN_LINK" /><ph name="DEVICE_TYPE" /> administreres<ph name="END_LINK" /> av organisasjonen din</translation>
 <translation id="3797900183766075808">&amp;Søk etter «<ph name="SEARCH_TERMS" />» på <ph name="SEARCH_ENGINE" /></translation>
@@ -2107,6 +2109,7 @@
 <translation id="4268025649754414643">Nøkkelchiffrering</translation>
 <translation id="4270393598798225102">Versjon <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">Ingen treff</translation>
+<translation id="4275663329226226506">Medier</translation>
 <translation id="4275830172053184480">Start enheten din på nytt</translation>
 <translation id="4278101229438943600">Assistenten din er klar</translation>
 <translation id="4278390842282768270">Tillatt</translation>
@@ -2149,7 +2152,6 @@
 <translation id="4354344420232759511">Nettsteder du besøker, vises her</translation>
 <translation id="435527878592612277">Velg bilde</translation>
 <translation id="4356334633973342967">Du kan også angi driveren manuelt:</translation>
-<translation id="4358169392473932247">Den sikkerhetsnøkkelen støtter ikke internlagring av legitimasjon, men det er den forespurte funksjonen.</translation>
 <translation id="4359408040881008151">Installert på grunn av avhengige utvidelser.</translation>
 <translation id="4359717112757026264">Bybilde</translation>
 <translation id="4361142739114356624">Privatnøkkelen for dette klientsertifikatet mangler eller er ugyldig</translation>
@@ -2332,7 +2334,6 @@
 <translation id="4665014895760275686">Produsent</translation>
 <translation id="4665446389743427678">Alle data som lagres av <ph name="SITE" />, blir slettet.</translation>
 <translation id="4668721319092543482">Klikk for å slå på <ph name="PLUGIN_NAME" /></translation>
-<translation id="4670688170798478686">Bekreft tilbakestilling</translation>
 <translation id="4672657274720418656">Destiller siden</translation>
 <translation id="4673442866648850031">Åpne pekepennverktøyene når pekepennen fjernes</translation>
 <translation id="4677585247300749148"><ph name="URL" /> ber om å svare på tilgjengelighetshendelser</translation>
@@ -2362,7 +2363,6 @@
 <translation id="4711638718396952945">Gjenopprett innstillingene</translation>
 <translation id="4715553623069266137">svært kort (0,8 s)</translation>
 <translation id="4716483597559580346">Powerwash for økt sikkerhet</translation>
-<translation id="4718490098585891067">Velg en konto for å logge på:</translation>
 <translation id="4720113199587244118">Legg til enheter</translation>
 <translation id="4720185134442950733">Mobildatanettverk</translation>
 <translation id="4722735765955348426">Passord for <ph name="USERNAME" /></translation>
@@ -2393,7 +2393,6 @@
 <translation id="4756388243121344051">&amp;Logg</translation>
 <translation id="4759238208242260848">Nedlastinger</translation>
 <translation id="4761104368405085019">bruke mikrofonen din</translation>
-<translation id="476166673298332917">Enhetsadministratoren har tilgang til nettleseraktiviteten din.</translation>
 <translation id="4762718786438001384">Det er kritisk lite plass på enheten</translation>
 <translation id="4763408175235639573">Følgende informasjonskapsler ble angitt da du besøkte denne siden</translation>
 <translation id="4763830802490665879">Informasjonskapsler fra flere nettsteder blir slettet ved avslutning.</translation>
@@ -3922,7 +3921,6 @@
 <translation id="713888829801648570">Beklager. Passordet ditt kunne ikke bekreftes fordi du ikke har nettilkobling.</translation>
 <translation id="7140928199327930795">Ingen andre tilgjengelige enheter.</translation>
 <translation id="7141105143012495934">Påloggingen mislyktes fordi kontoopplysningene dine ikke kunne hentes ut. Kontakt administratoren din, eller prøv på nytt.</translation>
-<translation id="714285394257538643">Ta på sikkerhetsnøkkelen igjen for å bekrefte at du vil tilbakestille den. All legitimasjon på sikkerhetsnøkkelen og den tilknyttede PIN-koden blir slettet.</translation>
 <translation id="7143092389027215216">Start demomodus</translation>
 <translation id="7143207342074048698">Kobler til</translation>
 <translation id="7144878232160441200">Prøv på nytt</translation>
@@ -4156,6 +4154,7 @@
 <translation id="7506541170099744506"><ph name="DEVICE_TYPE" />-enheten din er nå registrert for bedriftsadministrering.</translation>
 <translation id="7507930499305566459">Sertifikat for statussvar</translation>
 <translation id="7513029293694390567">Bruk lagret legitimasjon til å logge på nettsteder automatisk. Hvis dette er slått av, blir du bedt om bekreftelse hver gang du logger på et nettsted.</translation>
+<translation id="7514365320538308">Last ned</translation>
 <translation id="7517786267097410259">Lag et passord –</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">Si «Ok Google»</translation>
@@ -4494,6 +4493,7 @@ Nøkkelfil: <ph name="KEY_FILE" />
 Oppbevar nøkkelfilen på et trygt sted. Du får bruk for den når du skal opprette nye versjoner av utvidelsen.</translation>
 <translation id="8000066093800657092">Ingen nettverk</translation>
 <translation id="8000467600002607205">{NUM_TABS,plural, =1{Lukk fanen}other{Lukk fanene}}</translation>
+<translation id="8002274832045662704">Avansert skriveroppsett</translation>
 <translation id="8004582292198964060">Nettleser</translation>
 <translation id="8005600846065423578">Tillat alltid at <ph name="HOST" /> ser utklippstavlen</translation>
 <translation id="8008356846765065031">Internett er frakoblet. Sjekk Internett-forbindelsen din .</translation>
@@ -5034,6 +5034,7 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8850251000316748990">Se flere …</translation>
 <translation id="885246833287407341">API-funksjonsargumenter</translation>
 <translation id="8853586775156634952">Dette kortet lagres kun på denne enheten</translation>
+<translation id="885701979325669005">Lagring</translation>
 <translation id="8859057652521303089">Velg språk:</translation>
 <translation id="8859174528519900719">Underramme: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8862003515646449717">Bytt til en raskere nettleser</translation>

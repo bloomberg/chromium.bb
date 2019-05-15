@@ -181,8 +181,10 @@
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{ከ1 በላይ ያልተነበበ ማሳወቂያ}one{ከ# በላይ ያልተነበበቡ ማሳወቂያዎች}other{ከ# በላይ ያልተነበበቡ ማሳወቂያዎች}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{በ 1ደ ውስጥ}one{በ #ደ ውስጥ}other{በ #ደ ውስጥ}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="8098075892845277643">የ Google ረዳት የድምፅ ጥያቄን ጀምር</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{1 ሰዓት በፊት}one{# ሰዓቶች በፊት}other{# ሰዓቶች በፊት}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 ሰከንድ ቀርቷል}one{# ሰከንዶች ቀርቷል}other{# ሰከንዶች ቀርተዋል}}</translation>
+<translation id="8144660977431427332">የእርስዎ ፍለጋዎች የቀረቡት በ Google ረዳቱ ነው። <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />፣ ራስሰር ሙላ</translation>
 <translation id="815598010540052116">ወደ ታች ሸብልል</translation>
 <translation id="8170087467028567933">ይህን የአስተያየት ጥቆማን ማስወገድ በመላ መሣሪያዎችዎ ላይ ከመለያዎ ይደብቀዋል።</translation>

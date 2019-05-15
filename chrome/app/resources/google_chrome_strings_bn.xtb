@@ -147,7 +147,6 @@
 <translation id="4750550185319565338"><ph name="PLUGIN_NAME" /> সক্ষম করার জন্য Chrome আবার চালু করুন</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">এই ফাইলটি বিপজ্জনক হতে পারে, তাই Chrome এটিকে অবরুদ্ধ করেছে।</translation>
-<translation id="4794050651896644714">Chrome এ বিবরণ সেভ করুন</translation>
 <translation id="4891791193823137474">Google Chrome-কে ব্যাকগ্রাউন্ডে চলতে দিন</translation>
 <translation id="4895437082222824641">নতুন Chrome ট্যাবে লিঙ্ক খুলুন</translation>
 <translation id="4921569541910214635">একটি কম্পিউটার শেয়ার করবেন? এখন আপনি আপনার পছন্দমতো উপায়ে Chrome কে সেট আপ করতে পারেন৷</translation>
@@ -261,7 +260,6 @@
 <translation id="8077352834923175128">এই আপডেটটি প্রয়োগ করতে আপনার অ্যাডমিনিস্ট্রেটর চান যে আপনি Chrome OS রিস্টার্ট করুন</translation>
 <translation id="8129812357326543296">&amp;Google Chrome সম্বন্ধে</translation>
 <translation id="8179874765710681175">আপনার ফোনে Chrome ইনস্টল করুন। আমরা আপনার ফোনে একটি এসএমএস পাঠাব।</translation>
-<translation id="8183957050892517584">Chrome আপনার ব্যক্তিগত বিবরণ সুরক্ষিত ভাবে সঞ্চয় করবে, তাই আপনার আর টাইপ করার প্রয়োজন হবে না।</translation>
 <translation id="8226081633851087288">{0,plural, =0{Chrome OS এখন রিস্টার্ট হবে}=1{Chrome OS ১ সেকেন্ডের মধ্যে রিস্টার্ট হবে}one{Chrome OS # সেকেন্ডের মধ্যে রিস্টার্ট হবে}other{Chrome OS # সেকেন্ডের মধ্যে রিস্টার্ট হবে}}</translation>
 <translation id="825412236959742607">এই পৃষ্ঠাটি খুব বেশি মেমরি ব্যবহার করছে তাই Chrome কিছু কন্টেন্ট সরিয়ে দিয়েছে।</translation>
 <translation id="8255190535488645436">Google Chrome আপনার ক্যামেরা এবং মাইক্রোফোন ব্যবহার করছে৷</translation>

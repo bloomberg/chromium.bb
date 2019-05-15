@@ -226,6 +226,7 @@
 <translation id="1338950911836659113">削除しています...</translation>
 <translation id="1340527397989195812">ファイルアプリを使用してデバイスからメディアをバックアップします。</translation>
 <translation id="1341988552785875222">現在の壁紙は「<ph name="APP_NAME" />」により設定されています。別の壁紙を選択する前に「<ph name="APP_NAME" />」のアンインストールが必要となる場合があります。</translation>
+<translation id="1343865611738742294">Linux アプリに USB デバイスへのアクセスを許可します。USB デバイスを取り外した後は、Linux にデバイスのデータは残りません。</translation>
 <translation id="1347256498747320987">アップデートとアプリをインストールします。続行すると、このデバイスで Google、携帯通信会社、デバイスの製造元からのアップデートやアプリが自動的にダウンロードおよびインストールされることについても同意したと見なされます（ダウンロードの際にはモバイルデータ通信が使用される可能性もあります）。また、こうしたアプリの一部ではアプリ内購入をすすめられる場合があります。<ph name="BEGIN_LINK1" />詳細<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">更新は、<ph name="BATTERY_LEVEL" />% まで充電されたときに開始されます。</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
@@ -707,6 +708,7 @@
 <translation id="2120297377148151361">アクティビティと操作</translation>
 <translation id="2120478168904746065">{NUM_TABS,plural, =1{タブのミュートを解除}other{タブのミュートを解除}}</translation>
 <translation id="2121825465123208577">サイズを変更</translation>
+<translation id="2122305276694332719">非公開ネットワークに自動接続すると、お使いのデバイスと一部のネットワーク設定が他のユーザーに公開されます。そのためこの設定はおすすめしません。</translation>
 <translation id="2124930039827422115">{1,plural, =1{1 人のユーザーにより <ph name="AVERAGE_RATING" /> と評価されています。}other{# 人のユーザーにより平均で <ph name="AVERAGE_RATING" /> と評価されています。}}</translation>
 <translation id="2126167708562367080">同期は管理者により無効にされています。</translation>
 <translation id="2127372758936585790">低電力の充電器</translation>
@@ -1303,6 +1305,7 @@
 <translation id="3012917896646559015">すぐにハードウェアの製造元に連絡し、パソコンを修理センターに送るよう手配してください。</translation>
 <translation id="3013291976881901233">MIDI デバイス</translation>
 <translation id="3015639418649705390">今すぐ再起動</translation>
+<translation id="3016329696181678353"><ph name="PRINTER_NAME" /> を自動的に設定できませんでした。プリンタの詳細設定を指定してください。</translation>
 <translation id="3016641847947582299">コンポーネント更新完了</translation>
 <translation id="3016780570757425217">ユーザーの現在地の認識</translation>
 <translation id="3020183492814296499">ショートカット</translation>
@@ -1805,7 +1808,6 @@
 <translation id="3789841737615482174">インストール</translation>
 <translation id="379082410132524484">カードの有効期限が切れています</translation>
 <translation id="3792890930871100565">プリンタを切断</translation>
-<translation id="3792938779249970121">アカウントの選択</translation>
 <translation id="3796648294839530037">お気に入りのネットワーク:</translation>
 <translation id="3797739167230984533">ご使用の <ph name="BEGIN_LINK" /><ph name="DEVICE_TYPE" /> は組織によって管理<ph name="END_LINK" />されています</translation>
 <translation id="3797900183766075808"><ph name="SEARCH_ENGINE" /> で「<ph name="SEARCH_TERMS" />」を検索(&amp;S)</translation>
@@ -2114,6 +2116,7 @@
 <translation id="4268025649754414643">キーの暗号化</translation>
 <translation id="4270393598798225102">バージョン <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">一致する結果は見つかりませんでした</translation>
+<translation id="4275663329226226506">メディア</translation>
 <translation id="4275830172053184480">デバイスの再起動</translation>
 <translation id="4278101229438943600">アシスタントの設定完了</translation>
 <translation id="4278390842282768270">許可</translation>
@@ -2156,7 +2159,6 @@
 <translation id="4354344420232759511">アクセスしたサイトがここに表示されます</translation>
 <translation id="435527878592612277">写真を選択</translation>
 <translation id="4356334633973342967">または独自のドライバを指定:</translation>
-<translation id="4358169392473932247">認証情報の内部保存がリクエストされましたが、そのセキュリティ キーはこの機能に対応していません。</translation>
 <translation id="4359408040881008151">依存関係にある拡張機能によってインストールされました。</translation>
 <translation id="4359717112757026264">Cityscape</translation>
 <translation id="4361142739114356624">このクライアント証明書には秘密鍵がないか、秘密鍵が無効です</translation>
@@ -2339,7 +2341,6 @@
 <translation id="4665014895760275686">メーカー</translation>
 <translation id="4665446389743427678"><ph name="SITE" /> で保存されたすべてのデータが削除されます。</translation>
 <translation id="4668721319092543482">クリックして <ph name="PLUGIN_NAME" /> を有効にします</translation>
-<translation id="4670688170798478686">リセットの確認</translation>
 <translation id="4672657274720418656">ページを抽出</translation>
 <translation id="4673442866648850031">タッチペンを取り外したらタッチペン ツールを開く</translation>
 <translation id="4677585247300749148"><ph name="URL" /> から、ユーザー補助機能のイベントに応答する許可を求められています</translation>
@@ -2369,7 +2370,6 @@
 <translation id="4711638718396952945">設定を復元</translation>
 <translation id="4715553623069266137">非常に短い（0.8 秒）</translation>
 <translation id="4716483597559580346">セキュリティ強化に向けて Powerwash を実行する</translation>
-<translation id="4718490098585891067">ログインするアカウントを選択:</translation>
 <translation id="4720113199587244118">デバイスを追加</translation>
 <translation id="4720185134442950733">モバイルデータ ネットワーク</translation>
 <translation id="4722735765955348426"><ph name="USERNAME" /> のパスワード</translation>
@@ -2400,7 +2400,6 @@
 <translation id="4756388243121344051">履歴(&amp;H)</translation>
 <translation id="4759238208242260848">ダウンロード</translation>
 <translation id="4761104368405085019">マイクを使用する</translation>
-<translation id="476166673298332917">デバイス管理者が閲覧アクティビティを監視している可能性があります。</translation>
 <translation id="4762718786438001384">デバイスのディスク空き領域が非常に少なくなっています</translation>
 <translation id="4763408175235639573">このページを表示したときに以下の Cookie が設定されました</translation>
 <translation id="4763830802490665879">終了時に複数のサイトからの Cookie が消去されます。</translation>
@@ -3929,7 +3928,6 @@
 <translation id="713888829801648570">オフラインになっているためパスワードを確認できませんでした。</translation>
 <translation id="7140928199327930795">利用可能なデバイスは他にありません。</translation>
 <translation id="7141105143012495934">アカウントの詳細を取得できなかったためログインできませんでした。管理者に問い合わせるか、もう一度お試しください。</translation>
-<translation id="714285394257538643">セキュリティ キーのリセットを確定するには、もう一度タップします。セキュリティ キーに保存されているすべての認証情報と PIN が消去されます。</translation>
 <translation id="7143092389027215216">デモモードを開始します</translation>
 <translation id="7143207342074048698">接続中</translation>
 <translation id="7144878232160441200">再読み込み</translation>
@@ -4164,6 +4162,7 @@
 <translation id="7506541170099744506">この <ph name="DEVICE_TYPE" /> は組織の管理対象として登録されました。</translation>
 <translation id="7507930499305566459">ステータス レスポンダ証明書</translation>
 <translation id="7513029293694390567">保存されている認証情報を使用してウェブサイトに自動的にログインします。この機能が無効になっている場合は、ウェブサイトにログインするときに毎回確認を求められます。</translation>
+<translation id="7514365320538308">ダウンロード</translation>
 <translation id="7517786267097410259">パスワードを作成 -</translation>
 <translation id="7521387064766892559">Javascript</translation>
 <translation id="7522255036471229694">「OK Google」と言ってください</translation>
@@ -4504,6 +4503,7 @@
 鍵ファイルは安全な場所に保管してください。拡張機能の新しいバージョンの作成時に必要となります。</translation>
 <translation id="8000066093800657092">ネットワーク接続なし</translation>
 <translation id="8000467600002607205">{NUM_TABS,plural, =1{タブを閉じる}other{タブを閉じる}}</translation>
+<translation id="8002274832045662704">プリンタの詳細設定</translation>
 <translation id="8004582292198964060">ブラウザ</translation>
 <translation id="8005600846065423578"><ph name="HOST" /> によるクリップボードへのアクセスを常に許可する</translation>
 <translation id="8008356846765065031">インターネットが切断されました。インターネット接続を確認してください。</translation>
@@ -5044,6 +5044,7 @@
 <translation id="8850251000316748990">もっと見る...</translation>
 <translation id="885246833287407341">API 関数の引数</translation>
 <translation id="8853586775156634952">このカードはこのデバイスにのみ保存されます</translation>
+<translation id="885701979325669005">ストレージ</translation>
 <translation id="8859057652521303089">言語の選択:</translation>
 <translation id="8859174528519900719">サブフレーム: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8862003515646449717">高速なブラウザをぜひご利用ください</translation>

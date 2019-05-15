@@ -475,6 +475,7 @@
 <translation id="3495081129428749620">Find på side
     <ph name="PAGE_TITLE" /></translation>
 <translation id="3498215018399854026">Vi kan ikke få fat i din forælder på nuværende tidspunkt. Prøv igen.</translation>
+<translation id="3512163584740124171">Politikken ignoreres, da en anden politik fra samme politikgruppe har højere prioritet.</translation>
 <translation id="3528171143076753409">Serverens certifikat er ikke troværdigt.</translation>
 <translation id="3528485271872257980">Mørkebrun</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Mindst 1 element på synkroniserede enheder}=1{1 element (og flere på synkroniserede enheder)}one{# element (og flere på synkroniserede enheder)}other{# elementer (og flere på synkroniserede enheder)}}</translation>
@@ -1088,7 +1089,6 @@
 <translation id="7062635574500127092">Grønblå</translation>
 <translation id="7064851114919012435">Kontaktoplysninger</translation>
 <translation id="7079718277001814089">Dette website indeholder malware</translation>
-<translation id="7081564429925484109">Advarsel! Denne politik blev ikke flettet som angivet i PolicyListMultipleSourceMergeList, da den ikke findes på en liste.</translation>
 <translation id="7087282848513945231">Amt/region</translation>
 <translation id="7090678807593890770">Søg efter <ph name="LINK" /> på Google</translation>
 <translation id="7108338896283013870">Skjul</translation>
@@ -1148,7 +1148,6 @@ Yderligere oplysninger:
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">Nej</translation>
 <translation id="7378810950367401542">/</translation>
-<translation id="7381288752349550461">Tilsidesættelse af administreret session</translation>
 <translation id="7390545607259442187">Bekræft kort</translation>
 <translation id="7400418766976504921">Webadresse</translation>
 <translation id="7403591733719184120">Din <ph name="DEVICE_NAME" /> administreres</translation>

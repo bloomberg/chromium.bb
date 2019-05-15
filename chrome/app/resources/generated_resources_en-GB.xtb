@@ -226,6 +226,7 @@
 <translation id="1338950911836659113">Deleting...</translation>
 <translation id="1340527397989195812">Back up media from the device using the Files app.</translation>
 <translation id="1341988552785875222">The current wallpaper is set by '<ph name="APP_NAME" />'. You may need to uninstall '<ph name="APP_NAME" />' before selecting a different wallpaper.</translation>
+<translation id="1343865611738742294">Give Linux apps permission to access USB devices. Linux won't remember a USB device after it's removed.</translation>
 <translation id="1347256498747320987">Install updates &amp; apps. By continuing, you agree that this device may also automatically download and install updates and apps from Google, your operator and your device's manufacturer, possibly using mobile data. Some of these apps may offer in-app purchases. <ph name="BEGIN_LINK1" />Learn More<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">Update will begin when battery reaches <ph name="BATTERY_LEVEL" />%.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
@@ -707,6 +708,7 @@
 <translation id="2120297377148151361">Activity and interactions</translation>
 <translation id="2120478168904746065">{NUM_TABS,plural, =1{Unmute Tab}other{Unmute Tabs}}</translation>
 <translation id="2121825465123208577">Re-size</translation>
+<translation id="2122305276694332719">Automatically connecting to a hidden network allows others to see your device and some network settings, and is not recommended.</translation>
 <translation id="2124930039827422115">{1,plural, =1{Rated <ph name="AVERAGE_RATING" /> by one user.}other{Rated <ph name="AVERAGE_RATING" /> by # users.}}</translation>
 <translation id="2126167708562367080">Sync is disabled by your administrator.</translation>
 <translation id="2127372758936585790">Low-power charger</translation>
@@ -1302,6 +1304,7 @@
 <translation id="3012917896646559015">Please contact your hardware manufacturer immediately to send your computer to a repair facility.</translation>
 <translation id="3013291976881901233">MIDI devices</translation>
 <translation id="3015639418649705390">Relaunch now</translation>
+<translation id="3016329696181678353"><ph name="PRINTER_NAME" /> could not be configured automatically. Please specify advanced printer details.</translation>
 <translation id="3016641847947582299">Component updated</translation>
 <translation id="3016780570757425217">Know your location</translation>
 <translation id="3020183492814296499">Shortcuts</translation>
@@ -1804,7 +1807,6 @@
 <translation id="3789841737615482174">Install</translation>
 <translation id="379082410132524484">Your card has expired</translation>
 <translation id="3792890930871100565">Disconnect printers</translation>
-<translation id="3792938779249970121">Select account</translation>
 <translation id="3796648294839530037">Favourite Networks:</translation>
 <translation id="3797739167230984533">Your <ph name="BEGIN_LINK" /><ph name="DEVICE_TYPE" /> is managed<ph name="END_LINK" /> by your organisation</translation>
 <translation id="3797900183766075808">&amp;Search <ph name="SEARCH_ENGINE" /> for “<ph name="SEARCH_TERMS" />”</translation>
@@ -2113,6 +2115,7 @@
 <translation id="4268025649754414643">Key Encipherment</translation>
 <translation id="4270393598798225102">Version <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">No matches</translation>
+<translation id="4275663329226226506">Media</translation>
 <translation id="4275830172053184480">Restart your device</translation>
 <translation id="4278101229438943600">Your Assistant is ready</translation>
 <translation id="4278390842282768270">Allowed</translation>
@@ -2155,7 +2158,6 @@
 <translation id="4354344420232759511">Sites that you visit will appear here</translation>
 <translation id="435527878592612277">Select your photo</translation>
 <translation id="4356334633973342967">Or specify your own driver:</translation>
-<translation id="4358169392473932247">That security key does not support internal storage of credentials, but that feature was requested.</translation>
 <translation id="4359408040881008151">Installed because of dependent extension(s).</translation>
 <translation id="4359717112757026264">Cityscape</translation>
 <translation id="4361142739114356624">The Private Key for this Client Certificate is missing or invalid</translation>
@@ -2338,7 +2340,6 @@
 <translation id="4665014895760275686">Manufacturer</translation>
 <translation id="4665446389743427678">All data stored by <ph name="SITE" /> will be deleted.</translation>
 <translation id="4668721319092543482">Click to enable <ph name="PLUGIN_NAME" /></translation>
-<translation id="4670688170798478686">Confirm reset</translation>
 <translation id="4672657274720418656">Distill Page</translation>
 <translation id="4673442866648850031">Open stylus tools when the stylus is removed</translation>
 <translation id="4677585247300749148"><ph name="URL" /> wants to respond to accessibility events</translation>
@@ -2368,7 +2369,6 @@
 <translation id="4711638718396952945">Restore settings</translation>
 <translation id="4715553623069266137">very short (0.8s)</translation>
 <translation id="4716483597559580346">Powerwash for added security</translation>
-<translation id="4718490098585891067">Select an account to sign in:</translation>
 <translation id="4720113199587244118">Add Devices</translation>
 <translation id="4720185134442950733">Mobile data network</translation>
 <translation id="4722735765955348426">Password for <ph name="USERNAME" /></translation>
@@ -2399,7 +2399,6 @@
 <translation id="4756388243121344051">&amp;History</translation>
 <translation id="4759238208242260848">Downloads</translation>
 <translation id="4761104368405085019">Use your microphone</translation>
-<translation id="476166673298332917">The device admin may monitor your browsing activity.</translation>
 <translation id="4762718786438001384">Device disk space critically low</translation>
 <translation id="4763408175235639573">The following cookies were set when you viewed this page</translation>
 <translation id="4763830802490665879">Cookies from multiple sites will be cleared on exit.</translation>
@@ -3928,7 +3927,6 @@
 <translation id="713888829801648570">Sorry, your password could not be verified because you are offline.</translation>
 <translation id="7140928199327930795">No other available devices.</translation>
 <translation id="7141105143012495934">Sign-in failed because your account details could not be retrieved. Please contact your administrator or try again.</translation>
-<translation id="714285394257538643">To confirm that you want to reset your security key, touch it again. All credentials stored on the security key and its PIN will be erased.</translation>
 <translation id="7143092389027215216">Starting demo mode</translation>
 <translation id="7143207342074048698">Connecting ...</translation>
 <translation id="7144878232160441200">Retry</translation>
@@ -4162,6 +4160,7 @@
 <translation id="7506541170099744506">Your <ph name="DEVICE_TYPE" /> has successfully been enrolled for enterprise management.</translation>
 <translation id="7507930499305566459">Status Responder Certificate</translation>
 <translation id="7513029293694390567">Automatically sign in to websites using stored credentials. If disabled, you will be asked for confirmation every time before signing in to a website.</translation>
+<translation id="7514365320538308">Download</translation>
 <translation id="7517786267097410259">Create a password -</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">Say 'Ok Google'</translation>
@@ -4502,6 +4501,7 @@ Key File: <ph name="KEY_FILE" />
 Keep your key file in a safe place. You will need it to create new versions of your extension.</translation>
 <translation id="8000066093800657092">No network</translation>
 <translation id="8000467600002607205">{NUM_TABS,plural, =1{Close Tab}other{Close Tabs}}</translation>
+<translation id="8002274832045662704">Advanced printer configuration</translation>
 <translation id="8004582292198964060">Browser</translation>
 <translation id="8005600846065423578">Always allow <ph name="HOST" /> to see the clipboard</translation>
 <translation id="8008356846765065031">Internet disconnected. Please check your Internet connection.</translation>
@@ -5042,6 +5042,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8850251000316748990">See more...</translation>
 <translation id="885246833287407341">API function arguments</translation>
 <translation id="8853586775156634952">This card will be saved to this device only</translation>
+<translation id="885701979325669005">Storage</translation>
 <translation id="8859057652521303089">Select your language:</translation>
 <translation id="8859174528519900719">Subframe: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8862003515646449717">Switch to a fast browser</translation>

@@ -149,7 +149,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for further instructions.
 <translation id="4750550185319565338">Restart Chrome to enable <ph name="PLUGIN_NAME" /></translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">This file may be dangerous, so Chrome has blocked it.</translation>
-<translation id="4794050651896644714">Save details in Chrome</translation>
 <translation id="4891791193823137474">Let Google Chrome run in the background</translation>
 <translation id="4895437082222824641">Open link in new Chrome &amp;tab</translation>
 <translation id="4921569541910214635">Share a computer? Now you can set up Chrome just the way you like it.</translation>
@@ -265,7 +264,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="8077352834923175128">Your administrator asks that you restart Chrome OS to apply this update</translation>
 <translation id="8129812357326543296">About &amp;Google Chrome</translation>
 <translation id="8179874765710681175">Install Chrome on your phone. We’ll send an SMS to your phone.</translation>
-<translation id="8183957050892517584">Chrome will securely store your personal details so that you don't need to type them again.</translation>
 <translation id="8226081633851087288">{0,plural, =0{Chrome OS will restart now}=1{Chrome OS will restart in 1 second}other{Chrome OS will restart in # seconds}}</translation>
 <translation id="825412236959742607">This page uses too much memory, so Chrome removed some content.</translation>
 <translation id="8255190535488645436">Google Chrome is using your camera and microphone.</translation>

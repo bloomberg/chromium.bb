@@ -143,6 +143,15 @@
       Si la règle est définie sur "False", l'état de l'interrupteur du mode développeur n'est pas communiqué.</translation>
 <translation id="1160479894929412407">Autoriser le protocole QUIC</translation>
 <translation id="1160939557934457296">Désactiver l'accès au site lors de l'affichage de la page d'avertissement par le service de navigation sécurisée</translation>
+<translation id="1171342272070128466">Permet d'activer la fonctionnalité d'accessibilité Loupe ancrée.
+
+          Si cette règle est définie sur "True", la loupe ancrée est toujours activée.
+
+          Si cette règle est définie sur "False", la loupe ancrée est toujours désactivée.
+
+          Si vous configurez cette règle, les utilisateurs ne peuvent pas la modifier ni l'ignorer.
+
+          Si cette règle n'est pas définie, la loupe ancrée est initialement désactivée, mais les utilisateurs peuvent l'activer à tout moment.</translation>
 <translation id="1189817621108632689">Permet de définir une liste de formats d'URL spécifiant les sites non autorisés à afficher des images.
 
           Si cette règle n'est pas configurée, la valeur par défaut globale est utilisée pour tous les sites à partir de la règle "DefaultImagesSetting" si celle-ci est définie ou, à défaut, à partir de la configuration personnelle de l'utilisateur.
@@ -456,6 +465,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
       Si la présente règle est activée, les utilisateurs ne peuvent pas désactiver le paramètre par défaut où chaque site exécute son propre processus.
       Si cette règle n'est pas configurée ou si elle est désactivée, les utilisateurs peuvent modifier ce paramètre (en accédant à l'option "Désactiver l'isolation de sites" sur la page chrome://flags, par exemple).
       </translation>
+<translation id="1767673020408652620">Activer les recommandations d'applications dans le champ de recherche vide</translation>
 <translation id="1781356041596378058">Cette règle permet également de contrôler l'accès aux options pour les développeurs Android. Si vous définissez cette règle sur "True", les utilisateurs ne pourront pas accéder aux options pour les développeurs. Si vous la définissez sur "False" ou si vous ne la modifiez pas, les utilisateurs pourront accéder aux options pour les développeurs en appuyant sept fois sur le numéro de version dans l'application des paramètres Android.</translation>
 <translation id="1793346220873697538">Désactiver l'impression par code définie par défaut</translation>
 <translation id="1797233582739332495">Afficher une invite récurrente indiquant qu'un redémarrage est nécessaire</translation>
@@ -996,6 +1006,15 @@ Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" es
 
       Chaque entrée de la liste indique un identifiant, qui est utilisé de façon interne pour différencier les comptes locaux de l'appareil.</translation>
 <translation id="2769952903507981510">Configurer le nom de domaine requis pour les hôtes d'accès à distance</translation>
+<translation id="2783078941107212091">Permet de proposer des recommandations d'applications dans le champ de recherche vide du lanceur d'applications.
+
+          Si cette règle est définie sur "True", des recommandations d'applications peuvent être proposées dans le champ de recherche vide.
+
+          Si cette règle est définie sur "False", aucune recommandation d'application n'est proposée dans le champ de recherche vide.
+
+          Si vous configurez cette règle, les utilisateurs ne peuvent pas la modifier ni l'ignorer.
+
+          Si cette règle n'est pas définie, la valeur "False" est appliquée par défaut aux appareils gérés.</translation>
 <translation id="2787173078141616821">Transmettre des informations sur l'état d'Android</translation>
 <translation id="2799297758492717491">Autoriser la lecture automatique des contenus multimédias pour les formats d'URL sur liste blanche</translation>
 <translation id="2801155097555584385">Personnaliser le pourcentage auquel la batterie doit commencer à être rechargée</translation>
@@ -1193,6 +1212,24 @@ Si cette règle n'est pas configurée, le paramètre "AllowJavaScript" est utili
       Si cette règle est définie sur "False", l'optimisation WPAD est désactivée. Par conséquent, l'attente est plus longue dans <ph name="PRODUCT_NAME" /> pour obtenir une réponse des serveurs WPAD basés sur le DNS. Si la règle n'est pas configurée ou si elle est activée, l'optimisation WPAD est activée.
 
       Quelle que soit la définition de cette règle, les utilisateurs n'ont pas la possibilité de modifier le paramètre d'optimisation WPAD.</translation>
+<translation id="3071839057966069710">Permet de configurer une liste d'imprimantes.
+
+      Cette règle offre la possibilité aux administrateurs de proposer des configurations d'imprimantes à leurs utilisateurs.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> et <ph name="PRINTER_DESCRIPTION" /> sont des chaînes au format libre, que vous pouvez personnaliser pour faciliter la sélection de l'imprimante. <ph name="PRINTER_MANUFACTURER" /> et <ph name="PRINTER_MODEL" /> visent à aider les utilisateurs finaux à identifier rapidement une imprimante. Ces chaînes correspondent respectivement au fabricant et au modèle de l'imprimante. <ph name="PRINTER_URI" /> doit être une adresse accessible à partir d'un ordinateur client (cette chaîne doit inclure le <ph name="URI_SCHEME" />, le <ph name="URI_PORT" /> et la <ph name="URI_QUEUE" />). <ph name="PRINTER_UUID" /> est facultatif. S'il est indiqué, il est utilisé pour supprimer les imprimantes <ph name="ZEROCONF_DISCOVERY" /> en double.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> doit correspondre à l'une des chaînes qui représentent une imprimante <ph name="PRODUCT_NAME" /> compatible. Cette chaîne sert à identifier et à installer le bon fichier PPD pour l'imprimante. Pour en savoir plus, consultez la page https://support.google.com/chrome?p=noncloudprint.
+
+      <ph name="PRINTER_AUTOCONF" /> est un indicateur booléen précisant si IPP Everywhere doit être utilisé ou non pour configurer l'imprimante. Cet indicateur est compatible avec <ph name="PRODUCT_OS_NAME" /> version 76 (ou version ultérieure).
+
+      Soit <ph name="PRINTER_EFFECTIVE_MODEL" /> doit contenir le nom de l'imprimante, soit <ph name="PRINTER_AUTOCONF" /> doit être défini sur "True". Toute imprimante avec ces deux propriétés ou sans aucune propriété est ignorée.
+
+      La configuration d'une imprimante est effectuée lors de sa première utilisation.  Les fichiers PPD ne sont pas téléchargés tant que l'imprimante ne sert pas.  Par la suite, les fichiers PPD utilisés fréquemment sont mis en cache.
+
+      Cette règle n'a aucune incidence pour les utilisateurs en ce qui concerne la possibilité ou non de configurer des imprimantes sur différents appareils.  Elle est destinée à compléter la configuration des imprimantes effectuée par les différents utilisateurs.
+
+      Pour les appareils gérés par Active Directory, cette règle permet l'expansion de <ph name="MACHINE_NAME_VARIABLE" /> en fonction du nom de machine Active Directory ou de l'une de ses sous-chaînes. Par exemple, si le nom de machine est <ph name="MACHINE_NAME_EXAMPLE" />, alors <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> est remplacé par les quatre caractères suivant la sixième position, soit <ph name="MACHINE_NAME_PART_EXAMPLE" />. Notez que la position prend en compte le zéro.
+      </translation>
 <translation id="3072045631333522102">Economiseur d'écran à utiliser sur l'écran de connexion en mode Point de vente</translation>
 <translation id="3072847235228302527">Définir les conditions d'utilisation d'un compte local de l'appareil</translation>
 <translation id="3077183141551274418">Activer ou désactiver le cycle de vie des onglets</translation>
@@ -1984,7 +2021,6 @@ Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou
 <translation id="4591366717022345234">Fournir le build Quick Fix aux utilisateurs</translation>
 <translation id="4600786265870346112">Activer le grand curseur</translation>
 <translation id="4604931264910482931">Configurer la liste noire de messagerie native</translation>
-<translation id="4613508646038788144">Si cette règle est définie sur "false", le logiciel tiers sera autorisé à injecter du code exécutable dans les processus de Chrome. Si elle est définie sur "true" ou si elle n'est pas configurée, le logiciel tiers ne pourra pas injecter de code exécutable dans les processus de Chrome.</translation>
 <translation id="4617338332148204752">Ignorer la vérification des balises Meta dans <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="4625915093043961294">Configurer la liste blanche d'installation des extensions</translation>
 <translation id="4632343302005518762">Autoriser <ph name="PRODUCT_FRAME_NAME" /> à gérer les types de contenu répertoriés</translation>
@@ -2173,15 +2209,6 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
       Si elle est définie sur "False", Chrome fermera l'onglet lorsque vous changez de navigateur, même s'il s'agissait du dernier onglet. Chrome sera alors fermé complètement.</translation>
 <translation id="5105313908130842249">Délai de verrouillage de l'écran (batterie)</translation>
 <translation id="5108031557082757679">Imprimantes d'appareils d'entreprise désactivées</translation>
-<translation id="5113732180192599620">Cette règle contrôle la liste des sites Web qui n'entraîneront jamais de changement de navigateur.
-
-      Notez que vous pouvez également ajouter des éléments à cette liste avec les règles <ph name="USE_IE_SITELIST_POLICY_NAME" /> et <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />.
-
-      Si cette règle n'est pas définie, aucun site Web n'est ajouté à la liste.
-
-      Si cette règle est définie, chaque élément est traité comme une instruction, à l'instar de la règle <ph name="URL_LIST_POLICY_NAME" />. Toutefois, la logique est inversée : les instructions correspondantes n'ouvrent pas d'autre navigateur.
-
-      Contrairement à la règle <ph name="URL_LIST_POLICY_NAME" />, les instructions s'appliquent dans les deux sens. Autrement dit, si le module complémentaire d'Internet Explorer est présent et activé, il détermine également si <ph name="IE_PRODUCT_NAME" /> doit ouvrir ces URL dans <ph name="PRODUCT_NAME" />.</translation>
 <translation id="5124368997194894978">Activer le démarrage au branchement de l'alimentation CA (courant alternatif)</translation>
 <translation id="5131211790949066746">Permet de fusionner les règles relatives aux listes d'installation d'extensions <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" /> et <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />.
 
@@ -2462,6 +2489,7 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 
       Si elle n'est pas spécifiée, l'URL utilisée pour récupérer la valeur de départ des variantes n'est pas modifiée.</translation>
 <translation id="5561811616825571914">Sélectionner automatiquement des certificats client pour ces sites sur l'écran de connexion</translation>
+<translation id="5565178130821694365">Le mot de passe doit obligatoirement être saisi tous les deux jours (48 heures)</translation>
 <translation id="5566210228171064229">Autoriser l'impression avec et sans code</translation>
 <translation id="556865034069957245">Cette règle permet de contrôler la disponibilité du mode plein écran dans lequel l'interface utilisateur de <ph name="PRODUCT_NAME" /> est masquée, et seul le contenu Web est visible.
 

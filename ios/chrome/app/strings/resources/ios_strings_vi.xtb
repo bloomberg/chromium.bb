@@ -74,13 +74,11 @@
 <translation id="1952728750904661634">Đăng nhập bằng tài khoản được quản lý</translation>
 <translation id="1974060860693918893">Nâng cao</translation>
 <translation id="1989112275319619282">Duyệt qua</translation>
-<translation id="2000419248597011803">Gửi một số cookie và nội dung tìm kiếm từ thanh địa chỉ cũng như hộp tìm kiếm tới công cụ tìm kiếm mặc định</translation>
 <translation id="2015722694326466240">Để xem mật khẩu, trước tiên bạn phải đặt mật mã trên thiết bị của mình.</translation>
 <translation id="2068952045031577364">Tuần trước</translation>
 <translation id="2074131957428911366">Bạn luôn có thể chọn nội dung muốn đồng bộ hóa trong phần <ph name="BEGIN_LINK" />cài đặt<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Hoàn tác</translation>
 <translation id="209018056901015185">Yêu cầu trang web cho máy tính</translation>
-<translation id="2096012225669085171">Đồng bộ hóa và cá nhân hóa trên các thiết bị</translation>
 <translation id="2103075008456228677">Mở history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> dấu trang đã được di chuyển</translation>
 <translation id="213900355088104901">Để duyệt web riêng tư, hãy mở tab ẩn danh</translation>
@@ -107,7 +105,6 @@
 <translation id="2435457462613246316">Hiển thị mật khẩu</translation>
 <translation id="2481538920734869610">THÊM TÀI KHOẢN</translation>
 <translation id="2497852260688568942">Đồng bộ hóa bị quản trị viên của bạn tắt</translation>
-<translation id="2523184218357549926">Gửi cho Google URL của các trang bạn truy cập</translation>
 <translation id="2523363575747517183">Trang web này đang liên tục tìm cách mở một ứng dụng khác.</translation>
 <translation id="2529021024822217800">Mở tất cả</translation>
 <translation id="2572712655377361602">Chính sách thiết bị đã chặn quyền truy cập vào ảnh của bạn</translation>
@@ -137,6 +134,7 @@
 <translation id="2871695793448672541">Mật khẩu ẩn</translation>
 <translation id="288655811176831528">Đóng tab</translation>
 <translation id="2898963176829412617">Thư mục mới…</translation>
+<translation id="2916171785467530738">Tự động hoàn thành cụm từ tìm kiếm và URL</translation>
 <translation id="291754862089661335">Đặt mã QR hoặc mã vạch vào khung này</translation>
 <translation id="2921219216347069551">Ko thể chia sẻ trang</translation>
 <translation id="2923448633003185837">Dán và truy cập</translation>
@@ -306,7 +304,6 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="5857090052475505287">Thư mục Mới</translation>
 <translation id="5857770089550859117">Yêu cầu cụm mật khẩu để bắt đầu đồng bộ hóa.</translation>
 <translation id="5860033963881614850">Tắt</translation>
-<translation id="5865733239029070421">Tự động gửi số liệu thống kê sử dụng và báo cáo sự cố cho Google</translation>
 <translation id="5869029295770560994">OK</translation>
 <translation id="5871497086027727873">1 dấu trang đã được di chuyển</translation>
 <translation id="5897956970858271241">Truy cập vào liên kết đã sao chép</translation>
@@ -412,7 +409,6 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="722055596168483966">Cá nhân hóa dịch vụ của Google</translation>
 <translation id="7265758999917665941">Không bao giờ đối với trang web này</translation>
 <translation id="7272437679830969316">Không thể xác minh danh tính của bạn. Chưa sao chép mật khẩu.</translation>
-<translation id="7280856130494094142">Nhập cụm mật khẩu để bắt đầu đồng bộ hóa</translation>
 <translation id="7285236536143823449">CÓ, TÔI ĐỒNG Ý</translation>
 <translation id="7291368939935408496">Đang chuẩn bị mật khẩu...</translation>
 <translation id="7293171162284876153">Để bắt đầu đồng bộ hóa, hãy bật tùy chọn "Đồng bộ hóa dữ liệu Chrome".</translation>
@@ -434,12 +430,10 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="7554791636758816595">Tab mới</translation>
 <translation id="7561196759112975576">Luôn luôn</translation>
 <translation id="7603852183842204213">Cửa sổ bật lên đã bị chặn (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
-<translation id="7605594153474022051">Đồng bộ hóa không hoạt động</translation>
 <translation id="7638584964844754484">Cụm mật khẩu không chính xác</translation>
 <translation id="7658239707568436148">Hủy</translation>
 <translation id="766891008101699113">Để duyệt web ở chế độ riêng tư, hãy thêm tab mới.</translation>
 <translation id="7671141431838911305">CÀI ĐẶT</translation>
-<translation id="7704317875155739195">Tự động hoàn thành cụm từ tìm kiếm và URL</translation>
 <translation id="7765158879357617694">Di chuyển</translation>
 <translation id="7769602470925380267">Chấp nhận và đăng xuất</translation>
 <translation id="7772032839648071052">Xác nhận cụm mật khẩu</translation>
@@ -477,7 +471,6 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="842017693807136194">Đăng nhập bằng</translation>
 <translation id="8428045167754449968">Thành phố/thị trấn</translation>
 <translation id="8428213095426709021">Cài đặt</translation>
-<translation id="8438566539970814960">Cải thiện tính năng tìm kiếm và duyệt web</translation>
 <translation id="8458397775385147834">1 dấu trang đã bị xóa</translation>
 <translation id="8487700953926739672">Khả dụng ngoại tuyến</translation>
 <translation id="8503813439785031346">Tên người dùng</translation>

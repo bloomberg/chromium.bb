@@ -9,7 +9,6 @@
 <translation id="1067922213147265141">บริการอื่นๆ ของ Google</translation>
 <translation id="1068672505746868501">ไม่ต้องแปลหน้าเว็บภาษา<ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1080790410959514870">คุณกำลังออกจากระบบบัญชีที่จัดการโดย <ph name="DOMAIN_NAME" /> การออกจากระบบจะลบข้อมูล Chrome ที่จัดเก็บในอุปกรณ์นี้ แต่ข้อมูลดังกล่าวจะยังคงอยู่ในบัญชี Google ของคุณ</translation>
-<translation id="1099080783256647258">เมื่อเปิดโปรแกรมประหยัดอินเทอร์เน็ต Chrome จะใช้เซิร์ฟเวอร์ของ Google ในการเร่งความเร็วและบีบอัดการโหลดหน้าเว็บ โปรแกรมประหยัดอินเทอร์เน็ตจะเขียนหน้าที่ช้าอย่างมากใหม่เพื่อโหลดเฉพาะเนื้อหาที่จำเป็น โดยจะไม่เพิ่มประสิทธิภาพหน้าเว็บที่โหลดในโหมดไม่ระบุตัวตน</translation>
 <translation id="1100066534610197918">เปิดในแท็บใหม่ในกลุ่ม</translation>
 <translation id="1105960400813249514">จับภาพหน้าจอ</translation>
 <translation id="1111673857033749125">บุ๊กมาร์กที่บันทึกไว้ในอุปกรณ์เครื่องอื่นๆ ของคุณจะปรากฏที่นี่</translation>
@@ -25,6 +24,7 @@
 <translation id="1175310183703641346">บุ๊กมาร์ก ประวัติการเข้าชม รหัสผ่าน และอื่นๆ จะเลิกซิงค์กับบัญชี Google</translation>
 <translation id="1178581264944972037">หยุดชั่วคราว</translation>
 <translation id="1181037720776840403">นำออก</translation>
+<translation id="1188239144602654184">เริ่ม AR</translation>
 <translation id="1197267115302279827">ย้ายบุ๊กมาร์ก</translation>
 <translation id="119944043368869598">ล้างทั้งหมด</translation>
 <translation id="1201402288615127009">ถัดไป</translation>
@@ -96,7 +96,6 @@
 <translation id="1672586136351118594">ไม่ต้องแสดงอีก</translation>
 <translation id="1692118695553449118">การซิงค์เปิดอยู่</translation>
 <translation id="169515064810179024">บล็อกไม่ให้เว็บไซต์เข้าถึงเซ็นเซอร์ตรวจจับความเคลื่อนไหว</translation>
-<translation id="1709438864123551175">โปรแกรมประหยัดอินเทอร์เน็ต</translation>
 <translation id="1717218214683051432">เซ็นเซอร์ตรวจจับความเคลื่อนไหว</translation>
 <translation id="1718835860248848330">ชั่วโมงที่แล้ว</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - อัปเดตเมื่อ <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -214,7 +213,6 @@
 <translation id="2501278716633472235">ย้อนกลับ</translation>
 <translation id="2513403576141822879">ดูการตั้งค่าเพิ่มเติมเกี่ยวกับความเป็นส่วนตัว ความปลอดภัย และการรวบรวมข้อมูลได้ที่<ph name="BEGIN_LINK" />การซิงค์และบริการต่างๆ ของ Google<ph name="END_LINK" /></translation>
 <translation id="2523184218357549926">ส่ง URL ของหน้าที่คุณเข้าชมไปยัง Google</translation>
-<translation id="2526148617758225454">โปรแกรมประหยัดอินเทอร์เน็ตเปิดอยู่ จัดการโปรแกรมนี้ได้ในการตั้งค่า</translation>
 <translation id="2532336938189706096">มุมมองเว็บ</translation>
 <translation id="2534155362429831547">ลบแล้ว <ph name="NUMBER_OF_ITEMS" /> รายการ</translation>
 <translation id="2536728043171574184">ดูสำเนาแบบออฟไลน์ของหน้านี้</translation>
@@ -354,14 +352,12 @@
 <translation id="3599863153486145794">ล้างประวัติจากอุปกรณ์ที่ลงชื่อเข้าใช้ทั้งหมด บัญชี Google อาจมีประวัติการท่องเว็บรูปแบบอื่นๆ ที่ <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
 <translation id="3600792891314830896">ปิดเสียงเว็บไซต์ที่เล่นเสียง</translation>
 <translation id="3616113530831147358">เสียง</translation>
-<translation id="3620176948598597475">การรีเซ็ตจะลบประวัติโปรแกรมประหยัดอินเทอร์เน็ต รวมถึงรายการเว็บไซต์ที่เข้าชม</translation>
 <translation id="3632295766818638029">เปิดเผยรหัสผ่าน</translation>
 <translation id="363596933471559332">ลงชื่อเข้าใช้เว็บไซต์โดยอัตโนมัติโดยใช้ข้อมูลเข้าสู่ระบบที่เก็บไว้ เมื่อฟีเจอร์นี้ปิดอยู่ ระบบจะขอให้คุณยืนยันทุกครั้งก่อนลงชื่อเข้าใช้เว็บไซต์</translation>
 <translation id="3658159451045945436">การรีเซ็ตจะลบประวัติการประหยัดเน็ต รวมถึงรายการเว็บไซต์ที่เข้าชม</translation>
 <translation id="3662546969139119822">ไม่มีประวัติการเข้าชมที่นี่</translation>
 <translation id="3672452749423051839">คำแนะนำเมื่อเกิดข้อผิดพลาดในการนำทาง</translation>
 <translation id="3692944402865947621">ดาวน์โหลด <ph name="FILE_NAME" /> ไม่สำเร็จเนื่องจากเข้าถึงตำแหน่งที่เก็บข้อมูลไม่ได้</translation>
-<translation id="3712575778697986964">รีเซ็ตโปรแกรมประหยัดอินเทอร์เน็ตไหม</translation>
 <translation id="3714981814255182093">เปิดแถบค้นหา</translation>
 <translation id="3716182511346448902">หน้านี้ใช้หน่วยความจำมากเกินไป Chrome จึงหยุดหน้าชั่วคราว</translation>
 <translation id="3730075448226062617">หากต้องการให้ Chrome เข้าถึงไมโครโฟน ให้เปิดไมโครโฟนใน<ph name="BEGIN_LINK" />การตั้งค่า Android<ph name="END_LINK" /> ด้วย</translation>
@@ -503,13 +499,11 @@
 <translation id="4751476147751820511">เซ็นเซอร์จับความเคลื่อนไหวหรือเซ็นเซอร์แสง</translation>
 <translation id="4759238208242260848">ดาวน์โหลด</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{การดาวน์โหลด 1 รายการเสร็จสมบูรณ์}other{การดาวน์โหลด # รายการเสร็จสมบูรณ์}}</translation>
-<translation id="4766369052440583386">โปรแกรมประหยัดอินเทอร์เน็ตเปิดอยู่</translation>
 <translation id="4797039098279997504">แตะเพื่อกลับไปยัง <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4802417911091824046">การเข้ารหัสลับด้วยรหัสผ่านจะไม่รวมข้อมูลวิธีการชำระเงินและที่อยู่จาก Google Pay
 
 หากต้องการเปลี่ยนแปลงการตั้งค่านี้ ให้<ph name="BEGIN_LINK" />รีเซ็ตการซิงค์<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">ชื่อบนบัตร</translation>
-<translation id="4807963036345170158">โปรแกรมประหยัดอินเทอร์เน็ตปิดอยู่</translation>
 <translation id="4816465935029283692">ประเภทข้อมูล</translation>
 <translation id="4824958205181053313">ยกเลิกการซิงค์ใช่ไหม</translation>
 <translation id="4837753911714442426">เปิดตัวเลือกในการพิมพ์หน้า</translation>
@@ -601,6 +595,7 @@
 <translation id="5447765697759493033">ระบบจะไม่แปลไซต์นี้</translation>
 <translation id="545042621069398927">กำลังเพิ่มความเร็วในการดาวน์โหลด</translation>
 <translation id="5456381639095306749">ดาวน์โหลดหน้า</translation>
+<translation id="5475862044948910901">เริ่มเซสชัน Augmented Reality ไหม</translation>
 <translation id="548278423535722844">เปิดในแอปแผนที่</translation>
 <translation id="5487521232677179737">ล้างข้อมูล</translation>
 <translation id="5494752089476963479">บล็อกโฆษณาในเว็บไซต์ที่แสดงโฆษณาที่แทรกหรือทำให้เข้าใจผิด</translation>
@@ -643,7 +638,6 @@
 <translation id="569536719314091526">แปลหน้านี้เป็นภาษาใดก็ได้จากปุ่มตัวเลือกเพิ่มเติม</translation>
 <translation id="572328651809341494">แท็บล่าสุด</translation>
 <translation id="5726692708398506830">ขยายรายละเอียดทั้งหมดบนหน้า</translation>
-<translation id="5734520971562437809">ใช้เน็ตมือถือน้อยลงสูงสุดถึง 60 เปอร์เซ็นต์และท่องเว็บได้เร็วขึ้น</translation>
 <translation id="5748802427693696783">สลับเป็นแท็บมาตรฐานแล้ว</translation>
 <translation id="5749068826913805084">Chrome ต้องมีสิทธิ์เข้าถึงพื้นที่เก็บข้อมูลเพื่อดาวน์โหลดไฟล์</translation>
 <translation id="5763382633136178763">แท็บที่ไม่ระบุตัวตน</translation>
@@ -701,7 +695,6 @@
 <translation id="6159335304067198720">ประหยัดอินเทอร์เน็ต <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">ดูข้อมูลเพิ่มเติม</translation>
 <translation id="6177111841848151710">ถูกบล็อกสำหรับเครื่องมือค้นหาปัจจุบัน</translation>
-<translation id="6177390657002841081">เปิดโปรแกรมประหยัดอินเทอร์เน็ต</translation>
 <translation id="6181444274883918285">เพิ่มข้อยกเว้นของเว็บไซต์</translation>
 <translation id="6192333916571137726">ดาวน์โหลดไฟล์</translation>
 <translation id="6192792657125177640">ข้อยกเว้น</translation>
@@ -867,6 +860,11 @@
 <translation id="7352939065658542140">วิดีโอ</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{แชร์ 1 รายการที่เลือก}other{แชร์ # รายการที่เลือก}}</translation>
 <translation id="7359002509206457351">เข้าถึงวิธีการชำระเงิน</translation>
+<translation id="7365126855094612066">ระหว่างเซสชันนี้ เว็บไซต์จะทำสิ่งต่อไปนี้ได้
+• สร้างแผนที่ 3 มิติของสภาพแวดล้อม
+• ติดตามการเคลื่อนไหวของกล้อง
+
+เว็บไซต์นี้ "ไม่ได้" รับสิทธิ์เข้าถึงกล้องถ่ายรูป มีเพียงคุณเท่านั้นที่จะเห็นรูปจากกล้อง</translation>
 <translation id="7375125077091615385">ประเภท:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" /></translation>
 <translation id="7400418766976504921">URL</translation>
@@ -1114,11 +1112,9 @@
 <translation id="9188680907066685419">ออกจากระบบบัญชีที่มีการจัดการ</translation>
 <translation id="9204836675896933765">เหลืออีก 1 ไฟล์</translation>
 <translation id="9206873250291191720">A</translation>
-<translation id="9215534869786664672">ใช้เน็ตมือถือน้อยลงสูงสุดถึง 60 เปอร์เซ็นต์และท่องเว็บได้เร็วขึ้น เซิร์ฟเวอร์ของ Google จะเพิ่มประสิทธิภาพหน้าเว็บที่คุณเข้าชม</translation>
 <translation id="9219103736887031265">ภาพ</translation>
 <translation id="926205370408745186">นำกิจกรรม Chrome ออกจากไลฟ์สไตล์ดิจิทัล</translation>
 <translation id="932327136139879170">หน้าแรก</translation>
-<translation id="932599481871055447">ประหยัดเน็ตมือถือและท่องเว็บได้เร็วขึ้น</translation>
 <translation id="938850635132480979">ข้อผิดพลาด: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">เข้าถึงไมโครโฟน</translation>
 <translation id="951339005376969845">ลบข้อมูลที่มีอยู่ คุณสามารถดึงข้อมูลกลับมาโดยเปลี่ยนกลับไปเป็น <ph name="FROM_ACCOUNT" /></translation>

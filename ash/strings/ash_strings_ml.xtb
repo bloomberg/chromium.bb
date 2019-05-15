@@ -112,6 +112,7 @@
 <translation id="2597972630681408282">നൈറ്റ് ‌ലൈറ്റ്: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">സിം കാർഡ് ലോക്കുചെയ്‌തു</translation>
 <translation id="2653659639078652383">സമര്‍പ്പിക്കൂ</translation>
+<translation id="2658778018866295321">ക്ലിക്ക് ചെയ്‌ത് വലിച്ചിടുക</translation>
 <translation id="2700493154570097719">നിങ്ങളുടെ കീബോഡ് സജ്ജീകരിക്കുക</translation>
 <translation id="2718395828230677721">നൈറ്റ് ലൈറ്റ്</translation>
 <translation id="2727977024730340865">കുറഞ്ഞ തോതിൽ വൈദ്യുതി പ്രവഹിക്കുന്ന ചാർജ്ജറിലേക്ക് പ്ലഗ് ചെയ്‌തിരിക്കുന്നു. ബാറ്ററി ചാർജുചെയ്യൽ വിശ്വസനീയമാകണമെന്നില്ല.</translation>
@@ -227,6 +228,7 @@
 <translation id="4378551569595875038">കണക്റ്റുചെയ്യുന്നു...</translation>
 <translation id="4379531060876907730">ഇവയാണ് നിങ്ങളുടെ സ്‌റ്റൈലസ് ടൂളുകൾ</translation>
 <translation id="4389184120735010762">നിങ്ങൾ ഡോക്ക് ചെയ്‌ത മാഗ്നിഫയറിനായി കീബോഡ് കുറുക്കുവഴി അമർത്തി. അത് ഓണാക്കണോ?</translation>
+<translation id="4394049700291259645">അപ്രാപ്‌തമാക്കുക</translation>
 <translation id="4421231901400348175"><ph name="HELPER_NAME" /> ഉപയോഗിച്ച് നിങ്ങളുടെ വിദൂര സഹായി മുഖേന സ്‌ക്രീനിന്റെ നിയന്ത്രണം പങ്കിടുക.</translation>
 <translation id="4430019312045809116">അളവ്</translation>
 <translation id="4450893287417543264">വീണ്ടും കാണിക്കരുത്</translation>
@@ -246,7 +248,6 @@
 <translation id="4696813013609194136">രക്ഷാകർതൃ കോഡ് ഉപയോഗിച്ച് ഉപകരണം അൺലോക്ക് ചെയ്യുക</translation>
 <translation id="4731797938093519117">രക്ഷാകർതൃ ആക്‌സസ്</translation>
 <translation id="4734965478015604180">സമാന്തരം</translation>
-<translation id="476166673298332917">ഉപകരണ അഡ്‌മിൻ നിങ്ങളുടെ ബ്രൗസിംഗ് ആക്‌റ്റിവിറ്റി നിരീക്ഷിച്ചേക്കാം.</translation>
 <translation id="4774338217796918551">നാളെ <ph name="COME_BACK_TIME" />-ന് തിരികെ വരിക.</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> എന്നതിനായുള്ള പാസ്‌വേഡ്</translation>
 <translation id="4778095205580009397">ഡെമോ സെഷനിൽ Google അസി‌സ്‌റ്റന്റ് ലഭ്യമല്ല.</translation>
@@ -354,7 +355,6 @@
 <translation id="6537270692134705506">സ്‌ക്രീൻ ക്യാപ്‌ചർ ചെയ്യുക</translation>
 <translation id="6542521951477560771"><ph name="RECEIVER_NAME" /> ഉപകരണത്തിലേക്ക് കാസ്‌റ്റ് ചെയ്യുന്നു</translation>
 <translation id="6559976592393364813">അഡ്‌മിനിസ്‌ട്രേറ്ററോട് ചോദിക്കുക</translation>
-<translation id="6574601967010742428">ഉപകരണ അഡ്‌മിനിസ്‌ട്രേറ്റർക്ക് നിങ്ങളുടെ ആക്‌റ്റിവിറ്റി നിരീക്ഷിക്കാനായേക്കും.</translation>
 <translation id="6585808820553845416"><ph name="SESSION_TIME_REMAINING" />-നുള്ളിൽ സെഷൻ അവസാനിക്കുന്നു.</translation>
 <translation id="6627638273713273709">തിരയല്‍+Shift+K</translation>
 <translation id="6650933572246256093">"<ph name="DEVICE_NAME" />" എന്ന Bluetooth ഉപകരണം ജോടിയാക്കുന്നതിനുള്ള അനുമതി ആവശ്യപ്പെടുന്നു. ആ ഉപകരണത്തിൽ ഈ പാസ്‌കീ നൽകുക: <ph name="PASSKEY" /></translation>

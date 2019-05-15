@@ -112,6 +112,7 @@
 <translation id="2597972630681408282">Nattelys: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM-kortet er låst</translation>
 <translation id="2653659639078652383">Indsend</translation>
+<translation id="2658778018866295321">Klik og træk</translation>
 <translation id="2700493154570097719">Angiv dit tastatur</translation>
 <translation id="2718395828230677721">Nattelys</translation>
 <translation id="2727977024730340865">Tilsluttet en oplader med lav kraft. Batteriopladningen er muligvis ikke pålidelig.</translation>
@@ -227,6 +228,7 @@
 <translation id="4378551569595875038">Opretter forbindelse...</translation>
 <translation id="4379531060876907730">Dette er dine styluspenværktøjer</translation>
 <translation id="4389184120735010762">Du trykkede på tastaturgenvejen for det fastgjorte lupvindue. Vil du aktivere indstillingen?</translation>
+<translation id="4394049700291259645">Deaktiver</translation>
 <translation id="4421231901400348175">Skærmdeling med <ph name="HELPER_NAME" /> via Fjernsupport.</translation>
 <translation id="4430019312045809116">Lydstyrke</translation>
 <translation id="4450893287417543264">Vis ikke igen</translation>
@@ -246,7 +248,6 @@
 <translation id="4696813013609194136">Lås enheden op med forældrekode</translation>
 <translation id="4731797938093519117">Forældreadgang</translation>
 <translation id="4734965478015604180">Vandret</translation>
-<translation id="476166673298332917">Administratoren af enheden kan overvåge din browseraktivitet.</translation>
 <translation id="4774338217796918551">Kom tilbage i morgen kl. <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Adgangskode for <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">Google Assistent er ikke tilgængelig i en demosession.</translation>
@@ -355,7 +356,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6537270692134705506">Tag screenshot</translation>
 <translation id="6542521951477560771">Caster til <ph name="RECEIVER_NAME" /></translation>
 <translation id="6559976592393364813">Spørg din administrator</translation>
-<translation id="6574601967010742428">Enhedsadministratoren kan muligvis overvåge din aktivitet.</translation>
 <translation id="6585808820553845416">Sessionen slutter om <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Søgetast+Shift+K</translation>
 <translation id="6650933572246256093">Bluetooth-enheden "<ph name="DEVICE_NAME" />" vil gerne have parringstilladelse. Angiv din adgangsnøgle på enheden: <ph name="PASSKEY" /></translation>

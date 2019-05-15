@@ -146,7 +146,6 @@ Lähetimme lisäohjeita sähköpostiisi osoitteeseen <ph name="ACCOUNT_EMAIL" />
 <translation id="4750550185319565338">Ota <ph name="PLUGIN_NAME" /> käyttöön käynnistämällä Chrome uudelleen.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (saapuva mDNS)</translation>
 <translation id="4771048833395599659">Tämä tiedosto voi olla vaarallinen, joten Chrome on estänyt sen.</translation>
-<translation id="4794050651896644714">Tallenna tiedot Chromeen</translation>
 <translation id="4891791193823137474">Jätä Google Chrome käyntiin taustalle</translation>
 <translation id="4895437082222824641">Avaa linkki uudella Chromen välilehdellä</translation>
 <translation id="4921569541910214635">Jaatko tietokoneen jonkun kanssa? Nyt voit määrittää Chromen juuri sellaiseksi kuin haluat.</translation>
@@ -258,7 +257,6 @@ Lähetimme lisäohjeita sähköpostiisi osoitteeseen <ph name="ACCOUNT_EMAIL" />
 <translation id="8077352834923175128">Järjestelmänvalvoja pyytää Chrome OS:n uudelleenkäynnistystä, jotta tämä päivitys voidaan ottaa käyttöön.</translation>
 <translation id="8129812357326543296">Tietoja &amp;Google Chromesta</translation>
 <translation id="8179874765710681175">Asenna Chrome puhelimeesi. Lähetämme tekstiviestin puhelimeen.</translation>
-<translation id="8183957050892517584">Chrome tallentaa tietosi turvalliseen paikkaan, jottei sinun tarvitse kirjoittaa tietoja uudelleen.</translation>
 <translation id="8226081633851087288">{0,plural, =0{Chrome OS käynnistetään uudelleen nyt}=1{Chrome OS käynnistetään uudelleen 1 sekunnin kuluttua}other{Chrome OS käynnistetään uudelleen # sekunnin kuluttua}}</translation>
 <translation id="825412236959742607">Tämä sivu käyttää liikaa muistia, joten Chrome poisti osan sisällöstä.</translation>
 <translation id="8255190535488645436">Google Chrome käyttää kameraasi ja mikrofoniasi.</translation>

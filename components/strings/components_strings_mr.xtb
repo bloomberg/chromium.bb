@@ -447,7 +447,7 @@
 <translation id="3366477098757335611">कार्डे पाहा</translation>
 <translation id="3369192424181595722">घड्याळ एरर</translation>
 <translation id="337363190475750230">तरतूद रद्द केली</translation>
-<translation id="3377188786107721145">धोरण पार्स एरर</translation>
+<translation id="3377188786107721145">धोरण विश्लेषण एरर</translation>
 <translation id="3380365263193509176">अज्ञात एरर</translation>
 <translation id="3380864720620200369">क्लायंट आयडी:</translation>
 <translation id="3387261909427947069">पेमेंट पद्धती</translation>
@@ -474,6 +474,7 @@
 <translation id="3484560055331845446">तुम्ही तुमच्या Google खात्याचा ॲक्सेस कदाचित गमवाल. Chrome आता तुमचा पासवर्ड बदलण्याची शिफारस करते. तुम्हाला साइन इन करण्यासाठी सांगितले जाऊ शकते.</translation>
 <translation id="3495081129428749620">पेज <ph name="PAGE_TITLE" /> मध्ये शोधा</translation>
 <translation id="3498215018399854026">याक्षणी आम्ही आपल्या पालकांपर्यंत पोहोचू शकलो नाही. कृपया पुन्हा प्रयत्न करा.</translation>
+<translation id="3512163584740124171">या धोरणाकडे दुर्लक्ष केले कारण त्याच धोरण गटातील दुसऱ्या धोरणाला उच्च प्राधान्य आहे.</translation>
 <translation id="3528171143076753409">सर्व्हरचे सर्टिफिकेट विश्वसनीय नाही.</translation>
 <translation id="3528485271872257980">गडद तपकिरी</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{ सिंक केलेल्या डिव्हाइसवर किमान 1 आयटम}=1{1 आयटम (सिंक केलेल्या डिव्‍हाइसवर आणखी काही)}other{# आयटम (सिंक केलेल्या डिव्‍हाइसवर आणि आणखी काही)}}</translation>
@@ -1088,7 +1089,6 @@
 <translation id="7062635574500127092">हिरवट निळा</translation>
 <translation id="7064851114919012435">संपर्क माहिती</translation>
 <translation id="7079718277001814089">या साइटमध्ये मालवेअर आहे</translation>
-<translation id="7081564429925484109">चेतावणी: PolicyListMultipleSourceMergeList मध्ये नमूद केल्याप्रमाणे हे धोरण विलीन केले नाही कारण ती एखादी सूची नाही.</translation>
 <translation id="7087282848513945231">परगणा</translation>
 <translation id="7090678807593890770">Google वर <ph name="LINK" /> शोधा</translation>
 <translation id="7108338896283013870">लपवा</translation>
@@ -1148,7 +1148,6 @@
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">नाही</translation>
 <translation id="7378810950367401542">/</translation>
-<translation id="7381288752349550461">व्यवस्थापित केलेले सेशन ओव्हरराइड</translation>
 <translation id="7390545607259442187">कार्डची पुष्टी करा</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7403591733719184120">तुमचे <ph name="DEVICE_NAME" /> व्यवस्थापित केले आहे</translation>

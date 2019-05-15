@@ -146,7 +146,6 @@
 <translation id="4750550185319565338">重新启动 Chrome 以启用 <ph name="PLUGIN_NAME" /></translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">此文件可能存在危险，因此 Chrome 已将其拦截。</translation>
-<translation id="4794050651896644714">在 Chrome 中保存详细信息</translation>
 <translation id="4891791193823137474">让 Google Chrome 浏览器在后台运行</translation>
 <translation id="4895437082222824641">在 Chrome 新标签页中打开链接(&amp;T)</translation>
 <translation id="4921569541910214635">与其他人共用计算机？现在，您可以随心所欲地设置Chrome。</translation>
@@ -258,7 +257,6 @@
 <translation id="8077352834923175128">您的管理员请您重启 Chrome 操作系统以应用此项更新</translation>
 <translation id="8129812357326543296">关于 Google Chrome(&amp;G)</translation>
 <translation id="8179874765710681175">请在您的手机上安装 Chrome。我们会向您的手机发送一条短信。</translation>
-<translation id="8183957050892517584">Chrome 将妥善存储您的个人详细信息，这样您日后就不必重复输入了。</translation>
 <translation id="8226081633851087288">{0,plural, =0{Chrome 操作系统将会立即重启}=1{Chrome 操作系统将会在 1 秒后重启}other{Chrome 操作系统将会在 # 秒后重启}}</translation>
 <translation id="825412236959742607">此网页占用的内存过多，因此 Chrome 移除了部分内容。</translation>
 <translation id="8255190535488645436">Google Chrome 正在使用您的摄像头和麦克风。</translation>

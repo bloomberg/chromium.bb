@@ -9,7 +9,6 @@
 <translation id="1067922213147265141">다른 Google 서비스</translation>
 <translation id="1068672505746868501"><ph name="SOURCE_LANGUAGE" />로 된 페이지는 번역하지 않음</translation>
 <translation id="1080790410959514870"><ph name="DOMAIN_NAME" />에서 관리하는 계정에서 로그아웃합니다. 로그아웃하면 이 기기에 저장된 Chrome 데이터는 삭제되지만 Google 계정에는 데이터가 남습니다.</translation>
-<translation id="1099080783256647258">데이터 절약 모드를 사용 설정하면 Chrome은 Google 서버를 사용해 속도를 높이고 페이지 로드를 압축합니다. 속도가 매우 느린 페이지인 경우 꼭 필요한 콘텐츠만 로드되도록 데이터 절약 모드가 페이지를 다시 작성합니다. 시크릿 모드에서 로드된 페이지는 데이터 절약 모드에 의해 최적화되지 않습니다.</translation>
 <translation id="1100066534610197918">새 탭을 그룹에서 열기</translation>
 <translation id="1105960400813249514">화면 캡처</translation>
 <translation id="1111673857033749125">다른 기기에서 저장한 북마크가 여기에 표시됩니다.</translation>
@@ -25,6 +24,7 @@
 <translation id="1175310183703641346">북마크, 방문 기록, 비밀번호 등이 더 이상 Google 계정과 동기화되지 않습니다.</translation>
 <translation id="1178581264944972037">일시중지</translation>
 <translation id="1181037720776840403">삭제</translation>
+<translation id="1188239144602654184">AR 입력</translation>
 <translation id="1197267115302279827">북마크 이동</translation>
 <translation id="119944043368869598">모두 삭제</translation>
 <translation id="1201402288615127009">다음</translation>
@@ -95,7 +95,7 @@
 <translation id="1671236975893690980">다운로드 대기 중...</translation>
 <translation id="1672586136351118594">다시 표시하지 않음</translation>
 <translation id="1692118695553449118">동기화 사용 중</translation>
-<translation id="1709438864123551175">데이터 절약 모드</translation>
+<translation id="169515064810179024">사이트에서 움직임 감지 센서에 액세스하지 못하도록 차단</translation>
 <translation id="1717218214683051432">움직임 감지 센서</translation>
 <translation id="1718835860248848330">지난 1시간</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" />: <ph name="TIME_SINCE_UPDATE" />에 업데이트됨</translation>
@@ -213,7 +213,6 @@
 <translation id="2501278716633472235">뒤로 이동</translation>
 <translation id="2513403576141822879">개인정보 보호, 보안, 데이터 수집에 관한 설정을 더 보려면 <ph name="BEGIN_LINK" />동기화 및 Google 서비스<ph name="END_LINK" />를 참조하세요.</translation>
 <translation id="2523184218357549926">방문한 페이지의 URL을 Google에 전송</translation>
-<translation id="2526148617758225454">데이터 절약 모드를 사용하도록 설정했습니다. 설정에서 관리하세요.</translation>
 <translation id="2532336938189706096">웹 보기</translation>
 <translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" />개 항목 삭제함</translation>
 <translation id="2536728043171574184">이 페이지의 오프라인 사본 보는 중</translation>
@@ -248,6 +247,7 @@
 <translation id="2777555524387840389"><ph name="SECONDS" />초 남음</translation>
 <translation id="2779651927720337254">실패</translation>
 <translation id="2781151931089541271">1초 남음</translation>
+<translation id="2801022321632964776">최신 버전의 Chrome에서 내가 사용하는 언어를 사용하려면 업데이트하세요.</translation>
 <translation id="2810645512293415242">페이지가 간소화되어 데이터가 절약되고 로드 속도가 빨라졌습니다.</translation>
 <translation id="281504910091592009"><ph name="BEGIN_LINK" />Google 계정<ph name="END_LINK" />에서 저장된 비밀번호 보기 및 관리</translation>
 <translation id="2818669890320396765">어느 기기에서나 내 북마크를 사용하려면 로그인하고 동기화를 사용 설정하세요.</translation>
@@ -308,6 +308,7 @@
 <translation id="3259831549858767975">페이지의 모든 항목 축소</translation>
 <translation id="3269093882174072735">이미지 로드</translation>
 <translation id="3269956123044984603">다른 기기에서 탭을 가져오려면 Android 계정 설정에서 '데이터 자동 동기화'를 사용 설정하세요.</translation>
+<translation id="3277252321222022663">사이트의 센서 액세스 허용(권장)</translation>
 <translation id="3282568296779691940">Chrome에 로그인</translation>
 <translation id="3288003805934695103">페이지 새로고침</translation>
 <translation id="32895400574683172">알림이 허용되었습니다</translation>
@@ -351,14 +352,12 @@
 <translation id="3599863153486145794">로그인된 모든 기기에서 방문 기록을 지웁니다. Google 계정의 내 활동(<ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />)에는 인터넷 사용 기록이 다른 형식으로 남아 있을 수도 있습니다.</translation>
 <translation id="3600792891314830896">소리를 재생하는 사이트 음소거</translation>
 <translation id="3616113530831147358">오디오</translation>
-<translation id="3620176948598597475">초기화하면 방문한 사이트 목록 등 데이터 절약 모드 기록이 삭제됩니다.</translation>
 <translation id="3632295766818638029">비밀번호 공개</translation>
 <translation id="363596933471559332">저장된 사용자 인증 정보를 사용하여 자동으로 웹사이트에 로그인합니다. 이 기능이 꺼져 있는 경우에는 웹사이트에 로그인할 때마다 인증 요청 메시지가 표시됩니다.</translation>
 <translation id="3658159451045945436">재설정하면 방문한 사이트 목록을 비롯한 데이터 절약 기록이 삭제됩니다.</translation>
 <translation id="3662546969139119822">기록 없음</translation>
 <translation id="3672452749423051839">탐색 오류 시 추천사항 표시</translation>
 <translation id="3692944402865947621">저장 위치에 연결할 수 없어 <ph name="FILE_NAME" />을(를) 다운로드할 수 없습니다.</translation>
-<translation id="3712575778697986964">데이터 절약 모드를 초기화하시겠습니까?</translation>
 <translation id="3714981814255182093">찾기 창 열기</translation>
 <translation id="3716182511346448902">페이지에서 너무 많은 메모리를 사용하므로 Chrome에서 페이지를 일시중지했습니다.</translation>
 <translation id="3730075448226062617">Chrome에서 마이크에 액세스하도록 허용하려면 <ph name="BEGIN_LINK" />Android 설정<ph name="END_LINK" />에서도 마이크를 사용 설정하세요.</translation>
@@ -500,13 +499,11 @@
 <translation id="4751476147751820511">모션 또는 조도 센서</translation>
 <translation id="4759238208242260848">다운로드</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{다운로드 1개 완료}other{다운로드 #개 완료}}</translation>
-<translation id="4766369052440583386">데이터 절약 모드 사용</translation>
 <translation id="4797039098279997504">터치하여 <ph name="URL_OF_THE_CURRENT_TAB" />(으)로 돌아가기</translation>
 <translation id="4802417911091824046">Google Pay 결제 수단 및 주소는 암호로 암호화되지 않습니다.
 
 이 설정을 변경하려면 <ph name="BEGIN_LINK" />동기화를 재설정<ph name="END_LINK" />하세요.</translation>
 <translation id="4807098396393229769">카드 명의</translation>
-<translation id="4807963036345170158">데이터 절약 모드 사용 안함</translation>
 <translation id="4816465935029283692">데이터 유형</translation>
 <translation id="4824958205181053313">동기화를 취소하시겠습니까?</translation>
 <translation id="4837753911714442426">옵션을 열어 페이지 인쇄</translation>
@@ -546,6 +543,7 @@
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">허용</translation>
 <translation id="5040262127954254034">개인정보 보호</translation>
+<translation id="5048398596102334565">사이트의 움직임 감지 센서 액세스 허용(권장)</translation>
 <translation id="5063480226653192405">사용</translation>
 <translation id="5073204694187207510">전체화면 그리드 숨기기</translation>
 <translation id="5082793167783849073">그룹을 만들어서 페이지를 빠르게 비교하세요. 시작하려면 링크를 길게 터치합니다.</translation>
@@ -597,6 +595,7 @@
 <translation id="5447765697759493033">이 사이트는 번역되지 않습니다.</translation>
 <translation id="545042621069398927">다운로드 속도 향상</translation>
 <translation id="5456381639095306749">다운로드 페이지</translation>
+<translation id="5475862044948910901">증강 현실 세션을 시작할까요?</translation>
 <translation id="548278423535722844">지도 앱에서 열기</translation>
 <translation id="5487521232677179737">인터넷 사용 기록 삭제</translation>
 <translation id="5494752089476963479">방해가 되거나 사용자를 현혹하는 광고를 표시하는 사이트의 광고 차단</translation>
@@ -639,7 +638,6 @@
 <translation id="569536719314091526">옵션 더보기 버튼을 눌러 이 페이지를 원하는 언어로 번역하세요</translation>
 <translation id="572328651809341494">최근 탭</translation>
 <translation id="5726692708398506830">페이지의 모든 항목 확대</translation>
-<translation id="5734520971562437809">데이터 사용량을 최대 60퍼센트ㅍ까지 절약하고 웹 속도를 높이세요.</translation>
 <translation id="5748802427693696783">일반 탭으로 전환됨</translation>
 <translation id="5749068826913805084">Chrome에서 파일을 다운로드하려면 저장소 액세스 권한이 있어야 합니다.</translation>
 <translation id="5763382633136178763">시크릿 탭</translation>
@@ -697,7 +695,6 @@
 <translation id="6159335304067198720"><ph name="PERCENT" /> 데이터 절약</translation>
 <translation id="6165508094623778733">자세히 알아보기</translation>
 <translation id="6177111841848151710">현재 검색엔진에는 허용되지 않음</translation>
-<translation id="6177390657002841081">데이터 세이버 사용 설정</translation>
 <translation id="6181444274883918285">사이트 예외 추가</translation>
 <translation id="6192333916571137726">다운로드 파일</translation>
 <translation id="6192792657125177640">예외</translation>
@@ -736,6 +733,7 @@
 <translation id="6406506848690869874">동기화</translation>
 <translation id="641643625718530986">인쇄…</translation>
 <translation id="6416782512398055893"><ph name="MBS" />MB 다운로드됨</translation>
+<translation id="6427112570124116297">웹 번역</translation>
 <translation id="6433501201775827830">검색엔진 선택</translation>
 <translation id="6437478888915024427">페이지 정보</translation>
 <translation id="6441734959916820584">이름이 너무 깁니다.</translation>
@@ -848,6 +846,7 @@
 <translation id="7189598951263744875">공유...</translation>
 <translation id="7191430249889272776">탭이 백그라운드에 열림</translation>
 <translation id="723171743924126238">이미지 선택</translation>
+<translation id="7233236755231902816">내가 사용하는 언어로 웹을 보려면 최신 버전의 Chrome을 사용하세요.</translation>
 <translation id="7243308994586599757">화면 하단에서 옵션 선택 가능</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" />개 선택됨</translation>
 <translation id="7253272406652746122">기기 설정 앱의 계정 페이지에서 Google 계정을 추가하세요.</translation>
@@ -861,6 +860,11 @@
 <translation id="7352939065658542140">동영상</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{선택한 1개 항목 공유}other{선택한 #개 항목 공유}}</translation>
 <translation id="7359002509206457351">결제 수단 액세스</translation>
+<translation id="7365126855094612066">세션이 실행되는 동안 사이트에서 다음을 실행할 수 있습니다.
+• 사용자 환경을 3D 지도로 작성
+• 카메라 모션 추적
+
+사이트에서 카메라 액세스 권한을 요구하지 않습니다. 카메라 이미지는 나에게만 표시됩니다.</translation>
 <translation id="7375125077091615385">유형:</translation>
 <translation id="7396940094317457632">파일(<ph name="FILE_NAME" />)이 다운로드되었습니다.</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -897,7 +901,7 @@
 <translation id="756809126120519699">Chrome 데이터 삭제됨</translation>
 <translation id="757524316907819857">사이트에서 보호된 콘텐츠를 재생하지 못하도록 차단</translation>
 <translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" />개 파일 다운로드됨}other{<ph name="FILES_DOWNLOADED_MANY" />개 파일 다운로드됨}}</translation>
-<translation id="7588219262685291874">기기 절전 모드 사용 시 어두운 테마를 사용 설정합니다.</translation>
+<translation id="7588219262685291874">기기 절전 모드 사용 시 어두운 테마 사용 설정</translation>
 <translation id="7589445247086920869">현재 검색엔진에 허용 안함</translation>
 <translation id="7593557518625677601">Android 설정을 열고 Android 시스템 동기화를 다시 사용 설정하여 Chrome 동기화를 시작합니다.</translation>
 <translation id="7596558890252710462">운영체제</translation>
@@ -999,6 +1003,7 @@
 <translation id="8310344678080805313">일반 탭</translation>
 <translation id="8313455859591948645">시작 페이지 수정</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> 및 그 외 사이트</translation>
+<translation id="8327155640814342956">최고의 탐색 환경을 사용하려면 Chrome을 열고고 업데이트하세요.</translation>
 <translation id="8339163506404995330"><ph name="LANGUAGE" />로 된 페이지를 번역하지 않습니다.</translation>
 <translation id="8349013245300336738">사용된 데이터 양에 따라 정렬</translation>
 <translation id="8372893542064058268">특정 사이트에서 백그라운드 동기화를 허용합니다.</translation>
@@ -1056,6 +1061,7 @@
 <translation id="8788968922598763114">마지막으로 닫은 탭 다시 열기</translation>
 <translation id="8801436777607969138">특정 사이트의 자바스크립트를 차단합니다.</translation>
 <translation id="8812260976093120287">일부 웹사이트에서는 위의 결제 앱을 사용하여 내 기기에서 결제할 수 있습니다.</translation>
+<translation id="8816026460808729765">사이트에서 센서에 액세스하지 못하도록 차단</translation>
 <translation id="8816439037877937734"><ph name="APP_NAME" />이(가) Chrome에서 열립니다. 계속하면 Chrome의 <ph name="BEGIN_LINK1" />서비스 약관<ph name="END_LINK1" />, <ph name="BEGIN_LINK2" />개인정보처리방침<ph name="END_LINK2" /> 및 <ph name="BEGIN_LINK3" />Family Link로 관리되는 Google 계정용 개인정보처리방침<ph name="END_LINK3" />에 동의하는 것으로 간주됩니다.</translation>
 <translation id="8820817407110198400">북마크</translation>
 <translation id="8833831881926404480">사이트에서 화면을 공유하는 중입니다.</translation>
@@ -1106,11 +1112,9 @@
 <translation id="9188680907066685419">관리 계정에서 로그아웃</translation>
 <translation id="9204836675896933765">파일 1개가 남았습니다.</translation>
 <translation id="9206873250291191720">A</translation>
-<translation id="9215534869786664672">데이터 사용량을 최대 60퍼센트까지 절약하고 웹 속도를 높이세요. Google 서버에서 내가 방문하는 페이지를 최적화합니다.</translation>
 <translation id="9219103736887031265">이미지</translation>
 <translation id="926205370408745186">디지털 웰빙에서 Chrome 활동 삭제</translation>
 <translation id="932327136139879170">홈</translation>
-<translation id="932599481871055447">데이터 절약 모드</translation>
 <translation id="938850635132480979">오류: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">마이크에 액세스</translation>
 <translation id="951339005376969845">기존 데이터를 삭제합니다. <ph name="FROM_ACCOUNT" />(으)로 전환하여 기존 데이터를 가져올 수 있습니다.</translation>

@@ -112,6 +112,7 @@
 <translation id="2597972630681408282">Llum nocturna: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">La targeta SIM està bloquejada</translation>
 <translation id="2653659639078652383">Envia</translation>
+<translation id="2658778018866295321">Fes clic i arrossega</translation>
 <translation id="2700493154570097719">Defineix el teu teclat</translation>
 <translation id="2718395828230677721">Llum nocturna</translation>
 <translation id="2727977024730340865">S'ha connectat a un carregador de baix consum. És possible que la càrrega de la bateria no sigui fiable.</translation>
@@ -227,6 +228,7 @@
 <translation id="4378551569595875038">S'està connectant...</translation>
 <translation id="4379531060876907730">Aquestes són les eines del llapis òptic</translation>
 <translation id="4389184120735010762">Has premut la tecla de drecera de la lupa acoblada. Vols activar-la?</translation>
+<translation id="4394049700291259645">Desactiva</translation>
 <translation id="4421231901400348175">Es comparteix el control de la pantalla amb <ph name="HELPER_NAME" /> mitjançant l'Assistència remota.</translation>
 <translation id="4430019312045809116">Volum</translation>
 <translation id="4450893287417543264">No ho tornis a mostrar</translation>
@@ -246,7 +248,6 @@
 <translation id="4696813013609194136">Desbloqueja el dispositiu amb el codi parental</translation>
 <translation id="4731797938093519117">Accés parental</translation>
 <translation id="4734965478015604180">Horitzontal</translation>
-<translation id="476166673298332917">És possible que l'administrador del dispositiu supervisi l'activitat de navegació.</translation>
 <translation id="4774338217796918551">Pots tornar demà a les <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Contrasenya per a <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">L'Assistent de Google no està disponible en les sessions de demostració.</translation>
@@ -354,7 +355,6 @@
 <translation id="6537270692134705506">Captura la pantalla</translation>
 <translation id="6542521951477560771">S'està emetent a <ph name="RECEIVER_NAME" /></translation>
 <translation id="6559976592393364813">Pregunta a l'administrador</translation>
-<translation id="6574601967010742428">Pot ser que l'administrador del dispositiu pugui supervisar la teva activitat.</translation>
 <translation id="6585808820553845416">La sessió finalitzarà d'aquí a <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Cerca+Maj+K</translation>
 <translation id="6650933572246256093">El dispositiu Bluetooth "<ph name="DEVICE_NAME" />" sol·licita permís per emparellar-se. Introduïu-hi aquesta contrasenya: <ph name="PASSKEY" />.</translation>

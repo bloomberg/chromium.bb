@@ -130,6 +130,15 @@
       如果此政策设为False，则不报告dev开关的状态。</translation>
 <translation id="1160479894929412407">允许使用 QUIC 协议</translation>
 <translation id="1160939557934457296">禁止从安全浏览警告页面继续访问</translation>
+<translation id="1171342272070128466">启用停靠的放大镜无障碍功能。
+
+          如果将此政策设置为 true，停靠的放大镜将始终处于启用状态。
+
+          如果将此政策设置为 false，停靠的放大镜将始终处于停用状态。
+
+          如果您设置了此政策，用户将无法更改或覆盖它。
+
+          如果未设置此政策，则停靠的放大镜最初会处于停用状态，但用户可以随时启用该功能。</translation>
 <translation id="1189817621108632689">让您能够设置一系列网址格式，以用于指定允许哪些网站显示图片。
 
           如果未设置此政策，系统将会对所有网站使用“DefaultImagesSetting”政策中的全局默认值（倘若已设置“DefaultImagesSetting”政策），或使用用户个人配置中的全局默认值（倘若未设置“DefaultImagesSetting”政策）。
@@ -418,10 +427,11 @@
 <translation id="1750315445671978749">拦截所有下载内容</translation>
 <translation id="1762072363876276024">
       此政策适用于登录屏幕。另请参阅适用于用户会话的 <ph name="SITE_PER_PROCESS_POLICY_NAME" /> 政策。建议将这两项政策设为相同的值。如果这两项政策的值不一致，则在进入用户会话时，若系统正在应用由用户政策指定的值，便可能会出现延迟。
-      DeviceLoginScreenSitePerProcess 这项设置可用于禁止用户停用隔离所有网站的默认行为。请注意，DeviceLoginScreenIsolateOrigins 政策可能还有助于隔离其他更精细的来源。
+      DeviceLoginScreenSitePerProcess 设置可用于禁止用户停用隔离所有网站的默认行为。请注意，还可以使用 DeviceLoginScreenIsolateOrigins 政策以更精细的方式隔离其他来源。
       如果启用了此政策，则用户无法停用让每个网站在自己的进程中运行的默认行为。
       如果未配置或停用了此政策，则用户可以更改此设置（例如，使用 chrome://flags 中的“停用网站隔离”条目）。
       </translation>
+<translation id="1767673020408652620">在处于零状态的搜索框内启用应用推荐</translation>
 <translation id="1781356041596378058">此政策亦用于控制对 Android 开发者选项的访问。如果此政策设为 true，用户将无法访问开发者选项。如果此政策设为 false 或未设置，用户只需在 Android 的“设置”应用中连续点按 7 次版本号即可访问开发者选项。</translation>
 <translation id="1793346220873697538">默认停用 PIN 码打印</translation>
 <translation id="1797233582739332495">显示要求用户重新启动浏览器的周期性提示</translation>
@@ -828,7 +838,7 @@
 <translation id="257788512393330403">必须每 6 小时输入一次密码</translation>
 <translation id="2586162458524426376">
       此政策适用于登录屏幕。另请参阅适用于用户会话的 <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> 政策。
-      如果启用了此政策，则逗号分隔列表中指定的每个来源都将在自己的进程中运行。这也会隔离以子网域指定的来源；例如，指定 https://example.com/ 还会导致 https://foo.example.com/ 被隔离（作为 https://example.com/ 网站的一部分）。
+      如果启用了此政策，则逗号分隔列表中指定的每个来源都将在自己的进程中运行。以子网域形式指定的来源也会隔离；例如，指定 https://example.com/ 也会导致 https://foo.example.com/ 被隔离（作为 https://example.com/ 网站的一部分）。
       如果未配置或停用了此政策，则系统将为登录屏幕使用平台默认的网站隔离设置。
       </translation>
 <translation id="2587719089023392205">将 <ph name="PRODUCT_NAME" /> 设为默认浏览器</translation>
@@ -922,6 +932,15 @@
 
       每个列表条目指定一个标识符，用于在内部区分不同的设备本地帐号。</translation>
 <translation id="2769952903507981510">为远程访问主机配置所需的域名</translation>
+<translation id="2783078941107212091">在启动器中处于零状态的搜索框内启用应用推荐。
+
+          如果将此政策设置为 true，则系统可能会在零状态搜索时显示应用推荐。
+
+          如果将此政策设置为 false，则系统不会在零状态搜索时显示应用推荐。
+
+          如果您设置了此政策，用户将无法更改或覆盖它。
+
+          如果未设置此政策，则托管设备会将其默认设置为 False。</translation>
 <translation id="2787173078141616821">报告有关 Android 状态的信息</translation>
 <translation id="2799297758492717491">允许符合网址格式白名单中所列格式的网页自动播放媒体内容</translation>
 <translation id="2801155097555584385">设定电池充电自定义开始充电值（以百分比表示）</translation>
@@ -1114,6 +1133,24 @@
       如果此政策设置为 false，那么 WPAD 优化将处于停用状态，这会延长 <ph name="PRODUCT_NAME" /> 等待基于 DNS 的 WPAD 服务器响应的时间。如果未设置或已启用此政策，那么 WPAD 优化设置将处于启用状态。
 
       无论是否设置此政策或如何设置此政策，用户都无法更改 WPAD 优化设置。</translation>
+<translation id="3071839057966069710">配置打印机列表。
+
+      通过此政策，管理员可为他们的用户提供打印机配置。
+
+      “<ph name="PRINTER_DISPLAY_NAME" />”和“<ph name="PRINTER_DESCRIPTION" />”均为自由格式的字符串，且均可被自定义以便于选择打印机。“<ph name="PRINTER_MANUFACTURER" />”和“<ph name="PRINTER_MODEL" />”则可以帮助最终用户轻松识别打印机。它们分别代表打印机的制造商和型号。“<ph name="PRINTER_URI" />”应是可通过客户的计算机访问的地址，包括“<ph name="URI_SCHEME" />”、“<ph name="URI_PORT" />”和“<ph name="URI_QUEUE" />”。“<ph name="PRINTER_UUID" />”是可选项。如果提供的话，该项可用于帮助删除重复的“<ph name="ZEROCONF_DISCOVERY" />”打印机。
+
+      “<ph name="PRINTER_EFFECTIVE_MODEL" />”必须与代表 <ph name="PRODUCT_NAME" />支持的打印机的某个字符串匹配。该字符串将用于识别和为打印机安装相应的 PPD。如需了解详情，请访问：https://support.google.com/chrome?p=noncloudprint。
+
+      <ph name="PRINTER_AUTOCONF" /> 是一个布尔值标记，指示是否应该将 IPP Everywhere 用于设置打印机。<ph name="PRODUCT_OS_NAME" /> 76 及更高版本支持该标记。
+
+      要么 <ph name="PRINTER_EFFECTIVE_MODEL" /> 应该包含打印机的名称，要么 <ph name="PRINTER_AUTOCONF" /> 应该设置为 true。具有这两种属性或者不具有任一属性的打印机将会被忽略。
+
+      打印机设置会在用户首次使用打印机时完成。在用户开始使用打印机之前，系统不会下载 PPD。在用户开始使用打印机之后，系统则会缓存经常使用的 PPD。
+
+      此政策对用户能否在某设备上配置打印机没有影响。它旨在对各个用户的打印机配置起到补充作用。
+
+      对于由 Active Directory 托管的设备，此政策支持将“<ph name="MACHINE_NAME_VARIABLE" />”扩展为 Active Directory 机器名称或其子字符串。例如，如果机器名称是“<ph name="MACHINE_NAME_EXAMPLE" />”，则“<ph name="MACHINE_NAME_VARIABLE_EXAMPLE" />”将被替换为第 6 个字符后面的 4 个字符（即 <ph name="MACHINE_NAME_PART_EXAMPLE" />）。请注意，位置序数从 0 起算。
+      </translation>
 <translation id="3072045631333522102">用于零售模式登录屏幕的屏幕保护程序</translation>
 <translation id="3072847235228302527">为设备本地帐号设置服务条款</translation>
 <translation id="3077183141551274418">启用或停用标签页生命周期</translation>
@@ -1875,7 +1912,6 @@
 <translation id="4591366717022345234">为用户提供 Quick Fix Build</translation>
 <translation id="4600786265870346112">启用大号光标</translation>
 <translation id="4604931264910482931">配置本地消息传递主机黑名单</translation>
-<translation id="4613508646038788144">如果此政策设为 false，系统便会允许第三方软件将可执行代码插入到 Chrome 进程中。如果此政策设为 true 或未设置，系统则会阻止第三方软件将可执行代码插入到 Chrome 进程中。</translation>
 <translation id="4617338332148204752">跳过“<ph name="PRODUCT_FRAME_NAME" />”中的元标记检查</translation>
 <translation id="4625915093043961294">配置扩展程序安装白名单</translation>
 <translation id="4632343302005518762">允许 <ph name="PRODUCT_FRAME_NAME" />处理列出的内容类型</translation>
@@ -2060,15 +2096,6 @@
       如果此政策设为 false，那么当切换到备用浏览器后，Chrome 会关闭其中的标签页（即使是仅剩的那个标签页）。这将导致用户彻底退出 Chrome。</translation>
 <translation id="5105313908130842249">使用电池供电时的屏幕锁定延迟时间</translation>
 <translation id="5108031557082757679">已停用企业设备打印机</translation>
-<translation id="5113732180192599620">此政策可控制始终不会导致切换浏览器的网站列表。
-
-      请注意，还可以通过 <ph name="USE_IE_SITELIST_POLICY_NAME" /> 和 <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" /> 政策向该列表添加元素。
-
-      如果此政策未设置，则不会向该列表添加任何网站。
-
-      如果此政策已设置，则系统会将每项内容视为一条规则，这与 <ph name="URL_LIST_POLICY_NAME" /> 政策类似。不过，逻辑是相反的：匹配的规则将不会打开替代浏览器。
-
-      与 <ph name="URL_LIST_POLICY_NAME" /> 不同的是，此政策中的规则双向适用。也就是说，如果 Internet Explorer 附加组件存在且处于启用状态，此政策还可控制 <ph name="IE_PRODUCT_NAME" /> 是否应在 <ph name="PRODUCT_NAME" /> 中打开这些网址。</translation>
 <translation id="5124368997194894978">启用“接通 AC（交流电）时启动”</translation>
 <translation id="5131211790949066746">允许合并扩展程序安装列表政策 <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />、<ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" /> 和 <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />。
 
@@ -2325,6 +2352,7 @@
 
       如果未指定，则不会修改变体种子网址。</translation>
 <translation id="5561811616825571914">在登录屏幕上自动为这些网站选择客户端证书</translation>
+<translation id="5565178130821694365">必须每两天（48 小时）输入一次密码</translation>
 <translation id="5566210228171064229">允许打印（无论是否有 PIN 码）</translation>
 <translation id="556865034069957245">此政策用于控制全屏模式的可用性。在全屏模式下，所有 <ph name="PRODUCT_NAME" /> 界面都将隐藏，只显示屏幕内容。
 
@@ -2425,7 +2453,7 @@
       如果此政策已设置，用户将无法更改或替换它。</translation>
 <translation id="5708969689202733975">配置所允许的“快速解锁”模式</translation>
 <translation id="5711016543513883877">
-      如果启用了此政策，则逗号分隔列表中指定的每个来源都将在自己的进程中运行。这也会隔离以子网域指定的来源；例如，指定 https://example.com/ 还会导致 https://foo.example.com/ 被隔离（作为 https://example.com/ 网站的一部分）。
+      如果启用了此政策，则逗号分隔列表中指定的每个来源都将在自己的进程中运行。以子网域形式指定的来源也会隔离；例如，指定 https://example.com/ 也会导致 https://foo.example.com/ 被隔离（作为 https://example.com/ 网站的一部分）。
       如果未配置或停用了此政策，则用户可以更改此设置。
 
       注意：此政策不适用于 Android 设备。要在 Android 设备上启用 IsolateOrigins，请改用 IsolateOriginsAndroid 政策设置。
@@ -3310,7 +3338,7 @@
 
           如果启用了此政策，则系统会将此政策定义的帐号列表添加到 Kerberos 帐号设置。
 
-          如果停用了或未设置此政策，则系统不会向 Kerberos 帐号设置添加帐号，并移除之前使用此政策添加的所有帐号。如果启用了“用户可以添加 Kerberos 帐号”政策，则用户仍可手动添加帐号。</translation>
+          如果停用了或未设置此政策，则系统不会向 Kerberos 帐号设置添加帐号，并会移除此前使用此政策添加的所有帐号。如果启用了“用户可以添加 Kerberos 帐号”政策，则用户仍可手动添加帐号。</translation>
 <translation id="7458437477941640506">如果操作系统版本比目标版本新，则不会回滚到目标版本。相应更新也会被停用。</translation>
 <translation id="7464991223784276288">仅在当前会话中使用来自相符网址的 Cookie</translation>
 <translation id="7469554574977894907">启用搜索建议</translation>
@@ -3446,7 +3474,7 @@
 
           如果启用了或未设置此政策，则用户可以决定是否记住 Kerberos 密码，记住密码后就不需要重新输入密码。除非需要进行额外的身份验证（双重身份验证），否则系统会自动获取 Kerberos 凭据。
 
-          如果停用了此政策，则系统永远不会记住密码，并会移除之前存储的所有密码。每当需要使用 Kerberos 系统进行身份验证时，用户都必须输入密码。这种情况通常每 8 小时到数月时间就会发生一次，具体取决于服务器设置。</translation>
+          如果停用了此政策，则系统永远不会记住密码，并会移除之前存储的所有密码。每当需要向 Kerberos 系统进行身份验证时，用户都必须输入密码。这种情况通常每 8 小时到数月时间就会发生一次，具体取决于服务器设置。</translation>
 <translation id="7694807474048279351">安排在应用 <ph name="PRODUCT_OS_NAME" />更新后自动重启。
 
       如果此政策的值设为 True，则当应用 <ph name="PRODUCT_OS_NAME" />更新后需要重启才能完成更新过程时，系统会安排自动重启。系统会立即安排重启，但如果用户当前正在使用此设备，那么设备重启操作最多可能延迟 24 小时。
@@ -3481,9 +3509,9 @@
 
       如果此政策未设置，非默认端口上将会停用 HTTP/0.9。</translation>
 <translation id="7726421241038987229">
-      SitePerProcess 这项设置可用于禁止用户停用隔离所有网站的默认行为。请注意，IsolateOrigins 政策可能还有助于隔离其他更精细的来源。
+      SitePerProcess 设置可用于禁止用户停用隔离所有网站的默认行为。请注意，还可以使用 IsolateOrigins 政策以更精细的方式隔离其他来源。
       如果启用了此政策，则用户无法停用让每个网站在自己的进程中运行的默认行为。
-      如果未配置或停用了此政策，则用户可以停用网站隔离功能（例如，使用 chrome://flags 中的“停用网站隔离”条目）。将此政策设为停用状态和/或不配置此政策均无法关闭网站隔离功能。
+      如果未配置或停用了此政策，则用户可以停用网站隔离功能（例如，使用 chrome://flags 中的“停用网站隔离”条目）。将此政策设为停用状态和/或不配置此政策均不会关闭网站隔离功能。
       在 <ph name="PRODUCT_OS_NAME" /> 上，建议将设备政策 <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> 也设为相同的值。如果这两项政策指定的值不一致，则在进入用户会话时，若系统正在应用由用户政策指定的值，便可能会出现延迟。
 
       注意：此政策不适用于 Android 设备。要在 Android 设备上启用 SitePerProcess，请改用 SitePerProcessAndroid 政策设置。

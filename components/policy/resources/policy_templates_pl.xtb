@@ -140,6 +140,15 @@
       Jeśli ta zasada ma wartość Fałsz, stan przełącznika trybu dewelopera nie jest zgłaszany.</translation>
 <translation id="1160479894929412407">Zezwalaj na protokół QUIC</translation>
 <translation id="1160939557934457296">Wyłącz możliwość kontynuacji na stronie ostrzeżenia Bezpiecznego przeglądania</translation>
+<translation id="1171342272070128466">Włącz funkcję lupy zadokowanej.
+
+          Jeśli zasada ma wartość Prawda, lupa zadokowana będzie zawsze włączona.
+
+          Jeśli zasada ma wartość Fałsz, lupa zadokowana będzie zawsze wyłączona.
+
+          Jeśli skonfigurujesz tę zasadę, użytkownicy nie będą mogli jej zmienić ani zastąpić.
+
+          Jeśli nie skonfigurujesz tej zasady, lupa zadokowana jest początkowo wyłączona, ale użytkownik może ją w każdej chwili włączyć.</translation>
 <translation id="1189817621108632689">Pozwala na ustawienie listy wzorców adresów URL określających witryny, którym nie wolno wyświetlać obrazów.
 
           Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultImagesSettings” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.
@@ -449,6 +458,7 @@ Każdy element na liście tej zasady jest ciągiem zawierającym identyfikator r
       Jeśli ta zasada jest włączona, użytkownik nie może wyłączyć domyślnego zachowania, przy którym każda witryna działa w obrębie własnego procesu.
       Jeśli zasada jest wyłączona lub nieskonfigurowana, użytkownik może zmieniać to ustawienie (np. przez zmianę ustawienia „Wyłącz izolację witryn” na stronie chrome://flags).
       </translation>
+<translation id="1767673020408652620">Włącz rekomendacje aplikacji przy pustym polu wyszukiwania</translation>
 <translation id="1781356041596378058">Ta zasada kontroluje też dostęp do Opcji dewelopera Androida. Jej włączenie powoduje odebranie użytkownikom dostępu do Opcji dewelopera. Gdy jest wyłączona lub nieskonfigurowana, użytkownicy mogą uzyskać dostęp do Opcji dewelopera, klikając siedem razy numer kompilacji w aplikacji Ustawienia Androida.</translation>
 <translation id="1793346220873697538">Wyłącz drukowanie domyślnie z kodem PIN</translation>
 <translation id="1797233582739332495">Wyświetlaj cyklicznie komunikat o tym, że wymagane jest ponowne uruchomienie</translation>
@@ -964,6 +974,15 @@ Jeśli pozostanie ona nieskonfigurowana, użytkownik może sam zdecydować, czy 
 
       Każdy wpis określa identyfikator używany wewnętrznie do rozróżniania lokalnych kont na urządzeniu.</translation>
 <translation id="2769952903507981510">Konfiguracja wymaganej nazwy domeny dla hostów zdalnego dostępu</translation>
+<translation id="2783078941107212091">Włącz rekomendacje aplikacji przy pustym polu wyszukiwania w menu z aplikacjami.
+
+          Jeśli ta zasada ma wartość Prawda, przy pustym polu wyszukiwania mogą pojawić się rekomendacje aplikacji.
+
+          Jeśli ta zasada ma wartość Fałsz, przy pustym polu wyszukiwania nie będą się pojawiać rekomendacje aplikacji.
+
+          Jeśli skonfigurujesz tę zasadę, użytkownicy nie będą mogli jej zmienić ani zastąpić.
+
+          Jeśli nie skonfigurujesz tej zasady, jej domyślną wartością dla zarządzanych urządzeń będzie Fałsz.</translation>
 <translation id="2787173078141616821">Przesyłaj informacje o stanie Androida</translation>
 <translation id="2799297758492717491">Zezwalaj na automatyczne odtwarzanie multimediów na podstawie wzorców adresów URL na białej liście</translation>
 <translation id="2801155097555584385">Ustaw niestandardowy poziom rozpoczęcia ładowania baterii w procentach</translation>
@@ -1156,6 +1175,25 @@ Jeśli pozostanie ona nieskonfigurowana, użytkownik może sam zdecydować, czy 
       Jeśli ta zasada jest wyłączona, optymalizacja WPAD jest wyłączona. <ph name="PRODUCT_NAME" /> musi wtedy dłużej oczekiwać na serwery WPAD oparte na DNS. Jeśli zasada jest włączona lub nie jest skonfigurowana, optymalizacja WPAD jest włączona.
 
       Bez względu na to, czy i jak ta zasada jest skonfigurowana, użytkownicy nie mogą jej zmienić.</translation>
+<translation id="3071839057966069710">Konfiguruje listę drukarek.
+
+      Ta zasada umożliwia administratorom przekazanie konfiguracji drukarek
+      użytkownikom.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> i <ph name="PRINTER_DESCRIPTION" /> to dowolny tekst, który ma ułatwić wybranie drukarki. <ph name="PRINTER_MANUFACTURER" /> i <ph name="PRINTER_MODEL" /> ułatwiają użytkownikom identyfikację drukarki. Oznaczają producenta i model drukarki. <ph name="PRINTER_URI" /> to adres, który powinien być dostępny z komputera klienckiego, zawierający te składniki: <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> i <ph name="URI_QUEUE" />. Opcjonalny składnik to <ph name="PRINTER_UUID" />. Jeśli jest podany, umożliwia usunięcie duplikatów drukarek <ph name="ZEROCONF_DISCOVERY" />.
+
+      Ciąg znaków <ph name="PRINTER_EFFECTIVE_MODEL" /> musi być zgodny z jednym z ciągów oznaczających drukarkę współpracującą z <ph name="PRODUCT_NAME" />. Zostanie on użyty do zidentyfikowania oraz zainstalowania pliku PPD odpowiedniego dla drukarki. Więcej informacji znajdziesz na https://support.google.com/chrome?p=noncloudprint.
+
+      <ph name="PRINTER_AUTOCONF" /> to flaga wartości logicznej, która określa, czy do konfiguracji drukarki ma zostać użyty standard IPP Everywhere. Ta flaga działa w <ph name="PRODUCT_OS_NAME" /> w wersji 76 i nowszych.
+
+      Musi zostać spełniony jeden z dwóch warunków: <ph name="PRINTER_EFFECTIVE_MODEL" /> musi zawierać nazwę drukarki lub ustawienie <ph name="PRINTER_AUTOCONF" /> musi mieć wartość Prawda. Drukarki z obydwiema tymi właściwościami lub nieposiadające żadnej z nich będą ignorowane.
+
+      Konfiguracja drukarki jest wykonywana podczas jej pierwszego użycia.  Pliki PPD nie są pobierane przed użyciem drukarki.  Później często używane pliki PPD są przechowywane w pamięci podręcznej.
+
+      Zasada nie ma wpływu na to, czy użytkownicy mogą konfigurować drukarki na poszczególnych urządzeniach.  Jest ona uzupełnieniem konfiguracji drukarek wykonywanej przez poszczególnych użytkowników.
+
+      W przypadku urządzeń zarządzanych w Active Directory zasada ta obsługuje rozszerzanie nazwy <ph name="MACHINE_NAME_VARIABLE" /> do nazwy komputera Active Directory lub jej podłańcucha. Jeśli na przykład nazwa komputera to <ph name="MACHINE_NAME_EXAMPLE" />, ciąg <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> zastępowany jest czterema znakami, zaczynając po szóstej pozycji, np. <ph name="MACHINE_NAME_PART_EXAMPLE" />. Pozycja jest liczona od zera.
+      </translation>
 <translation id="3072045631333522102">Wygaszacz ekranu używany na ekranie logowania w trybie sklepu</translation>
 <translation id="3072847235228302527">Określ Warunki korzystania z usługi dla lokalnego konta na urządzeniu</translation>
 <translation id="3077183141551274418">Włącza lub wyłącza cykle życia kart</translation>
@@ -1933,7 +1971,6 @@ W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, cz
 <translation id="4591366717022345234">Udostępnia użytkownikom kompilację Quick Fix</translation>
 <translation id="4600786265870346112">Włącz duży kursor</translation>
 <translation id="4604931264910482931">Skonfiguruj czarną listę wiadomości natywnych</translation>
-<translation id="4613508646038788144">Jeśli ta zasada ma ustawienie „fałsz”, oprogramowanie innych firm będzie mogło wstrzykiwać kod wykonywalny do procesów Chrome. Jeśli ta zasada jest nieskonfigurowana lub ma ustawienie „prawda”, oprogramowanie innych firm nie będzie mogło wstrzykiwać takiego kodu do procesów Chrome.</translation>
 <translation id="4617338332148204752">Pomiń sprawdzanie metatagów w <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="4625915093043961294">Konfiguruj białą listę instalacji rozszerzeń</translation>
 <translation id="4632343302005518762">Zezwalaj <ph name="PRODUCT_FRAME_NAME" /> na obsługę poniższych typów treści</translation>
@@ -2114,15 +2151,6 @@ Pole <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> pozwala określić serwer pro
       Kiedy zasada ma wartość Fałsz, Chrome zamknie kartę po przełączeniu do innej przeglądarki, nawet jeśli jest to ostatnia karta. Spowoduje to całkowite zamknięcie Chrome.</translation>
 <translation id="5105313908130842249">Opóźnienie blokady ekranu przy zasilaniu z baterii</translation>
 <translation id="5108031557082757679">Wyłączone drukarki firmowe powiązane z urządzeniami</translation>
-<translation id="5113732180192599620">Ta zasada określa listę stron, które nigdy nie będą powodować zmiany przeglądarki.
-
-      Uwaga: elementy można dodawać do tej listy również za pomocą zasad <ph name="USE_IE_SITELIST_POLICY_NAME" /> i <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />.
-
-      Gdy ta zasada jest nieskonfigurowana, do listy nie są dodawane żadne strony.
-
-      Gdy zasada jest skonfigurowana, każda pozycja jest traktowana jako reguła, podobnie jak w przypadku zasady <ph name="URL_LIST_POLICY_NAME" />, ale działanie jest odwrotne – strony pasujące do reguł nie otwierają się w alternatywnej przeglądarce.
-
-      W przeciwieństwie do zasady <ph name="URL_LIST_POLICY_NAME" /> reguły są stosowane w obu kierunkach, czyli gdy dodatek do Internet Explorera jest zainstalowany i włączony, ta zasada określa też, czy <ph name="IE_PRODUCT_NAME" /> ma otwierać te adresy URL w <ph name="PRODUCT_NAME" />.</translation>
 <translation id="5124368997194894978">Uruchom po podłączeniu zasilania sieciowego</translation>
 <translation id="5131211790949066746">Umożliwia scalanie zasad <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" /> i <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" /> dotyczących list instalowania rozszerzeń.
 
@@ -2381,6 +2409,7 @@ Do odwzorowania sekwencji dowolnych znaków można używać symboli wieloznaczny
 
       Jeśli zasada nie zostanie określona, nie będzie modyfikować URL-a odmian.</translation>
 <translation id="5561811616825571914">Automatycznie wybierz certyfikaty klienta dla tych witryn na ekranie logowania</translation>
+<translation id="5565178130821694365">Podanie hasła jest wymagane co dwa dni (48 godzin)</translation>
 <translation id="5566210228171064229">Zezwól na drukowanie z kodem PIN i bez niego</translation>
 <translation id="556865034069957245">Ta zasada steruje dostępnością trybu pełnoekranowego, w którym cały interfejs <ph name="PRODUCT_NAME" /> jest ukryty i widać tylko zawartość strony internetowej.
 

@@ -149,7 +149,6 @@ Nadaljnja navodila preberite v e-poštnem sporočilu, ki ste ga prejeli na <ph n
 <translation id="4750550185319565338">Znova zaženite Chrome, če želite omogočiti <ph name="PLUGIN_NAME" /></translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Ta datoteka je morda nevarna, zato jo je Chrome blokiral.</translation>
-<translation id="4794050651896644714">Shrani podrobnosti v Chrome</translation>
 <translation id="4891791193823137474">Naj se Google Chrome izvaja v ozadju</translation>
 <translation id="4895437082222824641">Odpiranje povezave na novem &amp;zavihku v Chromu</translation>
 <translation id="4921569541910214635">Imate računalnik v skupni rabi? Zdaj lahko nastavite Chrome po svojih željah.</translation>
@@ -265,7 +264,6 @@ Google Chrome ne more obnoviti vaših nastavitev.</translation>
 <translation id="8077352834923175128">Skrbnik prosi, da za uveljavitev te posodobitve znova zaženete OS Chrome</translation>
 <translation id="8129812357326543296">O &amp;Google Chromu</translation>
 <translation id="8179874765710681175">Namestite Chrome v telefonu. V telefon vam bomo poslali SMS.</translation>
-<translation id="8183957050892517584">Chrome bo varno shranil vaše osebne podatke, tako da vam jih ne bo treba več vnesti.</translation>
 <translation id="8226081633851087288">{0,plural, =0{OS Chrome se bo zdaj znova zagnal}=1{OS Chrome se bo znova zagnal čez 1 sekundo}one{OS Chrome se bo znova zagnal čez # sekundo}two{OS Chrome se bo znova zagnal čez # sekundi}few{OS Chrome se bo znova zagnal čez # sekunde}other{OS Chrome se bo znova zagnal čez # sekund}}</translation>
 <translation id="825412236959742607">Ta stran uporablja preveč pomnilnika, zato je Chrome odstranil nekaj vsebine.</translation>
 <translation id="8255190535488645436">Google Chrome uporablja vašo kamero in mikrofon.</translation>

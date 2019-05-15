@@ -112,6 +112,7 @@
 <translation id="2597972630681408282">야간 조명: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM 카드가 잠겨 있습니다.</translation>
 <translation id="2653659639078652383">제출</translation>
+<translation id="2658778018866295321">클릭하여 드래그</translation>
 <translation id="2700493154570097719">키보드 설정</translation>
 <translation id="2718395828230677721">야간 조명</translation>
 <translation id="2727977024730340865">저출력 충전기에 연결되었습니다. 배터리 충전 상태가 불안정합니다.</translation>
@@ -227,6 +228,7 @@
 <translation id="4378551569595875038">연결 중...</translation>
 <translation id="4379531060876907730">스타일러스 도구입니다</translation>
 <translation id="4389184120735010762">고정 돋보기 단축키를 누르셨습니다. 사용 설정할까요?</translation>
+<translation id="4394049700291259645">사용 중지</translation>
 <translation id="4421231901400348175">원격 지원을 통해 <ph name="HELPER_NAME" />와(과) 화면 제어 공유</translation>
 <translation id="4430019312045809116">볼륨</translation>
 <translation id="4450893287417543264">다시 표시하지 않음</translation>
@@ -246,7 +248,6 @@
 <translation id="4696813013609194136">부모 코드로 기기 잠금 해제</translation>
 <translation id="4731797938093519117">부모 액세스</translation>
 <translation id="4734965478015604180">가로</translation>
-<translation id="476166673298332917">기기 관리자가 탐색 활동을 모니터링할 수 있습니다.</translation>
 <translation id="4774338217796918551">내일 <ph name="COME_BACK_TIME" />에 다시 사용해 주세요.</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" />의 비밀번호</translation>
 <translation id="4778095205580009397">데모 세션에서는 Google 어시스턴트를 사용할 수 없습니다.</translation>
@@ -354,7 +355,6 @@
 <translation id="6537270692134705506">화면 캡처</translation>
 <translation id="6542521951477560771"><ph name="RECEIVER_NAME" />(으)로 전송 중</translation>
 <translation id="6559976592393364813">관리자에게 요청</translation>
-<translation id="6574601967010742428">기기 관리자가 내 활동을 모니터링할 수도 있습니다.</translation>
 <translation id="6585808820553845416">세션이 <ph name="SESSION_TIME_REMAINING" /> 후에 종료됩니다.</translation>
 <translation id="6627638273713273709">검색+Shift+K</translation>
 <translation id="6650933572246256093">블루투스 기기 '<ph name="DEVICE_NAME" />'에서 페어링 허가를 요청합니다. 해당 기기에서 다음 패스키를 입력하세요. <ph name="PASSKEY" /></translation>

@@ -181,8 +181,10 @@
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Више од 1 непрочитаног обавештења}one{Више од # непрочитаног обавештења}few{Више од # непрочитана обавештења}other{Више од # непрочитаних обавештења}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{за 1 мин}one{за # мин}few{за # мин}other{за # мин}}</translation>
 <translation id="8087772101393322318"><ph name="KEY_MODIFIER_NAME" />+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="8098075892845277643">Започните гласовну претрагу у Google помоћнику</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{Пре 1 сат}one{Пре # сат}few{Пре # сата}other{Пре # сати}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Још 1 сек}one{Још # сек}few{Још # сек}other{Још # сек}}</translation>
+<translation id="8144660977431427332">Претраге омогућава Google помоћник. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, аутоматско довршавање</translation>
 <translation id="815598010540052116">Помери надоле</translation>
 <translation id="8170087467028567933">Уклањањем овог предлога сакрићете га за свој налог на свим уређајима.</translation>

@@ -226,6 +226,7 @@
 <translation id="1338950911836659113">กำลังลบ...</translation>
 <translation id="1340527397989195812">สำรองสื่อจากอุปกรณ์โดยใช้แอป Files</translation>
 <translation id="1341988552785875222">วอลเปเปอร์ปัจจุบันตั้งค่าโดย "<ph name="APP_NAME" />" คุณอาจต้องถอนการติดตั้ง "<ph name="APP_NAME" />" ก่อนที่จะเลือกวอลเปเปอร์อื่น</translation>
+<translation id="1343865611738742294">ให้สิทธิ์แอป Linux เข้าถึงอุปกรณ์ USB Linux จะไม่จำอุปกรณ์ USB หลังจากที่นำอุปกรณ์ดังกล่าวออก</translation>
 <translation id="1347256498747320987">ติดตั้งอัปเดตและแอป การดำเนินการต่อเป็นการยอมรับว่าอุปกรณ์นี้อาจใช้อินเทอร์เน็ตมือถือดาวน์โหลดและติดตั้งอัปเดตและแอปจาก Google ผู้ให้บริการ และผู้ผลิตอุปกรณ์โดยอัตโนมัติด้วย แอปเหล่านี้บางแอปอาจเสนอการซื้อในแอป <ph name="BEGIN_LINK1" />ดูข้อมูลเพิ่มเติม<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">อัปเดตจะเริ่มขึ้นเมื่อแบตเตอรี่ถึง <ph name="BATTERY_LEVEL" />%</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
@@ -707,6 +708,7 @@
 <translation id="2120297377148151361">กิจกรรมและการโต้ตอบ</translation>
 <translation id="2120478168904746065">{NUM_TABS,plural, =1{เลิกซ่อนแท็บ}other{เลิกซ่อนแท็บ}}</translation>
 <translation id="2121825465123208577">ปรับขนาด</translation>
+<translation id="2122305276694332719">การเชื่อมต่อเครือข่ายที่ซ่อนอยู่โดยอัตโนมัติจะทำให้คนอื่นๆ เห็นอุปกรณ์ของคุณและการตั้งค่าเครือข่ายบางอย่าง เราไม่แนะนำให้เชื่อมต่อ</translation>
 <translation id="2124930039827422115">{1,plural, =1{ได้คะแนน <ph name="AVERAGE_RATING" /> จากผู้ใช้ 1 ราย}other{ได้คะแนน <ph name="AVERAGE_RATING" /> จากผู้ใช้ # ราย}}</translation>
 <translation id="2126167708562367080">ผู้ดูแลระบบปิดใช้การซิงค์</translation>
 <translation id="2127372758936585790">ที่ชาร์จพลังงานต่ำ</translation>
@@ -1303,6 +1305,7 @@
 <translation id="3012917896646559015">โปรดติดต่อผู้ผลิตฮาร์ดแวร์ของคุณทันที เพื่อส่งคอมพิวเตอร์ไปยังศูนย์ซ่อม</translation>
 <translation id="3013291976881901233">อุปกรณ์ MIDI</translation>
 <translation id="3015639418649705390">เปิดใหม่เลย</translation>
+<translation id="3016329696181678353">กำหนดค่า <ph name="PRINTER_NAME" /> โดยอัตโนมัติไม่ได้ โปรดระบุรายละเอียดเครื่องพิมพ์ขั้นสูง</translation>
 <translation id="3016641847947582299">อัปเดตคอมโพเนนต์แล้ว</translation>
 <translation id="3016780570757425217">ทราบตำแหน่งของคุณ</translation>
 <translation id="3020183492814296499">ทางลัด</translation>
@@ -1805,7 +1808,6 @@
 <translation id="3789841737615482174">ติดตั้ง</translation>
 <translation id="379082410132524484">บัตรของคุณหมดอายุแล้ว</translation>
 <translation id="3792890930871100565">ยกเลิกการเชื่อมต่อเครื่องพิมพ์</translation>
-<translation id="3792938779249970121">เลือกบัญชี</translation>
 <translation id="3796648294839530037">เครือข่ายที่ชื่นชอบ:</translation>
 <translation id="3797739167230984533"><ph name="BEGIN_LINK" /><ph name="DEVICE_TYPE" /> ได้รับการจัดการ<ph name="END_LINK" />โดยองค์กรของคุณ</translation>
 <translation id="3797900183766075808">&amp;ค้นหา “<ph name="SEARCH_TERMS" />” ด้วย <ph name="SEARCH_ENGINE" /></translation>
@@ -2114,6 +2116,7 @@
 <translation id="4268025649754414643">การเข้ารหัสคีย์</translation>
 <translation id="4270393598798225102">รุ่น <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">ไม่มีรายการที่ตรงกัน</translation>
+<translation id="4275663329226226506">สื่อ</translation>
 <translation id="4275830172053184480">รีสตาร์ทอุปกรณ์ของคุณ</translation>
 <translation id="4278101229438943600">Assistant พร้อมใช้งานแล้ว</translation>
 <translation id="4278390842282768270">อนุญาตแล้ว</translation>
@@ -2156,7 +2159,6 @@
 <translation id="4354344420232759511">เว็บไซต์ที่คุณเข้าชมจะปรากฏที่นี่</translation>
 <translation id="435527878592612277">เลือกรูปภาพของคุณ</translation>
 <translation id="4356334633973342967">หรือระบุไดรเวอร์ของคุณเอง:</translation>
-<translation id="4358169392473932247">คีย์ความปลอดภัยนั้นไม่รองรับที่จัดเก็บข้อมูลภายในของข้อมูลเข้าสู่ระบบ แต่มีการขอฟีเจอร์ดังกล่าว</translation>
 <translation id="4359408040881008151">ติดตั้งแล้วเนื่องจากมีส่วนขยายที่ต้องพึ่งพา</translation>
 <translation id="4359717112757026264">ทิวทัศน์ของเมือง</translation>
 <translation id="4361142739114356624">คีย์ส่วนตัวของใบรับรองไคลเอ็นต์นี้หายไปหรือไม่ถูกต้อง</translation>
@@ -2339,7 +2341,6 @@
 <translation id="4665014895760275686">ผู้ผลิต</translation>
 <translation id="4665446389743427678">ระบบจะลบข้อมูลทั้งหมดที่ <ph name="SITE" /> จัดเก็บไว้</translation>
 <translation id="4668721319092543482">คลิกเพื่อเปิดใช้ <ph name="PLUGIN_NAME" /></translation>
-<translation id="4670688170798478686">ยืนยันการรีเซ็ต</translation>
 <translation id="4672657274720418656">สกัดหน้า</translation>
 <translation id="4673442866648850031">เปิดเครื่องมือสไตลัสเมื่อมีการถอดสไตลัสออก</translation>
 <translation id="4677585247300749148"><ph name="URL" /> ต้องการตอบสนองต่อเหตุการณ์การเข้าถึงพิเศษ</translation>
@@ -2369,7 +2370,6 @@
 <translation id="4711638718396952945">กู้คืนการตั้งค่า</translation>
 <translation id="4715553623069266137">สั้นมาก (0.8 วินาที)</translation>
 <translation id="4716483597559580346">Powerwash เพื่อเพิ่มความปลอดภัย</translation>
-<translation id="4718490098585891067">เลือกบัญชีที่จะลงชื่อเข้าใช้</translation>
 <translation id="4720113199587244118">เพิ่มอุปกรณ์</translation>
 <translation id="4720185134442950733">เครือข่ายข้อมูลมือถือ</translation>
 <translation id="4722735765955348426">รหัสผ่านของ <ph name="USERNAME" /></translation>
@@ -2400,7 +2400,6 @@
 <translation id="4756388243121344051">&amp;ประวัติการเข้าชม</translation>
 <translation id="4759238208242260848">ดาวน์โหลด</translation>
 <translation id="4761104368405085019">ใช้ไมโครโฟนของคุณ</translation>
-<translation id="476166673298332917">ผู้ดูแลระบบของอุปกรณ์อาจตรวจสอบกิจกรรมการท่องเว็บของคุณ</translation>
 <translation id="4762718786438001384">พื้นที่ดิสก์ของอุปกรณ์ใกล้จะเต็มแล้ว</translation>
 <translation id="4763408175235639573">มีการวางคุกกี้ต่อไปนี้เมื่อคุณดูหน้าเว็บนี้</translation>
 <translation id="4763830802490665879">คุกกี้จากหลายๆ ไซต์จะถูกล้างเมื่อออก</translation>
@@ -3929,7 +3928,6 @@
 <translation id="713888829801648570">ขออภัย ไม่สามารถยืนยันรหัสผ่านของคุณได้เพราะคุณออฟไลน์อยู่</translation>
 <translation id="7140928199327930795">ไม่มีอุปกรณ์อื่นๆ ที่พร้อมใช้งาน</translation>
 <translation id="7141105143012495934">การลงชื่อเข้าใช้ล้มเหลวเนื่องจากไม่สามารถเรียกคืนรายละเอียดบัญชีของคุณได้ โปรดติดต่อผู้ดูแลระบบของคุณหรือลองอีกครั้ง</translation>
-<translation id="714285394257538643">แตะคีย์ความปลอดภัยอีกครั้งเพื่อยืนยันว่าคุณต้องการรีเซ็ตคีย์ความปลอดภัย ระบบจะลบข้อมูลเข้าสู่ระบบทั้งหมดในคีย์ความปลอดภัยและ PIN ของคีย์ดังกล่าว</translation>
 <translation id="7143092389027215216">กำลังเริ่มโหมดสาธิต</translation>
 <translation id="7143207342074048698">กำลังเชื่อมต่อ</translation>
 <translation id="7144878232160441200">ลองอีกครั้ง</translation>
@@ -4163,6 +4161,7 @@
 <translation id="7506541170099744506">ลงทะเบียน <ph name="DEVICE_TYPE" /> ของคุณสำหรับการจัดการองค์กรเรียบร้อยแล้ว</translation>
 <translation id="7507930499305566459">ใบรับรอง Status Responder</translation>
 <translation id="7513029293694390567">ลงชื่อเข้าใช้เว็บไซต์โดยอัตโนมัติโดยใช้ข้อมูลเข้าสู่ระบบที่เก็บไว้ เมื่อฟีเจอร์นี้ปิดอยู่ ระบบจะขอให้คุณยืนยันทุกครั้งก่อนลงชื่อเข้าใช้เว็บไซต์</translation>
+<translation id="7514365320538308">ดาวน์โหลด</translation>
 <translation id="7517786267097410259">สร้างรหัสผ่าน -</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">พูดว่า "Ok Google"</translation>
@@ -4503,6 +4502,7 @@
 รักษาไฟล์กุญแจของคุณไว้ในที่ปลอดภัย คุณจะต้องใช้ไฟล์นี้ในการสร้างส่วนขยายรุ่นใหม่</translation>
 <translation id="8000066093800657092">ไม่มีเครือข่าย</translation>
 <translation id="8000467600002607205">{NUM_TABS,plural, =1{ปิดแท็บ}other{ปิดแท็บ}}</translation>
+<translation id="8002274832045662704">การกำหนดค่าขั้นสูงของเครื่องพิมพ์</translation>
 <translation id="8004582292198964060">เบราว์เซอร์</translation>
 <translation id="8005600846065423578">อนุญาตให้ <ph name="HOST" /> ดูคลิปบอร์ดได้เสมอ</translation>
 <translation id="8008356846765065031">อินเทอร์เน็ตถูกตัด โปรดตรวจสอบการเชื่อมต่ออินเทอร์เน็ต</translation>
@@ -5043,6 +5043,7 @@
 <translation id="8850251000316748990">ดูเพิ่มเติม...</translation>
 <translation id="885246833287407341">อาร์กิวเมนต์ของฟังก์ชัน API</translation>
 <translation id="8853586775156634952">บัตรนี้จะบันทึกอยู่ในอุปกรณ์เครื่องนี้เท่านั้น</translation>
+<translation id="885701979325669005">พื้นที่เก็บข้อมูล</translation>
 <translation id="8859057652521303089">เลือกภาษาที่ต้องการ:</translation>
 <translation id="8859174528519900719">เฟรมย่อย: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8862003515646449717">เปลี่ยนเป็นเบราว์เซอร์ที่เร็ว</translation>

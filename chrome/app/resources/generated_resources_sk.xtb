@@ -659,7 +659,6 @@
 <translation id="2023167225947895179">PIN sa dá ľahko uhádnuť</translation>
 <translation id="202352106777823113">Sťahovanie trvalo príliš dlho a bolo zastavené sieťou.</translation>
 <translation id="2025632980034333559"><ph name="APP_NAME" /> zlyhalo. Rozšírenie obnovíte kliknutím na túto bublinu.</translation>
-<translation id="2026598710281751445">Týmto zanecháte záznam o návšteve webu na bezpečnostnom kľúči.</translation>
 <translation id="2034346955588403444">Pridať inú sieť Wi‑Fi</translation>
 <translation id="203574396658008164">Povoliť písanie poznámok na uzamknutej obrazovke</translation>
 <translation id="2040460856718599782">Hops, pri overovaní vašej totožnosti sa vyskytla chyba. Skontrolujte znova svoje prihlasovacie údaje a skúste to znova.</translation>
@@ -1807,7 +1806,6 @@
 <translation id="3789841737615482174">Inštalovať</translation>
 <translation id="379082410132524484">Platnosť vašej karty vypršala</translation>
 <translation id="3792890930871100565">Odpojiť tlačiarne</translation>
-<translation id="3792938779249970121">Výber účtu</translation>
 <translation id="3796648294839530037">Obľúbené siete:</translation>
 <translation id="3797739167230984533"><ph name="BEGIN_LINK" />Zariadenie <ph name="DEVICE_TYPE" /> spravuje<ph name="END_LINK" /> vaša organizácia</translation>
 <translation id="3797900183766075808">Pomocou &amp;služby <ph name="SEARCH_ENGINE" /> vyhľadať text „<ph name="SEARCH_TERMS" />“</translation>
@@ -2110,13 +2108,13 @@
 <translation id="425573743389990240">Vybíjanie batérie vo Wattoch (záporná hodnota znamená, že batéria sa nabíja)</translation>
 <translation id="4256316378292851214">Uložiť &amp;video ako...</translation>
 <translation id="4258348331913189841">Systémy súborov</translation>
-<translation id="4261944951163987657">Bezpečnostný kľúč nemá dostatok voľného miesta na ďalšie účty.</translation>
 <translation id="4263757076580287579">Registrácia tlačiarne bola zrušená.</translation>
 <translation id="426564820080660648">Ak chcete skontrolovať aktualizácie, použite sieť ethernet, Wi‑Fi alebo mobilnú sieť.</translation>
 <translation id="4267953847983678297">Automaticky sa pripájať k mobilnej sieti</translation>
 <translation id="4268025649754414643">Zašifrovanie kľúča</translation>
 <translation id="4270393598798225102">Verzia <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">Žiadne zhody</translation>
+<translation id="4275663329226226506">Médiá</translation>
 <translation id="4275830172053184480">Reštart zariadenia</translation>
 <translation id="4278101229438943600">Váš Asistent je k dispozícii</translation>
 <translation id="4278390842282768270">Povolené</translation>
@@ -2159,7 +2157,6 @@
 <translation id="4354344420232759511">Navštívené weby sa zobrazia tu</translation>
 <translation id="435527878592612277">Vyberte fotku</translation>
 <translation id="4356334633973342967">Alebo vyberte vlastný ovládač:</translation>
-<translation id="4358169392473932247">Daný bezpečnostný kľúč nepodporuje interné úložisko poverení, ale táto funkcia bola vyžiadaná.</translation>
 <translation id="4359408040881008151">Nainštalované pre závislé rozšírenia.</translation>
 <translation id="4359717112757026264">Mestá</translation>
 <translation id="4361142739114356624">Súkromný kľúč pre tento klientsky certifikát chýba alebo je neplatný</translation>
@@ -2342,7 +2339,6 @@
 <translation id="4665014895760275686">Výrobca</translation>
 <translation id="4665446389743427678">Odstránia sa všetky údaje, ktoré uložil web <ph name="SITE" />.</translation>
 <translation id="4668721319092543482">Kliknutím povoľte doplnok <ph name="PLUGIN_NAME" /></translation>
-<translation id="4670688170798478686">Potvrdenie resetovania</translation>
 <translation id="4672657274720418656">Destilovať stránku</translation>
 <translation id="4673442866648850031">Pri odstránení dotykového pera spúšťať nástroje pre dotykové pero</translation>
 <translation id="4677585247300749148"><ph name="URL" /> chce reagovať na udalosti dostupnosti</translation>
@@ -2372,7 +2368,6 @@
 <translation id="4711638718396952945">Obnoviť nastavenia</translation>
 <translation id="4715553623069266137">veľmi krátke (0,8 s)</translation>
 <translation id="4716483597559580346">Vymazanie Powerwash v rámci zvýšenia zabezpečenia</translation>
-<translation id="4718490098585891067">Vyberte účet, do ktorého sa chcete prihlásiť:</translation>
 <translation id="4720113199587244118">Pridať zariadenia</translation>
 <translation id="4720185134442950733">Mobilná dátová sieť</translation>
 <translation id="4722735765955348426">Heslo používateľa <ph name="USERNAME" /></translation>
@@ -2403,7 +2398,6 @@
 <translation id="4756388243121344051">&amp;História</translation>
 <translation id="4759238208242260848">Stiahnuté</translation>
 <translation id="4761104368405085019">Používať mikrofón</translation>
-<translation id="476166673298332917">Správca zariadenia môže sledovať vašu aktivitu prehliadania.</translation>
 <translation id="4762718786438001384">Kritický nedostatok miesta na disku zariadenia</translation>
 <translation id="4763408175235639573">Počas zobrazenia tejto stránky boli nastavené nasledujúce súbory cookie</translation>
 <translation id="4763830802490665879">Súbory cookie z viacerých webových stránok budú vymazané pri ukončení relácie.</translation>
@@ -3932,7 +3926,6 @@
 <translation id="713888829801648570">Je nám to ľúto, ale vaše heslo nemohlo byť overené, pretože ste offline</translation>
 <translation id="7140928199327930795">Žiadne ďalšie dostupné zariadenia.</translation>
 <translation id="7141105143012495934">Prihlásenie zlyhalo, pretože podrobnosti účtu sa nepodarilo načítať. Kontaktujte svojho správcu alebo to skúste znova.</translation>
-<translation id="714285394257538643">Ak chcete resetovať svoj bezpečnostný kľúč, znova sa ho dotknite. Vymažú sa všetky poverenia uložené v bezpečnostnom kľúči a PIN.</translation>
 <translation id="7143092389027215216">Spúšťa sa režim ukážky</translation>
 <translation id="7143207342074048698">Pripája sa</translation>
 <translation id="7144878232160441200">Skúsiť znova</translation>
@@ -4166,6 +4159,7 @@
 <translation id="7506541170099744506">Zariadenie <ph name="DEVICE_TYPE" /> bolo úspešne zaregistrované na podnikovú správu.</translation>
 <translation id="7507930499305566459">Certifikát stavového odpovedajúceho zariadenia</translation>
 <translation id="7513029293694390567">Prihlasovať sa na weboch automaticky pomocou uložených prihlasovacích údajov. Keď je táto funkcia vypnutá, zobrazí sa vám pred každým prihlásením žiadosť o potvrdenie.</translation>
+<translation id="7514365320538308">Stiahnuť</translation>
 <translation id="7517786267097410259">Vytvorte heslo –</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">Povedzte „Ok Google“</translation>
@@ -5046,6 +5040,7 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="8850251000316748990">Zobraziť ďalšie…</translation>
 <translation id="885246833287407341">Argumenty funkcie rozhrania API</translation>
 <translation id="8853586775156634952">Táto karta sa uloží iba do tohto zariadenia</translation>
+<translation id="885701979325669005">Úložisko</translation>
 <translation id="8859057652521303089">Vyberte svoj jazyk:</translation>
 <translation id="8859174528519900719">Podrámec: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8862003515646449717">Prepnite na rýchly prehliadač</translation>

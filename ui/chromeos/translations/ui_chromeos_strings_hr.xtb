@@ -62,6 +62,7 @@
 <translation id="164969095109328410">Chrome uređaj</translation>
 <translation id="1665611772925418501">Nije bilo moguće mijenjati datoteku.</translation>
 <translation id="1673103856845176271">Nije bilo moguće pristupiti datoteci zbog sigurnosnih razloga.</translation>
+<translation id="1679806121152819234">Dodatak VM</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="1722487484194605434">Komprimiranje stavki (<ph name="NUMBER_OF_ITEMS" />)...</translation>
 <translation id="174173592514158117">Prikaži sve mape s Playa</translation>
@@ -372,7 +373,7 @@
 <translation id="5323213332664049067">latinoamerički</translation>
 <translation id="5327248766486351172">Naziv</translation>
 <translation id="5330145655348521461">Ove su datoteke otvorene na drugoj radnoj površini. Prebacite se na korisnika <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) da biste ih vidjeli.</translation>
-<translation id="5330512191124428349">Dohvati informacije</translation>
+<translation id="5330512191124428349">Informacije</translation>
 <translation id="5335458522276292100">Sigurnosno kopiranje datoteka (ukupno) <ph name="FILE_COUNT" /> na <ph name="BEGIN_LINK" />Google disk<ph name="END_LINK" /></translation>
 <translation id="5358764674931277">Brzina kadrova u sekundi</translation>
 <translation id="5368191757080475556">Dijelite mapu s Linuxom</translation>

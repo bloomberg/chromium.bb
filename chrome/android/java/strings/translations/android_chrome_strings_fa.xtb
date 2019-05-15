@@ -9,7 +9,6 @@
 <translation id="1067922213147265141">‏سایر سرویس‌های Google</translation>
 <translation id="1068672505746868501">هرگز صفحه‌های <ph name="SOURCE_LANGUAGE" /> ترجمه نشوند</translation>
 <translation id="1080790410959514870">‏در حال خروج از حسابی هستید که توسط <ph name="DOMAIN_NAME" /> مدیریت می‌شود. این کار داده‌های Chrome ذخیره شده در این دستگاه را حذف خواهد کرد، اما داده‌ها در حساب Google شما باقی خواهد ماند.</translation>
-<translation id="1099080783256647258">‏وقتی «صرفه‌جویی داده» روشن باشد، Chrome از سرورهای Google برای افزایش سرعت و فشرده‌سازی بارگیری صفحه‌ها استفاده می‌کند. خصوصاً در صفحه‌های کُند، «صرفه‌جویی داده» صفحه را بازنویسی می‌کند تا فقط محتوای اصلی صفحه بارگیری شود. «صرفه‌جویی داده» صفحه‌هایی را که در «حالت ناشناس» بارگیری می‌شود بهینه‌سازی نمی‌کند.</translation>
 <translation id="1100066534610197918">باز کردن در برگه جدید در گروه</translation>
 <translation id="1105960400813249514">گرفتن عکس از صفحه‌</translation>
 <translation id="1111673857033749125">نشانک‌های ذخیره‌شده در سایر دستگاه‌های شما در اینجا نشان داده می‌شوند.</translation>
@@ -25,6 +24,7 @@
 <translation id="1175310183703641346">‏نشانک‌ها، سابقه، گذرواژه‌ها و سایر تنظیمات، دیگر با حساب Google شما همگام‌سازی نمی‌شود</translation>
 <translation id="1178581264944972037">مکث</translation>
 <translation id="1181037720776840403">حذف</translation>
+<translation id="1188239144602654184">‏وارد شدن به AR</translation>
 <translation id="1197267115302279827">انتقال نشانک‌ها</translation>
 <translation id="119944043368869598">پاک کردن همه</translation>
 <translation id="1201402288615127009">بعدی</translation>
@@ -96,7 +96,6 @@
 <translation id="1672586136351118594">دیگر نشان داده نشود</translation>
 <translation id="1692118695553449118">همگام‌سازی روشن است</translation>
 <translation id="169515064810179024">سایت‌ها نمی‌توانند به حسگرهای حرکتی دسترسی داشته باشند</translation>
-<translation id="1709438864123551175">صرفه‌جویی داده</translation>
 <translation id="1717218214683051432">حسگرهای حرکتی</translation>
 <translation id="1718835860248848330">ساعت قبل</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - <ph name="TIME_SINCE_UPDATE" /> به‌روزرسانی شده است</translation>
@@ -214,7 +213,6 @@
 <translation id="2501278716633472235">بازگشت</translation>
 <translation id="2513403576141822879">‏برای تنظیمات بیشتر مرتبط با حریم خصوصی، امنیت و جمع‌آوری داده‌ها، <ph name="BEGIN_LINK" />همگام‌سازی و سرویس‌های Google<ph name="END_LINK" /> را ببینید</translation>
 <translation id="2523184218357549926">‏نشانی وب صفحه‌هایی را که بازدید می‌کنید برای Google ارسال می‌کند</translation>
-<translation id="2526148617758225454">«صرفه‌جویی داده» روشن است. آن را در «تنظیمات» مدیریت کنید.</translation>
 <translation id="2532336938189706096">نمای وب</translation>
 <translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" /> مورد حذف شد</translation>
 <translation id="2536728043171574184">مشاهده یک کپی آفلاین از این صفحه</translation>
@@ -354,14 +352,12 @@
 <translation id="3599863153486145794">‏سابقه را از همه دستگاه‌های به سیستم واردشده پاک می‌کند. ممکن است حساب Google شما اشکال دیگری از سابقه مرور در <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> داشته باشد.</translation>
 <translation id="3600792891314830896">سایت‌هایی که صدا پخش می‌کنند بی‌صدا شوند</translation>
 <translation id="3616113530831147358">صوتی</translation>
-<translation id="3620176948598597475">بازنشانی، سابقه صرفه‌جویی داده را، ازجمله فهرست سایت‌های بازدید شده، پاک می‌کند.</translation>
 <translation id="3632295766818638029">نمایش گذرواژه</translation>
 <translation id="363596933471559332">با استفاده از اعتبارنامه‌های ذخیره شده، به‌طور خودکار به سیستم وب‌سایت‌ها وارد شوید. وقتی این قابلیت خاموش است، هر بار قبل از وارد شدن به سیستم وب‌سایت از شما خواسته می‌شود اطلاعات را تأیید کنید.</translation>
 <translation id="3658159451045945436">بازنشانی باعث پاک شدن سابقه داده‌های ذخیره‌شده ازجمله فهرست سایت‌های بازدیدشده می‌شود.</translation>
 <translation id="3662546969139119822">سابقه‌ای اینجا نیست</translation>
 <translation id="3672452749423051839">پیشنهادات خطای پیمایش</translation>
 <translation id="3692944402865947621">به‌دلیل دردسترس نبودن مکان فضای ذخیره‌سازی، <ph name="FILE_NAME" /> بارگیری نشد.</translation>
-<translation id="3712575778697986964">صرفه‌جویی داده بازنشانی شود؟</translation>
 <translation id="3714981814255182093">باز کردن «نوار پیدا کردن»</translation>
 <translation id="3716182511346448902">‏این صفحه از حافظه بسیار زیادی استفاده می‌کند، بنابراین Chrome موقتاً آن را متوقف کرد.</translation>
 <translation id="3730075448226062617">‏برای اینکه به Chrome امکان دهید به میکروفون دسترسی یابد، در <ph name="BEGIN_LINK" />تنظیمات Android<ph name="END_LINK" /> هم میکروفون را روشن کنید.</translation>
@@ -503,13 +499,11 @@
 <translation id="4751476147751820511">حسگرهای نوری یا حرکتی</translation>
 <translation id="4759238208242260848">بارگیری‌ها</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{۱ بارگیری کامل شد.}one{# بارگیری کامل شد.}other{# بارگیری کامل شد.}}</translation>
-<translation id="4766369052440583386">صرفه‌جویی داده روشن است</translation>
 <translation id="4797039098279997504">برای برگشتن به <ph name="URL_OF_THE_CURRENT_TAB" />، لمس کنید</translation>
 <translation id="4802417911091824046">‏رمزگذاری عبارت ورود شامل روش‌های پرداخت و نشانی‌های موجود در Google Pay نمی‌شود.
 
 برای تغییر این تنظیم، <ph name="BEGIN_LINK" />همگام‌سازی را بازنشانی کنید<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">نام روی کارت</translation>
-<translation id="4807963036345170158">صرفه‌جویی داده خاموش است</translation>
 <translation id="4816465935029283692">انواع داده</translation>
 <translation id="4824958205181053313">همگام‌سازی لغو شود؟</translation>
 <translation id="4837753911714442426">باز کردن گزینه‌های چاپ صفحه</translation>
@@ -601,6 +595,7 @@
 <translation id="5447765697759493033">این سایت ترجمه نخواهد شد</translation>
 <translation id="545042621069398927">درحال سرعت بخشیدن به بارگیری.</translation>
 <translation id="5456381639095306749">بارگیری صفحه</translation>
+<translation id="5475862044948910901">جلسه «واقعیت افزوده» شروع شود؟</translation>
 <translation id="548278423535722844">‏باز کردن در برنامه Maps</translation>
 <translation id="5487521232677179737">پاک کردن داده‌ها</translation>
 <translation id="5494752089476963479">آگهی سایت‌هایی که آگهی‌های مزاحم یا گمراه‌کننده نشان می‌دهند، مسدود می‌شود</translation>
@@ -643,7 +638,6 @@
 <translation id="569536719314091526">با استفاده از دکمه «گزینه‌های بیشتر»، این صفحه را به زبان‌های دیگر ترجمه کنید</translation>
 <translation id="572328651809341494">برگه‌های اخیر</translation>
 <translation id="5726692708398506830">بزرگ‌تر کردن همه‌چیز در صفحه</translation>
-<translation id="5734520971562437809">تا ۶۰ درصد کمتر داده مصرف کنید و سرعت وب را افزایش دهید.</translation>
 <translation id="5748802427693696783">به برگه‌های استاندارد تغییر یافت</translation>
 <translation id="5749068826913805084">‏Chrome برای بارگیری فایل‌ها باید به حافظه دسترسی داشته باشد.</translation>
 <translation id="5763382633136178763">برگه‌های ناشناس</translation>
@@ -701,7 +695,6 @@
 <translation id="6159335304067198720">ذخیره داده‌ها: <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">بیشتر بدانید</translation>
 <translation id="6177111841848151710">برای موتور جستجوی فعلی مسدود شده است</translation>
-<translation id="6177390657002841081">روشن کردن «صرفه‌جویی در مصرف داده»</translation>
 <translation id="6181444274883918285">افزودن سایتی به استثناها</translation>
 <translation id="6192333916571137726">فایل بارگیری</translation>
 <translation id="6192792657125177640">موارد استثنا</translation>
@@ -867,6 +860,11 @@
 <translation id="7352939065658542140">ویدیو</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{اشتراک‌گذاری ۱ مورد انتخاب‌شده}one{اشتراک‌گذاری # مورد انتخاب‌شده}other{اشتراک‌گذاری # مورد انتخاب‌شده}}</translation>
 <translation id="7359002509206457351">دسترسی به روش‌های پرداخت</translation>
+<translation id="7365126855094612066">طی این جلسه، سایت می‌تواند:
+• نقشه سه‌بعدی محیط را ایجاد کند
+• حرکت دوربین را ردیابی کند
+
+سایت نمی‌تواند به دوربین دسترسی یابد. تصاویر دوربین فقط برای شما قابل‌مشاهده است.</translation>
 <translation id="7375125077091615385">نوع:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">نشانی وب</translation>
@@ -1114,11 +1112,9 @@
 <translation id="9188680907066685419">خروج از حساب مدیریت‌شده</translation>
 <translation id="9204836675896933765">۱ فایل باقی مانده است</translation>
 <translation id="9206873250291191720">A</translation>
-<translation id="9215534869786664672">‏تا ۶۰ درصد کمتر داده مصرف کنید و سرعت وب را افزایش دهید. سرورهای Google صفحه‌هایی را که بازدید می‌کنید بهینه می‌کند.</translation>
 <translation id="9219103736887031265">تصاویر</translation>
 <translation id="926205370408745186">‏فعالیت Chrome شما از «آسایش دیجیتالی» برداشته شود</translation>
 <translation id="932327136139879170">منزل</translation>
-<translation id="932599481871055447">ذخیره داده و مرور سریع‌تر</translation>
 <translation id="938850635132480979">خطا: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">دسترسی به میکروفن</translation>
 <translation id="951339005376969845">حذف داده‌های موجود. می‌توانید با جابه‌جایی به <ph name="FROM_ACCOUNT" /> آن را بازیابی کنید.</translation>

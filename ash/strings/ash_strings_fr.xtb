@@ -112,6 +112,7 @@
 <translation id="2597972630681408282">Éclairage nocturne : <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">La carte SIM est verrouillée</translation>
 <translation id="2653659639078652383">Valider</translation>
+<translation id="2658778018866295321">Cliquer et faire glisser</translation>
 <translation id="2700493154570097719">Définir votre clavier</translation>
 <translation id="2718395828230677721">Éclairage nocturne</translation>
 <translation id="2727977024730340865">L'appareil est branché à un chargeur de faible puissance. Il se peut que la charge ne soit pas fiable.</translation>
@@ -228,6 +229,7 @@
 <translation id="4378551569595875038">Connexion</translation>
 <translation id="4379531060876907730">Voici vos outils de stylet</translation>
 <translation id="4389184120735010762">Vous avez appuyé sur le raccourci clavier de la loupe ancrée. Voulez-vous l'activer ?</translation>
+<translation id="4394049700291259645">Désactiver</translation>
 <translation id="4421231901400348175">Partager le contrôle de votre écran avec <ph name="HELPER_NAME" /> via l'assistance à distance</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="4450893287417543264">Ne plus afficher</translation>
@@ -247,7 +249,6 @@
 <translation id="4696813013609194136">Déverrouiller l'appareil avec le code parental</translation>
 <translation id="4731797938093519117">Accès parental</translation>
 <translation id="4734965478015604180">Horizontal</translation>
-<translation id="476166673298332917">L'administrateur de cet appareil a accès à toute votre activité de navigation.</translation>
 <translation id="4774338217796918551">Revenez demain à <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Mot de passe de <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">L'Assistant Google n'est pas disponible dans une session de démonstration.</translation>
@@ -355,7 +356,6 @@
 <translation id="6537270692134705506">Capturer l'écran</translation>
 <translation id="6542521951477560771">Diffusion vers <ph name="RECEIVER_NAME" />…</translation>
 <translation id="6559976592393364813">Se renseigner auprès de l'administrateur</translation>
-<translation id="6574601967010742428">Il est possible que l'administrateur de l'appareil puisse surveiller votre activité.</translation>
 <translation id="6585808820553845416">Fin de la session dans <ph name="SESSION_TIME_REMAINING" /></translation>
 <translation id="6627638273713273709">Rechercher+Maj+K</translation>
 <translation id="6650933572246256093">L'appareil Bluetooth "<ph name="DEVICE_NAME" />" demande l'autorisation de s'associer. Veuillez saisir le code d'authentification suivant sur l'appareil : <ph name="PASSKEY" />.</translation>

@@ -226,6 +226,7 @@
 <translation id="1338950911836659113">جارٍ الحذف...</translation>
 <translation id="1340527397989195812">‏احتفظ بنسخة احتياطية للوسائط من الجهاز باستخدام تطبيق Files.</translation>
 <translation id="1341988552785875222">يتم تعيين الخلفية الحالية من قبل '<ph name="APP_NAME" />'. قد يلزمك إلغاء تثبيت '<ph name="APP_NAME" />' قبل تحديد خلفية مختلفة.</translation>
+<translation id="1343865611738742294">‏يمنح Linux أذونات التطبيق للوصول إلى أجهزة USB. لن يتذكر Linux جهاز USB بعد إزالته.</translation>
 <translation id="1347256498747320987">‏يمكنك تثبيت التحديثات والتطبيقات. وبالمتابعة، أنت توافق على تنزيل هذا الجهاز للتحديثات والتطبيقات وتثبيتها تلقائيًا من Google ومشغِّل شبكة الجوَّال والشركة المصنِّعة للجهاز، وأنّ ذلك قد يتم باستخدام بيانات شبكة الجوَّال. وقد توفّر بعض هذه التطبيقات ميزة الشراء داخل التطبيق. <ph name="BEGIN_LINK1" />مزيد من المعلومات<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">سيبدأ التحديث عندما يصل مستوى البطارية إلى <ph name="BATTERY_LEVEL" />%.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
@@ -707,6 +708,7 @@
 <translation id="2120297377148151361">النشاط والتفاعلات</translation>
 <translation id="2120478168904746065">{NUM_TABS,plural, =1{إعادة صوت علامة تبويب واحدة}zero{إعادة صوت علامات التبويب}two{إعادة صوت علامتيِّ التبويب}few{إعادة صوت علامات التبويب}many{إعادة صوت علامات التبويب}other{إعادة صوت علامات التبويب}}</translation>
 <translation id="2121825465123208577">تغيير الحجم</translation>
+<translation id="2122305276694332719">يسمح الاتصال تلقائيًا بشبكة مخفية للمستخدمين الآخرين رؤية جهازك وبعض إعدادات الشبكة، ولا ننصح بذلك.</translation>
 <translation id="2124930039827422115">{1,plural, =1{تم التقييم بـ <ph name="AVERAGE_RATING" /> بواسطة مستخدم واحد.}zero{تم التقييم بـ <ph name="AVERAGE_RATING" /> بواسطة # مستخدم.}two{تم التقييم بـ <ph name="AVERAGE_RATING" /> بواسطة مستخدميْنِ (#).}few{تم التقييم بـ <ph name="AVERAGE_RATING" /> بواسطة # مستخدمين.}many{تم التقييم بـ <ph name="AVERAGE_RATING" /> بواسطة # مستخدمًا.}other{تم التقييم بـ <ph name="AVERAGE_RATING" /> بواسطة # مستخدم.}}</translation>
 <translation id="2126167708562367080">تم إيقاف المزامنة من قِبل المشرف.</translation>
 <translation id="2127372758936585790">شاحن منخفض الطاقة</translation>
@@ -811,7 +813,7 @@
 <translation id="2256115617011615191">إعادة التشغيل الآن</translation>
 <translation id="225614027745146050">مرحبًا</translation>
 <translation id="225692081236532131">حالة التفعيل</translation>
-<translation id="2258855745387252834">‏للمشاركة، انقر بزر الماوس الأيمن على مجلد في تطبيق "الملفات"، ثم اختَر "المشاركة باستخدام الجهاز الافتراضي (VM) للمكوّن الإضافي".</translation>
+<translation id="2258855745387252834">‏للمشاركة، انقر بزر الماوس الأيمن على مجلد في تطبيق "الملفات"، ثم اختَر "المشاركة باستخدام Plugin VM".</translation>
 <translation id="2261323523305321874">أجرى المشرف تغييرًا عبر النظام بأكمله يعمل على إيقاف بعض الملفات الشخصية القديمة.</translation>
 <translation id="2262332168014443534">‏يعمل الوضع البسيط الآن على جعل التصفُّح أسرع في جميع الصفحات، بما في ذلك HTTPS.</translation>
 <translation id="2262477216570151239">تأخير قبل التكرار</translation>
@@ -1302,6 +1304,7 @@
 <translation id="3012917896646559015">يُرجى الاتصال بجهة تصنيع الجهاز على الفور لإرسال جهاز الكمبيوتر إلى أحد مرافق الإصلاح.</translation>
 <translation id="3013291976881901233">‏أجهزة MIDI</translation>
 <translation id="3015639418649705390">إعادة التشغيل الآن</translation>
+<translation id="3016329696181678353">تعذَّر ضبط <ph name="PRINTER_NAME" /> تلقائيًا. يُرجى تحديد تفاصيل الطابعة المتقدِّمة.</translation>
 <translation id="3016641847947582299">تم تحديث المُكوّن</translation>
 <translation id="3016780570757425217">معرفة موقعك</translation>
 <translation id="3020183492814296499">الاختصارات</translation>
@@ -1803,7 +1806,6 @@
 <translation id="3789841737615482174">تثبيت</translation>
 <translation id="379082410132524484">انتهت صلاحية بطاقتك</translation>
 <translation id="3792890930871100565">فصل الطابعات</translation>
-<translation id="3792938779249970121">اختيار حساب</translation>
 <translation id="3796648294839530037">الشبكات المفضلة:</translation>
 <translation id="3797739167230984533">تتم <ph name="BEGIN_LINK" />إدارة <ph name="DEVICE_TYPE" /> <ph name="END_LINK" /> من خلال مؤسستك</translation>
 <translation id="3797900183766075808">&amp;بحث <ph name="SEARCH_ENGINE" /> عن "<ph name="SEARCH_TERMS" />"</translation>
@@ -2109,6 +2111,7 @@
 <translation id="4268025649754414643">تشفير المفتاح</translation>
 <translation id="4270393598798225102">الإصدار <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">لا توجد أي مطابقات</translation>
+<translation id="4275663329226226506">الوسائط</translation>
 <translation id="4275830172053184480">إعادة تشغيل جهازك</translation>
 <translation id="4278101229438943600">المساعد جاهز</translation>
 <translation id="4278390842282768270">مسموح</translation>
@@ -2151,7 +2154,6 @@
 <translation id="4354344420232759511">ستظهر المواقع التي تزورها هنا.</translation>
 <translation id="435527878592612277">اختيار صورتك</translation>
 <translation id="4356334633973342967">أو تحديد برنامج تشغيلك الخاص:</translation>
-<translation id="4358169392473932247">لا يتيح مفتاح الأمان ذلك وحدة تخزين داخلية لبيانات الاعتماد، ولكن تم طلب هذه الميزة.</translation>
 <translation id="4359408040881008151">تم التثبيت بسبب الإضافة (الإضافات) التابعة.</translation>
 <translation id="4359717112757026264">مناظر المدن</translation>
 <translation id="4361142739114356624">المفتاح الخاص لشهادة العميل هذه مفقود أو غير صالح</translation>
@@ -2334,7 +2336,6 @@
 <translation id="4665014895760275686">جهة التصنيع</translation>
 <translation id="4665446389743427678">سيتم حذف جميع البيانات المُخزَّنة من خلال <ph name="SITE" />.</translation>
 <translation id="4668721319092543482">انقر لتمكين <ph name="PLUGIN_NAME" /></translation>
-<translation id="4670688170798478686">تأكيد إعادة الضبط</translation>
 <translation id="4672657274720418656">صفحة التنقية</translation>
 <translation id="4673442866648850031">فتح أدوات قلم الشاشة عندما تتم إزالة قلم الشاشة</translation>
 <translation id="4677585247300749148">يريد <ph name="URL" /> الاستجابة لأحداث إمكانية الوصول.</translation>
@@ -2364,7 +2365,6 @@
 <translation id="4711638718396952945">استعادة الإعدادات</translation>
 <translation id="4715553623069266137">قصير جدًا (0.8 ثانية)</translation>
 <translation id="4716483597559580346">‏Powerwash لمزيد من الأمان</translation>
-<translation id="4718490098585891067">يُرجى اختيار حساب لتسجيل الدخول:</translation>
 <translation id="4720113199587244118">إضافة أجهزة</translation>
 <translation id="4720185134442950733">شبكة بيانات الجوّال</translation>
 <translation id="4722735765955348426">كلمة مرور <ph name="USERNAME" /></translation>
@@ -2395,7 +2395,6 @@
 <translation id="4756388243121344051">ال&amp;سجل</translation>
 <translation id="4759238208242260848">التنزيلات</translation>
 <translation id="4761104368405085019">استخدام الميكروفون</translation>
-<translation id="476166673298332917">قد يراقب مشرف الجهاز نشاط التصفُح.</translation>
 <translation id="4762718786438001384">مساحة القرص على الجهاز منخفضة للغاية</translation>
 <translation id="4763408175235639573">تم تعيين ملفات تعريف الارتباط التالية عند عرض هذه الصفحة</translation>
 <translation id="4763830802490665879">سيتم محو ملفات تعريف الارتباط من مواقع متعددة عند الخروج.</translation>
@@ -3925,7 +3924,6 @@
 <translation id="713888829801648570">عفوًا، لا يمكن التحقق من كلمة المرور لأنك بلا إنترنت.</translation>
 <translation id="7140928199327930795">لا توجد أجهزة أخرى متاحة.</translation>
 <translation id="7141105143012495934">فشل تسجيل الدخول، نظرًا لعدم القدرة على استرداد تفاصيل حسابك، يُرجى الاتصال بالمسؤول أو إعادة المحاولة.</translation>
-<translation id="714285394257538643">لتأكيد رغبتك في إعادة ضبط مفتاح الأمان، يمكنك لمسه مرة أخرى. سيتم محو جميع بيانات الاعتماد المُخزَّنة على مفتاح الأمان ورقم تعريفه الشخصي.</translation>
 <translation id="7143092389027215216">جارٍ بدء الوضع التجريبي</translation>
 <translation id="7143207342074048698">اتصال</translation>
 <translation id="7144878232160441200">إعادة المحاولة</translation>
@@ -4159,6 +4157,7 @@
 <translation id="7506541170099744506">لقد تم تسجيل جهاز <ph name="DEVICE_TYPE" /> بنجاح لإدارة المؤسسة.</translation>
 <translation id="7507930499305566459">شهادة الاستجابة للحالة</translation>
 <translation id="7513029293694390567">يمكنك تسجيل الدخول تلقائيًا إلى مواقع الويب باستخدام بيانات الاعتماد المخزّنة. وعندما تكون هذه الميزة غير مفعّلة، سيُطلب منك التحقّق من بيانات الاعتماد في كل مرة قبل تسجيل الدخول إلى موقع ويب.</translation>
+<translation id="7514365320538308">تنزيل</translation>
 <translation id="7517786267097410259">إنشاء كلمة مرور -</translation>
 <translation id="7521387064766892559">جافا سكريبت</translation>
 <translation id="7522255036471229694">‏قل "Ok Google".</translation>
@@ -4499,6 +4498,7 @@
 احتفظ بملف المفتاح في مكان آمن، حيث ستحتاج إليه لإنشاء إصدارات جديدة من إضافتك.</translation>
 <translation id="8000066093800657092">لا شبكة</translation>
 <translation id="8000467600002607205">{NUM_TABS,plural, =1{إغلاق علامة تبويب واحدة}zero{إغلاق علامات التبويب}two{إغلاق علامتيِّ التبويب}few{إغلاق علامات التبويب}many{إغلاق علامات التبويب}other{إغلاق علامات التبويب}}</translation>
+<translation id="8002274832045662704">إعداد الطابعة المتقدِّمة</translation>
 <translation id="8004582292198964060">المتصفّح</translation>
 <translation id="8005600846065423578">السماح دائمًا لـ <ph name="HOST" /> بالاطلاع على الحافظة</translation>
 <translation id="8008356846765065031">تم قطع الاتصال بالإنترنت. يُرجى التحقق من الاتصال بالإنترنت.</translation>
@@ -4631,7 +4631,7 @@
 <translation id="8212008074015601248">{NUM_DOWNLOAD,plural, =1{جارٍ تنزيل عنصر واحد}zero{جارٍ تنزيل عدّة عناصر}two{جارِ تنزيل عنصرين}few{جارٍ تنزيل عدّة عناصر}many{جارٍ تنزيل عدّة عناصر}other{جارٍ تنزيل عدّة عناصر}}</translation>
 <translation id="8213449224684199188">تم الدخول إلى وضع الصور</translation>
 <translation id="8213577208796878755">جهاز واحد آخر متاح.</translation>
-<translation id="8213996900880218548">تريد الوصول إلى بيانات موقع الويب هذا</translation>
+<translation id="8213996900880218548">تطلب الوصول إلى بيانات موقع الويب هذا</translation>
 <translation id="8214489666383623925">فتح ملف...</translation>
 <translation id="8214962590150211830">إزالة هذا الشخص</translation>
 <translation id="8217399928341212914">متابعة حظر التنزيلات التلقائية لعدة ملفات</translation>
@@ -5039,6 +5039,7 @@
 <translation id="8850251000316748990">عرض المزيد...</translation>
 <translation id="885246833287407341">وسيطات وظيفة واجهة برمجة التطبيقات</translation>
 <translation id="8853586775156634952">سيتم حفظ هذه البطاقة في هذا الجهاز فقط</translation>
+<translation id="885701979325669005">التخزين</translation>
 <translation id="8859057652521303089">حدد لغتك:</translation>
 <translation id="8859174528519900719">هيكل سفلي: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8862003515646449717">التبديل إلى متصفح سريع</translation>

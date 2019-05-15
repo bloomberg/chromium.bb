@@ -132,6 +132,15 @@
       Ako se pravilo ne postavi ili se postavi na neistinito, izvješće o stanju prekidača za razvojne programere neće se generirati.</translation>
 <translation id="1160479894929412407">Dopusti QUIC protokol</translation>
 <translation id="1160939557934457296">Onemogući nastavljanje sa stranice upozorenja Sigurno pregledavanje</translation>
+<translation id="1171342272070128466">Omogućite značajku pristupačnosti usidrenog povećala.
+
+          Ako se to pravilo postavi na true, usidreno povećalo uvijek će biti omogućeno.
+
+          Ako se to pravilo postavi na false, usidreno povećalo uvijek će biti onemogućeno.
+
+          Ako postavite to pravilo, korisnici ga neće moći promijeniti ni nadjačati.
+
+          Ako se to pravilo ne postavi, usidreno povećalo izvorno je onemogućeno, ali ga korisnici mogu u bilo kojem trenutku omogućiti.</translation>
 <translation id="1189817621108632689">Omogućuje postavljanje popisa uzoraka URL-ova koji određuju web-lokacije koje ne smiju prikazivati slike.
 
           Ako ovo pravilo nije postavljeno, upotrebljavat će se globalna zadana vrijednost za sve web-lokacije iz pravila "DefaultImagesSetting" ako je postavljeno, odnosno iz osobne konfiguracije korisnika ako nije.
@@ -443,6 +452,7 @@
       Ako se to pravilo omogući, korisnici se neće moći isključiti iz zadanog ponašanja pri kojem se svaka web-lokacija izvodi u svojem procesu.
       Ako se to pravilo ne konfigurira ili se onemogući, korisnik će moći promijeniti tu postavku (na primjer pomoću unosa "Disable site isolation" (Onemogući izolaciju web-lokacije) na stranici chrome://flags).
       </translation>
+<translation id="1767673020408652620">Omogući preporuke aplikacije u nultom stanju okvira za pretraživanje</translation>
 <translation id="1781356041596378058">To pravilo kontrolira i pristup Opcijama za razvojne programere Androida. Ako to pravilo postavite na True, korisnici ne mogu pristupiti Opcijama za razvojne programere. Ako to pravilo postavite na False ili ga ne postavite, korisnici mogu pristupiti Opcijama za razvojne programere tako što će sedam puta dodirnuti broj međuverzije u aplikaciji postavki Androida.</translation>
 <translation id="1793346220873697538">Onemogući ispis s PIN-om prema zadanim postavkama</translation>
 <translation id="1797233582739332495">Prikaži korisniku ponavljajuću obavijest o obaveznom ponovnom pokretanju</translation>
@@ -960,6 +970,15 @@
 
       Svaki unos na popisu navodi identifikator, koji se upotrebljava interno da bi se razlikovali lokalni računi na uređaju.</translation>
 <translation id="2769952903507981510">Konfiguriraj traženi naziv domene za hostove daljinskog pristupa</translation>
+<translation id="2783078941107212091">Omogućite preporučivanje aplikacije u nultom stanju okvira za pretraživanje u pokretaču.
+
+          Ako se to pravilo postavi na true, preporuke aplikacije mogu se prikazivati u pretraživanju nultog stanja.
+
+          Ako se to pravilo postavi na false, preporuke aplikacije neće se prikazivati u pretraživanju nultog stanja.
+
+          Ako postavite to pravilo, korisnici ga neće moći promijeniti ni nadjačati.
+
+          Ako se to pravilo ne postavi, zadana postavka za upravljane uređaje bit će false.</translation>
 <translation id="2787173078141616821">Prijavi informacije o statusu Androida</translation>
 <translation id="2799297758492717491">Dopusti automatsku reprodukciju medija na popisu dopuštenih uzoraka URL-a</translation>
 <translation id="2801155097555584385">Postavi prilagođeni početak punjenja baterije u postocima</translation>
@@ -1155,6 +1174,25 @@
       Ako se to pravilo postavi na "False", optimizacija WPAD-a nije omogućena, pa <ph name="PRODUCT_NAME" /> dulje čeka WPAD poslužitelje temeljene na DNS-u. Ako se pravilo ne postavi ili ako se omogući, optimizacija WPAD-a omogućena je.
 
       Neovisno o tome hoće li se to pravilo postaviti i na koji način, korisnici ne mogu mijenjati postavku optimizacije WPAD-a.</translation>
+<translation id="3071839057966069710">Konfigurira popis pisača.
+
+      To pravilo omogućuje administratorima da navedu konfiguracije pisača za
+      korisnike.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> i <ph name="PRINTER_DESCRIPTION" /> predstavljaju nizove slobodnog oblika koji se mogu prilagoditi radi lakšeg odabira pisača. <ph name="PRINTER_MANUFACTURER" /> i <ph name="PRINTER_MODEL" /> krajnjim korisnicima omogućuju da lakše prepoznaju pisač tako što predstavljaju proizvođača i model pisača. <ph name="PRINTER_URI" /> treba biti adresa kojoj se može pristupiti s računala klijenta, uključujući <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> i <ph name="URI_QUEUE" />. Polje <ph name="PRINTER_UUID" /> nije obavezno. Ako se navede, služi za uklanjanje duplikata <ph name="ZEROCONF_DISCOVERY" /> pisača.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> mora odgovarati jednom od nizova koji predstavljaju pisač koji <ph name="PRODUCT_NAME" /> podržava. Niz će se upotrebljavati za određivanje i instaliranje odgovarajućeg PPD-a za pisač. Više informacija dostupno je na https://support.google.com/chrome?p=noncloudprint.
+
+      <ph name="PRINTER_AUTOCONF" /> je Booleova oznaka koja naznačuje treba li se za postavljanje pisača upotrijebiti IPP Everywhere. <ph name="PRODUCT_OS_NAME" /> podržava tu oznaku od verzije 76 nadalje.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> treba sadržavati naziv pisača ili se <ph name="PRINTER_AUTOCONF" /> treba postaviti na true. Pisači s oba ta svojstva ili bez ijednog od tih svojstava zanemarit će se.
+
+      Postavljanje pisača dovršava se po prvoj upotrebi pisača.  PPD-ovi će se preuzeti tek prilikom upotrebe pisača.  Nakon toga često korišteni PPD-ovi spremit će se u predmemoriju.
+
+      To pravilo ne utječe na mogućnost korisnika da konfiguriraju pisače na pojedinačnim uređajima.  Ono služi kao dodatno pravilo za konfiguraciju pisača pojedinačnih korisnika.
+
+      Za uređaje kojima upravlja Active Directory to pravilo podržava proširivanje naziva uređaja <ph name="MACHINE_NAME_VARIABLE" /> na naziv uređaja Active Directoryja ili njegov podniz. Na primjer, ako naziv uređaja glasi <ph name="MACHINE_NAME_EXAMPLE" />, onda će se <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> zamijeniti s četiri znaka iza šestog položaja, tj. <ph name="MACHINE_NAME_PART_EXAMPLE" />. Položaj se temelji na nuli.
+      </translation>
 <translation id="3072045631333522102">Čuvar zaslona koji će se upotrebljavati na zaslonu prijave u prodajnom načinu</translation>
 <translation id="3072847235228302527">Postavi Uvjete pružanja usluge za lokalni račun na uređaju</translation>
 <translation id="3077183141551274418">Omogućuje ili onemogućuje životne cikluse kartica</translation>
@@ -1930,7 +1968,6 @@
 <translation id="4591366717022345234">Pruži korisnicima međuverziju za brzi popravak</translation>
 <translation id="4600786265870346112">Omogućivanje velikog pokazivača</translation>
 <translation id="4604931264910482931">Konfiguriraj popis nedopuštenih za lokalno slanje poruka</translation>
-<translation id="4613508646038788144">Ako je pravilo postavljeno na False, softver treće strane moći će ubaciti izvršni kôd u Chromeove procese. Ako pravilo nije postavljeno ili je postavljeno na True, softver treće strane neće moći ubaciti izvršni kôd u Chromeove procese.</translation>
 <translation id="4617338332148204752">Preskoči provjeru metaoznaka u okviru <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="4625915093043961294">Konfiguriraj bijelu listu instalacije proširenja</translation>
 <translation id="4632343302005518762">Dopusti proizvodu <ph name="PRODUCT_FRAME_NAME" /> rukovanje navedenim vrstama sadržaja</translation>
@@ -2119,15 +2156,6 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
       Ako se pravilo postavi na False, Chrome će zatvoriti karticu nakon prebacivanja na zamjenski preglednik, čak i ako je to bila posljednja kartica. Chrome će se tako u potpunosti zatvoriti.</translation>
 <translation id="5105313908130842249">Odgoda zaključavanja zaslona za vrijeme baterijskog napajanja</translation>
 <translation id="5108031557082757679">Onemogućeni pisači za uređaje tvrtke</translation>
-<translation id="5113732180192599620">To pravilo određuje popis web-lokacija koje nikad neće uzrokovati promjenu preglednika.
-
-      Tom se popisu mogu dodati i elementi pomoću pravila <ph name="USE_IE_SITELIST_POLICY_NAME" /> i <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />.
-
-      Ako se pravilo ne postavi, web-lokacije neće se dodavati na popis.
-
-      Ako se pravilo postavi, svaka se stavka tretira kao pravilo. To je slično pravilu <ph name="URL_LIST_POLICY_NAME" />, samo što je logika je obrnuta: podudarna pravila neće otvoriti zamjenski preglednik.
-
-      Za razliku od pravila <ph name="URL_LIST_POLICY_NAME" />, pravila se primjenjuju u oba smjera. To znači da kada je prisutan i omogućen dodatak Internet Explorera, ono također određuje treba li <ph name="IE_PRODUCT_NAME" /> otvoriti te URL-ove u pregledniku <ph name="PRODUCT_NAME" />.</translation>
 <translation id="5124368997194894978">Omogući pokretanje na izmjeničnom napajanju</translation>
 <translation id="5131211790949066746">Omogućuje spajanje pravila <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" /> i <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" /> za popise za instaliranje proširenja.
 
@@ -2394,6 +2422,7 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
 
       Ako nije naveden, URL vrijednosti varijacija neće se izmijeniti.</translation>
 <translation id="5561811616825571914">Automatski odabir klijentskih certifikata za te web-lokacije na zaslonu za prijavu</translation>
+<translation id="5565178130821694365">Zaporku treba unijeti svaka dva dana (48 sati)</translation>
 <translation id="5566210228171064229">Dopusti ispis s PIN-om i bez njega</translation>
 <translation id="556865034069957245">To pravilo upravlja dostupnošću prikaza preko cijelog u kojem su svi elementi korisničkog sučelja preglednika <ph name="PRODUCT_NAME" /> skriveni, a vidljiv je samo web-sadržaj.
 
@@ -3397,7 +3426,7 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
 <translation id="7433714841194914373">Omogući Instant</translation>
 <translation id="7434202861148928348">Konfiguriraj tražene nazive domena za klijente daljinskog pristupa</translation>
 <translation id="7443616896860707393">Zahtjevi za Cross-origin HTTP Basic Auth</translation>
-<translation id="7454519673779830548">Dodaje unaprijed unesene Kerberos račune. Ako se vjerodajnice za Kerberos podudaraju s vjerodajnicama za prijavu, račun se može konfigurirati da ponovo koristi vjerodajnice za prijavu tako da se za principal navede "${{LOGIN_EMAIL}}", a za zaporku "${{PASSWORD}}" kako bi se Kerberosova karta mogla dohvatiti automatski osim ako je konfigurirana dvostruka autentifikacija. Korisnici ne mogu izmijeniti račune dodane tim pravilom.
+<translation id="7454519673779830548">Dodaje unaprijed unesene Kerberos račune. Ako se vjerodajnice za Kerberos podudaraju s vjerodajnicama za prijavu, račun se može konfigurirati da ponovo koristi vjerodajnice za prijavu tako da se za korisničko ime navede "${{LOGIN_EMAIL}}", a za zaporku "${{PASSWORD}}" kako bi se Kerberosov tiket mogao dohvatiti automatski osim ako je konfigurirana dvostruka autentifikacija. Korisnici ne mogu izmijeniti račune dodane tim pravilom.
 
           Ako se to pravilo omogući, popis računa definiranih pravilom dodaje se u postavke Kerberos računa.
 
@@ -3536,7 +3565,7 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
           Ako se to pravilo ne postavi, za sve web-lokacije upotrebljavat će se zadani ispunjivač. (Zadani ispunjivač može se konfigurirati pomoću pravila <ph name="CHROME_FRAME_RENDERER_SETTINGS_POLICY_NAME" />.)</translation>
 <translation id="7694245791806617022">Upravlja time je li značajka "Zapamti zaporku" omogućena u dijaloškom okviru za autentifikaciju koju pruža Kerberos. Zaporke se pohranjuju kriptirane na disku, a dostupne su samo demonu sustava Kerberos i tijekom korisničke sesije.
 
-          Ako se to pravilo omogući ili ne postavi, korisnici mogu odlučiti hoće li se zaporke Kerberosa zapamtiti kako ih se više ne bi trebalo unositi. Kerberosove karte dohvaćaju se automatski osim ako je potrebna dodatna autentifikacija (dvostruka autentifikacija).
+          Ako se to pravilo omogući ili ne postavi, korisnici mogu odlučiti hoće li se zaporke Kerberosa zapamtiti kako ih se više ne bi trebalo unositi. Kerberosov tiket dohvaća se automatski osim ako je potrebna dodatna autentifikacija (dvostruka autentifikacija).
 
           Ako se to pravilo onemogući, zaporke se ne pamte i sve se prethodno pohranjene zaporke uklanjaju. Korisnici moraju unijeti zaporku svaki put kad je potrebna provjera autentičnosti u sustavu Kerberos. Ovisno o postavkama poslužitelja vremenski intervali u kojima se to događa obično se kreću od svakih osam sati do nekoliko mjeseci.</translation>
 <translation id="7694807474048279351">Odredi vrijeme automatskog ponovnog pokretanja nakon primjene ažuriranja sustava <ph name="PRODUCT_OS_NAME" />.

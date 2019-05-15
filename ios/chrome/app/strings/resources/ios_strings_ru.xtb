@@ -74,13 +74,11 @@
 <translation id="1952728750904661634">Вход в управляемый аккаунт</translation>
 <translation id="1974060860693918893">Дополнительные</translation>
 <translation id="1989112275319619282">Выбрать</translation>
-<translation id="2000419248597011803">Отправлять некоторые файлы cookie и поисковые запросы из адресной строки в поисковую систему по умолчанию</translation>
 <translation id="2015722694326466240">Чтобы просматривать пароли, настройте на устройстве код доступа.</translation>
 <translation id="2068952045031577364">За прошлую неделю</translation>
 <translation id="2074131957428911366">Вы всегда можете выбрать, что синхронизировать, в <ph name="BEGIN_LINK" />настройках<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Отмена</translation>
 <translation id="209018056901015185">Версия для ПК</translation>
-<translation id="2096012225669085171">Синхронизация и персонализация данных на всех устройствах.</translation>
 <translation id="2103075008456228677">Открыть history.google.com</translation>
 <translation id="2116625576999540962">Перемещено закладок: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="213900355088104901">Чтобы просматривать сайты анонимно, откройте вкладку в режиме инкогнито</translation>
@@ -107,7 +105,6 @@
 <translation id="2435457462613246316">Показать пароль</translation>
 <translation id="2481538920734869610">ДОБАВИТЬ АККАУНТ</translation>
 <translation id="2497852260688568942">Ваш администратор отключил синхронизацию</translation>
-<translation id="2523184218357549926">Отправлять URL посещенных страниц в Google</translation>
 <translation id="2523363575747517183">Этот сайт часто пытается открыть другое приложение.</translation>
 <translation id="2529021024822217800">Открыть все</translation>
 <translation id="2572712655377361602">Политика устройства блокирует доступ к фотографиям</translation>
@@ -137,6 +134,7 @@
 <translation id="2871695793448672541">Скрытый пароль</translation>
 <translation id="288655811176831528">Закрыть вкладку</translation>
 <translation id="2898963176829412617">Новая папка</translation>
+<translation id="2916171785467530738">Включить автозаполнение для поисковых запросов и URL</translation>
 <translation id="291754862089661335">Поместите QR-код или штрихкод в эту рамку</translation>
 <translation id="2921219216347069551">Ошибка</translation>
 <translation id="2923448633003185837">Вставить и перейти</translation>
@@ -306,7 +304,6 @@
 <translation id="5857090052475505287">Новая папка</translation>
 <translation id="5857770089550859117">Чтобы начать синхронизацию, введите кодовую фразу.</translation>
 <translation id="5860033963881614850">ВЫКЛ</translation>
-<translation id="5865733239029070421">Автоматически отправлять в Google статистику использования и отчеты о сбоях</translation>
 <translation id="5869029295770560994">ОК</translation>
 <translation id="5871497086027727873">Перемещено закладок: 1</translation>
 <translation id="5897956970858271241">Открыть скопированную ссылку</translation>
@@ -412,7 +409,6 @@
 <translation id="722055596168483966">Персонализация сервисов Google</translation>
 <translation id="7265758999917665941">Никогда для этого сайта</translation>
 <translation id="7272437679830969316">Не удалось пройти проверку. Пароль не скопирован.</translation>
-<translation id="7280856130494094142">Чтобы включить синхронизацию, введите кодовую фразу</translation>
 <translation id="7285236536143823449">ОК</translation>
 <translation id="7291368939935408496">Подготовка паролей…</translation>
 <translation id="7293171162284876153">Чтобы начать синхронизацию, нажмите "Синхронизировать данные Chrome".</translation>
@@ -434,12 +430,10 @@
 <translation id="7554791636758816595">Новая вкладка</translation>
 <translation id="7561196759112975576">Всегда</translation>
 <translation id="7603852183842204213">Заблок. вспл. окон: <ph name="NUMBER_OF_BLOCKED_POPUPS" /></translation>
-<translation id="7605594153474022051">Ошибка синхронизации</translation>
 <translation id="7638584964844754484">Неверная кодовая фраза</translation>
 <translation id="7658239707568436148">Отмена</translation>
 <translation id="766891008101699113">Чтобы просматривать веб-страницы анонимно, откройте новую вкладку.</translation>
 <translation id="7671141431838911305">УСТАНОВИТЬ</translation>
-<translation id="7704317875155739195">Заполнять поисковые запросы и URL автоматически</translation>
 <translation id="7765158879357617694">Переместить</translation>
 <translation id="7769602470925380267">Принять и выйти</translation>
 <translation id="7772032839648071052">Подтвердите кодовую фразу</translation>
@@ -477,7 +471,6 @@
 <translation id="842017693807136194">Выполнен вход через</translation>
 <translation id="8428045167754449968">Город</translation>
 <translation id="8428213095426709021">Настройки</translation>
-<translation id="8438566539970814960">Помогать улучшить просмотр страниц и поиск</translation>
 <translation id="8458397775385147834">Удалено закладок: 1</translation>
 <translation id="8487700953926739672">Доступно в автономном режиме</translation>
 <translation id="8503813439785031346">Имя пользователя</translation>

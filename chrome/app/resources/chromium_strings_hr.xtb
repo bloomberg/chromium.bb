@@ -120,9 +120,7 @@
 <translation id="4987820182225656817">Gosti mogu upotrebljavati Chromium bez ostavljanja tragova o upotrebi.</translation>
 <translation id="4994636714258228724">Dodajte sebe kao korisnika Chromiuma</translation>
 <translation id="5021854341188256296">{0,plural, =0{Dostupno je ažuriranje OS-a Chromium}=1{Dostupno je ažuriranje OS-a Chromium}one{Ažuriranje OS-a Chromium dostupno je # dan}few{Ažuriranje OS-a Chromium dostupno je # dana}other{Ažuriranje OS-a Chromium dostupno je # dana}}</translation>
-<translation id="5032989939245619637">Spremi pojedinosti u sustavu Chromium</translation>
 <translation id="5045248521775609809">Ponesite Chromium svugdje</translation>
-<translation id="5116586539350239523">Chromium će pohraniti vaše osobne podatke na siguran način tako da ih ne morate ponovo upisivati.</translation>
 <translation id="5181952534059945058">Ova stranica upotrebljava previše memorije, pa je Chromium uklonio dio sadržaja.</translation>
 <translation id="5277894862589591112">Da bi se vaše promjene primijenile, ponovo pokrenite Chromium</translation>
 <translation id="5358375970380395591">Prijavljujete se upravljanim računom i dajete administratoru kontrolu nad svojim profilom u sustavu Chromium. Vaši podaci u sustavu Chromium, primjerice, aplikacije, oznake, povijest, zaporke i ostale postavke, trajno će se povezati s korisnikom <ph name="USER_NAME" />. Moći ćete izbrisati te podatke putem Nadzorne ploče Google računa, ali ih nećete moći povezati s nekim drugim računom. <ph name="LEARN_MORE" /></translation>

@@ -223,6 +223,7 @@
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">카드</translation>
 <translation id="2114841414352855701"><ph name="POLICY_NAME" />이(가) 우선 적용되었기 때문에 무시됩니다.</translation>
+<translation id="2129079103035905234">움직임 감지 센서</translation>
 <translation id="213826338245044447">모바일 북마크</translation>
 <translation id="214556005048008348">결제 취소</translation>
 <translation id="2147827593068025794">백그라운드 동기화</translation>
@@ -474,6 +475,7 @@
 <translation id="3495081129428749620"><ph name="PAGE_TITLE" />
 페이지에서 찾기</translation>
 <translation id="3498215018399854026">현재 부모님께 연락할 수 없습니다. 나중에 다시 시도해 주세요.</translation>
+<translation id="3512163584740124171">동일한 정책 그룹에 있는 다른 정책이 우선순위가 높기 때문에 이 정책은 무시됩니다.</translation>
 <translation id="3528171143076753409">서버의 인증서를 신뢰할 수 없습니다.</translation>
 <translation id="3528485271872257980">진한 갈색</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{동기화된 기기에 항목 1개 이상}=1{항목 1개(동기화된 기기에는 그 이상)}other{항목 #개(동기화된 기기에는 그 이상)}}</translation>
@@ -1004,7 +1006,7 @@
 <translation id="6508722015517270189">Chrome 다시 시작하기</translation>
 <translation id="6529602333819889595">삭제 다시 실행(&amp;R)</translation>
 <translation id="6534179046333460208">피지컬 웹 제안</translation>
-<translation id="6554795675067793129"><ph name="ENROLLMENT_DOMAIN" />에서 관리하는 계정입니다.</translation>
+<translation id="6554795675067793129">사용자의 계정은 <ph name="ENROLLMENT_DOMAIN" />에서 관리합니다.</translation>
 <translation id="6556866813142980365">다시실행</translation>
 <translation id="6563469144985748109">관리자가 아직 승인하지 않았습니다.</translation>
 <translation id="6569060085658103619">확장 프로그램 페이지를 보는 중</translation>
@@ -1087,7 +1089,6 @@
 <translation id="7062635574500127092">청록색</translation>
 <translation id="7064851114919012435">연락처 정보</translation>
 <translation id="7079718277001814089">이 사이트에 멀웨어가 있습니다.</translation>
-<translation id="7081564429925484109">경고: 이 정책은 목록이 아니므로 PolicyListMultipleSourceMergeList 정책에 명시된 대로 병합되지 않았습니다.</translation>
 <translation id="7087282848513945231">카운티</translation>
 <translation id="7090678807593890770">Google에서 <ph name="LINK" /> 검색</translation>
 <translation id="7108338896283013870">숨기기</translation>
@@ -1147,7 +1148,6 @@
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">안함</translation>
 <translation id="7378810950367401542">/</translation>
-<translation id="7381288752349550461">관리 세션 재정의</translation>
 <translation id="7390545607259442187">카드 확인</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7403591733719184120"><ph name="DEVICE_NAME" /> 기기는 관리 대상 기기입니다</translation>

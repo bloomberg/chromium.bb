@@ -147,7 +147,6 @@
 <translation id="4750550185319565338">‏إعادة تشغيل Chrome لتمكين <ph name="PLUGIN_NAME" /></translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">‏قد يكون هذا الملف ضارًا، لذلك فقد حظره Chrome.</translation>
-<translation id="4794050651896644714">‏حفظ التفاصيل في Chrome</translation>
 <translation id="4891791193823137474">‏دع Google Chrome يعمل في الخلفية</translation>
 <translation id="4895437082222824641">‏فتح الرابط في علامة تبويب جديدة في Chrome</translation>
 <translation id="4921569541910214635">‏هل تشارك جهاز كمبيوتر؟ يمكنك الآن إعداد Chrome بالطريقة التي تعجبك تمامًا.</translation>
@@ -261,7 +260,6 @@
 <translation id="8077352834923175128">‏يطلب المُشرِف إعادة تشغيل Chrome لتطبيق هذا التحديث.</translation>
 <translation id="8129812357326543296">‏&amp;حول Google Chrome</translation>
 <translation id="8179874765710681175">‏بادِر بتثبيت Chrome على هاتفك. سنرسل رسالة قصيرة إلى هاتفك.</translation>
-<translation id="8183957050892517584">‏سيخزّن Chrome معلوماتك الشخصية بشكلٍ آمن لكي لا تُضطر إلى كتابتها مرة أخرى.</translation>
 <translation id="8226081633851087288">{0,plural, =0{‏ستتم إعادة تشغيل نظام التشغيل Chrome الآن}=1{‏ستتم إعادة تشغيل نظام التشغيل Chrome خلال ثانية واحدة}two{‏ستتم إعادة تشغيل نظام التشغيل Chrome خلال ثانيتين (#)}few{‏ستتم إعادة تشغيل نظام التشغيل Chrome خلال # ثوانٍ}many{‏ستتم إعادة تشغيل نظام التشغيل Chrome خلال # ثانيةً}other{‏ستتم إعادة تشغيل نظام التشغيل Chrome خلال # ثانيةً}}</translation>
 <translation id="825412236959742607">‏تستهلك هذه الصفحة مساحة كبيرة من الذاكرة، لذلك أزال Chrome بعض محتواها.</translation>
 <translation id="8255190535488645436">‏يستخدم Google Chrome الكاميرا والميكروفون.</translation>

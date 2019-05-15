@@ -145,7 +145,6 @@
 <translation id="4750550185319565338"><ph name="PLUGIN_NAME" /> を有効にするには Chrome を再起動してください</translation>
 <translation id="4754614261631455953">Google Chrome Canary（mDNS インバウンド）</translation>
 <translation id="4771048833395599659">このファイルは危険なファイルの可能性があるため、Chrome でブロックしました。</translation>
-<translation id="4794050651896644714">Chrome で詳細を保存する</translation>
 <translation id="4891791193823137474">Google Chrome のバックグラウンドでの実行を許可する</translation>
 <translation id="4895437082222824641">新しい Chrome タブでリンクを開く(&amp;T)</translation>
 <translation id="4921569541910214635">共有パソコンにするなど、Chrome をお好みの方法で設定できるようになりました。</translation>
@@ -257,7 +256,6 @@
 <translation id="8077352834923175128">管理者が、このアップデートを適用するために Chrome OS を再起動するよう求めています</translation>
 <translation id="8129812357326543296">Google Chrome について(&amp;G)</translation>
 <translation id="8179874765710681175">Chrome をスマートフォンにインストールしませんか。Google よりスマートフォンに SMS をお送りします。</translation>
-<translation id="8183957050892517584">Chrome でユーザーの情報が安全に保存されるので、再度入力する必要がなくなります。</translation>
 <translation id="8226081633851087288">{0,plural, =0{Chrome OS は今すぐ再起動されます}=1{Chrome OS は 1 秒後に再起動されます}other{Chrome OS は # 秒後に再起動されます}}</translation>
 <translation id="825412236959742607">このページは大量のメモリを使用しているため、Chrome により一部のコンテンツが削除されました。</translation>
 <translation id="8255190535488645436">Google Chrome がカメラとマイクを使用しています。</translation>

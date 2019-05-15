@@ -131,6 +131,15 @@ Per ulteriori informazioni sui contesti sicuri, visita il sito https://www.w3.or
 <translation id="1152117524387175066">Consente di indicare lo stato dello switch dev del dispositivo all'avvio. Se la norma viene impostata su False, lo stato dello switch dev non viene indicato.</translation>
 <translation id="1160479894929412407">Consenti protocollo QUIC</translation>
 <translation id="1160939557934457296">Disattiva procedendo dalla pagina di avviso Navigazione sicura</translation>
+<translation id="1171342272070128466">Consente di attivare la funzione di accessibilità Lente d'ingrandimento ancorata.
+
+          Se questa norma viene impostata su true, la lente d'ingrandimento ancorata sarà sempre attiva.
+
+          Se questa norma viene impostata su false, la lente d'ingrandimento ancorata sarà sempre disattivata.
+
+          Se imposti questa norma, gli utenti non potranno modificarla o ignorarla.
+
+          Se questa norma non viene impostata, inizialmente la lente d'ingrandimento ancorata è disattivata, ma l'utente può attivarla in qualsiasi momento.</translation>
 <translation id="1189817621108632689">Questa norma consente di impostare un elenco di pattern URL che specificano i siti in cui non è consentita la visualizzazione di immagini.
 
           Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma "DefaultImagesSetting", se è impostata, oppure verrà utilizzata la configurazione personale dell'utente.
@@ -433,6 +442,7 @@ Per la norma dovrebbe essere impostato un URL da cui <ph name="PRODUCT_OS_NAME" 
       Se il criterio è attivato, gli utenti non potranno disattivare il comportamento predefinito nei casi in cui ciascun sito viene eseguito nel proprio processo.
       Se il criterio non è configurato o è disattivato, l'utente potrà modificare questa impostazione (ad esempio, utilizzando la voce "Disattiva isolamento dei siti" in chrome://flags).
       </translation>
+<translation id="1767673020408652620">Attiva consigli di app a stato nullo della casella di ricerca</translation>
 <translation id="1781356041596378058">Questa norma controlla anche l'accesso alle Opzioni sviluppatore di Android. Se la norma viene impostata su true, gli utenti non possono accedere alle Opzioni sviluppatore. Se la norma viene impostata su false o non viene impostata, gli utenti possono accedere alle Opzioni sviluppatore toccando sette volte il numero di build nell'app Impostazioni di Android.</translation>
 <translation id="1793346220873697538">Disattiva la stampa PIN per impostazione predefinita</translation>
 <translation id="1797233582739332495">Mostra un messaggio ricorrente all'utente in cui indica che è necessario un riavvio</translation>
@@ -944,6 +954,15 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
 
       Ogni voce in elenco specifica un identificatore che viene utilizzato internamente per distinguere i vari account del dispositivo.</translation>
 <translation id="2769952903507981510">Configura il nome di dominio richiesto per gli host di accesso remoto</translation>
+<translation id="2783078941107212091">Consente di attivare i consigli di app a stato nullo della casella di ricerca in Avvio app.
+
+          Se questa norma viene impostata su true, i consigli di app potrebbero essere visualizzati nella ricerca a stato nullo.
+
+          Se questa norma viene impostata su false, i consigli di app non verranno visualizzati nella ricerca a stato nullo.
+
+          Se imposti questa norma, gli utenti non potranno modificarla o ignorarla.
+
+          Se questa norma non viene impostata, il valore predefinito è False per i dispositivi gestiti.</translation>
 <translation id="2787173078141616821">Segnala informazioni sullo stato di Android</translation>
 <translation id="2799297758492717491">Consenti la riproduzione automatica dei contenuti multimediali per una whitelist di pattern URL</translation>
 <translation id="2801155097555584385">Imposta il valore personalizzato espresso in percentuale raggiunto il quale la batteria avvia la ricarica</translation>
@@ -1136,6 +1155,24 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
       Se questa norma è impostata su false, l'ottimizzazione WPAD viene disattivata, aumentando così i tempi di attesa da parte di <ph name="PRODUCT_NAME" /> dei server WPAD basati su DNS. Se questa norma non è impostata oppure se è attiva, l'ottimizzazione WPAD è abilitata.
 
       Indipendentemente da se o come questa norma è impostata, l'utente non può modificare l'impostazione di ottimizzazione di WPAD.</translation>
+<translation id="3071839057966069710">Consente di configurare un elenco di stampanti.
+
+      Questa norma consente agli amministratori di fornire configurazioni delle stampanti ai propri utenti.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> e <ph name="PRINTER_DESCRIPTION" /> sono stringhe in formato libero che è possibile personalizzare per selezionare facilmente le stampanti. I valori <ph name="PRINTER_MANUFACTURER" /> e <ph name="PRINTER_MODEL" />, che rappresentano il produttore e il modello della stampante, consentono agli utenti finali di identificare più facilmente le stampanti . Il valore <ph name="PRINTER_URI" /> deve essere un indirizzo raggiungibile da un computer client che includa <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> e <ph name="URI_QUEUE" />. Il valore <ph name="PRINTER_UUID" /> è facoltativo, ma se viene specificato viene utilizzato per consentire la deduplicazione delle stampanti <ph name="ZEROCONF_DISCOVERY" />.
+
+      Il valore <ph name="PRINTER_EFFECTIVE_MODEL" /> deve corrispondere a una delle stringhe che rappresentano una stampante supportata da <ph name="PRODUCT_NAME" />. La stringa verrà usata per identificare e installare il file PPD appropriato per la stampante. È possibile trovare ulteriori informazioni all'indirizzo https://support.google.com/chrome?p=noncloudprint.
+
+      <ph name="PRINTER_AUTOCONF" /> è un flag booleano che indica se deve essere usato o meno IPP Everywhere per configurare la stampante. Questo flag è supportato su <ph name="PRODUCT_OS_NAME" /> 76 e versioni successive.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> deve contenere il nome della stampante oppure occorre impostare <ph name="PRINTER_AUTOCONF" /> su true. Le stampanti con entrambe le proprietà o prive di proprietà verranno ignorate.
+
+      La configurazione viene completata al primo utilizzo della stampante.  I file PPD vengono scaricati soltanto quando viene utilizzata la stampante.  Dopodiché, i PPD utilizzati più spesso vengono memorizzati nella cache.
+
+      Questa norma non influisce sulla possibilità per gli utenti di configurare le stampanti su singoli dispositivi.  È supplementare alla configurazione di stampanti da parte dei singoli utenti.
+
+      Per i dispositivi Active Directory gestiti, questa norma supporta l'espansione di <ph name="MACHINE_NAME_VARIABLE" /> al nome della macchina Active Directory oppure a una sua sottostringa. Ad esempio, se il nome della macchina è <ph name="MACHINE_NAME_EXAMPLE" />, la variabile <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> verrà sostituita dai quattro caratteri che iniziano dopo la sesta posizione, ad esempio <ph name="MACHINE_NAME_PART_EXAMPLE" />. Tieni presente che la posizione è in base zero.
+      </translation>
 <translation id="3072045631333522102">Salvaschermo da utilizzare nella schermata di accesso in modalità retail</translation>
 <translation id="3072847235228302527">Imposta i Termini di servizio di un account locale del dispositivo</translation>
 <translation id="3077183141551274418">Abilita o disabilita i cicli di vita delle schede</translation>
@@ -1896,7 +1933,6 @@ Se questa norma non viene impostata, l'impostazione verrà attivata ma gli utent
 <translation id="4591366717022345234">Fornisce agli utenti una build di correzione rapida</translation>
 <translation id="4600786265870346112">Attivazione del puntatore grande</translation>
 <translation id="4604931264910482931">Configura lista nera di messaggi nativi</translation>
-<translation id="4613508646038788144">Se la norma viene impostata su false, i programmi software di terze parti potranno inserire codice eseguibile nei processi di Chrome. Se la norma non viene impostata o viene impostata su true, i programmi software di terze parti non potranno inserire codice eseguibile nei processi di Chrome.</translation>
 <translation id="4617338332148204752">Salta il controllo dei metatag in <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="4625915093043961294">Configura la whitelist per l'installazione delle estensioni</translation>
 <translation id="4632343302005518762">Consenti a <ph name="PRODUCT_FRAME_NAME" /> di gestire i tipi di contenuti elencati</translation>
@@ -2084,15 +2120,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       Se questa norma viene impostata su false, Chrome chiuderà la scheda dopo il passaggio a un browser alternativo, anche se si tratta dell'ultima scheda. Ciò comporterà la chiusura completa di Chrome.</translation>
 <translation id="5105313908130842249">Ritardo blocco schermo in caso di utilizzo della batteria</translation>
 <translation id="5108031557082757679">Stampanti aziendali associate ai dispositivi disattivate</translation>
-<translation id="5113732180192599620">Questa norma consente di stabilire l'elenco di siti web che non causeranno mai un cambio di browser.
-
-      Tieni presente che puoi aggiungere elementi all'elenco anche tramite le norme <ph name="USE_IE_SITELIST_POLICY_NAME" /> e <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />.
-
-      Se questa norma non viene impostata, nessun sito web viene aggiunto all'elenco.
-
-      Se viene impostata, ogni elemento è considerato come una regola, in modo simile alla norma <ph name="URL_LIST_POLICY_NAME" />. Tuttavia, la logica funziona al contrario: le regole con una corrispondenza non aprono un browser alternativo.
-
-      A differenza della norma <ph name="URL_LIST_POLICY_NAME" />, le regole vengono applicate in entrambe le direzioni. In altre parole, quando il componente aggiuntivo Internet Explorer è presente e attivato, la norma stabilisce se <ph name="IE_PRODUCT_NAME" /> deve aprire questi URL in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="5124368997194894978">Attiva avvio tramite CA (corrente alternata)</translation>
 <translation id="5131211790949066746">Consente di unire le norme relative all'elenco di installazione delle estensioni <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" /> e <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />.
 
@@ -2352,6 +2379,7 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
 
       Se non è specificata, questa norma non modifica l'URL del numero di inizializzazione delle varianti.</translation>
 <translation id="5561811616825571914">Seleziona automaticamente i certificati client per questi siti nella schermata di accesso</translation>
+<translation id="5565178130821694365">Inserimento della password richiesto ogni due giorni (48 ore)</translation>
 <translation id="5566210228171064229">Consenti la stampa con e senza PIN</translation>
 <translation id="556865034069957245">Questa norma consente di stabilire la disponibilità della modalità a schermo intero in cui ogni UI di <ph name="PRODUCT_NAME" /> è nascosta e sono visibili solo i contenuti web.
 

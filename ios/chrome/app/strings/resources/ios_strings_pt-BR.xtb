@@ -74,13 +74,11 @@
 <translation id="1952728750904661634">Fazer login com uma conta gerenciada</translation>
 <translation id="1974060860693918893">Avançado</translation>
 <translation id="1989112275319619282">Procurar</translation>
-<translation id="2000419248597011803">Envia alguns cookies e pesquisas da barra de endereço e da caixa de pesquisa para seu mecanismo de pesquisa padrão.</translation>
 <translation id="2015722694326466240">Para ver as senhas, defina uma senha no dispositivo primeiro.</translation>
 <translation id="2068952045031577364">Da última semana</translation>
 <translation id="2074131957428911366">Nas <ph name="BEGIN_LINK" />configurações<ph name="END_LINK" />, é possível escolher a qualquer momento o que é sincronizado.</translation>
 <translation id="2079545284768500474">Desfazer</translation>
 <translation id="209018056901015185">Versão para computador</translation>
-<translation id="2096012225669085171">Sincronizar e personalizar entre dispositivos</translation>
 <translation id="2103075008456228677">Abrir history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> itens movidos</translation>
 <translation id="213900355088104901">Para navegar com privacidade, abra uma guia anônima.</translation>
@@ -107,7 +105,6 @@
 <translation id="2435457462613246316">Mostrar senha</translation>
 <translation id="2481538920734869610">ADICIONAR CONTA</translation>
 <translation id="2497852260688568942">A sincronização foi desativada pelo administrador</translation>
-<translation id="2523184218357549926">Envia URLs das páginas que você visita para o Google</translation>
 <translation id="2523363575747517183">Este site está tentando repetidamente abrir outro aplicativo.</translation>
 <translation id="2529021024822217800">Abrir todos</translation>
 <translation id="2572712655377361602">Uma política do dispositivo bloqueou o acesso às suas fotos</translation>
@@ -137,6 +134,7 @@
 <translation id="2871695793448672541">Senha oculta</translation>
 <translation id="288655811176831528">Fechar guia</translation>
 <translation id="2898963176829412617">Nova pasta...</translation>
+<translation id="2916171785467530738">Preencher automaticamente pesquisas e URLs</translation>
 <translation id="291754862089661335">Posicione o código QR ou o código de barras neste quadro</translation>
 <translation id="2921219216347069551">Não é possível compartilhar a página</translation>
 <translation id="2923448633003185837">Colar e ir</translation>
@@ -306,7 +304,6 @@ A "Transição" também deve ser ativada na seção "Geral" das configurações.
 <translation id="5857090052475505287">Nova pasta</translation>
 <translation id="5857770089550859117">É necessário ter uma senha longa para iniciar a sincronização.</translation>
 <translation id="5860033963881614850">Desativado</translation>
-<translation id="5865733239029070421">Envia estatísticas de uso e relatórios de erros automaticamente para o Google</translation>
 <translation id="5869029295770560994">Ok, entendi</translation>
 <translation id="5871497086027727873">1 item movido</translation>
 <translation id="5897956970858271241">Visitar link copiado</translation>
@@ -412,7 +409,6 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="722055596168483966">Personalizar os serviços do Google</translation>
 <translation id="7265758999917665941">Nunca para este site</translation>
 <translation id="7272437679830969316">Não é possível verificar sua identidade. Senha não copiada.</translation>
-<translation id="7280856130494094142">Informe a senha para iniciar a sincronização</translation>
 <translation id="7285236536143823449">SIM, VAMOS LÁ</translation>
 <translation id="7291368939935408496">Preparando senhas…</translation>
 <translation id="7293171162284876153">Para iniciar a sincronização, ative a opção "Sincronizar seus dados do Chrome".</translation>
@@ -434,12 +430,10 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="7554791636758816595">Nova guia</translation>
 <translation id="7561196759112975576">Sempre</translation>
 <translation id="7603852183842204213">Pop-ups bloqueados (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
-<translation id="7605594153474022051">A sincronização não está funcionando</translation>
 <translation id="7638584964844754484">Senha incorreta</translation>
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="766891008101699113">Para navegar na Web com privacidade, adicione uma nova guia.</translation>
 <translation id="7671141431838911305">INSTALAR</translation>
-<translation id="7704317875155739195">Preencher automaticamente pesquisas e URLs</translation>
 <translation id="7765158879357617694">Mover</translation>
 <translation id="7769602470925380267">Aceitar e sair</translation>
 <translation id="7772032839648071052">Confirmar senha</translation>
@@ -477,7 +471,6 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="842017693807136194">Conectado com</translation>
 <translation id="8428045167754449968">Cidade</translation>
 <translation id="8428213095426709021">Configurações</translation>
-<translation id="8438566539970814960">Melhorar pesquisas e navegação</translation>
 <translation id="8458397775385147834">1 item excluído</translation>
 <translation id="8487700953926739672">Disponível off-line</translation>
 <translation id="8503813439785031346">Nome de usuário</translation>

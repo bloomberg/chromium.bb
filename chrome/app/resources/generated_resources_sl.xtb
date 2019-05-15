@@ -226,6 +226,7 @@
 <translation id="1338950911836659113">Brisanje ...</translation>
 <translation id="1340527397989195812">Varnostno kopiranje predstavnosti v napravi z aplikacijo Datoteke.</translation>
 <translation id="1341988552785875222">Trenutno ozadje je nastavila aplikacija »<ph name="APP_NAME" />«. Pred izbiro drugega ozadja boste morda morali odstraniti »<ph name="APP_NAME" />«.</translation>
+<translation id="1343865611738742294">Omogočanje, da aplikacije za Linux dostopajo do naprav USB. Linux si ne zapomni naprave USB, ko jo odstranite.</translation>
 <translation id="1347256498747320987">Namestitev posodobitev in aplikacij. Če nadaljujete, se strinjate, da lahko ta naprava tudi samodejno prenese in namesti posodobitve ter aplikacije, ki jih zagotavljajo Google, vaš operater in proizvajalec vaše naprave – morda s prenosom podatkov v mobilnih omrežjih. Nekatere od teh aplikacij morda ponujajo nakupe v aplikaciji. <ph name="BEGIN_LINK1" />Več o tem<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">Posodobitev se bo začela, ko bo akumulator dosegel <ph name="BATTERY_LEVEL" /> % napolnjenosti.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
@@ -707,6 +708,7 @@
 <translation id="2120297377148151361">Dejavnost in interakcija</translation>
 <translation id="2120478168904746065">{NUM_TABS,plural, =1{Vklop zvoka zavihka}one{Vklop zvoka zavihkov}two{Vklop zvoka zavihkov}few{Vklop zvoka zavihkov}other{Vklop zvoka zavihkov}}</translation>
 <translation id="2121825465123208577">Spreminjanje velikosti</translation>
+<translation id="2122305276694332719">Samodejna povezava s skritim omrežjem omogoča drugim, da vidijo vašo napravo in nekatere nastavitve omrežja, zato tega ne priporočamo.</translation>
 <translation id="2124930039827422115">{1,plural, =1{Ocena: <ph name="AVERAGE_RATING" /> – en uporabnik}one{Ocena: <ph name="AVERAGE_RATING" /> – # uporabnik}two{Ocena: <ph name="AVERAGE_RATING" /> – # uporabnika}few{Ocena: <ph name="AVERAGE_RATING" /> – # uporabniki}other{Ocena: <ph name="AVERAGE_RATING" /> – # uporabnikov}}</translation>
 <translation id="2126167708562367080">Sinhronizacijo je onemogočil skrbnik.</translation>
 <translation id="2127372758936585790">Nizkoenergijski polnilnik</translation>
@@ -1303,6 +1305,7 @@
 <translation id="3012917896646559015">Takoj se obrnite na proizvajalca strojne opreme glede pošiljanja računalnika na servis.</translation>
 <translation id="3013291976881901233">Naprave MIDI</translation>
 <translation id="3015639418649705390">Znova zaženi</translation>
+<translation id="3016329696181678353">Tiskalnika <ph name="PRINTER_NAME" /> ni bilo mogoče samodejno konfigurirati. Določite dodatne podrobnosti tiskalnika.</translation>
 <translation id="3016641847947582299">Komponenta je posodobljena</translation>
 <translation id="3016780570757425217">podatke o vaši lokaciji</translation>
 <translation id="3020183492814296499">Bližnjice</translation>
@@ -1805,7 +1808,6 @@
 <translation id="3789841737615482174">Namesti</translation>
 <translation id="379082410132524484">Kartica je potekla</translation>
 <translation id="3792890930871100565">Prekinite povezave s tiskalniki</translation>
-<translation id="3792938779249970121">Izbira računa</translation>
 <translation id="3796648294839530037">Priljubljena omrežja:</translation>
 <translation id="3797739167230984533">Vašo napravo <ph name="BEGIN_LINK" /><ph name="DEVICE_TYPE" /> upravlja<ph name="END_LINK" /> organizacija</translation>
 <translation id="3797900183766075808">&amp;V iskalniku <ph name="SEARCH_ENGINE" /> poišči »<ph name="SEARCH_TERMS" />«</translation>
@@ -2114,6 +2116,7 @@
 <translation id="4268025649754414643">Šifriranje ključa</translation>
 <translation id="4270393598798225102">Različica <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">Ni ujemanj</translation>
+<translation id="4275663329226226506">Predstavnost</translation>
 <translation id="4275830172053184480">Znova zaženite napravo.</translation>
 <translation id="4278101229438943600">Pomočnik je na voljo</translation>
 <translation id="4278390842282768270">Dovoljeno</translation>
@@ -2156,7 +2159,6 @@
 <translation id="4354344420232759511">Spletna mesta, ki jih obiščete, bodo prikazana tu</translation>
 <translation id="435527878592612277">Izberite fotografijo</translation>
 <translation id="4356334633973342967">Ali navedite svoj gonilnik:</translation>
-<translation id="4358169392473932247">Ta varnostni ključ ne podpira notranje shrambe poverilnic, vendar je bila ta funkcija zahtevana.</translation>
 <translation id="4359408040881008151">Nameščeno zaradi odvisnih razširitev.</translation>
 <translation id="4359717112757026264">Urbana pokrajina</translation>
 <translation id="4361142739114356624">Zasebni ključ za to potrdilo odjemalca manjka ali je neveljaven</translation>
@@ -2339,7 +2341,6 @@
 <translation id="4665014895760275686">Proizvajalec</translation>
 <translation id="4665446389743427678">Vsi podatki, ki jih shrani <ph name="SITE" />, bodo izbrisani.</translation>
 <translation id="4668721319092543482">Kliknite, če želite omogočiti <ph name="PLUGIN_NAME" /></translation>
-<translation id="4670688170798478686">Potrditev ponastavitve</translation>
 <translation id="4672657274720418656">Ustvari povzetek strani</translation>
 <translation id="4673442866648850031">Odpiranje orodij za pisalo, ko je pisalo izvlečeno</translation>
 <translation id="4677585247300749148"><ph name="URL" /> se želi odzvati na dogodke funkcij za ljudi s posebnimi potrebami</translation>
@@ -2369,7 +2370,6 @@
 <translation id="4711638718396952945">Obnovi nastavitve</translation>
 <translation id="4715553623069266137">zelo kratka (0,8 s)</translation>
 <translation id="4716483597559580346">Opravite postopek »Powerwash« zaradi dodane varnosti</translation>
-<translation id="4718490098585891067">Izberite račun, s katerim se želite prijaviti:</translation>
 <translation id="4720113199587244118">Dodaj naprave</translation>
 <translation id="4720185134442950733">Mobilno podatkovno omrežje</translation>
 <translation id="4722735765955348426">Geslo za uporabniško ime <ph name="USERNAME" /></translation>
@@ -2400,7 +2400,6 @@
 <translation id="4756388243121344051">&amp;Zgodovina</translation>
 <translation id="4759238208242260848">Prenosi</translation>
 <translation id="4761104368405085019">Uporabite mikrofon</translation>
-<translation id="476166673298332917">Skrbnik naprave morda spremlja vašo dejavnost brskanja.</translation>
 <translation id="4762718786438001384">V napravi kritično primanjkuje prostora na disku</translation>
 <translation id="4763408175235639573">Ko ste si ogledovali to stran, so bili poslani ti piškotki</translation>
 <translation id="4763830802490665879">Piškotki z več spletnih mest bodo ob izhodu izbrisani.</translation>
@@ -3931,7 +3930,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="713888829801648570">Oprostite, gesla ni bilo mogoče preveriti, ker nimate internetne povezave.</translation>
 <translation id="7140928199327930795">Ni drugih razpoložljivih naprav.</translation>
 <translation id="7141105143012495934">Prijava ni uspela, ker ni bilo mogoče pridobiti podrobnosti o računu. Obrnite se na skrbnika in poskusite znova.</translation>
-<translation id="714285394257538643">Če želite potrditi ponastavitev varnostnega ključa, se ga znova dotaknite. Vse poverilnice, shranjene na varnostnem ključu, in koda PIN varnostnega ključa bodo izbrisane.</translation>
 <translation id="7143092389027215216">Zagon predstavitvenega načina</translation>
 <translation id="7143207342074048698">Vzpostavljanje povezave</translation>
 <translation id="7144878232160441200">Poskusi znova</translation>
@@ -4165,6 +4163,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7506541170099744506">Naprava <ph name="DEVICE_TYPE" /> je bila uspešno prijavljena za upravljanje v podjetju.</translation>
 <translation id="7507930499305566459">Potrdilo odzivnika stanja</translation>
 <translation id="7513029293694390567">Samodejna prijava v spletna mesta s shranjenimi poverilnicami. Ko je to onemogočeno, boste morali potrditi pred vsako prijavo v spletno mesto.</translation>
+<translation id="7514365320538308">Prenos</translation>
 <translation id="7517786267097410259">Ustvarjanje gesla –</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">Izgovorite »Ok Google«</translation>
@@ -4505,6 +4504,7 @@ Datoteka s ključem: <ph name="KEY_FILE" />
 Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih različic razširitev.</translation>
 <translation id="8000066093800657092">Ni omrežja</translation>
 <translation id="8000467600002607205">{NUM_TABS,plural, =1{Zapiranje zavihka}one{Zapiranje zavihkov}two{Zapiranje zavihkov}few{Zapiranje zavihkov}other{Zapiranje zavihkov}}</translation>
+<translation id="8002274832045662704">Dodatna konfiguracija tiskalnika</translation>
 <translation id="8004582292198964060">Brskalnik</translation>
 <translation id="8005600846065423578">Vedno dovoli, da si <ph name="HOST" /> ogleda odložišče</translation>
 <translation id="8008356846765065031">Internetna povezava je prekinjena. Preverite povezavo.</translation>
@@ -5045,6 +5045,7 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="8850251000316748990">Več ...</translation>
 <translation id="885246833287407341">Argumenti funkcije API-ja</translation>
 <translation id="8853586775156634952">Ta kartica bo shranjena samo v to napravo</translation>
+<translation id="885701979325669005">Shramba</translation>
 <translation id="8859057652521303089">Izberite jezik:</translation>
 <translation id="8859174528519900719">Podokvir: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8862003515646449717">Preklop na hitrejši brskalnik</translation>

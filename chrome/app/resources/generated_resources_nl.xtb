@@ -226,6 +226,7 @@
 <translation id="1338950911836659113">Verwijderen...</translation>
 <translation id="1340527397989195812">Back-ups van media op het apparaat maken via de app Bestanden.</translation>
 <translation id="1341988552785875222">De huidige achtergrond is ingesteld door '<ph name="APP_NAME" />'. Je moet '<ph name="APP_NAME" />' mogelijk verwijderen voordat je een andere achtergrond selecteert.</translation>
+<translation id="1343865611738742294">Geef Linux-apps toegang tot USB-apparaten. Linux onthoudt een USB-apparaat niet nadat dit is verwijderd.</translation>
 <translation id="1347256498747320987">Updates en apps installeren. Als je doorgaat, ga je ermee akkoord dat dit apparaat ook automatisch updates en apps van Google, je provider en de fabrikant van dit apparaat kan downloaden en installeren, en dat hiervoor mogelijk mobiele data worden gebruikt. Sommige van deze apps kunnen in-app-aankopen aanbieden. <ph name="BEGIN_LINK1" />Meer informatie<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">De update wordt gestart wanneer de batterij voor <ph name="BATTERY_LEVEL" />% vol is.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
@@ -707,6 +708,7 @@
 <translation id="2120297377148151361">Activiteit en interacties</translation>
 <translation id="2120478168904746065">{NUM_TABS,plural, =1{Dempen tabblad opheffen}other{Dempen tabbladen opheffen}}</translation>
 <translation id="2121825465123208577">Formaat aanpassen</translation>
+<translation id="2122305276694332719">Als er automatisch verbinding wordt gemaakt met een verborgen netwerk, kunnen anderen je apparaat en bepaalde netwerkinstellingen zien. Dit wordt niet aanbevolen.</translation>
 <translation id="2124930039827422115">{1,plural, =1{Heeft een beoordeling van <ph name="AVERAGE_RATING" /> gekregen van één gebruiker.}other{Heeft een gemiddelde beoordeling van <ph name="AVERAGE_RATING" /> gekregen van # gebruikers.}}</translation>
 <translation id="2126167708562367080">Synchronisatie is uitgeschakeld door je beheerder.</translation>
 <translation id="2127372758936585790">Laag-vermogen-lader</translation>
@@ -1303,6 +1305,7 @@
 <translation id="3012917896646559015">Neem onmiddellijk contact op met je hardwarefabrikant om je computer op te sturen voor reparatie.</translation>
 <translation id="3013291976881901233">MIDI-apparaten</translation>
 <translation id="3015639418649705390">Nu opnieuw starten</translation>
+<translation id="3016329696181678353"><ph name="PRINTER_NAME" /> kan niet automatisch worden geconfigureerd. Geef geavanceerde printergegevens op.</translation>
 <translation id="3016641847947582299">Component bijgewerkt</translation>
 <translation id="3016780570757425217">Je locatie weten</translation>
 <translation id="3020183492814296499">Snelkoppelingen</translation>
@@ -1805,7 +1808,6 @@
 <translation id="3789841737615482174">Installeren</translation>
 <translation id="379082410132524484">Je pas is verlopen</translation>
 <translation id="3792890930871100565">Printers ontkoppelen</translation>
-<translation id="3792938779249970121">Account selecteren</translation>
 <translation id="3796648294839530037">Favoriete netwerken:</translation>
 <translation id="3797739167230984533">Je <ph name="BEGIN_LINK" /><ph name="DEVICE_TYPE" /> wordt beheerd<ph name="END_LINK" /> door je organisatie</translation>
 <translation id="3797900183766075808"><ph name="SEARCH_ENGINE" /> door&amp;zoeken op '<ph name="SEARCH_TERMS" />'</translation>
@@ -2114,6 +2116,7 @@
 <translation id="4268025649754414643">Sleutelcodering</translation>
 <translation id="4270393598798225102">Versie <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">Geen overeenkomsten</translation>
+<translation id="4275663329226226506">Media</translation>
 <translation id="4275830172053184480">Je apparaat opnieuw opstarten</translation>
 <translation id="4278101229438943600">De Assistent staat klaar</translation>
 <translation id="4278390842282768270">Toegestaan</translation>
@@ -2156,7 +2159,6 @@
 <translation id="4354344420232759511">Sites die je bezoekt, worden hier weergegeven</translation>
 <translation id="435527878592612277">Selecteer je foto</translation>
 <translation id="4356334633973342967">Of geef je eigen stuurprogramma op:</translation>
-<translation id="4358169392473932247">De interne opslag van inloggegevens wordt niet ondersteund door deze beveiligingssleutel, maar hier is wel om gevraagd.</translation>
 <translation id="4359408040881008151">Geïnstalleerd vanwege afhankelijke extensie(s).</translation>
 <translation id="4359717112757026264">Stadsgezicht</translation>
 <translation id="4361142739114356624">De privésleutel voor dit clientcertificaat ontbreekt of is ongeldig</translation>
@@ -2339,7 +2341,6 @@
 <translation id="4665014895760275686">Fabrikant</translation>
 <translation id="4665446389743427678">Alle gegevens die zijn opgeslagen door <ph name="SITE" />, worden verwijderd.</translation>
 <translation id="4668721319092543482">Klik om <ph name="PLUGIN_NAME" /> in te schakelen</translation>
-<translation id="4670688170798478686">Resetten bevestigen</translation>
 <translation id="4672657274720418656">Pagina omzetten</translation>
 <translation id="4673442866648850031">Stylustools openen wanneer de stylus wordt verwijderd</translation>
 <translation id="4677585247300749148"><ph name="URL" /> wil reageren op toegankelijkheidsfunctionaliteit</translation>
@@ -2369,7 +2370,6 @@
 <translation id="4711638718396952945">Instellingen herstellen</translation>
 <translation id="4715553623069266137">zeer kort (0,8 sec.)</translation>
 <translation id="4716483597559580346">Powerwash voor extra beveiliging</translation>
-<translation id="4718490098585891067">Selecteer een account om in te loggen:</translation>
 <translation id="4720113199587244118">Apparaten toevoegen</translation>
 <translation id="4720185134442950733">Mobiel datanetwerk</translation>
 <translation id="4722735765955348426">Wachtwoord voor <ph name="USERNAME" /></translation>
@@ -2400,7 +2400,6 @@
 <translation id="4756388243121344051">Gesc&amp;hiedenis</translation>
 <translation id="4759238208242260848">Downloads</translation>
 <translation id="4761104368405085019">Je microfoon gebruiken</translation>
-<translation id="476166673298332917">De apparaatbeheerder kan je browseactiviteit controleren.</translation>
 <translation id="4762718786438001384">Er is zeer weinig schijfruimte beschikbaar op het apparaat</translation>
 <translation id="4763408175235639573">De volgende cookies zijn opgeslagen toen je deze pagina bekeek</translation>
 <translation id="4763830802490665879">Cookies van meerdere sites worden gewist bij het afsluiten.</translation>
@@ -3929,7 +3928,6 @@
 <translation id="713888829801648570">Sorry, je wachtwoord kan niet worden geverifieerd omdat je offline bent.</translation>
 <translation id="7140928199327930795">Geen andere beschikbare apparaten.</translation>
 <translation id="7141105143012495934">Inloggen is mislukt omdat je accountgegevens niet kunnen worden opgevraagd. Neem contact op met je beheerder of probeer het opnieuw.</translation>
-<translation id="714285394257538643">Tik nog een keer op de beveiligingssleutel om te bevestigen dat je deze wilt resetten. Alle inloggegevens die op de beveiligingssleutel zijn opgeslagen en de bijbehorende pincode worden hierdoor gewist.</translation>
 <translation id="7143092389027215216">Demomodus starten</translation>
 <translation id="7143207342074048698">Verbinding maken</translation>
 <translation id="7144878232160441200">Opnieuw proberen</translation>
@@ -4163,6 +4161,7 @@
 <translation id="7506541170099744506">Je <ph name="DEVICE_TYPE" /> is aangemeld voor bedrijfsbeheer.</translation>
 <translation id="7507930499305566459">Certificaat voor statusbeantwoorder</translation>
 <translation id="7513029293694390567">Automatisch inloggen bij websites met de opgeslagen gegevens. Als de functie is uitgeschakeld, wordt elke keer om bevestiging gevraagd voordat je inlogt bij een website.</translation>
+<translation id="7514365320538308">Downloaden</translation>
 <translation id="7517786267097410259">Een wachtwoord maken –</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">Zeg "Oké Google"</translation>
@@ -4502,6 +4501,7 @@ Sleutelbestand: <ph name="KEY_FILE" />
 Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nieuwe versies van je extensie te maken.</translation>
 <translation id="8000066093800657092">Geen netwerk</translation>
 <translation id="8000467600002607205">{NUM_TABS,plural, =1{Tabblad sluiten}other{Tabbladen sluiten}}</translation>
+<translation id="8002274832045662704">Geavanceerde printerconfiguratie</translation>
 <translation id="8004582292198964060">Browser</translation>
 <translation id="8005600846065423578"><ph name="HOST" /> altijd toestaan om het klembord te bekijken</translation>
 <translation id="8008356846765065031">Verbinding met internet verbroken. Controleer je internetverbinding.</translation>
@@ -5043,6 +5043,7 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8850251000316748990">Meer weergeven…</translation>
 <translation id="885246833287407341">Argumenten voor API-functie</translation>
 <translation id="8853586775156634952">Deze pas wordt alleen op dit apparaat opgeslagen</translation>
+<translation id="885701979325669005">Opslag</translation>
 <translation id="8859057652521303089">Selecteer je taal:</translation>
 <translation id="8859174528519900719">Subframe: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8862003515646449717">Overschakelen naar een snelle browser</translation>

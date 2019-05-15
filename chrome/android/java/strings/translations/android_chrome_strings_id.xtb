@@ -9,7 +9,6 @@
 <translation id="1067922213147265141">Layanan Google lainnya</translation>
 <translation id="1068672505746868501">Jangan pernah menerjemahkan halaman dalam <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1080790410959514870">Anda keluar dari akun yang dikelola oleh <ph name="DOMAIN_NAME" />. Tindakan ini akan menghapus data Chrome yang tersimpan di perangkat ini, namun data akan tetap berada di Akun Google Anda.</translation>
-<translation id="1099080783256647258">Saat Penghemat Data diaktifkan, Chrome akan menggunakan server Google untuk mempercepat dan mengompresi pemuatan halaman. Pada halaman yang sangat lambat, Penghemat Data akan menulis ulang halaman untuk memuat konten yang penting saja. Penghemat Data tidak mengoptimalkan halaman yang dimuat dalam mode Penyamaran.</translation>
 <translation id="1100066534610197918">Buka pada tab baru di grup</translation>
 <translation id="1105960400813249514">Screenshot</translation>
 <translation id="1111673857033749125">Bookmark yang tersimpan di perangkat lainnya akan muncul di sini.</translation>
@@ -25,6 +24,7 @@
 <translation id="1175310183703641346">Bookmark, histori, sandi, dan lainnya tidak akan lagi disinkronkan ke Akun Google Anda.</translation>
 <translation id="1178581264944972037">Jeda</translation>
 <translation id="1181037720776840403">Hapus</translation>
+<translation id="1188239144602654184">Mulai AR</translation>
 <translation id="1197267115302279827">Pindahkan bookmark</translation>
 <translation id="119944043368869598">Hapus semua</translation>
 <translation id="1201402288615127009">Berikutnya</translation>
@@ -96,7 +96,6 @@
 <translation id="1672586136351118594">Jangan tampilkan lagi</translation>
 <translation id="1692118695553449118">Sinkronisasi aktif</translation>
 <translation id="169515064810179024">Memblokir situs agar tidak mengakses sensor gerakan</translation>
-<translation id="1709438864123551175">Penghemat Kuota Internet</translation>
 <translation id="1717218214683051432">Sensor gerakan</translation>
 <translation id="1718835860248848330">1 jam terakhir</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - Diupdate <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -214,7 +213,6 @@
 <translation id="2501278716633472235">Kembali</translation>
 <translation id="2513403576141822879">Untuk setelan lainnya yang berkaitan dengan privasi, keamanan, dan pengumpulan data, lihat <ph name="BEGIN_LINK" />Sinkronisasi dan layanan Google<ph name="END_LINK" /></translation>
 <translation id="2523184218357549926">Mengirimkan URL halaman yang Anda buka ke Google</translation>
-<translation id="2526148617758225454">Penghemat Kuota Internet aktif. Kelola di Setelan.</translation>
 <translation id="2532336938189706096">Tampilan Web</translation>
 <translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" /> item dihapus</translation>
 <translation id="2536728043171574184">Melihat salinan offline halaman ini</translation>
@@ -354,14 +352,12 @@
 <translation id="3599863153486145794">Menghapus histori dari semua perangkat yang dibuat login. Akun Google Anda mungkin memiliki bentuk histori penjelajahan lainnya di <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Matikan suara situs yang memutar suara</translation>
 <translation id="3616113530831147358">Audio</translation>
-<translation id="3620176948598597475">Menyetel ulang akan menghapus histori Penghemat Kuota Internet, termasuk daftar situs yang dikunjungi.</translation>
 <translation id="3632295766818638029">Tampilkan sandi</translation>
 <translation id="363596933471559332">Otomatis login ke situs web menggunakan kredensial yang tersimpan. Saat fitur dinonaktifkan, Anda akan dimintai verifikasi setiap kali hendak login ke situs web.</translation>
 <translation id="3658159451045945436">Penyetalan ulang akan menghapus histori penyimpanan data, termasuk daftar situs yang dibuka.</translation>
 <translation id="3662546969139119822">Tidak ada histori di sini</translation>
 <translation id="3672452749423051839">Saran untuk kesalahan navigasi</translation>
 <translation id="3692944402865947621">Download <ph name="FILE_NAME" /> gagal karena lokasi penyimpanan tidak dapat dijangkau.</translation>
-<translation id="3712575778697986964">Setel ulang Penghemat Kuota Internet?</translation>
 <translation id="3714981814255182093">Membuka Bilah Cari</translation>
 <translation id="3716182511346448902">Halaman ini menggunakan terlalu banyak memori, sehingga Chrome menjedanya.</translation>
 <translation id="3730075448226062617">Untuk mengizinkan Chrome mengakses mikrofon Anda, aktifkan juga mikrofon di <ph name="BEGIN_LINK" />Setelan Android<ph name="END_LINK" />.</translation>
@@ -503,13 +499,11 @@ Akun Google Anda mungkin memiliki bentuk histori penjelajahan lain seperti penel
 <translation id="4751476147751820511">Sensor gerakan atau cahaya</translation>
 <translation id="4759238208242260848">Download</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 download selesai.}other{# download selesai.}}</translation>
-<translation id="4766369052440583386">Penghemat Kuota Internet aktif</translation>
 <translation id="4797039098279997504">Sentuh untuk kembali ke <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4802417911091824046">Enkripsi frasa sandi tidak mencakup alamat dan metode pembayaran dari Google Pay.
 
 Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">Nama di kartu</translation>
-<translation id="4807963036345170158">Penghemat Kuota Internet nonaktif</translation>
 <translation id="4816465935029283692">Jenis data</translation>
 <translation id="4824958205181053313">Batalkan sinkronisasi?</translation>
 <translation id="4837753911714442426">Membuka opsi untuk mencetak halaman</translation>
@@ -601,6 +595,7 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="5447765697759493033">Situs ini tidak diterjemahkan</translation>
 <translation id="545042621069398927">Mempercepat download.</translation>
 <translation id="5456381639095306749">Download halaman</translation>
+<translation id="5475862044948910901">Mulai sesi Augmented Reality?</translation>
 <translation id="548278423535722844">Buka di aplikasi peta</translation>
 <translation id="5487521232677179737">Hapus data</translation>
 <translation id="5494752089476963479">Blokir iklan di situs yang menampilkan iklan yang mengganggu atau menyesatkan</translation>
@@ -643,7 +638,6 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="569536719314091526">Terjemahkan halaman ini ke bahasa apa pun dari tombol Opsi lainnya</translation>
 <translation id="572328651809341494">Tab baru-baru ini</translation>
 <translation id="5726692708398506830">Memperbesar semua yang ada di halaman</translation>
-<translation id="5734520971562437809">Hemat kuota hingga 60 persen dan muat web lebih cepat.</translation>
 <translation id="5748802427693696783">Beralih ke tab standar</translation>
 <translation id="5749068826913805084">Chrome memerlukan akses penyimpanan untuk mendownload file.</translation>
 <translation id="5763382633136178763">Tab penyamaran</translation>
@@ -701,7 +695,6 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="6159335304067198720">Penghematan kuota <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Pelajari lebih lanjut</translation>
 <translation id="6177111841848151710">Diblokir untuk mesin telusur yang sedang digunakan</translation>
-<translation id="6177390657002841081">Mengaktifkan Penghemat Kuota Internet</translation>
 <translation id="6181444274883918285">Tambahkan pengecualian situs</translation>
 <translation id="6192333916571137726">Download file</translation>
 <translation id="6192792657125177640">Pengecualian</translation>
@@ -867,6 +860,11 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Bagikan 1 item yang dipilih}other{Bagikan # item yang dipilih}}</translation>
 <translation id="7359002509206457351">Akses metode pembayaran</translation>
+<translation id="7365126855094612066">Untuk durasi sesi ini, situs akan dapat:
+• membuat peta 3D untuk lingkungan Anda
+• melacak gerakan kamera
+
+Situs TIDAK mendapatkan akses ke kamera. Gambar kamera hanya dapat dilihat oleh Anda.</translation>
 <translation id="7375125077091615385">Jenis:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -1114,11 +1112,9 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="9188680907066685419">Keluar dari akun yang dikelola</translation>
 <translation id="9204836675896933765">1 file tersisa</translation>
 <translation id="9206873250291191720">A</translation>
-<translation id="9215534869786664672">Hemat kuota hingga 60 persen dan muat web lebih cepat. Server Google akan mengoptimalkan halaman yang Anda buka.</translation>
 <translation id="9219103736887031265">Gambar</translation>
 <translation id="926205370408745186">Hapus aktivitas Chrome Anda dari Kesehatan Digital</translation>
 <translation id="932327136139879170">Beranda</translation>
-<translation id="932599481871055447">Hemat kuota dan percepat penelusuran</translation>
 <translation id="938850635132480979">Kesalahan: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Akses mikrofon Anda</translation>
 <translation id="951339005376969845">Hapus data yang sudah ada. Anda dapat mengambilnya dengan beralih ke <ph name="FROM_ACCOUNT" />.</translation>

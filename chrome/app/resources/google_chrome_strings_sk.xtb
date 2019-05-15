@@ -147,7 +147,6 @@ Ak chcete profilu <ph name="NEW_PROFILE_NAME" /> zabrániť pristupovať do vá�
 <translation id="4750550185319565338">Ak chcete povoliť doplnok <ph name="PLUGIN_NAME" />, reštartujte Chrome</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Tento súbor môže byť nebezpečný, a preto ho Chrome zablokoval.</translation>
-<translation id="4794050651896644714">Uložiť podrobnosti v prehliadači Chrome</translation>
 <translation id="4891791193823137474">Povoliť prehliadaču Google Chrome spustenie na pozadí</translation>
 <translation id="4895437082222824641">Otvoriť odkaz na novej &amp;karte Chromu</translation>
 <translation id="4921569541910214635">Zdieľať počítač? Teraz si môžete prehliadač Chrome nastaviť podľa vlastných predstáv.</translation>
@@ -263,7 +262,6 @@ Prehliadač Google Chrome nedokáže obnoviť vaše nastavenia.</translation>
 <translation id="8077352834923175128">Správca vás žiada o reštartovanie systému Chrome OS na použitie aktualizácie</translation>
 <translation id="8129812357326543296">Informácie o prehliadači &amp;Google Chrome</translation>
 <translation id="8179874765710681175">Nainštalujte si Chrome do telefónu. Pošleme vám doň správu SMS.</translation>
-<translation id="8183957050892517584">Chrome vaše osobné údaje bezpečne uloží, aby ste ich už nemuseli znova zadávať.</translation>
 <translation id="8226081633851087288">{0,plural, =0{Chrome OS sa teraz reštartuje}=1{Chrome OS sa reštartuje o sekundu}few{Chrome OS sa reštartuje o # sekundy}many{Chrome OS sa reštartuje o # sekundy}other{Chrome OS sa reštartuje o # sekúnd}}</translation>
 <translation id="825412236959742607">Táto stránka využíva príliš veľa pamäte, a preto Chrome odstránil niektorý obsah.</translation>
 <translation id="8255190535488645436">Google Chrome používa vašu kameru a mikrofón.</translation>

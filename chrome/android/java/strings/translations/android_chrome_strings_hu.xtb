@@ -9,7 +9,6 @@
 <translation id="1067922213147265141">Egyéb Google-szolgáltatások</translation>
 <translation id="1068672505746868501">Soha ne fordítsa le a(z) <ph name="SOURCE_LANGUAGE" /> nyelvű oldalakat</translation>
 <translation id="1080790410959514870">Kijelentkezik egy <ph name="DOMAIN_NAME" /> által felügyelt fiókból. Ezzel törli a Chrome-nak az eszközön tárolt adatait, Google-fiókjában azonban továbbra is megmaradnak.</translation>
-<translation id="1099080783256647258">Ha az Adatforgalom-csökkentő be van kapcsolva, a Chrome a Google szervereinek segítségével gyorsítja fel és tömöríti az oldalakat. A különösen lassú oldalakat átírja, hogy csak a legfontosabb tartalmak jelenjenek meg. Az Adatforgalom-csökkentő nem optimalizálja az inkognitómódban megnyitott oldalakat.</translation>
 <translation id="1100066534610197918">Megnyitás új lapon, csoportban</translation>
 <translation id="1105960400813249514">Képernyőrögzítés</translation>
 <translation id="1111673857033749125">A más eszközökön mentett könyvjelzők itt jelennek meg.</translation>
@@ -25,6 +24,7 @@
 <translation id="1175310183703641346">Könyvjelzői, előzményei, jelszavai és más beállításai többé nem lesznek szinkronizálva a Google-fiókjával</translation>
 <translation id="1178581264944972037">Szünet</translation>
 <translation id="1181037720776840403">Eltávolítás</translation>
+<translation id="1188239144602654184">AR indítása</translation>
 <translation id="1197267115302279827">Könyvjelzők áthelyezése</translation>
 <translation id="119944043368869598">Összes törlése</translation>
 <translation id="1201402288615127009">Tovább</translation>
@@ -96,7 +96,6 @@
 <translation id="1672586136351118594">Ne jelenjen meg többé</translation>
 <translation id="1692118695553449118">Szinkronizálás bekapcsolva</translation>
 <translation id="169515064810179024">A mozgásérzékelőkhöz való hozzáférés letiltása a webhelyek számára</translation>
-<translation id="1709438864123551175">Adatforgalom-csökkentő</translation>
 <translation id="1717218214683051432">Mozgásérzékelők</translation>
 <translation id="1718835860248848330">Az elmúlt órából</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> – Frissítve: <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -214,7 +213,6 @@
 <translation id="2501278716633472235">Visszalépés</translation>
 <translation id="2513403576141822879">A <ph name="BEGIN_LINK" />Szinkronizálás és Google<ph name="END_LINK" /> részben további beállításokat talál az adatvédelemre, biztonságra és adatgyűjtésre vonatkozóan</translation>
 <translation id="2523184218357549926">A felkeresett oldalak URL-címének elküldése a Google-nak</translation>
-<translation id="2526148617758225454">Az Adatforgalom-csökkentő be van kapcsolva, és a Beállítások menüben kezelheti.</translation>
 <translation id="2532336938189706096">Internetes megtekintés</translation>
 <translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" /> elem törölve</translation>
 <translation id="2536728043171574184">Az oldal offline példányának megtekintése</translation>
@@ -354,14 +352,12 @@
 <translation id="3599863153486145794">Törli az előzményeket valamennyi bejelentkezett eszközről. Előfordulhat, hogy a böngészési előzmények más formái még megtalálhatók Google-fiókjában a <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> webhelyen.</translation>
 <translation id="3600792891314830896">Elnémítja a hangot lejátszó webhelyeket</translation>
 <translation id="3616113530831147358">Audio</translation>
-<translation id="3620176948598597475">Az alaphelyzetbe állítás törli az Adatforgalom-csökkentő előzményeit, így a felkeresett webhelyek listáját is.</translation>
 <translation id="3632295766818638029">Jelszó megjelenítése</translation>
 <translation id="363596933471559332">Automatikus bejelentkezés webhelyekre a tárolt hitelesítő adatokkal. Ha ez a funkció ki van kapcsolva, mindig meg kell adnia hitelesítő adatait, amikor egy webhelyre szeretne bejelentkezni.</translation>
 <translation id="3658159451045945436">A visszaállítás törli a megtakarított adatmennyiségre vonatkozó előzményeket, így a felkeresett webhelyek listáját is.</translation>
 <translation id="3662546969139119822">Nincsenek előzmények</translation>
 <translation id="3672452749423051839">Navigálási hibákkal kapcsolatos javaslatok</translation>
 <translation id="3692944402865947621">A(z) <ph name="FILE_NAME" /> fájl letöltése sikertelen, mert nem lehet elérni a tárhelyet.</translation>
-<translation id="3712575778697986964">Alaphelyzetbe állítja az Adatforgalom-csökkentőt?</translation>
 <translation id="3714981814255182093">A keresősáv megnyitása</translation>
 <translation id="3716182511346448902">Ez az oldal túl sok memóriát használ, ezért a Chrome szünetelteti.</translation>
 <translation id="3730075448226062617">Ahhoz, hogy a Chrome hozzáférhessen a mikrofonhoz, a mikrofont az <ph name="BEGIN_LINK" />Android-beállítások<ph name="END_LINK" /> között is be kell kapcsolni.</translation>
@@ -503,13 +499,11 @@ Előfordulhat, hogy Google-fiókjában (a <ph name="BEGIN_LINK" />myactivity.goo
 <translation id="4751476147751820511">Mozgás- és fényérzékelők</translation>
 <translation id="4759238208242260848">Letöltések</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 letöltés befejeződött.}other{# letöltés befejeződött.}}</translation>
-<translation id="4766369052440583386">Az Adatforgalom-csökkentő aktív</translation>
 <translation id="4797039098279997504">Érintse meg, hogy visszatérjen ide: <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4802417911091824046">Az összetett jelszavas titkosítás nem tartalmazza a Google Payben megadott fizetési módokat és címeket.
 
 A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szinkronizálást<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">A kártyán feltüntetett név</translation>
-<translation id="4807963036345170158">Az Adatforgalom-csökkentő ki van kapcsolva</translation>
 <translation id="4816465935029283692">Adattípusok</translation>
 <translation id="4824958205181053313">Megszakítja a szinkronizálást?</translation>
 <translation id="4837753911714442426">Oldalnyomtatási lehetőségek megnyitása</translation>
@@ -601,6 +595,7 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="5447765697759493033">Nem fordítjuk le ezt a webhelyet</translation>
 <translation id="545042621069398927">Letöltés felgyorsítása…</translation>
 <translation id="5456381639095306749">Oldal letöltése</translation>
+<translation id="5475862044948910901">Elindítja a kiterjesztett valóságot (AR) használó munkamenetet?</translation>
 <translation id="548278423535722844">Megnyitás térképalkalmazásban</translation>
 <translation id="5487521232677179737">Adatok törlése</translation>
 <translation id="5494752089476963479">Hirdetések letiltása a tolakodó és félrevezető hirdetéseket megjelenítő webhelyeken</translation>
@@ -643,7 +638,6 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="569536719314091526">Bármely nyelvre lefordíthatja ezt az oldalt a További lehetőségek gomb segítségével</translation>
 <translation id="572328651809341494">Nemrég megnyitott lapok</translation>
 <translation id="5726692708398506830">Minden nagyítása az oldalon</translation>
-<translation id="5734520971562437809">Akár 60 százalékkal kevesebb adatforgalom és gyorsabb webhelyek.</translation>
 <translation id="5748802427693696783">Szabványos lapokra váltva</translation>
 <translation id="5749068826913805084">A Chrome-nak tárhelyhozzáférésre van szüksége a fájlok letöltéséhez.</translation>
 <translation id="5763382633136178763">Inkognitólapok</translation>
@@ -701,7 +695,6 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="6159335304067198720"><ph name="PERCENT" />-os adatmegtakarítás</translation>
 <translation id="6165508094623778733">További információ</translation>
 <translation id="6177111841848151710">Tiltott a jelenlegi keresőmotor számára</translation>
-<translation id="6177390657002841081">Az Adatforgalom-csökkentő bekapcsolása</translation>
 <translation id="6181444274883918285">Webhelykivétel hozzáadása</translation>
 <translation id="6192333916571137726">Fájl letöltése</translation>
 <translation id="6192792657125177640">Kivételek</translation>
@@ -867,6 +860,11 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="7352939065658542140">VIDEÓ</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{1 kijelölt elem megosztása}other{# kijelölt elem megosztása}}</translation>
 <translation id="7359002509206457351">Hozzáférés a fizetési módokhoz</translation>
+<translation id="7365126855094612066">A jelen munkamenet során a webhely a következőkre lesz képes:
+• 3D-s térképet készíthet az Ön környezetéről;
+• követheti a kamera mozgását.
+
+A webhely NEM kap hozzáférést a kamerához. A kamera képét csak Ön láthatja.</translation>
 <translation id="7375125077091615385">Típus:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -1114,11 +1112,9 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="9188680907066685419">Kijelentkezés felügyelt fiókból</translation>
 <translation id="9204836675896933765">1 fájl maradt</translation>
 <translation id="9206873250291191720">A</translation>
-<translation id="9215534869786664672">Akár 60 százalékkal kevesebb adatforgalom és gyorsabb webhelyek. A Google szerverei optimalizálni fogják a megnyitott weboldalakat.</translation>
 <translation id="9219103736887031265">Képek</translation>
 <translation id="926205370408745186">Chrome-beli tevékenység eltávolítása a digitális jóllét funkcióból</translation>
 <translation id="932327136139879170">Főoldal</translation>
-<translation id="932599481871055447">Csökkentheti az adatforgalmat és gyorsabban böngészhet</translation>
 <translation id="938850635132480979">Hiba: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Hozzáférés a mikrofonhoz</translation>
 <translation id="951339005376969845">Meglévő adatok törlése. Ezeket úgy hívhatja le, hogy visszavált a következő fiókra: <ph name="FROM_ACCOUNT" />.</translation>

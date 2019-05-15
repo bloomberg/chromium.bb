@@ -1991,7 +1991,6 @@ Vzory webových adries v tomto pravidle by nemali byť v konflikte s tými, k
 <translation id="4591366717022345234">Poskytovať používateľom zostavu s rýchlou opravou</translation>
 <translation id="4600786265870346112">Povoliť veľký kurzor</translation>
 <translation id="4604931264910482931">Konfigurácia zoznamu zakázaných položiek pre odosielanie natívnych správ</translation>
-<translation id="4613508646038788144">Ak toto pravidlo nastavíte na hodnotu False, softvér tretej strany bude môcť vkladať spustiteľný kód do procesov Chromu. Ak toto pravidlo nastavíte na hodnotu True alebo ponecháte nenastavené, softvér tretej strany bude mať vkladanie spustiteľného kódu do procesov Chromu zakázané.</translation>
 <translation id="4617338332148204752">Preskočiť kontrolu metaznačiek v rámci služby <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="4625915093043961294">Konfigurovať zoznam rozšírení, ktorých inštalácia je povolená</translation>
 <translation id="4632343302005518762">Povoliť doplnku <ph name="PRODUCT_FRAME_NAME" /> spracovávať uvedené typy obsahu</translation>
@@ -2180,15 +2179,6 @@ Vzory webových adries v tomto pravidle by nemali byť v konflikte s tými, k
       Keď ho nastavíte na hodnotu False, Chrome po prepnutí na alternatívny prehliadač príslušnú kartu zavrie dokonca aj vtedy, keď je posledná. Chrome sa tak úplne ukončí.</translation>
 <translation id="5105313908130842249">Oneskorenie uzamknutia obrazovky pri napájaní z batérie</translation>
 <translation id="5108031557082757679">Zakázané podnikové tlačiarne zariadenia</translation>
-<translation id="5113732180192599620">Toto pravidlo ovláda zoznam webov, ktoré nikdy nespustia prepnutie prehliadača.
-
-      Upozorňujeme, že do tohto zoznamu môžete tiež pridať prvky prostredníctvom pravidiel <ph name="USE_IE_SITELIST_POLICY_NAME" /> a <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />.
-
-      Keď toto pravidlo nenastavíte, do zoznamu sa nepridajú žiadne weby.
-
-      Keď ho nastavíte, jednotlivé položky sa budú rovnako ako v pravidle <ph name="URL_LIST_POLICY_NAME" /> považovať za pravidlá. Platí však opačná logika: pravidlá, ktoré sa zhodujú, nespustia alternatívny prehliadač.
-
-      Na rozdiel od pravidla <ph name="URL_LIST_POLICY_NAME" /> platia tieto pravidlá obojstranne. Znamená to, že ak používate doplnok pre Internet Explorer a je zapnutý, ovládate ním aj to, či má <ph name="IE_PRODUCT_NAME" /> otvárať tieto webové adresy v prehliadači <ph name="PRODUCT_NAME" />.</translation>
 <translation id="5124368997194894978">Povoliť zapnutie pri napájaní</translation>
 <translation id="5131211790949066746">Umožňuje zlúčenie pravidiel zoznamu inštalovaných rozšírení <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" /> a <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />.
 

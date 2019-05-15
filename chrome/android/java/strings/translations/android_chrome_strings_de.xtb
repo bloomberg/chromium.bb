@@ -9,7 +9,6 @@
 <translation id="1067922213147265141">Weitere Google-Dienste</translation>
 <translation id="1068672505746868501">Seiten auf <ph name="SOURCE_LANGUAGE" /> nie übersetzen</translation>
 <translation id="1080790410959514870">Sie melden sich von einem Konto ab, das von <ph name="DOMAIN_NAME" /> verwaltet wird. Dadurch werden die auf diesem Gerät gespeicherten Chrome-Daten gelöscht. Die Daten verbleiben jedoch weiterhin in Ihrem Google-Konto.</translation>
-<translation id="1099080783256647258">Wenn die Datenkomprimierung aktiviert ist, nutzt Chrome Google-Server, um Seitenladevorgänge zu beschleunigen und zu komprimieren. Bei besonders langsamen Seiten schreibt die Datenkomprimierung die Seite um, um nur die wesentlichen Inhalte zu laden. Seiten, die im Inkognitomodus geladen werden, werden von der Datenkomprimierung nicht optimiert.</translation>
 <translation id="1100066534610197918">In neuem Tab in Gruppe öffnen</translation>
 <translation id="1105960400813249514">Bildschirmaufnahme</translation>
 <translation id="1111673857033749125">Hier werden die Lesezeichen angezeigt, die auf Ihren anderen Geräten gespeichert sind.</translation>
@@ -25,6 +24,7 @@
 <translation id="1175310183703641346">Ihre Lesezeichen, Ihr Verlauf, Ihre Passwörter und andere Einstellungen werden nicht mehr mit Ihrem Google-Konto synchronisiert</translation>
 <translation id="1178581264944972037">Anhalten</translation>
 <translation id="1181037720776840403">Entfernen</translation>
+<translation id="1188239144602654184">AR-Sitzung starten</translation>
 <translation id="1197267115302279827">Lesezeichen verschieben</translation>
 <translation id="119944043368869598">Alle löschen</translation>
 <translation id="1201402288615127009">Weiter</translation>
@@ -96,7 +96,6 @@
 <translation id="1672586136351118594">Nicht mehr anzeigen</translation>
 <translation id="1692118695553449118">Synchronisierung ist aktiviert</translation>
 <translation id="169515064810179024">Zugriff auf Bewegungssensoren für Websites blockieren</translation>
-<translation id="1709438864123551175">Datensparmodus</translation>
 <translation id="1717218214683051432">Bewegungssensoren</translation>
 <translation id="1718835860248848330">Letzte Stunde</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> – <ph name="TIME_SINCE_UPDATE" /> aktualisiert</translation>
@@ -214,7 +213,6 @@
 <translation id="2501278716633472235">Zurück</translation>
 <translation id="2513403576141822879">Weitere Einstellungen in Verbindung mit Datenschutz, Sicherheit und der Erhebung von Daten finden Sie unter <ph name="BEGIN_LINK" />Synchronisierung und Google-Dienste<ph name="END_LINK" /></translation>
 <translation id="2523184218357549926">URLs der von Ihnen besuchten Seiten werden an Google gesendet</translation>
-<translation id="2526148617758225454">Der Datensparmodus ist aktiviert. Über die Einstellungen können Sie ihn wieder deaktivieren.</translation>
 <translation id="2532336938189706096">Web-Ansicht</translation>
 <translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" /> Einträge gelöscht</translation>
 <translation id="2536728043171574184">Eine Offline-Kopie dieser Seite wird angezeigt.</translation>
@@ -354,14 +352,12 @@
 <translation id="3599863153486145794">Löscht den Verlauf bei allen angemeldeten Geräten. Unter <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> sind möglicherweise weitere Arten von Browserverlaufsdaten für Ihr Google-Konto gespeichert.</translation>
 <translation id="3600792891314830896">Websites stummschalten, die Ton wiedergeben</translation>
 <translation id="3616113530831147358">Audio</translation>
-<translation id="3620176948598597475">Durch das Zurücksetzen wird der Verlauf des Datensparmodus gelöscht, dazu gehört auch die Liste der besuchten Websites.</translation>
 <translation id="3632295766818638029">Passwort anzeigen</translation>
 <translation id="363596933471559332">Sie werden mit gespeicherten Anmeldedaten automatisch auf Websites angemeldet. Wenn das Kästchen nicht angeklickt ist, werden Sie jedes Mal aufgefordert, sich manuell auf einer Website anzumelden.</translation>
 <translation id="3658159451045945436">Durch das Zurücksetzen wird der Verlauf gelöscht. Dazu gehört auch die Liste der besuchten Websites.</translation>
 <translation id="3662546969139119822">Kein Verlauf vorhanden</translation>
 <translation id="3672452749423051839">Vorschläge bei Navigationsfehlern</translation>
 <translation id="3692944402865947621">Download von <ph name="FILE_NAME" /> fehlgeschlagen, weil der Speicherort nicht erreichbar ist.</translation>
-<translation id="3712575778697986964">Datensparmodus zurücksetzen?</translation>
 <translation id="3714981814255182093">Suchleiste öffnen</translation>
 <translation id="3716182511346448902">Diese Seite benötigt zu viel Arbeitsspeicher und wurde daher von Chrome angehalten.</translation>
 <translation id="3730075448226062617">Aktivieren Sie das Mikrofon auch in den <ph name="BEGIN_LINK" />Android-Einstellungen<ph name="END_LINK" />, damit Chrome auf es zugreifen kann.</translation>
@@ -503,13 +499,11 @@ Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="E
 <translation id="4751476147751820511">Bewegungs- oder Lichtsensoren</translation>
 <translation id="4759238208242260848">Downloads</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 Download abgeschlossen.}other{# Downloads abgeschlossen.}}</translation>
-<translation id="4766369052440583386">Datensparmodus aktiviert</translation>
 <translation id="4797039098279997504">Tippen, um zu <ph name="URL_OF_THE_CURRENT_TAB" /> zurückzukehren</translation>
 <translation id="4802417911091824046">Die Passphrasenverschlüsselung enthält keine Zahlungsmethoden oder Adressen von Google Pay.
 
 Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie die Synchronisierung zurück<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">Name auf Karte</translation>
-<translation id="4807963036345170158">Datensparmodus deaktiviert</translation>
 <translation id="4816465935029283692">Datentypen</translation>
 <translation id="4824958205181053313">Synchronisierung abbrechen?</translation>
 <translation id="4837753911714442426">Optionen zum Drucken einer Seite öffnen</translation>
@@ -601,6 +595,7 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="5447765697759493033">Diese Website wird nicht übersetzt</translation>
 <translation id="545042621069398927">Download wird beschleunigt.</translation>
 <translation id="5456381639095306749">Seite herunterladen</translation>
+<translation id="5475862044948910901">Augmented-Reality-Sitzung starten?</translation>
 <translation id="548278423535722844">In einer Karten-App öffnen</translation>
 <translation id="5487521232677179737">Daten löschen</translation>
 <translation id="5494752089476963479">Werbung auf Websites blockieren, auf denen aufdringliche oder irreführende Werbung angezeigt wird</translation>
@@ -643,7 +638,6 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="569536719314091526">Über die Schaltfläche "Weitere Optionen" können Sie sich diese Seite in eine beliebige Sprache übersetzen lassen</translation>
 <translation id="572328651809341494">Zuletzt geöffnete Tabs</translation>
 <translation id="5726692708398506830">Gesamten Seiteninhalt vergrößern</translation>
-<translation id="5734520971562437809">Bis zu 60 Prozent weniger Datenverbrauch und schnelleres Internet.</translation>
 <translation id="5748802427693696783">Zu Standard-Tabs gewechselt</translation>
 <translation id="5749068826913805084">Chrome benötigt Speicherzugriff, um Dateien herunterladen zu können.</translation>
 <translation id="5763382633136178763">Inkognito-Tabs</translation>
@@ -701,7 +695,6 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="6159335304067198720"><ph name="PERCENT" /> Einsparungen bei der Datennutzung</translation>
 <translation id="6165508094623778733">Weitere Informationen</translation>
 <translation id="6177111841848151710">Für die aktuelle Suchmaschine blockiert</translation>
-<translation id="6177390657002841081">Datensparmodus aktivieren</translation>
 <translation id="6181444274883918285">Ausnahme für Website hinzufügen</translation>
 <translation id="6192333916571137726">Download-Datei</translation>
 <translation id="6192792657125177640">Ausnahmen</translation>
@@ -867,6 +860,11 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{1 ausgewähltes Element teilen}other{# ausgewählte Elemente teilen}}</translation>
 <translation id="7359002509206457351">Auf Zahlungsmethoden zugreifen</translation>
+<translation id="7365126855094612066">Die Website kann für die Dauer dieser Sitzung Folgendes tun:
+• Eine 3D-Karte Ihrer Umgebung erstellen
+• Die Bewegung der Kamera verfolgen
+
+Die Website erhält KEINEN Zugriff auf die Kamera. Die Kamerabilder sind nur für Sie sichtbar.</translation>
 <translation id="7375125077091615385">Typ:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -1114,11 +1112,9 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="9188680907066685419">Von verwaltetem Konto abmelden</translation>
 <translation id="9204836675896933765">Noch 1 Datei</translation>
 <translation id="9206873250291191720">A</translation>
-<translation id="9215534869786664672">Bis zu 60 Prozent weniger Datenverbrauch und schnelleres Internet. Google-Server optimieren die Seiten, die Sie besuchen.</translation>
 <translation id="9219103736887031265">Bilder</translation>
 <translation id="926205370408745186">Chrome-Aktivitäten aus Digital Wellbeing entfernen</translation>
 <translation id="932327136139879170">Privat</translation>
-<translation id="932599481871055447">Weniger Datenverbrauch und schnelleres Surfen</translation>
 <translation id="938850635132480979">Fehler: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Mikrofonzugriff</translation>
 <translation id="951339005376969845">Vorhandene Daten werden gelöscht. Wenn Sie Ihre vorhandenen Daten abrufen möchten, wechseln Sie zurück zu <ph name="FROM_ACCOUNT" />.</translation>

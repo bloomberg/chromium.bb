@@ -226,6 +226,7 @@
 <translation id="1338950911836659113">Đang xóa...</translation>
 <translation id="1340527397989195812">Sao lưu phương tiện từ thiết bị bằng ứng dụng Tệp.</translation>
 <translation id="1341988552785875222">Hình nền hiện tại do '<ph name="APP_NAME" />' đặt. Bạn có thể cần phải gỡ cài đặt '<ph name="APP_NAME" />' trước khi chọn hình nền khác.</translation>
+<translation id="1343865611738742294">Cấp cho các ứng dụng Linux quyền truy cập vào thiết bị USB. Linux sẽ không nhớ thiết bị USB sau khi bạn rút thiết bị ra.</translation>
 <translation id="1347256498747320987">Cài đặt bản cập nhật và ứng dụng. Bằng việc tiếp tục, bạn đồng ý rằng thiết bị này cũng có thể tự động tải xuống và cài đặt các bản cập nhật cũng như ứng dụng từ Google, nhà mạng và nhà sản xuất thiết bị, có thể bằng cách sử dụng dữ liệu di động. Một vài ứng dụng có thể cung cấp tùy chọn mua hàng trong ứng dụng. <ph name="BEGIN_LINK1" />Tìm hiểu thêm<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">Sẽ bắt đầu cập nhật khi pin đạt đến mức <ph name="BATTERY_LEVEL" />%.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
@@ -707,6 +708,7 @@
 <translation id="2120297377148151361">Hoạt động và tương tác</translation>
 <translation id="2120478168904746065">{NUM_TABS,plural, =1{Bật âm thanh tab}other{Bật âm thanh các tab}}</translation>
 <translation id="2121825465123208577">Đổi kích thước</translation>
+<translation id="2122305276694332719">Việc tự động kết nối vào một mạng ẩn sẽ cho phép những người khác nhìn thấy thiết bị và một số tùy chọn cài đặt mạng của bạn. Bạn không nên bật tùy chọn này.</translation>
 <translation id="2124930039827422115">{1,plural, =1{Một người dùng đã xếp hạng <ph name="AVERAGE_RATING" />.}other{# người dùng đã xếp hạng <ph name="AVERAGE_RATING" />.}}</translation>
 <translation id="2126167708562367080">Đồng bộ hóa bị quản trị viên của bạn tắt.</translation>
 <translation id="2127372758936585790">Bộ sạc công suất thấp</translation>
@@ -1303,6 +1305,7 @@
 <translation id="3012917896646559015">Vui lòng liên hệ ngay với nhà sản xuất phần cứng của bạn để gửi máy tính đến cơ sở sửa chữa.</translation>
 <translation id="3013291976881901233">Thiết bị MIDI</translation>
 <translation id="3015639418649705390">Chạy lại ngay</translation>
+<translation id="3016329696181678353">Không thể định cấu hình tự động cho <ph name="PRINTER_NAME" />. Vui lòng chỉ định các tùy chọn cài đặt nâng cao cho máy in.</translation>
 <translation id="3016641847947582299">Thành phần đã cập nhật</translation>
 <translation id="3016780570757425217">Biết vị trí của bạn</translation>
 <translation id="3020183492814296499">Phím tắt</translation>
@@ -1805,7 +1808,6 @@
 <translation id="3789841737615482174">Cài đặt</translation>
 <translation id="379082410132524484">Thẻ của bạn đã hết hạn</translation>
 <translation id="3792890930871100565">Ngắt kết nối máy in</translation>
-<translation id="3792938779249970121">Chọn tài khoản</translation>
 <translation id="3796648294839530037">Mạng yêu thích:</translation>
 <translation id="3797739167230984533"><ph name="BEGIN_LINK" /><ph name="DEVICE_TYPE" /> của bạn do<ph name="END_LINK" /> tổ chức của bạn quản lý</translation>
 <translation id="3797900183766075808">&amp;Tìm kiếm trên <ph name="SEARCH_ENGINE" /> cho “<ph name="SEARCH_TERMS" />”</translation>
@@ -2114,6 +2116,7 @@
 <translation id="4268025649754414643">Mã hóa Khóa</translation>
 <translation id="4270393598798225102">Phiên bản <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">Không có kết quả phù hợp</translation>
+<translation id="4275663329226226506">Truyền thông</translation>
 <translation id="4275830172053184480">Khởi động lại thiết bị của bạn</translation>
 <translation id="4278101229438943600">Trợ lý của bạn đã sẵn sàng</translation>
 <translation id="4278390842282768270">Được cho phép</translation>
@@ -2156,7 +2159,6 @@
 <translation id="4354344420232759511">Các trang web bạn truy cập sẽ xuất hiện ở đây</translation>
 <translation id="435527878592612277">Chọn ảnh của bạn</translation>
 <translation id="4356334633973342967">Hoặc chỉ định trình điều khiển của riêng bạn:</translation>
-<translation id="4358169392473932247">Khóa bảo mật đó không hỗ trợ lưu thông tin xác thực vào bộ nhớ trong, nhưng trang web lại yêu cầu tính năng đó.</translation>
 <translation id="4359408040881008151">Đã được cài đặt vì (các) tiện ích phụ thuộc.</translation>
 <translation id="4359717112757026264">Cảnh quan thành phố</translation>
 <translation id="4361142739114356624">Khóa cá nhân cho chứng chỉ ứng dụng này còn thiếu hoặc không hợp lệ</translation>
@@ -2339,7 +2341,6 @@
 <translation id="4665014895760275686">Nhà sản xuất</translation>
 <translation id="4665446389743427678">Tất cả dữ liệu do <ph name="SITE" /> lưu trữ sẽ bị xóa.</translation>
 <translation id="4668721319092543482">Nhấp để bật <ph name="PLUGIN_NAME" /></translation>
-<translation id="4670688170798478686">Xác nhận đặt lại</translation>
 <translation id="4672657274720418656">Lọc trang</translation>
 <translation id="4673442866648850031">Mở công cụ bút cảm ứng khi bút cảm ứng được lấy ra</translation>
 <translation id="4677585247300749148"><ph name="URL" /> muốn phản hồi các sự kiện trợ năng</translation>
@@ -2369,7 +2370,6 @@
 <translation id="4711638718396952945">Khôi phục cài đặt</translation>
 <translation id="4715553623069266137">rất ngắn (0,8 giây)</translation>
 <translation id="4716483597559580346">Powerwash giúp tăng cường bảo mật</translation>
-<translation id="4718490098585891067">Chọn một tài khoản để đăng nhập:</translation>
 <translation id="4720113199587244118">Thêm thiết bị</translation>
 <translation id="4720185134442950733">Mạng dữ liệu di động</translation>
 <translation id="4722735765955348426">Mật khẩu của <ph name="USERNAME" /></translation>
@@ -2400,7 +2400,6 @@
 <translation id="4756388243121344051">&amp;Lịch sử</translation>
 <translation id="4759238208242260848">Tệp đã tải xuống</translation>
 <translation id="4761104368405085019">Sử dụng micrô của bạn</translation>
-<translation id="476166673298332917">Quản trị viên thiết bị có thể theo dõi hoạt động duyệt web của bạn.</translation>
 <translation id="4762718786438001384">Dung lượng đĩa của thiết bị quá thấp</translation>
 <translation id="4763408175235639573">Các cookie sau đã được cài đặt khi bạn xem trang này</translation>
 <translation id="4763830802490665879">Cookie từ nhiều trang web sẽ bị xóa khi thoát.</translation>
@@ -3929,7 +3928,6 @@
 <translation id="713888829801648570">Rất tiếc, không thể xác minh mật khẩu của bạn vì bạn hiện ngoại tuyến.</translation>
 <translation id="7140928199327930795">Hiện không có thiết bị nào khác.</translation>
 <translation id="7141105143012495934">Đăng nhập không thành công vì không thể truy xuất chi tiết tài khoản của bạn. Vui lòng liên hệ với quản trị viên của bạn hoặc thử lại.</translation>
-<translation id="714285394257538643">Để xác nhận rằng bạn muốn đặt lại khóa bảo mật, hãy chạm lại vào khóa đó. Tất cả thông tin xác thực lưu trữ trên khóa bảo mật và mã PIN của khóa này sẽ bị xóa.</translation>
 <translation id="7143092389027215216">Đang khởi động chế độ minh họa</translation>
 <translation id="7143207342074048698">Đang kết nối</translation>
 <translation id="7144878232160441200">Thử lại</translation>
@@ -4163,6 +4161,7 @@
 <translation id="7506541170099744506"><ph name="DEVICE_TYPE" /> của bạn đã được đăng ký thành công cho quản lý doanh nghiệp.</translation>
 <translation id="7507930499305566459">Chứng chỉ Trả lời Trạng thái</translation>
 <translation id="7513029293694390567">Tự động đăng nhập vào các trang web bằng thông tin đăng nhập được lưu trữ. Nếu tính năng này tắt, bạn sẽ luôn được yêu cầu xác nhận trước khi đăng nhập vào trang web.</translation>
+<translation id="7514365320538308">Tải xuống</translation>
 <translation id="7517786267097410259">Tạo mật khẩu -</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">Nói “Ok Google”</translation>
@@ -4503,6 +4502,7 @@ Tệp Khoá: <ph name="KEY_FILE" />
 Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa để tạo phiên bản tiện ích mới của mình.</translation>
 <translation id="8000066093800657092">Không có mạng nào</translation>
 <translation id="8000467600002607205">{NUM_TABS,plural, =1{Đóng tab}other{Đóng các tab}}</translation>
+<translation id="8002274832045662704">Cấu hình máy in nâng cao</translation>
 <translation id="8004582292198964060">Trình duyệt</translation>
 <translation id="8005600846065423578">Luôn cho phép <ph name="HOST" /> xem khay nhớ tạm</translation>
 <translation id="8008356846765065031">Internet đã bị ngắt kết nối. Vui lòng kiểm tra kết nối Internet của bạn.</translation>
@@ -5043,6 +5043,7 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8850251000316748990">Xem thêm...</translation>
 <translation id="885246833287407341">Đối số hàm API</translation>
 <translation id="8853586775156634952">Thẻ này sẽ chỉ được lưu vào thiết bị này</translation>
+<translation id="885701979325669005">Bộ nhớ</translation>
 <translation id="8859057652521303089">Chọn ngôn ngữ:</translation>
 <translation id="8859174528519900719">Khung phụ: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8862003515646449717">Chuyển sang một trình duyệt nhanh</translation>

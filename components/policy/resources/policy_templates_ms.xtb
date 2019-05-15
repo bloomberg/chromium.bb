@@ -143,6 +143,15 @@
       Jika dasar tidak ditetapkan atau ditetapkan kepada tidak benar, keadaan suis pembangun tidak akan dilaporkan.</translation>
 <translation id="1160479894929412407">Benarkan protokol QUIC</translation>
 <translation id="1160939557934457296">Lumpuhkan tindakan dari halaman amaran Penyemakan Imbas Selamat</translation>
+<translation id="1171342272070128466">Dayakan ciri kebolehaksesan penggadang yang didok.
+
+          Jika dasar ini ditetapkan kepada benar, penggadang yang didok akan sentiasa didayakan.
+
+          Jika dasar ini ditetapkan kepada palsu, penggadang yang didok akan sentiasa dilumpuhkan.
+
+          Jika anda menetapkan dasar ini, pengguna tidak boleh menukar atau membatalkannya.
+
+          Jika dasar ini dibiarkan tanpa ditetapkan, penggadang yang didok dilumpuhkan pada mulanya tetapi boleh didayakan oleh pengguna pada bila-bila masa.</translation>
 <translation id="1189817621108632689">Membolehkan anda menetapkan beberapa corak url yang menentukan tapak yang tidak dibenarkan memaparkan imej.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak sama ada daripada dasar 'DefaultImagesSetting' jika dasar ini ditetapkan atau konfigurasi peribadi pengguna jika sebaliknya.
@@ -457,6 +466,7 @@
       Jika dasar ini didayakan, pengguna tidak akan dapat menarik diri daripada gelagat lalai, iaitu setiap tapak berjalan dalam prosesnya sendiri.
       Jika dasar ini tidak dikonfigurasikan atau dilumpuhkan, pengguna akan dapat menukar tetapan ini (mis. menggunakan masukan "Lumpuhkan pengasingan tapak" dalam chrome://flags).
       </translation>
+<translation id="1767673020408652620">Dayakan Cadangan Apl dalam Keadaan Sifar Kotak Carian</translation>
 <translation id="1781356041596378058">Dasar ini turut mengawal akses ke Pilihan Pembangun Android. Jika anda menetapkan dasar ini kepada benar, pengguna tidak dapat mengakses Pilihan Pembangun. Jika anda menetapkan dasar ini kepada palsu atau membiarkannya tidak ditetapkan, pengguna dapat mengakses Pilihan Pembangun dengan mengetik nombor binaan sebanyak tujuh kali dalam apl tetapan Android.</translation>
 <translation id="1793346220873697538">Lumpuhkan pencetakan PIN secara lalai</translation>
 <translation id="1797233582739332495">Tunjukkan gesaan berulang kepada pengguna yang menunjukkan pelancaran semula diperlukan</translation>
@@ -991,6 +1001,15 @@
 
       Setiap masukan senarai menetapkan pengecam, yang digunakan secara dalaman untuk membezakan akaun setempat peranti.</translation>
 <translation id="2769952903507981510">Konfigurasi nama domain yang diperlukan untuk hos akses jauh</translation>
+<translation id="2783078941107212091">Dayakan Cadangan Apl dalam Keadaan Sifar kotak carian dalam pelancar.
+
+          Jika dasar ini ditetapkan kepada benar, cadangan Apl boleh dipaparkan dalam carian keadaan sifar.
+
+          Jika dasar ini ditetapkan kepada palsu, cadangan Apl tidak akan dipaparkan dalam carian keadaan sifar.
+
+          Jika anda menetapkan dasar ini, pengguna tidak boleh menukar atau membatalkannya.
+
+          Jika dasar ini dibiarkan tanpa ditetapkan, tetapan lalai ialah Palsu untuk peranti terurus.</translation>
 <translation id="2787173078141616821">Laporkan maklumat tentang status Android</translation>
 <translation id="2799297758492717491">Benarkan automain media pada senarai putih corak URL</translation>
 <translation id="2801155097555584385">Menetapkan permulaan pengecasan tersuai dalam peratus bagi pengecasan bateri</translation>
@@ -1188,6 +1207,25 @@
       Jika dasar ini ditetapkan kepada palsu, pengoptimuman WPAD dilumpuhkan menyebabkan <ph name="PRODUCT_NAME" /> menunggu lebih lama untuk pelayan WPAD berasaskan DNS. Jika dasar ini tidak ditetapkan atau didayakan, pengoptimuman WPAD didayakan.
 
       Bergantung kepada sama ada atau cara dasar ini ditetapkan, tetapan pengoptimuman WPAD tidak boleh diubah oleh pengguna.</translation>
+<translation id="3071839057966069710">Mengkonfigurasi senarai pencetak.
+
+      Dasar ini membolehkan pentadbir menyediakan konfigurasi pencetak untuk
+      pengguna mereka.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> dan <ph name="PRINTER_DESCRIPTION" /> ialah rentetan berbentuk bebas yang boleh disesuaikan untuk memudahkan pemilihan pencetak. <ph name="PRINTER_MANUFACTURER" /> dan <ph name="PRINTER_MODEL" /> berfungsi untuk memudahkan pengenalpastian pencetak oleh pengguna akhir. Maklumat ini mewakili pengeluar dan model pencetak. <ph name="PRINTER_URI" /> haruslah alamat yang boleh dihubungi daripada komputer pelanggan termasuk <ph name="URI_SCHEME" />, <ph name="URI_PORT" />dan <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> tidak diwajibkan. Jika disediakan, maklumat ini digunakan untuk membantu menyahpendua pencetak <ph name="ZEROCONF_DISCOVERY" />.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> mestilah sepadan dengan satu daripada rentetan yang mewakili pencetak yang menyokong <ph name="PRODUCT_NAME" />. Rentetan akan digunakan untuk mengenal pasti dan memasang PPD yang bersesuaian untuk pencetak tersebut. Maklumat lanjut boleh didapati di https://support.google.com/chrome?p=noncloudprint.
+
+      <ph name="PRINTER_AUTOCONF" /> ialah bendera boolean yang menunjukkan sama ada IPP Everywhere harus digunakan untuk memnyediakan pencetak. Bendera ini disokong pada <ph name="PRODUCT_OS_NAME" /> versi 76 ke atas.
+
+      Sama ada <ph name="PRINTER_EFFECTIVE_MODEL" /> harus mengandungi nama pencetak atau <ph name="PRINTER_AUTOCONF" /> harus ditetapkan kepada benar. Pencetak yang mempunyai kedua-dua sifat atau tiada mana-mana sifat akan diabaikan.
+
+      Penyediaan pencetak selesai apabila pencetak digunakan buat kali pertama.  PPD tidak dimuat turun sehingga pencetak digunakan.  Selepas itu, PPD yang kerap digunakan akan dicache.
+
+      Dasar ini tidak mempengaruhi sama ada pengguna boleh mengkonfigurasi pencetak pada peranti individu.  Dasar ini bertujuan untuk dijadikan tambahan kepada konfigurasi pencetak oleh pengguna individu.
+
+      Untuk peranti yang diurus oleh Active Directory, dasar ini menyokong perluasan <ph name="MACHINE_NAME_VARIABLE" /> kepada nama mesin Active Directory atau subrentetan nama tersebut. Contohnya, jika nama mesin ialah <ph name="MACHINE_NAME_EXAMPLE" />, maka <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> akan digantikan oleh 4 aksara yang bermula selepas kedudukan ke-6, iaitu <ph name="MACHINE_NAME_PART_EXAMPLE" />. Harap maklum bahawa kedudukan tersebut adalah berasaskan sifar.
+      </translation>
 <translation id="3072045631333522102">Penyelamat skrin untuk digunakan pada skrin log masuk dalam mod runcit</translation>
 <translation id="3072847235228302527">Tetapkan Syarat Perkhidmatan untuk akaun setempat peranti</translation>
 <translation id="3077183141551274418">Mendayakan atau melumpuhkan kitaran hayat tab</translation>
@@ -1982,7 +2020,6 @@ Apabila |IdleAction| tidak ditetapkan, tindakan lalai akan diambil, iaitu gantun
 <translation id="4591366717022345234">Memberi pengguna Quick Fix Build</translation>
 <translation id="4600786265870346112">Dayakan kursor besar</translation>
 <translation id="4604931264910482931">Konfigurasi senarai hitam pemesejan natif</translation>
-<translation id="4613508646038788144">Jika dasar ditetapkan kepada palsu, maka perisian pihak ketiga akan dibenarkan untuk menyuntik kod boleh laku ke dalam proses Chrome. Jika dasar tidak ditetapkan atau ditetapkan kepada benar, maka perisian pihak ketiga akan dihalang daripada menyuntik kod boleh laku ke dalam proses Chrome.</translation>
 <translation id="4617338332148204752">Langkau semakan teg meta dalam <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="4625915093043961294">Konfigurasi senarai putih pemasangan sambungan</translation>
 <translation id="4632343302005518762">Benarkan <ph name="PRODUCT_FRAME_NAME" /> mengendalikan jenis kandungan yang disenaraikan</translation>
@@ -2174,15 +2211,6 @@ Apabila |IdleAction| tidak ditetapkan, tindakan lalai akan diambil, iaitu gantun
       Apabila dasar ini ditetapkan kepada palsu, Chrome akan menutup tab selepas bertukar kepada penyemak imbas alternatif, walaupun tab itu ialah tab yang terakhir. Ini akan menyebabkan Chrome keluar sepenuhnya.</translation>
 <translation id="5105313908130842249">Kelewatan kunci skrin apabila dijalankan dengan kuasa bateri</translation>
 <translation id="5108031557082757679">Pencetak peranti perusahaan dilumpuhkan</translation>
-<translation id="5113732180192599620">Dasar ini mengawal senarai tapak web yang tidak akan menyebabkan penukaran penyemak imbas.
-
-Sila ambil perhatian bahawa unsur juga boleh ditambah pada senarai ini melalui dasar <ph name="USE_IE_SITELIST_POLICY_NAME" /> dan <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />.
-
-Apabila dasar ini dibiarkan tanpa ditetapkan, tiada tapak web akan ditambahkan pada senarai.
-
-Apabila dasar ini ditetapkan, setiap item akan dikendalikan sebagai peraturan, sama seperti dasar <ph name="URL_LIST_POLICY_NAME" />. Walau bagaimanapun, logik akan diterbalikkan: peraturan yang sepadan tidak akan membuka penyemak imbas alternatif.
-
-Tidak seperti <ph name="URL_LIST_POLICY_NAME" />, peraturan dikenakan pada kedua-dua hala. Maknanya, apabila terdapat alat tambah Internet Explorer dan alat itu didayakan, peraturan tersebut juga mengawal sama ada <ph name="IE_PRODUCT_NAME" /> harus membuka URL ini dalam <ph name="PRODUCT_NAME" />.</translation>
 <translation id="5124368997194894978">Dayakan but AC (arus ulang-alik)</translation>
 <translation id="5131211790949066746">Membolehkan penggabungan dasar senarai pemasangan sambungan <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" />dan <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />.
 
@@ -2461,6 +2489,7 @@ Tidak seperti <ph name="URL_LIST_POLICY_NAME" />, peraturan dikenakan pada kedua
 
       Jika tidak ditetapkan, URL benih Variasi tidak akan diubah suai.</translation>
 <translation id="5561811616825571914">Memilih sijil pelanggan secara automatik untuk tapak ini pada skrin log masuk</translation>
+<translation id="5565178130821694365">Kata laluan perlu dimasukkan setiap dua hari (48 jam)</translation>
 <translation id="5566210228171064229">Benarkan pencetakan dengan dan tanpa PIN</translation>
 <translation id="556865034069957245">Dasar ini mengawal ketersediaan mod skrin penuh yang menyembunyikan semua UI <ph name="PRODUCT_NAME" /> dan hanya kandungan web akan kelihatan.
 

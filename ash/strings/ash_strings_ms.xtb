@@ -112,6 +112,7 @@
 <translation id="2597972630681408282">Lampu Malam: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">Kad SIM dikunci</translation>
 <translation id="2653659639078652383">Serah</translation>
+<translation id="2658778018866295321">Klik dan seret</translation>
 <translation id="2700493154570097719">Tetapkan papan kekunci anda</translation>
 <translation id="2718395828230677721">Cahaya Malam</translation>
 <translation id="2727977024730340865">Dipalamkan pada pengecas berkuasa rendah. Pengecasan bateri mungkin tidak boleh diharapkan.</translation>
@@ -228,6 +229,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="4378551569595875038">Menyambung...</translation>
 <translation id="4379531060876907730">Berikut ialah alatan stilus anda</translation>
 <translation id="4389184120735010762">Anda menekan pintasan papan kekunci untuk penggadang yang didok. Adakah anda ingin menghidupkannya?</translation>
+<translation id="4394049700291259645">Lumpuhkan</translation>
 <translation id="4421231901400348175">Berkongsi kawalan skrin anda dengan <ph name="HELPER_NAME" /> melalui Bantuan Jauh.</translation>
 <translation id="4430019312045809116">Kelantangan</translation>
 <translation id="4450893287417543264">Jangan tunjukkan lagi</translation>
@@ -247,7 +249,6 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="4696813013609194136">Buka kunci peranti menggunakan kod ibu bapa</translation>
 <translation id="4731797938093519117">Akses ibu bapa</translation>
 <translation id="4734965478015604180">Mendatar</translation>
-<translation id="476166673298332917">Pentadbir peranti boleh memantau aktiviti penyemakan imbas anda.</translation>
 <translation id="4774338217796918551">Datang semula esok pada <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Kata laluan untuk <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">Google Assistant tidak tersedia dalam sesi tunjuk cara.</translation>
@@ -355,7 +356,6 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="6537270692134705506">Tangkap skrin</translation>
 <translation id="6542521951477560771">Menghantar ke <ph name="RECEIVER_NAME" /></translation>
 <translation id="6559976592393364813">Tanya Pentadbir</translation>
-<translation id="6574601967010742428">Pentadbir peranti mungkin dapat memantau aktiviti anda</translation>
 <translation id="6585808820553845416">Sesi berakhir dalam <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Search+Shift+K</translation>
 <translation id="6650933572246256093">Peranti Bluetooth "<ph name="DEVICE_NAME" />" ingin kebenaran untuk berpasangan. Sila masukkan kekunci laluan ini pada peranti tersebut: <ph name="PASSKEY" /></translation>

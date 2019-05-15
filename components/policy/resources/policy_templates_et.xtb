@@ -1230,7 +1230,7 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
 
       Printeri seadistus viiakse lõpule printeri esimesel kasutuskorral.  PPD-sid ei laadita alla enne, kui printerit kasutatakse.  Pärast seda salvestatakse sageli kasutatud PPD-d vahemällu.
 
-      See reegel ei mõjuta seda, kas kasutajad saavad individuaalsetes seadmetes printereid seadistada.  See on mõeldud individuaalsete kasutajate printerite seadistusi täiendama.
+      See reegel ei mõjuta seda, kas kasutajad saavad konkreetsetes seadmetes printereid seadistada.  See on mõeldud kasutajate printerite seadistusi täiendama.
 
       Active Directory hallatavate seadmete puhul toetab see reegel seadme <ph name="MACHINE_NAME_VARIABLE" /> laiendamist Active Directory seadme nimele või selle alamstringile. Näiteks kui seadme nimi on <ph name="MACHINE_NAME_EXAMPLE" />, siis asendatakse <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> nelja tähemärgiga, mis algab pärast kuuendat märki (nt <ph name="MACHINE_NAME_PART_EXAMPLE" />). Pange tähele, et loendamist alustatakse nullist.
       </translation>
@@ -2022,7 +2022,6 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
 <translation id="4591366717022345234">Kasutajatele kiirparanduse järgu pakkumine</translation>
 <translation id="4600786265870346112">Suure kursori lubamine</translation>
 <translation id="4604931264910482931">Omasõnumside musta nimekirja seadistamine</translation>
-<translation id="4613508646038788144">Kui reegel on määratud väärtusele Väär, on kolmanda osapoole tarkvaral lubatud sisestada Chrome'i protsessidesse täitmiskoodi. Kui reegel on määramata või seatud väärtusele Tõene, on kolmandal osapoolel keelatud täitmiskoodi Chrome'i protsessidesse sisestada.</translation>
 <translation id="4617338332148204752">Metasildi kontrollimise vahelejätmine teenuses <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="4625915093043961294">Installimiseks lubatud laienduste loendi seadistamine</translation>
 <translation id="4632343302005518762">Pistikprogrammil <ph name="PRODUCT_FRAME_NAME" /> loetletud sisutüüpide töötlemise lubamine</translation>
@@ -2215,15 +2214,6 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
       Kui see reegel on seatud väärtusele Väär, sulgeb Chrome vahelehe peale alternatiivses brauseris avanemist, isegi siis, kui see on viimane vaheleht. See tähendab, et Chrome sulgub täielikult.</translation>
 <translation id="5105313908130842249">Ekraani lukustamise viiteaeg akutoite kasutamisel</translation>
 <translation id="5108031557082757679">Ettevõtte seadmete jaoks keelatud printerid</translation>
-<translation id="5113732180192599620">Reegel juhib loendit veebisaitidest, mis ei põhjusta kunagi brauserivahetust.
-
-      Pange tähele, et sellesse loendisse saab elemente lisada ka reeglite <ph name="USE_IE_SITELIST_POLICY_NAME" /> ja <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" /> kaudu.
-
-      Kui reegel on määramata, ei lisata loendisse ühtki veebisaiti.
-
-      Kui reegel on määratud, käsitletakse iga üksust reeglina, sarnaselt reegliga <ph name="URL_LIST_POLICY_NAME" />. Loogika on aga vastupidine: kattuvaid reegleid ei avata alternatiivses brauseris.
-
-      Erinevalt reeglist <ph name="URL_LIST_POLICY_NAME" /> kehtivad reeglid mõlemas suunas. See tähendab, et kui Internet Exploreri pistikprogramm on olemas ja lubatud, juhib see ka seda, kas<ph name="IE_PRODUCT_NAME" /> peaks avama URL-id rakenduses <ph name="PRODUCT_NAME" />.</translation>
 <translation id="5124368997194894978">Vahelduvvooluga käivitamise lubamine</translation>
 <translation id="5131211790949066746">Lubab liita laienduste installimise loendi reeglid <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" /> ja <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />.
 

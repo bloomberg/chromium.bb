@@ -226,6 +226,7 @@
 <translation id="1338950911836659113">Menghapus...</translation>
 <translation id="1340527397989195812">Cadangkan media dari perangkat menggunakan aplikasi File.</translation>
 <translation id="1341988552785875222">Wallpaper saat ini disetel oleh '<ph name="APP_NAME" />'. Anda mungkin perlu meng-uninstal '<ph name="APP_NAME" />' sebelum memilih wallpaper lainnya.</translation>
+<translation id="1343865611738742294">Berikan izin aplikasi ke Linux untuk mengakses perangkat USB. Linux tidak akan mengingat perangkat USB setelah perangkat tersebut dilepas.</translation>
 <translation id="1347256498747320987">Instal update &amp; aplikasi. Dengan melanjutkan, artinya Anda menyetujui bahwa perangkat ini juga dapat mendownload serta menginstal update dan aplikasi secara otomatis dari Google, operator, dan produsen perangkat, yang kemungkinan menggunakan kuota. Sebagian aplikasi ini mungkin menawarkan pembelian dalam aplikasi. <ph name="BEGIN_LINK1" />Pelajari Lebih Lanjut<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">Update akan dimulai jika baterai mencapai <ph name="BATTERY_LEVEL" />%.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
@@ -707,6 +708,7 @@
 <translation id="2120297377148151361">Aktivitas dan interaksi</translation>
 <translation id="2120478168904746065">{NUM_TABS,plural, =1{Aktifkan Notifikasi Tab}other{Aktifkan Notifikasi Beberapa Tab}}</translation>
 <translation id="2121825465123208577">Ubah ukuran</translation>
+<translation id="2122305276694332719">Menghubungkan ke jaringan tersembunyi secara otomatis akan memungkinkan orang lain melihat perangkat Anda dan beberapa setelan jaringan, sehingga tindakan ini tidak direkomendasikan.</translation>
 <translation id="2124930039827422115">{1,plural, =1{Diberi nilai <ph name="AVERAGE_RATING" /> oleh satu pengguna.}other{Diberi nilai <ph name="AVERAGE_RATING" /> oleh # pengguna.}}</translation>
 <translation id="2126167708562367080">Sinkronisasi dinonaktifkan oleh administrator Anda.</translation>
 <translation id="2127372758936585790">Pengisi daya rendah</translation>
@@ -1303,6 +1305,7 @@
 <translation id="3012917896646559015">Segera hubungi pabrikan hardware Anda untuk mengirimkan komputer ke fasilitas perbaikan.</translation>
 <translation id="3013291976881901233">Perangkat MIDI</translation>
 <translation id="3015639418649705390">Luncurkan ulang sekarang</translation>
+<translation id="3016329696181678353"><ph name="PRINTER_NAME" /> tidak dapat dikonfigurasi secara otomatis. Harap tentukan detail printer lanjutan.</translation>
 <translation id="3016641847947582299">Komponen telah diperbarui</translation>
 <translation id="3016780570757425217">Mengetahui lokasi Anda</translation>
 <translation id="3020183492814296499">Pintasan</translation>
@@ -1803,7 +1806,6 @@
 <translation id="3789841737615482174">Instal</translation>
 <translation id="379082410132524484">Kartu Anda telah habis masa berlakunya</translation>
 <translation id="3792890930871100565">Lepaskan sambungan printer</translation>
-<translation id="3792938779249970121">Pilih akun</translation>
 <translation id="3796648294839530037">Jaringan Favorit:</translation>
 <translation id="3797739167230984533"><ph name="BEGIN_LINK" /><ph name="DEVICE_TYPE" /> dikelola<ph name="END_LINK" /> oleh organisasi Anda</translation>
 <translation id="3797900183766075808">&amp;Menelusuri <ph name="SEARCH_ENGINE" /> untuk “<ph name="SEARCH_TERMS" />”</translation>
@@ -2112,6 +2114,7 @@
 <translation id="4268025649754414643">Penyandian Kunci</translation>
 <translation id="4270393598798225102">Versi <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">Tidak ada yang cocok</translation>
+<translation id="4275663329226226506">Media</translation>
 <translation id="4275830172053184480">Mulai ulang perangkat Anda</translation>
 <translation id="4278101229438943600">Asisten sudah siap</translation>
 <translation id="4278390842282768270">Diizinkan</translation>
@@ -2154,7 +2157,6 @@
 <translation id="4354344420232759511">Situs yang Anda kunjungi akan ditampilkan di sini</translation>
 <translation id="435527878592612277">Pilih foto Anda</translation>
 <translation id="4356334633973342967">Atau tentukan driver Anda sendiri:</translation>
-<translation id="4358169392473932247">Kunci keamanan tersebut tidak mendukung penyimpanan internal kredensial, tetapi fitur tersebut diminta.</translation>
 <translation id="4359408040881008151">Dipasang karena ekstensi dependen.</translation>
 <translation id="4359717112757026264">Pemandangan Kota</translation>
 <translation id="4361142739114356624">Kunci Pribadi untuk Sertifikat Klien ini tidak ditemukan atau tidak valid</translation>
@@ -2337,7 +2339,6 @@
 <translation id="4665014895760275686">Produsen</translation>
 <translation id="4665446389743427678">Semua data yang disimpan oleh <ph name="SITE" /> akan dihapus.</translation>
 <translation id="4668721319092543482">Klik untuk mengaktifkan <ph name="PLUGIN_NAME" /></translation>
-<translation id="4670688170798478686">Konfirmasi setel ulang</translation>
 <translation id="4672657274720418656">Halaman Saring</translation>
 <translation id="4673442866648850031">Buka alat stilus saat stilus dihapus</translation>
 <translation id="4677585247300749148"><ph name="URL" /> ingin merespons peristiwa aksesibilitas</translation>
@@ -2367,7 +2368,6 @@
 <translation id="4711638718396952945">Pulihkan setelan</translation>
 <translation id="4715553623069266137">sangat singkat (0,8 dtk)</translation>
 <translation id="4716483597559580346">Powerwash untuk keamanan tambahan</translation>
-<translation id="4718490098585891067">Pilih akun untuk login:</translation>
 <translation id="4720113199587244118">Tambahkan Perangkat</translation>
 <translation id="4720185134442950733">Jaringan data seluler</translation>
 <translation id="4722735765955348426">Sandi untuk <ph name="USERNAME" /></translation>
@@ -2398,7 +2398,6 @@
 <translation id="4756388243121344051">&amp;Riwayat</translation>
 <translation id="4759238208242260848">Download</translation>
 <translation id="4761104368405085019">Menggunakan mikrofon Anda</translation>
-<translation id="476166673298332917">Admin perangkat dapat memantau aktivitas akses internet Anda.</translation>
 <translation id="4762718786438001384">Ruang disk perangkat hampir habis</translation>
 <translation id="4763408175235639573">Cookie berikut disetel saat Anda melihat halaman ini</translation>
 <translation id="4763830802490665879">Cookie dari berbagai situs akan dihapus saat keluar.</translation>
@@ -3601,7 +3600,7 @@
 <translation id="6639554308659482635">Memori SQLite</translation>
 <translation id="6641138807883536517">Sandi modul aman yang dibuat secara acak tidak tersedia. Hal ini normal setelah menjalankan Powerwash.</translation>
 <translation id="6643016212128521049">Hapus</translation>
-<translation id="6644512095122093795">Tawarkan untuk menyimpan sandi</translation>
+<translation id="6644512095122093795">Tawarkan penyimpanan sandi</translation>
 <translation id="6644846457769259194">Memperbarui perangkat (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6645437135153136856">Perangkat Google Cloud Print yang dipilih tidak didukung lagi. <ph name="BR" /> Coba siapkan printer di setelan sistem komputer.</translation>
 <translation id="6647228709620733774">URL Kebijakan Otoritas Sertifikasi Netscape</translation>
@@ -3927,7 +3926,6 @@
 <translation id="713888829801648570">Maaf, sandi Anda tidak dapat diverifikasi karena Anda tidak tersambung ke internet.</translation>
 <translation id="7140928199327930795">Tidak ada perangkat lain.</translation>
 <translation id="7141105143012495934">Proses masuk gagal karena detail akun Anda tidak dapat diambil. Hubungi administrator Anda atau coba lagi.</translation>
-<translation id="714285394257538643">Sentuh lagi untuk mengonfirmasi bahwa Anda ingin menyetel ulang kunci keamanan. Semua kredensial yang disimpan di kunci keamanan beserta PIN-nya akan dihapus.</translation>
 <translation id="7143092389027215216">Memulai mode demo</translation>
 <translation id="7143207342074048698">Menyambungkan</translation>
 <translation id="7144878232160441200">Coba lagi</translation>
@@ -4161,6 +4159,7 @@
 <translation id="7506541170099744506"><ph name="DEVICE_TYPE" /> berhasil didaftarkan untuk pengelolaan perusahaan.</translation>
 <translation id="7507930499305566459">Sertifikat Penanggap Status</translation>
 <translation id="7513029293694390567">Otomatis login ke situs menggunakan kredensial yang tersimpan. Jika dinonaktifkan, Anda akan dimintai konfirmasi setiap kali login ke situs.</translation>
+<translation id="7514365320538308">Download</translation>
 <translation id="7517786267097410259">Buat sandi -</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">Ucapkan "Ok Google"</translation>
@@ -4501,6 +4500,7 @@ File Kunci: <ph name="KEY_FILE" />
 Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membuat versi baru ekstensi.</translation>
 <translation id="8000066093800657092">Tidak ada jaringan</translation>
 <translation id="8000467600002607205">{NUM_TABS,plural, =1{Tutup Tab}other{Tutup Beberapa Tab}}</translation>
+<translation id="8002274832045662704">Konfigurasi printer lanjutan</translation>
 <translation id="8004582292198964060">Browser</translation>
 <translation id="8005600846065423578">Selalu izinkan <ph name="HOST" /> melihat papan klip</translation>
 <translation id="8008356846765065031">Internet terputus. Periksa sambungan internet Anda.</translation>
@@ -5041,6 +5041,7 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8850251000316748990">Lihat selengkapnya...</translation>
 <translation id="885246833287407341">Argumen fungsi API</translation>
 <translation id="8853586775156634952">Kartu ini hanya akan disimpan ke perangkat ini</translation>
+<translation id="885701979325669005">Penyimpanan</translation>
 <translation id="8859057652521303089">Pilih bahasa Anda:</translation>
 <translation id="8859174528519900719">Subframe: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8862003515646449717">Beralih ke browser cepat</translation>

@@ -141,6 +141,15 @@
       Ha a házirend értéke hamis, akkor a fejlesztői kapcsoló állapota nem lesz jelentve.</translation>
 <translation id="1160479894929412407">A QUIC protokoll engedélyezése</translation>
 <translation id="1160939557934457296">Biztonságos Böngészés figyelmeztetőoldal</translation>
+<translation id="1171342272070128466">A dokkolt nagyító kisegítő funkció engedélyezése.
+
+          Ha a házirend igaz értékre van beállítva, a dokkolt nagyító mindig engedélyezve lesz.
+
+          Ha a házirend hamis értékre van beállítva, a dokkolt nagyító mindig le lesz tiltva.
+
+          Ha beállítja ezt a házirendet, a felhasználók nem módosíthatják vagy bírálhatják felül.
+
+          Ha nem állítja be a házirendet, akkor a dokkolt nagyító kezdetben le van tiltva, de a felhasználó bármikor engedélyezheti.</translation>
 <translation id="1189817621108632689">Lehetővé teszi, hogy megadja az URL-minták azon listáját, amely meghatározza, mely webhelyek nem jeleníthetnek meg képeket.
 
           Ha a házirend konfigurálatlanul marad, akkor a rendszer a „DefaultImagesSetting” házirend globális alapértelmezett értékét használja valamennyi webhelyre vonatkozóan (ha az be van állítva), vagy pedig a felhasználó saját személyes beállítását.
@@ -453,6 +462,7 @@
       Ha a házirend engedélyezett, a felhasználók nem tudják kikapcsolni az alapértelmezett viselkedést, amelynél minden webhely a saját folyamatában fut.
       Ha a házirend nincs beállítva, vagy le van tiltva, a felhasználók módosíthatják ezt a beállítást (pl. a chrome://flags oldalon található „Disable site isolation” [Webhely-elszigetelés letiltása] beállítás használatával).
       </translation>
+<translation id="1767673020408652620">Alkalmazásjavaslatok engedélyezése a keresőmező alapállapotában</translation>
 <translation id="1781356041596378058">A házirend meghatározza az Android fejlesztői beállításokhoz való hozzáférést is. Ha igaz értékre állítja ezt a házirendet, akkor a felhasználók nem férhetnek hozzá a fejlesztői beállításokhoz. Ha hamis értékre állítja a házirendet, illetve nem ad meg beállítást, akkor a felhasználók hozzáférhetnek a fejlesztői beállításokhoz, ha hétszer a build számára koppintanak az Android Beállítások alkalmazásában.</translation>
 <translation id="1793346220873697538">PIN-kóddal való nyomtatás alapértelmezett letiltása</translation>
 <translation id="1797233582739332495">Ismétlődő értesítés megjelenítése a felhasználónak arról, hogy újraindításra van szükség</translation>
@@ -970,6 +980,15 @@
 
       A lista minden bejegyzése egy azonosítót ad meg, amely az eszköz különböző helyi fiókjainak belső megkülönböztetésére szolgál.</translation>
 <translation id="2769952903507981510">Beállítja a távoli hozzáférésű gazdagép szükséges domainnevét</translation>
+<translation id="2783078941107212091">Alkalmazásjavaslatok engedélyezése az indító keresőmezőjének alapállapotában.
+
+          Ha a házirend beállítása igaz, az alkalmazásjavaslatok megjelenhetnek a keresés alapállapotában.
+
+          Ha a házirend beállítása hamis, az alkalmazásjavaslatok nem jelenhetnek meg a keresés alapállapotában.
+
+          Ha beállítja ezt a házirendet, a felhasználók nem módosíthatják vagy bírálhatják felül.
+
+          Ha nem állítja be a házirendet, akkor alapértelmezés szerint a hamis beállítást alkalmazza a rendszer a kezelt eszközöknél.</translation>
 <translation id="2787173078141616821">Az Android állapotával kapcsolatos információk jelentése</translation>
 <translation id="2799297758492717491">A médiatartalmak automatikus lejátszásának engedélyezése az engedélyezőlistán található URL-minták számára</translation>
 <translation id="2801155097555584385">Az akkumulátor töltésének beállítása úgy, hogy elkezdje a töltést a megadott százalékos érték elérésekor</translation>
@@ -1165,6 +1184,25 @@
       Ha a házirend értéke hamis, a WPAD-optimalizálás inaktív lesz, így a <ph name="PRODUCT_NAME" /> hosszabb ideig várakozik a DNS-alapú WPAD-szerverek esetében. Ha nem állítja be, vagy ha engedélyezi a házirendet, akkor a WPAD-optimalizálás aktív lesz.
 
       A házirend beállításától függetlenül a felhasználók nem tudják módosítani a WPAD-optimalizálás beállítását.</translation>
+<translation id="3071839057966069710">A nyomtatók listáját konfigurálja.
+
+      Ez a házirend lehetővé teszi a rendszergazdák számára, hogy 
+      nyomtatókonfigurációkat biztosítsanak felhasználóiknak.
+
+      A <ph name="PRINTER_DISPLAY_NAME" /> és a <ph name="PRINTER_DESCRIPTION" /> szabad formájú karakterláncok, amelyek személyre szabhatók a nyomtatóválasztás megkönnyítése érdekében. A <ph name="PRINTER_MANUFACTURER" /> és a <ph name="PRINTER_MODEL" /> a nyomtató végfelhasználó általi azonosításának megkönnyítésére szolgálnak. A nyomtató gyártóját és modelljét jelölik. Az <ph name="PRINTER_URI" /> linknek olyan címnek kell lennie, amelyhez hozzáfér az ügyfélszámítógép, és amely tartalmazza a következőket: <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> és <ph name="URI_QUEUE" />. Az <ph name="PRINTER_UUID" /> megadása nem kötelező. Ha meg van adva, segít elkerülni a <ph name="ZEROCONF_DISCOVERY" /> nyomtatók ismétlődését.
+
+      Az <ph name="PRINTER_EFFECTIVE_MODEL" /> karakterláncnak meg kell egyeznie a <ph name="PRODUCT_NAME" /> támogatott nyomtatóinak egyikét képviselő karakterlánccal. A karakterlánc a nyomtatóhoz tartozó megfelelő PPD azonosításához és telepítéséhez szükséges. További információ a következő linken található: https://support.google.com/chrome?p=noncloudprint.
+
+      Az <ph name="PRINTER_AUTOCONF" /> egy logikai jelölő, amely azt jelzi, hogy IPP Everywhere szabvánnyal kell-e beállítani a nyomtatót. Ezt a jelölőt a <ph name="PRODUCT_OS_NAME" /> 76-os és újabb verziói támogatják.
+
+      Vagy az <ph name="PRINTER_EFFECTIVE_MODEL" /> elemnek kell tartalmaznia a nyomtató nevét, vagy igazra kell állítani az <ph name="PRINTER_AUTOCONF" /> beállítást. A rendszer figyelmen kívül hagyja a mindkét tulajdonsággal, illetve az egyikkel sem rendelkező nyomtatókat.
+
+      A nyomtató beállítása a nyomtató első használatakor történik.  A PPD-k csak a nyomtató használatakor töltődnek le.  Ezután a gyakran használt PPD-k a gyorsítótárba kerülnek.
+
+      A házirend nem befolyásolja, hogy a felhasználók beállíthatják-e a nyomtatókat saját eszközeiken.  A házirend célja, hogy kiegészítse az egyes felhasználók nyomtatóbeállításait.
+
+      Az Active Directory által kezelt eszközöknél a házirend támogatja az <ph name="MACHINE_NAME_VARIABLE" /> kibővítését az Active Directory gép nevére, vagy annak karakterláncrészére. Ha például a gép neve <ph name="MACHINE_NAME_EXAMPLE" />, akkor az <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> karakterláncot a 6. pozíciónál kezdődő négy karakter helyettesíti, vagyis: <ph name="MACHINE_NAME_PART_EXAMPLE" />. Megjegyzés: A pozíció meghatározásához a kiindulási pont a nulla.
+      </translation>
 <translation id="3072045631333522102">A használandó képernyőkímélő a bejelentkezési képernyőn kiállító módban</translation>
 <translation id="3072847235228302527">Általános Szerződési Feltételek beállítása egy eszközszinten helyi fiók számára</translation>
 <translation id="3077183141551274418">Letiltja vagy engedélyezi a lapéletciklus funkciót</translation>
@@ -1619,8 +1657,8 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
           összes engedélyt, beleértve az alkalmazás/bővítmény jövőbeli verziói
           által kért további engedélyeket is. Ezenkívül megkapják az engedélyeket
           az enterprise.deviceAttributes és az enterprise.platformKeys bővítmény-
-          API-k is. (Ez a két API nem áll rendelkezésre a nem kényszerítve
-          telepített alkalmazások és bővítmények esetében.)
+          API-k is. (Ez a két API nem érhető el a nem kényszerítve
+          telepített alkalmazások és bővítmények számára.)
 
           Ez a házirend elsőbbséget élvez az esetlegesen ütköző <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> házirenddel szemben. Ha egy korábban kényszerítve telepített alkalmazást vagy bővítményt töröl erről a listáról, a <ph name="PRODUCT_NAME" /> automatikusan eltávolítja.
 
@@ -1939,7 +1977,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="4591366717022345234">A felhasználók számára Quick Fix Buildet biztosít</translation>
 <translation id="4600786265870346112">Nagy egérmutató engedélyezése</translation>
 <translation id="4604931264910482931">Natív üzenetkezelő tiltólista konfigurálása</translation>
-<translation id="4613508646038788144">Ha a házirend értéke „hamis”, akkor a harmadik felek szoftverei számára engedélyezve lesz a futtatható kódok Chrome-folyamatokba történő beszúrása. Ha a házirend nincs beállítva, vagy értéke „igaz”, akkor a harmadik felek szoftverei nem tudnak beszúrni futtatható kódot a Chrome-folyamatokba.</translation>
 <translation id="4617338332148204752">A metacímkék ellenőrzésének kihagyása a következőben: <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="4625915093043961294">Bővítménytelepítési kivétellista beállítása</translation>
 <translation id="4632343302005518762">A felsorolt tartalomtípusok kezelésének engedélyezése a(z) <ph name="PRODUCT_FRAME_NAME" /> számára</translation>
@@ -2127,15 +2164,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Ha a házirend hamis értékre van állítva, a Chrome bezárja a lapot a másik böngészőre való átváltás után (még akkor is, ha ez volt az utolsó lap). Ez azt eredményezi, hogy a Chrome teljesen bezárul.</translation>
 <translation id="5105313908130842249">Képernyő lezárásának késleltetése akkumulátorról való működés során</translation>
 <translation id="5108031557082757679">Eszközökhöz kötött letiltott vállalati nyomtatók</translation>
-<translation id="5113732180192599620">Ez a házirend szabályozza azon webhelyek listáját, amelyek nem vezetnek böngészőváltáshoz.
-
-      A listához a következő házirendeken keresztül adhat hozzá újabb elemeket: <ph name="USE_IE_SITELIST_POLICY_NAME" /> és <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />.
-
-      Ha a házirend nincs beállítva, nem kerül webhely a listára.
-
-      Ha a házirend be van állítva, minden elemet szabályként kezel a rendszer, a(z) <ph name="URL_LIST_POLICY_NAME" /> házirendhez hasonlóan. A mögötte álló logika azonban a fordítottja: az egyező szabályok nem nyitnak meg másik böngészőt.
-
-      A(z) <ph name="URL_LIST_POLICY_NAME" /> házirendtől eltérően a szabályok mindkét irányban érvényesek. Ez azt jelenti, hogy amikor az Internet Explorer-bővítmény jelen van és engedélyezett, a házirend azt is vezérli, hogy az <ph name="IE_PRODUCT_NAME" /> a <ph name="PRODUCT_NAME" /> böngészőben nyissa-e meg ezeket az URL-eket.</translation>
 <translation id="5124368997194894978">Hálózati áramforrás esetén történő rendszerindítás engedélyezése</translation>
 <translation id="5131211790949066746">Engedélyezi az <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" /> és <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" /> bővítménytelepítési listákra vonatkozó házirendek összevonását.
 
@@ -2398,6 +2426,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 
       Ha nincs meghatározva, nem változtat a Variations seed URL-jén.</translation>
 <translation id="5561811616825571914">Ügyféltanúsítványok automatikus kiválasztása ezeknél a webhelyeknél a bejelentkezési képernyőn</translation>
+<translation id="5565178130821694365">A jelszót minden másnap (48 óránként) meg kell adni</translation>
 <translation id="5566210228171064229">PIN-kóddal és nélküle is lehet nyomtatni</translation>
 <translation id="556865034069957245">Ez a házirend a teljes képernyős mód elérhetőségét vezérli. Teljes képernyős módban a <ph name="PRODUCT_NAME" /> teljes kezelőfelülete el van rejtve, csak az internetes tartalom látható.
 

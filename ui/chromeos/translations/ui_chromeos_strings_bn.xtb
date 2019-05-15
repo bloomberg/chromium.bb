@@ -62,6 +62,7 @@
 <translation id="164969095109328410">Chrome ডিভাইস</translation>
 <translation id="1665611772925418501">ফাইল সংশোধন করা যায়নি৷</translation>
 <translation id="1673103856845176271">নিরাপত্তাজড়িন কারণে ফাইলটিতে অ্যাক্সেস করা যায়নি৷</translation>
+<translation id="1679806121152819234">প্লাগ-ইন VM</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="1722487484194605434"><ph name="NUMBER_OF_ITEMS" />টি আইটেম জিপ করা হচ্ছে…</translation>
 <translation id="174173592514158117">সমস্ত Play ফোল্ডারগুলি দেখান</translation>
@@ -411,7 +412,7 @@
 <translation id="5819442873484330149">হাঙ্গুল ৩ সেট (সর্বশেষ)</translation>
 <translation id="5833610766403489739">এই ফাইলটির আসার পথ কোথাও বন্ধ করা আছে৷ অনুগ্রহ করে আপনার ডাউনলোড অবস্থানের সেটিংস পরীক্ষা করে আবার চেষ্টা করুন৷</translation>
 <translation id="5838825566232597749">মার্কিন ওয়ার্কম্যান আন্তর্জাতিক</translation>
-<translation id="5850516540536751549">এই ধরনের ফাইল সমর্থিত নয়৷ এই ধরনের ফাইল খুলতে পারে এমন অ্যাপ খুঁজতে <ph name="BEGIN_LINK" />Chrome ওয়েব স্টোর<ph name="END_LINK" /> দেখুন৷
+<translation id="5850516540536751549">এই ফাইল প্রকারটি সমর্থিত নয়৷ এই ধরণের ফাইল খুলতে পারে এমন অ্যাপ খুঁজতে অনুগ্রহ করে <ph name="BEGIN_LINK" />Chrome ওয়েব স্টোর<ph name="END_LINK" /> দেখুন৷
         <ph name="BEGIN_LINK_HELP" />আরও জানুন<ph name="END_LINK_HELP" /></translation>
 <translation id="5851063901794976166">এখানে দেখার মতো কিছু নেই...</translation>
 <translation id="5857774240076772505">Linux অ্যাপকে <ph name="FOLDER_NAME" /> ফোল্ডারের ফাইলগুলি পরিবর্তন করার অনুমতি দিন</translation>

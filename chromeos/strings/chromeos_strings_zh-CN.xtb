@@ -12,6 +12,7 @@
 <translation id="3442261357327209537">点击此处即可选择新密码</translation>
 <translation id="3506732833599356229">密码已过期</translation>
 <translation id="4731797938093519117">家长访问</translation>
+<translation id="476166673298332917">此设备的管理员可能会监控您的浏览活动。</translation>
 <translation id="5212543919916444558">无法提供与您的屏幕上可以找到的任何内容相关的帮助。
 请尝试通过点按麦克风图标向我提问。</translation>
 <translation id="5222676887888702881">退出</translation>
@@ -19,6 +20,7 @@
 <translation id="54609108002486618">托管</translation>
 <translation id="5832805196449965646">添加用户</translation>
 <translation id="5895138241574237353">重新启动</translation>
+<translation id="6574601967010742428">设备管理员或许能监控您的活动。</translation>
 <translation id="7467001599725918325">密码即将过期</translation>
 <translation id="7505377169174526985">{NUM_DAYS,plural, =0{您当前的密码已过期！}=1{您当前的密码将在 1 天内过期！}other{您当前的密码将在 # 天内过期！}}</translation>
 <translation id="7658239707568436148">取消</translation>

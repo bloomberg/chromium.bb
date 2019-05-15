@@ -226,6 +226,7 @@
 <translation id="1338950911836659113">Se șterge…</translation>
 <translation id="1340527397989195812">Fă backup conținutului media de pe dispozitiv folosind aplicația Fișiere.</translation>
 <translation id="1341988552785875222">Imaginea de fundal actuală este setată de „<ph name="APP_NAME" />”. Poate fi necesar să dezinstalezi „<ph name="APP_NAME" />” înainte să selectezi altă imagine de fundal.</translation>
+<translation id="1343865611738742294">Permite aplicațiilor Linux să acceseze dispozitivele USB. Linux nu va păstra un dispozitiv USB după ce este eliminat.</translation>
 <translation id="1347256498747320987">Instalează actualizări și aplicații. Dacă alegi să continui, ești de acord că este posibil ca dispozitivul să descarce și să instaleze automat actualizări și aplicații de la Google, de la operatorul tău și de la producătorul dispozitivului, eventual folosind datele mobile. Unele dintre aceste aplicații pot oferi achiziții în aplicație. <ph name="BEGIN_LINK1" />Află mai multe<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">Actualizarea va începe când bateria va ajunge la <ph name="BATTERY_LEVEL" />%.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
@@ -707,6 +708,7 @@
 <translation id="2120297377148151361">Activitate și interacțiuni</translation>
 <translation id="2120478168904746065">{NUM_TABS,plural, =1{Activează sunetul filei}few{Activează sunetul filelor}other{Activează sunetul filelor}}</translation>
 <translation id="2121825465123208577">Redimensionează</translation>
+<translation id="2122305276694332719">Conectarea automată la o rețea ascunsă permite altora să îți vadă dispozitivul și unele setări pentru rețea, așadar nu este recomandată.</translation>
 <translation id="2124930039827422115">{1,plural, =1{Evaluat cu <ph name="AVERAGE_RATING" /> de 1 utilizator.}few{Evaluat cu <ph name="AVERAGE_RATING" /> de # utilizatori.}other{Evaluat cu <ph name="AVERAGE_RATING" /> de # de utilizatori.}}</translation>
 <translation id="2126167708562367080">Sincronizarea este dezactivată de administrator.</translation>
 <translation id="2127372758936585790">Încărcător de putere joasă</translation>
@@ -1303,6 +1305,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3012917896646559015">Contactați imediat producătorul hardware-ului pentru a vă trimite computerul la o unitate de reparații.</translation>
 <translation id="3013291976881901233">Dispozitive MIDI</translation>
 <translation id="3015639418649705390">Relansează acum</translation>
+<translation id="3016329696181678353">Imprimanta <ph name="PRINTER_NAME" /> nu a putut fi configurată automat. Te rugăm să specifici detaliile de printare avansate.</translation>
 <translation id="3016641847947582299">Componentă actualizată</translation>
 <translation id="3016780570757425217">Afle locația</translation>
 <translation id="3020183492814296499">Comenzi rapide</translation>
@@ -1805,7 +1808,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3789841737615482174">Instalează</translation>
 <translation id="379082410132524484">Cardul a expirat</translation>
 <translation id="3792890930871100565">Deconectați imprimantele</translation>
-<translation id="3792938779249970121">Selectează un cont</translation>
 <translation id="3796648294839530037">Rețele preferate:</translation>
 <translation id="3797739167230984533"><ph name="BEGIN_LINK" /><ph name="DEVICE_TYPE" /> este gestionat<ph name="END_LINK" /> de organizația ta</translation>
 <translation id="3797900183766075808">&amp;Caută „<ph name="SEARCH_TERMS" />” pe <ph name="SEARCH_ENGINE" /></translation>
@@ -2114,6 +2116,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4268025649754414643">Cifrare cheie</translation>
 <translation id="4270393598798225102">Versiunea <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">Nicio potrivire</translation>
+<translation id="4275663329226226506">Media</translation>
 <translation id="4275830172053184480">Reporniți gadgetul</translation>
 <translation id="4278101229438943600">Asistentul este pregătit</translation>
 <translation id="4278390842282768270">Se permite</translation>
@@ -2156,7 +2159,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4354344420232759511">Site-urile pe care le accesezi apar aici</translation>
 <translation id="435527878592612277">Selectează fotografia</translation>
 <translation id="4356334633973342967">Sau specifică ce driver ai:</translation>
-<translation id="4358169392473932247">Acea cheie de securitate nu acceptă stocarea internă a certificatelor, dar funcția a fost solicitată.</translation>
 <translation id="4359408040881008151">Instalată din cauza extensiilor dependente.</translation>
 <translation id="4359717112757026264">Cityscape</translation>
 <translation id="4361142739114356624">Cheia privată pentru acest Certificat de client lipsește sau nu este validă</translation>
@@ -2339,7 +2341,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4665014895760275686">Producător</translation>
 <translation id="4665446389743427678">Toate datele stocate de <ph name="SITE" /> vor fi șterse.</translation>
 <translation id="4668721319092543482">Dă clic pentru a activa <ph name="PLUGIN_NAME" /></translation>
-<translation id="4670688170798478686">Confirmă resetarea</translation>
 <translation id="4672657274720418656">Faceți conversia paginii</translation>
 <translation id="4673442866648850031">Deschide instrumentele pentru creion când acesta este înlăturat</translation>
 <translation id="4677585247300749148"><ph name="URL" /> dorește să răspundă evenimentelor de accesibilitate</translation>
@@ -2369,7 +2370,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4711638718396952945">Restabiliți setările</translation>
 <translation id="4715553623069266137">foarte scurtă (0,8 sec.)</translation>
 <translation id="4716483597559580346">Powerwash pentru securitate suplimentară</translation>
-<translation id="4718490098585891067">Selectează un cont ca să te conectezi:</translation>
 <translation id="4720113199587244118">Adăugați dispozitive</translation>
 <translation id="4720185134442950733">Rețea de date mobile</translation>
 <translation id="4722735765955348426">Parola pentru <ph name="USERNAME" /></translation>
@@ -2400,7 +2400,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4756388243121344051">&amp;Istoric</translation>
 <translation id="4759238208242260848">Descărcări</translation>
 <translation id="4761104368405085019">Utilizează microfonul</translation>
-<translation id="476166673298332917">Administratorul dispozitivului îți poate monitoriza activitatea de navigare.</translation>
 <translation id="4762718786438001384">Spațiul de pe hard diskul dispozitivului este foarte redus</translation>
 <translation id="4763408175235639573">La afișarea paginii au fost setate următoarele cookie-uri</translation>
 <translation id="4763830802490665879">Cookie-urile de la mai multe site-uri vor fi șterse la ieșire.</translation>
@@ -3929,7 +3928,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="713888829801648570">Ne pare rău. Parola nu a putut fi verificată pentru că ești offline.</translation>
 <translation id="7140928199327930795">Nu există alte dispozitive disponibile.</translation>
 <translation id="7141105143012495934">Nu s-a conectat, deoarece nu s-au putut prelua detaliile contului. Contactează administratorul sau încearcă din nou.</translation>
-<translation id="714285394257538643">Pentru a confirma că vrei să resetezi cheia de securitate, atinge-o din nou. Toate certificatele stocate pe cheia de securitate și codul său PIN vor fi șterse.</translation>
 <translation id="7143092389027215216">Se pornește modul demonstrativ</translation>
 <translation id="7143207342074048698">Se conectează</translation>
 <translation id="7144878232160441200">Reîncearcă</translation>
@@ -4163,6 +4161,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="7506541170099744506">Dispozitivul <ph name="DEVICE_TYPE" /> a fost înscris pentru gestionarea de întreprindere.</translation>
 <translation id="7507930499305566459">Certificat de respondent de stare</translation>
 <translation id="7513029293694390567">Te conectezi automat la site-uri folosind datele de conectare stocate. Dacă funcția este dezactivată, ți se va solicita confirmarea de fiecare dată înainte de a te conecta la un site.</translation>
+<translation id="7514365320538308">Descarcă</translation>
 <translation id="7517786267097410259">Creați o parolă –</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">Rostește „Ok Google”</translation>
@@ -4503,6 +4502,7 @@ Fișier cheie: <ph name="KEY_FILE" />
 Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crearea noilor versiuni ale extensiei.</translation>
 <translation id="8000066093800657092">Nicio rețea</translation>
 <translation id="8000467600002607205">{NUM_TABS,plural, =1{Închide fila}few{Închide filele}other{Închide filele}}</translation>
+<translation id="8002274832045662704">Configurare avansată a imprimantei</translation>
 <translation id="8004582292198964060">Browser</translation>
 <translation id="8005600846065423578">Permite întotdeauna ca <ph name="HOST" /> să vadă clipboardul</translation>
 <translation id="8008356846765065031">Internet deconectat. Verificați conexiunea la internet.</translation>
@@ -5043,6 +5043,7 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8850251000316748990">Mai multe detalii...</translation>
 <translation id="885246833287407341">Argumentele funcției API</translation>
 <translation id="8853586775156634952">Acest card va fi salvat numai pe acest dispozitiv</translation>
+<translation id="885701979325669005">Stocare</translation>
 <translation id="8859057652521303089">Selectează limba:</translation>
 <translation id="8859174528519900719">Subcadru: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8862003515646449717">Comută la un browser rapid</translation>

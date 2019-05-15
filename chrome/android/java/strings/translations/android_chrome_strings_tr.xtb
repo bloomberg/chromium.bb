@@ -9,7 +9,6 @@
 <translation id="1067922213147265141">Diğer Google hizmetleri</translation>
 <translation id="1068672505746868501"><ph name="SOURCE_LANGUAGE" /> dilindeki sayfaları asla çevirme</translation>
 <translation id="1080790410959514870"><ph name="DOMAIN_NAME" /> tarafından yönetilen bir hesaptan çıkış yapıyorsunuz. Bu işlem, bu cihazda depolanan Chrome verilerini siler, ancak veriler Google Hesabınızda kalmaya devam eder.</translation>
-<translation id="1099080783256647258">Veri Tasarrufu özelliği açıkken Chrome, sayfaların yüklenmesini hızlandırmak ve sayfaları sıkıştırmak için Google sunucularını kullanır. Veri Tasarrufu, özellikle yavaş sayfaları yeniden yazarak yalnızca önemli içeriği yükler. Veri Tasarrufu özelliği Gizli modda yüklenen sayfaları optimize etmez.</translation>
 <translation id="1100066534610197918">Grupta yeni sekmede aç</translation>
 <translation id="1105960400813249514">Ekran Kaydediliyor</translation>
 <translation id="1111673857033749125">Diğer cihazlarınızda kaydedilmiş yer işaretleri burada görünür.</translation>
@@ -25,6 +24,7 @@
 <translation id="1175310183703641346">Yer işaretleri, geçmiş, şifreler ve diğer ayarlarınız artık Google Hesabınız ile senkronize edilmeyecek.</translation>
 <translation id="1178581264944972037">Duraklat</translation>
 <translation id="1181037720776840403">Kaldır</translation>
+<translation id="1188239144602654184">AR'ye gir</translation>
 <translation id="1197267115302279827">Yer işaretlerini taşı</translation>
 <translation id="119944043368869598">Tümünü temizle</translation>
 <translation id="1201402288615127009">İleri</translation>
@@ -96,7 +96,6 @@
 <translation id="1672586136351118594">Bir daha gösterme</translation>
 <translation id="1692118695553449118">Senkronizasyon açık.</translation>
 <translation id="169515064810179024">Sitelerin hareket sensörlerine erişimini engelle</translation>
-<translation id="1709438864123551175">Veri Tasarrufu</translation>
 <translation id="1717218214683051432">Hareket sensörleri</translation>
 <translation id="1718835860248848330">Son saat</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - Son Güncellenme: <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -214,7 +213,6 @@
 <translation id="2501278716633472235">Geri dön</translation>
 <translation id="2513403576141822879">Gizlilik, güvenlik ve veri toplamayla ilgili daha fazla ayar için <ph name="BEGIN_LINK" />Senkronizasyon ve Google hizmetleri<ph name="END_LINK" /> konusuna bakın</translation>
 <translation id="2523184218357549926">Ziyaret ettiğiniz sayfaların URL'lerini Google'a gönderir</translation>
-<translation id="2526148617758225454">Veri Tasarrufu açık. Bu özelliği Ayarlar'dan yönetin.</translation>
 <translation id="2532336938189706096">Web Görüntüleme</translation>
 <translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" /> öğe silindi</translation>
 <translation id="2536728043171574184">Bu sayfanın çevrimdışı bir kopyası görüntüleniyor</translation>
@@ -354,14 +352,12 @@
 <translation id="3599863153486145794">Oturumunuzun açık olduğu tüm cihazlarda geçmişi temizler. Google Hesabınızın <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> adresinde başka biçimlerde tarama geçmişi olabilir.</translation>
 <translation id="3600792891314830896">Ses çalan sitelerin sesini kapat</translation>
 <translation id="3616113530831147358">Ses</translation>
-<translation id="3620176948598597475">Sıfırlama işlemi, ziyaret edilen sitelerin listesi de dahil olmak üzere Veri Tasarrufu geçmişini siler.</translation>
 <translation id="3632295766818638029">Şifreyi göster</translation>
 <translation id="363596933471559332">Depolanmış kimlik bilgileriyle web sitelerinde otomatik olarak oturum açın. Bu özellik kapatıldığında, bir web sitesinde oturum açmadan önce her defasında doğrulama yapmanız istenir.</translation>
 <translation id="3658159451045945436">Sıfırlama işlemi, ziyaret edilen sitelerin listesi de dahil olmak üzere veri tasarrufu geçmişinizi siler.</translation>
 <translation id="3662546969139119822">Burada geçmiş yok</translation>
 <translation id="3672452749423051839">Gezinme hataları ile ilgili öneriler</translation>
 <translation id="3692944402865947621">Depolama konumuna erişilemediği için <ph name="FILE_NAME" /> dosyası indirilemedi.</translation>
-<translation id="3712575778697986964">Veri Tasarrufu sıfırlansın mı?</translation>
 <translation id="3714981814255182093">Bulma Çubuğu'nu açar</translation>
 <translation id="3716182511346448902">Bu sayfa, bellekte çok fazla yer kapladığından Chrome tarafından duraklatıldı.</translation>
 <translation id="3730075448226062617">Chrome'un mikrofonunuza erişebilmesi için <ph name="BEGIN_LINK" />Android Ayarları<ph name="END_LINK" />'nda da mikrofonu açın.</translation>
@@ -503,13 +499,11 @@ Diğer Google hizmetlerinden yapılan aramalar ve etkinlikler gibi Google hesab�
 <translation id="4751476147751820511">Hareket veya ışık sensörleri</translation>
 <translation id="4759238208242260848">İndirilenler</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 indirme işlemi tamamlandı.}other{# indirme işlemi tamamlandı.}}</translation>
-<translation id="4766369052440583386">Veri Tasarrufu açık</translation>
 <translation id="4797039098279997504"><ph name="URL_OF_THE_CURRENT_TAB" /> adresine dönmek için dokunun</translation>
 <translation id="4802417911091824046">Parolayla şifreleme, Google Pay'deki adresleri ve ödeme yöntemlerini kapsamaz.
 
 Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlayın<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">Kartın üzerindeki ad</translation>
-<translation id="4807963036345170158">Veri Tasarrufu kapalı</translation>
 <translation id="4816465935029283692">Veri türleri</translation>
 <translation id="4824958205181053313">Senkronizasyon iptal edilsin mi?</translation>
 <translation id="4837753911714442426">Sayfayı yazdırma seçeneklerini açar</translation>
@@ -601,6 +595,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="5447765697759493033">Bu site çevrilmeyecek</translation>
 <translation id="545042621069398927">İndirme işleminiz hızlandırılıyor.</translation>
 <translation id="5456381639095306749">Sayfayı indir</translation>
+<translation id="5475862044948910901">Artırılmış Gerçeklik oturumu başlatılsın mı?</translation>
 <translation id="548278423535722844">Haritalar uygulamasında aç</translation>
 <translation id="5487521232677179737">Verileri temizle</translation>
 <translation id="5494752089476963479">Araya giren veya yanıltıcı reklamlar gösteren sitelerde reklamları engelle</translation>
@@ -643,7 +638,6 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="569536719314091526">Diğer seçenekler düğmesini kullanarak bu sayfayı istediğiniz dile çevirin</translation>
 <translation id="572328651809341494">Son sekmeler</translation>
 <translation id="5726692708398506830">Sayfadaki her şeyi büyütür</translation>
-<translation id="5734520971562437809">Yüzde 60'a kadar daha az veri kullanın ve web'i hızlandırın.</translation>
 <translation id="5748802427693696783">Standart sekmelere geçildi</translation>
 <translation id="5749068826913805084">Dosya indirmek için Chrome'un depolama alanına erişmesi gerekiyor.</translation>
 <translation id="5763382633136178763">Gizli mod sekmeleri</translation>
@@ -701,7 +695,6 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="6159335304067198720"><ph name="PERCENT" /> veri tasarrufu</translation>
 <translation id="6165508094623778733">Daha fazla bilgi edinin</translation>
 <translation id="6177111841848151710">Geçerli arama motoru için engellendi</translation>
-<translation id="6177390657002841081">Veri Tasarrufu'nu aç</translation>
 <translation id="6181444274883918285">Site istisnası ekle</translation>
 <translation id="6192333916571137726">Dosyayı indir</translation>
 <translation id="6192792657125177640">İstisnalar</translation>
@@ -867,6 +860,11 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="7352939065658542140">VİDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{1 seçili öğeyi paylaş}other{# seçili öğeyi paylaş}}</translation>
 <translation id="7359002509206457351">Ödeme yöntemlerine erişim</translation>
+<translation id="7365126855094612066">Bu oturumun süresince site şunları yapabilir:
+• çevrenizin 3D haritasını oluşturabilir
+• kamera hareketini takip edebilir
+
+Site kameraya ERİŞMEZ. Kamera görüntülerini yalnızca siz görebilirsiniz.</translation>
 <translation id="7375125077091615385">Tür:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -1114,11 +1112,9 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="9188680907066685419">Yönetilen hesabın oturumunu kapat</translation>
 <translation id="9204836675896933765">1 dosya kaldı</translation>
 <translation id="9206873250291191720">A</translation>
-<translation id="9215534869786664672">Yüzde 60'a kadar daha az veri kullanın ve web'i hızlandırın. Google sunucuları ziyaret ettiğiniz sayfaları optimize eder.</translation>
 <translation id="9219103736887031265">Resimler</translation>
 <translation id="926205370408745186">Chrome etkinliğinizi Dijital Denge'den kaldırma</translation>
 <translation id="932327136139879170">Ana Sayfa</translation>
-<translation id="932599481871055447">Veri tasarrufuyla daha hızlı tarama deneyimi</translation>
 <translation id="938850635132480979">Hata: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Mikrofonunuza erişim</translation>
 <translation id="951339005376969845">Mevcut veriler silinir. İlgili verileri tekrar <ph name="FROM_ACCOUNT" /> hesabına geçerek alabilirsiniz.</translation>

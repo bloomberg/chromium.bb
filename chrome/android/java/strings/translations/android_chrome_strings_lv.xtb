@@ -9,7 +9,6 @@
 <translation id="1067922213147265141">Citi Google pakalpojumi</translation>
 <translation id="1068672505746868501">Nekad netulkot lapas šādā valodā: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1080790410959514870">Jūs izrakstāties no konta, kurš tiek pārvaldīts domēnā <ph name="DOMAIN_NAME" />. Tādējādi tiks dzēsti šajā ierīcē glabātie Chrome dati, taču tie joprojām būs pieejami jūsu Google kontā.</translation>
-<translation id="1099080783256647258">Kad Datu lietojuma samazinātājs ir ieslēgts, Chrome izmanto Google serverus, lai paātrinātu un saspiestu lapas ielādi. Īpaši lēnās lapās Datu lietojuma samazinātājs pārraksta lapu, lai ielādētu tikai būtisko saturu. Datu lietojuma samazinātājs neoptimizē lapas, kas ielādētas inkognito režīmā.</translation>
 <translation id="1100066534610197918">Atvērt jaunu cilni grupā</translation>
 <translation id="1105960400813249514">Ekrāna tveršana</translation>
 <translation id="1111673857033749125">Šeit būs redzamas grāmatzīmes, kuras esat saglabājis citās ierīcēs.</translation>
@@ -25,6 +24,7 @@
 <translation id="1175310183703641346">Jūsu grāmatzīmes, vēsture, paroles un citi iestatījumi vairs netiks sinhronizēti ar jūsu Google kontu</translation>
 <translation id="1178581264944972037">Pauzēt</translation>
 <translation id="1181037720776840403">Noņemt</translation>
+<translation id="1188239144602654184">Ievadīt PR</translation>
 <translation id="1197267115302279827">Pārvietot grāmatzīmes</translation>
 <translation id="119944043368869598">Notīrīt visu</translation>
 <translation id="1201402288615127009">Tālāk</translation>
@@ -96,7 +96,6 @@
 <translation id="1672586136351118594">Vairs nerādīt</translation>
 <translation id="1692118695553449118">Sinhronizācija ieslēgta</translation>
 <translation id="169515064810179024">Bloķēt vietņu piekļuvi kustību sensoriem</translation>
-<translation id="1709438864123551175">Datu lietojuma samazinātājs</translation>
 <translation id="1717218214683051432">Kustību sensori</translation>
 <translation id="1718835860248848330">Pēdējā stunda</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> — atjaunināts <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -214,7 +213,6 @@
 <translation id="2501278716633472235">Doties atpakaļ</translation>
 <translation id="2513403576141822879">Papildu iestatījumus, kas attiecas uz konfidencialitāti, drošību un datu apkopošanu, skatiet lapā <ph name="BEGIN_LINK" />Sinhronizēšana un Google pakalpojumi<ph name="END_LINK" />.</translation>
 <translation id="2523184218357549926">Nosūta Google serveriem apmeklēto lapu vietrāžus URL</translation>
-<translation id="2526148617758225454">Datu lietojuma samazinātājs ir ieslēgts. Varat to pārvaldīt iestatījumos.</translation>
 <translation id="2532336938189706096">Tīmekļa skatījums</translation>
 <translation id="2534155362429831547"><ph name="NUMBER_OF_ITEMS" /> vienumi tika izdzēsti</translation>
 <translation id="2536728043171574184">Skata šīs lapas kopiju bezsaistē</translation>
@@ -354,14 +352,12 @@
 <translation id="3599863153486145794">Notīra vēsturi no visām ierīcēm, kurās esat pierakstījies. Jūsu Google kontam vietnē <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> var būt citu veidu pārlūkošanas vēstures dati.</translation>
 <translation id="3600792891314830896">Izslēgt skaņu vietnēm, kurās tiek atskaņota skaņa</translation>
 <translation id="3616113530831147358">Audio</translation>
-<translation id="3620176948598597475">Veicot atiestatīšanu, tiek dzēsta datu lietojuma samazinātāja vēsture, tostarp apmeklēto vietņu saraksts.</translation>
 <translation id="3632295766818638029">Parādīt paroli</translation>
 <translation id="363596933471559332">Automātiski pierakstīties vietnēs, izmantojot saglabātos akreditācijas datus. Ja funkcija ir izslēgta, verifikācija būs jāveic ikreiz, kad pierakstīsieties vietnē.</translation>
 <translation id="3658159451045945436">Veicot atiestatīšanu, tiek dzēsta saglabāto datu vēsture, tostarp apmeklēto vietņu saraksts.</translation>
 <translation id="3662546969139119822">Nav vēstures</translation>
 <translation id="3672452749423051839">Navigācijas kļūdu ieteikumi</translation>
 <translation id="3692944402865947621">Faila <ph name="FILE_NAME" /> lejupielāde neizdevās, jo krātuves vieta nav sasniedzama.</translation>
-<translation id="3712575778697986964">Vai atiestatīt datu lietojuma samazinātāju?</translation>
 <translation id="3714981814255182093">Atvērt atrašanas joslu</translation>
 <translation id="3716182511346448902">Šī lapa izmanto pārāk daudz atmiņas, tādēļ Chrome to apturēja.</translation>
 <translation id="3730075448226062617">Lai atļautu pārlūkprogrammai Chrome piekļūt jūsu mikrofonam, ieslēdziet mikrofonu arī <ph name="BEGIN_LINK" />Android iestatījumos<ph name="END_LINK" />.</translation>
@@ -503,13 +499,11 @@ Jūsu Google kontam vietnē <ph name="BEGIN_LINK" />myactivity.google.com<ph nam
 <translation id="4751476147751820511">Kustību vai gaismas sensori</translation>
 <translation id="4759238208242260848">Lejupielādes</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 lejupielāde ir pabeigta.}zero{# lejupielādes ir pabeigtas.}one{# lejupielāde ir pabeigta.}other{# lejupielādes ir pabeigtas.}}</translation>
-<translation id="4766369052440583386">Datu lietojuma samazinātājs ir ieslēgts.</translation>
 <translation id="4797039098279997504">Pieskarieties, lai atgrieztos cilnē <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4802417911091824046">Ieejas frāzes šifrējumā nav iekļauti maksājumu veidi un adreses no pakalpojuma Google Pay.
 
 Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāciju<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">Vārds uz kartes</translation>
-<translation id="4807963036345170158">Datu lietojuma samazinātājs ir izslēgts.</translation>
 <translation id="4816465935029283692">Datu tipi</translation>
 <translation id="4824958205181053313">Vai atcelt sinhronizāciju?</translation>
 <translation id="4837753911714442426">Atvērt iespējas, lai izdrukātu lapu</translation>
@@ -601,6 +595,7 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="5447765697759493033">Šī vietne netiks tulkota</translation>
 <translation id="545042621069398927">Lejupielāde tiek paātrināta.</translation>
 <translation id="5456381639095306749">Lejupielādēt lapu</translation>
+<translation id="5475862044948910901">Vai sākt papildinātās realitātes sesiju?</translation>
 <translation id="548278423535722844">Atvērt karšu lietotnē</translation>
 <translation id="5487521232677179737">Notīrīt datus</translation>
 <translation id="5494752089476963479">Bloķēt reklāmas vietnēs, kurās tiek rādītas traucējošas vai maldinošas reklāmas</translation>
@@ -643,7 +638,6 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="569536719314091526">Tulkojiet šīs lapas saturu jebkurā valodā, izmantojot pogu Vairāk opciju.</translation>
 <translation id="572328651809341494">Nesen atvērtas cilnes</translation>
 <translation id="5726692708398506830">Palielināt visu lapas saturu</translation>
-<translation id="5734520971562437809">Izmantojiet līdz pat 60 procentiem mazāk datu un paātriniet tīmekļa darbību.</translation>
 <translation id="5748802427693696783">Notika pārslēgšanās uz standarta cilnēm</translation>
 <translation id="5749068826913805084">Chrome ir nepieciešama piekļuve krātuvei, lai varētu lejupielādēt failus.</translation>
 <translation id="5763382633136178763">Inkognito režīma cilnes</translation>
@@ -701,7 +695,6 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="6159335304067198720">Datu lietojuma samazinājums: <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Uzziniet vairāk</translation>
 <translation id="6177111841848151710">Bloķēta pašreizējai meklētājprogrammai</translation>
-<translation id="6177390657002841081">Ieslēgt Datu lietojuma samazinātāju</translation>
 <translation id="6181444274883918285">Pievienot vietnes izņēmumu</translation>
 <translation id="6192333916571137726">Lejupielāde fails</translation>
 <translation id="6192792657125177640">Izņēmumi</translation>
@@ -867,6 +860,11 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="7352939065658542140">VIDEOKLIPS</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Kopīgot 1 atlasīto vienumu}zero{Kopīgot # atlasītos vienumus}one{Kopīgot # atlasīto vienumu}other{Kopīgot # atlasītos vienumus}}</translation>
 <translation id="7359002509206457351">Piekļuve maksājumu veidiem</translation>
+<translation id="7365126855094612066">Šīs sesijas laikā vietne varēs:
+• izveidot jūsu vides 3D karti;
+• izsekot kameras kustību.
+
+Vietnei NAV piekļuves kamerai. Kameras attēli ir redzami tikai jums.</translation>
 <translation id="7375125077091615385">Veids:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -1114,11 +1112,9 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="9188680907066685419">Izrakstīšanās no pārvaldīta konta</translation>
 <translation id="9204836675896933765">Atlicis 1 fails</translation>
 <translation id="9206873250291191720">A</translation>
-<translation id="9215534869786664672">Izmantojiet līdz pat 60 procentiem mazāk datu un paātriniet tīmekļa darbību. Google serveri optimizēs apmeklēto lapu darbību.</translation>
 <translation id="9219103736887031265">Attēli</translation>
 <translation id="926205370408745186">Chrome darbību noņemšana no Digitālās labjutības</translation>
 <translation id="932327136139879170">Sākums</translation>
-<translation id="932599481871055447">Saglabājiet datus un paātriniet pārlūkošanu</translation>
 <translation id="938850635132480979">Kļūda: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Piekļuve mikrofonam</translation>
 <translation id="951339005376969845">Dzēst esošos datus. Varat tos izgūt, pārslēdzoties atpakaļ uz kontu <ph name="FROM_ACCOUNT" />.</translation>

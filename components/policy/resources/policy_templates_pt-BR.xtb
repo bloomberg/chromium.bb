@@ -137,6 +137,15 @@
       Se a política for definida como "False", o estado da chave dev não será informado.</translation>
 <translation id="1160479894929412407">Permitir protocolo QUIC</translation>
 <translation id="1160939557934457296">Desativa a continuação na página de aviso de "Navegação segura"</translation>
+<translation id="1171342272070128466">Ativar o recurso de acessibilidade da lupa ancorada.
+
+          Se esta política for definida como verdadeira, a lupa ancorada estará sempre ativada.
+
+          Se esta política for definida como falsa, a lupa ancorada estará sempre desativada.
+
+          Se você definir esta política, os usuários não poderão alterá-la ou modificá-la.
+
+          Se esta política não for definida, a lupa ancorada estará desativada inicialmente, mas poderá ser ativada pelo usuário a qualquer momento.</translation>
 <translation id="1189817621108632689">Permite que você defina uma lista de padrões de URL que especifica sites que têm permissão para exibir imagens.
 
           Se esta política não for definida, o valor global padrão será usado para todos os sites da política "DefaultImagesSetting", caso ela tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.
@@ -351,7 +360,7 @@ Cada item da lista da política é uma string que contém um código de extensã
       Esta política só é eficaz quando a <ph name="CHROME_REPORTING_EXTENSION_NAME" /> está ativada e quando a máquina está inscrita na política <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="1560205870554624777">Controla se a funcionalidade do Kerberos está ativada. Kerberos é um protocolo de autenticação que pode ser usado para autenticar apps da Web e compartilhamentos de arquivos.
 
-          Se esta política for ativada, a funcionalidade do Kerberos também será. As contas do Kerberos podem ser adicionadas por meio da política "Configurar contas do Kerberos" ou nas configurações de contas do protocolo, na página "Configurações de pessoas".
+          Se esta política for ativada, a funcionalidade do Kerberos também será. As contas do Kerberos podem ser adicionadas por meio da política "Configurar contas do Kerberos" ou nas configurações de contas do protocolo, na página de configurações "Pessoas".
 
           Se esta política for desativada ou não estiver definida, as configurações de contas do Kerberos serão desativadas. Não será possível adicionar nenhuma conta do Kerberos nem utilizar a autenticação dele. Todas as contas existentes do Kerberos e todas as senhas armazenadas serão excluídas.</translation>
 <translation id="1561424797596341174">A política modifica as versões de depuração do host de acesso remoto</translation>
@@ -444,8 +453,9 @@ Cada item da lista da política é uma string que contém um código de extensã
       Esta política se aplica à tela de login. Consulte também a política <ph name="SITE_PER_PROCESS_POLICY_NAME" />, que se aplica à sessão do usuário. É recomendado definir as duas políticas com o mesmo valor. Se os valores não coincidirem, poderá haver um atraso ao entrar em uma sessão enquanto o valor especificado pela política do usuário estiver sendo aplicado.
       Essa configuração, DeviceLoginScreenSitePerProcess, pode ser usada para impedir que os usuários desativem o comportamento padrão de isolar todos os sites. A política DeviceLoginScreenIsolateOrigins também pode ser útil para isolar outras origens mais refinadas.
       Se a política for ativada, os usuários não poderão desativar o comportamento padrão, em que cada site executa o próprio processo.
-      Se a política não for configurada ou estiver desativada, o usuário poderá alterar essa configuração (por exemplo, usando a entrada "Desativar isolamento de sites" em chrome://flags).
+      Se a política não for configurada ou estiver desativada, o usuário poderá alterar essa configuração (por exemplo, usando a entrada "Disable site isolation" em chrome://flags).
       </translation>
+<translation id="1767673020408652620">Ativar recomendações de app no estado inicial da caixa de pesquisa</translation>
 <translation id="1781356041596378058">Esta política também controla o acesso às Opções do desenvolvedor Android. Se você configurar essa política como true, os usuários não poderão acessar as Opções do desenvolvedor. Se configurá-la como false ou deixá-la sem definição, os usuários poderão acessar as Opções do desenvolvedor tocado sete vezes no número da versão no app Config. do Android.</translation>
 <translation id="1793346220873697538">Desativar impressão com PIN como padrão</translation>
 <translation id="1797233582739332495">Mostrar um prompt recorrente ao usuário indicando que é necessário reiniciar</translation>
@@ -958,6 +968,15 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
 
       Cada entrada da lista especifica um identificador, que é usado internamente para diferenciar as contas locais de dispositivo.</translation>
 <translation id="2769952903507981510">Configurar o nome de domínio obrigatório para hosts de acesso remoto</translation>
+<translation id="2783078941107212091">Ativar recomendação de app no estado inicial da caixa de pesquisa no acesso rápido.
+
+          Se esta política for definida como verdadeira, as recomendações de app podem ser exibidas no estado inicial da pesquisa.
+
+          Se esta política foi definida como falsa, as recomendações de app não serão exibidas no estado inicial da pesquisa.
+
+          Se você definir esta política, os usuários não poderão alterá-la ou modificá-la.
+
+          Se esta política não for definida, o padrão será falso para dispositivos gerenciados.</translation>
 <translation id="2787173078141616821">Informações de relatório sobre o status do Android</translation>
 <translation id="2799297758492717491">Permitir reprodução automática de mídia em uma lista de permissões de padrões de URL</translation>
 <translation id="2801155097555584385">Configurar o início do carregamento personalizado da bateria, em porcentagem</translation>
@@ -1153,6 +1172,24 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
       Se esta política for definida como "false", a otimização de WPAD será desativada, fazendo com que o <ph name="PRODUCT_NAME" /> tenha que esperar mais tempo por servidores de WPAD baseados em DNS. Se a política não estiver definida ou estiver ativada, a otimização de WPAD será ativada.
 
       Independentemente de se ou como esta política está definida, a configuração de otimização de WPAD não pode ser alterada pelos usuários.</translation>
+<translation id="3071839057966069710">Configura uma lista de impressoras.
+
+      Esta política permite aos administradores fornecer configurações de impressora para os usuários.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> e <ph name="PRINTER_DESCRIPTION" /> são strings de formato livre que podem ser personalizadas para facilitar a seleção da impressora. <ph name="PRINTER_MANUFACTURER" /> e <ph name="PRINTER_MODEL" /> servem para facilitar a identificação da impressora pelos usuários finais. Esses dados representam o fabricante e o modelo da impressora. É necessário que <ph name="PRINTER_URI" /> seja um endereço acessível em um computador cliente e que inclua <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> e <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> é opcional. Se fornecido, será usado para ajudar a eliminar a duplicação de impressoras <ph name="ZEROCONF_DISCOVERY" />.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> precisa corresponder a uma das strings que representam uma impressora <ph name="PRODUCT_NAME" /> compatível. A string será usada para identificar e instalar o PPD apropriado para a impressora. Mais informações estão disponíveis em https://support.google.com/chrome?p=noncloudprint.
+
+      <ph name="PRINTER_AUTOCONF" /> é uma sinalização booleana que indica se é necessário usar o IPP Everywhere para configurar a impressora. Essa sinalização é compatível com <ph name="PRODUCT_OS_NAME" /> versão 76 ou posterior.
+
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> precisa conter o nome da impressora ou <ph name="PRINTER_AUTOCONF" /> deve ser definida como verdadeira. As impressoras com as duas propriedades ou sem nenhuma serão ignoradas.
+
+      A configuração da impressora é concluída depois que ela é utilizada pela primeira vez.  O download de PPDs é realizado enquanto a impressora não é utilizada.  Depois disso, os PPDs usados com frequência são armazenados em cache.
+
+      Esta política não afeta a possibilidade de os usuários configurarem impressoras em dispositivos individuais.  Ela tem o objetivo de complementar a configuração de impressoras por usuários individuais.
+
+      Para dispositivos gerenciados pelo Active Directory, esta política permite a expansão de <ph name="MACHINE_NAME_VARIABLE" /> para o nome do computador com Active Directory ou uma substring correspondente. Por exemplo, se o nome do computador for <ph name="MACHINE_NAME_EXAMPLE" />, <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> será substituído pelos quatro caracteres que começam depois da 6ª posição, ou seja, <ph name="MACHINE_NAME_PART_EXAMPLE" />. A posição se baseia em zero.
+      </translation>
 <translation id="3072045631333522102">Protetor de tela a ser utilizado na tela de login no modo de varejo</translation>
 <translation id="3072847235228302527">Definir os Termos de Serviço para uma conta local do dispositivo</translation>
 <translation id="3077183141551274418">Ativa ou desativa os ciclos de vida de guias</translation>
@@ -1919,7 +1956,6 @@ Quando a |IdleAction| não for definida, a ação padrão de suspensão será re
 <translation id="4591366717022345234">Oferecer Quick Fix Build a usuários</translation>
 <translation id="4600786265870346112">Ativar cursor grande</translation>
 <translation id="4604931264910482931">Configurar a lista de proibições de mensagens nativas</translation>
-<translation id="4613508646038788144">Se a política for definida como falsa, o software de terceiros terá permissão para injetar um código executável nos processos do Chrome. Se a política não for definida ou for definida como verdadeira, o software de terceiros será impedido de injetar o código executável nos processos do Chrome.</translation>
 <translation id="4617338332148204752">Ignorar a verificação de metatags em <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="4625915093043961294">Configurar a lista branca de instalação de extensão</translation>
 <translation id="4632343302005518762">Permitir que o <ph name="PRODUCT_FRAME_NAME" /> trabalhe com os tipos de conteúdo listados</translation>
@@ -2104,15 +2140,6 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
       Quando ela estiver definida como falsa, o Chrome fechará a guia depois de alternar para um navegador alternativo, mesmo que essa seja a última guia. Assim, o Chrome será totalmente fechado.</translation>
 <translation id="5105313908130842249">Intervalo de bloqueio da tela no funcionamento com energia da bateria</translation>
 <translation id="5108031557082757679">Impressoras empresariais desativadas</translation>
-<translation id="5113732180192599620">Esta política controla a lista de sites que nunca causarão uma troca de navegador.
-
-      Também é possível adicionar elementos à lista pelas políticas <ph name="USE_IE_SITELIST_POLICY_NAME" /> e <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />.
-
-      Quando esta política não for definida, nenhum site será adicionado à lista.
-
-      Quando esta política for definida, cada item será tratado como uma regra, de forma semelhante à política <ph name="URL_LIST_POLICY_NAME" />. No entanto, a lógica é inversa: quando houver correspondência com as regras, um navegador alternativo não será aberto.
-
-      Ao contrário da <ph name="URL_LIST_POLICY_NAME" />, as regras se aplicam nas duas direções. Ou seja, quando o suplemento do Internet Explorer estiver presente e ativado, isso também controlará se o <ph name="IE_PRODUCT_NAME" /> abrirá esses URLs no <ph name="PRODUCT_NAME" />.</translation>
 <translation id="5124368997194894978">Ativar inicialização em CA (corrente alternada)</translation>
 <translation id="5131211790949066746">Ativa a mesclagem das políticas de lista <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" /> e <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" /> para instalação de extensões.
 
@@ -2367,6 +2394,7 @@ Se esta política não for definida, qualquer plug-in que corresponder aos padr�
 
       Se não for especificada, a política não modificará o URL do termo-semente "Variações".</translation>
 <translation id="5561811616825571914">Seleciona certificados de cliente automaticamente para esses sites na tela de login</translation>
+<translation id="5565178130821694365">É necessário digitar a senha a cada dois dias (48 horas)</translation>
 <translation id="5566210228171064229">Permitir impressão com e sem PIN</translation>
 <translation id="556865034069957245">Esta política controla a disponibilidade do modo de tela cheia, em que toda a IU do <ph name="PRODUCT_NAME" /> fica oculta enquanto apenas o conteúdo da Web se encontra visível.
 
@@ -3370,7 +3398,7 @@ Essas políticas são ignoradas se a Área de trabalho remota do Google Chrome n
 <translation id="7433714841194914373">Ativar o Instant</translation>
 <translation id="7434202861148928348">Configurar os nomes de domínio obrigatórios para clientes de acesso remoto</translation>
 <translation id="7443616896860707393">Solicitações básicas de autorização HTTPS de múltiplas origens</translation>
-<translation id="7454519673779830548">Adiciona contas já preenchidas do Kerberos. Se as credenciais do Kerberos coincidirem com as credenciais de login, uma conta poderá ser configurada para reutilizar as credenciais de login especificando "${{LOGIN_EMAIL}}" e "${{PASSWORD}}" como principal e senha, respectivamente. Assim, o tíquete do Kerberos poderá ser recuperado automaticamente, a não ser que a "autenticação de dois fatores" esteja configurada. O usuário não poderá modificar contas adicionadas por meio dessa política.
+<translation id="7454519673779830548">Adiciona contas já preenchidas do Kerberos. Se as credenciais do Kerberos coincidirem com as credenciais de login, uma conta poderá ser configurada para reutilizar as credenciais de login especificando "${{LOGIN_EMAIL}}" e "${{PASSWORD}}" como conta principal e senha, respectivamente. Assim, o tíquete do Kerberos poderá ser recuperado automaticamente, a não ser que a "autenticação de dois fatores" esteja configurada. O usuário não poderá modificar contas adicionadas por meio dessa política.
 
           Se esta política for ativada, a lista de contas definidas por meio dela será adicionada às configurações de contas do Kerberos.
 
@@ -3511,7 +3539,7 @@ Se esta política não for definida, o renderizador padrão será usado para tod
 
           Se esta política for ativada ou não estiver definida, o usuário poderá decidir se as senhas do Kerberos serão memorizadas, para que ele não precise digitá-las novamente. Os tíquetes do Kerberos serão buscados automaticamente, a não ser que uma autenticação adicional seja necessária (autenticação de dois fatores).
 
-          Se esta política for desativada, as senhas nunca serão lembradas, e todas as senhas armazenadas anteriormente serão removidas. O usuário precisará inserir a senha sempre que tiver que fazer autenticação no sistema Kerberos. Dependendo das configurações do servidor, isso geralmente acontecerá a cada oito horas até intervalos de meses.</translation>
+          Se esta política for desativada, as senhas nunca serão lembradas, e todas as senhas armazenadas anteriormente serão removidas. O usuário precisará inserir a senha sempre que tiver que fazer autenticação no sistema Kerberos. Dependendo das configurações do servidor, isso acontecerá no mínimo a cada oito horas, mas é possível definir até intervalos de meses.</translation>
 <translation id="7694807474048279351">Agendar uma reinicialização automática após a aplicação de uma atualização do <ph name="PRODUCT_OS_NAME" /> 
 
       Quando esta política está definida como "verdadeira", uma reinicialização automática é agendada quando uma atualização do <ph name="PRODUCT_OS_NAME" /> é aplicada e uma reinicialização é obrigatória para concluir o processo. A reinicialização é agendada imediatamente, mas pode ser adiada pelo dispositivo em até 24 horas se um usuário o estiver usando no momento.
@@ -3548,7 +3576,7 @@ Se esta política não for definida, o renderizador padrão será usado para tod
 <translation id="7726421241038987229">
       Essa configuração, SitePerProcess, pode ser usada para impedir que os usuários desativem o comportamento padrão de isolamento de todos os sites. A política IsolateOrigins também pode ser útil para isolar outras origens mais refinadas.
       Se a política for ativada, os usuários não poderão desativar o comportamento padrão, em que cada site executa o próprio processo.
-      Se a política não for configurada ou estiver desativada, o usuário poderá desativar o "isolamento de sites" (por exemplo, usando a entrada "Desativar isolamento de sites" em chrome://flags).  A desativação e/ou não configuração da política não desativa o "isolamento de sites".
+      Se a política não for configurada ou estiver desativada, o usuário poderá desativar o "isolamento de sites" (por exemplo, usando a entrada "Disable site isolation" em chrome://flags).  A desativação e/ou não configuração da política não desativa o "isolamento de sites".
       No <ph name="PRODUCT_OS_NAME" />, também é recomendado definir a política do dispositivo <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> com o mesmo valor. Se os valores especificados pelas duas políticas não coincidirem, poderá haver um atraso ao entrar em uma sessão enquanto o valor especificado pela política do usuário estiver sendo aplicado.
 
       OBSERVAÇÃO: esta política não se aplica ao Android. Para ativar SitePerProcess no Android, use a configuração de política SitePerProcessAndroid.
@@ -3620,7 +3648,7 @@ Se esta política não for definida, o renderizador padrão será usado para tod
 <translation id="7882890448959833986">Remover o aviso de SO não compatível</translation>
 <translation id="7889788745439330797">Controla se o usuário pode adicionar contas do Kerberos.
 
-          Se esta política for ativada ou não estiver definida, o usuário poderá adicionar contas do Kerberos por meio das configurações de contas do protocolo, na página "Configurações de pessoas". O usuário terá o controle total das contas que adicionou e poderá modificá-las ou removê-las.
+          Se esta política for ativada ou não estiver definida, o usuário poderá adicionar contas do Kerberos por meio das configurações de contas do protocolo, na página de configurações "Pessoas". O usuário terá o controle total das contas que adicionou e poderá modificá-las ou removê-las.
 
           Se esta política for desativada, o usuário não poderá adicionar contas do Kerberos. As contas só poderão ser adicionadas por meio da política "Configurar contas do Kerberos". Esta é uma maneira eficiente de bloquear contas.</translation>
 <translation id="7895553628261067384">Acesso remoto</translation>

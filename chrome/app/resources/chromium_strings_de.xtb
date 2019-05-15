@@ -120,9 +120,7 @@
 <translation id="4987820182225656817">Gastnutzer können Chromium verwenden, ohne Daten zu hinterlassen.</translation>
 <translation id="4994636714258228724">Mich zu Chromium hinzufügen</translation>
 <translation id="5021854341188256296">{0,plural, =0{Ein Chromium OS-Update ist verfügbar}=1{Ein Chromium OS-Update ist verfügbar}other{Ein Chromium OS-Update steht seit # Tagen zur Verfügung}}</translation>
-<translation id="5032989939245619637">Details in Chromium speichern</translation>
 <translation id="5045248521775609809">Chromium überall mitnehmen</translation>
-<translation id="5116586539350239523">Ihre personenbezogenen Daten werden von Chromium sicher gespeichert. Dadurch brauchen Sie sie nicht noch einmal einzugeben.</translation>
 <translation id="5181952534059945058">Diese Seite benötigt zu viel Arbeitsspeicher. Darum hat Chromium einige Inhalte entfernt.</translation>
 <translation id="5277894862589591112">Starten Sie Chromium neu, um die Änderungen zu übernehmen</translation>
 <translation id="5358375970380395591">Sie melden sich mit einem verwalteten Konto an und ermöglichen dessen Administrator Zugriff auf Ihr Chromium-Profil. Ihre Chromium-Daten, wie Apps, Lesezeichen, Verlauf, Passwörter und andere Einstellungen, werden dauerhaft mit <ph name="USER_NAME" /> verknüpft. Sie können diese Daten über das Google Konten-Dashboard löschen, aber nicht mit einem anderen Konto verknüpfen. <ph name="LEARN_MORE" /></translation>

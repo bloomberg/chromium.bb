@@ -147,7 +147,6 @@ Täiendavad juhised leiate aadressilt <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="4750550185319565338">Taaskäivitage pistikprogrammi <ph name="PLUGIN_NAME" /> lubamiseks Chrome</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Chrome blokeeris faili, kuna see võib olla ohtlik.</translation>
-<translation id="4794050651896644714">Salvesta üksikasjad Chrome'i</translation>
 <translation id="4891791193823137474">Luba Google Chrome'i töötamine taustal</translation>
 <translation id="4895437082222824641">Ava link Chrome'i uuel &amp;vahelehel</translation>
 <translation id="4921569541910214635">Kas jagage arvutit? Saate nüüd seadistada Chrome'i just nii, nagu teile meeldib.</translation>
@@ -261,7 +260,6 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="8077352834923175128">Administraator palub teil Chrome OS-i selle värskenduse rakendamiseks taaskäivitada</translation>
 <translation id="8129812357326543296">Teave &amp;Google Chrome'i kohta</translation>
 <translation id="8179874765710681175">Installige Chrome oma telefoni. Saadame teie telefoni SMS-i.</translation>
-<translation id="8183957050892517584">Chrome salvestab turvaliselt teie isiklikud andmed, et te ei peaks neid uuesti sisestama.</translation>
 <translation id="8226081633851087288">{0,plural, =0{Chrome OS taaskäivitatakse kohe}=1{Chrome OS taaskäivitatakse 1 sekundi pärast}other{Chrome OS taaskäivitatakse # sekundi pärast}}</translation>
 <translation id="825412236959742607">Chrome eemaldas osa sisust, kuna leht kasutab liiga palju mälu.</translation>
 <translation id="8255190535488645436">Google Chrome kasutab kaamerat ja mikrofoni.</translation>

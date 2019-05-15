@@ -226,6 +226,7 @@
 <translation id="1338950911836659113">Видалення…</translation>
 <translation id="1340527397989195812">Створити резервну копію медіа-вмісту з пристрою за допомогою додатка Файли.</translation>
 <translation id="1341988552785875222">Поточний фоновий малюнок установив додаток <ph name="APP_NAME" />. Щоб змінити фоновий малюнок, можливо, потрібно видалити додаток <ph name="APP_NAME" />.</translation>
+<translation id="1343865611738742294">Надайте додаткам Linux доступ до пристроїв USB. Linux не зберігатиме дані про пристрій USB після його вилучення.</translation>
 <translation id="1347256498747320987">Встановлення оновлень і додатків. Продовжуючи, ви дозволяєте цьому пристрою автоматично завантажувати та встановлювати оновлення й додатки від Google, вашого оператора чи виробника пристрою, зокрема через мобільний трафік. У деяких додатках можуть пропонуватися покупки. <ph name="BEGIN_LINK1" />Докладніше<ph name="END_LINK1" /></translation>
 <translation id="1347975661240122359">Оновлення почнеться, коли рівень заряду акумулятора сягне <ph name="BATTERY_LEVEL" />%.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
@@ -707,6 +708,7 @@
 <translation id="2120297377148151361">Активність і взаємодії</translation>
 <translation id="2120478168904746065">{NUM_TABS,plural, =1{Увімкнути звук на вкладці}one{Увімкнути звук на вкладках}few{Увімкнути звук на вкладках}many{Увімкнути звук на вкладках}other{Увімкнути звук на вкладках}}</translation>
 <translation id="2121825465123208577">Змінити розмір</translation>
+<translation id="2122305276694332719">Автоматичне підключення до прихованої мережі дозволяє іншим користувачам бачити ваш пристрій і певні мережеві налаштування. Не рекомендується.</translation>
 <translation id="2124930039827422115">{1,plural, =1{Оцінка одного користувача: <ph name="AVERAGE_RATING" />.}one{Оцінка # користувача: <ph name="AVERAGE_RATING" />.}few{Оцінка # користувачів: <ph name="AVERAGE_RATING" />.}many{Оцінка # користувачів: <ph name="AVERAGE_RATING" />.}other{Оцінка # користувача: <ph name="AVERAGE_RATING" />.}}</translation>
 <translation id="2126167708562367080">Ваш адміністратор вимкнув синхронізацію.</translation>
 <translation id="2127372758936585790">Зарядний пристрій низької потужності</translation>
@@ -1303,6 +1305,7 @@
 <translation id="3012917896646559015">Негайно зв’яжіться з виробником свого апаратного забезпечення, щоб надіслати свій комп’ютер на ремонт.</translation>
 <translation id="3013291976881901233">Пристрої MIDI</translation>
 <translation id="3015639418649705390">Перезапустити зараз</translation>
+<translation id="3016329696181678353">Не вдалось автоматично налаштувати принтер <ph name="PRINTER_NAME" />. Укажіть додаткову інформацію про нього.</translation>
 <translation id="3016641847947582299">Компонент оновлено</translation>
 <translation id="3016780570757425217">Бачити ваше місцезнаходження</translation>
 <translation id="3020183492814296499">Ярлики</translation>
@@ -1805,7 +1808,6 @@
 <translation id="3789841737615482174">Встановити</translation>
 <translation id="379082410132524484">Ваша картка недійсна</translation>
 <translation id="3792890930871100565">Від’єднати принтери</translation>
-<translation id="3792938779249970121">Виберіть обліковий запис</translation>
 <translation id="3796648294839530037">Улюблені мережі:</translation>
 <translation id="3797739167230984533">Пристроєм <ph name="BEGIN_LINK" /><ph name="DEVICE_TYPE" /> керує<ph name="END_LINK" /> адміністратор вашої організації</translation>
 <translation id="3797900183766075808">&amp;Шукати "<ph name="SEARCH_TERMS" />" у <ph name="SEARCH_ENGINE" />.</translation>
@@ -2114,6 +2116,7 @@
 <translation id="4268025649754414643">Шифрування ключа</translation>
 <translation id="4270393598798225102">Версія <ph name="NUMBER" /></translation>
 <translation id="4271396100647220620">Немає збігів</translation>
+<translation id="4275663329226226506">Медіа-дані</translation>
 <translation id="4275830172053184480">Перезапустіть пристрій</translation>
 <translation id="4278101229438943600">Ваш Асистент готовий</translation>
 <translation id="4278390842282768270">Дозволено</translation>
@@ -2156,7 +2159,6 @@
 <translation id="4354344420232759511">Відвідані вами сайти з’являтимуться тут</translation>
 <translation id="435527878592612277">Виберіть фотографію</translation>
 <translation id="4356334633973342967">Або виберіть свій драйвер:</translation>
-<translation id="4358169392473932247">Цей ключ безпеки не підтримує зберігання облікових даних у внутрішній пам’яті, однак є запит на таку функцію.</translation>
 <translation id="4359408040881008151">Установлено, оскільки є залежні розширення.</translation>
 <translation id="4359717112757026264">Міський пейзаж</translation>
 <translation id="4361142739114356624">Секретний ключ цього сертифіката клієнта відсутній або недійсний</translation>
@@ -2339,7 +2341,6 @@
 <translation id="4665014895760275686">Виробник</translation>
 <translation id="4665446389743427678">Усі дані, збережені сайтом <ph name="SITE" /> буде видалено.</translation>
 <translation id="4668721319092543482">Натисніть, щоб увімкнути плагін <ph name="PLUGIN_NAME" /></translation>
-<translation id="4670688170798478686">Підтвердити скидання</translation>
 <translation id="4672657274720418656">Сторінка перетворення</translation>
 <translation id="4673442866648850031">Відкривати інструменти стилуса, коли стилус витягнуто</translation>
 <translation id="4677585247300749148">Сайт <ph name="URL" /> хоче реагувати на використання спеціальних можливостей</translation>
@@ -2369,7 +2370,6 @@
 <translation id="4711638718396952945">Відновити налаштування</translation>
 <translation id="4715553623069266137">дуже коротка затримка (0,8 с)</translation>
 <translation id="4716483597559580346">Powerwash для додаткового захисту</translation>
-<translation id="4718490098585891067">Виберіть обліковий запис для входу:</translation>
 <translation id="4720113199587244118">Додати пристрої</translation>
 <translation id="4720185134442950733">Мережа мобільного передавання даних</translation>
 <translation id="4722735765955348426">Пароль користувача <ph name="USERNAME" /></translation>
@@ -2400,7 +2400,6 @@
 <translation id="4756388243121344051">&amp;Історія</translation>
 <translation id="4759238208242260848">Завантаження</translation>
 <translation id="4761104368405085019">Використовувати ваш мікрофон</translation>
-<translation id="476166673298332917">Адміністратор пристрою може бачити, що ви робите в Інтернеті.</translation>
 <translation id="4762718786438001384">На диску пристрою дуже мало вільного місця</translation>
 <translation id="4763408175235639573">Файли cookie, створені під час перегляду сторінки</translation>
 <translation id="4763830802490665879">Файли cookie з багатьох сайтів буде очищено під час виходу.</translation>
@@ -3929,7 +3928,6 @@
 <translation id="713888829801648570">На жаль, неможливо підтвердити ваш пароль, оскільки ви не під’єднані до Інтернету.</translation>
 <translation id="7140928199327930795">Немає інших доступних пристроїв.</translation>
 <translation id="7141105143012495934">Помилка входу. Не вдалось отримати дані вашого облікового запису. Зв’яжіться з адміністратором або повторіть спробу.</translation>
-<translation id="714285394257538643">Щоб підтвердити, що ви хочете скинути ключ безпеки, знову торкніться його. Усі збережені на ньому облікові дані та PIN-код буде видалено.</translation>
 <translation id="7143092389027215216">Запускається демонстраційний режим</translation>
 <translation id="7143207342074048698">Під’єднання</translation>
 <translation id="7144878232160441200">Повторити спробу</translation>
@@ -4163,6 +4161,7 @@
 <translation id="7506541170099744506"><ph name="DEVICE_TYPE" /> зареєстровано для корпоративного керування.</translation>
 <translation id="7507930499305566459">Сертифікат відповідача статусу</translation>
 <translation id="7513029293694390567">Автоматично входити в облікові записи на веб-сайтах за допомогою збережених облікових даних. Якщо цю функцію вимкнено, потрібно підтверджувати облікові дані під час кожного входу на веб-сайтах.</translation>
+<translation id="7514365320538308">Завантажити</translation>
 <translation id="7517786267097410259">Створити пароль –</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7522255036471229694">Скажіть "Ok Google"</translation>
@@ -4503,6 +4502,7 @@
 Зберігайте свій файл ключа в безпечному місці. Він знадобиться вам для створення нових версій вашого розширення.</translation>
 <translation id="8000066093800657092">Немає мережі</translation>
 <translation id="8000467600002607205">{NUM_TABS,plural, =1{Закрити вкладку}one{Закрити вкладки}few{Закрити вкладки}many{Закрити вкладки}other{Закрити вкладки}}</translation>
+<translation id="8002274832045662704">Розширена конфігурація принтера</translation>
 <translation id="8004582292198964060">Переглядач</translation>
 <translation id="8005600846065423578">Завжди дозволяти сайту <ph name="HOST" /> переглядати буфер обміну</translation>
 <translation id="8008356846765065031">Утрачено з’єднання з Інтернетом. Перевірте з’єднання.</translation>
@@ -5043,6 +5043,7 @@
 <translation id="8850251000316748990">Показати більше…</translation>
 <translation id="885246833287407341">Аргументи функції API</translation>
 <translation id="8853586775156634952">Картку буде збережено лише на цьому пристрої</translation>
+<translation id="885701979325669005">Обсяг пам’яті</translation>
 <translation id="8859057652521303089">Виберіть мову:</translation>
 <translation id="8859174528519900719">Додатковий фрейм: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8862003515646449717">Виберіть швидкий веб-переглядач</translation>

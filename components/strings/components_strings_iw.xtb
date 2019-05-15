@@ -218,6 +218,7 @@
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">כרטיס</translation>
 <translation id="2114841414352855701">המערכת התעלמה משום שהמדיניות בוטלה על ידי <ph name="POLICY_NAME" />.</translation>
+<translation id="2129079103035905234">חיישני תנועה</translation>
 <translation id="213826338245044447">סימניות לנייד</translation>
 <translation id="214556005048008348">ביטול תשלום</translation>
 <translation id="2147827593068025794">סינכרון ברקע</translation>
@@ -301,7 +302,7 @@
 <translation id="2586657967955657006">לוח</translation>
 <translation id="2587730715158995865">מ-<ph name="ARTICLE_PUBLISHER" />. לקריאת כתבה זו ו-<ph name="OTHER_ARTICLE_COUNT" /> כתבות נוספות.</translation>
 <translation id="2587841377698384444">‏מזהה ממשק API של ספרייה:</translation>
-<translation id="2595719060046994702">המכשיר והחשבון לא מנוהלים על ידי חברה או ארגון אחר.</translation>
+<translation id="2595719060046994702">המכשיר והחשבון לא מנוהלים על-ידי חברה או ארגון אחר.</translation>
 <translation id="2597378329261239068">מסמך זה מוגן באמצעות סיסמה. הזן סיסמה.</translation>
 <translation id="2609632851001447353">וריאציות</translation>
 <translation id="2618023639789766142">C10 (Envelope)‎</translation>
@@ -353,7 +354,7 @@
 <translation id="2903493209154104877">כתובות</translation>
 <translation id="290376772003165898">הדף לא ב<ph name="LANGUAGE" />?</translation>
 <translation id="2909946352844186028">אותר שינוי ברשת.</translation>
-<translation id="2910133103376701357">המכשיר והחשבון שלך מנוהלים על ידי <ph name="ENROLLMENT_DOMAIN" />.</translation>
+<translation id="2910133103376701357">המכשיר והחשבון שלך מנוהלים על-ידי <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="2916038427272391327">סגירת תוכניות אחרות</translation>
 <translation id="2922350208395188000">לא ניתן לבדוק את אישור השרת.</translation>
 <translation id="2925673989565098301">שיטת משלוח</translation>
@@ -466,6 +467,7 @@
 <translation id="3495081129428749620">חיפוש בדף
 <ph name="PAGE_TITLE" /></translation>
 <translation id="3498215018399854026">לא הצלחנו ליצור קשר עם ההורה שלך. נסה שוב מאוחר יותר.</translation>
+<translation id="3512163584740124171">המערכת מתעלמת מהמדיניות הזו כי יש מדיניות אחרת מאותה קבוצה של הגדרות מדיניות שקיבלה עדיפות גבוהה יותר.</translation>
 <translation id="3528171143076753409">אישור השרת אינו מהימן.</translation>
 <translation id="3528485271872257980">חום כהה</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{לפחות פריט אחד במכשירים מסונכרנים}=1{פריט אחד (ופריטים נוספים במכשירים מסונכרנים)}two{שני פריטים (ופריטים נוספים במכשירים מסונכרנים)}many{# פריטים (ופריטים נוספים במכשירים מסונכרנים)}other{# פריטים (ופריטים נוספים במכשירים מסונכרנים)}}</translation>
@@ -693,7 +695,7 @@
 
 1240185477879256427אתר
 Del</translation>
-<translation id="4780900888022378816">המכשיר שלך מנוהל על ידי <ph name="ENROLLMENT_DOMAIN" /> והחשבון שלך מנוהל על ידי <ph name="ACCOUNT_DOMAIN" />.</translation>
+<translation id="4780900888022378816">המכשיר שלך מנוהל על-ידי <ph name="ENROLLMENT_DOMAIN" /> והחשבון שלך מנוהל על-ידי <ph name="ACCOUNT_DOMAIN" />.</translation>
 <translation id="4785689107224900852">החלפה לכרטיסייה זו</translation>
 <translation id="4798078619018708837">‏כדי לעדכן את פרטי הכרטיס, יש להזין את תאריך התפוגה וקוד האימות של <ph name="CREDIT_CARD" />. אחרי שנקבל ממך אישור, נשתף עם האתר הזה את פרטי הכרטיס מחשבון Google.</translation>
 <translation id="4800132727771399293">‏בדוק את תאריך התפוגה ואת ה-CVC ונסה שוב</translation>
@@ -719,7 +721,7 @@ Del</translation>
 <translation id="4926159001844873046">האתר <ph name="SITE" /> אומר</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4943872375798546930">אין תוצאות</translation>
-<translation id="4945672369594656571">‏קובע את אופן הטיפול בנתוני המכשיר והחשבון שלך. Google מעבדת את נתוני המכשיר והחשבון אך ורק בהתאם להנחיות של מנהל המכשיר והחשבון ורק לצרכים שציין מנהל המכשיר והחשבון.</translation>
+<translation id="4945672369594656571">‏קובעת את אופן הטיפול בנתוני המכשיר והחשבון שלך. Google מעבדת את נתוני המכשיר והחשבון אך ורק בהתאם להנחיות של מנהל המכשיר והחשבון ורק לצרכים שציין מנהל המכשיר והחשבון.</translation>
 <translation id="4950898438188848926">‏לחצן החלפת כרטיסיות, יש להקיש על Enter כדי לעבור לכרטיסייה הפתוחה, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">פעולות</translation>
 <translation id="4955242332710481440">A5-Extra</translation>
@@ -733,7 +735,7 @@ Del</translation>
 <translation id="5017554619425969104">טקסט שהעתקת</translation>
 <translation id="5018422839182700155">לא ניתן לפתוח את הדף</translation>
 <translation id="5019198164206649151">האחסון המשמש כגיבוי אינו תקין</translation>
-<translation id="5020154601324912079">‏קובע את אופן הטיפול בנתוני המכשיר. Google מעבדת את נתוני המכשיר אך ורק בהתאם להנחיות של מנהל המכשיר ורק לצרכים שציין מנהל המכשיר.</translation>
+<translation id="5020154601324912079">‏קובעת את אופן הטיפול בנתוני המכשיר. Google מעבדת את נתוני המכשיר אך ורק בהתאם להנחיות של מנהל המכשיר ורק לצרכים שציין מנהל המכשיר.</translation>
 <translation id="5023310440958281426">בדוק את תקנון מנהל המערכת שלך</translation>
 <translation id="5029568752722684782">מחיקת העותק</translation>
 <translation id="503069730517007720">‏יש צורך באישור שורש בשביל "<ph name="SOFTWARE_NAME" />", אבל לא מותקן אישור כזה. על מנהל ה-IT לבדוק את הוראות התצורה של "<ph name="SOFTWARE_NAME" />" כדי לפתור את הבעיה. <ph name="FURTHER_EXPLANATION" /></translation>
@@ -913,7 +915,7 @@ Del</translation>
 <translation id="5975083100439434680">התרחק</translation>
 <translation id="5980920751713728343">Index-3x5</translation>
 <translation id="598637245381783098">לא ניתן לפתוח את אפליקציית התשלומים</translation>
-<translation id="5988826871883769516">המכשיר שלך מנוהל על ידי <ph name="ENROLLMENT_DOMAIN" />.</translation>
+<translation id="5988826871883769516">המכשיר שלך מנוהל על-ידי <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="5989320800837274978">‏לא צוינו שרתי Proxy קבועים ולא כתובת אתר של סקריפט ‎.pac</translation>
 <translation id="5990559369517809815">בקשות שנשלחו לשרת נחסמו על ידי תוסף.</translation>
 <translation id="6008256403891681546">JCB</translation>
@@ -1001,7 +1003,7 @@ Del</translation>
 <translation id="6508722015517270189">‏הפעלה מחדש של Chrome</translation>
 <translation id="6529602333819889595">&amp;ביצוע מחדש של מחיקה</translation>
 <translation id="6534179046333460208">הצעות לאינטרנט הפיזי</translation>
-<translation id="6554795675067793129">חשבון זה מנוהל על ידי <ph name="ENROLLMENT_DOMAIN" />.</translation>
+<translation id="6554795675067793129">החשבון שלך מנוהל על-ידי <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="6556866813142980365">בצע מחדש</translation>
 <translation id="6563469144985748109">המנהל שלך עדיין לא אישר זאת</translation>
 <translation id="6569060085658103619">אתה מציג דף של תוסף</translation>
@@ -1084,7 +1086,6 @@ Del</translation>
 <translation id="7062635574500127092">כחול-ירקרק</translation>
 <translation id="7064851114919012435">פרטים ליצירת קשר</translation>
 <translation id="7079718277001814089">האתר הזה מכיל תוכנה זדונית</translation>
-<translation id="7081564429925484109">‏אזהרה: מדיניות זו לא מוזגה בהתאם לאמור במדיניות PolicyListMultipleSourceMergeList כי היא לא רשימה.</translation>
 <translation id="7087282848513945231">מחוז</translation>
 <translation id="7090678807593890770">‏חפש ב-Google את <ph name="LINK" /></translation>
 <translation id="7108338896283013870">הסתרה</translation>
@@ -1141,7 +1142,6 @@ Del</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
 <translation id="7378627244592794276">לא</translation>
 <translation id="7378810950367401542">/</translation>
-<translation id="7381288752349550461">שינוי כתוצאה מסשן מנוהל</translation>
 <translation id="7390545607259442187">אשר את הכרטיס</translation>
 <translation id="7400418766976504921">כתובת אתר</translation>
 <translation id="7403591733719184120">מכשיר <ph name="DEVICE_NAME" /> זה מנוהל</translation>
@@ -1426,7 +1426,7 @@ Del</translation>
 <translation id="8971063699422889582">פג תוקפו של אישור השרת.</translation>
 <translation id="8975012916872825179">כולל מידע כמו מספרי טלפון, כתובות אימייל וכתובות למשלוח</translation>
 <translation id="8975263830901772334">שמות הקבצים שמודפסים על ידך</translation>
-<translation id="8978053250194585037">‏לאחרונה <ph name="BEGIN_LINK" />זוהה דיוג<ph name="END_LINK" /> באתר <ph name="SITE" /> על-ידי הגלישה הבטוחה של Google. אתרי דיוג מתחזים לאתרים אחרים כדי להונות אותך.</translation>
+<translation id="8978053250194585037">‏לאחרונה <ph name="BEGIN_LINK" />זוהה פישינג<ph name="END_LINK" /> באתר <ph name="SITE" /> על-ידי הגלישה הבטוחה של Google. אתרי פישינג מתחזים לאתרים אחרים כדי להונות אותך.</translation>
 <translation id="8983003182662520383">‏אמצעי תשלום וכתובות שנשמרו ב-Google Pay</translation>
 <translation id="8987927404178983737">חודש</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
