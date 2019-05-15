@@ -468,11 +468,8 @@ void DataReductionProxyNetworkDelegate::OnCompletedInternal(
       // infobar.
       !IsEntireResource(request->response_headers());
 
-  if ((server_lofi || will_show_client_lofi_placeholder) &&
-      data_reduction_proxy_io_data_ &&
-      data_reduction_proxy_io_data_->lofi_ui_service()) {
-    data_reduction_proxy_io_data_->lofi_ui_service()->OnLoFiReponseReceived(
-        *request);
+  if (server_lofi || will_show_client_lofi_placeholder) {
+    // TODO(robertogden): Remove this code.
   } else if (data_reduction_proxy_io_data_ && request->response_headers() &&
              IsLitePagePreview(*(request->response_headers()))) {
     RecordLitePageTransformationType(LITE_PAGE);

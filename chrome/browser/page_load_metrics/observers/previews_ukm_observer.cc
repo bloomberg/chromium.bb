@@ -231,8 +231,10 @@ void PreviewsUKMObserver::RecordPreviewsTypes(
     builder.Setresource_loading_hints(1);
   if (offline_preview_seen_)
     builder.Setoffline_preview(1);
+  // 2 is set here for legacy reasons as it denotes an optout through the
+  // omnibox ui as opposed to the now deprecated infobar.
   if (opt_out_occurred_)
-    builder.Setopt_out(previews::params::IsPreviewsOmniboxUiEnabled() ? 2 : 1);
+    builder.Setopt_out(2);
   if (origin_opt_out_occurred_)
     builder.Setorigin_opt_out(1);
   if (save_data_enabled_)

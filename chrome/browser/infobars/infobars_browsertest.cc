@@ -29,7 +29,6 @@
 #include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/plugins/plugin_observer.h"
 #include "chrome/browser/plugins/reload_plugin_infobar_delegate.h"
-#include "chrome/browser/previews/previews_infobar_delegate.h"
 #include "chrome/browser/previews/previews_lite_page_infobar_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -229,8 +228,6 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
       {"obsolete_system", IBD::OBSOLETE_SYSTEM_INFOBAR_DELEGATE},
       {"page_info", IBD::PAGE_INFO_INFOBAR_DELEGATE},
       {"translate", IBD::TRANSLATE_INFOBAR_DELEGATE_NON_AURA},
-      {"data_reduction_proxy_preview",
-       IBD::DATA_REDUCTION_PROXY_PREVIEW_INFOBAR_DELEGATE},
       {"automation", IBD::AUTOMATION_INFOBAR_DELEGATE},
       {"previews_lite_page", IBD::LITE_PAGE_PREVIEWS_INFOBAR},
       {"flash_deprecation", IBD::FLASH_DEPRECATION_INFOBAR_DELEGATE},
@@ -403,11 +400,6 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
       break;
     }
 
-    case IBD::DATA_REDUCTION_PROXY_PREVIEW_INFOBAR_DELEGATE:
-      PreviewsInfoBarDelegate::Create(
-          GetWebContents(), previews::PreviewsType::LOFI, true, nullptr);
-      break;
-
     case IBD::AUTOMATION_INFOBAR_DELEGATE:
       AutomationInfoBarDelegate::Create();
       break;
@@ -571,10 +563,6 @@ IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_translate) {
   ShowAndVerifyUi();
 }
 #endif
-
-IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_data_reduction_proxy_preview) {
-  ShowAndVerifyUi();
-}
 
 IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_automation) {
   ShowAndVerifyUi();

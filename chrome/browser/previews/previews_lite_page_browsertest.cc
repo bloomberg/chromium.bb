@@ -1741,15 +1741,6 @@ IN_PROC_BROWSER_TEST_P(
   histogram_tester.ExpectBucketCount(
       "Previews.ServerLitePage.IneligibleReasons",
       PreviewsLitePageNavigationThrottle::IneligibleReason::kInfoBarNotSeen, 1);
-
-  ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
-  // Expect the "Saved Data" InfoBar.
-  ASSERT_EQ(1U, GetInfoBarService()->infobar_count());
-  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_PREVIEWS_INFOBAR_SAVED_DATA_TITLE),
-            static_cast<ConfirmInfoBarDelegate*>(
-                GetInfoBarService()->infobar_at(0)->delegate())
-                ->GetMessageText());
-  VerifyPreviewLoaded();
 }
 
 class PreviewsLitePageNotificationDSDisabledBrowserTest

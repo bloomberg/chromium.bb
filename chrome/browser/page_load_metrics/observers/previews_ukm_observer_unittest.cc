@@ -442,42 +442,7 @@ TEST_F(PreviewsUKMObserverTest, LitePageSeen) {
               base::nullopt /* navigation_restart_penalty */);
 }
 
-TEST_F(PreviewsUKMObserverTest, LitePageOptOut) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {} /* enabled features */,
-      {previews::features::
-           kAndroidOmniboxPreviewsBadge} /* disabled features */);
-
-  RunTest(content::PREVIEWS_UNSPECIFIED /* allowed_state */,
-          PreviewsType::LITE_PAGE, true /* lite_page_received */,
-          false /* lite_page_redirect_received */, false /* noscript_on */,
-          false /* resource_loading_hints_on */, false /* origin_opt_out */,
-          false /* save_data_enabled */, false /* is_offline_preview */,
-          CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
-          base::nullopt /* navigation_restart_penalty */);
-
-  observer()->BroadcastEventToObservers(PreviewsUITabHelper::OptOutEventKey());
-  NavigateToUntrackedUrl();
-
-  ValidateUKM(false /* server_lofi_expected */,
-              false /* client_lofi_expected */, true /* lite_page_expected */,
-              false /* lite_page_redirect_expected */,
-              false /* noscript_expected */,
-              false /* resource_loading_hints_expected */,
-              1 /* opt_out_value */, false /* origin_opt_out_expected */,
-              false /* save_data_enabled_expected */,
-              false /* offline_preview_expected */, false /* previews_likely */,
-              CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
-              base::nullopt /* navigation_restart_penalty */);
-}
-
 TEST_F(PreviewsUKMObserverTest, LitePageOptOutChip) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {previews::features::kAndroidOmniboxPreviewsBadge} /* enabled features */,
-      {} /*disabled features */);
-
   RunTest(content::PREVIEWS_UNSPECIFIED /* allowed_state */,
           PreviewsType::LITE_PAGE, true /* lite_page_received */,
           false /* lite_page_redirect_received */, false /* noscript_on */,
@@ -524,42 +489,7 @@ TEST_F(PreviewsUKMObserverTest, LitePageRedirectSeen) {
               base::nullopt /* navigation_restart_penalty */);
 }
 
-TEST_F(PreviewsUKMObserverTest, LitePageRedirectOptOut) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {} /* enabled features */,
-      {previews::features::
-           kAndroidOmniboxPreviewsBadge} /* disabled features */);
-
-  RunTest(content::PREVIEWS_UNSPECIFIED /* allowed_state */,
-          PreviewsType::LITE_PAGE_REDIRECT, false /* lite_page_received */,
-          true /* lite_page_redirect_received */, false /* noscript_on */,
-          false /* resource_loading_hints_on */, false /* origin_opt_out */,
-          false /* save_data_enabled */, false /* is_offline_preview */,
-          CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
-          base::nullopt /* navigation_restart_penalty */);
-
-  observer()->BroadcastEventToObservers(PreviewsUITabHelper::OptOutEventKey());
-  NavigateToUntrackedUrl();
-
-  ValidateUKM(false /* server_lofi_expected */,
-              false /* client_lofi_expected */, false /* lite_page_expected */,
-              true /* lite_page_redirect_expected */,
-              false /* noscript_expected */,
-              false /* resource_loading_hints_expected */,
-              1 /* opt_out_value */, false /* origin_opt_out_expected */,
-              false /* save_data_enabled_expected */,
-              false /* offline_preview_expected */, false /* previews_likely */,
-              CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
-              base::nullopt /* navigation_restart_penalty */);
-}
-
 TEST_F(PreviewsUKMObserverTest, LitePageRedirectOptOutChip) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {previews::features::kAndroidOmniboxPreviewsBadge} /* enabled features */,
-      {} /*disabled features */);
-
   RunTest(content::PREVIEWS_UNSPECIFIED /* allowed_state */,
           PreviewsType::LITE_PAGE_REDIRECT, false /* lite_page_received */,
           true /* lite_page_redirect_received */, false /* noscript_on */,
@@ -605,41 +535,7 @@ TEST_F(PreviewsUKMObserverTest, NoScriptSeen) {
       base::nullopt /* navigation_restart_penalty */);
 }
 
-TEST_F(PreviewsUKMObserverTest, NoScriptOptOut) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {} /* enabled features */,
-      {previews::features::
-           kAndroidOmniboxPreviewsBadge} /* disabled features */);
-
-  RunTest(content::PREVIEWS_UNSPECIFIED /* allowed_state */,
-          PreviewsType::NOSCRIPT, false /* lite_page_received */,
-          false /* lite_page_redirect_received */, true /* noscript_on */,
-          false /* resource_loading_hints_on */, false /* origin_opt_out */,
-          false /* save_data_enabled */, false /* is_offline_preview */,
-          CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
-          base::nullopt /* navigation_restart_penalty */);
-
-  observer()->BroadcastEventToObservers(PreviewsUITabHelper::OptOutEventKey());
-  NavigateToUntrackedUrl();
-
-  ValidateUKM(
-      false /* server_lofi_expected */, false /* client_lofi_expected */,
-      false /* lite_page_expected */, false /* lite_page_redirect_expected */,
-      true /* noscript_expected */, false /* resource_loading_hints_expected */,
-      1 /* opt_out_value */, false /* origin_opt_out_expected */,
-      false /* save_data_enabled_expected */,
-      false /* offline_preview_expected */, false /* previews_likely */,
-      CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
-      base::nullopt /* navigation_restart_penalty */);
-}
-
 TEST_F(PreviewsUKMObserverTest, NoScriptOptOutChip) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {previews::features::kAndroidOmniboxPreviewsBadge} /* enabled features */,
-      {} /*disabled features */);
-
   RunTest(content::PREVIEWS_UNSPECIFIED /* allowed_state */,
           PreviewsType::NOSCRIPT, false /* lite_page_received */,
           false /* lite_page_redirect_received */, true /* noscript_on */,
@@ -707,41 +603,7 @@ TEST_F(PreviewsUKMObserverTest, ResourceLoadingHintsSeen) {
       base::nullopt /* navigation_restart_penalty */);
 }
 
-TEST_F(PreviewsUKMObserverTest, ResourceLoadingHintsOptOut) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {} /* enabled features */,
-      {previews::features::
-           kAndroidOmniboxPreviewsBadge} /* disabled features */);
-
-  RunTest(content::PREVIEWS_UNSPECIFIED /* allowed_state */,
-          PreviewsType::RESOURCE_LOADING_HINTS, false /* lite_page_received */,
-          false /* lite_page_redirect_received */, false /* noscript_on */,
-          true /* resource_loading_hints_on */, false /* origin_opt_out */,
-          false /* save_data_enabled */, false /* is_offline_preview */,
-          CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
-          base::nullopt /* navigation_restart_penalty */);
-
-  observer()->BroadcastEventToObservers(PreviewsUITabHelper::OptOutEventKey());
-  NavigateToUntrackedUrl();
-
-  ValidateUKM(
-      false /* server_lofi_expected */, false /* client_lofi_expected */,
-      false /* lite_page_expected */, false /* lite_page_redirect_expected */,
-      false /* noscript_expected */, true /* resource_loading_hints_expected */,
-      1 /* opt_out_value */, false /* origin_opt_out_expected */,
-      false /* save_data_enabled_expected */,
-      false /* offline_preview_expected */, false /* previews_likely */,
-      CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
-      base::nullopt /* navigation_restart_penalty */);
-}
-
 TEST_F(PreviewsUKMObserverTest, ResourceLoadingHintsOptOutChip) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {previews::features::kAndroidOmniboxPreviewsBadge} /* enabled features */,
-      {} /*disabled features */);
-
   RunTest(content::PREVIEWS_UNSPECIFIED /* allowed_state */,
           PreviewsType::RESOURCE_LOADING_HINTS, false /* lite_page_received */,
           false /* lite_page_redirect_received */, false /* noscript_on */,
@@ -809,63 +671,7 @@ TEST_F(PreviewsUKMObserverTest, ClientLoFiSeen) {
               base::nullopt /* navigation_restart_penalty */);
 }
 
-TEST_F(PreviewsUKMObserverTest, ClientLoFiOptOut) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {} /* enabled features */,
-      {previews::features::
-           kAndroidOmniboxPreviewsBadge} /* disabled features */);
-
-  RunTest(content::PREVIEWS_UNSPECIFIED /* allowed_state */, PreviewsType::LOFI,
-          false /* lite_page_received */,
-          false /* lite_page_redirect_received */, false /* noscript_on */,
-          false /* resource_loading_hints_on */, false /* origin_opt_out */,
-          false /* save_data_enabled */, false /* is_offline_preview */,
-          CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
-          base::nullopt /* navigation_restart_penalty */);
-
-  std::unique_ptr<data_reduction_proxy::DataReductionProxyData> data =
-      std::make_unique<data_reduction_proxy::DataReductionProxyData>();
-  data->set_client_lofi_requested(true);
-
-  // Prepare 3 resources of varying size and configurations, 2 of which have
-  // client LoFi set.
-  page_load_metrics::ExtraRequestCompleteInfo resources[] = {
-      {GURL(kDefaultTestUrl), net::IPEndPoint(), -1, false /*was_cached*/,
-       1024 * 40 /* raw_body_bytes */,
-       1024 * 40 * 5 /* original_network_content_length */, std::move(data),
-       content::ResourceType::kImage, 0, nullptr /* load_timing_info */},
-      // Uncached non-proxied request.
-      {GURL(kDefaultTestUrl), net::IPEndPoint(), -1, false /*was_cached*/,
-       1024 * 40 /* raw_body_bytes */,
-       1024 * 40 /* original_network_content_length */,
-       nullptr /* data_reduction_proxy_data */, content::ResourceType::kImage,
-       0, nullptr /* load_timing_info */},
-  };
-
-  for (const auto& request : resources)
-    SimulateLoadedResource(request);
-  observer()->BroadcastEventToObservers(PreviewsUITabHelper::OptOutEventKey());
-  NavigateToUntrackedUrl();
-
-  ValidateUKM(false /* server_lofi_expected */, true /* client_lofi_expected */,
-              false /* lite_page_expected */,
-              false /* lite_page_redirect_expected */,
-              false /* noscript_expected */,
-              false /* resource_loading_hints_expected */,
-              1 /* opt_out_value */, false /* origin_opt_out_expected */,
-              false /* save_data_enabled_expected */,
-              false /* offline_preview_expected */, false /* previews_likely */,
-              CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
-              base::nullopt /* navigation_restart_penalty */);
-}
-
 TEST_F(PreviewsUKMObserverTest, ClientLoFiOptOutChip) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {previews::features::kAndroidOmniboxPreviewsBadge} /* enabled features */,
-      {} /*disabled features */);
-
   RunTest(content::PREVIEWS_UNSPECIFIED /* allowed_state */, PreviewsType::LOFI,
           false /* lite_page_received */,
           false /* lite_page_redirect_received */, false /* noscript_on */,
@@ -955,64 +761,7 @@ TEST_F(PreviewsUKMObserverTest, ServerLoFiSeen) {
               base::nullopt /* navigation_restart_penalty */);
 }
 
-TEST_F(PreviewsUKMObserverTest, ServerLoFiOptOut) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {} /* enabled features */,
-      {previews::features::
-           kAndroidOmniboxPreviewsBadge} /* disabled features */);
-
-  RunTest(content::PREVIEWS_UNSPECIFIED /* allowed_state */, PreviewsType::LOFI,
-          false /* lite_page_received */,
-          false /* lite_page_redirect_received */, false /* noscript_on */,
-          false /* resource_loading_hints_on */, false /* origin_opt_out */,
-          false /* save_data_enabled */, false /* is_offline_preview */,
-          CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
-          base::nullopt /* navigation_restart_penalty */);
-
-  std::unique_ptr<data_reduction_proxy::DataReductionProxyData> data =
-      std::make_unique<data_reduction_proxy::DataReductionProxyData>();
-  data->set_used_data_reduction_proxy(true);
-  data->set_lofi_received(true);
-
-  // Prepare 3 resources of varying size and configurations, 2 of which have
-  // client LoFi set.
-  page_load_metrics::ExtraRequestCompleteInfo resources[] = {
-      {GURL(kDefaultTestUrl), net::IPEndPoint(), -1, false /*was_cached*/,
-       1024 * 40 /* raw_body_bytes */,
-       1024 * 40 * 5 /* original_network_content_length */, std::move(data),
-       content::ResourceType::kImage, 0, nullptr /* load_timing_info */},
-      {GURL(kDefaultTestUrl), net::IPEndPoint(), -1, false /*was_cached*/,
-       1024 * 40 /* raw_body_bytes */,
-       1024 * 40 /* original_network_content_length */,
-       nullptr /* data_reduction_proxy_data */, content::ResourceType::kImage,
-       0, nullptr /* load_timing_info */},
-  };
-
-  for (const auto& request : resources)
-    SimulateLoadedResource(request);
-
-  observer()->BroadcastEventToObservers(PreviewsUITabHelper::OptOutEventKey());
-  NavigateToUntrackedUrl();
-
-  ValidateUKM(true /* server_lofi_expected */, false /* client_lofi_expected */,
-              false /* lite_page_expected */,
-              false /* lite_page_redirect_expected */,
-              false /* noscript_expected */,
-              false /* resource_loading_hints_expected */,
-              1 /* opt_out_value */, false /* origin_opt_out_expected */,
-              false /* save_data_enabled_expected */,
-              false /* offline_preview_expected */, false /* previews_likely */,
-              CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
-              base::nullopt /* navigation_restart_penalty */);
-}
-
 TEST_F(PreviewsUKMObserverTest, ServerLoFiOptOutChip) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {previews::features::kAndroidOmniboxPreviewsBadge} /* enabled features */,
-      {} /*disabled features */);
-
   RunTest(content::PREVIEWS_UNSPECIFIED /* allowed_state */, PreviewsType::LOFI,
           false /* lite_page_received */,
           false /* lite_page_redirect_received */, false /* noscript_on */,
@@ -1108,68 +857,7 @@ TEST_F(PreviewsUKMObserverTest, BothLoFiSeen) {
               base::nullopt /* navigation_restart_penalty */);
 }
 
-TEST_F(PreviewsUKMObserverTest, BothLoFiOptOut) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {} /* enabled features */,
-      {previews::features::
-           kAndroidOmniboxPreviewsBadge} /* disabled features */);
-
-  RunTest(content::PREVIEWS_UNSPECIFIED /* allowed_state */, PreviewsType::LOFI,
-          false /* lite_page_received */,
-          false /* lite_page_redirect_received */, false /* noscript_on */,
-          false /* resource_loading_hints_on */, false /* origin_opt_out */,
-          false /* save_data_enabled */, false /* is_offline_preview */,
-          CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
-          base::nullopt /* navigation_restart_penalty */);
-
-  std::unique_ptr<data_reduction_proxy::DataReductionProxyData> data1 =
-      std::make_unique<data_reduction_proxy::DataReductionProxyData>();
-  data1->set_used_data_reduction_proxy(true);
-  data1->set_lofi_received(true);
-
-  std::unique_ptr<data_reduction_proxy::DataReductionProxyData> data2 =
-      std::make_unique<data_reduction_proxy::DataReductionProxyData>();
-  data2->set_used_data_reduction_proxy(true);
-  data2->set_client_lofi_requested(true);
-
-  // Prepare 4 resources of varying size and configurations, 1 has Client LoFi,
-  // 1 has Server LoFi.
-  page_load_metrics::ExtraRequestCompleteInfo resources[] = {
-      // Uncached proxied request with .1 compression ratio.
-      {GURL(kDefaultTestUrl), net::IPEndPoint(), -1, false /*was_cached*/,
-       1024 * 40 /* raw_body_bytes */,
-       1024 * 40 * 10 /* original_network_content_length */, std::move(data1),
-       content::ResourceType::kImage, 0, nullptr /* load_timing_info */},
-      // Uncached proxied request with .5 compression ratio.
-      {GURL(kDefaultTestUrl), net::IPEndPoint(), -1, false /*was_cached*/,
-       1024 * 40 /* raw_body_bytes */,
-       1024 * 40 * 5 /* original_network_content_length */, std::move(data2),
-       content::ResourceType::kImage, 0, nullptr /* load_timing_info */},
-  };
-
-  for (const auto& request : resources)
-    SimulateLoadedResource(request);
-  observer()->BroadcastEventToObservers(PreviewsUITabHelper::OptOutEventKey());
-  NavigateToUntrackedUrl();
-  ValidateUKM(true /* server_lofi_expected */, true /* client_lofi_expected */,
-              false /* lite_page_expected */,
-              false /* lite_page_redirect_expected */,
-              false /* noscript_expected */,
-              false /* resource_loading_hints_expected */,
-              1 /* opt_out_value */, false /* origin_opt_out_expected */,
-              false /* save_data_enabled_expected */,
-              false /* offline_preview_expected */, false /* previews_likely */,
-              CoinFlipHoldbackResult::kNotSet, {} /* eligibility_reasons */,
-              base::nullopt /* navigation_restart_penalty */);
-}
-
 TEST_F(PreviewsUKMObserverTest, BothLoFiOptOutChip) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {previews::features::kAndroidOmniboxPreviewsBadge} /* enabled features */,
-      {} /*disabled features */);
-
   RunTest(content::PREVIEWS_UNSPECIFIED /* allowed_state */, PreviewsType::LOFI,
           false /* lite_page_received */,
           false /* lite_page_redirect_received */, false /* noscript_on */,

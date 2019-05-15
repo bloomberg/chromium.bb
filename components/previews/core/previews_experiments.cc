@@ -296,10 +296,6 @@ bool ArePreviewsAllowed() {
   return base::FeatureList::IsEnabled(features::kPreviews);
 }
 
-bool IsPreviewsOmniboxUiEnabled() {
-  return base::FeatureList::IsEnabled(features::kAndroidOmniboxPreviewsBadge);
-}
-
 bool IsOfflinePreviewsEnabled() {
   return base::FeatureList::IsEnabled(features::kOfflinePreviews);
 }

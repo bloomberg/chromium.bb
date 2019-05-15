@@ -24,7 +24,6 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy.mojom.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_throttle_manager.h"
 #include "components/data_reduction_proxy/core/common/lofi_decider.h"
-#include "components/data_reduction_proxy/core/common/lofi_ui_service.h"
 #include "components/data_reduction_proxy/core/common/resource_type_provider.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -193,13 +192,6 @@ class DataReductionProxyIOData : public mojom::DataReductionProxy {
     lofi_decider_ = std::move(lofi_decider);
   }
 
-  LoFiUIService* lofi_ui_service() const { return lofi_ui_service_.get(); }
-
-  // Takes ownership of |lofi_ui_service|.
-  void set_lofi_ui_service(std::unique_ptr<LoFiUIService> lofi_ui_service) {
-    lofi_ui_service_ = std::move(lofi_ui_service);
-  }
-
   ResourceTypeProvider* resource_type_provider() const {
     DCHECK(io_task_runner_->BelongsToCurrentThread());
     return resource_type_provider_.get();
@@ -279,9 +271,6 @@ class DataReductionProxyIOData : public mojom::DataReductionProxy {
 
   // Handles getting if a request is in Lo-Fi mode.
   std::unique_ptr<LoFiDecider> lofi_decider_;
-
-  // Handles showing Lo-Fi UI when a Lo-Fi response is received.
-  std::unique_ptr<LoFiUIService> lofi_ui_service_;
 
   // Handles getting the content type of a request.
   std::unique_ptr<ResourceTypeProvider> resource_type_provider_;

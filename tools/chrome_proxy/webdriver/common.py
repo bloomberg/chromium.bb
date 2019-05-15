@@ -949,14 +949,20 @@ class IntegrationTest(unittest.TestCase):
     """
     infobar_histogram_name = 'Previews.InfoBarAction.%s' % preview_type
     android_histogram_name = 'Previews.OmniboxAction.%s' % preview_type
+    testing_histogram_name = 'Previews.PreviewShown.%s' % preview_type
 
     infobar_histogram = test_driver.GetBrowserHistogram(
       infobar_histogram_name, 5)
     android_histogram = test_driver.GetBrowserHistogram(
       android_histogram_name, 5)
+    testing_histogram = test_driver.GetBrowserHistogram(
+      testing_histogram_name, 5)
 
-    count = (infobar_histogram.get('count', 0)
-             + android_histogram.get('count', 0))
+    count = sum([
+      infobar_histogram.get('count', 0),
+      android_histogram.get('count', 0),
+      testing_histogram.get('count', 0),
+    ])
     return count > 0
 
   def assertPreviewShownViaHistogram(self, test_driver, preview_type):

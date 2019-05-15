@@ -46612,6 +46612,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="PreviewsInfoBarAction">
+  <obsolete>
+    Removed in M76.
+  </obsolete>
   <int value="0" label="Infobar shown"/>
   <int value="1" label="Infobar 'Load original' clicked"/>
   <int value="2" label="Infobar dismissed by user"/>

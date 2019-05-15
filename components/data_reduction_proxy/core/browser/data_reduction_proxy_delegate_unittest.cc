@@ -148,14 +148,6 @@ const Client kClient = Client::CHROME_QNX;
 const Client kClient = Client::UNKNOWN;
 #endif
 
-class TestLoFiUIService : public LoFiUIService {
- public:
-  TestLoFiUIService() {}
-  ~TestLoFiUIService() override {}
-
-  void OnLoFiReponseReceived(const net::URLRequest& request) override {}
-};
-
 class DataReductionProxyDelegateTest : public testing::Test {
  public:
   DataReductionProxyDelegateTest()
@@ -168,10 +160,6 @@ class DataReductionProxyDelegateTest : public testing::Test {
                           .Build()) {
     context_.set_client_socket_factory(&mock_socket_factory_);
     test_context_->AttachToURLRequestContext(&context_storage_);
-
-    std::unique_ptr<TestLoFiUIService> lofi_ui_service(new TestLoFiUIService());
-    lofi_ui_service_ = lofi_ui_service.get();
-    test_context_->io_data()->set_lofi_ui_service(std::move(lofi_ui_service));
 
     proxy_delegate_ = test_context_->io_data()->CreateProxyDelegate();
     context_.Init();
@@ -252,8 +240,6 @@ class DataReductionProxyDelegateTest : public testing::Test {
   net::MockClientSocketFactory mock_socket_factory_;
   net::TestURLRequestContext context_;
   net::URLRequestContextStorage context_storage_;
-
-  TestLoFiUIService* lofi_ui_service_;
 
   std::unique_ptr<DataReductionProxyTestContext> test_context_;
   std::unique_ptr<DataReductionProxyDelegate> proxy_delegate_;
