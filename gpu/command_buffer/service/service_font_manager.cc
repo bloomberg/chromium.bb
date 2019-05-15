@@ -6,6 +6,7 @@
 
 #include "base/debug/dump_without_crashing.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/rand_util.h"
 #include "gpu/command_buffer/common/buffer.h"
 #include "gpu/command_buffer/common/discardable_handle.h"
 
@@ -102,8 +103,9 @@ class ServiceFontManager::SkiaDiscardableManager
     const bool no_fallback = (type == SkStrikeClient::kGlyphMetrics ||
                               type == SkStrikeClient::kGlyphPath ||
                               type == SkStrikeClient::kGlyphImage);
-    constexpr int kMaxDumps = 10;
-    if (no_fallback && dump_count_ < kMaxDumps) {
+
+    constexpr int kMaxDumps = 5;
+    if (no_fallback && dump_count_ < kMaxDumps && base::RandInt(1, 100) == 1) {
       ++dump_count_;
       base::debug::DumpWithoutCrashing();
     }
