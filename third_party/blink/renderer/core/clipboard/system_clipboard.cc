@@ -199,6 +199,7 @@ String SystemClipboard::ReadCustomData(const String& type) {
 }
 
 void SystemClipboard::WriteDataObject(DataObject* data_object) {
+  DCHECK(data_object);
   // This plagiarizes the logic in DropDataBuilder::Build, but only extracts the
   // data needed for the implementation of WriteDataObject.
   //

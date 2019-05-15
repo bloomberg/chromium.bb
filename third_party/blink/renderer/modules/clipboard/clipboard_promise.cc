@@ -319,6 +319,7 @@ scoped_refptr<base::SingleThreadTaskRunner> ClipboardPromise::GetTaskRunner() {
 
 bool ClipboardPromise::IsFocusedDocument(ExecutionContext* context) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(context);
   DCHECK(context->IsSecureContext());  // [SecureContext] in IDL
   Document* doc = To<Document>(context);
   return doc && doc->hasFocus();

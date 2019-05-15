@@ -63,7 +63,7 @@ class CORE_EXPORT SystemClipboard {
   String ReadCustomData(const String& type);
   void WriteDataObject(DataObject*);
 
-  // Clipboard write functions that must use CommitWrite for changes to reach
+  // Clipboard write functions must use CommitWrite for changes to reach
   // the OS clipboard.
   void CommitWrite();
 
@@ -72,6 +72,8 @@ class CORE_EXPORT SystemClipboard {
   bool IsValidBufferType(mojom::ClipboardBuffer);
 
   mojom::blink::ClipboardHostPtr clipboard_;
+  // In X11, |buffer_| may equal ClipboardBuffer::kStandard or kSelection.
+  // Outside X11, |buffer_| always equals ClipboardBuffer::kStandard.
   mojom::ClipboardBuffer buffer_ = mojom::ClipboardBuffer::kStandard;
 
   DISALLOW_COPY_AND_ASSIGN(SystemClipboard);
