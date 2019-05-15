@@ -13,14 +13,14 @@
 
 namespace base {
 
-// A hash set container that provides lock-free versions of
-// |Insert|, |Remove|, and |Contains| operations.
-// It does not support concurrent write operations |Insert| and |Remove|
-// over the same key. Concurrent writes of distinct keys are ok.
+// A hash set container that provides lock-free version of |Contains| operation.
+// It does not support concurrent write operations |Insert| and |Remove|.
+// All write operations if performed from multiple threads must be properly
+// guarded with a lock.
 // |Contains| method can be executed concurrently with other |Insert|, |Remove|,
 // or |Contains| even over the same key.
 // However, please note the result of concurrent execution of |Contains|
-// with |Insert| or |Remove| is racy.
+// with |Insert| or |Remove| over the same key is racy.
 //
 // The hash set never rehashes, so the number of buckets stays the same
 // for the lifetime of the set.
@@ -50,27 +50,21 @@ class BASE_EXPORT LockFreeAddressHashSet {
 
   // Removes the |key| from the set. The key must be present in the set before
   // the invocation.
-  // Can be concurrent with other |Insert| and |Remove| executions, provided
-  // they operate over distinct keys.
-  // Concurrent |Insert| or |Remove| executions over the same key are not
-  // supported.
+  // Concurrent execution of |Insert|, |Remove|, or |Copy| is not supported.
   void Remove(void* key);
 
   // Inserts the |key| into the set. The key must not be present in the set
   // before the invocation.
-  // Can be concurrent with other |Insert| and |Remove| executions, provided
-  // they operate over distinct keys.
-  // Concurrent |Insert| or |Remove| executions over the same key are not
-  // supported.
+  // Concurrent execution of |Insert|, |Remove|, or |Copy| is not supported.
   void Insert(void* key);
 
   // Copies contents of |other| set into the current set. The current set
   // must be empty before the call.
-  // The operation cannot be executed concurrently with any other methods.
+  // Concurrent execution of |Insert|, |Remove|, or |Copy| is not supported.
   void Copy(const LockFreeAddressHashSet& other);
 
   size_t buckets_count() const { return buckets_.size(); }
-  size_t size() const { return size_.load(std::memory_order_relaxed); }
+  size_t size() const { return size_; }
 
   // Returns the average bucket utilization.
   float load_factor() const { return 1.f * size() / buckets_.size(); }
@@ -79,26 +73,21 @@ class BASE_EXPORT LockFreeAddressHashSet {
   friend class LockFreeAddressHashSetTest;
 
   struct Node {
-    explicit Node(void* key);
+    Node(void* key, Node* next);
     std::atomic<void*> key;
-    std::atomic<Node*> next;
+    Node* next;
   };
 
   static uint32_t Hash(void* key);
   Node* FindNode(void* key) const;
-  static Node* next_node(Node* node) {
-    return node->next.load(std::memory_order_acquire);
-  }
 
   std::vector<std::atomic<Node*>> buckets_;
-  std::atomic_int size_{0};
+  int size_ = 0;
   const size_t bucket_mask_;
 };
 
-inline LockFreeAddressHashSet::Node::Node(void* a_key) {
-  key.store(a_key, std::memory_order_relaxed);
-  // |next| field is initiailized later, right before the node is inserted
-  // into the linked list.
+inline LockFreeAddressHashSet::Node::Node(void* key, Node* next) : next(next) {
+  this->key.store(key, std::memory_order_relaxed);
 }
 
 inline bool LockFreeAddressHashSet::Contains(void* key) const {
@@ -112,17 +101,21 @@ inline void LockFreeAddressHashSet::Remove(void* key) {
   // as there may always be another thread currently iterating over it.
   // Instead we just mark it as empty, so |Insert| can reuse it later.
   node->key.store(nullptr, std::memory_order_relaxed);
-  size_.fetch_add(-1, std::memory_order_relaxed);
+  --size_;
 }
 
 inline LockFreeAddressHashSet::Node* LockFreeAddressHashSet::FindNode(
     void* key) const {
   DCHECK_NE(key, nullptr);
   const std::atomic<Node*>& bucket = buckets_[Hash(key) & bucket_mask_];
+  // It's enough to use std::memory_order_consume ordering here, as the
+  // node->next->...->next loads form dependency chain.
+  // However std::memory_order_consume is temporary deprecated in C++17.
+  // See https://isocpp.org/files/papers/p0636r0.html#removed
+  // Make use of more strong std::memory_order_acquire for now.
   for (Node* node = bucket.load(std::memory_order_acquire); node != nullptr;
-       node = next_node(node)) {
-    void* k = node->key.load(std::memory_order_relaxed);
-    if (k == key)
+       node = node->next) {
+    if (node->key.load(std::memory_order_relaxed) == key)
       return node;
   }
   return nullptr;

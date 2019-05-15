@@ -20,7 +20,7 @@ LockFreeAddressHashSet::~LockFreeAddressHashSet() {
   for (std::atomic<Node*>& bucket : buckets_) {
     Node* node = bucket.load(std::memory_order_relaxed);
     while (node) {
-      Node* next = node->next.load(std::memory_order_relaxed);
+      Node* next = node->next;
       delete node;
       node = next;
     }
@@ -30,33 +30,31 @@ LockFreeAddressHashSet::~LockFreeAddressHashSet() {
 void LockFreeAddressHashSet::Insert(void* key) {
   DCHECK_NE(key, nullptr);
   CHECK(!Contains(key));
-  size_.fetch_add(1, std::memory_order_relaxed);
+  ++size_;
+  // Note: There's no need to use std::atomic_compare_exchange here,
+  // as we do not support concurrent inserts, so values cannot change midair.
   std::atomic<Node*>& bucket = buckets_[Hash(key) & bucket_mask_];
-  Node* node = bucket.load(std::memory_order_acquire);
+  Node* node = bucket.load(std::memory_order_relaxed);
   // First iterate over the bucket nodes and try to reuse an empty one if found.
-  for (; node != nullptr; node = next_node(node)) {
-    void* empty_key = nullptr;
-    bool replaced = node->key.compare_exchange_strong(
-        empty_key, key, std::memory_order_relaxed);
-    if (replaced)
+  for (; node != nullptr; node = node->next) {
+    if (node->key.load(std::memory_order_relaxed) == nullptr) {
+      node->key.store(key, std::memory_order_relaxed);
       return;
+    }
   }
+  // There are no empty nodes to reuse left in the bucket.
   DCHECK_EQ(node, nullptr);
-  // There are no empty nodes to reuse in the bucket.
-  // Create a new node and prepend it to the list.
-  Node* new_node = new Node(key);
-  Node* current_head = bucket.load(std::memory_order_acquire);
-  do {
-    new_node->next.store(current_head, std::memory_order_relaxed);
-  } while (!bucket.compare_exchange_weak(current_head, new_node,
-                                         std::memory_order_release));
+  // Create a new node first...
+  Node* new_node = new Node(key, bucket.load(std::memory_order_relaxed));
+  // ... and then publish the new chain.
+  bucket.store(new_node, std::memory_order_release);
 }
 
 void LockFreeAddressHashSet::Copy(const LockFreeAddressHashSet& other) {
   DCHECK_EQ(0u, size());
   for (const std::atomic<Node*>& bucket : other.buckets_) {
-    for (Node* node = bucket.load(std::memory_order_acquire); node;
-         node = next_node(node)) {
+    for (Node* node = bucket.load(std::memory_order_relaxed); node;
+         node = node->next) {
       void* key = node->key.load(std::memory_order_relaxed);
       if (key)
         Insert(key);

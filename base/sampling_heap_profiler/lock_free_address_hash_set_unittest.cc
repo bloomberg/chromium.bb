@@ -25,7 +25,7 @@ class LockFreeAddressHashSetTest : public ::testing::Test {
          subset.buckets_) {
       for (LockFreeAddressHashSet::Node* node =
                bucket.load(std::memory_order_acquire);
-           node; node = LockFreeAddressHashSet::next_node(node)) {
+           node; node = node->next) {
         void* key = node->key.load(std::memory_order_relaxed);
         if (key && !superset.Contains(key))
           return false;
@@ -43,7 +43,7 @@ class LockFreeAddressHashSetTest : public ::testing::Test {
     size_t count = 0;
     LockFreeAddressHashSet::Node* node =
         set.buckets_[bucket].load(std::memory_order_acquire);
-    for (; node; node = set.next_node(node))
+    for (; node; node = node->next)
       ++count;
     return count;
   }
@@ -148,14 +148,16 @@ TEST_F(LockFreeAddressHashSetTest, DISABLE_ON_TSAN(ConcurrentAccess)) {
   // The purpose of this test is to make sure adding/removing keys concurrently
   // does not disrupt the state of other keys.
   LockFreeAddressHashSet set(16);
-  std::atomic_bool cancel(false);
-  auto thread = std::make_unique<WriterThread>(&set, &cancel);
-  thread->Start();
   for (size_t i = 1; i <= 20; ++i)
     set.Insert(reinterpret_cast<void*>(i));
   // Remove some items to test empty nodes.
   for (size_t i = 16; i <= 20; ++i)
     set.Remove(reinterpret_cast<void*>(i));
+
+  std::atomic_bool cancel(false);
+  auto thread = std::make_unique<WriterThread>(&set, &cancel);
+  thread->Start();
+
   for (size_t k = 0; k < 100000; ++k) {
     for (size_t i = 1; i <= 30; ++i) {
       EXPECT_EQ(i < 16, set.Contains(reinterpret_cast<void*>(i)));
