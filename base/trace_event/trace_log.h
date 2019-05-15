@@ -188,8 +188,9 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
   // callback will be called directly with (empty_string, false) to indicate
   // the end of this unsuccessful flush. Flush does the serialization
   // on the same thread if the caller doesn't set use_worker_thread explicitly.
-  typedef base::Callback<void(const scoped_refptr<base::RefCountedString>&,
-                              bool has_more_events)> OutputCallback;
+  using OutputCallback =
+      base::RepeatingCallback<void(const scoped_refptr<base::RefCountedString>&,
+                                   bool has_more_events)>;
   void Flush(const OutputCallback& cb, bool use_worker_thread = false);
 
   // Cancels tracing and discards collected data.

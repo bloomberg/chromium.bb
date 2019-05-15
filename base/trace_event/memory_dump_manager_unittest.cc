@@ -206,20 +206,21 @@ class MemoryDumpManagerTest : public testing::Test {
     //     bool success,
     //     std::unique_ptr<ProcessMemoryDump> pmd)
     // The extra arguments prepended to the |callback| below (the ones with the
-    // "curried_" prefix) are just passed from the Bind(). This is just to get
-    // around the limitation of Bind() in supporting only capture-less lambdas.
-    ProcessMemoryDumpCallback callback = Bind(
-        [](bool* curried_success, Closure curried_quit_closure,
+    // "curried_" prefix) are just passed from the BindOnce(). This is just to
+    // get around the limitation of BindOnce() in supporting only capture-less
+    // lambdas.
+    ProcessMemoryDumpCallback callback = BindOnce(
+        [](bool* curried_success, OnceClosure curried_quit_closure,
            uint64_t curried_expected_guid, bool success, uint64_t dump_guid,
            std::unique_ptr<ProcessMemoryDump> pmd) {
           *curried_success = success;
           EXPECT_EQ(curried_expected_guid, dump_guid);
-          ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  curried_quit_closure);
+          ThreadTaskRunnerHandle::Get()->PostTask(
+              FROM_HERE, std::move(curried_quit_closure));
         },
         Unretained(&success), run_loop.QuitClosure(), test_guid);
 
-    mdm_->CreateProcessDump(request_args, callback);
+    mdm_->CreateProcessDump(request_args, std::move(callback));
     run_loop.Run();
     return success;
   }
@@ -445,11 +446,11 @@ TEST_F(MemoryDumpManagerTest, RespectTaskRunnerAffinity) {
     // thread the MDP belongs to.
     {
       RunLoop run_loop;
-      Closure unregistration =
-          Bind(&MemoryDumpManager::UnregisterDumpProvider,
-               Unretained(mdm_.get()), Unretained(mdps.back().get()));
-      threads.back()->task_runner()->PostTaskAndReply(FROM_HERE, unregistration,
-                                                      run_loop.QuitClosure());
+      OnceClosure unregistration =
+          BindOnce(&MemoryDumpManager::UnregisterDumpProvider,
+                   Unretained(mdm_.get()), Unretained(mdps.back().get()));
+      threads.back()->task_runner()->PostTaskAndReply(
+          FROM_HERE, std::move(unregistration), run_loop.QuitClosure());
       run_loop.Run();
     }
     mdps.pop_back();

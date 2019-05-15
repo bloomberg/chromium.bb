@@ -94,7 +94,7 @@ void TraceToFile::EndTracingIfNeeded() {
 
   trace_event::TraceResultBuffer buffer;
   buffer.SetOutputCallback(
-      Bind(&TraceToFile::TraceOutputCallback, Unretained(this)));
+      BindRepeating(&TraceToFile::TraceOutputCallback, Unretained(this)));
 
   // In tests we might not have a MessageLoop, create one if needed.
   std::unique_ptr<MessageLoop> message_loop;
@@ -102,8 +102,8 @@ void TraceToFile::EndTracingIfNeeded() {
     message_loop = std::make_unique<MessageLoop>();
 
   RunLoop run_loop;
-  trace_event::TraceLog::GetInstance()->Flush(
-      Bind(&OnTraceDataCollected, run_loop.QuitClosure(), Unretained(&buffer)));
+  trace_event::TraceLog::GetInstance()->Flush(BindRepeating(
+      &OnTraceDataCollected, run_loop.QuitClosure(), Unretained(&buffer)));
   run_loop.Run();
 
   AppendFileFooter();

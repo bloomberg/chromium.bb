@@ -699,7 +699,8 @@ bool TestLauncher::Run(CommandLine* command_line) {
 
   auto controller = base::FileDescriptorWatcher::WatchReadable(
       g_shutdown_pipe[0],
-      base::Bind(&TestLauncher::OnShutdownPipeReadable, Unretained(this)));
+      base::BindRepeating(&TestLauncher::OnShutdownPipeReadable,
+                          Unretained(this)));
 #endif  // defined(OS_POSIX)
 
   // Start the watchdog timer.

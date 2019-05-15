@@ -51,7 +51,7 @@ void TestTaskFactory::RunTaskCallback(size_t task_index,
                                       PostNestedTask post_nested_task,
                                       OnceClosure after_task_closure) {
   if (post_nested_task == PostNestedTask::YES)
-    PostTask(PostNestedTask::NO, Closure());
+    PostTask(PostNestedTask::NO, OnceClosure());
 
   EXPECT_TRUE(task_runner_->RunsTasksInCurrentSequence());
 

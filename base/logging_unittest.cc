@@ -233,7 +233,7 @@ TEST_F(LoggingTest, MAYBE_CheckStreamsAreLazy) {
       WillRepeatedly(Return("check message"));
   EXPECT_CALL(uncalled_mock_log_source, Log()).Times(0);
 
-  ScopedLogAssertHandler scoped_assert_handler(base::Bind(LogSink));
+  ScopedLogAssertHandler scoped_assert_handler(base::BindRepeating(LogSink));
 
   CHECK(mock_log_source.Log()) << uncalled_mock_log_source.Log();
   PCHECK(!mock_log_source.Log()) << mock_log_source.Log();
@@ -582,12 +582,12 @@ TEST_F(LoggingTest, MAYBE_Dcheck) {
   EXPECT_FALSE(DLOG_IS_ON(DCHECK));
 #elif defined(NDEBUG) && defined(DCHECK_ALWAYS_ON)
   // Release build with real DCHECKS.
-  ScopedLogAssertHandler scoped_assert_handler(base::Bind(LogSink));
+  ScopedLogAssertHandler scoped_assert_handler(base::BindRepeating(LogSink));
   EXPECT_TRUE(DCHECK_IS_ON());
   EXPECT_TRUE(DLOG_IS_ON(DCHECK));
 #else
   // Debug build.
-  ScopedLogAssertHandler scoped_assert_handler(base::Bind(LogSink));
+  ScopedLogAssertHandler scoped_assert_handler(base::BindRepeating(LogSink));
   EXPECT_TRUE(DCHECK_IS_ON());
   EXPECT_TRUE(DLOG_IS_ON(DCHECK));
 #endif
@@ -700,7 +700,7 @@ TEST_F(LoggingTest, NestedLogAssertHandlers) {
           base::StringPiece("Last assert must be caught by handler_a again"),
           _));
 
-  logging::ScopedLogAssertHandler scoped_handler_a(base::Bind(
+  logging::ScopedLogAssertHandler scoped_handler_a(base::BindRepeating(
       &MockLogAssertHandler::HandleLogAssert, base::Unretained(&handler_a)));
 
   // Using LOG(FATAL) rather than CHECK(false) here since log messages aren't
@@ -708,7 +708,7 @@ TEST_F(LoggingTest, NestedLogAssertHandlers) {
   LOG(FATAL) << "First assert must be caught by handler_a";
 
   {
-    logging::ScopedLogAssertHandler scoped_handler_b(base::Bind(
+    logging::ScopedLogAssertHandler scoped_handler_b(base::BindRepeating(
         &MockLogAssertHandler::HandleLogAssert, base::Unretained(&handler_b)));
     LOG(FATAL) << "Second assert must be caught by handler_b";
   }
@@ -754,7 +754,7 @@ TEST_F(LoggingTest, ConfigurableDCheck) {
   ::testing::StrictMock<MockLogAssertHandler> handler;
   EXPECT_CALL(handler, HandleLogAssert(_, _, _, _)).Times(2);
   {
-    logging::ScopedLogAssertHandler scoped_handler_b(base::Bind(
+    logging::ScopedLogAssertHandler scoped_handler_b(base::BindRepeating(
         &MockLogAssertHandler::HandleLogAssert, base::Unretained(&handler)));
     DCHECK(false);
     DCHECK_EQ(1, 2);
