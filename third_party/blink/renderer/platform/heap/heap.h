@@ -515,12 +515,35 @@ class GarbageCollected {
   DISALLOW_COPY_AND_ASSIGN(GarbageCollected);
 };
 
-// Constructs an instance of T, which is a garbage collected type.
+// Default MakeGarbageCollected: Constructs an instance of T, which is a garbage
+// collected type.
 template <typename T, typename... Args>
 T* MakeGarbageCollected(Args&&... args) {
   static_assert(WTF::IsGarbageCollectedType<T>::value,
                 "T needs to be a garbage collected object");
   void* memory = T::AllocateObject(sizeof(T), IsEagerlyFinalizedType<T>::value);
+  HeapObjectHeader* header = HeapObjectHeader::FromPayload(memory);
+  header->MarkIsInConstruction();
+  // Placement new as regular operator new() is deleted.
+  T* object = ::new (memory) T(std::forward<Args>(args)...);
+  header->UnmarkIsInConstruction();
+  return object;
+}
+
+// Used for passing custom sizes to MakeGarbageCollected.
+struct AdditionalBytes {
+  explicit AdditionalBytes(size_t bytes) : value(bytes) {}
+  const size_t value;
+};
+
+// Constructs an instance of T, which is a garbage collected type. This special
+// version takes size which enables constructing inline objects.
+template <typename T, typename... Args>
+T* MakeGarbageCollected(AdditionalBytes additional_bytes, Args&&... args) {
+  static_assert(WTF::IsGarbageCollectedType<T>::value,
+                "T needs to be a garbage collected object");
+  void* memory = T::AllocateObject(sizeof(T) + additional_bytes.value,
+                                   IsEagerlyFinalizedType<T>::value);
   HeapObjectHeader* header = HeapObjectHeader::FromPayload(memory);
   header->MarkIsInConstruction();
   // Placement new as regular operator new() is deleted.

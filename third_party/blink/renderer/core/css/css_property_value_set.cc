@@ -41,11 +41,11 @@
 
 namespace blink {
 
-static wtf_size_t SizeForImmutableCSSPropertyValueSetWithPropertyCount(
+static AdditionalBytes
+AdditionalBytesForImmutableCSSPropertyValueSetWithPropertyCount(
     unsigned count) {
-  return sizeof(ImmutableCSSPropertyValueSet) - sizeof(void*) +
-         sizeof(Member<CSSValue>) * count +
-         sizeof(CSSPropertyValueMetadata) * count;
+  return AdditionalBytes(sizeof(Member<CSSValue>) * count +
+                         sizeof(CSSPropertyValueMetadata) * count);
 }
 
 ImmutableCSSPropertyValueSet* ImmutableCSSPropertyValueSet::Create(
@@ -53,10 +53,9 @@ ImmutableCSSPropertyValueSet* ImmutableCSSPropertyValueSet::Create(
     unsigned count,
     CSSParserMode css_parser_mode) {
   DCHECK_LE(count, static_cast<unsigned>(kMaxArraySize));
-  void* slot = ThreadHeap::Allocate<CSSPropertyValueSet>(
-      SizeForImmutableCSSPropertyValueSetWithPropertyCount(count));
-  return new (slot)
-      ImmutableCSSPropertyValueSet(properties, count, css_parser_mode);
+  return MakeGarbageCollected<ImmutableCSSPropertyValueSet>(
+      AdditionalBytesForImmutableCSSPropertyValueSetWithPropertyCount(count),
+      properties, count, css_parser_mode);
 }
 
 CSSPropertyName CSSPropertyValueSet::PropertyReference::Name() const {
@@ -645,7 +644,9 @@ void MutableCSSPropertyValueSet::TraceAfterDispatch(blink::Visitor* visitor) {
 unsigned CSSPropertyValueSet::AverageSizeInBytes() {
   // Please update this if the storage scheme changes so that this longer
   // reflects the actual size.
-  return SizeForImmutableCSSPropertyValueSetWithPropertyCount(4);
+  return sizeof(ImmutableCSSPropertyValueSet) +
+         AdditionalBytesForImmutableCSSPropertyValueSetWithPropertyCount(4)
+             .value;
 }
 
 // See the function above if you need to update this.

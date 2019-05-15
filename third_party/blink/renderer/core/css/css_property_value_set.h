@@ -195,23 +195,17 @@ class CORE_EXPORT ImmutableCSSPropertyValueSet : public CSSPropertyValueSet {
   int FindPropertyIndex(T property) const;
 
   void TraceAfterDispatch(blink::Visitor*);
-
-  void* operator new(std::size_t, void* location) { return location; }
-
-  void* storage_;
 };
 
 inline const Member<const CSSValue>* ImmutableCSSPropertyValueSet::ValueArray()
     const {
-  return reinterpret_cast<const Member<const CSSValue>*>(
-      const_cast<const void**>(&(this->storage_)));
+  return reinterpret_cast<const Member<const CSSValue>*>(this + 1);
 }
 
 inline const CSSPropertyValueMetadata*
 ImmutableCSSPropertyValueSet::MetadataArray() const {
-  return reinterpret_cast<const CSSPropertyValueMetadata*>(
-      &reinterpret_cast<const char*>(
-          &(this->storage_))[array_size_ * sizeof(Member<CSSValue>)]);
+  return reinterpret_cast<const CSSPropertyValueMetadata*>(ValueArray() +
+                                                           array_size_);
 }
 
 template <>
