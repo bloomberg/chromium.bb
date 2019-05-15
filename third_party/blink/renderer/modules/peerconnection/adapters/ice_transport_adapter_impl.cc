@@ -91,7 +91,10 @@ void IceTransportAdapterImpl::StartGathering(
                                       port_allocator_->candidate_pool_size(),
                                       port_allocator_->prune_turn_ports());
   }
-
+  if (!ice_transport_channel()) {
+    LOG(ERROR) << "StartGathering called, but ICE transport released";
+    return;
+  }
   ice_transport_channel()->SetIceParameters(local_parameters);
   ice_transport_channel()->MaybeStartGathering();
   DCHECK_EQ(ice_transport_channel()->gathering_state(),
@@ -102,6 +105,10 @@ void IceTransportAdapterImpl::Start(
     const cricket::IceParameters& remote_parameters,
     cricket::IceRole role,
     const std::vector<cricket::Candidate>& initial_remote_candidates) {
+  if (!ice_transport_channel()) {
+    LOG(ERROR) << "Start called, but ICE transport released";
+    return;
+  }
   ice_transport_channel()->SetRemoteIceParameters(remote_parameters);
   ice_transport_channel()->SetIceRole(role);
   for (const auto& candidate : initial_remote_candidates) {
@@ -111,12 +118,20 @@ void IceTransportAdapterImpl::Start(
 
 void IceTransportAdapterImpl::HandleRemoteRestart(
     const cricket::IceParameters& new_remote_parameters) {
+  if (!ice_transport_channel()) {
+    LOG(ERROR) << "HandleRemoteRestart called, but ICE transport released";
+    return;
+  }
   ice_transport_channel()->RemoveAllRemoteCandidates();
   ice_transport_channel()->SetRemoteIceParameters(new_remote_parameters);
 }
 
 void IceTransportAdapterImpl::AddRemoteCandidate(
     const cricket::Candidate& candidate) {
+  if (!ice_transport_channel()) {
+    LOG(ERROR) << "AddRemoteCandidate called, but ICE transport released";
+    return;
+  }
   ice_transport_channel()->AddRemoteCandidate(candidate);
 }
 
@@ -125,6 +140,10 @@ P2PQuicPacketTransport* IceTransportAdapterImpl::packet_transport() const {
 }
 
 void IceTransportAdapterImpl::SetupIceTransportChannel() {
+  if (!ice_transport_channel()) {
+    LOG(ERROR) << "SetupIceTransportChannel called, but ICE transport released";
+    return;
+  }
   ice_transport_channel()->SignalGatheringState.connect(
       this, &IceTransportAdapterImpl::OnGatheringStateChanged);
   ice_transport_channel()->SignalCandidateGathered.connect(
@@ -159,6 +178,10 @@ void IceTransportAdapterImpl::OnStateChanged(
 
 void IceTransportAdapterImpl::OnNetworkRouteChanged(
     absl::optional<rtc::NetworkRoute> new_network_route) {
+  if (!ice_transport_channel()) {
+    LOG(ERROR) << "OnNetworkRouteChanged called, but ICE transport released";
+    return;
+  }
   const cricket::CandidatePairInterface* selected_connection =
       ice_transport_channel()->selected_connection();
   if (!selected_connection) {
