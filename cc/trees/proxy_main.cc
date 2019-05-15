@@ -547,9 +547,9 @@ void ProxyMain::Stop() {
 void ProxyMain::SetMutator(std::unique_ptr<LayerTreeMutator> mutator) {
   TRACE_EVENT0("cc", "ThreadProxy::SetMutator");
   ImplThreadTaskRunner()->PostTask(
-      FROM_HERE, base::BindOnce(&ProxyImpl::InitializeMutatorOnImpl,
-                                base::Unretained(proxy_impl_.get()),
-                                base::Passed(std::move(mutator))));
+      FROM_HERE,
+      base::BindOnce(&ProxyImpl::InitializeMutatorOnImpl,
+                     base::Unretained(proxy_impl_.get()), std::move(mutator)));
 }
 
 void ProxyMain::SetPaintWorkletLayerPainter(
@@ -558,8 +558,7 @@ void ProxyMain::SetPaintWorkletLayerPainter(
   ImplThreadTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&ProxyImpl::InitializePaintWorkletLayerPainterOnImpl,
-                     base::Unretained(proxy_impl_.get()),
-                     base::Passed(std::move(painter))));
+                     base::Unretained(proxy_impl_.get()), std::move(painter)));
 }
 
 bool ProxyMain::SupportsImplScrolling() const {
