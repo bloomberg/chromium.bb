@@ -185,7 +185,9 @@ class FeedbackRequest {
         this.feedbackInfo_, function(result, landingPageType) {
           if (result == chrome.feedbackPrivate.Status.SUCCESS) {
             console.log('Feedback: Report sent for request with ID ' + ID);
-            if (FLOW != chrome.feedbackPrivate.FeedbackFlow.LOGIN) {
+            if (FLOW != chrome.feedbackPrivate.FeedbackFlow.LOGIN &&
+                landingPageType !=
+                    chrome.feedbackPrivate.LandingPageType.NO_LANDING_PAGE) {
               const landingPage = landingPageType ==
                       chrome.feedbackPrivate.LandingPageType.NORMAL ?
                   FEEDBACK_LANDING_PAGE :

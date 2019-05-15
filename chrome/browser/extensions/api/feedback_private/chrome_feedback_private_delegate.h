@@ -29,6 +29,8 @@ class ChromeFeedbackPrivateDelegate : public FeedbackPrivateDelegate {
   void FetchExtraLogs(scoped_refptr<feedback::FeedbackData> feedback_data,
                       FetchExtraLogsCallback callback) const override;
   void UnloadFeedbackExtension(content::BrowserContext* context) const override;
+  api::feedback_private::LandingPageType GetLandingPageType(
+      const feedback::FeedbackData& feedback_data) const override;
 #endif  // defined(OS_CHROMEOS)
   std::string GetSignedInUserEmail(
       content::BrowserContext* context) const override;

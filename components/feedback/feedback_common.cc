@@ -42,8 +42,6 @@ constexpr char kZipExt[] = ".zip";
 constexpr char kPngMimeType[] = "image/png";
 constexpr char kArbitraryMimeType[] = "application/octet-stream";
 
-constexpr char kGoogleDotCom[] = "@google.com";
-
 // Determine if the given feedback value is small enough to not need to
 // be compressed.
 bool BelowCompressionThreshold(const std::string& content) {
@@ -249,8 +247,7 @@ void FeedbackCommon::AddFilesAndLogsToReport(
       // @google.com email. We do this also in feedback_private_api, but not all
       // code paths go through that so we need to check again here.
       if (iter.first == feedback::FeedbackReport::kAllCrashReportIdsKey &&
-          !base::EndsWith(user_email(), kGoogleDotCom,
-                          base::CompareCase::INSENSITIVE_ASCII)) {
+          !feedback_util::IsGoogleEmail(user_email())) {
         continue;
       }
 

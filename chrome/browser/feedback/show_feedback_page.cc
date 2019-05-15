@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/feedback/feedback_util.h"
 #include "extensions/browser/api/feedback_private/feedback_private_api.h"
 
 #if defined(OS_CHROMEOS)
@@ -26,8 +27,6 @@ namespace chrome {
 namespace {
 
 #if defined(OS_CHROMEOS)
-constexpr char kGoogleDotCom[] = "@google.com";
-
 // Returns if the feedback page is considered to be triggered from user
 // interaction.
 bool IsFromUserInteraction(FeedbackSource source) {
@@ -44,7 +43,8 @@ bool IsFromUserInteraction(FeedbackSource source) {
   }
 }
 #endif
-}
+
+}  // namespace
 
 void ShowFeedbackPage(Browser* browser,
                       FeedbackSource source,
@@ -80,8 +80,8 @@ void ShowFeedbackPage(Browser* browser,
 #if defined(OS_CHROMEOS)
   auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
   if (identity_manager &&
-      base::EndsWith(identity_manager->GetPrimaryAccountInfo().email,
-                     kGoogleDotCom, base::CompareCase::INSENSITIVE_ASCII)) {
+      feedback_util::IsGoogleEmail(
+          identity_manager->GetPrimaryAccountInfo().email)) {
     flow = feedback_private::FeedbackFlow::FEEDBACK_FLOW_GOOGLEINTERNAL;
     include_bluetooth_logs = IsFromUserInteraction(source);
   }
