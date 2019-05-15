@@ -571,7 +571,14 @@ TEST_F(FileUtilTest, ExtensionURLToRelativeFilePath) {
     {URL_PREFIX "/simple.html", "simple.html"},
     {URL_PREFIX "\\simple.html", "simple.html"},
     {URL_PREFIX "\\\\foo\\simple.html", "foo/simple.html"},
-    {URL_PREFIX "..%2f..%2fsimple.html", "..%2f..%2fsimple.html"},
+    // Escaped file paths result in failure.
+    {URL_PREFIX "..%2f..%2fsimple.html", ""},
+    // Escaped things that look like escaped file paths, on the other hand,
+    // should work.
+    {URL_PREFIX "..%252f..%252fsimple.html", "..%2f..%2fsimple.html"},
+    // This is a UTF-8 lock icon, which is unsafe to display in the omnibox, but
+    // is a valid, if unusual, file name.
+    {URL_PREFIX "%F0%9F%94%93.html", "\xF0\x9F\x94\x93.html"},
   };
 #undef URL_PREFIX
 
