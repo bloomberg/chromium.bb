@@ -69,4 +69,5 @@
     [MeasureAs=SelectionModify] void modify([DefaultValue=Undefined] optional DOMString alter,
                                             [DefaultValue=Undefined] optional DOMString direction,
                                             [DefaultValue=Undefined] optional DOMString granularity);
+    [MeasureAs = SelectionGetClipboardCopyString] DOMString getClipboardCopyString();
 };
