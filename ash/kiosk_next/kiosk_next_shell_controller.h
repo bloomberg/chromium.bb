@@ -49,6 +49,10 @@ class ASH_EXPORT KioskNextShellController
   void OnActiveUserPrefServiceChanged(PrefService* pref_service) override;
 
  private:
+  // Launches Kiosk Next if the pref is enabled and the KioskNextShellClient is
+  // available.
+  void LaunchKioskNextShellIfEnabled();
+
   mojom::KioskNextShellClientPtr kiosk_next_shell_client_;
   mojo::BindingSet<mojom::KioskNextShellController> bindings_;
   base::ObserverList<KioskNextShellObserver> observer_list_;

@@ -43,11 +43,15 @@ aura::Window* KioskNextHomeController::GetHomeScreenWindow() {
     if (container->children().empty())
       continue;
 
-    // Expect only one window (there should be no app list window).
+    // Expect only one window.
     DCHECK_EQ(1u, container->children().size());
     aura::Window* window = container->children()[0];
-    DCHECK_EQ(window->type(), aura::client::WindowType::WINDOW_TYPE_NORMAL);
-    return window;
+
+    // When the app list is being destroyed (before the Home app is launched),
+    // the app list will appear here; filter for the Home app by checking for a
+    // normal type window.
+    if (window->type() == aura::client::WindowType::WINDOW_TYPE_NORMAL)
+      return window;
   }
 
   return nullptr;
