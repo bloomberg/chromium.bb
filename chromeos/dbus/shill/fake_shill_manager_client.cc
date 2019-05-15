@@ -292,10 +292,12 @@ void FakeShillManagerClient::RequestScan(const std::string& type,
     if (device_type == shill::kTypeCellular)
       device_client->AddCellularFoundNetwork(device_path);
   }
+  // Trigger |callback| immediately to indicate that the scan started.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&FakeShillManagerClient::ScanCompleted,
-                     weak_ptr_factory_.GetWeakPtr(), device_path, callback),
+                     weak_ptr_factory_.GetWeakPtr(), device_path),
       base::TimeDelta::FromSeconds(interactive_delay_));
 }
 
@@ -1098,16 +1100,14 @@ std::unique_ptr<base::ListValue> FakeShillManagerClient::GetEnabledServiceList(
   return new_service_list;
 }
 
-void FakeShillManagerClient::ScanCompleted(const std::string& device_path,
-                                           const base::Closure& callback) {
+void FakeShillManagerClient::ScanCompleted(const std::string& device_path) {
+  VLOG(1) << "ScanCompleted: " << device_path;
   if (!device_path.empty()) {
     ShillDeviceClient::Get()->GetTestInterface()->SetDeviceProperty(
         device_path, shill::kScanningProperty, base::Value(false),
         /*notify_changed=*/true);
   }
-  VLOG(1) << "ScanCompleted";
   CallNotifyObserversPropertyChanged(shill::kServiceCompleteListProperty);
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
 }
 
 void FakeShillManagerClient::ParseCommandLineSwitch() {

@@ -789,6 +789,12 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,
 }
 
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,
+                       OnDeviceScanningChangedEvent) {
+  SetupCellular();
+  EXPECT_TRUE(RunNetworkingSubtest("onDeviceScanningChangedEvent")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,
                        OnCertificateListsChangedEvent) {
   TestListener listener(
       "eventListenerReady", base::BindRepeating([]() {

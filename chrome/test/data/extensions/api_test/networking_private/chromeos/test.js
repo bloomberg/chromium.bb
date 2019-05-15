@@ -870,6 +870,16 @@ var availableTests = [
     chrome.networkingPrivate.onDeviceStateListChanged.addListener(listener);
     chrome.networkingPrivate.disableNetworkType('WiFi');
   },
+  function onDeviceScanningChangedEvent() {
+    // Requesting a scan should trigger a device state list changed event when
+    // the scan completes.
+    var listener = callbackPass(function() {
+      chrome.networkingPrivate.onDeviceStateListChanged.removeListener(
+          listener);
+    });
+    chrome.networkingPrivate.onDeviceStateListChanged.addListener(listener);
+    chrome.networkingPrivate.requestNetworkScan('Cellular');
+  },
   function onCertificateListsChangedEvent() {
     chrome.test.listenOnce(
         chrome.networkingPrivate.onCertificateListsChanged, function() {});

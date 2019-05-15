@@ -1970,7 +1970,7 @@ TEST_F(NetworkStateHandlerTest, UpdateGuid) {
   EXPECT_EQ("cellular1_guid", cellular->guid());
 }
 
-TEST_F(NetworkStateHandlerTest, EnsureCellularNetwork) {
+TEST_F(NetworkStateHandlerTest, DefaultCellularNetwork) {
   // ClearServices will trigger a kServiceCompleteListProperty property change
   // which will create a default Cellular network.
   service_test_->ClearServices();
@@ -1992,6 +1992,27 @@ TEST_F(NetworkStateHandlerTest, EnsureCellularNetwork) {
   ASSERT_EQ(1u, cellular_networks.size());
   EXPECT_FALSE(cellular_networks[0]->IsDefaultCellular());
   EXPECT_EQ("/service/cellular1", cellular_networks[0]->path());
+}
+
+TEST_F(NetworkStateHandlerTest, RemoveDefaultCellularNetwork) {
+  // ClearServices will trigger a kServiceCompleteListProperty property change
+  // which will create a default Cellular network.
+  service_test_->ClearServices();
+  base::RunLoop().RunUntilIdle();
+  NetworkStateHandler::NetworkStateList cellular_networks;
+  network_state_handler_->GetNetworkListByType(
+      NetworkTypePattern::Cellular(), false /* configured_only */,
+      false /* visible_only */, 0, &cellular_networks);
+  ASSERT_EQ(1u, cellular_networks.size());
+  EXPECT_TRUE(cellular_networks[0]->IsDefaultCellular());
+
+  // Removing the Cellular device should remove the default cellular network.
+  device_test_->RemoveDevice(kShillManagerClientStubCellularDevice);
+  base::RunLoop().RunUntilIdle();
+  network_state_handler_->GetNetworkListByType(
+      NetworkTypePattern::Cellular(), false /* configured_only */,
+      false /* visible_only */, 0, &cellular_networks);
+  EXPECT_EQ(0u, cellular_networks.size());
 }
 
 TEST_F(NetworkStateHandlerTest, UpdateCaptivePortalProvider) {
