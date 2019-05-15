@@ -51531,14 +51531,17 @@ Called by update_net_trust_anchors.py.-->
 
 <enum name="SignedExchangeSignatureVerificationResult">
   <int value="0" label="Success"/>
-  <int value="1" label="No certificate"/>
-  <int value="2" label="No cert-sha256"/>
+  <int value="1" label="No certificate (deprecated)"/>
+  <int value="2" label="No cert-sha256 (deprecated)"/>
   <int value="3" label="cert-sha256 mismatch"/>
-  <int value="4" label="Failed to reconstruct signed message"/>
+  <int value="4" label="Failed to reconstruct signed message (deprecated)"/>
   <int value="5" label="Failed to verify signature"/>
   <int value="6" label="Invalid integrity scheme"/>
-  <int value="7" label="Invalid timestamp"/>
+  <int value="7" label="Invalid timestamp (deprecated)"/>
   <int value="8" label="Unsupported certificate type"/>
+  <int value="9" label="Validity period is loo long"/>
+  <int value="10" label="Signature is not yet valid"/>
+  <int value="11" label="Signature is expired"/>
 </enum>
 
 <enum name="SignedExchangeValidityPingResult">
