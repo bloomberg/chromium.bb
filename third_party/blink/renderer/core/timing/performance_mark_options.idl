@@ -6,6 +6,6 @@
 // https://docs.google.com/document/d/1hltt8z9C4PaI5Qu1YMIp1wOGdbJPJPoJwBarEeCY6xQ/edit#
 
 dictionary PerformanceMarkOptions {
-    any detail = null;
+    any detail;
     DOMHighResTimeStamp startTime;
 };
