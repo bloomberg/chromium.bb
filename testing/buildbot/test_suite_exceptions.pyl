@@ -1559,14 +1559,6 @@
   'webgl_conformance_vulkan_passthrough_tests': {
     'remove_from': [
       'Win7 FYI Debug (AMD)',
-      # TODO(crbug.com/935060): diagnose and re-enable.
-      'ANGLE GPU Win10 Release (NVIDIA)',
-      'Optional Win10 Release (NVIDIA)',
-      'Win10 FYI Debug (NVIDIA)',
-      'Win10 FYI Release (NVIDIA)',
-      'Win10 FYI Release (NVIDIA GeForce GTX 1660)',
-      'Win7 FYI Release (NVIDIA)',
-      'Win7 FYI x64 Release (NVIDIA)',
     ],
   },
   'webkit_layout_tests': {
