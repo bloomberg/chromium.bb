@@ -34,8 +34,7 @@ class CC_EXPORT SoftwareImageDecodeCache
 
   SoftwareImageDecodeCache(SkColorType color_type,
                            size_t locked_memory_limit_bytes,
-                           PaintImage::GeneratorClientId generator_client_id,
-                           sk_sp<SkColorSpace> target_color_space);
+                           PaintImage::GeneratorClientId generator_client_id);
   ~SoftwareImageDecodeCache() override;
 
   // ImageDecodeCache overrides.
@@ -151,7 +150,6 @@ class CC_EXPORT SoftwareImageDecodeCache
                      PaintImage::FrameKeyHash>
       frame_key_to_image_keys_;
 
-  const sk_sp<SkColorSpace> target_color_space_;
   MemoryBudget locked_images_budget_;
 
   const SkColorType color_type_;

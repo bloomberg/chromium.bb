@@ -82,8 +82,16 @@ class OopPixelTest : public testing::Test,
             /*enable_oop_rasterization=*/false, /*support_locking=*/true);
     gpu::ContextResult result = gles2_context_provider_->BindToCurrentThread();
     DCHECK_EQ(result, gpu::ContextResult::kSuccess);
-    CHECK_EQ(gles2_context_provider_->ContextCapabilities().max_texture_size,
-             raster_context_provider_->ContextCapabilities().max_texture_size);
+    const int gles2_max_texture_size =
+        gles2_context_provider_->ContextCapabilities().max_texture_size;
+    gpu_image_cache_.reset(new GpuImageDecodeCache(
+        gles2_context_provider_.get(), false, kRGBA_8888_SkColorType,
+        kWorkingSetSize, gles2_max_texture_size,
+        PaintImage::kDefaultGeneratorClientId));
+
+    const int raster_max_texture_size =
+        raster_context_provider_->ContextCapabilities().max_texture_size;
+    ASSERT_EQ(raster_max_texture_size, gles2_max_texture_size);
   }
 
   // gpu::raster::GrShaderCache::Client implementation.
@@ -100,24 +108,12 @@ class OopPixelTest : public testing::Test,
             &gr_shader_cache_, &activity_flags_);
     gpu::ContextResult result = raster_context_provider_->BindToCurrentThread();
     DCHECK_EQ(result, gpu::ContextResult::kSuccess);
-  }
-
-  void CreateGpuImageCache(const gfx::ColorSpace& color_space) {
-    const int gles2_max_texture_size =
-        raster_context_provider_->ContextCapabilities().max_texture_size;
-    gpu_image_cache_.reset(new GpuImageDecodeCache(
-        gles2_context_provider_.get(), false, kRGBA_8888_SkColorType,
-        kWorkingSetSize, gles2_max_texture_size,
-        PaintImage::kDefaultGeneratorClientId, color_space.ToSkColorSpace()));
-  }
-
-  void CreateOopImageCache(const gfx::ColorSpace& color_space) {
     const int raster_max_texture_size =
         raster_context_provider_->ContextCapabilities().max_texture_size;
     oop_image_cache_.reset(new GpuImageDecodeCache(
         raster_context_provider_.get(), true, kRGBA_8888_SkColorType,
         kWorkingSetSize, raster_max_texture_size,
-        PaintImage::kDefaultGeneratorClientId, color_space.ToSkColorSpace()));
+        PaintImage::kDefaultGeneratorClientId));
   }
 
   class RasterOptions {
@@ -156,13 +152,12 @@ class OopPixelTest : public testing::Test,
 
   SkBitmap Raster(scoped_refptr<DisplayItemList> display_item_list,
                   const RasterOptions& options) {
-    CreateOopImageCache(options.color_space);
-
     GURL url("https://example.com/foo");
     TestInProcessContextProvider::ScopedRasterContextLock lock(
         raster_context_provider_.get(), url.possibly_invalid_spec().c_str());
 
     PlaybackImageProvider image_provider(oop_image_cache_.get(),
+                                         options.color_space,
                                          PlaybackImageProvider::Settings());
 
     gpu::gles2::GLES2Interface* gl = gles2_context_provider_->ContextGL();
@@ -263,8 +258,6 @@ class OopPixelTest : public testing::Test,
   SkBitmap RasterExpectedBitmap(
       scoped_refptr<DisplayItemList> display_item_list,
       const RasterOptions& options) {
-    CreateGpuImageCache(options.color_space);
-
     TestInProcessContextProvider::ScopedRasterContextLock lock(
         gles2_context_provider_.get());
     gles2_context_provider_->GrContext()->resetContext();
@@ -286,6 +279,7 @@ class OopPixelTest : public testing::Test,
       options.shader_with_animated_images->set_has_animated_images(true);
 
     PlaybackImageProvider image_provider(gpu_image_cache_.get(),
+                                         options.color_space,
                                          PlaybackImageProvider::Settings());
 
     auto raster_source = recording.CreateRasterSource();

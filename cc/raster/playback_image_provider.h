@@ -37,6 +37,7 @@ class CC_EXPORT PlaybackImageProvider : public ImageProvider {
 
   // If no settings are provided, all images are skipped during rasterization.
   PlaybackImageProvider(ImageDecodeCache* cache,
+                        const gfx::ColorSpace& target_color_space,
                         base::Optional<Settings>&& settings);
   PlaybackImageProvider(const PlaybackImageProvider&) = delete;
   PlaybackImageProvider(PlaybackImageProvider&& other);
@@ -51,6 +52,7 @@ class CC_EXPORT PlaybackImageProvider : public ImageProvider {
 
  private:
   ImageDecodeCache* cache_;
+  gfx::ColorSpace target_color_space_;
   base::Optional<Settings> settings_;
 };
 

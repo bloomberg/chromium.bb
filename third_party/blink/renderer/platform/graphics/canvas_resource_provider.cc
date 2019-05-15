@@ -828,6 +828,7 @@ class CanvasResourceProvider::CanvasImageProvider : public cc::ImageProvider {
  public:
   CanvasImageProvider(cc::ImageDecodeCache* cache_n32,
                       cc::ImageDecodeCache* cache_f16,
+                      const gfx::ColorSpace& target_color_space,
                       SkColorType target_color_type,
                       bool is_hardware_decode_cache);
   ~CanvasImageProvider() override = default;
@@ -856,17 +857,19 @@ class CanvasResourceProvider::CanvasImageProvider : public cc::ImageProvider {
 CanvasResourceProvider::CanvasImageProvider::CanvasImageProvider(
     cc::ImageDecodeCache* cache_n32,
     cc::ImageDecodeCache* cache_f16,
+    const gfx::ColorSpace& target_color_space,
     SkColorType canvas_color_type,
     bool is_hardware_decode_cache)
     : is_hardware_decode_cache_(is_hardware_decode_cache),
       playback_image_provider_n32_(cache_n32,
+                                   target_color_space,
                                    cc::PlaybackImageProvider::Settings()),
       weak_factory_(this) {
   // If the image provider may require to decode to half float instead of
   // uint8, create a f16 PlaybackImageProvider with the passed cache.
   if (canvas_color_type == kRGBA_F16_SkColorType) {
     DCHECK(cache_f16);
-    playback_image_provider_f16_.emplace(cache_f16,
+    playback_image_provider_f16_.emplace(cache_f16, target_color_space,
                                          cc::PlaybackImageProvider::Settings());
   }
 }
@@ -977,8 +980,8 @@ void CanvasResourceProvider::InitializePaintCanvas() {
   if (ColorParams().PixelFormat() == kF16CanvasPixelFormat)
     cache_f16 = ImageDecodeCacheF16();
   canvas_image_provider_ = std::make_unique<CanvasImageProvider>(
-      ImageDecodeCacheRGBA8(), cache_f16, color_params_.GetSkColorType(),
-      use_hardware_decode_cache());
+      ImageDecodeCacheRGBA8(), cache_f16, gfx::ColorSpace::CreateSRGB(),
+      color_params_.GetSkColorType(), use_hardware_decode_cache());
 
   cc::SkiaPaintCanvas::ContextFlushes context_flushes;
   if (IsAccelerated() &&
@@ -1109,26 +1112,24 @@ scoped_refptr<CanvasResource> CanvasResourceProvider::CreateResource() {
 }
 
 cc::ImageDecodeCache* CanvasResourceProvider::ImageDecodeCacheRGBA8() {
-  auto color_space = kSRGBCanvasColorSpace;
 
   if (use_hardware_decode_cache()) {
     return context_provider_wrapper_->ContextProvider()->ImageDecodeCache(
-        kN32_SkColorType,
-        blink::CanvasColorParams::CanvasColorSpaceToSkColorSpace(color_space));
+        kN32_SkColorType, ColorParams().GetSkColorSpace());
   }
 
-  return Image::SharedCCDecodeCache(color_space, kRGBA8CanvasPixelFormat);
+  return Image::SharedCCDecodeCache(ColorParams().ColorSpace(),
+                                    kRGBA8CanvasPixelFormat);
 }
 
 cc::ImageDecodeCache* CanvasResourceProvider::ImageDecodeCacheF16() {
-  auto color_space = kSRGBCanvasColorSpace;
 
   if (use_hardware_decode_cache()) {
     return context_provider_wrapper_->ContextProvider()->ImageDecodeCache(
-        kRGBA_F16_SkColorType,
-        blink::CanvasColorParams::CanvasColorSpaceToSkColorSpace(color_space));
+        kRGBA_F16_SkColorType, ColorParams().GetSkColorSpace());
   }
-  return Image::SharedCCDecodeCache(color_space, kF16CanvasPixelFormat);
+  return Image::SharedCCDecodeCache(ColorParams().ColorSpace(),
+                                    kF16CanvasPixelFormat);
 }
 
 void CanvasResourceProvider::RecycleResource(

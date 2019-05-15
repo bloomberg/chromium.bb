@@ -38,6 +38,7 @@ class CC_EXPORT DecodedImageTracker {
   // completion. The callback takes a bool indicating whether the decode was
   // successful or not.
   void QueueImageDecode(const PaintImage& image,
+                        const gfx::ColorSpace& target_color_space,
                         base::OnceCallback<void(bool)> callback);
 
   // Unlock all locked images - used to respond to memory pressure or

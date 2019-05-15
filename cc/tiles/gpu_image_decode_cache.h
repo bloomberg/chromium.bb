@@ -108,8 +108,7 @@ class CC_EXPORT GpuImageDecodeCache
                                SkColorType color_type,
                                size_t max_working_set_bytes,
                                int max_texture_size,
-                               PaintImage::GeneratorClientId client_id,
-                               sk_sp<SkColorSpace> target_color_space);
+                               PaintImage::GeneratorClientId client_id);
   ~GpuImageDecodeCache() override;
 
   // Returns the GL texture ID backing the given SkImage.
@@ -443,6 +442,7 @@ class CC_EXPORT GpuImageDecodeCache
     ImageData(PaintImage::Id paint_image_id,
               DecodedDataMode mode,
               size_t size,
+              const gfx::ColorSpace& target_color_space,
               SkFilterQuality quality,
               int upload_scale_mip_level,
               bool needs_mips,
@@ -456,6 +456,7 @@ class CC_EXPORT GpuImageDecodeCache
     const PaintImage::Id paint_image_id;
     const DecodedDataMode mode;
     const size_t size;
+    gfx::ColorSpace target_color_space;
     SkFilterQuality quality;
     int upload_scale_mip_level;
     bool needs_mips = false;
@@ -501,6 +502,7 @@ class CC_EXPORT GpuImageDecodeCache
     PaintImage::FrameKey frame_key;
     int upload_scale_mip_level;
     SkFilterQuality filter_quality;
+    gfx::ColorSpace target_color_space;
   };
   struct InUseCacheKeyHash {
     size_t operator()(const InUseCacheKey&) const;
@@ -551,6 +553,7 @@ class CC_EXPORT GpuImageDecodeCache
       const size_t image_width,
       const size_t image_height,
       const SkYUVColorSpace* yuva_color_space,
+      sk_sp<SkColorSpace> target_color_space,
       sk_sp<SkColorSpace> decoded_color_space) const;
 
   scoped_refptr<GpuImageDecodeCache::ImageData> CreateImageData(
@@ -658,7 +661,6 @@ class CC_EXPORT GpuImageDecodeCache
   // Images that are backed by planar textures must be handled differently
   // to avoid inadvertently flattening to RGB and creating additional textures.
   std::vector<sk_sp<SkImage>> yuv_images_pending_deletion_;
-  const sk_sp<SkColorSpace> target_color_space_;
 
   std::vector<uint32_t> ids_pending_unlock_;
   std::vector<uint32_t> ids_pending_deletion_;

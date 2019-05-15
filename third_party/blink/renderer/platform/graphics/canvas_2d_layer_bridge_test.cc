@@ -1212,13 +1212,14 @@ TEST_F(Canvas2DLayerBridgeTest, EnsureCCImageCacheUse) {
   std::unique_ptr<Canvas2DLayerBridge> bridge =
       MakeBridge(IntSize(300, 300), Canvas2DLayerBridge::kEnableAcceleration,
                  color_params);
+  gfx::ColorSpace expected_color_space = gfx::ColorSpace::CreateSRGB();
   std::vector<cc::DrawImage> images = {
       cc::DrawImage(cc::CreateDiscardablePaintImage(gfx::Size(10, 10)),
                     SkIRect::MakeWH(10, 10), kNone_SkFilterQuality,
-                    SkMatrix::I(), 0u),
+                    SkMatrix::I(), 0u, expected_color_space),
       cc::DrawImage(cc::CreateDiscardablePaintImage(gfx::Size(20, 20)),
                     SkIRect::MakeWH(5, 5), kNone_SkFilterQuality, SkMatrix::I(),
-                    0u)};
+                    0u, expected_color_space)};
 
   bridge->Canvas()->drawImage(images[0].paint_image(), 0u, 0u, nullptr);
   bridge->Canvas()->drawImageRect(
@@ -1238,10 +1239,10 @@ TEST_F(Canvas2DLayerBridgeTest, EnsureCCImageCacheUseWithColorConversion) {
   std::vector<cc::DrawImage> images = {
       cc::DrawImage(cc::CreateDiscardablePaintImage(gfx::Size(10, 10)),
                     SkIRect::MakeWH(10, 10), kNone_SkFilterQuality,
-                    SkMatrix::I(), 0u),
+                    SkMatrix::I(), 0u, color_params.GetStorageGfxColorSpace()),
       cc::DrawImage(cc::CreateDiscardablePaintImage(gfx::Size(20, 20)),
                     SkIRect::MakeWH(5, 5), kNone_SkFilterQuality, SkMatrix::I(),
-                    0u)};
+                    0u, color_params.GetStorageGfxColorSpace())};
 
   bridge->Canvas()->drawImage(images[0].paint_image(), 0u, 0u, nullptr);
   bridge->Canvas()->drawImageRect(
@@ -1264,13 +1265,13 @@ TEST_F(Canvas2DLayerBridgeTest, ImagesLockedUntilCacheLimit) {
   std::vector<cc::DrawImage> images = {
       cc::DrawImage(cc::CreateDiscardablePaintImage(gfx::Size(10, 10)),
                     SkIRect::MakeWH(10, 10), kNone_SkFilterQuality,
-                    SkMatrix::I(), 0u),
+                    SkMatrix::I(), 0u, color_params.GetStorageGfxColorSpace()),
       cc::DrawImage(cc::CreateDiscardablePaintImage(gfx::Size(20, 20)),
                     SkIRect::MakeWH(5, 5), kNone_SkFilterQuality, SkMatrix::I(),
-                    0u),
+                    0u, color_params.GetStorageGfxColorSpace()),
       cc::DrawImage(cc::CreateDiscardablePaintImage(gfx::Size(20, 20)),
                     SkIRect::MakeWH(5, 5), kNone_SkFilterQuality, SkMatrix::I(),
-                    0u)};
+                    0u, color_params.GetStorageGfxColorSpace())};
 
   // First 2 images are budgeted, they should remain locked after the op.
   bridge->Canvas()->drawImage(images[0].paint_image(), 0u, 0u, nullptr);
@@ -1297,9 +1298,10 @@ TEST_F(Canvas2DLayerBridgeTest, QueuesCleanupTaskForLockedImages) {
                  color_params);
   bridge->DisableDeferral(DisableDeferralReason::kDisableDeferralReasonUnknown);
 
-  auto image = cc::DrawImage(cc::CreateDiscardablePaintImage(gfx::Size(10, 10)),
-                             SkIRect::MakeWH(10, 10), kNone_SkFilterQuality,
-                             SkMatrix::I(), 0u);
+  auto image =
+      cc::DrawImage(cc::CreateDiscardablePaintImage(gfx::Size(10, 10)),
+                    SkIRect::MakeWH(10, 10), kNone_SkFilterQuality,
+                    SkMatrix::I(), 0u, color_params.GetStorageGfxColorSpace());
   bridge->Canvas()->drawImage(image.paint_image(), 0u, 0u, nullptr);
   EXPECT_EQ(image_decode_cache_.num_locked_images(), 1);
 
@@ -1320,10 +1322,10 @@ TEST_F(Canvas2DLayerBridgeTest, ImageCacheOnContextLost) {
   std::vector<cc::DrawImage> images = {
       cc::DrawImage(cc::CreateDiscardablePaintImage(gfx::Size(10, 10)),
                     SkIRect::MakeWH(10, 10), kNone_SkFilterQuality,
-                    SkMatrix::I(), 0u),
+                    SkMatrix::I(), 0u, color_params.GetStorageGfxColorSpace()),
       cc::DrawImage(cc::CreateDiscardablePaintImage(gfx::Size(20, 20)),
                     SkIRect::MakeWH(5, 5), kNone_SkFilterQuality, SkMatrix::I(),
-                    0u)};
+                    0u, color_params.GetStorageGfxColorSpace())};
   bridge->Canvas()->drawImage(images[0].paint_image(), 0u, 0u, nullptr);
 
   // Lose the context and ensure that the image provider is not used.
