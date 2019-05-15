@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.touchless;
 
 import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -33,6 +34,11 @@ class TouchlessActionItemViewHolder extends ActionItem.ViewHolder {
     public void onBindViewHolder(ActionItem item) {
         super.onBindViewHolder(item);
 
+        LinearLayout.LayoutParams params =
+                new LinearLayout.LayoutParams(itemView.getLayoutParams());
+        params.bottomMargin = itemView.getResources().getDimensionPixelSize(
+                R.dimen.touchless_new_tab_recycler_view_over_scroll);
+        itemView.setLayoutParams(params);
         itemView.setBackground(ApiCompatibilityUtils.getDrawable(
                 itemView.getResources(), R.drawable.hairline_border_card_background));
         mTextView.setText(itemView.getResources().getString(R.string.more_articles));
