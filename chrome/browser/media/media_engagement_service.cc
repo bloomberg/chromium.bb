@@ -330,6 +330,9 @@ Profile* MediaEngagementService::profile() const {
 
 bool MediaEngagementService::ShouldRecordEngagement(
     const url::Origin& origin) const {
+  if (base::FeatureList::IsEnabled(media::kMediaEngagementHTTPSOnly))
+    return origin.scheme() == url::kHttpsScheme;
+
   return (origin.scheme() == url::kHttpsScheme ||
           origin.scheme() == url::kHttpScheme);
 }
@@ -355,6 +358,11 @@ std::vector<MediaEngagementScore> MediaEngagementService::GetAllStoredScores()
         url::Origin::Create(GURL(site.primary_pattern.ToString()));
     if (origin.opaque()) {
       NOTREACHED();
+      continue;
+    }
+
+    if (base::FeatureList::IsEnabled(media::kMediaEngagementHTTPSOnly) &&
+        origin.scheme() != url::kHttpsScheme) {
       continue;
     }
 

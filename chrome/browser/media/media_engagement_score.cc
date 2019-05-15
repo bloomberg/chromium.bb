@@ -109,6 +109,13 @@ MediaEngagementScore::MediaEngagementScore(
   if (!score_dict_)
     return;
 
+  // This is to prevent using previously saved data to mark an HTTP website as
+  // allowed to autoplay.
+  if (base::FeatureList::IsEnabled(media::kMediaEngagementHTTPSOnly) &&
+      origin_.scheme() != url::kHttpsScheme) {
+    return;
+  }
+
   GetIntegerFromScore(score_dict_.get(), kVisitsKey, &visits_);
   GetIntegerFromScore(score_dict_.get(), kMediaPlaybacksKey, &media_playbacks_);
   GetIntegerFromScore(score_dict_.get(), kAudiblePlaybacksKey,
@@ -208,6 +215,12 @@ bool MediaEngagementScore::UpdateScoreDict() {
 
   if (!score_dict_)
     return false;
+
+  // This is to prevent saving data that we would otherwise not use.
+  if (base::FeatureList::IsEnabled(media::kMediaEngagementHTTPSOnly) &&
+      origin_.scheme() != url::kHttpsScheme) {
+    return false;
+  }
 
   if (base::Value* value = score_dict_->FindKeyOfType(
           kHasHighScoreKey, base::Value::Type::BOOLEAN)) {

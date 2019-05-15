@@ -481,6 +481,9 @@ const base::Feature kPreloadMediaEngagementData{
     "PreloadMediaEngagementData", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
+const base::Feature kMediaEngagementHTTPSOnly{
+    "MediaEngagementHTTPSOnly", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables experimental local learning for media.  Adds reporting only; does not
 // change media behavior.
 const base::Feature kMediaLearningExperiment{"MediaLearningExperiment",

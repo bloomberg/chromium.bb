@@ -283,27 +283,55 @@ TEST_F(MediaEngagementServiceTest, MojoSerialization) {
   EXPECT_EQ(0u, GetAllScoreDetails().size());
 
   RecordVisitAndPlaybackAndAdvanceClock(
-      url::Origin::Create(GURL("https://www.google.com")));
+      url::Origin::Create(GURL("http://www.example.com")));
+  RecordVisitAndPlaybackAndAdvanceClock(
+      url::Origin::Create(GURL("https://www.example.com")));
+  EXPECT_EQ(2u, GetAllScoreDetails().size());
+}
+
+TEST_F(MediaEngagementServiceTest, MojoSerialization_HTTPSOnly) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(media::kMediaEngagementHTTPSOnly);
+
+  EXPECT_EQ(0u, GetAllScoreDetails().size());
+
+  RecordVisitAndPlaybackAndAdvanceClock(
+      url::Origin::Create(GURL("http://www.example.com")));
+  RecordVisitAndPlaybackAndAdvanceClock(
+      url::Origin::Create(GURL("https://www.example.com")));
   EXPECT_EQ(1u, GetAllScoreDetails().size());
 }
 
 TEST_F(MediaEngagementServiceTest, RestrictedToHTTPAndHTTPS) {
-  url::Origin origin1 = url::Origin::Create(GURL("ftp://www.google.com/"));
-  url::Origin origin2 = url::Origin::Create(GURL("file://blah"));
-  url::Origin origin3 = url::Origin::Create(GURL("chrome://"));
-  url::Origin origin4 = url::Origin::Create(GURL("about://config"));
+  std::vector<url::Origin> origins = {
+      url::Origin::Create(GURL("ftp://www.google.com/")),
+      url::Origin::Create(GURL("file://blah")),
+      url::Origin::Create(GURL("chrome://")),
+      url::Origin::Create(GURL("about://config")),
+  };
 
-  RecordVisitAndPlaybackAndAdvanceClock(origin1);
-  ExpectScores(origin1, 0.0, 0, 0, TimeNotSet());
+  for (const url::Origin& origin : origins) {
+    RecordVisitAndPlaybackAndAdvanceClock(origin);
+    ExpectScores(origin, 0.0, 0, 0, TimeNotSet());
+  }
+}
 
-  RecordVisitAndPlaybackAndAdvanceClock(origin2);
-  ExpectScores(origin2, 0.0, 0, 0, TimeNotSet());
+TEST_F(MediaEngagementServiceTest, RestrictedToHTTPS) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(media::kMediaEngagementHTTPSOnly);
 
-  RecordVisitAndPlaybackAndAdvanceClock(origin4);
-  ExpectScores(origin4, 0.0, 0, 0, TimeNotSet());
+  std::vector<url::Origin> origins = {
+      url::Origin::Create(GURL("ftp://www.google.com/")),
+      url::Origin::Create(GURL("file://blah")),
+      url::Origin::Create(GURL("chrome://")),
+      url::Origin::Create(GURL("about://config")),
+      url::Origin::Create(GURL("http://example.com")),
+  };
 
-  RecordVisitAndPlaybackAndAdvanceClock(origin4);
-  ExpectScores(origin4, 0.0, 0, 0, TimeNotSet());
+  for (const url::Origin& origin : origins) {
+    RecordVisitAndPlaybackAndAdvanceClock(origin);
+    ExpectScores(origin, 0.0, 0, 0, TimeNotSet());
+  }
 }
 
 TEST_F(MediaEngagementServiceTest,
