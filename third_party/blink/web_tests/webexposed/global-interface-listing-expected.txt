@@ -4379,6 +4379,11 @@ interface KeyframeEffect : AnimationEffect
     method setKeyframes
     setter composite
     setter target
+interface LayoutShift : PerformanceEntry
+    attribute @@toStringTag
+    getter fraction
+    method constructor
+    method toJSON
 interface LinearAccelerationSensor : Accelerometer
     attribute @@toStringTag
     method constructor
@@ -5385,11 +5390,6 @@ interface PerformanceEventTiming : PerformanceEntry
     getter cancelable
     getter processingEnd
     getter processingStart
-    method constructor
-    method toJSON
-interface PerformanceLayoutJank : PerformanceEntry
-    attribute @@toStringTag
-    getter fraction
     method constructor
     method toJSON
 interface PerformanceLongTaskTiming : PerformanceEntry

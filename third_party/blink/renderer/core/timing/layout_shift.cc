@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/timing/performance_layout_jank.h"
+#include "third_party/blink/renderer/core/timing/layout_shift.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
 #include "third_party/blink/renderer/core/performance_entry_names.h"
@@ -10,26 +10,26 @@
 
 namespace blink {
 
-PerformanceLayoutJank::PerformanceLayoutJank(double start_time, double fraction)
+LayoutShift::LayoutShift(double start_time, double fraction)
     : PerformanceEntry(g_empty_atom, start_time, start_time),
       fraction_(fraction) {}
 
-PerformanceLayoutJank::~PerformanceLayoutJank() = default;
+LayoutShift::~LayoutShift() = default;
 
-AtomicString PerformanceLayoutJank::entryType() const {
+AtomicString LayoutShift::entryType() const {
   return performance_entry_names::kLayoutJank;
 }
 
-PerformanceEntryType PerformanceLayoutJank::EntryTypeEnum() const {
+PerformanceEntryType LayoutShift::EntryTypeEnum() const {
   return PerformanceEntry::EntryType::kLayoutJank;
 }
 
-void PerformanceLayoutJank::BuildJSONValue(V8ObjectBuilder& builder) const {
+void LayoutShift::BuildJSONValue(V8ObjectBuilder& builder) const {
   PerformanceEntry::BuildJSONValue(builder);
   builder.Add("fraction", fraction_);
 }
 
-void PerformanceLayoutJank::Trace(blink::Visitor* visitor) {
+void LayoutShift::Trace(blink::Visitor* visitor) {
   PerformanceEntry::Trace(visitor);
 }
 

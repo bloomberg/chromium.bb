@@ -43,9 +43,9 @@
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/core/timing/layout_shift.h"
 #include "third_party/blink/renderer/core/timing/performance_element_timing.h"
 #include "third_party/blink/renderer/core/timing/performance_event_timing.h"
-#include "third_party/blink/renderer/core/timing/performance_layout_jank.h"
 #include "third_party/blink/renderer/core/timing/performance_timing.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
@@ -436,8 +436,7 @@ void WindowPerformance::DispatchFirstInputTiming(
 void WindowPerformance::AddLayoutJankFraction(double jank_fraction) {
   DCHECK(RuntimeEnabledFeatures::LayoutInstabilityAPIEnabled(
       GetExecutionContext()));
-  auto* entry =
-      MakeGarbageCollected<PerformanceLayoutJank>(now(), jank_fraction);
+  auto* entry = MakeGarbageCollected<LayoutShift>(now(), jank_fraction);
   if (HasObserverFor(PerformanceEntry::kLayoutJank))
     NotifyObserversOfEntry(*entry);
   if (ShouldBufferEntries())

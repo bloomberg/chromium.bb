@@ -2,25 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_PERFORMANCE_LAYOUT_JANK_H_
-#define THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_PERFORMANCE_LAYOUT_JANK_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_LAYOUT_SHIFT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_LAYOUT_SHIFT_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/timing/performance_entry.h"
 
 namespace blink {
 
-// The PerformanceLayoutJank object exposes the jank fraction of an animation
+// The LayoutShift object exposes the jank fraction of an animation
 // frame that does not occur close to some user input. The jank fraction
 // approximates the fraction of the viewport affected by layout jank during that
 // frame. More details can be found in this explainer:
 // http://bit.ly/lsm-explainer.
-class CORE_EXPORT PerformanceLayoutJank final : public PerformanceEntry {
+class CORE_EXPORT LayoutShift final : public PerformanceEntry {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  PerformanceLayoutJank(double start_time, double fraction);
-  ~PerformanceLayoutJank() override;
+  LayoutShift(double start_time, double fraction);
+  ~LayoutShift() override;
 
   AtomicString entryType() const override;
   PerformanceEntryType EntryTypeEnum() const override;
@@ -37,4 +37,4 @@ class CORE_EXPORT PerformanceLayoutJank final : public PerformanceEntry {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_PERFORMANCE_LAYOUT_JANK_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_LAYOUT_SHIFT_H_

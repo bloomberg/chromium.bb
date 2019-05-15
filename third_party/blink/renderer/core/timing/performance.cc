@@ -44,9 +44,9 @@
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/document_load_timing.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/core/timing/layout_shift.h"
 #include "third_party/blink/renderer/core/timing/performance_element_timing.h"
 #include "third_party/blink/renderer/core/timing/performance_event_timing.h"
-#include "third_party/blink/renderer/core/timing/performance_layout_jank.h"
 #include "third_party/blink/renderer/core/timing/performance_long_task_timing.h"
 #include "third_party/blink/renderer/core/timing/performance_mark.h"
 #include "third_party/blink/renderer/core/timing/performance_mark_options.h"
@@ -638,7 +638,7 @@ void Performance::AddEventTimingBuffer(PerformanceEventTiming& entry) {
     DispatchEvent(*Event::Create(event_type_names::kEventtimingbufferfull));
 }
 
-void Performance::AddLayoutJankBuffer(PerformanceLayoutJank& entry) {
+void Performance::AddLayoutJankBuffer(LayoutShift& entry) {
   if (layout_jank_buffer_.size() < kDefaultLayoutJankBufferSize)
     layout_jank_buffer_.push_back(&entry);
 }

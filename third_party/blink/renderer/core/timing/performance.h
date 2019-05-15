@@ -55,10 +55,10 @@ namespace blink {
 
 class PerformanceMarkOptions;
 class ExceptionState;
+class LayoutShift;
 class MemoryInfo;
 class PerformanceElementTiming;
 class PerformanceEventTiming;
-class PerformanceLayoutJank;
 class PerformanceMark;
 class PerformanceMeasure;
 class PerformanceNavigation;
@@ -180,7 +180,7 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   void setEventTimingBufferMaxSize(unsigned);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(eventtimingbufferfull, kEventtimingbufferfull)
 
-  void AddLayoutJankBuffer(PerformanceLayoutJank&);
+  void AddLayoutJankBuffer(LayoutShift&);
 
   PerformanceMark* mark(ScriptState*,
                         const AtomicString& mark_name,
