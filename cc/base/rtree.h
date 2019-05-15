@@ -230,60 +230,54 @@ auto RTree<T>::BuildRecursive(std::vector<Branch<T>>* branches, int level)
       remainder = kMinChildren - remainder;
   }
 
-  int num_strips = static_cast<int>(std::ceil(std::sqrt(num_branches)));
-  int num_tiles = static_cast<int>(
-      std::ceil(num_branches / static_cast<float>(num_strips)));
   size_t current_branch = 0;
 
   size_t new_branch_index = 0;
-  for (int i = 0; i < num_strips; ++i) {
-    // Might be worth sorting by X here too.
-    for (int j = 0; j < num_tiles && current_branch < branches->size(); ++j) {
-      int increment_by = kMaxChildren;
-      if (remainder != 0) {
-        // if need be, omit some nodes to make up for remainder
-        if (remainder <= kMaxChildren - kMinChildren) {
-          increment_by -= remainder;
-          remainder = 0;
-        } else {
-          increment_by = kMinChildren;
-          remainder -= kMaxChildren - kMinChildren;
-        }
+  while (current_branch < branches->size()) {
+    int increment_by = kMaxChildren;
+    if (remainder != 0) {
+      // if need be, omit some nodes to make up for remainder
+      if (remainder <= kMaxChildren - kMinChildren) {
+        increment_by -= remainder;
+        remainder = 0;
+      } else {
+        increment_by = kMinChildren;
+        remainder -= kMaxChildren - kMinChildren;
       }
-      Node<T>* node = AllocateNodeAtLevel(level);
-      node->num_children = 1;
-      node->children[0] = (*branches)[current_branch];
-
-      Branch<T> branch;
-      branch.bounds = (*branches)[current_branch].bounds;
-      branch.subtree = node;
-      ++current_branch;
-      int x = branch.bounds.x();
-      int y = branch.bounds.y();
-      int right = branch.bounds.right();
-      int bottom = branch.bounds.bottom();
-      for (int k = 1; k < increment_by && current_branch < branches->size();
-           ++k) {
-        // We use a custom union instead of gfx::Rect::Union here, since this
-        // bypasses some empty checks and extra setters, which improves
-        // performance.
-        auto& bounds = (*branches)[current_branch].bounds;
-        x = std::min(x, bounds.x());
-        y = std::min(y, bounds.y());
-        right = std::max(right, bounds.right());
-        bottom = std::max(bottom, bounds.bottom());
-
-        node->children[k] = (*branches)[current_branch];
-        ++node->num_children;
-        ++current_branch;
-      }
-      branch.bounds.SetRect(x, y, base::ClampSub(right, x),
-                            base::ClampSub(bottom, y));
-
-      DCHECK_LT(new_branch_index, current_branch);
-      (*branches)[new_branch_index] = std::move(branch);
-      ++new_branch_index;
     }
+    Node<T>* node = AllocateNodeAtLevel(level);
+    node->num_children = 1;
+    node->children[0] = (*branches)[current_branch];
+
+    Branch<T> branch;
+    branch.bounds = (*branches)[current_branch].bounds;
+    branch.subtree = node;
+    ++current_branch;
+    int x = branch.bounds.x();
+    int y = branch.bounds.y();
+    int right = branch.bounds.right();
+    int bottom = branch.bounds.bottom();
+    for (int k = 1; k < increment_by && current_branch < branches->size();
+         ++k) {
+      // We use a custom union instead of gfx::Rect::Union here, since this
+      // bypasses some empty checks and extra setters, which improves
+      // performance.
+      auto& bounds = (*branches)[current_branch].bounds;
+      x = std::min(x, bounds.x());
+      y = std::min(y, bounds.y());
+      right = std::max(right, bounds.right());
+      bottom = std::max(bottom, bounds.bottom());
+
+      node->children[k] = (*branches)[current_branch];
+      ++node->num_children;
+      ++current_branch;
+    }
+    branch.bounds.SetRect(x, y, base::ClampSub(right, x),
+                          base::ClampSub(bottom, y));
+
+    DCHECK_LT(new_branch_index, current_branch);
+    (*branches)[new_branch_index] = std::move(branch);
+    ++new_branch_index;
   }
   branches->resize(new_branch_index);
   return BuildRecursive(branches, level + 1);
