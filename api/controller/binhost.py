@@ -66,7 +66,7 @@ def SetBinhost(input_proto, output_proto):
   output_proto.output_file = binhost.SetBinhost(target, key, uri,
                                                 private=private)
 
-_overlay_type_to_name = {
+_OVERLAY_TYPE_TO_NAME = {
     binhost_pb2.OVERLAYTYPE_PUBLIC: constants.PUBLIC_OVERLAYS,
     binhost_pb2.OVERLAYTYPE_PRIVATE: constants.PRIVATE_OVERLAYS,
     binhost_pb2.OVERLAYTYPE_BOTH: constants.BOTH_OVERLAYS,
@@ -84,7 +84,7 @@ def RegenBuildCache(input_proto):
   """
   overlay_type = input_proto.overlay_type
   sysroot = input_proto.sysroot
-  if overlay_type in _overlay_type_to_name:
-    binhost.RegenBuildCache(_overlay_type_to_name[overlay_type], sysroot.path)
+  if overlay_type in _OVERLAY_TYPE_TO_NAME:
+    binhost.RegenBuildCache(_OVERLAY_TYPE_TO_NAME[overlay_type], sysroot.path)
   else:
     cros_build_lib.Die('Overlay_type must be specified.')
