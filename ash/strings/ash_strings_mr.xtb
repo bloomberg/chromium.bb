@@ -413,7 +413,7 @@
 <translation id="7526573455193969409">नेटवर्कचे परीक्षण केले जाऊ शकते</translation>
 <translation id="7536035074519304529">IP पत्ता: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">झोपण्याची वेळ</translation>
-<translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> <ph name="SPECIFIED_RESOLUTION" /> ला सपोर्ट करत नाही. रिझोल्युशन <ph name="FALLBACK_RESOLUTION" /> मध्ये बदलले</translation>
+<translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> <ph name="SPECIFIED_RESOLUTION" /> ला सपोर्ट देत नाही. रिजोल्यूशन <ph name="FALLBACK_RESOLUTION" /> मध्ये बदलले</translation>
 <translation id="7562368315689366235">इमोजी पॅलेट</translation>
 <translation id="7564874036684306347">दुसऱ्या डेस्कटॉपवर विंडो हलवण्याने अनपेक्षित वर्तन घडू शकते. नंतर येणाऱ्या सूचना, विंडो आणि डायलॉग हे डेस्कटॉपच्या दरम्यान विभाजित केले जाऊ शकतात.</translation>
 <translation id="7569509451529460200">ब्रेल आणि ChromeVox चालू केलेले आहेत</translation>
@@ -427,7 +427,7 @@
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{एक सूचना}other{# सूचना}}</translation>
 <translation id="776344839111254542">अपडेट तपशील पाहण्यासाठी क्लिक करा</translation>
 <translation id="7780159184141939021">स्क्रीन फिरवा</translation>
-<translation id="7796353162336583443">नोंद करून घेण्यासाठी, स्क्रीनशॉट घेण्यासाठी, Google असिस्टंट, लेझर पॉइंटर किंवा भिंग वापरण्यासाठी शेल्फवरील स्टायलस बटणावर टॅप करा.</translation>
+<translation id="7796353162336583443">नोंद करून घेण्यासाठी, स्क्रीनशॉट घेण्यासाठी, Google Assistant, लेझर पॉइंटर किंवा भिंग वापरण्यासाठी शेल्फवरील स्टायलस बटणावर टॅप करा.</translation>
 <translation id="7798302898096527229">रद्द करण्यासाठी Search किंवा Shift दाबा.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> आणि <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">मजबूत सिग्नल</translation>

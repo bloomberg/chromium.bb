@@ -2609,9 +2609,9 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
       Jika Anda menonaktifkan setelan ini atau tidak menyetel suatu nilai, SafeSearch di Google Penelusuran tidak akan diterapkan.</translation>
 <translation id="5946082169633555022">Saluran beta</translation>
 <translation id="5946329690214660966">Menetapkan jadwal kustom untuk memeriksa update</translation>
-<translation id="5950205771952201658">Mengingat pemeriksaan pembatalan online kegagalan-lunak tidak memberikan manfaat keamanan yang efektif, pemeriksaan tersebut dinonaktifkan secara default di <ph name="PRODUCT_NAME" /> versi 19 dan yang lebih baru. Dengan menyetel kebijakan ini ke true, perilaku sebelumnya akan dipulihkan dan akan dilakukan pemeriksaan OCSP/CRL online.
+<translation id="5950205771952201658">Mengingat pemeriksaan pencabutan online kegagalan-lunak tidak memberikan manfaat keamanan yang efektif, pemeriksaan tersebut dinonaktifkan secara default di <ph name="PRODUCT_NAME" /> versi 19 dan yang lebih baru. Dengan menyetel kebijakan ini ke true, perilaku sebelumnya akan dipulihkan dan akan dilakukan pemeriksaan OCSP/CRL online.
 
-      Jika kebijakan tidak disetel, atau disetel ke false, <ph name="PRODUCT_NAME" /> tidak akan melakukan pemeriksaan pembatalan online di <ph name="PRODUCT_NAME" /> versi 19 dan yang lebih baru.</translation>
+      Jika kebijakan tidak disetel, atau disetel ke false, <ph name="PRODUCT_NAME" /> tidak akan melakukan pemeriksaan pencabutan online di <ph name="PRODUCT_NAME" /> versi 19 dan yang lebih baru.</translation>
 <translation id="5961137303188584693">Alamat MAC NIC bawaan perangkat</translation>
 <translation id="5966615072639944554">Ekstensi yang diizinkan untuk menggunakan API pengesahan jarak jauh</translation>
 <translation id="5983708779415553259">Perilaku default untuk situs tidak ada dalam paket konten mana pun</translation>

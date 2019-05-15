@@ -1643,8 +1643,8 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
           összes engedélyt, beleértve az alkalmazás/bővítmény jövőbeli verziói
           által kért további engedélyeket is. Ezenkívül megkapják az engedélyeket
           az enterprise.deviceAttributes és az enterprise.platformKeys bővítmény-
-          API-k is. (Ez a két API nem áll rendelkezésre a nem kényszerítve
-          telepített alkalmazások és bővítmények esetében.)
+          API-k is. (Ez a két API nem érhető el a nem kényszerítve
+          telepített alkalmazások és bővítmények számára.)
 
           Ez a házirend elsőbbséget élvez az esetlegesen ütköző <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> házirenddel szemben. Ha egy korábban kényszerítve telepített alkalmazást vagy bővítményt töröl erről a listáról, a <ph name="PRODUCT_NAME" /> automatikusan eltávolítja.
 

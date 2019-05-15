@@ -578,7 +578,7 @@
 <translation id="1880905663253319515">Voleu suprimir el certificat "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="1886996562706621347">Permet que els llocs web sol·licitin esdevenir gestors predeterminats de protocols (opció recomanada)</translation>
 <translation id="1887442540531652736">Error d'inici de sessió</translation>
-<translation id="1887597546629269384">Torna a dir "Ei Google"</translation>
+<translation id="1887597546629269384">Torna a dir "Ok Google"</translation>
 <translation id="1887850431809612466">Revisió de maquinari</translation>
 <translation id="1889984860246851556">Obre la configuració del servidor intermediari</translation>
 <translation id="1890674179660343635">&lt;span&gt;Identificador: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
@@ -2249,7 +2249,7 @@ Descripció: <ph name="LINUX_DESCRIPTION" /></translation>
 <translation id="4525382759303819021">Obtén les darreres actualitzacions i recomanacions de les aplicacions de Play Store</translation>
 <translation id="4530494379350999373">Origen</translation>
 <translation id="4532646538815530781">Aquest lloc web utilitza sensors de llum.</translation>
-<translation id="4533846798469727141">Ara digues "Ei Google"</translation>
+<translation id="4533846798469727141">Ara digues "Ok Google"</translation>
 <translation id="4533985347672295764">Temps de la CPU</translation>
 <translation id="4534661889221639075">Torna-ho a provar.</translation>
 <translation id="4535127706710932914">Perfil predeterminat</translation>
