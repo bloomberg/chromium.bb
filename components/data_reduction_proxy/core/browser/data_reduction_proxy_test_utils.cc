@@ -68,15 +68,14 @@ enum TestContextOptions {
 
 const char kTestKey[] = "test-key";
 
-const net::BackoffEntry::Policy kTestBackoffPolicy = {
-    0,               // num_errors_to_ignore
-    10 * 1000,       // initial_delay_ms
-    2,               // multiply_factor
-    0,               // jitter_factor
-    30 * 60 * 1000,  // maximum_backoff_ms
-    -1,              // entry_lifetime_ms
-    true,            // always_use_initial_delay
-};
+net::BackoffEntry::Policy kTestBackoffPolicy;
+
+const net::BackoffEntry::Policy& GetTestBackoffPolicy() {
+  kTestBackoffPolicy = data_reduction_proxy::GetBackoffPolicy();
+  // Remove jitter to bring certainty in the tests.
+  kTestBackoffPolicy.jitter_factor = 0;
+  return kTestBackoffPolicy;
+}
 
 }  // namespace
 
@@ -109,8 +108,9 @@ TestDataReductionProxyConfigServiceClient::
         DataReductionProxyConfig* config,
         DataReductionProxyIOData* io_data,
         network::NetworkConnectionTracker* network_connection_tracker,
-        ConfigStorer config_storer)
-    : DataReductionProxyConfigServiceClient(kTestBackoffPolicy,
+        ConfigStorer config_storer,
+        const net::BackoffEntry::Policy& backoff_policy)
+    : DataReductionProxyConfigServiceClient(backoff_policy,
                                             request_options,
                                             config_values,
                                             config,
@@ -121,7 +121,7 @@ TestDataReductionProxyConfigServiceClient::
       is_application_state_background_(false),
 #endif
       tick_clock_(base::Time::UnixEpoch()),
-      test_backoff_entry_(&kTestBackoffPolicy, &tick_clock_) {
+      test_backoff_entry_(&backoff_policy, &tick_clock_) {
 }
 
 TestDataReductionProxyConfigServiceClient::
@@ -139,6 +139,11 @@ void TestDataReductionProxyConfigServiceClient::SetCustomReleaseTime(
 
 base::TimeDelta TestDataReductionProxyConfigServiceClient::GetDelay() const {
   return config_refresh_timer_.GetCurrentDelay();
+}
+
+base::TimeDelta
+TestDataReductionProxyConfigServiceClient::GetBackoffTimeUntilRelease() const {
+  return test_backoff_entry_.GetTimeUntilRelease();
 }
 
 int TestDataReductionProxyConfigServiceClient::GetBackoffErrorCount() {
@@ -515,7 +520,8 @@ DataReductionProxyTestContext::Builder::Build() {
         std::move(params), io_data->request_options(), raw_mutable_config,
         io_data->config(), io_data.get(), test_network_connection_tracker,
         base::BindRepeating(&TestConfigStorer::StoreSerializedConfig,
-                            base::Unretained(config_storer.get()))));
+                            base::Unretained(config_storer.get())),
+        GetTestBackoffPolicy()));
   } else if (use_config_client_) {
     config_client.reset(new DataReductionProxyConfigServiceClient(
         GetBackoffPolicy(), io_data->request_options(), raw_mutable_config,
