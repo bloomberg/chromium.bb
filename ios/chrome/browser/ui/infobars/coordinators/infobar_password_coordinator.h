@@ -12,8 +12,9 @@ class IOSChromeSavePasswordInfoBarDelegate;
 // Coordinator that creates and manages the PasswordInfobar.
 @interface InfobarPasswordCoordinator : InfobarCoordinator
 
-- (instancetype)initWithInfoBarDelegate:
-    (IOSChromeSavePasswordInfoBarDelegate*)passwordInfoBarDelegate
+- (instancetype)initWithInfoBarDelegate:(IOSChromeSavePasswordInfoBarDelegate*)
+                                            passwordInfoBarDelegate
+                                   type:(InfobarType)infobarType
     NS_DESIGNATED_INITIALIZER;
 
 @end

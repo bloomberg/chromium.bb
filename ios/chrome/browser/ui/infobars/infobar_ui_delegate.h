@@ -7,6 +7,8 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/infobars/infobar_type.h"
+
 class InfoBarControllerDelegate;
 
 // Protocol to communicate with the Infobar container.
@@ -24,6 +26,9 @@ class InfoBarControllerDelegate;
 
 // YES if the container should modally present the Infobar.
 @property(nonatomic, assign, getter=isPresented) BOOL presented;
+
+// The InfobarType for this Infobar.
+@property(nonatomic, assign) InfobarType infobarType;
 
 @optional
 // The Infobar UIView.

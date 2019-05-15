@@ -44,6 +44,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/infobars/infobar.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
+#import "ios/chrome/browser/infobars/infobar_type.h"
 #import "ios/chrome/browser/metrics/ukm_url_recorder.h"
 #include "ios/chrome/browser/passwords/credential_manager.h"
 #import "ios/chrome/browser/passwords/ios_chrome_save_password_infobar_delegate.h"
@@ -686,7 +687,8 @@ void LogSuggestionShown(PasswordSuggestionType type) {
       if (IsInfobarUIRebootEnabled()) {
         InfobarPasswordCoordinator* coordinator =
             [[InfobarPasswordCoordinator alloc]
-                initWithInfoBarDelegate:delegate.get()];
+                initWithInfoBarDelegate:delegate.get()
+                                   type:InfobarType::kInfobarTypePasswordSave];
         infoBarManager->AddInfoBar(
             std::make_unique<InfoBarIOS>(coordinator, std::move(delegate)));
       } else {
@@ -703,9 +705,10 @@ void LogSuggestionShown(PasswordSuggestionType type) {
         auto delegate = std::make_unique<IOSChromeSavePasswordInfoBarDelegate>(
             isSyncUser, /*password_update*/ true, std::move(form));
         delegate->set_dispatcher(self.dispatcher);
-        InfobarPasswordCoordinator* coordinator =
-            [[InfobarPasswordCoordinator alloc]
-                initWithInfoBarDelegate:delegate.get()];
+        InfobarPasswordCoordinator* coordinator = [[InfobarPasswordCoordinator
+            alloc]
+            initWithInfoBarDelegate:delegate.get()
+                               type:InfobarType::kInfobarTypePasswordUpdate];
         infoBarManager->AddInfoBar(
             std::make_unique<InfoBarIOS>(coordinator, std::move(delegate)));
 

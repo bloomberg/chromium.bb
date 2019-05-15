@@ -7,6 +7,7 @@
 
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
+#import "ios/chrome/browser/infobars/infobar_type.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_delegate.h"
 #import "ios/chrome/browser/ui/infobars/infobar_ui_delegate.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_modal_delegate.h"
@@ -33,7 +34,9 @@ class InfoBarDelegate;
                                                    InfobarModalDelegate>
 
 - (instancetype)initWithInfoBarDelegate:
-    (infobars::InfoBarDelegate*)infoBarDelegate NS_DESIGNATED_INITIALIZER;
+                    (infobars::InfoBarDelegate*)infoBarDelegate
+                                   type:(InfobarType)infobarType
+    NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
     NS_UNAVAILABLE;

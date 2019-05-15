@@ -12,6 +12,7 @@
 #include "ios/chrome/browser/infobars/infobar.h"
 #include "ios/chrome/browser/infobars/infobar_badge_tab_helper.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
+#import "ios/chrome/browser/infobars/infobar_type.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/infobars/coordinators/infobar_confirm_coordinator.h"
 #import "ios/chrome/browser/ui/infobars/infobar_constants.h"
@@ -103,7 +104,8 @@ class InfobarContainerCoordinatorTest : public PlatformTest {
     TestInfoBarDelegate* test_infobar_delegate =
         new TestInfoBarDelegate(@"Title");
     coordinator_ = [[InfobarConfirmCoordinator alloc]
-        initWithInfoBarDelegate:test_infobar_delegate];
+        initWithInfoBarDelegate:test_infobar_delegate
+                           type:InfobarType::kInfobarTypeConfirm];
     infobar_delegate_ =
         std::unique_ptr<ConfirmInfoBarDelegate>(test_infobar_delegate);
 

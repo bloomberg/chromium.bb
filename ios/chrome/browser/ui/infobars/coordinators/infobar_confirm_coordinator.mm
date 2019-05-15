@@ -34,8 +34,10 @@
 @synthesize modalViewController = _modalViewController;
 
 - (instancetype)initWithInfoBarDelegate:
-    (ConfirmInfoBarDelegate*)confirmInfoBarDelegate {
-  self = [super initWithInfoBarDelegate:confirmInfoBarDelegate];
+                    (ConfirmInfoBarDelegate*)confirmInfoBarDelegate
+                                   type:(InfobarType)infobarType {
+  self = [super initWithInfoBarDelegate:confirmInfoBarDelegate
+                                   type:infobarType];
   if (self) {
     _confirmInfobarDelegate = confirmInfoBarDelegate;
   }
@@ -47,9 +49,9 @@
 - (void)start {
   if (!self.started) {
     self.started = YES;
-    self.bannerViewController = [[InfobarBannerViewController alloc]
-        initWithDelegate:self
-                    type:InfobarType::kInfobarTypeConfirm];
+    self.bannerViewController =
+        [[InfobarBannerViewController alloc] initWithDelegate:self
+                                                         type:self.infobarType];
     self.bannerViewController.titleText =
         base::SysUTF16ToNSString(self.confirmInfobarDelegate->GetMessageText());
     self.bannerViewController.buttonText =

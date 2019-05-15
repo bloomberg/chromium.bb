@@ -68,6 +68,7 @@ source_set("passwords") {
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/infobars",
+    "//ios/chrome/browser/infobars:public",
     "//ios/chrome/browser/metrics:ukm_url_recorder",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/ssl",

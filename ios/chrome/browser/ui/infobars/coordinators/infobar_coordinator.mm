@@ -54,14 +54,18 @@ const CGFloat kBannerOverlapWithOmnibox = 5.0;
 // Property defined in InfobarUIDelegate.
 @synthesize delegate = _delegate;
 // Property defined in InfobarUIDelegate.
+@synthesize infobarType = _infobarType;
+// Property defined in InfobarUIDelegate.
 @synthesize presented = _presented;
 
 - (instancetype)initWithInfoBarDelegate:
-    (infobars::InfoBarDelegate*)infoBarDelegate {
+                    (infobars::InfoBarDelegate*)infoBarDelegate
+                                   type:(InfobarType)infobarType {
   self = [super initWithBaseViewController:nil browserState:nil];
   if (self) {
     _infobarDelegate = infoBarDelegate;
     _presented = YES;
+    _infobarType = infobarType;
   }
   return self;
 }

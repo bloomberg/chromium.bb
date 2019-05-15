@@ -21,6 +21,7 @@
 @synthesize view = _view;
 @synthesize delegate = _delegate;
 @synthesize infoBarDelegate = _infoBarDelegate;
+@synthesize infobarType = _infobarType;
 @synthesize presented = _presented;
 
 #pragma mark - Public

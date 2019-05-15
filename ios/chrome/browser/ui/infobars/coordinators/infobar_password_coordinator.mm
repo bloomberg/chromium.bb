@@ -42,17 +42,17 @@
 // Synthesize since readonly property from superclass is changed to readwrite.
 @synthesize modalViewController = _modalViewController;
 
-- (instancetype)initWithInfoBarDelegate:
-    (IOSChromeSavePasswordInfoBarDelegate*)passwordInfoBarDelegate {
-  self = [super initWithInfoBarDelegate:passwordInfoBarDelegate];
+- (instancetype)initWithInfoBarDelegate:(IOSChromeSavePasswordInfoBarDelegate*)
+                                            passwordInfoBarDelegate
+                                   type:(InfobarType)infobarType {
+  self = [super initWithInfoBarDelegate:passwordInfoBarDelegate
+                                   type:infobarType];
   if (self) {
     _passwordInfoBarDelegate = passwordInfoBarDelegate;
     // Set |_infobarBannerType| at init time since
     // passwordInfoBarDelegate->IsPasswordUpdate() can change after the user has
     // interacted with the ModalInfobar.
-    _infobarBannerType = passwordInfoBarDelegate->IsPasswordUpdate()
-                             ? InfobarType::kInfobarTypePasswordUpdate
-                             : InfobarType::kInfobarTypePasswordSave;
+    _infobarBannerType = infobarType;
   }
   return self;
 }
