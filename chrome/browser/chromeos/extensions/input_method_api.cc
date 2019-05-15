@@ -12,7 +12,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -30,7 +29,6 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/api/input_method_private.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/sync/driver/sync_service.h"
@@ -86,10 +84,7 @@ InputMethodPrivateGetInputMethodConfigFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(false);
 #else
   std::unique_ptr<base::DictionaryValue> output(new base::DictionaryValue());
-  output->SetBoolean(
-      "isPhysicalKeyboardAutocorrectEnabled",
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kDisablePhysicalKeyboardAutocorrect));
+  output->SetBoolean("isPhysicalKeyboardAutocorrectEnabled", true);
   output->SetBoolean("isImeMenuActivated",
                      Profile::FromBrowserContext(browser_context())
                          ->GetPrefs()

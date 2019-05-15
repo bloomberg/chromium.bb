@@ -1903,9 +1903,6 @@ extern const char kNetworkPortalNotificationDescription[];
 extern const char kNewZipUnpackerName[];
 extern const char kNewZipUnpackerDescription[];
 
-extern const char kPhysicalKeyboardAutocorrectName[];
-extern const char kPhysicalKeyboardAutocorrectDescription[];
-
 extern const char kPrinterProviderSearchAppName[];
 extern const char kPrinterProviderSearchAppDescription[];
 

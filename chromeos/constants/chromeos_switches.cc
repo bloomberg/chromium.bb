@@ -237,10 +237,6 @@ const char kDisableMultiDisplayLayout[] = "disable-multi-display-layout";
 // Disables per-user timezone.
 const char kDisablePerUserTimezone[] = "disable-per-user-timezone";
 
-// Disables suggestions while typing on a physical keyboard.
-const char kDisablePhysicalKeyboardAutocorrect[] =
-    "disable-physical-keyboard-autocorrect";
-
 // Disables rollback option on reset screen.
 const char kDisableRollbackOption[] = "disable-rollback-option";
 
@@ -294,10 +290,6 @@ const char kEnableFirstRunUITransitions[] = "enable-first-run-ui-transitions";
 
 // Enables the marketing opt-in screen in OOBE.
 const char kEnableMarketingOptInScreen[] = "enable-market-opt-in";
-
-// Enables suggestions while typing on a physical keyboard.
-const char kEnablePhysicalKeyboardAutocorrect[] =
-    "enable-physical-keyboard-autocorrect";
 
 // Enables request of tablet site (via user agent override).
 const char kEnableRequestTabletSite[] = "enable-request-tablet-site";

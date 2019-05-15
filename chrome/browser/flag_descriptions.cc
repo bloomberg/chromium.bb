@@ -3154,11 +3154,6 @@ const char kNewZipUnpackerName[] = "ZIP Archiver (unpacking)";
 const char kNewZipUnpackerDescription[] =
     "Use the ZIP Archiver for mounting/unpacking ZIP files";
 
-const char kPhysicalKeyboardAutocorrectName[] = "Physical keyboard autocorrect";
-const char kPhysicalKeyboardAutocorrectDescription[] =
-    "Enable physical keyboard autocorrect for US keyboard, which can provide "
-    "suggestions as typing on physical keyboard.";
-
 const char kPrinterProviderSearchAppName[] =
     "Chrome Web Store Gallery app for printer drivers";
 const char kPrinterProviderSearchAppDescription[] =

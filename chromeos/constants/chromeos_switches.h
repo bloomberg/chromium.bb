@@ -85,8 +85,6 @@ extern const char kDisableMultiDisplayLayout[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kDisableNewZIPUnpacker[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kDisablePerUserTimezone[];
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const char kDisablePhysicalKeyboardAutocorrect[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kDisableRollbackOption[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kDisableSigninFrameClientCerts[];
@@ -111,8 +109,6 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kEnableFirstRunUITransitions[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kEnableMarketingOptInScreen[];
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const char kEnablePhysicalKeyboardAutocorrect[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kEnableRequestTabletSite[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)

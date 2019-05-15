@@ -1431,12 +1431,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-virtual-keyboard", flag_descriptions::kVirtualKeyboardName,
      flag_descriptions::kVirtualKeyboardDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(keyboard::switches::kEnableVirtualKeyboard)},
-    {"enable-physical-keyboard-autocorrect",
-     flag_descriptions::kPhysicalKeyboardAutocorrectName,
-     flag_descriptions::kPhysicalKeyboardAutocorrectDescription, kOsCrOS,
-     ENABLE_DISABLE_VALUE_TYPE(
-         chromeos::switches::kEnablePhysicalKeyboardAutocorrect,
-         chromeos::switches::kDisablePhysicalKeyboardAutocorrect)},
 #endif  // OS_CHROMEOS
 #if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
     {"device-discovery-notifications",

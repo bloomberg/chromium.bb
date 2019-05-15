@@ -1390,11 +1390,6 @@
     "expiry_milestone": -1
   },
   {
-    "name": "enable-physical-keyboard-autocorrect",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-pixel-canvas-recording",
     "owners": [ "malaykeshav", "oshima" ],
     "expiry_milestone": 77
