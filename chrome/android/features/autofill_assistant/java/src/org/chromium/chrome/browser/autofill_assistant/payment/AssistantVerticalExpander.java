@@ -161,22 +161,15 @@ public class AssistantVerticalExpander extends LinearLayout {
     }
 
     /**
-     * Sets the margin between the title bar and the content. This method should be used instead of
-     * manually setting a margin on the title view, because that would result in misalignment
-     * between title view and the expand chevron.
-     * @param marginInPixels The desired margin between the title bar and the content.
+     * Sets the top/bottom padding of the title bar. This method should be used instead of manually
+     * setting a padding on the title view, because that would result in misalignment between title
+     * view and the expand chevron.
      */
-    public void setTitleToContentMargin(int marginInPixels) {
-        View[] views = new View[] {mCollapsedContainer, mExpandedContainer};
-        for (View view : views) {
-            MarginLayoutParams lp = (MarginLayoutParams) view.getLayoutParams();
-            lp.topMargin = marginInPixels;
-            view.setLayoutParams(lp);
-        }
-
-        MarginLayoutParams lp = (MarginLayoutParams) mChevronButton.getLayoutParams();
-        lp.bottomMargin = marginInPixels;
-        mChevronButton.setLayoutParams(lp);
+    public void setTitlePadding(int topPadding, int bottomPadding) {
+        mTitleContainer.setPadding(mTitleContainer.getPaddingLeft(), topPadding,
+                mTitleContainer.getPaddingRight(), bottomPadding);
+        mChevronButton.setPadding(mChevronButton.getPaddingLeft(), topPadding,
+                mChevronButton.getPaddingRight(), bottomPadding);
     }
 
     public View getChevronButton() {

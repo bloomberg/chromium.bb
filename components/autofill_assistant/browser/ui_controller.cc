@@ -17,8 +17,10 @@ void UiController::OnStatusMessageChanged(const std::string& message) {}
 void UiController::WillShutdown(Metrics::DropOutReason reason) {}
 void UiController::OnSuggestionsChanged(const std::vector<Chip>& suggestions) {}
 void UiController::OnActionsChanged(const std::vector<Chip>& actions) {}
-void UiController::OnPaymentRequestChanged(
+void UiController::OnPaymentRequestOptionsChanged(
     const PaymentRequestOptions* options) {}
+void UiController::OnPaymentRequestInformationChanged(
+    const PaymentInformation* state) {}
 void UiController::OnDetailsChanged(const Details* details) {}
 void UiController::OnInfoBoxChanged(const InfoBox* info_box) {}
 void UiController::OnProgressChanged(int progress) {}

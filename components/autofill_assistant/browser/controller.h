@@ -108,6 +108,7 @@ class Controller : public ScriptExecutorDelegate,
   const std::vector<Chip>& GetActions() const override;
   void SelectAction(int index) override;
   const PaymentRequestOptions* GetPaymentRequestOptions() const override;
+  const PaymentInformation* GetPaymentRequestInformation() const override;
   void SetShippingAddress(
       std::unique_ptr<autofill::AutofillProfile> address) override;
   void SetBillingAddress(

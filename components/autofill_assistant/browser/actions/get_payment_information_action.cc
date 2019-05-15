@@ -16,6 +16,7 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
 #include "components/autofill_assistant/browser/client_memory.h"
+#include "components/autofill_assistant/browser/service.pb.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
 
 namespace autofill_assistant {

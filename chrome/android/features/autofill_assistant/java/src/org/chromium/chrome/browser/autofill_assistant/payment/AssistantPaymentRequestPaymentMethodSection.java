@@ -17,9 +17,7 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.payments.AutofillAddress;
 import org.chromium.chrome.browser.payments.AutofillPaymentInstrument;
 import org.chromium.chrome.browser.payments.CardEditor;
-import org.chromium.chrome.browser.payments.PaymentInstrument;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -28,7 +26,6 @@ import java.util.List;
 public class AssistantPaymentRequestPaymentMethodSection
         extends AssistantPaymentRequestSection<AutofillPaymentInstrument> {
     private CardEditor mEditor;
-    private boolean mIgnorePaymentMethodsChangeNotifications;
 
     AssistantPaymentRequestPaymentMethodSection(Context context, ViewGroup parent) {
         super(context, parent, R.layout.autofill_assistant_payment_method_summary,
@@ -50,10 +47,8 @@ public class AssistantPaymentRequestPaymentMethodSection
         if (mEditor == null) {
             return;
         }
-        mIgnorePaymentMethodsChangeNotifications = true;
         mEditor.edit(
                 oldItem, editedOption -> onItemCreatedOrEdited(oldItem, oldFullView, editedOption));
-        mIgnorePaymentMethodsChangeNotifications = false;
     }
 
     @Override
@@ -104,9 +99,9 @@ public class AssistantPaymentRequestPaymentMethodSection
     }
 
     void onProfilesChanged(List<PersonalDataManager.AutofillProfile> profiles) {
-        for (int i = 0; i < profiles.size(); i++) {
+        for (PersonalDataManager.AutofillProfile profile : profiles) {
             // TODO(crbug.com/806868): replace suggested billing addresses (remove if necessary).
-            mEditor.updateBillingAddressIfComplete(new AutofillAddress(mContext, profiles.get(i)));
+            mEditor.updateBillingAddressIfComplete(new AutofillAddress(mContext, profile));
         }
     }
 
@@ -114,18 +109,10 @@ public class AssistantPaymentRequestPaymentMethodSection
      * The set of available payment methods has changed externally. This will rebuild the UI with
      * the new/changed set of payment methods, while keeping the selected item if possible.
      */
-    void onPaymentMethodsChanged(List<PaymentInstrument> paymentMethods) {
-        if (mIgnorePaymentMethodsChangeNotifications) {
-            return;
-        }
-
+    void onAvailablePaymentMethodsChanged(List<AutofillPaymentInstrument> paymentMethods) {
         AutofillPaymentInstrument previouslySelectedMethod = mSelectedOption;
         int selectedMethodIndex = -1;
-        List<AutofillPaymentInstrument> creditCards = new ArrayList<>();
         for (int i = 0; i < paymentMethods.size(); i++) {
-            if (paymentMethods.get(i) instanceof AutofillPaymentInstrument) {
-                creditCards.add((AutofillPaymentInstrument) paymentMethods.get(i));
-            }
             if (previouslySelectedMethod != null
                     && TextUtils.equals(paymentMethods.get(i).getIdentifier(),
                             previouslySelectedMethod.getIdentifier())) {
@@ -134,6 +121,6 @@ public class AssistantPaymentRequestPaymentMethodSection
         }
 
         // Replace current set of items, keep selection if possible.
-        setItems(creditCards, selectedMethodIndex);
+        setItems(paymentMethods, selectedMethodIndex);
     }
 }

@@ -34,12 +34,15 @@ public abstract class AssistantPaymentRequestSection<T extends EditableOption> {
     private final View mSummaryView;
     private final int mFullViewResId;
     private final List<Item> mItems;
+    private final int mTitleToContentPadding;
 
     protected final Context mContext;
     protected T mSelectedOption;
 
     private boolean mIgnoreItemSelectedNotifications;
     private Callback<T> mListener;
+    private int mTopPadding;
+    private int mBottomPadding;
 
     private class Item {
         Item(View fullView, T option) {
@@ -67,6 +70,7 @@ public abstract class AssistantPaymentRequestSection<T extends EditableOption> {
         mContext = context;
         mFullViewResId = fullViewResId;
         mItems = new ArrayList<>();
+        mTitleToContentPadding = titleToContentPadding;
 
         LayoutInflater inflater = LayoutInflater.from(context);
         mSectionExpander = new AssistantVerticalExpander(context, null);
@@ -95,9 +99,6 @@ public abstract class AssistantPaymentRequestSection<T extends EditableOption> {
         setHorizontalMargins(mSectionExpander.getChevronButton(), 0, horizontalMargin);
         setHorizontalMargins(mSummaryView, horizontalMargin, 0);
         setHorizontalMargins(mItemsView, 0, 0);
-
-        // Add some space between title and summary / expanded section.
-        mSectionExpander.setTitleToContentMargin(titleToContentPadding);
 
         TextView titleView = mSectionExpander.findViewById(R.id.section_title);
         titleView.setText(title);
@@ -170,7 +171,11 @@ public abstract class AssistantPaymentRequestSection<T extends EditableOption> {
         }
     }
 
-    private void addOrUpdateItem(T option, boolean select) {
+    void addOrUpdateItem(@Nullable T option, boolean select) {
+        if (option == null) {
+            return;
+        }
+
         // Update existing item if possible.
         Item item = null;
         for (int i = 0; i < mItems.size(); i++) {
@@ -194,6 +199,27 @@ public abstract class AssistantPaymentRequestSection<T extends EditableOption> {
             mIgnoreItemSelectedNotifications = true;
             selectItem(item);
             mIgnoreItemSelectedNotifications = false;
+        }
+    }
+
+    void setPaddings(int topPadding, int bottomPadding) {
+        mTopPadding = topPadding;
+        mBottomPadding = bottomPadding;
+        updatePaddings();
+    }
+
+    void updatePaddings() {
+        if (isEmpty()) {
+            // Section is empty, i.e., the title is the bottom-most widget.
+            mSectionExpander.setTitlePadding(mTopPadding, mBottomPadding);
+        } else if (mSectionExpander.isExpanded()) {
+            // Section is expanded, i.e., the expanded widget is the bottom-most widget.
+            mSectionExpander.setTitlePadding(mTopPadding, mTitleToContentPadding);
+            setBottomPadding(mSectionExpander.getExpandedView(), mBottomPadding);
+        } else {
+            // Section is non-empty and collapsed -> collapsed widget is the bottom-most widget.
+            mSectionExpander.setTitlePadding(mTopPadding, mTitleToContentPadding);
+            setBottomPadding(mSectionExpander.getCollapsedView(), mBottomPadding);
         }
     }
 
@@ -325,5 +351,11 @@ public abstract class AssistantPaymentRequestSection<T extends EditableOption> {
         if (isEmpty()) {
             mSectionExpander.setExpanded(false);
         }
+        updatePaddings();
+    }
+
+    private void setBottomPadding(View view, int padding) {
+        view.setPadding(
+                view.getPaddingLeft(), view.getPaddingTop(), view.getPaddingRight(), padding);
     }
 }

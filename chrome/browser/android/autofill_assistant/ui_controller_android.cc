@@ -122,7 +122,9 @@ void UiControllerAndroid::Attach(content::WebContents* web_contents,
     OnDetailsChanged(ui_delegate->GetDetails());
     OnSuggestionsChanged(ui_delegate->GetSuggestions());
     UpdateActions();
-    OnPaymentRequestChanged(ui_delegate->GetPaymentRequestOptions());
+    OnPaymentRequestOptionsChanged(ui_delegate->GetPaymentRequestOptions());
+    OnPaymentRequestInformationChanged(
+        ui_delegate->GetPaymentRequestInformation());
 
     std::vector<RectF> area;
     ui_delegate->GetTouchableArea(&area);
@@ -595,24 +597,45 @@ void UiControllerAndroid::OnTermsAndConditionsChanged(
   ui_delegate_->SetTermsAndConditions(state);
 }
 
-void UiControllerAndroid::OnPaymentRequestChanged(
+void UiControllerAndroid::OnPaymentRequestOptionsChanged(
     const PaymentRequestOptions* payment_options) {
   JNIEnv* env = AttachCurrentThread();
   auto jmodel = GetPaymentRequestModel();
   if (!payment_options) {
-    Java_AssistantPaymentRequestModel_clearOptions(env, jmodel);
+    Java_AssistantPaymentRequestModel_setVisible(env, jmodel, false);
     return;
   }
-  Java_AssistantPaymentRequestModel_setOptions(
+
+  Java_AssistantPaymentRequestModel_setRequestName(
+      env, jmodel, payment_options->request_payer_name);
+  Java_AssistantPaymentRequestModel_setRequestEmail(
+      env, jmodel, payment_options->request_payer_email);
+  Java_AssistantPaymentRequestModel_setRequestPhone(
+      env, jmodel, payment_options->request_payer_phone);
+  Java_AssistantPaymentRequestModel_setRequestShippingAddress(
+      env, jmodel, payment_options->request_shipping);
+  Java_AssistantPaymentRequestModel_setRequestPayment(
+      env, jmodel, payment_options->request_payment_method);
+  Java_AssistantPaymentRequestModel_setSupportedBasicCardNetworks(
       env, jmodel,
-      base::android::ConvertUTF8ToJavaString(env,
-                                             client_->GetAccountEmailAddress()),
-      payment_options->request_shipping,
-      payment_options->request_payment_method,
-      payment_options->request_payer_name, payment_options->request_payer_phone,
-      payment_options->request_payer_email,
       base::android::ToJavaArrayOfStrings(
           env, payment_options->supported_basic_card_networks));
+
+  Java_AssistantPaymentRequestModel_setVisible(env, jmodel, true);
+}
+
+void UiControllerAndroid::OnPaymentRequestInformationChanged(
+    const PaymentInformation* state) {
+  JNIEnv* env = AttachCurrentThread();
+  auto jmodel = GetPaymentRequestModel();
+  if (!state) {
+    return;
+  }
+
+  // TODO(crbug.com/806868): Add |setContactDetails|, |setShippingAddress| and
+  // |setPaymentMethod|.
+  Java_AssistantPaymentRequestModel_setTermsStatus(env, jmodel,
+                                                   state->terms_and_conditions);
 }
 
 // Details related method.

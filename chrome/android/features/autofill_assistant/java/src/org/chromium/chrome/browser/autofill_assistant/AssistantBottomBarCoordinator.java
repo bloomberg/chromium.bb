@@ -28,6 +28,7 @@ import org.chromium.chrome.browser.autofill_assistant.infobox.AssistantInfoBoxCo
 import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayModel;
 import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayState;
 import org.chromium.chrome.browser.autofill_assistant.payment.AssistantPaymentRequestCoordinator;
+import org.chromium.chrome.browser.autofill_assistant.payment.AssistantPaymentRequestModel;
 import org.chromium.chrome.browser.compositor.CompositorViewResizer;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
@@ -44,13 +45,13 @@ class AssistantBottomBarCoordinator
     private final AssistantBottomSheetContent mContent;
 
     // Child coordinators.
-    private AssistantInfoBoxCoordinator mInfoBoxCoordinator;
     private final AssistantHeaderCoordinator mHeaderCoordinator;
     private final AssistantDetailsCoordinator mDetailsCoordinator;
-    private final AssistantPaymentRequestCoordinator mPaymentRequestCoordinator;
     private final AssistantCarouselCoordinator mSuggestionsCoordinator;
     private final AssistantCarouselCoordinator mActionsCoordinator;
     private final AssistantPeekHeightCoordinator mPeekHeightCoordinator;
+    private AssistantInfoBoxCoordinator mInfoBoxCoordinator;
+    private AssistantPaymentRequestCoordinator mPaymentRequestCoordinator;
 
     private final ObserverList<CompositorViewResizer.Observer> mSizeObservers =
             new ObserverList<>();
@@ -161,6 +162,8 @@ class AssistantBottomBarCoordinator
     public void destroy() {
         mInfoBoxCoordinator.destroy();
         mInfoBoxCoordinator = null;
+        mPaymentRequestCoordinator.destroy();
+        mPaymentRequestCoordinator = null;
     }
 
     /**
@@ -219,7 +222,8 @@ class AssistantBottomBarCoordinator
     @Override
     public void setShowOnlyCarousels(boolean showOnlyCarousels) {
         mDetailsCoordinator.setForceInvisible(showOnlyCarousels);
-        mPaymentRequestCoordinator.setForceInvisible(showOnlyCarousels);
+        mModel.getPaymentRequestModel().set(
+                AssistantPaymentRequestModel.FORCE_INVISIBLE, showOnlyCarousels);
     }
 
     @Override

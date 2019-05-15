@@ -9,7 +9,9 @@ import android.support.annotation.Nullable;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
+import org.chromium.chrome.browser.payments.AutofillAddress;
 import org.chromium.chrome.browser.payments.AutofillContact;
+import org.chromium.chrome.browser.payments.AutofillPaymentInstrument;
 
 /** Delegate for the Payment Request UI. */
 @JNINamespace("autofill_assistant")
@@ -42,15 +44,17 @@ class AssistantPaymentRequestDelegate {
         }
     }
 
-    public void onShippingAddressChanged(@Nullable PersonalDataManager.AutofillProfile address) {
+    public void onShippingAddressChanged(@Nullable AutofillAddress address) {
         if (mNativeAssistantPaymentRequestDelegate != 0) {
-            nativeOnShippingAddressChanged(mNativeAssistantPaymentRequestDelegate, address);
+            nativeOnShippingAddressChanged(mNativeAssistantPaymentRequestDelegate,
+                    address != null ? address.getProfile() : null);
         }
     }
 
-    public void onCreditCardChanged(@Nullable PersonalDataManager.CreditCard card) {
+    public void onPaymentMethodChanged(@Nullable AutofillPaymentInstrument paymentInstrument) {
         if (mNativeAssistantPaymentRequestDelegate != 0) {
-            nativeOnCreditCardChanged(mNativeAssistantPaymentRequestDelegate, card);
+            nativeOnCreditCardChanged(mNativeAssistantPaymentRequestDelegate,
+                    paymentInstrument != null ? paymentInstrument.getCard() : null);
         }
     }
 

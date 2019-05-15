@@ -63,7 +63,10 @@ class UiControllerAndroid : public UiController {
   void WillShutdown(Metrics::DropOutReason reason) override;
   void OnSuggestionsChanged(const std::vector<Chip>& suggestions) override;
   void OnActionsChanged(const std::vector<Chip>& actions) override;
-  void OnPaymentRequestChanged(const PaymentRequestOptions* options) override;
+  void OnPaymentRequestOptionsChanged(
+      const PaymentRequestOptions* options) override;
+  void OnPaymentRequestInformationChanged(
+      const PaymentInformation* state) override;
   void OnDetailsChanged(const Details* details) override;
   void OnInfoBoxChanged(const InfoBox* info_box) override;
   void OnProgressChanged(int progress) override;

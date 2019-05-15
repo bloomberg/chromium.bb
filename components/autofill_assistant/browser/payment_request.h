@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "components/autofill_assistant/browser/service.pb.h"
 
 namespace autofill {
 class AutofillProfile;

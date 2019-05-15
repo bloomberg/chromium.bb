@@ -50,7 +50,12 @@ class UiController {
   virtual void OnActionsChanged(const std::vector<Chip>& actions);
 
   // Gets or clears request for payment information.
-  virtual void OnPaymentRequestChanged(const PaymentRequestOptions* options);
+  virtual void OnPaymentRequestOptionsChanged(
+      const PaymentRequestOptions* options);
+
+  // Updates the currently selected contact information / payment method.
+  virtual void OnPaymentRequestInformationChanged(
+      const PaymentInformation* state);
 
   // Called when details have changed. Details will be null if they have been
   // cleared.

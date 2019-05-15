@@ -686,6 +686,10 @@ const PaymentRequestOptions* Controller::GetPaymentRequestOptions() const {
   return payment_request_options_.get();
 }
 
+const PaymentInformation* Controller::GetPaymentRequestInformation() const {
+  return payment_request_info_.get();
+}
+
 void Controller::OnPaymentRequestContinueButtonClicked() {
   if (!payment_request_options_ || !payment_request_info_)
     return;
@@ -708,6 +712,8 @@ void Controller::SetShippingAddress(
     return;
 
   payment_request_info_->shipping_address = std::move(address);
+  GetUiController()->OnPaymentRequestInformationChanged(
+      payment_request_info_.get());
   UpdatePaymentRequestActions();
 }
 
@@ -717,6 +723,8 @@ void Controller::SetBillingAddress(
     return;
 
   payment_request_info_->billing_address = std::move(address);
+  GetUiController()->OnPaymentRequestInformationChanged(
+      payment_request_info_.get());
   UpdatePaymentRequestActions();
 }
 
@@ -729,6 +737,8 @@ void Controller::SetContactInfo(std::string name,
   payment_request_info_->payer_name = name;
   payment_request_info_->payer_phone = phone;
   payment_request_info_->payer_email = email;
+  GetUiController()->OnPaymentRequestInformationChanged(
+      payment_request_info_.get());
   UpdatePaymentRequestActions();
 }
 
@@ -737,6 +747,8 @@ void Controller::SetCreditCard(std::unique_ptr<autofill::CreditCard> card) {
     return;
 
   payment_request_info_->card = std::move(card);
+  GetUiController()->OnPaymentRequestInformationChanged(
+      payment_request_info_.get());
   UpdatePaymentRequestActions();
 }
 
@@ -747,6 +759,8 @@ void Controller::SetTermsAndConditions(
 
   payment_request_info_->terms_and_conditions = terms_and_conditions;
   UpdatePaymentRequestActions();
+  GetUiController()->OnPaymentRequestInformationChanged(
+      payment_request_info_.get());
 }
 
 void Controller::UpdatePaymentRequestActions() {
@@ -988,11 +1002,16 @@ void Controller::SetPaymentRequestOptions(
 
   if (options) {
     payment_request_info_ = std::make_unique<PaymentInformation>();
+
+    // TODO(crbug.com/806868): set initial state according to proto.
   }
 
   payment_request_options_ = std::move(options);
   UpdatePaymentRequestActions();
-  GetUiController()->OnPaymentRequestChanged(payment_request_options_.get());
+  GetUiController()->OnPaymentRequestOptionsChanged(
+      payment_request_options_.get());
+  GetUiController()->OnPaymentRequestInformationChanged(
+      payment_request_info_.get());
 }
 
 ElementArea* Controller::touchable_element_area() {

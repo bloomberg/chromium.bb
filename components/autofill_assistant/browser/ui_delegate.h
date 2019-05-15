@@ -75,6 +75,10 @@ class UiDelegate {
   // field contains a non-null options describing the request.
   virtual const PaymentRequestOptions* GetPaymentRequestOptions() const = 0;
 
+  // If the controller is waiting for payment request information, this
+  // field contains a non-null object describing the currently selected data.
+  virtual const PaymentInformation* GetPaymentRequestInformation() const = 0;
+
   // Sets shipping address, in response to the current payment request options.
   virtual void SetShippingAddress(
       std::unique_ptr<autofill::AutofillProfile> address) = 0;
@@ -91,8 +95,8 @@ class UiDelegate {
   // Sets credit card, in response to the current payment request options.
   virtual void SetCreditCard(std::unique_ptr<autofill::CreditCard> card) = 0;
 
-  // Sets terms and conditions, in response to the current payment request
-  // options.
+  // Sets the state of the third party terms & conditions, pertaining to the
+  // current payment request options.
   virtual void SetTermsAndConditions(
       TermsAndConditionsState terms_and_conditions) = 0;
 
