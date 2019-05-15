@@ -61,6 +61,10 @@ class COMPONENT_EXPORT(VULKAN_ANDROID) VulkanImplementationAndroid
       VkDeviceMemory* vk_device_memory,
       VkDeviceSize* mem_allocation_size,
       VulkanYCbCrInfo* ycbcr_info) override;
+  bool GetSamplerYcbcrConversionInfo(
+      const VkDevice& vk_device,
+      base::android::ScopedHardwareBufferHandle ahb_handle,
+      VulkanYCbCrInfo* ycbcr_info) override;
 
  private:
   VulkanInstance vulkan_instance_;

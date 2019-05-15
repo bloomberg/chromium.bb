@@ -122,6 +122,12 @@ class VULKAN_EXPORT VulkanImplementation {
       VkDeviceMemory* vk_device_memory,
       VkDeviceSize* mem_allocation_size,
       VulkanYCbCrInfo* ycbcr_info = nullptr) = 0;
+
+  // Get the sampler ycbcr conversion information from the AHB.
+  virtual bool GetSamplerYcbcrConversionInfo(
+      const VkDevice& vk_device,
+      base::android::ScopedHardwareBufferHandle ahb_handle,
+      VulkanYCbCrInfo* ycbcr_info) = 0;
 #endif
 
  private:
