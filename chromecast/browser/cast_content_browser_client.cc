@@ -810,12 +810,21 @@ void CastContentBrowserClient::ExposeInterfacesToMediaService(
       base::BindRepeating(&CreateMediaDrmStorage, render_frame_host));
 #endif  // defined(OS_ANDROID) && !BUILDFLAG(USE_CHROMECAST_CDMS)
 
-  std::string application_session_id =
-      CastNavigationUIData::GetSessionIdForWebContents(
-          content::WebContents::FromRenderFrameHost(render_frame_host));
+  std::string application_session_id;
+  bool mixer_audio_enabled;
+  GetApplicationMediaInfo(&application_session_id, &mixer_audio_enabled,
+                          render_frame_host);
   registry->AddInterface(base::BindRepeating(
       &media::CreateApplicationMediaInfoManager, render_frame_host,
-      std::move(application_session_id), true));
+      std::move(application_session_id), mixer_audio_enabled));
+}
+
+void CastContentBrowserClient::GetApplicationMediaInfo(
+    std::string* application_session_id,
+    bool* mixer_audio_enabled,
+    content::RenderFrameHost* render_frame_host) {
+  *application_session_id = "";
+  *mixer_audio_enabled = true;
 }
 
 void CastContentBrowserClient::HandleServiceRequest(

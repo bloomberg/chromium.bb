@@ -250,6 +250,12 @@ class CastContentBrowserClient
     return url_request_context_factory_.get();
   }
 
+  // Internal implementation overwrites this function to inject real values.
+  virtual void GetApplicationMediaInfo(
+      std::string* application_session_id,
+      bool* mixer_audio_enabled,
+      content::RenderFrameHost* render_frame_host);
+
  private:
   // Create device cert/key
   virtual scoped_refptr<net::X509Certificate> DeviceCert();
