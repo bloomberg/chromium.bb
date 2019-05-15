@@ -156,8 +156,7 @@ JourneyInfoJsonRequest::Builder::BuildSimpleURLLoader() const {
 
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = GURL(url_);
-  resource_request->load_flags =
-      net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES;
+  resource_request->allow_credentials = false;
   resource_request->headers = BuildSimpleURLLoaderHeaders();
   variations::AppendVariationsHeader(url_, variations::InIncognito::kNo,
                                      variations::SignedIn::kNo,

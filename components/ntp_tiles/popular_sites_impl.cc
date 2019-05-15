@@ -444,8 +444,7 @@ void PopularSitesImpl::FetchPopularSites() {
         })");
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = pending_url_;
-  resource_request->load_flags =
-      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
+  resource_request->allow_credentials = false;
   simple_url_loader_ = network::SimpleURLLoader::Create(
       std::move(resource_request), traffic_annotation);
   simple_url_loader_->SetRetryOptions(

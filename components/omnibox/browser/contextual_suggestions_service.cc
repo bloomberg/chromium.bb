@@ -307,8 +307,7 @@ void ContextualSuggestionsService::CreateExperimentalRequest(
   std::string request_body =
       FormatRequestBodyExperimentalService(current_url, visit_time);
   AddVariationHeaders(request.get());
-  request->load_flags =
-      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
+  request->allow_credentials = false;
 
   // If authentication services are unavailable or if this request is still
   // waiting for an oauth2 token, run the contextual service without access

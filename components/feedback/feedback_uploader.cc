@@ -159,8 +159,7 @@ void FeedbackUploader::DispatchReport() {
         })");
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = feedback_post_url_;
-  resource_request->load_flags =
-      net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES;
+  resource_request->allow_credentials = false;
   resource_request->method = "POST";
 
   // Tell feedback server about the variation state of this install.

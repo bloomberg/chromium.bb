@@ -108,8 +108,7 @@ void GCMChannelStatusRequest::Start() {
   auto resource_request = std::make_unique<network::ResourceRequest>();
 
   resource_request->url = request_url;
-  resource_request->load_flags =
-      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
+  resource_request->allow_credentials = false;
   resource_request->method = "POST";
   resource_request->headers.SetHeader(net::HttpRequestHeaders::kUserAgent,
                                       user_agent_);

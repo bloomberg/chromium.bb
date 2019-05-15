@@ -410,8 +410,8 @@ GURL DeviceManagementRequestJobImpl::GetURL(
 void DeviceManagementRequestJobImpl::ConfigureRequest(
     network::ResourceRequest* resource_request) {
   resource_request->load_flags =
-      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES |
       net::LOAD_DISABLE_CACHE | (bypass_proxy_ ? net::LOAD_BYPASS_PROXY : 0);
+  resource_request->allow_credentials = false;
   CHECK(auth_data_ || oauth_token_);
   if (!auth_data_)
     return;

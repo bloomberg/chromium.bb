@@ -167,8 +167,7 @@ bool SpellingServiceClient::RequestTextCheck(
 
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = BuildEndpointUrl(type);
-  resource_request->load_flags =
-      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
+  resource_request->allow_credentials = false;
   resource_request->method = "POST";
 
   std::unique_ptr<network::SimpleURLLoader> simple_url_loader =

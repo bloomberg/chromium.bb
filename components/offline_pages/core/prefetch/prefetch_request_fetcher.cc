@@ -86,8 +86,7 @@ PrefetchRequestFetcher::PrefetchRequestFetcher(
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = url;
   resource_request->method = message.empty() ? "GET" : "POST";
-  resource_request->load_flags =
-      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
+  resource_request->allow_credentials = false;
 
   std::string experiment_header = PrefetchExperimentHeader();
   if (!experiment_header.empty())

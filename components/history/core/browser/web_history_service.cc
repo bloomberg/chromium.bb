@@ -137,8 +137,7 @@ class RequestImpl : public WebHistoryService::Request {
           })");
     auto resource_request = std::make_unique<network::ResourceRequest>();
     resource_request->url = url_;
-    resource_request->load_flags =
-        net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
+    resource_request->allow_credentials = false;
     resource_request->method = post_data_ ? "POST" : "GET";
     resource_request->headers.SetHeader(net::HttpRequestHeaders::kAuthorization,
                                         "Bearer " + access_token_info.token);

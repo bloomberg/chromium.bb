@@ -592,9 +592,8 @@ TEST_F(DataReductionProxyInterceptorEndToEndTest, RedirectChainToHttps) {
 
   std::unique_ptr<net::URLRequest> request =
       CreateAndExecuteRequest(GURL("http://music.google.com"));
-  request->SetLoadFlags(net::LOAD_DISABLE_CACHE |
-                        net::LOAD_DO_NOT_SEND_COOKIES |
-                        net::LOAD_DO_NOT_SAVE_COOKIES);
+  request->SetLoadFlags(net::LOAD_DISABLE_CACHE);
+  request->set_allow_credentials(false);
   EXPECT_FALSE(delegate().request_failed());
   EXPECT_EQ(kBody, delegate().data_received());
 
