@@ -883,6 +883,7 @@ test("browser_tests") {
       "../browser/safe_xml_parser_browsertest.cc",
       "../browser/search_engines/template_url_scraper_browsertest.cc",
       "../browser/secure_origin_whitelist_browsertest.cc",
+      "../browser/serial/chrome_serial_browsertest.cc",
       "../browser/sessions/better_session_restore_browsertest.cc",
       "../browser/sessions/session_restore_browsertest.cc",
       "../browser/sessions/session_restore_browsertest_chromeos.cc",

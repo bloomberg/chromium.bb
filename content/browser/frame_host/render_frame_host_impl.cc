@@ -4015,6 +4015,8 @@ void RenderFrameHostImpl::ResourceLoadComplete(
 }
 
 void RenderFrameHostImpl::RegisterMojoInterfaces() {
+  auto* command_line = base::CommandLine::ForCurrentProcess();
+
 #if !defined(OS_ANDROID)
   // The default (no-op) implementation of InstalledAppProvider. On Android, the
   // real implementation is provided in Java.
@@ -4131,8 +4133,12 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
                  base::Unretained(sensor_provider_proxy_.get())));
 
 #if !defined(OS_ANDROID)
-  registry_->AddInterface(base::BindRepeating(
-      &RenderFrameHostImpl::BindSerialServiceRequest, base::Unretained(this)));
+  if (command_line->HasSwitch(
+          switches::kEnableExperimentalWebPlatformFeatures)) {
+    registry_->AddInterface(
+        base::BindRepeating(&RenderFrameHostImpl::BindSerialServiceRequest,
+                            base::Unretained(this)));
+  }
 #endif  // !defined(OS_ANDROID)
 
   // Only save decode stats when BrowserContext provides a VideoPerfHistory.
@@ -4161,8 +4167,7 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
           base::Unretained(this)),
       std::move(save_stats_cb)));
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          cc::switches::kEnableGpuBenchmarking)) {
+  if (command_line->HasSwitch(cc::switches::kEnableGpuBenchmarking)) {
     registry_->AddInterface(
         base::Bind(&InputInjectorImpl::Create, weak_ptr_factory_.GetWeakPtr()));
   }
