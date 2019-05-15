@@ -37,7 +37,7 @@ import landmine_utils
 
 
 def get_build_dir(src_dir):
-  """
+  r"""
   Returns output directory absolute path dependent on build and targets.
   Examples:
     r'c:\b\build\slave\win\build\src\out'
