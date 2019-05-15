@@ -2679,6 +2679,22 @@ LayoutRect PaintLayer::BoundingBoxForCompositing() const {
       *this, nullptr, kMaybeIncludeTransformForAncestorLayer);
 }
 
+bool PaintLayer::ShouldApplyTransformToBoundingBox(
+    const PaintLayer& composited_layer,
+    CalculateBoundsOptions options) const {
+  if (!Transform())
+    return false;
+  if (options == kIncludeTransformsAndCompositedChildLayers)
+    return true;
+  if (PaintsWithTransform(kGlobalPaintNormalPhase)) {
+    if (this != &composited_layer)
+      return true;
+    if (options == kMaybeIncludeTransformForAncestorLayer)
+      return true;
+  }
+  return false;
+}
+
 LayoutRect PaintLayer::BoundingBoxForCompositingInternal(
     const PaintLayer& composited_layer,
     const PaintLayer* stacking_parent,
@@ -2723,10 +2739,7 @@ LayoutRect PaintLayer::BoundingBoxForCompositingInternal(
   if (PaintsWithFilters())
     result = MapLayoutRectForFilter(result);
 
-  if (Transform() && (options == kIncludeTransformsAndCompositedChildLayers ||
-                      ((PaintsWithTransform(kGlobalPaintNormalPhase) &&
-                        (this != &composited_layer ||
-                         options == kMaybeIncludeTransformForAncestorLayer)))))
+  if (ShouldApplyTransformToBoundingBox(composited_layer, options))
     result = Transform()->MapRect(result);
 
   if (ShouldFragmentCompositedBounds(&composited_layer)) {

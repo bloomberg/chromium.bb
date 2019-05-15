@@ -1232,6 +1232,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
       const PaintLayer& composited_layer,
       const PaintLayer* stacking_parent,
       CalculateBoundsOptions) const;
+  bool ShouldApplyTransformToBoundingBox(const PaintLayer& composited_layer,
+                                         CalculateBoundsOptions) const;
 
   bool NeedsFilterReferenceBox() const;
 
