@@ -630,7 +630,8 @@ void InkDropImpl::HostSizeChanged(const gfx::Size& new_size) {
   // |root_layer_| should fill the entire host because it affects the clipping
   // when a mask layer is applied to it. This will not affect clipping if no
   // mask layer is set.
-  root_layer_->SetBounds(gfx::Rect(new_size));
+  root_layer_->SetBounds(gfx::Rect(new_size) +
+                         root_layer_->bounds().OffsetFromOrigin());
 
   const bool create_ink_drop_ripple = !!ink_drop_ripple_;
   InkDropState state = GetTargetInkDropState();
