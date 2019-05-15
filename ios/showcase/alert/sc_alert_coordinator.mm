@@ -6,6 +6,7 @@
 
 #import "ios/chrome/browser/ui/alert_view_controller/alert_action.h"
 #import "ios/chrome/browser/ui/alert_view_controller/alert_view_controller.h"
+#import "ios/chrome/browser/ui/alert_view_controller/non_modal_view_controller_presenter.h"
 #import "ios/chrome/browser/ui/elements/text_field_configuration.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -16,6 +17,7 @@
 @property(nonatomic, strong)
     UIViewController* presentationContextViewController;
 @property(nonatomic, strong) UISwitch* blockAlertSwitch;
+@property(nonatomic, strong) NonModalViewControllerPresenter* presenter;
 @end
 
 @implementation SCAlertCoordinator
@@ -119,14 +121,12 @@
 }
 
 - (void)showAlert {
-  __weak __typeof(self) weakSelf = self;
+  __weak __typeof__(self) weakSelf = self;
   AlertAction* action =
       [AlertAction actionWithTitle:@"OK"
                              style:UIAlertActionStyleDefault
                            handler:^(AlertAction* action) {
-                             [weakSelf.presentationContextViewController
-                                 dismissViewControllerAnimated:YES
-                                                    completion:nil];
+                             [weakSelf.presenter dismissAnimated:YES];
                            }];
   [self presentAlertWithTitle:@"chromium.org says"
                       message:@"This is an alert message from a website."
@@ -140,22 +140,18 @@
                                        placeholder:@"placehorder"
                            accessibilityIdentifier:nil
                                    secureTextEntry:NO];
-  __weak __typeof(self) weakSelf = self;
+  __weak __typeof__(self) weakSelf = self;
   AlertAction* OKAction =
       [AlertAction actionWithTitle:@"OK"
                              style:UIAlertActionStyleDefault
                            handler:^(AlertAction* action) {
-                             [weakSelf.presentationContextViewController
-                                 dismissViewControllerAnimated:YES
-                                                    completion:nil];
+                             [weakSelf.presenter dismissAnimated:YES];
                            }];
   AlertAction* cancelAction =
       [AlertAction actionWithTitle:@"Cancel"
                              style:UIAlertActionStyleCancel
                            handler:^(AlertAction* action) {
-                             [weakSelf.presentationContextViewController
-                                 dismissViewControllerAnimated:YES
-                                                    completion:nil];
+                             [weakSelf.presenter dismissAnimated:YES];
                            }];
   [self presentAlertWithTitle:@"chromium.org says"
                       message:@"This is a promp message from a website."
@@ -164,22 +160,18 @@
 }
 
 - (void)showConfirm {
-  __weak __typeof(self) weakSelf = self;
+  __weak __typeof__(self) weakSelf = self;
   AlertAction* OKAction =
       [AlertAction actionWithTitle:@"OK"
                              style:UIAlertActionStyleDefault
                            handler:^(AlertAction* action) {
-                             [weakSelf.presentationContextViewController
-                                 dismissViewControllerAnimated:YES
-                                                    completion:nil];
+                             [weakSelf.presenter dismissAnimated:YES];
                            }];
   AlertAction* cancelAction =
       [AlertAction actionWithTitle:@"Cancel"
                              style:UIAlertActionStyleCancel
                            handler:^(AlertAction* action) {
-                             [weakSelf.presentationContextViewController
-                                 dismissViewControllerAnimated:YES
-                                                    completion:nil];
+                             [weakSelf.presenter dismissAnimated:YES];
                            }];
   [self presentAlertWithTitle:@"chromium.org says"
                       message:@"This is a confirm message from a website."
@@ -199,22 +191,18 @@
                            accessibilityIdentifier:nil
                                    secureTextEntry:YES];
 
-  __weak __typeof(self) weakSelf = self;
+  __weak __typeof__(self) weakSelf = self;
   AlertAction* OKAction =
       [AlertAction actionWithTitle:@"Sign In"
                              style:UIAlertActionStyleDefault
                            handler:^(AlertAction* action) {
-                             [weakSelf.presentationContextViewController
-                                 dismissViewControllerAnimated:YES
-                                                    completion:nil];
+                             [weakSelf.presenter dismissAnimated:YES];
                            }];
   AlertAction* cancelAction =
       [AlertAction actionWithTitle:@"Cancel"
                              style:UIAlertActionStyleCancel
                            handler:^(AlertAction* action) {
-                             [weakSelf.presentationContextViewController
-                                 dismissViewControllerAnimated:YES
-                                                    completion:nil];
+                             [weakSelf.presenter dismissAnimated:YES];
                            }];
   [self presentAlertWithTitle:@"Sign In"
                       message:@"https://www.chromium.org requires a "
@@ -234,22 +222,18 @@
                                        placeholder:@"Password"
                            accessibilityIdentifier:nil
                                    secureTextEntry:YES];
-  __weak __typeof(self) weakSelf = self;
+  __weak __typeof__(self) weakSelf = self;
   AlertAction* OKAction =
       [AlertAction actionWithTitle:@"Sign In"
                              style:UIAlertActionStyleDefault
                            handler:^(AlertAction* action) {
-                             [weakSelf.presentationContextViewController
-                                 dismissViewControllerAnimated:YES
-                                                    completion:nil];
+                             [weakSelf.presenter dismissAnimated:YES];
                            }];
   AlertAction* cancelAction =
       [AlertAction actionWithTitle:@"Cancel"
                              style:UIAlertActionStyleCancel
                            handler:^(AlertAction* action) {
-                             [weakSelf.presentationContextViewController
-                                 dismissViewControllerAnimated:YES
-                                                    completion:nil];
+                             [weakSelf.presenter dismissAnimated:YES];
                            }];
   NSString* message =
       @"It was the best of times, it was the worst of times, it was the age of "
@@ -282,14 +266,12 @@
   [alert setTextFieldConfigurations:textFieldConfigurations];
 
   if (self.blockAlertSwitch.isOn) {
-    __weak __typeof(self) weakSelf = self;
+    __weak __typeof__(self) weakSelf = self;
     AlertAction* blockAction =
         [AlertAction actionWithTitle:@"Block Dialogs"
                                style:UIAlertActionStyleDestructive
                              handler:^(AlertAction* action) {
-                               [weakSelf.presentationContextViewController
-                                   dismissViewControllerAnimated:YES
-                                                      completion:nil];
+                               [weakSelf.presenter dismissAnimated:YES];
                              }];
     NSArray* newActions = [actions arrayByAddingObject:blockAction];
     [alert setActions:newActions];
@@ -297,11 +279,11 @@
     [alert setActions:actions];
   }
 
-  alert.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
-  alert.modalPresentationStyle = UIModalPresentationOverCurrentContext;
-  [self.presentationContextViewController presentViewController:alert
-                                                       animated:true
-                                                     completion:nil];
+  self.presenter = [[NonModalViewControllerPresenter alloc] init];
+  self.presenter.baseViewController = self.presentationContextViewController;
+  self.presenter.presentedViewController = alert;
+  [self.presenter prepareForPresentation];
+  [self.presenter presentAnimated:YES];
 }
 
 @end
