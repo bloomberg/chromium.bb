@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
@@ -61,6 +62,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/content_restriction.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
@@ -96,6 +98,7 @@
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "url/gurl.h"
+#include "url/url_constants.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/api/commands/command_service.h"
@@ -533,6 +536,11 @@ void Home(Browser* browser, WindowOpenDisposition disposition) {
     extensions::MaybeShowExtensionControlledHomeNotification(browser);
 #endif
 
+  bool is_chrome_internal = url.SchemeIs(url::kAboutScheme) ||
+                            url.SchemeIs(content::kChromeUIScheme) ||
+                            url.SchemeIs(chrome::kChromeNativeScheme);
+  base::UmaHistogramBoolean("Navigation.Home.IsChromeInternal",
+                            is_chrome_internal);
   OpenURLParams params(
       url, Referrer(), disposition,
       ui::PageTransitionFromInt(ui::PAGE_TRANSITION_AUTO_BOOKMARK |

@@ -113,6 +113,7 @@ import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.widget.Toast;
@@ -1455,6 +1456,12 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
         if (TextUtils.isEmpty(homePageUrl) || isNewTabPageButtonEnabled) {
             homePageUrl = UrlConstants.NTP_URL;
         }
+        boolean is_chrome_internal =
+                homePageUrl.startsWith(ContentUrlConstants.ABOUT_URL_SHORT_PREFIX)
+                || homePageUrl.startsWith(UrlConstants.CHROME_URL_SHORT_PREFIX)
+                || homePageUrl.startsWith(UrlConstants.CHROME_NATIVE_URL_SHORT_PREFIX);
+        RecordHistogram.recordBooleanHistogram(
+                "Navigation.Home.IsChromeInternal", is_chrome_internal);
         if (isNewTabPageButtonEnabled) {
             recordToolbarUseForIPH(EventConstants.CLEAR_TAB_BUTTON_CLICKED);
         } else {
