@@ -8,27 +8,15 @@ namespace {
 
 const char kErrorPingNotImplemented[] = "Not implemented";
 const char kErrorPingFailed[] = "Failed to send ping packet";
-}
+
+}  // namespace
 
 namespace extensions {
 
 namespace SendPacket = api::diagnostics::SendPacket;
 
-DiagnosticsSendPacketFunction::DiagnosticsSendPacketFunction() {
-}
-
-DiagnosticsSendPacketFunction::~DiagnosticsSendPacketFunction() {
-}
-
-bool DiagnosticsSendPacketFunction::Prepare() {
-  parameters_ = SendPacket::Params::Create(*args_);
-  EXTENSION_FUNCTION_VALIDATE(parameters_.get());
-  return true;
-}
-
-bool DiagnosticsSendPacketFunction::Respond() {
-  return error_.empty();
-}
+DiagnosticsSendPacketFunction::DiagnosticsSendPacketFunction() = default;
+DiagnosticsSendPacketFunction::~DiagnosticsSendPacketFunction() = default;
 
 void DiagnosticsSendPacketFunction::OnCompleted(
     SendPacketResultCode result_code,
@@ -39,17 +27,16 @@ void DiagnosticsSendPacketFunction::OnCompleted(
       api::diagnostics::SendPacketResult result;
       result.ip = ip;
       result.latency = latency;
-      results_ = SendPacket::Results::Create(result);
+      Respond(OneArgument(SendPacket::Results::Create(result)));
       break;
     }
     case SEND_PACKET_NOT_IMPLEMENTED:
-      SetError(kErrorPingNotImplemented);
+      Respond(Error(kErrorPingNotImplemented));
       break;
     case SEND_PACKET_FAILED:
-      SetError(kErrorPingFailed);
+      Respond(Error(kErrorPingFailed));
       break;
   }
-  AsyncWorkCompleted();
 }
 
 }  // namespace extensions

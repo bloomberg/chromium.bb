@@ -8,12 +8,12 @@
 #include <memory>
 #include <string>
 
-#include "extensions/browser/api/async_api_function.h"
+#include "extensions/browser/extension_function.h"
 #include "extensions/common/api/diagnostics.h"
 
 namespace extensions {
 
-class DiagnosticsSendPacketFunction : public AsyncApiFunction {
+class DiagnosticsSendPacketFunction : public UIThreadExtensionFunction {
  public:
   // Result code for sending packet. Platform specific AsyncWorkStart() will
   // finish with this ResultCode so we can maximize shared code.
@@ -35,19 +35,13 @@ class DiagnosticsSendPacketFunction : public AsyncApiFunction {
  protected:
   ~DiagnosticsSendPacketFunction() override;
 
-  // AsyncApiFunction:
-  bool Prepare() override;
-  // This methods will be implemented differently on different platforms.
-  void AsyncWorkStart() override;
-  bool Respond() override;
+  // UIThreadExtensionFunction:
+  ResponseAction Run() override;
 
  private:
-  void SendPingPacket();
   void OnCompleted(SendPacketResultCode result_code,
                    const std::string& ip,
                    double latency);
-
-  std::unique_ptr<api::diagnostics::SendPacket::Params> parameters_;
 };
 
 }  // namespace extensions

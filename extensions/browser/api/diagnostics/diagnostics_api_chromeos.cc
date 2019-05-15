@@ -66,23 +66,27 @@ void OnTestICMPCompleted(const SendPacketCallback& callback,
 
 }  // namespace
 
-void DiagnosticsSendPacketFunction::AsyncWorkStart() {
+ExtensionFunction::ResponseAction DiagnosticsSendPacketFunction::Run() {
+  auto params = api::diagnostics::SendPacket::Params::Create(*args_);
+
   std::map<std::string, std::string> config;
   config[kCount] = kDefaultCount;
-  if (parameters_->options.ttl)
-    config[kTTL] = base::NumberToString(*parameters_->options.ttl);
-  if (parameters_->options.timeout)
-    config[kTimeout] = base::NumberToString(*parameters_->options.timeout);
-  if (parameters_->options.size)
-    config[kSize] = base::NumberToString(*parameters_->options.size);
+  if (params->options.ttl)
+    config[kTTL] = base::NumberToString(*params->options.ttl);
+  if (params->options.timeout)
+    config[kTimeout] = base::NumberToString(*params->options.timeout);
+  if (params->options.size)
+    config[kSize] = base::NumberToString(*params->options.size);
 
   chromeos::DBusThreadManager::Get()
       ->GetDebugDaemonClient()
       ->TestICMPWithOptions(
-          parameters_->options.ip, config,
+          params->options.ip, config,
           base::Bind(
               OnTestICMPCompleted,
               base::Bind(&DiagnosticsSendPacketFunction::OnCompleted, this)));
+
+  return RespondLater();
 }
 
 }  // namespace extensions
