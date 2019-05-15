@@ -158,7 +158,10 @@ class FrameNode extends GraphNode {
 
   /** override */
   linkTargets() {
-    return [this.frame.parentFrameId, this.frame.processId, this.frame.pageId];
+    // Only link to the page if there isn't a parent frame.
+    return [
+      this.frame.parentFrameId || this.frame.pageId, this.frame.processId
+    ];
   }
 }
 
