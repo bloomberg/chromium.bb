@@ -151,16 +151,18 @@ void ChromeAshMessageCenterClient::DisableNotification(const std::string& id) {
 void ChromeAshMessageCenterClient::SetNotifierEnabled(
     const NotifierId& notifier_id,
     bool enabled) {
-  sources_[notifier_id.type]->SetNotifierEnabled(GetProfileForNotifiers(),
-                                                 notifier_id, enabled);
+  Profile* profile = GetProfileForNotifiers();
+  CHECK(profile);
+  sources_[notifier_id.type]->SetNotifierEnabled(profile, notifier_id, enabled);
 }
 
 void ChromeAshMessageCenterClient::GetNotifierList(
     GetNotifierListCallback callback) {
+  Profile* profile = GetProfileForNotifiers();
+  CHECK(profile);
   std::vector<ash::mojom::NotifierUiDataPtr> notifiers;
   for (auto& source : sources_) {
-    auto source_notifiers =
-        source.second->GetNotifierList(GetProfileForNotifiers());
+    auto source_notifiers = source.second->GetNotifierList(profile);
     for (auto& notifier : source_notifiers) {
       notifiers.push_back(std::move(notifier));
     }
