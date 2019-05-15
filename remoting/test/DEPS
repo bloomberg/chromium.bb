@@ -1,5 +1,4 @@
 include_rules = [
-  "+extensions/browser/api/messaging",
   "+google_apis",
   "+jingle/glue",
   "+mojo/core/embedder",

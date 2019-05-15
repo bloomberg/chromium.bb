@@ -67,7 +67,7 @@ It2MeHost::~It2MeHost() {
 }
 
 void It2MeHost::set_enable_dialogs(bool enable) {
-#if defined(OS_CHROMEOS) || !defined(NDEBUG)
+#if defined(OS_CHROMEOS)
   enable_dialogs_ = enable;
 #else
   NOTREACHED() << "It2MeHost::set_enable_dialogs is only supported on ChromeOS";
