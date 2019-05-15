@@ -17,6 +17,8 @@ source_set("activities") {
     "reading_list_activity.mm",
     "request_desktop_or_mobile_site_activity.h",
     "request_desktop_or_mobile_site_activity.mm",
+    "send_tab_to_self_activity.h",
+    "send_tab_to_self_activity.mm",
   ]
   deps = [
     "resources:activity_services_add_bookmark",
@@ -27,6 +29,7 @@ source_set("activities") {
     "resources:activity_services_read_later",
     "resources:activity_services_request_desktop_site",
     "resources:activity_services_request_mobile_site",
+    "resources:activity_services_send_tab_to_self",
     "//base",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui/commands",

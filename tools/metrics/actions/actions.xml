@@ -12419,6 +12419,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileShareMenuSendTabToSelf">
+  <owner>jeffreycohen@chromium.org</owner>
+  <owner>sebsg@chromium.org</owner>
+  <description>
+    The user pressed &quot;Send Tab To Self&quot; from the share action menu.
+  </description>
+</action>
+
 <action name="MobileShortcutAllBookmarks">
   <obsolete>Deprecated as of 5/2015</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>

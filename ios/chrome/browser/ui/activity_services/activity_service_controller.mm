@@ -13,12 +13,14 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #import "ios/chrome/browser/passwords/password_form_filler.h"
+#import "ios/chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
 #import "ios/chrome/browser/ui/activity_services/activities/bookmark_activity.h"
 #import "ios/chrome/browser/ui/activity_services/activities/copy_activity.h"
 #import "ios/chrome/browser/ui/activity_services/activities/find_in_page_activity.h"
 #import "ios/chrome/browser/ui/activity_services/activities/print_activity.h"
 #import "ios/chrome/browser/ui/activity_services/activities/reading_list_activity.h"
 #import "ios/chrome/browser/ui/activity_services/activities/request_desktop_or_mobile_site_activity.h"
+#import "ios/chrome/browser/ui/activity_services/activities/send_tab_to_self_activity.h"
 #import "ios/chrome/browser/ui/activity_services/activity_type_util.h"
 #import "ios/chrome/browser/ui/activity_services/appex_constants.h"
 #import "ios/chrome/browser/ui/activity_services/chrome_activity_item_source.h"
@@ -67,7 +69,8 @@ NSString* const kActivityServicesSnackbarCategory =
 - (NSArray*)applicationActivitiesForData:(ShareToData*)data
                               dispatcher:(id<BrowserCommands>)dispatcher
                            bookmarkModel:
-                               (bookmarks::BookmarkModel*)bookmarkModel;
+                               (bookmarks::BookmarkModel*)bookmarkModel
+                        canSendTabToSelf:(BOOL)canSendTabToSelf;
 // Processes |extensionItems| returned from App Extension invocation returning
 // the |activityType|. Calls shareDelegate_ with the processed returned items
 // and |result| of activity. Returns whether caller should reset UI.
@@ -144,12 +147,17 @@ NSString* const kActivityServicesSnackbarCategory =
 
   bookmarks::BookmarkModel* bookmarkModel =
       ios::BookmarkModelFactory::GetForBrowserState(browserState);
+
+  BOOL canSendTabToSelf =
+      send_tab_to_self::ShouldOfferFeature(browserState, data.shareURL);
   DCHECK(!activityViewController_);
   activityViewController_ = [[UIActivityViewController alloc]
       initWithActivityItems:[self activityItemsForData:data]
-      applicationActivities:[self applicationActivitiesForData:data
-                                                    dispatcher:dispatcher
-                                                 bookmarkModel:bookmarkModel]];
+      applicationActivities:[self
+                                applicationActivitiesForData:data
+                                                  dispatcher:dispatcher
+                                               bookmarkModel:bookmarkModel
+                                            canSendTabToSelf:canSendTabToSelf]];
 
   // Reading List and Print activities refer to iOS' version of these.
   // Chrome-specific implementations of these two activities are provided below
@@ -247,7 +255,8 @@ NSString* const kActivityServicesSnackbarCategory =
 - (NSArray*)applicationActivitiesForData:(ShareToData*)data
                               dispatcher:(id<BrowserCommands>)dispatcher
                            bookmarkModel:
-                               (bookmarks::BookmarkModel*)bookmarkModel {
+                               (bookmarks::BookmarkModel*)bookmarkModel
+                        canSendTabToSelf:(BOOL)canSendTabToSelf {
   NSMutableArray* applicationActivities = [NSMutableArray array];
 
   [applicationActivities
@@ -259,6 +268,12 @@ NSString* const kActivityServicesSnackbarCategory =
                                            title:data.title
                                       dispatcher:dispatcher];
     [applicationActivities addObject:readingListActivity];
+
+    if (canSendTabToSelf) {
+      SendTabToSelfActivity* sendTabToSelfActivity =
+          [[SendTabToSelfActivity alloc] initWithDispatcher:dispatcher];
+      [applicationActivities addObject:sendTabToSelfActivity];
+    }
 
     if (bookmarkModel) {
       BOOL bookmarked = bookmarkModel->loaded() &&

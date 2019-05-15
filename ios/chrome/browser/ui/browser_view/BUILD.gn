@@ -61,6 +61,7 @@ source_set("browser_view") {
     "//ios/chrome/browser/prerender",
     "//ios/chrome/browser/reading_list",
     "//ios/chrome/browser/search_engines",
+    "//ios/chrome/browser/send_tab_to_self",
     "//ios/chrome/browser/sessions",
     "//ios/chrome/browser/sessions:serialisation",
     "//ios/chrome/browser/signin",

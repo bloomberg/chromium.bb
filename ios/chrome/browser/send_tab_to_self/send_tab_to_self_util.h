@@ -5,6 +5,8 @@
 #ifndef IOS_CHROME_BROWSER_SEND_TAB_TO_SELF_SEND_TAB_TO_SELF_UTIL_H_
 #define IOS_CHROME_BROWSER_SEND_TAB_TO_SELF_SEND_TAB_TO_SELF_UTIL_H_
 
+#import <Foundation/Foundation.h>
+
 class GURL;
 
 namespace ios {
@@ -34,11 +36,13 @@ bool IsContentRequirementsMet(const GURL& gurl,
                               ios::ChromeBrowserState* browser_state);
 
 // Returns true if all conditions are true and shows the option onto the menu.
-bool ShouldOfferFeature();
+bool ShouldOfferFeature(ios::ChromeBrowserState* browser_state,
+                        const GURL& url);
 
 // Add a new entry to SendTabToSelfModel when user click "Share to your
 // devices" option.
-void CreateNewEntry(ios::ChromeBrowserState* browser_state);
+void CreateNewEntry(ios::ChromeBrowserState* browser_state,
+                    NSString* target_device_id);
 
 }  // namespace send_tab_to_self
 

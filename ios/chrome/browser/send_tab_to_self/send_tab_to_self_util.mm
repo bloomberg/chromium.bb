@@ -4,6 +4,7 @@
 
 #include "ios/chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
 
+#include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/send_tab_to_self/features.h"
 #include "components/send_tab_to_self/send_tab_to_self_model.h"
@@ -68,42 +69,16 @@ bool IsContentRequirementsMet(const GURL& url,
   return is_http_or_https && !is_native_page && !is_incognito_mode;
 }
 
-bool ShouldOfferFeature() {
-  ios::ChromeBrowserStateManager* browser_state_manager =
-      GetApplicationContext()->GetChromeBrowserStateManager();
-  if (!browser_state_manager) {
-    // Can happen in tests.
-    return false;
-  }
-
-  ios::ChromeBrowserState* browser_state =
-      browser_state_manager->GetLastUsedBrowserState();
-  if (!browser_state) {
-    return false;
-  }
-
-  // If there is no web state or it is not visible then nothing should be
-  // shared.
-  TabModel* tab_model =
-      TabModelList::GetLastActiveTabModelForChromeBrowserState(browser_state);
-  if (!tab_model) {
-    return false;
-  }
-
-  WebStateList* web_state_list = tab_model.webStateList;
-  if (!web_state_list) {
-    return false;
-  }
-
-  web::WebState* web_state = web_state_list->GetActiveWebState();
-
+bool ShouldOfferFeature(ios::ChromeBrowserState* browser_state,
+                        const GURL& url) {
   // If sending is enabled, then so is receiving.
   return IsSendingEnabled() && IsUserSyncTypeActive(browser_state) &&
          IsSyncingOnMultipleDevices(browser_state) &&
-         IsContentRequirementsMet(web_state->GetVisibleURL(), browser_state);
+         IsContentRequirementsMet(url, browser_state);
 }
 
-void CreateNewEntry(ios::ChromeBrowserState* browser_state) {
+void CreateNewEntry(ios::ChromeBrowserState* browser_state,
+                    NSString* target_device_id) {
   // If there is no web state or it is not visible then nothing should be
   // shared.
   TabModel* tab_model =
@@ -130,8 +105,8 @@ void CreateNewEntry(ios::ChromeBrowserState* browser_state) {
   std::string title = base::UTF16ToUTF8(cur_item->GetTitle());
 
   base::Time navigation_time = cur_item->GetTimestamp();
-  // TODO(crbug.com/946804) Add target device.
-  std::string target_device;
+
+  std::string target_device = base::SysNSStringToUTF8(target_device_id);
 
   SendTabToSelfModel* model =
       SendTabToSelfSyncServiceFactory::GetForBrowserState(browser_state)
