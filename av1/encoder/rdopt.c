@@ -1603,10 +1603,36 @@ static const float *prune_2D_adaptive_thresholds[] = {
   NULL,
 };
 
+// Probablities are sorted in descending order.
+static INLINE void sort_probability(float prob[], int txk[], int len) {
+  int i, j, k;
+
+  for (i = 1; i <= len - 1; ++i) {
+    for (j = 0; j < i; ++j) {
+      if (prob[j] < prob[i]) {
+        float temp;
+        int tempi;
+
+        temp = prob[i];
+        tempi = txk[i];
+
+        for (k = i; k > j; k--) {
+          prob[k] = prob[k - 1];
+          txk[k] = txk[k - 1];
+        }
+
+        prob[j] = temp;
+        txk[j] = tempi;
+        break;
+      }
+    }
+  }
+}
+
 static uint16_t prune_tx_2D(MACROBLOCK *x, BLOCK_SIZE bsize, TX_SIZE tx_size,
                             int blk_row, int blk_col, TxSetType tx_set_type,
-                            TX_TYPE_PRUNE_MODE prune_mode) {
-  static const int tx_type_table_2D[16] = {
+                            TX_TYPE_PRUNE_MODE prune_mode, int *txk_map) {
+  int tx_type_table_2D[16] = {
     DCT_DCT,      DCT_ADST,      DCT_FLIPADST,      V_DCT,
     ADST_DCT,     ADST_ADST,     ADST_FLIPADST,     V_ADST,
     FLIPADST_DCT, FLIPADST_ADST, FLIPADST_FLIPADST, V_FLIPADST,
@@ -1686,6 +1712,10 @@ static uint16_t prune_tx_2D(MACROBLOCK *x, BLOCK_SIZE bsize, TX_SIZE tx_size,
     if (scores_2D[i] < score_thresh && i != max_score_i)
       prune_bitmask |= (1 << tx_type_table_2D[i]);
   }
+
+  sort_probability(scores_2D, tx_type_table_2D, TX_TYPES);
+  memcpy(txk_map, tx_type_table_2D, sizeof(tx_type_table_2D));
+
   return prune_bitmask;
 }
 
@@ -3005,6 +3035,10 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
   // if txk_allowed = TX_TYPES, >1 tx types are allowed, else, if txk_allowed <
   // TX_TYPES, only that specific tx type is allowed.
   TX_TYPE txk_allowed = TX_TYPES;
+  int txk_map[TX_TYPES] = {
+    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+  };
+
   if ((!is_inter && x->use_default_intra_tx_type) ||
       (is_inter && x->use_default_inter_tx_type)) {
     txk_allowed =
@@ -3045,7 +3079,7 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
     if (cpi->sf.tx_type_search.prune_mode >= PRUNE_2D_ACCURATE && is_inter) {
       const uint16_t prune =
           prune_tx_2D(x, plane_bsize, tx_size, blk_row, blk_col, tx_set_type,
-                      cpi->sf.tx_type_search.prune_mode);
+                      cpi->sf.tx_type_search.prune_mode, txk_map);
       allowed_tx_mask &= (~prune);
     }
   }
@@ -3101,7 +3135,10 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
   // TODO(any): Experiment with variance and mean based thresholds
   perform_block_coeff_opt = (block_mse_q8 <= cpi->coeff_opt_dist_threshold);
 
-  for (TX_TYPE tx_type = DCT_DCT; tx_type <= H_FLIPADST; ++tx_type) {
+  assert(IMPLIES(txk_allowed < TX_TYPES, allowed_tx_mask == 1 << txk_allowed));
+
+  for (int idx = 0; idx < TX_TYPES; ++idx) {
+    const TX_TYPE tx_type = (TX_TYPE)txk_map[idx];
     if (!(allowed_tx_mask & (1 << tx_type))) continue;
     if (plane == 0) mbmi->txk_type[txk_type_idx] = tx_type;
     RD_STATS this_rd_stats;
