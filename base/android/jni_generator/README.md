@@ -83,6 +83,7 @@ To add JNI to a class:
 1. Enable the JNI processor by adding to your `android_library` target:
    ```python
    annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
+   deps = [ "//base:jni_java" ]
    ```
 2. Create a nested-interface annotated with `@NativeMethods` that contains
    the declaration of the corresponding static methods you wish to have
@@ -98,7 +99,15 @@ Example:
 class Legacy {
   static native void nativeFoo();
   static native double nativeBar(int a, int b);
-  native void nativeNonStatic(long nativePointer);
+
+  // Either the |ClassName| part of the |nativeClassName| parameter name must
+  // match the native class name exactly, or the method annotation
+  // @NativeClassQualifiedName("ClassName") must be used.
+  //
+  // If the native class is nested, use
+  // @NativeClassQualifiedName("FooClassName::BarClassName") and call the
+  // parameter |nativePointer|.
+  native void nativeNonStatic(long nativeClassName);
 
   void callNatives() {
     nativeFoo()
@@ -109,13 +118,26 @@ class Legacy {
 
 // Equivalent using new style:
 class NewStyle {
+  // Cannot be private. Must be package or public.
   @NativeMethods
-  interface Natives {
+  /* package */ interface Natives {
     void foo();
     double bar(int a, int b);
-    // @JCaller is passed to C++ as the java "this" object, and nativePointer
+    // @JCaller is passed to C++ as the java "this" object, and nativeClassName
     // as the C++ "this" object.
-    void nonStatic(@JCaller NewStyle self, long nativePointer);
+    //
+    // If the C++ object does not use its Java caller in this method, you may
+    // omit the @JCaller parameter here. The C++ method still must have a caller
+    // parameter, but it will not be an instance of NewStyle.
+    //
+    // Either the |ClassName| part of the |nativeClassName| parameter name must
+    // match the native class name exactly, or the method annotation
+    // @NativeClassQualifiedName("ClassName") must be used.
+    //
+    // If the native class is nested, use
+    // @NativeClassQualifiedName("FooClassName::BarClassName") and call the
+    // parameter |nativePointer|.
+    void nonStatic(@JCaller NewStyle self, long nativeClassName);
   }
 
   void callNatives() {
