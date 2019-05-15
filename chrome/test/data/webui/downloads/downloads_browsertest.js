@@ -137,8 +137,10 @@ DownloadsUrlTest.prototype = {
 
 TEST_F('DownloadsUrlTest', 'All', function() {
   suite('loading a nonexistent URL of /a/b/', function() {
-    test('should yield no console errors', function() {
-      assertEquals(location.href, DownloadsUrlTest.prototype.browsePreload);
+    test('should load main page with no console errors', function() {
+      return customElements.whenDefined('downloads-manager').then(() => {
+        assertEquals('chrome://downloads/', location.href);
+      });
     });
   });
   mocha.run();

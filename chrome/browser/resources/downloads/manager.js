@@ -88,6 +88,14 @@ cr.define('downloads', function() {
       this.mojoEventTarget_ = browserProxy.callbackRouter;
       this.mojoHandler_ = browserProxy.handler;
       this.searchService_ = downloads.SearchService.getInstance();
+
+      // Regular expression that captures the leading slash, the content and the
+      // trailing slash in three different groups.
+      const CANONICAL_PATH_REGEX = /(^\/)([\/-\w]+)(\/$)/;
+      const path = location.pathname.replace(CANONICAL_PATH_REGEX, '$1$2');
+      if (path !== '/') {  // There are no subpages in chrome://downloads.
+        window.history.replaceState(undefined /* stateObject */, '', '/');
+      }
     },
 
     /** @override */

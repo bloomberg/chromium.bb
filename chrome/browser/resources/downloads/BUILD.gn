@@ -20,8 +20,8 @@ if (optimize_webui) {
     js_out_files = [ "crisper.js" ]
     excludes = [
       "chrome://resources/js/mojo_bindings_lite.js",
-      "chrome://downloads/downloads.mojom-lite.js",
-      "chrome://downloads/downloads.mojom-lite.html",
+      "downloads.mojom-lite.js",
+      "downloads.mojom-lite.html",
     ]
     replace_for_html_imports_polyfill = "crisper.js"
 
