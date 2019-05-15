@@ -70,7 +70,7 @@ class ExtensionsMenuViewBrowserTest : public DialogBrowserTest {
 
   std::vector<ToolbarActionView*> GetVisibleToolbarActionViews() const {
     auto views = GetToolbarActionViews();
-    base::EraseIf(views, [](views::View* view) { return !view->visible(); });
+    base::EraseIf(views, [](views::View* view) { return !view->GetVisible(); });
     return views;
   }
 

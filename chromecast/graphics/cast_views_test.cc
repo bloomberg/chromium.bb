@@ -40,8 +40,8 @@ TEST_F(CastViewsTest, ProgressBar) {
 
   EXPECT_TRUE(progress_bar->GetWidget());
   EXPECT_TRUE(progress_bar->GetWidget()->IsVisible());
-  EXPECT_TRUE(progress_bar->visible());
-  EXPECT_TRUE(progress_bar->enabled());
+  EXPECT_TRUE(progress_bar->GetVisible());
+  EXPECT_TRUE(progress_bar->GetEnabled());
 
   widget.reset();
   window_manager.reset();

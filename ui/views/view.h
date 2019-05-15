@@ -556,10 +556,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   PropertyChangedSubscription AddVisibleChangedCallback(
       PropertyChangedCallback callback) WARN_UNUSED_RESULT;
 
-  // NOTE: Deprecated. Please use GetVisible() which is the getter for the
-  // |Visible| property.
-  bool visible() const { return visible_; }
-
   // Returns true if this view is drawn on screen.
   virtual bool IsDrawn() const;
 
@@ -577,10 +573,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // The callback will be invoked whenever the property changes.
   PropertyChangedSubscription AddEnabledChangedCallback(
       PropertyChangedCallback callback) WARN_UNUSED_RESULT;
-
-  // NOTE: Deprecated. Please use GetEnabled() which is the getter for the
-  // |Enabled| property.
-  bool enabled() const { return enabled_; }
 
   // Returns the child views ordered in reverse z-order. That is, views later in
   // the returned vector have a higher z-order (are painted later) than those

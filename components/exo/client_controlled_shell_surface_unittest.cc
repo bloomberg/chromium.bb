@@ -502,7 +502,7 @@ TEST_F(ClientControlledShellSurfaceTest, Frame) {
           widget->non_client_view()->frame_view());
 
   // Normal state.
-  EXPECT_TRUE(frame_view->visible());
+  EXPECT_TRUE(frame_view->GetVisible());
   EXPECT_EQ(normal_window_bounds, widget->GetWindowBoundsInScreen());
   EXPECT_EQ(client_bounds,
             frame_view->GetClientBoundsForWindowBounds(normal_window_bounds));
@@ -512,7 +512,7 @@ TEST_F(ClientControlledShellSurfaceTest, Frame) {
   shell_surface->SetGeometry(fullscreen_bounds);
   surface->Commit();
 
-  EXPECT_TRUE(frame_view->visible());
+  EXPECT_TRUE(frame_view->GetVisible());
   EXPECT_EQ(fullscreen_bounds, widget->GetWindowBoundsInScreen());
   EXPECT_EQ(
       gfx::Size(800, 468),
@@ -521,7 +521,7 @@ TEST_F(ClientControlledShellSurfaceTest, Frame) {
   // AutoHide
   surface->SetFrame(SurfaceFrameType::AUTOHIDE);
   surface->Commit();
-  EXPECT_TRUE(frame_view->visible());
+  EXPECT_TRUE(frame_view->GetVisible());
   EXPECT_EQ(fullscreen_bounds, widget->GetWindowBoundsInScreen());
   EXPECT_EQ(fullscreen_bounds,
             frame_view->GetClientBoundsForWindowBounds(fullscreen_bounds));
@@ -529,7 +529,7 @@ TEST_F(ClientControlledShellSurfaceTest, Frame) {
   // Fullscreen state.
   shell_surface->SetFullscreen(true);
   surface->Commit();
-  EXPECT_TRUE(frame_view->visible());
+  EXPECT_TRUE(frame_view->GetVisible());
   EXPECT_EQ(fullscreen_bounds, widget->GetWindowBoundsInScreen());
   EXPECT_EQ(fullscreen_bounds,
             frame_view->GetClientBoundsForWindowBounds(fullscreen_bounds));
@@ -539,7 +539,7 @@ TEST_F(ClientControlledShellSurfaceTest, Frame) {
   shell_surface->SetGeometry(client_bounds);
   surface->SetFrame(SurfaceFrameType::NORMAL);
   surface->Commit();
-  EXPECT_TRUE(frame_view->visible());
+  EXPECT_TRUE(frame_view->GetVisible());
   EXPECT_EQ(normal_window_bounds, widget->GetWindowBoundsInScreen());
   EXPECT_EQ(client_bounds,
             frame_view->GetClientBoundsForWindowBounds(normal_window_bounds));
@@ -549,7 +549,7 @@ TEST_F(ClientControlledShellSurfaceTest, Frame) {
   shell_surface->SetGeometry(client_bounds);
   surface->SetFrame(SurfaceFrameType::NONE);
   surface->Commit();
-  EXPECT_FALSE(frame_view->visible());
+  EXPECT_FALSE(frame_view->GetVisible());
   EXPECT_EQ(client_bounds, widget->GetWindowBoundsInScreen());
   EXPECT_EQ(client_bounds,
             frame_view->GetClientBoundsForWindowBounds(client_bounds));
@@ -559,11 +559,11 @@ TEST_F(ClientControlledShellSurfaceTest, Frame) {
   shell_surface->SetGeometry(fullscreen_bounds);
   surface->SetFrame(SurfaceFrameType::AUTOHIDE);
   surface->Commit();
-  EXPECT_TRUE(frame_view->visible());
+  EXPECT_TRUE(frame_view->GetVisible());
   EXPECT_TRUE(frame_view->GetHeaderView()->in_immersive_mode());
   surface->SetFrame(SurfaceFrameType::NONE);
   surface->Commit();
-  EXPECT_FALSE(frame_view->visible());
+  EXPECT_FALSE(frame_view->GetVisible());
   EXPECT_FALSE(frame_view->GetHeaderView()->in_immersive_mode());
 }
 
@@ -1854,7 +1854,7 @@ TEST_F(ClientControlledShellSurfaceTest, SnappedInTabletMode) {
           shell_surface->GetWidget()->non_client_view()->frame_view());
   // Snapped window can also use auto hide.
   surface->SetFrame(SurfaceFrameType::AUTOHIDE);
-  EXPECT_TRUE(frame_view->visible());
+  EXPECT_TRUE(frame_view->GetVisible());
   EXPECT_TRUE(frame_view->GetHeaderView()->in_immersive_mode());
 }
 
