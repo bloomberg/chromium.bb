@@ -178,6 +178,12 @@ class TestBookmarkAppInstallFinalizer : public web_app::InstallFinalizer {
             std::move(callback)));
   }
 
+  void UninstallExternalWebApp(
+      const GURL& app_url,
+      UninstallExternalWebAppCallback callback) override {
+    NOTREACHED();
+  }
+
   bool CanCreateOsShortcuts() const override { return true; }
 
   void CreateOsShortcuts(const web_app::AppId& app_id,

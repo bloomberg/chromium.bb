@@ -28,6 +28,8 @@ class InstallFinalizer {
  public:
   using InstallFinalizedCallback =
       base::OnceCallback<void(const AppId& app_id, InstallResultCode code)>;
+  using UninstallExternalWebAppCallback =
+      base::OnceCallback<void(bool uninstalled)>;
   using CreateOsShortcutsCallback =
       base::OnceCallback<void(bool shortcuts_created)>;
 
@@ -45,6 +47,11 @@ class InstallFinalizer {
   virtual void FinalizeInstall(const WebApplicationInfo& web_app_info,
                                const FinalizeOptions& options,
                                InstallFinalizedCallback callback) = 0;
+
+  // Removes the external app for |app_url| from disk and registrar. Fails if
+  // there is no installed external app for |app_url|.
+  virtual void UninstallExternalWebApp(const GURL& app_url,
+                                       UninstallExternalWebAppCallback) = 0;
 
   virtual bool CanCreateOsShortcuts() const = 0;
   virtual void CreateOsShortcuts(const AppId& app_id,

@@ -19,7 +19,6 @@
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "chrome/browser/web_applications/components/web_app_url_loader.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_installation_task.h"
-#include "chrome/browser/web_applications/extensions/bookmark_app_uninstaller.h"
 
 class GURL;
 class Profile;
@@ -73,8 +72,6 @@ class PendingBookmarkAppManager final : public web_app::PendingAppManager {
       web_app::InstallSource install_source) const override;
 
   void SetTaskFactoryForTesting(TaskFactory task_factory);
-  void SetUninstallerForTesting(
-      std::unique_ptr<BookmarkAppUninstaller> uninstaller);
   void SetUrlLoaderForTesting(
       std::unique_ptr<web_app::WebAppUrlLoader> url_loader);
 
@@ -102,7 +99,6 @@ class PendingBookmarkAppManager final : public web_app::PendingAppManager {
   Profile* profile_;
   web_app::AppRegistrar* registrar_;
   web_app::InstallFinalizer* install_finalizer_;
-  std::unique_ptr<BookmarkAppUninstaller> uninstaller_;
   web_app::ExternallyInstalledWebAppPrefs externally_installed_app_prefs_;
 
   // unique_ptr so that it can be replaced in tests.

@@ -7,6 +7,7 @@
 #include "chrome/browser/web_applications/test/test_install_finalizer.h"
 
 #include "base/callback.h"
+#include "base/test/bind_test_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
@@ -40,6 +41,24 @@ void TestInstallFinalizer::FinalizeInstall(
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), app_id, code));
+}
+
+void TestInstallFinalizer::UninstallExternalWebApp(
+    const GURL& app_url,
+    UninstallExternalWebAppCallback callback) {
+  DCHECK(base::ContainsKey(next_uninstall_external_web_app_results_, app_url));
+  uninstall_external_web_app_urls_.push_back(app_url);
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          base::BindLambdaForTesting(
+              [this, app_url](UninstallExternalWebAppCallback callback) {
+                bool result = next_uninstall_external_web_app_results_[app_url];
+                next_uninstall_external_web_app_results_.erase(app_url);
+                std::move(callback).Run(result);
+              }),
+          std::move(callback)));
 }
 
 bool TestInstallFinalizer::CanCreateOsShortcuts() const {
@@ -93,6 +112,13 @@ void TestInstallFinalizer::SetNextFinalizeInstallResult(
     InstallResultCode code) {
   next_app_id_ = app_id;
   next_result_code_ = code;
+}
+
+void TestInstallFinalizer::SetNextUninstallExternalWebAppResult(
+    const GURL& app_url,
+    bool uninstalled) {
+  DCHECK(!base::ContainsKey(next_uninstall_external_web_app_results_, app_url));
+  next_uninstall_external_web_app_results_[app_url] = uninstalled;
 }
 
 }  // namespace web_app

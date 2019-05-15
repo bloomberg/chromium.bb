@@ -81,6 +81,12 @@ void WebAppInstallFinalizer::FinalizeInstall(
                      std::move(web_app)));
 }
 
+void WebAppInstallFinalizer::UninstallExternalWebApp(
+    const GURL& app_url,
+    UninstallExternalWebAppCallback callback) {
+  NOTIMPLEMENTED();
+}
+
 void WebAppInstallFinalizer::OnDataWritten(InstallFinalizedCallback callback,
                                            std::unique_ptr<WebApp> web_app,
                                            bool success) {

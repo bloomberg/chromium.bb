@@ -23,6 +23,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/install/crx_install_error.h"
+#include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_id.h"
 #include "extensions/common/extension_set.h"
@@ -70,7 +71,7 @@ void OnExtensionInstalled(
 }  // namespace
 
 BookmarkAppInstallFinalizer::BookmarkAppInstallFinalizer(Profile* profile)
-    : profile_(profile) {
+    : profile_(profile), externally_installed_app_prefs_(profile->GetPrefs()) {
   crx_installer_factory_ = base::BindRepeating([](Profile* profile) {
     ExtensionService* extension_service =
         ExtensionSystem::Get(profile)->extension_service();
@@ -122,6 +123,41 @@ void BookmarkAppInstallFinalizer::FinalizeInstall(
   }
 
   crx_installer->InstallWebApp(web_app_info);
+}
+
+void BookmarkAppInstallFinalizer::UninstallExternalWebApp(
+    const GURL& app_url,
+    UninstallExternalWebAppCallback callback) {
+  base::Optional<web_app::AppId> app_id =
+      externally_installed_app_prefs_.LookupAppId(app_url);
+  if (!app_id.has_value()) {
+    LOG(WARNING) << "Couldn't uninstall app with url " << app_url
+                 << "; No corresponding extension for url.";
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), false));
+    return;
+  }
+
+  if (!ExtensionRegistry::Get(profile_)->enabled_extensions().GetByID(
+          app_id.value())) {
+    LOG(WARNING) << "Couldn't uninstall app with url " << app_url
+                 << "; Extension not installed.";
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), false));
+    return;
+  }
+
+  base::string16 error;
+  bool uninstalled =
+      ExtensionSystem::Get(profile_)->extension_service()->UninstallExtension(
+          app_id.value(), UNINSTALL_REASON_ORPHANED_EXTERNAL_EXTENSION, &error);
+
+  if (!uninstalled) {
+    LOG(WARNING) << "Couldn't uninstall app with url " << app_url << ". "
+                 << error;
+  }
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), uninstalled));
 }
 
 bool BookmarkAppInstallFinalizer::CanCreateOsShortcuts() const {

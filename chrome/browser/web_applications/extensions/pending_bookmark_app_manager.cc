@@ -52,8 +52,6 @@ PendingBookmarkAppManager::PendingBookmarkAppManager(
     : profile_(profile),
       registrar_(registrar),
       install_finalizer_(install_finalizer),
-      uninstaller_(
-          std::make_unique<BookmarkAppUninstaller>(profile_, registrar_)),
       externally_installed_app_prefs_(profile->GetPrefs()),
       url_loader_(std::make_unique<web_app::WebAppUrlLoader>()),
       task_factory_(base::BindRepeating(&InstallationTaskCreateWrapper)) {}
@@ -93,7 +91,7 @@ void PendingBookmarkAppManager::UninstallApps(
     std::vector<GURL> uninstall_urls,
     const UninstallCallback& callback) {
   for (auto& url : uninstall_urls) {
-    uninstaller_->UninstallApp(
+    install_finalizer_->UninstallExternalWebApp(
         url, base::BindOnce(
                  [](const UninstallCallback& callback, const GURL& app_url,
                     bool uninstalled) { callback.Run(app_url, uninstalled); },
@@ -122,11 +120,6 @@ bool PendingBookmarkAppManager::HasAppIdWithInstallSource(
 void PendingBookmarkAppManager::SetTaskFactoryForTesting(
     TaskFactory task_factory) {
   task_factory_ = std::move(task_factory);
-}
-
-void PendingBookmarkAppManager::SetUninstallerForTesting(
-    std::unique_ptr<BookmarkAppUninstaller> uninstaller) {
-  uninstaller_ = std::move(uninstaller);
 }
 
 void PendingBookmarkAppManager::SetUrlLoaderForTesting(
@@ -272,7 +265,7 @@ void PendingBookmarkAppManager::UninstallPlaceholderIfNecessary() {
           install_options.url);
 
   if (app_id.has_value() && registrar_->IsInstalled(app_id.value())) {
-    uninstaller_->UninstallApp(
+    install_finalizer_->UninstallExternalWebApp(
         install_options.url,
         base::BindOnce(&PendingBookmarkAppManager::OnPlaceholderUninstalled,
                        weak_ptr_factory_.GetWeakPtr()));

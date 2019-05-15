@@ -146,58 +146,6 @@ class TestBookmarkAppInstallationTask : public BookmarkAppInstallationTask {
   DISALLOW_COPY_AND_ASSIGN(TestBookmarkAppInstallationTask);
 };
 
-class TestBookmarkAppUninstaller : public BookmarkAppUninstaller {
- public:
-  TestBookmarkAppUninstaller(Profile* profile,
-                             web_app::TestAppRegistrar* registrar)
-      : BookmarkAppUninstaller(profile, registrar), registrar_(registrar) {}
-
-  ~TestBookmarkAppUninstaller() override = default;
-
-  size_t uninstall_call_count() { return uninstall_call_count_; }
-
-  const std::vector<GURL>& uninstalled_app_urls() {
-    return uninstalled_app_urls_;
-  }
-
-  const GURL& last_uninstalled_app_url() { return uninstalled_app_urls_[0]; }
-
-  void SetNextResultForTesting(const GURL& app_url, bool result) {
-    DCHECK(!base::ContainsKey(next_result_map_, app_url));
-    next_result_map_[app_url] = result;
-  }
-
-  // BookmarkAppUninstaller
-  void UninstallApp(const GURL& app_url, UninstallCallback callback) override {
-    DCHECK(base::ContainsKey(next_result_map_, app_url));
-
-    ++uninstall_call_count_;
-    uninstalled_app_urls_.push_back(app_url);
-
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(base::BindLambdaForTesting(
-                                      [&, app_url](UninstallCallback callback) {
-                                        bool result = next_result_map_[app_url];
-                                        next_result_map_.erase(app_url);
-
-                                        if (result)
-                                          registrar_->RemoveAsInstalled(
-                                              GenerateFakeAppId(app_url));
-                                        std::move(callback).Run(result);
-                                      }),
-                                  std::move(callback)));
-  }
-
- private:
-  std::map<GURL, bool> next_result_map_;
-  web_app::TestAppRegistrar* registrar_;
-
-  size_t uninstall_call_count_ = 0;
-  std::vector<GURL> uninstalled_app_urls_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestBookmarkAppUninstaller);
-};
-
 }  // namespace
 
 class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
@@ -223,7 +171,6 @@ class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
   }
 
   void TearDown() override {
-    uninstaller_ = nullptr;
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
@@ -349,14 +296,6 @@ class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
         profile(), registrar_.get(), install_finalizer_.get());
     manager->SetTaskFactoryForTesting(successful_installation_task_creator());
 
-    // The test suite doesn't support multiple uninstallers.
-    DCHECK_EQ(nullptr, uninstaller_);
-
-    auto uninstaller = std::make_unique<TestBookmarkAppUninstaller>(
-        profile(), registrar_.get());
-    uninstaller_ = uninstaller.get();
-    manager->SetUninstallerForTesting(std::move(uninstaller));
-
     // The test suite doesn't support multiple loaders.
     DCHECK_EQ(nullptr, url_loader_);
 
@@ -382,23 +321,27 @@ class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
     return install_placeholder_run_count_;
   }
 
-  size_t uninstall_call_count() { return uninstaller_->uninstall_call_count(); }
+  size_t uninstall_call_count() {
+    return install_finalizer_->uninstall_external_web_app_urls().size();
+  }
 
   const std::vector<GURL>& uninstalled_app_urls() {
-    return uninstaller_->uninstalled_app_urls();
+    return install_finalizer_->uninstall_external_web_app_urls();
   }
 
   const GURL& last_uninstalled_app_url() {
-    return uninstaller_->last_uninstalled_app_url();
+    return install_finalizer_->uninstall_external_web_app_urls().back();
   }
 
   web_app::TestAppRegistrar* registrar() { return registrar_.get(); }
 
   web_app::TestWebAppUiDelegate* ui_delegate() { return ui_delegate_.get(); }
 
-  TestBookmarkAppUninstaller* uninstaller() { return uninstaller_; }
-
   web_app::TestWebAppUrlLoader* url_loader() { return url_loader_; }
+
+  web_app::TestInstallFinalizer* install_finalizer() {
+    return install_finalizer_.get();
+  }
 
  private:
   base::Optional<web_app::InstallOptions> last_app_info_;
@@ -412,7 +355,6 @@ class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
   std::unique_ptr<web_app::TestWebAppUiDelegate> ui_delegate_;
   std::unique_ptr<web_app::TestInstallFinalizer> install_finalizer_;
 
-  TestBookmarkAppUninstaller* uninstaller_ = nullptr;
   web_app::TestWebAppUrlLoader* url_loader_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(PendingBookmarkAppManagerTest);
@@ -1125,7 +1067,8 @@ TEST_F(PendingBookmarkAppManagerTest, UninstallApps_Succeeds) {
   auto pending_app_manager = GetPendingBookmarkAppManagerWithTestFactories();
   registrar()->AddAsInstalled(GenerateFakeAppId(kFooWebAppUrl));
 
-  uninstaller()->SetNextResultForTesting(kFooWebAppUrl, true);
+  install_finalizer()->SetNextUninstallExternalWebAppResult(kFooWebAppUrl,
+                                                            true);
   UninstallAppsResults results = UninstallAppsAndWait(
       pending_app_manager.get(), std::vector<GURL>{kFooWebAppUrl});
 
@@ -1138,7 +1081,8 @@ TEST_F(PendingBookmarkAppManagerTest, UninstallApps_Succeeds) {
 TEST_F(PendingBookmarkAppManagerTest, UninstallApps_Fails) {
   auto pending_app_manager = GetPendingBookmarkAppManagerWithTestFactories();
 
-  uninstaller()->SetNextResultForTesting(kFooWebAppUrl, false);
+  install_finalizer()->SetNextUninstallExternalWebAppResult(kFooWebAppUrl,
+                                                            false);
   UninstallAppsResults results = UninstallAppsAndWait(
       pending_app_manager.get(), std::vector<GURL>{kFooWebAppUrl});
   EXPECT_EQ(results, UninstallAppsResults({{kFooWebAppUrl, false}}));
@@ -1152,8 +1096,10 @@ TEST_F(PendingBookmarkAppManagerTest, UninstallApps_Multiple) {
   registrar()->AddAsInstalled(GenerateFakeAppId(kFooWebAppUrl));
   registrar()->AddAsInstalled(GenerateFakeAppId(kBarWebAppUrl));
 
-  uninstaller()->SetNextResultForTesting(kFooWebAppUrl, true);
-  uninstaller()->SetNextResultForTesting(kBarWebAppUrl, true);
+  install_finalizer()->SetNextUninstallExternalWebAppResult(kFooWebAppUrl,
+                                                            true);
+  install_finalizer()->SetNextUninstallExternalWebAppResult(kBarWebAppUrl,
+                                                            true);
   UninstallAppsResults results =
       UninstallAppsAndWait(pending_app_manager.get(),
                            std::vector<GURL>{kFooWebAppUrl, kBarWebAppUrl});
@@ -1180,7 +1126,8 @@ TEST_F(PendingBookmarkAppManagerTest, UninstallApps_PendingInstall) {
             run_loop.Quit();
           }));
 
-  uninstaller()->SetNextResultForTesting(kFooWebAppUrl, false);
+  install_finalizer()->SetNextUninstallExternalWebAppResult(kFooWebAppUrl,
+                                                            false);
   UninstallAppsResults uninstall_results = UninstallAppsAndWait(
       pending_app_manager.get(), std::vector<GURL>{kFooWebAppUrl});
   EXPECT_EQ(uninstall_results, UninstallAppsResults({{kFooWebAppUrl, false}}));
@@ -1212,7 +1159,8 @@ TEST_F(PendingBookmarkAppManagerTest, ReinstallPlaceholderApp_Success) {
     install_options.reinstall_placeholder = true;
     url_loader()->SetNextLoadUrlResult(
         kFooWebAppUrl, web_app::WebAppUrlLoader::Result::kUrlLoaded);
-    uninstaller()->SetNextResultForTesting(kFooWebAppUrl, true);
+    install_finalizer()->SetNextUninstallExternalWebAppResult(kFooWebAppUrl,
+                                                              true);
 
     base::Optional<GURL> url;
     base::Optional<web_app::InstallResultCode> code;
@@ -1255,7 +1203,8 @@ TEST_F(PendingBookmarkAppManagerTest,
     install_options.reinstall_placeholder = true;
     url_loader()->SetNextLoadUrlResult(
         kFooWebAppUrl, web_app::WebAppUrlLoader::Result::kUrlLoaded);
-    uninstaller()->SetNextResultForTesting(kFooWebAppUrl, false);
+    install_finalizer()->SetNextUninstallExternalWebAppResult(kFooWebAppUrl,
+                                                              false);
 
     base::Optional<GURL> url;
     base::Optional<web_app::InstallResultCode> code;
@@ -1298,7 +1247,8 @@ TEST_F(PendingBookmarkAppManagerTest,
     install_options.reinstall_placeholder = true;
     url_loader()->SetNextLoadUrlResult(
         kFooWebAppUrl, web_app::WebAppUrlLoader::Result::kRedirectedUrlLoaded);
-    uninstaller()->SetNextResultForTesting(kFooWebAppUrl, true);
+    install_finalizer()->SetNextUninstallExternalWebAppResult(kFooWebAppUrl,
+                                                              true);
 
     base::Optional<GURL> url;
     base::Optional<web_app::InstallResultCode> code;
@@ -1346,7 +1296,8 @@ TEST_F(PendingBookmarkAppManagerTest,
     ui_delegate()->SetNumWindowsForApp(GenerateFakeAppId(kFooWebAppUrl), 0);
     url_loader()->SetNextLoadUrlResult(
         kFooWebAppUrl, web_app::WebAppUrlLoader::Result::kUrlLoaded);
-    uninstaller()->SetNextResultForTesting(kFooWebAppUrl, true);
+    install_finalizer()->SetNextUninstallExternalWebAppResult(kFooWebAppUrl,
+                                                              true);
 
     base::Optional<GURL> url;
     base::Optional<web_app::InstallResultCode> code;
@@ -1391,7 +1342,8 @@ TEST_F(PendingBookmarkAppManagerTest,
     ui_delegate()->SetNumWindowsForApp(GenerateFakeAppId(kFooWebAppUrl), 1);
     url_loader()->SetNextLoadUrlResult(
         kFooWebAppUrl, web_app::WebAppUrlLoader::Result::kUrlLoaded);
-    uninstaller()->SetNextResultForTesting(kFooWebAppUrl, true);
+    install_finalizer()->SetNextUninstallExternalWebAppResult(kFooWebAppUrl,
+                                                              true);
 
     base::Optional<GURL> url;
     base::Optional<web_app::InstallResultCode> code;
