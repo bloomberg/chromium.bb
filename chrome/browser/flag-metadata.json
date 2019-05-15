@@ -2741,8 +2741,8 @@
   },
   {
     "name": "shared-array-buffer",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "binji" ],
+    "expiry_milestone": 78
   },
   {
     "name": "shelf-hover-previews",
