@@ -176,7 +176,9 @@ class CSSLazyPropertyParser
   DISALLOW_COPY_AND_ASSIGN(CSSLazyPropertyParser);
 };
 
-class CORE_EXPORT ImmutableCSSPropertyValueSet : public CSSPropertyValueSet {
+class CORE_EXPORT alignas(Member<const CSSValue>) alignas(
+    CSSPropertyValueMetadata) ImmutableCSSPropertyValueSet
+    : public CSSPropertyValueSet {
  public:
   ImmutableCSSPropertyValueSet(const CSSPropertyValue*,
                                unsigned count,
@@ -199,11 +201,21 @@ class CORE_EXPORT ImmutableCSSPropertyValueSet : public CSSPropertyValueSet {
 
 inline const Member<const CSSValue>* ImmutableCSSPropertyValueSet::ValueArray()
     const {
+  static_assert(
+      sizeof(ImmutableCSSPropertyValueSet) % alignof(Member<const CSSValue>) ==
+          0,
+      "ValueArray may be improperly aligned");
   return reinterpret_cast<const Member<const CSSValue>*>(this + 1);
 }
 
 inline const CSSPropertyValueMetadata*
 ImmutableCSSPropertyValueSet::MetadataArray() const {
+  static_assert(
+      sizeof(ImmutableCSSPropertyValueSet) %
+                  alignof(CSSPropertyValueMetadata) ==
+              0 &&
+          sizeof(Member<CSSValue>) % alignof(CSSPropertyValueMetadata) == 0,
+      "MetadataArray may be improperly aligned");
   return reinterpret_cast<const CSSPropertyValueMetadata*>(ValueArray() +
                                                            array_size_);
 }
