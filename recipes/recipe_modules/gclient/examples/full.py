@@ -36,7 +36,6 @@ TEST_CONFIGS = [
   'luci_go',
   'luci_py',
   'master_deps',
-  'mojo',
   'nacl',
   'openscreen',
   'pdfium',

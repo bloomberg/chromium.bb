@@ -263,12 +263,6 @@ def pdfium(c):
   m['pdfium'] = 'got_revision'
 
 @config_ctx()
-def mojo(c):
-  soln = c.solutions.add()
-  soln.name = 'src'
-  soln.url = 'https://chromium.googlesource.com/external/mojo.git'
-
-@config_ctx()
 def crashpad(c):
   soln = c.solutions.add()
   soln.name = 'crashpad'
