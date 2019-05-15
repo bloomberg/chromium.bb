@@ -142,16 +142,17 @@ std::string StateToStr(KeyboardControllerState state) {
 }
 
 // An enumeration of different keyboard control events that should be logged.
-enum KeyboardControlEvent {
-  KEYBOARD_CONTROL_SHOW = 0,
-  KEYBOARD_CONTROL_HIDE_AUTO,
-  KEYBOARD_CONTROL_HIDE_USER,
-  KEYBOARD_CONTROL_MAX,
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class KeyboardControlEvent {
+  kShow = 0,
+  kHideAuto = 1,
+  kHideUser = 2,
+  kMaxValue = kHideUser
 };
 
 void LogKeyboardControlEvent(KeyboardControlEvent event) {
-  UMA_HISTOGRAM_ENUMERATION("VirtualKeyboard.KeyboardControlEvent", event,
-                            KEYBOARD_CONTROL_MAX);
+  UMA_HISTOGRAM_ENUMERATION("VirtualKeyboard.KeyboardControlEvent", event);
 }
 
 class InputMethodKeyboardController : public ui::InputMethodKeyboardController {
@@ -603,11 +604,11 @@ void KeyboardController::HideKeyboard(HideReason reason) {
         case HIDE_REASON_SYSTEM_EXPLICIT:
         case HIDE_REASON_SYSTEM_IMPLICIT:
         case HIDE_REASON_SYSTEM_TEMPORARY:
-          LogKeyboardControlEvent(KEYBOARD_CONTROL_HIDE_AUTO);
+          LogKeyboardControlEvent(KeyboardControlEvent::kHideAuto);
           break;
         case HIDE_REASON_USER_EXPLICIT:
         case HIDE_REASON_USER_IMPLICIT:
-          LogKeyboardControlEvent(KEYBOARD_CONTROL_HIDE_USER);
+          LogKeyboardControlEvent(KeyboardControlEvent::kHideUser);
           break;
       }
 
@@ -948,7 +949,7 @@ void KeyboardController::PopulateKeyboardContent(
   // are at begin states for animation.
   container_behavior_->InitializeShowAnimationStartingState(keyboard_window);
 
-  LogKeyboardControlEvent(KEYBOARD_CONTROL_SHOW);
+  LogKeyboardControlEvent(KeyboardControlEvent::kShow);
   RecordUkmKeyboardShown();
 
   ui::LayerAnimator* container_animator =
@@ -973,8 +974,7 @@ void KeyboardController::PopulateKeyboardContent(
   ChangeState(KeyboardControllerState::SHOWN);
 
   UMA_HISTOGRAM_ENUMERATION("InputMethod.VirtualKeyboard.ContainerBehavior",
-                            GetActiveContainerType(),
-                            mojom::ContainerType::kMaxValue);
+                            GetActiveContainerType());
 }
 
 bool KeyboardController::WillHideKeyboard() const {
