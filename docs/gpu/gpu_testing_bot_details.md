@@ -227,8 +227,8 @@ In the [infradata/config] workspace (Google internal only, sorry):
 
 [infradata/config]:                https://chrome-internal.googlesource.com/infradata/config
 [bot_config.py]:                   https://chrome-internal.googlesource.com/infradata/config/+/master/configs/chromium-swarm/scripts/bot_config.py
-[gen.star]:                        https://chrome-internal.googlesource.com/infradata/config/+/master/configs/chromium-swarm/gen.star
 [gpu.star]:                        https://chrome-internal.googlesource.com/infradata/config/+/master/configs/chromium-swarm/starlark/bots/chromium/gpu.star
+[main.star]:                       https://chrome-internal.googlesource.com/infradata/config/+/master/main.star
 [vms.cfg]:                         https://chrome-internal.googlesource.com/infradata/config/+/master/configs/gce-provider/vms.cfg
 
 ## Walkthroughs of various maintenance scenarios
@@ -299,7 +299,7 @@ for the hosts.
         [zones](https://cloud.google.com/compute/docs/regions-zones/) has
         available capacity.
 
-    1.  Run [gen.star] to regenerate `configs/chromium-swarm/bots.cfg`.
+    1.  Run [main.star] to regenerate `configs/chromium-swarm/bots.cfg`.
         Double-check your work there.
     1.  Get this reviewed and landed. This step associates the VM or pool of VMs
         with the bot's name on the waterfall.
@@ -340,7 +340,7 @@ Builder].
         [second
         example](https://chrome-internal-review.googlesource.com/1111456).
 
-    1.  Run [gen.star] to regenerate `configs/chromium-swarm/bots.cfg`.
+    1.  Run [main.star] to regenerate `configs/chromium-swarm/bots.cfg`.
         Double-check your work there.
 
 1.  Allocate new virtual machines for the bots as described in [How to set up
