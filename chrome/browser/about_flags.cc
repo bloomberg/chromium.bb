@@ -3817,6 +3817,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kFormControlsRefreshDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kFormControlsRefresh)},
 
+#if defined(OS_CHROMEOS)
+    {"auto-screen-brightness", flag_descriptions::kAutoScreenBrightnessName,
+     flag_descriptions::kAutoScreenBrightnessDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kAutoScreenBrightness)},
+#endif  // defined(OS_CHROMEOS)
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

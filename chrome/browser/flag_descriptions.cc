@@ -206,6 +206,11 @@ const char kAutofillUseImprovedLabelDisambiguationDescription[] =
     "When enabled, the Autofill dropdown's suggestions' labels are displayed "
     "using the improved disambiguation format.";
 
+const char kAutoScreenBrightnessName[] = "Auto Screen Brightness model";
+const char kAutoScreenBrightnessDescription[] =
+    "Uses Auto Screen Brightness model to adjust screen brightness based on "
+    "ambient light";
+
 const char kAwaitOptimizationName[] = "Await optimization";
 const char kAwaitOptimizationDescription[] =
     "Enables await taking 1 tick on the microtask queue.";
