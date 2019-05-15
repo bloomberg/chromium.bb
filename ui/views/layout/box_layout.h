@@ -314,26 +314,26 @@ class VIEWS_EXPORT BoxLayout : public LayoutManager {
 
   // The alignment of children in the main axis. This is
   // MainAxisAlignment::kStart by default.
-  MainAxisAlignment main_axis_alignment_;
+  MainAxisAlignment main_axis_alignment_ = MainAxisAlignment::kStart;
 
   // The alignment of children in the cross axis. This is
   // kStretch by default.
-  CrossAxisAlignment cross_axis_alignment_;
+  CrossAxisAlignment cross_axis_alignment_ = CrossAxisAlignment::kStretch;
 
   // A map of views to their flex weights.
   FlexMap flex_map_;
 
   // The flex weight for views if none is set. Defaults to 0.
-  int default_flex_;
+  int default_flex_ = 0;
 
   // The minimum cross axis size for the layout.
-  int minimum_cross_axis_size_;
+  int minimum_cross_axis_size_ = 0;
 
   // Adjacent view margins and spacing should be collapsed.
   const bool collapse_margins_spacing_;
 
   // The view that this BoxLayout is managing the layout for.
-  views::View* host_;
+  views::View* host_ = nullptr;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(BoxLayout);
 };

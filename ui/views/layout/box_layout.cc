@@ -95,12 +95,7 @@ BoxLayout::BoxLayout(BoxLayout::Orientation orientation,
     : orientation_(orientation),
       inside_border_insets_(inside_border_insets),
       between_child_spacing_(between_child_spacing),
-      main_axis_alignment_(MainAxisAlignment::kStart),
-      cross_axis_alignment_(CrossAxisAlignment::kStretch),
-      default_flex_(0),
-      minimum_cross_axis_size_(0),
-      collapse_margins_spacing_(collapse_margins_spacing),
-      host_(nullptr) {}
+      collapse_margins_spacing_(collapse_margins_spacing) {}
 
 BoxLayout::~BoxLayout() = default;
 
