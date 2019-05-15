@@ -3246,14 +3246,6 @@ static int openDatabase(
   }
 #endif
 
-#ifdef DEFAULT_ENABLE_RECOVER
-  /* Initialize recover virtual table for testing. */
-  extern int chrome_sqlite3_recoverVtableInit(sqlite3 *db);
-  if( !db->mallocFailed && rc==SQLITE_OK ){
-    rc = chrome_sqlite3_recoverVtableInit(db);
-  }
-#endif
-
 #if defined(SQLITE_ENABLE_ICU) || defined(SQLITE_ENABLE_ICU_COLLATIONS)
   if( !db->mallocFailed && rc==SQLITE_OK ){
     rc = sqlite3IcuInit(db);
