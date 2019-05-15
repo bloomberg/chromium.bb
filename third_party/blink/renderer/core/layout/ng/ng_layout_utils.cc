@@ -237,9 +237,10 @@ NGLayoutCacheStatus CalculateSizeBasedLayoutCacheStatusWithGeometry(
     const NGConstraintSpace& new_space,
     const NGConstraintSpace& old_space) {
   const ComputedStyle& style = node.Style();
-  NGBoxFragment fragment(
-      style.GetWritingMode(), style.Direction(),
-      To<NGPhysicalBoxFragment>(layout_result.PhysicalFragment()));
+  const NGPhysicalBoxFragment& physical_fragment =
+      To<NGPhysicalBoxFragment>(layout_result.PhysicalFragment());
+  NGBoxFragment fragment(style.GetWritingMode(), style.Direction(),
+                         physical_fragment);
 
   if (fragment_geometry.border_box_size.inline_size != fragment.InlineSize())
     return NGLayoutCacheStatus::kNeedsLayout;
@@ -266,6 +267,20 @@ NGLayoutCacheStatus CalculateSizeBasedLayoutCacheStatusWithGeometry(
   }
 
   bool is_block_size_equal = block_size == fragment.BlockSize();
+
+  if (!is_block_size_equal) {
+    // If we are the document or body element in quirks mode, changing our size
+    // means that a scrollbar was added/removed. Require full layout.
+    if (node.IsQuirkyAndFillsViewport())
+      return NGLayoutCacheStatus::kNeedsLayout;
+
+    // If a block (within a formatting-context) changes to/from an empty-block,
+    // margins may collapse through this node, requiring full layout. We
+    // approximate this check by checking if the block-size is/was zero.
+    if (!physical_fragment.IsBlockFormattingContextRoot() &&
+        !block_size != !fragment.BlockSize())
+      return NGLayoutCacheStatus::kNeedsLayout;
+  }
 
   if (layout_result.HasDescendantThatDependsOnPercentageBlockSize()) {
     // %-block-size children of flex-items sometimes don't resolve their

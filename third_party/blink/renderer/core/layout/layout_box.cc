@@ -2316,6 +2316,8 @@ void LayoutBox::SetCachedLayoutResult(const NGLayoutResult& layout_result,
     return;
   if (layout_result.GetConstraintSpaceForCaching().IsIntermediateLayout())
     return;
+  if (layout_result.PhysicalFragment().BreakToken())
+    return;
 
   cached_layout_result_ = &layout_result;
 }
@@ -2323,7 +2325,10 @@ void LayoutBox::SetCachedLayoutResult(const NGLayoutResult& layout_result,
 scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
     const NGConstraintSpace& new_space,
     const NGBreakToken* break_token,
-    base::Optional<NGFragmentGeometry>* initial_fragment_geometry) {
+    base::Optional<NGFragmentGeometry>* initial_fragment_geometry,
+    NGLayoutCacheStatus* out_cache_status) {
+  *out_cache_status = NGLayoutCacheStatus::kNeedsLayout;
+
   if (!RuntimeEnabledFeatures::LayoutNGFragmentCachingEnabled())
     return nullptr;
 
@@ -2331,10 +2336,26 @@ scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
   if (break_token)
     return nullptr;
 
+  // Set our initial temporary cache status to "hit".
+  NGLayoutCacheStatus cache_status = NGLayoutCacheStatus::kHit;
+
   if (SelfNeedsLayoutForStyle() || NormalChildNeedsLayout() ||
       PosChildNeedsLayout() || NeedsSimplifiedNormalFlowLayout() ||
-      (NeedsPositionedMovementLayout() && !NeedsPositionedMovementLayoutOnly()))
-    return nullptr;
+      (NeedsPositionedMovementLayout() &&
+       !NeedsPositionedMovementLayoutOnly())) {
+    // Check if we only need "simplified" layout. We don't abort yet, as we
+    // need to check if other things (like floats) will require us to perform a
+    // full layout.
+    //
+    // We don't regenerate any lineboxes during our "simplified" layout pass.
+    // If something needs "simplified" layout within a linebox, (e.g. an
+    // atomic-inline) we miss the cache.
+    if (NeedsSimplifiedLayoutOnly() &&
+        (!ChildrenInline() || !NeedsSimplifiedNormalFlowLayout()))
+      cache_status = NGLayoutCacheStatus::kNeedsSimplifiedLayout;
+    else
+      return nullptr;
+  }
 
   const NGLayoutResult* cached_layout_result = GetCachedLayoutResult();
   if (!cached_layout_result)
@@ -2342,6 +2363,8 @@ scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
 
   const NGPhysicalContainerFragment& physical_fragment =
       cached_layout_result->PhysicalFragment();
+
+  DCHECK(!physical_fragment.BreakToken());
 
   // If we have an orthogonal flow root descendant, we don't attempt to cache
   // our layout result. This is because the initial containing block size may
@@ -2351,10 +2374,18 @@ scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
     return nullptr;
 
   NGBlockNode node(this);
-  if (CalculateSizeBasedLayoutCacheStatus(
-          node, *cached_layout_result, new_space, initial_fragment_geometry) !=
-      NGLayoutCacheStatus::kHit)
+  NGLayoutCacheStatus size_cache_status = CalculateSizeBasedLayoutCacheStatus(
+      node, *cached_layout_result, new_space, initial_fragment_geometry);
+
+  // If our size may change (or we know a descendants size may change), we miss
+  // the cache.
+  if (size_cache_status == NGLayoutCacheStatus::kNeedsLayout)
     return nullptr;
+
+  // Update our temporary cache status, if the size cache check indicated we
+  // might need simplified layout.
+  if (size_cache_status == NGLayoutCacheStatus::kNeedsSimplifiedLayout)
+    cache_status = NGLayoutCacheStatus::kNeedsSimplifiedLayout;
 
   base::Optional<LayoutUnit> bfc_block_offset =
       cached_layout_result->BfcBlockOffset();
@@ -2362,9 +2393,6 @@ scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
 
   const NGConstraintSpace& old_space =
       cached_layout_result->GetConstraintSpaceForCaching();
-
-  DCHECK_EQ(old_space.BfcOffset().line_offset,
-            cached_layout_result->BfcLineOffset());
 
   // Check the BFC offset. Even if they don't match, there're some cases we can
   // still reuse the fragment.
@@ -2394,10 +2422,30 @@ scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
        new_space.ClearanceOffset() != old_space.ClearanceOffset())) {
     DCHECK(!CreatesNewFormattingContext());
 
+    // If we have a different BFC offset, or exclusion space we can't perform
+    // "simplified" layout.
+    // This may occur if our %-block-size has changed (allowing "simplified"
+    // layout), and we've been pushed down in the BFC coordinate space by a
+    // sibling.
+    // The "simplified" layout algorithm doesn't have the required logic to
+    // shift any added exclusions within the output exclusion space.
+    if (cache_status == NGLayoutCacheStatus::kNeedsSimplifiedLayout)
+      return nullptr;
+
+    DCHECK_EQ(cache_status, NGLayoutCacheStatus::kHit);
+
     if (!MaySkipLayoutWithinBlockFormattingContext(
             *cached_layout_result, new_space, &bfc_block_offset))
       return nullptr;
   }
+
+  // We've performed all of the cache checks at this point. If we need
+  // "simplified" layout then abort now.
+  *out_cache_status = cache_status;
+  if (*out_cache_status == NGLayoutCacheStatus::kNeedsSimplifiedLayout)
+    return nullptr;
+
+  DCHECK_EQ(*out_cache_status, NGLayoutCacheStatus::kHit);
 
   // We can safely re-use this fragment if we are positioned, and only our
   // position constraints changed (left/top/etc). However we need to clear the

@@ -83,6 +83,7 @@ class CORE_EXPORT NGLayoutInputNode {
   bool IsInline() const { return type_ == kInline; }
   bool IsBlock() const { return type_ == kBlock; }
 
+  bool IsBlockFlow() const { return IsBlock() && box_->IsLayoutBlockFlow(); }
   bool IsColumnSpanAll() const { return IsBlock() && box_->IsColumnSpanAll(); }
   bool IsFloating() const { return IsBlock() && Style().IsFloating(); }
   bool IsOutOfFlowPositioned() const {

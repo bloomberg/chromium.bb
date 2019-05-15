@@ -44,6 +44,7 @@ class ShapeOutsideInfo;
 struct BoxLayoutExtraInput;
 class NGBreakToken;
 struct NGFragmentGeometry;
+enum class NGLayoutCacheStatus;
 class NGLayoutResult;
 struct NGPhysicalBoxStrut;
 struct PaintInfo;
@@ -910,11 +911,14 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // This method (while determining if the layout result can be reused), *may*
   // calculate the |initial_fragment_geometry| of the node.
   //
+  // |out_cache_status| indicates what type of layout pass is required.
+  //
   // TODO(ikilpatrick): Move this function into NGBlockNode.
   scoped_refptr<const NGLayoutResult> CachedLayoutResult(
       const NGConstraintSpace&,
       const NGBreakToken*,
-      base::Optional<NGFragmentGeometry>* initial_fragment_geometry);
+      base::Optional<NGFragmentGeometry>* initial_fragment_geometry,
+      NGLayoutCacheStatus* out_cache_status);
 
   void SetSpannerPlaceholder(LayoutMultiColumnSpannerPlaceholder&);
   void ClearSpannerPlaceholder();

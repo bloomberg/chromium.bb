@@ -16,8 +16,8 @@ class NGLayoutResult;
 // various types of misses we may be able to perform less work than a full
 // layout.
 //
-// TODO(ikilpatrick): Link to the simplified layout algorithm definition to
-// explain |kNeedsSimplifiedLayout| when it exists.
+// See |NGSimplifiedLayoutAlgorithm| for details about the
+// |kNeedsSimplifiedLayout| cache miss type.
 enum class NGLayoutCacheStatus {
   kHit,                   // Cache hit, no additional work required.
   kNeedsLayout,           // Cache miss, full layout required.

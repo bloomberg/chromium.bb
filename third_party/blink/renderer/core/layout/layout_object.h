@@ -960,6 +960,17 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
            !bitfields_.NeedsSimplifiedNormalFlowLayout();
   }
 
+  bool NeedsSimplifiedLayoutOnly() const {
+    // We don't need to check |SelfNeedsLayoutForAvailableSpace| as an
+    // additional check will determine if we need to perform full layout based
+    // on the available space.
+    return (bitfields_.PosChildNeedsLayout() ||
+            bitfields_.NeedsSimplifiedNormalFlowLayout()) &&
+           !bitfields_.SelfNeedsLayoutForStyle() &&
+           !bitfields_.NormalChildNeedsLayout() &&
+           !bitfields_.NeedsPositionedMovementLayout();
+  }
+
   bool SelfNeedsLayout() const {
     return bitfields_.SelfNeedsLayoutForStyle() ||
            bitfields_.SelfNeedsLayoutForAvailableSpace();

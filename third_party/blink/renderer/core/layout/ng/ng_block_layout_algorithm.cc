@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/list/ng_unpositioned_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_child_iterator.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_block_layout_algorithm_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
@@ -784,48 +785,27 @@ const NGInlineBreakToken* NGBlockLayoutAlgorithm::TryReuseFragmentsFromCache(
 void NGBlockLayoutAlgorithm::HandleOutOfFlowPositioned(
     const NGPreviousInflowPosition& previous_inflow_position,
     NGBlockNode child) {
-  const ComputedStyle& child_style = child.Style();
-
-  LogicalOffset offset = {border_scrollbar_padding_.inline_start,
-                          previous_inflow_position.logical_block_offset};
+  DCHECK(child.IsOutOfFlowPositioned());
+  LogicalOffset static_offset = {border_scrollbar_padding_.inline_start,
+                                 previous_inflow_position.logical_block_offset};
 
   // We only include the margin strut in the OOF static-position if we know we
   // aren't going to be a zero-block-size fragment.
   if (container_builder_.BfcBlockOffset())
-    offset.block_offset += previous_inflow_position.margin_strut.Sum();
+    static_offset.block_offset += previous_inflow_position.margin_strut.Sum();
 
-  if (child_style.IsOriginalDisplayInlineType()) {
-    // OOF-positioned nodes which were initially inline-level, however are in a
-    // block-level context, pretend they are in an inline-level context. E.g.
-    // they avoid floats, and respect text-align.
-    const TextDirection direction = ConstraintSpace().Direction();
-    LayoutUnit child_origin_line_offset =
-        container_builder_.BfcLineOffset() +
-        border_scrollbar_padding_.LineLeft(direction);
+  if (child.Style().IsOriginalDisplayInlineType()) {
+    NGBfcOffset origin_bfc_offset = {
+        ConstraintSpace().BfcOffset().line_offset +
+            border_scrollbar_padding_.LineLeft(Style().Direction()),
+        BfcBlockOffset() + static_offset.block_offset};
 
-    // Find a layout opportunity, this is where we would have placed a
-    // zero-sized line.
-    NGLayoutOpportunity opportunity = exclusion_space_.FindLayoutOpportunity(
-        {child_origin_line_offset, BfcBlockOffset() + offset.block_offset},
-        child_available_size_.inline_size, /* minimum_size */ LogicalSize());
-
-    LayoutUnit child_line_offset = IsLtr(direction)
-                                       ? opportunity.rect.LineStartOffset()
-                                       : opportunity.rect.LineEndOffset();
-
-    // Convert back to the logical coordinate system. As the conversion is on
-    // an OOF-positioned node, we pretent it has zero inline-size.
-    offset.inline_offset = LogicalFromBfcLineOffset(
-        child_line_offset, container_builder_.BfcLineOffset(),
-        /* child_inline_size */ LayoutUnit(),
-        container_builder_.Size().inline_size, direction);
-
-    // Adjust for text alignment, within the layout opportunity.
-    offset.inline_offset +=
-        InlineOffsetForTextAlign(Style(), opportunity.rect.InlineSize());
+    static_offset.inline_offset += CalculateOutOfFlowStaticInlineLevelOffset(
+        Style(), origin_bfc_offset, exclusion_space_,
+        child_available_size_.inline_size);
   }
 
-  container_builder_.AddOutOfFlowChildCandidate(child, offset);
+  container_builder_.AddOutOfFlowChildCandidate(child, static_offset);
 }
 
 void NGBlockLayoutAlgorithm::HandleFloat(

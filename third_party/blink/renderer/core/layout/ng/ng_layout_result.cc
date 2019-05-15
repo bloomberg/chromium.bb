@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/layout/ng/exclusions/ng_exclusion_space.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_positioned_float.h"
 
 namespace blink {
@@ -119,5 +120,44 @@ NGExclusionSpace NGLayoutResult::MergeExclusionSpaces(
       /* old_input */ other.space_.ExclusionSpace(),
       /* new_input */ new_input_exclusion_space, offset_delta);
 }
+
+#if DCHECK_IS_ON()
+void NGLayoutResult::CheckSameForSimplifiedLayout(
+    const NGLayoutResult& other,
+    bool check_same_block_size) const {
+  To<NGPhysicalBoxFragment>(*physical_fragment_)
+      .CheckSameForSimplifiedLayout(
+          To<NGPhysicalBoxFragment>(*other.physical_fragment_),
+          check_same_block_size);
+
+  DCHECK(unpositioned_list_marker_ == other.unpositioned_list_marker_);
+  exclusion_space_.CheckSameForSimplifiedLayout(other.exclusion_space_);
+
+  // We ignore bfc_block_offset_, and bfc_line_offset_ as "simplified" layout
+  // will move the layout result if required.
+
+  // We ignore the intrinsic_block_size_ as if a scrollbar gets added/removed
+  // this may change (even if the size of the fragment remains the same).
+
+  DCHECK(end_margin_strut_ == other.end_margin_strut_);
+  DCHECK_EQ(minimal_space_shortage_, other.minimal_space_shortage_);
+
+  DCHECK_EQ(initial_break_before_, other.initial_break_before_);
+  DCHECK_EQ(final_break_after_, other.final_break_after_);
+
+  DCHECK_EQ(has_valid_space_, other.has_valid_space_);
+  DCHECK_EQ(has_forced_break_, other.has_forced_break_);
+  DCHECK_EQ(is_pushed_by_floats_, other.is_pushed_by_floats_);
+  DCHECK_EQ(adjoining_floats_, other.adjoining_floats_);
+
+  if (check_same_block_size) {
+    DCHECK_EQ(is_initial_block_size_indefinite_,
+              other.is_initial_block_size_indefinite_);
+  }
+  DCHECK_EQ(has_descendant_that_depends_on_percentage_block_size_,
+            other.has_descendant_that_depends_on_percentage_block_size_);
+  DCHECK_EQ(status_, other.status_);
+}
+#endif
 
 }  // namespace blink

@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_page_layout_algorithm.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_simplified_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_space_utils.h"
 #include "third_party/blink/renderer/core/layout/shapes/shape_outside_info.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -211,10 +212,13 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::Layout(
         previous_result->GetConstraintSpaceForCaching().ExclusionSpace());
   }
 
+  NGLayoutCacheStatus cache_status;
   base::Optional<NGFragmentGeometry> fragment_geometry;
   scoped_refptr<const NGLayoutResult> layout_result = box_->CachedLayoutResult(
-      constraint_space, break_token, &fragment_geometry);
+      constraint_space, break_token, &fragment_geometry, &cache_status);
   if (layout_result) {
+    DCHECK_EQ(cache_status, NGLayoutCacheStatus::kHit);
+
     // We may have to update the margins on box_; we reuse the layout result
     // even if a percentage margin may have changed.
     if (UNLIKELY(Style().MayHaveMargin() && !IsTableCell()))
@@ -237,7 +241,29 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::Layout(
 
   NGLayoutAlgorithmParams params(*this, *fragment_geometry, constraint_space,
                                  To<NGBlockBreakToken>(break_token));
-  layout_result = LayoutWithAlgorithm(params);
+
+  // Try to perform "simplified" layout.
+  if (cache_status == NGLayoutCacheStatus::kNeedsSimplifiedLayout &&
+      block_flow && !GetFlowThread(block_flow)) {
+    // A child may have changed size while performing "simplified" layout (it
+    // may have gained or removed scrollbars, changing its size). In these
+    // cases "simplified" layout will return a null layout-result, indicating
+    // we need to perform a full layout.
+    layout_result =
+        NGSimplifiedLayoutAlgorithm(params, *box_->GetCachedLayoutResult())
+            .Layout();
+
+#if DCHECK_IS_ON()
+    if (layout_result) {
+      layout_result->CheckSameForSimplifiedLayout(
+          *box_->GetCachedLayoutResult(), /* check_same_block_size */ false);
+    }
+#endif
+  }
+
+  if (!layout_result)
+    layout_result = LayoutWithAlgorithm(params);
+
   FinishLayout(block_flow, constraint_space, break_token, layout_result);
 
   NGBoxStrut after_layout_scrollbars = GetScrollbarSizes();
@@ -278,6 +304,36 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::Layout(
       *layout_result, constraint_space.PercentageResolutionInlineSize());
 
   return layout_result;
+}
+
+scoped_refptr<const NGLayoutResult> NGBlockNode::SimplifiedLayout() {
+  scoped_refptr<const NGLayoutResult> previous_result =
+      box_->GetCachedLayoutResult();
+  DCHECK(previous_result);
+
+  if (!box_->NeedsLayout())
+    return previous_result;
+
+  DCHECK(box_->NeedsSimplifiedLayoutOnly());
+
+  // Perform layout on ourselves using the previous constraint space.
+  const NGConstraintSpace space(
+      previous_result->GetConstraintSpaceForCaching());
+  scoped_refptr<const NGLayoutResult> result =
+      Layout(space, /* break_token */ nullptr);
+
+  // If we changed size from performing "simplified" layout, we have
+  // added/removed scrollbars. Return null indicating to our parent that it
+  // needs to perform a full layout.
+  if (previous_result->PhysicalFragment().Size() !=
+      result->PhysicalFragment().Size())
+    return nullptr;
+
+#if DCHECK_IS_ON()
+  result->CheckSameForSimplifiedLayout(*previous_result);
+#endif
+
+  return result;
 }
 
 scoped_refptr<const NGLayoutResult>

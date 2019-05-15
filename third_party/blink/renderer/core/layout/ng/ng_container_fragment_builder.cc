@@ -138,6 +138,14 @@ NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
 void NGContainerFragmentBuilder::AddChildInternal(
     scoped_refptr<const NGPhysicalFragment> child,
     const LogicalOffset& child_offset) {
+  // In order to know where list-markers are within the children list (for the
+  // |NGSimplifiedLayoutAlgorithm|) we always place them as the first child.
+  if (child->IsListMarker()) {
+    children_.push_front(std::move(child));
+    offsets_.push_front(child_offset);
+    return;
+  }
+
   children_.emplace_back(std::move(child));
   offsets_.push_back(child_offset);
 }

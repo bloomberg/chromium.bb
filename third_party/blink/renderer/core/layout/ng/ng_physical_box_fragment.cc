@@ -238,4 +238,48 @@ NGPixelSnappedPhysicalBoxStrut NGPhysicalBoxFragment::BorderWidths() const {
   return box_strut.SnapToDevicePixels();
 }
 
+#if DCHECK_IS_ON()
+void NGPhysicalBoxFragment::CheckSameForSimplifiedLayout(
+    const NGPhysicalBoxFragment& other,
+    bool check_same_block_size) const {
+  DCHECK_EQ(layout_object_, other.layout_object_);
+
+  LogicalSize size = size_.ConvertToLogical(Style().GetWritingMode());
+  LogicalSize other_size =
+      other.size_.ConvertToLogical(Style().GetWritingMode());
+  DCHECK_EQ(size.inline_size, other_size.inline_size);
+  if (check_same_block_size)
+    DCHECK_EQ(size.block_size, other_size.block_size);
+
+  // "simplified" layout doesn't work within a fragmentation context.
+  DCHECK(!break_token_ && !other.break_token_);
+
+  DCHECK_EQ(type_, other.type_);
+  DCHECK_EQ(sub_type_, other.sub_type_);
+  DCHECK_EQ(style_variant_, other.style_variant_);
+
+  DCHECK_EQ(has_floating_descendants_, other.has_floating_descendants_);
+  DCHECK_EQ(has_orthogonal_flow_roots_, other.has_orthogonal_flow_roots_);
+  DCHECK_EQ(may_have_descendant_above_block_start_,
+            other.may_have_descendant_above_block_start_);
+  DCHECK_EQ(depends_on_percentage_block_size_,
+            other.depends_on_percentage_block_size_);
+
+  DCHECK_EQ(children_inline_, other.children_inline_);
+  DCHECK_EQ(is_fieldset_container_, other.is_fieldset_container_);
+  DCHECK_EQ(is_legacy_layout_root_, other.is_legacy_layout_root_);
+  DCHECK_EQ(border_edge_, other.border_edge_);
+
+  // The oof_positioned_descendants_ vector can change during "simplified"
+  // layout. This occurs when an OOF-descendant changes from "fixed" to
+  // "absolute" (or visa versa) changing its containing block.
+
+  // Legacy layout can (incorrectly) shift baseline position(s) during
+  // "simplified" layout.
+  DCHECK(IsLegacyLayoutRoot() || baselines_ == other.baselines_);
+  DCHECK(borders_ == other.borders_);
+  DCHECK(padding_ == other.padding_);
+}
+#endif
+
 }  // namespace blink

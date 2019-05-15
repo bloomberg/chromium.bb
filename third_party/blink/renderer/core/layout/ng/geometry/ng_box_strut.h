@@ -199,6 +199,11 @@ struct CORE_EXPORT NGPhysicalBoxStrut {
     return LayoutRectOutsets(top, right, bottom, left);
   }
 
+  bool operator==(const NGPhysicalBoxStrut& other) const {
+    return top == other.top && right == other.right && bottom == other.bottom &&
+           left == other.left;
+  }
+
   LayoutUnit top;
   LayoutUnit right;
   LayoutUnit bottom;

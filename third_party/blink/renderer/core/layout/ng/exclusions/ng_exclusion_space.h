@@ -146,6 +146,16 @@ class CORE_EXPORT NGExclusionSpaceInternal {
     return !(*this == other);
   }
 
+#if DCHECK_IS_ON()
+  void CheckSameForSimplifiedLayout(
+      const NGExclusionSpaceInternal& other) const {
+    DCHECK_EQ(num_exclusions_, other.num_exclusions_);
+    for (wtf_size_t i = 0; i < num_exclusions_; ++i) {
+      DCHECK(*exclusions_->data.at(i) == *other.exclusions_->data.at(i));
+    }
+  }
+#endif
+
   // This struct represents the side of a float against the "edge" of a shelf.
   struct NGShelfEdge {
     NGShelfEdge(LayoutUnit block_start, LayoutUnit block_end)
@@ -537,6 +547,14 @@ class CORE_EXPORT NGExclusionSpace {
   bool operator!=(const NGExclusionSpace& other) const {
     return !(*this == other);
   }
+
+#if DCHECK_IS_ON()
+  void CheckSameForSimplifiedLayout(const NGExclusionSpace& other) const {
+    DCHECK_EQ((bool)exclusion_space_, (bool)other.exclusion_space_);
+    if (exclusion_space_)
+      exclusion_space_->CheckSameForSimplifiedLayout(*other.exclusion_space_);
+  }
+#endif
 
  private:
   mutable std::unique_ptr<NGExclusionSpaceInternal> exclusion_space_;

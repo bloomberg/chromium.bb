@@ -38,6 +38,13 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
       const NGConstraintSpace& constraint_space,
       const NGBreakToken* break_token = nullptr);
 
+  // This method is just for use within the |NGSimplifiedLayoutAlgorithm|.
+  //
+  // If layout is dirty, it will perform layout using the previous constraint
+  // space used to generate the |NGLayoutResult|.
+  // Otherwise it will simply return the previous layout result generated.
+  scoped_refptr<const NGLayoutResult> SimplifiedLayout();
+
   // This method is just for use within the |NGOutOfFlowLayoutPart|.
   //
   // As OOF-positioned objects have their position, and size computed

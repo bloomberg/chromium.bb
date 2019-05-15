@@ -62,6 +62,10 @@ class CORE_EXPORT NGUnpositionedListMarker final {
                                       NGBoxFragmentBuilder*) const;
   LayoutUnit InlineOffset(const LayoutUnit marker_inline_size) const;
 
+  bool operator==(const NGUnpositionedListMarker& other) const {
+    return marker_layout_object_ == other.marker_layout_object_;
+  }
+
  private:
   bool IsImage() const;
 

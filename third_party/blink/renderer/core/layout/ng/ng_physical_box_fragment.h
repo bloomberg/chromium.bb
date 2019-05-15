@@ -70,6 +70,11 @@ class CORE_EXPORT NGPhysicalBoxFragment final
   unsigned BorderEdges() const { return border_edge_; }
   NGPixelSnappedPhysicalBoxStrut BorderWidths() const;
 
+#if DCHECK_IS_ON()
+  void CheckSameForSimplifiedLayout(const NGPhysicalBoxFragment&,
+                                    bool check_same_block_size) const;
+#endif
+
  private:
   NGPhysicalBoxFragment(NGBoxFragmentBuilder* builder,
                         WritingMode block_or_line_writing_mode);

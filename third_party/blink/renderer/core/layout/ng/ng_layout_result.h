@@ -157,6 +157,11 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
     return MutableForOutOfFlow(this);
   }
 
+#if DCHECK_IS_ON()
+  void CheckSameForSimplifiedLayout(const NGLayoutResult&,
+                                    bool check_same_block_size = true) const;
+#endif
+
  private:
   friend class NGBoxFragmentBuilder;
   friend class NGLineBoxFragmentBuilder;

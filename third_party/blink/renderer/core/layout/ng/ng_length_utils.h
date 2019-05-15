@@ -405,11 +405,6 @@ CORE_EXPORT LayoutUnit LineOffsetForTextAlign(ETextAlign,
                                               TextDirection,
                                               LayoutUnit space_left);
 
-// Same as |LineOffsetForTextAlign| but returns the logical inline offset
-// instead of line-left offset.
-CORE_EXPORT LayoutUnit InlineOffsetForTextAlign(const ComputedStyle&,
-                                                LayoutUnit space_left);
-
 inline LayoutUnit ConstrainByMinMax(LayoutUnit length,
                                     LayoutUnit min,
                                     LayoutUnit max) {

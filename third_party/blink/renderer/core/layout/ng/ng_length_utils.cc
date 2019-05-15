@@ -949,14 +949,6 @@ LayoutUnit LineOffsetForTextAlign(ETextAlign text_align,
   }
 }
 
-LayoutUnit InlineOffsetForTextAlign(const ComputedStyle& container_style,
-                                    LayoutUnit space_left) {
-  TextDirection direction = container_style.Direction();
-  LayoutUnit line_offset = LineOffsetForTextAlign(
-      container_style.GetTextAlign(), direction, space_left);
-  return IsLtr(direction) ? line_offset : space_left - line_offset;
-}
-
 namespace {
 
 // Calculates default content size for html and body elements in quirks mode.
