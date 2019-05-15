@@ -255,15 +255,19 @@ void ImportantFileWriter::WriteNow(std::unique_ptr<std::string> data) {
     return;
   }
 
-  auto task =
+  Closure task = AdaptCallbackForRepeating(
       BindOnce(&WriteScopedStringToFileAtomically, path_, std::move(data),
                std::move(before_next_write_callback_),
-               std::move(after_next_write_callback_), histogram_suffix_);
+               std::move(after_next_write_callback_), histogram_suffix_));
 
-  // If PostTask() returns false, it means that |task_runner_| isn't
-  // BLOCK_SHUTDOWN and thus isn't appropriate to write an important file.
-  CHECK(task_runner_->PostTask(FROM_HERE, std::move(task)));
+  if (!task_runner_->PostTask(FROM_HERE, MakeCriticalClosure(task))) {
+    // Posting the task to background message loop is not expected
+    // to fail, but if it does, avoid losing data and just hit the disk
+    // on the current thread.
+    NOTREACHED();
 
+    task.Run();
+  }
   ClearPendingWrite();
 }
 
