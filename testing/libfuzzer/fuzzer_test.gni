@@ -19,7 +19,7 @@ import("//testing/test.gni")
 # - environment_variables - certain whitelisted environment variables for the
 # - configs_to_remove - (EXPERIMENTAL, don't use) configs to remove.
 # fuzzer (AFL_DRIVER_DONT_DEFER is the only one allowed currently).
-# - libfuzzer_options - options for the fuzzer (e.g. -max_len=N or -timeout=N).
+# - libfuzzer_options - options for the fuzzer (e.g. -close_fd_mask=N).
 # - asan_options - AddressSanitizer options (e.g. allow_user_segv_handler=1).
 # - msan_options - MemorySanitizer options.
 # - ubsan_options - UndefinedBehaviorSanitizer options.
