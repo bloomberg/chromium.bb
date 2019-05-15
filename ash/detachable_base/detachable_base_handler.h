@@ -12,7 +12,6 @@
 #include "ash/ash_export.h"
 #include "ash/detachable_base/detachable_base_pairing_status.h"
 #include "ash/public/interfaces/user_info.mojom.h"
-#include "ash/shell_observer.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -27,7 +26,6 @@ class PrefService;
 namespace ash {
 
 class DetachableBaseObserver;
-class Shell;
 
 // Keeps track of the state of Chrome OS device's detachable base. It tracks
 // whether:
@@ -46,13 +44,11 @@ class Shell;
 // DetachableBaseHandler clients are expected to determine for which users the
 // detachable base state should be set or retrieved.
 class ASH_EXPORT DetachableBaseHandler
-    : public ShellObserver,
-      public chromeos::HammerdClient::Observer,
+    : public chromeos::HammerdClient::Observer,
       public chromeos::PowerManagerClient::Observer {
  public:
-  // |shell| - the ash shell that owns the DetachableBaseHandler. May be null in
-  // tests.
-  explicit DetachableBaseHandler(ash::Shell* shell);
+  // |local_state| - PrefService of Local state. May be null in tests.
+  explicit DetachableBaseHandler(PrefService* local_state);
   ~DetachableBaseHandler() override;
 
   // Registers the local state prefs for detachable base devices.
@@ -84,9 +80,6 @@ class ASH_EXPORT DetachableBaseHandler
   // changed when local state is initialized (provided a base is still
   // paired) - setting the last used base can be retried at that point.
   bool SetPairedBaseAsLastUsedByUser(const mojom::UserInfo& user);
-
-  // ShellObserver:
-  void OnLocalStatePrefServiceInitialized(PrefService* pref_service) override;
 
   // chromeos::HammerdClient::Observer:
   void BaseFirmwareUpdateNeeded() override;
@@ -128,9 +121,6 @@ class ASH_EXPORT DetachableBaseHandler
   void NotifyBaseRequiresFirmwareUpdate(bool requires_update);
 
   PrefService* local_state_ = nullptr;
-
-  // The shell that owns |this| - used to listen for local state initialization.
-  ash::Shell* shell_;
 
   // Tablet mode state currently reported by power manager - tablet mode getting
   // turned on is used as a signal that the base is detached.

@@ -46,14 +46,11 @@ void DetachableBaseHandler::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(prefs::kDetachableBaseDevices);
 }
 
-DetachableBaseHandler::DetachableBaseHandler(Shell* shell)
-    : shell_(shell),
+DetachableBaseHandler::DetachableBaseHandler(PrefService* local_state)
+    : local_state_(local_state),
       hammerd_observer_(this),
       power_manager_observer_(this),
       weak_ptr_factory_(this) {
-  if (shell_)
-    shell_->AddShellObserver(this);
-
   if (chromeos::HammerdClient::Get())  // May be null in tests
     hammerd_observer_.Add(chromeos::HammerdClient::Get());
   chromeos::PowerManagerClient* power_manager_client =
@@ -63,12 +60,12 @@ DetachableBaseHandler::DetachableBaseHandler(Shell* shell)
   power_manager_client->GetSwitchStates(
       base::BindOnce(&DetachableBaseHandler::OnGotPowerManagerSwitchStates,
                      weak_ptr_factory_.GetWeakPtr()));
+
+  if (GetPairingStatus() != DetachableBasePairingStatus::kNone)
+    NotifyPairingStatusChanged();
 }
 
-DetachableBaseHandler::~DetachableBaseHandler() {
-  if (shell_)
-    shell_->RemoveShellObserver(this);
-}
+DetachableBaseHandler::~DetachableBaseHandler() = default;
 
 void DetachableBaseHandler::AddObserver(DetachableBaseObserver* observer) {
   observers_.AddObserver(observer);
@@ -136,14 +133,6 @@ bool DetachableBaseHandler::SetPairedBaseAsLastUsedByUser(
   }
 
   return true;
-}
-
-void DetachableBaseHandler::OnLocalStatePrefServiceInitialized(
-    PrefService* pref_service) {
-  local_state_ = pref_service;
-
-  if (GetPairingStatus() != DetachableBasePairingStatus::kNone)
-    NotifyPairingStatusChanged();
 }
 
 void DetachableBaseHandler::BaseFirmwareUpdateNeeded() {

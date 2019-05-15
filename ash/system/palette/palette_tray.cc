@@ -72,10 +72,19 @@ const SkColor kPaletteSeparatorColor = SkColorSetARGB(0x1E, 0x00, 0x00, 0x00);
 // Returns true if the |palette_tray| is on an internal display or on every
 // display if requested from the command line.
 bool ShouldShowOnDisplay(PaletteTray* palette_tray) {
+  if (stylus_utils::IsPaletteEnabledOnEveryDisplay())
+    return true;
+
+  // |widget| is null when this function is called from PaletteTray constructor
+  // before it is added to a widget.
+  views::Widget* const widget = palette_tray->GetWidget();
+  if (!widget)
+    return false;
+
   const display::Display& display =
       display::Screen::GetScreen()->GetDisplayNearestWindow(
-          palette_tray->GetWidget()->GetNativeWindow());
-  return display.IsInternal() || stylus_utils::IsPaletteEnabledOnEveryDisplay();
+          widget->GetNativeWindow());
+  return display.IsInternal();
 }
 
 class TitleView : public views::View, public views::ButtonListener {
@@ -182,6 +191,8 @@ PaletteTray::PaletteTray(Shelf* shelf)
   tray_container()->AddChildView(icon_);
 
   Shell::Get()->AddShellObserver(this);
+
+  InitializeWithLocalState();
 }
 
 PaletteTray::~PaletteTray() {
@@ -222,8 +233,8 @@ bool PaletteTray::ShouldShowPalette() const {
 }
 
 void PaletteTray::OnStylusEvent(const ui::TouchEvent& event) {
-  if (!HasSeenStylus() && local_state_pref_service_)
-    local_state_pref_service_->SetBoolean(prefs::kHasSeenStylus, true);
+  if (!HasSeenStylus() && local_state_)
+    local_state_->SetBoolean(prefs::kHasSeenStylus, true);
 
   // Attempt to show the welcome bubble.
   if (!welcome_bubble_->HasBeenShown() && active_user_pref_service_) {
@@ -275,27 +286,6 @@ void PaletteTray::OnLockStateChanged(bool locked) {
     // will open the palette. Make sure to close it if that happens.
     HidePalette();
   }
-}
-
-void PaletteTray::OnLocalStatePrefServiceInitialized(
-    PrefService* pref_service) {
-  local_state_pref_service_ = pref_service;
-
-  // If a device has an internal stylus or the flag to force stylus is set, mark
-  // the has seen stylus flag as true since we know the user has a stylus.
-  if (stylus_utils::HasInternalStylus() ||
-      stylus_utils::HasForcedStylusInput()) {
-    local_state_pref_service_->SetBoolean(prefs::kHasSeenStylus, true);
-  }
-
-  pref_change_registrar_local_ = std::make_unique<PrefChangeRegistrar>();
-  pref_change_registrar_local_->Init(local_state_pref_service_);
-  pref_change_registrar_local_->Add(
-      prefs::kHasSeenStylus,
-      base::BindRepeating(&PaletteTray::OnHasSeenStylusPrefChanged,
-                          base::Unretained(this)));
-
-  OnHasSeenStylusPrefChanged();
 }
 
 void PaletteTray::ClickedOutsideBubble() {
@@ -528,6 +518,30 @@ TrayBubbleView* PaletteTray::GetBubbleView() {
   return bubble_ ? bubble_->bubble_view() : nullptr;
 }
 
+void PaletteTray::InitializeWithLocalState() {
+  DCHECK(!local_state_);
+  local_state_ = Shell::Get()->local_state();
+  // |local_state_| could be null in tests.
+  if (!local_state_)
+    return;
+
+  // If a device has an internal stylus or the flag to force stylus is set, mark
+  // the has seen stylus flag as true since we know the user has a stylus.
+  if (stylus_utils::HasInternalStylus() ||
+      stylus_utils::HasForcedStylusInput()) {
+    local_state_->SetBoolean(prefs::kHasSeenStylus, true);
+  }
+
+  pref_change_registrar_local_ = std::make_unique<PrefChangeRegistrar>();
+  pref_change_registrar_local_->Init(local_state_);
+  pref_change_registrar_local_->Add(
+      prefs::kHasSeenStylus,
+      base::BindRepeating(&PaletteTray::OnHasSeenStylusPrefChanged,
+                          base::Unretained(this)));
+
+  OnHasSeenStylusPrefChanged();
+}
+
 void PaletteTray::UpdateTrayIcon() {
   icon_->SetImage(CreateVectorIcon(
       palette_tool_manager_->GetActiveTrayIcon(
@@ -548,7 +562,7 @@ void PaletteTray::OnPaletteEnabledPrefChanged() {
 }
 
 void PaletteTray::OnHasSeenStylusPrefChanged() {
-  DCHECK(local_state_pref_service_);
+  DCHECK(local_state_);
 
   UpdateIconVisibility();
 }
@@ -569,8 +583,7 @@ bool PaletteTray::DeactivateActiveTool() {
 }
 
 bool PaletteTray::HasSeenStylus() {
-  return local_state_pref_service_ &&
-         local_state_pref_service_->GetBoolean(prefs::kHasSeenStylus);
+  return local_state_ && local_state_->GetBoolean(prefs::kHasSeenStylus);
 }
 
 void PaletteTray::UpdateIconVisibility() {

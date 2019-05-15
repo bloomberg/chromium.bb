@@ -95,8 +95,7 @@ class DetachableBaseHandlerTest : public testing::Test {
     default_user_ = CreateUser("user_1@foo.bar", "111111", UserType::kNormal);
 
     DetachableBaseHandler::RegisterPrefs(local_state_.registry());
-    handler_ = std::make_unique<DetachableBaseHandler>(nullptr);
-    handler_->OnLocalStatePrefServiceInitialized(&local_state_);
+    handler_ = std::make_unique<DetachableBaseHandler>(&local_state_);
     handler_->AddObserver(&detachable_base_observer_);
   }
 
@@ -122,19 +121,8 @@ class DetachableBaseHandlerTest : public testing::Test {
 
   void RestartHandler() {
     handler_->RemoveObserver(&detachable_base_observer_);
-    handler_ = std::make_unique<DetachableBaseHandler>(nullptr);
-    handler_->OnLocalStatePrefServiceInitialized(&local_state_);
+    handler_ = std::make_unique<DetachableBaseHandler>(&local_state_);
     handler_->AddObserver(&detachable_base_observer_);
-  }
-
-  void ResetHandlerWithNoLocalState() {
-    handler_->RemoveObserver(&detachable_base_observer_);
-    handler_ = std::make_unique<DetachableBaseHandler>(nullptr);
-    handler_->AddObserver(&detachable_base_observer_);
-  }
-
-  void SimulateLocalStateInitialized() {
-    handler_->OnLocalStatePrefServiceInitialized(&local_state_);
   }
 
   chromeos::FakeHammerdClient* hammerd_client_ = nullptr;
@@ -549,42 +537,6 @@ TEST_F(DetachableBaseHandlerTest, RemoveUserData) {
   EXPECT_EQ(1, detachable_base_observer_.pairing_status_changed_count());
   EXPECT_TRUE(handler_->PairedBaseMatchesLastUsedByUser(*default_user_));
   EXPECT_FALSE(handler_->PairedBaseMatchesLastUsedByUser(*second_user));
-  detachable_base_observer_.reset_pairing_status_changed_count();
-}
-
-TEST_F(DetachableBaseHandlerTest, NoLocalState) {
-  base::RunLoop().RunUntilIdle();
-
-  hammerd_client_->FirePairChallengeSucceededSignal({0x01, 0x02, 0x03, 0x04});
-  handler_->SetPairedBaseAsLastUsedByUser(*default_user_);
-  detachable_base_observer_.reset_pairing_status_changed_count();
-
-  ResetHandlerWithNoLocalState();
-  base::RunLoop().RunUntilIdle();
-
-  ChangePairedBase({0x04, 0x05, 0x06});
-
-  EXPECT_EQ(DetachableBasePairingStatus::kAuthenticated,
-            handler_->GetPairingStatus());
-  EXPECT_EQ(1, detachable_base_observer_.pairing_status_changed_count());
-  detachable_base_observer_.reset_pairing_status_changed_count();
-  EXPECT_TRUE(handler_->PairedBaseMatchesLastUsedByUser(*default_user_));
-
-  SimulateLocalStateInitialized();
-
-  EXPECT_EQ(1, detachable_base_observer_.pairing_status_changed_count());
-  detachable_base_observer_.reset_pairing_status_changed_count();
-  EXPECT_EQ(DetachableBasePairingStatus::kAuthenticated,
-            handler_->GetPairingStatus());
-  EXPECT_FALSE(handler_->PairedBaseMatchesLastUsedByUser(*default_user_));
-
-  ChangePairedBase({0x01, 0x02, 0x03, 0x04});
-
-  EXPECT_EQ(DetachableBasePairingStatus::kAuthenticated,
-            handler_->GetPairingStatus());
-  EXPECT_EQ(1, detachable_base_observer_.pairing_status_changed_count());
-  detachable_base_observer_.reset_pairing_status_changed_count();
-  EXPECT_TRUE(handler_->PairedBaseMatchesLastUsedByUser(*default_user_));
   detachable_base_observer_.reset_pairing_status_changed_count();
 }
 

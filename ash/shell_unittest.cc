@@ -182,22 +182,6 @@ class SimpleMenuDelegate : public ui::SimpleMenuModel::Delegate {
   DISALLOW_COPY_AND_ASSIGN(SimpleMenuDelegate);
 };
 
-class TestShellObserver : public ShellObserver {
- public:
-  TestShellObserver() = default;
-  ~TestShellObserver() override = default;
-
-  // ShellObserver:
-  void OnLocalStatePrefServiceInitialized(PrefService* pref_service) override {
-    last_local_state_ = pref_service;
-  }
-
-  PrefService* last_local_state_ = nullptr;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestShellObserver);
-};
-
 }  // namespace
 
 class ShellTest : public AshTestBase {
@@ -673,21 +657,6 @@ class ShellLocalStateTest : public AshTestBase {
  protected:
   std::unique_ptr<TestingPrefServiceSimple> local_state_;
 };
-
-TEST_F(ShellLocalStateTest, LocalState) {
-  TestShellObserver observer;
-  Shell::Get()->AddShellObserver(&observer);
-
-  // Prefs service wrapper code creates a PrefService.
-  local_state_ = std::make_unique<TestingPrefServiceSimple>();
-  RegisterLocalStatePrefs(local_state_->registry(), true);
-  TestingPrefServiceSimple* local_state_ptr = local_state_.get();
-  ShellTestApi().OnLocalStatePrefServiceInitialized(local_state_ptr);
-  EXPECT_EQ(local_state_ptr, observer.last_local_state_);
-  EXPECT_EQ(local_state_ptr, ash_test_helper()->GetLocalStatePrefService());
-
-  Shell::Get()->RemoveShellObserver(&observer);
-}
 
 using ShellLoginTest = NoSessionAshTestBase;
 

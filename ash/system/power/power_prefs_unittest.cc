@@ -200,8 +200,7 @@ class PowerPrefsTest : public NoSessionAshTestBase {
   }
 
   void TearDown() override {
-    static_cast<ShellObserver*>(power_prefs_)
-        ->OnLocalStatePrefServiceInitialized(nullptr);
+    power_prefs_->local_state_ = nullptr;
 
     NoSessionAshTestBase::TearDown();
   }
@@ -220,8 +219,8 @@ class PowerPrefsTest : public NoSessionAshTestBase {
 
     PowerPrefs::RegisterLocalStatePrefs(pref_registry_.get());
 
-    static_cast<ShellObserver*>(power_prefs_)
-        ->OnLocalStatePrefServiceInitialized(local_state_.get());
+    power_prefs_->local_state_ = local_state_.get();
+    power_prefs_->ObserveLocalStatePrefs(power_prefs_->local_state_);
   }
 
   std::string GetCurrentPowerPolicy() const {

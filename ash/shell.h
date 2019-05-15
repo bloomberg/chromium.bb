@@ -548,6 +548,8 @@ class ASH_EXPORT Shell : public SessionObserver,
     return toplevel_window_event_handler_.get();
   }
 
+  PrefService* local_state() { return local_state_; }
+
   // Force the shelf to query for it's current visibility state.
   // TODO(jamescook): Move to Shelf.
   void UpdateShelfVisibility();
@@ -660,8 +662,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   void OnSessionStateChanged(session_manager::SessionState state) override;
   void OnLoginStatusChanged(LoginStatus login_status) override;
   void OnLockStateChanged(bool locked) override;
-
-  void OnLocalStatePrefServiceInitialized(PrefService* pref_service);
 
   static Shell* instance_;
 

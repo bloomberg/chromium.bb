@@ -12,8 +12,6 @@ namespace aura {
 class Window;
 }
 
-class PrefService;
-
 namespace ash {
 
 class ASH_EXPORT ShellObserver {
@@ -68,10 +66,6 @@ class ASH_EXPORT ShellObserver {
   // Called near the end of ~Shell. Shell::Get() still returns the Shell, but
   // most of Shell's state has been deleted.
   virtual void OnShellDestroyed() {}
-
-  // Called when local state prefs are available. This occurs an arbitrary
-  // amount of time after Shell initialization. Only called once.
-  virtual void OnLocalStatePrefServiceInitialized(PrefService* pref_service) {}
 
  protected:
   virtual ~ShellObserver() {}

@@ -891,6 +891,8 @@ void Shell::Init(
   // Required by DetachableBaseHandler.
   chromeos::InitializeDBusClient<chromeos::HammerdClient>(dbus_bus.get());
 
+  local_state_ = local_state;
+
   // This creates the MessageCenter object which is used by some other objects
   // initialized here, so it needs to come early.
   message_center_controller_ = std::make_unique<MessageCenterController>();
@@ -898,8 +900,10 @@ void Shell::Init(
   // These controllers call Shell::Get() in their constructors, so they cannot
   // be in the member initialization list.
   touch_devices_controller_ = std::make_unique<TouchDevicesController>();
-  bluetooth_power_controller_ = std::make_unique<BluetoothPowerController>();
-  detachable_base_handler_ = std::make_unique<DetachableBaseHandler>(this);
+  bluetooth_power_controller_ =
+      std::make_unique<BluetoothPowerController>(local_state_);
+  detachable_base_handler_ =
+      std::make_unique<DetachableBaseHandler>(local_state_);
   detachable_base_notification_controller_ =
       std::make_unique<DetachableBaseNotificationController>(
           detachable_base_handler_.get());
@@ -930,7 +934,7 @@ void Shell::Init(
   // Shelf, and WallPaper could be created by the factory.
   views::FocusManagerFactory::Install(new AshFocusManagerFactory);
 
-  wallpaper_controller_ = std::make_unique<WallpaperController>();
+  wallpaper_controller_ = std::make_unique<WallpaperController>(local_state_);
 
   window_positioner_ = std::make_unique<WindowPositioner>();
 
@@ -940,7 +944,7 @@ void Shell::Init(
 
   InitializeDisplayManager();
 
-  display_prefs_ = std::make_unique<DisplayPrefs>(local_state);
+  display_prefs_ = std::make_unique<DisplayPrefs>(local_state_);
 
   // This will initialize aura::Env which requires |display_manager_| to
   // be initialized first.
@@ -1033,9 +1037,9 @@ void Shell::Init(
   sticky_keys_controller_.reset(new StickyKeysController);
   screen_pinning_controller_ = std::make_unique<ScreenPinningController>();
 
-  power_prefs_ =
-      std::make_unique<PowerPrefs>(chromeos::PowerPolicyController::Get(),
-                                   chromeos::PowerManagerClient::Get());
+  power_prefs_ = std::make_unique<PowerPrefs>(
+      chromeos::PowerPolicyController::Get(),
+      chromeos::PowerManagerClient::Get(), local_state_);
 
   backlights_forced_off_setter_ = std::make_unique<BacklightsForcedOffSetter>();
 
@@ -1182,10 +1186,6 @@ void Shell::Init(
   // By this point ash shell should have initialized its D-Bus signal
   // listeners, so inform the session manager that Ash is initialized.
   session_controller_->EmitAshInitialized();
-
-  // Associates with local state.
-  if (local_state)
-    OnLocalStatePrefServiceInitialized(local_state);
 }
 
 void Shell::InitializeDisplayManager() {
@@ -1340,16 +1340,6 @@ void Shell::OnLockStateChanged(bool locked) {
       DCHECK(container->children().empty());
   }
 #endif
-}
-
-void Shell::OnLocalStatePrefServiceInitialized(PrefService* pref_service) {
-  DCHECK(!local_state_);
-  DCHECK(pref_service);
-
-  local_state_ = pref_service;
-
-  for (auto& observer : shell_observers_)
-    observer.OnLocalStatePrefServiceInitialized(local_state_);
 }
 
 }  // namespace ash

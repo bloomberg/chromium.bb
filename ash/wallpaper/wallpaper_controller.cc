@@ -43,6 +43,7 @@
 #include "base/values.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "services/data_decoder/public/cpp/decode_image.h"
 #include "ui/display/manager/display_manager.h"
@@ -441,7 +442,7 @@ const char WallpaperController::kSmallWallpaperSubDir[] = "small";
 const char WallpaperController::kLargeWallpaperSubDir[] = "large";
 const char WallpaperController::kOriginalWallpaperSubDir[] = "original";
 
-WallpaperController::WallpaperController()
+WallpaperController::WallpaperController(PrefService* local_state)
     : locked_(false),
       wallpaper_mode_(WALLPAPER_NONE),
       color_profiles_(GetProminentColorProfiles()),
@@ -450,6 +451,7 @@ WallpaperController::WallpaperController()
           {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
       scoped_session_observer_(this),
+      local_state_(local_state),
       weak_factory_(this) {
   DCHECK(!color_profiles_.empty());
   prominent_colors_ =
@@ -1364,12 +1366,6 @@ void WallpaperController::OnRootWindowAdded(aura::Window* root_window) {
   }
 
   InstallDesktopController(root_window);
-}
-
-void WallpaperController::OnLocalStatePrefServiceInitialized(
-    PrefService* pref_service) {
-  DCHECK(!wallpaper_controller_client_);
-  local_state_ = pref_service;
 }
 
 void WallpaperController::OnShellInitialized() {

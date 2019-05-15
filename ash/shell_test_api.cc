@@ -166,11 +166,6 @@ PowerPrefs* ShellTestApi::power_prefs() {
   return shell_->power_prefs_.get();
 }
 
-void ShellTestApi::OnLocalStatePrefServiceInitialized(
-    PrefService* pref_service) {
-  shell_->OnLocalStatePrefServiceInitialized(pref_service);
-}
-
 void ShellTestApi::ResetPowerButtonControllerForTest() {
   shell_->backlights_forced_off_setter_->ResetForTest();
   shell_->power_button_controller_ = std::make_unique<PowerButtonController>(

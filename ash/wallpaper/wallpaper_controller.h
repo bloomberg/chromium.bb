@@ -82,7 +82,7 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
   static const char kLargeWallpaperSubDir[];
   static const char kOriginalWallpaperSubDir[];
 
-  WallpaperController();
+  explicit WallpaperController(PrefService* local_state);
   ~WallpaperController() override;
 
   static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
@@ -295,7 +295,6 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
 
   // ShellObserver:
   void OnRootWindowAdded(aura::Window* root_window) override;
-  void OnLocalStatePrefServiceInitialized(PrefService* pref_service) override;
   void OnShellInitialized() override;
   void OnShellDestroying() override;
 
@@ -661,9 +660,9 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
   // default wallpaper decoding is initiated.)
   std::vector<base::FilePath> decode_requests_for_testing_;
 
-  // PrefService provided by Shell::OnLocalStatePrefServiceInitialized.
+  // PrefService provided by Shell when constructing this.
   // Valid for the lifetime of ash::Shell which owns WallpaperController.
-  // May be null during intialization or in tests.
+  // May be null in tests.
   PrefService* local_state_ = nullptr;
 
   base::WeakPtrFactory<WallpaperController> weak_factory_;

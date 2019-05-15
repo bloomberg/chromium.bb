@@ -12,8 +12,6 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 
-class PrefService;
-
 namespace ash {
 class DragDropController;
 class MessageCenterController;
@@ -42,9 +40,6 @@ class ASH_EXPORT ShellTestApi {
   NativeCursorManagerAsh* native_cursor_manager_ash();
   DragDropController* drag_drop_controller();
   PowerPrefs* power_prefs();
-
-  // Calls the private method.
-  void OnLocalStatePrefServiceInitialized(PrefService* pref_service);
 
   // Resets |shell_->power_button_controller_| to hold a new object to simulate
   // Chrome starting.

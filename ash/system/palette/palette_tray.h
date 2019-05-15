@@ -69,7 +69,6 @@ class ASH_EXPORT PaletteTray : public TrayBackgroundView,
 
   // ShellObserver:
   void OnLockStateChanged(bool locked) override;
-  void OnLocalStatePrefServiceInitialized(PrefService* pref_service) override;
 
   // TrayBackgroundView:
   void ClickedOutsideBubble() override;
@@ -106,6 +105,9 @@ class ASH_EXPORT PaletteTray : public TrayBackgroundView,
   void OnActiveToolChanged() override;
   aura::Window* GetWindow() override;
 
+  // Initializes with Shell's local state and starts to observe it.
+  void InitializeWithLocalState();
+
   // Updates the tray icon from the palette tool manager.
   void UpdateTrayIcon();
 
@@ -132,7 +134,7 @@ class ASH_EXPORT PaletteTray : public TrayBackgroundView,
   // A Shell pre-target handler that notifies PaletteTray of stylus events.
   std::unique_ptr<ui::EventHandler> stylus_event_handler_;
 
-  PrefService* local_state_pref_service_ = nullptr;  // Not owned.
+  PrefService* local_state_ = nullptr;               // Not owned.
   PrefService* active_user_pref_service_ = nullptr;  // Not owned.
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_local_;
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_user_;
