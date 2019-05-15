@@ -35,7 +35,7 @@ class QUIC_EXPORT_PRIVATE QuicMemSliceStorageImpl {
 
  private:
   std::vector<scoped_refptr<net::IOBuffer>> buffers_;
-  std::vector<int> lengths_;
+  std::vector<size_t> lengths_;
 };
 
 }  // namespace quic

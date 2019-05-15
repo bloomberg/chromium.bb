@@ -86,9 +86,6 @@ QUIC_FLAG(bool, FLAGS_quic_supports_tls_handshake, false)
 // Allow QUIC to accept initial packet numbers that are random, not 1.
 QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_enable_accept_random_ipn, true)
 
-// If true, enable QUIC v43.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_43, true)
-
 // Enables 3 new connection options to make PROBE_RTT more aggressive
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_less_probe_rtt, false)
 
@@ -255,12 +252,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_39, false)
 // If true, use one loss algorithm per encryption level.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_uber_loss_algorithm, true)
 
-// When true, QuicFramer will use AppendIetfConnectionIdsNew instead of
-// AppendIetfConnectionId.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_use_new_append_connection_id,
-          true)
-
 // If true, QuicStreamSequencerBuffer will switch to a new
 // QuicIntervalSet::AddOptimizedForAppend method in OnStreamData().
 QUIC_FLAG(
@@ -372,3 +363,11 @@ QUIC_FLAG(
     bool,
     FLAGS_quic_restart_flag_quic_allow_variable_length_connection_id_for_negotiation,
     false)
+
+// If true, set burst token to 2 in cwnd bootstrapping experiment.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_conservative_bursts, false)
+
+// If true, make QuicDispatcher no longer have an instance of QuicFramer.
+QUIC_FLAG(bool,
+          FLAGS_quic_restart_flag_quic_no_framer_object_in_dispatcher,
+          false)
