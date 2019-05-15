@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_page_action_icon_container_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
+#include "ui/views/controls/button/button.h"
 
 // static
 PasswordBubbleViewBase* PasswordBubbleViewBase::g_manage_passwords_bubble_ =
@@ -48,10 +49,19 @@ void PasswordBubbleViewBase::ShowBubble(content::WebContents* web_contents,
   DCHECK(bubble == g_manage_passwords_bubble_);
 
   if (anchor_view) {
-    g_manage_passwords_bubble_->SetHighlightedButton(
-        browser_view->toolbar_button_provider()
-            ->GetOmniboxPageActionIconContainerView()
-            ->GetPageActionIconView(PageActionIconType::kManagePasswords));
+    views::Button* highlighted_button;
+    if (base::FeatureList::IsEnabled(
+            autofill::features::kAutofillEnableToolbarStatusChip)) {
+      highlighted_button =
+          browser_view->toolbar()->toolbar_page_action_container()->GetIconView(
+              PageActionIconType::kManagePasswords);
+    } else {
+      highlighted_button =
+          browser_view->toolbar_button_provider()
+              ->GetOmniboxPageActionIconContainerView()
+              ->GetPageActionIconView(PageActionIconType::kManagePasswords);
+    }
+    g_manage_passwords_bubble_->SetHighlightedButton(highlighted_button);
   } else {
     g_manage_passwords_bubble_->set_parent_window(
         web_contents->GetNativeView());
