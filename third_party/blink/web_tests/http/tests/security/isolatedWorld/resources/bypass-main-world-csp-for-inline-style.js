@@ -21,14 +21,14 @@ function test() {
         var success = window.getComputedStyle(document.getElementById(id)).color === "rgb(255, 0, 0)";
         if (shouldSucceed) {
             if (success)
-                console.log("PASS: Style assignment in test " + tests + " was blocked by CSP.");
+                console.log("PASS: Style assignment in test " + tests + " was not blocked by CSP.");
             else
-                console.log("FAIL: Style assignment in test " + tests + " was not blocked by CSP.");
+                console.log("FAIL: Style assignment in test " + tests + " was blocked by CSP.");
         } else {
             if (success)
-                console.log("FAIL: Style assignment in test " + tests + " was blocked by CSP.");
+                console.log("FAIL: Style assignment in test " + tests + " was not blocked by CSP.");
             else
-                console.log("PASS: Style assignment in test " + tests + " was not blocked by CSP.");
+                console.log("PASS: Style assignment in test " + tests + " was blocked by CSP.");
         }
         window.postMessage("next", "*");
     }
@@ -41,14 +41,14 @@ function test() {
         var success = window.getComputedStyle(document.getElementById(id)).color === "rgb(255, 0, 0)";
         if (shouldSucceed) {
             if (success)
-                console.log("PASS: Style attribute assignment in test " + tests + " was blocked by CSP.");
+                console.log("PASS: Style attribute assignment in test " + tests + " was not blocked by CSP.");
             else
-                console.log("FAIL: Style attribute assignment in test " + tests + " was not blocked by CSP.");
+                console.log("FAIL: Style attribute assignment in test " + tests + " was blocked by CSP.");
         } else {
             if (success)
-                console.log("FAIL: Style attribute assignment in test " + tests + " was blocked by CSP.");
+                console.log("FAIL: Style attribute assignment in test " + tests + " was not blocked by CSP.");
             else
-                console.log("PASS: Style attribute assignment in test " + tests + " was not blocked by CSP.");
+                console.log("PASS: Style attribute assignment in test " + tests + " was blocked by CSP.");
         }
         window.postMessage("next", "*");
     }
