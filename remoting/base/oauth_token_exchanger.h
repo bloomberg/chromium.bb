@@ -40,6 +40,7 @@ class OAuthTokenExchanger : public gaia::GaiaOAuthClient::Delegate {
  private:
   void NotifyCallbacks(OAuthTokenGetter::Status status,
                        const std::string& access_token);
+  void RequestNewToken();
 
   std::unique_ptr<gaia::GaiaOAuthClient> gaia_oauth_client_;
   base::queue<TokenCallback> pending_callbacks_;
@@ -50,9 +51,7 @@ class OAuthTokenExchanger : public gaia::GaiaOAuthClient::Delegate {
   // False if the refresh token is up-to-date with required scopes.
   // Unset if the scopes are unknown and the tokeninfo endpoint needs to be
   // queried.
-
-  // TODO(lambroslambrou): Activate tokeninfo fetch by removing '= false'.
-  base::Optional<bool> need_token_exchange_ = false;
+  base::Optional<bool> need_token_exchange_;
   DISALLOW_COPY_AND_ASSIGN(OAuthTokenExchanger);
 };
 

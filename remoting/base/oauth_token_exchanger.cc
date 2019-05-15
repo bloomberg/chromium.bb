@@ -7,6 +7,9 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/stl_util.h"
+#include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -16,6 +19,22 @@ namespace {
 
 // Maximum number of retries on network/500 errors.
 const int kMaxRetries = 3;
+
+const char API_TACHYON[] = "https://www.googleapis.com/auth/tachyon";
+const char API_CHROMOTING_ME2ME_HOST[] =
+    "https://www.googleapis.com/auth/chromoting.me2me.host";
+
+const char TOKENINFO_SCOPE_KEY[] = "scope";
+
+// Returns whether the "scopes" part of the OAuth tokeninfo response
+// contains all the needed scopes.
+bool HasNeededScopes(const std::string& scopes) {
+  std::vector<base::StringPiece> scopes_list =
+      base::SplitStringPiece(scopes, base::kWhitespaceASCII,
+                             base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  return base::ContainsValue(scopes_list, API_TACHYON) &&
+         base::ContainsValue(scopes_list, API_CHROMOTING_ME2ME_HOST);
+}
 
 }  // namespace
 
@@ -37,8 +56,7 @@ void OAuthTokenExchanger::ExchangeToken(const std::string& access_token,
   }
 
   if (need_token_exchange_.value()) {
-    // TODO(lambroslambrou): Implement token-exchange.
-    NOTIMPLEMENTED();
+    RequestNewToken();
     return;
   }
 
@@ -48,18 +66,21 @@ void OAuthTokenExchanger::ExchangeToken(const std::string& access_token,
 
 void OAuthTokenExchanger::OnGetTokenInfoResponse(
     std::unique_ptr<base::DictionaryValue> token_info) {
-  VLOG(1) << "GetTokenInfoResponse: " << *token_info;
-  base::Value* scopes_value = token_info->FindKey("scope");
+  base::Value* scopes_value = token_info->FindKey(TOKENINFO_SCOPE_KEY);
   if (!scopes_value || !scopes_value->is_string()) {
     NotifyCallbacks(OAuthTokenGetter::AUTH_ERROR, std::string());
     return;
   }
   std::string scopes = scopes_value->GetString();
-
-  // TODO(lambroslambrou): Check the scopes (one time only, cache the result),
-  // and either return the current token or try to exchange it.
   VLOG(1) << "Token scopes: " << scopes;
-  NotifyCallbacks(OAuthTokenGetter::SUCCESS, oauth_access_token_);
+  need_token_exchange_ = !HasNeededScopes(scopes);
+  VLOG(1) << "Need exchange: " << (need_token_exchange_.value() ? "yes" : "no");
+
+  if (need_token_exchange_.value()) {
+    RequestNewToken();
+  } else {
+    NotifyCallbacks(OAuthTokenGetter::SUCCESS, oauth_access_token_);
+  }
 }
 
 void OAuthTokenExchanger::OnOAuthError() {
@@ -81,6 +102,11 @@ void OAuthTokenExchanger::NotifyCallbacks(OAuthTokenGetter::Status status,
     std::move(callbacks.front()).Run(status, access_token);
     callbacks.pop();
   }
+}
+
+void OAuthTokenExchanger::RequestNewToken() {
+  NOTIMPLEMENTED() << "Token exchange not yet implemented.";
+  NotifyCallbacks(OAuthTokenGetter::SUCCESS, oauth_access_token_);
 }
 
 }  // namespace remoting
