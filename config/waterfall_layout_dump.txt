@@ -3,7 +3,6 @@
   amd64-generic-telemetry
   amd64-generic-tot-chromium-pfq-informational
   caroline-tot-chrome-pfq-informational
-  daisy-tot-chromium-pfq-informational
   eve-tot-chrome-pfq-informational
   kevin-arcnext-tot-chrome-pfq-informational
   tricky-tot-chrome-pfq-informational
@@ -23,8 +22,6 @@
     chell-chrome-pfq
     coral-chrome-pfq
     cyan-chrome-pfq
-    daisy-chromium-pfq
-    daisy_skate-chrome-pfq
     eve-arcnext-chrome-pfq
     eve-chrome-pfq
     grunt-chrome-pfq
@@ -65,9 +62,6 @@
     cobblepot-paladin
     coral-paladin
     cyan-paladin
-    daisy-paladin
-    daisy_skate-paladin
-    daisy_spring-paladin
     edgar-paladin
     elm-paladin
     eve-arcnext-paladin
@@ -331,7 +325,6 @@
   firmware-scarlet-10388.B-firmwarebranch
   firmware-servo-11011.B-firmwarebranch
   firmware-servo-9040.B-firmwarebranch
-  firmware-skate-3824.129.B-firmwarebranch
   firmware-smaug-7900.B-firmwarebranch
   firmware-squawks-5216.152.B-firmwarebranch
   firmware-strago-7287.B-firmwarebranch
@@ -354,7 +347,6 @@
     amd64-generic-goma-full
     arm-generic-full
     arm64-generic-full
-    daisy-full
     kevin-full
     kevin64-full
     lakitu-full
@@ -367,7 +359,6 @@
     amd64-generic-incremental
     betty-incremental
     chell-incremental
-    daisy-incremental
     lakitu-incremental
 
 == informational ==
@@ -438,9 +429,6 @@
     cobblepot-postsubmit
     coral-postsubmit
     cyan-postsubmit
-    daisy-postsubmit
-    daisy_skate-postsubmit
-    daisy_spring-postsubmit
     edgar-postsubmit
     elm-postsubmit
     enguarde-postsubmit
@@ -1393,63 +1381,6 @@
   cyan-tot-chromium-pfq-informational-tryjob
   cyan-unittest-stress
   cyan-wificell-pre-cq
-  daisy-chrome-perf-tryjob
-  daisy-chrome-pfq-tryjob
-  daisy-chromium-pfq-tryjob
-  daisy-compile-only-pre-cq
-  daisy-full-tryjob
-  daisy-incremental-tryjob
-  daisy-llvm-next-toolchain-tryjob
-  daisy-llvm-toolchain-tryjob
-  daisy-no-vmtest-pre-cq
-  daisy-paladin-tryjob
-  daisy-payloads-tryjob
-  daisy-postsubmit-tryjob
-  daisy-pre-cq
-  daisy-release-afdo-generate-tryjob
-  daisy-release-afdo-tryjob
-  daisy-release-afdo-use-tryjob
-  daisy-release-tryjob
-  daisy-tot-chrome-pfq-informational-tryjob
-  daisy-tot-chromium-pfq-informational-tryjob
-  daisy-unittest-stress
-  daisy-wificell-pre-cq
-  daisy_skate-chrome-pfq-tryjob
-  daisy_skate-chromium-pfq-tryjob
-  daisy_skate-compile-only-pre-cq
-  daisy_skate-full-tryjob
-  daisy_skate-llvm-next-toolchain-tryjob
-  daisy_skate-llvm-toolchain-tryjob
-  daisy_skate-no-vmtest-pre-cq
-  daisy_skate-paladin-tryjob
-  daisy_skate-payloads-tryjob
-  daisy_skate-postsubmit-tryjob
-  daisy_skate-pre-cq
-  daisy_skate-release-afdo-generate-tryjob
-  daisy_skate-release-afdo-tryjob
-  daisy_skate-release-afdo-use-tryjob
-  daisy_skate-release-tryjob
-  daisy_skate-tot-chrome-pfq-informational-tryjob
-  daisy_skate-tot-chromium-pfq-informational-tryjob
-  daisy_skate-unittest-stress
-  daisy_spring-chrome-pfq-tryjob
-  daisy_spring-chromium-pfq-tryjob
-  daisy_spring-compile-only-pre-cq
-  daisy_spring-full-tryjob
-  daisy_spring-llvm-next-toolchain-tryjob
-  daisy_spring-llvm-toolchain-tryjob
-  daisy_spring-no-vmtest-pre-cq
-  daisy_spring-paladin-tryjob
-  daisy_spring-payloads-tryjob
-  daisy_spring-postsubmit-tryjob
-  daisy_spring-pre-cq
-  daisy_spring-release-afdo-generate-tryjob
-  daisy_spring-release-afdo-tryjob
-  daisy_spring-release-afdo-use-tryjob
-  daisy_spring-release-tryjob
-  daisy_spring-tot-chrome-pfq-informational-tryjob
-  daisy_spring-tot-chromium-pfq-informational-tryjob
-  daisy_spring-unittest-stress
   edgar-chrome-pfq-tryjob
   edgar-chromium-pfq-tryjob
   edgar-compile-only-pre-cq
@@ -1873,7 +1804,6 @@
   firmware-scarlet-10388.B-firmwarebranch-tryjob
   firmware-servo-11011.B-firmwarebranch-tryjob
   firmware-servo-9040.B-firmwarebranch-tryjob
-  firmware-skate-3824.129.B-firmwarebranch-tryjob
   firmware-smaug-7900.B-firmwarebranch-tryjob
   firmware-squawks-5216.152.B-firmwarebranch-tryjob
   firmware-strago-7287.B-firmwarebranch-tryjob
@@ -2598,8 +2528,6 @@
     chell-chrome-pfq-tryjob
     coral-chrome-pfq-tryjob
     cyan-chrome-pfq-tryjob
-    daisy-chromium-pfq-tryjob
-    daisy_skate-chrome-pfq-tryjob
     eve-arcnext-chrome-pfq-tryjob
     eve-chrome-pfq-tryjob
     grunt-chrome-pfq-tryjob
@@ -2620,7 +2548,6 @@
     amd64-generic-goma-full-tryjob
     arm-generic-full-tryjob
     arm64-generic-full-tryjob
-    daisy-full-tryjob
     kevin-full-tryjob
     kevin64-full-tryjob
     lakitu-full-tryjob
@@ -2631,7 +2558,6 @@
     amd64-generic-incremental-tryjob
     betty-incremental-tryjob
     chell-incremental-tryjob
-    daisy-incremental-tryjob
     lakitu-incremental-tryjob
   master-lakitu-release-tryjob
   master-mst-android-pfq-tryjob
@@ -2669,9 +2595,6 @@
     cobblepot-paladin-tryjob
     coral-paladin-tryjob
     cyan-paladin-tryjob
-    daisy-paladin-tryjob
-    daisy_skate-paladin-tryjob
-    daisy_spring-paladin-tryjob
     edgar-paladin-tryjob
     elm-paladin-tryjob
     eve-arcnext-paladin-tryjob
@@ -2787,9 +2710,6 @@
     cobblepot-postsubmit-tryjob
     coral-postsubmit-tryjob
     cyan-postsubmit-tryjob
-    daisy-postsubmit-tryjob
-    daisy_skate-postsubmit-tryjob
-    daisy_spring-postsubmit-tryjob
     edgar-postsubmit-tryjob
     elm-postsubmit-tryjob
     enguarde-postsubmit-tryjob

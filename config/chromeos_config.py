@@ -1434,7 +1434,6 @@ def PreCqBuilders(site_config, boards_dict, ge_build_config):
       'winky',
       'veyron_speedy',
       'veyron_jerry',
-      'daisy',
       'lulu',
       'cyan',
       'elm',
@@ -1926,7 +1925,6 @@ def FullBuilders(site_config, boards_dict, ge_build_config):
       'amd64-generic',
       'arm-generic',
       'arm64-generic',
-      'daisy',
       'kevin',
       'kevin64',
       'oak',
@@ -2050,9 +2048,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'cobblepot',
       'coral',
       'cyan',
-      'daisy',
-      'daisy_skate',
-      'daisy_spring',
       'edgar',
       'elm',
       'eve',
@@ -2199,9 +2194,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'fizz-moblab',
   ])
 
-  _paladin_chroot_replace_boards = frozenset([
-      'daisy_spring',
-  ])
+  _paladin_chroot_replace_boards = frozenset([])
 
   _paladin_separate_symbols = frozenset([
       'amd64-generic',
@@ -2401,7 +2394,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # pylint: disable=bad-continuation, bad-whitespace, line-too-long
   _paladin_hwtest_assignments = frozenset([
     # bvt-inline      bvt-cq           bvt-arc             bvt-tast-cq          family
-    (None,            None,            None,               None),               # daisy (Exynos5250)
     ('wolf',          'peppy',         None,               'wolf'),             # slippy (HSW)
     ('winky',         'kip',           None,               'winky'),            # rambi (BYT)
     ('nyan_big',      'nyan_kitty',    None,               'nyan_big'),         # nyan (K1)
@@ -2667,18 +2659,6 @@ def IncrementalBuilders(site_config, boards_dict, ge_build_config):
   )
 
   # Build external source, for an internal board.
-  master_config.AddSlave(
-      site_config.Add(
-          'daisy-incremental',
-          site_config.templates.incremental,
-          site_config.templates.incremental_affinity,
-          board_configs['daisy'],
-          site_config.templates.external,
-          manifest_version=True,
-          useflags=config_lib.append_useflags(['-chrome_internal']),
-      )
-  )
-
   master_config.AddSlave(
       site_config.Add(
           'amd64-generic-incremental',
@@ -3000,7 +2980,6 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
   )
 
   _chrome_perf_boards = frozenset([
-      'daisy',
       'reef',
   ])
 
@@ -3013,7 +2992,6 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
 
   _tot_chromium_pfq_informational_swarming_boards = frozenset([
       'amd64-generic',
-      'daisy',
   ])
 
   _tot_chromium_pfq_informational_board_configs = UpdateBoardConfigs(
@@ -3033,7 +3011,7 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
 
   site_config.ApplyForBoards(
       'tot-chromium-pfq-informational',
-      ['amd64-generic', 'daisy'],
+      ['amd64-generic'],
       schedule='with 30m interval',
   )
 
@@ -3090,7 +3068,6 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       'amd64-generic',
       'arm-generic',
       'arm64-generic',
-      'daisy',
       'scarlet',
       'veyron_jerry',
   ])
@@ -3157,7 +3134,6 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       'chell',
       'coral',
       'cyan',
-      'daisy_skate',
       'eve',
       'eve-arcnext',
       'grunt',
@@ -3255,7 +3231,6 @@ def FirmwareBuilders(site_config, _boards_dict, _ge_build_config):
   ACTIVE = 'with 168h interval'  # 1 week interval
   INACTIVE = 'with 720h interval'  # 30 day interval
   firmware_branch_builders = [
-      (INACTIVE, 'firmware-skate-3824.129.B', ['daisy_skate']),
       (INACTIVE, 'firmware-falco_peppy-4389.B', ['falco', 'peppy']),
       (INACTIVE, 'firmware-wolf-4389.24.B', ['wolf']),
       (INACTIVE, 'firmware-leon-4389.61.B', ['leon']),
@@ -3944,9 +3919,6 @@ def ApplyCustomOverrides(site_config):
           'useflags': config_lib.append_useflags(['new_tcmalloc']),
       },
       'cyan-release': {
-          'useflags': config_lib.append_useflags(['new_tcmalloc']),
-      },
-      'daisy-release': {
           'useflags': config_lib.append_useflags(['new_tcmalloc']),
       },
       'edgar-release': {

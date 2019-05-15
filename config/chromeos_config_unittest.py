@@ -166,8 +166,8 @@ class FindConfigsForBoardTest(cros_test_lib.TestCase):
   def testBoth(self):
     """Both an external and internal config exist for board."""
     self._CheckFullConfig(
-        'daisy', external_expected='daisy-full',
-        internal_expected='daisy-release')
+        'nocturne', external_expected='nocturne-full',
+        internal_expected='nocturne-release')
 
   def testExternalCanonicalResolution(self):
     """Test an external canonical config."""
@@ -175,7 +175,7 @@ class FindConfigsForBoardTest(cros_test_lib.TestCase):
 
   def testInternalCanonicalResolution(self):
     """Test prefer internal over external when both exist."""
-    self._CheckCanonicalConfig('daisy', 'release')
+    self._CheckCanonicalConfig('nocturne', 'release')
 
   def testAFDOCanonicalResolution(self):
     """Test prefer non-AFDO over AFDO builder."""

@@ -211,8 +211,8 @@ class BinhostConfWriterTest(
     self._Run('master-chromium-pfq')
 
     # Provide a sample of private/public slave boards that are expected.
-    public_slave_boards = ('amd64-generic', 'daisy')
-    private_slave_boards = ('cyan', 'daisy_skate', 'reef')
+    public_slave_boards = ('amd64-generic', 'scarlet')
+    private_slave_boards = ('cyan', 'nocturne', 'reef')
 
     self._VerifyResults(public_slave_boards=public_slave_boards,
                         private_slave_boards=private_slave_boards)
@@ -220,7 +220,7 @@ class BinhostConfWriterTest(
   def testMasterPostsubmit(self):
     self._Run('master-postsubmit')
 
-    public_slave_boards = ('amd64-generic', 'daisy')
+    public_slave_boards = ('amd64-generic', 'scarlet')
     private_slave_boards = ('glados', 'grunt', 'reef')
 
     self._VerifyResults(public_slave_boards=public_slave_boards,
