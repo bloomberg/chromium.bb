@@ -110,7 +110,6 @@
     nyan_blaze-paladin
     nyan_kitty-full-compile-paladin
     nyan_kitty-paladin
-    oak-paladin
     octavius-paladin
     octopus-paladin
     panther-paladin
@@ -490,7 +489,6 @@
     nyan_big-postsubmit
     nyan_blaze-postsubmit
     nyan_kitty-postsubmit
-    oak-postsubmit
     octavius-postsubmit
     octopus-postsubmit
     orco-postsubmit
@@ -2698,7 +2696,6 @@
     nyan_blaze-paladin-tryjob
     nyan_kitty-full-compile-paladin-tryjob
     nyan_kitty-paladin-tryjob
-    oak-paladin-tryjob
     octavius-paladin-tryjob
     octopus-paladin-tryjob
     panther-paladin-tryjob
@@ -2823,7 +2820,6 @@
     nyan_big-postsubmit-tryjob
     nyan_blaze-postsubmit-tryjob
     nyan_kitty-postsubmit-tryjob
-    oak-postsubmit-tryjob
     octavius-postsubmit-tryjob
     octopus-postsubmit-tryjob
     orco-postsubmit-tryjob

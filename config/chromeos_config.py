@@ -2084,7 +2084,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'nyan_big',
       'nyan_blaze',
       'nyan_kitty',
-      'oak',
       'octavius',
       'octopus',
       'panther',
