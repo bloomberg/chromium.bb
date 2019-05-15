@@ -59,6 +59,7 @@ namespace blink {
 class CompositorAnimation;
 class Element;
 class ExceptionState;
+class PaintArtifactCompositor;
 class TreeScope;
 
 class CORE_EXPORT Animation final : public EventTargetWithInlineData,
@@ -187,10 +188,9 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
   bool Outdated() { return outdated_; }
 
   CompositorAnimations::FailureReasons CheckCanStartAnimationOnCompositor(
-      const base::Optional<CompositorElementIdSet>& composited_element_ids)
-      const;
+      const PaintArtifactCompositor* paint_artifact_compositor) const;
   void StartAnimationOnCompositor(
-      const base::Optional<CompositorElementIdSet>& composited_element_ids);
+      const PaintArtifactCompositor* paint_artifact_compositor);
   void CancelAnimationOnCompositor();
   void RestartAnimationOnCompositor();
   void CancelIncompatibleAnimationsOnCompositor();
@@ -209,7 +209,7 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
   // Returns whether we should continue with the commit for this animation or
   // wait until next commit.
   bool PreCommit(int compositor_group,
-                 const base::Optional<CompositorElementIdSet>&,
+                 const PaintArtifactCompositor*,
                  bool start_on_compositor);
   void PostCommit(double timeline_time);
 

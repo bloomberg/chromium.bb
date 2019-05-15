@@ -368,7 +368,6 @@ TEST_F(KeyframeEffectTest, TimeToEffectChange) {
 TEST_F(KeyframeEffectTest, CheckCanStartAnimationOnCompositorNoKeyframes) {
   ASSERT_TRUE(element);
 
-  const base::Optional<CompositorElementIdSet> composited_element_ids;
   const double animation_playback_rate = 1;
   Timing timing;
 
@@ -377,7 +376,7 @@ TEST_F(KeyframeEffectTest, CheckCanStartAnimationOnCompositorNoKeyframes) {
     KeyframeEffect* keyframe_effect =
         KeyframeEffect::Create(element, CreateEmptyEffectModel(), timing);
     EXPECT_TRUE(keyframe_effect->CheckCanStartAnimationOnCompositor(
-                    composited_element_ids, animation_playback_rate) &
+                    nullptr, animation_playback_rate) &
                 CompositorAnimations::kInvalidAnimationOrEffect);
   }
 
@@ -394,13 +393,12 @@ TEST_F(KeyframeEffectTest, CheckCanStartAnimationOnCompositorNoKeyframes) {
     KeyframeEffect* keyframe_effect =
         KeyframeEffect::Create(element, effect_model, timing);
     EXPECT_TRUE(keyframe_effect->CheckCanStartAnimationOnCompositor(
-                    composited_element_ids, animation_playback_rate) &
+                    nullptr, animation_playback_rate) &
                 CompositorAnimations::kInvalidAnimationOrEffect);
   }
 }
 
 TEST_F(KeyframeEffectTest, CheckCanStartAnimationOnCompositorNoTarget) {
-  const base::Optional<CompositorElementIdSet> composited_element_ids;
   const double animation_playback_rate = 1;
   Timing timing;
 
@@ -422,12 +420,11 @@ TEST_F(KeyframeEffectTest, CheckCanStartAnimationOnCompositorNoTarget) {
   KeyframeEffect* keyframe_effect =
       KeyframeEffect::Create(nullptr, effect_model, timing);
   EXPECT_TRUE(keyframe_effect->CheckCanStartAnimationOnCompositor(
-                  composited_element_ids, animation_playback_rate) &
+                  nullptr, animation_playback_rate) &
               CompositorAnimations::kInvalidAnimationOrEffect);
 }
 
 TEST_F(KeyframeEffectTest, CheckCanStartAnimationOnCompositorBadTarget) {
-  const base::Optional<CompositorElementIdSet> composited_element_ids;
   const double animation_playback_rate = 1;
   Timing timing;
 
@@ -453,7 +450,7 @@ TEST_F(KeyframeEffectTest, CheckCanStartAnimationOnCompositorBadTarget) {
       LengthPoint(Length::Percent(50.0), Length::Auto()));
   ASSERT_TRUE(element->GetComputedStyle()->HasOffset());
   EXPECT_TRUE(keyframe_effect->CheckCanStartAnimationOnCompositor(
-                  composited_element_ids, animation_playback_rate) &
+                  nullptr, animation_playback_rate) &
               CompositorAnimations::kTargetHasCSSOffset);
 
   // If the target has multiple transform properties we can't composite it.
@@ -463,7 +460,7 @@ TEST_F(KeyframeEffectTest, CheckCanStartAnimationOnCompositorBadTarget) {
   element->MutableComputedStyle()->SetScale(
       ScaleTransformOperation::Create(2, 1, TransformOperation::kScaleX));
   EXPECT_TRUE(keyframe_effect->CheckCanStartAnimationOnCompositor(
-                  composited_element_ids, animation_playback_rate) &
+                  nullptr, animation_playback_rate) &
               CompositorAnimations::kTargetHasMultipleTransformProperties);
 }
 

@@ -172,8 +172,7 @@ TEST_F(AnimationEffectStackTest, ForwardsFillDiscarding) {
   Play(MakeKeyframeEffect(MakeEffectModel(CSSPropertyID::kFontSize, "1px")), 2);
   Play(MakeKeyframeEffect(MakeEffectModel(CSSPropertyID::kFontSize, "2px")), 6);
   Play(MakeKeyframeEffect(MakeEffectModel(CSSPropertyID::kFontSize, "3px")), 4);
-  GetDocument().GetPendingAnimations().Update(
-      base::Optional<CompositorElementIdSet>());
+  GetDocument().GetPendingAnimations().Update(nullptr);
 
   // Because we will be forcing a naive GC that assumes there are no Oilpan
   // objects on the stack (e.g. passes BlinkGC::kNoHeapPointersOnStack), we have

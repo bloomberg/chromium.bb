@@ -162,18 +162,10 @@ class AnimationCompositorAnimationsTest : public PaintTestConfigurations,
       const Element& element,
       const Animation* animation,
       const EffectModel& effect_model) {
-    base::Optional<CompositorElementIdSet> composited_element_ids;
-
-    if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
-        RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-      const PaintArtifactCompositor* paint_artifact_compositor =
-          GetDocument().View()->GetPaintArtifactCompositor();
-      composited_element_ids = paint_artifact_compositor->RootLayer()
-                                   ->layer_tree_host()
-                                   ->elements_in_property_trees();
-    }
+    const PaintArtifactCompositor* paint_artifact_compositor =
+        GetDocument().View()->GetPaintArtifactCompositor();
     return CompositorAnimations::CheckCanStartEffectOnCompositor(
-        timing, element, animation, effect_model, composited_element_ids, 1);
+        timing, element, animation, effect_model, paint_artifact_compositor, 1);
   }
 
   CompositorAnimations::FailureReasons CheckCanStartElementOnCompositor(
@@ -422,8 +414,7 @@ class AnimationCompositorAnimationsTest : public PaintTestConfigurations,
   void SimulateFrame(double time) {
     GetAnimationClock().UpdateTime(base::TimeTicks() +
                                    base::TimeDelta::FromSecondsD(time));
-    GetPendingAnimations().Update(base::Optional<CompositorElementIdSet>(),
-                                  false);
+    GetPendingAnimations().Update(nullptr, false);
     timeline_->ServiceAnimations(kTimingUpdateForAnimationFrame);
   }
 

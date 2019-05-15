@@ -345,7 +345,7 @@ double Animation::UnlimitedCurrentTimeInternal() const {
 
 bool Animation::PreCommit(
     int compositor_group,
-    const base::Optional<CompositorElementIdSet>& composited_element_ids,
+    const PaintArtifactCompositor* paint_artifact_compositor,
     bool start_on_compositor) {
   PlayStateUpdateScope update_scope(*this, kTimingUpdateOnDemand,
                                     kDoNotSetCompositorPending);
@@ -386,12 +386,12 @@ bool Animation::PreCommit(
     compositor_group_ = compositor_group;
     if (start_on_compositor) {
       CompositorAnimations::FailureReasons failure_reasons =
-          CheckCanStartAnimationOnCompositor(composited_element_ids);
+          CheckCanStartAnimationOnCompositor(paint_artifact_compositor);
       RecordCompositorAnimationFailureReasons(failure_reasons);
 
       if (failure_reasons == CompositorAnimations::kNoFailure) {
         CreateCompositorAnimation();
-        StartAnimationOnCompositor(composited_element_ids);
+        StartAnimationOnCompositor(paint_artifact_compositor);
         compositor_state_ = std::make_unique<CompositorState>(*this);
       } else {
         CancelIncompatibleAnimationsOnCompositor();
@@ -952,14 +952,13 @@ void Animation::ForceServiceOnNextFrame() {
 
 CompositorAnimations::FailureReasons
 Animation::CheckCanStartAnimationOnCompositor(
-    const base::Optional<CompositorElementIdSet>& composited_element_ids)
-    const {
+    const PaintArtifactCompositor* paint_artifact_compositor) const {
   CompositorAnimations::FailureReasons reasons =
       CheckCanStartAnimationOnCompositorInternal();
   if (content_ && content_->IsKeyframeEffect()) {
     reasons |= ToKeyframeEffect(content_.Get())
-                   ->CheckCanStartAnimationOnCompositor(composited_element_ids,
-                                                        playback_rate_);
+                   ->CheckCanStartAnimationOnCompositor(
+                       paint_artifact_compositor, playback_rate_);
   }
   return reasons;
 }
@@ -1006,8 +1005,8 @@ Animation::CheckCanStartAnimationOnCompositorInternal() const {
 }
 
 void Animation::StartAnimationOnCompositor(
-    const base::Optional<CompositorElementIdSet>& composited_element_ids) {
-  DCHECK_EQ(CheckCanStartAnimationOnCompositor(composited_element_ids),
+    const PaintArtifactCompositor* paint_artifact_compositor) {
+  DCHECK_EQ(CheckCanStartAnimationOnCompositor(paint_artifact_compositor),
             CompositorAnimations::kNoFailure);
 
   bool reversed = playback_rate_ < 0;

@@ -190,6 +190,10 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
   bool NeedsUpdate() const { return needs_update_; }
   void ClearNeedsUpdateForTesting() { needs_update_ = false; }
 
+  // Returns true if a property tree node associated with |element_id| exists
+  // on any of the PropertyTrees constructed by |Update|.
+  bool HasComposited(CompositorElementId element_id) const;
+
  private:
   // A pending layer is a collection of paint chunks that will end up in
   // the same cc::Layer.

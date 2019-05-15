@@ -305,6 +305,16 @@ void PaintArtifactCompositor::UpdateTouchActionRects(
       HitTestRect::BuildRegion(touch_action_rects_in_layer_space));
 }
 
+bool PaintArtifactCompositor::HasComposited(
+    CompositorElementId element_id) const {
+  // |Update| sets the LayerTreeHost's |elements_in_property_trees_| to the
+  // elements composited by PaintArtifactCompositor. Look up whether the
+  // given |element_id| has been created.
+  DCHECK(!NeedsUpdate()) << "This should only be called after an update";
+  return root_layer_->layer_tree_host()->elements_in_property_trees().count(
+      element_id);
+}
+
 bool PaintArtifactCompositor::PropertyTreeStateChanged(
     const PropertyTreeState& state) const {
   const auto& root = PropertyTreeState::Root();

@@ -552,8 +552,7 @@ bool WorkletAnimation::StartOnCompositor() {
 
   double playback_rate = 1;
   CompositorAnimations::FailureReasons failure_reasons =
-      GetEffect()->CheckCanStartAnimationOnCompositor(
-          base::Optional<CompositorElementIdSet>(), playback_rate);
+      GetEffect()->CheckCanStartAnimationOnCompositor(nullptr, playback_rate);
 
   if (failure_reasons != CompositorAnimations::kNoFailure)
     return false;

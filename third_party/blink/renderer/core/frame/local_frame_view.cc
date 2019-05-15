@@ -2435,7 +2435,7 @@ void LocalFrameView::RunPaintLifecyclePhase() {
       ForAllNonThrottledLocalFrameViews([this](LocalFrameView& frame_view) {
         DocumentAnimations::UpdateAnimations(
             frame_view.GetLayoutView()->GetDocument(),
-            DocumentLifecycle::kPaintClean, animation_element_ids_);
+            DocumentLifecycle::kPaintClean, paint_artifact_compositor_.get());
       });
 
       // Initialize animation properties in the newly created paint property

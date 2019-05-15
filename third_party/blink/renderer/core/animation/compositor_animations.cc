@@ -59,6 +59,7 @@
 #include "third_party/blink/renderer/platform/animation/compositor_transform_animation_curve.h"
 #include "third_party/blink/renderer/platform/animation/compositor_transform_keyframe.h"
 #include "third_party/blink/renderer/platform/geometry/float_box.h"
+#include "third_party/blink/renderer/platform/graphics/compositing/paint_artifact_compositor.h"
 
 namespace blink {
 
@@ -184,14 +185,14 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
     const Element& target_element,
     const Animation* animation_to_add,
     const EffectModel& effect,
-    const base::Optional<CompositorElementIdSet>& composited_element_ids,
+    const PaintArtifactCompositor* paint_artifact_compositor,
     double animation_playback_rate) {
   FailureReasons reasons = kNoFailure;
   const KeyframeEffectModelBase& keyframe_effect =
       ToKeyframeEffectModelBase(effect);
 
   LayoutObject* layout_object = target_element.GetLayoutObject();
-  if (composited_element_ids) {
+  if (paint_artifact_compositor) {
     // If we are going to check that we can animate these below, we need
     // to have the UniqueID to compute the target ID.  Let's check it
     // once in common in advance.
@@ -294,7 +295,7 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
         reasons |= kInvalidAnimationOrEffect;
       }
 
-      if (composited_element_ids) {
+      if (paint_artifact_compositor) {
         if (!layout_object || !layout_object->UniqueId())
           continue;
 
@@ -304,7 +305,7 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
                 CompositorElementNamespaceForProperty(
                     property.GetCSSProperty().PropertyID()));
         DCHECK(target_element_id);
-        if (!composited_element_ids->count(target_element_id))
+        if (!paint_artifact_compositor->HasComposited(target_element_id))
           reasons |= kTargetHasInvalidCompositingState;
       }
     }
@@ -374,11 +375,11 @@ CompositorAnimations::CheckCanStartAnimationOnCompositor(
     const Element& target_element,
     const Animation* animation_to_add,
     const EffectModel& effect,
-    const base::Optional<CompositorElementIdSet>& composited_element_ids,
+    const PaintArtifactCompositor* paint_artifact_compositor,
     double animation_playback_rate) {
   FailureReasons reasons = CheckCanStartEffectOnCompositor(
-      timing, target_element, animation_to_add, effect, composited_element_ids,
-      animation_playback_rate);
+      timing, target_element, animation_to_add, effect,
+      paint_artifact_compositor, animation_playback_rate);
   return reasons | CheckCanStartElementOnCompositor(target_element);
 }
 
@@ -433,12 +434,11 @@ void CompositorAnimations::StartAnimationOnCompositor(
     Vector<int>& started_keyframe_model_ids,
     double animation_playback_rate) {
   DCHECK(started_keyframe_model_ids.IsEmpty());
-  // TODO(petermayo): Find and pass the set of valid compositor elements before
+  // TODO(petermayo): Pass the PaintArtifactCompositor before
   // BlinkGenPropertyTrees is always on.
   DCHECK_EQ(
-      CheckCanStartAnimationOnCompositor(
-          timing, element, animation, effect,
-          base::Optional<CompositorElementIdSet>(), animation_playback_rate),
+      CheckCanStartAnimationOnCompositor(timing, element, animation, effect,
+                                         nullptr, animation_playback_rate),
       kNoFailure);
 
   const KeyframeEffectModelBase& keyframe_effect =

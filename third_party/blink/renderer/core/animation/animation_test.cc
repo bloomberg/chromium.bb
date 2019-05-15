@@ -140,7 +140,7 @@ class AnimationAnimationTest : public RenderingTest {
     UpdateAllLifecyclePhasesForTest();
 
     document->GetAnimationClock().UpdateTime(base::TimeTicks());
-    document->GetPendingAnimations().Update(base::nullopt, true);
+    document->GetPendingAnimations().Update(nullptr, true);
   }
 
   KeyframeEffectModelBase* MakeEmptyEffectModel() {
@@ -153,13 +153,16 @@ class AnimationAnimationTest : public RenderingTest {
     return KeyframeEffect::Create(nullptr, MakeEmptyEffectModel(), timing);
   }
 
-  bool SimulateFrame(
-      double time,
-      base::Optional<CompositorElementIdSet> composited_element_ids =
-          base::Optional<CompositorElementIdSet>()) {
+  bool SimulateFrame(double time) {
+    const PaintArtifactCompositor* paint_artifact_compositor = nullptr;
+    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
+        RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+      paint_artifact_compositor =
+          document->GetFrame()->View()->GetPaintArtifactCompositorForTesting();
+    }
     document->GetAnimationClock().UpdateTime(
         base::TimeTicks() + base::TimeDelta::FromSecondsD(time));
-    document->GetPendingAnimations().Update(composited_element_ids, false);
+    document->GetPendingAnimations().Update(paint_artifact_compositor, false);
     // The timeline does not know about our animation, so we have to explicitly
     // call update().
     return animation->Update(kTimingUpdateForAnimationFrame);
@@ -937,21 +940,15 @@ TEST_F(AnimationAnimationTest, PauseAfterCancel) {
 
 TEST_F(AnimationAnimationTest, NoCompositeWithoutCompositedElementId) {
   ScopedCompositeAfterPaintForTest enable_cap(true);
+  EnableCompositing();
 
   SetBodyInnerHTML(
-      "<div id='foo' style='position: relative'></div>"
-      "<div id='bar' style='position: relative'></div>");
+      "<div id='foo' style='position: relative; will-change: "
+      "opacity;'>composited</div>"
+      "<div id='bar' style='position: relative'>not composited</div>");
 
   LayoutObject* object_composited = GetLayoutObjectByElementId("foo");
   LayoutObject* object_not_composited = GetLayoutObjectByElementId("bar");
-
-  base::Optional<CompositorElementIdSet> composited_element_ids =
-      CompositorElementIdSet();
-  CompositorElementId expected_compositor_element_id =
-      CompositorElementIdFromUniqueObjectId(
-          ToLayoutBoxModelObject(object_composited)->UniqueId(),
-          CompositorElementIdNamespace::kPrimaryEffect);
-  composited_element_ids->insert(expected_compositor_element_id);
 
   Timing timing;
   timing.iteration_duration = AnimationTimeDelta::FromSecondsD(30);
@@ -964,14 +961,17 @@ TEST_F(AnimationAnimationTest, NoCompositeWithoutCompositedElementId) {
   Animation* animation_not_composited =
       timeline->Play(keyframe_effect_not_composited);
 
-  SimulateFrame(0, composited_element_ids);
+  SimulateFrame(0);
   EXPECT_EQ(animation_composited->CheckCanStartAnimationOnCompositorInternal(),
             CompositorAnimations::kNoFailure);
+  const PaintArtifactCompositor* paint_artifact_compositor =
+      GetDocument().View()->GetPaintArtifactCompositor();
+  ASSERT_TRUE(paint_artifact_compositor);
   EXPECT_EQ(animation_composited->CheckCanStartAnimationOnCompositor(
-                composited_element_ids),
+                paint_artifact_compositor),
             CompositorAnimations::kNoFailure);
   EXPECT_NE(animation_not_composited->CheckCanStartAnimationOnCompositor(
-                composited_element_ids),
+                paint_artifact_compositor),
             CompositorAnimations::kNoFailure);
 }
 
@@ -1006,7 +1006,7 @@ TEST_F(AnimationAnimationTest, PreCommitWithUnresolvedStartTimes) {
 
   // At this point, a call to PreCommit should bail out and tell us to wait for
   // next commit because there are no resolved start times.
-  EXPECT_FALSE(animation->PreCommit(0, base::nullopt, true));
+  EXPECT_FALSE(animation->PreCommit(0, nullptr, true));
 }
 
 namespace {
@@ -1028,7 +1028,7 @@ TEST_F(AnimationAnimationTest, PreCommitRecordsHistograms) {
   // Initially the animation in this test has no target, so it is invalid.
   {
     HistogramTester histogram;
-    ASSERT_TRUE(animation->PreCommit(0, base::nullopt, true));
+    ASSERT_TRUE(animation->PreCommit(0, nullptr, true));
     histogram.ExpectBucketCount(
         histogram_name,
         GenerateHistogramValue(CompositorAnimations::kInvalidAnimationOrEffect),
@@ -1050,7 +1050,7 @@ TEST_F(AnimationAnimationTest, PreCommitRecordsHistograms) {
   animation->NotifyCompositorStartTime(100);
   {
     HistogramTester histogram;
-    ASSERT_TRUE(animation->PreCommit(0, base::nullopt, true));
+    ASSERT_TRUE(animation->PreCommit(0, nullptr, true));
     histogram.ExpectBucketCount(
         histogram_name,
         GenerateHistogramValue(CompositorAnimations::kInvalidAnimationOrEffect),
@@ -1077,7 +1077,7 @@ TEST_F(AnimationAnimationTest, PreCommitRecordsHistograms) {
   UpdateAllLifecyclePhasesForTest();
   {
     HistogramTester histogram;
-    ASSERT_TRUE(animation->PreCommit(0, base::nullopt, true));
+    ASSERT_TRUE(animation->PreCommit(0, nullptr, true));
     histogram.ExpectBucketCount(
         histogram_name,
         GenerateHistogramValue(CompositorAnimations::kUnsupportedCSSProperty),

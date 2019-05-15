@@ -46,6 +46,7 @@ class Animation;
 class CompositorAnimation;
 class Element;
 class KeyframeEffectModelBase;
+class PaintArtifactCompositor;
 
 class CORE_EXPORT CompositorAnimations {
   STATIC_ONLY(CompositorAnimations);
@@ -102,7 +103,7 @@ class CORE_EXPORT CompositorAnimations {
       const Element&,
       const Animation*,
       const EffectModel&,
-      const base::Optional<CompositorElementIdSet>& composited_element_ids,
+      const PaintArtifactCompositor*,
       double animation_playback_rate);
   static void CancelIncompatibleAnimationsOnCompositor(const Element&,
                                                        const Animation&,
@@ -159,7 +160,7 @@ class CORE_EXPORT CompositorAnimations {
       const Element&,
       const Animation*,
       const EffectModel&,
-      const base::Optional<CompositorElementIdSet>& composited_element_ids,
+      const PaintArtifactCompositor*,
       double animation_playback_rate);
   static FailureReasons CheckCanStartElementOnCompositor(const Element&);
 

@@ -262,10 +262,9 @@ void PaintLayerCompositor::UpdateIfNeededRecursiveInternal(
     // composited elements (see LocalFrameView::UpdateLifecyclePhasesInternal,
     // during kPaintClean).
     if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-      base::Optional<CompositorElementIdSet> composited_element_ids;
       DocumentAnimations::UpdateAnimations(layout_view_.GetDocument(),
                                            DocumentLifecycle::kCompositingClean,
-                                           composited_element_ids);
+                                           nullptr);
     }
 
     layout_view_.GetFrameView()

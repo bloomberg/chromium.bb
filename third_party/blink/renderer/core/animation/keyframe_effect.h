@@ -42,6 +42,7 @@ namespace blink {
 class Element;
 class ExceptionState;
 class KeyframeEffectModelBase;
+class PaintArtifactCompositor;
 class SampledEffect;
 class UnrestrictedDoubleOrKeyframeEffectOptions;
 
@@ -104,7 +105,7 @@ class CORE_EXPORT KeyframeEffect final : public AnimationEffect {
   void NotifySampledEffectRemovedFromEffectStack();
 
   CompositorAnimations::FailureReasons CheckCanStartAnimationOnCompositor(
-      const base::Optional<CompositorElementIdSet>& composited_element_ids,
+      const PaintArtifactCompositor*,
       double animation_playback_rate) const;
   // Must only be called once.
   void StartAnimationOnCompositor(int group,

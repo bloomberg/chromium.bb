@@ -217,7 +217,7 @@ void KeyframeEffect::NotifySampledEffectRemovedFromEffectStack() {
 
 CompositorAnimations::FailureReasons
 KeyframeEffect::CheckCanStartAnimationOnCompositor(
-    const base::Optional<CompositorElementIdSet>& composited_element_ids,
+    const PaintArtifactCompositor* paint_artifact_compositor,
     double animation_playback_rate) const {
   CompositorAnimations::FailureReasons reasons =
       CompositorAnimations::kNoFailure;
@@ -242,7 +242,7 @@ KeyframeEffect::CheckCanStartAnimationOnCompositor(
 
     reasons |= CompositorAnimations::CheckCanStartAnimationOnCompositor(
         SpecifiedTiming(), *target_, GetAnimation(), *Model(),
-        composited_element_ids, animation_playback_rate);
+        paint_artifact_compositor, animation_playback_rate);
   }
 
   return reasons;
