@@ -106,8 +106,14 @@ void LabelButton::SetElideBehavior(gfx::ElideBehavior elide_behavior) {
 
 void LabelButton::SetHorizontalAlignment(gfx::HorizontalAlignment alignment) {
   DCHECK_NE(gfx::ALIGN_TO_HEAD, alignment);
+  if (GetHorizontalAlignment() == alignment)
+    return;
   horizontal_alignment_ = alignment;
-  InvalidateLayout();
+  OnPropertyChanged(&min_size_, kPropertyEffectsLayout);
+}
+
+gfx::HorizontalAlignment LabelButton::GetHorizontalAlignment() const {
+  return horizontal_alignment_;
 }
 
 gfx::Size LabelButton::GetMinSize() const {
@@ -277,9 +283,10 @@ void LabelButton::Layout() {
   gfx::Size image_size(image_->GetPreferredSize());
   image_size.SetToMin(child_area.size());
 
+  const auto horizontal_alignment = GetHorizontalAlignment();
   if (!image_size.IsEmpty()) {
     int image_space = image_size.width() + GetImageLabelSpacing();
-    if (horizontal_alignment_ == gfx::ALIGN_RIGHT)
+    if (horizontal_alignment == gfx::ALIGN_RIGHT)
       label_area.Inset(0, 0, image_space, 0);
     else
       label_area.Inset(image_space, 0, 0, 0);
@@ -299,14 +306,14 @@ void LabelButton::Layout() {
   } else {
     image_origin.Offset(0, (child_area.height() - image_size.height()) / 2);
   }
-  if (horizontal_alignment_ == gfx::ALIGN_CENTER) {
+  if (horizontal_alignment == gfx::ALIGN_CENTER) {
     const int spacing = (image_size.width() > 0 && label_size.width() > 0)
                             ? GetImageLabelSpacing()
                             : 0;
     const int total_width = image_size.width() + label_size.width() +
         spacing;
     image_origin.Offset((child_area.width() - total_width) / 2, 0);
-  } else if (horizontal_alignment_ == gfx::ALIGN_RIGHT) {
+  } else if (horizontal_alignment == gfx::ALIGN_RIGHT) {
     image_origin.Offset(child_area.width() - image_size.width(), 0);
   }
   image_->SetBoundsRect(gfx::Rect(image_origin, image_size));
@@ -314,11 +321,11 @@ void LabelButton::Layout() {
   gfx::Rect label_bounds = label_area;
   if (label_area.width() == label_size.width()) {
     // Label takes up the whole area.
-  } else if (horizontal_alignment_ == gfx::ALIGN_CENTER) {
+  } else if (horizontal_alignment == gfx::ALIGN_CENTER) {
     label_bounds.ClampToCenteredSize(label_size);
   } else {
     label_bounds.set_size(label_size);
-    if (horizontal_alignment_ == gfx::ALIGN_RIGHT)
+    if (horizontal_alignment == gfx::ALIGN_RIGHT)
       label_bounds.Offset(label_area.width() - label_size.width(), 0);
   }
 
@@ -562,6 +569,9 @@ void LabelButton::ResetLabelEnabledColor() {
 BEGIN_METADATA(LabelButton)
 METADATA_PARENT_CLASS(Button)
 ADD_PROPERTY_METADATA(LabelButton, base::string16, Text)
+ADD_PROPERTY_METADATA(LabelButton,
+                      gfx::HorizontalAlignment,
+                      HorizontalAlignment)
 ADD_PROPERTY_METADATA(LabelButton, gfx::Size, MinSize)
 ADD_PROPERTY_METADATA(LabelButton, gfx::Size, MaxSize)
 ADD_PROPERTY_METADATA(LabelButton, bool, IsDefault)

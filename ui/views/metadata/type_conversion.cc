@@ -213,3 +213,13 @@ base::Optional<base::string16> ConvertFromString<base::string16>(
 
 }  // namespace metadata
 }  // namespace views
+
+DEFINE_ENUM_CONVERTERS(gfx::HorizontalAlignment,
+                       {gfx::HorizontalAlignment::ALIGN_LEFT,
+                        base::ASCIIToUTF16("ALIGN_LEFT")},
+                       {gfx::HorizontalAlignment::ALIGN_CENTER,
+                        base::ASCIIToUTF16("ALIGN_CENTER")},
+                       {gfx::HorizontalAlignment::ALIGN_RIGHT,
+                        base::ASCIIToUTF16("ALIGN_RIGHT")},
+                       {gfx::HorizontalAlignment::ALIGN_TO_HEAD,
+                        base::ASCIIToUTF16("ALIGN_TO_HEAD")})

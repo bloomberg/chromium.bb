@@ -68,9 +68,7 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   // Sets the horizontal alignment used for the button; reversed in RTL. The
   // optional image will lead the text, unless the button is right-aligned.
   void SetHorizontalAlignment(gfx::HorizontalAlignment alignment);
-  gfx::HorizontalAlignment horizontal_alignment() const {
-    return horizontal_alignment_;
-  }
+  gfx::HorizontalAlignment GetHorizontalAlignment() const;
 
   gfx::Size GetMinSize() const;
   void SetMinSize(const gfx::Size& min_size);

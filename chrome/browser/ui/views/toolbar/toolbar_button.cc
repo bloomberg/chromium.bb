@@ -120,7 +120,7 @@ void ToolbarButton::UpdateHighlightBackgroundAndInsets() {
 
     // Some subclasses (AvatarToolbarButton) may be change alignment. This adds
     // an inset to the text-label side.
-    if (horizontal_alignment() == gfx::ALIGN_RIGHT) {
+    if (GetHorizontalAlignment() == gfx::ALIGN_RIGHT) {
       new_insets += gfx::Insets(0, text_side_inset, 0, 0);
     } else {
       new_insets += gfx::Insets(0, 0, 0, text_side_inset);

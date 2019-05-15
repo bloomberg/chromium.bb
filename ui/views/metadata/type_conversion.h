@@ -16,6 +16,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/text_constants.h"
 #include "ui/views/views_export.h"
 
 namespace views {
@@ -129,6 +130,10 @@ VIEWS_EXPORT base::string16 ConvertToString<gfx::Size>(
     const gfx::Size& source_value);
 
 template <>
+VIEWS_EXPORT base::string16 ConvertToString<gfx::HorizontalAlignment>(
+    gfx::HorizontalAlignment source_value);
+
+template <>
 VIEWS_EXPORT base::string16 ConvertToString<base::string16>(
     const base::string16& source_value);
 
@@ -183,6 +188,10 @@ VIEWS_EXPORT base::Optional<bool> ConvertFromString<bool>(
 template <>
 VIEWS_EXPORT base::Optional<gfx::Size> ConvertFromString<gfx::Size>(
     const base::string16& source_value);
+
+template <>
+VIEWS_EXPORT base::Optional<gfx::HorizontalAlignment>
+ConvertFromString<gfx::HorizontalAlignment>(const base::string16& source_value);
 
 template <>
 VIEWS_EXPORT base::Optional<base::string16> ConvertFromString<base::string16>(
