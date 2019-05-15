@@ -278,8 +278,8 @@ size_t VaapiJpegEncodeAccelerator::GetMaxCodedBufferSize(
 
 void VaapiJpegEncodeAccelerator::Encode(scoped_refptr<VideoFrame> video_frame,
                                         int quality,
-                                        const BitstreamBuffer* exif_buffer,
-                                        const BitstreamBuffer& output_buffer) {
+                                        BitstreamBuffer* exif_buffer,
+                                        BitstreamBuffer output_buffer) {
   DVLOGF(4);
   DCHECK(io_task_runner_->BelongsToCurrentThread());
 
@@ -297,9 +297,9 @@ void VaapiJpegEncodeAccelerator::Encode(scoped_refptr<VideoFrame> video_frame,
 
   std::unique_ptr<UnalignedSharedMemory> exif_shm;
   if (exif_buffer) {
-    // |exif_shm| will take ownership of the |exif_buffer->handle()|.
+    // |exif_shm| will take ownership of the |exif_buffer->region()|.
     exif_shm = std::make_unique<UnalignedSharedMemory>(
-        exif_buffer->handle(), exif_buffer->size(), true);
+        exif_buffer->TakeRegion(), exif_buffer->size(), true);
     if (!exif_shm->MapAt(exif_buffer->offset(), exif_buffer->size())) {
       VLOGF(1) << "Failed to map exif buffer";
       task_runner_->PostTask(
@@ -318,7 +318,7 @@ void VaapiJpegEncodeAccelerator::Encode(scoped_refptr<VideoFrame> video_frame,
 
   // |output_shm| will take ownership of the |output_buffer.handle()|.
   auto output_shm = std::make_unique<UnalignedSharedMemory>(
-      output_buffer.handle(), output_buffer.size(), false);
+      output_buffer.TakeRegion(), output_buffer.size(), false);
   if (!output_shm->MapAt(output_buffer.offset(), output_buffer.size())) {
     VLOGF(1) << "Failed to map output buffer";
     task_runner_->PostTask(

@@ -122,16 +122,10 @@ void MojoVideoEncodeAcceleratorService::UseOutputBitstreamBuffer(
     return;
   }
 
-  base::SharedMemoryHandle handle;
-  size_t memory_size = 0;
-  auto result = mojo::UnwrapSharedMemoryHandle(std::move(buffer), &handle,
-                                               &memory_size, nullptr);
-  if (result != MOJO_RESULT_OK || memory_size == 0u) {
-    DLOG(ERROR) << __func__ << " mojo::UnwrapSharedMemoryHandle() failed";
-    NotifyError(::media::VideoEncodeAccelerator::kPlatformFailureError);
-    return;
-  }
+  base::subtle::PlatformSharedMemoryRegion region =
+      mojo::UnwrapPlatformSharedMemoryRegion(std::move(buffer));
 
+  auto memory_size = region.GetSize();
   if (memory_size < output_buffer_size_) {
     DLOG(ERROR) << __func__ << " bitstream_buffer_id=" << bitstream_buffer_id
                 << " has a size of " << memory_size
@@ -141,7 +135,7 @@ void MojoVideoEncodeAcceleratorService::UseOutputBitstreamBuffer(
   }
 
   encoder_->UseOutputBitstreamBuffer(
-      BitstreamBuffer(bitstream_buffer_id, handle, memory_size));
+      BitstreamBuffer(bitstream_buffer_id, std::move(region), memory_size));
 }
 
 void MojoVideoEncodeAcceleratorService::RequestEncodingParametersChange(

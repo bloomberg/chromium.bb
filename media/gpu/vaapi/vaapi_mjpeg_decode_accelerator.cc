@@ -243,7 +243,7 @@ void VaapiMjpegDecodeAccelerator::DecodeTask(
 }
 
 void VaapiMjpegDecodeAccelerator::Decode(
-    const BitstreamBuffer& bitstream_buffer,
+    BitstreamBuffer bitstream_buffer,
     const scoped_refptr<VideoFrame>& video_frame) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   TRACE_EVENT1("jpeg", "Decode", "input_id", bitstream_buffer.id());
@@ -253,7 +253,7 @@ void VaapiMjpegDecodeAccelerator::Decode(
 
   // UnalignedSharedMemory will take over the |bitstream_buffer.handle()|.
   auto shm = std::make_unique<UnalignedSharedMemory>(
-      bitstream_buffer.handle(), bitstream_buffer.size(), true);
+      bitstream_buffer.TakeRegion(), bitstream_buffer.size(), true);
 
   if (bitstream_buffer.id() < 0) {
     VLOGF(1) << "Invalid bitstream_buffer, id: " << bitstream_buffer.id();

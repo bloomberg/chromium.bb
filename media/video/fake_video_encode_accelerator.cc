@@ -67,8 +67,8 @@ void FakeVideoEncodeAccelerator::Encode(
 }
 
 void FakeVideoEncodeAccelerator::UseOutputBitstreamBuffer(
-    const BitstreamBuffer& buffer) {
-  available_buffers_.push_back(buffer);
+    BitstreamBuffer buffer) {
+  available_buffers_.push_back(std::move(buffer));
   EncodeTask();
 }
 

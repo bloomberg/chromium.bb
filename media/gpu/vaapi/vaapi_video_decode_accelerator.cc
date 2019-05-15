@@ -583,8 +583,7 @@ void VaapiVideoDecodeAccelerator::TryFinishSurfaceSetChange() {
   // |client_| may respond via AssignPictureBuffers().
 }
 
-void VaapiVideoDecodeAccelerator::Decode(
-    const BitstreamBuffer& bitstream_buffer) {
+void VaapiVideoDecodeAccelerator::Decode(BitstreamBuffer bitstream_buffer) {
   Decode(bitstream_buffer.ToDecoderBuffer(), bitstream_buffer.id());
 }
 

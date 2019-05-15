@@ -16,6 +16,8 @@
 #include <utility>
 #include <vector>
 
+#include "base/memory/shared_memory_mapping.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/scoped_co_mem.h"
@@ -89,11 +91,11 @@ class MediaFoundationVideoEncodeAccelerator::EncodeOutput {
 
 struct MediaFoundationVideoEncodeAccelerator::BitstreamBufferRef {
   BitstreamBufferRef(int32_t id,
-                     std::unique_ptr<base::SharedMemory> shm,
+                     base::WritableSharedMemoryMapping mapping,
                      size_t size)
-      : id(id), shm(std::move(shm)), size(size) {}
+      : id(id), mapping(std::move(mapping)), size(size) {}
   const int32_t id;
-  const std::unique_ptr<base::SharedMemory> shm;
+  const base::WritableSharedMemoryMapping mapping;
   const size_t size;
 
  private:
@@ -267,7 +269,7 @@ void MediaFoundationVideoEncodeAccelerator::Encode(
 }
 
 void MediaFoundationVideoEncodeAccelerator::UseOutputBitstreamBuffer(
-    const BitstreamBuffer& buffer) {
+    BitstreamBuffer buffer) {
   DVLOG(3) << __func__ << ": buffer size=" << buffer.size();
   DCHECK(main_client_task_runner_->BelongsToCurrentThread());
 
@@ -278,16 +280,19 @@ void MediaFoundationVideoEncodeAccelerator::UseOutputBitstreamBuffer(
     return;
   }
 
-  std::unique_ptr<base::SharedMemory> shm(
-      new base::SharedMemory(buffer.handle(), false));
-  if (!shm->Map(buffer.size())) {
+  auto region =
+      base::UnsafeSharedMemoryRegion::Deserialize(buffer.TakeRegion());
+  auto mapping = region.Map();
+  if (!region.IsValid() || !mapping.IsValid()) {
     DLOG(ERROR) << "Failed mapping shared memory.";
     NotifyError(kPlatformFailureError);
     return;
   }
+  // After mapping, |region| is no longer necessary and it can be
+  // destroyed. |mapping| will keep the shared memory region open.
 
   std::unique_ptr<BitstreamBufferRef> buffer_ref(
-      new BitstreamBufferRef(buffer.id(), std::move(shm), buffer.size()));
+      new BitstreamBufferRef(buffer.id(), std::move(mapping), buffer.size()));
   encoder_thread_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
@@ -661,7 +666,7 @@ void MediaFoundationVideoEncodeAccelerator::ProcessOutput() {
 
   {
     MediaBufferScopedPointer scoped_buffer(output_buffer.Get());
-    memcpy(buffer_ref->shm->memory(), scoped_buffer.get(), size);
+    memcpy(buffer_ref->mapping.memory(), scoped_buffer.get(), size);
   }
 
   main_client_task_runner_->PostTask(
@@ -699,7 +704,7 @@ void MediaFoundationVideoEncodeAccelerator::ReturnBitstreamBuffer(
   DVLOG(3) << __func__;
   DCHECK(encoder_thread_task_runner_->BelongsToCurrentThread());
 
-  memcpy(buffer_ref->shm->memory(), encode_output->memory(),
+  memcpy(buffer_ref->mapping.memory(), encode_output->memory(),
          encode_output->size());
   main_client_task_runner_->PostTask(
       FROM_HERE,

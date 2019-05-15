@@ -416,7 +416,7 @@ void V4L2VideoEncodeAccelerator::Encode(const scoped_refptr<VideoFrame>& frame,
 }
 
 void V4L2VideoEncodeAccelerator::UseOutputBitstreamBuffer(
-    const BitstreamBuffer& buffer) {
+    BitstreamBuffer buffer) {
   DVLOGF(4) << "id=" << buffer.id();
   DCHECK(child_task_runner_->BelongsToCurrentThread());
 
@@ -425,7 +425,7 @@ void V4L2VideoEncodeAccelerator::UseOutputBitstreamBuffer(
     return;
   }
 
-  auto shm = std::make_unique<UnalignedSharedMemory>(buffer.handle(),
+  auto shm = std::make_unique<UnalignedSharedMemory>(buffer.TakeRegion(),
                                                      buffer.size(), false);
   if (!shm->MapAt(buffer.offset(), buffer.size())) {
     NOTIFY_ERROR(kPlatformFailureError);

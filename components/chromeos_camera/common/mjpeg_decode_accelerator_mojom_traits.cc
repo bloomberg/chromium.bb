@@ -66,21 +66,16 @@ bool EnumTraits<chromeos_camera::mojom::DecodeError,
 // static
 mojo::ScopedSharedBufferHandle StructTraits<
     chromeos_camera::mojom::BitstreamBufferDataView,
-    media::BitstreamBuffer>::memory_handle(const media::BitstreamBuffer&
-                                               input) {
-  base::SharedMemoryHandle input_handle =
-      base::SharedMemory::DuplicateHandle(input.handle());
-  if (!base::SharedMemory::IsHandleValid(input_handle)) {
-    DLOG(ERROR) << "Failed to duplicate handle of BitstreamBuffer";
-    return mojo::ScopedSharedBufferHandle();
-  }
+    media::BitstreamBuffer>::memory_handle(media::BitstreamBuffer& input) {
+  base::subtle::PlatformSharedMemoryRegion input_region = input.TakeRegion();
+  DCHECK(input_region.IsValid()) << "Bad BitstreamBuffer handle";
 
-  // TODO(https://crbug.com/793446): Update this to |kReadOnly| protection once
-  // BitstreamBuffer can guarantee that its handle() field always corresponds to
-  // a read-only SharedMemoryHandle.
-  return mojo::WrapSharedMemoryHandle(
-      input_handle, input.size(),
-      mojo::UnwrappedSharedMemoryHandleProtection::kReadWrite);
+  // TODO(https://crbug.com/793446): Split BitstreamBuffers into ReadOnly and
+  // Unsafe versions corresponding to usage, eg video encode accelerators will
+  // use writable mappings but audio uses are readonly (see
+  // android_video_encode_accelerator.cc and
+  // vt_video_encode_accelerator_mac.cc).
+  return mojo::WrapPlatformSharedMemoryRegion(std::move(input_region));
 }
 
 // static
@@ -108,21 +103,20 @@ bool StructTraits<chromeos_camera::mojom::BitstreamBufferDataView,
   if (!handle.is_valid())
     return false;
 
-  base::SharedMemoryHandle memory_handle;
-  MojoResult unwrap_result = mojo::UnwrapSharedMemoryHandle(
-      std::move(handle), &memory_handle, nullptr, nullptr);
-  if (unwrap_result != MOJO_RESULT_OK)
+  auto memory_region =
+      mojo::UnwrapPlatformSharedMemoryRegion(std::move(handle));
+  if (!memory_region.IsValid())
     return false;
 
   media::BitstreamBuffer bitstream_buffer(
-      input.id(), memory_handle, input.size(),
+      input.id(), std::move(memory_region), input.size(),
       base::checked_cast<off_t>(input.offset()), timestamp);
   if (key_id.size()) {
     // Note that BitstreamBuffer currently ignores how each buffer is
     // encrypted and uses the settings from the Audio/VideoDecoderConfig.
     bitstream_buffer.SetDecryptionSettings(key_id, iv, subsamples);
   }
-  *output = bitstream_buffer;
+  *output = std::move(bitstream_buffer);
 
   return true;
 }

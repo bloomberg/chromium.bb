@@ -408,10 +408,9 @@ bool GpuVideoDecodeAccelerator::Initialize(
 
 // Runs on IO thread if VDA::TryToSetupDecodeOnSeparateThread() succeeded,
 // otherwise on the main thread.
-void GpuVideoDecodeAccelerator::OnDecode(
-    const BitstreamBuffer& bitstream_buffer) {
+void GpuVideoDecodeAccelerator::OnDecode(BitstreamBuffer bitstream_buffer) {
   DCHECK(video_decode_accelerator_);
-  video_decode_accelerator_->Decode(bitstream_buffer);
+  video_decode_accelerator_->Decode(std::move(bitstream_buffer));
 }
 
 void GpuVideoDecodeAccelerator::OnAssignPictureBuffers(

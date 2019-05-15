@@ -46,7 +46,7 @@ class MEDIA_GPU_EXPORT VaapiMjpegDecodeAccelerator
   // chromeos_camera::MjpegDecodeAccelerator implementation.
   bool Initialize(
       chromeos_camera::MjpegDecodeAccelerator::Client* client) override;
-  void Decode(const BitstreamBuffer& bitstream_buffer,
+  void Decode(BitstreamBuffer bitstream_buffer,
               const scoped_refptr<VideoFrame>& video_frame) override;
   bool IsSupported() override;
 

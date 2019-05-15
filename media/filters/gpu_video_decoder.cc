@@ -458,9 +458,9 @@ void GpuVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
   memcpy(shared_memory->memory(), buffer->data(), size);
   // AndroidVideoDecodeAccelerator needs the timestamp to output frames in
   // presentation order.
-  BitstreamBuffer bitstream_buffer(next_bitstream_buffer_id_,
-                                   shared_memory->handle(), size, 0,
-                                   buffer->timestamp());
+  BitstreamBuffer bitstream_buffer(
+      next_bitstream_buffer_id_, shared_memory->handle(), false /* read_only */,
+      size, 0, buffer->timestamp());
 
   if (buffer->decrypt_config()) {
     bitstream_buffer.SetDecryptionSettings(
@@ -480,7 +480,7 @@ void GpuVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
   DCHECK_LE(static_cast<int>(bitstream_buffers_in_decoder_.size()),
             kMaxInFlightDecodes);
 
-  vda_->Decode(bitstream_buffer);
+  vda_->Decode(std::move(bitstream_buffer));
 }
 
 void GpuVideoDecoder::RecordBufferData(const BitstreamBuffer& bitstream_buffer,

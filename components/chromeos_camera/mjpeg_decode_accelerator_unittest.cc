@@ -288,7 +288,8 @@ class JpegClient : public MjpegDecodeAccelerator::Client {
   bool is_skip_;
 
   // Mapped memory of input file.
-  std::unique_ptr<base::SharedMemory> in_shm_;
+  base::UnsafeSharedMemoryRegion in_shm_;
+  base::WritableSharedMemoryMapping in_shm_mapping_;
   // Mapped memory of output buffer from hardware decoder.
   std::unique_ptr<base::SharedMemory> hw_out_shm_;
   // Video frame corresponding to the output of the hardware decoder.
@@ -384,11 +385,12 @@ void JpegClient::PrepareMemory(int32_t bitstream_buffer_id) {
   ParsedJpegImage* image_file = test_image_files_[bitstream_buffer_id];
 
   size_t input_size = image_file->data_str.size();
-  if (!in_shm_.get() || input_size > in_shm_->mapped_size()) {
-    in_shm_.reset(new base::SharedMemory);
-    LOG_ASSERT(in_shm_->CreateAndMapAnonymous(input_size));
+  if (!in_shm_mapping_.IsValid() || input_size > in_shm_mapping_.size()) {
+    in_shm_ = base::UnsafeSharedMemoryRegion::Create(input_size);
+    in_shm_mapping_ = in_shm_.Map();
+    LOG_ASSERT(in_shm_mapping_.IsValid());
   }
-  memcpy(in_shm_->memory(), image_file->data_str.data(), input_size);
+  memcpy(in_shm_mapping_.memory(), image_file->data_str.data(), input_size);
 
   if (!hw_out_shm_.get() ||
       image_file->output_size > hw_out_shm_->mapped_size()) {
@@ -498,10 +500,10 @@ void JpegClient::StartDecode(int32_t bitstream_buffer_id,
   if (do_prepare_memory)
     PrepareMemory(bitstream_buffer_id);
 
-  base::SharedMemoryHandle dup_handle;
-  dup_handle = base::SharedMemory::DuplicateHandle(in_shm_->handle());
-  media::BitstreamBuffer bitstream_buffer(bitstream_buffer_id, dup_handle,
-                                          image_file->data_str.size());
+  auto dup_region = base::UnsafeSharedMemoryRegion::TakeHandleForSerialization(
+      in_shm_.Duplicate());
+  media::BitstreamBuffer bitstream_buffer(
+      bitstream_buffer_id, std::move(dup_region), image_file->data_str.size());
 
   hw_out_frame_ = media::VideoFrame::WrapExternalSharedMemory(
       media::PIXEL_FORMAT_I420, image_file->coded_size,
@@ -510,7 +512,7 @@ void JpegClient::StartDecode(int32_t bitstream_buffer_id,
       hw_out_shm_->handle(), 0, base::TimeDelta());
   LOG_ASSERT(hw_out_frame_.get());
 
-  decoder_->Decode(bitstream_buffer, hw_out_frame_);
+  decoder_->Decode(std::move(bitstream_buffer), hw_out_frame_);
 }
 
 bool JpegClient::GetSoftwareDecodeResult(int32_t bitstream_buffer_id) {
@@ -522,7 +524,7 @@ bool JpegClient::GetSoftwareDecodeResult(int32_t bitstream_buffer_id) {
       sw_out_shm_->handle(), 0, base::TimeDelta());
   LOG_ASSERT(sw_out_shm_.get());
 
-  if (libyuv::ConvertToI420(static_cast<uint8_t*>(in_shm_->memory()),
+  if (libyuv::ConvertToI420(static_cast<uint8_t*>(in_shm_mapping_.memory()),
                             image_file->data_str.size(),
                             sw_out_frame_->data(media::VideoFrame::kYPlane),
                             sw_out_frame_->stride(media::VideoFrame::kYPlane),

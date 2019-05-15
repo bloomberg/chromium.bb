@@ -116,11 +116,19 @@ scoped_refptr<DecoderBuffer> DecoderBuffer::CopyFrom(const uint8_t* data,
 }
 
 // static
-scoped_refptr<DecoderBuffer> DecoderBuffer::FromSharedMemoryHandle(
-    const base::SharedMemoryHandle& handle,
+scoped_refptr<DecoderBuffer> DecoderBuffer::FromSharedMemoryRegion(
+    base::subtle::PlatformSharedMemoryRegion region,
     off_t offset,
     size_t size) {
-  auto shm = std::make_unique<UnalignedSharedMemory>(handle, size, true);
+  // TODO(crbug.com/795291): when clients have converted to using
+  // base::ReadOnlySharedMemoryRegion the ugly mode check below will no longer
+  // be necessary.
+  auto shm = std::make_unique<UnalignedSharedMemory>(
+      std::move(region), size,
+      region.GetMode() ==
+              base::subtle::PlatformSharedMemoryRegion::Mode::kReadOnly
+          ? true
+          : false);
   if (size == 0 || !shm->MapAt(offset, size))
     return nullptr;
   return base::WrapRefCounted(new DecoderBuffer(std::move(shm), size));

@@ -28,7 +28,7 @@ struct StructTraits<chromeos_camera::mojom::BitstreamBufferDataView,
   static int32_t id(const media::BitstreamBuffer& input) { return input.id(); }
 
   static mojo::ScopedSharedBufferHandle memory_handle(
-      const media::BitstreamBuffer& input);
+      media::BitstreamBuffer& input);
 
   static uint32_t size(const media::BitstreamBuffer& input) {
     return base::checked_cast<uint32_t>(input.size());
