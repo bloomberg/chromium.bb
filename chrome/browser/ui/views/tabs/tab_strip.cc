@@ -119,8 +119,10 @@ int g_drop_indicator_height = 0;
 class TabHoverCardEventSniffer : public ui::EventHandler {
  public:
   TabHoverCardEventSniffer(TabHoverCardBubbleView* hover_card,
-                           views::Widget* widget)
-      : hover_card_(hover_card), widget_(widget) {
+                           TabStrip* tab_strip)
+      : hover_card_(hover_card),
+        tab_strip_(tab_strip),
+        widget_(tab_strip->GetWidget()) {
 #if defined(OS_MACOSX)
     if (widget_->GetRootView())
       widget_->GetRootView()->AddPreTargetHandler(this);
@@ -141,11 +143,22 @@ class TabHoverCardEventSniffer : public ui::EventHandler {
  protected:
   // ui::EventTarget:
   void OnKeyEvent(ui::KeyEvent* event) override {
-    hover_card_->FadeOutToHide();
+    if (!TabStripIsKeyboardFocused())
+      hover_card_->FadeOutToHide();
+  }
+
+  void OnMouseEvent(ui::MouseEvent* event) override {
+    if (event->IsAnyButton())
+      hover_card_->FadeOutToHide();
   }
 
  private:
+  bool TabStripIsKeyboardFocused() {
+    return tab_strip_->GetPaneFocusTraversable() != nullptr;
+  }
+
   TabHoverCardBubbleView* const hover_card_;
+  TabStrip* tab_strip_;
   views::Widget* widget_;
 };
 
@@ -1558,7 +1571,7 @@ void TabStrip::UpdateHoverCard(Tab* tab, bool should_show) {
     hover_card_->views::View::AddObserver(this);
     if (GetWidget()) {
       hover_card_event_sniffer_ =
-          std::make_unique<TabHoverCardEventSniffer>(hover_card_, GetWidget());
+          std::make_unique<TabHoverCardEventSniffer>(hover_card_, this);
     }
   }
   if (should_show)

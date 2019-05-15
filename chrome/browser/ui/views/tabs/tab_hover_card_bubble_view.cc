@@ -354,7 +354,8 @@ void TabHoverCardBubbleView::UpdateAndShow(Tab* tab) {
   fade_animation_delegate_->CancelFadeOut();
 
   if (!widget_->IsVisible()) {
-    if (disable_animations_for_testing_ || show_immediately) {
+    if (disable_animations_for_testing_ || show_immediately ||
+        tab->HasFocus()) {
       widget_->Show();
     } else {
       // Note that this will restart the timer if it is already running. If the
@@ -367,6 +368,8 @@ void TabHoverCardBubbleView::UpdateAndShow(Tab* tab) {
 }
 
 void TabHoverCardBubbleView::FadeOutToHide() {
+  if (!widget_->IsVisible())
+    return;
   delayed_show_timer_.Stop();
   last_visible_timestamp_ = base::TimeTicks::Now();
   if (disable_animations_for_testing_) {

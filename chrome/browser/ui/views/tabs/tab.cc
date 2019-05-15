@@ -155,6 +155,7 @@ Tab::Tab(TabController* controller)
       this, base::BindRepeating(&TabController::OnMouseEventInTab,
                                 base::Unretained(controller_)));
   AddChildView(close_button_);
+  close_button_->AddObserver(this);
 
   set_context_menu_controller(this);
 
@@ -165,7 +166,9 @@ Tab::Tab(TabController* controller)
   focus_ring_ = views::FocusRing::Install(this);
 }
 
-Tab::~Tab() = default;
+Tab::~Tab() {
+  close_button_->RemoveObserver(this);
+}
 
 void Tab::AnimationEnded(const gfx::Animation* animation) {
   DCHECK_EQ(animation, &title_animation_);
@@ -592,8 +595,16 @@ void Tab::AddedToWidget() {
   UpdateForegroundColors();
 }
 
+void Tab::OnFocus() {
+  controller_->UpdateHoverCard(this, true);
+}
+
 void Tab::OnThemeChanged() {
   UpdateForegroundColors();
+}
+
+void Tab::OnViewFocused(views::View* observed_view) {
+  controller_->UpdateHoverCard(this, true);
 }
 
 void Tab::SetClosing(bool closing) {
