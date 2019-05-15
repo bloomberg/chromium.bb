@@ -208,8 +208,9 @@ class TestWebWidgetClient : public WebWidgetClient {
   void SetPageScaleFactorAndLimits(float page_scale_factor,
                                    float minimum,
                                    float maximum) override;
-  void InjectGestureScrollEvent(const blink::WebFloatSize& delta,
-                                blink::WebScrollGranularity granularity,
+  void InjectGestureScrollEvent(WebGestureDevice device,
+                                const WebFloatSize& delta,
+                                WebScrollGranularity granularity,
                                 cc::ElementId scrollable_area_element_id,
                                 WebInputEvent::Type injected_type) override;
 

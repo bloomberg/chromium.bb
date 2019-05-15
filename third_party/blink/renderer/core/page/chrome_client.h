@@ -189,8 +189,9 @@ class CORE_EXPORT ChromeClient
   // The dispatched gesture will scroll the ScrollableArea identified by
   // |scrollable_area_element_id| by the given delta+granularity.
   virtual void InjectGestureScrollEvent(
+      WebGestureDevice device,
       const WebFloatSize& delta,
-      blink::WebScrollGranularity granularity,
+      WebScrollGranularity granularity,
       CompositorElementId scrollable_area_element_id,
       WebInputEvent::Type injected_type) {}
 

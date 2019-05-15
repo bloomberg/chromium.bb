@@ -67,7 +67,8 @@ class CONTENT_EXPORT RenderWidgetInputHandler {
                               const blink::WebFloatSize& velocity,
                               const cc::OverscrollBehavior& behavior);
 
-  void InjectGestureScrollEvent(const blink::WebFloatSize& delta,
+  void InjectGestureScrollEvent(blink::WebGestureDevice device,
+                                const blink::WebFloatSize& delta,
                                 blink::WebScrollGranularity granularity,
                                 cc::ElementId scrollable_area_element_id,
                                 blink::WebInputEvent::Type injected_type);

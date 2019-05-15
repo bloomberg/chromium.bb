@@ -294,12 +294,13 @@ void ChromeClientImpl::DidOverscroll(const FloatSize& overscroll_delta,
 }
 
 void ChromeClientImpl::InjectGestureScrollEvent(
+    WebGestureDevice device,
     const WebFloatSize& delta,
     WebScrollGranularity granularity,
     CompositorElementId scrollable_area_element_id,
     WebInputEvent::Type injected_type) {
   web_view_->WidgetClient()->InjectGestureScrollEvent(
-      delta, granularity, scrollable_area_element_id, injected_type);
+      device, delta, granularity, scrollable_area_element_id, injected_type);
 }
 
 void ChromeClientImpl::SetOverscrollBehavior(

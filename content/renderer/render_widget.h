@@ -79,7 +79,6 @@ namespace blink {
 namespace scheduler {
 class WebRenderWidgetSchedulingState;
 }
-enum class WebInjectedScrollSequenceType;
 struct WebDeviceEmulationParams;
 class WebDragData;
 class WebFrameWidget;
@@ -410,6 +409,7 @@ class CONTENT_EXPORT RenderWidget
                      const blink::WebFloatPoint& position,
                      const blink::WebFloatSize& velocity) override;
   void InjectGestureScrollEvent(
+      blink::WebGestureDevice device,
       const blink::WebFloatSize& delta,
       blink::WebScrollGranularity granularity,
       cc::ElementId scrollable_area_element_id,

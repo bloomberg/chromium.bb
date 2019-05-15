@@ -649,8 +649,9 @@ void TestWebWidgetClient::SetPageScaleFactorAndLimits(float page_scale_factor,
 }
 
 void TestWebWidgetClient::InjectGestureScrollEvent(
-    const blink::WebFloatSize& delta,
-    blink::WebScrollGranularity granularity,
+    WebGestureDevice device,
+    const WebFloatSize& delta,
+    WebScrollGranularity granularity,
     cc::ElementId scrollable_area_element_id,
     WebInputEvent::Type injected_type) {
   if (injected_type == WebInputEvent::kGestureScrollUpdate) {

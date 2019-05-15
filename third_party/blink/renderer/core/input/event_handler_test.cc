@@ -1069,13 +1069,14 @@ class InjectedGestureCapturingChromeClient : public EmptyChromeClient {
 
   struct InjectedGestureData {
     WebFloatSize delta;
-    blink::WebScrollGranularity granularity;
+    WebScrollGranularity granularity;
     CompositorElementId scrollable_area_element_id;
     WebInputEvent::Type type;
   };
 
-  void InjectGestureScrollEvent(const WebFloatSize& delta,
-                                blink::WebScrollGranularity granularity,
+  void InjectGestureScrollEvent(WebGestureDevice device,
+                                const WebFloatSize& delta,
+                                WebScrollGranularity granularity,
                                 CompositorElementId scrollable_area_element_id,
                                 WebInputEvent::Type type) override {
     InjectedGestureData data{delta, granularity, scrollable_area_element_id,
