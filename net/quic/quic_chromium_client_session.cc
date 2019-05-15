@@ -829,17 +829,17 @@ QuicChromiumClientSession::~QuicChromiumClientSession() {
 
   net_log_.EndEvent(NetLogEventType::QUIC_SESSION);
   DCHECK(waiting_for_confirmation_callbacks_.empty());
-  if (!dynamic_streams().empty())
+  if (HasActiveRequestStreams())
     RecordUnexpectedOpenStreams(DESTRUCTOR);
   if (!handles_.empty())
     RecordUnexpectedObservers(DESTRUCTOR);
   if (!going_away_)
     RecordUnexpectedNotGoingAway(DESTRUCTOR);
 
-  while (!dynamic_streams().empty() || !handles_.empty() ||
+  while (HasActiveRequestStreams() || !handles_.empty() ||
          !stream_requests_.empty()) {
     // The session must be closed before it is destroyed.
-    DCHECK(dynamic_streams().empty());
+    DCHECK(!HasActiveRequestStreams());
     CloseAllStreams(ERR_UNEXPECTED);
     DCHECK(handles_.empty());
     CloseAllHandles(ERR_UNEXPECTED);
@@ -1715,7 +1715,7 @@ void QuicChromiumClientSession::OnConnectionClosed(
   for (auto& socket : sockets_) {
     socket->Close();
   }
-  DCHECK(dynamic_streams().empty());
+  DCHECK(!HasActiveRequestStreams());
   CloseAllStreams(ERR_UNEXPECTED);
   CloseAllHandles(ERR_UNEXPECTED);
   CancelAllRequests(ERR_CONNECTION_CLOSED);
@@ -2415,11 +2415,26 @@ void QuicChromiumClientSession::CloseSessionOnErrorLater(
 }
 
 void QuicChromiumClientSession::CloseAllStreams(int net_error) {
-  while (!dynamic_streams().empty()) {
-    quic::QuicStream* stream = dynamic_streams().begin()->second.get();
-    quic::QuicStreamId id = stream->id();
-    static_cast<QuicChromiumClientStream*>(stream)->OnError(net_error);
-    CloseStream(id);
+  if (!eliminate_static_stream_map()) {
+    while (!dynamic_streams().empty()) {
+      quic::QuicStream* stream = dynamic_streams().begin()->second.get();
+      quic::QuicStreamId id = stream->id();
+      static_cast<QuicChromiumClientStream*>(stream)->OnError(net_error);
+      CloseStream(id);
+    }
+  } else {
+    quic::QuicSmallMap<quic::QuicStreamId, quic::QuicStream*, 10>
+        non_static_streams;
+    for (const auto& stream : dynamic_streams()) {
+      if (!stream.second->is_static()) {
+        non_static_streams[stream.first] = stream.second.get();
+      }
+    }
+    for (const auto& stream : non_static_streams) {
+      quic::QuicStreamId id = stream.first;
+      static_cast<QuicChromiumClientStream*>(stream.second)->OnError(net_error);
+      CloseStream(id);
+    }
   }
 }
 
@@ -2628,6 +2643,10 @@ void QuicChromiumClientSession::ResetNonMigratableStreams() {
   auto it = dynamic_streams().begin();
   // Stream may be deleted when iterating through the map.
   while (it != dynamic_streams().end()) {
+    if (eliminate_static_stream_map() && it->second->is_static()) {
+      it++;
+      continue;
+    }
     QuicChromiumClientStream* stream =
         static_cast<QuicChromiumClientStream*>(it->second.get());
     if (!stream->can_migrate_to_cellular_network()) {
@@ -2749,6 +2768,8 @@ base::Value QuicChromiumClientSession::GetInfoAsValue(
   std::unique_ptr<base::ListValue> stream_list(new base::ListValue());
   for (DynamicStreamMap::const_iterator it = dynamic_streams().begin();
        it != dynamic_streams().end(); ++it) {
+    if (eliminate_static_stream_map() && it->second->is_static())
+      continue;
     stream_list->AppendString(base::NumberToString(it->second->id()));
   }
   dict.Set("active_streams", std::move(stream_list));
@@ -2833,7 +2854,7 @@ void QuicChromiumClientSession::NotifyFactoryOfSessionGoingAway() {
 }
 
 void QuicChromiumClientSession::NotifyFactoryOfSessionClosedLater() {
-  if (!dynamic_streams().empty())
+  if (HasActiveRequestStreams())
     RecordUnexpectedOpenStreams(NOTIFY_FACTORY_OF_SESSION_CLOSED_LATER);
 
   if (!going_away_)
@@ -2849,7 +2870,7 @@ void QuicChromiumClientSession::NotifyFactoryOfSessionClosedLater() {
 }
 
 void QuicChromiumClientSession::NotifyFactoryOfSessionClosed() {
-  if (!dynamic_streams().empty())
+  if (HasActiveRequestStreams())
     RecordUnexpectedOpenStreams(NOTIFY_FACTORY_OF_SESSION_CLOSED);
 
   if (!going_away_)
