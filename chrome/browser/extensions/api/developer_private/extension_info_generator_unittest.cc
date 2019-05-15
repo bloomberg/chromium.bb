@@ -299,8 +299,6 @@ TEST_F(ExtensionInfoGeneratorUnitTest, BasicInfoTest) {
   EXPECT_FALSE(info->file_access.is_active);
   EXPECT_TRUE(info->incognito_access.is_enabled);
   EXPECT_FALSE(info->incognito_access.is_active);
-  PermissionMessages messages =
-      extension->permissions_data()->GetPermissionMessages();
 
   // Strip out the kHostReadWrite permission created by the extension requesting
   // host permissions above; runtime host permissions mean these are always
@@ -309,11 +307,12 @@ TEST_F(ExtensionInfoGeneratorUnitTest, BasicInfoTest) {
   // entry in |messages| has a matching entry in
   // |info->permissions.simple_permissions|, and kHostReadWrite is not a simple
   // permission.
-  for (auto it = messages.begin(); it != messages.end(); ++it) {
-    if (it->permissions().ContainsID(
+  PermissionMessages messages;
+  for (const PermissionMessage& message :
+       extension->permissions_data()->GetPermissionMessages()) {
+    if (!message.permissions().ContainsID(
             extensions::APIPermission::kHostReadWrite)) {
-      messages.erase(it);
-      break;
+      messages.push_back(message);
     }
   }
 
