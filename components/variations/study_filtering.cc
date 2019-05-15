@@ -274,6 +274,12 @@ bool ShouldAddStudy(const Study& study,
       return false;
     }
 
+    if (!CheckStudyOSVersion(study.filter(), client_state.os_version)) {
+      DVLOG(1) << "Filtered out study " << study.name()
+               << " due to os_version.";
+      return false;
+    }
+
     const std::string& country = GetClientCountryForStudy(study, client_state);
     if (!CheckStudyCountry(study.filter(), country)) {
       DVLOG(1) << "Filtered out study " << study.name() << " due to country.";
