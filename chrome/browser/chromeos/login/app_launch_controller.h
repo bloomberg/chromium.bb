@@ -139,6 +139,7 @@ class AppLaunchController : public KioskProfileLoader::Delegate,
   content::NotificationRegistrar registrar_;
   bool login_screen_visible_ = false;
   bool launcher_ready_ = false;
+  bool cleaned_up_ = false;
 
   // A timer to ensure the app splash is shown for a minimum amount of time.
   base::OneShotTimer splash_wait_timer_;
