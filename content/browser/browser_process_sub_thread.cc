@@ -197,6 +197,10 @@ void BrowserProcessSubThread::IOThreadCleanUp() {
 #if BUILDFLAG(CLANG_COVERAGE)
       // On coverage build, browser_tests runs 10x slower.
       const int kMaxSecondsToWaitForNetworkProcess = 100;
+#elif defined(OS_CHROMEOS)
+      // ChromeOS will kill the browser process if it doesn't shut down within
+      // 3 seconds, so make sure we wait for less than that.
+      const int kMaxSecondsToWaitForNetworkProcess = 1;
 #else
       const int kMaxSecondsToWaitForNetworkProcess = 10;
 #endif
