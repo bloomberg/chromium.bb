@@ -32606,6 +32606,12 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="9" label="Parent access button"/>
 </enum>
 
+<enum name="LockToSingleUserResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="No response"/>
+  <int value="2" label="Failed to lock"/>
+</enum>
+
 <enum name="LoginConsumerWhitelist">
   <int value="0" label="ANY_USER_ALLOWED">Any user can sign in</int>
   <int value="1" label="ONLY_WHITELISTED_ALLOWED">Whitelisted users only</int>
