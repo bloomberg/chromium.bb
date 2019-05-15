@@ -11,7 +11,6 @@
 #include "media/base/audio_parameters.h"
 #include "media/base/audio_renderer_sink.h"
 #include "media/blink/webaudiosourceprovider_impl.h"
-#include "media/blink/webmediaplayer_impl.h"
 #include "third_party/blink/public/platform/web_media_player.h"
 
 namespace content {

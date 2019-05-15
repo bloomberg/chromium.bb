@@ -34,10 +34,9 @@ ACTION_P(RunClosure, closure) {
 }
 
 // An almost empty WebMediaPlayer to override paint() method.
-class MockWebMediaPlayer : public blink::WebMediaPlayer,
-                           public base::SupportsWeakPtr<MockWebMediaPlayer> {
+class MockWebMediaPlayer : public blink::WebMediaPlayer {
  public:
-  MockWebMediaPlayer()  = default;
+  MockWebMediaPlayer() : weak_factory_(this) {}
   ~MockWebMediaPlayer() override = default;
 
   LoadTiming Load(LoadType,
@@ -97,7 +96,13 @@ class MockWebMediaPlayer : public blink::WebMediaPlayer,
   }
   bool IsOpaque() const override { return is_video_opaque_; }
 
+  base::WeakPtr<WebMediaPlayer> AsWeakPtr() override {
+    return weak_factory_.GetWeakPtr();
+  }
+
   bool is_video_opaque_ = true;
+
+  base::WeakPtrFactory<MockWebMediaPlayer> weak_factory_;
 };
 
 class HTMLVideoElementCapturerSourceTest : public testing::TestWithParam<bool> {

@@ -265,10 +265,12 @@ WebMediaPlayerMS::WebMediaPlayerMS(
       should_play_upon_shown_(false),
       create_bridge_callback_(std::move(create_bridge_callback)),
       submitter_(std::move(submitter)),
-      surface_layer_mode_(surface_layer_mode) {
+      surface_layer_mode_(surface_layer_mode),
+      weak_factory_(this) {
   DVLOG(1) << __func__;
   DCHECK(client);
   DCHECK(delegate_);
+  weak_this_ = weak_factory_.GetWeakPtr();
   delegate_id_ = delegate_->AddObserver(this);
 
   media_log_->AddEvent(
@@ -325,7 +327,7 @@ blink::WebMediaPlayer::LoadTiming WebMediaPlayerMS::Load(
 
   compositor_ = new WebMediaPlayerMSCompositor(
       compositor_task_runner_, io_task_runner_, web_stream_,
-      std::move(submitter_), surface_layer_mode_, AsWeakPtr());
+      std::move(submitter_), surface_layer_mode_, weak_this_);
 
   SetNetworkState(WebMediaPlayer::kNetworkStateLoading);
   SetReadyState(WebMediaPlayer::kReadyStateHaveNothing);
@@ -334,7 +336,7 @@ blink::WebMediaPlayer::LoadTiming WebMediaPlayerMS::Load(
   media_log_->AddEvent(media_log_->CreateLoadEvent(stream_id));
 
   frame_deliverer_.reset(new WebMediaPlayerMS::FrameDeliverer(
-      AsWeakPtr(),
+      weak_this_,
       base::BindRepeating(&WebMediaPlayerMSCompositor::EnqueueFrame,
                           compositor_),
       media_task_runner_, worker_task_runner_, gpu_factories_));
@@ -464,6 +466,10 @@ base::Optional<viz::SurfaceId> WebMediaPlayerMS::GetSurfaceId() {
   if (bridge_)
     return bridge_->GetSurfaceId();
   return base::nullopt;
+}
+
+base::WeakPtr<blink::WebMediaPlayer> WebMediaPlayerMS::AsWeakPtr() {
+  return weak_this_;
 }
 
 void WebMediaPlayerMS::Reload() {

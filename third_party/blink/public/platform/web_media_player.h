@@ -31,6 +31,7 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MEDIA_PLAYER_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MEDIA_PLAYER_H_
 
+#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "third_party/blink/public/platform/web_callbacks.h"
@@ -418,6 +419,8 @@ class WebMediaPlayer {
   virtual base::Optional<viz::SurfaceId> GetSurfaceId() {
     return base::nullopt;
   }
+
+  virtual base::WeakPtr<WebMediaPlayer> AsWeakPtr() = 0;
 };
 
 }  // namespace blink

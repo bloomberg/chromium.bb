@@ -314,28 +314,30 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       is_background_video_playback_enabled_(
           params->IsBackgroundVideoPlaybackEnabled()),
       is_background_video_track_optimization_supported_(
-          params->IsBackgroundVideoTrackOptimizationSupported()) {
+          params->IsBackgroundVideoTrackOptimizationSupported()),
+      weak_factory_(this) {
   DVLOG(1) << __func__;
   DCHECK(adjust_allocated_memory_cb_);
   DCHECK(renderer_factory_selector_);
   DCHECK(client_);
   DCHECK(delegate_);
 
+  weak_this_ = weak_factory_.GetWeakPtr();
+
   pipeline_controller_ = std::make_unique<PipelineController>(
       std::make_unique<PipelineImpl>(media_task_runner_, main_task_runner_,
                                      media_log_.get()),
       base::BindRepeating(&WebMediaPlayerImpl::CreateRenderer,
                           base::Unretained(this)),
-      base::BindRepeating(&WebMediaPlayerImpl::OnPipelineSeeked, AsWeakPtr()),
-      base::BindRepeating(&WebMediaPlayerImpl::OnPipelineSuspended,
-                          AsWeakPtr()),
+      base::BindRepeating(&WebMediaPlayerImpl::OnPipelineSeeked, weak_this_),
+      base::BindRepeating(&WebMediaPlayerImpl::OnPipelineSuspended, weak_this_),
       base::BindRepeating(&WebMediaPlayerImpl::OnBeforePipelineResume,
-                          AsWeakPtr()),
-      base::BindRepeating(&WebMediaPlayerImpl::OnPipelineResumed, AsWeakPtr()),
-      base::BindRepeating(&WebMediaPlayerImpl::OnError, AsWeakPtr()));
+                          weak_this_),
+      base::BindRepeating(&WebMediaPlayerImpl::OnPipelineResumed, weak_this_),
+      base::BindRepeating(&WebMediaPlayerImpl::OnError, weak_this_));
 
   buffered_data_source_host_ = std::make_unique<BufferedDataSourceHostImpl>(
-      base::BindRepeating(&WebMediaPlayerImpl::OnProgress, AsWeakPtr()),
+      base::BindRepeating(&WebMediaPlayerImpl::OnProgress, weak_this_),
       tick_clock_);
 
   // If we're supposed to force video overlays, then make sure that they're
@@ -487,7 +489,7 @@ WebMediaPlayer::LoadTiming WebMediaPlayerImpl::Load(
 
   if (defer_load_cb_) {
     is_deferred = defer_load_cb_.Run(base::BindOnce(
-        &WebMediaPlayerImpl::DoLoad, AsWeakPtr(), load_type, url, cors_mode));
+        &WebMediaPlayerImpl::DoLoad, weak_this_, load_type, url, cors_mode));
   } else {
     DoLoad(load_type, url, cors_mode);
   }
@@ -532,7 +534,7 @@ void WebMediaPlayerImpl::EnableOverlay() {
       overlay_mode_ == OverlayMode::kUseAndroidOverlay) {
     overlay_routing_token_is_pending_ = true;
     token_available_cb_.Reset(
-        base::Bind(&WebMediaPlayerImpl::OnOverlayRoutingToken, AsWeakPtr()));
+        base::Bind(&WebMediaPlayerImpl::OnOverlayRoutingToken, weak_this_));
     request_routing_token_cb_.Run(token_available_cb_.callback());
   }
 
@@ -728,18 +730,18 @@ void WebMediaPlayerImpl::DoLoad(LoadType load_type,
     auto url_data =
         url_index_->GetByUrl(url, static_cast<UrlData::CorsMode>(cors_mode));
     // Notify |this| of bytes received by the network.
-    url_data->AddBytesReceivedCallback(BindToCurrentLoop(base::BindRepeating(
-        &WebMediaPlayerImpl::OnBytesReceived, AsWeakPtr())));
+    url_data->AddBytesReceivedCallback(BindToCurrentLoop(
+        base::BindRepeating(&WebMediaPlayerImpl::OnBytesReceived, weak_this_)));
     mb_data_source_ = new MultibufferDataSource(
         main_task_runner_, std::move(url_data), media_log_.get(),
         buffered_data_source_host_.get(),
         base::BindRepeating(&WebMediaPlayerImpl::NotifyDownloading,
-                            AsWeakPtr()));
+                            weak_this_));
     data_source_.reset(mb_data_source_);
     mb_data_source_->SetPreload(preload_);
     mb_data_source_->SetIsClientAudioElement(client_->IsAudioElement());
     mb_data_source_->Initialize(
-        base::Bind(&WebMediaPlayerImpl::DataSourceInitialized, AsWeakPtr()));
+        base::Bind(&WebMediaPlayerImpl::DataSourceInitialized, weak_this_));
   }
 }
 
@@ -848,7 +850,7 @@ void WebMediaPlayerImpl::DoSeek(base::TimeDelta time, bool time_updated) {
     if (old_state == kReadyStateHaveEnoughData) {
       main_task_runner_->PostTask(
           FROM_HERE, base::BindOnce(&WebMediaPlayerImpl::OnBufferingStateChange,
-                                    AsWeakPtr(), BUFFERING_HAVE_ENOUGH));
+                                    weak_this_, BUFFERING_HAVE_ENOUGH));
     }
     return;
   }
@@ -1469,7 +1471,7 @@ void WebMediaPlayerImpl::SetCdmInternal(
   // after the pipeline is done with the |cdm_context|.
   pending_cdm_context_ref_ = std::move(cdm_context_ref);
   pipeline_controller_->SetCdm(
-      cdm_context, base::Bind(&WebMediaPlayerImpl::OnCdmAttached, AsWeakPtr()));
+      cdm_context, base::Bind(&WebMediaPlayerImpl::OnCdmAttached, weak_this_));
 }
 
 void WebMediaPlayerImpl::OnCdmAttached(bool success) {
@@ -1705,7 +1707,7 @@ void WebMediaPlayerImpl::OnError(PipelineStatus status) {
               std::move(start_pipeline_cb).Run();
             },
             std::move(demuxer_), std::move(data_source_),
-            base::BindOnce(&WebMediaPlayerImpl::StartPipeline, AsWeakPtr()))));
+            base::BindOnce(&WebMediaPlayerImpl::StartPipeline, weak_this_))));
 
     return;
   }
@@ -2292,7 +2294,7 @@ void WebMediaPlayerImpl::OnFrameShown() {
   if ((!paused_ && IsBackgroundOptimizationCandidate()) ||
       paused_when_hidden_) {
     frame_time_report_cb_.Reset(base::BindOnce(
-        &WebMediaPlayerImpl::ReportTimeFromForegroundToFirstFrame, AsWeakPtr(),
+        &WebMediaPlayerImpl::ReportTimeFromForegroundToFirstFrame, weak_this_,
         base::TimeTicks::Now()));
     vfc_task_runner_->PostTask(
         FROM_HERE,
@@ -2567,7 +2569,7 @@ std::unique_ptr<Renderer> WebMediaPlayerImpl::CreateRenderer() {
   RequestOverlayInfoCB request_overlay_info_cb;
 #if defined(OS_ANDROID)
   request_overlay_info_cb = BindToCurrentLoop(
-      base::Bind(&WebMediaPlayerImpl::OnOverlayInfoRequested, AsWeakPtr()));
+      base::Bind(&WebMediaPlayerImpl::OnOverlayInfoRequested, weak_this_));
 #endif
   return renderer_factory_selector_->GetCurrentFactory()->CreateRenderer(
       media_task_runner_, worker_task_runner_, audio_source_provider_.get(),
@@ -2579,14 +2581,14 @@ void WebMediaPlayerImpl::StartPipeline() {
 
   Demuxer::EncryptedMediaInitDataCB encrypted_media_init_data_cb =
       BindToCurrentLoop(base::Bind(
-          &WebMediaPlayerImpl::OnEncryptedMediaInitData, AsWeakPtr()));
+          &WebMediaPlayerImpl::OnEncryptedMediaInitData, weak_this_));
 
   vfc_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&VideoFrameCompositor::SetOnNewProcessedFrameCallback,
                      base::Unretained(compositor_.get()),
                      BindToCurrentLoop(base::BindOnce(
-                         &WebMediaPlayerImpl::OnFirstFrame, AsWeakPtr()))));
+                         &WebMediaPlayerImpl::OnFirstFrame, weak_this_))));
 
 #if defined(OS_ANDROID)
   if (demuxer_found_hls_ ||
@@ -2617,7 +2619,7 @@ void WebMediaPlayerImpl::StartPipeline() {
 #if BUILDFLAG(ENABLE_FFMPEG)
     Demuxer::MediaTracksUpdatedCB media_tracks_updated_cb =
         BindToCurrentLoop(base::Bind(
-            &WebMediaPlayerImpl::OnFFmpegMediaTracksUpdated, AsWeakPtr()));
+            &WebMediaPlayerImpl::OnFFmpegMediaTracksUpdated, weak_this_));
 
     demuxer_.reset(new FFmpegDemuxer(
         media_task_runner_, data_source_.get(), encrypted_media_init_data_cb,
@@ -2630,16 +2632,15 @@ void WebMediaPlayerImpl::StartPipeline() {
     DCHECK(!chunk_demuxer_);
     DCHECK(!data_source_);
 
-    chunk_demuxer_ = new ChunkDemuxer(
-        BindToCurrentLoop(
-            base::Bind(&WebMediaPlayerImpl::OnDemuxerOpened, AsWeakPtr())),
-        BindToCurrentLoop(
-            base::Bind(&WebMediaPlayerImpl::OnProgress, AsWeakPtr())),
-        encrypted_media_init_data_cb, media_log_.get());
+    chunk_demuxer_ =
+        new ChunkDemuxer(BindToCurrentLoop(base::Bind(
+                             &WebMediaPlayerImpl::OnDemuxerOpened, weak_this_)),
+                         BindToCurrentLoop(base::Bind(
+                             &WebMediaPlayerImpl::OnProgress, weak_this_)),
+                         encrypted_media_init_data_cb, media_log_.get());
     // Notify |this| of bytes that are received via MSE.
-    chunk_demuxer_->AddBytesReceivedCallback(
-        BindToCurrentLoop(base::BindRepeating(
-            &WebMediaPlayerImpl::OnBytesReceived, AsWeakPtr())));
+    chunk_demuxer_->AddBytesReceivedCallback(BindToCurrentLoop(
+        base::BindRepeating(&WebMediaPlayerImpl::OnBytesReceived, weak_this_)));
     demuxer_.reset(chunk_demuxer_);
 
     if (base::FeatureList::IsEnabled(kMemoryPressureBasedSourceBufferGC)) {
@@ -2975,7 +2976,7 @@ void WebMediaPlayerImpl::ReportMemoryUsage() {
     base::PostTaskAndReplyWithResult(
         media_task_runner_.get(), FROM_HERE,
         base::Bind(&Demuxer::GetMemoryUsage, base::Unretained(demuxer_.get())),
-        base::Bind(&WebMediaPlayerImpl::FinishMemoryUsageReport, AsWeakPtr()));
+        base::Bind(&WebMediaPlayerImpl::FinishMemoryUsageReport, weak_this_));
   } else {
     FinishMemoryUsageReport(0);
   }
@@ -3181,6 +3182,10 @@ base::Optional<viz::SurfaceId> WebMediaPlayerImpl::GetSurfaceId() {
   if (!surface_layer_for_video_enabled_)
     return base::nullopt;
   return bridge_->GetSurfaceId();
+}
+
+base::WeakPtr<blink::WebMediaPlayer> WebMediaPlayerImpl::AsWeakPtr() {
+  return weak_this_;
 }
 
 bool WebMediaPlayerImpl::ShouldPausePlaybackWhenHidden() const {
