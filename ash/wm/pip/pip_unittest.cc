@@ -8,8 +8,8 @@
 #include <utility>
 
 #include "ash/keyboard/ui/keyboard_controller.h"
-#include "ash/keyboard/ui/public/keyboard_switches.h"
 #include "ash/keyboard/ui/test/keyboard_test_util.h"
+#include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"

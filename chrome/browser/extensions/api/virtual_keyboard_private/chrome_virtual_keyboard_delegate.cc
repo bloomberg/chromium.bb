@@ -8,8 +8,8 @@
 #include <string>
 #include <utility>
 
-#include "ash/keyboard/ui/public/keyboard_controller_types.mojom.h"
-#include "ash/keyboard/ui/public/keyboard_switches.h"
+#include "ash/public/cpp/keyboard/keyboard_switches.h"
+#include "ash/public/interfaces/keyboard_controller_types.mojom.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"

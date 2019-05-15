@@ -4,8 +4,8 @@
 
 module ash.mojom;
 
-import "ash/keyboard/ui/public/keyboard_config.mojom";
-import "ash/keyboard/ui/public/keyboard_controller_types.mojom";
+import "ash/public/interfaces/keyboard_config.mojom";
+import "ash/public/interfaces/keyboard_controller_types.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
 enum HideReason {

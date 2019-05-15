@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "ash/keyboard/ui/public/keyboard_switches.h"
+#include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"

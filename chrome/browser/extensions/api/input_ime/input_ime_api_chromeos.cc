@@ -9,7 +9,7 @@
 #include <memory>
 #include <utility>
 
-#include "ash/keyboard/ui/public/keyboard_config.mojom.h"
+#include "ash/public/interfaces/keyboard_config.mojom.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"

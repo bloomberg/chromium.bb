@@ -1809,7 +1809,6 @@ jumbo_split_static_library("ui") {
       "//ash",
       "//ash/components/shortcut_viewer",
       "//ash/keyboard/ui",
-      "//ash/keyboard/ui:mojom",
       "//ash/public/cpp",
       "//ash/public/cpp/resources:ash_public_unscaled_resources",
       "//ash/public/cpp/vector_icons",

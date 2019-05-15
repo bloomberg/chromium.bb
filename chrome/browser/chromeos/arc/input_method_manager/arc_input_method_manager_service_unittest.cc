@@ -9,8 +9,8 @@
 #include <utility>
 #include <vector>
 
-#include "ash/keyboard/ui/public/keyboard_switches.h"
 #include "ash/public/cpp/ash_pref_names.h"
+#include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"

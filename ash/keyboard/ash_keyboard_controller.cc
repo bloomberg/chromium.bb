@@ -6,8 +6,8 @@
 
 #include "ash/keyboard/ui/keyboard_controller.h"
 #include "ash/keyboard/ui/keyboard_ui_factory.h"
-#include "ash/keyboard/ui/public/keyboard_switches.h"
 #include "ash/keyboard/virtual_keyboard_controller.h"
+#include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"

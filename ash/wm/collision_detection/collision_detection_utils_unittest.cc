@@ -5,8 +5,8 @@
 #include "ash/wm/collision_detection/collision_detection_utils.h"
 
 #include "ash/keyboard/ui/keyboard_controller.h"
-#include "ash/keyboard/ui/public/keyboard_switches.h"
 #include "ash/keyboard/ui/test/keyboard_test_util.h"
+#include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "ash/root_window_controller.h"
 #include "ash/scoped_root_window_for_new_windows.h"
 #include "ash/shelf/shelf.h"

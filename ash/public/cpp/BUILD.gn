@@ -75,6 +75,8 @@ component("cpp") {
     "immersive/immersive_fullscreen_controller_delegate.h",
     "immersive/immersive_revealed_lock.cc",
     "immersive/immersive_revealed_lock.h",
+    "keyboard/keyboard_switches.cc",
+    "keyboard/keyboard_switches.h",
     "keyboard_shortcut_viewer.h",
     "kiosk_app_menu.cc",
     "kiosk_app_menu.h",
@@ -284,7 +286,6 @@ source_set("test_support") {
 
   deps = [
     ":cpp",
-    "//ash/keyboard/ui:mojom",
     "//base",
     "//services/service_manager/public/cpp",
     "//ui/aura",

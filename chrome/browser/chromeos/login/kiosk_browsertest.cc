@@ -6,8 +6,8 @@
 #include <vector>
 
 #include "apps/test/app_window_waiter.h"
-#include "ash/keyboard/ui/public/keyboard_switches.h"
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "ash/public/interfaces/login_screen_test_api.test-mojom-test-utils.h"
 #include "ash/public/interfaces/wallpaper.mojom.h"
 #include "base/bind.h"

@@ -37,7 +37,9 @@ mojom("interfaces_internal") {
     "highlighter_controller.mojom",
     "ime_controller.mojom",
     "ime_info.mojom",
+    "keyboard_config.mojom",
     "keyboard_controller.mojom",
+    "keyboard_controller_types.mojom",
     "kiosk_next_shell.mojom",
     "locale.mojom",
     "login_screen.mojom",
@@ -64,7 +66,6 @@ mojom("interfaces_internal") {
   ]
 
   public_deps = [
-    "//ash/keyboard/ui:mojom",
     "//chromeos/components/proximity_auth/public/interfaces",
     "//chromeos/services/assistant/public/mojom",
     "//components/account_id/interfaces",

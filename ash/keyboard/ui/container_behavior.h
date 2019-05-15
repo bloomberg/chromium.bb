@@ -6,7 +6,7 @@
 #define ASH_KEYBOARD_UI_CONTAINER_BEHAVIOR_H_
 
 #include "ash/keyboard/ui/keyboard_export.h"
-#include "ash/keyboard/ui/public/keyboard_controller_types.mojom.h"
+#include "ash/public/interfaces/keyboard_controller_types.mojom.h"
 #include "ui/display/display.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"

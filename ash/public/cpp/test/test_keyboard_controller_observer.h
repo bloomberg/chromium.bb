@@ -5,7 +5,7 @@
 #ifndef ASH_PUBLIC_CPP_TEST_TEST_KEYBOARD_CONTROLLER_OBSERVER_H_
 #define ASH_PUBLIC_CPP_TEST_TEST_KEYBOARD_CONTROLLER_OBSERVER_H_
 
-#include "ash/keyboard/ui/public/keyboard_config.mojom.h"
+#include "ash/public/interfaces/keyboard_config.mojom.h"
 #include "ash/public/interfaces/keyboard_controller.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 

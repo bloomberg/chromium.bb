@@ -7,7 +7,7 @@
 #include <string>
 
 #include "ash/keyboard/ui/keyboard_controller.h"
-#include "ash/keyboard/ui/public/keyboard_switches.h"
+#include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 

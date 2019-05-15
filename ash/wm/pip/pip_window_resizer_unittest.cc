@@ -9,9 +9,9 @@
 #include <utility>
 
 #include "ash/keyboard/ui/keyboard_controller.h"
-#include "ash/keyboard/ui/public/keyboard_switches.h"
 #include "ash/keyboard/ui/test/keyboard_test_util.h"
 #include "ash/metrics/pip_uma.h"
+#include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "ash/scoped_root_window_for_new_windows.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"

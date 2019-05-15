@@ -4,8 +4,8 @@
 
 #include "ash/keyboard/ui/keyboard_controller.h"
 #include "ash/keyboard/ui/keyboard_util.h"
-#include "ash/keyboard/ui/public/keyboard_switches.h"
 #include "ash/keyboard/ui/test/keyboard_test_util.h"
+#include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/bind_helpers.h"

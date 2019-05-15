@@ -9,8 +9,8 @@
 #include <set>
 #include <utility>
 
-#include "ash/keyboard/ui/public/keyboard_switches.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/callback.h"

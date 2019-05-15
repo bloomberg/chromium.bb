@@ -4,7 +4,7 @@
 
 #include <stddef.h>
 
-#include "ash/keyboard/ui/public/keyboard_switches.h"
+#include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"

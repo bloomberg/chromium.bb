@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/keyboard/ui/public/keyboard_switches.h"
+#include "ash/public/cpp/keyboard/keyboard_switches.h"
 
 namespace keyboard {
 namespace switches {

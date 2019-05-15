@@ -9,7 +9,7 @@
 #include <set>
 #include <vector>
 
-#include "ash/keyboard/ui/public/keyboard_config.mojom.h"
+#include "ash/public/interfaces/keyboard_config.mojom.h"
 #include "ash/public/interfaces/keyboard_controller.mojom.h"
 #include "base/callback_forward.h"
 #include "base/macros.h"

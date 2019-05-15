@@ -5,7 +5,7 @@
 #ifndef ASH_KEYBOARD_UI_QUEUED_CONTAINER_TYPE_H_
 #define ASH_KEYBOARD_UI_QUEUED_CONTAINER_TYPE_H_
 
-#include "ash/keyboard/ui/public/keyboard_controller_types.mojom.h"
+#include "ash/public/interfaces/keyboard_controller_types.mojom.h"
 #include "base/bind.h"
 #include "base/optional.h"
 #include "ui/gfx/geometry/rect.h"

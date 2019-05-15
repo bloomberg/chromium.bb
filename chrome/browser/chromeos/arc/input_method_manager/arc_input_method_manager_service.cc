@@ -7,8 +7,8 @@
 #include <algorithm>
 #include <utility>
 
-#include "ash/keyboard/ui/public/keyboard_switches.h"
 #include "ash/public/cpp/ash_pref_names.h"
+#include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"

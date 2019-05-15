@@ -43,8 +43,6 @@ jumbo_component("ui") {
     "keyboard_util.h",
     "notification_manager.cc",
     "notification_manager.h",
-    "public/keyboard_switches.cc",
-    "public/keyboard_switches.h",
     "queued_container_type.cc",
     "queued_container_type.h",
     "queued_display_change.cc",
@@ -58,8 +56,8 @@ jumbo_component("ui") {
   defines = [ "KEYBOARD_IMPLEMENTATION" ]
 
   deps = [
-    ":mojom",
     ":resources",
+    "//ash/public/cpp",
     "//base",
     "//services/metrics/public/cpp:ukm_builders",
     "//ui/aura",
@@ -145,13 +143,6 @@ build_closure("inputview") {
   path = rebase_path("//third_party/google_input_tools")
 }
 
-mojom("mojom") {
-  sources = [
-    "public/keyboard_config.mojom",
-    "public/keyboard_controller_types.mojom",
-  ]
-}
-
 test("keyboard_unittests") {
   sources = [
     "container_floating_behavior_unittest.cc",
@@ -165,9 +156,9 @@ test("keyboard_unittests") {
   ]
 
   deps = [
-    ":mojom",
     ":test_support",
     ":ui",
+    "//ash/public/cpp",
     "//base",
     "//base/test:test_support",
     "//components/ukm:test_support",

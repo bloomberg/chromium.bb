@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "ash/keyboard/ui/public/keyboard_switches.h"
+#include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_restrictions.h"

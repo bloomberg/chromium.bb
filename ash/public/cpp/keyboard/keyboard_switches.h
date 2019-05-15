@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_KEYBOARD_UI_PUBLIC_KEYBOARD_SWITCHES_H_
-#define ASH_KEYBOARD_UI_PUBLIC_KEYBOARD_SWITCHES_H_
+#ifndef ASH_PUBLIC_CPP_KEYBOARD_KEYBOARD_SWITCHES_H_
+#define ASH_PUBLIC_CPP_KEYBOARD_KEYBOARD_SWITCHES_H_
 
-#include "ash/keyboard/ui/keyboard_export.h"
+#include "ash/public/cpp/ash_public_export.h"
 
 namespace keyboard {
 namespace switches {
 
 // Enables the virtual keyboard.
-KEYBOARD_EXPORT extern const char kEnableVirtualKeyboard[];
+ASH_PUBLIC_EXPORT extern const char kEnableVirtualKeyboard[];
 
 }  // namespace switches
 }  // namespace keyboard
 
-#endif  //  ASH_KEYBOARD_UI_PUBLIC_KEYBOARD_SWITCHES_H_
+#endif  //  ASH_PUBLIC_CPP_KEYBOARD_KEYBOARD_SWITCHES_H_
