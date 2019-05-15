@@ -20,6 +20,7 @@ from chromite.cbuildbot import goma_util
 from chromite.cbuildbot import validation_pool
 from chromite.cbuildbot.stages import completion_stages
 from chromite.cbuildbot.stages import generic_stages
+from chromite.lib import alerts
 from chromite.lib import cidb
 from chromite.lib import config_lib
 from chromite.lib import constants
@@ -585,8 +586,8 @@ class ReportStage(generic_stages.BuilderStage,
         subject = '%s health alert' % builder_run.config.name
         body = self._HealthAlertMessage(-streak_value)
         extra_fields = {'X-cbuildbot-alert': 'cq-health'}
-        tree_status.SendHealthAlert(builder_run, subject, body,
-                                    extra_fields=extra_fields)
+        alerts.SendHealthAlert(builder_run, subject, body,
+                               extra_fields=extra_fields)
 
   def _UpdateStreakCounter(self, final_status, counter_name,
                            dry_run=False):
@@ -637,8 +638,8 @@ class ReportStage(generic_stages.BuilderStage,
       body = ['%s failed on %s' % (name, cros_build_lib.GetHostName()),
               '%s' % msg]
       extra_fields = {'X-cbuildbot-alert': 'pre-cq-infra-alert'}
-      tree_status.SendHealthAlert(self._run, title, '\n\n'.join(body),
-                                  extra_fields=extra_fields)
+      alerts.SendHealthAlert(self._run, title, '\n\n'.join(body),
+                             extra_fields=extra_fields)
 
   def _LinkArtifacts(self, builder_run):
     """Upload an HTML index and uploaded.json for artifacts.

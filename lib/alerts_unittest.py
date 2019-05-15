@@ -8,11 +8,14 @@
 from __future__ import print_function
 
 import json
+import mock
 import os
 import smtplib
 import socket
+import urllib
 
 from chromite.lib import alerts
+from chromite.lib import constants
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 
@@ -165,6 +168,75 @@ class SendEmailLogTest(cros_test_lib.MockTestCase):
     alerts.SendEmailLog('mail', 'root@localhost',
                         server=alerts.GmailServer(token_cache_file='fakefile'))
     self.assertEqual(send_mock.call_count, 1)
+
+
+class GetGardenerEmailAddressesTest(cros_test_lib.MockTestCase):
+  """Tests functions related to retrieving the gardener's email address."""
+
+  def _SetEmails(self, emails):
+    gardener_json = ('{"updated_unix_timestamp":1547254144,'
+                     '"emails":[%s]}' % emails)
+    response = mock.MagicMock(json=gardener_json, getcode=lambda: 200,
+                              read=lambda: gardener_json)
+    self.PatchObject(urllib, 'urlopen', autospec=True,
+                     side_effect=[response])
+
+  def testParsingGardenerEmails(self):
+    self._SetEmails('"gardener@google.com"')
+    self.assertEqual(alerts.GetGardenerEmailAddresses(),
+                     ['gardener@google.com'])
+
+    # Test multiple gardeners.
+    self._SetEmails('"gardener@google.com", "gardener2@chromium.org"')
+    self.assertEqual(alerts.GetGardenerEmailAddresses(),
+                     ['gardener@google.com', 'gardener2@chromium.org'])
+
+
+class GetHealthAlertRecipientsTest(cros_test_lib.MockTestCase):
+  """Tests for GetHealthAlertRecipients."""
+
+  def SetRecipients(self, recipients):
+    self.builder_run.config.health_alert_recipients = recipients
+
+  def setUp(self):
+    self.builder_run = mock.MagicMock()
+
+  def testSingleRecipient(self):
+    """Test GetHealthAlertRecipients returns a non-gardener recipient."""
+    expected = ['jeff@google.com']
+    self.SetRecipients(expected)
+    actual = alerts.GetHealthAlertRecipients(self.builder_run)
+    self.assertEqual(actual, expected)
+
+  def testGardenerRecipient(self):
+    expected = ['gardener@chromium.org']
+    self.PatchObject(alerts, 'GetGardenerEmailAddresses', return_value=expected)
+    self.SetRecipients([constants.CHROME_GARDENER])
+    actual = alerts.GetHealthAlertRecipients(self.builder_run)
+    self.assertEqual(actual, expected)
+
+
+class SendHealthAlertTest(cros_test_lib.MockTestCase):
+  """Tests for SendHealthAlert."""
+
+  def setUp(self):
+    self.builder_run = mock.MagicMock()
+    self.builder_run.InEmailReportingEnvironment = lambda: True
+
+    self.recipients = ['jeff@google.com']
+    self.send_email = self.PatchObject(alerts, 'SendEmail')
+    self.get_health_alert_recipients = self.PatchObject(
+        alerts, 'GetHealthAlertRecipients', return_value=self.recipients)
+
+  def testBasic(self):
+    """Test that alert functions are called with the correct args."""
+    subject = 'PyTorch > TensorFlow'
+    body = 'You heard it here, Jeff'
+    alerts.SendHealthAlert(self.builder_run, subject, body)
+    self.assertEqual(
+        self.send_email.call_args_list,
+        [mock.call(subject, self.recipients,
+                   server=mock.ANY, message=body, extra_fields=None)])
 
 
 def main(_argv):

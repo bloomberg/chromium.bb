@@ -7,13 +7,8 @@
 
 from __future__ import print_function
 
-import json
 import os
 import urllib
-
-from chromite.lib import constants
-from chromite.lib import alerts
-from chromite.lib import cros_logging as logging
 
 
 _LUCI_MILO_BUILDBOT_URL = 'https://luci-milo.appspot.com/buildbot'
@@ -27,59 +22,6 @@ _LOGDOG_URL = ('https://luci-logdog.appspot.com/v/'
 # to:
 #   https://ci.chromium.org/p/chromeos/builds/b8914470887449121184
 _MILO_BUILD_URL = 'https://ci.chromium.org/b/%(buildbucket_id)s'
-
-
-def GetGardenerEmailAddresses():
-  """Get the email addresses of the gardeners.
-
-  Returns:
-    Gardener email addresses.
-  """
-  try:
-    response = urllib.urlopen(constants.CHROME_GARDENER_URL)
-    if response.getcode() == 200:
-      return json.load(response)['emails']
-  except (IOError, ValueError, KeyError) as e:
-    logging.error('Could not get gardener emails: %r', e)
-  return None
-
-
-def GetHealthAlertRecipients(builder_run):
-  """Returns a list of email addresses of the health alert recipients."""
-  recipients = []
-  for entry in builder_run.config.health_alert_recipients:
-    if '@' in entry:
-      # If the entry is an email address, add it to the list.
-      recipients.append(entry)
-    elif entry == constants.CHROME_GARDENER:
-      # Add gardener email address.
-      recipients.extend(GetGardenerEmailAddresses())
-
-  return recipients
-
-
-def SendHealthAlert(builder_run, subject, body, extra_fields=None):
-  """Send a health alert.
-
-  Health alerts are only sent for regular buildbots and Pre-CQ buildbots.
-
-  Args:
-    builder_run: BuilderRun for the main cbuildbot run.
-    subject: The subject of the health alert email.
-    body: The body of the health alert email.
-    extra_fields: (optional) A dictionary of additional message header fields
-                  to be added to the message. Custom field names should begin
-                  with the prefix 'X-'.
-  """
-  if builder_run.InEmailReportingEnvironment():
-    server = alerts.GmailServer(
-        token_cache_file=constants.GMAIL_TOKEN_CACHE_FILE,
-        token_json_file=constants.GMAIL_TOKEN_JSON_FILE)
-    alerts.SendEmail(subject,
-                     GetHealthAlertRecipients(builder_run),
-                     server=server,
-                     message=body,
-                     extra_fields=extra_fields)
 
 
 def ConstructMiloBuildURL(buildbucket_id):

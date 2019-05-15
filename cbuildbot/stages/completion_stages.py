@@ -13,6 +13,7 @@ from chromite.cbuildbot import commands
 from chromite.cbuildbot import prebuilts
 from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import sync_stages
+from chromite.lib import alerts
 from chromite.lib import buildbucket_lib
 from chromite.lib import builder_status_lib
 from chromite.lib import config_lib
@@ -21,7 +22,6 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import failures_lib
 from chromite.lib import metrics
 from chromite.lib import portage_util
-from chromite.lib import tree_status
 
 
 def GetBuilderSuccessMap(builder_run, overall_success):
@@ -535,7 +535,7 @@ class CanaryCompletionStage(MasterSlaveSyncCompletionStage):
     msg = '\n\n'.join(msgs)
     logging.warning(msg)
     extra_fields = {'X-cbuildbot-alert': 'canary-fail-alert'}
-    tree_status.SendHealthAlert(
+    alerts.SendHealthAlert(
         self._run, 'Canary builder failures', msg, extra_fields=extra_fields)
 
   def CanaryMasterHandleFailure(self, failing, inflight, no_stat):
@@ -668,7 +668,7 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
       msg = '\n\n'.join(msgs)
       subject = '%s infra failures' % (builder_name,)
       extra_fields = {'X-cbuildbot-alert': 'cq-infra-alert'}
-      tree_status.SendHealthAlert(
+      alerts.SendHealthAlert(
           self._run, subject, msg, extra_fields=extra_fields)
 
   def _WaitForSlavesToComplete(self, manager, build_identifier, builders_array,

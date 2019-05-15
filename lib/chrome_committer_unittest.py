@@ -9,10 +9,10 @@ from __future__ import print_function
 
 import os
 
+from chromite.lib import alerts
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import chrome_committer
-from chromite.lib import tree_status
 
 
 class ChromeCommitterTester(cros_test_lib.RunCommandTestCase,
@@ -81,7 +81,7 @@ class ChromeCommitterTester(cros_test_lib.RunCommandTestCase,
     self.committer.Commit(['OWNERS', 'chromeos/BUILD.gn'],
                           'Modify OWNERS and BUILD.gn')
 
-    self.PatchObject(tree_status, 'GetGardenerEmailAddresses',
+    self.PatchObject(alerts, 'GetGardenerEmailAddresses',
                      return_value=['gardener@chromium.org'])
     self.committer.Upload()
 
@@ -101,7 +101,7 @@ class ChromeCommitterTester(cros_test_lib.RunCommandTestCase,
     self.committer.Commit(['OWNERS', 'chromeos/BUILD.gn'],
                           'Modify OWNERS and BUILD.gn')
 
-    self.PatchObject(tree_status, 'GetGardenerEmailAddresses',
+    self.PatchObject(alerts, 'GetGardenerEmailAddresses',
                      return_value=['gardener@chromium.org'])
     self.committer._dryrun = True  # pylint: disable=protected-access
     self.committer.Upload()
