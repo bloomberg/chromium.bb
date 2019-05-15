@@ -27,8 +27,8 @@ TrackImageButton::TrackImageButton(ButtonListener* listener,
                                    base::string16 label)
     : ImageButton(listener),
       image_(gfx::CreateVectorIcon(icon, kTrackImageSize, kTrackIconColor)) {
-  SetImageAlignment(views::ImageButton::ALIGN_CENTER,
-                    views::ImageButton::ALIGN_MIDDLE);
+  SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
+  SetImageVerticalAlignment(views::ImageButton::ALIGN_MIDDLE);
   SetImage(views::Button::STATE_NORMAL, image_);
 
   // Accessibility.

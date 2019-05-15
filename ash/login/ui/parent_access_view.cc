@@ -433,8 +433,8 @@ ParentAccessView::ParentAccessView(const AccountId& account_id,
   back_button_->SetImage(views::Button::STATE_NORMAL,
                          gfx::CreateVectorIcon(kLockScreenArrowBackIcon,
                                                kArrowSizeDp, SK_ColorWHITE));
-  back_button_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
-                                  views::ImageButton::ALIGN_MIDDLE);
+  back_button_->SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
+  back_button_->SetImageVerticalAlignment(views::ImageButton::ALIGN_MIDDLE);
   back_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ASH_LOGIN_BACK_BUTTON_ACCESSIBLE_NAME));
   back_button_->SetFocusBehavior(FocusBehavior::ALWAYS);

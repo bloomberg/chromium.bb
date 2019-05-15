@@ -173,9 +173,8 @@ void PrivacyInfoView::InitCloseButton() {
   close_button_->SetImage(views::ImageButton::STATE_NORMAL,
                           gfx::CreateVectorIcon(views::kCloseIcon, kIconSizeDip,
                                                 gfx::kGoogleGrey700));
-  close_button_->SetImageAlignment(
-      views::ImageButton::HorizontalAlignment::ALIGN_CENTER,
-      views::ImageButton::VerticalAlignment::ALIGN_MIDDLE);
+  close_button_->SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
+  close_button_->SetImageVerticalAlignment(views::ImageButton::ALIGN_MIDDLE);
   base::string16 close_button_label(
       l10n_util::GetStringUTF16(IDS_APP_LIST_ASSISTANT_PRIVACY_INFO_CLOSE));
   close_button_->SetAccessibleName(close_button_label);

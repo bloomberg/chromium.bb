@@ -100,8 +100,8 @@ class SearchBoxImageButton : public views::ImageButton {
     SetInkDropMode(InkDropMode::ON);
 
     SetPreferredSize({kButtonSizeDip, kButtonSizeDip});
-    SetImageAlignment(HorizontalAlignment::ALIGN_CENTER,
-                      VerticalAlignment::ALIGN_MIDDLE);
+    SetImageHorizontalAlignment(ALIGN_CENTER);
+    SetImageVerticalAlignment(ALIGN_MIDDLE);
   }
   ~SearchBoxImageButton() override {}
 

@@ -30,8 +30,8 @@ MuteImageButton::MuteImageButton(ButtonListener* listener)
       unmute_image_(gfx::CreateVectorIcon(kTabAudioMutingIcon,
                                           kMuteImageSize,
                                           kMuteIconColor)) {
-  SetImageAlignment(views::ImageButton::ALIGN_CENTER,
-                    views::ImageButton::ALIGN_MIDDLE);
+  SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
+  SetImageVerticalAlignment(views::ImageButton::ALIGN_MIDDLE);
 
   // Accessibility.
   SetFocusForPlatform();

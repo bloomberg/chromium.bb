@@ -121,8 +121,10 @@ void NotificationSwipeControlView::ShowSettingsButton(bool show) {
             message_center::kNotificationSettingsButtonIcon,
             message_center_style::kSwipeControlButtonImageSize,
             gfx::kChromeIconGrey));
-    settings_button_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
-                                        views::ImageButton::ALIGN_MIDDLE);
+    settings_button_->SetImageHorizontalAlignment(
+        views::ImageButton::ALIGN_CENTER);
+    settings_button_->SetImageVerticalAlignment(
+        views::ImageButton::ALIGN_MIDDLE);
     settings_button_->SetPreferredSize(
         gfx::Size(message_center_style::kSwipeControlButtonSize,
                   message_center_style::kSwipeControlButtonSize));
@@ -152,8 +154,9 @@ void NotificationSwipeControlView::ShowSnoozeButton(bool show) {
             message_center::kNotificationSnoozeButtonIcon,
             message_center_style::kSwipeControlButtonImageSize,
             gfx::kChromeIconGrey));
-    snooze_button_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
-                                      views::ImageButton::ALIGN_MIDDLE);
+    snooze_button_->SetImageHorizontalAlignment(
+        views::ImageButton::ALIGN_CENTER);
+    snooze_button_->SetImageVerticalAlignment(views::ImageButton::ALIGN_MIDDLE);
     snooze_button_->SetPreferredSize(
         gfx::Size(message_center_style::kSwipeControlButtonSize,
                   message_center_style::kSwipeControlButtonSize));

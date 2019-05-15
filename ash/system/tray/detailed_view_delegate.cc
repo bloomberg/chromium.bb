@@ -64,8 +64,8 @@ class BackButton : public CustomShapeButton {
     gfx::ImageSkia image =
         gfx::CreateVectorIcon(kUnifiedMenuArrowBackIcon, kUnifiedMenuIconColor);
     SetImage(views::Button::STATE_NORMAL, image);
-    SetImageAlignment(HorizontalAlignment::ALIGN_RIGHT,
-                      VerticalAlignment::ALIGN_MIDDLE);
+    SetImageHorizontalAlignment(ALIGN_RIGHT);
+    SetImageVerticalAlignment(ALIGN_MIDDLE);
     SetTooltipText(
         l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_PREVIOUS_MENU));
     SetBorder(views::CreateEmptyBorder(

@@ -74,8 +74,7 @@ const gfx::FontList& GetTitleFontList() {
 
 void LayoutButton(ImageButton* button, const gfx::Rect& bounds) {
   button->SetVisible(true);
-  button->SetImageAlignment(ImageButton::ALIGN_LEFT,
-                            ImageButton::ALIGN_BOTTOM);
+  button->SetImageVerticalAlignment(ImageButton::ALIGN_BOTTOM);
   button->SetBoundsRect(bounds);
 }
 

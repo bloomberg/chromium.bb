@@ -165,8 +165,8 @@ std::unique_ptr<views::ToggleImageButton> CreatePasswordViewButton(
       views::ImageButton::STATE_NORMAL,
       ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
           IDR_HIDE_PASSWORD_HOVER));
-  button->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
-                            views::ImageButton::ALIGN_MIDDLE);
+  button->SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
+  button->SetImageVerticalAlignment(views::ImageButton::ALIGN_MIDDLE);
   button->SetToggled(are_passwords_revealed);
   return button;
 }

@@ -28,8 +28,6 @@ namespace views {
 
 ResizeHandleButton::ResizeHandleButton(ButtonListener* listener)
     : ImageButton(listener) {
-  SetImageAlignment(views::ImageButton::ALIGN_LEFT,
-                    views::ImageButton::ALIGN_TOP);
   SetSize(gfx::Size(kResizeHandleButtonSize, kResizeHandleButtonSize));
   SetImageForQuadrant(OverlayWindowViews::WindowQuadrant::kBottomRight);
 
@@ -101,24 +99,24 @@ void ResizeHandleButton::SetImageForQuadrant(
       kResizeHandleIcon, kResizeHandleButtonSize, kResizeHandleIconColor);
   switch (quadrant) {
     case OverlayWindowViews::WindowQuadrant::kBottomLeft:
-      SetImageAlignment(views::ImageButton::ALIGN_RIGHT,
-                        views::ImageButton::ALIGN_TOP);
+      SetImageHorizontalAlignment(views::ImageButton::ALIGN_RIGHT);
+      SetImageVerticalAlignment(views::ImageButton::ALIGN_TOP);
       break;
     case OverlayWindowViews::WindowQuadrant::kBottomRight:
-      SetImageAlignment(views::ImageButton::ALIGN_LEFT,
-                        views::ImageButton::ALIGN_TOP);
+      SetImageHorizontalAlignment(views::ImageButton::ALIGN_LEFT);
+      SetImageVerticalAlignment(views::ImageButton::ALIGN_TOP);
       icon = gfx::ImageSkiaOperations::CreateRotatedImage(
           icon, SkBitmapOperations::ROTATION_270_CW);
       break;
     case OverlayWindowViews::WindowQuadrant::kTopLeft:
-      SetImageAlignment(views::ImageButton::ALIGN_RIGHT,
-                        views::ImageButton::ALIGN_BOTTOM);
+      SetImageHorizontalAlignment(views::ImageButton::ALIGN_RIGHT);
+      SetImageVerticalAlignment(views::ImageButton::ALIGN_BOTTOM);
       icon = gfx::ImageSkiaOperations::CreateRotatedImage(
           icon, SkBitmapOperations::ROTATION_90_CW);
       break;
     case OverlayWindowViews::WindowQuadrant::kTopRight:
-      SetImageAlignment(views::ImageButton::ALIGN_LEFT,
-                        views::ImageButton::ALIGN_BOTTOM);
+      SetImageHorizontalAlignment(views::ImageButton::ALIGN_LEFT);
+      SetImageVerticalAlignment(views::ImageButton::ALIGN_BOTTOM);
       icon = gfx::ImageSkiaOperations::CreateRotatedImage(
           icon, SkBitmapOperations::ROTATION_180_CW);
       break;

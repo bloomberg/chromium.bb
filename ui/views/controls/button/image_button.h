@@ -21,6 +21,8 @@ namespace views {
 // SetFocusForPlatform() to make it part of the focus chain.
 class VIEWS_EXPORT ImageButton : public Button {
  public:
+  METADATA_HEADER(ImageButton);
+
   static const char kViewClassName[];
 
   // An enum describing the horizontal alignment of images on Buttons.
@@ -56,9 +58,11 @@ class VIEWS_EXPORT ImageButton : public Button {
                           const gfx::ImageSkia* image,
                           const gfx::ImageSkia* mask);
 
-  // Sets how the image is laid out within the button's bounds.
-  void SetImageAlignment(HorizontalAlignment h_align,
-                         VerticalAlignment v_align);
+  // How the image is laid out within the button's bounds.
+  HorizontalAlignment GetImageHorizontalAlignment() const;
+  VerticalAlignment GetImageVerticalAlignment() const;
+  void SetImageHorizontalAlignment(HorizontalAlignment h_alignment);
+  void SetImageVerticalAlignment(VerticalAlignment v_alignment);
 
   // Sets how the background is laid out within the button's bounds.
   void SetBackgroundImageAlignment(HorizontalAlignment h_align,
@@ -67,7 +71,7 @@ class VIEWS_EXPORT ImageButton : public Button {
   // The minimum size of the contents (not including the border). The contents
   // will be at least this size, but may be larger if the image itself is
   // larger.
-  const gfx::Size& minimum_image_size() const { return minimum_image_size_; }
+  gfx::Size GetMinimumImageSize() const;
   void SetMinimumImageSize(const gfx::Size& size);
 
   // Whether we should draw our images resources horizontally flipped.
@@ -111,8 +115,8 @@ class VIEWS_EXPORT ImageButton : public Button {
                                              VerticalAlignment v_alignment);
 
   // Image alignment.
-  HorizontalAlignment h_alignment_;
-  VerticalAlignment v_alignment_;
+  HorizontalAlignment h_alignment_ = ALIGN_LEFT;
+  VerticalAlignment v_alignment_ = ALIGN_TOP;
   gfx::Size minimum_image_size_;
 
   // Background alignment. If these are not set, the background image uses the
@@ -124,7 +128,7 @@ class VIEWS_EXPORT ImageButton : public Button {
   // linux titlebar, where image resources were designed to be flipped so a
   // small curved corner in the close button designed to fit into the frame
   // resources.
-  bool draw_image_mirrored_;
+  bool draw_image_mirrored_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ImageButton);
 };

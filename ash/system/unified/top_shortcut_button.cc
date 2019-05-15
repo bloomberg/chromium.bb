@@ -40,7 +40,8 @@ TopShortcutButton::TopShortcutButton(views::ButtonListener* listener,
 TopShortcutButton::TopShortcutButton(views::ButtonListener* listener,
                                      int accessible_name_id)
     : views::ImageButton(listener) {
-  SetImageAlignment(ALIGN_CENTER, ALIGN_MIDDLE);
+  SetImageHorizontalAlignment(ALIGN_CENTER);
+  SetImageVerticalAlignment(ALIGN_MIDDLE);
   if (accessible_name_id)
     SetTooltipText(l10n_util::GetStringUTF16(accessible_name_id));
 

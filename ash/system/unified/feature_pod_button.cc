@@ -39,7 +39,8 @@ FeaturePodIconButton::FeaturePodIconButton(views::ButtonListener* listener)
     : views::ImageButton(listener) {
   SetPreferredSize(kUnifiedFeaturePodIconSize);
   SetBorder(views::CreateEmptyBorder(kUnifiedFeaturePodIconPadding));
-  SetImageAlignment(ALIGN_CENTER, ALIGN_MIDDLE);
+  SetImageHorizontalAlignment(ALIGN_CENTER);
+  SetImageVerticalAlignment(ALIGN_MIDDLE);
   TrayPopupUtils::ConfigureTrayPopupButton(this);
 
   auto path = std::make_unique<SkPath>();

@@ -444,10 +444,11 @@ void OpaqueBrowserFrameViewLayout::SetBoundsForButton(
                  kImageButton) {
     DCHECK_EQ(std::string(views::ImageButton::kViewClassName),
               button->GetClassName());
-    static_cast<views::ImageButton*>(button)->SetImageAlignment(
+    auto* const image_button = static_cast<views::ImageButton*>(button);
+    image_button->SetImageHorizontalAlignment(
         (alignment == ALIGN_LEADING) ? views::ImageButton::ALIGN_RIGHT
-                                     : views::ImageButton::ALIGN_LEFT,
-        views::ImageButton::ALIGN_BOTTOM);
+                                     : views::ImageButton::ALIGN_LEFT);
+    image_button->SetImageVerticalAlignment(views::ImageButton::ALIGN_BOTTOM);
   }
 
   TopAreaPadding top_area_padding = GetTopAreaPadding();

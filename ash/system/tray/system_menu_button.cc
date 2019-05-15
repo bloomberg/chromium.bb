@@ -32,7 +32,8 @@ SystemMenuButton::SystemMenuButton(views::ButtonListener* listener,
   SetImage(STATE_NORMAL, normal_icon);
   SetImage(STATE_DISABLED, disabled_icon);
 
-  SetImageAlignment(ALIGN_CENTER, ALIGN_MIDDLE);
+  SetImageHorizontalAlignment(ALIGN_CENTER);
+  SetImageVerticalAlignment(ALIGN_MIDDLE);
   SetPreferredSize(gfx::Size(kMenuButtonSize, kMenuButtonSize));
 
   SetTooltipText(l10n_util::GetStringUTF16(accessible_name_id));

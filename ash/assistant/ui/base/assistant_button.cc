@@ -33,8 +33,8 @@ AssistantButton::AssistantButton(views::ButtonListener* listener,
   SetFocusForPlatform();
 
   // Image.
-  SetImageAlignment(views::ImageButton::ALIGN_CENTER,
-                    views::ImageButton::ALIGN_MIDDLE);
+  SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
+  SetImageVerticalAlignment(views::ImageButton::ALIGN_MIDDLE);
 
   // Ink drop.
   SetInkDropMode(InkDropMode::ON);

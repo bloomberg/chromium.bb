@@ -23,8 +23,8 @@ namespace views {
 
 BackToTabImageButton::BackToTabImageButton(ButtonListener* listener)
     : ImageButton(listener) {
-  SetImageAlignment(views::ImageButton::ALIGN_CENTER,
-                    views::ImageButton::ALIGN_MIDDLE);
+  SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
+  SetImageVerticalAlignment(views::ImageButton::ALIGN_MIDDLE);
   SetImage(views::Button::STATE_NORMAL,
            gfx::CreateVectorIcon(views::kLaunchIcon, kBackToTabImageSize,
                                  kBackToTabIconColor));

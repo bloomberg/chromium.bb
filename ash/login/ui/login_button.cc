@@ -25,8 +25,8 @@ constexpr SkColor kInkDropHighlightColor =
 
 LoginButton::LoginButton(views::ButtonListener* listener)
     : views::ImageButton(listener) {
-  SetImageAlignment(views::ImageButton::ALIGN_CENTER,
-                    views::ImageButton::ALIGN_MIDDLE);
+  SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
+  SetImageVerticalAlignment(views::ImageButton::ALIGN_MIDDLE);
   SetFocusPainter(views::Painter::CreateSolidFocusPainter(
       kFocusBorderColor, kFocusBorderThickness, gfx::InsetsF()));
   SetInkDropMode(InkDropMode::ON);

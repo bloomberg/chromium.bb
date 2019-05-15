@@ -522,8 +522,8 @@ class AppMenu::ZoomView : public AppMenuView {
     // focusable regardless of the platform.
     fullscreen_button_->SetFocusBehavior(FocusBehavior::ALWAYS);
     fullscreen_button_->set_tag(fullscreen_index);
-    fullscreen_button_->SetImageAlignment(
-        ImageButton::ALIGN_CENTER, ImageButton::ALIGN_MIDDLE);
+    fullscreen_button_->SetImageHorizontalAlignment(ImageButton::ALIGN_CENTER);
+    fullscreen_button_->SetImageVerticalAlignment(ImageButton::ALIGN_MIDDLE);
     fullscreen_button_->SetBackground(std::make_unique<InMenuButtonBackground>(
         InMenuButtonBackground::LEADING_BORDER));
     fullscreen_button_->SetAccessibleName(GetAccessibleNameForAppMenuItem(

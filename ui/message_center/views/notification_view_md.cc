@@ -382,8 +382,8 @@ NotificationInputContainerMD::NotificationInputContainerMD(
   layout->SetFlexForView(textfield_, 1);
 
   button_->SetBorder(views::CreateEmptyBorder(kInputReplyButtonPadding));
-  button_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
-                             views::ImageButton::ALIGN_MIDDLE);
+  button_->SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
+  button_->SetImageVerticalAlignment(views::ImageButton::ALIGN_MIDDLE);
   OnAfterUserAction(textfield_);
   AddChildView(button_);
 }

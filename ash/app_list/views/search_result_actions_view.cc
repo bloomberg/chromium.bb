@@ -96,8 +96,8 @@ SearchResultImageButton::SearchResultImageButton(
   SetInkDropMode(InkDropMode::ON);
 
   SetPreferredSize({kImageButtonSizeDip, kImageButtonSizeDip});
-  SetImageAlignment(HorizontalAlignment::ALIGN_CENTER,
-                    VerticalAlignment::ALIGN_MIDDLE);
+  SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
+  SetImageVerticalAlignment(views::ImageButton::ALIGN_MIDDLE);
 
   SetButtonImage(action.image,
                  AppListConfig::instance().search_list_icon_dimension());

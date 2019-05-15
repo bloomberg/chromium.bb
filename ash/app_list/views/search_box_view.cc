@@ -227,8 +227,8 @@ void SearchBoxView::SetupBackButton() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   back->SetImage(views::ImageButton::STATE_NORMAL,
                  rb.GetImageSkiaNamed(IDR_APP_LIST_FOLDER_BACK_NORMAL));
-  back->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
-                          views::ImageButton::ALIGN_MIDDLE);
+  back->SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
+  back->SetImageVerticalAlignment(views::ImageButton::ALIGN_MIDDLE);
   back->SetVisible(false);
   base::string16 back_button_label(
       l10n_util::GetStringUTF16(IDS_APP_LIST_BACK));

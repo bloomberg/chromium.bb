@@ -188,8 +188,8 @@ class OverviewItem::OverviewCloseButton : public views::ImageButton {
     SetImage(
         views::Button::STATE_NORMAL,
         gfx::CreateVectorIcon(kOverviewWindowCloseIcon, kCloseButtonColor));
-    SetImageAlignment(views::ImageButton::ALIGN_CENTER,
-                      views::ImageButton::ALIGN_MIDDLE);
+    SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
+    SetImageVerticalAlignment(views::ImageButton::ALIGN_MIDDLE);
     SetMinimumImageSize(gfx::Size(kHeaderHeightDp, kHeaderHeightDp));
     SetAccessibleName(l10n_util::GetStringUTF16(IDS_APP_ACCNAME_CLOSE));
     SetTooltipText(l10n_util::GetStringUTF16(IDS_APP_ACCNAME_CLOSE));

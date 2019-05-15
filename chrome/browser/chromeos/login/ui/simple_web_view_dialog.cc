@@ -169,8 +169,7 @@ void SimpleWebViewDialog::Init() {
   back_->set_triggerable_event_flags(ui::EF_LEFT_MOUSE_BUTTON |
                                      ui::EF_MIDDLE_MOUSE_BUTTON);
   back_->set_tag(IDC_BACK);
-  back_->SetImageAlignment(views::ImageButton::ALIGN_RIGHT,
-                           views::ImageButton::ALIGN_TOP);
+  back_->SetImageHorizontalAlignment(views::ImageButton::ALIGN_RIGHT);
   back_->SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_BACK));
   back_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_BACK));
   back_->SetID(VIEW_ID_BACK_BUTTON);

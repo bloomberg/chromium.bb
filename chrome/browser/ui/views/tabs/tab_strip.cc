@@ -2017,8 +2017,7 @@ void TabStrip::Init() {
       l10n_util::GetStringUTF16(IDS_TOOLTIP_NEW_TAB));
   new_tab_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ACCNAME_NEWTAB));
-  new_tab_button_->SetImageAlignment(views::ImageButton::ALIGN_LEFT,
-                                     views::ImageButton::ALIGN_BOTTOM);
+  new_tab_button_->SetImageVerticalAlignment(views::ImageButton::ALIGN_BOTTOM);
   new_tab_button_->SetEventTargeter(
       std::make_unique<views::ViewTargeter>(new_tab_button_));
   AddChildView(new_tab_button_);
