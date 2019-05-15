@@ -21,7 +21,9 @@ if (optimize_webui) {
     excludes = [
       "chrome://resources/js/mojo_bindings_lite.js",
       "chrome://downloads/downloads.mojom-lite.js",
+      "chrome://downloads/downloads.mojom-lite.html",
     ]
+    replace_for_html_imports_polyfill = "crisper.js"
 
     deps = [
       ":unpak",
@@ -92,6 +94,7 @@ js_library("downloads") {
     ":manager",
     "//ui/webui/resources/js:cr",
   ]
+  externs_list = [ "$externs_path/html_imports.js" ]
 }
 
 js_library("icon_loader") {

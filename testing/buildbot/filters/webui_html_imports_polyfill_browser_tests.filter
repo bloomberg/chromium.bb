@@ -32,6 +32,11 @@ CrExtensionsKioskModeTest.*
 CrExtensionsRuntimeHostPermissionsTest.*
 CrExtensionsHostPermissionsToggleListTest.*
 
+DownloadsItemTest.*
+DownloadsManagerTest.*
+DownloadsToolbarTest.*
+DownloadsUrlTest.*
+
 PDFAnnotationsTest.*
 PDFExtensionClipboardTest.*
 PDFExtensionHitTestTest.*
