@@ -3723,9 +3723,6 @@ static int get_rdmult_delta(AV1_COMP *cpi, BLOCK_SIZE bsize, int mi_row,
   int mi_high = mi_size_high[bsize];
   int row, col;
 
-  int dr = 0;
-  double r0, rk, beta;
-
   if (tpl_frame->is_valid == 0) return orig_rdmult;
 
   if (cpi->common.show_frame) return orig_rdmult;
@@ -3745,17 +3742,17 @@ static int get_rdmult_delta(AV1_COMP *cpi, BLOCK_SIZE bsize, int mi_row,
 
   aom_clear_system_state();
 
-  r0 = cpi->rd.r0;
-  rk = (double)intra_cost / mc_dep_cost;
-  beta = r0 / rk;
-  dr = av1_get_adaptive_rdmult(cpi, beta);
+  const double r0 = cpi->rd.r0;
+  const double rk = (double)intra_cost / mc_dep_cost;
+  const double beta = pow(r0 / rk, 0.125);
+  int rdmult = av1_get_adaptive_rdmult(cpi, beta);
 
-  dr = AOMMIN(dr, orig_rdmult * 3 / 2);
-  dr = AOMMAX(dr, orig_rdmult * 1 / 2);
+  rdmult = AOMMIN(rdmult, orig_rdmult * 3 / 2);
+  rdmult = AOMMAX(rdmult, orig_rdmult * 1 / 2);
 
-  dr = AOMMAX(1, dr);
+  rdmult = AOMMAX(1, rdmult);
 
-  return dr;
+  return rdmult;
 }
 
 // analysis_type 0: Use mc_dep_cost and intra_cost
