@@ -18,7 +18,13 @@ def plist_read(*args):
             'KSChannelID': 'stable',
             'KSChannelID-full': 'stable',
         },
+        # TODO(rsesek): Remove this entry after new_mac_bundle_structure launches.
         '$W/App Product Canary.app/Contents/Versions/99.0.9999.99/Product Framework.framework/XPCServices/AlertNotificationService.xpc/Contents/Info.plist':
+            {
+                'CFBundleIdentifier':
+                    bundle_id + '.AlertNotificationService.xpc'
+            },
+        '$W/App Product Canary.app/Contents/Frameworks/Product Framework.framework/XPCServices/AlertNotificationService.xpc/Contents/Info.plist':
             {
                 'CFBundleIdentifier':
                     bundle_id + '.AlertNotificationService.xpc'
@@ -223,13 +229,20 @@ class TestModification(unittest.TestCase):
         kwargs['write_file'].assert_called_once_with(
             '$W/App Product Canary.app/Contents/PkgInfo', 'APPLMooo')
 
+        if config.use_new_mac_bundle_structure:
+            xpc_plist_base = '$W/App Product Canary.app/Contents/Frameworks/Product Framework.framework'
+        else:
+            xpc_plist_base = '$W/App Product Canary.app/Contents/Versions/99.0.9999.99/Product Framework.framework'
+
         self.assertEqual(4, plistlib.writePlist.call_count)
         plistlib.writePlist.assert_has_calls([
-            mock.call({
+            mock.
+            call({
                 'CFBundleIdentifier':
                     'test.signing.bundle_id.canary.AlertNotificationService.xpc'
-            }, '$W/App Product Canary.app/Contents/Versions/99.0.9999.99/Product Framework.framework/XPCServices/AlertNotificationService.xpc/Contents/Info.plist'
-                     ),
+            }, xpc_plist_base +
+                 '/XPCServices/AlertNotificationService.xpc/Contents/Info.plist'
+                ),
             mock.call({
                 'CFBundleIdentifier': config.base_bundle_id,
                 'CFBundleExecutable': config.app_product,

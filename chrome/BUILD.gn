@@ -627,7 +627,11 @@ if (is_win) {
 } else if (is_mac) {
   chrome_helper_name = chrome_product_full_name + " Helper"
   chrome_framework_name = chrome_product_full_name + " Framework"
-  chrome_framework_version = "A"
+  if (new_mac_bundle_structure) {
+    chrome_framework_version = chrome_version_full
+  } else {
+    chrome_framework_version = "A"
+  }
 
   group("chrome") {
     deps = [
@@ -698,6 +702,7 @@ if (is_win) {
       ":chrome_app_strings_bundle_data",
       ":chrome_resources",
       ":chrome_versioned_bundle_data",
+      "//chrome/common:buildflags",
       "//chrome/common:version_header",
     ]
 
@@ -800,14 +805,17 @@ if (is_win) {
   bundle_data("chrome_versioned_bundle_data") {
     sources = [
       "$root_out_dir/$chrome_framework_name.framework",
-      "$root_out_dir/$chrome_helper_name.app",
     ]
-    outputs = [
-      "{{bundle_contents_dir}}/Versions/$chrome_version_full/{{source_file_part}}",
-    ]
+    if (new_mac_bundle_structure) {
+      outputs = [
+        "{{bundle_contents_dir}}/Frameworks/{{source_file_part}}",
+      ]
+    } else {
+      outputs = [
+        "{{bundle_contents_dir}}/Versions/$chrome_version_full/{{source_file_part}}",
+      ]
+    }
     public_deps = [
-      ":chrome_helper_app",
-
       # Before bundling the versioned app components, delete any existing
       # versions.
       ":clean_up_old_versions",
@@ -822,22 +830,57 @@ if (is_win) {
       ":verify_chrome_framework_order",
     ]
 
+    if (!new_mac_bundle_structure) {
+      sources += [ "$root_out_dir/$chrome_helper_name.app" ]
+      public_deps += [ ":chrome_helper_app" ]
+    }
+
     if (enable_widevine_cdm_host_verification) {
-      sources += [ "$root_out_dir/Widevine Resources.bundle" ]
-      public_deps += [ ":widevine_resources_bundle" ]
+      if (new_mac_bundle_structure) {
+        # The :chrome_framework_widevine_signature target copies into the
+        # :chrome_framework bundle. But because the signing file depends on the
+        # framework itself, that would cause a cyclical dependency. Instead,
+        # this dependency directly copies the file into the framework's
+        # resources directory.
+        public_deps += [ ":chrome_framework_widevine_signature" ]
+      } else {
+        sources += [ "$root_out_dir/Widevine Resources.bundle" ]
+        public_deps += [ ":widevine_resources_bundle" ]
+      }
     }
   }
 
   action("clean_up_old_versions") {
     script = "//chrome/tools/build/mac/clean_up_old_versions.py"
+
+    _stamp_file = "$root_gen_dir/run_$target_name.stamp"
+
     outputs = [
-      "$root_gen_dir/run_$target_name.stamp",
+      _stamp_file,
     ]
+
+    if (new_mac_bundle_structure) {
+      _versions_dir = "$root_out_dir/$chrome_product_full_name.app/Contents/Frameworks/$chrome_framework_name.framework/Versions"
+    } else {
+      _versions_dir =
+          "$root_out_dir/$chrome_product_full_name.app/Contents/Versions"
+    }
+
     args = [
-             rebase_path("$root_out_dir/$chrome_product_full_name.app",
-                         root_build_dir),
-             "$chrome_version_full",
-           ] + rebase_path(outputs, root_build_dir)
+      "--versions-dir",
+      rebase_path(_versions_dir, root_build_dir),
+      "--stamp",
+      rebase_path(_stamp_file, root_build_dir),
+      "--keep",
+      chrome_version_full,
+    ]
+
+    if (new_mac_bundle_structure) {
+      args += [
+        "--keep",
+        "Current",
+      ]
+    }
   }
 
   tweak_info_plist("chrome_helper_plist") {
@@ -877,6 +920,7 @@ if (is_win) {
     defines = [ "HELPER_EXECUTABLE" ]
 
     deps = [
+      "//chrome/common:buildflags",
       "//chrome/common:version_header",
       "//sandbox/mac:seatbelt",
     ]
@@ -884,12 +928,21 @@ if (is_win) {
     ldflags = []
 
     if (is_component_build) {
-      ldflags += [
-        # The helper is in Chromium.app/Contents/Versions/X/Chromium Helper.app/Contents/MacOS/
-        # so set rpath up to the base.
-        "-rpath",
-        "@loader_path/../../../../../../..",
-      ]
+      if (new_mac_bundle_structure) {
+        ldflags += [
+          # The helper is in Chromium.app/Contents/Frameworks/Chromium Framework.framework/Versions/X/Helpers/Chromium Helper.app/Contents/MacOS
+          # so set rpath up to the base.
+          "-rpath",
+          "@loader_path/../../../../../../../../../..",
+        ]
+      } else {
+        ldflags += [
+          # The helper is in Chromium.app/Contents/Versions/X/Chromium Helper.app/Contents/MacOS/
+          # so set rpath up to the base.
+          "-rpath",
+          "@loader_path/../../../../../../..",
+        ]
+      }
     }
 
     if (enable_stripping) {
@@ -916,6 +969,11 @@ if (is_win) {
       "//chrome/app_shim:app_mode_loader",
       "//components/crash/content/app:chrome_crashpad_handler",
     ]
+
+    if (new_mac_bundle_structure) {
+      sources += [ "$root_out_dir/$chrome_helper_name.app" ]
+      public_deps += [ ":chrome_helper_app" ]
+    }
 
     if (using_sanitizer) {
       # crashpad_handler requires the ASan runtime at its @executable_path.
@@ -1129,49 +1187,65 @@ if (is_win) {
       ]
     }
 
-    mac_info_plist("widevine_resources_plist") {
-      info_plist = "//third_party/widevine/cdm/widevine_resources.plist"
-      extra_substitutions = [
-        "CHROMIUM_BUNDLE_ID=$chrome_mac_bundle_id",
-        "BUNDLE_ID=widevine-resources",
-      ]
-      executable_name = "Widevine Resources"
-    }
+    if (new_mac_bundle_structure) {
+      copy("chrome_framework_widevine_signature") {
+        deps = [
+          ":sign_chrome_framework_for_widevine",
+        ]
 
-    bundle_data("widevine_resources_plist_bundle_data") {
-      sources = get_target_outputs(":widevine_resources_plist")
-      outputs = [
-        "{{bundle_contents_dir}}/Info.plist",
-      ]
-      public_deps = [
-        ":widevine_resources_plist",
-      ]
-    }
+        sources = [
+          "$root_out_dir/$chrome_framework_name.sig",
+        ]
 
-    bundle_data("framework_widevine_signature") {
-      sources = [
-        "$root_out_dir/$chrome_framework_name.sig",
-      ]
+        outputs = [
+          "$root_out_dir/$chrome_framework_name.framework/Resources/{{source_file_part}}",
+        ]
+      }
+    } else {
+      mac_info_plist("widevine_resources_plist") {
+        info_plist = "//third_party/widevine/cdm/widevine_resources.plist"
+        extra_substitutions = [
+          "CHROMIUM_BUNDLE_ID=$chrome_mac_bundle_id",
+          "BUNDLE_ID=widevine-resources",
+        ]
+        executable_name = "Widevine Resources"
+      }
 
-      outputs = [
-        "{{bundle_resources_dir}}/{{source_file_part}}",
-      ]
+      bundle_data("widevine_resources_plist_bundle_data") {
+        sources = get_target_outputs(":widevine_resources_plist")
+        outputs = [
+          "{{bundle_contents_dir}}/Info.plist",
+        ]
+        public_deps = [
+          ":widevine_resources_plist",
+        ]
+      }
 
-      public_deps = [
-        ":sign_chrome_framework_for_widevine",
-      ]
-    }
+      bundle_data("framework_widevine_signature") {
+        sources = [
+          "$root_out_dir/$chrome_framework_name.sig",
+        ]
 
-    create_bundle("widevine_resources_bundle") {
-      output_name = "Widevine Resources.bundle"
-      bundle_root_dir = "$root_build_dir/$output_name"
-      bundle_contents_dir = "$bundle_root_dir/Contents"
-      bundle_resources_dir = "$bundle_contents_dir/Resources"
+        outputs = [
+          "{{bundle_resources_dir}}/{{source_file_part}}",
+        ]
 
-      deps = [
-        ":framework_widevine_signature",
-        ":widevine_resources_plist_bundle_data",
-      ]
+        public_deps = [
+          ":sign_chrome_framework_for_widevine",
+        ]
+      }
+
+      create_bundle("widevine_resources_bundle") {
+        output_name = "Widevine Resources.bundle"
+        bundle_root_dir = "$root_build_dir/$output_name"
+        bundle_contents_dir = "$bundle_root_dir/Contents"
+        bundle_resources_dir = "$bundle_contents_dir/Resources"
+
+        deps = [
+          ":framework_widevine_signature",
+          ":widevine_resources_plist_bundle_data",
+        ]
+      }
     }
   }
 
@@ -1321,8 +1395,13 @@ if (is_win) {
       deps += [ ":default_apps" ]
     }
 
-    ldflags = [
-      "-Wl,-install_name,@executable_path/../Versions/$chrome_version_full/$chrome_framework_name.framework/$chrome_framework_name",
+    if (new_mac_bundle_structure) {
+      ldflags = [ "-Wl,-install_name,@executable_path/../Frameworks/$chrome_framework_name.framework/Versions/$chrome_version_full/$chrome_framework_name" ]
+    } else {
+      ldflags = [ "-Wl,-install_name,@executable_path/../Versions/$chrome_version_full/$chrome_framework_name.framework/$chrome_framework_name" ]
+    }
+
+    ldflags += [
       "-compatibility_version",
       chrome_dylib_version,
       "-current_version",
@@ -1331,11 +1410,18 @@ if (is_win) {
     ]
 
     if (is_component_build) {
-      ldflags += [
-        "-rpath",
-        "@loader_path/../../../../../../..",
-        "-Wl,-reexport_library,libchrome_dll.dylib",
-      ]
+      if (new_mac_bundle_structure) {
+        ldflags += [
+          "-rpath",
+          "@loader_path/../../../../../../../..",
+        ]
+      } else {
+        ldflags += [
+          "-rpath",
+          "@loader_path/../../../../../../..",
+        ]
+      }
+      ldflags += [ "-Wl,-reexport_library,libchrome_dll.dylib" ]
 
       data_deps = [
         ":chrome_dll",

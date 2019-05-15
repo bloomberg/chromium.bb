@@ -15,6 +15,7 @@
 #include "base/memory/free_deleter.h"
 #include "base/path_service.h"
 #include "build/build_config.h"
+#include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
 
@@ -36,9 +37,15 @@ NSBundle* OuterAppBundleInternal() {
     return [[NSBundle mainBundle] retain];
   }
 
+#if BUILDFLAG(NEW_MAC_BUNDLE_STRUCTURE)
+  // From C.app/Contents/Frameworks/C.framework, go up three steps to C.app.
+  base::FilePath framework_path = chrome::GetFrameworkBundlePath();
+  base::FilePath outer_app_dir = framework_path.DirName().DirName().DirName();
+#else
   // From C.app/Contents/Versions/1.2.3.4, go up three steps to get to C.app.
   base::FilePath versioned_dir = chrome::GetVersionedDirectory();
   base::FilePath outer_app_dir = versioned_dir.DirName().DirName().DirName();
+#endif
   const char* outer_app_dir_c = outer_app_dir.value().c_str();
   NSString* outer_app_dir_ns = [NSString stringWithUTF8String:outer_app_dir_c];
 
@@ -149,6 +156,7 @@ bool GetUserVideosDirectory(base::FilePath* result) {
   return base::mac::GetUserDirectory(NSMoviesDirectory, result);
 }
 
+#if !BUILDFLAG(NEW_MAC_BUNDLE_STRUCTURE)
 base::FilePath GetVersionedDirectory() {
   // Start out with the path to the running executable.
   base::FilePath path;
@@ -171,6 +179,7 @@ base::FilePath GetVersionedDirectory() {
 
   return path;
 }
+#endif
 
 base::FilePath GetFrameworkBundlePath() {
   // It's tempting to use +[NSBundle bundleWithIdentifier:], but it's really
@@ -183,9 +192,32 @@ base::FilePath GetFrameworkBundlePath() {
   // is the approach that is used here.  NSBundle is also documented as being
   // not thread-safe, and thread safety may be a concern here.
 
+#if BUILDFLAG(NEW_MAC_BUNDLE_STRUCTURE)
+  // Start out with the path to the running executable.
+  base::FilePath path;
+  base::PathService::Get(base::FILE_EXE, &path);
+
+  // One step up to MacOS, another to Contents.
+  path = path.DirName().DirName();
+  DCHECK_EQ(path.BaseName().value(), "Contents");
+
+  if (base::mac::IsBackgroundOnlyProcess()) {
+    // |path| is Chromium.app/Contents/Frameworks/Chromium Framework.framework/
+    // Versions/X/Helpers/Chromium Helper.app/Contents. Go up five times to
+    // the framework directory.
+    path = path.DirName().DirName().DirName().DirName().DirName();
+    DCHECK_EQ(path.BaseName().value(), kFrameworkName);
+  } else {
+    // |path| is Chromium.app/Contents, so go down to
+    // Chromium.app/Contents/Frameworks/Chromium Framework.framework.
+    path = path.Append("Frameworks").Append(kFrameworkName);
+  }
+  return path;
+#else
   // The framework bundle is at a known path and name from the browser .app's
   // versioned directory.
   return GetVersionedDirectory().Append(kFrameworkName);
+#endif
 }
 
 bool GetLocalLibraryDirectory(base::FilePath* result) {

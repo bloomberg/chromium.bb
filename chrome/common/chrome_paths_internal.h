@@ -9,6 +9,8 @@
 
 #include "build/build_config.h"
 
+#include "chrome/common/buildflags.h"
+
 #if defined(OS_MACOSX)
 #if defined(__OBJC__)
 @class NSBundle;
@@ -63,11 +65,13 @@ bool GetUserPicturesDirectory(base::FilePath* result);
 bool GetUserVideosDirectory(base::FilePath* result);
 
 #if defined(OS_MACOSX)
+#if !BUILDFLAG(NEW_MAC_BUNDLE_STRUCTURE)
 // The "versioned directory" is a directory in the browser .app bundle.  It
 // contains the bulk of the application, except for the things that the system
 // requires be located at spepcific locations.  The versioned directory is
 // in the .app at Contents/Versions/w.x.y.z.
 base::FilePath GetVersionedDirectory();
+#endif
 
 // Most of the application is further contained within the framework.  The
 // framework bundle is located within the versioned directory at a specific

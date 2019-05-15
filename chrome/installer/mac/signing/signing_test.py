@@ -191,7 +191,12 @@ def _get_plist_read(other_version):
             'App Product.app/Contents/Info.plist': {
                 'KSVersion': '99.0.9999.99'
             },
+            # TODO(rsesek): Remove this entry after new_mac_bundle_structure launches.
             'App Product.app/Contents/Versions/99.0.9999.99/Product Framework.framework/Resources/Info.plist':
+                {
+                    'CFBundleShortVersionString': other_version
+                },
+            'App Product.app/Contents/Frameworks/Product Framework.framework/Resources/Info.plist':
                 {
                     'CFBundleShortVersionString': other_version
                 }
@@ -243,10 +248,11 @@ class TestSignChrome(unittest.TestCase):
 
         # Make sure that the framework and the app are the last two parts that
         # are signed.
-        self.assertEqual(signed_paths[-2:], [
-            'App Product.app/Contents/Versions/99.0.9999.99/Product Framework.framework',
-            'App Product.app'
-        ])
+        self.assertEqual(signed_paths[-2:], [(
+            'App Product.app/Contents/Frameworks/Product Framework.framework'
+            if config.use_new_mac_bundle_structure else
+            'App Product.app/Contents/Versions/99.0.9999.99/Product Framework.framework'
+        ), 'App Product.app'])
 
         self.assertEqual(kwargs['run_command'].mock_calls, [
             mock.call.run_command([

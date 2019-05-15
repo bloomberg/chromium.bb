@@ -10,7 +10,6 @@ THIS_DIR = os.path.abspath(os.path.dirname(__file__))
 config = imp.load_source('signing.config', os.path.join(THIS_DIR,
                                                         'config.py.in'))
 
-
 class TestConfig(config.CodeSignConfig):
 
     def __init__(self, identity='[IDENTITY]', keychain='[KEYCHAIN]'):
@@ -31,6 +30,10 @@ class TestConfig(config.CodeSignConfig):
     @property
     def base_bundle_id(self):
         return 'test.signing.bundle_id'
+
+    @property
+    def use_new_mac_bundle_structure(self):
+        return os.getenv('USE_NEW_BUNDLE_STRUCTURE') == '1'
 
     @property
     def optional_parts(self):

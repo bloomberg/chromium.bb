@@ -42,7 +42,8 @@ def get_parts(config):
                 options=config.codesign_options_outer_app,
                 requirements=config.codesign_requirements_outer_app,
                 identifier_requirement=False,
-                resource_rules='app_resource_rules.plist',
+                resource_rules=None if config.use_new_mac_bundle_structure else
+                'app_resource_rules.plist',
                 entitlements='app-entitlements.plist',
                 verify_options=VerifyOptions.DEEP + VerifyOptions.NO_STRICT),
         'framework':
@@ -68,8 +69,10 @@ def get_parts(config):
                 verify_options=VerifyOptions.DEEP),
         'helper-app':
             CodeSignedProduct(
-                '{0.app_product}.app/Contents/Versions/{0.version}/{0.product} Helper.app'
-                .format(config),
+                ('{0.framework_dir}/Helpers/{0.product} Helper.app'
+                 if config.use_new_mac_bundle_structure else
+                 '{0.app_product}.app/Contents/Versions/{0.version}/{0.product} Helper.app'
+                ).format(config),
                 '{}.helper'.format(uncustomized_bundle_id),
                 options=config.codesign_options_helpers,
                 verify_options=VerifyOptions.DEEP),
