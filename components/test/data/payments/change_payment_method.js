@@ -57,21 +57,19 @@ function install() {  // eslint-disable-line no-unused-vars
  *                                   payment sheet.
  */
 function outputChangePaymentMethodReturnValue(request) {
-  let returnValue;
   request
     .show()
     .then((response) => {
-      returnValue = response.details.changePaymentMethodReturned;
-      return response.complete('success');
+      response.complete('success').then(() => {
+        output(
+          'PaymentRequest.show()',
+          'changePaymentMethod() returned: ' +
+            JSON.stringify(response.details.changePaymentMethodReturned)
+        );
+      });
     })
     .catch((error) => {
       output('PaymentRequest.show() rejected with', error);
-    })
-    .then(() => {
-      output(
-        'PaymentRequest.show()',
-        'changePaymentMethod() returned: ' + JSON.stringify(returnValue)
-      );
     });
 }
 

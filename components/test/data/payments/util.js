@@ -13,8 +13,8 @@ function print(msg) {  // eslint-disable-line no-unused-vars
 }
 
 /**
- * Prints output in developer console and sends it to the DOM automation
- * controller.
+ * Prints output in developer console and on the page, as well as sends it to
+ * the DOM automation controller.
  * @param {String} src - Human-readable description of where the message is
  *                       coming from.
  * @param {String} txt - The text to print.
@@ -25,10 +25,9 @@ function output(src, txt) {  // eslint-disable-line no-unused-vars
     txt = txt.message;
   }
   txt = src + ': ' + txt;
+  print(txt);
+  console.log(txt);
   if (window.domAutomationController) {
     window.domAutomationController.send(txt);
-  } else {
-    txt += ' window.domAutomationController not found.';
   }
-  console.log(txt);
 }

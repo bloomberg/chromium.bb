@@ -8,28 +8,10 @@ jumbo_static_library("content") {
   sources = [
     "can_make_payment_query_factory.cc",
     "can_make_payment_query_factory.h",
-    "content_payment_request_delegate.h",
-    "initialization_task.cc",
-    "initialization_task.h",
     "payment_handler_host.cc",
     "payment_handler_host.h",
-    "payment_request.cc",
-    "payment_request.h",
     "payment_request_converter.cc",
     "payment_request_converter.h",
-    "payment_request_dialog.h",
-    "payment_request_display_manager.cc",
-    "payment_request_display_manager.h",
-    "payment_request_spec.cc",
-    "payment_request_spec.h",
-    "payment_request_state.cc",
-    "payment_request_state.h",
-    "payment_request_web_contents_manager.cc",
-    "payment_request_web_contents_manager.h",
-    "payment_response_helper.cc",
-    "payment_response_helper.h",
-    "service_worker_payment_instrument.cc",
-    "service_worker_payment_instrument.h",
   ]
 
   deps = [
@@ -49,6 +31,29 @@ jumbo_static_library("content") {
     "//third_party/blink/public:blink_headers",
     "//url",
   ]
+
+  if (!is_android) {
+    sources += [
+      "content_payment_request_delegate.h",
+      "initialization_task.cc",
+      "initialization_task.h",
+      "payment_request.cc",
+      "payment_request.h",
+      "payment_request_dialog.h",
+      "payment_request_display_manager.cc",
+      "payment_request_display_manager.h",
+      "payment_request_spec.cc",
+      "payment_request_spec.h",
+      "payment_request_state.cc",
+      "payment_request_state.h",
+      "payment_request_web_contents_manager.cc",
+      "payment_request_web_contents_manager.h",
+      "payment_response_helper.cc",
+      "payment_response_helper.h",
+      "service_worker_payment_instrument.cc",
+      "service_worker_payment_instrument.h",
+    ]
+  }
 }
 
 # Files used by content and utility.
@@ -108,15 +113,20 @@ jumbo_source_set("unit_tests") {
   testonly = true
   sources = [
     "payment_method_manifest_table_unittest.cc",
-    "payment_request_spec_unittest.cc",
-    "payment_request_state_unittest.cc",
-    "payment_response_helper_unittest.cc",
     "service_worker_payment_app_factory_unittest.cc",
-    "service_worker_payment_instrument_unittest.cc",
     "test_content_payment_request_delegate.cc",
     "test_content_payment_request_delegate.h",
     "web_app_manifest_section_table_unittest.cc",
   ]
+
+  if (!is_android) {
+    sources += [
+      "payment_request_spec_unittest.cc",
+      "payment_request_state_unittest.cc",
+      "payment_response_helper_unittest.cc",
+      "service_worker_payment_instrument_unittest.cc",
+    ]
+  }
 
   deps = [
     ":content",

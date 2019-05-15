@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/android/jni_android.h"
+#include "components/payments/content/android/payment_details_deserializer.h"
 #include "components/payments/content/payment_request_converter.h"
 #include "components/payments/core/payment_details.h"
 #include "components/payments/core/payment_details_validation.h"
@@ -22,12 +23,10 @@ namespace payments {
 jboolean JNI_PaymentValidator_ValidatePaymentDetailsAndroid(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& buffer) {
-  jbyte* buf_in = static_cast<jbyte*>(env->GetDirectBufferAddress(buffer));
-  jlong buf_size = env->GetDirectBufferCapacity(buffer);
-  std::vector<uint8_t> mojo_buffer(buf_size);
-  memcpy(&mojo_buffer[0], buf_in, buf_size);
-  mojom::PaymentDetailsPtr details;
-  if (!mojom::PaymentDetails::Deserialize(std::move(mojo_buffer), &details))
+  bool success = false;
+  mojom::PaymentDetailsPtr details =
+      android::DeserializePaymentDetails(env, buffer, &success);
+  if (!success)
     return false;
   std::string unused_error_message;
   return ValidatePaymentDetails(ConvertPaymentDetails(details),

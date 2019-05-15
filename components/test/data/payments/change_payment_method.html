@@ -11,6 +11,7 @@ found in the LICENSE file.
       name="viewport"
       content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1">
     <title>Test For PaymentRequestEvent.changePaymentMethod()</title>
+    <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" type="text/css" href="style.css">
   </head>
   <body>
@@ -18,18 +19,18 @@ found in the LICENSE file.
       <button onclick="install()" id="install">Install Service Worker</button>
     </div>
     <div>
-      <button onclick="test_no_handler()" id="test_no_handler">
+      <button onclick="testNoHandler()" id="testNoHandler">
         Test No Handler
       </button>
     </div>
     <div>
-      <button onclick="test_reject()" id="test_reject">Test Rejection</button>
+      <button onclick="testReject()" id="testReject">Test Rejection</button>
     </div>
     <div>
-      <button onclick="test_throw()" id="test_throw">Test Throw</button>
+      <button onclick="testThrow()" id="testThrow">Test Throw</button>
     </div>
     <div>
-      <button onclick="test_details()" id="test_details">Test Details</button>
+      <button onclick="testDetails()" id="testDetails">Test Details</button>
     </div>
     <pre id="result"></pre>
     <script src="util.js"></script>

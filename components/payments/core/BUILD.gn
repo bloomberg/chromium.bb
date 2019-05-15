@@ -6,10 +6,6 @@ import("//build/config/jumbo.gni")
 
 jumbo_static_library("core") {
   sources = [
-    "autofill_payment_instrument.cc",
-    "autofill_payment_instrument.h",
-    "basic_card_response.cc",
-    "basic_card_response.h",
     "can_make_payment_query.cc",
     "can_make_payment_query.h",
     "currency_formatter.cc",
@@ -20,8 +16,6 @@ jumbo_static_library("core") {
     "features.h",
     "journey_logger.cc",
     "journey_logger.h",
-    "payment_address.cc",
-    "payment_address.h",
     "payment_currency_amount.cc",
     "payment_currency_amount.h",
     "payment_details.cc",
@@ -30,38 +24,49 @@ jumbo_static_library("core") {
     "payment_details_modifier.h",
     "payment_details_validation.cc",
     "payment_details_validation.h",
-    "payment_instrument.cc",
-    "payment_instrument.h",
     "payment_item.cc",
     "payment_item.h",
     "payment_manifest_downloader.cc",
     "payment_manifest_downloader.h",
     "payment_method_data.cc",
     "payment_method_data.h",
-    "payment_options.cc",
-    "payment_options.h",
-    "payment_options_provider.h",
     "payment_prefs.cc",
     "payment_prefs.h",
-    "payment_request_base_delegate.h",
-    "payment_request_data_util.cc",
-    "payment_request_data_util.h",
-    "payment_request_delegate.h",
-    "payment_response.cc",
-    "payment_response.h",
     "payment_shipping_option.cc",
     "payment_shipping_option.h",
-    "payments_experimental_features.cc",
-    "payments_experimental_features.h",
-    "payments_profile_comparator.cc",
-    "payments_profile_comparator.h",
     "payments_validators.cc",
     "payments_validators.h",
-    "strings_util.cc",
-    "strings_util.h",
-    "web_payment_request.cc",
-    "web_payment_request.h",
   ]
+
+  if (!is_android) {
+    sources += [
+      "autofill_payment_instrument.cc",
+      "autofill_payment_instrument.h",
+      "basic_card_response.cc",
+      "basic_card_response.h",
+      "payment_address.cc",
+      "payment_address.h",
+      "payment_instrument.cc",
+      "payment_instrument.h",
+      "payment_options.cc",
+      "payment_options.h",
+      "payment_options_provider.h",
+      "payment_request_base_delegate.h",
+      "payment_request_data_util.cc",
+      "payment_request_data_util.h",
+      "payment_request_delegate.h",
+      "payment_response.cc",
+      "payment_response.h",
+      "payments_experimental_features.cc",
+      "payments_experimental_features.h",
+      "payments_profile_comparator.cc",
+      "payments_profile_comparator.h",
+      "strings_util.cc",
+      "strings_util.h",
+      "web_payment_request.cc",
+      "web_payment_request.h",
+    ]
+  }
 
   deps = [
     "//base",
@@ -122,12 +127,9 @@ jumbo_static_library("test_support") {
 jumbo_source_set("unit_tests") {
   testonly = true
   sources = [
-    "autofill_payment_instrument_unittest.cc",
-    "basic_card_response_unittest.cc",
     "can_make_payment_query_unittest.cc",
     "currency_formatter_unittest.cc",
     "journey_logger_unittest.cc",
-    "payment_address_unittest.cc",
     "payment_currency_amount_unittest.cc",
     "payment_details_modifier_unittest.cc",
     "payment_details_unittest.cc",
@@ -135,15 +137,23 @@ jumbo_source_set("unit_tests") {
     "payment_item_unittest.cc",
     "payment_manifest_downloader_unittest.cc",
     "payment_method_data_unittest.cc",
-    "payment_options_unittest.cc",
-    "payment_request_data_util_unittest.cc",
-    "payment_response_unittest.cc",
     "payment_shipping_option_unittest.cc",
-    "payments_profile_comparator_unittest.cc",
     "payments_validators_unittest.cc",
-    "strings_util_unittest.cc",
-    "web_payment_request_unittest.cc",
   ]
+
+  if (!is_android) {
+    sources += [
+      "autofill_payment_instrument_unittest.cc",
+      "basic_card_response_unittest.cc",
+      "payment_address_unittest.cc",
+      "payment_options_unittest.cc",
+      "payment_request_data_util_unittest.cc",
+      "payment_response_unittest.cc",
+      "payments_profile_comparator_unittest.cc",
+      "strings_util_unittest.cc",
+      "web_payment_request_unittest.cc",
+    ]
+  }
 
   deps = [
     ":core",

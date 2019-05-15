@@ -24,6 +24,8 @@ class PaymentHandlerHost : public mojom::PaymentHandlerHost {
   // merchant's renderer process.
   class Delegate {
    public:
+    virtual ~Delegate() {}
+
     // Notifies the merchant that the payment method has changed. Returns
     // "false" if the state is invalid.
     virtual bool ChangePaymentMethod(const std::string& method_name,
@@ -37,8 +39,13 @@ class PaymentHandlerHost : public mojom::PaymentHandlerHost {
   explicit PaymentHandlerHost(Delegate* delegate);
   ~PaymentHandlerHost() override;
 
-  // Binds the payment handler host Mojo IPC connection to an endpoint and
-  // returns it.
+  // Returns "true" when the payment handler has changed the payment method, but
+  // has not received the response from the merchant yet.
+  bool is_changing_payment_method() const {
+    return !!change_payment_method_callback_;
+  }
+
+  // Binds to an IPC endpoint and returns it.
   mojom::PaymentHandlerHostPtrInfo Bind();
 
   // Notifies the payment handler of the updated details, such as updated total,
@@ -50,7 +57,7 @@ class PaymentHandlerHost : public mojom::PaymentHandlerHost {
   // method change event, so the payment details are unchanged.
   void NoUpdatedPaymentDetails();
 
-  // Disconnects from the payment handler host.
+  // Disconnects from the payment handler.
   void Disconnect();
 
  private:
@@ -59,14 +66,14 @@ class PaymentHandlerHost : public mojom::PaymentHandlerHost {
       mojom::PaymentHandlerMethodDataPtr method_data,
       mojom::PaymentHandlerHost::ChangePaymentMethodCallback callback) override;
 
-  // The end-point for the payment handler renderer process to call into the
-  // browser process.
-  mojo::Binding<mojom::PaymentHandlerHost> binding_;
-
   // Payment handler's callback to invoke after merchant responds to the
   // "payment method change" event.
   mojom::PaymentHandlerHost::ChangePaymentMethodCallback
       change_payment_method_callback_;
+
+  // The end-point for the payment handler renderer process to call into the
+  // browser process.
+  mojo::Binding<mojom::PaymentHandlerHost> binding_;
 
   // Not null and outlives this object. Owns this object.
   Delegate* delegate_;

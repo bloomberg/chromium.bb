@@ -53,6 +53,8 @@ import org.chromium.chrome.browser.widget.prefeditor.Completable;
 import org.chromium.chrome.browser.widget.prefeditor.EditableOption;
 import org.chromium.components.payments.CurrencyFormatter;
 import org.chromium.components.payments.OriginSecurityChecker;
+import org.chromium.components.payments.PaymentHandlerHost;
+import org.chromium.components.payments.PaymentHandlerHost.PaymentHandlerHostDelegate;
 import org.chromium.components.payments.PaymentValidator;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.RenderFrameHost;
@@ -104,7 +106,8 @@ public class PaymentRequestImpl
                    PaymentInstrument.InstrumentDetailsCallback,
                    PaymentAppFactory.PaymentAppCreatedCallback,
                    PaymentResponseHelper.PaymentResponseRequesterDelegate, FocusChangedObserver,
-                   NormalizedAddressRequestDelegate, SettingsAutofillAndPaymentsObserver.Observer {
+                   NormalizedAddressRequestDelegate, SettingsAutofillAndPaymentsObserver.Observer,
+                   PaymentHandlerHostDelegate {
     /**
      * A test-only observer for the PaymentRequest service implementation.
      */
@@ -315,6 +318,7 @@ public class PaymentRequestImpl
     private TabModelSelector mObservedTabModelSelector;
     private TabModel mObservedTabModel;
     private OverviewModeBehavior mOverviewModeBehavior;
+    private PaymentHandlerHost mPaymentHandlerHost;
 
     /** Aborts should only be recorded if the Payment Request was shown to the user. */
     private boolean mShouldRecordAbortReason;
@@ -856,6 +860,24 @@ public class PaymentRequestImpl
         return result == null ? null : Collections.unmodifiableMap(result);
     }
 
+    @Override
+    public boolean changePaymentMethod(String methodName, String stringifiedData) {
+        if (TextUtils.isEmpty(methodName) || stringifiedData == null || mClient == null
+                || mInvokedPaymentInstrument == null || mPaymentHandlerHost == null
+                || mPaymentHandlerHost.isChangingPaymentMethod()) {
+            return false;
+        }
+
+        mClient.onPaymentMethodChange(methodName, stringifiedData);
+        return true;
+    }
+
+    @Override
+    public boolean isInvokedInstrumentValidForPaymentMethodIdentifier(String methodName) {
+        return mInvokedPaymentInstrument != null
+                && mInvokedPaymentInstrument.isValidForPaymentMethodData(methodName, null);
+    }
+
     /**
      * Called by merchant to update the shipping options and line items after the user has selected
      * their shipping address or shipping option.
@@ -876,12 +898,15 @@ public class PaymentRequestImpl
             return;
         }
 
-        if (!mRequestShipping && !mRequestPayerName && !mRequestPayerEmail && !mRequestPayerPhone) {
+        if (!mRequestShipping && !mRequestPayerName && !mRequestPayerEmail && !mRequestPayerPhone
+                && mInvokedPaymentInstrument == null
+                && (mPaymentHandlerHost == null
+                        || !mPaymentHandlerHost.isChangingPaymentMethod())) {
             mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
             disconnectFromClientWithDebugMessage(
                     "PaymentRequestUpdateEvent.updateWith() called without passing a promise into "
-                    + "PaymentRequest.show() and without payment options "
-                    + "(e.g. requestShipping: true)");
+                    + "PaymentRequest.show(), without a payment method change event, and without"
+                    + "payment options (e.g. requestShipping: true)");
             return;
         }
 
@@ -898,6 +923,10 @@ public class PaymentRequestImpl
             // opaque to Chrome sub-instruments inside, representing each card in the user account.
             // Hence Chrome forwards the updateWith() calls to the currently invoked
             // PaymentInstrument object.
+            if (mPaymentHandlerHost != null && mPaymentHandlerHost.isChangingPaymentMethod()) {
+                mPaymentHandlerHost.updateWith(details);
+                return;
+            }
             mInvokedPaymentInstrument.onPaymentDetailsUpdate(
                     details.total != null ? details.total.amount : null, details.error);
             return;
@@ -965,6 +994,11 @@ public class PaymentRequestImpl
 
         if (mInvokedPaymentInstrument != null
                 && !(mInvokedPaymentInstrument instanceof AutofillPaymentInstrument)) {
+            if (mPaymentHandlerHost != null && mPaymentHandlerHost.isChangingPaymentMethod()) {
+                mPaymentHandlerHost.noUpdatedPaymentDetails();
+                return;
+            }
+
             mInvokedPaymentInstrument.onPaymentDetailsUpdate(null, null);
             return;
         }
@@ -1527,6 +1561,12 @@ public class PaymentRequestImpl
                     || instrumentMethodName.equals(PAY_WITH_GOOGLE_METHOD_NAME)) {
                 isGooglePaymentInstrument = true;
             }
+        }
+
+        if (mInvokedPaymentInstrument instanceof ServiceWorkerPaymentApp) {
+            if (mPaymentHandlerHost == null) mPaymentHandlerHost = new PaymentHandlerHost(this);
+            ((ServiceWorkerPaymentApp) mInvokedPaymentInstrument)
+                    .setPaymentHandlerHost(mPaymentHandlerHost);
         }
 
         mInvokedPaymentInstrument.invokePaymentApp(mId, mMerchantName, mTopLevelOrigin,
@@ -2194,6 +2234,8 @@ public class PaymentRequestImpl
             formatter.destroy();
         }
         mJourneyLogger.destroy();
+
+        if (mPaymentHandlerHost != null) mPaymentHandlerHost.destroy();
     }
 
     private void closeClient() {

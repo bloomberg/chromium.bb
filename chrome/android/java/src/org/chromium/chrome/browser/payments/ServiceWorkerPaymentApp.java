@@ -10,6 +10,7 @@ import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.components.payments.PaymentHandlerHost;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentItem;
@@ -29,7 +30,7 @@ import java.util.Set;
  * Such apps are implemented as service workers according to the Payment
  * Handler API specification.
  *
- * @see https://w3c.github.io/webpayments-payment-handler/
+ * @see https://w3c.github.io/payment-handler/
  */
 public class ServiceWorkerPaymentApp extends PaymentInstrument implements PaymentApp {
     private final WebContents mWebContents;
@@ -47,6 +48,9 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
     private final URI mSwUri;
     private final URI mScope;
     private final boolean mUseCache;
+
+    /** The endpoint for payment handler communication, such as the change-payment-method event. */
+    private PaymentHandlerHost mPaymentHandlerHost;
 
     /**
      * This class represents capabilities of a payment instrument. It is currently only used for
@@ -200,6 +204,16 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
         mUseCache = useCache;
     }
 
+    /**
+     * Sets the endpoint for payment handler communication. Must be called before invoking this
+     * payment handler.
+     * @param host The endpoint for payment handler communication. Should not be null.
+     */
+    /* package */ void setPaymentHandlerHost(PaymentHandlerHost host) {
+        assert host != null;
+        mPaymentHandlerHost = host;
+    }
+
     @Override
     public void getInstruments(Map<String, PaymentMethodData> methodDataMap, String origin,
             String iframeOrigin, byte[][] unusedCertificateChain,
@@ -335,17 +349,18 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
             byte[][] unusedCertificateChain, Map<String, PaymentMethodData> methodData,
             PaymentItem total, List<PaymentItem> displayItems,
             Map<String, PaymentDetailsModifier> modifiers, InstrumentDetailsCallback callback) {
+        assert mPaymentHandlerHost != null;
         if (mNeedsInstallation) {
             BitmapDrawable icon = (BitmapDrawable) getDrawableIcon();
             ServiceWorkerPaymentAppBridge.installAndInvokePaymentApp(mWebContents, origin,
                     iframeOrigin, id, new HashSet<>(methodData.values()), total,
-                    new HashSet<>(modifiers.values()), callback, mAppName,
+                    new HashSet<>(modifiers.values()), mPaymentHandlerHost, callback, mAppName,
                     icon == null ? null : icon.getBitmap(), mSwUri, mScope, mUseCache,
                     mMethodNames.toArray(new String[0])[0]);
         } else {
             ServiceWorkerPaymentAppBridge.invokePaymentApp(mWebContents, mRegistrationId, origin,
                     iframeOrigin, id, new HashSet<>(methodData.values()), total,
-                    new HashSet<>(modifiers.values()), callback);
+                    new HashSet<>(modifiers.values()), mPaymentHandlerHost, callback);
         }
     }
 

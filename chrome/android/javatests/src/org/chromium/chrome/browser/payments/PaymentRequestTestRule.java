@@ -150,10 +150,10 @@ public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
         mCanMakePaymentQueryResponded = new CallbackHelper();
         mHasEnrolledInstrumentQueryResponded = new CallbackHelper();
         mWebContentsRef = new AtomicReference<>();
-        mTestFilePath = testFileName.startsWith("data:")
+        mTestFilePath = testFileName.equals("about:blank") || testFileName.startsWith("data:")
                 ? testFileName
                 : UrlUtils.getIsolatedTestFilePath(
-                          String.format("components/test/data/payments/%s", testFileName));
+                        String.format("components/test/data/payments/%s", testFileName));
         mCallback = callback;
     }
 
