@@ -38,9 +38,11 @@ const int AddressField::kZipCodeMatchType =
     MATCH_DEFAULT | MATCH_TELEPHONE | MATCH_NUMBER;
 
 // Select fields are allowed here.  This occurs on top-100 site rediff.com.
-const int AddressField::kCityMatchType = MATCH_DEFAULT | MATCH_SELECT;
+const int AddressField::kCityMatchType =
+    MATCH_DEFAULT | MATCH_SELECT | MATCH_SEARCH;
 
-const int AddressField::kStateMatchType = MATCH_DEFAULT | MATCH_SELECT;
+const int AddressField::kStateMatchType =
+    MATCH_DEFAULT | MATCH_SELECT | MATCH_SEARCH;
 
 std::unique_ptr<FormField> AddressField::Parse(AutofillScanner* scanner) {
   if (scanner->IsEnd())
@@ -227,16 +229,17 @@ bool AddressField::ParseCountry(AutofillScanner* scanner) {
 
   scanner->SaveCursor();
   if (ParseFieldSpecifics(scanner, UTF8ToUTF16(kCountryRe),
-                          MATCH_DEFAULT | MATCH_SELECT, &country_)) {
+                          MATCH_DEFAULT | MATCH_SELECT | MATCH_SEARCH,
+                          &country_)) {
     return true;
   }
 
   // The occasional page (e.g. google account registration page) calls this a
   // "location". However, this only makes sense for select tags.
   scanner->Rewind();
-  return ParseFieldSpecifics(scanner, UTF8ToUTF16(kCountryLocationRe),
-                             MATCH_LABEL | MATCH_NAME | MATCH_SELECT,
-                             &country_);
+  return ParseFieldSpecifics(
+      scanner, UTF8ToUTF16(kCountryLocationRe),
+      MATCH_LABEL | MATCH_NAME | MATCH_SELECT | MATCH_SEARCH, &country_);
 }
 
 bool AddressField::ParseZipCode(AutofillScanner* scanner) {

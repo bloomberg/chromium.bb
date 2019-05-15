@@ -269,7 +269,8 @@ bool CreditCardField::LikelyCardMonthSelectField(AutofillScanner* scanner) {
     return false;
 
   AutofillField* field = scanner->Cursor();
-  if (!MatchesFormControlType(field->form_control_type, MATCH_SELECT))
+  if (!MatchesFormControlType(field->form_control_type,
+                              MATCH_SELECT | MATCH_SEARCH))
     return false;
 
   if (field->option_values.size() < 12 || field->option_values.size() > 13)
@@ -306,7 +307,8 @@ bool CreditCardField::LikelyCardYearSelectField(AutofillScanner* scanner) {
     return false;
 
   AutofillField* field = scanner->Cursor();
-  if (!MatchesFormControlType(field->form_control_type, MATCH_SELECT))
+  if (!MatchesFormControlType(field->form_control_type,
+                              MATCH_SELECT | MATCH_SEARCH))
     return false;
 
   const base::Time time_now = AutofillClock::Now();
@@ -330,7 +332,8 @@ bool CreditCardField::LikelyCardTypeSelectField(AutofillScanner* scanner) {
 
   AutofillField* field = scanner->Cursor();
 
-  if (!MatchesFormControlType(field->form_control_type, MATCH_SELECT))
+  if (!MatchesFormControlType(field->form_control_type,
+                              MATCH_SELECT | MATCH_SEARCH))
     return false;
 
   // We set |ignore_whitespace| to true on these calls because this is actually
@@ -444,21 +447,21 @@ bool CreditCardField::ParseExpirationDate(AutofillScanner* scanner) {
 
   // If that fails, do a general regex search.
   scanner->RewindTo(month_year_saved_cursor);
-  const int kMatchNumAndTelAndSelect =
-      MATCH_DEFAULT | MATCH_NUMBER | MATCH_TELEPHONE | MATCH_SELECT;
+  const int kMatchCCType = MATCH_DEFAULT | MATCH_NUMBER | MATCH_TELEPHONE |
+                           MATCH_SELECT | MATCH_SEARCH;
   if (ParseFieldSpecifics(scanner, base::UTF8ToUTF16(kExpirationMonthRe),
-                          kMatchNumAndTelAndSelect, &expiration_month_) &&
+                          kMatchCCType, &expiration_month_) &&
       ParseFieldSpecifics(scanner, base::UTF8ToUTF16(kExpirationYearRe),
-                          kMatchNumAndTelAndSelect, &expiration_year_)) {
+                          kMatchCCType, &expiration_year_)) {
     return true;
   }
 
   // If that fails, look for just MM and/or YY(YY).
   scanner->RewindTo(month_year_saved_cursor);
-  if (ParseFieldSpecifics(scanner, base::ASCIIToUTF16("^mm$"),
-                          kMatchNumAndTelAndSelect, &expiration_month_) &&
+  if (ParseFieldSpecifics(scanner, base::ASCIIToUTF16("^mm$"), kMatchCCType,
+                          &expiration_month_) &&
       ParseFieldSpecifics(scanner, base::ASCIIToUTF16("^(yy|yyyy)$"),
-                          kMatchNumAndTelAndSelect, &expiration_year_)) {
+                          kMatchCCType, &expiration_year_)) {
     return true;
   }
 
@@ -475,7 +478,7 @@ bool CreditCardField::ParseExpirationDate(AutofillScanner* scanner) {
   // Try to look for a 2-digit year expiration date.
   if (ParseFieldSpecifics(scanner,
                           base::UTF8ToUTF16(kExpirationDate2DigitYearRe),
-                          kMatchNumAndTelAndSelect, &expiration_date_)) {
+                          kMatchCCType, &expiration_date_)) {
     exp_year_type_ = CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR;
     expiration_month_ = nullptr;
     return true;
@@ -483,7 +486,7 @@ bool CreditCardField::ParseExpirationDate(AutofillScanner* scanner) {
 
   // Try to look for a generic expiration date field. (2 or 4 digit year)
   if (ParseFieldSpecifics(scanner, base::UTF8ToUTF16(kExpirationDateRe),
-                          kMatchNumAndTelAndSelect, &expiration_date_)) {
+                          kMatchCCType, &expiration_date_)) {
     // If such a field exists, but it cannot fit a 4-digit year expiration
     // date, then the likely possibility is that it is a 2-digit year expiration
     // date.
@@ -500,7 +503,7 @@ bool CreditCardField::ParseExpirationDate(AutofillScanner* scanner) {
                                   CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR) &&
       ParseFieldSpecifics(scanner,
                           base::UTF8ToUTF16(kExpirationDate4DigitYearRe),
-                          kMatchNumAndTelAndSelect, &expiration_date_)) {
+                          kMatchCCType, &expiration_date_)) {
     expiration_month_ = nullptr;
     return true;
   }

@@ -223,6 +223,9 @@ bool FormField::MatchesFormControlType(const std::string& type,
   if ((match_type & MATCH_NUMBER) && type == "number")
     return true;
 
+  if ((match_type & MATCH_SEARCH) && type == "search")
+    return true;
+
   return false;
 }
 

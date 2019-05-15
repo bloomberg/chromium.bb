@@ -147,7 +147,8 @@ std::unique_ptr<FirstLastNameField> FirstLastNameField::ParseComponentNames(
   while (!scanner->IsEnd()) {
     // Skip over any unrelated fields, e.g. "username" or "nickname".
     if (ParseFieldSpecifics(scanner, UTF8ToUTF16(kNameIgnoredRe),
-                            MATCH_DEFAULT | MATCH_SELECT, nullptr)) {
+                            MATCH_DEFAULT | MATCH_SELECT | MATCH_SEARCH,
+                            nullptr)) {
       continue;
     }
 

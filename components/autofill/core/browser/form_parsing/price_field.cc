@@ -14,10 +14,10 @@ namespace autofill {
 // static
 std::unique_ptr<FormField> PriceField::Parse(AutofillScanner* scanner) {
   AutofillField* field;
-  if (ParseFieldSpecifics(
-          scanner, base::UTF8ToUTF16(kPriceRe),
-          MATCH_DEFAULT | MATCH_NUMBER | MATCH_SELECT | MATCH_TEXT_AREA,
-          &field)) {
+  if (ParseFieldSpecifics(scanner, base::UTF8ToUTF16(kPriceRe),
+                          MATCH_DEFAULT | MATCH_NUMBER | MATCH_SELECT |
+                              MATCH_TEXT_AREA | MATCH_SEARCH,
+                          &field)) {
     return std::make_unique<PriceField>(field);
   }
 
