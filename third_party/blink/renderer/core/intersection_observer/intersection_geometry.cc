@@ -202,15 +202,9 @@ LayoutRect IntersectionGeometry::InitializeTargetRect(LayoutObject* target) {
   }
   if (target->IsBox())
     return LayoutRect(ToLayoutBoxModelObject(target)->BorderBoundingBox());
-  if (target->IsLayoutInline()) {
-    return EnclosingLayoutRect(
-        target
-            ->AncestorToLocalQuad(
-                nullptr, FloatQuad(target->AbsoluteBoundingBoxFloatRect()),
-                kUseTransforms | kApplyContainerFlip)
-            .BoundingBox());
-  }
-  return ToLayoutText(target)->PhysicalLinesBoundingBox();
+  if (target->IsLayoutInline())
+    return ToLayoutInline(target)->LinesBoundingBox();
+  return ToLayoutText(target)->LinesBoundingBox();
 }
 
 LayoutRect IntersectionGeometry::InitializeRootRect(
