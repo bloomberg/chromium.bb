@@ -204,6 +204,24 @@ ServiceWorkerTimeoutTimer::AbortCallback CreateAbortCallback(MapType* map,
       map, std::forward<Args>(args)...);
 }
 
+bool IsExcludedHeaderForServiceWorkerFetchEvent(
+    const std::string& header_name) {
+  // Excluding Sec-Fetch-... headers as suggested in
+  // https://crbug.com/949997#c4.
+  if (base::StartsWith(header_name, "sec-fetch-",
+                       base::CompareCase::INSENSITIVE_ASCII)) {
+    return true;
+  }
+
+  if (GetContentClient()
+          ->renderer()
+          ->IsExcludedHeaderForServiceWorkerFetchEvent(header_name)) {
+    return true;
+  }
+
+  return false;
+}
+
 }  // namespace
 
 // Holds data that needs to be bound to the worker context on the
@@ -1297,11 +1315,11 @@ void ServiceWorkerContextClient::ToWebServiceWorkerRequestForFetchEvent(
   web_request->SetURL(blink::WebURL(request->url));
   web_request->SetMethod(blink::WebString::FromUTF8(request->method));
   for (const auto& pair : request->headers) {
-    if (!GetContentClient()
-             ->renderer()
-             ->IsExcludedHeaderForServiceWorkerFetchEvent(pair.first)) {
-      web_request->SetHeader(blink::WebString::FromUTF8(pair.first),
-                             blink::WebString::FromUTF8(pair.second));
+    const std::string& header_name = pair.first;
+    const std::string& header_value = pair.second;
+    if (!IsExcludedHeaderForServiceWorkerFetchEvent(header_name)) {
+      web_request->SetHeader(blink::WebString::FromUTF8(header_name),
+                             blink::WebString::FromUTF8(header_value));
     }
   }
 
