@@ -337,12 +337,8 @@ inline int LazyLineBreakIterator::NextBreakablePosition(
       case BreakSpaceType::kAfterEverySpace:
         if (is_last_space)
           return i;
-        if (is_space) {
-          // Might be allowed to break before the first space after a word.
-          if (lineBreakType == LineBreakType::kBreakAll)
-            return i;
+        if (is_space)
           continue;
-        }
         break;
     }
 

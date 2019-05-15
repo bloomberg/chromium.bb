@@ -1915,10 +1915,6 @@ crbug.com/6122 external/wpt/css/css-text/text-transform/text-transform-shaping-0
 crbug.com/6122 external/wpt/css/css-text/text-transform/text-transform-shaping-002.html [ Failure ]
 crbug.com/6122 external/wpt/css/css-text/text-transform/text-transform-shaping-003.html [ Failure ]
 
-crbug.com/952254 external/wpt/css/css-text/white-space/break-spaces-008.html [ Failure ]
-crbug.com/952254 external/wpt/css/css-text/white-space/break-spaces-before-first-char-004.html [ Failure ]
-crbug.com/952254 external/wpt/css/css-text/white-space/break-spaces-before-first-char-005.html [ Failure ]
-
 # These are added to W3CImportExpectations as Skip, remove when next import is done.
 crbug.com/666657 external/wpt/css/css-text/hanging-punctuation [ Skip ]
 

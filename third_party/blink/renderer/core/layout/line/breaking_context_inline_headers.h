@@ -384,6 +384,11 @@ inline void BreakingContext::InitializeForCurrentObject() {
   // a single leading white-space as potential breaking opportunities.
   current_start_offset_ = current_.Offset();
   has_former_opportunity_ = false;
+
+  if (curr_ws_ == EWhiteSpace::kBreakSpaces) {
+    layout_text_info_.line_break_iterator_.SetBreakSpace(
+        BreakSpaceType::kAfterEverySpace);
+  }
 }
 
 inline void BreakingContext::Increment() {
@@ -860,6 +865,8 @@ ALWAYS_INLINE bool BreakingContext::RewindToMidWordBreak(
 
   LazyLineBreakIterator break_iterator(
       text.GetText(), style.LocaleForLineBreakIterator(), line_break_type);
+  if (curr_ws_ == EWhiteSpace::kBreakSpaces)
+    break_iterator.SetBreakSpace(BreakSpaceType::kAfterEverySpace);
   float x_pos_to_break = width_.AvailableWidth() - width_.CurrentWidth();
   if (x_pos_to_break <= LayoutUnit::Epsilon()) {
     // There were no space left. Skip computing how many characters can fit.
