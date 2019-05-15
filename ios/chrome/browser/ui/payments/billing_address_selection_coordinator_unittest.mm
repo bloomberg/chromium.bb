@@ -10,7 +10,7 @@
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/field_types.h"
-#include "components/autofill/core/browser/test_region_data_loader.h"
+#include "components/autofill/core/browser/geo/test_region_data_loader.h"
 #include "ios/chrome/browser/payments/payment_request_test_util.h"
 #import "ios/chrome/browser/payments/payment_request_unittest_base.h"
 #import "ios/chrome/browser/ui/payments/payment_request_selector_view_controller.h"

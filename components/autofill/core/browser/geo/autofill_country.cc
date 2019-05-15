@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/core/browser/autofill_country.h"
+#include "components/autofill/core/browser/geo/autofill_country.h"
 
 #include <stddef.h>
 
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
-#include "components/autofill/core/browser/country_data.h"
-#include "components/autofill/core/browser/country_names.h"
+#include "components/autofill/core/browser/geo/country_data.h"
+#include "components/autofill/core/browser/geo/country_names.h"
 #include "third_party/icu/source/common/unicode/locid.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -37,8 +37,7 @@ AutofillCountry::AutofillCountry(const std::string& country_code,
   address_required_fields_ = data.address_required_fields;
 }
 
-AutofillCountry::~AutofillCountry() {
-}
+AutofillCountry::~AutofillCountry() {}
 
 // static
 const std::string AutofillCountry::CountryCodeForLocale(
@@ -49,8 +48,7 @@ const std::string AutofillCountry::CountryCodeForLocale(
   UErrorCode error_ignored = U_ZERO_ERROR;
   uloc_addLikelySubtags(locale.c_str(),
                         base::WriteInto(&likely_locale, kLocaleCapacity),
-                        kLocaleCapacity,
-                        &error_ignored);
+                        kLocaleCapacity, &error_ignored);
 
   // Extract the country code.
   std::string country_code = icu::Locale(likely_locale.c_str()).getCountry();
@@ -71,7 +69,6 @@ AutofillCountry::AutofillCountry(const std::string& country_code,
     : country_code_(country_code),
       name_(name),
       postal_code_label_(postal_code_label),
-      state_label_(state_label) {
-}
+      state_label_(state_label) {}
 
 }  // namespace autofill

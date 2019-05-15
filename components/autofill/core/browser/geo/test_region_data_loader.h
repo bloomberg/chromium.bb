@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_TEST_REGION_DATA_LOADER_H_
-#define COMPONENTS_AUTOFILL_CORE_BROWSER_TEST_REGION_DATA_LOADER_H_
+#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_GEO_TEST_REGION_DATA_LOADER_H_
+#define COMPONENTS_AUTOFILL_CORE_BROWSER_GEO_TEST_REGION_DATA_LOADER_H_
 
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/callback.h"
-#include "components/autofill/core/browser/region_data_loader.h"
+#include "components/autofill/core/browser/geo/region_data_loader.h"
 
 namespace autofill {
 
@@ -54,4 +54,4 @@ class TestRegionDataLoader : public RegionDataLoader {
 
 }  // namespace autofill
 
-#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_TEST_REGION_DATA_LOADER_H_
+#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_GEO_TEST_REGION_DATA_LOADER_H_

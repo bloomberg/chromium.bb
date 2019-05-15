@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_PHONE_NUMBER_I18N_H_
-#define COMPONENTS_AUTOFILL_CORE_BROWSER_PHONE_NUMBER_I18N_H_
+#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_GEO_PHONE_NUMBER_I18N_H_
+#define COMPONENTS_AUTOFILL_CORE_BROWSER_GEO_PHONE_NUMBER_I18N_H_
 
 #include <memory>
 #include <string>
@@ -163,4 +163,4 @@ class PhoneObject {
 }  // namespace i18n
 }  // namespace autofill
 
-#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_PHONE_NUMBER_I18N_H_
+#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_GEO_PHONE_NUMBER_I18N_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/core/browser/subkey_requester.h"
+#include "components/autofill/core/browser/geo/subkey_requester.h"
 
 #include <memory>
 #include <utility>
@@ -38,8 +38,8 @@ class SubKeyRequest : public SubKeyRequester::Request {
         address_validator_(address_validator),
         on_subkeys_received_(std::move(on_subkeys_received)),
         has_responded_(false),
-        on_timeout_(
-            base::Bind(&SubKeyRequest::OnRulesLoaded, base::Unretained(this))) {
+        on_timeout_(base::BindRepeating(&SubKeyRequest::OnRulesLoaded,
+                                        base::Unretained(this))) {
     base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, on_timeout_.callback(),
         base::TimeDelta::FromSeconds(timeout_seconds));

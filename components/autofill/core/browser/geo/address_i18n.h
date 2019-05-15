@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_ADDRESS_I18N_H_
-#define COMPONENTS_AUTOFILL_CORE_BROWSER_ADDRESS_I18N_H_
+#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_GEO_ADDRESS_I18N_H_
+#define COMPONENTS_AUTOFILL_CORE_BROWSER_GEO_ADDRESS_I18N_H_
 
 #include <memory>
 
@@ -16,7 +16,7 @@ namespace i18n {
 namespace addressinput {
 struct AddressData;
 }
-}
+}  // namespace i18n
 
 namespace autofill {
 
@@ -28,7 +28,8 @@ namespace i18n {
 // Creates an AddressData object for internationalized address display or
 // validation using |get_info| for field values.
 std::unique_ptr<::i18n::addressinput::AddressData> CreateAddressData(
-    const base::Callback<base::string16(const AutofillType&)>& get_info);
+    const base::RepeatingCallback<base::string16(const AutofillType&)>&
+        get_info);
 
 // Creates an |AddressData| from |profile|.
 std::unique_ptr<::i18n::addressinput::AddressData>
@@ -53,4 +54,4 @@ bool IsFieldRequired(ServerFieldType server_type,
 }  // namespace i18n
 }  // namespace autofill
 
-#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_ADDRESS_I18N_H_
+#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_GEO_ADDRESS_I18N_H_

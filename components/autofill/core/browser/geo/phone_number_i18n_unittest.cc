@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/core/browser/phone_number_i18n.h"
+#include "components/autofill/core/browser/geo/phone_number_i18n.h"
 
 #include <stddef.h>
 
@@ -19,9 +19,9 @@ using base::UTF8ToUTF16;
 
 namespace autofill {
 
+using i18n::ConstructPhoneNumber;
 using i18n::NormalizePhoneNumber;
 using i18n::ParsePhoneNumber;
-using i18n::ConstructPhoneNumber;
 using i18n::PhoneNumbersMatch;
 
 TEST(PhoneNumberI18NTest, NormalizePhoneNumber) {

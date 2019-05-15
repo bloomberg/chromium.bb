@@ -9,8 +9,6 @@ import("//testing/libfuzzer/fuzzer_test.gni")
 
 jumbo_static_library("browser") {
   sources = [
-    "address_i18n.cc",
-    "address_i18n.h",
     "address_normalization_manager.cc",
     "address_normalization_manager.h",
     "address_normalizer.h",
@@ -26,8 +24,6 @@ jumbo_static_library("browser") {
     "autofill_address_util.h",
     "autofill_client.cc",
     "autofill_client.h",
-    "autofill_country.cc",
-    "autofill_country.h",
     "autofill_data_util.cc",
     "autofill_data_util.h",
     "autofill_download_manager.cc",
@@ -68,10 +64,6 @@ jumbo_static_library("browser") {
     "autofill_subject.h",
     "autofill_type.cc",
     "autofill_type.h",
-    "country_data.cc",
-    "country_data.h",
-    "country_names.cc",
-    "country_names.h",
     "data_model/address.cc",
     "data_model/address.h",
     "data_model/autofill_data_model.cc",
@@ -123,6 +115,23 @@ jumbo_static_library("browser") {
     "form_structure.h",
     "form_types.cc",
     "form_types.h",
+    "geo/address_i18n.cc",
+    "geo/address_i18n.h",
+    "geo/autofill_country.cc",
+    "geo/autofill_country.h",
+    "geo/country_data.cc",
+    "geo/country_data.h",
+    "geo/country_names.cc",
+    "geo/country_names.h",
+    "geo/phone_number_i18n.cc",
+    "geo/phone_number_i18n.h",
+    "geo/region_data_loader.h",
+    "geo/region_data_loader_impl.cc",
+    "geo/region_data_loader_impl.h",
+    "geo/state_names.cc",
+    "geo/state_names.h",
+    "geo/subkey_requester.cc",
+    "geo/subkey_requester.h",
     "metrics/address_form_event_logger.cc",
     "metrics/address_form_event_logger.h",
     "metrics/credit_card_form_event_logger.cc",
@@ -169,19 +178,10 @@ jumbo_static_library("browser") {
     "personal_data_manager.cc",
     "personal_data_manager.h",
     "personal_data_manager_observer.h",
-    "phone_number_i18n.cc",
-    "phone_number_i18n.h",
     "randomized_encoder.cc",
     "randomized_encoder.h",
     "rationalization_util.cc",
     "rationalization_util.h",
-    "region_data_loader.h",
-    "region_data_loader_impl.cc",
-    "region_data_loader_impl.h",
-    "state_names.cc",
-    "state_names.h",
-    "subkey_requester.cc",
-    "subkey_requester.h",
     "sync_utils.h",
     "ui/accessory_sheet_data.cc",
     "ui/accessory_sheet_data.h",
@@ -375,6 +375,8 @@ jumbo_static_library("test_support") {
     "autofill_test_utils.h",
     "data_driven_test.cc",
     "data_driven_test.h",
+    "geo/test_region_data_loader.cc",
+    "geo/test_region_data_loader.h",
     "mock_autocomplete_history_manager.cc",
     "mock_autocomplete_history_manager.h",
     "payments/test_credit_card_save_manager.cc",
@@ -418,8 +420,6 @@ jumbo_static_library("test_support") {
     "test_form_structure.h",
     "test_personal_data_manager.cc",
     "test_personal_data_manager.h",
-    "test_region_data_loader.cc",
-    "test_region_data_loader.h",
     "ui/suggestion_test_helpers.h",
     "webdata/autofill_sync_bridge_test_util.cc",
     "webdata/autofill_sync_bridge_test_util.h",
@@ -484,12 +484,10 @@ bundle_data("unit_tests_bundle_data") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "address_i18n_unittest.cc",
     "address_normalization_manager_unittest.cc",
     "address_normalizer_impl_unittest.cc",
     "address_rewriter_unittest.cc",
     "autocomplete_history_manager_unittest.cc",
-    "autofill_country_unittest.cc",
     "autofill_data_util_unittest.cc",
     "autofill_download_manager_unittest.cc",
     "autofill_driver_factory_unittest.cc",
@@ -504,7 +502,6 @@ source_set("unit_tests") {
     "autofill_profile_validator_unittest.cc",
     "autofill_subject_unittest.cc",
     "autofill_type_unittest.cc",
-    "country_names_unittest.cc",
     "data_model/address_unittest.cc",
     "data_model/autofill_data_model_unittest.cc",
     "data_model/autofill_profile_comparator_unittest.cc",
@@ -523,6 +520,11 @@ source_set("unit_tests") {
     "form_parsing/price_field_unittest.cc",
     "form_parsing/search_field_unittest.cc",
     "form_structure_unittest.cc",
+    "geo/address_i18n_unittest.cc",
+    "geo/autofill_country_unittest.cc",
+    "geo/country_names_unittest.cc",
+    "geo/phone_number_i18n_unittest.cc",
+    "geo/subkey_requester_unittest.cc",
     "payments/autofill_wallet_data_type_controller_unittest.cc",
     "payments/credit_card_save_manager_unittest.cc",
     "payments/full_card_request_unittest.cc",
@@ -535,11 +537,9 @@ source_set("unit_tests") {
     "payments/strike_database_integrator_test_strike_database_unittest.cc",
     "payments/strike_database_unittest.cc",
     "personal_data_manager_unittest.cc",
-    "phone_number_i18n_unittest.cc",
     "proto/legacy_proto_bridge_unittest.cc",
     "randomized_encoder_unittest.cc",
     "rationalization_util_unittest.cc",
-    "subkey_requester_unittest.cc",
     "ui/address_combobox_model_unittest.cc",
     "ui/country_combobox_model_unittest.cc",
     "ui/payments/card_unmask_prompt_controller_impl_unittest.cc",
@@ -665,7 +665,7 @@ if (use_libfuzzer) {
 
 fuzzer_test("autofill_phone_number_i18n_fuzzer") {
   sources = [
-    "phone_number_i18n_fuzzer.cc",
+    "geo/phone_number_i18n_fuzzer.cc",
   ]
 
   deps = [
@@ -676,5 +676,5 @@ fuzzer_test("autofill_phone_number_i18n_fuzzer") {
     "//third_party/libphonenumber",
   ]
 
-  dict = "phone_number_i18n_fuzzer.dict"
+  dict = "geo/phone_number_i18n_fuzzer.dict"
 }

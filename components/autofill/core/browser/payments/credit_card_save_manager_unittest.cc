@@ -1914,9 +1914,9 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_NoZipCodeAvailable) {
   test::CreateTestAddressFormData(&address_form);
   FormsSeen(std::vector<FormData>(1, address_form));
   // Autofill's validation requirements for Venezuala ("VE", see
-  // src/components/autofill/core/browser/country_data.cc) do not require zip
-  // codes. We use Venezuala here because to use the US (or one of many other
-  // countries which autofill requires a zip code for) would result in no
+  // src/components/autofill/core/browser/geo/country_data.cc) do not require
+  // zip codes. We use Venezuala here because to use the US (or one of many
+  // other countries which autofill requires a zip code for) would result in no
   // address being imported at all, and then we never reach the check for
   // missing zip code in the upload code.
   ManuallyFillAddressForm("Flo", "Master", "" /* zip_code */, "Venezuela",

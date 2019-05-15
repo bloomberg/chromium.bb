@@ -10,7 +10,7 @@
 #include "base/at_exit.h"
 #include "base/i18n/icu_util.h"
 #include "base/strings/string16.h"
-#include "components/autofill/core/browser/phone_number_i18n.h"
+#include "components/autofill/core/browser/geo/phone_number_i18n.h"
 #include "third_party/libphonenumber/phonenumber_api.h"
 
 namespace autofill {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/core/browser/test_region_data_loader.h"
+#include "components/autofill/core/browser/geo/test_region_data_loader.h"
 
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/region_data.h"
 

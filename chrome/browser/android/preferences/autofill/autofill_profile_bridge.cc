@@ -8,7 +8,7 @@
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "components/autofill/core/browser/autofill_country.h"
+#include "components/autofill/core/browser/geo/autofill_country.h"
 #include "jni/AutofillProfileBridge_jni.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_field.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_metadata.h"

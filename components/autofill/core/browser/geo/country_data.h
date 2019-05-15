@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_COUNTRY_DATA_H_
-#define COMPONENTS_AUTOFILL_CORE_BROWSER_COUNTRY_DATA_H_
+#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_GEO_COUNTRY_DATA_H_
+#define COMPONENTS_AUTOFILL_CORE_BROWSER_GEO_COUNTRY_DATA_H_
 
 #include <map>
 #include <string>
@@ -21,9 +21,9 @@ namespace autofill {
 // The minimal required fields for an address to be complete for a given
 // country.
 enum AddressRequiredFields {
-  ADDRESS_REQUIRES_CITY  = 1 << 0,
+  ADDRESS_REQUIRES_CITY = 1 << 0,
   ADDRESS_REQUIRES_STATE = 1 << 1,
-  ADDRESS_REQUIRES_ZIP   = 1 << 2,
+  ADDRESS_REQUIRES_ZIP = 1 << 2,
 
   // Composite versions (for data).
   ADDRESS_REQUIRES_CITY_STATE = ADDRESS_REQUIRES_CITY | ADDRESS_REQUIRES_STATE,
@@ -77,4 +77,4 @@ class CountryDataMap {
 
 }  // namespace autofill
 
-#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_COUNTRY_DATA_H_
+#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_GEO_COUNTRY_DATA_H_

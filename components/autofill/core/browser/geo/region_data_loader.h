@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_REGION_DATA_LOADER_H_
-#define COMPONENTS_AUTOFILL_CORE_BROWSER_REGION_DATA_LOADER_H_
+#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_GEO_REGION_DATA_LOADER_H_
+#define COMPONENTS_AUTOFILL_CORE_BROWSER_GEO_REGION_DATA_LOADER_H_
 
 #include <string>
 #include <vector>
@@ -24,7 +24,7 @@ class RegionDataLoader {
   // The signature of the function to be called when the region data is loaded.
   // When the loading request times out or other failure occure, |regions| is
   // empty.
-  typedef base::Callback<void(
+  typedef base::RepeatingCallback<void(
       const std::vector<const ::i18n::addressinput::RegionData*>& regions)>
       RegionDataLoaded;
 
@@ -41,4 +41,4 @@ class RegionDataLoader {
 
 }  // namespace autofill
 
-#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_REGION_DATA_LOADER_H_
+#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_GEO_REGION_DATA_LOADER_H_

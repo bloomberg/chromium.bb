@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
-#include "components/autofill/core/browser/autofill_country.h"
+#include "components/autofill/core/browser/geo/autofill_country.h"
 #include "components/autofill/core/browser/ui/country_combobox_model.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_ui.h"

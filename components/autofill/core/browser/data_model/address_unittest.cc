@@ -10,8 +10,8 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_type.h"
-#include "components/autofill/core/browser/country_names.h"
 #include "components/autofill/core/browser/data_model/address.h"
+#include "components/autofill/core/browser/geo/country_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;

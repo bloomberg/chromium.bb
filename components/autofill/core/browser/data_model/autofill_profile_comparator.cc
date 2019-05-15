@@ -15,9 +15,9 @@
 #include "base/strings/utf_string_conversion_utils.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/address_rewriter.h"
-#include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
-#include "components/autofill/core/browser/state_names.h"
+#include "components/autofill/core/browser/geo/autofill_country.h"
+#include "components/autofill/core/browser/geo/state_names.h"
 #include "third_party/libphonenumber/phonenumber_api.h"
 
 using base::UTF16ToUTF8;

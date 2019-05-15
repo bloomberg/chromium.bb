@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_REGION_DATA_LOADER_IMPL_H_
-#define COMPONENTS_AUTOFILL_CORE_BROWSER_REGION_DATA_LOADER_IMPL_H_
+#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_GEO_REGION_DATA_LOADER_IMPL_H_
+#define COMPONENTS_AUTOFILL_CORE_BROWSER_GEO_REGION_DATA_LOADER_IMPL_H_
 
-#include "components/autofill/core/browser/region_data_loader.h"
+#include "components/autofill/core/browser/geo/region_data_loader.h"
 
 #include <memory>
 #include <string>
@@ -63,4 +63,4 @@ class RegionDataLoaderImpl : public RegionDataLoader {
 
 }  // namespace autofill
 
-#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_REGION_DATA_LOADER_IMPL_H_
+#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_GEO_REGION_DATA_LOADER_IMPL_H_

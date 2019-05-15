@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_SUBKEY_REQUESTER_H_
-#define COMPONENTS_AUTOFILL_CORE_BROWSER_SUBKEY_REQUESTER_H_
+#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_GEO_SUBKEY_REQUESTER_H_
+#define COMPONENTS_AUTOFILL_CORE_BROWSER_GEO_SUBKEY_REQUESTER_H_
 
 #include "base/macros.h"
 #include "third_party/libaddressinput/chromium/chrome_address_validator.h"
@@ -73,4 +73,4 @@ class SubKeyRequester : public LoadRulesListener {
 
 }  // namespace autofill
 
-#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_SUBKEY_REQUESTER_H_
+#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_GEO_SUBKEY_REQUESTER_H_

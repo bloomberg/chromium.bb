@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/core/browser/region_data_loader_impl.h"
+#include "components/autofill/core/browser/geo/region_data_loader_impl.h"
 
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"

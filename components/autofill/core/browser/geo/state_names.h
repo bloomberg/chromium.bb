@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_STATE_NAMES_H_
-#define COMPONENTS_AUTOFILL_CORE_BROWSER_STATE_NAMES_H_
+#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_GEO_STATE_NAMES_H_
+#define COMPONENTS_AUTOFILL_CORE_BROWSER_GEO_STATE_NAMES_H_
 
 #include "base/strings/string16.h"
 
@@ -28,4 +28,4 @@ void GetNameAndAbbreviation(const base::string16& value,
 }  // namespace state_names
 }  // namespace autofill
 
-#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_STATE_NAMES_H_
+#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_GEO_STATE_NAMES_H_

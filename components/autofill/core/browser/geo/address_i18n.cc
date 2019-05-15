@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/core/browser/address_i18n.h"
+#include "components/autofill/core/browser/geo/address_i18n.h"
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -31,24 +31,25 @@ using ::i18n::addressinput::AddressData;
 using ::i18n::addressinput::AddressField;
 
 std::unique_ptr<AddressData> CreateAddressData(
-    const base::Callback<base::string16(const AutofillType&)>& get_info) {
+    const base::RepeatingCallback<base::string16(const AutofillType&)>&
+        get_info) {
   auto address_data = std::make_unique<AddressData>();
-  address_data->recipient = base::UTF16ToUTF8(
-      get_info.Run(AutofillType(NAME_FULL)));
-  address_data->organization = base::UTF16ToUTF8(
-      get_info.Run(AutofillType(COMPANY_NAME)));
+  address_data->recipient =
+      base::UTF16ToUTF8(get_info.Run(AutofillType(NAME_FULL)));
+  address_data->organization =
+      base::UTF16ToUTF8(get_info.Run(AutofillType(COMPANY_NAME)));
   address_data->region_code = base::UTF16ToUTF8(
       get_info.Run(AutofillType(HTML_TYPE_COUNTRY_CODE, HTML_MODE_NONE)));
-  address_data->administrative_area = base::UTF16ToUTF8(
-      get_info.Run(AutofillType(ADDRESS_HOME_STATE)));
-  address_data->locality = base::UTF16ToUTF8(
-      get_info.Run(AutofillType(ADDRESS_HOME_CITY)));
+  address_data->administrative_area =
+      base::UTF16ToUTF8(get_info.Run(AutofillType(ADDRESS_HOME_STATE)));
+  address_data->locality =
+      base::UTF16ToUTF8(get_info.Run(AutofillType(ADDRESS_HOME_CITY)));
   address_data->dependent_locality = base::UTF16ToUTF8(
       get_info.Run(AutofillType(ADDRESS_HOME_DEPENDENT_LOCALITY)));
-  address_data->sorting_code = base::UTF16ToUTF8(
-      get_info.Run(AutofillType(ADDRESS_HOME_SORTING_CODE)));
-  address_data->postal_code = base::UTF16ToUTF8(
-      get_info.Run(AutofillType(ADDRESS_HOME_ZIP)));
+  address_data->sorting_code =
+      base::UTF16ToUTF8(get_info.Run(AutofillType(ADDRESS_HOME_SORTING_CODE)));
+  address_data->postal_code =
+      base::UTF16ToUTF8(get_info.Run(AutofillType(ADDRESS_HOME_ZIP)));
   address_data->address_line = base::SplitString(
       base::UTF16ToUTF8(
           get_info.Run(AutofillType(ADDRESS_HOME_STREET_ADDRESS))),
@@ -60,7 +61,8 @@ std::unique_ptr<::i18n::addressinput::AddressData>
 CreateAddressDataFromAutofillProfile(const AutofillProfile& profile,
                                      const std::string& app_locale) {
   std::unique_ptr<::i18n::addressinput::AddressData> address_data =
-      i18n::CreateAddressData(base::Bind(&GetInfoHelper, profile, app_locale));
+      i18n::CreateAddressData(
+          base::BindRepeating(&GetInfoHelper, profile, app_locale));
   address_data->language_code = profile.language_code();
   return address_data;
 }
@@ -84,7 +86,7 @@ ServerFieldType TypeForField(AddressField address_field, bool billing) {
       return billing ? ADDRESS_BILLING_STREET_ADDRESS
                      : ADDRESS_HOME_STREET_ADDRESS;
     case ::i18n::addressinput::ORGANIZATION:
-        return COMPANY_NAME;
+      return COMPANY_NAME;
     case ::i18n::addressinput::RECIPIENT:
       return billing ? NAME_BILLING_FULL : NAME_FULL;
   }

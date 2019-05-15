@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_COUNTRY_NAMES_H_
-#define COMPONENTS_AUTOFILL_CORE_BROWSER_COUNTRY_NAMES_H_
+#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_GEO_COUNTRY_NAMES_H_
+#define COMPONENTS_AUTOFILL_CORE_BROWSER_GEO_COUNTRY_NAMES_H_
 
 #include <map>
 #include <memory>
@@ -93,4 +93,4 @@ class CountryNames {
 
 }  // namespace autofill
 
-#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_COUNTRY_NAMES_H_
+#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_GEO_COUNTRY_NAMES_H_

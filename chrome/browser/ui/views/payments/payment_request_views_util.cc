@@ -19,7 +19,7 @@
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
-#include "components/autofill/core/browser/phone_number_i18n.h"
+#include "components/autofill/core/browser/geo/phone_number_i18n.h"
 #include "components/payments/content/icon/icon_size.h"
 #include "components/payments/core/payment_options_provider.h"
 #include "components/payments/core/payment_request_data_util.h"

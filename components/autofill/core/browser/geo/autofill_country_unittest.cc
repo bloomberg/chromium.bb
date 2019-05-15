@@ -7,8 +7,8 @@
 
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/autofill/core/browser/autofill_country.h"
-#include "components/autofill/core/browser/country_data.h"
+#include "components/autofill/core/browser/geo/autofill_country.h"
+#include "components/autofill/core/browser/geo/country_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #if defined(ANDROID)
 #include "base/android/build_info.h"

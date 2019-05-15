@@ -6,7 +6,7 @@
 
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/autofill/core/browser/country_names.h"
+#include "components/autofill/core/browser/geo/country_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;
@@ -32,8 +32,8 @@ TEST(CountryNamesTest, GetCountryCode_BasicMapping) {
 }
 
 TEST(CountryNamesTest, GetCountryCode_CaseInsensitiveMapping) {
-  EXPECT_EQ("US", TestCountryNames("en_US")
-                      .GetCountryCode(ASCIIToUTF16("united states")));
+  EXPECT_EQ("US", TestCountryNames("en_US").GetCountryCode(
+                      ASCIIToUTF16("united states")));
 }
 
 TEST(CountryNamesTest, GetCountryCode_CodesMapToThemselves) {
@@ -53,8 +53,8 @@ TEST(CountryNamesTest, GetCountryCode_BasicSynonyms) {
 }
 
 TEST(CountryNamesTest, GetCountryCode_OtherLocales) {
-  EXPECT_EQ("US", TestCountryNames("es")
-                      .GetCountryCode(ASCIIToUTF16("Estados Unidos")));
+  EXPECT_EQ("US", TestCountryNames("es").GetCountryCode(
+                      ASCIIToUTF16("Estados Unidos")));
   EXPECT_EQ("IT",
             TestCountryNames("it").GetCountryCode(ASCIIToUTF16("Italia")));
   EXPECT_EQ("DE",

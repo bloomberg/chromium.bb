@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/core/browser/state_names.h"
+#include "components/autofill/core/browser/geo/state_names.h"
 
 #include <stddef.h>
 

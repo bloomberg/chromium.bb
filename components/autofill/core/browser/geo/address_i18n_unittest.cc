@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/core/browser/address_i18n.h"
+#include "components/autofill/core/browser/geo/address_i18n.h"
 
 #include <stddef.h>
 
@@ -127,18 +127,9 @@ TEST(AddressI18nTest, UnconvertableServerFields) {
 
 TEST(AddressI18nTest, CreateAddressDataFromAutofillProfile) {
   AutofillProfile profile(base::GenerateGUID(), "http://www.example.com/");
-  test::SetProfileInfo(&profile,
-                       "John",
-                       "H.",
-                       "Doe",
-                       "johndoe@hades.com",
-                       "Underworld",
-                       "666 Erebus St.",
-                       "Apt 8",
-                       "Elysium", "CA",
-                       "91111",
-                       "US",
-                       "16502111111");
+  test::SetProfileInfo(&profile, "John", "H.", "Doe", "johndoe@hades.com",
+                       "Underworld", "666 Erebus St.", "Apt 8", "Elysium", "CA",
+                       "91111", "US", "16502111111");
   profile.set_language_code("en");
   std::unique_ptr<AddressData> actual =
       CreateAddressDataFromAutofillProfile(profile, "en_US");
