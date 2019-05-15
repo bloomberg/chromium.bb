@@ -4877,6 +4877,104 @@ TEST_P(SSLClientSocketReadTest, IdleAfterRead) {
   EXPECT_EQ(stats.cert_size, stats.total_size);
 }
 
+// Test that certificate errors are properly reported when the underlying
+// transport is itself a TLS connection, such as when tunneling over an HTTPS
+// proxy. See https://crbug.com/959305.
+TEST_F(SSLClientSocketTest, SSLOverSSLBadCertificate) {
+  // Load a pair of certificates.
+  base::FilePath certs_dir = GetTestCertsDirectory();
+  scoped_refptr<net::X509Certificate> ok_cert =
+      ImportCertFromFile(certs_dir, "ok_cert.pem");
+  ASSERT_TRUE(ok_cert);
+  bssl::UniquePtr<EVP_PKEY> ok_pkey =
+      key_util::LoadEVP_PKEYFromPEM(certs_dir.AppendASCII("ok_cert.pem"));
+  ASSERT_TRUE(ok_pkey);
+
+  scoped_refptr<net::X509Certificate> expired_cert =
+      ImportCertFromFile(certs_dir, "expired_cert.pem");
+  ASSERT_TRUE(expired_cert);
+  bssl::UniquePtr<EVP_PKEY> expired_pkey =
+      key_util::LoadEVP_PKEYFromPEM(certs_dir.AppendASCII("expired_cert.pem"));
+  ASSERT_TRUE(expired_pkey);
+
+  CertVerifyResult expired_result;
+  expired_result.verified_cert = expired_cert;
+  expired_result.cert_status = CERT_STATUS_DATE_INVALID;
+  cert_verifier_->AddResultForCert(expired_cert, expired_result,
+                                   ERR_CERT_DATE_INVALID);
+
+  // Set up a TCP server.
+  TCPServerSocket server_listener(nullptr, NetLogSource());
+  ASSERT_THAT(
+      server_listener.Listen(IPEndPoint(IPAddress::IPv4Localhost(), 0), 1),
+      IsOk());
+  IPEndPoint server_address;
+  ASSERT_THAT(server_listener.GetLocalAddress(&server_address), IsOk());
+
+  // Connect a TCP client and server socket.
+  TestCompletionCallback server_callback;
+  std::unique_ptr<StreamSocket> server_transport;
+  int server_rv =
+      server_listener.Accept(&server_transport, server_callback.callback());
+
+  TestCompletionCallback client_callback;
+  auto client_transport = std::make_unique<TCPClientSocket>(
+      AddressList(server_address), nullptr, nullptr, NetLogSource());
+  int client_rv = client_transport->Connect(client_callback.callback());
+
+  ASSERT_THAT(server_callback.GetResult(server_rv), IsOk());
+  ASSERT_THAT(client_callback.GetResult(client_rv), IsOk());
+
+  // Set up a pair of SSL servers.
+  std::unique_ptr<crypto::RSAPrivateKey> ok_key =
+      crypto::RSAPrivateKey::CreateFromKey(ok_pkey.get());
+  ASSERT_TRUE(ok_key);
+  std::unique_ptr<SSLServerContext> ok_server_context =
+      CreateSSLServerContext(ok_cert.get(), *ok_key.get(), SSLServerConfig());
+
+  std::unique_ptr<crypto::RSAPrivateKey> expired_key =
+      crypto::RSAPrivateKey::CreateFromKey(expired_pkey.get());
+  ASSERT_TRUE(expired_key);
+  std::unique_ptr<SSLServerContext> expired_server_context =
+      CreateSSLServerContext(expired_cert.get(), *expired_key.get(),
+                             SSLServerConfig());
+
+  // Complete the proxy SSL handshake with ok_cert.pem. This should succeed.
+  std::unique_ptr<SSLClientSocket> client =
+      CreateSSLClientSocket(std::move(client_transport),
+                            HostPortPair("proxy.test", 443), SSLConfig());
+  std::unique_ptr<SSLServerSocket> server =
+      ok_server_context->CreateSSLServerSocket(std::move(server_transport));
+
+  client_rv = client->Connect(client_callback.callback());
+  server_rv = server->Handshake(server_callback.callback());
+  ASSERT_THAT(client_callback.GetResult(client_rv), IsOk());
+  ASSERT_THAT(server_callback.GetResult(server_rv), IsOk());
+
+  // Run the tunneled SSL handshake on with expired_cert.pem. This should fail.
+  client = CreateSSLClientSocket(std::move(client),
+                                 HostPortPair("server.test", 443), SSLConfig());
+  server = expired_server_context->CreateSSLServerSocket(std::move(server));
+
+  client_rv = client->Connect(client_callback.callback());
+  server_rv = server->Handshake(server_callback.callback());
+
+  // The client should observe the bad certificate error.
+  EXPECT_THAT(client_callback.GetResult(client_rv),
+              IsError(ERR_CERT_DATE_INVALID));
+  SSLInfo ssl_info;
+  ASSERT_TRUE(client->GetSSLInfo(&ssl_info));
+  EXPECT_EQ(ssl_info.cert_status, expired_result.cert_status);
+
+  // TODO(https://crbug.com/912383): The server sees
+  // ERR_BAD_SSL_CLIENT_AUTH_CERT because its peer (the client) alerts it with
+  // bad_certificate. The alert-mapping code assumes it is running on a client,
+  // so it translates bad_certificate to ERR_BAD_SSL_CLIENT_AUTH_CERT, which
+  // shouldn't be the error for a bad server certificate.
+  EXPECT_THAT(server_callback.GetResult(server_rv),
+              IsError(ERR_BAD_SSL_CLIENT_AUTH_CERT));
+}
+
 TEST_F(SSLClientSocketTest, Tag) {
   ASSERT_TRUE(StartTestServer(SpawnedTestServer::SSLOptions()));
 
