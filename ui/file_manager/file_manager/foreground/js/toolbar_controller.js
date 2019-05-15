@@ -114,7 +114,7 @@ class ToolbarController {
         'relayout', this.onNavigationListRelayout_.bind(this));
 
     this.directoryModel_.addEventListener(
-        'directory-change', this.updateCurrentDirectoryButtons_.bind(this));
+        'directory-changed', this.updateCurrentDirectoryButtons_.bind(this));
 
     // Watch visibility of toolbar buttons to update the width of location line.
     const observer =
