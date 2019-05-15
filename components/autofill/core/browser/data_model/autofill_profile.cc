@@ -839,12 +839,24 @@ bool AutofillProfile::HasGreaterFrescocencyThan(
     base::Time comparison_time,
     bool use_client_validation,
     bool use_server_validation) const {
+  double score = GetFrecencyScore(comparison_time);
+  double other_score = other->GetFrecencyScore(comparison_time);
+
+  const double kEpsilon = 0.001;
+  if (std::fabs(score - other_score) > kEpsilon)
+    return score > other_score;
+
   bool is_valid = (!use_client_validation || IsValidByClient()) &&
                   (!use_server_validation || IsValidByServer());
   bool other_is_valid = (!use_client_validation || other->IsValidByClient()) &&
                         (!use_server_validation || other->IsValidByServer());
-  if (is_valid == other_is_valid)
-    return HasGreaterFrecencyThan(other, comparison_time);
+
+  if (is_valid == other_is_valid) {
+    if (use_date() != other->use_date())
+      return use_date() > other->use_date();
+    return guid() > other->guid();
+  }
+
   if (is_valid && !other_is_valid)
     return true;
   return false;

@@ -44,7 +44,8 @@ bool AutofillDataModel::HasGreaterFrecencyThan(
   double other_score = other->GetFrecencyScore(comparison_time);
 
   // Ties are broken by MRU, then by GUID comparison.
-  if (score != other_score)
+  const double kEpsilon = 0.00001;
+  if (std::fabs(score - other_score) > kEpsilon)
     return score > other_score;
 
   if (use_date_ != other->use_date_)
