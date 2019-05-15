@@ -65,9 +65,11 @@ class IncludeNodeUnittest(unittest.TestCase):
     includes.AddChild(include_node)
     root.EndParsing()
 
+    last_dir = os.path.basename(os.getcwd())
+    expected_path = util.normpath(os.path.join(
+        u'..', last_dir, u'flugel/kugel.pdf'))
     self.assertEqual(root.ToRealPath(include_node.GetInputPath()),
-                     util.normpath(
-                       os.path.join(ur'../', ur'flugel/kugel.pdf')))
+                     expected_path)
 
   def testCompressGzip(self):
     root = util.ParseGrdForUnittest('''
