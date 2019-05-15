@@ -16,6 +16,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/test/mock_log.h"
+#include "base/test/scoped_command_line.h"
 #include "base/test/scoped_feature_list.h"
 #include "content/browser/browsing_instance.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -238,6 +239,33 @@ TEST_F(SiteInstanceTest, SiteInstanceDestructor) {
   EXPECT_EQ(1, browser_client()->GetAndClearSiteInstanceDeleteCount());
   EXPECT_EQ(1, browser_client()->GetAndClearBrowsingInstanceDeleteCount());
   // contents is now deleted, along with instance and browsing_instance
+
+  // Ensure that default SiteInstances are deleted when all references to them
+  // are gone.
+  {
+    base::test::ScopedCommandLine scoped_command_line;
+
+    // Disable site isolation so we can get default SiteInstances on all
+    // platforms.
+    scoped_command_line.GetProcessCommandLine()->AppendSwitch(
+        switches::kDisableSiteIsolation);
+
+    auto site_instance1 = SiteInstanceImpl::CreateForURL(
+        browser_context.get(), GURL("http://foo.com"));
+    // TODO(958060): Remove the creation of this second instance and update
+    // the deletion count below once CreateForURL() starts returning a default
+    // SiteInstance for sites that don't require a dedicated process.
+    auto site_instance2 =
+        site_instance1->GetRelatedSiteInstance(GURL("http://bar.com"));
+    EXPECT_FALSE(site_instance1->IsDefaultSiteInstance());
+    EXPECT_TRUE(static_cast<SiteInstanceImpl*>(site_instance2.get())
+                    ->IsDefaultSiteInstance());
+    site_instance1.reset();
+    site_instance2.reset();
+
+    EXPECT_EQ(2, browser_client()->GetAndClearSiteInstanceDeleteCount());
+    EXPECT_EQ(1, browser_client()->GetAndClearBrowsingInstanceDeleteCount());
+  }
 }
 
 // Test to ensure GetProcess returns and creates processes correctly.

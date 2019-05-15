@@ -26,7 +26,8 @@ BrowsingInstance::BrowsingInstance(BrowserContext* browser_context)
           BrowsingInstanceId::FromUnsafeValue(next_browsing_instance_id_++),
           BrowserOrResourceContext(browser_context)),
       active_contents_count_(0u),
-      default_process_(nullptr) {
+      default_process_(nullptr),
+      default_site_instance_(nullptr) {
   DCHECK(browser_context);
 }
 
@@ -51,8 +52,7 @@ void BrowsingInstance::SetDefaultProcess(RenderProcessHost* default_process) {
 
 bool BrowsingInstance::IsDefaultSiteInstance(
     const SiteInstanceImpl* site_instance) const {
-  return site_instance != nullptr &&
-         site_instance == default_site_instance_.get();
+  return site_instance != nullptr && site_instance == default_site_instance_;
 }
 
 bool BrowsingInstance::HasSiteInstance(const GURL& url) {
@@ -117,11 +117,18 @@ scoped_refptr<SiteInstanceImpl> BrowsingInstance::GetSiteInstanceForURLHelper(
       !SiteInstanceImpl::DoesSiteRequireDedicatedProcess(isolation_context_,
                                                          url)) {
     DCHECK(!default_process_);
-    if (!default_site_instance_) {
-      default_site_instance_ = new SiteInstanceImpl(this);
-      default_site_instance_->SetSite(SiteInstanceImpl::GetDefaultSiteURL());
+    scoped_refptr<SiteInstanceImpl> site_instance = default_site_instance_;
+    if (!site_instance) {
+      site_instance = new SiteInstanceImpl(this);
+      site_instance->SetSite(SiteInstanceImpl::GetDefaultSiteURL());
+
+      // Keep a copy of the pointer so it can be used for other URLs. This is
+      // safe because the SiteInstanceImpl destructor will call
+      // UnregisterSiteInstance() to clear this copy when the last
+      // reference to |site_instance| is destroyed.
+      default_site_instance_ = site_instance.get();
     }
-    return default_site_instance_;
+    return site_instance;
   }
 
   return nullptr;
@@ -133,7 +140,7 @@ void BrowsingInstance::RegisterSiteInstance(SiteInstanceImpl* site_instance) {
 
   // Explicitly prevent the |default_site_instance_| from being added since
   // the map is only supposed to contain instances that map to a single site.
-  if (site_instance == default_site_instance_.get())
+  if (site_instance == default_site_instance_)
     return;
 
   std::string site = site_instance->GetSiteURL().possibly_invalid_spec();
@@ -153,6 +160,12 @@ void BrowsingInstance::RegisterSiteInstance(SiteInstanceImpl* site_instance) {
 void BrowsingInstance::UnregisterSiteInstance(SiteInstanceImpl* site_instance) {
   DCHECK(site_instance->browsing_instance_.get() == this);
   DCHECK(site_instance->HasSite());
+
+  if (site_instance == default_site_instance_) {
+    // The last reference to the default SiteInstance is being destroyed.
+    default_site_instance_ = nullptr;
+  }
+
   std::string site = site_instance->GetSiteURL().possibly_invalid_spec();
 
   // Only unregister the SiteInstance if it is the same one that is registered
@@ -175,6 +188,7 @@ BrowsingInstance::~BrowsingInstance() {
   // us are gone.
   DCHECK(site_instance_map_.empty());
   DCHECK_EQ(0u, active_contents_count_);
+  DCHECK(!default_site_instance_);
   if (default_process_)
     default_process_->RemoveObserver(this);
 }
