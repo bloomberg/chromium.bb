@@ -124,7 +124,7 @@ class LocaleICUTest : public testing::Test {
 
 std::ostream& operator<<(std::ostream& os,
                          const LocaleICUTest::Labels& labels) {
-  return os << labels.ToString().Utf8().data();
+  return os << labels.ToString();
 }
 
 TEST_F(LocaleICUTest, isRTL) {
@@ -135,44 +135,44 @@ TEST_F(LocaleICUTest, isRTL) {
 }
 
 TEST_F(LocaleICUTest, monthFormat) {
-  EXPECT_STREQ("MMMM yyyy", MonthFormat("en_US").Utf8().data());
-  EXPECT_STREQ("MMMM yyyy", MonthFormat("fr").Utf8().data());
+  EXPECT_EQ("MMMM yyyy", MonthFormat("en_US"));
+  EXPECT_EQ("MMMM yyyy", MonthFormat("fr"));
   EXPECT_STREQ("yyyy\xE5\xB9\xB4M\xE6\x9C\x88",
                MonthFormat("ja").Utf8().data());
 }
 
 TEST_F(LocaleICUTest, localizedDateFormatText) {
   // Note: EXPECT_EQ(String, String) doesn't print result as string.
-  EXPECT_STREQ("h:mm:ss a", LocalizedDateFormatText("en_US").Utf8().data());
-  EXPECT_STREQ("HH:mm:ss", LocalizedDateFormatText("fr").Utf8().data());
-  EXPECT_STREQ("H:mm:ss", LocalizedDateFormatText("ja").Utf8().data());
+  EXPECT_EQ("h:mm:ss a", LocalizedDateFormatText("en_US"));
+  EXPECT_EQ("HH:mm:ss", LocalizedDateFormatText("fr"));
+  EXPECT_EQ("H:mm:ss", LocalizedDateFormatText("ja"));
 }
 
 TEST_F(LocaleICUTest, localizedShortDateFormatText) {
-  EXPECT_STREQ("h:mm a", LocalizedShortDateFormatText("en_US").Utf8().data());
-  EXPECT_STREQ("HH:mm", LocalizedShortDateFormatText("fr").Utf8().data());
-  EXPECT_STREQ("H:mm", LocalizedShortDateFormatText("ja").Utf8().data());
+  EXPECT_EQ("h:mm a", LocalizedShortDateFormatText("en_US"));
+  EXPECT_EQ("HH:mm", LocalizedShortDateFormatText("fr"));
+  EXPECT_EQ("H:mm", LocalizedShortDateFormatText("ja"));
 }
 
 TEST_F(LocaleICUTest, standAloneMonthLabels) {
-  EXPECT_STREQ("January", StandAloneMonthLabel("en_US", 0).Utf8().data());
-  EXPECT_STREQ("June", StandAloneMonthLabel("en_US", 5).Utf8().data());
-  EXPECT_STREQ("December", StandAloneMonthLabel("en_US", 11).Utf8().data());
+  EXPECT_EQ("January", StandAloneMonthLabel("en_US", 0));
+  EXPECT_EQ("June", StandAloneMonthLabel("en_US", 5));
+  EXPECT_EQ("December", StandAloneMonthLabel("en_US", 11));
 
 #if U_ICU_VERSION_MAJOR_NUM >= 54
-  EXPECT_STREQ("Janvier", StandAloneMonthLabel("fr_FR", 0).Utf8().data());
-  EXPECT_STREQ("Juin", StandAloneMonthLabel("fr_FR", 5).Utf8().data());
+  EXPECT_EQ("Janvier", StandAloneMonthLabel("fr_FR", 0));
+  EXPECT_EQ("Juin", StandAloneMonthLabel("fr_FR", 5));
   EXPECT_STREQ(
       "D\xC3\xA9"
       "cembre",
       StandAloneMonthLabel("fr_FR", 11).Utf8().data());
 #else
-  EXPECT_STREQ("janvier", standAloneMonthLabel("fr_FR", 0).utf8().data());
-  EXPECT_STREQ("juin", standAloneMonthLabel("fr_FR", 5).utf8().data());
-  EXPECT_STREQ(
+  EXPECT_EQ("janvier", standAloneMonthLabel("fr_FR", 0));
+  EXPECT_EQ("juin", standAloneMonthLabel("fr_FR", 5));
+  EXPECT_EQ(
       "d\xC3\xA9"
       "cembre",
-      standAloneMonthLabel("fr_FR", 11).utf8().data());
+      standAloneMonthLabel("fr_FR", 11));
 #endif
 
   EXPECT_STREQ("1\xE6\x9C\x88", StandAloneMonthLabel("ja_JP", 0).Utf8().data());
@@ -187,14 +187,14 @@ TEST_F(LocaleICUTest, standAloneMonthLabels) {
 }
 
 TEST_F(LocaleICUTest, shortMonthLabels) {
-  EXPECT_STREQ("Jan", ShortMonthLabel("en_US", 0).Utf8().data());
-  EXPECT_STREQ("Jan", ShortStandAloneMonthLabel("en_US", 0).Utf8().data());
-  EXPECT_STREQ("Dec", ShortMonthLabel("en_US", 11).Utf8().data());
-  EXPECT_STREQ("Dec", ShortStandAloneMonthLabel("en_US", 11).Utf8().data());
+  EXPECT_EQ("Jan", ShortMonthLabel("en_US", 0));
+  EXPECT_EQ("Jan", ShortStandAloneMonthLabel("en_US", 0));
+  EXPECT_EQ("Dec", ShortMonthLabel("en_US", 11));
+  EXPECT_EQ("Dec", ShortStandAloneMonthLabel("en_US", 11));
 
 #if U_ICU_VERSION_MAJOR_NUM >= 54
-  EXPECT_STREQ("janv.", ShortMonthLabel("fr_FR", 0).Utf8().data());
-  EXPECT_STREQ("Janv.", ShortStandAloneMonthLabel("fr_FR", 0).Utf8().data());
+  EXPECT_EQ("janv.", ShortMonthLabel("fr_FR", 0));
+  EXPECT_EQ("Janv.", ShortStandAloneMonthLabel("fr_FR", 0));
   EXPECT_STREQ(
       "d\xC3\xA9"
       "c.",
@@ -204,16 +204,16 @@ TEST_F(LocaleICUTest, shortMonthLabels) {
       "c.",
       ShortStandAloneMonthLabel("fr_FR", 11).Utf8().data());
 #else
-  EXPECT_STREQ("janv.", shortMonthLabel("fr_FR", 0).utf8().data());
-  EXPECT_STREQ("janv.", shortStandAloneMonthLabel("fr_FR", 0).utf8().data());
-  EXPECT_STREQ(
+  EXPECT_EQ("janv.", shortMonthLabel("fr_FR", 0));
+  EXPECT_EQ("janv.", shortStandAloneMonthLabel("fr_FR", 0));
+  EXPECT_EQ(
       "d\xC3\xA9"
       "c.",
-      shortMonthLabel("fr_FR", 11).utf8().data());
-  EXPECT_STREQ(
+      shortMonthLabel("fr_FR", 11));
+  EXPECT_EQ(
       "d\xC3\xA9"
       "c.",
-      shortStandAloneMonthLabel("fr_FR", 11).utf8().data());
+      shortStandAloneMonthLabel("fr_FR", 11));
 #endif
 
   EXPECT_STREQ("1\xE6\x9C\x88", ShortMonthLabel("ja_JP", 0).Utf8().data());
