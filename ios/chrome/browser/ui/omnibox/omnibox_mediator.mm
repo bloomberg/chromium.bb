@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/omnibox/omnibox_mediator.h"
 
 #include "base/strings/sys_string_conversions.h"
+#include "components/omnibox/browser/autocomplete_match.h"
 #import "ios/chrome/browser/favicon/favicon_loader.h"
 #import "ios/chrome/browser/search_engines/search_engine_observer_bridge.h"
 #import "ios/chrome/browser/search_engines/search_engines_util.h"
@@ -96,26 +97,53 @@ const CGFloat kOmniboxIconSize = 16;
   // Can't load favicons without a favicon loader.
   DCHECK(self.faviconLoader);
 
+  BOOL showsDefaultSearchEngineFavicon =
+      base::FeatureList::IsEnabled(kOmniboxUseDefaultSearchEngineFavicon) &&
+      AutocompleteMatch::IsSearchType(matchType);
+
+  const TemplateURL* default_provider =
+      _templateURLService->GetDefaultSearchProvider();
+  // Prepopulated search engines use empty search URL for favicon retrieval;
+  // custom search engines use a direct favicon URL.
+  BOOL shouldUseFaviconURL = default_provider->prepopulate_id() == 0;
+
+  if (showsDefaultSearchEngineFavicon) {
+    if (shouldUseFaviconURL) {
+      faviconURL = default_provider->favicon_url();
+    } else {
+      // Fake up a page URL for favicons of prepopulated search engines, since
+      // favicons may be fetched from Google server which doesn't suppoprt
+      // icon URL.
+      std::string emptyPageUrl = default_provider->url_ref().ReplaceSearchTerms(
+          TemplateURLRef::SearchTermsArgs(base::string16()),
+          _templateURLService->search_terms_data());
+      faviconURL = GURL(emptyPageUrl);
+    }
+  }
+
+  __weak OmniboxMediator* weakSelf = self;
+
+  auto useFaviconAttributes = ^void(FaviconAttributes* attributes) {
+    if (attributes.faviconImage && !attributes.usesDefaultImage &&
+        weakSelf.latestFaviconURL == faviconURL)
+      [weakSelf.consumer updateAutocompleteIcon:attributes.faviconImage];
+  };
+
   // Remember the last request URL to avoid showing favicons for past requests.
   self.latestFaviconURL = faviconURL;
   // Download the favicon.
-  __weak OmniboxMediator* weakSelf = self;
   // The code below mimics that in OmniboxPopupMediator.
-  FaviconAttributes* cachedAttributes = self.faviconLoader->FaviconForPageUrl(
-      faviconURL, kOmniboxIconSize, kOmniboxIconSize,
-      /*fallback_to_google_server=*/YES, ^(FaviconAttributes* attributes) {
-        // If the favicon isn't default, and this is still the latest request,
-        // use it.
-        if (attributes.faviconImage && !attributes.usesDefaultImage &&
-            weakSelf.latestFaviconURL == faviconURL)
-          [weakSelf.consumer updateAutocompleteIcon:attributes.faviconImage];
-      });
-
-  // Only use cached attributes when they are a non-default icon. Never show
-  // monograms or default globe icon.
-  if (cachedAttributes.faviconImage && !cachedAttributes.usesDefaultImage) {
-    [self.consumer updateAutocompleteIcon:cachedAttributes.faviconImage];
+  FaviconAttributes* cachedAttributes = nil;
+  if (shouldUseFaviconURL) {
+    cachedAttributes = self.faviconLoader->FaviconForIconUrl(
+        faviconURL, kOmniboxIconSize, kOmniboxIconSize, useFaviconAttributes);
+  } else {
+    cachedAttributes = self.faviconLoader->FaviconForPageUrl(
+        faviconURL, kOmniboxIconSize, kOmniboxIconSize,
+        /*fallback_to_google_server=*/YES, useFaviconAttributes);
   }
+
+  useFaviconAttributes(cachedAttributes);
 }
 
 @end
