@@ -1451,6 +1451,12 @@ class PDFExtensionInternalLinkClickTest : public PDFExtensionTest {
     return link_position;
   }
 
+  content::WebContents* GetWebContentsForInputRouting() {
+    return content::MimeHandlerViewMode::UsesCrossProcessFrame()
+               ? guest_contents_
+               : GetActiveWebContents();
+  }
+
  private:
   WebContents* guest_contents_;
 };
@@ -1463,9 +1469,9 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionInternalLinkClickTest, CtrlLeft) {
   content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_TAB_ADDED,
       content::NotificationService::AllSources());
-  content::SimulateMouseClickAt(web_contents, kDefaultKeyModifier,
-                                blink::WebMouseEvent::Button::kLeft,
-                                GetLinkPosition());
+  content::SimulateMouseClickAt(
+      GetWebContentsForInputRouting(), kDefaultKeyModifier,
+      blink::WebMouseEvent::Button::kLeft, GetLinkPosition());
   observer.Wait();
 
   int tab_count = browser()->tab_strip_model()->count();
@@ -1492,7 +1498,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionInternalLinkClickTest, Middle) {
   content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_TAB_ADDED,
       content::NotificationService::AllSources());
-  content::SimulateMouseClickAt(web_contents, 0,
+  content::SimulateMouseClickAt(GetWebContentsForInputRouting(), 0,
                                 blink::WebMouseEvent::Button::kMiddle,
                                 GetLinkPosition());
   observer.Wait();
@@ -1523,9 +1529,9 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionInternalLinkClickTest, ShiftLeft) {
   content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_BROWSER_OPENED,
       content::NotificationService::AllSources());
-  content::SimulateMouseClickAt(web_contents, blink::WebInputEvent::kShiftKey,
-                                blink::WebMouseEvent::Button::kLeft,
-                                GetLinkPosition());
+  content::SimulateMouseClickAt(
+      GetWebContentsForInputRouting(), blink::WebInputEvent::kShiftKey,
+      blink::WebMouseEvent::Button::kLeft, GetLinkPosition());
   observer.Wait();
 
   ASSERT_EQ(2U, chrome::GetTotalBrowserCount());
@@ -2099,6 +2105,11 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, ServiceWorkerInterception) {
 #endif
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, MAYBE_EmbeddedPdfGetsFocus) {
+  if (content::MimeHandlerViewMode::UsesCrossProcessFrame()) {
+    // This test verifies focus for a BrowserPlugin and is not relevant with
+    // MHVICPF since no BrowserPlugin is created with this flag.
+    return;
+  }
   GURL test_iframe_url(embedded_test_server()->GetURL(
       "/pdf/test-offset-cross-site-iframe.html"));
   ui_test_utils::NavigateToURL(browser(), test_iframe_url);

@@ -25,6 +25,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/mime_handler_view_mode.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_renderer_host.h"
 #include "extensions/browser/api/extensions_api_client.h"
@@ -525,6 +526,11 @@ class MimeHandlerViewBrowserPluginSpecificTest : public MimeHandlerViewTest {
 // the embedder knows about it.
 IN_PROC_BROWSER_TEST_F(MimeHandlerViewBrowserPluginSpecificTest,
                        AcceptTouchEvents) {
+  if (content::MimeHandlerViewMode::UsesCrossProcessFrame()) {
+    // This test requires BrowserPlugin which does not exist in frame-based
+    // MimeHandlerView.
+    return;
+  }
   RunTest("testBasic.csv");
   content::RenderViewHost* embedder_rvh =
       GetEmbedderWebContents()->GetRenderViewHost();
@@ -559,6 +565,11 @@ IN_PROC_BROWSER_TEST_F(MimeHandlerViewBrowserPluginSpecificTest,
 // Verify that a BrowserPlugin captures mouse input on MouseDown.
 IN_PROC_BROWSER_TEST_F(MimeHandlerViewBrowserPluginSpecificTest,
                        MouseCaptureOnMouseDown) {
+  if (content::MimeHandlerViewMode::UsesCrossProcessFrame()) {
+    // This test requires BrowserPlugin which does not exist in frame-based
+    // MimeHandlerView.
+    return;
+  }
   RunTest("testBasic.csv");
   auto* guest_web_contents = GetGuestViewManager()->WaitForSingleGuestCreated();
   auto* guest_widget = MimeHandlerViewGuest::FromWebContents(guest_web_contents)
