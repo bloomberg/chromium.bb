@@ -175,6 +175,9 @@ class MimeHandlerViewCrossProcessTest
     if (is_cross_process_mode_) {
       scoped_feature_list_.InitAndEnableFeature(
           features::kMimeHandlerViewInCrossProcessFrame);
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(
+          features::kMimeHandlerViewInCrossProcessFrame);
     }
   }
 
@@ -518,7 +521,14 @@ class MimeHandlerViewBrowserPluginSpecificTest : public MimeHandlerViewTest {
 
   ~MimeHandlerViewBrowserPluginSpecificTest() override {}
 
- protected:
+  void SetUpCommandLine(base::CommandLine* cl) override {
+    MimeHandlerViewTest::SetUpCommandLine(cl);
+    scoped_feature_list_.InitAndDisableFeature(
+        features::kMimeHandlerViewInCrossProcessFrame);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
   DISALLOW_COPY_AND_ASSIGN(MimeHandlerViewBrowserPluginSpecificTest);
 };
 
@@ -526,11 +536,6 @@ class MimeHandlerViewBrowserPluginSpecificTest : public MimeHandlerViewTest {
 // the embedder knows about it.
 IN_PROC_BROWSER_TEST_F(MimeHandlerViewBrowserPluginSpecificTest,
                        AcceptTouchEvents) {
-  if (content::MimeHandlerViewMode::UsesCrossProcessFrame()) {
-    // This test requires BrowserPlugin which does not exist in frame-based
-    // MimeHandlerView.
-    return;
-  }
   RunTest("testBasic.csv");
   content::RenderViewHost* embedder_rvh =
       GetEmbedderWebContents()->GetRenderViewHost();
@@ -565,11 +570,6 @@ IN_PROC_BROWSER_TEST_F(MimeHandlerViewBrowserPluginSpecificTest,
 // Verify that a BrowserPlugin captures mouse input on MouseDown.
 IN_PROC_BROWSER_TEST_F(MimeHandlerViewBrowserPluginSpecificTest,
                        MouseCaptureOnMouseDown) {
-  if (content::MimeHandlerViewMode::UsesCrossProcessFrame()) {
-    // This test requires BrowserPlugin which does not exist in frame-based
-    // MimeHandlerView.
-    return;
-  }
   RunTest("testBasic.csv");
   auto* guest_web_contents = GetGuestViewManager()->WaitForSingleGuestCreated();
   auto* guest_widget = MimeHandlerViewGuest::FromWebContents(guest_web_contents)
