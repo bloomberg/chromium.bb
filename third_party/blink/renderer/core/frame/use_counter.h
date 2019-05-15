@@ -71,8 +71,6 @@ class CORE_EXPORT UseCounter {
   // console warnings for deprecation.
   enum Context {
     kDefaultContext,
-    // Counters for SVGImages (lifetime independent from other pages).
-    kSVGImageContext,
     // Counters for extensions.
     kExtensionContext,
     // Context for file:// URLs.

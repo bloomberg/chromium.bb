@@ -132,9 +132,7 @@ DocumentLoader::DocumentLoader(
       devtools_navigation_token_(params_->devtools_navigation_token),
       had_sticky_activation_(params_->is_user_activated),
       was_discarded_(params_->was_discarded),
-      use_counter_(frame_->GetChromeClient().IsSVGImageChromeClient()
-                       ? UseCounter::kSVGImageContext
-                       : UseCounter::kDefaultContext) {
+      use_counter_() {
   DCHECK(frame_);
 
   // TODO(nasko): How should this work with OOPIF?

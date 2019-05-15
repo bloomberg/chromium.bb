@@ -20,10 +20,6 @@ namespace {
 const char kExtensionFeaturesHistogramName[] =
     "Blink.UseCounter.Extensions.Features";
 
-const char kSVGFeaturesHistogramName[] = "Blink.UseCounter.SVGImage.Features";
-
-// In practice, SVGs always appear to be loaded with an about:blank URL
-const char kSvgUrl[] = "about:blank";
 const char kExtensionUrl[] = "chrome-extension://dummysite/";
 
 int GetPageVisitsBucketforHistogram(const std::string& histogram_name) {
@@ -136,23 +132,6 @@ TEST_F(UseCounterTest, RecordingExtensions) {
         use_counter.DidCommitLoad(frame);
       },
       kExtensionUrl, UseCounter::kExtensionContext);
-}
-
-TEST_F(UseCounterTest, SVGImageContextFeatures) {
-  HistogramBasicTest<WebFeature>(
-      kSVGFeaturesHistogramName, WebFeature::kSVGSMILAdditiveAnimation,
-      WebFeature::kSVGSMILAnimationElementTiming,
-      [&](WebFeature feature, UseCounter& use_counter) -> bool {
-        return use_counter.HasRecordedMeasurement(feature);
-      },
-      [&](WebFeature feature, UseCounter& use_counter) {
-        use_counter.RecordMeasurement(feature, *GetFrame());
-      },
-      [](WebFeature feature) -> int { return static_cast<int>(feature); },
-      [&](LocalFrame* frame, UseCounter& use_counter) {
-        use_counter.DidCommitLoad(frame);
-      },
-      kSvgUrl, UseCounter::kSVGImageContext);
 }
 
 TEST_F(UseCounterTest, CSSSelectorPseudoWhere) {

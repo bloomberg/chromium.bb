@@ -1362,10 +1362,8 @@ void UseCounter::DidCommitLoad(const LocalFrame* frame) {
         ReportAndTraceMeasurementByCSSSampleId(sample_id, frame, true);
     }
 
-    // TODO(loonybear): remove or move SVG histogram and extension histogram
-    // to the browser side.
-    if ((context_ == kSVGImageContext || context_ == kExtensionContext ||
-         context_ == kFileContext)) {
+    // TODO(loonybear): move extension histogram to the browser side.
+    if (context_ == kExtensionContext || context_ == kFileContext) {
       FeaturesHistogram().Count(static_cast<int>(WebFeature::kPageVisits));
     }
   }
@@ -1520,15 +1518,6 @@ void UseCounter::NotifyFeatureCounted(WebFeature feature) {
 }
 
 EnumerationHistogram& UseCounter::FeaturesHistogram() const {
-  // Every SVGImage has it's own Page instance, and multiple web pages can
-  // share the usage of a single SVGImage.  Ideally perhaps we'd delegate
-  // metrics from an SVGImage to one of the Page's it's displayed in, but
-  // that's tricky (SVGImage is intentionally isolated, and the Page that
-  // created it may not even exist anymore).
-  // So instead we just use a dedicated histogram for the SVG case.
-  DEFINE_STATIC_LOCAL(blink::EnumerationHistogram, svg_histogram,
-                      ("Blink.UseCounter.SVGImage.Features",
-                       static_cast<int32_t>(WebFeature::kNumberOfFeatures)));
   DEFINE_STATIC_LOCAL(blink::EnumerationHistogram, extension_histogram,
                       ("Blink.UseCounter.Extensions.Features",
                        static_cast<int32_t>(WebFeature::kNumberOfFeatures)));
@@ -1542,8 +1531,6 @@ EnumerationHistogram& UseCounter::FeaturesHistogram() const {
       // The default features histogram is being recorded on the browser side.
       NOTREACHED();
       break;
-    case kSVGImageContext:
-      return svg_histogram;
     case kExtensionContext:
       return extension_histogram;
     case kFileContext:
@@ -1555,24 +1542,6 @@ EnumerationHistogram& UseCounter::FeaturesHistogram() const {
   NOTREACHED();
   blink::EnumerationHistogram* null = nullptr;
   return *null;
-}
-
-EnumerationHistogram& UseCounter::CssHistogram() const {
-  DCHECK_EQ(kSVGImageContext, context_);
-  DEFINE_STATIC_LOCAL(blink::EnumerationHistogram, svg_histogram,
-                      ("Blink.UseCounter.SVGImage.CSSProperties",
-                       mojom::blink::kMaximumCSSSampleId));
-
-  return svg_histogram;
-}
-
-EnumerationHistogram& UseCounter::AnimatedCSSHistogram() const {
-  DCHECK_EQ(kSVGImageContext, context_);
-  DEFINE_STATIC_LOCAL(blink::EnumerationHistogram, svg_histogram,
-                      ("Blink.UseCounter.SVGImage.AnimatedCSSProperties",
-                       mojom::blink::kMaximumCSSSampleId));
-
-  return svg_histogram;
 }
 
 }  // namespace blink
