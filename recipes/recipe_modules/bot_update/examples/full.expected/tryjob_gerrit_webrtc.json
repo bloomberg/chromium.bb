@@ -56,7 +56,7 @@
       "--output_json",
       "/path/to/tmp/json",
       "--patch_ref",
-      "https://webrtc.googlesource.com/src@refs/changes/56/123456/7",
+      "https://webrtc.googlesource.com/src@refs/heads/master:refs/changes/56/123456/7",
       "--revision",
       "src@HEAD",
       "--revision",
