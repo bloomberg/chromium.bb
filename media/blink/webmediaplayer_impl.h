@@ -609,7 +609,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   std::unique_ptr<MediaLog> media_log_;
 
   // |pipeline_controller_| owns an instance of Pipeline.
-  PipelineController pipeline_controller_;
+  std::unique_ptr<PipelineController> pipeline_controller_;
 
   // The LoadType passed in the |load_type| parameter of the load() call.
   LoadType load_type_ = kLoadTypeURL;
@@ -712,7 +712,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   const base::TickClock* tick_clock_ = nullptr;
 
-  BufferedDataSourceHostImpl buffered_data_source_host_;
+  std::unique_ptr<BufferedDataSourceHostImpl> buffered_data_source_host_;
   UrlIndex* const url_index_;
   scoped_refptr<viz::ContextProvider> context_provider_;
 

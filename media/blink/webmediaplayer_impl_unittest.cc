@@ -500,14 +500,14 @@ class WebMediaPlayerImplTest : public testing::Test {
     return wmpi_->UpdatePlayState_ComputePlayState(false, false, false, true);
   }
 
-  bool IsSuspended() { return wmpi_->pipeline_controller_.IsSuspended(); }
+  bool IsSuspended() { return wmpi_->pipeline_controller_->IsSuspended(); }
 
   int64_t GetDataSourceMemoryUsage() const {
     return wmpi_->data_source_->GetMemoryUsage();
   }
 
   void AddBufferedRanges() {
-    wmpi_->buffered_data_source_host_.AddBufferedByteRange(0, 1);
+    wmpi_->buffered_data_source_host_->AddBufferedByteRange(0, 1);
   }
 
   void SetDelegateState(WebMediaPlayerImpl::DelegateState state) {
