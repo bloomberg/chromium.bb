@@ -401,7 +401,7 @@ class BuildbucketV2(object):
 
   def GetBuildHistory(self, build_config, num_results, ignore_build_id=None,
                       start_date=None, end_date=None, branch=None,
-                      starting_build_id=None):
+                      ending_build_id=None):
     """Returns basic information about most recent builds for build config.
 
     By default this function returns the most recent builds. Some arguments can
@@ -420,7 +420,7 @@ class BuildbucketV2(object):
       end_date: (Optional, type:datetime.date) Get builds that occured on or
           before this date.
       branch: (Optional) Return only results for this branch.
-      starting_build_id: (Optional) The minimum build_id for which data should
+      ending_build_id: (Optional) The oldest build for which data should
           be retrieved.
 
     Returns:
@@ -438,8 +438,8 @@ class BuildbucketV2(object):
       tags.append(common_pb2.StringPair(key='cbb_branch',
                                         value=branch))
     build = None
-    if starting_build_id:
-      build = rpc_pb2.BuildRange(start_build_id=int(starting_build_id))
+    if ending_build_id:
+      build = rpc_pb2.BuildRange(end_build_id=int(ending_build_id))
     build_predicate = rpc_pb2.BuildPredicate(
         builder=builder, tags=tags, create_time=create_time, build=build)
     search_result = self.SearchBuild(build_predicate, page_size=num_results)

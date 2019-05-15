@@ -218,7 +218,7 @@ class BuildStore(object):
   def GetBuildHistory(
       self, build_config, num_results,
       ignore_build_id=None, start_date=None, end_date=None, branch=None,
-      platform_version=None, starting_build_id=None):
+      platform_version=None, ending_build_id=None):
     """Returns basic information about most recent builds for build config.
 
     By default this function returns the most recent builds. Some arguments can
@@ -237,8 +237,11 @@ class BuildStore(object):
       branch: (Optional) Return only results for this branch.
       platform_version: (Optional) Return only results for this
           platform_version.
-      starting_build_id: (Optional) The minimum build_id for which data should
+      ending_build_id: (Optional) The oldest build_id till which builds should
           be retrieved.
+          Fun fact: CIDB searches builds oldest to latest. Buildbucket searches
+          builds latest to oldest. So, ending_build_id for Buildbucket ==
+          starting_build_id for CIDB.
 
     Returns:
       A sorted list of dicts containing up to |number| dictionaries for
@@ -252,12 +255,12 @@ class BuildStore(object):
           build_config, num_results, ignore_build_id=ignore_build_id,
           start_date=start_date, end_date=end_date, branch=branch,
           platform_version=platform_version,
-          starting_build_id=starting_build_id)
+          starting_build_id=ending_build_id)
     else:
       return self.bb_client.GetBuildHistory(
           build_config, num_results, ignore_build_id=ignore_build_id,
           start_date=start_date, end_date=end_date, branch=branch,
-          starting_build_id=starting_build_id)
+          ending_build_id=ending_build_id)
 
   def InsertBuildStage(self,
                        build_id,

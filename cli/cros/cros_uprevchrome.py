@@ -96,7 +96,7 @@ class UprevChromeCommand(command.CliCommand):
   http://g3doc/company/teams/chrome/ops/chromeos/continuous_integration/on-call/guides/cros_uprevchrome_guide
   """
 
-  NUM_RESULTS_LIMIT = 1000
+  NUM_RESULTS_LIMIT = 100
 
   def __init__(self, options):
     super(UprevChromeCommand, self).__init__(options)
@@ -173,7 +173,7 @@ class UprevChromeCommand(command.CliCommand):
     # pfq run, should not uprev or overwrite the uprevs.
     build_infos = buildstore.GetBuildHistory(constants.PFQ_MASTER,
                                              self.NUM_RESULTS_LIMIT,
-                                             starting_build_id=pfq_build)
+                                             ending_build_id=pfq_build)
 
     for build_info in build_infos:
       if build_info['status'] == 'pass':

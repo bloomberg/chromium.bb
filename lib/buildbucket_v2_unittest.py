@@ -264,14 +264,14 @@ class BuildbucketV2Test(cros_test_lib.MockTestCase):
                                   value='master')]
     start_date = date(2019, 4, 16)
     create_time = buildbucket_v2.DateToTimeRange(start_date)
-    fake_build = rpc_pb2.BuildRange(start_build_id=1234)
+    fake_build = rpc_pb2.BuildRange(end_build_id=1234)
     fake_predicate = rpc_pb2.BuildPredicate(
         builder=builder, tags=tags, create_time=create_time, build=fake_build)
     bbv2 = buildbucket_v2.BuildbucketV2()
     search_fn = self.PatchObject(bbv2, 'SearchBuild')
     self.PatchObject(bbv2, 'GetBuildStatus')
     bbv2.GetBuildHistory('something-paladin', 10, start_date=start_date,
-                         branch='master', starting_build_id=1234)
+                         branch='master', ending_build_id=1234)
     search_fn.assert_called_once_with(fake_predicate, page_size=10)
 
   def testGetChildStatusesSuccess(self):
