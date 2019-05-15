@@ -3423,7 +3423,7 @@
       },
       'Linux Tests': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_linux_gtests',

@@ -239,6 +239,13 @@
       },
     },
   },
+  'linux-xenial': {
+    'swarming': {
+      'dimensions': {
+        'os': 'Ubuntu-16.04',
+      },
+    },
+  },
   'linux_amd_r7_240': {
     'swarming': {
       'dimensions': {
