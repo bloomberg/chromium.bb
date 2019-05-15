@@ -17,30 +17,17 @@ namespace ui {
 // ClipboardFormatType implementation.
 ClipboardFormatType::ClipboardFormatType() = default;
 
-ClipboardFormatType::ClipboardFormatType(UINT native_format) {
-  // There's no good way to actually initialize this in the constructor in
-  // C++03.
-  data_.cfFormat = static_cast<CLIPFORMAT>(native_format);
-  data_.dwAspect = DVASPECT_CONTENT;
-  data_.lindex = -1;
-  data_.tymed = TYMED_HGLOBAL;
-}
+ClipboardFormatType::ClipboardFormatType(UINT native_format)
+    : ClipboardFormatType(native_format, -1) {}
 
-ClipboardFormatType::ClipboardFormatType(UINT native_format, LONG index) {
-  // There's no good way to actually initialize this in the constructor in
-  // C++03.
-  data_.cfFormat = static_cast<CLIPFORMAT>(native_format);
-  data_.dwAspect = DVASPECT_CONTENT;
-  data_.lindex = index;
-  data_.tymed = TYMED_HGLOBAL;
-}
+ClipboardFormatType::ClipboardFormatType(UINT native_format, LONG index)
+    : ClipboardFormatType(native_format, index, TYMED_HGLOBAL) {}
 
-// TODO(https://crbug.com/949411): Use delegating constructors.
 ClipboardFormatType::ClipboardFormatType(UINT native_format,
                                          LONG index,
                                          DWORD tymed) {
   // There's no good way to actually initialize this in the constructor in
-  // C++03.
+  // C++14. In C++ 20, we can use designated initializers.
   data_.cfFormat = static_cast<CLIPFORMAT>(native_format);
   data_.dwAspect = DVASPECT_CONTENT;
   data_.lindex = index;
