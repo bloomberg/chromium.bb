@@ -547,7 +547,7 @@ bool PNGImageReader::ParseSize(const FastSharedBufferReader& reader) {
     new_frame_.start_offset = 0;
   }
 
-  // Process APNG chunks manually, pass other chunks to libpng.
+  // Process some chunks manually, and pass some to libpng.
   for (png_uint_32 length = 0; reader.size() >= read_offset_ + 8;
        // This call will not overflow since it was already checked below, after
        // calculating chunk_end_offset.
@@ -630,13 +630,24 @@ bool PNGImageReader::ParseSize(const FastSharedBufferReader& reader) {
     } else if (IsChunk(chunk, "fdAT")) {
       ignore_animation_ = true;
     } else {
-      png_process_data(png_, info_, const_cast<png_byte*>(chunk), 8);
-      ProcessData(reader, read_offset_ + 8, length + 4);
-      if (IsChunk(chunk, "IHDR")) {
-        parsed_ihdr_ = true;
-        ihdr_offset_ = read_offset_;
-        width_ = png_get_image_width(png_, info_);
-        height_ = png_get_image_height(png_, info_);
+      bool ihdr = IsChunk(chunk, "IHDR");
+      auto is_necessary = [](const png_byte* chunk) {
+        for (const char* tag :
+             {"PLTE", "IEND", "tRNS", "cHRM", "iCCP", "sRGB", "gAMA"}) {
+          if (IsChunk(chunk, tag))
+            return true;
+        }
+        return false;
+      };
+      if (ihdr || is_necessary(chunk)) {
+        png_process_data(png_, info_, const_cast<png_byte*>(chunk), 8);
+        ProcessData(reader, read_offset_ + 8, length + 4);
+        if (ihdr) {
+          parsed_ihdr_ = true;
+          ihdr_offset_ = read_offset_;
+          width_ = png_get_image_width(png_, info_);
+          height_ = png_get_image_height(png_, info_);
+        }
       }
     }
   }

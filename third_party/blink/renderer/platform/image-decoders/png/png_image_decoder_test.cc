@@ -1388,4 +1388,13 @@ TEST(PNGTests, crbug827754) {
   ASSERT_FALSE(decoder->Failed());
 }
 
+TEST(AnimatedPNGTests, TrnsMeansAlpha) {
+  const char* png_file =
+      "/images/resources/"
+      "png-animated-idat-part-of-animation.png";
+  auto decoder = CreatePNGDecoderWithPngData(png_file);
+  auto* frame = decoder->DecodeFrameBufferAtIndex(0);
+  ASSERT_TRUE(frame->HasAlpha());
+}
+
 }  // namespace blink
