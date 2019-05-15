@@ -133,6 +133,7 @@ class TestingDriveFsHostDelegate : public DriveFsHost::Delegate,
   std::string GetObfuscatedAccountId() override {
     return "salt-" + account_id_.GetAccountIdKey();
   }
+  bool IsMetricsCollectionEnabled() override { return false; }
 
   std::unique_ptr<DriveFsBootstrapListener> CreateMojoListener() override {
     DCHECK(pending_bootstrap_);
