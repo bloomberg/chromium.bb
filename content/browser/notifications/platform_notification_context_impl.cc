@@ -757,13 +757,15 @@ void PlatformNotificationContextImpl::DoWriteNotificationData(
 void PlatformNotificationContextImpl::DeleteNotificationData(
     const std::string& notification_id,
     const GURL& origin,
+    bool close_notification,
     DeleteResultCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!service_proxy_)
     return;
 
   // Close notification as we're about to delete its data.
-  service_proxy_->CloseNotification(notification_id);
+  if (close_notification)
+    service_proxy_->CloseNotification(notification_id);
 
   LazyInitialize(
       base::BindOnce(&PlatformNotificationContextImpl::DoDeleteNotificationData,

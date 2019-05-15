@@ -107,10 +107,12 @@ class PlatformNotificationContext
       WriteResultCallback callback) = 0;
 
   // Deletes all data associated with |notification_id| belonging to |origin|
-  // from the database. |callback| will be invoked with the success status
-  // when the operation has completed.
+  // from the database. Closes the notification if |close_notification| is true.
+  // |callback| will be invoked with the success status when the operation has
+  // completed.
   virtual void DeleteNotificationData(const std::string& notification_id,
                                       const GURL& origin,
+                                      bool close_notification,
                                       DeleteResultCallback callback) = 0;
 
   // Checks permissions for all notifications in the database and deletes all

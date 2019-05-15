@@ -175,7 +175,7 @@ void PushMessagingNotificationManager::DidGetNotificationsFromDatabase(
               ->GetPlatformNotificationContext();
       notification_context->DeleteNotificationData(
           notification_database_data.notification_id, origin,
-          base::DoNothing());
+          /* close_notification= */ true, base::DoNothing());
       break;
     }
   }

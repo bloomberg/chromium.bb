@@ -93,6 +93,7 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
                              WriteResultCallback callback) override;
   void DeleteNotificationData(const std::string& notification_id,
                               const GURL& origin,
+                              bool close_notification,
                               DeleteResultCallback callback) override;
   void DeleteAllNotificationDataForBlockedOrigins(
       DeleteAllResultCallback callback) override;

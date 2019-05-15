@@ -269,7 +269,8 @@ void BlinkNotificationServiceImpl::ClosePersistentNotification(
     return;
 
   notification_context_->DeleteNotificationData(
-      notification_id, origin_.GetURL(), base::DoNothing());
+      notification_id, origin_.GetURL(), /* close_notification= */ true,
+      base::DoNothing());
 }
 
 void BlinkNotificationServiceImpl::GetNotifications(

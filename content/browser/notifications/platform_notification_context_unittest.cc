@@ -311,6 +311,7 @@ TEST_F(PlatformNotificationContextTest, DeleteInvalidNotification) {
 
   context->DeleteNotificationData(
       "invalid-notification-id", GURL("https://example.com"),
+      /* close_notification= */ false,
       base::BindOnce(
           &PlatformNotificationContextTest::DidDeleteNotificationData,
           base::Unretained(this)));
@@ -344,6 +345,7 @@ TEST_F(PlatformNotificationContextTest, DeleteNotification) {
 
   context->DeleteNotificationData(
       notification_id(), origin,
+      /* close_notification= */ false,
       base::BindOnce(
           &PlatformNotificationContextTest::DidDeleteNotificationData,
           base::Unretained(this)));
@@ -392,6 +394,7 @@ TEST_F(PlatformNotificationContextTest, DeleteClosesNotification) {
 
   context->DeleteNotificationData(
       notification_id(), origin,
+      /* close_notification= */ true,
       base::BindOnce(
           &PlatformNotificationContextTest::DidDeleteNotificationData,
           base::Unretained(this)));

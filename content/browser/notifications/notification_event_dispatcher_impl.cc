@@ -96,7 +96,6 @@ void ServiceWorkerNotificationEventFinished(
 // called on the IO thread.
 void DispatchNotificationEventOnRegistration(
     const NotificationDatabaseData& notification_database_data,
-    const scoped_refptr<PlatformNotificationContext>& notification_context,
     NotificationOperationCallback dispatch_event_action,
     NotificationDispatchCompleteCallback dispatch_complete_callback,
     blink::ServiceWorkerStatusCode service_worker_status,
@@ -158,7 +157,6 @@ void DispatchNotificationEventOnRegistration(
 void FindServiceWorkerRegistration(
     const GURL& origin,
     const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context,
-    const scoped_refptr<PlatformNotificationContext>& notification_context,
     NotificationOperationCallback notification_action_callback,
     NotificationDispatchCompleteCallback dispatch_complete_callback,
     bool success,
@@ -178,14 +176,14 @@ void FindServiceWorkerRegistration(
 
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(
-          &ServiceWorkerContextWrapper::FindReadyRegistrationForId,
-          service_worker_context,
-          notification_database_data.service_worker_registration_id, origin,
-          base::BindOnce(&DispatchNotificationEventOnRegistration,
-                         notification_database_data, notification_context,
-                         std::move(notification_action_callback),
-                         std::move(dispatch_complete_callback))));
+      base::BindOnce(&ServiceWorkerContextWrapper::FindReadyRegistrationForId,
+                     service_worker_context,
+                     notification_database_data.service_worker_registration_id,
+                     origin,
+                     base::BindOnce(&DispatchNotificationEventOnRegistration,
+                                    notification_database_data,
+                                    std::move(notification_action_callback),
+                                    std::move(dispatch_complete_callback))));
 }
 
 // Reads the data associated with the |notification_id| belonging to |origin|
@@ -202,7 +200,7 @@ void ReadNotificationDatabaseData(
   notification_context->ReadNotificationDataAndRecordInteraction(
       notification_id, origin, interaction,
       base::BindOnce(&FindServiceWorkerRegistration, origin,
-                     service_worker_context, notification_context,
+                     service_worker_context,
                      std::move(notification_read_callback),
                      std::move(dispatch_complete_callback)));
 }
@@ -287,6 +285,7 @@ void DeleteNotificationDataFromDatabase(
       base::BindOnce(
           &PlatformNotificationContext::DeleteNotificationData,
           notification_context, notification_id, origin,
+          /* close_notification= */ false,
           base::BindOnce(&OnPersistentNotificationDataDeleted, status_code,
                          std::move(dispatch_complete_callback))));
 }
