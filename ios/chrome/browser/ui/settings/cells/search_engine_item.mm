@@ -6,6 +6,7 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_text_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
@@ -62,6 +63,8 @@
 
     if (styler.cellTitleColor)
       cell.titleLabel.textColor = styler.cellTitleColor;
+
+    cell.URLLabel.textColor = UIColorFromRGB(kSettingsCellsURLTextColor);
 
     [cell configureUILayout];
   } else {
