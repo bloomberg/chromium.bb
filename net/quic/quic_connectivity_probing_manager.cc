@@ -9,6 +9,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "net/log/net_log.h"
+#include "net/quic/address_utils.h"
 
 namespace net {
 
@@ -173,7 +174,7 @@ void QuicConnectivityProbingManager::OnConnectivityProbingReceived(
            << local_address.ToString() << ", to peer ip:port "
            << peer_address_.ToString();
 
-  if (quic::QuicSocketAddressImpl(local_address) != self_address.impl() ||
+  if (local_address != ToIPEndPoint(self_address) ||
       peer_address_ != peer_address) {
     DVLOG(1) << "Received probing response from peer ip:port "
              << peer_address.ToString() << ", to self ip:port "

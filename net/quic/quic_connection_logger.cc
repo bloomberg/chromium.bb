@@ -22,6 +22,7 @@
 #include "net/log/net_log.h"
 #include "net/log/net_log_capture_mode.h"
 #include "net/log/net_log_event_type.h"
+#include "net/quic/address_utils.h"
 #include "net/quic/quic_address_mismatch.h"
 #include "net/third_party/quiche/src/quic/core/crypto/crypto_handshake_message.h"
 #include "net/third_party/quiche/src/quic/core/crypto/crypto_protocol.h"
@@ -38,10 +39,11 @@ namespace net {
 
 namespace {
 
-base::Value NetLogQuicPacketCallback(const IPEndPoint* self_address,
-                                     const IPEndPoint* peer_address,
-                                     size_t packet_size,
-                                     NetLogCaptureMode /* capture_mode */) {
+base::Value NetLogQuicPacketCallback(
+    const quic::QuicSocketAddress* self_address,
+    const quic::QuicSocketAddress* peer_address,
+    size_t packet_size,
+    NetLogCaptureMode /* capture_mode */) {
   base::DictionaryValue dict;
   dict.SetString("self_address", self_address->ToString());
   dict.SetString("peer_address", peer_address->ToString());
@@ -223,7 +225,7 @@ base::Value NetLogQuicVersionNegotiationPacketCallback(
 
 base::Value NetLogQuicPublicResetPacketCallback(
     const IPEndPoint* server_hello_address,
-    const IPEndPoint* public_reset_address,
+    const quic::QuicSocketAddress* public_reset_address,
     NetLogCaptureMode /* capture_mode */) {
   base::DictionaryValue dict;
   dict.SetString("server_hello_address", server_hello_address->ToString());
@@ -540,10 +542,10 @@ void QuicConnectionLogger::OnPacketReceived(
     const quic::QuicSocketAddress& peer_address,
     const quic::QuicEncryptedPacket& packet) {
   if (local_address_from_self_.GetFamily() == ADDRESS_FAMILY_UNSPECIFIED) {
-    local_address_from_self_ = self_address.impl().socket_address();
+    local_address_from_self_ = ToIPEndPoint(self_address);
     UMA_HISTOGRAM_ENUMERATION(
         "Net.QuicSession.ConnectionTypeFromSelf",
-        GetRealAddressFamily(self_address.impl().socket_address().address()),
+        GetRealAddressFamily(ToIPEndPoint(self_address).address()),
         ADDRESS_FAMILY_LAST);
   }
 
@@ -551,11 +553,9 @@ void QuicConnectionLogger::OnPacketReceived(
   last_received_packet_size_ = packet.length();
   if (!net_log_is_capturing_)
     return;
-  net_log_.AddEvent(
-      NetLogEventType::QUIC_SESSION_PACKET_RECEIVED,
-      base::Bind(&NetLogQuicPacketCallback,
-                 &self_address.impl().socket_address(),
-                 &peer_address.impl().socket_address(), packet.length()));
+  net_log_.AddEvent(NetLogEventType::QUIC_SESSION_PACKET_RECEIVED,
+                    base::Bind(&NetLogQuicPacketCallback, &self_address,
+                               &peer_address, packet.length()));
 }
 
 void QuicConnectionLogger::OnUnauthenticatedHeader(
@@ -737,13 +737,13 @@ void QuicConnectionLogger::OnPingFrame(const quic::QuicPingFrame& frame) {
 void QuicConnectionLogger::OnPublicResetPacket(
     const quic::QuicPublicResetPacket& packet) {
   UpdatePublicResetAddressMismatchHistogram(
-      local_address_from_shlo_, packet.client_address.impl().socket_address());
+      local_address_from_shlo_, ToIPEndPoint(packet.client_address));
   if (!net_log_is_capturing_)
     return;
-  net_log_.AddEvent(NetLogEventType::QUIC_SESSION_PUBLIC_RESET_PACKET_RECEIVED,
-                    base::Bind(&NetLogQuicPublicResetPacketCallback,
-                               &local_address_from_shlo_,
-                               &packet.client_address.impl().socket_address()));
+  net_log_.AddEvent(
+      NetLogEventType::QUIC_SESSION_PUBLIC_RESET_PACKET_RECEIVED,
+      base::Bind(&NetLogQuicPublicResetPacketCallback,
+                 &local_address_from_shlo_, &packet.client_address));
 }
 
 void QuicConnectionLogger::OnVersionNegotiationPacket(
@@ -763,7 +763,7 @@ void QuicConnectionLogger::OnCryptoHandshakeMessageReceived(
     if (message.GetStringPiece(quic::kCADR, &address) &&
         decoder.Decode(address.data(), address.size())) {
       local_address_from_shlo_ =
-          IPEndPoint(decoder.ip().impl().ip_address(), decoder.port());
+          IPEndPoint(ToIPAddress(decoder.ip()), decoder.port());
       UMA_HISTOGRAM_ENUMERATION(
           "Net.QuicSession.ConnectionTypeFromPeer",
           GetRealAddressFamily(local_address_from_shlo_.address()),

@@ -27,6 +27,7 @@
 #include "net/http/transport_security_state.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source_type.h"
+#include "net/quic/address_utils.h"
 #include "net/quic/crypto/proof_verifier_chromium.h"
 #include "net/quic/quic_chromium_connection_helper.h"
 #include "net/quic/quic_chromium_packet_writer.h"
@@ -491,7 +492,7 @@ int QuicChromiumClientSession::Handle::GetPeerAddress(
   if (!session_)
     return ERR_CONNECTION_CLOSED;
 
-  *address = session_->peer_address().impl().socket_address();
+  *address = ToIPEndPoint(session_->peer_address());
   return OK;
 }
 
@@ -500,7 +501,7 @@ int QuicChromiumClientSession::Handle::GetSelfAddress(
   if (!session_)
     return ERR_CONNECTION_CLOSED;
 
-  *address = session_->self_address().impl().socket_address();
+  *address = ToIPEndPoint(session_->self_address());
   return OK;
 }
 
@@ -1173,7 +1174,7 @@ const quic::QuicCryptoClientStream* QuicChromiumClientSession::GetCryptoStream()
 }
 
 bool QuicChromiumClientSession::GetRemoteEndpoint(IPEndPoint* endpoint) {
-  *endpoint = peer_address().impl().socket_address();
+  *endpoint = ToIPEndPoint(peer_address());
   return true;
 }
 
@@ -1472,7 +1473,7 @@ void QuicChromiumClientSession::OnConfigNegotiated() {
 
   // Server has sent an alternate address to connect to.
   IPEndPoint new_address =
-      config()->ReceivedAlternateServerAddress().impl().socket_address();
+      ToIPEndPoint(config()->ReceivedAlternateServerAddress());
   IPEndPoint old_address;
   GetDefaultSocket()->GetPeerAddress(&old_address);
 
@@ -1864,7 +1865,7 @@ void QuicChromiumClientSession::MigrateSessionOnWriteError(
       NetLogEventType::QUIC_CONNECTION_MIGRATION_TRIGGERED,
       NetLogQuicConnectionMigrationTriggerCallback("WriteError"));
   MigrationResult result =
-      Migrate(new_network, connection()->peer_address().impl().socket_address(),
+      Migrate(new_network, ToIPEndPoint(connection()->peer_address()),
               /*close_session_on_error=*/false, migration_net_log);
   migration_net_log.EndEvent(
       NetLogEventType::QUIC_CONNECTION_MIGRATION_TRIGGERED);
@@ -2203,7 +2204,7 @@ void QuicChromiumClientSession::MigrateNetworkImmediately(
   probing_manager_.CancelProbing(network, peer_address());
 
   MigrationResult result =
-      Migrate(network, connection()->peer_address().impl().socket_address(),
+      Migrate(network, ToIPEndPoint(connection()->peer_address()),
               /*close_session_on_error=*/true, net_log_);
   if (result == MigrationResult::FAILURE)
     return;
@@ -2509,9 +2510,9 @@ ProbingResult QuicChromiumClientSession::StartProbeNetwork(
   // Create and configure socket on |network|.
   std::unique_ptr<DatagramClientSocket> probing_socket =
       stream_factory_->CreateSocket(net_log_.net_log(), net_log_.source());
-  if (stream_factory_->ConfigureSocket(
-          probing_socket.get(), peer_address.impl().socket_address(), network,
-          session_key_.socket_tag()) != OK) {
+  if (stream_factory_->ConfigureSocket(probing_socket.get(),
+                                       ToIPEndPoint(peer_address), network,
+                                       session_key_.socket_tag()) != OK) {
     HistogramAndLogMigrationFailure(
         migration_net_log, MIGRATION_STATUS_INTERNAL_ERROR, connection_id(),
         "Socket configuration failed");

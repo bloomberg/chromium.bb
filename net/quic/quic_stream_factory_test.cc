@@ -27,6 +27,7 @@
 #include "net/http/http_util.h"
 #include "net/http/transport_security_state.h"
 #include "net/http/transport_security_state_test_util.h"
+#include "net/quic/address_utils.h"
 #include "net/quic/crypto/proof_verifier_chromium.h"
 #include "net/quic/mock_crypto_client_stream_factory.h"
 #include "net/quic/mock_quic_data.h"
@@ -9324,9 +9325,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceAndHostResolutionSync) {
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
   EXPECT_TRUE(stream.get());
   QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
-  EXPECT_EQ(
-      session->peer_address().impl().socket_address().ToStringWithoutPort(),
-      kNonCachedIPAddress);
+  EXPECT_EQ(session->peer_address().host().ToString(), kNonCachedIPAddress);
 
   EXPECT_TRUE(quic_data.AllReadDataConsumed());
   EXPECT_TRUE(quic_data.AllWriteDataConsumed());
@@ -9373,9 +9372,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceAndHostResolutionAsync) {
   EXPECT_TRUE(stream.get());
   QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
 
-  EXPECT_EQ(
-      session->peer_address().impl().socket_address().ToStringWithoutPort(),
-      kNonCachedIPAddress);
+  EXPECT_EQ(session->peer_address().host().ToString(), kNonCachedIPAddress);
 
   EXPECT_TRUE(quic_data.AllReadDataConsumed());
   EXPECT_TRUE(quic_data.AllWriteDataConsumed());
@@ -9431,9 +9428,8 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceHostResolveAsyncStaleMatch) {
 
   QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
 
-  EXPECT_EQ(
-      session->peer_address().impl().socket_address().ToStringWithoutPort(),
-      kCachedIPAddress.ToString());
+  EXPECT_EQ(session->peer_address().host().ToString(),
+            kCachedIPAddress.ToString());
 
   EXPECT_TRUE(quic_data.AllReadDataConsumed());
   EXPECT_TRUE(quic_data.AllWriteDataConsumed());
@@ -9499,9 +9495,8 @@ TEST_P(QuicStreamFactoryTest,
 
   QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
 
-  EXPECT_EQ(
-      session->peer_address().impl().socket_address().ToStringWithoutPort(),
-      kCachedIPAddress.ToString());
+  EXPECT_EQ(session->peer_address().host().ToString(),
+            kCachedIPAddress.ToString());
 
   EXPECT_TRUE(quic_data.AllReadDataConsumed());
   EXPECT_TRUE(quic_data.AllWriteDataConsumed());
@@ -9563,9 +9558,8 @@ TEST_P(QuicStreamFactoryTest,
   EXPECT_TRUE(stream.get());
 
   QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
-  EXPECT_EQ(
-      session->peer_address().impl().socket_address().ToStringWithoutPort(),
-      kCachedIPAddress.ToString());
+  EXPECT_EQ(session->peer_address().host().ToString(),
+            kCachedIPAddress.ToString());
 
   EXPECT_TRUE(quic_data.AllReadDataConsumed());
   EXPECT_TRUE(quic_data.AllWriteDataConsumed());
@@ -9634,9 +9628,7 @@ TEST_P(QuicStreamFactoryTest,
 
   QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
 
-  EXPECT_EQ(
-      session->peer_address().impl().socket_address().ToStringWithoutPort(),
-      kNonCachedIPAddress);
+  EXPECT_EQ(session->peer_address().host().ToString(), kNonCachedIPAddress);
 
   EXPECT_TRUE(quic_data.AllReadDataConsumed());
   EXPECT_TRUE(quic_data.AllWriteDataConsumed());
@@ -9708,9 +9700,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceStaleAsyncResolveAsyncNoMatch) {
   EXPECT_TRUE(stream.get());
 
   QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
-  EXPECT_EQ(
-      session->peer_address().impl().socket_address().ToStringWithoutPort(),
-      kNonCachedIPAddress);
+  EXPECT_EQ(session->peer_address().host().ToString(), kNonCachedIPAddress);
 
   EXPECT_TRUE(quic_data.AllReadDataConsumed());
   EXPECT_TRUE(quic_data.AllWriteDataConsumed());
@@ -9779,9 +9769,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceResolveAsyncStaleAsyncNoMatch) {
   EXPECT_TRUE(stream.get());
 
   QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
-  EXPECT_EQ(
-      session->peer_address().impl().socket_address().ToStringWithoutPort(),
-      kNonCachedIPAddress);
+  EXPECT_EQ(session->peer_address().host().ToString(), kNonCachedIPAddress);
 
   EXPECT_TRUE(quic_data.AllReadDataConsumed());
   EXPECT_TRUE(quic_data.AllWriteDataConsumed());
@@ -10002,9 +9990,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceStaleErrorDNSNoMatch) {
 
   QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
 
-  EXPECT_EQ(
-      session->peer_address().impl().socket_address().ToStringWithoutPort(),
-      kNonCachedIPAddress);
+  EXPECT_EQ(session->peer_address().host().ToString(), kNonCachedIPAddress);
 
   EXPECT_TRUE(quic_data2.AllReadDataConsumed());
   EXPECT_TRUE(quic_data2.AllWriteDataConsumed());

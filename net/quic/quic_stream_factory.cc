@@ -36,6 +36,7 @@
 #include "net/log/net_log_capture_mode.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source_type.h"
+#include "net/quic/address_utils.h"
 #include "net/quic/crypto/proof_verifier_chromium.h"
 #include "net/quic/properties_based_quic_server_info.h"
 #include "net/quic/quic_chromium_alarm_factory.h"
@@ -412,7 +413,7 @@ class QuicStreamFactory::Job {
   bool DoesPeerAddressMatchWithFreshAddressList() {
     std::vector<net::IPEndPoint> endpoints =
         fresh_resolve_host_request_->GetAddressResults().value().endpoints();
-    IPEndPoint stale_address = session_->peer_address().impl().socket_address();
+    IPEndPoint stale_address = ToIPEndPoint(session_->peer_address());
 
     if (std::find(endpoints.begin(), endpoints.end(), stale_address) !=
         endpoints.end()) {
@@ -889,8 +890,7 @@ int QuicStreamFactory::Job::DoConfirmConnection(int rv) {
   DCHECK(!factory_->HasActiveSession(key_.session_key()));
   // There may well now be an active session for this IP.  If so, use the
   // existing session instead.
-  AddressList address(
-      session_->connection()->peer_address().impl().socket_address());
+  AddressList address(ToIPEndPoint(session_->connection()->peer_address()));
   if (factory_->HasMatchingIpSession(key_, address)) {
     LogConnectionIpPooling(true);
     session_->connection()->CloseConnection(
@@ -1898,7 +1898,7 @@ void QuicStreamFactory::ActivateSession(const QuicSessionAliasKey& key,
   active_sessions_[key.session_key()] = session;
   session_aliases_[session].insert(key);
   const IPEndPoint peer_address =
-      session->connection()->peer_address().impl().socket_address();
+      ToIPEndPoint(session->connection()->peer_address());
   DCHECK(!base::ContainsKey(ip_aliases_[peer_address], session));
   ip_aliases_[peer_address].insert(session);
   DCHECK(!base::ContainsKey(session_peer_ip_, session));

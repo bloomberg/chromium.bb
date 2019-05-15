@@ -958,6 +958,7 @@ component("net") {
       "proxy_resolution/proxy_resolver_winhttp.cc",
       "proxy_resolution/proxy_resolver_winhttp.h",
       "proxy_resolution/proxy_retry_info.h",
+      "quic/address_utils.h",
       "quic/bidirectional_stream_quic_impl.cc",
       "quic/bidirectional_stream_quic_impl.h",
       "quic/crypto/proof_source_chromium.cc",
