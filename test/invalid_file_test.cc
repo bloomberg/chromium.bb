@@ -23,10 +23,13 @@ namespace {
 struct DecodeParam {
   int threads;
   const char *filename;
+  const char *res_filename;  // If NULL, the result filename is
+                             // filename + ".res".
 };
 
 std::ostream &operator<<(std::ostream &os, const DecodeParam &dp) {
-  return os << "threads: " << dp.threads << " file: " << dp.filename;
+  return os << "threads: " << dp.threads << " file: " << dp.filename
+            << " result file: " << dp.res_filename;
 }
 
 class InvalidFileTest : public ::libaom_test::DecoderTest,
@@ -98,8 +101,11 @@ class InvalidFileTest : public ::libaom_test::DecoderTest,
 
     // Construct result file name. The file holds a list of expected integer
     // results, one for each decoded frame.  Any result that doesn't match
-    // the files list will cause a test failure.
-    const std::string res_filename = filename + ".res";
+    // the file's list will cause a test failure.
+    std::string res_filename = filename + ".res";
+    if (input.res_filename != NULL) {
+      res_filename = input.res_filename;
+    }
     OpenResFile(res_filename);
 
     ASSERT_NO_FATAL_FAILURE(RunLoop(&decode_video, cfg));
@@ -111,24 +117,28 @@ class InvalidFileTest : public ::libaom_test::DecoderTest,
 
 TEST_P(InvalidFileTest, ReturnCode) { RunTest(); }
 
+// If res_filename (the third field) is NULL, then the result filename is
+// filename + ".res" by default. Set res_filename to a string if the result
+// filename differs from the default.
 const DecodeParam kAV1InvalidFileTests[] = {
-  { 1, "invalid-bug-1814.ivf" },
-  { 1, "invalid-chromium-906381.ivf" },
-  { 1, "invalid-oss-fuzz-9288.ivf" },
-  { 4, "invalid-oss-fuzz-9463.ivf" },
-  { 1, "invalid-oss-fuzz-9482.ivf" },
-  { 1, "invalid-oss-fuzz-9720.ivf" },
-  { 1, "invalid-oss-fuzz-10061.ivf" },
-  { 1, "invalid-oss-fuzz-10117-mc-buf-use-highbd.ivf" },
-  { 1, "invalid-oss-fuzz-10227.ivf" },
-  { 1, "invalid-oss-fuzz-10389.ivf" },
-  { 4, "invalid-oss-fuzz-10555.ivf" },
-  { 1, "invalid-oss-fuzz-10705.ivf" },
-  { 1, "invalid-oss-fuzz-10723.ivf" },
-  { 1, "invalid-oss-fuzz-10779.ivf" },
-  { 1, "invalid-oss-fuzz-11477.ivf" },
-  { 1, "invalid-oss-fuzz-11479.ivf" },
-  { 1, "invalid-oss-fuzz-11523.ivf" },
+  // { threads, filename, res_filename }
+  { 1, "invalid-bug-1814.ivf", NULL },
+  { 1, "invalid-chromium-906381.ivf", NULL },
+  { 1, "invalid-oss-fuzz-9288.ivf", NULL },
+  { 4, "invalid-oss-fuzz-9463.ivf", NULL },
+  { 1, "invalid-oss-fuzz-9482.ivf", NULL },
+  { 1, "invalid-oss-fuzz-9720.ivf", NULL },
+  { 1, "invalid-oss-fuzz-10061.ivf", NULL },
+  { 1, "invalid-oss-fuzz-10117-mc-buf-use-highbd.ivf", NULL },
+  { 1, "invalid-oss-fuzz-10227.ivf", NULL },
+  { 1, "invalid-oss-fuzz-10389.ivf", NULL },
+  { 4, "invalid-oss-fuzz-10555.ivf", NULL },
+  { 1, "invalid-oss-fuzz-10705.ivf", NULL },
+  { 1, "invalid-oss-fuzz-10723.ivf", NULL },
+  { 1, "invalid-oss-fuzz-10779.ivf", NULL },
+  { 1, "invalid-oss-fuzz-11477.ivf", NULL },
+  { 1, "invalid-oss-fuzz-11479.ivf", NULL },
+  { 1, "invalid-oss-fuzz-11523.ivf", NULL },
 };
 
 AV1_INSTANTIATE_TEST_CASE(InvalidFileTest,
