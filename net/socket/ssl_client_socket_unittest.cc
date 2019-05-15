@@ -811,8 +811,18 @@ class SSLClientSocketTest : public PlatformTest,
   }
 
  protected:
-  // The address of the spawned test server, after calling StartTestServer().
+  // The address of the test server, after calling StartEmbeddedTestServer() or
+  // StartTestServer().
   const AddressList& addr() const { return addr_; }
+
+  // The hostname of the test server, after calling StartEmbeddedTestServer() or
+  // StartTestServer().
+  const HostPortPair& host_port_pair() const { return host_port_pair_; }
+
+  // The EmbeddedTestServer object, after calling StartEmbeddedTestServer().
+  EmbeddedTestServer* embedded_test_server() {
+    return embedded_test_server_.get();
+  }
 
   // The SpawnedTestServer object, after calling StartTestServer().
   const SpawnedTestServer* spawned_test_server() const {
@@ -831,11 +841,39 @@ class SSLClientSocketTest : public PlatformTest,
     context_.ct_policy_enforcer = policy_enforcer;
   }
 
-  // Starts the test server with SSL configuration |ssl_options|. Returns true
+  // Starts the embedded test server with the specified parameters. Returns true
   // on success.
+  bool StartEmbeddedTestServer(EmbeddedTestServer::ServerCertificate cert,
+                               const SSLServerConfig& server_config) {
+    spawned_test_server_ = nullptr;
+    embedded_test_server_ =
+        std::make_unique<EmbeddedTestServer>(EmbeddedTestServer::TYPE_HTTPS);
+    RegisterEmbeddedTestServerHandlers(embedded_test_server_.get());
+    embedded_test_server_->SetSSLConfig(cert, server_config);
+    if (!embedded_test_server_->Start()) {
+      LOG(ERROR) << "Could not start EmbeddedTestServer";
+      return false;
+    }
+
+    if (!embedded_test_server_->GetAddressList(&addr_)) {
+      LOG(ERROR) << "Could not get EmbeddedTestServer address list";
+      return false;
+    }
+    host_port_pair_ = embedded_test_server_->host_port_pair();
+    return true;
+  }
+
+  // May be overridden by the subclass to customize the EmbeddedTestServer.
+  virtual void RegisterEmbeddedTestServerHandlers(EmbeddedTestServer* server) {
+    server->AddDefaultHandlers(base::FilePath());
+  }
+
+  // Starts the spawned test server with SSL configuration |ssl_options|.
+  // Returns true on success. Prefer StartEmbeddedTestServer().
   bool StartTestServer(const SpawnedTestServer::SSLOptions& ssl_options) {
-    spawned_test_server_.reset(new SpawnedTestServer(
-        SpawnedTestServer::TYPE_HTTPS, ssl_options, base::FilePath()));
+    embedded_test_server_ = nullptr;
+    spawned_test_server_ = std::make_unique<SpawnedTestServer>(
+        SpawnedTestServer::TYPE_HTTPS, ssl_options, base::FilePath());
     if (!spawned_test_server_->Start()) {
       LOG(ERROR) << "Could not start SpawnedTestServer";
       return false;
@@ -845,6 +883,7 @@ class SSLClientSocketTest : public PlatformTest,
       LOG(ERROR) << "Could not get SpawnedTestServer address list";
       return false;
     }
+    host_port_pair_ = spawned_test_server_->host_port_pair();
     return true;
   }
 
@@ -890,8 +929,8 @@ class SSLClientSocketTest : public PlatformTest,
 
   bool CreateAndConnectSSLClientSocket(const SSLConfig& ssl_config,
                                        int* result) {
-    return CreateAndConnectSSLClientSocketWithHost(
-        ssl_config, spawned_test_server()->host_port_pair(), result);
+    return CreateAndConnectSSLClientSocketWithHost(ssl_config, host_port_pair(),
+                                                   result);
   }
 
   // Adds the server certificate with provided cert status.
@@ -921,8 +960,10 @@ class SSLClientSocketTest : public PlatformTest,
 
  private:
   std::unique_ptr<SpawnedTestServer> spawned_test_server_;
+  std::unique_ptr<EmbeddedTestServer> embedded_test_server_;
   TestCompletionCallback callback_;
   AddressList addr_;
+  HostPortPair host_port_pair_;
 };
 
 enum ReadIfReadyTransport {
@@ -1278,30 +1319,20 @@ class SSLClientSocketZeroRTTTest : public SSLClientSocketTest {
   SSLClientSocketZeroRTTTest() : SSLClientSocketTest() {}
 
   bool StartServer() {
-    test_server_.reset(
-        new EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
     SSLServerConfig server_config;
     server_config.early_data_enabled = true;
     server_config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
-    test_server_->AddDefaultHandlers(base::FilePath());
-    test_server_->RegisterRequestHandler(
-        base::BindRepeating(&HandleZeroRTTRequest));
-    test_server_->SetSSLConfig(net::EmbeddedTestServer::CERT_OK, server_config);
-    if (!test_server_->Start()) {
-      LOG(ERROR) << "Could not start EmbeddedTestServer";
-      return false;
-    }
+    return StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, server_config);
+  }
 
-    if (!test_server_->GetAddressList(&address_)) {
-      LOG(ERROR) << "Could not get EmbeddedTestServer address list";
-      return false;
-    }
-    return true;
+  void RegisterEmbeddedTestServerHandlers(EmbeddedTestServer* server) override {
+    SSLClientSocketTest::RegisterEmbeddedTestServerHandlers(server);
+    server->RegisterRequestHandler(base::BindRepeating(&HandleZeroRTTRequest));
   }
 
   void SetServerConfig(SSLServerConfig server_config) {
-    test_server_->ResetSSLConfig(net::EmbeddedTestServer::CERT_OK,
-                                 server_config);
+    embedded_test_server()->ResetSSLConfig(net::EmbeddedTestServer::CERT_OK,
+                                           server_config);
   }
 
   FakeBlockingStreamSocket* MakeClient(bool early_data_enabled) {
@@ -1310,7 +1341,7 @@ class SSLClientSocketZeroRTTTest : public SSLClientSocketTest {
     ssl_config.early_data_enabled = early_data_enabled;
 
     real_transport_.reset(
-        new TCPClientSocket(address_, nullptr, nullptr, NetLogSource()));
+        new TCPClientSocket(addr(), nullptr, nullptr, NetLogSource()));
     std::unique_ptr<FakeBlockingStreamSocket> transport(
         new FakeBlockingStreamSocket(std::move(real_transport_)));
     FakeBlockingStreamSocket* raw_transport = transport.get();
@@ -1318,8 +1349,8 @@ class SSLClientSocketZeroRTTTest : public SSLClientSocketTest {
     int rv = callback_.GetResult(transport->Connect(callback_.callback()));
     EXPECT_THAT(rv, IsOk());
 
-    ssl_socket_ = CreateSSLClientSocket(
-        std::move(transport), test_server_->host_port_pair(), ssl_config);
+    ssl_socket_ = CreateSSLClientSocket(std::move(transport), host_port_pair(),
+                                        ssl_config);
     EXPECT_FALSE(ssl_socket_->IsConnected());
 
     return raw_transport;
@@ -1371,8 +1402,6 @@ class SSLClientSocketZeroRTTTest : public SSLClientSocketTest {
   SSLClientSocket* ssl_socket() { return ssl_socket_.get(); }
 
  private:
-  std::unique_ptr<EmbeddedTestServer> test_server_;
-  AddressList address_;
   TestCompletionCallback callback_;
   std::unique_ptr<StreamSocket> real_transport_;
   std::unique_ptr<SSLClientSocket> ssl_socket_;
