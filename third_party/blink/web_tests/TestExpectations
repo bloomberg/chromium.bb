@@ -1411,6 +1411,7 @@ crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/css
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/css-flexbox-row-reverse-wrap-reverse.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/css-flexbox-row-wrap-reverse.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-align-items-center.html [ Failure ]
+crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-aspect-ratio-img-column-004.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-basis-010.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-direction-with-element-insert.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flex-direction.html [ Failure ]

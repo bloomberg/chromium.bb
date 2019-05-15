@@ -849,6 +849,14 @@ LayoutUnit LayoutFlexibleBox::ComputeInnerFlexBaseSizeForChild(
                                       main_axis_border_scrollbar_padding));
   }
 
+  if (UseChildAspectRatio(child)) {
+    const Length& cross_size_length = IsHorizontalFlow()
+                                          ? child.StyleRef().Height()
+                                          : child.StyleRef().Width();
+    return ComputeMainSizeFromAspectRatioUsing(child, cross_size_length) -
+           main_axis_border_scrollbar_padding;
+  }
+
   // The flex basis is indefinite (=auto), so we need to compute the actual
   // width of the child. For the logical width axis we just use the preferred
   // width; for the height we need to lay out the child.
