@@ -8,6 +8,9 @@ import("//build/config/android/rules.gni")
 # in two different targets.
 android_library("webview_license_provider_java") {
   java_files = [ "//android_webview/apk/java/src/com/android/webview/chromium/LicenseContentProvider.java" ]
+  deps = [
+    "//base:base_java",
+  ]
 }
 
 android_library("webview_license_activity_java") {

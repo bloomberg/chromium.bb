@@ -14,6 +14,8 @@ import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
 
+import org.chromium.base.FileUtils;
+
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -49,11 +51,7 @@ public class LicenseContentProvider
             ParcelFileDescriptor output, Uri uri, String mimeType, Bundle opts, String filename) {
         try (InputStream in = getContext().getAssets().open(filename);
                 OutputStream out = new FileOutputStream(output.getFileDescriptor());) {
-            byte[] buf = new byte[8192];
-            int size = -1;
-            while ((size = in.read(buf)) != -1) {
-                out.write(buf, 0, size);
-            }
+            FileUtils.copyStream(in, out);
         } catch (IOException e) {
             Log.e(TAG, "Failed to read the license file", e);
         }

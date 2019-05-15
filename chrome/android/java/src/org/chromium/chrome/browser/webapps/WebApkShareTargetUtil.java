@@ -17,12 +17,12 @@ import org.json.JSONException;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.FileUtils;
 import org.chromium.base.StrictModeContext;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.net.MimeTypeFilter;
 import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -87,14 +87,7 @@ public class WebApkShareTargetUtil {
         try (InputStream inputStream =
                         ContextUtils.getApplicationContext().getContentResolver().openInputStream(
                                 uri)) {
-            ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
-            byte[] buffer = new byte[1024];
-
-            int len;
-            while ((len = inputStream.read(buffer)) != -1) {
-                byteBuffer.write(buffer, 0, len);
-            }
-            return byteBuffer.toByteArray();
+            return FileUtils.readStream(inputStream);
         } catch (IOException e) {
             return null;
         }

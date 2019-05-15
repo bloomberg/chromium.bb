@@ -747,8 +747,7 @@ public class LibraryLoader {
                     throw new RuntimeException("Cannot find ZipEntry" + pathWithinApk);
                 InputStream inputStream = zipFile.getInputStream(zipEntry);
 
-                FileUtils.copyFileStreamAtomicWithBuffer(
-                        inputStream, libraryFile, new byte[16 * 1024]);
+                FileUtils.copyStreamToFile(inputStream, libraryFile);
                 libraryFile.setReadable(true, false);
                 libraryFile.setExecutable(true, false);
             } catch (IOException e) {

@@ -8,6 +8,7 @@ import android.content.Context;
 import android.util.SparseArray;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.FileUtils;
 import org.chromium.base.Log;
 import org.chromium.base.StreamUtil;
 import org.chromium.base.task.AsyncTask;
@@ -19,7 +20,6 @@ import org.chromium.chrome.browser.tabmodel.document.DocumentTabModel.Entry;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelInfo.DocumentEntry;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelInfo.DocumentList;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -39,9 +39,6 @@ public class StorageDelegate extends TabPersister {
 
     /** Directory to store TabState files in. */
     private static final String STATE_DIRECTORY = "ChromeDocumentActivity";
-
-    /** The buffer size to use when reading the DocumentTabModel file, set to 4k bytes. */
-    private static final int BUF_SIZE = 0x1000;
 
     /** Cached base state directory to prevent main-thread filesystem access in getStateDirectory().
      */
@@ -69,15 +66,7 @@ public class StorageDelegate extends TabPersister {
         try {
             String filename = getFilename(encrypted);
             streamIn = ContextUtils.getApplicationContext().openFileInput(filename);
-
-            // Read the file from the file into the out stream.
-            ByteArrayOutputStream streamOut = new ByteArrayOutputStream();
-            byte[] buf = new byte[BUF_SIZE];
-            int r;
-            while ((r = streamIn.read(buf)) != -1) {
-                streamOut.write(buf, 0, r);
-            }
-            bytes = streamOut.toByteArray();
+            bytes = FileUtils.readStream(streamIn);
         } catch (FileNotFoundException e) {
             Log.e(TAG, "DocumentTabModel file not found.");
         } catch (IOException e) {

@@ -384,9 +384,6 @@ public class ModuleLoader {
      * A task for creating module {@link ClassLoader}.
      */
     private class ClassLoaderTask extends AsyncTask<ClassLoader> {
-        /** Buffer size to use while copying an input stream into the disk. */
-        private static final int BUFFER_SIZE = 16 * 1024;
-
         @Override
         @Nullable
         protected ClassLoader doInBackground() {
@@ -453,7 +450,7 @@ public class ModuleLoader {
         private void copyDexToDisk(String dexAssetName) throws IOException {
             InputStream in =
                     mDexInputStreamProvider.createInputStream(dexAssetName, mModuleContext);
-            FileUtils.copyFileStreamAtomicWithBuffer(in, getDexFile(), new byte[BUFFER_SIZE]);
+            FileUtils.copyStreamToFile(in, getDexFile());
         }
 
         private ClassLoader getModuleClassLoader(boolean loadFromDex) {

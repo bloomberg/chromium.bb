@@ -6,10 +6,10 @@ package org.chromium.chrome.test.util;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.support.v4.content.ContextCompat;
 
+import org.chromium.base.FileUtils;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
@@ -42,17 +42,11 @@ public final class ApplicationData {
     public static void clearAppData(final Context targetContext) {
         CriteriaHelper.pollInstrumentationThread(
                 new Criteria() {
-                    private boolean mDataRemoved;
-
-                    // The lint check for calling apply() rather than commit() on a shared pref
-                    // was recently renamed.
-                    @SuppressLint({"ApplySharedPref", "CommitPrefEdits"})
                     @Override
                     public boolean isSatisfied() {
-                        if (!mDataRemoved && !removeAppData(targetContext)) {
+                        if (!removeAppData(targetContext)) {
                             return false;
                         }
-                        mDataRemoved = true;
                         // We have to make sure the cache directory still exists, as the framework
                         // will try to create it otherwise and will fail for sandbox processes with
                         // a NullPointerException.
@@ -65,8 +59,6 @@ public final class ApplicationData {
 
     /**
      * Remove all files and directories under the given application directory, except 'lib'.
-     *
-     * @return whether removal succeeded.
      */
     private static boolean removeAppData(final Context targetContext) {
         File dataDir = ContextCompat.getDataDir(targetContext);
@@ -90,7 +82,7 @@ public final class ApplicationData {
                 removeSharedPrefs(file);
                 continue;
             }
-            if (!removeFile(file)) {
+            if (!FileUtils.recursivelyDeleteFile(file)) {
                 return false;
             }
         }
@@ -104,23 +96,5 @@ public final class ApplicationData {
                 f.delete();
             }
         }
-    }
-
-    /**
-     * Remove the given file or directory.
-     *
-     * @param file the file or directory to remove.
-     *
-     * @return whether removal succeeded.
-     */
-    private static boolean removeFile(File file) {
-        if (file.isDirectory()) {
-            File[] files = file.listFiles();
-            if (files == null) return true;
-            for (File sub_file : files) {
-                if (!removeFile(sub_file)) return false;
-            }
-        }
-        return file.delete();
     }
 }
