@@ -14,6 +14,10 @@
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   using namespace inspector_protocol_encoding;
 
+  if (size > 64 * 1024) {
+    return 0;
+  }
+
   span<uint8_t> fuzz{data, size};
 
   // We need to handle whatever the parser parses. So, we handle the parsed

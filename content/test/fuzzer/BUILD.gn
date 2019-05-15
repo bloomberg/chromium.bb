@@ -147,7 +147,6 @@ fuzzer_test("inspector_fuzzer") {
     "//third_party/inspector_protocol:encoding",
   ]
   seed_corpus = "//components/cbor/reader_fuzzer_corpus/"
-  libfuzzer_options = [ "max_len=65535" ]
 }
 
 fuzzer_test("http_structured_header_fuzzer") {
