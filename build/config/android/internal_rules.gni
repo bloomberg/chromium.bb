@@ -1502,7 +1502,7 @@ if (enable_java_templates) {
                                "testonly",
                              ])
 
-      _source_dirs_listing_file = "$target_out_dir/${target_name}_sources.txt"
+      _sources_json_file = "$target_out_dir/${target_name}_sources.json"
       _jacococli_jar = "//third_party/jacoco/lib/jacococli.jar"
 
       script = "//build/android/gyp/jacoco_instr.py"
@@ -1511,7 +1511,7 @@ if (enable_java_templates) {
                  invoker.input_jar_path,
                ]
       outputs = [
-        _source_dirs_listing_file,
+        _sources_json_file,
         invoker.output_jar_path,
       ]
       args = [
@@ -1519,8 +1519,8 @@ if (enable_java_templates) {
         rebase_path(invoker.input_jar_path, root_build_dir),
         "--output-path",
         rebase_path(invoker.output_jar_path, root_build_dir),
-        "--sources-list-file",
-        rebase_path(_source_dirs_listing_file, root_build_dir),
+        "--sources-json-file",
+        rebase_path(_sources_json_file, root_build_dir),
         "--java-sources-file",
         rebase_path(invoker.java_sources_file, root_build_dir),
         "--jacococli-jar",

@@ -34,18 +34,19 @@ def _AddArguments(parser):
   parser.add_argument(
       '--input-path',
       required=True,
-      help=('Path to input file(s). Either the classes '
-            'directory, or the path to a jar.'))
+      help='Path to input file(s). Either the classes '
+      'directory, or the path to a jar.')
   parser.add_argument(
       '--output-path',
       required=True,
-      help=('Path to output final file(s) to. Either the '
-            'final classes directory, or the directory in '
-            'which to place the instrumented/copied jar.'))
+      help='Path to output final file(s) to. Either the '
+      'final classes directory, or the directory in '
+      'which to place the instrumented/copied jar.')
   parser.add_argument(
-      '--sources-list-file',
+      '--sources-json-file',
       required=True,
-      help='File to create with the list of sources.')
+      help='File to create with the list of source directories '
+      'and input path.')
   parser.add_argument(
       '--java-sources-file',
       required=True,
@@ -66,12 +67,16 @@ def _GetSourceDirsFromSourceFiles(source_files):
   return list(set(os.path.dirname(source_file) for source_file in source_files))
 
 
-def _CreateSourcesListFile(source_dirs, sources_list_file, src_root):
-  """Adds all normalized source directories to |sources_list_file|.
+def _CreateSourcesJsonFile(source_dirs, input_path, sources_json_file,
+                           src_root):
+  """Adds all normalized source directories and input path to
+  |sources_json_file|.
 
   Args:
     source_dirs: List of source directories.
-    sources_list_file: File into which to write the JSON list of sources.
+    input_path: The input path to non-instrumented class files.
+    sources_json_file: File into which to write the list of source directories
+    and input path.
     src_root: Root which sources added to the file should be relative to.
 
   Returns:
@@ -89,8 +94,11 @@ def _CreateSourcesListFile(source_dirs, sources_list_file, src_root):
 
     relative_sources.append(rel_source)
 
-  with open(sources_list_file, 'w') as f:
-    json.dump(relative_sources, f)
+  data = {}
+  data['source_dirs'] = relative_sources
+  data['input_path'] = os.path.abspath(input_path)
+  with open(sources_json_file, 'w') as f:
+    json.dump(data, f)
 
 
 def _RunInstrumentCommand(parser):
@@ -134,7 +142,7 @@ def _RunInstrumentCommand(parser):
   # TODO(GYP): In GN, we are passed the list of sources, detecting source
   # directories, then walking them to re-establish the list of sources.
   # This can obviously be simplified!
-  _CreateSourcesListFile(source_dirs, args.sources_list_file,
+  _CreateSourcesJsonFile(source_dirs, args.input_path, args.sources_json_file,
                          build_utils.DIR_SOURCE_ROOT)
 
   return 0
