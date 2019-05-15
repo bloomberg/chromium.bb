@@ -16,7 +16,6 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/test/browser_test_utils.h"
-#include "ui/aura/test/mus/change_completion_waiter.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -345,7 +344,6 @@ class KeyboardEndToEndOverscrollTest : public KeyboardEndToEndTest {
 IN_PROC_BROWSER_TEST_F(KeyboardEndToEndOverscrollTest,
                        ToggleKeyboardOnMaximizedWindowAffectsViewport) {
   browser()->window()->Maximize();
-  aura::test::WaitForAllChangesToComplete();
 
   const int old_height = GetViewportHeight(web_contents_);
 
@@ -368,7 +366,6 @@ IN_PROC_BROWSER_TEST_F(
   gfx::Size screen_bounds = GetScreenBounds();
   browser()->window()->SetBounds(
       gfx::Rect(0, 0, screen_bounds.width(), screen_bounds.height() / 2));
-  aura::test::WaitForAllChangesToComplete();
 
   const int old_height = GetViewportHeight(web_contents_);
 
@@ -393,8 +390,6 @@ IN_PROC_BROWSER_TEST_F(
   browser()->window()->SetBounds(gfx::Rect(0, screen_bounds.height() / 2,
                                            screen_bounds.width(),
                                            screen_bounds.height() / 2));
-  aura::test::WaitForAllChangesToComplete();
-
   const auto old_browser_bounds = browser()->window()->GetBounds();
   const int old_height = GetViewportHeight(web_contents_);
 
@@ -423,8 +418,6 @@ IN_PROC_BROWSER_TEST_F(
   browser()->window()->SetBounds(gfx::Rect(0, screen_bounds.height() / 3,
                                            screen_bounds.width(),
                                            screen_bounds.height() / 3 * 2));
-  aura::test::WaitForAllChangesToComplete();
-
   const auto old_browser_bounds = browser()->window()->GetBounds();
   const int old_height = GetViewportHeight(web_contents_);
 

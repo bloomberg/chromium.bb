@@ -99,7 +99,6 @@
 #include "chromeos/services/device_sync/device_sync_impl.h"
 #include "chromeos/services/device_sync/fake_device_sync.h"
 #include "components/user_manager/user_names.h"
-#include "ui/aura/test/mus/change_completion_waiter.h"
 #include "ui/events/test/event_generator.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -386,9 +385,6 @@ void InProcessBrowserTest::CloseBrowserSynchronously(Browser* browser) {
       chrome::NOTIFICATION_BROWSER_CLOSED, content::Source<Browser>(browser));
   CloseBrowserAsynchronously(browser);
   observer.Wait();
-#if defined(OS_CHROMEOS)
-  aura::test::WaitForAllChangesToComplete();
-#endif
 }
 
 void InProcessBrowserTest::CloseBrowserAsynchronously(Browser* browser) {

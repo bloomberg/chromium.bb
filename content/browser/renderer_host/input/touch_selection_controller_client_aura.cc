@@ -80,10 +80,8 @@ class TouchSelectionControllerClientAura::EnvEventObserver
       // Check IsMouseEventsEnabled, except on Mus, where it's disabled on touch
       // events in this client, but not re-enabled on mouse events elsewhere.
       auto* cursor = aura::client::GetCursorClient(window_->GetRootWindow());
-      if (cursor && !cursor->IsMouseEventsEnabled() &&
-          aura::Env::GetInstance()->mode() != aura::Env::Mode::MUS) {
+      if (cursor && !cursor->IsMouseEventsEnabled())
         return;
-      }
 
       // Windows OS unhandled WM_POINTER* may be redispatched as WM_MOUSE*.
       // Avoid adjusting the handles on synthesized events or events generated

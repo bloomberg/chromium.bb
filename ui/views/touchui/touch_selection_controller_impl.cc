@@ -226,10 +226,6 @@ class TouchSelectionControllerImpl::EditingHandleView
 
     targeter_ = new aura::WindowTargeter();
     aura::Window* window = widget_->GetNativeWindow();
-    // For Mus clients, adjust targeting of the handle's client root window,
-    // constructed by the window server for the handle's "content" window.
-    if (window->env()->mode() == aura::Env::Mode::MUS)
-      window = window->GetRootWindow();
     window->SetEventTargeter(std::unique_ptr<aura::WindowTargeter>(targeter_));
 
     // We are owned by the TouchSelectionControllerImpl.
@@ -639,14 +635,10 @@ void TouchSelectionControllerImpl::OnWidgetBoundsChanged(
 
 void TouchSelectionControllerImpl::OnEvent(const ui::Event& event) {
   if (event.IsMouseEvent()) {
-    // Check IsMouseEventsEnabled, except on Mus, where it's disabled on touch
-    // events in this client, but not re-enabled on mouse events elsewhere.
     auto* cursor = aura::client::GetCursorClient(
         client_view_->GetNativeView()->GetRootWindow());
-    if (cursor && !cursor->IsMouseEventsEnabled() &&
-        aura::Env::GetInstance()->mode() != aura::Env::Mode::MUS) {
+    if (cursor && !cursor->IsMouseEventsEnabled())
       return;
-    }
 
     // Windows OS unhandled WM_POINTER* may be redispatched as WM_MOUSE*.
     // Avoid adjusting the handles on synthesized events or events generated

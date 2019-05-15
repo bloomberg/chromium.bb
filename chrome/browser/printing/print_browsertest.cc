@@ -37,10 +37,6 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
-#if defined(OS_CHROMEOS)
-#include "ui/aura/env.h"
-#endif
-
 namespace printing {
 
 namespace {
@@ -578,12 +574,6 @@ IN_PROC_BROWSER_TEST_F(IsolateOriginsPrintBrowserTest, OopifPrinting) {
 // Printing an extension option page.
 // The test should not crash or timeout.
 IN_PROC_BROWSER_TEST_F(PrintExtensionBrowserTest, PrintOptionPage) {
-#if defined(OS_CHROMEOS)
-  // Mus can not support this test now https://crbug.com/823782.
-  if (aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS)
-    return;
-#endif
-
   LoadExtensionAndNavigateToOptionPage();
   PrintAndWaitUntilPreviewIsReady(/*print_only_selection=*/false);
 }
@@ -592,12 +582,6 @@ IN_PROC_BROWSER_TEST_F(PrintExtensionBrowserTest, PrintOptionPage) {
 // The test should not crash or timeout.
 IN_PROC_BROWSER_TEST_F(SitePerProcessPrintExtensionBrowserTest,
                        PrintOptionPage) {
-#if defined(OS_CHROMEOS)
-  // Mus can not support this test now https://crbug.com/823782.
-  if (aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS)
-    return;
-#endif
-
   LoadExtensionAndNavigateToOptionPage();
   PrintAndWaitUntilPreviewIsReady(/*print_only_selection=*/false);
 }

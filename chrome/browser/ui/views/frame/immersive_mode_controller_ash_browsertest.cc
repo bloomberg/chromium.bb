@@ -30,7 +30,6 @@
 #include "net/cert/mock_cert_verifier.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/test/mus/change_completion_waiter.h"
 #include "ui/views/animation/test/ink_drop_host_view_test_api.h"
 #include "ui/views/window/frame_caption_button.h"
 
@@ -226,7 +225,6 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest,
 
   // Verify that after minimizing, immersive mode is disabled.
   browser()->window()->Minimize();
-  aura::test::WaitForAllChangesToComplete();
   EXPECT_TRUE(browser()->window()->IsMinimized());
   EXPECT_FALSE(controller()->IsEnabled());
 

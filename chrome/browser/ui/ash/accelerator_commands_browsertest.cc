@@ -24,7 +24,6 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/test/mus/change_completion_waiter.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/ui_base_features.h"
@@ -48,13 +47,6 @@ class MaximizableWidgetDelegate : public views::WidgetDelegateView {
  private:
   DISALLOW_COPY_AND_ASSIGN(MaximizableWidgetDelegate);
 };
-
-// Tells Ash to toggle fullscreen as if the user had pressed the hardware
-// fullscreen key.
-void ToggleFullscreen() {
-  ash::ShellTestApi().ToggleFullscreen();
-  aura::test::WaitForAllChangesToComplete();
-}
 
 bool IsInImmersive(aura::Window* window) {
   aura::Window* toplevel =
@@ -107,24 +99,20 @@ IN_PROC_BROWSER_TEST_P(AcceleratorCommandsFullscreenBrowserTest,
   SetToInitialShowState(widget);
   EXPECT_TRUE(IsInitialShowState(widget));
 
-  // Wait for Ash to become aware of active widget.
-  aura::test::WaitForAllChangesToComplete();
-
-  ToggleFullscreen();
+  ash::ShellTestApi().ToggleFullscreen();
   EXPECT_TRUE(IsInImmersive(window));
 
-  ToggleFullscreen();
+  ash::ShellTestApi().ToggleFullscreen();
   EXPECT_FALSE(IsInImmersive(window));
   EXPECT_TRUE(IsInitialShowState(widget));
 
-  // 2) ToggleFullscreen() should have no effect on windows which cannot be
-  // maximized.
+  // 2) ash::ShellTestApi().ToggleFullscreen() should have no effect on windows
+  // which cannot be maximized.
   aura::Window* toplevel =
       features::IsUsingWindowService() ? window->GetRootWindow() : window;
   toplevel->SetProperty(aura::client::kResizeBehaviorKey,
                         ws::mojom::kResizeBehaviorNone);
-  aura::test::WaitForAllChangesToComplete();
-  ToggleFullscreen();
+  ash::ShellTestApi().ToggleFullscreen();
   EXPECT_TRUE(IsInitialShowState(widget));
 
   // 3) Hosted apps.
@@ -142,13 +130,10 @@ IN_PROC_BROWSER_TEST_P(AcceleratorCommandsFullscreenBrowserTest,
   SetToInitialShowState(widget);
   EXPECT_TRUE(IsInitialShowState(widget));
 
-  // Wait for Ash to become aware of active widget.
-  aura::test::WaitForAllChangesToComplete();
-
-  ToggleFullscreen();
+  ash::ShellTestApi().ToggleFullscreen();
   EXPECT_TRUE(IsInImmersive(window));
 
-  ToggleFullscreen();
+  ash::ShellTestApi().ToggleFullscreen();
   EXPECT_FALSE(IsInImmersive(window));
   EXPECT_TRUE(IsInitialShowState(widget));
 
@@ -165,13 +150,10 @@ IN_PROC_BROWSER_TEST_P(AcceleratorCommandsFullscreenBrowserTest,
   SetToInitialShowState(widget);
   EXPECT_TRUE(IsInitialShowState(widget));
 
-  // Wait for Ash to become aware of active widget.
-  aura::test::WaitForAllChangesToComplete();
-
-  ToggleFullscreen();
+  ash::ShellTestApi().ToggleFullscreen();
   EXPECT_TRUE(IsInImmersive(window));
 
-  ToggleFullscreen();
+  ash::ShellTestApi().ToggleFullscreen();
   EXPECT_FALSE(IsInImmersive(window));
   EXPECT_TRUE(IsInitialShowState(widget));
 
@@ -189,13 +171,10 @@ IN_PROC_BROWSER_TEST_P(AcceleratorCommandsFullscreenBrowserTest,
   SetToInitialShowState(widget);
   EXPECT_TRUE(IsInitialShowState(widget));
 
-  // Wait for Ash to become aware of active widget.
-  aura::test::WaitForAllChangesToComplete();
-
-  ToggleFullscreen();
+  ash::ShellTestApi().ToggleFullscreen();
   EXPECT_TRUE(IsInImmersive(window));
 
-  ToggleFullscreen();
+  ash::ShellTestApi().ToggleFullscreen();
   EXPECT_FALSE(IsInImmersive(window));
   EXPECT_TRUE(IsInitialShowState(widget));
 
@@ -261,14 +240,11 @@ IN_PROC_BROWSER_TEST_P(AcceleratorCommandsPlatformAppFullscreenBrowserTest,
     ASSERT_TRUE(app_window->GetBaseWindow()->IsActive());
     EXPECT_TRUE(IsInitialShowState(app_window));
 
-    // Wait for Ash to become aware of active widget.
-    aura::test::WaitForAllChangesToComplete();
-
-    ToggleFullscreen();
+    ash::ShellTestApi().ToggleFullscreen();
     EXPECT_TRUE(native_app_window->IsFullscreen());
     EXPECT_TRUE(IsInImmersive(native_app_window->GetNativeWindow()));
 
-    ToggleFullscreen();
+    ash::ShellTestApi().ToggleFullscreen();
     EXPECT_FALSE(native_app_window->IsFullscreen());
     EXPECT_TRUE(IsInitialShowState(app_window));
 
@@ -288,14 +264,11 @@ IN_PROC_BROWSER_TEST_P(AcceleratorCommandsPlatformAppFullscreenBrowserTest,
     SetToInitialShowState(app_window);
     EXPECT_TRUE(IsInitialShowState(app_window));
 
-    // Wait for Ash to become aware of active widget.
-    aura::test::WaitForAllChangesToComplete();
-
-    ToggleFullscreen();
+    ash::ShellTestApi().ToggleFullscreen();
     EXPECT_TRUE(native_app_window->IsFullscreen());
     EXPECT_FALSE(IsInImmersive(native_app_window->GetNativeWindow()));
 
-    ToggleFullscreen();
+    ash::ShellTestApi().ToggleFullscreen();
     EXPECT_FALSE(native_app_window->IsFullscreen());
     EXPECT_TRUE(IsInitialShowState(app_window));
 

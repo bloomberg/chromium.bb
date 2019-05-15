@@ -62,7 +62,6 @@
 #include "services/ws/common/util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/env_test_helper.h"
-#include "ui/aura/test/mus/change_completion_waiter.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/ui_base_features.h"
@@ -134,14 +133,8 @@ class MultiProfileSupportTest : public ChromeAshTestBase {
 
  protected:
   void SwitchActiveUser(const AccountId& id) {
-    // WaitForAllChangesToComplete() does nothing in classic mode.
-    // WaitForAllChangesToComplete() is called before and after to ensure all
-    // changes have been pushed to ash before a switch, and similarly after a
-    // switch.
-    aura::test::WaitForAllChangesToComplete();
     fake_user_manager_->SwitchActiveUser(id);
     ash::MultiUserWindowManagerImpl::Get()->OnActiveUserSessionChanged(id);
-    aura::test::WaitForAllChangesToComplete();
   }
 
   // Set up the test environment for this many windows.

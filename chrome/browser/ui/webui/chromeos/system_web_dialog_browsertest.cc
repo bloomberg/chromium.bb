@@ -23,7 +23,6 @@
 #include "content/public/common/web_preferences.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/test/mus/change_completion_waiter.h"
 #include "ui/base/ui_base_features.h"
 #include "url/gurl.h"
 
@@ -33,15 +32,6 @@ namespace {
 
 constexpr char kTestUser[] = "test-user@gmail.com";
 constexpr char kTestUserGaiaId[] = "1234567890";
-
-// Returns whether a system modal window (e.g. modal dialog) is open. Blocks
-// until the ash service responds.
-bool IsSystemModalWindowOpen() {
-  // Wait for window visibility to stabilize.
-  aura::test::WaitForAllChangesToComplete();
-
-  return ash::ShellTestApi().IsSystemModalWindowOpen();
-}
 
 class MockSystemWebDialog : public SystemWebDialogDelegate {
  public:
@@ -77,7 +67,7 @@ class SystemWebDialogLoginTest : public LoginManagerTest {
 IN_PROC_BROWSER_TEST_F(SystemWebDialogLoginTest, ModalTest) {
   auto* dialog = new MockSystemWebDialog();
   dialog->ShowSystemDialog();
-  EXPECT_TRUE(IsSystemModalWindowOpen());
+  EXPECT_TRUE(ash::ShellTestApi().IsSystemModalWindowOpen());
 }
 
 IN_PROC_BROWSER_TEST_F(SystemWebDialogLoginTest, PRE_NonModalTest) {
@@ -90,7 +80,7 @@ IN_PROC_BROWSER_TEST_F(SystemWebDialogLoginTest, NonModalTest) {
   LoginUser(AccountId::FromUserEmailGaiaId(kTestUser, kTestUserGaiaId));
   auto* dialog = new MockSystemWebDialog();
   dialog->ShowSystemDialog();
-  EXPECT_FALSE(IsSystemModalWindowOpen());
+  EXPECT_FALSE(ash::ShellTestApi().IsSystemModalWindowOpen());
   aura::Window* window_to_test = dialog->dialog_window();
   // In Mash, the AlwaysOnTop property will be set on the parent.
   if (::features::IsUsingWindowService())

@@ -167,7 +167,6 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "ui/aura/env.h"
 #include "ui/aura/test/test_screen.h"
 #endif
 
@@ -962,9 +961,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHighDPIBrowserTest,
 #if defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                        SubframeUpdateToCorrectDeviceScaleFactor) {
-  if (aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS)
-    return;
-
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));

@@ -29,7 +29,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_observer.h"
@@ -109,10 +108,6 @@ bool IsAllowedStateTransition(KeyboardControllerState from,
 }
 
 void SetTouchEventLogging(bool enable) {
-  // TODO(moshayedi): crbug.com/642863. Revisit when we have mojo interface for
-  // InputController for processes that aren't mus-ws.
-  if (aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS)
-    return;
   ui::InputController* controller =
       ui::OzonePlatform::GetInstance()->GetInputController();
   if (controller)

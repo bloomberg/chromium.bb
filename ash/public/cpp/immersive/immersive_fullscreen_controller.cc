@@ -317,10 +317,7 @@ void ImmersiveFullscreenController::EnableEventObservers(bool enable) {
   event_observers_enabled_ = enable;
 
   aura::Window* window = widget_->GetNativeWindow();
-  // For Mash, handle events sent to the Mus client's root window.
-  if (window->env()->mode() == aura::Env::Mode::MUS)
-    window = window->GetRootWindow();
-  aura::Env* env = window->env();
+  aura::Env* env = aura::Env::GetInstance();
   if (enable) {
     immersive_focus_watcher_ = std::make_unique<ImmersiveFocusWatcher>(this);
     std::set<ui::EventType> types = {

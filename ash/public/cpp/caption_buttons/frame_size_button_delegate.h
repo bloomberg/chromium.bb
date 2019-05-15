@@ -8,10 +8,6 @@
 #include "ash/public/cpp/ash_public_export.h"
 #include "ui/views/window/caption_button_types.h"
 
-namespace aura {
-class Window;
-}
-
 namespace gfx {
 class Point;
 }
@@ -52,9 +48,6 @@ class ASH_PUBLIC_EXPORT FrameSizeButtonDelegate {
   virtual void SetHoveredAndPressedButtons(
       const views::FrameCaptionButton* to_hover,
       const views::FrameCaptionButton* to_press) = 0;
-
-  // Returns the top level aura::Window that the buttons act on.
-  virtual aura::Window* GetFrameWindow() = 0;
 
   // Thunks to methods of the same name in FrameCaptionDelegate.
   virtual bool CanSnap() = 0;

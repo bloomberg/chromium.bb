@@ -84,8 +84,6 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/screen_position_client.h"
-#include "ui/aura/mus/window_mus.h"
-#include "ui/aura/test/mus/change_completion_waiter.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/display/manager/display_manager.h"
@@ -154,9 +152,6 @@ class QuitDraggingObserver : public content::NotificationObserver {
 
   void Wait() {
     run_loop_.Run();
-#if defined(OS_CHROMEOS)
-    aura::test::WaitForAllChangesToComplete();
-#endif
   }
 
  private:
@@ -227,9 +222,6 @@ void TabDragControllerTest::AddTabAndResetBrowser(Browser* browser) {
   AddBlankTabAndShow(browser);
   StopAnimating(GetTabStripForBrowser(browser));
   ResetIDs(browser->tab_strip_model(), 0);
-#if defined(OS_CHROMEOS)
-  aura::test::WaitForAllChangesToComplete();
-#endif
 }
 
 Browser* TabDragControllerTest::CreateAnotherBrowserAndResize() {
@@ -246,9 +238,6 @@ Browser* TabDragControllerTest::CreateAnotherBrowserAndResize() {
   browser()->window()->SetBounds(browser_rect);
   browser_rect.set_x(browser_rect.right());
   browser2->window()->SetBounds(browser_rect);
-#if defined(OS_CHROMEOS)
-  aura::test::WaitForAllChangesToComplete();
-#endif
   return browser2;
 }
 
@@ -425,7 +414,6 @@ class DetachToBrowserTabDragControllerTest
     // tests' touch events.
     ui::GestureConfiguration::GetInstance()->set_min_fling_velocity(
         std::numeric_limits<float>::max());
-    aura::test::WaitForAllChangesToComplete();
 #endif
 #if defined(OS_MACOSX)
     // Currently MacViews' browser windows are shown in the background and could
@@ -1074,7 +1062,6 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   // Forcively reveal the tabstrip immediately.
   std::unique_ptr<ImmersiveRevealedLock> lock(
       controller->GetRevealedLock(ImmersiveModeController::ANIMATE_REVEAL_NO));
-  aura::test::WaitForAllChangesToComplete();
 
   // Add another tab.
   AddTabAndResetBrowser(browser());
@@ -1750,7 +1737,6 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   browser()->window()->SetBounds(browser()->window()->GetBounds() +
                                  gfx::Vector2d(100, 50));
   browser()->window()->Maximize();
-  aura::test::WaitForAllChangesToComplete();
 
   DragWindowAndVerifyOffset(this, GetTabStripForBrowser(browser()), 0);
   ASSERT_FALSE(TabDragController::IsActive());
@@ -2355,10 +2341,6 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
   display::Screen* screen = display::Screen::GetScreen();
   Display second_display = ui_test_utils::GetSecondaryDisplay(screen);
   browser2->window()->SetBounds(second_display.work_area());
-  // In Mash, the display change as the result of the bounds change is processed
-  // asynchronously in the window server, it should wait for those changes to
-  // complete.
-  aura::test::WaitForAllChangesToComplete();
   EXPECT_EQ(
       second_display.id(),
       screen->GetDisplayNearestWindow(browser2->window()->GetNativeWindow())
@@ -2477,8 +2459,6 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
   // Sanity check: second browser should still be on the second display.
   ASSERT_LT(work_area.x(), second_display.work_area().right());
   browser2->window()->SetBounds(work_area);
-  // Wait for the display changes. See the earlier comments for the details.
-  aura::test::WaitForAllChangesToComplete();
   EXPECT_EQ(
       second_display.id(),
       screen->GetDisplayNearestWindow(browser()->window()->GetNativeWindow())
@@ -2599,8 +2579,6 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
   display::Screen* screen = display::Screen::GetScreen();
   const std::pair<Display, Display> displays = GetDisplays(screen);
   browser2->window()->SetBounds(displays.second.work_area());
-  // Wait for the display changes. See the earlier comments for the details.
-  aura::test::WaitForAllChangesToComplete();
   EXPECT_EQ(
       displays.second.id(),
       screen->GetDisplayNearestWindow(browser2->window()->GetNativeWindow())
@@ -2861,8 +2839,6 @@ IN_PROC_BROWSER_TEST_P(
           .id());
 
   browser()->window()->SetBounds(displays.second.work_area());
-  // Wait for the display changes. See the earlier comments for the details.
-  aura::test::WaitForAllChangesToComplete();
   EXPECT_EQ(
       displays.second.id(),
       screen->GetDisplayNearestWindow(browser()->window()->GetNativeWindow())

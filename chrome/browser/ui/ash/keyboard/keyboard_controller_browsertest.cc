@@ -21,7 +21,6 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/value_builder.h"
-#include "ui/aura/test/mus/change_completion_waiter.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/dummy_text_input_client.h"
 #include "ui/base/ime/init/input_method_factory.h"
@@ -159,13 +158,6 @@ class KeyboardControllerWebContentTest : public InProcessBrowserTest {
     // Mock window.resizeTo that is expected to be called after navigate to a
     // new virtual keyboard.
     keyboard_controller->GetKeyboardWindow()->SetBounds(init_bounds);
-
-    // SetBounds() of the keyboard window in this context will end up with
-    // invisible bounds so that the virtual keyboard isn't going to be visible
-    // in this context. We need to wait for the processing of this bounds
-    // change, otherwise further SetBounds invocations in
-    // FocusEditableNodeeAndShowKeyboard() will be ignored.
-    aura::test::WaitForAllChangesToComplete();
   }
 
  private:

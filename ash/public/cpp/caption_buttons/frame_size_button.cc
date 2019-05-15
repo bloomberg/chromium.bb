@@ -212,7 +212,7 @@ void FrameSizeButton::AnimateButtonsToSnapMode() {
 
   // Start observing the to-be-snapped window.
   snapping_window_observer_ = std::make_unique<SnappingWindowObserver>(
-      delegate_->GetFrameWindow(), this);
+      GetWidget()->GetNativeWindow(), this);
 }
 
 void FrameSizeButton::SetButtonsToSnapMode(

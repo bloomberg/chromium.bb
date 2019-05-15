@@ -148,7 +148,6 @@
 #include "services/identity/public/cpp/identity_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/icu/source/common/unicode/locid.h"
-#include "ui/aura/test/mus/change_completion_waiter.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/input_method_descriptor.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
@@ -249,9 +248,6 @@ const char kFakeOncWithCertificate[] =
     "]}";
 
 bool IsLogoutConfirmationDialogShowing() {
-  // Wait for any browser window close mojo messages to propagate to ash.
-  aura::test::WaitForAllChangesToComplete();
-
   // TODO(mash): Add mojo test API for this.
   return !!ash::Shell::Get()
                ->logout_confirmation_controller()
