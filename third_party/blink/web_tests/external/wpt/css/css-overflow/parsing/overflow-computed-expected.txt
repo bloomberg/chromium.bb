@@ -26,10 +26,10 @@ PASS Property overflow-x value 'visible' computes to 'visible'
 FAIL Property overflow-y value 'clip' computes to 'clip' assert_equals: expected "clip" but got "visible"
 PASS Property overflow-y value 'auto' computes to 'auto'
 PASS Property overflow-y value 'visible' computes to 'visible'
-PASS Property overflow-block value 'hidden' computes to 'hidden'
-PASS Property overflow-block value 'clip' computes to 'clip'
-PASS Property overflow-block value 'visible' computes to 'visible'
-PASS Property overflow-inline value 'scroll' computes to 'scroll'
-PASS Property overflow-inline value 'visible' computes to 'visible'
+FAIL Property overflow-block value 'hidden' computes to 'hidden' assert_own_property: expected property "overflow-block" missing
+FAIL Property overflow-block value 'clip' computes to 'clip' assert_own_property: expected property "overflow-block" missing
+FAIL Property overflow-block value 'visible' computes to 'visible' assert_own_property: expected property "overflow-block" missing
+FAIL Property overflow-inline value 'scroll' computes to 'scroll' assert_own_property: expected property "overflow-inline" missing
+FAIL Property overflow-inline value 'visible' computes to 'visible' assert_own_property: expected property "overflow-inline" missing
 Harness: the test ran to completion.
 

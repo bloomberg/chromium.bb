@@ -1,0 +1,7 @@
+This is a testharness.js-based test.
+FAIL Property scrollbar-color has initial value auto assert_own_property: expected property "scrollbar-color" missing
+FAIL Property scrollbar-color inherits assert_own_property: expected property "scrollbar-color" missing
+FAIL Property scrollbar-width has initial value auto assert_own_property: expected property "scrollbar-width" missing
+FAIL Property scrollbar-width does not inherit assert_own_property: expected property "scrollbar-width" missing
+Harness: the test ran to completion.
+

@@ -1,6 +1,6 @@
 This is a testharness.js-based test.
-PASS Property hanging-punctuation has initial value none
-PASS Property hanging-punctuation inherits
+FAIL Property hanging-punctuation has initial value none assert_own_property: expected property "hanging-punctuation" missing
+FAIL Property hanging-punctuation inherits assert_own_property: expected property "hanging-punctuation" missing
 PASS Property hyphens has initial value manual
 PASS Property hyphens inherits
 PASS Property letter-spacing has initial value normal
@@ -11,8 +11,8 @@ PASS Property overflow-wrap has initial value normal
 PASS Property overflow-wrap inherits
 PASS Property tab-size has initial value 8
 PASS Property tab-size inherits
-PASS Property text-align-all has initial value start
-PASS Property text-align-all inherits
+FAIL Property text-align-all has initial value start assert_own_property: expected property "text-align-all" missing
+FAIL Property text-align-all inherits assert_own_property: expected property "text-align-all" missing
 PASS Property text-align-last has initial value auto
 PASS Property text-align-last inherits
 PASS Property text-indent has initial value 0px

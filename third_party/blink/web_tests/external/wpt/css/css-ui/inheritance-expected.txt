@@ -1,20 +1,20 @@
 This is a testharness.js-based test.
-PASS Property appearance has initial value auto
-PASS Property appearance does not inherit
+FAIL Property appearance has initial value auto assert_own_property: expected property "appearance" missing
+FAIL Property appearance does not inherit assert_own_property: expected property "appearance" missing
 PASS Property caret-color has initial value rgb(0, 255, 0)
 PASS Property caret-color inherits
-PASS Property caret-shape has initial value auto
-PASS Property caret-shape inherits
+FAIL Property caret-shape has initial value auto assert_own_property: expected property "caret-shape" missing
+FAIL Property caret-shape inherits assert_own_property: expected property "caret-shape" missing
 PASS Property cursor has initial value auto
 PASS Property cursor inherits
-PASS Property nav-down has initial value auto
-PASS Property nav-down does not inherit
-PASS Property nav-left has initial value auto
-PASS Property nav-left does not inherit
-PASS Property nav-right has initial value auto
-PASS Property nav-right does not inherit
-PASS Property nav-up has initial value auto
-PASS Property nav-up does not inherit
+FAIL Property nav-down has initial value auto assert_own_property: expected property "nav-down" missing
+FAIL Property nav-down does not inherit assert_own_property: expected property "nav-down" missing
+FAIL Property nav-left has initial value auto assert_own_property: expected property "nav-left" missing
+FAIL Property nav-left does not inherit assert_own_property: expected property "nav-left" missing
+FAIL Property nav-right has initial value auto assert_own_property: expected property "nav-right" missing
+FAIL Property nav-right does not inherit assert_own_property: expected property "nav-right" missing
+FAIL Property nav-up has initial value auto assert_own_property: expected property "nav-up" missing
+FAIL Property nav-up does not inherit assert_own_property: expected property "nav-up" missing
 PASS Property outline-color has initial value rgb(0, 255, 0)
 PASS Property outline-color does not inherit
 PASS Property outline-offset has initial value 0px

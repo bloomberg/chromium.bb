@@ -1,0 +1,19 @@
+This is a testharness.js-based test.
+FAIL Property block-ellipsis has initial value none assert_own_property: expected property "block-ellipsis" missing
+FAIL Property block-ellipsis inherits assert_own_property: expected property "block-ellipsis" missing
+FAIL Property continue has initial value auto assert_own_property: expected property "continue" missing
+FAIL Property continue does not inherit assert_own_property: expected property "continue" missing
+FAIL Property max-lines has initial value none assert_own_property: expected property "max-lines" missing
+FAIL Property max-lines does not inherit assert_own_property: expected property "max-lines" missing
+FAIL Property overflow-block has initial value visible assert_own_property: expected property "overflow-block" missing
+FAIL Property overflow-block does not inherit assert_own_property: expected property "overflow-block" missing
+FAIL Property overflow-inline has initial value visible assert_own_property: expected property "overflow-inline" missing
+FAIL Property overflow-inline does not inherit assert_own_property: expected property "overflow-inline" missing
+PASS Property overflow-x has initial value visible
+PASS Property overflow-x does not inherit
+PASS Property overflow-y has initial value visible
+PASS Property overflow-y does not inherit
+PASS Property text-overflow has initial value clip
+PASS Property text-overflow does not inherit
+Harness: the test ran to completion.
+
