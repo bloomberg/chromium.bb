@@ -238,6 +238,9 @@
       <message name="IDS_CLOSE" desc="A generic term for Close on buttons and menus.">
         Close
       </message>
+      <message name="IDS_CLEAR" desc="A generic term for Clearing input fields.">
+        Clear
+      </message>
       <message name="IDS_DONE" desc="A generic term for Done on buttons and menus.">
         Done
       </message>
