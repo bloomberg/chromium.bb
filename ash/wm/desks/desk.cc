@@ -110,10 +110,8 @@ void Desk::AddWindowToDesk(aura::Window* window) {
   NotifyContentChanged();
 }
 
-std::unique_ptr<base::AutoReset<bool>>
-Desk::GetScopedNotifyContentChangedDisabler() {
-  return std::make_unique<base::AutoReset<bool>>(
-      &should_notify_content_changed_, false);
+base::AutoReset<bool> Desk::GetScopedNotifyContentChangedDisabler() {
+  return base::AutoReset<bool>(&should_notify_content_changed_, false);
 }
 
 void Desk::Activate(bool update_window_activation) {

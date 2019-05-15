@@ -64,8 +64,7 @@ class ASH_EXPORT Desk : public aura::WindowObserver {
 
   void AddWindowToDesk(aura::Window* window);
 
-  std::unique_ptr<base::AutoReset<bool>>
-  GetScopedNotifyContentChangedDisabler();
+  base::AutoReset<bool> GetScopedNotifyContentChangedDisabler();
 
   // Activates this desk. All windows on this desk (if any) will become visible
   // (by means of showing this desk's associated containers on all root
