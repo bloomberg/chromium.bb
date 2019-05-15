@@ -329,14 +329,6 @@ void Window::SetBounds(const gfx::Rect& new_bounds) {
 
 void Window::SetBoundsInScreen(const gfx::Rect& new_bounds_in_screen,
                                const display::Display& dst_display) {
-  WindowTreeHost* host = GetHost();
-  bool is_moving = false;
-  if (host && host->GetDisplayId() != dst_display.id()) {
-    is_moving = true;
-    for (auto& observer : observers_)
-      observer.OnWillMoveWindowToDisplay(this, dst_display.id());
-  }
-
   aura::client::ScreenPositionClient* screen_position_client = nullptr;
   Window* root = GetRootWindow();
   if (root)
@@ -345,11 +337,6 @@ void Window::SetBoundsInScreen(const gfx::Rect& new_bounds_in_screen,
     screen_position_client->SetBounds(this, new_bounds_in_screen, dst_display);
   else
     SetBounds(new_bounds_in_screen);
-
-  if (is_moving) {
-    for (auto& observer : observers_)
-      observer.OnDidMoveWindowToDisplay(this);
-  }
 }
 
 gfx::Rect Window::GetTargetBounds() const {
