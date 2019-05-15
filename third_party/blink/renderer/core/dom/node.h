@@ -165,8 +165,6 @@ class CORE_EXPORT Node : public EventTarget {
 
   // Override operator new to allocate Node subtype objects onto
   // a dedicated heap.
-  GC_PLUGIN_IGNORE("crbug.com/443854")
-  void* operator new(size_t size) { return AllocateObject(size, false); }
   static void* AllocateObject(size_t size, bool is_eager) {
     ThreadState* state =
         ThreadStateFor<ThreadingTrait<Node>::kAffinity>::GetState();

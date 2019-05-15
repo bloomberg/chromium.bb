@@ -1669,7 +1669,7 @@ void MediaControlsImpl::HandleTouchEvent(Event* event) {
 void MediaControlsImpl::EnsureAnimatedArrowContainer() {
   if (!animated_arrow_container_element_) {
     animated_arrow_container_element_ =
-        new MediaControlAnimatedArrowContainerElement(*this);
+        MakeGarbageCollected<MediaControlAnimatedArrowContainerElement>(*this);
     ParserAppendChild(animated_arrow_container_element_);
   }
 }

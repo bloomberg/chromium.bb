@@ -17,9 +17,9 @@ class MediaControlAnimatedArrowContainerElementTest : public PageTestBase {
   void SetUp() final {
     // Create page and instance of AnimatedArrow to run tests on.
     PageTestBase::SetUp();
-    arrow_element_ =
-        new MediaControlAnimatedArrowContainerElement::AnimatedArrow(
-            "test", GetDocument());
+    arrow_element_ = MakeGarbageCollected<
+        MediaControlAnimatedArrowContainerElement::AnimatedArrow>(
+        "test", GetDocument());
     GetDocument().body()->AppendChild(arrow_element_);
   }
 

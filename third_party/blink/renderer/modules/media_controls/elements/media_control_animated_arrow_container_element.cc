@@ -98,14 +98,14 @@ void MediaControlAnimatedArrowContainerElement::ShowArrowAnimation(
         MediaControlsResourceLoader::GetAnimatedArrowStyleSheet());
     shadow_root->ParserAppendChild(style);
 
-    left_jump_arrow_ =
-        new MediaControlAnimatedArrowContainerElement::AnimatedArrow(
-            "left-arrow", GetDocument());
+    left_jump_arrow_ = MakeGarbageCollected<
+        MediaControlAnimatedArrowContainerElement::AnimatedArrow>(
+        "left-arrow", GetDocument());
     shadow_root->ParserAppendChild(left_jump_arrow_);
 
-    right_jump_arrow_ =
-        new MediaControlAnimatedArrowContainerElement::AnimatedArrow(
-            "right-arrow", GetDocument());
+    right_jump_arrow_ = MakeGarbageCollected<
+        MediaControlAnimatedArrowContainerElement::AnimatedArrow>(
+        "right-arrow", GetDocument());
     shadow_root->ParserAppendChild(right_jump_arrow_);
   }
 
