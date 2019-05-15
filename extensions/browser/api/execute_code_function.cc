@@ -250,9 +250,8 @@ bool ExecuteCodeFunction::LoadFile(const std::string& file,
         {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
         base::BindOnce(&ExecuteCodeFunction::
                            GetFileURLAndLocalizeComponentResourceInBackground,
-                       this, base::Passed(std::move(data)), extension_id,
-                       extension_path, extension_default_locale,
-                       might_require_localization),
+                       this, std::move(data), extension_id, extension_path,
+                       extension_default_locale, might_require_localization),
         base::BindOnce(&ExecuteCodeFunction::DidLoadAndLocalizeFile, this,
                        resource_.relative_path().AsUTF8Unsafe(),
                        true /* We assume this call always succeeds */));
