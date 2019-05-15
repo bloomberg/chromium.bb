@@ -74,6 +74,9 @@ constexpr char kAppListZeroStateSearchResultRemovalHistogram[] =
 constexpr char kSearchAbandonQueryLengthHistogram[] =
     "Apps.AppListSearchAbandonQueryLength";
 
+// The base UMA histogram that logs app launches within the AppList and shelf.
+constexpr char kAppListAppLaunched[] = "Apps.AppListAppLaunchedV2";
+
 // The UMA histograms that log app launches within the AppList and shelf. The
 // app launches are divided by histogram for each of the the different AppList
 // states.
@@ -231,6 +234,7 @@ void RecordAppListAppLaunched(ash::mojom::AppListLaunchedFrom launched_from,
                               ash::mojom::AppListViewState app_list_state,
                               bool is_tablet_mode,
                               bool home_launcher_shown) {
+  UMA_HISTOGRAM_ENUMERATION(kAppListAppLaunched, launched_from);
   switch (app_list_state) {
     case ash::mojom::AppListViewState::kClosed:
       UMA_HISTOGRAM_ENUMERATION(kAppListAppLaunchedClosed, launched_from);
