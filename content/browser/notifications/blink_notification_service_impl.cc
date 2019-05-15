@@ -268,12 +268,6 @@ void BlinkNotificationServiceImpl::ClosePersistentNotification(
   if (CheckPermissionStatus() != blink::mojom::PermissionStatus::GRANTED)
     return;
 
-  GetNotificationService(browser_context_)
-      ->ClosePersistentNotification(notification_id);
-
-  // Deleting the data associated with |notification_id| from the notification
-  // database will be done in a task runner, but there's no reason to postpone
-  // removing the notification from the user's display until that's done.
   notification_context_->DeleteNotificationData(
       notification_id, origin_.GetURL(), base::DoNothing());
 }

@@ -170,9 +170,12 @@ void PushMessagingNotificationManager::DidGetNotificationsFromDatabase(
         continue;
       }
 
-      PlatformNotificationServiceFactory::GetForProfile(profile_)
-          ->ClosePersistentNotification(
-              notification_database_data.notification_id);
+      scoped_refptr<PlatformNotificationContext> notification_context =
+          GetStoragePartition(profile_, origin)
+              ->GetPlatformNotificationContext();
+      notification_context->DeleteNotificationData(
+          notification_database_data.notification_id, origin,
+          base::DoNothing());
       break;
     }
   }

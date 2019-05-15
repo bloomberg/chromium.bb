@@ -206,8 +206,8 @@ TEST_F(PlatformNotificationContextTest, ReadNonExistentNotification) {
   context->ReadNotificationDataAndRecordInteraction(
       "invalid-notification-id", GURL("https://example.com"),
       PlatformNotificationContext::Interaction::NONE,
-      base::Bind(&PlatformNotificationContextTest::DidReadNotificationData,
-                 base::Unretained(this)));
+      base::BindOnce(&PlatformNotificationContextTest::DidReadNotificationData,
+                     base::Unretained(this)));
 
   base::RunLoop().RunUntilIdle();
 
@@ -226,8 +226,8 @@ TEST_F(PlatformNotificationContextTest, WriteReadNotification) {
   context->WriteNotificationData(
       next_persistent_notification_id(), kFakeServiceWorkerRegistrationId,
       origin, notification_database_data,
-      base::Bind(&PlatformNotificationContextTest::DidWriteNotificationData,
-                 base::Unretained(this)));
+      base::BindOnce(&PlatformNotificationContextTest::DidWriteNotificationData,
+                     base::Unretained(this)));
 
   base::RunLoop().RunUntilIdle();
 
@@ -237,8 +237,8 @@ TEST_F(PlatformNotificationContextTest, WriteReadNotification) {
 
   context->ReadNotificationDataAndRecordInteraction(
       notification_id(), origin, PlatformNotificationContext::Interaction::NONE,
-      base::Bind(&PlatformNotificationContextTest::DidReadNotificationData,
-                 base::Unretained(this)));
+      base::BindOnce(&PlatformNotificationContextTest::DidReadNotificationData,
+                     base::Unretained(this)));
 
   base::RunLoop().RunUntilIdle();
 
@@ -268,8 +268,8 @@ TEST_F(PlatformNotificationContextTest, WriteReadReplacedNotification) {
   context->WriteNotificationData(
       next_persistent_notification_id(), kFakeServiceWorkerRegistrationId,
       origin, notification_database_data,
-      base::Bind(&PlatformNotificationContextTest::DidWriteNotificationData,
-                 base::Unretained(this)));
+      base::BindOnce(&PlatformNotificationContextTest::DidWriteNotificationData,
+                     base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
 
   std::string read_notification_id = notification_id();
@@ -285,8 +285,8 @@ TEST_F(PlatformNotificationContextTest, WriteReadReplacedNotification) {
   context->WriteNotificationData(
       next_persistent_notification_id(), kFakeServiceWorkerRegistrationId,
       origin, notification_database_data,
-      base::Bind(&PlatformNotificationContextTest::DidWriteNotificationData,
-                 base::Unretained(this)));
+      base::BindOnce(&PlatformNotificationContextTest::DidWriteNotificationData,
+                     base::Unretained(this)));
 
   base::RunLoop().RunUntilIdle();
 
@@ -311,8 +311,9 @@ TEST_F(PlatformNotificationContextTest, DeleteInvalidNotification) {
 
   context->DeleteNotificationData(
       "invalid-notification-id", GURL("https://example.com"),
-      base::Bind(&PlatformNotificationContextTest::DidDeleteNotificationData,
-                 base::Unretained(this)));
+      base::BindOnce(
+          &PlatformNotificationContextTest::DidDeleteNotificationData,
+          base::Unretained(this)));
 
   base::RunLoop().RunUntilIdle();
 
@@ -332,8 +333,8 @@ TEST_F(PlatformNotificationContextTest, DeleteNotification) {
   context->WriteNotificationData(
       next_persistent_notification_id(), kFakeServiceWorkerRegistrationId,
       origin, notification_database_data,
-      base::Bind(&PlatformNotificationContextTest::DidWriteNotificationData,
-                 base::Unretained(this)));
+      base::BindOnce(&PlatformNotificationContextTest::DidWriteNotificationData,
+                     base::Unretained(this)));
 
   base::RunLoop().RunUntilIdle();
 
@@ -343,8 +344,9 @@ TEST_F(PlatformNotificationContextTest, DeleteNotification) {
 
   context->DeleteNotificationData(
       notification_id(), origin,
-      base::Bind(&PlatformNotificationContextTest::DidDeleteNotificationData,
-                 base::Unretained(this)));
+      base::BindOnce(
+          &PlatformNotificationContextTest::DidDeleteNotificationData,
+          base::Unretained(this)));
 
   base::RunLoop().RunUntilIdle();
 
@@ -353,14 +355,52 @@ TEST_F(PlatformNotificationContextTest, DeleteNotification) {
 
   context->ReadNotificationDataAndRecordInteraction(
       notification_id(), origin, PlatformNotificationContext::Interaction::NONE,
-      base::Bind(&PlatformNotificationContextTest::DidReadNotificationData,
-                 base::Unretained(this)));
+      base::BindOnce(&PlatformNotificationContextTest::DidReadNotificationData,
+                     base::Unretained(this)));
 
   base::RunLoop().RunUntilIdle();
 
   // The notification was removed, so we shouldn't be able to read it from
   // the database anymore.
   EXPECT_FALSE(success());
+}
+
+TEST_F(PlatformNotificationContextTest, DeleteClosesNotification) {
+  NotificationBrowserClient notification_browser_client(browser_context());
+  SetBrowserClientForTesting(&notification_browser_client);
+  PlatformNotificationService* service =
+      notification_browser_client.GetPlatformNotificationService(
+          browser_context());
+
+  scoped_refptr<PlatformNotificationContextImpl> context =
+      CreatePlatformNotificationContext();
+
+  GURL origin("https://example.com");
+  NotificationDatabaseData notification_database_data;
+
+  context->WriteNotificationData(
+      next_persistent_notification_id(), kFakeServiceWorkerRegistrationId,
+      origin, notification_database_data,
+      base::BindOnce(&PlatformNotificationContextTest::DidWriteNotificationData,
+                     base::Unretained(this)));
+
+  base::RunLoop().RunUntilIdle();
+
+  // The write operation should have displayed a notification.
+  ASSERT_TRUE(success());
+  EXPECT_EQ(1u, GetDisplayedNotificationsSync(service).size());
+
+  context->DeleteNotificationData(
+      notification_id(), origin,
+      base::BindOnce(
+          &PlatformNotificationContextTest::DidDeleteNotificationData,
+          base::Unretained(this)));
+
+  base::RunLoop().RunUntilIdle();
+
+  // Deleting the notification data should have closed the notification.
+  ASSERT_TRUE(success());
+  EXPECT_EQ(0u, GetDisplayedNotificationsSync(service).size());
 }
 
 TEST_F(PlatformNotificationContextTest,
@@ -470,8 +510,8 @@ TEST_F(PlatformNotificationContextTest, ServiceWorkerUnregistered) {
   notification_context->WriteNotificationData(
       next_persistent_notification_id(), kFakeServiceWorkerRegistrationId,
       origin, notification_database_data,
-      base::Bind(&PlatformNotificationContextTest::DidWriteNotificationData,
-                 base::Unretained(this)));
+      base::BindOnce(&PlatformNotificationContextTest::DidWriteNotificationData,
+                     base::Unretained(this)));
 
   base::RunLoop().RunUntilIdle();
 
@@ -493,8 +533,8 @@ TEST_F(PlatformNotificationContextTest, ServiceWorkerUnregistered) {
   // And verify that the associated notification has indeed been dropped.
   notification_context->ReadNotificationDataAndRecordInteraction(
       notification_id(), origin, PlatformNotificationContext::Interaction::NONE,
-      base::Bind(&PlatformNotificationContextTest::DidReadNotificationData,
-                 base::Unretained(this)));
+      base::BindOnce(&PlatformNotificationContextTest::DidReadNotificationData,
+                     base::Unretained(this)));
 
   base::RunLoop().RunUntilIdle();
 
@@ -514,8 +554,8 @@ TEST_F(PlatformNotificationContextTest, DestroyDatabaseOnStorageWiped) {
   context->WriteNotificationData(
       next_persistent_notification_id(), kFakeServiceWorkerRegistrationId,
       origin, notification_database_data,
-      base::Bind(&PlatformNotificationContextTest::DidWriteNotificationData,
-                 base::Unretained(this)));
+      base::BindOnce(&PlatformNotificationContextTest::DidWriteNotificationData,
+                     base::Unretained(this)));
 
   base::RunLoop().RunUntilIdle();
 
@@ -532,8 +572,8 @@ TEST_F(PlatformNotificationContextTest, DestroyDatabaseOnStorageWiped) {
   // be the case when OnStorageWiped gets called in production.
   context->ReadNotificationDataAndRecordInteraction(
       notification_id(), origin, PlatformNotificationContext::Interaction::NONE,
-      base::Bind(&PlatformNotificationContextTest::DidReadNotificationData,
-                 base::Unretained(this)));
+      base::BindOnce(&PlatformNotificationContextTest::DidReadNotificationData,
+                     base::Unretained(this)));
 
   base::RunLoop().RunUntilIdle();
 
@@ -556,8 +596,8 @@ TEST_F(PlatformNotificationContextTest, DestroyOnDiskDatabase) {
   context->ReadNotificationDataAndRecordInteraction(
       "invalid-notification-id", GURL("https://example.com"),
       PlatformNotificationContext::Interaction::NONE,
-      base::Bind(&PlatformNotificationContextTest::DidReadNotificationData,
-                 base::Unretained(this)));
+      base::BindOnce(&PlatformNotificationContextTest::DidReadNotificationData,
+                     base::Unretained(this)));
 
   base::RunLoop().RunUntilIdle();
 
@@ -599,8 +639,9 @@ TEST_F(PlatformNotificationContextTest, ReadAllServiceWorkerDataFilled) {
     context->WriteNotificationData(
         next_persistent_notification_id(), kFakeServiceWorkerRegistrationId,
         origin, notification_database_data,
-        base::Bind(&PlatformNotificationContextTest::DidWriteNotificationData,
-                   base::Unretained(this)));
+        base::BindOnce(
+            &PlatformNotificationContextTest::DidWriteNotificationData,
+            base::Unretained(this)));
 
     base::RunLoop().RunUntilIdle();
 
@@ -640,8 +681,8 @@ TEST_F(PlatformNotificationContextTest, SynchronizeNotifications) {
   context->WriteNotificationData(
       next_persistent_notification_id(), kFakeServiceWorkerRegistrationId,
       origin, notification_database_data,
-      base::Bind(&PlatformNotificationContextTest::DidWriteNotificationData,
-                 base::Unretained(this)));
+      base::BindOnce(&PlatformNotificationContextTest::DidWriteNotificationData,
+                     base::Unretained(this)));
 
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(success());
@@ -661,8 +702,8 @@ TEST_F(PlatformNotificationContextTest, SynchronizeNotifications) {
   context->ReadNotificationDataAndRecordInteraction(
       notification_id(), origin,
       PlatformNotificationContext::Interaction::CLOSED,
-      base::Bind(&PlatformNotificationContextTest::DidReadNotificationData,
-                 base::Unretained(this)));
+      base::BindOnce(&PlatformNotificationContextTest::DidReadNotificationData,
+                     base::Unretained(this)));
 
   base::RunLoop().RunUntilIdle();
 
