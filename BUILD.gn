@@ -278,17 +278,22 @@ target(link_target_type, "ffmpeg_internal") {
     }
   }
 
-  if (is_fuchsia || (is_posix && !(is_android && use_call_graph))) {
-    # Remove default stack frames config so we can force -fomit-frame-pointer.
-    configs -= [ "//build/config/compiler:default_stack_frames" ]
-
+  if (is_fuchsia || is_posix) {
     cflags += [
       "-fPIC",
-      "-fomit-frame-pointer",
 
       # ffmpeg uses its own deprecated functions.
       "-Wno-deprecated-declarations",
     ]
+
+    if (!(is_android && use_call_graph)) {
+      # Remove default stack frames config so we can force -fomit-frame-pointer.
+      configs -= [ "//build/config/compiler:default_stack_frames" ]
+
+      cflags += [
+        "-fomit-frame-pointer",
+      ]
+    }
 
     if (!is_clang) {
       # gcc doesn't have flags for specific warnings, so disable them
