@@ -50,7 +50,6 @@
 #include "third_party/blink/public/resources/grit/blink_resources.h"
 #include "third_party/zlib/google/compression_utils.h"
 #include "ui/base/layout.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/events/gestures/blink/web_gesture_curve_impl.h"
 
 #if defined(OS_ANDROID)
@@ -78,8 +77,6 @@ std::unique_ptr<blink::WebThemeEngine> GetWebThemeEngine() {
 #if defined(OS_ANDROID)
   return std::make_unique<WebThemeEngineAndroid>();
 #elif defined(OS_MACOSX)
-  if (features::IsFormControlsRefreshEnabled())
-    return std::make_unique<WebThemeEngineDefault>();
   return std::make_unique<WebThemeEngineMac>();
 #else
   return std::make_unique<WebThemeEngineDefault>();

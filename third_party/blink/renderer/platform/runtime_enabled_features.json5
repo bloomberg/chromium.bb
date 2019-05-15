@@ -601,11 +601,6 @@
       name: "FormAssociatedCustomElements",
       status: "experimental",
     },
-    // This is to communicate features::FormControlsRefresh from ui (and can be
-    // removed when the feature launches).
-    {
-      name: "FormControlsRefresh",
-    },
     {
       name: "FormDataEvent",
       status: "experimental",

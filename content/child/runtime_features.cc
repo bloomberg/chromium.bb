@@ -23,7 +23,6 @@
 #include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/events/blink/blink_features.h"
 #include "ui/gfx/switches.h"
 #include "ui/gl/gl_switches.h"
@@ -502,9 +501,6 @@ void SetIndividualRuntimeFeatures(
 
   WebRuntimeFeatures::EnableDisplayLocking(
       base::FeatureList::IsEnabled(blink::features::kDisplayLocking));
-
-  WebRuntimeFeatures::EnableFormControlsRefresh(
-      features::IsFormControlsRefreshEnabled());
 }
 
 }  // namespace
