@@ -190,6 +190,11 @@ bool NGLineTruncator::TruncateChild(LayoutUnit space_for_child,
   if (!child->fragment)
     return is_first_child;
   auto& fragment = To<NGPhysicalTextFragment>(*child->fragment);
+
+  // No need to truncate empty results.
+  if (!fragment.TextShapeResult())
+    return is_first_child;
+
   // TODO(layout-dev): Add support for OffsetToFit to ShapeResultView to avoid
   // this copy.
   scoped_refptr<blink::ShapeResult> shape_result =
