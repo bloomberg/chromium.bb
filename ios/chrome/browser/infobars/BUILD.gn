@@ -43,6 +43,7 @@ source_set("badge") {
   ]
   deps = [
     ":infobars",
+    ":public",
     "//ios/chrome/browser/ui/infobars:feature_flags",
     "//ios/chrome/browser/ui/infobars:infobars_ui",
     "//ios/web",

@@ -32,12 +32,14 @@
 @interface InfobarBadgeTabHelperTestDelegate
     : NSObject <InfobarBadgeTabHelperDelegate>
 @property(nonatomic, assign) BOOL displayingBadge;
+@property(nonatomic, assign) InfobarType infobarType;
 @end
 
 @implementation InfobarBadgeTabHelperTestDelegate
 @synthesize badgeState = _badgeState;
-- (void)displayBadge:(BOOL)display {
+- (void)displayBadge:(BOOL)display type:(InfobarType)infobarType {
   self.displayingBadge = display;
+  self.infobarType = infobarType;
 }
 @end
 
@@ -153,7 +155,7 @@ class InfobarBadgeTabHelperTest : public PlatformTest {
         new TestInfoBarDelegate(@"Title");
     InfobarConfirmCoordinator* coordinator = [[InfobarConfirmCoordinator alloc]
         initWithInfoBarDelegate:test_infobar_delegate
-                           type:InfobarType::kInfobarTypeConfirm];
+                           type:InfobarType::kInfobarTypePasswordSave];
     coordinator.browserState = browser_state_.get();
     coordinator.badgeDelegate = infobar_badge_ui_delegate_;
 
@@ -242,6 +244,12 @@ TEST_F(InfobarBadgeTabHelperTest, TestInfobarBadgeAcceptedState) {
 TEST_F(InfobarBadgeTabHelperTest, TestInfobarBadgeStateOnBannerPresentation) {
   EXPECT_TRUE(infobar_badge_tab_delegate_.displayingBadge);
   EXPECT_FALSE(infobar_badge_tab_delegate_.badgeState);
+}
+
+// Test that the correct InfobarType is set.
+TEST_F(InfobarBadgeTabHelperTest, TestInfobarBadgeType) {
+  EXPECT_EQ(infobar_badge_tab_delegate_.infobarType,
+            InfobarType::kInfobarTypePasswordSave);
 }
 
 // Tests that once the Modal is presented the default state is

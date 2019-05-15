@@ -47,8 +47,12 @@ void InfobarBadgeTabHelper::UpdateBadgeForInfobarAccepted() {
   delegate_.badgeState |= InfobarBadgeStateAccepted;
 }
 
-bool InfobarBadgeTabHelper::IsInfobarBadgeDisplaying() {
+bool InfobarBadgeTabHelper::is_infobar_displaying() {
   return is_infobar_displaying_;
+}
+
+InfobarType InfobarBadgeTabHelper::infobar_type() {
+  return infobar_type_;
 }
 
 InfobarBadgeTabHelper::~InfobarBadgeTabHelper() = default;
@@ -87,11 +91,12 @@ void InfobarBadgeTabHelper::OnManagerShuttingDown(
 
 void InfobarBadgeTabHelper::UpdateBadgeForInfobar(infobars::InfoBar* infobar,
                                                   bool display) {
-  is_infobar_displaying_ = display;
   InfoBarIOS* infobar_ios = static_cast<InfoBarIOS*>(infobar);
   id<InfobarUIDelegate> controller_ = infobar_ios->InfobarUIDelegate();
   if (IsInfobarUIRebootEnabled() && [controller_ isPresented]) {
-    [delegate_ displayBadge:display];
+    is_infobar_displaying_ = display;
+    infobar_type_ = controller_.infobarType;
+    [delegate_ displayBadge:display type:infobar_type_];
   }
 }
 

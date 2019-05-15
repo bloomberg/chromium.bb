@@ -9,6 +9,7 @@
 #import "ios/web/public/web_state/web_state_user_data.h"
 
 #include "components/infobars/core/infobar_manager.h"
+#import "ios/chrome/browser/infobars/infobar_type.h"
 
 namespace web {
 class WebState;
@@ -37,7 +38,10 @@ class InfobarBadgeTabHelper
 
   // Returns wheter an Infobar badge is being displayed for the TabHelper
   // Webstate.
-  bool IsInfobarBadgeDisplaying();
+  bool is_infobar_displaying();
+  // Returns the type of the Infobar being displayed.
+  InfobarType infobar_type();
+
   ~InfobarBadgeTabHelper() override;
 
  private:
@@ -58,6 +62,8 @@ class InfobarBadgeTabHelper
   __weak id<InfobarBadgeTabHelperDelegate> delegate_ = nil;
   // Returns wheter an Infobar is being displayed.
   bool is_infobar_displaying_;
+  // The type of the Infobar being displayed.
+  InfobarType infobar_type_;
 
   WEB_STATE_USER_DATA_KEY_DECL();
   DISALLOW_COPY_AND_ASSIGN(InfobarBadgeTabHelper);

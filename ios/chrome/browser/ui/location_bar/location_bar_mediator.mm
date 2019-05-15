@@ -161,9 +161,9 @@
 
 #pragma mark - InfobarBadgeTabHelper
 
-- (void)displayBadge:(BOOL)display {
+- (void)displayBadge:(BOOL)display type:(InfobarType)infobarType {
   DCHECK(IsInfobarUIRebootEnabled());
-  [self.consumer displayInfobarBadge:display];
+  [self.consumer displayInfobarBadge:display type:infobarType];
 }
 
 - (void)setBadgeState:(InfobarBadgeState)badgeState {
@@ -192,8 +192,9 @@
       if (self.consumer) {
         // Whenever the WebState changes ask the corresponding
         // InfobarBadgeTabHelper if a badge should be displayed.
-        [self.consumer displayInfobarBadge:infobarBadgeTabHelper
-                                               ->IsInfobarBadgeDisplaying()];
+        [self.consumer
+            displayInfobarBadge:infobarBadgeTabHelper->is_infobar_displaying()
+                           type:infobarBadgeTabHelper->infobar_type()];
       }
     }
 

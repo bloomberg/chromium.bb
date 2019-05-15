@@ -18,6 +18,7 @@
 #include "ios/chrome/browser/autocomplete/autocomplete_scheme_classifier_impl.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/geolocation/omnibox_geolocation_controller.h"
+#include "ios/chrome/browser/infobars/infobar_metrics_recorder.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/chrome/browser/ui/commands/browser_commands.h"
@@ -381,8 +382,15 @@ const int kLocationAuthorizationStatusCount = 4;
   self.viewController.searchByImageEnabled = searchByImageSupported;
 }
 
-- (void)displayInfobarBadge:(BOOL)display {
-  [self.viewController displayInfobarButton:display];
+- (void)displayInfobarBadge:(BOOL)display type:(InfobarType)infobarType {
+  InfobarMetricsRecorder* metricsRecorder;
+  // If the Badge will be displayed create a metrics recorder to log its
+  // interactions, if its hidden metrics recorder should be nil.
+  if (display)
+    metricsRecorder = [[InfobarMetricsRecorder alloc] initWithType:infobarType];
+
+  [self.viewController displayInfobarButton:display
+                            metricsRecorder:metricsRecorder];
 }
 
 - (void)selectInfobarBadge:(BOOL)select {

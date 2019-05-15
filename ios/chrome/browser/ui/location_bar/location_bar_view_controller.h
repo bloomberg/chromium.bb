@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/ui/location_bar/location_bar_consumer.h"
 #import "ios/chrome/browser/ui/orchestrator/location_bar_animatee.h"
 
+@class InfobarMetricsRecorder;
 @class OmniboxTextFieldIOS;
 @protocol ActivityServiceCommands;
 @protocol ApplicationCommands;
@@ -73,10 +74,11 @@
 - (void)updateForNTP:(BOOL)isNTP;
 // Sets |enabled| of the share button.
 - (void)setShareButtonEnabled:(BOOL)enabled;
-// Displays or hides the InfobarButton.
+// Displays or hides the InfobarButton. |metricsRecorder| can be nil.
 // TODO(crbug.com/935804): This method is currently only being used in the
 // Infobar redesign.
-- (void)displayInfobarButton:(BOOL)display;
+- (void)displayInfobarButton:(BOOL)display
+             metricsRecorder:(InfobarMetricsRecorder*)metricsRecorder;
 // If |selected| is YES applies the selected styling to the InfobarButton, if NO
 // it removes it.
 // TODO(crbug.com/935804): This method is currently only being used in the

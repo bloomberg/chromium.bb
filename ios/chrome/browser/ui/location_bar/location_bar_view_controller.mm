@@ -10,6 +10,7 @@
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/open_from_clipboard/clipboard_recent_content.h"
 #include "components/strings/grit/components_strings.h"
+#include "ios/chrome/browser/infobars/infobar_metrics_recorder.h"
 #import "ios/chrome/browser/ui/commands/activity_service_commands.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
@@ -62,6 +63,9 @@ typedef NS_ENUM(int, TrailingButtonState) {
 // Keeps the status of the leading button of the location bar steady view. Used
 // to preserve leading button visibility during animations.
 @property(nonatomic, assign) BOOL shouldShowLeadingButton;
+
+// Used to build and record Infobar metrics.
+@property(nonatomic, strong) InfobarMetricsRecorder* infobarMetricsRecorder;
 
 // Starts voice search, updating the NamedGuide to be constrained to the
 // trailing button.
@@ -252,7 +256,9 @@ typedef NS_ENUM(int, TrailingButtonState) {
   }
 }
 
-- (void)displayInfobarButton:(BOOL)display {
+- (void)displayInfobarButton:(BOOL)display
+             metricsRecorder:(InfobarMetricsRecorder*)metricsRecorder {
+  self.infobarMetricsRecorder = metricsRecorder;
   self.shouldShowLeadingButton = display;
   [self.locationBarSteadyView.leadingButton displayBadge:display animated:YES];
 }
