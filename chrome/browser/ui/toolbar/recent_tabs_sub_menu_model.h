@@ -119,6 +119,7 @@ class RecentTabsSubMenuModel : public ui::SimpleMenuModel,
   // OnFaviconDataAvailable() will be invoked when the favicon is ready.
   void AddTabFavicon(int command_id, const GURL& url);
   void OnFaviconDataAvailable(
+      const GURL& page_url,
       int command_id,
       const favicon_base::FaviconImageResult& image_result);
 
