@@ -16,10 +16,10 @@
 // Even trivial DCHECK_DEATH_TESTs like
 // AbstractPromiseTest.CantRejectIfpromiseDeclaredAsNonRejecting can flakily
 // timeout on the chromeos bots.
-#if DCHECK_IS_ON() && !defined(OS_CHROMEOS)
-#define DCHECK_DEATH_TEST_ENABLED 1
+#if defined(OS_CHROMEOS)
+#define ABSTRACT_PROMISE_DEATH_TEST(test_name) DISABLED_##test_name
 #else
-#define DCHECK_DEATH_TEST_ENABLED 0
+#define ABSTRACT_PROMISE_DEATH_TEST(test_name) test_name
 #endif
 
 using testing::ElementsAre;
@@ -1023,8 +1023,8 @@ TEST_F(AbstractPromiseTest, AllAlreadyCanceledPrerequisitePolicyANY) {
   EXPECT_TRUE(any_promise->IsCanceled());
 }
 
-TEST_F(AbstractPromiseTest, DetectResolveDoubleMoveHazard) {
-#if DCHECK_DEATH_TEST_ENABLED
+TEST_F(AbstractPromiseTest,
+       ABSTRACT_PROMISE_DEATH_TEST(DetectResolveDoubleMoveHazard)) {
   scoped_refptr<AbstractPromise> p0 = ThenPromise(FROM_HERE, nullptr);
 
   scoped_refptr<AbstractPromise> p1 =
@@ -1034,11 +1034,11 @@ TEST_F(AbstractPromiseTest, DetectResolveDoubleMoveHazard) {
     scoped_refptr<AbstractPromise> p2 =
         ThenPromise(FROM_HERE, p0).WithResolve(ArgumentPassingType::kMove);
   });
-#endif
 }
 
-TEST_F(AbstractPromiseTest, DetectMixedResolveCallbackMoveAndNonMoveHazard) {
-#if DCHECK_DEATH_TEST_ENABLED
+TEST_F(AbstractPromiseTest,
+       ABSTRACT_PROMISE_DEATH_TEST(
+           DetectMixedResolveCallbackMoveAndNonMoveHazard)) {
   scoped_refptr<AbstractPromise> p0 = ThenPromise(FROM_HERE, nullptr);
 
   scoped_refptr<AbstractPromise> p1 =
@@ -1046,7 +1046,6 @@ TEST_F(AbstractPromiseTest, DetectMixedResolveCallbackMoveAndNonMoveHazard) {
 
   EXPECT_DCHECK_DEATH(
       { scoped_refptr<AbstractPromise> p2 = ThenPromise(FROM_HERE, p0); });
-#endif
 }
 
 TEST_F(AbstractPromiseTest, MultipleNonMoveCatchCallbacksAreOK) {
@@ -1073,8 +1072,8 @@ TEST_F(AbstractPromiseTest, MultipleNonMoveCatchCallbacksAreOK) {
   scoped_refptr<AbstractPromise> p4 = CatchPromise(FROM_HERE, p2);
 }
 
-TEST_F(AbstractPromiseTest, DetectCatchCallbackDoubleMoveHazard) {
-#if DCHECK_DEATH_TEST_ENABLED
+TEST_F(AbstractPromiseTest,
+       ABSTRACT_PROMISE_DEATH_TEST(DetectCatchCallbackDoubleMoveHazard)) {
   /*
    * Key:  T = Then, C = Catch
    *
@@ -1098,11 +1097,11 @@ TEST_F(AbstractPromiseTest, DetectCatchCallbackDoubleMoveHazard) {
     scoped_refptr<AbstractPromise> p2 =
         CatchPromise(FROM_HERE, p0).WithReject(ArgumentPassingType::kMove);
   });
-#endif
 }
 
-TEST_F(AbstractPromiseTest, DetectCatchCallbackDoubleMoveHazardInChain) {
-#if DCHECK_DEATH_TEST_ENABLED
+TEST_F(
+    AbstractPromiseTest,
+    ABSTRACT_PROMISE_DEATH_TEST(DetectCatchCallbackDoubleMoveHazardInChain)) {
   /*
    * Key:  T = Then, C = Catch
    *
@@ -1133,12 +1132,12 @@ TEST_F(AbstractPromiseTest, DetectCatchCallbackDoubleMoveHazardInChain) {
     scoped_refptr<AbstractPromise> p4 =
         CatchPromise(FROM_HERE, p2).WithReject(ArgumentPassingType::kMove);
   });
-#endif
 }
 
-TEST_F(AbstractPromiseTest,
-       DetectCatchCallbackDoubleMoveHazardInChainIntermediateThensCanReject) {
-#if DCHECK_DEATH_TEST_ENABLED
+TEST_F(
+    AbstractPromiseTest,
+    ABSTRACT_PROMISE_DEATH_TEST(
+        DetectCatchCallbackDoubleMoveHazardInChainIntermediateThensCanReject)) {
   /*
    * Key:  T = Then, C = Catch
    *
@@ -1172,11 +1171,11 @@ TEST_F(AbstractPromiseTest,
     scoped_refptr<AbstractPromise> p4 =
         CatchPromise(FROM_HERE, p2).WithReject(ArgumentPassingType::kMove);
   });
-#endif
 }
 
-TEST_F(AbstractPromiseTest, DetectMixedCatchCallbackMoveAndNonMoveHazard) {
-#if DCHECK_DEATH_TEST_ENABLED
+TEST_F(
+    AbstractPromiseTest,
+    ABSTRACT_PROMISE_DEATH_TEST(DetectMixedCatchCallbackMoveAndNonMoveHazard)) {
   /*
    * Key:  T = Then, C = Catch
    *
@@ -1206,11 +1205,10 @@ TEST_F(AbstractPromiseTest, DetectMixedCatchCallbackMoveAndNonMoveHazard) {
 
   EXPECT_DCHECK_DEATH(
       { scoped_refptr<AbstractPromise> p4 = CatchPromise(FROM_HERE, p2); });
-#endif
 }
 
-TEST_F(AbstractPromiseTest, DetectThenCallbackDoubleMoveHazardInChain) {
-#if DCHECK_DEATH_TEST_ENABLED
+TEST_F(AbstractPromiseTest,
+       ABSTRACT_PROMISE_DEATH_TEST(DetectThenCallbackDoubleMoveHazardInChain)) {
   /*
    * Key:  T = Then, C = Catch
    *
@@ -1239,7 +1237,6 @@ TEST_F(AbstractPromiseTest, DetectThenCallbackDoubleMoveHazardInChain) {
     scoped_refptr<AbstractPromise> p4 =
         ThenPromise(FROM_HERE, p2).WithResolve(ArgumentPassingType::kMove);
   });
-#endif
 }
 
 TEST_F(AbstractPromiseTest, SimpleMissingCatch) {
@@ -1265,8 +1262,7 @@ TEST_F(AbstractPromiseTest, SimpleMissingCatch) {
   scoped_refptr<AbstractPromise> p2 = CatchPromise(FROM_HERE, p1);
 }
 
-TEST_F(AbstractPromiseTest, MissingCatch) {
-#if DCHECK_DEATH_TEST_ENABLED
+TEST_F(AbstractPromiseTest, ABSTRACT_PROMISE_DEATH_TEST(MissingCatch)) {
   scoped_refptr<AbstractPromise> p0 =
       DoNothingPromiseBuilder(FROM_HERE).SetCanResolve(true);
 
@@ -1291,7 +1287,6 @@ TEST_F(AbstractPromiseTest, MissingCatch) {
   // Under the hood EXPECT_DCHECK_DEATH uses fork() so |p2| isn't actually
   // cleared so we need to tidy up.
   scoped_refptr<AbstractPromise> p3 = CatchPromise(FROM_HERE, p2);
-#endif
 }
 
 TEST_F(AbstractPromiseTest, MissingCatchNotRequired) {
@@ -1315,8 +1310,8 @@ TEST_F(AbstractPromiseTest, MissingCatchNotRequired) {
   RunLoop().RunUntilIdle();
 }
 
-TEST_F(AbstractPromiseTest, MissingCatchFromCurriedPromise) {
-#if DCHECK_DEATH_TEST_ENABLED
+TEST_F(AbstractPromiseTest,
+       ABSTRACT_PROMISE_DEATH_TEST(MissingCatchFromCurriedPromise)) {
   scoped_refptr<AbstractPromise> p0 =
       DoNothingPromiseBuilder(FROM_HERE).SetCanResolve(true);
 
@@ -1350,11 +1345,11 @@ TEST_F(AbstractPromiseTest, MissingCatchFromCurriedPromise) {
   // cleared so we need to tidy up.
   scoped_refptr<AbstractPromise> p3 = CatchPromise(FROM_HERE, p2);
   RunLoop().RunUntilIdle();
-#endif
 }
 
-TEST_F(AbstractPromiseTest, MissingCatchFromCurriedPromiseWithDependent) {
-#if DCHECK_DEATH_TEST_ENABLED
+TEST_F(
+    AbstractPromiseTest,
+    ABSTRACT_PROMISE_DEATH_TEST(MissingCatchFromCurriedPromiseWithDependent)) {
   scoped_refptr<AbstractPromise> p0 =
       DoNothingPromiseBuilder(FROM_HERE).SetCanResolve(true);
 
@@ -1390,12 +1385,11 @@ TEST_F(AbstractPromiseTest, MissingCatchFromCurriedPromiseWithDependent) {
   // cleared so we need to tidy up.
   scoped_refptr<AbstractPromise> p4 = CatchPromise(FROM_HERE, p3);
   RunLoop().RunUntilIdle();
-#endif
 }
 
 TEST_F(AbstractPromiseTest,
-       MissingCatchFromCurriedPromiseWithDependentAddedAfterExecution) {
-#if DCHECK_DEATH_TEST_ENABLED
+       ABSTRACT_PROMISE_DEATH_TEST(
+           MissingCatchFromCurriedPromiseWithDependentAddedAfterExecution)) {
   scoped_refptr<AbstractPromise> p0 =
       DoNothingPromiseBuilder(FROM_HERE).SetCanResolve(true);
 
@@ -1432,11 +1426,10 @@ TEST_F(AbstractPromiseTest,
   // cleared so we need to tidy up.
   scoped_refptr<AbstractPromise> p4 = CatchPromise(FROM_HERE, p3);
   RunLoop().RunUntilIdle();
-#endif
 }
 
-TEST_F(AbstractPromiseTest, MissingCatchLongChain) {
-#if DCHECK_DEATH_TEST_ENABLED
+TEST_F(AbstractPromiseTest,
+       ABSTRACT_PROMISE_DEATH_TEST(MissingCatchLongChain)) {
   scoped_refptr<AbstractPromise> p0 =
       DoNothingPromiseBuilder(FROM_HERE).SetCanResolve(true);
 
@@ -1462,12 +1455,11 @@ TEST_F(AbstractPromiseTest, MissingCatchLongChain) {
   // cleared so we need to tidy up.
   scoped_refptr<AbstractPromise> p5 = CatchPromise(FROM_HERE, p4);
   RunLoop().RunUntilIdle();
-#endif
 }
 
 TEST_F(AbstractPromiseTest,
-       ThenAddedToSettledPromiseWithMissingCatchAndSeveralDependents) {
-#if DCHECK_DEATH_TEST_ENABLED
+       ABSTRACT_PROMISE_DEATH_TEST(
+           ThenAddedToSettledPromiseWithMissingCatchAndSeveralDependents)) {
   scoped_refptr<AbstractPromise> p0 =
       DoNothingPromiseBuilder(FROM_HERE).SetCanResolve(true);
 
@@ -1498,11 +1490,11 @@ TEST_F(AbstractPromiseTest,
   scoped_refptr<AbstractPromise> p7 = CatchPromise(FROM_HERE, p4);
   scoped_refptr<AbstractPromise> p8 = CatchPromise(FROM_HERE, p5);
   RunLoop().RunUntilIdle();
-#endif
 }
 
-TEST_F(AbstractPromiseTest, ThenAddedAfterChainExecutionWithMissingCatch) {
-#if DCHECK_DEATH_TEST_ENABLED
+TEST_F(
+    AbstractPromiseTest,
+    ABSTRACT_PROMISE_DEATH_TEST(ThenAddedAfterChainExecutionWithMissingCatch)) {
   scoped_refptr<AbstractPromise> p0 =
       DoNothingPromiseBuilder(FROM_HERE).SetCanResolve(true);
 
@@ -1532,7 +1524,6 @@ TEST_F(AbstractPromiseTest, ThenAddedAfterChainExecutionWithMissingCatch) {
   // cleared so we need to tidy up.
   scoped_refptr<AbstractPromise> p5 = CatchPromise(FROM_HERE, p4);
   RunLoop().RunUntilIdle();
-#endif
 }
 
 TEST_F(AbstractPromiseTest, CatchAddedAfterChainExecution) {
@@ -1560,8 +1551,8 @@ TEST_F(AbstractPromiseTest, CatchAddedAfterChainExecution) {
   RunLoop().RunUntilIdle();
 }
 
-TEST_F(AbstractPromiseTest, MultipleThensAddedAfterChainExecution) {
-#if DCHECK_DEATH_TEST_ENABLED
+TEST_F(AbstractPromiseTest,
+       ABSTRACT_PROMISE_DEATH_TEST(MultipleThensAddedAfterChainExecution)) {
   scoped_refptr<AbstractPromise> p0 =
       DoNothingPromiseBuilder(FROM_HERE).SetCanResolve(true);
 
@@ -1600,7 +1591,6 @@ TEST_F(AbstractPromiseTest, MultipleThensAddedAfterChainExecution) {
   scoped_refptr<AbstractPromise> p9 = CatchPromise(FROM_HERE, p6);
   scoped_refptr<AbstractPromise> p10 = CatchPromise(FROM_HERE, p7);
   RunLoop().RunUntilIdle();
-#endif
 }
 
 TEST_F(AbstractPromiseTest, MultipleDependentsAddedAfterChainExecution) {
@@ -1652,8 +1642,9 @@ TEST_F(AbstractPromiseTest, CatchAfterLongChain) {
   RunLoop().RunUntilIdle();
 }
 
-TEST_F(AbstractPromiseTest, MissingCatchOneSideOfBranchedExecutionChain) {
-#if DCHECK_DEATH_TEST_ENABLED
+TEST_F(
+    AbstractPromiseTest,
+    ABSTRACT_PROMISE_DEATH_TEST(MissingCatchOneSideOfBranchedExecutionChain)) {
   /*
    * Key:  T = Then, C = Catch
    *
@@ -1690,27 +1681,25 @@ TEST_F(AbstractPromiseTest, MissingCatchOneSideOfBranchedExecutionChain) {
   // cleared so we need to tidy up.
   scoped_refptr<AbstractPromise> p5 = CatchPromise(FROM_HERE, p4);
   RunLoop().RunUntilIdle();
-#endif
 }
 
-TEST_F(AbstractPromiseTest, CantResolveIfpromiseDeclaredAsNonResolving) {
-#if DCHECK_DEATH_TEST_ENABLED
+TEST_F(
+    AbstractPromiseTest,
+    ABSTRACT_PROMISE_DEATH_TEST(CantResolveIfpromiseDeclaredAsNonResolving)) {
   scoped_refptr<AbstractPromise> p = DoNothingPromiseBuilder(FROM_HERE);
 
   EXPECT_DCHECK_DEATH({ p->OnResolved(); });
-#endif
 }
 
-TEST_F(AbstractPromiseTest, CantRejectIfpromiseDeclaredAsNonRejecting) {
-#if DCHECK_DEATH_TEST_ENABLED
+TEST_F(AbstractPromiseTest,
+       ABSTRACT_PROMISE_DEATH_TEST(CantRejectIfpromiseDeclaredAsNonRejecting)) {
   scoped_refptr<AbstractPromise> p = DoNothingPromiseBuilder(FROM_HERE);
 
   EXPECT_DCHECK_DEATH({ p->OnRejected(); });
-#endif
 }
 
-TEST_F(AbstractPromiseTest, DoubleMoveDoNothingPromise) {
-#if DCHECK_DEATH_TEST_ENABLED
+TEST_F(AbstractPromiseTest,
+       ABSTRACT_PROMISE_DEATH_TEST(DoubleMoveDoNothingPromise)) {
   scoped_refptr<AbstractPromise> p1 =
       DoNothingPromiseBuilder(FROM_HERE).SetCanResolve(true);
 
@@ -1731,7 +1720,6 @@ TEST_F(AbstractPromiseTest, DoubleMoveDoNothingPromise) {
               p->OnResolved();
             }));
   });
-#endif
 }
 
 TEST_F(AbstractPromiseTest, CatchBothSidesOfBranchedExecutionChain) {
