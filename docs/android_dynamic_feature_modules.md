@@ -70,14 +70,14 @@ and add:
         <dist:fusing dist:include="false" />
     </dist:module>
 
-    <!-- Remove hasCode="false" when adding Java code. -->
-    <application hasCode="false" />
+    <!-- Remove android:hasCode="false" when adding Java code. -->
+    <application android:hasCode="false" />
 </manifest>
 ```
 
 Then, add a package ID for Foo so that Foo's resources have unique identifiers.
 For this, add a new ID to
-`//chrome/android/features/module_names_to_package_ids.gni`:
+`//chrome/android/features/dynamic_feature_modules.gni`:
 
 ```gn
 resource_packages_id_mapping = [
@@ -100,7 +100,7 @@ the following:
 ```gn
 import("//build/config/android/rules.gni")
 import("//build/config/locales.gni")
-import("//chrome/android/features/module_names_to_package_ids.gni")
+import("//chrome/android/features/dynamic_feature_modules.gni")
 
 template("foo_module_tmpl") {
   _manifest = "$target_gen_dir/$target_name/AndroidManifest.xml"
@@ -134,21 +134,22 @@ template("foo_module_tmpl") {
 ```
 
 Then, instantiate the module template in `//chrome/android/BUILD.gn` inside the
-`monochrome_public_bundle_tmpl` template and add it to the bundle target:
+`monochrome_or_trichrome_public_bundle_tmpl` template and add it to the bundle
+target:
 
 ```gn
 ...
 import("modules/foo/foo_module_tmpl.gni")
 ...
-template("monochrome_public_bundle_tmpl") {
+template("monochrome_or_trichrome_public_bundle_tmpl") {
   ...
   foo_module_tmpl("${target_name}__foo_bundle_module") {
     manifest_package = manifest_package
     module_name = "Foo" + _bundle_name
     base_module_target = ":$_base_module_target_name"
-    version_code = monochrome_version_code
-    version_name = chrome_version_name
     uncompress_shared_libraries = true
+    version_code = _version_code
+    version_name = _version_name
   }
   ...
   android_app_bundle(target_name) {
@@ -361,7 +362,7 @@ android_app_bundle_module(target_name) {
 ```
 
 Finally, tell Android that your module is now containing code. Do that by
-removing the `hasCode="false"` attribute from the `<application>` tag in
+removing the `android:hasCode="false"` attribute from the `<application>` tag in
 `//chrome/android/features/foo/java/AndroidManifest.xml`. You should be left
 with an empty tag like so:
 
@@ -586,8 +587,7 @@ Fake-install and launch Chrome with the following command:
 
 ```shell
 $ $OUTDIR/bin/monochrome_public_bundle install -m base -f foo
-$ $OUTDIR/bin/monochrome_public_bundle launch \
-    --args="--fake-feature-module-install"
+$ $OUTDIR/bin/monochrome_public_bundle launch --args="--fake-feature-module-install"
 ```
 
 When running the install code, the Foo DFM module will be emulated.
