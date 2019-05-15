@@ -224,7 +224,7 @@ void LogPowerMLSmartDimParameterResult(SmartDimParameterResult result) {
 
 // Returns "dim_threshold" from experiment parameter. Also logs status to UMA.
 float GetDimThreshold() {
-  const double default_threshold = -0.18;
+  const double default_threshold = -1.0;
   const double dim_threshold = base::GetFieldTrialParamByFeatureAsDouble(
       features::kUserActivityPrediction, "dim_threshold", default_threshold);
   if (std::abs(dim_threshold - default_threshold) < 1e-10) {

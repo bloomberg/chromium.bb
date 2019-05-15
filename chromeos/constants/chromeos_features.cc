@@ -127,7 +127,7 @@ const base::Feature kUserActivityPrediction{"UserActivityPrediction",
 // Enables or disables ML service inferencing (instead of TFNative inferencing)
 // for the Smart Dim feature on Chrome OS.
 const base::Feature kUserActivityPredictionMlService{
-    "UserActivityPredictionMlService", base::FEATURE_DISABLED_BY_DEFAULT};
+    "UserActivityPredictionMlService", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable or disable native controls in video player on Chrome OS.
 const base::Feature kVideoPlayerNativeControls{
