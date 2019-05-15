@@ -26,9 +26,21 @@ InitiatorLockCompatibility VerifyRequestInitiatorLock(
   const url::Origin& lock = request_initiator_site_lock.value();
 
   if (!request_initiator.has_value()) {
-    // This should only happen for the browser process (or if NetworkService is
-    // not enabled).
-    DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
+    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+      // SECURITY CHECK: Renderer processes should always provide a
+      // |request_initiator|.  Similarly, browser-side features acting on
+      // behalf of a renderer process (like AppCache), should always provide a
+      // |request_initiator|.
+      //
+      // Callers associated with features (e.g. Sec-Fetch-Site) that may handle
+      // browser-initiated requests (e.g. navigations and/or SafeBrowsing
+      // traffic) need to take extra care to avoid calling
+      // VerifyRequestInitiatorLock (and/or GetTrustworthyInitiator) with no
+      // |request_initiator|.  Such features should return early when handling
+      // request with no |request_initiator| but only when the request comes
+      // through a URLLoaderFactory associated with kBrowserProcessId.
+      CHECK(false);
+    }
     return InitiatorLockCompatibility::kNoInitiator;
   }
   const url::Origin& initiator = request_initiator.value();
@@ -42,10 +54,8 @@ InitiatorLockCompatibility VerifyRequestInitiatorLock(
   // TODO(lukasza, nasko): https://crbug.com/888079: Return kIncorrectLock if
   // the origins do not match exactly in the previous if statement.  This should
   // be possible to do once we no longer fall back to site_url and have
-  // request_initiator_*origin*_lock instead.  The fallback will go away after:
-  // - We have precursor origins: https://crbug.com/888079
-  // and
-  // - We no longer vend process-wide factory: https://crbug.com/891872
+  // request_initiator_*origin*_lock instead.  In practice, the fallback can go
+  // away after we no longer vend process-wide factory: https://crbug.com/891872
   if (!initiator.opaque() && !lock.opaque() &&
       initiator.scheme() == lock.scheme() &&
       initiator.GetURL().SchemeIsHTTPOrHTTPS() &&

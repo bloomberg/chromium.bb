@@ -48,6 +48,7 @@
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/resource_scheduler_client.h"
+#include "services/network/sec_fetch_site.h"
 #include "services/network/throttling/scoped_throttling_token.h"
 
 namespace network {
@@ -405,6 +406,8 @@ URLLoader::URLLoader(
 
   url_request_->set_initiator(request.request_initiator);
 
+  SetSecFetchSiteHeader(url_request_.get(), nullptr, *factory_params_);
+
   if (request.update_first_party_url_on_redirect) {
     url_request_->set_first_party_url_policy(
         net::URLRequest::UPDATE_FIRST_PARTY_URL_ON_REDIRECT);
@@ -729,6 +732,9 @@ void URLLoader::OnReceivedRedirect(net::URLRequest* url_request,
     DeleteSelf();
     return;
   }
+
+  SetSecFetchSiteHeader(url_request_.get(), &redirect_info.new_url,
+                        *factory_params_);
 
   url_loader_client_->OnReceiveRedirect(redirect_info, response->head);
 }

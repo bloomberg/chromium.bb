@@ -232,26 +232,12 @@ void AddAdditionalRequestHeaders(net::HttpRequestHeaders* headers,
   // TODO(mkwst): Extract this logic out somewhere that can be shared between
   // Blink and //content.
   if (IsFetchMetadataEnabled() && IsOriginSecure(url)) {
-    std::string site_value = "cross-site";
-    std::string user_value = has_user_gesture ? "?1" : std::string();
-
     // Navigations that aren't triggerable from the web (e.g. typing in the
-    // address bar, or clicking a bookmark) are labeled as 'none'. Webby
-    // navigations compare the |initiator_origin| to the navigation target.
-    if (!PageTransitionIsWebTriggerable(transition)) {
-      site_value = "none";
+    // address bar, or clicking a bookmark) are labeled as user-initiated.
+    std::string user_value = has_user_gesture ? "?1" : std::string();
+    if (!PageTransitionIsWebTriggerable(transition))
       user_value = "?1";
-    } else if (initiator_origin) {
-      url::Origin target_origin = url::Origin::Create(url);
-      if (initiator_origin->IsSameOriginWith(target_origin)) {
-        site_value = "same-origin";
-      } else if (net::registry_controlled_domains::SameDomainOrHost(
-                     *initiator_origin, target_origin,
-                     net::registry_controlled_domains::
-                         INCLUDE_PRIVATE_REGISTRIES)) {
-        site_value = "same-site";
-      }
-    }
+
     std::string destination;
     std::string mode = "navigate";
     switch (frame_tree_node->frame_owner_element_type()) {
@@ -280,9 +266,9 @@ void AddAdditionalRequestHeaders(net::HttpRequestHeaders* headers,
       headers->SetHeaderIfMissing("Sec-Fetch-Dest", destination.c_str());
     }
     headers->SetHeaderIfMissing("Sec-Fetch-Mode", mode.c_str());
-    headers->SetHeaderIfMissing("Sec-Fetch-Site", site_value.c_str());
     if (!user_value.empty())
       headers->SetHeaderIfMissing("Sec-Fetch-User", user_value.c_str());
+    // Sec-Fetch-Site is covered by network::SetSecFetchSiteHeader function.
   }
 
   // Ask whether we should request a policy.

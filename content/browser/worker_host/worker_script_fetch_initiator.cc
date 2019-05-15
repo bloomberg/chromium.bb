@@ -222,20 +222,8 @@ void WorkerScriptFetchInitiator::AddAdditionalRequestHeaders(
   if ((base::FeatureList::IsEnabled(network::features::kFetchMetadata) ||
        experimental_features_enabled) &&
       IsOriginSecure(resource_request->url)) {
-    // The worker's origin can be different from the constructor's origin, for
-    // example, when the worker created from the extension.
-    // TODO(hiroshige): Add DCHECK to make sure the same-originness once the
-    // cross-origin workers are deprecated (https://crbug.com/867302).
-    std::string site_value = "cross-site";
-    if (resource_request->request_initiator->IsSameOriginWith(
-            url::Origin::Create(resource_request->url))) {
-      site_value = "same-origin";
-    }
-    resource_request->headers.SetHeaderIfMissing("Sec-Fetch-Site",
-                                                 site_value.c_str());
     resource_request->headers.SetHeaderIfMissing("Sec-Fetch-Mode",
                                                  "same-origin");
-    // We don't set `Sec-Fetch-User` for subresource requests.
 
     if (base::FeatureList::IsEnabled(
             network::features::kFetchMetadataDestination) ||
@@ -243,6 +231,10 @@ void WorkerScriptFetchInitiator::AddAdditionalRequestHeaders(
       resource_request->headers.SetHeaderIfMissing("Sec-Fetch-Dest",
                                                    "sharedworker");
     }
+
+    // Note that the `Sec-Fetch-User` header is always false (and therefore
+    // omitted) for subresource requests. Also note that `Sec-Fetch-Site` is
+    // covered elsewhere - by the network::SetSecFetchSiteHeader function.
   }
 }
 

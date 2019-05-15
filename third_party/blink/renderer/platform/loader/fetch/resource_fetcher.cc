@@ -314,22 +314,6 @@ void SetSecFetchHeaders(
     // We'll handle adding these headers to navigations outside of Blink.
     if (strncmp(destination_value, "document", 8) != 0 &&
         request.GetRequestContext() != mojom::RequestContextType::INTERNAL) {
-      const char* site_value = "cross-site";
-      if (url_origin->IsSameSchemeHostPort(
-              fetch_client_settings_object.GetSecurityOrigin())) {
-        site_value = "same-origin";
-      } else {
-        OriginAccessEntry access_entry(
-            request.Url().Protocol(), request.Url().Host(),
-            network::mojom::CorsOriginAccessMatchMode::
-                kAllowRegistrableDomains);
-        if (access_entry.MatchesOrigin(
-                *fetch_client_settings_object.GetSecurityOrigin()) ==
-            network::cors::OriginAccessEntry::kMatchesOrigin) {
-          site_value = "same-site";
-        }
-      }
-
       if (blink::RuntimeEnabledFeatures::FetchMetadataDestinationEnabled()) {
         request.SetHttpHeaderField("Sec-Fetch-Dest", destination_value);
       }
@@ -337,8 +321,11 @@ void SetSecFetchHeaders(
       request.SetHttpHeaderField(
           "Sec-Fetch-Mode",
           FetchRequestModeToString(request.GetFetchRequestMode()));
-      request.SetHttpHeaderField("Sec-Fetch-Site", site_value);
-      // We don't set `Sec-Fetch-User` for subresource requests.
+
+      // Note that the `Sec-Fetch-User` header is always false (and therefore
+      // omitted) for subresource requests. Likewise, note that we rely on
+      // Blink's embedder to set `Sec-Fetch-Site`, as we don't want to trust the
+      // renderer to assert its own origin.
     }
   }
 }

@@ -52,6 +52,7 @@
 #include "content/browser/loader/resource_message_filter.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/loader/resource_requester_info.h"
+#include "content/browser/loader/sec_fetch_site_resource_handler.h"
 #include "content/browser/loader/stream_resource_handler.h"
 #include "content/browser/loader/throttling_resource_handler.h"
 #include "content/browser/loader/upload_data_stream_builder.h"
@@ -1159,6 +1160,8 @@ ResourceDispatcherHostImpl::AddStandardHandlers(
 #if BUILDFLAG(ENABLE_PLUGINS)
   plugin_service = PluginService::GetInstance();
 #endif
+
+  handler.reset(new SecFetchSiteResourceHandler(request, std::move(handler)));
 
   if (!IsResourceTypeFrame(resource_type)) {
     // Add a handler to block cross-site documents from the renderer process.
