@@ -116,6 +116,10 @@ SyncedBookmarkTracker::SyncedBookmarkTracker(
       // Otherwise, it must be a deletion so we must remember to deletion
       // ordering.
       DCHECK(entity->metadata()->is_deleted());
+      // TODO(crbug.com/516866): The below CHECK is added to debug some crashes.
+      // Should be removed after figuring out the reason for the crash.
+      CHECK_EQ(0, std::count(ordered_local_tombstones_.begin(),
+                             ordered_local_tombstones_.end(), entity.get()));
       ordered_local_tombstones_.push_back(entity.get());
     }
     // TODO(crbug.com/516866): The below CHECK is added to debug some crashes.
@@ -284,6 +288,10 @@ void SyncedBookmarkTracker::MarkDeleted(const std::string& sync_id) {
   // Clear all references to the deleted bookmark node.
   bookmark_node_to_entities_map_.erase(entity->bookmark_node());
   entity->clear_bookmark_node();
+  // TODO(crbug.com/516866): The below CHECK is added to debug some crashes.
+  // Should be removed after figuring out the reason for the crash.
+  CHECK_EQ(0, std::count(ordered_local_tombstones_.begin(),
+                         ordered_local_tombstones_.end(), entity));
   ordered_local_tombstones_.push_back(entity);
 }
 
@@ -376,6 +384,10 @@ SyncedBookmarkTracker::GetEntitiesWithLocalChanges(size_t max_entries) const {
   std::vector<const SyncedBookmarkTracker::Entity*> ordered_local_changes =
       ReorderUnsyncedEntitiesExceptDeletions(entities_with_local_changes);
   for (const Entity* tombstone_entity : ordered_local_tombstones_) {
+    // TODO(crbug.com/516866): The below CHECK is added to debug some crashes.
+    // Should be removed after figuring out the reason for the crash.
+    CHECK_EQ(0, std::count(ordered_local_changes.begin(),
+                           ordered_local_changes.end(), tombstone_entity));
     ordered_local_changes.push_back(tombstone_entity);
   }
   if (ordered_local_changes.size() > max_entries) {
