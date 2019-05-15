@@ -2607,29 +2607,6 @@ void LayoutBlockFlow::ComputeLayoutOverflow(LayoutUnit old_client_after_edge,
     AddLayoutOverflowFromFloats();
 }
 
-void LayoutBlockFlow::AbsoluteRects(
-    Vector<IntRect>& rects,
-    const LayoutPoint& accumulated_offset) const {
-  if (!IsAnonymousBlockContinuation()) {
-    LayoutBlock::AbsoluteRects(rects, accumulated_offset);
-    return;
-  }
-  // For blocks inside inlines, we go ahead and include margins so that we run
-  // right up to the inline boxes above and below us (thus getting merged with
-  // them to form a single irregular shape).
-  // FIXME: This is wrong for vertical writing-modes.
-  // https://bugs.webkit.org/show_bug.cgi?id=46781
-  LayoutRect rect(accumulated_offset, Size());
-  rect.Expand(CollapsedMarginBoxLogicalOutsets());
-  rects.push_back(PixelSnappedIntRect(rect));
-  Continuation()->AbsoluteRects(
-      rects,
-      accumulated_offset -
-          ToLayoutSize(
-              Location() +
-              InlineElementContinuation()->ContainingBlock()->Location()));
-}
-
 void LayoutBlockFlow::AbsoluteQuads(Vector<FloatQuad>& quads,
                                     MapCoordinatesFlags mode) const {
   if (!IsAnonymousBlockContinuation()) {

@@ -393,16 +393,8 @@ void ThemePainter::PaintSliderTicks(const LayoutObject& o,
       input->UserAgentShadowRoot()
           ->getElementById(shadow_element_names::SliderTrack())
           ->GetLayoutObject();
-  // We can ignoring transforms because transform is handled by the graphics
-  // context.
   if (track_layout_object)
-    track_bounds =
-        track_layout_object->AbsoluteBoundingBoxRectIgnoringTransforms();
-  IntRect slider_bounds = o.AbsoluteBoundingBoxRectIgnoringTransforms();
-
-  // Make position relative to the transformed ancestor element.
-  track_bounds.SetX(track_bounds.X() - slider_bounds.X() + rect.X());
-  track_bounds.SetY(track_bounds.Y() - slider_bounds.Y() + rect.Y());
+    track_bounds = track_layout_object->FirstFragment().VisualRect();
 
   if (is_horizontal) {
     tick_rect.SetWidth(floor(tick_size.Width() * zoom_factor));

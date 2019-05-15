@@ -373,39 +373,6 @@ String LayoutText::PlainText() const {
   return plain_text_builder.ToString();
 }
 
-void LayoutText::AbsoluteRects(Vector<IntRect>& rects,
-                               const LayoutPoint& accumulated_offset) const {
-  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
-    auto fragments = NGPaintFragment::InlineFragmentsFor(this);
-    if (fragments.IsInLayoutNGInlineFormattingContext()) {
-      Vector<LayoutRect, 32> layout_rects;
-      for (const NGPaintFragment* fragment : fragments) {
-        layout_rects.push_back(
-            LayoutRect(fragment->InlineOffsetToContainerBox().ToLayoutPoint(),
-                       fragment->Size().ToLayoutSize()));
-      }
-      // |rect| is in flipped block physical coordinate, but LayoutNG is in
-      // physical coordinate. Flip if needed.
-      if (UNLIKELY(HasFlippedBlocksWritingMode())) {
-        LayoutBlock* block = ContainingBlock();
-        DCHECK(block);
-        for (LayoutRect& rect : layout_rects)
-          block->FlipForWritingMode(rect);
-      }
-      for (LayoutRect& rect : layout_rects) {
-        rect.MoveBy(accumulated_offset);
-        rects.push_back(EnclosingIntRect(rect));
-      }
-      return;
-    }
-  }
-
-  for (InlineTextBox* box : TextBoxes()) {
-    rects.push_back(EnclosingIntRect(LayoutRect(
-        LayoutPoint(accumulated_offset) + box->Location(), box->Size())));
-  }
-}
-
 static FloatRect LocalQuadForTextBox(InlineTextBox* box,
                                      unsigned start,
                                      unsigned end) {

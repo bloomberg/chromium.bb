@@ -922,8 +922,7 @@ DOMRectReadOnly* Internals::boundingBox(Element* element) {
   LayoutObject* layout_object = element->GetLayoutObject();
   if (!layout_object)
     return DOMRectReadOnly::Create(0, 0, 0, 0);
-  return DOMRectReadOnly::FromIntRect(
-      layout_object->AbsoluteBoundingBoxRectIgnoringTransforms());
+  return DOMRectReadOnly::FromIntRect(layout_object->AbsoluteBoundingBoxRect());
 }
 
 void Internals::setMarker(Document* document,

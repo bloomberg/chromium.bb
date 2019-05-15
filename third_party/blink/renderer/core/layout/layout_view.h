@@ -148,8 +148,6 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
 
   void CommitPendingSelection();
 
-  void AbsoluteRects(Vector<IntRect>&,
-                     const LayoutPoint& accumulated_offset) const override;
   void AbsoluteQuads(Vector<FloatQuad>&,
                      MapCoordinatesFlags mode = 0) const override;
 

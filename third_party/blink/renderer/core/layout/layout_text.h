@@ -112,9 +112,6 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   void DirtyOrDeleteLineBoxesIfNeeded(bool full_layout);
   void DirtyLineBoxes();
 
-  void AbsoluteRects(Vector<IntRect>&,
-                     const LayoutPoint& accumulated_offset) const final;
-
   void AbsoluteQuads(Vector<FloatQuad>&,
                      MapCoordinatesFlags mode = 0) const final;
   void AbsoluteQuadsForRange(Vector<FloatQuad>&,

@@ -725,8 +725,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
                              CollapsedMarginAfter(), LayoutUnit());
   }
 
-  void AbsoluteRects(Vector<IntRect>&,
-                     const LayoutPoint& accumulated_offset) const override;
   void AbsoluteQuads(Vector<FloatQuad>&,
                      MapCoordinatesFlags mode = 0) const override;
   FloatRect LocalBoundingBoxRectForAccessibility() const final;

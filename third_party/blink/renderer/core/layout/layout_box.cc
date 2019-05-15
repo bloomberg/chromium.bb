@@ -750,11 +750,6 @@ void LayoutBox::SetMargin(const NGPhysicalBoxStrut& box) {
   margin_box_outsets_.SetLeft(box.left);
 }
 
-void LayoutBox::AbsoluteRects(Vector<IntRect>& rects,
-                              const LayoutPoint& accumulated_offset) const {
-  rects.push_back(PixelSnappedIntRect(accumulated_offset, Size()));
-}
-
 void LayoutBox::AbsoluteQuads(Vector<FloatQuad>& quads,
                               MapCoordinatesFlags mode) const {
   if (LayoutFlowThread* flow_thread = FlowThreadContainingBlock()) {

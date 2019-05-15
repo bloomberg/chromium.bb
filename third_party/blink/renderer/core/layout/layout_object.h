@@ -1572,15 +1572,11 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // not be on the containing block chain of |this|.
   LayoutSize OffsetFromAncestor(const LayoutObject*) const;
 
-  virtual void AbsoluteRects(Vector<IntRect>&, const LayoutPoint&) const {}
-
   FloatRect AbsoluteBoundingBoxFloatRect(MapCoordinatesFlags = 0) const;
   // This returns an IntRect enclosing this object. If this object has an
   // integral size and the position has fractional values, the resultant
   // IntRect can be larger than the integral size.
   IntRect AbsoluteBoundingBoxRect(MapCoordinatesFlags = 0) const;
-  // FIXME: This function should go away eventually
-  IntRect AbsoluteBoundingBoxRectIgnoringTransforms() const;
 
   // These two functions also handle inlines without content for which the
   // location of the result rect (which may be empty) should be the absolute

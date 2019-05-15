@@ -54,8 +54,6 @@ class LayoutSVGModelObject : public LayoutObject {
     return local_visual_rect_;
   }
 
-  void AbsoluteRects(Vector<IntRect>&,
-                     const LayoutPoint& accumulated_offset) const final;
   void AbsoluteQuads(Vector<FloatQuad>&,
                      MapCoordinatesFlags mode = 0) const override;
   FloatRect LocalBoundingBoxRectForAccessibility() const final;

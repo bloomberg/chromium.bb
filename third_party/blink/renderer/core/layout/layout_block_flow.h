@@ -483,8 +483,6 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
 
   void UpdateBlockChildDirtyBitsBeforeLayout(bool relayout_children,
                                              LayoutBox&);
-  void AbsoluteRects(Vector<IntRect>&,
-                     const LayoutPoint& accumulated_offset) const override;
   void AbsoluteQuads(Vector<FloatQuad>&,
                      MapCoordinatesFlags mode = 0) const override;
   void AbsoluteQuadsForSelf(Vector<FloatQuad>& quads,

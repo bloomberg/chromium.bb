@@ -549,10 +549,11 @@ TEST_P(ParameterizedLayoutTextTest, IsBeforeAfterNonCollapsedCharacterBR) {
   EXPECT_TRUE(GetBasicText()->IsAfterNonCollapsedCharacter(1));
 }
 
-TEST_P(ParameterizedLayoutTextTest, AbsoluteRects) {
+TEST_P(ParameterizedLayoutTextTest, AbsoluteQuads) {
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
     <style>
+    body { margin: 0 }
     div {
       font: 10px/1 Ahem;
       width: 5em;
@@ -561,16 +562,17 @@ TEST_P(ParameterizedLayoutTextTest, AbsoluteRects) {
     <div>012<span id=target>345 67</span></div>
   )HTML");
   LayoutText* layout_text = GetLayoutTextById("target");
-  Vector<IntRect> rects;
-  layout_text->AbsoluteRects(rects, {LayoutUnit(100), LayoutUnit(200)});
-  EXPECT_THAT(rects, testing::ElementsAre(IntRect(130, 200, 30, 10),
-                                          IntRect(100, 210, 20, 10)));
+  Vector<FloatQuad> quads;
+  layout_text->AbsoluteQuads(quads);
+  EXPECT_THAT(quads, testing::ElementsAre(FloatRect(30, 0, 30, 10),
+                                          FloatRect(0, 10, 20, 10)));
 }
 
-TEST_P(ParameterizedLayoutTextTest, AbsoluteRectsVRL) {
+TEST_P(ParameterizedLayoutTextTest, AbsoluteQuadsVRL) {
   LoadAhem();
   SetBodyInnerHTML(R"HTML(
     <style>
+    body { margin: 0 }
     div {
       font: 10px/1 Ahem;
       width: 10em;
@@ -581,10 +583,10 @@ TEST_P(ParameterizedLayoutTextTest, AbsoluteRectsVRL) {
     <div>012<span id=target>345 67</span></div>
   )HTML");
   LayoutText* layout_text = GetLayoutTextById("target");
-  Vector<IntRect> rects;
-  layout_text->AbsoluteRects(rects, {LayoutUnit(100), LayoutUnit(200)});
-  EXPECT_THAT(rects, testing::ElementsAre(IntRect(100, 230, 10, 30),
-                                          IntRect(110, 200, 10, 20)));
+  Vector<FloatQuad> quads;
+  layout_text->AbsoluteQuads(quads);
+  EXPECT_THAT(quads, testing::ElementsAre(FloatRect(90, 30, 10, 30),
+                                          FloatRect(80, 0, 10, 20)));
 }
 
 TEST_P(ParameterizedLayoutTextTest, PhysicalLinesBoundingBox) {

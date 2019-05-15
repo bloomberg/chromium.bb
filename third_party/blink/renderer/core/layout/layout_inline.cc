@@ -928,50 +928,6 @@ void LayoutInline::GenerateCulledLineBoxRects(
 
 namespace {
 
-class AbsoluteRectsGeneratorContext {
- public:
-  AbsoluteRectsGeneratorContext(Vector<IntRect>& rects,
-                                const LayoutPoint& accumulated_offset)
-      : rects_(rects), accumulated_offset_(accumulated_offset) {}
-
-  void operator()(const LayoutRect& rect) {
-    IntRect int_rect = EnclosingIntRect(rect);
-    int_rect.Move(accumulated_offset_.X().ToInt(),
-                  accumulated_offset_.Y().ToInt());
-    rects_.push_back(int_rect);
-  }
-
- private:
-  Vector<IntRect>& rects_;
-  const LayoutPoint& accumulated_offset_;
-};
-
-}  // unnamed namespace
-
-void LayoutInline::AbsoluteRects(Vector<IntRect>& rects,
-                                 const LayoutPoint& accumulated_offset) const {
-  AbsoluteRectsGeneratorContext context(rects, accumulated_offset);
-  GenerateLineBoxRects(context);
-  if (rects.IsEmpty())
-    context(LayoutRect());
-
-  if (const LayoutBoxModelObject* continuation = Continuation()) {
-    if (continuation->IsBox()) {
-      const LayoutBox* box = ToLayoutBox(continuation);
-      continuation->AbsoluteRects(
-          rects,
-          ToLayoutPoint(accumulated_offset - ContainingBlock()->Location() +
-                        box->LocationOffset()));
-    } else {
-      continuation->AbsoluteRects(
-          rects,
-          ToLayoutPoint(accumulated_offset - ContainingBlock()->Location()));
-    }
-  }
-}
-
-namespace {
-
 class AbsoluteQuadsGeneratorContext {
  public:
   AbsoluteQuadsGeneratorContext(const LayoutInline* layout_object,

@@ -1278,21 +1278,6 @@ IntRect LayoutObject::AbsoluteBoundingBoxRect(MapCoordinatesFlags flags) const {
   return result;
 }
 
-IntRect LayoutObject::AbsoluteBoundingBoxRectIgnoringTransforms() const {
-  FloatPoint abs_pos = LocalToAbsolute();
-  Vector<IntRect> rects;
-  AbsoluteRects(rects, FlooredLayoutPoint(abs_pos));
-
-  wtf_size_t n = rects.size();
-  if (!n)
-    return IntRect();
-
-  IntRect result = rects[0];
-  for (wtf_size_t i = 1; i < n; ++i)
-    result.Unite(rects[i]);
-  return result;
-}
-
 LayoutRect LayoutObject::AbsoluteBoundingBoxRectHandlingEmptyInline() const {
   return EnclosingLayoutRect(AbsoluteBoundingBoxFloatRect());
 }

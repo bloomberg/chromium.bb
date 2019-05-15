@@ -73,14 +73,6 @@ const LayoutObject* LayoutSVGModelObject::PushMappingToContainer(
                                                   geometry_map);
 }
 
-void LayoutSVGModelObject::AbsoluteRects(
-    Vector<IntRect>& rects,
-    const LayoutPoint& accumulated_offset) const {
-  IntRect rect = EnclosingIntRect(StrokeBoundingBox());
-  rect.MoveBy(RoundedIntPoint(accumulated_offset));
-  rects.push_back(rect);
-}
-
 void LayoutSVGModelObject::AbsoluteQuads(Vector<FloatQuad>& quads,
                                          MapCoordinatesFlags mode) const {
   quads.push_back(LocalToAbsoluteQuad(StrokeBoundingBox(), mode));

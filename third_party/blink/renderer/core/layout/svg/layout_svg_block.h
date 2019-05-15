@@ -78,9 +78,6 @@ class LayoutSVGBlock : public LayoutBlockFlow {
 
   LayoutRect VisualRectInDocument(VisualRectFlags) const final;
 
-  void AbsoluteRects(Vector<IntRect>&,
-                     const LayoutPoint& accumulated_offset) const final;
-
   void UpdateFromStyle() final;
 
   bool NodeAtPoint(HitTestResult&,

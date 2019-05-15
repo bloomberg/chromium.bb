@@ -148,8 +148,6 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
   LayoutUnit MarginTop() const final;
   LayoutUnit MarginBottom() const final;
 
-  void AbsoluteRects(Vector<IntRect>&,
-                     const LayoutPoint& accumulated_offset) const final;
   FloatRect LocalBoundingBoxRectForAccessibility() const final;
 
   LayoutRect PhysicalLinesBoundingBox() const;
