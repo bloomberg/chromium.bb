@@ -21,12 +21,27 @@ inline void PostCrossThreadTask(base::SequencedTaskRunner& task_runner,
                               base::TimeDelta());
 }
 
+inline void PostCrossThreadTask(base::SequencedTaskRunner& task_runner,
+                                const base::Location& location,
+                                WTF::CrossThreadOnceClosure task) {
+  task_runner.PostDelayedTask(
+      location, ConvertToBaseOnceCallback(std::move(task)), base::TimeDelta());
+}
+
 inline void PostDelayedCrossThreadTask(base::SequencedTaskRunner& task_runner,
                                        const base::Location& location,
                                        WTF::CrossThreadClosure task,
                                        base::TimeDelta delay) {
   task_runner.PostDelayedTask(location, ConvertToBaseCallback(std::move(task)),
                               delay);
+}
+
+inline void PostDelayedCrossThreadTask(base::SequencedTaskRunner& task_runner,
+                                       const base::Location& location,
+                                       WTF::CrossThreadOnceClosure task,
+                                       base::TimeDelta delay) {
+  task_runner.PostDelayedTask(
+      location, ConvertToBaseOnceCallback(std::move(task)), delay);
 }
 
 }  // namespace blink

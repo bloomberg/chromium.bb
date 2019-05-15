@@ -62,11 +62,9 @@ namespace WTF {
 // WTF::Bind(), WTF::BindRepeating and base::{Once,Repeating}Callback should
 // be used for same-thread closures only, i.e. the closures must be created,
 // executed and destructed on the same thread.
-// Use crossThreadBind() and CrossThreadClosure if the function/task is called
-// or destructed on a (potentially) different thread from the current thread.
-//
-// Currently, WTF::CrossThreadClosure does not distinguish Once and Repeating
-// usage.
+// Use CrossThreadBind() and CrossThreadBindOnce() if the function/task is
+// called or destructed on a (potentially) different thread from the current
+// thread.
 
 // WTF::Bind() / WTF::BindRepeating() and move semantics
 // =====================================================
@@ -344,6 +342,42 @@ class CrossThreadFunction<R(Args...)> {
   base::Callback<R(Args...)> callback_;
 };
 
+template <typename Signature>
+class CrossThreadOnceFunction;
+
+template <typename R, typename... Args>
+class CrossThreadOnceFunction<R(Args...)> {
+  USING_FAST_MALLOC(CrossThreadOnceFunction);
+
+ public:
+  CrossThreadOnceFunction() = default;
+  explicit CrossThreadOnceFunction(base::OnceCallback<R(Args...)> callback)
+      : callback_(std::move(callback)) {}
+  ~CrossThreadOnceFunction() = default;
+
+  CrossThreadOnceFunction(const CrossThreadOnceFunction&) = delete;
+  CrossThreadOnceFunction& operator=(const CrossThreadOnceFunction&) = delete;
+
+  CrossThreadOnceFunction(CrossThreadOnceFunction&& other) = default;
+  CrossThreadOnceFunction& operator=(CrossThreadOnceFunction&& other) = default;
+
+  R Run(Args... args) && {
+    return std::move(callback_).Run(std::forward<Args>(args)...);
+  }
+
+  bool IsCancelled() const { return callback_.IsCancelled(); }
+  void Reset() { callback_.Reset(); }
+  explicit operator bool() const { return static_cast<bool>(callback_); }
+
+  friend base::OnceCallback<R(Args...)> ConvertToBaseOnceCallback(
+      CrossThreadOnceFunction function) {
+    return std::move(function.callback_);
+  }
+
+ private:
+  base::OnceCallback<R(Args...)> callback_;
+};
+
 // Note: now there is WTF::Bind()and WTF::BindRepeating(). See the comment block
 // above for the correct usage of those.
 template <typename FunctionType, typename... BoundParameters>
@@ -391,6 +425,8 @@ template <typename T>
 using CrossThreadRepeatingFunction = CrossThreadFunction<T>;
 using CrossThreadRepeatingClosure = CrossThreadFunction<void()>;
 using CrossThreadClosure = CrossThreadFunction<void()>;
+
+using CrossThreadOnceClosure = CrossThreadOnceFunction<void()>;
 
 }  // namespace WTF
 
