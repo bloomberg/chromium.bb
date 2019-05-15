@@ -13,6 +13,7 @@
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/focus_cycler.h"
 #include "ash/ime/ime_controller.h"
+#include "ash/kiosk_next/kiosk_next_shell_controller.h"
 #include "ash/kiosk_next/kiosk_next_shell_test_util.h"
 #include "ash/kiosk_next/mock_kiosk_next_shell_client.h"
 #include "ash/public/cpp/ash_features.h"
@@ -3953,6 +3954,15 @@ class KioskNextShelfViewTest : public ShelfViewTest {
     client_ = BindMockKioskNextShellClient();
   }
 
+ protected:
+  void LogInKioskNextUserInternal() {
+    LogInKioskNextUser(GetSessionControllerClient());
+
+    // The shelf_view_ in ShelfWidget will be replaced. Therefore, we need
+    // to update |shelf_view_|.
+    shelf_view_ = GetPrimaryShelf()->GetShelfViewForTesting();
+  }
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<MockKioskNextShellClient> client_;
@@ -3961,16 +3971,22 @@ class KioskNextShelfViewTest : public ShelfViewTest {
 };
 
 TEST_F(KioskNextShelfViewTest, AppButtonHidden) {
-  LogInKioskNextUser(GetSessionControllerClient());
+  // When a KioskNextUser is not logged in, the shelf model is not hosted
+  // in KioskNextSellController.
+  EXPECT_FALSE(shelf_view_->model() ==
+               Shell::Get()->kiosk_next_shell_controller()->shelf_model());
+
+  LogInKioskNextUserInternal();
+
+  // When a KiosknextUser is logged in, the shelf model for the shelf view
+  // is hosted in KioskNextShellController.
+  EXPECT_TRUE(shelf_view_->model() ==
+              Shell::Get()->kiosk_next_shell_controller()->shelf_model());
 
   // The home and back buttons are always visible.
   EXPECT_TRUE(shelf_view_->GetAppListButton()->GetVisible());
   EXPECT_TRUE(shelf_view_->GetBackButton()->GetVisible());
 
-  // Adding app items doesn't add them to the visible shelf, and the overflow
-  // button remains hidden.
-  AddApp();
-  AddApp();
   ASSERT_FALSE(shelf_view_->GetOverflowButton()->GetVisible());
   EXPECT_EQ(1, shelf_view_->last_visible_index());
 }

@@ -32,14 +32,13 @@ class BackButtonTest : public AshTestBase {
   BackButtonTest() = default;
   ~BackButtonTest() override = default;
 
-  BackButton* back_button() { return back_button_; }
+  BackButton* back_button() { return test_api_->shelf_view()->GetBackButton(); }
   ShelfViewTestAPI* test_api() { return test_api_.get(); }
 
   void SetUp() override {
     AshTestBase::SetUp();
     test_api_ = std::make_unique<ShelfViewTestAPI>(
         GetPrimaryShelf()->GetShelfViewForTesting());
-    back_button_ = test_api_->shelf_view()->GetBackButton();
 
     // Finish all setup tasks. In particular we want to finish the
     // GetSwitchStates post task in (Fake)PowerManagerClient which is triggered
@@ -49,7 +48,6 @@ class BackButtonTest : public AshTestBase {
   }
 
  private:
-  BackButton* back_button_ = nullptr;
   std::unique_ptr<ShelfViewTestAPI> test_api_;
 
   DISALLOW_COPY_AND_ASSIGN(BackButtonTest);
