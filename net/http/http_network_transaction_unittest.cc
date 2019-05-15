@@ -19710,8 +19710,6 @@ TEST_F(HttpNetworkTransactionTest, ZeroRTTDoesntConfirm) {
                 "Connection: keep-alive\r\n\r\n"),
   };
 
-  // The proxy responds to the connect with a 407, using a persistent
-  // connection.
   MockRead data_reads[] = {
       MockRead("HTTP/1.1 200 OK\r\n"),
       MockRead("Content-Length: 1\r\n\r\n"),
@@ -19767,8 +19765,6 @@ TEST_F(HttpNetworkTransactionTest, ZeroRTTSyncConfirmSyncWrite) {
                 "Content-Length: 0\r\n\r\n"),
   };
 
-  // The proxy responds to the connect with a 407, using a persistent
-  // connection.
   MockRead data_reads[] = {
       MockRead("HTTP/1.1 200 OK\r\n"),
       MockRead("Content-Length: 1\r\n\r\n"),
@@ -19823,8 +19819,6 @@ TEST_F(HttpNetworkTransactionTest, ZeroRTTSyncConfirmAsyncWrite) {
                 "Content-Length: 0\r\n\r\n"),
   };
 
-  // The proxy responds to the connect with a 407, using a persistent
-  // connection.
   MockRead data_reads[] = {
       MockRead("HTTP/1.1 200 OK\r\n"),
       MockRead("Content-Length: 1\r\n\r\n"),
@@ -19879,8 +19873,6 @@ TEST_F(HttpNetworkTransactionTest, ZeroRTTAsyncConfirmSyncWrite) {
                 "Content-Length: 0\r\n\r\n"),
   };
 
-  // The proxy responds to the connect with a 407, using a persistent
-  // connection.
   MockRead data_reads[] = {
       MockRead("HTTP/1.1 200 OK\r\n"),
       MockRead("Content-Length: 1\r\n\r\n"),
@@ -19935,8 +19927,6 @@ TEST_F(HttpNetworkTransactionTest, ZeroRTTAsyncConfirmAsyncWrite) {
                 "Content-Length: 0\r\n\r\n"),
   };
 
-  // The proxy responds to the connect with a 407, using a persistent
-  // connection.
   MockRead data_reads[] = {
       MockRead("HTTP/1.1 200 OK\r\n"),
       MockRead("Content-Length: 1\r\n\r\n"),
@@ -19976,6 +19966,107 @@ TEST_F(HttpNetworkTransactionTest, ZeroRTTAsyncConfirmAsyncWrite) {
   session->CloseAllConnections();
 }
 
+// 0-RTT rejects are handled at HttpNetworkTransaction.
+TEST_F(HttpNetworkTransactionTest, ZeroRTTReject) {
+  enum class RejectType {
+    kRead,
+    kWrite,
+    kConfirm,
+  };
+
+  for (RejectType type :
+       {RejectType::kRead, RejectType::kWrite, RejectType::kConfirm}) {
+    SCOPED_TRACE(static_cast<int>(type));
+    for (Error reject_error :
+         {ERR_EARLY_DATA_REJECTED, ERR_WRONG_VERSION_ON_EARLY_DATA}) {
+      SCOPED_TRACE(reject_error);
+      session_deps_.socket_factory =
+          std::make_unique<MockClientSocketFactory>();
+
+      HttpRequestInfo request;
+      request.method = type == RejectType::kConfirm ? "POST" : "GET";
+      request.url = GURL("https://www.example.org/");
+      request.traffic_annotation =
+          net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+
+      // The first request fails.
+      std::vector<MockWrite> data1_writes;
+      std::vector<MockRead> data1_reads;
+      SSLSocketDataProvider ssl1(SYNCHRONOUS, OK);
+      switch (type) {
+        case RejectType::kRead:
+          data1_writes.emplace_back(
+              "GET / HTTP/1.1\r\n"
+              "Host: www.example.org\r\n"
+              "Connection: keep-alive\r\n\r\n");
+          data1_reads.emplace_back(ASYNC, reject_error);
+          // Cause ConfirmHandshake to hang (it should not be called).
+          ssl1.confirm = MockConfirm(SYNCHRONOUS, ERR_IO_PENDING);
+          break;
+        case RejectType::kWrite:
+          data1_writes.emplace_back(ASYNC, reject_error);
+          // Cause ConfirmHandshake to hang (it should not be called).
+          ssl1.confirm = MockConfirm(SYNCHRONOUS, ERR_IO_PENDING);
+          break;
+        case RejectType::kConfirm:
+          // The request never gets far enough to read or write.
+          ssl1.confirm = MockConfirm(ASYNC, reject_error);
+          break;
+      }
+
+      StaticSocketDataProvider data1(data1_reads, data1_writes);
+      session_deps_.socket_factory->AddSocketDataProvider(&data1);
+      session_deps_.enable_early_data = true;
+      session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl1);
+
+      // The retry succeeds.
+      //
+      // TODO(https://crbug.com/950705): If |reject_error| is
+      // ERR_EARLY_DATA_REJECTED, the retry should happen over the same socket.
+      MockWrite data2_writes[] = {
+          request.method == "POST"
+              ? MockWrite("POST / HTTP/1.1\r\n"
+                          "Host: www.example.org\r\n"
+                          "Connection: keep-alive\r\n"
+                          "Content-Length: 0\r\n\r\n")
+              : MockWrite("GET / HTTP/1.1\r\n"
+                          "Host: www.example.org\r\n"
+                          "Connection: keep-alive\r\n\r\n"),
+      };
+
+      MockRead data2_reads[] = {
+          MockRead("HTTP/1.1 200 OK\r\n"),
+          MockRead("Content-Length: 1\r\n\r\n"),
+          MockRead(SYNCHRONOUS, "1"),
+      };
+
+      StaticSocketDataProvider data2(data2_reads, data2_writes);
+      session_deps_.socket_factory->AddSocketDataProvider(&data2);
+      SSLSocketDataProvider ssl2(SYNCHRONOUS, OK);
+      ssl2.confirm = MockConfirm(ASYNC, OK);
+      session_deps_.enable_early_data = true;
+      session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl2);
+
+      std::unique_ptr<HttpNetworkSession> session(
+          CreateSession(&session_deps_));
+
+      TestCompletionCallback callback;
+      auto trans = std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY,
+                                                            session.get());
+
+      EXPECT_THAT(callback.GetResult(trans->Start(&request, callback.callback(),
+                                                  NetLogWithSource())),
+                  IsOk());
+
+      const HttpResponseInfo* response = trans->GetResponseInfo();
+      ASSERT_TRUE(response);
+      ASSERT_TRUE(response->headers);
+      EXPECT_EQ(200, response->headers->response_code());
+      EXPECT_EQ(1, response->headers->GetContentLength());
+    }
+  }
+}
+
 TEST_F(HttpNetworkTransactionTest, ZeroRTTConfirmErrorSync) {
   HttpRequestInfo request;
   request.method = "POST";
@@ -19990,8 +20081,6 @@ TEST_F(HttpNetworkTransactionTest, ZeroRTTConfirmErrorSync) {
                 "Content-Length: 0\r\n\r\n"),
   };
 
-  // The proxy responds to the connect with a 407, using a persistent
-  // connection.
   MockRead data_reads[] = {
       MockRead("HTTP/1.1 200 OK\r\n"),
       MockRead("Content-Length: 1\r\n\r\n"),
@@ -20039,8 +20128,6 @@ TEST_F(HttpNetworkTransactionTest, ZeroRTTConfirmErrorAsync) {
                 "Content-Length: 0\r\n\r\n"),
   };
 
-  // The proxy responds to the connect with a 407, using a persistent
-  // connection.
   MockRead data_reads[] = {
       MockRead("HTTP/1.1 200 OK\r\n"),
       MockRead("Content-Length: 1\r\n\r\n"),
