@@ -157,7 +157,7 @@ ChildWindowWin::~ChildWindowWin() {
         FROM_HERE,
         base::BindOnce(&DestroyWindowsOnThread, window_,
                        initial_parent_window_),
-        base::BindOnce(&DestroyThread, base::Passed(std::move(thread_))));
+        base::BindOnce(&DestroyThread, std::move(thread_)));
   }
 }
 
