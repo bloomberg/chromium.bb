@@ -6419,8 +6419,9 @@ class TextCheckClient : public WebTextCheckClient {
 
   // WebTextCheckClient:
   bool IsSpellCheckingEnabled() const override { return true; }
-  void RequestCheckingOfText(const WebString&,
-                             WebTextCheckingCompletion* completion) override {
+  void RequestCheckingOfText(
+      const WebString&,
+      std::unique_ptr<WebTextCheckingCompletion> completion) override {
     ++number_of_times_checked_;
     Vector<WebTextCheckingResult> results;
     const int kMisspellingStartOffset = 1;
@@ -6578,9 +6579,10 @@ class StubbornTextCheckClient : public WebTextCheckClient {
 
   // WebTextCheckClient:
   bool IsSpellCheckingEnabled() const override { return true; }
-  void RequestCheckingOfText(const WebString&,
-                             WebTextCheckingCompletion* completion) override {
-    completion_ = completion;
+  void RequestCheckingOfText(
+      const WebString&,
+      std::unique_ptr<WebTextCheckingCompletion> completion) override {
+    completion_ = std::move(completion);
   }
 
   void KickNoResults() { Kick(-1, -1, kWebTextDecorationTypeSpelling); }
@@ -6601,10 +6603,10 @@ class StubbornTextCheckClient : public WebTextCheckClient {
                                               misspelling_length));
     }
     completion_->DidFinishCheckingText(results);
-    completion_ = nullptr;
+    completion_.reset();
   }
 
-  WebTextCheckingCompletion* completion_;
+  std::unique_ptr<WebTextCheckingCompletion> completion_;
 };
 
 TEST_F(WebFrameTest, SlowSpellcheckMarkerPosition) {

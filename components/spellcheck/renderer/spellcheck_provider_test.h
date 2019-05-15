@@ -22,18 +22,22 @@ namespace base {
 class MessageLoop;
 }
 
+struct FakeTextCheckingResult {
+  size_t completion_count_ = 0;
+  size_t cancellation_count_ = 0;
+};
+
 // A fake completion object for verification.
 class FakeTextCheckingCompletion : public blink::WebTextCheckingCompletion {
  public:
-  FakeTextCheckingCompletion();
-  ~FakeTextCheckingCompletion();
+  explicit FakeTextCheckingCompletion(FakeTextCheckingResult*);
+  ~FakeTextCheckingCompletion() override;
 
   void DidFinishCheckingText(
       const blink::WebVector<blink::WebTextCheckingResult>& results) override;
   void DidCancelCheckingText() override;
 
-  size_t completion_count_;
-  size_t cancellation_count_;
+  FakeTextCheckingResult* result_;
 };
 
 // Faked test target, which stores sent message for verification.
@@ -47,8 +51,9 @@ class TestingSpellCheckProvider : public SpellCheckProvider,
 
   ~TestingSpellCheckProvider() override;
 
-  void RequestTextChecking(const base::string16& text,
-                           blink::WebTextCheckingCompletion* completion);
+  void RequestTextChecking(
+      const base::string16& text,
+      std::unique_ptr<blink::WebTextCheckingCompletion> completion);
 
   void SetLastResults(
       const base::string16 last_request,

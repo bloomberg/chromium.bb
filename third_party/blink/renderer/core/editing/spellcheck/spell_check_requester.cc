@@ -61,19 +61,18 @@ class WebTextCheckingCompletionImpl : public WebTextCheckingCompletion {
       const WebVector<WebTextCheckingResult>& results) override {
     if (request_)
       request_->DidSucceed(ToCoreResults(results));
-    delete this;
+    request_ = nullptr;
   }
 
   void DidCancelCheckingText() override {
     if (request_)
       request_->DidCancel();
-    // TODO(dgozman): use std::unique_ptr.
-    delete this;
+    request_ = nullptr;
   }
 
- private:
-  virtual ~WebTextCheckingCompletionImpl() = default;
+  ~WebTextCheckingCompletionImpl() override = default;
 
+ private:
   // As |WebTextCheckingCompletionImpl| is mananaged outside Blink, it should
   // only keep weak references to Blink objects to prevent memory leaks.
   WeakPersistent<SpellCheckRequest> request_;
@@ -243,7 +242,7 @@ void SpellCheckRequester::InvokeRequest(SpellCheckRequest* request) {
   if (WebTextCheckClient* text_checker_client = GetTextCheckerClient()) {
     text_checker_client->RequestCheckingOfText(
         processing_request_->GetText(),
-        new WebTextCheckingCompletionImpl(request));
+        std::make_unique<WebTextCheckingCompletionImpl>(request));
   }
 }
 

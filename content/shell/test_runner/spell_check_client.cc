@@ -65,7 +65,7 @@ void SpellCheckClient::CheckSpelling(
 
 void SpellCheckClient::RequestCheckingOfText(
     const blink::WebString& text,
-    blink::WebTextCheckingCompletion* completion) {
+    std::unique_ptr<blink::WebTextCheckingCompletion> completion) {
   if (!enabled_ || text.IsEmpty()) {
     if (completion) {
       completion->DidCancelCheckingText();
@@ -76,11 +76,11 @@ void SpellCheckClient::RequestCheckingOfText(
 
   if (last_requested_text_checking_completion_) {
     last_requested_text_checking_completion_->DidCancelCheckingText();
-    last_requested_text_checking_completion_ = nullptr;
+    last_requested_text_checking_completion_.reset();
     RequestResolved();
   }
 
-  last_requested_text_checking_completion_ = completion;
+  last_requested_text_checking_completion_ = std::move(completion);
   last_requested_text_check_string_ = text;
   if (spell_check_.HasInCache(text)) {
     FinishLastTextCheck();
@@ -120,7 +120,7 @@ void SpellCheckClient::FinishLastTextCheck() {
                                            &results);
   }
   last_requested_text_checking_completion_->DidFinishCheckingText(results);
-  last_requested_text_checking_completion_ = nullptr;
+  last_requested_text_checking_completion_.reset();
   RequestResolved();
 
   if (test_runner_->shouldDumpSpellCheckCallbacks())

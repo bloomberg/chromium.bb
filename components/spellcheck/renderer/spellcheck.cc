@@ -118,21 +118,22 @@ std::vector<WebString> FilterReplacementSuggestions(
 
 class SpellCheck::SpellcheckRequest {
  public:
-  SpellcheckRequest(const base::string16& text,
-                    blink::WebTextCheckingCompletion* completion)
-      : text_(text), completion_(completion) {
-    DCHECK(completion);
+  SpellcheckRequest(
+      const base::string16& text,
+      std::unique_ptr<blink::WebTextCheckingCompletion> completion)
+      : text_(text), completion_(std::move(completion)) {
+    DCHECK(completion_);
   }
   ~SpellcheckRequest() {}
 
   base::string16 text() { return text_; }
-  blink::WebTextCheckingCompletion* completion() { return completion_; }
+  blink::WebTextCheckingCompletion* completion() { return completion_.get(); }
 
  private:
   base::string16 text_;  // Text to be checked in this task.
 
   // The interface to send the misspelled ranges to WebKit.
-  blink::WebTextCheckingCompletion* completion_;
+  std::unique_ptr<blink::WebTextCheckingCompletion> completion_;
 
   DISALLOW_COPY_AND_ASSIGN(SpellcheckRequest);
 };
@@ -387,13 +388,13 @@ bool SpellCheck::SpellCheckParagraph(
 #if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 void SpellCheck::RequestTextChecking(
     const base::string16& text,
-    blink::WebTextCheckingCompletion* completion) {
+    std::unique_ptr<blink::WebTextCheckingCompletion> completion) {
   // Clean up the previous request before starting a new request.
   if (pending_request_param_)
     pending_request_param_->completion()->DidCancelCheckingText();
 
-  pending_request_param_.reset(new SpellcheckRequest(
-      text, completion));
+  pending_request_param_.reset(
+      new SpellcheckRequest(text, std::move(completion)));
   // We will check this text after we finish loading the hunspell dictionary.
   if (InitializeIfNeeded())
     return;
