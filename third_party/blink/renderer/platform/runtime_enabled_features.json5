@@ -715,15 +715,7 @@
       name: "IsolatedWorldCSP"
     },
     {
-      // Tracks "jank" from layout objects changing their visual location
-      // between animation frames (see crbug.com/581518).
-      name: "JankTracking",
-      implied_by: ["LayoutJankAPI", "JankTrackingSweepLine"],
-      origin_trial_feature_name: "LayoutJankAPI",
-      status: "stable",
-    },
-    {
-      // Modifies JankTracking to use O(n log n) sweep line algorithm for
+      // Modifies JankTracker to use O(n log n) sweep line algorithm for
       // computing the area of the jank region.
       name: "JankTrackingSweepLine",
       status: "experimental",

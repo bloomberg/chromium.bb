@@ -1317,13 +1317,10 @@ void CompositedLayerMapping::UpdateMainGraphicsLayerGeometry(
   if (new_position != old_position && !is_iframe_doc) {
     graphics_layer_->SetPosition(new_position);
 
-    if (RuntimeEnabledFeatures::JankTrackingEnabled(
-            &layout_object.GetDocument())) {
-      LocalFrameView* frame_view = layout_object.View()->GetFrameView();
-      frame_view->GetJankTracker().NotifyCompositedLayerMoved(
-          OwningLayer(), FloatRect(old_position, FloatSize(old_size)),
-          FloatRect(new_position, FloatSize(new_size)));
-    }
+    LocalFrameView* frame_view = layout_object.View()->GetFrameView();
+    frame_view->GetJankTracker().NotifyCompositedLayerMoved(
+        OwningLayer(), FloatRect(old_position, FloatSize(old_size)),
+        FloatRect(new_position, FloatSize(new_size)));
   }
   graphics_layer_->SetOffsetFromLayoutObject(
       ToIntSize(local_compositing_bounds.Location()));

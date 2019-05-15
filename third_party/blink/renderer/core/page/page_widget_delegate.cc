@@ -85,11 +85,8 @@ WebInputEventResult PageWidgetDelegate::HandleInputEvent(
   if (root) {
     Document* document = root->GetDocument();
     DCHECK(document);
-
-    if (RuntimeEnabledFeatures::JankTrackingEnabled(document)) {
-      if (LocalFrameView* view = document->View())
-        view->GetJankTracker().NotifyInput(event);
-    }
+    if (LocalFrameView* view = document->View())
+      view->GetJankTracker().NotifyInput(event);
   }
 
   if (event.GetModifiers() & WebInputEvent::kIsTouchAccessibility &&
