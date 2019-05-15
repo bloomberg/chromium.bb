@@ -284,7 +284,7 @@ void It2MeNativeMessagingHost::ProcessConnect(
   // Create the It2Me host and start connecting. Note that disabling dialogs is
   // only supported on ChromeOS.
   it2me_host_ = factory_->CreateIt2MeHost();
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || !defined(NDEBUG)
   it2me_host_->set_enable_dialogs(!no_dialogs);
 #endif
   it2me_host_->Connect(host_context_->Copy(), std::move(policies),

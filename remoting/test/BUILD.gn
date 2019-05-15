@@ -129,6 +129,26 @@ if (enable_remoting_host && !is_android && !is_chromeos) {
     ]
   }
 
+  if (!is_win) {
+    # A binary for starting an IT2ME host from command line.
+    executable("it2me_cli_host") {
+      testonly = true
+      sources = [
+        "it2me_cli_host.cc",
+        "it2me_cli_host.h",
+        "it2me_cli_host_main.cc",
+      ]
+      deps = [
+        ":test_support",
+        "//mojo/core/embedder",
+        "//remoting/base",
+        "//remoting/host",
+        "//remoting/host/it2me:common",
+        "//remoting/host/native_messaging",
+      ]
+    }
+  }
+
   static_library("it2me_standalone_host") {
     testonly = true
 
