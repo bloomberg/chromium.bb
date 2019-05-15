@@ -35,13 +35,14 @@ class CORE_EXPORT OutdentBlockCommand : public BlockCommand {
 public:
     static OutdentBlockCommand* create(Document& document)
     {
-        return new OutdentBlockCommand(document);
+        return MakeGarbageCollected<OutdentBlockCommand>(document);
     }
 
     bool PreservesTypingStyle() const override { return true; }
+    
+    explicit OutdentBlockCommand(Document&);
 
 private:
-    explicit OutdentBlockCommand(Document&);
 
     Node* SplitStart(Node* ancestor, Node* prpChild);
     Node* SplitEnd(Node* ancestor, Node* prpChild);
