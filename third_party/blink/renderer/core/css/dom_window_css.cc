@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -49,8 +50,10 @@ bool DOMWindowCSS::supports(const ExecutionContext* execution_context,
     MutableCSSPropertyValueSet* dummy_style =
         MutableCSSPropertyValueSet::Create(kHTMLStandardMode);
     bool is_animation_tainted = false;
+    const Document& document = To<Document>(*execution_context);
+    const PropertyRegistry* registry = document.GetPropertyRegistry();
     return CSSParser::ParseValueForCustomProperty(
-               dummy_style, "--valid", nullptr, value, false,
+               dummy_style, AtomicString(property), registry, value, false,
                execution_context->GetSecureContextMode(), nullptr,
                is_animation_tainted)
         .did_parse;
