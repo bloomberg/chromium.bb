@@ -51,7 +51,6 @@ int32_t GetTransportSendBufferSize(const base::DictionaryValue& options) {
 }  // namespace
 
 UdpTransportImpl::UdpTransportImpl(
-    net::NetLog* net_log,
     const scoped_refptr<base::SingleThreadTaskRunner>& io_thread_proxy,
     const net::IPEndPoint& local_end_point,
     const net::IPEndPoint& remote_end_point,
@@ -60,7 +59,7 @@ UdpTransportImpl::UdpTransportImpl(
       local_addr_(local_end_point),
       remote_addr_(remote_end_point),
       udp_socket_(new net::UDPSocket(net::DatagramSocket::DEFAULT_BIND,
-                                     net_log,
+                                     nullptr /* net_log */,
                                      net::NetLogSource())),
       send_pending_(false),
       receive_pending_(false),

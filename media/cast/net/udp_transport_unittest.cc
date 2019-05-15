@@ -77,15 +77,13 @@ class UdpTransportImplTest : public ::testing::Test {
     net::IPEndPoint free_local_port2 = test::GetFreeLocalPort();
 
     send_transport_ = std::make_unique<UdpTransportImpl>(
-        nullptr, scoped_task_environment_.GetMainThreadTaskRunner(),
-        free_local_port1, free_local_port2,
-        base::BindRepeating(&UpdateCastTransportStatus));
+        scoped_task_environment_.GetMainThreadTaskRunner(), free_local_port1,
+        free_local_port2, base::BindRepeating(&UpdateCastTransportStatus));
     send_transport_->SetSendBufferSize(65536);
 
     recv_transport_ = std::make_unique<UdpTransportImpl>(
-        nullptr, scoped_task_environment_.GetMainThreadTaskRunner(),
-        free_local_port2, free_local_port1,
-        base::BindRepeating(&UpdateCastTransportStatus));
+        scoped_task_environment_.GetMainThreadTaskRunner(), free_local_port2,
+        free_local_port1, base::BindRepeating(&UpdateCastTransportStatus));
     recv_transport_->SetSendBufferSize(65536);
   }
 
