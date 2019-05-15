@@ -258,10 +258,10 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, PageAction) {
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(1));
   int tab_id = SessionTabHelper::FromWebContents(
       browser()->tab_strip_model()->GetActiveWebContents())->session_id().id();
-  ExtensionAction* action =
-      ExtensionActionManager::Get(browser()->profile())->
-      GetPageAction(*extension);
+  ExtensionAction* action = ExtensionActionManager::Get(browser()->profile())
+                                ->GetExtensionAction(*extension);
   ASSERT_TRUE(action);
+  EXPECT_EQ(ActionInfo::TYPE_PAGE, action->action_type());
   EXPECT_EQ("Send message", action->GetTitle(tab_id));
 
   ExtensionTestMessageListener test_listener(false);  // Won't reply.

@@ -80,31 +80,29 @@ void ExtensionActionManager::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const Extension* extension,
     UnloadedExtensionReason reason) {
-  page_actions_.erase(extension->id());
-  browser_actions_.erase(extension->id());
+  actions_.erase(extension->id());
 }
 
-namespace {
+ExtensionAction* ExtensionActionManager::GetExtensionAction(
+    const Extension& extension) const {
+  auto iter = actions_.find(extension.id());
+  if (iter != actions_.end())
+    return iter->second.get();
 
-// Returns map[extension_id] if that entry exists. Otherwise, if
-// action_info!=nullptr, creates an ExtensionAction from it, fills in the map,
-// and returns that.  Otherwise (action_info==nullptr), returns nullptr.
-ExtensionAction* GetOrCreateOrNull(
-    std::map<std::string, std::unique_ptr<ExtensionAction>>* map,
-    const Extension& extension,
-    const ActionInfo* action_info,
-    Profile* profile) {
-  auto it = map->find(extension.id());
-  if (it != map->end())
-    return it->second.get();
+  // TODO(https://crbug.com/893373): Update this to use
+  // ActionInfo::GetAnyActionInfo() once all callers can handle a generic action
+  // type.
+  const ActionInfo* action_info = ActionInfo::GetBrowserActionInfo(&extension);
+  if (!action_info)
+    action_info = ActionInfo::GetPageActionInfo(&extension);
   if (!action_info)
     return nullptr;
 
   // Only create action info for enabled extensions.
   // This avoids bugs where actions are recreated just after being removed
   // in response to OnExtensionUnloaded().
-  if (!ExtensionRegistry::Get(profile)
-      ->enabled_extensions().Contains(extension.id())) {
+  if (!ExtensionRegistry::Get(profile_)->enabled_extensions().Contains(
+          extension.id())) {
     return nullptr;
   }
 
@@ -112,36 +110,14 @@ ExtensionAction* GetOrCreateOrNull(
 
   if (action->default_icon()) {
     action->SetDefaultIconImage(std::make_unique<IconImage>(
-        profile, &extension, *action->default_icon(),
+        profile_, &extension, *action->default_icon(),
         ExtensionAction::ActionIconSize(),
         ExtensionAction::FallbackIcon().AsImageSkia(), nullptr));
   }
 
   ExtensionAction* raw_action = action.get();
-  (*map)[extension.id()] = std::move(action);
+  actions_[extension.id()] = std::move(action);
   return raw_action;
-}
-
-}  // namespace
-
-ExtensionAction* ExtensionActionManager::GetPageAction(
-    const Extension& extension) const {
-  return GetOrCreateOrNull(&page_actions_, extension,
-                           ActionInfo::GetPageActionInfo(&extension),
-                           profile_);
-}
-
-ExtensionAction* ExtensionActionManager::GetBrowserAction(
-    const Extension& extension) const {
-  return GetOrCreateOrNull(&browser_actions_, extension,
-                           ActionInfo::GetBrowserActionInfo(&extension),
-                           profile_);
-}
-
-ExtensionAction* ExtensionActionManager::GetExtensionAction(
-    const Extension& extension) const {
-  ExtensionAction* action = GetBrowserAction(extension);
-  return action ? action : GetPageAction(extension);
 }
 
 }  // namespace extensions

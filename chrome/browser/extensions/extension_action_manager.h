@@ -34,14 +34,7 @@ class ExtensionActionManager : public KeyedService,
   // shared between a profile and its incognito version.
   static ExtensionActionManager* Get(content::BrowserContext* browser_context);
 
-  // Retrieves the page action, browser action, or system indicator for
-  // |extension|.
-  // If the result is not NULL, it remains valid until the extension is
-  // unloaded.
-  ExtensionAction* GetPageAction(const Extension& extension) const;
-  ExtensionAction* GetBrowserAction(const Extension& extension) const;
-
-  // Returns either the PageAction or BrowserAction for |extension|, or NULL if
+  // Returns either the PageAction or BrowserAction for |extension|, or null if
   // none exists. Since an extension can only declare one of Browser|PageAction,
   // this is okay to use anywhere you need a generic "ExtensionAction".
   ExtensionAction* GetExtensionAction(const Extension& extension) const;
@@ -60,12 +53,10 @@ class ExtensionActionManager : public KeyedService,
 
   // Keyed by Extension ID.  These maps are populated lazily when their
   // ExtensionAction is first requested, and the entries are removed when the
-  // extension is unloaded.  Not every extension has a page action or browser
-  // action.
+  // extension is unloaded.  Not every extension has an action.
   using ExtIdToActionMap =
       std::map<std::string, std::unique_ptr<ExtensionAction>>;
-  mutable ExtIdToActionMap page_actions_;
-  mutable ExtIdToActionMap browser_actions_;
+  mutable ExtIdToActionMap actions_;
 };
 
 }  // namespace extensions

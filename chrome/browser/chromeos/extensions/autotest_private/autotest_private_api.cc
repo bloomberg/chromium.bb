@@ -38,6 +38,7 @@
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
+#include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -53,6 +54,7 @@
 #include "chrome/browser/ui/views/crostini/crostini_uninstaller_view.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/api/autotest_private.h"
+#include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
@@ -379,9 +381,11 @@ AutotestPrivateGetExtensionsInfoFunction::Run() {
     extension_value->SetBoolean("isEnabled", service->IsExtensionEnabled(id));
     extension_value->SetBoolean(
         "allowedInIncognito", util::IsIncognitoEnabled(id, browser_context()));
+    const ExtensionAction* action =
+        extension_action_manager->GetExtensionAction(*extension);
     extension_value->SetBoolean(
         "hasPageAction",
-        extension_action_manager->GetPageAction(*extension) != NULL);
+        action && action->action_type() == ActionInfo::TYPE_PAGE);
 
     extensions_values->Append(std::move(extension_value));
   }
