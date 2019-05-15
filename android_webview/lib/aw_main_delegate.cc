@@ -288,17 +288,18 @@ void AwMainDelegate::PreSandboxStartup() {
 int AwMainDelegate::RunProcess(
     const std::string& process_type,
     const content::MainFunctionParams& main_function_params) {
-  if (process_type.empty()) {
-    browser_runner_ = content::BrowserMainRunner::Create();
-    int exit_code = browser_runner_->Initialize(main_function_params);
-    DCHECK_LT(exit_code, 0);
+  // Defer to the default main method outside the browser process.
+  if (!process_type.empty())
+    return -1;
 
-    // Return 0 so that we do NOT trigger the default behavior. On Android, the
-    // UI message loop is managed by the Java application.
-    return 0;
-  }
-
-  return -1;
+  browser_runner_ = content::BrowserMainRunner::Create();
+  int exit_code = browser_runner_->Initialize(main_function_params);
+  // We do not expect Initialize() to ever fail in AndroidWebView. On success
+  // it returns a negative value but we do not want to use that on Android.
+  DCHECK_LT(exit_code, 0);
+  // Return 0 so that we do NOT trigger the default behavior. On Android, the
+  // UI message loop is managed by the Java application.
+  return 0;
 }
 
 void AwMainDelegate::ProcessExiting(const std::string& process_type) {

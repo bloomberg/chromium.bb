@@ -1044,7 +1044,9 @@ int ChromeMainDelegate::RunProcess(
 // ANDROID doesn't support "service", so no CloudPrintServiceProcessMain, and
 // arraysize doesn't support empty array. So we comment out the block for
 // Android.
-#if !defined(OS_ANDROID)
+#if defined(OS_ANDROID)
+  NOTREACHED();  // Android provides a subclass and shares no code here.
+#else
   static const MainFunction kMainFunctions[] = {
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) && !defined(CHROME_MULTIPLE_DLL_CHILD) && \
     !defined(OS_CHROMEOS)
@@ -1070,7 +1072,7 @@ int ChromeMainDelegate::RunProcess(
     if (process_type == kMainFunctions[i].name)
       return kMainFunctions[i].function(main_function_params);
   }
-#endif
+#endif  // !defined(OS_ANDROID)
 
   return -1;
 }

@@ -544,17 +544,9 @@ static void RegisterMainThreadFactories() {
 int RunBrowserProcessMain(const MainFunctionParams& main_function_params,
                           ContentMainDelegate* delegate) {
   int exit_code = delegate->RunProcess("", main_function_params);
-#if defined(OS_ANDROID)
-  // In Android's browser process, the negative exit code doesn't mean the
-  // default behavior should be used as the UI message loop is managed by
-  // the Java and the browser process's default behavior is always
-  // overridden.
-  return exit_code;
-#else
   if (exit_code >= 0)
     return exit_code;
   return BrowserMain(main_function_params);
-#endif
 }
 #endif  // !defined(CHROME_MULTIPLE_DLL_CHILD)
 
