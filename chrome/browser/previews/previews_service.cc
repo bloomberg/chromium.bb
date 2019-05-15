@@ -112,6 +112,7 @@ PreviewsService::PreviewsService(content::BrowserContext* browser_context)
           std::make_unique<PreviewsLitePageDecider>(browser_context)),
       previews_offline_helper_(
           std::make_unique<PreviewsOfflineHelper>(browser_context)),
+      browser_context_(browser_context),
       previews_url_loader_factory_(
           content::BrowserContext::GetDefaultStoragePartition(
               Profile::FromBrowserContext(browser_context))
@@ -147,8 +148,10 @@ void PreviewsService::Initialize(
       optimization_guide_service
           ? std::make_unique<previews::PreviewsOptimizationGuide>(
                 optimization_guide_service, ui_task_runner,
-                background_task_runner, profile_path, database_provider,
-                previews_top_host_provider_.get(), previews_url_loader_factory_)
+                background_task_runner, profile_path,
+                Profile::FromBrowserContext(browser_context_)->GetPrefs(),
+                database_provider, previews_top_host_provider_.get(),
+                previews_url_loader_factory_)
           : nullptr,
       base::Bind(&IsPreviewsTypeEnabled),
       std::make_unique<previews::PreviewsLogger>(), GetAllowedPreviews(),

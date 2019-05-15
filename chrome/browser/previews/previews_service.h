@@ -107,6 +107,9 @@ class PreviewsService : public KeyedService {
   // The offline previews helper.
   std::unique_ptr<PreviewsOfflineHelper> previews_offline_helper_;
 
+  // Guaranteed to outlive |this|.
+  content::BrowserContext* browser_context_;
+
   // URL Factory for the Previews Optimization Guide's Hints Fetcher.
   scoped_refptr<network::SharedURLLoaderFactory> previews_url_loader_factory_;
 

@@ -22,11 +22,15 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/keyed_service/core/test_simple_factory_key.h"
 #include "components/leveldb_proto/content/proto_database_provider_factory.h"
 #include "components/optimization_guide/hints_component_info.h"
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/optimization_guide/proto/hints.pb.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/testing_pref_service.h"
 #include "components/previews/content/hints_fetcher.h"
 #include "components/previews/content/previews_hints.h"
 #include "components/previews/content/previews_top_host_provider.h"
@@ -163,6 +167,7 @@ class TestPreviewsOptimizationGuide : public PreviewsOptimizationGuide {
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
       const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
       const base::FilePath& profile_path,
+      PrefService* pref_service,
       leveldb_proto::ProtoDatabaseProvider* database_provider,
       PreviewsTopHostProvider* previews_top_host_provider,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
@@ -170,6 +175,7 @@ class TestPreviewsOptimizationGuide : public PreviewsOptimizationGuide {
                                   ui_task_runner,
                                   background_task_runner,
                                   profile_path,
+                                  pref_service,
                                   database_provider,
                                   previews_top_host_provider,
                                   url_loader_factory) {}
@@ -203,6 +209,7 @@ class PreviewsOptimizationGuideTest : public ProtoDatabaseProviderTestBase {
 
   void SetUp() override {
     ProtoDatabaseProviderTestBase::SetUp();
+    EnableDataSaver();
     CreateServiceAndGuide();
   }
 
@@ -226,6 +233,8 @@ class PreviewsOptimizationGuideTest : public ProtoDatabaseProviderTestBase {
     return url_loader_factory_.get();
   }
 
+  PrefService* pref_service() { return pref_service_.get(); }
+
   TestHintsFetcher* hints_fetcher() {
     return static_cast<TestHintsFetcher*>(guide_->GetHintsFetcherForTesting());
   }
@@ -238,6 +247,16 @@ class PreviewsOptimizationGuideTest : public ProtoDatabaseProviderTestBase {
     ASSERT_NO_FATAL_FAILURE(WriteConfigToFile(config, info.path));
     guide_->OnHintsComponentAvailable(info);
     RunUntilIdle();
+  }
+
+  void EnableDataSaver() {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        data_reduction_proxy::switches::kEnableDataReductionProxy);
+  }
+
+  void DisableDataSaver() {
+    base::CommandLine::ForCurrentProcess()->RemoveSwitch(
+        data_reduction_proxy::switches::kEnableDataReductionProxy);
   }
 
   void CreateServiceAndGuide() {
@@ -254,11 +273,18 @@ class PreviewsOptimizationGuideTest : public ProtoDatabaseProviderTestBase {
     optimization_guide_service_ =
         std::make_unique<TestOptimizationGuideService>(
             scoped_task_environment_.GetMainThreadTaskRunner());
+    pref_service_ = std::make_unique<TestingPrefServiceSimple>();
+
+    // Registry pref for DataSaver with default off.
+    pref_service_->registry()->RegisterBooleanPref(
+        data_reduction_proxy::prefs::kDataSaverEnabled, false);
+
     guide_ = std::make_unique<TestPreviewsOptimizationGuide>(
         optimization_guide_service_.get(),
         scoped_task_environment_.GetMainThreadTaskRunner(),
         scoped_task_environment_.GetMainThreadTaskRunner(), temp_dir(),
-        db_provider_, previews_top_host_provider_.get(), url_loader_factory_);
+        pref_service_.get(), db_provider_, previews_top_host_provider_.get(),
+        url_loader_factory_);
 
     guide_->SetTimeClockForTesting(scoped_task_environment_.GetMockClock());
 
@@ -337,6 +363,10 @@ class PreviewsOptimizationGuideTest : public ProtoDatabaseProviderTestBase {
     }
   }
 
+  // Flag set when the OnLoadOptimizationHints callback runs. This indicates
+  // that MaybeLoadOptimizationHints() has completed its processing.
+  bool requested_hints_loaded_;
+
  private:
   void WriteConfigToFile(const optimization_guide::proto::Configuration& config,
                          const base::FilePath& filePath) {
@@ -356,21 +386,17 @@ class PreviewsOptimizationGuideTest : public ProtoDatabaseProviderTestBase {
   // MaybeLoadOptimizationHints() has completed its processing.
   void OnLoadOptimizationHints();
 
-  // std::unique_ptr<PreviewsOptimizationGuide> guide_;
   std::unique_ptr<TestPreviewsOptimizationGuide> guide_;
   std::unique_ptr<TestOptimizationGuideService> optimization_guide_service_;
   std::unique_ptr<MockPreviewsTopHostProvider> previews_top_host_provider_;
+  std::unique_ptr<TestingPrefServiceSimple> pref_service_;
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   network::TestURLLoaderFactory test_url_loader_factory_;
 
-  // Flag set when the OnLoadOptimizationHints callback runs. This indicates
-  // that MaybeLoadOptimizationHints() has completed its processing.
-  bool requested_hints_loaded_;
 
   GURL loaded_hints_document_gurl_;
   std::vector<std::string> loaded_hints_resource_patterns_;
-  // const base::SimpleTestClock* test_clock_;
 
   DISALLOW_COPY_AND_ASSIGN(PreviewsOptimizationGuideTest);
 };
@@ -1832,4 +1858,41 @@ TEST_F(PreviewsOptimizationGuideTest, HintsFetcherDisabled) {
   InitializeFixedCountResourceLoadingHints();
 }
 
+class PreviewsOptimizationGuideDataSaverOffTest
+    : public PreviewsOptimizationGuideTest {
+ public:
+  PreviewsOptimizationGuideDataSaverOffTest() {}
+
+  ~PreviewsOptimizationGuideDataSaverOffTest() override {}
+
+  void SetUp() override {
+    PreviewsOptimizationGuideTest::SetUp();
+    DisableDataSaver();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PreviewsOptimizationGuideDataSaverOffTest);
+};
+
+TEST_F(PreviewsOptimizationGuideDataSaverOffTest,
+       HintsFetcherEnabledDataSaverDisabled) {
+  base::HistogramTester histogram_tester;
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndEnableFeature(features::kOptimizationHintsFetching);
+  std::string opt_guide_url = "https://hintsserver.com";
+
+  guide()->SetHintsFetcherForTesting(
+      BuildTestHintsFetcher(HintsFetcherEndState::kFetchSuccessWithHints));
+
+  std::vector<std::string> hosts = {"example1.com", "example2.com"};
+  EXPECT_CALL(*top_host_provider(), GetTopHosts(testing::_)).Times(0);
+
+  // Load hints so that OnHintsUpdated is called. This will force FetchHints to
+  // be triggered if OptimizationHintsFetching is enabled.
+  InitializeFixedCountResourceLoadingHints();
+
+  // Force timer to expire and schedule a hints fetch.
+  MoveClockForwardBy(base::TimeDelta::FromSeconds(kTestFetchRetryDelaySecs));
+  EXPECT_FALSE(hints_fetcher()->hints_fetched());
+}
 }  // namespace previews

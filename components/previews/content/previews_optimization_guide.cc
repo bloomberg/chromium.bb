@@ -13,9 +13,11 @@
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "base/time/default_clock.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/optimization_guide/hints_component_info.h"
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/optimization_guide/proto/hints.pb.h"
+#include "components/prefs/pref_service.h"
 #include "components/previews/content/hint_cache_store.h"
 #include "components/previews/content/hints_fetcher.h"
 #include "components/previews/content/previews_hints.h"
@@ -128,6 +130,7 @@ PreviewsOptimizationGuide::PreviewsOptimizationGuide(
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
     const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
     const base::FilePath& profile_path,
+    PrefService* pref_service,
     leveldb_proto::ProtoDatabaseProvider* database_provider,
     PreviewsTopHostProvider* previews_top_host_provider,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
@@ -140,6 +143,7 @@ PreviewsOptimizationGuide::PreviewsOptimizationGuide(
                                            background_task_runner_))),
       previews_top_host_provider_(previews_top_host_provider),
       time_clock_(base::DefaultClock::GetInstance()),
+      pref_service_(pref_service),
       url_loader_factory_(url_loader_factory),
       ui_weak_ptr_factory_(this) {
   DCHECK(optimization_guide_service_);
@@ -372,6 +376,7 @@ void PreviewsOptimizationGuide::UpdateHints(
 void PreviewsOptimizationGuide::OnHintsUpdated(
     base::OnceClosure update_closure) {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
+  DCHECK(pref_service_);
   if (!update_closure.is_null())
     std::move(update_closure).Run();
 
@@ -385,25 +390,34 @@ void PreviewsOptimizationGuide::OnHintsUpdated(
   // flag |kOptimizationHintsFetching|, fetch hints from the remote Optimization
   // Guide Service.
   //
-  // TODO(mcrouse): Add a check for user specific state in addition to the
-  // feature state: (1) Data saver should be enabled (2) Check if Infobar
-  // notification needs to be shown to the user.
+  // TODO(mcrouse): Add a check if Infobar notification needs to be shown to the
+  // user.
+  if (!data_reduction_proxy::DataReductionProxySettings::
+          IsDataSaverEnabledByUser(pref_service_)) {
+    return;
+  }
 
-  if (previews::params::IsHintsFetchingEnabled()) {
-    if (ParseHintsFetchOverrideFromCommandLine()) {
-      // Skip the fetch scheduling logic and perform a hints fetch immediately
-      // after initialization.
-      last_fetch_attempt_ = time_clock_->Now();
-      FetchHints();
-    } else {
-      ScheduleHintsFetch();
-    }
+  if (!previews::params::IsHintsFetchingEnabled())
+    return;
+
+  if (ParseHintsFetchOverrideFromCommandLine()) {
+    // Skip the fetch scheduling logic and perform a hints fetch immediately
+    // after initialization.
+    last_fetch_attempt_ = time_clock_->Now();
+    FetchHints();
+  } else {
+    ScheduleHintsFetch();
   }
 }
 
 void PreviewsOptimizationGuide::ScheduleHintsFetch() {
   DCHECK(!hints_fetch_timer_.IsRunning());
+  DCHECK(pref_service_);
 
+  if (!data_reduction_proxy::DataReductionProxySettings::
+          IsDataSaverEnabledByUser(pref_service_)) {
+    return;
+  }
   const base::TimeDelta time_until_update_time =
       hint_cache_->FetchedHintsUpdateTime() - time_clock_->Now();
   const base::TimeDelta time_until_retry =
@@ -411,15 +425,15 @@ void PreviewsOptimizationGuide::ScheduleHintsFetch() {
   base::TimeDelta fetcher_delay;
   if (time_until_update_time <= base::TimeDelta() &&
       time_until_retry <= base::TimeDelta()) {
-    // Fetched hints in the store should be updated and an attempt has not been
-    // made in last |kFetchRetryDelay|.
+    // Fetched hints in the store should be updated and an attempt has not
+    // been made in last |kFetchRetryDelay|.
     last_fetch_attempt_ = time_clock_->Now();
     hints_fetch_timer_.Start(FROM_HERE, RandomFetchDelay(), this,
                              &PreviewsOptimizationGuide::FetchHints);
   } else {
     if (time_until_update_time >= base::TimeDelta()) {
-      // If the fetched hints in the store are still up-to-date, set a timer for
-      // when the hints need to be updated.
+      // If the fetched hints in the store are still up-to-date, set a timer
+      // for when the hints need to be updated.
       fetcher_delay = time_until_update_time;
     } else {
       // Otherwise, hints need to be updated but an attempt was made in last
