@@ -3079,8 +3079,8 @@ TEST_F(ViewportTest, viewportWarnings2) {
   EXPECT_EQ(1U, web_frame_client.messages.size());
   EXPECT_EQ(mojom::ConsoleMessageLevel::kWarning,
             web_frame_client.messages[0].level);
-  EXPECT_STREQ("The key \"wwidth\" is not recognized and ignored.",
-               web_frame_client.messages[0].text.Utf8().c_str());
+  EXPECT_EQ("The key \"wwidth\" is not recognized and ignored.",
+            web_frame_client.messages[0].text);
 
   EXPECT_EQ(980, constraints.layout_size.Width());
   EXPECT_EQ(1078, constraints.layout_size.Height());
@@ -3106,10 +3106,10 @@ TEST_F(ViewportTest, viewportWarnings3) {
   EXPECT_EQ(1U, web_frame_client.messages.size());
   EXPECT_EQ(mojom::ConsoleMessageLevel::kWarning,
             web_frame_client.messages[0].level);
-  EXPECT_STREQ(
+  EXPECT_EQ(
       "The value \"unrecognized-width\" for key \"width\" is invalid, and has "
       "been ignored.",
-      web_frame_client.messages[0].text.Utf8().c_str());
+      web_frame_client.messages[0].text);
 
   EXPECT_NEAR(980, constraints.layout_size.Width(), 0.01);
   EXPECT_NEAR(1078, constraints.layout_size.Height(), 0.01);
@@ -3135,10 +3135,10 @@ TEST_F(ViewportTest, viewportWarnings4) {
   EXPECT_EQ(1U, web_frame_client.messages.size());
   EXPECT_EQ(mojom::ConsoleMessageLevel::kWarning,
             web_frame_client.messages[0].level);
-  EXPECT_STREQ(
+  EXPECT_EQ(
       "The value \"123x456\" for key \"width\" was truncated to its numeric "
       "prefix.",
-      web_frame_client.messages[0].text.Utf8().c_str());
+      web_frame_client.messages[0].text);
 
   EXPECT_NEAR(123.0f, constraints.layout_size.Width(), 0.01);
   EXPECT_NEAR(135.3f, constraints.layout_size.Height(), 0.01);
@@ -3165,10 +3165,10 @@ TEST_F(ViewportTest, viewportWarnings5) {
 
   EXPECT_EQ(mojom::ConsoleMessageLevel::kWarning,
             web_frame_client.messages[0].level);
-  EXPECT_STREQ(
+  EXPECT_EQ(
       "Error parsing a meta element's content: ';' is not a valid key-value "
       "pair separator. Please use ',' instead.",
-      web_frame_client.messages[0].text.Utf8().c_str());
+      web_frame_client.messages[0].text);
 
   EXPECT_NEAR(320.0f, constraints.layout_size.Width(), 0.01);
   EXPECT_NEAR(352.0f, constraints.layout_size.Height(), 0.01);
@@ -3194,9 +3194,9 @@ TEST_F(ViewportTest, viewportWarnings6) {
   EXPECT_EQ(1U, web_frame_client.messages.size());
   EXPECT_EQ(mojom::ConsoleMessageLevel::kWarning,
             web_frame_client.messages[0].level);
-  EXPECT_STREQ(
+  EXPECT_EQ(
       "The value \"\" for key \"width\" is invalid, and has been ignored.",
-      web_frame_client.messages[0].text.Utf8().c_str());
+      web_frame_client.messages[0].text);
 
   EXPECT_NEAR(980, constraints.layout_size.Width(), 0.01);
   EXPECT_NEAR(1078, constraints.layout_size.Height(), 0.01);

@@ -28,10 +28,9 @@ class FetchResponseDataTest : public testing::Test {
   }
 
   void CheckHeaders(const WebServiceWorkerResponse& web_response) {
-    EXPECT_STREQ("foo", web_response.GetHeader("set-cookie").Utf8().c_str());
-    EXPECT_STREQ("bar", web_response.GetHeader("bar").Utf8().c_str());
-    EXPECT_STREQ("no-cache",
-                 web_response.GetHeader("cache-control").Utf8().c_str());
+    EXPECT_EQ("foo", web_response.GetHeader("set-cookie"));
+    EXPECT_EQ("bar", web_response.GetHeader("bar"));
+    EXPECT_EQ("no-cache", web_response.GetHeader("cache-control"));
   }
 };
 

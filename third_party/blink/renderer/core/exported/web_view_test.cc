@@ -606,8 +606,7 @@ TEST_F(WebViewTest, DocumentHasFocus) {
   Document* document = frame->GetFrame()->GetDocument();
   WebElement log_element = frame->GetDocument().GetElementById("log");
   EXPECT_TRUE(document->hasFocus());
-  EXPECT_STREQ("document.hasFocus(): true",
-               log_element.TextContent().Utf8().data());
+  EXPECT_EQ("document.hasFocus(): true", log_element.TextContent());
 
   web_view->SetIsActive(false);
   web_view->MainFrameWidget()->SetFocus(false);
@@ -616,8 +615,7 @@ TEST_F(WebViewTest, DocumentHasFocus) {
 
   web_view->MainFrameWidget()->SetFocus(true);
   EXPECT_TRUE(document->hasFocus());
-  EXPECT_STREQ("document.hasFocus(): true",
-               log_element.TextContent().Utf8().data());
+  EXPECT_EQ("document.hasFocus(): true", log_element.TextContent());
 }
 
 TEST_F(WebViewTest, ActiveState) {
@@ -2767,8 +2765,7 @@ TEST_F(WebViewTest, TouchCancelOnStartDragging) {
 
   // Send long press to start dragging
   EXPECT_TRUE(TapElementById(WebInputEvent::kGestureLongPress, target_id));
-  EXPECT_STREQ("dragstart",
-               web_view->MainFrameImpl()->GetDocument().Title().Utf8().data());
+  EXPECT_EQ("dragstart", web_view->MainFrameImpl()->GetDocument().Title());
 
   // Check pointer cancel is sent to dom.
   WebPointerEvent pointer_cancel(
@@ -2779,8 +2776,7 @@ TEST_F(WebViewTest, TouchCancelOnStartDragging) {
             web_view->MainFrameWidget()->HandleInputEvent(
                 WebCoalescedInputEvent(pointer_cancel)));
   web_view->MainFrameWidget()->DispatchBufferedTouchEvents();
-  EXPECT_STREQ("touchcancel",
-               web_view->MainFrameImpl()->GetDocument().Title().Utf8().data());
+  EXPECT_EQ("touchcancel", web_view->MainFrameImpl()->GetDocument().Title());
 }
 
 TEST_F(WebViewTest, showContextMenuOnLongPressingLinks) {
@@ -2801,12 +2797,12 @@ TEST_F(WebViewTest, showContextMenuOnLongPressingLinks) {
   WebString image_tag_id = WebString::FromUTF8("imageTag");
 
   EXPECT_TRUE(TapElementById(WebInputEvent::kGestureLongPress, anchor_tag_id));
-  EXPECT_STREQ("anchor contextmenu",
-               web_view->MainFrameImpl()->GetDocument().Title().Utf8().data());
+  EXPECT_EQ("anchor contextmenu",
+            web_view->MainFrameImpl()->GetDocument().Title());
 
   EXPECT_TRUE(TapElementById(WebInputEvent::kGestureLongPress, image_tag_id));
-  EXPECT_STREQ("image contextmenu",
-               web_view->MainFrameImpl()->GetDocument().Title().Utf8().data());
+  EXPECT_EQ("image contextmenu",
+            web_view->MainFrameImpl()->GetDocument().Title());
 }
 
 TEST_F(WebViewTest, LongPressEmptyEditableSelection) {
@@ -3586,7 +3582,7 @@ TEST_F(WebViewTest, DispatchesFocusOutFocusInOnViewToggleFocus) {
 
   WebElement element =
       web_view->MainFrameImpl()->GetDocument().GetElementById("message");
-  EXPECT_STREQ("focusoutfocusin", element.TextContent().Utf8().data());
+  EXPECT_EQ("focusoutfocusin", element.TextContent());
 }
 
 TEST_F(WebViewTest, DispatchesDomFocusOutDomFocusInOnViewToggleFocus) {
@@ -3600,7 +3596,7 @@ TEST_F(WebViewTest, DispatchesDomFocusOutDomFocusInOnViewToggleFocus) {
 
   WebElement element =
       web_view->MainFrameImpl()->GetDocument().GetElementById("message");
-  EXPECT_STREQ("DOMFocusOutDOMFocusIn", element.TextContent().Utf8().data());
+  EXPECT_EQ("DOMFocusOutDOMFocusIn", element.TextContent());
 }
 
 static void OpenDateTimeChooser(WebView* web_view,
@@ -3634,52 +3630,52 @@ TEST_F(WebViewTest, ChooseValueFromDateTimeChooser) {
   input_element = ToHTMLInputElement(document->getElementById("date"));
   OpenDateTimeChooser(web_view_impl, input_element);
   GetExternalDateTimeChooser(web_view_impl)->ResponseHandler(true, 0);
-  EXPECT_STREQ("1970-01-01", input_element->value().Utf8().data());
+  EXPECT_EQ("1970-01-01", input_element->value());
 
   OpenDateTimeChooser(web_view_impl, input_element);
   GetExternalDateTimeChooser(web_view_impl)
       ->ResponseHandler(true, std::numeric_limits<double>::quiet_NaN());
-  EXPECT_STREQ("", input_element->value().Utf8().data());
+  EXPECT_EQ("", input_element->value());
 
   input_element = ToHTMLInputElement(document->getElementById("datetimelocal"));
   OpenDateTimeChooser(web_view_impl, input_element);
   GetExternalDateTimeChooser(web_view_impl)->ResponseHandler(true, 0);
-  EXPECT_STREQ("1970-01-01T00:00", input_element->value().Utf8().data());
+  EXPECT_EQ("1970-01-01T00:00", input_element->value());
 
   OpenDateTimeChooser(web_view_impl, input_element);
   GetExternalDateTimeChooser(web_view_impl)
       ->ResponseHandler(true, std::numeric_limits<double>::quiet_NaN());
-  EXPECT_STREQ("", input_element->value().Utf8().data());
+  EXPECT_EQ("", input_element->value());
 
   input_element = ToHTMLInputElement(document->getElementById("month"));
   OpenDateTimeChooser(web_view_impl, input_element);
   GetExternalDateTimeChooser(web_view_impl)->ResponseHandler(true, 0);
-  EXPECT_STREQ("1970-01", input_element->value().Utf8().data());
+  EXPECT_EQ("1970-01", input_element->value());
 
   OpenDateTimeChooser(web_view_impl, input_element);
   GetExternalDateTimeChooser(web_view_impl)
       ->ResponseHandler(true, std::numeric_limits<double>::quiet_NaN());
-  EXPECT_STREQ("", input_element->value().Utf8().data());
+  EXPECT_EQ("", input_element->value());
 
   input_element = ToHTMLInputElement(document->getElementById("time"));
   OpenDateTimeChooser(web_view_impl, input_element);
   GetExternalDateTimeChooser(web_view_impl)->ResponseHandler(true, 0);
-  EXPECT_STREQ("00:00", input_element->value().Utf8().data());
+  EXPECT_EQ("00:00", input_element->value());
 
   OpenDateTimeChooser(web_view_impl, input_element);
   GetExternalDateTimeChooser(web_view_impl)
       ->ResponseHandler(true, std::numeric_limits<double>::quiet_NaN());
-  EXPECT_STREQ("", input_element->value().Utf8().data());
+  EXPECT_EQ("", input_element->value());
 
   input_element = ToHTMLInputElement(document->getElementById("week"));
   OpenDateTimeChooser(web_view_impl, input_element);
   GetExternalDateTimeChooser(web_view_impl)->ResponseHandler(true, 0);
-  EXPECT_STREQ("1970-W01", input_element->value().Utf8().data());
+  EXPECT_EQ("1970-W01", input_element->value());
 
   OpenDateTimeChooser(web_view_impl, input_element);
   GetExternalDateTimeChooser(web_view_impl)
       ->ResponseHandler(true, std::numeric_limits<double>::quiet_NaN());
-  EXPECT_STREQ("", input_element->value().Utf8().data());
+  EXPECT_EQ("", input_element->value());
 
   // Clear the WebViewClient from the webViewHelper to avoid use-after-free in
   // the WebViewHelper destructor.
@@ -3698,7 +3694,7 @@ TEST_F(WebViewTest, DispatchesFocusBlurOnViewToggle) {
   WebElement element =
       web_view->MainFrameImpl()->GetDocument().GetElementById("message");
   // Expect not to see duplication of events.
-  EXPECT_STREQ("blurfocus", element.TextContent().Utf8().data());
+  EXPECT_EQ("blurfocus", element.TextContent());
 }
 
 class CreateChildCounterFrameClient

@@ -106,9 +106,8 @@ class HTMLMockHTMLResourcePreloader : public ResourcePreloader {
     if (preload_request_) {
       EXPECT_FALSE(preload_request_->IsPreconnect());
       EXPECT_EQ(type, preload_request_->GetResourceType());
-      EXPECT_STREQ(url, preload_request_->ResourceURL().Ascii().data());
-      EXPECT_STREQ(base_url,
-                   preload_request_->BaseURL().GetString().Ascii().data());
+      EXPECT_EQ(url, preload_request_->ResourceURL());
+      EXPECT_EQ(base_url, preload_request_->BaseURL().GetString());
       EXPECT_EQ(width, preload_request_->ResourceWidth());
       EXPECT_EQ(preferences.ShouldSend(mojom::WebClientHintsType::kDpr),
                 preload_request_->Preferences().ShouldSend(
@@ -153,8 +152,7 @@ class HTMLMockHTMLResourcePreloader : public ResourcePreloader {
                                      CrossOriginAttributeValue cross_origin) {
     if (!host.IsNull()) {
       EXPECT_TRUE(preload_request_->IsPreconnect());
-      EXPECT_STREQ(preload_request_->ResourceURL().Ascii().data(),
-                   host.Ascii().data());
+      EXPECT_EQ(preload_request_->ResourceURL(), host);
       EXPECT_EQ(preload_request_->CrossOrigin(), cross_origin);
     }
   }

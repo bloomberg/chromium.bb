@@ -204,7 +204,7 @@ TEST_F(ExternalPopupMenuTest, DidAcceptIndices) {
   WebVector<int> indices_vector(indices, 1);
   client->DidAcceptIndices(indices_vector);
   EXPECT_FALSE(select->PopupIsVisible());
-  EXPECT_STREQ("2", menu_list->GetText().Utf8().data());
+  EXPECT_EQ("2", menu_list->GetText());
   EXPECT_EQ(2, select->selectedIndex());
 }
 

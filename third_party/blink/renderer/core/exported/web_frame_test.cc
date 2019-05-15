@@ -5903,8 +5903,8 @@ TEST_F(WebFrameTest, SmartClipData) {
   UpdateAllLifecyclePhases(web_view_helper.GetWebView());
   WebRect crop_rect(300, 125, 152, 50);
   frame->ExtractSmartClipData(crop_rect, clip_text, clip_html, clip_rect);
-  EXPECT_STREQ(kExpectedClipText, clip_text.Utf8().c_str());
-  EXPECT_STREQ(kExpectedClipHtml, clip_html.Utf8().c_str());
+  EXPECT_EQ(kExpectedClipText, clip_text);
+  EXPECT_EQ(kExpectedClipHtml, clip_html);
 }
 
 TEST_F(WebFrameTest, SmartClipDataWithPinchZoom) {
@@ -5943,8 +5943,8 @@ TEST_F(WebFrameTest, SmartClipDataWithPinchZoom) {
       WebFloatPoint(167, 100));
   WebRect crop_rect(200, 38, 228, 75);
   frame->ExtractSmartClipData(crop_rect, clip_text, clip_html, clip_rect);
-  EXPECT_STREQ(kExpectedClipText, clip_text.Utf8().c_str());
-  EXPECT_STREQ(kExpectedClipHtml, clip_html.Utf8().c_str());
+  EXPECT_EQ(kExpectedClipText, clip_text);
+  EXPECT_EQ(kExpectedClipHtml, clip_html);
 }
 
 TEST_F(WebFrameTest, SmartClipReturnsEmptyStringsWhenUserSelectIsNone) {
