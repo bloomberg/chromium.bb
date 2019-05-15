@@ -400,7 +400,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   bool SkipReportingPermissionCheck() const;
 
   // Reports and gather CORS preflight cache size metric.
-  size_t ReportAndGatherCorsPreflightCacheSizeMetric();
+  cors::PreflightCache::Metrics ReportAndGatherCorsPreflightCacheSizeMetric();
 
   // Gather active URLLoader count.
   size_t GatherActiveLoaderCount();

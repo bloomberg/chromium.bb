@@ -823,12 +823,19 @@ void NetworkService::AckUpdateLoadInfo() {
 
 void NetworkService::ReportMetrics() {
   size_t cache_size = 0;
+  size_t memory_pressure_in_bytes = 0;
   size_t loader_count = 0;
   for (auto* context : network_contexts_) {
-    cache_size += context->ReportAndGatherCorsPreflightCacheSizeMetric();
+    cors::PreflightCache::Metrics metrics =
+        context->ReportAndGatherCorsPreflightCacheSizeMetric();
+    cache_size += metrics.num_entries;
+    memory_pressure_in_bytes += metrics.memory_pressure_in_bytes;
     loader_count += context->GatherActiveLoaderCount();
   }
   UMA_HISTOGRAM_COUNTS_10000("Net.Cors.PreflightCacheTotalEntries", cache_size);
+  UMA_HISTOGRAM_COUNTS_10000(
+      "Net.Cors.PreflightCacheTotalMemoryPressureInBytes",
+      memory_pressure_in_bytes);
   UMA_HISTOGRAM_COUNTS_1000("Net.Cors.ActiveLoaderCount", loader_count);
 }
 

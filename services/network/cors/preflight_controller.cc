@@ -351,7 +351,7 @@ void PreflightController::PerformPreflightCheck(
   (*emplaced_pair.first)->Request(loader_factory);
 }
 
-size_t PreflightController::ReportAndGatherCacheSizeMetric() {
+PreflightCache::Metrics PreflightController::ReportAndGatherCacheSizeMetric() {
   return cache_.ReportAndGatherSizeMetric();
 }
 

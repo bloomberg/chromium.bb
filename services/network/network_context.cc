@@ -754,7 +754,8 @@ bool NetworkContext::SkipReportingPermissionCheck() const {
   return params_ && params_->skip_reporting_send_permission_check;
 }
 
-size_t NetworkContext::ReportAndGatherCorsPreflightCacheSizeMetric() {
+cors::PreflightCache::Metrics
+NetworkContext::ReportAndGatherCorsPreflightCacheSizeMetric() {
   return cors_preflight_controller_.ReportAndGatherCacheSizeMetric();
 }
 
