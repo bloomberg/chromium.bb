@@ -28,6 +28,7 @@ jumbo_static_library("sync_user_events") {
   ]
   deps = [
     "//components/signin/core/browser:shared",
+    "//google_apis",
   ]
 }
 
