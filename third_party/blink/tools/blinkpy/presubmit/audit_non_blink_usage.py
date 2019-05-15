@@ -510,7 +510,6 @@ _CONFIG = [
             'third_party/blink/renderer/modules/device_orientation/',
             'third_party/blink/renderer/modules/gamepad/',
             'third_party/blink/renderer/modules/sensor/',
-            'third_party/blink/renderer/modules/xr/',
         ],
         'allowed': [
             'base::subtle::Atomic32',
