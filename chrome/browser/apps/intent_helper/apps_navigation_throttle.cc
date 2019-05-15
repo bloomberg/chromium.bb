@@ -13,6 +13,7 @@
 #include "chrome/browser/apps/intent_helper/page_transition_util.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/menu_manager.h"
+#include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -30,6 +31,16 @@
 #include "url/origin.h"
 
 namespace {
+
+// Returns true if |url| is a known and valid redirector that will redirect a
+// navigation elsewhere.
+bool IsGoogleRedirectorUrl(const GURL& url) {
+  // This currently only check for redirectors on the "google" domain.
+  if (!page_load_metrics::IsGoogleSearchHostname(url))
+    return false;
+
+  return url.path_piece() == "/url" && url.has_query();
+}
 
 // Compares the host name of the referrer and target URL to decide whether
 // the navigation needs to be overridden.
@@ -53,6 +64,11 @@ bool ShouldOverrideUrlLoading(const GURL& previous_url,
       previous_url.SchemeIs(extensions::kExtensionScheme)) {
     return false;
   }
+
+  // Skip URL redirectors that are intermediate pages redirecting towards a
+  // final URL.
+  if (IsGoogleRedirectorUrl(current_url))
+    return false;
 
   return true;
 }
@@ -159,6 +175,11 @@ void AppsNavigationThrottle::RecordUma(const std::string& selected_app_package,
 
   UMA_HISTOGRAM_ENUMERATION("ChromeOS.Apps.IntentPickerDestinationPlatform",
                             platform);
+}
+
+// static
+bool AppsNavigationThrottle::IsGoogleRedirectorUrlForTesting(const GURL& url) {
+  return IsGoogleRedirectorUrl(url);
 }
 
 // static
