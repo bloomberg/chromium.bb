@@ -5459,6 +5459,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     web::NavigationContextImpl* context =
         [self contextForPendingMainFrameNavigationWithURL:responseURL];
     context->SetIsDownload(true);
+    context->ReleaseItem();
     // Navigation callbacks can only be called for the main frame.
     self.webStateImpl->OnNavigationFinished(context);
     transition = context->GetPageTransition();

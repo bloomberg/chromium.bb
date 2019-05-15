@@ -738,6 +738,28 @@ TEST_P(CRWWebControllerResponseTest, DownloadWithNSHTTPURLResponse) {
       ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT));
 }
 
+// Tests that webView:decidePolicyForNavigationResponse:decisionHandler:
+// discards pending URL.
+TEST_P(CRWWebControllerResponseTest, DownloadDiscardsPendingUrl) {
+  GURL url(kTestURLString);
+  AddPendingItem(url, ui::PAGE_TRANSITION_TYPED);
+
+  // Simulate download response.
+  NSURLResponse* response =
+      [[NSURLResponse alloc] initWithURL:[NSURL URLWithString:@(kTestURLString)]
+                                MIMEType:@(kTestMimeType)
+                   expectedContentLength:10
+                        textEncodingName:nil];
+  WKNavigationResponsePolicy policy = WKNavigationResponsePolicyAllow;
+  ASSERT_TRUE(CallDecidePolicyForNavigationResponseWithResponse(
+      response, /*for_main_frame=*/YES, /*can_show_mime_type=*/NO, &policy));
+  EXPECT_EQ(WKNavigationResponsePolicyCancel, policy);
+
+  // Verify that download task was created and pending URL discarded.
+  ASSERT_EQ(1U, download_delegate_.alive_download_tasks().size());
+  EXPECT_EQ("", web_state()->GetVisibleURL());
+}
+
 // Tests that webView:decidePolicyForNavigationResponse:decisionHandler: creates
 // the DownloadTask for NSHTTPURLResponse and iframes.
 TEST_P(CRWWebControllerResponseTest, IFrameDownloadWithNSHTTPURLResponse) {
