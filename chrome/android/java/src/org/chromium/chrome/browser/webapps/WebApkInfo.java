@@ -295,7 +295,7 @@ public class WebApkInfo extends WebappInfo {
         ShareTarget shareTarget = extractAndMergeShareTargets(webApkPackageName);
 
         boolean isSplashProvidedByWebApk =
-                (canUseSplashFromContentProvider && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
+                (canUseSplashFromContentProvider && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
                         && hasContentProviderForSplash(webApkPackageName));
 
         return create(WebApkConstants.WEBAPK_ID_PREFIX + webApkPackageName, url, scope,
