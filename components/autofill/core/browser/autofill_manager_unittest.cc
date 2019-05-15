@@ -3224,7 +3224,7 @@ TEST_F(AutofillManagerTest,
   field.autocomplete_attribute = "name";
   form_with_misclassified_extension.fields.push_back(field);
   test::CreateTestFormField("address", "address", "", "text", &field);
-  field.autocomplete_attribute = "address";
+  field.autocomplete_attribute = "addresses";
   form_with_misclassified_extension.fields.push_back(field);
   test::CreateTestFormField("area code", "area_code", "", "text", &field);
   field.autocomplete_attribute = "tel-area-code";
@@ -3284,7 +3284,7 @@ TEST_F(AutofillManagerTest, FillFirstPhoneNumber_BestEfforFilling) {
   field.autocomplete_attribute = "name";
   form_with_no_complete_number.fields.push_back(field);
   test::CreateTestFormField("address", "address", "", "text", &field);
-  field.autocomplete_attribute = "address";
+  field.autocomplete_attribute = "address";  // not standard, but covered.
   form_with_no_complete_number.fields.push_back(field);
   test::CreateTestFormField("area code", "area_code", "", "text", &field);
   field.autocomplete_attribute = "tel-area-code";
@@ -3315,7 +3315,8 @@ TEST_F(AutofillManagerTest, FillFirstPhoneNumber_BestEfforFilling) {
   ASSERT_EQ(4U, response_data.fields.size());
   EXPECT_EQ(ASCIIToUTF16("Charles Hardin Holley"),
             response_data.fields[0].value);
-  EXPECT_EQ(base::string16(), response_data.fields[1].value);
+  EXPECT_EQ(ASCIIToUTF16("123 Apple St., unit 6"),
+            response_data.fields[1].value);
   EXPECT_EQ(ASCIIToUTF16("650"), response_data.fields[2].value);
   EXPECT_EQ(base::string16(), response_data.fields[3].value);
 }
