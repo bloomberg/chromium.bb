@@ -13,6 +13,7 @@
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/page_load_metrics/observers/largest_contentful_paint_handler.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
+#include "chrome/browser/page_load_metrics/protocol_util.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
@@ -39,47 +40,16 @@ namespace {
 
 const char kOfflinePreviewsMimeType[] = "multipart/related";
 
-enum class HttpProtocolScheme { kHttp11, kHttp2, kQuic };
-
-base::Optional<HttpProtocolScheme> ConvertConnectionInfoToHttpProtocolScheme(
-    base::Optional<net::HttpResponseInfo::ConnectionInfo> connection_info) {
-  if (!connection_info)
-    return base::nullopt;
-
-  switch (connection_info.value()) {
-    case net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN:
-    case net::HttpResponseInfo::CONNECTION_INFO_DEPRECATED_SPDY2:
-    case net::HttpResponseInfo::CONNECTION_INFO_DEPRECATED_SPDY3:
-    case net::HttpResponseInfo::CONNECTION_INFO_DEPRECATED_HTTP2_14:
-    case net::HttpResponseInfo::CONNECTION_INFO_DEPRECATED_HTTP2_15:
-    case net::HttpResponseInfo::CONNECTION_INFO_HTTP0_9:
-    case net::HttpResponseInfo::CONNECTION_INFO_HTTP1_0:
-    case net::HttpResponseInfo::NUM_OF_CONNECTION_INFOS:
-      return base::nullopt;
-    case net::HttpResponseInfo::CONNECTION_INFO_HTTP1_1:
-      return HttpProtocolScheme::kHttp11;
-    case net::HttpResponseInfo::CONNECTION_INFO_HTTP2:
-      return HttpProtocolScheme::kHttp2;
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_UNKNOWN_VERSION:
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_32:
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_33:
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_34:
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_35:
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_36:
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_37:
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_38:
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_39:
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_40:
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_41:
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_42:
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_43:
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_44:
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_45:
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_46:
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_47:
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_99:
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_999:
-      return HttpProtocolScheme::kQuic;
+bool IsSupportedProtocol(page_load_metrics::NetworkProtocol protocol) {
+  switch (protocol) {
+    case page_load_metrics::NetworkProtocol::kHttp11:
+      return true;
+    case page_load_metrics::NetworkProtocol::kHttp2:
+      return true;
+    case page_load_metrics::NetworkProtocol::kQuic:
+      return true;
+    case page_load_metrics::NetworkProtocol::kOther:
+      return false;
   }
 }
 
@@ -546,11 +516,13 @@ void UkmPageLoadMetricsObserver::ReportMainResourceTimingMetrics(
         navigation_start_to_request_start.InMilliseconds());
   }
 
-  base::Optional<HttpProtocolScheme> protocol_scheme =
-      ConvertConnectionInfoToHttpProtocolScheme(connection_info_);
-  if (protocol_scheme.has_value()) {
-    builder->SetMainFrameResource_HttpProtocolScheme(
-        static_cast<int>(protocol_scheme.value()));
+  if (connection_info_.has_value()) {
+    page_load_metrics::NetworkProtocol protocol =
+        page_load_metrics::GetNetworkProtocol(*connection_info_);
+    if (IsSupportedProtocol(protocol)) {
+      builder->SetMainFrameResource_HttpProtocolScheme(
+          static_cast<int>(protocol));
+    }
   }
 
   if (main_frame_request_redirect_count_ > 0) {
