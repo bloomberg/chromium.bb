@@ -20,6 +20,7 @@
     <LinearLayout
         android:id="@+id/content"
         android:layout_below="@id/explanation"
+        android:visibility="gone"
         style="@style/ListItemContainer">
 
         <include layout="@layout/checkbox_layout" />

@@ -114,6 +114,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kDontAutoHideBrowserControls,
     &kChromeSmartSelection,
     &kCommandLineOnNonRooted,
+    &kContactsPickerSelectAll,
     &kContentSuggestionsScrollToLoad,
     &kContextualSearchDefinitions,
     &kContextualSearchLongpressResolve,
@@ -331,6 +332,9 @@ const base::Feature kChromeSmartSelection{"ChromeSmartSelection",
 
 const base::Feature kCommandLineOnNonRooted{"CommandLineOnNonRooted",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kContactsPickerSelectAll{"ContactsPickerSelectAll",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kContentSuggestionsScrollToLoad{
     "ContentSuggestionsScrollToLoad", base::FEATURE_DISABLED_BY_DEFAULT};
