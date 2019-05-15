@@ -90,125 +90,125 @@ base::string16 ConvertToString<const char*>(const char* source_value) {
 }
 
 template <>
-bool ConvertFromString<int8_t>(const base::string16& source_value,
-                               int8_t* dst_value) {
+base::Optional<int8_t> ConvertFromString<int8_t>(
+    const base::string16& source_value) {
   int32_t ret = 0;
   if (base::StringToInt(source_value, &ret) &&
       base::IsValueInRangeForNumericType<int8_t>(ret)) {
-    *dst_value = static_cast<int8_t>(ret);
-    return true;
+    return static_cast<int8_t>(ret);
   }
-  return false;
+  return base::nullopt;
 }
 
 template <>
-bool ConvertFromString<int16_t>(const base::string16& source_value,
-                                int16_t* dst_value) {
+base::Optional<int16_t> ConvertFromString<int16_t>(
+    const base::string16& source_value) {
   int32_t ret = 0;
   if (base::StringToInt(source_value, &ret) &&
       base::IsValueInRangeForNumericType<int16_t>(ret)) {
-    *dst_value = static_cast<int16_t>(ret);
-    return true;
+    return static_cast<int16_t>(ret);
   }
-  return false;
+  return base::nullopt;
 }
 
 template <>
-bool ConvertFromString<int32_t>(const base::string16& source_value,
-                                int32_t* dst_value) {
-  return base::StringToInt(source_value, dst_value);
+base::Optional<int32_t> ConvertFromString<int32_t>(
+    const base::string16& source_value) {
+  int value;
+  return base::StringToInt(source_value, &value) ? base::make_optional(value)
+                                                 : base::nullopt;
 }
 
 template <>
-bool ConvertFromString<int64_t>(const base::string16& source_value,
-                                int64_t* dst_value) {
-  return base::StringToInt64(source_value, dst_value);
+base::Optional<int64_t> ConvertFromString<int64_t>(
+    const base::string16& source_value) {
+  int64_t value;
+  return base::StringToInt64(source_value, &value) ? base::make_optional(value)
+                                                   : base::nullopt;
 }
 
 template <>
-bool ConvertFromString<uint8_t>(const base::string16& source_value,
-                                uint8_t* dst_value) {
+base::Optional<uint8_t> ConvertFromString<uint8_t>(
+    const base::string16& source_value) {
   uint32_t ret = 0;
   if (base::StringToUint(source_value, &ret) &&
       base::IsValueInRangeForNumericType<uint8_t>(ret)) {
-    *dst_value = static_cast<uint8_t>(ret);
-    return true;
+    return static_cast<uint8_t>(ret);
   }
-  return false;
+  return base::nullopt;
 }
 
 template <>
-bool ConvertFromString<uint16_t>(const base::string16& source_value,
-                                 uint16_t* dst_value) {
+base::Optional<uint16_t> ConvertFromString<uint16_t>(
+    const base::string16& source_value) {
   uint32_t ret = 0;
   if (base::StringToUint(source_value, &ret) &&
       base::IsValueInRangeForNumericType<uint16_t>(ret)) {
-    *dst_value = static_cast<uint16_t>(ret);
-    return true;
+    return static_cast<uint16_t>(ret);
   }
-  return false;
+  return base::nullopt;
 }
 
 template <>
-bool ConvertFromString<uint32_t>(const base::string16& source_value,
-                                 uint32_t* dst_value) {
-  return base::StringToUint(source_value, dst_value);
+base::Optional<uint32_t> ConvertFromString<uint32_t>(
+    const base::string16& source_value) {
+  unsigned int value;
+  return base::StringToUint(source_value, &value) ? base::make_optional(value)
+                                                  : base::nullopt;
 }
 
 template <>
-bool ConvertFromString<uint64_t>(const base::string16& source_value,
-                                 uint64_t* dst_value) {
-  return base::StringToUint64(source_value, dst_value);
+base::Optional<uint64_t> ConvertFromString<uint64_t>(
+    const base::string16& source_value) {
+  uint64_t value;
+  return base::StringToUint64(source_value, &value) ? base::make_optional(value)
+                                                    : base::nullopt;
 }
 
 template <>
-bool ConvertFromString<float>(const base::string16& source_value,
-                              float* dst_value) {
-  double temp;
-  if (ConvertFromString<double>(source_value, &temp)) {
-    *dst_value = static_cast<float>(temp);
-    return true;
-  }
-  return false;
+base::Optional<float> ConvertFromString<float>(
+    const base::string16& source_value) {
+  if (base::Optional<double> temp = ConvertFromString<double>(source_value))
+    return static_cast<float>(temp.value());
+  return base::nullopt;
 }
 
 template <>
-bool ConvertFromString<double>(const base::string16& source_value,
-                               double* dst_value) {
-  return base::StringToDouble(base::UTF16ToUTF8(source_value), dst_value);
+base::Optional<double> ConvertFromString<double>(
+    const base::string16& source_value) {
+  double value;
+  return base::StringToDouble(base::UTF16ToUTF8(source_value), &value)
+             ? base::make_optional(value)
+             : base::nullopt;
 }
 
 template <>
-bool ConvertFromString<bool>(const base::string16& source_value,
-                             bool* dst_value) {
-  if (source_value == base::ASCIIToUTF16("true") ||
-      source_value == base::ASCIIToUTF16("false")) {
-    *dst_value = source_value == base::ASCIIToUTF16("true");
-    return true;
-  }
-  return false;
+base::Optional<bool> ConvertFromString<bool>(
+    const base::string16& source_value) {
+  const bool is_true = source_value == base::ASCIIToUTF16("true");
+  if (is_true || source_value == base::ASCIIToUTF16("false"))
+    return is_true;
+  return base::nullopt;
 }
 
 template <>
-bool ConvertFromString<gfx::Size>(const base::string16& source_value,
-                                  gfx::Size* dst_value) {
+base::Optional<gfx::Size> ConvertFromString<gfx::Size>(
+    const base::string16& source_value) {
   const auto values =
       base::SplitStringPiece(source_value, base::ASCIIToUTF16("{,}"),
                              base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   int width, height;
   if ((values.size() == 2) && base::StringToInt(values[0], &width) &&
       base::StringToInt(values[1], &height)) {
-    *dst_value = gfx::Size(width, height);
-    return true;
+    return gfx::Size(width, height);
   }
-  return false;
+  return base::nullopt;
 }
 
 template <>
-bool ConvertFromString<base::string16>(const base::string16& source_value,
-                                       base::string16* dst_value) {
-  *dst_value = source_value;
-  return true;
+base::Optional<base::string16> ConvertFromString<base::string16>(
+    const base::string16& source_value) {
+  return source_value;
 }
 
 }  // namespace metadata

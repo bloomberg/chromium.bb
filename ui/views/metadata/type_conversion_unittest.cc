@@ -22,16 +22,17 @@ TEST_F(TypeConversionTest, TestConversion_IntToString) {
 
 TEST_F(TypeConversionTest, TestConversion_StringToInt) {
   base::string16 from_string = base::ASCIIToUTF16("10");
-  int to_int = 0;
-  EXPECT_TRUE(TC::ConvertFromString<int>(from_string, &to_int));
-
-  EXPECT_EQ(to_int, 10);
+  EXPECT_EQ(TC::ConvertFromString<int>(from_string), 10);
 }
 
 // This tests whether the converter handles a bogus input string, in which case
-// the return value should be false.
+// the return value should be nullopt.
 TEST_F(TypeConversionTest, TestConversion_BogusStringToInt) {
   base::string16 from_string = base::ASCIIToUTF16("Foo");
-  int to_int = 0;
-  EXPECT_FALSE(TC::ConvertFromString<int>(from_string, &to_int));
+  EXPECT_EQ(TC::ConvertFromString<int>(from_string), base::nullopt);
+}
+
+TEST_F(TypeConversionTest, TestConversion_BogusStringToFloat) {
+  base::string16 from_string = base::ASCIIToUTF16("1.2");
+  EXPECT_EQ(TC::ConvertFromString<float>(from_string), 1.2f);
 }

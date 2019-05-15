@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/no_destructor.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -70,15 +71,14 @@ static const EnumStrings<T>& GetEnumStringsInstance();
   }                                                                    \
                                                                        \
   template <>                                                          \
-  bool views::metadata::ConvertFromString<T>(                          \
-      const base::string16& source_value, T* dst_value) {              \
+  base::Optional<T> views::metadata::ConvertFromString<T>(             \
+      const base::string16& source_value) {                            \
     for (const auto& pair : GetEnumStringsInstance<T>().pairs) {       \
       if (source_value == pair.str_value) {                            \
-        *dst_value = pair.enum_value;                                  \
-        return true;                                                   \
+        return pair.enum_value;                                        \
       }                                                                \
     }                                                                  \
-    return false;                                                      \
+    return base::nullopt;                                              \
   }
 
 // Type Conversion Template Function
@@ -87,7 +87,7 @@ template <typename TSource>
 base::string16 ConvertToString(ArgType<TSource> source_value);
 
 template <typename TTarget>
-bool ConvertFromString(const base::string16& source_value, TTarget* dst_value);
+base::Optional<TTarget> ConvertFromString(const base::string16& source_value);
 
 // String Conversions ---------------------------------------------------------
 
@@ -137,61 +137,56 @@ VIEWS_EXPORT base::string16 ConvertToString<const char*>(
     const char* source_value);
 
 template <>
-VIEWS_EXPORT bool ConvertFromString<int8_t>(const base::string16& source_value,
-                                            int8_t* dst_value);
+VIEWS_EXPORT base::Optional<int8_t> ConvertFromString<int8_t>(
+    const base::string16& source_value);
 
 template <>
-VIEWS_EXPORT bool ConvertFromString<int16_t>(const base::string16& source_value,
-                                             int16_t* dst_value);
+VIEWS_EXPORT base::Optional<int16_t> ConvertFromString<int16_t>(
+    const base::string16& source_value);
 
 template <>
-VIEWS_EXPORT bool ConvertFromString<int32_t>(const base::string16& source_value,
-                                             int32_t* dst_value);
+VIEWS_EXPORT base::Optional<int32_t> ConvertFromString<int32_t>(
+    const base::string16& source_value);
 
 template <>
-VIEWS_EXPORT bool ConvertFromString<int64_t>(const base::string16& source_value,
-                                             int64_t* dst_value);
+VIEWS_EXPORT base::Optional<int64_t> ConvertFromString<int64_t>(
+    const base::string16& source_value);
 
 template <>
-VIEWS_EXPORT bool ConvertFromString<uint8_t>(const base::string16& source_value,
-                                             uint8_t* dst_value);
+VIEWS_EXPORT base::Optional<uint8_t> ConvertFromString<uint8_t>(
+    const base::string16& source_value);
 
 template <>
-VIEWS_EXPORT bool ConvertFromString<uint16_t>(
-    const base::string16& source_value,
-    uint16_t* dst_value);
+VIEWS_EXPORT base::Optional<uint16_t> ConvertFromString<uint16_t>(
+    const base::string16& source_value);
 
 template <>
-VIEWS_EXPORT bool ConvertFromString<uint32_t>(
-    const base::string16& source_value,
-    uint32_t* dst_value);
+VIEWS_EXPORT base::Optional<uint32_t> ConvertFromString<uint32_t>(
+    const base::string16& source_value);
 
 template <>
-VIEWS_EXPORT bool ConvertFromString<uint64_t>(
-    const base::string16& source_value,
-    uint64_t* dst_value);
+VIEWS_EXPORT base::Optional<uint64_t> ConvertFromString<uint64_t>(
+    const base::string16& source_value);
 
 template <>
-VIEWS_EXPORT bool ConvertFromString<double>(const base::string16& source_value,
-                                            double* dst_value);
+VIEWS_EXPORT base::Optional<double> ConvertFromString<double>(
+    const base::string16& source_value);
 
 template <>
-VIEWS_EXPORT bool ConvertFromString<float>(const base::string16& source_value,
-                                           float* dst_value);
+VIEWS_EXPORT base::Optional<float> ConvertFromString<float>(
+    const base::string16& source_value);
 
 template <>
-VIEWS_EXPORT bool ConvertFromString<bool>(const base::string16& source_value,
-                                          bool* dst_value);
+VIEWS_EXPORT base::Optional<bool> ConvertFromString<bool>(
+    const base::string16& source_value);
 
 template <>
-VIEWS_EXPORT bool ConvertFromString<gfx::Size>(
-    const base::string16& source_value,
-    gfx::Size* dst_value);
+VIEWS_EXPORT base::Optional<gfx::Size> ConvertFromString<gfx::Size>(
+    const base::string16& source_value);
 
 template <>
-VIEWS_EXPORT bool ConvertFromString<base::string16>(
-    const base::string16& source_value,
-    base::string16* dst_value);
+VIEWS_EXPORT base::Optional<base::string16> ConvertFromString<base::string16>(
+    const base::string16& source_value);
 
 }  // namespace metadata
 }  // namespace views
