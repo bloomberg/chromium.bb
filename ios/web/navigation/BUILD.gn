@@ -53,6 +53,8 @@ source_set("navigation") {
     "session_storage_builder.mm",
     "time_smoother.cc",
     "time_smoother.h",
+    "wk_back_forward_list_item_holder.h",
+    "wk_back_forward_list_item_holder.mm",
     "wk_based_navigation_manager_impl.h",
     "wk_based_navigation_manager_impl.mm",
     "wk_navigation_action_policy_util.h",
