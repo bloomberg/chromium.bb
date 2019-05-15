@@ -15,6 +15,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "device/gamepad/gamepad_consumer.h"
 #include "device/gamepad/gamepad_data_fetcher.h"
+#include "device/gamepad/gamepad_data_fetcher_manager.h"
 #include "device/gamepad/gamepad_provider.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -64,6 +65,11 @@ void GamepadService::StartUp(
     std::unique_ptr<service_manager::Connector> service_manager_connector) {
   if (!service_manager_connector_)
     service_manager_connector_ = std::move(service_manager_connector);
+
+  // Ensures GamepadDataFetcherManager is created on UI thread. Otherwise,
+  // GamepadPlatformDataFetcherLinux::Factory would be created with the
+  // wrong thread for its |dbus_runner_|.
+  GamepadDataFetcherManager::GetInstance();
 }
 
 service_manager::Connector* GamepadService::GetConnector() {
