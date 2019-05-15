@@ -23,6 +23,8 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.favicon.LargeIconBridge;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.share.ShareParams;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
@@ -138,12 +140,13 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
                     mOnMenuShown, mOnMenuClosed);
             // TODO(sinansahin): This could be pushed in to the menuController.
             if (mCurrentContextMenuParams.isImage()) {
-                getThumbnail(menuController, new Callback<Bitmap>() {
-                    @Override
-                    public void onResult(Bitmap result) {
-                        menuController.onImageThumbnailRetrieved(result);
-                    }
-                });
+                getThumbnail(menuController, menuController::onImageThumbnailRetrieved);
+            } else {
+                LargeIconBridge iconBridge = new LargeIconBridge(Profile.getLastUsedProfile());
+                iconBridge.getLargeIconForUrl(mCurrentContextMenuParams.getUrl(),
+                        getActivity().getResources().getDimensionPixelSize(
+                                R.dimen.default_favicon_size),
+                        menuController::onFaviconAvailable);
             }
             return;
         }
