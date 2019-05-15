@@ -361,8 +361,6 @@ class HostProcess : public ConfigWatcher::Delegate,
                const std::string& file_name,
                const int& line_number);
 
-  SignalStrategy* GetSignalStrategyForJingleSession();
-
   std::unique_ptr<ChromotingHostContext> context_;
 
 #if defined(OS_LINUX)
@@ -419,7 +417,7 @@ class HostProcess : public ConfigWatcher::Delegate,
   webrtc::WindowId window_id_ = 0;
 
   // TODO(crbug.com/954566): Clean up GCD code
-  // Must outlive |ftl_signal_strategy_|, |gcd_state_updater_| and
+  // Must outlive |signal_strategy_|, |gcd_state_updater_| and
   // |signaling_connector_|.
   std::unique_ptr<OAuthTokenGetterImpl> oauth_token_getter_;
 
@@ -427,11 +425,8 @@ class HostProcess : public ConfigWatcher::Delegate,
 
   // Signal strategies must outlive |signaling_connector_|, |gcd_subscriber_|,
   // and |xmpp_heartbeat_sender_|.
-  // |ftl_signal_strategy_| and |xmpp_signal_strategy_| must outlive
-  // |muxing_signal_strategy_|.
-  std::unique_ptr<FtlSignalStrategy> ftl_signal_strategy_;
-  std::unique_ptr<XmppSignalStrategy> xmpp_signal_strategy_;
-  std::unique_ptr<MuxingSignalStrategy> muxing_signal_strategy_;
+  std::unique_ptr<SignalStrategy> signal_strategy_;
+  XmppSignalStrategy* xmpp_signal_strategy_;
 
   std::unique_ptr<SignalingConnector> xmpp_signaling_connector_;
   std::unique_ptr<FtlSignalingConnector> ftl_signaling_connector_;
@@ -1450,9 +1445,7 @@ bool HostProcess::OnFileTransferPolicyUpdate(base::DictionaryValue* policies) {
 void HostProcess::InitializeSignaling() {
   DCHECK(!host_id_.empty());  // ApplyConfig() should already have been run.
 
-  DCHECK(!ftl_signal_strategy_);
-  DCHECK(!xmpp_signal_strategy_);
-  DCHECK(!muxing_signal_strategy_);
+  DCHECK(!signal_strategy_);
   DCHECK(!oauth_token_getter_);
   DCHECK(!ftl_signaling_connector_);
   DCHECK(!xmpp_signaling_connector_);
@@ -1464,9 +1457,10 @@ void HostProcess::InitializeSignaling() {
   DCHECK(!heartbeat_sender_);
 
   // Create SignalStrategy.
-  xmpp_signal_strategy_ = std::make_unique<XmppSignalStrategy>(
+  auto xmpp_signal_strategy = std::make_unique<XmppSignalStrategy>(
       net::ClientSocketFactory::GetDefaultFactory(),
       context_->url_request_context_getter(), xmpp_server_config_);
+  xmpp_signal_strategy_ = xmpp_signal_strategy.get();
 
   // Create SignalingConnector.
   auto dns_blackhole_checker = std::make_unique<DnsBlackholeChecker>(
@@ -1478,21 +1472,37 @@ void HostProcess::InitializeSignaling() {
   oauth_token_getter_ = std::make_unique<OAuthTokenGetterImpl>(
       std::move(oauth_credentials), context_->url_loader_factory(), false);
   xmpp_signaling_connector_ = std::make_unique<SignalingConnector>(
-      xmpp_signal_strategy_.get(), std::move(dns_blackhole_checker),
+      xmpp_signal_strategy_, std::move(dns_blackhole_checker),
       oauth_token_getter_.get(),
       base::BindRepeating(&HostProcess::OnAuthFailed, base::Unretained(this)));
 
   if (enable_ftl_signaling_) {
-    ftl_signal_strategy_ = std::make_unique<FtlSignalStrategy>(
+    auto ftl_signal_strategy = std::make_unique<FtlSignalStrategy>(
         std::make_unique<OAuthTokenGetterProxy>(
             oauth_token_getter_->GetWeakPtr()),
         std::make_unique<FtlHostDeviceIdProvider>(host_id_));
     ftl_signaling_connector_ = std::make_unique<FtlSignalingConnector>(
-        ftl_signal_strategy_.get(),
+        ftl_signal_strategy.get(),
         base::BindOnce(&HostProcess::OnAuthFailed, base::Unretained(this)));
     ftl_signaling_connector_->Start();
-    muxing_signal_strategy_ = std::make_unique<MuxingSignalStrategy>(
-        ftl_signal_strategy_.get(), xmpp_signal_strategy_.get());
+    auto muxing_signal_strategy = std::make_unique<MuxingSignalStrategy>(
+        std::move(ftl_signal_strategy), std::move(xmpp_signal_strategy));
+    heartbeat_sender_ = std::make_unique<HeartbeatSender>(
+        base::BindOnce(&HostProcess::OnHeartbeatSuccessful,
+                       base::Unretained(this)),
+        base::BindOnce(&HostProcess::OnUnknownHostIdError,
+                       base::Unretained(this)),
+        host_id_, muxing_signal_strategy.get(), key_pair_,
+        oauth_token_getter_.get());
+    signal_strategy_ = std::move(muxing_signal_strategy);
+  } else {
+    xmpp_heartbeat_sender_.reset(new XmppHeartbeatSender(
+        base::BindRepeating(&HostProcess::OnHeartbeatSuccessful,
+                            base::Unretained(this)),
+        base::BindRepeating(&HostProcess::OnUnknownHostIdError,
+                            base::Unretained(this)),
+        host_id_, xmpp_signal_strategy_, key_pair_, directory_bot_jid_));
+    signal_strategy_ = std::move(xmpp_signal_strategy);
   }
 
 #if defined(USE_GCD)
@@ -1504,32 +1514,14 @@ void HostProcess::InitializeSignaling() {
   gcd_state_updater_.reset(new GcdStateUpdater(
       base::Bind(&HostProcess::OnHeartbeatSuccessful, base::Unretained(this)),
       base::Bind(&HostProcess::OnUnknownHostIdError, base::Unretained(this)),
-      xmpp_signal_strategy_.get(), std::move(gcd_rest_client)));
+      xmpp_signal_strategy_, std::move(gcd_rest_client)));
   PushNotificationSubscriber::Subscription sub;
   sub.channel = "cloud_devices";
   PushNotificationSubscriber::SubscriptionList subs;
   subs.push_back(sub);
   gcd_subscriber_.reset(
-      new PushNotificationSubscriber(xmpp_signal_strategy_.get(), subs));
+      new PushNotificationSubscriber(xmpp_signal_strategy_, subs));
 #endif  // defined(USE_GCD)
-
-  // Create heartbeat sender.
-  if (enable_ftl_signaling_) {
-    heartbeat_sender_ = std::make_unique<HeartbeatSender>(
-        base::BindOnce(&HostProcess::OnHeartbeatSuccessful,
-                       base::Unretained(this)),
-        base::BindOnce(&HostProcess::OnUnknownHostIdError,
-                       base::Unretained(this)),
-        host_id_, xmpp_signal_strategy_.get(), ftl_signal_strategy_.get(),
-        key_pair_, oauth_token_getter_.get());
-  } else {
-    xmpp_heartbeat_sender_.reset(new XmppHeartbeatSender(
-        base::BindRepeating(&HostProcess::OnHeartbeatSuccessful,
-                            base::Unretained(this)),
-        base::BindRepeating(&HostProcess::OnUnknownHostIdError,
-                            base::Unretained(this)),
-        host_id_, xmpp_signal_strategy_.get(), key_pair_, directory_bot_jid_));
-  }
 }
 
 void HostProcess::StartHostIfReady() {
@@ -1579,13 +1571,13 @@ void HostProcess::StartHost() {
 
   scoped_refptr<protocol::TransportContext> transport_context =
       new protocol::TransportContext(
-          GetSignalStrategyForJingleSession(),
+          signal_strategy_.get(),
           std::make_unique<protocol::ChromiumPortAllocatorFactory>(),
           std::make_unique<ChromiumUrlRequestFactory>(
               context_->url_loader_factory()),
           network_settings, protocol::TransportRole::SERVER);
   std::unique_ptr<protocol::SessionManager> session_manager(
-      new protocol::JingleSessionManager(GetSignalStrategyForJingleSession()));
+      new protocol::JingleSessionManager(signal_strategy_.get()));
 
   std::unique_ptr<protocol::CandidateSessionConfig> protocol_config =
       protocol::CandidateSessionConfig::CreateDefault();
@@ -1617,11 +1609,11 @@ void HostProcess::StartHost() {
 #endif
 
   host_change_notification_listener_.reset(new HostChangeNotificationListener(
-      this, host_id_, xmpp_signal_strategy_.get(), directory_bot_jid_));
+      this, host_id_, xmpp_signal_strategy_, directory_bot_jid_));
 
   host_status_logger_.reset(
       new HostStatusLogger(host_->status_monitor(), ServerLogEntry::ME2ME,
-                           xmpp_signal_strategy_.get(), directory_bot_jid_));
+                           xmpp_signal_strategy_, directory_bot_jid_));
 
   power_save_blocker_.reset(new HostPowerSaveBlocker(
       host_->status_monitor(), context_->ui_task_runner(),
@@ -1708,7 +1700,7 @@ void HostProcess::GoOffline(const std::string& host_offline_reason) {
   // Before shutting down HostSignalingManager, send the |host_offline_reason|
   // if possible (i.e. if we have the config).
   if (!serialized_config_.empty()) {
-    if (!GetSignalStrategyForJingleSession())
+    if (!signal_strategy_)
       InitializeSignaling();
 
     HOST_LOG << "SendHostOfflineReason: sending " << host_offline_reason << ".";
@@ -1751,9 +1743,8 @@ void HostProcess::OnHostOfflineReasonAck(bool success) {
   oauth_token_getter_.reset();
   ftl_signaling_connector_.reset();
   xmpp_signaling_connector_.reset();
-  muxing_signal_strategy_.reset();
-  ftl_signal_strategy_.reset();
-  xmpp_signal_strategy_.reset();
+  signal_strategy_.reset();
+  xmpp_signal_strategy_ = nullptr;
 #if defined(USE_GCD)
   gcd_state_updater_.reset();
   gcd_subscriber_.reset();
@@ -1789,13 +1780,6 @@ void HostProcess::OnCrash(const std::string& function_name,
 
   // The daemon requested us to crash the process.
   CHECK(false) << message;
-}
-
-SignalStrategy* HostProcess::GetSignalStrategyForJingleSession() {
-  if (muxing_signal_strategy_) {
-    return muxing_signal_strategy_.get();
-  }
-  return xmpp_signal_strategy_.get();
 }
 
 int HostProcessMain() {

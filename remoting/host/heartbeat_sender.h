@@ -16,7 +16,7 @@
 #include "base/timer/timer.h"
 #include "remoting/base/rsa_key_pair.h"
 #include "remoting/proto/remoting/v1/directory_messages.pb.h"
-#include "remoting/signaling/signal_strategy.h"
+#include "remoting/signaling/muxing_signal_strategy.h"
 
 namespace base {
 class TimeDelta;
@@ -70,8 +70,7 @@ class HeartbeatSender final : public SignalStrategy::Listener {
   HeartbeatSender(base::OnceClosure on_heartbeat_successful_callback,
                   base::OnceClosure on_unknown_host_id_error,
                   const std::string& host_id,
-                  SignalStrategy* xmpp_signal_strategy,
-                  SignalStrategy* ftl_signal_strategy,
+                  MuxingSignalStrategy* signal_strategy,
                   const scoped_refptr<const RsaKeyPair>& host_key_pair,
                   OAuthTokenGetter* oauth_token_getter);
   ~HeartbeatSender() override;
@@ -113,17 +112,10 @@ class HeartbeatSender final : public SignalStrategy::Listener {
   apis::v1::HeartbeatRequest CreateHeartbeatRequest();
   std::string CreateSignature();
 
-  // Note that IsAnyStrategyConnected() is not negation of
-  // IsEveryStrategyDisconnected() because there is a "CONNECTING" state.
-  bool IsAnyStrategyConnected() const;
-  bool IsEveryStrategyConnected() const;
-  bool IsEveryStrategyDisconnected() const;
-
   base::OnceClosure on_heartbeat_successful_callback_;
   base::OnceClosure on_unknown_host_id_error_;
   std::string host_id_;
-  SignalStrategy* const xmpp_signal_strategy_;
-  SignalStrategy* const ftl_signal_strategy_;
+  MuxingSignalStrategy* const signal_strategy_;
   scoped_refptr<const RsaKeyPair> host_key_pair_;
   std::unique_ptr<HeartbeatClient> client_;
 
@@ -139,7 +131,6 @@ class HeartbeatSender final : public SignalStrategy::Listener {
   std::string host_offline_reason_;
   base::OnceCallback<void(bool success)> host_offline_reason_ack_callback_;
   base::OneShotTimer host_offline_reason_timeout_timer_;
-  base::OneShotTimer wait_for_all_strategies_connected_timeout_timer_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

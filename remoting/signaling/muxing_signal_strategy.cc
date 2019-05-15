@@ -15,22 +15,51 @@
 
 namespace remoting {
 
+namespace {
+
+constexpr base::TimeDelta kWaitForAllStrategiesConnectedTimeout =
+    base::TimeDelta::FromSeconds(5);
+
+}  // namespace
+
 MuxingSignalStrategy::MuxingSignalStrategy(
-    FtlSignalStrategy* ftl_signal_strategy,
-    XmppSignalStrategy* xmpp_signal_strategy) {
+    std::unique_ptr<FtlSignalStrategy> ftl_signal_strategy,
+    std::unique_ptr<XmppSignalStrategy> xmpp_signal_strategy) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
-  ftl_signal_strategy_ = ftl_signal_strategy;
-  xmpp_signal_strategy_ = xmpp_signal_strategy;
+  ftl_signal_strategy_ = std::move(ftl_signal_strategy);
+  xmpp_signal_strategy_ = std::move(xmpp_signal_strategy);
   DCHECK(ftl_signal_strategy_);
   DCHECK(xmpp_signal_strategy_);
   ftl_signal_strategy_->AddListener(this);
   xmpp_signal_strategy_->AddListener(this);
+
+  UpdateTimerState();
+  previous_state_ = GetState();
 }
 
 MuxingSignalStrategy::~MuxingSignalStrategy() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   ftl_signal_strategy_->RemoveListener(this);
   xmpp_signal_strategy_->RemoveListener(this);
+}
+
+void MuxingSignalStrategy::Connect() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  ftl_signal_strategy_->Connect();
+  xmpp_signal_strategy_->Connect();
+}
+
+SignalStrategy::State MuxingSignalStrategy::GetState() const {
+  if (IsEveryStrategyDisconnected()) {
+    return State::DISCONNECTED;
+  }
+
+  if (IsAnyStrategyConnected() &&
+      !wait_for_all_strategies_connected_timeout_timer_.IsRunning()) {
+    return State::CONNECTED;
+  }
+
+  return State::CONNECTING;
 }
 
 const SignalingAddress& MuxingSignalStrategy::GetLocalAddress() const {
@@ -75,15 +104,39 @@ SignalStrategy* MuxingSignalStrategy::SignalStrategyForStanza(
     return nullptr;
   }
   if (receiver.channel() == SignalingAddress::Channel::FTL) {
-    return ftl_signal_strategy_;
+    return ftl_signal_strategy_.get();
   }
-  return xmpp_signal_strategy_;
+  return xmpp_signal_strategy_.get();
 }
 
-void MuxingSignalStrategy::OnSignalStrategyStateChange(State state) {
-  // This is not needed by JingleSessionManager, and forwarding state change
-  // from two signal strategies may also cause unexpected behavior, so we just
-  // silently drop the call.
+void MuxingSignalStrategy::UpdateTimerState() {
+  if (IsEveryStrategyConnected() || IsEveryStrategyDisconnected()) {
+    wait_for_all_strategies_connected_timeout_timer_.AbandonAndStop();
+  } else if (IsAnyStrategyConnected()) {
+    wait_for_all_strategies_connected_timeout_timer_.Start(
+        FROM_HERE, kWaitForAllStrategiesConnectedTimeout, this,
+        &MuxingSignalStrategy::OnWaitForAllStrategiesConnectedTimeout);
+  }
+}
+
+void MuxingSignalStrategy::OnWaitForAllStrategiesConnectedTimeout() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!IsEveryStrategyConnected()) {
+    LOG(WARNING) << "Timeout waiting for all strategies to be connected.";
+    OnSignalStrategyStateChange(/* unused */ State::CONNECTED);
+  }
+}
+
+void MuxingSignalStrategy::OnSignalStrategyStateChange(State unused) {
+  UpdateTimerState();
+  State new_state = GetState();
+  if (previous_state_ != new_state) {
+    for (auto& listener : listeners_) {
+      listener.OnSignalStrategyStateChange(new_state);
+    }
+    previous_state_ = new_state;
+  }
 }
 
 bool MuxingSignalStrategy::OnSignalStrategyIncomingStanza(
@@ -103,22 +156,31 @@ bool MuxingSignalStrategy::OnSignalStrategyIncomingStanza(
   return message_handled;
 }
 
-void MuxingSignalStrategy::Connect() {
-  NOTREACHED();
-}
-
 void MuxingSignalStrategy::Disconnect() {
   NOTREACHED();
-}
-
-SignalStrategy::State MuxingSignalStrategy::GetState() const {
-  NOTREACHED();
-  return State::DISCONNECTED;
 }
 
 SignalStrategy::Error MuxingSignalStrategy::GetError() const {
   NOTREACHED();
   return Error::NETWORK_ERROR;
+}
+
+bool MuxingSignalStrategy::IsAnyStrategyConnected() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return xmpp_signal_strategy_->GetState() == State::CONNECTED ||
+         ftl_signal_strategy_->GetState() == State::CONNECTED;
+}
+
+bool MuxingSignalStrategy::IsEveryStrategyConnected() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return xmpp_signal_strategy_->GetState() == State::CONNECTED &&
+         ftl_signal_strategy_->GetState() == State::CONNECTED;
+}
+
+bool MuxingSignalStrategy::IsEveryStrategyDisconnected() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return xmpp_signal_strategy_->GetState() == State::DISCONNECTED &&
+         ftl_signal_strategy_->GetState() == State::DISCONNECTED;
 }
 
 }  // namespace remoting

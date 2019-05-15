@@ -23,8 +23,10 @@
 #include "remoting/base/service_urls.h"
 #include "remoting/host/host_details.h"
 #include "remoting/proto/remoting/v1/directory_service.grpc.pb.h"
+#include "remoting/signaling/ftl_signal_strategy.h"
 #include "remoting/signaling/signal_strategy.h"
 #include "remoting/signaling/signaling_address.h"
+#include "remoting/signaling/xmpp_signal_strategy.h"
 
 namespace remoting {
 
@@ -34,8 +36,6 @@ constexpr base::TimeDelta kMinimumHeartbeatInterval =
     base::TimeDelta::FromMinutes(3);
 constexpr base::TimeDelta kHeartbeatResponseTimeout =
     base::TimeDelta::FromSeconds(30);
-constexpr base::TimeDelta kWaitForAllStrategiesConnectedTimeout =
-    base::TimeDelta::FromSeconds(5);
 constexpr base::TimeDelta kResendDelay = base::TimeDelta::FromSeconds(10);
 constexpr base::TimeDelta kResendDelayOnHostNotFound =
     base::TimeDelta::FromSeconds(10);
@@ -108,35 +108,25 @@ HeartbeatSender::HeartbeatSender(
     base::OnceClosure on_heartbeat_successful_callback,
     base::OnceClosure on_unknown_host_id_error,
     const std::string& host_id,
-    SignalStrategy* xmpp_signal_strategy,
-    SignalStrategy* ftl_signal_strategy,
+    MuxingSignalStrategy* signal_strategy,
     const scoped_refptr<const RsaKeyPair>& host_key_pair,
     OAuthTokenGetter* oauth_token_getter)
     : on_heartbeat_successful_callback_(
           std::move(on_heartbeat_successful_callback)),
       on_unknown_host_id_error_(std::move(on_unknown_host_id_error)),
       host_id_(host_id),
-      xmpp_signal_strategy_(xmpp_signal_strategy),
-      ftl_signal_strategy_(ftl_signal_strategy),
+      signal_strategy_(signal_strategy),
       host_key_pair_(host_key_pair),
       client_(std::make_unique<HeartbeatClient>(oauth_token_getter)) {
-  DCHECK(xmpp_signal_strategy_);
-  DCHECK(ftl_signal_strategy_);
   DCHECK(host_key_pair_.get());
 
-  xmpp_signal_strategy_->AddListener(this);
-  ftl_signal_strategy_->AddListener(this);
-
-  // Start heartbeats if any signaling strategy is already connected. We only
-  // need to call OnSignalStrategyStateChange() once and it will figure out the
-  // state of both strategies.
-  OnSignalStrategyStateChange(ftl_signal_strategy_->GetState());
+  signal_strategy_->AddListener(this);
+  OnSignalStrategyStateChange(signal_strategy_->GetState());
 }
 
 HeartbeatSender::~HeartbeatSender() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  xmpp_signal_strategy_->RemoveListener(this);
-  ftl_signal_strategy_->RemoveListener(this);
+  signal_strategy_->RemoveListener(this);
 }
 
 void HeartbeatSender::SetHostOfflineReason(
@@ -150,7 +140,7 @@ void HeartbeatSender::SetHostOfflineReason(
   host_offline_reason_ack_callback_ = std::move(ack_callback);
   host_offline_reason_timeout_timer_.Start(
       FROM_HERE, timeout, this, &HeartbeatSender::OnHostOfflineReasonTimeout);
-  if (IsAnyStrategyConnected()) {
+  if (signal_strategy_->GetState() == SignalStrategy::State::CONNECTED) {
     // Drop refresh timer and pending heartbeat (which doesn't have the offline
     // reason) and send a new heartbeat immediately with the offline reason.
     client_->CancelPendingRequests();
@@ -162,18 +152,18 @@ void HeartbeatSender::SetHostOfflineReason(
 
 void HeartbeatSender::OnSignalStrategyStateChange(SignalStrategy::State state) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (IsEveryStrategyConnected()) {
-    wait_for_all_strategies_connected_timeout_timer_.AbandonAndStop();
-    heartbeat_timer_.AbandonAndStop();
-    SendHeartbeat();
-  } else if (IsAnyStrategyConnected()) {
-    wait_for_all_strategies_connected_timeout_timer_.Start(
-        FROM_HERE, kWaitForAllStrategiesConnectedTimeout, this,
-        &HeartbeatSender::OnWaitForAllStrategiesConnectedTimeout);
-  } else if (IsEveryStrategyDisconnected()) {
-    wait_for_all_strategies_connected_timeout_timer_.AbandonAndStop();
-    client_->CancelPendingRequests();
-    heartbeat_timer_.AbandonAndStop();
+  switch (state) {
+    case SignalStrategy::State::CONNECTED:
+      heartbeat_timer_.AbandonAndStop();
+      SendHeartbeat();
+      break;
+    case SignalStrategy::State::DISCONNECTED:
+      client_->CancelPendingRequests();
+      heartbeat_timer_.AbandonAndStop();
+      break;
+    default:
+      // Do nothing
+      break;
   }
 }
 
@@ -202,19 +192,10 @@ void HeartbeatSender::OnHostOfflineReasonAck() {
   std::move(host_offline_reason_ack_callback_).Run(true);
 }
 
-void HeartbeatSender::OnWaitForAllStrategiesConnectedTimeout() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  if (!IsEveryStrategyConnected()) {
-    LOG(WARNING) << "Timeout waiting for all strategies to be connected.";
-    SendHeartbeat();
-  }
-}
-
 void HeartbeatSender::SendHeartbeat() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (IsEveryStrategyDisconnected()) {
+  if (signal_strategy_->GetState() == SignalStrategy::State::DISCONNECTED) {
     LOG(WARNING)
         << "Not sending heartbeat because all strategies are disconnected.";
     return;
@@ -299,11 +280,15 @@ apis::v1::HeartbeatRequest HeartbeatSender::CreateHeartbeatRequest() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   apis::v1::HeartbeatRequest heartbeat;
-  if (ftl_signal_strategy_->GetState() == SignalStrategy::State::CONNECTED) {
-    heartbeat.set_tachyon_id(ftl_signal_strategy_->GetLocalAddress().jid());
+  if (signal_strategy_->ftl_signal_strategy()->GetState() ==
+      SignalStrategy::State::CONNECTED) {
+    heartbeat.set_tachyon_id(
+        signal_strategy_->ftl_signal_strategy()->GetLocalAddress().jid());
   }
-  if (xmpp_signal_strategy_->GetState() == SignalStrategy::State::CONNECTED) {
-    heartbeat.set_jabber_id(xmpp_signal_strategy_->GetLocalAddress().jid());
+  if (signal_strategy_->xmpp_signal_strategy()->GetState() ==
+      SignalStrategy::State::CONNECTED) {
+    heartbeat.set_jabber_id(
+        signal_strategy_->xmpp_signal_strategy()->GetLocalAddress().jid());
   }
   heartbeat.set_host_id(host_id_);
   heartbeat.set_sequence_id(sequence_id_);
@@ -327,34 +312,13 @@ std::string HeartbeatSender::CreateSignature() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // TODO(yuweih): Rename JID to something FTL specific.
-  std::string jid = ftl_signal_strategy_->GetLocalAddress().jid();
+  std::string jid =
+      signal_strategy_->ftl_signal_strategy()->GetLocalAddress().jid();
   if (jid.empty()) {
-    jid = xmpp_signal_strategy_->GetLocalAddress().jid();
+    jid = signal_strategy_->xmpp_signal_strategy()->GetLocalAddress().jid();
   }
   std::string message = jid + ' ' + base::NumberToString(sequence_id_);
   return host_key_pair_->SignMessage(message);
-}
-
-bool HeartbeatSender::IsAnyStrategyConnected() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return xmpp_signal_strategy_->GetState() ==
-             SignalStrategy::State::CONNECTED ||
-         ftl_signal_strategy_->GetState() == SignalStrategy::State::CONNECTED;
-}
-
-bool HeartbeatSender::IsEveryStrategyConnected() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return xmpp_signal_strategy_->GetState() ==
-             SignalStrategy::State::CONNECTED &&
-         ftl_signal_strategy_->GetState() == SignalStrategy::State::CONNECTED;
-}
-
-bool HeartbeatSender::IsEveryStrategyDisconnected() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return xmpp_signal_strategy_->GetState() ==
-             SignalStrategy::State::DISCONNECTED &&
-         ftl_signal_strategy_->GetState() ==
-             SignalStrategy::State::DISCONNECTED;
 }
 
 }  // namespace remoting
