@@ -787,7 +787,7 @@
         android:persistableMode="persistNever"
         android:resizeableActivity="true"
         android:supportsPictureInPicture="true"
-        android:theme="@style/Theme.Chromium.Webapp"
+        android:theme="@style/Theme.Chromium.Webapp.Translucent"
         android:windowSoftInputMode="adjustResize">
       <intent-filter>
         <action android:name="org.chromium.chrome.browser.dummy.action"/>

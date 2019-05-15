@@ -778,7 +778,7 @@ by a child template that "extends" this file.
         {% endfor %}
         <!-- Activities for WebAPKs. -->
         <activity android:name="org.chromium.chrome.browser.webapps.SameTaskWebApkActivity"
-            android:theme="@style/Theme.Chromium.Webapp"
+            android:theme="@style/Theme.Chromium.Webapp.Translucent"
             android:label="@string/webapp_activity_title"
             android:exported="false"
             android:persistableMode="persistNever"
