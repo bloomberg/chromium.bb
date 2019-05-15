@@ -181,6 +181,7 @@ WebPreferences::WebPreferences()
 #else
       double_tap_to_zoom_enabled(false),
 #endif
+      fullscreen_supported(true),
 #if !defined(OS_ANDROID)
       text_autosizing_enabled(false),
 #else
@@ -188,7 +189,6 @@ WebPreferences::WebPreferences()
       font_scale_factor(1.0f),
       device_scale_adjustment(1.0f),
       force_enable_zoom(false),
-      fullscreen_supported(true),
       support_deprecated_target_density_dpi(false),
       use_legacy_background_size_shorthand_behavior(false),
       wide_viewport_quirk(false),

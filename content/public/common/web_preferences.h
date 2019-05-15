@@ -225,6 +225,8 @@ struct CONTENT_EXPORT WebPreferences {
 
   bool double_tap_to_zoom_enabled;
 
+  bool fullscreen_supported;
+
   bool text_autosizing_enabled;
 
   // Representation of the Web App Manifest scope if any.
@@ -234,7 +236,6 @@ struct CONTENT_EXPORT WebPreferences {
   float font_scale_factor;
   float device_scale_adjustment;
   bool force_enable_zoom;
-  bool fullscreen_supported;
   GURL default_video_poster_url;
   bool support_deprecated_target_density_dpi;
   bool use_legacy_background_size_shorthand_behavior;
@@ -268,7 +269,6 @@ struct CONTENT_EXPORT WebPreferences {
   // WebView sets this to false to retain old documentElement behaviour
   // (http://crbug.com/761016).
   bool scroll_top_left_interop_enabled;
-#else  // defined(OS_ANDROID)
 #endif  // defined(OS_ANDROID)
 
   // Enable forcibly modifying content rendering to result in a light on dark
