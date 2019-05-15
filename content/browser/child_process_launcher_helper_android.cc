@@ -190,7 +190,8 @@ static void JNI_ChildProcessLauncherHelperImpl_SetTerminationInfo(
     jboolean clean_exit,
     jint remaining_process_with_strong_binding,
     jint remaining_process_with_moderate_binding,
-    jint remaining_process_with_waived_binding) {
+    jint remaining_process_with_waived_binding,
+    jint reverse_rank) {
   ChildProcessTerminationInfo* info =
       reinterpret_cast<ChildProcessTerminationInfo*>(termination_info_ptr);
   info->binding_state =
@@ -203,6 +204,7 @@ static void JNI_ChildProcessLauncherHelperImpl_SetTerminationInfo(
       remaining_process_with_moderate_binding;
   info->remaining_process_with_waived_binding =
       remaining_process_with_waived_binding;
+  info->best_effort_reverse_rank = reverse_rank;
 }
 
 // static

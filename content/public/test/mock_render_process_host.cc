@@ -93,7 +93,9 @@ void MockRenderProcessHost::SimulateRenderProcessExit(
     base::TerminationStatus status,
     int exit_code) {
   has_connection_ = false;
-  ChildProcessTerminationInfo termination_info{status, exit_code};
+  ChildProcessTerminationInfo termination_info;
+  termination_info.status = status;
+  termination_info.exit_code = exit_code;
   NotificationService::current()->Notify(
       NOTIFICATION_RENDERER_PROCESS_CLOSED, Source<RenderProcessHost>(this),
       Details<ChildProcessTerminationInfo>(&termination_info));

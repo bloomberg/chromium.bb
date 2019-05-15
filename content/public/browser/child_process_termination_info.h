@@ -8,6 +8,7 @@
 #include "base/process/kill.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "content/common/content_export.h"
 #include "content/public/common/result_codes.h"
 
 #if defined(OS_ANDROID)
@@ -16,7 +17,11 @@
 
 namespace content {
 
-struct ChildProcessTerminationInfo {
+struct CONTENT_EXPORT ChildProcessTerminationInfo {
+  ChildProcessTerminationInfo();
+  ChildProcessTerminationInfo(const ChildProcessTerminationInfo& other);
+  ~ChildProcessTerminationInfo();
+
   base::TerminationStatus status = base::TERMINATION_STATUS_NORMAL_TERMINATION;
 
   // If |status| is TERMINATION_STATUS_LAUNCH_FAILED then |exit_code| will
@@ -44,6 +49,12 @@ struct ChildProcessTerminationInfo {
   int remaining_process_with_strong_binding = 0;
   int remaining_process_with_moderate_binding = 0;
   int remaining_process_with_waived_binding = 0;
+
+  // Eg lowest ranked process at time of death should have value 0.
+  // Valid values are non-negative.
+  // -1 means could not be obtained due to threading restrictions.
+  // -2 means not applicable because process is not ranked.
+  int best_effort_reverse_rank = -1;
 #endif
 };
 

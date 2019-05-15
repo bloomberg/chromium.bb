@@ -168,6 +168,7 @@ public final class ChildProcessLauncherHelperImpl {
                     sLauncherByPid.remove(connection.getPid());
                     if (mBindingManager != null) mBindingManager.removeConnection(connection);
                     if (mRanking != null) {
+                        setReverseRankWhenConnectionLost(mRanking.getReverseRank(connection));
                         mRanking.removeConnection(connection);
                         if (mBindingManager != null) mBindingManager.rankingChanged();
                     }
@@ -182,6 +183,10 @@ public final class ChildProcessLauncherHelperImpl {
     // The initial value is MODERATE since a newly created connection has moderate bindings.
     private @ChildProcessImportance int mEffectiveImportance = ChildProcessImportance.MODERATE;
     private boolean mVisible;
+
+    // Protects fields below that are accessed on client thread as well.
+    private final Object mLock = new Object();
+    private int mReverseRankWhenConnectionLost;
 
     @CalledByNative
     private static FileDescriptorInfo makeFdInfo(
@@ -423,9 +428,12 @@ public final class ChildProcessLauncherHelperImpl {
         if (sandboxed) {
             mRanking = sSandboxedChildConnectionRanking;
             mBindingManager = sBindingManager;
+            mReverseRankWhenConnectionLost = -1;
         } else {
             mRanking = null;
             mBindingManager = null;
+            // -2 means not applicable.
+            mReverseRankWhenConnectionLost = -2;
         }
     }
 
@@ -441,6 +449,18 @@ public final class ChildProcessLauncherHelperImpl {
         return TextUtils.isEmpty(mProcessType) ? "" : mProcessType;
     }
 
+    private void setReverseRankWhenConnectionLost(int reverseRank) {
+        synchronized (mLock) {
+            mReverseRankWhenConnectionLost = reverseRank;
+        }
+    }
+
+    private int getReverseRankWhenConnectionLost() {
+        synchronized (mLock) {
+            return mReverseRankWhenConnectionLost;
+        }
+    }
+
     // Called on client (UI or IO) thread.
     @CalledByNative
     private void getTerminationInfoAndStop(long terminationInfoPtr) {
@@ -450,11 +470,14 @@ public final class ChildProcessLauncherHelperImpl {
         // access it afterwards.
         if (connection == null) return;
 
+        // Note there is no guarantee that connection lost has happened. However ChildProcessRanking
+        // is not thread safe, so this is the best we can do.
+        int reverseRank = getReverseRankWhenConnectionLost();
         int bindingCounts[] = connection.remainingBindingStateCountsCurrentOrWhenDied();
         nativeSetTerminationInfo(terminationInfoPtr, connection.bindingStateCurrentOrWhenDied(),
                 connection.isKilledByUs(), connection.hasCleanExit(),
                 bindingCounts[ChildBindingState.STRONG], bindingCounts[ChildBindingState.MODERATE],
-                bindingCounts[ChildBindingState.WAIVED]);
+                bindingCounts[ChildBindingState.WAIVED], reverseRank);
         LauncherThread.post(() -> mLauncher.stop());
     }
 
@@ -700,5 +723,5 @@ public final class ChildProcessLauncherHelperImpl {
 
     private static native void nativeSetTerminationInfo(long termiantionInfoPtr,
             @ChildBindingState int bindingState, boolean killedByUs, boolean cleanExit,
-            int remainingStrong, int remainingModerate, int remainingWaived);
+            int remainingStrong, int remainingModerate, int remainingWaived, int reverseRank);
 }
