@@ -78,7 +78,6 @@ class MediaEngagementScoreDetailsProviderImpl
         base::FeatureList::IsEnabled(
             media::kMediaEngagementBypassAutoplayPolicies),
         base::FeatureList::IsEnabled(media::kPreloadMediaEngagementData),
-        base::FeatureList::IsEnabled(media::kMediaEngagementHTTPSOnly),
         base::FeatureList::IsEnabled(media::kAutoplayDisableSettings),
         base::FeatureList::IsEnabled(media::kAutoplayWhitelistSettings),
         GetBlockAutoplayPref(),
