@@ -815,23 +815,23 @@ ALL_PERF_WATERFALL_BENCHMARKS_METADATA = merge_dicts(
 # that live in tools/perf/core.  We need to verify off of that list.
 def get_telemetry_tests_in_performance_test_suite():
   tests = set()
-  add_benchmarks_from_sharding_map(
-      tests, "shard_maps/linux-perf_map.json")
-  add_benchmarks_from_sharding_map(
-      tests, "shard_maps/android-pixel2-perf_map.json")
+  for platform in bot_platforms.OFFICIAL_PLATFORMS:
+    add_benchmarks_from_sharding_map(
+        tests, platform.shards_map_file_path)
   return tests
 
 
-def add_benchmarks_from_sharding_map(tests, shard_map_name):
-  path = os.path.join(os.path.dirname(__file__), shard_map_name)
-  if os.path.exists(path):
-    with open(path) as f:
-      sharding_map = json.load(f)
-    for shard, benchmarks in sharding_map.iteritems():
-      if "extra_infos" in shard:
-        continue
-      for benchmark, _ in benchmarks['benchmarks'].iteritems():
-        tests.add(benchmark)
+def add_benchmarks_from_sharding_map(tests, shard_map_path):
+  if not os.path.exists(shard_map_path):
+    raise RuntimeError(
+        'Platform does not have a shard map at %s.' % shard_map_path)
+  with open(shard_map_path) as f:
+    shard_map = json.load(f)
+  for shard, benchmarks in shard_map.iteritems():
+    if "extra_infos" in shard:
+      continue
+    for benchmark, _ in benchmarks['benchmarks'].iteritems():
+      tests.add(benchmark)
 
 
 def get_scheduled_non_telemetry_benchmarks(perf_waterfall_file):
