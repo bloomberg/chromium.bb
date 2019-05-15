@@ -549,6 +549,11 @@ OmniboxFieldTrial::GetEmphasizeTitlesConditionForInput(
   return static_cast<EmphasizeTitlesCondition>(value);
 }
 
+bool OmniboxFieldTrial::IsPreserveDefaultMatchScoreEnabled() {
+  return base::FeatureList::IsEnabled(
+      omnibox::kOmniboxPreserveDefaultMatchScore);
+}
+
 bool OmniboxFieldTrial::IsReverseAnswersEnabled() {
   return base::FeatureList::IsEnabled(omnibox::kOmniboxReverseAnswers);
 }

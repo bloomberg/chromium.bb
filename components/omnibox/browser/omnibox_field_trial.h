@@ -380,6 +380,9 @@ EmphasizeTitlesCondition GetEmphasizeTitlesConditionForInput(
 // ---------------------------------------------------------
 // For UI experiments.
 
+// Returns whether preserve default match score is enabled.
+bool IsPreserveDefaultMatchScoreEnabled();
+
 // Returns true if the reverse answers flag is enabled.
 bool IsReverseAnswersEnabled();
 

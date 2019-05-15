@@ -160,7 +160,8 @@ struct AutocompleteMatch {
   // empty string if there is no explanation.
   base::string16 GetWhyThisSuggestionText() const;
 
-  // Comparison function for determining when one match is better than another.
+  // Comparison function for determining whether the first match is better than
+  // the second.
   static bool MoreRelevant(const AutocompleteMatch& elem1,
                            const AutocompleteMatch& elem2);
 
