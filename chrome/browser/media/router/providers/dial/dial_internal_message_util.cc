@@ -92,6 +92,11 @@ std::unique_ptr<DialInternalMessage> DialInternalMessage::From(
     base::Value message,
     std::string* error) {
   DCHECK(error);
+  if (!message.is_dict()) {
+    *error = "Input message was not a dictionary";
+    return nullptr;
+  }
+
   base::Value* type_value =
       message.FindKeyOfType("type", base::Value::Type::STRING);
   if (!type_value) {

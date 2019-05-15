@@ -1,9 +1,9 @@
 # Copyright 2015 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-#
 
 import("//extensions/buildflags/buildflags.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 
 static_library("router") {
@@ -67,7 +67,6 @@ static_library("router") {
   if (enable_extensions) {
     deps += [
       "discovery",
-      "//extensions/browser",
       "//mojo/public/cpp/bindings",
       "//ui/base:buildflags",
     ]
@@ -186,4 +185,18 @@ static_library("test_support") {
       "test/noop_dual_media_sink_service.h",
     ]
   }
+}
+
+fuzzer_test("dial_internal_message_fuzzer") {
+  sources = [
+    "providers/dial/dial_internal_message_fuzzer.cc",
+  ]
+  deps = [
+    ":router",
+    "//base",
+    "//components/mirroring/mojom:service",
+    "//components/translate/content/common",
+  ]
+  dict = "providers/dial/fuzzer_data/dial_internal_message_fuzzer.dict"
+  seed_corpus = "providers/dial/fuzzer_data/corpus/"
 }
