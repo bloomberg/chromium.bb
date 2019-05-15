@@ -117,7 +117,7 @@ const char kCityRe[] =
     "|^시[^도·・]|시[·・]?군[·・]?구";       // ko-KR
 const char kStateRe[] =
     "(?<!(united|hist|history).?)state|county|region|province"
-    "|land"                 // de-DE
+    "|land(?!.*(mark.*))"   // de-DE landmark is another field type in India.
     "|county|principality"  // en-UK
     "|都道府県"             // ja-JP
     "|estado|provincia"     // pt-BR, pt-PT
