@@ -262,8 +262,8 @@ infra/tools/luci/vpython/windows-amd64
 	URdASxHunCnTpWYCexYLrUvW8ifbWByq9CG1epMe4j4C
 
 infra/tools/mac_toolchain/mac-amd64
-	git_revision:edd5644be66d37cdf82978efb0e5d6504d0d552f
-	WvNxqV3SDEsYZovJkXsk17k5B70pSV7QAe6XjFEupb0C
+	git_revision:47354a337f7eb444f2cb1e1b5d30ac3940f1d097
+	qeuJWCEG8k8sDHF66tpTllhiWuGcl1m_TtpuhuwhrFsC
 
 infra/tools/prpc/linux-386
 	git_revision:edd5644be66d37cdf82978efb0e5d6504d0d552f
