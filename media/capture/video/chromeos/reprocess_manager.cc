@@ -44,10 +44,10 @@ int ReprocessManager::GetReprocessReturnCode(
   return kReprocessSuccess;
 }
 
-ReprocessManager::ReprocessManager()
+ReprocessManager::ReprocessManager(UpdateStaticMetadataCallback callback)
     : sequenced_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::TaskPriority::USER_VISIBLE})),
-      impl(new ReprocessManager::ReprocessManagerImpl) {}
+      impl(new ReprocessManager::ReprocessManagerImpl(std::move(callback))) {}
 
 ReprocessManager::~ReprocessManager() {
   sequenced_task_runner_->DeleteSoon(FROM_HERE, std::move(impl));
@@ -86,27 +86,28 @@ void ReprocessManager::FlushReprocessOptions(const std::string& device_id) {
           base::Unretained(impl.get()), device_id));
 }
 
-void ReprocessManager::GetSupportedEffects(
-    const std::string& device_id,
-    GetSupportedEffectsCallback callback) {
+void ReprocessManager::GetStaticMetadata(const std::string& device_id,
+                                         GetStaticMetadataCallback callback) {
   sequenced_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(
-          &ReprocessManager::ReprocessManagerImpl::GetSupportedEffects,
-          base::Unretained(impl.get()), device_id, std::move(callback)));
+      base::BindOnce(&ReprocessManager::ReprocessManagerImpl::GetStaticMetadata,
+                     base::Unretained(impl.get()), device_id,
+                     std::move(callback)));
 }
 
-void ReprocessManager::UpdateSupportedEffects(
+void ReprocessManager::UpdateStaticMetadata(
     const std::string& device_id,
     const cros::mojom::CameraMetadataPtr& metadata) {
   sequenced_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
-          &ReprocessManager::ReprocessManagerImpl::UpdateSupportedEffects,
+          &ReprocessManager::ReprocessManagerImpl::UpdateStaticMetadata,
           base::Unretained(impl.get()), device_id, metadata.Clone()));
 }
 
-ReprocessManager::ReprocessManagerImpl::ReprocessManagerImpl() {}
+ReprocessManager::ReprocessManagerImpl::ReprocessManagerImpl(
+    UpdateStaticMetadataCallback callback)
+    : update_static_metadata_callback_(std::move(callback)) {}
 
 ReprocessManager::ReprocessManagerImpl::~ReprocessManagerImpl() = default;
 
@@ -161,25 +162,28 @@ void ReprocessManager::ReprocessManagerImpl::FlushReprocessOptions(
   reprocess_task_queue_map_[device_id].swap(empty_queue);
 }
 
-void ReprocessManager::ReprocessManagerImpl::GetSupportedEffects(
+void ReprocessManager::ReprocessManagerImpl::GetStaticMetadata(
     const std::string& device_id,
-    GetSupportedEffectsCallback callback) {
-  std::move(callback).Run(
-      base::flat_set<cros::mojom::Effect>(supported_effects_map_[device_id]));
+    GetStaticMetadataCallback callback) {
+  if (static_metadata_map_[device_id]) {
+    std::move(callback).Run(static_metadata_map_[device_id].Clone());
+  } else {
+    get_static_metadata_callback_queue_map_[device_id].push(
+        std::move(callback));
+    update_static_metadata_callback_.Run(device_id);
+  }
 }
 
-void ReprocessManager::ReprocessManagerImpl::UpdateSupportedEffects(
+void ReprocessManager::ReprocessManagerImpl::UpdateStaticMetadata(
     const std::string& device_id,
-    const cros::mojom::CameraMetadataPtr metadata) {
-  const cros::mojom::CameraMetadataEntryPtr* portrait_mode =
-      media::GetMetadataEntry(
-          metadata,
-          static_cast<cros::mojom::CameraMetadataTag>(kPortraitModeVendorKey));
-  supported_effects_map_[device_id].clear();
-  supported_effects_map_[device_id].insert(cros::mojom::Effect::NO_EFFECT);
-  if (portrait_mode) {
-    supported_effects_map_[device_id].insert(
-        cros::mojom::Effect::PORTRAIT_MODE);
+    cros::mojom::CameraMetadataPtr metadata) {
+  static_metadata_map_[device_id] = std::move(metadata);
+
+  auto& callback_queue = get_static_metadata_callback_queue_map_[device_id];
+  while (!callback_queue.empty()) {
+    std::move(callback_queue.front())
+        .Run(static_metadata_map_[device_id].Clone());
+    callback_queue.pop();
   }
 }
 

@@ -23,11 +23,11 @@ RendererFacingCrosImageCapture::RendererFacingCrosImageCapture(
 
 RendererFacingCrosImageCapture::~RendererFacingCrosImageCapture() = default;
 
-void RendererFacingCrosImageCapture::GetSupportedEffectsWithRealId(
-    GetSupportedEffectsCallback callback,
+void RendererFacingCrosImageCapture::GetStaticMetadataWithRealId(
+    GetStaticMetadataCallback callback,
     const base::Optional<std::string>& device_id) {
   DCHECK(device_id.has_value());
-  cros_image_capture_->GetSupportedEffects(*device_id, std::move(callback));
+  cros_image_capture_->GetStaticMetadata(*device_id, std::move(callback));
 }
 
 void RendererFacingCrosImageCapture::SetReprocessOptionWithRealId(
@@ -39,13 +39,13 @@ void RendererFacingCrosImageCapture::SetReprocessOptionWithRealId(
                                           std::move(callback));
 }
 
-void RendererFacingCrosImageCapture::GetSupportedEffects(
+void RendererFacingCrosImageCapture::GetStaticMetadata(
     const std::string& source_id,
-    GetSupportedEffectsCallback callback) {
+    GetStaticMetadataCallback callback) {
   mapping_callback_.Run(
       source_id,
       media::BindToCurrentLoop(base::BindOnce(
-          &RendererFacingCrosImageCapture::GetSupportedEffectsWithRealId,
+          &RendererFacingCrosImageCapture::GetStaticMetadataWithRealId,
           weak_ptr_factory_.GetWeakPtr(), std::move(callback))));
 }
 

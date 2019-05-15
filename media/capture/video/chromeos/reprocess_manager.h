@@ -46,12 +46,14 @@ constexpr int32_t kReprocessSuccess = 0;
 // sequentialize to a single sequence.
 class CAPTURE_EXPORT ReprocessManager {
  public:
-  using GetSupportedEffectsCallback =
-      base::OnceCallback<void(base::flat_set<cros::mojom::Effect>)>;
+  using GetStaticMetadataCallback =
+      base::OnceCallback<void(cros::mojom::CameraMetadataPtr static_metadata)>;
+  using UpdateStaticMetadataCallback =
+      base::RepeatingCallback<void(const std::string& device_id)>;
 
   class ReprocessManagerImpl {
    public:
-    ReprocessManagerImpl();
+    ReprocessManagerImpl(UpdateStaticMetadataCallback callback);
     ~ReprocessManagerImpl();
 
     void SetReprocessOption(
@@ -67,17 +69,23 @@ class CAPTURE_EXPORT ReprocessManager {
 
     void FlushReprocessOptions(const std::string& device_id);
 
-    void GetSupportedEffects(const std::string& device_id,
-                             GetSupportedEffectsCallback callback);
+    void GetStaticMetadata(const std::string& device_id,
+                           GetStaticMetadataCallback callback);
 
-    void UpdateSupportedEffects(const std::string& device_id,
-                                const cros::mojom::CameraMetadataPtr metadata);
+    void UpdateStaticMetadata(const std::string& device_id,
+                              cros::mojom::CameraMetadataPtr metadata);
 
    private:
     base::flat_map<std::string, base::queue<ReprocessTask>>
         reprocess_task_queue_map_;
-    base::flat_map<std::string, base::flat_set<cros::mojom::Effect>>
-        supported_effects_map_;
+
+    base::flat_map<std::string, cros::mojom::CameraMetadataPtr>
+        static_metadata_map_;
+
+    base::flat_map<std::string, base::queue<GetStaticMetadataCallback>>
+        get_static_metadata_callback_queue_map_;
+
+    UpdateStaticMetadataCallback update_static_metadata_callback_;
 
     DISALLOW_COPY_AND_ASSIGN(ReprocessManagerImpl);
   };
@@ -85,7 +93,7 @@ class CAPTURE_EXPORT ReprocessManager {
   static int GetReprocessReturnCode(
       cros::mojom::Effect effect,
       const cros::mojom::CameraMetadataPtr* metadata);
-  ReprocessManager();
+  ReprocessManager(UpdateStaticMetadataCallback callback);
   ~ReprocessManager();
 
   // Sets the reprocess option for given device id and effect. Each reprocess
@@ -106,14 +114,13 @@ class CAPTURE_EXPORT ReprocessManager {
   // Clears all remaining ReprocessTasks in the queue for given device id.
   void FlushReprocessOptions(const std::string& device_id);
 
-  // Gets supported effects for current active device.
-  void GetSupportedEffects(const std::string& device_id,
-                           GetSupportedEffectsCallback callback);
+  // Gets camera static metadata for current active device.
+  void GetStaticMetadata(const std::string& device_id,
+                         GetStaticMetadataCallback callback);
 
-  // Updates supported effects for given device. This method should be triggered
-  // whenever the camera characteristics is updated.
-  void UpdateSupportedEffects(const std::string& device_id,
-                              const cros::mojom::CameraMetadataPtr& metadata);
+  // Updates camera static metadata for given device.
+  void UpdateStaticMetadata(const std::string& device_id,
+                            const cros::mojom::CameraMetadataPtr& metadata);
 
  private:
   scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;

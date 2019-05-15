@@ -23,12 +23,12 @@ void CrosImageCaptureImpl::BindRequest(
   bindings_.AddBinding(this, std::move(request));
 }
 
-void CrosImageCaptureImpl::GetSupportedEffects(
+void CrosImageCaptureImpl::GetStaticMetadata(
     const std::string& device_id,
-    GetSupportedEffectsCallback callback) {
-  reprocess_manager_->GetSupportedEffects(
+    GetStaticMetadataCallback callback) {
+  reprocess_manager_->GetStaticMetadata(
       device_id, media::BindToCurrentLoop(base::BindOnce(
-                     &CrosImageCaptureImpl::OnGetSupportedEffects,
+                     &CrosImageCaptureImpl::OnGotStaticMetadata,
                      base::Unretained(this), std::move(callback))));
 }
 
@@ -40,12 +40,10 @@ void CrosImageCaptureImpl::SetReprocessOption(
       device_id, effect, media::BindToCurrentLoop(std::move(callback)));
 }
 
-void CrosImageCaptureImpl::OnGetSupportedEffects(
-    GetSupportedEffectsCallback callback,
-    base::flat_set<cros::mojom::Effect> supported_effects) {
-  std::vector<cros::mojom::Effect> effects(supported_effects.begin(),
-                                           supported_effects.end());
-  std::move(callback).Run(std::move(effects));
+void CrosImageCaptureImpl::OnGotStaticMetadata(
+    GetStaticMetadataCallback callback,
+    cros::mojom::CameraMetadataPtr static_metadata) {
+  std::move(callback).Run(std::move(static_metadata));
 }
 
 }  // namespace media

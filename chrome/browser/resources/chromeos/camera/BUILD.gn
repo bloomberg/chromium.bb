@@ -197,6 +197,8 @@ copy("chrome_camera_app_views") {
 copy("chrome_camera_app_mojo_generated") {
   sources = [
     "$root_gen_dir/media/capture/mojom/image_capture.mojom-lite.js",
+    "$root_gen_dir/media/capture/video/chromeos/mojo/camera_metadata.mojom-lite.js",
+    "$root_gen_dir/media/capture/video/chromeos/mojo/camera_metadata_tags.mojom-lite.js",
     "$root_gen_dir/media/capture/video/chromeos/mojo/cros_image_capture.mojom-lite.js",
     "$root_gen_dir/mojo/public/js/mojo_bindings_lite.js",
   ]
