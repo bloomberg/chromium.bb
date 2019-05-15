@@ -988,3 +988,14 @@ message ImportLxdContainerProgressSignal {
   // Set when status is FAILED_ARCHITECTURE.
   string architecture_container = 9;
 }
+
+message PendingAppListUpdatesSignal {
+  // Name of the VM on which the app list updates will run.
+  string vm_name = 1;
+
+  // Name of the container on which the app list updates will run.
+  string container_name = 2;
+
+  // Number of currently scheduled app list updates for this container.
+  uint32 count = 3;
+}
