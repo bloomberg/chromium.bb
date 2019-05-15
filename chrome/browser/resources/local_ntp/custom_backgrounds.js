@@ -80,6 +80,7 @@ customBackgrounds.IDS = {
   BACKGROUNDS_BUTTON: 'backgrounds-button',
   BACKGROUNDS_IMAGE_MENU: 'backgrounds-image-menu',
   BACKGROUNDS_MENU: 'backgrounds-menu',
+  BACKGROUNDS_UPLOAD: 'backgrounds-upload',
   CANCEL: 'bg-sel-footer-cancel',
   COLORS_BUTTON: 'colors-button',
   CUSTOMIZATION_MENU: 'customization-menu',
@@ -890,7 +891,11 @@ customBackgrounds.loadChromeBackgrounds = function() {
 
 /* Close dialog when an image is selected via the file picker. */
 customBackgrounds.closeCustomizationDialog = function() {
-  $(customBackgrounds.IDS.EDIT_BG_DIALOG).close();
+  if (configData.richerPicker) {
+    $(customBackgrounds.IDS.CUSTOMIZATION_MENU).close();
+  } else {
+    $(customBackgrounds.IDS.EDIT_BG_DIALOG).close();
+  }
 };
 
 /*
@@ -1358,6 +1363,14 @@ customBackgrounds.initCustomBackgrounds = function(showErrorNotification) {
       } else {
         $('img_tile_0').focus();
       }
+    }
+  };
+
+  $(customBackgrounds.IDS.BACKGROUNDS_UPLOAD).onclick = uploadImageInteraction;
+  $(customBackgrounds.IDS.BACKGROUNDS_UPLOAD).onkeydown = function(event) {
+    if (event.keyCode === customBackgrounds.KEYCODES.ENTER ||
+        event.keyCode === customBackgrounds.KEYCODES.SPACE) {
+      uploadImageInteraction();
     }
   };
 
