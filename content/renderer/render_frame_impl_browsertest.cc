@@ -497,7 +497,7 @@ TEST_F(RenderFrameImplTest, NoCrashWhenDeletingFrameDuringFind) {
       1, "foo", true /* match_case */, true /* forward */,
       false /* find_next */, true /* force */, false /* wrap_within_frame */);
 
-  FrameMsg_Delete delete_message(0);
+  FrameMsg_Delete delete_message(0, FrameDeleteIntention::kNotMainFrame);
   frame()->OnMessageReceived(delete_message);
 }
 

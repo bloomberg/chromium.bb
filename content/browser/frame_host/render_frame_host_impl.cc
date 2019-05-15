@@ -1758,12 +1758,12 @@ bool RenderFrameHostImpl::CreateRenderFrame(int previous_routing_id,
   return true;
 }
 
-void RenderFrameHostImpl::DeleteRenderFrame() {
+void RenderFrameHostImpl::DeleteRenderFrame(FrameDeleteIntention intent) {
   if (!is_active())
     return;
 
   if (render_frame_created_) {
-    Send(new FrameMsg_Delete(routing_id_));
+    Send(new FrameMsg_Delete(routing_id_, intent));
 
     if (!frame_tree_node_->IsMainFrame() && IsCurrent()) {
       // If this subframe has an unload handler (and isn't speculative), ensure
@@ -2036,7 +2036,8 @@ void RenderFrameHostImpl::RemoveChild(FrameTreeNode* child) {
       // observers are notified of its deletion.
       std::unique_ptr<FrameTreeNode> node_to_delete(std::move(*iter));
       children_.erase(iter);
-      node_to_delete->current_frame_host()->DeleteRenderFrame();
+      node_to_delete->current_frame_host()->DeleteRenderFrame(
+          FrameDeleteIntention::kNotMainFrame);
       // Speculative RenderFrameHosts are deleted by the FrameTreeNode's
       // RenderFrameHostManager's destructor. RenderFrameProxyHosts send
       // FrameMsg_Delete automatically in the destructor.
@@ -2059,7 +2060,8 @@ void RenderFrameHostImpl::ResetChildren() {
   // this RenderFrameHostImpl to detach the current frame's children, rather
   // than messaging each child's current frame host...
   for (auto& child : children)
-    child->current_frame_host()->DeleteRenderFrame();
+    child->current_frame_host()->DeleteRenderFrame(
+        FrameDeleteIntention::kNotMainFrame);
 }
 
 void RenderFrameHostImpl::SetLastCommittedUrl(const GURL& url) {
@@ -2389,7 +2391,7 @@ void RenderFrameHostImpl::DetachFromProxy() {
     return;
 
   // Start pending deletion on this frame and its children.
-  DeleteRenderFrame();
+  DeleteRenderFrame(FrameDeleteIntention::kNotMainFrame);
   StartPendingDeletionOnSubtree();
   // Some children with no unload handler may be eligible for immediate
   // deletion. Cut the dead branches now. This is a performance optimization.
@@ -4520,7 +4522,7 @@ void RenderFrameHostImpl::StartPendingDeletionOnSubtree() {
           local_ancestor = rfh;
       }
 
-      local_ancestor->DeleteRenderFrame();
+      local_ancestor->DeleteRenderFrame(FrameDeleteIntention::kNotMainFrame);
       if (local_ancestor != child) {
         child->unload_state_ =
             child->GetSuddenTerminationDisablerState(blink::kUnloadHandler)
