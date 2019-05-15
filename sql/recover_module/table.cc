@@ -167,8 +167,7 @@ VirtualTable::VirtualTable(sqlite3* sqlite_db,
                            int root_page_id,
                            int page_size,
                            std::vector<RecoveredColumnSpec> column_specs)
-    : sqlite_db_(sqlite_db),
-      sqlite_file_(sqlite_file),
+    : sqlite_file_(sqlite_file),
       root_page_id_(root_page_id),
       page_size_(page_size),
       column_specs_(std::move(column_specs)) {
@@ -204,8 +203,6 @@ VirtualCursor* VirtualTable::CreateCursor() {
 #if DCHECK_IS_ON()
   open_cursor_count_.fetch_add(1, std::memory_order_relaxed);
 #endif  // DCHECK_IS_ON()
-
-  (void)sqlite_db_;
 
   VirtualCursor* result = new VirtualCursor(this);
   return result;

@@ -70,6 +70,9 @@ class InnerPageDecoder {
   // The number of the B-tree page this reader is reading.
   const int page_id_;
   // Used to read the tree page.
+  //
+  // Raw pointer usage is acceptable because this instance's owner is expected
+  // to ensure that the DatabasePageReader outlives this.
   DatabasePageReader* const db_reader_;
   // Caches the ComputeCellCount() value for this reader's page.
   const int cell_count_ = ComputeCellCount(db_reader_);
@@ -162,6 +165,9 @@ class LeafPageDecoder {
   // The number of the B-tree page this reader is reading.
   const int64_t page_id_;
   // Used to read the tree page.
+  //
+  // Raw pointer usage is acceptable because this instance's owner is expected
+  // to ensure that the DatabasePageReader outlives this.
   DatabasePageReader* const db_reader_;
   // Caches the ComputeCellCount() value for this reader's page.
   const int cell_count_ = ComputeCellCount(db_reader_);

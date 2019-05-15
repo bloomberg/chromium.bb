@@ -101,6 +101,9 @@ class LeafPayloadReader {
   bool PopulateNextOverflowPageId();
 
   // Used to read the pages containing the payload.
+  //
+  // Raw pointer usage is acceptable because this instance's owner is expected
+  // to ensure that the DatabasePageReader outlives this.
   DatabasePageReader* const db_reader_;
 
   // Total size of the current payload.

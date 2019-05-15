@@ -103,9 +103,7 @@ class VirtualTable {
   // SQLite handle for this table. The struct is populated and used by SQLite.
   sqlite3_vtab sqlite_table_;
 
-  // SQLite connection for both the recovered table and the virtual table.
-  sqlite3* const sqlite_db_;
-
+  // See the corresponding getters for these members' purpose.
   sqlite3_file* const sqlite_file_;
   const int root_page_id_;
   const int page_size_;

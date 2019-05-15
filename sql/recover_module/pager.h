@@ -135,9 +135,11 @@ class DatabasePageReader {
   // Points to the last page successfully read by ReadPage().
   // Set to kInvalidPageId if the last read was unsuccessful.
   int page_id_ = kInvalidPageId;
-  //
+  // Stores the bytes of the last page successfully read by ReadPage().
+  // The content is undefined if the last call to ReadPage() did not succeed.
   const std::unique_ptr<uint8_t[]> page_data_;
-  // Raw
+  // Raw pointer usage is acceptable because this instance's owner is expected
+  // to ensure that the VirtualTable outlives this.
   VirtualTable* const table_;
   int page_size_ = 0;
 

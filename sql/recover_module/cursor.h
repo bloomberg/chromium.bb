@@ -107,6 +107,10 @@ class VirtualCursor {
   sqlite3_vtab_cursor sqlite_cursor_;
 
   // The table this cursor was created for.
+  //
+  // Raw pointer usage is acceptable because SQLite will ensure that the
+  // VirtualTable, which is passed around as a sqlite3_vtab*, will outlive this
+  // cursor, which is passed around as a sqlite3_cursor*.
   VirtualTable* const table_;
 
   // Reads database pages for this cursor.

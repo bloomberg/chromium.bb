@@ -65,6 +65,14 @@ class RecordReader {
     bool has_inline_value;
   };
 
+  // Creates an uninitialized record reader from a SQLite table B-tree.
+  //
+  // |payload_reader_| must outlive this instance, and should always point to
+  // leaf pages in the same tree. |column_count| must match the number of
+  // columns in the table's schema.
+  //
+  // The underlying table should not be modified while the record is
+  // initialized.
   explicit RecordReader(LeafPayloadReader* payload_reader_, int column_count);
   ~RecordReader();
 
@@ -128,6 +136,9 @@ class RecordReader {
   std::vector<uint8_t> header_buffer_;
 
   // Brings the record's bytes from the SQLite database pages.
+  //
+  // Raw pointer usage is acceptable because this instance's owner is expected
+  // to ensure that the LeafPayloadReader outlives this.
   LeafPayloadReader* const payload_reader_;
 
   // The number of columns in the table schema. No payload should have more than
