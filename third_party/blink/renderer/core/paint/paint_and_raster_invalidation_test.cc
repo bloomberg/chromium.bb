@@ -1039,7 +1039,7 @@ TEST_P(PaintAndRasterInvalidationTest, ScrollingInvalidatesStickyOffset) {
   EXPECT_EQ(LayoutPoint(0, 0), inner->FirstFragment().PaintOffset());
 }
 
-class PaintInvalidatorTestClient : public EmptyChromeClient {
+class PaintInvalidatorTestClient : public RenderingTestChromeClient {
  public:
   void InvalidateRect(const IntRect&) override {
     invalidation_recorded_ = true;

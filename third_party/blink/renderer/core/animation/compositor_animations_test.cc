@@ -65,6 +65,7 @@
 #include "third_party/blink/renderer/platform/animation/compositor_keyframe_model.h"
 #include "third_party/blink/renderer/platform/geometry/float_box.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
+#include "third_party/blink/renderer/platform/graphics/compositing/paint_artifact_compositor.h"
 #include "third_party/blink/renderer/platform/testing/histogram_tester.h"
 #include "third_party/blink/renderer/platform/testing/paint_test_configurations.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
@@ -93,6 +94,7 @@ class AnimationCompositorAnimationsTest : public PaintTestConfigurations,
   Persistent<StringKeyframeEffectModel> keyframe_animation_effect5_;
 
   Persistent<Element> element_;
+  Persistent<Element> inline_;
   Persistent<DocumentTimeline> timeline_;
 
   void SetUp() override {
@@ -129,9 +131,11 @@ class AnimationCompositorAnimationsTest : public PaintTestConfigurations,
     // Having an animation would normally ensure this but these tests don't
     // explicitly construct a full animation on the element.
     SetBodyInnerHTML(R"HTML(
-        <div id='test' style='will-change: opacity,filter,transform;'></div>
+        <div id='test' style='will-change: opacity,filter,transform; height:100px; background: green;'></div>
+        <span id='inline' style='will-change: opacity,filter,transform;'>text</div>
     )HTML");
     element_ = GetDocument().getElementById("test");
+    inline_ = GetDocument().getElementById("inline");
 
     helper_.Initialize(nullptr, nullptr, nullptr);
     base_url_ = "http://www.test.com/";
@@ -146,22 +150,28 @@ class AnimationCompositorAnimationsTest : public PaintTestConfigurations,
   CompositorAnimations::FailureReasons CanStartEffectOnCompositor(
       const Timing& timing,
       const KeyframeEffectModelBase& effect) {
-    // As the compositor code only understands CompositorKeyframeValues, we must
-    // snapshot the effect to make those available.
-    base::Optional<CompositorElementIdSet> none;
     // TODO(crbug.com/725385): Remove once compositor uses InterpolationTypes.
     auto style = GetDocument().EnsureStyleResolver().StyleForElement(element_);
     effect.SnapshotAllCompositorKeyframesIfNecessary(*element_.Get(), *style,
                                                      nullptr);
     return CheckCanStartEffectOnCompositor(timing, *element_.Get(), nullptr,
-                                           effect, none);
+                                           effect);
   }
   CompositorAnimations::FailureReasons CheckCanStartEffectOnCompositor(
       const Timing& timing,
       const Element& element,
       const Animation* animation,
-      const EffectModel& effect_model,
-      const base::Optional<CompositorElementIdSet>& composited_element_ids) {
+      const EffectModel& effect_model) {
+    base::Optional<CompositorElementIdSet> composited_element_ids;
+
+    if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
+        RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+      const PaintArtifactCompositor* paint_artifact_compositor =
+          GetDocument().View()->GetPaintArtifactCompositor();
+      composited_element_ids = paint_artifact_compositor->RootLayer()
+                                   ->layer_tree_host()
+                                   ->elements_in_property_trees();
+    }
     return CompositorAnimations::CheckCanStartEffectOnCompositor(
         timing, element, animation, effect_model, composited_element_ids, 1);
   }
@@ -807,30 +817,7 @@ TEST_P(AnimationCompositorAnimationsTest,
 
 TEST_P(AnimationCompositorAnimationsTest,
        CanStartElementOnCompositorEffectOpacity) {
-  // This test doesn't apply for pre-BlinkGenPropertyTrees due to the element id
-  // namespaces.
-  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
-      !RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
-
-  Persistent<Element> element = GetDocument().CreateElementForBinding("shared");
-
-  LayoutObjectProxy* layout_object = LayoutObjectProxy::Create(element.Get());
-  layout_object->EnsureIdForTestingProxy();
-  element->SetLayoutObject(layout_object);
-
-  CompositorElementIdSet compositor_ids;
-  compositor_ids.insert(CompositorElementIdFromUniqueObjectId(
-      layout_object->UniqueId(), CompositorElementIdNamespace::kPrimaryEffect));
-
-  // We need an ID to be in the set, but not the same.
-  CompositorElementId different_id = CompositorElementIdFromUniqueObjectId(
-      layout_object->UniqueId(), CompositorElementIdNamespace::kEffectClipPath);
   // Check that we got something effectively different.
-  EXPECT_FALSE(compositor_ids.count(different_id));
-  CompositorElementIdSet disjoint_ids;
-  compositor_ids.insert(different_id);
-
   StringKeyframeVector key_frames;
   key_frames.push_back(CreateDefaultKeyframe(
       CSSPropertyID::kOpacity, EffectModel::kCompositeReplace, 0.0));
@@ -841,91 +828,37 @@ TEST_P(AnimationCompositorAnimationsTest,
 
   Timing timing;
   timing.iteration_duration = AnimationTimeDelta::FromSecondsD(1);
-  base::Optional<CompositorElementIdSet> none;
 
   // The first animation for opacity is ok to run on compositor.
   KeyframeEffect* keyframe_effect1 =
-      KeyframeEffect::Create(element.Get(), animation_effect, timing);
+      KeyframeEffect::Create(element_, animation_effect, timing);
   Animation* animation = timeline_->Play(keyframe_effect1);
   auto style = ComputedStyle::Create();
   animation_effect->SnapshotAllCompositorKeyframesIfNecessary(*element_.Get(),
                                                               *style, nullptr);
 
   // Now we can check that we are set up correctly.
-  EXPECT_EQ(CheckCanStartEffectOnCompositor(timing, *element.Get(), animation,
-                                            *animation_effect, none),
-            CompositorAnimations::kNoFailure);
-  // ... and still true if we enable the checks for Composited ID.
-  EXPECT_EQ(CheckCanStartEffectOnCompositor(timing, *element.Get(), animation,
-                                            *animation_effect, compositor_ids),
-            CompositorAnimations::kNoFailure);
-
-  // Check out the failure modes.  Now that the setup is done and tested,
-  // we get to exercising the failure paths without distraction.
-
-  // id not in set.
-  EXPECT_TRUE(CheckCanStartEffectOnCompositor(timing, *element.Get(), animation,
-                                              *animation_effect, disjoint_ids) &
-              CompositorAnimations::kTargetHasInvalidCompositingState);
-
-  // No Layout Object
-  element->SetLayoutObject(nullptr);
-  EXPECT_TRUE(CheckCanStartEffectOnCompositor(timing, *element.Get(), animation,
-                                              *animation_effect,
-                                              compositor_ids) &
-              CompositorAnimations::kTargetHasInvalidCompositingState);
-  LayoutObjectProxy::Dispose(layout_object);
-  layout_object = nullptr;
-
-  // No layout Object Id
-  LayoutObjectProxy* new_layout_object =
-      LayoutObjectProxy::Create(element.Get());
-  element->SetLayoutObject(new_layout_object);
-  EXPECT_TRUE(CheckCanStartEffectOnCompositor(timing, *element.Get(), animation,
-                                              *animation_effect,
-                                              compositor_ids) &
-              CompositorAnimations::kTargetHasInvalidCompositingState);
-  new_layout_object->EnsureIdForTestingProxy();
-
-  // And back to the baseline.
-  EXPECT_EQ(CheckCanStartEffectOnCompositor(timing, *element.Get(), animation,
-                                            *animation_effect, none),
+  EXPECT_EQ(CheckCanStartEffectOnCompositor(timing, *element_.Get(), animation,
+                                            *animation_effect),
             CompositorAnimations::kNoFailure);
 
   // Timings have to be convertible for compositor.
-  compositor_ids.insert(CompositorElementIdFromUniqueObjectId(
-      new_layout_object->UniqueId(),
-      CompositorElementIdNamespace::kPrimaryEffect));
-  EXPECT_EQ(CheckCanStartEffectOnCompositor(timing, *element.Get(), animation,
-                                            *animation_effect, compositor_ids),
+  EXPECT_EQ(CheckCanStartEffectOnCompositor(timing, *element_.Get(), animation,
+                                            *animation_effect),
             CompositorAnimations::kNoFailure);
   timing.end_delay = 1.0;
-  EXPECT_TRUE(CheckCanStartEffectOnCompositor(timing, *element.Get(), animation,
-                                              *animation_effect,
-                                              compositor_ids) &
+  EXPECT_TRUE(CheckCanStartEffectOnCompositor(timing, *element_.Get(),
+                                              animation, *animation_effect) &
               CompositorAnimations::kEffectHasUnsupportedTimingParameters);
-  EXPECT_TRUE(CheckCanStartEffectOnCompositor(timing, *element.Get(), animation,
-                                              *animation_effect, none) &
+  EXPECT_TRUE(CheckCanStartEffectOnCompositor(timing, *element_.Get(),
+                                              animation, *animation_effect) &
               (CompositorAnimations::kTargetHasInvalidCompositingState |
                CompositorAnimations::kEffectHasUnsupportedTimingParameters));
-  element->SetLayoutObject(nullptr);
-  LayoutObjectProxy::Dispose(new_layout_object);
 }
 
 TEST_P(AnimationCompositorAnimationsTest,
        CanStartElementOnCompositorEffectInvalid) {
-  base::Optional<CompositorElementIdSet> none;
   auto style = ComputedStyle::Create();
-
-  Persistent<Element> element = GetDocument().CreateElementForBinding("shared");
-
-  LayoutObjectProxy* layout_object = LayoutObjectProxy::Create(element.Get());
-  layout_object->EnsureIdForTestingProxy();
-  element->SetLayoutObject(layout_object);
-
-  CompositorElementIdSet compositor_ids;
-  compositor_ids.insert(CompositorElementIdFromUniqueObjectId(
-      layout_object->UniqueId(), CompositorElementIdNamespace::kPrimaryEffect));
 
   // Check that we notice the value is not animatable correctly.
   const CSSProperty& target_property1(GetCSSPropertyOutlineStyle());
@@ -935,7 +868,7 @@ TEST_P(AnimationCompositorAnimationsTest,
       CreateReplaceOpKeyframe(target_property1.PropertyID(), "dashed", 1.0));
 
   KeyframeEffect* keyframe_effect1 =
-      KeyframeEffect::Create(element.Get(), effect1, timing_);
+      KeyframeEffect::Create(element_.Get(), effect1, timing_);
 
   Animation* animation1 = timeline_->Play(keyframe_effect1);
   effect1->SnapshotAllCompositorKeyframesIfNecessary(*element_.Get(), *style,
@@ -946,11 +879,11 @@ TEST_P(AnimationCompositorAnimationsTest,
   EXPECT_FALSE(effect1->GetPropertySpecificKeyframes(target_property1h)[0]
                    ->GetCompositorKeyframeValue());
   EXPECT_EQ(1u, effect1->Properties().size());
-  EXPECT_TRUE(CheckCanStartEffectOnCompositor(timing_, *element.Get(),
-                                              animation1, *effect1, none) &
+  EXPECT_TRUE(CheckCanStartEffectOnCompositor(timing_, *element_.Get(),
+                                              animation1, *effect1) &
               CompositorAnimations::kUnsupportedCSSProperty);
 
-  // Check that we notice the Property is not animatable correctly.
+  // Check that we notice transform is not animatable correctly on an inline.
   const CSSProperty& target_property2(GetCSSPropertyScale());
   PropertyHandle target_property2h(target_property2);
   StringKeyframeEffectModel* effect2 = CreateKeyframeEffectModel(
@@ -958,10 +891,10 @@ TEST_P(AnimationCompositorAnimationsTest,
       CreateReplaceOpKeyframe(target_property2.PropertyID(), "3", 1.0));
 
   KeyframeEffect* keyframe_effect2 =
-      KeyframeEffect::Create(element.Get(), effect2, timing_);
+      KeyframeEffect::Create(inline_.Get(), effect2, timing_);
 
   Animation* animation2 = timeline_->Play(keyframe_effect2);
-  effect2->SnapshotAllCompositorKeyframesIfNecessary(*element_.Get(), *style,
+  effect2->SnapshotAllCompositorKeyframesIfNecessary(*inline_.Get(), *style,
                                                      nullptr);
 
   EXPECT_EQ(2u,
@@ -969,8 +902,8 @@ TEST_P(AnimationCompositorAnimationsTest,
   EXPECT_TRUE(effect2->GetPropertySpecificKeyframes(target_property2h)[0]
                   ->GetCompositorKeyframeValue());
   EXPECT_EQ(1u, effect2->Properties().size());
-  EXPECT_TRUE(CheckCanStartEffectOnCompositor(timing_, *element.Get(),
-                                              animation2, *effect2, none) &
+  EXPECT_TRUE(CheckCanStartEffectOnCompositor(timing_, *inline_.Get(),
+                                              animation2, *effect2) &
               CompositorAnimations::
                   kTransformRelatedPropertyCannotBeAcceleratedOnTarget);
 
@@ -984,7 +917,7 @@ TEST_P(AnimationCompositorAnimationsTest,
       CreateMockReplaceKeyframe(target_property3.PropertyID(), "20px", 1.0));
 
   KeyframeEffect* keyframe_effect3 =
-      KeyframeEffect::Create(element.Get(), effect3, timing_);
+      KeyframeEffect::Create(element_.Get(), effect3, timing_);
 
   Animation* animation3 = timeline_->Play(keyframe_effect3);
   effect3->SnapshotAllCompositorKeyframesIfNecessary(*element_.Get(), *style,
@@ -995,34 +928,18 @@ TEST_P(AnimationCompositorAnimationsTest,
   EXPECT_TRUE(effect3->GetPropertySpecificKeyframes(target_property3h)[0]
                   ->GetCompositorKeyframeValue());
   EXPECT_EQ(1u, effect3->Properties().size());
-  EXPECT_TRUE(CheckCanStartEffectOnCompositor(timing_, *element.Get(),
-                                              animation3, *effect3, none) &
+  EXPECT_TRUE(CheckCanStartEffectOnCompositor(timing_, *element_.Get(),
+                                              animation3, *effect3) &
               CompositorAnimations::kUnsupportedCSSProperty);
-
-  element->SetLayoutObject(nullptr);
-  LayoutObjectProxy::Dispose(layout_object);
 }
 
 TEST_P(AnimationCompositorAnimationsTest,
        CanStartElementOnCompositorEffectFilter) {
-  base::Optional<CompositorElementIdSet> none;
-
-  Persistent<Element> element = GetDocument().CreateElementForBinding("shared");
-
-  LayoutObjectProxy* layout_object = LayoutObjectProxy::Create(element.Get());
-  layout_object->EnsureIdForTestingProxy();
-  element->SetLayoutObject(layout_object);
-
-  CompositorElementIdSet compositor_ids;
-  compositor_ids.insert(CompositorElementIdFromUniqueObjectId(
-      layout_object->UniqueId(), CompositorElementIdNamespace::kEffectFilter));
-
-  CompositorElementId different_id = CompositorElementIdFromUniqueObjectId(
-      layout_object->UniqueId(), CompositorElementIdNamespace::kPrimary);
-  // Check that we got something effectively different.
-  EXPECT_FALSE(compositor_ids.count(different_id));
-  CompositorElementIdSet disjoint_ids;
-  compositor_ids.insert(different_id);
+  // TODO(https://crbug.com/960953): Create a filter effect node when
+  // will-change: filter is specified so that filter effects can be tested
+  // without compositing changes.
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
 
   // Filter Properties use a different ID namespace
   StringKeyframeEffectModel* effect1 = CreateKeyframeEffectModel(
@@ -1030,7 +947,7 @@ TEST_P(AnimationCompositorAnimationsTest,
       CreateReplaceOpKeyframe(CSSPropertyID::kFilter, "sepia(50%)", 1.0));
 
   KeyframeEffect* keyframe_effect1 =
-      KeyframeEffect::Create(element.Get(), effect1, timing_);
+      KeyframeEffect::Create(element_.Get(), effect1, timing_);
 
   Animation* animation1 = timeline_->Play(keyframe_effect1);
   auto style = ComputedStyle::Create();
@@ -1038,17 +955,9 @@ TEST_P(AnimationCompositorAnimationsTest,
                                                      nullptr);
 
   // Now we can check that we are set up correctly.
-  EXPECT_EQ(CheckCanStartEffectOnCompositor(timing_, *element.Get(), animation1,
-                                            *effect1, none),
+  EXPECT_EQ(CheckCanStartEffectOnCompositor(timing_, *element_.Get(),
+                                            animation1, *effect1),
             CompositorAnimations::kNoFailure);
-  // ... and still true if we enable the checks for Composited ID.
-  EXPECT_EQ(CheckCanStartEffectOnCompositor(timing_, *element.Get(), animation1,
-                                            *effect1, compositor_ids),
-            CompositorAnimations::kNoFailure);
-  // ... but not if we are not in the set.
-  EXPECT_TRUE(CheckCanStartEffectOnCompositor(
-                  timing_, *element.Get(), animation1, *effect1, disjoint_ids) &
-              CompositorAnimations::kTargetHasInvalidCompositingState);
 
   // Filters that affect neighboring pixels can't be composited.
   StringKeyframeEffectModel* effect2 = CreateKeyframeEffectModel(
@@ -1056,54 +965,23 @@ TEST_P(AnimationCompositorAnimationsTest,
       CreateReplaceOpKeyframe(CSSPropertyID::kFilter, "blur(10px)", 1.0));
 
   KeyframeEffect* keyframe_effect2 =
-      KeyframeEffect::Create(element.Get(), effect2, timing_);
+      KeyframeEffect::Create(element_.Get(), effect2, timing_);
 
   Animation* animation2 = timeline_->Play(keyframe_effect2);
   effect2->SnapshotAllCompositorKeyframesIfNecessary(*element_.Get(), *style,
                                                      nullptr);
-  EXPECT_TRUE(CheckCanStartEffectOnCompositor(timing_, *element.Get(),
-                                              animation2, *effect2,
-                                              compositor_ids) &
+  EXPECT_TRUE(CheckCanStartEffectOnCompositor(timing_, *element_.Get(),
+                                              animation2, *effect2) &
               CompositorAnimations::kFilterRelatedPropertyMayMovePixels);
 
-  EXPECT_TRUE(CheckCanStartEffectOnCompositor(timing_, *element.Get(),
-                                              animation2, *effect2, none) &
+  EXPECT_TRUE(CheckCanStartEffectOnCompositor(timing_, *element_.Get(),
+                                              animation2, *effect2) &
               (CompositorAnimations::kFilterRelatedPropertyMayMovePixels |
                CompositorAnimations::kTargetHasInvalidCompositingState));
-
-  element->SetLayoutObject(nullptr);
-  LayoutObjectProxy::Dispose(layout_object);
 }
 
 TEST_P(AnimationCompositorAnimationsTest,
        CanStartElementOnCompositorEffectTransform) {
-  // This test doesn't apply for pre-BlinkGenPropertyTrees due to the element id
-  // namespaces.
-  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
-      !RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
-
-  Persistent<Element> element = GetDocument().CreateElementForBinding("shared");
-
-  LayoutObjectProxy* layout_object = LayoutObjectProxy::Create(element.Get());
-  layout_object->EnsureIdForTestingProxy();
-  element->SetLayoutObject(layout_object);
-
-  CompositorElementIdSet compositor_ids;
-  compositor_ids.insert(CompositorElementIdFromUniqueObjectId(
-      layout_object->UniqueId(),
-      CompositorElementIdNamespace::kPrimaryTransform));
-  compositor_ids.insert(CompositorElementIdFromUniqueObjectId(
-      layout_object->UniqueId(), CompositorElementIdNamespace::kPrimaryEffect));
-
-  CompositorElementId different_id = CompositorElementIdFromUniqueObjectId(
-      layout_object->UniqueId(), CompositorElementIdNamespace::kEffectFilter);
-  // Check that we got something effectively different.
-  EXPECT_FALSE(compositor_ids.count(different_id));
-  CompositorElementIdSet disjoint_ids;
-  compositor_ids.insert(different_id);
-
-  base::Optional<CompositorElementIdSet> none;
   auto style = ComputedStyle::Create();
 
   StringKeyframeEffectModel* effect1 = CreateKeyframeEffectModel(
@@ -1111,31 +989,17 @@ TEST_P(AnimationCompositorAnimationsTest,
       CreateReplaceOpKeyframe(CSSPropertyID::kTransform, "rotate(45deg)", 1.0));
 
   KeyframeEffect* keyframe_effect1 =
-      KeyframeEffect::Create(element.Get(), effect1, timing_);
+      KeyframeEffect::Create(element_.Get(), effect1, timing_);
 
   Animation* animation1 = timeline_->Play(keyframe_effect1);
   effect1->SnapshotAllCompositorKeyframesIfNecessary(*element_.Get(), *style,
                                                      nullptr);
 
-  // our Layout object is not TransformApplicable
-  EXPECT_FALSE(layout_object->IsBox());
-  EXPECT_TRUE(CheckCanStartEffectOnCompositor(timing_, *element.Get(),
-                                              animation1, *effect1, none) &
+  // Check if our layout object is not TransformApplicable
+  EXPECT_TRUE(CheckCanStartEffectOnCompositor(timing_, *inline_.Get(),
+                                              animation1, *effect1) &
               CompositorAnimations::
                   kTransformRelatedPropertyCannotBeAcceleratedOnTarget);
-  // Now we can check that we are set up correctly.
-  layout_object->SetIsBox();
-  EXPECT_EQ(CheckCanStartEffectOnCompositor(timing_, *element.Get(), animation1,
-                                            *effect1, none),
-            CompositorAnimations::kNoFailure);
-  // ... and still true if we enable the checks for Composited ID.
-  EXPECT_EQ(CheckCanStartEffectOnCompositor(timing_, *element.Get(), animation1,
-                                            *effect1, compositor_ids),
-            CompositorAnimations::kNoFailure);
-  // ... but not if we are not in the set.
-  EXPECT_TRUE(CheckCanStartEffectOnCompositor(
-                  timing_, *element.Get(), animation1, *effect1, disjoint_ids) &
-              CompositorAnimations::kTargetHasInvalidCompositingState);
 
   StringKeyframeEffectModel* effect2 = CreateKeyframeEffectModel(
       CreateReplaceOpKeyframe(CSSPropertyID::kTransform, "translateX(-45px)",
@@ -1146,25 +1010,15 @@ TEST_P(AnimationCompositorAnimationsTest,
       CreateReplaceOpKeyframe(CSSPropertyID::kRotate, "45deg", 1.0));
 
   KeyframeEffect* keyframe_effect2 =
-      KeyframeEffect::Create(element.Get(), effect2, timing_);
+      KeyframeEffect::Create(element_.Get(), effect2, timing_);
 
   Animation* animation2 = timeline_->Play(keyframe_effect2);
   effect2->SnapshotAllCompositorKeyframesIfNecessary(*element_.Get(), *style,
                                                      nullptr);
 
-  // our Layout object is not TransformApplicable
-  EXPECT_TRUE(CheckCanStartEffectOnCompositor(timing_, *element.Get(),
-                                              animation2, *effect2, none) &
+  EXPECT_TRUE(CheckCanStartEffectOnCompositor(timing_, *element_.Get(),
+                                              animation2, *effect2) &
               CompositorAnimations::kMultipleTransformAnimationsOnSameTarget);
-  // ... and still declined if we enable the checks for Composited ID.
-  EXPECT_TRUE(CheckCanStartEffectOnCompositor(timing_, *element.Get(),
-                                              animation2, *effect2,
-                                              compositor_ids) &
-              (CompositorAnimations::kMultipleTransformAnimationsOnSameTarget |
-               CompositorAnimations::kTargetHasInvalidCompositingState));
-
-  element->SetLayoutObject(nullptr);
-  LayoutObjectProxy::Dispose(layout_object);
 }
 
 TEST_P(AnimationCompositorAnimationsTest,
@@ -1712,13 +1566,6 @@ TEST_P(AnimationCompositorAnimationsTest,
 
 TEST_P(AnimationCompositorAnimationsTest,
        CancelIncompatibleCompositorAnimations) {
-  Persistent<Element> element = GetDocument().CreateElementForBinding("shared");
-  base::Optional<CompositorElementIdSet> none;
-
-  LayoutObjectProxy* layout_object = LayoutObjectProxy::Create(element.Get());
-  layout_object->EnsureIdForTestingProxy();
-  element->SetLayoutObject(layout_object);
-
   Persistent<HeapVector<Member<StringKeyframe>>> key_frames =
       MakeGarbageCollected<HeapVector<Member<StringKeyframe>>>();
   key_frames->push_back(CreateDefaultKeyframe(
@@ -1735,31 +1582,23 @@ TEST_P(AnimationCompositorAnimationsTest,
 
   // The first animation for opacity is ok to run on compositor.
   KeyframeEffect* keyframe_effect1 =
-      KeyframeEffect::Create(element.Get(), animation_effect1, timing);
+      KeyframeEffect::Create(element_.Get(), animation_effect1, timing);
   Animation* animation1 = timeline_->Play(keyframe_effect1);
   auto style = ComputedStyle::Create();
   animation_effect1->SnapshotAllCompositorKeyframesIfNecessary(*element_.Get(),
                                                                *style, nullptr);
-  EXPECT_EQ(CheckCanStartEffectOnCompositor(timing, *element.Get(), animation1,
-                                            *animation_effect1, none),
+  EXPECT_EQ(CheckCanStartEffectOnCompositor(timing, *element_.Get(), animation1,
+                                            *animation_effect1),
             CompositorAnimations::kNoFailure);
-
-  // simulate KeyframeEffect::maybeStartAnimationOnCompositor
-  Vector<int> compositor_keyframe_model_ids;
-  compositor_keyframe_model_ids.push_back(1);
-  keyframe_effect1->SetCompositorKeyframeModelIdsForTesting(
-      compositor_keyframe_model_ids);
-  EXPECT_TRUE(animation1->HasActiveAnimationsOnCompositor());
 
   // The second animation for opacity is not ok to run on compositor.
   KeyframeEffect* keyframe_effect2 =
-      KeyframeEffect::Create(element.Get(), animation_effect2, timing);
+      KeyframeEffect::Create(element_.Get(), animation_effect2, timing);
   Animation* animation2 = timeline_->Play(keyframe_effect2);
   animation_effect2->SnapshotAllCompositorKeyframesIfNecessary(*element_.Get(),
                                                                *style, nullptr);
-  EXPECT_TRUE(CheckCanStartEffectOnCompositor(timing, *element.Get(),
-                                              animation2, *animation_effect2,
-                                              none) &
+  EXPECT_TRUE(CheckCanStartEffectOnCompositor(timing, *element_.Get(),
+                                              animation2, *animation_effect2) &
               CompositorAnimations::kTargetHasIncompatibleAnimations);
   EXPECT_FALSE(animation2->HasActiveAnimationsOnCompositor());
 
@@ -1771,14 +1610,13 @@ TEST_P(AnimationCompositorAnimationsTest,
   EXPECT_FALSE(animation2->HasActiveAnimationsOnCompositor());
 
   SimulateFrame(0);
-  EXPECT_EQ(2U, element->GetElementAnimations()->Animations().size());
+  EXPECT_EQ(2U, element_->GetElementAnimations()->Animations().size());
+
+  // After finishing and collecting garbage there should be no
+  // ElementAnimations on the element.
   SimulateFrame(1.);
-
-  element->SetLayoutObject(nullptr);
-  LayoutObjectProxy::Dispose(layout_object);
-
   ThreadState::Current()->CollectAllGarbageForTesting();
-  EXPECT_TRUE(element->GetElementAnimations()->Animations().IsEmpty());
+  EXPECT_TRUE(element_->GetElementAnimations()->Animations().IsEmpty());
 }
 
 namespace {

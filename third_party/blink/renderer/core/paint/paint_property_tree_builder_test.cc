@@ -6471,15 +6471,6 @@ TEST_P(PaintPropertyTreeBuilderTest, SimpleOpacityChangeDoesNotCausePacUpdate) {
   auto* pac = GetDocument().View()->GetPaintArtifactCompositor();
   ASSERT_TRUE(pac);
 
-  cc::FakeLayerTreeHostClient layer_tree_host_client;
-  auto layer_tree =
-      std::make_unique<LayerTreeHostEmbedder>(&layer_tree_host_client,
-                                              /*single_thread_client=*/nullptr);
-  layer_tree_host_client.SetLayerTreeHost(layer_tree->layer_tree_host());
-  layer_tree->layer_tree_host()->SetRootLayer(pac->RootLayer());
-
-  UpdateAllLifecyclePhasesForTest();
-
   const auto* properties = PaintPropertiesForElement("element");
   ASSERT_TRUE(properties);
   ASSERT_TRUE(properties->Effect());
@@ -6487,14 +6478,16 @@ TEST_P(PaintPropertyTreeBuilderTest, SimpleOpacityChangeDoesNotCausePacUpdate) {
   EXPECT_FALSE(pac->NeedsUpdate());
 
   cc::EffectNode* cc_effect =
-      layer_tree->layer_tree_host()
+      GetChromeClient()
+          .layer_tree_host()
           ->property_trees()
           ->effect_tree.FindNodeFromElementId(
               properties->Effect()->GetCompositorElementId());
   ASSERT_TRUE(cc_effect);
   EXPECT_FLOAT_EQ(cc_effect->opacity, 0.5f);
   EXPECT_FALSE(cc_effect->effect_changed);
-  EXPECT_FALSE(layer_tree->layer_tree_host()
+  EXPECT_FALSE(GetChromeClient()
+                   .layer_tree_host()
                    ->property_trees()
                    ->effect_tree.needs_update());
 
@@ -6506,7 +6499,8 @@ TEST_P(PaintPropertyTreeBuilderTest, SimpleOpacityChangeDoesNotCausePacUpdate) {
   EXPECT_FLOAT_EQ(cc_effect->opacity, 0.9f);
   EXPECT_TRUE(cc_effect->effect_changed);
   EXPECT_FALSE(pac->NeedsUpdate());
-  EXPECT_TRUE(layer_tree->layer_tree_host()
+  EXPECT_TRUE(GetChromeClient()
+                  .layer_tree_host()
                   ->property_trees()
                   ->effect_tree.needs_update());
 }
@@ -6537,15 +6531,6 @@ TEST_P(PaintPropertyTreeBuilderTest, SimpleScrollChangeDoesNotCausePacUpdate) {
   auto* pac = GetDocument().View()->GetPaintArtifactCompositor();
   ASSERT_TRUE(pac);
 
-  cc::FakeLayerTreeHostClient layer_tree_host_client;
-  auto layer_tree =
-      std::make_unique<LayerTreeHostEmbedder>(&layer_tree_host_client,
-                                              /*single_thread_client=*/nullptr);
-  layer_tree_host_client.SetLayerTreeHost(layer_tree->layer_tree_host());
-  layer_tree->layer_tree_host()->SetRootLayer(pac->RootLayer());
-
-  UpdateAllLifecyclePhasesForTest();
-
   const auto* properties = PaintPropertiesForElement("element");
   ASSERT_TRUE(properties);
   ASSERT_TRUE(properties->ScrollTranslation());
@@ -6554,7 +6539,7 @@ TEST_P(PaintPropertyTreeBuilderTest, SimpleScrollChangeDoesNotCausePacUpdate) {
                        properties->ScrollTranslation()->Translation2D());
   EXPECT_FALSE(pac->NeedsUpdate());
 
-  auto* property_trees = layer_tree->layer_tree_host()->property_trees();
+  auto* property_trees = GetChromeClient().layer_tree_host()->property_trees();
   auto* cc_scroll_node = property_trees->scroll_tree.FindNodeFromElementId(
       properties->ScrollTranslation()->ScrollNode()->GetCompositorElementId());
   ASSERT_TRUE(cc_scroll_node);

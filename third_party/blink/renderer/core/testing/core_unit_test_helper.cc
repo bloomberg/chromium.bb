@@ -34,9 +34,9 @@ void LocalFrameClientWithParent::Detached(FrameDetachType) {
       ->DidDetachChild();
 }
 
-ChromeClient& RenderingTest::GetChromeClient() const {
-  DEFINE_STATIC_LOCAL(Persistent<EmptyChromeClient>, client,
-                      (MakeGarbageCollected<EmptyChromeClient>()));
+RenderingTestChromeClient& RenderingTest::GetChromeClient() const {
+  DEFINE_STATIC_LOCAL(Persistent<RenderingTestChromeClient>, client,
+                      (MakeGarbageCollected<RenderingTestChromeClient>()));
   return *client;
 }
 
@@ -67,6 +67,7 @@ HitTestResult::NodeSet RenderingTest::RectBasedHitTest(LayoutRect rect) {
 void RenderingTest::SetUp() {
   Page::PageClients page_clients;
   FillWithEmptyClients(page_clients);
+  GetChromeClient().SetUp();
   page_clients.chrome_client = &GetChromeClient();
   SetupPageWithClients(&page_clients, local_frame_client_, SettingOverrider());
   EXPECT_TRUE(

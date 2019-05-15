@@ -19,7 +19,7 @@ using testing::_;
 namespace blink {
 namespace {
 
-class ScrollableAreaMockChromeClient : public EmptyChromeClient {
+class ScrollableAreaMockChromeClient : public RenderingTestChromeClient {
  public:
   MOCK_METHOD3(MockSetToolTip, void(LocalFrame*, const String&, TextDirection));
   void SetToolTip(LocalFrame& frame,

@@ -24,7 +24,7 @@
 
 namespace blink {
 
-class DragMockChromeClient : public EmptyChromeClient {
+class DragMockChromeClient : public RenderingTestChromeClient {
  public:
   DragMockChromeClient() = default;
 

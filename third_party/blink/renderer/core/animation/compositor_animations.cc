@@ -164,7 +164,12 @@ CompositorElementIdNamespace CompositorElementNamespaceForProperty(
     case CSSPropertyID::kBackdropFilter:
       return CompositorElementIdNamespace::kEffectFilter;
     case CSSPropertyID::kVariable:
-      return CompositorElementIdNamespace::kPrimary;
+      // TODO(crbug.com/883721): Variables should not require the target
+      // element to have any composited property tree nodes - i.e. should
+      // not need to check for existence of a property tree node.
+      // For now, variable animations target the primary animation target
+      // node - the effect namespace.
+      return CompositorElementIdNamespace::kPrimaryEffect;
     default:
       NOTREACHED();
   }

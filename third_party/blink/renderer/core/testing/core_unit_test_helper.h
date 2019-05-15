@@ -21,6 +21,7 @@
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/core/testing/use_mock_scrollbar_settings.h"
+#include "third_party/blink/renderer/platform/testing/layer_tree_host_embedder.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
@@ -65,6 +66,33 @@ class LocalFrameClientWithParent final : public EmptyLocalFrameClient {
   Member<LocalFrame> parent_;
 };
 
+// RenderingTestChromeClient ensures that we have a LayerTreeHost which allows
+// testing BlinkGenPropertyTrees and CompositeAfterPaint property tree creation.
+class RenderingTestChromeClient : public EmptyChromeClient {
+ public:
+  void SetUp() {
+    // Runtime flags can affect LayerTreeHost's settings so this needs to be
+    // recreated for each test.
+    layer_tree_.reset(new LayerTreeHostEmbedder());
+  }
+
+  bool HasLayer(const cc::Layer& layer) {
+    return layer.layer_tree_host() == layer_tree_->layer_tree_host();
+  }
+
+  void AttachRootLayer(scoped_refptr<cc::Layer> layer,
+                       LocalFrame* local_root) override {
+    layer_tree_->layer_tree_host()->SetRootLayer(std::move(layer));
+  }
+
+  cc::LayerTreeHost* layer_tree_host() {
+    return layer_tree_->layer_tree_host();
+  }
+
+ private:
+  std::unique_ptr<LayerTreeHostEmbedder> layer_tree_;
+};
+
 class RenderingTest : public PageTestBase, public UseMockScrollbarSettings {
   USING_FAST_MALLOC(RenderingTest);
 
@@ -72,7 +100,7 @@ class RenderingTest : public PageTestBase, public UseMockScrollbarSettings {
   virtual FrameSettingOverrideFunction SettingOverrider() const {
     return nullptr;
   }
-  virtual ChromeClient& GetChromeClient() const;
+  virtual RenderingTestChromeClient& GetChromeClient() const;
 
   explicit RenderingTest(LocalFrameClient* = nullptr);
 

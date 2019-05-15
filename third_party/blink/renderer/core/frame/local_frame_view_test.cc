@@ -28,7 +28,7 @@ using testing::AnyNumber;
 namespace blink {
 namespace {
 
-class AnimationMockChromeClient : public EmptyChromeClient {
+class AnimationMockChromeClient : public RenderingTestChromeClient {
  public:
   AnimationMockChromeClient() : has_scheduled_animation_(false) {}
 
@@ -61,7 +61,9 @@ class LocalFrameViewTest : public RenderingTest {
     testing::Mock::VerifyAndClearExpectations(&GetAnimationMockChromeClient());
   }
 
-  ChromeClient& GetChromeClient() const override { return *chrome_client_; }
+  RenderingTestChromeClient& GetChromeClient() const override {
+    return *chrome_client_;
+  }
 
   void SetUp() override {
     RenderingTest::SetUp();

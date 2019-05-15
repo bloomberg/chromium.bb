@@ -12,7 +12,7 @@ namespace blink {
 
 namespace {
 
-class MockChromeClient : public EmptyChromeClient {
+class MockChromeClient : public RenderingTestChromeClient {
  public:
   MockChromeClient() = default;
 
