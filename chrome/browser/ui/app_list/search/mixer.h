@@ -50,9 +50,13 @@ class Mixer {
   // Collects the results, sorts and publishes them.
   void MixAndPublish(size_t num_max_results, const base::string16& query);
 
-  // Sets a SearchResultRanker to re-rank search results before they are
+  // Sets a SearchResultRanker to re-rank non-app search results before they are
   // published.
-  void SetSearchResultRanker(std::unique_ptr<SearchResultRanker> ranker);
+  void SetNonAppSearchResultRanker(std::unique_ptr<SearchResultRanker> ranker);
+
+  // Get a pointer to the SearchResultRanker owned by this object used for all
+  // non-app ranking.
+  SearchResultRanker* GetNonAppSearchResultRanker();
 
   // Handle a training signal.
   void Train(const std::string& id, RankingItemType type);
@@ -88,7 +92,7 @@ class Mixer {
   Groups groups_;
 
   // Adaptive models used for re-ranking search results.
-  std::unique_ptr<SearchResultRanker> ranker_;
+  std::unique_ptr<SearchResultRanker> non_app_ranker_;
 
   DISALLOW_COPY_AND_ASSIGN(Mixer);
 };

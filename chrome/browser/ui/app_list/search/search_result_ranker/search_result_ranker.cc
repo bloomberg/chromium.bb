@@ -49,7 +49,9 @@ Model ModelForType(RankingItemType type) {
 
 }  // namespace
 
-SearchResultRanker::SearchResultRanker(Profile* profile) {
+SearchResultRanker::SearchResultRanker(Profile* profile)
+    : enable_zero_state_mixed_types_(
+          app_list_features::IsZeroStateMixedTypesRankerEnabled()) {
   if (app_list_features::IsAdaptiveResultRankerEnabled()) {
     RecurrenceRankerConfigProto config;
     config.set_min_seconds_between_saves(240u);
@@ -73,18 +75,43 @@ SearchResultRanker::SearchResultRanker(Profile* profile) {
   }
 
   profile_ = profile;
-  if (auto* notifier =
-          file_manager::file_tasks::FileTasksNotifier::GetForProfile(profile_))
-    notifier->AddObserver(this);
-  /*file_tasks_observer_.Add(
-      file_manager::file_tasks::FileTasksNotifierFactory::GetInstance()
-          ->GetForProfile(profile));*/
+  if (enable_zero_state_mixed_types_) {
+    if (auto* notifier =
+            file_manager::file_tasks::FileTasksNotifier::GetForProfile(
+                profile_)) {
+      notifier->AddObserver(this);
+    }
+
+    RecurrenceRankerConfigProto config;
+    config.set_min_seconds_between_saves(240u);
+    config.set_condition_limit(0u);
+    config.set_condition_decay(0.5f);
+
+    config.set_target_limit(base::GetFieldTrialParamByFeatureAsInt(
+        app_list_features::kEnableZeroStateMixedTypesRanker, "target_limit",
+        200));
+    config.set_target_decay(base::GetFieldTrialParamByFeatureAsDouble(
+        app_list_features::kEnableZeroStateMixedTypesRanker, "target_decay",
+        0.8f));
+
+    // Despite not changing any fields, this sets the predictor to the default
+    // predictor.
+    config.mutable_default_predictor();
+
+    zero_state_mixed_types_ranker_ = std::make_unique<RecurrenceRanker>(
+        profile->GetPath().AppendASCII("zero_state_mixed_types_ranker.proto"),
+        config, chromeos::ProfileHelper::IsEphemeralUserProfile(profile));
+  }
 }
 
 SearchResultRanker::~SearchResultRanker() {
-  if (auto* notifier =
-          file_manager::file_tasks::FileTasksNotifier::GetForProfile(profile_))
-    notifier->RemoveObserver(this);
+  if (enable_zero_state_mixed_types_) {
+    if (auto* notifier =
+            file_manager::file_tasks::FileTasksNotifier::GetForProfile(
+                profile_)) {
+      notifier->RemoveObserver(this);
+    }
+  }
 }
 
 void SearchResultRanker::FetchRankings(const base::string16& query) {
@@ -141,7 +168,15 @@ void SearchResultRanker::Train(const std::string& id, RankingItemType type) {
 
 void SearchResultRanker::OnFilesOpened(
     const std::vector<FileOpenEvent>& file_opens) {
-  // TODO(959679): route file open events to a model as training signals.
+  if (enable_zero_state_mixed_types_) {
+    DCHECK(zero_state_mixed_types_ranker_);
+    for (const auto& file_open : file_opens)
+      zero_state_mixed_types_ranker_->Record(file_open.path.value());
+  }
+}
+
+RecurrenceRanker* SearchResultRanker::get_zero_state_mixed_types_ranker() {
+  return zero_state_mixed_types_ranker_.get();
 }
 
 }  // namespace app_list

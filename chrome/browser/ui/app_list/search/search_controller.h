@@ -54,16 +54,16 @@ class SearchController {
   ChromeSearchResult* FindSearchResult(const std::string& result_id);
   ChromeSearchResult* GetResultByTitleForTest(const std::string& title);
 
-  // Sets a SearchResultRanker to re-rank search results before they are
-  // published. The Mixer owned by the SearchController will take ownership of
-  // |ranker|.
-  void SetSearchResultRanker(std::unique_ptr<SearchResultRanker> ranker);
-
   // Sends training signal to each |providers_|
   void Train(const std::string& id, RankingItemType type);
 
-  // Get the app search result ranker owned by this object.
-  AppSearchResultRanker* GetSearchResultRanker();
+  // Gets the search result ranker owned by this object that is used for ranking
+  // apps.
+  AppSearchResultRanker* GetAppSearchResultRanker();
+
+  // Gets the search result ranker owned by the Mixer that is used for all
+  // other ranking.
+  SearchResultRanker* GetNonAppSearchResultRanker();
 
  private:
   // Invoked when the search results are changed.
@@ -77,10 +77,10 @@ class SearchController {
   // The query associated with the most recent search.
   base::string16 last_query_;
 
+  std::unique_ptr<Mixer> mixer_;
   using Providers = std::vector<std::unique_ptr<SearchProvider>>;
   Providers providers_;
-  std::unique_ptr<Mixer> mixer_;
-  std::unique_ptr<AppSearchResultRanker> ranker_;
+  std::unique_ptr<AppSearchResultRanker> app_ranker_;
   AppListControllerDelegate* list_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchController);
