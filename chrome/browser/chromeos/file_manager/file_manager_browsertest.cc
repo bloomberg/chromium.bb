@@ -965,7 +965,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
             .EnableMyFilesVolume()
             .DontMountVolumes(),
         TestCase("myFilesUpdatesChildren").EnableMyFilesVolume(),
-        TestCase("myFilesAutoExpandOnce").EnableMyFilesVolume()));
+        TestCase("myFilesAutoExpandOnce").EnableMyFilesVolume(),
+        TestCase("myFilesToolbarDelete").EnableMyFilesVolume()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     InstallLinuxPackageDialog, /* install_linux_package_dialog.js */

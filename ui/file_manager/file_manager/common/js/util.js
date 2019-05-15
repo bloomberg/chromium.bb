@@ -1166,6 +1166,50 @@ util.getEntryLabel = (locationInfo, entry) => {
 };
 
 /**
+ * Returns true if specified entry is a special entry such as MyFiles/Downloads,
+ * MyFiles/PluginVm or Linux files root which cannot be modified such as
+ * deleted/cut or renamed.
+ *
+ * @param {!VolumeManager} volumeManager
+ * @param {(Entry|FakeEntry)} entry Entry or a fake entry.
+ * @return {boolean}
+ */
+util.isNonModifiable = (volumeManager, entry) => {
+  if (!entry) {
+    return false;
+  }
+  if (util.isFakeEntry(entry)) {
+    return true;
+  }
+
+  // If the entry is not a valid entry.
+  if (!volumeManager) {
+    return false;
+  }
+
+  const volumeInfo = volumeManager.getVolumeInfo(entry);
+  if (!volumeInfo) {
+    return false;
+  }
+
+  if (volumeInfo.volumeType === VolumeManagerCommon.RootType.DOWNLOADS) {
+    if (util.isMyFilesVolumeEnabled() && entry.fullPath === '/Downloads') {
+      return true;
+    }
+    if (util.isPluginVmEnabled() && entry.fullPath === '/PluginVm') {
+      return true;
+    }
+  }
+
+  if (volumeInfo.volumeType === VolumeManagerCommon.RootType.CROSTINI &&
+      entry.fullPath === '/') {
+    return true;
+  }
+
+  return false;
+};
+
+/**
  * Checks if the specified set of allowed effects contains the given effect.
  * See: http://www.w3.org/TR/html5/editing.html#the-datatransfer-interface
  *

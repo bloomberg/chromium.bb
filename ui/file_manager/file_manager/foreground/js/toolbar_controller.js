@@ -17,10 +17,11 @@ class ToolbarController {
    *     the toolbar.
    * @param {!FileSelectionHandler} selectionHandler
    * @param {!DirectoryModel} directoryModel
+   * @param {!VolumeManager} volumeManager
    */
   constructor(
       toolbar, navigationList, listContainer, locationLine, selectionHandler,
-      directoryModel) {
+      directoryModel, volumeManager) {
     /**
      * @private {!HTMLElement}
      * @const
@@ -100,6 +101,12 @@ class ToolbarController {
      */
     this.directoryModel_ = directoryModel;
 
+    /**
+     * @private {!VolumeManager}
+     * @const
+     */
+    this.volumeManager_ = volumeManager;
+
     this.selectionHandler_.addEventListener(
         FileSelectionHandler.EventType.CHANGE,
         this.onSelectionChanged_.bind(this));
@@ -172,10 +179,8 @@ class ToolbarController {
     this.deleteButton_.hidden =
         (selection.totalCount === 0 || this.directoryModel_.isReadOnly() ||
          selection.hasReadOnlyEntry() ||
-         (util.isMyFilesVolumeEnabled() &&
-          this.directoryModel_.getCurrentRootType() ==
-              VolumeManagerCommon.RootType.DOWNLOADS &&
-          selection.entries.some(entry => entry.fullPath === '/Downloads')));
+         selection.entries.some(
+             entry => util.isNonModifiable(this.volumeManager_, entry)));
 
     // Set .selecting class to containing element to change the view
     // accordingly.
