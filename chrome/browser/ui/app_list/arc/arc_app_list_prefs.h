@@ -17,6 +17,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
@@ -39,6 +40,10 @@ class ArcPackageSyncableService;
 template <typename InstanceType, typename HostType>
 class ConnectionHolder;
 }  // namespace arc
+
+namespace base {
+class SequencedTaskRunner;
+}  // namespace base
 
 namespace content {
 class BrowserContext;
@@ -549,6 +554,8 @@ class ArcAppListPrefs : public KeyedService,
   base::OneShotTimer detect_default_app_availability_timeout_;
   // Set of currently installing apps_.
   std::unordered_set<std::string> apps_installations_;
+  // To execute file operations in sequence.
+  scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
 
   arc::ArcPackageSyncableService* sync_service_ = nullptr;
 

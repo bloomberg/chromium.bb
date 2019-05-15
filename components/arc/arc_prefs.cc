@@ -75,6 +75,9 @@ const char kArcProvisioningInitiatedFromOobe[] =
 const char kArcFastAppReinstallStarted[] = "arc.fast.app.reinstall.started";
 // A preference to keep list of Play Fast App Reinstall packages.
 const char kArcFastAppReinstallPackages[] = "arc.fast.app.reinstall.packages";
+// A preference to keep the current Android framework version. Note, that value
+// is only available after first packages update.
+const char kArcFrameworkVersion[] = "arc.framework.version";
 // A preference that holds the list of apps that the admin requested to be
 // push-installed.
 const char kArcPushInstallAppsRequested[] = "arc.push_install.requested";

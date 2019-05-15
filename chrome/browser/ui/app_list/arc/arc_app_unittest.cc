@@ -78,6 +78,10 @@
 namespace {
 
 constexpr char kTestPackageName[] = "fake.package.name2";
+constexpr char kFrameworkPackageName[] = "android";
+
+constexpr int kFrameworkNycVersion = 25;
+constexpr int kFrameworkPiVersion = 28;
 
 class FakeAppIconLoaderDelegate : public AppIconLoaderDelegate {
  public:
@@ -142,15 +146,17 @@ void WaitForIconCreation(ArcAppListPrefs* prefs,
   } while (!base::PathExists(icon_path));
 }
 
-void WaitForIconUpdates(Profile* profile,
-                        const std::string& app_id,
-                        size_t expected_updates) {
+void WaitForIconUpdates(Profile* profile, const std::string& app_id) {
   FakeAppIconLoaderDelegate delegate;
   ArcAppIconLoader icon_loader(
       profile, app_list::AppListConfig::instance().grid_icon_dimension(),
       &delegate);
+
+  // |FetchImage| ensures all supported factors are loaded.
+  const std::vector<ui::ScaleFactor>& scale_factors =
+      ui::GetSupportedScaleFactors();
   icon_loader.FetchImage(app_id);
-  delegate.WaitForIconUpdates(expected_updates);
+  delegate.WaitForIconUpdates(scale_factors.size());
 }
 
 enum class ArcState {
@@ -453,11 +459,17 @@ class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
   }
 
   arc::mojom::ArcPackageInfoPtr CreatePackage(const std::string& package_name) {
+    return CreatePackageWithVersion(package_name, 1 /* package_version */);
+  }
+
+  arc::mojom::ArcPackageInfoPtr CreatePackageWithVersion(
+      const std::string& package_name,
+      int package_version) {
     base::flat_map<arc::mojom::AppPermission, bool> permissions;
     permissions.insert(std::make_pair(arc::mojom::AppPermission::CAMERA, 0));
     permissions.insert(std::make_pair(arc::mojom::AppPermission::LOCATION, 1));
     return arc::mojom::ArcPackageInfo::New(
-        package_name, 1 /* package_version */, 1 /* last_backup_android_id */,
+        package_name, package_version, 1 /* last_backup_android_id */,
         1 /* last_backup_time */, true /* sync */, false /* system */,
         false /* vpn_provider */, nullptr /* web_app_info */, permissions);
   }
@@ -572,17 +584,14 @@ class ArcAppModelIconTest : public ArcAppModelBuilderRecreate {
     DCHECK(prefs);
 
     app_instance()->SendRefreshAppList({app});
-    auto package = CreatePackage(app.package_name);
-    package->package_version = package_version;
-    AddPackage(std::move(package));
+    AddPackage(CreatePackageWithVersion(app.package_name, package_version));
     return app_id;
   }
 
   // Simulates package of the test app is updated.
   void UpdatePackage(int package_version) {
     const arc::mojom::AppInfo app = test_app();
-    auto package = CreatePackage(app.package_name);
-    package->package_version = package_version;
+    auto package = CreatePackageWithVersion(app.package_name, package_version);
     app_instance()->SendPackageAppListRefreshed(package->package_name, {app});
     app_instance()->SendPackageModified(std::move(package));
   }
@@ -602,7 +611,7 @@ class ArcAppModelIconTest : public ArcAppModelBuilderRecreate {
     ASSERT_EQ(GetAppListIconDimensionForScaleFactor(ui::SCALE_FACTOR_200P),
               icon_requests[1]->dimension());
 
-    WaitForIconUpdates(profile_.get(), app_id, 2);
+    WaitForIconUpdates(profile_.get(), app_id);
   }
 
   arc::mojom::AppInfo test_app() const { return fake_apps()[0]; }
@@ -734,8 +743,8 @@ TEST_P(ArcAppModelBuilderTest, ArcPackagePref) {
   RemovePackage(kTestPackageName);
   ValidateHavePackages(fake_packages());
 
-  auto package = CreatePackage(kTestPackageName);
-  package->package_version = 2;
+  auto package =
+      CreatePackageWithVersion(kTestPackageName, 2 /* package_version */);
   package->last_backup_android_id = 2;
   package->last_backup_time = 2;
   AddPackage(package);
@@ -1122,9 +1131,10 @@ TEST_P(ArcAppModelBuilderTest, RequestShortcutIcons) {
   std::set<int> expected_dimensions;
   ArcAppItem* app_item = FindArcItem(ArcAppTest::GetAppId(shortcut));
   ASSERT_NE(nullptr, app_item);
+  WaitForIconUpdates(profile_.get(), app_item->id());
+
   const std::vector<ui::ScaleFactor>& scale_factors =
       ui::GetSupportedScaleFactors();
-  WaitForIconUpdates(profile_.get(), app_item->id(), scale_factors.size());
   for (auto& scale_factor : scale_factors) {
     expected_dimensions.insert(
         GetAppListIconDimensionForScaleFactor(scale_factor));
@@ -1224,7 +1234,7 @@ TEST_P(ArcAppModelBuilderTest, InstallIcon) {
   // This initiates async loading.
   app_item->icon().GetRepresentation(scale);
 
-  WaitForIconUpdates(profile_.get(), app_id, 1);
+  WaitForIconUpdates(profile_.get(), app_id);
 
   // Validate that icons are installed, have right content and icon is
   // refreshed for ARC app item.
@@ -1260,7 +1270,7 @@ TEST_P(ArcAppModelBuilderTest, RemoveAppCleanUpFolder) {
   const base::FilePath app_path = prefs->GetAppPath(app_id);
 
   // Now send generated icon for the app.
-  WaitForIconUpdates(profile_.get(), app_id, 1);
+  WaitForIconUpdates(profile_.get(), app_id);
   EXPECT_TRUE(IsIconCreated(prefs, app_id, scale_factor));
 
   // Send empty app list. This will delete app and its folder.
@@ -2021,10 +2031,7 @@ TEST_P(ArcAppModelIconTest, IconInvalidation) {
   ASSERT_TRUE(prefs);
 
   const std::string app_id = StartApp(1 /* package_version */);
-  prefs->MaybeRequestIcon(app_id,
-                          GetAppListIconDescriptor(ui::SCALE_FACTOR_100P));
-
-  WaitForIconUpdates(profile_.get(), app_id, 1);
+  WaitForIconUpdates(profile_.get(), app_id);
 
   // Simulate ARC restart.
   RestartArc();
@@ -2044,6 +2051,49 @@ TEST_P(ArcAppModelIconTest, IconInvalidation) {
 
   // No new icon update requests on restart. Icons were invalidated and updated.
   EXPECT_TRUE(app_instance()->icon_requests().empty());
+}
+
+TEST_P(ArcAppModelIconTest, IconInvalidationOnFrameworkUpdate) {
+  ArcAppListPrefs* const prefs = ArcAppListPrefs::Get(profile_.get());
+  ASSERT_TRUE(prefs);
+
+  const arc::mojom::AppInfo app = test_app();
+  const std::string app_id = ArcAppTest::GetAppId(app);
+  app_instance()->SendRefreshAppList({app});
+
+  std::vector<arc::mojom::ArcPackageInfoPtr> packages;
+  packages.emplace_back(CreatePackage(app.package_name));
+  packages.emplace_back(
+      CreatePackageWithVersion(kFrameworkPackageName, kFrameworkNycVersion));
+  app_instance()->SendRefreshPackageList(std::move(packages));
+
+  WaitForIconUpdates(profile_.get(), app_id);
+
+  RestartArc();
+
+  app_instance()->SendRefreshAppList({app});
+
+  // Framework is the same, no update.
+  packages.emplace_back(CreatePackage(app.package_name));
+  packages.emplace_back(
+      CreatePackageWithVersion(kFrameworkPackageName, kFrameworkNycVersion));
+  app_instance()->SendRefreshPackageList(std::move(packages));
+
+  EXPECT_TRUE(app_instance()->icon_requests().empty());
+
+  RestartArc();
+
+  app_instance()->SendRefreshAppList({app});
+
+  // Framework was updated, app icons should be updated even app's package is
+  // the same.
+  packages.emplace_back(CreatePackage(app.package_name));
+  packages.emplace_back(
+      CreatePackageWithVersion(kFrameworkPackageName, kFrameworkPiVersion));
+  app_instance()->SendRefreshPackageList(std::move(packages));
+
+  EXPECT_FALSE(app_instance()->icon_requests().empty());
+  EnsureIconsUpdated();
 }
 
 // This verifies that app icons are invalidated in case icon version was

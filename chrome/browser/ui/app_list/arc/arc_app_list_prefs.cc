@@ -14,6 +14,7 @@
 #include "base/files/file_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
@@ -51,6 +52,7 @@
 namespace {
 
 constexpr char kActivity[] = "activity";
+constexpr char kFrameworkPackageName[] = "android";
 constexpr char kIconResourceId[] = "icon_resource_id";
 constexpr char kIconVersion[] = "icon_version";
 constexpr char kInstallTime[] = "install_time";
@@ -231,6 +233,8 @@ void ArcAppListPrefs::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterDictionaryPref(arc::prefs::kArcApps);
   registry->RegisterDictionaryPref(arc::prefs::kArcPackages);
+  registry->RegisterIntegerPref(arc::prefs::kArcFrameworkVersion,
+                                -1 /* default_value */);
   registry->RegisterDictionaryPref(
       arc::prefs::kArcSetNotificationsEnabledDeferred);
   ArcDefaultAppList::RegisterProfilePrefs(registry);
@@ -350,6 +354,9 @@ ArcAppListPrefs::ArcAppListPrefs(
     : profile_(profile),
       prefs_(profile->GetPrefs()),
       app_connection_holder_for_testing_(app_connection_holder_for_testing),
+      file_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
       weak_ptr_factory_(this) {
   VLOG(1) << "ARC app list prefs created";
   DCHECK(profile);
@@ -1254,6 +1261,20 @@ void ArcAppListPrefs::AddOrUpdatePackagePrefs(
     package_dict->RemoveKey(kPermissions);
   }
 
+  // TODO (crbug.com/xxxxx): Remove in M78. This is required to force updating
+  // icons for all packages in case framework version is changed. Prior to this
+  // change |InvalidatePackageIcons| for framework did not refresh all packages.
+  if (package_name == kFrameworkPackageName) {
+    const int last_framework_version =
+        profile_->GetPrefs()->GetInteger(arc::prefs::kArcFrameworkVersion);
+    if (last_framework_version != package.package_version) {
+      InvalidatePackageIcons(package_name);
+      profile_->GetPrefs()->SetInteger(arc::prefs::kArcFrameworkVersion,
+                                       package.package_version);
+    }
+    return;
+  }
+
   if (old_package_version == -1 ||
       old_package_version == package.package_version) {
     return;
@@ -1381,14 +1402,22 @@ void ArcAppListPrefs::InvalidateAppIcons(const std::string& app_id) {
 }
 
 void ArcAppListPrefs::InvalidatePackageIcons(const std::string& package_name) {
+  if (package_name == kFrameworkPackageName) {
+    VLOG(1)
+        << "Android framework was changed, refreshing icons for all packages";
+    for (const auto& package_name_to_invalidate : GetPackagesFromPrefs()) {
+      if (package_name_to_invalidate != kFrameworkPackageName)
+        InvalidatePackageIcons(package_name_to_invalidate);
+    }
+  }
   for (const std::string& app_id : GetAppsForPackage(package_name))
     InvalidateAppIcons(app_id);
 }
 
 void ArcAppListPrefs::ScheduleAppFolderDeletion(const std::string& app_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  file_task_runner_->PostTask(
+      FROM_HERE,
       base::BindOnce(&DeleteAppFolderFromFileThread, GetAppPath(app_id)));
 }
 
@@ -1740,8 +1769,8 @@ void ArcAppListPrefs::InstallIcon(const std::string& app_id,
                                   const ArcAppIconDescriptor& descriptor,
                                   const std::vector<uint8_t>& content_png) {
   const base::FilePath icon_path = GetIconPath(app_id, descriptor);
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTaskAndReplyWithResult(
+      file_task_runner_.get(), FROM_HERE,
       base::BindOnce(&InstallIconFromFileThread, icon_path, content_png),
       base::BindOnce(&ArcAppListPrefs::OnIconInstalled,
                      weak_ptr_factory_.GetWeakPtr(), app_id, descriptor));
