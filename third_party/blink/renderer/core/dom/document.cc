@@ -2254,15 +2254,6 @@ void Document::UpdateStyleAndLayoutTree() {
 
   NotifyLayoutTreeOfSubtreeChanges();
 
-  // As a result of the style recalculation, the currently hovered element might
-  // have been detached (for example, by setting display:none in the :hover
-  // style), schedule another mouseMove event to check if any other elements
-  // ended up under the mouse pointer due to re-layout.
-  if (HoverElement() && !HoverElement()->GetLayoutObject() && GetFrame()) {
-    GetFrame()->GetEventHandler().MayUpdateHoverWhenContentUnderMouseChanged(
-        MouseEventManager::UpdateHoverReason::kLayoutOrStyleChanged);
-  }
-
   if (focused_element_ && !focused_element_->IsFocusable())
     ClearFocusedElementSoon();
   GetLayoutView()->ClearHitTestCache();
