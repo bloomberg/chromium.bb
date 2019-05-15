@@ -32,6 +32,7 @@
 
 #include "base/allocator/partition_allocator/oom.h"
 #include "base/allocator/partition_allocator/page_allocator.h"
+#include "base/allocator/partition_allocator/partition_root_base.h"
 #include "base/debug/alias.h"
 #include "base/lazy_instance.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partition_allocator.h"
@@ -95,17 +96,13 @@ void Partitions::DecommitFreeableMemory() {
       base::FeatureList::IsEnabled(kNoPartitionAllocDecommit)) {
     return;
   }
-
-  ArrayBufferPartition()->PurgeMemory(
-      base::PartitionPurgeDecommitEmptyPages |
-      base::PartitionPurgeDiscardUnusedSystemPages);
-  BufferPartition()->PurgeMemory(base::PartitionPurgeDecommitEmptyPages |
-                                 base::PartitionPurgeDiscardUnusedSystemPages);
-  FastMallocPartition()->PurgeMemory(
-      base::PartitionPurgeDecommitEmptyPages |
-      base::PartitionPurgeDiscardUnusedSystemPages);
-  LayoutPartition()->PurgeMemory(base::PartitionPurgeDecommitEmptyPages |
-                                 base::PartitionPurgeDiscardUnusedSystemPages);
+  base::internal::PartitionRootBase* partitions[] = {
+      ArrayBufferPartition(), BufferPartition(), FastMallocPartition(),
+      LayoutPartition()};
+  constexpr int kFlags = base::PartitionPurgeDecommitEmptyPages |
+                         base::PartitionPurgeDiscardUnusedSystemPages;
+  for (auto* partition : partitions)
+    partition->PurgeMemory(kFlags);
 }
 
 void Partitions::ReportMemoryUsageHistogram() {

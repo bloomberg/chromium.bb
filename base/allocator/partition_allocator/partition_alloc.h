@@ -126,7 +126,7 @@ struct BASE_EXPORT PartitionRoot : public internal::PartitionRootBase {
   ALWAYS_INLINE void* Alloc(size_t size, const char* type_name);
   ALWAYS_INLINE void* AllocFlags(int flags, size_t size, const char* type_name);
 
-  void PurgeMemory(int flags);
+  void PurgeMemory(int flags) override;
 
   void DumpStats(const char* partition_name,
                  bool is_light_dump,
@@ -166,7 +166,7 @@ struct BASE_EXPORT PartitionRootGeneric : public internal::PartitionRootBase {
 
   ALWAYS_INLINE size_t ActualSize(size_t size);
 
-  void PurgeMemory(int flags);
+  void PurgeMemory(int flags) override;
 
   void DumpStats(const char* partition_name,
                  bool is_light_dump,
