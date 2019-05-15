@@ -84,7 +84,8 @@ public class AppThemeColorProvider extends ThemeColorProvider implements Incogni
         final boolean isAccessibilityEnabled = DeviceClassManager.enableAccessibilityLayout();
         final boolean isHorizontalTabSwitcherEnabled =
                 ChromeFeatureList.isEnabled(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID);
-        final boolean isTabGridEnabled = FeatureUtilities.isGridTabSwitcherEnabled();
+        final boolean isTabGridEnabled = FeatureUtilities.isGridTabSwitcherEnabled()
+                || FeatureUtilities.isTabGroupsAndroidEnabled();
         final boolean shouldUseIncognitoBackground = mIsIncognito
                 && (isAccessibilityEnabled || isHorizontalTabSwitcherEnabled || isTabGridEnabled
                         || !mIsOverviewVisible);
