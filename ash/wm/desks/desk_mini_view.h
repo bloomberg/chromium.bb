@@ -40,20 +40,6 @@ class ASH_EXPORT DeskMiniView : public views::Button,
     return close_desk_button_;
   }
 
-  // Called by DesksBarView to inform us that the desk was actually deleted, and
-  // the animation to remove the mini_view is about to begin.
-  // Note that the mini_view outlives the desk (which will be removed after all
-  // observers have been removed) because of the animation. We need to stop
-  // observing it now.
-  // Note that we can't make it the other way around (i.e. make the desk outlive
-  // the mini_view). The desk's existence (or lack thereof) is more important
-  // than the existence of the mini_view, since it determines whether we can
-  // create new desks or remove existing ones. This determines whether the close
-  // button will show on hover, and whether the new_desk_button is enabled. We
-  // shouldn't allow that state to be wrong while the mini_views perform the
-  // desk removal animation.
-  void OnDeskRemoved();
-
   void SetTitle(const base::string16& title);
 
   // Returns the associated desk's container window on the display this
@@ -77,7 +63,8 @@ class ASH_EXPORT DeskMiniView : public views::Button,
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // Desk::Observer:
-  void OnDeskWindowsChanged() override;
+  void OnContentChanged() override;
+  void OnDeskDestroyed(const Desk* desk) override;
 
  private:
   // The root window on which this mini_view is created.

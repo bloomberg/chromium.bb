@@ -1392,12 +1392,15 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, BackdropTest) {
   // Toggle overview.
   Shell::Get()->overview_controller()->ToggleOverview();
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(test_helper.GetBackdropWindow());
+  backdrop = test_helper.GetBackdropWindow();
+  ASSERT_TRUE(backdrop);
+  EXPECT_FALSE(backdrop->IsVisible());
 
   Shell::Get()->overview_controller()->ToggleOverview();
   base::RunLoop().RunUntilIdle();
   backdrop = test_helper.GetBackdropWindow();
-  EXPECT_TRUE(backdrop);
+  ASSERT_TRUE(backdrop);
+  EXPECT_TRUE(backdrop->IsVisible());
   {
     aura::Window::Windows children = window1->parent()->children();
     EXPECT_EQ(4U, children.size());
@@ -1422,10 +1425,14 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, BackdropTest) {
   // Toggle overview with the delegate.
   Shell::Get()->overview_controller()->ToggleOverview();
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(test_helper.GetBackdropWindow());
+  backdrop = test_helper.GetBackdropWindow();
+  ASSERT_TRUE(backdrop);
+  EXPECT_FALSE(backdrop->IsVisible());
   Shell::Get()->overview_controller()->ToggleOverview();
   base::RunLoop().RunUntilIdle();
   backdrop = test_helper.GetBackdropWindow();
+  ASSERT_TRUE(backdrop);
+  EXPECT_TRUE(backdrop->IsVisible());
   {
     aura::Window::Windows children = window1->parent()->children();
     EXPECT_EQ(4U, children.size());

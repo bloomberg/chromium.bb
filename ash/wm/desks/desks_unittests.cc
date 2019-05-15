@@ -122,7 +122,8 @@ class TestDeskObserver : public Desk::Observer {
   int notify_counts() const { return notify_counts_; }
 
   // Desk::Observer:
-  void OnDeskWindowsChanged() override { ++notify_counts_; }
+  void OnContentChanged() override { ++notify_counts_; }
+  void OnDeskDestroyed(const Desk* desk) override {}
 
  private:
   int notify_counts_ = 0;
@@ -671,7 +672,7 @@ TEST_F(DesksTest, RemoveInactiveDeskFromOverview) {
 
   // Active desk_4 and enter overview mode. Expect that the grid is currently
   // empty.
-  const Desk* desk_4 = controller->desks()[3].get();
+  Desk* desk_4 = controller->desks()[3].get();
   ActivateDesk(desk_4);
   auto* overview_controller = Shell::Get()->overview_controller();
   overview_controller->ToggleOverview();
@@ -686,10 +687,22 @@ TEST_F(DesksTest, RemoveInactiveDeskFromOverview) {
   const auto* desks_bar_view = overview_grid->GetDesksBarViewForTesting();
   ASSERT_TRUE(desks_bar_view);
   ASSERT_EQ(4u, desks_bar_view->mini_views().size());
-  const Desk* desk_1 = controller->desks()[0].get();
+  Desk* desk_1 = controller->desks()[0].get();
   const auto* mini_view = desks_bar_view->mini_views().front().get();
   EXPECT_EQ(desk_1, mini_view->desk());
+
+  // Setup observers of both the active and inactive desks to make sure
+  // refreshing the mini_view is requested only *once* for the active desk, and
+  // never for the to-be-removed inactive desk.
+  TestDeskObserver desk_4_observer;
+  desk_4->AddObserver(&desk_4_observer);
+  TestDeskObserver desk_1_observer;
+  desk_1->AddObserver(&desk_1_observer);
+
   CloseDeskFromMiniView(mini_view, GetEventGenerator());
+
+  EXPECT_EQ(0, desk_1_observer.notify_counts());
+  EXPECT_EQ(1, desk_4_observer.notify_counts());
 
   ASSERT_EQ(3u, desks_bar_view->mini_views().size());
   EXPECT_TRUE(overview_controller->InOverviewSession());
@@ -704,6 +717,20 @@ TEST_F(DesksTest, RemoveInactiveDeskFromOverview) {
   // Make sure overview mode remains active.
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(overview_controller->InOverviewSession());
+
+  // Removing a desk with no windows should not result in any new mini_views
+  // updates.
+  mini_view = desks_bar_view->mini_views().front().get();
+  EXPECT_TRUE(mini_view->desk()->windows().empty());
+  CloseDeskFromMiniView(mini_view, GetEventGenerator());
+  EXPECT_EQ(1, desk_4_observer.notify_counts());
+
+  // Exiting overview mode should not cause any mini_views refreshes, since the
+  // destroyed overview-specific windows do not show up in the mini_view.
+  overview_controller->ToggleOverview();
+  EXPECT_FALSE(overview_controller->InOverviewSession());
+  EXPECT_EQ(1, desk_4_observer.notify_counts());
+  desk_4->RemoveObserver(&desk_4_observer);
 }
 
 TEST_F(DesksTest, RemoveActiveDeskFromOverview) {
@@ -714,13 +741,14 @@ TEST_F(DesksTest, RemoveActiveDeskFromOverview) {
   ASSERT_EQ(2u, controller->desks().size());
 
   // Create two windows on desk_1.
+  Desk* desk_1 = controller->desks()[0].get();
   auto win0 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
   auto win1 = CreateTestWindow(gfx::Rect(50, 50, 200, 200));
   wm::ActivateWindow(win0.get());
   EXPECT_EQ(win0.get(), wm::GetActiveWindow());
 
   // Activate desk_2 and create one more window.
-  const Desk* desk_2 = controller->desks()[1].get();
+  Desk* desk_2 = controller->desks()[1].get();
   ActivateDesk(desk_2);
   auto win2 = CreateTestWindow(gfx::Rect(50, 50, 200, 200));
   wm::ActivateWindow(win2.get());
@@ -738,13 +766,24 @@ TEST_F(DesksTest, RemoveActiveDeskFromOverview) {
   ASSERT_EQ(2u, desks_bar_view->mini_views().size());
   const auto* mini_view = desks_bar_view->mini_views().back().get();
   EXPECT_EQ(desk_2, mini_view->desk());
+
+  // Setup observers of both the active and inactive desks to make sure
+  // refreshing the mini_view is requested only *once* for the soon-to-be active
+  // desk_1, and never for the to-be-removed currently active desk_2.
+  TestDeskObserver desk_1_observer;
+  desk_1->AddObserver(&desk_1_observer);
+  TestDeskObserver desk_2_observer;
+  desk_2->AddObserver(&desk_2_observer);
+
   CloseDeskFromMiniView(mini_view, GetEventGenerator());
+
+  EXPECT_EQ(1, desk_1_observer.notify_counts());
+  EXPECT_EQ(0, desk_2_observer.notify_counts());
 
   // desk_1 will become active, and windows from desk_2 and desk_1 will merge
   // and added in the overview grid in the order of MRU.
   ASSERT_EQ(1u, controller->desks().size());
   ASSERT_EQ(1u, desks_bar_view->mini_views().size());
-  const Desk* desk_1 = controller->desks()[0].get();
   EXPECT_TRUE(desk_1->is_active());
   EXPECT_TRUE(overview_controller->InOverviewSession());
   EXPECT_EQ(3u, overview_grid->window_list().size());
@@ -763,6 +802,13 @@ TEST_F(DesksTest, RemoveActiveDeskFromOverview) {
   // Make sure overview mode remains active.
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(overview_controller->InOverviewSession());
+
+  // Exiting overview mode should not cause any mini_views refreshes, since the
+  // destroyed overview-specific windows do not show up in the mini_view.
+  overview_controller->ToggleOverview();
+  EXPECT_FALSE(overview_controller->InOverviewSession());
+  EXPECT_EQ(1, desk_1_observer.notify_counts());
+  desk_1->RemoveObserver(&desk_1_observer);
 }
 
 TEST_F(DesksTest, ActivateActiveDeskFromOverview) {

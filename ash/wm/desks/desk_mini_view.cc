@@ -87,13 +87,10 @@ DeskMiniView::DeskMiniView(aura::Window* root_window,
 }
 
 DeskMiniView::~DeskMiniView() {
+  // In tests, where animations are disabled, the mini_view maybe destroyed
+  // before the desk.
   if (desk_)
     desk_->RemoveObserver(this);
-}
-
-void DeskMiniView::OnDeskRemoved() {
-  desk_->RemoveObserver(this);
-  desk_ = nullptr;
 }
 
 void DeskMiniView::SetTitle(const base::string16& title) {
@@ -175,8 +172,28 @@ void DeskMiniView::ButtonPressed(views::Button* sender,
   controller->RemoveDesk(desk_);
 }
 
-void DeskMiniView::OnDeskWindowsChanged() {
+void DeskMiniView::OnContentChanged() {
   desk_preview_->RecreateDeskContentsMirrorLayers();
+}
+
+void DeskMiniView::OnDeskDestroyed(const Desk* desk) {
+  // Note that the mini_view outlives the desk (which will be removed after all
+  // DeskController's observers have been notified of its removal) because of
+  // the animation.
+  // Note that we can't make it the other way around (i.e. make the desk outlive
+  // the mini_view). The desk's existence (or lack thereof) is more important
+  // than the existence of the mini_view, since it determines whether we can
+  // create new desks or remove existing ones. This determines whether the close
+  // button will show on hover, and whether the new_desk_button is enabled. We
+  // shouldn't allow that state to be wrong while the mini_views perform the
+  // desk removal animation.
+  // TODO(afakhry): Consider detaching the layer and destroying the mini_view
+  // directly.
+
+  DCHECK_EQ(desk_, desk);
+  desk_ = nullptr;
+
+  // No need to remove `this` as an observer; it's done automatically.
 }
 
 }  // namespace ash

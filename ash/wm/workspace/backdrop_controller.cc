@@ -17,6 +17,7 @@
 #include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_controller.h"
 #include "ash/wm/always_on_top_controller.h"
+#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/window_animations.h"
@@ -86,7 +87,7 @@ BackdropController::~BackdropController() {
   Shell::Get()->RemoveShellObserver(this);
   // TODO(oshima): animations won't work right with mus:
   // http://crbug.com/548396.
-  Hide();
+  Hide(/*destroy=*/true);
 }
 
 void BackdropController::OnWindowAddedToLayout() {
@@ -129,8 +130,8 @@ void BackdropController::UpdateBackdrop() {
 
   aura::Window* window = GetTopmostWindowWithBackdrop();
   if (!window) {
-    // Hide backdrop since no suitable window was found.
-    Hide();
+    // Destroy the backdrop since no suitable window was found.
+    Hide(/*destroy=*/true);
     return;
   }
   // We are changing the order of windows which will cause recursion.
@@ -171,7 +172,10 @@ void BackdropController::OnSplitViewModeEnded() {
 }
 
 void BackdropController::OnOverviewModeStarting() {
-  Hide(/*animate=*/false);
+  // Don't destroy backdrops, just hide them so they don't show in the overview
+  // grid, but keep the widget so that it can be mirrored into the mini_desk
+  // views.
+  Hide(/*destroy=*/false, /*animate=*/false);
 }
 
 void BackdropController::OnOverviewModeEnding(
@@ -212,7 +216,7 @@ void BackdropController::EnsureBackdropWidget() {
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.bounds = container_->GetBoundsInScreen();
   params.layer_type = ui::LAYER_SOLID_COLOR;
-  params.name = "WorkspaceBackdropDelegate";
+  params.name = "Backdrop";
   // To disallow the MRU list from picking this window up it should not be
   // activateable.
   params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
@@ -220,7 +224,7 @@ void BackdropController::EnsureBackdropWidget() {
   params.parent = container_;
   backdrop_->Init(params);
   backdrop_window_ = backdrop_->GetNativeWindow();
-  backdrop_window_->SetName("Backdrop");
+  backdrop_window_->SetProperty(kHideInOverviewKey, true);
   // The backdrop window in always on top container can be reparented without
   // this when the window is set to fullscreen.
   AlwaysOnTopController::SetDisallowReparent(backdrop_window_);
@@ -252,11 +256,31 @@ aura::Window* BackdropController::GetTopmostWindowWithBackdrop() {
   for (auto window_iter = windows.rbegin(); window_iter != windows.rend();
        ++window_iter) {
     aura::Window* window = *window_iter;
-    if (window != backdrop_window_ && window->layer()->GetTargetVisibility() &&
-        window->type() == aura::client::WINDOW_TYPE_NORMAL &&
-        ::wm::CanActivateWindow(window) && WindowShouldHaveBackdrop(window)) {
-      return window;
+    if (window == backdrop_window_)
+      continue;
+
+    if (window->type() != aura::client::WINDOW_TYPE_NORMAL)
+      continue;
+
+    auto* window_state = wm::GetWindowState(window);
+    if (window_state->IsMinimized())
+      continue;
+
+    // No need to check the visibility or the activateability of the window if
+    // this is an inactive desk's container.
+    if (!desks_util::IsDeskContainer(container_) ||
+        desks_util::IsActiveDeskContainer(container_)) {
+      if (!window->layer()->GetTargetVisibility())
+        continue;
+
+      if (!::wm::CanActivateWindow(window))
+        continue;
     }
+
+    if (!WindowShouldHaveBackdrop(window))
+      continue;
+
+    return window;
   }
   return nullptr;
 }
@@ -287,7 +311,7 @@ void BackdropController::Show() {
   backdrop_->Show();
 }
 
-void BackdropController::Hide(bool animate) {
+void BackdropController::Hide(bool destroy, bool animate) {
   if (!backdrop_)
     return;
 
@@ -307,11 +331,15 @@ void BackdropController::Hide(bool animate) {
     backdrop_window_->SetProperty(aura::client::kAnimationsDisabledKey, true);
   }
 
-  backdrop_->Close();
-  backdrop_ = nullptr;
-  backdrop_window_ = nullptr;
-  original_event_handler_ = nullptr;
-  backdrop_event_handler_.reset();
+  if (destroy) {
+    backdrop_->Close();
+    backdrop_ = nullptr;
+    backdrop_window_ = nullptr;
+    original_event_handler_ = nullptr;
+    backdrop_event_handler_.reset();
+  } else {
+    backdrop_->Hide();
+  }
 }
 
 bool BackdropController::BackdropShouldFullscreen() {

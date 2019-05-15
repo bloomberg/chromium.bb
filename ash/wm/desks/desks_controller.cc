@@ -130,10 +130,18 @@ void DesksController::RemoveDesk(const Desk* desk) {
   const base::flat_set<aura::Window*> removed_desk_windows =
       removed_desk->windows();
 
+  // No need to spend time refreshing the mini_views of the removed desk.
+  auto removed_desk_mini_views_pauser =
+      removed_desk->GetScopedNotifyContentChangedDisabler();
+
   // - Move windows in removed desk (if any) to the currently active desk.
   // - If the active desk is the one being removed, activate the desk to its
   //   left, if no desk to the left, activate one on the right.
   if (removed_desk.get() != active_desk_) {
+    // We will refresh the mini_views of the active desk only once at the end.
+    auto active_desk_mini_view_pauser =
+        active_desk_->GetScopedNotifyContentChangedDisabler();
+
     removed_desk->MoveWindowsToDesk(active_desk_);
 
     // If overview mode is active, we add the windows of the removed desk to the
@@ -153,6 +161,11 @@ void DesksController::RemoveDesk(const Desk* desk) {
     }
 
     DCHECK(target_desk);
+
+    // The target desk, which is about to become active, will have its
+    // mini_views refreshed at the end.
+    auto target_desk_mini_view_pauser =
+        target_desk->GetScopedNotifyContentChangedDisabler();
 
     // The removed desk is the active desk, so temporarily remove its windows
     // from the overview grid which will result in removing the
@@ -174,6 +187,12 @@ void DesksController::RemoveDesk(const Desk* desk) {
     if (in_overview)
       AppendWindowsToOverview(target_desk->windows(), /*should_animate=*/false);
   }
+
+  // It's OK now to refresh the mini_views of *only* the active desk, and only
+  // if windows from the removed desk moved to it.
+  DCHECK(active_desk_->should_notify_content_changed());
+  if (!removed_desk_windows.empty())
+    active_desk_->NotifyContentChanged();
 
   for (auto& observer : observers_)
     observer.OnDeskRemoved(removed_desk.get());

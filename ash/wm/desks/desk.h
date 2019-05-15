@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "base/auto_reset.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
@@ -31,8 +32,15 @@ class ASH_EXPORT Desk : public aura::WindowObserver {
  public:
   class Observer : public base::CheckedObserver {
    public:
-    // Called after windows are added or removed from this desk.
-    virtual void OnDeskWindowsChanged() = 0;
+    // Called when the desk's content change as a result of windows addition or
+    // removal. Note that some windows are added or removed, but are not
+    // considered a content change, such as the windows created by overview
+    // mode.
+    virtual void OnContentChanged() = 0;
+
+    // Called when Desk is at the end of its destructor. Desk automatically
+    // removes its Observers before calling this.
+    virtual void OnDeskDestroyed(const Desk* desk) = 0;
   };
 
   explicit Desk(int associated_container_id);
@@ -44,6 +52,10 @@ class ASH_EXPORT Desk : public aura::WindowObserver {
 
   bool is_active() const { return is_active_; }
 
+  bool should_notify_content_changed() const {
+    return should_notify_content_changed_;
+  }
+
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
@@ -51,6 +63,9 @@ class ASH_EXPORT Desk : public aura::WindowObserver {
   void OnRootWindowClosing(aura::Window* root);
 
   void AddWindowToDesk(aura::Window* window);
+
+  std::unique_ptr<base::AutoReset<bool>>
+  GetScopedNotifyContentChangedDisabler();
 
   // Activates this desk. All windows on this desk (if any) will become visible
   // (by means of showing this desk's associated containers on all root
@@ -70,11 +85,11 @@ class ASH_EXPORT Desk : public aura::WindowObserver {
   aura::Window* GetDeskContainerForRoot(aura::Window* root) const;
 
   // aura::WindowObserver:
-  void OnWindowDestroying(aura::Window* window) override;
+  void OnWindowDestroyed(aura::Window* window) override;
+
+  void NotifyContentChanged();
 
  private:
-  void NotifyDeskWindowsChanged();
-
   // The associated container ID with this desk.
   const int container_id_;
 
@@ -92,10 +107,10 @@ class ASH_EXPORT Desk : public aura::WindowObserver {
   // TODO(afakhry): Consider removing this.
   bool is_active_ = false;
 
-  // If false, observers won't be notified of desk's windows changes. This is
+  // If false, observers won't be notified of desk's contents changes. This is
   // used to throttle those notifications when we add or remove many windows,
   // and we want to notify observers only once.
-  bool should_notify_windows_changed_ = true;
+  bool should_notify_content_changed_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(Desk);
 };

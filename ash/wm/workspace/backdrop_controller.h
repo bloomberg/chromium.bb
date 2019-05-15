@@ -99,8 +99,9 @@ class BackdropController : public AccessibilityObserver,
   // Show the backdrop window.
   void Show();
 
-  // Hide the backdrop window.
-  void Hide(bool animate = true);
+  // Hide the backdrop window. If |destroy| is true, the backdrop widget will be
+  // destroyed, otherwise it'll be just hidden.
+  void Hide(bool destroy, bool animate = true);
 
   // Returns true if the backdrop window should be fullscreen. It should not be
   // fullscreen only if 1) split view is active and 2) there is only one snapped

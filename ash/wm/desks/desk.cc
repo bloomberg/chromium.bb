@@ -6,12 +6,12 @@
 
 #include <utility>
 
+#include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_transient_descendant_iterator.h"
 #include "ash/wm/window_util.h"
-#include "base/auto_reset.h"
 
 namespace ash {
 
@@ -62,6 +62,11 @@ Desk::Desk(int associated_container_id)
 
 Desk::~Desk() {
   DCHECK(windows_.empty()) << "DesksController should remove my windows first.";
+
+  for (auto& observer : observers_) {
+    observers_.RemoveObserver(&observer);
+    observer.OnDeskDestroyed(this);
+  }
 }
 
 void Desk::AddObserver(Observer* observer) {
@@ -102,7 +107,13 @@ void Desk::AddWindowToDesk(aura::Window* window) {
       transient_window->AddObserver(this);
   }
 
-  NotifyDeskWindowsChanged();
+  NotifyContentChanged();
+}
+
+std::unique_ptr<base::AutoReset<bool>>
+Desk::GetScopedNotifyContentChangedDisabler() {
+  return std::make_unique<base::AutoReset<bool>>(
+      &should_notify_content_changed_, false);
 }
 
 void Desk::Activate(bool update_window_activation) {
@@ -159,10 +170,10 @@ void Desk::MoveWindowsToDesk(Desk* target_desk) {
   {
     // Throttle notifying the observers, while we move those windows and notify
     // them only once when done.
-    base::AutoReset<bool> this_desk_throttled(&should_notify_windows_changed_,
+    base::AutoReset<bool> this_desk_throttled(&should_notify_content_changed_,
                                               false);
     base::AutoReset<bool> target_desk_throttled(
-        &(target_desk->should_notify_windows_changed_), false);
+        &(target_desk->should_notify_content_changed_), false);
 
     for (auto* window : windows_) {
       window->RemoveObserver(this);
@@ -191,8 +202,8 @@ void Desk::MoveWindowsToDesk(Desk* target_desk) {
     windows_.clear();
   }
 
-  NotifyDeskWindowsChanged();
-  target_desk->NotifyDeskWindowsChanged();
+  NotifyContentChanged();
+  target_desk->NotifyContentChanged();
 }
 
 aura::Window* Desk::GetDeskContainerForRoot(aura::Window* root) const {
@@ -201,18 +212,25 @@ aura::Window* Desk::GetDeskContainerForRoot(aura::Window* root) const {
   return root->GetChildById(container_id_);
 }
 
-void Desk::OnWindowDestroying(aura::Window* window) {
+void Desk::OnWindowDestroyed(aura::Window* window) {
+  // We listen to `OnWindowDestroyed()` as opposed to `OnWindowDestroying()`
+  // since we want to refresh the mini_views only after the window has been
+  // removed from the window tree hierarchy.
   const size_t count = windows_.erase(window);
   DCHECK(count);
-  NotifyDeskWindowsChanged();
+
+  // No need to refresh the mini_views if the destroyed window doesn't show up
+  // there in the first place.
+  if (!window->GetProperty(kHideInDeskMiniViewKey))
+    NotifyContentChanged();
 }
 
-void Desk::NotifyDeskWindowsChanged() {
-  if (!should_notify_windows_changed_)
+void Desk::NotifyContentChanged() {
+  if (!should_notify_content_changed_)
     return;
 
   for (auto& observer : observers_)
-    observer.OnDeskWindowsChanged();
+    observer.OnContentChanged();
 }
 
 }  // namespace ash

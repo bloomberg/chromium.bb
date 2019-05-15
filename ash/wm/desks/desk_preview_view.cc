@@ -121,6 +121,7 @@ DeskPreviewView::DeskPreviewView(DeskMiniView* mini_view)
 
   wallpaper_preview_->SetPaintToLayer();
   auto* wallpaper_preview_layer = wallpaper_preview_->layer();
+  wallpaper_preview_layer->SetFillsBoundsOpaquely(false);
   wallpaper_preview_layer->SetRoundedCornerRadius(kCornerRadii);
   wallpaper_preview_layer->SetIsFastRoundedCorner(true);
   AddChildView(wallpaper_preview_);
@@ -128,7 +129,7 @@ DeskPreviewView::DeskPreviewView(DeskMiniView* mini_view)
   desk_mirrored_contents_view_->SetPaintToLayer(ui::LAYER_NOT_DRAWN);
   ui::Layer* contents_view_layer = desk_mirrored_contents_view_->layer();
   contents_view_layer->SetMasksToBounds(true);
-  contents_view_layer->set_name("Desk mirrored contents");
+  contents_view_layer->set_name("Desk mirrored contents view");
   AddChildView(desk_mirrored_contents_view_);
 
   RecreateDeskContentsMirrorLayers();
@@ -146,10 +147,9 @@ void DeskPreviewView::RecreateDeskContentsMirrorLayers() {
   DCHECK(desk_container->layer());
 
   // Mirror the layer tree of the desk container.
-  std::unique_ptr<ui::Layer> mirrored_content_root_layer =
-      desk_container->layer()->Mirror();
-  mirrored_content_root_layer->SetVisible(true);
-  mirrored_content_root_layer->SetOpacity(1);
+  auto mirrored_content_root_layer =
+      std::make_unique<ui::Layer>(ui::LAYER_NOT_DRAWN);
+  mirrored_content_root_layer->set_name("mirrored contents root layer");
   base::flat_map<ui::Layer*, LayerData> layers_data;
   GetLayersData(desk_container, &layers_data);
   MirrorLayerTree(desk_container->layer(), mirrored_content_root_layer.get(),
@@ -179,11 +179,10 @@ void DeskPreviewView::Layout() {
   wallpaper_preview_->SetBoundsRect(bounds);
   desk_mirrored_contents_view_->SetBoundsRect(bounds);
 
-  // The desk's contents mirrored layer needs to be scaled and translated so
-  // that it fits exactly in the center of the view.
+  // The desk's contents mirrored layer needs to be scaled down so that it fits
+  // exactly in the center of the view.
   const auto root_size = mini_view_->root_window()->layer()->size();
   gfx::Transform transform;
-  transform.Translate(kBorderSize, kBorderSize);
   transform.Scale(static_cast<float>(bounds.width()) / root_size.width(),
                   static_cast<float>(bounds.height()) / root_size.height());
   ui::Layer* desk_mirrored_contents_layer =
