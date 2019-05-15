@@ -283,7 +283,8 @@ void JankTracker::NotifyPrePaintFinished() {
     frame.Client()->DidObserveLayoutJank(weighted_jank_fraction);
   }
 
-  if (RuntimeEnabledFeatures::LayoutJankAPIEnabled(frame.GetDocument()) &&
+  if (RuntimeEnabledFeatures::LayoutInstabilityAPIEnabled(
+          frame.GetDocument()) &&
       frame.DomWindow()) {
     WindowPerformance* performance =
         DOMWindowPerformance::performance(*frame.DomWindow());

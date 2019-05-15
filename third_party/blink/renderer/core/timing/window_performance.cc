@@ -434,7 +434,8 @@ void WindowPerformance::DispatchFirstInputTiming(
 }
 
 void WindowPerformance::AddLayoutJankFraction(double jank_fraction) {
-  DCHECK(RuntimeEnabledFeatures::LayoutJankAPIEnabled(GetExecutionContext()));
+  DCHECK(RuntimeEnabledFeatures::LayoutInstabilityAPIEnabled(
+      GetExecutionContext()));
   auto* entry =
       MakeGarbageCollected<PerformanceLayoutJank>(now(), jank_fraction);
   if (HasObserverFor(PerformanceEntry::kLayoutJank))

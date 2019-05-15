@@ -63,7 +63,7 @@ Vector<AtomicString> PerformanceObserver::supportedEntryTypes(
       supportedEntryTypes.push_back(performance_entry_names::kEvent);
       supportedEntryTypes.push_back(performance_entry_names::kFirstInput);
     }
-    if (RuntimeEnabledFeatures::LayoutJankAPIEnabled(execution_context))
+    if (RuntimeEnabledFeatures::LayoutInstabilityAPIEnabled(execution_context))
       supportedEntryTypes.push_back(performance_entry_names::kLayoutJank);
     supportedEntryTypes.push_back(performance_entry_names::kLongtask);
   }
