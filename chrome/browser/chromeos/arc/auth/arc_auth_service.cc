@@ -26,6 +26,9 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/ui/app_list/arc/arc_data_removal_dialog.h"
+#include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chrome/browser/ui/webui/signin/inline_login_handler_dialog_chromeos.h"
+#include "chrome/common/webui_url_constants.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_features.h"
 #include "components/arc/arc_prefs.h"
@@ -460,6 +463,30 @@ void ArcAuthService::FetchPrimaryAccountInfo(
       base::BindOnce(&ArcAuthService::OnPrimaryAccountAuthCodeFetched,
                      weak_ptr_factory_.GetWeakPtr(), auth_code_fetcher_ptr,
                      std::move(callback)));
+}
+
+void ArcAuthService::IsAccountManagerAvailable(
+    IsAccountManagerAvailableCallback callback) {
+  std::move(callback).Run(chromeos::IsAccountManagerAvailable(profile_));
+}
+
+void ArcAuthService::HandleAddAccountRequest() {
+  DCHECK(chromeos::IsAccountManagerAvailable(profile_));
+
+  chromeos::InlineLoginHandlerDialogChromeOS::Show();
+}
+
+void ArcAuthService::HandleRemoveAccountRequest(const std::string& email) {
+  DCHECK(chromeos::IsAccountManagerAvailable(profile_));
+
+  chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+      profile_, chrome::kAccountManagerSubPage);
+}
+
+void ArcAuthService::HandleUpdateCredentialsRequest(const std::string& email) {
+  DCHECK(chromeos::IsAccountManagerAvailable(profile_));
+
+  chromeos::InlineLoginHandlerDialogChromeOS::Show(email);
 }
 
 void ArcAuthService::OnRefreshTokenUpdatedForAccount(

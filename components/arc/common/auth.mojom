@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 20
+// Next MinVersion: 21
 
 module arc.mojom;
 
@@ -214,7 +214,7 @@ struct ArcAccountInfo {
   string gaia_id;
 };
 
-// Next Method ID: 14.
+// Next Method ID: 18.
 interface AuthHost {
   // Notifies Chrome that the authorization flow is completed and provides
   // resulting |status|. If |initial_signin| is true then this indicates that
@@ -271,6 +271,29 @@ interface AuthHost {
   // than SUCCESS, and |account_info| is null.
   [MinVersion=15] RequestAccountInfo@13(string account_name)
       => (ArcSignInStatus status, AccountInfo? account_info);
+
+  // Returns |true| if Chrome OS Account Manager is available for this session.
+  // Account Manager is not available in Guest Sessions and Public Sessions
+  // among other cases. Returning |true| here has the effect of routing all
+  // Google account management |Intent|s from Android to Chrome OS Account
+  // Manager, instead of launching Android's account management flows.
+  [MinVersion=20] IsAccountManagerAvailable@14() => (bool is_available);
+
+  // Handles an Android |Intent| to add a Google account by displaying Chrome OS
+  // Account Manager's account addition UI.
+  [MinVersion=20] HandleAddAccountRequest@15();
+
+  // Handles an Android |Intent| to remove a Google account. |account_name| is
+  // the Google email id for the account. |account_name| cannot be null or
+  // empty.
+  // Note: Calling this API will not silently remove |account_name|. Currently
+  // it redirects users to Chrome OS Account Manager's Settings Page.
+  [MinVersion=20] HandleRemoveAccountRequest@16(string account_name);
+
+  // Handles an Android |Intent| to update a Google account by displaying Chrome
+  // OS Account Manager's re-authentication UI. |account_name| is the Google
+  // email id for the account. |account_name| cannot be null or empty.
+  [MinVersion=20] HandleUpdateCredentialsRequest@17(string account_name);
 };
 
 // Next Method ID: 5

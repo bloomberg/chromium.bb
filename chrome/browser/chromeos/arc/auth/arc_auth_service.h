@@ -88,6 +88,11 @@ class ArcAuthService : public KeyedService,
       RequestPrimaryAccountInfoCallback callback) override;
   void RequestAccountInfo(const std::string& account_name,
                           RequestAccountInfoCallback callback) override;
+  void IsAccountManagerAvailable(
+      IsAccountManagerAvailableCallback callback) override;
+  void HandleAddAccountRequest() override;
+  void HandleRemoveAccountRequest(const std::string& email) override;
+  void HandleUpdateCredentialsRequest(const std::string& email) override;
 
   void SetURLLoaderFactoryForTesting(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
