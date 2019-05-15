@@ -64,7 +64,12 @@ template("trichrome_library_apk_tmpl") {
     version_name = chrome_version_name
     version_code = trichrome_version_code
     min_sdk_version = 28
-    product_version_resources_dep = "//chrome/android:product_version_resources"
+    if (!enable_trichrome_synchronized_proguard) {
+      generate_buildconfig_java = false
+    } else {
+      product_version_resources_dep =
+          "//chrome/android:product_version_resources"
+    }
 
     # TODO(torne): using system_webview_resources just to get a temporary icon
     deps = [
