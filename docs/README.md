@@ -278,7 +278,8 @@ used when committed.
 
 ### Misc Chrome-OS-Specific Docs
 *   [Setting up captive portals and other restrictive networks](login/restrictive_networks.md)
-*   [Enrolling a device in OOBE/Login](login/enterprise_enrollment.md)
+*   [Enterprise Enrollment](enterprise/enrollment.md)
+    *   [Kiosk mode and public sessions](enterprise/kiosk_public_session.md)
 *   [Debugging UI in OOBE/login/lock](login/ui_debugging.md)
 *   [Chrome Logging on Chrome OS](chrome_os_logging.md)
 

@@ -1,6 +1,6 @@
-#Kiosk mode and public sessions (ChromeOS)
+#Kiosk mode and public sessions (Chrome OS)
 
-When ChromeOS device is enterprise enrolled, organization admins can add two
+When Chrome OS device is enterprise enrolled, organization admins can add two
 special types of users on the device. Those are Public sessions and Kiosk apps.
 
 ## Public sessions
