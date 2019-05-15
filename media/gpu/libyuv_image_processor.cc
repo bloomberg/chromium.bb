@@ -205,7 +205,7 @@ void LibYUVImageProcessor::ProcessTask(scoped_refptr<VideoFrame> input_frame,
   DVLOGF(4);
 #if defined(OS_LINUX)
   if (input_frame->storage_type() == VideoFrame::STORAGE_DMABUFS) {
-    DCHECK_NE(video_frame_mapper_, nullptr);
+    DCHECK_NE(video_frame_mapper_.get(), nullptr);
     input_frame = video_frame_mapper_->Map(std::move(input_frame));
     if (!input_frame) {
       VLOGF(1) << "Failed to map input VideoFrame";
