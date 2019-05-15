@@ -2,16 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_MAGNIFIER_DOCKED_MAGNIFIER_CONTROLLER_H_
-#define ASH_MAGNIFIER_DOCKED_MAGNIFIER_CONTROLLER_H_
+#ifndef ASH_MAGNIFIER_DOCKED_MAGNIFIER_CONTROLLER_IMPL_H_
+#define ASH_MAGNIFIER_DOCKED_MAGNIFIER_CONTROLLER_IMPL_H_
 
 #include <memory>
 
 #include "ash/ash_export.h"
 #include "ash/display/window_tree_host_manager.h"
-#include "ash/public/interfaces/docked_magnifier_controller.mojom.h"
+#include "ash/public/cpp/docked_magnifier_controller.h"
 #include "ash/session/session_observer.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "ui/base/ime/ime_bridge_observer.h"
 #include "ui/base/ime/input_method_observer.h"
 #include "ui/events/event_handler.h"
@@ -43,8 +42,8 @@ namespace ash {
 // (which follows the cursor location, text input caret location, or focus
 // changes). In a multiple display scenario, the magnifier viewport is located
 // on the same display as that of the point of interest.
-class ASH_EXPORT DockedMagnifierController
-    : public mojom::DockedMagnifierController,
+class ASH_EXPORT DockedMagnifierControllerImpl
+    : public DockedMagnifierController,
       public SessionObserver,
       public ui::EventHandler,
       public ui::IMEBridgeObserver,
@@ -52,8 +51,8 @@ class ASH_EXPORT DockedMagnifierController
       public views::WidgetObserver,
       public WindowTreeHostManager::Observer {
  public:
-  DockedMagnifierController();
-  ~DockedMagnifierController() override;
+  DockedMagnifierControllerImpl();
+  ~DockedMagnifierControllerImpl() override;
 
   // The height of the black separator layer between the magnifier viewport and
   // the rest of the screen.
@@ -64,8 +63,6 @@ class ASH_EXPORT DockedMagnifierController
   static constexpr int kScreenHeightDivisor = 3;
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test);
-
-  void BindRequest(mojom::DockedMagnifierControllerRequest request);
 
   // Get the Docked Magnifier settings for the current active user prefs.
   bool GetEnabled() const;
@@ -80,7 +77,7 @@ class ASH_EXPORT DockedMagnifierController
   // value of |delta_index|.
   void StepToNextScaleValue(int delta_index);
 
-  // ash::mojom::DockedMagnifierController:
+  // DockedMagnifierController:
   void CenterOnPoint(const gfx::Point& point_in_screen) override;
 
   // ash::SessionObserver:
@@ -212,11 +209,9 @@ class ASH_EXPORT DockedMagnifierController
 
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
 
-  mojo::Binding<mojom::DockedMagnifierController> binding_;
-
-  DISALLOW_COPY_AND_ASSIGN(DockedMagnifierController);
+  DISALLOW_COPY_AND_ASSIGN(DockedMagnifierControllerImpl);
 };
 
 }  // namespace ash
 
-#endif  // ASH_MAGNIFIER_DOCKED_MAGNIFIER_CONTROLLER_H_
+#endif  // ASH_MAGNIFIER_DOCKED_MAGNIFIER_CONTROLLER_IMPL_H_

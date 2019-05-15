@@ -11,7 +11,7 @@
 #include "ash/display/display_prefs.h"
 #include "ash/kiosk_next/kiosk_next_shell_controller.h"
 #include "ash/login/login_screen_controller.h"
-#include "ash/magnifier/docked_magnifier_controller.h"
+#include "ash/magnifier/docked_magnifier_controller_impl.h"
 #include "ash/shelf/shelf_controller.h"
 #include "ash/system/bluetooth/bluetooth_power_controller.h"
 #include "ash/system/caps_lock_notification_controller.h"
@@ -36,7 +36,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
   AssistantController::RegisterProfilePrefs(registry);
   BluetoothPowerController::RegisterProfilePrefs(registry);
   CapsLockNotificationController::RegisterProfilePrefs(registry, for_test);
-  DockedMagnifierController::RegisterProfilePrefs(registry, for_test);
+  DockedMagnifierControllerImpl::RegisterProfilePrefs(registry, for_test);
   KioskNextShellController::RegisterProfilePrefs(registry, for_test);
   LoginScreenController::RegisterProfilePrefs(registry, for_test);
   LogoutButtonTray::RegisterProfilePrefs(registry);

@@ -17,7 +17,7 @@
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/ime/test_ime_controller_client.h"
-#include "ash/magnifier/docked_magnifier_controller.h"
+#include "ash/magnifier/docked_magnifier_controller_impl.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/media/media_controller.h"
 #include "ash/public/cpp/ash_features.h"
@@ -1767,7 +1767,7 @@ class MagnifiersAcceleratorsTester : public AcceleratorControllerTest {
   MagnifiersAcceleratorsTester() = default;
   ~MagnifiersAcceleratorsTester() override = default;
 
-  DockedMagnifierController* docked_magnifier_controller() const {
+  DockedMagnifierControllerImpl* docked_magnifier_controller() const {
     return Shell::Get()->docked_magnifier_controller();
   }
 

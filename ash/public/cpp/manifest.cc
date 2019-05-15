@@ -13,7 +13,6 @@
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/cros_display_config.mojom.h"
 #include "ash/public/interfaces/display_output_protection.mojom.h"
-#include "ash/public/interfaces/docked_magnifier_controller.mojom.h"
 #include "ash/public/interfaces/event_rewriter_controller.mojom.h"
 #include "ash/public/interfaces/first_run_helper.mojom.h"
 #include "ash/public/interfaces/highlighter_controller.mojom.h"
@@ -81,7 +80,6 @@ const service_manager::Manifest& GetManifest() {
                   mojom::AssistantVolumeControl,
                   mojom::KioskNextShellController,
                   mojom::CrosDisplayConfigController,
-                  mojom::DockedMagnifierController,
                   mojom::EventRewriterController, mojom::FirstRunHelper,
                   mojom::HighlighterController, mojom::ImeController,
                   ime::mojom::ImeEngineFactoryRegistry,

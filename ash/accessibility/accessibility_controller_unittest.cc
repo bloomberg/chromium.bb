@@ -9,7 +9,7 @@
 #include "ash/accessibility/accessibility_observer.h"
 #include "ash/accessibility/test_accessibility_controller_client.h"
 #include "ash/keyboard/ui/keyboard_util.h"
-#include "ash/magnifier/docked_magnifier_controller.h"
+#include "ash/magnifier/docked_magnifier_controller_impl.h"
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/session/session_controller_impl.h"
@@ -482,7 +482,7 @@ TEST_P(AccessibilityControllerSigninTest, EnableOnLoginScreenAndLogin) {
 
   AccessibilityController* accessibility =
       Shell::Get()->accessibility_controller();
-  DockedMagnifierController* docked_magnifier =
+  DockedMagnifierControllerImpl* docked_magnifier =
       Shell::Get()->docked_magnifier_controller();
 
   SessionControllerImpl* session = Shell::Get()->session_controller();

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/magnifier/docked_magnifier_controller.h"
+#include "ash/magnifier/docked_magnifier_controller_impl.h"
 
 #include <memory>
 #include <vector>
@@ -14,7 +14,6 @@
 #include "ash/magnifier/magnifier_test_utils.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/ash_switches.h"
-#include "ash/public/interfaces/docked_magnifier_controller.mojom.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shelf/shelf_constants.h"
@@ -45,8 +44,9 @@ constexpr char kUser2Email[] = "user2@dockedmagnifier";
 
 // Returns the magnifier area height given the display height.
 int GetMagnifierHeight(int display_height) {
-  return (display_height / DockedMagnifierController::kScreenHeightDivisor) +
-         DockedMagnifierController::kSeparatorHeight;
+  return (display_height /
+          DockedMagnifierControllerImpl::kScreenHeightDivisor) +
+         DockedMagnifierControllerImpl::kSeparatorHeight;
 }
 
 class DockedMagnifierTest : public NoSessionAshTestBase {
@@ -54,7 +54,7 @@ class DockedMagnifierTest : public NoSessionAshTestBase {
   DockedMagnifierTest() = default;
   ~DockedMagnifierTest() override = default;
 
-  DockedMagnifierController* controller() const {
+  DockedMagnifierControllerImpl* controller() const {
     return Shell::Get()->docked_magnifier_controller();
   }
 
@@ -198,7 +198,7 @@ TEST_F(DockedMagnifierTest, TestScale) {
 }
 
 // Tests that updates of the Docked Magnifier user prefs from outside the
-// DockedMagnifierController (such as Settings UI) are observed and applied.
+// DockedMagnifierControllerImpl (such as Settings UI) are observed and applied.
 TEST_F(DockedMagnifierTest, TestOutsidePrefsUpdates) {
   EXPECT_FALSE(controller()->GetEnabled());
   user1_pref_service()->SetBoolean(prefs::kDockedMagnifierEnabled, true);
@@ -483,7 +483,7 @@ TEST_F(DockedMagnifierTest, AddRemoveDisplays) {
   ASSERT_NE(nullptr, viewport_widget);
   EXPECT_EQ(root_windows[0], viewport_widget->GetNativeView()->GetRootWindow());
   const int viewport_1_height =
-      800 / DockedMagnifierController::kScreenHeightDivisor;
+      800 / DockedMagnifierControllerImpl::kScreenHeightDivisor;
   EXPECT_EQ(gfx::Rect(0, 0, 600, viewport_1_height),
             viewport_widget->GetWindowBoundsInScreen());
 
@@ -508,7 +508,7 @@ TEST_F(DockedMagnifierTest, AddRemoveDisplays) {
   viewport_widget = controller()->GetViewportWidgetForTesting();
   EXPECT_EQ(root_windows[1], viewport_widget->GetNativeView()->GetRootWindow());
   const int viewport_2_height =
-      600 / DockedMagnifierController::kScreenHeightDivisor;
+      600 / DockedMagnifierControllerImpl::kScreenHeightDivisor;
   EXPECT_EQ(gfx::Rect(600, 0, 400, viewport_2_height),
             viewport_widget->GetWindowBoundsInScreen());
 
@@ -547,7 +547,7 @@ TEST_F(DockedMagnifierTest, TransformSimple) {
   ASSERT_NE(nullptr, viewport_widget);
   EXPECT_EQ(root_windows[0], viewport_widget->GetNativeView()->GetRootWindow());
   const int viewport_height =
-      800 / DockedMagnifierController::kScreenHeightDivisor;
+      800 / DockedMagnifierControllerImpl::kScreenHeightDivisor;
   EXPECT_EQ(gfx::Rect(0, 0, 800, viewport_height),
             viewport_widget->GetWindowBoundsInScreen());
 
@@ -571,7 +571,7 @@ TEST_F(DockedMagnifierTest, TransformSimple) {
   // separator, and it should go to the center of the top *edge* of the viewport
   // widget.
   point_of_interest.set_y(viewport_height +
-                          DockedMagnifierController::kSeparatorHeight);
+                          DockedMagnifierControllerImpl::kSeparatorHeight);
   const gfx::Point viewport_center =
       viewport_widget->GetNativeWindow()->GetBoundsInRootWindow().CenterPoint();
   gfx::Point viewport_top_edge_center = viewport_center;
@@ -584,7 +584,7 @@ TEST_F(DockedMagnifierTest, TransformSimple) {
   // + the height of the separator + half the height of the viewport when scaled
   // back to the non-magnified space.
   EXPECT_FLOAT_EQ(viewport_height +
-                      DockedMagnifierController::kSeparatorHeight +
+                      DockedMagnifierControllerImpl::kSeparatorHeight +
                       (viewport_center.y() / scale1),
                   controller()->GetMinimumPointOfInterestHeightForTesting());
 
@@ -596,12 +596,12 @@ TEST_F(DockedMagnifierTest, TransformSimple) {
   point_of_interest = gfx::Point(799, 0);
   TestMagnifierLayerTransform(point_of_interest, root_windows[0]);
   point_of_interest.set_y(viewport_height +
-                          DockedMagnifierController::kSeparatorHeight);
+                          DockedMagnifierControllerImpl::kSeparatorHeight);
   magnifier_layer->transform().TransformPoint(&point_of_interest);
   EXPECT_EQ(viewport_top_edge_center, point_of_interest);
 
   EXPECT_FLOAT_EQ(viewport_height +
-                      DockedMagnifierController::kSeparatorHeight +
+                      DockedMagnifierControllerImpl::kSeparatorHeight +
                       (viewport_center.y() / scale2),
                   controller()->GetMinimumPointOfInterestHeightForTesting());
 }
@@ -675,7 +675,7 @@ TEST_F(DockedMagnifierTest, HighContrastMode) {
   UpdateDisplay("600x900");
 
   // Enable the docked magnifier.
-  DockedMagnifierController* magnifier = controller();
+  DockedMagnifierControllerImpl* magnifier = controller();
   magnifier->SetEnabled(true);
   EXPECT_TRUE(magnifier->GetEnabled());
 

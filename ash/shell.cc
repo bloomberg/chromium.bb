@@ -62,7 +62,7 @@
 #include "ash/laser/laser_pointer_controller.h"
 #include "ash/login/login_screen_controller.h"
 #include "ash/login_status.h"
-#include "ash/magnifier/docked_magnifier_controller.h"
+#include "ash/magnifier/docked_magnifier_controller_impl.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"
 #include "ash/media/media_controller.h"
@@ -423,7 +423,7 @@ bool Shell::ShouldSaveDisplaySettings() {
       !display_configuration_observer_->save_preference());
 }
 
-DockedMagnifierController* Shell::docked_magnifier_controller() {
+DockedMagnifierControllerImpl* Shell::docked_magnifier_controller() {
   return docked_magnifier_controller_.get();
 }
 
@@ -803,7 +803,7 @@ Shell::~Shell() {
   // NightLightController depends on the PrefService as well as the window tree
   // host manager, and must be destructed before them. crbug.com/724231.
   night_light_controller_ = nullptr;
-  // Similarly for DockedMagnifierController.
+  // Similarly for DockedMagnifierControllerImpl.
   docked_magnifier_controller_ = nullptr;
 
   // Stop observing window activation changes before closing all windows.
@@ -1090,7 +1090,8 @@ void Shell::Init(
 
   high_contrast_controller_.reset(new HighContrastController);
 
-  docked_magnifier_controller_ = std::make_unique<DockedMagnifierController>();
+  docked_magnifier_controller_ =
+      std::make_unique<DockedMagnifierControllerImpl>();
 
   video_detector_ = std::make_unique<VideoDetector>();
 

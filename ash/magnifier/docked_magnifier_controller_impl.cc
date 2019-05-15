@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/magnifier/docked_magnifier_controller.h"
+#include "ash/magnifier/docked_magnifier_controller_impl.h"
 
 #include <algorithm>
 
@@ -76,7 +76,7 @@ gfx::Rect GetViewportWidgetBoundsInRoot(aura::Window* root) {
 
   auto root_bounds = root->GetBoundsInRootWindow();
   root_bounds.set_height(root_bounds.height() /
-                         DockedMagnifierController::kScreenHeightDivisor);
+                         DockedMagnifierControllerImpl::kScreenHeightDivisor);
   return root_bounds;
 }
 
@@ -86,7 +86,7 @@ inline gfx::Rect SeparatorBoundsFromViewportBounds(
     const gfx::Rect& viewport_bounds) {
   return gfx::Rect(viewport_bounds.x(), viewport_bounds.bottom(),
                    viewport_bounds.width(),
-                   DockedMagnifierController::kSeparatorHeight);
+                   DockedMagnifierControllerImpl::kSeparatorHeight);
 }
 
 // Returns the angle by which the magnifier layer should be rotated such that
@@ -120,13 +120,18 @@ aura::Window* GetViewportParentContainerForRoot(aura::Window* root) {
 
 }  // namespace
 
-DockedMagnifierController::DockedMagnifierController() : binding_(this) {
+// static
+DockedMagnifierController* DockedMagnifierController::Get() {
+  return Shell::Get()->docked_magnifier_controller();
+}
+
+DockedMagnifierControllerImpl::DockedMagnifierControllerImpl() {
   Shell::Get()->session_controller()->AddObserver(this);
   if (ui::IMEBridge::Get())
     ui::IMEBridge::Get()->AddObserver(this);
 }
 
-DockedMagnifierController::~DockedMagnifierController() {
+DockedMagnifierControllerImpl::~DockedMagnifierControllerImpl() {
   if (input_method_)
     input_method_->RemoveObserver(this);
   input_method_ = nullptr;
@@ -143,7 +148,7 @@ DockedMagnifierController::~DockedMagnifierController() {
 }
 
 // static
-void DockedMagnifierController::RegisterProfilePrefs(
+void DockedMagnifierControllerImpl::RegisterProfilePrefs(
     PrefRegistrySimple* registry,
     bool for_test) {
   if (for_test) {
@@ -157,31 +162,26 @@ void DockedMagnifierController::RegisterProfilePrefs(
                                kDefaultMagnifierScale, PrefRegistry::PUBLIC);
 }
 
-void DockedMagnifierController::BindRequest(
-    mojom::DockedMagnifierControllerRequest request) {
-  binding_.Bind(std::move(request));
-}
-
-bool DockedMagnifierController::GetEnabled() const {
+bool DockedMagnifierControllerImpl::GetEnabled() const {
   return active_user_pref_service_ &&
          active_user_pref_service_->GetBoolean(prefs::kDockedMagnifierEnabled);
 }
 
-float DockedMagnifierController::GetScale() const {
+float DockedMagnifierControllerImpl::GetScale() const {
   if (active_user_pref_service_)
     return active_user_pref_service_->GetDouble(prefs::kDockedMagnifierScale);
 
   return kDefaultMagnifierScale;
 }
 
-void DockedMagnifierController::SetEnabled(bool enabled) {
+void DockedMagnifierControllerImpl::SetEnabled(bool enabled) {
   if (active_user_pref_service_) {
     active_user_pref_service_->SetBoolean(prefs::kDockedMagnifierEnabled,
                                           enabled);
   }
 }
 
-void DockedMagnifierController::SetScale(float scale) {
+void DockedMagnifierControllerImpl::SetScale(float scale) {
   if (active_user_pref_service_) {
     active_user_pref_service_->SetDouble(
         prefs::kDockedMagnifierScale,
@@ -189,12 +189,12 @@ void DockedMagnifierController::SetScale(float scale) {
   }
 }
 
-void DockedMagnifierController::StepToNextScaleValue(int delta_index) {
+void DockedMagnifierControllerImpl::StepToNextScaleValue(int delta_index) {
   SetScale(magnifier_utils::GetNextMagnifierScaleValue(
       delta_index, GetScale(), kMinMagnifierScale, kMaxMagnifierScale));
 }
 
-void DockedMagnifierController::CenterOnPoint(
+void DockedMagnifierControllerImpl::CenterOnPoint(
     const gfx::Point& point_in_screen) {
   if (!GetEnabled())
     return;
@@ -279,23 +279,23 @@ void DockedMagnifierController::CenterOnPoint(
   viewport_magnifier_layer_->SetTransform(transform);
 }
 
-void DockedMagnifierController::OnActiveUserPrefServiceChanged(
+void DockedMagnifierControllerImpl::OnActiveUserPrefServiceChanged(
     PrefService* pref_service) {
   active_user_pref_service_ = pref_service;
   InitFromUserPrefs();
 }
 
-void DockedMagnifierController::OnSigninScreenPrefServiceInitialized(
+void DockedMagnifierControllerImpl::OnSigninScreenPrefServiceInitialized(
     PrefService* prefs) {
   OnActiveUserPrefServiceChanged(prefs);
 }
 
-void DockedMagnifierController::OnMouseEvent(ui::MouseEvent* event) {
+void DockedMagnifierControllerImpl::OnMouseEvent(ui::MouseEvent* event) {
   DCHECK(GetEnabled());
   CenterOnPoint(GetCursorScreenPoint());
 }
 
-void DockedMagnifierController::OnScrollEvent(ui::ScrollEvent* event) {
+void DockedMagnifierControllerImpl::OnScrollEvent(ui::ScrollEvent* event) {
   DCHECK(GetEnabled());
   if (!event->IsAltDown() || !event->IsControlDown())
     return;
@@ -317,7 +317,7 @@ void DockedMagnifierController::OnScrollEvent(ui::ScrollEvent* event) {
   }
 }
 
-void DockedMagnifierController::OnTouchEvent(ui::TouchEvent* event) {
+void DockedMagnifierControllerImpl::OnTouchEvent(ui::TouchEvent* event) {
   DCHECK(GetEnabled());
 
   aura::Window* target = static_cast<aura::Window*>(event->target());
@@ -327,7 +327,7 @@ void DockedMagnifierController::OnTouchEvent(ui::TouchEvent* event) {
   CenterOnPoint(event_screen_point);
 }
 
-void DockedMagnifierController::OnInputContextHandlerChanged() {
+void DockedMagnifierControllerImpl::OnInputContextHandlerChanged() {
   if (!GetEnabled())
     return;
 
@@ -343,14 +343,14 @@ void DockedMagnifierController::OnInputContextHandlerChanged() {
     input_method_->AddObserver(this);
 }
 
-void DockedMagnifierController::OnInputMethodDestroyed(
+void DockedMagnifierControllerImpl::OnInputMethodDestroyed(
     const ui::InputMethod* input_method) {
   DCHECK_EQ(input_method, input_method_);
   input_method_->RemoveObserver(this);
   input_method_ = nullptr;
 }
 
-void DockedMagnifierController::OnCaretBoundsChanged(
+void DockedMagnifierControllerImpl::OnCaretBoundsChanged(
     const ui::TextInputClient* client) {
   if (!GetEnabled()) {
     // There is a small window between the time the "enabled" pref is updated to
@@ -380,14 +380,14 @@ void DockedMagnifierController::OnCaretBoundsChanged(
   CenterOnPoint(caret_screen_bounds.CenterPoint());
 }
 
-void DockedMagnifierController::OnWidgetDestroying(views::Widget* widget) {
+void DockedMagnifierControllerImpl::OnWidgetDestroying(views::Widget* widget) {
   DCHECK_EQ(widget, viewport_widget_);
 
   SwitchCurrentSourceRootWindowIfNeeded(nullptr,
                                         false /* update_old_root_workarea */);
 }
 
-void DockedMagnifierController::OnDisplayConfigurationChanged() {
+void DockedMagnifierControllerImpl::OnDisplayConfigurationChanged() {
   DCHECK(GetEnabled());
 
   // The viewport might have been on a display that just got removed, and hence
@@ -419,42 +419,43 @@ void DockedMagnifierController::OnDisplayConfigurationChanged() {
   CenterOnPoint(GetCursorScreenPoint());
 }
 
-bool DockedMagnifierController::GetFullscreenMagnifierEnabled() const {
+bool DockedMagnifierControllerImpl::GetFullscreenMagnifierEnabled() const {
   return active_user_pref_service_ &&
          active_user_pref_service_->GetBoolean(
              prefs::kAccessibilityScreenMagnifierEnabled);
 }
 
-void DockedMagnifierController::SetFullscreenMagnifierEnabled(bool enabled) {
+void DockedMagnifierControllerImpl::SetFullscreenMagnifierEnabled(
+    bool enabled) {
   if (active_user_pref_service_) {
     active_user_pref_service_->SetBoolean(
         prefs::kAccessibilityScreenMagnifierEnabled, enabled);
   }
 }
 
-int DockedMagnifierController::GetTotalMagnifierHeight() const {
+int DockedMagnifierControllerImpl::GetTotalMagnifierHeight() const {
   if (separator_layer_)
     return separator_layer_->bounds().bottom();
 
   return 0;
 }
 
-const views::Widget* DockedMagnifierController::GetViewportWidgetForTesting()
-    const {
+const views::Widget*
+DockedMagnifierControllerImpl::GetViewportWidgetForTesting() const {
   return viewport_widget_;
 }
 
 const ui::Layer*
-DockedMagnifierController::GetViewportMagnifierLayerForTesting() const {
+DockedMagnifierControllerImpl::GetViewportMagnifierLayerForTesting() const {
   return viewport_magnifier_layer_.get();
 }
 
-float DockedMagnifierController::GetMinimumPointOfInterestHeightForTesting()
+float DockedMagnifierControllerImpl::GetMinimumPointOfInterestHeightForTesting()
     const {
   return minimum_point_of_interest_height_;
 }
 
-void DockedMagnifierController::SwitchCurrentSourceRootWindowIfNeeded(
+void DockedMagnifierControllerImpl::SwitchCurrentSourceRootWindowIfNeeded(
     aura::Window* new_root_window,
     bool update_old_root_workarea) {
   if (current_source_root_window_ == new_root_window)
@@ -525,34 +526,34 @@ void DockedMagnifierController::SwitchCurrentSourceRootWindowIfNeeded(
           viewport_magnifier_layer_.get());
 }
 
-void DockedMagnifierController::InitFromUserPrefs() {
+void DockedMagnifierControllerImpl::InitFromUserPrefs() {
   DCHECK(active_user_pref_service_);
 
   pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
   pref_change_registrar_->Init(active_user_pref_service_);
   pref_change_registrar_->Add(
       prefs::kDockedMagnifierEnabled,
-      base::BindRepeating(&DockedMagnifierController::OnEnabledPrefChanged,
+      base::BindRepeating(&DockedMagnifierControllerImpl::OnEnabledPrefChanged,
                           base::Unretained(this)));
   pref_change_registrar_->Add(
       prefs::kDockedMagnifierScale,
-      base::BindRepeating(&DockedMagnifierController::OnScalePrefChanged,
+      base::BindRepeating(&DockedMagnifierControllerImpl::OnScalePrefChanged,
                           base::Unretained(this)));
   pref_change_registrar_->Add(
       prefs::kAccessibilityScreenMagnifierEnabled,
-      base::BindRepeating(
-          &DockedMagnifierController::OnFullscreenMagnifierEnabledPrefChanged,
-          base::Unretained(this)));
+      base::BindRepeating(&DockedMagnifierControllerImpl::
+                              OnFullscreenMagnifierEnabledPrefChanged,
+                          base::Unretained(this)));
   pref_change_registrar_->Add(
       prefs::kAccessibilityHighContrastEnabled,
       base::BindRepeating(
-          &DockedMagnifierController::OnHighContrastEnabledPrefChanged,
+          &DockedMagnifierControllerImpl::OnHighContrastEnabledPrefChanged,
           base::Unretained(this)));
 
   OnEnabledPrefChanged();
 }
 
-void DockedMagnifierController::OnEnabledPrefChanged() {
+void DockedMagnifierControllerImpl::OnEnabledPrefChanged() {
   // When switching from the signin screen to a newly created profile while the
   // Docked Magnifier is enabled, the prefs will be copied from the signin
   // profile to the user profile, and the Docked Magnifier will remain enabled.
@@ -614,7 +615,7 @@ void DockedMagnifierController::OnEnabledPrefChanged() {
   shell->UpdateCursorCompositingEnabled();
 }
 
-void DockedMagnifierController::OnScalePrefChanged() {
+void DockedMagnifierControllerImpl::OnScalePrefChanged() {
   if (GetEnabled()) {
     // Invalidate the cached minimum height of the point of interest since the
     // change in scale changes that height.
@@ -623,25 +624,25 @@ void DockedMagnifierController::OnScalePrefChanged() {
   }
 }
 
-void DockedMagnifierController::OnFullscreenMagnifierEnabledPrefChanged() {
+void DockedMagnifierControllerImpl::OnFullscreenMagnifierEnabledPrefChanged() {
   // Enabling the Fullscreen Magnifier disables the Docked Magnifier.
   if (GetFullscreenMagnifierEnabled())
     SetEnabled(false);
 }
 
-void DockedMagnifierController::OnHighContrastEnabledPrefChanged() {
+void DockedMagnifierControllerImpl::OnHighContrastEnabledPrefChanged() {
   if (!GetEnabled())
     return;
 
   viewport_magnifier_layer_->SetLayerInverted(IsHighContrastEnabled());
 }
 
-void DockedMagnifierController::Refresh() {
+void DockedMagnifierControllerImpl::Refresh() {
   DCHECK(GetEnabled());
   CenterOnPoint(GetCursorScreenPoint());
 }
 
-void DockedMagnifierController::CreateMagnifierViewport() {
+void DockedMagnifierControllerImpl::CreateMagnifierViewport() {
   DCHECK(GetEnabled());
   DCHECK(current_source_root_window_);
   DCHECK(!reflector_);
@@ -700,7 +701,7 @@ void DockedMagnifierController::CreateMagnifierViewport() {
   ConfineMouseCursorOutsideViewport();
 }
 
-void DockedMagnifierController::MaybeCachePointOfInterestMinimumHeight(
+void DockedMagnifierControllerImpl::MaybeCachePointOfInterestMinimumHeight(
     aura::WindowTreeHost* host) {
   DCHECK(GetEnabled());
   DCHECK(current_source_root_window_);
@@ -788,7 +789,7 @@ void DockedMagnifierController::MaybeCachePointOfInterestMinimumHeight(
   is_minimum_point_of_interest_height_valid_ = true;
 }
 
-void DockedMagnifierController::ConfineMouseCursorOutsideViewport() {
+void DockedMagnifierControllerImpl::ConfineMouseCursorOutsideViewport() {
   DCHECK(current_source_root_window_);
 
   gfx::Rect confine_bounds =

@@ -26,7 +26,7 @@
 #include "ash/ime/ime_switch_type.h"
 #include "ash/keyboard/ui/keyboard_controller.h"
 #include "ash/kiosk_next/kiosk_next_shell_controller.h"
-#include "ash/magnifier/docked_magnifier_controller.h"
+#include "ash/magnifier/docked_magnifier_controller_impl.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/media/media_controller.h"
 #include "ash/metrics/user_metrics_recorder.h"
@@ -861,7 +861,7 @@ void SetDockedMagnifierEnabled(bool enabled) {
 void HandleToggleDockedMagnifier() {
   base::RecordAction(UserMetricsAction("Accel_Toggle_Docked_Magnifier"));
 
-  DockedMagnifierController* docked_magnifier_controller =
+  DockedMagnifierControllerImpl* docked_magnifier_controller =
       Shell::Get()->docked_magnifier_controller();
   const bool current_enabled = docked_magnifier_controller->GetEnabled();
   const bool dialog_ever_accepted =
