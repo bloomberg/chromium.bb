@@ -19,7 +19,7 @@ class XRSessionRequestConsentManagerImpl
   ~XRSessionRequestConsentManagerImpl() override;
 
   // XRSessionRequestConsentManager:
-  void ShowDialogAndGetConsent(
+  TabModalConfirmDialog* ShowDialogAndGetConsent(
       content::WebContents* web_contents,
       base::OnceCallback<void(bool)> response_callback) override;
 

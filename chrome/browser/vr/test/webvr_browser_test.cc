@@ -26,6 +26,7 @@ void WebVrBrowserTestBase::EnterSessionWithUserGesture(
       .WillByDefault(Invoke(
           [](content::WebContents*, base::OnceCallback<void(bool)> callback) {
             std::move(callback).Run(true);
+            return nullptr;
           }));
 #endif
   // ExecuteScript runs with a user gesture, so we can just directly call

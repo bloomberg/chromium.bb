@@ -12,6 +12,8 @@ namespace content {
 class WebContents;
 }
 
+class TabModalConfirmDialog;
+
 namespace vr {
 
 // Abstract class to break a dependency loop between the "vr_common" component
@@ -42,7 +44,7 @@ class VR_EXPORT XRSessionRequestConsentManager {
   // |response_callback| is guaranteed to be called with 'true' as arg if
   // the user presses the 'accept' button, or with 'false' if the user
   // either closes the dialog by any means or clicks on 'cancel' button.
-  virtual void ShowDialogAndGetConsent(
+  virtual TabModalConfirmDialog* ShowDialogAndGetConsent(
       content::WebContents* web_contents,
       base::OnceCallback<void(bool)> response_callback) = 0;
 };

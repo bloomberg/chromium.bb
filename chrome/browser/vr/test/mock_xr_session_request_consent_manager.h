@@ -17,9 +17,10 @@ class MockXRSessionRequestConsentManager
   MockXRSessionRequestConsentManager();
   ~MockXRSessionRequestConsentManager() override;
 
-  MOCK_METHOD2(ShowDialogAndGetConsent,
-               void(content::WebContents* web_contents,
-                    base::OnceCallback<void(bool)> response_callback));
+  MOCK_METHOD2(
+      ShowDialogAndGetConsent,
+      TabModalConfirmDialog*(content::WebContents* web_contents,
+                             base::OnceCallback<void(bool)> response_callback));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockXRSessionRequestConsentManager);

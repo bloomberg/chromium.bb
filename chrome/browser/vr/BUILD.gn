@@ -669,6 +669,8 @@ if (!is_android) {
     sources = [
       "test/conditional_skipping.cc",
       "test/conditional_skipping.h",
+      "test/fake_xr_session_request_consent_manager.cc",
+      "test/fake_xr_session_request_consent_manager.h",
       "test/mock_xr_device_hook_base.cc",
       "test/mock_xr_device_hook_base.h",
       "test/mock_xr_session_request_consent_manager.cc",
@@ -728,6 +730,7 @@ if (!is_android) {
 
       # Tests.
       sources += [
+        "webxr_vr_consent_dialog_browser_test.cc",
         "webxr_vr_frame_pose_browser_test.cc",
         "webxr_vr_indicators_browser_test.cc",
         "webxr_vr_input_browser_test.cc",
