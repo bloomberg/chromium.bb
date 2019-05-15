@@ -18,9 +18,11 @@
 #include "url/gurl.h"
 
 namespace blink {
+class WebDocumentLoader;
 class WebFrame;
 class WebLocalFrame;
 }  // namespace blink
+
 namespace content {
 class RenderFrame;
 struct WebPluginInfo;
@@ -81,6 +83,8 @@ class MimeHandlerViewContainerManager
   PostMessageSupport* GetPostMessageSupport();
 
   // content::RenderFrameObserver.
+  void ReadyToCommitNavigation(
+      blink::WebDocumentLoader* document_loader) override;
   void OnDestruct() override;
 
   // mojom::MimeHandlerViewContainerManager overrides.

@@ -123,6 +123,16 @@ MimeHandlerViewContainerManager::MimeHandlerViewContainerManager(
 
 MimeHandlerViewContainerManager::~MimeHandlerViewContainerManager() {}
 
+void MimeHandlerViewContainerManager::ReadyToCommitNavigation(
+    blink::WebDocumentLoader* document_loader) {
+  // At this point the <embed> element is not yet attached to the DOM and the
+  // |post_message_support_|, if any, had been created for a previous page. Note
+  // that this scenario comes up when a same-process navigation between two PDF
+  // files happens in the same RenderFrame (e.g., some of
+  // PDFExtensionLoadTest tests).
+  post_message_support_.reset();
+}
+
 void MimeHandlerViewContainerManager::OnDestruct() {
   bindings_.CloseAllBindings();
   // This will delete the class.
