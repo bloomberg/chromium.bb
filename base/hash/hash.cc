@@ -4,12 +4,35 @@
 
 #include "base/hash/hash.h"
 
+#include "base/third_party/cityhash/city.h"
+#include "build/build_config.h"
+
 // Definition in base/third_party/superfasthash/superfasthash.c. (Third-party
 // code did not come with its own header file, so declaring the function here.)
 // Note: This algorithm is also in Blink under Source/wtf/StringHasher.h.
 extern "C" uint32_t SuperFastHash(const char* data, int len);
 
 namespace base {
+
+size_t FastHash(base::span<const uint8_t> data) {
+  // We use the updated CityHash within our namespace (not the deprecated
+  // version from third_party/smhasher).
+#if defined(ARCH_CPU_64_BITS)
+  return base::internal::cityhash_v111::CityHash64(
+      reinterpret_cast<const char*>(data.data()), data.size());
+#else
+  return base::internal::cityhash_v111::CityHash32(
+      reinterpret_cast<const char*>(data.data()), data.size());
+#endif
+}
+
+size_t FastHash(const std::string& str) {
+#if defined(ARCH_CPU_64_BITS)
+  return base::internal::cityhash_v111::CityHash64(str.data(), str.size());
+#else
+  return base::internal::cityhash_v111::CityHash32(str.data(), str.size());
+#endif
+}
 
 uint32_t Hash(const void* data, size_t length) {
   // Currently our in-memory hash is the same as the persistent hash. The

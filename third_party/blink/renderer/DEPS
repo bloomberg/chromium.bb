@@ -10,6 +10,7 @@ include_rules = [
     "+base/feature_list.h",
     "+base/format_macros.h",
     "+base/gtest_prod_util.h",
+    "+base/hash/hash.h",
     "+base/location.h",
     "+base/logging.h",
     "+base/macros.h",
