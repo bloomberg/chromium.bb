@@ -715,12 +715,7 @@ void NotificationViewMD::ButtonPressed(views::Button* sender,
   if (sender == header_row_) {
     if (IsExpandable() && content_row_->visible()) {
       SetManuallyExpandedOrCollapsed(true);
-      auto weak_ptr = weak_ptr_factory_.GetWeakPtr();
       ToggleExpanded();
-      // Check |this| is valid before continuing, because ToggleExpanded() might
-      // cause |this| to be deleted.
-      if (!weak_ptr)
-        return;
       Layout();
       SchedulePaint();
     }
@@ -1238,12 +1233,15 @@ void NotificationViewMD::ToggleInlineSettings(const ui::Event& event) {
 
   SetSettingMode(inline_settings_visible);
   SetExpanded(!inline_settings_visible);
+<<<<<<< HEAD   (c440b8 Settings: Fix data overflow issues for All Sites Page.)
 
   // Check |this| is valid before continuing, because SetExpanded() might
   // cause |this| to be deleted.
   if (!weak_ptr_factory_.GetWeakPtr())
     return;
 
+=======
+>>>>>>> CHANGE (41eda1 Reland "Notifications: Delay closing out of workarea bounds )
   PreferredSizeChanged();
 
   if (inline_settings_visible)
