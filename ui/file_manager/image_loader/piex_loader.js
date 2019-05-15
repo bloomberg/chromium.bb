@@ -3,6 +3,75 @@
 // found in the LICENSE file.
 
 /**
+ * Set true if we should use wasm for raw preview image extraction (PIEX),
+ * by the fileManagerPrivate.isPiexLoaderEnabled() code below.
+ * @type {boolean}
+ */
+let useWasm = false;
+
+/**
+ * Call FMP.isPiexLoaderEnabled() to get the piex feature flag, and use it
+ * to select nacl or wasm for PIEX work.
+ */
+if (chrome && chrome.fileManagerPrivate) {
+  chrome.fileManagerPrivate.isPiexLoaderEnabled((piex_nacl_enabled) => {
+    useWasm = !piex_nacl_enabled;
+    console.log('[PiexLoader] wasm mode ' + useWasm);
+  });
+}
+
+/**
+ * Declares the piex-wasm Module interface. The Module has many interfaces
+ * but only declare the parts required for PIEX work.
+ * @typedef {{
+ *   calledRun: boolean,
+ *   onAbort: function(!Error):undefined,
+ *   HEAP8: !Uint8Array,
+ *   _malloc: function(?number):number,
+ *   _free: function(?number):undefined,
+ *   image: function(number, ?number):Object
+ * }}
+ */
+var PiexWasmModule;
+
+/**
+ * |window| var Module defined in page <script src='piex/piex.js.wasm'>.
+ * @type {PiexWasmModule}
+ */
+var Module = window['Module'] || {};
+
+/**
+ * Set true only if the Module.onAbort() handler is called.
+ * @type {boolean}
+ */
+let wasmFailed = false;
+
+/**
+ * Installs an (Emscripten) wasm Module.onAbort handler, that records that
+ * the Module has failed and then re-throws the error.
+ * @throws
+ */
+Module.onAbort = (error) => {
+  wasmFailed = true;
+  throw error;
+};
+
+/**
+ * Module failure recovery: if wasmFailed is set via onAbort due to OOM in
+ * the C++ for example, or the Module failed to load or call run, then the
+ * wasm Module is in a broken, non-functional state.
+ *
+ * Re-loading the page is the only reliable way to attempt to recover from
+ * this broken Module state.
+ */
+function hasWasmModuleFailed() {
+  if (wasmFailed || !Module.calledRun) {
+    setTimeout(chrome.runtime.reload, 0);
+    return true;
+  }
+}
+
+/**
  * @typedef {{
  *   fulfill: function(PiexLoaderResponse):undefined,
  *   reject: function(string):undefined}
