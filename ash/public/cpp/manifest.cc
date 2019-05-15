@@ -7,7 +7,6 @@
 #include "ash/public/interfaces/accessibility_controller.mojom.h"
 #include "ash/public/interfaces/accessibility_focus_ring_controller.mojom.h"
 #include "ash/public/interfaces/app_list.mojom.h"
-#include "ash/public/interfaces/ash_display_controller.mojom.h"
 #include "ash/public/interfaces/ash_message_center_controller.mojom.h"
 #include "ash/public/interfaces/assistant_controller.mojom.h"
 #include "ash/public/interfaces/assistant_volume_control.mojom.h"
@@ -95,9 +94,6 @@ const service_manager::Manifest& GetManifest() {
                   mojom::TabletModeController, mojom::TrayAction,
                   mojom::VoiceInteractionController, mojom::VpnList,
                   mojom::WallpaperController>())
-          .ExposeCapability("display", service_manager::Manifest::InterfaceList<
-                                           mojom::AshDisplayController,
-                                           mojom::DisplayOutputProtection>())
           .ExposeCapability("test", service_manager::Manifest::InterfaceList<
                                         mojom::ShelfIntegrationTestApi>())
           .RequireCapability("*", "accessibility")

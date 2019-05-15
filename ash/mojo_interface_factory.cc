@@ -15,7 +15,6 @@
 #include "ash/assistant/assistant_screen_context_controller.h"
 #include "ash/assistant/assistant_setup_controller.h"
 #include "ash/autotest/shelf_integration_test_api.h"
-#include "ash/display/ash_display_controller.h"
 #include "ash/display/cros_display_config.h"
 #include "ash/display/display_output_protection.h"
 #include "ash/events/event_rewriter_controller.h"
@@ -79,11 +78,6 @@ void BindAppListControllerRequestOnMainThread(
   // sessions.
   if (Shell::Get()->app_list_controller())
     Shell::Get()->app_list_controller()->BindRequest(std::move(request));
-}
-
-void BindAshDisplayControllerRequestOnMainThread(
-    mojom::AshDisplayControllerRequest request) {
-  Shell::Get()->ash_display_controller()->BindRequest(std::move(request));
 }
 
 void BindAssistantAlarmTimerControllerRequestOnMainThread(
@@ -289,9 +283,6 @@ void RegisterInterfaces(
         base::BindRepeating(&BindAssistantVolumeControlRequestOnMainThread),
         main_thread_task_runner);
   }
-  registry->AddInterface(
-      base::BindRepeating(&BindAshDisplayControllerRequestOnMainThread),
-      main_thread_task_runner);
   registry->AddInterface(
       base::BindRepeating(&BindCrosDisplayConfigControllerRequestOnMainThread),
       main_thread_task_runner);

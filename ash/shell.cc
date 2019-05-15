@@ -26,7 +26,6 @@
 #include "ash/dbus/ash_dbus_services.h"
 #include "ash/detachable_base/detachable_base_handler.h"
 #include "ash/detachable_base/detachable_base_notification_controller.h"
-#include "ash/display/ash_display_controller.h"
 #include "ash/display/cros_display_config.h"
 #include "ash/display/cursor_window_controller.h"
 #include "ash/display/display_color_manager.h"
@@ -561,7 +560,6 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
                           : nullptr),
       aura_env_(owned_aura_env_.get() ? owned_aura_env_.get()
                                       : aura::Env::GetInstance()),
-      ash_display_controller_(std::make_unique<AshDisplayController>()),
       brightness_control_delegate_(
           std::make_unique<system::BrightnessControllerChromeos>()),
       connector_(connector),

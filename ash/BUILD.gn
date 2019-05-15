@@ -214,8 +214,6 @@ component("ash") {
     "detachable_base/detachable_base_pairing_status.h",
     "disconnected_app_handler.cc",
     "disconnected_app_handler.h",
-    "display/ash_display_controller.cc",
-    "display/ash_display_controller.h",
     "display/cros_display_config.cc",
     "display/cros_display_config.h",
     "display/cursor_window_controller.cc",
