@@ -1014,9 +1014,6 @@ void AppListControllerImpl::ViewShown(int64_t display_id) {
 
 void AppListControllerImpl::ViewClosing() {
   if (presenter_.GetView()->search_box_view()->is_search_box_active()) {
-    // Close the search box if it is open when the app list is closing.
-    presenter_.HandleCloseOpenSearchBox();
-
     // Close the virtual keyboard before the app list view is dismissed.
     // Otherwise if the browser is behind the app list view, after the latter is
     // closed, IME is updated because of the changed focus. Consequently,
