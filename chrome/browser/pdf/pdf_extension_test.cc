@@ -101,6 +101,19 @@ const int kDefaultKeyModifier = blink::WebInputEvent::kMetaKey;
 const int kDefaultKeyModifier = blink::WebInputEvent::kControlKey;
 #endif
 
+// Calling PluginService::GetPlugins ensures that LoadPlugins is called
+// internally. This is an asynchronous task and this method uses a run loop to
+// wait for the loading task to complete.
+void WaitForPluginServiceToLoad() {
+  base::RunLoop run_loop;
+  content::PluginService::GetPluginsCallback callback = base::BindOnce(
+      [](base::RepeatingClosure quit,
+         const std::vector<content::WebPluginInfo>& unused) { quit.Run(); },
+      run_loop.QuitClosure());
+  content::PluginService::GetInstance()->GetPlugins(std::move(callback));
+  run_loop.Run();
+}
+
 // Check if the |actual| string matches the string or the string pattern in
 // |pattern| and print a readable message if it does not match.
 #define ASSERT_MULTILINE_STR_MATCHES(pattern, actual) \
@@ -2060,6 +2073,13 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionHitTestTest, ContextMenuCoordinates) {
 // The plugin document and the mime handler should both use the same background
 // color.
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, BackgroundColor) {
+  if (content::MimeHandlerViewMode::UsesCrossProcessFrame()) {
+    // The background color for plugins is injected when the first response
+    // is intercepted, at which point not all the plugins have loaded. This line
+    // ensures that the PDF plugin has loaded and the right background color is
+    // beign used.
+    WaitForPluginServiceToLoad();
+  }
   WebContents* guest_contents =
       LoadPdfGetGuestContents(embedded_test_server()->GetURL("/pdf/test.pdf"));
   ASSERT_TRUE(guest_contents);
