@@ -41,10 +41,9 @@ _logger = logging.getLogger(__name__)
 
 
 # Path that are needed to import necessary modules when launching a testserver.
-os.environ['PYTHONPATH'] = os.environ.get('PYTHONPATH', '') + (':%s:%s:%s:%s:%s'
+os.environ['PYTHONPATH'] = os.environ.get('PYTHONPATH', '') + (':%s:%s:%s:%s'
     % (os.path.join(_DIR_SOURCE_ROOT, 'third_party'),
        os.path.join(_DIR_SOURCE_ROOT, 'third_party', 'tlslite'),
-       os.path.join(_DIR_SOURCE_ROOT, 'third_party', 'pyftpdlib', 'src'),
        os.path.join(_DIR_SOURCE_ROOT, 'net', 'tools', 'testserver'),
        os.path.join(_DIR_SOURCE_ROOT, 'components', 'sync', 'tools',
                     'testserver')))
@@ -232,11 +231,13 @@ class TestServerThread(threading.Thread):
     self._GenerateCommandLineArguments()
     command = _DIR_SOURCE_ROOT
     if self.arguments['server-type'] == 'sync':
-      command = [os.path.join(command, 'components', 'sync', 'tools',
+      command = [sys.executable,
+                 os.path.join(command, 'components', 'sync', 'tools',
                               'testserver',
                               'sync_testserver.py')] + self.command_line
     else:
-      command = [os.path.join(command, 'net', 'tools', 'testserver',
+      command = [sys.executable,
+                 os.path.join(command, 'net', 'tools', 'testserver',
                               'testserver.py')] + self.command_line
     _logger.info('Running: %s', command)
 

@@ -5633,18 +5633,15 @@ test("net_unittests") {
 
   if (is_linux || is_mac || is_win || is_fuchsia) {
     deps += [
-      "//third_party/pyftpdlib/",
       "//third_party/pywebsocket/",
       "//third_party/tlslite/",
     ]
     data_deps += [
-      "//third_party/pyftpdlib/",
       "//third_party/pywebsocket/",
       "//third_party/tlslite/",
     ]
     data += [
       "tools/testserver/",
-      "//third_party/pyftpdlib/",
       "//third_party/pywebsocket/src/mod_pywebsocket/",
       "//third_party/tlslite/",
     ]

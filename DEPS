@@ -1212,9 +1212,6 @@ deps = {
       'condition': 'checkout_linux',
   },
 
-  'src/third_party/pyftpdlib/src':
-    Var('chromium_git') + '/external/pyftpdlib.git' + '@' + '2be6d65e31c7ee6320d059f581f05ae8d89d7e45',
-
   'src/third_party/quic_trace/src':
     Var('chromium_git') + '/external/github.com/google/quic-trace.git' + '@' + '8415c22f0ca2485bd8a16eff64075f4361f3878e',
 

@@ -525,7 +525,6 @@ check_targets = [
   "//third_party/protobuf/*",
   "//third_party/pycoverage/*",
   "//third_party/pyelftools/*",
-  "//third_party/pyftpdlib/*",
   "//third_party/pyjson5/*",
   "//third_party/pylint/*",
   "//third_party/pymock/*",

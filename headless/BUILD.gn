@@ -731,7 +731,6 @@ test("headless_browsertests") {
     "$root_out_dir/headless_lib.pak",
     "//net/tools/testserver/",
     "//third_party/blink/web_tests/http/tests/inspector-protocol/",
-    "//third_party/pyftpdlib/",
     "//third_party/pywebsocket/",
     "//third_party/tlslite/",
     "test/data/",
