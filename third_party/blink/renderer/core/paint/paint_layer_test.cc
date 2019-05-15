@@ -1429,7 +1429,13 @@ TEST_P(PaintLayerTest, NeedsRepaintOnSelfPaintingStatusChange) {
   // span_layer should be marked NeedsRepaint.
   target_element->setAttribute(html_names::kStyleAttr,
                                "overflow: hidden; float: left");
+
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  // TODO(yosin): Once multicol in LayoutNG, we should remove following
+  // assignments. This is because the layout tree maybe reattached. In LayoutNG
+  // phase 1, layout tree is reattached because multicol forces legacy layout.
+  target_object = target_element->GetLayoutObject();
+  target_layer = ToLayoutBoxModelObject(target_object)->Layer();
   EXPECT_FALSE(target_layer->IsSelfPaintingLayer());
   if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
     EXPECT_EQ(span_layer, target_layer->CompositingContainer());
