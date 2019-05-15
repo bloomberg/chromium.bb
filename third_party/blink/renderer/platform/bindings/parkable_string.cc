@@ -583,9 +583,7 @@ void ParkableStringImpl::CompressInBackground(
 
   // This runs in background, making CPU starvation likely, and not an issue.
   // Hence, report thread time instead of wall clock time.
-  bool thread_ticks_supported = base::ThreadTicks::IsSupported();
-  auto tick =
-      thread_ticks_supported ? base::ThreadTicks::Now() : base::ThreadTicks();
+  base::ElapsedThreadTimer thread_timer;
   {
     // Temporary vector. As we don't want to waste memory, the temporary buffer
     // has the same size as the initial data. Compression will fail if this is
@@ -623,8 +621,7 @@ void ParkableStringImpl::CompressInBackground(
                          compressed_size);
     }
   }
-  auto tock =
-      thread_ticks_supported ? base::ThreadTicks::Now() : base::ThreadTicks();
+  base::TimeDelta thread_elapsed = thread_timer.Elapsed();
 
   auto* task_runner = params->callback_task_runner.get();
   size_t size = params->size;
@@ -639,7 +636,7 @@ void ParkableStringImpl::CompressInBackground(
                 std::move(params), std::move(compressed), parking_thread_time);
           },
           WTF::Passed(std::move(params)), WTF::Passed(std::move(compressed)),
-          tock - tick));
+          thread_elapsed));
   RecordStatistics(size, timer.Elapsed(), ParkingAction::kParkedInBackground);
 }
 

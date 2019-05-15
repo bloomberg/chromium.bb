@@ -6,13 +6,9 @@
 
 namespace base {
 
-ElapsedTimer::ElapsedTimer() {
-  begin_ = TimeTicks::Now();
-}
+ElapsedTimer::ElapsedTimer() : begin_(TimeTicks::Now()) {}
 
-ElapsedTimer::ElapsedTimer(ElapsedTimer&& other) {
-  begin_ = other.begin_;
-}
+ElapsedTimer::ElapsedTimer(ElapsedTimer&& other) : begin_(other.begin_) {}
 
 void ElapsedTimer::operator=(ElapsedTimer&& other) {
   begin_ = other.begin_;
@@ -20,6 +16,14 @@ void ElapsedTimer::operator=(ElapsedTimer&& other) {
 
 TimeDelta ElapsedTimer::Elapsed() const {
   return TimeTicks::Now() - begin_;
+}
+
+ElapsedThreadTimer::ElapsedThreadTimer()
+    : is_supported_(ThreadTicks::IsSupported()),
+      begin_(is_supported_ ? ThreadTicks::Now() : ThreadTicks()) {}
+
+TimeDelta ElapsedThreadTimer::Elapsed() const {
+  return is_supported_ ? (ThreadTicks::Now() - begin_) : TimeDelta();
 }
 
 }  // namespace base
