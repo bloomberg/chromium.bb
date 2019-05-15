@@ -543,9 +543,9 @@ TEST_F(ConnectorTest, DestroyOnDifferentThreadAfterClose) {
   base::RunLoop run_loop;
   another_thread.task_runner()->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           [](std::unique_ptr<Connector> connector) { connector.reset(); },
-          base::Passed(std::move(connector))),
+          std::move(connector)),
       run_loop.QuitClosure());
 
   run_loop.Run();
