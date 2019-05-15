@@ -40,18 +40,14 @@
 
 namespace {
 
-bool RunOneTest(
-    const content::TestInfo& test_info,
-    bool* ran_at_least_once,
-    content::BlinkTestController* blink_test_controller,
-    const std::unique_ptr<content::BrowserMainRunner>& main_runner) {
-  DCHECK(ran_at_least_once);
+bool RunOneTest(const content::TestInfo& test_info,
+                content::BlinkTestController* blink_test_controller,
+                content::BrowserMainRunner* main_runner) {
   DCHECK(blink_test_controller);
 
   if (!blink_test_controller->PrepareForWebTest(test_info))
     return false;
 
-  *ran_at_least_once = true;
 #if defined(OS_ANDROID)
   // The message loop on Android is provided by the system, and does not
   // offer a blocking Run() method. For web tests, use a nested loop
@@ -74,7 +70,7 @@ bool RunOneTest(
   return true;
 }
 
-int RunTests(const std::unique_ptr<content::BrowserMainRunner>& main_runner) {
+void RunTests(content::BrowserMainRunner* main_runner) {
   content::BlinkTestController test_controller;
   {
     // We're outside of the message loop here, and this is a test.
@@ -94,10 +90,9 @@ int RunTests(const std::unique_ptr<content::BrowserMainRunner>& main_runner) {
   bool ran_at_least_once = false;
   std::unique_ptr<content::TestInfo> test_info;
   while ((test_info = test_extractor.GetNextTest())) {
-    if (!RunOneTest(*test_info, &ran_at_least_once, &test_controller,
-                    main_runner)) {
+    ran_at_least_once = true;
+    if (!RunOneTest(*test_info, &test_controller, main_runner))
       break;
-    }
   }
   if (!ran_at_least_once) {
     // CloseAllWindows will cause the |main_runner| loop to quit.
@@ -112,16 +107,15 @@ int RunTests(const std::unique_ptr<content::BrowserMainRunner>& main_runner) {
   // anywhere else.
   main_runner->Shutdown();
 #endif
-
-  return 0;
 }
 
 }  // namespace
 
 // Main routine for running as the Browser process.
-int WebTestBrowserMain(
-    const content::MainFunctionParams& parameters,
-    const std::unique_ptr<content::BrowserMainRunner>& main_runner) {
+void WebTestBrowserMain(const content::MainFunctionParams& parameters) {
+  std::unique_ptr<content::BrowserMainRunner> main_runner =
+      content::BrowserMainRunner::Create();
+
   base::ScopedTempDir browser_context_path_for_web_tests;
 
   CHECK(browser_context_path_for_web_tests.CreateUniqueTempDir());
@@ -142,25 +136,23 @@ int WebTestBrowserMain(
   content::ScopedAndroidConfiguration android_configuration;
 #endif
 
-  int exit_code = main_runner->Initialize(parameters);
-  DCHECK_LT(exit_code, 0)
+  int initialize_exit_code = main_runner->Initialize(parameters);
+  DCHECK_LT(initialize_exit_code, 0)
       << "BrowserMainRunner::Initialize failed in WebTestBrowserMain";
-
-  if (exit_code >= 0)
-    return exit_code;
 
 #if defined(OS_ANDROID)
   main_runner->SynchronouslyFlushStartupTasks();
   android_configuration.RedirectStreams();
 #endif
 
-  exit_code = RunTests(main_runner);
+  RunTests(main_runner.get());
   base::RunLoop().RunUntilIdle();
 
   content::Shell::CloseAllWindows();
+
 #if !defined(OS_ANDROID)
+  // This Shutdown() is done earlier on Android. Generally BrowserMainRunner
+  // shutdown does not work on Android but it does for the WebTest harness.
   main_runner->Shutdown();
 #endif
-
-  return exit_code;
 }

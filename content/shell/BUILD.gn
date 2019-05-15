@@ -116,8 +116,6 @@ jumbo_static_library("content_shell_lib") {
     "browser/shell_application_mac.mm",
     "browser/shell_browser_context.cc",
     "browser/shell_browser_context.h",
-    "browser/shell_browser_main.cc",
-    "browser/shell_browser_main.h",
     "browser/shell_browser_main_parts.cc",
     "browser/shell_browser_main_parts.h",
     "browser/shell_browser_main_parts_mac.mm",

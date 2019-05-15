@@ -392,14 +392,22 @@ void BrowserTestBase::SetUp() {
     delegate->PostTaskSchedulerStart();
   }
 
-  // Run BrowserMain which ContentMain would normally run.
+  // ContentMain would normally call RunProcess() on the delegate and fallback
+  // to BrowserMain() if it did not run it (or equivalent) itself. On Android,
+  // RunProcess() will return 0 so we don't have to fallback to BrowserMain().
   {
     MainFunctionParams params(*command_line);
     params.ui_task = ui_task.release();
     params.created_main_parts_closure = created_main_parts_closure.release();
-    int exit_code = BrowserMain(params);
+    // Passing "" as the process type to indicate the browser process.
+    int exit_code = delegate->RunProcess("", params);
     DCHECK_EQ(exit_code, 0);
   }
+
+  // Normally the BrowserMainLoop does this during shutdown but on Android we
+  // don't go through shutdown, so this doesn't happen there. We do need it
+  // for the test harness to be able to delete temp dirs.
+  base::ThreadRestrictions::SetIOAllowed(true);
 
   BrowserTaskExecutor::ResetForTesting();
 #else
