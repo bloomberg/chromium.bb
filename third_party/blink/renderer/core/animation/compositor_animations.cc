@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
+#include "third_party/blink/renderer/core/paint/compositing/compositing_reason_finder.h"
 #include "third_party/blink/renderer/core/paint/filter_effect_builder.h"
 #include "third_party/blink/renderer/core/paint/object_paint_properties.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -190,6 +191,16 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
     // to have the UniqueID to compute the target ID.  Let's check it
     // once in common in advance.
     if (!layout_object || !layout_object->UniqueId()) {
+      reasons |= kTargetHasInvalidCompositingState;
+    }
+
+    // Elements with subtrees containing will-change: contents are not
+    // composited for animations as if the contents change the tiles
+    // would need to be rerastered anyways.
+    // TODO(crbug.com/961686): Remove Style() check once unit tests create
+    // fully styled Elements.
+    if (layout_object && layout_object->Style() &&
+        layout_object->Style()->SubtreeWillChangeContents()) {
       reasons |= kTargetHasInvalidCompositingState;
     }
   }

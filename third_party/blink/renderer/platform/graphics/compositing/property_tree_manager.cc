@@ -462,9 +462,7 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
     property_trees_.element_id_to_transform_node_index[compositor_element_id] =
         id;
     compositor_node.element_id = compositor_element_id;
-
-    if (transform_node.RequiresCompositingForAnimation())
-      CollectAnimationElementId(compositor_element_id);
+    CollectAnimationElementId(compositor_element_id);
   }
 
   // If this transform is a scroll offset translation, create the associated
@@ -945,7 +943,6 @@ void PropertyTreeManager::CollectAnimationElementId(
   if (element_namespace == CompositorElementIdNamespace::kPrimaryTransform ||
       element_namespace == CompositorElementIdNamespace::kPrimaryEffect ||
       element_namespace == CompositorElementIdNamespace::kEffectFilter) {
-    DCHECK_EQ(0u, animation_element_ids_.count(element_id));
     animation_element_ids_.insert(element_id);
   }
 }
@@ -994,9 +991,7 @@ void PropertyTreeManager::BuildEffectNodesRecursively(
         compositor_element_id));
     property_trees_.element_id_to_effect_node_index[compositor_element_id] =
         effect_node.id;
-
-    if (next_effect.RequiresCompositingForAnimation())
-      CollectAnimationElementId(compositor_element_id);
+    CollectAnimationElementId(compositor_element_id);
   }
 
   effect_stack_.emplace_back(current_);
