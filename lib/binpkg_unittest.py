@@ -63,3 +63,41 @@ class DebugSymbolsTest(cros_test_lib.TempDirTestCase):
     self.assertEquals(index.packages[0]['CPV'], 'chromeos-base/shill-0.0.1-r1')
     self.assertEquals(index.packages[0].get('DEBUG_SYMBOLS'), 'yes')
     self.assertFalse('DEBUG_SYMBOLS' in index.packages[1])
+
+
+class PackageIndexTest(cros_test_lib.TempDirTestCase):
+  """Package index tests."""
+
+  def testReadWrite(self):
+    """Sanity check that the read and write method work properly."""
+    packages1 = os.path.join(self.tempdir, 'Packages1')
+    packages2 = os.path.join(self.tempdir, 'Packages2')
+
+    # Set some data.
+    pkg_index = binpkg.PackageIndex()
+    pkg_index.header['A'] = 'B'
+    pkg_index.packages = [
+        {'CPV': 'foo/bar',
+         'KEY': 'value'},
+        {'CPV': 'cat/pkg',
+         'KEY': 'also_value'},
+    ]
+
+    # Write the two package index files using each writing method.
+    pkg_index.modified = True
+    pkg_index.WriteFile(packages1)
+    with open(packages2, 'w') as f:
+      pkg_index.Write(f)
+
+    # Make sure the two files are the same.
+    fc1 = osutils.ReadFile(packages1)
+    fc2 = osutils.ReadFile(packages2)
+    self.assertEqual(fc1, fc2)
+
+    # Make sure it parses out the same data we wrote.
+    with open(packages1) as f:
+      read_index = binpkg.PackageIndex()
+      read_index.Read(f)
+
+    self.assertDictEqual(pkg_index.header, read_index.header)
+    self.assertItemsEqual(pkg_index.packages, read_index.packages)

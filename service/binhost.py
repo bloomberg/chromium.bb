@@ -120,7 +120,7 @@ def GetPrebuiltsFiles(prebuilts_root):
   return prebuilt_paths
 
 
-def UpdatePackageIndex(prebuilts_root, upload_uri, upload_path):
+def UpdatePackageIndex(prebuilts_root, upload_uri, upload_path, sudo=False):
   """Update package index with information about where it will be uploaded.
 
   This causes the existing Packages file to be overwritten.
@@ -129,16 +129,17 @@ def UpdatePackageIndex(prebuilts_root, upload_uri, upload_path):
     prebuilts_root: Absolute path to root directory containing binary prebuilts.
     upload_uri: The URI (typically GS bucket) where prebuilts will be uploaded.
     upload_path: The path at the URI for the prebuilts.
+    sudo (bool): Whether to write the file as the root user.
 
   Returns:
     Path to the new Package index.
   """
+  assert not upload_path.startswith('/')
   package_index = binpkg.GrabLocalPackageIndex(prebuilts_root)
   package_index.SetUploadLocation(upload_uri, upload_path)
   package_index.header['TTL'] = 60 * 60 * 24 * 365
   package_index_path = os.path.join(prebuilts_root, 'Packages')
-  with open(package_index_path, 'w+') as package_index_fh:
-    package_index.Write(package_index_fh)
+  package_index.WriteFile(package_index_path, sudo=sudo)
   return package_index_path
 
 

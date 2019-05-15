@@ -162,6 +162,11 @@ class UpdatePackageIndexTest(cros_test_lib.MockTempDirTestCase):
     self.root = os.path.join(self.tempdir, 'chroot/build/target/packages')
     osutils.SafeMakedirs(self.root)
 
+  def testAbsoluteUploadPath(self):
+    """Test UpdatePackageIndex raises an error for absolute paths."""
+    with self.assertRaises(AssertionError):
+      binhost.UpdatePackageIndex(self.root, 'gs://chromeos-prebuilt', '/target')
+
   def testUpdatePackageIndex(self):
     """UpdatePackageIndex writes updated file to disk."""
     packages_content = """\
