@@ -769,7 +769,7 @@ void WorkerThread::PauseOrFreezeOnWorkerThread(
   std::unique_ptr<scheduler::WorkerScheduler::PauseHandle> pause_handle =
       GetScheduler()->Pause();
   {
-    // Since the nested message loop runner needs to be created an destroyed on
+    // Since the nested message loop runner needs to be created and destroyed on
     // the same thread we allocate and destroy a new message loop runner each
     // time we pause or freeze. The AutoReset allows a raw ptr to be stored in
     // the worker thread such that the resume/terminate can quit this runner.
