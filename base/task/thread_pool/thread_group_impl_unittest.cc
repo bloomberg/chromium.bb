@@ -191,7 +191,7 @@ class ThreadPostingTasksWaitIdle : public SimpleThread {
 
     for (size_t i = 0; i < kNumTasksPostedPerThread; ++i) {
       thread_group_->WaitForAllWorkersIdleForTesting();
-      EXPECT_TRUE(factory_.PostTask(PostNestedTask::NO, Closure()));
+      EXPECT_TRUE(factory_.PostTask(PostNestedTask::NO, OnceClosure()));
     }
   }
 
@@ -253,7 +253,7 @@ TEST_P(ThreadGroupImplImplTestParam, PostTasksWithOneAvailableWorker) {
                                         &mock_pooled_task_runner_delegate_),
       GetParam());
   for (size_t i = 0; i < kNumTasksPostedPerThread; ++i)
-    EXPECT_TRUE(short_task_factory.PostTask(PostNestedTask::NO, Closure()));
+    EXPECT_TRUE(short_task_factory.PostTask(PostNestedTask::NO, OnceClosure()));
   short_task_factory.WaitForAllTasksToRun();
 
   // Release tasks waiting on |event|.
@@ -452,8 +452,8 @@ TEST_F(ThreadGroupImplCheckTlsReuse, CheckCleanupWorkers) {
         TaskSourceExecutionMode::kParallel));
     ASSERT_TRUE(factories.back()->PostTask(
         PostNestedTask::NO,
-        Bind(&ThreadGroupImplCheckTlsReuse::SetTlsValueAndWait,
-             Unretained(this))));
+        BindOnce(&ThreadGroupImplCheckTlsReuse::SetTlsValueAndWait,
+                 Unretained(this))));
     factories.back()->WaitForAllTasksToRun();
   }
 
@@ -474,8 +474,8 @@ TEST_F(ThreadGroupImplCheckTlsReuse, CheckCleanupWorkers) {
     count_waiters.push_back(std::make_unique<WaitableEvent>());
     ASSERT_TRUE(factory->PostTask(
         PostNestedTask::NO,
-        Bind(&ThreadGroupImplCheckTlsReuse::CountZeroTlsValuesAndWait,
-             Unretained(this), count_waiters.back().get())));
+        BindOnce(&ThreadGroupImplCheckTlsReuse::CountZeroTlsValuesAndWait,
+                 Unretained(this), count_waiters.back().get())));
     factory->WaitForAllTasksToRun();
   }
 
@@ -1160,7 +1160,7 @@ TEST_P(ThreadGroupImplBlockingTest, PostBeforeBlocking) {
     task_runner_->PostTask(
         FROM_HERE,
         BindOnce(
-            [](Closure* extra_threads_running_barrier,
+            [](RepeatingClosure* extra_threads_running_barrier,
                WaitableEvent* extra_threads_continue) {
               extra_threads_running_barrier->Run();
               test::WaitWithoutBlockingObserver(extra_threads_continue);
@@ -1376,7 +1376,8 @@ TEST_F(ThreadGroupImplOverCapacityTest, VerifyCleanup) {
 
   WaitableEvent blocked_call_continue;
   RepeatingClosure closure = BindRepeating(
-      [](Closure* threads_running_barrier, WaitableEvent* threads_continue,
+      [](RepeatingClosure* threads_running_barrier,
+         WaitableEvent* threads_continue,
          WaitableEvent* blocked_call_continue) {
         threads_running_barrier->Run();
         {
@@ -1405,7 +1406,7 @@ TEST_F(ThreadGroupImplOverCapacityTest, VerifyCleanup) {
     task_runner_->PostTask(
         FROM_HERE,
         BindOnce(
-            [](Closure* extra_threads_running_barrier,
+            [](RepeatingClosure* extra_threads_running_barrier,
                WaitableEvent* extra_threads_continue) {
               extra_threads_running_barrier->Run();
               test::WaitWithoutBlockingObserver(extra_threads_continue);
@@ -1460,23 +1461,23 @@ TEST_F(ThreadGroupImplBlockingTest, MaximumWorkersTest) {
 
   // Post ScopedBlockingCall tasks to hit the worker cap.
   for (size_t i = 0; i < kMaxNumberOfWorkers; ++i) {
-    task_runner_->PostTask(FROM_HERE,
-                           BindOnce(
-                               [](Closure* early_threads_barrier_closure,
-                                  WaitableEvent* early_release_threads_continue,
-                                  Closure* early_threads_finished) {
-                                 {
-                                   ScopedBlockingCall scoped_blocking_call(
-                                       FROM_HERE, BlockingType::WILL_BLOCK);
-                                   early_threads_barrier_closure->Run();
-                                   test::WaitWithoutBlockingObserver(
-                                       early_release_threads_continue);
-                                 }
-                                 early_threads_finished->Run();
-                               },
-                               Unretained(&early_threads_barrier_closure),
-                               Unretained(&early_release_threads_continue),
-                               Unretained(&early_threads_finished_barrier)));
+    task_runner_->PostTask(
+        FROM_HERE, BindOnce(
+                       [](RepeatingClosure* early_threads_barrier_closure,
+                          WaitableEvent* early_release_threads_continue,
+                          RepeatingClosure* early_threads_finished) {
+                         {
+                           ScopedBlockingCall scoped_blocking_call(
+                               FROM_HERE, BlockingType::WILL_BLOCK);
+                           early_threads_barrier_closure->Run();
+                           test::WaitWithoutBlockingObserver(
+                               early_release_threads_continue);
+                         }
+                         early_threads_finished->Run();
+                       },
+                       Unretained(&early_threads_barrier_closure),
+                       Unretained(&early_release_threads_continue),
+                       Unretained(&early_threads_finished_barrier)));
   }
 
   early_blocking_threads_running.Wait();
@@ -1497,7 +1498,7 @@ TEST_F(ThreadGroupImplBlockingTest, MaximumWorkersTest) {
     task_runner_->PostTask(
         FROM_HERE,
         BindOnce(
-            [](Closure* late_threads_barrier_closure,
+            [](RepeatingClosure* late_threads_barrier_closure,
                WaitableEvent* late_release_thread_contine) {
               ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                       BlockingType::WILL_BLOCK);
@@ -1527,7 +1528,7 @@ TEST_F(ThreadGroupImplBlockingTest, MaximumWorkersTest) {
     task_runner_->PostTask(
         FROM_HERE,
         BindOnce(
-            [](Closure* closure, WaitableEvent* final_tasks_continue) {
+            [](RepeatingClosure* closure, WaitableEvent* final_tasks_continue) {
               closure->Run();
               test::WaitWithoutBlockingObserver(final_tasks_continue);
             },

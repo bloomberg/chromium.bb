@@ -149,8 +149,8 @@ class FixtureWithMockTaskRunner final : public Fixture {
   FixtureWithMockTaskRunner()
       : test_task_runner_(MakeRefCounted<TestMockTimeTaskRunner>(
             TestMockTimeTaskRunner::Type::kBoundToThread)),
-        call_counting_clock_(
-            Bind(&TestMockTimeTaskRunner::NowTicks, test_task_runner_)),
+        call_counting_clock_(BindRepeating(&TestMockTimeTaskRunner::NowTicks,
+                                           test_task_runner_)),
         sequence_manager_(SequenceManagerForTest::Create(
             nullptr,
             ThreadTaskRunnerHandle::Get(),
@@ -4142,9 +4142,9 @@ TEST_P(SequenceManagerTest, RecordsQueueTimeIfSettingTrue) {
 }
 
 namespace {
-// Inject a test point for recording the destructor calls for Closure objects
-// send to PostTask(). It is awkward usage since we are trying to hook the
-// actual destruction, which is not a common operation.
+// Inject a test point for recording the destructor calls for OnceClosure
+// objects sent to PostTask(). It is awkward usage since we are trying to hook
+// the actual destruction, which is not a common operation.
 class DestructionObserverProbe : public RefCounted<DestructionObserverProbe> {
  public:
   DestructionObserverProbe(bool* task_destroyed,

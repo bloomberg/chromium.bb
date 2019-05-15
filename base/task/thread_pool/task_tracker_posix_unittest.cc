@@ -53,9 +53,10 @@ class ThreadPoolTaskTrackerPosixTest : public testing::Test {
 // Verify that TaskTrackerPosix runs a Task it receives.
 TEST_F(ThreadPoolTaskTrackerPosixTest, RunTask) {
   bool did_run = false;
-  Task task(FROM_HERE,
-            Bind([](bool* did_run) { *did_run = true; }, Unretained(&did_run)),
-            TimeDelta());
+  Task task(
+      FROM_HERE,
+      BindOnce([](bool* did_run) { *did_run = true; }, Unretained(&did_run)),
+      TimeDelta());
   constexpr TaskTraits default_traits = {};
 
   EXPECT_TRUE(tracker_.WillPostTask(&task, default_traits.shutdown_behavior()));
@@ -75,8 +76,8 @@ TEST_F(ThreadPoolTaskTrackerPosixTest, FileDescriptorWatcher) {
   int fds[2];
   ASSERT_EQ(0, pipe(fds));
   Task task(FROM_HERE,
-            Bind(IgnoreResult(&FileDescriptorWatcher::WatchReadable), fds[0],
-                 DoNothing()),
+            BindOnce(IgnoreResult(&FileDescriptorWatcher::WatchReadable),
+                     fds[0], DoNothing()),
             TimeDelta());
   constexpr TaskTraits default_traits = {};
 

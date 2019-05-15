@@ -90,7 +90,7 @@ class ThreadPostingTasks : public SimpleThread {
     EXPECT_FALSE(factory_.task_runner()->RunsTasksInCurrentSequence());
 
     for (size_t i = 0; i < kNumTasksPostedPerThread; ++i)
-      EXPECT_TRUE(factory_.PostTask(post_nested_task_, Closure()));
+      EXPECT_TRUE(factory_.PostTask(post_nested_task_, OnceClosure()));
   }
 
   const scoped_refptr<TaskRunner> task_runner_;

@@ -51,19 +51,19 @@ constexpr size_t kLoadTestNumIterations = 75;
 // Invokes a closure asynchronously.
 class CallbackThread : public SimpleThread {
  public:
-  explicit CallbackThread(const Closure& closure)
-      : SimpleThread("CallbackThread"), closure_(closure) {}
+  explicit CallbackThread(OnceClosure closure)
+      : SimpleThread("CallbackThread"), closure_(std::move(closure)) {}
 
   // Returns true once the callback returns.
   bool has_returned() { return has_returned_.IsSet(); }
 
  private:
   void Run() override {
-    closure_.Run();
+    std::move(closure_).Run();
     has_returned_.Set();
   }
 
-  const Closure closure_;
+  OnceClosure closure_;
   AtomicFlag has_returned_;
 
   DISALLOW_COPY_AND_ASSIGN(CallbackThread);
@@ -150,7 +150,7 @@ class ThreadPoolTaskTrackerTest
   Task CreateTask() {
     return Task(
         FROM_HERE,
-        Bind(&ThreadPoolTaskTrackerTest::RunTaskCallback, Unretained(this)),
+        BindOnce(&ThreadPoolTaskTrackerTest::RunTaskCallback, Unretained(this)),
         TimeDelta());
   }
 
@@ -170,7 +170,7 @@ class ThreadPoolTaskTrackerTest
     ASSERT_FALSE(thread_calling_shutdown_);
     ASSERT_TRUE(tracker_.HasShutdownStarted());
     thread_calling_shutdown_ = std::make_unique<CallbackThread>(
-        Bind(&TaskTracker::CompleteShutdown, Unretained(&tracker_)));
+        BindOnce(&TaskTracker::CompleteShutdown, Unretained(&tracker_)));
     thread_calling_shutdown_->Start();
     PlatformThread::Sleep(TestTimeouts::tiny_timeout());
     VerifyAsyncShutdownInProgress();
@@ -194,7 +194,7 @@ class ThreadPoolTaskTrackerTest
   void CallFlushFromAnotherThread() {
     ASSERT_FALSE(thread_calling_flush_);
     thread_calling_flush_.reset(new CallbackThread(
-        Bind(&TaskTracker::FlushForTesting, Unretained(&tracker_))));
+        BindOnce(&TaskTracker::FlushForTesting, Unretained(&tracker_))));
     thread_calling_flush_->Start();
   }
 
@@ -285,7 +285,7 @@ TEST_P(ThreadPoolTaskTrackerTest, WillPostAndRunLongTaskBeforeShutdown) {
                              WaitableEvent::InitialState::NOT_SIGNALED);
   Task blocked_task(
       FROM_HERE,
-      Bind(
+      BindOnce(
           [](WaitableEvent* task_running, WaitableEvent* task_barrier) {
             task_running->Signal();
             test::WaitWithoutBlockingObserver(task_barrier);
@@ -494,7 +494,7 @@ TEST_P(ThreadPoolTaskTrackerTest, IOAllowed) {
   // Unset the IO allowed bit. Expect TaskTracker to set it before running a
   // task with the MayBlock() trait.
   ThreadRestrictions::SetIOAllowed(false);
-  Task task_with_may_block(FROM_HERE, Bind([]() {
+  Task task_with_may_block(FROM_HERE, BindOnce([]() {
                              // Shouldn't fail.
                              ScopedBlockingCall scope_blocking_call(
                                  FROM_HERE, BlockingType::WILL_BLOCK);
@@ -509,7 +509,7 @@ TEST_P(ThreadPoolTaskTrackerTest, IOAllowed) {
   // Set the IO allowed bit. Expect TaskTracker to unset it before running a
   // task without the MayBlock() trait.
   ThreadRestrictions::SetIOAllowed(true);
-  Task task_without_may_block(FROM_HERE, Bind([]() {
+  Task task_without_may_block(FROM_HERE, BindOnce([]() {
                                 EXPECT_DCHECK_DEATH({
                                   ScopedBlockingCall scope_blocking_call(
                                       FROM_HERE, BlockingType::WILL_BLOCK);
@@ -932,7 +932,8 @@ TEST_F(ThreadPoolTaskTrackerTest, CurrentSequenceToken) {
       TaskTraits(), nullptr, TaskSourceExecutionMode::kParallel);
 
   const SequenceToken sequence_token = sequence->token();
-  Task task(FROM_HERE, Bind(&ExpectSequenceToken, sequence_token), TimeDelta());
+  Task task(FROM_HERE, BindOnce(&ExpectSequenceToken, sequence_token),
+            TimeDelta());
   tracker_.WillPostTask(&task, sequence->shutdown_behavior());
 
   {
@@ -1149,7 +1150,7 @@ class WaitAllowedTestThread : public SimpleThread {
     // running a task without the WithBaseSyncPrimitives() trait.
     internal::AssertBaseSyncPrimitivesAllowed();
     Task task_without_sync_primitives(
-        FROM_HERE, Bind([]() {
+        FROM_HERE, BindOnce([]() {
           EXPECT_DCHECK_DEATH({ internal::AssertBaseSyncPrimitivesAllowed(); });
         }),
         TimeDelta());
@@ -1165,7 +1166,7 @@ class WaitAllowedTestThread : public SimpleThread {
     // with the WithBaseSyncPrimitives() trait.
     ThreadRestrictions::DisallowWaiting();
     Task task_with_sync_primitives(
-        FROM_HERE, Bind([]() {
+        FROM_HERE, BindOnce([]() {
           // Shouldn't fail.
           internal::AssertBaseSyncPrimitivesAllowed();
         }),

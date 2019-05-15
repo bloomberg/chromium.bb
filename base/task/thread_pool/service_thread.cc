@@ -89,8 +89,8 @@ void ServiceThread::PerformHeartbeatLatencyReport() const {
 
   // Post through the static API to time the full stack. Use a new Now() for
   // every set of traits in case PostTaskWithTraits() itself is slow.
-  // Bonus: this appraoch also includes the overhead of Bind() in the reported
-  // latency).
+  // Bonus: this approach also includes the overhead of BindOnce() in the
+  // reported latency.
   // TODO(jessemckenna): pass |profiled_traits| directly to
   // RecordHeartbeatLatencyAndTasksRunWhileQueuingHistograms() once compiler
   // error on NaCl is fixed
