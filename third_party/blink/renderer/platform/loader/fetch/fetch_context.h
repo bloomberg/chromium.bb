@@ -60,7 +60,6 @@ enum class ResourceType : uint8_t;
 class ClientHintsPreferences;
 class KURL;
 class PlatformProbeSink;
-class ResourceFetcherProperties;
 class ResourceTimingInfo;
 class WebScopedVirtualTimePauser;
 
@@ -80,22 +79,9 @@ class PLATFORM_EXPORT FetchContext
 
   virtual ~FetchContext() = default;
 
-  // Called from a ResourceFetcher constructor. This is called only once.
-  // TODO(yhirano): Consider removing this.
-  void Init(const ResourceFetcherProperties& properties) {
-    DCHECK(!resource_fetcher_properties_);
-    resource_fetcher_properties_ = &properties;
-  }
-
   virtual void Trace(blink::Visitor*);
 
   virtual void AddAdditionalRequestHeaders(ResourceRequest&);
-
-  // This function must not be called before |Init| is called.
-  const ResourceFetcherProperties& GetResourceFetcherProperties() const {
-    DCHECK(resource_fetcher_properties_);
-    return *resource_fetcher_properties_;
-  }
 
   // Returns the cache policy for the resource. ResourceRequest is not passed as
   // a const reference as a header needs to be added for doc.write blocking
@@ -163,9 +149,7 @@ class PLATFORM_EXPORT FetchContext
   // with "keepalive" specified).
   // Returns a "detached" fetch context which cannot be null.
   virtual FetchContext* Detach() {
-    DCHECK(resource_fetcher_properties_);
     auto* context = &NullInstance();
-    context->Init(*resource_fetcher_properties_);
     return context;
   }
 
@@ -178,7 +162,6 @@ class PLATFORM_EXPORT FetchContext
 
  private:
   Member<PlatformProbeSink> platform_probe_sink_;
-  Member<const ResourceFetcherProperties> resource_fetcher_properties_;
 
   DISALLOW_COPY_AND_ASSIGN(FetchContext);
 };

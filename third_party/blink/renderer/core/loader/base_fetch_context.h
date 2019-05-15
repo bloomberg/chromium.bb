@@ -19,6 +19,7 @@
 namespace blink {
 
 class ConsoleMessage;
+class DetachableResourceFetcherProperties;
 class KURL;
 class PreviewsResourceLoadingHints;
 class SecurityOrigin;
@@ -45,6 +46,11 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
 
   void Trace(blink::Visitor*) override;
 
+  const DetachableResourceFetcherProperties& GetResourceFetcherProperties()
+      const {
+    return *fetcher_properties_;
+  }
+
   virtual KURL GetSiteForCookies() const = 0;
 
   // Returns the origin of the top frame in the document.
@@ -63,7 +69,9 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
   virtual const ContentSecurityPolicy* GetContentSecurityPolicy() const = 0;
 
  protected:
-  BaseFetchContext() = default;
+  explicit BaseFetchContext(
+      const DetachableResourceFetcherProperties& properties)
+      : fetcher_properties_(properties) {}
 
   // Used for security checks.
   virtual bool AllowScriptFromSource(const KURL&) const = 0;
@@ -92,6 +100,8 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
   virtual void AddConsoleMessage(ConsoleMessage*) const = 0;
 
  private:
+  const Member<const DetachableResourceFetcherProperties> fetcher_properties_;
+
   void PrintAccessDeniedMessage(const KURL&) const;
 
   // Utility methods that are used in default implement for CanRequest,

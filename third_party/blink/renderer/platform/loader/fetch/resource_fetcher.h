@@ -51,6 +51,7 @@ namespace blink {
 enum class ResourceType : uint8_t;
 class CodeCacheLoader;
 class DetachableConsoleLogger;
+class DetachableResourceFetcherProperties;
 class FetchContext;
 class FrameScheduler;
 class MHTMLArchive;
@@ -58,7 +59,6 @@ class KURL;
 class PreflightTimingInfo;
 class Resource;
 class ResourceError;
-class ResourceFetcherProperties;
 class ResourceLoadObserver;
 class ResourceTimingInfo;
 class WebURLLoader;
@@ -108,11 +108,9 @@ class PLATFORM_EXPORT ResourceFetcher
   // - This function returns the same object throughout this fetcher's
   //   entire life.
   // - The returned object remains valid after ClearContext() is called.
-  // - This function returns a different object from the corresponding
-  //   argument in the constructor.
-  // - This function should be used rather than the properties given
-  //   to the ResourceFetcher constructor.
-  const ResourceFetcherProperties& GetProperties() const;
+  const DetachableResourceFetcherProperties& GetProperties() const {
+    return *properties_;
+  }
 
   // Returns whether this fetcher is detached from the associated context.
   bool IsDetached() const;
@@ -268,7 +266,6 @@ class PLATFORM_EXPORT ResourceFetcher
 
  private:
   friend class ResourceCacheValidationSuppressor;
-  class DetachableProperties;
   enum class StopFetchingTarget {
     kExcludingKeepaliveLoaders,
     kIncludingKeepaliveLoaders,
@@ -372,7 +369,7 @@ class PLATFORM_EXPORT ResourceFetcher
   void ScheduleStaleRevalidate(Resource* stale_resource);
   void RevalidateStaleResource(Resource* stale_resource);
 
-  Member<DetachableProperties> properties_;
+  Member<DetachableResourceFetcherProperties> properties_;
   Member<ResourceLoadObserver> resource_load_observer_;
   Member<FetchContext> context_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
@@ -454,13 +451,12 @@ struct PLATFORM_EXPORT ResourceFetcherInit final {
  public:
   // |context| and |task_runner| must not be null.
   // |loader_factory| can be null if |properties.IsDetached()| is true.
-  // The given ResourceFetcherProperties is kept until ClearContext() is called.
-  ResourceFetcherInit(const ResourceFetcherProperties& properties,
+  ResourceFetcherInit(DetachableResourceFetcherProperties& properties,
                       FetchContext* context,
                       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                       ResourceFetcher::LoaderFactory* loader_factory);
 
-  const Member<const ResourceFetcherProperties> properties;
+  const Member<DetachableResourceFetcherProperties> properties;
   const Member<FetchContext> context;
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner;
   const Member<ResourceFetcher::LoaderFactory> loader_factory;

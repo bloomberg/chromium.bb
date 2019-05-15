@@ -106,9 +106,9 @@ TEST_F(AllowedByNosniffTest, AllowedOrNot) {
         SecurityOrigin::Create(url));
     auto* context = CountUsageMockFetchContext::Create();
     // Bind |properties| to |context| through a ResourceFetcher.
-    MakeGarbageCollected<ResourceFetcher>(
-        ResourceFetcherInit(*properties, context, CreateTaskRunner(),
-                            MakeGarbageCollected<TestLoaderFactory>()));
+    MakeGarbageCollected<ResourceFetcher>(ResourceFetcherInit(
+        properties->MakeDetachable(), context, CreateTaskRunner(),
+        MakeGarbageCollected<TestLoaderFactory>()));
     Persistent<MockConsoleLogger> logger =
         MakeGarbageCollected<MockConsoleLogger>();
     ResourceResponse response(url);
@@ -133,51 +133,58 @@ TEST_F(AllowedByNosniffTest, AllowedOrNot) {
 }
 
 TEST_F(AllowedByNosniffTest, Counters) {
+  constexpr auto kBasic = network::mojom::FetchResponseType::kBasic;
+  constexpr auto kOpaque = network::mojom::FetchResponseType::kOpaque;
+  constexpr auto kCors = network::mojom::FetchResponseType::kCors;
   const char* bla = "https://bla.com";
   const char* blubb = "https://blubb.com";
   struct {
     const char* url;
     const char* origin;
     const char* mimetype;
+    network::mojom::FetchResponseType response_type;
     WebFeature expected;
   } data[] = {
       // Test same- vs cross-origin cases.
-      {bla, "", "text/plain", WebFeature::kCrossOriginTextScript},
-      {bla, "", "text/plain", WebFeature::kCrossOriginTextPlain},
-      {bla, blubb, "text/plain", WebFeature::kCrossOriginTextScript},
-      {bla, blubb, "text/plain", WebFeature::kCrossOriginTextPlain},
-      {bla, bla, "text/plain", WebFeature::kSameOriginTextScript},
-      {bla, bla, "text/plain", WebFeature::kSameOriginTextPlain},
+      {bla, "", "text/plain", kOpaque, WebFeature::kCrossOriginTextScript},
+      {bla, "", "text/plain", kCors, WebFeature::kCrossOriginTextPlain},
+      {bla, blubb, "text/plain", kCors, WebFeature::kCrossOriginTextScript},
+      {bla, blubb, "text/plain", kOpaque, WebFeature::kCrossOriginTextPlain},
+      {bla, bla, "text/plain", kBasic, WebFeature::kSameOriginTextScript},
+      {bla, bla, "text/plain", kBasic, WebFeature::kSameOriginTextPlain},
 
       // Test mime type and subtype handling.
-      {bla, bla, "text/xml", WebFeature::kSameOriginTextScript},
-      {bla, bla, "text/xml", WebFeature::kSameOriginTextXml},
+      {bla, bla, "text/xml", kBasic, WebFeature::kSameOriginTextScript},
+      {bla, bla, "text/xml", kBasic, WebFeature::kSameOriginTextXml},
 
       // Test mime types from crbug.com/765544, with random cross/same site
       // origins.
-      {bla, bla, "text/plain", WebFeature::kSameOriginTextPlain},
-      {bla, blubb, "text/xml", WebFeature::kCrossOriginTextXml},
-      {blubb, blubb, "application/octet-stream",
+      {bla, bla, "text/plain", kBasic, WebFeature::kSameOriginTextPlain},
+      {bla, bla, "text/xml", kOpaque, WebFeature::kCrossOriginTextXml},
+      {blubb, blubb, "application/octet-stream", kBasic,
        WebFeature::kSameOriginApplicationOctetStream},
-      {blubb, bla, "application/xml", WebFeature::kCrossOriginApplicationXml},
-      {bla, bla, "text/html", WebFeature::kSameOriginTextHtml},
+      {blubb, blubb, "application/xml", kCors,
+       WebFeature::kCrossOriginApplicationXml},
+      {bla, bla, "text/html", kBasic, WebFeature::kSameOriginTextHtml},
   };
 
   for (auto& testcase : data) {
-    SCOPED_TRACE(testing::Message() << "\n  url: " << testcase.url
-                                    << "\n  origin: " << testcase.origin
-                                    << "\n  mime type: " << testcase.mimetype
-                                    << "\n  webfeature: " << testcase.expected);
+    SCOPED_TRACE(testing::Message()
+                 << "\n  url: " << testcase.url << "\n  origin: "
+                 << testcase.origin << "\n  mime type: " << testcase.mimetype
+                 << "\n response type: " << testcase.response_type
+                 << "\n  webfeature: " << testcase.expected);
     auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>(
         SecurityOrigin::Create(KURL(testcase.origin)));
     auto* context = CountUsageMockFetchContext::Create();
     // Bind |properties| to |context| through a ResourceFetcher.
-    MakeGarbageCollected<ResourceFetcher>(
-        ResourceFetcherInit(*properties, context, CreateTaskRunner(),
-                            MakeGarbageCollected<TestLoaderFactory>()));
+    MakeGarbageCollected<ResourceFetcher>(ResourceFetcherInit(
+        properties->MakeDetachable(), context, CreateTaskRunner(),
+        MakeGarbageCollected<TestLoaderFactory>()));
     Persistent<MockConsoleLogger> logger =
         MakeGarbageCollected<MockConsoleLogger>();
     ResourceResponse response(KURL(testcase.url));
+    response.SetType(testcase.response_type);
     response.SetHttpHeaderField("Content-Type", testcase.mimetype);
 
     EXPECT_CALL(*context, CountUsage(testcase.expected));
@@ -218,9 +225,9 @@ TEST_F(AllowedByNosniffTest, AllTheSchemes) {
     auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
     auto* context = CountUsageMockFetchContext::Create();
     // Bind |properties| to |context| through a ResourceFetcher.
-    MakeGarbageCollected<ResourceFetcher>(
-        ResourceFetcherInit(*properties, context, CreateTaskRunner(),
-                            MakeGarbageCollected<TestLoaderFactory>()));
+    MakeGarbageCollected<ResourceFetcher>(ResourceFetcherInit(
+        properties->MakeDetachable(), context, CreateTaskRunner(),
+        MakeGarbageCollected<TestLoaderFactory>()));
     Persistent<MockConsoleLogger> logger =
         MakeGarbageCollected<MockConsoleLogger>();
     EXPECT_CALL(*logger, AddConsoleMessage(_, _, _))

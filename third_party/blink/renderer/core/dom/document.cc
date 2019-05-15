@@ -717,10 +717,12 @@ Document::Document(const DocumentInit& initializer,
   } else if (imports_controller_) {
     fetcher_ = FrameFetchContext::CreateFetcherForImportedDocument(this);
   } else {
+    auto& properties =
+        *MakeGarbageCollected<DetachableResourceFetcherProperties>(
+            *MakeGarbageCollected<NullResourceFetcherProperties>());
     fetcher_ = MakeGarbageCollected<ResourceFetcher>(ResourceFetcherInit(
-        *MakeGarbageCollected<NullResourceFetcherProperties>(),
-        &FetchContext::NullInstance(), GetTaskRunner(TaskType::kNetworking),
-        nullptr /* loader_factory */));
+        properties, &FetchContext::NullInstance(),
+        GetTaskRunner(TaskType::kNetworking), nullptr /* loader_factory */));
   }
   DCHECK(fetcher_);
 

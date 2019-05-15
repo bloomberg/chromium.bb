@@ -25,6 +25,10 @@ class TestResourceFetcherProperties final : public ResourceFetcherProperties {
 
   void Trace(Visitor* visitor) override;
 
+  DetachableResourceFetcherProperties& MakeDetachable() const {
+    return *MakeGarbageCollected<DetachableResourceFetcherProperties>(*this);
+  }
+
   // ResourceFetcherProperties implementation
   const FetchClientSettingsObject& GetFetchClientSettingsObject()
       const override {

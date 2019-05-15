@@ -213,17 +213,18 @@ struct FrameFetchContext::FrozenState final
 ResourceFetcher* FrameFetchContext::CreateFetcherForCommittedDocument(
     DocumentLoader& loader,
     Document& document) {
-  auto* frame_or_imported_document =
-      MakeGarbageCollected<FrameOrImportedDocument>(loader, document);
-  auto* resource_fetcher_properties =
-      MakeGarbageCollected<FrameResourceFetcherProperties>(
-          *frame_or_imported_document);
-  LocalFrame& frame = frame_or_imported_document->GetFrame();
+  auto& frame_or_imported_document =
+      *MakeGarbageCollected<FrameOrImportedDocument>(loader, document);
+  auto& properties = *MakeGarbageCollected<DetachableResourceFetcherProperties>(
+      *MakeGarbageCollected<FrameResourceFetcherProperties>(
+          frame_or_imported_document));
+  LocalFrame& frame = frame_or_imported_document.GetFrame();
   ResourceFetcherInit init(
-      *resource_fetcher_properties,
-      MakeGarbageCollected<FrameFetchContext>(*frame_or_imported_document),
+      properties,
+      MakeGarbageCollected<FrameFetchContext>(frame_or_imported_document,
+                                              properties),
       frame.GetTaskRunner(TaskType::kNetworking),
-      MakeGarbageCollected<LoaderFactoryForFrame>(*frame_or_imported_document));
+      MakeGarbageCollected<LoaderFactoryForFrame>(frame_or_imported_document));
   auto* console_logger =
       MakeGarbageCollected<DetachableConsoleLogger>(&document);
   init.console_logger = console_logger;
@@ -236,7 +237,7 @@ ResourceFetcher* FrameFetchContext::CreateFetcherForCommittedDocument(
   ResourceFetcher* fetcher = MakeGarbageCollected<ResourceFetcher>(init);
   fetcher->SetResourceLoadObserver(
       MakeGarbageCollected<ResourceLoadObserverForFrame>(
-          *frame_or_imported_document, fetcher->GetProperties()));
+          frame_or_imported_document, fetcher->GetProperties()));
   fetcher->SetImagesEnabled(frame.GetSettings()->GetImagesEnabled());
   fetcher->SetAutoLoadImages(
       frame.GetSettings()->GetLoadsImagesAutomatically());
@@ -250,11 +251,14 @@ ResourceFetcher* FrameFetchContext::CreateFetcherForImportedDocument(
   DCHECK(!document->GetFrame());
   auto& frame_or_imported_document =
       *MakeGarbageCollected<FrameOrImportedDocument>(*document);
+  auto& properties = *MakeGarbageCollected<DetachableResourceFetcherProperties>(
+      *MakeGarbageCollected<FrameResourceFetcherProperties>(
+          frame_or_imported_document));
   LocalFrame& frame = frame_or_imported_document.GetFrame();
   ResourceFetcherInit init(
-      *MakeGarbageCollected<FrameResourceFetcherProperties>(
-          frame_or_imported_document),
-      MakeGarbageCollected<FrameFetchContext>(frame_or_imported_document),
+      properties,
+      MakeGarbageCollected<FrameFetchContext>(frame_or_imported_document,
+                                              properties),
       document->GetTaskRunner(blink::TaskType::kNetworking),
       MakeGarbageCollected<LoaderFactoryForFrame>(frame_or_imported_document));
   auto* console_logger =
@@ -269,8 +273,10 @@ ResourceFetcher* FrameFetchContext::CreateFetcherForImportedDocument(
 }
 
 FrameFetchContext::FrameFetchContext(
-    const FrameOrImportedDocument& frame_or_imported_document)
-    : frame_or_imported_document_(frame_or_imported_document),
+    const FrameOrImportedDocument& frame_or_imported_document,
+    const DetachableResourceFetcherProperties& properties)
+    : BaseFetchContext(properties),
+      frame_or_imported_document_(frame_or_imported_document),
       save_data_enabled_(
           GetNetworkStateNotifier().SaveDataEnabled() &&
           !GetFrame()->GetSettings()->GetDataSaverHoldbackWebApi()) {}

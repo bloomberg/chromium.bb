@@ -46,8 +46,9 @@ namespace blink {
 
 class MockBaseFetchContext final : public BaseFetchContext {
  public:
-  explicit MockBaseFetchContext(ExecutionContext* execution_context)
-      : execution_context_(execution_context) {}
+  MockBaseFetchContext(const DetachableResourceFetcherProperties& properties,
+                       ExecutionContext* execution_context)
+      : BaseFetchContext(properties), execution_context_(execution_context) {}
   ~MockBaseFetchContext() override = default;
 
   // BaseFetchContext overrides:
@@ -118,14 +119,15 @@ class BaseFetchContextTest : public testing::Test {
     execution_context_ = MakeGarbageCollected<NullExecutionContext>();
     static_cast<NullExecutionContext*>(execution_context_.Get())
         ->SetUpSecurityContext();
-    fetch_context_ =
-        MakeGarbageCollected<MockBaseFetchContext>(execution_context_);
     resource_fetcher_properties_ =
         MakeGarbageCollected<TestResourceFetcherProperties>(
             *MakeGarbageCollected<FetchClientSettingsObjectImpl>(
                 *execution_context_));
+    auto& properties = resource_fetcher_properties_->MakeDetachable();
+    fetch_context_ = MakeGarbageCollected<MockBaseFetchContext>(
+        properties, execution_context_);
     resource_fetcher_ = MakeGarbageCollected<ResourceFetcher>(
-        ResourceFetcherInit(*resource_fetcher_properties_, fetch_context_,
+        ResourceFetcherInit(properties, fetch_context_,
                             base::MakeRefCounted<scheduler::FakeTaskRunner>(),
                             MakeGarbageCollected<TestLoaderFactory>()));
   }

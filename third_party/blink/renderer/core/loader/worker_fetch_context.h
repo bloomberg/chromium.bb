@@ -32,7 +32,8 @@ enum class ResourceType : uint8_t;
 // For more details, see core/workers/README.md.
 class WorkerFetchContext final : public BaseFetchContext {
  public:
-  WorkerFetchContext(WorkerOrWorkletGlobalScope&,
+  WorkerFetchContext(const DetachableResourceFetcherProperties&,
+                     WorkerOrWorkletGlobalScope&,
                      scoped_refptr<WebWorkerFetchContext>,
                      SubresourceFilter*,
                      ContentSecurityPolicy&,

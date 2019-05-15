@@ -243,6 +243,7 @@ BaseFetchContext::CanRequestInternal(
 }
 
 void BaseFetchContext::Trace(blink::Visitor* visitor) {
+  visitor->Trace(fetcher_properties_);
   FetchContext::Trace(visitor);
 }
 

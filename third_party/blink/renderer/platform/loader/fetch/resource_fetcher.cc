@@ -346,7 +346,7 @@ void SetSecFetchHeaders(
 }  // namespace
 
 ResourceFetcherInit::ResourceFetcherInit(
-    const ResourceFetcherProperties& properties,
+    DetachableResourceFetcherProperties& properties,
     FetchContext* context,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     ResourceFetcher::LoaderFactory* loader_factory)
@@ -400,94 +400,6 @@ mojom::RequestContextType ResourceFetcher::DetermineRequestContext(
   NOTREACHED();
   return mojom::RequestContextType::SUBRESOURCE;
 }
-
-// A delegating ResourceFetcherProperties subclass which can be from the
-// original ResourceFetcherProperties.
-class ResourceFetcher::DetachableProperties final
-    : public ResourceFetcherProperties {
- public:
-  explicit DetachableProperties(const ResourceFetcherProperties& properties)
-      : properties_(properties) {}
-  ~DetachableProperties() override = default;
-
-  void Detach() {
-    if (!properties_) {
-      // Already detached.
-      return;
-    }
-
-    fetch_client_settings_object_ =
-        MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
-            properties_->GetFetchClientSettingsObject());
-    is_main_frame_ = properties_->IsMainFrame();
-    paused_ = properties_->IsPaused();
-    load_complete_ = properties_->IsLoadComplete();
-    is_subframe_deprioritization_enabled_ =
-        properties_->IsSubframeDeprioritizationEnabled();
-
-    properties_ = nullptr;
-  }
-
-  void Trace(Visitor* visitor) override {
-    visitor->Trace(properties_);
-    visitor->Trace(fetch_client_settings_object_);
-    ResourceFetcherProperties::Trace(visitor);
-  }
-
-  // ResourceFetcherProperties implementation
-  // Add a test in resource_fetcher_test.cc when you change behaviors.
-  const FetchClientSettingsObject& GetFetchClientSettingsObject()
-      const override {
-    return properties_ ? properties_->GetFetchClientSettingsObject()
-                       : *fetch_client_settings_object_;
-  }
-  bool IsMainFrame() const override {
-    return properties_ ? properties_->IsMainFrame() : is_main_frame_;
-  }
-  ControllerServiceWorkerMode GetControllerServiceWorkerMode() const override {
-    return properties_ ? properties_->GetControllerServiceWorkerMode()
-                       : ControllerServiceWorkerMode::kNoController;
-  }
-  int64_t ServiceWorkerId() const override {
-    // When detached, GetControllerServiceWorkerMode returns kNoController, so
-    // this function must not be called.
-    DCHECK(properties_);
-    return properties_->ServiceWorkerId();
-  }
-  bool IsPaused() const override {
-    return properties_ ? properties_->IsPaused() : paused_;
-  }
-  bool IsDetached() const override {
-    return properties_ ? properties_->IsDetached() : true;
-  }
-  bool IsLoadComplete() const override {
-    return properties_ ? properties_->IsLoadComplete() : load_complete_;
-  }
-  bool ShouldBlockLoadingSubResource() const override {
-    // Returns true when detached in order to preserve the existing behavior.
-    return properties_ ? properties_->ShouldBlockLoadingSubResource() : true;
-  }
-  bool IsSubframeDeprioritizationEnabled() const override {
-    return properties_ ? properties_->IsSubframeDeprioritizationEnabled()
-                       : is_subframe_deprioritization_enabled_;
-  }
-
-  scheduler::FrameStatus GetFrameStatus() const override {
-    return properties_ ? properties_->GetFrameStatus()
-                       : scheduler::FrameStatus::kNone;
-  }
-
- private:
-  // |properties_| is null if and only if detached.
-  Member<const ResourceFetcherProperties> properties_;
-
-  // The following members are used when detached.
-  Member<const FetchClientSettingsObject> fetch_client_settings_object_;
-  bool is_main_frame_ = false;
-  bool paused_ = false;
-  bool load_complete_ = false;
-  bool is_subframe_deprioritization_enabled_ = false;
-};
 
 ResourceLoadPriority ResourceFetcher::ComputeLoadPriority(
     ResourceType type,
@@ -587,8 +499,7 @@ ResourceLoadPriority ResourceFetcher::ComputeLoadPriority(
 }
 
 ResourceFetcher::ResourceFetcher(const ResourceFetcherInit& init)
-    : properties_(
-          *MakeGarbageCollected<DetachableProperties>(*init.properties)),
+    : properties_(*init.properties),
       context_(init.context),
       task_runner_(init.task_runner),
       console_logger_(init.console_logger
@@ -616,15 +527,10 @@ ResourceFetcher::ResourceFetcher(const ResourceFetcherInit& init)
   InstanceCounters::IncrementCounter(InstanceCounters::kResourceFetcherCounter);
   if (IsMainThread())
     MainThreadFetchersSet().insert(this);
-  context_->Init(*properties_);
 }
 
 ResourceFetcher::~ResourceFetcher() {
   InstanceCounters::DecrementCounter(InstanceCounters::kResourceFetcherCounter);
-}
-
-const ResourceFetcherProperties& ResourceFetcher::GetProperties() const {
-  return *properties_;
 }
 
 bool ResourceFetcher::IsDetached() const {

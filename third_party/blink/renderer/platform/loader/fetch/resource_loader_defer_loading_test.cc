@@ -37,7 +37,7 @@ class ResourceLoaderDefersLoadingTest : public testing::Test {
 
   ResourceFetcher* CreateFetcher() {
     return MakeGarbageCollected<ResourceFetcher>(ResourceFetcherInit(
-        *MakeGarbageCollected<TestResourceFetcherProperties>(),
+        MakeGarbageCollected<TestResourceFetcherProperties>()->MakeDetachable(),
         MakeGarbageCollected<MockFetchContext>(),
         base::MakeRefCounted<scheduler::FakeTaskRunner>(),
         MakeGarbageCollected<TestLoaderFactory>()));

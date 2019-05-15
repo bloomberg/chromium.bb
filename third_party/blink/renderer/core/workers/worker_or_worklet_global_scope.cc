@@ -290,12 +290,15 @@ ResourceFetcher* WorkerOrWorkletGlobalScope::CreateFetcherInternal(
   InitializeWebFetchContextIfNeeded();
   ResourceFetcher* fetcher = nullptr;
   if (web_worker_fetch_context_) {
+    auto& properties =
+        *MakeGarbageCollected<DetachableResourceFetcherProperties>(
+            *MakeGarbageCollected<WorkerResourceFetcherProperties>(
+                *this, fetch_client_settings_object,
+                web_worker_fetch_context_));
     ResourceFetcherInit init(
-        *MakeGarbageCollected<WorkerResourceFetcherProperties>(
-            *this, fetch_client_settings_object, web_worker_fetch_context_),
-
+        properties,
         MakeGarbageCollected<WorkerFetchContext>(
-            *this, web_worker_fetch_context_, subresource_filter_,
+            properties, *this, web_worker_fetch_context_, subresource_filter_,
             content_security_policy, resource_timing_notifier),
         GetTaskRunner(TaskType::kNetworking),
         MakeGarbageCollected<LoaderFactoryForWorker>(
@@ -308,11 +311,13 @@ ResourceFetcher* WorkerOrWorkletGlobalScope::CreateFetcherInternal(
             *probe::ToCoreProbeSink(static_cast<ExecutionContext*>(this)),
             fetcher->GetProperties(), web_worker_fetch_context_));
   } else {
+    auto& properties =
+        *MakeGarbageCollected<DetachableResourceFetcherProperties>(
+            *MakeGarbageCollected<NullResourceFetcherProperties>());
     // This code path is for unittests.
     fetcher = MakeGarbageCollected<ResourceFetcher>(ResourceFetcherInit(
-        *MakeGarbageCollected<NullResourceFetcherProperties>(),
-        &FetchContext::NullInstance(), GetTaskRunner(TaskType::kNetworking),
-        nullptr /* loader_factory */));
+        properties, &FetchContext::NullInstance(),
+        GetTaskRunner(TaskType::kNetworking), nullptr /* loader_factory */));
   }
   if (IsContextPaused())
     fetcher->SetDefersLoading(true);

@@ -166,7 +166,7 @@ void ModuleScriptLoaderTest::InitializeForDocument() {
   auto* properties =
       MakeGarbageCollected<TestResourceFetcherProperties>(security_origin_);
   fetcher_ = MakeGarbageCollected<ResourceFetcher>(
-      ResourceFetcherInit(*properties, fetch_context,
+      ResourceFetcherInit(properties->MakeDetachable(), fetch_context,
                           base::MakeRefCounted<scheduler::FakeTaskRunner>(),
                           MakeGarbageCollected<TestLoaderFactory>()));
   modulator_ = MakeGarbageCollected<ModuleScriptLoaderTestModulator>(
@@ -178,7 +178,7 @@ void ModuleScriptLoaderTest::InitializeForWorklet() {
   auto* properties =
       MakeGarbageCollected<TestResourceFetcherProperties>(security_origin_);
   fetcher_ = MakeGarbageCollected<ResourceFetcher>(
-      ResourceFetcherInit(*properties, fetch_context,
+      ResourceFetcherInit(properties->MakeDetachable(), fetch_context,
                           base::MakeRefCounted<scheduler::FakeTaskRunner>(),
                           MakeGarbageCollected<TestLoaderFactory>()));
   reporting_proxy_ = std::make_unique<MockWorkerReportingProxy>();

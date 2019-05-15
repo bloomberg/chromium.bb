@@ -35,12 +35,14 @@ namespace blink {
 WorkerFetchContext::~WorkerFetchContext() = default;
 
 WorkerFetchContext::WorkerFetchContext(
+    const DetachableResourceFetcherProperties& properties,
     WorkerOrWorkletGlobalScope& global_scope,
     scoped_refptr<WebWorkerFetchContext> web_context,
     SubresourceFilter* subresource_filter,
     ContentSecurityPolicy& content_security_policy,
     WorkerResourceTimingNotifier& resource_timing_notifier)
-    : global_scope_(global_scope),
+    : BaseFetchContext(properties),
+      global_scope_(global_scope),
       web_context_(std::move(web_context)),
       subresource_filter_(subresource_filter),
       content_security_policy_(&content_security_policy),

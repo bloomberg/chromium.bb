@@ -358,10 +358,10 @@ void TestThatIsNotPlaceholderRequestAndServeResponse(
 
 ResourceFetcher* CreateFetcher() {
   auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
-  return MakeGarbageCollected<ResourceFetcher>(
-      ResourceFetcherInit(*properties, MakeGarbageCollected<MockFetchContext>(),
-                          base::MakeRefCounted<scheduler::FakeTaskRunner>(),
-                          MakeGarbageCollected<TestLoaderFactory>()));
+  return MakeGarbageCollected<ResourceFetcher>(ResourceFetcherInit(
+      properties->MakeDetachable(), MakeGarbageCollected<MockFetchContext>(),
+      base::MakeRefCounted<scheduler::FakeTaskRunner>(),
+      MakeGarbageCollected<TestLoaderFactory>()));
 }
 
 TEST(ImageResourceTest, MultipartImage) {
@@ -1870,13 +1870,14 @@ TEST(ImageResourceTest, PeriodicFlushTest) {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       page_holder->GetFrame().GetTaskRunner(TaskType::kInternalTest);
   auto* context = MakeGarbageCollected<MockFetchContext>();
-  auto* properties = MakeGarbageCollected<TestResourceFetcherProperties>();
+  auto& properties =
+      MakeGarbageCollected<TestResourceFetcherProperties>()->MakeDetachable();
   auto* fetcher = MakeGarbageCollected<ResourceFetcher>(
-      ResourceFetcherInit(*properties, context, task_runner,
+      ResourceFetcherInit(properties, context, task_runner,
                           MakeGarbageCollected<TestLoaderFactory>()));
   auto frame_scheduler = std::make_unique<scheduler::FakeFrameScheduler>();
   auto* scheduler = MakeGarbageCollected<ResourceLoadScheduler>(
-      ResourceLoadScheduler::ThrottlingPolicy::kNormal, *properties,
+      ResourceLoadScheduler::ThrottlingPolicy::kNormal, properties,
       frame_scheduler.get(), *MakeGarbageCollected<DetachableConsoleLogger>());
   ImageResource* image_resource = ImageResource::CreateForTest(test_url);
 

@@ -66,7 +66,8 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   // |document_loader_| will be set to nullptr.
   static ResourceFetcher* CreateFetcherForImportedDocument(Document* document);
 
-  explicit FrameFetchContext(const FrameOrImportedDocument&);
+  FrameFetchContext(const FrameOrImportedDocument&,
+                    const DetachableResourceFetcherProperties&);
   ~FrameFetchContext() override = default;
 
   void AddAdditionalRequestHeaders(ResourceRequest&) override;

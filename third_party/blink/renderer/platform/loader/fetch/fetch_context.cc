@@ -30,9 +30,7 @@
 
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_context.h"
 
-#include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
-#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/platform_probe_sink.h"
 #include "third_party/blink/renderer/platform/probe/platform_trace_events_agent.h"
 
@@ -62,7 +60,6 @@ FetchContext::FetchContext()
 
 void FetchContext::Trace(blink::Visitor* visitor) {
   visitor->Trace(platform_probe_sink_);
-  visitor->Trace(resource_fetcher_properties_);
 }
 
 void FetchContext::AddAdditionalRequestHeaders(ResourceRequest&) {}

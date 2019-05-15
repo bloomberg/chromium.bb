@@ -120,9 +120,10 @@ class MemoryCacheCorrectnessTest : public testing::Test {
     auto* properties =
         MakeGarbageCollected<TestResourceFetcherProperties>(security_origin_);
     properties->SetShouldBlockLoadingSubResource(true);
-    fetcher_ = MakeGarbageCollected<ResourceFetcher>(ResourceFetcherInit(
-        *properties, context, base::MakeRefCounted<scheduler::FakeTaskRunner>(),
-        MakeGarbageCollected<TestLoaderFactory>()));
+    fetcher_ = MakeGarbageCollected<ResourceFetcher>(
+        ResourceFetcherInit(properties->MakeDetachable(), context,
+                            base::MakeRefCounted<scheduler::FakeTaskRunner>(),
+                            MakeGarbageCollected<TestLoaderFactory>()));
   }
   void TearDown() override {
     GetMemoryCache()->EvictResources();

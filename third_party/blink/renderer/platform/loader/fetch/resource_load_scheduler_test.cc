@@ -91,8 +91,8 @@ class ResourceLoadSchedulerTest : public testing::Test {
     auto frame_scheduler = std::make_unique<scheduler::FakeFrameScheduler>();
     console_logger_ = MakeGarbageCollected<MockConsoleLogger>();
     scheduler_ = MakeGarbageCollected<ResourceLoadScheduler>(
-        ResourceLoadScheduler::ThrottlingPolicy::kTight, *properties,
-        frame_scheduler.get(),
+        ResourceLoadScheduler::ThrottlingPolicy::kTight,
+        properties->MakeDetachable(), frame_scheduler.get(),
         *MakeGarbageCollected<DetachableConsoleLogger>(console_logger_));
     Scheduler()->SetOutstandingLimitForTesting(1);
   }

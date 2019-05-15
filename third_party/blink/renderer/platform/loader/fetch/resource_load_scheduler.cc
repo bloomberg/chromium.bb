@@ -97,7 +97,7 @@ uint32_t GetFieldTrialUint32Param(const char* trial_name,
 }
 
 size_t GetOutstandingThrottledLimit(
-    const ResourceFetcherProperties& properties) {
+    const DetachableResourceFetcherProperties& properties) {
   if (!RuntimeEnabledFeatures::ResourceLoadSchedulerEnabled())
     return ResourceLoadScheduler::kOutstandingUnlimited;
 
@@ -127,7 +127,7 @@ bool IsResourceLoadThrottlingEnabled() {
 class ResourceLoadScheduler::TrafficMonitor {
  public:
   explicit TrafficMonitor(
-      const ResourceFetcherProperties& resource_fetcher_properties);
+      const DetachableResourceFetcherProperties& resource_fetcher_properties);
   ~TrafficMonitor();
 
   // Notified when the ThrottlingState is changed.
@@ -140,7 +140,7 @@ class ResourceLoadScheduler::TrafficMonitor {
   void ReportAll();
 
  private:
-  const Persistent<const ResourceFetcherProperties>
+  const Persistent<const DetachableResourceFetcherProperties>
       resource_fetcher_properties_;
 
   scheduler::SchedulingLifecycleState current_state_ =
@@ -162,7 +162,7 @@ class ResourceLoadScheduler::TrafficMonitor {
 };
 
 ResourceLoadScheduler::TrafficMonitor::TrafficMonitor(
-    const ResourceFetcherProperties& resource_fetcher_properties)
+    const DetachableResourceFetcherProperties& resource_fetcher_properties)
     : resource_fetcher_properties_(resource_fetcher_properties),
       traffic_kilobytes_per_frame_status_(
           "Blink.ResourceLoadScheduler.TrafficBytes.KBPerFrameStatus",
@@ -351,7 +351,7 @@ constexpr ResourceLoadScheduler::ClientId
 
 ResourceLoadScheduler::ResourceLoadScheduler(
     ThrottlingPolicy initial_throttling_policy,
-    const ResourceFetcherProperties& resource_fetcher_properties,
+    const DetachableResourceFetcherProperties& resource_fetcher_properties,
     FrameScheduler* frame_scheduler,
     DetachableConsoleLogger& console_logger)
     : resource_fetcher_properties_(resource_fetcher_properties),
