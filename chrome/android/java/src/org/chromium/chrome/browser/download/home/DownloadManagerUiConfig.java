@@ -88,7 +88,7 @@ public class DownloadManagerUiConfig {
         private boolean mUseNewDownloadPath;
         private boolean mUseNewDownloadPathThumbnails;
         private int mInMemoryThumbnailCacheSizeBytes = IN_MEMORY_THUMBNAIL_CACHE_SIZE_BYTES;
-        private float mMaxThumbnailScaleFactor = 1.f; /* mdpi scale factor. */
+        private float mMaxThumbnailScaleFactor = 1.5f; /* hdpi scale factor. */
         private long mJustNowThresholdSeconds;
         private boolean mIsRenameEnabled;
         private boolean mShowSectionHeaders;
