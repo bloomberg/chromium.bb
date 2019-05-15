@@ -1833,6 +1833,7 @@ crbug.com/441840 external/wpt/css/css-shapes/shape-outside/values/shape-outside-
 crbug.com/441840 external/wpt/css/css-shapes/shape-outside/values/shape-outside-polygon-004.html [ Failure ]
 crbug.com/441840 [ Win ] external/wpt/css/css-shapes/shape-outside/values/shape-outside-shape-arguments-000.html [ Failure ]
 
+crbug.com/963369 external/wpt/css/css-text/hyphens/hyphens-out-of-flow-001.html [ Failure ]
 crbug.com/6122 external/wpt/css/css-text/hyphens/hyphens-shaping-001.html [ Failure ]
 crbug.com/958672 external/wpt/css/css-text/hyphens/hyphens-shaping-002.html [ Failure ]
 crbug.com/958672 external/wpt/css/css-text/hyphens/hyphens-span-001.html [ Failure ]
@@ -2738,7 +2739,6 @@ crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/selectors/cue_function/class_object/class_vertical_text-combine-upright.html [ Failure ]
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/bidi/vertical_lr.html [ Failure ]
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/selectors/cue/vertical_text-combine-upright.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/hyphens/hyphens-out-of-flow-001.html [ Failure ]
 crbug.com/626703 virtual/speech-with-unified-autoplay/external/wpt/speech-api/SpeechSynthesisUtterance-volume-manual.html [ Skip ]
 crbug.com/626703 [ Linux ] external/wpt/speech-api/SpeechSynthesisUtterance-volume-manual.html [ Skip ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/speech-api/SpeechSynthesisUtterance-volume-manual.html [ Skip ]
