@@ -439,14 +439,26 @@ constexpr int kTextfieldBackgroundColor = 0xf7f7f7;
 - (void)handleKeyboardWillShow:(NSNotification*)notification {
   CGRect keyboardFrame =
       [notification.userInfo[UIKeyboardFrameEndUserInfoKey] CGRectValue];
-  self.additionalSafeAreaInsets =
-      UIEdgeInsetsMake(0, 0, keyboardFrame.size.height, 0);
+  CGRect viewFrameInWindow = [self.view convertRect:self.view.bounds
+                                             toView:nil];
+  CGRect intersectedFrame =
+      CGRectIntersection(keyboardFrame, viewFrameInWindow);
+
+  CGFloat additionalBottomInset =
+      intersectedFrame.size.height - self.view.safeAreaInsets.bottom;
+
+  if (additionalBottomInset > 0) {
+    self.additionalSafeAreaInsets =
+        UIEdgeInsetsMake(0, 0, additionalBottomInset, 0);
+  }
+
   self.tapRecognizer.enabled = YES;
   self.swipeRecognizer.enabled = YES;
 }
 
 - (void)handleKeyboardWillHide:(NSNotification*)notification {
   self.additionalSafeAreaInsets = UIEdgeInsetsZero;
+
   self.tapRecognizer.enabled = NO;
   self.swipeRecognizer.enabled = NO;
 }
