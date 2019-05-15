@@ -11,11 +11,8 @@ js_type_check("closure_compile") {
     ":languages_browser_proxy",
     ":languages_page",
     ":languages_types",
+    ":manage_input_methods_page",
   ]
-
-  if (is_chromeos) {
-    deps += [ ":manage_input_methods_page" ]
-  }
 }
 
 js_library("languages_browser_proxy") {
