@@ -10,6 +10,7 @@
 #include "base/barrier_closure.h"
 #include "base/base64.h"
 #include "base/bind.h"
+#include "base/build_time.h"
 #include "base/command_line.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/debug/dump_without_crashing.h"
@@ -91,6 +92,7 @@
 #if BUILDFLAG(IS_CT_SUPPORTED)
 #include "components/certificate_transparency/chrome_ct_policy_enforcer.h"
 #include "components/certificate_transparency/chrome_require_ct_delegate.h"
+#include "components/certificate_transparency/ct_known_logs.h"
 #include "components/certificate_transparency/features.h"
 #include "components/certificate_transparency/sth_distributor.h"
 #include "components/certificate_transparency/sth_reporter.h"
@@ -1860,7 +1862,10 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
 #if BUILDFLAG(IS_CT_SUPPORTED)
   if (params_->enforce_chrome_ct_policy) {
     builder->set_ct_policy_enforcer(
-        std::make_unique<certificate_transparency::ChromeCTPolicyEnforcer>());
+        std::make_unique<certificate_transparency::ChromeCTPolicyEnforcer>(
+            base::GetBuildTime(),
+            certificate_transparency::GetDisqualifiedLogs(),
+            certificate_transparency::GetLogsOperatedByGoogle()));
   }
 #endif  // BUILDFLAG(IS_CT_SUPPORTED)
 

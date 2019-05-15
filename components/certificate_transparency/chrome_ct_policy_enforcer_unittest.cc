@@ -7,9 +7,11 @@
 #include <memory>
 #include <string>
 
+#include "base/build_time.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "base/version.h"
+#include "components/certificate_transparency/ct_known_logs.h"
 #include "crypto/rsa_private_key.h"
 #include "crypto/sha2.h"
 #include "net/cert/ct_policy_status.h"
@@ -42,7 +44,9 @@ static_assert(base::size(kGoogleAviatorLogID) - 1 == crypto::kSHA256Length,
 class ChromeCTPolicyEnforcerTest : public ::testing::Test {
  public:
   void SetUp() override {
-    policy_enforcer_.reset(new ChromeCTPolicyEnforcer);
+    policy_enforcer_.reset(
+        new ChromeCTPolicyEnforcer(base::GetBuildTime(), GetDisqualifiedLogs(),
+                                   GetLogsOperatedByGoogle()));
 
     std::string der_test_cert(net::ct::GetDerEncodedX509Cert());
     chain_ = X509Certificate::CreateFromBytes(der_test_cert.data(),
