@@ -12,6 +12,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_test_helper.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_test_helper.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -19,6 +20,9 @@
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image_unittest_util.h"
+
+using chromeos::network_config::mojom::ConnectionStateType;
+using chromeos::network_config::mojom::NetworkType;
 
 namespace ash {
 
@@ -101,9 +105,17 @@ class ActiveNetworkIconTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  gfx::ImageSkia ImageForNetwork(const chromeos::NetworkState* network) {
+  gfx::ImageSkia ImageForNetwork(
+      chromeos::network_config::mojom::NetworkType type,
+      chromeos::network_config::mojom::ConnectionStateType connection_state,
+      int signal_strength = 100) {
+    std::string id = base::StringPrintf("reference_%d", reference_count_++);
+    chromeos::network_config::mojom::NetworkStatePropertiesPtr
+        reference_properties =
+            network_state_helper().CreateStandaloneNetworkProperties(
+                id, type, connection_state, signal_strength);
     return network_icon::GetImageForNonVirtualNetwork(
-        network_icon::NetworkIconState(network), icon_type_,
+        network_icon::NetworkIconState(reference_properties.get()), icon_type_,
         false /* show_vpn_badge */);
   }
 
@@ -120,18 +132,6 @@ class ActiveNetworkIconTest : public testing::Test {
                           const std::string& key,
                           const base::Value& value) {
     network_state_helper().SetServiceProperty(service_path, key, value);
-  }
-
-  std::unique_ptr<chromeos::NetworkState> CreateStandaloneNetworkState(
-      const std::string& type,
-      const std::string& connection_state,
-      int signal_strength = 100) {
-    std::string id = base::StringPrintf("reference_%d", reference_count_++);
-    VLOG(1) << "CreateStandaloneNetworkState: " << id << " type: " << type
-            << " State: " << connection_state
-            << " Strength: " << signal_strength;
-    return network_state_helper().CreateStandaloneNetworkState(
-        id, type, connection_state, signal_strength);
   }
 
   chromeos::NetworkStateTestHelper& network_state_helper() {
@@ -190,17 +190,17 @@ TEST_F(ActiveNetworkIconTest, GetSingleImage) {
   bool animating;
   gfx::ImageSkia image =
       active_network_icon()->GetSingleImage(icon_type(), &animating);
-  std::unique_ptr<chromeos::NetworkState> reference_network =
-      CreateStandaloneNetworkState(shill::kTypeCellular, shill::kStateOnline);
-  EXPECT_TRUE(AreImagesEqual(image, ImageForNetwork(reference_network.get())));
+  EXPECT_TRUE(AreImagesEqual(
+      image,
+      ImageForNetwork(NetworkType::kCellular, ConnectionStateType::kOnline)));
   EXPECT_FALSE(animating);
 
   // Cellular + WiFi connected = WiFi connected icon
   SetupWiFi(shill::kStateOnline);
   image = active_network_icon()->GetSingleImage(icon_type(), &animating);
-  reference_network =
-      CreateStandaloneNetworkState(shill::kTypeWifi, shill::kStateOnline);
-  EXPECT_TRUE(AreImagesEqual(image, ImageForNetwork(reference_network.get())));
+  EXPECT_TRUE(AreImagesEqual(
+      image,
+      ImageForNetwork(NetworkType::kWiFi, ConnectionStateType::kOnline)));
   EXPECT_FALSE(animating);
 
   // Cellular + WiFi connecting = WiFi connecting icon
@@ -210,15 +210,17 @@ TEST_F(ActiveNetworkIconTest, GetSingleImage) {
                      base::Value(50));
   base::RunLoop().RunUntilIdle();
   image = active_network_icon()->GetSingleImage(icon_type(), &animating);
-  reference_network = CreateStandaloneNetworkState(
-      shill::kTypeWifi, shill::kStateAssociation, 50);
-  EXPECT_TRUE(AreImagesEqual(image, ImageForNetwork(reference_network.get())));
+  EXPECT_TRUE(AreImagesEqual(
+      image, ImageForNetwork(NetworkType::kWiFi,
+                             ConnectionStateType::kConnecting, 50)));
   EXPECT_TRUE(animating);
 
   // Cellular + WiFi connecting + Ethernet = WiFi connecting icon
   SetupEthernet();
   image = active_network_icon()->GetSingleImage(icon_type(), &animating);
-  EXPECT_TRUE(AreImagesEqual(image, ImageForNetwork(reference_network.get())));
+  EXPECT_TRUE(AreImagesEqual(
+      image, ImageForNetwork(NetworkType::kWiFi,
+                             ConnectionStateType::kConnecting, 50)));
   EXPECT_TRUE(animating);
 
   // Cellular + WiFi connected + Ethernet = No icon
@@ -240,10 +242,9 @@ TEST_F(ActiveNetworkIconTest, CellularUninitialized) {
   bool animating;
   gfx::ImageSkia image =
       active_network_icon()->GetSingleImage(icon_type(), &animating);
-  std::unique_ptr<chromeos::NetworkState> reference_network =
-      CreateStandaloneNetworkState(shill::kTypeCellular,
-                                   shill::kStateAssociation);
-  EXPECT_TRUE(AreImagesEqual(image, ImageForNetwork(reference_network.get())));
+  EXPECT_TRUE(
+      AreImagesEqual(image, ImageForNetwork(NetworkType::kCellular,
+                                            ConnectionStateType::kConnecting)));
   EXPECT_TRUE(animating);
 }
 
@@ -260,10 +261,9 @@ TEST_F(ActiveNetworkIconTest, CellularScanning) {
   bool animating;
   gfx::ImageSkia image =
       active_network_icon()->GetSingleImage(icon_type(), &animating);
-  std::unique_ptr<chromeos::NetworkState> reference_network =
-      CreateStandaloneNetworkState(shill::kTypeCellular,
-                                   shill::kStateAssociation);
-  EXPECT_TRUE(AreImagesEqual(image, ImageForNetwork(reference_network.get())));
+  EXPECT_TRUE(
+      AreImagesEqual(image, ImageForNetwork(NetworkType::kCellular,
+                                            ConnectionStateType::kConnecting)));
   EXPECT_TRUE(animating);
 }
 

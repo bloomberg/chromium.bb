@@ -126,31 +126,34 @@ void NetworkTrayView::UpdateConnectionStatus(
         IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED,
         base::UTF8ToUTF16(connected_network->name()));
 
-    // Retrieve the string describing the signal strength, if it is applicable
-    // to |connected_network|.
-    base::string16 signal_strength_string;
-    switch (network_icon::GetSignalStrengthForNetwork(connected_network)) {
-      case SignalStrength::NONE:
-      case SignalStrength::NOT_WIRELESS:
-        break;
-      case SignalStrength::WEAK:
-        signal_strength_string =
-            l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NETWORK_SIGNAL_WEAK);
-        break;
-      case SignalStrength::MEDIUM:
-        signal_strength_string = l10n_util::GetStringUTF16(
-            IDS_ASH_STATUS_TRAY_NETWORK_SIGNAL_MEDIUM);
-        break;
-      case SignalStrength::STRONG:
-        signal_strength_string = l10n_util::GetStringUTF16(
-            IDS_ASH_STATUS_TRAY_NETWORK_SIGNAL_STRONG);
-        break;
-    }
+    if (connected_network->Matches(NetworkTypePattern::Wireless())) {
+      // Retrieve the string describing the signal strength, if it is applicable
+      // to |connected_network|.
+      base::string16 signal_strength_string;
+      switch (network_icon::GetSignalStrength(
+          connected_network->signal_strength())) {
+        case SignalStrength::NONE:
+          break;
+        case SignalStrength::WEAK:
+          signal_strength_string = l10n_util::GetStringUTF16(
+              IDS_ASH_STATUS_TRAY_NETWORK_SIGNAL_WEAK);
+          break;
+        case SignalStrength::MEDIUM:
+          signal_strength_string = l10n_util::GetStringUTF16(
+              IDS_ASH_STATUS_TRAY_NETWORK_SIGNAL_MEDIUM);
+          break;
+        case SignalStrength::STRONG:
+          signal_strength_string = l10n_util::GetStringUTF16(
+              IDS_ASH_STATUS_TRAY_NETWORK_SIGNAL_STRONG);
+          break;
+      }
 
-    if (!signal_strength_string.empty()) {
-      new_connection_status_string = l10n_util::GetStringFUTF16(
-          IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED_ACCESSIBLE,
-          base::UTF8ToUTF16(connected_network->name()), signal_strength_string);
+      if (!signal_strength_string.empty()) {
+        new_connection_status_string = l10n_util::GetStringFUTF16(
+            IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED_ACCESSIBLE,
+            base::UTF8ToUTF16(connected_network->name()),
+            signal_strength_string);
+      }
     }
     connection_status_tooltip_ = new_connection_status_string;
   } else {

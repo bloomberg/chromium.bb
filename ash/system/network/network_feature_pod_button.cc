@@ -90,6 +90,11 @@ const NetworkState* GetCurrentNetwork() {
 base::string16 GetSubLabelForConnectedNetwork(const NetworkState* network) {
   DCHECK(network && network->IsConnectedState());
 
+  if (!network->Matches(NetworkTypePattern::Wireless())) {
+    return l10n_util::GetStringUTF16(
+        IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTED);
+  }
+
   if (NetworkTypePattern::Cellular().MatchesType(network->type())) {
     if (network->network_technology() == shill::kNetworkTechnology1Xrtt) {
       return l10n_util::GetStringUTF16(
@@ -137,7 +142,10 @@ base::string16 GetSubLabelForConnectedNetwork(const NetworkState* network) {
         IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTED);
   }
 
-  switch (network_icon::GetSignalStrengthForNetwork(network)) {
+  switch (network_icon::GetSignalStrength(network->signal_strength())) {
+    case network_icon::SignalStrength::NONE:
+      return l10n_util::GetStringUTF16(
+          IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTED);
     case network_icon::SignalStrength::WEAK:
       return l10n_util::GetStringUTF16(
           IDS_ASH_STATUS_TRAY_NETWORK_SIGNAL_WEAK_SUBLABEL);
@@ -147,10 +155,10 @@ base::string16 GetSubLabelForConnectedNetwork(const NetworkState* network) {
     case network_icon::SignalStrength::STRONG:
       return l10n_util::GetStringUTF16(
           IDS_ASH_STATUS_TRAY_NETWORK_SIGNAL_STRONG_SUBLABEL);
-    default:
-      return l10n_util::GetStringUTF16(
-          IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTED);
   }
+  NOTREACHED();
+  return l10n_util::GetStringUTF16(
+      IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTED);
 }
 
 }  // namespace

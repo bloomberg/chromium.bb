@@ -16,10 +16,6 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chromeos/network/network_state.h"
-#include "chromeos/network/network_type_pattern.h"
-#include "chromeos/network/onc/onc_translation_tables.h"
-#include "chromeos/network/tether_constants.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_util.h"
 #include "components/onc/onc_constants.h"
 #include "components/vector_icons/vector_icons.h"
@@ -30,7 +26,6 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/vector_icon_types.h"
 
-using chromeos::NetworkTypePattern;
 using chromeos::network_config::mojom::ActivationStateType;
 using chromeos::network_config::mojom::ConnectionStateType;
 using chromeos::network_config::mojom::NetworkType;
@@ -296,6 +291,8 @@ gfx::ImageSkia GetIcon(const NetworkIconState& network,
     return gfx::CreateVectorIcon(kNetworkVpnIcon,
                                  GetDefaultColorForIconType(ICON_TYPE_LIST));
   }
+  DCHECK_GE(strength_index, 0) << "Strength not set for type: " << network.type;
+  DCHECK_LT(strength_index, kNumNetworkImages);
   return GetImageForIndex(ImageTypeForNetworkType(network.type), icon_type,
                           strength_index);
 }
@@ -308,56 +305,13 @@ gfx::ImageSkia GetConnectingVpnImage(IconType icon_type) {
 
 }  // namespace
 
-NetworkIconState::NetworkIconState(const chromeos::NetworkState* network) {
-  guid = network->guid();
-  name = network->name();
-
-  const std::string& network_type = network->type();
-  if (NetworkTypePattern::Cellular().MatchesType(network_type) ||
-      NetworkTypePattern::Wimax().MatchesType(network_type)) {
-    type = NetworkType::kCellular;
-  } else if (NetworkTypePattern::Ethernet().MatchesType(network_type)) {
-    type = NetworkType::kEthernet;
-  } else if (NetworkTypePattern::Tether().MatchesType(network_type)) {
-    type = NetworkType::kTether;
-  } else if (NetworkTypePattern::VPN().MatchesType(network_type)) {
-    type = NetworkType::kVPN;
-  } else {
-    type = NetworkType::kWiFi;
-  }
-
-  if (network->IsCaptivePortal()) {
-    connection_state = ConnectionStateType::kPortal;
-  } else if (network->IsConnectedState()) {
-    connection_state = ConnectionStateType::kConnected;
-  } else if (network->IsConnectingState()) {
-    connection_state = ConnectionStateType::kConnecting;
-  } else {
-    connection_state = ConnectionStateType::kNotConnected;
-  }
-
-  security = network->GetMojoSecurity();
-
-  if (type == NetworkType::kCellular) {
-    if (!network->network_technology().empty()) {
-      chromeos::onc::TranslateStringToONC(
-          chromeos::onc::kNetworkTechnologyTable, network->network_technology(),
-          &network_technology);
-    }
-  }
-
-  activation_state = network->GetMojoActivationState();
-  signal_strength = network->signal_strength();
-  is_roaming = network->IndicateRoaming();
-}
-
 NetworkIconState::NetworkIconState(
     const chromeos::network_config::mojom::NetworkStateProperties* network) {
   guid = network->guid;
   name = network->name;
   type = network->type;
   connection_state = network->connection_state;
-  if (type == NetworkType::kCellular && network->cellular) {
+  if (type == NetworkType::kCellular) {
     activation_state = network->cellular->activation_state;
     network_technology = network->cellular->network_technology;
     is_roaming = network->cellular->roaming;
@@ -365,16 +319,16 @@ NetworkIconState::NetworkIconState(
   } else {
     activation_state = ActivationStateType::kUnknown;
   }
-  if (type == NetworkType::kTether && network->tether) {
+  if (type == NetworkType::kTether) {
     signal_strength = network->tether->signal_strength;
   }
-  if (type == NetworkType::kWiFi && network->wifi) {
+  if (type == NetworkType::kWiFi) {
     security = network->wifi->security;
     signal_strength = network->wifi->signal_strength;
   } else {
     security = chromeos::network_config::mojom::SecurityType::kNone;
   }
-  if (type == NetworkType::kWiMAX && network->wimax) {
+  if (type == NetworkType::kWiMAX) {
     signal_strength = network->wimax->signal_strength;
   }
 }
@@ -409,8 +363,8 @@ void NetworkIconImpl::Update(const NetworkIconState& network,
   }
 
   NetworkType type = network.type;
-  if (type == NetworkType::kCellular || type == NetworkType::kTether ||
-      type == NetworkType::kWiFi) {
+  if (chromeos::network_config::NetworkTypeMatchesType(
+          type, NetworkType::kWireless)) {
     dirty |= UpdateWirelessStrengthIndex(network);
   }
 
@@ -679,16 +633,12 @@ void PurgeNetworkIconCache(const std::set<std::string>& network_guids) {
   PurgeIconMap(ICON_TYPE_MENU_LIST, network_guids);
 }
 
-SignalStrength GetSignalStrengthForNetwork(
-    const chromeos::NetworkState* network) {
-  if (!network->Matches(NetworkTypePattern::Wireless()))
-    return SignalStrength::NOT_WIRELESS;
-
+SignalStrength GetSignalStrength(int strength) {
   // Decide whether the signal is considered weak, medium or strong based on the
   // strength index. Each signal strength corresponds to a bucket which
   // attempted to be split evenly from |kNumNetworkImages| - 1. Remainders go
   // first to the lowest bucket and then the second lowest bucket.
-  const int index = StrengthIndex(network->signal_strength());
+  const int index = StrengthIndex(strength);
   if (index == 0)
     return SignalStrength::NONE;
   const int seperations = kNumNetworkImages - 1;

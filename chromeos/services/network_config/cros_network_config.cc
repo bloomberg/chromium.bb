@@ -117,9 +117,8 @@ mojom::DeviceStateType GetMojoDeviceStateType(
   return mojom::DeviceStateType::kUnavailable;
 }
 
-mojom::NetworkStatePropertiesPtr NetworkStateToMojo(
-    NetworkStateHandler* network_state_handler,
-    const NetworkState* network) {
+mojom::NetworkStatePropertiesPtr NetworkStateToMojo(const NetworkState* network,
+                                                    const DeviceState* device) {
   mojom::NetworkType type = ShillTypeToMojo(network->type());
   if (type == mojom::NetworkType::kAll) {
     NET_LOG(ERROR) << "Unexpected network type: " << network->type()
@@ -157,8 +156,6 @@ mojom::NetworkStatePropertiesPtr NetworkStateToMojo(
                                                 onc::kNetworkTechnologyTable);
       cellular->roaming = network->IndicateRoaming();
       cellular->signal_strength = network->signal_strength();
-      const DeviceState* device =
-          network_state_handler->GetDeviceState(network->device_path());
       if (device) {
         cellular->scanning = device->scanning();
         cellular->sim_absent = device->IsSimAbsent();
@@ -223,8 +220,8 @@ mojom::NetworkStatePropertiesPtr NetworkStateToMojo(
 }
 
 mojom::DeviceStatePropertiesPtr DeviceStateToMojo(
-    NetworkStateHandler* network_state_handler,
-    const DeviceState* device) {
+    const DeviceState* device,
+    mojom::DeviceStateType technology_state) {
   mojom::NetworkType type = ShillTypeToMojo(device->type());
   if (type == mojom::NetworkType::kAll) {
     NET_LOG(ERROR) << "Unexpected device type: " << device->type()
@@ -232,17 +229,10 @@ mojom::DeviceStatePropertiesPtr DeviceStateToMojo(
     return nullptr;
   }
 
-  mojom::DeviceStateType state =
-      GetMojoDeviceStateType(network_state_handler->GetTechnologyState(
-          NetworkTypePattern::Primitive(device->type())));
-  if (state == mojom::DeviceStateType::kUnavailable) {
-    NET_LOG(ERROR) << "Device state unavailable";
-    return nullptr;
-  }
   auto result = mojom::DeviceStateProperties::New();
   result->type = type;
   result->scanning = device->scanning();
-  result->state = state;
+  result->state = technology_state;
   result->managed_network_available =
       !device->available_managed_network_path().empty();
 
@@ -290,7 +280,8 @@ void CrosNetworkConfig::GetNetworkState(const std::string& guid,
     std::move(callback).Run(nullptr);
     return;
   }
-  std::move(callback).Run(NetworkStateToMojo(network_state_handler_, network));
+  std::move(callback).Run(NetworkStateToMojo(
+      network, network_state_handler_->GetDeviceState(network->device_path())));
 }
 
 void CrosNetworkConfig::GetNetworkStateList(
@@ -323,8 +314,9 @@ void CrosNetworkConfig::GetNetworkStateList(
   }
   std::vector<mojom::NetworkStatePropertiesPtr> result;
   for (const NetworkState* network : networks) {
-    mojom::NetworkStatePropertiesPtr mojo_network =
-        NetworkStateToMojo(network_state_handler_, network);
+    mojom::NetworkStatePropertiesPtr mojo_network = NetworkStateToMojo(
+        network,
+        network_state_handler_->GetDeviceState(network->device_path()));
     if (mojo_network)
       result.emplace_back(std::move(mojo_network));
   }
@@ -337,8 +329,15 @@ void CrosNetworkConfig::GetDeviceStateList(
   network_state_handler_->GetDeviceList(&devices);
   std::vector<mojom::DeviceStatePropertiesPtr> result;
   for (const DeviceState* device : devices) {
+    mojom::DeviceStateType technology_state =
+        GetMojoDeviceStateType(network_state_handler_->GetTechnologyState(
+            NetworkTypePattern::Primitive(device->type())));
+    if (technology_state == mojom::DeviceStateType::kUnavailable) {
+      NET_LOG(ERROR) << "Device state unavailable: " << device->name();
+      continue;
+    }
     mojom::DeviceStatePropertiesPtr mojo_device =
-        DeviceStateToMojo(network_state_handler_, device);
+        DeviceStateToMojo(device, technology_state);
     if (mojo_device)
       result.emplace_back(std::move(mojo_device));
   }
@@ -362,8 +361,9 @@ void CrosNetworkConfig::ActiveNetworksChanged(
     const std::vector<const NetworkState*>& active_networks) {
   std::vector<mojom::NetworkStatePropertiesPtr> result;
   for (const NetworkState* network : active_networks) {
-    mojom::NetworkStatePropertiesPtr mojo_network =
-        NetworkStateToMojo(network_state_handler_, network);
+    mojom::NetworkStatePropertiesPtr mojo_network = NetworkStateToMojo(
+        network,
+        network_state_handler_->GetDeviceState(network->device_path()));
     if (mojo_network)
       result.emplace_back(std::move(mojo_network));
   }

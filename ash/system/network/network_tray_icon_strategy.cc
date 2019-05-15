@@ -10,16 +10,7 @@
 #include "ash/system/network/active_network_icon.h"
 #include "ash/system/network/network_icon.h"
 #include "base/logging.h"
-#include "chromeos/network/network_state.h"
-#include "chromeos/network/network_state_handler.h"
-#include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/gfx/image/image_skia.h"
-
-using chromeos::NetworkConnectionHandler;
-using chromeos::NetworkHandler;
-using chromeos::NetworkState;
-using chromeos::NetworkStateHandler;
-using chromeos::NetworkTypePattern;
 
 namespace ash {
 namespace tray {

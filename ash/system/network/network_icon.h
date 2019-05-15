@@ -15,17 +15,11 @@
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image_skia.h"
 
-namespace chromeos {
-class NetworkState;
-}
-
 namespace ash {
 namespace network_icon {
 
 // TODO(stevenjb): Replace with network_config::mojom::NetworkStateProperties.
 struct ASH_EXPORT NetworkIconState {
-  // Constructs a NetworkIconState from a NetworkState.
-  explicit NetworkIconState(const chromeos::NetworkState* network);
   // Constructs a NetworkIconState from mojom::NetworkStateProperties.
   explicit NetworkIconState(
       const chromeos::network_config::mojom::NetworkStateProperties* network);
@@ -54,7 +48,7 @@ enum IconType {
 };
 
 // Strength of a wireless signal.
-enum class SignalStrength { NONE, WEAK, MEDIUM, STRONG, NOT_WIRELESS };
+enum class SignalStrength { NONE, WEAK, MEDIUM, STRONG };
 
 // Returns true if |icon_state| is connected or portal.
 bool IsConnected(const NetworkIconState& icon_state);
@@ -124,10 +118,8 @@ ASH_EXPORT void PurgeNetworkIconCache(
     const std::set<std::string>& network_guids);
 
 // Called by ChromeVox to give a verbal indication of the network icon. Returns
-// the signal strength of |network|, if it is a network type with a signal
-// strength.
-ASH_EXPORT SignalStrength
-GetSignalStrengthForNetwork(const chromeos::NetworkState* network);
+// a signal strength enum for |strength| value 0-100.
+ASH_EXPORT SignalStrength GetSignalStrength(int strength);
 
 }  // namespace network_icon
 }  // namespace ash
