@@ -139,7 +139,7 @@ class TabHoverCardBubbleView::WidgetFadeAnimationDelegate
     constexpr base::TimeDelta kFadeInDuration =
         base::TimeDelta::FromMilliseconds(200);
     set_animation_state(FadeAnimationState::FADE_IN);
-    widget_->SetOpacity(0);
+    widget_->SetOpacity(0.0f);
     widget_->Show();
     fade_animation_ = std::make_unique<gfx::LinearAnimation>(this);
     fade_animation_->SetDuration(kFadeInDuration);
@@ -163,7 +163,7 @@ class TabHoverCardBubbleView::WidgetFadeAnimationDelegate
 
     fade_animation_->Stop();
     set_animation_state(FadeAnimationState::IDLE);
-    widget_->SetOpacity(1);
+    widget_->SetOpacity(1.0f);
   }
 
  private:
@@ -171,14 +171,14 @@ class TabHoverCardBubbleView::WidgetFadeAnimationDelegate
     // Get the value of the animation with a material ease applied.
     double value = gfx::Tween::CalculateValue(gfx::Tween::FAST_OUT_SLOW_IN,
                                               animation->GetCurrentValue());
-    float opaqueness = 0;
+    float opaqueness = 0.0f;
     if (IsFadingOut()) {
       opaqueness = gfx::Tween::FloatValueBetween(value, 1.0f, 0.0f);
     } else if (animation_state_ == FadeAnimationState::FADE_IN) {
       opaqueness = gfx::Tween::FloatValueBetween(value, 0.0f, 1.0f);
     }
 
-    if (IsFadingOut() && opaqueness == 0) {
+    if (IsFadingOut() && opaqueness == 0.0f) {
       widget_->Hide();
     } else {
       widget_->SetOpacity(opaqueness);
@@ -356,6 +356,7 @@ void TabHoverCardBubbleView::UpdateAndShow(Tab* tab) {
   if (!widget_->IsVisible()) {
     if (disable_animations_for_testing_ || show_immediately ||
         tab->HasFocus()) {
+      widget_->SetOpacity(1.0f);
       widget_->Show();
     } else {
       // Note that this will restart the timer if it is already running. If the
