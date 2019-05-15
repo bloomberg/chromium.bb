@@ -165,3 +165,4 @@ crbug.com/626703 [ Linux ] external/wpt/webdriver/tests/new_window/new_window.py
 crbug.com/626703 [ Linux ] external/wpt/webdriver/tests/new_window/user_prompts.py>>test_dismiss_and_notify[capabilities0-prompt-None] [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/webdriver/tests/permissions/set.py>>test_set_to_state[realmSetting2-prompt] [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/webdriver/tests/permissions/set.py>>test_set_to_state_cross_realm[realmSetting0-prompt] [ Failure ]
+crbug.com/963245 [ Linux ] external/wpt/webdriver/tests/find_element/find.py>>test_no_browsing_context [ Failure ]
