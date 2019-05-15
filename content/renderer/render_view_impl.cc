@@ -1969,6 +1969,7 @@ void RenderViewImpl::OnSetRendererPrefs(
           : base::TimeDelta::FromMilliseconds(
                 blink::mojom::kDefaultCaretBlinkIntervalInMilliseconds));
 
+#if defined(USE_AURA)
   if (renderer_prefs.use_custom_colors) {
     blink::SetFocusRingColor(renderer_prefs.focus_ring_color);
     blink::SetSelectionColors(renderer_prefs.active_selection_bg_color,
@@ -1978,6 +1979,7 @@ void RenderViewImpl::OnSetRendererPrefs(
     if (webview())
       webview()->MainFrameWidget()->ThemeChanged();
   }
+#endif
 
   if (webview() &&
       old_accept_languages != renderer_preferences_.accept_languages) {

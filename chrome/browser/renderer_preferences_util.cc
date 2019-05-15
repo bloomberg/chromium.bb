@@ -118,8 +118,6 @@ void UpdateFromSystemSettings(blink::mojom::RendererPreferences* prefs,
   prefs->inactive_selection_bg_color = SkColorSetRGB(0xEA, 0xEA, 0xEA);
   prefs->inactive_selection_fg_color = SK_ColorBLACK;
 #endif
-#else
-  prefs->use_custom_colors = false;
 #endif
 
 #if defined(TOOLKIT_VIEWS)
