@@ -16,6 +16,7 @@ namespace blink {
 class ExceptionState;
 class ScriptState;
 class ScriptValue;
+class TrustedHTML;
 class TrustedTypePolicy;
 class TrustedTypePolicyOptions;
 
@@ -42,6 +43,8 @@ class CORE_EXPORT TrustedTypePolicyFactory final : public ScriptWrappable,
   bool isScriptURL(ScriptState*, const ScriptValue&);
   bool isURL(ScriptState*, const ScriptValue&);
 
+  TrustedHTML* emptyHTML() const;
+
   // Count whether a Trusted Type error occured during DOM operations.
   // (We aggregate this here to get a count per document, so that we can
   //  relate it to the total number of TT enabled documents.)
@@ -53,6 +56,7 @@ class CORE_EXPORT TrustedTypePolicyFactory final : public ScriptWrappable,
   const WrapperTypeInfo* GetWrapperTypeInfoFromScriptValue(ScriptState*,
                                                            const ScriptValue&);
 
+  Member<TrustedHTML> empty_html_;
   HeapHashMap<String, Member<TrustedTypePolicy>> policy_map_;
 
   bool hadAssignmentError = false;
