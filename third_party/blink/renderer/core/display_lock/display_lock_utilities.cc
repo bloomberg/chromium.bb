@@ -67,12 +67,26 @@ DisplayLockUtilities::ScopedChainForcedUpdate::ScopedChainForcedUpdate(
     return;
   }
   const_cast<Node*>(node)->UpdateDistributionForFlatTreeTraversal();
+
+  // Get the right ancestor view. Only use inclusive ancestors if the node
+  // itself is locked and it prevents self layout. If self layout is not
+  // prevented, we don't need to force the subtree layout, so use exclusive
+  // ancestors in that case.
+  auto ancestor_view = [node] {
+    if (node->IsElementNode()) {
+      auto* context = ToElement(node)->GetDisplayLockContext();
+      if (context && !context->ShouldLayout(DisplayLockContext::kSelf))
+        return FlatTreeTraversal::InclusiveAncestorsOf(*node);
+    }
+    return FlatTreeTraversal::AncestorsOf(*node);
+  }();
+
   // TODO(vmpstr): This is somewhat inefficient, since we would pay the cost
   // of traversing the ancestor chain even for nodes that are not in the
   // locked subtree. We need to figure out if there is a supplementary
   // structure that we can use to quickly identify nodes that are in the
   // locked subtree.
-  for (Node& ancestor : FlatTreeTraversal::InclusiveAncestorsOf(*node)) {
+  for (Node& ancestor : ancestor_view) {
     if (!ancestor.IsElementNode())
       continue;
     if (auto* context = ToElement(ancestor).GetDisplayLockContext())
