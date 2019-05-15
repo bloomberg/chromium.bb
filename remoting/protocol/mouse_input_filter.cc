@@ -49,14 +49,20 @@ void MouseInputFilter::InjectMouseEvent(const MouseEvent& event) {
 
 void MouseInputFilter::set_input_size(const webrtc::DesktopSize& size) {
   input_size_ = webrtc::DesktopSize(size.width() - 1, size.height() - 1);
+  LOG(INFO) << "Setting MouseInputFilter input_size to " << input_size_.width()
+            << "x" << input_size_.height();
 }
 
 void MouseInputFilter::set_output_size(const webrtc::DesktopSize& size) {
   output_size_ = webrtc::DesktopSize(size.width() - 1, size.height() - 1);
+  LOG(INFO) << "Setting MouseInputFilter output_size to "
+            << output_size_.width() << "x" << output_size_.height();
 }
 
 void MouseInputFilter::set_output_offset(const webrtc::DesktopVector& v) {
   output_offset_ = webrtc::DesktopVector(v.x(), v.y());
+  LOG(INFO) << "Setting MouseInputFilter output_offset to "
+            << output_offset_.x() << "," << output_offset_.y();
 }
 
 }  // namespace protocol

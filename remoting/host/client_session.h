@@ -252,6 +252,10 @@ class ClientSession : public protocol::HostStub,
   // Contains the most recently gathered info about the desktop displays;
   DesktopDisplayInfo desktop_display_info_;
 
+  // Default DPI values to use if a display reports 0 for DPI.
+  int default_x_dpi_;
+  int default_y_dpi_;
+
   // The id of the desktop display to show to the user.
   // Default is webrtc::kFullDesktopScreenId which shows all displays.
   webrtc::ScreenId show_display_id_ = webrtc::kFullDesktopScreenId;

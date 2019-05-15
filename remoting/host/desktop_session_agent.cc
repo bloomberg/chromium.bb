@@ -286,6 +286,13 @@ void DesktopSessionAgent::SetDisableInputs(bool disable_inputs) {
 
 void DesktopSessionAgent::OnDesktopDisplayChanged(
     std::unique_ptr<protocol::VideoLayout> layout) {
+  LOG(INFO) << "DSA::OnDesktopDisplayChanged";
+  for (int display_id = 0; display_id < layout->video_track_size();
+       display_id++) {
+    protocol::VideoTrackLayout track = layout->video_track(display_id);
+    LOG(INFO) << "   #" << display_id << " : "
+              << " [" << track.x_dpi() << "," << track.y_dpi() << "]";
+  }
   SendToNetwork(std::make_unique<ChromotingDesktopNetworkMsg_DisplayChanged>(
       *layout.get()));
 }

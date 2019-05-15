@@ -539,6 +539,13 @@ void DesktopSessionProxy::OnReleaseSharedBuffer(int id) {
 void DesktopSessionProxy::OnDesktopDisplayChanged(
     const protocol::VideoLayout& displays) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
+  LOG(INFO) << "DSP::OnDesktopDisplayChanged";
+  for (int display_id = 0; display_id < displays.video_track_size();
+       display_id++) {
+    protocol::VideoTrackLayout track = displays.video_track(display_id);
+    LOG(INFO) << "   #" << display_id << " : "
+              << " [" << track.x_dpi() << "," << track.y_dpi() << "]";
+  }
 
   if (client_session_control_) {
     auto layout = std::make_unique<protocol::VideoLayout>();

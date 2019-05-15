@@ -490,6 +490,7 @@ void ClientSession::OnVideoSizeChanged(protocol::VideoStream* video_stream,
                                        const webrtc::DesktopSize& size,
                                        const webrtc::DesktopVector& dpi) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  LOG(INFO) << "ClientSession::OnVideoSizeChanged";
   webrtc::DesktopVector origin;
   if (show_display_id_ != webrtc::kFullDesktopScreenId) {
     origin = desktop_display_info_.CalcDisplayOffset(show_display_id_);
@@ -497,18 +498,29 @@ void ClientSession::OnVideoSizeChanged(protocol::VideoStream* video_stream,
   mouse_clamping_filter_.set_output_offset(origin);
   mouse_clamping_filter_.set_output_size(size);
 
+  // Record default DPI in case a display reports 0 for DPI.
+  default_x_dpi_ = dpi.x();
+  default_y_dpi_ = dpi.y();
+
   switch (connection_->session()->config().protocol()) {
     case protocol::SessionConfig::Protocol::ICE:
+      LOG(INFO) << "   ICE input size (pixels): " << size.width() << "x"
+                << size.height() << " @ " << dpi.x() << "," << dpi.y();
       mouse_clamping_filter_.set_input_size(webrtc::DesktopSize(size));
       break;
 
     case protocol::SessionConfig::Protocol::WEBRTC: {
+      LOG(INFO) << "   WebRTC input size (pixels): " << size.width() << "x"
+                << size.height() << " @ " << dpi.x() << "," << dpi.y();
       // When using WebRTC protocol the client sends mouse coordinates in DIPs,
       // while InputInjector expects them in physical pixels.
       // TODO(sergeyu): Fix InputInjector implementations to use DIPs as well.
       webrtc::DesktopSize size_dips =
           DesktopDisplayInfo::CalcSizeDips(size, dpi.x(), dpi.y());
       mouse_clamping_filter_.set_input_size(webrtc::DesktopSize(size_dips));
+      LOG(INFO) << "   DPI: " << dpi.x() << "," << dpi.y();
+      LOG(INFO) << "   WebRTC input size (DIPS): " << size_dips.width() << "x"
+                << size_dips.height();
 
       // Generate and send VideoLayout message.
       protocol::VideoLayout layout;
@@ -519,6 +531,10 @@ void ClientSession::OnVideoSizeChanged(protocol::VideoStream* video_stream,
       video_track->set_height(size_dips.height());
       video_track->set_x_dpi(dpi.x());
       video_track->set_y_dpi(dpi.y());
+
+      LOG(INFO) << "  VideoLayout Desktop (DIPS) = 0,0 " << size_dips.width()
+                << "x" << size_dips.height() << " [" << dpi.x() << ","
+                << dpi.y() << "]";
 
       // VideoLayout can be sent only after the control channel is connected.
       // TODO(sergeyu): Change client_stub() implementation to allow queuing
@@ -535,7 +551,7 @@ void ClientSession::OnVideoSizeChanged(protocol::VideoStream* video_stream,
 
 void ClientSession::OnDesktopDisplayChanged(
     std::unique_ptr<protocol::VideoLayout> displays) {
-  LOG(INFO) << "OnDesktopDisplayChanged";
+  LOG(INFO) << "ClientSession::OnDesktopDisplayChanged";
   // Scan display list to calculate the full desktop size.
   int min_x = 0;
   int max_x = 0;
@@ -543,9 +559,14 @@ void ClientSession::OnDesktopDisplayChanged(
   int max_y = 0;
   int dpi_x = 0;
   int dpi_y = 0;
+  LOG(INFO) << "  Scanning display info...";
   for (int display_id = 0; display_id < displays->video_track_size();
        display_id++) {
     protocol::VideoTrackLayout track = displays->video_track(display_id);
+    LOG(INFO) << "   #" << display_id << " : " << track.position_x() << ","
+              << track.position_y() << " " << track.width() << "x"
+              << track.height() << " [" << track.x_dpi() << "," << track.y_dpi()
+              << "]";
     if (dpi_x == 0)
       dpi_x = track.x_dpi();
     if (dpi_y == 0)
@@ -563,6 +584,12 @@ void ClientSession::OnDesktopDisplayChanged(
       max_y = std::max(y + track.height(), max_y);
     }
   }
+
+  // TODO(garykac): Investigate why these DPI values are 0 for some users.
+  if (dpi_x == 0)
+    dpi_x = default_x_dpi_;
+  if (dpi_y == 0)
+    dpi_y = default_y_dpi_;
 
   // Calc desktop scaled geometry (in DIPs)
   // See comment in OnVideoSizeChanged() for details.
@@ -608,8 +635,8 @@ void ClientSession::OnDesktopDisplayChanged(
 
     protocol::VideoTrackLayout* video_track = layout.add_video_track();
     video_track->CopyFrom(display);
-    LOG(INFO) << "  Display " << display_id << " " << display.position_x()
-              << "," << display.position_y() << display.width() << "x"
+    LOG(INFO) << "  Display " << display_id << " = " << display.position_x()
+              << "," << display.position_y() << " " << display.width() << "x"
               << display.height() << " [" << display.x_dpi() << ","
               << display.y_dpi() << "]";
   }
