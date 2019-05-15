@@ -80,8 +80,10 @@ const extensions::Extension* BadgeServiceImpl::ExtensionFromLastUrl() {
 }
 
 bool BadgeServiceImpl::IsInApp() {
-  web_app::AppBrowserController* app_controller =
-      chrome::FindBrowserWithWebContents(web_contents_)->app_controller();
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
+  if (!browser)
+    return false;
+  web_app::AppBrowserController* app_controller = browser->app_controller();
   return app_controller &&
          extensions::IsSameScope(app_controller->GetAppLaunchURL(),
                                  web_contents_->GetLastCommittedURL(),
