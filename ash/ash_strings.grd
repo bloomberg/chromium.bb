@@ -1635,6 +1635,12 @@ This file contains the strings for ash.
       <message name="IDS_ASH_LOGIN_PUBLIC_ACCOUNT_MONITORING_INFO_ITEM_4" desc="Text shown in the warning dialog after user clicks on the learn more link, notifying the user of potential security and privacy implications of using the device">
         Adjust privacy settings
       </message>
+      <message name="IDS_ASH_LOGIN_PARENT_ACCESS_TITLE_CHANGE_TIME" desc="Title of the parent access input dialog that allows to change the child's device time.">
+        Change time
+      </message>
+      <message name="IDS_ASH_LOGIN_PARENT_ACCESS_TITLE_CHANGE_TIMEZONE" desc="Title of the parent access input dialog that allows to change the child's device timezone.">
+        Change timezone
+      </message>
       <message name="IDS_ASH_LOGIN_PARENT_ACCESS_DIALOG_NAME" desc="Accessible name of the parent access input dialog that allows to unlock child's device with a code.">
         Parent access
       </message>
@@ -1646,6 +1652,9 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_LOGIN_PARENT_ACCESS_DESCRIPTION" desc="Description shown on the parent access input dialog. Explains what code should be used to unlock the device.">
         To unlock the device, enter your Family Link parent access code
+      </message>
+      <message name="IDS_ASH_LOGIN_PARENT_ACCESS_GENERIC_DESCRIPTION" desc="Description shown on the parent access input dialog. Explains what code should be used to unlock the device.">
+        Enter Family Link parent access code.
       </message>
       <message name="IDS_ASH_LOGIN_PARENT_ACCESS_HELP" desc="Label of a button shown on the parent access input dialog.">
         Need help?
