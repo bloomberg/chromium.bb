@@ -66,15 +66,8 @@ PrintPreviewPrintHeaderInteractiveTest =
   }
 };
 
-// Web UI interactive tests are flaky on Win10, see https://crbug.com/711256
-GEN('#if defined(OS_WIN)');
-GEN('#define MAYBE_FocusPrintOnReady DISABLED_FocusPrintOnReady');
-GEN('#else');
-GEN('#define MAYBE_FocusPrintOnReady FocusPrintOnReady');
-GEN('#endif');
 TEST_F(
-    'PrintPreviewPrintHeaderInteractiveTest', 'MAYBE_FocusPrintOnReady',
-    function() {
+    'PrintPreviewPrintHeaderInteractiveTest', 'FocusPrintOnReady', function() {
       this.runMochaTest(
           print_header_interactive_test.TestNames.FocusPrintOnReady);
     });
@@ -138,27 +131,15 @@ PrintPreviewDestinationDialogInteractiveTest =
   }
 };
 
-// Web UI interactive tests are flaky on Win10, see https://crbug.com/711256
-GEN('#if defined(OS_WIN)');
-GEN('#define MAYBE_FocusSearchBox DISABLED_FocusSearchBox');
-GEN('#else');
-GEN('#define MAYBE_FocusSearchBox FocusSearchBox');
-GEN('#endif');
 TEST_F(
-    'PrintPreviewDestinationDialogInteractiveTest', 'MAYBE_FocusSearchBox',
+    'PrintPreviewDestinationDialogInteractiveTest', 'FocusSearchBox',
     function() {
       this.runMochaTest(
           destination_dialog_interactive_test.TestNames.FocusSearchBox);
     });
 
-// Web UI interactive tests are flaky on Win10, see https://crbug.com/711256
-GEN('#if defined(OS_WIN)');
-GEN('#define MAYBE_EscapeSearchBox DISABLED_EscapeSearchBox');
-GEN('#else');
-GEN('#define MAYBE_EscapeSearchBox EscapeSearchBox');
-GEN('#endif');
 TEST_F(
-    'PrintPreviewDestinationDialogInteractiveTest', 'MAYBE_EscapeSearchBox',
+    'PrintPreviewDestinationDialogInteractiveTest', 'EscapeSearchBox',
     function() {
       this.runMochaTest(
           destination_dialog_interactive_test.TestNames.EscapeSearchBox);
@@ -185,38 +166,19 @@ PrintPreviewPagesSettingsTest = class extends PrintPreviewInteractiveUITest {
   }
 };
 
-// Web UI interactive tests are flaky on Win10, see https://crbug.com/711256
-GEN('#if defined(OS_WIN)');
-GEN('#define MAYBE_ClearInput DISABLED_ClearInput');
-GEN('#else');
-GEN('#define MAYBE_ClearInput ClearInput');
-GEN('#endif');
-TEST_F('PrintPreviewPagesSettingsTest', 'MAYBE_ClearInput', function() {
+TEST_F('PrintPreviewPagesSettingsTest', 'ClearInput', function() {
   this.runMochaTest(pages_settings_test.TestNames.ClearInput);
 });
 
-// Web UI interactive tests are flaky on Win10, see https://crbug.com/711256
-GEN('#if defined(OS_WIN)');
-GEN('#define MAYBE_InputNotDisabledOnValidityChange DISABLED_InputNotDisabledOnValidityChange');
-GEN('#else');
-GEN('#define MAYBE_InputNotDisabledOnValidityChange InputNotDisabledOnValidityChange');
-GEN('#endif');
 TEST_F(
-    'PrintPreviewPagesSettingsTest', 'MAYBE_InputNotDisabledOnValidityChange',
+    'PrintPreviewPagesSettingsTest', 'InputNotDisabledOnValidityChange',
     function() {
       this.runMochaTest(
           pages_settings_test.TestNames.InputNotDisabledOnValidityChange);
     });
 
-// Web UI interactive tests are flaky on Win10, see https://crbug.com/711256
-GEN('#if defined(OS_WIN)');
-GEN('#define MAYBE_EnterOnInputTriggersPrint DISABLED_EnterOnInputTriggersPrint');
-GEN('#else');
-GEN('#define MAYBE_EnterOnInputTriggersPrint EnterOnInputTriggersPrint');
-GEN('#endif');
 TEST_F(
-    'PrintPreviewPagesSettingsTest', 'MAYBE_EnterOnInputTriggersPrint',
-    function() {
+    'PrintPreviewPagesSettingsTest', 'EnterOnInputTriggersPrint', function() {
       this.runMochaTest(
           pages_settings_test.TestNames.EnterOnInputTriggersPrint);
     });
@@ -243,15 +205,9 @@ PrintPreviewNumberSettingsSectionInteractiveTest =
   }
 };
 
-// Web UI interactive tests are flaky on Win10, see https://crbug.com/711256
-GEN('#if defined(OS_WIN)');
-GEN('#define MAYBE_BlurResetsEmptyInput DISABLED_BlurResetsEmptyInput');
-GEN('#else');
-GEN('#define MAYBE_BlurResetsEmptyInput BlurResetsEmptyInput');
-GEN('#endif');
 TEST_F(
-    'PrintPreviewNumberSettingsSectionInteractiveTest',
-    'MAYBE_BlurResetsEmptyInput', function() {
+    'PrintPreviewNumberSettingsSectionInteractiveTest', 'BlurResetsEmptyInput',
+    function() {
       this.runMochaTest(number_settings_section_interactive_test.TestNames
                             .BlurResetsEmptyInput);
     });
