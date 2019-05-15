@@ -135,10 +135,8 @@ std::string StateToStr(KeyboardControllerState state) {
       return "INITIAL";
     case KeyboardControllerState::COUNT:
       NOTREACHED();
+      return "";
   }
-  NOTREACHED() << "Unknownstate: " << static_cast<int>(state);
-  // Needed for windows build.
-  return "";
 }
 
 // An enumeration of different keyboard control events that should be logged.
