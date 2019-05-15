@@ -84,6 +84,8 @@ public class DownloadNotificationService {
             "org.chromium.chrome.browser.download.OfflineItemsStateAtCancel";
 
     static final String EXTRA_NOTIFICATION_BUNDLE_ICON_ID = "Chrome.NotificationBundleIconIdExtra";
+    static final String EXTRA_IS_AUTO_RESUMPTION =
+            "org.chromium.chrome.browser.download.IS_AUTO_RESUMPTION";
     /** Notification Id starting value, to avoid conflicts from IDs used in prior versions. */
     private static final int STARTING_NOTIFICATION_ID = 1000000;
 
@@ -553,6 +555,7 @@ public class DownloadNotificationService {
             intent.setAction(ACTION_DOWNLOAD_RESUME);
             intent.putExtra(EXTRA_DOWNLOAD_CONTENTID_ID, entry.id.id);
             intent.putExtra(EXTRA_DOWNLOAD_CONTENTID_NAMESPACE, entry.id.namespace);
+            intent.putExtra(EXTRA_IS_AUTO_RESUMPTION, true);
 
             resumeDownload(intent);
         }

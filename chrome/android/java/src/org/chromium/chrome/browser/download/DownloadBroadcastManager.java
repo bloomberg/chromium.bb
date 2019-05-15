@@ -13,6 +13,7 @@ import static org.chromium.chrome.browser.download.DownloadNotificationService.A
 import static org.chromium.chrome.browser.download.DownloadNotificationService.EXTRA_DOWNLOAD_CONTENTID_ID;
 import static org.chromium.chrome.browser.download.DownloadNotificationService.EXTRA_DOWNLOAD_CONTENTID_NAMESPACE;
 import static org.chromium.chrome.browser.download.DownloadNotificationService.EXTRA_DOWNLOAD_STATE_AT_CANCEL;
+import static org.chromium.chrome.browser.download.DownloadNotificationService.EXTRA_IS_AUTO_RESUMPTION;
 import static org.chromium.chrome.browser.download.DownloadNotificationService.EXTRA_IS_OFF_THE_RECORD;
 import static org.chromium.chrome.browser.download.DownloadNotificationService.clearResumptionAttemptLeft;
 
@@ -257,11 +258,12 @@ public class DownloadBroadcastManager extends Service {
                 DownloadItem item = (entry != null)
                         ? entry.buildDownloadItem()
                         : new DownloadItem(false,
-                                  new DownloadInfo.Builder()
-                                          .setDownloadGuid(id.id)
-                                          .setIsOffTheRecord(isOffTheRecord)
-                                          .build());
-                downloadServiceDelegate.resumeDownload(id, item, true /* hasUserGesture */);
+                                new DownloadInfo.Builder()
+                                        .setDownloadGuid(id.id)
+                                        .setIsOffTheRecord(isOffTheRecord)
+                                        .build());
+                downloadServiceDelegate.resumeDownload(id, item,
+                        !IntentUtils.safeGetBooleanExtra(intent, EXTRA_IS_AUTO_RESUMPTION, false));
                 break;
 
             default:
