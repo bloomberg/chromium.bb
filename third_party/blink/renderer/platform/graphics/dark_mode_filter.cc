@@ -3,11 +3,11 @@
 #include "base/optional.h"
 #include "third_party/blink/renderer/platform/graphics/dark_mode_settings.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
+#include "third_party/skia/include/effects/SkColorMatrix.h"
 #include "third_party/skia/include/effects/SkHighContrastFilter.h"
 #include "third_party/skia/include/effects/SkTableColorFilter.h"
 
 namespace blink {
-
 namespace {
 
 bool ShouldApplyToImage(const DarkModeSettings& settings,
@@ -21,6 +21,16 @@ bool ShouldApplyToImage(const DarkModeSettings& settings,
     default:
       return false;
   }
+}
+
+// |grayscale_percent| should be between 0.0 and 1.0.
+sk_sp<SkColorFilter> MakeGrayscaleFilter(float grayscale_percent) {
+  DCHECK_GE(grayscale_percent, 0.0f);
+  DCHECK_LE(grayscale_percent, 1.0f);
+
+  SkColorMatrix grayscale_matrix;
+  grayscale_matrix.setSaturation(1.0f - grayscale_percent);
+  return SkColorFilters::Matrix(grayscale_matrix);
 }
 
 }  // namespace
@@ -69,23 +79,10 @@ void DarkModeFilter::UpdateSettings(const DarkModeSettings& new_settings) {
   config.fContrast = settings_.contrast;
   default_filter_ = SkHighContrastFilter::Make(config);
 
-  SkHighContrastConfig image_config = config;
-  switch (settings_.image_style) {
-    case DarkModeImageStyle::kGrayscale:
-      image_config.fGrayscale = true;
-      image_config.fInvertStyle = SkHighContrastConfig::InvertStyle::kNoInvert;
-      image_filter_ = SkHighContrastFilter::Make(image_config);
-      break;
-    case DarkModeImageStyle::kGrayscaleAndInvert:
-      DCHECK_NE(image_config.fInvertStyle,
-                SkHighContrastConfig::InvertStyle::kNoInvert);
-      image_config.fGrayscale = true;
-      image_filter_ = SkHighContrastFilter::Make(image_config);
-      break;
-    case DarkModeImageStyle::kDefault:
-      image_filter_.reset(nullptr);
-      break;
-  }
+  if (settings_.image_grayscale_percent > 0.0f)
+    image_filter_ = MakeGrayscaleFilter(settings_.image_grayscale_percent);
+  else
+    image_filter_.reset(nullptr);
 }
 
 Color DarkModeFilter::ApplyIfNeeded(const Color& color) {
@@ -98,8 +95,8 @@ Color DarkModeFilter::ApplyIfNeeded(const Color& color) {
 }
 
 // TODO(gilmanmh): Investigate making |image| a const reference. This code
-// relies on Image::ShouldApplyDarkModeFilter(), which is not const. If it could
-// be made const, then |image| could also be const.
+// relies on Image::ShouldApplyDarkModeFilter(), which is not const. If it
+// could be made const, then |image| could also be const.
 void DarkModeFilter::ApplyToImageFlagsIfNeeded(const FloatRect& src_rect,
                                                Image* image,
                                                cc::PaintFlags* flags) {

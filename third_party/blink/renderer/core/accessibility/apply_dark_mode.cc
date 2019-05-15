@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/accessibility/apply_dark_mode.h"
+
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
@@ -53,7 +54,8 @@ DarkModeSettings BuildDarkModeSettings(const Settings& frame_settings,
   dark_mode_settings.grayscale = frame_settings.GetDarkModeGrayscale();
   dark_mode_settings.contrast = frame_settings.GetDarkModeContrast();
   dark_mode_settings.image_policy = frame_settings.GetDarkModeImagePolicy();
-  dark_mode_settings.image_style = frame_settings.GetDarkModeImageStyle();
+  dark_mode_settings.image_grayscale_percent =
+      frame_settings.GetDarkModeImageGrayscale();
   return dark_mode_settings;
 }
 

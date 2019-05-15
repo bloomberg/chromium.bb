@@ -26,16 +26,6 @@ enum class DarkModeImagePolicy {
   kFilterSmart,
 };
 
-// For images that should have a filter applied, which filter should be used?
-enum class DarkModeImageStyle {
-  // Invert images the same way as other elements.
-  kDefault,
-  // Apply grayscale to images that would be inverted, but don't invert them.
-  kGrayscale,
-  // Apply grayscale to images as well as inverting them.
-  kGrayscaleAndInvert
-};
-
 enum class DarkModePagePolicy {
   // Apply dark-mode filter to all frames, regardless of content.
   kFilterAll,
@@ -46,9 +36,9 @@ enum class DarkModePagePolicy {
 struct DarkModeSettings {
   DarkMode mode = DarkMode::kOff;
   bool grayscale = false;
-  float contrast = 0.0;  // Valid range from -1.0 to 1.0
+  float image_grayscale_percent = 0.0;  // Valid range from 0.0 to 1.0
+  float contrast = 0.0;                 // Valid range from -1.0 to 1.0
   DarkModeImagePolicy image_policy = DarkModeImagePolicy::kFilterAll;
-  DarkModeImageStyle image_style = DarkModeImageStyle::kDefault;
 };
 
 }  // namespace blink

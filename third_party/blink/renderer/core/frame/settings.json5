@@ -913,9 +913,9 @@
       invalidate: "Paint",
     },
     {
-      name: "darkModeImageStyle",
-      initial: "DarkModeImageStyle::kDefault",
-      type: "DarkModeImageStyle",
+      name: "darkModeImageGrayscale",
+      initial: "0.0",
+      type: "float",
       invalidate: "Paint",
     },
     {
