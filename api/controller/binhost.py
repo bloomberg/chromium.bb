@@ -40,7 +40,8 @@ def PrepareBinhostUploads(input_proto, output_proto):
   # binhost for Portage to use it, so include it in upload_targets.
   uploads_dir = binhost.GetPrebuiltsRoot(target)
   upload_targets = binhost.GetPrebuiltsFiles(uploads_dir)
-  index_path = binhost.UpdatePackageIndex(uploads_dir, upload_uri, upload_path)
+  index_path = binhost.UpdatePackageIndex(uploads_dir, upload_uri, upload_path,
+                                          sudo=True)
   assert index_path.startswith(uploads_dir), (
       'expected index_path to start with uploads_dir')
   upload_targets.append(index_path[len(uploads_dir):])
