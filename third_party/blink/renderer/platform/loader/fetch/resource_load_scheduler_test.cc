@@ -58,8 +58,8 @@ class MockClient final : public GarbageCollectedFinalized<MockClient>,
   }
 
  private:
-  Member<ConsoleLogger> console_logger_ =
-      MakeGarbageCollected<NullConsoleLogger>();
+  Member<DetachableConsoleLogger> console_logger_ =
+      MakeGarbageCollected<DetachableConsoleLogger>();
   MockClientDelegate* delegate_;
   bool was_run_ = false;
 };
@@ -92,7 +92,8 @@ class ResourceLoadSchedulerTest : public testing::Test {
     console_logger_ = MakeGarbageCollected<MockConsoleLogger>();
     scheduler_ = MakeGarbageCollected<ResourceLoadScheduler>(
         ResourceLoadScheduler::ThrottlingPolicy::kTight, *properties,
-        frame_scheduler.get(), *console_logger_);
+        frame_scheduler.get(),
+        *MakeGarbageCollected<DetachableConsoleLogger>(console_logger_));
     Scheduler()->SetOutstandingLimitForTesting(1);
   }
   void TearDown() override { Scheduler()->Shutdown(); }

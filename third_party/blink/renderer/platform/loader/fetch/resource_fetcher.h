@@ -50,7 +50,7 @@ namespace blink {
 
 enum class ResourceType : uint8_t;
 class CodeCacheLoader;
-class ConsoleLogger;
+class DetachableConsoleLogger;
 class FetchContext;
 class FrameScheduler;
 class MHTMLArchive;
@@ -170,7 +170,7 @@ class PLATFORM_EXPORT ResourceFetcher
 
   FetchContext& Context() const;
   void ClearContext();
-  ConsoleLogger& GetConsoleLogger();
+  DetachableConsoleLogger& GetConsoleLogger() { return *console_logger_; }
 
   int BlockingRequestCount() const;
   int NonblockingRequestCount() const;
@@ -268,7 +268,6 @@ class PLATFORM_EXPORT ResourceFetcher
 
  private:
   friend class ResourceCacheValidationSuppressor;
-  class DetachableConsoleLogger;
   class DetachableProperties;
   enum class StopFetchingTarget {
     kExcludingKeepaliveLoaders,
@@ -465,7 +464,7 @@ struct PLATFORM_EXPORT ResourceFetcherInit final {
   const Member<FetchContext> context;
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner;
   const Member<ResourceFetcher::LoaderFactory> loader_factory;
-  Member<ConsoleLogger> console_logger;
+  Member<DetachableConsoleLogger> console_logger;
   ResourceLoadScheduler::ThrottlingPolicy initial_throttling_policy =
       ResourceLoadScheduler::ThrottlingPolicy::kNormal;
   Member<MHTMLArchive> archive;

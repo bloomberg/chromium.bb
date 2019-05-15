@@ -401,33 +401,6 @@ mojom::RequestContextType ResourceFetcher::DetermineRequestContext(
   return mojom::RequestContextType::SUBRESOURCE;
 }
 
-class ResourceFetcher::DetachableConsoleLogger final
-    : public GarbageCollectedFinalized<DetachableConsoleLogger>,
-      public ConsoleLogger {
-  USING_GARBAGE_COLLECTED_MIXIN(DetachableConsoleLogger);
-
- public:
-  DetachableConsoleLogger(ConsoleLogger& logger) : logger_(logger) {}
-
-  void Detach() { logger_ = nullptr; }
-
-  // ConsoleLogger implementation.
-  void AddConsoleMessage(mojom::ConsoleMessageSource source,
-                         mojom::ConsoleMessageLevel level,
-                         const String& message) override {
-    if (logger_) {
-      logger_->AddConsoleMessage(source, level, message);
-    }
-  }
-  void Trace(Visitor* visitor) override {
-    visitor->Trace(logger_);
-    ConsoleLogger::Trace(visitor);
-  }
-
- private:
-  Member<ConsoleLogger> logger_;
-};
-
 // A delegating ResourceFetcherProperties subclass which can be from the
 // original ResourceFetcherProperties.
 class ResourceFetcher::DetachableProperties final
@@ -618,9 +591,9 @@ ResourceFetcher::ResourceFetcher(const ResourceFetcherInit& init)
           *MakeGarbageCollected<DetachableProperties>(*init.properties)),
       context_(init.context),
       task_runner_(init.task_runner),
-      console_logger_(MakeGarbageCollected<DetachableConsoleLogger>(
-          init.console_logger ? *init.console_logger
-                              : *MakeGarbageCollected<NullConsoleLogger>())),
+      console_logger_(init.console_logger
+                          ? init.console_logger.Get()
+                          : MakeGarbageCollected<DetachableConsoleLogger>()),
       loader_factory_(init.loader_factory),
       scheduler_(MakeGarbageCollected<ResourceLoadScheduler>(
           init.initial_throttling_policy,
@@ -1775,10 +1748,6 @@ void ResourceFetcher::ClearContext() {
                   WrapPersistent(this)),
         kKeepaliveLoadersTimeout);
   }
-}
-
-ConsoleLogger& ResourceFetcher::GetConsoleLogger() {
-  return *console_logger_;
 }
 
 int ResourceFetcher::BlockingRequestCount() const {

@@ -300,7 +300,8 @@ ResourceFetcher* WorkerOrWorkletGlobalScope::CreateFetcherInternal(
         GetTaskRunner(TaskType::kNetworking),
         MakeGarbageCollected<LoaderFactoryForWorker>(
             *this, web_worker_fetch_context_));
-    init.console_logger = this;
+    auto* console_logger = MakeGarbageCollected<DetachableConsoleLogger>(this);
+    init.console_logger = console_logger;
     fetcher = MakeGarbageCollected<ResourceFetcher>(init);
     fetcher->SetResourceLoadObserver(
         MakeGarbageCollected<ResourceLoadObserverForWorker>(

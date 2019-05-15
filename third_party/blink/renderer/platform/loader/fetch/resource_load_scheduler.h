@@ -17,7 +17,7 @@
 
 namespace blink {
 
-class ConsoleLogger;
+class DetachableConsoleLogger;
 class ResourceFetcherProperties;
 
 // Client interface to use the throttling/scheduling functionality that
@@ -149,7 +149,7 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
   ResourceLoadScheduler(ThrottlingPolicy initial_throttling_poilcy,
                         const ResourceFetcherProperties&,
                         FrameScheduler*,
-                        ConsoleLogger& console_logger);
+                        DetachableConsoleLogger& console_logger);
   ~ResourceLoadScheduler() override;
 
   void Trace(blink::Visitor*);
@@ -339,7 +339,7 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
   std::unique_ptr<FrameScheduler::LifecycleObserverHandle>
       scheduler_observer_handle_;
 
-  const Member<ConsoleLogger> console_logger_;
+  const Member<DetachableConsoleLogger> console_logger_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceLoadScheduler);
 };

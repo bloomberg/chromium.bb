@@ -353,7 +353,7 @@ ResourceLoadScheduler::ResourceLoadScheduler(
     ThrottlingPolicy initial_throttling_policy,
     const ResourceFetcherProperties& resource_fetcher_properties,
     FrameScheduler* frame_scheduler,
-    ConsoleLogger& console_logger)
+    DetachableConsoleLogger& console_logger)
     : resource_fetcher_properties_(resource_fetcher_properties),
       policy_(initial_throttling_policy),
       outstanding_limit_for_throttled_frame_scheduler_(
