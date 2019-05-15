@@ -15,14 +15,13 @@ class XRBoundedReferenceSpace final : public XRReferenceSpace {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  XRBoundedReferenceSpace(XRSession*);
+  explicit XRBoundedReferenceSpace(XRSession*);
+  XRBoundedReferenceSpace(XRSession*, XRRigidTransform*);
   ~XRBoundedReferenceSpace() override;
 
   std::unique_ptr<TransformationMatrix> DefaultPose() override;
   std::unique_ptr<TransformationMatrix> TransformBasePose(
       const TransformationMatrix& base_pose) override;
-
-  void setOriginOffset(XRRigidTransform*) override;
 
   HeapVector<Member<DOMPointReadOnly>> boundsGeometry();
 
@@ -31,6 +30,9 @@ class XRBoundedReferenceSpace final : public XRReferenceSpace {
   void OnReset() override;
 
  private:
+  XRBoundedReferenceSpace* cloneWithOriginOffset(
+      XRRigidTransform* origin_offset) override;
+
   void EnsureUpdated();
 
   HeapVector<Member<DOMPointReadOnly>> bounds_geometry_;

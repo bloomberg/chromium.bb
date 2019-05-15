@@ -17,6 +17,12 @@ XRStationaryReferenceSpace::XRStationaryReferenceSpace(XRSession* session,
                                                        Subtype subtype)
     : XRReferenceSpace(session), subtype_(subtype) {}
 
+XRStationaryReferenceSpace::XRStationaryReferenceSpace(
+    XRSession* session,
+    XRRigidTransform* transform,
+    Subtype subtype)
+    : XRReferenceSpace(session, transform), subtype_(subtype) {}
+
 XRStationaryReferenceSpace::~XRStationaryReferenceSpace() = default;
 
 void XRStationaryReferenceSpace::UpdateFloorLevelTransform() {
@@ -67,8 +73,8 @@ XRStationaryReferenceSpace::TransformBasePose(
 
       // Apply the floor-level transform to the base pose.
       if (floor_level_transform_) {
-        std::unique_ptr<TransformationMatrix> pose(
-            std::make_unique<TransformationMatrix>(*floor_level_transform_));
+        auto pose =
+            std::make_unique<TransformationMatrix>(*floor_level_transform_);
         pose->Multiply(base_pose);
         return pose;
       }
@@ -77,8 +83,7 @@ XRStationaryReferenceSpace::TransformBasePose(
       // 'position-disabled' poses must not contain any translation components,
       // and as a result the space the base pose is originally in doesn't matter
       // much. Strip out translation component and return.
-      std::unique_ptr<TransformationMatrix> pose(
-          std::make_unique<TransformationMatrix>(base_pose));
+      auto pose = std::make_unique<TransformationMatrix>(base_pose);
       pose->SetM41(0.0);
       pose->SetM42(0.0);
       pose->SetM43(0.0);
@@ -98,8 +103,7 @@ XRStationaryReferenceSpace::TransformBaseInputPose(
     const TransformationMatrix& base_pose) {
   switch (subtype_) {
     case kSubtypePositionDisabled: {
-      std::unique_ptr<TransformationMatrix> head_model_pose(
-          TransformBasePose(base_pose));
+      auto head_model_pose = TransformBasePose(base_pose);
 
       // Get the positional delta between the base pose and the head model pose.
       float dx = head_model_pose->M41() - base_pose.M41();
@@ -108,8 +112,7 @@ XRStationaryReferenceSpace::TransformBaseInputPose(
 
       // Translate the controller by the same delta so that it shows up in the
       // right relative position.
-      std::unique_ptr<TransformationMatrix> pose(
-          std::make_unique<TransformationMatrix>(base_input_pose));
+      auto pose = std::make_unique<TransformationMatrix>(base_input_pose);
       pose->SetM41(pose->M41() + dx);
       pose->SetM42(pose->M42() + dy);
       pose->SetM43(pose->M43() + dz);
@@ -131,6 +134,12 @@ void XRStationaryReferenceSpace::Trace(blink::Visitor* visitor) {
 
 void XRStationaryReferenceSpace::OnReset() {
   DispatchEvent(*XRReferenceSpaceEvent::Create(event_type_names::kReset, this));
+}
+
+XRStationaryReferenceSpace* XRStationaryReferenceSpace::cloneWithOriginOffset(
+    XRRigidTransform* origin_offset) {
+  return MakeGarbageCollected<XRStationaryReferenceSpace>(
+      this->session(), origin_offset, subtype_);
 }
 
 }  // namespace blink

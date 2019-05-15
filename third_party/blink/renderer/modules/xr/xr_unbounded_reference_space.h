@@ -14,7 +14,8 @@ class XRUnboundedReferenceSpace final : public XRReferenceSpace {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  XRUnboundedReferenceSpace(XRSession*);
+  explicit XRUnboundedReferenceSpace(XRSession*);
+  XRUnboundedReferenceSpace(XRSession*, XRRigidTransform*);
   ~XRUnboundedReferenceSpace() override;
 
   std::unique_ptr<TransformationMatrix> DefaultPose() override;
@@ -26,6 +27,9 @@ class XRUnboundedReferenceSpace final : public XRReferenceSpace {
   void OnReset() override;
 
  private:
+  XRUnboundedReferenceSpace* cloneWithOriginOffset(
+      XRRigidTransform* origin_offset) override;
+
   std::unique_ptr<TransformationMatrix> pose_transform_;
 };
 

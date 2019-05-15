@@ -14,15 +14,12 @@ namespace blink {
 XRBoundedReferenceSpace::XRBoundedReferenceSpace(XRSession* session)
     : XRReferenceSpace(session) {}
 
+XRBoundedReferenceSpace::XRBoundedReferenceSpace(
+    XRSession* session,
+    XRRigidTransform* origin_offset)
+    : XRReferenceSpace(session, origin_offset) {}
+
 XRBoundedReferenceSpace::~XRBoundedReferenceSpace() = default;
-
-void XRBoundedReferenceSpace::setOriginOffset(XRRigidTransform* transform) {
-  XRReferenceSpace::setOriginOffset(transform);
-
-  // Force a bounds update.
-  stage_parameters_id_ = 0;
-  EnsureUpdated();
-}
 
 // No default pose for bounded reference spaces.
 std::unique_ptr<TransformationMatrix> XRBoundedReferenceSpace::DefaultPose() {
@@ -51,8 +48,7 @@ void XRBoundedReferenceSpace::EnsureUpdated() {
     // In order to ensure that the bounds continue to line up with the user's
     // physical environment we need to transform by the inverse of the
     // originOffset.
-    TransformationMatrix bounds_transform =
-        originOffset()->InverseTransformMatrix();
+    TransformationMatrix bounds_transform = InverseOriginOffsetMatrix();
 
     if (display_info->stageParameters->bounds) {
       bounds_geometry_.clear();
@@ -124,6 +120,12 @@ void XRBoundedReferenceSpace::Trace(blink::Visitor* visitor) {
 
 void XRBoundedReferenceSpace::OnReset() {
   DispatchEvent(*XRReferenceSpaceEvent::Create(event_type_names::kReset, this));
+}
+
+XRBoundedReferenceSpace* XRBoundedReferenceSpace::cloneWithOriginOffset(
+    XRRigidTransform* origin_offset) {
+  return MakeGarbageCollected<XRBoundedReferenceSpace>(this->session(),
+                                                       origin_offset);
 }
 
 }  // namespace blink

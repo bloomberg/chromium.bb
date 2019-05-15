@@ -13,6 +13,11 @@ namespace blink {
 XRUnboundedReferenceSpace::XRUnboundedReferenceSpace(XRSession* session)
     : XRReferenceSpace(session) {}
 
+XRUnboundedReferenceSpace::XRUnboundedReferenceSpace(
+    XRSession* session,
+    XRRigidTransform* origin_offset)
+    : XRReferenceSpace(session, origin_offset) {}
+
 XRUnboundedReferenceSpace::~XRUnboundedReferenceSpace() = default;
 
 // No default pose for unbounded reference spaces.
@@ -34,6 +39,12 @@ void XRUnboundedReferenceSpace::Trace(blink::Visitor* visitor) {
 
 void XRUnboundedReferenceSpace::OnReset() {
   DispatchEvent(*XRReferenceSpaceEvent::Create(event_type_names::kReset, this));
+}
+
+XRUnboundedReferenceSpace* XRUnboundedReferenceSpace::cloneWithOriginOffset(
+    XRRigidTransform* origin_offset) {
+  return MakeGarbageCollected<XRUnboundedReferenceSpace>(this->session(),
+                                                         origin_offset);
 }
 
 }  // namespace blink

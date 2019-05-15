@@ -173,8 +173,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                 // right level. (Here we're moving it 1.6 meters, which should
                 // *very* roughly align us with the eye height of an "average"
                 // adult human.)
-                refSpace.originOffset = new XRRigidTransform({y: -1.6});
-                return refSpace;
+                return refSpace.getOffsetReferenceSpace(new XRRigidTransform({y: -1.6}));
               });
             } else {
               throw e;

@@ -37,6 +37,11 @@ std::unique_ptr<TransformationMatrix> XRSpace::TransformBaseInputPose(
   return nullptr;
 }
 
+TransformationMatrix XRSpace::OriginOffsetMatrix() {
+  TransformationMatrix identity;
+  return identity;
+}
+
 TransformationMatrix XRSpace::InverseOriginOffsetMatrix() {
   TransformationMatrix identity;
   return identity;

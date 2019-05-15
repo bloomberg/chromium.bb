@@ -16,6 +16,6 @@ enum XRReferenceSpaceType {
     Exposed=Window,
     RuntimeEnabled=WebXR
 ] interface XRReferenceSpace : XRSpace {
-  attribute XRRigidTransform originOffset;
   attribute EventHandler onreset;
+  XRReferenceSpace getOffsetReferenceSpace(XRRigidTransform originOffset);
 };

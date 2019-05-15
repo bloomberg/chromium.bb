@@ -19,6 +19,7 @@ class XRReferenceSpace : public XRSpace {
 
  public:
   explicit XRReferenceSpace(XRSession*);
+  XRReferenceSpace(XRSession*, XRRigidTransform*);
   ~XRReferenceSpace() override;
 
   std::unique_ptr<TransformationMatrix> DefaultPose() override;
@@ -30,9 +31,10 @@ class XRReferenceSpace : public XRSpace {
 
   std::unique_ptr<TransformationMatrix> GetTransformToMojoSpace() override;
 
-  XRRigidTransform* originOffset() const { return origin_offset_; }
-  virtual void setOriginOffset(XRRigidTransform*);
+  TransformationMatrix OriginOffsetMatrix() override;
   TransformationMatrix InverseOriginOffsetMatrix() override;
+
+  XRReferenceSpace* getOffsetReferenceSpace(XRRigidTransform* transform);
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(reset, kReset)
 
@@ -41,6 +43,9 @@ class XRReferenceSpace : public XRSpace {
   virtual void OnReset();
 
  private:
+  virtual XRReferenceSpace* cloneWithOriginOffset(
+      XRRigidTransform* origin_offset);
+
   Member<XRRigidTransform> origin_offset_;
 };
 

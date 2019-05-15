@@ -21,6 +21,7 @@ class XRStationaryReferenceSpace final : public XRReferenceSpace {
   };
 
   XRStationaryReferenceSpace(XRSession*, Subtype);
+  XRStationaryReferenceSpace(XRSession*, XRRigidTransform*, Subtype);
   ~XRStationaryReferenceSpace() override;
 
   std::unique_ptr<TransformationMatrix> DefaultPose() override;
@@ -35,6 +36,9 @@ class XRStationaryReferenceSpace final : public XRReferenceSpace {
   void OnReset() override;
 
  private:
+  XRStationaryReferenceSpace* cloneWithOriginOffset(
+      XRRigidTransform* origin_offset) override;
+
   void UpdateFloorLevelTransform();
 
   unsigned int display_info_id_ = 0;

@@ -13,9 +13,13 @@ namespace blink {
 
 // origin offset starts as identity transform
 XRReferenceSpace::XRReferenceSpace(XRSession* session)
-    : XRSpace(session),
-      origin_offset_(MakeGarbageCollected<XRRigidTransform>(nullptr, nullptr)) {
-}
+    : XRReferenceSpace(
+          session,
+          MakeGarbageCollected<XRRigidTransform>(nullptr, nullptr)) {}
+
+XRReferenceSpace::XRReferenceSpace(XRSession* session,
+                                   XRRigidTransform* origin_offset)
+    : XRSpace(session), origin_offset_(origin_offset) {}
 
 XRReferenceSpace::~XRReferenceSpace() = default;
 
@@ -63,12 +67,26 @@ XRReferenceSpace::GetTransformToMojoSpace() {
   return transform_matrix;
 }
 
-void XRReferenceSpace::setOriginOffset(XRRigidTransform* transform) {
-  origin_offset_ = transform;
+TransformationMatrix XRReferenceSpace::OriginOffsetMatrix() {
+  return origin_offset_->TransformMatrix();
 }
 
 TransformationMatrix XRReferenceSpace::InverseOriginOffsetMatrix() {
   return origin_offset_->InverseTransformMatrix();
+}
+
+XRReferenceSpace* XRReferenceSpace::getOffsetReferenceSpace(
+    XRRigidTransform* additional_offset) {
+  auto matrix =
+      OriginOffsetMatrix().Multiply(additional_offset->TransformMatrix());
+
+  auto* result_transform = MakeGarbageCollected<XRRigidTransform>(matrix);
+  return cloneWithOriginOffset(result_transform);
+}
+
+XRReferenceSpace* XRReferenceSpace::cloneWithOriginOffset(
+    XRRigidTransform* origin_offset) {
+  return MakeGarbageCollected<XRReferenceSpace>(this->session(), origin_offset);
 }
 
 void XRReferenceSpace::Trace(blink::Visitor* visitor) {

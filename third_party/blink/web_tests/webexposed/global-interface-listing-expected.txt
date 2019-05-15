@@ -10626,10 +10626,9 @@ interface XRRay
 interface XRReferenceSpace : XRSpace
     attribute @@toStringTag
     getter onreset
-    getter originOffset
     method constructor
+    method getOffsetReferenceSpace
     setter onreset
-    setter originOffset
 interface XRReferenceSpaceEvent : Event
     attribute @@toStringTag
     getter referenceSpace

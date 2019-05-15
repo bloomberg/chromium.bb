@@ -429,8 +429,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           {x: invPosition[0], y: invPosition[1], z: invPosition[2]},
           {x: invOrientation[0], y: invOrientation[1], z: invOrientation[2], w: invOrientation[3]});
 
-        // Update originOffset to use the teleported player position and orientation
-        refSpace.originOffset = xform;
+        // Update refSpace to use a new originOffset with the teleported player position and orientation
+        refSpace = refSpace.getOffsetReferenceSpace(xform);
 
         console.log('teleport to', trackingSpaceOriginInWorldSpace);
       }
