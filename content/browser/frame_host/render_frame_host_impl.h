@@ -1055,12 +1055,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
                            NavigationCommitInIframePendingDeletionABC);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
                            CommittedOriginIncompatibleWithOriginLock);
-  FRIEND_TEST_ALL_PREFIXES(
-      SitePerProcessBrowserTest,
-      IsDetachedSubframeObservableDuringUnloadHandlerSameProcess);
-  FRIEND_TEST_ALL_PREFIXES(
-      SitePerProcessBrowserTest,
-      IsDetachedSubframeObservableDuringUnloadHandlerCrossProcess);
 
   class DroppedInterfaceRequestLogger;
 
