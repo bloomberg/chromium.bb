@@ -313,6 +313,8 @@ crbug.com/954591 external/wpt/css/css-transforms/composited-under-rotateY-180deg
 
 # LayoutNG fixes this
 crbug.com/408895 external/wpt/css/CSS2/floats/overhanging-float-paint-order.html [ Failure ]
+crbug.com/769039 external/wpt/css/CSS2/normal-flow/max-height-separates-margin.html [ Failure ]
+crbug.com/769039 external/wpt/css/CSS2/normal-flow/min-height-separates-margin.html [ Failure ]
 
 # ====== Paint team owned tests to here ======
 

@@ -647,9 +647,11 @@ scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::FinishLayout(
 
   if (container_builder_.BfcBlockOffset()) {
     // Do not collapse margins between the last in-flow child and bottom margin
-    // of its parent if the parent has height != auto.
-    if (!Style().LogicalHeight().IsAuto()) {
-      // TODO(layout-ng): handle LogicalMinHeight, LogicalMaxHeight.
+    // of its parent if:
+    //  - The parent has block-size != auto.
+    //  - The block-size differs from the intrinsic size.
+    if (!Style().LogicalHeight().IsAuto() ||
+        border_box_size.block_size != intrinsic_block_size_) {
       end_margin_strut = NGMarginStrut();
     }
   }
