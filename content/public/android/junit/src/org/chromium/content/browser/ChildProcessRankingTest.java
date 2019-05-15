@@ -230,6 +230,25 @@ public class ChildProcessRankingTest {
     }
 
     @Test
+    public void testFrameDepthIntOverflow() {
+        ChildProcessConnection c1 = createConnection();
+        ChildProcessConnection c2 = createConnection();
+        ChildProcessConnection c3 = createConnection();
+        ChildProcessRanking ranking = new ChildProcessRanking();
+
+        // Native can pass up the maximum value of unsigned int.
+        long intOverflow = ((long) Integer.MAX_VALUE) * 2;
+        ranking.addConnection(c3, true /* foreground */, intOverflow - 1 /* frameDepth */,
+                true /* intersectsViewport */, ChildProcessImportance.NORMAL);
+        ranking.addConnection(c2, true /* foreground */, 10 /* frameDepth */,
+                true /* intersectsViewport */, ChildProcessImportance.NORMAL);
+        ranking.addConnection(c1, true /* foreground */, intOverflow /* frameDepth */,
+                true /* intersectsViewport */, ChildProcessImportance.NORMAL);
+
+        assertRankingAndRemoveAll(ranking, new ChildProcessConnection[] {c2, c3, c1});
+    }
+
+    @Test
     public void testThrowExceptionWhenGoingOverLimit() {
         ChildProcessRanking ranking = new ChildProcessRanking(2);
 

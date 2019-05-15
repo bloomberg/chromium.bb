@@ -66,7 +66,7 @@ public class ChildProcessRanking implements Iterable<ChildProcessConnection> {
                 return 1;
             }
 
-            return (int) (o1.frameDepth - o2.frameDepth);
+            return Long.signum(o1.frameDepth - o2.frameDepth);
         }
 
         @Override
