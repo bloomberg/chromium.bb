@@ -192,8 +192,10 @@ void SuggestionContainerView::OnUiVisibilityChanged(
     AssistantVisibility old_visibility,
     base::Optional<AssistantEntryPoint> entry_point,
     base::Optional<AssistantExitPoint> exit_point) {
-  if (assistant::util::IsStartingSession(new_visibility, old_visibility)) {
-    // Show conversation starters at the start of a new Assistant session.
+  if (assistant::util::IsStartingSession(new_visibility, old_visibility) &&
+      entry_point.value() != AssistantEntryPoint::kLauncherSearchResult) {
+    // Show conversation starters at the start of a new Assistant session except
+    // when the user already started a query in Launcher quick search box (QSB).
     OnConversationStartersChanged(
         delegate_->GetCacheModel()->GetConversationStarters());
     return;
