@@ -884,9 +884,13 @@ ALWAYS_INLINE bool BreakingContext::RewindToMidWordBreak(
     len = end - start;
   }
   if (!len) {
+    LazyLineBreakIterator breakall_it(
+      text.GetText(), style.LocaleForLineBreakIterator(),
+      LineBreakType::kBreakAll);
+
     // No characters can fit in the available space.
     // Break at the first mid-word break opportunity and let the line overflow.
-    return RewindToFirstMidWordBreak(text, style, font, break_iterator,
+    return RewindToFirstMidWordBreak(text, style, font, breakall_it,
                                      word_measurement);
   }
 
@@ -989,6 +993,8 @@ inline bool BreakingContext::HandleText(WordMeasurements& word_measurements,
       current_style_->WordBreak() == EWordBreak::kBreakAll && auto_wrap_;
   bool keep_all =
       current_style_->WordBreak() == EWordBreak::kKeepAll && auto_wrap_;
+  bool keepAllIfKorean =
+      current_style_->WordBreak() == EWordBreak::kBbKeepAllIfKorean && auto_wrap_;
   bool prohibit_break_inside = current_style_->HasTextCombine() &&
                                layout_text.IsCombineText() &&
                                LineLayoutTextCombine(layout_text).IsCombined();
@@ -1008,12 +1014,20 @@ inline bool BreakingContext::HandleText(WordMeasurements& word_measurements,
     break_words = false;
     break_all = false;
     keep_all = false;
+    keepAllIfKorean = false;
   }
 
-  // Use LineBreakType::Normal for break-all. When a word does not fit,
-  // rewindToMidWordBreak() finds the mid-word break point.
-  LineBreakType line_break_type =
-      keep_all ? LineBreakType::kKeepAll : LineBreakType::kNormal;
+  LineBreakType line_break_type;
+  if (break_all) {
+      line_break_type = LineBreakType::kBreakAll;
+  } else if (keep_all) {
+      line_break_type = LineBreakType::kKeepAll;
+  } else if (keepAllIfKorean) {
+      line_break_type = LineBreakType::kKeepAllIfKorean;
+  } else {
+      line_break_type = LineBreakType::kNormal;
+  }
+
   bool can_break_mid_word = break_all || break_words;
   int next_breakable_position_for_break_all = -1;
 
@@ -1084,11 +1098,13 @@ inline bool BreakingContext::HandleText(WordMeasurements& word_measurements,
 
     // Determine if we are in the whitespace between words.
     int next_breakable_position = current_.NextBreakablePosition();
+    bool isBreakable = break_all || layout_text_info_.line_break_iterator_.IsBreakable(
+             current_.Offset(), next_breakable_position, line_break_type);
+
     bool between_words =
         c == kNewlineCharacter ||
         (curr_ws_ != EWhiteSpace::kPre && !at_start_ &&
-         layout_text_info_.line_break_iterator_.IsBreakable(
-             current_.Offset(), next_breakable_position, line_break_type) &&
+         isBreakable &&
          (!disable_soft_hyphen ||
           current_.PreviousInSameNode() != kSoftHyphenCharacter));
     current_.SetNextBreakablePosition(next_breakable_position);
