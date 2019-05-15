@@ -69,7 +69,8 @@ void ContentBrowserTest::SetUp() {
   subprocess_path = subprocess_path.DirName().DirName();
   DCHECK_EQ(subprocess_path.BaseName().value(), "Contents");
   subprocess_path = subprocess_path.Append(
-      "Frameworks/Content Shell Helper.app/Contents/MacOS/Content Shell Helper");
+      "Frameworks/Content Shell Framework.framework/Helpers/Content Shell "
+      "Helper.app/Contents/MacOS/Content Shell Helper");
   command_line->AppendSwitchPath(switches::kBrowserSubprocessPath,
                                  subprocess_path);
 #endif

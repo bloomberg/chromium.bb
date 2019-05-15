@@ -661,19 +661,6 @@ if (is_android) {
 }
 
 if (is_mac) {
-  bundle_data("content_shell_framework_helpers") {
-    testonly = true
-    sources = [
-      "$root_out_dir/chrome_crashpad_handler",
-    ]
-    outputs = [
-      "{{bundle_contents_dir}}/Helpers/{{source_file_part}}",
-    ]
-    public_deps = [
-      "//components/crash/content/app:chrome_crashpad_handler",
-    ]
-  }
-
   mac_xib_bundle_data("content_shell_framework_xibs") {
     sources = [
       "app/English.lproj/HttpAuth.xib",
@@ -736,6 +723,21 @@ if (is_mac) {
 
   content_shell_framework_name = "$content_shell_product_name Framework"
   content_shell_helper_name = "$content_shell_product_name Helper"
+
+  bundle_data("content_shell_framework_helpers") {
+    testonly = true
+    sources = [
+      "$root_out_dir/$content_shell_helper_name.app",
+      "$root_out_dir/chrome_crashpad_handler",
+    ]
+    outputs = [
+      "{{bundle_contents_dir}}/Helpers/{{source_file_part}}",
+    ]
+    public_deps = [
+      ":content_shell_helper_app",
+      "//components/crash/content/app:chrome_crashpad_handler",
+    ]
+  }
 
   tweak_info_plist("content_shell_framework_plist") {
     testonly = true
@@ -844,14 +846,12 @@ if (is_mac) {
     testonly = true
     sources = [
       "$root_out_dir/$content_shell_framework_name.framework",
-      "$root_out_dir/$content_shell_helper_name.app",
     ]
     outputs = [
       "{{bundle_contents_dir}}/Frameworks/{{source_file_part}}",
     ]
     public_deps = [
       ":content_shell_framework",
-      ":content_shell_helper_app",
     ]
   }
 
