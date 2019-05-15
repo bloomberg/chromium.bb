@@ -138,10 +138,6 @@ IntRect AbsoluteElementBoundingBoxRect(const LayoutObject* layout_object) {
 
 }  // anonymous namespace
 
-// Webpage with more than |kMaxAnchorElementMetricsSize| anchor element metrics
-// to report will be ignored, so it should be large enough to cover most pages.
-const int AnchorElementMetrics::kMaxAnchorElementMetricsSize = 40;
-
 // static
 base::Optional<AnchorElementMetrics> AnchorElementMetrics::Create(
     const HTMLAnchorElement* anchor_element) {
@@ -303,8 +299,10 @@ void AnchorElementMetrics::MaybeReportViewportMetricsOnLoad(
 
     anchor_elements_metrics.push_back(anchor_metric.value().CreateMetricsPtr());
 
-    if (anchor_elements_metrics.size() > kMaxAnchorElementMetricsSize)
-      return;
+    // Webpages with more than 40 anchors will stop processing at the 40th
+    // anchor element.
+    if (anchor_elements_metrics.size() >= 40)
+      break;
   }
 
   if (anchor_elements_metrics.IsEmpty())
