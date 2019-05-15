@@ -22,6 +22,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.native_page.NativePage;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.display.DisplayAndroid;
 
@@ -64,7 +65,18 @@ public class TabContentManager {
      */
     private static int getIntegerResourceWithOverride(Context context, int resourceId,
             String commandLineSwitch) {
-        int val = context.getResources().getInteger(resourceId);
+        int val = -1;
+        // TODO(crbug/959054): Convert this to Finch config.
+        if (FeatureUtilities.isGridTabSwitcherEnabled()
+                || FeatureUtilities.isTabGroupsAndroidEnabled()) {
+            // With Grid Tab Switcher, we can greatly reduce the capacity of thumbnail cache.
+            // See crbug.com/959054 for more details.
+            if (resourceId == R.integer.default_thumbnail_cache_size) val = 2;
+            if (resourceId == R.integer.default_approximation_thumbnail_cache_size) val = 8;
+            assert val != -1;
+        } else {
+            val = context.getResources().getInteger(resourceId);
+        }
         String switchCount = CommandLine.getInstance().getSwitchValue(commandLineSwitch);
         if (switchCount != null) {
             int count = Integer.parseInt(switchCount);
