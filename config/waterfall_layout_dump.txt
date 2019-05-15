@@ -71,7 +71,6 @@
     edgar-paladin
     elm-paladin
     eve-arcnext-paladin
-    eve-campfire-paladin
     eve-paladin
     falco-full-compile-paladin
     falco-paladin
@@ -446,7 +445,6 @@
     elm-postsubmit
     enguarde-postsubmit
     eve-arcnext-postsubmit
-    eve-campfire-postsubmit
     eve-postsubmit
     expresso-postsubmit
     falco-postsubmit
@@ -463,7 +461,6 @@
     gonzo-postsubmit
     grunt-postsubmit
     guado-accelerator-postsubmit
-    guado-postsubmit
     guado_moblab-postsubmit
     hana-postsubmit
     hatch-postsubmit
@@ -472,7 +469,6 @@
     kefka-postsubmit
     kevin-arcnext-postsubmit
     kevin-postsubmit
-    kevin64-postsubmit
     kip-postsubmit
     kukui-postsubmit
     lakitu-gpu-postsubmit
@@ -2663,7 +2659,6 @@
     edgar-paladin-tryjob
     elm-paladin-tryjob
     eve-arcnext-paladin-tryjob
-    eve-campfire-paladin-tryjob
     eve-paladin-tryjob
     falco-full-compile-paladin-tryjob
     falco-paladin-tryjob
@@ -2783,7 +2778,6 @@
     elm-postsubmit-tryjob
     enguarde-postsubmit-tryjob
     eve-arcnext-postsubmit-tryjob
-    eve-campfire-postsubmit-tryjob
     eve-postsubmit-tryjob
     expresso-postsubmit-tryjob
     falco-postsubmit-tryjob
@@ -2800,7 +2794,6 @@
     gonzo-postsubmit-tryjob
     grunt-postsubmit-tryjob
     guado-accelerator-postsubmit-tryjob
-    guado-postsubmit-tryjob
     guado_moblab-postsubmit-tryjob
     hana-postsubmit-tryjob
     hatch-postsubmit-tryjob
@@ -2809,7 +2802,6 @@
     kefka-postsubmit-tryjob
     kevin-arcnext-postsubmit-tryjob
     kevin-postsubmit-tryjob
-    kevin64-postsubmit-tryjob
     kip-postsubmit-tryjob
     kukui-postsubmit-tryjob
     lakitu-gpu-postsubmit-tryjob
