@@ -17,6 +17,7 @@ class CommandBufferTaskExecutor;
 #if BUILDFLAG(ENABLE_VULKAN)
 class VulkanImplementation;
 #endif
+struct GpuPreferences;
 }  // namespace gpu
 
 namespace viz {
@@ -24,11 +25,22 @@ class GpuServiceImpl;
 
 // Starts GPU Main and IO threads, and creates a GpuServiceImpl that can be used
 // to create a SkiaOutputSurfaceImpl. This isn't a full GPU service
-// implementation and should only be used in tests. GpuPreferences will be
-// constructed from the command line when this class is first created.
+// implementation and should only be used in tests.
 class TestGpuServiceHolder {
  public:
-  TestGpuServiceHolder();
+  // Gets a singleton suitable for most tests. The use of a singleton allows
+  // easy sharing of the GpuServiceImpl by different clients (e.g. to
+  // share SharedImages via a common SharedImageManager).
+  //
+  // If specific feature flags or GpuPreferences are needed for a specific test,
+  // a separate instance of this class can be created.
+  //
+  // The singleton will parse GpuPreferences from the command line when this
+  // class is first created (e.g. to allow entire test suite with
+  // --enable-vulkan).
+  static TestGpuServiceHolder* GetSingleton();
+
+  explicit TestGpuServiceHolder(const gpu::GpuPreferences& preferences);
   ~TestGpuServiceHolder();
 
   scoped_refptr<base::SingleThreadTaskRunner> gpu_thread_task_runner() {
@@ -52,7 +64,8 @@ class TestGpuServiceHolder {
   }
 
  private:
-  void InitializeOnGpuThread(base::WaitableEvent* completion);
+  void InitializeOnGpuThread(const gpu::GpuPreferences& preferences,
+                             base::WaitableEvent* completion);
   void DeleteOnGpuThread();
 
   base::Thread gpu_thread_;

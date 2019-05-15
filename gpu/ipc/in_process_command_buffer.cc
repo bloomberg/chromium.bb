@@ -476,15 +476,22 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
   command_buffer_ = std::make_unique<CommandBufferService>(
       this, context_group_->memory_tracker());
 
+  context_state_ = task_executor_->shared_context_state();
+
   if (!surface_) {
     if (is_offscreen_) {
-      // TODO(crbug.com/832243): GLES2CommandBufferStub has additional logic for
-      // offscreen surfaces that might be needed here.
-      surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size());
-      if (!surface_.get()) {
-        DestroyOnGpuThread();
-        LOG(ERROR) << "ContextResult::kFatalFailure: Failed to create surface.";
-        return gpu::ContextResult::kFatalFailure;
+      if (context_state_) {
+        surface_ = context_state_->surface();
+      } else {
+        // TODO(crbug.com/832243): GLES2CommandBufferStub has additional logic
+        // for offscreen surfaces that might be needed here.
+        surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size());
+        if (!surface_.get()) {
+          DestroyOnGpuThread();
+          LOG(ERROR)
+              << "ContextResult::kFatalFailure: Failed to create surface.";
+          return gpu::ContextResult::kFatalFailure;
+        }
       }
     } else {
       gl::GLSurfaceFormat surface_format;
@@ -558,8 +565,6 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
     gl_share_group_ = task_executor_->share_group();
   }
 
-  context_state_ = task_executor_->shared_context_state();
-
   if (params.attribs.context_type == CONTEXT_TYPE_WEBGPU) {
     if (!task_executor_->gpu_preferences().enable_webgpu) {
       DLOG(ERROR) << "ContextResult::kFatalFailure: WebGPU not enabled";
@@ -614,13 +619,13 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
 
     if (params.attribs.enable_raster_interface &&
         !params.attribs.enable_gles2_interface) {
+      gr_shader_cache_ = params.gr_shader_cache;
       if (!context_state_) {
         context_state_ = base::MakeRefCounted<SharedContextState>(
             gl_share_group_, surface_, real_context,
             use_virtualized_gl_context_, base::DoNothing());
         context_state_->InitializeGL(task_executor_->gpu_preferences(),
                                      context_group_->feature_info());
-        gr_shader_cache_ = params.gr_shader_cache;
         context_state_->InitializeGrContext(workarounds, params.gr_shader_cache,
                                             params.activity_flags);
       }

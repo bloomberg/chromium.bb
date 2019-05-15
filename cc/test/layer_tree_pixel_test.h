@@ -6,6 +6,7 @@
 #define CC_TEST_LAYER_TREE_PIXEL_TEST_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/files/file_path.h"
@@ -33,7 +34,6 @@ class ColorSpace;
 namespace viz {
 class CopyOutputRequest;
 class CopyOutputResult;
-class TestGpuServiceHolder;
 }
 
 namespace cc {
@@ -165,7 +165,6 @@ class LayerTreePixelTest : public LayerTreeTest {
 
   // Used to create SkiaOutputSurfaceImpl.
   std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
-  std::unique_ptr<viz::TestGpuServiceHolder> gpu_service_holder_;
 };
 
 }  // namespace cc

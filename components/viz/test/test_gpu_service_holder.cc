@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/no_destructor.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
@@ -30,15 +31,24 @@
 
 namespace viz {
 
-TestGpuServiceHolder::TestGpuServiceHolder()
+// static
+TestGpuServiceHolder* TestGpuServiceHolder::GetSingleton() {
+  static base::NoDestructor<TestGpuServiceHolder> instance(
+      gpu::gles2::ParseGpuPreferences(base::CommandLine::ForCurrentProcess()));
+  return instance.get();
+}
+
+TestGpuServiceHolder::TestGpuServiceHolder(
+    const gpu::GpuPreferences& gpu_preferences)
     : gpu_thread_("GPUMainThread"), io_thread_("GPUIOThread") {
   CHECK(gpu_thread_.Start());
   CHECK(io_thread_.Start());
 
   base::WaitableEvent completion;
   gpu_thread_.task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&TestGpuServiceHolder::InitializeOnGpuThread,
-                                base::Unretained(this), &completion));
+      FROM_HERE,
+      base::BindOnce(&TestGpuServiceHolder::InitializeOnGpuThread,
+                     base::Unretained(this), gpu_preferences, &completion));
   completion.Wait();
 }
 
@@ -52,11 +62,9 @@ TestGpuServiceHolder::~TestGpuServiceHolder() {
 }
 
 void TestGpuServiceHolder::InitializeOnGpuThread(
+    const gpu::GpuPreferences& gpu_preferences,
     base::WaitableEvent* completion) {
   DCHECK(gpu_thread_.task_runner()->BelongsToCurrentThread());
-  auto* command_line = base::CommandLine::ForCurrentProcess();
-  gpu::GpuPreferences gpu_preferences =
-      gpu::gles2::ParseGpuPreferences(command_line);
 
   if (gpu_preferences.enable_vulkan) {
 #if BUILDFLAG(ENABLE_VULKAN)
@@ -70,12 +78,22 @@ void TestGpuServiceHolder::InitializeOnGpuThread(
     NOTREACHED();
 #endif
   }
+
+  // Always enable gpu and oop raster, regardless of platform and blacklist.
+  // The latter instructs GpuChannelManager::GetSharedContextState to create a
+  // GrContext, which is required by SkiaRenderer as well as OOP-R.
+  gpu::GpuFeatureInfo gpu_feature_info;
+  gpu_feature_info.status_values[gpu::GPU_FEATURE_TYPE_GPU_RASTERIZATION] =
+      gpu::kGpuFeatureStatusEnabled;
+  gpu_feature_info.status_values[gpu::GPU_FEATURE_TYPE_OOP_RASTERIZATION] =
+      gpu::kGpuFeatureStatusEnabled;
+
   // TODO(sgilhuly): Investigate why creating a GPUInfo and GpuFeatureInfo from
   // the command line causes the test SkiaOutputSurfaceImplTest.SubmitPaint to
   // fail on Android.
   gpu_service_ = std::make_unique<GpuServiceImpl>(
       gpu::GPUInfo(), /*watchdog_thread=*/nullptr, io_thread_.task_runner(),
-      gpu::GpuFeatureInfo(), gpu_preferences,
+      gpu_feature_info, gpu_preferences,
       /*gpu_info_for_hardware_gpu=*/gpu::GPUInfo(),
       /*gpu_feature_info_for_hardware_gpu=*/gpu::GpuFeatureInfo(),
 #if BUILDFLAG(ENABLE_VULKAN)
@@ -93,6 +111,7 @@ void TestGpuServiceHolder::InitializeOnGpuThread(
       gl::init::CreateOffscreenGLSurface(gfx::Size()),
       /*sync_point_manager=*/nullptr, /*shared_image_manager=*/nullptr,
       /*shutdown_event=*/nullptr);
+
   task_executor_ = std::make_unique<gpu::GpuInProcessThreadService>(
       gpu_thread_.task_runner(), gpu_service_->scheduler(),
       gpu_service_->sync_point_manager(), gpu_service_->mailbox_manager(),

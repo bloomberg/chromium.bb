@@ -12,9 +12,12 @@
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace viz {
+class TestGpuServiceHolder;
+}
+
 namespace gpu {
 
-class InProcessGpuThreadHolder;
 class SharedImageInterface;
 class WebGPUInProcessContext;
 
@@ -51,7 +54,7 @@ class WebGPUTest : public testing::Test {
   void WaitForCompletion(dawn::Device device);
 
  private:
-  std::unique_ptr<InProcessGpuThreadHolder> gpu_thread_holder_;
+  std::unique_ptr<viz::TestGpuServiceHolder> gpu_service_holder_;
   std::unique_ptr<WebGPUInProcessContext> context_;
 };
 

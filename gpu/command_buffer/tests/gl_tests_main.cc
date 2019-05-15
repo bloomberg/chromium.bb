@@ -12,6 +12,7 @@
 #include "build/build_config.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
 #include "gpu/command_buffer/tests/gl_test_utils.h"
+#include "mojo/core/embedder/embedder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 #if defined(OS_MACOSX)
@@ -38,6 +39,9 @@ int RunHelper(base::TestSuite* testSuite) {
 int main(int argc, char** argv) {
   base::TestSuite test_suite(argc, argv);
   base::CommandLine::Init(argc, argv);
+
+  mojo::core::Init();
+
 #if defined(OS_MACOSX)
   base::mac::ScopedNSAutoreleasePool pool;
 #endif

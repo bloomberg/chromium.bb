@@ -8,11 +8,11 @@
 
 #include "base/test/test_simple_task_runner.h"
 #include "build/build_config.h"
+#include "components/viz/test/test_gpu_service_holder.h"
 #include "gpu/command_buffer/client/webgpu_implementation.h"
 #include "gpu/command_buffer/service/webgpu_decoder.h"
 #include "gpu/config/gpu_test_config.h"
 #include "gpu/ipc/in_process_command_buffer.h"
-#include "gpu/ipc/in_process_gpu_thread_holder.h"
 #include "gpu/ipc/webgpu_in_process_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -37,8 +37,10 @@ bool WebGPUTest::WebGPUSharedImageSupported() const {
 }
 
 void WebGPUTest::SetUp() {
-  gpu_thread_holder_ = std::make_unique<InProcessGpuThreadHolder>();
-  gpu_thread_holder_->GetGpuPreferences()->enable_webgpu = true;
+  gpu::GpuPreferences gpu_preferences;
+  gpu_preferences.enable_webgpu = true;
+  gpu_service_holder_ =
+      std::make_unique<viz::TestGpuServiceHolder>(gpu_preferences);
 }
 
 void WebGPUTest::TearDown() {
@@ -61,7 +63,7 @@ void WebGPUTest::Initialize(const Options& options) {
   static constexpr GpuChannelManagerDelegate* channel_manager = nullptr;
   context_ = std::make_unique<WebGPUInProcessContext>();
   ContextResult result =
-      context_->Initialize(gpu_thread_holder_->GetTaskExecutor(), attributes,
+      context_->Initialize(gpu_service_holder_->task_executor(), attributes,
                            options.shared_memory_limits, memory_buffer_manager,
                            image_factory, channel_manager);
   if (result != ContextResult::kSuccess) {

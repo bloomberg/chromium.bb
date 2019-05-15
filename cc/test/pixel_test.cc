@@ -273,11 +273,7 @@ void PixelTest::SetUpGLRenderer(bool flipped_output_surface) {
 
 void PixelTest::SetUpSkiaRenderer(bool flipped_output_surface) {
   // Set up the GPU service.
-  const char enable_features[] = "VizDisplayCompositor,UseSkiaRenderer";
-  const char disable_features[] = "";
-  scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
-  scoped_feature_list_->InitFromCommandLine(enable_features, disable_features);
-  gpu_service_holder_ = std::make_unique<viz::TestGpuServiceHolder>();
+  gpu_service_holder_ = viz::TestGpuServiceHolder::GetSingleton();
 
   // Set up the skia renderer.
   output_surface_ = std::make_unique<PixelTestSkiaOutputSurfaceImpl>(
@@ -332,7 +328,6 @@ void PixelTest::TearDown() {
   renderer_.reset();
   resource_provider_.reset();
   output_surface_.reset();
-  gpu_service_holder_.reset();
   scoped_feature_list_.reset();
 }
 

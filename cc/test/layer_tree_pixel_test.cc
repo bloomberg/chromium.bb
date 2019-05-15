@@ -83,18 +83,10 @@ LayerTreePixelTest::CreateLayerTreeFrameSink(
 
 std::unique_ptr<viz::SkiaOutputSurface>
 LayerTreePixelTest::CreateDisplaySkiaOutputSurfaceOnThread() {
-  // SkiaOutputSurfaceImplOnGpu requires UseSkiaRenderer.
-  std::vector<base::Feature> enable_features = {features::kVizDisplayCompositor,
-                                                features::kUseSkiaRenderer};
-  std::vector<base::Feature> disable_features = {};
-  scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
-  scoped_feature_list_->InitWithFeatures(enable_features, disable_features);
-  gpu_service_holder_ = std::make_unique<viz::TestGpuServiceHolder>();
-
   // Set up the SkiaOutputSurfaceImpl.
   auto output_surface = std::make_unique<viz::SkiaOutputSurfaceImpl>(
-      gpu_service_holder_->gpu_service(), gpu::kNullSurfaceHandle,
-      viz::RendererSettings());
+      viz::TestGpuServiceHolder::GetSingleton()->gpu_service(),
+      gpu::kNullSurfaceHandle, viz::RendererSettings());
   return output_surface;
 }
 

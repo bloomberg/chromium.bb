@@ -289,6 +289,7 @@ test("gl_tests") {
     "//gpu/ipc:gl_in_process_context",
     "//gpu/ipc/host",
     "//gpu/ipc/service",
+    "//mojo/core/embedder",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/angle:translator",

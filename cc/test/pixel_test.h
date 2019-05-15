@@ -5,6 +5,10 @@
 #ifndef CC_TEST_PIXEL_TEST_H_
 #define CC_TEST_PIXEL_TEST_H_
 
+#include <memory>
+#include <utility>
+#include <vector>
+
 #include "base/files/file_util.h"
 #include "base/memory/shared_memory_mapping.h"
 #include "base/single_thread_task_runner.h"
@@ -90,7 +94,7 @@ class PixelTest : public testing::Test {
                                                   const SkBitmap& source);
 
   // For SkiaRenderer.
-  std::unique_ptr<viz::TestGpuServiceHolder> gpu_service_holder_;
+  viz::TestGpuServiceHolder* gpu_service_holder_ = nullptr;
   std::unique_ptr<gpu::GpuMemoryBufferManager> gpu_memory_buffer_manager_;
 
   viz::RendererSettings renderer_settings_;

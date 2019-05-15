@@ -64,7 +64,7 @@ class SkiaOutputSurfaceImplTest : public testing::TestWithParam<bool> {
 
   GpuServiceImpl* gpu_service() { return gpu_service_holder_->gpu_service(); }
 
-  std::unique_ptr<TestGpuServiceHolder> gpu_service_holder_;
+  TestGpuServiceHolder* gpu_service_holder_;
   std::unique_ptr<SkiaOutputSurfaceImpl> output_surface_;
 
  private:
@@ -87,7 +87,6 @@ void SkiaOutputSurfaceImplTest::UnblockMainThread() {
 
 void SkiaOutputSurfaceImplTest::TearDown() {
   output_surface_.reset();
-  gpu_service_holder_.reset();
   scoped_feature_list_.reset();
 }
 
@@ -97,7 +96,7 @@ void SkiaOutputSurfaceImplTest::SetUpSkiaOutputSurfaceImpl() {
   const char disable_features[] = "";
   scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
   scoped_feature_list_->InitFromCommandLine(enable_features, disable_features);
-  gpu_service_holder_ = std::make_unique<TestGpuServiceHolder>();
+  gpu_service_holder_ = TestGpuServiceHolder::GetSingleton();
 
   // Set up the SkiaOutputSurfaceImpl.
   gpu::SurfaceHandle surface_handle_ = gpu::kNullSurfaceHandle;
