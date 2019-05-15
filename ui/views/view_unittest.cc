@@ -233,8 +233,6 @@ class TestView : public View {
     views::View::Blur();
   }
 
-  FocusBehavior focus_behavior() const { return View::focus_behavior(); }
-
   void set_can_process_events_within_subtree(bool can_process) {
     can_process_events_within_subtree_ = can_process;
   }
@@ -4676,17 +4674,17 @@ TEST_F(ViewTest, FocusableAssertions) {
   // which effects the preferred size. To avoid preferred size changing around
   // these Views need to key off the last value set to SetFocusBehavior(), not
   // whether the View is focusable right now. For this reason it's important
-  // that the return value of focus_behavior() depends on the last value passed
-  // to SetFocusBehavior and not whether the View is focusable right now.
+  // that the return value of GetFocusBehavior() depends on the last value
+  // passed to SetFocusBehavior and not whether the View is focusable right now.
   TestView view;
   view.SetFocusBehavior(View::FocusBehavior::ALWAYS);
-  EXPECT_EQ(View::FocusBehavior::ALWAYS, view.focus_behavior());
+  EXPECT_EQ(View::FocusBehavior::ALWAYS, view.GetFocusBehavior());
   view.SetEnabled(false);
-  EXPECT_EQ(View::FocusBehavior::ALWAYS, view.focus_behavior());
+  EXPECT_EQ(View::FocusBehavior::ALWAYS, view.GetFocusBehavior());
   view.SetFocusBehavior(View::FocusBehavior::NEVER);
-  EXPECT_EQ(View::FocusBehavior::NEVER, view.focus_behavior());
+  EXPECT_EQ(View::FocusBehavior::NEVER, view.GetFocusBehavior());
   view.SetFocusBehavior(View::FocusBehavior::ACCESSIBLE_ONLY);
-  EXPECT_EQ(View::FocusBehavior::ACCESSIBLE_ONLY, view.focus_behavior());
+  EXPECT_EQ(View::FocusBehavior::ACCESSIBLE_ONLY, view.GetFocusBehavior());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -549,7 +549,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // hidden.
   virtual void SetVisible(bool visible);
   // Return whether a view is visible.
-  bool GetVisible() const { return visible_; }
+  bool GetVisible() const;
 
   // Adds a callback subscription associated with the above Visible property.
   // The callback will be invoked whenever the Visible property changes.
@@ -571,7 +571,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // is invoked. Also, clears focus if the focused view is disabled.
   void SetEnabled(bool enabled);
   // Returns whether the view is enabled.
-  bool GetEnabled() const { return enabled_; }
+  bool GetEnabled() const;
 
   // Adds a callback subscription associated with the above |Enabled| property.
   // The callback will be invoked whenever the property changes.
@@ -1113,8 +1113,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // IMPORTANT NOTE: loops in the focus hierarchy are not supported.
   void SetNextFocusableView(View* view);
 
-  // Gets/sets |focus_behavior|. SetFocusBehavior() advances focus if necessary.
-  FocusBehavior focus_behavior() const { return focus_behavior_; }
+  // Gets/sets |FocusBehavior|. SetFocusBehavior() advances focus if necessary.
+  FocusBehavior GetFocusBehavior() const;
   void SetFocusBehavior(FocusBehavior focus_behavior);
 
   // Returns true if this view is focusable, |enabled_| and drawn.

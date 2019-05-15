@@ -76,7 +76,7 @@ class TrayInfoLabelTest : public AshTestBase {
     EXPECT_EQ(expected_clickable, label_->IsClickable());
     EXPECT_EQ(expected_clickable ? views::View::FocusBehavior::ALWAYS
                                  : views::View::FocusBehavior::NEVER,
-              label_->focus_behavior());
+              label_->GetFocusBehavior());
 
     ui::AXNodeData node_data;
     label_->GetAccessibleNodeData(&node_data);

@@ -85,6 +85,11 @@ base::string16 ConvertToString<base::string16>(
 }
 
 template <>
+base::string16 ConvertToString<const char*>(const char* source_value) {
+  return base::UTF8ToUTF16(source_value);
+}
+
+template <>
 bool ConvertFromString<int8_t>(const base::string16& source_value,
                                int8_t* dst_value) {
   int32_t ret = 0;

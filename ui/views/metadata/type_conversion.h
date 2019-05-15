@@ -92,10 +92,6 @@ bool ConvertFromString(const base::string16& source_value, TTarget* dst_value);
 // String Conversions ---------------------------------------------------------
 
 template <>
-VIEWS_EXPORT base::string16 ConvertToString<base::string16>(
-    const base::string16& source_value);
-
-template <>
 VIEWS_EXPORT base::string16 ConvertToString<int8_t>(int8_t source_value);
 
 template <>
@@ -135,6 +131,10 @@ VIEWS_EXPORT base::string16 ConvertToString<gfx::Size>(
 template <>
 VIEWS_EXPORT base::string16 ConvertToString<base::string16>(
     const base::string16& source_value);
+
+template <>
+VIEWS_EXPORT base::string16 ConvertToString<const char*>(
+    const char* source_value);
 
 template <>
 VIEWS_EXPORT bool ConvertFromString<int8_t>(const base::string16& source_value,

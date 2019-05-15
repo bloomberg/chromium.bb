@@ -418,6 +418,10 @@ int View::GetHeightForWidth(int w) const {
   return GetPreferredSize().height();
 }
 
+bool View::GetVisible() const {
+  return visible_;
+}
+
 void View::SetVisible(bool visible) {
   if (parent_) {
     LayoutManager* const layout_manager = parent_->GetLayoutManager();
@@ -457,6 +461,10 @@ PropertyChangedSubscription View::AddVisibleChangedCallback(
 
 bool View::IsDrawn() const {
   return visible_ && parent_ ? parent_->IsDrawn() : false;
+}
+
+bool View::GetEnabled() const {
+  return enabled_;
 }
 
 void View::SetEnabled(bool enabled) {
@@ -1292,12 +1300,18 @@ void View::SetNextFocusableView(View* view) {
   next_focusable_view_ = view;
 }
 
+View::FocusBehavior View::GetFocusBehavior() const {
+  return focus_behavior_;
+}
+
 void View::SetFocusBehavior(FocusBehavior focus_behavior) {
   if (focus_behavior_ == focus_behavior)
     return;
 
   focus_behavior_ = focus_behavior;
   AdvanceFocusIfNecessary();
+
+  OnPropertyChanged(&focus_behavior_, kPropertyEffectsNone);
 }
 
 bool View::IsFocusable() const {
@@ -2727,15 +2741,25 @@ bool View::DoDrag(const ui::LocatedEvent& event,
   return true;
 }
 
+DEFINE_ENUM_CONVERTERS(View::FocusBehavior,
+                       {View::FocusBehavior::ACCESSIBLE_ONLY,
+                        base::ASCIIToUTF16("ACCESSIBLE_ONLY")},
+                       {View::FocusBehavior::ALWAYS,
+                        base::ASCIIToUTF16("ALWAYS")},
+                       {View::FocusBehavior::NEVER,
+                        base::ASCIIToUTF16("NEVER")})
+
 // This block requires the existence of METADATA_HEADER(View) in the class
 // declaration for View.
 BEGIN_METADATA(View)
+ADD_READONLY_PROPERTY_METADATA(View, const char*, ClassName)
 ADD_PROPERTY_METADATA(View, bool, Enabled)
+ADD_PROPERTY_METADATA(View, View::FocusBehavior, FocusBehavior)
 ADD_PROPERTY_METADATA(View, int, Group)
 ADD_PROPERTY_METADATA(View, int, ID)
-ADD_PROPERTY_METADATA(View, bool, Visible)
-ADD_READONLY_PROPERTY_METADATA(View, gfx::Size, MinimumSize)
 ADD_READONLY_PROPERTY_METADATA(View, gfx::Size, MaximumSize)
+ADD_READONLY_PROPERTY_METADATA(View, gfx::Size, MinimumSize)
+ADD_PROPERTY_METADATA(View, bool, Visible)
 END_METADATA()
 
 }  // namespace views

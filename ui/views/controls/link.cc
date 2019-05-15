@@ -60,7 +60,7 @@ void Link::PaintFocusRing(gfx::Canvas* canvas) const {
 gfx::Insets Link::GetInsets() const {
   gfx::Insets insets = Label::GetInsets();
   if (GetFocusStyle() == FocusStyle::RING &&
-      focus_behavior() != FocusBehavior::NEVER) {
+      GetFocusBehavior() != FocusBehavior::NEVER) {
     DCHECK(!text().empty());
     insets += gfx::Insets(kFocusBorderPadding);
   }

@@ -42,7 +42,7 @@ base::LazyInstance<std::vector<QueuedEvent>>::Leaky g_event_queue =
 bool g_is_queueing_events = false;
 
 bool IsAccessibilityFocusableWhenEnabled(View* view) {
-  return view->focus_behavior() != View::FocusBehavior::NEVER &&
+  return view->GetFocusBehavior() != View::FocusBehavior::NEVER &&
          view->IsDrawn();
 }
 
