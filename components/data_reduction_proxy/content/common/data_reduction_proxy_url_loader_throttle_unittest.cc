@@ -13,6 +13,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_throttle_manager.h"
 #include "content/public/common/previews_state.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,16 +28,54 @@ class MockMojoDataReductionProxy : public mojom::DataReductionProxy {
   void MarkProxiesAsBad(base::TimeDelta bypass_duration,
                         const net::ProxyList& bad_proxies,
                         MarkProxiesAsBadCallback callback) override {
+    if (waiting_for_mark_as_bad_closure_) {
+      // We are being called via mojo.
+      std::move(callback).Run();
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, std::move(waiting_for_mark_as_bad_closure_));
+      return;
+    }
+
+    // We are being called via the mojom::DataReductionProxy interface
+    // directly.
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                   std::move(callback));
   }
 
   void AddThrottleConfigObserver(
-      mojom::DataReductionProxyThrottleConfigObserverPtr observer) override {}
+      mojom::DataReductionProxyThrottleConfigObserverPtr /* observer */)
+      override {
+    ++observer_count_;
+  }
 
-  void Clone(mojom::DataReductionProxyRequest request) override {}
+  void Clone(mojom::DataReductionProxyRequest request) override {
+    bindings_.AddBinding(this, std::move(request));
+  }
+
+  // When mojom::DataReductionProxy methods are called via mojo, things are
+  // asynchronous by nature.  Test code can then use this function to wait for
+  // MarkProxiesAsBad() to be called.
+  void WaitUntilMarkProxiesAsBadCalled() {
+    ASSERT_TRUE(waiting_for_mark_as_bad_closure_.is_null());
+
+    base::RunLoop run_loop;
+    waiting_for_mark_as_bad_closure_ = run_loop.QuitClosure();
+    run_loop.Run();
+  }
+
+  // +1 because MockMojoDataReductionProxy uses direct calls through the
+  // mojom::DataReductionProxy interface by default, and mojo is only involved
+  // after Clone().
+  size_t pipe_count() const { return bindings_.size() + 1u; }
+
+  size_t observer_count() const { return observer_count_; }
 
  private:
+  mojo::BindingSet<mojom::DataReductionProxy> bindings_;
+  size_t observer_count_ = 0;
+
+  base::OnceClosure waiting_for_mark_as_bad_closure_;
+
   DISALLOW_COPY_AND_ASSIGN(MockMojoDataReductionProxy);
 };
 
@@ -326,6 +365,53 @@ TEST_F(DataReductionProxyURLLoaderThrottleTest, MarkProxyAsBadAndRestart) {
   delegate.resume_callback = run_loop.QuitClosure();
   run_loop.Run();
 
+  EXPECT_EQ(1u, delegate.resume_called);
+  EXPECT_EQ(1u, delegate.restart_with_flags_called);
+  EXPECT_EQ(0, delegate.restart_additional_load_flags);
+}
+
+TEST_F(DataReductionProxyURLLoaderThrottleTest, MarkProxyAsBadOnNewSequence) {
+  auto drp_server = MakeCoreDrpServer("HTTPS localhost");
+
+  auto manager = CreateManager(mock_mojo_data_reduction_proxy(), {drp_server});
+  MockDelegate delegate;
+  DataReductionProxyURLLoaderThrottle throttle((net::HttpRequestHeaders()),
+                                               manager.get());
+  throttle.set_delegate(&delegate);
+
+  // The URLLoaderThrottle is about to move to another sequence.  It should
+  // create a private pipe to the DRP interface in preparation.
+  throttle.DetachFromCurrentSequence();
+  EXPECT_EQ(mock_mojo_data_reduction_proxy()->pipe_count(), 2u);
+
+  network::ResourceRequest request;
+  request.resource_type = static_cast<int>(content::ResourceType::kMainFrame);
+  request.url = GURL("http://www.example.com/");
+  bool defer = false;
+
+  // WillStartRequest() is the first call on the new sequence.  This is when
+  // the throttle should bind the private pipes to the sequence.
+  throttle.WillStartRequest(&request, &defer);
+  EXPECT_FALSE(defer);
+
+  network::ResourceResponseHead response_head;
+  response_head.proxy_server = drp_server.proxy_server();
+  response_head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+      "HTTP/1.1 500 Server error\n");
+
+  throttle.BeforeWillProcessResponse(request.url, response_head, &defer);
+
+  // The throttle should have marked the proxy as bad.
+  EXPECT_TRUE(defer);
+  EXPECT_EQ(0u, delegate.resume_called);
+  EXPECT_EQ(0u, delegate.restart_with_flags_called);
+
+  // The DRP calls are carried by mojo now, which makes them asynchronous.
+  mock_mojo_data_reduction_proxy()->WaitUntilMarkProxiesAsBadCalled();
+
+  EXPECT_EQ(mock_mojo_data_reduction_proxy()->observer_count(), 2u);
+
+  // The throttle should restart and resume.
   EXPECT_EQ(1u, delegate.resume_called);
   EXPECT_EQ(1u, delegate.restart_with_flags_called);
   EXPECT_EQ(0, delegate.restart_additional_load_flags);

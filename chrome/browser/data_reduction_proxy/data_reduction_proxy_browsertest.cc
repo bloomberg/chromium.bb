@@ -437,17 +437,27 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest, ChromeProxyHeaderSet) {
 }
 
 // Gets the response body for an XHR to |url| (as seen by the renderer).
-std::string ReadSubresourceFromRenderer(Browser* browser, const GURL& url) {
-  std::string script = R"((url => {
+std::string ReadSubresourceFromRenderer(Browser* browser,
+                                        const GURL& url,
+                                        bool asynchronous_xhr = true) {
+  static const char asynchronous_script[] = R"((url => {
     var xhr = new XMLHttpRequest();
     xhr.open('GET', url, true);
     xhr.onload = () => domAutomationController.send(xhr.responseText);
     xhr.send();
   }))";
+  static const char synchronous_script[] = R"((url => {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url, false);
+    xhr.send();
+    domAutomationController.send(xhr.responseText);
+  }))";
   std::string result;
   EXPECT_TRUE(ExecuteScriptAndExtractString(
       browser->tab_strip_model()->GetActiveWebContents(),
-      script + "('" + url.spec() + "')", &result));
+      base::StrCat({asynchronous_xhr ? asynchronous_script : synchronous_script,
+                    "('", url.spec(), "')"}),
+      &result));
   return result;
 }
 
@@ -481,6 +491,29 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest,
 
   std::string result = ReadSubresourceFromRenderer(
       browser(), GetURLWithMockHost(test_server, "/echoheader?Chrome-Proxy"));
+
+  EXPECT_THAT(result, HasSubstr(kSessionKey));
+  EXPECT_THAT(result, Not(HasSubstr("pid=")));
+  EXPECT_THAT(result, HasSubstr("s="));
+  EXPECT_THAT(result, HasSubstr("c="));
+  EXPECT_THAT(result, HasSubstr("b="));
+  EXPECT_THAT(result, HasSubstr("p="));
+}
+
+IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest,
+                       ChromeProxyHeaderSetForSubresourceSync) {
+  net::EmbeddedTestServer test_server;
+  test_server.RegisterRequestHandler(
+      base::BindRepeating(&BasicResponse, kDummyBody));
+  ASSERT_TRUE(test_server.Start());
+
+  ui_test_utils::NavigateToURL(browser(),
+                               GetURLWithMockHost(test_server, "/echo"));
+
+  const bool asynchronous_xhr = false;
+  std::string result = ReadSubresourceFromRenderer(
+      browser(), GetURLWithMockHost(test_server, "/echoheader?Chrome-Proxy"),
+      asynchronous_xhr);
 
   EXPECT_THAT(result, HasSubstr(kSessionKey));
   EXPECT_THAT(result, Not(HasSubstr("pid=")));
