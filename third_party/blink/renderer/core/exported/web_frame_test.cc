@@ -5426,7 +5426,9 @@ static WebPoint BottomRightMinusOne(const WebRect& rect) {
   // selection bounds, selectRange() will select the *next* element. That's
   // strictly correct, as hit-testing checks the pixel to the lower-right of
   // the input coordinate, but it's a wart on the API.
-  return WebPoint(rect.x + rect.width - 1, rect.y + rect.height - 1);
+  if (rect.width > 0)
+    return WebPoint(rect.x + rect.width - 1, rect.y + rect.height - 1);
+  return WebPoint(rect.x + rect.width, rect.y + rect.height - 1);
 }
 
 static WebRect ElementBounds(WebLocalFrame* frame, const WebString& id) {
