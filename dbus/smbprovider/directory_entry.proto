@@ -230,21 +230,6 @@ message GetSharesOptionsProto {
   optional string server_url = 1;
 }
 
-// Used for passing inputs into SmbProvider.Remount().
-message RemountOptionsProto {
-  // Path of the share to be remounted. (e.g. "smb://192.168.0.1/testshare")
-  optional string path = 1;
-  // ID to assign to the mount.
-  optional int32 mount_id = 2;
-
-  // Authentication parameters.
-  optional string workgroup = 3;
-  optional string username = 4;
-
-  // Mount options set by the client.
-  optional MountConfigProto mount_config = 5;
-}
-
 // Used for returning a list of hostnames from a parsed NetBios response packet.
 message HostnamesProto {
   repeated string hostnames = 1;
@@ -258,15 +243,6 @@ message UpdateMountCredentialsOptionsProto {
   optional string workgroup = 2;
   // Updated username.
   optional string username = 3;
-}
-
-// Used for passing inputs into Smbprovider.Premount().
-message PremountOptionsProto {
-  // Share path URL of the mount.
-  optional string path = 1;
-
-  // Mount options set by the client.
-  optional MountConfigProto mount_config = 2;
 }
 
 // Used for passing inputs into Smbprovider.UpdateSharePath().
