@@ -4,7 +4,6 @@
 
 #include "components/exo/wayland/zcr_gaming_input.h"
 
-#include <gaming-input-unstable-v1-server-protocol.h>
 #include <gaming-input-unstable-v2-server-protocol.h>
 #include <wayland-server-core.h>
 #include <wayland-server-protocol-core.h>

@@ -7,7 +7,6 @@
 #include <alpha-compositing-unstable-v1-server-protocol.h>
 #include <aura-shell-server-protocol.h>
 #include <cursor-shapes-unstable-v1-server-protocol.h>
-#include <gaming-input-unstable-v1-server-protocol.h>
 #include <gaming-input-unstable-v2-server-protocol.h>
 #include <grp.h>
 #include <input-timestamps-unstable-v1-server-protocol.h>
