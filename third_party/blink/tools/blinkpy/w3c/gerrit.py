@@ -33,6 +33,9 @@ class GerritAPI(object):
         if raw:
             return raw_data
 
+        if not raw_data:
+            return None
+
         # Gerrit API responses are prefixed by a 5-character JSONP preamble
         return json.loads(raw_data[5:])
 
@@ -49,11 +52,16 @@ class GerritAPI(object):
 
     def query_cl(self, change_id):
         """Quries a commit information from Gerrit."""
-        path = '/changes/%s' % (change_id)
+        path = ('/changes/chromium%2Fsrc~master~{}?'
+                'o=CURRENT_FILES&o=CURRENT_REVISION&o=COMMIT_FOOTERS').format(change_id)
         try:
             cl_data = self.get(path)
         except NetworkTimeout:
-            raise GerritError('Timed out querying CL using changeid')
+            raise GerritError('Timed out querying CL using Change-Id')
+
+        if not cl_data:
+            raise GerritError('Cannot find Change-Id')
+
         cl = GerritCL(data=cl_data, api=self)
         return cl
 
@@ -128,7 +136,8 @@ class GerritCL(object):
         try:
             return self.api.post(path, {'message': message})
         except HTTPError as e:
-            raise GerritError('Failed to post a comment to issue {} (code {}).'.format(self.change_id, e.code))
+            raise GerritError('Failed to post a comment to issue {} (code {}).'.format(
+                self.change_id, e.code))
 
     def is_exportable(self):
         # TODO(robertma): Consolidate with the related part in chromium_exportable_commits.py.
@@ -141,7 +150,8 @@ class GerritCL(object):
 
         # Guard against accidental CLs that touch thousands of files.
         if len(files) > 1000:
-            _log.info('Rejecting CL with over 1000 files: %s (ID: %s) ', self.subject, self.change_id)
+            _log.info('Rejecting CL with over 1000 files: %s (ID: %s) ',
+                      self.subject, self.change_id)
             return False
 
         if 'No-Export: true' in self.current_revision['commit_with_footers']:
