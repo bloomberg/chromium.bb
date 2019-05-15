@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_AUTOFILL_MANUAL_FILLING_UTILS_H_
 #define CHROME_BROWSER_AUTOFILL_MANUAL_FILLING_UTILS_H_
 
-#include "components/autofill/core/browser/accessory_sheet_data.h"
+#include "components/autofill/core/browser/ui/accessory_sheet_data.h"
 
 namespace autofill {
 

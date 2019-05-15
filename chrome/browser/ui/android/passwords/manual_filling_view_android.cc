@@ -20,7 +20,7 @@
 #include "chrome/browser/autofill/manual_filling_controller.h"
 #include "chrome/browser/autofill/manual_filling_controller_impl.h"
 #include "chrome/browser/password_manager/password_accessory_controller.h"
-#include "components/autofill/core/browser/accessory_sheet_data.h"
+#include "components/autofill/core/browser/ui/accessory_sheet_data.h"
 #include "components/autofill/core/common/password_form.h"
 #include "jni/ManualFillingComponentBridge_jni.h"
 #include "jni/UserInfoField_jni.h"

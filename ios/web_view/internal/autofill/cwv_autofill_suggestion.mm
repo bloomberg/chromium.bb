@@ -6,7 +6,7 @@
 
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
-#include "components/autofill/core/browser/popup_item_ids.h"
+#include "components/autofill/core/browser/ui/popup_item_ids.h"
 #import "components/autofill/ios/browser/form_suggestion.h"
 #include "ui/base/resource/resource_bundle.h"
 

@@ -33,8 +33,8 @@
 #include "components/autofill/core/browser/payments/card_unmask_delegate.h"
 #include "components/autofill/core/browser/payments/full_card_request.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
-#include "components/autofill/core/browser/popup_types.h"
 #include "components/autofill/core/browser/sync_utils.h"
+#include "components/autofill/core/browser/ui/popup_types.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/signatures_util.h"
 

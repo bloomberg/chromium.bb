@@ -13,7 +13,7 @@
 #include "chrome/browser/ui/android/view_android_helper.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
 #include "chrome/browser/ui/autofill/autofill_popup_layout_model.h"
-#include "components/autofill/core/browser/suggestion.h"
+#include "components/autofill/core/browser/ui/suggestion.h"
 #include "jni/AutofillKeyboardAccessoryViewBridge_jni.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"

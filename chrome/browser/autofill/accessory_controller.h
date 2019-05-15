@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "components/autofill/core/browser/accessory_sheet_data.h"
+#include "components/autofill/core/browser/ui/accessory_sheet_data.h"
 
 // Interface for the portions of type-specific manual filling controllers (e.g.,
 // password, credit card) which interact with the generic

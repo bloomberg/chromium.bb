@@ -14,7 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/password_manager/password_accessory_controller.h"
-#include "components/autofill/core/browser/accessory_sheet_data.h"
+#include "components/autofill/core/browser/ui/accessory_sheet_data.h"
 #include "components/autofill/core/common/filling_status.h"
 #include "components/favicon_base/favicon_types.h"
 #include "content/public/browser/web_contents_user_data.h"

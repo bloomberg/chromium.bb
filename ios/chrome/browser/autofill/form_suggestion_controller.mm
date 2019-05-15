@@ -10,7 +10,7 @@
 #include "base/mac/scoped_block.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/autofill/core/browser/autofill_popup_delegate.h"
+#include "components/autofill/core/browser/ui/autofill_popup_delegate.h"
 #import "components/autofill/ios/browser/form_suggestion.h"
 #import "components/autofill/ios/browser/form_suggestion_provider.h"
 #include "components/autofill/ios/form_util/form_activity_params.h"

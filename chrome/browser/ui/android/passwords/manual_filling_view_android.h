@@ -9,7 +9,7 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "chrome/browser/autofill/manual_filling_view_interface.h"
-#include "components/autofill/core/browser/accessory_sheet_data.h"
+#include "components/autofill/core/browser/ui/accessory_sheet_data.h"
 
 namespace gfx {
 class Image;

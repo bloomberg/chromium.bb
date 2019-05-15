@@ -6,8 +6,8 @@
 
 #include "base/mac/availability.h"
 #import "chrome/browser/ui/cocoa/touchbar/web_textfield_touch_bar_controller.h"
-#include "components/autofill/core/browser/autofill_popup_delegate.h"
-#include "components/autofill/core/browser/popup_item_ids.h"
+#include "components/autofill/core/browser/ui/autofill_popup_delegate.h"
+#include "components/autofill/core/browser/ui/popup_item_ids.h"
 
 using base::WeakPtr;
 
