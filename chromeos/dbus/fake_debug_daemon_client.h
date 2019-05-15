@@ -56,10 +56,10 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeDebugDaemonClient
   void GetLog(const std::string& log_name,
               DBusMethodCallback<std::string> callback) override;
   void TestICMP(const std::string& ip_address,
-                const TestICMPCallback& callback) override;
+                TestICMPCallback callback) override;
   void TestICMPWithOptions(const std::string& ip_address,
                            const std::map<std::string, std::string>& options,
-                           const TestICMPCallback& callback) override;
+                           TestICMPCallback callback) override;
   void UploadCrashes() override;
   void EnableDebuggingFeatures(
       const std::string& password,

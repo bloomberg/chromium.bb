@@ -102,25 +102,25 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DebugDaemonClient
   virtual void SetStopAgentTracingTaskRunner(
       scoped_refptr<base::TaskRunner> task_runner) = 0;
 
-  // Called once TestICMP() is complete. Takes two parameters:
-  // - succeeded: information was obtained successfully.
-  // - status: information about ICMP connectivity to a specified host as json.
+  // Called once TestICMP() is complete. Takes an optional string.
+  // - The optional string has value if information was obtained successfully.
+  // - The string value contains information about ICMP connectivity to a
+  //   specified host as json.
   //   For details please refer to
   //   https://gerrit.chromium.org/gerrit/#/c/30310/2/src/helpers/icmp.cc
-  typedef base::Callback<void(bool succeeded, const std::string& status)>
-      TestICMPCallback;
+  using TestICMPCallback = DBusMethodCallback<std::string>;
 
   // Tests ICMP connectivity to a specified host. The |ip_address| contains the
   // IPv4 or IPv6 address of the host, for example "8.8.8.8".
   virtual void TestICMP(const std::string& ip_address,
-                        const TestICMPCallback& callback) = 0;
+                        TestICMPCallback callback) = 0;
 
   // Tests ICMP connectivity to a specified host. The |ip_address| contains the
   // IPv4 or IPv6 address of the host, for example "8.8.8.8".
   virtual void TestICMPWithOptions(
       const std::string& ip_address,
       const std::map<std::string, std::string>& options,
-      const TestICMPCallback& callback) = 0;
+      TestICMPCallback callback) = 0;
 
   // Called once EnableDebuggingFeatures() is complete. |succeeded| will be true
   // if debugging features have been successfully enabled.

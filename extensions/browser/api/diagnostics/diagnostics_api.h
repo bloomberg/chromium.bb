@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/optional.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/common/api/diagnostics.h"
 
@@ -15,19 +16,6 @@ namespace extensions {
 
 class DiagnosticsSendPacketFunction : public UIThreadExtensionFunction {
  public:
-  // Result code for sending packet. Platform specific AsyncWorkStart() will
-  // finish with this ResultCode so we can maximize shared code.
-  enum SendPacketResultCode {
-    // Ping packed is sent and ICMP reply is received before time out.
-    SEND_PACKET_OK,
-
-    // Not implemented on the platform.
-    SEND_PACKET_NOT_IMPLEMENTED,
-
-    // The ping operation failed because of timeout or network unreachable.
-    SEND_PACKET_FAILED,
-  };
-
   DECLARE_EXTENSION_FUNCTION("diagnostics.sendPacket", DIAGNOSTICS_SENDPACKET)
 
   DiagnosticsSendPacketFunction();
@@ -39,9 +27,7 @@ class DiagnosticsSendPacketFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 
  private:
-  void OnCompleted(SendPacketResultCode result_code,
-                   const std::string& ip,
-                   double latency);
+  void OnTestICMPCompleted(base::Optional<std::string> status);
 };
 
 }  // namespace extensions

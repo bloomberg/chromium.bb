@@ -124,17 +124,17 @@ void FakeDebugDaemonClient::GetLog(const std::string& log_name,
 }
 
 void FakeDebugDaemonClient::TestICMP(const std::string& ip_address,
-                                     const TestICMPCallback& callback) {
+                                     TestICMPCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, false, ""));
+      FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
 }
 
 void FakeDebugDaemonClient::TestICMPWithOptions(
     const std::string& ip_address,
     const std::map<std::string, std::string>& options,
-    const TestICMPCallback& callback) {
+    TestICMPCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, false, ""));
+      FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
 }
 
 void FakeDebugDaemonClient::UploadCrashes() {

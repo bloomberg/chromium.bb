@@ -316,7 +316,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
   }
 
   void TestICMP(const std::string& ip_address,
-                const TestICMPCallback& callback) override {
+                TestICMPCallback callback) override {
     dbus::MethodCall method_call(debugd::kDebugdInterface,
                                  debugd::kTestICMP);
     dbus::MessageWriter writer(&method_call);
@@ -324,12 +324,12 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     debugdaemon_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&DebugDaemonClientImpl::OnTestICMP,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   void TestICMPWithOptions(const std::string& ip_address,
                            const std::map<std::string, std::string>& options,
-                           const TestICMPCallback& callback) override {
+                           TestICMPCallback callback) override {
     dbus::MethodCall method_call(debugd::kDebugdInterface,
                                  debugd::kTestICMPWithOptions);
     dbus::MessageWriter writer(&method_call);
@@ -354,7 +354,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     debugdaemon_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&DebugDaemonClientImpl::OnTestICMP,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   void UploadCrashes() override {
@@ -698,12 +698,14 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     // NB: requester is signaled when i/o completes
   }
 
-  void OnTestICMP(const TestICMPCallback& callback, dbus::Response* response) {
+  void OnTestICMP(TestICMPCallback callback, dbus::Response* response) {
     std::string status;
-    if (response && dbus::MessageReader(response).PopString(&status))
-      callback.Run(true, status);
-    else
-      callback.Run(false, "");
+    if (!response || !dbus::MessageReader(response).PopString(&status)) {
+      std::move(callback).Run(base::nullopt);
+      return;
+    }
+
+    std::move(callback).Run(status);
   }
 
   // Called when pipe i/o completes; pass data on and delete the instance.
