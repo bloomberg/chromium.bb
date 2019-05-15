@@ -173,7 +173,7 @@ class ProfileAttributesStorage
   // decoded into |image|.
   void OnAvatarPictureLoaded(const base::FilePath& profile_path,
                              const std::string& key,
-                             gfx::Image** image) const;
+                             gfx::Image image) const;
 
   // Called when the picture given by |file_name| has been saved to disk. Used
   // both for the GAIA profile picture and the high res avatar files.
