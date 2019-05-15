@@ -139,15 +139,24 @@ constexpr int kTextfieldBackgroundColor = 0xf7f7f7;
   self.swipeRecognizer.enabled = NO;
   [self.contentView addGestureRecognizer:self.swipeRecognizer];
 
-  BOOL isAccessibilityContentSize =
-      UIContentSizeCategoryIsAccessibilityCategory(
-          [UIApplication sharedApplication].preferredContentSizeCategory);
-  const CGFloat alertWidth =
-      isAccessibilityContentSize ? kAlertWidthAccessibilty : kAlertWidth;
+  auto GetAlertWidth = ^CGFloat(void) {
+    BOOL isAccessibilityContentSize =
+        UIContentSizeCategoryIsAccessibilityCategory(
+            [UIApplication sharedApplication].preferredContentSizeCategory);
+    return isAccessibilityContentSize ? kAlertWidthAccessibilty : kAlertWidth;
+  };
+
   NSLayoutConstraint* widthConstraint =
-      [self.contentView.widthAnchor constraintEqualToConstant:alertWidth];
+      [self.contentView.widthAnchor constraintEqualToConstant:GetAlertWidth()];
   widthConstraint.priority = UILayoutPriorityRequired - 1;
 
+  [[NSNotificationCenter defaultCenter]
+      addObserverForName:UIContentSizeCategoryDidChangeNotification
+                  object:nil
+                   queue:[NSOperationQueue mainQueue]
+              usingBlock:^(NSNotification* _Nonnull note) {
+                widthConstraint.constant = GetAlertWidth();
+              }];
   [NSLayoutConstraint activateConstraints:@[
     widthConstraint,
 
@@ -214,6 +223,7 @@ constexpr int kTextfieldBackgroundColor = 0xf7f7f7;
     UILabel* titleLabel = [[UILabel alloc] init];
     titleLabel.font =
         [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
+    titleLabel.adjustsFontForContentSizeCategory = YES;
     titleLabel.textAlignment = NSTextAlignmentCenter;
     titleLabel.text = self.title;
     titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
@@ -232,6 +242,7 @@ constexpr int kTextfieldBackgroundColor = 0xf7f7f7;
     messageLabel.numberOfLines = 0;
     messageLabel.font =
         [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
+    messageLabel.adjustsFontForContentSizeCategory = YES;
     messageLabel.textAlignment = NSTextAlignmentCenter;
     messageLabel.text = self.message;
     messageLabel.translatesAutoresizingMaskIntoConstraints = NO;
@@ -315,6 +326,7 @@ constexpr int kTextfieldBackgroundColor = 0xf7f7f7;
       textField.translatesAutoresizingMaskIntoConstraints = NO;
       textField.delegate = self;
       textField.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
+      textField.adjustsFontForContentSizeCategory = YES;
 
       [fieldStack addArrangedSubview:textField];
       ChromeDirectionalEdgeInsets fieldInsets = ChromeDirectionalEdgeInsetsMake(
@@ -353,7 +365,9 @@ constexpr int kTextfieldBackgroundColor = 0xf7f7f7;
       font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
       textColor = UIColorFromRGB(kButtonTextDestructiveColor);
     }
-    [button.titleLabel setFont:font];
+    button.titleLabel.font = font;
+    button.titleLabel.adjustsFontForContentSizeCategory = YES;
+
     [button setTitleColor:textColor forState:UIControlStateNormal];
     [button setTitle:action.title forState:UIControlStateNormal];
 
