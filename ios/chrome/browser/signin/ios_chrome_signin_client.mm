@@ -75,6 +75,10 @@ bool IOSChromeSigninClient::AreSigninCookiesAllowed() {
   return signin::SettingsAllowSigninCookies(cookie_settings_.get());
 }
 
+bool IOSChromeSigninClient::AreSigninCookiesDeletedOnExit() {
+  return signin::SettingsDeleteSigninCookiesOnExit(cookie_settings_.get());
+}
+
 void IOSChromeSigninClient::AddContentSettingsObserver(
     content_settings::Observer* observer) {
   host_content_settings_map_->AddObserver(observer);

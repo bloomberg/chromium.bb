@@ -45,6 +45,7 @@ class IOSChromeSigninClient : public SigninClient {
   void DoFinalInit() override;
   bool IsFirstRun() const override;
   bool AreSigninCookiesAllowed() override;
+  bool AreSigninCookiesDeletedOnExit() override;
   void AddContentSettingsObserver(
       content_settings::Observer* observer) override;
   void RemoveContentSettingsObserver(

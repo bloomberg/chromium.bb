@@ -160,6 +160,12 @@ bool ChromeSigninClient::AreSigninCookiesAllowed() {
   return ProfileAllowsSigninCookies(profile_);
 }
 
+bool ChromeSigninClient::AreSigninCookiesDeletedOnExit() {
+  content_settings::CookieSettings* cookie_settings =
+      CookieSettingsFactory::GetForProfile(profile_).get();
+  return signin::SettingsDeleteSigninCookiesOnExit(cookie_settings);
+}
+
 void ChromeSigninClient::AddContentSettingsObserver(
     content_settings::Observer* observer) {
   HostContentSettingsMapFactory::GetForProfile(profile_)

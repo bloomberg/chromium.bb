@@ -70,6 +70,10 @@ bool TestSigninClient::AreSigninCookiesAllowed() {
   return are_signin_cookies_allowed_;
 }
 
+bool TestSigninClient::AreSigninCookiesDeletedOnExit() {
+  return false;
+}
+
 void TestSigninClient::AddContentSettingsObserver(
     content_settings::Observer* observer) {
 }

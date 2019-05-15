@@ -79,6 +79,9 @@ class SigninClient : public KeyedService {
   // Returns true if GAIA cookies are allowed in the content area.
   virtual bool AreSigninCookiesAllowed() = 0;
 
+  // Returns true if signin cookies are cleared on exit.
+  virtual bool AreSigninCookiesDeletedOnExit() = 0;
+
   // Adds an observer to listen for changes to the state of sign in cookie
   // settings.
   virtual void AddContentSettingsObserver(

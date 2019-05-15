@@ -68,6 +68,10 @@ bool IOSWebViewSigninClient::AreSigninCookiesAllowed() {
   return signin::SettingsAllowSigninCookies(cookie_settings_.get());
 }
 
+bool IOSWebViewSigninClient::AreSigninCookiesDeletedOnExit() {
+  return signin::SettingsDeleteSigninCookiesOnExit(cookie_settings_.get());
+}
+
 void IOSWebViewSigninClient::AddContentSettingsObserver(
     content_settings::Observer* observer) {
   host_content_settings_map_->AddObserver(observer);
