@@ -5,8 +5,9 @@
 #include "chrome/browser/vr/elements/indicator_spec.h"
 
 #include "build/build_config.h"
-#include "chrome/browser/vr/ui_support.h"
+#include "chrome/browser/vr/vector_icons/vector_icons.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/vector_icons/vector_icons.h"
 
 namespace vr {
 
@@ -44,7 +45,7 @@ std::vector<IndicatorSpec> GetIndicatorSpecs() {
 
   std::vector<IndicatorSpec> specs = {
       {kLocationAccessIndicator, kWebVrLocationAccessIndicator,
-       GetVrIcon(kVrMyLocationIcon),
+       kMyLocationIcon,
        IDS_VR_SHELL_SITE_IS_TRACKING_LOCATION,
        // Background tabs cannot track high accuracy location.
        0,
@@ -53,7 +54,7 @@ std::vector<IndicatorSpec> GetIndicatorSpecs() {
        false},
 
       {kAudioCaptureIndicator, kWebVrAudioCaptureIndicator,
-       GetVrIcon(kVrMicIcon),
+       vector_icons::kMicIcon,
        IDS_VR_SHELL_SITE_IS_USING_MICROPHONE,
        IDS_VR_SHELL_BG_IS_USING_MICROPHONE,
        IDS_VR_SHELL_SITE_CAN_USE_MICROPHONE,
@@ -61,7 +62,7 @@ std::vector<IndicatorSpec> GetIndicatorSpecs() {
        false},
 
       {kVideoCaptureIndicator, kWebVrVideoCaptureIndicator,
-       GetVrIcon(kVrVideocamIcon),
+       vector_icons::kVideocamIcon,
        IDS_VR_SHELL_SITE_IS_USING_CAMERA,
        IDS_VR_SHELL_BG_IS_USING_CAMERA,
        IDS_VR_SHELL_SITE_CAN_USE_CAMERA,
@@ -69,7 +70,7 @@ std::vector<IndicatorSpec> GetIndicatorSpecs() {
        false},
 
       {kBluetoothConnectedIndicator, kWebVrBluetoothConnectedIndicator,
-       GetVrIcon(kVrBluetoothConnectedIcon),
+       vector_icons::kBluetoothConnectedIcon,
        IDS_VR_SHELL_SITE_IS_USING_BLUETOOTH,
 #if defined(OS_ANDROID)
        IDS_VR_SHELL_BG_IS_USING_BLUETOOTH,
@@ -81,7 +82,7 @@ std::vector<IndicatorSpec> GetIndicatorSpecs() {
        false},
 
       {kScreenCaptureIndicator, kWebVrScreenCaptureIndicator,
-       GetVrIcon(kVrScreenShareIcon),
+       vector_icons::kScreenShareIcon,
        IDS_VR_SHELL_SITE_IS_SHARING_SCREEN,
        IDS_VR_SHELL_BG_IS_SHARING_SCREEN,
        IDS_VR_SHELL_SITE_CAN_SHARE_SCREEN,
@@ -90,7 +91,7 @@ std::vector<IndicatorSpec> GetIndicatorSpecs() {
 
 #if !defined(OS_ANDROID)
       {kUsbConnectedIndicator, kWebXrUsbConnectedIndicator,
-       GetVrIcon(kVrUsbIcon),
+       vector_icons::kUsbIcon,
        IDS_VR_SHELL_SITE_IS_USING_USB,
        0,
        0,
@@ -98,7 +99,7 @@ std::vector<IndicatorSpec> GetIndicatorSpecs() {
        false},
 
        {kMidiConnectedIndicator, kWebXrMidiConnectedIndicator,
-       GetVrIcon(kVrMidiIcon),
+       vector_icons::kMidiIcon,
        IDS_VR_SHELL_SITE_IS_USING_MIDI,
        0,
        IDS_VR_SHELL_SITE_CAN_USE_MIDI,
