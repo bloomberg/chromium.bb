@@ -776,7 +776,7 @@ void InputMethodChromeOS::UpdateCompositionText(const CompositionText& text,
 }
 
 void InputMethodChromeOS::HidePreeditText() {
-  if (composition_.text.empty() || IsTextInputTypeNone())
+  if (IsTextInputTypeNone())
     return;
 
   // Intentionally leaves |composing_text_| unchanged.
