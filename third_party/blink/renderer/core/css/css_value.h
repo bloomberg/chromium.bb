@@ -33,10 +33,6 @@ class Length;
 
 class CORE_EXPORT CSSValue : public GarbageCollectedFinalized<CSSValue> {
  public:
-  // Override operator new to allocate CSSValue subtype objects onto
-  // a dedicated heap.
-  GC_PLUGIN_IGNORE("crbug.com/443854")
-  void* operator new(size_t size) { return AllocateObject(size, false); }
   static void* AllocateObject(size_t size, bool is_eager) {
     ThreadState* state =
         ThreadStateFor<ThreadingTrait<CSSValue>::kAffinity>::GetState();

@@ -31,6 +31,10 @@ class CORE_EXPORT CSSInheritedValue : public CSSValue {
  public:
   static CSSInheritedValue* Create();
 
+  // Only construct through MakeGarbageCollected for the initial value. Use
+  // Create() to get the pooled value.
+  CSSInheritedValue() : CSSValue(kInheritedClass) {}
+
   String CustomCSSText() const;
 
   bool Equals(const CSSInheritedValue&) const { return true; }
@@ -41,8 +45,6 @@ class CORE_EXPORT CSSInheritedValue : public CSSValue {
 
  private:
   friend class CSSValuePool;
-
-  CSSInheritedValue() : CSSValue(kInheritedClass) {}
 };
 
 template <>

@@ -19,6 +19,10 @@ class CORE_EXPORT CSSUnsetValue : public CSSValue {
  public:
   static CSSUnsetValue* Create();
 
+  // Only construct through MakeGarbageCollected for the initial value. Use
+  // Create() to get the pooled value.
+  CSSUnsetValue() : CSSValue(kUnsetClass) {}
+
   String CustomCSSText() const;
 
   bool Equals(const CSSUnsetValue&) const { return true; }
@@ -29,8 +33,6 @@ class CORE_EXPORT CSSUnsetValue : public CSSValue {
 
  private:
   friend class ::blink::CSSValuePool;
-
-  CSSUnsetValue() : CSSValue(kUnsetClass) {}
 };
 
 }  // namespace cssvalue
