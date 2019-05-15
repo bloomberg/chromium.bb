@@ -15,10 +15,13 @@
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/post_task.h"
+#include "base/task/task_traits.h"
 #include "base/time/time.h"
 #include "chrome/browser/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/offline_pages/buildflags/buildflags.h"
+#include "components/offline_pages/core/page_criteria.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/previews/core/previews_experiments.h"
@@ -85,8 +88,10 @@ void RemoveStaleOfflinePageEntries(base::DictionaryValue* dict) {
       continue;
     }
 
-    if (expiry < earliest_expiry)
+    if (expiry < earliest_expiry) {
       earliest_key = iter.first;
+      earliest_expiry = expiry;
+    }
   }
 
   for (const std::string& key : keys_to_delete)
@@ -97,6 +102,13 @@ void RemoveStaleOfflinePageEntries(base::DictionaryValue* dict) {
   if (dict->DictSize() > previews::params::OfflinePreviewsHelperMaxPrefSize()) {
     dict->RemoveKey(earliest_key);
   }
+}
+
+bool IsOfflinePageItemFreshForPreviews(
+    const offline_pages::OfflinePageItem& item) {
+  return base::Time::Now() <=
+         item.creation_time +
+             previews::params::OfflinePreviewFreshnessDuration();
 }
 
 void AddSingleOfflineItemEntry(
@@ -139,11 +151,19 @@ PreviewsOfflineHelper::PreviewsOfflineHelper(
   offline_page_model_ =
       offline_pages::OfflinePageModelFactory::GetForBrowserContext(
           browser_context);
-  if (offline_page_model_) {
+
+  if (offline_page_model_ &&
+      base::FeatureList::IsEnabled(
+          previews::features::kOfflinePreviewsFalsePositivePrevention)) {
     offline_page_model_->AddObserver(this);
-    offline_page_model_->GetAllPages(
-        base::BindOnce(&PreviewsOfflineHelper::UpdateAllPrefEntries,
-                       weak_factory_.GetWeakPtr()));
+    // Schedule a low priority task with a slight delay to ensure that the
+    // expensive DB query doesn't occur during startup or during other user
+    // visible actions.
+    base::PostDelayedTaskWithTraits(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::LOWEST},
+        base::BindOnce(&PreviewsOfflineHelper::RequestDBUpdate,
+                       weak_factory_.GetWeakPtr()),
+        base::TimeDelta::FromSeconds(30));
   }
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
 }
@@ -207,6 +227,19 @@ void PreviewsOfflineHelper::Shutdown() {
   }
 }
 
+void PreviewsOfflineHelper::RequestDBUpdate() {
+  offline_pages::PageCriteria criteria;
+  criteria.exclude_tab_bound_pages = true;
+  criteria.maximum_matches =
+      previews::params::OfflinePreviewsHelperMaxPrefSize();
+  criteria.additional_criteria =
+      base::BindRepeating(&IsOfflinePageItemFreshForPreviews);
+
+  offline_page_model_->GetPagesWithCriteria(
+      criteria, base::BindOnce(&PreviewsOfflineHelper::UpdateAllPrefEntries,
+                               weak_factory_.GetWeakPtr()));
+}
+
 void PreviewsOfflineHelper::UpdateAllPrefEntries(
     const offline_pages::MultipleOfflinePageItemResult& pages) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -216,7 +249,6 @@ void PreviewsOfflineHelper::UpdateAllPrefEntries(
   available_pages_->Clear();
   for (const offline_pages::OfflinePageItem& page : pages)
     AddSingleOfflineItemEntry(available_pages_.get(), page);
-  RemoveStaleOfflinePageEntries(available_pages_.get());
   UpdatePref();
 
   UMA_HISTOGRAM_COUNTS_100("Previews.Offline.FalsePositivePrevention.PrefSize",
@@ -243,8 +275,6 @@ void PreviewsOfflineHelper::OfflinePageDeleted(
 
   // Has no effect if the url was never in the dictionary.
   available_pages_->RemoveKey(HashURL(deleted_page.url));
-
-  RemoveStaleOfflinePageEntries(available_pages_.get());
   UpdatePref();
 }
 

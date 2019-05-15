@@ -59,6 +59,12 @@ class PreviewsOfflineHelper : public offline_pages::OfflinePageModel::Observer {
   }
 
  private:
+  // Requests all eligible pages from Offline Page Model. This is defined as a
+  // separate method so that it can be scheduled at a low priority since the
+  // Offline DB query is expensive, and only needs to be done at most once per
+  // session.
+  void RequestDBUpdate();
+
   // Helper method to update |available_pages_| in |pref_service_|.
   void UpdatePref();
 
