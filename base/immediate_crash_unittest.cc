@@ -40,6 +40,9 @@ TEST(ImmediateCrashTest, ExpectedOpcodeSequence) {
 #endif
   helper_library_path = helper_library_path.AppendASCII(
       GetNativeLibraryName("immediate_crash_test_helper"));
+#if defined(OS_ANDROID) && defined(COMPONENT_BUILD)
+  helper_library_path = helper_library_path.ReplaceExtension(".cr.so");
+#endif
   // TODO(dcheng): Shouldn't GetNativeLibraryName just return a FilePath?
   NativeLibrary helper_library =
       LoadNativeLibrary(helper_library_path, &load_error);
