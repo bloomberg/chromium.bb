@@ -47,7 +47,7 @@ class ClipboardImageWriter final : public ClipboardWriter {
 
     PostCrossThreadTask(
         *task_runner, FROM_HERE,
-        CrossThreadBind(
+        CrossThreadBindOnce(
             &ClipboardImageWriter::Write,
             /* This unretained is safe because the ClipboardImageWriter must
               remain alive when returning to its main thread. */
@@ -84,7 +84,7 @@ class ClipboardTextWriter final : public ClipboardWriter {
     DCHECK(wtf_string.IsSafeToSendToAnotherThread());
     PostCrossThreadTask(
         *task_runner, FROM_HERE,
-        CrossThreadBind(
+        CrossThreadBindOnce(
             &ClipboardTextWriter::Write,
             /* This unretained is safe because the ClipboardTextWriter
               must remain alive when returning to its main thread. */

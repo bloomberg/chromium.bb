@@ -140,10 +140,10 @@ void CanvasResourceDispatcher::PostImageToPlaceholder(
 
   PostCrossThreadTask(
       *Thread::MainThread()->Scheduler()->CompositorTaskRunner(), FROM_HERE,
-      CrossThreadBind(UpdatePlaceholderImage, this->GetWeakPtr(),
-                      WTF::Passed(std::move(dispatcher_task_runner)),
-                      placeholder_canvas_id_, std::move(canvas_resource),
-                      resource_id));
+      CrossThreadBindOnce(UpdatePlaceholderImage, this->GetWeakPtr(),
+                          WTF::Passed(std::move(dispatcher_task_runner)),
+                          placeholder_canvas_id_, std::move(canvas_resource),
+                          resource_id));
 }
 
 void CanvasResourceDispatcher::DispatchFrameSync(

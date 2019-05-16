@@ -71,7 +71,7 @@ class PaintWorkletProxyClientTest : public RenderingTest {
       PostCrossThreadTask(
           *worklet_threads[i]->GetTaskRunner(TaskType::kInternalTest),
           FROM_HERE,
-          CrossThreadBind(
+          CrossThreadBindOnce(
               &PaintWorkletProxyClientTest::AddGlobalScopeOnWorkletThread,
               CrossThreadUnretained(this),
               CrossThreadUnretained(worklet_threads[i].get()),
@@ -85,7 +85,7 @@ class PaintWorkletProxyClientTest : public RenderingTest {
     base::WaitableEvent waitable_event;
     PostCrossThreadTask(
         *worklet_threads[0]->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
-        CrossThreadBind(
+        CrossThreadBindOnce(
             callback, CrossThreadUnretained(worklet_threads[0].get()),
             CrossThreadPersistent<PaintWorkletProxyClient>(proxy_client_),
             CrossThreadUnretained(&waitable_event)));
@@ -158,7 +158,7 @@ TEST_F(PaintWorkletProxyClientTest, AddGlobalScopes) {
   base::WaitableEvent waitable_event;
   PostCrossThreadTask(
       *worklet_thread->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
-      CrossThreadBind(
+      CrossThreadBindOnce(
           &RunAddGlobalScopesTestOnWorklet,
           CrossThreadUnretained(worklet_thread.get()),
           CrossThreadPersistent<PaintWorkletProxyClient>(proxy_client_),

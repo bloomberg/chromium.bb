@@ -627,7 +627,7 @@ void ParkableStringImpl::CompressInBackground(
   size_t size = params->size;
   PostCrossThreadTask(
       *task_runner, FROM_HERE,
-      CrossThreadBind(
+      CrossThreadBindOnce(
           [](std::unique_ptr<CompressionTaskParams> params,
              std::unique_ptr<Vector<uint8_t>> compressed,
              base::TimeDelta parking_thread_time) {

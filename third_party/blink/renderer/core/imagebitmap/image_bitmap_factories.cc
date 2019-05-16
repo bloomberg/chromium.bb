@@ -348,9 +348,9 @@ void ImageBitmapFactories::ImageBitmapLoader::DecodeImageOnDecoderThread(
   }
   PostCrossThreadTask(
       *task_runner, FROM_HERE,
-      CrossThreadBind(&ImageBitmapFactories::ImageBitmapLoader::
-                          ResolvePromiseOnOriginalThread,
-                      WrapCrossThreadPersistent(this), std::move(frame)));
+      CrossThreadBindOnce(&ImageBitmapFactories::ImageBitmapLoader::
+                              ResolvePromiseOnOriginalThread,
+                          WrapCrossThreadPersistent(this), std::move(frame)));
 }
 
 void ImageBitmapFactories::ImageBitmapLoader::ResolvePromiseOnOriginalThread(

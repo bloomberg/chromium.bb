@@ -271,8 +271,8 @@ TEST_F(DeferredImageDecoderTest, MAYBE_decodeOnOtherThread) {
           .SetThreadNameForTest("RasterThread"));
   PostCrossThreadTask(
       *thread->GetTaskRunner(), FROM_HERE,
-      CrossThreadBind(&RasterizeMain, CrossThreadUnretained(canvas_.get()),
-                      record));
+      CrossThreadBindOnce(&RasterizeMain, CrossThreadUnretained(canvas_.get()),
+                          record));
   thread.reset();
   EXPECT_EQ(0, decode_request_count_);
   EXPECT_EQ(SkColorSetARGB(255, 255, 255, 255), bitmap_.getColor(0, 0));

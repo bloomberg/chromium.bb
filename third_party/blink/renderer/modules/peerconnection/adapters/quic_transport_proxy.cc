@@ -48,9 +48,9 @@ QuicTransportProxy::QuicTransportProxy(
       ice_transport_proxy->ConnectConsumer(this);
   PostCrossThreadTask(
       *host_thread(), FROM_HERE,
-      CrossThreadBind(&QuicTransportHost::Initialize,
-                      CrossThreadUnretained(host_.get()),
-                      CrossThreadUnretained(ice_transport_host), config));
+      CrossThreadBindOnce(&QuicTransportHost::Initialize,
+                          CrossThreadUnretained(host_.get()),
+                          CrossThreadUnretained(ice_transport_host), config));
 }
 
 QuicTransportProxy::~QuicTransportProxy() {
@@ -74,16 +74,16 @@ scoped_refptr<base::SingleThreadTaskRunner> QuicTransportProxy::host_thread()
 void QuicTransportProxy::Start(P2PQuicTransport::StartConfig config) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   PostCrossThreadTask(*host_thread(), FROM_HERE,
-                      CrossThreadBind(&QuicTransportHost::Start,
-                                      CrossThreadUnretained(host_.get()),
-                                      WTF::Passed(std::move(config))));
+                      CrossThreadBindOnce(&QuicTransportHost::Start,
+                                          CrossThreadUnretained(host_.get()),
+                                          WTF::Passed(std::move(config))));
 }
 
 void QuicTransportProxy::Stop() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   PostCrossThreadTask(*host_thread(), FROM_HERE,
-                      CrossThreadBind(&QuicTransportHost::Stop,
-                                      CrossThreadUnretained(host_.get())));
+                      CrossThreadBindOnce(&QuicTransportHost::Stop,
+                                          CrossThreadUnretained(host_.get())));
 }
 
 QuicStreamProxy* QuicTransportProxy::CreateStream() {
@@ -97,9 +97,9 @@ QuicStreamProxy* QuicTransportProxy::CreateStream() {
   stream_proxy->Initialize(this);
 
   PostCrossThreadTask(*host_thread(), FROM_HERE,
-                      CrossThreadBind(&QuicTransportHost::CreateStream,
-                                      CrossThreadUnretained(host_.get()),
-                                      WTF::Passed(std::move(stream_host))));
+                      CrossThreadBindOnce(&QuicTransportHost::CreateStream,
+                                          CrossThreadUnretained(host_.get()),
+                                          WTF::Passed(std::move(stream_host))));
 
   QuicStreamProxy* stream_proxy_ptr = stream_proxy.get();
   stream_proxies_.insert(
@@ -110,10 +110,10 @@ QuicStreamProxy* QuicTransportProxy::CreateStream() {
 void QuicTransportProxy::SendDatagram(Vector<uint8_t> datagram) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  PostCrossThreadTask(
-      *host_thread(), FROM_HERE,
-      CrossThreadBind(&QuicTransportHost::SendDatagram,
-                      CrossThreadUnretained(host_.get()), std::move(datagram)));
+  PostCrossThreadTask(*host_thread(), FROM_HERE,
+                      CrossThreadBindOnce(&QuicTransportHost::SendDatagram,
+                                          CrossThreadUnretained(host_.get()),
+                                          std::move(datagram)));
 }
 
 void QuicTransportProxy::GetStats(uint32_t request_id) {
@@ -121,8 +121,8 @@ void QuicTransportProxy::GetStats(uint32_t request_id) {
 
   PostCrossThreadTask(
       *host_thread(), FROM_HERE,
-      CrossThreadBind(&QuicTransportHost::GetStats,
-                      CrossThreadUnretained(host_.get()), request_id));
+      CrossThreadBindOnce(&QuicTransportHost::GetStats,
+                          CrossThreadUnretained(host_.get()), request_id));
 }
 
 void QuicTransportProxy::OnRemoveStream(

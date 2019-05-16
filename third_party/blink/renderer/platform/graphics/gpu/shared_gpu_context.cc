@@ -126,11 +126,11 @@ void SharedGpuContext::CreateContextProviderIfNeeded(
         Thread::MainThread()->GetTaskRunner();
     PostCrossThreadTask(
         *task_runner, FROM_HERE,
-        CrossThreadBind(&CreateContextProviderOnMainThread,
-                        only_if_gpu_compositing,
-                        CrossThreadUnretained(&is_gpu_compositing_disabled_),
-                        CrossThreadUnretained(&context_provider_wrapper_),
-                        CrossThreadUnretained(&waitable_event)));
+        CrossThreadBindOnce(
+            &CreateContextProviderOnMainThread, only_if_gpu_compositing,
+            CrossThreadUnretained(&is_gpu_compositing_disabled_),
+            CrossThreadUnretained(&context_provider_wrapper_),
+            CrossThreadUnretained(&waitable_event)));
     waitable_event.Wait();
     if (context_provider_wrapper_ &&
         !context_provider_wrapper_->ContextProvider()->BindToCurrentThread())

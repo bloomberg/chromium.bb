@@ -214,10 +214,11 @@ void BackgroundFetchIconLoader::DecodeAndResizeImageOnBackgroundThread(
     }
   }
 
-  PostCrossThreadTask(*task_runner, FROM_HERE,
-                      CrossThreadBind(&BackgroundFetchIconLoader::RunCallback,
-                                      WrapCrossThreadPersistent(this),
-                                      ideal_to_chosen_icon_size_times_hundred));
+  PostCrossThreadTask(
+      *task_runner, FROM_HERE,
+      CrossThreadBindOnce(&BackgroundFetchIconLoader::RunCallback,
+                          WrapCrossThreadPersistent(this),
+                          ideal_to_chosen_icon_size_times_hundred));
 }
 
 void BackgroundFetchIconLoader::DidFail(const ResourceError& error) {

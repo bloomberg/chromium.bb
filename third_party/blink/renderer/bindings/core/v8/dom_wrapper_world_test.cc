@@ -79,7 +79,7 @@ void WorkerThreadFunc(
 
   thread->ShutdownOnBackingThread();
   PostCrossThreadTask(*main_thread_task_runner, FROM_HERE,
-                      CrossThreadBind(&test::ExitRunLoop));
+                      CrossThreadBindOnce(&test::ExitRunLoop));
 }
 
 TEST(DOMWrapperWorldTest, Basic) {

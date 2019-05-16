@@ -87,13 +87,13 @@ void AsyncAudioDecoder::DecodeOnBackgroundThread(
   if (context) {
     PostCrossThreadTask(
         *task_runner, FROM_HERE,
-        CrossThreadBind(&AsyncAudioDecoder::NotifyComplete,
-                        WrapCrossThreadPersistent(audio_data),
-                        WrapCrossThreadPersistent(success_callback),
-                        WrapCrossThreadPersistent(error_callback),
-                        WTF::RetainedRef(std::move(bus)),
-                        WrapCrossThreadPersistent(resolver),
-                        WrapCrossThreadPersistent(context)));
+        CrossThreadBindOnce(&AsyncAudioDecoder::NotifyComplete,
+                            WrapCrossThreadPersistent(audio_data),
+                            WrapCrossThreadPersistent(success_callback),
+                            WrapCrossThreadPersistent(error_callback),
+                            WTF::RetainedRef(std::move(bus)),
+                            WrapCrossThreadPersistent(resolver),
+                            WrapCrossThreadPersistent(context)));
   }
 }
 

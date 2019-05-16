@@ -60,7 +60,7 @@ void WorkerResourceTimingNotifierImpl::AddResourceTiming(
   } else {
     PostCrossThreadTask(
         *task_runner_, FROM_HERE,
-        CrossThreadBind(
+        CrossThreadBindOnce(
             &WorkerResourceTimingNotifierImpl::AddCrossThreadResourceTiming,
             WrapCrossThreadWeakPersistent(this), info,
             initiator_type.GetString()));

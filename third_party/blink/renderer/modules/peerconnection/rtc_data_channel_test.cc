@@ -34,7 +34,7 @@ void RunSynchronous(base::TestSimpleTaskRunner* thread,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
   PostCrossThreadTask(
       *thread, FROM_HERE,
-      CrossThreadBind(
+      CrossThreadBindOnce(
           [](WTF::CrossThreadClosure closure, base::WaitableEvent* event) {
             std::move(closure).Run();
             event->Signal();

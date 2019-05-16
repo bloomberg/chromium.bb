@@ -46,23 +46,25 @@ scoped_refptr<base::SingleThreadTaskRunner> QuicStreamProxy::host_thread()
 
 void QuicStreamProxy::Reset() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  PostCrossThreadTask(*host_thread(), FROM_HERE,
-                      CrossThreadBind(&QuicStreamHost::Reset, stream_host_));
+  PostCrossThreadTask(
+      *host_thread(), FROM_HERE,
+      CrossThreadBindOnce(&QuicStreamHost::Reset, stream_host_));
   Delete();
 }
 
 void QuicStreamProxy::MarkReceivedDataConsumed(uint32_t amount) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  PostCrossThreadTask(*host_thread(), FROM_HERE,
-                      CrossThreadBind(&QuicStreamHost::MarkReceivedDataConsumed,
-                                      stream_host_, amount));
+  PostCrossThreadTask(
+      *host_thread(), FROM_HERE,
+      CrossThreadBindOnce(&QuicStreamHost::MarkReceivedDataConsumed,
+                          stream_host_, amount));
 }
 
 void QuicStreamProxy::WriteData(Vector<uint8_t> data, bool fin) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   PostCrossThreadTask(*host_thread(), FROM_HERE,
-                      CrossThreadBind(&QuicStreamHost::WriteData, stream_host_,
-                                      std::move(data), fin));
+                      CrossThreadBindOnce(&QuicStreamHost::WriteData,
+                                          stream_host_, std::move(data), fin));
   if (fin) {
     writable_ = false;
     if (!readable_ && !writable_) {

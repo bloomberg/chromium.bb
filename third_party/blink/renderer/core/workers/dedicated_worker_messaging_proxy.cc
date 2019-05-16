@@ -112,7 +112,7 @@ void DedicatedWorkerMessagingProxy::PostMessageToWorkerGlobalScope(
   }
   PostCrossThreadTask(
       *GetWorkerThread()->GetTaskRunner(TaskType::kPostedMessage), FROM_HERE,
-      CrossThreadBind(
+      CrossThreadBindOnce(
           &DedicatedWorkerObjectProxy::ProcessMessageFromWorkerObject,
           CrossThreadUnretained(&WorkerObjectProxy()),
           WTF::Passed(std::move(message)),
@@ -166,7 +166,7 @@ void DedicatedWorkerMessagingProxy::DidEvaluateScript(bool success) {
   for (auto& task : tasks) {
     PostCrossThreadTask(
         *GetWorkerThread()->GetTaskRunner(TaskType::kPostedMessage), FROM_HERE,
-        CrossThreadBind(
+        CrossThreadBindOnce(
             &DedicatedWorkerObjectProxy::ProcessMessageFromWorkerObject,
             CrossThreadUnretained(&WorkerObjectProxy()),
             WTF::Passed(std::move(task)),
@@ -223,9 +223,10 @@ void DedicatedWorkerMessagingProxy::DispatchErrorEvent(
   // https://html.spec.whatwg.org/C/#runtime-script-errors-2
   PostCrossThreadTask(
       *GetWorkerThread()->GetTaskRunner(TaskType::kDOMManipulation), FROM_HERE,
-      CrossThreadBind(&DedicatedWorkerObjectProxy::ProcessUnhandledException,
-                      CrossThreadUnretained(worker_object_proxy_.get()),
-                      exception_id, CrossThreadUnretained(GetWorkerThread())));
+      CrossThreadBindOnce(
+          &DedicatedWorkerObjectProxy::ProcessUnhandledException,
+          CrossThreadUnretained(worker_object_proxy_.get()), exception_id,
+          CrossThreadUnretained(GetWorkerThread())));
 
   // Propagate an unhandled error to the parent context.
   const auto mute_script_errors = SanitizeScriptErrors::kDoNotSanitize;

@@ -145,10 +145,10 @@ MailboxTextureHolder::~MailboxTextureHolder() {
       thread_id_ != Thread::Current()->ThreadId()) {
     PostCrossThreadTask(
         *texture_thread_task_runner_, FROM_HERE,
-        CrossThreadBind(&ReleaseTexture, is_converted_from_skia_texture_,
-                        texture_id_, WTF::Passed(std::move(passed_mailbox)),
-                        WTF::Passed(ContextProviderWrapper()),
-                        WTF::Passed(std::move(passed_sync_token))));
+        CrossThreadBindOnce(&ReleaseTexture, is_converted_from_skia_texture_,
+                            texture_id_, WTF::Passed(std::move(passed_mailbox)),
+                            WTF::Passed(ContextProviderWrapper()),
+                            WTF::Passed(std::move(passed_sync_token))));
   } else {
     ReleaseTexture(is_converted_from_skia_texture_, texture_id_,
                    std::move(passed_mailbox), ContextProviderWrapper(),

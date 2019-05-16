@@ -112,7 +112,7 @@ void PaintWorkletProxyClient::RegisterCSSPaintDefinition(
       passed_custom_properties.push_back(property.GetString());
     PostCrossThreadTask(
         *main_thread_runner_, FROM_HERE,
-        CrossThreadBind(
+        CrossThreadBindOnce(
             &PaintWorklet::RegisterMainThreadDocumentPaintDefinition,
             paint_worklet_, name, definition->NativeInvalidationProperties(),
             WTF::Passed(std::move(passed_custom_properties)),

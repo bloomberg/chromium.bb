@@ -614,13 +614,13 @@ void AudioContext::HandleAudibility(AudioBus* destination_bus) {
     if (is_audible) {
       PostCrossThreadTask(
           *task_runner_, FROM_HERE,
-          CrossThreadBind(&AudioContext::NotifyAudibleAudioStarted,
-                          WrapCrossThreadPersistent(this)));
+          CrossThreadBindOnce(&AudioContext::NotifyAudibleAudioStarted,
+                              WrapCrossThreadPersistent(this)));
     } else {
       PostCrossThreadTask(
           *task_runner_, FROM_HERE,
-          CrossThreadBind(&AudioContext::NotifyAudibleAudioStopped,
-                          WrapCrossThreadPersistent(this)));
+          CrossThreadBindOnce(&AudioContext::NotifyAudibleAudioStopped,
+                              WrapCrossThreadPersistent(this)));
     }
   }
 }

@@ -473,10 +473,10 @@ void WorkerGlobalScope::ExceptionThrown(ErrorEvent* event) {
 }
 
 void WorkerGlobalScope::RemoveURLFromMemoryCache(const KURL& url) {
-  PostCrossThreadTask(*thread_->GetParentExecutionContextTaskRunners()->Get(
-                          TaskType::kNetworking),
-                      FROM_HERE,
-                      CrossThreadBind(&RemoveURLFromMemoryCacheInternal, url));
+  PostCrossThreadTask(
+      *thread_->GetParentExecutionContextTaskRunners()->Get(
+          TaskType::kNetworking),
+      FROM_HERE, CrossThreadBindOnce(&RemoveURLFromMemoryCacheInternal, url));
 }
 
 NOINLINE void WorkerGlobalScope::InitializeURL(const KURL& url) {

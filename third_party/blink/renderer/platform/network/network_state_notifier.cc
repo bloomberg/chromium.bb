@@ -279,9 +279,10 @@ void NetworkStateNotifier::NotifyObservers(ObserverListMap& map,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner = entry.key;
     PostCrossThreadTask(
         *task_runner, FROM_HERE,
-        CrossThreadBind(&NetworkStateNotifier::NotifyObserversOnTaskRunner,
-                        CrossThreadUnretained(this),
-                        CrossThreadUnretained(&map), type, task_runner, state));
+        CrossThreadBindOnce(&NetworkStateNotifier::NotifyObserversOnTaskRunner,
+                            CrossThreadUnretained(this),
+                            CrossThreadUnretained(&map), type, task_runner,
+                            state));
   }
 }
 
