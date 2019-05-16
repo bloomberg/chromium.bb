@@ -85,7 +85,7 @@ const char* const kAllocatorDumpNameWhitelist[] = {
     "blink_objects/UACSSResource",
     "blink_objects/ResourceFetcher",
     "components/download/controller_0x?",
-    "devtools/file_watcher_path_count",
+    "devtools/file_watcher_0x?",
     "discardable",
     "discardable/child_0x?",
     "extensions/value_store/Extensions.Database.Open.Settings/0x?",
