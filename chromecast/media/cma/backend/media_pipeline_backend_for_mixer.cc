@@ -251,7 +251,7 @@ int64_t MediaPipelineBackendForMixer::MonotonicClockNow() const {
 }
 #elif defined(OS_FUCHSIA)
 int64_t MediaPipelineBackendForMixer::MonotonicClockNow() const {
-  return zx_clock_get(ZX_CLOCK_MONOTONIC) / 1000;
+  return zx_clock_get_monotonic() / 1000;
 }
 #endif
 

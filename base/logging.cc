@@ -189,7 +189,7 @@ uint64_t TickCount() {
 #if defined(OS_WIN)
   return GetTickCount();
 #elif defined(OS_FUCHSIA)
-  return zx_clock_get(ZX_CLOCK_MONOTONIC) /
+  return zx_clock_get_monotonic() /
          static_cast<zx_time_t>(base::Time::kNanosecondsPerMicrosecond);
 #elif defined(OS_MACOSX)
   return mach_absolute_time();
