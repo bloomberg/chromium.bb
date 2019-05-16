@@ -187,6 +187,7 @@
 #import "ios/chrome/browser/web/web_navigation_util.h"
 #include "ios/chrome/browser/web_state_list/all_web_state_observation_forwarder.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
+#import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #import "ios/chrome/browser/web_state_list/web_usage_enabler/web_state_list_web_usage_enabler.h"
 #import "ios/chrome/browser/web_state_list/web_usage_enabler/web_state_list_web_usage_enabler_factory.h"
 #import "ios/chrome/browser/webui/net_export_tab_helper.h"
@@ -392,6 +393,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                      TabModelObserver,
                                      TabStripPresentation,
                                      ToolbarHeightProviderForFullscreen,
+                                     WebStateListObserving,
                                      UIGestureRecognizerDelegate,
                                      URLLoadingObserver> {
   // The dependency factory passed on initialization.  Used to vend objects used
@@ -512,6 +514,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserverBridge;
 
   std::unique_ptr<UrlLoadingObserverBridge> _URLLoadingObserverBridge;
+
+  // Bridges C++ WebStateListObserver methods to this BrowserViewController.
+  std::unique_ptr<WebStateListObserverBridge> _webStateListObserver;
 }
 
 // Activates/deactivates the object. This will enable/disable the ability for
@@ -668,8 +673,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // Sets the correct frame and hierarchy for subviews and helper views.  Only
 // insert views on |initialLayout|.
 - (void)setUpViewLayout:(BOOL)initialLayout;
-// Makes |tab| the currently visible tab, displaying its view.
-- (void)displayTab:(Tab*)tab;
+// Makes |webState| the currently visible WebState, displaying its view.
+- (void)displayWebState:(web::WebState*)webState;
 // Initializes the bookmark interaction controller if not already initialized.
 - (void)initializeBookmarkInteractionController;
 // Installs the BVC as overscroll actions controller of |nativeContent| if
@@ -744,11 +749,12 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 - (void)installDelegatesForTab:(Tab*)tab;
 // Remove delegates from the provided |tab|.
 - (void)uninstallDelegatesForTab:(Tab*)tab;
-// Called when a tab is selected in the model. Make any required view changes.
-// The notification will not be sent when the tab is already the selected tab.
-// |notifyToolbar| indicates whether the toolbar is notified that the tab has
-// changed.
-- (void)tabSelected:(Tab*)tab notifyToolbar:(BOOL)notifyToolbar;
+// Called when a |webState| is selected in the WebStateList. Make any required
+// view changes. The notification will not be sent when the |webState| is
+// already the selected WebState. |notifyToolbar| indicates whether the toolbar
+// is notified that the webState has changed.
+- (void)webStateSelected:(web::WebState*)webState
+           notifyToolbar:(BOOL)notifyToolbar;
 // Returns the native controller being used by |tab|'s web controller.
 - (id)nativeControllerForTab:(Tab*)tab;
 
@@ -1231,7 +1237,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // Keyboard shouldn't overlay the ecoutez window, so dismiss find in page and
   // dismiss the keyboard.
   [self closeFindInPage];
-  [[self viewForTab:self.tabModel.currentTab] endEditing:NO];
+  [[self viewForWebState:self.currentWebState] endEditing:NO];
 
   // Ensure that voice search objects are created.
   [self ensureVoiceSearchControllerCreated];
@@ -1277,7 +1283,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   [self updateBroadcastState];
 
   // Stop the NTP on web usage toggle. This happens when clearing browser
-  // data, and forces the NTP to be recreated in -displayTab below.
+  // data, and forces the NTP to be recreated in -displayWebState below.
   // TODO(crbug.com/906199): Move this to the NewTabPageTabHelper when
   // WebStateObserver has a webUsage callback.
   if (!active) {
@@ -1294,9 +1300,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       PagePlaceholderTabHelper::FromWebState(self.currentWebState)
           ->AddPlaceholderForNextNavigation();
     }
-    Tab* currentTab = self.tabModel.currentTab;
-    if (currentTab)
-      [self displayTab:currentTab];
+    if (self.currentWebState)
+      [self displayWebState:self.currentWebState];
   } else {
     [_dialogPresenter cancelAllDialogs];
   }
@@ -1459,6 +1464,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // before self.tabModel is released.
   _sideSwipeController = nil;
   [self.tabModel removeObserver:self];
+  self.tabModel.webStateList->RemoveObserver(_webStateListObserver.get());
+  _webStateListObserver.reset();
   _allWebStateObservationForwarder = nullptr;
   if (_voiceSearchController)
     _voiceSearchController->SetDispatcher(nil);
@@ -1632,11 +1639,10 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // updating the view will be handled when it's displayed again.
   if (!self.webUsageEnabled || !self.contentArea)
     return;
-  // Update the displayed tab (if any; the switcher may not have created one
-  // yet) in case it changed while showing the switcher.
-  Tab* currentTab = self.tabModel.currentTab;
-  if (currentTab)
-    [self displayTab:currentTab];
+  // Update the displayed WebState (if any; the switcher may not have created
+  // one yet) in case it changed while showing the switcher.
+  if (self.currentWebState)
+    [self displayWebState:self.currentWebState];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
@@ -1920,6 +1926,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       std::make_unique<AllWebStateObservationForwarder>(
           self.tabModel.webStateList, _webStateObserverBridge.get());
 
+  _webStateListObserver = std::make_unique<WebStateListObserverBridge>(self);
+  self.tabModel.webStateList->AddObserver(_webStateListObserver.get());
   _URLLoadingObserverBridge = std::make_unique<UrlLoadingObserverBridge>(self);
   UrlLoadingNotifier* urlLoadingNotifier =
       UrlLoadingNotifierFactory::GetForBrowserState(_browserState);
@@ -2394,12 +2402,12 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   }
 }
 
-- (void)displayTab:(Tab*)tab {
-  DCHECK(tab);
+- (void)displayWebState:(web::WebState*)webState {
+  DCHECK(webState);
   [self loadViewIfNeeded];
 
   // Set this before triggering any of the possible page loads below.
-  tab.webState->SetKeepRenderProcessAlive(true);
+  webState->SetKeepRenderProcessAlive(true);
 
   if (!self.inNewTabAnimation) {
     // Hide findbar.  |updateToolbar| will restore the findbar later.
@@ -2407,25 +2415,25 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
     // Make new content visible, resizing it first as the orientation may
     // have changed from the last time it was displayed.
-    [self viewForTab:tab].frame = self.contentArea.bounds;
+    [self viewForWebState:webState].frame = self.contentArea.bounds;
+
     [_toolbarUIUpdater updateState];
     NewTabPageTabHelper* NTPHelper =
-        NewTabPageTabHelper::FromWebState(tab.webState);
+        NewTabPageTabHelper::FromWebState(webState);
     if (NTPHelper && NTPHelper->IsActive()) {
       UIViewController* viewController =
-          _ntpCoordinatorsForWebStates[tab.webState].viewController;
-      viewController.view.frame = [self ntpFrameForWebState:tab.webState];
+          _ntpCoordinatorsForWebStates[webState].viewController;
+      viewController.view.frame = [self ntpFrameForWebState:webState];
       // TODO(crbug.com/873729): For a newly created WebState, the session will
       // not be restored until LoadIfNecessary call. Remove when fixed.
-      tab.webState->GetNavigationManager()->LoadIfNecessary();
+      webState->GetNavigationManager()->LoadIfNecessary();
 
       // Always show the webState view under the NTP, to work around
       // crbug.com/848789
       if (base::FeatureList::IsEnabled(kBrowserContainerKeepsContentView)) {
         if (self.browserContainerViewController.contentView !=
-            tab.webState->GetView()) {
-          self.browserContainerViewController.contentView =
-              tab.webState->GetView();
+            webState->GetView()) {
+          self.browserContainerViewController.contentView = webState->GetView();
         }
         self.browserContainerViewController.contentView.frame =
             self.contentArea.bounds;
@@ -2434,16 +2442,15 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       }
       self.browserContainerViewController.contentViewController =
           viewController;
-
     } else {
-      self.browserContainerViewController.contentView = [self viewForTab:tab];
+      self.browserContainerViewController.contentView =
+          [self viewForWebState:webState];
     }
   }
   [self updateToolbar];
 
   // Notify the WebState that it was displayed.
-  DCHECK(tab.webState);
-  tab.webState->WasShown();
+  webState->WasShown();
 }
 
 - (void)initializeBookmarkInteractionController {
@@ -2555,7 +2562,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 }
 
 - (CGRect)visibleFrameForTab:(Tab*)tab {
-  UIView* tabView = [self viewForTab:tab];
+  UIView* tabView = [self viewForWebState:tab.webState];
   return UIEdgeInsetsInsetRect(tabView.bounds,
                                [self viewportInsetsForView:tabView]);
 }
@@ -2586,16 +2593,15 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   }
 }
 
-- (UIView*)viewForTab:(Tab*)tab {
-  DCHECK(tab);
-  if (!tab.webState)
+- (UIView*)viewForWebState:(web::WebState*)webState {
+  if (!webState)
     return nil;
-  web::WebState* webState = tab.webState;
   NewTabPageTabHelper* NTPHelper = NewTabPageTabHelper::FromWebState(webState);
   if (NTPHelper && NTPHelper->IsActive()) {
     return _ntpCoordinatorsForWebStates[webState].viewController.view;
   }
-  DCHECK([self.tabModel indexOfTab:tab] != NSNotFound);
+  DCHECK(self.tabModel.webStateList->GetIndexOfWebState(webState) !=
+         WebStateList::kInvalidIndex);
   // TODO(crbug.com/904588): Move |RecordPageLoadStart| to TabUsageRecorder.
   if (webState->IsEvicted() && [self.tabModel tabUsageRecorder]) {
     [self.tabModel tabUsageRecorder] -> RecordPageLoadStart(webState);
@@ -2796,15 +2802,16 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   SnapshotTabHelper::FromWebState(tab.webState)->SetDelegate(nil);
 }
 
-- (void)tabSelected:(Tab*)tab notifyToolbar:(BOOL)notifyToolbar {
-  DCHECK(tab);
+- (void)webStateSelected:(web::WebState*)webState
+           notifyToolbar:(BOOL)notifyToolbar {
+  DCHECK(webState);
 
   // Ignore changes while the tab stack view is visible (or while suspended).
   // The display will be refreshed when this view becomes active again.
   if (!self.visible || !self.webUsageEnabled)
     return;
 
-  [self displayTab:tab];
+  [self displayWebState:webState];
 
   if (_expectingForegroundTab && !self.inNewTabAnimation) {
     // Now that the new tab has been displayed, return to normal. Rather than
@@ -4274,7 +4281,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // Dismiss the omnibox (if open).
   [self.dispatcher cancelOmniboxEdit];
   // Dismiss the soft keyboard (if open).
-  [[self viewForTab:self.tabModel.currentTab] endEditing:NO];
+  [[self viewForWebState:self.currentWebState] endEditing:NO];
   // Dismiss Find in Page focus.
   [self updateFindBar:NO shouldFocus:NO];
 
@@ -4323,6 +4330,31 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   navigationManager->ReloadWithUserAgentType(userAgentType);
 }
 
+#pragma mark - WebStateListObserving methods
+
+// Observer method, active WebState changed.
+- (void)webStateList:(WebStateList*)webStateList
+    didChangeActiveWebState:(web::WebState*)newWebState
+                oldWebState:(web::WebState*)oldWebState
+                    atIndex:(int)atIndex
+                     reason:(int)reason {
+  if (oldWebState) {
+    oldWebState->WasHidden();
+    oldWebState->SetKeepRenderProcessAlive(false);
+    [self dismissPopups];
+  }
+  // NOTE: webStateSelected expects to always be called with a
+  // non-null WebState.
+  if (!newWebState)
+    return;
+
+  self.currentWebState->GetWebViewProxy().scrollViewProxy.clipsToBounds = NO;
+
+  [_paymentRequestManager setActiveWebState:newWebState];
+
+  [self webStateSelected:newWebState notifyToolbar:YES];
+}
+
 #pragma mark - TabModelObserver methods
 
 // Observer method, tab inserted.
@@ -4336,29 +4368,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   if (fg) {
     [_paymentRequestManager setActiveWebState:tab.webState];
   }
-}
-
-// Observer method, active tab changed.
-- (void)tabModel:(TabModel*)model
-    didChangeActiveTab:(Tab*)newTab
-           previousTab:(Tab*)previousTab
-               atIndex:(NSUInteger)index {
-  if (previousTab) {
-    previousTab.webState->WasHidden();
-    previousTab.webState->SetKeepRenderProcessAlive(false);
-    [self dismissPopups];
-  }
-
-  // TODO(rohitrao): tabSelected expects to always be called with a non-nil tab.
-  // Currently this observer method is always called with a non-nil |newTab|,
-  // but that may change in the future.  Remove this DCHECK when it does.
-  DCHECK(newTab);
-
-  self.currentWebState->GetWebViewProxy().scrollViewProxy.clipsToBounds = NO;
-
-  [_paymentRequestManager setActiveWebState:newTab.webState];
-
-  [self tabSelected:newTab notifyToolbar:YES];
 }
 
 - (void)tabModel:(TabModel*)model didChangeTab:(Tab*)tab {
@@ -4447,7 +4456,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   // Add |newTab|'s view to the hierarchy if it's the current Tab.
   if (self.active && model.currentTab == newTab)
-    [self displayTab:newTab];
+    [self displayWebState:newTab.webState];
 
   if (newTab)
     [_paymentRequestManager setActiveWebState:newTab.webState];
@@ -4510,22 +4519,22 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     toolbarSnapshot.frame = [self.contentArea convertRect:toolbarSnapshot.frame
                                                  fromView:self.view];
     [self.contentArea addSubview:toolbarSnapshot];
-    newPage = [self viewForTab:tab];
+    newPage = [self viewForWebState:tab.webState];
     newPage.userInteractionEnabled = NO;
     newPage.frame = self.view.bounds;
   } else {
-    [self viewForTab:tab].frame = self.contentArea.bounds;
+    [self viewForWebState:tab.webState].frame = self.contentArea.bounds;
     // Setting the frame here doesn't trigger a layout pass. Trigger it manually
     // if needed. Not triggering it can create problem if the previous frame
     // wasn't the right one, for example in https://crbug.com/852106.
-    [[self viewForTab:tab] layoutIfNeeded];
-    newPage = [self viewForTab:tab];
+    [[self viewForWebState:tab.webState] layoutIfNeeded];
+    newPage = [self viewForWebState:tab.webState];
     newPage.userInteractionEnabled = NO;
   }
 
   // Cleanup steps needed for both UI Refresh and stack-view style animations.
   auto commonCompletion = ^{
-    [self viewForTab:tab].frame = self.contentArea.bounds;
+    [self viewForWebState:tab.webState].frame = self.contentArea.bounds;
     newPage.userInteractionEnabled = YES;
     self.inNewTabAnimation = NO;
     // Use the model's currentTab here because it is possible that it can
@@ -4534,8 +4543,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     // tab's view hasn't been displayed yet because it was in a new tab
     // animation.
     Tab* currentTab = self.tabModel.currentTab;
-    if (currentTab) {
-      [self tabSelected:currentTab notifyToolbar:NO];
+    if (currentTab.webState) {
+      [self webStateSelected:currentTab.webState notifyToolbar:NO];
     }
     if (completion)
       completion();
@@ -4607,7 +4616,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 }
 
 - (void)sideSwipeRedisplayTab:(Tab*)tab {
-  [self displayTab:tab];
+  [self displayWebState:tab.webState];
 }
 
 - (BOOL)preventSideSwipe {
@@ -4894,7 +4903,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     _ntpCoordinatorsForWebStates.erase(webState);
   }
   if (self.active && self.currentWebState == webState) {
-    [self displayTab:self.tabModel.currentTab];
+    [self displayWebState:webState];
   }
 }
 

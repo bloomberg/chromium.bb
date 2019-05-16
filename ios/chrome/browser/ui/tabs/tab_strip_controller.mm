@@ -45,6 +45,7 @@
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
+#import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "third_party/google_toolbox_for_mac/src/iPhone/GTMFadeTruncatingLabel.h"
@@ -154,12 +155,13 @@ UIColor* BackgroundColor() {
 
 @end
 
-@interface TabStripController ()<DropAndNavigateDelegate,
-                                 TabModelObserver,
-                                 TabStripViewLayoutDelegate,
-                                 TabViewDelegate,
-                                 UIGestureRecognizerDelegate,
-                                 UIScrollViewDelegate> {
+@interface TabStripController () <DropAndNavigateDelegate,
+                                  TabModelObserver,
+                                  TabStripViewLayoutDelegate,
+                                  TabViewDelegate,
+                                  WebStateListObserving,
+                                  UIGestureRecognizerDelegate,
+                                  UIScrollViewDelegate> {
   TabModel* _tabModel;
   UIView* _view;
   TabStripView* _tabStripView;
@@ -231,6 +233,9 @@ UIColor* BackgroundColor() {
   // The disabler that prevents the toolbar from being scrolled offscreen during
   // drags.
   std::unique_ptr<ScopedFullscreenDisabler> _fullscreenDisabler;
+
+  // Bridges C++ WebStateListObserver methods to this TabStripController.
+  std::unique_ptr<WebStateListObserverBridge> _webStateListObserver;
 
   API_AVAILABLE(ios(11.0)) DropAndNavigateInteraction* _buttonNewTabInteraction;
 }
@@ -388,6 +393,8 @@ UIColor* BackgroundColor() {
 
     _tabModel = tabModel;
     [_tabModel addObserver:self];
+    _webStateListObserver = std::make_unique<WebStateListObserverBridge>(self);
+    _tabModel.webStateList->AddObserver(_webStateListObserver.get());
     _style = style;
     _dispatcher = dispatcher;
 
@@ -486,6 +493,7 @@ UIColor* BackgroundColor() {
   [_tabStripView setDelegate:nil];
   [_tabStripView setLayoutDelegate:nil];
   [_tabModel removeObserver:self];
+  _tabModel.webStateList->RemoveObserver(_webStateListObserver.get());
 }
 
 - (void)hideTabStrip:(BOOL)hidden {
@@ -939,6 +947,32 @@ UIColor* BackgroundColor() {
 }
 
 #pragma mark -
+#pragma mark WebStateObserving methods
+
+// Observer method, active WebState changed.
+- (void)webStateList:(WebStateList*)webStateList
+    didChangeActiveWebState:(web::WebState*)newWebState
+                oldWebState:(web::WebState*)oldWebState
+                    atIndex:(int)atIndex
+                     reason:(int)reason {
+  if (!newWebState)
+    return;
+
+  for (TabView* view in _tabArray) {
+    [view setSelected:NO];
+  }
+
+  NSUInteger index = [self indexForModelIndex:atIndex];
+  TabView* activeView = [_tabArray objectAtIndex:index];
+  [activeView setSelected:YES];
+
+  // No need to animate this change, as selecting a new tab simply changes the
+  // z-ordering of the TabViews.  If a new tab was selected as a result of a tab
+  // closure, then the animated layout has already been scheduled.
+  [_tabStripView setNeedsLayout];
+}
+
+#pragma mark -
 #pragma mark TabModelObserver methods
 
 // Observer method.
@@ -1009,25 +1043,6 @@ UIColor* BackgroundColor() {
   [_tabArray removeObject:view];
   [_tabArray insertObject:view atIndex:toIndex];
   [self setNeedsLayoutWithAnimation];
-}
-
-// Observer method.
-- (void)tabModel:(TabModel*)model
-    didChangeActiveTab:(Tab*)newTab
-           previousTab:(Tab*)previousTab
-               atIndex:(NSUInteger)modelIndex {
-  for (TabView* view in _tabArray) {
-    [view setSelected:NO];
-  }
-
-  NSUInteger index = [self indexForModelIndex:modelIndex];
-  TabView* activeView = [_tabArray objectAtIndex:index];
-  [activeView setSelected:YES];
-
-  // No need to animate this change, as selecting a new tab simply changes the
-  // z-ordering of the TabViews.  If a new tab was selected as a result of a tab
-  // closure, then the animated layout has already been scheduled.
-  [_tabStripView setNeedsLayout];
 }
 
 // Observer method.

@@ -21,6 +21,8 @@
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller_dependency_factory.h"
 #import "ios/chrome/browser/url_loading/app_url_loading_service.h"
+#import "ios/chrome/browser/web_state_list/web_state_list.h"
+#import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/web/public/web_state/web_state.h"
 
@@ -83,7 +85,7 @@
 
 @end
 
-@interface BrowserViewWrangler ()<TabModelObserver> {
+@interface BrowserViewWrangler () <WebStateListObserving, TabModelObserver> {
   ios::ChromeBrowserState* _browserState;
   __weak id<TabModelObserver> _tabModelObserver;
   __weak id<ApplicationCommands> _applicationCommandEndpoint;
@@ -93,6 +95,7 @@
 
   std::unique_ptr<Browser> _mainBrowser;
   std::unique_ptr<Browser> _otrBrowser;
+  std::unique_ptr<WebStateListObserverBridge> _webStateListObserver;
 }
 
 @property(nonatomic, strong, readwrite) WrangledBrowser* mainInterface;
@@ -148,6 +151,7 @@
     _applicationCommandEndpoint = applicationCommandEndpoint;
     _appURLLoadingService = appURLLoadingService;
     _storageSwitcher = storageSwitcher;
+    _webStateListObserver = std::make_unique<WebStateListObserverBridge>(self);
   }
   return self;
 }
@@ -245,6 +249,7 @@
       [tabModel removeObserver:_tabModelObserver];
     }
     [tabModel removeObserver:self];
+    tabModel.webStateList->RemoveObserver(_webStateListObserver.get());
   }
 
   _mainBrowser = std::move(mainBrowser);
@@ -259,6 +264,7 @@
       [tabModel removeObserver:_tabModelObserver];
     }
     [tabModel removeObserver:self];
+    tabModel.webStateList->RemoveObserver(_webStateListObserver.get());
   }
 
   _otrBrowser = std::move(otrBrowser);
@@ -275,14 +281,17 @@
   [self.deviceSharingManager updateBrowserState:NULL];
 }
 
-#pragma mark - TabModelObserver
+#pragma mark - WebStateListObserving
 
-- (void)tabModel:(TabModel*)model
-    didChangeActiveTab:(Tab*)newTab
-           previousTab:(Tab*)previousTab
-               atIndex:(NSUInteger)index {
+- (void)webStateList:(WebStateList*)webStateList
+    didChangeActiveWebState:(web::WebState*)newWebState
+                oldWebState:(web::WebState*)oldWebState
+                    atIndex:(int)atIndex
+                     reason:(int)reason {
   [self updateDeviceSharingManager];
 }
+
+#pragma mark - TabModelObserver
 
 - (void)tabModel:(TabModel*)model didChangeTab:(Tab*)tab {
   [self updateDeviceSharingManager];
@@ -410,6 +419,7 @@
   if (_tabModelObserver) {
     [tabModel addObserver:_tabModelObserver];
     [tabModel addObserver:self];
+    tabModel.webStateList->AddObserver(_webStateListObserver.get());
   }
   breakpad::MonitorTabStateForWebStateList(tabModel.webStateList);
 }
