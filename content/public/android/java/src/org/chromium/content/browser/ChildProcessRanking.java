@@ -4,6 +4,8 @@
 
 package org.chromium.content.browser;
 
+import android.os.Handler;
+
 import org.chromium.base.BuildConfig;
 import org.chromium.base.process_launcher.ChildProcessConnection;
 import org.chromium.content_public.browser.ChildProcessImportance;
@@ -25,6 +27,12 @@ public class ChildProcessRanking implements Iterable<ChildProcessConnection> {
     // with importance right - FROM_RIGHT rather than in the middle. Use 15 out of 31 bits
     // so should support 2^16 connections, which should be way more than enough.
     private static final int FROM_RIGHT = 32768;
+
+    // Delay after group is rebound so that higher ranked processes are more recent.
+    // Note the post and delay is to avoid extra rebinds when rank for multiple connections
+    // change together, eg if visibility changes for a tab with a number of out-of-process
+    // iframes.
+    private static final int REBIND_DELAY_MS = 1000;
 
     private static class ConnectionWithRank {
         public final ChildProcessConnection connection;
@@ -161,13 +169,17 @@ public class ChildProcessRanking implements Iterable<ChildProcessConnection> {
 
     private static final RankComparator COMPARATOR = new RankComparator();
 
+    private final Handler mHandler = new Handler();
     // |mMaxSize| can be -1 to indicate there can be arbitrary number of connections.
     private final int mMaxSize;
     // ArrayList is not the most theoretically efficient data structure, but is good enough
     // for sizes in production and more memory efficient than linked data structures.
     private final List<ConnectionWithRank> mRankings = new ArrayList<>();
 
+    private final Runnable mRebindRunnable = this::rebindHighRankConnections;
+
     private boolean mEnableServiceGroupImportance;
+    private boolean mRebindRunnablePending;
 
     public ChildProcessRanking() {
         mMaxSize = -1;
@@ -185,6 +197,7 @@ public class ChildProcessRanking implements Iterable<ChildProcessConnection> {
         assert !mEnableServiceGroupImportance;
         mEnableServiceGroupImportance = true;
         reshuffleGroupImportance();
+        postRebindHighRankConnectionsIfNeeded();
         if (ENABLE_CHECKS) checkGroupImportance();
     }
 
@@ -308,6 +321,7 @@ public class ChildProcessRanking implements Iterable<ChildProcessConnection> {
             reshuffleGroupImportance();
         }
 
+        postRebindHighRankConnectionsIfNeeded();
         if (ENABLE_CHECKS) checkGroupImportance();
     }
 
@@ -318,6 +332,21 @@ public class ChildProcessRanking implements Iterable<ChildProcessConnection> {
             if (!connection.shouldBeInLowRankGroup()) break;
             connection.connection.updateGroupImportance(LOW_RANK_GROUP, importance);
             importance -= FROM_RIGHT;
+        }
+    }
+
+    private void postRebindHighRankConnectionsIfNeeded() {
+        if (mRebindRunnablePending) return;
+        mHandler.postDelayed(mRebindRunnable, REBIND_DELAY_MS);
+        mRebindRunnablePending = true;
+    }
+
+    private void rebindHighRankConnections() {
+        mRebindRunnablePending = false;
+        for (int i = mRankings.size() - 1; i >= 0; --i) {
+            ConnectionWithRank connection = mRankings.get(i);
+            if (connection.shouldBeInLowRankGroup()) continue;
+            connection.connection.rebind();
         }
     }
 

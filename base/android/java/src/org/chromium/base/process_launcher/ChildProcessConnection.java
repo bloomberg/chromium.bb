@@ -132,14 +132,12 @@ public class ChildProcessConnection {
 
         @Override
         public boolean bind() {
-            if (!mBound) {
-                try {
-                    TraceEvent.begin("ChildProcessConnection.ChildServiceConnectionImpl.bind");
-                    mBound = BindService.doBindService(mContext, mBindIntent, this, mBindFlags,
-                            mHandler, mExecutor, mInstanceName);
-                } finally {
-                    TraceEvent.end("ChildProcessConnection.ChildServiceConnectionImpl.bind");
-                }
+            try {
+                TraceEvent.begin("ChildProcessConnection.ChildServiceConnectionImpl.bind");
+                mBound = BindService.doBindService(mContext, mBindIntent, this, mBindFlags,
+                        mHandler, mExecutor, mInstanceName);
+            } finally {
+                TraceEvent.end("ChildProcessConnection.ChildServiceConnectionImpl.bind");
             }
             return mBound;
         }
@@ -410,6 +408,16 @@ public class ChildProcessConnection {
         } finally {
             TraceEvent.end("ChildProcessConnection.start");
         }
+    }
+
+    /**
+     * Call bindService again on this connection. This must be called while connection is already
+     * bound. This is useful for controlling the recency of this connection, and also for updating
+     */
+    public void rebind() {
+        assert isRunningOnLauncherThread();
+        assert mWaivedBinding.isBound();
+        mWaivedBinding.bind();
     }
 
     /**

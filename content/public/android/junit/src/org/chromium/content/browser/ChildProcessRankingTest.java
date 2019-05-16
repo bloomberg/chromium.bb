@@ -10,6 +10,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowLooper;
 
 import org.chromium.base.process_launcher.ChildProcessConnection;
 import org.chromium.base.test.BaseRobolectricTestRunner;
@@ -20,7 +21,7 @@ import org.chromium.content_public.browser.ChildProcessImportance;
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class ChildProcessRankingTest {
-    private ChildProcessConnection createConnection() {
+    private TestChildProcessConnection createConnection() {
         TestChildProcessConnection connection = new TestChildProcessConnection(
                 new ComponentName("pkg", "cls"), false /* bindToCallerCheck */,
                 false /* bindAsExternalService */, null /* serviceBundle */);
@@ -268,5 +269,35 @@ public class ChildProcessRankingTest {
             exceptionThrown = true;
         }
         Assert.assertTrue(exceptionThrown);
+    }
+
+    @Test
+    public void testRebindHighRankConnection() {
+        ChildProcessRanking ranking = new ChildProcessRanking();
+        ranking.enableServiceGroupImportance();
+
+        TestChildProcessConnection c1 = createConnection();
+        TestChildProcessConnection c2 = createConnection();
+        TestChildProcessConnection c3 = createConnection();
+
+        ranking.addConnection(c1, true /* foreground */, 0 /* frameDepth */,
+                false /* intersectsViewport */, ChildProcessImportance.IMPORTANT);
+        ranking.addConnection(c2, true /* foreground */, 2 /* frameDepth */,
+                false /* intersectsViewport */, ChildProcessImportance.NORMAL);
+        ranking.addConnection(c3, true /* foreground */, 3 /* frameDepth */,
+                false /* intersectsViewport */, ChildProcessImportance.NORMAL);
+
+        assertNotInGroup(new ChildProcessConnection[] {c1});
+        assertInGroupOrderedByImportance(new ChildProcessConnection[] {c2, c3});
+
+        c1.getAndResetRebindCalled();
+        ranking.updateConnection(c3, true /* foreground */, 1 /* frameDepth */,
+                false /* intersectsViewport */, ChildProcessImportance.NORMAL);
+        assertNotInGroup(new ChildProcessConnection[] {c1});
+        assertInGroupOrderedByImportance(new ChildProcessConnection[] {c3, c2});
+        Assert.assertFalse(c1.getAndResetRebindCalled());
+
+        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+        Assert.assertTrue(c1.getAndResetRebindCalled());
     }
 }
