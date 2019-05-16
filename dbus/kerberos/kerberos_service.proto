@@ -109,6 +109,15 @@ message RemoveAccountResponse {
   optional ErrorType error = 1;
 }
 
+message ClearAccountsRequest {
+  // Reserved for future use.
+}
+
+message ClearAccountsResponse {
+  // Response status.
+  optional ErrorType error = 1;
+}
+
 message ListAccountsRequest {
   // Reserved for future use.
 }

@@ -15,6 +15,7 @@ const char kKerberosServiceName[] = "org.chromium.Kerberos";
 // Methods
 const char kAddAccountMethod[] = "AddAccount";
 const char kRemoveAccountMethod[] = "RemoveAccount";
+const char kClearAccountsMethod[] = "ClearAccounts";
 const char kListAccountsMethod[] = "ListAccounts";
 const char kSetConfigMethod[] = "SetConfig";
 const char kAcquireKerberosTgtMethod[] = "AcquireKerberosTgt";
