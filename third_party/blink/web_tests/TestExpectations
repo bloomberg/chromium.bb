@@ -5600,3 +5600,4 @@ crbug.com/943975 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCSctpTransport-
 crbug.com/963734 [ Mac ] mojo/bind-intercepted-interface-in-worker.html [ Failure ]
 crbug.com/963734 [ Mac ] shapedetection/detection-on-worker.html  [ Timeout ]
 crbug.com/963764 [ Mac ] media/video-aspect-ratio.html [ Pass Failure ]
+crbug.com/963141 [ Linux ] media/video-object-fit.html [ Pass Failure ]
