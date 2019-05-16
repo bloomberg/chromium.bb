@@ -10,7 +10,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/command_line.h"
 #include "base/optional.h"
 #include "base/test/bind_test_util.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
@@ -22,12 +21,10 @@
 #include "chrome/services/app_service/public/cpp/app_service_proxy.h"
 #include "chrome/services/app_service/public/cpp/app_update.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "components/arc/test/fake_app_instance.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/types/display_constants.h"
@@ -50,8 +47,7 @@ typedef std::map<std::string, mojom::AppPtr> AppMap;
 
 class FakeAppControllerClient : public mojom::AppControllerClient {
  public:
-  explicit FakeAppControllerClient(
-      mojo::InterfaceRequest<mojom::AppControllerClient> request)
+  explicit FakeAppControllerClient(mojom::AppControllerClientRequest request)
       : binding_(this, std::move(request)) {}
 
   const std::vector<mojom::AppPtr>& app_updates() { return app_updates_; }
@@ -142,11 +138,6 @@ class AppControllerServiceTest : public testing::Test {
 
   void StopArc() { arc_test_.StopArcInstance(); }
 
-  void SetHomeUrlPrefix(const std::string& url_prefix) {
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        chromeos::switches::kKioskNextHomeUrlPrefix, url_prefix);
-  }
-
   void AddAppDeltaToAppService(apps::mojom::AppPtr delta) {
     std::vector<apps::mojom::AppPtr> deltas;
     deltas.push_back(std::move(delta));
@@ -212,39 +203,6 @@ class AppControllerServiceTest : public testing::Test {
     EXPECT_CALL(*intent_config_helper, IsIntentAllowed(testing::_))
         .WillOnce(testing::Return(allowed));
     service()->SetIntentConfigHelperForTesting(std::move(intent_config_helper));
-  }
-
-  void ExpectLaunchHomeUrlResponse(
-      const std::string& url_to_launch,
-      bool success,
-      const base::Optional<std::string>& error_message) {
-    bool returned_success;
-    base::Optional<std::string> returned_error_message;
-
-    service()->LaunchHomeUrl(
-        url_to_launch,
-        base::BindLambdaForTesting(
-            [&returned_success, &returned_error_message](
-                bool success,
-                const base::Optional<std::string>& error_message) {
-              returned_success = success;
-              returned_error_message = error_message;
-            }));
-
-    EXPECT_EQ(returned_success, success);
-
-    // We first check if the optionals have the same value state.
-    // Then we check their values. This is necessary to get more readable
-    // failure messages when the returned values are different, if we simply
-    // compare two different optionals we get:
-    // Expected equality of these values:
-    // returned_error_message
-    //   Which is: 32-byte object <01-00 ... 00-00>
-    // error_message
-    //   Which is: 32-byte object <01-2E ... 00-00>
-    ASSERT_EQ(returned_error_message.has_value(), error_message.has_value());
-    if (returned_error_message.has_value())
-      EXPECT_EQ(returned_error_message.value(), error_message.value());
   }
 
   void ExpectLaunchIntentResponse(
@@ -549,34 +507,6 @@ TEST_F(AppControllerServiceTest, GetArcAndroidIdFailureIsPropagated) {
   StopArc();
 
   ExpectArcAndroidIdResponse(false, "0");
-}
-
-TEST_F(AppControllerServiceTest, LaunchHomeUrlFailsWhenWeDontHaveUrlPrefix) {
-  base::Optional<std::string> error_message("No URL prefix.");
-  ExpectLaunchHomeUrlResponse("http://example.com", false, error_message);
-  ExpectNoLaunchedIntents();
-}
-
-TEST_F(AppControllerServiceTest, LaunchHomeUrlFailsWhenArcIsDisabled) {
-  SetHomeUrlPrefix("https://example.com/?q=");
-  StopArc();
-  base::Optional<std::string> error_message("ARC bridge not available.");
-  ExpectLaunchHomeUrlResponse("example_query", false, error_message);
-  ExpectNoLaunchedIntents();
-}
-
-TEST_F(AppControllerServiceTest, LaunchHomeUrlFailsWhenUrlIsInvalid) {
-  SetHomeUrlPrefix("invalid_url_prefix_example");
-  base::Optional<std::string> error_message("Invalid URL.");
-  ExpectLaunchHomeUrlResponse("invalid_query", false, error_message);
-  ExpectNoLaunchedIntents();
-}
-
-TEST_F(AppControllerServiceTest, LaunchHomeUrlLaunchesWhenWeHaveAValidPrefix) {
-  SetHomeUrlPrefix("https://example.com/?q=");
-  ExpectLaunchHomeUrlResponse("example_query", true, base::nullopt);
-
-  ExpectIntentLaunched("https://example.com/?q=example_query");
 }
 
 TEST_F(AppControllerServiceTest, LaunchIntentLaunchesWhenAllowed) {

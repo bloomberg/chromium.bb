@@ -64,15 +64,6 @@ kioskNextHome.Bridge = class {
   launchApp(appId) {}
 
   /**
-   * Launches a URL prefixed by chromeos::switches::kKioskNextHomeUrlPrefix with
-   * the given suffix.
-   * @param {string} suffix
-   * @return {!Promise} Resolves if URL is launched, or rejects in case of
-   *     failures.
-   */
-  launchHomeUrl(suffix) {}
-
-  /**
    * Launches an allowed ARC intent. Intents are checked via
    * chromeos::kiosk_next_home::IntentConfigHelper.
    * @param {string} intent

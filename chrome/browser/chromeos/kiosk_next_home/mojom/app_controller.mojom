@@ -56,11 +56,6 @@ interface AppController {
   // Gets the Android ID for the ARC container.
   GetArcAndroidId() => (bool success, string android_id);
 
-  // Launches URL prefixed by chromeos::switches::kKioskNextHomeUrlPrefix with
-  // the given suffix.
-  // TODO(brunoad): Remove once LaunchIntent can be used.
-  LaunchHomeUrl(string suffix) => (bool launched, string? error_message);
-
   // Launches allowed ARC intents.
   // Intents are checked via chromeos::kiosk_next_home::IntentConfigHelper.
   LaunchIntent(string intent) => (bool launched, string? error_message);

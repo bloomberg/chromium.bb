@@ -154,15 +154,6 @@ class KioskNextHomeBridge {
   }
 
   /** @override */
-  launchHomeUrl(suffix) {
-    return this.appControllerProxy_.launchHomeUrl(suffix).then(result => {
-      if (!result.launched) {
-        throw result.errorMessage;
-      }
-    });
-  }
-
-  /** @override */
   launchIntent(intent) {
     return this.appControllerProxy_.launchIntent(intent).then(result => {
       if (!result.launched) {

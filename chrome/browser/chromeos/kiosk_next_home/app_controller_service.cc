@@ -11,7 +11,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/optional.h"
 #include "base/strings/string_util.h"
@@ -25,7 +24,6 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/services/app_service/public/cpp/app_service_proxy.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/common/app.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
@@ -119,33 +117,6 @@ void AppControllerService::GetArcAndroidId(
         std::move(callback).Run(success, android_id_stream.str());
       },
       std::move(callback)));
-}
-
-void AppControllerService::LaunchHomeUrl(const std::string& suffix,
-                                         LaunchHomeUrlCallback callback) {
-  std::string url_prefix =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          chromeos::switches::kKioskNextHomeUrlPrefix);
-
-  if (url_prefix.empty()) {
-    std::move(callback).Run(false, "No URL prefix.");
-    return;
-  }
-
-  GURL url(url_prefix + suffix);
-  if (!url.is_valid()) {
-    std::move(callback).Run(false, "Invalid URL.");
-    return;
-  }
-
-  arc::mojom::AppInstance* app_instance = GetArcAppInstanceForLaunchIntent();
-  if (!app_instance) {
-    std::move(callback).Run(false, "ARC bridge not available.");
-    return;
-  }
-
-  app_instance->LaunchIntent(url.spec(), display::kDefaultDisplayId);
-  std::move(callback).Run(true, base::nullopt);
 }
 
 void AppControllerService::LaunchIntent(const std::string& intent,

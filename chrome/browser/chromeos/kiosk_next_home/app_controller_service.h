@@ -54,8 +54,6 @@ class AppControllerService : public mojom::AppController,
   void UninstallApp(const std::string& app_id) override;
   void GetArcAndroidId(
       mojom::AppController::GetArcAndroidIdCallback callback) override;
-  void LaunchHomeUrl(const std::string& suffix,
-                     LaunchHomeUrlCallback callback) override;
   void LaunchIntent(const std::string& intent,
                     LaunchIntentCallback callback) override;
 
