@@ -7,22 +7,19 @@
 
 #include <string>
 
-#include "ash/public/interfaces/app_list.mojom.h"
+#include "ash/public/cpp/app_list/app_list_client.h"
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/binding.h"
 
 namespace ash {
 
 // A test implementation of AppListClient that records function call counts.
 // Registers itself as the presenter for the app list on construction.
-class TestAppListClient : public mojom::AppListClient {
+class TestAppListClient : public app_list::AppListClient {
  public:
   TestAppListClient();
   ~TestAppListClient() override;
 
-  mojom::AppListClientPtr CreateInterfacePtrAndBind();
-
-  // ash::mojom::AppListClient:
+  // app_list::AppListClient:
   void StartSearch(const base::string16& trimmed_query) override {}
   void OpenSearchResult(const std::string& result_id,
                         int event_flags,
@@ -69,8 +66,6 @@ class TestAppListClient : public mojom::AppListClient {
                                        bool visibility) override {}
 
  private:
-  mojo::Binding<mojom::AppListClient> binding_;
-
   DISALLOW_COPY_AND_ASSIGN(TestAppListClient);
 };
 

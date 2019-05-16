@@ -4,7 +4,6 @@
 
 module ash.mojom;
 
-import "ash/public/interfaces/menu.mojom";
 import "components/sync/mojo/syncer.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
@@ -213,9 +212,6 @@ struct SearchResultAction {
 // - When app list states in Chrome change that require UI's response. This can
 //   happen while installing/uninstalling apps and the app list gets toggled.
 interface AppListController {
-  // Sets a client to handle calls from Ash.
-  SetClient(AppListClient client);
-
   //////////////////////////////////////////////////////////////////////////////
   // Interfaces that come from AppListModelUpdater:
   // The following interfaces are called to update the app list model in Ash,
@@ -316,100 +312,4 @@ interface AppListController {
   ShowAppListAndSwitchToState(AppListState state);
   // Shows the app list.
   ShowAppList();
-};
-
-// In contrast to AppListController, this client is implemented in Chrome to
-// handle calls from Ash. These include:
-// - When Chrome components are needed to get involved in the user's actions on
-//   app list views. This can happen while the user is searching, clicking on
-//   any app list item, etc.
-// - When view changes in Ash and we want to notify Chrome. This can happen
-//   while app list is performing animations.
-// - When a user action on views need information from Chrome to complete. This
-//   can happen while populating context menu models, which depends on item data
-//   in Chrome.
-interface AppListClient {
-  //////////////////////////////////////////////////////////////////////////////
-  // Interfaces on searching:
-  // Triggers a search query.
-  // |trimmed_query|: the trimmed input texts from the search text field.
-  StartSearch(mojo_base.mojom.String16 trimmed_query);
-  // Opens a search result and logs to metrics when its view is clicked or
-  // pressed.
-  // |result_id|: the id of the search result the user wants to open.
-  // |launched_from|: where the result was launched.
-  // |launch_type|: how the result is represented in the UI.
-  // |suggestion_index|: the position of the result as a suggestion chip in
-  // the AppsGridView or the position of the result in the zero state search
-  // page.
-  OpenSearchResult(string result_id, int32 event_flags,
-                   AppListLaunchedFrom launched_from,
-                   AppListLaunchType launch_type, int32 suggestion_index);
-  // Invokes a custom action on a result with |result_id|.
-  // |action_index| corresponds to the index of an action on the search result,
-  // for example, installing. They are stored in SearchResult::actions_.
-  InvokeSearchResultAction(string result_id,
-                           int32 action_index,
-                           int32 event_flags);
-  // Returns the context menu model for the search result with |result_id|, or
-  // an empty array if there is currently no menu for the result.
-  GetSearchResultContextMenuModel(string result_id) => (array<MenuItem> items);
-  // Invoked when a context menu item of a search result is clicked.
-  // |result_id|: the clicked search result's id.
-  // |command_id|: the clicked menu item's command id.
-  // |event_flags|: flags from the event which triggered this command.
-  SearchResultContextMenuItemSelected(string result_id,
-                                      int32 command_id,
-                                      int32 event_flags);
-
-  //////////////////////////////////////////////////////////////////////////////
-  // Interfaces on the app list UI:
-  // Invoked when the app list is shown in the display with |display_id|.
-  ViewShown(int64 display_id);
-  // Invoked when the app list is closed.
-  ViewClosing();
-  // Notifies target visibility changes of the app list.
-  OnAppListTargetVisibilityChanged(bool visible);
-  // Notifies visibility changes of the app list.
-  OnAppListVisibilityChanged(bool visible);
-
-  //////////////////////////////////////////////////////////////////////////////
-  // Interfaces on app list items. |profile_id| indicates the profile to which
-  // app list items belong. In multi-profile mode, each profile has its own
-  // app list model updater:
-  // Activates (opens) the item with |id|.
-  ActivateItem(int32 profile_id, string id, int32 event_flags);
-  // Returns the context menu model for the item with |id|, or an empty array if
-  // there is currently no menu for the item (e.g. during install).
-  GetContextMenuModel(int32 profile_id, string id) => (array<MenuItem> items);
-  // Invoked when a context menu item of an app list item is clicked.
-  // |id|: the clicked AppListItem's id.
-  // |command_id|: the clicked menu item's command id.
-  // |event_flags|: flags from the event which triggered this command.
-  ContextMenuItemSelected(int32 profile_id,
-                          string id,
-                          int32 command_id,
-                          int32 event_flags);
-  // Invoked when a folder is created in Ash (e.g. merge items into a folder).
-  OnFolderCreated(int32 profile_id, AppListItemMetadata folder);
-  // Invoked when a folder has only one item left and so gets removed.
-  OnFolderDeleted(int32 profile_id, AppListItemMetadata folder);
-  // Invoked when user changes a folder's name or an item's position.
-  OnItemUpdated(int32 profile_id, AppListItemMetadata folder);
-  // Invoked when a "page break" item is added with |id| and |position|.
-  OnPageBreakItemAdded(int32 profile_id,
-                       string id,
-                       syncer.mojom.StringOrdinal position);
-  // Invoked when a "page break" item with |id| is deleted.
-  OnPageBreakItemDeleted(int32 profile_id, string id);
-
-  // Updated when item with |id| is set to |visible|. Only sent if
-  // |notify_visibility_change| was set on the SearchResultMetadata.
-  OnSearchResultVisibilityChanged(string id, bool visibility);
-
-  // Acquires a NavigableContentsFactory (indirectly) from the Content Service
-  // to allow the app list to display embedded web contents. Currently used only
-  // for answer card search results.
-  GetNavigableContentsFactory(
-      pending_receiver<content.mojom.NavigableContentsFactory> receiver);
 };

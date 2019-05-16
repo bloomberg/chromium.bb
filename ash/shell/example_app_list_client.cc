@@ -185,13 +185,15 @@ class ExampleSearchResult : public app_list::SearchResult {
 
 ExampleAppListClient::ExampleAppListClient(AppListControllerImpl* controller)
     : controller_(controller) {
-  controller_->SetClient(CreateInterfacePtrAndBind());
+  controller_->SetClient(this);
 
   PopulateApps();
   DecorateSearchBox();
 }
 
-ExampleAppListClient::~ExampleAppListClient() = default;
+ExampleAppListClient::~ExampleAppListClient() {
+  controller_->SetClient(nullptr);
+}
 
 void ExampleAppListClient::PopulateApps() {
   for (int i = 0; i < static_cast<int>(WindowTypeShelfItem::LAST_TYPE); ++i) {

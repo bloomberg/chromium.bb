@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/public/cpp/app_list/app_list_controller.h"
 #include "ash/public/cpp/menu_utils.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
@@ -65,17 +66,14 @@ int AppListClientImpl::MojoRecorderForTest::Query(int profile_id) const {
 }
 ///////////////////////////////////////////////////////////////////////////////
 
-AppListClientImpl::AppListClientImpl()
-    : template_url_service_observer_(this),
-      binding_(this),
-      weak_ptr_factory_(this) {
-  // Bind this to the AppListController in Ash.
+AppListClientImpl::AppListClientImpl() {
+  app_list::AppListController::Get()->SetClient(this);
+
+  // Get the mojo AppListController in Ash.
   content::ServiceManagerConnection::GetForProcess()
       ->GetConnector()
       ->BindInterface(ash::mojom::kServiceName, &app_list_controller_);
-  ash::mojom::AppListClientPtr client;
-  binding_.Bind(mojo::MakeRequest(&client));
-  app_list_controller_->SetClient(std::move(client));
+
   user_manager::UserManager::Get()->AddSessionStateObserver(this);
 
   DCHECK(!g_app_list_client_instance);
@@ -90,6 +88,9 @@ AppListClientImpl::~AppListClientImpl() {
 
   DCHECK_EQ(this, g_app_list_client_instance);
   g_app_list_client_instance = nullptr;
+
+  if (app_list::AppListController::Get())
+    app_list::AppListController::Get()->SetClient(nullptr);
 }
 
 // static
@@ -564,5 +565,4 @@ ash::ShelfLaunchSource AppListClientImpl::AppListSourceToLaunchSource(
 
 void AppListClientImpl::FlushMojoForTesting() {
   app_list_controller_.FlushForTesting();
-  binding_.FlushForTesting();
 }

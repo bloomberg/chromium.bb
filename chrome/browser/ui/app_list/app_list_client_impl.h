@@ -10,6 +10,7 @@
 #include <memory>
 #include <string>
 
+#include "ash/public/cpp/app_list/app_list_client.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/interfaces/app_list.mojom.h"
 #include "base/callback_forward.h"
@@ -22,8 +23,6 @@
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_service_observer.h"
 #include "components/user_manager/user_manager.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "ui/display/types/display_constants.h"
 
 namespace app_list {
@@ -37,7 +36,7 @@ class AppSyncUIStateWatcher;
 class Profile;
 
 class AppListClientImpl
-    : public ash::mojom::AppListClient,
+    : public app_list::AppListClient,
       public AppListControllerDelegate,
       public user_manager::UserManager::UserSessionStateObserver,
       public TemplateURLServiceObserver {
@@ -64,7 +63,7 @@ class AppListClientImpl
 
   static AppListClientImpl* GetInstance();
 
-  // ash::mojom::AppListClient:
+  // app_list::AppListClient:
   void StartSearch(const base::string16& trimmed_query) override;
   void OpenSearchResult(const std::string& result_id,
                         int event_flags,
@@ -210,9 +209,8 @@ class AppListClientImpl
   std::unique_ptr<MojoRecorderForTest> mojo_recorder_for_test_;
 
   ScopedObserver<TemplateURLService, AppListClientImpl>
-      template_url_service_observer_;
+      template_url_service_observer_{this};
 
-  mojo::Binding<ash::mojom::AppListClient> binding_;
   ash::mojom::AppListControllerPtr app_list_controller_;
 
   bool app_list_target_visibility_ = false;
@@ -220,7 +218,7 @@ class AppListClientImpl
 
   app_list::AppLaunchEventLogger app_launch_event_logger_;
 
-  base::WeakPtrFactory<AppListClientImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<AppListClientImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AppListClientImpl);
 };

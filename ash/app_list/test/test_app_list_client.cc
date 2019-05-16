@@ -8,15 +8,8 @@
 
 namespace ash {
 
-TestAppListClient::TestAppListClient() : binding_(this) {}
-
-TestAppListClient::~TestAppListClient() {}
-
-mojom::AppListClientPtr TestAppListClient::CreateInterfacePtrAndBind() {
-  mojom::AppListClientPtr ptr;
-  binding_.Bind(mojo::MakeRequest(&ptr));
-  return ptr;
-}
+TestAppListClient::TestAppListClient() = default;
+TestAppListClient::~TestAppListClient() = default;
 
 void TestAppListClient::GetSearchResultContextMenuModel(
     const std::string& result_id,

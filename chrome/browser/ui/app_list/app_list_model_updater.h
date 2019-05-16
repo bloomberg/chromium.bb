@@ -16,6 +16,10 @@
 #include "chrome/browser/ui/app_list/app_list_model_updater_observer.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 
+namespace ui {
+class MenuModel;
+}
+
 class ChromeAppListItem;
 class ChromeSearchResult;
 

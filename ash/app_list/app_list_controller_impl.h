@@ -22,6 +22,7 @@
 #include "ash/home_screen/home_launcher_gesture_handler_observer.h"
 #include "ash/home_screen/home_screen_delegate.h"
 #include "ash/keyboard/ui/keyboard_controller_observer.h"
+#include "ash/public/cpp/app_list/app_list_controller.h"
 #include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/interfaces/app_list.mojom.h"
@@ -52,7 +53,8 @@ class AppListControllerObserver;
 // functions that allow Chrome to modify and observe the Shelf and AppListModel
 // state.
 class ASH_EXPORT AppListControllerImpl
-    : public mojom::AppListController,
+    : public app_list::AppListController,
+      public mojom::AppListController,
       public SessionObserver,
       public app_list::AppListModelObserver,
       public app_list::AppListViewDelegate,
@@ -81,8 +83,10 @@ class ASH_EXPORT AppListControllerImpl
 
   app_list::AppListPresenterImpl* presenter() { return &presenter_; }
 
+  // app_list::AppListController:
+  void SetClient(app_list::AppListClient* client) override;
+
   // mojom::AppListController:
-  void SetClient(mojom::AppListClientPtr client_ptr) override;
   void AddItem(AppListItemMetadataPtr app_item) override;
   void AddItemToFolder(AppListItemMetadataPtr app_item,
                        const std::string& folder_id) override;
@@ -354,7 +358,7 @@ class ASH_EXPORT AppListControllerImpl
   // Record the app launch for AppListAppLaunchedV2 metric.
   void RecordAppLaunched(mojom::AppListLaunchedFrom launched_from);
 
-  mojom::AppListClientPtr client_;
+  app_list::AppListClient* client_ = nullptr;
 
   std::unique_ptr<app_list::AppListModel> model_;
   app_list::SearchModel search_model_;
