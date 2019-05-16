@@ -1127,7 +1127,6 @@ TEST_P(WindowOpenByDomTest, OpenWithUserGesture) {
 // Tests that window.open executed w/o user gesture does not open a new window,
 // but blocks popup instead.
 TEST_P(WindowOpenByDomTest, BlockPopup) {
-  ASSERT_FALSE([web_controller() userIsInteracting]);
   EXPECT_NSEQ([NSNull null], OpenWindowByDom());
 
   EXPECT_TRUE(delegate_.child_windows().empty());

@@ -171,3 +171,18 @@ source_set("web_frame") {
 
   configs += [ "//build/config/compiler:enable_arc" ]
 }
+
+source_set("user_interaction") {
+  sources = [
+    "user_interaction_event.h",
+    "user_interaction_state.h",
+    "user_interaction_state.mm",
+  ]
+
+  deps = [
+    "//base",
+    "//url",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+}

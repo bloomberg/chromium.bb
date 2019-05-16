@@ -222,9 +222,6 @@ class WebStateImpl;
 @property(nonatomic, readonly) web::WebState* webState;
 @property(nonatomic, readonly) web::WebStateImpl* webStateImpl;
 
-// Returns whether the user is interacting with the page.
-@property(nonatomic, readonly) BOOL userIsInteracting;
-
 // Injects a CRWWebViewContentView for testing.  Takes ownership of
 // |webViewContentView|.
 - (void)injectWebViewContentView:(CRWWebViewContentView*)webViewContentView;

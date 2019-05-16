@@ -107,6 +107,7 @@
 #include "ios/web/web_state/ui/web_kit_constants.h"
 #import "ios/web/web_state/ui/wk_security_origin_util.h"
 #import "ios/web/web_state/ui/wk_web_view_configuration_provider.h"
+#import "ios/web/web_state/user_interaction_state.h"
 #import "ios/web/web_state/web_frame_impl.h"
 #import "ios/web/web_state/web_frames_manager_impl.h"
 #import "ios/web/web_state/web_state_impl.h"
@@ -141,17 +142,6 @@ using web::wk_navigation_util::URLNeedsUserAgentType;
 
 namespace {
 
-// Struct to capture data about a user interaction. Records the time of the
-// interaction and the main document URL at that time.
-struct UserInteractionEvent {
-  UserInteractionEvent(GURL url)
-      : main_document_url(url), time(CFAbsoluteTimeGetCurrent()) {}
-  // Main document URL at the time the interaction occurred.
-  GURL main_document_url;
-  // Time that the interaction occurred, measured in seconds since Jan 1 2001.
-  CFAbsoluteTime time;
-};
-
 // Keys for JavaScript command handlers context.
 NSString* const kUserIsInteractingKey = @"userIsInteracting";
 NSString* const kOriginURLKey = @"originURL";
@@ -164,10 +154,6 @@ NSString* const kScriptMessageName = @"crwebinvoke";
 NSString* const kFrameBecameAvailableMessageName = @"FrameBecameAvailable";
 // Message command sent when a frame is unloading.
 NSString* const kFrameBecameUnavailableMessageName = @"FrameBecameUnavailable";
-
-// The duration of the period following a screen touch during which the user is
-// still considered to be interacting with the page.
-const NSTimeInterval kMaximumDelayForUserInteractionInSeconds = 2;
 
 // Values for the histogram that counts slow/fast back/forward navigations.
 enum class BackForwardNavigationType {
@@ -249,9 +235,6 @@ bool RequiresContentFilterBlockingWorkaround() {
   BOOL _currentURLLoadWasTrigerred;
   BOOL _isHalted;  // YES if halted. Halting happens prior to destruction.
   BOOL _isBeingDestroyed;  // YES if in the process of closing.
-  // YES if the user has interacted with the content area since the last URL
-  // change.
-  BOOL _interactionRegisteredSinceLastURLChange;
   // The actual URL of the document object (i.e., the last committed URL).
   // TODO(crbug.com/549616): Remove this in favor of just updating the
   // navigation manager and treating that as authoritative.
@@ -269,15 +252,6 @@ bool RequiresContentFilterBlockingWorkaround() {
   BOOL _webUsageEnabled;
   // The controller that tracks long press and check context menu trigger.
   CRWContextMenuController* _contextMenuController;
-  // Whether a click is in progress.
-  BOOL _clickInProgress;
-  // Data on the recorded last user interaction.
-  std::unique_ptr<UserInteractionEvent> _lastUserInteraction;
-  // YES if there has been user interaction with views owned by this controller.
-  BOOL _userInteractedWithWebController;
-  // The time of the last page transfer start, measured in seconds since Jan 1
-  // 2001.
-  CFAbsoluteTime _lastTransferTimeInSeconds;
   // Default URL (about:blank).
   GURL _defaultURL;
   // Whether the web page is currently performing window.history.pushState or
@@ -327,6 +301,9 @@ bool RequiresContentFilterBlockingWorkaround() {
   // cert status from |didReceiveAuthenticationChallenge:| to
   // |didFailProvisionalNavigation:| delegate method.
   std::unique_ptr<CertVerificationErrorsCacheType> _certVerificationErrors;
+
+  // State of user interaction with web content.
+  web::UserInteractionState _userInteractionState;
 }
 
 // The WKNavigationDelegate handler class.
@@ -365,9 +342,6 @@ bool RequiresContentFilterBlockingWorkaround() {
 // Returns the referrer for the current page.
 @property(nonatomic, readonly) web::Referrer currentReferrer;
 
-// Returns YES if the user interacted with the page recently.
-@property(nonatomic, readonly) BOOL userClickedRecently;
-
 // User agent type of the transient item if any, the pending item if a
 // navigation is in progress or the last committed item otherwise.
 // Returns MOBILE, the default type, if navigation manager is nullptr or empty.
@@ -375,10 +349,6 @@ bool RequiresContentFilterBlockingWorkaround() {
 
 // Facade for Mojo API.
 @property(nonatomic, readonly) web::MojoFacade* mojoFacade;
-
-// YES if a user interaction has been registered at any time since the page has
-// loaded.
-@property(nonatomic, readwrite) BOOL userInteractionRegistered;
 
 @property(nonatomic, readonly) web::WebState* webState;
 // WebStateImpl instance associated with this CRWWebController, web controller
@@ -860,21 +830,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
                        web::ReferrerPolicyAlways);
 }
 
-- (BOOL)userClickedRecently {
-  // Scrolling generates a pair of touch on/off event which causes
-  // _lastUserInteraction to register that there was user interaction.
-  // Checks for scrolling first to override time-based click heuristics.
-  BOOL scrolling = [[self webScrollView] isDragging] ||
-                   [[self webScrollView] isDecelerating];
-  if (scrolling)
-    return NO;
-  if (!_lastUserInteraction)
-    return NO;
-  return _clickInProgress ||
-         ((CFAbsoluteTimeGetCurrent() - _lastUserInteraction->time) <
-          kMaximumDelayForUserInteractionInSeconds);
-}
-
 - (web::UserAgentType)userAgentType {
   web::NavigationItem* item = self.currentNavItem;
   return item ? item->GetUserAgentType() : web::UserAgentType::MOBILE;
@@ -888,12 +843,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
         std::make_unique<web::MojoFacade>(interfaceProvider, self.webState);
   }
   return _mojoFacade.get();
-}
-
-- (void)setUserInteractionRegistered:(BOOL)flag {
-  _userInteractionRegistered = flag;
-  if (flag)
-    _interactionRegisteredSinceLastURLChange = YES;
 }
 
 - (WebState*)webState {
@@ -1087,7 +1036,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   // TODO(crbug.com/546337): Move to after the load commits, in the subclass
   // implementation. This will be inaccurate if the reload fails or is
   // cancelled.
-  _lastUserInteraction = nullptr;
+  _userInteractionState.SetLastUserInteraction(nullptr);
   base::RecordAction(base::UserMetricsAction("Reload"));
   GURL URL = self.currentNavItem->GetURL();
   if ([self shouldLoadURLInNativeView:URL]) {
@@ -1377,7 +1326,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   // - the user has interacted with the page.
   web::NavigationItem* item = self.currentNavItem;
   if (item && item->GetURL() == [self currentURL] &&
-      self.userInteractionRegistered) {
+      _userInteractionState.UserInteractionRegisteredSincePageLoaded()) {
     item->SetPageDisplayState(self.pageDisplayState);
   }
 }
@@ -1548,10 +1497,9 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 #pragma mark - CRWTouchTrackingDelegate (Public)
 
 - (void)touched:(BOOL)touched {
-  _clickInProgress = touched;
+  _userInteractionState.SetTapInProgress(touched);
   if (touched) {
-    self.userInteractionRegistered = YES;
-    _userInteractedWithWebController = YES;
+    _userInteractionState.SetUserInteractionRegisteredSincePageLoaded(true);
     if (_isBeingDestroyed)
       return;
     const NavigationManagerImpl* navigationManager = self.navigationManagerImpl;
@@ -1559,8 +1507,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
         navigationManager->GetLastCommittedItem()
             ? navigationManager->GetLastCommittedItem()->GetURL()
             : [self currentURL];
-    _lastUserInteraction =
-        std::make_unique<UserInteractionEvent>(mainDocumentURL);
+    _userInteractionState.SetLastUserInteraction(
+        std::make_unique<web::UserInteractionEvent>(mainDocumentURL));
   }
 }
 
@@ -1593,7 +1541,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
                context:(web::NavigationContextImpl*)context {
   if (newURL != _documentURL && newURL.is_valid()) {
     _documentURL = newURL;
-    _interactionRegisteredSinceLastURLChange = NO;
+    _userInteractionState.SetUserInteractionRegisteredSinceLastUrlChange(false);
   }
   if (web::GetWebClient()->IsSlimNavigationManagerEnabled() && context &&
       !context->IsLoadingHtmlString() && !context->IsLoadingErrorPage() &&
@@ -1687,7 +1635,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   // the page has no navigation items, as occurs when an App Store link is
   // opened from another application.
   BOOL rendererInitiatedWithoutInteraction =
-      self.hasOpener && !_userInteractedWithWebController;
+      self.hasOpener &&
+      !_userInteractionState.UserInteractionRegisteredSinceWebViewCreated();
   BOOL noNavigationItems = !(self.navigationManagerImpl->GetItemCount());
   return rendererInitiatedWithoutInteraction || noNavigationItems;
 }
@@ -1709,7 +1658,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
       // or may not be the result of user actions. For now, guess based on
       // whether there's been an interaction since the last URL change.
       // TODO(crbug.com/549301): See if this heuristic can be improved.
-      return _interactionRegisteredSinceLastURLChange
+      return _userInteractionState.UserInteractionRegisteredSinceLastUrlChange()
                  ? ui::PAGE_TRANSITION_LINK
                  : ui::PAGE_TRANSITION_CLIENT_REDIRECT;
   }
@@ -1775,7 +1724,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
         placeholderNavigation:(BOOL)placeholderNavigation {
   // Transfer time is registered so that further transitions within the time
   // envelope are not also registered as links.
-  _lastTransferTimeInSeconds = CFAbsoluteTimeGetCurrent();
+  _userInteractionState.ResetLastTransferTime();
 
   // Add or update pending item before any WebStateObserver callbacks.
   // See https://crbug.com/842151 for a scenario where this is important.
@@ -2810,21 +2759,12 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   if (!message->GetDictionary("crwCommand", &command)) {
     return NO;
   }
-  return [self respondToMessage:command
-              userIsInteracting:[self userIsInteracting]
-                      originURL:net::GURLWithNSURL(self.webView.URL)
-                    isMainFrame:scriptMessage.frameInfo.mainFrame
-                    senderFrame:senderFrame];
-}
-
-- (BOOL)userIsInteracting {
-  // If page transfer started after last click, user is deemed to be no longer
-  // interacting.
-  if (!_lastUserInteraction ||
-      _lastTransferTimeInSeconds > _lastUserInteraction->time) {
-    return NO;
-  }
-  return [self userClickedRecently];
+  return [self
+       respondToMessage:command
+      userIsInteracting:_userInteractionState.IsUserInteracting(self.webView)
+              originURL:net::GURLWithNSURL(self.webView.URL)
+            isMainFrame:scriptMessage.frameInfo.mainFrame
+            senderFrame:senderFrame];
 }
 
 #pragma mark - Web frames management
@@ -3092,9 +3032,10 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   // If not, categorize it is a client redirect as it occurred without user
   // input and should not be added to the history stack.
   // TODO(crbug.com/549301): Improve transition detection.
-  ui::PageTransition transition = self.userInteractionRegistered
-                                      ? ui::PAGE_TRANSITION_LINK
-                                      : ui::PAGE_TRANSITION_CLIENT_REDIRECT;
+  ui::PageTransition transition =
+      _userInteractionState.UserInteractionRegisteredSincePageLoaded()
+          ? ui::PAGE_TRANSITION_LINK
+          : ui::PAGE_TRANSITION_CLIENT_REDIRECT;
   [self pushStateWithPageURL:pushURL
                  stateObject:stateObject
                   transition:transition
@@ -3218,7 +3159,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
                                                           transition);
   context->SetHasCommitted(true);
   self.webStateImpl->OnNavigationFinished(context.get());
-  self.userInteractionRegistered = NO;
+  _userInteractionState.SetUserInteractionRegisteredSincePageLoaded(false);
 }
 
 // Assigns the given URL and state object to the current NavigationItem.
@@ -4025,7 +3966,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 #pragma mark - WKUIDelegate Helpers
 
 - (BOOL)isUserInitiatedAction:(WKNavigationAction*)action {
-  return [self userIsInteracting];
+  return _userInteractionState.IsUserInteracting(self.webView);
 }
 
 // Helper to respond to |webView:runJavaScript...| delegate methods.
@@ -4245,9 +4186,9 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
   if (allowLoad) {
     BOOL userInteractedWithRequestMainFrame =
-        [self userClickedRecently] &&
+        _userInteractionState.HasUserTappedRecently(self.webView) &&
         net::GURLWithNSURL(action.request.mainDocumentURL) ==
-            _lastUserInteraction->main_document_url;
+            _userInteractionState.LastUserInteraction()->main_document_url;
     web::WebStatePolicyDecider::RequestInfo requestInfo(
         transition, isMainFrameNavigationAction,
         userInteractedWithRequestMainFrame);
@@ -5140,8 +5081,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 // Resets any state that is associated with a specific document object (e.g.,
 // page interaction tracking).
 - (void)resetDocumentSpecificState {
-  _lastUserInteraction = nullptr;
-  _clickInProgress = NO;
+  _userInteractionState.SetLastUserInteraction(nullptr);
+  _userInteractionState.SetTapInProgress(false);
 }
 
 // Called when a page (native or web) has actually started loading (i.e., for
@@ -5152,7 +5093,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   self.navigationState = web::WKNavigationState::STARTED;
   _displayStateOnStartLoading = self.pageDisplayState;
 
-  self.userInteractionRegistered = NO;
+  _userInteractionState.SetUserInteractionRegisteredSincePageLoaded(false);
   _pageHasZoomed = NO;
 }
 
@@ -5602,7 +5543,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     item->ResetHttpRequestHeaders();
   }
 
-  _lastTransferTimeInSeconds = CFAbsoluteTimeGetCurrent();
+  _userInteractionState.ResetLastTransferTime();
 }
 
 // Returns YES if the current live view is a web view with an image MIME type.
