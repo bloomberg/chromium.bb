@@ -5,6 +5,7 @@
 #include "ash/login/ui/arrow_button_view.h"
 
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/paint_vector_icon.h"
 
@@ -44,6 +45,11 @@ void ArrowButtonView::PaintButtonContents(gfx::Canvas* canvas) {
 
   // Draw arrow icon.
   views::ImageButton::PaintButtonContents(canvas);
+}
+void ArrowButtonView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  // TODO(tbarzic): Fix this - https://crbug.com/961930.
+  if (GetAccessibleName().empty())
+    node_data->SetNameExplicitlyEmpty();
 }
 
 void ArrowButtonView::SetBackgroundColor(SkColor color) {
