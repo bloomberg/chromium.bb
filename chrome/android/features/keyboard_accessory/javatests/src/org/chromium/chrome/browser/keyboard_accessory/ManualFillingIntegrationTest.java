@@ -178,6 +178,29 @@ public class ManualFillingIntegrationTest {
     @Test
     @SmallTest
     @Features.DisableFeatures(ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY)
+    public void testAccessoryHiddenAfterTappingAutoGenerationButton()
+            throws InterruptedException, TimeoutException {
+        mHelper.loadTestPage(false);
+
+        // Focus the field to bring up the accessory and add the generation button.
+        mHelper.focusPasswordField();
+        mHelper.signalAutoGenerationStatus(true);
+        mHelper.waitForKeyboardAccessoryToBeShown();
+
+        // Click the tab to show the sheet and hide the keyboard.
+        whenDisplayed(isKeyboardAccessoryTabLayout()).perform(selectTabAtPosition(0));
+        mHelper.waitForKeyboardToDisappear();
+        whenDisplayed(withChild(withId(R.id.keyboard_accessory_sheet)));
+
+        // Click the generation button. This should hide the accessory sheet and bar.
+        onView(withText(R.string.password_generation_accessory_button)).perform(click());
+        waitToBeHidden(withChild(withId(R.id.keyboard_accessory_sheet)));
+        waitToBeHidden(withId(R.id.keyboard_accessory));
+    }
+
+    @Test
+    @SmallTest
+    @Features.DisableFeatures(ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY)
     public void testHidingSheetBringsBackKeyboard() throws InterruptedException, TimeoutException {
         mHelper.loadTestPage(false);
 

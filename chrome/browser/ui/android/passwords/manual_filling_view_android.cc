@@ -16,10 +16,12 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autofill/manual_filling_controller.h"
 #include "chrome/browser/autofill/manual_filling_controller_impl.h"
 #include "chrome/browser/password_manager/password_accessory_controller.h"
+#include "chrome/browser/password_manager/password_generation_controller.h"
 #include "components/autofill/core/browser/ui/accessory_sheet_data.h"
 #include "components/autofill/core/common/password_form.h"
 #include "jni/ManualFillingComponentBridge_jni.h"
@@ -218,6 +220,25 @@ void JNI_ManualFillingComponentBridge_CachePasswordSheetDataForTesting(
     credentials[password_forms[i].username_value] = &password_forms[i];
   }
   pwd_controller->SavePasswordsForOrigin(credentials, origin);
+}
+
+// static
+void JNI_ManualFillingComponentBridge_SignalAutoGenerationStatusForTesting(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& j_web_contents,
+    jboolean j_available) {
+  content::WebContents* web_contents =
+      content::WebContents::FromJavaWebContents(j_web_contents);
+  if (j_available) {
+    // The added generation button will call back to the generation controller
+    // so we need to make sure one exists.
+    ignore_result(PasswordGenerationController::GetOrCreate(web_contents));
+  }
+
+  // Bypass the generation controller when sending this status to the UI to
+  // avoid setup overhead, since its logic is currently not needed for tests.
+  ManualFillingControllerImpl::GetOrCreate(web_contents)
+      ->OnAutomaticGenerationStatusChanged(j_available);
 }
 
 // static

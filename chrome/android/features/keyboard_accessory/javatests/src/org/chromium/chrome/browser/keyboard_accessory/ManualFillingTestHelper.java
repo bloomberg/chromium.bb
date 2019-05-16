@@ -416,4 +416,11 @@ public class ManualFillingTestHelper {
                             AccessoryAction.GENERATE_PASSWORD_AUTOMATIC, result -> {})});
         });
     }
+
+    public void signalAutoGenerationStatus(boolean available) {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            ManualFillingComponentBridge.signalAutoGenerationStatus(
+                    mActivityTestRule.getWebContents(), available);
+        });
+    }
 }
