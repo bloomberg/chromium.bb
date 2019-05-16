@@ -204,6 +204,7 @@ void WebAppInstallTask::OnDidPerformInstallableCheck(
     std::unique_ptr<WebApplicationInfo> web_app_info,
     bool force_shortcut_app,
     const blink::Manifest& manifest,
+    bool valid_manifest_for_web_app,
     bool is_installable) {
   if (ShouldStopInstall())
     return;

@@ -105,6 +105,7 @@ class WebAppInstallTask : content::WebContentsObserver {
       std::unique_ptr<WebApplicationInfo> web_app_info,
       bool force_shortcut_app,
       const blink::Manifest& manifest,
+      bool valid_manifest_for_web_app,
       bool is_installable);
   void OnIconsRetrieved(std::unique_ptr<WebApplicationInfo> web_app_info,
                         bool is_locally_installed,

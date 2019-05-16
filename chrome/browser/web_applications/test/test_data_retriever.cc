@@ -40,7 +40,8 @@ void TestDataRetriever::CheckInstallabilityAndRetrieveManifest(
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindOnce(std::move(callback), *manifest_, is_installable_));
+      base::BindOnce(std::move(callback), *manifest_,
+                     /*valid_manifest_for_web_app=*/true, is_installable_));
 }
 
 void TestDataRetriever::GetIcons(content::WebContents* web_contents,

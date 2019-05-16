@@ -40,7 +40,9 @@ class WebAppDataRetriever {
       base::OnceCallback<void(std::unique_ptr<WebApplicationInfo>)>;
   // |is_installable| is false if installability check failed.
   using CheckInstallabilityCallback =
-      base::OnceCallback<void(const blink::Manifest&, bool is_installable)>;
+      base::OnceCallback<void(const blink::Manifest&,
+                              bool valid_manifest_for_web_app,
+                              bool is_installable)>;
   // Returns empty map if error.
   using GetIconsCallback = base::OnceCallback<void(IconsMap)>;
 

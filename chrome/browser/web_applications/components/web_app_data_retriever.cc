@@ -138,11 +138,12 @@ void WebAppDataRetriever::OnGetWebApplicationInfoFailed() {
 void WebAppDataRetriever::OnDidPerformInstallableCheck(
     CheckInstallabilityCallback callback,
     const InstallableData& data) {
+  DCHECK(data.manifest);
   DCHECK(data.manifest_url.is_valid() || data.manifest->IsEmpty());
 
   const bool is_installable = data.errors.empty();
 
-  std::move(callback).Run(*data.manifest, is_installable);
+  std::move(callback).Run(*data.manifest, data.valid_manifest, is_installable);
 }
 
 void WebAppDataRetriever::OnIconsDownloaded(GetIconsCallback callback,
