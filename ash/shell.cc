@@ -685,7 +685,6 @@ Shell::~Shell() {
   // Destroy tablet mode controller early on since it has some observers which
   // need to be removed.
   tablet_mode_controller_.reset();
-  kiosk_next_shell_controller_.reset();
 
   toast_manager_.reset();
 
@@ -729,6 +728,9 @@ Shell::~Shell() {
 
   // Close all widgets (including the shelf) and destroy all window containers.
   CloseAllRootWindowChildWindows();
+
+  // Destruct KioskNextShellController after Shelf
+  kiosk_next_shell_controller_.reset();
 
   login_screen_controller_.reset();
   system_notification_controller_.reset();
