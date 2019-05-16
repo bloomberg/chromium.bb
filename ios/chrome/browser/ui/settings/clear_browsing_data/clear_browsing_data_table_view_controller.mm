@@ -270,6 +270,20 @@
 
 #pragma mark - UITableViewDelegate
 
+- (CGFloat)tableView:(UITableView*)tableView
+    heightForHeaderInSection:(NSInteger)section {
+  NSInteger sectionIdentifier =
+      [self.tableViewModel sectionIdentifierForSection:section];
+  switch (sectionIdentifier) {
+    case SectionIdentifierGoogleAccount:
+    case SectionIdentifierClearSyncAndSavedSiteData:
+    case SectionIdentifierSavedSiteData:
+      return 5;
+    default:
+      return [super tableView:tableView heightForHeaderInSection:section];
+  }
+}
+
 - (void)tableView:(UITableView*)tableView
     didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
   if (!IsNewClearBrowsingDataUIEnabled()) {
