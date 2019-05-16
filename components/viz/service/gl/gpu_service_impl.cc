@@ -179,8 +179,10 @@ GpuServiceImpl::GpuServiceImpl(
 #endif
 
 #if defined(OS_MACOSX)
-  if (gpu_preferences.enable_metal)
+  if (gpu_feature_info_.status_values[gpu::GPU_FEATURE_TYPE_METAL] ==
+      gpu::kGpuFeatureStatusEnabled) {
     metal_context_provider_ = MetalContextProvider::Create();
+  }
 #endif
 
   gpu_memory_buffer_factory_ =

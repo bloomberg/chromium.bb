@@ -1734,6 +1734,21 @@
       "features": [
         "all"
       ]
+    },
+    {
+      "id": 162,
+      "cr_bugs": [963000],
+      "description": "Metal is very crashy on macOS 10.12",
+      "os": {
+        "type": "macosx",
+        "version": {
+          "op": "=",
+          "value": "10.12"
+        }
+      },
+      "features": [
+        "metal"
+      ]
     }
   ]
 }

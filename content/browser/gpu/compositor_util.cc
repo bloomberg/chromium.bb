@@ -169,12 +169,13 @@ const GpuFeatureData GetGpuFeatureData(
        "Out-of-process accelerated rasterization has been disabled, either "
        "via blacklist, about:flags or the command line.",
        false, true},
-      {"metal", gpu::kGpuFeatureStatusEnabled,
+      {"metal",
+       SafeGetFeatureStatus(gpu_feature_info, gpu::GPU_FEATURE_TYPE_METAL),
 #if defined(OS_MACOSX)
        !base::FeatureList::IsEnabled(features::kMetal) /* disabled */,
        "Metal is not enabled by default.",
 #else
-       true /* disabled */, "Metal only available on macOS.",
+       true /* disabled */, "Metal is only available on macOS.",
 #endif
        false /* fallback_to_software */, false /* needs_gpu_access */},
       {"multiple_raster_threads", gpu::kGpuFeatureStatusEnabled,
@@ -239,12 +240,6 @@ std::unique_ptr<base::DictionaryValue> GetFeatureStatusImpl(
     std::string status;
     if (gpu_feature_data.name == "surface_synchronization") {
       status = (!gpu_feature_data.disabled ? "enabled_on" : "disabled_off");
-    } else if (gpu_feature_data.name == "metal") {
-#if defined(OS_MACOSX)
-      status = (!gpu_feature_data.disabled ? "enabled_on" : "disabled_off");
-#else
-      status = "unavailable_off";
-#endif
     } else if (gpu_feature_data.name == "viz_display_compositor") {
       status = (!gpu_feature_data.disabled ? "enabled_on" : "disabled_off");
     } else if (gpu_feature_data.disabled || gpu_access_blocked ||
@@ -284,6 +279,8 @@ std::unique_ptr<base::DictionaryValue> GetFeatureStatusImpl(
         if (features::IsVizHitTestingSurfaceLayerEnabled())
           status += "_on";
       }
+      if (gpu_feature_data.name == "metal")
+        status += "_on";
     }
     feature_status_dict->SetString(gpu_feature_data.name, status);
   }
