@@ -841,12 +841,12 @@ void LayoutSelection::OnDocumentShutdown() {
   paint_range_->end_offset = base::nullopt;
 }
 
-static LayoutRect SelectionRectForLayoutObject(const LayoutObject* object) {
+static PhysicalRect SelectionRectForLayoutObject(const LayoutObject* object) {
   if (!object->IsRooted())
-    return LayoutRect();
+    return PhysicalRect();
 
   if (!object->CanUpdateSelectionOnRootLineBoxes())
-    return LayoutRect();
+    return PhysicalRect();
 
   return object->AbsoluteSelectionRect();
 }
@@ -877,7 +877,7 @@ IntRect LayoutSelection::AbsoluteSelectionBounds() {
     void Visit(LayoutObject* layout_object) {
       selected_rect.Unite(SelectionRectForLayoutObject(layout_object));
     }
-    LayoutRect selected_rect;
+    PhysicalRect selected_rect;
   } visitor;
   VisitSelectedInclusiveDescendantsOf(frame_selection_->GetDocument(),
                                       &visitor);

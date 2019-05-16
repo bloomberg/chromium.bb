@@ -89,6 +89,10 @@ class ScopedPaintState {
     return GetPaintInfo().GetCullRect().Intersects(rect_in_paint_info_space);
   }
 
+  bool LocalRectIntersectsCullRect(const PhysicalRect& local_rect) const {
+    return LocalRectIntersectsCullRect(local_rect.ToLayoutRect());
+  }
+
  protected:
   // Constructors for subclasses to create the initial state before adjustment.
   ScopedPaintState(const ScopedPaintState& input)

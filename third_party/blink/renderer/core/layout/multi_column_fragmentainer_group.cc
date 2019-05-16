@@ -170,12 +170,12 @@ LayoutSize MultiColumnFragmentainerGroup::FlowThreadTranslationAtOffset(
 
   LayoutRect portion_rect(FlowThreadPortionRectAt(column_index));
   flow_thread->FlipForWritingMode(portion_rect);
-  portion_rect.MoveBy(flow_thread->PhysicalLocation());
+  portion_rect.MoveBy(flow_thread->PhysicalLocation().ToLayoutPoint());
 
   LayoutRect column_rect(ColumnRectAt(column_index));
   column_rect.Move(OffsetFromColumnSet());
   column_set_.FlipForWritingMode(column_rect);
-  column_rect.MoveBy(column_set_.PhysicalLocation());
+  column_rect.MoveBy(column_set_.PhysicalLocation().ToLayoutPoint());
 
   LayoutSize translation_relative_to_flow_thread =
       column_rect.Location() - portion_rect.Location();

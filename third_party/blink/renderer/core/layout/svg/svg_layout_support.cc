@@ -74,29 +74,29 @@ FloatRect SVGLayoutSupport::LocalVisualRect(const LayoutObject& object) {
   return visual_rect;
 }
 
-LayoutRect SVGLayoutSupport::VisualRectInAncestorSpace(
+PhysicalRect SVGLayoutSupport::VisualRectInAncestorSpace(
     const LayoutObject& object,
     const LayoutBoxModelObject& ancestor,
     VisualRectFlags flags) {
-  LayoutRect rect;
+  PhysicalRect rect;
   MapToVisualRectInAncestorSpace(object, &ancestor, LocalVisualRect(object),
                                  rect, flags);
   return rect;
 }
 
-LayoutRect SVGLayoutSupport::TransformVisualRect(
+PhysicalRect SVGLayoutSupport::TransformVisualRect(
     const LayoutObject& object,
     const AffineTransform& root_transform,
     const FloatRect& local_rect) {
   FloatRect adjusted_rect = root_transform.MapRect(local_rect);
 
   if (adjusted_rect.IsEmpty())
-    return LayoutRect();
+    return PhysicalRect();
 
-  // Use enclosingIntRect because we cannot properly apply subpixel offset of
+  // Use EnclosingIntRect because we cannot properly apply subpixel offset of
   // the SVGRoot since we don't know the desired subpixel accumulation at this
   // point.
-  return LayoutRect(EnclosingIntRect(adjusted_rect));
+  return PhysicalRect(EnclosingIntRect(adjusted_rect));
 }
 
 static const LayoutSVGRoot& ComputeTransformToSVGRoot(
@@ -117,7 +117,7 @@ bool SVGLayoutSupport::MapToVisualRectInAncestorSpace(
     const LayoutObject& object,
     const LayoutBoxModelObject* ancestor,
     const FloatRect& local_visual_rect,
-    LayoutRect& result_rect,
+    PhysicalRect& result_rect,
     VisualRectFlags visual_rect_flags) {
   AffineTransform root_border_box_transform;
   const LayoutSVGRoot& svg_root =
@@ -127,7 +127,7 @@ bool SVGLayoutSupport::MapToVisualRectInAncestorSpace(
 
   // Apply initial viewport clip.
   if (svg_root.ShouldApplyViewportClip()) {
-    LayoutRect clip_rect(svg_root.OverflowClipRect(LayoutPoint()));
+    PhysicalRect clip_rect(svg_root.OverflowClipRect(PhysicalOffset()));
     if (visual_rect_flags & kEdgeInclusive) {
       if (!result_rect.InclusiveIntersect(clip_rect))
         return false;

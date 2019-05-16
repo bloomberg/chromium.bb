@@ -150,7 +150,7 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
 
   FloatRect LocalBoundingBoxRectForAccessibility() const final;
 
-  LayoutRect PhysicalLinesBoundingBox() const;
+  PhysicalRect PhysicalLinesBoundingBox() const;
   LayoutRect VisualOverflowRect() const final;
   LayoutRect ReferenceBoxForClipPath() const;
 
@@ -188,7 +188,7 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
   }
   LayoutInline* InlineElementContinuation() const;
 
-  LayoutSize OffsetForInFlowPositionedInline(const LayoutBox& child) const;
+  PhysicalOffset OffsetForInFlowPositionedInline(const LayoutBox& child) const;
 
   void AddOutlineRects(Vector<LayoutRect>&,
                        const LayoutPoint& additional_offset,
@@ -241,19 +241,22 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
                            const LayoutPoint& accumulated_offset,
                            const NGPaintFragment* parent_fragment = nullptr);
 
-  LayoutPoint FirstLineBoxTopLeft() const {
-    return FirstLineBoxTopLeftInternal().value_or(LayoutPoint());
+  PhysicalOffset FirstLineBoxTopLeft() const {
+    return FirstLineBoxTopLeftInternal().value_or(PhysicalOffset());
   }
 
   void MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
                           TransformState&,
                           MapCoordinatesFlags mode) const override;
 
-  LayoutRect AbsoluteBoundingBoxRectHandlingEmptyInline() const final;
+  PhysicalRect AbsoluteBoundingBoxRectHandlingEmptyInline() const final;
+
+  PhysicalRect VisualRectInDocument(
+      VisualRectFlags = kDefaultVisualRectFlags) const override;
 
   const char* GetName() const override { return "LayoutInline"; }
 
-  LayoutRect DebugRect() const override;
+  PhysicalRect DebugRect() const override;
 
  protected:
   void WillBeDestroyed() override;
@@ -269,12 +272,11 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
   void AbsoluteQuadsForSelf(Vector<FloatQuad>& quads,
                             MapCoordinatesFlags mode = 0) const override;
 
-  LayoutSize OffsetFromContainerInternal(const LayoutObject*,
-                                         bool ignore_scroll_offset) const final;
+  PhysicalOffset OffsetFromContainerInternal(
+      const LayoutObject*,
+      bool ignore_scroll_offset) const final;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(ParameterizedLayoutInlineTest, VisualRectInDocument);
-
   LayoutObjectChildList* VirtualChildren() final { return Children(); }
   const LayoutObjectChildList* VirtualChildren() const final {
     return Children();
@@ -341,14 +343,11 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
     return PhysicalLinesBoundingBox().Height();
   }
 
-  LayoutRect VisualRectInDocument(
-      VisualRectFlags = kDefaultVisualRectFlags) const override;
-
   // This method differs from VisualOverflowRect() in that
   // 1. it doesn't include the rects for culled inline boxes, which aren't
   //    necessary for paint invalidation;
   // 2. it is in physical coordinates.
-  LayoutRect LocalVisualRectIgnoringVisibility() const override;
+  PhysicalRect LocalVisualRectIgnoringVisibility() const override;
 
   bool MapToVisualRectInAncestorSpaceInternal(
       const LayoutBoxModelObject* ancestor,
@@ -393,8 +392,8 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
 
   LayoutBoxModelObject* ContinuationBefore(LayoutObject* before_child);
 
-  base::Optional<LayoutPoint> FirstLineBoxTopLeftInternal() const;
-  LayoutPoint AnchorPhysicalLocation() const;
+  base::Optional<PhysicalOffset> FirstLineBoxTopLeftInternal() const;
+  PhysicalOffset AnchorPhysicalLocation() const;
 
   LayoutObjectChildList children_;
 

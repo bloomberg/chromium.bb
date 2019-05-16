@@ -669,17 +669,17 @@ IntRect NGPaintFragment::PartialInvalidationVisualRect() const {
              : layout_object.PartialInvalidationVisualRect();
 }
 
-base::Optional<LayoutRect> NGPaintFragment::LocalVisualRectFor(
+base::Optional<PhysicalRect> NGPaintFragment::LocalVisualRectFor(
     const LayoutObject& layout_object) {
   auto fragments = InlineFragmentsFor(&layout_object);
   if (!fragments.IsInLayoutNGInlineFormattingContext())
     return base::nullopt;
 
-  LayoutRect visual_rect;
+  PhysicalRect visual_rect;
   for (NGPaintFragment* fragment : fragments) {
     PhysicalRect child_visual_rect = fragment->SelfInkOverflow();
     child_visual_rect.offset += fragment->InlineOffsetToContainerBox();
-    visual_rect.Unite(child_visual_rect.ToLayoutRect());
+    visual_rect.Unite(child_visual_rect);
   }
   return visual_rect;
 }

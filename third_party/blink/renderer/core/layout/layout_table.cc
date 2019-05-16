@@ -1571,18 +1571,18 @@ LayoutUnit LayoutTable::FirstLineBoxBaseline() const {
   return LayoutUnit(-1);
 }
 
-LayoutRect LayoutTable::OverflowClipRect(
-    const LayoutPoint& location,
+PhysicalRect LayoutTable::OverflowClipRect(
+    const PhysicalOffset& location,
     OverlayScrollbarClipBehavior overlay_scrollbar_clip_behavior) const {
   if (ShouldCollapseBorders()) {
     // Though the outer halves of the collapsed borders are considered as the
     // the border area of the table by means of the box model, they are actually
     // contents of the table and should not be clipped off. The overflow clip
     // rect is BorderBoxRect() + location.
-    return LayoutRect(location, Size());
+    return PhysicalRect(location, Size());
   }
 
-  LayoutRect rect =
+  PhysicalRect rect =
       LayoutBlock::OverflowClipRect(location, overlay_scrollbar_clip_behavior);
 
   // If we have a caption, expand the clip to include the caption.
@@ -1594,11 +1594,11 @@ LayoutRect LayoutTable::OverflowClipRect(
   // (depending on what order we do these bug fixes in).
   if (!captions_.IsEmpty()) {
     if (StyleRef().IsHorizontalWritingMode()) {
-      rect.SetHeight(Size().Height());
-      rect.SetY(location.Y());
+      rect.size.height = Size().Height();
+      rect.offset.top = location.top;
     } else {
-      rect.SetWidth(Size().Width());
-      rect.SetX(location.X());
+      rect.size.width = Size().Width();
+      rect.offset.left = location.left;
     }
   }
 
@@ -1615,7 +1615,9 @@ bool LayoutTable::NodeAtPoint(HitTestResult& result,
   bool skip_children = (result.GetHitTestRequest().GetStopNode() == this);
   if (!skip_children &&
       (!HasOverflowClip() ||
-       location_in_container.Intersects(OverflowClipRect(adjusted_location)))) {
+       location_in_container.Intersects(
+           OverflowClipRect(PhysicalOffsetToBeNoop(adjusted_location))
+               .ToLayoutRect()))) {
     for (LayoutObject* child = LastChild(); child;
          child = child->PreviousSibling()) {
       if (child->IsBox() && !ToLayoutBox(child)->HasSelfPaintingLayer() &&

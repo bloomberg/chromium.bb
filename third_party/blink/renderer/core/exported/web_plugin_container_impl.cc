@@ -1076,7 +1076,7 @@ void WebPluginContainerImpl::ComputeClipRectsForPlugin(
   // the containing view space, and rounded off.  See
   // LayoutEmbeddedContent::UpdateGeometry. To remove the lossy effect of
   // rounding off, use contentBoxRect directly.
-  LayoutRect unclipped_root_frame_rect(box->PhysicalContentBoxRect());
+  PhysicalRect unclipped_root_frame_rect = box->PhysicalContentBoxRect();
   box->MapToVisualRectInAncestorSpace(root_view, unclipped_root_frame_rect);
   unclipped_root_frame_rect =
       root_view->GetFrameView()->DocumentToFrame(unclipped_root_frame_rect);
@@ -1084,19 +1084,19 @@ void WebPluginContainerImpl::ComputeClipRectsForPlugin(
   // The frameRect is already in absolute space of the local frame to the
   // plugin so map it up to the root frame.
   window_rect = FrameRect();
-  LayoutRect layout_window_rect =
-      LayoutRect(element_->GetDocument()
-                     .View()
-                     ->GetLayoutView()
-                     ->LocalToAbsoluteQuad(FloatQuad(FloatRect(window_rect)),
-                                           kTraverseDocumentBoundaries)
-                     .BoundingBox());
+  PhysicalRect layout_window_rect = PhysicalRect::EnclosingRect(
+      element_->GetDocument()
+          .View()
+          ->GetLayoutView()
+          ->LocalToAbsoluteQuad(FloatQuad(FloatRect(window_rect)),
+                                kTraverseDocumentBoundaries)
+          .BoundingBox());
 
   window_rect = PixelSnappedIntRect(layout_window_rect);
 
-  LayoutRect clipped_root_frame_rect = unclipped_root_frame_rect;
-  clipped_root_frame_rect.Intersect(
-      LayoutRect(LayoutPoint(), LayoutSize(root_view->GetFrameView()->Size())));
+  PhysicalRect clipped_root_frame_rect = unclipped_root_frame_rect;
+  clipped_root_frame_rect.Intersect(PhysicalRect(
+      PhysicalOffset(), PhysicalSize(root_view->GetFrameView()->Size())));
 
   unclipped_int_local_rect =
       box->AbsoluteToLocalQuad(FloatRect(unclipped_root_frame_rect),

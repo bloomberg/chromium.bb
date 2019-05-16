@@ -797,9 +797,9 @@ void PaintLayer::UpdateLayerPosition() {
   // their size.
   if (GetLayoutObject().IsInline() && GetLayoutObject().IsLayoutInline())
     UpdateSizeAndScrollingAfterLayout();
-  LayoutPoint local_point;
+  PhysicalOffset local_point;
   if (LayoutBox* box = GetLayoutBox()) {
-    local_point.MoveBy(box->PhysicalLocation());
+    local_point += box->PhysicalLocation();
   }
 
   if (!GetLayoutObject().IsOutOfFlowPositioned() &&
@@ -811,13 +811,13 @@ void PaintLayer::UpdateLayerPosition() {
       if (curr->IsBox() && !curr->IsTableRow()) {
         // Rows and cells share the same coordinate space (that of the section).
         // Omit them when computing our xpos/ypos.
-        local_point.MoveBy(ToLayoutBox(curr)->PhysicalLocation());
+        local_point += ToLayoutBox(curr)->PhysicalLocation();
       }
       curr = curr->Container();
     }
     if (curr && curr->IsTableRow()) {
       // Put ourselves into the row coordinate space.
-      local_point.MoveBy(-ToLayoutBox(curr)->PhysicalLocation());
+      local_point -= ToLayoutBox(curr)->PhysicalLocation();
     }
   }
 
@@ -827,7 +827,7 @@ void PaintLayer::UpdateLayerPosition() {
       // Subtract our container's scroll offset.
       IntSize offset =
           containing_layer->GetLayoutBox()->ScrolledContentOffset();
-      local_point -= offset;
+      local_point -= PhysicalOffset(offset);
     } else {
       auto& container = containing_layer->GetLayoutObject();
       if (GetLayoutObject().IsOutOfFlowPositioned() &&
@@ -835,7 +835,7 @@ void PaintLayer::UpdateLayerPosition() {
           container.CanContainOutOfFlowPositionedElement(
               GetLayoutObject().StyleRef().GetPosition())) {
         // Adjust offset for absolute under in-flow positioned inline.
-        LayoutSize offset =
+        PhysicalOffset offset =
             ToLayoutInline(container).OffsetForInFlowPositionedInline(
                 ToLayoutBox(GetLayoutObject()));
         local_point += offset;
@@ -844,15 +844,15 @@ void PaintLayer::UpdateLayerPosition() {
   }
 
   if (GetLayoutObject().IsInFlowPositioned()) {
-    LayoutSize new_offset = GetLayoutObject().OffsetForInFlowPosition();
+    PhysicalOffset new_offset = GetLayoutObject().OffsetForInFlowPosition();
     if (rare_data_ || !new_offset.IsZero())
       EnsureRareData().offset_for_in_flow_position = new_offset;
-    local_point.Move(new_offset);
+    local_point += new_offset;
   } else if (rare_data_) {
-    rare_data_->offset_for_in_flow_position = LayoutSize();
+    rare_data_->offset_for_in_flow_position = PhysicalOffset();
   }
 
-  location_ = local_point;
+  location_ = local_point.ToLayoutPoint();
 
 #if DCHECK_IS_ON()
   needs_position_update_ = false;
@@ -1277,7 +1277,8 @@ LayoutRect PaintLayer::TransparencyClipBox(
   LayoutPoint delta;
   layer->ConvertToLayerCoords(root_layer, delta);
   clip_rect.MoveBy(-delta);
-  clip_rect = layer->MapLayoutRectForFilter(clip_rect);
+  clip_rect =
+      layer->MapRectForFilter(PhysicalRectToBeNoop(clip_rect)).ToLayoutRect();
   clip_rect.MoveBy(delta);
 
   clip_rect.Move(sub_pixel_accumulation);
@@ -1912,8 +1913,9 @@ HitTestingTransformState PaintLayer::CreateLocalTransformState(
   if (GetLayoutObject().ShouldUseTransformFromContainer(
           container_layout_object)) {
     TransformationMatrix container_transform;
-    GetLayoutObject().GetTransformFromContainer(
-        container_layout_object, ToLayoutSize(offset), container_transform);
+    GetLayoutObject().GetTransformFromContainer(container_layout_object,
+                                                PhysicalOffsetToBeNoop(offset),
+                                                container_transform);
     transform_state.ApplyTransform(
         container_transform, HitTestingTransformState::kAccumulateTransform);
   } else {
@@ -2560,26 +2562,22 @@ bool PaintLayer::IntersectsDamageRect(
   return PhysicalBoundingBox(offset_from_root).Intersects(damage_rect);
 }
 
-LayoutRect PaintLayer::LogicalBoundingBox() const {
-  LayoutRect rect = GetLayoutObject().VisualOverflowRect();
+PhysicalRect PaintLayer::LocalBoundingBox() const {
+  PhysicalRect rect;
+  if (GetLayoutObject().IsBox()) {
+    rect = ToLayoutBox(GetLayoutObject()).PhysicalVisualOverflowRect();
+  } else {
+    LayoutRect layout_rect = GetLayoutObject().VisualOverflowRect();
+    GetLayoutObject().ContainingBlock()->FlipForWritingMode(layout_rect);
+    rect = PhysicalRect(layout_rect);
+  }
 
   if (GetLayoutObject().IsEffectiveRootScroller() || IsRootLayer()) {
-    rect.Unite(LayoutRect(rect.Location(),
-                          GetLayoutObject().View()->ViewRect().Size()));
+    rect.Unite(
+        PhysicalRect(rect.offset, GetLayoutObject().View()->ViewRect().size));
   }
 
   return rect;
-}
-
-static inline LayoutRect FlippedLogicalBoundingBox(
-    LayoutRect bounding_box,
-    LayoutObject& layout_object) {
-  LayoutRect result = bounding_box;
-  if (layout_object.IsBox())
-    ToLayoutBox(layout_object).FlipForWritingMode(result);
-  else
-    layout_object.ContainingBlock()->FlipForWritingMode(result);
-  return result;
 }
 
 LayoutRect PaintLayer::PhysicalBoundingBox(
@@ -2591,8 +2589,7 @@ LayoutRect PaintLayer::PhysicalBoundingBox(
 
 LayoutRect PaintLayer::PhysicalBoundingBox(
     const LayoutPoint& offset_from_root) const {
-  LayoutRect result =
-      FlippedLogicalBoundingBox(LogicalBoundingBox(), GetLayoutObject());
+  LayoutRect result = LocalBoundingBox().ToLayoutRect();
   result.MoveBy(offset_from_root);
   return result;
 }
@@ -2602,8 +2599,7 @@ LayoutRect PaintLayer::FragmentsBoundingBox(
   if (!EnclosingPaginationLayer())
     return PhysicalBoundingBox(ancestor_layer);
 
-  LayoutRect result =
-      FlippedLogicalBoundingBox(LogicalBoundingBox(), GetLayoutObject());
+  LayoutRect result = LocalBoundingBox().ToLayoutRect();
   ConvertFromFlowThreadToVisualBoundingBoxInAncestor(ancestor_layer, result);
   return result;
 }
@@ -2737,7 +2733,7 @@ LayoutRect PaintLayer::BoundingBoxForCompositingInternal(
   // Only enlarge by the filter outsets if we know the filter is going to be
   // rendered in software.  Accelerated filters will handle their own outsets.
   if (PaintsWithFilters())
-    result = MapLayoutRectForFilter(result);
+    result = MapRectForFilter(PhysicalRectToBeNoop(result)).ToLayoutRect();
 
   if (ShouldApplyTransformToBoundingBox(composited_layer, options))
     result = Transform()->MapRect(result);
@@ -3358,10 +3354,10 @@ FloatRect PaintLayer::MapRectForFilter(const FloatRect& rect) const {
   return FilterOperationsIncludingReflection().MapRect(rect);
 }
 
-LayoutRect PaintLayer::MapLayoutRectForFilter(const LayoutRect& rect) const {
+PhysicalRect PaintLayer::MapRectForFilter(const PhysicalRect& rect) const {
   if (!HasFilterThatMovesPixels())
     return rect;
-  return EnclosingLayoutRect(MapRectForFilter(FloatRect(rect)));
+  return PhysicalRect::EnclosingRect(MapRectForFilter(FloatRect(rect)));
 }
 
 bool PaintLayer::HasFilterThatMovesPixels() const {

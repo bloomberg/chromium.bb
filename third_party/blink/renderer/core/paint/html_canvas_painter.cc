@@ -33,7 +33,8 @@ void HTMLCanvasPainter::PaintReplaced(const PaintInfo& paint_info,
                                       const LayoutPoint& paint_offset) {
   GraphicsContext& context = paint_info.context;
 
-  LayoutRect paint_rect = layout_html_canvas_.ReplacedContentRect();
+  LayoutRect paint_rect =
+      layout_html_canvas_.ReplacedContentRect().ToLayoutRect();
   paint_rect.MoveBy(paint_offset);
 
   HTMLCanvasElement* canvas =

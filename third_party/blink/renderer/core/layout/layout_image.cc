@@ -244,7 +244,7 @@ bool LayoutImage::ForegroundIsKnownToBeOpaqueInRect(
   ImageResourceContent* image_content = image_resource_->CachedImage();
   if (!image_content || !image_content->IsLoaded())
     return false;
-  if (!PhysicalContentBoxRect().Contains(local_rect))
+  if (!PhysicalContentBoxRect().ToLayoutRect().Contains(local_rect))
     return false;
   EFillBox background_clip = StyleRef().BackgroundClip();
   // Background paints under borders.

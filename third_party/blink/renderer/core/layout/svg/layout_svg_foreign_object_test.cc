@@ -35,9 +35,9 @@ TEST_F(LayoutSVGForeignObjectTest, DivInForeignObject) {
   EXPECT_EQ(AffineTransform(), foreign_object.LocalToSVGParentTransform());
 
   // mapToVisualRectInAncestorSpace
-  LayoutRect div_rect(0, 0, 100, 50);
+  PhysicalRect div_rect(0, 0, 100, 50);
   EXPECT_TRUE(div.MapToVisualRectInAncestorSpace(&GetLayoutView(), div_rect));
-  EXPECT_EQ(LayoutRect(150, 150, 100, 50), div_rect);
+  EXPECT_EQ(PhysicalRect(150, 150, 100, 50), div_rect);
 
   // mapLocalToAncestor
   TransformState transform_state(TransformState::kApplyTransformDirection,
@@ -110,12 +110,12 @@ TEST_F(LayoutSVGForeignObjectTest, IframeInForeignObject) {
   EXPECT_EQ(AffineTransform(), foreign_object.LocalSVGTransform());
   EXPECT_EQ(AffineTransform(), foreign_object.LocalToSVGParentTransform());
 
-  // mapToVisualRectInAncestorSpace
-  LayoutRect div_rect(0, 0, 100, 50);
+  // MapToVisualRectInAncestorSpace
+  PhysicalRect div_rect(0, 0, 100, 50);
   EXPECT_TRUE(div.MapToVisualRectInAncestorSpace(&GetLayoutView(), div_rect));
-  EXPECT_EQ(LayoutRect(200, 200, 100, 50), div_rect);
+  EXPECT_EQ(PhysicalRect(200, 200, 100, 50), div_rect);
 
-  // mapLocalToAncestor
+  // MapLocalToAncestor
   TransformState transform_state(TransformState::kApplyTransformDirection,
                                  FloatPoint());
   div.MapLocalToAncestor(&GetLayoutView(), transform_state,
@@ -123,7 +123,7 @@ TEST_F(LayoutSVGForeignObjectTest, IframeInForeignObject) {
   transform_state.Flatten();
   EXPECT_EQ(FloatPoint(200, 200), transform_state.LastPlanarPoint());
 
-  // mapAncestorToLocal
+  // MapAncestorToLocal
   TransformState transform_state1(
       TransformState::kUnapplyInverseTransformDirection, FloatPoint());
   div.MapAncestorToLocal(&GetLayoutView(), transform_state1,
@@ -131,7 +131,7 @@ TEST_F(LayoutSVGForeignObjectTest, IframeInForeignObject) {
   transform_state1.Flatten();
   EXPECT_EQ(FloatPoint(-200, -200), transform_state1.LastPlanarPoint());
 
-  // pushMappingToContainer
+  // PushMappingToContainer
   LayoutGeometryMap rgm(kTraverseDocumentBoundaries);
   rgm.PushMappingsToAncestor(&div, nullptr);
   EXPECT_EQ(FloatQuad(FloatRect(200, 200, 1, 2)),
@@ -182,13 +182,13 @@ TEST_F(LayoutSVGForeignObjectTest, HitTestZoomedForeignObject) {
   EXPECT_EQ(AffineTransform(), foreign_object.LocalSVGTransform());
   EXPECT_EQ(AffineTransform(), foreign_object.LocalToSVGParentTransform());
 
-  // mapToVisualRectInAncestorSpace
-  LayoutRect div_rect(0, 0, 100, 50);
+  // MapToVisualRectInAncestorSpace
+  PhysicalRect div_rect(0, 0, 100, 50);
   EXPECT_TRUE(div.GetLayoutObject()->MapToVisualRectInAncestorSpace(
       &GetLayoutView(), div_rect));
-  EXPECT_EQ(LayoutRect(286, 286, 339, 170), div_rect);
+  EXPECT_EQ(PhysicalRect(286, 286, 339, 170), div_rect);
 
-  // mapLocalToAncestor
+  // MapLocalToAncestor
   TransformState transform_state(TransformState::kApplyTransformDirection,
                                  FloatPoint());
   div.GetLayoutObject()->MapLocalToAncestor(&GetLayoutView(), transform_state,
@@ -196,7 +196,7 @@ TEST_F(LayoutSVGForeignObjectTest, HitTestZoomedForeignObject) {
   transform_state.Flatten();
   EXPECT_EQ(FloatPoint(286.875, 286.875), transform_state.LastPlanarPoint());
 
-  // mapAncestorToLocal
+  // MapAncestorToLocal
   TransformState transform_state1(
       TransformState::kUnapplyInverseTransformDirection,
       FloatPoint(286.875, 286.875));
@@ -235,7 +235,7 @@ TEST_F(LayoutSVGForeignObjectTest, HitTestViewBoxForeignObject) {
   const auto& foreign = *GetDocument().getElementById("foreign");
   const auto& div = *GetDocument().getElementById("div");
 
-  // mapLocalToAncestor
+  // MapLocalToAncestor
   TransformState transform_state(TransformState::kApplyTransformDirection,
                                  FloatPoint());
   div.GetLayoutObject()->MapLocalToAncestor(&GetLayoutView(), transform_state,
@@ -243,7 +243,7 @@ TEST_F(LayoutSVGForeignObjectTest, HitTestViewBoxForeignObject) {
   transform_state.Flatten();
   EXPECT_EQ(FloatPoint(128, 128), transform_state.LastPlanarPoint());
 
-  // mapAncestorToLocal
+  // MapAncestorToLocal
   TransformState transform_state1(
       TransformState::kUnapplyInverseTransformDirection, FloatPoint(128, 128));
   div.GetLayoutObject()->MapAncestorToLocal(&GetLayoutView(), transform_state1,

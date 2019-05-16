@@ -130,8 +130,7 @@ NGLayoutInputNode NGLayoutInputNode::NextSibling() {
 PhysicalSize NGLayoutInputNode::InitialContainingBlockSize() const {
   IntSize icb_size =
       GetDocument().GetLayoutView()->GetLayoutSize(kExcludeScrollbars);
-  return PhysicalSize{LayoutUnit(icb_size.Width()),
-                      LayoutUnit(icb_size.Height())};
+  return PhysicalSize(icb_size);
 }
 
 const NGPaintFragment* NGLayoutInputNode::PaintFragment() const {

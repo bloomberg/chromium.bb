@@ -346,7 +346,7 @@ class CORE_EXPORT LayoutTableCell : public LayoutBlockFlow {
 
   void InvalidatePaint(const PaintInvalidatorContext&) const override;
 
-  LayoutSize OffsetFromContainerInternal(
+  PhysicalOffset OffsetFromContainerInternal(
       const LayoutObject*,
       bool ignore_scroll_offset) const override;
 

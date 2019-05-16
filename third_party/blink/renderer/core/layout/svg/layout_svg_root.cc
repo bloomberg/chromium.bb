@@ -479,7 +479,8 @@ bool LayoutSVGRoot::NodeAtPoint(HitTestResult& result,
   // supported by nodeAtFloatPoint.
   bool skip_children = (result.GetHitTestRequest().GetStopNode() == this);
   if (!skip_children &&
-      (local_border_box_location.Intersects(PhysicalContentBoxRect()) ||
+      (local_border_box_location.Intersects(
+           PhysicalContentBoxRect().ToLayoutRect()) ||
        (!ShouldApplyViewportClip() &&
         local_border_box_location.Intersects(VisualOverflowRect())))) {
     TransformedHitTestLocation local_location(local_border_box_location,

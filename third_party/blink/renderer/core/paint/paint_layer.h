@@ -107,7 +107,7 @@ struct PaintLayerRareData {
   ~PaintLayerRareData();
 
   // Our current relative position offset.
-  LayoutSize offset_for_in_flow_position;
+  PhysicalOffset offset_for_in_flow_position;
 
   std::unique_ptr<TransformationMatrix> transform;
 
@@ -324,8 +324,9 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   PaintLayer* RenderingContextRoot();
   const PaintLayer* RenderingContextRoot() const;
 
-  LayoutSize OffsetForInFlowPosition() const {
-    return rare_data_ ? rare_data_->offset_for_in_flow_position : LayoutSize();
+  PhysicalOffset OffsetForInFlowPosition() const {
+    return rare_data_ ? rare_data_->offset_for_in_flow_position
+                      : PhysicalOffset();
   }
 
   PaintLayerStackingNode* StackingNode() { return stacking_node_.get(); }
@@ -634,7 +635,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   FloatRect MapRectForFilter(const FloatRect&) const;
 
   // Calls the above, rounding outwards.
-  LayoutRect MapLayoutRectForFilter(const LayoutRect&) const;
+  PhysicalRect MapRectForFilter(const PhysicalRect&) const;
 
   bool HasFilterThatMovesPixels() const;
 
@@ -1093,7 +1094,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   void Update3DTransformedDescendantStatus();
 
   // Bounding box in the coordinates of this layer.
-  LayoutRect LogicalBoundingBox() const;
+  PhysicalRect LocalBoundingBox() const;
 
   bool HasOverflowControls() const;
 

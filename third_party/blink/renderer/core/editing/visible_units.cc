@@ -460,7 +460,8 @@ bool HasRenderedNonAnonymousDescendantsWithHeight(
            // TODO(crbug.com/771398): Find alternative ways to check whether an
            // empty LayoutInline is rendered, without checking InlineBox.
            BoundingBoxLogicalHeight(
-               o, ToLayoutInline(o)->PhysicalLinesBoundingBox())))
+               o,
+               ToLayoutInline(o)->PhysicalLinesBoundingBox().ToLayoutRect())))
         return true;
     }
   }

@@ -123,8 +123,7 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
     if (LocalFrameView* frame_view = ToLayoutView(container)->GetFrameView()) {
       IntSize size =
           frame_view->LayoutViewport()->ExcludeScrollbars(frame_view->Size());
-      PhysicalSize physical_size =
-          PhysicalSize(LayoutUnit(size.Width()), LayoutUnit(size.Height()));
+      PhysicalSize physical_size(size);
       initial_containing_block_fixed_size =
           physical_size.ConvertToLogical(container->Style()->GetWritingMode());
     }

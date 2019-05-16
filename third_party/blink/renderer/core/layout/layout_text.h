@@ -183,13 +183,13 @@ class CORE_EXPORT LayoutText : public LayoutObject {
                          bool& strip_front_spaces,
                          TextDirection);
 
-  virtual LayoutRect PhysicalLinesBoundingBox() const;
+  virtual PhysicalRect PhysicalLinesBoundingBox() const;
 
   // Returns the bounding box of visual overflow rects of all line boxes,
   // in containing block's physical coordinates with flipped blocks direction.
   LayoutRect VisualOverflowRect() const;
 
-  LayoutPoint FirstLineBoxTopLeft() const;
+  PhysicalOffset FirstLineBoxTopLeft() const;
 
   virtual void SetText(scoped_refptr<StringImpl>,
                        bool force = false,
@@ -201,7 +201,7 @@ class CORE_EXPORT LayoutText : public LayoutObject {
 
   virtual void TransformText();
 
-  LayoutRect LocalSelectionVisualRect() const final;
+  PhysicalRect LocalSelectionVisualRect() const final;
   LayoutRect LocalCaretRect(
       const InlineBox*,
       int caret_offset,
@@ -288,7 +288,7 @@ class CORE_EXPORT LayoutText : public LayoutObject {
 
   float HyphenWidth(const Font&, TextDirection);
 
-  LayoutRect DebugRect() const override;
+  PhysicalRect DebugRect() const override;
 
   void AutosizingMultiplerChanged() {
     known_to_have_no_overflow_and_no_fallback_fonts_ = false;
@@ -390,7 +390,7 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   bool IsText() const =
       delete;  // This will catch anyone doing an unnecessary check.
 
-  LayoutRect LocalVisualRectIgnoringVisibility() const final;
+  PhysicalRect LocalVisualRectIgnoringVisibility() const final;
 
   bool CanOptimizeSetText() const;
   void SetFirstTextBoxLogicalLeft(float text_width) const;

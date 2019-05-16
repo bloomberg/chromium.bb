@@ -123,19 +123,19 @@ void SliderThumbElement::SetPositionFromPoint(const LayoutPoint& point) {
   LayoutUnit track_size;
   LayoutUnit position;
   LayoutUnit current_position;
-  LayoutSize thumb_offset = thumb_box->OffsetFromAncestor(input_object) -
-                            track_box->OffsetFromAncestor(input_object);
+  PhysicalOffset thumb_offset = thumb_box->OffsetFromAncestor(input_object) -
+                                track_box->OffsetFromAncestor(input_object);
   if (is_vertical) {
     track_size = track_box->ContentHeight() - thumb_box->Size().Height();
     position = point_in_track.top - thumb_box->Size().Height() / 2 -
                thumb_box->MarginBottom();
-    current_position = thumb_offset.Height();
+    current_position = thumb_offset.top;
   } else {
     track_size = track_box->ContentWidth() - thumb_box->Size().Width();
     position = point_in_track.left - thumb_box->Size().Width() / 2;
     position -= is_left_to_right_direction ? thumb_box->MarginLeft()
                                            : thumb_box->MarginRight();
-    current_position = thumb_offset.Width();
+    current_position = thumb_offset.left;
   }
   position = std::min(position, track_size).ClampNegativeToZero();
   const Decimal ratio =

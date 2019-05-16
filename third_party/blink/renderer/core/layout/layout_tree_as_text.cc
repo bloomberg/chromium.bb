@@ -158,7 +158,7 @@ void LayoutTreeAsText::WriteLayoutObject(WTF::TextStream& ts,
       ts << " {" << tag_name << "}";
   }
 
-  LayoutRect rect = o.DebugRect();
+  PhysicalRect rect = o.DebugRect();
   ts << " " << rect;
 
   if (!(o.IsText() && !o.IsBR())) {

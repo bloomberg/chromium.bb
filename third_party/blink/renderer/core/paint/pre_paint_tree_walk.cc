@@ -483,7 +483,8 @@ void PrePaintTreeWalk::Walk(const LayoutObject& object) {
     if (auto* local_frame_view = DynamicTo<LocalFrameView>(frame_view)) {
       if (context().tree_builder_context) {
         context().tree_builder_context->fragments[0].current.paint_offset +=
-            layout_embedded_content.ReplacedContentRect().Location() -
+            layout_embedded_content.ReplacedContentRect()
+                .offset.ToLayoutPoint() -
             local_frame_view->FrameRect().Location();
         context()
             .tree_builder_context->fragments[0]

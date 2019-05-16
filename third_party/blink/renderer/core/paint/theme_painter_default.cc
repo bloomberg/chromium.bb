@@ -127,10 +127,10 @@ IntRect ConvertToPaintingRect(const LayoutObject& input_layout_object,
                               LayoutRect part_rect,
                               const IntRect& local_offset) {
   // Compute an offset between the partLayoutObject and the inputLayoutObject.
-  LayoutSize offset_from_input_layout_object =
+  PhysicalOffset offset_from_input_layout_object =
       -part_layout_object.OffsetFromAncestor(&input_layout_object);
   // Move the rect into partLayoutObject's coords.
-  part_rect.Move(offset_from_input_layout_object);
+  part_rect.Move(offset_from_input_layout_object.ToLayoutSize());
   // Account for the local drawing offset.
   part_rect.Move(local_offset.X(), local_offset.Y());
 
@@ -464,7 +464,8 @@ bool ThemePainterDefault::PaintSearchFieldCancelButton(
   if (!base_layout_object.IsBox())
     return false;
   const LayoutBox& input_layout_box = ToLayoutBox(base_layout_object);
-  LayoutRect input_content_box = input_layout_box.PhysicalContentBoxRect();
+  LayoutRect input_content_box =
+      input_layout_box.PhysicalContentBoxRect().ToLayoutRect();
 
   // Make sure the scaled button stays square and will fit in its parent's box.
   LayoutUnit cancel_button_size =
@@ -475,7 +476,7 @@ bool ThemePainterDefault::PaintSearchFieldCancelButton(
   // pixel off-center, it will be one pixel closer to the bottom of the field.
   // This tends to look better with the text.
   LayoutRect cancel_button_rect(
-      cancel_button_object.OffsetFromAncestor(&input_layout_box).Width(),
+      cancel_button_object.OffsetFromAncestor(&input_layout_box).left,
       input_content_box.Y() +
           (input_content_box.Height() - cancel_button_size + 1) / 2,
       cancel_button_size, cancel_button_size);

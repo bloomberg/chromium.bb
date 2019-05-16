@@ -26,7 +26,8 @@ void TextControlSingleLinePainter::Paint(const PaintInfo& paint_info) {
   DrawingRecorder recorder(paint_info.context, text_control_,
                            DisplayItem::kCapsLockIndicator);
 
-  LayoutRect contents_rect = text_control_.PhysicalContentBoxRect();
+  LayoutRect contents_rect =
+      text_control_.PhysicalContentBoxRect().ToLayoutRect();
 
   // Center in the block progression direction.
   if (text_control_.IsHorizontalWritingMode()) {

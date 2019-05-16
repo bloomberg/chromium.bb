@@ -661,16 +661,17 @@ bool LayoutMultiColumnSet::ComputeColumnRuleBounds(
   return true;
 }
 
-LayoutRect LayoutMultiColumnSet::LocalVisualRectIgnoringVisibility() const {
-  LayoutRect block_flow_bounds =
+PhysicalRect LayoutMultiColumnSet::LocalVisualRectIgnoringVisibility() const {
+  PhysicalRect block_flow_bounds =
       LayoutBlockFlow::LocalVisualRectIgnoringVisibility();
 
   // Now add in column rule bounds, if present.
   Vector<LayoutRect> column_rule_bounds;
   if (ComputeColumnRuleBounds(LayoutPoint(), column_rule_bounds)) {
-    for (auto& bound : column_rule_bounds)
-      block_flow_bounds.Unite(bound);
+    block_flow_bounds.Unite(
+        PhysicalRectToBeNoop(UnionRect(column_rule_bounds)));
   }
+
   return block_flow_bounds;
 }
 

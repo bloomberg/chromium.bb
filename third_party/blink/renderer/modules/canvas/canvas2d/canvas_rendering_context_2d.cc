@@ -358,7 +358,7 @@ void CanvasRenderingContext2D::ScrollPathIntoViewInternal(const Path& path) {
 
   // We first map canvas coordinates to layout coordinates.
   LayoutRect path_rect(bounding_rect);
-  LayoutRect canvas_rect = layout_box->PhysicalContentBoxRect();
+  LayoutRect canvas_rect = layout_box->PhysicalContentBoxRect().ToLayoutRect();
   canvas_rect.MoveBy(LayoutPoint(layout_box->LocalToAbsolute()));
   path_rect.SetX(
       (canvas_rect.X() + path_rect.X() * canvas_rect.Width() / Width()));

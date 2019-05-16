@@ -84,17 +84,17 @@
 
 namespace blink {
 
-static LayoutRect ContentsRect(const LayoutObject& layout_object) {
+static PhysicalRect ContentsRect(const LayoutObject& layout_object) {
   if (!layout_object.IsBox())
-    return LayoutRect();
+    return PhysicalRect();
   if (layout_object.IsLayoutReplaced())
     return ToLayoutReplaced(layout_object).ReplacedContentRect();
   return ToLayoutBox(layout_object).PhysicalContentBoxRect();
 }
 
-static LayoutRect BackgroundRect(const LayoutObject& layout_object) {
+static PhysicalRect BackgroundRect(const LayoutObject& layout_object) {
   if (!layout_object.IsBox())
-    return LayoutRect();
+    return PhysicalRect();
 
   const LayoutBox& box = ToLayoutBox(layout_object);
   return box.PhysicalBackgroundRect(kBackgroundClipRect);
@@ -483,7 +483,9 @@ void CompositedLayerMapping::UpdateContentsOpaque() {
       // this for solid color backgrounds the answer will be the same.
       scrolling_contents_layer_->SetContentsOpaque(
           owning_layer_.BackgroundIsKnownToBeOpaqueInRect(
-              ToLayoutBox(GetLayoutObject()).PhysicalPaddingBoxRect(),
+              ToLayoutBox(GetLayoutObject())
+                  .PhysicalPaddingBoxRect()
+                  .ToLayoutRect(),
               should_check_children));
 
       if (GetLayoutObject().GetBackgroundPaintLocation() &
@@ -954,7 +956,9 @@ void CompositedLayerMapping::ComputeBoundsOfOwningLayer(
   LayoutPoint local_representative_point_for_fragmentation;
   if (owning_layer_.GetLayoutObject().IsLayoutInline()) {
     local_representative_point_for_fragmentation =
-        ToLayoutInline(owning_layer_.GetLayoutObject()).FirstLineBoxTopLeft();
+        ToLayoutInline(owning_layer_.GetLayoutObject())
+            .FirstLineBoxTopLeft()
+            .ToLayoutPoint();
   }
   // Blink will already have applied any necessary offset for sticky positioned
   // elements. If the compositor is handling sticky offsets for this layer, we
@@ -1583,7 +1587,8 @@ void CompositedLayerMapping::UpdateChildContainmentLayerGeometry() {
   } else {
     IntRect clipping_box = PixelSnappedIntRect(
         ToLayoutBox(GetLayoutObject())
-            .ClippingRect(LayoutPoint(SubpixelAccumulation())));
+            .ClippingRect(PhysicalOffsetToBeNoop(SubpixelAccumulation()))
+            .ToLayoutRect());
     child_containment_layer_->SetSize(gfx::Size(clipping_box.Size()));
     child_containment_layer_->SetOffsetFromLayoutObject(
         ToIntSize(clipping_box.Location()));
@@ -2945,7 +2950,7 @@ LayoutSize CompositedLayerMapping::ContentOffsetInCompositingLayer() const {
 }
 
 LayoutRect CompositedLayerMapping::ContentsBox() const {
-  LayoutRect contents_box = ContentsRect(GetLayoutObject());
+  LayoutRect contents_box = ContentsRect(GetLayoutObject()).ToLayoutRect();
   contents_box.Move(ContentOffsetInCompositingLayer());
   return contents_box;
 }

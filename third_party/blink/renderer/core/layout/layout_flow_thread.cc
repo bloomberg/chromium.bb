@@ -136,7 +136,8 @@ void LayoutFlowThread::AbsoluteQuadsForDescendant(const LayoutBox& descendant,
   LayoutPoint offset_from_flow_thread;
   for (const LayoutObject* object = &descendant; object != this;) {
     const LayoutObject* container = object->Container();
-    offset_from_flow_thread += object->OffsetFromContainer(container);
+    offset_from_flow_thread +=
+        object->OffsetFromContainer(container).ToLayoutSize();
     object = container;
   }
   LayoutRect bounding_rect_in_flow_thread(offset_from_flow_thread,

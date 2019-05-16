@@ -170,7 +170,7 @@ LayoutUnit LayoutVideo::MinimumReplacedHeight() const {
   return LayoutReplaced::MinimumReplacedHeight();
 }
 
-LayoutRect LayoutVideo::ReplacedContentRect() const {
+PhysicalRect LayoutVideo::ReplacedContentRect() const {
   if (ShouldDisplayVideo()) {
     // Video codecs may need to restart from an I-frame when the output is
     // resized. Round size in advance to avoid 1px snap difference.

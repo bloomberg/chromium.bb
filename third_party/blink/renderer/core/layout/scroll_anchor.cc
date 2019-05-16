@@ -97,7 +97,8 @@ static LayoutRect RelativeBounds(const LayoutObject* layout_object,
       local_bounds.ShiftMaxYEdgeTo(max_y);
     }
   } else if (layout_object->IsText()) {
-    LayoutRect bounds = ToLayoutText(layout_object)->PhysicalLinesBoundingBox();
+    LayoutRect bounds =
+        ToLayoutText(layout_object)->PhysicalLinesBoundingBox().ToLayoutRect();
     if (UNLIKELY(layout_object->HasFlippedBlocksWritingMode()))
       layout_object->ContainingBlock()->FlipForWritingMode(bounds);
     local_bounds.Unite(bounds);

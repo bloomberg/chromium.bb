@@ -42,7 +42,7 @@ void ScrollbarPainter::PaintIntoRect(
   // TODO(crbug.com/856802): Move this into PaintPropertyTreeBuilder.
   layout_scrollbar_part.GetMutableForPainting().FirstFragment().SetPaintOffset(
       (scrollbar ? scrollbar->Location() : LayoutPoint()) +
-      layout_scrollbar_part.PhysicalLocation());
+      layout_scrollbar_part.PhysicalLocation().ToLayoutPoint());
 
   PaintInfo paint_info(graphics_context, PixelSnappedIntRect(rect),
                        PaintPhase::kForeground, kGlobalPaintNormalPhase,

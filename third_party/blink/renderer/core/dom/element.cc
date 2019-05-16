@@ -820,7 +820,7 @@ int Element::clientWidth() {
         GetDocument().UpdateStyleAndLayoutForNode(this);
       if (GetDocument().GetPage()->GetSettings().GetForceZeroLayoutHeight())
         return AdjustForAbsoluteZoom::AdjustLayoutUnit(
-                   layout_view->OverflowClipRect(LayoutPoint()).Width(),
+                   layout_view->OverflowClipRect(PhysicalOffset()).Width(),
                    layout_view->StyleRef())
             .Round();
       return AdjustForAbsoluteZoom::AdjustLayoutUnit(
@@ -856,7 +856,7 @@ int Element::clientHeight() {
         GetDocument().UpdateStyleAndLayoutForNode(this);
       if (GetDocument().GetPage()->GetSettings().GetForceZeroLayoutHeight())
         return AdjustForAbsoluteZoom::AdjustLayoutUnit(
-                   layout_view->OverflowClipRect(LayoutPoint()).Height(),
+                   layout_view->OverflowClipRect(PhysicalOffset()).Height(),
                    layout_view->StyleRef())
             .Round();
       return AdjustForAbsoluteZoom::AdjustLayoutUnit(
@@ -1254,10 +1254,10 @@ IntRect Element::VisibleBoundsInVisualViewport() const {
 
   // We don't use absoluteBoundingBoxRect() because it can return an IntRect
   // larger the actual size by 1px. crbug.com/470503
-  LayoutRect rect(
+  PhysicalRect rect(
       RoundedIntRect(GetLayoutObject()->AbsoluteBoundingBoxFloatRect()));
-  LayoutRect frame_clip_rect =
-      GetDocument().View()->GetLayoutView()->ClippingRect(LayoutPoint());
+  PhysicalRect frame_clip_rect =
+      GetDocument().View()->GetLayoutView()->ClippingRect(PhysicalOffset());
   rect.Intersect(frame_clip_rect);
 
   // MapToVisualRectInAncestorSpace, called with a null ancestor argument,

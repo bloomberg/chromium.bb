@@ -141,8 +141,7 @@ TEST_F(
   EXPECT_EQ(layout_object->ContainingBlockForFixedPosition(), GetLayoutView());
   auto offset =
       layout_object->OffsetFromContainer(containing_blocklayout_object);
-  EXPECT_EQ(offset.Width().ToInt(), 2);
-  EXPECT_EQ(offset.Height().ToInt(), 10);
+  EXPECT_EQ(PhysicalOffset(2, 10), offset);
 }
 
 TEST_F(LayoutObjectTest, ContainingBlockFixedLayoutObjectInTransformedDiv) {
@@ -216,8 +215,7 @@ TEST_F(
       EPosition::kFixed));
 
   auto offset = layout_object->OffsetFromContainer(span_layout_object);
-  EXPECT_EQ(offset.Width().ToInt(), 20);
-  EXPECT_EQ(offset.Height().ToInt(), 10);
+  EXPECT_EQ(PhysicalOffset(20, 10), offset);
 
   // Sanity check: Make sure we don't generate anonymous objects.
   EXPECT_EQ(nullptr, body_layout_object->SlowFirstChild()->NextSibling());
@@ -282,10 +280,10 @@ TEST_F(LayoutObjectTest, InlineFloatMismatch) {
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("span"));
   if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
     // 10px for margin.
-    EXPECT_EQ(LayoutSize(10, 0), float_obj->OffsetFromAncestor(span));
+    EXPECT_EQ(PhysicalOffset(10, 0), float_obj->OffsetFromAncestor(span));
   } else {
     // 10px for margin, -40px because float is to the left of the span.
-    EXPECT_EQ(LayoutSize(-30, 0), float_obj->OffsetFromAncestor(span));
+    EXPECT_EQ(PhysicalOffset(-30, 0), float_obj->OffsetFromAncestor(span));
   }
 }
 
@@ -535,8 +533,8 @@ TEST_F(LayoutObjectTest, VisualRect) {
     MOCK_CONST_METHOD0(VisualRectRespectsVisibility, bool());
 
    private:
-    LayoutRect LocalVisualRectIgnoringVisibility() const override {
-      return LayoutRect(10, 10, 20, 20);
+    PhysicalRect LocalVisualRectIgnoringVisibility() const override {
+      return PhysicalRect(10, 10, 20, 20);
     }
     const char* GetName() const final { return "MockLayoutObject"; }
     void UpdateLayout() final {}
@@ -548,16 +546,16 @@ TEST_F(LayoutObjectTest, VisualRect) {
   MockLayoutObject mock_object;
   auto style = ComputedStyle::Create();
   mock_object.SetStyle(style.get());
-  EXPECT_EQ(LayoutRect(10, 10, 20, 20), mock_object.LocalVisualRect());
-  EXPECT_EQ(LayoutRect(10, 10, 20, 20), mock_object.LocalVisualRect());
+  EXPECT_EQ(PhysicalRect(10, 10, 20, 20), mock_object.LocalVisualRect());
+  EXPECT_EQ(PhysicalRect(10, 10, 20, 20), mock_object.LocalVisualRect());
 
   style->SetVisibility(EVisibility::kHidden);
   EXPECT_CALL(mock_object, VisualRectRespectsVisibility())
       .WillOnce(Return(true));
-  EXPECT_EQ(LayoutRect(), mock_object.LocalVisualRect());
+  EXPECT_TRUE(mock_object.LocalVisualRect().IsEmpty());
   EXPECT_CALL(mock_object, VisualRectRespectsVisibility())
       .WillOnce(Return(false));
-  EXPECT_EQ(LayoutRect(10, 10, 20, 20), mock_object.LocalVisualRect());
+  EXPECT_EQ(PhysicalRect(10, 10, 20, 20), mock_object.LocalVisualRect());
 }
 
 TEST_F(LayoutObjectTest, DisplayContentsInlineWrapper) {

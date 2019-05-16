@@ -47,7 +47,7 @@ class LayoutSVGModelObject : public LayoutObject {
 
   bool IsChildAllowed(LayoutObject*, const ComputedStyle&) const override;
 
-  LayoutRect VisualRectInDocument(
+  PhysicalRect VisualRectInDocument(
       VisualRectFlags = kDefaultVisualRectFlags) const override;
 
   FloatRect VisualRectInLocalSVGCoordinates() const override {

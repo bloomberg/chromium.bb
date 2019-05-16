@@ -334,7 +334,8 @@ ObjectPaintInvalidatorWithContext::InvalidatePartialRect(
   if (IsFullPaintInvalidationReason(reason))
     return reason;
 
-  auto local_rect = object_.PartialInvalidationLocalRect();
+  auto local_rect =
+      PhysicalRectToBeNoop(object_.PartialInvalidationLocalRect());
   if (local_rect.IsEmpty())
     return reason;
 

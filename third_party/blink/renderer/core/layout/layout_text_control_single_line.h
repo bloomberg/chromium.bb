@@ -48,7 +48,7 @@ class LayoutTextControlSingleLine : public LayoutTextControl {
 
  private:
   bool HasControlClip() const final;
-  LayoutRect ControlClipRect(const LayoutPoint&) const final;
+  PhysicalRect ControlClipRect(const PhysicalOffset&) const final;
   bool IsOfType(LayoutObjectType type) const override {
     return type == kLayoutObjectTextField || LayoutTextControl::IsOfType(type);
   }

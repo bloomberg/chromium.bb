@@ -2278,9 +2278,7 @@ TEST_F(CompositedLayerMappingTest,
 
   // On the blink side, a sticky offset of (0, 100) should have been applied to
   // the sticky element.
-  LayoutSize blink_sticky_offset = sticky->StickyPositionOffset();
-  EXPECT_FLOAT_EQ(0, blink_sticky_offset.Width());
-  EXPECT_FLOAT_EQ(100, blink_sticky_offset.Height());
+  EXPECT_EQ(PhysicalOffset(0, 100), sticky->StickyPositionOffset());
 
   // On the CompositedLayerMapping side however, the offset should have been
   // removed so that the compositor can take care of it.

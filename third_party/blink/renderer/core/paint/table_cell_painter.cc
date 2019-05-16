@@ -85,7 +85,7 @@ void TableCellPainter::PaintBoxDecorationBackground(
   if (box_decoration_data.IsPaintingScrollingBackground()) {
     // See BoxPainter::PaintBoxDecorationBackground() for explanations.
     // TODO(wangxianzhu): Perhaps we can merge them for CompositeAfterPaint.
-    paint_rect = layout_table_cell_.PhysicalLayoutOverflowRect();
+    paint_rect = layout_table_cell_.PhysicalLayoutOverflowRect().ToLayoutRect();
     contents_paint_state.emplace(paint_info, paint_offset, layout_table_cell_);
     paint_rect.MoveBy(contents_paint_state->PaintOffset());
     paint_rect.Expand(layout_table_cell_.BorderBoxOutsets());

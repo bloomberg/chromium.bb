@@ -1542,18 +1542,18 @@ UChar32 LayoutText::LastCharacterAfterWhitespaceCollapsing() const {
   return 0;
 }
 
-LayoutPoint LayoutText::FirstLineBoxTopLeft() const {
+PhysicalOffset LayoutText::FirstLineBoxTopLeft() const {
   if (const NGPaintFragment* fragment = FirstInlineFragment())
-    return fragment->InlineOffsetToContainerBox().ToLayoutPoint();
+    return fragment->InlineOffsetToContainerBox();
   if (const auto* text_box = FirstTextBox()) {
     auto location = text_box->Location();
     if (UNLIKELY(HasFlippedBlocksWritingMode())) {
       location = ContainingBlock()->FlipForWritingMode(location);
       location.Move(-text_box->Width(), LayoutUnit());
     }
-    return location;
+    return PhysicalOffset(location);
   }
-  return LayoutPoint();
+  return PhysicalOffset();
 }
 
 bool LayoutText::CanOptimizeSetText() const {
@@ -1961,7 +1961,7 @@ float LayoutText::Width(unsigned from,
   return w;
 }
 
-LayoutRect LayoutText::PhysicalLinesBoundingBox() const {
+PhysicalRect LayoutText::PhysicalLinesBoundingBox() const {
   if (const NGPhysicalBoxFragment* box_fragment =
           ContainingBlockFlowFragment()) {
     PhysicalRect bounding_box;
@@ -1969,7 +1969,7 @@ LayoutRect LayoutText::PhysicalLinesBoundingBox() const {
         NGInlineFragmentTraversal::SelfFragmentsOf(*box_fragment, this);
     for (const auto& child : children)
       bounding_box.UniteIfNonZero(child.RectInContainerBox());
-    return bounding_box.ToLayoutRect();
+    return bounding_box;
   }
 
   LayoutRect result;
@@ -2000,15 +2000,16 @@ LayoutRect LayoutText::PhysicalLinesBoundingBox() const {
 
   if (UNLIKELY(HasFlippedBlocksWritingMode()))
     ContainingBlock()->FlipForWritingMode(result);
-  return result;
+  return PhysicalRect(result);
 }
 
 LayoutRect LayoutText::VisualOverflowRect() const {
-  if (base::Optional<LayoutRect> rect =
+  if (base::Optional<PhysicalRect> physical_rect =
           NGPaintFragment::LocalVisualRectFor(*this)) {
+    LayoutRect rect = physical_rect->ToLayoutRect();
     if (UNLIKELY(HasFlippedBlocksWritingMode()))
-      ContainingBlock()->FlipForWritingMode(*rect);
-    return *rect;
+      ContainingBlock()->FlipForWritingMode(rect);
+    return rect;
   }
 
   if (!FirstTextBox())
@@ -2055,26 +2056,26 @@ LayoutRect LayoutText::VisualOverflowRect() const {
   return rect;
 }
 
-LayoutRect LayoutText::LocalVisualRectIgnoringVisibility() const {
+PhysicalRect LayoutText::LocalVisualRectIgnoringVisibility() const {
   if (const auto& rect = NGPaintFragment::LocalVisualRectFor(*this))
     return UnionRect(*rect, LocalSelectionVisualRect());
 
   auto rect = VisualOverflowRect();
   if (UNLIKELY(HasFlippedBlocksWritingMode()))
     ContainingBlock()->FlipForWritingMode(rect);
-  return UnionRect(rect, LocalSelectionVisualRect());
+  return UnionRect(PhysicalRect(rect), LocalSelectionVisualRect());
 }
 
-LayoutRect LayoutText::LocalSelectionVisualRect() const {
+PhysicalRect LayoutText::LocalSelectionVisualRect() const {
   DCHECK(!NeedsLayout());
 
   if (!IsSelected())
-    return LayoutRect();
+    return PhysicalRect();
 
   const FrameSelection& frame_selection = GetFrame()->Selection();
   const auto fragments = NGPaintFragment::InlineFragmentsFor(this);
   if (fragments.IsInLayoutNGInlineFormattingContext()) {
-    LayoutRect rect;
+    PhysicalRect rect;
     for (const NGPaintFragment* fragment : fragments) {
       const LayoutSelectionStatus status =
           frame_selection.ComputeLayoutSelectionStatus(*fragment);
@@ -2083,7 +2084,7 @@ LayoutRect LayoutText::LocalSelectionVisualRect() const {
       PhysicalRect fragment_rect =
           fragment->ComputeLocalSelectionRectForText(status);
       fragment_rect.offset += fragment->InlineOffsetToContainerBox();
-      rect.Unite(fragment_rect.ToLayoutRect());
+      rect.Unite(fragment_rect);
     }
     return rect;
   }
@@ -2101,7 +2102,7 @@ LayoutRect LayoutText::LocalSelectionVisualRect() const {
 
   if (UNLIKELY(HasFlippedBlocksWritingMode()))
     ContainingBlock()->FlipForWritingMode(rect);
-  return rect;
+  return PhysicalRect(rect);
 }
 
 const NGOffsetMapping* LayoutText::GetNGOffsetMapping() const {
@@ -2419,8 +2420,8 @@ void LayoutText::InvalidateDisplayItemClients(
   }
 }
 
-LayoutRect LayoutText::DebugRect() const {
-  return LayoutRect(EnclosingIntRect(PhysicalLinesBoundingBox()));
+PhysicalRect LayoutText::DebugRect() const {
+  return PhysicalRect(EnclosingIntRect(PhysicalLinesBoundingBox()));
 }
 
 NodeHolder LayoutText::EnsureNodeHolder() {

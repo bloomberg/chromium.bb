@@ -28,12 +28,12 @@
 
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/geometry/physical_offset.h"
 #include "third_party/blink/renderer/core/layout/layout_geometry_map_step.h"
 #include "third_party/blink/renderer/core/layout/map_coordinates_flags.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/geometry/float_quad.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
-#include "third_party/blink/renderer/platform/geometry/layout_size.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -83,13 +83,13 @@ class CORE_EXPORT LayoutGeometryMap {
   // ancestor must be its container() or some stacking context between the
   // layoutObject and its container.
   void Push(const LayoutObject*,
-            const LayoutSize&,
+            const PhysicalOffset&,
             GeometryInfoFlags = 0,
-            LayoutSize offset_for_fixed_position = LayoutSize());
+            PhysicalOffset offset_for_fixed_position = PhysicalOffset());
   void Push(const LayoutObject*,
             const TransformationMatrix&,
             GeometryInfoFlags = 0,
-            LayoutSize offset_for_fixed_position = LayoutSize());
+            PhysicalOffset offset_for_fixed_position = PhysicalOffset());
 
  private:
   void PopMappingsToAncestor(const LayoutBoxModelObject*);
@@ -118,7 +118,7 @@ class CORE_EXPORT LayoutGeometryMap {
   int transformed_steps_count_;
   int fixed_steps_count_;
   LayoutGeometryMapSteps mapping_;
-  LayoutSize accumulated_offset_;
+  PhysicalOffset accumulated_offset_;
   MapCoordinatesFlags map_coordinates_flags_;
 
   DISALLOW_COPY_AND_ASSIGN(LayoutGeometryMap);

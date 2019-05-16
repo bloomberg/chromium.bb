@@ -240,7 +240,7 @@ class CORE_EXPORT LayoutMultiColumnSet final : public LayoutBlockFlow {
   LayoutMultiColumnSet(LayoutFlowThread*);
 
  private:
-  LayoutRect LocalVisualRectIgnoringVisibility() const final;
+  PhysicalRect LocalVisualRectIgnoringVisibility() const final;
 
   void InsertedIntoTree() final;
   void WillBeRemovedFromTree() final;

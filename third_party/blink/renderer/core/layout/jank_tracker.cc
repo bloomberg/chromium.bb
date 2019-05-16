@@ -223,7 +223,7 @@ double JankTracker::SubframeWeightingFactor() const {
   GeometryMapper::LocalToAncestorVisualRect(
       frame_view_->GetLayoutView()->FirstFragment().LocalBorderBoxProperties(),
       PropertyTreeState::Root(), subframe_cliprect);
-  LayoutRect subframe_rect = LayoutRect(subframe_cliprect.Rect());
+  auto subframe_rect = PhysicalRect::EnclosingRect(subframe_cliprect.Rect());
 
   // Intersect with the portion of the local root that overlaps the main frame.
   frame.LocalFrameRoot().View()->MapToVisualRectInTopFrameSpace(subframe_rect);

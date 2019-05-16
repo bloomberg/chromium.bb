@@ -61,7 +61,7 @@ void BoxPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info,
     // For the case where we are painting the background into the scrolling
     // contents layer of a composited scroller we need to include the entire
     // overflow rect.
-    paint_rect = layout_box_.PhysicalLayoutOverflowRect();
+    paint_rect = layout_box_.PhysicalLayoutOverflowRect().ToLayoutRect();
     contents_paint_state.emplace(paint_info, paint_offset, layout_box_);
     paint_rect.MoveBy(contents_paint_state->PaintOffset());
 

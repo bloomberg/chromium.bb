@@ -92,7 +92,7 @@ void LayoutReplaced::UpdateLayout() {
   DCHECK(NeedsLayout());
   LayoutAnalyzer::Scope analyzer(*this);
 
-  LayoutRect old_content_rect = ReplacedContentRect();
+  PhysicalRect old_content_rect = ReplacedContentRect();
 
   SetHeight(MinimumReplacedHeight());
 
@@ -591,9 +591,9 @@ void LayoutReplaced::ComputePositionedLogicalHeight(
   computed_values.position_ = logical_top_pos;
 }
 
-LayoutRect LayoutReplaced::ComputeObjectFit(
+PhysicalRect LayoutReplaced::ComputeObjectFit(
     const LayoutSize* overridden_intrinsic_size) const {
-  LayoutRect content_rect = PhysicalContentBoxRect();
+  PhysicalRect content_rect = PhysicalContentBoxRect();
   EObjectFit object_fit = StyleRef().GetObjectFit();
 
   if (object_fit == EObjectFit::kFill &&
@@ -612,8 +612,8 @@ LayoutRect LayoutReplaced::ComputeObjectFit(
   if (!intrinsic_size.Width() || !intrinsic_size.Height())
     return content_rect;
 
-  LayoutSize scaled_intrinsic_size = intrinsic_size;
-  LayoutRect final_rect = content_rect;
+  PhysicalSize scaled_intrinsic_size(intrinsic_size);
+  PhysicalRect final_rect = content_rect;
   switch (object_fit) {
     case EObjectFit::kScaleDown:
       // Srcset images have an intrinsic size depending on their destination,
@@ -626,16 +626,16 @@ LayoutRect LayoutReplaced::ComputeObjectFit(
       FALLTHROUGH;
     case EObjectFit::kContain:
     case EObjectFit::kCover:
-      final_rect.SetSize(final_rect.Size().FitToAspectRatio(
+      final_rect.size = final_rect.size.FitToAspectRatio(
           scaled_intrinsic_size, object_fit == EObjectFit::kCover
                                      ? kAspectRatioFitGrow
-                                     : kAspectRatioFitShrink));
+                                     : kAspectRatioFitShrink);
       if (object_fit != EObjectFit::kScaleDown ||
-          final_rect.Width() <= scaled_intrinsic_size.Width())
+          final_rect.Width() <= scaled_intrinsic_size.width)
         break;
       FALLTHROUGH;
     case EObjectFit::kNone:
-      final_rect.SetSize(scaled_intrinsic_size);
+      final_rect.size = scaled_intrinsic_size;
       break;
     case EObjectFit::kFill:
       break;
@@ -649,18 +649,18 @@ LayoutRect LayoutReplaced::ComputeObjectFit(
   LayoutUnit y_offset =
       MinimumValueForLength(StyleRef().ObjectPosition().Y(),
                             content_rect.Height() - final_rect.Height());
-  final_rect.Move(x_offset, y_offset);
+  final_rect.Move(PhysicalOffset(x_offset, y_offset));
 
   return final_rect;
 }
 
-LayoutRect LayoutReplaced::ReplacedContentRect() const {
+PhysicalRect LayoutReplaced::ReplacedContentRect() const {
   return ComputeObjectFit();
 }
 
-LayoutRect LayoutReplaced::PreSnappedRectForPersistentSizing(LayoutRect rect) {
-  rect.SetSize(LayoutSize(RoundedIntSize(rect.Size())));
-  return rect;
+PhysicalRect LayoutReplaced::PreSnappedRectForPersistentSizing(
+    const PhysicalRect& rect) {
+  return PhysicalRect(rect.offset, PhysicalSize(RoundedIntSize(rect.size)));
 }
 
 void LayoutReplaced::ComputeIntrinsicSizingInfo(
@@ -987,28 +987,25 @@ PositionWithAffinity LayoutReplaced::PositionForPoint(
   return LayoutBox::PositionForPoint(point);
 }
 
-LayoutRect LayoutReplaced::LocalSelectionVisualRect() const {
+PhysicalRect LayoutReplaced::LocalSelectionVisualRect() const {
   if (GetSelectionState() == SelectionState::kNone ||
       GetSelectionState() == SelectionState::kContain) {
-    return LayoutRect();
+    return PhysicalRect();
   }
 
   if (IsInline()) {
     const auto fragments = NGPaintFragment::InlineFragmentsFor(this);
     if (fragments.IsInLayoutNGInlineFormattingContext()) {
-      LayoutRect rect;
-      for (const NGPaintFragment* fragment : fragments) {
-        const PhysicalRect fragment_rect =
-            fragment->ComputeLocalSelectionRectForReplaced();
-        rect.Unite(fragment_rect.ToLayoutRect());
-      }
+      PhysicalRect rect;
+      for (const NGPaintFragment* fragment : fragments)
+        rect.Unite(fragment->ComputeLocalSelectionRectForReplaced());
       return rect;
     }
   }
 
   if (!InlineBoxWrapper()) {
     // We're a block-level replaced element.  Just return our own dimensions.
-    return LayoutRect(LayoutPoint(), Size());
+    return PhysicalRect(PhysicalOffset(), Size());
   }
 
   RootInlineBox& root = InlineBoxWrapper()->Root();
@@ -1016,11 +1013,12 @@ LayoutRect LayoutReplaced::LocalSelectionVisualRect() const {
       root.Block().StyleRef().IsFlippedBlocksWritingMode()
           ? InlineBoxWrapper()->LogicalBottom() - root.SelectionBottom()
           : root.SelectionTop() - InlineBoxWrapper()->LogicalTop();
-  if (root.Block().StyleRef().IsHorizontalWritingMode())
-    return LayoutRect(LayoutUnit(), new_logical_top, Size().Width(),
-                      root.SelectionHeight());
-  return LayoutRect(new_logical_top, LayoutUnit(), root.SelectionHeight(),
-                    Size().Height());
+  if (root.Block().StyleRef().IsHorizontalWritingMode()) {
+    return PhysicalRect(LayoutUnit(), new_logical_top, Size().Width(),
+                        root.SelectionHeight());
+  }
+  return PhysicalRect(new_logical_top, LayoutUnit(), root.SelectionHeight(),
+                      Size().Height());
 }
 
 }  // namespace blink

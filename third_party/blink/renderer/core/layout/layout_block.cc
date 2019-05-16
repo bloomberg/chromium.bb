@@ -1301,7 +1301,7 @@ PositionWithAffinity LayoutBlock::PositionForPointRespectingEditingBoundaries(
     const LayoutPoint& point_in_parent_coordinates) const {
   LayoutPoint child_location = child.Location();
   if (child.IsInFlowPositioned())
-    child_location += child.OffsetForInFlowPosition();
+    child_location += child.OffsetForInFlowPosition().ToLayoutPoint();
 
   // FIXME: This is wrong if the child's writing-mode is different from the
   // parent's.

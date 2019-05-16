@@ -1445,8 +1445,9 @@ static LayoutPoint VisualOffsetFromPaintOffsetRoot(
   LayoutPoint result = child->VisualOffsetFromAncestor(painting_layer);
   if (!paint_offset_root->HasLayer() ||
       ToLayoutBoxModelObject(paint_offset_root)->Layer() != painting_layer) {
-    result.Move(-paint_offset_root->OffsetFromAncestor(
-        &painting_layer->GetLayoutObject()));
+    result.Move(-paint_offset_root
+                     ->OffsetFromAncestor(&painting_layer->GetLayoutObject())
+                     .ToLayoutSize());
   }
 
   // Convert the result into the space of the scrolling contents space.
@@ -1564,8 +1565,9 @@ void FragmentPaintPropertyTreeBuilder::UpdateOverflowClip() {
         LayoutRect content_rect =
             LayoutRect(context_.current.paint_offset, replaced.Size());
         if (replaced.IsVideo()) {
-          content_rect =
-              LayoutReplaced::PreSnappedRectForPersistentSizing(content_rect);
+          content_rect = LayoutReplaced::PreSnappedRectForPersistentSizing(
+                             PhysicalRectToBeNoop(content_rect))
+                             .ToLayoutRect();
         }
         // LayoutReplaced clips the foreground by rounded content box.
         state.clip_rect = replaced.StyleRef().GetRoundedInnerBorderFor(
@@ -1580,8 +1582,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateOverflowClip() {
           // could overflow by 1px due to pre-snapping. Adjust clip rect to
           // match pre-snapped box as a special case.
           FloatRect adjusted_rect = state.clip_rect.Rect();
-          adjusted_rect.SetSize(
-              FloatSize(replaced.ReplacedContentRect().Size()));
+          adjusted_rect.SetSize(FloatSize(replaced.ReplacedContentRect().size));
           state.clip_rect.SetRect(adjusted_rect);
         }
       } else if (object_.IsBox()) {
@@ -1683,7 +1684,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateReplacedContentTransform() {
               .TransformToPixelSnappedBorderBox(context_.current.paint_offset);
     } else if (object_.IsImage()) {
       const LayoutImage& layout_image = ToLayoutImage(object_);
-      LayoutRect layout_replaced_rect = layout_image.ReplacedContentRect();
+      LayoutRect layout_replaced_rect =
+          layout_image.ReplacedContentRect().ToLayoutRect();
       layout_replaced_rect.MoveBy(context_.current.paint_offset);
       IntRect replaced_rect = PixelSnappedIntRect(layout_replaced_rect);
       scoped_refptr<Image> image =
@@ -2078,7 +2080,7 @@ static LayoutRect BoundingBoxInPaginationContainer(
     // For non-SVG we can get a more accurate result with LocalVisualRect,
     // instead of falling back to the bounds of the enclosing block.
     if (!object.IsSVG()) {
-      local_bounds = object.LocalVisualRect();
+      local_bounds = object.LocalVisualRect().ToLayoutRect();
     } else {
       local_bounds = LayoutRect(SVGLayoutSupport::LocalVisualRect(object));
     }
@@ -2202,7 +2204,7 @@ void FragmentPaintPropertyTreeBuilder::UpdatePaintOffset() {
         break;
       case EPosition::kRelative:
         context_.current.paint_offset +=
-            box_model_object.OffsetForInFlowPosition();
+            box_model_object.OffsetForInFlowPosition().ToLayoutPoint();
         break;
       case EPosition::kAbsolute: {
         DCHECK(full_context_.container_for_absolute_position ==
@@ -2216,8 +2218,10 @@ void FragmentPaintPropertyTreeBuilder::UpdatePaintOffset() {
           DCHECK(container->CanContainAbsolutePositionObjects());
           DCHECK(box_model_object.IsBox());
           context_.current.paint_offset +=
-              ToLayoutInline(container)->OffsetForInFlowPositionedInline(
-                  ToLayoutBox(box_model_object));
+              ToLayoutInline(container)
+                  ->OffsetForInFlowPositionedInline(
+                      ToLayoutBox(box_model_object))
+                  .ToLayoutPoint();
         }
         break;
       }
@@ -2238,8 +2242,10 @@ void FragmentPaintPropertyTreeBuilder::UpdatePaintOffset() {
           DCHECK(container->CanContainFixedPositionObjects());
           DCHECK(box_model_object.IsBox());
           context_.current.paint_offset +=
-              ToLayoutInline(container)->OffsetForInFlowPositionedInline(
-                  ToLayoutBox(box_model_object));
+              ToLayoutInline(container)
+                  ->OffsetForInFlowPositionedInline(
+                      ToLayoutBox(box_model_object))
+                  .ToLayoutPoint();
         }
         break;
       }
@@ -2254,7 +2260,7 @@ void FragmentPaintPropertyTreeBuilder::UpdatePaintOffset() {
     // The containing block and other containers can be stored on
     // PaintPropertyTreeBuilderFragmentContext instead of recomputing them.
     context_.current.paint_offset.MoveBy(
-        ToLayoutBox(object_).PhysicalLocation());
+        ToLayoutBox(object_).PhysicalLocation().ToLayoutPoint());
 
     // This is a weird quirk that table cells paint as children of table rows,
     // but their location have the row's location baked-in.
@@ -2263,7 +2269,7 @@ void FragmentPaintPropertyTreeBuilder::UpdatePaintOffset() {
       LayoutObject* parent_row = object_.Parent();
       DCHECK(parent_row && parent_row->IsTableRow());
       context_.current.paint_offset.MoveBy(
-          -ToLayoutBox(parent_row)->PhysicalLocation());
+          -ToLayoutBox(parent_row)->PhysicalLocation().ToLayoutPoint());
     }
   }
 

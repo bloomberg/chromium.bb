@@ -51,9 +51,9 @@ bool FillsViewport(const Element& element) {
   // the parent is done to ensure consistent semantics with respect to how the
   // mobile URL bar affects layout, which isn't a concern for non-iframe
   // elements because those semantics will already be applied to the element.
-  LayoutRect rect = layout_box->IsLayoutIFrame()
-                        ? layout_box->PhysicalContentBoxRect()
-                        : layout_box->PhysicalPaddingBoxRect();
+  PhysicalRect rect = layout_box->IsLayoutIFrame()
+                          ? layout_box->PhysicalContentBoxRect()
+                          : layout_box->PhysicalPaddingBoxRect();
 
   FloatQuad quad = layout_box->LocalToAbsoluteQuad(FloatRect(rect));
 

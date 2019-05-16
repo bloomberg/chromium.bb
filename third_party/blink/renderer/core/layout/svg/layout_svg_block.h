@@ -76,7 +76,7 @@ class LayoutSVGBlock : public LayoutBlockFlow {
   // LayoutSVGBlock subclasses should use GetElement() instead.
   void GetNode() const = delete;
 
-  LayoutRect VisualRectInDocument(VisualRectFlags) const final;
+  PhysicalRect VisualRectInDocument(VisualRectFlags) const final;
 
   void UpdateFromStyle() final;
 

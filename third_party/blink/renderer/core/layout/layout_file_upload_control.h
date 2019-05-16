@@ -51,9 +51,9 @@ class CORE_EXPORT LayoutFileUploadControl final : public LayoutBlockFlow {
   int UploadButtonWidth();
 
   bool HasControlClip() const override { return true; }
-  LayoutRect ControlClipRect(const LayoutPoint&) const override;
-  LayoutRect OverflowClipRect(const LayoutPoint&,
-                              OverlayScrollbarClipBehavior) const override;
+  PhysicalRect ControlClipRect(const PhysicalOffset&) const override;
+  PhysicalRect OverflowClipRect(const PhysicalOffset&,
+                                OverlayScrollbarClipBehavior) const override;
 
   static const int kAfterButtonSpacing = 4;
 

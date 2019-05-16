@@ -336,15 +336,15 @@ void LayoutTableCell::SetOverrideLogicalHeightFromRowHeight(
   SetOverrideLogicalHeight(row_height);
 }
 
-LayoutSize LayoutTableCell::OffsetFromContainerInternal(
+PhysicalOffset LayoutTableCell::OffsetFromContainerInternal(
     const LayoutObject* o,
     bool ignore_scroll_offset) const {
   DCHECK_EQ(o, Container());
 
-  LayoutSize offset =
+  PhysicalOffset offset =
       LayoutBlockFlow::OffsetFromContainerInternal(o, ignore_scroll_offset);
   if (Parent())
-    offset -= ParentBox()->PhysicalLocationOffset();
+    offset -= ParentBox()->PhysicalLocation();
 
   return offset;
 }

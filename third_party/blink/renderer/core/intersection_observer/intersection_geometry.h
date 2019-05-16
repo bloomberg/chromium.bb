@@ -7,7 +7,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/dom_high_res_time_stamp.h"
-#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+#include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/platform/geometry/length.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -58,9 +58,9 @@ class CORE_EXPORT IntersectionGeometry {
     return flags_ & kShouldTrackFractionOfRoot;
   }
 
-  LayoutRect TargetRect() const { return target_rect_; }
-  LayoutRect IntersectionRect() const { return intersection_rect_; }
-  LayoutRect RootRect() const { return root_rect_; }
+  PhysicalRect TargetRect() const { return target_rect_; }
+  PhysicalRect IntersectionRect() const { return intersection_rect_; }
+  PhysicalRect RootRect() const { return root_rect_; }
 
   IntRect IntersectionIntRect() const {
     return PixelSnappedIntRect(intersection_rect_);
@@ -80,20 +80,20 @@ class CORE_EXPORT IntersectionGeometry {
                        Element& target_element,
                        const Vector<Length>& root_margin,
                        const Vector<float>& thresholds);
-  LayoutRect InitializeTargetRect(LayoutObject* target);
-  LayoutRect InitializeRootRect(LayoutObject* root,
-                                const Vector<Length>& margin);
-  void ApplyRootMargin(LayoutRect& rect, const Vector<Length>& margin);
+  PhysicalRect InitializeTargetRect(LayoutObject* target);
+  PhysicalRect InitializeRootRect(LayoutObject* root,
+                                  const Vector<Length>& margin);
+  void ApplyRootMargin(PhysicalRect& rect, const Vector<Length>& margin);
   bool ClipToRoot(LayoutObject* root,
                   LayoutObject* target,
-                  const LayoutRect& root_rect,
-                  LayoutRect& intersection_rect);
+                  const PhysicalRect& root_rect,
+                  PhysicalRect& intersection_rect);
   unsigned FirstThresholdGreaterThan(float ratio,
                                      const Vector<float>& thresholds) const;
 
-  LayoutRect target_rect_;
-  LayoutRect intersection_rect_;
-  LayoutRect root_rect_;
+  PhysicalRect target_rect_;
+  PhysicalRect intersection_rect_;
+  PhysicalRect root_rect_;
   unsigned flags_;
   double intersection_ratio_;
   unsigned threshold_index_;

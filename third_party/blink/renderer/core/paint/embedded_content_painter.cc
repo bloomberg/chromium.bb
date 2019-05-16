@@ -28,7 +28,7 @@ void EmbeddedContentPainter::PaintReplaced(const PaintInfo& paint_info,
 
   IntPoint paint_location(RoundedIntPoint(
       paint_offset +
-      layout_embedded_content_.ReplacedContentRect().Location()));
+      layout_embedded_content_.ReplacedContentRect().offset.ToLayoutPoint()));
 
   IntSize view_paint_offset =
       paint_location - embedded_content_view->FrameRect().Location();

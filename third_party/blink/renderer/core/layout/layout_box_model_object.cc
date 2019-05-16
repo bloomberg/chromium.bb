@@ -691,9 +691,9 @@ bool LayoutBoxModelObject::HasAutoHeightOrContainingBlockWithAutoHeight(
   return false;
 }
 
-LayoutSize LayoutBoxModelObject::RelativePositionOffset() const {
+PhysicalOffset LayoutBoxModelObject::RelativePositionOffset() const {
   DCHECK(IsRelPositioned());
-  LayoutSize offset = AccumulateInFlowPositionOffsets();
+  PhysicalOffset offset = AccumulateInFlowPositionOffsets();
 
   LayoutBlock* containing_block = ContainingBlock();
 
@@ -731,15 +731,15 @@ LayoutSize LayoutBoxModelObject::RelativePositionOffset() const {
   switch (writing_mode) {
     case WritingMode::kHorizontalTb:
       if (is_ltr)
-        offset.Expand(left.value(), LayoutUnit());
+        offset.left += left.value();
       else
-        offset.SetWidth(-right.value());
+        offset.left = -right.value();
       break;
     case WritingMode::kVerticalRl:
-      offset.SetWidth(-right.value());
+      offset.left = -right.value();
       break;
     case WritingMode::kVerticalLr:
-      offset.Expand(left.value(), LayoutUnit());
+      offset.left += left.value();
       break;
     // TODO(layout-dev): Sideways-lr and sideways-rl are not yet supported.
     default:
@@ -794,19 +794,19 @@ LayoutSize LayoutBoxModelObject::RelativePositionOffset() const {
     bottom = -top.value();
   switch (writing_mode) {
     case WritingMode::kHorizontalTb:
-      offset.Expand(LayoutUnit(), top.value());
+      offset.top += top.value();
       break;
     case WritingMode::kVerticalRl:
       if (is_ltr)
-        offset.Expand(LayoutUnit(), top.value());
+        offset.top += top.value();
       else
-        offset.SetHeight(-bottom.value());
+        offset.top = -bottom.value();
       break;
     case WritingMode::kVerticalLr:
       if (is_ltr)
-        offset.Expand(LayoutUnit(), top.value());
+        offset.top += top.value();
       else
-        offset.SetHeight(-bottom.value());
+        offset.top = -bottom.value();
       break;
     // TODO(layout-dev): Sideways-lr and sideways-rl are not yet supported.
     default:
@@ -1047,18 +1047,18 @@ FloatRect LayoutBoxModelObject::ComputeStickyConstrainingRect() const {
   return constraining_rect;
 }
 
-LayoutSize LayoutBoxModelObject::StickyPositionOffset() const {
+PhysicalOffset LayoutBoxModelObject::StickyPositionOffset() const {
   const PaintLayer* ancestor_overflow_layer = Layer()->AncestorOverflowLayer();
   // TODO: Force compositing input update if we ask for offset before
   // compositing inputs have been computed?
   if (!ancestor_overflow_layer || !ancestor_overflow_layer->GetScrollableArea())
-    return LayoutSize();
+    return PhysicalOffset();
 
   StickyConstraintsMap& constraints_map =
       ancestor_overflow_layer->GetScrollableArea()->GetStickyConstraintsMap();
   auto it = constraints_map.find(Layer());
   if (it == constraints_map.end())
-    return LayoutSize();
+    return PhysicalOffset();
   StickyPositionScrollingConstraints* constraints = &it->value;
 
   // The sticky offset is physical, so we can just return the delta computed in
@@ -1066,19 +1066,19 @@ LayoutSize LayoutBoxModelObject::StickyPositionOffset() const {
   FloatRect constraining_rect = ComputeStickyConstrainingRect();
   constraining_rect.MoveBy(
       ancestor_overflow_layer->GetScrollableArea()->ScrollPosition());
-  return LayoutSize(
+  return PhysicalOffset::FromFloatSizeRound(
       constraints->ComputeStickyOffset(constraining_rect, constraints_map));
 }
 
-LayoutPoint LayoutBoxModelObject::AdjustedPositionRelativeTo(
-    const LayoutPoint& start_point,
+PhysicalOffset LayoutBoxModelObject::AdjustedPositionRelativeTo(
+    const PhysicalOffset& start_point,
     const Element* offset_parent) const {
   // If the element is the HTML body element or doesn't have a parent
   // return 0 and stop this algorithm.
   if (IsBody() || !Parent())
-    return LayoutPoint();
+    return PhysicalOffset();
 
-  LayoutPoint reference_point = start_point;
+  PhysicalOffset reference_point = start_point;
 
   // If the offsetParent is null, return the distance between the canvas origin
   // and the left/top border edge of the element and stop this algorithm.
@@ -1089,7 +1089,7 @@ LayoutPoint LayoutBoxModelObject::AdjustedPositionRelativeTo(
           offset_parent->GetLayoutBoxModelObject()) {
     if (!IsOutOfFlowPositioned()) {
       if (IsInFlowPositioned())
-        reference_point.Move(OffsetForInFlowPosition());
+        reference_point += OffsetForInFlowPosition();
 
       // Note that we may fail to find |offsetParent| while walking the
       // container chain, if |offsetParent| is an inline split into
@@ -1100,15 +1100,16 @@ LayoutPoint LayoutBoxModelObject::AdjustedPositionRelativeTo(
            current && current->GetNode() != offset_parent;
            current = current->Container()) {
         // FIXME: What are we supposed to do inside SVG content?
-        reference_point.Move(current->ColumnOffset(reference_point));
+        reference_point += PhysicalOffsetToBeNoop(
+            current->ColumnOffset(reference_point.ToLayoutPoint()));
         if (current->IsBox() && !current->IsTableRow())
-          reference_point.MoveBy(ToLayoutBox(current)->PhysicalLocation());
+          reference_point += ToLayoutBox(current)->PhysicalLocation();
       }
 
       if (offset_parent_object->IsBox() && offset_parent_object->IsBody() &&
           !offset_parent_object->IsPositioned()) {
-        reference_point.MoveBy(
-            ToLayoutBox(offset_parent_object)->PhysicalLocation());
+        reference_point +=
+            ToLayoutBox(offset_parent_object)->PhysicalLocation();
       }
     }
 
@@ -1128,34 +1129,35 @@ LayoutPoint LayoutBoxModelObject::AdjustedPositionRelativeTo(
     }
 
     if (offset_parent_object->IsBox() && !offset_parent_object->IsBody()) {
-      reference_point.Move(-ToLayoutBox(offset_parent_object)->BorderLeft(),
-                           -ToLayoutBox(offset_parent_object)->BorderTop());
+      reference_point -=
+          PhysicalOffset(ToLayoutBox(offset_parent_object)->BorderLeft(),
+                         ToLayoutBox(offset_parent_object)->BorderTop());
     }
   }
 
   return reference_point;
 }
 
-LayoutSize LayoutBoxModelObject::OffsetForInFlowPosition() const {
+PhysicalOffset LayoutBoxModelObject::OffsetForInFlowPosition() const {
   if (IsRelPositioned())
     return RelativePositionOffset();
 
   if (IsStickyPositioned())
     return StickyPositionOffset();
 
-  return LayoutSize();
+  return PhysicalOffset();
 }
 
 LayoutUnit LayoutBoxModelObject::OffsetLeft(const Element* parent) const {
   // Note that LayoutInline and LayoutBox override this to pass a different
   // startPoint to adjustedPositionRelativeTo.
-  return AdjustedPositionRelativeTo(LayoutPoint(), parent).X();
+  return AdjustedPositionRelativeTo(PhysicalOffset(), parent).left;
 }
 
 LayoutUnit LayoutBoxModelObject::OffsetTop(const Element* parent) const {
   // Note that LayoutInline and LayoutBox override this to pass a different
   // startPoint to adjustedPositionRelativeTo.
-  return AdjustedPositionRelativeTo(LayoutPoint(), parent).Y();
+  return AdjustedPositionRelativeTo(PhysicalOffset(), parent).top;
 }
 
 int LayoutBoxModelObject::PixelSnappedOffsetWidth(const Element* parent) const {
@@ -1292,22 +1294,21 @@ const LayoutObject* LayoutBoxModelObject::PushMappingToContainer(
   bool contains_fixed_position = CanContainFixedPositionObjects();
 
   TransformationMatrix adjustment_for_skipped_ancestor;
-  bool adjustment_for_skipped_ancestor_is_translate2D = true;
+  bool adjustment_for_skipped_ancestor_is_translate_2d = true;
   if (skip_info.AncestorSkipped()) {
     // There can't be a transform between container and ancestor_to_stop_at,
     // because transforms create containers, so it should be safe to just
     // subtract the delta between the container and ancestor_to_stop_at.
-    LayoutSize ancestor_offset =
+    PhysicalOffset ancestor_offset =
         ancestor_to_stop_at->OffsetFromAncestor(container);
-    adjustment_for_skipped_ancestor.Translate(
-        -ancestor_offset.Width().ToFloat(),
-        -ancestor_offset.Height().ToFloat());
+    adjustment_for_skipped_ancestor.Translate(-ancestor_offset.left.ToFloat(),
+                                              -ancestor_offset.top.ToFloat());
   }
 
-  LayoutSize container_offset = OffsetFromContainer(container);
+  PhysicalOffset container_offset = OffsetFromContainer(container);
   bool offset_depends_on_point;
   if (IsLayoutFlowThread()) {
-    container_offset += ColumnOffset(LayoutPoint());
+    container_offset += PhysicalOffsetToBeNoop(ColumnOffset(LayoutPoint()));
     offset_depends_on_point = true;
   } else {
     offset_depends_on_point =
@@ -1331,20 +1332,16 @@ const LayoutObject* LayoutBoxModelObject::PushMappingToContainer(
     GetTransformFromContainer(container, container_offset, t);
     adjustment_for_skipped_ancestor.Multiply(t);
     geometry_map.Push(this, adjustment_for_skipped_ancestor, flags,
-                      LayoutSize());
-  } else if (adjustment_for_skipped_ancestor_is_translate2D) {
-    container_offset.SetWidth(
-        container_offset.Width() +
-        LayoutUnit(adjustment_for_skipped_ancestor.M41()));
-    container_offset.SetHeight(
-        container_offset.Height() +
-        LayoutUnit(adjustment_for_skipped_ancestor.M42()));
-    geometry_map.Push(this, container_offset, flags, LayoutSize());
+                      PhysicalOffset());
+  } else if (adjustment_for_skipped_ancestor_is_translate_2d) {
+    container_offset += PhysicalOffset::FromFloatSizeRound(
+        adjustment_for_skipped_ancestor.To2DTranslation());
+    geometry_map.Push(this, container_offset, flags, PhysicalOffset());
   } else {
-    adjustment_for_skipped_ancestor.Translate(container_offset.Width(),
-                                              container_offset.Height());
+    adjustment_for_skipped_ancestor.Translate(container_offset.left,
+                                              container_offset.top);
     geometry_map.Push(this, adjustment_for_skipped_ancestor, flags,
-                      LayoutSize());
+                      PhysicalOffset());
   }
 
   return skip_info.AncestorSkipped() ? ancestor_to_stop_at : container;

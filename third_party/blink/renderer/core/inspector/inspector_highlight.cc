@@ -857,11 +857,11 @@ bool InspectorHighlight::BuildNodeQuads(Node* node,
     const int vertical_scrollbar_width = layout_box->VerticalScrollbarWidth();
     const int horizontal_scrollbar_height =
         layout_box->HorizontalScrollbarHeight();
-    content_box = layout_box->PhysicalContentBoxRect();
+    content_box = layout_box->PhysicalContentBoxRect().ToLayoutRect();
     content_box.SetWidth(content_box.Width() + vertical_scrollbar_width);
     content_box.SetHeight(content_box.Height() + horizontal_scrollbar_height);
 
-    padding_box = layout_box->PhysicalPaddingBoxRect();
+    padding_box = layout_box->PhysicalPaddingBoxRect().ToLayoutRect();
     padding_box.SetWidth(padding_box.Width() + vertical_scrollbar_width);
     padding_box.SetHeight(padding_box.Height() + horizontal_scrollbar_height);
 
@@ -876,7 +876,7 @@ bool InspectorHighlight::BuildNodeQuads(Node* node,
 
     // LayoutInline's bounding box includes paddings and borders, excludes
     // margins.
-    border_box = LayoutRect(layout_inline->PhysicalLinesBoundingBox());
+    border_box = layout_inline->PhysicalLinesBoundingBox().ToLayoutRect();
     padding_box = LayoutRect(border_box.X() + layout_inline->BorderLeft(),
                              border_box.Y() + layout_inline->BorderTop(),
                              border_box.Width() - layout_inline->BorderLeft() -

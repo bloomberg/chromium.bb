@@ -49,7 +49,7 @@ void LayoutMedia::UpdateLayout() {
 
   LayoutImage::UpdateLayout();
 
-  LayoutRect new_rect(PhysicalContentBoxRect());
+  auto new_rect = PhysicalContentBoxRect().ToLayoutRect();
 
   LayoutState state(*this);
 

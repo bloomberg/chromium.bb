@@ -197,10 +197,10 @@ bool LayoutTextControlSingleLine::HasControlClip() const {
   return true;
 }
 
-LayoutRect LayoutTextControlSingleLine::ControlClipRect(
-    const LayoutPoint& additional_offset) const {
-  LayoutRect clip_rect = PhysicalPaddingBoxRect();
-  clip_rect.MoveBy(additional_offset);
+PhysicalRect LayoutTextControlSingleLine::ControlClipRect(
+    const PhysicalOffset& additional_offset) const {
+  PhysicalRect clip_rect = PhysicalPaddingBoxRect();
+  clip_rect.offset += additional_offset;
   return clip_rect;
 }
 

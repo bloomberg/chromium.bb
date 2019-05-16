@@ -91,7 +91,7 @@ void PaintPropertyTreeBuilderTest::SetUp() {
 #define CHECK_VISUAL_RECT(expected, source_object, ancestor, slop_factor)      \
   do {                                                                         \
     if ((source_object)->HasLayer() && (ancestor)->HasLayer()) {               \
-      LayoutRect actual((source_object)->LocalVisualRect());                   \
+      auto actual = (source_object)->LocalVisualRect();                        \
       (source_object)                                                          \
           ->MapToVisualRectInAncestorSpace(ancestor, actual,                   \
                                            kUseGeometryMapper);                \
@@ -101,18 +101,18 @@ void PaintPropertyTreeBuilderTest::SetUp() {
                                                                                \
     if (slop_factor == LayoutUnit::Max())                                      \
       break;                                                                   \
-    LayoutRect slow_path_rect = (source_object)->LocalVisualRect();            \
+    auto slow_path_rect = (source_object)->LocalVisualRect();                  \
     (source_object)->MapToVisualRectInAncestorSpace(ancestor, slow_path_rect); \
     if (slop_factor) {                                                         \
-      LayoutRect inflated_expected = LayoutRect(expected);                     \
-      inflated_expected.Inflate(slop_factor);                                  \
+      auto inflated_expected = expected;                                       \
+      inflated_expected.Inflate(LayoutUnit(slop_factor));                      \
       SCOPED_TRACE(String::Format(                                             \
           "Slow path rect: %s, Expected: %s, Inflated expected: %s",           \
           slow_path_rect.ToString().Ascii().data(),                            \
           expected.ToString().Ascii().data(),                                  \
           inflated_expected.ToString().Ascii().data()));                       \
-      EXPECT_TRUE(LayoutRect(EnclosingIntRect(slow_path_rect))                 \
-                      .Contains(LayoutRect(expected)));                        \
+      EXPECT_TRUE(                                                             \
+          PhysicalRect(EnclosingIntRect(slow_path_rect)).Contains(expected));  \
       EXPECT_TRUE(inflated_expected.Contains(slow_path_rect));                 \
     } else {                                                                   \
       SCOPED_TRACE("Slow path: ");                                             \
@@ -170,7 +170,7 @@ TEST_P(PaintPropertyTreeBuilderTest, FixedPosition) {
   }
   EXPECT_EQ(FloatSize(0, -3), positioned_scroll_translation->Translation2D());
   EXPECT_EQ(nullptr, target1_properties->ScrollTranslation());
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(200, 150, 100, 100),
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(200, 150, 100, 100),
                           target1->GetLayoutObject(),
                           frame_view->GetLayoutView());
 
@@ -208,7 +208,7 @@ TEST_P(PaintPropertyTreeBuilderTest, FixedPosition) {
   EXPECT_EQ(FloatSize(0, -5), transformed_scroll_translation->Translation2D());
   EXPECT_EQ(nullptr, target2_properties->ScrollTranslation());
 
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(208, 153, 200, 100),
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(208, 153, 200, 100),
                           target2->GetLayoutObject(),
                           frame_view->GetLayoutView());
 }
@@ -243,7 +243,7 @@ TEST_P(PaintPropertyTreeBuilderTest, PositionAndScroll) {
   EXPECT_EQ(FloatRoundedRect(0, 0, 413, 317),
             scroller_properties->OverflowClip()->ClipRect());
   EXPECT_EQ(DocContentClip(), scroller_properties->OverflowClip()->Parent());
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(120, 340, 413, 317),
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(120, 340, 413, 317),
                           scroller->GetLayoutObject(),
                           frame_view->GetLayoutView());
 
@@ -262,7 +262,7 @@ TEST_P(PaintPropertyTreeBuilderTest, PositionAndScroll) {
             rel_pos_properties->OverflowClip()->ClipRect());
   EXPECT_EQ(scroller_properties->OverflowClip(),
             rel_pos_properties->OverflowClip()->Parent());
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(), rel_pos->GetLayoutObject(),
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(), rel_pos->GetLayoutObject(),
                           frame_view->GetLayoutView());
 
   // The absolute-positioned element should not be affected by non-positioned
@@ -279,7 +279,7 @@ TEST_P(PaintPropertyTreeBuilderTest, PositionAndScroll) {
   EXPECT_EQ(FloatRoundedRect(0, 0, 300, 400),
             abs_pos_properties->OverflowClip()->ClipRect());
   EXPECT_EQ(DocContentClip(), abs_pos_properties->OverflowClip()->Parent());
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(123, 456, 300, 400),
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(123, 456, 300, 400),
                           abs_pos->GetLayoutObject(),
                           frame_view->GetLayoutView());
 }
@@ -504,7 +504,7 @@ TEST_P(PaintPropertyTreeBuilderTest, DocScrollingTraditional) {
   EXPECT_EQ(FloatRoundedRect(0, 0, 800, 600), DocContentClip()->ClipRect());
   EXPECT_TRUE(DocContentClip()->Parent()->IsRoot());
 
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(8, 8, 784, 10000),
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(8, 8, 784, 10000),
                           GetDocument().body()->GetLayoutObject(),
                           frame_view->GetLayoutView());
 }
@@ -558,7 +558,7 @@ TEST_P(PaintPropertyTreeBuilderTest, Perspective) {
             inner_properties->PaintOffsetTranslation()->Translation2D());
   EXPECT_EQ(perspective_properties->Perspective(),
             inner_properties->PaintOffsetTranslation()->Parent());
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(50, 100, 100, 200),
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(50, 100, 100, 200),
                           inner->GetLayoutObject(),
                           GetDocument().View()->GetLayoutView());
 
@@ -625,7 +625,7 @@ TEST_P(PaintPropertyTreeBuilderTest, Transform) {
         transform_properties->Transform()->HasDirectCompositingReasons());
   }
 
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(173, 556, 400, 300),
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(173, 556, 400, 300),
                           transform->GetLayoutObject(),
                           GetDocument().View()->GetLayoutView());
 
@@ -770,7 +770,7 @@ TEST_P(PaintPropertyTreeBuilderTest, WillChangeTransform) {
         transform_properties->Transform()->HasDirectCompositingReasons());
   }
 
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(50, 100, 400, 300),
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(50, 100, 400, 300),
                           transform->GetLayoutObject(),
                           GetDocument().View()->GetLayoutView());
 
@@ -805,7 +805,7 @@ TEST_P(PaintPropertyTreeBuilderTest, WillChangeContents) {
   Element* transform = GetDocument().getElementById("transform");
   EXPECT_EQ(nullptr,
             transform->GetLayoutObject()->FirstFragment().PaintProperties());
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(50, 100, 400, 300),
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(50, 100, 400, 300),
                           transform->GetLayoutObject(),
                           GetDocument().View()->GetLayoutView());
 }
@@ -837,7 +837,7 @@ TEST_P(PaintPropertyTreeBuilderTest, RelativePositionInline) {
     EXPECT_EQ(DocScrollTranslation(),
               inline_block_properties->PaintOffsetTranslation()->Parent());
   }
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(135, 490, 10, 20),
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(135, 490, 10, 20),
                           inline_block->GetLayoutObject(),
                           GetDocument().View()->GetLayoutView());
 }
@@ -861,7 +861,7 @@ TEST_P(PaintPropertyTreeBuilderTest, NestedOpacityEffect) {
   const auto* data_without_opacity_properties =
       node_without_opacity->FirstFragment().PaintProperties();
   EXPECT_EQ(nullptr, data_without_opacity_properties);
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(8, 8, 100, 200), node_without_opacity,
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(8, 8, 100, 200), node_without_opacity,
                           GetDocument().View()->GetLayoutView());
 
   LayoutObject* child_with_opacity =
@@ -871,7 +871,7 @@ TEST_P(PaintPropertyTreeBuilderTest, NestedOpacityEffect) {
   EXPECT_EQ(0.5f, child_with_opacity_properties->Effect()->Opacity());
   // childWithOpacity is the root effect node.
   EXPECT_NE(nullptr, child_with_opacity_properties->Effect()->Parent());
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(8, 8, 50, 60), child_with_opacity,
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(8, 8, 50, 60), child_with_opacity,
                           GetDocument().View()->GetLayoutView());
 
   LayoutObject* grand_child_without_opacity =
@@ -880,7 +880,8 @@ TEST_P(PaintPropertyTreeBuilderTest, NestedOpacityEffect) {
           ->GetLayoutObject();
   EXPECT_EQ(nullptr,
             grand_child_without_opacity->FirstFragment().PaintProperties());
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(8, 8, 20, 30), grand_child_without_opacity,
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(8, 8, 20, 30),
+                          grand_child_without_opacity,
                           GetDocument().View()->GetLayoutView());
 
   LayoutObject* great_grand_child_with_opacity =
@@ -893,7 +894,7 @@ TEST_P(PaintPropertyTreeBuilderTest, NestedOpacityEffect) {
             great_grand_child_with_opacity_properties->Effect()->Opacity());
   EXPECT_EQ(child_with_opacity_properties->Effect(),
             great_grand_child_with_opacity_properties->Effect()->Parent());
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(8, 8, 10, 15),
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(8, 8, 10, 15),
                           great_grand_child_with_opacity,
                           GetDocument().View()->GetLayoutView());
 }
@@ -933,7 +934,7 @@ TEST_P(PaintPropertyTreeBuilderTest, TransformNodeDoesNotAffectEffectNodes) {
             node_with_opacity_properties->Effect()->OutputClip());
   EXPECT_NE(nullptr, node_with_opacity_properties->Effect()->Parent());
   EXPECT_EQ(nullptr, node_with_opacity_properties->Transform());
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(8, 8, 100, 200), node_with_opacity,
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(8, 8, 100, 200), node_with_opacity,
                           GetDocument().View()->GetLayoutView());
 
   LayoutObject* child_with_transform =
@@ -943,7 +944,7 @@ TEST_P(PaintPropertyTreeBuilderTest, TransformNodeDoesNotAffectEffectNodes) {
   EXPECT_EQ(nullptr, child_with_transform_properties->Effect());
   EXPECT_EQ(FloatSize(10, 10),
             child_with_transform_properties->Transform()->Translation2D());
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(18, 18, 50, 60), child_with_transform,
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(18, 18, 50, 60), child_with_transform,
                           GetDocument().View()->GetLayoutView());
 
   LayoutObject* grand_child_with_opacity =
@@ -956,7 +957,8 @@ TEST_P(PaintPropertyTreeBuilderTest, TransformNodeDoesNotAffectEffectNodes) {
   EXPECT_EQ(node_with_opacity_properties->Effect(),
             grand_child_with_opacity_properties->Effect()->Parent());
   EXPECT_EQ(nullptr, grand_child_with_opacity_properties->Transform());
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(18, 18, 20, 30), grand_child_with_opacity,
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(18, 18, 20, 30),
+                          grand_child_with_opacity,
                           GetDocument().View()->GetLayoutView());
 }
 
@@ -981,7 +983,7 @@ TEST_P(PaintPropertyTreeBuilderTest, EffectNodesAcrossStackingContext) {
             node_with_opacity_properties->Effect()->OutputClip());
   EXPECT_NE(nullptr, node_with_opacity_properties->Effect()->Parent());
   EXPECT_EQ(nullptr, node_with_opacity_properties->Transform());
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(8, 8, 100, 200), node_with_opacity,
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(8, 8, 100, 200), node_with_opacity,
                           GetDocument().View()->GetLayoutView());
 
   LayoutObject* child_with_stacking_context =
@@ -991,7 +993,8 @@ TEST_P(PaintPropertyTreeBuilderTest, EffectNodesAcrossStackingContext) {
   const ObjectPaintProperties* child_with_stacking_context_properties =
       child_with_stacking_context->FirstFragment().PaintProperties();
   EXPECT_EQ(nullptr, child_with_stacking_context_properties);
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(8, 8, 50, 60), child_with_stacking_context,
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(8, 8, 50, 60),
+                          child_with_stacking_context,
                           GetDocument().View()->GetLayoutView());
 
   LayoutObject* grand_child_with_opacity =
@@ -1004,7 +1007,7 @@ TEST_P(PaintPropertyTreeBuilderTest, EffectNodesAcrossStackingContext) {
   EXPECT_EQ(node_with_opacity_properties->Effect(),
             grand_child_with_opacity_properties->Effect()->Parent());
   EXPECT_EQ(nullptr, grand_child_with_opacity_properties->Transform());
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(8, 8, 20, 30), grand_child_with_opacity,
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(8, 8, 20, 30), grand_child_with_opacity,
                           GetDocument().View()->GetLayoutView());
 }
 
@@ -1659,7 +1662,7 @@ TEST_P(PaintPropertyTreeBuilderTest, ControlClip) {
   EXPECT_EQ(FloatRoundedRect(5, 5, 335, 113),
             button_properties->OverflowClip()->ClipRect());
   EXPECT_EQ(DocContentClip(), button_properties->OverflowClip()->Parent());
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(0, 0, 345, 123), &button,
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(0, 0, 345, 123), &button,
                           GetDocument().View()->GetLayoutView());
 }
 
@@ -1693,7 +1696,7 @@ TEST_P(PaintPropertyTreeBuilderTest, ControlClipInsideForeignObject) {
 
   EXPECT_EQ(FloatRoundedRect(2, 2, 341, 119),
             button_properties->OverflowClip()->ClipRect());
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(8, 8, 345, 123), &button,
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(8, 8, 345, 123), &button,
                           GetDocument().View()->GetLayoutView());
 }
 
@@ -1767,7 +1770,7 @@ TEST_P(PaintPropertyTreeBuilderTest, BorderRadiusClip) {
           FloatSize(6, 1)),   // (bot right) = max((56, 56) - (50, 55), (0, 0))
       border_radius_clip->ClipRect());
   EXPECT_EQ(DocContentClip(), border_radius_clip->Parent());
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(0, 0, 610, 500), &div,
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(0, 0, 610, 500), &div,
                           GetDocument().View()->GetLayoutView());
 }
 
@@ -1805,7 +1808,7 @@ TEST_P(PaintPropertyTreeBuilderTest, TransformNodesAcrossSubframes) {
       div_with_transform->FirstFragment().PaintProperties();
   EXPECT_EQ(TransformationMatrix().Translate3d(1, 2, 3),
             div_with_transform_properties->Transform()->Matrix());
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(1, 2, 800, 164), div_with_transform,
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(1, 2, 800, 164), div_with_transform,
                           frame_view->GetLayoutView());
 
   LayoutObject* inner_div_with_transform =
@@ -1817,7 +1820,7 @@ TEST_P(PaintPropertyTreeBuilderTest, TransformNodesAcrossSubframes) {
   auto* inner_div_transform = inner_div_with_transform_properties->Transform();
   EXPECT_EQ(TransformationMatrix().Translate3d(4, 5, 6),
             inner_div_transform->Matrix());
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(12, 14, 100, 145),
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(12, 14, 100, 145),
                           inner_div_with_transform,
                           frame_view->GetLayoutView());
 
@@ -2003,7 +2006,7 @@ TEST_P(PaintPropertyTreeBuilderTest, TransformNodesInTransformedSubframes) {
       inner_div_with_transform->FirstFragment().PaintProperties()->Transform();
   EXPECT_EQ(TransformationMatrix().Translate3d(7, 8, 9),
             inner_div_transform->Matrix());
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(92, 95, 100, 111),
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(92, 95, 100, 111),
                           inner_div_with_transform,
                           frame_view->GetLayoutView());
 
@@ -2029,7 +2032,7 @@ TEST_P(PaintPropertyTreeBuilderTest, TransformNodesInTransformedSubframes) {
       GetLayoutObjectByElementId("divWithTransform");
   EXPECT_EQ(div_with_transform_transform,
             div_with_transform->FirstFragment().PaintProperties()->Transform());
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(1, 2, 800, 248), div_with_transform,
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(1, 2, 800, 248), div_with_transform,
                           frame_view->GetLayoutView());
 }
 
@@ -2056,9 +2059,9 @@ TEST_P(PaintPropertyTreeBuilderTest, TreeContextClipByNonStackingContext) {
             &child->FirstFragment().LocalBorderBoxProperties().Clip());
   EXPECT_EQ(scroller_properties->ScrollTranslation(),
             &child->FirstFragment().LocalBorderBoxProperties().Transform());
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(0, 0, 400, 300), scroller,
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(0, 0, 400, 300), scroller,
                           frame_view->GetLayoutView());
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(0, 0, 100, 200), child,
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(0, 0, 100, 200), child,
                           frame_view->GetLayoutView());
 }
 
@@ -2107,9 +2110,9 @@ TEST_P(PaintPropertyTreeBuilderTest,
   }
   EXPECT_EQ(scroller_properties->Effect(),
             &child.FirstFragment().LocalBorderBoxProperties().Effect());
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(0, 0, 800, 10000), &scroller,
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(0, 0, 800, 10000), &scroller,
                           GetDocument().View()->GetLayoutView());
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(0, 0, 100, 200), &child,
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(0, 0, 100, 200), &child,
                           GetDocument().View()->GetLayoutView());
 }
 
@@ -2156,7 +2159,7 @@ TEST_P(PaintPropertyTreeBuilderTest, TableCellLayoutLocation) {
     EXPECT_EQ(DocScrollTranslation(),
               &target.FirstFragment().LocalBorderBoxProperties().Transform());
   }
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(170, 170, 100, 100), &target,
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(170, 170, 100, 100), &target,
                           GetDocument().View()->GetLayoutView());
 }
 
@@ -2203,7 +2206,7 @@ TEST_P(PaintPropertyTreeBuilderTest, CSSClipFixedPositionDescendant) {
   }
   EXPECT_EQ(FloatRoundedRect(FloatRect(absolute_clip_rect)),
             clip_properties->CssClip()->ClipRect());
-  CHECK_VISUAL_RECT(absolute_clip_rect, &clip,
+  CHECK_VISUAL_RECT(PhysicalRectToBeNoop(absolute_clip_rect), &clip,
                     GetDocument().View()->GetLayoutView(),
                     // TODO(crbug.com/599939): mapToVisualRectInAncestorSpace()
                     // doesn't apply css clip on the object itself.
@@ -2215,7 +2218,8 @@ TEST_P(PaintPropertyTreeBuilderTest, CSSClipFixedPositionDescendant) {
   EXPECT_EQ(DocPreTranslation(),
             &fixed->FirstFragment().LocalBorderBoxProperties().Transform());
   EXPECT_EQ(LayoutPoint(654, 321), fixed->FirstFragment().PaintOffset());
-  CHECK_VISUAL_RECT(LayoutRect(), fixed, GetDocument().View()->GetLayoutView(),
+  CHECK_VISUAL_RECT(PhysicalRect(), fixed,
+                    GetDocument().View()->GetLayoutView(),
                     // TODO(crbug.com/599939): CSS clip of fixed-position
                     // descendants is broken in
                     // mapToVisualRectInAncestorSpace().
@@ -2270,7 +2274,7 @@ TEST_P(PaintPropertyTreeBuilderTest, CSSClipAbsPositionDescendant) {
   }
   EXPECT_EQ(FloatRoundedRect(FloatRect(absolute_clip_rect)),
             clip_properties->CssClip()->ClipRect());
-  CHECK_VISUAL_RECT(absolute_clip_rect, clip,
+  CHECK_VISUAL_RECT(PhysicalRectToBeNoop(absolute_clip_rect), clip,
                     GetDocument().View()->GetLayoutView(),
                     // TODO(crbug.com/599939): mapToVisualRectInAncestorSpace()
                     // doesn't apply css clip on the object itself.
@@ -2293,7 +2297,7 @@ TEST_P(PaintPropertyTreeBuilderTest, CSSClipAbsPositionDescendant) {
         &absolute->FirstFragment().LocalBorderBoxProperties().Transform());
   }
   EXPECT_EQ(LayoutPoint(777, 777), absolute->FirstFragment().PaintOffset());
-  CHECK_VISUAL_RECT(LayoutRect(), absolute,
+  CHECK_VISUAL_RECT(PhysicalRect(), absolute,
                     GetDocument().View()->GetLayoutView(),
                     // TODO(crbug.com/599939): CSS clip of fixed-position
                     // descendants is broken in
@@ -2396,7 +2400,7 @@ TEST_P(PaintPropertyTreeBuilderTest, CSSClipFixedPositionDescendantNonShared) {
     EXPECT_EQ(DocScrollTranslation(),
               overflow_properties->ScrollTranslation()->Parent()->Parent());
   }
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(0, 0, 50, 50), &overflow,
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(0, 0, 50, 50), &overflow,
                           GetDocument().View()->GetLayoutView());
 
   LayoutObject* clip = GetLayoutObjectByElementId("clip");
@@ -2414,7 +2418,7 @@ TEST_P(PaintPropertyTreeBuilderTest, CSSClipFixedPositionDescendantNonShared) {
             &clip_properties->CssClipFixedPosition()->LocalTransformSpace());
   EXPECT_EQ(FloatRoundedRect(FloatRect(absolute_clip_rect)),
             clip_properties->CssClipFixedPosition()->ClipRect());
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(), clip,
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(), clip,
                           GetDocument().View()->GetLayoutView());
 
   LayoutObject* fixed = GetLayoutObjectByElementId("fixed");
@@ -2423,7 +2427,8 @@ TEST_P(PaintPropertyTreeBuilderTest, CSSClipFixedPositionDescendantNonShared) {
   EXPECT_EQ(DocPreTranslation(),
             &fixed->FirstFragment().LocalBorderBoxProperties().Transform());
   EXPECT_EQ(LayoutPoint(654, 321), fixed->FirstFragment().PaintOffset());
-  CHECK_VISUAL_RECT(LayoutRect(), fixed, GetDocument().View()->GetLayoutView(),
+  CHECK_VISUAL_RECT(PhysicalRect(), fixed,
+                    GetDocument().View()->GetLayoutView(),
                     // TODO(crbug.com/599939): CSS clip of fixed-position
                     // descendants is broken in geometry mapping.
                     LayoutUnit::Max());
@@ -2448,7 +2453,7 @@ TEST_P(PaintPropertyTreeBuilderTest, ColumnSpannerUnderRelativePositioned) {
 
   LayoutObject* spanner = GetLayoutObjectByElementId("spanner");
   EXPECT_EQ(LayoutPoint(55, 44), spanner->FirstFragment().PaintOffset());
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(55, 44, 100, 100), spanner,
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(55, 44, 100, 100), spanner,
                           GetDocument().View()->GetLayoutView());
 }
 
@@ -2479,16 +2484,16 @@ TEST_P(PaintPropertyTreeBuilderTest, FractionalPaintOffset) {
   LayoutObject* a = GetLayoutObjectByElementId("a");
   LayoutPoint a_paint_offset = LayoutPoint(FloatPoint(0.1, 0.3));
   EXPECT_EQ(a_paint_offset, a->FirstFragment().PaintOffset());
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(LayoutUnit(0.1), LayoutUnit(0.3),
-                                     LayoutUnit(70), LayoutUnit(70)),
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(LayoutUnit(0.1), LayoutUnit(0.3),
+                                       LayoutUnit(70), LayoutUnit(70)),
                           a, frame_view->GetLayoutView());
 
   LayoutObject* b = GetLayoutObjectByElementId("b");
   LayoutPoint b_paint_offset =
       a_paint_offset + LayoutPoint(FloatPoint(0.5, 11.1));
   EXPECT_EQ(b_paint_offset, b->FirstFragment().PaintOffset());
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(LayoutUnit(0.1), LayoutUnit(0.3),
-                                     LayoutUnit(70), LayoutUnit(70)),
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(LayoutUnit(0.1), LayoutUnit(0.3),
+                                       LayoutUnit(70), LayoutUnit(70)),
                           a, frame_view->GetLayoutView());
 }
 
@@ -2532,8 +2537,9 @@ TEST_P(PaintPropertyTreeBuilderTest, PaintOffsetWithBasicPixelSnapping) {
   // The residual subpixel adjustment should be (0.3,0.3) - (0,0) = (0.3,0.3).
   LayoutPoint subpixel_accumulation = LayoutPoint(FloatPoint(0.3, 0.3));
   EXPECT_EQ(subpixel_accumulation, b->FirstFragment().PaintOffset());
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(FloatRect(0.3, 0.3, 40, 40)), b,
-                          frame_view->GetLayoutView());
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(LayoutUnit(0.3), LayoutUnit(0.3),
+                                       LayoutUnit(40), LayoutUnit(40)),
+                          b, frame_view->GetLayoutView());
 
   // c's painted should start at subpixelAccumulation + (0.1,0.1) = (0.4,0.4).
   LayoutObject* c = GetLayoutObjectByElementId("c");
@@ -2543,8 +2549,9 @@ TEST_P(PaintPropertyTreeBuilderTest, PaintOffsetWithBasicPixelSnapping) {
   // Visual rects via the non-paint properties system use enclosingIntRect
   // before applying transforms, because they are computed bottom-up and
   // therefore can't apply pixel snapping. Therefore apply a slop of 1px.
-  CHECK_VISUAL_RECT(LayoutRect(FloatRect(0.4, 0.4, 40, 40)), c,
-                    frame_view->GetLayoutView(), 1);
+  CHECK_VISUAL_RECT(PhysicalRect(LayoutUnit(0.4), LayoutUnit(0.4),
+                                 LayoutUnit(40), LayoutUnit(40)),
+                    c, frame_view->GetLayoutView(), 1);
 }
 
 TEST_P(PaintPropertyTreeBuilderTest,
@@ -2590,8 +2597,8 @@ TEST_P(PaintPropertyTreeBuilderTest,
   LayoutPoint subpixel_accumulation =
       LayoutPoint(LayoutPoint(FloatPoint(0.7, 0.7)) - LayoutPoint(1, 1));
   EXPECT_EQ(subpixel_accumulation, b->FirstFragment().PaintOffset());
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(LayoutUnit(0.7), LayoutUnit(0.7),
-                                     LayoutUnit(40), LayoutUnit(40)),
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(LayoutUnit(0.7), LayoutUnit(0.7),
+                                       LayoutUnit(40), LayoutUnit(40)),
                           b, frame_view->GetLayoutView());
 
   // c's painting should start at subpixelAccumulation + (0.7,0.7) = (0.4,0.4).
@@ -2602,9 +2609,9 @@ TEST_P(PaintPropertyTreeBuilderTest,
   // Visual rects via the non-paint properties system use enclosingIntRect
   // before applying transforms, because they are computed bottom-up and
   // therefore can't apply pixel snapping. Therefore apply a slop of 1px.
-  CHECK_VISUAL_RECT(LayoutRect(LayoutUnit(0.7) + LayoutUnit(0.7),
-                               LayoutUnit(0.7) + LayoutUnit(0.7),
-                               LayoutUnit(40), LayoutUnit(40)),
+  CHECK_VISUAL_RECT(PhysicalRect(LayoutUnit(0.7) + LayoutUnit(0.7),
+                                 LayoutUnit(0.7) + LayoutUnit(0.7),
+                                 LayoutUnit(40), LayoutUnit(40)),
                     c, frame_view->GetLayoutView(), 1);
 }
 
@@ -2653,8 +2660,8 @@ TEST_P(PaintPropertyTreeBuilderTest,
   // Visual rects via the non-paint properties system use enclosingIntRect
   // before applying transforms, because they are computed bottom-up and
   // therefore can't apply pixel snapping. Therefore apply a slop of 1px.
-  CHECK_VISUAL_RECT(LayoutRect(LayoutUnit(1), LayoutUnit(1), LayoutUnit(400),
-                               LayoutUnit(400)),
+  CHECK_VISUAL_RECT(PhysicalRect(LayoutUnit(1), LayoutUnit(1), LayoutUnit(400),
+                                 LayoutUnit(400)),
                     b, frame_view->GetLayoutView(), 1);
 
   // c's painting should start at c_offset.
@@ -2666,8 +2673,8 @@ TEST_P(PaintPropertyTreeBuilderTest,
   // therefore can't apply pixel snapping. Therefore apply a slop of 1px
   // in the transformed space (c_offset * 10 in view space) and 1px in the
   // view space.
-  CHECK_VISUAL_RECT(LayoutRect(c_offset * 10 + 1, c_offset * 10 + 1,
-                               LayoutUnit(400), LayoutUnit(400)),
+  CHECK_VISUAL_RECT(PhysicalRect(c_offset * 10 + 1, c_offset * 10 + 1,
+                                 LayoutUnit(400), LayoutUnit(400)),
                     c, frame_view->GetLayoutView(), c_offset * 10 + 1);
 }
 
@@ -2721,8 +2728,8 @@ TEST_P(PaintPropertyTreeBuilderTest,
   LayoutPoint subpixel_accumulation =
       LayoutPoint(LayoutPoint(FloatPoint(0.7, 0.7)) - LayoutPoint(1, 1));
   EXPECT_EQ(subpixel_accumulation, b->FirstFragment().PaintOffset());
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(LayoutUnit(5.7), LayoutUnit(7.7),
-                                     LayoutUnit(40), LayoutUnit(40)),
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(LayoutUnit(5.7), LayoutUnit(7.7),
+                                       LayoutUnit(40), LayoutUnit(40)),
                           b, frame_view->GetLayoutView());
 
   LayoutObject* c = GetLayoutObjectByElementId("c");
@@ -2734,8 +2741,8 @@ TEST_P(PaintPropertyTreeBuilderTest,
   EXPECT_EQ(FloatSize(), c_properties->Transform()->Parent()->Translation2D());
   // The residual subpixel adjustment should still be (-0.3,-0.3).
   EXPECT_EQ(subpixel_accumulation, c->FirstFragment().PaintOffset());
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(LayoutUnit(16.7), LayoutUnit(20.7),
-                                     LayoutUnit(40), LayoutUnit(40)),
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(LayoutUnit(16.7), LayoutUnit(20.7),
+                                       LayoutUnit(40), LayoutUnit(40)),
                           c, frame_view->GetLayoutView());
 
   // d should be painted starting at subpixelAccumulation + (0.7,0.7) =
@@ -2747,9 +2754,9 @@ TEST_P(PaintPropertyTreeBuilderTest,
   // Visual rects via the non-paint properties system use enclosingIntRect
   // before applying transforms, because they are computed bottom-up and
   // therefore can't apply pixel snapping. Therefore apply a slop of 1px.
-  CHECK_VISUAL_RECT(LayoutRect(LayoutUnit(16.7) + LayoutUnit(0.7),
-                               LayoutUnit(20.7) + LayoutUnit(0.7),
-                               LayoutUnit(40), LayoutUnit(40)),
+  CHECK_VISUAL_RECT(PhysicalRect(LayoutUnit(16.7) + LayoutUnit(0.7),
+                                 LayoutUnit(20.7) + LayoutUnit(0.7),
+                                 LayoutUnit(40), LayoutUnit(40)),
                     d, frame_view->GetLayoutView(), 1);
 }
 
@@ -2802,15 +2809,15 @@ TEST_P(PaintPropertyTreeBuilderTest, PaintOffsetWithPixelSnappingWithFixedPos) {
   LayoutPoint subpixel_accumulation =
       LayoutPoint(LayoutPoint(FloatPoint(0.7, 0)) - LayoutPoint(1, 0));
   EXPECT_EQ(subpixel_accumulation, b->FirstFragment().PaintOffset());
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(LayoutUnit(0.7), LayoutUnit(0),
-                                     LayoutUnit(40), LayoutUnit(40)),
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(LayoutUnit(0.7), LayoutUnit(0),
+                                       LayoutUnit(40), LayoutUnit(40)),
                           b, frame_view->GetLayoutView());
 
   LayoutObject* fixed = GetLayoutObjectByElementId("fixed");
   // The residual subpixel adjustment should still be (-0.3,0).
   EXPECT_EQ(subpixel_accumulation, fixed->FirstFragment().PaintOffset());
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(LayoutUnit(0.7), LayoutUnit(0),
-                                     LayoutUnit(40), LayoutUnit(40)),
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(LayoutUnit(0.7), LayoutUnit(0),
+                                       LayoutUnit(40), LayoutUnit(40)),
                           fixed, frame_view->GetLayoutView());
 
   // d should be painted starting at subpixelAccumulation + (0.7,0) = (0.4,0).
@@ -2821,8 +2828,8 @@ TEST_P(PaintPropertyTreeBuilderTest, PaintOffsetWithPixelSnappingWithFixedPos) {
   // Visual rects via the non-paint properties system use enclosingIntRect
   // before applying transforms, because they are computed bottom-up and
   // therefore can't apply pixel snapping. Therefore apply a slop of 1px.
-  CHECK_VISUAL_RECT(LayoutRect(LayoutUnit(0.7) + LayoutUnit(0.7), LayoutUnit(),
-                               LayoutUnit(40), LayoutUnit(40)),
+  CHECK_VISUAL_RECT(PhysicalRect(LayoutUnit(0.7) + LayoutUnit(0.7),
+                                 LayoutUnit(), LayoutUnit(40), LayoutUnit(40)),
                     d, frame_view->GetLayoutView(), 1);
 }
 
@@ -2932,9 +2939,9 @@ TEST_P(PaintPropertyTreeBuilderTest, Preserve3DCreatesSharedRenderingContext) {
     EXPECT_EQ(a_properties->Transform()->RenderingContextId(),
               b_properties->Transform()->RenderingContextId());
   }
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(8, 8, 30, 40), a,
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(8, 8, 30, 40), a,
                           frame_view->GetLayoutView());
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(8, 48, 20, 10), b,
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(8, 48, 20, 10), b,
                           frame_view->GetLayoutView());
 }
 
@@ -2976,9 +2983,9 @@ TEST_P(PaintPropertyTreeBuilderTest, FlatTransformStyleEndsRenderingContext) {
     EXPECT_TRUE(a_properties->Transform()->HasRenderingContext());
     EXPECT_FALSE(b_properties->Transform()->HasRenderingContext());
   }
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(8, 8, 30, 40), a,
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(8, 8, 30, 40), a,
                           frame_view->GetLayoutView());
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(8, 8, 10, 20), b,
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(8, 8, 10, 20), b,
                           frame_view->GetLayoutView());
 }
 
@@ -3015,9 +3022,9 @@ TEST_P(PaintPropertyTreeBuilderTest, NestedRenderingContexts) {
     EXPECT_NE(a_properties->Transform()->RenderingContextId(),
               b_properties->Transform()->RenderingContextId());
   }
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(8, 8, 50, 60), a,
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(8, 8, 50, 60), a,
                           frame_view->GetLayoutView());
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(8, 8, 10, 20), b,
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(8, 8, 10, 20), b,
                           frame_view->GetLayoutView());
 }
 
@@ -3077,9 +3084,9 @@ TEST_P(PaintPropertyTreeBuilderTest, FlatTransformStylePropagatesToChildren) {
   // Some node must flatten the inherited transform from #a before it reaches
   // #b's transform.
   EXPECT_TRUE(SomeNodeFlattensTransform(b_transform, a_transform));
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(8, 8, 30, 40), a,
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(8, 8, 30, 40), a,
                           frame_view->GetLayoutView());
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(8, 8, 10, 10), b,
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(8, 8, 10, 10), b,
                           frame_view->GetLayoutView());
 }
 
@@ -3116,9 +3123,9 @@ TEST_P(PaintPropertyTreeBuilderTest,
   // No node may flatten the inherited transform from #a before it reaches
   // #b's transform.
   EXPECT_FALSE(SomeNodeFlattensTransform(b_transform, a_transform));
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(8, 8, 30, 40), a,
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(8, 8, 30, 40), a,
                           frame_view->GetLayoutView());
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(8, 8, 10, 10), b,
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(8, 8, 10, 10), b,
                           frame_view->GetLayoutView());
 }
 
@@ -3146,9 +3153,9 @@ TEST_P(PaintPropertyTreeBuilderTest, PerspectiveIsNotFlattened) {
   ASSERT_TRUE(b_transform);
   ASSERT_TRUE(NodeHasAncestor(b_transform, a_perspective));
   EXPECT_FALSE(SomeNodeFlattensTransform(b_transform, a_perspective));
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(8, 8, 30, 40), a,
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(8, 8, 30, 40), a,
                           frame_view->GetLayoutView());
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(8, 8, 10, 20), b,
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(8, 8, 10, 20), b,
                           frame_view->GetLayoutView());
 }
 
@@ -3232,9 +3239,9 @@ TEST_P(PaintPropertyTreeBuilderTest,
   const TransformPaintPropertyNode* b_transform = b_properties->Transform();
   ASSERT_TRUE(b_transform);
   EXPECT_FALSE(b_transform->HasRenderingContext());
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(8, 8, 30, 40), a,
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(8, 8, 30, 40), a,
                           frame_view->GetLayoutView());
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(8, 8, 10, 20), b,
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(8, 8, 10, 20), b,
                           frame_view->GetLayoutView());
 }
 
@@ -3273,11 +3280,11 @@ TEST_P(PaintPropertyTreeBuilderTest, CachedProperties) {
       c_properties->Transform();
   EXPECT_EQ(FloatSize(77, 88), c_transform_node->Translation2D());
 
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(33, 44, 50, 60), a->GetLayoutObject(),
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(33, 44, 50, 60), a->GetLayoutObject(),
                           frame_view->GetLayoutView());
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(88, 110, 30, 40), b->GetLayoutObject(),
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(88, 110, 30, 40), b->GetLayoutObject(),
                           frame_view->GetLayoutView());
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(165, 198, 10, 20), c->GetLayoutObject(),
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(165, 198, 10, 20), c->GetLayoutObject(),
                           frame_view->GetLayoutView());
 
   // Change transform of b. B's transform node should be a new node with the new
@@ -3301,11 +3308,11 @@ TEST_P(PaintPropertyTreeBuilderTest, CachedProperties) {
   EXPECT_EQ(c_transform_node, c_properties->Transform());
   EXPECT_EQ(b_transform_node, c_transform_node->Parent()->Parent());
 
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(33, 44, 50, 60), a->GetLayoutObject(),
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(33, 44, 50, 60), a->GetLayoutObject(),
                           frame_view->GetLayoutView());
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(144, 266, 50, 20), b->GetLayoutObject(),
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(144, 266, 50, 20), b->GetLayoutObject(),
                           frame_view->GetLayoutView());
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(221, 354, 10, 20), c->GetLayoutObject(),
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(221, 354, 10, 20), c->GetLayoutObject(),
                           frame_view->GetLayoutView());
 
   // Remove transform from b. B's transform node should be removed from the
@@ -3325,11 +3332,11 @@ TEST_P(PaintPropertyTreeBuilderTest, CachedProperties) {
   EXPECT_EQ(c_transform_node, c_properties->Transform());
   EXPECT_EQ(a_transform_node, c_transform_node->Parent()->Parent());
 
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(33, 44, 50, 60), a->GetLayoutObject(),
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(33, 44, 50, 60), a->GetLayoutObject(),
                           frame_view->GetLayoutView());
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(33, 44, 50, 20), b->GetLayoutObject(),
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(33, 44, 50, 20), b->GetLayoutObject(),
                           frame_view->GetLayoutView());
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(110, 132, 10, 20), c->GetLayoutObject(),
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(110, 132, 10, 20), c->GetLayoutObject(),
                           frame_view->GetLayoutView());
 
   // Re-add transform to b. B's transform node should be inserted into the tree,
@@ -3354,11 +3361,11 @@ TEST_P(PaintPropertyTreeBuilderTest, CachedProperties) {
   EXPECT_EQ(c_transform_node, c_properties->Transform());
   EXPECT_EQ(b_transform_node, c_transform_node->Parent()->Parent());
 
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(33, 44, 50, 60), a->GetLayoutObject(),
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(33, 44, 50, 60), a->GetLayoutObject(),
                           frame_view->GetLayoutView());
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(37, 49, 50, 20), b->GetLayoutObject(),
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(37, 49, 50, 20), b->GetLayoutObject(),
                           frame_view->GetLayoutView());
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(114, 137, 10, 20), c->GetLayoutObject(),
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(114, 137, 10, 20), c->GetLayoutObject(),
                           frame_view->GetLayoutView());
 }
 
@@ -3422,7 +3429,7 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowClipContentsTreeState) {
   EXPECT_EQ(clip_properties->OverflowClip(),
             &child->FirstFragment().LocalBorderBoxProperties().Clip());
 
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(0, 0, 500, 600), child, clipper);
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(0, 0, 500, 600), child, clipper);
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, ReplacedSvgContentWithIsolation) {
@@ -3560,7 +3567,7 @@ TEST_P(PaintPropertyTreeBuilderTest, ContainPaintOrStyleLayoutTreeState) {
               &child->FirstFragment().LocalBorderBoxProperties().Clip());
     EXPECT_EQ(&contents_properties.Effect(),
               &child->FirstFragment().LocalBorderBoxProperties().Effect());
-    CHECK_EXACT_VISUAL_RECT(LayoutRect(0, 0, 400, 500), child, clipper);
+    CHECK_EXACT_VISUAL_RECT(PhysicalRect(0, 0, 400, 500), child, clipper);
   }
 }
 
@@ -3608,7 +3615,7 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollContentsTreeState) {
   EXPECT_EQ(clip_properties->OverflowClip(),
             &child->FirstFragment().LocalBorderBoxProperties().Clip());
 
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(0, 0, 500, 600), child, clipper);
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(0, 0, 500, 600), child, clipper);
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollWithRoundedRect) {
@@ -3703,7 +3710,7 @@ TEST_P(PaintPropertyTreeBuilderTest, CssClipContentsTreeState) {
   }
   EXPECT_EQ(clip_properties->CssClip(), &contents_properties.Clip());
 
-  CHECK_EXACT_VISUAL_RECT(LayoutRect(0, 0, 400, 500), child, clipper);
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(0, 0, 400, 500), child, clipper);
 }
 
 TEST_P(PaintPropertyTreeBuilderTest,

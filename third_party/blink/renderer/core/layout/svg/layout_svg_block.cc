@@ -104,13 +104,13 @@ const LayoutObject* LayoutSVGBlock::PushMappingToContainer(
     const LayoutBoxModelObject* ancestor_to_stop_at,
     LayoutGeometryMap& geometry_map) const {
   // Convert from local HTML coordinates to local SVG coordinates.
-  geometry_map.Push(this, LocationOffset());
+  geometry_map.Push(this, PhysicalOffset(Location()));
   // Apply other mappings on local SVG coordinates.
   return SVGLayoutSupport::PushMappingToContainer(this, ancestor_to_stop_at,
                                                   geometry_map);
 }
 
-LayoutRect LayoutSVGBlock::VisualRectInDocument(VisualRectFlags flags) const {
+PhysicalRect LayoutSVGBlock::VisualRectInDocument(VisualRectFlags flags) const {
   return SVGLayoutSupport::VisualRectInAncestorSpace(*this, *View(), flags);
 }
 
@@ -119,9 +119,9 @@ bool LayoutSVGBlock::MapToVisualRectInAncestorSpaceInternal(
     TransformState& transform_state,
     VisualRectFlags) const {
   transform_state.Flatten();
-  LayoutRect rect(transform_state.LastPlanarQuad().BoundingBox());
+  PhysicalRect rect(LayoutRect(transform_state.LastPlanarQuad().BoundingBox()));
   // Convert from local HTML coordinates to local SVG coordinates.
-  rect.MoveBy(Location());
+  rect.Move(PhysicalLocation());
   // Apply other mappings on local SVG coordinates.
   bool retval = SVGLayoutSupport::MapToVisualRectInAncestorSpace(
       *this, ancestor, FloatRect(rect), rect);

@@ -151,8 +151,8 @@ bool LayoutEmbeddedContent::NodeAtPointOverEmbeddedContentView(
   // just in the border/padding area).
   if ((inside || location_in_container.IsRectBasedTest()) && !had_result &&
       result.InnerNode() == GetNode()) {
-    result.SetIsOverEmbeddedContentView(
-        PhysicalContentBoxRect().Contains(result.LocalPoint()));
+    result.SetIsOverEmbeddedContentView(PhysicalContentBoxRect().Contains(
+        PhysicalOffsetToBeNoop(result.LocalPoint())));
   }
   return inside;
 }
@@ -299,11 +299,13 @@ CursorDirective LayoutEmbeddedContent::GetCursor(const LayoutPoint& point,
   return LayoutReplaced::GetCursor(point, cursor);
 }
 
-LayoutRect LayoutEmbeddedContent::ReplacedContentRect() const {
-  LayoutRect content_rect = PhysicalContentBoxRect();
+PhysicalRect LayoutEmbeddedContent::ReplacedContentRect() const {
+  PhysicalRect content_rect = PhysicalContentBoxRect();
   // IFrames set as the root scroller should get their size from their parent.
-  if (ChildFrameView() && View() && IsEffectiveRootScroller())
-    content_rect = LayoutRect(LayoutPoint(), View()->ViewRect().Size());
+  if (ChildFrameView() && View() && IsEffectiveRootScroller()) {
+    content_rect.offset = PhysicalOffset();
+    content_rect.size = View()->ViewRect().size;
+  }
 
   // We don't propagate sub-pixel into sub-frame layout, in other words, the
   // rect is snapped at the document boundary, and sub-pixel movement could
@@ -338,7 +340,7 @@ void LayoutEmbeddedContent::UpdateGeometry(
   // Ignore transform here, as we only care about the sub-pixel accumulation.
   // TODO(trchen): What about multicol? Need a LayoutBox function to query
   // sub-pixel accumulation.
-  LayoutRect replaced_rect = ReplacedContentRect();
+  LayoutRect replaced_rect = ReplacedContentRect().ToLayoutRect();
   TransformState transform_state(TransformState::kApplyTransformDirection,
                                  FloatPoint(),
                                  FloatQuad(FloatRect(replaced_rect)));

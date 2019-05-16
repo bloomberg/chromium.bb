@@ -80,10 +80,6 @@ class LayoutTableCellTest : public RenderingTest {
   bool IsInEndColumn(const LayoutTableCell* cell) {
     return cell->IsInEndColumn();
   }
-  LayoutRect LocalVisualRect(const LayoutTableCell* cell) {
-    return cell->LocalVisualRect();
-  }
-
   LayoutTableCell* GetCellByElementId(const char* id) {
     return ToLayoutTableCell(GetLayoutObjectByElementId(id));
   }
@@ -143,8 +139,7 @@ TEST_F(LayoutTableCellTest, RepaintContentInTableCell) {
 
   // Check that overflow was calculated on the cell.
   auto* input_block = To<LayoutBlock>(cell->GetLayoutObject());
-  LayoutRect rect = input_block->LocalVisualRect();
-  EXPECT_EQ(LayoutRect(-1, -1, 24, 24), rect);
+  EXPECT_EQ(PhysicalRect(-1, -1, 24, 24), input_block->LocalVisualRect());
 }
 
 TEST_F(LayoutTableCellTest, IsInStartAndEndColumn) {

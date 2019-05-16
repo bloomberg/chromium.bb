@@ -35,7 +35,6 @@ namespace blink {
 class AffineTransform;
 class FloatPoint;
 class FloatRect;
-class LayoutRect;
 class LayoutGeometryMap;
 class LayoutBoxModelObject;
 class LayoutObject;
@@ -96,18 +95,18 @@ class CORE_EXPORT SVGLayoutSupport {
   // Important functions used by nearly all SVG layoutObjects centralizing
   // coordinate transformations / visual rect calculations
   static FloatRect LocalVisualRect(const LayoutObject&);
-  static LayoutRect VisualRectInAncestorSpace(
+  static PhysicalRect VisualRectInAncestorSpace(
       const LayoutObject&,
       const LayoutBoxModelObject& ancestor,
       VisualRectFlags = kDefaultVisualRectFlags);
-  static LayoutRect TransformVisualRect(const LayoutObject&,
-                                        const AffineTransform&,
-                                        const FloatRect&);
+  static PhysicalRect TransformVisualRect(const LayoutObject&,
+                                          const AffineTransform&,
+                                          const FloatRect&);
   static bool MapToVisualRectInAncestorSpace(
       const LayoutObject&,
       const LayoutBoxModelObject* ancestor,
       const FloatRect& local_visual_rect,
-      LayoutRect& result_rect,
+      PhysicalRect& result_rect,
       VisualRectFlags = kDefaultVisualRectFlags);
   static void MapLocalToAncestor(const LayoutObject*,
                                  const LayoutBoxModelObject* ancestor,

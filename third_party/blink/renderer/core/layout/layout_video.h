@@ -39,7 +39,7 @@ class LayoutVideo final : public LayoutMedia {
 
   static LayoutSize DefaultSize();
 
-  LayoutRect ReplacedContentRect() const final;
+  PhysicalRect ReplacedContentRect() const final;
 
   bool SupportsAcceleratedRendering() const;
 

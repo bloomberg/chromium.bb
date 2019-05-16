@@ -44,19 +44,19 @@ TEST_P(ParameterizedLayoutInlineTest, PhysicalLinesBoundingBox) {
     <p dir=rtl><span id=rtl2>12 345 6789</span></p>
     <p class=vertical><span id=vertical>abc<br>xyz</span></p>
   )HTML");
-  EXPECT_EQ(LayoutRect(0, 0, 30, 20),
+  EXPECT_EQ(PhysicalRect(0, 0, 30, 20),
             ToLayoutInline(GetLayoutObjectByElementId("ltr1"))
                 ->PhysicalLinesBoundingBox());
-  EXPECT_EQ(LayoutRect(0, 0, 110, 10),
+  EXPECT_EQ(PhysicalRect(0, 0, 110, 10),
             ToLayoutInline(GetLayoutObjectByElementId("ltr2"))
                 ->PhysicalLinesBoundingBox());
-  EXPECT_EQ(LayoutRect(270, 0, 30, 20),
+  EXPECT_EQ(PhysicalRect(270, 0, 30, 20),
             ToLayoutInline(GetLayoutObjectByElementId("rtl1"))
                 ->PhysicalLinesBoundingBox());
-  EXPECT_EQ(LayoutRect(190, 0, 110, 10),
+  EXPECT_EQ(PhysicalRect(190, 0, 110, 10),
             ToLayoutInline(GetLayoutObjectByElementId("rtl2"))
                 ->PhysicalLinesBoundingBox());
-  EXPECT_EQ(LayoutRect(280, 0, 20, 30),
+  EXPECT_EQ(PhysicalRect(280, 0, 20, 30),
             ToLayoutInline(GetLayoutObjectByElementId("vertical"))
                 ->PhysicalLinesBoundingBox());
 }
@@ -294,10 +294,35 @@ TEST_P(ParameterizedLayoutInlineTest, VisualRectInDocument) {
   )HTML");
 
   LayoutInline* target = ToLayoutInline(GetLayoutObjectByElementId("target"));
-  EXPECT_EQ(LayoutRect(0, 20, 111, 222 + 20 * 2),
+  EXPECT_EQ(PhysicalRect(0, 20, 111, 222 + 20 * 2),
             target->VisualRectInDocument());
-  EXPECT_EQ(LayoutRect(0, 20, 111, 222 + 20 * 2),
+  EXPECT_EQ(PhysicalRect(0, 20, 111, 222 + 20 * 2),
             target->VisualRectInDocument(kUseGeometryMapper));
+}
+
+TEST_P(ParameterizedLayoutInlineTest, VisualRectInDocumentVerticalRL) {
+  LoadAhem();
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body {
+        margin:0px;
+        font: 20px/20px Ahem;
+      }
+    </style>
+    <div style="width: 400px; height: 400px; writing-mode: vertical-rl">
+      <span>xx<br>
+        <span id="target">yy
+          <div style="width:111px; height:222px; background:yellow"></div>
+          yy
+        </span>
+      </span>
+    </div>
+  )HTML");
+
+  LayoutInline* target = ToLayoutInline(GetLayoutObjectByElementId("target"));
+  PhysicalRect expected(400 - 111 - 20 * 3, 0, 111 + 20 * 2, 222);
+  EXPECT_EQ(expected, target->VisualRectInDocument());
+  EXPECT_EQ(expected, target->VisualRectInDocument(kUseGeometryMapper));
 }
 
 // When adding focus ring rects, we should avoid adding duplicated rect for
@@ -397,24 +422,24 @@ TEST_P(ParameterizedLayoutInlineTest,
     </span>
   )HTML");
 
-  EXPECT_EQ(LayoutRect(50, 70, 0, 0),
+  EXPECT_EQ(PhysicalRect(50, 70, 0, 0),
             GetLayoutObjectByElementId("target1")
                 ->AbsoluteBoundingBoxRectHandlingEmptyInline());
-  EXPECT_EQ(LayoutRect(50, 90, 0, 0),
+  EXPECT_EQ(PhysicalRect(50, 90, 0, 0),
             GetLayoutObjectByElementId("target2")
                 ->AbsoluteBoundingBoxRectHandlingEmptyInline());
-  EXPECT_EQ(LayoutRect(50, 110, 0, 0),
+  EXPECT_EQ(PhysicalRect(50, 110, 0, 0),
             GetLayoutObjectByElementId("target3")
                 ->AbsoluteBoundingBoxRectHandlingEmptyInline());
-  EXPECT_EQ(LayoutRect(50, 130, 0, 0),
+  EXPECT_EQ(PhysicalRect(50, 130, 0, 0),
             GetLayoutObjectByElementId("target4")
                 ->AbsoluteBoundingBoxRectHandlingEmptyInline());
-  EXPECT_EQ(LayoutRect(50, 150, 0, 0),
+  EXPECT_EQ(PhysicalRect(50, 150, 0, 0),
             GetLayoutObjectByElementId("target5")
                 ->AbsoluteBoundingBoxRectHandlingEmptyInline());
   // This rect covers the overflowing images and continuations.
   // 168 = (30 + 4) * 2 + 100. 4 is the descent of the font.
-  EXPECT_EQ(LayoutRect(50, 170, 100, 168),
+  EXPECT_EQ(PhysicalRect(50, 170, 100, 168),
             GetLayoutObjectByElementId("target6")
                 ->AbsoluteBoundingBoxRectHandlingEmptyInline());
 }
@@ -444,23 +469,23 @@ TEST_P(ParameterizedLayoutInlineTest,
     </div>
   )HTML");
 
-  EXPECT_EQ(LayoutRect(630, 70, 0, 0),
+  EXPECT_EQ(PhysicalRect(630, 70, 0, 0),
             GetLayoutObjectByElementId("target1")
                 ->AbsoluteBoundingBoxRectHandlingEmptyInline());
-  EXPECT_EQ(LayoutRect(610, 70, 0, 0),
+  EXPECT_EQ(PhysicalRect(610, 70, 0, 0),
             GetLayoutObjectByElementId("target2")
                 ->AbsoluteBoundingBoxRectHandlingEmptyInline());
-  EXPECT_EQ(LayoutRect(590, 70, 0, 0),
+  EXPECT_EQ(PhysicalRect(590, 70, 0, 0),
             GetLayoutObjectByElementId("target3")
                 ->AbsoluteBoundingBoxRectHandlingEmptyInline());
-  EXPECT_EQ(LayoutRect(570, 70, 0, 0),
+  EXPECT_EQ(PhysicalRect(570, 70, 0, 0),
             GetLayoutObjectByElementId("target4")
                 ->AbsoluteBoundingBoxRectHandlingEmptyInline());
-  EXPECT_EQ(LayoutRect(550, 70, 0, 0),
+  EXPECT_EQ(PhysicalRect(550, 70, 0, 0),
             GetLayoutObjectByElementId("target5")
                 ->AbsoluteBoundingBoxRectHandlingEmptyInline());
   // This rect covers the overflowing images and continuations.
-  EXPECT_EQ(LayoutRect(390, 70, 160, 100),
+  EXPECT_EQ(PhysicalRect(390, 70, 160, 100),
             GetLayoutObjectByElementId("target6")
                 ->AbsoluteBoundingBoxRectHandlingEmptyInline());
 }
@@ -485,13 +510,13 @@ TEST_P(ParameterizedLayoutInlineTest, AddAnnotatedRegions) {
   Vector<AnnotatedRegionValue> regions1;
   GetLayoutObjectByElementId("target1")->AddAnnotatedRegions(regions1);
   ASSERT_EQ(1u, regions1.size());
-  EXPECT_EQ(LayoutRect(0, 10, 50, 20), regions1[0].bounds);
+  EXPECT_EQ(PhysicalRect(0, 10, 50, 20), regions1[0].bounds);
   EXPECT_TRUE(regions1[0].draggable);
 
   Vector<AnnotatedRegionValue> regions2;
   GetLayoutObjectByElementId("target2")->AddAnnotatedRegions(regions2);
   ASSERT_EQ(1u, regions2.size());
-  EXPECT_EQ(LayoutRect(0, 20, 70, 20), regions2[0].bounds);
+  EXPECT_EQ(PhysicalRect(0, 20, 70, 20), regions2[0].bounds);
   EXPECT_FALSE(regions2[0].draggable);
 
   Vector<AnnotatedRegionValue> regions3;
@@ -519,13 +544,13 @@ TEST_P(ParameterizedLayoutInlineTest, AddAnnotatedRegionsVerticalRL) {
   Vector<AnnotatedRegionValue> regions1;
   GetLayoutObjectByElementId("target1")->AddAnnotatedRegions(regions1);
   ASSERT_EQ(1u, regions1.size());
-  EXPECT_EQ(LayoutRect(570, 0, 20, 50), regions1[0].bounds);
+  EXPECT_EQ(PhysicalRect(570, 0, 20, 50), regions1[0].bounds);
   EXPECT_TRUE(regions1[0].draggable);
 
   Vector<AnnotatedRegionValue> regions2;
   GetLayoutObjectByElementId("target2")->AddAnnotatedRegions(regions2);
   ASSERT_EQ(1u, regions2.size());
-  EXPECT_EQ(LayoutRect(560, 0, 20, 70), regions2[0].bounds);
+  EXPECT_EQ(PhysicalRect(560, 0, 20, 70), regions2[0].bounds);
   EXPECT_FALSE(regions2[0].draggable);
 
   Vector<AnnotatedRegionValue> regions3;

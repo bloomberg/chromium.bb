@@ -462,7 +462,7 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackground(
     // contents layer of a composited scroller we need to include the entire
     // overflow rect.
     const LayoutBox& layout_box = ToLayoutBox(layout_object);
-    paint_rect = layout_box.PhysicalLayoutOverflowRect();
+    paint_rect = layout_box.PhysicalLayoutOverflowRect().ToLayoutRect();
 
     contents_paint_state.emplace(paint_info, paint_offset, layout_box);
     paint_rect.MoveBy(contents_paint_state->PaintOffset());

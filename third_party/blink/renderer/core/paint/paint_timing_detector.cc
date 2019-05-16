@@ -244,7 +244,7 @@ FloatRect PaintTimingDetector::CalculateVisualRect(
     return float_visual_rect;
   // OOPIF. The final rect lives in the iframe's root frame space. We need to
   // project it to the top frame space.
-  LayoutRect layout_visual_rect(float_visual_rect);
+  auto layout_visual_rect = PhysicalRect::EnclosingRect(float_visual_rect);
   frame_view_->GetFrame()
       .LocalFrameRoot()
       .View()

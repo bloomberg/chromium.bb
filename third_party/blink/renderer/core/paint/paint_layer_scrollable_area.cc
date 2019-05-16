@@ -2280,7 +2280,9 @@ bool PaintLayerScrollableArea::ComputeNeedsCompositedScrolling(
           &non_composited_main_thread_scrolling_reasons_) &
           kBackgroundPaintInScrollingContents &&
       layer->BackgroundIsKnownToBeOpaqueInRect(
-          ToLayoutBox(layer->GetLayoutObject()).PhysicalPaddingBoxRect(),
+          ToLayoutBox(layer->GetLayoutObject())
+              .PhysicalPaddingBoxRect()
+              .ToLayoutRect(),
           true) &&
       !layer->CompositesWithTransform() && !layer->CompositesWithOpacity();
 
@@ -2299,7 +2301,9 @@ bool PaintLayerScrollableArea::ComputeNeedsCompositedScrolling(
           cc::MainThreadScrollingReason::kHasTransformAndLCDText;
     }
     if (!layer->BackgroundIsKnownToBeOpaqueInRect(
-            ToLayoutBox(layer->GetLayoutObject()).PhysicalPaddingBoxRect(),
+            ToLayoutBox(layer->GetLayoutObject())
+                .PhysicalPaddingBoxRect()
+                .ToLayoutRect(),
             true)) {
       non_composited_main_thread_scrolling_reasons_ |=
           cc::MainThreadScrollingReason::kBackgroundNotOpaqueInRectAndLCDText;

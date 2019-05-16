@@ -260,8 +260,10 @@ BoxPaintInvalidator::ComputeViewBackgroundInvalidation() {
       if (document_background && document_background->IsBox()) {
         const auto* document_background_box = ToLayoutBox(document_background);
         if (ShouldFullyInvalidateBackgroundOnLayoutOverflowChange(
-                document_background_box->PreviousPhysicalLayoutOverflowRect(),
-                document_background_box->PhysicalLayoutOverflowRect())) {
+                document_background_box->PreviousPhysicalLayoutOverflowRect()
+                    .ToLayoutRect(),
+                document_background_box->PhysicalLayoutOverflowRect()
+                    .ToLayoutRect())) {
           return BackgroundInvalidationType::kFull;
         }
       }
@@ -312,16 +314,16 @@ BoxPaintInvalidator::ComputeBackgroundInvalidation(
   if (!layout_overflow_change_causes_invalidation)
     return BackgroundInvalidationType::kNone;
 
-  const LayoutRect& old_layout_overflow =
-      box_.PreviousPhysicalLayoutOverflowRect();
-  LayoutRect new_layout_overflow = box_.PhysicalLayoutOverflowRect();
+  const auto& old_layout_overflow = box_.PreviousPhysicalLayoutOverflowRect();
+  auto new_layout_overflow = box_.PhysicalLayoutOverflowRect();
   if (ShouldFullyInvalidateBackgroundOnLayoutOverflowChange(
-          old_layout_overflow, new_layout_overflow))
+          old_layout_overflow.ToLayoutRect(),
+          new_layout_overflow.ToLayoutRect()))
     return BackgroundInvalidationType::kFull;
 
   if (new_layout_overflow != old_layout_overflow) {
     // Do incremental invalidation if possible.
-    if (old_layout_overflow.Location() == new_layout_overflow.Location())
+    if (old_layout_overflow.offset == new_layout_overflow.offset)
       return BackgroundInvalidationType::kIncremental;
     return BackgroundInvalidationType::kFull;
   }

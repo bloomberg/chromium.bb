@@ -120,7 +120,7 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
 
   // See comments for the equivalent method on LayoutObject.
   bool MapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ancestor,
-                                      LayoutRect&,
+                                      PhysicalRect&,
                                       MapCoordinatesFlags mode,
                                       VisualRectFlags) const;
 
@@ -137,7 +137,7 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
       const LayoutBoxModelObject* ancestor,
       TransformState&,
       VisualRectFlags = kDefaultVisualRectFlags) const override;
-  LayoutSize OffsetForFixedPosition() const;
+  PhysicalOffset OffsetForFixedPosition() const;
 
   void InvalidatePaintForViewAndCompositedLayers();
 
@@ -151,9 +151,9 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
   void AbsoluteQuads(Vector<FloatQuad>&,
                      MapCoordinatesFlags mode = 0) const override;
 
-  LayoutRect ViewRect() const override;
-  LayoutRect OverflowClipRect(
-      const LayoutPoint& location,
+  PhysicalRect ViewRect() const override;
+  PhysicalRect OverflowClipRect(
+      const PhysicalOffset& location,
       OverlayScrollbarClipBehavior =
           kIgnorePlatformOverlayScrollbarSize) const override;
 
@@ -228,7 +228,7 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
     layout_state_ = layout_state_->Next();
   }
 
-  LayoutRect LocalVisualRectIgnoringVisibility() const override;
+  PhysicalRect LocalVisualRectIgnoringVisibility() const override;
 
   // Invalidates paint for the entire view, including composited descendants,
   // but not including child frames.
@@ -237,7 +237,7 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
 
   bool ShouldPlaceBlockDirectionScrollbarOnLogicalLeft() const override;
 
-  LayoutRect DebugRect() const override;
+  PhysicalRect DebugRect() const override;
 
   // Returns the coordinates of find-in-page scrollbar tickmarks.  These come
   // from DocumentMarkerController, unless overridden by SetTickmarks.
@@ -256,7 +256,9 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
   // The visible background area, in the local coordinates. The view background
   // will be painted in this rect. It's also the positioning area of fixed-
   // attachment backgrounds.
-  LayoutRect BackgroundRect() const { return OverflowClipRect(LayoutPoint()); }
+  LayoutRect BackgroundRect() const {
+    return OverflowClipRect(PhysicalOffset()).ToLayoutRect();
+  }
 
   // The previous BackgroundRect after the previous paint invalidation.
   LayoutRect PreviousBackgroundRect() const {

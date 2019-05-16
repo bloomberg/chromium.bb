@@ -959,8 +959,9 @@ LayoutRect Node::BoundingBox() const {
 
 LayoutRect Node::BoundingBoxForScrollIntoView() const {
   if (GetLayoutObject()) {
-    return LayoutRect(
-        GetLayoutObject()->AbsoluteBoundingBoxRectForScrollIntoView());
+    return GetLayoutObject()
+        ->AbsoluteBoundingBoxRectForScrollIntoView()
+        .ToLayoutRect();
   }
 
   return LayoutRect();

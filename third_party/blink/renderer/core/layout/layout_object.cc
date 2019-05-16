@@ -1278,12 +1278,12 @@ IntRect LayoutObject::AbsoluteBoundingBoxRect(MapCoordinatesFlags flags) const {
   return result;
 }
 
-LayoutRect LayoutObject::AbsoluteBoundingBoxRectHandlingEmptyInline() const {
-  return EnclosingLayoutRect(AbsoluteBoundingBoxFloatRect());
+PhysicalRect LayoutObject::AbsoluteBoundingBoxRectHandlingEmptyInline() const {
+  return PhysicalRect::EnclosingRect(AbsoluteBoundingBoxFloatRect());
 }
 
-LayoutRect LayoutObject::AbsoluteBoundingBoxRectForScrollIntoView() const {
-  LayoutRect rect = AbsoluteBoundingBoxRectHandlingEmptyInline();
+PhysicalRect LayoutObject::AbsoluteBoundingBoxRectForScrollIntoView() const {
+  PhysicalRect rect = AbsoluteBoundingBoxRectHandlingEmptyInline();
   const auto& style = StyleRef();
   rect.ExpandEdges(LayoutUnit(style.ScrollMarginTop()),
                    LayoutUnit(style.ScrollMarginRight()),
@@ -1520,13 +1520,13 @@ void LayoutObject::InvalidatePaintRectangle(const LayoutRect& dirty_rect) {
   SetShouldCheckForPaintInvalidation();
 }
 
-LayoutRect LayoutObject::AbsoluteSelectionRect() const {
-  LayoutRect selection_rect = LocalSelectionVisualRect();
+PhysicalRect LayoutObject::AbsoluteSelectionRect() const {
+  PhysicalRect selection_rect = LocalSelectionVisualRect();
   if (!selection_rect.IsEmpty())
     MapToVisualRectInAncestorSpace(View(), selection_rect);
 
   if (LocalFrameView* frame_view = GetFrameView())
-    selection_rect = frame_view->DocumentToFrame(selection_rect);
+    return frame_view->DocumentToFrame(selection_rect);
 
   return selection_rect;
 }
@@ -1567,20 +1567,20 @@ void LayoutObject::ClearPreviousVisualRects() {
   SetShouldDoFullPaintInvalidation();
 }
 
-LayoutRect LayoutObject::VisualRectInDocument(VisualRectFlags flags) const {
-  LayoutRect rect = LocalVisualRect();
+PhysicalRect LayoutObject::VisualRectInDocument(VisualRectFlags flags) const {
+  PhysicalRect rect = LocalVisualRect();
   MapToVisualRectInAncestorSpace(View(), rect, flags);
   return rect;
 }
 
-LayoutRect LayoutObject::LocalVisualRectIgnoringVisibility() const {
+PhysicalRect LayoutObject::LocalVisualRectIgnoringVisibility() const {
   NOTREACHED();
-  return LayoutRect();
+  return PhysicalRect();
 }
 
 bool LayoutObject::MapToVisualRectInAncestorSpaceInternalFastPath(
     const LayoutBoxModelObject* ancestor,
-    LayoutRect& rect,
+    PhysicalRect& rect,
     VisualRectFlags visual_rect_flags,
     bool& intersects) const {
   intersects = true;
@@ -1604,7 +1604,7 @@ bool LayoutObject::MapToVisualRectInAncestorSpaceInternalFastPath(
   // FirstFragment().PaintOffset() is relative to the transform space defined by
   // FirstFragment().LocalBorderBoxProperties() (if this == property_container)
   // or property_container->FirstFragment().ContentsProperties().
-  rect.MoveBy(FirstFragment().PaintOffset());
+  rect.Move(PhysicalOffsetToBeNoop(FirstFragment().PaintOffset()));
   if (property_container != ancestor) {
     FloatClipRect clip_rect((FloatRect(rect)));
     const auto& local_state =
@@ -1616,16 +1616,16 @@ bool LayoutObject::MapToVisualRectInAncestorSpaceInternalFastPath(
         kIgnorePlatformOverlayScrollbarSize,
         (visual_rect_flags & kEdgeInclusive) ? kInclusiveIntersect
                                              : kNonInclusiveIntersect);
-    rect = LayoutRect(clip_rect.Rect());
+    rect = PhysicalRect::EnclosingRect(clip_rect.Rect());
   }
-  rect.MoveBy(-ancestor->FirstFragment().PaintOffset());
+  rect.Move(-PhysicalOffsetToBeNoop(ancestor->FirstFragment().PaintOffset()));
 
   return true;
 }
 
 bool LayoutObject::MapToVisualRectInAncestorSpace(
     const LayoutBoxModelObject* ancestor,
-    LayoutRect& rect,
+    PhysicalRect& rect,
     VisualRectFlags visual_rect_flags) const {
   bool intersects = true;
   if (MapToVisualRectInAncestorSpaceInternalFastPath(
@@ -1637,7 +1637,8 @@ bool LayoutObject::MapToVisualRectInAncestorSpace(
   intersects = MapToVisualRectInAncestorSpaceInternal(ancestor, transform_state,
                                                       visual_rect_flags);
   transform_state.Flatten();
-  rect = LayoutRect(transform_state.LastPlanarQuad().BoundingBox());
+  rect = PhysicalRect::EnclosingRect(
+      transform_state.LastPlanarQuad().BoundingBox());
   return intersects;
 }
 
@@ -2520,7 +2521,7 @@ void LayoutObject::CheckCounterChanges(const ComputedStyle* old_style,
   View()->SetNeedsCounterUpdate();
 }
 
-LayoutRect LayoutObject::ViewRect() const {
+PhysicalRect LayoutObject::ViewRect() const {
   return View()->ViewRect();
 }
 
@@ -2581,7 +2582,7 @@ void LayoutObject::MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
     }
   }
 
-  LayoutSize container_offset =
+  PhysicalOffset container_offset =
       OffsetFromContainer(container, mode & kIgnoreScrollOffset);
   // TODO(smcgruer): This is inefficient. Instead we should avoid including
   // offsetForInFlowPosition in offsetFromContainer when ignoring sticky.
@@ -2594,8 +2595,8 @@ void LayoutObject::MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
     // everything in the fragmentation context lived in one tall single column).
     // Convert it to a visual point now, since we're about to escape the flow
     // thread.
-    container_offset +=
-        ColumnOffset(LayoutPoint(transform_state.MappedPoint()));
+    container_offset += PhysicalOffsetToBeNoop(
+        ColumnOffset(LayoutPoint(transform_state.MappedPoint())));
   }
 
   // Text objects just copy their parent's computed style, so we need to ignore
@@ -2611,7 +2612,7 @@ void LayoutObject::MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
                                           ? TransformState::kAccumulateTransform
                                           : TransformState::kFlattenTransform);
   } else {
-    transform_state.Move(container_offset.Width(), container_offset.Height(),
+    transform_state.Move(container_offset.left, container_offset.top,
                          preserve3d ? TransformState::kAccumulateTransform
                                     : TransformState::kFlattenTransform);
   }
@@ -2620,9 +2621,7 @@ void LayoutObject::MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
     // There can't be a transform between |ancestor| and |o|, because transforms
     // create containers, so it should be safe to just subtract the delta
     // between the ancestor and |o|.
-    LayoutSize container_offset =
-        ancestor->OffsetFromAncestor(container);
-    transform_state.Move(-container_offset.Width(), -container_offset.Height(),
+    transform_state.Move(-ancestor->OffsetFromAncestor(container),
                          preserve3d ? TransformState::kAccumulateTransform
                                     : TransformState::kFlattenTransform);
     // If the ancestor is fixed, then the rect is already in its coordinates so
@@ -2630,8 +2629,7 @@ void LayoutObject::MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
     if (ancestor->StyleRef().GetPosition() != EPosition::kFixed &&
         container->IsLayoutView() &&
         StyleRef().GetPosition() == EPosition::kFixed) {
-      LayoutSize adjustment = ToLayoutView(container)->OffsetForFixedPosition();
-      transform_state.Move(adjustment.Width(), adjustment.Height());
+      transform_state.Move(ToLayoutView(container)->OffsetForFixedPosition());
     }
     return;
   }
@@ -2670,7 +2668,7 @@ void LayoutObject::MapAncestorToLocal(const LayoutBoxModelObject* ancestor,
   if (!skip_info.AncestorSkipped())
     container->MapAncestorToLocal(ancestor, transform_state, mode);
 
-  LayoutSize container_offset = OffsetFromContainer(container);
+  PhysicalOffset container_offset = OffsetFromContainer(container);
   bool preserve3d =
       mode & kUseTransforms &&
       (container->StyleRef().Preserves3D() || StyleRef().Preserves3D());
@@ -2681,7 +2679,7 @@ void LayoutObject::MapAncestorToLocal(const LayoutBoxModelObject* ancestor,
                                           ? TransformState::kAccumulateTransform
                                           : TransformState::kFlattenTransform);
   } else {
-    transform_state.Move(container_offset.Width(), container_offset.Height(),
+    transform_state.Move(container_offset.left, container_offset.top,
                          preserve3d ? TransformState::kAccumulateTransform
                                     : TransformState::kFlattenTransform);
   }
@@ -2704,14 +2702,13 @@ void LayoutObject::MapAncestorToLocal(const LayoutBoxModelObject* ancestor,
 
   if (skip_info.AncestorSkipped()) {
     container_offset = ancestor->OffsetFromAncestor(container);
-    transform_state.Move(-container_offset.Width(), -container_offset.Height());
+    transform_state.Move(-container_offset.left, -container_offset.top);
     // If the ancestor is fixed, then the rect is already in its coordinates so
     // doesn't need viewport-adjusting.
     if (ancestor->StyleRef().GetPosition() != EPosition::kFixed &&
         container->IsLayoutView() &&
         StyleRef().GetPosition() == EPosition::kFixed) {
-      LayoutSize adjustment = ToLayoutView(container)->OffsetForFixedPosition();
-      transform_state.Move(adjustment.Width(), adjustment.Height());
+      transform_state.Move(ToLayoutView(container)->OffsetForFixedPosition());
     }
   }
 }
@@ -2727,7 +2724,7 @@ bool LayoutObject::ShouldUseTransformFromContainer(
 
 void LayoutObject::GetTransformFromContainer(
     const LayoutObject* container_object,
-    const LayoutSize& offset_in_container,
+    const PhysicalOffset& offset_in_container,
     TransformationMatrix& transform) const {
   transform.MakeIdentity();
   PaintLayer* layer =
@@ -2735,8 +2732,8 @@ void LayoutObject::GetTransformFromContainer(
   if (layer && layer->Transform())
     transform.Multiply(layer->CurrentTransform());
 
-  transform.PostTranslate(offset_in_container.Width().ToFloat(),
-                          offset_in_container.Height().ToFloat());
+  transform.PostTranslate(offset_in_container.left.ToFloat(),
+                          offset_in_container.top.ToFloat());
 
   if (container_object && container_object->HasLayer() &&
       container_object->StyleRef().HasPerspective()) {
@@ -2830,40 +2827,41 @@ TransformationMatrix LayoutObject::LocalToAncestorTransform(
   return transform_state.AccumulatedTransform();
 }
 
-LayoutSize LayoutObject::OffsetFromContainer(const LayoutObject* o,
-                                             bool ignore_scroll_offset) const {
+PhysicalOffset LayoutObject::OffsetFromContainer(
+    const LayoutObject* o,
+    bool ignore_scroll_offset) const {
   return OffsetFromContainerInternal(o, ignore_scroll_offset);
 }
 
-LayoutSize LayoutObject::OffsetFromContainerInternal(
+PhysicalOffset LayoutObject::OffsetFromContainerInternal(
     const LayoutObject* o,
     bool ignore_scroll_offset) const {
   DCHECK_EQ(o, Container());
   return o->HasOverflowClip()
              ? OffsetFromScrollableContainer(o, ignore_scroll_offset)
-             : LayoutSize();
+             : PhysicalOffset();
 }
 
-LayoutSize LayoutObject::OffsetFromScrollableContainer(
+PhysicalOffset LayoutObject::OffsetFromScrollableContainer(
     const LayoutObject* container,
     bool ignore_scroll_offset) const {
   DCHECK(container->HasOverflowClip());
   const LayoutBox* box = ToLayoutBox(container);
   if (!ignore_scroll_offset)
-    return -LayoutSize(box->ScrolledContentOffset());
+    return -PhysicalOffset(box->ScrolledContentOffset());
 
   // ScrollOrigin accounts for other writing modes whose content's origin is not
   // at the top-left.
-  return LayoutSize(ToIntSize(box->GetScrollableArea()->ScrollOrigin()));
+  return PhysicalOffset(box->GetScrollableArea()->ScrollOrigin());
 }
 
-LayoutSize LayoutObject::OffsetFromAncestor(
+PhysicalOffset LayoutObject::OffsetFromAncestor(
     const LayoutObject* ancestor_container) const {
   if (ancestor_container == this)
-    return LayoutSize();
+    return PhysicalOffset();
 
-  LayoutSize offset;
-  LayoutPoint reference_point;
+  PhysicalOffset offset;
+  PhysicalOffset reference_point;
   const LayoutObject* curr_container = this;
   AncestorSkipInfo skip_info(ancestor_container);
   do {
@@ -2874,10 +2872,10 @@ LayoutSize LayoutObject::OffsetFromAncestor(
     if (!next_container)
       break;
     DCHECK(!curr_container->HasTransformRelatedProperty());
-    LayoutSize current_offset =
+    PhysicalOffset current_offset =
         curr_container->OffsetFromContainer(next_container);
     offset += current_offset;
-    reference_point.Move(current_offset);
+    reference_point += current_offset;
     curr_container = next_container;
   } while (curr_container != ancestor_container &&
            !skip_info.AncestorSkipped());
@@ -3504,7 +3502,7 @@ void LayoutObject::AddAnnotatedRegions(Vector<AnnotatedRegionValue>& regions) {
   AnnotatedRegionValue region;
   region.draggable =
       StyleRef().DraggableRegionMode() == EDraggableRegionMode::kDrag;
-  region.bounds = LayoutRect(abs_bounds);
+  region.bounds = PhysicalRect::EnclosingRect(abs_bounds);
   regions.push_back(region);
 }
 
@@ -3926,8 +3924,8 @@ void LayoutObject::SetIsBackgroundAttachmentFixedObject(
     GetFrameView()->RemoveBackgroundAttachmentFixedObject(this);
 }
 
-LayoutRect LayoutObject::DebugRect() const {
-  return LayoutRect();
+PhysicalRect LayoutObject::DebugRect() const {
+  return PhysicalRect();
 }
 
 void LayoutObject::InvalidateSelectedChildrenOnStyleChange() {

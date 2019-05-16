@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/api/hit_test_action.h"
 #include "third_party/blink/renderer/core/layout/api/selection_state.h"
+#include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/core/layout/geometry/transform_state.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_object_child_list.h"
@@ -116,7 +117,7 @@ struct AnnotatedRegionValue {
     return draggable == o.draggable && bounds == o.bounds;
   }
 
-  LayoutRect bounds;
+  PhysicalRect bounds;
   bool draggable;
 };
 
@@ -1566,11 +1567,11 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   // Return the offset from the container() layoutObject (excluding transforms
   // and multicol).
-  LayoutSize OffsetFromContainer(const LayoutObject*,
-                                 bool ignore_scroll_offset = false) const;
+  PhysicalOffset OffsetFromContainer(const LayoutObject*,
+                                     bool ignore_scroll_offset = false) const;
   // Return the offset from an object from the ancestor. The ancestor need
   // not be on the containing block chain of |this|.
-  LayoutSize OffsetFromAncestor(const LayoutObject*) const;
+  PhysicalOffset OffsetFromAncestor(const LayoutObject*) const;
 
   FloatRect AbsoluteBoundingBoxFloatRect(MapCoordinatesFlags = 0) const;
   // This returns an IntRect enclosing this object. If this object has an
@@ -1584,10 +1585,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // box of named anchors.
   // TODO(crbug.com/953479): After the bug is fixed, investigate whether we
   // can combine this with AbsoluteBoundingBoxRect().
-  virtual LayoutRect AbsoluteBoundingBoxRectHandlingEmptyInline() const;
+  virtual PhysicalRect AbsoluteBoundingBoxRectHandlingEmptyInline() const;
   // This returns an IntRect expanded from
   // AbsoluteBoundingBoxRectHandlingEmptyInline by ScrollMargin.
-  LayoutRect AbsoluteBoundingBoxRectForScrollIntoView() const;
+  PhysicalRect AbsoluteBoundingBoxRectForScrollIntoView() const;
 
   // Build an array of quads in absolute coords for line boxes
   virtual void AbsoluteQuads(Vector<FloatQuad>&,
@@ -1673,7 +1674,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // Returns the rect that should have raster invalidated whenever this object
   // changes. The rect is in the coordinate space of the document's scrolling
   // contents. This method deals with outlines and overflow.
-  virtual LayoutRect VisualRectInDocument(
+  virtual PhysicalRect VisualRectInDocument(
       VisualRectFlags = kDefaultVisualRectFlags) const;
 
   // Returns the rect that should have raster invalidated whenever this object
@@ -1681,10 +1682,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // This is for non-SVG objects and LayoutSVGRoot only. SVG objects (except
   // LayoutSVGRoot) should use VisualRectInLocalSVGCoordinates() and map with
   // SVG transforms instead.
-  LayoutRect LocalVisualRect() const {
+  PhysicalRect LocalVisualRect() const {
     if (StyleRef().Visibility() != EVisibility::kVisible &&
         VisualRectRespectsVisibility())
-      return LayoutRect();
+      return PhysicalRect();
     return LocalVisualRectIgnoringVisibility();
   }
 
@@ -1712,7 +1713,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // information.
   bool MapToVisualRectInAncestorSpace(
       const LayoutBoxModelObject* ancestor,
-      LayoutRect&,
+      PhysicalRect&,
       VisualRectFlags = kDefaultVisualRectFlags) const;
 
   // Do not call this method directly. Call mapToVisualRectInAncestorSpace
@@ -1725,7 +1726,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // Do a rect-based hit test with this object as the stop node.
   HitTestResult HitTestForOcclusion(const LayoutRect&) const;
   HitTestResult HitTestForOcclusion() const {
-    return HitTestForOcclusion(VisualRectInDocument());
+    return HitTestForOcclusion(VisualRectInDocument().ToLayoutRect());
   }
 
   // Return the offset to the column in which the specified point (in
@@ -1757,9 +1758,11 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // A single rectangle that encompasses all of the selected objects within this
   // object. Used to determine the tightest possible bounding box for the
   // selection. The rect is in the object's local physical coordinate space.
-  virtual LayoutRect LocalSelectionVisualRect() const { return LayoutRect(); }
+  virtual PhysicalRect LocalSelectionVisualRect() const {
+    return PhysicalRect();
+  }
 
-  LayoutRect AbsoluteSelectionRect() const;
+  PhysicalRect AbsoluteSelectionRect() const;
 
   bool CanBeSelectionLeaf() const;
   bool IsSelected() const;
@@ -1879,7 +1882,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   bool ShouldUseTransformFromContainer(const LayoutObject* container) const;
   void GetTransformFromContainer(const LayoutObject* container,
-                                 const LayoutSize& offset_in_container,
+                                 const PhysicalOffset& offset_in_container,
                                  TransformationMatrix&) const;
 
   bool CreatesGroup() const {
@@ -2002,7 +2005,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
   void SetShouldInvalidateSelection();
 
-  virtual LayoutRect ViewRect() const;
+  virtual PhysicalRect ViewRect() const;
 
   // Called by PaintInvalidator during PrePaint. Checks paint invalidation flags
   // and other changes that will cause different painting, and invalidate
@@ -2027,7 +2030,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   // Returns a rect corresponding to this LayoutObject's bounds for use in
   // debugging output
-  virtual LayoutRect DebugRect() const;
+  virtual PhysicalRect DebugRect() const;
 
   // Each LayoutObject has one or more painting fragments (exactly one
   // in the absence of multicol/pagination).
@@ -2444,7 +2447,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // The return value of this method is whether the fast path could be used.
   bool MapToVisualRectInAncestorSpaceInternalFastPath(
       const LayoutBoxModelObject* ancestor,
-      LayoutRect&,
+      PhysicalRect&,
       VisualRectFlags,
       bool& intersects) const;
 
@@ -2492,15 +2495,15 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   // See LocalVisualRect().
   virtual bool VisualRectRespectsVisibility() const { return true; }
-  virtual LayoutRect LocalVisualRectIgnoringVisibility() const;
+  virtual PhysicalRect LocalVisualRectIgnoringVisibility() const;
 
   virtual bool CanBeSelectionLeafInternal() const { return false; }
 
-  virtual LayoutSize OffsetFromContainerInternal(
+  virtual PhysicalOffset OffsetFromContainerInternal(
       const LayoutObject*,
       bool ignore_scroll_offset) const;
-  LayoutSize OffsetFromScrollableContainer(const LayoutObject*,
-                                           bool ignore_scroll_offset) const;
+  PhysicalOffset OffsetFromScrollableContainer(const LayoutObject*,
+                                               bool ignore_scroll_offset) const;
 
   void NotifyDisplayLockDidLayout(DisplayLockContext::LifecycleTarget target) {
     if (auto* context = GetDisplayLockContext())

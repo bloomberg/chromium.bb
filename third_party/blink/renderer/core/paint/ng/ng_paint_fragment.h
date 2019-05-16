@@ -286,7 +286,7 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
 
   // Computes LocalVisualRect for an inline LayoutObject. Returns nullopt if the
   // LayoutObject is not in LayoutNG inline formatting context.
-  static base::Optional<LayoutRect> LocalVisualRectFor(const LayoutObject&);
+  static base::Optional<PhysicalRect> LocalVisualRectFor(const LayoutObject&);
 
  private:
   static scoped_refptr<NGPaintFragment> CreateOrReuse(

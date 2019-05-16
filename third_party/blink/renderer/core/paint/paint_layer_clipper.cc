@@ -514,14 +514,10 @@ LayoutRect PaintLayerClipper::LocalVisualRect(
   // The LayoutView or Global Root Scroller is special since its overflow
   // clipping rect may be larger than its box rect (crbug.com/492871).
   bool affected_by_url_bar = layout_object.IsGlobalRootScroller();
-  LayoutRect layer_bounds_with_visual_overflow =
-      affected_by_url_bar ? layout_object.View()->ViewRect()
-                          : ToLayoutBox(layout_object).VisualOverflowRect();
-  ToLayoutBox(layout_object)
-      .FlipForWritingMode(
-          // PaintLayer are in physical coordinates, so the overflow has to be
-          // flipped.
-          layer_bounds_with_visual_overflow);
+  PhysicalRect layer_bounds_with_visual_overflow =
+      affected_by_url_bar
+          ? layout_object.View()->ViewRect()
+          : ToLayoutBox(layout_object).PhysicalVisualOverflowRect();
   // At this point layer_bounds_with_visual_overflow only includes the visual
   // overflow induced by paint, prior to applying filters. This function is
   // expected the return the final visual rect after filtering.
@@ -530,9 +526,9 @@ LayoutRect PaintLayerClipper::LocalVisualRect(
       // will handle filter effects.
       (!use_geometry_mapper_ || context.root_layer == &layer_)) {
     layer_bounds_with_visual_overflow =
-        layer_.MapLayoutRectForFilter(layer_bounds_with_visual_overflow);
+        layer_.MapRectForFilter(layer_bounds_with_visual_overflow);
   }
-  return layer_bounds_with_visual_overflow;
+  return layer_bounds_with_visual_overflow.ToLayoutRect();
 }
 
 void PaintLayerClipper::CalculateBackgroundClipRect(
@@ -570,7 +566,7 @@ void PaintLayerClipper::CalculateBackgroundClipRect(
   if (parent_clip_rects->Fixed() &&
       &context.root_layer->GetLayoutObject() == layout_view &&
       output != LayoutRect(LayoutRect::InfiniteIntRect()))
-    output.Move(LayoutSize(layout_view->OffsetForFixedPosition()));
+    output.Move(layout_view->OffsetForFixedPosition().ToLayoutSize());
 }
 
 void PaintLayerClipper::GetOrCalculateClipRects(const ClipRectsContext& context,

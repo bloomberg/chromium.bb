@@ -4271,10 +4271,10 @@ bool LayoutBlockFlow::HitTestFloats(
   return false;
 }
 
-LayoutSize LayoutBlockFlow::AccumulateInFlowPositionOffsets() const {
+PhysicalOffset LayoutBlockFlow::AccumulateInFlowPositionOffsets() const {
   if (!IsAnonymousBlock() || !IsInFlowPositioned())
-    return LayoutSize();
-  LayoutSize offset;
+    return PhysicalOffset();
+  PhysicalOffset offset;
   for (const LayoutObject* p = InlineElementContinuation();
        p && p->IsLayoutInline(); p = p->Parent()) {
     if (p->IsInFlowPositioned())

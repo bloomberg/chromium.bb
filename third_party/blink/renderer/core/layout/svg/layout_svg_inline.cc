@@ -83,7 +83,8 @@ FloatRect LayoutSVGInline::VisualRectInLocalSVGCoordinates() const {
   return FloatRect();
 }
 
-LayoutRect LayoutSVGInline::VisualRectInDocument(VisualRectFlags flags) const {
+PhysicalRect LayoutSVGInline::VisualRectInDocument(
+    VisualRectFlags flags) const {
   return SVGLayoutSupport::VisualRectInAncestorSpace(*this, *View(), flags);
 }
 

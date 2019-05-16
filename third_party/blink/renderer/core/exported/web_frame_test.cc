@@ -140,6 +140,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_test_suite.h"
+#include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/core/testing/null_execution_context.h"
 #include "third_party/blink/renderer/core/testing/scoped_fake_plugin_registry.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
@@ -12008,7 +12009,7 @@ TEST_F(WebFrameSimTest, LayoutViewLocalVisualRect) {
   )HTML");
 
   Compositor().BeginFrame();
-  ASSERT_EQ(LayoutRect(0, 0, 1200, 800),
+  ASSERT_EQ(PhysicalRect(0, 0, 1200, 800),
             GetDocument().GetLayoutView()->LocalVisualRect());
 }
 

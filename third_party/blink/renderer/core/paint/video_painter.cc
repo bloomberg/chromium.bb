@@ -26,7 +26,7 @@ void VideoPainter::PaintReplaced(const PaintInfo& paint_info,
   if (!displaying_poster && !media_player)
     return;
 
-  LayoutRect replaced_rect(layout_video_.ReplacedContentRect());
+  LayoutRect replaced_rect(layout_video_.ReplacedContentRect().ToLayoutRect());
   replaced_rect.MoveBy(paint_offset);
   IntRect snapped_replaced_rect = PixelSnappedIntRect(replaced_rect);
 
@@ -38,7 +38,8 @@ void VideoPainter::PaintReplaced(const PaintInfo& paint_info,
     return;
 
   GraphicsContext& context = paint_info.context;
-  LayoutRect content_box_rect = layout_video_.PhysicalContentBoxRect();
+  LayoutRect content_box_rect =
+      layout_video_.PhysicalContentBoxRect().ToLayoutRect();
   content_box_rect.MoveBy(paint_offset);
 
   // Since we may have changed the location of the replaced content, we need to
