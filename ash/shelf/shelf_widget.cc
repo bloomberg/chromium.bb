@@ -9,7 +9,6 @@
 #include "ash/animation/animation_change_type.h"
 #include "ash/focus_cycler.h"
 #include "ash/keyboard/ui/keyboard_controller.h"
-#include "ash/kiosk_next/kiosk_next_shell_controller.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/window_properties.h"
@@ -364,14 +363,6 @@ ShelfWidget::ShelfWidget(aura::Window* shelf_container, Shelf* shelf)
 
   background_animator_.AddObserver(delegate_view_);
   shelf_->AddObserver(this);
-
-  // KioskNextShell controller may have already notified its observers that
-  // it has been enabled by the time this ShelfWidget is being created.
-  if (Shell::Get()->kiosk_next_shell_controller()->IsEnabled()) {
-    OnKioskNextEnabled();
-  } else {
-    Shell::Get()->kiosk_next_shell_controller()->AddObserver(this);
-  }
 }
 
 ShelfWidget::~ShelfWidget() {
@@ -399,9 +390,6 @@ void ShelfWidget::Shutdown() {
   // Don't need to update the shelf background during shutdown.
   background_animator_.RemoveObserver(delegate_view_);
   shelf_->RemoveObserver(this);
-
-  if (Shell::Get()->kiosk_next_shell_controller())
-    Shell::Get()->kiosk_next_shell_controller()->RemoveObserver(this);
 
   // Don't need to observe focus/activation during shutdown.
   Shell::Get()->focus_cycler()->RemoveWidget(this);
@@ -595,18 +583,6 @@ void ShelfWidget::OnSessionStateChanged(session_manager::SessionState state) {
 
 void ShelfWidget::OnUserSessionAdded(const AccountId& account_id) {
   login_shelf_view_->UpdateAfterSessionChange();
-}
-
-void ShelfWidget::OnKioskNextEnabled() {
-  // Hide the shelf view and delete/remove it.
-  shelf_view_->SetVisible(false);
-  delete shelf_view_;
-
-  shelf_view_ = new ShelfView(
-      Shell::Get()->kiosk_next_shell_controller()->shelf_model(), shelf_, this);
-  shelf_view_->Init();
-  GetContentsView()->AddChildView(shelf_view_);
-  shelf_view_->SetVisible(true);
 }
 
 SkColor ShelfWidget::GetShelfBackgroundColor() const {

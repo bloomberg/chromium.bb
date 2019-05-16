@@ -12,44 +12,13 @@
 #include "ash/kiosk_next/kiosk_next_shell_observer.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
-#include "ash/public/cpp/shelf_model.h"
 #include "ash/session/session_controller_impl.h"
-#include "ash/shelf/home_button_delegate.h"
 #include "ash/shell.h"
-#include "ash/strings/grit/ash_strings.h"
-#include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/account_id/account_id.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
-#include "ui/base/l10n/l10n_util.h"
 
 namespace ash {
-
-namespace {
-
-std::unique_ptr<ShelfModel> CreateKioskNextShelfModel() {
-  auto shelf_model = std::make_unique<ShelfModel>();
-
-  shelf_model->SetShelfItemDelegate(ShelfID(kBackButtonId), nullptr);
-  shelf_model->SetShelfItemDelegate(ShelfID(kAppListId),
-                                    std::make_unique<HomeButtonDelegate>());
-
-  DCHECK_EQ(0, shelf_model->ItemIndexByID(ShelfID(kBackButtonId)));
-  DCHECK_EQ(1, shelf_model->ItemIndexByID(ShelfID(kAppListId)));
-
-  ShelfItem back_item = shelf_model->items()[0];
-  ShelfItem home_item = shelf_model->items()[1];
-
-  back_item.title = l10n_util::GetStringUTF16(IDS_ASH_SHELF_BACK_BUTTON_TITLE);
-  home_item.title =
-      l10n_util::GetStringUTF16(IDS_ASH_SHELF_APP_LIST_LAUNCHER_TITLE);
-
-  shelf_model->Set(0, back_item);
-  shelf_model->Set(1, home_item);
-  return shelf_model;
-}
-
-}  // namespace
 
 KioskNextShellController::KioskNextShellController() = default;
 
@@ -120,8 +89,6 @@ void KioskNextShellController::LaunchKioskNextShellIfEnabled() {
 
   kiosk_next_shell_client_->LaunchKioskNextShell(
       session_controller->GetPrimaryUserSession()->user_info.account_id);
-
-  shelf_model_ = CreateKioskNextShelfModel();
 
   // Notify observers that KioskNextShell has been enabled.
   for (KioskNextShellObserver& observer : observer_list_) {
