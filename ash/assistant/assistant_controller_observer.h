@@ -31,6 +31,9 @@ class AssistantControllerObserver : public base::CheckedObserver {
   // Invoked when the AssistantController is starting to be destroyed.
   virtual void OnAssistantControllerDestroying() {}
 
+  // Invoked when the Assistant is ready.
+  virtual void OnAssistantReady() {}
+
   // Invoked when Assistant has received a deep link of the specified |type|
   // with the given |params|.
   virtual void OnDeepLinkReceived(

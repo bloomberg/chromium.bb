@@ -143,8 +143,10 @@ AppListControllerImpl::AppListControllerImpl()
   shell->voice_interaction_controller()->AddLocalObserver(this);
   shell->window_tree_host_manager()->AddObserver(this);
   shell->mru_window_tracker()->AddObserver(this);
-  if (app_list_features::IsEmbeddedAssistantUIEnabled())
+  if (app_list_features::IsEmbeddedAssistantUIEnabled()) {
+    shell->assistant_controller()->AddObserver(this);
     shell->assistant_controller()->ui_controller()->AddModelObserver(this);
+  }
   shell->home_screen_controller()->home_launcher_gesture_handler()->AddObserver(
       this);
 }
@@ -674,6 +676,10 @@ void AppListControllerImpl::OnDisplayConfigurationChanged() {
 
 void AppListControllerImpl::OnWindowUntracked(aura::Window* untracked_window) {
   UpdateExpandArrowVisibility();
+}
+
+void AppListControllerImpl::OnAssistantReady() {
+  UpdateAssistantVisibility();
 }
 
 void AppListControllerImpl::OnUiVisibilityChanged(
@@ -1381,8 +1387,10 @@ void AppListControllerImpl::Shutdown() {
   shell->home_screen_controller()
       ->home_launcher_gesture_handler()
       ->RemoveObserver(this);
-  if (app_list_features::IsEmbeddedAssistantUIEnabled())
+  if (app_list_features::IsEmbeddedAssistantUIEnabled()) {
+    shell->assistant_controller()->RemoveObserver(this);
     shell->assistant_controller()->ui_controller()->RemoveModelObserver(this);
+  }
   shell->mru_window_tracker()->RemoveObserver(this);
   shell->window_tree_host_manager()->RemoveObserver(this);
   shell->voice_interaction_controller()->RemoveLocalObserver(this);
