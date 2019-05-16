@@ -153,6 +153,9 @@ cast_test_group("cast_tests") {
         gtest_excludes += [
           "CastMediaBlockerBrowserTest.Video_BlockUnblock",
           "CastMediaBlockerBrowserTest.Audio_BlockUnblock",
+
+          # This browser test can only be run inside of a source checkout.
+          "CastWebContentsBrowserTest.*",
         ]
       }
 
