@@ -793,6 +793,7 @@ scoped_refptr<const NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
   NGExclusionSpace exclusion_space;
   const NGInlineBreakToken* break_token = BreakToken();
 
+  bool is_line_created = false;
   LayoutUnit line_block_size;
   LayoutUnit block_delta;
   const auto* opportunities_it = opportunities.begin();
@@ -820,6 +821,7 @@ scoped_refptr<const NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
     // Reset any state that may have been modified in a previous pass.
     container_builder_.Reset();
     exclusion_space = initial_exclusion_space;
+    is_line_created = false;
 
     NGLineLayoutOpportunity line_opportunity =
         opportunity.ComputeLineLayoutOpportunity(ConstraintSpace(),
@@ -836,8 +838,8 @@ scoped_refptr<const NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
     // *and* the opportunity is smaller than the available inline-size, and the
     // container autowraps, continue to the next opportunity.
     if (line_info.HasOverflow() &&
-        ConstraintSpace().AvailableSize().inline_size !=
-            line_opportunity.AvailableFloatInlineSize() &&
+        !line_opportunity.IsEqualToAvailableFloatInlineSize(
+            ConstraintSpace().AvailableSize().inline_size) &&
         Node().Style().AutoWrap()) {
       // Shapes are *special*. We need to potentially increment the block-delta
       // by 1px each loop to properly test each potential position of the line.
@@ -853,11 +855,15 @@ scoped_refptr<const NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
         line_block_size = LayoutUnit();
         ++opportunities_it;
       }
+      // There must be at least one more opportunity, or we fail to call
+      // |CreateLine()|.
+      DCHECK_NE(opportunities_it, opportunities.end());
       continue;
     }
 
     PrepareBoxStates(line_info, break_token);
     CreateLine(line_opportunity, &line_info, &exclusion_space);
+    is_line_created = true;
 
     // We now can check the block-size of the fragment, and it fits within the
     // opportunity.
@@ -915,6 +921,7 @@ scoped_refptr<const NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
     break;
   }
 
+  CHECK(is_line_created);
   container_builder_.SetExclusionSpace(std::move(exclusion_space));
   container_builder_.MoveOutOfFlowDescendantCandidatesToDescendants();
   return container_builder_.ToLineBoxFragment();
