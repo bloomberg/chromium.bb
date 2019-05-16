@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/memory/weak_ptr.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/message_center/message_center_export.h"
@@ -237,8 +236,6 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   //   * a new notification comes in: MOVE_UP_FOR_INVERSE -> FADE_IN
   //   * a notification comes out: FADE_OUT
   bool inverse_ = false;
-
-  base::WeakPtrFactory<MessagePopupCollection> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MessagePopupCollection);
 };
