@@ -29,8 +29,7 @@ class ExtensionActionManagerTest
     const char* key = nullptr;
     switch (GetParam()) {
       case ActionInfo::TYPE_ACTION:
-        // TODO(https://crbug.com/893373): Add support for this key.
-        NOTREACHED();
+        key = manifest_keys::kAction;
         break;
       case ActionInfo::TYPE_PAGE:
         key = manifest_keys::kPageAction;
@@ -139,7 +138,8 @@ TEST_P(ExtensionActionManagerTest, TestDontOverrideIfDefaultsProvided) {
 
 INSTANTIATE_TEST_SUITE_P(,
                          ExtensionActionManagerTest,
-                         testing::Values(ActionInfo::TYPE_BROWSER,
+                         testing::Values(ActionInfo::TYPE_ACTION,
+                                         ActionInfo::TYPE_BROWSER,
                                          ActionInfo::TYPE_PAGE));
 
 }  // namespace extensions
