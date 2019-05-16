@@ -401,9 +401,19 @@ void CorsURLLoader::StartRequest() {
       request_.request_initiator &&
       (fetch_cors_flag_ ||
        (request_.method != "GET" && request_.method != "HEAD"))) {
-    request_.headers.SetHeader(
-        net::HttpRequestHeaders::kOrigin,
-        (tainted_ ? url::Origin() : *request_.request_initiator).Serialize());
+    if (!fetch_cors_flag_ &&
+        request_.headers.HasHeader(net::HttpRequestHeaders::kOrigin) &&
+        request_.request_initiator->scheme() == "chrome-extension") {
+      // We need to attach an origin header when the request's method is neither
+      // GET nor HEAD. For requests made by an extension content scripts, we
+      // want to attach page's origin, whereas the request's origin is the
+      // content script's origin. See https://crbug.com/944704 for details.
+      // TODO(crbug.com/940068) Remove this condition.
+    } else {
+      request_.headers.SetHeader(
+          net::HttpRequestHeaders::kOrigin,
+          (tainted_ ? url::Origin() : *request_.request_initiator).Serialize());
+    }
   }
 
   if (fetch_cors_flag_ &&
