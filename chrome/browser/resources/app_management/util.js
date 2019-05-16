@@ -58,13 +58,15 @@ cr.define('app_management.util', function() {
    * @param {number} permissionId
    * @param {!PermissionValueType} valueType
    * @param {number} value
+   * @param {boolean} isManaged
    * @return {!Permission}
    */
-  function createPermission(permissionId, valueType, value) {
+  function createPermission(permissionId, valueType, value, isManaged) {
     return {
-      permissionId: permissionId,
-      valueType: valueType,
-      value: value,
+      permissionId,
+      valueType,
+      value,
+      isManaged,
     };
   }
 

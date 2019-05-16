@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 1
+// Next MinVersion: 2
 
 module arc.mojom;
 
@@ -14,6 +14,11 @@ enum AppPermission {
   LOCATION        = 1, // android.manifest.ACCESS_FINE_LOCATION
   MICROPHONE      = 2, // android.manifest.RECORD_AUDIO
   NOTIFICATIONS   = 3, // Not a manifest permission
+};
+
+struct PermissionState {
+  bool granted;          // If the permission has been granted
+  bool managed;          // If the permission is managed by an enterprise policy
 };
 
 // An interface for Chrome to manipulate app permissions in ARC.

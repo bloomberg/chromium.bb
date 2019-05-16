@@ -18,6 +18,18 @@ cr.define('app_management', function() {
         this.handler = new app_management.FakePageHandler(
             this.callbackRouter.createProxy());
 
+        const permissionOptions = {};
+        permissionOptions[PwaPermissionType.CONTENT_SETTINGS_TYPE_GEOLOCATION] =
+            {
+              permissionValue: TriState.kAllow,
+              isManaged: true,
+            };
+        permissionOptions[PwaPermissionType
+                              .CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA] = {
+          permissionValue: TriState.kBlock,
+          isManaged: true
+        };
+
         const /** @type {!Array<App>}*/ appList = [
           app_management.FakePageHandler.createApp(
               'blpcfgokakmgnkcojhhkbfblekacnbeo',
@@ -68,9 +80,14 @@ cr.define('app_management', function() {
           app_management.FakePageHandler.createApp(
               'aapocclcgogkmnckokdopfmhonfmgok',
               {
-                title: 'Web App, policy installed',
+                title: 'Web App, policy applied',
                 type: AppType.kWeb,
-                installSource: InstallSource.kPolicy,
+                isPinned: apps.mojom.OptionalBool.kTrue,
+                isPolicyPinned: apps.mojom.OptionalBool.kTrue,
+                installSource: apps.mojom.InstallSource.kPolicy,
+                permissions:
+                    app_management.FakePageHandler.createWebPermissions(
+                        permissionOptions),
               },
               ),
         ];

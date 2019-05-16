@@ -57,6 +57,10 @@ content::WebUIDataSource* CreateAppManagementUIHTMLSource(Profile* profile) {
   source->AddLocalizedString("title", IDS_APP_MANAGEMENT_TITLE);
   source->AddLocalizedString("uninstall", IDS_APP_MANAGEMENT_UNINSTALL);
   source->AddLocalizedString("version", IDS_APP_MANAGEMENT_VERSION);
+  source->AddLocalizedString("controlledByPolicy",
+                             IDS_CONTROLLED_SETTING_POLICY);
+  source->AddLocalizedString("pinControlledByPolicy",
+                             IDS_APP_MANAGEMENT_PIN_ENFORCED_BY_POLICY);
 
   source->AddResourcePath("app_management.mojom-lite.js",
                           IDR_APP_MANAGEMENT_MOJO_LITE_JS);

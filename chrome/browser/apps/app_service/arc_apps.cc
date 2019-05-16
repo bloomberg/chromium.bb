@@ -138,13 +138,15 @@ void LoadIcon0(apps::mojom::IconCompression icon_compression,
 }
 
 void UpdateAppPermissions(
-    const base::flat_map<arc::mojom::AppPermission, bool>& new_permissions,
+    const base::flat_map<arc::mojom::AppPermission,
+                         arc::mojom::PermissionStatePtr>& new_permissions,
     std::vector<apps::mojom::PermissionPtr>* permissions) {
   for (const auto& new_permission : new_permissions) {
     auto permission = apps::mojom::Permission::New();
     permission->permission_id = static_cast<uint32_t>(new_permission.first);
     permission->value_type = apps::mojom::PermissionValueType::kBool;
-    permission->value = static_cast<uint32_t>(new_permission.second);
+    permission->value = static_cast<uint32_t>(new_permission.second->granted);
+    permission->is_managed = new_permission.second->managed;
 
     permissions->push_back(std::move(permission));
   }
