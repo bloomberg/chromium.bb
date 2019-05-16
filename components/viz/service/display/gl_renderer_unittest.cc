@@ -2051,6 +2051,11 @@ class MockOutputSurface : public OutputSurface {
   MOCK_METHOD0(ApplyExternalStencil, void());
   MOCK_METHOD1(SetUpdateVSyncParametersCallback,
                void(UpdateVSyncParametersCallback));
+  MOCK_METHOD1(SetDisplayTransformHint, void(gfx::OverlayTransform));
+
+  gfx::OverlayTransform GetDisplayTransform() override {
+    return gfx::OVERLAY_TRANSFORM_NONE;
+  }
 };
 
 class MockOutputSurfaceTest : public GLRendererTest {

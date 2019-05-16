@@ -109,6 +109,7 @@ class VIZ_SERVICE_EXPORT DirectContextProvider
                        base::OnceClosure callback) override;
   void WaitSyncToken(const gpu::SyncToken& sync_token) override;
   bool CanWaitUnverifiedSyncToken(const gpu::SyncToken& sync_token) override;
+  void SetDisplayTransform(gfx::OverlayTransform transform) override;
 
  private:
   friend class base::RefCountedThreadSafe<DirectContextProvider>;

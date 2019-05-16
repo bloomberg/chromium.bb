@@ -83,6 +83,7 @@ class TestContextSupport : public gpu::ContextSupport {
   void SetGrContext(GrContext* gr) override;
   void WillCallGLFromSkia() override;
   void DidCallGLFromSkia() override;
+  void SetDisplayTransform(gfx::OverlayTransform transform) override {}
 
   void CallAllSyncPointCallbacks();
 

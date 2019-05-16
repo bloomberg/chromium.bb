@@ -49,6 +49,8 @@ class GLOutputSurface : public OutputSurface {
       UpdateVSyncParametersCallback callback) override;
   void SetGpuVSyncCallback(GpuVSyncCallback callback) override;
   void SetGpuVSyncEnabled(bool enabled) override;
+  void SetDisplayTransformHint(gfx::OverlayTransform transform) override {}
+  gfx::OverlayTransform GetDisplayTransform() override;
 
  protected:
   OutputSurfaceClient* client() const { return client_; }
@@ -73,6 +75,7 @@ class GLOutputSurface : public OutputSurface {
                                  const gpu::SwapBuffersCompleteParams& params);
   void OnPresentation(const gfx::PresentationFeedback& feedback);
   void OnGpuVSync(base::TimeTicks vsync_time, base::TimeDelta vsync_interval);
+  gfx::Rect ApplyDisplayInverse(const gfx::Rect& input);
 
   scoped_refptr<VizProcessContextProvider> viz_context_provider_;
   OutputSurfaceClient* client_ = nullptr;

@@ -21,8 +21,19 @@ class VIZ_SERVICE_EXPORT OverlayCandidateValidatorAndroid
   bool AllowDCLayerOverlays() override;
   bool NeedsSurfaceOccludingDamageRect() override;
   void CheckOverlaySupport(OverlayCandidateList* surfaces) override;
+  void AdjustOutputSurfaceOverlay(OverlayCandidate* candidate) override;
+
+  void set_display_transform(gfx::OverlayTransform transform) {
+    display_transform_ = transform;
+  }
+  void set_viewport_size(const gfx::Size& viewport_size) {
+    viewport_size_ = viewport_size;
+  }
 
  private:
+  gfx::OverlayTransform display_transform_ = gfx::OVERLAY_TRANSFORM_NONE;
+  gfx::Size viewport_size_;
+
   DISALLOW_COPY_AND_ASSIGN(OverlayCandidateValidatorAndroid);
 };
 

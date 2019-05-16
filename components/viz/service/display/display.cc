@@ -26,6 +26,7 @@
 #include "components/viz/service/display/display_scheduler.h"
 #include "components/viz/service/display/gl_renderer.h"
 #include "components/viz/service/display/output_surface.h"
+#include "components/viz/service/display/renderer_utils.h"
 #include "components/viz/service/display/skia_output_surface.h"
 #include "components/viz/service/display/skia_renderer.h"
 #include "components/viz/service/display/software_renderer.h"
@@ -36,6 +37,7 @@
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/overlay_transform_utils.h"
 #include "ui/gfx/presentation_feedback.h"
 
 namespace viz {
@@ -404,8 +406,9 @@ bool Display::DrawAndSwap() {
     frame = aggregator_->Aggregate(
         current_surface_id_,
         scheduler_ ? scheduler_->current_frame_display_time() : now_time,
-        ++swapped_trace_id_);
+        output_surface_->GetDisplayTransform(), ++swapped_trace_id_);
   }
+
   UMA_HISTOGRAM_COUNTS_1M("Compositing.SurfaceAggregator.AggregateUs",
                           aggregate_timer.Elapsed().InMicroseconds());
 
@@ -436,19 +439,29 @@ bool Display::DrawAndSwap() {
   gfx::Size surface_size;
   bool have_damage = false;
   auto& last_render_pass = *frame.render_pass_list.back();
+
+  // The CompositorFrame provided by the SurfaceAggregator includes the display
+  // transform while |current_surface_size_| is the pre-transform size received
+  // from the client.
+  const gfx::Transform display_transform = gfx::OverlayTransformToTransform(
+      output_surface_->GetDisplayTransform(), current_surface_size_);
+  const gfx::Size current_surface_size =
+      cc::MathUtil::MapEnclosedRectWith2dAxisAlignedTransform(
+          display_transform, gfx::Rect(current_surface_size_))
+          .size();
   if (settings_.auto_resize_output_surface &&
-      last_render_pass.output_rect.size() != current_surface_size_ &&
+      last_render_pass.output_rect.size() != current_surface_size &&
       last_render_pass.damage_rect == last_render_pass.output_rect &&
-      !current_surface_size_.IsEmpty()) {
+      !current_surface_size.IsEmpty()) {
     // Resize the output rect to the current surface size so that we won't
     // skip the draw and so that the GL swap won't stretch the output.
-    last_render_pass.output_rect.set_size(current_surface_size_);
+    last_render_pass.output_rect.set_size(current_surface_size);
     last_render_pass.damage_rect = last_render_pass.output_rect;
   }
   surface_size = last_render_pass.output_rect.size();
   have_damage = !last_render_pass.damage_rect.size().IsEmpty();
 
-  bool size_matches = surface_size == current_surface_size_;
+  bool size_matches = surface_size == current_surface_size;
   if (!size_matches)
     TRACE_EVENT_INSTANT0("viz", "Size mismatch.", TRACE_EVENT_SCOPE_THREAD);
 
@@ -478,7 +491,7 @@ bool Display::DrawAndSwap() {
     base::ElapsedTimer draw_timer;
     renderer_->DecideRenderPassAllocationsForFrame(frame.render_pass_list);
     renderer_->DrawFrame(&frame.render_pass_list, device_scale_factor_,
-                         current_surface_size_);
+                         current_surface_size);
     if (software_renderer_) {
       UMA_HISTOGRAM_COUNTS_1M("Compositing.DirectRenderer.Software.DrawFrameUs",
                               draw_timer.Elapsed().InMicroseconds());
@@ -900,6 +913,10 @@ base::TimeDelta Display::GetPreferredFrameIntervalForFrameSinkId(
 void Display::SetSupportedFrameIntervals(
     std::vector<base::TimeDelta> intervals) {
   frame_rate_decider_->SetSupportedFrameIntervals(std::move(intervals));
+}
+
+void Display::SetDisplayTransformHint(gfx::OverlayTransform transform) {
+  output_surface_->SetDisplayTransformHint(transform);
 }
 
 }  // namespace viz

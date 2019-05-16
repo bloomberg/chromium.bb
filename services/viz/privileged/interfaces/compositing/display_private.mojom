@@ -8,6 +8,7 @@ import "gpu/ipc/common/context_result.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "ui/gfx/mojo/ca_layer_params.mojom";
 import "ui/gfx/mojo/color_space.mojom";
+import "ui/gfx/mojo/overlay_transform.mojom";
 import "ui/gfx/mojo/transform.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/latency/mojo/latency_info.mojom";
@@ -70,6 +71,9 @@ interface DisplayPrivate {
   // support multiple observers.
   AddVSyncParameterObserver(
     VSyncParameterObserver observer);
+
+  // Notifies the Display of the current screen rotation.
+  SetDisplayTransformHint(gfx.mojom.OverlayTransform transform);
 };
 
 interface DisplayClient {

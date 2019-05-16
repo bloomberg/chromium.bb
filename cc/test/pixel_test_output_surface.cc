@@ -113,4 +113,8 @@ unsigned PixelTestOutputSurface::UpdateGpuFence() {
 void PixelTestOutputSurface::SetUpdateVSyncParametersCallback(
     viz::UpdateVSyncParametersCallback callback) {}
 
+gfx::OverlayTransform PixelTestOutputSurface::GetDisplayTransform() {
+  return gfx::OVERLAY_TRANSFORM_NONE;
+}
+
 }  // namespace cc

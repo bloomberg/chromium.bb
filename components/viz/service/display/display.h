@@ -150,6 +150,7 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   void RemoveOverdrawQuads(CompositorFrame* frame);
 
   void SetSupportedFrameIntervals(std::vector<base::TimeDelta> intervals);
+  void SetDisplayTransformHint(gfx::OverlayTransform transform);
 
  private:
   // TODO(cblume, crbug.com/900973): |enable_shared_images| is a temporary

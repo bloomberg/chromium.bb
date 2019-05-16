@@ -116,4 +116,8 @@ unsigned ParentOutputSurface::UpdateGpuFence() {
 void ParentOutputSurface::SetUpdateVSyncParametersCallback(
     viz::UpdateVSyncParametersCallback callback) {}
 
+gfx::OverlayTransform ParentOutputSurface::GetDisplayTransform() {
+  return gfx::OVERLAY_TRANSFORM_NONE;
+}
+
 }  // namespace android_webview

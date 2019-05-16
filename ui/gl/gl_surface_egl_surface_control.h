@@ -80,6 +80,7 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public GLSurfaceEGL {
   bool SupportsPresentationCallback() override;
   bool SupportsPostSubBuffer() override;
   bool SupportsCommitOverlayPlanes() override;
+  void SetDisplayTransform(gfx::OverlayTransform transform) override;
 
  private:
   ~GLSurfaceEGLSurfaceControl() override;
@@ -133,6 +134,8 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public GLSurfaceEGL {
       ResourceRefs released_resources,
       SurfaceControl::TransactionStats transaction_stats);
 
+  gfx::Rect ApplyDisplayInverse(const gfx::Rect& input) const;
+
   const std::string root_surface_name_;
   const std::string child_surface_name_;
 
@@ -169,6 +172,8 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public GLSurfaceEGL {
 
   // Set if a transaction was applied and we are waiting for it to be acked.
   bool transaction_ack_pending_ = false;
+
+  gfx::OverlayTransform display_transform_ = gfx::OVERLAY_TRANSFORM_NONE;
 
   scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner_;
   base::WeakPtrFactory<GLSurfaceEGLSurfaceControl> weak_factory_;

@@ -77,6 +77,8 @@ class FakeOutputSurface : public OutputSurface {
   unsigned UpdateGpuFence() override;
   void SetUpdateVSyncParametersCallback(
       UpdateVSyncParametersCallback callback) override;
+  void SetDisplayTransformHint(gfx::OverlayTransform transform) override {}
+  gfx::OverlayTransform GetDisplayTransform() override;
 
   void set_framebuffer(GLint framebuffer, GLenum format) {
     framebuffer_ = framebuffer;

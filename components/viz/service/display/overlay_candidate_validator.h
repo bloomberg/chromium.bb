@@ -40,6 +40,10 @@ class VIZ_SERVICE_EXPORT OverlayCandidateValidator {
   // coordinates if necessary.
   virtual void CheckOverlaySupport(OverlayCandidateList* surfaces) = 0;
 
+  // The OverlayCandidate for the OutputSurface. Allows the validator to update
+  // any properties of the |surface| required by the platform.
+  virtual void AdjustOutputSurfaceOverlay(OverlayCandidate* candidate) {}
+
   virtual ~OverlayCandidateValidator() {}
 };
 

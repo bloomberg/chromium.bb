@@ -125,6 +125,10 @@ void FakeSkiaOutputSurface::SetUpdateVSyncParametersCallback(
   NOTIMPLEMENTED();
 }
 
+gfx::OverlayTransform FakeSkiaOutputSurface::GetDisplayTransform() {
+  return gfx::OVERLAY_TRANSFORM_NONE;
+}
+
 SkCanvas* FakeSkiaOutputSurface::BeginPaintCurrentFrame() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   auto& sk_surface = sk_surfaces_[0];

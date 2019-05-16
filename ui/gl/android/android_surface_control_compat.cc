@@ -200,6 +200,8 @@ ARect RectToARect(const gfx::Rect& rect) {
 }
 
 int32_t OverlayTransformToWindowTransform(gfx::OverlayTransform transform) {
+  // Note that the gfx::OverlayTransform expresses rotations in anticlockwise
+  // direction while the ANativeWindow rotations are in clockwise direction.
   switch (transform) {
     case gfx::OVERLAY_TRANSFORM_INVALID:
       DCHECK(false) << "Invalid Transform";
@@ -211,11 +213,11 @@ int32_t OverlayTransformToWindowTransform(gfx::OverlayTransform transform) {
     case gfx::OVERLAY_TRANSFORM_FLIP_VERTICAL:
       return ANATIVEWINDOW_TRANSFORM_MIRROR_VERTICAL;
     case gfx::OVERLAY_TRANSFORM_ROTATE_90:
-      return ANATIVEWINDOW_TRANSFORM_ROTATE_90;
+      return ANATIVEWINDOW_TRANSFORM_ROTATE_270;
     case gfx::OVERLAY_TRANSFORM_ROTATE_180:
       return ANATIVEWINDOW_TRANSFORM_ROTATE_180;
     case gfx::OVERLAY_TRANSFORM_ROTATE_270:
-      return ANATIVEWINDOW_TRANSFORM_ROTATE_270;
+      return ANATIVEWINDOW_TRANSFORM_ROTATE_90;
   };
   NOTREACHED();
   return ANATIVEWINDOW_TRANSFORM_IDENTITY;

@@ -37,6 +37,8 @@ class CONTENT_EXPORT BrowserCompositorOutputSurface
   void ApplyExternalStencil() override;
   void SetUpdateVSyncParametersCallback(
       viz::UpdateVSyncParametersCallback callback) override;
+  void SetDisplayTransformHint(gfx::OverlayTransform transform) override {}
+  gfx::OverlayTransform GetDisplayTransform() override;
 
   void SetReflector(ReflectorImpl* reflector);
 

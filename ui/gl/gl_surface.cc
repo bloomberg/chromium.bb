@@ -506,6 +506,10 @@ void GLSurfaceAdapter::SetGpuVSyncEnabled(bool enabled) {
   surface_->SetGpuVSyncEnabled(enabled);
 }
 
+void GLSurfaceAdapter::SetDisplayTransform(gfx::OverlayTransform transform) {
+  return surface_->SetDisplayTransform(transform);
+}
+
 GLSurfaceAdapter::~GLSurfaceAdapter() {}
 
 scoped_refptr<GLSurface> InitializeGLSurfaceWithFormat(

@@ -235,8 +235,22 @@ void OverlayProcessor::ProcessForOverlays(
     }
   }
 
-  if (!successful_strategy && !previous_frame_underlay_rect.IsEmpty())
-    damage_rect->Union(previous_frame_underlay_rect);
+  if (!successful_strategy) {
+    if (!previous_frame_underlay_rect.IsEmpty())
+      damage_rect->Union(previous_frame_underlay_rect);
+
+    // If no strategy worked the only remaining overlay in the list is the one
+    // backed by the OutputSurface. Make sure the OverlayCandidateValidator
+    // applies any modifications if needed.
+    if (!candidates->empty() && surface_->GetOverlayCandidateValidator()) {
+      DCHECK_EQ(candidates->size(), 1u);
+      DCHECK(candidates->back().use_output_surface_for_resource);
+
+      surface_->GetOverlayCandidateValidator()->AdjustOutputSurfaceOverlay(
+          &candidates->back());
+      DCHECK_EQ(candidates->size(), 1u);
+    }
+  }
 
   UMA_HISTOGRAM_ENUMERATION("Viz.DisplayCompositor.OverlayStrategy",
                             successful_strategy

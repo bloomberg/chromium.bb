@@ -47,6 +47,8 @@ class ParentOutputSurface : public viz::OutputSurface {
   unsigned UpdateGpuFence() override;
   void SetUpdateVSyncParametersCallback(
       viz::UpdateVSyncParametersCallback callback) override;
+  void SetDisplayTransformHint(gfx::OverlayTransform transform) override {}
+  gfx::OverlayTransform GetDisplayTransform() override;
 
  private:
   void OnPresentation(const gfx::PresentationFeedback& feedback);

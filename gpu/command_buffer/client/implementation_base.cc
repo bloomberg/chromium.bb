@@ -416,4 +416,9 @@ void ImplementationBase::DidCallGLFromSkia() {
   NOTREACHED();
 }
 
+void ImplementationBase::SetDisplayTransform(gfx::OverlayTransform transform) {
+  helper_->Flush();
+  gpu_control_->SetDisplayTransform(transform);
+}
+
 }  // namespace gpu

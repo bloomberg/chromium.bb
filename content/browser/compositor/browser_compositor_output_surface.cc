@@ -66,4 +66,8 @@ void BrowserCompositorOutputSurface::SetUpdateVSyncParametersCallback(
   update_vsync_parameters_callback_ = std::move(callback);
 }
 
+gfx::OverlayTransform BrowserCompositorOutputSurface::GetDisplayTransform() {
+  return gfx::OVERLAY_TRANSFORM_NONE;
+}
+
 }  // namespace content

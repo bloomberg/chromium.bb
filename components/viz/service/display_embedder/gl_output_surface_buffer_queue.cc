@@ -119,4 +119,13 @@ void GLOutputSurfaceBufferQueue::DidReceiveSwapBuffersAck(
     client()->SetNeedsRedrawRect(gfx::Rect(swap_size_));
 }
 
+void GLOutputSurfaceBufferQueue::SetDisplayTransformHint(
+    gfx::OverlayTransform transform) {
+  display_transform_ = transform;
+}
+
+gfx::OverlayTransform GLOutputSurfaceBufferQueue::GetDisplayTransform() {
+  return display_transform_;
+}
+
 }  // namespace viz

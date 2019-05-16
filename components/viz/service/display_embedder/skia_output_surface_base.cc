@@ -94,6 +94,19 @@ void SkiaOutputSurfaceBase::SetNeedsSwapSizeNotifications(
 void SkiaOutputSurfaceBase::SetUpdateVSyncParametersCallback(
     UpdateVSyncParametersCallback callback) {}
 
+void SkiaOutputSurfaceBase::SetDisplayTransformHint(
+    gfx::OverlayTransform transform) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  // TODO(khushalsagar): Apply this transform if rendering using Vulkan.
+}
+
+gfx::OverlayTransform SkiaOutputSurfaceBase::GetDisplayTransform() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  return gfx::OVERLAY_TRANSFORM_NONE;
+}
+
 void SkiaOutputSurfaceBase::AddContextLostObserver(
     ContextLostObserver* observer) {
   observers_.AddObserver(observer);

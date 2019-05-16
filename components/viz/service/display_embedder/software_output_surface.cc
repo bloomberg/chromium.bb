@@ -143,4 +143,8 @@ void SoftwareOutputSurface::SetUpdateVSyncParametersCallback(
   update_vsync_parameters_callback_ = std::move(callback);
 }
 
+gfx::OverlayTransform SoftwareOutputSurface::GetDisplayTransform() {
+  return gfx::OVERLAY_TRANSFORM_NONE;
+}
+
 }  // namespace viz

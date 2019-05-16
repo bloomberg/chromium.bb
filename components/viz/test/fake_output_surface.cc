@@ -108,4 +108,8 @@ unsigned FakeOutputSurface::UpdateGpuFence() {
 void FakeOutputSurface::SetUpdateVSyncParametersCallback(
     UpdateVSyncParametersCallback callback) {}
 
+gfx::OverlayTransform FakeOutputSurface::GetDisplayTransform() {
+  return gfx::OVERLAY_TRANSFORM_NONE;
+}
+
 }  // namespace viz

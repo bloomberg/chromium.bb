@@ -305,6 +305,8 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
 
   virtual void SetGpuVSyncEnabled(bool enabled);
 
+  virtual void SetDisplayTransform(gfx::OverlayTransform transform) {}
+
   static GLSurface* GetCurrent();
 
  protected:
@@ -398,6 +400,7 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
   int GetBufferCount() const override;
   bool SupportsGpuVSync() const override;
   void SetGpuVSyncEnabled(bool enabled) override;
+  void SetDisplayTransform(gfx::OverlayTransform transform) override;
 
   GLSurface* surface() const { return surface_.get(); }
 

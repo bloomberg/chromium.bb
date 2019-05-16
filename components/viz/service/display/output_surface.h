@@ -148,6 +148,24 @@ class VIZ_SERVICE_EXPORT OutputSurface {
   // Enable or disable vsync callback based on whether begin frames are needed.
   virtual void SetGpuVSyncEnabled(bool enabled);
 
+  // When the device is rotated, the scene prepared by the UI is in the logical
+  // screen space as seen by the user. However, attempting to scanout a buffer
+  // with its content in this logical space may be unsupported or inefficient
+  // when rendered by the display hardware.
+  //
+  // In order to avoid this, this API provides the OutputSurface with the
+  // transform/rotation that should be applied to the display compositor's
+  // output. This is the same rotation as the physical rotation on the display.
+  // In some cases, this is done natively by the graphics backend (
+  // For instance, this is already done by GL drivers on Android. See
+  // https://source.android.com/devices/graphics/implement#pre-rotation).
+  //
+  // If not supported natively, the OutputSurface should return the transform
+  // needed in GetDisplayTransform for it to explicitly applied by the
+  // compositor.
+  virtual void SetDisplayTransformHint(gfx::OverlayTransform transform) = 0;
+  virtual gfx::OverlayTransform GetDisplayTransform() = 0;
+
   // If set to true, the OutputSurface must deliver
   // OutputSurfaceclient::DidSwapWithSize notifications to its client.
   // OutputSurfaces which support delivering swap size notifications should

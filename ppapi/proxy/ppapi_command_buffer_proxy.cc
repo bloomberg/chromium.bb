@@ -226,6 +226,11 @@ bool PpapiCommandBufferProxy::CanWaitUnverifiedSyncToken(
   return false;
 }
 
+void PpapiCommandBufferProxy::SetDisplayTransform(
+    gfx::OverlayTransform transform) {
+  NOTREACHED();
+}
+
 void PpapiCommandBufferProxy::SignalQuery(uint32_t query,
                                           base::OnceClosure callback) {
   NOTREACHED();

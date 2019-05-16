@@ -12,7 +12,9 @@
 #include "base/bind.h"
 #include "base/strings/strcat.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "cc/base/math_util.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/overlay_transform_utils.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image_ahardwarebuffer.h"
 #include "ui/gl/gl_utils.h"
@@ -72,7 +74,7 @@ bool GLSurfaceEGLSurfaceControl::Resize(const gfx::Size& size,
                                         float scale_factor,
                                         ColorSpace color_space,
                                         bool has_alpha) {
-  window_rect_ = gfx::Rect(0, 0, size.width(), size.height());
+  window_rect_ = gfx::Rect(size);
   return true;
 }
 
@@ -137,13 +139,15 @@ void GLSurfaceEGLSurfaceControl::CommitPendingTransaction(
   // Mark the intersection of a surface's rect with the damage rect as the dirty
   // rect for that surface.
   DCHECK_LE(pending_surfaces_count_, surface_list_.size());
+  const gfx::Rect damage_rect_in_screen_space =
+      ApplyDisplayInverse(damage_rect);
   for (size_t i = 0; i < pending_surfaces_count_; ++i) {
     const auto& surface_state = surface_list_[i];
     if (!surface_state.buffer_updated_in_pending_transaction)
       continue;
 
     gfx::Rect surface_damage_rect = surface_state.dst;
-    surface_damage_rect.Intersect(damage_rect);
+    surface_damage_rect.Intersect(damage_rect_in_screen_space);
     pending_transaction_->SetDamageRect(*surface_state.surface,
                                         surface_damage_rect);
   }
@@ -374,6 +378,19 @@ void GLSurfaceEGLSurfaceControl::OnTransactionAckOnGpuThread(
     pending_transaction_queue_.front().Apply();
     pending_transaction_queue_.pop();
   }
+}
+
+void GLSurfaceEGLSurfaceControl::SetDisplayTransform(
+    gfx::OverlayTransform transform) {
+  display_transform_ = transform;
+}
+
+gfx::Rect GLSurfaceEGLSurfaceControl::ApplyDisplayInverse(
+    const gfx::Rect& input) const {
+  gfx::Transform display_inverse = gfx::OverlayTransformToTransform(
+      gfx::InvertOverlayTransform(display_transform_), window_rect_.size());
+  return cc::MathUtil::MapEnclosedRectWith2dAxisAlignedTransform(
+      display_inverse, input);
 }
 
 GLSurfaceEGLSurfaceControl::SurfaceState::SurfaceState(

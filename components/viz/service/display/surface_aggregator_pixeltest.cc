@@ -114,8 +114,8 @@ TYPED_TEST(SurfaceAggregatorPixelTest, DrawSimpleFrame) {
 
   SurfaceAggregator aggregator(this->manager_.surface_manager(),
                                this->resource_provider_.get(), true, false);
-  CompositorFrame aggregated_frame =
-      aggregator.Aggregate(root_surface_id, this->GetNextDisplayTime());
+  CompositorFrame aggregated_frame = aggregator.Aggregate(
+      root_surface_id, this->GetNextDisplayTime(), gfx::OVERLAY_TRANSFORM_NONE);
 
   bool discard_alpha = false;
   cc::ExactPixelComparator pixel_comparator(discard_alpha);
@@ -196,8 +196,8 @@ TYPED_TEST(SurfaceAggregatorPixelTest, DrawSimpleAggregatedFrame) {
 
   SurfaceAggregator aggregator(this->manager_.surface_manager(),
                                this->resource_provider_.get(), true, false);
-  CompositorFrame aggregated_frame =
-      aggregator.Aggregate(root_surface_id, this->GetNextDisplayTime());
+  CompositorFrame aggregated_frame = aggregator.Aggregate(
+      root_surface_id, this->GetNextDisplayTime(), gfx::OVERLAY_TRANSFORM_NONE);
 
   bool discard_alpha = false;
   cc::ExactPixelComparator pixel_comparator(discard_alpha);
@@ -338,8 +338,8 @@ TYPED_TEST(SurfaceAggregatorPixelTest,
 
   SurfaceAggregator aggregator(this->manager_.surface_manager(),
                                this->resource_provider_.get(), true, false);
-  CompositorFrame aggregated_frame =
-      aggregator.Aggregate(root_surface_id, this->GetNextDisplayTime());
+  CompositorFrame aggregated_frame = aggregator.Aggregate(
+      root_surface_id, this->GetNextDisplayTime(), gfx::OVERLAY_TRANSFORM_NONE);
 
   bool discard_alpha = false;
   cc::ExactPixelComparator pixel_comparator(discard_alpha);

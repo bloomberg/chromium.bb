@@ -316,6 +316,11 @@ bool DirectContextProvider::CanWaitUnverifiedSyncToken(
   return false;
 }
 
+void DirectContextProvider::SetDisplayTransform(
+    gfx::OverlayTransform transform) {
+  NOTREACHED();
+}
+
 GLuint DirectContextProvider::GenClientTextureId() {
   const auto& share_group = gles2_implementation_->share_group();
   auto* id_handler =

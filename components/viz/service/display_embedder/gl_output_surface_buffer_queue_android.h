@@ -21,8 +21,14 @@ class GLOutputSurfaceBufferQueueAndroid : public GLOutputSurfaceBufferQueue {
       gfx::BufferFormat buffer_format);
   ~GLOutputSurfaceBufferQueueAndroid() override;
 
-  // GLOutputSurfaceBufferQueue implementation:
+  // OutputSurface implementation
   OverlayCandidateValidator* GetOverlayCandidateValidator() const override;
+  void SetDisplayTransformHint(gfx::OverlayTransform transform) override;
+  void Reshape(const gfx::Size& size,
+               float device_scale_factor,
+               const gfx::ColorSpace& color_space,
+               bool has_alpha,
+               bool use_stencil) override;
 
  private:
   OverlayCandidateValidatorAndroid overlay_candidate_validator_;

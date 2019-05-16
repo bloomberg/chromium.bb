@@ -107,6 +107,10 @@ class SynchronousLayerTreeFrameSink::SoftwareOutputSurface
   unsigned UpdateGpuFence() override { return 0; }
   void SetUpdateVSyncParametersCallback(
       viz::UpdateVSyncParametersCallback callback) override {}
+  void SetDisplayTransformHint(gfx::OverlayTransform transform) override {}
+  gfx::OverlayTransform GetDisplayTransform() override {
+    return gfx::OVERLAY_TRANSFORM_NONE;
+  }
 };
 
 base::TimeDelta SynchronousLayerTreeFrameSink::StubDisplayClient::

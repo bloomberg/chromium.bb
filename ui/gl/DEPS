@@ -1,4 +1,5 @@
 include_rules = [
+  "+cc/base",
   "+third_party/khronos",
   "+third_party/libsync",
   "+third_party/skia",

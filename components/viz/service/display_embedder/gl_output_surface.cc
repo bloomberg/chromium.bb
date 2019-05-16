@@ -9,14 +9,17 @@
 
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "cc/base/math_util.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/service/display/output_surface_frame.h"
+#include "components/viz/service/display/renderer_utils.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
 #include "gpu/command_buffer/common/swap_buffers_flags.h"
+#include "ui/gfx/overlay_transform_utils.h"
 #include "ui/gl/color_space_utils.h"
 
 namespace viz {
@@ -101,9 +104,13 @@ void GLOutputSurface::SwapBuffers(OutputSurfaceFrame frame) {
   if (wants_vsync_parameter_updates_)
     flags |= gpu::SwapBuffersFlags::kVSyncParams;
 
+  // The |swap_size| here should always be in the UI's logical screen space
+  // since it is forwarded to the client code which is unaware of the display
+  // transform optimization.
+  gfx::Size swap_size = ApplyDisplayInverse(gfx::Rect(size_)).size();
   auto swap_callback = base::BindOnce(
       &GLOutputSurface::OnGpuSwapBuffersCompleted,
-      weak_ptr_factory_.GetWeakPtr(), std::move(frame.latency_info), size_);
+      weak_ptr_factory_.GetWeakPtr(), std::move(frame.latency_info), swap_size);
   gpu::ContextSupport::PresentationCallback presentation_callback;
   presentation_callback = base::BindOnce(&GLOutputSurface::OnPresentation,
                                          weak_ptr_factory_.GetWeakPtr());
@@ -218,6 +225,17 @@ void GLOutputSurface::SetGpuVSyncCallback(GpuVSyncCallback callback) {
 void GLOutputSurface::SetGpuVSyncEnabled(bool enabled) {
   DCHECK(capabilities_.supports_gpu_vsync);
   viz_context_provider_->SetGpuVSyncEnabled(enabled);
+}
+
+gfx::OverlayTransform GLOutputSurface::GetDisplayTransform() {
+  return gfx::OVERLAY_TRANSFORM_NONE;
+}
+
+gfx::Rect GLOutputSurface::ApplyDisplayInverse(const gfx::Rect& input) {
+  gfx::Transform display_inverse = gfx::OverlayTransformToTransform(
+      gfx::InvertOverlayTransform(GetDisplayTransform()), size_);
+  return cc::MathUtil::MapEnclosedRectWith2dAxisAlignedTransform(
+      display_inverse, input);
 }
 
 }  // namespace viz

@@ -46,6 +46,8 @@ class VIZ_SERVICE_EXPORT SoftwareOutputSurface : public OutputSurface {
   unsigned UpdateGpuFence() override;
   void SetUpdateVSyncParametersCallback(
       UpdateVSyncParametersCallback callback) override;
+  void SetDisplayTransformHint(gfx::OverlayTransform transform) override {}
+  gfx::OverlayTransform GetDisplayTransform() override;
 
  private:
   void SwapBuffersCallback();

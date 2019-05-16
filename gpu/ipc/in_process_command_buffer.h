@@ -145,6 +145,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
                        base::OnceClosure callback) override;
   void WaitSyncToken(const SyncToken& sync_token) override;
   bool CanWaitUnverifiedSyncToken(const SyncToken& sync_token) override;
+  void SetDisplayTransform(gfx::OverlayTransform transform) override;
 
   // CommandBufferServiceClient implementation (called on gpu thread):
   CommandBatchProcessedResult OnCommandBatchProcessed() override;
@@ -297,6 +298,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   void UpdateSharedImageOnGpuThread(const Mailbox& mailbox,
                                     const SyncToken& sync_token);
   void DestroySharedImageOnGpuThread(const Mailbox& mailbox);
+  void SetDisplayTransformOnGpuThread(gfx::OverlayTransform transform);
 
   // Sets |active_url_| as the active GPU process URL. Should be called on GPU
   // thread only.

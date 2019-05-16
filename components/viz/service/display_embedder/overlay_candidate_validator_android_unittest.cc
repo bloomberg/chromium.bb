@@ -84,4 +84,47 @@ TEST(OverlayCandidateValidatorAndroidTest, ClipAndNegativeOffset) {
                   gfx::RectF(0.75f, 0.75f, 0.25f, 0.25f));
 }
 
+TEST(OverlayCandidateValidatorAndroidTest, DisplayTransformOverlay) {
+  OverlayCandidate candidate;
+  candidate.display_rect = gfx::RectF(10, 10, 50, 100);
+  candidate.use_output_surface_for_resource = false;
+  candidate.overlay_handled = false;
+
+  OverlayCandidateList candidates;
+  candidates.push_back(candidate);
+
+  OverlayCandidateValidatorAndroid validator;
+  validator.set_viewport_size(gfx::Size(100, 200));
+  validator.set_display_transform(gfx::OVERLAY_TRANSFORM_ROTATE_90);
+
+  // First use a different transform than the display transform, the overlay is
+  // rejected.
+  candidates.back().transform = gfx::OVERLAY_TRANSFORM_NONE;
+  validator.CheckOverlaySupport(&candidates);
+  EXPECT_FALSE(candidates.back().overlay_handled);
+
+  candidates.back().transform = gfx::OVERLAY_TRANSFORM_ROTATE_90;
+  validator.CheckOverlaySupport(&candidates);
+  EXPECT_TRUE(candidates.back().overlay_handled);
+  EXPECT_EQ(candidates.back().transform, gfx::OVERLAY_TRANSFORM_NONE);
+  EXPECT_RECTF_EQ(candidates.back().display_rect, gfx::RectF(10, 40, 100, 50));
+}
+
+TEST(OverlayCandidateValidatorAndroidTest,
+     DisplayTransformOutputSurfaceOverlay) {
+  OverlayCandidate candidate;
+  candidate.display_rect = gfx::RectF(100, 200);
+  candidate.use_output_surface_for_resource = true;
+  candidate.overlay_handled = false;
+  candidate.transform = gfx::OVERLAY_TRANSFORM_NONE;
+
+  OverlayCandidateValidatorAndroid validator;
+  validator.set_viewport_size(gfx::Size(100, 200));
+  validator.set_display_transform(gfx::OVERLAY_TRANSFORM_ROTATE_90);
+  validator.AdjustOutputSurfaceOverlay(&candidate);
+  EXPECT_TRUE(candidate.overlay_handled);
+  EXPECT_RECTF_EQ(candidate.display_rect, gfx::RectF(200, 100));
+  EXPECT_EQ(candidate.transform, gfx::OVERLAY_TRANSFORM_ROTATE_90);
+}
+
 }  // namespace viz

@@ -41,14 +41,19 @@ class GLOutputSurfaceBufferQueue : public GLOutputSurface {
 
   // TODO(rjkroege): Implement the equivalent of Reflector.
 
- private:
+ protected:
   // OutputSurface implementation.
-  void BindFramebuffer() override;
+  void SetDisplayTransformHint(gfx::OverlayTransform transform) override;
+  gfx::OverlayTransform GetDisplayTransform() override;
   void Reshape(const gfx::Size& size,
                float device_scale_factor,
                const gfx::ColorSpace& color_space,
                bool has_alpha,
                bool use_stencil) override;
+
+ private:
+  // OutputSurface implementation.
+  void BindFramebuffer() override;
   void SwapBuffers(OutputSurfaceFrame frame) override;
   uint32_t GetFramebufferCopyTextureFormat() override;
   bool IsDisplayedAsOverlayPlane() const override;
@@ -61,6 +66,7 @@ class GLOutputSurfaceBufferQueue : public GLOutputSurface {
 
   std::unique_ptr<BufferQueue> buffer_queue_;
 
+  gfx::OverlayTransform display_transform_ = gfx::OVERLAY_TRANSFORM_NONE;
   gfx::Size reshape_size_;
   gfx::Size swap_size_;
 

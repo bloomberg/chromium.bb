@@ -54,6 +54,8 @@ class FakeSkiaOutputSurface : public SkiaOutputSurface {
       bool needs_swap_size_notifications) override;
   void SetUpdateVSyncParametersCallback(
       UpdateVSyncParametersCallback callback) override;
+  void SetDisplayTransformHint(gfx::OverlayTransform transform) override {}
+  gfx::OverlayTransform GetDisplayTransform() override;
 
   // SkiaOutputSurface implementation:
   SkCanvas* BeginPaintCurrentFrame() override;

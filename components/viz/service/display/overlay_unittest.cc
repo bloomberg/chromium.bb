@@ -231,6 +231,10 @@ class OverlayOutputSurface : public OutputSurface {
   unsigned UpdateGpuFence() override { return 0; }
   void SetUpdateVSyncParametersCallback(
       UpdateVSyncParametersCallback callback) override {}
+  void SetDisplayTransformHint(gfx::OverlayTransform transform) override {}
+  gfx::OverlayTransform GetDisplayTransform() override {
+    return gfx::OVERLAY_TRANSFORM_NONE;
+  }
 
   void set_is_displayed_as_overlay_plane(bool value) {
     is_displayed_as_overlay_plane_ = value;

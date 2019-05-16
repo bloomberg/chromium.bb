@@ -103,6 +103,33 @@ namespace {
 
 static const char* kBrowser = "Browser";
 
+gfx::OverlayTransform RotationToDisplayTransform(
+    display::Display::Rotation rotation) {
+  // Note that the angle provided by |rotation| here is the opposite direction
+  // of the physical rotation of the device, which is the space in which the UI
+  // prepares the scene (see
+  // https://developer.android.com/reference/android/view/Display#getRotation()
+  // for details).
+  //
+  // The rotation which needs to be applied by the display compositor to allow
+  // the buffers produced by it to be used directly by the system compositor
+  // needs to be the inverse of this rotation. Since display::Rotation is in
+  // clockwise direction while gfx::OverlayTransform is anti-clockwise, directly
+  // mapping them below performs this inversion.
+  switch (rotation) {
+    case display::Display::ROTATE_0:
+      return gfx::OVERLAY_TRANSFORM_NONE;
+    case display::Display::ROTATE_90:
+      return gfx::OVERLAY_TRANSFORM_ROTATE_90;
+    case display::Display::ROTATE_180:
+      return gfx::OVERLAY_TRANSFORM_ROTATE_180;
+    case display::Display::ROTATE_270:
+      return gfx::OVERLAY_TRANSFORM_ROTATE_270;
+  }
+  NOTREACHED();
+  return gfx::OVERLAY_TRANSFORM_NONE;
+}
+
 // These functions are called based on application visibility status.
 void SendOnBackgroundedToGpuService() {
   content::GpuProcessHost::CallOnIO(
@@ -478,6 +505,11 @@ class AndroidOutputSurface : public viz::OutputSurface {
 
   void SetUpdateVSyncParametersCallback(
       viz::UpdateVSyncParametersCallback callback) override {}
+
+  void SetDisplayTransformHint(gfx::OverlayTransform transform) override {}
+  gfx::OverlayTransform GetDisplayTransform() override {
+    return gfx::OVERLAY_TRANSFORM_NONE;
+  }
 
  private:
   gpu::CommandBufferProxyImpl* GetCommandBufferProxy() {
@@ -1133,15 +1165,25 @@ void CompositorImpl::RemoveChildFrameSink(
 
 void CompositorImpl::OnDisplayMetricsChanged(const display::Display& display,
                                              uint32_t changed_metrics) {
-  if (changed_metrics & display::DisplayObserver::DisplayMetric::
-                            DISPLAY_METRIC_DEVICE_SCALE_FACTOR &&
-      display.id() == display::Screen::GetScreen()
+  if (display.id() != display::Screen::GetScreen()
                           ->GetDisplayNearestWindow(root_window_)
                           .id()) {
+    return;
+  }
+
+  if (changed_metrics & display::DisplayObserver::DisplayMetric::
+                            DISPLAY_METRIC_DEVICE_SCALE_FACTOR) {
     // TODO(ccameron): This is transiently incorrect -- |size_| must be
     // recalculated here as well. Is the call in SetWindowBounds sufficient?
     host_->SetViewportSizeAndScale(size_, root_window_->GetDipScale(),
                                    GenerateLocalSurfaceId());
+  }
+
+  if ((changed_metrics &
+       display::DisplayObserver::DisplayMetric::DISPLAY_METRIC_ROTATION) &&
+      display_private_) {
+    display_private_->SetDisplayTransformHint(
+        RotationToDisplayTransform(display.rotation()));
   }
 }
 
@@ -1212,15 +1254,15 @@ void CompositorImpl::InitializeVizLayerTreeFrameSink(
   root_params->display_client =
       display_client_->GetBoundPtr(task_runner).PassInterface();
 
+  const auto& display_props =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(root_window_);
+
   viz::RendererSettings renderer_settings;
   renderer_settings.partial_swap_enabled = true;
   renderer_settings.allow_antialiasing = false;
   renderer_settings.highp_threshold_min = 2048;
   renderer_settings.requires_alpha_channel = requires_alpha_channel_;
-  renderer_settings.initial_screen_size =
-      display::Screen::GetScreen()
-          ->GetDisplayNearestWindow(root_window_)
-          .GetSizeInPixel();
+  renderer_settings.initial_screen_size = display_props.GetSizeInPixel();
   renderer_settings.use_skia_renderer = features::IsUsingSkiaRenderer();
   renderer_settings.color_space = display_color_space_;
 
@@ -1258,6 +1300,8 @@ void CompositorImpl::InitializeVizLayerTreeFrameSink(
   display_private_->SetVSyncPaused(vsync_paused_);
   display_private_->SetSupportedRefreshRates(
       root_window_->GetSupportedRefreshRates());
+  display_private_->SetDisplayTransformHint(
+      RotationToDisplayTransform(display_props.rotation()));
 }
 
 viz::LocalSurfaceIdAllocation CompositorImpl::GenerateLocalSurfaceId() {

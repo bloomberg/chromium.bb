@@ -187,6 +187,11 @@ void RootCompositorFrameSinkImpl::ForceImmediateDrawAndSwapIfPossible() {
   display_->ForceImmediateDrawAndSwapIfPossible();
 }
 
+void RootCompositorFrameSinkImpl::SetDisplayTransformHint(
+    gfx::OverlayTransform transform) {
+  display_->SetDisplayTransformHint(transform);
+}
+
 #if defined(OS_ANDROID)
 void RootCompositorFrameSinkImpl::SetVSyncPaused(bool paused) {
   if (external_begin_frame_source_)
