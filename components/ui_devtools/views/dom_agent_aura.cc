@@ -23,19 +23,13 @@ DOMAgentAura* DOMAgentAura::dom_agent_aura_ = nullptr;
 DOMAgentAura::DOMAgentAura() {
   DCHECK(!dom_agent_aura_);
   dom_agent_aura_ = this;
-  RegisterEnv(aura::Env::GetInstance());
+  aura::Env::GetInstance()->AddObserver(this);
 }
 DOMAgentAura::~DOMAgentAura() {
   for (aura::Window* window : roots_)
     window->RemoveObserver(this);
-  for (auto* env : envs_)
-    env->RemoveObserver(this);
+  aura::Env::GetInstance()->RemoveObserver(this);
   dom_agent_aura_ = nullptr;
-}
-
-void DOMAgentAura::RegisterEnv(aura::Env* env) {
-  envs_.push_back(env);
-  env->AddObserver(this);
 }
 
 void DOMAgentAura::RegisterRootWindow(aura::Window* root) {

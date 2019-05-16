@@ -17,8 +17,6 @@
 #if defined(USE_AURA)
 #include "components/ui_devtools/views/dom_agent_aura.h"
 #include "components/ui_devtools/views/overlay_agent_aura.h"
-#include "ui/aura/env.h"
-#include "ui/aura/window.h"
 #endif
 
 namespace ui_devtools {
@@ -44,8 +42,6 @@ std::unique_ptr<UiDevToolsServer> CreateUiDevToolsServerForViews(
 #if defined(USE_AURA)
 void RegisterAdditionalRootWindowsAndEnv(std::vector<aura::Window*> roots) {
   DCHECK(!roots.empty());
-  OverlayAgentAura::GetInstance()->RegisterEnv(roots[0]->env());
-  DOMAgentAura::GetInstance()->RegisterEnv(roots[0]->env());
   for (auto* root : roots)
     DOMAgentAura::GetInstance()->RegisterRootWindow(root);
 }

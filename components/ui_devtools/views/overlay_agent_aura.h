@@ -30,7 +30,6 @@ class OverlayAgentAura : public OverlayAgentViews {
 
   FRIEND_TEST_ALL_PREFIXES(OverlayAgentTest, HighlightWindow);
   FRIEND_TEST_ALL_PREFIXES(OverlayAgentTest, HighlightEmptyOrInvisibleWindow);
-  std::vector<aura::Env*> envs_;
 
   static OverlayAgentAura* overlay_agent_aura_;
 
