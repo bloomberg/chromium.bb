@@ -846,6 +846,26 @@
             ]
         }
     ],
+    "AutofillPruneSuggestions": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutofillPruneSuggestions"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillRefreshStyleAndroid": [
         {
             "platforms": [
