@@ -31,6 +31,15 @@
 namespace gwp_asan {
 namespace internal {
 
+namespace {
+
+constexpr const char* kMallocHistogramName =
+    "GwpAsan.CrashAnalysisResult.Malloc";
+constexpr const char* kPartitionAllocHistogramName =
+    "GwpAsan.CrashAnalysisResult.PartitionAlloc";
+
+}  // namespace
+
 class CrashAnalyzerTest : public testing::Test {
  protected:
   void SetUp() final {
@@ -90,7 +99,8 @@ TEST_F(CrashAnalyzerTest, StackTraceCollection) {
       CrashAnalyzer::GetExceptionInfo(process_snapshot_, &proto);
   ASSERT_TRUE(proto_present);
 
-  histogram_tester.ExpectTotalCount(CrashAnalyzer::kCrashAnalysisHistogram, 0);
+  histogram_tester.ExpectTotalCount(kMallocHistogramName, 0);
+  histogram_tester.ExpectTotalCount(kPartitionAllocHistogramName, 0);
 
   ASSERT_TRUE(proto.has_allocation());
   ASSERT_TRUE(proto.has_deallocation());
@@ -146,11 +156,11 @@ TEST_F(CrashAnalyzerTest, InternalError) {
       CrashAnalyzer::GetExceptionInfo(process_snapshot_, &proto);
   ASSERT_TRUE(proto_present);
 
-  int result = static_cast<int>(
-      CrashAnalyzer::GwpAsanCrashAnalysisResult::kErrorBadMetadataIndex);
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples(CrashAnalyzer::kCrashAnalysisHistogram),
-      testing::ElementsAre(base::Bucket(result, 1)));
+  int result =
+      static_cast<int>(GwpAsanCrashAnalysisResult::kErrorBadMetadataIndex);
+  EXPECT_THAT(histogram_tester.GetAllSamples(kMallocHistogramName),
+              testing::ElementsAre(base::Bucket(result, 1)));
+  histogram_tester.ExpectTotalCount(kPartitionAllocHistogramName, 0);
 
   EXPECT_TRUE(proto.has_internal_error());
   ASSERT_TRUE(proto.has_missing_metadata());
