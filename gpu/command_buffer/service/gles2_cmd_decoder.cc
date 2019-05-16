@@ -28,7 +28,6 @@
 #include "base/containers/span.h"
 #include "base/debug/alias.h"
 #include "base/debug/dump_without_crashing.h"
-#include "base/hash/hash.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/ranges.h"
@@ -88,6 +87,7 @@
 #include "gpu/command_buffer/service/vertex_attrib_manager.h"
 #include "gpu/config/gpu_preferences.h"
 #include "third_party/angle/src/image_util/loadimage.h"
+#include "third_party/smhasher/src/City.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/point.h"
@@ -4449,10 +4449,7 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
   if (((shader_spec == SH_WEBGL_SPEC || shader_spec == SH_WEBGL2_SPEC) &&
        features().enable_shader_name_hashing) ||
       force_shader_name_hashing_for_test)
-    resources.HashFunction = [](const char* data, size_t length) {
-      return static_cast<uint64_t>(
-          base::FastHash(base::as_bytes(base::make_span(data, length))));
-    };
+    resources.HashFunction = &CityHash64;
   else
     resources.HashFunction = nullptr;
 
