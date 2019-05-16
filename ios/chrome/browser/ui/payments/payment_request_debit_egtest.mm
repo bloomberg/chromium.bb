@@ -105,7 +105,7 @@ std::unique_ptr<autofill::AutofillProfile> _profile;
   [self addServerCardWithType:DEBIT];
 
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebViewElementWithID:@"canMakePayment"]);
+      [ChromeEarlGrey tapWebStateElementWithID:@"canMakePayment"]);
 
   [self waitForWebViewContainingTexts:{"true"}];
 }
@@ -122,7 +122,7 @@ std::unique_ptr<autofill::AutofillProfile> _profile;
   [self addServerCardWithType:UNKNOWN];
 
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebViewElementWithID:@"canMakePayment"]);
+      [ChromeEarlGrey tapWebStateElementWithID:@"canMakePayment"]);
 
   [self waitForWebViewContainingTexts:{"true"}];
 }
@@ -136,7 +136,7 @@ std::unique_ptr<autofill::AutofillProfile> _profile;
   [self addServerCardWithType:PREPAID];
 
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebViewElementWithID:@"canMakePayment"]);
+      [ChromeEarlGrey tapWebStateElementWithID:@"canMakePayment"]);
 
   [self waitForWebViewContainingTexts:{"false"}];
 }
@@ -152,7 +152,7 @@ std::unique_ptr<autofill::AutofillProfile> _profile;
 
   [self addServerCardWithType:DEBIT];
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebViewElementWithID:@"buy"]);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"buy"]);
 
   // Confirm that the Payment Request UI is showing.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::PaymentRequestView()]
@@ -171,7 +171,7 @@ std::unique_ptr<autofill::AutofillProfile> _profile;
 
   [self addServerCardWithType:UNKNOWN];
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebViewElementWithID:@"buy"]);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"buy"]);
 
   // Confirm that the Payment Request UI is showing.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::PaymentRequestView()]
@@ -194,7 +194,7 @@ std::unique_ptr<autofill::AutofillProfile> _profile;
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kDebitPage)]);
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebViewElementWithID:@"buy"]);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"buy"]);
 
   // Confirm that the Payment Request UI is showing.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::PaymentRequestView()]

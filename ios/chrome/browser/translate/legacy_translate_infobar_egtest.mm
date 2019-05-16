@@ -29,7 +29,6 @@
 #import "ios/chrome/test/app/chrome_test_util.h"
 #include "ios/chrome/test/app/navigation_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
-#import "ios/chrome/test/app/web_view_interaction_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -216,7 +215,6 @@ using base::test::ios::WaitUntilConditionOrTimeout;
 using chrome_test_util::ButtonWithAccessibilityLabel;
 using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::CloseButton;
-using chrome_test_util::TapWebViewElementWithId;
 using translate::LanguageDetectionController;
 
 #pragma mark - MockTranslateScriptManager
@@ -480,12 +478,12 @@ using translate::LanguageDetectionController;
 
   // Check that the translation happened.
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:"Translated"]);
+      [ChromeEarlGrey waitForWebStateContainingText:"Translated"]);
 
   // Click on the link.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebViewElementWithID:@"link"]);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"link"]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewNotContainingText:"link"]);
+      [ChromeEarlGrey waitForWebStateNotContainingText:"link"]);
 
   GURL frenchPagePathURL = web::test::HttpServer::MakeUrl(
       base::StringPrintf("http://%s", kFrenchPagePath));
@@ -495,7 +493,7 @@ using translate::LanguageDetectionController;
 
   // Check that the auto-translation happened.
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:"Translated"]);
+      [ChromeEarlGrey waitForWebStateContainingText:"Translated"]);
 }
 
 #pragma mark - Utility methods
@@ -512,7 +510,7 @@ using translate::LanguageDetectionController;
   // The infobar is presented with an animation. Wait for the "Done" button
   // to become visibile before considering the animation as complete.
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForElementWithMatcherSufficientlyVisible:
+      [ChromeEarlGrey waitForSufficientlyVisibleElementWithMatcher:
                           ButtonWithAccessibilityLabelId(IDS_DONE)]);
 
   // Assert that the infobar is visible.

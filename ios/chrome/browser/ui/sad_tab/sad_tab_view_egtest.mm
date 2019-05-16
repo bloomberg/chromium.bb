@@ -95,7 +95,7 @@ id<GREYMatcher> incognitoHelpContainsText() {
   void (^loadAndCheckSimpleURL)() = ^void() {
     CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:simple_URL]);
     CHROME_EG_ASSERT_NO_ERROR(
-        [ChromeEarlGrey waitForWebViewContainingText:"You've arrived"]);
+        [ChromeEarlGrey waitForWebStateContainingText:"You've arrived"]);
     [[EarlGrey selectElementWithMatcher:reloadSadTabTitleText()]
         assertWithMatcher:grey_nil()];
     [[EarlGrey selectElementWithMatcher:feedbackSadTabTitleContainsText()]

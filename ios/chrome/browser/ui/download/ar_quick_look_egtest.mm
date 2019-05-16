@@ -92,8 +92,8 @@ std::unique_ptr<net::test_server::HttpResponse> GetResponse(
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey loadURL:self.testServer->GetURL("/")]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:"Good"]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebViewElementWithID:@"good"]);
+      [ChromeEarlGrey waitForWebStateContainingText:"Good"]);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"good"]);
 
   // QLPreviewController UI is rendered out of host process so EarlGrey matcher
   // can not find QLPreviewController UI. Instead this test relies on view
@@ -119,9 +119,9 @@ std::unique_ptr<net::test_server::HttpResponse> GetResponse(
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey loadURL:self.testServer->GetURL("/")]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:"Unauthorized"]);
+      [ChromeEarlGrey waitForWebStateContainingText:"Unauthorized"]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebViewElementWithID:@"unauthorized"]);
+      [ChromeEarlGrey tapWebStateElementWithID:@"unauthorized"]);
 
   // QLPreviewController UI is rendered out of host process so EarlGrey matcher
   // can not find QLPreviewController UI. Instead this test relies on view
@@ -147,9 +147,9 @@ std::unique_ptr<net::test_server::HttpResponse> GetResponse(
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey loadURL:self.testServer->GetURL("/")]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:"Forbidden"]);
+      [ChromeEarlGrey waitForWebStateContainingText:"Forbidden"]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebViewElementWithID:@"forbidden"]);
+      [ChromeEarlGrey tapWebStateElementWithID:@"forbidden"]);
 
   // QLPreviewController UI is rendered out of host process so EarlGrey matcher
   // can not find QLPreviewController UI. Instead this test relies on view
@@ -175,9 +175,9 @@ std::unique_ptr<net::test_server::HttpResponse> GetResponse(
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey loadURL:self.testServer->GetURL("/")]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:"Changing Mime Type"]);
+      [ChromeEarlGrey waitForWebStateContainingText:"Changing Mime Type"]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebViewElementWithID:@"changing-mime-type"]);
+      [ChromeEarlGrey tapWebStateElementWithID:@"changing-mime-type"]);
 
   // QLPreviewController UI is rendered out of host process so EarlGrey matcher
   // can not find QLPreviewController UI. Instead this test relies on view

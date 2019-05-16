@@ -60,7 +60,7 @@ const char kHTMLURL[] = "http://test";
 
   chrome_test_util::LoadUrl(url);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:response]);
+      [ChromeEarlGrey waitForWebStateContainingText:response]);
 
   [self printCurrentPage];
 }

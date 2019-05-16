@@ -14,7 +14,6 @@
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/histogram_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
-#import "ios/chrome/test/app/web_view_interaction_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
@@ -193,7 +192,7 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
   const GURL pageURL = self.testServer->GetURL(kLogoPagePath);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:pageURL]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kLogoPageText]);
+      [ChromeEarlGrey waitForWebStateContainingText:kLogoPageText]);
 
   LongPressElement(kLogoPageChromiumImageId);
   TapOnContextMenuButton(OpenImageButton());
@@ -211,7 +210,7 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
   const GURL pageURL = self.testServer->GetURL(kLogoPagePath);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:pageURL]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kLogoPageText]);
+      [ChromeEarlGrey waitForWebStateContainingText:kLogoPageText]);
 
   LongPressElement(kLogoPageChromiumImageId);
   TapOnContextMenuButton(OpenImageInNewTabButton());
@@ -231,7 +230,7 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
   const GURL initialURL = self.testServer->GetURL(kInitialPageUrl);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:initialURL]);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      waitForWebViewContainingText:kInitialPageDestinationLinkText]);
+      waitForWebStateContainingText:kInitialPageDestinationLinkText]);
 
   LongPressElement(kInitialPageDestinationLinkId);
   TapOnContextMenuButton(OpenLinkInNewTabButton());
@@ -239,7 +238,7 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:2]);
   SelectTabAtIndexInCurrentMode(1U);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kDestinationPageText]);
+      [ChromeEarlGrey waitForWebStateContainingText:kDestinationPageText]);
 
   // Verify url.
   const GURL destinationURL = self.testServer->GetURL(kDestinationPageUrl);
@@ -288,7 +287,7 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
   const GURL pageURL = self.testServer->GetURL(kLogoPagePath);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:pageURL]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kLogoPageText]);
+      [ChromeEarlGrey waitForWebStateContainingText:kLogoPageText]);
 
   LongPressElement(kLogoPageChromiumImageId);
   TapOnContextMenuButton(OpenImageButton());
@@ -307,7 +306,7 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
   const GURL pageURL = self.testServer->GetURL(kLogoPagePath);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:pageURL]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kLogoPageText]);
+      [ChromeEarlGrey waitForWebStateContainingText:kLogoPageText]);
 
   LongPressElement(kLogoPageChromiumImageId);
   TapOnContextMenuButton(OpenImageButton());
@@ -330,7 +329,7 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
   const GURL destinationURL = self.testServer->GetURL(kDestinationPageUrl);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:destinationURL]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kDestinationPageText]);
+      [ChromeEarlGrey waitForWebStateContainingText:kDestinationPageText]);
 
   LongPressElement(kDestinationPageTextId);
 
@@ -354,7 +353,7 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
   const GURL initialURL = self.testServer->GetURL(kInitialPageUrl);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:initialURL]);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      waitForWebViewContainingText:kInitialPageDestinationLinkText]);
+      waitForWebStateContainingText:kInitialPageDestinationLinkText]);
 
   // Display the context menu twice.
   for (NSInteger i = 0; i < 2; i++) {
@@ -390,7 +389,7 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
   const GURL initialURL = self.testServer->GetURL(kInitialPageUrl);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:initialURL]);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      waitForWebViewContainingText:kInitialPageDestinationLinkText]);
+      waitForWebStateContainingText:kInitialPageDestinationLinkText]);
 
   LongPressElement(kInitialPageDestinationLinkId);
 

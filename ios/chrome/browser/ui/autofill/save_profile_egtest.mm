@@ -11,7 +11,6 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
-#import "ios/chrome/test/app/web_view_interaction_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
@@ -23,8 +22,6 @@
 #endif
 
 namespace {
-
-using chrome_test_util::TapWebViewElementWithId;
 
 // URLs of the test pages.
 const char kProfileForm[] =
@@ -60,10 +57,10 @@ const char kProfileForm[] =
 #pragma mark - Page interaction helper methods
 
 - (void)fillAndSubmitForm {
-  GREYAssert(TapWebViewElementWithId("fill_profile_president"),
-             @"Failed to tap \"fill_profile_president\"");
-  GREYAssert(TapWebViewElementWithId("submit_profile"),
-             @"Failed to tap \"submit_profile\"");
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey tapWebStateElementWithID:@"fill_profile_president"]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey tapWebStateElementWithID:@"submit_profile"]);
 }
 
 #pragma mark - Tests

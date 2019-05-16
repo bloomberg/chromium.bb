@@ -289,7 +289,7 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
 
   // Check that the page has been opened.
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kPageLoadedString]);
+      [ChromeEarlGrey waitForWebStateContainingText:kPageLoadedString]);
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           pageURL.GetContent())]
       assertWithMatcher:grey_notNil()];
@@ -360,7 +360,7 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
   // Check the page has been correctly opened.
   chrome_test_util::SelectTabAtIndexInCurrentMode(1);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kPageLoadedString]);
+      [ChromeEarlGrey waitForWebStateContainingText:kPageLoadedString]);
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           pageURL.GetContent())]
       assertWithMatcher:grey_notNil()];
@@ -383,7 +383,7 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
 
   // Check that the tab has been opened in foreground.
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kPageLoadedString]);
+      [ChromeEarlGrey waitForWebStateContainingText:kPageLoadedString]);
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           pageURL.GetContent())]
       assertWithMatcher:grey_notNil()];
@@ -493,7 +493,7 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
   [ChromeEarlGrey clearBrowsingHistory];
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:pageURL]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebViewContainingText:kPageLoadedString]);
+      [ChromeEarlGrey waitForWebStateContainingText:kPageLoadedString]);
 
   // After loading URL, need to do another action before opening a new tab
   // with the icon present.

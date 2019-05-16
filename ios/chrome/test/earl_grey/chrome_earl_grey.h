@@ -62,21 +62,28 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 
 // Loads |URL| in the current WebState with transition type
 // ui::PAGE_TRANSITION_TYPED, and waits for the loading to complete within a
-// timeout, or a GREYAssert is induced.
+// timeout.
+// If the condition is not met within a timeout returns an NSError indicating
+// why the operation failed, otherwise nil.
 // TODO(crbug.com/963613): Change return type to avoid when
 // CHROME_EG_ASSERT_NO_ERROR is removed.
 - (NSError*)loadURL:(const GURL&)URL;
 
-// Reloads the page and waits for the loading to complete within a timeout, or a
-// GREYAssert is induced.
+// Reloads the page and waits for the loading to complete within a timeout.
+// If the condition is not met within a timeout returns an NSError indicating
+// why the operation failed, otherwise nil.
 - (NSError*)reload WARN_UNUSED_RESULT;
 
 // Navigates back to the previous page and waits for the loading to complete
-// within a timeout, or a GREYAssert is induced.
+// within a timeout.
+// If the condition is not met within a timeout returns an NSError indicating
+// why the operation failed, otherwise nil.
 - (NSError*)goBack WARN_UNUSED_RESULT;
 
 // Navigates forward to the next page and waits for the loading to complete
-// within a timeout, or a GREYAssert is induced.
+// within a timeout.
+// If the condition is not met within a timeout returns an NSError indicating
+// why the operation failed, otherwise nil.
 - (NSError*)goForward WARN_UNUSED_RESULT;
 
 // Opens a new tab and waits for the new tab animation to complete.
@@ -96,62 +103,42 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // Closes the current tab and waits for the UI to complete.
 - (void)closeCurrentTab;
 
-// Waits for the page to finish loading within a timeout, or a GREYAssert is
-// induced.
+// Waits for the page to finish loading within a timeout.
+// If the page is not loaded within a timeout returns an NSError indicating why
+// the operation failed, otherwise nil.
 - (NSError*)waitForPageToFinishLoading WARN_UNUSED_RESULT;
 
-// Taps html element with |elementID| in the current web view.
-- (NSError*)tapWebViewElementWithID:(NSString*)elementID WARN_UNUSED_RESULT;
-
-// Waits for a static html view containing |text|. If the condition is not met
-// within a timeout, a GREYAssert is induced.
+// Waits for a static html view containing |text|.
+// If the condition is not met within a timeout returns an NSError indicating
+// why the operation failed, otherwise nil.
 - (NSError*)waitForStaticHTMLViewContainingText:(NSString*)text
     WARN_UNUSED_RESULT;
 
 // Waits for there to be no static html view, or a static html view that does
-// not contain |text|. If the condition is not met within a timeout, a
-// GREYAssert is induced.
+// not contain |text|.
+// If the condition is not met within a timeout returns an NSError indicating
+// why the operation failed, otherwise nil.
 - (NSError*)waitForStaticHTMLViewNotContainingText:(NSString*)text
     WARN_UNUSED_RESULT;
 
-// Waits for a Chrome error page. If it is not found within a timeout, a
-// GREYAssert is induced.
+// Waits for a Chrome error page.
+// If the condition is not met within a timeout returns an NSError indicating
+// why the operation failed, otherwise nil.
 - (NSError*)waitForErrorPage WARN_UNUSED_RESULT;
 
-// Waits for the current web view to contain |text|. If the condition is not met
-// within a timeout, a GREYAssert is induced.
-- (NSError*)waitForWebViewContainingText:(std::string)text WARN_UNUSED_RESULT;
-
-// Waits for the current web view to contain an element matching |selector|.
-// If the condition is not met within a timeout, a GREYAssert is induced.
-- (NSError*)waitForWebViewContainingElement:(ElementSelector*)selector
-    WARN_UNUSED_RESULT;
-
-// Waits for there to be no web view containing |text|. If the condition is not
-// met within a timeout, a GREYAssert is induced.
-- (NSError*)waitForWebViewNotContainingText:(std::string)text
-    WARN_UNUSED_RESULT;
-
-// Waits for there to be |count| number of non-incognito tabs. If the condition
-// is not met within a timeout, a GREYAssert is induced.
+// Waits for there to be |count| number of non-incognito tabs.
+// If the condition is not met within a timeout returns an NSError indicating
+// why the operation failed, otherwise nil.
 - (NSError*)waitForMainTabCount:(NSUInteger)count WARN_UNUSED_RESULT;
 
-// Waits for there to be |count| number of incognito tabs. If the condition is
-// not met within a timeout, a GREYAssert is induced.
+// Waits for there to be |count| number of incognito tabs.
+// If the condition is not met within a timeout returns an NSError indicating
+// why the operation failed, otherwise nil.
 - (NSError*)waitForIncognitoTabCount:(NSUInteger)count WARN_UNUSED_RESULT;
 
-// Waits for there to be a web view containing a blocked |image_id|.  When
-// blocked, the image element will be smaller than the actual image size.
-- (NSError*)waitForWebViewContainingBlockedImageElementWithID:
-    (std::string)imageID WARN_UNUSED_RESULT;
-
-// Waits for there to be a web view containing loaded image with |image_id|.
-// When loaded, the image element will have the same size as actual image.
-- (NSError*)waitForWebViewContainingLoadedImageElementWithID:
-    (std::string)imageID WARN_UNUSED_RESULT;
-
-// Waits for the bookmark internal state to be done loading. If it does not
-// happen within a timeout, a GREYAssert is induced.
+// Waits for the bookmark internal state to be done loading.
+// If the condition is not met within a timeout returns an NSError indicating
+// why the operation failed, otherwise nil.
 - (NSError*)waitForBookmarksToFinishLoading WARN_UNUSED_RESULT;
 
 // Clears bookmarks and if any bookmark still presents. Returns nil on success,
@@ -159,8 +146,52 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 - (NSError*)clearBookmarks;
 
 // Waits for the matcher to return an element that is sufficiently visible.
-- (NSError*)waitForElementWithMatcherSufficientlyVisible:
+- (NSError*)waitForSufficientlyVisibleElementWithMatcher:
     (id<GREYMatcher>)matcher WARN_UNUSED_RESULT;
+
+#pragma mark - WebState Utilities
+
+// Taps html element with |elementID| in the current web state.
+- (NSError*)tapWebStateElementWithID:(NSString*)elementID WARN_UNUSED_RESULT;
+
+// Attempts to tap the element with |element_id| within window.frames[0] of the
+// current WebState using a JavaScript click() event. This only works on
+// same-origin iframes.
+// If the condition did not succeeded returns an NSError indicating
+// why the operation failed, otherwise nil.
+- (NSError*)tapWebStateElementInIFrameWithID:(const std::string&)elementID
+    WARN_UNUSED_RESULT;
+
+// Attempts to submit form with |formID| in the current WebState.
+- (NSError*)submitWebStateFormWithID:(const std::string&)formID
+    WARN_UNUSED_RESULT;
+
+// Waits for the current web state to contain |text|. Returns nil if the
+// condition is met within a timeout, otherwise an NSError indicating why the
+// operation failed.
+- (NSError*)waitForWebStateContainingText:(std::string)text WARN_UNUSED_RESULT;
+
+// Waits for the current web state to contain an element matching |selector|.
+// If the condition is not met within a timeout returns an NSError indicating
+// why the operation failed, otherwise nil.
+- (NSError*)waitForWebStateContainingElement:(ElementSelector*)selector
+    WARN_UNUSED_RESULT;
+
+// Waits for there to be no web state containing |text|.
+// If the condition is not met within a timeout returns an NSError indicating
+// why the operation failed, otherwise nil.
+- (NSError*)waitForWebStateNotContainingText:(std::string)text
+    WARN_UNUSED_RESULT;
+
+// Waits for there to be a web state containing a blocked |image_id|.  When
+// blocked, the image element will be smaller than the actual image size.
+- (NSError*)waitForWebStateContainingBlockedImageElementWithID:
+    (std::string)imageID WARN_UNUSED_RESULT;
+
+// Waits for there to be a web state containing loaded image with |image_id|.
+// When loaded, the image element will have the same size as actual image.
+- (NSError*)waitForWebStateContainingLoadedImageElementWithID:
+    (std::string)imageID WARN_UNUSED_RESULT;
 
 #pragma mark - Sync Utilities
 
