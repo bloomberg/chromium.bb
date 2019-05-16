@@ -1537,6 +1537,45 @@ int amdgpu_cs_syncobj_wait(amdgpu_device_handle dev,
 			   uint32_t *first_signaled);
 
 /**
+ *  Wait for one or all sync objects on their points to signal.
+ *
+ * \param   dev	    - \c [in] self-explanatory
+ * \param   handles - \c [in] array of sync object handles
+ * \param   points - \c [in] array of sync points to wait
+ * \param   num_handles - \c [in] self-explanatory
+ * \param   timeout_nsec - \c [in] self-explanatory
+ * \param   flags   - \c [in] a bitmask of DRM_SYNCOBJ_WAIT_FLAGS_*
+ * \param   first_signaled - \c [in] self-explanatory
+ *
+ * \return   0 on success\n
+ *          -ETIME - Timeout
+ *          <0 - Negative POSIX Error code
+ *
+ */
+int amdgpu_cs_syncobj_timeline_wait(amdgpu_device_handle dev,
+				    uint32_t *handles, uint64_t *points,
+				    unsigned num_handles,
+				    int64_t timeout_nsec, unsigned flags,
+				    uint32_t *first_signaled);
+/**
+ *  Query sync objects payloads.
+ *
+ * \param   dev	    - \c [in] self-explanatory
+ * \param   handles - \c [in] array of sync object handles
+ * \param   points - \c [out] array of sync points returned, which presents
+ * syncobj payload.
+ * \param   num_handles - \c [in] self-explanatory
+ *
+ * \return   0 on success\n
+ *          -ETIME - Timeout
+ *          <0 - Negative POSIX Error code
+ *
+ */
+int amdgpu_cs_syncobj_query(amdgpu_device_handle dev,
+			    uint32_t *handles, uint64_t *points,
+			    unsigned num_handles);
+
+/**
  *  Export kernel sync object to shareable fd.
  *
  * \param   dev	       - \c [in] device handle

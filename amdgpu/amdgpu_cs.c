@@ -686,6 +686,29 @@ drm_public int amdgpu_cs_syncobj_wait(amdgpu_device_handle dev,
 			      flags, first_signaled);
 }
 
+drm_public int amdgpu_cs_syncobj_timeline_wait(amdgpu_device_handle dev,
+					       uint32_t *handles, uint64_t *points,
+					       unsigned num_handles,
+					       int64_t timeout_nsec, unsigned flags,
+					       uint32_t *first_signaled)
+{
+	if (NULL == dev)
+		return -EINVAL;
+
+	return drmSyncobjTimelineWait(dev->fd, handles, points, num_handles,
+				      timeout_nsec, flags, first_signaled);
+}
+
+drm_public int amdgpu_cs_syncobj_query(amdgpu_device_handle dev,
+				       uint32_t *handles, uint64_t *points,
+				       unsigned num_handles)
+{
+	if (NULL == dev)
+		return -EINVAL;
+
+	return drmSyncobjQuery(dev->fd, handles, points, num_handles);
+}
+
 drm_public int amdgpu_cs_export_syncobj(amdgpu_device_handle dev,
 					uint32_t handle,
 					int *shared_fd)
