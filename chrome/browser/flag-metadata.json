@@ -1431,8 +1431,8 @@
   },
   {
     "name": "enable-request-tablet-site",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "xdai" ],
+    "expiry_milestone": 78
   },
   {
     "name": "enable-resampling-input-events",
