@@ -2799,8 +2799,8 @@
   },
   {
     "name": "site-settings",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "mxcai" ],
+    "expiry_milestone": 78
   },
   {
     "name": "smart-text-selection",
