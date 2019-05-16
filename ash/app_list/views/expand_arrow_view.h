@@ -44,6 +44,7 @@ class APP_LIST_EXPORT ExpandArrowView : public views::Button,
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   void OnFocus() override;
   void OnBlur() override;
+  const char* GetClassName() const override;
 
   // Overridden from views::InkDropHost:
   std::unique_ptr<views::InkDrop> CreateInkDrop() override;

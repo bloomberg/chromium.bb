@@ -205,6 +205,10 @@ void SearchBoxView::OnPaintBackground(gfx::Canvas* canvas) {
   }
 }
 
+const char* SearchBoxView::GetClassName() const {
+  return "SearchBoxView";
+}
+
 // static
 int SearchBoxView::GetFocusRingSpacing() {
   return kSearchBoxFocusRingWidth + kSearchBoxFocusRingPadding;

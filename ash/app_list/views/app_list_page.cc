@@ -75,4 +75,8 @@ gfx::Rect AppListPage::GetDefaultContentsBounds() const {
   return contents_view_->GetDefaultContentsBounds();
 }
 
+const char* AppListPage::GetClassName() const {
+  return "AppListPage";
+}
+
 }  // namespace app_list

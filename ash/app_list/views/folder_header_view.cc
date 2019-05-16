@@ -188,6 +188,10 @@ gfx::Size FolderHeaderView::CalculatePreferredSize() const {
                    folder_name_view_->GetPreferredSize().height());
 }
 
+const char* FolderHeaderView::GetClassName() const {
+  return "FolderHeaderView";
+}
+
 views::View* FolderHeaderView::GetFolderNameViewForTest() const {
   return folder_name_view_;
 }

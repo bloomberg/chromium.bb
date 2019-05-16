@@ -22,6 +22,10 @@ bool SearchResultBaseView::SkipDefaultKeyEventProcessing(
   return false;
 }
 
+const char* SearchResultBaseView::GetClassName() const {
+  return "SearchResultBaseView";
+}
+
 void SearchResultBaseView::SetBackgroundHighlighted(bool enabled) {
   background_highlighted_ = enabled;
   SchedulePaint();

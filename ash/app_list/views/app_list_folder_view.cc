@@ -549,6 +549,10 @@ bool AppListFolderView::OnKeyPressed(const ui::KeyEvent& event) {
   return false;
 }
 
+const char* AppListFolderView::GetClassName() const {
+  return "AppListFolderView";
+}
+
 void AppListFolderView::OnAppListItemWillBeDeleted(AppListItem* item) {
   if (item == folder_item_) {
     items_grid_view_->OnFolderItemRemoved();

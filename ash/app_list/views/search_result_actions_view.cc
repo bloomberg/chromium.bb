@@ -251,6 +251,10 @@ void SearchResultActionsView::ActionButtonStateChanged() {
   UpdateButtonsOnStateChanged();
 }
 
+const char* SearchResultActionsView::GetClassName() const {
+  return "SearchResultActionsView";
+}
+
 void SearchResultActionsView::CreateImageButton(
     const SearchResult::Action& action) {
   SearchResultImageButton* button = new SearchResultImageButton(this, action);

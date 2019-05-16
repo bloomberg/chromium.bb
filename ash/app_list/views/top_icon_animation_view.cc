@@ -112,6 +112,10 @@ void TopIconAnimationView::TransformView() {
   }
 }
 
+const char* TopIconAnimationView::GetClassName() const {
+  return "TopIconAnimationView";
+}
+
 gfx::Size TopIconAnimationView::CalculatePreferredSize() const {
   return gfx::Size(AppListConfig::instance().grid_tile_width(),
                    AppListConfig::instance().grid_tile_height());

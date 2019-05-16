@@ -84,6 +84,10 @@ PulsingBlockView::PulsingBlockView(const gfx::Size& size, bool start_delay) {
 
 PulsingBlockView::~PulsingBlockView() {}
 
+const char* PulsingBlockView::GetClassName() const {
+  return "PulsingBlockView";
+}
+
 void PulsingBlockView::OnStartDelayTimer() {
   SchedulePulsingAnimation(layer());
 }

@@ -68,6 +68,10 @@ void HorizontalPageContainer::OnGestureEvent(ui::GestureEvent* event) {
     event->SetHandled();
 }
 
+const char* HorizontalPageContainer::GetClassName() const {
+  return "HorizontalPageContainer";
+}
+
 void HorizontalPageContainer::OnWillBeHidden() {
   GetSelectedPage()->OnWillBeHidden();
 }

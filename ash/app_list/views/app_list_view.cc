@@ -122,6 +122,9 @@ class SearchBoxFocusHost : public views::View {
     return search_box_widget_;
   }
 
+  // views::View:
+  const char* GetClassName() const override { return "SearchBoxFocusHost"; }
+
  private:
   views::Widget* search_box_widget_;
 
@@ -437,6 +440,10 @@ class AppListBackgroundShieldView : public views::View {
   }
 
   SkColor GetColorForTest() const { return color_; }
+
+  const char* GetClassName() const override {
+    return "AppListBackgroundShieldView";
+  }
 
  private:
   SkColor color_;

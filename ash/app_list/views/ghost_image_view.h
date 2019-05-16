@@ -39,6 +39,9 @@ class GhostImageView : public views::ImageView,
   // Returns the page number which this view belongs to.
   int page() const { return page_; }
 
+  // views::View:
+  const char* GetClassName() const override;
+
  private:
   // Start the animation for showing or for hiding the GhostImageView.
   void DoAnimation(bool hide);

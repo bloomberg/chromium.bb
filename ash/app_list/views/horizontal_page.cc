@@ -28,6 +28,10 @@ bool HorizontalPage::ShouldShowSearchBox() const {
   return true;
 }
 
+const char* HorizontalPage::GetClassName() const {
+  return "HorizontalPage";
+}
+
 HorizontalPage::HorizontalPage() = default;
 
 HorizontalPage::~HorizontalPage() = default;

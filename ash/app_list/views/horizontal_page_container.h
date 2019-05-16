@@ -36,6 +36,7 @@ class APP_LIST_EXPORT HorizontalPageContainer
   gfx::Size CalculatePreferredSize() const override;
   void Layout() override;
   void OnGestureEvent(ui::GestureEvent* event) override;
+  const char* GetClassName() const override;
 
   // AppListPage overrides:
   void OnWillBeHidden() override;

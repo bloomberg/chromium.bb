@@ -51,6 +51,9 @@ class APP_LIST_EXPORT SearchResultBaseView : public views::Button,
   // views::Button:
   bool SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) override;
 
+  // views::View:
+  const char* GetClassName() const override;
+
  protected:
   ~SearchResultBaseView() override;
 

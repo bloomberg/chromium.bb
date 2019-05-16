@@ -234,6 +234,10 @@ void PageSwitcher::Layout() {
   buttons_->SetBoundsRect(rect);
 }
 
+const char* PageSwitcher::GetClassName() const {
+  return "PageSwitcher";
+}
+
 void PageSwitcher::ButtonPressed(views::Button* sender,
                                  const ui::Event& event) {
   if (!model_ || ignore_button_press_)

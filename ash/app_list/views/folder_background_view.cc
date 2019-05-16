@@ -14,6 +14,10 @@ FolderBackgroundView::FolderBackgroundView(AppListFolderView* folder_view)
 
 FolderBackgroundView::~FolderBackgroundView() = default;
 
+const char* FolderBackgroundView::GetClassName() const {
+  return "FolderBackgroundView";
+}
+
 bool FolderBackgroundView::OnMousePressed(const ui::MouseEvent& event) {
   HandleClickOrTap();
   return true;

@@ -38,6 +38,9 @@ class SearchResultActionsView : public views::View,
   // Called when one of the action buttons changes state.
   void ActionButtonStateChanged();
 
+  // views::View:
+  const char* GetClassName() const override;
+
  private:
   void CreateImageButton(const SearchResult::Action& action);
 

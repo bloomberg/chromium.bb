@@ -30,6 +30,9 @@ class APP_LIST_EXPORT HorizontalPage : public views::View {
   // Returns true if the search box should be shown in this page.
   virtual bool ShouldShowSearchBox() const;
 
+  // views::View:
+  const char* GetClassName() const override;
+
  protected:
   HorizontalPage();
   ~HorizontalPage() override;

@@ -246,6 +246,10 @@ void ExpandArrowView::OnBlur() {
   Button::OnBlur();
 }
 
+const char* ExpandArrowView::GetClassName() const {
+  return "ExpandArrowView";
+}
+
 std::unique_ptr<views::InkDrop> ExpandArrowView::CreateInkDrop() {
   std::unique_ptr<views::InkDropImpl> ink_drop =
       Button::CreateDefaultInkDropImpl();

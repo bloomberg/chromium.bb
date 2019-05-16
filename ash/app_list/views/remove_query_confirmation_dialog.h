@@ -32,6 +32,9 @@ class RemoveQueryConfirmationDialog
   // Shows the dialog with |parent|.
   void Show(gfx::NativeWindow parent);
 
+  // views::View:
+  const char* GetClassName() const override;
+
  private:
   // views::WidgetDelegate:
   base::string16 GetWindowTitle() const override;
