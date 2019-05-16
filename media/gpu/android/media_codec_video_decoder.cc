@@ -853,6 +853,14 @@ void MediaCodecVideoDecoder::ForwardVideoFrame(
     scoped_refptr<VideoFrame> frame) {
   DVLOG(3) << __func__ << " : "
            << (frame ? frame->AsHumanReadableString() : "null");
+
+  // No |frame| indicates an error creating it.
+  if (!frame) {
+    DLOG(ERROR) << __func__ << " |frame| is null";
+    EnterTerminalState(State::kError);
+    return;
+  }
+
   if (reset_generation == reset_generation_) {
     // TODO(liberato): We might actually have a SW decoder.  Consider setting
     // this to false if so, especially for higher bitrates.

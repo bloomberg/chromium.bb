@@ -196,8 +196,8 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
       std::make_unique<AndroidVideoSurfaceChooserImpl>(
           DeviceInfo::GetInstance()->IsSetOutputSurfaceSupported()),
       android_overlay_factory_cb_, std::move(request_overlay_info_cb),
-      std::make_unique<VideoFrameFactoryImpl>(gpu_task_runner_,
-                                              std::move(get_stub_cb)));
+      std::make_unique<VideoFrameFactoryImpl>(
+          gpu_task_runner_, std::move(get_stub_cb), gpu_preferences_));
 #elif defined(OS_CHROMEOS) || defined(OS_MACOSX) || defined(OS_WIN) || \
     defined(OS_LINUX)
       video_decoder = VdaVideoDecoder::Create(
