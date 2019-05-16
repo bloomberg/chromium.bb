@@ -4,11 +4,16 @@
 
 #include "chrome/browser/extensions/extension_action_manager.h"
 
+#include <memory>
+
 #include "chrome/browser/extensions/extension_action.h"
+#include "chrome/common/extensions/extension_test_util.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/version_info/channel.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension_builder.h"
+#include "extensions/common/features/feature_channel.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/value_builder.h"
@@ -49,11 +54,18 @@ class ExtensionActionManagerTest
   content::TestBrowserThreadBundle thread_bundle_;
   ExtensionRegistry* registry_;
   ExtensionActionManager* manager_;
+
+  // Instantiate the channel override, if any, before the profile.
+  std::unique_ptr<ScopedCurrentChannel> current_channel_;
   std::unique_ptr<TestingProfile> profile_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionActionManagerTest);
 };
 
 ExtensionActionManagerTest::ExtensionActionManagerTest()
-    : profile_(std::make_unique<TestingProfile>()) {
+    : current_channel_(
+          extension_test_util::GetOverrideChannelForActionType(GetParam())),
+      profile_(std::make_unique<TestingProfile>()) {
   registry_ = ExtensionRegistry::Get(profile_.get());
   manager_ = ExtensionActionManager::Get(profile_.get());
 }

@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -17,6 +17,7 @@
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/extensions/extension_test_util.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/version_info/channel.h"
 #include "content/public/browser/web_contents.h"
@@ -95,17 +96,12 @@ class MultiActionAPITest
     : public ExtensionActionAPITest,
       public testing::WithParamInterface<ActionInfo::Type> {
  public:
-  MultiActionAPITest() {
-    if (GetParam() == ActionInfo::TYPE_ACTION) {
-      // The "action" key is currently restricted to trunk. Used a fake channel
-      // iff we're testing that key, so that we still get multi-channel coverage
-      // for browser and page actions.
-      current_channel_.emplace(version_info::Channel::UNKNOWN);
-    }
-  }
+  MultiActionAPITest()
+      : current_channel_(
+            extension_test_util::GetOverrideChannelForActionType(GetParam())) {}
 
  private:
-  base::Optional<ScopedCurrentChannel> current_channel_;
+  std::unique_ptr<ScopedCurrentChannel> current_channel_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiActionAPITest);
 };
