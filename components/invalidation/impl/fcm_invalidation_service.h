@@ -44,7 +44,8 @@ class FCMInvalidationService : public InvalidationService,
                          instance_id::InstanceIDDriver* client_id_driver,
                          PrefService* pref_service,
                          const syncer::ParseJSONCallback& parse_json,
-                         network::mojom::URLLoaderFactory* loader_factory);
+                         network::mojom::URLLoaderFactory* loader_factory,
+                         const std::string& sender_id = {});
   ~FCMInvalidationService() override;
 
   void Init();
@@ -112,6 +113,10 @@ class FCMInvalidationService : public InvalidationService,
   void OnDeleteIDCompleted(instance_id::InstanceID::Result);
 
   void DoUpdateRegisteredIdsIfNeeded();
+
+  const std::string GetApplicationName();
+
+  const std::string sender_id_;
 
   syncer::InvalidatorRegistrarWithMemory invalidator_registrar_;
   std::unique_ptr<syncer::Invalidator> invalidator_;

@@ -20,11 +20,15 @@ using net::URLRequestStatus;
 
 namespace {
 
+const char kPublicTopicNameKey[] = "publicTopicName";
 const char kPrivateTopicNameKey[] = "privateTopicName";
 
-base::Value* GetPrivateTopicName(base::Value* value) {
+base::Value* GetTopicName(base::Value* value) {
   if (!value || !value->is_dict()) {
     return nullptr;
+  }
+  if (value->FindBoolKey("isPublic").value_or(false)) {
+    return value->FindKeyOfType(kPublicTopicNameKey, base::Value::Type::STRING);
   }
   return value->FindKeyOfType(kPrivateTopicNameKey, base::Value::Type::STRING);
 }
@@ -75,6 +79,13 @@ void RecordRequestStatus(
         "FCMInvalidations.SubscriptionResponseCodeForTopic." + topic,
         response_code);
   }
+}
+
+bool IsPublicTopic(const base::StringPiece topic) {
+  // Team Drive topics are public.
+  // TODO(crbug.com/912281): Replace with plumbing this through from the
+  // InvalidationHandler.
+  return topic.starts_with("team-drive-");
 }
 
 }  // namespace
@@ -179,8 +190,7 @@ void PerUserTopicRegistrationRequest::OnJsonParseFailure(
 
 void PerUserTopicRegistrationRequest::OnJsonParseSuccess(
     std::unique_ptr<base::Value> value) {
-  const base::Value* private_topic_name_value =
-      GetPrivateTopicName(value.get());
+  const base::Value* private_topic_name_value = GetTopicName(value.get());
   RecordRequestStatus(SubscriptionStatus::kSuccess, type_, topic_);
   if (private_topic_name_value) {
     std::move(request_completed_callback_)
@@ -212,9 +222,14 @@ PerUserTopicRegistrationRequest::Builder::Build() const {
           scope_.c_str(), project_id_.c_str(), token_.c_str());
       break;
     case UNSUBSCRIBE:
+      std::string public_param;
+      if (IsPublicTopic(topic_)) {
+        public_param = "subscription.is_public=true&";
+      }
       url = base::StringPrintf(
-          "%s/v1/perusertopics/%s/rel/topics/%s?subscriber_token=%s",
-          scope_.c_str(), project_id_.c_str(), topic_.c_str(), token_.c_str());
+          "%s/v1/perusertopics/%s/rel/topics/%s?%ssubscriber_token=%s",
+          scope_.c_str(), project_id_.c_str(), topic_.c_str(),
+          public_param.c_str(), token_.c_str());
       break;
   }
   GURL full_url(url);
@@ -290,6 +305,9 @@ std::string PerUserTopicRegistrationRequest::Builder::BuildBody() const {
   base::DictionaryValue request;
 
   request.SetString("public_topic_name", topic_);
+  if (IsPublicTopic(topic_)) {
+    request.SetBoolean("is_public", true);
+  }
 
   std::string request_json;
   bool success = base::JSONWriter::Write(request, &request_json);

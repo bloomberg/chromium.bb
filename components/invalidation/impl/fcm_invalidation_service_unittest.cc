@@ -104,8 +104,10 @@ class FCMInvalidationServiceTestDelegate {
  public:
   FCMInvalidationServiceTestDelegate() {
     pref_service_.registry()->RegisterStringPref(
-        prefs::kFCMInvalidationClientIDCache,
+        prefs::kFCMInvalidationClientIDCacheDeprecated,
         /*default_value=*/std::string());
+    pref_service_.registry()->RegisterDictionaryPref(
+        prefs::kInvalidationClientIDCache);
     syncer::InvalidatorRegistrarWithMemory::RegisterProfilePrefs(
         pref_service_.registry());
   }

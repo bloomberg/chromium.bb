@@ -37,10 +37,10 @@ const char kInvalidationRegistrationScope[] =
 const char kProjectId[] = "8181035976";
 
 const char kTypeRegisteredForInvalidation[] =
-    "invalidation.registered_for_invalidation";
+    "invalidation.per_sender_registered_for_invalidation";
 
-const char kActiveRegistrationToken[] =
-    "invalidation.active_registration_token";
+const char kActiveRegistrationTokens[] =
+    "invalidation.per_sender_active_registration_tokens";
 
 const char kFakeInstanceIdToken[] = "fake_instance_id_token";
 
@@ -124,10 +124,12 @@ class PerUserTopicRegistrationManagerTest : public testing::Test {
     identity_provider_->SetActiveAccountId(account.account_id);
   }
 
-  std::unique_ptr<PerUserTopicRegistrationManager> BuildRegistrationManager() {
+  std::unique_ptr<PerUserTopicRegistrationManager> BuildRegistrationManager(
+      bool migrate_prefs = true) {
     auto reg_manager = std::make_unique<PerUserTopicRegistrationManager>(
         identity_provider_.get(), &pref_service_, url_loader_factory(),
-        base::BindRepeating(&syncer::JsonUnsafeParser::Parse), kProjectId);
+        base::BindRepeating(&syncer::JsonUnsafeParser::Parse), kProjectId,
+        migrate_prefs);
     reg_manager->Init();
     reg_manager->AddObserver(&state_observer_);
     return reg_manager;
@@ -138,6 +140,12 @@ class PerUserTopicRegistrationManagerTest : public testing::Test {
   }
 
   TestingPrefServiceSimple* pref_service() { return &pref_service_; }
+
+  const base::Value* GetRegisteredTopics() {
+    return pref_service()
+        ->GetDictionary(kTypeRegisteredForInvalidation)
+        ->FindDictKey(kProjectId);
+  }
 
   SubscriptionChannelState observed_state() {
     return state_observer_.observed_state();
@@ -220,8 +228,7 @@ TEST_F(PerUserTopicRegistrationManagerTest, ShouldUpdateRegisteredTopics) {
       per_user_topic_registration_manager->HaveAllRequestsFinishedForTest());
 
   for (const auto& id : ids) {
-    const base::DictionaryValue* topics =
-        pref_service()->GetDictionary(kTypeRegisteredForInvalidation);
+    const base::Value* topics = GetRegisteredTopics();
     const base::Value* private_topic_value =
         topics->FindKeyOfType(id, base::Value::Type::STRING);
     ASSERT_NE(private_topic_value, nullptr);
@@ -293,16 +300,14 @@ TEST_F(PerUserTopicRegistrationManagerTest,
 
   // ids were disabled, check that they're not in the prefs.
   for (const auto& id : disabled_ids) {
-    const base::DictionaryValue* topics =
-        pref_service()->GetDictionary(kTypeRegisteredForInvalidation);
+    const base::Value* topics = GetRegisteredTopics();
     const base::Value* private_topic_value = topics->FindKey(id);
     ASSERT_EQ(private_topic_value, nullptr);
   }
 
   // Check that enable ids are still in the prefs.
   for (const auto& id : enabled_ids) {
-    const base::DictionaryValue* topics =
-        pref_service()->GetDictionary(kTypeRegisteredForInvalidation);
+    const base::Value* topics = GetRegisteredTopics();
     const base::Value* private_topic_value =
         topics->FindKeyOfType(id, base::Value::Type::STRING);
     ASSERT_NE(private_topic_value, nullptr);
@@ -326,8 +331,7 @@ TEST_F(PerUserTopicRegistrationManagerTest,
   EXPECT_EQ(ids, per_user_topic_registration_manager->GetRegisteredIds());
 
   for (const auto& id : ids) {
-    const base::DictionaryValue* topics =
-        pref_service()->GetDictionary(kTypeRegisteredForInvalidation);
+    const base::Value* topics = GetRegisteredTopics();
     const base::Value* private_topic_value =
         topics->FindKeyOfType(id, base::Value::Type::STRING);
     ASSERT_NE(private_topic_value, nullptr);
@@ -337,7 +341,9 @@ TEST_F(PerUserTopicRegistrationManagerTest,
   }
 
   EXPECT_EQ(kFakeInstanceIdToken,
-            pref_service()->GetString(kActiveRegistrationToken));
+            *pref_service()
+                 ->GetDictionary(kActiveRegistrationTokens)
+                 ->FindStringKey(kProjectId));
 
   std::string token = "new-fake-token";
   AddCorrectSubscriptionResponce("new-token-topic", token);
@@ -345,12 +351,13 @@ TEST_F(PerUserTopicRegistrationManagerTest,
   per_user_topic_registration_manager->UpdateRegisteredTopics(ids, token);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(token, pref_service()->GetString(kActiveRegistrationToken));
+  EXPECT_EQ(token, *pref_service()
+                        ->GetDictionary(kActiveRegistrationTokens)
+                        ->FindStringKey(kProjectId));
   EXPECT_EQ(ids, per_user_topic_registration_manager->GetRegisteredIds());
 
   for (const auto& id : ids) {
-    const base::DictionaryValue* topics =
-        pref_service()->GetDictionary(kTypeRegisteredForInvalidation);
+    const base::Value* topics = GetRegisteredTopics();
     const base::Value* private_topic_value =
         topics->FindKeyOfType(id, base::Value::Type::STRING);
     ASSERT_NE(private_topic_value, nullptr);
@@ -385,16 +392,14 @@ TEST_F(PerUserTopicRegistrationManagerTest,
 
   // Ids should still be removed from prefs.
   for (const auto& id : disabled_ids) {
-    const base::DictionaryValue* topics =
-        pref_service()->GetDictionary(kTypeRegisteredForInvalidation);
+    const base::Value* topics = GetRegisteredTopics();
     const base::Value* private_topic_value = topics->FindKey(id);
     ASSERT_EQ(private_topic_value, nullptr);
   }
 
   // Check that enable ids are still in the prefs.
   for (const auto& id : enabled_ids) {
-    const base::DictionaryValue* topics =
-        pref_service()->GetDictionary(kTypeRegisteredForInvalidation);
+    const base::Value* topics = GetRegisteredTopics();
     const base::Value* private_topic_value =
         topics->FindKeyOfType(id, base::Value::Type::STRING);
     ASSERT_NE(private_topic_value, nullptr);

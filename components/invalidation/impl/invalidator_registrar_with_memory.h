@@ -31,7 +31,9 @@ using HandlerNameTopicsMap = std::map<std::string, TopicSet>;
 class INVALIDATION_EXPORT InvalidatorRegistrarWithMemory
     : public InvalidatorRegistrar {
  public:
-  InvalidatorRegistrarWithMemory(PrefService* local_state);
+  InvalidatorRegistrarWithMemory(PrefService* local_state,
+                                 const std::string& sender_id,
+                                 bool migrate_old_prefs);
 
   // It is an error to have registered handlers on destruction.
   ~InvalidatorRegistrarWithMemory();
@@ -65,6 +67,7 @@ class INVALIDATION_EXPORT InvalidatorRegistrarWithMemory
       handler_name_to_handler_;
   HandlerNameTopicsMap handler_name_to_topics_map_;
   PrefService* local_state_;
+  const std::string sender_id_;
 
   DISALLOW_COPY_AND_ASSIGN(InvalidatorRegistrarWithMemory);
 };

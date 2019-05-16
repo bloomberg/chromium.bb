@@ -248,6 +248,10 @@ const base::Feature kDownloadsLocationChange{"DownloadsLocationChange",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
+// If enabled, Drive will use FCM for its invalidations.
+const base::Feature kDriveFcmInvalidations{"DriveFCMInvalidations",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Show the number of open incognito windows besides incognito icon on the
 // toolbar.
 const base::Feature kEnableIncognitoWindowCounter{

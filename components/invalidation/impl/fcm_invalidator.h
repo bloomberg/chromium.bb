@@ -33,7 +33,8 @@ class FCMInvalidator : public Invalidator,
                  PrefService* pref_service,
                  network::mojom::URLLoaderFactory* loader_factory,
                  const ParseJSONCallback& parse_json,
-                 const std::string& project_id);
+                 const std::string& project_id,
+                 bool migrate_prefs);
 
   ~FCMInvalidator() override;
 

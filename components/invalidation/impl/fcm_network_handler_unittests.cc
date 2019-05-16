@@ -51,7 +51,6 @@ gcm::IncomingMessage CreateValidMessage() {
   gcm::IncomingMessage message;
   message.data["payload"] = "payload";
   message.data["version"] = "version";
-  message.data["external_name"] = "public_topic";
   message.sender_id = "private_topic";
   return message;
 }
@@ -333,15 +332,20 @@ TEST_F(FCMNetworkHandlerTest, ShouldInvokeMessageCallbackOnValidMessage) {
   std::unique_ptr<FCMNetworkHandler> handler =
       MakeHandlerReadyForMessage(mock_on_message_callback.Get());
   EXPECT_CALL(mock_on_message_callback,
+              Run("payload", "private_topic", "", "version"))
+      .Times(1);
+  EXPECT_CALL(mock_on_message_callback,
               Run("payload", "private_topic", "public_topic", "version"))
       .Times(1);
+  handler->OnMessage(kInvalidationsAppId, message);
+  message.data["external_name"] = "public_topic";
   handler->OnMessage(kInvalidationsAppId, message);
 
   EXPECT_THAT(
       histogram_tester.GetAllSamples("FCMInvalidations.FCMMessageStatus"),
       testing::ElementsAre(base::Bucket(
           static_cast<int>(InvalidationParsingStatus::kSuccess) /* min */,
-          1 /* count */)));
+          2 /* count */)));
 }
 
 TEST_F(FCMNetworkHandlerTest,
@@ -361,27 +365,6 @@ TEST_F(FCMNetworkHandlerTest,
       histogram_tester.GetAllSamples("FCMInvalidations.FCMMessageStatus"),
       testing::ElementsAre(base::Bucket(
           static_cast<int>(InvalidationParsingStatus::kVersionEmpty) /* min */,
-          1 /* count */)));
-}
-
-TEST_F(FCMNetworkHandlerTest,
-       ShouldNotInvokeMessageCallbackOnMessageWithEmptyPublicTopic) {
-  base::HistogramTester histogram_tester;
-  MockOnMessageCallback mock_on_message_callback;
-  gcm::IncomingMessage message = CreateValidMessage();
-  // Clear public topic.
-  auto it = message.data.find("external_name");
-  message.data.erase(it);
-
-  std::unique_ptr<FCMNetworkHandler> handler =
-      MakeHandlerReadyForMessage(mock_on_message_callback.Get());
-  EXPECT_CALL(mock_on_message_callback, Run(_, _, _, _)).Times(0);
-  handler->OnMessage(kInvalidationsAppId, message);
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("FCMInvalidations.FCMMessageStatus"),
-      testing::ElementsAre(base::Bucket(
-          static_cast<int>(
-              InvalidationParsingStatus::kPublicTopicEmpty) /* min */,
           1 /* count */)));
 }
 

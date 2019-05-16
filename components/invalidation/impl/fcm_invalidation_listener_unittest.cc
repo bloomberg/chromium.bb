@@ -165,11 +165,17 @@ class MockRegistrationManager : public PerUserTopicRegistrationManager {
             nullptr /* pref_service */,
             nullptr /* loader_factory */,
             base::BindRepeating(&syncer::JsonUnsafeParser::Parse),
-            "fake_sender_id") {}
+            "fake_sender_id",
+            false) {
+    ON_CALL(*this, LookupRegisteredPublicTopicByPrivateTopic)
+        .WillByDefault(testing::ReturnArg<0>());
+  }
   ~MockRegistrationManager() override {}
   MOCK_METHOD2(UpdateRegisteredTopics,
                void(const TopicSet& topics, const std::string& token));
   MOCK_METHOD0(Init, void());
+  MOCK_CONST_METHOD1(LookupRegisteredPublicTopicByPrivateTopic,
+                     base::Optional<Topic>(const std::string& private_topic));
 };
 
 class FCMInvalidationListenerTest : public testing::Test {

@@ -75,12 +75,24 @@ void FCMInvalidationListener::Invalidate(const std::string& payload,
     // TODO(melandory): Report error and consider not to process with the
     // invalidation.
   }
+  // Note: |public_topic| is empty for some invalidations (e.g. Drive). Prefer
+  // using |*expected_public_topic| over |public_topic|.
+  base::Optional<std::string> expected_public_topic =
+      per_user_topic_registration_manager_
+          ->LookupRegisteredPublicTopicByPrivateTopic(private_topic);
+  if (!expected_public_topic ||
+      (!public_topic.empty() && public_topic != *expected_public_topic)) {
+    DVLOG(1) << "Unexpected invalidation for " << private_topic
+             << " with public topic " << public_topic << ". Expected "
+             << expected_public_topic.value_or("<None>");
+    return;
+  }
   TopicInvalidationMap invalidations;
   Invalidation inv =
-      Invalidation::Init(ConvertTopicToId(public_topic), v, payload);
+      Invalidation::Init(ConvertTopicToId(*expected_public_topic), v, payload);
   inv.SetAckHandler(AsWeakPtr(), base::ThreadTaskRunnerHandle::Get());
   DVLOG(1) << "Received invalidation with version " << inv.version() << " for "
-           << public_topic;
+           << *expected_public_topic;
 
   invalidations.Insert(inv);
   DispatchInvalidations(invalidations);
