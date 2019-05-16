@@ -20,9 +20,9 @@ namespace {
 // If |proxies| is non-empty, sets it in |dict| under the key |name|.
 void AddProxyListToValue(const char* name,
                          const ProxyList& proxies,
-                         base::DictionaryValue* dict) {
+                         base::Value* dict) {
   if (!proxies.IsEmpty())
-    dict->Set(name, proxies.ToValue());
+    dict->SetKey(name, proxies.ToValue());
 }
 
 // Split the |uri_list| on commas and add each entry to |proxy_list| in turn.
@@ -210,35 +210,31 @@ void ProxyConfig::ClearAutomaticSettings() {
   pac_url_ = GURL();
 }
 
-std::unique_ptr<base::DictionaryValue> ProxyConfig::ToValue() const {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+base::Value ProxyConfig::ToValue() const {
+  base::Value dict(base::Value::Type::DICTIONARY);
 
   // Output the automatic settings.
   if (auto_detect_)
-    dict->SetBoolean("auto_detect", auto_detect_);
+    dict.SetBoolKey("auto_detect", auto_detect_);
   if (has_pac_url()) {
-    dict->SetString("pac_url", pac_url_.possibly_invalid_spec());
+    dict.SetStringKey("pac_url", pac_url_.possibly_invalid_spec());
     if (pac_mandatory_)
-      dict->SetBoolean("pac_mandatory", pac_mandatory_);
+      dict.SetBoolKey("pac_mandatory", pac_mandatory_);
   }
 
   // Output the manual settings.
   if (proxy_rules_.type != ProxyRules::Type::EMPTY) {
     switch (proxy_rules_.type) {
       case ProxyRules::Type::PROXY_LIST:
-        AddProxyListToValue("single_proxy", proxy_rules_.single_proxies,
-                            dict.get());
+        AddProxyListToValue("single_proxy", proxy_rules_.single_proxies, &dict);
         break;
       case ProxyRules::Type::PROXY_LIST_PER_SCHEME: {
-        std::unique_ptr<base::DictionaryValue> dict2(
-            new base::DictionaryValue());
-        AddProxyListToValue("http", proxy_rules_.proxies_for_http, dict2.get());
-        AddProxyListToValue("https", proxy_rules_.proxies_for_https,
-                            dict2.get());
-        AddProxyListToValue("ftp", proxy_rules_.proxies_for_ftp, dict2.get());
-        AddProxyListToValue("fallback", proxy_rules_.fallback_proxies,
-                            dict2.get());
-        dict->Set("proxy_per_scheme", std::move(dict2));
+        base::Value dict2(base::Value::Type::DICTIONARY);
+        AddProxyListToValue("http", proxy_rules_.proxies_for_http, &dict2);
+        AddProxyListToValue("https", proxy_rules_.proxies_for_https, &dict2);
+        AddProxyListToValue("ftp", proxy_rules_.proxies_for_ftp, &dict2);
+        AddProxyListToValue("fallback", proxy_rules_.fallback_proxies, &dict2);
+        dict2.SetKey("proxy_per_scheme", std::move(dict2));
         break;
       }
       default:
@@ -249,15 +245,14 @@ std::unique_ptr<base::DictionaryValue> ProxyConfig::ToValue() const {
     const ProxyBypassRules& bypass = proxy_rules_.bypass_rules;
     if (!bypass.rules().empty()) {
       if (proxy_rules_.reverse_bypass)
-        dict->SetBoolean("reverse_bypass", true);
+        dict.SetBoolKey("reverse_bypass", true);
 
-      auto list = std::make_unique<base::ListValue>();
+      base::Value list(base::Value::Type::LIST);
 
-      for (auto it = bypass.rules().begin(); it != bypass.rules().end(); ++it) {
-        list->AppendString((*it)->ToString());
-      }
+      for (const auto& bypass_rule : bypass.rules())
+        list.GetList().emplace_back(bypass_rule->ToString());
 
-      dict->Set("bypass_list", std::move(list));
+      dict.SetKey("bypass_list", std::move(list));
     }
   }
 

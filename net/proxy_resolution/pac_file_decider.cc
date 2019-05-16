@@ -69,7 +69,7 @@ PacFileDataWithSource& PacFileDataWithSource::operator=(
 base::Value PacFileDecider::PacSource::NetLogCallback(
     const GURL* effective_pac_url,
     NetLogCaptureMode /* capture_mode */) const {
-  base::DictionaryValue dict;
+  base::Value dict(base::Value::Type::DICTIONARY);
   std::string source;
   switch (type) {
     case PacSource::WPAD_DHCP:
@@ -84,8 +84,8 @@ base::Value PacFileDecider::PacSource::NetLogCallback(
       source += effective_pac_url->possibly_invalid_spec();
       break;
   }
-  dict.SetString("source", source);
-  return std::move(dict);
+  dict.SetStringKey("source", source);
+  return dict;
 }
 
 PacFileDecider::PacFileDecider(PacFileFetcher* pac_file_fetcher,

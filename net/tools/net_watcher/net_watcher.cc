@@ -74,9 +74,9 @@ const char* ConnectionTypeToString(
 }
 
 std::string ProxyConfigToString(const net::ProxyConfig& config) {
-  std::unique_ptr<base::Value> config_value(config.ToValue());
+  base::Value config_value = config.ToValue();
   std::string str;
-  base::JSONWriter::Write(*config_value, &str);
+  base::JSONWriter::Write(config_value, &str);
   return str;
 }
 

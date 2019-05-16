@@ -27,10 +27,10 @@ namespace {
 base::Value NetLogErrorCallback(int line_number,
                                 const base::string16* message,
                                 NetLogCaptureMode /* capture_mode */) {
-  base::DictionaryValue dict;
-  dict.SetInteger("line_number", line_number);
-  dict.SetString("message", *message);
-  return std::move(dict);
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetIntKey("line_number", line_number);
+  dict.SetStringKey("message", *message);
+  return dict;
 }
 
 class BindingsImpl : public ProxyResolverV8Tracing::Bindings {

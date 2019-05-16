@@ -318,34 +318,33 @@ base::Value NetLogProxyConfigChangedCallback(
     const base::Optional<ProxyConfigWithAnnotation>* old_config,
     const ProxyConfigWithAnnotation* new_config,
     NetLogCaptureMode /* capture_mode */) {
-  base::DictionaryValue dict;
+  base::Value dict(base::Value::Type::DICTIONARY);
   // The "old_config" is optional -- the first notification will not have
   // any "previous" configuration.
   if (old_config->has_value())
-    dict.Set("old_config", (*old_config)->value().ToValue());
-  dict.Set("new_config", new_config->value().ToValue());
-  return std::move(dict);
+    dict.SetKey("old_config", (*old_config)->value().ToValue());
+  dict.SetKey("new_config", new_config->value().ToValue());
+  return dict;
 }
 
 base::Value NetLogBadProxyListCallback(const ProxyRetryInfoMap* retry_info,
                                        NetLogCaptureMode /* capture_mode */) {
-  base::DictionaryValue dict;
-  base::ListValue list;
+  base::Value dict(base::Value::Type::DICTIONARY);
+  base::Value list(base::Value::Type::LIST);
 
-  for (auto iter = retry_info->begin(); iter != retry_info->end(); ++iter) {
-    list.AppendString(iter->first);
-  }
+  for (const auto& retry_info_pair : *retry_info)
+    list.GetList().emplace_back(retry_info_pair.first);
   dict.SetKey("bad_proxy_list", std::move(list));
-  return std::move(dict);
+  return dict;
 }
 
 // Returns NetLog parameters on a successfuly proxy resolution.
 base::Value NetLogFinishedResolvingProxyCallback(
     const ProxyInfo* result,
     NetLogCaptureMode /* capture_mode */) {
-  base::DictionaryValue dict;
-  dict.SetString("pac_string", result->ToPacString());
-  return std::move(dict);
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetStringKey("pac_string", result->ToPacString());
+  return dict;
 }
 
 #if defined(OS_CHROMEOS)
