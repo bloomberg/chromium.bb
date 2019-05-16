@@ -790,10 +790,10 @@ are declared in tools/grit/grit_rule.gni.
             Turn On Enhanced Spell Check
           </message>
           <message name="IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_ENABLE" desc="In Title Case: The button text that allows integrating the spelling service of Google.">
-            Enable
+            Turn On
           </message>
           <message name="IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_DISABLE" desc="In Title Case: The button text that disallows integrating the spelling service of Google.">
-            No Thanks
+            Cancel
           </message>
           <message name="IDS_CONTENT_CONTEXT_SPELLING_CHECKING" desc="The place-holder message shown while the Spelling service is checking text">
             Loading suggestion
@@ -848,7 +848,7 @@ are declared in tools/grit/grit_rule.gni.
       </if>
       <if expr="not is_macosx">
         <message name="IDS_CONTENT_CONTEXT_SPELLCHECK_MENU" desc="The name of the menu item that shows the submenu for spellcheck options">
-          &amp;Spellcheck
+          &amp;Spell check
         </message>
         <message name="IDS_CONTENT_CONTEXT_LANGUAGE_SETTINGS" desc="The name of the menu item that opens spellcheck settings in a new tab">
           &amp;Language settings
