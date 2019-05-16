@@ -279,11 +279,11 @@ for the hosts.
         of VMs associated with it. This means that each new bot requires a new
         prefix. Add your new entry to the correct block:
         1. Put waterfall bots under `gpu_ci_bots`. For example: <br>
-           `swarming.gce_provider('linux-fyi-skiarenderer-vulkan-nvidia')` or
-           <br> `swarming.gce_provider('win10-fyi-release-amd-rx-550')`.
+           `gce_thin_trusty('linux-fyi-skiarenderer-vulkan-nvidia', 'us-east1-c')`
+           or <br> `gce_thin_win10('win10-fyi-release-amd-rx-550')`.
         1. Put trybots under the appropriate `gpu_try_bots` block (optional GPU
            trybots, ANGLE trybots, etc.). For example: <br>
-           `swarming.gce_provider('gpu-manual-try-linux-intel-exp')`.
+           `gce_trusty_pair('gpu-fyi-try-linux-intel-exp')`.
 
     1.  Edit [vms.cfg] to add an entry for the new bot. Trybots should be added
         to the `luci.chromium.try` pool; see the configurations of other similar
