@@ -198,6 +198,7 @@ std::unique_ptr<views::Widget> CreateDropTargetWidget(
   widget->SetContentsView(new DropTargetView(
       dragged_window->GetProperty(ash::kTabDraggingSourceWindowKey)));
   aura::Window* drop_target_window = widget->GetNativeWindow();
+  drop_target_window->SetProperty(kHideInDeskMiniViewKey, true);
   drop_target_window->parent()->StackChildAtBottom(drop_target_window);
   widget->Show();
 
@@ -256,9 +257,14 @@ gfx::Rect GetGridBoundsInScreenDuringDragging(aura::Window* dragged_window,
   }
 }
 
-gfx::Rect GetDesksWidgetBounds(aura::Window* root, int overview_grid_width) {
-  return screen_util::SnapBoundsToDisplayEdge(
-      gfx::Rect(overview_grid_width, DesksBarView::GetBarHeight()), root);
+// Returns the desks widget bounds in root, given the screen bounds of the
+// overview grid.
+gfx::Rect GetDesksWidgetBounds(aura::Window* root,
+                               const gfx::Rect& overview_grid_screen_bounds) {
+  gfx::Rect desks_widget_root_bounds = overview_grid_screen_bounds;
+  ::wm::ConvertRectFromScreen(root, &desks_widget_root_bounds);
+  desks_widget_root_bounds.set_height(DesksBarView::GetBarHeight());
+  return screen_util::SnapBoundsToDisplayEdge(desks_widget_root_bounds, root);
 }
 
 }  // namespace
@@ -656,10 +662,8 @@ void OverviewGrid::SetBoundsAndUpdatePositions(
     const gfx::Rect& bounds_in_screen,
     const base::flat_set<OverviewItem*>& ignored_items) {
   bounds_ = bounds_in_screen;
-  if (desks_widget_) {
-    desks_widget_->SetBounds(
-        GetDesksWidgetBounds(root_window_, bounds_.width()));
-  }
+  if (desks_widget_)
+    desks_widget_->SetBounds(GetDesksWidgetBounds(root_window_, bounds_));
   PositionWindows(/*animate=*/true, ignored_items);
 }
 
@@ -1309,7 +1313,7 @@ void OverviewGrid::MaybeInitDesksWidget() {
     return;
 
   desks_widget_ = DesksBarView::CreateDesksWidget(
-      root_window_, GetDesksWidgetBounds(root_window_, bounds_.width()));
+      root_window_, GetDesksWidgetBounds(root_window_, bounds_));
   desks_bar_view_ = new DesksBarView;
 
   // The following order of function calls is significant: SetContentsView()
