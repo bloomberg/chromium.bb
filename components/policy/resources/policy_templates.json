@@ -15218,7 +15218,7 @@
       'device_only': True,
       'example_value': 2,
       'features': {
-        'dynamic_refresh': True,
+        'dynamic_refresh': False,
         'per_profile': False,
       },
       'supported_on': ['chrome_os:74-'],

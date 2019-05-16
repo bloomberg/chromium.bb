@@ -85,6 +85,7 @@
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
+#include "chrome/browser/chromeos/policy/lock_to_single_user_manager.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/controller.h"
 #include "chrome/browser/chromeos/power/freezer_cgroup_process_manager.h"
 #include "chrome/browser/chromeos/power/idle_action_warning_observer.h"
@@ -678,6 +679,9 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
           DBusThreadManager::Get()->GetDebugDaemonClient(),
           g_browser_process->local_state());
 
+  lock_to_single_user_manager_ =
+      std::make_unique<policy::LockToSingleUserManager>();
+
   ChromeBrowserMainPartsLinux::PreMainMessageLoopRun();
 }
 
@@ -1106,6 +1110,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   scheduler_configuration_manager_.reset();
   auto_screen_brightness_controller_.reset();
   dark_resume_controller_.reset();
+  lock_to_single_user_manager_.reset();
   wilco_dtc_supportd_manager_.reset();
 
   // Detach D-Bus clients before DBusThreadManager is shut down.
