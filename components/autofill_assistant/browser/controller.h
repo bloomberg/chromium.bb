@@ -130,6 +130,9 @@ class Controller : public ScriptExecutorDelegate,
   void GetOverlayColors(OverlayColors* colors) const override;
   const FormProto* GetForm() const override;
   void SetCounterValue(int input_index, int counter_index, int value) override;
+  void SetChoiceSelected(int input_index,
+                         int choice_index,
+                         bool selected) override;
 
  private:
   friend ControllerTest;

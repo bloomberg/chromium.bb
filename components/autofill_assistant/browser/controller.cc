@@ -295,22 +295,20 @@ const FormProto* Controller::GetForm() const {
 bool Controller::SetForm(
     std::unique_ptr<FormProto> form,
     base::RepeatingCallback<void(const FormProto::Result*)> callback) {
-  if (!form) {
-    form_.reset();
-    form_result_.reset();
-    form_callback_ = base::DoNothing();
+  form_.reset();
+  form_result_.reset();
+  form_callback_ = base::DoNothing();
 
+  if (!form) {
     GetUiController()->OnFormChanged(nullptr);
     return true;
   }
 
-  form_ = std::move(form);
-  form_result_ = std::make_unique<FormProto::Result>();
-  form_callback_ = callback;
-
-  // Initialize form result.
-  for (FormInputProto& input : *form_->mutable_inputs()) {
-    FormInputProto::Result* result = form_result_->add_input_results();
+  // Initialize form result. This will return false if the form is invalid or
+  // contains unsupported inputs.
+  auto form_result = std::make_unique<FormProto::Result>();
+  for (FormInputProto& input : *form->mutable_inputs()) {
+    FormInputProto::Result* result = form_result->add_input_results();
     switch (input.input_type_case()) {
       case FormInputProto::InputTypeCase::kCounter:
         // Add the initial value of each counter into the form result.
@@ -319,16 +317,35 @@ bool Controller::SetForm(
           result->mutable_counter()->add_values(counter.initial_value());
         }
         break;
+      case FormInputProto::InputTypeCase::kSelection: {
+        // Add the initial selected state of each choice into the form result.
+        bool has_selected = false;
+        for (const SelectionInputProto::Choice& choice :
+             input.selection().choices()) {
+          if (choice.selected()) {
+            if (has_selected && !input.selection().allow_multiple()) {
+              // Multiple choices are initially selected even though it is not
+              // allowed by the input.
+              return false;
+            }
+            has_selected = true;
+          }
+          result->mutable_selection()->add_selected(choice.selected());
+        }
+        break;
+      }
       case FormInputProto::InputTypeCase::INPUT_TYPE_NOT_SET:
         DVLOG(1) << "Encountered input with INPUT_TYPE_NOT_SET";
-        form_.reset();
-        form_result_.reset();
-        form_callback_ = base::DoNothing();
         return false;
         // Intentionally no default case to make compilation fail if a new value
         // was added to the enum but not to this list.
     }
   }
+
+  // Form is valid.
+  form_ = std::move(form);
+  form_result_ = std::move(form_result);
+  form_callback_ = callback;
 
   // Call the callback with initial result.
   form_callback_.Run(form_result_.get());
@@ -355,6 +372,27 @@ void Controller::SetCounterValue(int input_index,
   }
 
   input_result->mutable_counter()->set_values(counter_index, value);
+  form_callback_.Run(form_result_.get());
+}
+
+void Controller::SetChoiceSelected(int input_index,
+                                   int choice_index,
+                                   bool selected) {
+  if (!form_result_ || input_index < 0 ||
+      input_index >= form_result_->input_results_size()) {
+    NOTREACHED() << "Invalid input index: " << input_index;
+    return;
+  }
+
+  FormInputProto::Result* input_result =
+      form_result_->mutable_input_results(input_index);
+  if (!input_result->has_selection() || choice_index < 0 ||
+      choice_index >= input_result->selection().selected_size()) {
+    NOTREACHED() << "Invalid choice index: " << choice_index;
+    return;
+  }
+
+  input_result->mutable_selection()->set_selected(choice_index, selected);
   form_callback_.Run(form_result_.get());
 }
 

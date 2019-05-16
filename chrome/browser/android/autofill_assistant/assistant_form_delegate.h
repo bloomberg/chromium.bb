@@ -21,6 +21,13 @@ class AssistantFormDelegate {
                         jint counter_index,
                         jint value);
 
+  void OnChoiceSelectionChanged(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jcaller,
+      jint input_index,
+      jint choice_index,
+      jboolean selected);
+
   base::android::ScopedJavaGlobalRef<jobject> GetJavaObject();
 
  private:

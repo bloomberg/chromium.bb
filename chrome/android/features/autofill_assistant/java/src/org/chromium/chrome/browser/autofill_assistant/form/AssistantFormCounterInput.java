@@ -41,7 +41,11 @@ class AssistantFormCounterInput extends AssistantFormInput {
         ViewGroup root = (ViewGroup) LayoutInflater.from(context).inflate(
                 R.layout.autofill_assistant_form_counter_input, parent, /* attachToRoot= */ false);
         TextView label = root.findViewById(R.id.label);
-        label.setText(mLabel);
+        if (mLabel.isEmpty()) {
+            label.setVisibility(View.GONE);
+        } else {
+            label.setText(mLabel);
+        }
 
         ViewGroup expandableSection = root.findViewById(R.id.expandable_section);
         int labelIndex = root.indexOfChild(label);

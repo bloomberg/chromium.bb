@@ -97,6 +97,9 @@ class UiControllerAndroid : public UiController {
 
   // Called by AssistantFormDelegate:
   void OnCounterChanged(int input_index, int counter_index, int value);
+  void OnChoiceSelectionChanged(int input_index,
+                                int choice_index,
+                                bool selected);
 
   // Called by Java.
   void SnackbarResult(JNIEnv* env,

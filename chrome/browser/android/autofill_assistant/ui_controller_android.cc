@@ -685,6 +685,30 @@ void UiControllerAndroid::OnFormChanged(const FormProto* form) {
                 form_delegate_.GetJavaObject()));
         break;
       }
+      case FormInputProto::InputTypeCase::kSelection: {
+        SelectionInputProto selection_input = input.selection();
+
+        auto jchoices = Java_AssistantFormInput_createChoiceList(env);
+        for (const SelectionInputProto::Choice choice :
+             selection_input.choices()) {
+          Java_AssistantFormInput_addChoice(
+              env, jchoices,
+              Java_AssistantFormInput_createChoice(
+                  env,
+                  base::android::ConvertUTF8ToJavaString(env, choice.label()),
+                  choice.selected()));
+        }
+
+        Java_AssistantFormModel_addInput(
+            env, jinput_list,
+            Java_AssistantFormInput_createSelectionInput(
+                env, i,
+                base::android::ConvertUTF8ToJavaString(env,
+                                                       selection_input.label()),
+                jchoices, selection_input.allow_multiple(),
+                form_delegate_.GetJavaObject()));
+        break;
+      }
       case FormInputProto::InputTypeCase::INPUT_TYPE_NOT_SET:
         NOTREACHED();
         break;
@@ -700,6 +724,12 @@ void UiControllerAndroid::OnCounterChanged(int input_index,
                                            int counter_index,
                                            int value) {
   ui_delegate_->SetCounterValue(input_index, counter_index, value);
+}
+
+void UiControllerAndroid::OnChoiceSelectionChanged(int input_index,
+                                                   int choice_index,
+                                                   bool selected) {
+  ui_delegate_->SetChoiceSelected(input_index, choice_index, selected);
 }
 
 // Details related method.

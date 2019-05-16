@@ -24,7 +24,8 @@ public class AssistantFormCoordinator {
 
     private boolean mForceInvisible;
 
-    public AssistantFormCoordinator(Context context, AssistantFormModel model) {
+    public AssistantFormCoordinator(
+            Context context, AssistantFormModel model, int verticalSpacingPx) {
         mModel = model;
         mView = new ScrollView(context);
         mContainerView = new LinearLayout(context);
@@ -33,6 +34,7 @@ public class AssistantFormCoordinator {
                         /* height= */ 0, /* weight= */ 1));
         mContainerView.setLayoutParams(new ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        mContainerView.setOrientation(LinearLayout.VERTICAL);
         mView.addView(mContainerView);
 
         updateVisibility();
@@ -42,7 +44,10 @@ public class AssistantFormCoordinator {
                 mContainerView.removeAllViews();
                 for (AssistantFormInput input : mModel.getInputsModel()) {
                     // Add the views to the linear layout (not the scroll view).
-                    mContainerView.addView(input.createView(context, mContainerView));
+                    View view = input.createView(context, mContainerView);
+                    mContainerView.addView(view);
+                    ((LinearLayout.LayoutParams) view.getLayoutParams()).topMargin =
+                            verticalSpacingPx;
                 }
                 updateVisibility();
             }

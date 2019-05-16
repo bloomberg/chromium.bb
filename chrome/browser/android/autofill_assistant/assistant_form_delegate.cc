@@ -31,6 +31,15 @@ void AssistantFormDelegate::OnCounterChanged(
   ui_controller_->OnCounterChanged(input_index, counter_index, value);
 }
 
+void AssistantFormDelegate::OnChoiceSelectionChanged(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller,
+    jint input_index,
+    jint choice_index,
+    jboolean selected) {
+  ui_controller_->OnChoiceSelectionChanged(input_index, choice_index, selected);
+}
+
 base::android::ScopedJavaGlobalRef<jobject>
 AssistantFormDelegate::GetJavaObject() {
   return java_assistant_form_delegate_;

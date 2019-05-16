@@ -1114,7 +1114,7 @@ message ConfigureBottomSheetProto {
   optional PeekMode peek_mode = 2;
 }
 
-// Allow scripts to display a form with multiples inputs.
+// Allow scripts to display a form with multiple inputs.
 message ShowFormProto {
   // The form to display.
   optional FormProto form = 1;
@@ -1131,10 +1131,16 @@ message FormProto {
 
 message FormInputProto {
   message Result {
-    oneof input_type { CounterInputProto.Result counter = 1; }
+    oneof input_type {
+      CounterInputProto.Result counter = 1;
+      SelectionInputProto.Result selection = 2;
+    }
   }
 
-  oneof input_type { CounterInputProto counter = 1; }
+  oneof input_type {
+    CounterInputProto counter = 1;
+    SelectionInputProto selection = 2;
+  }
 }
 
 // An input that is made of one or more counters. A CounterInputProto is
@@ -1176,4 +1182,40 @@ message CounterInputProto {
   // will be displayed in an expandable section below the first
   // |minimized_count| counters.
   optional int32 minimized_count = 3 [default = 0x7FFFFFFF];  // kint32max
+}
+
+// An input that allows the user to choose one or multiple options. This input
+// is considered valid if the number of selected choices is bigger or equal than
+// |min_choices|.
+message SelectionInputProto {
+  message Choice {
+    // The label of this choice.
+    optional string label = 1;
+
+    // Whether this choice is selected by default. If |allow_multiple| is false,
+    // then maximum 1 Choice can have this set to true, otherwise the associated
+    // FormAction will fail.
+    optional bool selected = 2 [default = false];
+  }
+
+  message Result {
+    // Stores whether each choice was selected or not, such that |selected[i]|
+    // is true if |choices[i]| was selected.
+    repeated bool selected = 1;
+  }
+
+  // An optional label shown above the different choices.
+  optional string label = 1;
+
+  // The choices to display.
+  repeated Choice choices = 2;
+
+  // Whether the user will be allowed to select multiple choices. If false, each
+  // choice will be displayed with a radio button. Otherwise, it will be
+  // displayed with checkboxes.
+  optional bool allow_multiple = 3 [default = false];
+
+  // The minimum number of choices that should be selected to consider this
+  // input valid.
+  optional int32 min_selected_choices = 4 [default = 1];
 }

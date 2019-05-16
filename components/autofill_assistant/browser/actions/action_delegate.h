@@ -261,7 +261,7 @@ class ActionDelegate {
   // is a change. |callback| will be called directly with the initial values of
   // the form directly after this call. Returns true if the form was correctly
   // set, false otherwise. The latter can happen if the form contains
-  // unsupported inputs.
+  // unsupported or invalid inputs.
   virtual bool SetForm(
       std::unique_ptr<FormProto> form,
       base::RepeatingCallback<void(const FormProto::Result*)> callback) = 0;

@@ -31,7 +31,7 @@ void ShowFormAction::InternalProcessAction(ActionDelegate* delegate,
           std::make_unique<FormProto>(proto_.show_form().form()),
           base::BindRepeating(&ShowFormAction::OnFormValuesChanged,
                               weak_ptr_factory_.GetWeakPtr(), delegate))) {
-    // The form contains unsupported inputs.
+    // The form contains unsupported or invalid inputs.
     UpdateProcessedAction(UNSUPPORTED);
     std::move(callback_).Run(std::move(processed_action_proto_));
     return;
@@ -70,6 +70,29 @@ void ShowFormAction::OnFormValuesChanged(ActionDelegate* delegate,
         }
 
         if (!input_is_valid) {
+          form_is_valid = false;
+        }
+        break;
+      }
+      case FormInputProto::InputTypeCase::kSelection: {
+        DCHECK(input_result.has_selection());
+        DCHECK_EQ(input.selection().choices_size(),
+                  input_result.selection().selected_size());
+
+        // A selection input is valid if the number of selected choices is
+        // greater or equal than |min_selected_choices|.
+        int min_selected = input.selection().min_selected_choices();
+        if (min_selected == 0)
+          break;
+
+        int n = 0;
+        for (bool selected : input_result.selection().selected()) {
+          if (selected && ++n >= min_selected) {
+            break;
+          }
+        }
+
+        if (n < min_selected) {
           form_is_valid = false;
         }
         break;

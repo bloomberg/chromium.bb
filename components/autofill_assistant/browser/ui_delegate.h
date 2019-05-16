@@ -131,6 +131,11 @@ class UiDelegate {
                                int counter_index,
                                int value) = 0;
 
+  // Sets whether a selection choice is selected.
+  virtual void SetChoiceSelected(int input_index,
+                                 int choice_index,
+                                 bool selected) = 0;
+
  protected:
   UiDelegate() = default;
 };

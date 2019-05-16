@@ -26,6 +26,12 @@ class AssistantFormDelegate {
             nativeOnCounterChanged(mNativeAssistantFormDelegate, inputIndex, counterIndex, value);
         }
     }
+    void onChoiceSelectionChanged(int inputIndex, int choiceIndex, boolean selected) {
+        if (mNativeAssistantFormDelegate != 0) {
+            nativeOnChoiceSelectionChanged(
+                    mNativeAssistantFormDelegate, inputIndex, choiceIndex, selected);
+        }
+    }
 
     @CalledByNative
     private void clearNativePtr() {
@@ -34,4 +40,6 @@ class AssistantFormDelegate {
 
     private native void nativeOnCounterChanged(long nativeAssistantFormDelegate, int inputIndex,
             int counterIndex, long nativeAssistantOverlayDelegate);
+    private native void nativeOnChoiceSelectionChanged(
+            long nativeAssistantFormDelegate, int inputIndex, int choiceIndex, boolean selected);
 }

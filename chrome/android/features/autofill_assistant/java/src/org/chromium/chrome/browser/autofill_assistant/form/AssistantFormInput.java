@@ -28,9 +28,20 @@ public abstract class AssistantFormInput {
     }
 
     @CalledByNative
+    private static List<AssistantFormSelectionChoice> createChoiceList() {
+        return new ArrayList<>();
+    }
+
+    @CalledByNative
     private static void addCounter(
             List<AssistantFormCounter> counters, AssistantFormCounter counter) {
         counters.add(counter);
+    }
+
+    @CalledByNative
+    private static void addChoice(
+            List<AssistantFormSelectionChoice> choices, AssistantFormSelectionChoice choice) {
+        choices.add(choice);
     }
 
     @CalledByNative
@@ -40,11 +51,26 @@ public abstract class AssistantFormInput {
     }
 
     @CalledByNative
+    private static AssistantFormSelectionChoice createChoice(
+            String label, boolean initiallySelected) {
+        return new AssistantFormSelectionChoice(label, initiallySelected);
+    }
+
+    @CalledByNative
     private static AssistantFormCounterInput createCounterInput(int inputIndex, String label,
             List<AssistantFormCounter> counters, int minimizedCount,
             AssistantFormDelegate delegate) {
         return new AssistantFormCounterInput(label, counters, minimizedCount,
                 (counterIndex,
                         value) -> delegate.onCounterChanged(inputIndex, counterIndex, value));
+    }
+
+    @CalledByNative
+    private static AssistantFormSelectionInput createSelectionInput(int inputIndex, String label,
+            List<AssistantFormSelectionChoice> choices, boolean allowMultipleChoices,
+            AssistantFormDelegate delegate) {
+        return new AssistantFormSelectionInput(label, choices, allowMultipleChoices,
+                (choiceIndex, selected)
+                        -> delegate.onChoiceSelectionChanged(inputIndex, choiceIndex, selected));
     }
 }
