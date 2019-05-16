@@ -30,6 +30,8 @@ source_set("exo") {
     "keyboard_observer.h",
     "layer_tree_frame_sink_holder.cc",
     "layer_tree_frame_sink_holder.h",
+    "mime_utils.cc",
+    "mime_utils.h",
     "seat.cc",
     "seat.h",
     "seat_observer.h",
@@ -62,9 +64,12 @@ source_set("exo") {
     "//device/gamepad/public/cpp:shared_with_blink",
     "//gpu",
     "//gpu/command_buffer/client:raster_interface",
+    "//net",
+    "//services/data_decoder/public/cpp",
     "//services/viz/privileged/interfaces/compositing",
     "//services/ws/public/mojom",
     "//skia",
+    "//third_party/blink/public/common",
     "//ui/aura",
     "//ui/base/ime",
     "//ui/compositor",
@@ -185,6 +190,7 @@ source_set("unit_tests") {
     "//components/user_manager",
     "//components/viz/service",
     "//components/viz/test:test_support",
+    "//content/test:test_support",
     "//device/gamepad:test_helpers",
     "//gpu/command_buffer/client:raster_interface",
     "//skia",
@@ -202,12 +208,16 @@ source_set("unit_tests") {
     "//ui/wm",
   ]
 
+  sources = [
+    "mime_utils_unittest.cc",
+  ]
+
   if (use_ozone) {
     deps += [ "//ui/ozone" ]
   }
 
   if (is_chromeos) {
-    sources = [
+    sources += [
       "../../ui/events/ozone/gamepad/gamepad_event.cc",
       "buffer_unittest.cc",
       "client_controlled_shell_surface_unittest.cc",
@@ -237,9 +247,7 @@ source_set("unit_tests") {
   }
 
   if (is_chromecast) {
-    sources = [
-      "fullscreen_shell_surface_unittest.cc",
-    ]
+    sources += [ "fullscreen_shell_surface_unittest.cc" ]
   }
 }
 
