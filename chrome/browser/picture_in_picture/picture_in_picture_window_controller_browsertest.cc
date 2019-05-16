@@ -139,6 +139,25 @@ class PictureInPictureWindowControllerBrowserTest
     EXPECT_TRUE(result);
   }
 
+  // The WebContents that is passed to this method must have a
+  // "isInPictureInPicture()" method returning a boolean and when the video
+  // leaves Picture-in-Picture, it must change the WebContents title to
+  // "leavepictureinpicture".
+  void ExpectLeavePictureInPicture(content::WebContents* web_contents) {
+    // 'leavepictureinpicture' is the title of the tab when the event is
+    // received.
+    const base::string16 expected_title =
+        base::ASCIIToUTF16("leavepictureinpicture");
+    EXPECT_EQ(
+        expected_title,
+        content::TitleWatcher(web_contents, expected_title).WaitAndGetTitle());
+
+    bool in_picture_in_picture = true;
+    EXPECT_TRUE(ExecuteScriptAndExtractBool(
+        web_contents, "isInPictureInPicture();", &in_picture_in_picture));
+    EXPECT_FALSE(in_picture_in_picture);
+  }
+
   class WidgetBoundsChangeWaiter : public views::WidgetObserver {
    public:
     explicit WidgetBoundsChangeWaiter(views::Widget* widget)
@@ -470,7 +489,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 
   window_controller()->Close(true /* should_pause_video */);
 
-  base::string16 expected_title = base::ASCIIToUTF16("left");
+  base::string16 expected_title = base::ASCIIToUTF16("leavepictureinpicture");
   EXPECT_EQ(expected_title,
             content::TitleWatcher(active_web_contents, expected_title)
                 .WaitAndGetTitle());
@@ -509,7 +528,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   ASSERT_TRUE(window_controller());
   window_controller()->Close(true /* should_pause_video */);
 
-  base::string16 expected_title = base::ASCIIToUTF16("left");
+  base::string16 expected_title = base::ASCIIToUTF16("leavepictureinpicture");
   EXPECT_EQ(expected_title,
             content::TitleWatcher(active_web_contents, expected_title)
                 .WaitAndGetTitle());
@@ -582,7 +601,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
       content::ExecuteScript(active_web_contents, "exitPictureInPicture();"));
 
   // 'left' is sent when the first video leaves Picture-in-Picture.
-  base::string16 expected_title = base::ASCIIToUTF16("left");
+  base::string16 expected_title = base::ASCIIToUTF16("leavepictureinpicture");
   EXPECT_EQ(expected_title,
             content::TitleWatcher(active_web_contents, expected_title)
                 .WaitAndGetTitle());
@@ -628,7 +647,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
       content::ExecuteScript(active_web_contents, "exitPictureInPicture();"));
 
   // 'left' is sent when the video leaves Picture-in-Picture.
-  base::string16 expected_title = base::ASCIIToUTF16("left");
+  base::string16 expected_title = base::ASCIIToUTF16("leavepictureinpicture");
   EXPECT_EQ(expected_title,
             content::TitleWatcher(active_web_contents, expected_title)
                 .WaitAndGetTitle());
@@ -683,16 +702,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   EXPECT_TRUE(
       content::ExecuteScript(active_web_contents, "secondPictureInPicture();"));
 
-  // 'left' is sent when the first video leaves Picture-in-Picture.
-  base::string16 expected_title = base::ASCIIToUTF16("left");
-  EXPECT_EQ(expected_title,
-            content::TitleWatcher(active_web_contents, expected_title)
-                .WaitAndGetTitle());
-
-  in_picture_in_picture = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      active_web_contents, "isInPictureInPicture();", &in_picture_in_picture));
-  EXPECT_FALSE(in_picture_in_picture);
+  ExpectLeavePictureInPicture(active_web_contents);
 
   bool is_paused = false;
   EXPECT_TRUE(ExecuteScriptAndExtractBool(active_web_contents, "isPaused();",
@@ -859,7 +869,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   window_controller()->Close(true /* should_pause_video */);
 
   // Wait for the window to close.
-  base::string16 expected_title = base::ASCIIToUTF16("left");
+  base::string16 expected_title = base::ASCIIToUTF16("leavepictureinpicture");
   EXPECT_EQ(expected_title,
             content::TitleWatcher(active_web_contents, expected_title)
                 .WaitAndGetTitle());
@@ -984,7 +994,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
     EXPECT_TRUE(pip_window_controller->GetWindowForTesting()->IsVisible());
 
     // 'left' is sent when the first tab leaves Picture-in-Picture.
-    base::string16 expected_title = base::ASCIIToUTF16("left");
+    base::string16 expected_title = base::ASCIIToUTF16("leavepictureinpicture");
     EXPECT_EQ(expected_title,
               content::TitleWatcher(initial_web_contents, expected_title)
                   .WaitAndGetTitle());
@@ -1355,10 +1365,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   // Simulate closing from the system.
   overlay_window->OnNativeWidgetDestroyed();
 
-  bool in_picture_in_picture = false;
-  ASSERT_TRUE(ExecuteScriptAndExtractBool(
-      active_web_contents, "isInPictureInPicture();", &in_picture_in_picture));
-  EXPECT_FALSE(in_picture_in_picture);
+  ExpectLeavePictureInPicture(active_web_contents);
 }
 
 // Tests that the play/pause icon state is properly updated when a
@@ -1443,12 +1450,8 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   pip_window_manager->EnterPictureInPictureWithController(&mock_controller());
 
   // WebContents sourced Picture-in-Picture should stop.
-  bool in_picture_in_picture = false;
-  content::WebContents* active_web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      active_web_contents, "isInPictureInPicture();", &in_picture_in_picture));
-  EXPECT_FALSE(in_picture_in_picture);
+  ExpectLeavePictureInPicture(
+      browser()->tab_strip_model()->GetActiveWebContents());
 }
 
 IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
@@ -1508,10 +1511,8 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 
   window_controller()->Close(true /* should_pause_video */);
 
-  result = false;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      active_web_contents, "isInPictureInPicture();", &result));
-  EXPECT_FALSE(result);
+  // The video should leave Picture-in-Picture mode.
+  ExpectLeavePictureInPicture(active_web_contents);
 }
 
 // Tests that opening a Picture-in-Picture window from a video in an iframe
@@ -2784,7 +2785,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
                                      "video.src=''; exitPictureInPicture();"));
 
   // 'left' is sent when the first video leaves Picture-in-Picture.
-  base::string16 expected_title = base::ASCIIToUTF16("left");
+  base::string16 expected_title = base::ASCIIToUTF16("leavepictureinpicture");
   EXPECT_EQ(expected_title,
             content::TitleWatcher(active_web_contents, expected_title)
                 .WaitAndGetTitle());
@@ -2851,7 +2852,7 @@ IN_PROC_BROWSER_TEST_F(MuteButtonPictureInPictureWindowControllerBrowserTest,
       content::ExecuteScript(active_web_contents, "secondVideo.muted = true;"));
   ASSERT_TRUE(
       content::ExecuteScript(active_web_contents, "secondPictureInPicture();"));
-  base::string16 expected_title = base::ASCIIToUTF16("left");
+  base::string16 expected_title = base::ASCIIToUTF16("leavepictureinpicture");
   EXPECT_EQ(expected_title,
             content::TitleWatcher(active_web_contents, expected_title)
                 .WaitAndGetTitle());
@@ -2909,7 +2910,7 @@ IN_PROC_BROWSER_TEST_F(MuteButtonPictureInPictureWindowControllerBrowserTest,
                                      "secondVideo.muted = false;"));
   ASSERT_TRUE(
       content::ExecuteScript(active_web_contents, "secondPictureInPicture();"));
-  expected_title = base::ASCIIToUTF16("left");
+  expected_title = base::ASCIIToUTF16("leavepictureinpicture");
   EXPECT_EQ(expected_title,
             content::TitleWatcher(active_web_contents, expected_title)
                 .WaitAndGetTitle());
@@ -2978,4 +2979,34 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(overlay_window->muted_state_for_testing(),
             OverlayWindowViews::MutedState::kNoAudio);
+}
+
+// Tests that when closing the window after the player was reset, the <video>
+// element is still notified.
+IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
+                       ResetPlayerCloseWindowNotifiesElement) {
+  LoadTabAndEnterPictureInPicture(browser());
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Video should be in Picture-in-Picture.
+  {
+    bool in_picture_in_picture = false;
+    ASSERT_TRUE(ExecuteScriptAndExtractBool(active_web_contents,
+                                            "isInPictureInPicture();",
+                                            &in_picture_in_picture));
+    EXPECT_TRUE(in_picture_in_picture);
+  }
+
+  // Reset video source and wait for the notification.
+  ASSERT_TRUE(content::ExecuteScript(active_web_contents, "resetVideo();"));
+  base::string16 expected_title = base::ASCIIToUTF16("emptied");
+  EXPECT_EQ(expected_title,
+            content::TitleWatcher(active_web_contents, expected_title)
+                .WaitAndGetTitle());
+
+  window_controller()->Close(true /* should_pause_video */);
+
+  // Video should no longer be in Picture-in-Picture.
+  ExpectLeavePictureInPicture(active_web_contents);
 }

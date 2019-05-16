@@ -359,7 +359,7 @@ void PictureInPictureControllerImpl::OnWindowSizeChanged(
 }
 
 void PictureInPictureControllerImpl::OnStopped() {
-  // TODO(940694): implement OnStopped() and remove IPC message.
+  OnExitedPictureInPicture(nullptr);
 }
 
 bool PictureInPictureControllerImpl::ShouldShowMuteButton(
