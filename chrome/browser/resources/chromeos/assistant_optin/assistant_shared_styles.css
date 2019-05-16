@@ -8,10 +8,14 @@ a {
   text-decoration: none;
 }
 
+oobe-dialog {
+  height: calc(640px - var(--caption-bar-height));
+}
+
 .container {
   height: 496px;
   overflow: hidden;
-  padding: 60px 64px 0 64px;
+  padding: calc(60px - var(--caption-bar-height)) 64px 0 64px;
   position: absolute;
   width: 640px;
 }

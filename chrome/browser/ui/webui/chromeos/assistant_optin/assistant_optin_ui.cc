@@ -8,9 +8,9 @@
 #include <string>
 #include <utility>
 
-#include "ash/public/cpp/window_properties.h"
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/ash_util.h"
@@ -27,7 +27,6 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/content_features.h"
 #include "net/base/url_util.h"
-#include "ui/aura/window.h"
 #include "ui/views/widget/widget.h"
 
 namespace chromeos {
@@ -38,13 +37,17 @@ AssistantOptInDialog* g_dialog = nullptr;
 
 constexpr int kAssistantOptInDialogWidth = 768;
 constexpr int kAssistantOptInDialogHeight = 640;
+constexpr int kCaptionBarHeight = 32;
 constexpr char kFlowTypeParamKey[] = "flow-type";
+constexpr char kCaptionBarHeightParamKey[] = "caption-bar-height";
 
 GURL CreateAssistantOptInURL(ash::mojom::FlowType type) {
   // TODO(updowndota): Directly use mojom enum types in js.
-  auto gurl = net::AppendOrReplaceQueryParameter(
-      GURL(chrome::kChromeUIAssistantOptInURL), kFlowTypeParamKey,
-      std::to_string(static_cast<int>(type)));
+  GURL gurl(chrome::kChromeUIAssistantOptInURL);
+  gurl = net::AppendQueryParameter(
+      gurl, kFlowTypeParamKey, base::NumberToString(static_cast<int>(type)));
+  gurl = net::AppendQueryParameter(gurl, kCaptionBarHeightParamKey,
+                                   base::NumberToString(kCaptionBarHeight));
   return gurl;
 }
 
@@ -123,7 +126,6 @@ void AssistantOptInDialog::Show(
   g_dialog = new AssistantOptInDialog(type, std::move(callback));
 
   g_dialog->ShowSystemDialog();
-  g_dialog->dialog_window()->SetProperty(ash::kHideInOverviewKey, true);
 }
 
 AssistantOptInDialog::AssistantOptInDialog(
@@ -139,19 +141,16 @@ AssistantOptInDialog::~AssistantOptInDialog() {
 
 void AssistantOptInDialog::AdjustWidgetInitParams(
     views::Widget::InitParams* params) {
-  *params = ash_util::GetFramelessInitParams();
+  params->keep_on_top = false;
 }
 
 void AssistantOptInDialog::GetDialogSize(gfx::Size* size) const {
-  size->SetSize(kAssistantOptInDialogWidth, kAssistantOptInDialogHeight);
+  size->SetSize(kAssistantOptInDialogWidth,
+                kAssistantOptInDialogHeight - kCaptionBarHeight);
 }
 
 std::string AssistantOptInDialog::GetDialogArgs() const {
   return std::string();
-}
-
-bool AssistantOptInDialog::ShouldShowDialogTitle() const {
-  return false;
 }
 
 void AssistantOptInDialog::OnDialogShown(
@@ -171,10 +170,6 @@ void AssistantOptInDialog::OnDialogClosed(const std::string& json_retval) {
        ash::mojom::ConsentStatus::kActivityControlAccepted);
   std::move(callback_).Run(completed);
   SystemWebDialogDelegate::OnDialogClosed(json_retval);
-}
-
-bool AssistantOptInDialog::CanCloseDialog() const {
-  return false;
 }
 
 }  // namespace chromeos

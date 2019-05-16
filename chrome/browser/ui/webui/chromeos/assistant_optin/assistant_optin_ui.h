@@ -61,11 +61,9 @@ class AssistantOptInDialog : public SystemWebDialogDelegate {
   // ui::WebDialogDelegate
   void GetDialogSize(gfx::Size* size) const override;
   std::string GetDialogArgs() const override;
-  bool ShouldShowDialogTitle() const override;
   void OnDialogShown(content::WebUI* webui,
                      content::RenderViewHost* render_view_host) override;
   void OnDialogClosed(const std::string& json_retval) override;
-  bool CanCloseDialog() const override;
 
  private:
   AssistantOptInUI* assistant_ui_ = nullptr;
