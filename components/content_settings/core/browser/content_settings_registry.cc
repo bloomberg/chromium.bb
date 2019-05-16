@@ -169,7 +169,7 @@ void ContentSettingsRegistry::Init() {
            ContentSettingsInfo::EXCEPTIONS_ON_SECURE_AND_INSECURE_ORIGINS);
 
   Register(CONTENT_SETTINGS_TYPE_PLUGINS, "plugins", CONTENT_SETTING_BLOCK,
-           WebsiteSettingsInfo::SYNCABLE,
+           WebsiteSettingsInfo::UNSYNCABLE,
            WhitelistedSchemes(kChromeUIScheme, kChromeDevToolsScheme),
            ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK,
                          CONTENT_SETTING_ASK,
