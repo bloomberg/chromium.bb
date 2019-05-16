@@ -53,13 +53,13 @@ autofill::PersonalDataManager* AwAutofillClient::GetPersonalDataManager() {
 
 autofill::AutocompleteHistoryManager*
 AwAutofillClient::GetAutocompleteHistoryManager() {
-  return AwContentBrowserClient::GetAwBrowserContext()
+  return AwBrowserContext::FromWebContents(web_contents_)
       ->GetAutocompleteHistoryManager();
 }
 
 PrefService* AwAutofillClient::GetPrefs() {
   return user_prefs::UserPrefs::Get(
-      AwContentBrowserClient::GetAwBrowserContext());
+      AwBrowserContext::FromWebContents(web_contents_));
 }
 
 syncer::SyncService* AwAutofillClient::GetSyncService() {

@@ -259,11 +259,6 @@ std::string AwContentBrowserClient::GetAcceptLangsImpl() {
 }
 
 // static
-AwBrowserContext* AwContentBrowserClient::GetAwBrowserContext() {
-  return AwBrowserContext::GetDefault();
-}
-
-// static
 void AwContentBrowserClient::set_check_cleartext_permitted(bool permitted) {
 #if DCHECK_IS_ON()
   DCHECK(!g_created_network_context_params);
@@ -964,15 +959,16 @@ void AwContentBrowserClient::RegisterNonNetworkSubresourceURLLoaderFactories(
     int render_process_id,
     int render_frame_id,
     NonNetworkURLLoaderFactoryMap* factories) {
-  AwSettings* aw_settings =
-      AwSettings::FromWebContents(content::WebContents::FromRenderFrameHost(
-          content::RenderFrameHost::FromID(render_process_id,
-                                           render_frame_id)));
+  WebContents* web_contents = content::WebContents::FromRenderFrameHost(
+      content::RenderFrameHost::FromID(render_process_id, render_frame_id));
+  AwSettings* aw_settings = AwSettings::FromWebContents(web_contents);
 
   if (aw_settings && aw_settings->GetAllowFileAccess()) {
+    AwBrowserContext* aw_browser_context =
+        AwBrowserContext::FromWebContents(web_contents);
     auto file_factory = CreateFileURLLoaderFactory(
-        AwBrowserContext::GetDefault()->GetPath(),
-        AwBrowserContext::GetDefault()->GetSharedCorsOriginAccessList());
+        aw_browser_context->GetPath(),
+        aw_browser_context->GetSharedCorsOriginAccessList());
     factories->emplace(url::kFileScheme, std::move(file_factory));
   }
 }

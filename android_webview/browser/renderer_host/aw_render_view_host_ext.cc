@@ -159,7 +159,8 @@ void AwRenderViewHostExt::RenderFrameCreated(
     content::RenderFrameHost* frame_host) {
   registry_.AddInterface(base::BindRepeating(
       &web_restrictions::WebRestrictionsMojoImplementation::Create,
-      AwBrowserContext::GetDefault()->GetWebRestrictionProvider()));
+      AwBrowserContext::FromWebContents(web_contents())
+          ->GetWebRestrictionProvider()));
   if (!frame_host->GetParent()) {
     frame_host->Send(new AwViewMsg_SetBackgroundColor(
         frame_host->GetRoutingID(), background_color_));
