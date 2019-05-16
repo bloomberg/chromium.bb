@@ -50,10 +50,6 @@ const char kModePreMountValue[] = "pre_mount";
 const char kModeUnknownValue[] = "unknown";
 const base::TimeDelta kHostDiscoveryInterval = base::TimeDelta::FromSeconds(60);
 
-bool ContainsAt(const std::string& username) {
-  return username.find('@') != std::string::npos;
-}
-
 net::NetworkInterfaceList GetInterfaces() {
   net::NetworkInterfaceList list;
   if (!net::GetNetworkList(&list, net::EXCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES)) {
@@ -170,9 +166,8 @@ void SmbService::UpdateCredentials(int32_t mount_id,
 
   std::string parsed_username = username;
   std::string workgroup;
-  if (ContainsAt(username)) {
-    ParseUserPrincipalName(username, &parsed_username, &workgroup);
-  }
+  ParseUserName(username, &parsed_username, &workgroup);
+
   GetSmbProviderClient()->UpdateMountCredentials(
       mount_id, workgroup, parsed_username,
       temp_file_manager_->WritePasswordToFile(password),
@@ -258,9 +253,7 @@ void SmbService::CallMount(const file_system_provider::MountOptions& options,
     // workgroup if necessary.
     username = username_input;
     password = password_input;
-    if (ContainsAt(username)) {
-      ParseUserPrincipalName(username_input, &username, &workgroup);
-    }
+    ParseUserName(username_input, &username, &workgroup);
   }
 
   // If using kerberos, the hostname should not be resolved since kerberos
