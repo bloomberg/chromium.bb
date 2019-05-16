@@ -16,7 +16,7 @@ window.loadTimeData.getString = id => {
 
 function testSimpleProgress() {
   const group =
-      new ProgressCenterItemGroup(/* name */ 'test', /* quite */ false);
+      new ProgressCenterItemGroup(/* name */ 'test', /* quiet */ false);
   assertEquals(ProgressCenterItemGroup.State.EMPTY, group.state);
 
   const item = new ProgressCenterItem();
@@ -67,7 +67,7 @@ function testSimpleProgress() {
 
 function testCompleteAnimationDuringProgress() {
   const group =
-      new ProgressCenterItemGroup(/* name */ 'test', /* quite */ false);
+      new ProgressCenterItemGroup(/* name */ 'test', /* quiet */ false);
   const item = new ProgressCenterItem();
   item.id = 'test-item-1';
   item.message = 'TestItemMessage1';
@@ -130,7 +130,7 @@ function testCompleteAnimationDuringProgress() {
 
 function testAddMaxProgressItem() {
   const group =
-      new ProgressCenterItemGroup(/* name */ 'test', /* quite */ false);
+      new ProgressCenterItemGroup(/* name */ 'test', /* quiet */ false);
   const item = new ProgressCenterItem();
   item.id = 'test-item-1';
   item.message = 'TestItemMessage1';
@@ -158,7 +158,7 @@ function testAddMaxProgressItem() {
 
 function testCompleteDuringAnimation() {
   const group =
-      new ProgressCenterItemGroup(/* name */ 'test', /* quite */ false);
+      new ProgressCenterItemGroup(/* name */ 'test', /* quiet */ false);
   const item = new ProgressCenterItem();
   item.id = 'test-item-1';
   item.message = 'TestItemMessage1';
@@ -195,7 +195,7 @@ function testCompleteDuringAnimation() {
 
 function testTwoItems() {
   const group =
-      new ProgressCenterItemGroup(/* name */ 'test', /* quite */ false);
+      new ProgressCenterItemGroup(/* name */ 'test', /* quiet */ false);
   const item1 = new ProgressCenterItem();
   item1.id = 'test-item-1';
   item1.message = 'TestItemMessage1';
@@ -286,7 +286,7 @@ function testTwoItems() {
 
 function testOneError() {
   const group =
-      new ProgressCenterItemGroup(/* name */ 'test', /* quite */ false);
+      new ProgressCenterItemGroup(/* name */ 'test', /* quiet */ false);
   const item1 = new ProgressCenterItem();
   item1.id = 'test-item-1';
   item1.message = 'TestItemMessage1';
@@ -341,7 +341,7 @@ function testOneError() {
 
 function testOneItemWithError() {
   const group =
-      new ProgressCenterItemGroup(/* name */ 'test', /* quite */ false);
+      new ProgressCenterItemGroup(/* name */ 'test', /* quiet */ false);
   const item1 = new ProgressCenterItem();
   item1.id = 'test-item-1';
   item1.message = 'TestItemMessage1';
@@ -420,7 +420,7 @@ function testOneItemWithError() {
 
 function testOneItemWithErrorDuringAnimation() {
   const group =
-      new ProgressCenterItemGroup(/* name */ 'test', /* quite */ false);
+      new ProgressCenterItemGroup(/* name */ 'test', /* quiet */ false);
   const item1 = new ProgressCenterItem();
   item1.id = 'test-item-1';
   item1.message = 'TestItemMessage1';
@@ -464,7 +464,7 @@ function testOneItemWithErrorDuringAnimation() {
 
 function testTwoErrors() {
   const group =
-      new ProgressCenterItemGroup(/* name */ 'test', /* quite */ false);
+      new ProgressCenterItemGroup(/* name */ 'test', /* quiet */ false);
   const item1 = new ProgressCenterItem();
   item1.id = 'test-item-1';
   item1.message = 'Error message 1';
@@ -510,7 +510,7 @@ function testTwoErrors() {
 
 function testCancel() {
   const group =
-      new ProgressCenterItemGroup(/* name */ 'test', /* quite */ false);
+      new ProgressCenterItemGroup(/* name */ 'test', /* quiet */ false);
   const item = new ProgressCenterItem();
   item.id = 'test-item-1';
   item.message = 'TestItemMessage1';
@@ -538,7 +538,7 @@ function testCancel() {
 
 function testCancelWithError() {
   const group =
-      new ProgressCenterItemGroup(/* name */ 'test', /* quite */ false);
+      new ProgressCenterItemGroup(/* name */ 'test', /* quiet */ false);
   const item1 = new ProgressCenterItem();
   item1.id = 'test-item-1';
   item1.message = 'TestItemMessage1';
@@ -580,7 +580,7 @@ function testCancelWithError() {
 
 function testQuietItem() {
   const group =
-      new ProgressCenterItemGroup(/* name */ 'test', /* quite */ true);
+      new ProgressCenterItemGroup(/* name */ 'test', /* quiet */ true);
   const item = new ProgressCenterItem();
   item.id = 'test-item-1';
   item.message = 'TestItemMessage1';
