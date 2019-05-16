@@ -2626,7 +2626,9 @@ def PostSubmitBuilders(site_config, boards_dict, ge_build_config):
           prebuilts=constants.PUBLIC,
       )
 
-    if board in postsubmit_boards:
+    # Not putting reef in postsubmit, experiment parallel CQ postsubmit reef
+    # producing prebuilts.
+    if board in postsubmit_boards and board != 'reef':
       # Mark unimportant for postsubmit iff at least one of release, paladin,
       # or pre_cq had it marked unimportant.
       important = (release_boards_importance.get(board, True)

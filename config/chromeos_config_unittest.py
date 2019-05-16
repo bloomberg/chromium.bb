@@ -744,6 +744,9 @@ class CBuildBotTest(ChromeosConfigTestBase):
     for builder in set(self.site_config['master-postsubmit'].slave_configs):
       postsubmit.update(self.site_config[builder].boards)
 
+    # Not putting reef in postsubmit, experiment parallel CQ postsubmit reef
+    # producing prebuilts.
+    cq.remove('reef')
     without_postsubmit = cq.difference(postsubmit)
     self.assertFalse(without_postsubmit)
 

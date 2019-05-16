@@ -502,7 +502,6 @@
     pyro-postsubmit
     quawks-postsubmit
     rammus-postsubmit
-    reef-postsubmit
     reks-postsubmit
     relm-postsubmit
     rikku-postsubmit
@@ -2850,7 +2849,6 @@
     pyro-postsubmit-tryjob
     quawks-postsubmit-tryjob
     rammus-postsubmit-tryjob
-    reef-postsubmit-tryjob
     reks-postsubmit-tryjob
     relm-postsubmit-tryjob
     rikku-postsubmit-tryjob
