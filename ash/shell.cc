@@ -32,7 +32,6 @@
 #include "ash/display/display_configuration_controller.h"
 #include "ash/display/display_configuration_observer.h"
 #include "ash/display/display_error_observer.h"
-#include "ash/display/display_output_protection.h"
 #include "ash/display/display_prefs.h"
 #include "ash/display/display_shutdown_observer.h"
 #include "ash/display/event_transformation_handler.h"
@@ -595,8 +594,6 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
   login_screen_controller_ =
       std::make_unique<LoginScreenController>(system_tray_notifier_.get());
   display_manager_.reset(ScreenAsh::CreateDisplayManager());
-  display_output_protection_ = std::make_unique<DisplayOutputProtection>(
-      display_manager_->configurator());
   window_tree_host_manager_ = std::make_unique<WindowTreeHostManager>();
   user_metrics_recorder_ = std::make_unique<UserMetricsRecorder>();
   ash_keyboard_controller_ =

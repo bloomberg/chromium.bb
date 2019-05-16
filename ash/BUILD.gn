@@ -231,8 +231,6 @@ component("ash") {
     "display/display_error_observer.h",
     "display/display_move_window_util.cc",
     "display/display_move_window_util.h",
-    "display/display_output_protection.cc",
-    "display/display_output_protection.h",
     "display/display_prefs.cc",
     "display/display_shutdown_observer.cc",
     "display/display_shutdown_observer.h",

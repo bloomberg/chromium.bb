@@ -16,7 +16,6 @@
 #include "ash/assistant/assistant_setup_controller.h"
 #include "ash/autotest/shelf_integration_test_api.h"
 #include "ash/display/cros_display_config.h"
-#include "ash/display/display_output_protection.h"
 #include "ash/events/event_rewriter_controller.h"
 #include "ash/first_run/first_run_helper.h"
 #include "ash/highlighter/highlighter_controller.h"
@@ -123,11 +122,6 @@ void BindCrosDisplayConfigControllerRequestOnMainThread(
 void BindAshMessageCenterControllerRequestOnMainThread(
     mojom::AshMessageCenterControllerRequest request) {
   Shell::Get()->message_center_controller()->BindRequest(std::move(request));
-}
-
-void BindDisplayOutputProtectionRequestOnMainThread(
-    mojom::DisplayOutputProtectionRequest request) {
-  Shell::Get()->display_output_protection()->BindRequest(std::move(request));
 }
 
 void BindEventRewriterControllerRequestOnMainThread(
@@ -288,9 +282,6 @@ void RegisterInterfaces(
         base::BindRepeating(&BindKioskNextShellControllerRequestOnMainThread),
         main_thread_task_runner);
   }
-  registry->AddInterface(
-      base::BindRepeating(&BindDisplayOutputProtectionRequestOnMainThread),
-      main_thread_task_runner);
   registry->AddInterface(
       base::BindRepeating(&BindEventRewriterControllerRequestOnMainThread),
       main_thread_task_runner);

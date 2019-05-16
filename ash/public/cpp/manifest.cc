@@ -12,7 +12,6 @@
 #include "ash/public/interfaces/assistant_volume_control.mojom.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/cros_display_config.mojom.h"
-#include "ash/public/interfaces/display_output_protection.mojom.h"
 #include "ash/public/interfaces/event_rewriter_controller.mojom.h"
 #include "ash/public/interfaces/first_run_helper.mojom.h"
 #include "ash/public/interfaces/highlighter_controller.mojom.h"
