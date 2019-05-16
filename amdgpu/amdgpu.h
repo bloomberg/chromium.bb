@@ -1685,6 +1685,28 @@ int amdgpu_cs_syncobj_import_sync_file2(amdgpu_device_handle dev,
 					uint32_t syncobj,
 					uint64_t point,
 					int sync_file_fd);
+
+/**
+ *  transfer between syncbojs.
+ *
+ * \param   dev		- \c [in] device handle
+ * \param   dst_handle	- \c [in] sync object handle
+ * \param   dst_point	- \c [in] timeline point, 0 presents dst is binary
+ * \param   src_handle	- \c [in] sync object handle
+ * \param   src_point	- \c [in] timeline point, 0 presents src is binary
+ * \param   flags	- \c [in] flags
+ *
+ * \return   0 on success\n
+ *          <0 - Negative POSIX Error code
+ *
+ */
+int amdgpu_cs_syncobj_transfer(amdgpu_device_handle dev,
+			       uint32_t dst_handle,
+			       uint64_t dst_point,
+			       uint32_t src_handle,
+			       uint64_t src_point,
+			       uint32_t flags);
+
 /**
  * Export an amdgpu fence as a handle (syncobj or fd).
  *

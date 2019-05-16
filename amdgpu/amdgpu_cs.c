@@ -817,6 +817,22 @@ out:
 	return ret;
 }
 
+drm_public int amdgpu_cs_syncobj_transfer(amdgpu_device_handle dev,
+					  uint32_t dst_handle,
+					  uint64_t dst_point,
+					  uint32_t src_handle,
+					  uint64_t src_point,
+					  uint32_t flags)
+{
+	if (NULL == dev)
+		return -EINVAL;
+
+	return drmSyncobjTransfer(dev->fd,
+				  dst_handle, dst_point,
+				  src_handle, src_point,
+				  flags);
+}
+
 drm_public int amdgpu_cs_submit_raw(amdgpu_device_handle dev,
 				    amdgpu_context_handle context,
 				    amdgpu_bo_list_handle bo_list_handle,
