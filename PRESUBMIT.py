@@ -767,6 +767,20 @@ _BANNED_CPP_FUNCTIONS = (
       True,
       (),
     ),
+    (
+      'mojo::ConvertTo',
+      (
+        'mojo::ConvertTo and TypeConverter are deprecated. Please consider',
+        'StructTraits / UnionTraits / EnumTraits / ArrayTraits / MapTraits /',
+        'StringTraits if you would like to convert between custom types and',
+        'the wire format of mojom types.'
+      ),
+      True,
+      (
+        r'^third_party/blink/.*\.(cc|h)$',
+        r'^content/renderer/.*\.(cc|h)$',
+      ),
+    ),
 )
 
 

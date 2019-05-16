@@ -1926,17 +1926,26 @@ class BannedFunctionCheckTest(unittest.TestCase):
     input_api.files = [
       MockFile('some/cpp/problematic/file.cc',
                ['mojo::DataPipe();']),
+      MockFile('some/cpp/problematic/file2.cc',
+               ['mojo::ConvertTo<>']),
       MockFile('some/cpp/ok/file.cc',
                ['CreateDataPipe();']),
       MockFile('some/cpp/ok/file2.cc',
                ['mojo::DataPipeDrainer();']),
+      MockFile('third_party/blink/ok/file3.cc',
+               ['mojo::ConvertTo<>']),
+      MockFile('content/renderer/ok/file3.cc',
+               ['mojo::ConvertTo<>']),
     ]
 
     errors = PRESUBMIT._CheckNoBannedFunctions(input_api, MockOutputApi())
     self.assertEqual(1, len(errors))
     self.assertTrue('some/cpp/problematic/file.cc' in errors[0].message)
+    self.assertTrue('some/cpp/problematic/file2.cc' in errors[0].message)
     self.assertTrue('some/cpp/ok/file.cc' not in errors[0].message)
     self.assertTrue('some/cpp/ok/file2.cc' not in errors[0].message)
+    self.assertTrue('third_party/blink/ok/file3.cc' not in errors[0].message)
+    self.assertTrue('content/renderer/ok/file3.cc' not in errors[0].message)
 
 
 class NoProductionCodeUsingTestOnlyFunctionsTest(unittest.TestCase):
