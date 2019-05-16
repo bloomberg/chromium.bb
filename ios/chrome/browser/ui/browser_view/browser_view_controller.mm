@@ -745,10 +745,10 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // --------------------------
 // Whether the given tab's URL is an application specific URL.
 - (BOOL)isTabNativePage:(Tab*)tab;
-// Add all delegates to the provided |tab|.
-- (void)installDelegatesForTab:(Tab*)tab;
-// Remove delegates from the provided |tab|.
-- (void)uninstallDelegatesForTab:(Tab*)tab;
+// Add all delegates to the provided |webState|.
+- (void)installDelegatesForWebState:(web::WebState*)webState;
+// Remove delegates from the provided |webState|.
+- (void)uninstallDelegatesForWebState:(web::WebState*)webState;
 // Called when a |webState| is selected in the WebStateList. Make any required
 // view changes. The notification will not be sent when the |webState| is
 // already the selected WebState. |notifyToolbar| indicates whether the toolbar
@@ -1432,8 +1432,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   // Uninstall delegates so that any delegate callbacks triggered by subsequent
   // WebStateDestroyed() signals are not handled.
-  for (NSUInteger index = 0; index < self.tabModel.count; ++index)
-    [self uninstallDelegatesForTab:[self.tabModel tabAtIndex:index]];
+  WebStateList* webStateList = self.tabModel.webStateList;
+  for (int index = 0; index < webStateList->count(); ++index)
+    [self uninstallDelegatesForWebState:webStateList->GetWebStateAt(index)];
 
   // Disconnect child coordinators.
   [_activityServiceCoordinator disconnect];
@@ -1933,9 +1934,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       UrlLoadingNotifierFactory::GetForBrowserState(_browserState);
   urlLoadingNotifier->AddObserver(_URLLoadingObserverBridge.get());
 
-  NSUInteger count = self.tabModel.count;
-  for (NSUInteger index = 0; index < count; ++index)
-    [self installDelegatesForTab:[self.tabModel tabAtIndex:index]];
+  WebStateList* webStateList = self.tabModel.webStateList;
+  for (int index = 0; index < webStateList->count(); ++index)
+    [self installDelegatesForWebState:webStateList->GetWebStateAt(index)];
 
   self.imageSaver = [[ImageSaver alloc] initWithBaseViewController:self];
   self.imageCopier = [[ImageCopier alloc] initWithBaseViewController:self];
@@ -2715,48 +2716,51 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   return web::GetWebClient()->IsAppSpecificURL(visibleItem->GetURL());
 }
 
-- (void)installDelegatesForTab:(Tab*)tab {
-  // Unregistration happens when the Tab is removed from the TabModel.
-  DCHECK_NE(tab.webState->GetDelegate(), _webStateDelegate.get());
+- (void)installDelegatesForWebState:(web::WebState*)webState {
+  // Unregistration happens when the WebState is removed from the WebStateList.
+  DCHECK_NE(webState->GetDelegate(), _webStateDelegate.get());
 
   // There should be no pre-rendered Tabs in TabModel.
   PrerenderService* prerenderService =
       PrerenderServiceFactory::GetForBrowserState(_browserState);
   DCHECK(!prerenderService ||
-         !prerenderService->IsWebStatePrerendered(tab.webState));
+         !prerenderService->IsWebStatePrerendered(webState));
 
-  SnapshotTabHelper::FromWebState(tab.webState)->SetDelegate(self);
+  SnapshotTabHelper::FromWebState(webState)->SetDelegate(self);
 
   // TODO(crbug.com/777557): do not pass the dispatcher to PasswordTabHelper.
   if (PasswordTabHelper* passwordTabHelper =
-          PasswordTabHelper::FromWebState(tab.webState)) {
+          PasswordTabHelper::FromWebState(webState)) {
     passwordTabHelper->SetBaseViewController(self);
     passwordTabHelper->SetDispatcher(self.dispatcher);
     passwordTabHelper->SetPasswordControllerDelegate(self);
   }
 
   if (!IsIPadIdiom()) {
-    OverscrollActionsTabHelper::FromWebState(tab.webState)->SetDelegate(self);
+    OverscrollActionsTabHelper::FromWebState(webState)->SetDelegate(self);
   }
+
+  // TODO(crbug.com/960950): Remove this once webController is moved out of tab.
+  Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
+
   // Install the proper CRWWebController delegates.
   tab.webController.nativeProvider = self;
   tab.webController.swipeRecognizerProvider = self.sideSwipeController;
   tab.webState->SetDelegate(_webStateDelegate.get());
-  SadTabTabHelper::FromWebState(tab.webState)->SetDelegate(_sadTabCoordinator);
-  NetExportTabHelper::CreateForWebState(tab.webState, self);
-  CaptivePortalDetectorTabHelper::CreateForWebState(tab.webState, self);
+  SadTabTabHelper::FromWebState(webState)->SetDelegate(_sadTabCoordinator);
+  NetExportTabHelper::CreateForWebState(webState, self);
+  CaptivePortalDetectorTabHelper::CreateForWebState(webState, self);
 
   if (reading_list::IsOfflinePageWithoutNativeContentEnabled()) {
     OfflinePageTabHelper::CreateForWebState(
-        tab.webState,
-        ReadingListModelFactory::GetForBrowserState(_browserState));
+        webState, ReadingListModelFactory::GetForBrowserState(_browserState));
   }
 
   // DownloadManagerTabHelper cannot function without delegate.
   DCHECK(_downloadManagerCoordinator);
-  DownloadManagerTabHelper::CreateForWebState(tab.webState,
+  DownloadManagerTabHelper::CreateForWebState(webState,
                                               _downloadManagerCoordinator);
-  NewTabPageTabHelper::CreateForWebState(tab.webState, self);
+  NewTabPageTabHelper::CreateForWebState(webState, self);
 
   // The language detection helper accepts a callback from the translate
   // client, so must be created after it.
@@ -2764,42 +2768,46 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // (this only comes up in unit tests), so check for that and bypass the
   // init of the translation helpers if needed.
   // TODO(crbug.com/785238): Remove the need for this check.
-  if (tab.webState->GetJSInjectionReceiver()) {
+  if (webState->GetJSInjectionReceiver()) {
     language::IOSLanguageDetectionTabHelper::CreateForWebState(
-        tab.webState,
+        webState,
         UrlLanguageHistogramFactory::GetForBrowserState(self.browserState));
-    ChromeIOSTranslateClient::CreateForWebState(tab.webState);
+    ChromeIOSTranslateClient::CreateForWebState(webState);
   }
 
   if (AccountConsistencyService* accountConsistencyService =
           ios::AccountConsistencyServiceFactory::GetForBrowserState(
               self.browserState)) {
-    accountConsistencyService->SetWebStateHandler(tab.webState, self);
+    accountConsistencyService->SetWebStateHandler(webState, self);
   }
 }
 
-- (void)uninstallDelegatesForTab:(Tab*)tab {
-  DCHECK_EQ(tab.webState->GetDelegate(), _webStateDelegate.get());
+- (void)uninstallDelegatesForWebState:(web::WebState*)webState {
+  DCHECK_EQ(webState->GetDelegate(), _webStateDelegate.get());
 
   // TODO(crbug.com/777557): do not pass the dispatcher to PasswordTabHelper.
   if (PasswordTabHelper* passwordTabHelper =
-          PasswordTabHelper::FromWebState(tab.webState)) {
+          PasswordTabHelper::FromWebState(webState)) {
     passwordTabHelper->SetDispatcher(nil);
   }
 
   if (!IsIPadIdiom()) {
-    OverscrollActionsTabHelper::FromWebState(tab.webState)->SetDelegate(nil);
+    OverscrollActionsTabHelper::FromWebState(webState)->SetDelegate(nil);
   }
+
+  // TODO(crbug.com/960950): Remove this once webController is moved out of tab.
+  Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
+
   tab.webController.nativeProvider = nil;
   tab.webController.swipeRecognizerProvider = nil;
-  tab.webState->SetDelegate(nullptr);
+  webState->SetDelegate(nullptr);
   if (AccountConsistencyService* accountConsistencyService =
           ios::AccountConsistencyServiceFactory::GetForBrowserState(
               self.browserState)) {
-    accountConsistencyService->RemoveWebStateHandler(tab.webState);
+    accountConsistencyService->RemoveWebStateHandler(webState);
   }
 
-  SnapshotTabHelper::FromWebState(tab.webState)->SetDelegate(nil);
+  SnapshotTabHelper::FromWebState(webState)->SetDelegate(nil);
 }
 
 - (void)webStateSelected:(web::WebState*)webState
@@ -4355,6 +4363,27 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   [self webStateSelected:newWebState notifyToolbar:YES];
 }
 
+// A WebState has been removed, remove its views from display if necessary.
+- (void)webStateList:(WebStateList*)webStateList
+    didDetachWebState:(web::WebState*)webState
+              atIndex:(int)atIndex {
+  webState->WasHidden();
+  webState->SetKeepRenderProcessAlive(false);
+
+  [self uninstallDelegatesForWebState:webState];
+
+  // Cancel dialogs for |webState|.
+  [self.dialogPresenter cancelDialogForWebState:webState];
+
+  // Ignore changes while the tab grid is visible (or while suspended).
+  // The display will be refreshed when this view becomes active again.
+  if (!self.visible || !self.webUsageEnabled)
+    return;
+
+  // Remove the find bar for now.
+  [self hideFindBarWithAnimation:NO];
+}
+
 - (void)webStateList:(WebStateList*)webStateList
     willDetachWebState:(web::WebState*)webState
                atIndex:(int)atIndex {
@@ -4379,7 +4408,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
          atIndex:(NSUInteger)modelIndex
     inForeground:(BOOL)fg {
   DCHECK(tab);
-  [self installDelegatesForTab:tab];
+  [self installDelegatesForWebState:tab.webState];
 
   if (fg) {
     [_paymentRequestManager setActiveWebState:tab.webState];
@@ -4467,8 +4496,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     didReplaceTab:(Tab*)oldTab
           withTab:(Tab*)newTab
           atIndex:(NSUInteger)index {
-  [self uninstallDelegatesForTab:oldTab];
-  [self installDelegatesForTab:newTab];
+  [self uninstallDelegatesForWebState:oldTab.webState];
+  [self installDelegatesForWebState:newTab.webState];
 
   // Add |newTab|'s view to the hierarchy if it's the current Tab.
   if (self.active && model.currentTab == newTab)
@@ -4476,27 +4505,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   if (newTab)
     [_paymentRequestManager setActiveWebState:newTab.webState];
-}
-
-// A tab has been removed, remove its views from display if necessary.
-- (void)tabModel:(TabModel*)model
-    didRemoveTab:(Tab*)tab
-         atIndex:(NSUInteger)index {
-  tab.webState->WasHidden();
-  tab.webState->SetKeepRenderProcessAlive(false);
-
-  [self uninstallDelegatesForTab:tab];
-
-  // Cancel dialogs for |tab|'s WebState.
-  [self.dialogPresenter cancelDialogForWebState:tab.webState];
-
-  // Ignore changes while the tab stack view is visible (or while suspended).
-  // The display will be refreshed when this view becomes active again.
-  if (!self.visible || !self.webUsageEnabled)
-    return;
-
-  // Remove the find bar for now.
-  [self hideFindBarWithAnimation:NO];
 }
 
 #pragma mark - TabModelObserver helpers (new tab animations)

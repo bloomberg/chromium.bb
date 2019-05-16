@@ -972,32 +972,13 @@ UIColor* BackgroundColor() {
   [_tabStripView setNeedsLayout];
 }
 
-#pragma mark -
-#pragma mark TabModelObserver methods
-
-// Observer method.
-- (void)tabModel:(TabModel*)model
-    didInsertTab:(Tab*)tab
-         atIndex:(NSUInteger)modelIndex
-    inForeground:(BOOL)fg {
-  TabView* view = [self tabViewForTab:tab isSelected:fg];
-  [_tabArray insertObject:view atIndex:[self indexForModelIndex:modelIndex]];
-  [[self tabStripView] addSubview:view];
-
-  [self updateContentSizeAndRepositionViews];
-  [self setNeedsLayoutWithAnimation];
-  [self updateContentOffsetForTabIndex:modelIndex isNewTab:YES];
-
-  [self updateTabCount];
-}
-
-// Observer method.
-- (void)tabModel:(TabModel*)model
-    didRemoveTab:(Tab*)tab
-         atIndex:(NSUInteger)modelIndex {
+// Observer method, |webState| removed from |webStateList|.
+- (void)webStateList:(WebStateList*)webStateList
+    didDetachWebState:(web::WebState*)webState
+              atIndex:(int)atIndex {
   // Keep the actual view around while it is animating out.  Once the animation
   // is done, remove the view.
-  NSUInteger index = [self indexForModelIndex:modelIndex];
+  NSUInteger index = [self indexForModelIndex:atIndex];
   TabView* view = [_tabArray objectAtIndex:index];
   [_closingTabs addObject:view];
   _targetFrames.RemoveFrame(view);
@@ -1026,6 +1007,25 @@ UIColor* BackgroundColor() {
       }];
 
   [self setNeedsLayoutWithAnimation];
+
+  [self updateTabCount];
+}
+
+#pragma mark -
+#pragma mark TabModelObserver methods
+
+// Observer method.
+- (void)tabModel:(TabModel*)model
+    didInsertTab:(Tab*)tab
+         atIndex:(NSUInteger)modelIndex
+    inForeground:(BOOL)fg {
+  TabView* view = [self tabViewForTab:tab isSelected:fg];
+  [_tabArray insertObject:view atIndex:[self indexForModelIndex:modelIndex]];
+  [[self tabStripView] addSubview:view];
+
+  [self updateContentSizeAndRepositionViews];
+  [self setNeedsLayoutWithAnimation];
+  [self updateContentOffsetForTabIndex:modelIndex isNewTab:YES];
 
   [self updateTabCount];
 }
