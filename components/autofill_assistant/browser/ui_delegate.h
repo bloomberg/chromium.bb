@@ -123,6 +123,14 @@ class UiDelegate {
   // Fills in the overlay colors.
   virtual void GetOverlayColors(OverlayColors* colors) const = 0;
 
+  // Returns the current form. May be null if there is no form to show.
+  virtual const FormProto* GetForm() const = 0;
+
+  // Sets a counter value.
+  virtual void SetCounterValue(int input_index,
+                               int counter_index,
+                               int value) = 0;
+
  protected:
   UiDelegate() = default;
 };

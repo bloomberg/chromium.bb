@@ -67,6 +67,9 @@ class ScriptExecutorDelegate {
   virtual void SetChips(std::unique_ptr<std::vector<Chip>> chips) = 0;
   virtual void SetResizeViewport(bool resize_viewport) = 0;
   virtual void SetPeekMode(ConfigureBottomSheetProto::PeekMode peek_mode) = 0;
+  virtual bool SetForm(
+      std::unique_ptr<FormProto> form,
+      base::RepeatingCallback<void(const FormProto::Result*)> callback) = 0;
 
   // Makes no area of the screen touchable.
   void ClearTouchableElementArea() {

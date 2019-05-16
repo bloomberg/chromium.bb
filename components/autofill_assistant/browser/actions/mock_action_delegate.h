@@ -161,6 +161,10 @@ class MockActionDelegate : public ActionDelegate {
   MOCK_METHOD1(SetResizeViewport, void(bool resize_viewport));
   MOCK_METHOD1(SetPeekMode,
                void(ConfigureBottomSheetProto::PeekMode peek_mode));
+  MOCK_METHOD2(
+      SetForm,
+      bool(std::unique_ptr<FormProto> form,
+           base::RepeatingCallback<void(const FormProto::Result*)> callback));
 };
 
 }  // namespace autofill_assistant

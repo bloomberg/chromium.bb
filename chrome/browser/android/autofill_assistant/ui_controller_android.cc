@@ -38,6 +38,8 @@
 #include "google_apis/google_api_keys.h"
 #include "jni/AssistantDetailsModel_jni.h"
 #include "jni/AssistantDetails_jni.h"
+#include "jni/AssistantFormInput_jni.h"
+#include "jni/AssistantFormModel_jni.h"
 #include "jni/AssistantHeaderModel_jni.h"
 #include "jni/AssistantInfoBoxModel_jni.h"
 #include "jni/AssistantInfoBox_jni.h"
@@ -79,6 +81,7 @@ UiControllerAndroid::UiControllerAndroid(
     const base::android::JavaRef<jobject>& jactivity)
     : overlay_delegate_(this),
       payment_request_delegate_(this),
+      form_delegate_(this),
       weak_ptr_factory_(this) {
   java_object_ = Java_AutofillAssistantUiController_create(
       env, jactivity,
@@ -131,6 +134,7 @@ void UiControllerAndroid::Attach(content::WebContents* web_contents,
     OnTouchableAreaChanged(area);
     OnResizeViewportChanged(ui_delegate->GetResizeViewport());
     OnPeekModeChanged(ui_delegate->GetPeekMode());
+    OnFormChanged(ui_delegate->GetForm());
 
     UiDelegate::OverlayColors colors;
     ui_delegate->GetOverlayColors(&colors);
@@ -636,6 +640,66 @@ void UiControllerAndroid::OnPaymentRequestInformationChanged(
   // |setPaymentMethod|.
   Java_AssistantPaymentRequestModel_setTermsStatus(env, jmodel,
                                                    state->terms_and_conditions);
+}
+
+// FormProto related methods.
+base::android::ScopedJavaLocalRef<jobject> UiControllerAndroid::GetFormModel() {
+  return Java_AssistantModel_getFormModel(AttachCurrentThread(), GetModel());
+}
+
+void UiControllerAndroid::OnFormChanged(const FormProto* form) {
+  JNIEnv* env = AttachCurrentThread();
+
+  if (!form) {
+    Java_AssistantFormModel_clearInputs(env, GetFormModel());
+    return;
+  }
+
+  auto jinput_list = Java_AssistantFormModel_createInputList(env);
+  for (int i = 0; i < form->inputs_size(); i++) {
+    const FormInputProto input = form->inputs(i);
+
+    switch (input.input_type_case()) {
+      case FormInputProto::InputTypeCase::kCounter: {
+        CounterInputProto counter_input = input.counter();
+
+        auto jcounters = Java_AssistantFormInput_createCounterList(env);
+        for (const CounterInputProto::Counter counter :
+             counter_input.counters()) {
+          Java_AssistantFormInput_addCounter(
+              env, jcounters,
+              Java_AssistantFormInput_createCounter(
+                  env,
+                  base::android::ConvertUTF8ToJavaString(env, counter.label()),
+                  counter.initial_value(), counter.min_value(),
+                  counter.max_value()));
+        }
+
+        Java_AssistantFormModel_addInput(
+            env, jinput_list,
+            Java_AssistantFormInput_createCounterInput(
+                env, i,
+                base::android::ConvertUTF8ToJavaString(env,
+                                                       counter_input.label()),
+                jcounters, counter_input.minimized_count(),
+                form_delegate_.GetJavaObject()));
+        break;
+      }
+      case FormInputProto::InputTypeCase::INPUT_TYPE_NOT_SET:
+        NOTREACHED();
+        break;
+        // Intentionally no default case to make compilation fail if a new value
+        // was added to the enum but not to this list.
+    }
+
+    Java_AssistantFormModel_setInputs(env, GetFormModel(), jinput_list);
+  }
+}
+
+void UiControllerAndroid::OnCounterChanged(int input_index,
+                                           int counter_index,
+                                           int value) {
+  ui_delegate_->SetCounterValue(input_index, counter_index, value);
 }
 
 // Details related method.

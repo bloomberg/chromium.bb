@@ -342,6 +342,7 @@ message ActionProto {
     ExpectNavigationProto expect_navigation = 40;
     WaitForNavigationProto wait_for_navigation = 41;
     ConfigureBottomSheetProto configure_bottom_sheet = 42;
+    ShowFormProto show_form = 43;
   }
 
   // Set to true to make the client remove any contextual information if the
@@ -374,6 +375,8 @@ message ProcessedActionProto {
     PaymentDetails payment_details = 15;
     // Should be set as a result of SetFormFieldValueAction.
     SetFormFieldValueProto.Result set_form_field_value_result = 17;
+    // Should be set as a result of FormAction.
+    FormProto.Result form_result = 21;
   }
 
   // Reports information about navigation that happened while
@@ -1109,4 +1112,68 @@ message ConfigureBottomSheetProto {
   // resize_viewport is true or was set to true by a previous actions, the
   // viewport will be resized to match the new peek height.
   optional PeekMode peek_mode = 2;
+}
+
+// Allow scripts to display a form with multiples inputs.
+message ShowFormProto {
+  // The form to display.
+  optional FormProto form = 1;
+}
+
+message FormProto {
+  // A result associated to this form, such that |input_results[i]| is the
+  // result of |inputs[i]|.
+  message Result { repeated FormInputProto.Result input_results = 1; }
+
+  // The different inputs to display.
+  repeated FormInputProto inputs = 1;
+}
+
+message FormInputProto {
+  message Result {
+    oneof input_type { CounterInputProto.Result counter = 1; }
+  }
+
+  oneof input_type { CounterInputProto counter = 1; }
+}
+
+// An input that is made of one or more counters. A CounterInputProto is
+// considered valid if at least one of its counters value differs from its
+// |initial_value|.
+message CounterInputProto {
+  // A single counter.
+  message Counter {
+    // The label shown with the counter, that handles plurals using the format
+    // defined by java.text.ChoiceFormat. All occurrences of the '{value}'
+    // substring will be replaced by the current counter value.
+    optional string label = 1;
+
+    // The minimum value this counter can have.
+    optional int32 min_value = 2 [default = -0x80000000];  // kint32min
+
+    // The maximum value this counter can have.
+    optional int32 max_value = 3 [default = 0x7FFFFFFF];  // kint32max
+
+    // The initial value of the counter.
+    optional int32 initial_value = 4 [default = 0];
+  }
+
+  // A result associated to this counter.
+  message Result {
+    // The values of all counters from this CounterInputProto, such that
+    // |values[i]| is the value of |counters[i]|.
+    repeated int32 values = 1;
+  }
+
+  // An optional label shown above the different counters.
+  optional string label = 1;
+
+  // The counters to display.
+  repeated Counter counters = 2;
+
+  // If specified, the input will initially display maximum |minimized_count|
+  // counters. If |counters|.size > |minimized_count|, the remaining counters
+  // will be displayed in an expandable section below the first
+  // |minimized_count| counters.
+  optional int32 minimized_count = 3 [default = 0x7FFFFFFF];  // kint32max
 }

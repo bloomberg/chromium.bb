@@ -85,6 +85,9 @@ class Controller : public ScriptExecutorDelegate,
   void SetChips(std::unique_ptr<std::vector<Chip>> chips) override;
   void SetResizeViewport(bool resize_viewport) override;
   void SetPeekMode(ConfigureBottomSheetProto::PeekMode peek_mode) override;
+  bool SetForm(std::unique_ptr<FormProto> form,
+               base::RepeatingCallback<void(const FormProto::Result*)> callback)
+      override;
   bool IsNavigatingToNewDocument() override;
   bool HasNavigationError() override;
   void AddListener(ScriptExecutorDelegate::Listener* listener) override;
@@ -125,6 +128,8 @@ class Controller : public ScriptExecutorDelegate,
   bool GetResizeViewport() override;
   ConfigureBottomSheetProto::PeekMode GetPeekMode() override;
   void GetOverlayColors(OverlayColors* colors) const override;
+  const FormProto* GetForm() const override;
+  void SetCounterValue(int input_index, int counter_index, int value) override;
 
  private:
   friend ControllerTest;
@@ -291,6 +296,11 @@ class Controller : public ScriptExecutorDelegate,
 
   std::unique_ptr<PaymentRequestOptions> payment_request_options_;
   std::unique_ptr<PaymentInformation> payment_request_info_;
+
+  std::unique_ptr<FormProto> form_;
+  std::unique_ptr<FormProto::Result> form_result_;
+  base::RepeatingCallback<void(const FormProto::Result*)> form_callback_ =
+      base::DoNothing();
 
   // Value for ScriptExecutorDelegate::IsNavigatingToNewDocument()
   bool navigating_to_new_document_ = false;

@@ -31,5 +31,6 @@ void UiController::OnPeekModeChanged(
     ConfigureBottomSheetProto::PeekMode peek_mode) {}
 void UiController::OnOverlayColorsChanged(
     const UiDelegate::OverlayColors& colors) {}
+void UiController::OnFormChanged(const FormProto* form) {}
 
 }  // namespace autofill_assistant

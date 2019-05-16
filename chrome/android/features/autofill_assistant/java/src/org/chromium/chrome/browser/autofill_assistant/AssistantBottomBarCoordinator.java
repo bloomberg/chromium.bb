@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantCarousel
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantSuggestionsCarouselCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.details.AssistantDetailsCoordinator;
+import org.chromium.chrome.browser.autofill_assistant.form.AssistantFormCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderModel;
 import org.chromium.chrome.browser.autofill_assistant.infobox.AssistantInfoBoxCoordinator;
@@ -47,6 +48,7 @@ class AssistantBottomBarCoordinator
     // Child coordinators.
     private final AssistantHeaderCoordinator mHeaderCoordinator;
     private final AssistantDetailsCoordinator mDetailsCoordinator;
+    private final AssistantFormCoordinator mFormCoordinator;
     private final AssistantCarouselCoordinator mSuggestionsCoordinator;
     private final AssistantCarouselCoordinator mActionsCoordinator;
     private final AssistantPeekHeightCoordinator mPeekHeightCoordinator;
@@ -73,6 +75,7 @@ class AssistantBottomBarCoordinator
         mDetailsCoordinator = new AssistantDetailsCoordinator(activity, model.getDetailsModel());
         mPaymentRequestCoordinator =
                 new AssistantPaymentRequestCoordinator(activity, model.getPaymentRequestModel());
+        mFormCoordinator = new AssistantFormCoordinator(activity, model.getFormModel());
         mSuggestionsCoordinator =
                 new AssistantSuggestionsCarouselCoordinator(activity, model.getSuggestionsModel());
         mActionsCoordinator =
@@ -86,6 +89,7 @@ class AssistantBottomBarCoordinator
         mContent.mBottomBarView.addView(mInfoBoxCoordinator.getView());
         mContent.mBottomBarView.addView(mDetailsCoordinator.getView());
         mContent.mBottomBarView.addView(mPaymentRequestCoordinator.getView());
+        mContent.mBottomBarView.addView(mFormCoordinator.getView());
         mContent.mBottomBarView.addView(mSuggestionsCoordinator.getView());
         mContent.mBottomBarView.addView(mActionsCoordinator.getView());
 
@@ -98,16 +102,17 @@ class AssistantBottomBarCoordinator
                 R.dimen.autofill_assistant_bottombar_vertical_spacing);
         setChildMarginTop(mDetailsCoordinator.getView(), childSpacing);
         setChildMarginTop(mPaymentRequestCoordinator.getView(), childSpacing);
+        setChildMarginTop(mFormCoordinator.getView(), childSpacing);
         setCarouselMarginTop(mSuggestionsCoordinator.getView(),
                 model.getSuggestionsModel().getChipsModel(), childSpacing);
         setCarouselMarginTop(mActionsCoordinator.getView(), model.getActionsModel().getChipsModel(),
                 childSpacing);
 
-        // We set the horizontal margins of the details and info box. We don't set a padding
-        // to the container and the payment request as we want the carousels children and PR
-        // sections to be full-width.
+        // Set the horizontal margins of children. We don't set them on the payment request and the
+        // carousels to allow them to take the full width of the sheet.
         setHorizontalMargins(mInfoBoxCoordinator.getView());
         setHorizontalMargins(mDetailsCoordinator.getView());
+        setHorizontalMargins(mFormCoordinator.getView());
 
         View bottomSheetContainer =
                 bottomSheet.findViewById(org.chromium.chrome.R.id.bottom_sheet_content);
@@ -224,6 +229,7 @@ class AssistantBottomBarCoordinator
         mDetailsCoordinator.setForceInvisible(showOnlyCarousels);
         mModel.getPaymentRequestModel().set(
                 AssistantPaymentRequestModel.FORCE_INVISIBLE, showOnlyCarousels);
+        mFormCoordinator.setForceInvisible(showOnlyCarousels);
     }
 
     @Override
@@ -332,6 +338,10 @@ class AssistantBottomBarCoordinator
 
             if (mPaymentRequestCoordinator.getScrollView().isShown()) {
                 return mPaymentRequestCoordinator.getScrollView().getScrollY();
+            }
+
+            if (mFormCoordinator.getView().isShown()) {
+                return mFormCoordinator.getView().getScrollY();
             }
 
             return 0;

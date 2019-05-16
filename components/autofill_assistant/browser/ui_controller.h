@@ -89,6 +89,9 @@ class UiController {
 
   // Called when the overlay colors have changed.
   virtual void OnOverlayColorsChanged(const UiDelegate::OverlayColors& colors);
+
+  // Called when the form has changed.
+  virtual void OnFormChanged(const FormProto* form);
 };
 }  // namespace autofill_assistant
 #endif  // COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_UI_CONTROLLER_H_

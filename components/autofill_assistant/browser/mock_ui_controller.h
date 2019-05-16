@@ -40,6 +40,7 @@ class MockUiController : public UiController {
   MOCK_METHOD1(OnResizeViewportChanged, void(bool resize_viewport));
   MOCK_METHOD1(OnPeekModeChanged,
                void(ConfigureBottomSheetProto::PeekMode peek_mode));
+  MOCK_METHOD1(OnFormChanged, void(const FormProto* form));
 };
 
 }  // namespace autofill_assistant

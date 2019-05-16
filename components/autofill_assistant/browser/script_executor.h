@@ -177,6 +177,9 @@ class ScriptExecutor : public ActionDelegate,
   void SetProgressVisible(bool visible) override;
   void SetResizeViewport(bool resize_viewport) override;
   void SetPeekMode(ConfigureBottomSheetProto::PeekMode peek_mode) override;
+  bool SetForm(std::unique_ptr<FormProto> form,
+               base::RepeatingCallback<void(const FormProto::Result*)> callback)
+      override;
 
  private:
   // Helper for WaitForElementVisible that keeps track of the state required to

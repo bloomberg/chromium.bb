@@ -61,6 +61,8 @@ jumbo_static_library("browser") {
     "actions/set_form_field_value_action.h",
     "actions/show_details_action.cc",
     "actions/show_details_action.h",
+    "actions/show_form_action.cc",
+    "actions/show_form_action.h",
     "actions/show_info_box_action.cc",
     "actions/show_info_box_action.h",
     "actions/show_progress_bar_action.cc",

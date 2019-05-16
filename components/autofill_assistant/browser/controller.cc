@@ -288,6 +288,76 @@ void Controller::SetPeekMode(ConfigureBottomSheetProto::PeekMode peek_mode) {
   GetUiController()->OnPeekModeChanged(peek_mode);
 }
 
+const FormProto* Controller::GetForm() const {
+  return form_.get();
+}
+
+bool Controller::SetForm(
+    std::unique_ptr<FormProto> form,
+    base::RepeatingCallback<void(const FormProto::Result*)> callback) {
+  if (!form) {
+    form_.reset();
+    form_result_.reset();
+    form_callback_ = base::DoNothing();
+
+    GetUiController()->OnFormChanged(nullptr);
+    return true;
+  }
+
+  form_ = std::move(form);
+  form_result_ = std::make_unique<FormProto::Result>();
+  form_callback_ = callback;
+
+  // Initialize form result.
+  for (FormInputProto& input : *form_->mutable_inputs()) {
+    FormInputProto::Result* result = form_result_->add_input_results();
+    switch (input.input_type_case()) {
+      case FormInputProto::InputTypeCase::kCounter:
+        // Add the initial value of each counter into the form result.
+        for (const CounterInputProto::Counter& counter :
+             input.counter().counters()) {
+          result->mutable_counter()->add_values(counter.initial_value());
+        }
+        break;
+      case FormInputProto::InputTypeCase::INPUT_TYPE_NOT_SET:
+        DVLOG(1) << "Encountered input with INPUT_TYPE_NOT_SET";
+        form_.reset();
+        form_result_.reset();
+        form_callback_ = base::DoNothing();
+        return false;
+        // Intentionally no default case to make compilation fail if a new value
+        // was added to the enum but not to this list.
+    }
+  }
+
+  // Call the callback with initial result.
+  form_callback_.Run(form_result_.get());
+
+  GetUiController()->OnFormChanged(form_.get());
+  return true;
+}
+
+void Controller::SetCounterValue(int input_index,
+                                 int counter_index,
+                                 int value) {
+  if (!form_result_ || input_index < 0 ||
+      input_index >= form_result_->input_results_size()) {
+    NOTREACHED() << "Invalid input index: " << input_index;
+    return;
+  }
+
+  FormInputProto::Result* input_result =
+      form_result_->mutable_input_results(input_index);
+  if (!input_result->has_counter() || counter_index < 0 ||
+      counter_index >= input_result->counter().values_size()) {
+    NOTREACHED() << "Invalid counter index: " << counter_index;
+    return;
+  }
+
+  input_result->mutable_counter()->set_values(counter_index, value);
+  form_callback_.Run(form_result_.get());
+}
+
 bool Controller::GetResizeViewport() {
   return resize_viewport_;
 }

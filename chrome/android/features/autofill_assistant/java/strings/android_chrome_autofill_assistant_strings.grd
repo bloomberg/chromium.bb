@@ -165,6 +165,12 @@
       <message name="IDS_AUTOFILL_ASSISTANT_SHEET_CLOSED" desc="Text announced when the Autofill Assistant sheet is closed.">
         Google Assistant in Chrome closed.
       </message>
+      <message name="IDS_AUTOFILL_ASSISTANT_FORM_SHOW_MORE" desc="Text shown when displaying a form with an expandable section that is minimized.">
+        Show more
+      </message>
+      <message name="IDS_AUTOFILL_ASSISTANT_FORM_SHOW_LESS" desc="Text shown when displaying a form with an expandable section that can be minimized.">
+        Show less
+      </message>
     </messages>
   </release>
 </grit>

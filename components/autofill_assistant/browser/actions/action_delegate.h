@@ -257,6 +257,15 @@ class ActionDelegate {
   // Set the peek mode.
   virtual void SetPeekMode(ConfigureBottomSheetProto::PeekMode peek_mode) = 0;
 
+  // Show a form to the user and call |callback| with its values whenever there
+  // is a change. |callback| will be called directly with the initial values of
+  // the form directly after this call. Returns true if the form was correctly
+  // set, false otherwise. The latter can happen if the form contains
+  // unsupported inputs.
+  virtual bool SetForm(
+      std::unique_ptr<FormProto> form,
+      base::RepeatingCallback<void(const FormProto::Result*)> callback) = 0;
+
  protected:
   ActionDelegate() = default;
 };

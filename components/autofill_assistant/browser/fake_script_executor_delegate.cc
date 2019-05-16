@@ -105,4 +105,10 @@ void FakeScriptExecutorDelegate::AddListener(Listener* listener) {
 void FakeScriptExecutorDelegate::RemoveListener(Listener* listener) {
   listeners_.erase(listener);
 }
+
+bool FakeScriptExecutorDelegate::SetForm(
+    std::unique_ptr<FormProto> form,
+    base::RepeatingCallback<void(const FormProto::Result*)> callback) {
+  return true;
+}
 }  // namespace autofill_assistant

@@ -22,6 +22,7 @@
 #include "components/autofill_assistant/browser/actions/set_attribute_action.h"
 #include "components/autofill_assistant/browser/actions/set_form_field_value_action.h"
 #include "components/autofill_assistant/browser/actions/show_details_action.h"
+#include "components/autofill_assistant/browser/actions/show_form_action.h"
 #include "components/autofill_assistant/browser/actions/show_info_box_action.h"
 #include "components/autofill_assistant/browser/actions/show_progress_bar_action.h"
 #include "components/autofill_assistant/browser/actions/stop_action.h"
@@ -273,6 +274,10 @@ bool ProtocolUtils::ParseActions(const std::string& response,
       }
       case ActionProto::ActionInfoCase::kConfigureBottomSheet: {
         client_action = std::make_unique<ConfigureBottomSheetAction>(action);
+        break;
+      }
+      case ActionProto::ActionInfoCase::kShowForm: {
+        client_action = std::make_unique<ShowFormAction>(action);
         break;
       }
       case ActionProto::ActionInfoCase::ACTION_INFO_NOT_SET: {

@@ -11,6 +11,7 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
+#include "chrome/browser/android/autofill_assistant/assistant_form_delegate.h"
 #include "chrome/browser/android/autofill_assistant/assistant_overlay_delegate.h"
 #include "chrome/browser/android/autofill_assistant/assistant_payment_request_delegate.h"
 #include "components/autofill_assistant/browser/chip.h"
@@ -76,6 +77,7 @@ class UiControllerAndroid : public UiController {
   void OnPeekModeChanged(
       ConfigureBottomSheetProto::PeekMode peek_mode) override;
   void OnOverlayColorsChanged(const UiDelegate::OverlayColors& colors) override;
+  void OnFormChanged(const FormProto* form) override;
 
   // Called by AssistantOverlayDelegate:
   void OnUnexpectedTaps();
@@ -92,6 +94,9 @@ class UiControllerAndroid : public UiController {
                             std::string email);
   void OnCreditCardChanged(std::unique_ptr<autofill::CreditCard> card);
   void OnTermsAndConditionsChanged(TermsAndConditionsState state);
+
+  // Called by AssistantFormDelegate:
+  void OnCounterChanged(int input_index, int counter_index, int value);
 
   // Called by Java.
   void SnackbarResult(JNIEnv* env,
@@ -132,6 +137,7 @@ class UiControllerAndroid : public UiController {
   UiDelegate* ui_delegate_ = nullptr;
   AssistantOverlayDelegate overlay_delegate_;
   AssistantPaymentRequestDelegate payment_request_delegate_;
+  AssistantFormDelegate form_delegate_;
 
   // What to do if undo is not pressed on the current snackbar.
   base::OnceCallback<void()> snackbar_action_;
@@ -142,6 +148,7 @@ class UiControllerAndroid : public UiController {
   base::android::ScopedJavaLocalRef<jobject> GetDetailsModel();
   base::android::ScopedJavaLocalRef<jobject> GetInfoBoxModel();
   base::android::ScopedJavaLocalRef<jobject> GetPaymentRequestModel();
+  base::android::ScopedJavaLocalRef<jobject> GetFormModel();
 
   void SetOverlayState(OverlayState state);
   void AllowShowingSoftKeyboard(bool enabled);
