@@ -49,7 +49,7 @@ constexpr UserMetricsAction kBookmarkBarIncognito(
 constexpr UserMetricsAction kAppMenuBookmarksNewBackgroundTab(
     "WrenchMenu_Bookmarks_ContextMenu_OpenAll");
 constexpr UserMetricsAction kAppMenuBookmarksNewWindow(
-    "WrenchMenu_Bookmarks_ContextMenu_OpenAll");
+    "WrenchMenu_Bookmarks_ContextMenu_OpenAllInNewWindow");
 constexpr UserMetricsAction kAppMenuBookmarksIncognito(
     "WrenchMenu_Bookmarks_ContextMenu_OpenAllIncognito");
 

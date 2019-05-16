@@ -3184,18 +3184,31 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="BookmarkBar_ContextMenu_OpenAll">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>dfried@chromium.org</owner>
+  <description>
+    The user opened one or more bookmarks in the Bookmarks Bar using the context
+    menu. Distinguished from launching from e.g. the application menu or the
+    bookmark manager. This is for opening bookmarks normally (in the same
+    window).
+  </description>
 </action>
 
 <action name="BookmarkBar_ContextMenu_OpenAllIncognito">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>dfried@chromium.org</owner>
+  <description>
+    The user opened one or more bookmarks in the Bookmarks Bar using the context
+    menu. Distinguished from launching from e.g. the application menu or the
+    bookmark manager. This is for opening bookmarks in an incognito window.
+  </description>
 </action>
 
 <action name="BookmarkBar_ContextMenu_OpenAllInNewWindow">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>dfried@chromium.org</owner>
+  <description>
+    The user opened one or more bookmarks in the Bookmarks Bar using the context
+    menu. Distinguished from launching from e.g. the application menu or the
+    bookmark manager. This is for opening bookmarks in a new window.
+  </description>
 </action>
 
 <action name="BookmarkBar_ContextMenu_OpenInNewTab">
@@ -21798,6 +21811,34 @@ should be able to be added at any place in this file.
 <action name="WP_Gallery">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="WrenchMenu_Bookmarks_ContextMenu_OpenAll">
+  <owner>dfried@chromium.org</owner>
+  <description>
+    The user opened one or more bookmarks in the Bookmarks Bar using the context
+    menu. Distinguished from launching from e.g. the application menu or the
+    bookmark manager. This is for opening bookmarks normally (in the same
+    window).
+  </description>
+</action>
+
+<action name="WrenchMenu_Bookmarks_ContextMenu_OpenAllIncognito">
+  <owner>dfried@chromium.org</owner>
+  <description>
+    The user opened one or more bookmarks in the Bookmarks Bar using the context
+    menu. Distinguished from launching from e.g. the application menu or the
+    bookmark manager. This is for opening bookmarks in an incognito window.
+  </description>
+</action>
+
+<action name="WrenchMenu_Bookmarks_ContextMenu_OpenAllInNewWindow">
+  <owner>dfried@chromium.org</owner>
+  <description>
+    The user opened one or more bookmarks in the Bookmarks Bar using the context
+    menu. Distinguished from launching from e.g. the application menu or the
+    bookmark manager. This is for opening bookmarks in a new window.
+  </description>
 </action>
 
 <action name="WrenchMenu_Bookmarks_LaunchURL">
