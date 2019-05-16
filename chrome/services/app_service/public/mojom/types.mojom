@@ -39,6 +39,8 @@ struct App {
 
   // TODO(nigeltao): be more principled, instead of ad hoc show_in_xxx and
   // show_in_yyy fields?
+  OptionalBool recommendable;
+  OptionalBool searchable;
   OptionalBool show_in_launcher;
   OptionalBool show_in_search;
   OptionalBool show_in_management;

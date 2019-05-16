@@ -554,7 +554,8 @@ apps::mojom::AppPtr ExtensionApps::Convert(
   app->is_platform_app = extension->is_platform_app()
                              ? apps::mojom::OptionalBool::kTrue
                              : apps::mojom::OptionalBool::kFalse;
-
+  app->recommendable = apps::mojom::OptionalBool::kTrue;
+  app->searchable = apps::mojom::OptionalBool::kTrue;
   SetShowInFields(app, extension, profile_);
   return app;
 }

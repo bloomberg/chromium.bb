@@ -47,6 +47,12 @@ class AppUpdateTest : public testing::Test {
   apps::mojom::OptionalBool expect_is_platform_app_;
   bool expect_is_platform_app_changed_;
 
+  apps::mojom::OptionalBool expect_recommendable_;
+  bool expect_recommendable_changed_;
+
+  apps::mojom::OptionalBool expect_searchable_;
+  bool expect_searchable_changed_;
+
   apps::mojom::OptionalBool expect_show_in_launcher_;
   bool expect_show_in_launcher_changed_;
 
@@ -80,6 +86,8 @@ class AppUpdateTest : public testing::Test {
     expect_permissions_changed_ = false;
     expect_install_source_changed_ = false;
     expect_is_platform_app_changed_ = false;
+    expect_recommendable_changed_ = false;
+    expect_searchable_changed_ = false;
     expect_show_in_launcher_changed_ = false;
     expect_show_in_search_changed_ = false;
     expect_show_in_management_changed_ = false;
@@ -120,6 +128,12 @@ class AppUpdateTest : public testing::Test {
     EXPECT_EQ(expect_is_platform_app_, u.IsPlatformApp());
     EXPECT_EQ(expect_is_platform_app_changed_, u.IsPlatformAppChanged());
 
+    EXPECT_EQ(expect_recommendable_, u.Recommendable());
+    EXPECT_EQ(expect_recommendable_changed_, u.RecommendableChanged());
+
+    EXPECT_EQ(expect_searchable_, u.Searchable());
+    EXPECT_EQ(expect_searchable_changed_, u.SearchableChanged());
+
     EXPECT_EQ(expect_show_in_launcher_, u.ShowInLauncher());
     EXPECT_EQ(expect_show_in_launcher_changed_, u.ShowInLauncherChanged());
 
@@ -148,6 +162,8 @@ class AppUpdateTest : public testing::Test {
     expect_permissions_.clear();
     expect_install_source_ = apps::mojom::InstallSource::kUnknown;
     expect_is_platform_app_ = apps::mojom::OptionalBool::kUnknown;
+    expect_recommendable_ = apps::mojom::OptionalBool::kUnknown;
+    expect_searchable_ = apps::mojom::OptionalBool::kUnknown;
     expect_show_in_launcher_ = apps::mojom::OptionalBool::kUnknown;
     expect_show_in_search_ = apps::mojom::OptionalBool::kUnknown;
     expect_show_in_management_ = apps::mojom::OptionalBool::kUnknown;
@@ -367,6 +383,72 @@ class AppUpdateTest : public testing::Test {
       delta->is_platform_app = apps::mojom::OptionalBool::kTrue;
       expect_is_platform_app_ = apps::mojom::OptionalBool::kTrue;
       expect_is_platform_app_changed_ = true;
+      CheckExpects(u);
+    }
+
+    if (state) {
+      apps::AppUpdate::Merge(state, delta);
+      ExpectNoChange();
+      CheckExpects(u);
+    }
+
+    // Recommendable tests.
+
+    if (state) {
+      state->recommendable = apps::mojom::OptionalBool::kFalse;
+      expect_recommendable_ = apps::mojom::OptionalBool::kFalse;
+      expect_recommendable_changed_ = false;
+      CheckExpects(u);
+    }
+
+    if (delta) {
+      delta->recommendable = apps::mojom::OptionalBool::kTrue;
+      expect_recommendable_ = apps::mojom::OptionalBool::kTrue;
+      expect_recommendable_changed_ = true;
+      CheckExpects(u);
+    }
+
+    if (state) {
+      apps::AppUpdate::Merge(state, delta);
+      ExpectNoChange();
+      CheckExpects(u);
+    }
+
+    // Searchable tests.
+
+    if (state) {
+      state->searchable = apps::mojom::OptionalBool::kFalse;
+      expect_searchable_ = apps::mojom::OptionalBool::kFalse;
+      expect_searchable_changed_ = false;
+      CheckExpects(u);
+    }
+
+    if (delta) {
+      delta->searchable = apps::mojom::OptionalBool::kTrue;
+      expect_searchable_ = apps::mojom::OptionalBool::kTrue;
+      expect_searchable_changed_ = true;
+      CheckExpects(u);
+    }
+
+    if (state) {
+      apps::AppUpdate::Merge(state, delta);
+      ExpectNoChange();
+      CheckExpects(u);
+    }
+
+    // ShowInLauncher tests.
+
+    if (state) {
+      state->show_in_launcher = apps::mojom::OptionalBool::kFalse;
+      expect_show_in_launcher_ = apps::mojom::OptionalBool::kFalse;
+      expect_show_in_launcher_changed_ = false;
+      CheckExpects(u);
+    }
+
+    if (delta) {
+      delta->show_in_launcher = apps::mojom::OptionalBool::kTrue;
+      expect_show_in_launcher_ = apps::mojom::OptionalBool::kTrue;
+      expect_show_in_launcher_changed_ = true;
       CheckExpects(u);
     }
 

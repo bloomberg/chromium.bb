@@ -83,6 +83,12 @@ void AppUpdate::Merge(apps::mojom::App* state, const apps::mojom::App* delta) {
   if (delta->is_platform_app != apps::mojom::OptionalBool::kUnknown) {
     state->is_platform_app = delta->is_platform_app;
   }
+  if (delta->recommendable != apps::mojom::OptionalBool::kUnknown) {
+    state->recommendable = delta->recommendable;
+  }
+  if (delta->searchable != apps::mojom::OptionalBool::kUnknown) {
+    state->searchable = delta->searchable;
+  }
   if (delta->show_in_launcher != apps::mojom::OptionalBool::kUnknown) {
     state->show_in_launcher = delta->show_in_launcher;
   }
@@ -305,6 +311,39 @@ bool AppUpdate::IsPlatformAppChanged() const {
   return delta_ &&
          (delta_->is_platform_app != apps::mojom::OptionalBool::kUnknown) &&
          (!state_ || (delta_->is_platform_app != state_->is_platform_app));
+}
+
+apps::mojom::OptionalBool AppUpdate::Recommendable() const {
+  if (delta_ &&
+      (delta_->recommendable != apps::mojom::OptionalBool::kUnknown)) {
+    return delta_->recommendable;
+  }
+  if (state_) {
+    return state_->recommendable;
+  }
+  return apps::mojom::OptionalBool::kUnknown;
+}
+
+bool AppUpdate::RecommendableChanged() const {
+  return delta_ &&
+         (delta_->recommendable != apps::mojom::OptionalBool::kUnknown) &&
+         (!state_ || (delta_->recommendable != state_->recommendable));
+}
+
+apps::mojom::OptionalBool AppUpdate::Searchable() const {
+  if (delta_ && (delta_->searchable != apps::mojom::OptionalBool::kUnknown)) {
+    return delta_->searchable;
+  }
+  if (state_) {
+    return state_->searchable;
+  }
+  return apps::mojom::OptionalBool::kUnknown;
+}
+
+bool AppUpdate::SearchableChanged() const {
+  return delta_ &&
+         (delta_->searchable != apps::mojom::OptionalBool::kUnknown) &&
+         (!state_ || (delta_->searchable != state_->searchable));
 }
 
 apps::mojom::OptionalBool AppUpdate::ShowInLauncher() const {

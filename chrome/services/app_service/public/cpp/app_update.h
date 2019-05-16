@@ -93,6 +93,12 @@ class AppUpdate {
   apps::mojom::OptionalBool IsPlatformApp() const;
   bool IsPlatformAppChanged() const;
 
+  apps::mojom::OptionalBool Recommendable() const;
+  bool RecommendableChanged() const;
+
+  apps::mojom::OptionalBool Searchable() const;
+  bool SearchableChanged() const;
+
   apps::mojom::OptionalBool ShowInLauncher() const;
   bool ShowInLauncherChanged() const;
 

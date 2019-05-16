@@ -518,6 +518,8 @@ apps::mojom::AppPtr ArcApps::Convert(const std::string& app_id,
   app->install_source = GetInstallSource(prefs_, app_info.package_name);
 
   app->is_platform_app = apps::mojom::OptionalBool::kFalse;
+  app->recommendable = apps::mojom::OptionalBool::kTrue;
+  app->searchable = apps::mojom::OptionalBool::kTrue;
 
   auto show = app_info.show_in_launcher ? apps::mojom::OptionalBool::kTrue
                                         : apps::mojom::OptionalBool::kFalse;

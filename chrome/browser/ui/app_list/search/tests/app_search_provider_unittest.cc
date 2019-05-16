@@ -375,12 +375,16 @@ TEST_F(AppSearchProviderTest, FetchRecommendations) {
   prefs->SetLastLaunchTime(kHostedAppId, base::Time::FromInternalValue(20));
   prefs->SetLastLaunchTime(kPackagedApp1Id, base::Time::FromInternalValue(10));
   prefs->SetLastLaunchTime(kPackagedApp2Id, base::Time::FromInternalValue(5));
+  // Allow async callbacks to run.
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2,Settings,Camera",
             RunQuery(""));
 
   prefs->SetLastLaunchTime(kHostedAppId, base::Time::FromInternalValue(5));
   prefs->SetLastLaunchTime(kPackagedApp1Id, base::Time::FromInternalValue(10));
   prefs->SetLastLaunchTime(kPackagedApp2Id, base::Time::FromInternalValue(20));
+  // Allow async callbacks to run.
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ("Packaged App 2,Packaged App 1,Hosted App,Settings,Camera",
             RunQuery(""));
 
@@ -389,6 +393,8 @@ TEST_F(AppSearchProviderTest, FetchRecommendations) {
                            kTestCurrentTime + base::TimeDelta::FromSeconds(5));
   prefs->SetLastLaunchTime(kPackagedApp1Id, base::Time::FromInternalValue(10));
   prefs->SetLastLaunchTime(kPackagedApp2Id, base::Time::FromInternalValue(5));
+  // Allow async callbacks to run.
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2,Settings,Camera",
             RunQuery(""));
 }

@@ -48,6 +48,11 @@ apps::mojom::AppPtr Convert(const app_list::InternalApp& internal_app) {
   app->install_source = apps::mojom::InstallSource::kSystem;
 
   app->is_platform_app = apps::mojom::OptionalBool::kFalse;
+  app->recommendable = internal_app.recommendable
+                           ? apps::mojom::OptionalBool::kTrue
+                           : apps::mojom::OptionalBool::kFalse;
+  app->searchable = internal_app.searchable ? apps::mojom::OptionalBool::kTrue
+                                            : apps::mojom::OptionalBool::kFalse;
   app->show_in_launcher = internal_app.show_in_launcher
                               ? apps::mojom::OptionalBool::kTrue
                               : apps::mojom::OptionalBool::kFalse;

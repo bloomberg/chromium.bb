@@ -206,6 +206,8 @@ apps::mojom::AppPtr CrostiniApps::Convert(
   app->install_source = apps::mojom::InstallSource::kUser;
 
   app->is_platform_app = apps::mojom::OptionalBool::kFalse;
+  app->recommendable = apps::mojom::OptionalBool::kTrue;
+  app->searchable = apps::mojom::OptionalBool::kTrue;
 
   // TODO(crbug.com/826982): if Crostini isn't enabled, don't show the Terminal
   // item until it becomes enabled.
