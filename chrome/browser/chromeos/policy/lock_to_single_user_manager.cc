@@ -10,6 +10,7 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/cryptohome/cryptohome_client.h"
+#include "chromeos/login/session/session_termination_manager.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/user_manager/user_manager.h"
@@ -83,8 +84,12 @@ void LockToSingleUserManager::OnLockToSingleUserMountUntilRebootDone(
   // Force user logout if failed to lock the device to single user mount.
   const RebootOnSignOutReply extension =
       reply->GetExtension(RebootOnSignOutReply::reply);
-  if (extension.result() != RebootOnSignOutResult::SUCCESS &&
-      extension.result() != RebootOnSignOutResult::PCR_ALREADY_EXTENDED) {
+  if (extension.result() == RebootOnSignOutResult::SUCCESS ||
+      extension.result() == RebootOnSignOutResult::PCR_ALREADY_EXTENDED) {
+    // The device is locked to single user on TPM level. Update the cache in
+    // SessionTerminationManager, so that it triggers reboot on sign out.
+    chromeos::SessionTerminationManager::Get()->SetDeviceLockedToSingleUser();
+  } else {
     LOG(ERROR) << "Signing out user: failed to lock device to single user: "
                << extension.result();
     chrome::AttemptUserExit();
