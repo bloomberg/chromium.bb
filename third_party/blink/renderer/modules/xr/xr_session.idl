@@ -3,10 +3,11 @@
 // found in the LICENSE file.
 
 // https://immersive-web.github.io/webxr/#xrsession-interface
+
 enum XRSessionMode {
   "inline",
   "immersive-vr",
-  "immersive-ar",
+  /* [RuntimeEnabled=WebXRHitTest OR RuntimeEnabled=WebXRPlaneDetection] */ "immersive-ar",
 };
 
 enum XREnvironmentBlendMode {
@@ -44,10 +45,8 @@ enum XREnvironmentBlendMode {
 
   [RuntimeEnabled=WebXRHitTest, CallWith=ScriptState] Promise<FrozenArray<XRHitResult>> requestHitTest(XRRay ray, XRSpace space);
 
-  [RuntimeEnabled=WebXRPlaneDetection] readonly attribute XRWorldTrackingState worldTrackingState;
-  // Configures a session with real-world understanding capabilities.
-  // More details can be found here:
   // https://github.com/immersive-web/real-world-geometry/blob/master/plane-detection-explainer.md
+  [RuntimeEnabled=WebXRPlaneDetection] readonly attribute XRWorldTrackingState worldTrackingState;
   [RuntimeEnabled=WebXRPlaneDetection, RaisesException] void updateWorldTrackingState(optional XRWorldTrackingStateInit state);
 
   [CallWith=ScriptState] Promise<void> end();

@@ -87,4 +87,59 @@ test(t => {
   OriginTrialsHelper.check_interfaces_missing_unless_runtime_flag(
     this, planes_interfaces, 'webXRPlaneDetectionEnabled');
 }, "Plane interfaces are not available with a WebXR token.");
+
+
+// Ensure that AR sessions are not exposed as part of the WebXR origin trial.
+// The webXREnabled check is effectively checking whether experimental features
+// are enabled. This works as long as at least one AR feature is experimental.
+// TODO(https://crbug.com/962685): Make the supportsSession checks first after
+// this issue is fixed.
+promise_test(t => {
+  let promise = navigator.xr.requestSession('immersive-ar');
+  if (OriginTrialsHelper.is_runtime_flag_enabled('webXREnabled')) {
+    return promise_rejects(t, "SecurityError", promise);
+  } else {
+    return promise_rejects(t, new TypeError(), promise);
+  }
+}, "immersive-ar is not recognized by requestSession() with a WebXR token.");
+promise_test(t => {
+  let promise = navigator.xr.supportsSession('immersive-ar');
+  if (OriginTrialsHelper.is_runtime_flag_enabled('webXREnabled')) {
+    return promise_rejects(t, "NotSupportedError", promise);
+  } else {
+    return promise_rejects(t, new TypeError(), promise);
+  }
+}, "immersive-ar is not recognized by supportsSession() with a WebXR token.");
+// Verify the rejection reason matches that for other invalid enum values.
+// It only makes sense to run these when the failure occurs.
+if (!OriginTrialsHelper.is_runtime_flag_enabled('webXREnabled')) {
+  promise_test(t => {
+    return navigator.xr.supportsSession('invalid').then(function() {
+        assert_unreached("Promise should be rejected.")
+    }).catch(function(invalidReason) {
+      return navigator.xr.supportsSession('immersive-ar').then(function() {
+        assert_unreached("Promise should be rejected.")
+      }).catch(function(arReason) {
+        // Replace the enum value in the expected message. That is the only
+        // thing that should be different.
+        invalidReason.message = invalidReason.message.replace('invalid', 'immersive-ar');
+        assert_object_equals(invalidReason, arReason);
+      });
+    });
+  }, "supportsSession('immersive-ar') result matches result for other invalid values.");
+  promise_test(t => {
+    return navigator.xr.requestSession('invalid').then(function() {
+        assert_unreached("Promise should be rejected.")
+    }).catch(function(invalidReason) {
+      return navigator.xr.requestSession('immersive-ar').then(function() {
+        assert_unreached("Promise should be rejected.")
+      }).catch(function(arReason) {
+        // Replace the enum value in the expected message. That is the only
+        // thing that should be different.
+        invalidReason.message = invalidReason.message.replace('invalid', 'immersive-ar');
+        assert_object_equals(invalidReason, arReason);
+      });
+    });
+  }, "requestSession('immersive-ar') result matches result for other invalid values.");
+}
 </script>

@@ -21,8 +21,9 @@
 #include "third_party/blink/renderer/modules/xr/xr_frame_provider.h"
 #include "third_party/blink/renderer/modules/xr/xr_presentation_context.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
+#include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
-
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 namespace blink {
 
 namespace {
@@ -43,6 +44,10 @@ const char kSessionNotSupported[] =
     "The specified session configuration is not supported.";
 
 const char kNoDevicesMessage[] = "No XR hardware found.";
+
+const char kImmersiveArModeNotValid[] =
+    "Failed to execute '%s' on 'XR': The provided value 'immersive-ar' is not "
+    "a valid enum value of type XRSessionMode.";
 
 // Helper method to convert session mode into Mojo options.
 device::mojom::blink::XRSessionOptionsPtr convertModeToMojo(
@@ -69,6 +74,11 @@ XRSession::SessionMode stringToSessionMode(const String& mode_string) {
 
   NOTREACHED();  // Only strings in the enum are allowed by IDL.
   return XRSession::kModeInline;
+}
+
+bool AreArRuntimeFeaturesEnabled(const FeatureContext* context) {
+  return RuntimeEnabledFeatures::WebXRHitTestEnabled(context) ||
+         RuntimeEnabledFeatures::WebXRPlaneDetectionEnabled(context);
 }
 
 }  // namespace
@@ -152,9 +162,19 @@ ScriptPromise XR::supportsSession(ScriptState* script_state,
                                            kNavigatorDetachedError));
   }
 
-  if (!frame->GetDocument()->IsFeatureEnabled(
-          mojom::FeaturePolicyFeature::kWebVr,
-          ReportOptions::kReportOnFailure)) {
+  Document* doc = frame->GetDocument();
+  XRSession::SessionMode session_mode = stringToSessionMode(mode);
+
+  if (session_mode == XRSession::kModeImmersiveAR &&
+      !AreArRuntimeFeaturesEnabled(doc)) {
+    return ScriptPromise::Reject(
+        script_state, V8ThrowException::CreateTypeError(
+                          script_state->GetIsolate(),
+                          String::Format(kImmersiveArModeNotValid, __func__)));
+  }
+
+  if (!doc->IsFeatureEnabled(mojom::FeaturePolicyFeature::kWebVr,
+                             ReportOptions::kReportOnFailure)) {
     // Only allow the call to be made if the appropriate feature policy is in
     // place.
     return ScriptPromise::RejectWithDOMException(
@@ -165,7 +185,6 @@ ScriptPromise XR::supportsSession(ScriptState* script_state,
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  XRSession::SessionMode session_mode = stringToSessionMode(mode);
   if (session_mode == XRSession::kModeInline) {
     // `inline` sessions are always supported if not blocked by feature policy.
     resolver->Resolve();
@@ -218,6 +237,15 @@ ScriptPromise XR::requestSession(ScriptState* script_state,
 
   Document* doc = frame->GetDocument();
   XRSession::SessionMode session_mode = stringToSessionMode(mode);
+
+  if (session_mode == XRSession::kModeImmersiveAR &&
+      !AreArRuntimeFeaturesEnabled(doc)) {
+    return ScriptPromise::Reject(
+        script_state, V8ThrowException::CreateTypeError(
+                          script_state->GetIsolate(),
+                          String::Format(kImmersiveArModeNotValid, __func__)));
+  }
+
   bool is_immersive = session_mode == XRSession::kModeImmersiveVR ||
                       session_mode == XRSession::kModeImmersiveAR;
 
