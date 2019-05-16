@@ -209,6 +209,9 @@ void Dav1dVideoDecoder::Initialize(const VideoDecoderConfig& config,
   // Route dav1d internal logs through Chrome's DLOG system.
   s.logger = {nullptr, &LogDav1dMessage};
 
+  // Set a maximum frame size limit to avoid OOM'ing fuzzers.
+  s.frame_size_limit = limits::kMaxCanvas;
+
   if (dav1d_open(&dav1d_decoder_, &s) < 0) {
     bound_init_cb.Run(false);
     return;
