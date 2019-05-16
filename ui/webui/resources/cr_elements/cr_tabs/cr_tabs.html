@@ -14,7 +14,6 @@
         font-size: var(--cr-tabs-font-size, 14px);
         font-weight: 500;
         height: var(--cr-tabs-height);
-        outline: none;
         position: relative;
         user-select: none;
       }
@@ -27,12 +26,17 @@
         height: 100%;
         justify-content: center;
         opacity: .8;
+        outline: none;
+        transition: opacity 100ms cubic-bezier(.4, 0, 1, 1);
       }
 
       .selected {
         color: var(--google-blue-600);
-        font-weight: 700;
         opacity: 1;
+      }
+
+      .selected:focus {
+        font-weight: 700;
       }
 
       :host-context([dark]) .selected {
@@ -70,9 +74,9 @@
     </style>
     <template is="dom-repeat" items="[[tabNames]]"
         on-dom-change="updateSelectionBar_">
-      <div class$="tab [[getTabCssClass_(index, selected)]]"
-          role="tab" aria-selected$="[[getTabAriaSelected_(index, selected)]]"
-          on-click="onTabClick_">
+      <div class$="tab [[getCssClass_(index, selected)]]" role="tab"
+          aria-selected$="[[getAriaSelected_(index, selected)]]"
+          tabindex$="[[getTabIndex_(index, selected)]]" on-click="onTabClick_">
         [[item]]
       </div>
     </template>

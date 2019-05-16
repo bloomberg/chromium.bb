@@ -169,3 +169,27 @@ CrElementsExpandButtonTest.prototype = {
 TEST_F('CrElementsExpandButtonTest', 'All', function() {
   mocha.run();
 });
+
+/**
+ * @constructor
+ * @extends {CrElementsBrowserTest}
+ */
+function CrElementsTabsTest() {}
+
+CrElementsTabsTest.prototype = {
+  __proto__: CrElementsFocusTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://resources/cr_elements/cr_tabs/cr_tabs.html',
+
+  /** @override */
+  extraLibraries: CrElementsFocusTest.prototype.extraLibraries.concat([
+    '//ui/webui/resources/js/util.js',
+    '../settings/test_util.js',
+    'cr_tabs_test.js',
+  ]),
+};
+
+TEST_F('CrElementsTabsTest', 'All', function() {
+  mocha.run();
+});

@@ -11,8 +11,7 @@
  * cr-tabs takes its #selectionBar animation from paper-tabs.
  *
  * Keyboard behavior
- *   - left/right changes the tab selection
- *   - space/enter selects the currently focused tab
+ *   - Home, End, ArrowLeft and ArrowRight changes the tab selection
  *
  * Known limitations
  *   - no "disabled" state for the cr-tabs as a whole or individual tabs
@@ -43,7 +42,6 @@ Polymer({
 
   hostAttributes: {
     role: 'tablist',
-    tabindex: 0,
   },
 
   listeners: {
@@ -66,7 +64,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getTabAriaSelected_: function(index) {
+  getAriaSelected_: function(index) {
     return this.selected == index ? 'true' : 'false';
   },
 
@@ -75,8 +73,17 @@ Polymer({
    * @return {string}
    * @private
    */
-  getTabCssClass_: function(index) {
+  getCssClass_: function(index) {
     return this.selected == index ? 'selected' : '';
+  },
+
+  /**
+   * @param {number} index
+   * @return {number}
+   * @private
+   */
+  getTabIndex_: function(index) {
+    return this.selected == index ? 0 : -1;
   },
 
   /**
@@ -84,16 +91,22 @@ Polymer({
    * @private
    */
   onKeyDown_: function(e) {
-    if (e.key != 'ArrowLeft' && e.key != 'ArrowRight') {
+    const count = this.tabNames.length;
+    let newSelection;
+    if (e.key == 'Home') {
+      newSelection = 0;
+    } else if (e.key == 'End') {
+      newSelection = count - 1;
+    } else if (e.key == 'ArrowLeft' || e.key == 'ArrowRight') {
+      const delta = e.key == 'ArrowLeft' ? (this.isRtl_ ? 1 : -1) :
+                                           (this.isRtl_ ? -1 : 1);
+      newSelection = (count + this.selected + delta) % count;
+    } else {
       return;
     }
-
     e.preventDefault();
     e.stopPropagation();
-    const delta =
-        e.key == 'ArrowLeft' ? (this.isRtl_ ? 1 : -1) : (this.isRtl_ ? -1 : 1);
-    const count = this.tabNames.length;
-    this.selected = (count + this.selected + delta) % count;
+    this.selected = newSelection;
   },
 
   /**
@@ -124,6 +137,7 @@ Polymer({
       return;
     }
 
+    selectedTab.focus();
     this.$.selectionBar.classList.remove('expand', 'contract');
     const {offsetLeft: selectedLeft, offsetWidth: selectedWidth} = selectedTab;
     const oldValue = this.lastSelected_;
