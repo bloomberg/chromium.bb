@@ -12,6 +12,13 @@
 #include "base/task/thread_pool/task_tracker.h"
 #include "base/threading/thread_local.h"
 
+#if defined(OS_WIN)
+#include "base/win/com_init_check_hook.h"
+#include "base/win/scoped_com_initializer.h"
+#include "base/win/scoped_winrt_initializer.h"
+#include "base/win/windows_version.h"
+#endif
+
 namespace base {
 namespace internal {
 
@@ -147,6 +154,39 @@ void ThreadGroup::InvalidateAndHandoffAllTaskSourcesToOtherThreadGroup(
   destination_thread_group->priority_queue_ = std::move(priority_queue_);
   replacement_thread_group_ = destination_thread_group;
 }
+
+#if defined(OS_WIN)
+// static
+std::unique_ptr<win::ScopedWindowsThreadEnvironment>
+ThreadGroup::GetScopedWindowsThreadEnvironment(WorkerEnvironment environment) {
+  std::unique_ptr<win::ScopedWindowsThreadEnvironment> scoped_environment;
+  switch (environment) {
+    case WorkerEnvironment::COM_MTA: {
+      if (win::GetVersion() >= win::Version::WIN8) {
+        scoped_environment = std::make_unique<win::ScopedWinrtInitializer>();
+      } else {
+        scoped_environment = std::make_unique<win::ScopedCOMInitializer>(
+            win::ScopedCOMInitializer::kMTA);
+      }
+      break;
+    }
+    case WorkerEnvironment::COM_STA: {
+      // When defined(COM_INIT_CHECK_HOOK_ENABLED), ignore
+      // WorkerEnvironment::COM_STA to find incorrect uses of
+      // COM that should be running in a COM STA Task Runner.
+#if !defined(COM_INIT_CHECK_HOOK_ENABLED)
+      scoped_environment = std::make_unique<win::ScopedCOMInitializer>();
+#endif
+      break;
+    }
+    default:
+      break;
+  }
+
+  DCHECK(!scoped_environment || scoped_environment->Succeeded());
+  return scoped_environment;
+}
+#endif
 
 }  // namespace internal
 }  // namespace base

@@ -236,11 +236,6 @@ GURL ContentRendererClient::OverrideFlashEmbedWithHTML(const GURL& url) {
   return GURL();
 }
 
-std::unique_ptr<base::ThreadPool::InitParams>
-ContentRendererClient::GetThreadPoolInitParams() {
-  return nullptr;
-}
-
 bool ContentRendererClient::IsIdleMediaSuspendEnabled() {
   return true;
 }

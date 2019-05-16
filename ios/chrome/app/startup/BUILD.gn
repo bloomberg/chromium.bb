@@ -24,7 +24,6 @@ source_set("startup_basic") {
   deps = [
     "//base",
     "//components/crash/core/common",
-    "//components/thread_pool_util",
     "//ios/chrome/browser:chrome_paths",
     "//ios/web/public/app",
     "//skia",

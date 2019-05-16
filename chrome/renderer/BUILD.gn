@@ -146,7 +146,6 @@ jumbo_static_library("renderer") {
     "//components/spellcheck:buildflags",
     "//components/startup_metric_utils/common:interfaces",
     "//components/subresource_filter/content/renderer",
-    "//components/thread_pool_util",
     "//components/translate/content/renderer",
     "//components/translate/core/common",
     "//components/translate/core/language_detection",

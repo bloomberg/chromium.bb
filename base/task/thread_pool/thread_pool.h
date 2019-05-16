@@ -18,7 +18,6 @@
 #include "base/task/single_thread_task_runner_thread_mode.h"
 #include "base/task/task_executor.h"
 #include "base/task/task_traits.h"
-#include "base/task/thread_pool/thread_group_params.h"
 #include "base/task_runner.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -58,18 +57,28 @@ class BASE_EXPORT ThreadPool : public TaskExecutor {
 #if defined(OS_WIN)
       // Place the pool's workers in a COM MTA.
       COM_MTA,
+      // Place the pool's *foreground* workers in a COM STA. This exists to
+      // mimic the behavior of SequencedWorkerPool and BrowserThreadImpl that
+      // ThreadPool has replaced. Tasks that need a COM STA should use
+      // CreateCOMSTATaskRunnerWithTraits() instead of
+      // Create(Sequenced)TaskRunnerWithTraits() + this init param.
+      DEPRECATED_COM_STA_IN_FOREGROUND_GROUP,
 #endif  // defined(OS_WIN)
     };
 
-    InitParams(const ThreadGroupParams& background_thread_group_params_in,
-               const ThreadGroupParams& foreground_thread_group_params_in,
-               CommonThreadPoolEnvironment common_thread_pool_environment_in =
-                   CommonThreadPoolEnvironment::DEFAULT);
+    InitParams(int max_num_foreground_threads_in);
     ~InitParams();
 
-    ThreadGroupParams background_thread_group_params;
-    ThreadGroupParams foreground_thread_group_params;
-    CommonThreadPoolEnvironment common_thread_pool_environment;
+    // Maximum number of unblocked tasks that can run concurrently in the
+    // foreground thread group.
+    int max_num_foreground_threads;
+
+    // Whether COM is initialized when running sequenced and parallel tasks.
+    CommonThreadPoolEnvironment common_thread_pool_environment =
+        CommonThreadPoolEnvironment::DEFAULT;
+
+    // Suggested time after which an unused thread can be reclaimed.
+    TimeDelta suggested_reclaim_time = TimeDelta::FromSeconds(30);
   };
 
   // A ScopedExecutionFence prevents any new task from being scheduled in

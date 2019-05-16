@@ -14,6 +14,10 @@
 #include "base/task/thread_pool/tracked_ref.h"
 #include "build/build_config.h"
 
+#if defined(OS_WIN)
+#include "base/win/scoped_windows_thread_environment.h"
+#endif
+
 namespace base {
 namespace internal {
 
@@ -41,6 +45,8 @@ class BASE_EXPORT ThreadGroup {
 #if defined(OS_WIN)
     // Initialize a COM MTA on the worker.
     COM_MTA,
+    // Initialize a COM STA on the worker.
+    COM_STA,
 #endif  // defined(OS_WIN)
   };
 
@@ -150,6 +156,11 @@ class BASE_EXPORT ThreadGroup {
   ThreadGroup(TrackedRef<TaskTracker> task_tracker,
               TrackedRef<Delegate> delegate,
               ThreadGroup* predecessor_thread_group = nullptr);
+
+#if defined(OS_WIN)
+  static std::unique_ptr<win::ScopedWindowsThreadEnvironment>
+  GetScopedWindowsThreadEnvironment(WorkerEnvironment environment);
+#endif
 
   const TrackedRef<TaskTracker> task_tracker_;
   const TrackedRef<Delegate> delegate_;

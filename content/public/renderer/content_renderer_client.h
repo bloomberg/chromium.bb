@@ -388,11 +388,6 @@ class CONTENT_EXPORT ContentRendererClient {
   // An empty URL is returned if the URL is not overriden.
   virtual GURL OverrideFlashEmbedWithHTML(const GURL& url);
 
-  // Provides parameters for initializing the global thread pool. Default
-  // params are used if this returns nullptr.
-  virtual std::unique_ptr<base::ThreadPool::InitParams>
-  GetThreadPoolInitParams();
-
   // Whether the renderer allows idle media players to be automatically
   // suspended after a period of inactivity.
   virtual bool IsIdleMediaSuspendEnabled();

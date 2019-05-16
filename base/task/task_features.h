@@ -25,6 +25,12 @@ extern const BASE_EXPORT Feature kNoDetachBelowInitialCapacity;
 extern const BASE_EXPORT Feature kMayBlockWithoutDelay;
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
+#define HAS_NATIVE_THREAD_POOL() 1
+#else
+#define HAS_NATIVE_THREAD_POOL() 0
+#endif
+
+#if HAS_NATIVE_THREAD_POOL()
 // Under this feature, ThreadPool will use a ThreadGroup backed by a
 // native thread pool implementation. The Windows Thread Pool API and
 // libdispatch are used on Windows and macOS/iOS respectively.

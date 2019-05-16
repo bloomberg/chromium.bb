@@ -90,7 +90,6 @@
 #include "components/subresource_filter/content/renderer/subresource_filter_agent.h"
 #include "components/subresource_filter/content/renderer/unverified_ruleset_dealer.h"
 #include "components/subresource_filter/core/common/common_features.h"
-#include "components/thread_pool_util/variations_util.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "components/variations/variations_switches.h"
 #include "components/version_info/version_info.h"
@@ -1544,11 +1543,6 @@ GURL ChromeContentRendererClient::OverrideFlashEmbedWithHTML(const GURL& url) {
     return GURL();
 
   return FlashEmbedRewrite::RewriteFlashEmbedURL(url);
-}
-
-std::unique_ptr<base::ThreadPool::InitParams>
-ChromeContentRendererClient::GetThreadPoolInitParams() {
-  return thread_pool_util::GetThreadPoolInitParamsForRenderer();
 }
 
 void ChromeContentRendererClient::CreateRendererService(

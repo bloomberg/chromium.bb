@@ -35,7 +35,6 @@
 #include "base/task/thread_pool/task_tracker.h"
 #include "base/task/thread_pool/test_task_factory.h"
 #include "base/task/thread_pool/test_utils.h"
-#include "base/task/thread_pool/thread_group_params.h"
 #include "base/task/thread_pool/worker_thread_observer.h"
 #include "base/task_runner.h"
 #include "base/test/bind_test_util.h"
@@ -102,9 +101,9 @@ class ThreadGroupImplImplTestBase : public ThreadGroup::Delegate {
                         Optional<TimeDelta> may_block_threshold = nullopt) {
     ASSERT_TRUE(thread_group_);
     thread_group_->Start(
-        ThreadGroupParams(max_tasks, suggested_reclaim_time),
+        max_tasks,
         max_best_effort_tasks ? max_best_effort_tasks.value() : max_tasks,
-        service_thread_.task_runner(), worker_observer,
+        suggested_reclaim_time, service_thread_.task_runner(), worker_observer,
         ThreadGroup::WorkerEnvironment::NONE, may_block_threshold);
   }
 
@@ -1716,9 +1715,9 @@ class ThreadGroupImplBlockingCallAndMaxBestEffortTasksTest
 
   void SetUp() override {
     CreateThreadGroup();
-    thread_group_->Start(ThreadGroupParams(kMaxTasks, base::TimeDelta::Max()),
-                         kMaxBestEffortTasks, service_thread_.task_runner(),
-                         nullptr, ThreadGroup::WorkerEnvironment::NONE);
+    thread_group_->Start(kMaxTasks, kMaxBestEffortTasks, base::TimeDelta::Max(),
+                         service_thread_.task_runner(), nullptr,
+                         ThreadGroup::WorkerEnvironment::NONE);
   }
 
   void TearDown() override { ThreadGroupImplImplTestBase::CommonTearDown(); }
@@ -1801,10 +1800,10 @@ TEST_F(ThreadGroupImplImplStartInBodyTest, RacyCleanup) {
   constexpr TimeDelta kReclaimTimeForRacyCleanupTest =
       TimeDelta::FromMilliseconds(10);
 
-  thread_group_->Start(
-      ThreadGroupParams(kLocalMaxTasks, kReclaimTimeForRacyCleanupTest),
-      kLocalMaxTasks, service_thread_.task_runner(), nullptr,
-      ThreadGroup::WorkerEnvironment::NONE);
+  thread_group_->Start(kLocalMaxTasks, kLocalMaxTasks,
+                       kReclaimTimeForRacyCleanupTest,
+                       service_thread_.task_runner(), nullptr,
+                       ThreadGroup::WorkerEnvironment::NONE);
 
   scoped_refptr<TaskRunner> task_runner = test::CreateTaskRunnerWithTraits(
       {WithBaseSyncPrimitives()}, &mock_pooled_task_runner_delegate_);

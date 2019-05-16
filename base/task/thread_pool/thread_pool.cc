@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/system/sys_info.h"
-#include "base/task/thread_pool/thread_group_params.h"
 #include "base/task/thread_pool/thread_pool_impl.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
@@ -23,13 +22,8 @@ ThreadPool* g_thread_pool = nullptr;
 
 }  // namespace
 
-ThreadPool::InitParams::InitParams(
-    const ThreadGroupParams& background_thread_group_params_in,
-    const ThreadGroupParams& foreground_thread_group_params_in,
-    CommonThreadPoolEnvironment common_thread_pool_environment_in)
-    : background_thread_group_params(background_thread_group_params_in),
-      foreground_thread_group_params(foreground_thread_group_params_in),
-      common_thread_pool_environment(common_thread_pool_environment_in) {}
+ThreadPool::InitParams::InitParams(int max_num_foreground_threads_in)
+    : max_num_foreground_threads(max_num_foreground_threads_in) {}
 
 ThreadPool::InitParams::~InitParams() = default;
 
@@ -58,15 +52,8 @@ void ThreadPool::StartWithDefaultParams() {
   // * The main thread is assumed to be busy, cap foreground workers at
   //   |num_cores - 1|.
   const int num_cores = SysInfo::NumberOfProcessors();
-
-  // TODO(etiennep): Change this to 2.
-  constexpr int kBackgroundMaxThreads = 3;
-  const int kForegroundMaxThreads = std::max(3, num_cores - 1);
-
-  constexpr TimeDelta kSuggestedReclaimTime = TimeDelta::FromSeconds(30);
-
-  Start({{kBackgroundMaxThreads, kSuggestedReclaimTime},
-         {kForegroundMaxThreads, kSuggestedReclaimTime}});
+  const int max_num_foreground_threads = std::max(3, num_cores - 1);
+  Start({max_num_foreground_threads});
 }
 #endif  // !defined(OS_NACL)
 

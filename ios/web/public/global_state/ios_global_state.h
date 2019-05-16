@@ -54,11 +54,10 @@ void CreateNetworkChangeNotifier();
 // It is safe to call this method multiple time.
 void DestroyNetworkChangeNotifier();
 
-// Starts a global base::ThreadPool. This method must be called to start
-// the Task Scheduler that is created in |Create|. If |init_params| is null,
-// default InitParams will be used. It is safe to call this method more than
-// once, the thread pool will only be started once.
-void StartThreadPool(base::ThreadPool::InitParams* init_params);
+// Starts a global base::ThreadPool. This method must be called to start the
+// Thread Pool that is created in |Create|. It is safe to call this method more
+// than once, the thread pool will only be started once.
+void StartThreadPool();
 
 // Destroys the AtExitManager if one was created in |Create|. It is safe to call
 // this method even if |install_at_exit_manager| was false in the CreateParams

@@ -36,7 +36,6 @@ namespace base {
 
 class HistogramBase;
 class WorkerThreadObserver;
-class ThreadGroupParams;
 
 namespace internal {
 
@@ -64,10 +63,11 @@ class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
                   TrackedRef<TaskTracker> task_tracker,
                   TrackedRef<Delegate> delegate);
 
-  // Creates workers following the |params| specification, allowing existing and
-  // future tasks to run. The thread group runs at most |max_best_effort_tasks|
-  // unblocked BEST_EFFORT tasks concurrently, uses |service_thread_task_runner|
-  // to monitor for blocked tasks, and, if specified, notifies
+  // Creates threads, allowing existing and future tasks to run. The thread
+  // group runs at most |max_tasks| / |max_best_effort_tasks| unblocked task
+  // with any / BEST_EFFORT priority concurrently. It reclaims unused threads
+  // after |suggested_reclaim_time|. It uses |service_thread_task_runner| to
+  // monitor for blocked tasks. If specified, it notifies
   // |worker_thread_observer| when a worker enters and exits its main function
   // (the observer must not be destroyed before JoinForTesting() has returned).
   // |worker_environment| specifies the environment in which tasks are executed.
@@ -75,8 +75,9 @@ class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
   // ScopedBlockingCall is considered blocked (the thread group will choose an
   // appropriate value if none is specified). Can only be called once. CHECKs on
   // failure.
-  void Start(const ThreadGroupParams& params,
+  void Start(int max_tasks,
              int max_best_effort_tasks,
+             TimeDelta suggested_reclaim_time,
              scoped_refptr<TaskRunner> service_thread_task_runner,
              WorkerThreadObserver* worker_thread_observer,
              WorkerEnvironment worker_environment,
@@ -227,8 +228,6 @@ class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
 
     // Suggested reclaim time for workers.
     TimeDelta suggested_reclaim_time;
-
-    WorkerThreadBackwardCompatibility backward_compatibility;
 
     // Environment to be initialized per worker.
     WorkerEnvironment worker_environment = WorkerEnvironment::NONE;

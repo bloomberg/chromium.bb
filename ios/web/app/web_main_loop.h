@@ -10,7 +10,6 @@
 #include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "ios/web/public/app/thread_pool_init_params_callback.h"
 
 namespace base {
 class PowerMonitor;
@@ -35,10 +34,8 @@ class WebMainLoop {
   void EarlyInitialization();
   void MainMessageLoopStart();
 
-  // Creates and starts running the tasks needed to complete startup. The
-  // |init_params_callback| may be null or supply InitParams to be used to start
-  // the global ThreadPool instead of using the defaults.
-  void CreateStartupTasks(ThreadPoolInitParamsCallback init_params_callback);
+  // Creates and starts running the tasks needed to complete startup.
+  void CreateStartupTasks();
 
   // Performs the shutdown sequence, starting with PostMainMessageLoopRun
   // through stopping threads to PostDestroyThreads.
@@ -52,10 +49,8 @@ class WebMainLoop {
   // Called just before creating the threads
   int PreCreateThreads();
 
-  // Creates all secondary threads. The |init_params_callback| may be null or
-  // supply InitParams to be used to start the global ThreadPool instead of
-  // using the defaults.
-  int CreateThreads(ThreadPoolInitParamsCallback init_params_callback);
+  // Creates all secondary threads.
+  int CreateThreads();
 
   // Called right after the web threads have been started.
   int WebThreadsStarted();

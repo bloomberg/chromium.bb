@@ -227,14 +227,8 @@ bool ChromotingInstance::Init(uint32_t argc,
   // Initialize ThreadPool. ThreadPool::StartWithDefaultParams() doesn't
   // work on NACL.
   base::ThreadPool::Create("RemotingChromeApp");
-  // TODO(etiennep): Change this to 2 in future CL.
-  constexpr int kBackgroundMaxThreads = 3;
   constexpr int kForegroundMaxThreads = 3;
-  constexpr base::TimeDelta kSuggestedReclaimTime =
-      base::TimeDelta::FromSeconds(30);
-  base::ThreadPool::GetInstance()->Start(
-      {{kBackgroundMaxThreads, kSuggestedReclaimTime},
-       {kForegroundMaxThreads, kSuggestedReclaimTime}});
+  base::ThreadPool::GetInstance()->Start({kForegroundMaxThreads});
 
   return true;
 }
@@ -250,8 +244,7 @@ void ChromotingInstance::HandleMessage(const pp::Var& message) {
   base::DictionaryValue* message_dict = nullptr;
   std::string method;
   base::DictionaryValue* data = nullptr;
-  if (!json.get() ||
-      !json->GetAsDictionary(&message_dict) ||
+  if (!json.get() || !json->GetAsDictionary(&message_dict) ||
       !message_dict->GetString("method", &method) ||
       !message_dict->GetDictionary("data", &data)) {
     LOG(ERROR) << "Received invalid message:" << message.AsString();
@@ -633,8 +626,8 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
         experiments, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   }
 
-  VLOG(0) << "Connecting to " << host_jid
-          << ". Local jid: " << local_jid << ".";
+  VLOG(0) << "Connecting to " << host_jid << ". Local jid: " << local_jid
+          << ".";
 
   std::string key_filter;
   if (!data.GetString("keyFilter", &key_filter)) {
@@ -770,7 +763,7 @@ void ChromotingInstance::HandleReleaseAllKeys(
 }
 
 void ChromotingInstance::HandleInjectKeyEvent(
-      const base::DictionaryValue& data) {
+    const base::DictionaryValue& data) {
   int usb_keycode = 0;
   bool is_pressed = false;
   if (!data.GetInteger("usbKeycode", &usb_keycode) ||
@@ -838,10 +831,8 @@ void ChromotingInstance::HandleNotifyClientResolution(
   int y_dpi = kDefaultDPI;
   if (!data.GetInteger("width", &width) ||
       !data.GetInteger("height", &height) ||
-      !data.GetInteger("x_dpi", &x_dpi) ||
-      !data.GetInteger("y_dpi", &y_dpi) ||
-      width <= 0 || height <= 0 ||
-      x_dpi <= 0 || y_dpi <= 0) {
+      !data.GetInteger("x_dpi", &x_dpi) || !data.GetInteger("y_dpi", &y_dpi) ||
+      width <= 0 || height <= 0 || x_dpi <= 0 || y_dpi <= 0) {
     LOG(ERROR) << "Invalid notifyClientResolution.";
     return;
   }
@@ -963,8 +954,9 @@ void ChromotingInstance::HandleExtensionMessage(
 void ChromotingInstance::HandleAllowMouseLockMessage() {
   // Create the mouse lock handler and route cursor shape messages through it.
   mouse_locker_.reset(new PepperMouseLocker(
-      this, base::Bind(&PepperInputHandler::set_send_mouse_move_deltas,
-                       base::Unretained(&input_handler_)),
+      this,
+      base::Bind(&PepperInputHandler::set_send_mouse_move_deltas,
+                 base::Unretained(&input_handler_)),
       &cursor_setter_));
   empty_cursor_filter_.set_cursor_stub(mouse_locker_.get());
 }
@@ -1120,7 +1112,9 @@ void ChromotingInstance::UnregisterLoggingInstance() {
 }
 
 // static
-bool ChromotingInstance::LogToUI(int severity, const char* file, int line,
+bool ChromotingInstance::LogToUI(int severity,
+                                 const char* file,
+                                 int line,
                                  size_t message_start,
                                  const std::string& str) {
   PP_LogLevel log_level = PP_LOGLEVEL_ERROR;

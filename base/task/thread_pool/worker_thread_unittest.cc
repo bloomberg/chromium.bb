@@ -31,12 +31,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_WIN)
-#include <objbase.h>
-
-#include "base/win/com_init_check_hook.h"
-#endif
-
 using testing::_;
 using testing::Mock;
 using testing::Ne;
@@ -815,89 +809,6 @@ TEST(ThreadPoolWorkerTest, MAYBE_WorkerThreadObserver) {
   }
   Mock::VerifyAndClear(&observer);
 }
-
-#if defined(OS_WIN)
-
-namespace {
-
-class CoInitializeDelegate : public WorkerThreadDefaultDelegate {
- public:
-  CoInitializeDelegate() = default;
-
-  scoped_refptr<TaskSource> GetWork(WorkerThread* worker) override {
-    EXPECT_FALSE(get_work_returned_.IsSignaled());
-    EXPECT_EQ(E_UNEXPECTED, coinitialize_hresult_);
-
-    coinitialize_hresult_ = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
-    if (SUCCEEDED(coinitialize_hresult_))
-      CoUninitialize();
-
-    get_work_returned_.Signal();
-    return nullptr;
-  }
-
-  void WaitUntilGetWorkReturned() { get_work_returned_.Wait(); }
-
-  HRESULT coinitialize_hresult() const { return coinitialize_hresult_; }
-
- private:
-  WaitableEvent get_work_returned_;
-  HRESULT coinitialize_hresult_ = E_UNEXPECTED;
-
-  DISALLOW_COPY_AND_ASSIGN(CoInitializeDelegate);
-};
-
-}  // namespace
-
-TEST(ThreadPoolWorkerTest, BackwardCompatibilityEnabled) {
-  TaskTracker task_tracker("Test");
-  auto delegate = std::make_unique<CoInitializeDelegate>();
-  CoInitializeDelegate* const delegate_raw = delegate.get();
-
-  // Create a worker with backward compatibility ENABLED. Wake it up and wait
-  // until GetWork() returns.
-  auto worker = MakeRefCounted<WorkerThread>(
-      ThreadPriority::NORMAL, std::move(delegate), task_tracker.GetTrackedRef(),
-      nullptr, WorkerThreadBackwardCompatibility::INIT_COM_STA);
-  worker->Start();
-  worker->WakeUp();
-  delegate_raw->WaitUntilGetWorkReturned();
-
-// The call to CoInitializeEx() should have returned S_FALSE to indicate that
-// the COM library was already initialized on the thread.
-// See WorkerThread::Thread::ThreadMain for why we expect two different
-// results here.
-#if defined(COM_INIT_CHECK_HOOK_ENABLED)
-  EXPECT_EQ(S_OK, delegate_raw->coinitialize_hresult());
-#else
-  EXPECT_EQ(S_FALSE, delegate_raw->coinitialize_hresult());
-#endif
-
-  worker->JoinForTesting();
-}
-
-TEST(ThreadPoolWorkerTest, BackwardCompatibilityDisabled) {
-  TaskTracker task_tracker("Test");
-  auto delegate = std::make_unique<CoInitializeDelegate>();
-  CoInitializeDelegate* const delegate_raw = delegate.get();
-
-  // Create a worker with backward compatibility DISABLED. Wake it up and wait
-  // until GetWork() returns.
-  auto worker = MakeRefCounted<WorkerThread>(
-      ThreadPriority::NORMAL, std::move(delegate), task_tracker.GetTrackedRef(),
-      nullptr, WorkerThreadBackwardCompatibility::DISABLED);
-  worker->Start();
-  worker->WakeUp();
-  delegate_raw->WaitUntilGetWorkReturned();
-
-  // The call to CoInitializeEx() should have returned S_OK to indicate that the
-  // COM library wasn't already initialized on the thread.
-  EXPECT_EQ(S_OK, delegate_raw->coinitialize_hresult());
-
-  worker->JoinForTesting();
-}
-
-#endif  // defined(OS_WIN)
 
 }  // namespace internal
 }  // namespace base

@@ -1274,17 +1274,8 @@ bool TestLauncher::ValidateTests() {
 }
 
 void TestLauncher::CreateAndStartThreadPool(int num_parallel_jobs) {
-  // These values are taken from ThreadPool::StartWithDefaultParams(), which
-  // is not used directly to allow a custom number of threads in the foreground
-  // pool.
-  // TODO(etiennep): Change this to 2 in future CL.
-  constexpr int kMaxBackgroundThreads = 3;
-  constexpr base::TimeDelta kSuggestedReclaimTime =
-      base::TimeDelta::FromSeconds(30);
   base::ThreadPool::Create("TestLauncher");
-  base::ThreadPool::GetInstance()->Start(
-      {{kMaxBackgroundThreads, kSuggestedReclaimTime},
-       {num_parallel_jobs, kSuggestedReclaimTime}});
+  base::ThreadPool::GetInstance()->Start({num_parallel_jobs});
 }
 
 void TestLauncher::CombinePositiveTestFilters(

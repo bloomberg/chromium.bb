@@ -26,7 +26,6 @@
 #include "base/task/thread_pool/task.h"
 #include "base/task/thread_pool/task_source.h"
 #include "base/task/thread_pool/thread_group_impl.h"
-#include "base/task/thread_pool/thread_group_params.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 
@@ -48,6 +47,8 @@ constexpr EnvironmentParams kForegroundPoolEnvironmentParams{
 
 constexpr EnvironmentParams kBackgroundPoolEnvironmentParams{
     "Background", base::ThreadPriority::BACKGROUND};
+
+constexpr int kMaxBestEffortTasks = 2;
 
 // Indicates whether BEST_EFFORT tasks are disabled by a command line switch.
 bool HasDisableBestEffortTasksSwitch() {
@@ -112,12 +113,17 @@ void ThreadPoolImpl::Start(const ThreadPool::InitParams& init_params,
 
   internal::InitializeThreadPrioritiesFeature();
 
+  // The max number of concurrent BEST_EFFORT tasks is |kMaxBestEffortTasks|,
+  // unless the max number of foreground threads is lower.
+  const int max_best_effort_tasks =
+      std::min(kMaxBestEffortTasks, init_params.max_num_foreground_threads);
+
   // This is set in Start() and not in the constructor because variation params
   // are usually not ready when ThreadPoolImpl is instantiated in a process.
   if (FeatureList::IsEnabled(kAllTasksUserBlocking))
     all_tasks_user_blocking_.Set();
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if HAS_NATIVE_THREAD_POOL()
   if (FeatureList::IsEnabled(kUseNativeThreadPool)) {
     std::unique_ptr<ThreadGroup> pool = std::move(foreground_thread_group_);
     foreground_thread_group_ = std::make_unique<ThreadGroupNativeImpl>(
@@ -154,17 +160,23 @@ void ThreadPoolImpl::Start(const ThreadPool::InitParams& init_params,
 
   single_thread_task_runner_manager_.Start(worker_thread_observer);
 
-  const ThreadGroup::WorkerEnvironment worker_environment =
+  ThreadGroup::WorkerEnvironment worker_environment;
+  switch (init_params.common_thread_pool_environment) {
+    case InitParams::CommonThreadPoolEnvironment::DEFAULT:
+      worker_environment = ThreadGroup::WorkerEnvironment::NONE;
+      break;
 #if defined(OS_WIN)
-      init_params.common_thread_pool_environment ==
-              InitParams::CommonThreadPoolEnvironment::COM_MTA
-          ? ThreadGroup::WorkerEnvironment::COM_MTA
-          : ThreadGroup::WorkerEnvironment::NONE;
-#else
-      ThreadGroup::WorkerEnvironment::NONE;
+    case InitParams::CommonThreadPoolEnvironment::COM_MTA:
+      worker_environment = ThreadGroup::WorkerEnvironment::COM_MTA;
+      break;
+    case InitParams::CommonThreadPoolEnvironment::
+        DEPRECATED_COM_STA_IN_FOREGROUND_GROUP:
+      worker_environment = ThreadGroup::WorkerEnvironment::COM_STA;
+      break;
 #endif
+  }
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if HAS_NATIVE_THREAD_POOL()
   if (FeatureList::IsEnabled(kUseNativeThreadPool)) {
     static_cast<ThreadGroupNative*>(foreground_thread_group_.get())
         ->Start(worker_environment);
@@ -172,27 +184,29 @@ void ThreadPoolImpl::Start(const ThreadPool::InitParams& init_params,
 #endif
   {
     // On platforms that can't use the background thread priority, best-effort
-    // tasks run in foreground pools. A cap is set on the number of background
+    // tasks run in foreground pools. A cap is set on the number of best-effort
     // tasks that can run in foreground pools to ensure that there is always
     // room for incoming foreground tasks and to minimize the performance impact
     // of best-effort tasks.
-
-    const int max_best_effort_tasks_in_foreground_thread_group = std::max(
-        1,
-        std::min(init_params.background_thread_group_params.max_tasks(),
-                 init_params.foreground_thread_group_params.max_tasks() / 2));
     static_cast<ThreadGroupImpl*>(foreground_thread_group_.get())
-        ->Start(init_params.foreground_thread_group_params,
-                max_best_effort_tasks_in_foreground_thread_group,
-                service_thread_task_runner, worker_thread_observer,
-                worker_environment);
+        ->Start(init_params.max_num_foreground_threads, max_best_effort_tasks,
+                init_params.suggested_reclaim_time, service_thread_task_runner,
+                worker_thread_observer, worker_environment);
   }
 
   if (background_thread_group_) {
     background_thread_group_->Start(
-        init_params.background_thread_group_params,
-        init_params.background_thread_group_params.max_tasks(),
-        service_thread_task_runner, worker_thread_observer, worker_environment);
+        max_best_effort_tasks, max_best_effort_tasks,
+        init_params.suggested_reclaim_time, service_thread_task_runner,
+        worker_thread_observer,
+#if defined(OS_WIN)
+        // COM STA is a backward-compatibility feature for the foreground thread
+        // group only.
+        worker_environment == ThreadGroup::WorkerEnvironment::COM_STA
+            ? ThreadGroup::WorkerEnvironment::NONE
+            :
+#endif
+            worker_environment);
   }
 
   started_ = true;

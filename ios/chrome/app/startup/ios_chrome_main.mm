@@ -8,12 +8,10 @@
 
 #include <vector>
 
-#include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/time/time.h"
-#include "components/thread_pool_util/variations_util.h"
 #include "ios/web/public/app/web_main_runner.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -46,8 +44,6 @@ IOSChromeMain::IOSChromeMain() {
   }
   main_params.argv = argv;
 
-  main_params.get_thread_pool_init_params_callback =
-      base::BindOnce(&thread_pool_util::GetThreadPoolInitParamsForBrowser);
   // Chrome registers an AtExitManager in main in order to initialize breakpad
   // early, so prevent a second registration by WebMainRunner.
   main_params.register_exit_manager = false;

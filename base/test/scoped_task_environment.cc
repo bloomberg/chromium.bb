@@ -386,32 +386,29 @@ void ScopedTaskEnvironment::InitializeThreadPool() {
   // ScopedBlockingCall. It also allows enough concurrency to allow TSAN to spot
   // data races.
   constexpr int kMaxThreads = 4;
-  const TimeDelta kSuggestedReclaimTime = TimeDelta::Max();
-  const ThreadGroupParams thread_group_params(kMaxThreads,
-                                              kSuggestedReclaimTime);
+  ThreadPool::InitParams init_params(kMaxThreads);
+  init_params.suggested_reclaim_time = TimeDelta::Max();
+#if defined(OS_WIN)
+  // Enable the MTA in unit tests to match the browser process' ThreadPool
+  // configuration.
+  //
+  // This has the adverse side-effect of enabling the MTA in non-browser unit
+  // tests as well but the downside there is not as bad as not having it in
+  // browser unit tests. It just means some COM asserts may pass in unit tests
+  // where they wouldn't in integration tests or prod. That's okay because unit
+  // tests are already generally very loose on allowing I/O, waits, etc. Such
+  // misuse will still be caught in later phases (and COM usage should already
+  // be pretty much inexistent in sandboxed processes).
+  init_params.common_thread_pool_environment =
+      ThreadPool::InitParams::CommonThreadPoolEnvironment::COM_MTA;
+#endif
+
   auto task_tracker = std::make_unique<TestTaskTracker>();
   task_tracker_ = task_tracker.get();
   ThreadPool::SetInstance(std::make_unique<internal::ThreadPoolImpl>(
       "ScopedTaskEnvironment", std::move(task_tracker)));
   thread_pool_ = ThreadPool::GetInstance();
-  ThreadPool::GetInstance()->Start({
-    thread_group_params, thread_group_params
-#if defined(OS_WIN)
-        ,
-        // Enable the MTA in unit tests to match the browser process'
-        // ThreadPool configuration.
-        //
-        // This has the adverse side-effect of enabling the MTA in non-browser
-        // unit tests as well but the downside there is not as bad as not having
-        // it in browser unit tests. It just means some COM asserts may pass in
-        // unit tests where they wouldn't in integration tests or prod. That's
-        // okay because unit tests are already generally very loose on allowing
-        // I/O, waits, etc. Such misuse will still be caught in later phases
-        // (and COM usage should already be pretty much inexistent in sandboxed
-        // processes).
-        ThreadPool::InitParams::CommonThreadPoolEnvironment::COM_MTA
-#endif
-  });
+  ThreadPool::GetInstance()->Start(init_params);
 }
 
 void ScopedTaskEnvironment::CompleteInitialization() {

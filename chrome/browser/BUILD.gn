@@ -1996,7 +1996,6 @@ jumbo_split_static_library("browser") {
     "//components/sync_bookmarks",
     "//components/sync_preferences",
     "//components/sync_sessions",
-    "//components/thread_pool_util",
     "//components/tracing:startup_tracing",
     "//components/translate/content/browser",
     "//components/translate/core/browser",

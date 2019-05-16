@@ -262,7 +262,6 @@
 #include "components/signin/core/browser/account_consistency_method.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_throttle_manager.h"
-#include "components/thread_pool_util/variations_util.h"
 #include "components/translate/core/common/translate_switches.h"
 #include "components/url_formatter/url_fixer.h"
 #include "components/variations/variations_associated_data.h"
@@ -4642,11 +4641,6 @@ void ChromeContentBrowserClient::CreateMediaRemoter(
       render_frame_host, std::move(source), std::move(request));
 }
 #endif  // BUILDFLAG(ENABLE_MEDIA_REMOTING)
-
-std::unique_ptr<base::ThreadPool::InitParams>
-ChromeContentBrowserClient::GetThreadPoolInitParams() {
-  return thread_pool_util::GetThreadPoolInitParamsForBrowser();
-}
 
 base::FilePath ChromeContentBrowserClient::GetLoggingFileName(
     const base::CommandLine& command_line) {

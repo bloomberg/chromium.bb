@@ -120,13 +120,7 @@ class ThreadPoolPerfTest : public testing::Test {
   void StartThreadPool(size_t num_running_threads,
                        size_t num_posting_threads,
                        base::RepeatingClosure post_action) {
-    constexpr TimeDelta kSuggestedReclaimTime = TimeDelta::FromSeconds(30);
-    constexpr int kMaxNumBackgroundThreads = 1;
-
-    ThreadPool::GetInstance()->Start(
-        {{kMaxNumBackgroundThreads, kSuggestedReclaimTime},
-         {num_running_threads, kSuggestedReclaimTime}},
-        nullptr);
+    ThreadPool::GetInstance()->Start({num_running_threads});
 
     base::RepeatingClosure done = BarrierClosure(
         num_posting_threads,

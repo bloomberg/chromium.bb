@@ -1178,11 +1178,6 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Returns the RapporService from the browser process.
   virtual ::rappor::RapporService* GetRapporService();
 
-  // Provides parameters for initializing the global thread pool. Default
-  // params are used if this returns nullptr.
-  virtual std::unique_ptr<base::ThreadPool::InitParams>
-  GetThreadPoolInitParams();
-
   // Allows the embedder to register one or more URLLoaderThrottles for a
   // navigation request.
   // This is called both when the network service is enabled and disabled.

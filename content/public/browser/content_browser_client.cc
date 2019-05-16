@@ -732,11 +732,6 @@ std::vector<std::string> ContentBrowserClient::GetStartupServices() {
   return nullptr;
 }
 
-std::unique_ptr<base::ThreadPool::InitParams>
-ContentBrowserClient::GetThreadPoolInitParams() {
-  return nullptr;
-}
-
 std::vector<std::unique_ptr<URLLoaderThrottle>>
 ContentBrowserClient::CreateURLLoaderThrottles(
     const network::ResourceRequest& request,

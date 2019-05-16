@@ -21,7 +21,6 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
-#include "base/task/thread_pool/initialization_util.h"
 #include "base/task/thread_pool/thread_pool.h"
 #include "base/task_runner.h"
 #include "base/threading/platform_thread.h"
@@ -51,16 +50,7 @@ const uint8_t mimo_hash[] = {0xc8, 0xce, 0x99, 0xba, 0xce, 0x89, 0xf8, 0x20,
                              0x54, 0xf9, 0x56, 0xd3, 0xe7, 0x88, 0xba, 0x8c};
 
 void ThreadPoolStart() {
-  base::ThreadPool::Create("Updater");
-  const auto thread_pool_init_params =
-      std::make_unique<base::ThreadPool::InitParams>(
-          base::ThreadGroupParams(
-              base::RecommendedMaxNumberOfThreadsInThreadGroup(3, 8, 0.1, 0),
-              base::TimeDelta::FromSeconds(30)),
-          base::ThreadGroupParams(
-              base::RecommendedMaxNumberOfThreadsInThreadGroup(8, 32, 0.3, 0),
-              base::TimeDelta::FromSeconds(30)));
-  base::ThreadPool::GetInstance()->Start(*thread_pool_init_params);
+  base::ThreadPool::CreateAndStartWithDefaultParams("Updater");
 }
 
 void ThreadPoolStop() {

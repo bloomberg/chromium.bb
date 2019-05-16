@@ -6,6 +6,7 @@
 #define BASE_TASK_THREAD_POOL_TEST_UTILS_H_
 
 #include "base/task/common/checked_lock.h"
+#include "base/task/task_features.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool/delayed_task_manager.h"
 #include "base/task/thread_pool/pooled_task_runner_delegate.h"
@@ -74,7 +75,7 @@ class MockPooledTaskRunnerDelegate : public PooledTaskRunnerDelegate {
 // thread_pool tests.
 enum class PoolType {
   GENERIC,
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if HAS_NATIVE_THREAD_POOL()
   NATIVE,
 #endif
 };

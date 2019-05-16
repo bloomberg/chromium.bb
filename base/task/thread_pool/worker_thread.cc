@@ -18,9 +18,6 @@
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
-#elif defined(OS_WIN)
-#include "base/win/com_init_check_hook.h"
-#include "base/win/scoped_com_initializer.h"
 #endif
 
 namespace base {
@@ -38,22 +35,15 @@ void WorkerThread::Delegate::WaitForWork(WaitableEvent* wake_up_event) {
   }
 }
 
-WorkerThread::WorkerThread(
-    ThreadPriority priority_hint,
-    std::unique_ptr<Delegate> delegate,
-    TrackedRef<TaskTracker> task_tracker,
-    const CheckedLock* predecessor_lock,
-    WorkerThreadBackwardCompatibility backward_compatibility)
+WorkerThread::WorkerThread(ThreadPriority priority_hint,
+                           std::unique_ptr<Delegate> delegate,
+                           TrackedRef<TaskTracker> task_tracker,
+                           const CheckedLock* predecessor_lock)
     : thread_lock_(predecessor_lock),
       delegate_(std::move(delegate)),
       task_tracker_(std::move(task_tracker)),
       priority_hint_(priority_hint),
-      current_thread_priority_(GetDesiredThreadPriority())
-#if defined(OS_WIN) && !defined(COM_INIT_CHECK_HOOK_ENABLED)
-      ,
-      backward_compatibility_(backward_compatibility)
-#endif
-{
+      current_thread_priority_(GetDesiredThreadPriority()) {
   DCHECK(delegate_);
   DCHECK(task_tracker_);
   DCHECK(CanUseBackgroundPriorityForWorkerThread() ||
@@ -306,16 +296,6 @@ void WorkerThread::RunWorker() {
     delegate_->WaitForWork(&wake_up_event_);
     TRACE_EVENT_BEGIN0("thread_pool", "WorkerThreadThread active");
   }
-
-// When defined(COM_INIT_CHECK_HOOK_ENABLED), ignore
-// WorkerThreadBackwardCompatibility::INIT_COM_STA to find incorrect uses of
-// COM that should be running in a COM STA Task Runner.
-#if defined(OS_WIN) && !defined(COM_INIT_CHECK_HOOK_ENABLED)
-  std::unique_ptr<win::ScopedCOMInitializer> com_initializer;
-  if (backward_compatibility_ ==
-      WorkerThreadBackwardCompatibility::INIT_COM_STA)
-    com_initializer = std::make_unique<win::ScopedCOMInitializer>();
-#endif
 
   while (!ShouldExit()) {
 #if defined(OS_MACOSX)

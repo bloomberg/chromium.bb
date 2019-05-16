@@ -26,7 +26,6 @@
 #include "base/task/task_features.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool/task_tracker.h"
-#include "base/task/thread_pool/thread_group_params.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_checker.h"
@@ -382,8 +381,9 @@ ThreadGroupImpl::ThreadGroupImpl(StringPiece histogram_label,
 }
 
 void ThreadGroupImpl::Start(
-    const ThreadGroupParams& params,
+    int max_tasks,
     int max_best_effort_tasks,
+    TimeDelta suggested_reclaim_time,
     scoped_refptr<TaskRunner> service_thread_task_runner,
     WorkerThreadObserver* worker_thread_observer,
     WorkerEnvironment worker_environment,
@@ -407,13 +407,12 @@ void ThreadGroupImpl::Start(
       priority_hint_ == ThreadPriority::NORMAL ? kForegroundBlockedWorkersPoll
                                                : kBackgroundBlockedWorkersPoll;
 
-  max_tasks_ = params.max_tasks();
+  max_tasks_ = max_tasks;
   DCHECK_GE(max_tasks_, 1U);
   in_start().initial_max_tasks = max_tasks_;
   DCHECK_LE(in_start().initial_max_tasks, kMaxNumberOfWorkers);
   max_best_effort_tasks_ = max_best_effort_tasks;
-  in_start().suggested_reclaim_time = params.suggested_reclaim_time();
-  in_start().backward_compatibility = params.backward_compatibility();
+  in_start().suggested_reclaim_time = suggested_reclaim_time;
   in_start().worker_environment = worker_environment;
   in_start().service_thread_task_runner = std::move(service_thread_task_runner);
   in_start().worker_thread_observer = worker_thread_observer;
@@ -569,17 +568,8 @@ void ThreadGroupImpl::WorkerThreadDelegateImpl::OnMainEntry(
   }
 
 #if defined(OS_WIN)
-  if (outer_->after_start().worker_environment == WorkerEnvironment::COM_MTA) {
-    if (win::GetVersion() >= win::Version::WIN8) {
-      worker_only().win_thread_environment =
-          std::make_unique<win::ScopedWinrtInitializer>();
-    } else {
-      worker_only().win_thread_environment =
-          std::make_unique<win::ScopedCOMInitializer>(
-              win::ScopedCOMInitializer::kMTA);
-    }
-    DCHECK(worker_only().win_thread_environment->Succeeded());
-  }
+  worker_only().win_thread_environment = GetScopedWindowsThreadEnvironment(
+      outer_->after_start().worker_environment);
 #endif  // defined(OS_WIN)
 
   DCHECK_EQ(worker_only().num_tasks_since_last_wait, 0U);
@@ -989,11 +979,11 @@ ThreadGroupImpl::CreateAndRegisterWorkerLockRequired(
   // WorkerThread needs |lock_| as a predecessor for its thread lock
   // because in WakeUpOneWorker, |lock_| is first acquired and then
   // the thread lock is acquired when WakeUp is called on the worker.
-  scoped_refptr<WorkerThread> worker = MakeRefCounted<WorkerThread>(
-      priority_hint_,
-      std::make_unique<WorkerThreadDelegateImpl>(
-          tracked_ref_factory_.GetTrackedRef()),
-      task_tracker_, &lock_, after_start().backward_compatibility);
+  scoped_refptr<WorkerThread> worker =
+      MakeRefCounted<WorkerThread>(priority_hint_,
+                                   std::make_unique<WorkerThreadDelegateImpl>(
+                                       tracked_ref_factory_.GetTrackedRef()),
+                                   task_tracker_, &lock_);
 
   workers_.push_back(worker);
   executor->ScheduleStart(worker);

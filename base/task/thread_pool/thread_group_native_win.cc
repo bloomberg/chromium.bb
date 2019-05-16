@@ -88,9 +88,8 @@ ThreadGroupNativeWin::RunNextTaskSource(PTP_CALLBACK_INSTANCE callback_instance,
   // Windows Thread Pool API best practices state that all resources created
   // in the callback function should be cleaned up before returning from the
   // function. This includes COM initialization.
-  Optional<win::ScopedCOMInitializer> com_initializer;
-  if (thread_group->worker_environment_ == WorkerEnvironment::COM_MTA)
-    com_initializer.emplace(win::ScopedCOMInitializer::kMTA);
+  auto win_thread_environment = thread_group->GetScopedWindowsThreadEnvironment(
+      thread_group->worker_environment_);
 
   ScopedCallbackMayRunLongObserver callback_may_run_long_observer(
       callback_instance);

@@ -90,14 +90,13 @@ void WebMainLoop::MainMessageLoopStart() {
   }
 }
 
-void WebMainLoop::CreateStartupTasks(
-    ThreadPoolInitParamsCallback init_params_callback) {
+void WebMainLoop::CreateStartupTasks() {
   int result = 0;
   result = PreCreateThreads();
   if (result > 0)
     return;
 
-  result = CreateThreads(std::move(init_params_callback));
+  result = CreateThreads();
   if (result > 0)
     return;
 
@@ -118,13 +117,8 @@ int WebMainLoop::PreCreateThreads() {
   return result_code_;
 }
 
-int WebMainLoop::CreateThreads(
-    ThreadPoolInitParamsCallback init_params_callback) {
-  std::unique_ptr<base::ThreadPool::InitParams> init_params;
-  if (!init_params_callback.is_null()) {
-    init_params = std::move(init_params_callback).Run();
-  }
-  ios_global_state::StartThreadPool(init_params.get());
+int WebMainLoop::CreateThreads() {
+  ios_global_state::StartThreadPool();
 
   base::Thread::Options io_message_loop_options;
   io_message_loop_options.message_loop_type = base::MessageLoop::TYPE_IO;

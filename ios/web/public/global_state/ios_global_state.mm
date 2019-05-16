@@ -22,32 +22,6 @@ base::AtExitManager* g_exit_manager = nullptr;
 base::MessageLoopForUI* g_message_loop = nullptr;
 net::NetworkChangeNotifier* g_network_change_notifer = nullptr;
 
-base::ThreadPool::InitParams GetDefaultThreadPoolInitParams() {
-  constexpr int kMinBackgroundThreads = 4;
-  constexpr int kMaxBackgroundThreads = 16;
-  constexpr double kCoreMultiplierBackgroundThreads = 0.2;
-  constexpr int kOffsetBackgroundThreads = 0;
-  constexpr int kReclaimTimeBackground = 30;
-
-  constexpr int kMinForegroundThreads = 6;
-  constexpr int kMaxForegroundThreads = 16;
-  constexpr double kCoreMultiplierForegroundThreads = 0.6;
-  constexpr int kOffsetForegroundThreads = 0;
-  constexpr int kReclaimTimeForeground = 30;
-
-  return base::ThreadPool::InitParams(
-      base::ThreadGroupParams(
-          base::RecommendedMaxNumberOfThreadsInThreadGroup(
-              kMinBackgroundThreads, kMaxBackgroundThreads,
-              kCoreMultiplierBackgroundThreads, kOffsetBackgroundThreads),
-          base::TimeDelta::FromSeconds(kReclaimTimeBackground)),
-      base::ThreadGroupParams(
-          base::RecommendedMaxNumberOfThreadsInThreadGroup(
-              kMinForegroundThreads, kMaxForegroundThreads,
-              kCoreMultiplierForegroundThreads, kOffsetForegroundThreads),
-          base::TimeDelta::FromSeconds(kReclaimTimeForeground)));
-}
-
 }  // namespace
 
 namespace ios_global_state {
@@ -93,11 +67,17 @@ void DestroyNetworkChangeNotifier() {
   g_network_change_notifer = nullptr;
 }
 
-void StartThreadPool(base::ThreadPool::InitParams* params) {
+void StartThreadPool() {
   static dispatch_once_t once_token;
   dispatch_once(&once_token, ^{
-    auto init_params = params ? *params : GetDefaultThreadPoolInitParams();
-    base::ThreadPool::GetInstance()->Start(init_params);
+    constexpr int kMinForegroundThreads = 6;
+    constexpr int kMaxForegroundThreads = 16;
+    constexpr double kCoreMultiplierForegroundThreads = 0.6;
+    constexpr int kOffsetForegroundThreads = 0;
+    base::ThreadPool::GetInstance()->Start(
+        {base::RecommendedMaxNumberOfThreadsInThreadGroup(
+            kMinForegroundThreads, kMaxForegroundThreads,
+            kCoreMultiplierForegroundThreads, kOffsetForegroundThreads)});
   });
 }
 

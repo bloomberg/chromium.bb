@@ -19,7 +19,6 @@
 #include "base/task/thread_pool/test_task_factory.h"
 #include "base/task/thread_pool/test_utils.h"
 #include "base/task/thread_pool/thread_group_impl.h"
-#include "base/task/thread_pool/thread_group_params.h"
 #include "base/task_runner.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/test_timeouts.h"
@@ -33,6 +32,7 @@
 
 #if defined(OS_WIN)
 #include "base/task/thread_pool/thread_group_native_win.h"
+#include "base/win/com_init_check_hook.h"
 #include "base/win/com_init_util.h"
 #elif defined(OS_MACOSX)
 #include "base/task/thread_pool/thread_group_native_mac.h"
@@ -43,7 +43,7 @@ namespace internal {
 
 namespace {
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if HAS_NATIVE_THREAD_POOL()
 using ThreadGroupNativeType =
 #if defined(OS_WIN)
     ThreadGroupNativeWin;
@@ -129,7 +129,7 @@ class ThreadGroupTest : public testing::TestWithParam<PoolExecutionType>,
             task_tracker_.GetTrackedRef(),
             tracked_ref_factory_.GetTrackedRef());
         break;
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if HAS_NATIVE_THREAD_POOL()
       case test::PoolType::NATIVE:
         thread_group_ = std::make_unique<ThreadGroupNativeType>(
             task_tracker_.GetTrackedRef(),
@@ -150,11 +150,11 @@ class ThreadGroupTest : public testing::TestWithParam<PoolExecutionType>,
         ThreadGroupImpl* thread_group_impl =
             static_cast<ThreadGroupImpl*>(thread_group_.get());
         thread_group_impl->Start(
-            ThreadGroupParams(kMaxTasks, TimeDelta::Max()), kMaxBestEffortTasks,
+            kMaxTasks, kMaxBestEffortTasks, TimeDelta::Max(),
             service_thread_.task_runner(), nullptr, worker_environment);
         break;
       }
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if HAS_NATIVE_THREAD_POOL()
       case test::PoolType::NATIVE: {
         ThreadGroupNativeType* thread_group_native_impl =
             static_cast<ThreadGroupNativeType*>(thread_group_.get());
@@ -476,6 +476,28 @@ TEST_P(ThreadGroupTest, COMMTAWorkerEnvironment) {
   task_ran.Wait();
 }
 
+TEST_P(ThreadGroupTest, COMSTAWorkerEnvironment) {
+  StartThreadGroup(ThreadGroup::WorkerEnvironment::COM_STA);
+  auto task_runner = test::CreateTaskRunnerWithExecutionMode(
+      GetParam().execution_mode, &mock_pooled_task_runner_delegate_);
+
+  WaitableEvent task_ran;
+  task_runner->PostTask(
+      FROM_HERE, BindOnce(
+                     [](WaitableEvent* task_ran) {
+  // COM STA is ignored when defined(COM_INIT_CHECK_HOOK_ENABLED). See comment
+  // in ThreadGroup::GetScopedWindowsThreadEnvironment().
+#if defined(COM_INIT_CHECK_HOOK_ENABLED)
+                       win::AssertComApartmentType(win::ComApartmentType::NONE);
+#else
+                       win::AssertComApartmentType(win::ComApartmentType::STA);
+#endif
+                       task_ran->Signal();
+                     },
+                     Unretained(&task_ran)));
+  task_ran.Wait();
+}
+
 TEST_P(ThreadGroupTest, NoWorkerEnvironment) {
   StartThreadGroup(ThreadGroup::WorkerEnvironment::NONE);
   auto task_runner = test::CreateTaskRunnerWithExecutionMode(
@@ -504,7 +526,7 @@ INSTANTIATE_TEST_SUITE_P(GenericSequenced,
                              test::PoolType::GENERIC,
                              TaskSourceExecutionMode::kSequenced}));
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if HAS_NATIVE_THREAD_POOL()
 INSTANTIATE_TEST_SUITE_P(NativeParallel,
                          ThreadGroupTest,
                          ::testing::Values(PoolExecutionType{
