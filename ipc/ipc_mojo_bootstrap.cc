@@ -1035,9 +1035,10 @@ bool ControllerMemoryDumpProvider::OnMemoryDump(
       // TODO(ssid): Memory dumps currently do not support adding string
       // arguments in background dumps. So, add this value as a trace event for
       // now.
-      TRACE_EVENT1(base::trace_event::MemoryDumpManager::kTraceCategory,
+      TRACE_EVENT2(base::trace_event::MemoryDumpManager::kTraceCategory,
                    "ControllerMemoryDumpProvider::OnMemoryDump",
-                   "top_queued_message_tag", info.profiler_tag);
+                   "top_queued_message_tag", info.profiler_tag,
+                   "count", count);
     }
   }
 
