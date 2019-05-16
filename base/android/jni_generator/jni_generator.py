@@ -12,6 +12,7 @@ import base64
 import collections
 import errno
 import hashlib
+import itertools
 import optparse
 import os
 import re
@@ -1503,35 +1504,6 @@ def WrapOutput(output):
   return '\n'.join(ret)
 
 
-def ExtractJarInputFile(jar_file, input_file, out_dir):
-  """Extracts input file from jar and returns the filename.
-
-  The input file is extracted to the same directory that the generated jni
-  headers will be placed in.  This is passed as an argument to script.
-
-  Args:
-    jar_file: the jar file containing the input files to extract.
-    input_files: the list of files to extract from the jar file.
-    out_dir: the name of the directories to extract to.
-
-  Returns:
-    the name of extracted input file.
-  """
-  jar_file = zipfile.ZipFile(jar_file)
-
-  out_dir = os.path.join(out_dir, os.path.dirname(input_file))
-  try:
-    os.makedirs(out_dir)
-  except OSError as e:
-    if e.errno != errno.EEXIST:
-      raise
-  extracted_file_name = os.path.join(out_dir, os.path.basename(input_file))
-  with open(extracted_file_name, 'wb') as outfile:
-    outfile.write(jar_file.read(input_file))
-
-  return extracted_file_name
-
-
 def GenerateJNIHeader(input_file, output_file, options):
   try:
     if os.path.splitext(input_file)[1] == '.class':
@@ -1579,13 +1551,13 @@ See SampleForTests.java for more details.
                            help='Uses as a namespace in the generated header '
                            'instead of the javap class name, or when there is '
                            'no JNINamespace annotation in the java source.')
-  option_parser.add_option('--input_file',
-                           help='Single input file name. The output file name '
-                           'will be derived from it. Must be used with '
-                           '--output_dir.')
+  option_parser.add_option('--input_files',
+                           help='Input file names, or paths within a .jar if '
+                           '--jar-file is used.')
+  option_parser.add_option('--output_files',
+                           help='Output file names.')
   option_parser.add_option('--output_dir',
-                           help='The output directory. Must be used with '
-                           '--input')
+                           help='The output directory.')
   option_parser.add_option('--script_name', default=GetScriptName(),
                            help='The name of this script in the generated '
                            'header.')
@@ -1614,20 +1586,23 @@ See SampleForTests.java for more details.
       'in @JniNatives interface. And uses a shorter name and package'
       ' than GEN_JNI.')
   options, args = option_parser.parse_args(argv)
-  if options.jar_file:
-    input_file = ExtractJarInputFile(options.jar_file, options.input_file,
-                                     options.output_dir)
-  elif options.input_file:
-    input_file = options.input_file
-  else:
-    option_parser.print_help()
-    print('\nError: Must specify --jar_file or --input_file.')
-    return 1
-  output_file = None
-  if options.output_dir:
-    root_name = os.path.splitext(os.path.basename(input_file))[0]
-    output_file = os.path.join(options.output_dir, root_name) + '_jni.h'
-  GenerateJNIHeader(input_file, output_file, options)
+  input_files = build_utils.ParseGnList(options.input_files)
+  output_files = build_utils.ParseGnList(options.output_files)
+
+  # Prevent stale file issues when moving file locations (crbug.com/951701).
+  if options.output_dir and os.path.exists(options.output_dir):
+    build_utils.DeleteDirectory(options.output_dir)
+    build_utils.MakeDirectory(options.output_dir)
+
+  with build_utils.TempDir() as temp_dir:
+    if options.jar_file:
+      with zipfile.ZipFile(options.jar_file) as z:
+        z.extractall(temp_dir, input_files)
+      input_files = [os.path.join(temp_dir, f) for f in input_files]
+
+    for java_path, header_path in itertools.izip_longest(
+        input_files, output_files):
+      GenerateJNIHeader(java_path, header_path, options)
 
 
 if __name__ == '__main__':
