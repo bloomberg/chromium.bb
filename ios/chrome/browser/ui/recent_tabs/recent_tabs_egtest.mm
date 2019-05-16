@@ -84,7 +84,7 @@ id<GREYMatcher> TitleOfTestPage() {
 @implementation RecentTabsTestCase
 
 - (void)setUp {
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBrowsingHistory]);
+  [ChromeEarlGrey clearBrowsingHistory];
   [super setUp];
   web::test::SetUpSimpleHttpServer(std::map<GURL, std::string>{{
       web::test::HttpServer::MakeUrl(kURLOfTestPage),

@@ -184,7 +184,7 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
 - (void)tearDown {
   self.provider->FireCategoryStatusChanged(
       self.category, CategoryStatus::ALL_SUGGESTIONS_EXPLICITLY_DISABLED);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBrowsingHistory]);
+  [ChromeEarlGrey clearBrowsingHistory];
   [super tearDown];
 }
 
@@ -490,7 +490,7 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
   NSString* pageTitle = base::SysUTF8ToNSString(kPageTitle);
 
   // Clear history and verify that the tile does not exist.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBrowsingHistory]);
+  [ChromeEarlGrey clearBrowsingHistory];
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:pageURL]);
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey waitForWebViewContainingText:kPageLoadedString]);

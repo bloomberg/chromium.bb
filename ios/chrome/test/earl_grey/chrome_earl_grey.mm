@@ -53,13 +53,13 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
 
 #pragma mark - History Utilities
 
-- (NSError*)clearBrowsingHistory {
-  NSError* error = [ChromeEarlGreyAppInterface clearBrowsingHistory];
+- (void)clearBrowsingHistory {
+  EG_TEST_HELPER_ASSERT_NO_ERROR(
+      [ChromeEarlGreyAppInterface clearBrowsingHistory]);
 
   // After clearing browsing history via code, wait for the UI to be done
   // with any updates. This includes icons from the new tab page being removed.
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
-  return error;
 }
 
 @end

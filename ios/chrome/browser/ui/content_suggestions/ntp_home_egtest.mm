@@ -722,7 +722,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   const GURL pageURL = self.testServer->GetURL(kPageURL);
 
   // Clear history to ensure the tile will be shown.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBrowsingHistory]);
+  [ChromeEarlGrey clearBrowsingHistory];
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:pageURL]);
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey waitForWebViewContainingText:kPageLoadedString]);

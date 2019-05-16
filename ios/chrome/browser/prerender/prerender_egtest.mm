@@ -61,7 +61,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
         @"Disabled for iPad due to alternate letters educational screen.");
   }
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBrowsingHistory]);
+  [ChromeEarlGrey clearBrowsingHistory];
   // Set server up.
   self.testServer->RegisterRequestHandler(
       base::BindRepeating(&StandardResponse));

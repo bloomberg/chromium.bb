@@ -38,8 +38,9 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 @interface ChromeEarlGreyImpl : BaseEGTestHelperImpl
 
 #pragma mark - History Utilities
-// Clears browsing history.
-- (NSError*)clearBrowsingHistory WARN_UNUSED_RESULT;
+// Clears browsing history. Raises an EarlGrey exception if history is not
+// cleared within a timeout.
+- (void)clearBrowsingHistory;
 
 @end
 

@@ -149,7 +149,7 @@ id<GREYMatcher> OpenInNewIncognitoTabButton() {
   _URL1 = web::test::HttpServer::MakeUrl(kURL1);
   _URL2 = web::test::HttpServer::MakeUrl(kURL2);
   _URL3 = web::test::HttpServer::MakeUrl(kURL3);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBrowsingHistory]);
+  [ChromeEarlGrey clearBrowsingHistory];
   // Some tests rely on a clean state for the "Clear Browsing Data" settings
   // screen.
   [self resetBrowsingDataPrefs];

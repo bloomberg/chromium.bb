@@ -82,7 +82,7 @@
 
 // Tests that helpers from chrome_earl_grey.h are available for use in tests.
 - (void)testClearBrowsingHistory {
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBrowsingHistory]);
+  [ChromeEarlGrey clearBrowsingHistory];
 }
 
 @end

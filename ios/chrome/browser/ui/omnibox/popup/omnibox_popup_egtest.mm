@@ -104,7 +104,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
       base::BindRepeating(&StandardResponse));
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBrowsingHistory]);
+  [ChromeEarlGrey clearBrowsingHistory];
 }
 
 // Tests that tapping the switch to open tab button, switch to the open tab,

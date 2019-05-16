@@ -35,7 +35,7 @@ using web::test::HttpServer;
 @implementation NTPTilesTest
 
 - (void)tearDown {
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBrowsingHistory]);
+  [ChromeEarlGrey clearBrowsingHistory];
   [super tearDown];
 }
 
@@ -49,7 +49,7 @@ using web::test::HttpServer;
   web::test::SetUpSimpleHttpServer(responses);
 
   // Clear history and verify that the tile does not exist.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBrowsingHistory]);
+  [ChromeEarlGrey clearBrowsingHistory];
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
 
   [[EarlGrey selectElementWithMatcher:
@@ -93,7 +93,7 @@ using web::test::HttpServer;
   web::test::SetUpHttpServer(std::move(provider));
 
   // Clear history and verify that the tile does not exist.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBrowsingHistory]);
+  [ChromeEarlGrey clearBrowsingHistory];
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
   [[EarlGrey selectElementWithMatcher:
                  chrome_test_util::StaticTextWithAccessibilityLabel(@"title2")]

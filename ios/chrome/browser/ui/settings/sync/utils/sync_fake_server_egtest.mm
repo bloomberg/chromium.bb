@@ -386,9 +386,9 @@ void AssertNumberOfEntitiesWithName(int entity_count,
 - (void)testSyncTypedURLUpload {
   const GURL mockURL("http://not-a-real-site/");
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBrowsingHistory]);
+  [ChromeEarlGrey clearBrowsingHistory];
   [self setTearDownHandler:^{
-    CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBrowsingHistory]);
+    [ChromeEarlGrey clearBrowsingHistory];
   }];
   chrome_test_util::AddTypedURLOnClient(mockURL);
 
@@ -422,9 +422,9 @@ void AssertNumberOfEntitiesWithName(int entity_count,
 - (void)testSyncTypedUrlDownload {
   const GURL mockURL("http://not-a-real-site/");
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBrowsingHistory]);
+  [ChromeEarlGrey clearBrowsingHistory];
   [self setTearDownHandler:^{
-    CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBrowsingHistory]);
+    [ChromeEarlGrey clearBrowsingHistory];
   }];
 
   // Inject typed url on server.
@@ -457,9 +457,9 @@ void AssertNumberOfEntitiesWithName(int entity_count,
 - (void)testSyncTypedURLDeleteFromClient {
   const GURL mockURL("http://not-a-real-site/");
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBrowsingHistory]);
+  [ChromeEarlGrey clearBrowsingHistory];
   [self setTearDownHandler:^{
-    CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBrowsingHistory]);
+    [ChromeEarlGrey clearBrowsingHistory];
   }];
 
   // Inject typed url on server.
@@ -502,9 +502,9 @@ void AssertNumberOfEntitiesWithName(int entity_count,
 - (void)testSyncTypedURLDeleteFromServer {
   const GURL mockURL("http://not-a-real-site/");
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBrowsingHistory]);
+  [ChromeEarlGrey clearBrowsingHistory];
   [self setTearDownHandler:^{
-    CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey clearBrowsingHistory]);
+    [ChromeEarlGrey clearBrowsingHistory];
   }];
   chrome_test_util::AddTypedURLOnClient(mockURL);
 
