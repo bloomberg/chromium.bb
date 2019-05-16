@@ -78,6 +78,7 @@ class ASH_EXPORT HeaderView : public views::View,
   // views::View:
   void Layout() override;
   void ChildPreferredSizeChanged(views::View* child) override;
+  bool IsDrawn() const override;
 
   // TabletModeObserver:
   void OnTabletModeStarted() override;
@@ -158,6 +159,9 @@ class ASH_EXPORT HeaderView : public views::View,
   bool should_paint_;
 
   bool in_immersive_mode_ = false;
+
+  // This is used to compute visible bounds.
+  mutable bool is_drawn_override_ = false;
 
   // Observes property changes to |target_widget_|'s window.
   ScopedObserver<aura::Window, aura::WindowObserver> window_observer_{this};

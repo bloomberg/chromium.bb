@@ -207,11 +207,14 @@ void NonClientFrameViewAsh::OverlayView::Layout() {
   int onscreen_height = header_height_
                             ? *header_height_
                             : header_view_->GetPreferredOnScreenHeight();
+  int height =
+      header_height_ ? *header_height_ : header_view_->GetPreferredHeight();
   if (onscreen_height == 0 || !GetVisible()) {
     header_view_->SetVisible(false);
+    // Make sure the correct width is set even when immersive is enabled, but
+    // never revealed yet.
+    header_view_->SetBounds(0, 0, width(), height);
   } else {
-    const int height =
-        header_height_ ? *header_height_ : header_view_->GetPreferredHeight();
     header_view_->SetBounds(0, onscreen_height - height, width(), height);
     header_view_->SetVisible(true);
   }

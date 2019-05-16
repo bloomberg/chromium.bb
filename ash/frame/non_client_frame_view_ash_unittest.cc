@@ -467,6 +467,32 @@ TEST_F(NonClientFrameViewAshTest, HeaderVisibilityInSplitview) {
   Shell::Get()->split_view_controller()->EndSplitView();
 }
 
+TEST_F(NonClientFrameViewAshTest, HeaderVisibilityInFullscreen) {
+  auto* delegate = new NonClientFrameViewAshTestWidgetDelegate();
+  std::unique_ptr<views::Widget> widget = CreateTestWidget(delegate);
+  NonClientFrameViewAsh* non_client_frame_view =
+      delegate->non_client_frame_view();
+  HeaderView* header_view = non_client_frame_view->GetHeaderView();
+  EXPECT_FALSE(header_view->in_immersive_mode());
+  EXPECT_TRUE(header_view->GetVisible());
+  widget->SetFullscreen(true);
+  EXPECT_TRUE(header_view->in_immersive_mode());
+  EXPECT_TRUE(header_view->GetVisible());
+  widget->SetFullscreen(false);
+  EXPECT_FALSE(header_view->in_immersive_mode());
+  EXPECT_TRUE(header_view->GetVisible());
+
+  // Turn immersive off, and make sure that header view is invisible
+  // in fullscreen.
+  widget->SetFullscreen(true);
+  ash::ImmersiveFullscreenController::EnableForWidget(widget.get(), false);
+  EXPECT_FALSE(header_view->in_immersive_mode());
+  EXPECT_FALSE(header_view->GetVisible());
+  widget->SetFullscreen(false);
+  EXPECT_FALSE(header_view->in_immersive_mode());
+  EXPECT_TRUE(header_view->GetVisible());
+}
+
 namespace {
 
 class TestButtonModel : public CaptionButtonModel {
@@ -715,10 +741,12 @@ TEST_F(NonClientFrameViewAshTest, WideFrame) {
   wide_frame_view->Init(&controller);
   EXPECT_FALSE(wide_header_view->in_immersive_mode());
   EXPECT_FALSE(header_view->in_immersive_mode());
+  EXPECT_TRUE(header_view->GetVisible());
 
   ImmersiveFullscreenController::EnableForWidget(widget.get(), true);
   EXPECT_TRUE(header_view->in_immersive_mode());
   EXPECT_TRUE(wide_header_view->in_immersive_mode());
+  EXPECT_TRUE(header_view->GetVisible());
   // The height should be ~(33 *.5)
   wide_header_view->SetVisibleFraction(0.5);
   EXPECT_NEAR(16, wide_header_view->GetPreferredOnScreenHeight(), 1);
