@@ -6,8 +6,8 @@
 
 #import "ios/chrome/browser/ui/alert_view_controller/alert_action.h"
 #import "ios/chrome/browser/ui/alert_view_controller/alert_view_controller.h"
-#import "ios/chrome/browser/ui/alert_view_controller/non_modal_view_controller_presenter.h"
 #import "ios/chrome/browser/ui/elements/text_field_configuration.h"
+#import "ios/chrome/browser/ui/presenters/non_modal_view_controller_presenter.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

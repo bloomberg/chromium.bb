@@ -9,8 +9,6 @@ source_set("alert_view_controller") {
     "alert_consumer.h",
     "alert_view_controller.h",
     "alert_view_controller.mm",
-    "non_modal_view_controller_presenter.h",
-    "non_modal_view_controller_presenter.mm",
   ]
   deps = [
     "//base",

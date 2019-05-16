@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/alert_view_controller/non_modal_view_controller_presenter.h"
+#import "ios/chrome/browser/ui/presenters/non_modal_view_controller_presenter.h"
 
 #include "base/logging.h"
 #import "ios/chrome/browser/ui/presenters/contained_presenter_delegate.h"
