@@ -8,11 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/observer_list.h"
-#include "base/sequence_checker.h"
-#include "base/timer/timer.h"
 #include "remoting/signaling/signal_strategy.h"
-#include "remoting/signaling/signaling_address.h"
 
 namespace remoting {
 
@@ -27,10 +23,11 @@ class XmppSignalStrategy;
 // MuxingSignalStrategy multiplexes FtlSignalStrategy and XmppSignalStrategy.
 // It can accept stanzas with FTL or XMPP receiver and forward them to the
 // proper SignalStrategy.
-class MuxingSignalStrategy final : public SignalStrategy,
-                                   public SignalStrategy::Listener {
+//
+// Caller can create MuxingSignalStrategy on one thread and thereafter use it
+// on another thread.
+class MuxingSignalStrategy final : public SignalStrategy {
  public:
-  // Raw pointers must outlive |this|.
   MuxingSignalStrategy(
       std::unique_ptr<FtlSignalStrategy> ftl_signal_strategy,
       std::unique_ptr<XmppSignalStrategy> xmpp_signal_strategy);
@@ -59,47 +56,31 @@ class MuxingSignalStrategy final : public SignalStrategy,
   bool SendStanza(std::unique_ptr<jingle_xmpp::XmlElement> stanza) override;
   std::string GetNextId() override;
 
-  FtlSignalStrategy* ftl_signal_strategy() {
-    return ftl_signal_strategy_.get();
-  }
-
-  XmppSignalStrategy* xmpp_signal_strategy() {
-    return xmpp_signal_strategy_.get();
-  }
+  FtlSignalStrategy* ftl_signal_strategy();
+  XmppSignalStrategy* xmpp_signal_strategy();
 
  private:
-  SignalStrategy* SignalStrategyForStanza(
-      const jingle_xmpp::XmlElement* stanza);
-  void UpdateTimerState();
-
-  void OnWaitForAllStrategiesConnectedTimeout();
+  class Core;
 
   // These methods are not supported. Caller should directly call them on the
   // underlying signal strategies instead.
   void Disconnect() override;
   Error GetError() const override;
 
-  // SignalStrategy::Listener implementations.
-  void OnSignalStrategyStateChange(State state) override;
-  bool OnSignalStrategyIncomingStanza(
-      const jingle_xmpp::XmlElement* stanza) override;
+  // Returns pointer to the core, and creates a core if it has not been created.
+  //
+  // The Core constructor will bind the underlying signal strategies to the
+  // current sequence, so we delay construction of the core so that user can
+  // create MuxingSignalStrategy on one sequence and use it on another sequence.
+  Core* GetCore();
+  const Core* GetCore() const;
+  Core* GetCoreImpl();
 
-  bool IsAnyStrategyConnected() const;
-  bool IsEveryStrategyConnected() const;
-  bool IsEveryStrategyDisconnected() const;
+  // These will be moved to |core_| once the core is created.
+  std::unique_ptr<FtlSignalStrategy> ftl_signal_strategy_;
+  std::unique_ptr<XmppSignalStrategy> xmpp_signal_strategy_;
 
-  base::ObserverList<SignalStrategy::Listener> listeners_;
-
-  std::unique_ptr<FtlSignalStrategy> ftl_signal_strategy_ = nullptr;
-  std::unique_ptr<XmppSignalStrategy> xmpp_signal_strategy_ = nullptr;
-
-  SignalingAddress current_local_address_;
-  State previous_state_;
-
-  base::OneShotTimer wait_for_all_strategies_connected_timeout_timer_;
-
-  SEQUENCE_CHECKER(sequence_checker_);
-
+  std::unique_ptr<Core> core_;
   DISALLOW_COPY_AND_ASSIGN(MuxingSignalStrategy);
 };
 
