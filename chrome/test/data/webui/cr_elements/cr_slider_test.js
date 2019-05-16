@@ -20,7 +20,6 @@ suite('cr-slider', function() {
         window.getComputedStyle(crSlider)['pointer-events'] == 'none');
     const expectedTabindex = expected ? '-1' : '0';
     assertEquals(expectedTabindex, crSlider.getAttribute('tabindex'));
-    assertEquals(expectedTabindex, crSlider.$.knob.getAttribute('tabindex'));
   }
 
   function pressArrowRight() {

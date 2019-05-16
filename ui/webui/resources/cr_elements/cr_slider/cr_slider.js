@@ -275,7 +275,6 @@ cr_slider.SliderTick;
     /** @private */
     onDisabledChanged_: function() {
       this.setAttribute('tabindex', this.disabled_ ? -1 : 0);
-      this.$.knob.setAttribute('tabindex', this.disabled_ ? -1 : 0);
       this.blur();
     },
 
@@ -286,7 +285,6 @@ cr_slider.SliderTick;
       if (this.shadowRoot.activeElement == this.$.knob) {
         return;
       }
-      this.$.knob.focus();
     },
 
     /** @private */
@@ -342,22 +340,6 @@ cr_slider.SliderTick;
         setTimeout(() => {
           this.updatingFromKey = false;
         });
-      }
-    },
-
-    /**
-     * This code is taken from cr-input. See https://crbug.com/832177#c31 for
-     * the CL that handles escaping focus from the shadow DOM.
-     * TODO(aee): see if a common behavior can be extracted from cr-slider and
-     *     cr-input with regards to focusing an element in the shadow DOM and
-     *     also being a focusable component. It may be useful for other
-     *     components.
-     * @param {!KeyboardEvent} e
-     * @private
-     */
-    onKnobKeydown_: function(e) {
-      if (e.shiftKey && e.key === 'Tab') {
-        this.focus();
       }
     },
 
