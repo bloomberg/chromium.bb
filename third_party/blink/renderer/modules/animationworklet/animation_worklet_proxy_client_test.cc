@@ -82,7 +82,7 @@ class AnimationWorkletProxyClientTest : public RenderingTest {
     base::WaitableEvent waitable_event;
     PostCrossThreadTask(
         *first_worklet->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
-        CrossThreadBind(
+        CrossThreadBindOnce(
             &AnimationWorkletProxyClientTest::AddGlobalScopeForTesting,
             CrossThreadUnretained(this),
             CrossThreadUnretained(first_worklet.get()),
@@ -93,7 +93,7 @@ class AnimationWorkletProxyClientTest : public RenderingTest {
     waitable_event.Reset();
     PostCrossThreadTask(
         *second_worklet->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
-        CrossThreadBind(
+        CrossThreadBindOnce(
             &AnimationWorkletProxyClientTest::AddGlobalScopeForTesting,
             CrossThreadUnretained(this),
             CrossThreadUnretained(second_worklet.get()),
@@ -103,7 +103,7 @@ class AnimationWorkletProxyClientTest : public RenderingTest {
 
     PostCrossThreadTask(
         *first_worklet->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
-        CrossThreadBind(
+        CrossThreadBindOnce(
             callback, CrossThreadUnretained(this),
             CrossThreadPersistent<AnimationWorkletProxyClient>(proxy_client_),
             CrossThreadUnretained(&waitable_event)));

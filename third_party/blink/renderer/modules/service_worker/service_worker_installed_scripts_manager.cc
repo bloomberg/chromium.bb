@@ -261,8 +261,9 @@ ServiceWorkerInstalledScriptsManager::ServiceWorkerInstalledScriptsManager(
     installed_urls_.insert(url.Copy());
   PostCrossThreadTask(
       *io_task_runner, FROM_HERE,
-      CrossThreadBind(&Internal::Create, script_container_,
-                      WTF::Passed(std::move(manager_request)), io_task_runner));
+      CrossThreadBindOnce(&Internal::Create, script_container_,
+                          WTF::Passed(std::move(manager_request)),
+                          io_task_runner));
 }
 
 bool ServiceWorkerInstalledScriptsManager::IsScriptInstalled(

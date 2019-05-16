@@ -194,7 +194,7 @@ void AnimationWorkletMutatorDispatcherImpl::MutateAsynchronouslyInternal(
          int next_async_mutation_id) {
         PostCrossThreadTask(
             *host_queue, FROM_HERE,
-            CrossThreadBind(
+            CrossThreadBindOnce(
                 &AnimationWorkletMutatorDispatcherImpl::AsyncMutationsDone,
                 dispatcher, next_async_mutation_id));
       },
@@ -313,7 +313,7 @@ void AnimationWorkletMutatorDispatcherImpl::RequestMutations(
 
     PostCrossThreadTask(
         *worklet_queue, FROM_HERE,
-        CrossThreadBind(
+        CrossThreadBindOnce(
             [](AnimationWorkletMutator* mutator,
                std::unique_ptr<AnimationWorkletInput> input,
                scoped_refptr<OutputVectorRef> outputs, int index,

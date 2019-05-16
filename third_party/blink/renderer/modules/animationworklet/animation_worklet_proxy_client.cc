@@ -86,7 +86,7 @@ void AnimationWorkletProxyClient::SynchronizeAnimatorName(
   for (auto& mutator_item : mutator_items_) {
     PostCrossThreadTask(
         *mutator_item.mutator_runner, FROM_HERE,
-        CrossThreadBind(
+        CrossThreadBindOnce(
             &AnimationWorkletMutatorDispatcherImpl::SynchronizeAnimatorName,
             mutator_item.mutator_dispatcher, animator_name));
   }
@@ -118,10 +118,11 @@ void AnimationWorkletProxyClient::AddGlobalScope(
   for (auto& mutator_item : mutator_items_) {
     PostCrossThreadTask(
         *mutator_item.mutator_runner, FROM_HERE,
-        CrossThreadBind(&AnimationWorkletMutatorDispatcherImpl::
-                            RegisterAnimationWorkletMutator,
-                        mutator_item.mutator_dispatcher,
-                        WrapCrossThreadPersistent(this), global_scope_runner));
+        CrossThreadBindOnce(&AnimationWorkletMutatorDispatcherImpl::
+                                RegisterAnimationWorkletMutator,
+                            mutator_item.mutator_dispatcher,
+                            WrapCrossThreadPersistent(this),
+                            global_scope_runner));
   }
 }
 
@@ -132,10 +133,10 @@ void AnimationWorkletProxyClient::Dispose() {
     for (auto& mutator_item : mutator_items_) {
       PostCrossThreadTask(
           *mutator_item.mutator_runner, FROM_HERE,
-          CrossThreadBind(&AnimationWorkletMutatorDispatcherImpl::
-                              UnregisterAnimationWorkletMutator,
-                          mutator_item.mutator_dispatcher,
-                          WrapCrossThreadPersistent(this)));
+          CrossThreadBindOnce(&AnimationWorkletMutatorDispatcherImpl::
+                                  UnregisterAnimationWorkletMutator,
+                              mutator_item.mutator_dispatcher,
+                              WrapCrossThreadPersistent(this)));
     }
   }
   state_ = RunState::kDisposed;

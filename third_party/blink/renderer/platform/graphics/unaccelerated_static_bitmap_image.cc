@@ -50,8 +50,8 @@ UnacceleratedStaticBitmapImage::~UnacceleratedStaticBitmapImage() {
   if (!original_skia_image_task_runner_->BelongsToCurrentThread()) {
     PostCrossThreadTask(
         *original_skia_image_task_runner_, FROM_HERE,
-        CrossThreadBind([](sk_sp<SkImage> image) { image.reset(); },
-                        std::move(original_skia_image_)));
+        CrossThreadBindOnce([](sk_sp<SkImage> image) { image.reset(); },
+                            std::move(original_skia_image_)));
   } else {
     original_skia_image_.reset();
   }

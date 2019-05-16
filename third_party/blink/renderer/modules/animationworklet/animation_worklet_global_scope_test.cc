@@ -84,9 +84,9 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
     base::WaitableEvent waitable_event;
     PostCrossThreadTask(
         *worklet->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
-        CrossThreadBind(callback, CrossThreadUnretained(this),
-                        CrossThreadUnretained(worklet.get()),
-                        CrossThreadUnretained(&waitable_event)));
+        CrossThreadBindOnce(callback, CrossThreadUnretained(this),
+                            CrossThreadUnretained(worklet.get()),
+                            CrossThreadUnretained(&waitable_event)));
     waitable_event.Wait();
 
     worklet->Terminate();
@@ -485,11 +485,11 @@ TEST_F(AnimationWorkletGlobalScopeTest,
       )JS";
   PostCrossThreadTask(
       *worklet->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
-      CrossThreadBind(&AnimationWorkletGlobalScopeTest::RunScriptOnWorklet,
-                      CrossThreadUnretained(this),
-                      Passed(std::move(source_code)),
-                      CrossThreadUnretained(worklet.get()),
-                      CrossThreadUnretained(&waitable_event)));
+      CrossThreadBindOnce(&AnimationWorkletGlobalScopeTest::RunScriptOnWorklet,
+                          CrossThreadUnretained(this),
+                          Passed(std::move(source_code)),
+                          CrossThreadUnretained(worklet.get()),
+                          CrossThreadUnretained(&waitable_event)));
   waitable_event.Wait();
 
   // AWGS should register itself first time an animator is registered with it.

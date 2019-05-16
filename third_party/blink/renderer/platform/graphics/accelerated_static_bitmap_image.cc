@@ -118,7 +118,7 @@ AcceleratedStaticBitmapImage::~AcceleratedStaticBitmapImage() {
     if (!original_skia_image_task_runner_->BelongsToCurrentThread()) {
       PostCrossThreadTask(
           *original_skia_image_task_runner_, FROM_HERE,
-          CrossThreadBind(
+          CrossThreadBindOnce(
               &DestroySkImageOnOriginalThread, std::move(original_skia_image_),
               std::move(original_skia_image_context_provider_wrapper_),
               WTF::Passed(std::move(sync_token))));

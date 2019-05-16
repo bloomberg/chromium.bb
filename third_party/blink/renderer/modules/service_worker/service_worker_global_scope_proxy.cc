@@ -769,8 +769,8 @@ void ServiceWorkerGlobalScopeProxy::DidCloseWorkerGlobalScope() {
   PostCrossThreadTask(
       *parent_execution_context_task_runners_->Get(TaskType::kInternalDefault),
       FROM_HERE,
-      CrossThreadBind(&WebEmbeddedWorkerImpl::TerminateWorkerContext,
-                      CrossThreadUnretained(embedded_worker_)));
+      CrossThreadBindOnce(&WebEmbeddedWorkerImpl::TerminateWorkerContext,
+                          CrossThreadUnretained(embedded_worker_)));
 
   // NOTE: WorkerThread calls WillDestroyWorkerGlobalScope() synchronously after
   // this function returns, since it calls DidCloseWorkerGlobalScope() then

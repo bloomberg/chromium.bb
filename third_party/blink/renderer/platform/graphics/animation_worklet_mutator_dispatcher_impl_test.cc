@@ -63,7 +63,7 @@ class MockAnimationWorkletMutator
   void BlockWorkletThread() {
     PostCrossThreadTask(
         *expected_runner_, FROM_HERE,
-        CrossThreadBind(
+        CrossThreadBindOnce(
             [](base::WaitableEvent* start_processing_event) {
               start_processing_event->Wait();
             },

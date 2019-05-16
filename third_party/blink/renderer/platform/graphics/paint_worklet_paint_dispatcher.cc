@@ -98,7 +98,7 @@ sk_sp<cc::PaintRecord> PaintWorkletPaintDispatcher::Paint(
 
     PostCrossThreadTask(
         *task_runner, FROM_HERE,
-        CrossThreadBind(
+        CrossThreadBindOnce(
             [](PaintWorkletPainter* painter, cc::PaintWorkletInput* input,
                std::unique_ptr<AutoSignal> completion,
                sk_sp<cc::PaintRecord>* output) {

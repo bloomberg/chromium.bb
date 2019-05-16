@@ -54,7 +54,7 @@ class PaintWorkletGlobalScopeTest : public PageTestBase {
     base::WaitableEvent waitable_event;
     PostCrossThreadTask(
         *worklet->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
-        CrossThreadBind(
+        CrossThreadBindOnce(
             callback, CrossThreadUnretained(this),
             CrossThreadUnretained(worklet.get()),
             CrossThreadPersistent<PaintWorkletProxyClient>(proxy_client_),
