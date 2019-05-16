@@ -174,6 +174,7 @@ Display::CreateClientControlledShellSurface(
                                                      container));
   DCHECK_GE(default_device_scale_factor, 1.0);
   shell_surface->SetScale(default_device_scale_factor);
+  shell_surface->CommitPendingScale();
   return shell_surface;
 }
 

@@ -427,6 +427,16 @@ void ClientControlledShellSurface::SetScale(double scale) {
   pending_scale_ = scale;
 }
 
+void ClientControlledShellSurface::CommitPendingScale() {
+  if (pending_scale_ != scale_) {
+    gfx::Transform transform;
+    DCHECK_NE(pending_scale_, 0.0);
+    transform.Scale(1.0 / pending_scale_, 1.0 / pending_scale_);
+    host_window()->SetTransform(transform);
+    scale_ = pending_scale_;
+  }
+}
+
 void ClientControlledShellSurface::SetTopInset(int height) {
   TRACE_EVENT1("exo", "ClientControlledShellSurface::SetTopInset", "height",
                height);
@@ -979,13 +989,7 @@ void ClientControlledShellSurface::OnPostWidgetCommit() {
   }
 
   // Update surface scale.
-  if (pending_scale_ != scale_) {
-    gfx::Transform transform;
-    DCHECK_NE(pending_scale_, 0.0);
-    transform.Scale(1.0 / pending_scale_, 1.0 / pending_scale_);
-    host_window()->SetTransform(transform);
-    scale_ = pending_scale_;
-  }
+  CommitPendingScale();
 
   orientation_ = pending_orientation_;
   if (expected_orientation_ == orientation_)

@@ -120,11 +120,12 @@ TEST_F(DisplayTest, CreateClientControlledShellSurface) {
   ASSERT_TRUE(surface2);
 
   // Create a remote shell surface for surface1.
-  std::unique_ptr<ShellSurfaceBase> shell_surface1 =
+  std::unique_ptr<ClientControlledShellSurface> shell_surface1 =
       display->CreateClientControlledShellSurface(
           surface1.get(), ash::kShellWindowId_SystemModalContainer,
           2.0 /* default_scale_factor */);
-  EXPECT_TRUE(shell_surface1);
+  ASSERT_TRUE(shell_surface1);
+  EXPECT_EQ(shell_surface1->scale(), 2.0);
 
   // Create a remote shell surface for surface2.
   std::unique_ptr<ShellSurfaceBase> shell_surface2 =

@@ -135,7 +135,12 @@ class ClientControlledShellSurface
   // Set shadow bounds in surface coordinates. Empty bounds disable the shadow.
   void SetShadowBounds(const gfx::Rect& bounds);
 
+  // Set the pending scale.
   void SetScale(double scale);
+
+  // Commit the pending scale if it was changed. The scale set by SetScale() is
+  // otherwise committed by OnPostWidgetCommit().
+  void CommitPendingScale();
 
   // Set top inset for surface.
   void SetTopInset(int height);
@@ -224,6 +229,10 @@ class ClientControlledShellSurface
       const DelegateFactoryCallback& callback);
 
   ash::WideFrameView* wide_frame_for_test() { return wide_frame_.get(); }
+
+  // Exposed for testing. Returns the effective scale as opposed to
+  // |pending_scale_|.
+  double scale() const { return scale_; }
 
  private:
   class ScopedSetBoundsLocally;
