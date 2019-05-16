@@ -98,7 +98,6 @@
 #include "chromecast/graphics/cast_window_manager_aura.h"
 #include "components/viz/service/display/overlay_strategy_underlay_cast.h"  // nogncheck
 #include "ui/display/screen.h"
-#include "ui/views/views_delegate.h"
 #else
 #include "chromecast/graphics/cast_window_manager_default.h"
 #endif
@@ -237,21 +236,6 @@ CreateClientConnectionManager(
 }
 
 #endif
-
-#if defined(USE_AURA)
-
-// Provide a basic implementation. No need to override anything since we're not
-// planning on customizing any behavior at this point.
-class CastViewsDelegate : public views::ViewsDelegate {
- public:
-  CastViewsDelegate() = default;
-  ~CastViewsDelegate() override = default;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CastViewsDelegate);
-};
-
-#endif  // defined(USE_AURA)
 
 }  // namespace
 
@@ -428,12 +412,6 @@ void CastBrowserMainParts::PostMainMessageLoopStart() {
 }
 
 void CastBrowserMainParts::ToolkitInitialized() {
-#if defined(USE_AURA)
-  // Needs to be initialize before any UI is created.
-  if (!views::ViewsDelegate::GetInstance())
-    views_delegate_ = std::make_unique<CastViewsDelegate>();
-#endif  // defined(USE_AURA)
-
 #if defined(OS_LINUX)
   // Without this call, the FontConfig library gets implicitly initialized
   // on the first call to FontConfig. Since it's not safe to initialize it
