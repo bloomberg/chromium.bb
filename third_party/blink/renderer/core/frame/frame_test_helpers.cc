@@ -641,9 +641,11 @@ void TestWebWidgetClient::SetAllowGpuRasterization(bool allow) {
   layer_tree_host()->SetHasGpuRasterizationTrigger(allow);
 }
 
-void TestWebWidgetClient::SetPageScaleFactorAndLimits(float page_scale_factor,
-                                                      float minimum,
-                                                      float maximum) {
+void TestWebWidgetClient::SetPageScaleStateAndLimits(
+    float page_scale_factor,
+    bool is_pinch_gesture_active,
+    float minimum,
+    float maximum) {
   layer_tree_host()->SetPageScaleFactorAndLimits(page_scale_factor, minimum,
                                                  maximum);
 }
