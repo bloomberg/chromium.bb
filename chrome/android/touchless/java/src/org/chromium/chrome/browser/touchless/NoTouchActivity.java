@@ -128,7 +128,7 @@ public class NoTouchActivity extends SingleTabActivity {
     public void initializeState() {
         mInactivityTracker = new ChromeInactivityTracker(
                 LAST_BACKGROUNDED_TIME_MS_PREF, this.getLifecycleDispatcher());
-        boolean launchNtpDueToInactivity = shouldForceNTPDueToInactivity();
+        boolean launchNtpDueToInactivity = shouldForceNTPDueToInactivity(null);
 
         // SingleTabActivity#initializeState creates a tab based on #getSavedInstanceState(), so if
         // we need to clear it due to inactivity, we should do it before calling
@@ -157,7 +157,11 @@ public class NoTouchActivity extends SingleTabActivity {
         resetSavedInstanceState();
     }
 
-    private boolean shouldForceNTPDueToInactivity() {
+    private boolean shouldForceNTPDueToInactivity(Intent intent) {
+        if (intent != null) {
+            String intentData = intent.getDataString();
+            if (intentData != null && !intentData.isEmpty()) return false;
+        }
         if (mInactivityTracker == null) return false;
         if (mTabObserver == null) return false;
 
@@ -177,7 +181,7 @@ public class NoTouchActivity extends SingleTabActivity {
 
     @Override
     public void onNewIntentWithNative(Intent intent) {
-        if (shouldForceNTPDueToInactivity()) {
+        if (shouldForceNTPDueToInactivity(intent)) {
             if (!mIntentHandler.shouldIgnoreIntent(intent)) {
                 if (!NTP_URL.equals(getActivityTab().getUrl())) {
                     intent.setData(Uri.parse(NTP_URL));
