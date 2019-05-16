@@ -355,9 +355,20 @@ void RenderWidgetHostViewAndroid::OnRenderFrameMetadataChangedBeforeActivation(
   if (!features::IsSurfaceSynchronizationEnabled())
     return;
 
+  bool is_transparent = metadata.has_transparent_background;
+  SkColor root_background_color = metadata.root_background_color;
+
   if (!using_browser_compositor_) {
     // DevTools ScreenCast support for Android WebView.
     last_devtools_frame_metadata_.emplace(metadata);
+    // Android WebView ignores transparent background.
+    is_transparent = false;
+    // Android WebView always uses a black background while fullscreen.
+    // This inadvertently happened in the past (see https://crbug.com/961223#c5)
+    // but has been the behavior for long enough that it's become standard.
+    // This ensures the behaviour is robust.
+    if (host()->delegate()->IsFullscreenForCurrentTab())
+      root_background_color = SK_ColorBLACK;
   }
 
   bool is_mobile_optimized = IsMobileOptimizedFrame(
@@ -413,9 +424,8 @@ void RenderWidgetHostViewAndroid::OnRenderFrameMetadataChangedBeforeActivation(
       metadata.top_controls_shown_ratio, metadata.bottom_controls_height,
       metadata.bottom_controls_shown_ratio);
 
-  SetContentBackgroundColor(metadata.has_transparent_background
-                                ? SK_ColorTRANSPARENT
-                                : metadata.root_background_color);
+  SetContentBackgroundColor(is_transparent ? SK_ColorTRANSPARENT
+                                           : root_background_color);
 
   if (overscroll_controller_) {
     overscroll_controller_->OnFrameMetadataUpdated(
@@ -2062,6 +2072,13 @@ RenderWidgetHostViewAndroid::GetTouchSelectionControllerClientManager() {
 
 const viz::LocalSurfaceIdAllocation&
 RenderWidgetHostViewAndroid::GetLocalSurfaceIdAllocation() const {
+  // Don't return an local surface ID for webview unless we're using
+  // SurfaceSynchronization.
+  if (!using_browser_compositor_ &&
+      !features::IsSurfaceSynchronizationEnabled()) {
+    return viz::ParentLocalSurfaceIdAllocator::
+        InvalidLocalSurfaceIdAllocation();
+  }
   return local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation();
 }
 
