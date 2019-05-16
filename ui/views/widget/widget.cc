@@ -42,10 +42,6 @@
 #include "ui/views/window/custom_frame_view.h"
 #include "ui/views/window/dialog_delegate.h"
 
-#if defined(USE_AURA)
-#include "ui/aura/env.h"     // nogncheck
-#endif
-
 namespace views {
 
 namespace {
@@ -1017,11 +1013,7 @@ gfx::Rect Widget::GetWorkAreaBoundsInScreen() const {
 void Widget::SynthesizeMouseMoveEvent() {
   // In screen coordinate.
   gfx::Point mouse_location =
-#if defined(USE_AURA)
-      GetNativeWindow()->env()->last_mouse_location();
-#else
       display::Screen::GetScreen()->GetCursorScreenPoint();
-#endif
   if (!GetWindowBoundsInScreen().Contains(mouse_location))
     return;
 
@@ -1117,13 +1109,11 @@ bool Widget::OnNativeWidgetActivationChanged(bool active) {
 }
 
 void Widget::OnNativeFocus() {
-  WidgetFocusManager::GetInstance(GetNativeWindow())
-      ->OnNativeFocusChanged(GetNativeView());
+  WidgetFocusManager::GetInstance()->OnNativeFocusChanged(GetNativeView());
 }
 
 void Widget::OnNativeBlur() {
-  WidgetFocusManager::GetInstance(GetNativeWindow())
-      ->OnNativeFocusChanged(nullptr);
+  WidgetFocusManager::GetInstance()->OnNativeFocusChanged(nullptr);
 }
 
 void Widget::OnNativeWidgetVisibilityChanging(bool visible) {

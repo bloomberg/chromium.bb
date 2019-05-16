@@ -718,8 +718,7 @@ bool NativeWidgetAura::IsMouseEventsEnabled() const {
 }
 
 bool NativeWidgetAura::IsMouseButtonDown() const {
-  return window_ ? window_->env()->IsMouseButtonDown()
-                 : aura::Env::GetInstance()->IsMouseButtonDown();
+  return aura::Env::GetInstance()->IsMouseButtonDown();
 }
 
 void NativeWidgetAura::ClearNativeFocus() {
@@ -804,7 +803,7 @@ bool NativeWidgetAura::IsTranslucentWindowOpacitySupported() const {
 }
 
 ui::GestureRecognizer* NativeWidgetAura::GetGestureRecognizer() {
-  return window_->env()->gesture_recognizer();
+  return aura::Env::GetInstance()->gesture_recognizer();
 }
 
 void NativeWidgetAura::OnSizeConstraintsChanged() {

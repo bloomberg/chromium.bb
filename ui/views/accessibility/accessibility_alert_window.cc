@@ -19,17 +19,16 @@ AccessibilityAlertWindow::AccessibilityAlertWindow(aura::Window* parent,
     : cache_(cache) {
   CHECK(parent);
   alert_window_ = std::make_unique<aura::Window>(
-      nullptr, aura::client::WINDOW_TYPE_UNKNOWN, parent->env());
+      nullptr, aura::client::WINDOW_TYPE_UNKNOWN);
   alert_window_->set_owned_by_parent(false);
   alert_window_->Init(ui::LayerType::LAYER_NOT_DRAWN);
   alert_window_->SetProperty(ui::kAXRoleOverride, ax::mojom::Role::kAlert);
   parent->AddChild(alert_window_.get());
-  alert_window_->env()->AddObserver(this);
+  aura::Env::GetInstance()->AddObserver(this);
 }
 
 AccessibilityAlertWindow::~AccessibilityAlertWindow() {
-  if (alert_window_.get())
-    alert_window_->env()->RemoveObserver(this);
+  aura::Env::GetInstance()->RemoveObserver(this);
 }
 
 void AccessibilityAlertWindow::HandleAlert(const std::string& alert_string) {

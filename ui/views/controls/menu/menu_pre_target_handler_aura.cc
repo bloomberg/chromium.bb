@@ -25,7 +25,6 @@ MenuPreTargetHandlerAura::MenuPreTargetHandlerAura(MenuController* controller,
                                                    Widget* owner)
     : controller_(controller), root_(GetOwnerRootWindow(owner)) {
   if (root_) {
-    aura_env_ = root_->env();
     wm::GetActivationClient(root_)->AddObserver(this);
     root_->AddObserver(this);
   } else {
@@ -35,13 +34,13 @@ MenuPreTargetHandlerAura::MenuPreTargetHandlerAura(MenuController* controller,
     // pre-target handler on the aura::Env associated with their app window.
     DCHECK(!::features::IsUsingWindowService())
         << "MenuPreTargetHandlerAura may not work correctly without an owner.";
-    aura_env_ = aura::Env::GetInstance();
   }
-  aura_env_->AddPreTargetHandler(this, ui::EventTarget::Priority::kSystem);
+  aura::Env::GetInstance()->AddPreTargetHandler(
+      this, ui::EventTarget::Priority::kSystem);
 }
 
 MenuPreTargetHandlerAura::~MenuPreTargetHandlerAura() {
-  aura_env_->RemovePreTargetHandler(this);
+  aura::Env::GetInstance()->RemovePreTargetHandler(this);
   Cleanup();
 }
 

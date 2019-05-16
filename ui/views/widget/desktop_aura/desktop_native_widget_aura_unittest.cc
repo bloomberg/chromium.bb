@@ -334,7 +334,7 @@ TEST_F(DesktopNativeWidgetAuraTest, MAYBE_ReorderDoesntRecomputeOcclusion) {
 
   // Reorder child views. Expect occlusion to only be recomputed once.
   aura::test::WindowOcclusionTrackerTestApi window_occlusion_tracker_test_api(
-      parent_window->env()->GetWindowOcclusionTracker());
+      aura::Env::GetInstance()->GetWindowOcclusionTracker());
   const int num_times_occlusion_recomputed =
       window_occlusion_tracker_test_api.GetNumTimesOcclusionRecomputed();
   contents_view->ReorderChildView(host_view3, 0);

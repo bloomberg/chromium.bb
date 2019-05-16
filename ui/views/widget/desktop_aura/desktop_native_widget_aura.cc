@@ -618,7 +618,7 @@ void DesktopNativeWidgetAura::ReorderNativeViews() {
   // scope rather than after each individual change.
   // https://crbug.com/829918
   aura::WindowOcclusionTracker::ScopedPause pause_occlusion(
-      content_window_->env());
+      aura::Env::GetInstance());
   window_reorderer_->ReorderChildWindows();
 }
 
@@ -929,8 +929,7 @@ bool DesktopNativeWidgetAura::IsMouseEventsEnabled() const {
 }
 
 bool DesktopNativeWidgetAura::IsMouseButtonDown() const {
-  return content_window_ ? content_window_->env()->IsMouseButtonDown()
-                         : aura::Env::GetInstance()->IsMouseButtonDown();
+  return aura::Env::GetInstance()->IsMouseButtonDown();
 }
 
 void DesktopNativeWidgetAura::ClearNativeFocus() {
@@ -999,7 +998,7 @@ bool DesktopNativeWidgetAura::IsTranslucentWindowOpacitySupported() const {
 }
 
 ui::GestureRecognizer* DesktopNativeWidgetAura::GetGestureRecognizer() {
-  return content_window_->env()->gesture_recognizer();
+  return aura::Env::GetInstance()->gesture_recognizer();
 }
 
 void DesktopNativeWidgetAura::OnSizeConstraintsChanged() {
