@@ -906,7 +906,6 @@ html[dir=rtl] .menu-option {
 }
 
 .menu-option-icon {
-  -webkit-mask-image: url(icons/icon_pencil.svg);
   -webkit-mask-position-x: center;
   -webkit-mask-position-y: center;
   -webkit-mask-repeat: no-repeat;
@@ -929,6 +928,14 @@ html[darkmode=true] .menu-option-icon {
 
 #shortcuts-icon {
   -webkit-mask-image: url(icons/link.svg);
+}
+
+#backgrounds-icon {
+  -webkit-mask-image: url(icons/backgrounds.svg);
+}
+
+#colors-icon {
+  -webkit-mask-image: url(icons/colors.svg);
 }
 
 .menu-option-label {
