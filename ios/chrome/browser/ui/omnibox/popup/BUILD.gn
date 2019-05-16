@@ -29,6 +29,7 @@ source_set("popup") {
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/ntp:util",
+    "//ios/chrome/browser/ui/omnibox:omnibox_protocols",
     "//ios/chrome/browser/ui/omnibox:omnibox_util",
     "//ios/chrome/browser/ui/omnibox/popup/shortcuts",
     "//ios/chrome/browser/ui/toolbar/buttons",
@@ -48,8 +49,6 @@ source_set("popup_ui") {
   sources = [
     "autocomplete_result_consumer.h",
     "autocomplete_suggestion.h",
-    "favicon_retriever.h",
-    "image_retriever.h",
     "omnibox_popup_base_view_controller+internal.h",
     "omnibox_popup_base_view_controller.h",
     "omnibox_popup_base_view_controller.mm",
@@ -76,6 +75,8 @@ source_set("popup_ui") {
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/elements",
     "//ios/chrome/browser/ui/omnibox:omnibox_popup_shared",
+    "//ios/chrome/browser/ui/omnibox:omnibox_protocols",
+    "//ios/chrome/browser/ui/omnibox:omnibox_ui",
     "//ios/chrome/browser/ui/toolbar/buttons",
     "//ios/chrome/browser/ui/toolbar/public",
     "//ios/chrome/browser/ui/util",
@@ -92,18 +93,15 @@ source_set("popup_internal") {
     "autocomplete_match_formatter.mm",
   ]
   deps = [
+    ":popup_ui",
     "//base",
     "//components/omnibox/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/ui:feature_flags",
+    "//ios/chrome/browser/ui/omnibox:omnibox_ui_internal",
     "//ios/chrome/browser/ui/omnibox:omnibox_util",
     "//ios/chrome/browser/ui/util",
     "//ios/third_party/material_components_ios",
-  ]
-
-  # Temporary until ios_internal CL is submitted
-  public_deps = [
-    ":popup_ui",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }

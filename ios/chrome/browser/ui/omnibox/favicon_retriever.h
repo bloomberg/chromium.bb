@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_OMNIBOX_POPUP_FAVICON_RETRIEVER_H_
-#define IOS_CHROME_BROWSER_UI_OMNIBOX_POPUP_FAVICON_RETRIEVER_H_
+#ifndef IOS_CHROME_BROWSER_UI_OMNIBOX_FAVICON_RETRIEVER_H_
+#define IOS_CHROME_BROWSER_UI_OMNIBOX_FAVICON_RETRIEVER_H_
+
+class GURL;
 
 // A favicon retriever.
 // This protocol is intended to be used in Showcase, abstracting out the actual
@@ -16,4 +18,4 @@
 - (void)fetchFavicon:(GURL)pageURL completion:(void (^)(UIImage*))completion;
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_OMNIBOX_POPUP_FAVICON_RETRIEVER_H_
+#endif  // IOS_CHROME_BROWSER_UI_OMNIBOX_FAVICON_RETRIEVER_H_

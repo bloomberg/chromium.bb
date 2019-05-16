@@ -9,9 +9,8 @@
 #include "components/omnibox/common/omnibox_features.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/elements/extended_touch_target_button.h"
+#import "ios/chrome/browser/ui/omnibox/omnibox_icon_view.h"
 #import "ios/chrome/browser/ui/omnibox/popup/autocomplete_suggestion.h"
-#import "ios/chrome/browser/ui/omnibox/popup/favicon_retriever.h"
-#import "ios/chrome/browser/ui/omnibox/popup/image_retriever.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_truncating_label.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
@@ -85,9 +84,8 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
     _detailAnswerLabel.translatesAutoresizingMaskIntoConstraints = NO;
     _detailAnswerLabel.lineBreakMode = NSLineBreakByTruncatingTail;
 
-    _leadingImageView = [[UIImageView alloc] initWithImage:nil];
-    _leadingImageView.translatesAutoresizingMaskIntoConstraints = NO;
-    _leadingImageView.contentMode = UIViewContentModeCenter;
+    _leadingIconView = [[OmniboxIconView alloc] init];
+    _leadingIconView.translatesAutoresizingMaskIntoConstraints = NO;
 
     _trailingButton =
         [ExtendedTouchTargetButton buttonWithType:UIButtonTypeCustom];
@@ -99,7 +97,6 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
 
     _separator = [[UIView alloc] initWithFrame:CGRectZero];
     _separator.translatesAutoresizingMaskIntoConstraints = NO;
-    _separator.backgroundColor = [MDCPalette.cr_greyPalette tint200];
     _separator.hidden = YES;
 
     _incognito = NO;
@@ -117,12 +114,39 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
   }
 }
 
+#pragma mark - Property setter/getters
+
+- (void)setImageRetriever:(id<ImageRetriever>)imageRetriever {
+  _imageRetriever = imageRetriever;
+  self.leadingIconView.imageRetriever = imageRetriever;
+}
+
+- (void)setFaviconRetriever:(id<FaviconRetriever>)faviconRetriever {
+  _faviconRetriever = faviconRetriever;
+  self.leadingIconView.faviconRetriever = faviconRetriever;
+}
+
+- (void)setOmniboxSemanticContentAttribute:
+    (UISemanticContentAttribute)omniboxSemanticContentAttribute {
+  _omniboxSemanticContentAttribute = omniboxSemanticContentAttribute;
+  self.contentView.semanticContentAttribute = omniboxSemanticContentAttribute;
+  self.textStackView.semanticContentAttribute = omniboxSemanticContentAttribute;
+}
+
+- (BOOL)showsSeparator {
+  return self.separator.hidden;
+}
+
+- (void)setShowsSeparator:(BOOL)showsSeparator {
+  self.separator.hidden = !showsSeparator;
+}
+
 #pragma mark - Layout
 
 // Setup the layout of the cell initially. This only adds the elements that are
 // always in the cell.
 - (void)setupLayout {
-  [self.contentView addSubview:self.leadingImageView];
+  [self.contentView addSubview:self.leadingIconView];
   [self.contentView addSubview:self.textStackView];
   [self.contentView addSubview:self.separator];
 
@@ -131,15 +155,15 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
     [self.contentView.heightAnchor
         constraintGreaterThanOrEqualToConstant:kOmniboxPopupCellMinimumHeight],
 
-    // Position leadingImageView at the leading edge of the view.
+    // Position leadingIconView at the leading edge of the view.
     // Leave the horizontal position unconstrained as that will be added via a
     // layout guide once the cell has been added to the view hierarchy.
-    [self.leadingImageView.heightAnchor
-        constraintEqualToAnchor:self.leadingImageView.widthAnchor],
-    [self.leadingImageView.centerYAnchor
+    [self.leadingIconView.heightAnchor
+        constraintEqualToAnchor:self.leadingIconView.widthAnchor],
+    [self.leadingIconView.centerYAnchor
         constraintEqualToAnchor:self.contentView.centerYAnchor],
 
-    // Position textStackView "after" leadingImageView. The horizontal position
+    // Position textStackView "after" leadingIconView. The horizontal position
     // is actually left off because it will be added via a
     // layout guide once the cell has been added to the view hierarchy.
     // Top space should be at least the given top margin, but can be more if
@@ -223,9 +247,9 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
   stackViewToCellTrailing.priority = highest;
 
   [NSLayoutConstraint activateConstraints:@[
-    [self.leadingImageView.centerXAnchor
+    [self.leadingIconView.centerXAnchor
         constraintEqualToAnchor:imageLayoutGuide.centerXAnchor],
-    [self.leadingImageView.widthAnchor
+    [self.leadingIconView.widthAnchor
         constraintEqualToAnchor:imageLayoutGuide.widthAnchor],
     [self.textStackView.leadingAnchor
         constraintEqualToAnchor:textLayoutGuide.leadingAnchor],
@@ -233,21 +257,6 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
     stackViewToLayoutGuideTrailing,
     stackViewToCellTrailing,
   ]];
-}
-
-- (void)setOmniboxSemanticContentAttribute:
-    (UISemanticContentAttribute)omniboxSemanticContentAttribute {
-  _omniboxSemanticContentAttribute = omniboxSemanticContentAttribute;
-  self.contentView.semanticContentAttribute = omniboxSemanticContentAttribute;
-  self.textStackView.semanticContentAttribute = omniboxSemanticContentAttribute;
-}
-
-- (BOOL)showsSeparator {
-  return self.separator.hidden;
-}
-
-- (void)setShowsSeparator:(BOOL)showsSeparator {
-  self.separator.hidden = !showsSeparator;
 }
 
 - (void)prepareForReuse {
@@ -263,7 +272,7 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
   self.detailTruncatingLabel.attributedText = nil;
   self.detailAnswerLabel.attributedText = nil;
 
-  self.leadingImageView.image = nil;
+  [self.leadingIconView prepareForReuse];
 
   // Remove optional views.
   [self.trailingButton setImage:nil forState:UIControlStateNormal];
@@ -289,9 +298,9 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
   self.suggestion = suggestion;
   self.incognito = incognito;
 
-  self.separator.backgroundColor = self.incognito
-                                       ? [MDCPalette.cr_greyPalette tint700]
-                                       : [MDCPalette.cr_greyPalette tint200];
+  self.separator.backgroundColor =
+      self.incognito ? [MDCPalette.cr_greyPalette tint700]
+                     : [UIColor.blackColor colorWithAlphaComponent:0.12];
 
   self.textTruncatingLabel.attributedText = self.suggestion.text;
 
@@ -307,61 +316,11 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
     }
   }
 
-  [self setupLeadingImageView];
+  [self.leadingIconView setOmniboxIcon:self.suggestion.icon];
 
   if (self.suggestion.isAppendable || self.suggestion.isTabMatch) {
     [self setupTrailingButton];
   }
-}
-
-// Populate the leading image view with the correct image and color.
-- (void)setupLeadingImageView {
-  if (self.suggestion.hasImage) {
-    [self setupLeadingImageViewForAnswerImage];
-  } else {
-    [self setupLeadingImageViewForIconAndFavicon];
-  }
-}
-
-// Populate the leading image view in the case where the image should be an
-// image from answers-in-suggest or rich entity.
-- (void)setupLeadingImageViewForAnswerImage {
-  self.leadingImageView.contentMode = UIViewContentModeScaleAspectFill;
-  __weak OmniboxPopupRowCell* weakSelf = self;
-  GURL imageURL = self.suggestion.imageURL;
-  [self.imageRetriever fetchImage:imageURL
-                       completion:^(UIImage* image) {
-                         // Make sure cell is still displaying the same
-                         // suggestion.
-                         if (weakSelf.suggestion.imageURL != imageURL) {
-                           return;
-                         }
-                         weakSelf.leadingImageView.image = image;
-                       }];
-  self.leadingImageView.backgroundColor = nil;
-}
-
-// Populate the leading image view in the case where the image should be a
-// standard suggestion icon or a favicon.
-- (void)setupLeadingImageViewForIconAndFavicon {
-  self.leadingImageView.contentMode = UIViewContentModeCenter;
-  self.leadingImageView.image = self.suggestion.suggestionTypeIcon;
-
-  // Attempt to load favicon.
-  GURL pageURL = self.suggestion.faviconPageURL;
-  __weak OmniboxPopupRowCell* weakSelf = self;
-  [self.faviconRetriever fetchFavicon:pageURL
-                           completion:^(UIImage* image) {
-                             if (pageURL == weakSelf.suggestion.faviconPageURL)
-                               weakSelf.leadingImageView.image = image;
-                           }];
-
-  self.leadingImageView.backgroundColor =
-      self.incognito ? [UIColor colorWithWhite:1 alpha:0.05]
-                     : [UIColor colorWithWhite:0 alpha:0.03];
-  self.leadingImageView.tintColor = self.incognito
-                                        ? [UIColor colorWithWhite:1 alpha:0.4]
-                                        : [UIColor colorWithWhite:0 alpha:0.33];
 }
 
 // Setup the trailing button. This includes both setting up the button's layout

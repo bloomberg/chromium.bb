@@ -10,6 +10,7 @@
 @protocol AutocompleteSuggestion;
 @protocol FaviconRetriever;
 @protocol ImageRetriever;
+@class OmniboxIconView;
 @class OmniboxPopupRowCell;
 
 namespace {
@@ -54,7 +55,7 @@ const CGFloat kOmniboxPopupCellMinimumHeight = 58;
 @property(nonatomic, assign) BOOL showsSeparator;
 
 // Image view for the leading image.
-@property(nonatomic, strong, readonly) UIImageView* leadingImageView;
+@property(nonatomic, strong, readonly) OmniboxIconView* leadingIconView;
 
 @end
 

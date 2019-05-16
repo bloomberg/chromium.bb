@@ -18,6 +18,45 @@ source_set("omnibox") {
   ]
 }
 
+source_set("omnibox_protocols") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "favicon_retriever.h",
+    "image_retriever.h",
+  ]
+}
+
+source_set("omnibox_ui") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "omnibox_icon.h",
+    "omnibox_icon_view.h",
+    "omnibox_icon_view.mm",
+  ]
+  deps = [
+    ":omnibox_protocols",
+    "//url",
+  ]
+}
+
+source_set("omnibox_ui_internal") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "omnibox_icon_formatter.h",
+    "omnibox_icon_formatter.mm",
+  ]
+
+  deps = [
+    ":omnibox_protocols",
+    ":omnibox_ui",
+    ":omnibox_util",
+    "//components/omnibox/browser",
+    "//ios/chrome/browser/ui:feature_flags",
+    "//ios/chrome/browser/ui/colors",
+    "//url",
+  ]
+}
+
 source_set("omnibox_popup_shared") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [

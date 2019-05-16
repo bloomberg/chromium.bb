@@ -9,7 +9,6 @@
 
 #import "ios/chrome/browser/ui/commands/omnibox_suggestion_commands.h"
 #import "ios/chrome/browser/ui/omnibox/popup/autocomplete_result_consumer.h"
-#import "ios/chrome/browser/ui/omnibox/popup/image_retriever.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_base_view_controller.h"
 #include "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_row.h"
 

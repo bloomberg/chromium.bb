@@ -292,6 +292,10 @@ NSAttributedString* calculatorText() {
   return self.imageURL.is_valid();
 }
 
+- (id<OmniboxIcon>)icon {
+  return nil;
+}
+
 + (instancetype)simpleSuggestion {
   FakeAutocompleteSuggestion* suggestion =
       [[FakeAutocompleteSuggestion alloc] init];

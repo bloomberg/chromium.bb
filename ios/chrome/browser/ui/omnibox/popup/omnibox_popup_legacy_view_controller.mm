@@ -9,8 +9,8 @@
 
 #include "base/ios/ios_util.h"
 #include "base/metrics/histogram_macros.h"
+#import "ios/chrome/browser/ui/omnibox/image_retriever.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_constants.h"
-#import "ios/chrome/browser/ui/omnibox/popup/image_retriever.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_row.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_truncating_label.h"
 #import "ios/chrome/browser/ui/omnibox/popup/self_sizing_table_view.h"

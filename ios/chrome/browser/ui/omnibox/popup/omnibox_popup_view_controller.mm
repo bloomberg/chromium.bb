@@ -100,13 +100,13 @@
   OmniboxPopupRowCell* cell = [self.tableView
       dequeueReusableCellWithIdentifier:OmniboxPopupRowCellReuseIdentifier
                            forIndexPath:indexPath];
+  cell.faviconRetriever = self.faviconRetriever;
+  cell.imageRetriever = self.imageRetriever;
   [cell setupWithAutocompleteSuggestion:self.currentResult[indexPath.row]
                               incognito:self.incognito];
   cell.showsSeparator =
       (NSUInteger)indexPath.row < self.currentResult.count - 1;
   cell.delegate = self;
-  cell.faviconRetriever = self.faviconRetriever;
-  cell.imageRetriever = self.imageRetriever;
 
   return cell;
 }

@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/suggestion_answer.h"
+#import "ios/chrome/browser/ui/omnibox/omnibox_icon_formatter.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_util.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/ui_util.h"
@@ -144,6 +145,10 @@ bool ShouldUseNewFormatting() {
   return detailAttributedText;
 }
 
+- (id<OmniboxIcon>)icon {
+  return [[OmniboxIconFormatter alloc] initWithMatch:_match];
+}
+
 - (NSInteger)numberOfLines {
   // Answers specify their own limit on the number of lines to show but are
   // additionally capped here at 3 to guard against unreasonable values.
@@ -189,6 +194,7 @@ bool ShouldUseNewFormatting() {
                                                 color:suggestionTextColor
                                              dimColor:dimColor];
   }
+
   return attributedText;
 }
 
