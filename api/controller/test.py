@@ -59,6 +59,12 @@ def BuildTargetUnitTest(input_proto, output_proto):
   # An empty sysroot means build packages was not run.
   was_built = not input_proto.flags.empty_sysroot
 
+  # Skipped tests.
+  blacklisted_package_info = input_proto.package_blacklist
+  blacklist = []
+  for package_info in blacklisted_package_info:
+    blacklist.append(controller_util.PackageInfoToString(package_info))
+
   # Chroot handling.
   chroot = input_proto.chroot.path
   cache_dir = input_proto.chroot.cache_dir
@@ -84,7 +90,8 @@ def BuildTargetUnitTest(input_proto, output_proto):
 
     try:
       commands.RunUnitTests(constants.SOURCE_ROOT, board, extra_env=extra_env,
-                            chroot_args=chroot_args, build_stage=was_built)
+                            chroot_args=chroot_args, build_stage=was_built,
+                            blacklist=blacklist)
     except failures_lib.PackageBuildFailure as e:
       # Add the failed packages.
       for pkg in e.failed_packages:

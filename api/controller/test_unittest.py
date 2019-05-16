@@ -26,12 +26,18 @@ class BuildTargetUnitTestTest(cros_test_lib.MockTempDirTestCase):
   """Tests for the UnitTest function."""
 
   def _GetInput(self, board=None, result_path=None, chroot_path=None,
-                cache_dir=None, empty_sysroot=None):
+                cache_dir=None, empty_sysroot=None, blacklist=None):
     """Helper to build an input message instance."""
+    formatted_blacklist = []
+    for pkg in blacklist or []:
+      formatted_blacklist.append({'category': pkg.category,
+                                  'package_name': pkg.package})
+
     return test_pb2.BuildTargetUnitTestRequest(
         build_target={'name': board}, result_path=result_path,
         chroot={'path': chroot_path, 'cache_dir': cache_dir},
-        flags={'empty_sysroot': empty_sysroot}
+        flags={'empty_sysroot': empty_sysroot},
+        package_blacklist=formatted_blacklist,
     )
 
   def _GetOutput(self):
@@ -123,8 +129,10 @@ class BuildTargetUnitTestTest(cros_test_lib.MockTempDirTestCase):
     self.PatchObject(portage_util, 'ParseParallelEmergeStatusFile',
                      return_value=[])
 
+    pkgs = ['foo/bar', 'cat/pkg']
+    blacklist = [portage_util.SplitCPV(p, strict=False) for p in pkgs]
     input_msg = self._GetInput(board='board', result_path=self.tempdir,
-                               empty_sysroot=True)
+                               empty_sysroot=True, blacklist=blacklist)
     output_msg = self._GetOutput()
 
     rc = test_controller.BuildTargetUnitTest(input_msg, output_msg)
@@ -132,7 +140,8 @@ class BuildTargetUnitTestTest(cros_test_lib.MockTempDirTestCase):
     self.assertNotEqual(0, rc)
     self.assertFalse(output_msg.failed_packages)
     patch.assert_called_with(constants.SOURCE_ROOT, 'board', extra_env=mock.ANY,
-                             chroot_args=mock.ANY, build_stage=False)
+                             chroot_args=mock.ANY, build_stage=False,
+                             blacklist=pkgs)
 
 
 class VmTestTest(cros_test_lib.MockTestCase):
