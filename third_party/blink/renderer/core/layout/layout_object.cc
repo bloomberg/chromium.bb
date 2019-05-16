@@ -3376,9 +3376,11 @@ static scoped_refptr<const ComputedStyle> FirstLineStyleForCachedUncachedType(
     const LayoutObject* layout_object,
     const ComputedStyle* style) {
   DCHECK(layout_object);
-  const LayoutObject* layout_object_for_first_line_style = layout_object;
-  if (layout_object->IsBeforeOrAfterContent())
-    layout_object_for_first_line_style = layout_object->Parent();
+
+  const LayoutObject* layout_object_for_first_line_style =
+      (layout_object->IsBeforeOrAfterContent() && layout_object->Parent())
+          ? layout_object->Parent()
+          : layout_object;
 
   if (layout_object_for_first_line_style->BehavesLikeBlockContainer()) {
     if (const LayoutBlock* first_line_block =
