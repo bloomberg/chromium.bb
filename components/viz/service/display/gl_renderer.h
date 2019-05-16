@@ -205,7 +205,7 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
       DrawRenderPassDrawQuadParams* params,
       gfx::Transform* backdrop_filter_bounds_transform,
       base::Optional<gfx::RRectF>* backdrop_filter_bounds,
-      gfx::Rect* unclipped_rect);
+      gfx::Rect* unclipped_rect) const;
 
   // Allocates and returns a texture id that contains a copy of the contents
   // of the current RenderPass being drawn.
