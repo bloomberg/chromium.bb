@@ -61,6 +61,7 @@
   "force-update-menu-type",
   "ignore-gpu-blacklist",
   "ignore-previews-blocklist",
+  "in-product-help-demo-mode-choice",
   "list-all-display-modes",
   "load-media-router-component-extension",
   "memlog",

@@ -2112,8 +2112,10 @@
   },
   {
     "name": "in-product-help-demo-mode-choice",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "dtrainor", "nyquist" ],
+    // This flag is used by teams as they develop in-product help integrations,
+    // as well as by QA; this feature is difficult to test without this.
+    "expiry_milestone": -1
   },
   {
     "name": "in-session-password-change",
