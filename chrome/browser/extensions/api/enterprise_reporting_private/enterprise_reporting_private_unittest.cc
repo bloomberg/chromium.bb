@@ -9,7 +9,7 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/extension_api_unittest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
-#include "chrome/browser/policy/browser_dm_token_storage.h"
+#include "chrome/browser/policy/fake_browser_dm_token_storage.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -25,26 +25,6 @@ namespace {
 const char kFakeDMToken[] = "fake-dm-token";
 const char kFakeClientId[] = "fake-client-id";
 const char kFakeMachineNameReport[] = "{\"computername\":\"name\"}";
-
-class FakeBrowserDMTokenStorage : public policy::BrowserDMTokenStorage {
- public:
-  FakeBrowserDMTokenStorage() = default;
-  ~FakeBrowserDMTokenStorage() override = default;
-
-  void SetClientId(const std::string& client_id) { client_id_ = client_id; }
-
-  // policy::BrowserDMTokenStorage:
-  std::string InitClientId() override { return client_id_; }
-  std::string InitEnrollmentToken() override { return std::string(); }
-  std::string InitDMToken() override { return std::string(); }
-  bool InitEnrollmentErrorOption() override { return true; }
-  void SaveDMToken(const std::string& token) override {}
-
- private:
-  std::string client_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeBrowserDMTokenStorage);
-};
 
 }  // namespace
 
@@ -133,16 +113,14 @@ TEST_F(EnterpriseReportingPrivateUploadChromeDesktopReportTest,
 // Test for API enterprise.reportingPrivate.getDeviceId
 class EnterpriseReportingPrivateGetDeviceIdTest : public ExtensionApiUnittest {
  public:
-  EnterpriseReportingPrivateGetDeviceIdTest() {
-    policy::BrowserDMTokenStorage::SetForTesting(&storage_);
-  }
+  EnterpriseReportingPrivateGetDeviceIdTest() = default;
 
   void SetClientId(const std::string& client_id) {
     storage_.SetClientId(client_id);
   }
 
  private:
-  FakeBrowserDMTokenStorage storage_;
+  policy::FakeBrowserDMTokenStorage storage_;
 
   DISALLOW_COPY_AND_ASSIGN(EnterpriseReportingPrivateGetDeviceIdTest);
 };
