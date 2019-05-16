@@ -820,7 +820,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // reset once a LocalSurfaceId is submitted with a higher id.
   base::Optional<uint32_t> generated_child_surface_sequence_number_;
 
-  SkColor background_color_ = SK_ColorWHITE;
+  SkColor background_color_ = SK_ColorBLACK;
 
   LayerSelection selection_;
 
