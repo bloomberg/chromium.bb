@@ -53,6 +53,8 @@ class ViewAccessibility;
 // ViewAccessibility or an AXVirtualView.
 class VIEWS_EXPORT AXVirtualView : public ui::AXPlatformNodeDelegateBase {
  public:
+  using AXVirtualViews = std::vector<std::unique_ptr<AXVirtualView>>;
+
   static AXVirtualView* GetFromId(int32_t id);
 
   AXVirtualView();
@@ -79,10 +81,7 @@ class VIEWS_EXPORT AXVirtualView : public ui::AXPlatformNodeDelegateBase {
   // The virtual views are deleted.
   void RemoveAllChildViews();
 
-  bool has_children() const { return !children_.empty(); }
-
-  const AXVirtualView* child_at(int index) const;
-  AXVirtualView* child_at(int index);
+  const AXVirtualViews& children() const { return children_; }
 
   // Returns the parent ViewAccessibility if the parent is a real View and not
   // an AXVirtualView. Returns nullptr otherwise.
@@ -179,7 +178,7 @@ class VIEWS_EXPORT AXVirtualView : public ui::AXPlatformNodeDelegateBase {
   AXVirtualView* virtual_parent_view_ = nullptr;
 
   // We own our children.
-  std::vector<std::unique_ptr<AXVirtualView>> children_;
+  AXVirtualViews children_;
 
   ui::AXUniqueId unique_id_;
   ui::AXNodeData custom_data_;

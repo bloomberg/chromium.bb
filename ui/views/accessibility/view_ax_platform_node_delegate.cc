@@ -235,8 +235,8 @@ int ViewAXPlatformNodeDelegate::GetChildCount() {
   if (IsLeaf())
     return 0;
 
-  if (virtual_child_count())
-    return virtual_child_count();
+  if (!virtual_children().empty())
+    return int{virtual_children().size()};
 
   const auto child_widgets_result = GetChildWidgets();
   if (child_widgets_result.is_tab_modal_showing) {
@@ -254,8 +254,9 @@ gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::ChildAtIndex(int index) {
   if (IsLeaf())
     return nullptr;
 
-  if (virtual_child_count())
-    return virtual_child_at(index)->GetNativeObject();
+  size_t child_index = size_t{index};
+  if (!virtual_children().empty())
+    return virtual_children()[child_index]->GetNativeObject();
 
   // If this is a root view, our widget might have child widgets. Include
   const auto child_widgets_result = GetChildWidgets();
@@ -268,7 +269,6 @@ gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::ChildAtIndex(int index) {
     return child_widgets[0]->GetRootView()->GetNativeViewAccessible();
   }
 
-  size_t child_index = size_t{index};
   if (child_index < view()->children().size())
     return view()->children()[child_index]->GetNativeViewAccessible();
 

@@ -1354,12 +1354,12 @@ AXVirtualView* TableView::GetVirtualAccessibilityRow(int row) {
   DCHECK_GE(row, 0);
   DCHECK_LT(row, RowCount());
   if (header_)
-    row += 1;
-  if (row < GetViewAccessibility().virtual_child_count()) {
-    AXVirtualView* ax_row = GetViewAccessibility().virtual_child_at(row);
+    ++row;
+  if (size_t{row} < GetViewAccessibility().virtual_children().size()) {
+    const auto& ax_row = GetViewAccessibility().virtual_children()[size_t{row}];
     DCHECK(ax_row);
     DCHECK_EQ(ax_row->GetData().role, ax::mojom::Role::kRow);
-    return ax_row;
+    return ax_row.get();
   }
   NOTREACHED() << "|row| not found. Did you forget to call "
                   "UpdateVirtualAccessibilityChildren()?";
@@ -1370,25 +1370,22 @@ AXVirtualView* TableView::GetVirtualAccessibilityCell(
     int row,
     int visible_column_index) {
   AXVirtualView* ax_row = GetVirtualAccessibilityRow(row);
-  if (!ax_row) {
-    NOTREACHED() << "|row| not found. Did you forget to call "
+  DCHECK(ax_row) << "|row| not found. Did you forget to call "
                     "UpdateVirtualAccessibilityChildren()?";
-    return nullptr;
-  }
-  for (int i = 0; i < ax_row->GetChildCount(); ++i) {
-    AXVirtualView* ax_cell = ax_row->child_at(i);
+  const auto matches_index = [visible_column_index](const auto& ax_cell) {
     DCHECK(ax_cell);
     DCHECK(ax_cell->GetData().role == ax::mojom::Role::kColumnHeader ||
            ax_cell->GetData().role == ax::mojom::Role::kCell);
-    if (ax_cell->GetData().GetIntAttribute(
-            ax::mojom::IntAttribute::kTableCellColumnIndex) ==
-        visible_column_index) {
-      return ax_cell;
-    }
-  }
-  NOTREACHED() << "|visible_column_index| not found. Did you forget to call "
-                  "UpdateVirtualAccessibilityChildren()?";
-  return nullptr;
+    return ax_cell->GetData().GetIntAttribute(
+               ax::mojom::IntAttribute::kTableCellColumnIndex) ==
+           visible_column_index;
+  };
+  const auto i = std::find_if(ax_row->children().cbegin(),
+                              ax_row->children().cend(), matches_index);
+  DCHECK(i != ax_row->children().cend())
+      << "|visible_column_index| not found. Did you forget to call "
+      << "UpdateVirtualAccessibilityChildren()?";
+  return i->get();
 }
 
 }  // namespace views

@@ -375,43 +375,42 @@ TEST_F(TableViewTest, UpdateVirtualAccessibilityChildren) {
                 ax::mojom::IntAttribute::kTableColumnCount)));
 
   // The header takes up another row.
-  ASSERT_EQ(table_->RowCount() + 1, view_accessibility.virtual_child_count());
-  const AXVirtualView* header = view_accessibility.virtual_child_at(0);
+  ASSERT_EQ(size_t{table_->RowCount() + 1},
+            view_accessibility.virtual_children().size());
+  const auto& header = view_accessibility.virtual_children().front();
   ASSERT_TRUE(header);
   EXPECT_EQ(ax::mojom::Role::kRow, header->GetData().role);
 
-  ASSERT_EQ(
-      helper_->visible_col_count(),
-      static_cast<size_t>(const_cast<AXVirtualView*>(header)->GetChildCount()));
-  for (int j = 0; j < static_cast<int>(helper_->visible_col_count()); ++j) {
-    const AXVirtualView* header_cell = header->child_at(j);
+  ASSERT_EQ(helper_->visible_col_count(), header->children().size());
+  int j = 0;
+  for (const auto& header_cell : header->children()) {
     ASSERT_TRUE(header_cell);
     const ui::AXNodeData& header_cell_data = header_cell->GetData();
     EXPECT_EQ(ax::mojom::Role::kColumnHeader, header_cell_data.role);
-    EXPECT_EQ(j, static_cast<int>(header_cell_data.GetIntAttribute(
-                     ax::mojom::IntAttribute::kTableCellColumnIndex)));
+    EXPECT_EQ(j++, header_cell_data.GetIntAttribute(
+                       ax::mojom::IntAttribute::kTableCellColumnIndex));
   }
 
-  for (int i = 1; i < table_->RowCount() + 1; ++i) {
-    const AXVirtualView* row = view_accessibility.virtual_child_at(i);
+  int i = 0;
+  for (auto child_iter = view_accessibility.virtual_children().begin() + 1;
+       i < table_->RowCount(); ++child_iter, ++i) {
+    const auto& row = *child_iter;
     ASSERT_TRUE(row);
     const ui::AXNodeData& row_data = row->GetData();
     EXPECT_EQ(ax::mojom::Role::kRow, row_data.role);
-    EXPECT_EQ(i - 1, static_cast<int>(row_data.GetIntAttribute(
-                         ax::mojom::IntAttribute::kTableRowIndex)));
+    EXPECT_EQ(
+        i, row_data.GetIntAttribute(ax::mojom::IntAttribute::kTableRowIndex));
 
-    ASSERT_EQ(
-        helper_->visible_col_count(),
-        static_cast<size_t>(const_cast<AXVirtualView*>(row)->GetChildCount()));
-    for (int j = 0; j < static_cast<int>(helper_->visible_col_count()); ++j) {
-      const AXVirtualView* cell = row->child_at(j);
+    ASSERT_EQ(helper_->visible_col_count(), row->children().size());
+    j = 0;
+    for (const auto& cell : row->children()) {
       ASSERT_TRUE(cell);
       const ui::AXNodeData& cell_data = cell->GetData();
       EXPECT_EQ(ax::mojom::Role::kCell, cell_data.role);
-      EXPECT_EQ(i - 1, static_cast<int>(cell_data.GetIntAttribute(
-                           ax::mojom::IntAttribute::kTableCellRowIndex)));
-      EXPECT_EQ(j, static_cast<int>(cell_data.GetIntAttribute(
-                       ax::mojom::IntAttribute::kTableCellColumnIndex)));
+      EXPECT_EQ(i, cell_data.GetIntAttribute(
+                       ax::mojom::IntAttribute::kTableCellRowIndex));
+      EXPECT_EQ(j++, cell_data.GetIntAttribute(
+                         ax::mojom::IntAttribute::kTableCellColumnIndex));
     }
   }
 }
