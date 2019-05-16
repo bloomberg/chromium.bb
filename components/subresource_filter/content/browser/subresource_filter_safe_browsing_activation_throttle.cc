@@ -114,14 +114,13 @@ void SubresourceFilterSafeBrowsingActivationThrottle::OnCheckUrlResultOnUI(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   size_t request_id = result.request_id;
   DCHECK_LT(request_id, check_results_.size());
-  DCHECK_LT(request_id, check_start_times_.size());
 
   auto& stored_result = check_results_.at(request_id);
   CHECK(!stored_result.finished);
   stored_result = result;
 
   UMA_HISTOGRAM_TIMES("SubresourceFilter.SafeBrowsing.TotalCheckTime",
-                      base::TimeTicks::Now() - check_start_times_[request_id]);
+                      base::TimeTicks::Now() - result.start_time);
   if (deferring_ && HasFinishedAllSafeBrowsingChecks()) {
     NotifyResult();
 
@@ -151,14 +150,14 @@ SubresourceFilterSafeBrowsingActivationThrottle::ConfigResult::~ConfigResult() =
 
 void SubresourceFilterSafeBrowsingActivationThrottle::CheckCurrentUrl() {
   DCHECK(database_client_);
-  check_start_times_.push_back(base::TimeTicks::Now());
   check_results_.emplace_back();
   size_t id = check_results_.size() - 1;
   io_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&SubresourceFilterSafeBrowsingClient::CheckUrlOnIO,
                      base::Unretained(database_client_.get()),
-                     navigation_handle()->GetURL(), id));
+                     navigation_handle()->GetURL(), id,
+                     base::TimeTicks::Now()));
 }
 
 void SubresourceFilterSafeBrowsingActivationThrottle::NotifyResult() {

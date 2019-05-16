@@ -105,7 +105,6 @@ class SubresourceFilterSafeBrowsingActivationThrottle
       ActivationList matched_list) const;
 
   std::vector<SubresourceFilterSafeBrowsingClient::CheckResult> check_results_;
-  std::vector<base::TimeTicks> check_start_times_;
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 

@@ -63,7 +63,7 @@ char kRedirectURL[] = "http://redirect.test/";
 const char kSafeBrowsingNavigationDelay[] =
     "SubresourceFilter.PageLoad.SafeBrowsingDelay";
 const char kSafeBrowsingCheckTime[] =
-    "SubresourceFilter.SafeBrowsing.CheckTime";
+    "SubresourceFilter.SafeBrowsing.TotalCheckTime";
 const char kActivationListHistogram[] =
     "SubresourceFilter.PageLoad.ActivationList";
 
