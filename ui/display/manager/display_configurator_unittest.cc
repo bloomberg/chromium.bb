@@ -261,9 +261,10 @@ class DisplayConfiguratorTest : public testing::Test {
                                       uint32_t connection_mask,
                                       uint32_t protection_mask) {
     query_content_protection_success_ = success;
-    query_content_protection_connection_mask_ = connection_mask;
-    query_content_protection_protection_mask_ = protection_mask;
     query_content_protection_call_count_++;
+
+    connection_mask_ = connection_mask;
+    protection_mask_ = protection_mask;
   }
 
   // Predefined modes that can be used by outputs.
@@ -340,8 +341,8 @@ class DisplayConfiguratorTest : public testing::Test {
   int apply_content_protection_call_count_ = 0;
   bool query_content_protection_success_ = false;
   int query_content_protection_call_count_ = 0;
-  uint32_t query_content_protection_connection_mask_ = 0;
-  uint32_t query_content_protection_protection_mask_ = 0;
+  uint32_t connection_mask_ = DISPLAY_CONNECTION_TYPE_NONE;
+  uint32_t protection_mask_ = CONTENT_PROTECTION_METHOD_NONE;
 
   static constexpr size_t kNumOutputs = 3;
   std::unique_ptr<DisplaySnapshot> outputs_[kNumOutputs];
@@ -871,10 +872,8 @@ TEST_F(DisplayConfiguratorTest, ContentProtection) {
                      base::Unretained(this)));
   EXPECT_EQ(1, query_content_protection_call_count_);
   EXPECT_TRUE(query_content_protection_success_);
-  EXPECT_EQ(static_cast<uint32_t>(DISPLAY_CONNECTION_TYPE_INTERNAL),
-            query_content_protection_connection_mask_);
-  EXPECT_EQ(static_cast<uint32_t>(CONTENT_PROTECTION_METHOD_NONE),
-            query_content_protection_protection_mask_);
+  EXPECT_EQ(DISPLAY_CONNECTION_TYPE_INTERNAL, connection_mask_);
+  EXPECT_EQ(CONTENT_PROTECTION_METHOD_NONE, protection_mask_);
   EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
 
   UpdateOutputs(2, true);
@@ -886,10 +885,8 @@ TEST_F(DisplayConfiguratorTest, ContentProtection) {
                      base::Unretained(this)));
   EXPECT_EQ(2, query_content_protection_call_count_);
   EXPECT_TRUE(query_content_protection_success_);
-  EXPECT_EQ(static_cast<uint32_t>(DISPLAY_CONNECTION_TYPE_HDMI),
-            query_content_protection_connection_mask_);
-  EXPECT_EQ(static_cast<uint32_t>(CONTENT_PROTECTION_METHOD_NONE),
-            query_content_protection_protection_mask_);
+  EXPECT_EQ(DISPLAY_CONNECTION_TYPE_HDMI, connection_mask_);
+  EXPECT_EQ(CONTENT_PROTECTION_METHOD_NONE, protection_mask_);
   EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
 
   configurator_.ApplyContentProtection(
@@ -898,21 +895,19 @@ TEST_F(DisplayConfiguratorTest, ContentProtection) {
                      base::Unretained(this)));
   EXPECT_EQ(1, apply_content_protection_call_count_);
   EXPECT_TRUE(apply_content_protection_success_);
-  EXPECT_EQ(GetSetHDCPStateAction(*outputs_[1], HDCP_STATE_DESIRED),
+  EXPECT_EQ(GetSetHDCPStateAction(kDisplayIds[1], HDCP_STATE_DESIRED),
             log_->GetActionsAndClear());
 
-  // Enable protection.
-  native_display_delegate_->set_hdcp_state(HDCP_STATE_ENABLED);
+  EXPECT_EQ(HDCP_STATE_ENABLED, native_display_delegate_->hdcp_state());
+
   configurator_.QueryContentProtection(
       id, outputs_[1]->display_id(),
       base::BindOnce(&DisplayConfiguratorTest::QueryContentProtectionCallback,
                      base::Unretained(this)));
   EXPECT_EQ(3, query_content_protection_call_count_);
   EXPECT_TRUE(query_content_protection_success_);
-  EXPECT_EQ(static_cast<uint32_t>(DISPLAY_CONNECTION_TYPE_HDMI),
-            query_content_protection_connection_mask_);
-  EXPECT_EQ(static_cast<uint32_t>(CONTENT_PROTECTION_METHOD_HDCP),
-            query_content_protection_protection_mask_);
+  EXPECT_EQ(DISPLAY_CONNECTION_TYPE_HDMI, connection_mask_);
+  EXPECT_EQ(CONTENT_PROTECTION_METHOD_HDCP, protection_mask_);
   EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
 
   // Requests on invalid display should fail.
@@ -928,18 +923,20 @@ TEST_F(DisplayConfiguratorTest, ContentProtection) {
 
   EXPECT_EQ(4, query_content_protection_call_count_);
   EXPECT_FALSE(query_content_protection_success_);
-  EXPECT_EQ(static_cast<uint32_t>(DISPLAY_CONNECTION_TYPE_NONE),
-            query_content_protection_connection_mask_);
-  EXPECT_EQ(static_cast<uint32_t>(CONTENT_PROTECTION_METHOD_NONE),
-            query_content_protection_protection_mask_);
+  EXPECT_EQ(DISPLAY_CONNECTION_TYPE_NONE, connection_mask_);
+  EXPECT_EQ(CONTENT_PROTECTION_METHOD_NONE, protection_mask_);
 
   EXPECT_EQ(2, apply_content_protection_call_count_);
   EXPECT_FALSE(apply_content_protection_success_);
 
+  EXPECT_EQ(HDCP_STATE_ENABLED, native_display_delegate_->hdcp_state());
+
   // Protections should be disabled after unregister.
   configurator_.UnregisterContentProtectionClient(id);
-  EXPECT_EQ(GetSetHDCPStateAction(*outputs_[1], HDCP_STATE_UNDESIRED),
+
+  EXPECT_EQ(GetSetHDCPStateAction(kDisplayIds[1], HDCP_STATE_UNDESIRED),
             log_->GetActionsAndClear());
+  EXPECT_EQ(HDCP_STATE_UNDESIRED, native_display_delegate_->hdcp_state());
 }
 
 TEST_F(DisplayConfiguratorTest, ContentProtectionAsync) {
@@ -966,8 +963,9 @@ TEST_F(DisplayConfiguratorTest, ContentProtectionAsync) {
 
   EXPECT_EQ(0, apply_content_protection_call_count_);
   EXPECT_EQ(0, query_content_protection_call_count_);
+  EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
+  EXPECT_EQ(HDCP_STATE_UNDESIRED, native_display_delegate_->hdcp_state());
 
-  native_display_delegate_->set_hdcp_state(HDCP_STATE_ENABLED);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(kTaskCount, apply_content_protection_call_count_);
@@ -975,13 +973,12 @@ TEST_F(DisplayConfiguratorTest, ContentProtectionAsync) {
 
   EXPECT_EQ(kTaskCount, query_content_protection_call_count_);
   EXPECT_TRUE(query_content_protection_success_);
-  EXPECT_EQ(static_cast<uint32_t>(DISPLAY_CONNECTION_TYPE_HDMI),
-            query_content_protection_connection_mask_);
-  EXPECT_EQ(static_cast<uint32_t>(CONTENT_PROTECTION_METHOD_HDCP),
-            query_content_protection_protection_mask_);
+  EXPECT_EQ(DISPLAY_CONNECTION_TYPE_HDMI, connection_mask_);
+  EXPECT_EQ(CONTENT_PROTECTION_METHOD_HDCP, protection_mask_);
 
-  EXPECT_EQ(GetSetHDCPStateAction(*outputs_[1], HDCP_STATE_DESIRED),
+  EXPECT_EQ(GetSetHDCPStateAction(kDisplayIds[1], HDCP_STATE_DESIRED),
             log_->GetActionsAndClear());
+  EXPECT_EQ(HDCP_STATE_ENABLED, native_display_delegate_->hdcp_state());
 
   // Pending task should run even if previous task fails.
   native_display_delegate_->set_set_hdcp_state_expectation(false);
@@ -1006,13 +1003,13 @@ TEST_F(DisplayConfiguratorTest, ContentProtectionAsync) {
 
   EXPECT_EQ(kTaskCount + 1, query_content_protection_call_count_);
   EXPECT_TRUE(query_content_protection_success_);
-  EXPECT_EQ(static_cast<uint32_t>(DISPLAY_CONNECTION_TYPE_HDMI),
-            query_content_protection_connection_mask_);
-  EXPECT_EQ(static_cast<uint32_t>(CONTENT_PROTECTION_METHOD_HDCP),
-            query_content_protection_protection_mask_);
+  EXPECT_EQ(DISPLAY_CONNECTION_TYPE_HDMI, connection_mask_);
+  EXPECT_EQ(CONTENT_PROTECTION_METHOD_HDCP, protection_mask_);
 
-  EXPECT_EQ(GetSetHDCPStateAction(*outputs_[1], HDCP_STATE_UNDESIRED),
+  // Disabling protection should fail.
+  EXPECT_EQ(GetSetHDCPStateAction(kDisplayIds[1], HDCP_STATE_UNDESIRED),
             log_->GetActionsAndClear());
+  EXPECT_EQ(HDCP_STATE_ENABLED, native_display_delegate_->hdcp_state());
 }
 
 TEST_F(DisplayConfiguratorTest, DoNotConfigureWithSuspendedDisplays) {
@@ -1096,9 +1093,10 @@ TEST_F(DisplayConfiguratorTest, ContentProtectionTwoClients) {
                      base::Unretained(this)));
   EXPECT_EQ(1, apply_content_protection_call_count_);
   EXPECT_TRUE(apply_content_protection_success_);
-  EXPECT_EQ(GetSetHDCPStateAction(*outputs_[1], HDCP_STATE_DESIRED).c_str(),
+
+  EXPECT_EQ(GetSetHDCPStateAction(kDisplayIds[1], HDCP_STATE_DESIRED),
             log_->GetActionsAndClear());
-  native_display_delegate_->set_hdcp_state(HDCP_STATE_ENABLED);
+  EXPECT_EQ(HDCP_STATE_ENABLED, native_display_delegate_->hdcp_state());
 
   configurator_.QueryContentProtection(
       client1, outputs_[1]->display_id(),
@@ -1106,10 +1104,8 @@ TEST_F(DisplayConfiguratorTest, ContentProtectionTwoClients) {
                      base::Unretained(this)));
   EXPECT_EQ(1, query_content_protection_call_count_);
   EXPECT_TRUE(query_content_protection_success_);
-  EXPECT_EQ(static_cast<uint32_t>(DISPLAY_CONNECTION_TYPE_HDMI),
-            query_content_protection_connection_mask_);
-  EXPECT_EQ(CONTENT_PROTECTION_METHOD_HDCP,
-            query_content_protection_protection_mask_);
+  EXPECT_EQ(DISPLAY_CONNECTION_TYPE_HDMI, connection_mask_);
+  EXPECT_EQ(CONTENT_PROTECTION_METHOD_HDCP, protection_mask_);
 
   configurator_.QueryContentProtection(
       client2, outputs_[1]->display_id(),
@@ -1117,10 +1113,8 @@ TEST_F(DisplayConfiguratorTest, ContentProtectionTwoClients) {
                      base::Unretained(this)));
   EXPECT_EQ(2, query_content_protection_call_count_);
   EXPECT_TRUE(query_content_protection_success_);
-  EXPECT_EQ(static_cast<uint32_t>(DISPLAY_CONNECTION_TYPE_HDMI),
-            query_content_protection_connection_mask_);
-  EXPECT_EQ(CONTENT_PROTECTION_METHOD_NONE,
-            query_content_protection_protection_mask_);
+  EXPECT_EQ(DISPLAY_CONNECTION_TYPE_HDMI, connection_mask_);
+  EXPECT_EQ(CONTENT_PROTECTION_METHOD_NONE, protection_mask_);
 
   // Protections will be disabled only if no more clients request them.
   configurator_.ApplyContentProtection(
@@ -1129,7 +1123,9 @@ TEST_F(DisplayConfiguratorTest, ContentProtectionTwoClients) {
                      base::Unretained(this)));
   EXPECT_EQ(2, apply_content_protection_call_count_);
   EXPECT_TRUE(apply_content_protection_success_);
+
   EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
+  EXPECT_EQ(HDCP_STATE_ENABLED, native_display_delegate_->hdcp_state());
 
   configurator_.ApplyContentProtection(
       client1, outputs_[1]->display_id(), CONTENT_PROTECTION_METHOD_NONE,
@@ -1137,8 +1133,9 @@ TEST_F(DisplayConfiguratorTest, ContentProtectionTwoClients) {
                      base::Unretained(this)));
   EXPECT_EQ(3, apply_content_protection_call_count_);
   EXPECT_TRUE(apply_content_protection_success_);
-  EXPECT_EQ(GetSetHDCPStateAction(*outputs_[1], HDCP_STATE_UNDESIRED).c_str(),
+  EXPECT_EQ(GetSetHDCPStateAction(kDisplayIds[1], HDCP_STATE_UNDESIRED),
             log_->GetActionsAndClear());
+  EXPECT_EQ(HDCP_STATE_UNDESIRED, native_display_delegate_->hdcp_state());
 }
 
 TEST_F(DisplayConfiguratorTest, ContentProtectionTwoClientsEnable) {
@@ -1155,16 +1152,17 @@ TEST_F(DisplayConfiguratorTest, ContentProtectionTwoClientsEnable) {
                      base::Unretained(this)));
   EXPECT_EQ(1, apply_content_protection_call_count_);
   EXPECT_TRUE(apply_content_protection_success_);
-  native_display_delegate_->set_hdcp_state(HDCP_STATE_DESIRED);
+
   configurator_.ApplyContentProtection(
       client2, outputs_[1]->display_id(), CONTENT_PROTECTION_METHOD_HDCP,
       base::BindOnce(&DisplayConfiguratorTest::ApplyContentProtectionCallback,
                      base::Unretained(this)));
   EXPECT_EQ(2, apply_content_protection_call_count_);
   EXPECT_TRUE(apply_content_protection_success_);
-  EXPECT_EQ(GetSetHDCPStateAction(*outputs_[1], HDCP_STATE_DESIRED).c_str(),
+
+  EXPECT_EQ(GetSetHDCPStateAction(kDisplayIds[1], HDCP_STATE_DESIRED),
             log_->GetActionsAndClear());
-  native_display_delegate_->set_hdcp_state(HDCP_STATE_ENABLED);
+  EXPECT_EQ(HDCP_STATE_ENABLED, native_display_delegate_->hdcp_state());
 
   // Don't enable again if HDCP is already active.
   configurator_.ApplyContentProtection(
@@ -1173,13 +1171,16 @@ TEST_F(DisplayConfiguratorTest, ContentProtectionTwoClientsEnable) {
                      base::Unretained(this)));
   EXPECT_EQ(3, apply_content_protection_call_count_);
   EXPECT_TRUE(apply_content_protection_success_);
+
   configurator_.ApplyContentProtection(
       client2, outputs_[1]->display_id(), CONTENT_PROTECTION_METHOD_HDCP,
       base::BindOnce(&DisplayConfiguratorTest::ApplyContentProtectionCallback,
                      base::Unretained(this)));
   EXPECT_EQ(4, apply_content_protection_call_count_);
   EXPECT_TRUE(apply_content_protection_success_);
+
   EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
+  EXPECT_EQ(HDCP_STATE_ENABLED, native_display_delegate_->hdcp_state());
 }
 
 TEST_F(DisplayConfiguratorTest, HandleConfigureCrtcFailure) {
