@@ -18,8 +18,8 @@
 
     <!-- Common alpha values -->
     <item name="default_disabled_alpha" format="float" type="dimen">0.38</item>
-    <item name="default_pressed_alpha" format="float" type="dimen">0.10</item>
-    <item name="default_focused_hovered_alpha" format="float" type="dimen">0.10</item>
+    <item name="default_pressed_alpha" format="float" type="dimen">0.06</item>
+    <item name="default_focused_hovered_alpha" format="float" type="dimen">0.06</item>
     <item name="default_focused_alpha" format="float" type="dimen">0.06</item>
     <item name="default_hovered_alpha" format="float" type="dimen">0.04</item>
 
