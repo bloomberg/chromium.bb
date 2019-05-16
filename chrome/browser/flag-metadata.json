@@ -2020,11 +2020,6 @@
     "expiry_milestone": -1
   },
   {
-    "name": "force-tablet-mode",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "force-text-direction",
     "owners": [ "krb", "pbos", "ellyjones" ],
     // This flag is used for developers who don't speak an RTL language to QA

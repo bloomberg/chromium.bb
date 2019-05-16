@@ -3205,19 +3205,6 @@ const char kUiDevToolsDescription[] =
     "Enables inspection of native UI elements. For local inspection use "
     "chrome://inspect#other";
 
-// Force UI Mode
-const char kUiModeName[] = "Force Ui Mode";
-const char kUiModeDescription[] =
-    "This flag can be used to force a certain mode on to a chromebook, "
-    "despite its current orientation. \"Tablet\" means that the "
-    "chromebook will act as if it were in tablet mode. \"Clamshell\" "
-    "means that the chromebook will act as if it were in clamshell "
-    "mode. \"Auto\" means that the chromebook will alternate between "
-    "the two, based on its orientation.";
-const char kUiModeTablet[] = "Tablet";
-const char kUiModeClamshell[] = "Clamshell";
-const char kUiModeAuto[] = "Auto (default)";
-
 const char kUiShowCompositedLayerBordersName[] =
     "Show UI composited layer borders";
 const char kUiShowCompositedLayerBordersDescription[] =

@@ -1926,12 +1926,6 @@ extern const char kTouchscreenCalibrationDescription[];
 extern const char kUiDevToolsName[];
 extern const char kUiDevToolsDescription[];
 
-extern const char kUiModeName[];
-extern const char kUiModeDescription[];
-extern const char kUiModeTablet[];
-extern const char kUiModeClamshell[];
-extern const char kUiModeAuto[];
-
 extern const char kUiShowCompositedLayerBordersName[];
 extern const char kUiShowCompositedLayerBordersDescription[];
 extern const char kUiShowCompositedLayerBordersRenderPass[];

@@ -487,16 +487,6 @@ const FeatureEntry::Choice kForceTextDirectionChoices[] = {
 };
 
 #if defined(OS_CHROMEOS)
-const FeatureEntry::Choice kAshUiModeChoices[] = {
-    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
-    {flag_descriptions::kUiModeTablet, ash::switches::kAshUiMode,
-     ash::switches::kAshUiModeTablet},
-    {flag_descriptions::kUiModeClamshell, ash::switches::kAshUiMode,
-     ash::switches::kAshUiModeClamshell},
-    {flag_descriptions::kUiModeAuto, ash::switches::kAshUiMode,
-     ash::switches::kAshUiModeAuto},
-};
-
 const FeatureEntry::Choice kSchedulerConfigurationChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
     {flag_descriptions::kSchedulerConfigurationConservative,
@@ -2385,10 +2375,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kServiceWorkerLongRunningMessage)},
 
 #if defined(OS_CHROMEOS)
-    {"force-tablet-mode", flag_descriptions::kUiModeName,
-     flag_descriptions::kUiModeDescription, kOsCrOS,
-     MULTI_VALUE_TYPE(kAshUiModeChoices)},
-
     {"scheduler-configuration", flag_descriptions::kSchedulerConfigurationName,
      flag_descriptions::kSchedulerConfigurationDescription, kOsCrOS,
      MULTI_VALUE_TYPE(kSchedulerConfigurationChoices)},
