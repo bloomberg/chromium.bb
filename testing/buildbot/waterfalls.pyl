@@ -22,39 +22,12 @@
           'all',
         ],
       },
-      'android-dbg': {
-        'additional_compile_targets': [
-          'all',
-        ],
-      },
-      'android-rel': {
-        'additional_compile_targets': [
-          'all',
-        ],
-      },
       'linux-archive-dbg': {
         'additional_compile_targets': [
           'all',
         ],
       },
       'linux-archive-rel': {
-        'mixins': [
-          'linux-archive-rel-args',
-          'linux-trusty',
-        ],
-        'additional_compile_targets': [
-          'all',
-        ],
-        'test_suites': {
-          'scripts': 'public_build_scripts',
-        },
-      },
-      'linux-dbg': {
-        'additional_compile_targets': [
-          'all',
-        ],
-      },
-      'linux-rel': {
         'mixins': [
           'linux-archive-rel-args',
           'linux-trusty',
@@ -80,20 +53,6 @@
           'scripts': 'public_build_scripts',
         },
       },
-      'mac-dbg': {
-        'additional_compile_targets': [
-          'all',
-        ],
-      },
-      'mac-rel': {
-        'mixins': ['mac-archive-rel-args'],
-        'additional_compile_targets': [
-          'all',
-        ],
-        'test_suites': {
-          'scripts': 'public_build_scripts',
-        },
-      },
       'win-archive-dbg': {
         'additional_compile_targets': [
           'all',
@@ -107,38 +66,12 @@
           'scripts': 'public_build_scripts',
         },
       },
-      'win-dbg': {
-        'additional_compile_targets': [
-          'all',
-        ],
-      },
-      'win-rel': {
-        'additional_compile_targets': [
-          'all',
-        ],
-        'test_suites': {
-          'scripts': 'public_build_scripts',
-        },
-      },
       'win32-archive-dbg': {
         'additional_compile_targets': [
           'all',
         ],
       },
       'win32-archive-rel': {
-        'additional_compile_targets': [
-          'all',
-        ],
-        'test_suites': {
-          'scripts': 'public_build_scripts',
-        },
-      },
-      'win32-dbg': {
-        'additional_compile_targets': [
-          'all',
-        ],
-      },
-      'win32-rel': {
         'additional_compile_targets': [
           'all',
         ],

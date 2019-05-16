@@ -11,16 +11,6 @@
       "all"
     ]
   },
-  "android-dbg": {
-    "additional_compile_targets": [
-      "all"
-    ]
-  },
-  "android-rel": {
-    "additional_compile_targets": [
-      "all"
-    ]
-  },
   "linux-archive-dbg": {
     "additional_compile_targets": [
       "all"
@@ -32,34 +22,12 @@
     ],
     "scripts": []
   },
-  "linux-dbg": {
-    "additional_compile_targets": [
-      "all"
-    ]
-  },
-  "linux-rel": {
-    "additional_compile_targets": [
-      "all"
-    ],
-    "scripts": []
-  },
   "mac-archive-dbg": {
     "additional_compile_targets": [
       "all"
     ]
   },
   "mac-archive-rel": {
-    "additional_compile_targets": [
-      "all"
-    ],
-    "scripts": []
-  },
-  "mac-dbg": {
-    "additional_compile_targets": [
-      "all"
-    ]
-  },
-  "mac-rel": {
     "additional_compile_targets": [
       "all"
     ],
@@ -81,44 +49,12 @@
       }
     ]
   },
-  "win-dbg": {
-    "additional_compile_targets": [
-      "all"
-    ]
-  },
-  "win-rel": {
-    "additional_compile_targets": [
-      "all"
-    ],
-    "scripts": [
-      {
-        "name": "checkbins",
-        "script": "checkbins.py"
-      }
-    ]
-  },
   "win32-archive-dbg": {
     "additional_compile_targets": [
       "all"
     ]
   },
   "win32-archive-rel": {
-    "additional_compile_targets": [
-      "all"
-    ],
-    "scripts": [
-      {
-        "name": "checkbins",
-        "script": "checkbins.py"
-      }
-    ]
-  },
-  "win32-dbg": {
-    "additional_compile_targets": [
-      "all"
-    ]
-  },
-  "win32-rel": {
     "additional_compile_targets": [
       "all"
     ],

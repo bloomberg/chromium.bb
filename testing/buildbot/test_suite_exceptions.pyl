@@ -284,10 +284,6 @@
   },
   'checkbins': {
     'remove_from': [
-      'linux-dbg',
-      'linux-rel',
-      'mac-dbg',
-      'mac-rel',
       'linux-archive-dbg',
       'linux-archive-rel',
       'mac-archive-dbg',

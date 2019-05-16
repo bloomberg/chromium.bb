@@ -999,15 +999,6 @@ class BBJSONGenerator(object):
       # Defined in internal configs.
       'chromeos-amd64-generic-google-rel',
       'chromeos-betty-google-rel',
-      # chromium, https://crbug.com/888810
-      'android-archive-dbg',
-      'android-archive-rel',
-      'linux-archive-dbg',
-      'linux-archive-rel',
-      'mac-archive-dbg',
-      'mac-archive-rel',
-      'win-archive-rel',
-      'win32-archive-rel',
       # code coverage, see see https://crbug.com/930364
       'Linux Builder Code Coverage',
       'Linux Tests Code Coverage',
