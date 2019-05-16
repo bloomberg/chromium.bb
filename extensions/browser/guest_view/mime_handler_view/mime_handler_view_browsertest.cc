@@ -152,6 +152,27 @@ class MimeHandlerViewTest : public extensions::ExtensionApiTest {
   int basic_count_ = 0;
 };
 
+// TODO(mcnee): These tests are BrowserPlugin specific. Once
+// MimeHandlerViewGuest is no longer based on BrowserPlugin, remove these tests.
+// (See https://crbug.com/533069 and https://crbug.com/659750). These category
+// of tests are solely testing BrowserPlugin features.
+class MimeHandlerViewBrowserPluginSpecificTest : public MimeHandlerViewTest {
+ public:
+  MimeHandlerViewBrowserPluginSpecificTest() {}
+
+  ~MimeHandlerViewBrowserPluginSpecificTest() override {}
+
+  void SetUpCommandLine(base::CommandLine* cl) override {
+    MimeHandlerViewTest::SetUpCommandLine(cl);
+    scoped_feature_list_.InitAndDisableFeature(
+        features::kMimeHandlerViewInCrossProcessFrame);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+  DISALLOW_COPY_AND_ASSIGN(MimeHandlerViewBrowserPluginSpecificTest);
+};
+
 // The parametric version of the test class which runs the test both on
 // BrowserPlugin-based and cross-process-frame-based MimeHandlerView
 // implementation. All current browser tests should eventually be moved to this
@@ -432,7 +453,8 @@ IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest, EmbeddedDataUrlLong) {
   RunTest("test_embedded_data_url_long.html");
 }
 
-IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, ResizeBeforeAttach) {
+IN_PROC_BROWSER_TEST_F(MimeHandlerViewBrowserPluginSpecificTest,
+                       ResizeBeforeAttach) {
   // Delay the creation of the guest's WebContents in order to delay the guest's
   // attachment to the embedder. This will allow us to resize the <object> tag
   // after the guest is created, but before it is attached in
@@ -510,27 +532,6 @@ IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest,
   EXPECT_FALSE(before_unload_dialog->is_reload());
   before_unload_dialog->OnAccept(base::string16(), false);
 }
-
-// TODO(mcnee): These tests are BrowserPlugin specific. Once
-// MimeHandlerViewGuest is no longer based on BrowserPlugin, remove these tests.
-// (See https://crbug.com/533069 and https://crbug.com/659750). These category
-// of tests are solely testing BrowserPlugin features.
-class MimeHandlerViewBrowserPluginSpecificTest : public MimeHandlerViewTest {
- public:
-  MimeHandlerViewBrowserPluginSpecificTest() {}
-
-  ~MimeHandlerViewBrowserPluginSpecificTest() override {}
-
-  void SetUpCommandLine(base::CommandLine* cl) override {
-    MimeHandlerViewTest::SetUpCommandLine(cl);
-    scoped_feature_list_.InitAndDisableFeature(
-        features::kMimeHandlerViewInCrossProcessFrame);
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-  DISALLOW_COPY_AND_ASSIGN(MimeHandlerViewBrowserPluginSpecificTest);
-};
 
 // This test verifies that when BrowserPlugin-based guest has touch handlers,
 // the embedder knows about it.
