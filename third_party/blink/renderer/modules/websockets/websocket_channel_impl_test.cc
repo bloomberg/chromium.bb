@@ -216,13 +216,12 @@ TEST_F(WebSocketChannelImplTest, connectSuccess) {
   Document& document = GetDocument();
   document.SetURL(page_url);
   // Make sure that firstPartyForCookies() is set to the given value.
-  EXPECT_STREQ("http://example.com/",
-               document.SiteForCookies().GetString().Utf8().data());
+  EXPECT_EQ("http://example.com/", document.SiteForCookies().GetString());
 
   EXPECT_TRUE(Channel()->Connect(KURL("ws://localhost/"), "x"));
 
   EXPECT_EQ(1U, protocols.size());
-  EXPECT_STREQ("x", protocols[0].Utf8().data());
+  EXPECT_EQ("x", protocols[0]);
 
   checkpoint.Call(1);
   HandleClient()->DidConnect(Handle(), String("a"), String("b"));
