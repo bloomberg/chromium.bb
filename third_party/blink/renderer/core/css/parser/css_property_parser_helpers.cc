@@ -1937,6 +1937,10 @@ bool ConsumeShorthandVia2Longhands(
   const CSSValue* end =
       ParseLonghand(longhands[1]->PropertyID(), shorthand.id(), context, range);
 
+  if (shorthand.id() == CSSPropertyID::kOverflow && start && end) {
+    context.Count(WebFeature::kTwoValuedOverflow);
+  }
+
   if (!end)
     end = start;
   AddProperty(longhands[0]->PropertyID(), shorthand.id(), *start, important,
