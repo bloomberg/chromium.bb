@@ -444,7 +444,7 @@ class BBJSONGenerator(object):
     # build type was not specified.
     if 'swarming' in test and self.is_android(tester_config):
       for d in test['swarming'].get('dimension_sets', []):
-        if not d.get('device_os_type'):
+        if d.get('os') == 'Android' and not d.get('device_os_type'):
           d['device_os_type'] = 'userdebug'
 
     return test

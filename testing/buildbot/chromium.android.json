@@ -18209,7 +18209,6 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os_type": "userdebug",
               "os": "Ubuntu-14.04"
             }
           ]
