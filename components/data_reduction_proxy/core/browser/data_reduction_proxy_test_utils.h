@@ -215,8 +215,9 @@ class TestDataReductionProxyIOData : public DataReductionProxyIOData {
       bool enabled);
   ~TestDataReductionProxyIOData() override;
 
-  void SetDataReductionProxyService(base::WeakPtr<DataReductionProxyService>
-                                        data_reduction_proxy_service) override;
+  void SetDataReductionProxyService(
+      base::WeakPtr<DataReductionProxyService> data_reduction_proxy_service,
+      const std::string& user_agent) override;
 
   DataReductionProxyConfigurator* configurator() const {
     return configurator_.get();

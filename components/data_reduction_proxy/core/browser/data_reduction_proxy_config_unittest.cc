@@ -430,7 +430,7 @@ TEST_F(DataReductionProxyConfigTest, WarmupURL) {
         base::BindRepeating([](const std::vector<DataReductionProxyServer>&) {
           return network::mojom::CustomProxyConfig::New();
         }),
-        &network_properties_manager);
+        &network_properties_manager, std::string() /* user_agent*/);
     RunUntilIdle();
 
     {

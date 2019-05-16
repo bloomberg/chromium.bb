@@ -41,6 +41,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "net/base/host_port_pair.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/http/http_request_headers.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -1088,6 +1089,10 @@ class DataReductionProxyWarmupURLBrowsertest
       run_loop->Quit();
       response->set_content("content");
       response->AddCustomHeader("via", via_header_);
+      const auto user_agent =
+          request.headers.find(net::HttpRequestHeaders::kUserAgent);
+      EXPECT_TRUE(user_agent != request.headers.end());
+      EXPECT_THAT(user_agent->second, HasSubstr("Chrome/"));
     } else if (base::StartsWith(request.relative_url, "/echoheader",
                                 base::CompareCase::SENSITIVE)) {
       const auto chrome_proxy_header = request.headers.find("chrome-proxy");
