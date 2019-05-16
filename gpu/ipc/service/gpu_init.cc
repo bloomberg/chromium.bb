@@ -58,7 +58,7 @@ bool CollectGraphicsInfo(GPUInfo* gpu_info,
   DCHECK(gpu_info);
   TRACE_EVENT0("gpu,startup", "Collect Graphics Info");
   base::TimeTicks before_collect_context_graphics_info = base::TimeTicks::Now();
-  bool success = CollectContextGraphicsInfo(gpu_info, gpu_preferences);
+  bool success = CollectContextGraphicsInfo(gpu_info);
   if (!success)
     LOG(ERROR) << "gpu::CollectGraphicsInfo failed.";
 
@@ -456,7 +456,7 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
   bool gl_disabled = gl::GetGLImplementation() == gl::kGLImplementationDisabled;
 
   if (!gl_disabled && !use_swiftshader) {
-    CollectContextGraphicsInfo(&gpu_info_, gpu_preferences_);
+    CollectContextGraphicsInfo(&gpu_info_);
     gpu_feature_info_ = ComputeGpuFeatureInfo(gpu_info_, gpu_preferences_,
                                               command_line, nullptr);
     use_swiftshader = EnableSwiftShaderIfNeeded(
@@ -494,7 +494,7 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
   // information on Linux platform. Try to collect graphics information
   // based on core profile context after disabling platform extensions.
   if (!gl_disabled && !use_swiftshader) {
-    CollectContextGraphicsInfo(&gpu_info_, gpu_preferences_);
+    CollectContextGraphicsInfo(&gpu_info_);
     gpu_feature_info_ = ComputeGpuFeatureInfo(gpu_info_, gpu_preferences_,
                                               command_line, nullptr);
     use_swiftshader = EnableSwiftShaderIfNeeded(
@@ -524,7 +524,7 @@ void GpuInit::AdjustInfoToSwiftShader() {
   gpu_info_.passthrough_cmd_decoder = false;
   gpu_feature_info_for_hardware_gpu_ = gpu_feature_info_;
   gpu_feature_info_ = ComputeGpuFeatureInfoForSwiftShader();
-  CollectContextGraphicsInfo(&gpu_info_, gpu_preferences_);
+  CollectContextGraphicsInfo(&gpu_info_);
 }
 
 scoped_refptr<gl::GLSurface> GpuInit::TakeDefaultOffscreenSurface() {

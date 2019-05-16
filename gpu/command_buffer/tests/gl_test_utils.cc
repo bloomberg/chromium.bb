@@ -374,7 +374,7 @@ bool GpuCommandBufferTestEGL::InitializeEGLGLES2(int width, int height) {
     }
 
     gpu::GPUInfo gpu_info;
-    gpu::CollectContextGraphicsInfo(&gpu_info, gpu::GpuPreferences());
+    gpu::CollectContextGraphicsInfo(&gpu_info);
     // See crbug.com/822716, the ATI proprietary driver has eglGetProcAddress
     // but eglInitialize crashes with x11.
     if (gpu_info.gl_vendor.find("ATI Technologies Inc.") != std::string::npos) {

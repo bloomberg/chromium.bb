@@ -557,13 +557,12 @@ void RecordGpuSupportedRuntimeVersionHistograms(Dx12VulkanVersionInfo* info) {
   }
 }
 
-bool CollectContextGraphicsInfo(GPUInfo* gpu_info,
-                                const GpuPreferences& gpu_preferences) {
+bool CollectContextGraphicsInfo(GPUInfo* gpu_info) {
   TRACE_EVENT0("gpu", "CollectGraphicsInfo");
 
   DCHECK(gpu_info);
 
-  if (!CollectGraphicsInfoGL(gpu_info, gpu_preferences))
+  if (!CollectGraphicsInfoGL(gpu_info))
     return false;
 
   // ANGLE's renderer strings are of the form:

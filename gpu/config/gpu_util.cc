@@ -629,7 +629,7 @@ bool InitializeGLThreadSafe(base::CommandLine* command_line,
       return false;
     }
   }
-  CollectContextGraphicsInfo(out_gpu_info, gpu_preferences);
+  CollectContextGraphicsInfo(out_gpu_info);
   *out_gpu_feature_info = ComputeGpuFeatureInfo(*out_gpu_info, gpu_preferences,
                                                 command_line, nullptr);
   if (!out_gpu_feature_info->disabled_extensions.empty()) {
