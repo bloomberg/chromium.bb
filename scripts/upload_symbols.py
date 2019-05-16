@@ -355,25 +355,48 @@ def ExecRequest(operator, url, timeout, api_key, **kwargs):
   return {}
 
 
-def UploadExists(symbol, status_url, timeout, api_key):
-  """Skip a symbol files if we've already uploaded.
+def FindDuplicates(symbols, status_url, api_key, timeout=DEDUPE_TIMEOUT):
+  """Check whether the symbol files have already been uploaded.
 
   Args:
-    symbol: A SymbolFile instance.
+    symbols: A iterable of SymbolFiles to be uploaded
     status_url: The crash URL to validate the file existence.
-    timeout: HTTP timeout for request.
     api_key: Authentication key.
+    timeout: HTTP timeout for request.
 
   Yields:
-    Boolean, true if it is available on server, false if
-    it is not.
+    All SymbolFiles from symbols, but duplicates have status updated to
+    DUPLICATE.
   """
-  result = ExecRequest('get', '%s/symbols/%s/%s:checkStatus' %
-                       (status_url, symbol.header.name,
-                        symbol.header.id.replace('-', '')),
-                       timeout, api_key)
-  return (result and 'status' in result.keys()
-          and result['status'] == 'FOUND')
+  for batch in BatchGenerator(symbols, DEDUPE_LIMIT):
+    items = []
+    result = {}
+    for x in batch:
+      items.append({'debug_file': x.header.name,
+                    'debug_id': x.header.id.replace('-', '')})
+    symbol_data = {'symbol_ids': items}
+    try:
+      result = ExecRequest('post', '%s/symbols:checkStatuses' %
+                           status_url,
+                           timeout,
+                           api_key=api_key,
+                           data=json.dumps(symbol_data))
+    except (requests.exceptions.HTTPError,
+            requests.exceptions.Timeout,
+            requests.exceptions.RequestException) as e:
+      logging.warning('could not identify duplicates: HTTP error: %s', e)
+    for b in batch:
+      b.status = SymbolFile.INITIAL
+      set_match = {'debugId': b.header.id.replace('-', ''),
+                   'debugFile': b.header.name}
+      for cs_result in result.get('pairs', []):
+        if cmp(set_match, cs_result.get('symbolId')) == 0:
+          if cs_result.get('status') == 'FOUND':
+            logging.debug('Found duplicate: %s', b.display_name)
+            b.status = SymbolFile.DUPLICATE
+            break
+      yield b
+
 
 def UploadSymbolFile(upload_url, symbol, api_key):
   '''Upload a symbol file to the crash server, returning the status result.
@@ -384,32 +407,27 @@ def UploadSymbolFile(upload_url, symbol, api_key):
     api_key: Authentication key
   '''
   timeout = GetUploadTimeout(symbol)
-  if UploadExists(symbol, upload_url, timeout, api_key):
-    logging.info('%s/%s symbol file already uploaded, skipping',
-                 symbol.header.id, symbol.header.name)
-    symbol.status = SymbolFile.DUPLICATE
-  else:
-    upload = ExecRequest('post',
-                         '%s/uploads:create' % upload_url, timeout, api_key)
+  upload = ExecRequest('post',
+                       '%s/uploads:create' % upload_url, timeout, api_key)
 
-    if upload and 'uploadUrl' in upload.keys():
-      symbol_data = {'symbol_id':
-                     {'debug_file': symbol.header.name,
-                      'debug_id': symbol.header.id.replace('-', '')}
-                    }
-      ExecRequest('put',
-                  upload['uploadUrl'], timeout,
-                  api_key=api_key,
-                  data=open(symbol.file_name, 'r'))
-      ExecRequest('post',
-                  '%s/uploads/%s:complete' % (
-                      upload_url, upload['uploadKey']),
-                  timeout, api_key=api_key,
-                  # TODO(mikenichols): Validate product_name once it is added
-                  # to the proto; currently unsupported.
-                  data=json.dumps(symbol_data))
-    else:
-      raise requests.exceptions.HTTPError
+  if upload and 'uploadUrl' in upload.keys():
+    symbol_data = {'symbol_id':
+                   {'debug_file': symbol.header.name,
+                    'debug_id': symbol.header.id.replace('-', '')}
+                  }
+    ExecRequest('put',
+                upload['uploadUrl'], timeout,
+                api_key=api_key,
+                data=open(symbol.file_name, 'r'))
+    ExecRequest('post',
+                '%s/uploads/%s:complete' % (
+                    upload_url, upload['uploadKey']),
+                timeout, api_key=api_key,
+                # TODO(mikenichols): Validate product_name once it is added
+                # to the proto; currently unsupported.
+                data=json.dumps(symbol_data))
+  else:
+    raise requests.exceptions.HTTPError
 
 
 def PerformSymbolsFileUpload(symbols, upload_url, api_key):
@@ -523,7 +541,7 @@ def ReportResults(symbols, failed_list):
 
 
 def UploadSymbols(sym_paths, upload_url, failed_list=None,
-                  upload_limit=None, strip_cfi=None,
+                  upload_limit=None, strip_cfi=None, timeout=None,
                   api_key=None):
   """Upload all the generated symbols for |board| to the crash server
 
@@ -534,6 +552,7 @@ def UploadSymbols(sym_paths, upload_url, failed_list=None,
     failed_list: A filename at which to write out a list of our failed uploads.
     upload_limit: Integer listing how many files to upload. None for no limit.
     strip_cfi: File size at which we strip out CFI data. None for no limit.
+    timeout: HTTP timeout for request.
     api_key: A string based authentication key
 
   Returns:
@@ -562,6 +581,9 @@ def UploadSymbols(sym_paths, upload_url, failed_list=None,
 
     # Strip CFI, if needed.
     symbols = (AdjustSymbolFileSize(s, tempdir, strip_cfi) for s in symbols)
+
+    # Find duplicates via batch API
+    symbols = FindDuplicates(symbols, upload_url, api_key, timeout)
 
     # Perform uploads
     symbols = PerformSymbolsFileUpload(symbols, upload_url, api_key)

@@ -188,7 +188,6 @@ PUBLIC 1471 0 main"""
       self.PatchObject(upload_symbols, 'ExecRequest',
                        return_value={'uploadUrl': 'testurl',
                                      'uploadKey': 'testSuccess'})
-
     self.SpawnServer(Handler)
     ret = upload_symbols.UploadSymbols(
         sym_paths=[self.sym_file] * 10,
@@ -214,6 +213,9 @@ PUBLIC 1471 0 main"""
     """The server chokes, but we recover"""
     class Handler(SymbolServerRequestHandler):
       """All connections choke forever"""
+      self.PatchObject(upload_symbols, 'ExecRequest',
+                       return_value={'pairs': []})
+
       def do_POST(self):
         while True:
           time.sleep(1000)
@@ -224,6 +226,7 @@ PUBLIC 1471 0 main"""
       ret = upload_symbols.UploadSymbols(
           sym_paths=[self.sym_file] * 10,
           upload_url=self.server_url,
+          timeout=m.return_value,
           api_key='testkey')
     self.assertEqual(ret, 10)
 
@@ -377,6 +380,45 @@ class AdjustSymbolFileSizeTest(SymbolsTestBase):
     self.assertEqual(self.warn_mock.call_count, 1)
 
 
+class DeduplicateTest(SymbolsTestBase):
+  """Test server Deduplication."""
+  def setUp(self):
+    self.PatchObject(upload_symbols, 'ExecRequest',
+                     return_value={'pairs': [
+                         {'status': 'FOUND',
+                          'symbolId':
+                          {'debugFile': 'sym1_sym',
+                           'debugId': 'BEAA9BE'}},
+                         {'status': 'FOUND',
+                          'symbolId':
+                          {'debugFile': 'sym2_sym',
+                           'debugId': 'B6B1A36'}},
+                         {'status': 'MISSING',
+                          'symbolId':
+                          {'debugFile': 'sym3_sym',
+                           'debugId': 'D4FC0FC'}}]})
+
+  def testFindDuplicates(self):
+    # The first two symbols will be duplicate, the third new.
+    sym1 = self.createSymbolFile('sym1.sym')
+    sym1.header = cros_generate_breakpad_symbols.SymbolHeader('cpu', 'BEAA9BE',
+                                                              'sym1_sym', 'os')
+    sym2 = self.createSymbolFile('sym2.sym')
+    sym2.header = cros_generate_breakpad_symbols.SymbolHeader('cpu', 'B6B1A36',
+                                                              'sym2_sym', 'os')
+    sym3 = self.createSymbolFile('sym3.sym')
+    sym3.header = cros_generate_breakpad_symbols.SymbolHeader('cpu', 'D4FC0FC',
+                                                              'sym3_sym', 'os')
+
+    result = upload_symbols.FindDuplicates((sym1, sym2, sym3), 'fake_url',
+                                           api_key='testkey')
+    self.assertEqual(list(result), [sym1, sym2, sym3])
+
+    self.assertEqual(sym1.status, upload_symbols.SymbolFile.DUPLICATE)
+    self.assertEqual(sym2.status, upload_symbols.SymbolFile.DUPLICATE)
+    self.assertEqual(sym3.status, upload_symbols.SymbolFile.INITIAL)
+
+
 class PerformSymbolFilesUploadTest(SymbolsTestBase):
   """Test PerformSymbolFile, and it's helper methods."""
   def setUp(self):
@@ -399,21 +441,11 @@ class PerformSymbolFilesUploadTest(SymbolsTestBase):
     large = self.createSymbolFile('large.sym', size=(300 * 1024 * 1024))
     self.assertEqual(upload_symbols.GetUploadTimeout(large), 771)
 
-  def testUploadExists(self):
-    """Test IsFound helper function."""
-    self.PatchObject(upload_symbols, 'UploadExists',
-                     return_value=True)
-    symbols = [self.sym_initial]
-    result = upload_symbols.PerformSymbolsFileUpload(
-        symbols, 'fake_url', api_key='testkey')
-    self.assertEqual(list(result), symbols)
-    self.assertEqual(self.sym_initial.status,
-                     upload_symbols.SymbolFile.DUPLICATE)
   def testUploadSymbolFile(self):
     upload_symbols.UploadSymbolFile('fake_url', self.sym_initial,
                                     api_key='testkey')
     # TODO: Examine mock in more detail to make sure request is correct.
-    self.assertEqual(self.request_mock.call_count, 4)
+    self.assertEqual(self.request_mock.call_count, 3)
 
   def testPerformSymbolsFileUpload(self):
     """We upload on first try."""
@@ -425,7 +457,7 @@ class PerformSymbolFilesUploadTest(SymbolsTestBase):
     self.assertEqual(list(result), symbols)
     self.assertEqual(self.sym_initial.status,
                      upload_symbols.SymbolFile.UPLOADED)
-    self.assertEqual(self.request_mock.call_count, 4)
+    self.assertEqual(self.request_mock.call_count, 3)
 
   def testPerformSymbolsFileUploadFailure(self):
     """All network requests fail."""
@@ -450,7 +482,7 @@ class PerformSymbolFilesUploadTest(SymbolsTestBase):
     self.assertEqual(list(result), symbols)
     self.assertEqual(self.sym_initial.status,
                      upload_symbols.SymbolFile.UPLOADED)
-    self.assertEqual(self.request_mock.call_count, 4)
+    self.assertEqual(self.request_mock.call_count, 3)
 
   def testPerformSymbolsFileUploadMixed(self):
     """Upload symbols in mixed starting states.
@@ -474,7 +506,7 @@ class PerformSymbolFilesUploadTest(SymbolsTestBase):
                      upload_symbols.SymbolFile.DUPLICATE)
     self.assertEqual(self.sym_uploaded.status,
                      upload_symbols.SymbolFile.UPLOADED)
-    self.assertEqual(self.request_mock.call_count, 8)
+    self.assertEqual(self.request_mock.call_count, 6)
 
 
   def testPerformSymbolsFileUploadErrorOut(self):
@@ -531,8 +563,7 @@ class UploadSymbolsTest(SymbolsTestBase):
 
   def testUploadSymbolsEmpty(self):
     """Upload dir is empty."""
-    result = upload_symbols.UploadSymbols(
-        [self.data], 'fake_url', 'product')
+    result = upload_symbols.UploadSymbols([self.data], 'fake_url')
 
     self.assertEquals(result, 0)
     self.assertEqual(self.urlopen_mock.call_count, 0)
@@ -549,7 +580,7 @@ class UploadSymbolsTest(SymbolsTestBase):
         api_key='testkey')
 
     self.assertEquals(result, 0)
-    self.assertEqual(self.request_mock.call_count, 12)
+    self.assertEqual(self.request_mock.call_count, 10)
     self.assertEquals(osutils.ReadFile(self.failure_file), '')
 
   def testUploadSymbolsLimited(self):
@@ -563,7 +594,7 @@ class UploadSymbolsTest(SymbolsTestBase):
         api_key='testkey')
 
     self.assertEquals(result, 0)
-    self.assertEqual(self.request_mock.call_count, 8)
+    self.assertEqual(self.request_mock.call_count, 7)
     self.assertNotExists(self.failure_file)
 
   def testUploadSymbolsFailures(self):
