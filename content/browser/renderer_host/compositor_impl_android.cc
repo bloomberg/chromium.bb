@@ -106,8 +106,7 @@ static const char* kBrowser = "Browser";
 // These functions are called based on application visibility status.
 void SendOnBackgroundedToGpuService() {
   content::GpuProcessHost::CallOnIO(
-      content::GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
-      false /* force_create */,
+      content::GPU_PROCESS_KIND_SANDBOXED, false /* force_create */,
       base::BindRepeating([](content::GpuProcessHost* host) {
         if (host) {
           host->gpu_service()->OnBackgrounded();
@@ -117,8 +116,7 @@ void SendOnBackgroundedToGpuService() {
 
 void SendOnForegroundedToGpuService() {
   content::GpuProcessHost::CallOnIO(
-      content::GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
-      false /* force_create */,
+      content::GPU_PROCESS_KIND_SANDBOXED, false /* force_create */,
       base::BindRepeating([](content::GpuProcessHost* host) {
         if (host) {
           host->gpu_service()->OnForegrounded();
@@ -267,8 +265,7 @@ class CompositorDependencies {
     // Next, notify the GPU process to do background processing, which will
     // lose all renderer contexts.
     content::GpuProcessHost::CallOnIO(
-        content::GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
-        false /* force_create */,
+        content::GPU_PROCESS_KIND_SANDBOXED, false /* force_create */,
         base::BindRepeating([](content::GpuProcessHost* host) {
           if (host) {
             host->gpu_service()->OnBackgroundCleanup();

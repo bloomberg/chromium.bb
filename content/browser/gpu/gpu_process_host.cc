@@ -271,9 +271,9 @@ enum GPUProcessLifetimeEvent {
 
 // Indexed by GpuProcessKind. There is one of each kind maximum. This array may
 // only be accessed from the IO thread.
-GpuProcessHost* g_gpu_process_hosts[GpuProcessHost::GPU_PROCESS_KIND_COUNT];
+GpuProcessHost* g_gpu_process_hosts[GPU_PROCESS_KIND_COUNT];
 
-void RunCallbackOnIO(GpuProcessHost::GpuProcessKind kind,
+void RunCallbackOnIO(GpuProcessKind kind,
                      bool force_create,
                      base::OnceCallback<void(GpuProcessHost*)> callback) {
   GpuProcessHost* host = GpuProcessHost::Get(kind, force_create);
@@ -594,7 +594,7 @@ void GpuProcessHost::CallOnIO(
     bool force_create,
     base::OnceCallback<void(GpuProcessHost*)> callback) {
 #if !defined(OS_WIN)
-  DCHECK_NE(kind, GpuProcessHost::GPU_PROCESS_KIND_UNSANDBOXED_NO_GL);
+  DCHECK_NE(kind, GPU_PROCESS_KIND_UNSANDBOXED_NO_GL);
 #endif
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
                            base::BindOnce(&RunCallbackOnIO, kind, force_create,
@@ -825,7 +825,8 @@ bool GpuProcessHost::Init() {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     DCHECK(GetGpuMainThreadFactory());
     gpu::GpuPreferences gpu_preferences = GetGpuPreferencesFromCommandLine();
-    GpuDataManagerImpl::GetInstance()->UpdateGpuPreferences(&gpu_preferences);
+    GpuDataManagerImpl::GetInstance()->UpdateGpuPreferences(
+        &gpu_preferences, GPU_PROCESS_KIND_SANDBOXED);
     in_process_gpu_thread_.reset(GetGpuMainThreadFactory()(
         InProcessChildThreadParams(
             base::ThreadTaskRunnerHandle::Get(),
@@ -1046,7 +1047,7 @@ void GpuProcessHost::BindDiscardableMemoryRequest(
       base::BindOnce(&BindDiscardableMemoryRequestOnUI, std::move(request)));
 }
 
-GpuProcessHost::GpuProcessKind GpuProcessHost::kind() {
+GpuProcessKind GpuProcessHost::kind() {
   return kind_;
 }
 
@@ -1129,7 +1130,8 @@ bool GpuProcessHost::LaunchGpuProcess() {
 
   // TODO(kylechar): The command line flags added here should be based on
   // |mode_|.
-  GpuDataManagerImpl::GetInstance()->AppendGpuCommandLine(cmd_line.get());
+  GpuDataManagerImpl::GetInstance()->AppendGpuCommandLine(cmd_line.get(),
+                                                          kind_);
 
   // If specified, prepend a launcher program to the command line.
   if (!gpu_launcher.empty())

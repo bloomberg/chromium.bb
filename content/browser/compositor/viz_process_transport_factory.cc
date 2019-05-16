@@ -98,7 +98,7 @@ bool IsWorkerContextLost(viz::RasterContextProvider* context_provider) {
 // Provided as a callback to crash the GPU process.
 void ReceivedBadMessageFromGpuProcess() {
   GpuProcessHost::CallOnIO(
-      GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED, false /* force_create */,
+      GPU_PROCESS_KIND_SANDBOXED, false /* force_create */,
       base::BindRepeating([](GpuProcessHost* host) {
         // There should always be a GpuProcessHost instance, and GPU process,
         // for running the compositor thread. The exception is during shutdown

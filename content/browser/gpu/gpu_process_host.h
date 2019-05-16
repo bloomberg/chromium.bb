@@ -57,12 +57,6 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
                        public IPC::Sender,
                        public viz::GpuHostImpl::Delegate {
  public:
-  enum GpuProcessKind {
-    GPU_PROCESS_KIND_UNSANDBOXED_NO_GL,  // Unsandboxed, no init GL bindings.
-    GPU_PROCESS_KIND_SANDBOXED,
-    GPU_PROCESS_KIND_COUNT
-  };
-
   static int GetGpuCrashCount();
 
   // Creates a new GpuProcessHost (if |force_create| is turned on) or gets an

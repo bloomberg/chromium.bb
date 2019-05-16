@@ -135,8 +135,7 @@ const gpu::GpuPreferences GetGpuPreferencesFromCommandLine() {
 
 void StopGpuProcess(const base::Closure& callback) {
   content::GpuProcessHost::CallOnIO(
-      content::GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
-      false /* force_create */,
+      content::GPU_PROCESS_KIND_SANDBOXED, false /* force_create */,
       base::Bind(&StopGpuProcessImpl,
                  base::Bind(RunTaskOnTaskRunner,
                             base::ThreadTaskRunnerHandle::Get(), callback)));

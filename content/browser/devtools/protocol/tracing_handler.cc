@@ -773,7 +773,7 @@ void TracingHandler::Start(Maybe<std::string> categories,
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {BrowserThread::IO}, base::BindOnce([]() {
         GpuProcessHost* gpu_process_host =
-            GpuProcessHost::Get(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
+            GpuProcessHost::Get(GPU_PROCESS_KIND_SANDBOXED,
                                 /* force_create */ false);
         return gpu_process_host ? gpu_process_host->process_id()
                                 : base::kNullProcessId;

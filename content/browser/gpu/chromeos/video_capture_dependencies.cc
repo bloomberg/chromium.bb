@@ -23,8 +23,8 @@ void VideoCaptureDependencies::CreateJpegDecodeAccelerator(
     return;
   }
 
-  auto* host = GpuProcessHost::Get(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
-                                   true /*force_create*/);
+  auto* host =
+      GpuProcessHost::Get(GPU_PROCESS_KIND_SANDBOXED, true /*force_create*/);
   if (host) {
     host->gpu_service()->CreateJpegDecodeAccelerator(std::move(accelerator));
   } else {
@@ -44,8 +44,8 @@ void VideoCaptureDependencies::CreateJpegEncodeAccelerator(
     return;
   }
 
-  auto* host = GpuProcessHost::Get(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
-                                   true /*force_create*/);
+  auto* host =
+      GpuProcessHost::Get(GPU_PROCESS_KIND_SANDBOXED, true /*force_create*/);
   if (host) {
     host->gpu_service()->CreateJpegEncodeAccelerator(std::move(accelerator));
   } else {

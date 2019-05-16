@@ -2306,7 +2306,8 @@ void ChromeContentBrowserClient::AdjustUtilityServiceProcessCommandLine(
         base::MessageLoop::TYPE_UI) {
       command_line->AppendSwitch(switches::kMessageLoopTypeUi);
     }
-    content::GpuDataManager::GetInstance()->AppendGpuCommandLine(command_line);
+    content::GpuDataManager::GetInstance()->AppendGpuCommandLine(
+        command_line, content::GPU_PROCESS_KIND_SANDBOXED);
   }
 #endif
 

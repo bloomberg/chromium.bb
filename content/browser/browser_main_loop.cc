@@ -432,8 +432,8 @@ class GpuDataManagerVisualProxy : public GpuDataManagerObserver {
                 !gpu_data_manager_->GpuAccessAllowed(nullptr),
             gpu_info.system_visual, gpu_info.rgba_visual)) {
       // The GPU process sent back bad visuals, which should never happen.
-      auto* gpu_process_host = GpuProcessHost::Get(
-          GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED, false);
+      auto* gpu_process_host =
+          GpuProcessHost::Get(GPU_PROCESS_KIND_SANDBOXED, false);
       if (gpu_process_host)
         gpu_process_host->ForceShutdown();
     }
@@ -469,7 +469,7 @@ class HDRProxy {
  private:
   static void RequestOnIOThread() {
     auto* gpu_process_host =
-        GpuProcessHost::Get(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED, false);
+        GpuProcessHost::Get(GPU_PROCESS_KIND_SANDBOXED, false);
     if (gpu_process_host) {
       auto* gpu_service = gpu_process_host->gpu_host()->gpu_service();
       gpu_service->RequestHDRStatus(
@@ -1409,8 +1409,7 @@ int BrowserMainLoop::BrowserThreadsStarted() {
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(base::IgnoreResult(&GpuProcessHost::Get),
-                       GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
-                       true /* force_create */));
+                       GPU_PROCESS_KIND_SANDBOXED, true /* force_create */));
   }
 
 #if defined(OS_WIN)

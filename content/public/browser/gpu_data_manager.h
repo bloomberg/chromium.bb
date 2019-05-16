@@ -22,6 +22,11 @@ struct VideoMemoryUsageStats;
 }
 
 namespace content {
+enum GpuProcessKind {
+  GPU_PROCESS_KIND_UNSANDBOXED_NO_GL,  // Unsandboxed, no init GL bindings.
+  GPU_PROCESS_KIND_SANDBOXED,
+  GPU_PROCESS_KIND_COUNT
+};
 
 class GpuDataManagerObserver;
 
@@ -68,7 +73,8 @@ class GpuDataManager {
   virtual bool HardwareAccelerationEnabled() const = 0;
 
   // Insert switches into gpu process command line: kUseGL, etc.
-  virtual void AppendGpuCommandLine(base::CommandLine* command_line) const = 0;
+  virtual void AppendGpuCommandLine(base::CommandLine* command_line,
+                                    GpuProcessKind kind) const = 0;
 
  protected:
   virtual ~GpuDataManager() {}
