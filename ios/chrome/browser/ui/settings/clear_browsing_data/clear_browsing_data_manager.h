@@ -5,15 +5,18 @@
 #ifndef IOS_CHROME_BROWSER_UI_SETTINGS_CLEAR_BROWSING_DATA_CLEAR_BROWSING_DATA_MANAGER_H_
 #define IOS_CHROME_BROWSER_UI_SETTINGS_CLEAR_BROWSING_DATA_CLEAR_BROWSING_DATA_MANAGER_H_
 
-#import <Foundation/Foundation.h>
+#include "components/browsing_data/core/counters/browsing_data_counter.h"
+#import "ios/chrome/browser/ui/list_model/list_model.h"
 
-#import "ios/chrome/browser/browsing_data/browsing_data_remover_observer_bridge.h"
-#import "ios/chrome/browser/ui/settings/clear_browsing_data/browsing_data_counter_wrapper_producer.h"
-#import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_consumer.h"
-#import "ios/chrome/browser/ui/settings/clear_browsing_data/time_range_selector_table_view_controller.h"
+namespace ios {
+class ChromeBrowserState;
+}
+class BrowsingDataRemover;
+enum class BrowsingDataRemoveMask;
 
-@class ListModel;
 @class ActionSheetCoordinator;
+@class BrowsingDataCounterWrapperProducer;
+@protocol ClearBrowsingDataConsumer;
 @protocol CollectionViewFooterLinkDelegate;
 
 // Clear Browswing Data Section Identifiers.
@@ -70,9 +73,7 @@ enum class ClearBrowsingDataListType {
 
 // Manager that serves as the bulk of the logic for
 // ClearBrowsingDataConsumer.
-@interface ClearBrowsingDataManager
-    : NSObject <BrowsingDataRemoverObserving,
-                TimeRangeSelectorTableViewControllerDelegate>
+@interface ClearBrowsingDataManager : NSObject
 
 // The manager's consumer.
 @property(nonatomic, weak) id<ClearBrowsingDataConsumer> consumer;

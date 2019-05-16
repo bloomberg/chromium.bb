@@ -20,6 +20,7 @@
 #include "ios/chrome/browser/signin/identity_test_environment_chrome_browser_state_adaptor.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data/fake_browsing_data_counter_wrapper_producer.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_detail_icon_item.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "services/identity/public/cpp/identity_test_environment.h"
@@ -64,13 +65,16 @@ class ClearBrowsingDataManagerTest : public PlatformTest {
     manager_ = [[ClearBrowsingDataManager alloc]
                       initWithBrowserState:browser_state_.get()
                                   listType:ClearBrowsingDataListType::
-                                               kListTypeCollectionView
+                                               kListTypeTableView
                        browsingDataRemover:remover_.get()
         browsingDataCounterWrapperProducer:
             [[FakeBrowsingDataCounterWrapperProducer alloc] init]];
 
     test_sync_service_ = static_cast<syncer::TestSyncService*>(
         ProfileSyncServiceFactory::GetForBrowserState(browser_state_.get()));
+
+    time_range_pref_.Init(browsing_data::prefs::kDeleteTimePeriod,
+                          browser_state_->GetPrefs());
   }
 
   identity::IdentityTestEnvironment* identity_test_env() {
@@ -86,23 +90,24 @@ class ClearBrowsingDataManagerTest : public PlatformTest {
   ClearBrowsingDataManager* manager_;
   syncer::TestSyncService* test_sync_service_;
   web::TestWebThreadBundle thread_bundle_;
+  IntegerPrefMember time_range_pref_;
 };
 
 // Tests model is set up with all appropriate items and sections.
 TEST_F(ClearBrowsingDataManagerTest, TestModel) {
   [manager_ loadModel:model_];
 
-  int section_offset = 0;
+  EXPECT_EQ(3, [model_ numberOfSections]);
   if (IsNewClearBrowsingDataUIEnabled()) {
-    EXPECT_EQ(4, [model_ numberOfSections]);
+    // Time Range selector.
     EXPECT_EQ(1, [model_ numberOfItemsInSection:0]);
-    section_offset = 1;
+    EXPECT_EQ(5, [model_ numberOfItemsInSection:1]);
   } else {
-    EXPECT_EQ(3, [model_ numberOfSections]);
+    EXPECT_EQ(5, [model_ numberOfItemsInSection:0]);
+    // CBD button.
+    EXPECT_EQ(1, [model_ numberOfItemsInSection:1]);
   }
-  EXPECT_EQ(5, [model_ numberOfItemsInSection:0 + section_offset]);
-  EXPECT_EQ(1, [model_ numberOfItemsInSection:1 + section_offset]);
-  EXPECT_EQ(1, [model_ numberOfItemsInSection:2 + section_offset]);
+  EXPECT_EQ(1, [model_ numberOfItemsInSection:2]);
 }
 
 // Tests model is set up with correct number of items and sections if signed in
@@ -116,19 +121,18 @@ TEST_F(ClearBrowsingDataManagerTest, TestModelSignedInSyncOff) {
 
   [manager_ loadModel:model_];
 
-  int section_offset = 0;
+  EXPECT_EQ(4, [model_ numberOfSections]);
   if (IsNewClearBrowsingDataUIEnabled()) {
-    EXPECT_EQ(5, [model_ numberOfSections]);
+    // Time Range selector.
     EXPECT_EQ(1, [model_ numberOfItemsInSection:0]);
-    section_offset = 1;
+    EXPECT_EQ(5, [model_ numberOfItemsInSection:1]);
   } else {
-    EXPECT_EQ(4, [model_ numberOfSections]);
+    EXPECT_EQ(5, [model_ numberOfItemsInSection:0]);
+    // CBD button.
+    EXPECT_EQ(1, [model_ numberOfItemsInSection:1]);
   }
-
-  EXPECT_EQ(5, [model_ numberOfItemsInSection:0 + section_offset]);
-  EXPECT_EQ(1, [model_ numberOfItemsInSection:1 + section_offset]);
-  EXPECT_EQ(1, [model_ numberOfItemsInSection:2 + section_offset]);
-  EXPECT_EQ(1, [model_ numberOfItemsInSection:3 + section_offset]);
+  EXPECT_EQ(1, [model_ numberOfItemsInSection:2]);
+  EXPECT_EQ(1, [model_ numberOfItemsInSection:3]);
 }
 
 TEST_F(ClearBrowsingDataManagerTest, TestCacheCounterFormattingForAllTime) {
@@ -196,6 +200,27 @@ TEST_F(ClearBrowsingDataManagerTest,
     NSString* output = [manager_ counterTextFromResult:result];
     EXPECT_NSEQ(test_case.expected_output, output);
   }
+}
+
+TEST_F(ClearBrowsingDataManagerTest, TestOnPreferenceChanged) {
+  // Only works with new UI
+  if (!IsNewClearBrowsingDataUIEnabled()) {
+    return;
+  }
+  ASSERT_EQ("en", GetApplicationContext()->GetApplicationLocale());
+  [manager_ loadModel:model_];
+  NSArray* timeRangeItems =
+      [model_ itemsInSectionWithIdentifier:SectionIdentifierTimeRange];
+  ASSERT_EQ(1UL, timeRangeItems.count);
+  TableViewDetailIconItem* timeRangeItem = timeRangeItems.firstObject;
+  ASSERT_TRUE([timeRangeItem isKindOfClass:[TableViewDetailIconItem class]]);
+
+  // Changes of Time Range should trigger updates on Time Range item's
+  // detailText.
+  time_range_pref_.SetValue(2);
+  EXPECT_NSEQ(@"Past Week", timeRangeItem.detailText);
+  time_range_pref_.SetValue(3);
+  EXPECT_NSEQ(@"Last 4 Weeks", timeRangeItem.detailText);
 }
 
 }  // namespace

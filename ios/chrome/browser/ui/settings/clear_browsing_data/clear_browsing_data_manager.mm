@@ -14,6 +14,7 @@
 #include "components/feature_engagement/public/tracker.h"
 #include "components/google/core/common/google_util.h"
 #include "components/history/core/browser/web_history_service.h"
+#include "components/prefs/ios/pref_observer_bridge.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_service.h"
@@ -24,6 +25,7 @@
 #include "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remover.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remover_factory.h"
+#import "ios/chrome/browser/browsing_data/browsing_data_remover_observer_bridge.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #include "ios/chrome/browser/history/web_history_service_factory.h"
@@ -40,7 +42,10 @@
 #import "ios/chrome/browser/ui/settings/cells/clear_browsing_data_item.h"
 #import "ios/chrome/browser/ui/settings/cells/legacy/legacy_settings_detail_item.h"
 #import "ios/chrome/browser/ui/settings/cells/table_view_clear_browsing_data_item.h"
+#import "ios/chrome/browser/ui/settings/clear_browsing_data/browsing_data_counter_wrapper_producer.h"
+#import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_consumer.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_ui_constants.h"
+#import "ios/chrome/browser/ui/settings/clear_browsing_data/time_range_selector_table_view_controller.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_icon_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_button_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
@@ -93,9 +98,14 @@ static NSDictionary* _imageNamesByItemTypes = @{
       @"clear_browsing_data_autofill",
 };
 
-@interface ClearBrowsingDataManager () {
+@interface ClearBrowsingDataManager () <BrowsingDataRemoverObserving,
+                                        PrefObserverDelegate> {
   // Access to the kDeleteTimePeriod preference.
   IntegerPrefMember _timeRangePref;
+  // Pref observer to track changes to prefs.
+  std::unique_ptr<PrefObserverBridge> _prefObserverBridge;
+  // Registrar for pref changes notifications.
+  PrefChangeRegistrar _prefChangeRegistrar;
 
   // Observer for browsing data removal events and associated ScopedObserver
   // used to track registration with BrowsingDataRemover. They both may be
@@ -175,6 +185,11 @@ static NSDictionary* _imageNamesByItemTypes = @{
           ScopedObserver<BrowsingDataRemover, BrowsingDataRemoverObserver>>(
           observer_.get());
       scoped_observer_->Add(remover);
+
+      _prefChangeRegistrar.Init(_browserState->GetPrefs());
+      _prefObserverBridge.reset(new PrefObserverBridge(self));
+      _prefObserverBridge->ObserveChangesForPreference(
+          browsing_data::prefs::kDeleteTimePeriod, &_prefChangeRegistrar);
     }
   }
   return self;
@@ -815,11 +830,10 @@ static NSDictionary* _imageNamesByItemTypes = @{
   [self.consumer updateCellsForItem:footerItem];
 }
 
-#pragma mark TimeRangeSelectorTableViewControllerDelegate
+#pragma mark - PrefObserverDelegate
 
-- (void)timeRangeSelectorViewController:
-            (TimeRangeSelectorTableViewController*)tableViewController
-                    didSelectTimePeriod:(browsing_data::TimePeriod)timePeriod {
+- (void)onPreferenceChanged:(const std::string&)preferenceName {
+  DCHECK(preferenceName == browsing_data::prefs::kDeleteTimePeriod);
   NSString* detailText = [TimeRangeSelectorTableViewController
       timePeriodLabelForPrefs:self.browserState->GetPrefs()];
   if (self.listType == ClearBrowsingDataListType::kListTypeCollectionView) {

@@ -210,8 +210,7 @@
     case ItemTypeTimeRange: {
       UIViewController* controller =
           [[TimeRangeSelectorTableViewController alloc]
-              initWithPrefs:_browserState->GetPrefs()
-                   delegate:self.dataManager];
+              initWithPrefs:_browserState->GetPrefs()];
       [self.navigationController pushViewController:controller animated:YES];
       break;
     }

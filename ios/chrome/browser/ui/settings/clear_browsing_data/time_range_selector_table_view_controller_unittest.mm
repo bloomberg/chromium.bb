@@ -39,17 +39,13 @@ class TimeRangeSelectorTableViewControllerTest
   void SetUp() override {
     ChromeTableViewControllerTest::SetUp();
     pref_service_ = CreateLocalState();
-    delegate_ = [OCMockObject
-        mockForProtocol:@protocol(
-                            TimeRangeSelectorTableViewControllerDelegate)];
     CreateController();
   }
 
   ChromeTableViewController* InstantiateController() override {
     time_range_selector_controller_ =
         [[TimeRangeSelectorTableViewController alloc]
-            initWithPrefs:pref_service_.get()
-                 delegate:delegate_];
+            initWithPrefs:pref_service_.get()];
     return time_range_selector_controller_;
   }
 
@@ -72,7 +68,6 @@ class TimeRangeSelectorTableViewControllerTest
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<PrefService> pref_service_;
-  id delegate_;
   TimeRangeSelectorTableViewController* time_range_selector_controller_;
 };
 
@@ -115,25 +110,6 @@ TEST_F(TimeRangeSelectorTableViewControllerTest, TestUpdateCheckedState) {
         CheckTextItemAccessoryType(UITableViewCellAccessoryNone, 0, item);
       }
     }
-  }
-}
-
-TEST_F(TimeRangeSelectorTableViewControllerTest, TestUpdatePrefValue) {
-  CheckController();
-  UITableView* tableView = time_range_selector_controller_.tableView;
-  for (NSInteger checkedItem = 0; checkedItem < kNumberOfItems; ++checkedItem) {
-    NSIndexPath* indexPath = [NSIndexPath indexPathForRow:checkedItem
-                                                inSection:0];
-    [[delegate_ expect]
-        timeRangeSelectorViewController:time_range_selector_controller_
-                    didSelectTimePeriod:static_cast<browsing_data::TimePeriod>(
-                                            checkedItem)];
-    [time_range_selector_controller_ tableView:tableView
-                       didSelectRowAtIndexPath:indexPath];
-    EXPECT_EQ(
-        pref_service_->GetInteger(browsing_data::prefs::kDeleteTimePeriod),
-        checkedItem);
-    EXPECT_OCMOCK_VERIFY(delegate_);
   }
 }
 
