@@ -139,6 +139,7 @@ js_library("actions_model") {
     "ui:error_dialog",
     "ui:files_alert_dialog",
     "ui:list_container",
+    "//ui/file_manager/file_manager/foreground/js/ui:action_model_ui",
     "//ui/webui/resources/js:cr",
   ]
   externs_list = [ "../../../externs/background/drive_sync_handler.js" ]
@@ -160,6 +161,7 @@ js_unittest("actions_model_unittest") {
     "//ui/file_manager/base/js:test_error_reporting",
     "//ui/file_manager/file_manager/background/js:mock_drive_sync_handler",
     "//ui/file_manager/file_manager/background/js:mock_volume_manager",
+    "//ui/file_manager/file_manager/foreground/js/ui:action_model_ui",
   ]
 }
 

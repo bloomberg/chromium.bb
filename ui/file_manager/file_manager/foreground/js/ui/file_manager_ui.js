@@ -4,6 +4,7 @@
 
 /**
  * The root of the file manager's view managing the DOM of the Files app.
+ * @implements ActionModelUI
  */
 class FileManagerUI {
   /**

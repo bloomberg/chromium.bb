@@ -18,6 +18,7 @@ group("closure_compile") {
 
 js_type_check("closure_compile_module") {
   deps = [
+    ":action_model_ui",
     ":actions_submenu",
     ":banners",
     ":closure_compile_externs",
@@ -73,6 +74,14 @@ js_library("closure_compile_externs") {
     "../../../../externs/paper_elements.js",
     "../../../../externs/platform.js",
     "../../../../externs/search_item.js",
+  ]
+}
+
+js_library("action_model_ui") {
+  deps = [
+    ":error_dialog",
+    ":files_alert_dialog",
+    ":list_container",
   ]
 }
 
@@ -225,6 +234,7 @@ js_library("file_manager_dialog_base") {
 
 js_library("file_manager_ui") {
   deps = [
+    ":action_model_ui",
     ":actions_submenu",
     ":banners",
     ":combobutton",

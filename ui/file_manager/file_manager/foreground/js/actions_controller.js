@@ -18,56 +18,31 @@ class ActionsController {
   constructor(
       volumeManager, metadataModel, directoryModel, shortcutsModel,
       driveSyncHandler, selectionHandler, ui) {
-    /**
-     * @private
-     * @const
-     */
+    /** @private @const {!VolumeManager} */
     this.volumeManager_ = volumeManager;
 
-    /**
-     * @private
-     * @const
-     */
+    /** @private @const {!MetadataModel} */
     this.metadataModel_ = metadataModel;
 
-    /**
-     * @private
-     * @const
-     */
+    /** @private @const {!DirectoryModel} */
     this.directoryModel_ = directoryModel;
 
-    /**
-     * @private
-     * @const
-     */
+    /** @private @const {!FolderShortcutsDataModel} */
     this.shortcutsModel_ = shortcutsModel;
 
-    /**
-     * @private
-     * @const
-     */
+    /** @private @const {!DriveSyncHandler} */
     this.driveSyncHandler_ = driveSyncHandler;
 
-    /**
-     * @private
-     * @const
-     */
+    /** @private @const {!FileSelectionHandler} */
     this.selectionHandler_ = selectionHandler;
 
-    /**
-     * @private
-     * @const
-     */
+    /** @private @const {!FileManagerUI} */
     this.ui_ = ui;
 
-    /**
-     * @private {Map<string, ActionsModel>}
-     */
+    /** @private @const {Map<string, ActionsModel>} */
     this.readyModels_ = new Map();
 
-    /**
-     * @private {Map<string, Promise<ActionsModel>>}
-     */
+    /** @private @const {Map<string, Promise<ActionsModel>>} */
     this.initializingdModels_ = new Map();
 
     /**

@@ -31,15 +31,6 @@ class Action {
   getEntries() {}
 }
 
-/**
- * @typedef {{
- *  alertDialog: FilesAlertDialog,
- *  errorDialog: ErrorDialog,
- *  listContainer: ListContainer,
- * }}
- */
-let ActionModelUI;
-
 /** @implements {Action} */
 class DriveShareAction {
   /**
