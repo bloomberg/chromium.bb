@@ -101,9 +101,9 @@ void DelegatedFrameHost::WasShown(
   if (record_presentation_time && compositor_ &&
       !tab_switch_start_time.is_null()) {
     compositor_->RequestPresentationTimeForNextFrame(
-        tab_switch_time_recorder_.BeginTimeRecording(
-            tab_switch_start_time, true /* has_saved_frames */,
-            base::TimeTicks::Now()));
+        tab_switch_time_recorder_.TabWasShown(true /* has_saved_frames */,
+                                              tab_switch_start_time,
+                                              base::TimeTicks::Now()));
   }
 
   // Use the default deadline to synchronize web content with browser UI.
@@ -124,6 +124,7 @@ bool DelegatedFrameHost::HasSavedFrame() const {
 
 void DelegatedFrameHost::WasHidden() {
   frame_evictor_->SetVisible(false);
+  tab_switch_time_recorder_.TabWasHidden();
 }
 
 void DelegatedFrameHost::CopyFromCompositingSurface(

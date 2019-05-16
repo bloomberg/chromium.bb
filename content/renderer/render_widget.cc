@@ -918,6 +918,8 @@ void RenderWidget::OnWasHidden() {
 
   SetHidden(true);
 
+  tab_switch_time_recorder_.TabWasHidden();
+
   for (auto& observer : render_frames_)
     observer.WasHidden();
 }
@@ -935,11 +937,11 @@ void RenderWidget::OnWasShown(base::TimeTicks show_request_timestamp,
   was_shown_time_ = base::TimeTicks::Now();
 
   SetHidden(false);
-  if (!show_request_timestamp.is_null()) {
+  if (!tab_switch_start_time.is_null()) {
     layer_tree_view_->layer_tree_host()->RequestPresentationTimeForNextFrame(
-        tab_switch_time_recorder_.BeginTimeRecording(
-            tab_switch_start_time, false /* has_saved_frames */,
-            show_request_timestamp));
+        tab_switch_time_recorder_.TabWasShown(false /* has_saved_frames */,
+                                              tab_switch_start_time,
+                                              show_request_timestamp));
   }
 
   for (auto& observer : render_frames_)
