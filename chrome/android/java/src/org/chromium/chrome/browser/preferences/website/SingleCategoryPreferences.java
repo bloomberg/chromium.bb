@@ -848,6 +848,7 @@ public class SingleCategoryPreferences extends PreferenceFragment
             screen.removePreference(explainProtectedMediaKey);
             screen.removePreference(allowedGroup);
             screen.removePreference(blockedGroup);
+            screen.removePreference(managedGroup);
             // Since all preferences are hidden, there's nothing to do further and we can
             // simply return.
             return;
