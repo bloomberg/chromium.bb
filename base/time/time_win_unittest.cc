@@ -247,6 +247,10 @@ TEST(TimeTicks, TimerPerformance) {
   }
 }
 
+#if !defined(ARCH_CPU_ARM64)
+// This test is disabled on Windows ARM64 systems because TSCTicksPerSecond is
+// only used in Chromium for QueryThreadCycleTime, and QueryThreadCycleTime
+// doesn't use a constant-rate timer on ARM64.
 TEST(TimeTicks, TSCTicksPerSecond) {
   if (ThreadTicks::IsSupported()) {
     ThreadTicks::WaitUntilInitialized();
@@ -269,6 +273,7 @@ TEST(TimeTicks, TSCTicksPerSecond) {
                 0.005 * processor_mhz_from_registry);
   }
 }
+#endif
 
 TEST(TimeTicks, FromQPCValue) {
   if (!TimeTicks::IsHighResolution())
