@@ -33,6 +33,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller_audience.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_consumer.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_metrics.h"
+#import "ios/chrome/browser/ui/content_suggestions/user_account_image_update_delegate.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_notification_names.h"
 #include "ios/chrome/browser/ui/ntp/metrics.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
@@ -467,6 +468,9 @@ const char kNTPHelpURL[] =
 
 - (BOOL)isScrolledToTop {
   return self.suggestionsViewController.scrolledToTop;
+}
+
+- (void)registerImageUpdater:(id<UserAccountImageUpdateDelegate>)imageUpdater {
 }
 
 - (BOOL)ignoreLoadRequests {
