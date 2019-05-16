@@ -21,8 +21,6 @@ cr.define('cr.login', function() {
   // of hardcoding the prod URL here.  As is, this does not work with staging
   // environments.
   const IDP_ORIGIN = 'https://accounts.google.com/';
-  const CONTINUE_URL =
-      'chrome-extension://mfffpogegjflfpflabcdkioaeobkgjik/success.html';
   const SIGN_IN_HEADER = 'google-accounts-signin';
   const EMBEDDED_FORM_HEADER = 'google-accounts-embedded';
   const LOCATION_HEADER = 'location';
@@ -61,7 +59,6 @@ cr.define('cr.login', function() {
     'gaiaPath',      // Gaia path to use without a leading slash.
     'hl',            // Language code for the user interface.
     'service',       // Name of Gaia service.
-    'continueUrl',   // Continue url to use.
     'frameUrl',      // Initial frame URL to use. If empty defaults to
                      // gaiaUrl.
     'constrained',   // Whether the extension is loaded in a constrained
@@ -132,8 +129,6 @@ cr.define('cr.login', function() {
       this.authDomain = '';
       this.videoEnabled = false;
       this.idpOrigin_ = null;
-      this.continueUrl_ = null;
-      this.continueUrlWithoutParams_ = null;
       this.initialFrameUrl_ = null;
       this.reloadUrl_ = null;
       this.trusted_ = true;
@@ -286,10 +281,6 @@ cr.define('cr.login', function() {
       // gaiaUrl parameter is used for testing. Once defined, it is never
       // changed.
       this.idpOrigin_ = data.gaiaUrl || IDP_ORIGIN;
-      this.continueUrl_ = data.continueUrl || CONTINUE_URL;
-      this.continueUrlWithoutParams_ =
-          this.continueUrl_.substring(0, this.continueUrl_.indexOf('?')) ||
-          this.continueUrl_;
       this.isConstrainedWindow_ = data.constrained == '1';
       this.clientId_ = data.clientId;
       this.dontResizeNonEmbeddedPages = data.dontResizeNonEmbeddedPages;

@@ -122,8 +122,6 @@ void InlineLoginHandler::ContinueHandleInitializeMessage() {
     params.SetBoolean("isLoginPrimaryAccount", true);
   }
 
-  params.SetString("continueUrl", signin::GetLandingURL(access_point).spec());
-
   Profile* profile = Profile::FromWebUI(web_ui());
   std::string default_email;
   if (reason == signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT ||
