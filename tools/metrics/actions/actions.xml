@@ -17363,6 +17363,14 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="ShowAppManagementPage">
+  <owner>jshikaram@chromium.org</owner>
+  <owner>dominickn@chromium.org</owner>
+  <description>
+    The user selected the App Info context menu item in the app launcher.
+  </description>
+</action>
+
 <action name="ShowAppMenu">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
