@@ -88,10 +88,10 @@ class PLATFORM_EXPORT ImageFrameGenerator final
                       cc::PaintImage::GeneratorClientId);
 
   // Decodes YUV components directly into the provided memory planes. Must not
-  // be called unless getYUVComponentSizes has been called and returned true.
-  // YUV decoding does not currently support progressive decoding. In order to
-  // support it, ImageDecoder needs something analagous to its ImageFrame cache
-  // to hold partial planes, and the GPU code needs to handle them.
+  // be called unless GetYUVComponentSizes has been called and returned true.
+  // TODO(crbug.com/943519): In order to support incremental YUV decoding,
+  // ImageDecoder needs something analogous to its ImageFrame cache to hold
+  // partial planes, and the GPU code needs to handle them.
   bool DecodeToYUV(SegmentReader*,
                    size_t index,
                    const SkISize component_sizes[3],
@@ -110,9 +110,7 @@ class PLATFORM_EXPORT ImageFrameGenerator final
 
   bool HasAlpha(size_t index);
 
-  // Must not be called unless the SkROBuffer has all the data. YUV decoding
-  // does not currently support progressive decoding. See comment above on
-  // decodeToYUV().
+  // TODO(crbug.com/943519): Do not call unless the SkROBuffer has all the data.
   bool GetYUVComponentSizes(SegmentReader*, SkYUVASizeInfo*);
 
  private:

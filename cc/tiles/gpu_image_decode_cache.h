@@ -593,6 +593,10 @@ class CC_EXPORT GpuImageDecodeCache
   void UploadImageIfNecessary(const DrawImage& draw_image,
                               ImageData* image_data);
 
+  // Flush pending operations on context_->GrContext() for each element of
+  // |yuv_images| and then clear the vector.
+  void FlushYUVImages(std::vector<sk_sp<SkImage>>* yuv_images);
+
   // Runs pending operations that required the |context_| lock to be held, but
   // were queued up during a time when the |context_| lock was unavailable.
   // These including deleting, unlocking, and locking textures.
@@ -660,7 +664,10 @@ class CC_EXPORT GpuImageDecodeCache
   std::vector<sk_sp<SkImage>> images_pending_deletion_;
   // Images that are backed by planar textures must be handled differently
   // to avoid inadvertently flattening to RGB and creating additional textures.
+  // See comment in RunPendingContextThreadOperations().
   std::vector<sk_sp<SkImage>> yuv_images_pending_deletion_;
+  std::vector<sk_sp<SkImage>> yuv_images_pending_unlock_;
+  const sk_sp<SkColorSpace> target_color_space_;
 
   std::vector<uint32_t> ids_pending_unlock_;
   std::vector<uint32_t> ids_pending_deletion_;

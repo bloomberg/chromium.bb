@@ -362,7 +362,7 @@ void ImageDecoder::ClearFrameBuffer(size_t frame_index) {
 }
 
 Vector<size_t> ImageDecoder::FindFramesToDecode(size_t index) const {
-  DCHECK(index < frame_buffer_cache_.size());
+  DCHECK_LT(index, frame_buffer_cache_.size());
 
   Vector<size_t> frames_to_decode;
   do {

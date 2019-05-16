@@ -65,6 +65,8 @@ class PLATFORM_EXPORT ImagePlanes final {
 
  public:
   ImagePlanes();
+  // TODO(crbug/910276): To support YUVA, ImagePlanes needs to support a
+  // variable number of planes.
   ImagePlanes(void* planes[3], const size_t row_bytes[3]);
 
   void* Plane(int);

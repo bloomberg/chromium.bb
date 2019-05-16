@@ -59,7 +59,17 @@ class PLATFORM_EXPORT WEBPImageDecoder final : public ImageDecoder {
   size_t DecodeFrameCount() override;
   void InitializeNewFrame(size_t) override;
   void Decode(size_t) override;
+  void SetImagePlanes(std::unique_ptr<ImagePlanes>) override;
+  bool CanDecodeToYUV() override;
+  void DecodeToYUV() override;
 
+  WEBP_CSP_MODE RGBOutputMode();
+  // Returns true if the image data received so far (as stored in
+  // |consolidated_data_|) can potentially be decoded and rendered from YUV
+  // planes.
+  bool CanAllowYUVDecodingForWebP();
+  bool HasImagePlanes() const { return image_planes_.get(); }
+  bool DecodeSingleFrameToYUV(const uint8_t* data_bytes, size_t data_size);
   bool DecodeSingleFrame(const uint8_t* data_bytes,
                          size_t data_size,
                          size_t frame_index);
@@ -75,10 +85,30 @@ class PLATFORM_EXPORT WEBPImageDecoder final : public ImageDecoder {
     return frame_buffer_cache_[index].GetStatus() == ImageFrame::kFrameComplete;
   }
 
+  bool IsDoingYuvDecode() const {
+    if (image_planes_) {
+      DCHECK(can_decode_to_yuv_);
+      return true;
+    }
+    return false;
+  }
+
   WebPIDecoder* decoder_;
   WebPDecBuffer decoder_buffer_;
   int format_flags_;
   bool frame_background_has_alpha_;
+  // Note that |can_decode_to_yuv_| being true merely means that the
+  // WEBPImageDecoder is allowed to decode to YUV. Other layers higher in the
+  // stack (the PaintImageGenerator, ImageFrameGenerator, or cache) may
+  // decline to go down the YUV path.
+  bool can_decode_to_yuv_;
+  std::unique_ptr<ImagePlanes> image_planes_;
+
+  // Provides the size of each component.
+  IntSize DecodedYUVSize(int component) const override;
+
+  // Returns the width of each row of the memory allocation.
+  size_t DecodedYUVWidthBytes(int component) const override;
 
   void ReadColorProfile();
   bool UpdateDemuxer();

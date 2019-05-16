@@ -26,8 +26,8 @@
 #include "third_party/blink/renderer/platform/graphics/decoding_image_generator.h"
 
 #include <utility>
-
 #include <memory>
+
 #include "third_party/blink/renderer/platform/graphics/image_frame_generator.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
@@ -231,6 +231,7 @@ bool DecodingImageGenerator::QueryYUVA8(
   indices[SkYUVAIndex::kV_Index] = {2, SkColorChannel::kR};
   indices[SkYUVAIndex::kA_Index] = {-1, SkColorChannel::kR};
 
+  DCHECK(all_data_received_);
   return frame_generator_->GetYUVComponentSizes(data_.get(), size_info);
 }
 
@@ -239,8 +240,8 @@ bool DecodingImageGenerator::GetYUVA8Planes(const SkYUVASizeInfo& size_info,
                                             void* planes[3],
                                             size_t frame_index,
                                             uint32_t lazy_pixel_ref) {
-  // YUV decoding does not currently support progressive decoding. See comment
-  // in ImageFrameGenerator.h.
+  // TODO(crbug.com/943519): YUV decoding does not currently support incremental
+  // decoding. See comment in image_frame_generator.h.
   DCHECK(can_yuv_decode_);
   DCHECK(all_data_received_);
 
