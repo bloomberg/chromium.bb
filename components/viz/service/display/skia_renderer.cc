@@ -1622,12 +1622,8 @@ SkiaRenderer::DrawRPDQParams SkiaRenderer::CalculateRPDQParams(
         bg_paint_filter ? bg_paint_filter->cached_sk_filter_ : nullptr;
 
     if (sk_bg_filter) {
-      SkMatrix content_to_dest = SkMatrix::MakeRectToRect(
-          gfx::RectFToSkRect(quad->tex_coord_rect),
-          gfx::RectToSkRect(quad->rect), SkMatrix::kFill_ScaleToFit);
-      content_to_dest.preConcat(local_matrix);
       rpdq_params.backdrop_filter =
-          sk_bg_filter->makeWithLocalMatrix(content_to_dest);
+          sk_bg_filter->makeWithLocalMatrix(local_matrix);
     }
   }
 
@@ -1637,16 +1633,10 @@ SkiaRenderer::DrawRPDQParams SkiaRenderer::CalculateRPDQParams(
     const base::Optional<gfx::RRectF> backdrop_filter_bounds =
         BackdropFilterBoundsForPass(quad->render_pass_id);
     if (backdrop_filter_bounds) {
-      // Map this into the same coordinate system as the quad.
-      // (See gl_renderer::GetBackdropBoundingBoxForRenderPassQuad)
       rpdq_params.backdrop_filter_bounds = *backdrop_filter_bounds;
       // Scale by the filter's scale, but don't apply filter origin
       rpdq_params.backdrop_filter_bounds->Scale(quad->filters_scale.x(),
                                                 quad->filters_scale.y());
-      // Offset by the render pass' output rect.
-      rpdq_params.backdrop_filter_bounds->Offset(
-          gfx::Point() -
-          current_frame()->current_render_pass->output_rect.origin());
 
       // If there are also regular image filters, they apply to the area of
       // the backdrop_filter_bounds too, so expand the backdrop bounds and join
