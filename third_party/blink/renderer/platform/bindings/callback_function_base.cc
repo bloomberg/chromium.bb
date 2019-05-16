@@ -70,6 +70,22 @@ ScriptState* CallbackFunctionBase::CallbackRelevantScriptStateOrThrowException(
   return nullptr;
 }
 
+void CallbackFunctionBase::EvaluateAsPartOfCallback(
+    base::OnceCallback<void()> closure) {
+  if (!callback_relevant_script_state_)
+    return;
+
+  // https://heycam.github.io/webidl/#es-invoking-callback-functions
+  // step 8: Prepare to run script with relevant settings.
+  ScriptState::Scope callback_relevant_context_scope(
+      callback_relevant_script_state_);
+  // step 9: Prepare to run a callback with stored settings.
+  v8::Context::BackupIncumbentScope backup_incumbent_scope(
+      IncumbentScriptState()->GetContext());
+
+  std::move(closure).Run();
+}
+
 V8PersistentCallbackFunctionBase::V8PersistentCallbackFunctionBase(
     CallbackFunctionBase* callback_function)
     : callback_function_(callback_function) {
