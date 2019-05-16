@@ -10,6 +10,10 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
+namespace base {
+class TickClock;
+}
+
 namespace blink {
 
 class CORE_EXPORT IdleDeadline : public ScriptWrappable {
@@ -32,9 +36,14 @@ class CORE_EXPORT IdleDeadline : public ScriptWrappable {
     return callback_type_ == CallbackType::kCalledByTimeout;
   }
 
+  // The caller is the owner of the |clock|. The |clock| must outlive the
+  // IdleDeadline.
+  void SetTickClockForTesting(const base::TickClock* clock) { clock_ = clock; }
+
  private:
   TimeTicks deadline_;
   CallbackType callback_type_;
+  const base::TickClock* clock_;
 };
 
 }  // namespace blink

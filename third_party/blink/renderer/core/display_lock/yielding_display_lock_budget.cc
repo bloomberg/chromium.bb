@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/display_lock/yielding_display_lock_budget.h"
 
+#include "base/time/tick_clock.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 #include <algorithm>
@@ -24,7 +25,7 @@ bool YieldingDisplayLockBudget::ShouldPerformPhase(Phase phase) const {
     return true;
 
   // Otherwise, we can still do work while we're not past the deadline.
-  return CurrentTimeTicks() < deadline_;
+  return clock_->NowTicks() < deadline_;
 }
 
 void YieldingDisplayLockBudget::DidPerformPhase(Phase phase) {
@@ -42,7 +43,7 @@ void YieldingDisplayLockBudget::DidPerformPhase(Phase phase) {
 void YieldingDisplayLockBudget::WillStartLifecycleUpdate() {
   ++lifecycle_count_;
   deadline_ =
-      CurrentTimeTicks() + TimeDelta::FromMillisecondsD(GetCurrentBudgetMs());
+      clock_->NowTicks() + TimeDelta::FromMillisecondsD(GetCurrentBudgetMs());
 
   // Figure out the next phase we would run. If we had completed a phase before,
   // then we should try to complete the next one, otherwise we'll start with the

@@ -198,6 +198,12 @@ _CONFIG = [
             # For MessageLoop::TaskObserver.
             'base::PendingTask',
 
+            # Time
+            'base::Clock',
+            'base::DefaultClock',
+            'base::DefaultTickClock',
+            'base::TickClock',
+
             # cc painting types.
             'cc::PaintCanvas',
             'cc::PaintFlags',

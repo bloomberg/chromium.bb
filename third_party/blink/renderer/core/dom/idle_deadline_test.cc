@@ -5,12 +5,11 @@
 #include "third_party/blink/renderer/core/dom/idle_deadline.h"
 
 #include "base/single_thread_task_runner.h"
+#include "base/test/test_mock_time_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/testing/scoped_scheduler_overrider.h"
-#include "third_party/blink/renderer/platform/testing/wtf/scoped_mock_clock.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 namespace {
@@ -74,16 +73,20 @@ class MockIdleDeadlineScheduler final : public ThreadScheduler {
 
 class IdleDeadlineTest : public testing::Test {
  public:
-  void SetUp() override { clock_.Advance(TimeDelta::FromSeconds(1)); }
+  void SetUp() override {
+    test_task_runner_ = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
+  }
 
- private:
-  WTF::ScopedMockClock clock_;
+ protected:
+  scoped_refptr<base::TestMockTimeTaskRunner> test_task_runner_;
 };
 
 TEST_F(IdleDeadlineTest, DeadlineInFuture) {
   auto* deadline = MakeGarbageCollected<IdleDeadline>(
       TimeTicks() + TimeDelta::FromSecondsD(1.25),
       IdleDeadline::CallbackType::kCalledWhenIdle);
+  deadline->SetTickClockForTesting(test_task_runner_->GetMockTickClock());
+  test_task_runner_->FastForwardBy(TimeDelta::FromSeconds(1));
   // Note: the deadline is computed with reduced resolution.
   EXPECT_FLOAT_EQ(250.0, deadline->timeRemaining());
 }
@@ -92,6 +95,8 @@ TEST_F(IdleDeadlineTest, DeadlineInPast) {
   auto* deadline = MakeGarbageCollected<IdleDeadline>(
       TimeTicks() + TimeDelta::FromSecondsD(0.75),
       IdleDeadline::CallbackType::kCalledWhenIdle);
+  deadline->SetTickClockForTesting(test_task_runner_->GetMockTickClock());
+  test_task_runner_->FastForwardBy(TimeDelta::FromSeconds(1));
   EXPECT_FLOAT_EQ(0, deadline->timeRemaining());
 }
 
@@ -102,6 +107,8 @@ TEST_F(IdleDeadlineTest, YieldForHighPriorityWork) {
   auto* deadline = MakeGarbageCollected<IdleDeadline>(
       TimeTicks() + TimeDelta::FromSecondsD(1.25),
       IdleDeadline::CallbackType::kCalledWhenIdle);
+  deadline->SetTickClockForTesting(test_task_runner_->GetMockTickClock());
+  test_task_runner_->FastForwardBy(TimeDelta::FromSeconds(1));
   EXPECT_FLOAT_EQ(0, deadline->timeRemaining());
 }
 

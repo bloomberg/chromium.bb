@@ -13,6 +13,7 @@ include_rules = [
     "+base/strings/stringprintf.h",
     "+base/synchronization/waitable_event.h",
     "+base/task/sequence_manager/task_time_observer.h",
+    "+base/time",
     "+base/unguessable_token.h",
     "+build/mac",
     "+build/win",
@@ -87,6 +88,7 @@ specific_include_rules = {
     # Additional allowed includes for tests.
     ".*_test(_.*)?\.(cc|h)" : [
         "+base/message_loop/message_loop.h",
+        "+base/test/test_mock_time_task_runner.h",
         # Test harness may use cc directly instead of going through WebViewImpl etc.
         "+cc",
         "+components/ukm/test_ukm_recorder.h",

@@ -4,10 +4,9 @@
 
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 
+#include "base/test/test_mock_time_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/platform/testing/wtf/scoped_mock_clock.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -112,17 +111,20 @@ TEST(UserGestureIndicatorTest, MultipleGesturesWithTheSameToken) {
 }
 
 TEST(UserGestureIndicatorTest, Timeouts) {
-  WTF::ScopedMockClock clock;
-
+  auto test_task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
   {
     // Token times out after 1 second.
     std::unique_ptr<UserGestureIndicator> user_gesture_scope =
         LocalFrame::NotifyUserActivation(nullptr);
     scoped_refptr<UserGestureToken> token = user_gesture_scope->CurrentToken();
+    token->SetClockForTesting(test_task_runner->GetMockClock());
+    // Timestamp is initialized to Now() in constructor using the default clock,
+    // reset it so it gets the Now() of the mock clock.
+    token->ResetTimestampForTesting();
     EXPECT_TRUE(token->HasGestures());
-    clock.Advance(TimeDelta::FromSecondsD(0.75));
+    test_task_runner->FastForwardBy(TimeDelta::FromSecondsD(0.75));
     EXPECT_TRUE(token->HasGestures());
-    clock.Advance(TimeDelta::FromSecondsD(0.75));
+    test_task_runner->FastForwardBy(TimeDelta::FromSecondsD(0.75));
     EXPECT_FALSE(token->HasGestures());
   }
 
@@ -134,16 +136,20 @@ TEST(UserGestureIndicatorTest, Timeouts) {
       std::unique_ptr<UserGestureIndicator> user_gesture_scope =
           LocalFrame::NotifyUserActivation(nullptr);
       token = user_gesture_scope->CurrentToken();
+      token->SetClockForTesting(test_task_runner->GetMockClock());
+      // Timestamp is initialized to Now() in constructor using the default
+      // clock, reset it so it gets the Now() of the mock clock.
+      token->ResetTimestampForTesting();
       EXPECT_TRUE(token->HasGestures());
-      clock.Advance(TimeDelta::FromSecondsD(0.75));
+      test_task_runner->FastForwardBy(TimeDelta::FromSecondsD(0.75));
       EXPECT_TRUE(token->HasGestures());
     }
 
     {
       UserGestureIndicator user_gesture_scope(token.get());
-      clock.Advance(TimeDelta::FromSecondsD(0.75));
+      test_task_runner->FastForwardBy(TimeDelta::FromSecondsD(0.75));
       EXPECT_TRUE(token->HasGestures());
-      clock.Advance(TimeDelta::FromSecondsD(0.75));
+      test_task_runner->FastForwardBy(TimeDelta::FromSecondsD(0.75));
       EXPECT_FALSE(token->HasGestures());
     }
   }

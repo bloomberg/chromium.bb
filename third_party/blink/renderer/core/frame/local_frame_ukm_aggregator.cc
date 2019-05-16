@@ -6,6 +6,7 @@
 
 #include "base/format_macros.h"
 #include "base/rand_util.h"
+#include "base/time/default_tick_clock.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -15,15 +16,18 @@ namespace blink {
 
 LocalFrameUkmAggregator::ScopedUkmHierarchicalTimer::ScopedUkmHierarchicalTimer(
     scoped_refptr<LocalFrameUkmAggregator> aggregator,
-    size_t metric_index)
+    size_t metric_index,
+    const base::TickClock* clock)
     : aggregator_(aggregator),
       metric_index_(metric_index),
-      start_time_(CurrentTimeTicks()) {}
+      clock_(clock),
+      start_time_(clock_->NowTicks()) {}
 
 LocalFrameUkmAggregator::ScopedUkmHierarchicalTimer::ScopedUkmHierarchicalTimer(
     ScopedUkmHierarchicalTimer&& other)
     : aggregator_(other.aggregator_),
       metric_index_(other.metric_index_),
+      clock_(other.clock_),
       start_time_(other.start_time_) {
   other.aggregator_ = nullptr;
 }
@@ -31,7 +35,7 @@ LocalFrameUkmAggregator::ScopedUkmHierarchicalTimer::ScopedUkmHierarchicalTimer(
 LocalFrameUkmAggregator::ScopedUkmHierarchicalTimer::
     ~ScopedUkmHierarchicalTimer() {
   if (aggregator_ && base::TimeTicks::IsHighResolution()) {
-    aggregator_->RecordSample(metric_index_, start_time_, CurrentTimeTicks());
+    aggregator_->RecordSample(metric_index_, start_time_, clock_->NowTicks());
   }
 }
 
@@ -39,6 +43,7 @@ LocalFrameUkmAggregator::LocalFrameUkmAggregator(int64_t source_id,
                                                  ukm::UkmRecorder* recorder)
     : source_id_(source_id),
       recorder_(recorder),
+      clock_(base::DefaultTickClock::GetInstance()),
       event_name_("Blink.UpdateTime") {
   // Record average and worst case for the primary metric.
   primary_metric_.reset();
@@ -111,12 +116,17 @@ LocalFrameUkmAggregator::LocalFrameUkmAggregator(int64_t source_id,
 
 LocalFrameUkmAggregator::ScopedUkmHierarchicalTimer
 LocalFrameUkmAggregator::GetScopedTimer(size_t metric_index) {
-  return ScopedUkmHierarchicalTimer(this, metric_index);
+  return ScopedUkmHierarchicalTimer(this, metric_index, clock_);
 }
 
 void LocalFrameUkmAggregator::BeginMainFrame() {
   DCHECK(!in_main_frame_update_);
   in_main_frame_update_ = true;
+}
+
+void LocalFrameUkmAggregator::SetTickClockForTesting(
+    const base::TickClock* clock) {
+  clock_ = clock;
 }
 
 void LocalFrameUkmAggregator::RecordSample(size_t metric_index,

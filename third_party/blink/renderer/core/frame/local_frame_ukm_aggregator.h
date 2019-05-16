@@ -11,6 +11,10 @@
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
+namespace base {
+class TickClock;
+}
+
 namespace ukm {
 class UkmRecorder;
 }
@@ -194,10 +198,12 @@ class CORE_EXPORT LocalFrameUkmAggregator
     friend class LocalFrameUkmAggregator;
 
     ScopedUkmHierarchicalTimer(scoped_refptr<LocalFrameUkmAggregator>,
-                               size_t metric_index);
+                               size_t metric_index,
+                               const base::TickClock* clock);
 
     scoped_refptr<LocalFrameUkmAggregator> aggregator_;
     const size_t metric_index_;
+    const base::TickClock* clock_;
     const TimeTicks start_time_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedUkmHierarchicalTimer);
@@ -225,6 +231,10 @@ class CORE_EXPORT LocalFrameUkmAggregator
   void BeginMainFrame();
 
   bool InMainFrame() { return in_main_frame_update_; }
+
+  // The caller is the owner of the |clock|. The |clock| must outlive the
+  // LocalFrameUkmAggregator.
+  void SetTickClockForTesting(const base::TickClock* clock);
 
  private:
   struct AbsoluteMetricRecord {
@@ -261,6 +271,7 @@ class CORE_EXPORT LocalFrameUkmAggregator
   // UKM system data
   const int64_t source_id_;
   ukm::UkmRecorder* const recorder_;
+  const base::TickClock* clock_;
 
   // Event and metric data
   const String event_name_;

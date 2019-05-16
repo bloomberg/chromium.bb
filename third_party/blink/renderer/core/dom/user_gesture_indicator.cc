@@ -4,12 +4,12 @@
 
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 
+#include "base/time/default_clock.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -21,7 +21,8 @@ const double kUserGestureOutOfProcessTimeout = 10.0;
 
 UserGestureToken::UserGestureToken(Status status)
     : consumable_gestures_(0),
-      timestamp_(WTF::CurrentTime()),
+      clock_(base::DefaultClock::GetInstance()),
+      timestamp_(clock_->Now().ToDoubleT()),
       timeout_policy_(kDefault),
       was_forwarded_cross_process_(false) {
   if (status == kNewGesture || !UserGestureIndicator::CurrentTokenThreadSafe())
@@ -52,7 +53,7 @@ void UserGestureToken::SetTimeoutPolicy(TimeoutPolicy policy) {
 }
 
 void UserGestureToken::ResetTimestamp() {
-  timestamp_ = WTF::CurrentTime();
+  timestamp_ = clock_->Now().ToDoubleT();
 }
 
 bool UserGestureToken::HasTimedOut() const {
@@ -61,7 +62,7 @@ bool UserGestureToken::HasTimedOut() const {
   double timeout = timeout_policy_ == kOutOfProcess
                        ? kUserGestureOutOfProcessTimeout
                        : kUserGestureTimeout;
-  return WTF::CurrentTime() - timestamp_ > timeout;
+  return clock_->Now().ToDoubleT() - timestamp_ > timeout;
 }
 
 bool UserGestureToken::WasForwardedCrossProcess() const {

@@ -4,9 +4,9 @@
 
 #include "third_party/blink/renderer/core/frame/local_frame_ukm_aggregator.h"
 
+#include "base/test/test_mock_time_task_runner.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/platform/testing/wtf/scoped_mock_clock.h"
 
 namespace blink {
 
@@ -16,14 +16,14 @@ class LocalFrameUkmAggregatorTest : public testing::Test {
   ~LocalFrameUkmAggregatorTest() override = default;
 
   void SetUp() override {
-    clock_.emplace();
+    test_task_runner_ = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
     aggregator_ = base::MakeRefCounted<LocalFrameUkmAggregator>(
         ukm::UkmRecorder::GetNewSourceID(), &recorder_);
+    aggregator_->SetTickClockForTesting(test_task_runner_->GetMockTickClock());
   }
 
   void TearDown() override {
     aggregator_.reset();
-    clock_.reset();
   }
 
   LocalFrameUkmAggregator& aggregator() {
@@ -34,8 +34,6 @@ class LocalFrameUkmAggregatorTest : public testing::Test {
   ukm::TestUkmRecorder& recorder() { return recorder_; }
 
   void ResetAggregator() { aggregator_.reset(); }
-
-  WTF::ScopedMockClock& clock() { return *clock_; }
 
   std::string GetPrimaryMetricName() {
     return std::string(
@@ -58,9 +56,10 @@ class LocalFrameUkmAggregatorTest : public testing::Test {
     aggregator().FramesToNextEventForTest(delta);
   }
 
-  base::TimeTicks Now() {
-    return base::TimeTicks() + base::TimeDelta::FromSecondsD(clock_->Now());
-  }
+  base::TimeTicks Now() { return test_task_runner_->NowTicks(); }
+
+ protected:
+  scoped_refptr<base::TestMockTimeTaskRunner> test_task_runner_;
 
   void VerifyEntries(unsigned expected_num_entries,
                      unsigned expected_primary_metric,
@@ -93,7 +92,6 @@ class LocalFrameUkmAggregatorTest : public testing::Test {
   }
 
  private:
-  base::Optional<WTF::ScopedMockClock> clock_;
   scoped_refptr<LocalFrameUkmAggregator> aggregator_;
   ukm::TestUkmRecorder recorder_;
 };
@@ -106,7 +104,7 @@ TEST_F(LocalFrameUkmAggregatorTest, EmptyEventsNotRecorded) {
     return;
 
   // There is no BeginMainFrame, so no metrics get recorded.
-  clock().Advance(TimeDelta::FromSeconds(10));
+  test_task_runner_->FastForwardBy(TimeDelta::FromSeconds(10));
   ResetAggregator();
 
   EXPECT_EQ(recorder().sources_count(), 0u);
@@ -129,7 +127,8 @@ TEST_F(LocalFrameUkmAggregatorTest, FirstFrameIsRecorded) {
   for (int i = 0; i < LocalFrameUkmAggregator::kCount; ++i) {
     auto timer =
         aggregator().GetScopedTimer(i % LocalFrameUkmAggregator::kCount);
-    clock().Advance(TimeDelta::FromMilliseconds(millisecond_for_step));
+    test_task_runner_->FastForwardBy(
+        TimeDelta::FromMilliseconds(millisecond_for_step));
   }
   aggregator().RecordEndOfFrameMetrics(start_time, Now());
 
@@ -171,9 +170,11 @@ TEST_F(LocalFrameUkmAggregatorTest, EventsRecordedAtIntervals) {
   aggregator().BeginMainFrame();
   for (int i = 0; i < LocalFrameUkmAggregator::kCount; ++i) {
     auto timer = aggregator().GetScopedTimer(i);
-    clock().Advance(TimeDelta::FromMilliseconds(millisecond_per_step));
+    test_task_runner_->FastForwardBy(
+        TimeDelta::FromMilliseconds(millisecond_per_step));
   }
-  clock().Advance(TimeDelta::FromMilliseconds(millisecond_per_step));
+  test_task_runner_->FastForwardBy(
+      TimeDelta::FromMilliseconds(millisecond_per_step));
   aggregator().RecordEndOfFrameMetrics(start_time, Now());
 
   // We should have a sample after the very first step, regardless of the
@@ -188,9 +189,11 @@ TEST_F(LocalFrameUkmAggregatorTest, EventsRecordedAtIntervals) {
   aggregator().BeginMainFrame();
   for (int i = 0; i < LocalFrameUkmAggregator::kCount; ++i) {
     auto timer = aggregator().GetScopedTimer(i);
-    clock().Advance(TimeDelta::FromMilliseconds(millisecond_per_step));
+    test_task_runner_->FastForwardBy(
+        TimeDelta::FromMilliseconds(millisecond_per_step));
   }
-  clock().Advance(TimeDelta::FromMilliseconds(millisecond_per_step));
+  test_task_runner_->FastForwardBy(
+      TimeDelta::FromMilliseconds(millisecond_per_step));
   aggregator().RecordEndOfFrameMetrics(start_time, Now());
 
   VerifyEntries(1u, millisecond_per_frame, millisecond_per_step,
@@ -203,9 +206,11 @@ TEST_F(LocalFrameUkmAggregatorTest, EventsRecordedAtIntervals) {
   aggregator().BeginMainFrame();
   for (int i = 0; i < LocalFrameUkmAggregator::kCount; ++i) {
     auto timer = aggregator().GetScopedTimer(i);
-    clock().Advance(TimeDelta::FromMilliseconds(millisecond_per_step));
+    test_task_runner_->FastForwardBy(
+        TimeDelta::FromMilliseconds(millisecond_per_step));
   }
-  clock().Advance(TimeDelta::FromMilliseconds(millisecond_per_step));
+  test_task_runner_->FastForwardBy(
+      TimeDelta::FromMilliseconds(millisecond_per_step));
   aggregator().RecordEndOfFrameMetrics(start_time, Now());
 
   VerifyEntries(2u, millisecond_per_frame, millisecond_per_step,
@@ -216,9 +221,11 @@ TEST_F(LocalFrameUkmAggregatorTest, EventsRecordedAtIntervals) {
   aggregator().BeginMainFrame();
   for (int i = 0; i < LocalFrameUkmAggregator::kCount; ++i) {
     auto timer = aggregator().GetScopedTimer(i);
-    clock().Advance(TimeDelta::FromMilliseconds(millisecond_per_step));
+    test_task_runner_->FastForwardBy(
+        TimeDelta::FromMilliseconds(millisecond_per_step));
   }
-  clock().Advance(TimeDelta::FromMilliseconds(millisecond_per_step));
+  test_task_runner_->FastForwardBy(
+      TimeDelta::FromMilliseconds(millisecond_per_step));
   aggregator().RecordEndOfFrameMetrics(start_time, Now());
 
   // Should be no more samples.
@@ -230,9 +237,11 @@ TEST_F(LocalFrameUkmAggregatorTest, EventsRecordedAtIntervals) {
   aggregator().BeginMainFrame();
   for (int i = 0; i < LocalFrameUkmAggregator::kCount; ++i) {
     auto timer = aggregator().GetScopedTimer(i);
-    clock().Advance(TimeDelta::FromMilliseconds(millisecond_per_step));
+    test_task_runner_->FastForwardBy(
+        TimeDelta::FromMilliseconds(millisecond_per_step));
   }
-  clock().Advance(TimeDelta::FromMilliseconds(millisecond_per_step));
+  test_task_runner_->FastForwardBy(
+      TimeDelta::FromMilliseconds(millisecond_per_step));
   aggregator().RecordEndOfFrameMetrics(start_time, Now());
 
   // We should have 3 more events, once for the prior interval and 2 for the
