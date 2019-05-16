@@ -635,10 +635,6 @@ DiskInfo::~DiskInfo() = default;
 //     variant       string ""
 //   }
 //   dict entry {
-//     string "NativePath"
-//     variant       string "/sys/devices/pci0000:00/0000:00:1d.7/usb1/1-4/...
-//   }
-//   dict entry {
 //     string "StorageDevicePath"
 //     variant       string "/sys/devices/pci0000:00/0000:00:1d.7/usb1/1-4/...
 //   }
@@ -670,8 +666,6 @@ void DiskInfo::InitializeFromResponse(dbus::Response* response) {
                                              &is_virtual_);
   properties->GetBooleanWithoutPathExpansion(cros_disks::kIsAutoMountable,
                                              &is_auto_mountable_);
-  properties->GetStringWithoutPathExpansion(
-      cros_disks::kNativePath, &system_path_);
   properties->GetStringWithoutPathExpansion(cros_disks::kStorageDevicePath,
                                             &storage_device_path_);
   properties->GetStringWithoutPathExpansion(

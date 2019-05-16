@@ -52,7 +52,6 @@ using chromeos::disks::DiskMountManager;
 namespace {
 
 struct TestDiskInfo {
-  const char* system_path;
   const char* file_path;
   bool write_disabled_by_policy;
   const char* device_label;
@@ -85,8 +84,7 @@ struct TestMountPoint {
   int disk_info_index;
 };
 
-TestDiskInfo kTestDisks[] = {{"system_path1",
-                              "file_path1",
+TestDiskInfo kTestDisks[] = {{"file_path1",
                               false,
                               "device_label1",
                               "drive_label1",
@@ -106,8 +104,7 @@ TestDiskInfo kTestDisks[] = {{"system_path1",
                               false,
                               "exfat",
                               ""},
-                             {"system_path2",
-                              "file_path2",
+                             {"file_path2",
                               false,
                               "device_label2",
                               "drive_label2",
@@ -127,8 +124,7 @@ TestDiskInfo kTestDisks[] = {{"system_path1",
                               false,
                               "exfat",
                               ""},
-                             {"system_path3",
-                              "file_path3",
+                             {"file_path3",
                               true,  // write_disabled_by_policy
                               "device_label3",
                               "drive_label3",
@@ -294,7 +290,6 @@ class FileManagerPrivateApiTest : public extensions::ExtensionApiTest {
                 .SetMountPath(kTestMountPoints[i].mount_path)
                 .SetWriteDisabledByPolicy(
                     kTestDisks[disk_info_index].write_disabled_by_policy)
-                .SetSystemPath(kTestDisks[disk_info_index].system_path)
                 .SetFilePath(kTestDisks[disk_info_index].file_path)
                 .SetDeviceLabel(kTestDisks[disk_info_index].device_label)
                 .SetDriveLabel(kTestDisks[disk_info_index].drive_label)

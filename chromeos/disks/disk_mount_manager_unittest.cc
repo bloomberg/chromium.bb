@@ -42,7 +42,6 @@ const char kFileSystemType2[] = "exfat";
 struct TestDiskInfo {
   const char* source_path;
   const char* mount_path;
-  const char* system_path;
   const char* file_path;
   const char* device_label;
   const char* drive_label;
@@ -72,7 +71,6 @@ const TestDiskInfo kTestDisks[] = {
     {
         kDevice1SourcePath,
         kDevice1MountPath,
-        "/device/prefix/system_path",
         "/device/file_path",
         "/device/device_label",
         "/device/drive_label",
@@ -91,7 +89,6 @@ const TestDiskInfo kTestDisks[] = {
     {
         kDevice2SourcePath,
         "",     // not mounted initially
-        "/device/prefix/system_path2",
         "/device/file_path2",
         "/device/device_label2",
         "/device/drive_label2",
@@ -110,7 +107,6 @@ const TestDiskInfo kTestDisks[] = {
     {
         kReadOnlyDeviceSourcePath,
         kReadOnlyDeviceMountPath,
-        "/device/prefix/system_path_3",
         "/device/file_path_3",
         "/device/device_label_3",
         "/device/drive_label_3",
@@ -537,7 +533,6 @@ class DiskMountManagerTest : public testing::Test {
         Disk::Builder()
             .SetDevicePath(disk.source_path)
             .SetMountPath(disk.mount_path)
-            .SetSystemPath(disk.system_path)
             .SetFilePath(disk.file_path)
             .SetDeviceLabel(disk.device_label)
             .SetDriveLabel(disk.drive_label)

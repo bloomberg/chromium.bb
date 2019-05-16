@@ -41,10 +41,6 @@ class COMPONENT_EXPORT(CHROMEOS_DISKS) Disk {
   // See crrev.com/f8692888d11a10b5b5f8ad6fbfdeae21aed8cbf6 for the reason.
   const std::string& mount_path() const { return mount_path_; }
 
-  // The path of the device according to the udev system.
-  // (e.g. /sys/devices/pci0000:00/.../8:0:0:0/block/sdb/sdb1)
-  const std::string& system_path() const { return system_path_; }
-
   // The path of the device according to filesystem.
   // (e.g. /dev/sdb)
   const std::string& file_path() const { return file_path_; }
@@ -143,7 +139,6 @@ class COMPONENT_EXPORT(CHROMEOS_DISKS) Disk {
   std::string device_path_;
   std::string mount_path_;
   bool write_disabled_by_policy_ = false;
-  std::string system_path_;
   std::string file_path_;
   std::string device_label_;
   std::string drive_label_;
@@ -175,7 +170,6 @@ class COMPONENT_EXPORT(CHROMEOS_DISKS) Disk::Builder {
   Builder& SetDevicePath(const std::string& device_path);
   Builder& SetMountPath(const std::string& mount_path);
   Builder& SetWriteDisabledByPolicy(bool write_disabled_by_policy);
-  Builder& SetSystemPath(const std::string& system_path);
   Builder& SetFilePath(const std::string& file_path);
   Builder& SetDeviceLabel(const std::string& device_label);
   Builder& SetDriveLabel(const std::string& drive_label);

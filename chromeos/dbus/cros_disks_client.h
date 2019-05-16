@@ -148,10 +148,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DiskInfo {
   // Disk mount path. (e.g. /media/removable/VOLUME)
   const std::string& mount_path() const { return mount_path_; }
 
-  // Disk system path given by udev.
-  // (e.g. /sys/devices/pci0000:00/.../8:0:0:0/block/sdb/sdb1)
-  const std::string& system_path() const { return system_path_; }
-
   // Path of the scsi/mmc/nvme storage device that this disk is a part of.
   // (e.g. /sys/devices/pci0000:00/.../mmc_host/mmc0/mmc0:0002)
   const std::string& storage_device_path() const {
@@ -220,7 +216,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DiskInfo {
 
   std::string device_path_;
   std::string mount_path_;
-  std::string system_path_;
   std::string storage_device_path_;
   bool is_drive_;
   bool has_media_;

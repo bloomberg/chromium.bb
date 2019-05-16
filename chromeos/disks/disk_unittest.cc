@@ -26,7 +26,6 @@ const char kMountPath2[] = "/media/removable/second_mount_path";
 const char kDriveModel[] = "DriveModel";
 const char kIdLabel[] = "UNTITLED";
 const char kIdUuid[] = "XXXX-YYYY";
-const char kNativePath[] = "/sys/devices/.../sdb/sdb1";
 const char kStorageDevicePath[] =
     "/sys/devices/pci0000:00/0000:00:14.0/usb2/2-8/2-8:1.0/host14/target14:0:0/"
     "14:0:0:0";
@@ -87,7 +86,6 @@ void AppendBasicProperties(dbus::MessageWriter* array_writer) {
   AppendStringDictEntry(array_writer, cros_disks::kDriveModel, kDriveModel);
   AppendStringDictEntry(array_writer, cros_disks::kIdLabel, kIdLabel);
   AppendStringDictEntry(array_writer, cros_disks::kIdUuid, kIdUuid);
-  AppendStringDictEntry(array_writer, cros_disks::kNativePath, kNativePath);
   AppendStringDictEntry(array_writer, cros_disks::kStorageDevicePath,
                         kStorageDevicePath);
   AppendStringDictEntry(array_writer, cros_disks::kProductId, kProductId);
@@ -122,7 +120,6 @@ TEST(DiskTest, ConstructFromDiskInfo) {
   Disk disk(disk_info, false /* write_disabled_by_policy */, kBaseMountpath);
 
   EXPECT_EQ(kDevicePath, disk.device_path());
-  EXPECT_EQ(kNativePath, disk.system_path());
   EXPECT_EQ(kDeviceFile, disk.file_path());
   EXPECT_EQ(kIdLabel, disk.device_label());
   EXPECT_EQ(kDriveModel, disk.drive_label());

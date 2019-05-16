@@ -21,7 +21,6 @@ Disk::Disk(const DiskInfo& disk_info,
     : device_path_(disk_info.device_path()),
       mount_path_(disk_info.mount_path()),
       write_disabled_by_policy_(write_disabled_by_policy),
-      system_path_(disk_info.system_path()),
       file_path_(disk_info.file_path()),
       device_label_(disk_info.label()),
       drive_label_(disk_info.drive_label()),
@@ -79,10 +78,6 @@ Disk::Builder& Disk::Builder::SetMountPath(const std::string& mount_path) {
 Disk::Builder& Disk::Builder::SetWriteDisabledByPolicy(
     bool write_disabled_by_policy) {
   disk_->write_disabled_by_policy_ = write_disabled_by_policy;
-  return *this;
-}
-Disk::Builder& Disk::Builder::SetSystemPath(const std::string& system_path) {
-  disk_->system_path_ = system_path;
   return *this;
 }
 Disk::Builder& Disk::Builder::SetFilePath(const std::string& file_path) {

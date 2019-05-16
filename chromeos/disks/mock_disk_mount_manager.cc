@@ -39,7 +39,6 @@ const char kTestFileSystemType[] = "vfat";
 std::unique_ptr<Disk::Builder> MakeDiskBuilder() {
   std::unique_ptr<Disk::Builder> builder = std::make_unique<Disk::Builder>();
   builder->SetDevicePath(kTestDevicePath)
-      .SetSystemPath(kTestSystemPath)
       .SetFilePath(kTestFilePath)
       .SetDriveLabel(kTestDriveLabel)
       .SetVendorId(kTestVendorId)
