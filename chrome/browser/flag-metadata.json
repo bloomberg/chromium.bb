@@ -2026,9 +2026,10 @@
   },
   {
     "name": "force-text-direction",
-    "owners": [ "pbos", "ellyjones" ],
+    "owners": [ "krb", "pbos", "ellyjones" ],
     // This flag is used for developers who don't speak an RTL language to QA
-    // RTL UI layout.
+    // RTL text regardless of UI layout direction. This for instance impacts the
+    // Omnibox where arbitrary text directions may be entered.
     "expiry_milestone": -1
   },
   {
