@@ -1739,9 +1739,7 @@ inline void HasResultAndType(Op opcode, bool *hasResult, bool *hasResultType) {
     case Op::OpSubgroupImageMediaBlockReadINTEL: *hasResult = true; *hasResultType = true; break;
     case Op::OpSubgroupImageMediaBlockWriteINTEL: *hasResult = false; *hasResultType = false; break;
     case Op::OpDecorateString: *hasResult = false; *hasResultType = false; break;
-    case Op::OpDecorateStringGOOGLE: *hasResult = false; *hasResultType = false; break;
     case Op::OpMemberDecorateString: *hasResult = false; *hasResultType = false; break;
-    case Op::OpMemberDecorateStringGOOGLE: *hasResult = false; *hasResultType = false; break;
     case Op::OpVmeImageINTEL: *hasResult = true; *hasResultType = true; break;
     case Op::OpTypeVmeImageINTEL: *hasResult = true; *hasResultType = false; break;
     case Op::OpTypeAvcImePayloadINTEL: *hasResult = true; *hasResultType = false; break;
