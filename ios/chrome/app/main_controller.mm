@@ -594,7 +594,6 @@ enum class EnterTabSwitcherSnapshotResult {
 }
 
 - (void)dealloc {
-  net::RequestTracker::SetRequestTrackerFactory(nullptr);
   [NSObject cancelPreviousPerformRequestsWithTarget:self];
 }
 
