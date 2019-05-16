@@ -1943,7 +1943,7 @@ TEST_P(HasGreaterFrescocencyTest, HasGreaterFrescocency) {
                              test_case.server_validity_state_b,
                              AutofillDataModel::SERVER);
 
-  base::Time now = base::Time::Now();
+  const base::Time now = base::Time::Now();
 
   if (test_case.expectation == EQUAL) {
     EXPECT_EQ(profile_a.HasGreaterFrecencyThan(&profile_b, now),
@@ -1961,6 +1961,36 @@ TEST_P(HasGreaterFrescocencyTest, HasGreaterFrescocency) {
             profile_b.HasGreaterFrescocencyThan(
                 &profile_a, now, test_case.use_client_validation,
                 test_case.use_server_validation));
+}
+
+// Validity is only checked in case of tie in frecency. Frecency has greater
+// priority than validity in frescocency.
+TEST_P(HasGreaterFrescocencyTest, PriorityCheck) {
+  AutofillProfile profile_invalid("00000000-0000-0000-0000-000000000001", "");
+  AutofillProfile profile_valid("00000000-0000-0000-0000-000000000002", "");
+
+  profile_invalid.SetValidityState(EMAIL_ADDRESS, AutofillDataModel::INVALID,
+                                   AutofillDataModel::CLIENT);
+  profile_valid.SetValidityState(ADDRESS_HOME_ZIP, AutofillDataModel::INVALID,
+                                 AutofillDataModel::SERVER);
+
+  profile_valid.SetValidityState(ADDRESS_HOME_CITY, AutofillDataModel::VALID,
+                                 AutofillDataModel::CLIENT);
+  profile_valid.SetValidityState(PHONE_HOME_NUMBER, AutofillDataModel::VALID,
+                                 AutofillDataModel::SERVER);
+
+  profile_invalid.set_use_count(100);
+  profile_valid.set_use_count(10);
+
+  const base::Time now = base::Time::Now();
+  const base::Time past = now - base::TimeDelta::FromDays(1);
+
+  profile_invalid.set_use_date(now);
+  profile_valid.set_use_date(past);
+
+  EXPECT_TRUE(profile_invalid.HasGreaterFrecencyThan(&profile_valid, now));
+  EXPECT_TRUE(profile_invalid.HasGreaterFrescocencyThan(&profile_valid, now,
+                                                        true, true));
 }
 
 INSTANTIATE_TEST_SUITE_P(

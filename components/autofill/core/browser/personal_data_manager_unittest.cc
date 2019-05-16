@@ -2279,8 +2279,9 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_Validity) {
                        "invalid email", "Fox",
                        "123 Zoo St.\nSecond Line\nThird line", "unit 5",
                        "Hollywood", "CA", "91601", "US", "Invalid Phone");
-  invalid_profile.set_use_date(AutofillClock::Now());
-  invalid_profile.set_use_count(1000);
+  invalid_profile.set_use_date(AutofillClock::Now() -
+                               base::TimeDelta::FromDays(1));
+  invalid_profile.set_use_count(1);
   AddProfileToPersonalDataManager(invalid_profile);
 
   auto profiles = personal_data_->GetProfiles();
@@ -2403,7 +2404,6 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_Validity) {
     scoped_features.InitWithFeatures(
         /*enabled_features=*/{features::kAutofillProfileServerValidation},
         /*disabled_features=*/{features::kAutofillProfileClientValidation});
-    LOG(ERROR) << __FUNCTION__;
     std::vector<Suggestion> email_suggestions =
         personal_data_->GetProfileSuggestions(AutofillType(EMAIL_ADDRESS),
                                               base::string16(), false,
