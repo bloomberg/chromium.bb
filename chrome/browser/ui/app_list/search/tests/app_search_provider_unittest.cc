@@ -896,12 +896,16 @@ TEST_P(AppSearchProviderWithExtensionInstallType, InstallInternallyRanking) {
       break;
   }
 
+  // Allow async callbacks to run.
+  base::RunLoop().RunUntilIdle();
   EXPECT_LT(prefs->GetInstallTime(normal_app_id),
             prefs->GetInstallTime(internal_app_id));
 
   // Installed internally app has runking below other apps, even if it's install
   // time is later.
   CreateSearch();
+  // Allow async callbacks to run.
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(std::string(kRankingNormalAppName) + "," +
                 std::string(kRankingInternalAppName),
             RunQuery(kRankingAppQuery));
@@ -910,6 +914,8 @@ TEST_P(AppSearchProviderWithExtensionInstallType, InstallInternallyRanking) {
   WaitTimeUpdated();
   prefs->SetLastLaunchTime(internal_app_id, base::Time::Now());
   CreateSearch();
+  // Allow async callbacks to run.
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(std::string(kRankingInternalAppName) + "," +
                 std::string(kRankingNormalAppName),
             RunQuery(kRankingAppQuery));
