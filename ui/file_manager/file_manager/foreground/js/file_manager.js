@@ -572,6 +572,10 @@ FileManager.prototype = /** @struct */ {
         /** @param {!Event} event */
         event => {
           this.navigationUma_.onDirectoryChanged(event.newDirEntry);
+          if (event.volumeChanged) {
+            this.showArcStorageToast_(
+                this.volumeManager_.getVolumeInfo(event.newDirEntry));
+          }
         });
 
     this.initCommands_();
@@ -1633,5 +1637,40 @@ FileManager.prototype = /** @struct */ {
           }
           this.directoryTree.redraw(false);
         });
+  };
+
+  /**
+   * Shows a toast for ARC storage when needed.
+   * @param {VolumeInfo} volumeInfo Volume information currently selected.
+   */
+  FileManager.prototype.showArcStorageToast_ = function(volumeInfo) {
+    if (!volumeInfo ||
+        volumeInfo.volumeType !== VolumeManagerCommon.VolumeType.REMOVABLE) {
+      // The toast is for removable volumes.
+      return;
+    }
+    const key = 'show-arc-storage-toast-shown';
+    if (window.sessionStorage.getItem(key)) {
+      // We show the toast only once.
+      // TODO(yusukes): We should show the UI only once *per user session*.
+      // Since sessionStorage is deleted when you close the app window, the
+      // current code is not perfect.
+      return;
+    }
+    chrome.fileManagerPrivate.getPreferences(pref => {
+      if (!pref.arcEnabled || pref.arcRemovableMediaAccessEnabled) {
+        // We don't show the toast when ARC is disabled or the setting has
+        // already been enabled.
+        return;
+      }
+      this.ui.toast.show(str('FILE_BROWSER_PLAY_STORE_ACCESS_LABEL'), {
+        text: str('FILE_BROWSER_OPEN_PLAY_STORE_SETTINGS_LABEL'),
+        callback: () => {
+          chrome.fileManagerPrivate.openSettingsSubpage(
+              'storage/externalStoragePreferences');
+        }
+      });
+      window.sessionStorage.setItem(key, 'true');
+    });
   };
 })();

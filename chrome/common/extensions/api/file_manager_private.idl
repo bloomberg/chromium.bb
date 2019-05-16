@@ -565,6 +565,8 @@ dictionary Preferences {
 
 dictionary PreferencesChange {
   boolean? cellularDisabled;
+  boolean? arcEnabled;
+  boolean? arcRemovableMediaAccessEnabled;
 };
 
 dictionary SearchParams {

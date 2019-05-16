@@ -249,9 +249,19 @@ FileManagerPrivateSetPreferencesFunction::Run() {
   Profile* profile = Profile::FromBrowserContext(browser_context());
   PrefService* const service = profile->GetPrefs();
 
-  if (params->change_info.cellular_disabled)
+  if (params->change_info.cellular_disabled) {
     service->SetBoolean(drive::prefs::kDisableDriveOverCellular,
                         *params->change_info.cellular_disabled);
+  }
+  if (params->change_info.arc_enabled) {
+    service->SetBoolean(arc::prefs::kArcEnabled,
+                        *params->change_info.arc_enabled);
+  }
+  if (params->change_info.arc_removable_media_access_enabled) {
+    service->SetBoolean(
+        arc::prefs::kArcHasAccessToRemovableMedia,
+        *params->change_info.arc_removable_media_access_enabled);
+  }
 
   return RespondNow(NoArguments());
 }

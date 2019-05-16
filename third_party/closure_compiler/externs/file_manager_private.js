@@ -405,6 +405,8 @@ chrome.fileManagerPrivate.Preferences;
 /**
  * @typedef {{
  *   cellularDisabled: (boolean|undefined),
+ *   arcEnabled: (boolean|undefined),
+ *   arcRemovableMediaAccessEnabled: (boolean|undefined)
  * }}
  */
 chrome.fileManagerPrivate.PreferencesChange;
