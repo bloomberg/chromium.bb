@@ -129,8 +129,7 @@ IN_PROC_BROWSER_TEST_F(CastChannelBindingsTest, CastChannelBufferedInput) {
   frame_->GetNavigationController(controller.NewRequest());
 
   CastChannelBindings cast_channel_instance(
-      frame_.get(), connector_.get(), receiver_binding_.NewBinding().Bind(),
-      base::MakeExpectedNotRunClosure(FROM_HERE));
+      frame_.get(), connector_.get(), receiver_binding_.NewBinding().Bind());
 
   // Verify that CastChannelBindings can properly handle message, connect,
   // disconnect, and MessagePort disconnection events.
@@ -156,8 +155,7 @@ IN_PROC_BROWSER_TEST_F(CastChannelBindingsTest, CastChannelReconnect) {
   frame_->GetNavigationController(controller.NewRequest());
 
   CastChannelBindings cast_channel_instance(
-      frame_.get(), connector_.get(), receiver_binding_.NewBinding().Bind(),
-      base::MakeExpectedNotRunClosure(FROM_HERE));
+      frame_.get(), connector_.get(), receiver_binding_.NewBinding().Bind());
 
   // Verify that CastChannelBindings can properly handle message, connect,
   // disconnect, and MessagePort disconnection events.

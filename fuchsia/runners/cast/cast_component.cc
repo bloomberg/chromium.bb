@@ -41,6 +41,7 @@ TouchInputPolicy TouchInputPolicyFromApplicationConfig(
 CastComponent::CastComponent(
     CastRunner* runner,
     chromium::cast::ApplicationConfig application_config,
+    std::unique_ptr<ApiBindingsClient> api_bindings_client,
     std::unique_ptr<base::fuchsia::StartupContext> context,
     fidl::InterfaceRequest<fuchsia::sys::ComponentController>
         controller_request,
@@ -51,6 +52,7 @@ CastComponent::CastComponent(
       touch_input_policy_(
           TouchInputPolicyFromApplicationConfig(application_config_)),
       connector_(frame()),
+      api_bindings_client_(std::move(api_bindings_client)),
       navigation_listener_binding_(this) {
   base::AutoReset<bool> constructor_active_reset(&constructor_active_, true);
 
@@ -59,6 +61,11 @@ CastComponent::CastComponent(
 
   frame()->SetNavigationEventListener(
       navigation_listener_binding_.NewBinding());
+  api_bindings_client_->AttachToFrame(
+      frame(), &connector_,
+      base::BindOnce(&CastComponent::DestroyComponent, base::Unretained(this),
+                     kBindingsFailureExitCode,
+                     fuchsia::sys::TerminationReason::INTERNAL_ERROR));
 }
 
 CastComponent::~CastComponent() = default;
@@ -96,10 +103,7 @@ void CastComponent::InitializeCastPlatformBindings() {
   cast_channel_ = std::make_unique<CastChannelBindings>(
       frame(), &connector_,
       agent_manager_->ConnectToAgentService<chromium::cast::CastChannel>(
-          CastRunner::kAgentComponentUrl),
-      base::BindOnce(&CastComponent::DestroyComponent, base::Unretained(this),
-                     kBindingsFailureExitCode,
-                     fuchsia::sys::TerminationReason::INTERNAL_ERROR));
+          CastRunner::kAgentComponentUrl));
 
   queryable_data_ = std::make_unique<QueryableDataBindings>(
       frame(),

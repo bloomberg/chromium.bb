@@ -57,6 +57,11 @@ NamedMessagePortConnector::~NamedMessagePortConnector() {
   DCHECK(port_connected_handlers_.empty());
 }
 
+void NamedMessagePortConnector::RegisterDefaultHandler(
+    DefaultPortConnectedCallback handler) {
+  default_handler_ = std::move(handler);
+}
+
 void NamedMessagePortConnector::Register(const std::string& port_name,
                                          PortConnectedCallback handler) {
   DCHECK(handler);
@@ -106,13 +111,6 @@ void NamedMessagePortConnector::OnConnectRequest(
     return;
   }
 
-  if (port_connected_handlers_.find(port_name) ==
-      port_connected_handlers_.end()) {
-    LOG(ERROR) << "No registration for port: " << port_name;
-    control_port_.Unbind();
-    return;
-  }
-
   if (message.incoming_transfer().size() != 1) {
     LOG(ERROR) << "Expected one Transferable, got "
                << message.incoming_transfer().size() << " instead.";
@@ -127,8 +125,24 @@ void NamedMessagePortConnector::OnConnectRequest(
     control_port_.Unbind();
     return;
   }
-  port_connected_handlers_[port_name].Run(
-      std::move(transferable.message_port()));
 
-  ReceiveNextConnectRequest();
+  if (default_handler_ && port_connected_handlers_.find(port_name) ==
+                              port_connected_handlers_.end()) {
+    default_handler_.Run(port_name, std::move(transferable.message_port()));
+  } else {
+    // TODO(crbug.com/953958): Deprecated, remove this once all APIs are
+    // migrated.
+
+    if (port_connected_handlers_.find(port_name) ==
+        port_connected_handlers_.end()) {
+      LOG(ERROR) << "No registration for port: " << port_name;
+      control_port_.Unbind();
+      return;
+    }
+
+    port_connected_handlers_[port_name].Run(
+        std::move(transferable.message_port()));
+
+    ReceiveNextConnectRequest();
+  }
 }

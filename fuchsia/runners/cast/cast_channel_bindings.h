@@ -23,15 +23,11 @@ class CastChannelBindings {
   // |frame|: The frame to be provided with a CastChannel.
   // |connector|: The NamedMessagePortConnector to use for establishing
   // transport.
-  // |on_error_closure|: Invoked in the event of an unrecoverable error (e.g.
-  //                     lost connection to the Agent). The callback must
-  //                     remain valid for the entire lifetime of |this|.
   // |channel_consumer|: A FIDL service which receives opened Cast Channels.
   // Both |frame| and |connector| must outlive |this|.
   CastChannelBindings(fuchsia::web::Frame* frame,
                       NamedMessagePortConnector* connector,
-                      chromium::cast::CastChannelPtr channel_consumer,
-                      base::OnceClosure on_error_closure);
+                      chromium::cast::CastChannelPtr channel_consumer);
   ~CastChannelBindings();
 
  private:
@@ -64,8 +60,6 @@ class CastChannelBindings {
   fuchsia::web::MessagePortPtr master_port_;
 
   fuchsia::mem::Buffer bindings_script_;
-
-  base::OnceClosure on_error_closure_;
 
   // The service which will receive connected Cast Channels.
   chromium::cast::CastChannelPtr channel_consumer_;

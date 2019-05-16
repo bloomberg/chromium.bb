@@ -26,18 +26,15 @@ const char kMessagePortName[] = "cast.__platform__.channel";
 CastChannelBindings::CastChannelBindings(
     fuchsia::web::Frame* frame,
     NamedMessagePortConnector* connector,
-    chromium::cast::CastChannelPtr channel_consumer,
-    base::OnceClosure on_error_closure)
+    chromium::cast::CastChannelPtr channel_consumer)
     : frame_(frame),
       connector_(connector),
-      on_error_closure_(std::move(on_error_closure)),
       channel_consumer_(std::move(channel_consumer)) {
   DCHECK(connector_);
   DCHECK(frame_);
 
-  channel_consumer_.set_error_handler([this](zx_status_t status) mutable {
-    ZX_LOG(ERROR, status) << " Agent disconnected";
-    std::move(on_error_closure_).Run();
+  channel_consumer_.set_error_handler([](zx_status_t status) mutable {
+    ZX_LOG(ERROR, status) << "Cast Channel FIDL client disconnected";
   });
 
   connector->Register(

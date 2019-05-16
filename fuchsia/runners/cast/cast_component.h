@@ -10,6 +10,7 @@
 
 #include "base/fuchsia/service_directory.h"
 #include "fuchsia/base/agent_manager.h"
+#include "fuchsia/runners/cast/api_bindings_client.h"
 #include "fuchsia/runners/cast/cast_channel_bindings.h"
 #include "fuchsia/runners/cast/named_message_port_connector.h"
 #include "fuchsia/runners/cast/queryable_data_bindings.h"
@@ -24,6 +25,7 @@ class CastComponent : public WebComponent,
  public:
   CastComponent(CastRunner* runner,
                 chromium::cast::ApplicationConfig application_config,
+                std::unique_ptr<ApiBindingsClient> bindings_manager,
                 std::unique_ptr<base::fuchsia::StartupContext> startup_context,
                 fidl::InterfaceRequest<fuchsia::sys::ComponentController>
                     controller_request,
@@ -31,6 +33,7 @@ class CastComponent : public WebComponent,
   ~CastComponent() override;
 
  private:
+  // TODO(crbug.com/953958): Remove this.
   void InitializeCastPlatformBindings();
 
   // WebComponent overrides.
@@ -52,6 +55,7 @@ class CastComponent : public WebComponent,
   std::unique_ptr<CastChannelBindings> cast_channel_;
   std::unique_ptr<QueryableDataBindings> queryable_data_;
   std::unique_ptr<TouchInputBindings> touch_input_;
+  std::unique_ptr<ApiBindingsClient> api_bindings_client_;
 
   fidl::Binding<fuchsia::web::NavigationEventListener>
       navigation_listener_binding_;
