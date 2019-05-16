@@ -169,7 +169,8 @@ class CONTENT_EXPORT RenderWidget
                bool is_frozen,
                bool hidden,
                bool never_visible,
-               mojom::WidgetRequest widget_request = nullptr);
+               mojom::WidgetRequest widget_request = nullptr,
+               int32_t view_id = 0);
 
   // Initialize a new RenderWidget for a popup. The |show_callback| is called
   // when RenderWidget::Show() happens. This method increments the reference
@@ -782,6 +783,8 @@ class CONTENT_EXPORT RenderWidget
   // Routing ID that allows us to communicate to the parent browser process
   // RenderWidgetHost.
   const int32_t routing_id_;
+
+  const int32_t view_id_;
 
   // Dependencies for initializing a compositor, including flags for optional
   // features.
