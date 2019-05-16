@@ -160,7 +160,7 @@ button on
 will not give feedback that the bad proxies were cleared, however capturing a
 new NetLog dump can confirm it was cleared.
 
-## Arguments are passed to `FindProxyForURL(url, host)` in PAC scripts
+## Arguments passed to `FindProxyForURL(url, host)` in PAC scripts
 
 PAC scripts in Chrome are expected to define a JavaScript function
 `FindProxyForURL`.
