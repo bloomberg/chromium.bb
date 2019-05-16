@@ -5591,3 +5591,7 @@ crbug.com/963141 [ Mac Win ] media/controls/video-overlay-cast-light-rendering.h
 crbug.com/943975 external/wpt/webrtc/RTCDataChannel-send.html [ Pass Failure ]
 crbug.com/943975 external/wpt/webrtc/RTCSctpTransport-maxMessageSize.html [ Pass Failure ]
 crbug.com/943975 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCSctpTransport-maxMessageSize.html [ Pass Failure ]
+
+# Sheriff 2019-05-16
+crbug.com/963734 [ Mac ] mojo/bind-intercepted-interface-in-worker.html [ Failure ]
+crbug.com/963734 [ Mac ] shapedetection/detection-on-worker.html  [ Timeout ]
