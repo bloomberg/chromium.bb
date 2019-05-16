@@ -16,12 +16,15 @@
 #include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
+#include "gpu/command_buffer/common/sync_token.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/graphics/accelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_dispatcher.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "ui/gfx/buffer_format_util.h"
@@ -760,11 +763,41 @@ void CanvasResourceSharedImage::WillDraw() {
   mailbox_needs_new_sync_token_ = true;
 }
 
+// static
+void CanvasResourceSharedImage::OnBitmapImageDestroyed(
+    scoped_refptr<CanvasResourceSharedImage> resource,
+    scoped_refptr<base::SingleThreadTaskRunner> original_task_runner,
+    const gpu::SyncToken& sync_token,
+    bool is_lost) {
+  if (!original_task_runner->BelongsToCurrentThread()) {
+    PostCrossThreadTask(
+        *original_task_runner, FROM_HERE,
+        CrossThreadBind(&CanvasResourceSharedImage::OnBitmapImageDestroyed,
+                        std::move(resource), std::move(original_task_runner),
+                        sync_token, is_lost));
+    return;
+  }
+
+  auto weak_provider = resource->WeakProvider();
+  ReleaseFrameResources(std::move(weak_provider), std::move(resource),
+                        sync_token, is_lost);
+}
+
 scoped_refptr<StaticBitmapImage> CanvasResourceSharedImage::Bitmap() {
+  // The |release_callback| keeps a ref on this resource to ensure the backing
+  // shared image is kept alive until the lifetime of the image.
+  // Note that the code in CanvasResourceProvider::RecycleResource also uses the
+  // ref-count on the resource as a proxy for a read lock to allow recycling the
+  // resource once all refs have been released.
+  auto release_callback = viz::SingleReleaseCallback::Create(base::BindOnce(
+      &OnBitmapImageDestroyed, scoped_refptr<CanvasResourceSharedImage>(this),
+      Thread::Current()->GetTaskRunner()));
+
   scoped_refptr<StaticBitmapImage> image =
       AcceleratedStaticBitmapImage::CreateFromWebGLContextImage(
           shared_image_mailbox_, GetSyncToken(), 0, ContextProviderWrapper(),
-          Size());
+          Size(), AcceleratedStaticBitmapImage::MailboxType::kSharedImageId,
+          std::move(release_callback));
   DCHECK(image);
   return image;
 }

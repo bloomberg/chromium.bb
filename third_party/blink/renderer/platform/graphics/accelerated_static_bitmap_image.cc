@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/graphics/accelerated_static_bitmap_image.h"
 
+#include "components/viz/common/resources/single_release_callback.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/sync_token.h"
@@ -41,10 +42,11 @@ AcceleratedStaticBitmapImage::CreateFromWebGLContextImage(
     base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&
         context_provider_wrapper,
     IntSize mailbox_size,
-    MailboxType mailbox_type) {
+    MailboxType mailbox_type,
+    std::unique_ptr<viz::SingleReleaseCallback> release_callback) {
   return base::AdoptRef(new AcceleratedStaticBitmapImage(
       mailbox, sync_token, texture_id, std::move(context_provider_wrapper),
-      mailbox_size, mailbox_type));
+      mailbox_size, mailbox_type, std::move(release_callback)));
 }
 
 AcceleratedStaticBitmapImage::AcceleratedStaticBitmapImage(
@@ -65,9 +67,11 @@ AcceleratedStaticBitmapImage::AcceleratedStaticBitmapImage(
     base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&
         context_provider_wrapper,
     IntSize mailbox_size,
-    MailboxType mailbox_type)
+    MailboxType mailbox_type,
+    std::unique_ptr<viz::SingleReleaseCallback> release_callback)
     : paint_image_content_id_(cc::PaintImage::GetNextContentId()),
-      mailbox_type_(mailbox_type) {
+      mailbox_type_(mailbox_type),
+      release_callback_(std::move(release_callback)) {
   texture_holder_ = std::make_unique<MailboxTextureHolder>(
       mailbox, sync_token, texture_id, std::move(context_provider_wrapper),
       mailbox_size);
@@ -99,6 +103,11 @@ void DestroySkImageOnOriginalThread(
 
 AcceleratedStaticBitmapImage::~AcceleratedStaticBitmapImage() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  if (release_callback_) {
+    release_callback_->Run(texture_holder_->GetSyncToken(),
+                           false /* is_lost */);
+  }
 
   // If the original SkImage was retained, it must be destroyed on the thread
   // where it came from. In the same thread case, there is nothing to do because

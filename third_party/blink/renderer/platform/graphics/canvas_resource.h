@@ -122,6 +122,7 @@ class PLATFORM_EXPORT CanvasResource
   const CanvasColorParams& ColorParams() const { return color_params_; }
   void OnDestroy();
   CanvasResourceProvider* Provider() { return provider_.get(); }
+  base::WeakPtr<CanvasResourceProvider> WeakProvider() { return provider_; }
 
  private:
   // Sync token that was provided when resource was released
@@ -340,6 +341,12 @@ class PLATFORM_EXPORT CanvasResourceSharedImage final : public CanvasResource {
   void WillDraw();
 
  private:
+  static void OnBitmapImageDestroyed(
+      scoped_refptr<CanvasResourceSharedImage> resource,
+      scoped_refptr<base::SingleThreadTaskRunner> original_task_runner,
+      const gpu::SyncToken& sync_token,
+      bool is_lost);
+
   void TearDown() override;
   base::WeakPtr<WebGraphicsContext3DProviderWrapper> ContextProviderWrapper()
       const override;

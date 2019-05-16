@@ -35,6 +35,7 @@
 #include <vector>
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "gpu/command_buffer/common/sync_token.h"
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
@@ -139,6 +140,12 @@ struct CrossThreadCopier<base::TimeTicks>
 template <>
 struct CrossThreadCopier<base::Time>
     : public CrossThreadCopierPassThrough<base::Time> {
+  STATIC_ONLY(CrossThreadCopier);
+};
+
+template <>
+struct CrossThreadCopier<gpu::SyncToken>
+    : public CrossThreadCopierPassThrough<gpu::SyncToken> {
   STATIC_ONLY(CrossThreadCopier);
 };
 

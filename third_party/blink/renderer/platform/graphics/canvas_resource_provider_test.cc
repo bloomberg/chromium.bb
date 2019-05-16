@@ -269,6 +269,41 @@ TEST_F(CanvasResourceProviderTest, CanvasResourceProviderSharedImage) {
   EXPECT_NE(sync_token, resource_again->GetSyncToken());
 }
 
+TEST_F(CanvasResourceProviderTest,
+       CanvasResourceProviderSharedImageStaticBitmapImage) {
+  const IntSize kSize(10, 10);
+  const CanvasColorParams kColorParams(kSRGBCanvasColorSpace,
+                                       kRGBA8CanvasPixelFormat, kNonOpaque);
+  EnsureBufferFormatIsSupported(kColorParams.GetBufferFormat());
+
+  auto provider = CanvasResourceProvider::Create(
+      kSize, CanvasResourceProvider::kCreateSharedImageForTesting,
+      context_provider_wrapper_, 0 /* msaa_sample_count */, kColorParams,
+      CanvasResourceProvider::kAllowImageChromiumPresentationMode,
+      nullptr /* resource_dispatcher */, true /* is_origin_top_left */);
+  ASSERT_TRUE(provider->IsValid());
+
+  // Same resource returned until the canvas is updated.
+  auto image = provider->Snapshot();
+  ASSERT_TRUE(image);
+  auto new_image = provider->Snapshot();
+  EXPECT_EQ(image->GetMailbox(), new_image->GetMailbox());
+  EXPECT_EQ(provider->ProduceCanvasResource()->GetOrCreateGpuMailbox(
+                kOrderingBarrier),
+            image->GetMailbox());
+
+  // Resource updated after draw.
+  provider->Canvas()->clear(SK_ColorWHITE);
+  new_image = provider->Snapshot();
+  EXPECT_NE(new_image->GetMailbox(), image->GetMailbox());
+
+  // Resource recycled.
+  auto original_mailbox = image->GetMailbox();
+  image.reset();
+  provider->Canvas()->clear(SK_ColorBLACK);
+  EXPECT_EQ(original_mailbox, provider->Snapshot()->GetMailbox());
+}
+
 TEST_F(CanvasResourceProviderTest, CanvasResourceProviderBitmap) {
   const IntSize kSize(10, 10);
   const CanvasColorParams kColorParams(kSRGBCanvasColorSpace,
