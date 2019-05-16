@@ -316,6 +316,7 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
       section_summary->AddBoolStat("Sync Feature Enabled");
   Stat<bool>* setup_in_progress =
       section_summary->AddBoolStat("Setup In Progress");
+  Stat<std::string>* auth_error = section_summary->AddStringStat("Auth Error");
 
   Section* section_version = section_list.AddSection("Version Info");
   Stat<std::string>* client_version =
@@ -330,7 +331,6 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
       section_identity->AddStringStat("Invalidator Client ID");
   Stat<std::string>* username = section_identity->AddStringStat("Username");
   Stat<bool>* user_is_primary = section_identity->AddBoolStat("Is Primary");
-  Stat<std::string>* auth_error = section_identity->AddStringStat("Auth Error");
 
   Section* section_credentials = section_list.AddSection("Credentials");
   Stat<std::string>* request_token_time =
@@ -451,6 +451,10 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
   disable_reasons->Set(GetDisableReasonsString(service->GetDisableReasons()));
   feature_enabled->Set(service->IsSyncFeatureEnabled());
   setup_in_progress->Set(service->IsSetupInProgress());
+  std::string auth_error_str = service->GetAuthError().ToString();
+  auth_error->Set(base::StringPrintf(
+      "%s since %s", (auth_error_str.empty() ? "OK" : auth_error_str).c_str(),
+      GetTimeStr(service->GetAuthErrorTime(), "browser startup").c_str()));
 
   SyncStatus full_status;
   bool is_status_valid =
@@ -471,10 +475,6 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
     invalidator_id->Set(full_status.invalidator_client_id);
   username->Set(service->GetAuthenticatedAccountInfo().email);
   user_is_primary->Set(service->IsAuthenticatedAccountPrimary());
-  std::string auth_error_str = service->GetAuthError().ToString();
-  auth_error->Set(base::StringPrintf(
-      "%s since %s", (auth_error_str.empty() ? "OK" : auth_error_str).c_str(),
-      GetTimeStr(service->GetAuthErrorTime(), "browser startup").c_str()));
 
   // Credentials.
   request_token_time->Set(GetTimeStr(token_status.token_request_time, "n/a"));
