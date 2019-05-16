@@ -196,7 +196,7 @@ class DerivedTestView : public View {
 
 class TestAXEventObserver : public AXEventObserver {
  public:
-  TestAXEventObserver(AXAuraObjCache* cache) : cache_(cache) {
+  explicit TestAXEventObserver(AXAuraObjCache* cache) : cache_(cache) {
     AXEventManager::Get()->AddObserver(this);
   }
 

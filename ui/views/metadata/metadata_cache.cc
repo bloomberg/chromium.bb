@@ -13,8 +13,8 @@
 namespace views {
 namespace metadata {
 
-MetaDataCache::MetaDataCache() {}
-MetaDataCache::~MetaDataCache() {}
+MetaDataCache::MetaDataCache() = default;
+MetaDataCache::~MetaDataCache() = default;
 
 // static
 MetaDataCache* MetaDataCache::GetInstance() {

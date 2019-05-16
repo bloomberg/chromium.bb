@@ -128,7 +128,8 @@ Widget::PaintAsActiveLock::~PaintAsActiveLock() = default;
 
 class Widget::PaintAsActiveLockImpl : public Widget::PaintAsActiveLock {
  public:
-  PaintAsActiveLockImpl(base::WeakPtr<Widget>&& widget) : widget_(widget) {}
+  explicit PaintAsActiveLockImpl(base::WeakPtr<Widget>&& widget)
+      : widget_(widget) {}
 
   ~PaintAsActiveLockImpl() override {
     Widget* const widget = widget_.get();
