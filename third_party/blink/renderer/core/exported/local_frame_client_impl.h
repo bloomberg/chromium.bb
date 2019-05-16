@@ -89,7 +89,6 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   void WillBeDetached() override;
   void Detached(FrameDetachType) override;
   void DispatchWillSendRequest(ResourceRequest&) override;
-  void DispatchDidReceiveResponse(const ResourceResponse&) override;
   void DispatchDidLoadResourceFromMemoryCache(const ResourceRequest&,
                                               const ResourceResponse&) override;
   void DispatchDidHandleOnloadEvents() override;

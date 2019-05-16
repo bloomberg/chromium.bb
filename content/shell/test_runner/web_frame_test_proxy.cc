@@ -250,12 +250,6 @@ void WebFrameTestProxy::WillSendRequest(blink::WebURLRequest& request) {
   test_client_->WillSendRequest(request);
 }
 
-void WebFrameTestProxy::DidReceiveResponse(
-    const blink::WebURLResponse& response) {
-  test_client_->DidReceiveResponse(response);
-  RenderFrameImpl::DidReceiveResponse(response);
-}
-
 void WebFrameTestProxy::BeginNavigation(
     std::unique_ptr<blink::WebNavigationInfo> info) {
   if (test_client_->ShouldContinueNavigation(info.get()))

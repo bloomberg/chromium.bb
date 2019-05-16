@@ -1208,8 +1208,6 @@ void DocumentLoader::StartLoadingInternal() {
   }
   GetFrameLoader().Progress().IncrementProgress(main_resource_identifier_,
                                                 response_);
-  // TODO(dgozman): remove this client call, it is only used in tests.
-  GetLocalFrameClient().DispatchDidReceiveResponse(response_);
   probe::DidReceiveResourceResponse(probe::ToCoreProbeSink(GetFrame()),
                                     main_resource_identifier_, this, response_,
                                     nullptr /* resource */);

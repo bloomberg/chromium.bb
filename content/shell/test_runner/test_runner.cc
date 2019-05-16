@@ -178,7 +178,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void DumpPermissionClientCallbacks();
   void DumpPingLoaderCallbacks();
   void DumpResourceLoadCallbacks();
-  void DumpResourceResponseMIMETypes();
   void DumpSelectionRect();
   void DumpSpellCheckCallbacks();
   void DumpTitleChanges();
@@ -440,8 +439,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::DumpPingLoaderCallbacks)
       .SetMethod("dumpResourceLoadCallbacks",
                  &TestRunnerBindings::DumpResourceLoadCallbacks)
-      .SetMethod("dumpResourceResponseMIMETypes",
-                 &TestRunnerBindings::DumpResourceResponseMIMETypes)
       .SetMethod("dumpSelectionRect", &TestRunnerBindings::DumpSelectionRect)
       .SetMethod("dumpSpellCheckCallbacks",
                  &TestRunnerBindings::DumpSpellCheckCallbacks)
@@ -1060,11 +1057,6 @@ void TestRunnerBindings::SetCanOpenWindows() {
 void TestRunnerBindings::DumpResourceLoadCallbacks() {
   if (runner_)
     runner_->DumpResourceLoadCallbacks();
-}
-
-void TestRunnerBindings::DumpResourceResponseMIMETypes() {
-  if (runner_)
-    runner_->DumpResourceResponseMIMETypes();
 }
 
 void TestRunnerBindings::SetImagesAllowed(bool allowed) {
@@ -1776,11 +1768,6 @@ bool TestRunner::shouldDumpResourceLoadCallbacks() const {
          web_test_runtime_flags_.dump_resource_load_callbacks();
 }
 
-bool TestRunner::shouldDumpResourceResponseMIMETypes() const {
-  return test_is_running_ &&
-         web_test_runtime_flags_.dump_resource_response_mime_types();
-}
-
 blink::WebContentSettingsClient* TestRunner::GetWebContentSettings() const {
   return mock_content_settings_client_.get();
 }
@@ -2317,11 +2304,6 @@ void TestRunner::SetCanOpenWindows() {
 
 void TestRunner::DumpResourceLoadCallbacks() {
   web_test_runtime_flags_.set_dump_resource_load_callbacks(true);
-  OnWebTestRuntimeFlagsChanged();
-}
-
-void TestRunner::DumpResourceResponseMIMETypes() {
-  web_test_runtime_flags_.set_dump_resource_response_mime_types(true);
   OnWebTestRuntimeFlagsChanged();
 }
 

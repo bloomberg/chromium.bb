@@ -124,7 +124,6 @@ class TestRunner : public WebTestRunner {
   bool shouldDumpCreateView() const;
   bool canOpenWindows() const;
   bool shouldDumpResourceLoadCallbacks() const;
-  bool shouldDumpResourceResponseMIMETypes() const;
   bool shouldDumpSpellCheckCallbacks() const;
   bool shouldWaitUntilExternalURLLoad() const;
   const std::set<std::string>* httpHeadersToClear() const;

@@ -137,7 +137,6 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
 
   virtual void WillBeDetached() = 0;
   virtual void DispatchWillSendRequest(ResourceRequest&) = 0;
-  virtual void DispatchDidReceiveResponse(const ResourceResponse&) = 0;
   virtual void DispatchDidLoadResourceFromMemoryCache(
       const ResourceRequest&,
       const ResourceResponse&) = 0;

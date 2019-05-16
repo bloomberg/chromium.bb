@@ -149,7 +149,6 @@ void ResourceLoadObserverForFrame::DidReceiveResponse(
   }
 
   frame.Loader().Progress().IncrementProgress(identifier, response);
-  frame_client->DispatchDidReceiveResponse(response);
   probe::DidReceiveResourceResponse(GetProbe(), identifier, &document_loader,
                                     response, resource);
   // It is essential that inspector gets resource response BEFORE console.

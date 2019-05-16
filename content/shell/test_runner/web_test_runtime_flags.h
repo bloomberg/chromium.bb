@@ -132,10 +132,6 @@ class TEST_RUNNER_EXPORT WebTestRuntimeFlags {
   // load callback.
   DEFINE_BOOL_WEB_TEST_RUNTIME_FLAG(dump_resource_load_callbacks)
 
-  // If true, the test runner will output the MIME type for each resource that
-  // was loaded.
-  DEFINE_BOOL_WEB_TEST_RUNTIME_FLAG(dump_resource_response_mime_types)
-
   // If true, content_shell will dump the default navigation policy passed to
   // WebLocalFrameClient::decidePolicyForNavigation.
   DEFINE_BOOL_WEB_TEST_RUNTIME_FLAG(dump_navigation_policy)

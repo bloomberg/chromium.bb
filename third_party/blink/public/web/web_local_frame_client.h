@@ -607,9 +607,6 @@ class BLINK_EXPORT WebLocalFrameClient {
   // made.
   virtual void WillSendRequest(WebURLRequest&) {}
 
-  // Response headers have been received.
-  virtual void DidReceiveResponse(const WebURLResponse&) {}
-
   // The specified request was satified from WebCore's memory cache.
   virtual void DidLoadResourceFromMemoryCache(const WebURLRequest&,
                                               const WebURLResponse&) {}

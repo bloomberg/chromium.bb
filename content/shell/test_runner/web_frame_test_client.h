@@ -70,7 +70,6 @@ class WebFrameTestClient : public blink::WebLocalFrameClient {
   void DidStopLoading() override;
   void DidDispatchPingLoader(const blink::WebURL& url) override;
   void WillSendRequest(blink::WebURLRequest& request) override;
-  void DidReceiveResponse(const blink::WebURLResponse& response) override;
   void CheckIfAudioSinkExistsAndIsAuthorized(
       const blink::WebString& sink_id,
       blink::WebSetSinkIdCompleteCallback completion_callback) override;

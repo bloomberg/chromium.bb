@@ -376,14 +376,6 @@ void LocalFrameClientImpl::DispatchWillSendRequest(ResourceRequest& request) {
   }
 }
 
-void LocalFrameClientImpl::DispatchDidReceiveResponse(
-    const ResourceResponse& response) {
-  if (web_frame_->Client()) {
-    WrappedResourceResponse webresp(response);
-    web_frame_->Client()->DidReceiveResponse(webresp);
-  }
-}
-
 void LocalFrameClientImpl::DispatchDidFinishDocumentLoad() {
   // TODO(dglazkov): Sadly, workers are WebLocalFrameClients, and they can
   // totally destroy themselves when didFinishDocumentLoad is invoked, and in

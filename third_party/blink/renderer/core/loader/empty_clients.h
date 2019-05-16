@@ -256,7 +256,6 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   void FrameFocused() const override {}
 
   void DispatchWillSendRequest(ResourceRequest&) override {}
-  void DispatchDidReceiveResponse(const ResourceResponse&) override {}
   void DispatchDidLoadResourceFromMemoryCache(
       const ResourceRequest&,
       const ResourceResponse&) override {}
