@@ -73,11 +73,19 @@ bool GetUserVideosDirectory(base::FilePath* result);
 base::FilePath GetVersionedDirectory();
 #endif
 
+#if BUILDFLAG(NEW_MAC_BUNDLE_STRUCTURE)
+// Most of the application is further contained within the framework, which
+// resides in the Frameworks directory of the top-level Contents folder. The
+// framework is versioned with the full product version. This function returns
+// the full path to the versioned sub-directory of the framework, i.e.:
+// Chromium.app/Contents/Frameworks/Chromium Framework.framework/Versions/X.
+#else
 // Most of the application is further contained within the framework.  The
 // framework bundle is located within the versioned directory at a specific
 // path.  The only components in the versioned directory not included in the
 // framework are things that also depend on the framework, such as the helper
 // app bundle.
+#endif
 base::FilePath GetFrameworkBundlePath();
 
 // Get the local library directory.

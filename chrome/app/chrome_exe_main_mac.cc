@@ -62,6 +62,8 @@ __attribute__((visibility("default"))) int main(int argc, char* argv[]) {
   }
 
 #if BUILDFLAG(NEW_MAC_BUNDLE_STRUCTURE)
+  // The helper lives within the versioned framework directory, so simply
+  // go up to find the main dylib.
   const char rel_path[] = "../../../../" PRODUCT_FULLNAME_STRING " Framework";
 #else
   const char rel_path[] =
@@ -70,10 +72,9 @@ __attribute__((visibility("default"))) int main(int argc, char* argv[]) {
 #endif  // NEW_MAC_BUNDLE_STRUCTURE
 #else
 #if BUILDFLAG(NEW_MAC_BUNDLE_STRUCTURE)
-  const char rel_path[] =
-      "../Frameworks/" PRODUCT_FULLNAME_STRING
-      " Framework.framework/Versions/Current/" PRODUCT_FULLNAME_STRING
-      " Framework";
+  const char rel_path[] = "../Frameworks/" PRODUCT_FULLNAME_STRING
+                          " Framework.framework/Versions/" CHROME_VERSION_STRING
+                          "/" PRODUCT_FULLNAME_STRING " Framework";
 #else
   const char rel_path[] =
       "../Versions/" CHROME_VERSION_STRING "/" PRODUCT_FULLNAME_STRING

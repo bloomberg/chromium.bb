@@ -30,8 +30,6 @@ void SetUpBundleOverrides() {
 #if BUILDFLAG(NEW_MAC_BUNDLE_STRUCTURE)
   base::FilePath child_exe_path =
       chrome::GetFrameworkBundlePath()
-          .Append("Versions")
-          .Append(chrome::kChromeVersion)
           .Append("Helpers")
           .Append(chrome::kHelperProcessExecutablePath);
 #else

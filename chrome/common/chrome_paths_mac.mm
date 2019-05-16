@@ -38,9 +38,11 @@ NSBundle* OuterAppBundleInternal() {
   }
 
 #if BUILDFLAG(NEW_MAC_BUNDLE_STRUCTURE)
-  // From C.app/Contents/Frameworks/C.framework, go up three steps to C.app.
+  // From C.app/Contents/Frameworks/C.framework/Versions/1.2.3.4, go up five
+  // steps to C.app.
   base::FilePath framework_path = chrome::GetFrameworkBundlePath();
-  base::FilePath outer_app_dir = framework_path.DirName().DirName().DirName();
+  base::FilePath outer_app_dir =
+      framework_path.DirName().DirName().DirName().DirName().DirName();
 #else
   // From C.app/Contents/Versions/1.2.3.4, go up three steps to get to C.app.
   base::FilePath versioned_dir = chrome::GetVersionedDirectory();
@@ -203,15 +205,30 @@ base::FilePath GetFrameworkBundlePath() {
 
   if (base::mac::IsBackgroundOnlyProcess()) {
     // |path| is Chromium.app/Contents/Frameworks/Chromium Framework.framework/
-    // Versions/X/Helpers/Chromium Helper.app/Contents. Go up five times to
-    // the framework directory.
-    path = path.DirName().DirName().DirName().DirName().DirName();
-    DCHECK_EQ(path.BaseName().value(), kFrameworkName);
+    // Versions/X/Helpers/Chromium Helper.app/Contents. Go up three times to
+    // the versioned framework directory.
+    path = path.DirName().DirName().DirName();
   } else {
     // |path| is Chromium.app/Contents, so go down to
-    // Chromium.app/Contents/Frameworks/Chromium Framework.framework.
-    path = path.Append("Frameworks").Append(kFrameworkName);
+    // Chromium.app/Contents/Frameworks/Chromium Framework.framework/Versions/X.
+    path = path.Append("Frameworks")
+               .Append(kFrameworkName)
+               .Append("Versions")
+               .Append(kChromeVersion);
   }
+  DCHECK_EQ(path.BaseName().value(), kChromeVersion);
+  DCHECK_EQ(path.DirName().BaseName().value(), "Versions");
+  DCHECK_EQ(path.DirName().DirName().BaseName().value(), kFrameworkName);
+  DCHECK_EQ(path.DirName().DirName().DirName().BaseName().value(),
+            "Frameworks");
+  DCHECK_EQ(path.DirName()
+                .DirName()
+                .DirName()
+                .DirName()
+                .DirName()
+                .BaseName()
+                .Extension(),
+            ".app");
   return path;
 #else
   // The framework bundle is at a known path and name from the browser .app's

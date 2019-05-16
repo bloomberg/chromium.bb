@@ -102,8 +102,7 @@ bool InitializeStaticEGLInternal(GLImplementation implementation) {
   // as app bundles. In that case, the .dylib is next to the executable.
   base::FilePath base_dir;
   if (base::mac::AmIBundled()) {
-    base_dir =
-        base::mac::FrameworkBundlePath().Append("Versions/Current/Libraries/");
+    base_dir = base::mac::FrameworkBundlePath().Append("Libraries");
   } else {
     if (!base::PathService::Get(base::FILE_EXE, &base_dir)) {
       LOG(ERROR) << "PathService::Get failed.";

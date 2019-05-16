@@ -77,17 +77,12 @@ void AddCdmHostFilePaths(
 #elif defined(OS_MACOSX)
 
 #if BUILDFLAG(NEW_MAC_BUNDLE_STRUCTURE)
-  // Always access the framework through the currently-running version, in case
-  // an update has been staged and updated the Current symlinks.
-  base::FilePath versioned_framework_dir = base::mac::FrameworkBundlePath()
-                                               .Append("Versions")
-                                               .Append(chrome::kChromeVersion);
+  base::FilePath framework_dir = base::mac::FrameworkBundlePath();
   base::FilePath chrome_framework_path =
-      versioned_framework_dir.Append(chrome::kFrameworkExecutableName);
+      framework_dir.Append(chrome::kFrameworkExecutableName);
   // The signature file lives inside
   // Google Chrome Framework.framework/Versions/X/Resources/.
-  base::FilePath widevine_signature_path =
-      versioned_framework_dir.Append("Resources");
+  base::FilePath widevine_signature_path = framework_dir.Append("Resources");
 #else
   base::FilePath chrome_framework_path =
       base::mac::FrameworkBundlePath().Append(chrome::kFrameworkExecutableName);

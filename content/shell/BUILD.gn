@@ -762,6 +762,7 @@ if (is_mac) {
 
     framework_contents = [
       "Helpers",
+      "Libraries",
       "Resources",
     ]
 
@@ -866,7 +867,7 @@ if (is_mac) {
   }
 
   if (use_egl) {
-    # Add the ANGLE .dylibs in the MODULE_DIR of Chromium.app
+    # Add the ANGLE .dylibs in the Libraries directory of the Framework.
     bundle_data("content_shell_angle_binaries") {
       sources = [
         "$root_out_dir/egl_intermediates/libEGL.dylib",
@@ -880,7 +881,7 @@ if (is_mac) {
       ]
     }
 
-    # Add the SwiftShader .dylibs in the MODULE_DIR of Chromium.app
+    # Add the SwiftShader .dylibs in the Libraries directory of the Framework.
     bundle_data("content_shell_swiftshader_binaries") {
       sources = [
         "$root_out_dir/egl_intermediates/libswiftshader_libEGL.dylib",

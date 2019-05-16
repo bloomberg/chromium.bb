@@ -180,8 +180,14 @@ void RecordLastRunAppBundlePath() {
                                                 base::BlockingType::MAY_BLOCK);
 
 #if BUILDFLAG(NEW_MAC_BUNDLE_STRUCTURE)
-  base::FilePath app_bundle_path =
-      chrome::GetFrameworkBundlePath().DirName().DirName().DirName();
+  // Go up five levels from the versioned sub-directory of the framework, which
+  // is at C.app/Contents/Frameworks/C.framework/Versions/V.
+  base::FilePath app_bundle_path = chrome::GetFrameworkBundlePath()
+                                       .DirName()
+                                       .DirName()
+                                       .DirName()
+                                       .DirName()
+                                       .DirName();
 #else
   base::FilePath app_bundle_path =
       chrome::GetVersionedDirectory().DirName().DirName().DirName();
