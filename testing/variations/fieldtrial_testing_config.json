@@ -2321,6 +2321,22 @@
             ]
         }
     ],
+    "GwpAsanPartitionAlloc": [
+        {
+            "platforms": [
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "GwpAsanPartitionAlloc"
+                    ]
+                }
+            ]
+        }
+    ],
     "HTTPReallyBadFinal": [
         {
             "platforms": [
