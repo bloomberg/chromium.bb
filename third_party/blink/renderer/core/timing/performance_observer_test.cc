@@ -69,7 +69,7 @@ TEST_F(PerformanceObserverTest, ObserveWithBufferedFlag) {
 
   NonThrowableExceptionState exception_state;
   PerformanceObserverInit* options = PerformanceObserverInit::Create();
-  options->setType("layoutJank");
+  options->setType("layoutShift");
   options->setBuffered(true);
   EXPECT_EQ(0, NumPerformanceEntries());
 

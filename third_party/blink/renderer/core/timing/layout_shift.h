@@ -10,29 +10,26 @@
 
 namespace blink {
 
-// The LayoutShift object exposes the jank fraction of an animation
-// frame that does not occur close to some user input. The jank fraction
-// approximates the fraction of the viewport affected by layout jank during that
-// frame. More details can be found in this explainer:
-// http://bit.ly/lsm-explainer.
+// Exposes the layout shift score of an animation frame, computed as described
+// in http://bit.ly/lsm-explainer.
 class CORE_EXPORT LayoutShift final : public PerformanceEntry {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  LayoutShift(double start_time, double fraction);
+  LayoutShift(double start_time, double value);
   ~LayoutShift() override;
 
   AtomicString entryType() const override;
   PerformanceEntryType EntryTypeEnum() const override;
 
-  double fraction() const { return fraction_; }
+  double value() const { return value_; }
 
   void Trace(blink::Visitor*) override;
 
  private:
   void BuildJSONValue(V8ObjectBuilder&) const override;
 
-  double fraction_;
+  double value_;
 };
 
 }  // namespace blink
