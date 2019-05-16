@@ -130,11 +130,8 @@ void AppListClientImpl::OpenSearchResult(
         result_id, suggestion_index, static_cast<int>(launched_from));
   }
 
-  if (launched_from ==
-      ash::mojom::AppListLaunchedFrom::kLaunchedFromSearchBox) {
-    RecordSearchResultOpenTypeHistogram(result->GetSearchResultType(),
-                                        IsTabletMode());
-  }
+  RecordSearchResultOpenTypeHistogram(
+      launched_from, result->GetSearchResultType(), IsTabletMode());
 }
 
 void AppListClientImpl::InvokeSearchResultAction(const std::string& result_id,

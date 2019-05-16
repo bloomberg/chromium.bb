@@ -941,7 +941,7 @@ void AppListControllerImpl::OpenSearchResult(
            "search results (ie. search results in the search result page) not "
            "chips.";
     app_list::RecordSearchResultOpenTypeHistogram(
-        app_list::ASSISTANT_OMNIBOX_RESULT, IsTabletMode());
+        launched_from, app_list::ASSISTANT_OMNIBOX_RESULT, IsTabletMode());
     Shell::Get()->assistant_controller()->ui_controller()->ShowUi(
         AssistantEntryPoint::kLauncherSearchResult);
     Shell::Get()->assistant_controller()->OpenUrl(
