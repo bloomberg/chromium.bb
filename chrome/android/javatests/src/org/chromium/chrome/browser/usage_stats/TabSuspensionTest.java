@@ -13,7 +13,6 @@ import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -21,10 +20,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
-import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -34,7 +31,6 @@ import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.browser.multiwindow.MultiWindowTestHelper;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
-import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabTestUtils;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
@@ -45,6 +41,8 @@ import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.components.safe_browsing.SafeBrowsingApiBridge;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -65,6 +63,9 @@ import java.util.concurrent.TimeoutException;
 public class TabSuspensionTest {
     private static final String STARTING_FQDN = "example.com";
     private static final String DIFFERENT_FQDN = "www.google.com";
+    private static final String MAINFRAME_TEST_PAGE =
+            "/chrome/test/data/android/usage_stats/amp_root.html";
+    private static final String SUBFRAME_TEST_PAGE = "/chrome/test/data/android/test.html";
 
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
@@ -285,6 +286,38 @@ public class TabSuspensionTest {
         });
     }
 
+    @Test
+    @MediumTest
+    public void testAmpPage() throws InterruptedException, TimeoutException {
+        String mainframeUrl = mTestServer.getURLWithHostName(DIFFERENT_FQDN, MAINFRAME_TEST_PAGE);
+        mActivityTestRule.loadUrl(mainframeUrl);
+        doReturn(true).when(mSuspensionTracker).isWebsiteSuspended(STARTING_FQDN);
+
+        String iframeSrc =
+                mTestServer.getURLWithHostName(STARTING_FQDN, SUBFRAME_TEST_PAGE + "?amp_js_v=0");
+        String code = "document.getElementById('iframe_test_id').src='" + iframeSrc + "';";
+        JavaScriptUtils.executeJavaScriptAndWaitForResult(
+                mTab.getWebContents(), code, 3, TimeUnit.SECONDS);
+        waitForSuspendedTabToShow(mTab, STARTING_FQDN);
+
+        doReturn(false).when(mSuspensionTracker).isWebsiteSuspended(STARTING_FQDN);
+        unsuspendDomain(STARTING_FQDN);
+        assertSuspendedTabHidden(mTab);
+
+        // Un-suspension reloads the page, so we need to wait for it to load and re-navigate the
+        // iframe back to the suspended domain.
+        ChromeTabUtils.waitForTabPageLoaded(mTab, mainframeUrl);
+        JavaScriptUtils.executeJavaScriptAndWaitForResult(
+                mTab.getWebContents(), code, 3, TimeUnit.SECONDS);
+
+        doReturn(true).when(mSuspensionTracker).isWebsiteSuspended(STARTING_FQDN);
+        suspendDomain(STARTING_FQDN);
+        waitForSuspendedTabToShow(mTab, STARTING_FQDN);
+
+        mActivityTestRule.loadUrl(mDifferentUrl);
+        assertSuspendedTabHidden(mTab);
+    }
+
     private void startLoadingUrl(Tab tab, String url) {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { tab.loadUrl(new LoadUrlParams(url, PageTransition.TYPED)); });
@@ -319,35 +352,10 @@ public class TabSuspensionTest {
     }
 
     private void waitForSuspendedTabToShow(Tab tab, String fqdn) throws InterruptedException {
-        final CallbackHelper startedCallback = new CallbackHelper();
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            SuspendedTab suspendedTab = SuspendedTab.from(tab);
-            if (suspendedTab.isShowing()) {
-                startedCallback.notifyCalled();
-                return;
-            }
+        CriteriaHelper.pollUiThread(() -> {
+            return SuspendedTab.from(tab).isShowing();
+        }, "Suspended tab should be showing", 10000, 50);
 
-            tab.addObserver(new EmptyTabObserver() {
-                @Override
-                public void onUpdateUrl(Tab tab, String url) {
-                    startedCallback.notifyCalled();
-                    tab.removeObserver(this);
-                }
-
-                @Override
-                public void onShown(Tab tab, @TabSelectionType int type) {
-                    startedCallback.notifyCalled();
-                    tab.removeObserver(this);
-                }
-            });
-        });
-
-        try {
-            startedCallback.waitForCallback(
-                    0, 1, ScalableTimeout.scaleTimeout(10), TimeUnit.SECONDS);
-            assertSuspendedTabShowing(tab, fqdn);
-        } catch (TimeoutException e) {
-            Assert.fail("Tab never painted. url at failure: " + tab.getUrl());
-        }
+        assertSuspendedTabShowing(tab, fqdn);
     }
 }
