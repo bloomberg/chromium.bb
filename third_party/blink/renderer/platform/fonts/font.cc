@@ -107,11 +107,12 @@ void Font::Update(FontSelector* font_selector) const {
 
 namespace {
 
-void DrawBlobs(cc::PaintCanvas* canvas,
-               const cc::PaintFlags& flags,
-               const ShapeResultBloberizer::BlobBuffer& blobs,
-               const FloatPoint& point,
-               const cc::NodeHolder& node_holder = cc::NodeHolder()) {
+void DrawBlobs(
+    cc::PaintCanvas* canvas,
+    const cc::PaintFlags& flags,
+    const ShapeResultBloberizer::BlobBuffer& blobs,
+    const FloatPoint& point,
+    const cc::NodeHolder& node_holder = cc::NodeHolder::EmptyNodeHolder()) {
   for (const auto& blob_info : blobs) {
     DCHECK(blob_info.blob);
     cc::PaintCanvasAutoRestore auto_restore(canvas, false);
@@ -175,7 +176,7 @@ void Font::DrawText(cc::PaintCanvas* canvas,
   ShapeResultBloberizer bloberizer(*this, device_scale_factor);
   bloberizer.FillGlyphs(text_info.text, text_info.from, text_info.to,
                         text_info.shape_result);
-  DrawBlobs(canvas, flags, bloberizer.Blobs(), point);
+  DrawBlobs(canvas, flags, bloberizer.Blobs(), point, node_holder);
 }
 
 bool Font::DrawBidiText(cc::PaintCanvas* canvas,
