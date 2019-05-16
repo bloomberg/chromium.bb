@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Darwin Huang <huangdarwin@chromium.org>
 Date: Fri, 3 May 2019 14:46:06 -0700
-Subject: [PATCH 4/5] Fix memory-leak/segfault
+Subject: [PATCH 4/7] Fix memory-leak/segfault
 
 Backports https://www.sqlite.org/src/info/a9b90aa12eecdd9f
 
