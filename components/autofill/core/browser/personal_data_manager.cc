@@ -1170,10 +1170,11 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
   std::unique_ptr<LabelFormatter> formatter;
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
+  bool use_improved_label_disambiguation = base::FeatureList::IsEnabled(
+      autofill::features::kAutofillUseImprovedLabelDisambiguation);
   // The formatter stores a constant reference to |unique_matched_profiles|.
   // This is safe since the formatter is destroyed when this function returns.
-  formatter = base::FeatureList::IsEnabled(
-                  autofill::features::kAutofillUseImprovedLabelDisambiguation)
+  formatter = use_improved_label_disambiguation
                   ? LabelFormatter::Create(unique_matched_profiles, app_locale_,
                                            type.GetStorableType(), field_types)
                   : nullptr;
@@ -1188,9 +1189,16 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
                                           type.GetStorableType(), 1,
                                           app_locale_, &labels);
   }
-
   suggestion_selection::PrepareSuggestions(formatter != nullptr, labels,
                                            &unique_suggestions);
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  if (use_improved_label_disambiguation && !unique_suggestions.empty()) {
+    AutofillMetrics::LogProfileSuggestionsMadeWithFormatter(formatter !=
+                                                            nullptr);
+  }
+#endif  // #if !defined(OS_ANDROID) && !defined(OS_IOS)
+
   return unique_suggestions;
 }
 

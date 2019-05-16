@@ -889,6 +889,11 @@ class AutofillMetrics {
     DISALLOW_IMPLICIT_CONSTRUCTORS(UkmTimestampPin);
   };
 
+  // When the autofill-use-improved-label-disambiguation experiment is enabled
+  // and suggestions are available, records if a LabelFormatter successfully
+  // created the suggestions.
+  static void LogProfileSuggestionsMadeWithFormatter(bool made_with_formatter);
+
   static void LogSubmittedCardStateMetric(SubmittedCardStateMetric metric);
 
   // If a credit card that matches a server card (unmasked or not) was submitted
