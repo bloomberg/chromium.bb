@@ -203,8 +203,9 @@ class CONTENT_EXPORT BrowsingInstance final
   // |site_instance_map_| and it does not require a dedicated process.
   // This field and |default_process_| are mutually exclusive and this field
   // should only be set if kProcessSharingWithStrictSiteInstances is not
-  // enabled.
-  scoped_refptr<SiteInstanceImpl> default_site_instance_;
+  // enabled. This is a raw pointer to avoid a reference cycle between the
+  // BrowsingInstance and the SiteInstanceImpl.
+  SiteInstanceImpl* default_site_instance_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingInstance);
 };
