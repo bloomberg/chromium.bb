@@ -21,7 +21,6 @@
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
-#import "ios/chrome/test/app/sync_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -44,7 +43,6 @@ using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::ClearBrowsingDataView;
 using chrome_test_util::GetIncognitoTabCount;
 using chrome_test_util::IsIncognitoMode;
-using chrome_test_util::IsSyncInitialized;
 using chrome_test_util::SettingsAccountButton;
 using chrome_test_util::SettingsDoneButton;
 using chrome_test_util::SettingsMenuPrivacyButton;
@@ -98,15 +96,6 @@ bool g_metrics_enabled = false;
 
 // Constant for timeout while waiting for asynchronous sync and UKM operations.
 const NSTimeInterval kSyncUKMOperationsTimeout = 10.0;
-
-void AssertSyncInitialized(bool is_initialized) {
-  ConditionBlock condition = ^{
-    return IsSyncInitialized() == is_initialized;
-  };
-  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
-                 kSyncUKMOperationsTimeout, condition),
-             @"Failed to assert whether Sync was initialized or not.");
-}
 
 void AssertUKMEnabled(bool is_enabled) {
   ConditionBlock condition = ^{
@@ -227,12 +216,16 @@ void SignOut() {
 - (void)setUp {
   [super setUp];
 
-  AssertSyncInitialized(false);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
+      waitForSyncInitialized:NO
+                 syncTimeout:kSyncUKMOperationsTimeout]);
   AssertUKMEnabled(false);
 
   // Enable sync.
   [SigninEarlGreyUI signinWithIdentity:[SigninEarlGreyUtils fakeIdentity1]];
-  AssertSyncInitialized(true);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
+      waitForSyncInitialized:YES
+                 syncTimeout:kSyncUKMOperationsTimeout]);
 
   // Grant metrics consent and update MetricsServicesManager.
   GREYAssert(!g_metrics_enabled, @"Unpaired set/reset of user consent.");
@@ -245,7 +238,9 @@ void SignOut() {
 }
 
 - (void)tearDown {
-  AssertSyncInitialized(true);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
+      waitForSyncInitialized:YES
+                 syncTimeout:kSyncUKMOperationsTimeout]);
   AssertUKMEnabled(true);
 
   // Revoke metrics consent and update MetricsServicesManager.
@@ -259,8 +254,10 @@ void SignOut() {
 
   // Disable sync.
   SignOut();
-  AssertSyncInitialized(false);
-  chrome_test_util::ClearSyncServerData();
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
+      waitForSyncInitialized:NO
+                 syncTimeout:kSyncUKMOperationsTimeout]);
+  [ChromeEarlGrey clearSyncServerData];
 
   [super tearDown];
 }
@@ -431,7 +428,7 @@ void SignOut() {
 
   // Reset sync back to original state.
   SignOut();
-  chrome_test_util::ClearSyncServerData();
+  [ChromeEarlGrey clearSyncServerData];
   [SigninEarlGreyUI signinWithIdentity:[SigninEarlGreyUtils fakeIdentity1]];
   AssertUKMEnabled(true);
 }

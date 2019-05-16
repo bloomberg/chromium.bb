@@ -28,6 +28,7 @@
 #import "ios/chrome/test/app/settings_test_util.h"                 // nogncheck
 #import "ios/chrome/test/app/signin_test_util.h"                   // nogncheck
 #import "ios/chrome/test/app/static_html_view_test_util.h"         // nogncheck
+#import "ios/chrome/test/app/sync_test_util.h"                     // nogncheck
 #import "ios/chrome/test/app/tab_test_util.h"                      // nogncheck
 #import "ios/web/public/test/earl_grey/js_test_util.h"             // nogncheck
 #import "ios/web/public/test/web_view_content_test_util.h"         // nogncheck
@@ -415,6 +416,153 @@ id ExecuteJavaScript(NSString* javascript,
   }
 
   return nil;
+}
+
+#pragma mark - Sync Utilities
+
+- (void)clearSyncServerData {
+  chrome_test_util::ClearSyncServerData();
+}
+
+- (void)startSync {
+  chrome_test_util::StartSync();
+}
+
+- (void)stopSync {
+  chrome_test_util::StopSync();
+}
+
+- (NSError*)waitForSyncInitialized:(BOOL)isInitialized
+                       syncTimeout:(NSTimeInterval)timeout {
+  bool success = WaitUntilConditionOrTimeout(timeout, ^{
+    return chrome_test_util::IsSyncInitialized() == isInitialized;
+  });
+
+  if (!success) {
+    return testing::NSErrorWithLocalizedDescription(
+        @"Sync was not initialized.");
+  }
+
+  return nil;
+}
+
+- (const std::string)syncCacheGUID {
+  return chrome_test_util::GetSyncCacheGuid();
+}
+
+- (NSError*)waitForSyncServerEntitiesWithType:(syncer::ModelType)type
+                                         name:(const std::string&)name
+                                        count:(size_t)count
+                                      timeout:(NSTimeInterval)timeout {
+  __block NSError* error = nil;
+  ConditionBlock condition = ^{
+    NSError* __autoreleasing tempError = error;
+    BOOL success = chrome_test_util::VerifyNumberOfSyncEntitiesWithName(
+        type, name, count, &tempError);
+    error = tempError;
+    DCHECK(success || error);
+    return !!success;
+  };
+  bool success = WaitUntilConditionOrTimeout(timeout, condition);
+  if (error != nil) {
+    return nil;
+  }
+  if (!success) {
+    return testing::NSErrorWithLocalizedDescription(
+        [NSString stringWithFormat:@"Expected %zu entities of the %d type.",
+                                   count, type]);
+  }
+  return nil;
+}
+
+- (void)clearAutofillProfileWithGUID:(const std::string&)GUID {
+  chrome_test_util::ClearAutofillProfile(GUID);
+}
+
+- (int)numberOfSyncEntitiesWithType:(syncer::ModelType)type {
+  return chrome_test_util::GetNumberOfSyncEntities(type);
+}
+
+- (void)injectBookmarkOnFakeSyncServerWithURL:(const std::string&)URL
+                                bookmarkTitle:(const std::string&)title {
+  chrome_test_util::InjectBookmarkOnFakeSyncServer(URL, title);
+}
+
+- (void)injectAutofillProfileOnFakeSyncServerWithGUID:(const std::string&)GUID
+                                  autofillProfileName:
+                                      (const std::string&)fullName {
+  chrome_test_util::InjectAutofillProfileOnFakeSyncServer(GUID, fullName);
+}
+
+- (BOOL)isAutofillProfilePresentWithGUID:(const std::string&)GUID
+                     autofillProfileName:(const std::string&)fullName {
+  return chrome_test_util::IsAutofillProfilePresent(GUID, fullName);
+}
+
+- (void)addTypedURL:(const GURL&)URL {
+  chrome_test_util::AddTypedURLOnClient(URL);
+}
+
+- (void)triggerSyncCycleForType:(syncer::ModelType)type {
+  chrome_test_util::TriggerSyncCycle(type);
+}
+
+- (NSError*)waitForTypedURL:(const GURL&)URL
+              expectPresent:(BOOL)expectPresent
+                    timeout:(NSTimeInterval)timeout {
+  __block NSError* error = nil;
+  ConditionBlock condition = ^{
+    NSError* __autoreleasing tempError = error;
+    BOOL success = chrome_test_util::IsTypedUrlPresentOnClient(
+        URL, expectPresent, &tempError);
+    error = tempError;
+    DCHECK(success || error);
+    return !!success;
+  };
+  bool success = WaitUntilConditionOrTimeout(timeout, condition);
+  if (error != nil) {
+    return nil;
+  }
+  if (!success) {
+    return testing::NSErrorWithLocalizedDescription(
+        @"Error occurred during typed URL verification.");
+  }
+  return nil;
+}
+
+- (void)deleteTypedURL:(const GURL&)URL {
+  chrome_test_util::DeleteTypedUrlFromClient(URL);
+}
+
+- (void)injectTypedURLOnFakeSyncServer:(const std::string&)URL {
+  chrome_test_util::InjectTypedURLOnFakeSyncServer(URL);
+}
+
+- (void)deleteAutofillProfileOnFakeSyncServerWithGUID:(const std::string&)GUID {
+  chrome_test_util::DeleteAutofillProfileOnFakeSyncServer(GUID);
+}
+
+- (NSError*)verifySyncServerURLs:(const std::multiset<std::string>&)URLs {
+  NSError* error = nil;
+  NSError* __autoreleasing tempError = error;
+  BOOL success = chrome_test_util::VerifySessionsOnSyncServer(URLs, &tempError);
+  error = tempError;
+  if (error != nil) {
+    return error;
+  }
+  if (!success) {
+    return testing::NSErrorWithLocalizedDescription(
+        @"Error occurred during verification sessions.");
+  }
+  return nil;
+}
+
+- (void)setUpFakeSyncServer {
+  chrome_test_util::SetUpFakeSyncServer();
+}
+
+- (void)tearDownFakeSyncServer {
+  chrome_test_util::TearDownFakeSyncServer();
 }
 
 #pragma mark - Settings Utilities

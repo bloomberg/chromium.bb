@@ -11,6 +11,7 @@
 
 #include "base/compiler_specific.h"
 #import "components/content_settings/core/common/content_settings.h"
+#include "components/sync/base/model_type.h"
 #import "ios/testing/earl_grey/base_eg_test_helper_impl.h"
 #include "url/gurl.h"
 
@@ -160,6 +161,94 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // Waits for the matcher to return an element that is sufficiently visible.
 - (NSError*)waitForElementWithMatcherSufficientlyVisible:
     (id<GREYMatcher>)matcher WARN_UNUSED_RESULT;
+
+#pragma mark - Sync Utilities
+
+// Clears fake sync server data.
+- (void)clearSyncServerData;
+
+// Starts the sync server. The server should not be running when calling this.
+- (void)startSync;
+
+// Stops the sync server. The server should be running when calling this.
+- (void)stopSync;
+
+// Waits for sync to be initialized or not. Returns nil on success, or else an
+// NSError indicating why the operation failed.
+- (NSError*)waitForSyncInitialized:(BOOL)isInitialized
+                       syncTimeout:(NSTimeInterval)timeout WARN_UNUSED_RESULT;
+
+// Returns the current sync cache guid. The sync server must be running when
+// calling this.
+- (std::string)syncCacheGUID WARN_UNUSED_RESULT;
+
+// Verifies that |count| entities of the given |type| and |name| exist on the
+// sync FakeServer. Folders are not included in this count. Returns nil on
+// success, or else an NSError indicating why the operation failed.
+- (NSError*)waitForSyncServerEntitiesWithType:(syncer::ModelType)type
+                                         name:(const std::string&)name
+                                        count:(size_t)count
+                                      timeout:(NSTimeInterval)timeout
+    WARN_UNUSED_RESULT;
+
+// Clears the autofill profile for the given |GUID|.
+- (void)clearAutofillProfileWithGUID:(const std::string&)GUID;
+
+// Gets the number of entities of the given |type|.
+- (int)numberOfSyncEntitiesWithType:(syncer::ModelType)type WARN_UNUSED_RESULT;
+
+// Injects a bookmark into the fake sync server with |URL| and |title|.
+- (void)injectBookmarkOnFakeSyncServerWithURL:(const std::string&)URL
+                                bookmarkTitle:(const std::string&)title;
+
+// Injects an autofill profile into the fake sync server with |GUID| and
+// |full_name|.
+- (void)injectAutofillProfileOnFakeSyncServerWithGUID:(const std::string&)GUID
+                                  autofillProfileName:
+                                      (const std::string&)fullName;
+
+// Returns YES if there is an autofilll profile with the corresponding |GUID|
+// and |full_name|.
+- (BOOL)isAutofillProfilePresentWithGUID:(const std::string&)GUID
+                     autofillProfileName:(const std::string&)fullName
+    WARN_UNUSED_RESULT;
+
+// Adds typed URL into HistoryService.
+- (void)addTypedURL:(const GURL&)URL;
+
+// Triggers a sync cycle for a |type|.
+- (void)triggerSyncCycleForType:(syncer::ModelType)type;
+
+// If the provided |url| is present (or not) if |expected_present|
+// is YES (or NO) returns nil, otherwise an NSError indicating why the operation
+// failed.
+- (NSError*)waitForTypedURL:(const GURL&)URL
+              expectPresent:(BOOL)expectPresent
+                    timeout:(NSTimeInterval)timeout WARN_UNUSED_RESULT;
+
+// Deletes typed URL from HistoryService.
+- (void)deleteTypedURL:(const GURL&)URL;
+
+// Injects typed URL to sync FakeServer.
+- (void)injectTypedURLOnFakeSyncServer:(const std::string&)URL;
+
+// Deletes an autofill profile from the fake sync server with |GUID|, if it
+// exists. If it doesn't exist, nothing is done.
+- (void)deleteAutofillProfileOnFakeSyncServerWithGUID:(const std::string&)GUID;
+
+// Verifies the sessions hierarchy on the Sync FakeServer. |expected_urls| is
+// the collection of URLs that are to be expected for a single window. Returns
+// nil on success, or else an NSError indicating why the operation failed. See
+// the SessionsHierarchy class for documentation regarding the verification.
+- (NSError*)verifySyncServerURLs:(const std::multiset<std::string>&)URLs
+    WARN_UNUSED_RESULT;
+
+// Sets up a fake sync server to be used by the ProfileSyncService.
+- (void)setUpFakeSyncServer;
+
+// Tears down the fake sync server used by the ProfileSyncService and restores
+// the real one.
+- (void)tearDownFakeSyncServer;
 
 #pragma mark - Settings Utilities
 

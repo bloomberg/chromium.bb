@@ -17,7 +17,6 @@
 #include "components/signin/core/browser/signin_switches.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #include "ios/chrome/test/app/signin_test_util.h"
-#import "ios/chrome/test/app/sync_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/testing/earl_grey/coverage_utils.h"
@@ -288,7 +287,7 @@ const CFTimeInterval kDrainTimeout = 5;
   // Make sure local data is cleared, before disabling mock authentication,
   // where data may be sent to real servers.
   chrome_test_util::SignOutAndClearAccounts();
-  chrome_test_util::TearDownFakeSyncServer();
+  [ChromeEarlGrey tearDownFakeSyncServer];
   chrome_test_util::TearDownMockAccountReconcilor();
   chrome_test_util::TearDownMockAuthentication();
 }
@@ -296,7 +295,7 @@ const CFTimeInterval kDrainTimeout = 5;
 + (void)enableMockAuthentication {
   chrome_test_util::SetUpMockAuthentication();
   chrome_test_util::SetUpMockAccountReconcilor();
-  chrome_test_util::SetUpFakeSyncServer();
+  [ChromeEarlGrey setUpFakeSyncServer];
 }
 
 + (void)stopHTTPServer {
