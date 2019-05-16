@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//v8/gni/snapshot_toolchain.gni")
 import("//v8/gni/v8.gni")
-import("//v8/snapshot_toolchain.gni")
 
 # Variables:
 #   test_type: One of 'webui', 'unit' or 'extension' indicating what

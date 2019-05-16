@@ -25,8 +25,8 @@ import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
 import("//ui/base/ui_features.gni")
 import("//ui/ozone/ozone.gni")
 import("//ui/webui/webui_features.gni")
+import("//v8/gni/snapshot_toolchain.gni")
 import("//v8/gni/v8.gni")
-import("//v8/snapshot_toolchain.gni")
 
 if (is_android) {
   import("//build/config/android/config.gni")
