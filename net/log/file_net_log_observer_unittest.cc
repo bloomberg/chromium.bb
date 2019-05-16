@@ -20,6 +20,7 @@
 #include "base/task/thread_pool/thread_pool.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "net/base/test_completion_callback.h"
 #include "net/log/net_log_entry.h"
 #include "net/log/net_log_event_type.h"
@@ -563,6 +564,13 @@ TEST_P(FileNetLogObserverTest, GeneratesValidJSONWithPolledData) {
 TEST_P(FileNetLogObserverTest, AddEventsFromMultipleThreads) {
   const size_t kNumThreads = 10;
   std::vector<std::unique_ptr<base::Thread>> threads(kNumThreads);
+
+#if defined(OS_FUCHSIA)
+  // TODO(https://crbug.com/959245): Diagnosting logging to determine where
+  // this test sometimes hangs.
+  LOG(ERROR) << "Create and start threads.";
+#endif
+
   // Start all the threads. Waiting for them to start is to hopefuly improve
   // the odds of hitting interesting races once events start being added.
   for (size_t i = 0; i < threads.size(); ++i) {
@@ -572,9 +580,17 @@ TEST_P(FileNetLogObserverTest, AddEventsFromMultipleThreads) {
     threads[i]->WaitUntilThreadStarted();
   }
 
+#if defined(OS_FUCHSIA)
+  LOG(ERROR) << "Create and start observing.";
+#endif
+
   CreateAndStartObserving(nullptr);
 
   const size_t kNumEventsAddedPerThread = 200;
+
+#if defined(OS_FUCHSIA)
+  LOG(ERROR) << "Posting tasks.";
+#endif
 
   // Add events in parallel from all the threads.
   for (size_t i = 0; i < kNumThreads; ++i) {
@@ -583,19 +599,35 @@ TEST_P(FileNetLogObserverTest, AddEventsFromMultipleThreads) {
                                   kNumEventsAddedPerThread, kDummyEventSize));
   }
 
+#if defined(OS_FUCHSIA)
+  LOG(ERROR) << "Joining all threads.";
+#endif
+
   // Join all the threads.
   threads.clear();
+
+#if defined(OS_FUCHSIA)
+  LOG(ERROR) << "Stop observing.";
+#endif
 
   // Stop observing.
   TestClosure closure;
   logger_->StopObserving(nullptr, closure.closure());
   closure.WaitForResult();
 
+#if defined(OS_FUCHSIA)
+  LOG(ERROR) << "Read log from disk and verify.";
+#endif
+
   // Verify the written log.
   std::unique_ptr<ParsedNetLog> log = ReadNetLogFromDisk(log_path_);
   ASSERT_TRUE(log);
   // Check that the expected number of events were written to disk.
   EXPECT_EQ(kNumEventsAddedPerThread * kNumThreads, log->events->GetSize());
+
+#if defined(OS_FUCHSIA)
+  LOG(ERROR) << "Teardown.";
+#endif
 }
 
 // Sends enough events to the observer to completely fill one file, but not
