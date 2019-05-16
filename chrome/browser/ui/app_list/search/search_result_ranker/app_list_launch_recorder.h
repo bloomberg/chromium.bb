@@ -12,6 +12,7 @@
 #include "base/no_destructor.h"
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
+#include "third_party/metrics_proto/chrome_os_app_list_launch_event.pb.h"
 
 namespace app_list {
 
@@ -25,14 +26,10 @@ class SearchController;
 // This should only be called from the browser UI thread.
 class AppListLaunchRecorder {
  public:
-  // TODO(951287): Replace this with the relevant enum from the proto to be
-  // added to ChromeUserMetricsExtension.
-  enum LaunchType { APP_TILES, RESULTS_LIST };
-
   // Stores information about a single launch event to be logged by a call to
   // Record.
   struct LaunchInfo {
-    LaunchInfo(LaunchType launch_type,
+    LaunchInfo(metrics::ChromeOSAppListLaunchEventProto::LaunchType launch_type,
                const std::string& target,
                const std::string& query,
                const std::string& domain,
@@ -40,7 +37,8 @@ class AppListLaunchRecorder {
     LaunchInfo(const LaunchInfo& other);
     ~LaunchInfo();
 
-    LaunchType launch_type;
+    // Specifies which UI component this event was launched from.
+    metrics::ChromeOSAppListLaunchEventProto::LaunchType launch_type;
     // A string identifier of the item being launched, eg. an app ID or
     // filepath.
     std::string target;

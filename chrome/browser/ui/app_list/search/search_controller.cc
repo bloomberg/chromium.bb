@@ -26,6 +26,9 @@
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_ranker.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/search_result_ranker.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
+#include "third_party/metrics_proto/chrome_os_app_list_launch_event.pb.h"
+
+using metrics::ChromeOSAppListLaunchEventProto;
 
 namespace app_list {
 
@@ -163,12 +166,12 @@ SearchResultRanker* SearchController::GetNonAppSearchResultRanker() {
 
 void SearchController::Train(const std::string& id, RankingItemType type) {
   if (app_list_features::IsAppListLaunchRecordingEnabled()) {
-    AppListLaunchRecorder::LaunchType launch_type;
+    ChromeOSAppListLaunchEventProto::LaunchType launch_type;
     if (type == RankingItemType::kApp ||
         type == RankingItemType::kArcAppShortcut) {
-      launch_type = AppListLaunchRecorder::APP_TILES;
+      launch_type = ChromeOSAppListLaunchEventProto::APP_TILES;
     } else {
-      launch_type = AppListLaunchRecorder::RESULTS_LIST;
+      launch_type = ChromeOSAppListLaunchEventProto::RESULTS_LIST;
     }
 
     // TODO(951287): Record the last-used domain and app.

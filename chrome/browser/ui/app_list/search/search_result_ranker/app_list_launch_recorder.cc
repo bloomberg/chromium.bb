@@ -11,7 +11,7 @@ namespace app_list {
 using LaunchInfo = AppListLaunchRecorder::LaunchInfo;
 
 AppListLaunchRecorder::LaunchInfo::LaunchInfo(
-    AppListLaunchRecorder::LaunchType launch_type,
+    metrics::ChromeOSAppListLaunchEventProto::LaunchType launch_type,
     const std::string& target,
     const std::string& query,
     const std::string& domain,
