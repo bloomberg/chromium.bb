@@ -18,19 +18,28 @@ FakeConciergeClient::FakeConciergeClient() : weak_ptr_factory_(this) {
 }
 FakeConciergeClient::~FakeConciergeClient() = default;
 
-// ConciergeClient override.
-void FakeConciergeClient::AddObserver(Observer* observer) {
-  observer_list_.AddObserver(observer);
+void FakeConciergeClient::AddContainerObserver(ContainerObserver* observer) {
+  container_observer_list_.AddObserver(observer);
 }
 
-// ConciergeClient override.
-void FakeConciergeClient::RemoveObserver(Observer* observer) {
-  observer_list_.RemoveObserver(observer);
+void FakeConciergeClient::RemoveContainerObserver(ContainerObserver* observer) {
+  container_observer_list_.RemoveObserver(observer);
 }
 
-// ConciergeClient override.
+void FakeConciergeClient::AddDiskImageObserver(DiskImageObserver* observer) {
+  disk_image_observer_list_.AddObserver(observer);
+}
+
+void FakeConciergeClient::RemoveDiskImageObserver(DiskImageObserver* observer) {
+  disk_image_observer_list_.RemoveObserver(observer);
+}
+
 bool FakeConciergeClient::IsContainerStartupFailedSignalConnected() {
   return is_container_startup_failed_signal_connected_;
+}
+
+bool FakeConciergeClient::IsDiskImageProgressSignalConnected() {
+  return is_disk_image_progress_signal_connected_;
 }
 
 void FakeConciergeClient::CreateDiskImage(
@@ -50,6 +59,43 @@ void FakeConciergeClient::DestroyDiskImage(
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback), destroy_disk_image_response_));
+}
+
+void FakeConciergeClient::ImportDiskImage(
+    base::ScopedFD fd,
+    const vm_tools::concierge::ImportDiskImageRequest& request,
+    DBusMethodCallback<vm_tools::concierge::ImportDiskImageResponse> callback) {
+  import_disk_image_called_ = true;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&FakeConciergeClient::FakeImportCallbacks,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void FakeConciergeClient::FakeImportCallbacks(
+    DBusMethodCallback<vm_tools::concierge::ImportDiskImageResponse> callback) {
+  std::move(callback).Run(import_disk_image_response_);
+  // Trigger DiskImageStatus signals.
+  for (auto const& signal : disk_image_status_signals_) {
+    OnDiskImageProgress(signal);
+  }
+}
+
+void FakeConciergeClient::OnDiskImageProgress(
+    const vm_tools::concierge::DiskImageStatusResponse& signal) {
+  for (auto& observer : disk_image_observer_list_) {
+    observer.OnDiskImageProgress(signal);
+  }
+}
+
+void FakeConciergeClient::DiskImageStatus(
+    const vm_tools::concierge::DiskImageStatusRequest& request,
+    DBusMethodCallback<vm_tools::concierge::DiskImageStatusResponse> callback) {
+  disk_image_status_called_ = true;
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), disk_image_status_response_));
 }
 
 void FakeConciergeClient::ListVmDisks(

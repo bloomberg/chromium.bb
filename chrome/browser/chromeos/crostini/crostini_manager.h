@@ -207,7 +207,7 @@ class InstallerViewStatusObserver : public base::CheckedObserver {
 // possible. The existence of Cicerone is abstracted behind this class and
 // only the Concierge name is exposed outside of here.
 class CrostiniManager : public KeyedService,
-                        public chromeos::ConciergeClient::Observer,
+                        public chromeos::ConciergeClient::ContainerObserver,
                         public chromeos::CiceroneClient::Observer {
  public:
   using CrostiniResultCallback =

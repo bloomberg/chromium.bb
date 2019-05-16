@@ -588,12 +588,12 @@ CrostiniManager::CrostiniManager(Profile* profile)
       weak_ptr_factory_(this) {
   DCHECK(!profile_->IsOffTheRecord());
   GetCiceroneClient()->AddObserver(this);
-  GetConciergeClient()->AddObserver(this);
+  GetConciergeClient()->AddContainerObserver(this);
 }
 
 CrostiniManager::~CrostiniManager() {
   GetCiceroneClient()->RemoveObserver(this);
-  GetConciergeClient()->RemoveObserver(this);
+  GetConciergeClient()->RemoveContainerObserver(this);
 }
 
 // static
