@@ -224,15 +224,6 @@ const FeatureEntry::Choice kTouchEventFeatureDetectionChoices[] = {
      switches::kTouchEventFeatureDetectionAuto}};
 
 #if defined(USE_AURA)
-const FeatureEntry::Choice kOverscrollStartThresholdChoices[] = {
-    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
-    {flag_descriptions::kOverscrollStartThreshold133Percent,
-     switches::kOverscrollStartThreshold, "133"},
-    {flag_descriptions::kOverscrollStartThreshold166Percent,
-     switches::kOverscrollStartThreshold, "166"},
-    {flag_descriptions::kOverscrollStartThreshold200Percent,
-     switches::kOverscrollStartThreshold, "200"}};
-
 const FeatureEntry::Choice kPullToRefreshChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
     {flags_ui::kGenericExperimentChoiceDisabled, switches::kPullToRefresh, "0"},
@@ -1389,10 +1380,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAura | kOsAndroid,
      FEATURE_VALUE_TYPE(features::kOverscrollHistoryNavigation)},
 #if !defined(OS_ANDROID)
-    {"overscroll-start-threshold",
-     flag_descriptions::kOverscrollStartThresholdName,
-     flag_descriptions::kOverscrollStartThresholdDescription, kOsAura,
-     MULTI_VALUE_TYPE(kOverscrollStartThresholdChoices)},
     {"pull-to-refresh", flag_descriptions::kPullToRefreshName,
      flag_descriptions::kPullToRefreshDescription, kOsAura,
      MULTI_VALUE_TYPE(kPullToRefreshChoices)},

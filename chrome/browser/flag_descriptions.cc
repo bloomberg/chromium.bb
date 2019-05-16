@@ -1439,13 +1439,6 @@ const char kOverscrollHistoryNavigationName[] = "Overscroll history navigation";
 const char kOverscrollHistoryNavigationDescription[] =
     "History navigation in response to horizontal overscroll.";
 
-const char kOverscrollStartThresholdName[] = "Overscroll start threshold";
-const char kOverscrollStartThresholdDescription[] =
-    "Changes overscroll start threshold relative to the default value.";
-const char kOverscrollStartThreshold133Percent[] = "133%";
-const char kOverscrollStartThreshold166Percent[] = "166%";
-const char kOverscrollStartThreshold200Percent[] = "200%";
-
 const char kTouchpadOverscrollHistoryNavigationName[] =
     "Overscroll history navigation on Touchpad";
 const char kTouchpadOverscrollHistoryNavigationDescription[] =

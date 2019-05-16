@@ -320,10 +320,10 @@ bool OverscrollController::DispatchEventCompletesAction(
           ? overscroll_delta_x_
           : overscroll_delta_y_;
   const float ratio = fabs(delta) / std::max(size.width(), size.height());
-  const float threshold = OverscrollConfig::GetThreshold(
+  const float threshold =
       overscroll_source_ == OverscrollSource::TOUCHPAD
-          ? OverscrollConfig::Threshold::kCompleteTouchpad
-          : OverscrollConfig::Threshold::kCompleteTouchscreen);
+          ? OverscrollConfig::kCompleteTouchpadThresholdPercent
+          : OverscrollConfig::kCompleteTouchscreenThresholdPercent;
   return ratio >= threshold;
 }
 
@@ -458,9 +458,9 @@ bool OverscrollController::ProcessOverscroll(float delta_x,
   overscroll_delta_x_ += delta_x;
   overscroll_delta_y_ += delta_y;
 
-  const float start_threshold = OverscrollConfig::GetThreshold(
-      is_touchpad ? OverscrollConfig::Threshold::kStartTouchpad
-                  : OverscrollConfig::Threshold::kStartTouchscreen);
+  const float start_threshold =
+      is_touchpad ? OverscrollConfig::kStartTouchpadThresholdDips
+                  : OverscrollConfig::kStartTouchscreenThresholdDips;
   if (fabs(overscroll_delta_x_) <= start_threshold &&
       fabs(overscroll_delta_y_) <= start_threshold) {
     SetOverscrollMode(OVERSCROLL_NONE, OverscrollSource::NONE);

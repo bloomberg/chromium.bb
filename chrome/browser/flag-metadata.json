@@ -2616,11 +2616,6 @@
      "expiry_milestone": 77
   },
   {
-    "name": "overscroll-start-threshold",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "passive-event-listeners-due-to-fling",
     "owners": [ "sahel", "input-dev" ],
     "expiry_milestone": 76

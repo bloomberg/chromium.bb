@@ -873,12 +873,6 @@ extern const char kUseNewAcceptLanguageHeaderDescription[];
 extern const char kOverscrollHistoryNavigationName[];
 extern const char kOverscrollHistoryNavigationDescription[];
 
-extern const char kOverscrollStartThresholdName[];
-extern const char kOverscrollStartThresholdDescription[];
-extern const char kOverscrollStartThreshold133Percent[];
-extern const char kOverscrollStartThreshold166Percent[];
-extern const char kOverscrollStartThreshold200Percent[];
-
 extern const char kParallelDownloadingName[];
 extern const char kParallelDownloadingDescription[];
 

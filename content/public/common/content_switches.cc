@@ -605,12 +605,6 @@ const char kNumRasterThreads[]              = "num-raster-threads";
 const char kOverridePluginPowerSaverForTesting[] =
     "override-plugin-power-saver-for-testing";
 
-// Controls the value of the threshold to start horizontal overscroll relative
-// to the default value.
-// E.g. set the value to '133' to have the overscroll start threshold be 133%
-// of the default threshold.
-const char kOverscrollStartThreshold[] = "overscroll-start-threshold";
-
 // Override the default value for the 'passive' field in javascript
 // addEventListener calls. Values are defined as:
 //  'documentonlytrue' to set the default be true only for document level nodes.
