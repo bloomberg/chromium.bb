@@ -282,8 +282,8 @@ bool IsCommandIdAnAppLaunch(int command_id_number) {
   ash::CommandId command_id = static_cast<ash::CommandId>(command_id_number);
 
   // Consider all platform app menu options as launches.
-  if (command_id >= ash::CommandId::USE_LAUNCH_TYPE_COMMAND_END &&
-      command_id < ash::CommandId::LAUNCH_APP_SHORTCUT_FIRST) {
+  if (command_id >= ash::CommandId::EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
+      command_id < ash::CommandId::EXTENSIONS_CONTEXT_CUSTOM_LAST) {
     return true;
   }
 
@@ -332,6 +332,8 @@ bool IsCommandIdAnAppLaunch(int command_id_number) {
     case ash::CommandId::USE_LAUNCH_TYPE_WINDOW:
     case ash::CommandId::USE_LAUNCH_TYPE_COMMAND_END:
     case ash::CommandId::STOP_APP:
+    case ash::CommandId::EXTENSIONS_CONTEXT_CUSTOM_FIRST:
+    case ash::CommandId::EXTENSIONS_CONTEXT_CUSTOM_LAST:
     case ash::CommandId::COMMAND_ID_COUNT:
       return false;
   }
