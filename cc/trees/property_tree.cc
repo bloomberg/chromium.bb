@@ -2228,6 +2228,12 @@ ClipRectData* PropertyTrees::FetchClipRectFromCache(int clip_id,
   return &clip_node->cached_clip_rects->back();
 }
 
+bool PropertyTrees::HasElement(ElementId element_id) const {
+  return element_id_to_effect_node_index.contains(element_id) ||
+         element_id_to_scroll_node_index.contains(element_id) ||
+         element_id_to_transform_node_index.contains(element_id);
+}
+
 DrawTransforms& PropertyTrees::GetDrawTransforms(int transform_id,
                                                  int effect_id) const {
   const EffectNode* effect_node = effect_tree.Node(effect_id);

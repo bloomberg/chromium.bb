@@ -53,7 +53,6 @@ class PropertyTreeManager {
                       cc::PropertyTrees& property_trees,
                       cc::Layer& root_layer,
                       LayerListBuilder& layer_list_builder,
-                      CompositorElementIdSet& animation_element_ids,
                       int new_sequence_number);
   ~PropertyTreeManager();
 
@@ -259,7 +258,6 @@ class PropertyTreeManager {
   cc::Layer& root_layer_;
 
   LayerListBuilder& layer_list_builder_;
-  CompositorElementIdSet& animation_element_ids_;
 
   int new_sequence_number_;
 

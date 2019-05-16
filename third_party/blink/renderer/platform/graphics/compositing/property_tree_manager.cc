@@ -44,13 +44,11 @@ PropertyTreeManager::PropertyTreeManager(
     cc::PropertyTrees& property_trees,
     cc::Layer& root_layer,
     LayerListBuilder& layer_list_builder,
-    CompositorElementIdSet& animation_element_ids,
     int new_sequence_number)
     : client_(client),
       property_trees_(property_trees),
       root_layer_(root_layer),
       layer_list_builder_(layer_list_builder),
-      animation_element_ids_(animation_element_ids),
       new_sequence_number_(new_sequence_number) {
   SetupRootTransformNode();
   SetupRootClipNode();
@@ -464,7 +462,6 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
     property_trees_.element_id_to_transform_node_index[compositor_element_id] =
         id;
     compositor_node.element_id = compositor_element_id;
-    CollectAnimationElementId(compositor_element_id);
   }
 
   // If this transform is a scroll offset translation, create the associated
@@ -936,19 +933,6 @@ SkBlendMode PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
   return delegated_blend;
 }
 
-void PropertyTreeManager::CollectAnimationElementId(
-    CompositorElementId element_id) {
-  // Collect the element id if the namespace is one of the ones needed for
-  // running animations on the compositor. These are the only element_ids the
-  // compositor needs to track existence of in the element id set.
-  auto element_namespace = NamespaceFromCompositorElementId(element_id);
-  if (element_namespace == CompositorElementIdNamespace::kPrimaryTransform ||
-      element_namespace == CompositorElementIdNamespace::kPrimaryEffect ||
-      element_namespace == CompositorElementIdNamespace::kEffectFilter) {
-    animation_element_ids_.insert(element_id);
-  }
-}
-
 void PropertyTreeManager::BuildEffectNodesRecursively(
     const EffectPaintPropertyNode& next_effect_arg) {
   const auto& next_effect = next_effect_arg.Unalias();
@@ -993,7 +977,6 @@ void PropertyTreeManager::BuildEffectNodesRecursively(
         compositor_element_id));
     property_trees_.element_id_to_effect_node_index[compositor_element_id] =
         effect_node.id;
-    CollectAnimationElementId(compositor_element_id);
   }
 
   effect_stack_.emplace_back(current_);

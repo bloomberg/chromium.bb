@@ -137,22 +137,15 @@ class PaintArtifactCompositorTest : public testing::Test,
     return property_trees->element_id_to_scroll_node_index[element_id];
   }
 
-  void Update(scoped_refptr<const PaintArtifact> artifact) {
-    CompositorElementIdSet element_ids;
-    Update(artifact, element_ids);
-  }
-
   using ViewportProperties = PaintArtifactCompositor::ViewportProperties;
   using Settings = PaintArtifactCompositor::Settings;
 
   void Update(
       scoped_refptr<const PaintArtifact> artifact,
-      CompositorElementIdSet& element_ids,
       const ViewportProperties& viewport_properties = ViewportProperties(),
       const Settings& settings = Settings()) {
     paint_artifact_compositor_->SetNeedsUpdate();
-    paint_artifact_compositor_->Update(artifact, element_ids,
-                                       viewport_properties, settings);
+    paint_artifact_compositor_->Update(artifact, viewport_properties, settings);
     layer_tree_->layer_tree_host()->LayoutAndUpdateLayers();
   }
 
@@ -1044,10 +1037,7 @@ TEST_P(PaintArtifactCompositorTest, OneScrollNode) {
       .RectDrawing(FloatRect(-110, 12, 170, 19), Color::kWhite);
 
   // Scroll node ElementIds are referenced by scroll animations.
-  CompositorElementIdSet composited_element_ids;
-  Update(artifact.Build(), composited_element_ids);
-  EXPECT_EQ(1u, composited_element_ids.size());
-  EXPECT_TRUE(composited_element_ids.count(scroll_element_id));
+  Update(artifact.Build());
 
   const cc::ScrollTree& scroll_tree = GetPropertyTrees().scroll_tree;
   // Node #0 reserved for null; #1 for root render surface.
@@ -2351,50 +2341,6 @@ TEST_P(PaintArtifactCompositorTest, DecompositedEffectNotMergingDueToOverlap) {
   EXPECT_EQ(1, layer4->effect_tree_index());
 }
 
-TEST_P(PaintArtifactCompositorTest, UpdatePopulatesCompositedElementIds) {
-  auto transform = CreateAnimatingTransform(t0());
-  auto effect = CreateAnimatingOpacityEffect(e0());
-  TestPaintArtifact artifact;
-  artifact.Chunk(*transform, c0(), e0())
-      .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack)
-      .Chunk(t0(), c0(), *effect)
-      .RectDrawing(FloatRect(100, 100, 200, 100), Color::kBlack);
-
-  CompositorElementIdSet composited_element_ids;
-  Update(artifact.Build(), composited_element_ids);
-
-  EXPECT_EQ(2u, composited_element_ids.size());
-  EXPECT_TRUE(
-      composited_element_ids.count(transform->GetCompositorElementId()));
-  EXPECT_TRUE(composited_element_ids.count(effect->GetCompositorElementId()));
-}
-
-// If we have both a transform and an opacity animation, they should both be
-// included in the composited element id set returned from
-// |PaintArtifactCompositor::Update(...)|.
-TEST_P(PaintArtifactCompositorTest, UniqueAnimationCompositedElementIds) {
-  auto animating_transform = CreateAnimatingTransform(t0());
-  auto non_animating_transform = CreateTransform(
-      *animating_transform, TransformationMatrix().Translate(10, 20));
-  auto animating_effect = CreateAnimatingOpacityEffect(e0());
-  auto non_animating_effect = CreateOpacityEffect(*animating_effect, 0.5f);
-
-  CompositorElementIdSet composited_element_ids;
-  Update(TestPaintArtifact()
-             .Chunk(*animating_transform, c0(), *animating_effect)
-             .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack)
-             .Chunk(*non_animating_transform, c0(), *non_animating_effect)
-             .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack)
-             .Build(),
-         composited_element_ids);
-
-  EXPECT_EQ(2u, composited_element_ids.size());
-  EXPECT_EQ(1u, composited_element_ids.count(
-                    animating_transform->GetCompositorElementId()));
-  EXPECT_EQ(1u, composited_element_ids.count(
-                    animating_effect->GetCompositorElementId()));
-}
-
 TEST_P(PaintArtifactCompositorTest, SkipChunkWithOpacityZero) {
   UpdateWithArtifactWithOpacity(0, false, false);
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
@@ -2556,17 +2502,17 @@ TEST_P(PaintArtifactCompositorTest, UpdateManagesLayerElementIds) {
 
     Update(artifact.Build());
     ASSERT_EQ(1u, ContentLayerCount());
-    ASSERT_TRUE(GetLayerTreeHost().IsElementInList(
+    ASSERT_TRUE(GetLayerTreeHost().IsElementInPropertyTrees(
         element_id, cc::ElementListType::ACTIVE));
   }
 
   {
     TestPaintArtifact artifact;
-    ASSERT_TRUE(GetLayerTreeHost().IsElementInList(
+    ASSERT_TRUE(GetLayerTreeHost().IsElementInPropertyTrees(
         element_id, cc::ElementListType::ACTIVE));
     Update(artifact.Build());
     ASSERT_EQ(0u, ContentLayerCount());
-    ASSERT_FALSE(GetLayerTreeHost().IsElementInList(
+    ASSERT_FALSE(GetLayerTreeHost().IsElementInPropertyTrees(
         element_id, cc::ElementListType::ACTIVE));
   }
 }
@@ -3885,8 +3831,7 @@ TEST_P(PaintArtifactCompositorTest, CreatesViewportNodes) {
   TestPaintArtifact artifact;
   ViewportProperties viewport_properties;
   viewport_properties.page_scale = scale_transform_node.get();
-  CompositorElementIdSet element_ids;
-  Update(artifact.Build(), element_ids, viewport_properties);
+  Update(artifact.Build(), viewport_properties);
 
   cc::TransformTree& transform_tree = GetPropertyTrees().transform_tree;
   cc::TransformNode* cc_transform_node = transform_tree.FindNodeFromElementId(
@@ -3927,8 +3872,7 @@ TEST_P(PaintArtifactCompositorTest, InSubtreeOfPageScale) {
       .RectDrawing(FloatRect(0, 0, 10, 10), Color::kBlack);
   ViewportProperties viewport_properties;
   viewport_properties.page_scale = page_scale_transform.get();
-  CompositorElementIdSet element_ids;
-  Update(artifact.Build(), element_ids, viewport_properties);
+  Update(artifact.Build(), viewport_properties);
 
   cc::TransformTree& transform_tree = GetPropertyTrees().transform_tree;
   const auto* cc_page_scale_transform = transform_tree.FindNodeFromElementId(
@@ -3982,8 +3926,7 @@ TEST_P(PaintArtifactCompositorTest, ViewportPageScale) {
       .RectDrawing(FloatRect(0, 0, 10, 10), Color::kBlack);
   ViewportProperties viewport_properties;
   viewport_properties.page_scale = scale_transform_node.get();
-  CompositorElementIdSet element_ids;
-  Update(artifact.Build(), element_ids, viewport_properties);
+  Update(artifact.Build(), viewport_properties);
 
   cc::ScrollTree& scroll_tree = GetPropertyTrees().scroll_tree;
   cc::ScrollNode* cc_scroll_node =

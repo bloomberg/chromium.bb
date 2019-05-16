@@ -29,8 +29,8 @@ enum class AnimationWorkletMutationState {
 
 class MutatorHostClient {
  public:
-  virtual bool IsElementInList(ElementId element_id,
-                               ElementListType list_type) const = 0;
+  virtual bool IsElementInPropertyTrees(ElementId element_id,
+                                        ElementListType list_type) const = 0;
 
   virtual void SetMutatorsNeedCommit() = 0;
   virtual void SetMutatorsNeedRebuildPropertyTrees() = 0;

@@ -52,8 +52,11 @@ class CC_ANIMATION_EXPORT ElementAnimations
 
   void ClearAffectedElementTypes(const PropertyToElementIdMap& element_id_map);
 
-  void ElementRegistered(ElementId element_id, ElementListType list_type);
-  void ElementUnregistered(ElementId element_id, ElementListType list_type);
+  // Called when |element_id| is available to animate in |list_type|.
+  void ElementIdRegistered(ElementId element_id, ElementListType list_type);
+
+  // Called when |element_id| is no longer avialable to animate in |list_type|.
+  void ElementIdUnregistered(ElementId element_id, ElementListType list_type);
 
   void AddKeyframeEffect(KeyframeEffect* keyframe_effect);
   void RemoveKeyframeEffect(KeyframeEffect* keyframe_effect);

@@ -263,6 +263,24 @@ ui::FrameMetricsSettings LTHI_FrameMetricsSettings(
   return ui::FrameMetricsSettings(source, source_thread, compile_target);
 }
 
+class ScopedPostAnimationEventsToMainThread {
+ public:
+  ScopedPostAnimationEventsToMainThread(MutatorHost* animation_host,
+                                        LayerTreeHostImplClient* client)
+      : events_(animation_host->CreateEvents()), client_(client) {}
+
+  ~ScopedPostAnimationEventsToMainThread() {
+    if (!events_->IsEmpty())
+      client_->PostAnimationEventsToMainThreadOnImplThread(std::move(events_));
+  }
+
+  MutatorEvents* events() { return events_.get(); }
+
+ private:
+  std::unique_ptr<MutatorEvents> events_;
+  LayerTreeHostImplClient* client_;
+};
+
 }  // namespace
 
 DEFINE_SCOPED_UMA_HISTOGRAM_TIMER(PendingTreeDurationHistogramTimer,
@@ -444,6 +462,10 @@ void LayerTreeHostImpl::CommitComplete() {
 
   if (CommitToActiveTree()) {
     active_tree_->HandleScrollbarShowRequestsFromMain();
+
+    // Property tree nodes have been updated by the commit. Update elements
+    // available on active tree to start/stop ticking animations.
+    UpdateElements(ElementListType::ACTIVE);
 
     // We have to activate animations here or "IsActive()" is true on the layers
     // but the animations aren't activated yet so they get ignored by
@@ -1275,6 +1297,10 @@ void LayerTreeHostImpl::DidAnimateScrollOffset() {
 
 void LayerTreeHostImpl::SetViewportDamage(const gfx::Rect& damage_rect) {
   viewport_damage_rect_.Union(damage_rect);
+}
+
+void LayerTreeHostImpl::UpdateElements(ElementListType changed_list) {
+  mutator_host()->UpdateRegisteredElementIds(changed_list);
 }
 
 void LayerTreeHostImpl::InvalidateContentOnImplSide() {
@@ -2866,12 +2892,17 @@ void LayerTreeHostImpl::ActivateSyncTree() {
         LayerTreeLifecycle::kSyncedPropertyTrees);
 
     TreeSynchronizer::PushLayerProperties(pending_tree(), active_tree());
+
     active_tree_->lifecycle().AdvanceTo(
         LayerTreeLifecycle::kSyncedLayerProperties);
 
     pending_tree_->PushPropertiesTo(active_tree_.get());
     if (!pending_tree_->LayerListIsEmpty())
       pending_tree_->property_trees()->ResetAllChangeTracking();
+
+    // Property tree nodes have been updated by PushLayerProperties. Update
+    // elements available on active tree to start/stop ticking animations.
+    UpdateElements(ElementListType::ACTIVE);
 
     active_tree_->lifecycle().AdvanceTo(LayerTreeLifecycle::kNotSyncing);
 
@@ -5071,20 +5102,21 @@ bool LayerTreeHostImpl::AnimateLayers(base::TimeTicks monotonic_time,
 }
 
 void LayerTreeHostImpl::UpdateAnimationState(bool start_ready_animations) {
-  std::unique_ptr<MutatorEvents> events = mutator_host_->CreateEvents();
+  ScopedPostAnimationEventsToMainThread event_poster(mutator_host_.get(),
+                                                     client_);
 
-  const bool has_active_animations =
-      mutator_host_->UpdateAnimationState(start_ready_animations, events.get());
-
-  if (!events->IsEmpty())
-    client_->PostAnimationEventsToMainThreadOnImplThread(std::move(events));
+  const bool has_active_animations = mutator_host_->UpdateAnimationState(
+      start_ready_animations, event_poster.events());
 
   if (has_active_animations)
     SetNeedsOneBeginImplFrame();
 }
 
 void LayerTreeHostImpl::ActivateAnimations() {
-  const bool activated = mutator_host_->ActivateAnimations();
+  ScopedPostAnimationEventsToMainThread event_poster(mutator_host_.get(),
+                                                     client_);
+  const bool activated =
+      mutator_host_->ActivateAnimations(event_poster.events());
   if (activated) {
     // Activating an animation changes layer draw properties, such as
     // screen_space_transform_is_animating. So when we see a new animation get
@@ -5665,8 +5697,9 @@ bool LayerTreeHostImpl::ScrollAnimationUpdateTarget(
   return animation_updated;
 }
 
-bool LayerTreeHostImpl::IsElementInList(ElementId element_id,
-                                        ElementListType list_type) const {
+bool LayerTreeHostImpl::IsElementInPropertyTrees(
+    ElementId element_id,
+    ElementListType list_type) const {
   if (list_type == ElementListType::ACTIVE)
     return active_tree() && active_tree()->IsElementInPropertyTree(element_id);
 

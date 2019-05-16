@@ -142,25 +142,35 @@ void AnimationHost::RemoveAnimationTimeline(
   SetNeedsPushProperties();
 }
 
+void AnimationHost::UpdateRegisteredElementIds(ElementListType changed_list) {
+  for (auto map_entry : element_to_animations_map_) {
+    if (mutator_host_client()->IsElementInPropertyTrees(map_entry.first,
+                                                        changed_list))
+      map_entry.second->ElementIdRegistered(map_entry.first, changed_list);
+    else
+      map_entry.second->ElementIdUnregistered(map_entry.first, changed_list);
+  }
+}
+
 void AnimationHost::InitClientAnimationState() {
   for (auto map_entry : element_to_animations_map_)
     map_entry.second->InitClientAnimationState();
 }
 
-void AnimationHost::RegisterElement(ElementId element_id,
-                                    ElementListType list_type) {
-  scoped_refptr<ElementAnimations> element_animations =
-      GetElementAnimationsForElementId(element_id);
-  if (element_animations)
-    element_animations->ElementRegistered(element_id, list_type);
-}
-
-void AnimationHost::UnregisterElement(ElementId element_id,
+void AnimationHost::RegisterElementId(ElementId element_id,
                                       ElementListType list_type) {
   scoped_refptr<ElementAnimations> element_animations =
       GetElementAnimationsForElementId(element_id);
   if (element_animations)
-    element_animations->ElementUnregistered(element_id, list_type);
+    element_animations->ElementIdRegistered(element_id, list_type);
+}
+
+void AnimationHost::UnregisterElementId(ElementId element_id,
+                                        ElementListType list_type) {
+  scoped_refptr<ElementAnimations> element_animations =
+      GetElementAnimationsForElementId(element_id);
+  if (element_animations)
+    element_animations->ElementIdUnregistered(element_id, list_type);
 }
 
 void AnimationHost::RegisterKeyframeEffectForElement(
@@ -357,14 +367,19 @@ void AnimationHost::TickMutator(base::TimeTicks monotonic_time,
   return;
 }
 
-bool AnimationHost::ActivateAnimations() {
+bool AnimationHost::ActivateAnimations(MutatorEvents* mutator_events) {
   if (!NeedsTickAnimations())
     return false;
 
+  auto* animation_events = static_cast<AnimationEvents*>(mutator_events);
+
   TRACE_EVENT0("cc", "AnimationHost::ActivateAnimations");
   AnimationsList ticking_animations_copy = ticking_animations_;
-  for (auto& it : ticking_animations_copy)
+  for (auto& it : ticking_animations_copy) {
     it->ActivateKeyframeEffects();
+    // Finish animations which no longer affect active or pending elements.
+    it->UpdateState(false, animation_events);
+  }
 
   return true;
 }

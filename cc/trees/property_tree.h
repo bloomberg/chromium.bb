@@ -700,6 +700,8 @@ class CC_EXPORT PropertyTrees final {
 
   ClipRectData* FetchClipRectFromCache(int clip_id, int target_id);
 
+  bool HasElement(ElementId element_id) const;
+
  private:
   gfx::Vector2dF inner_viewport_container_bounds_delta_;
   gfx::Vector2dF outer_viewport_container_bounds_delta_;

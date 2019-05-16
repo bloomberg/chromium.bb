@@ -183,13 +183,11 @@ void KeyframeEffect::RemoveFromTicking() {
 void KeyframeEffect::UpdateState(bool start_ready_keyframe_models,
                                  AnimationEvents* events) {
   DCHECK(has_bound_element_animations());
-  if (!element_animations_->has_element_in_active_list())
-    return;
 
   // Animate hasn't been called, this happens if an element has been added
   // between the Commit and Draw phases.
   if (last_tick_time_ == base::TimeTicks())
-    return;
+    start_ready_keyframe_models = false;
 
   if (start_ready_keyframe_models)
     PromoteStartedKeyframeModels(events);
@@ -204,6 +202,9 @@ void KeyframeEffect::UpdateState(bool start_ready_keyframe_models,
       PromoteStartedKeyframeModels(events);
     }
   }
+
+  if (!element_animations()->has_element_in_any_list())
+    RemoveFromTicking();
 }
 
 void KeyframeEffect::UpdateTickingState() {

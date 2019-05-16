@@ -2763,8 +2763,8 @@ void LocalFrameView::PushPaintArtifactToCompositor() {
   }
 
   paint_artifact_compositor_->Update(
-      paint_controller_->GetPaintArtifactShared(), animation_element_ids_,
-      viewport_properties, settings);
+      paint_controller_->GetPaintArtifactShared(), viewport_properties,
+      settings);
 
   probe::LayerTreePainted(&GetFrame());
 }

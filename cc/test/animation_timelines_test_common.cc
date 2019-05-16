@@ -78,8 +78,8 @@ void TestHostClient::ClearMutatedProperties() {
     kv.second->ClearMutatedProperties();
 }
 
-bool TestHostClient::IsElementInList(ElementId element_id,
-                                     ElementListType list_type) const {
+bool TestHostClient::IsElementInPropertyTrees(ElementId element_id,
+                                              ElementListType list_type) const {
   return list_type == ElementListType::ACTIVE
              ? layers_in_active_tree_.count(element_id)
              : layers_in_pending_tree_.count(element_id);
@@ -161,8 +161,8 @@ gfx::ScrollOffset TestHostClient::GetScrollOffsetForAnimation(
   return scroll_offset_;
 }
 
-void TestHostClient::RegisterElement(ElementId element_id,
-                                     ElementListType list_type) {
+void TestHostClient::RegisterElementId(ElementId element_id,
+                                       ElementListType list_type) {
   ElementIdToTestLayer& layers_in_tree = list_type == ElementListType::ACTIVE
                                              ? layers_in_active_tree_
                                              : layers_in_pending_tree_;
@@ -170,13 +170,13 @@ void TestHostClient::RegisterElement(ElementId element_id,
   layers_in_tree[element_id] = TestLayer::Create();
 
   DCHECK(host_);
-  host_->RegisterElement(element_id, list_type);
+  host_->RegisterElementId(element_id, list_type);
 }
 
-void TestHostClient::UnregisterElement(ElementId element_id,
-                                       ElementListType list_type) {
+void TestHostClient::UnregisterElementId(ElementId element_id,
+                                         ElementListType list_type) {
   DCHECK(host_);
-  host_->UnregisterElement(element_id, list_type);
+  host_->UnregisterElementId(element_id, list_type);
 
   ElementIdToTestLayer& layers_in_tree = list_type == ElementListType::ACTIVE
                                              ? layers_in_active_tree_
@@ -387,16 +387,16 @@ void AnimationTimelinesTest::CreateTestLayer(
 }
 
 void AnimationTimelinesTest::CreateTestMainLayer() {
-  client_.RegisterElement(element_id_, ElementListType::ACTIVE);
+  client_.RegisterElementId(element_id_, ElementListType::ACTIVE);
 }
 
 void AnimationTimelinesTest::DestroyTestMainLayer() {
-  client_.UnregisterElement(element_id_, ElementListType::ACTIVE);
+  client_.UnregisterElementId(element_id_, ElementListType::ACTIVE);
 }
 
 void AnimationTimelinesTest::CreateTestImplLayer(
     ElementListType element_list_type) {
-  client_impl_.RegisterElement(element_id_, element_list_type);
+  client_impl_.RegisterElementId(element_id_, element_list_type);
 }
 
 void AnimationTimelinesTest::AttachTimelineAnimationLayer() {

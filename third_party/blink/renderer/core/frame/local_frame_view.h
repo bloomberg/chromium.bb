@@ -950,14 +950,6 @@ class CORE_EXPORT LocalFrameView final
   std::unique_ptr<PaintController> paint_controller_;
   std::unique_ptr<PaintArtifactCompositor> paint_artifact_compositor_;
 
-  // The set of ElementIds that were composited for animation by
-  // PaintArtifactCompositor during the Paint lifecycle phase. Only used by
-  // BlinkGenPropertyTrees and CompositeAfterPaint. These are stored here
-  // because sometimes PaintArtifactCompositor::Update() does not run (if the
-  // dirty bit is not set) and in that case, the element ids from the prior run
-  // are retained.
-  CompositorElementIdSet animation_element_ids_;
-
   MainThreadScrollingReasons main_thread_scrolling_reasons_;
 
   scoped_refptr<LocalFrameUkmAggregator> ukm_aggregator_;

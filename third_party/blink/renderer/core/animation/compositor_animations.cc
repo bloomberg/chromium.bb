@@ -347,6 +347,10 @@ CompositorAnimations::CheckCanStartElementOnCompositor(
     // DCHECK(document().lifecycle().state() >=
     // DocumentLifecycle::PrePaintClean);
     DCHECK(layout_object);
+
+    if (!layout_object->UniqueId())
+      reasons |= kTargetHasInvalidCompositingState;
+
     if (const auto* paint_properties =
             layout_object->FirstFragment().PaintProperties()) {
       const TransformPaintPropertyNode* transform_node =

@@ -33,7 +33,7 @@ class WorkletAnimationTest : public AnimationTimelinesTest {
   ~WorkletAnimationTest() override = default;
 
   void AttachWorkletAnimation() {
-    client_.RegisterElement(element_id_, ElementListType::ACTIVE);
+    client_.RegisterElementId(element_id_, ElementListType::ACTIVE);
 
     worklet_animation_ = WrapRefCounted(
         new WorkletAnimation(1, worklet_animation_id_, "test_name", 1, nullptr,

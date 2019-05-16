@@ -307,11 +307,11 @@ void PaintArtifactCompositor::UpdateTouchActionRects(
 
 bool PaintArtifactCompositor::HasComposited(
     CompositorElementId element_id) const {
-  // |Update| sets the LayerTreeHost's |elements_in_property_trees_| to the
-  // elements composited by PaintArtifactCompositor. Look up whether the
-  // given |element_id| has been created.
+  // |Update| creates PropertyTrees on the LayerTreeHost to represent the
+  // composited page state. Check if it has created a property tree node for
+  // the given |element_id|.
   DCHECK(!NeedsUpdate()) << "This should only be called after an update";
-  return root_layer_->layer_tree_host()->elements_in_property_trees().count(
+  return root_layer_->layer_tree_host()->property_trees()->HasElement(
       element_id);
 }
 
@@ -797,7 +797,6 @@ static void UpdateCompositorViewportProperties(
 
 void PaintArtifactCompositor::Update(
     scoped_refptr<const PaintArtifact> paint_artifact,
-    CompositorElementIdSet& animation_element_ids,
     const ViewportProperties& viewport_properties,
     const Settings& settings) {
   DCHECK(NeedsUpdate());
@@ -824,9 +823,9 @@ void PaintArtifactCompositor::Update(
       g_s_property_tree_sequence_number);
 
   LayerListBuilder layer_list_builder;
-  PropertyTreeManager property_tree_manager(
-      *this, *host->property_trees(), *root_layer_, layer_list_builder,
-      animation_element_ids, g_s_property_tree_sequence_number);
+  PropertyTreeManager property_tree_manager(*this, *host->property_trees(),
+                                            *root_layer_, layer_list_builder,
+                                            g_s_property_tree_sequence_number);
   CollectPendingLayers(*paint_artifact, settings);
 
   UpdateCompositorViewportProperties(viewport_properties, property_tree_manager,
@@ -843,8 +842,6 @@ void PaintArtifactCompositor::Update(
   for (auto& entry : synthesized_clip_cache_)
     entry.in_use = false;
 
-  // Clear prior frame ids before inserting new ones.
-  animation_element_ids.clear();
   for (auto& pending_layer : pending_layers_) {
     const auto& property_state = pending_layer.property_tree_state;
     const auto& clip = property_state.Clip();
@@ -913,9 +910,6 @@ void PaintArtifactCompositor::Update(
         pending_layer.FirstPaintChunk(*paint_artifact).id.client.OwnerNodeId());
     // TODO(wangxianzhu): cc_picture_layer_->set_compositing_reasons(...);
 
-    if (layer->scrollable())
-      animation_element_ids.insert(layer->element_id());
-
     // If the property tree state has changed between the layer and the root, we
     // need to inform the compositor so damage can be calculated.
     // Calling |PropertyTreeStateChanged| for every pending layer is
@@ -951,8 +945,8 @@ void PaintArtifactCompositor::Update(
                                 blink_effects);
   root_layer_->SetChildLayerList(std::move(layers));
 
-  // Update the host's active registered element ids.
-  host->SetActiveRegisteredElementIds(animation_element_ids);
+  // Update the host's active registered elements from the new property tree.
+  host->UpdateActiveElements();
 
   // Mark the property trees as having been rebuilt.
   host->property_trees()->needs_rebuild = false;

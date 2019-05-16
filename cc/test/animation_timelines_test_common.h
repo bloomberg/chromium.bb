@@ -96,8 +96,8 @@ class TestHostClient : public MutatorHostClient {
 
   void ClearMutatedProperties();
 
-  bool IsElementInList(ElementId element_id,
-                       ElementListType list_type) const override;
+  bool IsElementInPropertyTrees(ElementId element_id,
+                                ElementListType list_type) const override;
 
   void SetMutatorsNeedCommit() override;
   void SetMutatorsNeedRebuildPropertyTrees() override;
@@ -140,8 +140,8 @@ class TestHostClient : public MutatorHostClient {
   bool mutators_need_commit() const { return mutators_need_commit_; }
   void set_mutators_need_commit(bool need) { mutators_need_commit_ = need; }
 
-  void RegisterElement(ElementId element_id, ElementListType list_type);
-  void UnregisterElement(ElementId element_id, ElementListType list_type);
+  void RegisterElementId(ElementId element_id, ElementListType list_type);
+  void UnregisterElementId(ElementId element_id, ElementListType list_type);
 
   AnimationHost* host() {
     DCHECK(host_);

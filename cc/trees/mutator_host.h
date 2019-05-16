@@ -46,12 +46,13 @@ class MutatorHost {
 
   virtual void ClearMutators() = 0;
 
+  virtual void UpdateRegisteredElementIds(ElementListType changed_list) = 0;
   virtual void InitClientAnimationState() = 0;
 
-  virtual void RegisterElement(ElementId element_id,
-                               ElementListType list_type) = 0;
-  virtual void UnregisterElement(ElementId element_id,
+  virtual void RegisterElementId(ElementId element_id,
                                  ElementListType list_type) = 0;
+  virtual void UnregisterElementId(ElementId element_id,
+                                   ElementListType list_type) = 0;
 
   virtual void SetMutatorHostClient(MutatorHostClient* client) = 0;
 
@@ -65,7 +66,7 @@ class MutatorHost {
       base::TimeDelta duration) = 0;
   virtual bool NeedsTickAnimations() const = 0;
 
-  virtual bool ActivateAnimations() = 0;
+  virtual bool ActivateAnimations(MutatorEvents* events) = 0;
   // TODO(smcgruer): Once we only tick scroll-based animations on scroll, we
   // don't need to pass the scroll tree in here.
   virtual bool TickAnimations(base::TimeTicks monotonic_time,

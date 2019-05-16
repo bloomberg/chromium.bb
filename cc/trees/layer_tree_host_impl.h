@@ -340,6 +340,10 @@ class CC_EXPORT LayerTreeHostImpl
   void SetFullViewportDamage();
   void SetViewportDamage(const gfx::Rect& damage_rect);
 
+  // Updates registered ElementIds present in |changed_list|. Call this after
+  // changing the property trees for the |changed_list| trees.
+  void UpdateElements(ElementListType changed_list);
+
   // Analogous to a commit, this function is used to create a sync tree and
   // add impl-side invalidations to it.
   // virtual for testing.
@@ -355,8 +359,8 @@ class CC_EXPORT LayerTreeHostImpl
   }
 
   // MutatorHostClient implementation.
-  bool IsElementInList(ElementId element_id,
-                       ElementListType list_type) const override;
+  bool IsElementInPropertyTrees(ElementId element_id,
+                                ElementListType list_type) const override;
   void SetMutatorsNeedCommit() override;
   void SetMutatorsNeedRebuildPropertyTrees() override;
   void SetElementFilterMutated(ElementId element_id,

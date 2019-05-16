@@ -173,9 +173,9 @@ TEST_F(AnimationTest, AttachDetachTimelineIfLayerAttached) {
 }
 
 TEST_F(AnimationTest, PropertiesMutate) {
-  client_.RegisterElement(element_id_, ElementListType::ACTIVE);
-  client_impl_.RegisterElement(element_id_, ElementListType::PENDING);
-  client_impl_.RegisterElement(element_id_, ElementListType::ACTIVE);
+  client_.RegisterElementId(element_id_, ElementListType::ACTIVE);
+  client_impl_.RegisterElementId(element_id_, ElementListType::PENDING);
+  client_impl_.RegisterElementId(element_id_, ElementListType::ACTIVE);
 
   host_->AddAnimationTimeline(timeline_);
 
@@ -227,7 +227,7 @@ TEST_F(AnimationTest, PropertiesMutate) {
   EXPECT_FALSE(client_impl_.IsPropertyMutated(
       element_id_, ElementListType::ACTIVE, TargetProperty::FILTER));
 
-  host_impl_->ActivateAnimations();
+  host_impl_->ActivateAnimations(nullptr);
 
   base::TimeTicks time;
   time += base::TimeDelta::FromSecondsD(0.1);
@@ -264,9 +264,9 @@ TEST_F(AnimationTest, AttachTwoAnimationsToOneLayer) {
   TestAnimationDelegate delegate1;
   TestAnimationDelegate delegate2;
 
-  client_.RegisterElement(element_id_, ElementListType::ACTIVE);
-  client_impl_.RegisterElement(element_id_, ElementListType::PENDING);
-  client_impl_.RegisterElement(element_id_, ElementListType::ACTIVE);
+  client_.RegisterElementId(element_id_, ElementListType::ACTIVE);
+  client_impl_.RegisterElementId(element_id_, ElementListType::PENDING);
+  client_impl_.RegisterElementId(element_id_, ElementListType::ACTIVE);
 
   scoped_refptr<Animation> animation1 = Animation::Create(100);
   scoped_refptr<Animation> animation2 = Animation::Create(200);
@@ -309,7 +309,7 @@ TEST_F(AnimationTest, AttachTwoAnimationsToOneLayer) {
                                   transform_y, keyframe_effect_id2);
 
   host_->PushPropertiesTo(host_impl_);
-  host_impl_->ActivateAnimations();
+  host_impl_->ActivateAnimations(nullptr);
 
   EXPECT_FALSE(delegate1.started());
   EXPECT_FALSE(delegate1.finished());
@@ -360,9 +360,9 @@ TEST_F(AnimationTest, AttachTwoAnimationsToOneLayer) {
 }
 
 TEST_F(AnimationTest, AddRemoveAnimationToNonAttachedAnimation) {
-  client_.RegisterElement(element_id_, ElementListType::ACTIVE);
-  client_impl_.RegisterElement(element_id_, ElementListType::PENDING);
-  client_impl_.RegisterElement(element_id_, ElementListType::ACTIVE);
+  client_.RegisterElementId(element_id_, ElementListType::ACTIVE);
+  client_impl_.RegisterElementId(element_id_, ElementListType::PENDING);
+  client_impl_.RegisterElementId(element_id_, ElementListType::ACTIVE);
 
   animation_->AddKeyframeEffect(
       std::make_unique<KeyframeEffect>(keyframe_effect_id_));
@@ -417,7 +417,7 @@ TEST_F(AnimationTest, AddRemoveAnimationToNonAttachedAnimation) {
   EXPECT_FALSE(client_impl_.IsPropertyMutated(
       element_id_, ElementListType::ACTIVE, TargetProperty::FILTER));
 
-  host_impl_->ActivateAnimations();
+  host_impl_->ActivateAnimations(nullptr);
 
   base::TimeTicks time;
   time += base::TimeDelta::FromSecondsD(0.1);
@@ -440,7 +440,7 @@ TEST_F(AnimationTest, AddRemoveAnimationToNonAttachedAnimation) {
 }
 
 TEST_F(AnimationTest, AddRemoveAnimationCausesSetNeedsCommit) {
-  client_.RegisterElement(element_id_, ElementListType::ACTIVE);
+  client_.RegisterElementId(element_id_, ElementListType::ACTIVE);
   host_->AddAnimationTimeline(timeline_);
   animation_->AddKeyframeEffect(
       std::make_unique<KeyframeEffect>(keyframe_effect_id_));
@@ -840,9 +840,9 @@ TEST_F(AnimationTest,
 TEST_F(AnimationTest, TickingAnimationsFromTwoKeyframeEffects) {
   TestAnimationDelegate delegate1;
 
-  client_.RegisterElement(element_id_, ElementListType::ACTIVE);
-  client_impl_.RegisterElement(element_id_, ElementListType::PENDING);
-  client_impl_.RegisterElement(element_id_, ElementListType::ACTIVE);
+  client_.RegisterElementId(element_id_, ElementListType::ACTIVE);
+  client_impl_.RegisterElementId(element_id_, ElementListType::PENDING);
+  client_impl_.RegisterElementId(element_id_, ElementListType::ACTIVE);
 
   KeyframeEffectId keyframe_effect_id1 = animation_->NextKeyframeEffectId();
 
@@ -882,7 +882,7 @@ TEST_F(AnimationTest, TickingAnimationsFromTwoKeyframeEffects) {
   AddAnimatedTransformToAnimation(animation_.get(), duration, transform_x,
                                   transform_y, keyframe_effect_id2);
   host_->PushPropertiesTo(host_impl_);
-  host_impl_->ActivateAnimations();
+  host_impl_->ActivateAnimations(nullptr);
 
   EXPECT_FALSE(delegate1.started());
   EXPECT_FALSE(delegate1.finished());
@@ -943,9 +943,18 @@ TEST_F(AnimationTest, TickingState) {
   KeyframeEffect* keyframe_effect =
       animation_->GetKeyframeEffectById(keyframe_effect_id);
   EXPECT_FALSE(keyframe_effect->is_ticking());
-  client_.RegisterElement(element_id_, ElementListType::ACTIVE);
+  client_.RegisterElementId(element_id_, ElementListType::ACTIVE);
   EXPECT_TRUE(keyframe_effect->is_ticking());
-  client_.UnregisterElement(element_id_, ElementListType::ACTIVE);
+
+  client_.UnregisterElementId(element_id_, ElementListType::ACTIVE);
+  // The keyframe keeps ticking until the next call to UpdateState where it can
+  // generate a finished event.
+  EXPECT_TRUE(keyframe_effect->is_ticking());
+
+  // The next call to UpdateState should remove the animation from ticking. We
+  // could also assert that the finish event was generated if we also track the
+  // state in the KeyframeModel correctly.
+  host_->UpdateAnimationState(true, nullptr);
   EXPECT_FALSE(keyframe_effect->is_ticking());
 }
 

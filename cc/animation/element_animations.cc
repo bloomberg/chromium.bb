@@ -65,11 +65,11 @@ void ElementAnimations::InitAffectedElementTypes() {
   DCHECK(animation_host_);
 
   DCHECK(animation_host_->mutator_host_client());
-  if (animation_host_->mutator_host_client()->IsElementInList(
+  if (animation_host_->mutator_host_client()->IsElementInPropertyTrees(
           element_id_, ElementListType::ACTIVE)) {
     set_has_element_in_active_list(true);
   }
-  if (animation_host_->mutator_host_client()->IsElementInList(
+  if (animation_host_->mutator_host_client()->IsElementInPropertyTrees(
           element_id_, ElementListType::PENDING)) {
     set_has_element_in_pending_list(true);
   }
@@ -111,8 +111,8 @@ void ElementAnimations::ClearAffectedElementTypes(
   RemoveKeyframeEffectsFromTicking();
 }
 
-void ElementAnimations::ElementRegistered(ElementId element_id,
-                                          ElementListType list_type) {
+void ElementAnimations::ElementIdRegistered(ElementId element_id,
+                                            ElementListType list_type) {
   DCHECK_EQ(element_id_, element_id);
 
   bool had_element_in_any_list = has_element_in_any_list();
@@ -126,16 +126,13 @@ void ElementAnimations::ElementRegistered(ElementId element_id,
     UpdateKeyframeEffectsTickingState();
 }
 
-void ElementAnimations::ElementUnregistered(ElementId element_id,
-                                            ElementListType list_type) {
+void ElementAnimations::ElementIdUnregistered(ElementId element_id,
+                                              ElementListType list_type) {
   DCHECK_EQ(this->element_id(), element_id);
   if (list_type == ElementListType::ACTIVE)
     set_has_element_in_active_list(false);
   else
     set_has_element_in_pending_list(false);
-
-  if (!has_element_in_any_list())
-    RemoveKeyframeEffectsFromTicking();
 }
 
 void ElementAnimations::AddKeyframeEffect(KeyframeEffect* keyframe_effect) {

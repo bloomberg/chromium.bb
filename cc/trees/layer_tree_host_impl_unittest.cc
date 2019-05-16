@@ -2287,7 +2287,21 @@ TEST_F(LayerTreeHostImplTest, AnimationSchedulingOnLayerDestruction) {
   // Destroy layer, unregister animation target (element).
   child->test_properties()->parent = nullptr;
   root->test_properties()->RemoveChild(child);
+
+  // Calling LayerImplTestProperties::RemoveChild above does not actually
+  // remove the property tree nodes for the removed layer. In the real code,
+  // you cannot remove a child on LayerImpl, but a child removed on Layer
+  // will force a full tree sync which will rebuild property trees without that
+  // child's property tree nodes. Call BuildPropertyTrees to simulate the
+  // rebuild that would happen during the commit.
+  host_impl_->active_tree()->BuildPropertyTreesForTesting();
   child = nullptr;
+
+  // On updating state, we will send an animation event and request one last
+  // frame.
+  host_impl_->UpdateAnimationState(true);
+  EXPECT_TRUE(did_request_next_frame_);
+  did_request_next_frame_ = false;
 
   // Doing Animate() doesn't request another frame after the current one.
   host_impl_->Animate();

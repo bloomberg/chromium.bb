@@ -619,33 +619,11 @@ LayerImplList::reverse_iterator LayerTreeImpl::rend() {
 }
 
 bool LayerTreeImpl::IsElementInPropertyTree(ElementId element_id) const {
-  return elements_in_property_trees_.count(element_id);
+  return property_trees()->HasElement(element_id);
 }
 
 ElementListType LayerTreeImpl::GetElementTypeForAnimation() const {
   return IsActiveTree() ? ElementListType::ACTIVE : ElementListType::PENDING;
-}
-
-void LayerTreeImpl::AddToElementPropertyTreeList(ElementId element_id) {
-#if DCHECK_IS_ON()
-  bool element_id_collision_detected =
-      elements_in_property_trees_.count(element_id);
-
-  DCHECK(!element_id_collision_detected);
-#endif
-
-  elements_in_property_trees_.insert(element_id);
-
-  DCHECK(settings().use_layer_lists);
-  host_impl_->mutator_host()->RegisterElement(element_id,
-                                              GetElementTypeForAnimation());
-}
-
-void LayerTreeImpl::RemoveFromElementPropertyTreeList(ElementId element_id) {
-  DCHECK(settings().use_layer_lists);
-  host_impl_->mutator_host()->UnregisterElement(element_id,
-                                                GetElementTypeForAnimation());
-  elements_in_property_trees_.erase(element_id);
 }
 
 void LayerTreeImpl::AddToElementLayerList(ElementId element_id,
@@ -658,9 +636,8 @@ void LayerTreeImpl::AddToElementLayerList(ElementId element_id,
                element_id.AsValue().release());
 
   if (!settings().use_layer_lists) {
-    elements_in_property_trees_.insert(element_id);
-    host_impl_->mutator_host()->RegisterElement(element_id,
-                                                GetElementTypeForAnimation());
+    host_impl_->mutator_host()->RegisterElementId(element_id,
+                                                  GetElementTypeForAnimation());
   }
 
   if (layer->scrollable())
@@ -676,9 +653,8 @@ void LayerTreeImpl::RemoveFromElementLayerList(ElementId element_id) {
                element_id.AsValue().release());
 
   if (!settings().use_layer_lists) {
-    elements_in_property_trees_.erase(element_id);
-    host_impl_->mutator_host()->UnregisterElement(element_id,
-                                                  GetElementTypeForAnimation());
+    host_impl_->mutator_host()->UnregisterElementId(
+        element_id, GetElementTypeForAnimation());
   }
 
   element_id_to_scrollable_layer_.erase(element_id);
@@ -1421,6 +1397,7 @@ void LayerTreeImpl::BuildPropertyTreesForTesting() {
       gfx::Rect(GetDeviceViewport().size()), host_impl_->DrawTransform(),
       &property_trees_);
   property_trees_.transform_tree.set_source_to_parent_updates_allowed(false);
+  host_impl_->UpdateElements(GetElementTypeForAnimation());
 }
 
 const RenderSurfaceList& LayerTreeImpl::GetRenderSurfaceList() const {

@@ -60,11 +60,13 @@ class ElementAnimationsTest : public AnimationTimelinesTest {
 TEST_F(ElementAnimationsTest, AttachToLayerInActiveTree) {
   // Set up the layer which is in active tree for main thread and not
   // yet passed onto the impl thread.
-  client_.RegisterElement(element_id_, ElementListType::ACTIVE);
-  client_impl_.RegisterElement(element_id_, ElementListType::PENDING);
+  client_.RegisterElementId(element_id_, ElementListType::ACTIVE);
+  client_impl_.RegisterElementId(element_id_, ElementListType::PENDING);
 
-  EXPECT_TRUE(client_.IsElementInList(element_id_, ElementListType::ACTIVE));
-  EXPECT_FALSE(client_.IsElementInList(element_id_, ElementListType::PENDING));
+  EXPECT_TRUE(
+      client_.IsElementInPropertyTrees(element_id_, ElementListType::ACTIVE));
+  EXPECT_FALSE(
+      client_.IsElementInPropertyTrees(element_id_, ElementListType::PENDING));
 
   AttachTimelineAnimationLayer();
 
@@ -79,17 +81,17 @@ TEST_F(ElementAnimationsTest, AttachToLayerInActiveTree) {
   EXPECT_TRUE(element_animations_impl_->has_element_in_pending_list());
 
   // Create the layer in the impl active tree.
-  client_impl_.RegisterElement(element_id_, ElementListType::ACTIVE);
+  client_impl_.RegisterElementId(element_id_, ElementListType::ACTIVE);
   EXPECT_TRUE(element_animations_impl_->has_element_in_active_list());
   EXPECT_TRUE(element_animations_impl_->has_element_in_pending_list());
 
-  EXPECT_TRUE(
-      client_impl_.IsElementInList(element_id_, ElementListType::ACTIVE));
-  EXPECT_TRUE(
-      client_impl_.IsElementInList(element_id_, ElementListType::PENDING));
+  EXPECT_TRUE(client_impl_.IsElementInPropertyTrees(element_id_,
+                                                    ElementListType::ACTIVE));
+  EXPECT_TRUE(client_impl_.IsElementInPropertyTrees(element_id_,
+                                                    ElementListType::PENDING));
 
   // kill layer on main thread.
-  client_.UnregisterElement(element_id_, ElementListType::ACTIVE);
+  client_.UnregisterElementId(element_id_, ElementListType::ACTIVE);
   EXPECT_EQ(element_animations_,
             animation_->keyframe_effect()->element_animations());
   EXPECT_FALSE(element_animations_->has_element_in_active_list());
@@ -103,14 +105,14 @@ TEST_F(ElementAnimationsTest, AttachToLayerInActiveTree) {
   EXPECT_TRUE(element_animations_impl_->has_element_in_pending_list());
 
   // Kill layer on impl thread in pending tree.
-  client_impl_.UnregisterElement(element_id_, ElementListType::PENDING);
+  client_impl_.UnregisterElementId(element_id_, ElementListType::PENDING);
   EXPECT_EQ(element_animations_impl_,
             animation_impl_->keyframe_effect()->element_animations());
   EXPECT_TRUE(element_animations_impl_->has_element_in_active_list());
   EXPECT_FALSE(element_animations_impl_->has_element_in_pending_list());
 
   // Kill layer on impl thread in active tree.
-  client_impl_.UnregisterElement(element_id_, ElementListType::ACTIVE);
+  client_impl_.UnregisterElementId(element_id_, ElementListType::ACTIVE);
   EXPECT_EQ(element_animations_impl_,
             animation_impl_->keyframe_effect()->element_animations());
   EXPECT_FALSE(element_animations_impl_->has_element_in_active_list());
@@ -152,15 +154,15 @@ TEST_F(ElementAnimationsTest, AttachToNotYetCreatedLayer) {
   EXPECT_FALSE(element_animations_impl_->has_element_in_pending_list());
 
   // Create layer.
-  client_.RegisterElement(element_id_, ElementListType::ACTIVE);
+  client_.RegisterElementId(element_id_, ElementListType::ACTIVE);
   EXPECT_TRUE(element_animations_->has_element_in_active_list());
   EXPECT_FALSE(element_animations_->has_element_in_pending_list());
 
-  client_impl_.RegisterElement(element_id_, ElementListType::PENDING);
+  client_impl_.RegisterElementId(element_id_, ElementListType::PENDING);
   EXPECT_FALSE(element_animations_impl_->has_element_in_active_list());
   EXPECT_TRUE(element_animations_impl_->has_element_in_pending_list());
 
-  client_impl_.RegisterElement(element_id_, ElementListType::ACTIVE);
+  client_impl_.RegisterElementId(element_id_, ElementListType::ACTIVE);
   EXPECT_TRUE(element_animations_impl_->has_element_in_active_list());
   EXPECT_TRUE(element_animations_impl_->has_element_in_pending_list());
 }
@@ -1764,6 +1766,8 @@ TEST_F(ElementAnimationsTest, InactiveObserverGetsTicked) {
   animation_impl_->AddKeyframeModel(CreateKeyframeModel(
       std::unique_ptr<AnimationCurve>(new FakeFloatTransition(1.0, 0.5f, 1.f)),
       id, TargetProperty::OPACITY));
+  animation_impl_->GetKeyframeModel(TargetProperty::OPACITY)
+      ->set_affects_active_elements(false);
 
   // Without an observer, the animation shouldn't progress to the STARTING
   // state.
@@ -1800,6 +1804,8 @@ TEST_F(ElementAnimationsTest, InactiveObserverGetsTicked) {
             client_impl_.GetOpacity(element_id_, ElementListType::PENDING));
 
   CreateTestImplLayer(ElementListType::ACTIVE);
+  animation_impl_->GetKeyframeModel(TargetProperty::OPACITY)
+      ->set_affects_active_elements(true);
 
   // Now that an active observer has been added, the animation should still
   // initially tick at its starting point, but should now progress to RUNNING.
@@ -3589,9 +3595,11 @@ TEST_F(ElementAnimationsTest, DestroyTestMainLayerBeforePushProperties) {
   EXPECT_EQ(1u, host_->ticking_animations_for_testing().size());
 
   DestroyTestMainLayer();
+  host_->UpdateAnimationState(true, nullptr);
   EXPECT_EQ(0u, host_->ticking_animations_for_testing().size());
 
   PushProperties();
+  host_impl_->ActivateAnimations(nullptr);
   EXPECT_EQ(0u, host_->ticking_animations_for_testing().size());
   EXPECT_EQ(0u, host_impl_->ticking_animations_for_testing().size());
 }
