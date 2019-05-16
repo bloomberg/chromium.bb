@@ -223,6 +223,9 @@ static NSString* gSearchTerm;
     // Keep track of whether a find is in progress so to avoid running
     // JavaScript during disable if unnecessary.
     _findStringStarted = YES;
+    // Save the query in the model before searching. TODO:(crbug.com/963908):
+    // Remove as part of refactoring.
+    [self.findInPageModel updateQuery:query matches:0];
     _findInPageManager->Find(query, web::FindInPageOptions::FindInPageSearch);
     return;
   }
