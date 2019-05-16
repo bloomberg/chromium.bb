@@ -695,7 +695,10 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
   }
   {
     TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:NetworkChangeNotifier");
-    network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
+    // On Android if reduced mode started network service this would already be
+    //  created.
+    if (!net::NetworkChangeNotifier::HasNetworkChangeNotifier())
+      network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
   }
   {
     TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:ScreenlockMonitor");

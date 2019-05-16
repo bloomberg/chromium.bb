@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/callback_list.h"
+#include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
 
@@ -63,8 +64,11 @@ RegisterNetworkServiceCrashHandler(base::RepeatingClosure handler);
 // service is enabled.
 CONTENT_EXPORT network::NetworkService* GetNetworkServiceImpl();
 
+// Only on ChromeOS since it's only used there.
+#if defined(OS_CHROMEOS)
 // Returns the global NetworkChangeNotifier instance.
 CONTENT_EXPORT net::NetworkChangeNotifier* GetNetworkChangeNotifier();
+#endif
 
 // Call |FlushForTesting()| on cached |NetworkServicePtr|. For testing only.
 // Must only be called on the UI thread.

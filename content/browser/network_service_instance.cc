@@ -243,9 +243,11 @@ network::NetworkService* GetNetworkServiceImpl() {
   return g_network_service;
 }
 
+#if defined(OS_CHROMEOS)
 net::NetworkChangeNotifier* GetNetworkChangeNotifier() {
   return BrowserMainLoop::GetInstance()->network_change_notifier();
 }
+#endif
 
 void FlushNetworkServiceInstanceForTesting() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

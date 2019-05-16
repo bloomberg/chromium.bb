@@ -175,14 +175,16 @@ class CONTENT_EXPORT BrowserMainLoop {
   media::UserInputMonitor* user_input_monitor() const {
     return user_input_monitor_.get();
   }
-  net::NetworkChangeNotifier* network_change_notifier() const {
-    return network_change_notifier_.get();
-  }
   MediaKeysListenerManagerImpl* media_keys_listener_manager() const {
     return media_keys_listener_manager_.get();
   }
 
 #if defined(OS_CHROMEOS)
+  // Only expose this on ChromeOS since it's only needed there. On Android this
+  // be null if this process started in reduced mode.
+  net::NetworkChangeNotifier* network_change_notifier() const {
+    return network_change_notifier_.get();
+  }
   KeyboardMicRegistration* keyboard_mic_registration() {
     return &keyboard_mic_registration_;
   }
