@@ -50,8 +50,7 @@ TestBrowserThreadBundle::~TestBrowserThreadBundle() {
   // The only way this check can fail after RunUntilIdle() is if a test is
   // running its own base::Thread's. Such tests should make sure to coalesce
   // independent threads before this point.
-  // TODO(crbug.com/938126): Enable this CHECK once flaky tests have been fixed.
-  // CHECK(MainThreadIsIdle()) << sequence_manager()->DescribeAllPendingTasks();
+  CHECK(MainThreadIsIdle()) << sequence_manager()->DescribeAllPendingTasks();
 
   BrowserTaskExecutor::ResetForTesting();
 
