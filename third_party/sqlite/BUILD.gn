@@ -166,6 +166,13 @@ config("chromium_sqlite3_compile_options") {
 
     # Uses isnan() in the C99 standard library.
     "SQLITE_HAVE_ISNAN",
+
+    # Forces SQLite to only store temporary data in memory.
+    #
+    # This is the only supported setting on Android. Using it everywhere removes
+    # a source of cross-platform variation, and saves us from having to reason
+    # about SQLite storing data in the operating system's temporary directory.
+    "SQLITE_TEMP_STORE=3",
   ]
 
   # On OSX, SQLite has extra logic for detecting the use of network
@@ -348,7 +355,6 @@ component("chromium_sqlite3") {
     defines += [
       "SQLITE_DEFAULT_JOURNAL_SIZE_LIMIT=1048576",
       "SQLITE_DEFAULT_AUTOVACUUM=1",
-      "SQLITE_TEMP_STORE=3",
     ]
   }
 
