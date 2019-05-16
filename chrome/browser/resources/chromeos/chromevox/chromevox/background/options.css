@@ -65,52 +65,22 @@ h2 {
     width: 40px;
 }
 
-.option .settings-description {
-  display: block;
-  height: 15px;
-}
-
-.option .settings-sub-description {
-  color: #757575;
-  display: block;
-}
-
-.option .settings-expand-row {
-  display: block;
-  height: 60px;
-  padding-start: 50px;
-}
-
-.option .braille-description-selection {
-  display: inline-block;
-  margin: 0;
-}
-
 .option .developerLog {
   height: 60px;
   padding-inline-end: 0;
   width: 666px;
 }
 
-.option .left {
-  float: left;
-  height: 60px;
-  line-height: 15px;
-}
-
-.option .right {
-  float: right;
-  height: 60px;
+.option .sub-description {
+  color: rgb(95, 99, 104);
+  display: block;
 }
 
 .option .developer-option-icon-button {
+  background-color: #fff;
   float: right;
-  margin-top: 10px;
-}
-
-.option .change-display-style {
-  margin: 0;
-  padding: 0;
+  height: 60px;
+  vertical-align: middle;
 }
 
 .option input[type='checkbox']:checked {
@@ -157,3 +127,4 @@ h2 {
     vertical-align: middle;
     width: 646px;
 }
+
