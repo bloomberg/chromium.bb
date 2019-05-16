@@ -205,17 +205,7 @@ std::set<int>& GetPluginProxyingProcesses() {
 }
 
 bool ShouldEnforceInitiatorLock() {
-  return base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-         base::FeatureList::IsEnabled(
-             network::features::kEnforceRequestInitiatorLockForCorb);
-}
-
-void RecordCorbResultVsInitiatorLockCompatibility(
-    CrossOriginReadBlocking::CorbResultVsInitiatorLockCompatibility value) {
-  if (ShouldEnforceInitiatorLock()) {
-    UMA_HISTOGRAM_ENUMERATION(
-        "SiteIsolation.XSD.NetworkService.InitiatorLockCompatibility", value);
-  }
+  return base::FeatureList::IsEnabled(network::features::kNetworkService);
 }
 
 const base::flat_set<std::string>& GetNeverSniffedMimeTypes() {
@@ -618,12 +608,6 @@ CrossOriginReadBlocking::ResponseAnalyzer::ResponseAnalyzer(
     const ResourceResponse& response,
     base::Optional<url::Origin> request_initiator_site_lock,
     mojom::FetchRequestMode fetch_request_mode) {
-  // TODO(lukasza): Remove |initiator_compatibility_| field once the UMAs
-  // depending on it are expired (e.g. see
-  // SiteIsolation.XSD.NetworkService.InitiatorLockCompatibility).
-  initiator_compatibility_ = VerifyRequestInitiatorLock(
-      request_initiator_site_lock, request.initiator());
-
   content_length_ = response.head.content_length;
   http_response_code_ =
       response.head.headers ? response.head.headers->response_code() : 0;
@@ -982,9 +966,6 @@ void CrossOriginReadBlocking::ResponseAnalyzer::LogAllowedResponse() {
           : network::CrossOriginReadBlocking::Action::kAllowedWithoutSniffing);
 
   LogBytesReadForSniffing();
-
-  RecordCorbResultVsInitiatorLockCompatibility(
-      CorbResultVsInitiatorLockCompatibility::kNoBlocking);
 }
 
 void CrossOriginReadBlocking::ResponseAnalyzer::LogBlockedResponse() {
@@ -1007,27 +988,6 @@ void CrossOriginReadBlocking::ResponseAnalyzer::LogBlockedResponse() {
   }
 
   LogBytesReadForSniffing();
-
-  if (!ShouldReportBlockedResponse()) {
-    RecordCorbResultVsInitiatorLockCompatibility(
-        CorbResultVsInitiatorLockCompatibility::kBenignBlocking);
-  } else {
-    switch (initiator_compatibility_) {
-      case InitiatorLockCompatibility::kIncorrectLock:
-        RecordCorbResultVsInitiatorLockCompatibility(
-            CorbResultVsInitiatorLockCompatibility::kBlockingWhenIncorrectLock);
-        break;
-      case InitiatorLockCompatibility::kCompatibleLock:
-        RecordCorbResultVsInitiatorLockCompatibility(
-            CorbResultVsInitiatorLockCompatibility::
-                kBlockingWhenCompatibleLock);
-        break;
-      default:
-        RecordCorbResultVsInitiatorLockCompatibility(
-            CorbResultVsInitiatorLockCompatibility::kBlockingWhenOtherLock);
-        break;
-    }
-  }
 }
 
 // static

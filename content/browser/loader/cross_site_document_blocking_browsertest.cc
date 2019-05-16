@@ -56,8 +56,6 @@ using testing::HasSubstr;
 using Action = network::CrossOriginReadBlocking::Action;
 using RequestInitiatorOriginLockCompatibility =
     network::InitiatorLockCompatibility;
-using CorbVsInitiatorLock =
-    network::CrossOriginReadBlocking::CorbResultVsInitiatorLockCompatibility;
 
 namespace {
 
@@ -116,37 +114,6 @@ void InspectHistograms(
     histograms.ExpectUniqueSample(
         "NetworkService.URLLoader.RequestInitiatorOriginLockCompatibility",
         expected_lock_compatibility, 1);
-
-    if (0 != (expectations & kShouldBeBlocked)) {
-      auto benign_blocking = base::Bucket(
-          static_cast<int>(CorbVsInitiatorLock::kBenignBlocking), 1);
-      auto compatible_blocking = base::Bucket(
-          static_cast<int>(CorbVsInitiatorLock::kBlockingWhenCompatibleLock),
-          1);
-      auto other_blocking = base::Bucket(
-          static_cast<int>(CorbVsInitiatorLock::kBlockingWhenOtherLock), 1);
-
-      ::testing::Matcher<std::vector<base::Bucket>> expected_buckets;
-      if (special_request_initiator_origin_lock_check_for_appcache) {
-        expected_buckets = ::testing::ElementsAre(other_blocking);
-      } else {
-        // Important part of the verification is that we never expect to
-        // encounted kBlockingWhenIncorrectLock (outside of HTML Import
-        // scenarios covered by separate, explicit tests below).
-        expected_buckets =
-            ::testing::AnyOf(::testing::ElementsAre(benign_blocking),
-                             ::testing::ElementsAre(compatible_blocking));
-      }
-
-      EXPECT_THAT(
-          histograms.GetAllSamples(
-              "SiteIsolation.XSD.NetworkService.InitiatorLockCompatibility"),
-          expected_buckets);
-    } else {  // ~kAllowed
-      histograms.ExpectUniqueSample(
-          "SiteIsolation.XSD.NetworkService.InitiatorLockCompatibility",
-          CorbVsInitiatorLock::kNoBlocking, 1);
-    }
   }
 
   std::string bucket;
@@ -1337,28 +1304,6 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
       // which means that legitimate fetches from HTML Imported scripts may get
       // incorrectly blocked.
       interceptor.Verify(CorbExpectations::kShouldBeBlockedWithoutSniffing);
-
-      // The main purpose of the test is not verifying the incorrect behavior
-      // above, but making sure that the UMA that records the incorrect behavior
-      // is logged.  Hopefully the incorrect behavior will rarely occur in
-      // practice.
-      FetchHistogramsFromChildProcesses();
-      auto incorrect_lock_blocking = base::Bucket(
-          static_cast<int>(CorbVsInitiatorLock::kBlockingWhenIncorrectLock), 1);
-
-      // ExecuteScriptAsync covers 2 fetches:
-      // - Fetching cross_site_document_blocking/html_import.html
-      // - Fetching site_isolation/nosniff.json (via <script src=...>
-      //   from html_import.html)
-      // The second one is done with kIncorrectLock, but the assertion below
-      // needs to also cover the first one:
-      auto no_blocking =
-          base::Bucket(static_cast<int>(CorbVsInitiatorLock::kNoBlocking), 1);
-      EXPECT_THAT(
-          histograms.GetAllSamples(
-              "SiteIsolation.XSD.NetworkService.InitiatorLockCompatibility"),
-          ::testing::UnorderedElementsAre(no_blocking,
-                                          incorrect_lock_blocking));
     } else {
       // Without |request_initiator_site_lock| no CORB blocking is expected.
       interceptor.Verify(CorbExpectations::kShouldBeAllowedWithoutSniffing);
@@ -1429,22 +1374,6 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
     std::string fetch_result;
     EXPECT_TRUE(msg_queue.WaitForMessage(&fetch_result));
     EXPECT_THAT(fetch_result, ::testing::HasSubstr("BODY: runMe"));
-
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      FetchHistogramsFromChildProcesses();
-
-      // ExecuteScriptAsync covers 3 fetches:
-      // - Fetching cross_site_document_blocking/html_import.html
-      // - Fetching cross_site_document_blocking/fetch_nosniff_json.js
-      // - Fetching site_isolation/nosniff.json
-      // All of them should result in no CORB blocking.
-      auto no_blocking =
-          base::Bucket(static_cast<int>(CorbVsInitiatorLock::kNoBlocking), 3);
-      EXPECT_THAT(
-          histograms.GetAllSamples(
-              "SiteIsolation.XSD.NetworkService.InitiatorLockCompatibility"),
-          ::testing::UnorderedElementsAre(no_blocking));
-    }
   }
 }
 
@@ -1511,25 +1440,6 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
     std::string fetch_result;
     EXPECT_TRUE(msg_queue.WaitForMessage(&fetch_result));
     EXPECT_THAT(fetch_result, ::testing::HasSubstr("BODY: runMe"));
-
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      // The main purpose of the test is not verifying the incorrect behavior
-      // above, but making sure that the UMA that records the incorrect behavior
-      // is logged.  Hopefully the incorrect behavior will rarely occur in
-      // practice.
-      FetchHistogramsFromChildProcesses();
-
-      // ExecuteScriptAsync covers 3 fetches:
-      // - Fetching cross_site_document_blocking/html_import.html
-      // - Fetching site_isolation/nosniff.json
-      // All of them should result in no CORB blocking.
-      auto no_blocking =
-          base::Bucket(static_cast<int>(CorbVsInitiatorLock::kNoBlocking), 2);
-      EXPECT_THAT(
-          histograms.GetAllSamples(
-              "SiteIsolation.XSD.NetworkService.InitiatorLockCompatibility"),
-          ::testing::UnorderedElementsAre(no_blocking));
-    }
   }
 }
 

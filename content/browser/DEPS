@@ -134,6 +134,5 @@ specific_include_rules = {
   # To share values of UMA enums between product code and tests.
   "cross_site_document_blocking_browsertest.cc": [
     "+services/network/cross_origin_read_blocking.h",
-    "+services/network/initiator_lock_compatibility.h",
   ],
 }

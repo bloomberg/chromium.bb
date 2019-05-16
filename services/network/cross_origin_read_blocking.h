@@ -71,17 +71,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
     kInvalidMimeType = kMax,
   };
 
-  enum class CorbResultVsInitiatorLockCompatibility {
-    // Note that these values are used in histograms, and must not change.
-    kNoBlocking = 0,
-    kBenignBlocking = 1,
-    kBlockingWhenIncorrectLock = 2,
-    kBlockingWhenCompatibleLock = 3,
-    kBlockingWhenOtherLock = 4,
-
-    kMaxValue = kBlockingWhenOtherLock
-  };
-
   // An instance for tracking the state of analyzing a single response
   // and deciding whether CORB should block the response.
   class COMPONENT_EXPORT(NETWORK_SERVICE) ResponseAnalyzer {
@@ -179,12 +168,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
     // The HTTP response code (e.g. 200 or 404) received in response to this
     // resource request.
     int http_response_code_ = 0;
-
-    // Whether |request_initiator| was compatible with
-    // |request_initiator_site_lock|.  For safety initialized to kIncorrectLock,
-    // but in practice it will always be explicitly set by the constructor.
-    InitiatorLockCompatibility initiator_compatibility_ =
-        InitiatorLockCompatibility::kIncorrectLock;
 
     // Propagated from URLLoaderFactoryParams::request_initiator_site_lock;
     base::Optional<url::Origin> request_initiator_site_lock_;

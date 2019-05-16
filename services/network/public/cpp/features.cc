@@ -52,13 +52,6 @@ const base::Feature kThrottleDelayable{"ThrottleDelayable",
 const base::Feature kDelayRequestsOnMultiplexedConnections{
     "DelayRequestsOnMultiplexedConnections", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Kill switch for enforcing
-// URLLoaderFactoryParams::request_initiator_origin_lock for Cross-Origin Read
-// Blocking.  When enabled, then CORB treats |request_initiator| as opaque
-// when it doesn't match |request_initiator_site_lock|.
-const base::Feature kEnforceRequestInitiatorLockForCorb{
-    "EnforceRequestInitiatorLockForCorb", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Implementation of https://mikewest.github.io/sec-metadata/
 const base::Feature kFetchMetadata{"FetchMetadata",
                                    base::FEATURE_ENABLED_BY_DEFAULT};
