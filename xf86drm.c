@@ -4256,3 +4256,47 @@ drm_public int drmSyncobjSignal(int fd, const uint32_t *handles,
     ret = drmIoctl(fd, DRM_IOCTL_SYNCOBJ_SIGNAL, &args);
     return ret;
 }
+
+drm_public int drmSyncobjTimelineWait(int fd, uint32_t *handles, uint64_t *points,
+				      unsigned num_handles,
+				      int64_t timeout_nsec, unsigned flags,
+				      uint32_t *first_signaled)
+{
+    struct drm_syncobj_timeline_wait args;
+    int ret;
+
+    memclear(args);
+    args.handles = (uintptr_t)handles;
+    args.points = (uintptr_t)points;
+    args.timeout_nsec = timeout_nsec;
+    args.count_handles = num_handles;
+    args.flags = flags;
+
+    ret = drmIoctl(fd, DRM_IOCTL_SYNCOBJ_TIMELINE_WAIT, &args);
+    if (ret < 0)
+        return -errno;
+
+    if (first_signaled)
+        *first_signaled = args.first_signaled;
+    return ret;
+}
+
+
+drm_public int drmSyncobjQuery(int fd, uint32_t *handles, uint64_t *points,
+			       uint32_t handle_count)
+{
+    struct drm_syncobj_timeline_array args;
+    int ret;
+
+    memclear(args);
+    args.handles = (uintptr_t)handles;
+    args.points = (uintptr_t)points;
+    args.count_handles = handle_count;
+
+    ret = drmIoctl(fd, DRM_IOCTL_SYNCOBJ_QUERY, &args);
+    if (ret)
+        return ret;
+    return 0;
+}
+
+

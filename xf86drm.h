@@ -876,6 +876,12 @@ extern int drmSyncobjWait(int fd, uint32_t *handles, unsigned num_handles,
 			  uint32_t *first_signaled);
 extern int drmSyncobjReset(int fd, const uint32_t *handles, uint32_t handle_count);
 extern int drmSyncobjSignal(int fd, const uint32_t *handles, uint32_t handle_count);
+extern int drmSyncobjTimelineWait(int fd, uint32_t *handles, uint64_t *points,
+				  unsigned num_handles,
+				  int64_t timeout_nsec, unsigned flags,
+				  uint32_t *first_signaled);
+extern int drmSyncobjQuery(int fd, uint32_t *handles, uint64_t *points,
+			   uint32_t handle_count);
 
 #if defined(__cplusplus)
 }
