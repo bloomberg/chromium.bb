@@ -1170,54 +1170,7 @@ TEST_F(PendingBookmarkAppManagerTest, ReinstallPlaceholderApp_Success) {
     EXPECT_EQ(web_app::InstallResultCode::kSuccess, code.value());
     EXPECT_EQ(kFooWebAppUrl, url.value());
 
-    EXPECT_EQ(1u, uninstall_call_count());
-    EXPECT_EQ(kFooWebAppUrl, last_uninstalled_app_url());
-
     EXPECT_EQ(1u, install_run_count());
-    EXPECT_EQ(1u, install_placeholder_run_count());
-  }
-}
-
-TEST_F(PendingBookmarkAppManagerTest,
-       ReinstallPlaceholderApp_FailsToUninstall) {
-  auto pending_app_manager = GetPendingBookmarkAppManagerWithTestFactories();
-
-  // Install a placeholder app
-  auto install_options = GetFooInstallOptions();
-  install_options.install_placeholder = true;
-
-  {
-    url_loader()->SetNextLoadUrlResult(
-        kFooWebAppUrl, web_app::WebAppUrlLoader::Result::kRedirectedUrlLoaded);
-    base::Optional<GURL> url;
-    base::Optional<web_app::InstallResultCode> code;
-    std::tie(url, code) =
-        InstallAndWait(pending_app_manager.get(), install_options);
-    ASSERT_EQ(web_app::InstallResultCode::kSuccess, code.value());
-    EXPECT_EQ(0u, install_run_count());
-    EXPECT_EQ(1u, install_placeholder_run_count());
-  }
-
-  // Reinstall placeholder
-  {
-    install_options.reinstall_placeholder = true;
-    url_loader()->SetNextLoadUrlResult(
-        kFooWebAppUrl, web_app::WebAppUrlLoader::Result::kUrlLoaded);
-    install_finalizer()->SetNextUninstallExternalWebAppResult(kFooWebAppUrl,
-                                                              false);
-
-    base::Optional<GURL> url;
-    base::Optional<web_app::InstallResultCode> code;
-    std::tie(url, code) =
-        InstallAndWait(pending_app_manager.get(), install_options);
-
-    EXPECT_EQ(web_app::InstallResultCode::kFailedUnknownReason, code.value());
-    EXPECT_EQ(kFooWebAppUrl, url.value());
-
-    EXPECT_EQ(1u, uninstall_call_count());
-    EXPECT_EQ(kFooWebAppUrl, last_uninstalled_app_url());
-
-    EXPECT_EQ(0u, install_run_count());
     EXPECT_EQ(1u, install_placeholder_run_count());
   }
 }
@@ -1247,8 +1200,6 @@ TEST_F(PendingBookmarkAppManagerTest,
     install_options.reinstall_placeholder = true;
     url_loader()->SetNextLoadUrlResult(
         kFooWebAppUrl, web_app::WebAppUrlLoader::Result::kRedirectedUrlLoaded);
-    install_finalizer()->SetNextUninstallExternalWebAppResult(kFooWebAppUrl,
-                                                              true);
 
     base::Optional<GURL> url;
     base::Optional<web_app::InstallResultCode> code;
@@ -1257,10 +1208,6 @@ TEST_F(PendingBookmarkAppManagerTest,
 
     EXPECT_EQ(web_app::InstallResultCode::kSuccess, code.value());
     EXPECT_EQ(kFooWebAppUrl, url.value());
-
-    // We don't uninstall the placeholder app if we are going to fail
-    // installing the new app.
-    EXPECT_EQ(0u, uninstall_call_count());
 
     EXPECT_EQ(0u, install_run_count());
     // Even though the placeholder app is already install, we make a call to
@@ -1296,8 +1243,6 @@ TEST_F(PendingBookmarkAppManagerTest,
     ui_delegate()->SetNumWindowsForApp(GenerateFakeAppId(kFooWebAppUrl), 0);
     url_loader()->SetNextLoadUrlResult(
         kFooWebAppUrl, web_app::WebAppUrlLoader::Result::kUrlLoaded);
-    install_finalizer()->SetNextUninstallExternalWebAppResult(kFooWebAppUrl,
-                                                              true);
 
     base::Optional<GURL> url;
     base::Optional<web_app::InstallResultCode> code;
@@ -1306,9 +1251,6 @@ TEST_F(PendingBookmarkAppManagerTest,
 
     EXPECT_EQ(web_app::InstallResultCode::kSuccess, code.value());
     EXPECT_EQ(kFooWebAppUrl, url.value());
-
-    EXPECT_EQ(1u, uninstall_call_count());
-    EXPECT_EQ(kFooWebAppUrl, last_uninstalled_app_url());
 
     EXPECT_EQ(1u, install_run_count());
     EXPECT_EQ(1u, install_placeholder_run_count());
@@ -1352,9 +1294,6 @@ TEST_F(PendingBookmarkAppManagerTest,
 
     EXPECT_EQ(web_app::InstallResultCode::kSuccess, code.value());
     EXPECT_EQ(kFooWebAppUrl, url.value());
-
-    EXPECT_EQ(1u, uninstall_call_count());
-    EXPECT_EQ(kFooWebAppUrl, last_uninstalled_app_url());
 
     EXPECT_EQ(1u, install_run_count());
     EXPECT_EQ(1u, install_placeholder_run_count());

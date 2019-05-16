@@ -72,6 +72,13 @@ class BookmarkAppInstallationTask {
   const web_app::InstallOptions& install_options() { return install_options_; }
 
  private:
+  void UninstallPlaceholderApp(content::WebContents* web_contents,
+                               ResultCallback result_callback);
+  void OnPlaceholderUninstalled(content::WebContents* web_contents,
+                                ResultCallback result_callback,
+                                bool uninstalled);
+  void ContinueWebAppInstall(content::WebContents* web_contents,
+                             ResultCallback result_callback);
   void OnWebAppInstalled(bool is_placeholder,
                          ResultCallback result_callback,
                          const web_app::AppId& app_id,

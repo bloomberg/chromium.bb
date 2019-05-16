@@ -133,6 +133,15 @@ class TestBookmarkAppInstallFinalizer : public web_app::InstallFinalizer {
     next_finalize_install_results_[url] = {app_id, code};
   }
 
+  void SetNextUninstallExternalWebAppResult(const GURL& app_url,
+                                            bool uninstalled) {
+    DCHECK(
+        !base::ContainsKey(next_uninstall_external_web_app_results_, app_url));
+
+    next_uninstall_external_web_app_results_[app_url] = {
+        GetAppIdForUrl(app_url), uninstalled};
+  }
+
   void SetNextCreateOsShortcutsResult(const web_app::AppId& app_id,
                                       bool shortcut_created) {
     DCHECK(!base::ContainsKey(next_create_os_shortcuts_results_, app_id));
@@ -145,6 +154,10 @@ class TestBookmarkAppInstallFinalizer : public web_app::InstallFinalizer {
 
   const std::vector<FinalizeOptions>& finalize_options_list() {
     return finalize_options_list_;
+  }
+
+  const std::vector<GURL>& uninstall_external_web_app_urls() const {
+    return uninstall_external_web_app_urls_;
   }
 
   size_t num_create_os_shortcuts_calls() {
@@ -181,7 +194,26 @@ class TestBookmarkAppInstallFinalizer : public web_app::InstallFinalizer {
   void UninstallExternalWebApp(
       const GURL& app_url,
       UninstallExternalWebAppCallback callback) override {
-    NOTREACHED();
+    DCHECK(
+        base::ContainsKey(next_uninstall_external_web_app_results_, app_url));
+    uninstall_external_web_app_urls_.push_back(app_url);
+
+    web_app::AppId app_id;
+    bool uninstalled;
+    std::tie(app_id, uninstalled) =
+        next_uninstall_external_web_app_results_[app_url];
+    next_uninstall_external_web_app_results_.erase(app_url);
+
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(base::BindLambdaForTesting(
+                           [&, app_id, uninstalled](
+                               UninstallExternalWebAppCallback callback) {
+                             if (uninstalled)
+                               registrar_->RemoveAsInstalled(app_id);
+                             std::move(callback).Run(uninstalled);
+                           }),
+                       std::move(callback)));
   }
 
   bool CanCreateOsShortcuts() const override { return true; }
@@ -235,12 +267,19 @@ class TestBookmarkAppInstallFinalizer : public web_app::InstallFinalizer {
 
   std::vector<WebApplicationInfo> web_app_info_list_;
   std::vector<FinalizeOptions> finalize_options_list_;
+  std::vector<GURL> uninstall_external_web_app_urls_;
 
   size_t num_create_os_shortcuts_calls_ = 0;
   size_t num_pin_app_to_shelf_calls_ = 0;
 
   std::map<GURL, std::pair<web_app::AppId, web_app::InstallResultCode>>
       next_finalize_install_results_;
+
+  // Maps app URLs to the id of the app that would have been installed for that
+  // url and the result of trying to uninstall it.
+  std::map<GURL, std::pair<web_app::AppId, bool>>
+      next_uninstall_external_web_app_results_;
+
   std::map<web_app::AppId, bool> next_create_os_shortcuts_results_;
 
   DISALLOW_COPY_AND_ASSIGN(TestBookmarkAppInstallFinalizer);
@@ -634,7 +673,7 @@ TEST_F(BookmarkAppInstallationTaskTest, InstallPlaceholder) {
 TEST_F(BookmarkAppInstallationTaskTest, InstallPlaceholderTwice) {
   web_app::InstallOptions options(kWebAppUrl, web_app::LaunchContainer::kWindow,
                                   web_app::InstallSource::kExternalPolicy);
-  std::string placeholder_app_id;
+  web_app::AppId placeholder_app_id;
 
   // Install a placeholder app.
   {
@@ -671,6 +710,117 @@ TEST_F(BookmarkAppInstallationTaskTest, InstallPlaceholderTwice) {
 
         run_loop.Quit();
       }));
+  run_loop.Run();
+}
+
+TEST_F(BookmarkAppInstallationTaskTest, ReinstallPlaceholderSucceeds) {
+  web_app::InstallOptions options(kWebAppUrl, web_app::LaunchContainer::kWindow,
+                                  web_app::InstallSource::kExternalPolicy);
+  web_app::AppId placeholder_app_id;
+
+  // Install a placeholder app.
+  {
+    auto task = std::make_unique<BookmarkAppInstallationTask>(
+        profile(), registrar(), install_finalizer(), options);
+    install_finalizer()->SetNextFinalizeInstallResult(
+        kWebAppUrl, web_app::InstallResultCode::kSuccess);
+    install_finalizer()->SetNextCreateOsShortcutsResult(
+        install_finalizer()->GetAppIdForUrl(kWebAppUrl), true);
+
+    base::RunLoop run_loop;
+    task->InstallPlaceholder(base::BindLambdaForTesting(
+        [&](BookmarkAppInstallationTask::Result result) {
+          EXPECT_EQ(web_app::InstallResultCode::kSuccess, result.code);
+          placeholder_app_id = result.app_id.value();
+
+          EXPECT_EQ(1u, install_finalizer()->finalize_options_list().size());
+          run_loop.Quit();
+        }));
+    run_loop.Run();
+  }
+
+  // Replace the placeholder with a real app.
+  options.reinstall_placeholder = true;
+  auto task = std::make_unique<BookmarkAppInstallationTask>(
+      profile(), registrar(), install_finalizer(), options);
+  install_finalizer()->SetNextUninstallExternalWebAppResult(kWebAppUrl, true);
+  base::RunLoop run_loop;
+  task->Install(
+      web_contents(),
+      base::BindLambdaForTesting(
+          [&](BookmarkAppInstallationTask::Result result) {
+            EXPECT_EQ(web_app::InstallResultCode::kSuccess, result.code);
+            EXPECT_TRUE(result.app_id.has_value());
+            EXPECT_FALSE(IsPlaceholderApp(profile(), kWebAppUrl));
+
+            EXPECT_EQ(
+                1u,
+                install_finalizer()->uninstall_external_web_app_urls().size());
+            EXPECT_EQ(
+                kWebAppUrl,
+                install_finalizer()->uninstall_external_web_app_urls().at(0));
+
+            run_loop.Quit();
+          }));
+  content::RunAllTasksUntilIdle();
+  test_helper().CompleteInstallation();
+  run_loop.Run();
+}
+
+TEST_F(BookmarkAppInstallationTaskTest, ReinstallPlaceholderFails) {
+  web_app::InstallOptions options(kWebAppUrl, web_app::LaunchContainer::kWindow,
+                                  web_app::InstallSource::kExternalPolicy);
+  web_app::AppId placeholder_app_id;
+
+  // Install a placeholder app.
+  {
+    auto task = std::make_unique<BookmarkAppInstallationTask>(
+        profile(), registrar(), install_finalizer(), options);
+    install_finalizer()->SetNextFinalizeInstallResult(
+        kWebAppUrl, web_app::InstallResultCode::kSuccess);
+    install_finalizer()->SetNextCreateOsShortcutsResult(
+        install_finalizer()->GetAppIdForUrl(kWebAppUrl), true);
+
+    base::RunLoop run_loop;
+    task->InstallPlaceholder(base::BindLambdaForTesting(
+        [&](BookmarkAppInstallationTask::Result result) {
+          EXPECT_EQ(web_app::InstallResultCode::kSuccess, result.code);
+          placeholder_app_id = result.app_id.value();
+
+          EXPECT_EQ(1u, install_finalizer()->finalize_options_list().size());
+
+          run_loop.Quit();
+        }));
+    run_loop.Run();
+  }
+
+  // Replace the placeholder with a real app.
+  options.reinstall_placeholder = true;
+  auto task = std::make_unique<BookmarkAppInstallationTask>(
+      profile(), registrar(), install_finalizer(), options);
+  install_finalizer()->SetNextUninstallExternalWebAppResult(kWebAppUrl, false);
+  base::RunLoop run_loop;
+  task->Install(
+      web_contents(),
+      base::BindLambdaForTesting(
+          [&](BookmarkAppInstallationTask::Result result) {
+            EXPECT_EQ(web_app::InstallResultCode::kFailedUnknownReason,
+                      result.code);
+            EXPECT_FALSE(result.app_id.has_value());
+            EXPECT_TRUE(IsPlaceholderApp(profile(), kWebAppUrl));
+
+            EXPECT_EQ(
+                1u,
+                install_finalizer()->uninstall_external_web_app_urls().size());
+            EXPECT_EQ(
+                kWebAppUrl,
+                install_finalizer()->uninstall_external_web_app_urls().at(0));
+
+            // There should have been no new calls to install a placeholder.
+            EXPECT_EQ(1u, install_finalizer()->finalize_options_list().size());
+
+            run_loop.Quit();
+          }));
   run_loop.Run();
 }
 

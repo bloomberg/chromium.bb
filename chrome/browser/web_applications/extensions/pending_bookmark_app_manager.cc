@@ -235,7 +235,10 @@ void PendingBookmarkAppManager::OnUrlLoaded(
       current_task_and_callback_->task->install_options();
 
   if (result == web_app::WebAppUrlLoader::Result::kUrlLoaded) {
-    UninstallPlaceholderIfNecessary();
+    current_task_and_callback_->task->Install(
+        web_contents_.get(),
+        base::BindOnce(&PendingBookmarkAppManager::OnInstalled,
+                       weak_ptr_factory_.GetWeakPtr()));
     return;
   }
 
@@ -249,42 +252,6 @@ void PendingBookmarkAppManager::OnUrlLoaded(
   }
 
   CurrentInstallationFinished(base::nullopt);
-}
-
-void PendingBookmarkAppManager::UninstallPlaceholderIfNecessary() {
-  const auto& install_options =
-      current_task_and_callback_->task->install_options();
-
-  if (!install_options.reinstall_placeholder) {
-    OnPlaceholderUninstalled(true);
-    return;
-  }
-
-  base::Optional<web_app::AppId> app_id =
-      externally_installed_app_prefs_.LookupPlaceholderAppId(
-          install_options.url);
-
-  if (app_id.has_value() && registrar_->IsInstalled(app_id.value())) {
-    install_finalizer_->UninstallExternalWebApp(
-        install_options.url,
-        base::BindOnce(&PendingBookmarkAppManager::OnPlaceholderUninstalled,
-                       weak_ptr_factory_.GetWeakPtr()));
-    return;
-  }
-
-  OnPlaceholderUninstalled(true);
-}
-
-void PendingBookmarkAppManager::OnPlaceholderUninstalled(bool succeeded) {
-  if (!succeeded) {
-    CurrentInstallationFinished(base::nullopt);
-    return;
-  }
-
-  current_task_and_callback_->task->Install(
-      web_contents_.get(),
-      base::BindOnce(&PendingBookmarkAppManager::OnInstalled,
-                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void PendingBookmarkAppManager::OnInstalled(

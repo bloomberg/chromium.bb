@@ -59,9 +59,61 @@ BookmarkAppInstallationTask::~BookmarkAppInstallationTask() = default;
 void BookmarkAppInstallationTask::Install(content::WebContents* web_contents,
                                           ResultCallback result_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
   DCHECK_EQ(web_contents->GetBrowserContext(), profile_);
 
+  // If we are not re-installing a placeholder, then no need to uninstall
+  // anything.
+  if (!install_options_.reinstall_placeholder) {
+    ContinueWebAppInstall(web_contents, std::move(result_callback));
+    return;
+  }
+  // Calling InstallWebAppWithOptions with the same URL used to install a
+  // placeholder won't necessarily replace the placeholder app, because the new
+  // app might be installed with a new AppId. To avoid this, always uninstall
+  // the placeholder app.
+  UninstallPlaceholderApp(web_contents, std::move(result_callback));
+}
+
+void BookmarkAppInstallationTask::UninstallPlaceholderApp(
+    content::WebContents* web_contents,
+    ResultCallback result_callback) {
+  base::Optional<web_app::AppId> app_id =
+      externally_installed_app_prefs_.LookupPlaceholderAppId(
+          install_options_.url);
+
+  // If there is no placeholder app or the app is not installed,
+  // then no need to uninstall anything.
+  if (!app_id.has_value() || !registrar_->IsInstalled(app_id.value())) {
+    ContinueWebAppInstall(web_contents, std::move(result_callback));
+    return;
+  }
+
+  // Otherwise, uninstall the placeholder app.
+  install_finalizer_->UninstallExternalWebApp(
+      install_options_.url,
+      base::BindOnce(&BookmarkAppInstallationTask::OnPlaceholderUninstalled,
+                     weak_ptr_factory_.GetWeakPtr(), web_contents,
+                     std::move(result_callback)));
+}
+
+void BookmarkAppInstallationTask::OnPlaceholderUninstalled(
+    content::WebContents* web_contents,
+    ResultCallback result_callback,
+    bool uninstalled) {
+  if (!uninstalled) {
+    LOG(ERROR) << "Failed to uninstall placeholder for: "
+               << install_options_.url;
+    std::move(result_callback)
+        .Run(Result(web_app::InstallResultCode::kFailedUnknownReason,
+                    base::nullopt));
+    return;
+  }
+  ContinueWebAppInstall(web_contents, std::move(result_callback));
+}
+
+void BookmarkAppInstallationTask::ContinueWebAppInstall(
+    content::WebContents* web_contents,
+    ResultCallback result_callback) {
   auto* provider = web_app::WebAppProviderBase::GetProviderBase(profile_);
   DCHECK(provider);
 
