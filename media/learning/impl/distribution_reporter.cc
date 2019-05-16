@@ -6,6 +6,8 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 
 namespace media {
 namespace learning {
@@ -162,16 +164,68 @@ class UmaRegressionReporter : public DistributionReporter {
   }
 };
 
+// Ukm-based reporter.
+class UkmRegressionReporter : public DistributionReporter {
+ public:
+  UkmRegressionReporter(const LearningTask& task)
+      : DistributionReporter(task) {}
+
+  void OnPrediction(const PredictionInfo& info,
+                    TargetHistogram predicted) override {
+    DCHECK_EQ(task().target_description.ordering,
+              LearningTask::Ordering::kNumeric);
+
+    DCHECK_NE(info.source_id, ukm::kInvalidSourceId);
+
+    ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
+    if (!ukm_recorder)
+      return;
+
+    ukm::builders::Media_Learning_PredictionRecord builder(info.source_id);
+    builder.SetLearningTask(task().GetId());
+    builder.SetObservedValue(Bucketize(info.observed.value()));
+    builder.SetPredictedValue(Bucketize(predicted.Average()));
+    builder.SetTrainingDataTotalWeight(info.total_training_weight);
+    builder.SetTrainingDataSize(info.total_training_examples);
+    // TODO(liberato): we'd add feature subsets here.
+
+    builder.Record(ukm_recorder);
+  }
+
+  // Scale and translate |value| from the range specified in the task to 0-100.
+  // We scale it so that the buckets have an equal amount of the input range in
+  // each of them.
+  int Bucketize(double value) {
+    const int output_min = 0;
+    const int output_max = 100;
+    // Scale it so that input_min -> output_min and input_max -> output_max.
+    // Note that the input width is |input_max - input_min|, but there are
+    // |output_max - output_min + 1| output buckets.  That's why we don't
+    // add one to the denominator, but we do add one to the numerator.
+    double scaled_value =
+        ((output_max - output_min + 1) * (value - task().ukm_min_input_value)) /
+            (task().ukm_max_input_value - task().ukm_min_input_value) +
+        output_min;
+    // Clip to [0, 100] and truncate to an integer.
+    return std::min(std::max(static_cast<int>(scaled_value), output_min),
+                    output_max);
+  }
+};
+
 std::unique_ptr<DistributionReporter> DistributionReporter::Create(
     const LearningTask& task) {
   // We only know how to report regression tasks right now.
   if (task.target_description.ordering != LearningTask::Ordering::kNumeric)
     return nullptr;
 
+  // We can report hacky UMA or non-hacky UKM.  We could report both if we had
+  // a DistributionReporter that forwarded predictions to each, but we don't.
   if (task.uma_hacky_aggregate_confusion_matrix ||
       task.uma_hacky_by_training_weight_confusion_matrix ||
       task.uma_hacky_by_feature_subset_confusion_matrix) {
     return std::make_unique<UmaRegressionReporter>(task);
+  } else if (task.report_via_ukm) {
+    return std::make_unique<UkmRegressionReporter>(task);
   }
 
   return nullptr;

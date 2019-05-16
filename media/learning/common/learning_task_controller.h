@@ -11,6 +11,7 @@
 #include "base/unguessable_token.h"
 #include "media/learning/common/labelled_example.h"
 #include "media/learning/common/learning_task.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 
 namespace media {
 namespace learning {
@@ -21,13 +22,16 @@ namespace learning {
 // SourceId, which most callers don't care about.
 struct ObservationCompletion {
   ObservationCompletion() = default;
-  /* implicit */ ObservationCompletion(const TargetValue& target)
-      : target_value(target) {}
-  ObservationCompletion(const TargetValue& target, WeightType w)
-      : target_value(target), weight(w) {}
+  /* implicit */ ObservationCompletion(const TargetValue& target,
+                                       WeightType w = 1.,
+                                       ukm::SourceId id = ukm::kInvalidSourceId)
+      : target_value(target), weight(w), source_id(id) {}
 
   TargetValue target_value;
-  WeightType weight = 1u;
+  WeightType weight;
+
+  // Optional, and ignored from the renderer.
+  ukm::SourceId source_id;
 };
 
 // Client for a single learning task.  Intended to be the primary API for client

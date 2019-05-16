@@ -50,6 +50,7 @@ void LearningTaskControllerHelper::CompleteObservation(
   iter->second.example.target_value = completion.target_value;
   iter->second.example.weight = completion.weight;
   iter->second.target_done = true;
+  iter->second.source_id = completion.source_id;
   ProcessExampleIfFinished(std::move(iter));
 }
 
@@ -98,7 +99,7 @@ void LearningTaskControllerHelper::ProcessExampleIfFinished(
   if (!iter->second.features_done || !iter->second.target_done)
     return;
 
-  add_example_cb_.Run(std::move(iter->second.example));
+  add_example_cb_.Run(std::move(iter->second.example), iter->second.source_id);
   pending_examples_.erase(iter);
 
   // TODO(liberato): If we receive FeatureVector f1 then f2, and start filling

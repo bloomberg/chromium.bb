@@ -24,7 +24,8 @@ class COMPONENT_EXPORT(LEARNING_IMPL) LearningSessionImpl
     : public LearningSession {
  public:
   // We will create LearningTaskControllers that run on |task_runner|.
-  LearningSessionImpl(scoped_refptr<base::SequencedTaskRunner> task_runner);
+  explicit LearningSessionImpl(
+      scoped_refptr<base::SequencedTaskRunner> task_runner);
   ~LearningSessionImpl() override;
 
   // Create a SequenceBound controller for |task| on |task_runner|.

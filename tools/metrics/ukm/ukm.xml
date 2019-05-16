@@ -3346,6 +3346,61 @@ be describing additional metrics about the same event.
   <metric name="Length"/>
 </event>
 
+<event name="Media.Learning.PredictionRecord">
+  <owner>liberato@chromium.org</owner>
+  <summary>
+    A record of some predicted value vs. an observation. If the prediction is
+    for a regression-style task (e.g., &quot;predict a number&quot; rather than
+    &quot;predict an enum value&quot;), then the predicted and observed values
+    are the numeric values, scaled by default to be in the integer range 0-100.
+
+    The exact scaling used depends on the particular regression problem. Please
+    see the LearningTask structure for the task of interest to find out how it
+    maps values into the [0, 100] output range.
+
+    A record is created for every prediction separately.
+
+    For example, in the MediaCapabilities experiments, each playback generates a
+    record. The predicted / observed values are the ratio of dropped to decoded
+    frames, expressed as a percentage scaled to 0-100.
+  </summary>
+  <metric name="LearningTask">
+    <summary>
+      The learning task to which this record applies. This is a persistent hash
+      of the |name| field in the LearningTask. Presumably, you'll want to
+      include only records of a particular task when analyzing results.
+    </summary>
+  </metric>
+  <metric name="ObservedValue">
+    <summary>
+      Observed value for this sample, scaled into the range [0, 100]. The exact
+      scaling factor depends on the particular task.
+
+      MediaCapabilities, for example, reports 100 * percentage_of_dropped_frames
+      in this field.
+    </summary>
+  </metric>
+  <metric name="PredictedValue">
+    <summary>
+      Predicted value for this sample, scaled into the range [0, 100]. The exact
+      scaling factor depends on the particular task.
+
+      MediaCapabilities, for example, reports 100 * percentage_of_dropped_frames
+      in this field.
+    </summary>
+  </metric>
+  <metric name="TrainingDataSize">
+    <summary>
+      Number of training examples that were used to train this model.
+    </summary>
+  </metric>
+  <metric name="TrainingDataTotalWeight">
+    <summary>
+      Total weight of all examples that were used to train this model.
+    </summary>
+  </metric>
+</event>
+
 <event name="Media.SiteMuted" singular="True">
   <owner>steimel@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>

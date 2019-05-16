@@ -75,7 +75,8 @@ void LearningTaskControllerImpl::CancelObservation(base::UnguessableToken id) {
   helper_->CancelObservation(id);
 }
 
-void LearningTaskControllerImpl::AddFinishedExample(LabelledExample example) {
+void LearningTaskControllerImpl::AddFinishedExample(LabelledExample example,
+                                                    ukm::SourceId source_id) {
   // Verify that we have a trainer and that we got the right number of features.
   // We don't compare to |task_.feature_descriptions.size()| since that has been
   // adjusted to the subset size already.  We expect the original count.
@@ -110,6 +111,7 @@ void LearningTaskControllerImpl::AddFinishedExample(LabelledExample example) {
 
     DistributionReporter::PredictionInfo info;
     info.observed = example.target_value;
+    info.source_id = source_id;
     info.total_training_weight = last_training_weight_;
     info.total_training_examples = last_training_size_;
     reporter_->GetPredictionCallback(info).Run(predicted);
@@ -126,6 +128,10 @@ void LearningTaskControllerImpl::AddFinishedExample(LabelledExample example) {
     return;
 
   num_untrained_examples_ = 0;
+
+  // Record these for metrics.
+  last_training_weight_ = training_data_->total_weight();
+  last_training_size_ = training_data_->size();
 
   TrainedModelCB model_cb =
       base::BindOnce(&LearningTaskControllerImpl::OnModelTrained, AsWeakPtr(),
