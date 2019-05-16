@@ -704,6 +704,8 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/history/BrowsingHistoryBridge.java",
   "java/src/org/chromium/chrome/browser/history/HistoryActivity.java",
   "java/src/org/chromium/chrome/browser/history/HistoryAdapter.java",
+  "java/src/org/chromium/chrome/browser/history/HistoryDeletionBridge.java",
+  "java/src/org/chromium/chrome/browser/history/HistoryDeletionInfo.java",
   "java/src/org/chromium/chrome/browser/history/HistoryItem.java",
   "java/src/org/chromium/chrome/browser/history/HistoryItemView.java",
   "java/src/org/chromium/chrome/browser/history/HistoryManager.java",
