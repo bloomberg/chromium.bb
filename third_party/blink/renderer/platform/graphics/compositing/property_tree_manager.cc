@@ -422,8 +422,10 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
       transform_node.FlattensInheritedTransform();
   compositor_node.sorting_context_id = transform_node.RenderingContextId();
 
-  if (transform_node.IsAffectedByOuterViewportBoundsDelta())
+  if (transform_node.IsAffectedByOuterViewportBoundsDelta()) {
+    compositor_node.moved_by_outer_viewport_bounds_delta_y = true;
     GetTransformTree().AddNodeAffectedByOuterViewportBoundsDelta(id);
+  }
 
   compositor_node.in_subtree_of_page_scale_layer =
       transform_node.IsInSubtreeOfPageScale();

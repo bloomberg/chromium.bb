@@ -399,7 +399,7 @@ static bool CanDecompositeTransform(const TransformPaintPropertyNode& node) {
     return false;
   return node.CcNodeId(g_s_property_tree_sequence_number) == -1 &&
          !node.IsRoot() && node.IsIdentityOr2DTranslation() &&
-         !node.ScrollNode() &&
+         !node.ScrollNode() && !node.IsAffectedByOuterViewportBoundsDelta() &&
          !node.HasDirectCompositingReasonsOtherThan3dTransform() &&
          node.FlattensInheritedTransformSameAsParent() &&
          node.BackfaceVisibilitySameAsParent();
