@@ -1338,7 +1338,7 @@ public class CustomTabActivityTest {
     }
 
     /**
-     * Tests that page load metrice are sent.
+     * Tests that page load metrics are sent.
      */
     @Test
     @SmallTest
@@ -2724,7 +2724,11 @@ public class CustomTabActivityTest {
             public void extraCallback(String callbackName, Bundle args) {
                 if (callbackName.equals(CustomTabsConnection.ON_WARMUP_COMPLETED)) return;
 
-                assertEquals(CustomTabsConnection.PAGE_LOAD_METRICS_CALLBACK, callbackName);
+                // Check if the callback name is either the Bottom Bar Scroll, or Page Load Metrics.
+                // See https://crbug.com/963538 for why it might be either.
+                if (!CustomTabsConnection.BOTTOM_BAR_SCROLL_STATE_CALLBACK.equals(callbackName)) {
+                    assertEquals(CustomTabsConnection.PAGE_LOAD_METRICS_CALLBACK, callbackName);
+                }
                 if (-1 != args.getLong(PageLoadMetrics.EFFECTIVE_CONNECTION_TYPE, -1)) {
                     sawNetworkQualityEstimates.set(true);
                 }
