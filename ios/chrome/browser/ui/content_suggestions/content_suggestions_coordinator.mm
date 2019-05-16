@@ -69,17 +69,6 @@
 @implementation ContentSuggestionsCoordinator
 
 @synthesize browserState = _browserState;
-@synthesize suggestionsViewController = _suggestionsViewController;
-@synthesize visible = _visible;
-@synthesize contentSuggestionsMediator = _contentSuggestionsMediator;
-@synthesize headerCollectionInteractionHandler =
-    _headerCollectionInteractionHandler;
-@synthesize headerController = _headerController;
-@synthesize webStateList = _webStateList;
-@synthesize toolbarDelegate = _toolbarDelegate;
-@synthesize dispatcher = _dispatcher;
-@synthesize metricsRecorder = _metricsRecorder;
-@synthesize NTPMediator = _NTPMediator;
 
 - (void)start {
   if (self.visible || !self.browserState) {
@@ -116,7 +105,7 @@
   }
 
   UrlLoadingService* urlLoadingService =
-      UrlLoadingServiceFactory::GetForBrowserState(_browserState);
+      UrlLoadingServiceFactory::GetForBrowserState(self.browserState);
 
   self.NTPMediator = [[NTPHomeMediator alloc]
       initWithWebStateList:self.webStateList
