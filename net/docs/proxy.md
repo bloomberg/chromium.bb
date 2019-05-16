@@ -212,3 +212,41 @@ depend on reading the query/path portion of any URL
 type, since future versions of Chrome may [deprecate that
 capability](https://bugs.chromium.org/p/chromium/issues/detail?id=882536) in
 favor of a consistent policy.
+
+## Resolving client's IP address within a PAC script using `myIpAddress()`
+
+PAC scripts can invoke `myIpAddress()` to obtain the client's IP address. This
+function returns a single IP literal, or `"127.0.0.1"` on failure.
+
+`myIpAddress()` is fundamentally broken for multi-homed hosts.
+
+Consider what happens when a machine has multiple network interfaces, each with
+its own IP address. Answering "what is my IP address" depends on what interface
+the request is sent out on. Which in turn depends on what the destination IP
+is. Which in turn depends on the result of proxy resolution + fallback, which
+is what we are currently blocked in!
+
+Chrome's algorithm uses these ordered steps to find an IP address
+(short-circuiting when a candidate is found).
+
+1. Select the IP of an interface that can route to public Internet:
+    * Probe for route to `8.8.8.8`.
+    * Probe for route to `2001:4860:4860::8888`.
+2. Select an IP by doing a DNS resolve of the machine's hostname:
+    * Select the first IPv4 result if there is one.
+    * Select the first IP result if there is one.
+3. Select the IP of an interface that can route to private IP space:
+    * Probe for route to `10.0.0.0`.
+    * Probe for route to `172.16.0.0`.
+    * Probe for route to `192.168.0.0`.
+    * Probe for route to `FC00::`.
+
+When searching for candidate IP addresses, link-local and loopback addresses
+are skipped over. Link-local or loopback address will only be returned as a
+last resort when no other IP address was found by following these steps.
+
+Also note that this sequence of steps explicitly favors IPv4 over IPv6 results.
+
+## Resolving client's IP address within a PAC script using `myIpAddressEx()`
+
+TODO
