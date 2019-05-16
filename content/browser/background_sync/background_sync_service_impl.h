@@ -40,14 +40,15 @@ class CONTENT_EXPORT BackgroundSyncServiceImpl
                 RegisterCallback callback) override;
   void DidResolveRegistration(blink::mojom::BackgroundSyncRegistrationInfoPtr
                                   registration_info) override;
-  void GetRegistrations(int64_t sw_registration_id,
-                        GetRegistrationsCallback callback) override;
+  void GetOneShotSyncRegistrations(
+      int64_t sw_registration_id,
+      GetOneShotSyncRegistrationsCallback callback) override;
 
   void OnRegisterResult(RegisterCallback callback,
                         BackgroundSyncStatus status,
                         std::unique_ptr<BackgroundSyncRegistration> result);
   void OnGetRegistrationsResult(
-      GetRegistrationsCallback callback,
+      GetOneShotSyncRegistrationsCallback callback,
       BackgroundSyncStatus status,
       std::vector<std::unique_ptr<BackgroundSyncRegistration>> result);
 

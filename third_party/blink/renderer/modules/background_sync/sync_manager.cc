@@ -51,7 +51,7 @@ ScriptPromise SyncManager::getTags(ScriptState* script_state) {
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  GetBackgroundSyncServicePtr()->GetRegistrations(
+  GetBackgroundSyncServicePtr()->GetOneShotSyncRegistrations(
       registration_->RegistrationId(),
       WTF::Bind(&SyncManager::GetRegistrationsCallback,
                 WrapPersistent(resolver)));
@@ -131,7 +131,7 @@ void SyncManager::GetRegistrationsCallback(
     case mojom::blink::BackgroundSyncError::NOT_ALLOWED:
     case mojom::blink::BackgroundSyncError::PERMISSION_DENIED:
       // These errors should never be returned from
-      // BackgroundSyncManager::GetRegistrations
+      // BackgroundSyncManager::GetOneShotSyncRegistrations
       NOTREACHED();
       break;
     case mojom::blink::BackgroundSyncError::STORAGE:

@@ -222,8 +222,8 @@ void DidStartWorkerForSyncEvent(
 
 BackgroundSyncType GetBackgroundSyncType(
     const blink::mojom::SyncRegistrationOptions& options) {
-  return options.min_interval >= 0 ? BackgroundSyncType::PERIODIC
-                                   : BackgroundSyncType::ONE_SHOT;
+  return options.min_interval == -1 ? BackgroundSyncType::ONE_SHOT
+                                    : BackgroundSyncType::PERIODIC;
 }
 
 std::string GetEventStatusString(blink::ServiceWorkerStatusCode status_code) {
@@ -364,7 +364,22 @@ void BackgroundSyncManager::DidResolveRegistration(
                      std::move(registration_info)));
 }
 
+void BackgroundSyncManager::GetOneShotSyncRegistrations(
+    int64_t sw_registration_id,
+    StatusAndRegistrationsCallback callback) {
+  GetRegistrations(BackgroundSyncType::ONE_SHOT, sw_registration_id,
+                   std::move(callback));
+}
+
+void BackgroundSyncManager::GetPeriodicSyncRegistrations(
+    int64_t sw_registration_id,
+    StatusAndRegistrationsCallback callback) {
+  GetRegistrations(BackgroundSyncType::PERIODIC, sw_registration_id,
+                   std::move(callback));
+}
+
 void BackgroundSyncManager::GetRegistrations(
+    BackgroundSyncType sync_type,
     int64_t sw_registration_id,
     StatusAndRegistrationsCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -381,7 +396,8 @@ void BackgroundSyncManager::GetRegistrations(
   op_scheduler_.ScheduleOperation(
       CacheStorageSchedulerOp::kBackgroundSync,
       base::BindOnce(&BackgroundSyncManager::GetRegistrationsImpl,
-                     weak_ptr_factory_.GetWeakPtr(), sw_registration_id,
+                     weak_ptr_factory_.GetWeakPtr(), sync_type,
+                     sw_registration_id,
                      op_scheduler_.WrapCallbackToRunNext(std::move(callback))));
 }
 
@@ -1146,6 +1162,7 @@ void BackgroundSyncManager::HasMainFrameProviderHost(const url::Origin& origin,
 }
 
 void BackgroundSyncManager::GetRegistrationsImpl(
+    BackgroundSyncType sync_type,
     int64_t sw_registration_id,
     StatusAndRegistrationsCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -1167,6 +1184,8 @@ void BackgroundSyncManager::GetRegistrationsImpl(
     for (const auto& key_and_registration : registrations.registration_map) {
       const BackgroundSyncRegistration& registration =
           key_and_registration.second;
+      if (registration.sync_type() != sync_type)
+        continue;
       out_registrations.push_back(
           std::make_unique<BackgroundSyncRegistration>(registration));
     }

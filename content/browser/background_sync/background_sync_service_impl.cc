@@ -84,14 +84,14 @@ void BackgroundSyncServiceImpl::DidResolveRegistration(
   background_sync_manager->DidResolveRegistration(std::move(registration_info));
 }
 
-void BackgroundSyncServiceImpl::GetRegistrations(
+void BackgroundSyncServiceImpl::GetOneShotSyncRegistrations(
     int64_t sw_registration_id,
-    GetRegistrationsCallback callback) {
+    GetOneShotSyncRegistrationsCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BackgroundSyncManager* background_sync_manager =
       background_sync_context_->background_sync_manager();
   DCHECK(background_sync_manager);
-  background_sync_manager->GetRegistrations(
+  background_sync_manager->GetOneShotSyncRegistrations(
       sw_registration_id,
       base::BindOnce(&BackgroundSyncServiceImpl::OnGetRegistrationsResult,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
@@ -119,7 +119,7 @@ void BackgroundSyncServiceImpl::OnRegisterResult(
 }
 
 void BackgroundSyncServiceImpl::OnGetRegistrationsResult(
-    GetRegistrationsCallback callback,
+    GetOneShotSyncRegistrationsCallback callback,
     BackgroundSyncStatus status,
     std::vector<std::unique_ptr<BackgroundSyncRegistration>>
         result_registrations) {

@@ -96,11 +96,17 @@ class CONTENT_EXPORT BackgroundSyncManager
   void DidResolveRegistration(
       blink::mojom::BackgroundSyncRegistrationInfoPtr registration_info);
 
-  // Finds the background sync registrations associated with
+  // Finds the one-shot Background Sync registrations associated with
   // |sw_registration_id|. Calls |callback| with BACKGROUND_SYNC_STATUS_OK on
   // success.
-  void GetRegistrations(int64_t sw_registration_id,
-                        StatusAndRegistrationsCallback callback);
+  void GetOneShotSyncRegistrations(int64_t sw_registration_id,
+                                   StatusAndRegistrationsCallback callback);
+
+  // Finds the periodic Background Sync registrations associated with
+  // |sw_registration_id|. Calls |callback| with BACKGROUND_SYNC_STATUS_OK on
+  // success.
+  void GetPeriodicSyncRegistrations(int64_t sw_registration_id,
+                                    StatusAndRegistrationsCallback callback);
 
   // ServiceWorkerContextCoreObserver overrides.
   void OnRegistrationDeleted(int64_t sw_registration_id,
@@ -234,6 +240,10 @@ class CONTENT_EXPORT BackgroundSyncManager
       const std::vector<std::pair<int64_t, std::string>>& user_data,
       blink::ServiceWorkerStatusCode status);
 
+  void GetRegistrations(blink::mojom::BackgroundSyncType sync_type,
+                        int64_t sw_registration_id,
+                        StatusAndRegistrationsCallback callback);
+
   // Register callbacks
   void RegisterCheckIfHasMainFrame(
       int64_t sw_registration_id,
@@ -273,7 +283,8 @@ class CONTENT_EXPORT BackgroundSyncManager
       std::unique_ptr<BackgroundSyncEventKeepAlive> keepalive);
 
   // GetRegistrations callbacks
-  void GetRegistrationsImpl(int64_t sw_registration_id,
+  void GetRegistrationsImpl(blink::mojom::BackgroundSyncType sync_type,
+                            int64_t sw_registration_id,
                             StatusAndRegistrationsCallback callback);
 
   bool AreOptionConditionsMet();

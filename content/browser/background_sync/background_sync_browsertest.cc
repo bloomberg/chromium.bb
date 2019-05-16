@@ -100,7 +100,7 @@ void RegistrationPendingDidGetSWRegistration(
   ASSERT_EQ(blink::ServiceWorkerStatusCode::kOk, status);
   int64_t service_worker_id = registration->id();
   BackgroundSyncManager* sync_manager = sync_context->background_sync_manager();
-  sync_manager->GetRegistrations(
+  sync_manager->GetOneShotSyncRegistrations(
       service_worker_id,
       base::BindOnce(&RegistrationPendingDidGetSyncRegistration, tag,
                      std::move(callback)));
@@ -514,7 +514,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest, GetTags) {
   EXPECT_TRUE(GetTags(registered_tags));
 }
 
-// Verify that GetRegistrations works in a service worker
+// Verify that GetOneShotSyncRegistrations works in a service worker
 IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest,
                        GetRegistrationsFromServiceWorker) {
   EXPECT_TRUE(RegisterServiceWorker());
@@ -535,7 +535,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest,
   EXPECT_TRUE(GetTagsFromServiceWorker(registered_tags));
 }
 
-// Verify that GetRegistration works in a service worker
+// Verify that GetOneShotSyncRegistration works in a service worker
 IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest, HasTagFromServiceWorker) {
   EXPECT_TRUE(RegisterServiceWorker());
   EXPECT_TRUE(LoadTestPage(kDefaultTestURL));  // Control the page.
