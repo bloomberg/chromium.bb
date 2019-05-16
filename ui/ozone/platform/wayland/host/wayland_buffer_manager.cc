@@ -80,7 +80,7 @@ class WaylandBufferManager::Surface {
         return false;
     }
 
-    // Once the BufferRelease is called. The buffer will be released.
+    // Once the BufferRelease is called, the buffer will be released.
     DCHECK(buffer->released);
     buffer->released = false;
 
@@ -100,7 +100,7 @@ class WaylandBufferManager::Surface {
     // before, and Wayland won't release the front buffer until next buffer is
     // attached. Thus, notify about successful submission immediately.
     if (!prev_submitted_buffer_)
-      OnRelease();
+      CompleteSubmission();
 
     return true;
   }
@@ -130,7 +130,7 @@ class WaylandBufferManager::Surface {
     // comes for that buffer. Thus, if there is a submitted buffer, notify
     // the client about successful swap.
     if (buffer && !buffer->released && submitted_buffer_)
-      OnRelease();
+      CompleteSubmission();
 
     if (prev_submitted_buffer_ == buffer)
       prev_submitted_buffer_ = nullptr;
@@ -276,23 +276,55 @@ class WaylandBufferManager::Surface {
     self->OnFrameCallback(callback);
   }
 
-  // wl_buffer_listener
-  static void BufferRelease(void* data, struct wl_buffer* wl_buffer) {
-    Surface* self = static_cast<Surface*>(data);
-    DCHECK(self);
+  void OnRelease(struct wl_buffer* wl_buffer) {
+    DCHECK(wl_buffer);
 
-    DCHECK(self->prev_submitted_buffer_->wl_buffer.get() == wl_buffer);
-    self->prev_submitted_buffer_->released = true;
+    WaylandBuffer* buffer = nullptr;
+    // The Wayland compositor may release the buffer immediately after it has
+    // been submitted. Thus, check that wl_buffer belongs to either the
+    // submitted buffer or the previously submitted buffer.
+    if (submitted_buffer_ && submitted_buffer_->wl_buffer.get() == wl_buffer) {
+      buffer = submitted_buffer_;
+      DCHECK(buffer->wl_buffer.get() == wl_buffer);
+    } else {
+      buffer = prev_submitted_buffer_;
+      DCHECK(buffer && buffer->wl_buffer.get() == wl_buffer);
+    }
+
+    DCHECK(!buffer->released);
+    buffer->released = true;
+
+    // It may happen that the client has attached only one buffer and then
+    // destroyed the window. That means that we manually called OnRelease on
+    // that very first buffer attach as long as the surface has not had any
+    // buffers attached before. However, the |submitted_buffer_| can be null in
+    // the OnRelease and hit the DCHECK when the client does not continue
+    // attaching new buffers (only one has been attached) and destroyes the
+    // surface. In this case, the Wayland compositor releases the buffer and the
+    // DCHECK is hit, because we have already run the OnRelease call manually.
+    // Please note that the |prev_submitted_buffer_| is the buffer we have
+    // released manually, and when the Wayland compositor sends OnRelease, the
+    // validation of the wl_buffers succeeds because of that previous manual
+    // OnRelease call.
+    if (!submitted_buffer_)
+      return;
 
     // Although, the Wayland compositor has just released the previously
     // attached buffer, which became a back buffer, we have to notify the client
     // that next buffer has been attach and become the front one. Thus, mark the
     // back buffer as released to ensure the DCHECK is not hit, and notify about
     // successful submission of the front buffer.
-    self->OnRelease();
+    CompleteSubmission();
   }
 
-  void OnRelease() {
+  // wl_buffer_listener
+  static void BufferRelease(void* data, struct wl_buffer* wl_buffer) {
+    Surface* self = static_cast<Surface*>(data);
+    DCHECK(self);
+    self->OnRelease(wl_buffer);
+  }
+
+  void CompleteSubmission() {
     DCHECK(submitted_buffer_);
     auto id = submitted_buffer_->buffer_id;
     prev_submitted_buffer_ = submitted_buffer_;
