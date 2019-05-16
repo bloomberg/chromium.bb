@@ -304,6 +304,33 @@ TEST_F(CanvasResourceProviderTest,
   EXPECT_EQ(original_mailbox, provider->Snapshot()->GetMailbox());
 }
 
+TEST_F(CanvasResourceProviderTest,
+       CanvasResourceProviderSharedImageCopyOnWriteDisabled) {
+  auto* mock_context = static_cast<MockWebGraphisContext3DProviderWrapper*>(
+      context_provider_wrapper_->ContextProvider());
+  auto caps = mock_context->GetCapabilities();
+  caps.disable_2d_canvas_copy_on_write = true;
+  mock_context->SetCapabilities(caps);
+
+  const IntSize kSize(10, 10);
+  const CanvasColorParams kColorParams(kSRGBCanvasColorSpace,
+                                       kRGBA8CanvasPixelFormat, kNonOpaque);
+  EnsureBufferFormatIsSupported(kColorParams.GetBufferFormat());
+
+  auto provider = CanvasResourceProvider::Create(
+      kSize, CanvasResourceProvider::kCreateSharedImageForTesting,
+      context_provider_wrapper_, 0 /* msaa_sample_count */, kColorParams,
+      CanvasResourceProvider::kAllowImageChromiumPresentationMode,
+      nullptr /* resource_dispatcher */, true /* is_origin_top_left */);
+  ASSERT_TRUE(provider->IsValid());
+
+  // Disabling copy-on-write forces a copy each time the resource is queried.
+  auto resource = provider->ProduceCanvasResource();
+  EXPECT_NE(resource->GetOrCreateGpuMailbox(kOrderingBarrier),
+            provider->ProduceCanvasResource()->GetOrCreateGpuMailbox(
+                kOrderingBarrier));
+}
+
 TEST_F(CanvasResourceProviderTest, CanvasResourceProviderBitmap) {
   const IntSize kSize(10, 10);
   const CanvasColorParams kColorParams(kSRGBCanvasColorSpace,

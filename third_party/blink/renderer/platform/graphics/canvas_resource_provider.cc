@@ -502,6 +502,19 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
     TRACE_EVENT0("blink",
                  "CanvasResourceProviderSharedImage::ProduceCanvasResource");
     FlushSkia();
+
+    scoped_refptr<CanvasResource> resource = resource_;
+    if (ContextProviderWrapper()
+            ->ContextProvider()
+            ->GetCapabilities()
+            .disable_2d_canvas_copy_on_write) {
+      // A readback operation may alter the texture parameters, which may affect
+      // the compositor's behavior. Therefore, we must trigger copy-on-write
+      // even though we are not technically writing to the texture, only to its
+      // parameters. This issue is Android-WebView specific: crbug.com/585250.
+      WillDraw();
+    }
+
     return resource_;
   }
 
