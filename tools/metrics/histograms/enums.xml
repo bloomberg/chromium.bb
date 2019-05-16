@@ -7070,6 +7070,19 @@ histogram as enum -->
   <int value="2" label="First service disabled"/>
 </enum>
 
+<enum name="ChromeOSCameraErrorType">
+  <int value="1" label="Device"/>
+  <int value="2" label="Request"/>
+  <int value="3" label="Result"/>
+  <int value="4" label="Buffer"/>
+</enum>
+
+<enum name="ChromeOSCameraFacing">
+  <int value="0" label="Back"/>
+  <int value="1" label="Front"/>
+  <int value="2" label="External"/>
+</enum>
+
 <enum name="ChromeOSColorProfile">
   <summary>See ui/display/display_constants.h for the variation.</summary>
   <int value="0" label="Standard"/>
