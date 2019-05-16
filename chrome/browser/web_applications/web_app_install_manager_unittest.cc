@@ -5,8 +5,8 @@
 #include "chrome/browser/web_applications/web_app_install_manager.h"
 
 #include <memory>
+#include <vector>
 
-#include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/containers/flat_set.h"
@@ -73,7 +73,7 @@ class WebAppInstallManagerTest : public WebAppTest {
 };
 
 TEST_F(WebAppInstallManagerTest,
-       InstallOrUpdateWebAppFromSync_ConcurrentInstalls) {
+       InstallOrUpdateWebAppFromSync_TwoConcurrentInstallsAreRunInOrder) {
   const GURL url1{"https://example.com/path"};
   const AppId app1_id = GenerateAppIdFromURL(url1);
 
@@ -83,32 +83,64 @@ TEST_F(WebAppInstallManagerTest,
   url_loader().SetNextLoadUrlResult(GURL("about:blank"),
                                     WebAppUrlLoader::Result::kUrlLoaded);
 
-  base::RunLoop run_loop;
-  auto barrier_closure = base::BarrierClosure(2u, run_loop.QuitClosure());
-
   // 1 InstallTask == 1 DataRetriever, their lifetime matches.
   base::flat_set<TestDataRetriever*> task_data_retrievers;
+
+  base::RunLoop app1_installed_run_loop;
+  base::RunLoop app2_installed_run_loop;
+
+  enum class Event {
+    Task1_Queued,
+    Task2_Queued,
+    Task1_Started,
+    Task1_Completed,
+    App1_CallbackCalled,
+    Task2_Started,
+    Task2_Completed,
+    App2_CallbackCalled,
+  };
+
+  std::vector<Event> event_order;
+
+  int task_index = 0;
 
   install_manager().SetDataRetrieverFactoryForTesting(
       base::BindLambdaForTesting([&]() {
         auto data_retriever = std::make_unique<TestDataRetriever>();
-
-        IconsMap icons_map;
-        AddIconToIconsMap(kIconUrl, icon_size::k256, SK_ColorBLUE, &icons_map);
-        data_retriever->SetIcons(std::move(icons_map));
+        task_index++;
 
         TestDataRetriever* data_retriever_ptr = data_retriever.get();
         task_data_retrievers.insert(data_retriever_ptr);
 
-        data_retriever->SetDestructionCallback(base::BindLambdaForTesting(
-            [&task_data_retrievers, data_retriever_ptr]() {
-              // The task has been executed, all icons have been retrieved.
-              EXPECT_FALSE(data_retriever_ptr->HasIcons());
+        event_order.push_back(task_index == 1 ? Event::Task1_Queued
+                                              : Event::Task2_Queued);
+
+        // Every InstallTask starts with WebAppDataRetriever::GetIcons step.
+        data_retriever->SetGetIconsDelegate(base::BindLambdaForTesting(
+            [&, task_index](content::WebContents* web_contents,
+                            const std::vector<GURL>& icon_urls,
+                            bool skip_page_favicons) {
+              event_order.push_back(task_index == 1 ? Event::Task1_Started
+                                                    : Event::Task2_Started);
+              IconsMap icons_map;
+              AddIconToIconsMap(kIconUrl, icon_size::k256, SK_ColorBLUE,
+                                &icons_map);
+              return icons_map;
+            }));
+
+        // Every InstallTask ends with WebAppDataRetriever destructor.
+        data_retriever->SetDestructionCallback(
+            base::BindLambdaForTesting([&task_data_retrievers, &event_order,
+                                        data_retriever_ptr, task_index]() {
+              event_order.push_back(task_index == 1 ? Event::Task1_Completed
+                                                    : Event::Task2_Completed);
               task_data_retrievers.erase(data_retriever_ptr);
             }));
 
         return std::unique_ptr<WebAppDataRetriever>(std::move(data_retriever));
       }));
+
+  EXPECT_FALSE(install_manager().has_web_contents_for_testing());
 
   // Enqueue a request to install the 1st app.
   install_manager().InstallOrUpdateWebAppFromSync(
@@ -117,14 +149,13 @@ TEST_F(WebAppInstallManagerTest,
           [&](const AppId& installed_app_id, InstallResultCode code) {
             EXPECT_EQ(InstallResultCode::kSuccess, code);
             EXPECT_EQ(app1_id, installed_app_id);
-            barrier_closure.Run();
+            event_order.push_back(Event::App1_CallbackCalled);
+            app1_installed_run_loop.Quit();
           }));
 
+  EXPECT_TRUE(install_manager().has_web_contents_for_testing());
   EXPECT_EQ(0u, finalizer().finalize_options_list().size());
   EXPECT_EQ(1u, task_data_retrievers.size());
-  // All tasks are queued, no icons retrieved yet.
-  for (auto* data_retriever : task_data_retrievers)
-    EXPECT_TRUE(data_retriever->HasIcons());
 
   // Immediately enqueue a request to install the 2nd app, WebContents is not
   // ready.
@@ -134,19 +165,33 @@ TEST_F(WebAppInstallManagerTest,
           [&](const AppId& installed_app_id, InstallResultCode code) {
             EXPECT_EQ(InstallResultCode::kSuccess, code);
             EXPECT_EQ(app2_id, installed_app_id);
-            barrier_closure.Run();
+            event_order.push_back(Event::App2_CallbackCalled);
+            app2_installed_run_loop.Quit();
           }));
 
-  EXPECT_EQ(0u, finalizer().finalize_options_list().size());
+  EXPECT_TRUE(install_manager().has_web_contents_for_testing());
   EXPECT_EQ(2u, task_data_retrievers.size());
-  // All tasks are queued, no icons retrieved yet.
-  for (auto* data_retriever : task_data_retrievers)
-    EXPECT_TRUE(data_retriever->HasIcons());
+  EXPECT_EQ(0u, finalizer().finalize_options_list().size());
 
-  run_loop.Run();
+  // Wait for the 1st app installed.
+  app1_installed_run_loop.Run();
+  EXPECT_TRUE(install_manager().has_web_contents_for_testing());
+  EXPECT_EQ(1u, task_data_retrievers.size());
+  EXPECT_EQ(1u, finalizer().finalize_options_list().size());
 
+  // Wait for the 2nd app installed.
+  app2_installed_run_loop.Run();
+  EXPECT_FALSE(install_manager().has_web_contents_for_testing());
   EXPECT_EQ(0u, task_data_retrievers.size());
   EXPECT_EQ(2u, finalizer().finalize_options_list().size());
+
+  const std::vector<Event> expected_event_order{
+      Event::Task1_Queued,    Event::Task2_Queued,        Event::Task1_Started,
+      Event::Task1_Completed, Event::App1_CallbackCalled, Event::Task2_Started,
+      Event::Task2_Completed, Event::App2_CallbackCalled,
+  };
+
+  EXPECT_EQ(expected_event_order, event_order);
 }
 
 }  // namespace web_app

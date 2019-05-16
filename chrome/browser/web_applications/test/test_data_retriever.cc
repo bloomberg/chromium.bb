@@ -44,8 +44,13 @@ void TestDataRetriever::CheckInstallabilityAndRetrieveManifest(
 
 void TestDataRetriever::GetIcons(content::WebContents* web_contents,
                                  const std::vector<GURL>& icon_urls,
-                                 bool skip_page_fav_icons,
+                                 bool skip_page_favicons,
                                  GetIconsCallback callback) {
+  if (get_icons_delegate_) {
+    icons_map_ =
+        get_icons_delegate_.Run(web_contents, icon_urls, skip_page_favicons);
+  }
+
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), std::move(icons_map_)));
   icons_map_.clear();
@@ -63,7 +68,14 @@ void TestDataRetriever::SetManifest(std::unique_ptr<blink::Manifest> manifest,
 }
 
 void TestDataRetriever::SetIcons(IconsMap icons_map) {
+  DCHECK(!get_icons_delegate_);
   icons_map_ = std::move(icons_map);
+}
+
+void TestDataRetriever::SetGetIconsDelegate(
+    GetIconsDelegate get_icons_delegate) {
+  DCHECK(icons_map_.empty());
+  get_icons_delegate_ = std::move(get_icons_delegate);
 }
 
 void TestDataRetriever::SetDestructionCallback(base::OnceClosure callback) {

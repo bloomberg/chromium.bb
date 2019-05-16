@@ -72,6 +72,7 @@ class WebAppInstallManager final : public InstallManager {
       DataRetrieverFactory data_retriever_factory);
 
   void SetUrlLoaderForTesting(std::unique_ptr<WebAppUrlLoader> url_loader);
+  bool has_web_contents_for_testing() const { return web_contents_ != nullptr; }
 
  private:
   void MaybeStartQueuedTask();
