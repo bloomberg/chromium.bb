@@ -1110,7 +1110,7 @@ body._10sec .description span[i18n-content=label_timer_10s] {
 }
 
 #intro-dialog .dialog-title-icon {
-  background-image: url(../images/dialog_new_cca_icon.svg);
+  background-image: url(../images/dialog_intro_icon.svg);
   background-size: cover;
   height: 32px;
   width: 32px;
