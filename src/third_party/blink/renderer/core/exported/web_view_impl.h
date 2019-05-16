@@ -108,6 +108,8 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // they should be rendered by WebKit (which is the default).
   static bool UseExternalPopupMenus();
 
+  void DidChangeWindowRect() override;
+  
   // WebView methods:
   void DidAttachLocalMainFrame(WebWidgetClient*) override;
   void DidAttachRemoteMainFrame(WebWidgetClient*) override;
