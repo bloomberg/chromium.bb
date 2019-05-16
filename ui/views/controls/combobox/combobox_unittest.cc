@@ -124,7 +124,7 @@ class TestComboboxModel : public ui::ComboboxModel {
       observer.OnComboboxModelChanged(this);
   }
 
-  base::ObserverList<ui::ComboboxModelObserver>::Unchecked observers_;
+  base::ObserverList<ui::ComboboxModelObserver> observers_;
   std::set<int> separators_;
   int item_count_ = kItemCount;
 
@@ -162,7 +162,7 @@ class VectorComboboxModel : public ui::ComboboxModel {
   }
 
  private:
-  base::ObserverList<ui::ComboboxModelObserver>::Unchecked observers_;
+  base::ObserverList<ui::ComboboxModelObserver> observers_;
   int default_index_ = 0;
   std::vector<std::string>* const values_;
 
