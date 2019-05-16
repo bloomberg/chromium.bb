@@ -34,8 +34,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
-#include "base/power_monitor/power_monitor.h"
-#include "base/power_monitor/power_monitor_source.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -332,25 +330,6 @@ void TestLoadTimingNoHttpResponse(
   EXPECT_TRUE(load_timing_info.receive_headers_end.is_null());
 }
 #endif
-
-// Test power monitor source that can simulate entering suspend mode. Can't use
-// the one in base/ because it insists on bringing its own MessageLoop.
-class TestPowerMonitorSource : public base::PowerMonitorSource {
- public:
-  TestPowerMonitorSource() = default;
-  ~TestPowerMonitorSource() override = default;
-
-  void Shutdown() override {}
-
-  void Suspend() { ProcessPowerEvent(SUSPEND_EVENT); }
-
-  void Resume() { ProcessPowerEvent(RESUME_EVENT); }
-
-  bool IsOnBatteryPowerImpl() override { return false; }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestPowerMonitorSource);
-};
 
 // Job that allows monitoring of its priority.
 class PriorityMonitoringURLRequestJob : public URLRequestTestJob {
@@ -4027,35 +4006,6 @@ TEST_P(URLRequestTestParameterizedSameSite, CookieNetworkSecurityMetricNoHSTS) {
             static_cast<int>(!same_site),
         2);
   }
-}
-
-// Tests that a request is cancelled while entering suspend mode. Uses mocks
-// rather than a spawned test server because the connection used to talk to
-// the test server is affected by entering suspend mode on Android.
-TEST_F(URLRequestTest, CancelOnSuspend) {
-  TestPowerMonitorSource* power_monitor_source = new TestPowerMonitorSource();
-  base::PowerMonitor power_monitor(base::WrapUnique(power_monitor_source));
-
-  URLRequestFailedJob::AddUrlHandler();
-
-  TestDelegate d;
-  // Request that just hangs.
-  GURL url(URLRequestFailedJob::GetMockHttpUrl(ERR_IO_PENDING));
-  std::unique_ptr<URLRequest> r(default_context().CreateRequest(
-      url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
-  r->Start();
-
-  power_monitor_source->Suspend();
-  // Wait for the suspend notification to cause the request to fail.
-  d.RunUntilComplete();
-  EXPECT_EQ(ERR_ABORTED, d.request_status());
-  EXPECT_TRUE(d.request_failed());
-  EXPECT_EQ(1, default_network_delegate_.completed_requests());
-
-  URLRequestFilter::GetInstance()->ClearHandlers();
-
-  // Shouldn't be needed, but just in case.
-  power_monitor_source->Resume();
 }
 
 // FixedDateNetworkDelegate swaps out the server's HTTP Date response header

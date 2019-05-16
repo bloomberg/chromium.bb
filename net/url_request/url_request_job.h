@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "base/power_monitor/power_observer.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/load_states.h"
@@ -49,11 +48,11 @@ class UploadDataStream;
 class URLRequestStatus;
 class X509Certificate;
 
-class NET_EXPORT URLRequestJob : public base::PowerObserver {
+class NET_EXPORT URLRequestJob {
  public:
   explicit URLRequestJob(URLRequest* request,
                          NetworkDelegate* network_delegate);
-  ~URLRequestJob() override;
+  virtual ~URLRequestJob();
 
   // Returns the request that owns this job.
   URLRequest* request() const {
@@ -227,10 +226,6 @@ class NET_EXPORT URLRequestJob : public base::PowerObserver {
   // Returns the socket address for the connection.
   // See url_request.h for details.
   virtual IPEndPoint GetResponseRemoteEndpoint() const;
-
-  // base::PowerObserver methods:
-  // We invoke URLRequestJob::Kill on suspend (crbug.com/4606).
-  void OnSuspend() override;
 
   // Called after a NetworkDelegate has been informed that the URLRequest
   // will be destroyed. This is used to track that no pending callbacks
