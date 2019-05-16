@@ -53,6 +53,7 @@ extern const base::Feature kIPHBookmarkFeature;
 extern const base::Feature kIPHIncognitoWindowFeature;
 extern const base::Feature kIPHNewTabFeature;
 extern const base::Feature kIPHReopenTabFeature;
+extern const base::Feature kIPHFocusModeFeature;
 #endif  // BUILDFLAG(ENABLE_DESKTOP_IPH)
 
 #if defined(OS_IOS)

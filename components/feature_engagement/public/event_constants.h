@@ -47,6 +47,14 @@ extern const char kIncognitoWindowSessionTimeMet[];
 extern const char kReopenTabConditionsMet[];
 // The user reopened a previously closed tab.
 extern const char kTabReopened[];
+
+// All the events declared below are the string names of deferred onboarding
+// events for the Focus Mode feature.
+
+// The user has opened a Focus Mode window.
+extern const char kFocusModeOpened[];
+// All conditions for show Focus Mode IPH were met.
+extern const char kFocusModeConditionsMet[];
 #endif  // BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
 
 #if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_IOS)
