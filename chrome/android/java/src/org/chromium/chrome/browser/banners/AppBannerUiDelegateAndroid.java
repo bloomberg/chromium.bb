@@ -15,7 +15,9 @@ import org.chromium.base.PackageUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.webapps.AddToHomescreenDialog;
+import org.chromium.chrome.browser.webapps.TouchlessAddToHomescreenDialog;
 
 /**
  * Handles the promotion and installation of an app specified by the current web page. This object
@@ -102,9 +104,21 @@ public class AppBannerUiDelegateAndroid implements AddToHomescreenDialog.Delegat
         mTab.getWindowAndroid().showIntent(appData.detailsIntent(), null, null);
     }
 
+    /**
+     * Build a dialog based on the browser mode.
+     * @return A version of the {@link AddToHomescreenDialog}.
+     */
+    private AddToHomescreenDialog buildDialog() {
+        if (FeatureUtilities.isNoTouchModeEnabled()) {
+            return new TouchlessAddToHomescreenDialog(
+                    mTab.getActivity(), mTab.getActivity().getModalDialogManager(), this);
+        }
+        return new AddToHomescreenDialog(mTab.getActivity(), this);
+    }
+
     @CalledByNative
     private boolean showNativeAppDialog(String title, Bitmap iconBitmap, AppData appData) {
-        mDialog = new AddToHomescreenDialog(mTab.getActivity(), this);
+        mDialog = buildDialog();
         mDialog.show();
         mDialog.onUserTitleAvailable(title, appData.installButtonText(), appData.rating());
         mDialog.onIconAvailable(iconBitmap);
@@ -113,7 +127,7 @@ public class AppBannerUiDelegateAndroid implements AddToHomescreenDialog.Delegat
 
     @CalledByNative
     private boolean showWebAppDialog(String title, Bitmap iconBitmap, String url) {
-        mDialog = new AddToHomescreenDialog(mTab.getActivity(), this);
+        mDialog = buildDialog();
         mDialog.show();
         mDialog.onUserTitleAvailable(title, url, true /* isWebapp */);
         mDialog.onIconAvailable(iconBitmap);

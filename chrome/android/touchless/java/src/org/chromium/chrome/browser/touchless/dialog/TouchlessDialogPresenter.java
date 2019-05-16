@@ -153,6 +153,10 @@ public class TouchlessDialogPresenter extends Presenter {
             TextView textView = dialogView.findViewById(R.id.touchless_dialog_description);
             textView.setText(model.get(ModalDialogProperties.MESSAGE));
             textView.setVisibility(View.VISIBLE);
+        } else if (ModalDialogProperties.CUSTOM_VIEW == propertyKey) {
+            ViewGroup customGroup = dialogView.findViewById(R.id.custom);
+            customGroup.addView(model.get(ModalDialogProperties.CUSTOM_VIEW));
+            customGroup.setVisibility(View.VISIBLE);
         } else if (TouchlessDialogProperties.LIST_MODELS == propertyKey) {
             ListView listView = dialogView.findViewById(R.id.touchless_dialog_option_list);
             PropertyModel[] models = model.get(TouchlessDialogProperties.LIST_MODELS);
