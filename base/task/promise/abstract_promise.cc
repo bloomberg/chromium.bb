@@ -398,6 +398,10 @@ void AbstractPromise::OnCanceled() {
     return;
   }
 
+  // The executor could be keeping a promise alive, but it's never going to run
+  // so clear it.
+  value_ = unique_any();
+
 #if DCHECK_IS_ON()
   {
     CheckedAutoLock lock(GetCheckedLock());

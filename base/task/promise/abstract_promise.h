@@ -24,8 +24,15 @@ class TaskRunner;
 // contain the empty type Void. This is the same idea as std::monospace.
 struct Void {};
 
+// Signals that a promise doesn't resolve.  E.g. Promise<NoResolve, int>
+struct NoResolve {};
+
 // Signals that a promise doesn't reject.  E.g. Promise<int, NoReject>
 struct NoReject {};
+
+// A promise for either |ResolveType| if successful or |RejectType| on error.
+template <typename ResolveType, typename RejectType>
+class Promise;
 
 // This enum is used to configure AbstractPromise's uncaught reject detection.
 // Usually not catching a reject reason is a coding error, but at times that can
@@ -42,7 +49,13 @@ template <typename T>
 struct BASE_EXPORT Resolved {
   using Type = T;
 
-  Resolved() = default;
+  static_assert(!std::is_same<T, NoReject>::value,
+                "Can't have Resolved<NoReject>");
+
+  Resolved() {
+    static_assert(!std::is_same<T, NoResolve>::value,
+                  "Can't have Resolved<NoResolve>");
+  }
 
   template <typename... Args>
   Resolved(Args&&... args) noexcept : value(std::forward<Args>(args)...) {}
@@ -64,10 +77,19 @@ struct BASE_EXPORT Rejected {
   using Type = T;
   T value;
 
-  Rejected() = default;
+  static_assert(!std::is_same<T, NoResolve>::value,
+                "Can't have Rejected<NoResolve>");
+
+  Rejected() {
+    static_assert(!std::is_same<T, NoReject>::value,
+                  "Can't have Rejected<NoReject>");
+  }
 
   template <typename... Args>
-  Rejected(Args&&... args) noexcept : value(std::forward<Args>(args)...) {}
+  Rejected(Args&&... args) noexcept : value(std::forward<Args>(args)...) {
+    static_assert(!std::is_same<T, NoReject>::value,
+                  "Can't have Rejected<NoReject>");
+  }
 };
 
 template <>

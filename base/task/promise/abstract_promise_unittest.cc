@@ -1850,8 +1850,6 @@ TEST_F(AbstractPromiseTest, CanceledCurriedPromise) {
                 FROM_HERE, BindOnce(&AbstractPromise::Execute, p2));
             p->emplace(p2);
             p->OnResolved();
-
-            EXPECT_TRUE(p3->IsResolvedWithPromise());
           }));
 
   scoped_refptr<AbstractPromise> p4 =
