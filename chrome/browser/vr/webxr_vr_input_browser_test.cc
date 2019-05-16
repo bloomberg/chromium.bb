@@ -287,7 +287,7 @@ IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard, TestGamepadIncompleteData) {
   LoadUrlAndAwaitInitialization(
       GetFileUrlForHtmlTestFile("test_webxr_gamepad_support"));
   EnterSessionWithUserGestureOrFail();
-  ExecuteStepAndWait("validateInputSourceHasNoGamepad()");
+  PollJavaScriptBooleanOrFail("inputSourceHasNoGamepad()", kPollTimeoutShort);
   RunJavaScriptOrFail("done()");
   EndTest();
 }
@@ -310,9 +310,12 @@ IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard, TestGamepadMinimumData) {
 
   // The trigger should be button 0, and the first set of axes should have it's
   // value set.
-  ExecuteStepAndWait("validateMapping('xr-standard')");
-  ExecuteStepAndWait("validateButtonPressed(0)");
-  ExecuteStepAndWait("validateAxesValues(0, 0.5, -0.5)");
+  PollJavaScriptBooleanOrFail("isMappingEqualTo('xr-standard')",
+                              kPollTimeoutShort);
+  PollJavaScriptBooleanOrFail("isButtonPressedEqualTo(0, true)",
+                              kPollTimeoutShort);
+  PollJavaScriptBooleanOrFail("areAxesValuesEqualTo(0, 0.5, -0.5)",
+                              kPollTimeoutShort);
   RunJavaScriptOrFail("done()");
   EndTest();
 }
@@ -359,18 +362,23 @@ IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard, TestGamepadCompleteData) {
                         vr::ButtonMaskFromId(vr::k_EButton_Grip));
 
   // Controller should meet the requirements for the 'xr-standard' mapping.
-  ExecuteStepAndWait("validateMapping('xr-standard')");
+  PollJavaScriptBooleanOrFail("isMappingEqualTo('xr-standard')",
+                              kPollTimeoutShort);
 
   // The secondary set of axes should be set appropriately.
-  ExecuteStepAndWait("validateAxesValues(1, 0.25, -0.25)");
+  PollJavaScriptBooleanOrFail("areAxesValuesEqualTo(1, 0.25, -0.25)",
+                              kPollTimeoutShort);
 
   // Button 2 is reserved for the Grip, and should be pressed.
-  ExecuteStepAndWait("validateButtonPressed(2)");
+  PollJavaScriptBooleanOrFail("isButtonPressedEqualTo(2, true)",
+                              kPollTimeoutShort);
 
   // Button 3 is reserved for the secondary trackpad/joystick and should be
   // touched but not pressed.
-  ExecuteStepAndWait("validateButtonNotPressed(3)");
-  ExecuteStepAndWait("validateButtonTouched(3)");
+  PollJavaScriptBooleanOrFail("isButtonPressedEqualTo(3, false)",
+                              kPollTimeoutShort);
+  PollJavaScriptBooleanOrFail("isButtonTouchedEqualTo(3, true)",
+                              kPollTimeoutShort);
 
   RunJavaScriptOrFail("done()");
   EndTest();
@@ -410,12 +418,18 @@ IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard, TestGamepadReservedData) {
   // Index 2 and 3 are reserved for the grip and secondary joystick.
   // As our controller doesn't support them, they should be present but not
   // pressed, and our "extra" button should be index 4 and should be pressed.
-  ExecuteStepAndWait("validateMapping('xr-standard')");
-  ExecuteStepAndWait("validateButtonPressed(0)");
-  ExecuteStepAndWait("validateButtonPressed(1)");
-  ExecuteStepAndWait("validateButtonNotPressed(2)");
-  ExecuteStepAndWait("validateButtonNotPressed(3)");
-  ExecuteStepAndWait("validateButtonPressed(4)");
+  PollJavaScriptBooleanOrFail("isMappingEqualTo('xr-standard')",
+                              kPollTimeoutShort);
+  PollJavaScriptBooleanOrFail("isButtonPressedEqualTo(0, true)",
+                              kPollTimeoutShort);
+  PollJavaScriptBooleanOrFail("isButtonPressedEqualTo(1, true)",
+                              kPollTimeoutShort);
+  PollJavaScriptBooleanOrFail("isButtonPressedEqualTo(2, false)",
+                              kPollTimeoutShort);
+  PollJavaScriptBooleanOrFail("isButtonPressedEqualTo(3, false)",
+                              kPollTimeoutShort);
+  PollJavaScriptBooleanOrFail("isButtonPressedEqualTo(4, true)",
+                              kPollTimeoutShort);
 
   RunJavaScriptOrFail("done()");
   EndTest();

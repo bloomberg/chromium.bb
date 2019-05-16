@@ -17,6 +17,20 @@ circumstances.
       // always null.
       window.addEventListener("gamepadconnected", function(e) {});
 
+      let selectCount = 0;
+
+      function onSelect() {
+        selectCount++;
+      }
+
+      function currentImmersiveSession() {
+        return sessionInfos[sessionTypes.IMMERSIVE].currentSession;
+      }
+
+      function stepSetupListeners() {
+        currentImmersiveSession().addEventListener('select', onSelect, false);
+      }
+
       // TODO(https://crbug.com/961774): On some Windows machines, a phantom
       // gamepad shows up in the navigator.getGamepads() array once a WebXR
       // gamepad sends any input. Until that's fixed, filter out such devices
@@ -26,137 +40,159 @@ circumstances.
         return gamepad.id == "Unknown Gamepad (Vendor: 0000 Product: 0000)";
       }
 
-      function assertNumNavigatorGamepadsMatchesExpectation(numExpectedGamepads) {
+      function navigatorGamepadCount() {
         let numGamepads = 0;
         for (gamepad of navigator.getGamepads()) {
           if ((gamepad !== null) && !isPhantomGamepad(gamepad)) {
             numGamepads++;
           }
         }
-        assert_equals(numGamepads, numExpectedGamepads,
-            "Number of returned gamepads matches expectation");
+        return numGamepads;
       }
 
-      function assertNumInputSourceGamepadsMatchesExpectation(numExpectedGamepads) {
-        let currentSession = sessionInfos[sessionTypes.IMMERSIVE].currentSession;
+      function inputSourceCount() {
+        return currentImmersiveSession().getInputSources().length;
+      }
+
+      function inputSourceWithGamepadCount() {
         let numGamepads = 0;
-        for (source of currentSession.getInputSources()) {
+        for (source of currentImmersiveSession().getInputSources()) {
           if (source.gamepad !== null) {
             numGamepads++;
           }
         }
-        assert_equals(numGamepads, numExpectedGamepads,
-            "Number of XRInputSources with Gamepads on XRSession matches expectation");
+        return numGamepads;
       }
 
-      function assertNumInputSourcesMatchesExpectation(numExpectedSources) {
-        let currentSession = sessionInfos[sessionTypes.IMMERSIVE].currentSession;
-        assert_equals(currentSession.getInputSources().length, numExpectedSources,
-            "Number of XRInputSources on XRSession matches expectation");
-      }
-
-      function validateInputSourceHasNoGamepad() {
-        assert_equals(onImmersiveXRFrameCallback, null);
-        onImmersiveXRFrameCallback = function(session) {
-          // Clear the callback first in case any of the following asserts fail.
-          // If any asserts trigger, we don't run any code that follows, so if
-          // we did this as the last step of the callback and any of the asserts
-          // failed, we would be continually called, which just makes it harder
-          // to debug.
-          onImmersiveXRFrameCallback = null;
-
-          // We don't expect to have attached any non-vr gamepads, and vr
-          // gamepads shouldn't show up in navigator.getGamepads()
-          assertNumNavigatorGamepadsMatchesExpectation(0);
-
-          // There should only be one input source, but there should not be
-          // enough data to make a gamepad.
-          assertNumInputSourcesMatchesExpectation(1);
-          assertNumInputSourceGamepadsMatchesExpectation(0);
-          finishJavaScriptStep();
+      // Especially on Android, there can be a small delay between when the test
+      // code sends simulated input and when that input is registered by WebXR.
+      // These functions return bools instead of asserting so that test code can
+      // poll on the return values to avoid race conditions.
+      function inputSourceHasNoGamepad() {
+        // We don't expect to have attached any non-vr gamepads, and vr
+        // gamepads shouldn't show up in navigator.getGamepads()
+        if (navigatorGamepadCount() != 0) {
+          return false;
         }
+
+        // There should only be one input source, but there should not be
+        // enough data to make a gamepad.
+        if (inputSourceCount() != 1) {
+          return false;
+        }
+        if (inputSourceWithGamepadCount() != 0) {
+          return false;
+        }
+
+        return true;
       }
 
-      function validateFirstGamepad(validationFunction) {
-        assert_equals(onImmersiveXRFrameCallback, null);
-        onImmersiveXRFrameCallback = function(session) {
-          // Clear the callback first in case any of the following asserts fail.
-          // If any asserts trigger, we don't run any code that follows, so if
-          // we did this as the last step of the callback and any of the asserts
-          // failed, we would be continually called, which just makes it harder
-          // to debug.
-          onImmersiveXRFrameCallback = null;
+      // Especially on Android, there can be a small delay between when the test
+      // code sends simulated input and when that input is registered by WebXR.
+      // These functions return bools instead of asserting so that test code can
+      // poll on the return values to avoid race conditions.
+      function isFirstGamepadAsExpected(verificationFunction) {
+        // We don't expect to have attached any non-vr gamepads, and vr
+        // gamepads shouldn't show up in navigator.getGamepads()
+        if (navigatorGamepadCount() != 0) {
+          return false;
+        }
 
-          // We don't expect to have attached any non-vr gamepads, and vr
-          // gamepads shouldn't show up in navigator.getGamepads()
-          assertNumNavigatorGamepadsMatchesExpectation(0);
+        // There should only be one input source and it should have a gamepad.
+        if (inputSourceCount() != 1) {
+          return false;
+        }
+        if (inputSourceWithGamepadCount() != 1) {
+          return false;
+        }
 
-          // There should only be one input source and it should have a gamepad.
-          assertNumInputSourcesMatchesExpectation(1);
-          assertNumInputSourceGamepadsMatchesExpectation(1);
+        if (verificationFunction) {
+          let gamepad = currentImmersiveSession().getInputSources()[0].gamepad;
+          if (!verificationFunction(gamepad)) {
+            return false;
+          }
+        }
 
-          let gamepad = session.getInputSources()[0].gamepad;
-          if (validationFunction) {
-            validationFunction(gamepad);
+        return true;
+      }
+
+      function isMappingEqualTo(expected_mapping) {
+        let verificationFunction = function(gamepad) {
+          return gamepad.mapping == expected_mapping;
+        }
+
+        return isFirstGamepadAsExpected(verificationFunction);
+      }
+
+      function isButtonCountEqualTo(expected_count) {
+        let verificationFunction = function(gamepad) {
+          return gamepad.buttons.length == expected_count;
+        }
+
+        return isFirstGamepadAsExpected(verificationFunction);
+      }
+
+      // WebXR only exposes axes in (x, y) pairs because triggers are reported
+      // as buttons on the Gamepad. The GamepadButton interface has a "value"
+      // attribute that supports one-dimensional analog input.
+      function isAxisPairCountEqualTo(expected_count) {
+        let verificationFunction = function(gamepad) {
+          return gamepad.axes.length == (expected_count * 2);
+        }
+
+        return isFirstGamepadAsExpected(verificationFunction);
+      }
+
+      function isButtonPressedEqualTo(button_index, expected_pressed) {
+        let verificationFunction = function(gamepad) {
+          if (button_index >= gamepad.buttons.length) {
+            return false;
           }
 
-          finishJavaScriptStep();
-        }
-      }
-
-      function validateMapping(expected_mapping) {
-        let validationFunction = function(gamepad) {
-          assert_equals(gamepad.mapping, expected_mapping);
+          return gamepad.buttons[button_index].pressed == expected_pressed;
         }
 
-        validateFirstGamepad(validationFunction);
+        return isFirstGamepadAsExpected(verificationFunction);
       }
 
-      function validateButtonNotPressed(button_index) {
-        let validationFunction = function(gamepad) {
-          assert_less_than(button_index, gamepad.buttons.length,
-            "Verify that we have at least as many buttons as requested");
-          assert_false(gamepad.buttons[button_index].pressed);
+      function isButtonTouchedEqualTo(button_index, expected_touched) {
+        let verificationFunction = function(gamepad) {
+          if (button_index >= gamepad.buttons.length) {
+            return false;
+          }
+
+          return gamepad.buttons[button_index].touched == expected_touched;
         }
 
-        validateFirstGamepad(validationFunction);
+        return isFirstGamepadAsExpected(verificationFunction);
       }
 
-      function validateButtonPressed(button_index) {
-        let validationFunction = function(gamepad) {
-          assert_less_than(button_index, gamepad.buttons.length,
-            "Verify that we have at least as many buttons as requested");
-          assert_true(gamepad.buttons[button_index].pressed);
-        }
-
-        validateFirstGamepad(validationFunction);
-      }
-
-      function validateButtonTouched(button_index) {
-        let validationFunction = function(gamepad) {
-          assert_less_than(button_index, gamepad.buttons.length,
-            "Verify that we have at least as many buttons as requested");
-          assert_true(gamepad.buttons[button_index].touched);
-        }
-
-        validateFirstGamepad(validationFunction);
-      }
-
-      function validateAxesValues(axes_pair_index, x_axis_value, y_axis_value) {
-        let validationFunction = function(gamepad) {
+      function areAxesValuesEqualTo(axes_pair_index, x_axis_value, y_axis_value) {
+        let verificationFunction = function(gamepad) {
           let epsilon = 0.001;
           let x_index = (2 * axes_pair_index);
           let y_index = (2 * axes_pair_index) + 1;
 
-          assert_less_than(y_index, gamepad.axes.length,
-            "Verify that we have at least as many axes as requested");
-          assert_true(Math.abs(gamepad.axes[x_index] - x_axis_value) < epsilon,
-            "X approximately equals expected");
-          assert_true(Math.abs(gamepad.axes[y_index] - y_axis_value) < epsilon,
-            "Y approximately equals expected");
+          if (y_index >= gamepad.axes.length) {
+            return false;
+          }
+
+          function approxEquals(a, b) {
+            return Math.abs(a - b) < epsilon;
+          }
+
+          if (!approxEquals(gamepad.axes[x_index], x_axis_value)) {
+            return false;
+          }
+
+          if (!approxEquals(gamepad.axes[y_index], y_axis_value)) {
+            return false;
+          }
+
+          return true;
         }
 
-        validateFirstGamepad(validationFunction);
+        return isFirstGamepadAsExpected(verificationFunction);
       }
     </script>
   </body>

@@ -4,11 +4,18 @@
 
 1. Get a rooted Pixel device of some sort.
 2. Make sure "VR Services" is up to date in the Playstore.
-3. Run `ninja -C out/Debug chrome_public_test_vr_apk
+3. Set lock screen timeout to at least 5 minutes. If screen is locked or device
+   goes to sleep while tests are still running, they will fail.
+4. Run `ninja -C out/Debug chrome_public_test_vr_apk
         && out/Debug/bin/run_chrome_public_test_vr_apk
         --num-retries=0
         --shared-prefs-file=//chrome/android/shared_preference_files/test/vr_ddview_skipdon_setupcomplete.json
         --test-filter=<failing test case>`
+   Don't touch phone while the tests are running.
+
+**NOTE** The message "Main  Unable to find package info for org.chromium.chrome"
+         is usually displayed when the test package is being installed and does
+         not indicate any problem.
 
 ## Introduction
 

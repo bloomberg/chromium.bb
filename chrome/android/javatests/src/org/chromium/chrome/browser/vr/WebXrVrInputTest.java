@@ -53,6 +53,7 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -231,6 +232,98 @@ public class WebXrVrInputTest {
         }
 
         mWebXrVrTestFramework.endTest();
+    }
+
+    /**
+     * Tests that Daydream controller is exposed as a Gamepad on an
+     * XRInputSource in an immersive session and that button clicks and touchpad
+     * movements are registered.
+     */
+    @Test
+    @MediumTest
+    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
+    @CommandLineFlags
+            .Remove({"enable-webvr"})
+            @CommandLineFlags.Add({"enable-features=WebXR"})
+            @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
+            public void testControllerExposedAsGamepadOnDaydream_WebXr()
+            throws InterruptedException {
+        EmulatedVrController controller = new EmulatedVrController(mTestRule.getActivity());
+        mWebXrVrTestFramework.loadUrlAndAwaitInitialization(
+                WebXrVrTestFramework.getFileUrlForHtmlTestFile("test_webxr_gamepad_support"),
+                PAGE_LOAD_TIMEOUT_S);
+        mWebXrVrTestFramework.enterSessionWithUserGestureOrFail();
+
+        // There must be interaction with the controller before an XRInputSource
+        // is recognized. Wait for JS to register the select event to avoid a
+        // race condition.
+        mWebXrVrTestFramework.runJavaScriptOrFail("stepSetupListeners()", POLL_TIMEOUT_SHORT_MS);
+        controller.sendClickButtonToggleEvent();
+        controller.sendClickButtonToggleEvent();
+        mWebXrVrTestFramework.pollJavaScriptBooleanOrFail("selectCount > 0", POLL_TIMEOUT_SHORT_MS);
+
+        // Daydream controller should not be 'xr-standard' mapping since it does
+        // not meet the requirements.
+        mWebXrVrTestFramework.pollJavaScriptBooleanOrFail(
+                "isMappingEqualTo('')", POLL_TIMEOUT_SHORT_MS);
+
+        // Daydream controller should only expose a single button and set of
+        // input axes (the pressable touchpad). It should not expose any of the
+        // platform buttons such as "home" or "back".
+        mWebXrVrTestFramework.pollJavaScriptBooleanOrFail(
+                "isButtonCountEqualTo(1)", POLL_TIMEOUT_SHORT_MS);
+        mWebXrVrTestFramework.pollJavaScriptBooleanOrFail(
+                "isAxisPairCountEqualTo(1)", POLL_TIMEOUT_SHORT_MS);
+
+        // Initially, the touchpad should not be touched.
+        validateTouchpadNotTouched();
+
+        // Make sure pressing the touchpad button works.
+        controller.sendClickButtonToggleEvent();
+        mWebXrVrTestFramework.pollJavaScriptBooleanOrFail(
+                "isButtonPressedEqualTo(0, true)", POLL_TIMEOUT_SHORT_MS);
+        controller.sendClickButtonToggleEvent();
+        mWebXrVrTestFramework.pollJavaScriptBooleanOrFail(
+                "isButtonPressedEqualTo(0, false)", POLL_TIMEOUT_SHORT_MS);
+
+        // Make sure setting the touchpad position works.
+        setAndValidateTouchpadPosition(controller, 0.0f, 1.0f);
+        setAndValidateTouchpadPosition(controller, 1.0f, 0.0f);
+        setAndValidateTouchpadPosition(controller, 0.5f, 0.5f);
+
+        controller.stopTouchingTouchpad(0.5f, 0.5f);
+        validateTouchpadNotTouched();
+
+        mWebXrVrTestFramework.runJavaScriptOrFail("done()", POLL_TIMEOUT_SHORT_MS);
+        mWebXrVrTestFramework.endTest();
+    }
+
+    // When touchpad is not touched, it should not be reported as pressed
+    // either. The input axis values should be at the origin: (0, 0).
+    private void validateTouchpadNotTouched() {
+        mWebXrVrTestFramework.pollJavaScriptBooleanOrFail(
+                "isButtonTouchedEqualTo(0, false)", POLL_TIMEOUT_SHORT_MS);
+        mWebXrVrTestFramework.pollJavaScriptBooleanOrFail(
+                "isButtonPressedEqualTo(0, false)", POLL_TIMEOUT_SHORT_MS);
+        mWebXrVrTestFramework.pollJavaScriptBooleanOrFail(
+                "areAxesValuesEqualTo(0, 0.0, 0.0)", POLL_TIMEOUT_SHORT_MS);
+    }
+
+    // Device code reports touchpad position in range [0.0, 1.0].
+    // WebXR reports Gamepad input axis position in range [-1.0, 1.0].
+    private float rawToWebXRTouchpadPosition(float raw) {
+        return (raw * 2.0f) - 1.0f;
+    }
+
+    private void setAndValidateTouchpadPosition(EmulatedVrController controller, float x, float y) {
+        controller.setTouchpadPosition(x, y);
+        float xExpected = rawToWebXRTouchpadPosition(x);
+        float yExpected = rawToWebXRTouchpadPosition(y);
+        String js =
+                String.format(Locale.US, "areAxesValuesEqualTo(0, %f, %f)", xExpected, yExpected);
+        mWebXrVrTestFramework.pollJavaScriptBooleanOrFail(js, POLL_TIMEOUT_SHORT_MS);
+        mWebXrVrTestFramework.pollJavaScriptBooleanOrFail(
+                "isButtonTouchedEqualTo(0, true)", POLL_TIMEOUT_SHORT_MS);
     }
 
     private long sendScreenTouchDown(final View view, final int x, final int y) {
@@ -613,7 +706,8 @@ public class WebXrVrInputTest {
             // Verify that there is a gamepad on the XRInputSource and that it
             // has the expected mapping of '' (the Daydream controller does not
             // meet the 'xr-standard' mapping requirements).
-            mWebXrVrTestFramework.executeStepAndWait("validateMapping('')");
+            mWebXrVrTestFramework.pollJavaScriptBooleanOrFail(
+                    "isMappingEqualTo('')", POLL_TIMEOUT_SHORT_MS);
         } else {
             int x = mWebXrVrTestFramework.getCurrentContentView().getWidth() / 2;
             int y = mWebXrVrTestFramework.getCurrentContentView().getHeight() / 2;
@@ -621,7 +715,8 @@ public class WebXrVrInputTest {
                     TestVrShellDelegate.getVrShellForTesting().getPresentationViewForTesting();
             spamScreenTaps(presentationView, x, y, numIterations);
 
-            mWebXrVrTestFramework.executeStepAndWait("validateInputSourceHasNoGamepad()");
+            mWebXrVrTestFramework.pollJavaScriptBooleanOrFail(
+                    "inputSourceHasNoGamepad()", POLL_TIMEOUT_SHORT_MS);
         }
 
         mWebVrTestFramework.runJavaScriptOrFail("done()", POLL_TIMEOUT_SHORT_MS);
