@@ -48,9 +48,8 @@ class WiFiDisplayMediaPipeline {
   // Note: to be called only once.
   void Initialize(const InitCompletionCallback& callback);
 
-  void InsertRawVideoFrame(
-      const scoped_refptr<media::VideoFrame>& video_frame,
-      base::TimeTicks reference_time);
+  void InsertRawVideoFrame(scoped_refptr<media::VideoFrame> video_frame,
+                           base::TimeTicks reference_time);
 
   void RequestIDRPicture();
 

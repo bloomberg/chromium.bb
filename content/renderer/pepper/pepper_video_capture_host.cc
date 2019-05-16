@@ -120,16 +120,13 @@ void PepperVideoCaptureHost::PostErrorReply() {
           static_cast<uint32_t>(PP_ERROR_FAILED)));
 }
 
-void PepperVideoCaptureHost::OnFrameReady(
-    const scoped_refptr<media::VideoFrame>& frame) {
-  DCHECK(frame.get());
-
-  if (alloc_size_ != frame->visible_rect().size() || buffers_.empty()) {
-    alloc_size_ = frame->visible_rect().size();
+void PepperVideoCaptureHost::OnFrameReady(const media::VideoFrame& frame) {
+  if (alloc_size_ != frame.visible_rect().size() || buffers_.empty()) {
+    alloc_size_ = frame.visible_rect().size();
     double frame_rate;
     int rounded_frame_rate;
-    if (frame->metadata()->GetDouble(media::VideoFrameMetadata::FRAME_RATE,
-                                     &frame_rate))
+    if (frame.metadata()->GetDouble(media::VideoFrameMetadata::FRAME_RATE,
+                                    &frame_rate))
       rounded_frame_rate = static_cast<int>(frame_rate + 0.5 /* round */);
     else
       rounded_frame_rate = blink::MediaStreamVideoSource::kUnknownFrameRate;
@@ -138,9 +135,9 @@ void PepperVideoCaptureHost::OnFrameReady(
 
   for (uint32_t i = 0; i < buffers_.size(); ++i) {
     if (!buffers_[i].in_use) {
-      DCHECK_EQ(frame->format(), media::PIXEL_FORMAT_I420);
+      DCHECK_EQ(frame.format(), media::PIXEL_FORMAT_I420);
       if (buffers_[i].buffer->size() <
-          media::VideoFrame::AllocationSize(frame->format(), alloc_size_)) {
+          media::VideoFrame::AllocationSize(frame.format(), alloc_size_)) {
         // TODO(ihf): handle size mismatches gracefully here.
         return;
       }
@@ -148,12 +145,12 @@ void PepperVideoCaptureHost::OnFrameReady(
       static_assert(media::VideoFrame::kYPlane == 0, "y plane should be 0");
       static_assert(media::VideoFrame::kUPlane == 1, "u plane should be 1");
       static_assert(media::VideoFrame::kVPlane == 2, "v plane should be 2");
-      for (size_t j = 0; j < media::VideoFrame::NumPlanes(frame->format());
+      for (size_t j = 0; j < media::VideoFrame::NumPlanes(frame.format());
            ++j) {
-        const uint8_t* src = frame->visible_data(j);
-        const size_t row_bytes = frame->row_bytes(j);
-        const size_t src_stride = frame->stride(j);
-        for (int k = 0; k < frame->rows(j); ++k) {
+        const uint8_t* src = frame.visible_data(j);
+        const size_t row_bytes = frame.row_bytes(j);
+        const size_t src_stride = frame.stride(j);
+        for (int k = 0; k < frame.rows(j); ++k) {
           memcpy(dst, src, row_bytes);
           dst += row_bytes;
           src += src_stride;

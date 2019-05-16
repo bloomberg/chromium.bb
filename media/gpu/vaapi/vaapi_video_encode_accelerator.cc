@@ -418,7 +418,7 @@ void VaapiVideoEncodeAccelerator::UploadFrame(scoped_refptr<VideoFrame> frame,
                                               VASurfaceID va_surface_id) {
   DCHECK(encoder_thread_task_runner_->BelongsToCurrentThread());
   DVLOGF(4) << "frame is uploading: " << va_surface_id;
-  if (!vaapi_wrapper_->UploadVideoFrameToSurface(frame, va_surface_id))
+  if (!vaapi_wrapper_->UploadVideoFrameToSurface(*frame, va_surface_id))
     NOTIFY_ERROR(kPlatformFailureError, "Failed to upload frame");
 }
 
@@ -500,15 +500,16 @@ void VaapiVideoEncodeAccelerator::ReturnBitstreamBuffer(
                                 buffer->id, encode_job->Metadata(data_size)));
 }
 
-void VaapiVideoEncodeAccelerator::Encode(const scoped_refptr<VideoFrame>& frame,
+void VaapiVideoEncodeAccelerator::Encode(scoped_refptr<VideoFrame> frame,
                                          bool force_keyframe) {
   DVLOGF(4) << "Frame timestamp: " << frame->timestamp().InMilliseconds()
             << " force_keyframe: " << force_keyframe;
   DCHECK(child_task_runner_->BelongsToCurrentThread());
 
   encoder_thread_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&VaapiVideoEncodeAccelerator::EncodeTask,
-                                base::Unretained(this), frame, force_keyframe));
+      FROM_HERE,
+      base::BindOnce(&VaapiVideoEncodeAccelerator::EncodeTask,
+                     base::Unretained(this), std::move(frame), force_keyframe));
 }
 
 void VaapiVideoEncodeAccelerator::EncodeTask(scoped_refptr<VideoFrame> frame,
@@ -516,7 +517,8 @@ void VaapiVideoEncodeAccelerator::EncodeTask(scoped_refptr<VideoFrame> frame,
   DCHECK(encoder_thread_task_runner_->BelongsToCurrentThread());
   DCHECK_NE(state_, kUninitialized);
 
-  input_queue_.push(std::make_unique<InputFrameRef>(frame, force_keyframe));
+  input_queue_.push(
+      std::make_unique<InputFrameRef>(std::move(frame), force_keyframe));
   EncodePendingInputs();
 }
 

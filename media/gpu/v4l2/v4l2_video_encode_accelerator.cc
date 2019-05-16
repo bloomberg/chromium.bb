@@ -363,7 +363,7 @@ void V4L2VideoEncodeAccelerator::ImageProcessorError() {
   NOTIFY_ERROR(kPlatformFailureError);
 }
 
-void V4L2VideoEncodeAccelerator::Encode(const scoped_refptr<VideoFrame>& frame,
+void V4L2VideoEncodeAccelerator::Encode(scoped_refptr<VideoFrame> frame,
                                         bool force_keyframe) {
   DVLOGF(4) << "force_keyframe=" << force_keyframe;
   DCHECK(child_task_runner_->BelongsToCurrentThread());
@@ -405,13 +405,13 @@ void V4L2VideoEncodeAccelerator::Encode(const scoped_refptr<VideoFrame>& frame,
         }
       }
     } else {
-      image_processor_input_queue_.emplace(frame, force_keyframe);
+      image_processor_input_queue_.emplace(std::move(frame), force_keyframe);
     }
   } else {
     encoder_thread_.task_runner()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&V4L2VideoEncodeAccelerator::EncodeTask,
-                       base::Unretained(this), frame, force_keyframe));
+        FROM_HERE, base::BindOnce(&V4L2VideoEncodeAccelerator::EncodeTask,
+                                  base::Unretained(this), std::move(frame),
+                                  force_keyframe));
   }
 }
 
@@ -628,9 +628,8 @@ size_t V4L2VideoEncodeAccelerator::CopyIntoOutputBuffer(
   return buffer_ref->shm->size() - remaining_dst_size;
 }
 
-void V4L2VideoEncodeAccelerator::EncodeTask(
-    const scoped_refptr<VideoFrame>& frame,
-    bool force_keyframe) {
+void V4L2VideoEncodeAccelerator::EncodeTask(scoped_refptr<VideoFrame> frame,
+                                            bool force_keyframe) {
   DVLOGF(4) << "force_keyframe=" << force_keyframe;
   DCHECK(encoder_thread_.task_runner()->BelongsToCurrentThread());
   DCHECK_NE(encoder_state_, kUninitialized);
@@ -640,7 +639,7 @@ void V4L2VideoEncodeAccelerator::EncodeTask(
     return;
   }
 
-  encoder_input_queue_.emplace(frame, force_keyframe);
+  encoder_input_queue_.emplace(std::move(frame), force_keyframe);
   Enqueue();
 }
 

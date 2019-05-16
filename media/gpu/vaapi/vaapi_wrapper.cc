@@ -1458,12 +1458,11 @@ std::unique_ptr<ScopedVAImage> VaapiWrapper::CreateVaImage(
   return scoped_image->IsValid() ? std::move(scoped_image) : nullptr;
 }
 
-bool VaapiWrapper::UploadVideoFrameToSurface(
-    const scoped_refptr<VideoFrame>& frame,
-    VASurfaceID va_surface_id) {
+bool VaapiWrapper::UploadVideoFrameToSurface(const VideoFrame& frame,
+                                             VASurfaceID va_surface_id) {
   base::AutoLock auto_lock(*va_lock_);
 
-  const gfx::Size size = frame->coded_size();
+  const gfx::Size size = frame.coded_size();
   bool va_create_put_fallback = false;
   VAImage image;
   VAStatus va_res = vaDeriveImage(va_display_, va_surface_id, &image);
@@ -1500,30 +1499,28 @@ bool VaapiWrapper::UploadVideoFrameToSurface(
   int ret = 0;
   {
     base::AutoUnlock auto_unlock(*va_lock_);
-    switch (frame->format()) {
+    switch (frame.format()) {
       case PIXEL_FORMAT_I420:
-        ret = libyuv::I420ToNV12(frame->data(VideoFrame::kYPlane),
-                                 frame->stride(VideoFrame::kYPlane),
-                                 frame->data(VideoFrame::kUPlane),
-                                 frame->stride(VideoFrame::kUPlane),
-                                 frame->data(VideoFrame::kVPlane),
-                                 frame->stride(VideoFrame::kVPlane),
-                                 image_ptr + image.offsets[0], image.pitches[0],
-                                 image_ptr + image.offsets[1], image.pitches[1],
-                                 image.width, image.height);
+        ret = libyuv::I420ToNV12(
+            frame.data(VideoFrame::kYPlane), frame.stride(VideoFrame::kYPlane),
+            frame.data(VideoFrame::kUPlane), frame.stride(VideoFrame::kUPlane),
+            frame.data(VideoFrame::kVPlane), frame.stride(VideoFrame::kVPlane),
+            image_ptr + image.offsets[0], image.pitches[0],
+            image_ptr + image.offsets[1], image.pitches[1], image.width,
+            image.height);
         break;
       case PIXEL_FORMAT_NV12:
-        libyuv::CopyPlane(frame->data(VideoFrame::kYPlane),
-                          frame->stride(VideoFrame::kYPlane),
+        libyuv::CopyPlane(frame.data(VideoFrame::kYPlane),
+                          frame.stride(VideoFrame::kYPlane),
                           image_ptr + image.offsets[0], image.pitches[0],
                           image.width, image.height);
-        libyuv::CopyPlane(frame->data(VideoFrame::kUVPlane),
-                          frame->stride(VideoFrame::kUVPlane),
+        libyuv::CopyPlane(frame.data(VideoFrame::kUVPlane),
+                          frame.stride(VideoFrame::kUVPlane),
                           image_ptr + image.offsets[1], image.pitches[1],
                           image.width, image.height / 2);
         break;
       default:
-        LOG(ERROR) << "Unsupported pixel format: " << frame->format();
+        LOG(ERROR) << "Unsupported pixel format: " << frame.format();
         return false;
     }
   }

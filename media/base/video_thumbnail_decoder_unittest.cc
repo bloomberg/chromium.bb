@@ -60,7 +60,7 @@ class VideoThumbnailDecoderTest : public testing::Test {
     return thumbnail_decoder_.get();
   }
   MockVideoDecoder* mock_video_decoder() { return mock_video_decoder_; }
-  const scoped_refptr<VideoFrame>& frame() { return frame_; }
+  scoped_refptr<VideoFrame> frame() { return frame_; }
 
  private:
   void OnFrameDecoded(scoped_refptr<VideoFrame> frame) {

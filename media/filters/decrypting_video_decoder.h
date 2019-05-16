@@ -70,8 +70,7 @@ class MEDIA_EXPORT DecryptingVideoDecoder : public VideoDecoder {
   void DecodePendingBuffer();
 
   // Callback for Decryptor::DecryptAndDecodeVideo().
-  void DeliverFrame(Decryptor::Status status,
-                    const scoped_refptr<VideoFrame>& frame);
+  void DeliverFrame(Decryptor::Status status, scoped_refptr<VideoFrame> frame);
 
   // Callback for the |decryptor_| to notify this object that a new key has been
   // added.

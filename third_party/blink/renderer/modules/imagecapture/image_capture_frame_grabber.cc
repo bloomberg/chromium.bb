@@ -56,7 +56,7 @@ class ImageCaptureFrameGrabber::SingleShotFrameHandler
   void OnVideoFrameOnIOThread(
       SkImageDeliverCB callback,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      const scoped_refptr<media::VideoFrame>& frame,
+      scoped_refptr<media::VideoFrame> frame,
       base::TimeTicks current_time);
 
  private:
@@ -72,7 +72,7 @@ class ImageCaptureFrameGrabber::SingleShotFrameHandler
 void ImageCaptureFrameGrabber::SingleShotFrameHandler::OnVideoFrameOnIOThread(
     SkImageDeliverCB callback,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    const scoped_refptr<media::VideoFrame>& frame,
+    scoped_refptr<media::VideoFrame> frame,
     base::TimeTicks /* current_time */) {
   DCHECK(frame->format() == media::PIXEL_FORMAT_I420 ||
          frame->format() == media::PIXEL_FORMAT_I420A);

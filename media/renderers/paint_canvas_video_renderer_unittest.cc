@@ -78,18 +78,17 @@ class PaintCanvasVideoRendererTest : public testing::Test {
 
   // Paints the |video_frame| to the |canvas| using |renderer_|, setting the
   // color of |video_frame| to |color| first.
-  void Paint(const scoped_refptr<VideoFrame>& video_frame,
+  void Paint(scoped_refptr<VideoFrame> video_frame,
              cc::PaintCanvas* canvas,
              Color color);
-  void PaintRotated(const scoped_refptr<VideoFrame>& video_frame,
+  void PaintRotated(scoped_refptr<VideoFrame> video_frame,
                     cc::PaintCanvas* canvas,
                     const gfx::RectF& dest_rect,
                     Color color,
                     SkBlendMode mode,
                     VideoTransformation video_transformation);
 
-  void Copy(const scoped_refptr<VideoFrame>& video_frame,
-            cc::PaintCanvas* canvas);
+  void Copy(scoped_refptr<VideoFrame> video_frame, cc::PaintCanvas* canvas);
 
   // Getters for various frame sizes.
   scoped_refptr<VideoFrame> natural_frame() { return natural_frame_; }
@@ -230,16 +229,15 @@ void PaintCanvasVideoRendererTest::PaintWithoutFrame(cc::PaintCanvas* canvas) {
                   nullptr);
 }
 
-void PaintCanvasVideoRendererTest::Paint(
-    const scoped_refptr<VideoFrame>& video_frame,
-    cc::PaintCanvas* canvas,
-    Color color) {
-  PaintRotated(video_frame, canvas, kNaturalRect, color, SkBlendMode::kSrcOver,
-               kNoTransformation);
+void PaintCanvasVideoRendererTest::Paint(scoped_refptr<VideoFrame> video_frame,
+                                         cc::PaintCanvas* canvas,
+                                         Color color) {
+  PaintRotated(std::move(video_frame), canvas, kNaturalRect, color,
+               SkBlendMode::kSrcOver, kNoTransformation);
 }
 
 void PaintCanvasVideoRendererTest::PaintRotated(
-    const scoped_refptr<VideoFrame>& video_frame,
+    scoped_refptr<VideoFrame> video_frame,
     cc::PaintCanvas* canvas,
     const gfx::RectF& dest_rect,
     Color color,
@@ -261,14 +259,13 @@ void PaintCanvasVideoRendererTest::PaintRotated(
   cc::PaintFlags flags;
   flags.setBlendMode(mode);
   flags.setFilterQuality(kLow_SkFilterQuality);
-  renderer_.Paint(video_frame, canvas, dest_rect, flags, video_transformation,
-                  nullptr);
+  renderer_.Paint(std::move(video_frame), canvas, dest_rect, flags,
+                  video_transformation, nullptr);
 }
 
-void PaintCanvasVideoRendererTest::Copy(
-    const scoped_refptr<VideoFrame>& video_frame,
-    cc::PaintCanvas* canvas) {
-  renderer_.Copy(video_frame, canvas, nullptr);
+void PaintCanvasVideoRendererTest::Copy(scoped_refptr<VideoFrame> video_frame,
+                                        cc::PaintCanvas* canvas) {
+  renderer_.Copy(std::move(video_frame), canvas, nullptr);
 }
 
 TEST_F(PaintCanvasVideoRendererTest, NoFrame) {
@@ -560,14 +557,14 @@ TEST_F(PaintCanvasVideoRendererTest, Y16) {
       static_cast<unsigned char*>(base::AlignedAlloc(
           byte_size, media::VideoFrame::kFrameAddressAlignment)));
   const gfx::Rect rect(offset_x, offset_y, bitmap.width(), bitmap.height());
-  scoped_refptr<media::VideoFrame> video_frame =
+  auto video_frame =
       CreateTestY16Frame(gfx::Size(stride, offset_y + bitmap.height()), rect,
                          memory.get(), cropped_frame()->timestamp());
 
   cc::SkiaPaintCanvas canvas(bitmap);
   cc::PaintFlags flags;
   flags.setFilterQuality(kNone_SkFilterQuality);
-  renderer_.Paint(video_frame, &canvas,
+  renderer_.Paint(std::move(video_frame), &canvas,
                   gfx::RectF(bitmap.width(), bitmap.height()), flags,
                   kNoTransformation, nullptr);
   for (int j = 0; j < bitmap.height(); j++) {
@@ -709,8 +706,8 @@ TEST_F(PaintCanvasVideoRendererTest, ContextLost) {
 
   cc::PaintFlags flags;
   flags.setFilterQuality(kLow_SkFilterQuality);
-  renderer_.Paint(video_frame, &canvas, kNaturalRect, flags, kNoTransformation,
-                  context_provider.get());
+  renderer_.Paint(std::move(video_frame), &canvas, kNaturalRect, flags,
+                  kNoTransformation, context_provider.get());
 }
 
 void EmptyCallback(const gpu::SyncToken& sync_token) {}
@@ -734,8 +731,8 @@ TEST_F(PaintCanvasVideoRendererTest, CorrectFrameSizeToVisibleRect) {
 
   gfx::RectF visible_rect(visible_size.width(), visible_size.height());
   cc::PaintFlags flags;
-  renderer_.Paint(video_frame, &canvas, visible_rect, flags, kNoTransformation,
-                  nullptr);
+  renderer_.Paint(std::move(video_frame), &canvas, visible_rect, flags,
+                  kNoTransformation, nullptr);
 
   EXPECT_EQ(fWidth / 2, renderer_.LastImageDimensionsForTesting().width());
   EXPECT_EQ(fWidth / 2, renderer_.LastImageDimensionsForTesting().height());
@@ -754,7 +751,7 @@ TEST_F(PaintCanvasVideoRendererTest, TexImage2D_Y16_RGBA32F) {
       static_cast<unsigned char*>(base::AlignedAlloc(
           byte_size, media::VideoFrame::kFrameAddressAlignment)));
   const gfx::Rect rect(offset_x, offset_y, width, height);
-  scoped_refptr<media::VideoFrame> video_frame =
+  auto video_frame =
       CreateTestY16Frame(gfx::Size(stride, offset_y + height), rect,
                          memory.get(), cropped_frame()->timestamp());
 
@@ -802,7 +799,7 @@ TEST_F(PaintCanvasVideoRendererTest, TexSubImage2D_Y16_R32F) {
       static_cast<unsigned char*>(base::AlignedAlloc(
           byte_size, media::VideoFrame::kFrameAddressAlignment)));
   const gfx::Rect rect(offset_x, offset_y, width, height);
-  scoped_refptr<media::VideoFrame> video_frame =
+  auto video_frame =
       CreateTestY16Frame(gfx::Size(stride, offset_y + height), rect,
                          memory.get(), cropped_frame()->timestamp());
 

@@ -38,7 +38,7 @@ bool FakeMjpegDecodeAccelerator::Initialize(
 
 void FakeMjpegDecodeAccelerator::Decode(
     media::BitstreamBuffer bitstream_buffer,
-    const scoped_refptr<media::VideoFrame>& video_frame) {
+    scoped_refptr<media::VideoFrame> video_frame) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
 
   auto src_shm = std::make_unique<media::UnalignedSharedMemory>(
@@ -55,13 +55,13 @@ void FakeMjpegDecodeAccelerator::Decode(
   decoder_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&FakeMjpegDecodeAccelerator::DecodeOnDecoderThread,
-                     base::Unretained(this), bitstream_buffer.id(), video_frame,
-                     base::Passed(&src_shm)));
+                     base::Unretained(this), bitstream_buffer.id(),
+                     std::move(video_frame), base::Passed(&src_shm)));
 }
 
 void FakeMjpegDecodeAccelerator::DecodeOnDecoderThread(
     int32_t bitstream_buffer_id,
-    const scoped_refptr<media::VideoFrame>& video_frame,
+    scoped_refptr<media::VideoFrame> video_frame,
     std::unique_ptr<media::UnalignedSharedMemory> src_shm) {
   DCHECK(decoder_task_runner_->BelongsToCurrentThread());
 

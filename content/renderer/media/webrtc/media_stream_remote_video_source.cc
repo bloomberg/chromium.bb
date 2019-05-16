@@ -43,8 +43,7 @@ class MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate
   // thread.
   void OnFrame(const webrtc::VideoFrame& frame) override;
 
-  void DoRenderFrameOnIOThread(
-      const scoped_refptr<media::VideoFrame>& video_frame);
+  void DoRenderFrameOnIOThread(scoped_refptr<media::VideoFrame> video_frame);
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
@@ -198,13 +197,12 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::OnFrame(
                      video_frame));
 }
 
-void MediaStreamRemoteVideoSource::
-RemoteVideoSourceDelegate::DoRenderFrameOnIOThread(
-    const scoped_refptr<media::VideoFrame>& video_frame) {
+void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::
+    DoRenderFrameOnIOThread(scoped_refptr<media::VideoFrame> video_frame) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   TRACE_EVENT0("webrtc", "RemoteVideoSourceDelegate::DoRenderFrameOnIOThread");
   // TODO(hclam): Give the estimated capture time.
-  frame_callback_.Run(video_frame, base::TimeTicks());
+  frame_callback_.Run(std::move(video_frame), base::TimeTicks());
 }
 
 MediaStreamRemoteVideoSource::MediaStreamRemoteVideoSource(

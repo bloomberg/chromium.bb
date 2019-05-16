@@ -102,8 +102,7 @@ class CONTENT_EXPORT StreamTextureWrapperImpl
 
   void ReallocateVideoFrame(const gfx::Size& natural_size);
 
-  void SetCurrentFrameInternal(
-      const scoped_refptr<media::VideoFrame>& video_frame);
+  void SetCurrentFrameInternal(scoped_refptr<media::VideoFrame> video_frame);
 
   bool enable_texture_copy_;
 

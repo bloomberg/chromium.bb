@@ -53,7 +53,7 @@ class MEDIA_EXPORT PaintCanvasVideoRenderer {
   //
   // If |video_frame| is nullptr or an unsupported format, |dest_rect| will be
   // painted black.
-  void Paint(const scoped_refptr<VideoFrame>& video_frame,
+  void Paint(scoped_refptr<VideoFrame> video_frame,
              cc::PaintCanvas* canvas,
              const gfx::RectF& dest_rect,
              cc::PaintFlags& flags,
@@ -64,7 +64,7 @@ class MEDIA_EXPORT PaintCanvasVideoRenderer {
   //
   // If the format of |video_frame| is PIXEL_FORMAT_NATIVE_TEXTURE, |context_3d|
   // and |context_support| must be provided.
-  void Copy(const scoped_refptr<VideoFrame>& video_frame,
+  void Copy(scoped_refptr<VideoFrame> video_frame,
             cc::PaintCanvas* canvas,
             viz::ContextProvider* context_provider);
 
@@ -97,7 +97,7 @@ class MEDIA_EXPORT PaintCanvasVideoRenderer {
   bool CopyVideoFrameTexturesToGLTexture(
       viz::ContextProvider* context_provider,
       gpu::gles2::GLES2Interface* destination_gl,
-      const scoped_refptr<VideoFrame>& video_frame,
+      scoped_refptr<VideoFrame> video_frame,
       unsigned int target,
       unsigned int texture,
       unsigned int internal_format,
@@ -109,7 +109,7 @@ class MEDIA_EXPORT PaintCanvasVideoRenderer {
 
   bool PrepareVideoFrameForWebGL(viz::ContextProvider* context_provider,
                                  gpu::gles2::GLES2Interface* gl,
-                                 const scoped_refptr<VideoFrame>& video_frame,
+                                 scoped_refptr<VideoFrame> video_frame,
                                  unsigned int target,
                                  unsigned int texture);
 
@@ -123,7 +123,7 @@ class MEDIA_EXPORT PaintCanvasVideoRenderer {
   bool CopyVideoFrameYUVDataToGLTexture(
       viz::ContextProvider* context_provider,
       gpu::gles2::GLES2Interface* destination_gl,
-      const scoped_refptr<VideoFrame>& video_frame,
+      const VideoFrame& video_frame,
       unsigned int target,
       unsigned int texture,
       unsigned int internal_format,
@@ -185,13 +185,13 @@ class MEDIA_EXPORT PaintCanvasVideoRenderer {
  private:
   // Update the cache holding the most-recently-painted frame. Returns false
   // if the image couldn't be updated.
-  bool UpdateLastImage(const scoped_refptr<VideoFrame>& video_frame,
+  bool UpdateLastImage(scoped_refptr<VideoFrame> video_frame,
                        viz::ContextProvider* context_provider,
                        bool allow_wrap_texture);
 
   void CorrectLastImageDimensions(const SkIRect& visible_rect);
 
-  bool PrepareVideoFrame(const scoped_refptr<VideoFrame>& video_frame,
+  bool PrepareVideoFrame(scoped_refptr<VideoFrame> video_frame,
                          viz::ContextProvider* context_provider,
                          unsigned int textureTarget,
                          unsigned int texture);

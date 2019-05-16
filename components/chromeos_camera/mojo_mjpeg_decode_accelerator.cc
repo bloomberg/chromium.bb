@@ -49,7 +49,7 @@ void MojoMjpegDecodeAccelerator::InitializeAsync(Client* client,
 
 void MojoMjpegDecodeAccelerator::Decode(
     media::BitstreamBuffer bitstream_buffer,
-    const scoped_refptr<media::VideoFrame>& video_frame) {
+    scoped_refptr<media::VideoFrame> video_frame) {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(jpeg_decoder_.is_bound());
 

@@ -138,8 +138,8 @@ class EndToEndFrameChecker
     EXPECT_TRUE(decoder_init_result);
   }
 
-  void PushExpectation(const scoped_refptr<VideoFrame>& frame) {
-    expectations_.push(frame);
+  void PushExpectation(scoped_refptr<VideoFrame> frame) {
+    expectations_.push(std::move(frame));
   }
 
   void EncodeDone(std::unique_ptr<SenderEncodedFrame> encoded_frame) {

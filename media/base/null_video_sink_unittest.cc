@@ -58,7 +58,7 @@ class NullVideoSinkTest : public testing::Test,
                                          bool));
   MOCK_METHOD0(OnFrameDropped, void());
 
-  MOCK_METHOD1(FrameReceived, void(const scoped_refptr<VideoFrame>&));
+  MOCK_METHOD1(FrameReceived, void(scoped_refptr<VideoFrame>));
 
  protected:
   base::MessageLoop message_loop_;

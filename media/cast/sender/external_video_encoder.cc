@@ -68,11 +68,11 @@ struct InProgressExternalVideoFrameEncode {
   const base::TimeTicks start_time;
 
   InProgressExternalVideoFrameEncode(
-      const scoped_refptr<VideoFrame>& v_frame,
+      scoped_refptr<VideoFrame> v_frame,
       base::TimeTicks r_time,
       VideoEncoder::FrameEncodedCallback callback,
       int bit_rate)
-      : video_frame(v_frame),
+      : video_frame(std::move(v_frame)),
         reference_time(r_time),
         frame_encoded_callback(callback),
         target_bit_rate(bit_rate),
@@ -157,7 +157,7 @@ class ExternalVideoEncoder::VEAClientImpl
   }
 
   void EncodeVideoFrame(
-      const scoped_refptr<media::VideoFrame>& video_frame,
+      scoped_refptr<media::VideoFrame> video_frame,
       const base::TimeTicks& reference_time,
       bool key_frame_requested,
       const VideoEncoder::FrameEncodedCallback& frame_encoded_callback) {
@@ -663,7 +663,7 @@ void ExternalVideoEncoder::DestroyClientSoon() {
 }
 
 bool ExternalVideoEncoder::EncodeVideoFrame(
-    const scoped_refptr<media::VideoFrame>& video_frame,
+    scoped_refptr<media::VideoFrame> video_frame,
     const base::TimeTicks& reference_time,
     const FrameEncodedCallback& frame_encoded_callback) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
@@ -674,7 +674,7 @@ bool ExternalVideoEncoder::EncodeVideoFrame(
 
   client_->task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&VEAClientImpl::EncodeVideoFrame, client_,
-                                video_frame, reference_time,
+                                std::move(video_frame), reference_time,
                                 key_frame_requested_, frame_encoded_callback));
   key_frame_requested_ = false;
   return true;

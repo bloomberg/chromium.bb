@@ -18,15 +18,15 @@ namespace mojo {
 namespace {
 
 media::mojom::VideoFrameDataPtr MakeVideoFrameData(
-    const scoped_refptr<media::VideoFrame>& input) {
+    const media::VideoFrame* input) {
   if (input->metadata()->IsTrue(media::VideoFrameMetadata::END_OF_STREAM)) {
     return media::mojom::VideoFrameData::NewEosData(
         media::mojom::EosVideoFrameData::New());
   }
 
   if (input->storage_type() == media::VideoFrame::STORAGE_MOJO_SHARED_BUFFER) {
-    media::MojoSharedBufferVideoFrame* mojo_frame =
-        static_cast<media::MojoSharedBufferVideoFrame*>(input.get());
+    const media::MojoSharedBufferVideoFrame* mojo_frame =
+        static_cast<const media::MojoSharedBufferVideoFrame*>(input);
 
     // TODO(https://crbug.com/803136): This should duplicate as READ_ONLY, but
     // can't because there is no guarantee that the input handle is sharable as
@@ -66,7 +66,7 @@ media::mojom::VideoFrameDataPtr MakeVideoFrameData(
 media::mojom::VideoFrameDataPtr StructTraits<media::mojom::VideoFrameDataView,
                                              scoped_refptr<media::VideoFrame>>::
     data(const scoped_refptr<media::VideoFrame>& input) {
-  return media::mojom::VideoFrameDataPtr(MakeVideoFrameData(input));
+  return media::mojom::VideoFrameDataPtr(MakeVideoFrameData(input.get()));
 }
 
 // static

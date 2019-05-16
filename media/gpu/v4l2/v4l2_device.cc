@@ -45,7 +45,7 @@ class V4L2Buffer {
   void* GetPlaneMapping(const size_t plane);
   size_t GetMemoryUsage() const;
   const struct v4l2_buffer* v4l2_buffer() const { return &v4l2_buffer_; }
-  const scoped_refptr<VideoFrame>& GetVideoFrame();
+  scoped_refptr<VideoFrame> GetVideoFrame();
 
  private:
   V4L2Buffer(scoped_refptr<V4L2Device> device,
@@ -185,7 +185,7 @@ scoped_refptr<VideoFrame> V4L2Buffer::CreateVideoFrame() {
       *layout, gfx::Rect(size), size, std::move(dmabuf_fds), base::TimeDelta());
 }
 
-const scoped_refptr<VideoFrame>& V4L2Buffer::GetVideoFrame() {
+scoped_refptr<VideoFrame> V4L2Buffer::GetVideoFrame() {
   // We can create the VideoFrame only when using MMAP buffers.
   if (v4l2_buffer_.memory != V4L2_MEMORY_MMAP) {
     DVLOGF(1) << "Cannot create video frame from non-MMAP buffer";
@@ -262,7 +262,7 @@ class V4L2BufferRefBase {
   bool QueueBuffer();
   void* GetPlaneMapping(const size_t plane);
 
-  const scoped_refptr<VideoFrame>& GetVideoFrame();
+  scoped_refptr<VideoFrame> GetVideoFrame();
 
   // Data from the buffer, that users can query and/or write.
   struct v4l2_buffer v4l2_buffer_;
@@ -330,7 +330,7 @@ void* V4L2BufferRefBase::GetPlaneMapping(const size_t plane) {
   return queue_->buffers_[BufferId()]->GetPlaneMapping(plane);
 }
 
-const scoped_refptr<VideoFrame>& V4L2BufferRefBase::GetVideoFrame() {
+scoped_refptr<VideoFrame> V4L2BufferRefBase::GetVideoFrame() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Used so we can return a const scoped_refptr& in all cases.
@@ -383,7 +383,7 @@ V4L2WritableBufferRef& V4L2WritableBufferRef::operator=(
   return *this;
 }
 
-const scoped_refptr<VideoFrame>& V4L2WritableBufferRef::GetVideoFrame() {
+scoped_refptr<VideoFrame> V4L2WritableBufferRef::GetVideoFrame() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   return buffer_data_->GetVideoFrame();
@@ -564,7 +564,7 @@ V4L2ReadableBuffer::V4L2ReadableBuffer(const struct v4l2_buffer* v4l2_buffer,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-const scoped_refptr<VideoFrame>& V4L2ReadableBuffer::GetVideoFrame() {
+scoped_refptr<VideoFrame> V4L2ReadableBuffer::GetVideoFrame() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   return buffer_data_->GetVideoFrame();

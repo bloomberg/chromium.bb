@@ -996,7 +996,7 @@ bool WebMediaPlayerMS::CopyVideoYUVDataToPlatformTexture(
     return false;
 
   return video_renderer_.CopyVideoFrameYUVDataToGLTexture(
-      provider, gl, video_frame.get(), target, texture, internal_format, format,
+      provider, gl, *video_frame, target, texture, internal_format, format,
       type, level, premultiply_alpha, flip_y);
 }
 

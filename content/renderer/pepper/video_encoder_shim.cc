@@ -98,17 +98,15 @@ class VideoEncoderShim::EncoderImpl {
   ~EncoderImpl();
 
   void Initialize(const media::VideoEncodeAccelerator::Config& config);
-  void Encode(const scoped_refptr<media::VideoFrame>& frame,
-              bool force_keyframe);
+  void Encode(scoped_refptr<media::VideoFrame> frame, bool force_keyframe);
   void UseOutputBitstreamBuffer(media::BitstreamBuffer buffer, uint8_t* mem);
   void RequestEncodingParametersChange(uint32_t bitrate, uint32_t framerate);
   void Stop();
 
  private:
   struct PendingEncode {
-    PendingEncode(const scoped_refptr<media::VideoFrame>& frame,
-                  bool force_keyframe)
-        : frame(frame), force_keyframe(force_keyframe) {}
+    PendingEncode(scoped_refptr<media::VideoFrame> frame, bool force_keyframe)
+        : frame(std::move(frame)), force_keyframe(force_keyframe) {}
     ~PendingEncode() {}
 
     scoped_refptr<media::VideoFrame> frame;
@@ -238,9 +236,9 @@ void VideoEncoderShim::EncoderImpl::Initialize(const Config& config) {
 }
 
 void VideoEncoderShim::EncoderImpl::Encode(
-    const scoped_refptr<media::VideoFrame>& frame,
+    scoped_refptr<media::VideoFrame> frame,
     bool force_keyframe) {
-  frames_.push_back(PendingEncode(frame, force_keyframe));
+  frames_.push_back(PendingEncode(std::move(frame), force_keyframe));
   DoEncode();
 }
 
@@ -417,14 +415,14 @@ bool VideoEncoderShim::Initialize(
   return true;
 }
 
-void VideoEncoderShim::Encode(const scoped_refptr<media::VideoFrame>& frame,
+void VideoEncoderShim::Encode(scoped_refptr<media::VideoFrame> frame,
                               bool force_keyframe) {
   DCHECK(RenderThreadImpl::current());
 
   media_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&VideoEncoderShim::EncoderImpl::Encode,
-                                base::Unretained(encoder_impl_.get()), frame,
-                                force_keyframe));
+                                base::Unretained(encoder_impl_.get()),
+                                std::move(frame), force_keyframe));
 }
 
 void VideoEncoderShim::UseOutputBitstreamBuffer(media::BitstreamBuffer buffer) {

@@ -41,7 +41,7 @@ namespace {
 
 // This function copies |frame| to a new I420 or YV12A media::VideoFrame.
 scoped_refptr<media::VideoFrame> CopyFrame(
-    const scoped_refptr<media::VideoFrame>& frame,
+    scoped_refptr<media::VideoFrame> frame,
     media::PaintCanvasVideoRenderer* video_renderer) {
   scoped_refptr<media::VideoFrame> new_frame;
   if (frame->HasTextures()) {
@@ -477,39 +477,40 @@ void WebMediaPlayerMSCompositor::RenderUsingAlgorithm(
   if (!frame || frame == current_frame_)
     return;
 
+  const base::TimeDelta timestamp = frame->timestamp();
   SetCurrentFrame(std::move(frame));
 
   const auto& end = timestamps_to_clock_times_.end();
   const auto& begin = timestamps_to_clock_times_.begin();
   auto iterator = begin;
-  while (iterator != end && iterator->first < frame->timestamp())
+  while (iterator != end && iterator->first < timestamp)
     ++iterator;
   timestamps_to_clock_times_.erase(begin, iterator);
 }
 
 void WebMediaPlayerMSCompositor::RenderWithoutAlgorithm(
-    const scoped_refptr<media::VideoFrame>& frame) {
+    scoped_refptr<media::VideoFrame> frame) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   video_frame_compositor_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
           &WebMediaPlayerMSCompositor::RenderWithoutAlgorithmOnCompositor, this,
-          frame));
+          std::move(frame)));
 }
 
 void WebMediaPlayerMSCompositor::RenderWithoutAlgorithmOnCompositor(
-    const scoped_refptr<media::VideoFrame>& frame) {
+    scoped_refptr<media::VideoFrame> frame) {
   DCHECK(video_frame_compositor_task_runner_->BelongsToCurrentThread());
   {
     base::AutoLock auto_lock(current_frame_lock_);
-    SetCurrentFrame(frame);
+    SetCurrentFrame(std::move(frame));
   }
   if (video_frame_provider_client_)
     video_frame_provider_client_->DidReceiveFrame();
 }
 
 void WebMediaPlayerMSCompositor::SetCurrentFrame(
-    const scoped_refptr<media::VideoFrame>& frame) {
+    scoped_refptr<media::VideoFrame> frame) {
   DCHECK(video_frame_compositor_task_runner_->BelongsToCurrentThread());
   current_frame_lock_.AssertAcquired();
   TRACE_EVENT_INSTANT1("media", "WebMediaPlayerMSCompositor::SetCurrentFrame",
@@ -528,12 +529,12 @@ void WebMediaPlayerMSCompositor::SetCurrentFrame(
   video_frame_compositor_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&WebMediaPlayerMSCompositor::CheckForFrameChanges, this,
-                     old_frame, frame));
+                     std::move(old_frame), std::move(frame)));
 }
 
 void WebMediaPlayerMSCompositor::CheckForFrameChanges(
-    const scoped_refptr<media::VideoFrame>& old_frame,
-    const scoped_refptr<media::VideoFrame>& new_frame) {
+    scoped_refptr<media::VideoFrame> old_frame,
+    scoped_refptr<media::VideoFrame> new_frame) {
   DCHECK(video_frame_compositor_task_runner_->BelongsToCurrentThread());
 
   const bool new_frame_is_opaque = media::IsOpaque(new_frame->format());

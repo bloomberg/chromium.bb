@@ -275,8 +275,8 @@ class NaivePlayer : public InProcessReceiver,
   ////////////////////////////////////////////////////////////////////
   // InProcessReceiver finals.
 
-  void OnVideoFrame(const scoped_refptr<VideoFrame>& video_frame,
-                    const base::TimeTicks& playout_time,
+  void OnVideoFrame(scoped_refptr<VideoFrame> video_frame,
+                    base::TimeTicks playout_time,
                     bool is_continuous) final {
     DCHECK(cast_env()->CurrentlyOn(CastEnvironment::MAIN));
     LOG_IF(WARNING, !is_continuous)
@@ -284,7 +284,7 @@ class NaivePlayer : public InProcessReceiver,
     video_playout_queue_.push_back(std::make_pair(playout_time, video_frame));
     ScheduleVideoPlayout();
     uint16_t frame_no;
-    if (media::cast::test::DecodeBarcode(video_frame, &frame_no)) {
+    if (media::cast::test::DecodeBarcode(*video_frame, &frame_no)) {
       video_play_times_.insert(
           std::pair<uint16_t, base::TimeTicks>(frame_no, playout_time));
     } else {
@@ -293,7 +293,7 @@ class NaivePlayer : public InProcessReceiver,
   }
 
   void OnAudioFrame(std::unique_ptr<AudioBus> audio_frame,
-                    const base::TimeTicks& playout_time,
+                    base::TimeTicks playout_time,
                     bool is_continuous) final {
     DCHECK(cast_env()->CurrentlyOn(CastEnvironment::MAIN));
     LOG_IF(WARNING, !is_continuous)
@@ -425,7 +425,7 @@ class NaivePlayer : public InProcessReceiver,
     if (!video_playout_queue_.empty()) {
       const scoped_refptr<VideoFrame> video_frame = PopOneVideoFrame(false);
 #if defined(USE_X11)
-      render_.RenderFrame(video_frame);
+      render_.RenderFrame(*video_frame);
 #endif  // defined(USE_X11)
     }
     ScheduleVideoPlayout();

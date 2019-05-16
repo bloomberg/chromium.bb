@@ -1205,10 +1205,9 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
   return external_resources;
 }
 
-void VideoResourceUpdater::ReturnTexture(
-    const scoped_refptr<VideoFrame>& video_frame,
-    const gpu::SyncToken& sync_token,
-    bool lost_resource) {
+void VideoResourceUpdater::ReturnTexture(scoped_refptr<VideoFrame> video_frame,
+                                         const gpu::SyncToken& sync_token,
+                                         bool lost_resource) {
   // TODO(dshwang): Forward to the decoder as a lost resource.
   if (lost_resource)
     return;

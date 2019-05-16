@@ -850,14 +850,14 @@ void MediaCodecVideoDecoder::RunEosDecodeCb(int reset_generation) {
 void MediaCodecVideoDecoder::ForwardVideoFrame(
     int reset_generation,
     std::unique_ptr<ScopedAsyncTrace> async_trace,
-    const scoped_refptr<VideoFrame>& frame) {
+    scoped_refptr<VideoFrame> frame) {
   DVLOG(3) << __func__ << " : "
            << (frame ? frame->AsHumanReadableString() : "null");
   if (reset_generation == reset_generation_) {
     // TODO(liberato): We might actually have a SW decoder.  Consider setting
     // this to false if so, especially for higher bitrates.
     frame->metadata()->SetBoolean(VideoFrameMetadata::POWER_EFFICIENT, true);
-    output_cb_.Run(frame);
+    output_cb_.Run(std::move(frame));
   }
 }
 

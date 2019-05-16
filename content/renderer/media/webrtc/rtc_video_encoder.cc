@@ -203,7 +203,7 @@ class RTCVideoEncoder::Impl
 
   // Checks if the frame size is different than hardware accelerator
   // requirements.
-  bool RequiresSizeChange(const scoped_refptr<media::VideoFrame>& frame) const;
+  bool RequiresSizeChange(const media::VideoFrame& frame) const;
 
   // Return an encoded output buffer to WebRTC.
   void ReturnEncodedImage(const webrtc::EncodedImage& image,
@@ -651,7 +651,7 @@ void RTCVideoEncoder::Impl::EncodeOneFrame() {
     frame = static_cast<WebRtcVideoFrameAdapter*>(
                 next_frame->video_frame_buffer().get())
                 ->getMediaVideoFrame();
-    requires_copy = RequiresSizeChange(frame) ||
+    requires_copy = RequiresSizeChange(*frame) ||
                     frame->storage_type() != media::VideoFrame::STORAGE_SHMEM;
   } else {
     requires_copy = true;
@@ -748,9 +748,9 @@ bool RTCVideoEncoder::Impl::IsBitrateTooHigh(uint32_t bitrate) {
 }
 
 bool RTCVideoEncoder::Impl::RequiresSizeChange(
-    const scoped_refptr<media::VideoFrame>& frame) const {
-  return (frame->coded_size() != input_frame_coded_size_ ||
-          frame->visible_rect() != gfx::Rect(input_visible_size_));
+    const media::VideoFrame& frame) const {
+  return (frame.coded_size() != input_frame_coded_size_ ||
+          frame.visible_rect() != gfx::Rect(input_visible_size_));
 }
 
 void RTCVideoEncoder::Impl::RegisterEncodeCompleteCallback(

@@ -418,11 +418,11 @@ void SynchronizeVideoFrameRead(scoped_refptr<VideoFrame> video_frame,
 // Generates an RGB image from a VideoFrame. Convert YUV to RGB plain on GPU.
 class VideoImageGenerator : public cc::PaintImageGenerator {
  public:
-  VideoImageGenerator(const scoped_refptr<VideoFrame>& frame)
+  VideoImageGenerator(scoped_refptr<VideoFrame> frame)
       : cc::PaintImageGenerator(
             SkImageInfo::MakeN32Premul(frame->visible_rect().width(),
                                        frame->visible_rect().height())),
-        frame_(frame) {
+        frame_(std::move(frame)) {
     DCHECK(!frame_->HasTextures());
   }
   ~VideoImageGenerator() override = default;
@@ -580,13 +580,12 @@ PaintCanvasVideoRenderer::~PaintCanvasVideoRenderer() {
   ResetCache();
 }
 
-void PaintCanvasVideoRenderer::Paint(
-    const scoped_refptr<VideoFrame>& video_frame,
-    cc::PaintCanvas* canvas,
-    const gfx::RectF& dest_rect,
-    cc::PaintFlags& flags,
-    VideoTransformation video_transformation,
-    viz::ContextProvider* context_provider) {
+void PaintCanvasVideoRenderer::Paint(scoped_refptr<VideoFrame> video_frame,
+                                     cc::PaintCanvas* canvas,
+                                     const gfx::RectF& dest_rect,
+                                     cc::PaintFlags& flags,
+                                     VideoTransformation video_transformation,
+                                     viz::ContextProvider* context_provider) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (flags.getAlpha() == 0) {
     return;
@@ -684,7 +683,8 @@ void PaintCanvasVideoRenderer::Paint(
   if (video_frame->HasTextures()) {
     // Synchronize |video_frame| with the read operations in UpdateLastImage(),
     // which are triggered by canvas->flush().
-    SynchronizeVideoFrameRead(video_frame, context_provider->ContextGL(),
+    SynchronizeVideoFrameRead(std::move(video_frame),
+                              context_provider->ContextGL(),
                               context_provider->ContextSupport());
   }
   // Because we are not retaining a reference to the VideoFrame, it would be
@@ -693,15 +693,15 @@ void PaintCanvasVideoRenderer::Paint(
   DCHECK(!last_image_wraps_video_frame_texture_);
 }
 
-void PaintCanvasVideoRenderer::Copy(
-    const scoped_refptr<VideoFrame>& video_frame,
-    cc::PaintCanvas* canvas,
-    viz::ContextProvider* context_provider) {
+void PaintCanvasVideoRenderer::Copy(scoped_refptr<VideoFrame> video_frame,
+                                    cc::PaintCanvas* canvas,
+                                    viz::ContextProvider* context_provider) {
   cc::PaintFlags flags;
   flags.setBlendMode(SkBlendMode::kSrc);
   flags.setFilterQuality(kLow_SkFilterQuality);
-  Paint(video_frame, canvas,
-        gfx::RectF(gfx::SizeF(video_frame->visible_rect().size())), flags,
+
+  auto dest_rect = gfx::RectF(gfx::SizeF(video_frame->visible_rect().size()));
+  Paint(std::move(video_frame), canvas, dest_rect, flags,
         media::kNoTransformation, context_provider);
 }
 
@@ -1101,7 +1101,7 @@ void PaintCanvasVideoRenderer::CopyVideoFrameSingleTextureToGLTexture(
 bool PaintCanvasVideoRenderer::CopyVideoFrameTexturesToGLTexture(
     viz::ContextProvider* context_provider,
     gpu::gles2::GLES2Interface* destination_gl,
-    const scoped_refptr<VideoFrame>& video_frame,
+    scoped_refptr<VideoFrame> video_frame,
     unsigned int target,
     unsigned int texture,
     unsigned int internal_format,
@@ -1172,13 +1172,13 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameTexturesToGLTexture(
     // Synchronize |video_frame| with the read operations in UpdateLastImage(),
     // which are triggered by getBackendTexture() or CopyTextureCHROMIUM (in the
     // case last_image_ was referencing its texture(s) directly).
-    SynchronizeVideoFrameRead(video_frame, canvas_gl,
+    SynchronizeVideoFrameRead(std::move(video_frame), canvas_gl,
                               context_provider->ContextSupport());
   } else {
     CopyVideoFrameSingleTextureToGLTexture(
         destination_gl, video_frame.get(), target, texture, internal_format,
         format, type, level, premultiply_alpha, flip_y);
-    SynchronizeVideoFrameRead(video_frame, destination_gl, nullptr);
+    SynchronizeVideoFrameRead(std::move(video_frame), destination_gl, nullptr);
   }
   DCHECK(!last_image_wraps_video_frame_texture_);
 
@@ -1188,7 +1188,7 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameTexturesToGLTexture(
 bool PaintCanvasVideoRenderer::PrepareVideoFrameForWebGL(
     viz::ContextProvider* context_provider,
     gpu::gles2::GLES2Interface* destination_gl,
-    const scoped_refptr<VideoFrame>& video_frame,
+    scoped_refptr<VideoFrame> video_frame,
     unsigned int target,
     unsigned int texture) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -1263,7 +1263,7 @@ bool PaintCanvasVideoRenderer::PrepareVideoFrameForWebGL(
 bool PaintCanvasVideoRenderer::CopyVideoFrameYUVDataToGLTexture(
     viz::ContextProvider* context_provider,
     gpu::gles2::GLES2Interface* destination_gl,
-    const scoped_refptr<VideoFrame>& video_frame,
+    const VideoFrame& video_frame,
     unsigned int target,
     unsigned int texture,
     unsigned int internal_format,
@@ -1278,17 +1278,17 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameYUVDataToGLTexture(
     return false;
   }
 
-  if (!video_frame || !video_frame->IsMappable()) {
+  if (!video_frame.IsMappable()) {
     return false;
   }
 
-  if (video_frame->format() != media::PIXEL_FORMAT_I420) {
+  if (video_frame.format() != media::PIXEL_FORMAT_I420) {
     return false;
   }
   // Could handle NV12 here as well. See NewSkImageFromVideoFrameYUVTextures.
 
   static constexpr size_t kNumPlanes = 3;
-  DCHECK_EQ(video_frame->NumPlanes(video_frame->format()), kNumPlanes);
+  DCHECK_EQ(video_frame.NumPlanes(video_frame.format()), kNumPlanes);
   // Y,U,V GPU-side SkImages. (These must outlive the yuv_textures).
   sk_sp<SkImage> yuv_images[kNumPlanes]{};
   // Y,U,V GPU textures from those SkImages.
@@ -1296,13 +1296,13 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameYUVDataToGLTexture(
   GrBackendTexture yuv_textures[kNumPlanes]{};
 
   // Upload the whole coded image area (not visible rect).
-  gfx::Size y_tex_size = video_frame->coded_size();
+  gfx::Size y_tex_size = video_frame.coded_size();
   gfx::Size uv_tex_size((y_tex_size.width() + 1) / 2,
                         (y_tex_size.height() + 1) / 2);
 
   for (size_t plane = 0; plane < kNumPlanes; ++plane) {
-    const uint8_t* data = video_frame->data(plane);
-    int plane_stride = video_frame->stride(plane);
+    const uint8_t* data = video_frame.data(plane);
+    int plane_stride = video_frame.stride(plane);
 
     bool is_y_plane = plane == media::VideoFrame::kYPlane;
     gfx::Size tex_size = is_y_plane ? y_tex_size : uv_tex_size;
@@ -1328,9 +1328,8 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameYUVDataToGLTexture(
   }
 
   // Decode 3 GPU-side Y,U,V SkImages into a GPU-side RGB SkImage.
-  sk_sp<SkImage> yuv_image =
-      YUVGrBackendTexturesToSkImage(gr_context, video_frame->ColorSpace(),
-                                    video_frame->format(), yuv_textures);
+  sk_sp<SkImage> yuv_image = YUVGrBackendTexturesToSkImage(
+      gr_context, video_frame.ColorSpace(), video_frame.format(), yuv_textures);
   if (!yuv_image) {
     return false;
   }
@@ -1355,7 +1354,7 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameYUVDataToGLTexture(
       destination_gl->CreateAndConsumeTextureCHROMIUM(
           mailbox_holder.mailbox.name);
   VideoFrameCopyTextureOrSubTexture(
-      destination_gl, video_frame->coded_size(), video_frame->visible_rect(),
+      destination_gl, video_frame.coded_size(), video_frame.visible_rect(),
       intermediate_texture, target, texture, internal_format, format, type,
       level, premultiply_alpha, flip_y);
   destination_gl->DeleteTextures(1, &intermediate_texture);
@@ -1455,7 +1454,7 @@ void PaintCanvasVideoRenderer::ResetCache() {
 }
 
 bool PaintCanvasVideoRenderer::UpdateLastImage(
-    const scoped_refptr<VideoFrame>& video_frame,
+    scoped_refptr<VideoFrame> video_frame,
     viz::ContextProvider* context_provider,
     bool allow_wrap_texture) {
   DCHECK(!last_image_wraps_video_frame_texture_);
@@ -1506,7 +1505,7 @@ bool PaintCanvasVideoRenderer::UpdateLastImage(
 }
 
 bool PaintCanvasVideoRenderer::PrepareVideoFrame(
-    const scoped_refptr<VideoFrame>& video_frame,
+    scoped_refptr<VideoFrame> video_frame,
     viz::ContextProvider* context_provider,
     unsigned int textureTarget,
     unsigned int texture) {

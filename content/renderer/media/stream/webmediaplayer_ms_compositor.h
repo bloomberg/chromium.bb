@@ -139,16 +139,16 @@ class CONTENT_EXPORT WebMediaPlayerMSCompositor
   // For algorithm disabled case only: call SetCurrentFrame() with the current
   // frame immediately. |video_frame_provider_client_| gets notified about the
   // new frame with a DidReceiveFrame() call.
-  void RenderWithoutAlgorithm(const scoped_refptr<media::VideoFrame>& frame);
+  void RenderWithoutAlgorithm(scoped_refptr<media::VideoFrame> frame);
   void RenderWithoutAlgorithmOnCompositor(
-      const scoped_refptr<media::VideoFrame>& frame);
+      scoped_refptr<media::VideoFrame> frame);
 
   // Update |current_frame_| and |dropped_frame_count_|
-  void SetCurrentFrame(const scoped_refptr<media::VideoFrame>& frame);
+  void SetCurrentFrame(scoped_refptr<media::VideoFrame> frame);
   // Following the update to |current_frame_|, this will check for changes that
   // require updating video layer.
-  void CheckForFrameChanges(const scoped_refptr<media::VideoFrame>& old_frame,
-                            const scoped_refptr<media::VideoFrame>& new_frame);
+  void CheckForFrameChanges(scoped_refptr<media::VideoFrame> old_frame,
+                            scoped_refptr<media::VideoFrame> new_frame);
 
   void StartRenderingInternal();
   void StopRenderingInternal();

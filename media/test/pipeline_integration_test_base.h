@@ -218,7 +218,7 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
   // Creates Demuxer and sets |demuxer_|.
   void CreateDemuxer(std::unique_ptr<DataSource> data_source);
 
-  void OnVideoFramePaint(const scoped_refptr<VideoFrame>& frame);
+  void OnVideoFramePaint(scoped_refptr<VideoFrame> frame);
 
   void CheckDuration();
 

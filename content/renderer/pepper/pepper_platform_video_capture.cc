@@ -138,10 +138,10 @@ void PepperPlatformVideoCapture::OnStateUpdate(blink::VideoCaptureState state) {
 }
 
 void PepperPlatformVideoCapture::OnFrameReady(
-    const scoped_refptr<media::VideoFrame>& frame,
+    scoped_refptr<media::VideoFrame> frame,
     base::TimeTicks estimated_capture_time) {
   if (handler_ && !stop_capture_cb_.is_null())
-    handler_->OnFrameReady(frame);
+    handler_->OnFrameReady(*frame);
 }
 
 PepperMediaDeviceManager* PepperPlatformVideoCapture::GetMediaDeviceManager() {

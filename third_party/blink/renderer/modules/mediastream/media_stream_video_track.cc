@@ -28,7 +28,7 @@ void ResetCallback(std::unique_ptr<VideoCaptureDeliverFrameCB> callback) {
 
 // Empty method used for keeping a reference to the original media::VideoFrame.
 // The reference to |frame| is kept in the closure that calls this method.
-void ReleaseOriginalFrame(const scoped_refptr<media::VideoFrame>& frame) {}
+void ReleaseOriginalFrame(scoped_refptr<media::VideoFrame> frame) {}
 
 }  // namespace
 
@@ -63,7 +63,7 @@ class MediaStreamVideoTrack::FrameDeliverer
 
   // Triggers all registered callbacks with |frame|, |format| and
   // |estimated_capture_time| as parameters. Must be called on the IO-thread.
-  void DeliverFrameOnIO(const scoped_refptr<media::VideoFrame>& frame,
+  void DeliverFrameOnIO(scoped_refptr<media::VideoFrame> frame,
                         base::TimeTicks estimated_capture_time);
 
  private:
@@ -80,7 +80,7 @@ class MediaStreamVideoTrack::FrameDeliverer
   // Returns a black frame where the size and time stamp is set to the same as
   // as in |reference_frame|.
   scoped_refptr<media::VideoFrame> GetBlackFrame(
-      const scoped_refptr<media::VideoFrame>& reference_frame);
+      const media::VideoFrame& reference_frame);
 
   // Used to DCHECK that AddCallback and RemoveCallback are called on the main
   // Render Thread.
@@ -184,7 +184,7 @@ void MediaStreamVideoTrack::FrameDeliverer::SetEnabledOnIO(bool enabled) {
 }
 
 void MediaStreamVideoTrack::FrameDeliverer::DeliverFrameOnIO(
-    const scoped_refptr<media::VideoFrame>& frame,
+    scoped_refptr<media::VideoFrame> frame,
     base::TimeTicks estimated_capture_time) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   if (!enabled_ && main_render_task_runner_ && emit_frame_drop_events_) {
@@ -196,20 +196,19 @@ void MediaStreamVideoTrack::FrameDeliverer::DeliverFrameOnIO(
             media::VideoCaptureFrameDropReason::
                 kVideoTrackFrameDelivererNotEnabledReplacingWithBlackFrame));
   }
-  const scoped_refptr<media::VideoFrame>& video_frame =
-      enabled_ ? frame : GetBlackFrame(frame);
+  auto video_frame = enabled_ ? std::move(frame) : GetBlackFrame(*frame);
   for (const auto& entry : callbacks_)
     entry.second.Run(video_frame, estimated_capture_time);
 }
 
 scoped_refptr<media::VideoFrame>
 MediaStreamVideoTrack::FrameDeliverer::GetBlackFrame(
-    const scoped_refptr<media::VideoFrame>& reference_frame) {
+    const media::VideoFrame& reference_frame) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   if (!black_frame_.get() ||
-      black_frame_->natural_size() != reference_frame->natural_size()) {
+      black_frame_->natural_size() != reference_frame.natural_size()) {
     black_frame_ =
-        media::VideoFrame::CreateBlackFrame(reference_frame->natural_size());
+        media::VideoFrame::CreateBlackFrame(reference_frame.natural_size());
   }
 
   // Wrap |black_frame_| so we get a fresh timestamp we can modify. Frames
@@ -223,9 +222,9 @@ MediaStreamVideoTrack::FrameDeliverer::GetBlackFrame(
   wrapped_black_frame->AddDestructionObserver(
       base::BindOnce(&ReleaseOriginalFrame, black_frame_));
 
-  wrapped_black_frame->set_timestamp(reference_frame->timestamp());
+  wrapped_black_frame->set_timestamp(reference_frame.timestamp());
   base::TimeTicks reference_time;
-  if (reference_frame->metadata()->GetTimeTicks(
+  if (reference_frame.metadata()->GetTimeTicks(
           media::VideoFrameMetadata::REFERENCE_TIME, &reference_time)) {
     wrapped_black_frame->metadata()->SetTimeTicks(
         media::VideoFrameMetadata::REFERENCE_TIME, reference_time);

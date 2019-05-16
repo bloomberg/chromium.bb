@@ -61,7 +61,7 @@ class BLINK_EXPORT VideoTrackAdapter
 
   // Delivers |frame| to all tracks that have registered a callback.
   // Must be called on the IO-thread.
-  void DeliverFrameOnIO(const scoped_refptr<media::VideoFrame>& frame,
+  void DeliverFrameOnIO(scoped_refptr<media::VideoFrame> frame,
                         base::TimeTicks estimated_capture_time);
 
   base::SingleThreadTaskRunner* io_task_runner() const {
@@ -97,7 +97,7 @@ class BLINK_EXPORT VideoTrackAdapter
   // VideoTrackSettingsCallback and VideoTrackFormatCallback respectively.
   using VideoCaptureDeliverFrameInternalCallback =
       WTF::CrossThreadFunction<void(
-          const scoped_refptr<media::VideoFrame>& video_frame,
+          scoped_refptr<media::VideoFrame> video_frame,
           base::TimeTicks estimated_capture_time)>;
   using VideoTrackSettingsInternalCallback =
       WTF::CrossThreadFunction<void(gfx::Size frame_size, double frame_rate)>;

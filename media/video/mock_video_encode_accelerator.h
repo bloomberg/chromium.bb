@@ -23,8 +23,7 @@ class MockVideoEncodeAccelerator : public VideoEncodeAccelerator {
                bool(const VideoEncodeAccelerator::Config& config,
                     VideoEncodeAccelerator::Client* client));
   MOCK_METHOD2(Encode,
-               void(const scoped_refptr<VideoFrame>& frame,
-                    bool force_keyframe));
+               void(scoped_refptr<VideoFrame> frame, bool force_keyframe));
   MOCK_METHOD1(UseOutputBitstreamBuffer, void(BitstreamBuffer buffer));
   MOCK_METHOD2(RequestEncodingParametersChange,
                void(uint32_t bitrate, uint32_t framerate));

@@ -116,11 +116,10 @@ class CONTENT_EXPORT VideoTrackRecorder : public blink::MediaStreamVideoSink {
     // encode the frame. If the |frame|'s data is not directly available (e.g.
     // it's a texture) then RetrieveFrameOnMainThread() is called, and if even
     // that fails, black frames are sent instead.
-    void StartFrameEncode(const scoped_refptr<media::VideoFrame>& frame,
+    void StartFrameEncode(scoped_refptr<media::VideoFrame> frame,
                           base::TimeTicks capture_timestamp);
-    void RetrieveFrameOnMainThread(
-        const scoped_refptr<media::VideoFrame>& video_frame,
-        base::TimeTicks capture_timestamp);
+    void RetrieveFrameOnMainThread(scoped_refptr<media::VideoFrame> video_frame,
+                                   base::TimeTicks capture_timestamp);
 
     static void OnFrameEncodeCompleted(
         const VideoTrackRecorder::OnEncodedVideoCB& on_encoded_video_cb,
@@ -151,7 +150,7 @@ class CONTENT_EXPORT VideoTrackRecorder : public blink::MediaStreamVideoSink {
         base::TimeTicks capture_timestamp) = 0;
 
     // Called when the frame reference is released after encode.
-    void FrameReleased(const scoped_refptr<media::VideoFrame>& frame);
+    void FrameReleased(scoped_refptr<media::VideoFrame> frame);
 
     // Used to shutdown properly on the same thread we were created.
     const scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
@@ -241,15 +240,16 @@ class CONTENT_EXPORT VideoTrackRecorder : public blink::MediaStreamVideoSink {
   void Pause();
   void Resume();
 
-  void OnVideoFrameForTesting(const scoped_refptr<media::VideoFrame>& frame,
+  void OnVideoFrameForTesting(scoped_refptr<media::VideoFrame> frame,
                               base::TimeTicks capture_time);
+
  private:
   friend class VideoTrackRecorderTest;
   void InitializeEncoder(CodecId codec,
                          const OnEncodedVideoCB& on_encoded_video_callback,
                          int32_t bits_per_second,
                          bool allow_vea_encoder,
-                         const scoped_refptr<media::VideoFrame>& frame,
+                         scoped_refptr<media::VideoFrame> frame,
                          base::TimeTicks capture_time);
   void OnError();
 
@@ -263,7 +263,7 @@ class CONTENT_EXPORT VideoTrackRecorder : public blink::MediaStreamVideoSink {
   scoped_refptr<Encoder> encoder_;
 
   base::Callback<void(bool allow_vea_encoder,
-                      const scoped_refptr<media::VideoFrame>& frame,
+                      scoped_refptr<media::VideoFrame> frame,
                       base::TimeTicks capture_time)>
       initialize_encoder_callback_;
 

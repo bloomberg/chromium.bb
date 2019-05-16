@@ -256,7 +256,7 @@ bool MediaFoundationVideoEncodeAccelerator::Initialize(const Config& config,
 }
 
 void MediaFoundationVideoEncodeAccelerator::Encode(
-    const scoped_refptr<VideoFrame>& frame,
+    scoped_refptr<VideoFrame> frame,
     bool force_keyframe) {
   DVLOG(3) << __func__;
   DCHECK(main_client_task_runner_->BelongsToCurrentThread());
@@ -264,7 +264,7 @@ void MediaFoundationVideoEncodeAccelerator::Encode(
   encoder_thread_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&MediaFoundationVideoEncodeAccelerator::EncodeTask,
-                     encoder_task_weak_factory_.GetWeakPtr(), frame,
+                     encoder_task_weak_factory_.GetWeakPtr(), std::move(frame),
                      force_keyframe));
 }
 

@@ -269,7 +269,7 @@ class JpegClient : public MjpegDecodeAccelerator::Client {
   // Save a video frame that contains a decoded JPEG. The output is a PNG file.
   // The suffix will be added before the .png extension.
   void SaveToFile(int32_t bitstream_buffer_id,
-                  const scoped_refptr<media::VideoFrame>& in_frame,
+                  scoped_refptr<media::VideoFrame> in_frame,
                   const std::string& suffix = "");
 
   // Calculate mean absolute difference of hardware and software decode results
@@ -414,9 +414,9 @@ void JpegClient::SetState(ClientState new_state) {
 }
 
 void JpegClient::SaveToFile(int32_t bitstream_buffer_id,
-                            const scoped_refptr<media::VideoFrame>& in_frame,
+                            scoped_refptr<media::VideoFrame> in_frame,
                             const std::string& suffix) {
-  LOG_ASSERT(in_frame.get());
+  LOG_ASSERT(in_frame);
   ParsedJpegImage* image_file = test_image_files_[bitstream_buffer_id];
 
   // First convert to ARGB format. Note that in our case, the coded size and the

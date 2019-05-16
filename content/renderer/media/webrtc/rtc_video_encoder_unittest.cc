@@ -163,7 +163,7 @@ class RTCVideoEncoderTest
                            kInputFrameFillU, kInputFrameFillV) == 0);
   }
 
-  void VerifyEncodedFrame(const scoped_refptr<media::VideoFrame>& frame,
+  void VerifyEncodedFrame(scoped_refptr<media::VideoFrame> frame,
                           bool force_keyframe) {
     DVLOG(3) << __func__;
     EXPECT_EQ(kInputFrameWidth, frame->visible_rect().width());
@@ -176,7 +176,7 @@ class RTCVideoEncoderTest
               frame->visible_data(media::VideoFrame::kVPlane)[0]);
   }
 
-  void ReturnFrameWithTimeStamp(const scoped_refptr<media::VideoFrame>& frame,
+  void ReturnFrameWithTimeStamp(scoped_refptr<media::VideoFrame> frame,
                                 bool force_keyframe) {
     client_->BitstreamBufferReady(
         0,
@@ -239,7 +239,7 @@ TEST_F(RTCVideoEncoderTest, SoftwareFallbackAfterError) {
   EXPECT_EQ(WEBRTC_VIDEO_CODEC_OK, rtc_encoder_->InitEncode(&codec, 1, 12345));
 
   EXPECT_CALL(*mock_vea_, Encode(_, _))
-      .WillOnce(Invoke([this](const scoped_refptr<media::VideoFrame>&, bool) {
+      .WillOnce(Invoke([this](scoped_refptr<media::VideoFrame>, bool) {
         encoder_thread_.task_runner()->PostTask(
             FROM_HERE,
             base::BindOnce(

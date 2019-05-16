@@ -459,7 +459,7 @@ class VideoRendererImplTest : public testing::Test {
   // Use StrictMock<T> to catch missing/extra callbacks.
   class MockCB : public MockRendererClient {
    public:
-    MOCK_METHOD1(FrameReceived, void(const scoped_refptr<VideoFrame>&));
+    MOCK_METHOD1(FrameReceived, void(scoped_refptr<VideoFrame>));
   };
   StrictMock<MockCB> mock_cb_;
 

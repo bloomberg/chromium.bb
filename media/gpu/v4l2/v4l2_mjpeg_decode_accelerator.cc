@@ -248,9 +248,8 @@ bool V4L2MjpegDecodeAccelerator::Initialize(
   return true;
 }
 
-void V4L2MjpegDecodeAccelerator::Decode(
-    BitstreamBuffer bitstream_buffer,
-    const scoped_refptr<VideoFrame>& video_frame) {
+void V4L2MjpegDecodeAccelerator::Decode(BitstreamBuffer bitstream_buffer,
+                                        scoped_refptr<VideoFrame> video_frame) {
   DVLOGF(4) << "input_id=" << bitstream_buffer.id()
             << ", size=" << bitstream_buffer.size();
   DCHECK(io_task_runner_->BelongsToCurrentThread());
@@ -267,7 +266,7 @@ void V4L2MjpegDecodeAccelerator::Decode(
   }
 
   std::unique_ptr<JobRecord> job_record(
-      new JobRecord(std::move(bitstream_buffer), video_frame));
+      new JobRecord(std::move(bitstream_buffer), std::move(video_frame)));
 
   decoder_task_runner_->PostTask(
       FROM_HERE,
@@ -671,7 +670,7 @@ void V4L2MjpegDecodeAccelerator::EnqueueOutput() {
 
 bool V4L2MjpegDecodeAccelerator::ConvertOutputImage(
     const BufferRecord& output_buffer,
-    const scoped_refptr<VideoFrame>& dst_frame) {
+    VideoFrame* dst_frame) {
   uint8_t* dst_y = dst_frame->data(VideoFrame::kYPlane);
   uint8_t* dst_u = dst_frame->data(VideoFrame::kUPlane);
   uint8_t* dst_v = dst_frame->data(VideoFrame::kVPlane);
@@ -821,7 +820,7 @@ void V4L2MjpegDecodeAccelerator::Dequeue() {
       // Copy the decoded data from output buffer to the buffer provided by the
       // client. Do format conversion when output format is not
       // V4L2_PIX_FMT_YUV420.
-      if (!ConvertOutputImage(output_record, job_record->out_frame)) {
+      if (!ConvertOutputImage(output_record, job_record->out_frame.get())) {
         PostNotifyError(job_record->bitstream_buffer_id, PLATFORM_FAILURE);
         return;
       }

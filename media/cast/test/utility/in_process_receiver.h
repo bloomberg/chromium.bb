@@ -86,10 +86,10 @@ class InProcessReceiver {
   // To be implemented by subclasses.  These are called on the Cast MAIN thread
   // as each frame is received.
   virtual void OnAudioFrame(std::unique_ptr<AudioBus> audio_frame,
-                            const base::TimeTicks& playout_time,
+                            base::TimeTicks playout_time,
                             bool is_continuous) = 0;
-  virtual void OnVideoFrame(const scoped_refptr<VideoFrame>& video_frame,
-                            const base::TimeTicks& playout_time,
+  virtual void OnVideoFrame(scoped_refptr<VideoFrame> video_frame,
+                            base::TimeTicks playout_time,
                             bool is_continuous) = 0;
 
   // Helper method that creates |transport_| and |cast_receiver_|, starts
@@ -112,10 +112,10 @@ class InProcessReceiver {
   // comments for the callbacks defined in src/media/cast/cast_receiver.h for
   // argument description and semantics.
   void GotAudioFrame(std::unique_ptr<AudioBus> audio_frame,
-                     const base::TimeTicks& playout_time,
+                     base::TimeTicks playout_time,
                      bool is_continuous);
-  void GotVideoFrame(const scoped_refptr<VideoFrame>& video_frame,
-                     const base::TimeTicks& playout_time,
+  void GotVideoFrame(scoped_refptr<VideoFrame> video_frame,
+                     base::TimeTicks playout_time,
                      bool is_continuous);
   void PullNextAudioFrame();
   void PullNextVideoFrame();

@@ -104,7 +104,7 @@ class MEDIA_EXPORT GpuVideoDecoder
 
   typedef std::map<int32_t, PictureBuffer> PictureBufferMap;
 
-  void DeliverFrame(const scoped_refptr<VideoFrame>& frame);
+  void DeliverFrame(scoped_refptr<VideoFrame> frame);
 
   // Static method is to allow it to run even after GVD is deleted.
   static void ReleaseMailbox(base::WeakPtr<GpuVideoDecoder> decoder,

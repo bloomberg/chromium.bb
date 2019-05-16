@@ -220,9 +220,8 @@ void DecryptingVideoDecoder::DecodePendingBuffer() {
           &DecryptingVideoDecoder::DeliverFrame, weak_this_)));
 }
 
-void DecryptingVideoDecoder::DeliverFrame(
-    Decryptor::Status status,
-    const scoped_refptr<VideoFrame>& frame) {
+void DecryptingVideoDecoder::DeliverFrame(Decryptor::Status status,
+                                          scoped_refptr<VideoFrame> frame) {
   DVLOG(3) << "DeliverFrame() - status: " << status;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, kPendingDecode) << state_;
@@ -301,7 +300,7 @@ void DecryptingVideoDecoder::DeliverFrame(
       frame->set_color_space(config_.color_space_info().ToGfxColorSpace());
   }
 
-  output_cb_.Run(frame);
+  output_cb_.Run(std::move(frame));
 
   if (scoped_pending_buffer_to_decode->end_of_stream()) {
     // Set |pending_buffer_to_decode_| back as we need to keep flushing the

@@ -147,7 +147,7 @@ bool VaapiMjpegDecodeAccelerator::Initialize(
 bool VaapiMjpegDecodeAccelerator::OutputPictureOnTaskRunner(
     std::unique_ptr<ScopedVAImage> scoped_image,
     int32_t input_buffer_id,
-    const scoped_refptr<VideoFrame>& video_frame) {
+    scoped_refptr<VideoFrame> video_frame) {
   DCHECK(decoder_task_runner_->BelongsToCurrentThread());
 
   TRACE_EVENT1("jpeg", "VaapiMjpegDecodeAccelerator::OutputPictureOnTaskRunner",
@@ -236,7 +236,7 @@ void VaapiMjpegDecodeAccelerator::DecodeTask(
   }
 
   if (!OutputPictureOnTaskRunner(std::move(image), bitstream_buffer_id,
-                                 video_frame)) {
+                                 std::move(video_frame))) {
     VLOGF(1) << "Output picture failed";
     NotifyError(bitstream_buffer_id, PLATFORM_FAILURE);
   }
@@ -244,7 +244,7 @@ void VaapiMjpegDecodeAccelerator::DecodeTask(
 
 void VaapiMjpegDecodeAccelerator::Decode(
     BitstreamBuffer bitstream_buffer,
-    const scoped_refptr<VideoFrame>& video_frame) {
+    scoped_refptr<VideoFrame> video_frame) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   TRACE_EVENT1("jpeg", "Decode", "input_id", bitstream_buffer.id());
 

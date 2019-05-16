@@ -50,7 +50,7 @@ class MediaStreamVideoRendererSink::FrameDeliverer {
     DCHECK(state_ == STARTED || state_ == PAUSED) << state_;
   }
 
-  void OnVideoFrame(const scoped_refptr<media::VideoFrame>& frame,
+  void OnVideoFrame(scoped_refptr<media::VideoFrame> frame,
                     base::TimeTicks /*current_time*/) {
     DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
     DCHECK(frame);
@@ -73,7 +73,7 @@ class MediaStreamVideoRendererSink::FrameDeliverer {
     }
 
     frame_size_ = frame->natural_size();
-    repaint_cb_.Run(frame);
+    repaint_cb_.Run(std::move(frame));
   }
 
   void RenderEndOfStream() {

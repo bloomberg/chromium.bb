@@ -73,7 +73,7 @@ void VpxEncoder::EncodeOnEncodingTaskRunner(scoped_refptr<VideoFrame> frame,
   DCHECK(encoding_task_runner_->BelongsToCurrentThread());
 
   const gfx::Size frame_size = frame->visible_rect().size();
-  base::TimeDelta duration = EstimateFrameDuration(frame);
+  base::TimeDelta duration = EstimateFrameDuration(*frame);
   const media::WebmMuxer::VideoParameters video_params(frame);
 
   if (!IsInitialized(codec_config_) ||
@@ -285,14 +285,13 @@ bool VpxEncoder::IsInitialized(const vpx_codec_enc_cfg_t& codec_config) const {
   return codec_config.g_timebase.den != 0;
 }
 
-base::TimeDelta VpxEncoder::EstimateFrameDuration(
-    const scoped_refptr<VideoFrame>& frame) {
+base::TimeDelta VpxEncoder::EstimateFrameDuration(const VideoFrame& frame) {
   DCHECK(encoding_task_runner_->BelongsToCurrentThread());
 
   using base::TimeDelta;
   TimeDelta predicted_frame_duration;
-  if (!frame->metadata()->GetTimeDelta(VideoFrameMetadata::FRAME_DURATION,
-                                       &predicted_frame_duration) ||
+  if (!frame.metadata()->GetTimeDelta(VideoFrameMetadata::FRAME_DURATION,
+                                      &predicted_frame_duration) ||
       predicted_frame_duration <= TimeDelta()) {
     // The source of the video frame did not provide the frame duration.  Use
     // the actual amount of time between the current and previous frame as a
@@ -300,9 +299,9 @@ base::TimeDelta VpxEncoder::EstimateFrameDuration(
     // TODO(mcasas): This duration estimation could lead to artifacts if the
     // cadence of the received stream is compromised (e.g. camera freeze, pause,
     // remote packet loss).  Investigate using GetFrameRate() in this case.
-    predicted_frame_duration = frame->timestamp() - last_frame_timestamp_;
+    predicted_frame_duration = frame.timestamp() - last_frame_timestamp_;
   }
-  last_frame_timestamp_ = frame->timestamp();
+  last_frame_timestamp_ = frame.timestamp();
   // Make sure |predicted_frame_duration| is in a safe range of values.
   const TimeDelta kMaxFrameDuration = TimeDelta::FromSecondsD(1.0 / 8);
   const TimeDelta kMinFrameDuration = TimeDelta::FromMilliseconds(1);

@@ -229,9 +229,8 @@ void AndroidVideoEncodeAccelerator::MaybeStopIOTimer() {
   }
 }
 
-void AndroidVideoEncodeAccelerator::Encode(
-    const scoped_refptr<VideoFrame>& frame,
-    bool force_keyframe) {
+void AndroidVideoEncodeAccelerator::Encode(scoped_refptr<VideoFrame> frame,
+                                           bool force_keyframe) {
   DVLOG(3) << __PRETTY_FUNCTION__ << ": " << force_keyframe;
   DCHECK(thread_checker_.CalledOnValidThread());
   RETURN_ON_FAILURE(frame->format() == PIXEL_FORMAT_I420, "Unexpected format",
@@ -251,7 +250,7 @@ void AndroidVideoEncodeAccelerator::Encode(
                     kInvalidArgumentError);
 
   pending_frames_.push(
-      std::make_tuple(frame, force_keyframe, base::Time::Now()));
+      std::make_tuple(std::move(frame), force_keyframe, base::Time::Now()));
   DoIOTask();
 }
 

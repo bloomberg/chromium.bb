@@ -154,11 +154,10 @@ scoped_refptr<VideoFrame> VideoFrameCompositor::GetCurrentFrameOnAnyThread() {
   return current_frame_;
 }
 
-void VideoFrameCompositor::SetCurrentFrame(
-    const scoped_refptr<VideoFrame>& frame) {
+void VideoFrameCompositor::SetCurrentFrame(scoped_refptr<VideoFrame> frame) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   base::AutoLock lock(current_frame_lock_);
-  current_frame_ = frame;
+  current_frame_ = std::move(frame);
 }
 
 void VideoFrameCompositor::PutCurrentFrame() {
@@ -209,17 +208,16 @@ void VideoFrameCompositor::Stop() {
                                 base::Unretained(this), false));
 }
 
-void VideoFrameCompositor::PaintSingleFrame(
-    const scoped_refptr<VideoFrame>& frame,
-    bool repaint_duplicate_frame) {
+void VideoFrameCompositor::PaintSingleFrame(scoped_refptr<VideoFrame> frame,
+                                            bool repaint_duplicate_frame) {
   if (!task_runner_->BelongsToCurrentThread()) {
     task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&VideoFrameCompositor::PaintSingleFrame,
-                       base::Unretained(this), frame, repaint_duplicate_frame));
+        FROM_HERE, base::BindOnce(&VideoFrameCompositor::PaintSingleFrame,
+                                  base::Unretained(this), std::move(frame),
+                                  repaint_duplicate_frame));
     return;
   }
-  if (ProcessNewFrame(frame, repaint_duplicate_frame) &&
+  if (ProcessNewFrame(std::move(frame), repaint_duplicate_frame) &&
       IsClientSinkAvailable()) {
     client_->DidReceiveFrame();
   }
@@ -261,9 +259,8 @@ void VideoFrameCompositor::SetOnNewProcessedFrameCallback(
   new_processed_frame_cb_ = std::move(cb);
 }
 
-bool VideoFrameCompositor::ProcessNewFrame(
-    const scoped_refptr<VideoFrame>& frame,
-    bool repaint_duplicate_frame) {
+bool VideoFrameCompositor::ProcessNewFrame(scoped_refptr<VideoFrame> frame,
+                                           bool repaint_duplicate_frame) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (frame && GetCurrentFrame() && !repaint_duplicate_frame &&
@@ -275,7 +272,7 @@ bool VideoFrameCompositor::ProcessNewFrame(
   // subsequent PutCurrentFrame() call it will mark it as rendered.
   rendered_last_frame_ = false;
 
-  SetCurrentFrame(frame);
+  SetCurrentFrame(std::move(frame));
 
   if (new_processed_frame_cb_)
     std::move(new_processed_frame_cb_).Run(base::TimeTicks::Now());

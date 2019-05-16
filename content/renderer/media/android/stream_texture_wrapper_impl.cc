@@ -117,9 +117,9 @@ void StreamTextureWrapperImpl::ClearReceivedFrameCBOnAnyThread() {
 }
 
 void StreamTextureWrapperImpl::SetCurrentFrameInternal(
-    const scoped_refptr<media::VideoFrame>& video_frame) {
+    scoped_refptr<media::VideoFrame> video_frame) {
   base::AutoLock auto_lock(current_frame_lock_);
-  current_frame_ = video_frame;
+  current_frame_ = std::move(video_frame);
 }
 
 void StreamTextureWrapperImpl::UpdateTextureSize(const gfx::Size& new_size) {

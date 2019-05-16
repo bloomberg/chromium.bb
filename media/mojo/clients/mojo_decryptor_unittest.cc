@@ -107,8 +107,7 @@ class MojoDecryptorTest : public ::testing::Test {
                void(Decryptor::Status status,
                     const Decryptor::AudioFrames& frames));
   MOCK_METHOD2(VideoDecoded,
-               void(Decryptor::Status status,
-                    const scoped_refptr<VideoFrame>& frame));
+               void(Decryptor::Status status, scoped_refptr<VideoFrame> frame));
   MOCK_METHOD0(OnConnectionClosed, void());
   MOCK_METHOD0(OnFrameDestroyed, void());
 

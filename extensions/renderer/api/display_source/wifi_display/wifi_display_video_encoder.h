@@ -72,7 +72,7 @@ class WiFiDisplayVideoEncoder : public WiFiDisplayMediaEncoder {
   // Encodes the given raw frame. The resulting encoded frame is passed
   // as an |encoded_callback|'s argument which is set via 'SetCallbacks'
   // method.
-  void InsertRawVideoFrame(const scoped_refptr<media::VideoFrame>& video_frame,
+  void InsertRawVideoFrame(scoped_refptr<media::VideoFrame> video_frame,
                            base::TimeTicks reference_time);
 
   // Requests the next encoded frame to be an instantaneous decoding refresh

@@ -707,7 +707,7 @@ void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
   DeliverFrame(frame);
 }
 
-void GpuVideoDecoder::DeliverFrame(const scoped_refptr<VideoFrame>& frame) {
+void GpuVideoDecoder::DeliverFrame(scoped_refptr<VideoFrame> frame) {
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
 
   // During a pending vda->Reset(), we don't accumulate frames.  Drop it on the
@@ -717,7 +717,7 @@ void GpuVideoDecoder::DeliverFrame(const scoped_refptr<VideoFrame>& frame) {
 
   frame->metadata()->SetBoolean(VideoFrameMetadata::POWER_EFFICIENT, true);
 
-  output_cb_.Run(frame);
+  output_cb_.Run(std::move(frame));
 }
 
 // static

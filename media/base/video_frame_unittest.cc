@@ -259,9 +259,8 @@ TEST(VideoFrame, CreateBlackFrame) {
   }
 }
 
-static void FrameNoLongerNeededCallback(
-    const scoped_refptr<media::VideoFrame>& frame,
-    bool* triggered) {
+static void FrameNoLongerNeededCallback(scoped_refptr<media::VideoFrame> frame,
+                                        bool* triggered) {
   *triggered = true;
 }
 

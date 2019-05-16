@@ -221,7 +221,7 @@ class MEDIA_GPU_EXPORT VaapiWrapper
                                                const gfx::Size& size);
 
   // Upload contents of |frame| into |va_surface_id| for encode.
-  bool UploadVideoFrameToSurface(const scoped_refptr<VideoFrame>& frame,
+  bool UploadVideoFrameToSurface(const VideoFrame& frame,
                                  VASurfaceID va_surface_id);
 
   // Create a buffer of |size| bytes to be used as encode output.

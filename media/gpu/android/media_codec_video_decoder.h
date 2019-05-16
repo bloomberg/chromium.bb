@@ -177,7 +177,7 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder : public VideoDecoder,
   // started when we dequeued the corresponding output buffer.
   void ForwardVideoFrame(int reset_generation,
                          std::unique_ptr<ScopedAsyncTrace> async_trace,
-                         const scoped_refptr<VideoFrame>& frame);
+                         scoped_refptr<VideoFrame> frame);
 
   // Starts draining the codec by queuing an EOS if required. It skips the drain
   // if possible.

@@ -43,7 +43,7 @@ class CONTENT_EXPORT WebRtcVideoTrackSource
   bool remote() const override;
   bool is_screencast() const override;
   absl::optional<bool> needs_denoising() const override;
-  void OnFrameCaptured(const scoped_refptr<media::VideoFrame>& frame);
+  void OnFrameCaptured(scoped_refptr<media::VideoFrame> frame);
 
   using webrtc::VideoTrackSourceInterface::AddOrUpdateSink;
   using webrtc::VideoTrackSourceInterface::RemoveSink;

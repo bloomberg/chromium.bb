@@ -47,7 +47,7 @@ class MEDIA_GPU_EXPORT VaapiMjpegDecodeAccelerator
   bool Initialize(
       chromeos_camera::MjpegDecodeAccelerator::Client* client) override;
   void Decode(BitstreamBuffer bitstream_buffer,
-              const scoped_refptr<VideoFrame>& video_frame) override;
+              scoped_refptr<VideoFrame> video_frame) override;
   bool IsSupported() override;
 
  private:
@@ -69,7 +69,7 @@ class MEDIA_GPU_EXPORT VaapiMjpegDecodeAccelerator
   // |input_buffer_id| of the resulting picture to client for output.
   bool OutputPictureOnTaskRunner(std::unique_ptr<ScopedVAImage> image,
                                  int32_t input_buffer_id,
-                                 const scoped_refptr<VideoFrame>& video_frame);
+                                 scoped_refptr<VideoFrame> video_frame);
 
   // ChildThread's task runner.
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

@@ -326,7 +326,7 @@ class TestPatternReceiver : public media::cast::InProcessReceiver {
  private:
   // Invoked by InProcessReceiver for each received audio frame.
   void OnAudioFrame(std::unique_ptr<media::AudioBus> audio_frame,
-                    const base::TimeTicks& playout_time,
+                    base::TimeTicks playout_time,
                     bool is_continuous) override {
     CHECK(cast_env()->CurrentlyOn(media::cast::CastEnvironment::MAIN));
 
@@ -350,8 +350,8 @@ class TestPatternReceiver : public media::cast::InProcessReceiver {
     }
   }
 
-  void OnVideoFrame(const scoped_refptr<media::VideoFrame>& video_frame,
-                    const base::TimeTicks& playout_time,
+  void OnVideoFrame(scoped_refptr<media::VideoFrame> video_frame,
+                    base::TimeTicks playout_time,
                     bool is_continuous) override {
     CHECK(cast_env()->CurrentlyOn(media::cast::CastEnvironment::MAIN));
 
@@ -360,7 +360,7 @@ class TestPatternReceiver : public media::cast::InProcessReceiver {
                          (playout_time - base::TimeTicks()).InMicroseconds());
 
     uint16_t frame_no;
-    if (media::cast::test::DecodeBarcode(video_frame, &frame_no)) {
+    if (media::cast::test::DecodeBarcode(*video_frame, &frame_no)) {
       video_events_.push_back(TimeData(frame_no, playout_time));
     } else {
       DVLOG(2) << "Failed to decode barcode!";

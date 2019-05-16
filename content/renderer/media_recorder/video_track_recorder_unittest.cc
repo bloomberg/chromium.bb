@@ -125,11 +125,11 @@ class VideoTrackRecorderTest
                      is_key_frame);
   }
 
-  void Encode(const scoped_refptr<VideoFrame>& frame,
-              base::TimeTicks capture_time) {
+  void Encode(scoped_refptr<VideoFrame> frame, base::TimeTicks capture_time) {
     EXPECT_TRUE(blink::scheduler::GetSingleThreadTaskRunnerForTesting()
                     ->BelongsToCurrentThread());
-    video_track_recorder_->OnVideoFrameForTesting(frame, capture_time);
+    video_track_recorder_->OnVideoFrameForTesting(std::move(frame),
+                                                  capture_time);
   }
 
   void OnError() { video_track_recorder_->OnError(); }

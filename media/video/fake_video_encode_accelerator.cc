@@ -58,9 +58,8 @@ bool FakeVideoEncodeAccelerator::Initialize(const Config& config,
   return true;
 }
 
-void FakeVideoEncodeAccelerator::Encode(
-    const scoped_refptr<VideoFrame>& frame,
-    bool force_keyframe) {
+void FakeVideoEncodeAccelerator::Encode(scoped_refptr<VideoFrame> frame,
+                                        bool force_keyframe) {
   DCHECK(client_);
   queued_frames_.push(force_keyframe);
   EncodeTask();

@@ -35,7 +35,7 @@ class MojoMjpegDecodeAccelerator : public MjpegDecodeAccelerator {
   bool Initialize(Client* client) override;
   void InitializeAsync(Client* client, InitCB init_cb) override;
   void Decode(media::BitstreamBuffer bitstream_buffer,
-              const scoped_refptr<media::VideoFrame>& video_frame) override;
+              scoped_refptr<media::VideoFrame> video_frame) override;
   bool IsSupported() override;
 
  private:

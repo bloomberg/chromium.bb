@@ -41,10 +41,10 @@ bool HasH264StartCode(const std::vector<uint8_t>& data) {
 
 // Returns if the first few bytes in the YUV frame are not all zero. This is a
 // rough method to verify the frame is not empty.
-bool HasValidYUVData(const scoped_refptr<media::VideoFrame>& frame) {
+bool HasValidYUVData(const media::VideoFrame& frame) {
   bool valid = false;
   for (size_t i = 0; i < 8; ++i) {
-    valid |= *(frame->data(media::VideoFrame::kYPlane) + i);
+    valid |= *(frame.data(media::VideoFrame::kYPlane) + i);
     if (valid)
       break;
   }
@@ -158,7 +158,7 @@ TEST_F(MediaParserAndroidTest, VideoFrameExtractionVp8) {
             chrome::mojom::VideoFrameData::Tag::DECODED_FRAME);
   const auto& frame = result.video_frame_data->get_decoded_frame();
   EXPECT_TRUE(frame);
-  EXPECT_TRUE(HasValidYUVData(frame));
+  EXPECT_TRUE(HasValidYUVData(*frame));
   EXPECT_TRUE(frame->IsMappable());
   EXPECT_FALSE(frame->HasTextures());
   EXPECT_EQ(frame->storage_type(),
@@ -176,7 +176,7 @@ TEST_F(MediaParserAndroidTest, VideoFrameExtractionVp8WithAlphaPlane) {
             chrome::mojom::VideoFrameData::Tag::DECODED_FRAME);
   const auto& frame = result.video_frame_data->get_decoded_frame();
   EXPECT_TRUE(frame);
-  EXPECT_TRUE(HasValidYUVData(frame));
+  EXPECT_TRUE(HasValidYUVData(*frame));
   EXPECT_TRUE(frame->IsMappable());
   EXPECT_FALSE(frame->HasTextures());
   EXPECT_EQ(frame->storage_type(),

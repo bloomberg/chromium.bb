@@ -208,7 +208,7 @@ VideoTrackRecorder::Encoder::~Encoder() {
 }
 
 void VideoTrackRecorder::Encoder::StartFrameEncode(
-    const scoped_refptr<VideoFrame>& video_frame,
+    scoped_refptr<VideoFrame> video_frame,
     base::TimeTicks capture_timestamp) {
   // Cache the thread sending frames on first frame arrival.
   if (!origin_task_runner_.get())
@@ -233,7 +233,7 @@ void VideoTrackRecorder::Encoder::StartFrameEncode(
   if (video_frame->HasTextures()) {
     main_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&Encoder::RetrieveFrameOnMainThread, this,
-                                  video_frame, capture_timestamp));
+                                  std::move(video_frame), capture_timestamp));
     return;
   }
 
@@ -250,9 +250,8 @@ void VideoTrackRecorder::Encoder::StartFrameEncode(
   wrapped_frame->AddDestructionObserver(media::BindToCurrentLoop(
       base::BindOnce(&VideoTrackRecorder::Counter::DecreaseCount,
                      num_frames_in_encode_->GetWeakPtr())));
-  wrapped_frame->AddDestructionObserver(
-      base::BindOnce([](const scoped_refptr<VideoFrame>& video_frame) {},
-                     std::move(video_frame)));
+  wrapped_frame->AddDestructionObserver(base::BindOnce(
+      [](scoped_refptr<VideoFrame> video_frame) {}, std::move(video_frame)));
   num_frames_in_encode_->IncreaseCount();
 
   encoding_task_runner_->PostTask(
@@ -261,7 +260,7 @@ void VideoTrackRecorder::Encoder::StartFrameEncode(
 }
 
 void VideoTrackRecorder::Encoder::RetrieveFrameOnMainThread(
-    const scoped_refptr<VideoFrame>& video_frame,
+    scoped_refptr<VideoFrame> video_frame,
     base::TimeTicks capture_timestamp) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
@@ -456,7 +455,7 @@ void VideoTrackRecorder::Resume() {
 }
 
 void VideoTrackRecorder::OnVideoFrameForTesting(
-    const scoped_refptr<media::VideoFrame>& frame,
+    scoped_refptr<media::VideoFrame> frame,
     base::TimeTicks timestamp) {
   DVLOG(3) << __func__;
 
@@ -466,7 +465,7 @@ void VideoTrackRecorder::OnVideoFrameForTesting(
                                      timestamp);
   }
 
-  encoder_->StartFrameEncode(frame, timestamp);
+  encoder_->StartFrameEncode(std::move(frame), timestamp);
 }
 
 void VideoTrackRecorder::InitializeEncoder(
@@ -474,7 +473,7 @@ void VideoTrackRecorder::InitializeEncoder(
     const OnEncodedVideoCB& on_encoded_video_callback,
     int32_t bits_per_second,
     bool allow_vea_encoder,
-    const scoped_refptr<media::VideoFrame>& frame,
+    scoped_refptr<media::VideoFrame> frame,
     base::TimeTicks capture_time) {
   DVLOG(3) << __func__ << frame->visible_rect().size().ToString();
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);

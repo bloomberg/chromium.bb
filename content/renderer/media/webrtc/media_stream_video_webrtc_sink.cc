@@ -91,14 +91,13 @@ class MediaStreamVideoWebRtcSink::WebRtcVideoSourceAdapter
   // destroyed.
   void ReleaseSourceOnMainThread();
 
-  void OnVideoFrameOnIO(const scoped_refptr<media::VideoFrame>& frame,
+  void OnVideoFrameOnIO(scoped_refptr<media::VideoFrame> frame,
                         base::TimeTicks estimated_capture_time);
 
  private:
   friend class base::RefCountedThreadSafe<WebRtcVideoSourceAdapter>;
 
-  void OnVideoFrameOnWorkerThread(
-      const scoped_refptr<media::VideoFrame>& frame);
+  void OnVideoFrameOnWorkerThread(scoped_refptr<media::VideoFrame> frame);
 
   virtual ~WebRtcVideoSourceAdapter();
 
@@ -188,7 +187,7 @@ void MediaStreamVideoWebRtcSink::WebRtcVideoSourceAdapter::
 }
 
 void MediaStreamVideoWebRtcSink::WebRtcVideoSourceAdapter::OnVideoFrameOnIO(
-    const scoped_refptr<media::VideoFrame>& frame,
+    scoped_refptr<media::VideoFrame> frame,
     base::TimeTicks estimated_capture_time) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   render_task_runner_->PostTask(
@@ -198,15 +197,15 @@ void MediaStreamVideoWebRtcSink::WebRtcVideoSourceAdapter::OnVideoFrameOnIO(
   libjingle_worker_thread_->PostTask(
       FROM_HERE,
       base::BindOnce(&WebRtcVideoSourceAdapter::OnVideoFrameOnWorkerThread,
-                     this, frame));
+                     this, std::move(frame)));
 }
 
 void MediaStreamVideoWebRtcSink::WebRtcVideoSourceAdapter::
-    OnVideoFrameOnWorkerThread(const scoped_refptr<media::VideoFrame>& frame) {
+    OnVideoFrameOnWorkerThread(scoped_refptr<media::VideoFrame> frame) {
   DCHECK(libjingle_worker_thread_->BelongsToCurrentThread());
   base::AutoLock auto_lock(video_source_stop_lock_);
   if (video_source_)
-    video_source_->OnFrameCaptured(frame);
+    video_source_->OnFrameCaptured(std::move(frame));
 }
 
 MediaStreamVideoWebRtcSink::MediaStreamVideoWebRtcSink(

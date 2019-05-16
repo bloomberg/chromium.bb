@@ -236,8 +236,7 @@ class MockMediaStreamVideoRenderer : public blink::WebMediaStreamVideoRenderer {
   void InjectFrame();
 
   // Methods for test use
-  void AddFrame(FrameType category,
-                const scoped_refptr<media::VideoFrame>& frame);
+  void AddFrame(FrameType category, scoped_refptr<media::VideoFrame> frame);
 
   bool started_;
   bool paused_;
@@ -296,8 +295,8 @@ void MockMediaStreamVideoRenderer::Pause() {
 
 void MockMediaStreamVideoRenderer::AddFrame(
     FrameType category,
-    const scoped_refptr<media::VideoFrame>& frame) {
-  frames_.push_back(std::make_pair(category, frame));
+    scoped_refptr<media::VideoFrame> frame) {
+  frames_.push_back(std::make_pair(category, std::move(frame)));
 }
 
 void MockMediaStreamVideoRenderer::QueueFrames(

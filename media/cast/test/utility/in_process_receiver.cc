@@ -115,7 +115,7 @@ void InProcessReceiver::StartOnMainThread() {
 }
 
 void InProcessReceiver::GotAudioFrame(std::unique_ptr<AudioBus> audio_frame,
-                                      const base::TimeTicks& playout_time,
+                                      base::TimeTicks playout_time,
                                       bool is_continuous) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   if (audio_frame.get())
@@ -123,13 +123,12 @@ void InProcessReceiver::GotAudioFrame(std::unique_ptr<AudioBus> audio_frame,
   PullNextAudioFrame();
 }
 
-void InProcessReceiver::GotVideoFrame(
-    const scoped_refptr<VideoFrame>& video_frame,
-    const base::TimeTicks& playout_time,
-    bool is_continuous) {
+void InProcessReceiver::GotVideoFrame(scoped_refptr<VideoFrame> video_frame,
+                                      base::TimeTicks playout_time,
+                                      bool is_continuous) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-  if (video_frame.get())
-    OnVideoFrame(video_frame, playout_time, is_continuous);
+  if (video_frame)
+    OnVideoFrame(std::move(video_frame), playout_time, is_continuous);
   PullNextVideoFrame();
 }
 
