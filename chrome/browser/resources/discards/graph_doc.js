@@ -25,6 +25,8 @@ class GraphNode {
     this.id = id;
     /** @type {string} */
     this.color = 'black';
+    /** @type {string} */
+    this.iconUrl = '';
 
     // Implementation of the d3.ForceNode interface.
     // See https://github.com/d3/d3-force#simulation_nodes.
@@ -311,55 +313,49 @@ class Graph {
     this.nodeGroup_ = svg.append('g').attr('class', 'nodes');
   }
 
-  /**
-   * @param {!performanceManager.mojom.WebUIFrameInfo} frame
-   */
+  /** @override */
   frameCreated(frame) {
     this.addNode_(new FrameNode(frame));
   }
 
-  /**
-   * @param {!performanceManager.mojom.WebUIPageInfo} page
-   */
+  /** @override */
   pageCreated(page) {
     this.addNode_(new PageNode(page));
   }
 
-  /**
-   * @param {!performanceManager.mojom.WebUIProcessInfo} process
-   */
+  /** @override */
   processCreated(process) {
     this.addNode_(new ProcessNode(process));
   }
 
-  /**
-   * @param {!performanceManager.mojom.WebUIFrameInfo} frame
-   */
+  /** @override */
   frameChanged(frame) {
     const frameNode = /** @type {!FrameNode} */ (this.nodes_.get(frame.id));
     frameNode.frame = frame;
   }
 
-  /**
-   * @param {!performanceManager.mojom.WebUIPageInfo} page
-   */
+  /** @override */
   pageChanged(page) {
     const pageNode = /** @type {!PageNode} */ (this.nodes_.get(page.id));
     pageNode.page = page;
   }
 
-  /**
-   * @param {!performanceManager.mojom.WebUIProcessInfo} process
-   */
+  /** @override */
   processChanged(process) {
     const processNode =
         /** @type {!ProcessNode} */ (this.nodes_.get(process.id));
     processNode.process = process;
   }
 
-  /**
-   * @param {!number} nodeId
-   */
+  /** @override */
+  favIconDataAvailable(iconInfo) {
+    const graphNode = this.nodes_.get(iconInfo.nodeId);
+    if (graphNode) {
+      graphNode.iconUrl = 'data:image/png;base64,' + iconInfo.iconData;
+    }
+  }
+
+  /** @override */
   nodeDeleted(nodeId) {
     const node = this.nodes_.get(nodeId);
 
@@ -403,6 +399,10 @@ class Graph {
         this.processChanged(
             /** @type {!performanceManager.mojom.WebUIProcessInfo} */ (data));
         break;
+      case 'favIconDataAvailable':
+        this.favIconDataAvailable(
+            /** @type {!performanceManager.mojom.WebUIFavIconInfo} */ (data));
+        break;
       case 'nodeDeleted':
         this.nodeDeleted(/** @type {number} */ (data));
         break;
@@ -411,7 +411,22 @@ class Graph {
     this.render_();
   }
 
-  /** @private */
+  /**
+   * Renders nodes_ and edges_ to the SVG DOM.
+   *
+   * Each edge is a line element.
+   * Each node is represented as a group element with three children:
+   *   1. A circle that has a color and which animates the node on creation
+   *      and deletion.
+   *   2. An image that is provided a data URL for the nodes favicon, when
+   *      available.
+   *   3. A title element that presents the nodes URL on hover-over, if
+   *      available.
+   * Deleted nodes are classed '.dead', and CSS takes care of hiding their
+   * image element if it's been populated with an icon.
+   *
+   * @private
+   */
   render_() {
     // Select the links.
     const link = this.linkGroup_.selectAll('line').data(this.links_);
@@ -423,7 +438,7 @@ class Graph {
     // Select the nodes, except for any dead ones that are still transitioning.
     const nodes = Array.from(this.nodes_.values());
     const node =
-        this.nodeGroup_.selectAll('circle:not(.dead)').data(nodes, d => d.id);
+        this.nodeGroup_.selectAll('g:not(.dead)').data(nodes, d => d.id);
 
     // Add new nodes, if any.
     if (!node.enter().empty()) {
@@ -432,12 +447,15 @@ class Graph {
       drag.on('drag', this.onDrag_.bind(this));
       drag.on('end', this.onDragEnd_.bind(this));
 
-      const circles = node.enter()
-                          .append('circle')
-                          .attr('r', 9)
-                          .attr('fill', 'green')  // New nodes appear green.
-                          .call(drag);
-      circles.append('title');
+      const newNodes = node.enter().append('g').call(drag);
+      const circles = newNodes.append('circle').attr('r', 9).attr(
+          'fill', 'green');  // New nodes appear green.
+      newNodes.append('image')
+          .attr('x', -8)
+          .attr('y', -8)
+          .attr('width', 16)
+          .attr('height', 16);
+      newNodes.append('title');
 
       // Transition new nodes to their chosen color in 2 seconds.
       circles.transition()
@@ -448,9 +466,9 @@ class Graph {
 
     // Give dead nodes a distinguishing class to exclude them from the selection
     // above. Interrupt any ongoing transitions, then transition them out.
-    node.exit()
-        .classed('dead', true)
-        .interrupt()
+    const deletedNodes = node.exit().classed('dead', true).interrupt();
+
+    deletedNodes.select('circle')
         .attr('r', 9)
         .attr('fill', 'red')
         .transition()
@@ -460,6 +478,8 @@ class Graph {
 
     // Update the title for all nodes.
     node.selectAll('title').text(d => d.title);
+    // Update the favicon for all nodes.
+    node.selectAll('image').attr('href', d => d.iconUrl);
 
     // Update and restart the simulation if the graph changed.
     if (!node.enter().empty() || !node.exit().empty() ||
@@ -473,8 +493,8 @@ class Graph {
 
   /** @private */
   onTick_() {
-    const circles = this.nodeGroup_.selectAll('circle');
-    circles.attr('cx', d => d.x).attr('cy', d => d.y);
+    const nodes = this.nodeGroup_.selectAll('g');
+    nodes.attr('transform', d => `translate(${d.x},${d.y})`);
 
     const lines = this.linkGroup_.selectAll('line');
     lines.attr('x1', d => d.source.x)

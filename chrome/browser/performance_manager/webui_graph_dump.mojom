@@ -39,6 +39,15 @@ struct WebUIProcessInfo {
   uint64 private_footprint_kb;
 };
 
+// Used to transport favicon data.
+struct WebUIFavIconInfo {
+  int64 node_id;
+
+  // Contains the base64-encoded icon data, suitable for inclusion in a
+  // data URL.
+  string icon_data;
+};
+
 interface WebUIGraphChangeStream {
   FrameCreated(WebUIFrameInfo frame);
   PageCreated(WebUIPageInfo pages);
@@ -47,6 +56,8 @@ interface WebUIGraphChangeStream {
   FrameChanged(WebUIFrameInfo frame);
   PageChanged(WebUIPageInfo page);
   ProcessChanged(WebUIProcessInfo process);
+
+  FavIconDataAvailable(WebUIFavIconInfo favicon);
 
   NodeDeleted(int64 node_id);
 };

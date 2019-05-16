@@ -20,51 +20,42 @@ cr.define('graph_tab', function() {
       this.contentWindow_.postMessage([type, data], '*');
     }
 
-    /**
-     * @param {!performanceManager.mojom.WebUIFrameInfo} frame
-     */
+    /** @override */
     frameCreated(frame) {
       this.postMessage_('frameCreated', frame);
     }
 
-    /**
-     * @param {!performanceManager.mojom.WebUIPageInfo} page
-     */
+    /** @override */
     pageCreated(page) {
       this.postMessage_('pageCreated', page);
     }
 
-    /**
-     * @param {!performanceManager.mojom.WebUIProcessInfo} process
-     */
+    /** @override */
     processCreated(process) {
       this.postMessage_('processCreated', process);
     }
 
-    /**
-     * @param {!performanceManager.mojom.WebUIFrameInfo} frame
-     */
+    /** @override */
     frameChanged(frame) {
       this.postMessage_('frameChanged', frame);
     }
 
-    /**
-     * @param {!performanceManager.mojom.WebUIPageInfo} page
-     */
+    /** @override */
     pageChanged(page) {
       this.postMessage_('pageChanged', page);
     }
 
-    /**
-     * @param {!performanceManager.mojom.WebUIProcessInfo} process
-     */
+    /** @override */
     processChanged(process) {
       this.postMessage_('processChanged', process);
     }
 
-    /**
-     * @param {!number} nodeId
-     */
+    /** @override */
+    favIconDataAvailable(icon_info) {
+      this.postMessage_('favIconDataAvailable', icon_info);
+    }
+
+    /** @override */
     nodeDeleted(nodeId) {
       this.postMessage_('nodeDeleted', nodeId);
     }

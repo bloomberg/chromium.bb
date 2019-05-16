@@ -11,10 +11,10 @@
 #include "base/stl_util.h"
 #include "base/test/bind_test_util.h"
 #include "base/time/time.h"
-#include "chrome/browser/performance_manager/graph/graph_test_harness.h"
 #include "chrome/browser/performance_manager/graph/mock_graphs.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/performance_manager_clock.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -81,6 +81,8 @@ class TestChangeStream : public mojom::WebUIGraphChangeStream {
     ++num_changes_;
   }
 
+  void FavIconDataAvailable(mojom::WebUIFavIconInfoPtr favicon) override {}
+
   void NodeDeleted(int64_t node_id) override {
     EXPECT_EQ(1u, id_set_.erase(node_id));
 
@@ -110,9 +112,9 @@ class TestChangeStream : public mojom::WebUIGraphChangeStream {
 
 }  // namespace
 
-class WebUIGraphDumpImplTest : public GraphTestHarness {};
+TEST(WebUIGraphDumpImplTest, ChangeStream) {
+  content::TestBrowserThreadBundle browser_thread_bundle;
 
-TEST_F(WebUIGraphDumpImplTest, ChangeStream) {
   GraphImpl graph;
   MockMultiplePagesWithMultipleProcessesGraph mock_graph(&graph);
 
@@ -133,7 +135,7 @@ TEST_F(WebUIGraphDumpImplTest, ChangeStream) {
   TestChangeStream change_stream;
   impl_proxy->SubscribeToChanges(change_stream.GetProxy());
 
-  task_env().RunUntilIdle();
+  browser_thread_bundle.RunUntilIdle();
 
   // Validate that the initial graph state dump is complete.
   EXPECT_EQ(0u, change_stream.num_changes());
@@ -182,7 +184,7 @@ TEST_F(WebUIGraphDumpImplTest, ChangeStream) {
       NodeBase::GetSerializationId(mock_graph.child_frame.get());
   mock_graph.child_frame.reset();
 
-  task_env().RunUntilIdle();
+  browser_thread_bundle.RunUntilIdle();
 
   EXPECT_EQ(1u, change_stream.num_changes());
   EXPECT_FALSE(base::ContainsKey(change_stream.id_set(), child_frame_id));
@@ -191,6 +193,8 @@ TEST_F(WebUIGraphDumpImplTest, ChangeStream) {
       NodeBase::GetSerializationId(mock_graph.page.get()));
   ASSERT_TRUE(main_page_it != change_stream.page_map().end());
   EXPECT_EQ(kAnotherURL, main_page_it->second->main_frame_url);
+
+  browser_thread_bundle.RunUntilIdle();
 }
 
 }  // namespace performance_manager

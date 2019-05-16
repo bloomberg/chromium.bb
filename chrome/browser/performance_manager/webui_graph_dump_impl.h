@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_WEBUI_GRAPH_DUMP_IMPL_H_
 #define CHROME_BROWSER_PERFORMANCE_MANAGER_WEBUI_GRAPH_DUMP_IMPL_H_
 
+#include "base/memory/ref_counted_memory.h"
+#include "base/memory/weak_ptr.h"
+#include "base/sequence_checker.h"
 #include "chrome/browser/performance_manager/observers/graph_observer.h"
 #include "chrome/browser/performance_manager/webui_graph_dump.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -44,7 +47,7 @@ class WebUIGraphDumpImpl : public mojom::WebUIGraphDump, public GraphObserver {
   void OnPageAlmostIdleChanged(PageNodeImpl* page_node) override;
 
   // Event notification.
-  void OnFaviconUpdated(PageNodeImpl* page_node) override {}
+  void OnFaviconUpdated(PageNodeImpl* page_node) override;
   // Event notification.
   void OnTitleUpdated(PageNodeImpl* page_node) override {}
 
@@ -63,18 +66,36 @@ class WebUIGraphDumpImpl : public mojom::WebUIGraphDump, public GraphObserver {
   void SetNodeGraph(GraphImpl* graph) override;
 
  private:
+  // The favicon requests happen on the UI thread. This helper class
+  // maintains the state required to do that.
+  class FaviconRequestHelper;
+
+  FaviconRequestHelper* EnsureFaviconRequestHelper();
+
+  void StartPageFaviconRequest(PageNodeImpl* page_node);
+  void StartFrameFaviconRequest(FrameNodeImpl* frame_node);
+
   void SendFrameNotification(FrameNodeImpl* frame, bool created);
   void SendPageNotification(PageNodeImpl* page, bool created);
   void SendProcessNotification(ProcessNodeImpl* process, bool created);
   void SendDeletionNotification(NodeBase* node);
+  void SendFaviconNotification(
+      int64_t serialization_id,
+      scoped_refptr<base::RefCountedMemory> bitmap_data);
 
   GraphImpl* graph_;
+
+  std::unique_ptr<FaviconRequestHelper> favicon_request_helper_;
 
   // The current change subscriber to this dumper. This instance is subscribed
   // to every node in |graph_| save for the system node, so long as there is a
   // subscriber.
   mojom::WebUIGraphChangeStreamPtr change_subscriber_;
   mojo::Binding<mojom::WebUIGraphDump> binding_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
+
+  base::WeakPtrFactory<WebUIGraphDumpImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUIGraphDumpImpl);
 };
