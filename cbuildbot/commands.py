@@ -1696,8 +1696,7 @@ def AbortHWTests(config_type_or_name, version, debug, suite=''):
     logging.warning('AbortHWTests failed', exc_info=True)
 
 
-def AbortSkylabHWTests(build, board, debug, suite, priority, pool=None,
-                       suite_id=''):
+def AbortSkylabHWTests(build, board, debug, suite, priority, pool=None):
   """Abort the specified hardware tests for the given bot(s).
 
   Args:
@@ -1707,11 +1706,8 @@ def AbortSkylabHWTests(build, board, debug, suite, priority, pool=None,
     suite: Name of the Autotest suite.
     priority: A string like 'CQ' to represent the suite's priority.
     pool: The name of the pool.
-    suite_id: The ID of this swarming suite task.
   """
   abort_args = ['--board', board, '--suite_name', suite, '--build', build]
-  if suite_id:
-    abort_args += ['--suite_task_ids', suite_id]
 
   if pool is not None:
     abort_args += ['--pool', pool]
