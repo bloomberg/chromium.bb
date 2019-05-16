@@ -209,9 +209,8 @@ class TestWebWidgetClient : public WebWidgetClient {
                                   bool is_pinch_gesture_active,
                                   float minimum,
                                   float maximum) override;
-  void InjectGestureScrollEvent(WebGestureDevice device,
-                                const WebFloatSize& delta,
-                                WebScrollGranularity granularity,
+  void InjectGestureScrollEvent(const blink::WebFloatSize& delta,
+                                blink::WebScrollGranularity granularity,
                                 cc::ElementId scrollable_area_element_id,
                                 WebInputEvent::Type injected_type) override;
 

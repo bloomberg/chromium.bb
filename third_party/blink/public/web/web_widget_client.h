@@ -71,6 +71,7 @@ struct WebCursorInfo;
 struct WebFloatPoint;
 struct WebFloatRect;
 struct WebFloatSize;
+enum class WebInjectedScrollSequenceType;
 
 class WebWidgetClient {
  public:
@@ -174,9 +175,8 @@ class WebWidgetClient {
   // ScrollableArea identified by |scrollable_area_element_id| by the given
   // delta + granularity.
   virtual void InjectGestureScrollEvent(
-      WebGestureDevice device,
-      const WebFloatSize& delta,
-      WebScrollGranularity granularity,
+      const blink::WebFloatSize& delta,
+      blink::WebScrollGranularity granularity,
       cc::ElementId scrollable_area_element_id,
       WebInputEvent::Type injected_type) {}
 

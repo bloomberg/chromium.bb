@@ -545,8 +545,8 @@ void Scrollbar::InjectScrollGesture(WebInputEvent::Type gesture_type) {
   ScrollGranularity granularity = PressedPartScrollGranularity();
   ScrollOffset delta = ToScrollDelta(PressedPartScrollDirectionPhysical(), 1);
   scrollable_area_->GetChromeClient()->InjectGestureScrollEvent(
-      WebGestureDevice::kScrollbar, delta, granularity,
-      scrollable_area_->GetCompositorElementId(), gesture_type);
+      delta, granularity, scrollable_area_->GetCompositorElementId(),
+      gesture_type);
 }
 
 void Scrollbar::SetScrollbarsHiddenIfOverlay(bool hidden) {

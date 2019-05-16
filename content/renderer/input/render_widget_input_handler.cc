@@ -526,7 +526,6 @@ void RenderWidgetInputHandler::DidOverscrollFromBlink(
 }
 
 void RenderWidgetInputHandler::InjectGestureScrollEvent(
-    blink::WebGestureDevice device,
     const blink::WebFloatSize& delta,
     blink::WebScrollGranularity granularity,
     cc::ElementId scrollable_area_element_id,
@@ -552,15 +551,16 @@ void RenderWidgetInputHandler::InjectGestureScrollEvent(
           std::make_unique<std::vector<InjectScrollGestureParams>>();
     }
 
-    InjectScrollGestureParams params{device, delta, granularity,
-                                     scrollable_area_element_id, injected_type};
+    InjectScrollGestureParams params{blink::WebGestureDevice::kScrollbar, delta,
+                                     granularity, scrollable_area_element_id,
+                                     injected_type};
     (*handling_injected_scroll_params_)->push_back(params);
   } else {
     base::TimeTicks now = base::TimeTicks::Now();
     std::unique_ptr<WebGestureEvent> gesture_event =
-        ui::GenerateInjectedScrollGesture(injected_type, now, device,
-                                          WebFloatPoint(0, 0), delta,
-                                          granularity);
+        ui::GenerateInjectedScrollGesture(
+            injected_type, now, blink::WebGestureDevice::kScrollbar,
+            WebFloatPoint(0, 0), delta, granularity);
     if (injected_type == WebInputEvent::Type::kGestureScrollBegin) {
       gesture_event->data.scroll_begin.scrollable_area_element_id =
           scrollable_area_element_id.GetInternalValue();
