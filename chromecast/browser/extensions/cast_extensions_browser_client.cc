@@ -242,10 +242,6 @@ void CastExtensionsBrowserClient::BroadcastEventToRenderers(
   EventRouter::Get(browser_context_)->BroadcastEvent(std::move(event));
 }
 
-net::NetLog* CastExtensionsBrowserClient::GetNetLog() {
-  return nullptr;
-}
-
 ExtensionCache* CastExtensionsBrowserClient::GetExtensionCache() {
   return nullptr;
 }

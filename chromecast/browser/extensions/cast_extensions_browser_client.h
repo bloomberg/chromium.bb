@@ -101,7 +101,6 @@ class CastExtensionsBrowserClient : public ExtensionsBrowserClient {
       events::HistogramValue histogram_value,
       const std::string& event_name,
       std::unique_ptr<base::ListValue> args) override;
-  net::NetLog* GetNetLog() override;
   ExtensionCache* GetExtensionCache() override;
   bool IsBackgroundUpdateAllowed() override;
   bool IsMinBrowserVersionSupported(const std::string& min_version) override;

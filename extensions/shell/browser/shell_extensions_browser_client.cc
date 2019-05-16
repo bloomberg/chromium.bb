@@ -261,10 +261,6 @@ void ShellExtensionsBrowserClient::BroadcastEventToRenderers(
   EventRouter::Get(browser_context_)->BroadcastEvent(std::move(event));
 }
 
-net::NetLog* ShellExtensionsBrowserClient::GetNetLog() {
-  return NULL;
-}
-
 ExtensionCache* ShellExtensionsBrowserClient::GetExtensionCache() {
   return extension_cache_.get();
 }

@@ -238,10 +238,6 @@ void TestExtensionsBrowserClient::BroadcastEventToRenderers(
     const std::string& event_name,
     std::unique_ptr<base::ListValue> args) {}
 
-net::NetLog* TestExtensionsBrowserClient::GetNetLog() {
-  return nullptr;
-}
-
 ExtensionCache* TestExtensionsBrowserClient::GetExtensionCache() {
   return extension_cache_.get();
 }

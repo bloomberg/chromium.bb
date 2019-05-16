@@ -47,7 +47,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "components/net_log/chrome_net_log.h"
 #include "components/update_client/update_client.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
@@ -372,10 +371,6 @@ void ChromeExtensionsBrowserClient::BroadcastEventToRenderers(
   g_browser_process->extension_event_router_forwarder()
       ->BroadcastEventToRenderers(histogram_value, event_name, std::move(args),
                                   GURL());
-}
-
-net::NetLog* ChromeExtensionsBrowserClient::GetNetLog() {
-  return g_browser_process->net_log();
 }
 
 ExtensionCache* ChromeExtensionsBrowserClient::GetExtensionCache() {

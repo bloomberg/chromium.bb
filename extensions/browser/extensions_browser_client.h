@@ -39,7 +39,6 @@ class WebContents;
 }
 
 namespace net {
-class NetLog;
 class NetworkDelegate;
 class URLRequest;
 class URLRequestJob;
@@ -269,9 +268,6 @@ class ExtensionsBrowserClient {
       events::HistogramValue histogram_value,
       const std::string& event_name,
       std::unique_ptr<base::ListValue> args) = 0;
-
-  // Returns the embedder's net::NetLog.
-  virtual net::NetLog* GetNetLog() = 0;
 
   // Gets the single ExtensionCache instance shared across the browser process.
   virtual ExtensionCache* GetExtensionCache() = 0;
