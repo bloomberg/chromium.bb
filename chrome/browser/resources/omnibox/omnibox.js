@@ -20,6 +20,15 @@
 (function() {
 /**
  * @typedef {{
+ *   inputText: string,
+ *   callback: function(!mojom.OmniboxResponse):Promise,
+ *   display: boolean,
+ * }}
+ */
+let Request;
+
+/**
+ * @typedef {{
  *   queryInputs: QueryInputs,
  *   displayInputs: DisplayInputs,
  *   responsesHistory: !Array<!Array<!mojom.OmniboxResponse>>,
@@ -43,24 +52,9 @@ class BrowserProxy {
     this.callbackRouter_ = new mojom.OmniboxPageCallbackRouter;
 
     this.callbackRouter_.handleNewAutocompleteResponse.addListener(
-        (response, isPageController) => {
-          // When unfocusing the browser omnibox, the autocomplete controller
-          // sends a response with no combined results. This response is ignored
-          // in order to prevent the previous non-empty response from being
-          // hidden and because these results wouldn't normally be displayed by
-          // the browser window omnibox.
-          if (isPageController ||
-              (omniboxInput.connectWindowOmnibox &&
-               response.combinedResults.length)) {
-            omniboxOutput.addAutocompleteResponse(response);
-          }
-        });
+        this.handleNewAutocompleteResponse.bind(this));
     this.callbackRouter_.handleNewAutocompleteQuery.addListener(
-        isPageController => {
-          if (isPageController || omniboxInput.connectWindowOmnibox) {
-            omniboxOutput.prepareNewQuery();
-          }
-        });
+        this.handleNewAutocompleteQuery.bind(this));
     this.callbackRouter_.handleAnswerImageData.addListener(
         omniboxOutput.updateAnswerImage.bind(omniboxOutput));
 
@@ -68,11 +62,74 @@ class BrowserProxy {
     this.handler_ = mojom.OmniboxPageHandler.getProxy();
     this.handler_.setClientPage(this.callbackRouter_.createProxy());
 
-    /**
-     * @type {function(string, boolean, number, boolean, boolean, boolean,
-     *     string, number)}
-     */
-    this.makeRequest = this.handler_.startOmniboxQuery.bind(this.handler_);
+    /** @private {Request} */
+    this.lastRequest;
+  }
+
+
+  /**
+   * @param {!mojom.OmniboxResponse} response
+   * @param {boolean} isPageController
+   */
+  handleNewAutocompleteResponse(response, isPageController) {
+    const isForLastPageRequest = isPageController && this.lastRequest &&
+        this.lastRequest.inputText === response.host;
+
+    // When unfocusing the browser omnibox, the autocomplete controller
+    // sends a response with no combined results. This response is ignored
+    // in order to prevent the previous non-empty response from being
+    // hidden and because these results wouldn't normally be displayed by
+    // the browser window omnibox.
+    if (isForLastPageRequest && this.lastRequest.display ||
+        omniboxInput.connectWindowOmnibox && !isPageController &&
+            response.combinedResults.length) {
+      omniboxOutput.addAutocompleteResponse(response);
+    }
+
+    if (isForLastPageRequest && response.done) {
+      this.lastRequest.callback(response);
+      this.lastRequest = null;
+    }
+  }
+
+  /**
+   * @param {boolean} isPageController
+   * @param {string} inputText
+   */
+  handleNewAutocompleteQuery(isPageController, inputText) {
+    // If the request originated from the debug page and is not for display,
+    // then we don't want to clear the omniboxOutput.
+    if (isPageController && this.lastRequest &&
+            this.lastRequest.inputText === inputText &&
+            this.lastRequest.display ||
+        omniboxInput.connectWindowOmnibox && !isPageController) {
+      omniboxOutput.prepareNewQuery();
+    }
+  }
+
+  /**
+   * @param {string} inputText
+   * @param {boolean} resetAutocompleteController
+   * @param {number} cursorPosition
+   * @param {boolean} zeroSuggest
+   * @param {boolean} preventInlineAutocomplete
+   * @param {boolean} preferKeyword
+   * @param {string} currentUrl
+   * @param {number} pageClassification
+   * @param {boolean} display
+   * @return {!Promise}
+   */
+  makeRequest(
+      inputText, resetAutocompleteController, cursorPosition, zeroSuggest,
+      preventInlineAutocomplete, preferKeyword, currentUrl, pageClassification,
+      display) {
+    return new Promise(resolve => {
+      this.lastRequest = {inputText, callback: resolve, display};
+      this.handler_.startOmniboxQuery(
+          inputText, resetAutocompleteController, cursorPosition, zeroSuggest,
+          preventInlineAutocomplete, preferKeyword, currentUrl,
+          pageClassification);
+    });
   }
 }
 
@@ -89,7 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
         e.detail.inputText, e.detail.resetAutocompleteController,
         e.detail.cursorPosition, e.detail.zeroSuggest,
         e.detail.preventInlineAutocomplete, e.detail.preferKeyword,
-        e.detail.currentUrl, e.detail.pageClassification);
+        e.detail.currentUrl, e.detail.pageClassification, true);
   });
   omniboxInput.addEventListener(
       'display-inputs-changed',

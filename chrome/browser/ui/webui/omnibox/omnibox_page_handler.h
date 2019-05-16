@@ -39,7 +39,8 @@ class OmniboxPageHandler : public AutocompleteControllerDelegate,
   void OnResultChanged(bool default_match_changed) override;
 
   // OmniboxControllerEmitter::Observer overrides:
-  void OnOmniboxQuery(AutocompleteController* controller) override;
+  void OnOmniboxQuery(AutocompleteController* controller,
+                      const base::string16& input_text) override;
   void OnOmniboxResultChanged(bool default_match_changed,
                               AutocompleteController* controller) override;
 

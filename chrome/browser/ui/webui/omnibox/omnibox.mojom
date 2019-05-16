@@ -79,6 +79,6 @@ interface OmniboxPageHandler {
 interface OmniboxPage {
   handleNewAutocompleteResponse(OmniboxResponse response,
                                 bool isPageController);
-  HandleNewAutocompleteQuery(bool isPageController);
+  HandleNewAutocompleteQuery(bool isPageController, string input_text);
   HandleAnswerImageData(string image_url, string image_data);
 };

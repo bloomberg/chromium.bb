@@ -235,8 +235,10 @@ void OmniboxPageHandler::OnResultChanged(bool default_match_changed) {
   OnOmniboxResultChanged(default_match_changed, controller_.get());
 }
 
-void OmniboxPageHandler::OnOmniboxQuery(AutocompleteController* controller) {
-  page_->HandleNewAutocompleteQuery(controller == controller_.get());
+void OmniboxPageHandler::OnOmniboxQuery(AutocompleteController* controller,
+                                        const base::string16& input_text) {
+  page_->HandleNewAutocompleteQuery(controller == controller_.get(),
+                                    base::UTF16ToUTF8(input_text));
 }
 
 void OmniboxPageHandler::OnOmniboxResultChanged(
@@ -412,7 +414,7 @@ void OmniboxPageHandler::StartOmniboxQuery(const std::string& input_string,
     input_.set_keyword_mode_entry_method(metrics::OmniboxEventProto::TAB);
   input_.set_from_omnibox_focus(zero_suggest);
 
-  OnOmniboxQuery(controller_.get());
+  OnOmniboxQuery(controller_.get(), input_.text());
   controller_->Start(input_);
 }
 
