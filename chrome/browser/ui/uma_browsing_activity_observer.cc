@@ -90,10 +90,9 @@ void UMABrowsingActivityObserver::LogTimeBeforeUpdate() const {
   if (upgrade_detected_time.is_null())
     return;
   const base::Time now = base::Time::Now();
-  UMA_HISTOGRAM_CUSTOM_TIMES("UpgradeDetector.TimeBeforeUpgrade",
-                             base::TimeDelta(now - upgrade_detected_time),
-                             base::TimeDelta::FromHours(1),
-                             base::TimeDelta::FromDays(20), 50);
+  UMA_HISTOGRAM_EXACT_LINEAR(
+      "UpgradeDetector.DaysBeforeUpgrade",
+      base::TimeDelta(now - upgrade_detected_time).InDays(), 30);
 }
 
 void UMABrowsingActivityObserver::LogRenderProcessHostCount() const {
