@@ -30,9 +30,9 @@
 
 #include "third_party/blink/renderer/core/loader/appcache/application_cache_host.h"
 
-#include "services/network/public/mojom/request_context_frame_type.mojom-blink.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom-blink.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom-blink.h"
+#include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink.h"
 #include "third_party/blink/public/platform/web_application_cache_host.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_error.h"

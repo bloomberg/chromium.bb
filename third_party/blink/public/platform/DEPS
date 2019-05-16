@@ -37,7 +37,6 @@ include_rules = [
     "+media/mojo/interfaces/display_media_information.mojom-shared.h",
     "+services/network/public/mojom/cors.mojom-shared.h",
     "+services/network/public/mojom/fetch_api.mojom-shared.h",
-    "+services/network/public/mojom/request_context_frame_type.mojom-shared.h",
     "+services/network/public/mojom/restricted_cookie_manager.mojom-shared.h",
     "+services/network/public/mojom/referrer_policy.mojom-shared.h",
 

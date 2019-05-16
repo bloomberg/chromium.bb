@@ -22,7 +22,7 @@
 
 #include "third_party/blink/renderer/core/html/html_plugin_element.h"
 
-#include "services/network/public/mojom/request_context_frame_type.mojom-blink.h"
+#include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"

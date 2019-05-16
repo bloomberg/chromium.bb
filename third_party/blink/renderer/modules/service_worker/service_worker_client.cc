@@ -7,7 +7,7 @@
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
-#include "services/network/public/mojom/request_context_frame_type.mojom-blink.h"
+#include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/bindings/core/v8/callback_promise_adapter.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/post_message_helper.h"

@@ -33,7 +33,6 @@
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/mojom/cors.mojom-shared.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
-#include "services/network/public/mojom/request_context_frame_type.mojom-shared.h"
 #include "url/ipc/url_param_traits.h"
 #include "url/origin.h"
 
@@ -103,9 +102,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::FetchRedirectMode,
 
 IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::FetchRequestMode,
                           network::mojom::FetchRequestMode::kMaxValue)
-
-IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::RequestContextFrameType,
-                          network::mojom::RequestContextFrameType::kMaxValue)
 
 IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::CorsPreflightPolicy,
                           network::mojom::CorsPreflightPolicy::kMaxValue)

@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/loader/base_fetch_context.h"
 
-#include "services/network/public/mojom/request_context_frame_type.mojom-blink.h"
+#include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/settings.h"

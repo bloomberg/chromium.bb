@@ -10,7 +10,6 @@
 #include "base/bind_helpers.h"
 #include "content/child/image_decoder.h"
 #include "content/public/renderer/associated_resource_fetcher.h"
-#include "services/network/public/mojom/request_context_frame_type.mojom.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/public/web/web_associated_url_loader_options.h"

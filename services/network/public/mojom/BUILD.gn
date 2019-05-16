@@ -96,7 +96,6 @@ mojom("mojom") {
     "proxy_lookup_client.mojom",
     "proxy_resolving_socket.mojom",
     "referrer_policy.mojom",
-    "request_context_frame_type.mojom",
     "restricted_cookie_manager.mojom",
     "ssl_config.mojom",
     "tcp_socket.mojom",

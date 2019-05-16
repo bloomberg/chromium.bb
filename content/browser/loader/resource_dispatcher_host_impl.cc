@@ -106,7 +106,6 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
-#include "services/network/public/mojom/request_context_frame_type.mojom.h"
 #include "services/network/resource_scheduler.h"
 #include "services/network/throttling/scoped_throttling_token.h"
 #include "services/network/url_loader_factory.h"
