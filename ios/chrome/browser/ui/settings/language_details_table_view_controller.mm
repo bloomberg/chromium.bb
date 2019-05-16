@@ -5,7 +5,9 @@
 #import "ios/chrome/browser/ui/settings/language_details_table_view_controller.h"
 
 #include "base/feature_list.h"
+#import "ios/chrome/browser/ui/settings/cells/language_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_cells_constants.h"
+#import "ios/chrome/browser/ui/settings/language_settings_data_source.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
@@ -35,36 +37,31 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 @interface LanguageDetailsTableViewController ()
 
-// The language code for the given language.
-@property(nonatomic, copy) NSString* languageCode;
+// The model data passed to this instance.
+@property(nonatomic, strong) LanguageItem* languageItem;
 
-// The name of the given language.
-@property(nonatomic, copy) NSString* languageName;
-
-// Whether the language is Translate-blocked.
-@property(nonatomic, getter=isBlocked) BOOL blocked;
-
-// Whether Translate can be offered for the language, i.e., it can be unblocked.
-@property(nonatomic) BOOL canOfferTranslate;
+// The delegate passed to this instance.
+@property(nonatomic, weak) id<LanguageDetailsTableViewControllerDelegate>
+    delegate;
 
 @end
 
 @implementation LanguageDetailsTableViewController
 
-- (instancetype)initWithLanguageCode:(NSString*)languageCode
-                        languageName:(NSString*)languageName
-                             blocked:(BOOL)blocked
-                   canOfferTranslate:(BOOL)canOfferTranslate {
+- (instancetype)initWithLanguageItem:(LanguageItem*)languageItem
+                            delegate:
+                                (id<LanguageDetailsTableViewControllerDelegate>)
+                                    delegate {
+  DCHECK(languageItem);
+  DCHECK(delegate);
   UITableViewStyle style = base::FeatureList::IsEnabled(kSettingsRefresh)
                                ? UITableViewStylePlain
                                : UITableViewStyleGrouped;
   self = [super initWithTableViewStyle:style
                            appBarStyle:ChromeTableViewControllerStyleNoAppBar];
   if (self) {
-    _languageCode = [languageCode copy];
-    _languageName = [languageName copy];
-    _blocked = blocked;
-    _canOfferTranslate = canOfferTranslate;
+    _languageItem = languageItem;
+    _delegate = delegate;
   }
   return self;
 }
@@ -74,7 +71,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)viewDidLoad {
   [super viewDidLoad];
 
-  self.title = self.languageName;
+  self.title = self.languageItem.text;
   self.shouldHideDoneButton = YES;
   self.tableView.accessibilityIdentifier =
       kLanguageDetailsTableViewAccessibilityIdentifier;
@@ -96,7 +93,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   neverTranslateItem.text =
       l10n_util::GetNSString(IDS_IOS_LANGUAGE_SETTINGS_NEVER_TRANSLATE_TITLE);
   neverTranslateItem.accessibilityTraits |= UIAccessibilityTraitButton;
-  neverTranslateItem.accessoryType = self.isBlocked
+  neverTranslateItem.accessoryType = self.languageItem.isBlocked
                                          ? UITableViewCellAccessoryCheckmark
                                          : UITableViewCellAccessoryNone;
   [model addItem:neverTranslateItem
@@ -108,10 +105,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
   offerTranslateItem.text = l10n_util::GetNSString(
       IDS_IOS_LANGUAGE_SETTINGS_OFFER_TO_TRANSLATE_TITLE);
   offerTranslateItem.accessibilityTraits |= UIAccessibilityTraitButton;
-  offerTranslateItem.accessoryType = self.isBlocked
+  offerTranslateItem.accessoryType = self.languageItem.isBlocked
                                          ? UITableViewCellAccessoryNone
                                          : UITableViewCellAccessoryCheckmark;
-  if (!self.canOfferTranslate) {
+  if (!self.languageItem.canOfferTranslate) {
     offerTranslateItem.enabled = NO;
     offerTranslateItem.textColor =
         UIColorFromRGB(kSettingsCellsDetailTextColor);
@@ -128,7 +125,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [self.delegate
       languageDetailsTableViewController:self
                  didSelectOfferTranslate:(type == ItemTypeOfferTranslate)
-                            languageCode:self.languageCode];
+                            languageCode:self.languageItem.languageCode];
 }
 
 @end

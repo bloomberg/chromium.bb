@@ -50,6 +50,7 @@
 #import "ios/chrome/browser/ui/settings/content_settings_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/google_services/accounts_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_coordinator.h"
+#import "ios/chrome/browser/ui/settings/language_settings_mediator.h"
 #import "ios/chrome/browser/ui/settings/language_settings_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/material_cell_catalog_view_controller.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_table_view_controller.h"
@@ -863,10 +864,17 @@ void IdentityObserverBridge::OnPrimaryAccountCleared(
       controller = [[PrivacyTableViewController alloc]
           initWithBrowserState:_browserState];
       break;
-    case ItemTypeLanguageSettings:
-      controller = [[LanguageSettingsTableViewController alloc]
-          initWithBrowserState:_browserState];
+    case ItemTypeLanguageSettings: {
+      LanguageSettingsMediator* mediator =
+          [[LanguageSettingsMediator alloc] initWithBrowserState:_browserState];
+      LanguageSettingsTableViewController* languageSettingsTableViewController =
+          [[LanguageSettingsTableViewController alloc]
+              initWithDataSource:mediator
+                  commandHandler:mediator];
+      mediator.consumer = languageSettingsTableViewController;
+      controller = languageSettingsTableViewController;
       break;
+    }
     case ItemTypeContentSettings:
       controller = [[ContentSettingsTableViewController alloc]
           initWithBrowserState:_browserState];

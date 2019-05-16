@@ -5,19 +5,21 @@
 #ifndef IOS_CHROME_BROWSER_UI_SETTINGS_LANGUAGE_SETTINGS_TABLE_VIEW_CONTROLLER_H_
 #define IOS_CHROME_BROWSER_UI_SETTINGS_LANGUAGE_SETTINGS_TABLE_VIEW_CONTROLLER_H_
 
+#import "ios/chrome/browser/ui/settings/language_settings_consumer.h"
 #import "ios/chrome/browser/ui/settings/settings_root_table_view_controller.h"
 
-namespace ios {
-class ChromeBrowserState;
-}  // namespace ios
+@protocol LanguageSettingsDataSource;
+@protocol LanguageSettingsCommands;
 
 // Controller for the UI that allows the user to change language settings such
-// as user preferred languages.
-@interface LanguageSettingsTableViewController : SettingsRootTableViewController
+// as the ordered list of accept languages and their Translate preferences.
+@interface LanguageSettingsTableViewController
+    : SettingsRootTableViewController <LanguageSettingsConsumer>
 
-// The designated initializer. |browserState| must not be nil and is not
-// retained.
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
+// The designated initializer. |dataSource| and |commandHandler| must not be
+// nil. |commandHandler| will not be retained.
+- (instancetype)initWithDataSource:(id<LanguageSettingsDataSource>)dataSource
+                    commandHandler:(id<LanguageSettingsCommands>)commandHandler
     NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithTableViewStyle:(UITableViewStyle)style
                            appBarStyle:

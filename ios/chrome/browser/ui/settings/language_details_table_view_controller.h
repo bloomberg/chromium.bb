@@ -5,10 +5,15 @@
 #ifndef IOS_CHROME_BROWSER_UI_SETTINGS_LANGUAGE_DETAILS_TABLE_VIEW_CONTROLLER_H_
 #define IOS_CHROME_BROWSER_UI_SETTINGS_LANGUAGE_DETAILS_TABLE_VIEW_CONTROLLER_H_
 
+#include <string>
+
 #import "ios/chrome/browser/ui/settings/settings_root_table_view_controller.h"
 
 @class LanguageDetailsTableViewController;
+@class LanguageItem;
 
+// Protocol used by LanguageDetailsTableViewController to communicate to its
+// delegate.
 @protocol LanguageDetailsTableViewControllerDelegate
 
 // Informs the delegate that user selected whether or not to offer Translate for
@@ -16,27 +21,24 @@
 - (void)languageDetailsTableViewController:
             (LanguageDetailsTableViewController*)tableViewController
                    didSelectOfferTranslate:(BOOL)offerTranslate
-                              languageCode:(NSString*)languageCode;
+                              languageCode:(const std::string&)languageCode;
 
 @end
 
-// Controller for the UI that allows the user to change the settings for a given
-// language, i.e., to choose whether or not Translate should be offered for it.
+// Controller for the UI that allows the user to choose whether or not Translate
+// should be offered for a given language.
 @interface LanguageDetailsTableViewController : SettingsRootTableViewController
 
-// The designated initializer.
-- (instancetype)initWithLanguageCode:(NSString*)languageCode
-                        languageName:(NSString*)languageName
-                             blocked:(BOOL)blocked
-                   canOfferTranslate:(BOOL)canOfferTranslate
-    NS_DESIGNATED_INITIALIZER;
+// The designated initializer. |languageItem| and |delegate| must not be nil.
+// |delegate| will not be retained.
+- (instancetype)initWithLanguageItem:(LanguageItem*)languageItem
+                            delegate:
+                                (id<LanguageDetailsTableViewControllerDelegate>)
+                                    delegate NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithTableViewStyle:(UITableViewStyle)style
                            appBarStyle:
                                (ChromeTableViewControllerStyle)appBarStyle
     NS_UNAVAILABLE;
-
-@property(nonatomic, weak) id<LanguageDetailsTableViewControllerDelegate>
-    delegate;
 
 @end
 

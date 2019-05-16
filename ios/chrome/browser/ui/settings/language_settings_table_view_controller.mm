@@ -4,33 +4,16 @@
 
 #import "ios/chrome/browser/ui/settings/language_settings_table_view_controller.h"
 
-#include <map>
-#include <memory>
-#include <vector>
-
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
-#include "base/strings/sys_string_conversions.h"
-#include "components/language/core/browser/language_model_manager.h"
-#include "components/language/core/browser/pref_names.h"
-#include "components/language/core/common/language_util.h"
-#include "components/prefs/ios/pref_observer_bridge.h"
-#include "components/prefs/pref_change_registrar.h"
-#include "components/prefs/pref_service.h"
-#include "components/translate/core/browser/translate_pref_names.h"
-#include "components/translate/core/browser/translate_prefs.h"
-#include "ios/chrome/browser/application_context.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/language/language_model_manager_factory.h"
-#include "ios/chrome/browser/translate/chrome_ios_translate_client.h"
-#include "ios/chrome/browser/translate/translate_service_ios.h"
-#import "ios/chrome/browser/ui/list_model/list_model.h"
+#import "ios/chrome/browser/ui/list_model/list_item+Controller.h"
 #import "ios/chrome/browser/ui/settings/cells/language_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_cells_constants.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_cell.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
 #import "ios/chrome/browser/ui/settings/language_details_table_view_controller.h"
-#import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
+#import "ios/chrome/browser/ui/settings/language_settings_commands.h"
+#import "ios/chrome/browser/ui/settings/language_settings_data_source.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
@@ -66,27 +49,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }  // namespace
 
 @interface LanguageSettingsTableViewController () <
-    BooleanObserver,
-    LanguageDetailsTableViewControllerDelegate,
-    PrefObserverDelegate> {
-  // Registrar for pref change notifications.
-  std::unique_ptr<PrefChangeRegistrar> _prefChangeRegistrar;
+    LanguageDetailsTableViewControllerDelegate>
 
-  // Pref observer to track changes to language::prefs::kAcceptLanguages.
-  std::unique_ptr<PrefObserverBridge> _acceptLanguagesPrefObserverBridge;
+// The data source passed to this instance.
+@property(nonatomic, strong) id<LanguageSettingsDataSource> dataSource;
 
-  // Pref observer to track changes to language::prefs::kFluentLanguages.
-  std::unique_ptr<PrefObserverBridge> _fluentLanguagesPrefObserverBridge;
-
-  // Translate wrapper for the PrefService.
-  std::unique_ptr<translate::TranslatePrefs> _translatePrefs;
-}
-
-// The BrowserState passed to this instance.
-@property(nonatomic, assign) ios::ChromeBrowserState* browserState;
-
-// Whether or not prefs::kOfferTranslateEnabled pref is enabled.
-@property(nonatomic, strong) PrefBackedBoolean* translateEnabled;
+// The command handler passed to this instance.
+@property(nonatomic, weak) id<LanguageSettingsCommands> commandHandler;
 
 // A reference to the Add language item for quick access.
 @property(nonatomic, weak) TableViewTextItem* addLanguageItem;
@@ -98,34 +67,19 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 @implementation LanguageSettingsTableViewController
 
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState {
-  DCHECK(browserState);
+- (instancetype)initWithDataSource:(id<LanguageSettingsDataSource>)dataSource
+                    commandHandler:
+                        (id<LanguageSettingsCommands>)commandHandler {
+  DCHECK(dataSource);
+  DCHECK(commandHandler);
   UITableViewStyle style = base::FeatureList::IsEnabled(kSettingsRefresh)
                                ? UITableViewStylePlain
                                : UITableViewStyleGrouped;
   self = [super initWithTableViewStyle:style
                            appBarStyle:ChromeTableViewControllerStyleNoAppBar];
   if (self) {
-    _browserState = browserState;
-
-    _translateEnabled = [[PrefBackedBoolean alloc]
-        initWithPrefService:_browserState->GetPrefs()
-                   prefName:prefs::kOfferTranslateEnabled];
-    [_translateEnabled setObserver:self];
-
-    _prefChangeRegistrar = std::make_unique<PrefChangeRegistrar>();
-    _prefChangeRegistrar->Init(_browserState->GetPrefs());
-    _acceptLanguagesPrefObserverBridge =
-        std::make_unique<PrefObserverBridge>(self);
-    _acceptLanguagesPrefObserverBridge->ObserveChangesForPreference(
-        language::prefs::kAcceptLanguages, _prefChangeRegistrar.get());
-    _fluentLanguagesPrefObserverBridge =
-        std::make_unique<PrefObserverBridge>(self);
-    _fluentLanguagesPrefObserverBridge->ObserveChangesForPreference(
-        language::prefs::kFluentLanguages, _prefChangeRegistrar.get());
-
-    _translatePrefs = ChromeIOSTranslateClient::CreateTranslatePrefs(
-        _browserState->GetPrefs());
+    _dataSource = dataSource;
+    _commandHandler = commandHandler;
   }
   return self;
 }
@@ -164,7 +118,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       l10n_util::GetNSString(IDS_IOS_LANGUAGE_SETTINGS_TRANSLATE_SWITCH_TITLE);
   translateSwitchItem.detailText = l10n_util::GetNSString(
       IDS_IOS_LANGUAGE_SETTINGS_TRANSLATE_SWITCH_SUBTITLE);
-  translateSwitchItem.on = self.translateEnabled.value;
+  translateSwitchItem.on = [self.dataSource translateEnabled];
   [model addItem:translateSwitchItem
       toSectionWithIdentifier:SectionIdentifierTranslate];
 }
@@ -212,7 +166,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   // Ignore selection of language items when Translate is disabled.
   NSInteger itemType = [self.tableViewModel itemTypeForIndexPath:indexPath];
-  return (itemType != ItemTypeLanguage || self.translateEnabled.value)
+  return (itemType != ItemTypeLanguage || [self.dataSource translateEnabled])
              ? indexPath
              : nil;
 }
@@ -224,17 +178,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
   TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
   if (item.type == ItemTypeLanguage) {
     LanguageItem* languageItem = base::mac::ObjCCastStrict<LanguageItem>(item);
-    BOOL canOfferTranslate =
-        [self canOfferToTranslateLanguage:languageItem.languageCode
-                                  blocked:languageItem.isBlocked];
+    languageItem.canOfferTranslate =
+        [self canOfferTranslateForLanguage:languageItem];
     LanguageDetailsTableViewController* viewController =
         [[LanguageDetailsTableViewController alloc]
-            initWithLanguageCode:base::SysUTF8ToNSString(
-                                     languageItem.languageCode)
-                    languageName:languageItem.text
-                         blocked:languageItem.isBlocked
-               canOfferTranslate:canOfferTranslate];
-    viewController.delegate = self;
+            initWithLanguageItem:languageItem
+                        delegate:self];
     [self.navigationController pushViewController:viewController animated:YES];
   }
 }
@@ -288,8 +237,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   // Update the model and the table view.
   [self deleteItems:[NSArray arrayWithObject:indexPath]];
 
-  // Update the pref.
-  _translatePrefs->RemoveFromLanguageList(languageItem.languageCode);
+  // Inform the command handler.
+  [self.commandHandler removeLanguage:languageItem.languageCode];
 }
 
 - (BOOL)tableView:(UITableView*)tableView
@@ -317,16 +266,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
       inSectionWithIdentifier:SectionIdentifierLanguages
                       atIndex:destinationIndexPath.row];
 
-  // Update the pref.
-  translate::TranslatePrefs::RearrangeSpecifier where =
-      sourceIndexPath.row < destinationIndexPath.row
-          ? translate::TranslatePrefs::kDown
-          : translate::TranslatePrefs::kUp;
-  const int offset = abs(sourceIndexPath.row - destinationIndexPath.row);
-  std::vector<std::string> languageCodes;
-  _translatePrefs->GetLanguageList(&languageCodes);
-  _translatePrefs->RearrangeLanguage(languageItem.languageCode, where, offset,
-                                     languageCodes);
+  // Inform the command handler.
+  BOOL downward = sourceIndexPath.row < destinationIndexPath.row;
+  NSUInteger offset = abs(sourceIndexPath.row - destinationIndexPath.row);
+  [self.commandHandler moveLanguage:languageItem.languageCode
+                           downward:downward
+                         withOffset:offset];
 }
 
 - (UITableViewCell*)tableView:(UITableView*)tableView
@@ -351,43 +296,36 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)languageDetailsTableViewController:
             (LanguageDetailsTableViewController*)tableViewController
                    didSelectOfferTranslate:(BOOL)offerTranslate
-                              languageCode:(NSString*)languageCode {
-  const std::string& code = base::SysNSStringToUTF8(languageCode);
+                              languageCode:(const std::string&)languageCode {
+  // Inform the command handler.
   if (offerTranslate) {
-    _translatePrefs->UnblockLanguage(code);
+    [self.commandHandler unblockLanguage:languageCode];
   } else {
-    _translatePrefs->BlockLanguage(code);
+    [self.commandHandler blockLanguage:languageCode];
   }
+
+  // Update the model and the table view.
   [self updateLanguagesSection];
+
   [self.navigationController popViewControllerAnimated:YES];
 }
 
-#pragma mark - BooleanObserver
+#pragma mark - LanguageSettingsConsumer
 
-// Called when the value of prefs::kOfferTranslateEnabled changes.
-- (void)booleanDidChange:(id<ObservableBoolean>)observableBoolean {
-  // Ingnore pref changes while in edit mode.
+- (void)translateEnabled:(BOOL)enabled {
+  // Ignore pref changes while in edit mode.
   if (self.isEditing)
     return;
 
-  DCHECK_EQ(self.translateEnabled, observableBoolean);
-
   // Update the model and the table view.
-  [self setTranslateSwitchItemOn:self.translateEnabled.value];
+  [self setTranslateSwitchItemOn:enabled];
   [self updateLanguagesSection];
 }
 
-#pragma mark - PrefObserverDelegate
-
-// Called when the values of language::prefs::kAcceptLanguages or
-// language::prefs::kFluentLanguages change.
-- (void)onPreferenceChanged:(const std::string&)preferenceName {
-  // Ingnore pref changes while in edit mode.
+- (void)languagePrefsChanged {
+  // Ignore pref changes while in edit mode.
   if (self.isEditing)
     return;
-
-  DCHECK(preferenceName == language::prefs::kAcceptLanguages ||
-         preferenceName == language::prefs::kFluentLanguages);
 
   // Update the model and the table view.
   [self updateLanguagesSection];
@@ -405,48 +343,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model setHeader:headerItem
       forSectionWithIdentifier:SectionIdentifierLanguages];
 
-  // Populate the supported languages map.
-  std::map<std::string, translate::TranslateLanguageInfo> supportedLanguagesMap;
-  std::vector<translate::TranslateLanguageInfo> supportedLanguages;
-  translate::TranslatePrefs::GetLanguageInfoList(
-      GetApplicationContext()->GetApplicationLocale(),
-      _translatePrefs->IsTranslateAllowedByPolicy(), &supportedLanguages);
-  for (const auto& entry : supportedLanguages) {
-    supportedLanguagesMap[entry.code] = entry;
-  }
-
   // Languages items.
-  std::vector<std::string> languageCodes;
-  _translatePrefs->GetLanguageList(&languageCodes);
-  for (const auto& languageCode : languageCodes) {
-    // Ignore unsupported languages.
-    auto it = supportedLanguagesMap.find(languageCode);
-    if (it == supportedLanguagesMap.end())
-      continue;
-
-    const translate::TranslateLanguageInfo& language = it->second;
-    LanguageItem* languageItem =
-        [[LanguageItem alloc] initWithType:ItemTypeLanguage];
-    languageItem.languageCode = language.code;
-    languageItem.text = base::SysUTF8ToNSString(language.display_name);
-    languageItem.leadingDetailText =
-        base::SysUTF8ToNSString(language.native_display_name);
-    languageItem.blocked = _translatePrefs->IsBlockedLanguage(language.code);
-    if (self.translateEnabled.value) {
-      // Show a disclosure indicator to suggest Translate options are available
-      // as well as a label indicating if the language is Translate-blocked.
-      languageItem.accessibilityTraits |= UIAccessibilityTraitButton;
-      languageItem.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-      languageItem.trailingDetailText =
-          languageItem.isBlocked
-              ? l10n_util::GetNSString(
-                    IDS_IOS_LANGUAGE_SETTINGS_NEVER_TRANSLATE_TITLE)
-              : l10n_util::GetNSString(
-                    IDS_IOS_LANGUAGE_SETTINGS_OFFER_TO_TRANSLATE_TITLE);
-    }
-    [model addItem:languageItem
-        toSectionWithIdentifier:SectionIdentifierLanguages];
-  }
+  [[self.dataSource acceptLanguagesItems]
+      enumerateObjectsUsingBlock:^(LanguageItem* item, NSUInteger index,
+                                   BOOL* stop) {
+        item.type = ItemTypeLanguage;
+        [model addItem:item toSectionWithIdentifier:SectionIdentifierLanguages];
+      }];
 
   // Add language item.
   TableViewTextItem* addLanguageItem =
@@ -502,26 +405,21 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [self reconfigureCellsForItems:@[ self.translateSwitchItem ]];
 }
 
-- (BOOL)canOfferToTranslateLanguage:(const std::string&)languageCode
-                            blocked:(BOOL)blocked {
+// Returns whether Translate can be offered for the language (it can be
+// unblocked).
+- (BOOL)canOfferTranslateForLanguage:(LanguageItem*)languageItem {
+  // Cannot offer Translate for languages not supported by the Translate server.
+  if (!languageItem.supportsTranslate)
+    return NO;
+
   // Cannot offer Translate for the last Translate-blocked language.
-  if (blocked && [self numberOfBlockedLanguages] <= 1) {
+  if (languageItem.isBlocked && [self numberOfBlockedLanguages] <= 1) {
     return NO;
   }
 
   // Cannot offer Translate for the Translate target language.
-  // Note the language codes used in the language settings have the Chrome
-  // internal format while the Translate target language has the Translate
-  // server format. To convert the former to the latter the utilily function
-  // ToTranslateLanguageSynonym() must be used.
-  const std::string& targetLanguageCode =
-      TranslateServiceIOS::GetTargetLanguage(
-          self.browserState->GetPrefs(),
-          LanguageModelManagerFactory::GetForBrowserState(self.browserState)
-              ->GetPrimaryModel());
-  std::string canonicalLanguageCode = languageCode;
-  language::ToTranslateLanguageSynonym(&canonicalLanguageCode);
-  return targetLanguageCode != canonicalLanguageCode;
+  return [self.dataSource targetLanguageCode] !=
+         languageItem.canonicalLanguageCode;
 }
 
 // Returns the number of Translate-blocked languages currently in the model.
@@ -543,12 +441,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
 #pragma mark - Actions
 
 - (void)translateSwitchChanged:(UISwitch*)switchView {
-  // Update the pref.
-  [self.translateEnabled setValue:switchView.isOn];
+  // Inform the command handler.
+  [self.commandHandler setTranslateEnabled:switchView.isOn];
 
   // Update the model and the table view.
-  [self setTranslateSwitchItemOn:switchView.isOn];
-  [self updateLanguagesSection];
+  [self translateEnabled:switchView.isOn];
 }
 
 @end
