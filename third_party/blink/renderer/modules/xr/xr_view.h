@@ -26,7 +26,7 @@ class MODULES_EXPORT XRView final : public ScriptWrappable {
  public:
   XRView(XRSession*, const XRViewData&);
 
-  enum XREye { kEyeLeft = 0, kEyeRight = 1 };
+  enum XREye { kEyeNone = 0, kEyeLeft = 1, kEyeRight = 2 };
 
   const String& eye() const { return eye_string_; }
   XREye EyeValue() const { return eye_; }

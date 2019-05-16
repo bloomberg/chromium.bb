@@ -69,6 +69,10 @@ const double kDegToRad = M_PI / 180.0;
 // TODO(bajones): This is something that we probably want to make configurable.
 const double kMagicWindowVerticalFieldOfView = 75.0f * M_PI / 180.0f;
 
+// Indices into the views array.
+const unsigned int kMonoOrStereoLeftView = 0;
+const unsigned int kStereoRightView = 1;
+
 void UpdateViewFromEyeParameters(
     XRViewData& view,
     const device::mojom::blink::VREyeParametersPtr& eye,
@@ -953,17 +957,17 @@ WTF::Vector<XRViewData>& XRSession::views() {
       // In immersive mode the projection and view matrices must be aligned with
       // the device's physical optics.
       UpdateViewFromEyeParameters(
-          views_[XRView::kEyeLeft], display_info_->leftEye,
+          views_[kMonoOrStereoLeftView], display_info_->leftEye,
           render_state_->depthNear(), render_state_->depthFar());
       if (display_info_->rightEye) {
         UpdateViewFromEyeParameters(
-            views_[XRView::kEyeRight], display_info_->rightEye,
+            views_[kStereoRightView], display_info_->rightEye,
             render_state_->depthNear(), render_state_->depthFar());
       }
     } else {
       if (views_.IsEmpty()) {
-        views_.emplace_back(XRView::kEyeLeft);
-        views_[XRView::kEyeLeft].UpdateOffset(0, 0, 0);
+        views_.emplace_back(XRView::kEyeNone);
+        views_[kMonoOrStereoLeftView].UpdateOffset(0, 0, 0);
       }
 
       float aspect = 1.0f;
@@ -975,7 +979,7 @@ WTF::Vector<XRViewData>& XRSession::views() {
       // In non-immersive mode, if there is no explicit projection matrix
       // provided, the projection matrix must be aligned with the
       // output canvas dimensions.
-      views_[XRView::kEyeLeft].UpdateProjectionMatrixFromAspect(
+      views_[kMonoOrStereoLeftView].UpdateProjectionMatrixFromAspect(
           kMagicWindowVerticalFieldOfView, aspect, render_state_->depthNear(),
           render_state_->depthFar());
     }

@@ -13,7 +13,16 @@ namespace blink {
 
 XRView::XRView(XRSession* session, const XRViewData& view_data)
     : eye_(view_data.Eye()), session_(session) {
-  eye_string_ = (eye_ == kEyeLeft ? "left" : "right");
+  switch (eye_) {
+    case kEyeLeft:
+      eye_string_ = "left";
+      break;
+    case kEyeRight:
+      eye_string_ = "right";
+      break;
+    default:
+      eye_string_ = "none";
+  }
   transform_ = MakeGarbageCollected<XRRigidTransform>(view_data.Transform());
   projection_matrix_ =
       transformationMatrixToDOMFloat32Array(view_data.ProjectionMatrix());
