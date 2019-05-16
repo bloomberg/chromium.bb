@@ -477,6 +477,7 @@ void PaletteTray::ShowBubble(bool show_by_click) {
   init_params.max_width = kPaletteWidth;
   init_params.close_on_deactivate = true;
   init_params.show_by_click = show_by_click;
+  init_params.use_native_theme = false;
 
   // TODO(tdanderson): Refactor into common row layout code.
   // TODO(tdanderson|jdufault): Add material design ripple effects to the menu

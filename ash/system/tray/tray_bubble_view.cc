@@ -233,7 +233,8 @@ TrayBubbleView::TrayBubbleView(const InitParams& init_params)
   set_margins(gfx::Insets());
   SetPaintToLayer();
 
-  SetNativeTheme(ui::NativeThemeDarkAura::instance());
+  if (init_params.use_native_theme)
+    SetNativeTheme(ui::NativeThemeDarkAura::instance());
 
   if (!ash::features::ShouldUseShaderRoundedCorner()) {
     bubble_content_mask_ = views::Painter::CreatePaintedLayer(
