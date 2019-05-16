@@ -31,63 +31,63 @@
 namespace gwp_asan {
 namespace internal {
 
-namespace {
+class CrashAnalyzerTest : public testing::Test {
+ protected:
+  void SetUp() final {
+    gpa_.Init(1, 1, 1);
+    InitializeSnapshot();
+  }
 
-// Initializes this ProcessSnapshot so that it appears the given allocator was
-// used for backing malloc.
-void InitializeSnapshot(crashpad::test::TestProcessSnapshot* process_snapshot,
-                        const GuardedPageAllocator& gpa) {
-  std::string crash_key_value = gpa.GetCrashKey();
-  std::vector<uint8_t> crash_key_vector(crash_key_value.begin(),
-                                        crash_key_value.end());
+  // Initializes the ProcessSnapshot so that it appears the given allocator was
+  // used for backing malloc.
+  void InitializeSnapshot() {
+    std::string crash_key_value = gpa_.GetCrashKey();
+    std::vector<uint8_t> crash_key_vector(crash_key_value.begin(),
+                                          crash_key_value.end());
 
-  std::vector<crashpad::AnnotationSnapshot> annotations;
-  annotations.emplace_back(
-      kMallocCrashKey,
-      static_cast<uint16_t>(crashpad::Annotation::Type::kString),
-      crash_key_vector);
+    std::vector<crashpad::AnnotationSnapshot> annotations;
+    annotations.emplace_back(
+        kMallocCrashKey,
+        static_cast<uint16_t>(crashpad::Annotation::Type::kString),
+        crash_key_vector);
 
-  auto module = std::make_unique<crashpad::test::TestModuleSnapshot>();
-  module->SetAnnotationObjects(annotations);
+    auto module = std::make_unique<crashpad::test::TestModuleSnapshot>();
+    module->SetAnnotationObjects(annotations);
 
-  auto exception = std::make_unique<crashpad::test::TestExceptionSnapshot>();
-  // Just match the bitness, the actual architecture doesn't matter.
+    auto exception = std::make_unique<crashpad::test::TestExceptionSnapshot>();
+    // Just match the bitness, the actual architecture doesn't matter.
 #if defined(ARCH_CPU_64_BITS)
-  exception->MutableContext()->architecture =
-      crashpad::CPUArchitecture::kCPUArchitectureX86_64;
+    exception->MutableContext()->architecture =
+        crashpad::CPUArchitecture::kCPUArchitectureX86_64;
 #else
-  exception->MutableContext()->architecture =
-      crashpad::CPUArchitecture::kCPUArchitectureX86;
+    exception->MutableContext()->architecture =
+        crashpad::CPUArchitecture::kCPUArchitectureX86;
 #endif
 
-  auto memory = std::make_unique<crashpad::ProcessMemoryNative>();
-  ASSERT_TRUE(memory->Initialize(crashpad::test::GetSelfProcess()));
+    auto memory = std::make_unique<crashpad::ProcessMemoryNative>();
+    ASSERT_TRUE(memory->Initialize(crashpad::test::GetSelfProcess()));
 
-  process_snapshot->AddModule(std::move(module));
-  process_snapshot->SetException(std::move(exception));
-  process_snapshot->SetProcessMemory(std::move(memory));
-}
+    process_snapshot_.AddModule(std::move(module));
+    process_snapshot_.SetException(std::move(exception));
+    process_snapshot_.SetProcessMemory(std::move(memory));
+  }
 
-}  // namespace
+  GuardedPageAllocator gpa_;
+  crashpad::test::TestProcessSnapshot process_snapshot_;
+};
 
-TEST(CrashAnalyzerTest, StackTraceCollection) {
-  GuardedPageAllocator gpa;
-  gpa.Init(1, 1, 1);
-
-  void* ptr = gpa.Allocate(10);
+TEST_F(CrashAnalyzerTest, StackTraceCollection) {
+  void* ptr = gpa_.Allocate(10);
   ASSERT_NE(ptr, nullptr);
-  gpa.Deallocate(ptr);
+  gpa_.Deallocate(ptr);
 
   // Lets pretend a double free() occurred on the allocation we saw previously.
-  gpa.state_.double_free_address = reinterpret_cast<uintptr_t>(ptr);
-
-  crashpad::test::TestProcessSnapshot process_snapshot;
-  InitializeSnapshot(&process_snapshot, gpa);
+  gpa_.state_.double_free_address = reinterpret_cast<uintptr_t>(ptr);
 
   base::HistogramTester histogram_tester;
   gwp_asan::Crash proto;
   bool proto_present =
-      CrashAnalyzer::GetExceptionInfo(process_snapshot, &proto);
+      CrashAnalyzer::GetExceptionInfo(process_snapshot_, &proto);
   ASSERT_TRUE(proto_present);
 
   histogram_tester.ExpectTotalCount(CrashAnalyzer::kCrashAnalysisHistogram, 0);
@@ -132,24 +132,18 @@ TEST(CrashAnalyzerTest, StackTraceCollection) {
                 proto.deallocation().stack_trace_size() - (trace_len + 1)));
 }
 
-TEST(CrashAnalyzerTest, InternalError) {
-  GuardedPageAllocator gpa;
-  gpa.Init(1, 1, 1);
-
+TEST_F(CrashAnalyzerTest, InternalError) {
   // Lets pretend an invalid free() occurred in the allocator region.
-  gpa.state_.free_invalid_address =
-      reinterpret_cast<uintptr_t>(gpa.state_.first_page_addr);
+  gpa_.state_.free_invalid_address =
+      reinterpret_cast<uintptr_t>(gpa_.state_.first_page_addr);
   // Out of bounds slot_to_metadata_idx, allocator was initialized with only a
   // single entry slot/metadata entry.
-  gpa.slot_to_metadata_idx_[0] = 5;
-
-  crashpad::test::TestProcessSnapshot process_snapshot;
-  InitializeSnapshot(&process_snapshot, gpa);
+  gpa_.slot_to_metadata_idx_[0] = 5;
 
   base::HistogramTester histogram_tester;
   gwp_asan::Crash proto;
   bool proto_present =
-      CrashAnalyzer::GetExceptionInfo(process_snapshot, &proto);
+      CrashAnalyzer::GetExceptionInfo(process_snapshot_, &proto);
   ASSERT_TRUE(proto_present);
 
   int result = static_cast<int>(

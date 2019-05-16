@@ -142,6 +142,7 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
   // Required for a singleton to access the constructor.
   friend base::NoDestructor<GuardedPageAllocator>;
 
+  friend class CrashAnalyzerTest;
   friend class GuardedPageAllocatorTest;
   FRIEND_TEST_ALL_PREFIXES(CrashAnalyzerTest, InternalError);
   FRIEND_TEST_ALL_PREFIXES(CrashAnalyzerTest, StackTraceCollection);
