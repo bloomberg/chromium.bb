@@ -13,8 +13,8 @@ let ParagraphUtils = function() {};
 /**
  * Gets the first ancestor of a node which is a paragraph or is not inline,
  * or get the root node if none is found.
- * @param { AutomationNode } node The node to get the parent for.
- * @return { ?AutomationNode } the parent paragraph or null if there is none.
+ * @param {AutomationNode} node The node to get the parent for.
+ * @return {?AutomationNode} the parent paragraph or null if there is none.
  */
 ParagraphUtils.getFirstBlockAncestor = function(node) {
   let parent = node.parent;
@@ -39,9 +39,9 @@ ParagraphUtils.getFirstBlockAncestor = function(node) {
 /**
  * Determines whether two nodes are in the same block-like ancestor, i.e.
  * whether they are in the same paragraph.
- * @param { AutomationNode|undefined } first The first node to compare.
- * @param { AutomationNode|undefined } second The second node to compare.
- * @return { boolean } whether two nodes are in the same paragraph.
+ * @param {AutomationNode|undefined} first The first node to compare.
+ * @param {AutomationNode|undefined} second The second node to compare.
+ * @return {boolean} whether two nodes are in the same paragraph.
  */
 ParagraphUtils.inSameParagraph = function(first, second) {
   if (first === undefined || second === undefined) {
