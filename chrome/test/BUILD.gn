@@ -297,6 +297,13 @@ static_library("test_support") {
     ]
   }
 
+  if (is_win) {
+    sources += [
+      "pixel/skia_gold_pixel_diff.cc",
+      "pixel/skia_gold_pixel_diff.h",
+    ]
+  }
+
   if (toolkit_views) {
     public_deps += [ "//ui/views:test_support" ]
     sources += [
@@ -3075,6 +3082,13 @@ test("unit_tests") {
     if (enable_widevine) {
       sources += [ "../browser/media/widevine_hardware_caps_win_unittest.cc" ]
     }
+  }
+
+  # Pixeltests only support win.
+  if (is_win) {
+    sources += [
+      "../test/pixel/skia_gold_pixel_diff_unittest.cc",
+    ]
   }
 
   if (!is_android) {
@@ -6044,6 +6058,27 @@ if (is_win) {
     # Directory contains useful and non-useful files. Don't worry about
     # non-useful since they are eliminated during pruning.
     seed_corpus = "data/safe_browsing/download_protection/"
+  }
+}
+
+if (is_win) {
+  test("pixel_browser_tests") {
+    sources = [
+      "pixel/demo/skia_gold_demo_pixeltest.cc",
+    ]
+    configs += [ "//build/config:precompiled_headers" ]
+    defines = [
+      "HAS_OUT_OF_PROC_TEST_RUNNER",
+    ]
+    deps = [
+      ":test_support",
+      ":browser_tests_runner",
+    ]
+    if (is_win) {
+      data = [ "//tools/skia_goldctl/goldctl.exe" ]
+    } else {
+      data = [ "//tools/skia_goldctl/goldctl" ]
+    }
   }
 }
 
