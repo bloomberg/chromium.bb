@@ -1141,6 +1141,57 @@ IN_PROC_BROWSER_TEST_F(CrossOriginReadBlockingExtensionTest,
 }
 
 IN_PROC_BROWSER_TEST_P(CrossOriginReadBlockingExtensionAllowlistingTest,
+                       OriginHeaderInCrossOriginGetRequest) {
+  // Load the test extension.
+  ASSERT_TRUE(InstallExtension());
+
+  // Navigate to a foo.com page.
+  GURL page_url = GetTestPageUrl("foo.com");
+  ui_test_utils::NavigateToURL(browser(), page_url);
+  ASSERT_EQ(page_url,
+            active_web_contents()->GetMainFrame()->GetLastCommittedURL());
+  ASSERT_EQ(url::Origin::Create(page_url),
+            active_web_contents()->GetMainFrame()->GetLastCommittedOrigin());
+
+  // Inject a content script that performs a cross-origin GET XHR to bar.com.
+  GURL cross_site_resource(
+      embedded_test_server()->GetURL("bar.com", "/echoall"));
+  const char* kScriptTemplate = R"(
+      fetch($1, {method: 'GET', mode:'cors'})
+          .then(response => response.text())
+          .then(text => domAutomationController.send(text))
+          .catch(err => domAutomationController.send('ERROR: ' + err));
+  )";
+  content::DOMMessageQueue message_queue;
+  ExecuteContentScript(
+      active_web_contents(),
+      content::JsReplace(kScriptTemplate, cross_site_resource));
+  std::string fetch_result = PopString(&message_queue);
+
+  // Verify if the fetch was blocked + what the Origin header was.
+  if (AreContentScriptFetchesExpectedToBeBlocked()) {
+    // TODO(lukasza): https://crbug.com/953315: No CORB blocking should occur
+    // for the CORS-mode request - the test expectations should be the same,
+    // regardless of AreContentScriptFetchesExpectedToBeBlocked.
+    EXPECT_EQ("", fetch_result);
+  } else if (IsExtensionAllowlisted()) {
+    // Legacy behavior - no Origin: header is present in GET CORS requests from
+    // content scripts based on the extension permissions.
+    EXPECT_THAT(fetch_result, ::testing::Not(::testing::HasSubstr("Origin:")));
+  } else {
+    // TODO(lukasza): https://crbug.com/920638: Non-allowlisted extension
+    // should use the website's origin in the CORS request.
+    // TODO: EXPECT_THAT(fetch_result,
+    //                   ::testing::HasSubstr("Origin: http://foo.com"));
+    EXPECT_THAT(fetch_result, ::testing::Not(::testing::HasSubstr("Origin:")));
+  }
+
+  // Regression test against https://crbug.com/944704.
+  EXPECT_THAT(fetch_result,
+              ::testing::Not(::testing::HasSubstr("Origin: chrome-extension")));
+}
+
+IN_PROC_BROWSER_TEST_P(CrossOriginReadBlockingExtensionAllowlistingTest,
                        OriginHeaderInCrossOriginPostRequest) {
   // Load the test extension.
   ASSERT_TRUE(InstallExtension());
@@ -1176,12 +1227,11 @@ IN_PROC_BROWSER_TEST_P(CrossOriginReadBlockingExtensionAllowlistingTest,
     EXPECT_EQ("", fetch_result);
   } else {
     EXPECT_THAT(fetch_result, ::testing::HasSubstr("Origin: http://foo.com"));
-
-    // Regression test against https://crbug.com/944704.
-    EXPECT_THAT(
-        fetch_result,
-        ::testing::Not(::testing::HasSubstr("Origin: chrome-extension")));
   }
+
+  // Regression test against https://crbug.com/944704.
+  EXPECT_THAT(fetch_result,
+              ::testing::Not(::testing::HasSubstr("Origin: chrome-extension")));
 }
 
 IN_PROC_BROWSER_TEST_P(CrossOriginReadBlockingExtensionAllowlistingTest,
