@@ -485,10 +485,6 @@ void TabDragController::Init(TabDragContext* source_context,
   if (event_source == EVENT_SOURCE_TOUCH)
     SetCapture(source_context_);
 
-#if defined(USE_AURA)
-  env_ = source_context_->AsView()->GetWidget()->GetNativeWindow()->env();
-#endif
-
   window_finder_ = WindowFinder::Create(
       event_source, source_context->AsView()->GetWidget()->GetNativeWindow());
 }
@@ -1979,7 +1975,8 @@ Browser* TabDragController::CreateBrowserForDrag(
 
 gfx::Point TabDragController::GetCursorScreenPoint() {
 #if defined(OS_CHROMEOS)
-  if (event_source_ == EVENT_SOURCE_TOUCH && env_->is_touch_down()) {
+  if (event_source_ == EVENT_SOURCE_TOUCH &&
+      aura::Env::GetInstance()->is_touch_down()) {
     views::Widget* widget = GetAttachedBrowserWidget();
     DCHECK(widget);
     aura::Window* widget_window = widget->GetNativeWindow();

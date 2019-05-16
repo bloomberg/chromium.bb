@@ -849,9 +849,8 @@ gfx::Rect WebContentsViewAura::GetViewBounds() const {
 void WebContentsViewAura::CreateAuraWindow(aura::Window* context) {
   DCHECK(aura::Env::HasInstance());
   DCHECK(!window_);
-  window_ = std::make_unique<aura::Window>(
-      this, aura::client::WINDOW_TYPE_CONTROL,
-      context ? context->env() : aura::Env::GetInstance());
+  window_ =
+      std::make_unique<aura::Window>(this, aura::client::WINDOW_TYPE_CONTROL);
   window_->set_owned_by_parent(false);
   window_->SetName("WebContentsViewAura");
   window_->Init(ui::LAYER_NOT_DRAWN);

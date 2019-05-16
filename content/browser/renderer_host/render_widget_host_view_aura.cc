@@ -2441,7 +2441,7 @@ void RenderWidgetHostViewAura::CreateSelectionController() {
 }
 
 void RenderWidgetHostViewAura::OnDidNavigateMainFrameToNewPage() {
-  window_->env()->gesture_recognizer()->CancelActiveTouches(window_);
+  aura::Env::GetInstance()->gesture_recognizer()->CancelActiveTouches(window_);
 }
 
 const viz::FrameSinkId& RenderWidgetHostViewAura::GetFrameSinkId() const {

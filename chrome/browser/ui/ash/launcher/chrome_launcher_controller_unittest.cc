@@ -1092,8 +1092,8 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
 
  private:
   TestBrowserWindow* CreateTestBrowserWindowAura() {
-    std::unique_ptr<aura::Window> window(new aura::Window(
-        nullptr, aura::client::WINDOW_TYPE_NORMAL, GetContext()->env()));
+    std::unique_ptr<aura::Window> window(
+        new aura::Window(nullptr, aura::client::WINDOW_TYPE_NORMAL));
     window->set_id(0);
     window->Init(ui::LAYER_TEXTURED);
     aura::client::ParentWindowWithContext(window.get(), GetContext(),

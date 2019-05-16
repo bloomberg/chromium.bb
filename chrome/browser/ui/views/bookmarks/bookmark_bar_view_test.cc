@@ -82,9 +82,9 @@ namespace {
 class DialogWaiter : public aura::EnvObserver,
                      public views::WidgetObserver {
  public:
-  explicit DialogWaiter(aura::Env* env) : env_(env) { env_->AddObserver(this); }
+  DialogWaiter() { aura::Env::GetInstance()->AddObserver(this); }
 
-  ~DialogWaiter() override { env_->RemoveObserver(this); }
+  ~DialogWaiter() override { aura::Env::GetInstance()->RemoveObserver(this); }
 
   views::Widget* WaitForDialog() {
     if (dialog_created_)
@@ -118,7 +118,6 @@ class DialogWaiter : public aura::EnvObserver,
     }
   }
 
-  aura::Env* env_;
   bool dialog_created_ = false;
   views::Widget* dialog_ = nullptr;
   base::Closure quit_closure_;
@@ -1278,8 +1277,7 @@ class BookmarkBarViewTest12 : public BookmarkBarViewEventTestBase {
     ASSERT_TRUE(child_menu != NULL);
 
     // Click and wait until the dialog box appears.
-    auto dialog_waiter =
-        std::make_unique<DialogWaiter>(GetWidget()->GetNativeWindow()->env());
+    auto dialog_waiter = std::make_unique<DialogWaiter>();
     ui_test_utils::MoveMouseToCenterAndPress(
         child_menu, ui_controls::LEFT, ui_controls::DOWN | ui_controls::UP,
         base::BindOnce(&BookmarkBarViewTest12::Step4, base::Unretained(this),

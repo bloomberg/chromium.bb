@@ -21,12 +21,6 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/widget/widget_observer.h"
 
-#if defined(USE_AURA)
-namespace aura {
-class Env;
-}
-#endif
-
 namespace ui {
 class ListSelectionModel;
 }
@@ -649,10 +643,6 @@ class TabDragController : public views::WidgetObserver {
       attached_context_tabs_closed_tracker_;
 
   std::unique_ptr<WindowFinder> window_finder_;
-
-#if defined(USE_AURA)
-  aura::Env* env_ = nullptr;
-#endif
 
   base::WeakPtrFactory<TabDragController> weak_factory_;
 

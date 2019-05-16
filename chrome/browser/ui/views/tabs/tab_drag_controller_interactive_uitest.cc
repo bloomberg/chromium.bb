@@ -2962,8 +2962,7 @@ void SecondFingerPressTestStep2(DetachToBrowserTabDragControllerTest* test,
   ASSERT_TRUE(test->DragInputTo(target_point));
 
   // Now add a second finger to tap on it.
-  not_attached_tab_strip->GetWidget()->GetNativeWindow()->env()->set_touch_down(
-      true);
+  aura::Env::GetInstance()->set_touch_down(true);
   ASSERT_TRUE(test->PressInput(gfx::Point(), 1));
   ASSERT_TRUE(test->ReleaseInput(1));
 
