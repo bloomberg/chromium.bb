@@ -2488,6 +2488,8 @@ jumbo_split_static_library("browser") {
       "android/preferences/website_preference_bridge.cc",
       "android/profile_key_startup_accessor.cc",
       "android/profile_key_startup_accessor.h",
+      "android/profile_key_util.cc",
+      "android/profile_key_util.h",
       "android/profiles/profile_downloader_android.cc",
       "android/profiles/profile_manager_utils.cc",
       "android/provider/blocking_ui_thread_async_request.cc",

@@ -164,9 +164,8 @@ public class OfflineTestUtil {
     // Set the offline_pages.enabled_by_server pref for testing. If |enabled| is false,
     // also ensures that the server-enabled check is due.
     public static void setPrefetchingEnabledByServer(boolean enabled) {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            nativeSetPrefetchingEnabledByServer(Profile.getLastUsedProfile(), enabled);
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { nativeSetPrefetchingEnabledByServer(enabled); });
     }
 
     private static native void nativeGetRequestsInQueue(Callback<SavePageRequest[]> callback);
@@ -177,6 +176,5 @@ public class OfflineTestUtil {
     private static native void nativeClearIntercepts();
     private static native void nativeDumpRequestCoordinatorState(Callback<String> callback);
     private static native void nativeWaitForConnectivityState(boolean connected, Runnable callback);
-    private static native void nativeSetPrefetchingEnabledByServer(
-            Profile profile, boolean enabled);
+    private static native void nativeSetPrefetchingEnabledByServer(boolean enabled);
 }

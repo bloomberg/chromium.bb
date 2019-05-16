@@ -12,7 +12,6 @@ import android.content.Context;
 import android.support.test.filters.SmallTest;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -21,9 +20,9 @@ import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.ServicificationBackgroundService;
 import org.chromium.chrome.browser.offlinepages.OfflineTestUtil;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.components.background_task_scheduler.BackgroundTask.TaskFinishedCallback;
 import org.chromium.components.background_task_scheduler.BackgroundTaskScheduler;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
@@ -43,9 +42,6 @@ import java.util.concurrent.TimeUnit;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         "enable-features=OfflinePagesPrefetching"})
 public class PrefetchBackgroundTaskTest {
-    @Rule
-    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
-
     private static final double BACKOFF_JITTER_FACTOR = 0.33;
     private static final int SEMAPHORE_TIMEOUT_MS = 5000;
     private static final String GCM_TOKEN = "dummy_gcm_token";
@@ -185,7 +181,7 @@ public class PrefetchBackgroundTaskTest {
 
     @Before
     public void setUp() throws Exception {
-        mActivityTestRule.startMainActivityOnBlankPage();
+        ServicificationBackgroundService.launchChromeInBackground(true /*serviceManagerOnlyMode*/);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mScheduler = new TestBackgroundTaskScheduler();
             BackgroundTaskSchedulerFactory.setSchedulerForTesting(mScheduler);
