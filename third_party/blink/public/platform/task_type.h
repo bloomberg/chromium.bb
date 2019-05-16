@@ -12,8 +12,10 @@ namespace blink {
 //
 // For the task type usage guideline, see https://bit.ly/2vMAsQ4
 //
-// When a new task type is created, use kCount value as a new value,
-// the tools/metrics/histograms/enums.xml shall also be updated.
+// When a new task type is created:
+// * use kCount value as a new value,
+// * update tools/metrics/histograms/enums.xml,
+// * update TaskTypes.md
 enum class TaskType : unsigned char {
   ///////////////////////////////////////
   // Speced tasks should use one of the following task types
