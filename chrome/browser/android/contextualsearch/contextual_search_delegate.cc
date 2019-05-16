@@ -277,10 +277,6 @@ std::string ContextualSearchDelegate::BuildRequestUrl(
   int contextual_cards_version =
       contextual_search::kContextualCardsUrlActionsIntegration;
   if (base::FeatureList::IsEnabled(
-          chrome::android::kContextualSearchTranslationModel)) {
-    contextual_cards_version =
-        contextual_search::kContextualCardsTranslationsIntegration;
-  } else if (base::FeatureList::IsEnabled(
                  chrome::android::kContextualSearchDefinitions)) {
     contextual_cards_version =
         contextual_search::kContextualCardsDefinitionsIntegration;
