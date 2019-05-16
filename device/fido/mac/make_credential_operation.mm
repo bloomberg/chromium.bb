@@ -84,6 +84,15 @@ void MakeCredentialOperation::PromptTouchIdDone(bool success) {
     return;
   }
 
+  if (request().resident_key_required) {
+    // TODO(martinkr): Implement resident keys for Touch ID.
+    // MakeCredentialRequestHandler ensures the request never reaches Touch ID.
+    NOTREACHED();
+    std::move(callback())
+        .Run(CtapDeviceResponseCode::kCtap2ErrUnsupportedOption, base::nullopt);
+    return;
+  }
+
   // Evaluate that excludeList does not contain any credentials stored by this
   // authenticator.
   if (request().exclude_list) {

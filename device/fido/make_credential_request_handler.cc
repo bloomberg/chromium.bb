@@ -213,6 +213,12 @@ void MakeCredentialRequestHandler::DispatchRequest(
       return;
     }
 
+    if (authenticator->Options() &&
+        authenticator->Options()->is_platform_device) {
+      HandleInapplicableAuthenticator(authenticator);
+      return;
+    }
+
     // This authenticator does not meet requirements, but make it flash anyway
     // so the user understands that it's functional. A descriptive error message
     // will be shown if the user selects it.

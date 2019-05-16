@@ -64,29 +64,29 @@ void GetAssertionOperation::PromptTouchIdDone(bool success) {
     return;
   }
 
-  // Collect the credential ids from allowList. If allowList is absent, we will
-  // pick the first available credential for the RP.
   std::set<std::vector<uint8_t>> allowed_credential_ids;
   for (const PublicKeyCredentialDescriptor& desc : request().allow_list) {
-    if (desc.credential_type() != CredentialType::kPublicKey)
-      continue;
-
-    if (!desc.transports().empty() &&
-        !base::ContainsKey(desc.transports(), FidoTransportProtocol::kInternal))
-      continue;
-
-    allowed_credential_ids.insert(desc.id());
+    if (desc.credential_type() == CredentialType::kPublicKey &&
+        (desc.transports().empty() ||
+         base::ContainsKey(desc.transports(),
+                           FidoTransportProtocol::kInternal))) {
+      allowed_credential_ids.insert(desc.id());
+    }
+  }
+  if (allowed_credential_ids.empty()) {
+    // TODO(martinkr): Implement resident keys for Touch ID.
+    std::move(callback())
+        .Run(CtapDeviceResponseCode::kCtap2ErrNoCredentials, base::nullopt);
+    return;
   }
 
-  // Fetch credentials for RP from the request and current user profile.
   base::Optional<Credential> credential = FindCredentialInKeychain(
       keychain_access_group(), metadata_secret(), RpId(),
       allowed_credential_ids, authentication_context());
   if (!credential) {
-    // For now, don't show a Touch ID prompt if no credential exists.
-    // TODO(martinkr): Prompt for the fingerprint anyway, once dispatch to this
-    // authenticator is moved behind user interaction with the authenticator
-    // selection UI.
+    // TouchIdAuthenticator::HasCredentialForGetAssertionRequest() is invoked
+    // first to ensure this doesn't occur.
+    NOTREACHED();
     std::move(callback())
         .Run(CtapDeviceResponseCode::kCtap2ErrNoCredentials, base::nullopt);
     return;
