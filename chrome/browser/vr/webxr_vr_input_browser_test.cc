@@ -200,6 +200,70 @@ void WebXrControllerInputMock::OnFrameSubmitted(
   std::move(callback).Run();
 }
 
+// Test that inputsourceschange events contain only the expected added/removed
+// input sources when a mock controller is connected/disconnected.
+// Also validates that if an input source changes substantially we get an event
+// containing both the removal of the old one and the additon of the new one,
+// rather than two events.
+IN_PROC_BROWSER_TEST_F(WebXrVrBrowserTestStandard, TestInputSourcesChange) {
+  WebXrControllerInputMock my_mock;
+
+  // TODO(crbug.com/963676): Figure out if the race is a product or test bug.
+  // There's a potential for a race causing the input sources change event to
+  // fire multiple times if we disconnect a controller that has a gamepad.
+  uint64_t insufficient_buttons =
+      vr::ButtonMaskFromId(vr::k_EButton_SteamVR_Trigger);
+  std::map<vr::EVRButtonId, unsigned int> insufficient_axis_types = {
+      {vr::k_EButton_SteamVR_Trigger, vr::k_eControllerAxis_Trigger},
+  };
+  unsigned int controller_index = my_mock.CreateAndConnectController(
+      device::ControllerRole::kControllerRoleRight, insufficient_axis_types,
+      insufficient_buttons);
+
+  LoadUrlAndAwaitInitialization(
+      GetFileUrlForHtmlTestFile("test_webxr_input_sources_change_event"));
+  EnterSessionWithUserGestureOrFail();
+
+  // Wait for the first changed event
+  PollJavaScriptBooleanOrFail("inputChangeEvents === 1", kPollTimeoutShort);
+
+  // Validate that we only have one controller added, and no controller removed.
+  RunJavaScriptOrFail("validateAdded(1)");
+  RunJavaScriptOrFail("validateRemoved(0)");
+  RunJavaScriptOrFail("updateCachedInputSource(0)");
+  RunJavaScriptOrFail("validateCachedAddedPresence(true)");
+
+  // Disconnect the controller and validate that we only have one controller
+  // removed, and that our previously cached controller is in the removed array.
+  my_mock.DisconnectController(controller_index);
+  PollJavaScriptBooleanOrFail("inputChangeEvents === 2", kPollTimeoutShort);
+
+  RunJavaScriptOrFail("validateAdded(0)");
+  RunJavaScriptOrFail("validateRemoved(1)");
+  RunJavaScriptOrFail("validateCachedRemovedPresence(true)");
+
+  // Connect a controller, and then change enough properties that the system
+  // recalculates its status as a valid controller, so that we can verify
+  // it is both added and removed.
+  // Since we're changing the controller state without disconnecting it, we can
+  // (and should) use the minimal gamepad here.
+  controller_index = my_mock.CreateAndConnectMinimalGamepad();
+  PollJavaScriptBooleanOrFail("inputChangeEvents === 3", kPollTimeoutShort);
+  RunJavaScriptOrFail("updateCachedInputSource(0)");
+
+  my_mock.UpdateControllerSupport(controller_index, insufficient_axis_types,
+                                  insufficient_buttons);
+
+  PollJavaScriptBooleanOrFail("inputChangeEvents === 4", kPollTimeoutShort);
+  RunJavaScriptOrFail("validateAdded(1)");
+  RunJavaScriptOrFail("validateRemoved(1)");
+  RunJavaScriptOrFail("validateCachedAddedPresence(false)");
+  RunJavaScriptOrFail("validateCachedRemovedPresence(true)");
+
+  RunJavaScriptOrFail("done()");
+  EndTest();
+}
+
 // Ensure that changes to a gamepad object respect that it is the same object
 // and that if whether or not an input source has a gamepad changes that the
 // input source change event is fired and a new input source is created.

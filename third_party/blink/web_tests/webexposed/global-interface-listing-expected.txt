@@ -10605,6 +10605,12 @@ interface XRInputSourceEvent : Event
     getter frame
     getter inputSource
     method constructor
+interface XRInputSourcesChangeEvent : Event
+    attribute @@toStringTag
+    getter added
+    getter removed
+    getter session
+    method constructor
 interface XRLayer
     attribute @@toStringTag
     method constructor

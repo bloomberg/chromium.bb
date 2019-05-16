@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/modules/xr/xr_frame_provider.h"
 #include "third_party/blink/renderer/modules/xr/xr_hit_result.h"
 #include "third_party/blink/renderer/modules/xr/xr_input_source_event.h"
+#include "third_party/blink/renderer/modules/xr/xr_input_sources_change_event.h"
 #include "third_party/blink/renderer/modules/xr/xr_layer.h"
 #include "third_party/blink/renderer/modules/xr/xr_presentation_context.h"
 #include "third_party/blink/renderer/modules/xr/xr_ray.h"
@@ -766,10 +767,11 @@ void XRSession::OnInputStateChange(
     int16_t frame_id,
     const WTF::Vector<device::mojom::blink::XRInputSourceStatePtr>&
         input_states) {
-  bool input_sources_changed = false;
+  HeapVector<Member<XRInputSource>> added;
+  HeapVector<Member<XRInputSource>> removed;
 
-  // Update any input sources with new state information. Any updated input
-  // sources are marked as active.
+  // Build up our added array, and update the frame id of any active input
+  // sources so we can flag the ones that are no longer active.
   for (const auto& input_state : input_states) {
     XRInputSource* stored_input_source =
         input_sources_.at(input_state->source_id);
@@ -779,33 +781,46 @@ void XRSession::OnInputStateChange(
     // Using pointer equality to determine if the pointer needs to be set.
     if (stored_input_source != input_source) {
       input_sources_.Set(input_state->source_id, input_source);
-      input_sources_changed = true;
+      added.push_back(input_source);
+
+      // If we previously had a stored_input_source
+      if (stored_input_source)
+        removed.push_back(stored_input_source);
     }
 
     input_source->active_frame_id = frame_id;
-    UpdateSelectState(input_source, input_state);
   }
 
   // Remove any input sources that are inactive.  Note that this is done in
   // two passes because HeapHashMap makes no guarantees about iterators on
   // removal.
+  // We use a separate array of inactive sources here rather than just
+  // processing removed, because if we replaced any input sources, they would
+  // also be in removed, and we'd remove our newly added source.
   std::vector<uint32_t> inactive_sources;
   for (const auto& input_source : input_sources_.Values()) {
     if (input_source->active_frame_id != frame_id) {
       inactive_sources.push_back(input_source->source_id());
-      input_sources_changed = true;
+      removed.push_back(input_source);
     }
   }
 
-  if (!inactive_sources.empty()) {
-    for (uint32_t source_id : inactive_sources) {
-      input_sources_.erase(source_id);
-    }
+  for (uint32_t source_id : inactive_sources) {
+    input_sources_.erase(source_id);
   }
 
-  if (input_sources_changed) {
-    DispatchEvent(
-        *XRSessionEvent::Create(event_type_names::kInputsourceschange, this));
+  // If there have been any changes, fire the input sources change event.
+  if (!added.IsEmpty() || !removed.IsEmpty()) {
+    DispatchEvent(*XRInputSourcesChangeEvent::Create(
+        event_type_names::kInputsourceschange, this, added, removed));
+  }
+
+  // Now that we've fired the input sources change event (if needed), update and
+  // fire events for any select state changes.
+  for (const auto& input_state : input_states) {
+    XRInputSource* input_source = input_sources_.at(input_state->source_id);
+    DCHECK(input_source);
+    UpdateSelectState(input_source, input_state);
   }
 }
 
