@@ -238,12 +238,12 @@ class WaylandDataDeviceDelegate : public DataDeviceDelegate {
     return surface &&
            wl_resource_get_client(GetSurfaceResource(surface)) == client_;
   }
-  DataOffer* OnDataOffer() override {
+  DataOffer* OnDataOffer(DataOffer::Purpose purpose) override {
     wl_resource* data_offer_resource =
         wl_resource_create(client_, &wl_data_offer_interface,
                            wl_resource_get_version(data_device_resource_), 0);
     std::unique_ptr<DataOffer> data_offer = std::make_unique<DataOffer>(
-        new WaylandDataOfferDelegate(data_offer_resource));
+        new WaylandDataOfferDelegate(data_offer_resource), purpose);
     SetDataOfferResource(data_offer.get(), data_offer_resource);
     SetImplementation(data_offer_resource, &data_offer_implementation,
                       std::move(data_offer));
