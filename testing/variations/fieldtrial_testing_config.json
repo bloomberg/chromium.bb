@@ -4824,25 +4824,6 @@
             ]
         }
     ],
-    "SqlTempStoreMemory": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "ios",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "SqlTempStoreMemory"
-                    ]
-                }
-            ]
-        }
-    ],
     "StabilityDebugging": [
         {
             "platforms": [

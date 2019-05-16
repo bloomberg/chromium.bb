@@ -8,15 +8,7 @@ namespace sql {
 
 namespace features {
 
-// SQLite databases only use RAM for temporary storage.
-//
-// Enabling this feature matches the SQLITE_TEMP_STORE=3 build option, which is
-// used on Android.
-//
-// TODO(pwnall): After the memory impact of the config change is assessed, land
-//               https://crrev.com/c/1146493 and remove this flag.
-const base::Feature kSqlTempStoreMemory{"SqlTempStoreMemory",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
+// Flags for SQLite configuration experiments will be defined here.
 
 }  // namespace features
 

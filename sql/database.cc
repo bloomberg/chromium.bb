@@ -31,7 +31,6 @@
 #include "sql/database_memory_dump_provider.h"
 #include "sql/initialization.h"
 #include "sql/meta_table.h"
-#include "sql/sql_features.h"
 #include "sql/statement.h"
 #include "sql/vfs_wrapper.h"
 #include "third_party/sqlite/sqlite3.h"
@@ -1459,12 +1458,6 @@ bool Database::OpenInternal(const std::string& file_name,
     // requests exclusive locking but doesn't get it is almost certain
     // to be ill-tested.
     ignore_result(Execute("PRAGMA locking_mode=EXCLUSIVE"));
-  }
-
-  if (base::FeatureList::IsEnabled(features::kSqlTempStoreMemory)) {
-    err = ExecuteAndReturnErrorCode("PRAGMA temp_store=MEMORY");
-    // This operates on in-memory configuration, so it should not fail.
-    DCHECK_EQ(err, SQLITE_OK) << "Failed switching to in-RAM temporary storage";
   }
 
   // http://www.sqlite.org/pragma.html#pragma_journal_mode

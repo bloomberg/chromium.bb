@@ -12,7 +12,7 @@ namespace sql {
 
 namespace features {
 
-COMPONENT_EXPORT(SQL) extern const base::Feature kSqlTempStoreMemory;
+// Flags for SQLite configuration experiments will be declared here.
 
 }  // namespace features
 
