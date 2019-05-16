@@ -51,7 +51,6 @@ class NetworkThrottlingObserver;
 class PowerMetricsReporter;
 class RendererFreezer;
 class SchedulerConfigurationManager;
-class SessionTerminationManager;
 class ShutdownPolicyForwarder;
 class WakeOnWifiManager;
 class WilcoDtcSupportdManager;
@@ -169,7 +168,6 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   std::unique_ptr<chromeos::system::DarkResumeController>
       dark_resume_controller_;
 
-  std::unique_ptr<SessionTerminationManager> session_termination_manager_;
   std::unique_ptr<policy::LockToSingleUserManager> lock_to_single_user_manager_;
   std::unique_ptr<WilcoDtcSupportdManager> wilco_dtc_supportd_manager_;
 
