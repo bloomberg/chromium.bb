@@ -57,6 +57,7 @@
   "force-effective-connection-type",
   "force-show-update-menu-badge",
   "force-text-direction",
+  "force-ui-direction",
   "force-update-menu-type",
   "ignore-gpu-blacklist",
   "ignore-previews-blocklist",
