@@ -7,6 +7,7 @@ import("//third_party/protobuf/proto_library.gni")
 proto_library("proto") {
   sources = [
     "cryptauth_api.proto",
+    "cryptauth_better_together_device_metadata.proto",
     "cryptauth_better_together_feature_metadata.proto",
     "cryptauth_client_app_metadata.proto",
     "cryptauth_common.proto",
