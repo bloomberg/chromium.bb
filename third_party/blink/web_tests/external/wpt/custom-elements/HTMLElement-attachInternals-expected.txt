@@ -1,0 +1,7 @@
+This is a testharness.js-based test.
+FAIL Successful attachInternals() and the second call. assert_throws: New - 2nd call function "() => { element.attachInternals(); }" threw object "InvalidStateError: Failed to execute 'attachInternals' on 'HTMLElement': ElementInternals for the specified element was already attached." that is not a DOMException NotSupportedError: property "code" is equal to 11, expected 9
+PASS attachInternals() throws a NotSupportedError if it is called for a customized built-in element
+FAIL If a custom element definition for the local name of the element doesn't exist, throw an NotSupportedError assert_throws: function "() => { builtin.attachInternals() }" threw object "InvalidStateError: Failed to execute 'attachInternals' on 'HTMLElement': Unable to attach ElementInternals to non-custom elements." that is not a DOMException NotSupportedError: property "code" is equal to 11, expected 9
+PASS If a custom element definition for the local name of the element has disable internals flag, throw a NotSupportedError
+Harness: the test ran to completion.
+

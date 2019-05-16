@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 202 tests; 201 PASS, 1 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 217 tests; 198 PASS, 19 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Partial interface Navigator: original interface defined
 PASS Partial dictionary WebGLContextAttributes: original dictionary defined
@@ -28,10 +28,9 @@ PASS XRSession interface: existence and properties of interface prototype object
 PASS XRSession interface: existence and properties of interface prototype object's @@unscopables property
 PASS XRSession interface: attribute environmentBlendMode
 PASS XRSession interface: attribute renderState
-PASS XRSession interface: attribute viewerSpace
+FAIL XRSession interface: attribute inputSources assert_true: The prototype object must have a property "inputSources" expected true got false
 PASS XRSession interface: operation updateRenderState(XRRenderStateInit)
 PASS XRSession interface: operation requestReferenceSpace(XRReferenceSpaceType)
-PASS XRSession interface: operation getInputSources()
 PASS XRSession interface: operation requestAnimationFrame(XRFrameRequestCallback)
 PASS XRSession interface: operation cancelAnimationFrame(long)
 PASS XRSession interface: operation end()
@@ -147,6 +146,14 @@ PASS XRInputSource interface: attribute targetRayMode
 PASS XRInputSource interface: attribute targetRaySpace
 PASS XRInputSource interface: attribute gripSpace
 PASS XRInputSource interface: attribute gamepad
+FAIL XRInputSourceArray interface: existence and properties of interface object assert_own_property: self does not have own property "XRInputSourceArray" expected property "XRInputSourceArray" missing
+FAIL XRInputSourceArray interface object length assert_own_property: self does not have own property "XRInputSourceArray" expected property "XRInputSourceArray" missing
+FAIL XRInputSourceArray interface object name assert_own_property: self does not have own property "XRInputSourceArray" expected property "XRInputSourceArray" missing
+FAIL XRInputSourceArray interface: existence and properties of interface prototype object assert_own_property: self does not have own property "XRInputSourceArray" expected property "XRInputSourceArray" missing
+FAIL XRInputSourceArray interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "XRInputSourceArray" expected property "XRInputSourceArray" missing
+FAIL XRInputSourceArray interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "XRInputSourceArray" expected property "XRInputSourceArray" missing
+FAIL XRInputSourceArray interface: iterable<XRInputSource> Cannot read property 'prototype' of undefined
+FAIL XRInputSourceArray interface: attribute length assert_own_property: self does not have own property "XRInputSourceArray" expected property "XRInputSourceArray" missing
 PASS XRLayer interface: existence and properties of interface object
 PASS XRLayer interface object length
 PASS XRLayer interface object name
@@ -166,7 +173,6 @@ PASS XRWebGLLayer interface: attribute framebuffer
 PASS XRWebGLLayer interface: attribute framebufferWidth
 PASS XRWebGLLayer interface: attribute framebufferHeight
 PASS XRWebGLLayer interface: operation getViewport(XRView)
-PASS XRWebGLLayer interface: operation requestViewportScaling(double)
 PASS XRWebGLLayer interface: operation getNativeFramebufferScaleFactor(XRSession)
 PASS XRPresentationContext interface: existence and properties of interface object
 PASS XRPresentationContext interface object length
@@ -191,6 +197,15 @@ PASS XRInputSourceEvent interface: existence and properties of interface prototy
 PASS XRInputSourceEvent interface: attribute frame
 PASS XRInputSourceEvent interface: attribute inputSource
 PASS XRInputSourceEvent interface: attribute buttonIndex
+FAIL XRInputSourcesChangeEvent interface: existence and properties of interface object assert_own_property: self does not have own property "XRInputSourcesChangeEvent" expected property "XRInputSourcesChangeEvent" missing
+FAIL XRInputSourcesChangeEvent interface object length assert_own_property: self does not have own property "XRInputSourcesChangeEvent" expected property "XRInputSourcesChangeEvent" missing
+FAIL XRInputSourcesChangeEvent interface object name assert_own_property: self does not have own property "XRInputSourcesChangeEvent" expected property "XRInputSourcesChangeEvent" missing
+FAIL XRInputSourcesChangeEvent interface: existence and properties of interface prototype object assert_own_property: self does not have own property "XRInputSourcesChangeEvent" expected property "XRInputSourcesChangeEvent" missing
+FAIL XRInputSourcesChangeEvent interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "XRInputSourcesChangeEvent" expected property "XRInputSourcesChangeEvent" missing
+FAIL XRInputSourcesChangeEvent interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "XRInputSourcesChangeEvent" expected property "XRInputSourcesChangeEvent" missing
+FAIL XRInputSourcesChangeEvent interface: attribute session assert_own_property: self does not have own property "XRInputSourcesChangeEvent" expected property "XRInputSourcesChangeEvent" missing
+FAIL XRInputSourcesChangeEvent interface: attribute added assert_own_property: self does not have own property "XRInputSourcesChangeEvent" expected property "XRInputSourcesChangeEvent" missing
+FAIL XRInputSourcesChangeEvent interface: attribute removed assert_own_property: self does not have own property "XRInputSourcesChangeEvent" expected property "XRInputSourcesChangeEvent" missing
 PASS XRReferenceSpaceEvent interface: existence and properties of interface object
 PASS XRReferenceSpaceEvent interface object length
 PASS XRReferenceSpaceEvent interface object name
