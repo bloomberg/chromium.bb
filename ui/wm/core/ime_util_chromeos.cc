@@ -5,7 +5,6 @@
 #include "ui/wm/core/ime_util_chromeos.h"
 
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/mus/window_mus.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -80,16 +79,6 @@ void RestoreWindowBoundsOnClientFocusLost(aura::Window* window) {
 
 void EnsureWindowNotInRect(aura::Window* window,
                            const gfx::Rect& rect_in_screen) {
-  // If |window| is embedded, the move should happen at the embedding side.
-  if (auto* window_mus = aura::WindowMus::Get(window->GetRootWindow())) {
-    if (window_mus->window_mus_type() == aura::WindowMusType::EMBED) {
-      window->GetRootWindow()->SetProperty(
-          aura::client::kEmbeddedWindowEnsureNotInRect,
-          new gfx::Rect(rect_in_screen));
-      return;
-    }
-  }
-
   gfx::Rect original_window_bounds = window->GetBoundsInScreen();
   if (window->GetProperty(wm::kVirtualKeyboardRestoreBoundsKey)) {
     original_window_bounds =

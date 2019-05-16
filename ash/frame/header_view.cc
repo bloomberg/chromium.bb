@@ -16,7 +16,6 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/mus/window_tree_host_mus.h"
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/views/controls/image_view.h"

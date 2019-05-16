@@ -13,7 +13,6 @@
 #include "ui/base/class_property.h"
 
 namespace aura {
-class PropertyConverter;
 class Window;
 template <typename T>
 using WindowProperty = ui::ClassProperty<T>;
@@ -36,11 +35,6 @@ enum class BackdropWindowMode {
   kDisabled,  // The window should never have a backdrop.
   kAuto,  // The window manager decides if the window should have a backdrop.
 };
-
-// Registers Ash's properties with the given PropertyConverter. This allows Ash
-// and other services (eg. Chrome) to exchange Ash window property values.
-ASH_PUBLIC_EXPORT void RegisterWindowProperties(
-    aura::PropertyConverter* property_converter);
 
 // Shell-specific window property keys for use by ash and its clients.
 
