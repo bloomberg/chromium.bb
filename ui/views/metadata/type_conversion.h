@@ -92,110 +92,30 @@ base::Optional<TTarget> ConvertFromString(const base::string16& source_value);
 
 // String Conversions ---------------------------------------------------------
 
-template <>
-VIEWS_EXPORT base::string16 ConvertToString<int8_t>(int8_t source_value);
+#define DECLARE_CONVERSIONS(T)                                             \
+  template <>                                                              \
+  VIEWS_EXPORT base::string16 ConvertToString<T>(ArgType<T> source_value); \
+  template <>                                                              \
+  VIEWS_EXPORT base::Optional<T> ConvertFromString<T>(                     \
+      const base::string16& source_value);
 
-template <>
-VIEWS_EXPORT base::string16 ConvertToString<int16_t>(int16_t source_value);
+DECLARE_CONVERSIONS(int8_t)
+DECLARE_CONVERSIONS(int16_t)
+DECLARE_CONVERSIONS(int32_t)
+DECLARE_CONVERSIONS(int64_t)
+DECLARE_CONVERSIONS(uint8_t)
+DECLARE_CONVERSIONS(uint16_t)
+DECLARE_CONVERSIONS(uint32_t)
+DECLARE_CONVERSIONS(uint64_t)
+DECLARE_CONVERSIONS(float)
+DECLARE_CONVERSIONS(double)
+DECLARE_CONVERSIONS(bool)
+DECLARE_CONVERSIONS(gfx::Size)
+DECLARE_CONVERSIONS(gfx::HorizontalAlignment)
+DECLARE_CONVERSIONS(base::string16)
+DECLARE_CONVERSIONS(const char*)
 
-template <>
-VIEWS_EXPORT base::string16 ConvertToString<int32_t>(int32_t source_value);
-
-template <>
-VIEWS_EXPORT base::string16 ConvertToString<int64_t>(int64_t source_value);
-
-template <>
-VIEWS_EXPORT base::string16 ConvertToString<uint8_t>(uint8_t source_value);
-
-template <>
-VIEWS_EXPORT base::string16 ConvertToString<uint16_t>(uint16_t source_value);
-
-template <>
-VIEWS_EXPORT base::string16 ConvertToString<uint32_t>(uint32_t source_value);
-
-template <>
-VIEWS_EXPORT base::string16 ConvertToString<uint64_t>(uint64_t source_value);
-
-template <>
-VIEWS_EXPORT base::string16 ConvertToString<float>(float source_value);
-
-template <>
-VIEWS_EXPORT base::string16 ConvertToString<double>(double source_value);
-
-template <>
-VIEWS_EXPORT base::string16 ConvertToString<bool>(bool source_value);
-
-template <>
-VIEWS_EXPORT base::string16 ConvertToString<gfx::Size>(
-    const gfx::Size& source_value);
-
-template <>
-VIEWS_EXPORT base::string16 ConvertToString<gfx::HorizontalAlignment>(
-    gfx::HorizontalAlignment source_value);
-
-template <>
-VIEWS_EXPORT base::string16 ConvertToString<base::string16>(
-    const base::string16& source_value);
-
-template <>
-VIEWS_EXPORT base::string16 ConvertToString<const char*>(
-    const char* source_value);
-
-template <>
-VIEWS_EXPORT base::Optional<int8_t> ConvertFromString<int8_t>(
-    const base::string16& source_value);
-
-template <>
-VIEWS_EXPORT base::Optional<int16_t> ConvertFromString<int16_t>(
-    const base::string16& source_value);
-
-template <>
-VIEWS_EXPORT base::Optional<int32_t> ConvertFromString<int32_t>(
-    const base::string16& source_value);
-
-template <>
-VIEWS_EXPORT base::Optional<int64_t> ConvertFromString<int64_t>(
-    const base::string16& source_value);
-
-template <>
-VIEWS_EXPORT base::Optional<uint8_t> ConvertFromString<uint8_t>(
-    const base::string16& source_value);
-
-template <>
-VIEWS_EXPORT base::Optional<uint16_t> ConvertFromString<uint16_t>(
-    const base::string16& source_value);
-
-template <>
-VIEWS_EXPORT base::Optional<uint32_t> ConvertFromString<uint32_t>(
-    const base::string16& source_value);
-
-template <>
-VIEWS_EXPORT base::Optional<uint64_t> ConvertFromString<uint64_t>(
-    const base::string16& source_value);
-
-template <>
-VIEWS_EXPORT base::Optional<double> ConvertFromString<double>(
-    const base::string16& source_value);
-
-template <>
-VIEWS_EXPORT base::Optional<float> ConvertFromString<float>(
-    const base::string16& source_value);
-
-template <>
-VIEWS_EXPORT base::Optional<bool> ConvertFromString<bool>(
-    const base::string16& source_value);
-
-template <>
-VIEWS_EXPORT base::Optional<gfx::Size> ConvertFromString<gfx::Size>(
-    const base::string16& source_value);
-
-template <>
-VIEWS_EXPORT base::Optional<gfx::HorizontalAlignment>
-ConvertFromString<gfx::HorizontalAlignment>(const base::string16& source_value);
-
-template <>
-VIEWS_EXPORT base::Optional<base::string16> ConvertFromString<base::string16>(
-    const base::string16& source_value);
+#undef DECLARE_CONVERSIONS
 
 }  // namespace metadata
 }  // namespace views

@@ -17,55 +17,22 @@ namespace metadata {
 
 /***** String Conversions *****/
 
-template <>
-base::string16 ConvertToString<int8_t>(int8_t source_value) {
-  return base::NumberToString16(source_value);
-}
+#define CONVERT_NUMBER_TO_STRING(T)                   \
+  template <>                                         \
+  base::string16 ConvertToString<T>(T source_value) { \
+    return base::NumberToString16(source_value);      \
+  }
 
-template <>
-base::string16 ConvertToString<int16_t>(int16_t source_value) {
-  return base::NumberToString16(source_value);
-}
-
-template <>
-base::string16 ConvertToString<int32_t>(int32_t source_value) {
-  return base::NumberToString16(source_value);
-}
-
-template <>
-base::string16 ConvertToString<int64_t>(int64_t source_value) {
-  return base::NumberToString16(source_value);
-}
-
-template <>
-base::string16 ConvertToString<uint8_t>(uint8_t source_value) {
-  return base::NumberToString16(source_value);
-}
-
-template <>
-base::string16 ConvertToString<uint16_t>(uint16_t source_value) {
-  return base::NumberToString16(source_value);
-}
-
-template <>
-base::string16 ConvertToString<uint32_t>(uint32_t source_value) {
-  return base::NumberToString16(source_value);
-}
-
-template <>
-base::string16 ConvertToString<uint64_t>(uint64_t source_value) {
-  return base::NumberToString16(source_value);
-}
-
-template <>
-base::string16 ConvertToString<float>(float source_value) {
-  return base::NumberToString16(source_value);
-}
-
-template <>
-base::string16 ConvertToString<double>(double source_value) {
-  return base::NumberToString16(source_value);
-}
+CONVERT_NUMBER_TO_STRING(int8_t)
+CONVERT_NUMBER_TO_STRING(int16_t)
+CONVERT_NUMBER_TO_STRING(int32_t)
+CONVERT_NUMBER_TO_STRING(int64_t)
+CONVERT_NUMBER_TO_STRING(uint8_t)
+CONVERT_NUMBER_TO_STRING(uint16_t)
+CONVERT_NUMBER_TO_STRING(uint32_t)
+CONVERT_NUMBER_TO_STRING(uint64_t)
+CONVERT_NUMBER_TO_STRING(float)
+CONVERT_NUMBER_TO_STRING(double)
 
 template <>
 base::string16 ConvertToString<bool>(bool source_value) {
