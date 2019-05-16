@@ -346,13 +346,23 @@ void HTMLPlugInElement::DetachLayoutTree(const AttachContext& context) {
     GetDocument().DecrementLoadEventDelayCount();
   }
 
+  bool keep_plugin = context.performing_reattach && !dispose_view_;
+
   // Only try to persist a plugin we actually own.
   WebPluginContainerImpl* plugin = OwnedPlugin();
-  if (plugin && context.performing_reattach && !dispose_view_) {
+  if (plugin && keep_plugin) {
     SetPersistedPlugin(ToWebPluginContainerImpl(ReleaseEmbeddedContentView()));
   } else {
+    // A persisted plugin isn't processed and hooked up immediately
+    // (synchronously) when attaching the layout object, so it's possible that
+    // it's still around. That's fine if we're allowed to keep it. Otherwise,
+    // get rid of it now.
+    if (persisted_plugin_ && !keep_plugin)
+      SetPersistedPlugin(nullptr);
+
     // Clear the plugin; will trigger disposal of it with Oilpan.
-    SetEmbeddedContentView(nullptr);
+    if (!persisted_plugin_)
+      SetEmbeddedContentView(nullptr);
   }
 
   // We should attempt to use the same view afterwards, so that we don't lose
