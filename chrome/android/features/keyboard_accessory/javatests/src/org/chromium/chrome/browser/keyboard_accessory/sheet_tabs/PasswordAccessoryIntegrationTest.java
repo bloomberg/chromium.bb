@@ -17,6 +17,7 @@ import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingTestHe
 import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingTestHelper.selectTabAtPosition;
 import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingTestHelper.whenDisplayed;
 
+import android.os.Build;
 import android.support.test.filters.SmallTest;
 
 import org.junit.After;
@@ -26,6 +27,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -82,6 +84,7 @@ public class PasswordAccessoryIntegrationTest {
     @Test
     @SmallTest
     @EnableFeatures({ChromeFeatureList.PASSWORDS_KEYBOARD_ACCESSORY})
+    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP, message = "crbug.com/958631")
     public void testPasswordSheetDisplaysProvidedItems()
             throws InterruptedException, TimeoutException {
         mHelper.loadTestPage(false);
@@ -116,6 +119,7 @@ public class PasswordAccessoryIntegrationTest {
     @Test
     @SmallTest
     @EnableFeatures({ChromeFeatureList.PASSWORDS_KEYBOARD_ACCESSORY})
+    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP, message = "crbug.com/958631")
     public void testFillsPasswordOnTap() throws InterruptedException, TimeoutException {
         mHelper.loadTestPage(false);
         mHelper.cacheCredentials("mpark@abc.com", "ShorterPassword");
