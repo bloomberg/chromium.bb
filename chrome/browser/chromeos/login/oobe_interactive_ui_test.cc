@@ -19,11 +19,8 @@
 #include "chrome/browser/chromeos/login/screens/recommend_apps/scoped_test_recommend_apps_fetcher_factory.h"
 #include "chrome/browser/chromeos/login/screens/sync_consent_screen.h"
 #include "chrome/browser/chromeos/login/screens/update_screen.h"
-#include "chrome/browser/chromeos/login/test/device_state_mixin.h"
-#include "chrome/browser/chromeos/login/test/embedded_test_server_mixin.h"
 #include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
-#include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_exit_waiter.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
@@ -41,7 +38,6 @@
 #include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/recommend_apps_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/terms_of_service_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/update_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/welcome_screen_handler.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -121,7 +117,12 @@ class ScopedQuickUnlockPrivateGetAuthTokenFunctionObserver {
       ScopedQuickUnlockPrivateGetAuthTokenFunctionObserver);
 };
 
-class OobeEndToEndTestSetupMixin : public InProcessBrowserTestMixin {
+}  // namespace
+
+class OobeInteractiveUITest
+    : public OobeBaseTest,
+      public extensions::QuickUnlockPrivateGetAuthTokenFunction::TestObserver,
+      public ::testing::WithParamInterface<std::tuple<bool, bool, ArcState>> {
  public:
   struct Parameters {
     bool is_tablet;
@@ -136,30 +137,33 @@ class OobeEndToEndTestSetupMixin : public InProcessBrowserTestMixin {
     }
   };
 
-  explicit OobeEndToEndTestSetupMixin(
-      InProcessBrowserTestMixinHost* mixin_host,
-      net::EmbeddedTestServer* arc_tos_server,
-      const std::tuple<bool, bool, ArcState>& parameters)
-      : InProcessBrowserTestMixin(mixin_host), arc_tos_server_(arc_tos_server) {
-    std::tie(params_.is_tablet, params_.is_quick_unlock_enabled,
-             params_.arc_state) = parameters;
-  }
-  ~OobeEndToEndTestSetupMixin() override = default;
+  OobeInteractiveUITest() = default;
+  ~OobeInteractiveUITest() override = default;
 
-  // InProcessBrowserTestMixin:
   void SetUp() override {
-    LOG(INFO) << "OOBE end-to-end test  started with params "
-              << params_.ToString();
-
-    if (params_.arc_state != ArcState::kNotAvailable)
+    params_ = Parameters();
+    std::tie(params_->is_tablet, params_->is_quick_unlock_enabled,
+             params_->arc_state) = GetParam();
+    LOG(INFO) << "OobeInteractiveUITest() started with params "
+              << params_->ToString();
+    if (params_->arc_state != ArcState::kNotAvailable)
       feature_list_.InitAndEnableFeature(switches::kAssistantFeature);
+    OobeBaseTest::SetUp();
+  }
+
+  void TearDown() override {
+    quick_unlock::EnabledForTesting(false);
+    OobeBaseTest::TearDown();
+    params_.reset();
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    if (params_.is_tablet)
+    OobeBaseTest::SetUpCommandLine(command_line);
+
+    if (params_->is_tablet)
       command_line->AppendSwitch(ash::switches::kAshEnableTabletMode);
 
-    if (params_.arc_state != ArcState::kNotAvailable) {
+    if (params_->arc_state != ArcState::kNotAvailable) {
       arc::SetArcAvailableCommandLineForTesting(command_line);
       // Prevent encryption migration screen from showing up after user login
       // with ARC available.
@@ -168,44 +172,54 @@ class OobeEndToEndTestSetupMixin : public InProcessBrowserTestMixin {
   }
 
   void SetUpInProcessBrowserTestFixture() override {
-    if (params_.is_quick_unlock_enabled)
+    OobeBaseTest::SetUpInProcessBrowserTestFixture();
+
+    if (params_->is_quick_unlock_enabled)
       quick_unlock::EnabledForTesting(true);
 
-    if (params_.arc_state != ArcState::kNotAvailable) {
+    if (params_->arc_state != ArcState::kNotAvailable) {
       recommend_apps_fetcher_factory_ =
           std::make_unique<ScopedTestRecommendAppsFetcherFactory>(
               base::BindRepeating(&CreateRecommendAppsFetcher));
-      if (arc_tos_server_) {
-        arc_tos_server_->RegisterRequestHandler(
-            base::BindRepeating(&OobeEndToEndTestSetupMixin::HandleRequest,
-                                base::Unretained(this)));
-      }
+      arc_tos_server_.RegisterRequestHandler(base::BindRepeating(
+          &OobeInteractiveUITest::HandleRequest, base::Unretained(this)));
     }
   }
 
   void SetUpOnMainThread() override {
-    if (params_.is_tablet)
+    OobeBaseTest::SetUpOnMainThread();
+
+    if (params_->is_tablet)
       TabletModeClient::Get()->OnTabletModeToggled(true);
 
-    if (params_.arc_state != ArcState::kNotAvailable) {
+    if (params_->arc_state != ArcState::kNotAvailable) {
       // Init ArcSessionManager for testing.
       arc::ArcServiceLauncher::Get()->ResetForTesting();
       arc::ArcSessionManager::Get()->SetArcSessionRunnerForTesting(
           std::make_unique<arc::ArcSessionRunner>(
               base::BindRepeating(arc::FakeArcSession::Create)));
 
-      if (arc_tos_server_) {
-        test::OobeJS().Evaluate(base::StringPrintf(
-            "login.ArcTermsOfServiceScreen.setTosHostNameForTesting('%s');",
-            arc_tos_server_->GetURL("/arc-tos").spec().c_str()));
-      }
+      test::OobeJS().Evaluate(base::StringPrintf(
+          "login.ArcTermsOfServiceScreen.setTosHostNameForTesting('%s');",
+          arc_tos_server_.GetURL("/arc-tos").spec().c_str()));
     }
   }
-  void TearDownInProcessBrowserTestFixture() override {
-    recommend_apps_fetcher_factory_.reset();
+
+  void TearDownOnMainThread() override {
+    // If the login display is still showing, exit gracefully.
+    if (LoginDisplayHost::default_host()) {
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(&chrome::AttemptExit));
+      RunUntilBrowserProcessQuits();
+    }
+
+    OobeBaseTest::TearDownOnMainThread();
   }
 
-  void TearDown() override { quick_unlock::EnabledForTesting(false); }
+  void TearDownInProcessBrowserTestFixture() override {
+    recommend_apps_fetcher_factory_.reset();
+    OobeBaseTest::TearDownInProcessBrowserTestFixture();
+  }
 
   std::unique_ptr<HttpResponse> HandleRequest(const HttpRequest& request) {
     auto response = std::make_unique<BasicHttpResponse>();
@@ -217,46 +231,6 @@ class OobeEndToEndTestSetupMixin : public InProcessBrowserTestMixin {
       response->set_content_type("text/html");
     }
     return response;
-  }
-
-  bool is_tablet() const { return params_.is_tablet; }
-
-  bool is_quick_unlock_enabled() const {
-    return params_.is_quick_unlock_enabled;
-  }
-
-  ArcState arc_state() const { return params_.arc_state; }
-
- private:
-  Parameters params_;
-
-  base::test::ScopedFeatureList feature_list_;
-  std::unique_ptr<ScopedTestRecommendAppsFetcherFactory>
-      recommend_apps_fetcher_factory_;
-  net::EmbeddedTestServer* arc_tos_server_;
-
-  DISALLOW_COPY_AND_ASSIGN(OobeEndToEndTestSetupMixin);
-};
-
-}  // namespace
-
-class OobeInteractiveUITest
-    : public OobeBaseTest,
-      public extensions::QuickUnlockPrivateGetAuthTokenFunction::TestObserver,
-      public ::testing::WithParamInterface<std::tuple<bool, bool, ArcState>> {
- public:
-  OobeInteractiveUITest() = default;
-  ~OobeInteractiveUITest() override = default;
-
-  // OobeInteractiveUITest:
-  void TearDownOnMainThread() override {
-    // If the login display is still showing, exit gracefully.
-    if (LoginDisplayHost::default_host()) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(&chrome::AttemptExit));
-      RunUntilBrowserProcessQuits();
-    }
-    OobeBaseTest::TearDownOnMainThread();
   }
 
   // QuickUnlockPrivateGetAuthTokenFunction::TestObserver:
@@ -600,9 +574,9 @@ class OobeInteractiveUITest
 
   void SimpleEndToEnd();
 
-  const OobeEndToEndTestSetupMixin* test_setup() const { return &setup_; }
-
   base::Optional<std::string> quick_unlock_private_get_auth_token_password_;
+  base::Optional<Parameters> params_;
+  base::test::ScopedFeatureList feature_list_;
 
  private:
   FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
@@ -610,12 +584,15 @@ class OobeInteractiveUITest
   net::EmbeddedTestServer arc_tos_server_{net::EmbeddedTestServer::TYPE_HTTPS};
   EmbeddedTestServerSetupMixin arc_tos_server_setup_{&mixin_host_,
                                                      &arc_tos_server_};
-  OobeEndToEndTestSetupMixin setup_{&mixin_host_, &arc_tos_server_, GetParam()};
+
+  std::unique_ptr<ScopedTestRecommendAppsFetcherFactory>
+      recommend_apps_fetcher_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(OobeInteractiveUITest);
 };
 
 void OobeInteractiveUITest::SimpleEndToEnd() {
+  ASSERT_TRUE(params_.has_value());
   ScopedQuickUnlockPrivateGetAuthTokenFunctionObserver scoped_observer(this);
 
   WaitForOobeWelcomeScreen();
@@ -642,7 +619,7 @@ void OobeInteractiveUITest::SimpleEndToEnd() {
   // may cause flaky load failures.
   // TODO(https://crbug/com/959902): Fix ARC terms of service screen to better
   //     handle this case.
-  if (test_setup()->arc_state() != ArcState::kNotAvailable) {
+  if (params_->arc_state != ArcState::kNotAvailable) {
     test::OobeJS()
         .CreateHasClassWaiter(true, "arc-tos-loaded",
                               {"arc-tos-root", "arc-tos-dialog"})
@@ -656,29 +633,28 @@ void OobeInteractiveUITest::SimpleEndToEnd() {
   ExitScreenSyncConsent();
 #endif
 
-  if (test_setup()->is_quick_unlock_enabled()) {
+  if (quick_unlock::IsEnabledForTesting()) {
     WaitForFingerprintScreen();
     RunFingerprintScreenChecks();
     ExitFingerprintPinSetupScreen();
   }
 
-  if (test_setup()->is_tablet()) {
+  if (params_->is_tablet) {
     WaitForDiscoverScreen();
     RunDiscoverScreenChecks();
     ExitDiscoverPinSetupScreen();
   }
 
-  if (test_setup()->arc_state() != ArcState::kNotAvailable) {
-    HandleArcTermsOfServiceScreen(test_setup()->arc_state() ==
-                                  ArcState::kAcceptTerms);
+  if (params_->arc_state != ArcState::kNotAvailable) {
+    HandleArcTermsOfServiceScreen(params_->arc_state == ArcState::kAcceptTerms);
   }
 
-  if (test_setup()->arc_state() == ArcState::kAcceptTerms) {
+  if (params_->arc_state == ArcState::kAcceptTerms) {
     HandleRecommendAppsScreen();
     HandleAppDownloadingScreen();
   }
 
-  if (test_setup()->arc_state() != ArcState::kNotAvailable) {
+  if (params_->arc_state != ArcState::kNotAvailable) {
     HandleAssistantOptInScreen();
   }
 
@@ -696,104 +672,6 @@ INSTANTIATE_TEST_SUITE_P(
                      testing::Bool(),
                      testing::Values(ArcState::kNotAvailable,
                                      ArcState::kAcceptTerms,
-                                     ArcState::kDeclineTerms)));
-
-class PublicSessionOobeTest
-    : public MixinBasedInProcessBrowserTest,
-      public ::testing::WithParamInterface<std::tuple<bool, bool, ArcState>> {
- public:
-  PublicSessionOobeTest()
-      : PublicSessionOobeTest(false /*requires_terms_of_service*/) {}
-
-  explicit PublicSessionOobeTest(bool requires_terms_of_service)
-      : requires_terms_of_service_(requires_terms_of_service) {}
-
-  ~PublicSessionOobeTest() override = default;
-
-  void SetUpInProcessBrowserTestFixture() override {
-    std::unique_ptr<ScopedDevicePolicyUpdate> device_policy_update =
-        device_state_.RequestDevicePolicyUpdate();
-
-    const std::string kAccountId = "public-session@test";
-
-    enterprise_management::DeviceLocalAccountsProto* const
-        device_local_accounts = device_policy_update->policy_payload()
-                                    ->mutable_device_local_accounts();
-
-    // Add public session account.
-    enterprise_management::DeviceLocalAccountInfoProto* const account =
-        device_local_accounts->add_account();
-    account->set_account_id(kAccountId);
-    account->set_type(enterprise_management::DeviceLocalAccountInfoProto::
-                          ACCOUNT_TYPE_PUBLIC_SESSION);
-
-    // Set the public session to auto-launch.
-    device_local_accounts->set_auto_login_id(kAccountId);
-    device_policy_update.reset();
-
-    std::unique_ptr<ScopedUserPolicyUpdate> device_local_account_policy_update =
-        device_state_.RequestDeviceLocalAccountPolicyUpdate(kAccountId);
-    // Specify terms of service if needed.
-    if (requires_terms_of_service_) {
-      device_local_account_policy_update->policy_payload()
-          ->mutable_termsofserviceurl()
-          ->set_value(embedded_test_server()
-                          ->GetURL("/chromeos/enterprise/tos.txt")
-                          .spec());
-    }
-    device_local_account_policy_update.reset();
-
-    MixinBasedInProcessBrowserTest::SetUpInProcessBrowserTestFixture();
-  }
-
-  LoginManagerMixin login_manager_{&mixin_host_, {}};
-
- private:
-  const bool requires_terms_of_service_;
-
-  OobeEndToEndTestSetupMixin setup_{&mixin_host_, nullptr, GetParam()};
-  DeviceStateMixin device_state_{
-      &mixin_host_, DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
-};
-
-IN_PROC_BROWSER_TEST_P(PublicSessionOobeTest, NoTermsOfService) {
-  login_manager_.WaitForActiveSession();
-}
-
-INSTANTIATE_TEST_SUITE_P(
-    PublicSessionOobeTestImpl,
-    PublicSessionOobeTest,
-    testing::Combine(testing::Bool(),
-                     testing::Bool(),
-                     testing::Values(ArcState::kNotAvailable,
-                                     ArcState::kDeclineTerms)));
-
-class PublicSessionWithTermsOfServiceOobeTest : public PublicSessionOobeTest {
- public:
-  PublicSessionWithTermsOfServiceOobeTest()
-      : PublicSessionOobeTest(true /*requires_terms_od_service*/) {}
-  ~PublicSessionWithTermsOfServiceOobeTest() override = default;
-
-  // Use embedded test server to serve Public session Terms of Service.
-  EmbeddedTestServerSetupMixin embedded_test_server_setup_{
-      &mixin_host_, embedded_test_server()};
-};
-
-IN_PROC_BROWSER_TEST_P(PublicSessionWithTermsOfServiceOobeTest,
-                       AcceptTermsOfService) {
-  OobeScreenWaiter(TermsOfServiceScreenView::kScreenId).Wait();
-  test::OobeJS().ClickOnPath({"tos-accept-button"});
-  OobeScreenExitWaiter(TermsOfServiceScreenView::kScreenId).Wait();
-
-  login_manager_.WaitForActiveSession();
-}
-
-INSTANTIATE_TEST_SUITE_P(
-    PublicSessionWithTermsOfServiceOobeTestImpl,
-    PublicSessionWithTermsOfServiceOobeTest,
-    testing::Combine(testing::Bool(),
-                     testing::Bool(),
-                     testing::Values(ArcState::kNotAvailable,
                                      ArcState::kDeclineTerms)));
 
 }  //  namespace chromeos
