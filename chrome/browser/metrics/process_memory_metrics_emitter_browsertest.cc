@@ -554,6 +554,10 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
 #if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER)
 #define MAYBE_FetchAndEmitMetricsWithExtensions \
   DISABLED_FetchAndEmitMetricsWithExtensions
+#elif defined(OS_LINUX)
+// Disabled for crbug.com/964025
+#define MAYBE_FetchAndEmitMetricsWithExtensions \
+  DISABLED_FetchAndEmitMetricsWithExtensions
 #else
 #define MAYBE_FetchAndEmitMetricsWithExtensions \
   FetchAndEmitMetricsWithExtensions
