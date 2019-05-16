@@ -21,9 +21,6 @@
          atIndex:(NSUInteger)index
     inForeground:(BOOL)fg;
 
-// The given tab will be removed.
-- (void)tabModel:(TabModel*)model willRemoveTab:(Tab*)tab;
-
 // A tab was removed at the given index.
 - (void)tabModel:(TabModel*)model
     didRemoveTab:(Tab*)tab

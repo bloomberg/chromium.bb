@@ -4355,6 +4355,22 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   [self webStateSelected:newWebState notifyToolbar:YES];
 }
 
+- (void)webStateList:(WebStateList*)webStateList
+    willDetachWebState:(web::WebState*)webState
+               atIndex:(int)atIndex {
+  if (webState == self.currentWebState) {
+    self.browserContainerViewController.contentView = nil;
+  }
+
+  [_paymentRequestManager stopTrackingWebState:webState];
+
+  [[UpgradeCenter sharedInstance]
+      tabWillClose:TabIdTabHelper::FromWebState(webState)->tab_id()];
+  if (webStateList->count() == 1) {  // About to remove the last tab.
+    [_paymentRequestManager setActiveWebState:nullptr];
+  }
+}
+
 #pragma mark - TabModelObserver methods
 
 // Observer method, tab inserted.
@@ -4481,20 +4497,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   // Remove the find bar for now.
   [self hideFindBarWithAnimation:NO];
-}
-
-- (void)tabModel:(TabModel*)model willRemoveTab:(Tab*)tab {
-  if (tab == [model currentTab]) {
-    self.browserContainerViewController.contentView = nil;
-  }
-
-  [_paymentRequestManager stopTrackingWebState:tab.webState];
-
-  [[UpgradeCenter sharedInstance]
-      tabWillClose:TabIdTabHelper::FromWebState(tab.webState)->tab_id()];
-  if ([model count] == 1) {  // About to remove the last tab.
-    [_paymentRequestManager setActiveWebState:nullptr];
-  }
 }
 
 #pragma mark - TabModelObserver helpers (new tab animations)
