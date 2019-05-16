@@ -11,9 +11,11 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/optional.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_image_download_client.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_image_manager_factory.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_metrics_util.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
@@ -49,6 +51,8 @@ const char kContent2[] = "This is content #2.";
 const int kContent2Size = strlen(kContent2);
 const int kContentSize = kContent1Size + kContent2Size;
 const char kLicenseKey[] = "LICENSE_KEY";
+// File size set in test_download_service.
+const int kDownloadedPluginVmImageSizeInMb = 123456789u / (1024 * 1024);
 
 }  // namespace
 
@@ -86,6 +90,7 @@ class PluginVmImageManagerTest : public testing::Test {
   download::test::TestDownloadService* download_service_;
   std::unique_ptr<MockObserver> observer_;
   base::FilePath fake_downloaded_plugin_vm_image_archive_;
+  std::unique_ptr<base::HistogramTester> histogram_tester_;
 
   void SetUp() override {
     ASSERT_TRUE(profiles_dir_.CreateUniqueTempDir());
@@ -105,6 +110,8 @@ class PluginVmImageManagerTest : public testing::Test {
 
     SetPluginVmDevicePolicies();
     SetUserWithAffiliation();
+
+    histogram_tester_ = std::make_unique<base::HistogramTester>();
   }
 
   void TearDown() override {
@@ -269,6 +276,9 @@ TEST_F(PluginVmImageManagerTest, OnlyOneImageIsProcessedTest) {
   test_browser_thread_bundle_.RunUntilIdle();
 
   EXPECT_FALSE(manager_->IsProcessingImage());
+
+  histogram_tester_->ExpectUniqueSample(kPluginVmImageDownloadedSize,
+                                        kDownloadedPluginVmImageSizeInMb, 1);
 }
 
 TEST_F(PluginVmImageManagerTest, CanProceedWithANewImageWhenSucceededTest) {
@@ -289,6 +299,9 @@ TEST_F(PluginVmImageManagerTest, CanProceedWithANewImageWhenSucceededTest) {
   // As it is deleted after successful unzipping.
   fake_downloaded_plugin_vm_image_archive_ = CreateZipFile();
   ProcessImageUntilConfigured();
+
+  histogram_tester_->ExpectUniqueSample(kPluginVmImageDownloadedSize,
+                                        kDownloadedPluginVmImageSizeInMb, 2);
 }
 
 TEST_F(PluginVmImageManagerTest, CanProceedWithANewImageWhenFailedTest) {
@@ -309,6 +322,9 @@ TEST_F(PluginVmImageManagerTest, CanProceedWithANewImageWhenFailedTest) {
   EXPECT_FALSE(manager_->IsProcessingImage());
 
   ProcessImageUntilConfigured();
+
+  histogram_tester_->ExpectUniqueSample(kPluginVmImageDownloadedSize,
+                                        kDownloadedPluginVmImageSizeInMb, 1);
 }
 
 TEST_F(PluginVmImageManagerTest, CancelledDownloadTest) {
@@ -320,6 +336,8 @@ TEST_F(PluginVmImageManagerTest, CancelledDownloadTest) {
   test_browser_thread_bundle_.RunUntilIdle();
   // Finishing image processing as it should really happen.
   manager_->OnDownloadCancelled();
+
+  histogram_tester_->ExpectTotalCount(kPluginVmImageDownloadedSize, 0);
 }
 
 TEST_F(PluginVmImageManagerTest, UnzipDownloadedImageTest) {
@@ -387,6 +405,9 @@ TEST_F(PluginVmImageManagerTest, CancelUnzippingTest) {
   test_browser_thread_bundle_.RunUntilIdle();
 
   EnsurePluginVmImageIsRemoved();
+
+  histogram_tester_->ExpectUniqueSample(kPluginVmImageDownloadedSize,
+                                        kDownloadedPluginVmImageSizeInMb, 1);
 }
 
 TEST_F(PluginVmImageManagerTest, CancelRegistrationTest) {
@@ -406,6 +427,9 @@ TEST_F(PluginVmImageManagerTest, CancelRegistrationTest) {
   test_browser_thread_bundle_.RunUntilIdle();
 
   EnsurePluginVmImageIsRemoved();
+
+  histogram_tester_->ExpectUniqueSample(kPluginVmImageDownloadedSize,
+                                        kDownloadedPluginVmImageSizeInMb, 1);
 }
 
 TEST_F(PluginVmImageManagerTest, EmptyPluginVmImageUrlTest) {
@@ -414,6 +438,8 @@ TEST_F(PluginVmImageManagerTest, EmptyPluginVmImageUrlTest) {
   EXPECT_CALL(*observer_, OnDownloadFailed());
 
   ProcessImageUntilUnzipping();
+
+  histogram_tester_->ExpectTotalCount(kPluginVmImageDownloadedSize, 0);
 }
 
 TEST_F(PluginVmImageManagerTest, VerifyDownloadTest) {

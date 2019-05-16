@@ -1508,6 +1508,8 @@ source_set("chromeos") {
     "plugin_vm/plugin_vm_image_manager_factory.h",
     "plugin_vm/plugin_vm_manager.cc",
     "plugin_vm/plugin_vm_manager.h",
+    "plugin_vm/plugin_vm_metrics_util.cc",
+    "plugin_vm/plugin_vm_metrics_util.h",
     "plugin_vm/plugin_vm_pref_names.cc",
     "plugin_vm/plugin_vm_pref_names.h",
     "plugin_vm/plugin_vm_util.cc",

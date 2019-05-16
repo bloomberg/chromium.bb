@@ -14,6 +14,7 @@
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_metrics_util.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/download/download_service_factory.h"
@@ -156,6 +157,7 @@ void PluginVmImageManager::OnDownloadCompleted(
   state_ = State::DOWNLOADED;
   if (observer_)
     observer_->OnDownloadCompleted();
+  RecordPluginVmImageDownloadedSize(info.bytes_downloaded);
 }
 
 void PluginVmImageManager::OnDownloadCancelled() {
