@@ -569,7 +569,8 @@ static void init_gop_frames_for_tpl(AV1_COMP *cpi,
       gf_picture[frame_idx] = &buf->img;
       if (frame_idx == gf_group->size) {
         gf_group->frame_disp_idx[frame_idx] = frame_disp_idx;
-        gf_group->q_val[frame_idx] = pframe_qindex;
+        gf_group->q_val[frame_idx] = gf_group->q_val[1];
+        gf_group->update_type[frame_idx] = OVERLAY_UPDATE;
       }
     }
 
@@ -601,6 +602,7 @@ static void init_gop_frames_for_tpl(AV1_COMP *cpi,
       gf_picture[frame_idx] = &buf->img;
       gf_group->q_val[frame_idx] = pframe_qindex;
       gf_group->frame_disp_idx[frame_idx] = frame_disp_idx;
+      gf_group->update_type[frame_idx] = LF_UPDATE;
 
       gf_group->ref_frame_gop_idx[frame_idx][REF_IDX(GOLDEN_FRAME)] =
           gld_idx_next_gop;
@@ -665,8 +667,12 @@ void av1_tpl_setup_stats(AV1_COMP *cpi,
 
   if (cpi->oxcf.enable_tpl_model == 1) {
     // Backward propagation from tpl_group_frames to 1.
-    for (frame_idx = cpi->tpl_gf_group_frames - 1; frame_idx > 0; --frame_idx)
+    for (frame_idx = cpi->tpl_gf_group_frames - 1; frame_idx > 0; --frame_idx) {
+      if (gf_group->update_type[frame_idx] == OVERLAY_UPDATE ||
+          gf_group->update_type[frame_idx] == INTNL_OVERLAY_UPDATE)
+        continue;
       mc_flow_dispenser(cpi, gf_picture, frame_idx);
+    }
   }
 }
 
@@ -883,6 +889,9 @@ void av1_tpl_setup_forward_stats(AV1_COMP *cpi) {
   for (int idx = gf_group->index + 1; idx < cpi->tpl_gf_group_frames; ++idx) {
     const int tpl_future_idx = cpi->twopass.gf_group.frame_disp_idx[idx];
 
+    if (gf_group->update_type[idx] == OVERLAY_UPDATE ||
+        gf_group->update_type[idx] == INTNL_OVERLAY_UPDATE)
+      continue;
     if (tpl_future_idx == tpl_cur_idx) continue;
     if (tpl_used_mask[tpl_future_idx]) continue;
 
