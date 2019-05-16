@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.ntp;
 
 import android.app.Activity;
 import android.graphics.Canvas;
+import android.os.Build;
 import android.support.v4.view.ViewCompat;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -56,6 +57,12 @@ public class IncognitoNewTabPage
 
         mIncognitoNTPBackgroundColor =
                 ApiCompatibilityUtils.getColor(activity.getResources(), R.color.ntp_bg_incognito);
+
+        // Work around https://crbug.com/943873 and https://crbug.com/963385 where default focus
+        // highlight shows up after toggling dark mode.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            getView().setDefaultFocusHighlightEnabled(false);
+        }
     }
 
     @Override
