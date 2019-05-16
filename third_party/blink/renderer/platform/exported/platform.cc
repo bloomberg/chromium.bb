@@ -111,7 +111,7 @@ static void CallOnMainThreadFunction(WTF::MainThreadFunction function,
                                      void* context) {
   PostCrossThreadTask(
       *Thread::MainThread()->GetTaskRunner(), FROM_HERE,
-      CrossThreadBind(function, CrossThreadUnretained(context)));
+      CrossThreadBindOnce(function, CrossThreadUnretained(context)));
 }
 
 Platform::Platform() {

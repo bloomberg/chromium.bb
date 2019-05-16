@@ -195,8 +195,8 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
     for (WorkerThread* thread : WorkerThreads()) {
       PostCrossThreadTask(
           *thread->GetTaskRunner(task_type), FROM_HERE,
-          CrossThreadBind(function, WTF::CrossThreadUnretained(thread),
-                          parameters...));
+          CrossThreadBindOnce(function, WTF::CrossThreadUnretained(thread),
+                              parameters...));
     }
   }
 

@@ -188,9 +188,9 @@ void WorkerThread::EvaluateClassicScript(
   DCHECK_CALLED_ON_VALID_THREAD(parent_thread_checker_);
   PostCrossThreadTask(
       *GetTaskRunner(TaskType::kDOMManipulation), FROM_HERE,
-      CrossThreadBind(&WorkerThread::EvaluateClassicScriptOnWorkerThread,
-                      CrossThreadUnretained(this), script_url, source_code,
-                      WTF::Passed(std::move(cached_meta_data)), stack_id));
+      CrossThreadBindOnce(&WorkerThread::EvaluateClassicScriptOnWorkerThread,
+                          CrossThreadUnretained(this), script_url, source_code,
+                          WTF::Passed(std::move(cached_meta_data)), stack_id));
 }
 
 void WorkerThread::FetchAndRunClassicScript(
@@ -201,7 +201,7 @@ void WorkerThread::FetchAndRunClassicScript(
   DCHECK_CALLED_ON_VALID_THREAD(parent_thread_checker_);
   PostCrossThreadTask(
       *GetTaskRunner(TaskType::kDOMManipulation), FROM_HERE,
-      CrossThreadBind(
+      CrossThreadBindOnce(
           &WorkerThread::FetchAndRunClassicScriptOnWorkerThread,
           CrossThreadUnretained(this), script_url,
           WTF::Passed(outside_settings_object.CopyData()),
@@ -217,7 +217,7 @@ void WorkerThread::FetchAndRunModuleScript(
   DCHECK_CALLED_ON_VALID_THREAD(parent_thread_checker_);
   PostCrossThreadTask(
       *GetTaskRunner(TaskType::kDOMManipulation), FROM_HERE,
-      CrossThreadBind(
+      CrossThreadBindOnce(
           &WorkerThread::FetchAndRunModuleScriptOnWorkerThread,
           CrossThreadUnretained(this), script_url,
           WTF::Passed(outside_settings_object.CopyData()),

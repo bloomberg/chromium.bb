@@ -194,8 +194,9 @@ void DatabaseTracker::CloseDatabasesImmediately(const SecurityOrigin* origin,
        it != database_set->end(); ++it) {
     PostCrossThreadTask(
         *(*it)->GetDatabaseTaskRunner(), FROM_HERE,
-        CrossThreadBind(&DatabaseTracker::CloseOneDatabaseImmediately,
-                        CrossThreadUnretained(this), origin_string, name, *it));
+        CrossThreadBindOnce(&DatabaseTracker::CloseOneDatabaseImmediately,
+                            CrossThreadUnretained(this), origin_string, name,
+                            *it));
   }
 }
 

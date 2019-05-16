@@ -513,7 +513,7 @@ void VideoTrackAdapter::AddTrack(const MediaStreamVideoTrack* track,
 
   PostCrossThreadTask(
       *io_task_runner_, FROM_HERE,
-      CrossThreadBind(
+      CrossThreadBindOnce(
           &VideoTrackAdapter::AddTrackOnIO, CrossThreadUnretained(this),
           CrossThreadUnretained(track),
           WTF::Passed(CrossThreadBind(std::move(frame_callback))),
@@ -550,8 +550,8 @@ void VideoTrackAdapter::RemoveTrack(const MediaStreamVideoTrack* track) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   PostCrossThreadTask(
       *io_task_runner_, FROM_HERE,
-      CrossThreadBind(&VideoTrackAdapter::RemoveTrackOnIO, WrapRefCounted(this),
-                      CrossThreadUnretained(track)));
+      CrossThreadBindOnce(&VideoTrackAdapter::RemoveTrackOnIO,
+                          WrapRefCounted(this), CrossThreadUnretained(track)));
 }
 
 void VideoTrackAdapter::ReconfigureTrack(
@@ -559,10 +559,11 @@ void VideoTrackAdapter::ReconfigureTrack(
     const VideoTrackAdapterSettings& settings) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  PostCrossThreadTask(*io_task_runner_, FROM_HERE,
-                      CrossThreadBind(&VideoTrackAdapter::ReconfigureTrackOnIO,
-                                      WrapRefCounted(this),
-                                      CrossThreadUnretained(track), settings));
+  PostCrossThreadTask(
+      *io_task_runner_, FROM_HERE,
+      CrossThreadBindOnce(&VideoTrackAdapter::ReconfigureTrackOnIO,
+                          WrapRefCounted(this), CrossThreadUnretained(track),
+                          settings));
 }
 
 void VideoTrackAdapter::StartFrameMonitoring(
@@ -575,7 +576,7 @@ void VideoTrackAdapter::StartFrameMonitoring(
 
   PostCrossThreadTask(
       *io_task_runner_, FROM_HERE,
-      CrossThreadBind(
+      CrossThreadBindOnce(
           &VideoTrackAdapter::StartFrameMonitoringOnIO, WrapRefCounted(this),
           WTF::Passed(CrossThreadBind(std::move(bound_on_muted_callback))),
           source_frame_rate));
@@ -585,16 +586,16 @@ void VideoTrackAdapter::StopFrameMonitoring() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   PostCrossThreadTask(
       *io_task_runner_, FROM_HERE,
-      CrossThreadBind(&VideoTrackAdapter::StopFrameMonitoringOnIO,
-                      WrapRefCounted(this)));
+      CrossThreadBindOnce(&VideoTrackAdapter::StopFrameMonitoringOnIO,
+                          WrapRefCounted(this)));
 }
 
 void VideoTrackAdapter::SetSourceFrameSize(const IntSize& source_frame_size) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   PostCrossThreadTask(
       *io_task_runner_, FROM_HERE,
-      CrossThreadBind(&VideoTrackAdapter::SetSourceFrameSizeOnIO,
-                      WrapRefCounted(this), source_frame_size));
+      CrossThreadBindOnce(&VideoTrackAdapter::SetSourceFrameSizeOnIO,
+                          WrapRefCounted(this), source_frame_size));
 }
 
 bool VideoTrackAdapter::CalculateDesiredSize(
@@ -778,7 +779,7 @@ void VideoTrackAdapter::CheckFramesReceivedOnIO(
 
   PostDelayedCrossThreadTask(
       *io_task_runner_, FROM_HERE,
-      CrossThreadBind(
+      CrossThreadBindOnce(
           &VideoTrackAdapter::CheckFramesReceivedOnIO, WrapRefCounted(this),
           WTF::Passed(std::move(set_muted_state_callback)), frame_counter_),
       base::TimeDelta::FromSecondsD(kNormalFrameTimeoutInFrameIntervals /

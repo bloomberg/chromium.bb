@@ -337,8 +337,8 @@ void DeferredTaskHandler::RequestToDeleteHandlersOnMainThread() {
   rendering_orphan_handlers_.clear();
   PostCrossThreadTask(
       *task_runner_, FROM_HERE,
-      CrossThreadBind(&DeferredTaskHandler::DeleteHandlersOnMainThread,
-                      scoped_refptr<DeferredTaskHandler>(this)));
+      CrossThreadBindOnce(&DeferredTaskHandler::DeleteHandlersOnMainThread,
+                          scoped_refptr<DeferredTaskHandler>(this)));
 }
 
 void DeferredTaskHandler::DeleteHandlersOnMainThread() {

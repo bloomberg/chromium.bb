@@ -958,11 +958,12 @@ void ImageBitmap::RasterizeImageOnBackgroundThread(
   }
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       Thread::MainThread()->GetTaskRunner();
-  PostCrossThreadTask(*task_runner, FROM_HERE,
-                      CrossThreadBind(&ResolvePromiseOnOriginalThread,
-                                      WrapCrossThreadPersistent(resolver),
-                                      std::move(skia_image), origin_clean,
-                                      WTF::Passed(std::move(parsed_options))));
+  PostCrossThreadTask(
+      *task_runner, FROM_HERE,
+      CrossThreadBindOnce(&ResolvePromiseOnOriginalThread,
+                          WrapCrossThreadPersistent(resolver),
+                          std::move(skia_image), origin_clean,
+                          WTF::Passed(std::move(parsed_options))));
 }
 
 ScriptPromise ImageBitmap::CreateAsync(ImageElementBase* image,

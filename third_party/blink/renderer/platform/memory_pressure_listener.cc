@@ -114,7 +114,7 @@ void MemoryPressureListenerRegistry::OnPurgeMemory() {
 
     PostCrossThreadTask(
         *thread->GetTaskRunner(), FROM_HERE,
-        CrossThreadBind(
+        CrossThreadBindOnce(
             MemoryPressureListenerRegistry::ClearThreadSpecificMemory));
   }
 }

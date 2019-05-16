@@ -48,8 +48,8 @@ void UpdateThreadTLSAndWait(Thread* thread) {
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
   PostCrossThreadTask(
       *thread->GetTaskRunner(), FROM_HERE,
-      CrossThreadBind(&UpdateThreadTLS, WTF::CrossThreadUnretained(thread),
-                      WTF::CrossThreadUnretained(&event)));
+      CrossThreadBindOnce(&UpdateThreadTLS, WTF::CrossThreadUnretained(thread),
+                          WTF::CrossThreadUnretained(&event)));
   event.Wait();
 }
 

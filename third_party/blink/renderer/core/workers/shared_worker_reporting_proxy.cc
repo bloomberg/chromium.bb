@@ -30,8 +30,8 @@ void SharedWorkerReportingProxy::CountFeature(WebFeature feature) {
   PostCrossThreadTask(
       *parent_execution_context_task_runners_->Get(TaskType::kInternalDefault),
       FROM_HERE,
-      CrossThreadBind(&WebSharedWorkerImpl::CountFeature,
-                      CrossThreadUnretained(worker_), feature));
+      CrossThreadBindOnce(&WebSharedWorkerImpl::CountFeature,
+                          CrossThreadUnretained(worker_), feature));
 }
 
 void SharedWorkerReportingProxy::CountDeprecation(WebFeature feature) {
@@ -71,8 +71,8 @@ void SharedWorkerReportingProxy::DidFetchScript() {
   PostCrossThreadTask(
       *parent_execution_context_task_runners_->Get(TaskType::kInternalDefault),
       FROM_HERE,
-      CrossThreadBind(&WebSharedWorkerImpl::DidFetchScript,
-                      CrossThreadUnretained(worker_)));
+      CrossThreadBindOnce(&WebSharedWorkerImpl::DidFetchScript,
+                          CrossThreadUnretained(worker_)));
 }
 
 void SharedWorkerReportingProxy::DidFailToFetchClassicScript() {
@@ -83,8 +83,8 @@ void SharedWorkerReportingProxy::DidFailToFetchClassicScript() {
   PostCrossThreadTask(
       *parent_execution_context_task_runners_->Get(TaskType::kInternalDefault),
       FROM_HERE,
-      CrossThreadBind(&WebSharedWorkerImpl::DidFailToFetchClassicScript,
-                      CrossThreadUnretained(worker_)));
+      CrossThreadBindOnce(&WebSharedWorkerImpl::DidFailToFetchClassicScript,
+                          CrossThreadUnretained(worker_)));
 }
 
 void SharedWorkerReportingProxy::DidFailToFetchModuleScript() {
@@ -99,8 +99,8 @@ void SharedWorkerReportingProxy::DidEvaluateClassicScript(bool success) {
   PostCrossThreadTask(
       *parent_execution_context_task_runners_->Get(TaskType::kInternalDefault),
       FROM_HERE,
-      CrossThreadBind(&WebSharedWorkerImpl::DidEvaluateClassicScript,
-                      CrossThreadUnretained(worker_), success));
+      CrossThreadBindOnce(&WebSharedWorkerImpl::DidEvaluateClassicScript,
+                          CrossThreadUnretained(worker_), success));
 }
 
 void SharedWorkerReportingProxy::DidEvaluateModuleScript(bool success) {
@@ -115,8 +115,8 @@ void SharedWorkerReportingProxy::DidCloseWorkerGlobalScope() {
   PostCrossThreadTask(
       *parent_execution_context_task_runners_->Get(TaskType::kInternalDefault),
       FROM_HERE,
-      CrossThreadBind(&WebSharedWorkerImpl::DidCloseWorkerGlobalScope,
-                      CrossThreadUnretained(worker_)));
+      CrossThreadBindOnce(&WebSharedWorkerImpl::DidCloseWorkerGlobalScope,
+                          CrossThreadUnretained(worker_)));
 }
 
 void SharedWorkerReportingProxy::DidTerminateWorkerThread() {
@@ -124,8 +124,8 @@ void SharedWorkerReportingProxy::DidTerminateWorkerThread() {
   PostCrossThreadTask(
       *parent_execution_context_task_runners_->Get(TaskType::kInternalDefault),
       FROM_HERE,
-      CrossThreadBind(&WebSharedWorkerImpl::DidTerminateWorkerThread,
-                      CrossThreadUnretained(worker_)));
+      CrossThreadBindOnce(&WebSharedWorkerImpl::DidTerminateWorkerThread,
+                          CrossThreadUnretained(worker_)));
 }
 
 void SharedWorkerReportingProxy::Trace(blink::Visitor* visitor) {

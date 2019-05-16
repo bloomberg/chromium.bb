@@ -145,8 +145,9 @@ void MojoWatcher::OnHandleReady(const MojoTrapEvent* event) {
   MojoWatcher* watcher = reinterpret_cast<MojoWatcher*>(event->trigger_context);
   PostCrossThreadTask(
       *watcher->task_runner_, FROM_HERE,
-      CrossThreadBind(&MojoWatcher::RunReadyCallback,
-                      WrapCrossThreadWeakPersistent(watcher), event->result));
+      CrossThreadBindOnce(&MojoWatcher::RunReadyCallback,
+                          WrapCrossThreadWeakPersistent(watcher),
+                          event->result));
 }
 
 void MojoWatcher::RunReadyCallback(MojoResult result) {

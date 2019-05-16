@@ -772,9 +772,10 @@ void CanvasResourceSharedImage::OnBitmapImageDestroyed(
   if (!original_task_runner->BelongsToCurrentThread()) {
     PostCrossThreadTask(
         *original_task_runner, FROM_HERE,
-        CrossThreadBind(&CanvasResourceSharedImage::OnBitmapImageDestroyed,
-                        std::move(resource), std::move(original_task_runner),
-                        sync_token, is_lost));
+        CrossThreadBindOnce(&CanvasResourceSharedImage::OnBitmapImageDestroyed,
+                            std::move(resource),
+                            std::move(original_task_runner), sync_token,
+                            is_lost));
     return;
   }
 

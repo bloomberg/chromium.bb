@@ -6817,9 +6817,10 @@ void Document::AddConsoleMessage(ConsoleMessage* console_message) {
   if (!IsContextThread()) {
     PostCrossThreadTask(
         *GetTaskRunner(TaskType::kInternalInspector), FROM_HERE,
-        CrossThreadBind(&RunAddConsoleMessageTask, console_message->Source(),
-                        console_message->Level(), console_message->Message(),
-                        WrapCrossThreadPersistent(this)));
+        CrossThreadBindOnce(&RunAddConsoleMessageTask,
+                            console_message->Source(), console_message->Level(),
+                            console_message->Message(),
+                            WrapCrossThreadPersistent(this)));
     return;
   }
 

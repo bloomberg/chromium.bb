@@ -62,7 +62,7 @@ TEST(StorageControllerTest, CacheLimit) {
   mojom::blink::StoragePartitionServicePtr storage_partition_service_ptr;
   PostCrossThreadTask(
       *base::CreateSequencedTaskRunnerWithTraits({}), FROM_HERE,
-      CrossThreadBind(
+      CrossThreadBindOnce(
           [](mojom::blink::StoragePartitionServiceRequest request) {
             mojo::MakeStrongBinding(
                 std::make_unique<MockStoragePartitionService>(),
@@ -124,7 +124,7 @@ TEST(StorageControllerTest, CacheLimitSessionStorage) {
   mojom::blink::StoragePartitionServicePtr storage_partition_service_ptr;
   PostCrossThreadTask(
       *task_runner, FROM_HERE,
-      CrossThreadBind(
+      CrossThreadBindOnce(
           [](std::unique_ptr<MockStoragePartitionService> storage_partition_ptr,
              mojom::blink::StoragePartitionServiceRequest request) {
             mojo::MakeStrongBinding(std::move(storage_partition_ptr),

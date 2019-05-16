@@ -72,15 +72,15 @@ void QuicStreamHost::OnRemoteReset() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   PostCrossThreadTask(
       *proxy_thread(), FROM_HERE,
-      CrossThreadBind(&QuicStreamProxy::OnRemoteReset, stream_proxy_));
+      CrossThreadBindOnce(&QuicStreamProxy::OnRemoteReset, stream_proxy_));
   Delete();
 }
 
 void QuicStreamHost::OnDataReceived(Vector<uint8_t> data, bool fin) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   PostCrossThreadTask(*proxy_thread(), FROM_HERE,
-                      CrossThreadBind(&QuicStreamProxy::OnDataReceived,
-                                      stream_proxy_, std::move(data), fin));
+                      CrossThreadBindOnce(&QuicStreamProxy::OnDataReceived,
+                                          stream_proxy_, std::move(data), fin));
   if (fin) {
     readable_ = false;
     if (!readable_ && !writable_) {
@@ -92,8 +92,8 @@ void QuicStreamHost::OnDataReceived(Vector<uint8_t> data, bool fin) {
 void QuicStreamHost::OnWriteDataConsumed(uint32_t amount) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   PostCrossThreadTask(*proxy_thread(), FROM_HERE,
-                      CrossThreadBind(&QuicStreamProxy::OnWriteDataConsumed,
-                                      stream_proxy_, amount));
+                      CrossThreadBindOnce(&QuicStreamProxy::OnWriteDataConsumed,
+                                          stream_proxy_, amount));
 }
 
 void QuicStreamHost::Delete() {

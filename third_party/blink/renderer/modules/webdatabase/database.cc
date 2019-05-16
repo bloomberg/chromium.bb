@@ -851,9 +851,10 @@ void Database::RunTransaction(
 void Database::ScheduleTransactionCallback(SQLTransaction* transaction) {
   // The task is constructed in a database thread, and destructed in the
   // context thread.
-  PostCrossThreadTask(*GetDatabaseTaskRunner(), FROM_HERE,
-                      CrossThreadBind(&SQLTransaction::PerformPendingCallback,
-                                      WrapCrossThreadPersistent(transaction)));
+  PostCrossThreadTask(
+      *GetDatabaseTaskRunner(), FROM_HERE,
+      CrossThreadBindOnce(&SQLTransaction::PerformPendingCallback,
+                          WrapCrossThreadPersistent(transaction)));
 }
 
 Vector<String> Database::PerformGetTableNames() {

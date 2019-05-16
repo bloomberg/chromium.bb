@@ -41,7 +41,7 @@ void WaitForSignalTask(WorkerThread* worker_thread,
   PostCrossThreadTask(
       *worker_thread->GetParentExecutionContextTaskRunners()->Get(
           TaskType::kInternalTest),
-      FROM_HERE, CrossThreadBind(&test::ExitRunLoop));
+      FROM_HERE, CrossThreadBindOnce(&test::ExitRunLoop));
   waitable_event->Wait();
   worker_thread->DebuggerTaskFinished();
 }
@@ -112,9 +112,9 @@ void CreateNestedWorkerThenTerminateParent(
       *parent_thread->GetParentExecutionContextTaskRunners()->Get(
           TaskType::kInternalTest),
       FROM_HERE,
-      CrossThreadBind(&TerminateParentOfNestedWorker,
-                      CrossThreadUnretained(parent_thread),
-                      CrossThreadUnretained(&child_waitable)));
+      CrossThreadBindOnce(&TerminateParentOfNestedWorker,
+                          CrossThreadUnretained(parent_thread),
+                          CrossThreadUnretained(&child_waitable)));
   child_waitable.Wait();
   EXPECT_EQ(ExitCode::kNotTerminated, parent_thread->GetExitCodeForTesting());
 
@@ -123,7 +123,7 @@ void CreateNestedWorkerThenTerminateParent(
   PostCrossThreadTask(
       *parent_thread->GetParentExecutionContextTaskRunners()->Get(
           TaskType::kInternalTest),
-      FROM_HERE, CrossThreadBind(&test::ExitRunLoop));
+      FROM_HERE, CrossThreadBindOnce(&test::ExitRunLoop));
 }
 
 void VerifyParentAndChildAreTerminated(WorkerThread* parent_thread,
@@ -407,9 +407,9 @@ TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunningOnInitialization) {
   base::WaitableEvent waitable_event;
   PostCrossThreadTask(
       *worker_thread_->GetTaskRunner(TaskType::kInternalInspector), FROM_HERE,
-      CrossThreadBind(&WaitForSignalTask,
-                      CrossThreadUnretained(worker_thread_.get()),
-                      CrossThreadUnretained(&waitable_event)));
+      CrossThreadBindOnce(&WaitForSignalTask,
+                          CrossThreadUnretained(worker_thread_.get()),
+                          CrossThreadUnretained(&waitable_event)));
 
   // Wait for the debugger task.
   test::EnterRunLoop();
@@ -453,9 +453,9 @@ TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunning) {
   base::WaitableEvent waitable_event;
   PostCrossThreadTask(
       *worker_thread_->GetTaskRunner(TaskType::kInternalInspector), FROM_HERE,
-      CrossThreadBind(&WaitForSignalTask,
-                      CrossThreadUnretained(worker_thread_.get()),
-                      CrossThreadUnretained(&waitable_event)));
+      CrossThreadBindOnce(&WaitForSignalTask,
+                          CrossThreadUnretained(worker_thread_.get()),
+                          CrossThreadUnretained(&waitable_event)));
 
   // Wait for the debugger task.
   test::EnterRunLoop();
@@ -496,9 +496,9 @@ TEST_F(WorkerThreadTest, DISABLED_TerminateWorkerWhileChildIsLoading) {
   // Create a nested worker from the worker thread.
   PostCrossThreadTask(
       *worker_thread_->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
-      CrossThreadBind(&CreateNestedWorkerThenTerminateParent,
-                      CrossThreadUnretained(worker_thread_.get()),
-                      CrossThreadUnretained(&nested_worker_helper)));
+      CrossThreadBindOnce(&CreateNestedWorkerThenTerminateParent,
+                          CrossThreadUnretained(worker_thread_.get()),
+                          CrossThreadUnretained(&nested_worker_helper)));
   test::EnterRunLoop();
 
   base::WaitableEvent waitable_event;
@@ -541,10 +541,10 @@ TEST_F(WorkerThreadTest, TerminateFrozenScript) {
   reporting_proxy_->WaitUntilScriptEvaluation();
 
   base::WaitableEvent child_waitable;
-  PostCrossThreadTask(*worker_thread_->GetTaskRunner(TaskType::kInternalTest),
-                      FROM_HERE,
-                      CrossThreadBind(&base::WaitableEvent::Signal,
-                                      CrossThreadUnretained(&child_waitable)));
+  PostCrossThreadTask(
+      *worker_thread_->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
+      CrossThreadBindOnce(&base::WaitableEvent::Signal,
+                          CrossThreadUnretained(&child_waitable)));
 
   // Freeze() enters a nested event loop where the kInternalTest should run.
   worker_thread_->Freeze();
@@ -569,10 +569,10 @@ TEST_F(WorkerThreadTest, NestedPauseFreeze) {
   reporting_proxy_->WaitUntilScriptEvaluation();
 
   base::WaitableEvent child_waitable;
-  PostCrossThreadTask(*worker_thread_->GetTaskRunner(TaskType::kInternalTest),
-                      FROM_HERE,
-                      CrossThreadBind(&base::WaitableEvent::Signal,
-                                      CrossThreadUnretained(&child_waitable)));
+  PostCrossThreadTask(
+      *worker_thread_->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
+      CrossThreadBindOnce(&base::WaitableEvent::Signal,
+                          CrossThreadUnretained(&child_waitable)));
 
   // Pause() enters a nested event loop where the kInternalTest should run.
   worker_thread_->Pause();
@@ -607,17 +607,17 @@ TEST_F(WorkerThreadTest, NestedPauseFreezeNoInterrupts) {
   Start();
 
   base::WaitableEvent child_waitable;
-  PostCrossThreadTask(*worker_thread_->GetTaskRunner(TaskType::kInternalTest),
-                      FROM_HERE,
-                      CrossThreadBind(&base::WaitableEvent::Signal,
-                                      CrossThreadUnretained(&child_waitable)));
+  PostCrossThreadTask(
+      *worker_thread_->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
+      CrossThreadBindOnce(&base::WaitableEvent::Signal,
+                          CrossThreadUnretained(&child_waitable)));
 
   child_waitable.Wait();
   base::WaitableEvent child_waitable2;
-  PostCrossThreadTask(*worker_thread_->GetTaskRunner(TaskType::kInternalTest),
-                      FROM_HERE,
-                      CrossThreadBind(&base::WaitableEvent::Signal,
-                                      CrossThreadUnretained(&child_waitable2)));
+  PostCrossThreadTask(
+      *worker_thread_->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
+      CrossThreadBindOnce(&base::WaitableEvent::Signal,
+                          CrossThreadUnretained(&child_waitable2)));
 
   // Pause() enters a nested event loop where the kInternalTest should run.
   worker_thread_->Pause();

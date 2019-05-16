@@ -68,7 +68,7 @@ class MultiThreadedTest : public testing::Test {
           threads[i]->PlatformThread().GetTaskRunner().get();
 
       PostCrossThreadTask(*task_runner, FROM_HERE,
-                          CrossThreadBind(
+                          CrossThreadBindOnce(
                               [](WebThreadSupportingGC* thread) {
                                 thread->InitializeOnThread();
                               },
@@ -76,12 +76,12 @@ class MultiThreadedTest : public testing::Test {
 
       for (int j = 0; j < callbacks_per_thread_; ++j) {
         PostCrossThreadTask(*task_runner, FROM_HERE,
-                            CrossThreadBind(function, parameters...));
+                            CrossThreadBindOnce(function, parameters...));
       }
 
       PostCrossThreadTask(
           *task_runner, FROM_HERE,
-          CrossThreadBind(
+          CrossThreadBindOnce(
               [](WebThreadSupportingGC* thread, base::WaitableEvent* w) {
                 thread->ShutdownOnThread();
                 w->Signal();

@@ -81,7 +81,7 @@ void ServiceWorkerThread::RunInstalledClassicScript(
   // WorkerThread::EvaluateClassicScript().
   PostCrossThreadTask(
       *GetTaskRunner(TaskType::kDOMManipulation), FROM_HERE,
-      CrossThreadBind(
+      CrossThreadBindOnce(
           &ServiceWorkerThread::RunInstalledClassicScriptOnWorkerThread,
           CrossThreadUnretained(this), script_url, stack_id));
 }
@@ -92,7 +92,7 @@ void ServiceWorkerThread::RunInstalledModuleScript(
     network::mojom::FetchCredentialsMode credentials_mode) {
   PostCrossThreadTask(
       *GetTaskRunner(TaskType::kDOMManipulation), FROM_HERE,
-      CrossThreadBind(
+      CrossThreadBindOnce(
           &ServiceWorkerThread::RunInstalledModuleScriptOnWorkerThread,
           CrossThreadUnretained(this), module_url_record,
           WTF::Passed(outside_settings_object.CopyData()), credentials_mode));

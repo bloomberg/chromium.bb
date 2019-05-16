@@ -501,7 +501,7 @@ class ThreadedTesterBase {
               .SetThreadNameForTest("blink gc testing thread"));
       PostCrossThreadTask(
           *thread->GetTaskRunner(), FROM_HERE,
-          CrossThreadBind(ThreadFunc, CrossThreadUnretained(tester)));
+          CrossThreadBindOnce(ThreadFunc, CrossThreadUnretained(tester)));
     }
     tester->done_.Wait();
     delete tester;

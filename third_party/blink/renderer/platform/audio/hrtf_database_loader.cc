@@ -98,8 +98,8 @@ void HRTFDatabaseLoader::LoadAsynchronously() {
       ThreadCreationParams(WebThreadType::kHRTFDatabaseLoaderThread));
   // TODO(alexclarke): Should this be posted as a loading task?
   PostCrossThreadTask(*thread_->GetTaskRunner(), FROM_HERE,
-                      CrossThreadBind(&HRTFDatabaseLoader::LoadTask,
-                                      CrossThreadUnretained(this)));
+                      CrossThreadBindOnce(&HRTFDatabaseLoader::LoadTask,
+                                          CrossThreadUnretained(this)));
 }
 
 HRTFDatabase* HRTFDatabaseLoader::Database() {
@@ -128,9 +128,9 @@ void HRTFDatabaseLoader::WaitForLoaderThreadCompletion() {
   base::WaitableEvent sync;
   // TODO(alexclarke): Should this be posted as a loading task?
   PostCrossThreadTask(*thread_->GetTaskRunner(), FROM_HERE,
-                      CrossThreadBind(&HRTFDatabaseLoader::CleanupTask,
-                                      CrossThreadUnretained(this),
-                                      CrossThreadUnretained(&sync)));
+                      CrossThreadBindOnce(&HRTFDatabaseLoader::CleanupTask,
+                                          CrossThreadUnretained(this),
+                                          CrossThreadUnretained(&sync)));
   sync.Wait();
   thread_.reset();
 }

@@ -96,7 +96,7 @@ void ThreadedWorkletMessagingProxy::FetchAndInvokeScript(
   DCHECK(IsMainThread());
   PostCrossThreadTask(
       *GetWorkerThread()->GetTaskRunner(TaskType::kInternalLoading), FROM_HERE,
-      CrossThreadBind(
+      CrossThreadBindOnce(
           &ThreadedWorkletObjectProxy::FetchAndInvokeScript,
           CrossThreadUnretained(worklet_object_proxy_.get()), module_url_record,
           credentials_mode, WTF::Passed(outside_settings_object.CopyData()),

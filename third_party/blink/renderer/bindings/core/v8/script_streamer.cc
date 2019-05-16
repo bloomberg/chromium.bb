@@ -102,7 +102,7 @@ class SourceStream : public v8::ScriptCompiler::ExternalSourceStream {
           memcpy(copy_for_resource.get(), buffer, num_bytes);
           PostCrossThreadTask(
               *loading_task_runner_, FROM_HERE,
-              CrossThreadBind(
+              CrossThreadBindOnce(
                   NotifyClientDidReceiveData, response_body_loader_client_,
                   WTF::Passed(std::move(copy_for_resource)), num_bytes));
 
@@ -233,7 +233,7 @@ class SourceStream : public v8::ScriptCompiler::ExternalSourceStream {
     CHECK(!finished_);
     PostCrossThreadTask(
         *loading_task_runner_, FROM_HERE,
-        CrossThreadBind(callback, response_body_loader_client_));
+        CrossThreadBindOnce(callback, response_body_loader_client_));
     finished_ = true;
   }
 
@@ -297,8 +297,8 @@ void ScriptStreamer::StreamingCompleteOnBackgroundThread() {
   // notifyFinished might already be called, or it might be called in the
   // future (if the parsing finishes earlier because of a parse error).
   PostCrossThreadTask(*loading_task_runner_, FROM_HERE,
-                      CrossThreadBind(&ScriptStreamer::StreamingComplete,
-                                      WrapCrossThreadPersistent(this)));
+                      CrossThreadBindOnce(&ScriptStreamer::StreamingComplete,
+                                          WrapCrossThreadPersistent(this)));
 
   // The task might be the only remaining reference to the ScriptStreamer, and
   // there's no way to guarantee that this function has returned before the task

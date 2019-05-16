@@ -43,8 +43,8 @@ class FIFOClient {
     duration_ms_ = duration_ms;
     interval_ms_ = interval_ms;
     PostCrossThreadTask(*client_thread_->GetTaskRunner(), FROM_HERE,
-                        CrossThreadBind(&FIFOClient::RunTaskOnOwnThread,
-                                        CrossThreadUnretained(this)));
+                        CrossThreadBindOnce(&FIFOClient::RunTaskOnOwnThread,
+                                            CrossThreadUnretained(this)));
     return done_event_.get();
   }
 
