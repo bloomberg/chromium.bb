@@ -5,9 +5,9 @@
 #ifndef UI_GFX_X_X11_ATOM_CACHE_H_
 #define UI_GFX_X_X11_ATOM_CACHE_H_
 
-#include <map>
 #include <string>
 
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "ui/gfx/gfx_export.h"
 #include "ui/gfx/x/x11_types.h"
@@ -42,7 +42,7 @@ class GFX_EXPORT X11AtomCache {
 
   XDisplay* xdisplay_;
 
-  mutable std::map<std::string, XAtom> cached_atoms_;
+  mutable base::flat_map<std::string, XAtom> cached_atoms_;
 
   DISALLOW_COPY_AND_ASSIGN(X11AtomCache);
 };

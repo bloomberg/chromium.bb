@@ -42,6 +42,10 @@ class VIZ_HOST_EXPORT HostDisplayClient : public mojom::DisplayClient {
       mojom::LayeredWindowUpdaterRequest request) override;
 #endif
 
+#if defined(USE_X11)
+  void DidCompleteSwapWithNewSize(const gfx::Size& size) override;
+#endif
+
   mojo::Binding<mojom::DisplayClient> binding_;
 #if defined(OS_MACOSX) || defined(OS_WIN)
   gfx::AcceleratedWidget widget_;

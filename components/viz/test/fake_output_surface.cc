@@ -112,4 +112,9 @@ gfx::OverlayTransform FakeOutputSurface::GetDisplayTransform() {
   return gfx::OVERLAY_TRANSFORM_NONE;
 }
 
+#if defined(USE_X11)
+void FakeOutputSurface::SetNeedsSwapSizeNotifications(
+    bool needs_swap_size_notifications) {}
+#endif
+
 }  // namespace viz

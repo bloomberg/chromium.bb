@@ -1299,6 +1299,14 @@ gfx::ICCProfile GetICCProfileForMonitor(int monitor) {
   return icc_profile;
 }
 
+bool IsSyncExtensionAvailable() {
+  auto* display = gfx::GetXDisplay();
+  int unused;
+  static bool result = XSyncQueryExtension(display, &unused, &unused) &&
+                       XSyncInitialize(display, &unused, &unused);
+  return result;
+}
+
 XRefcountedMemory::XRefcountedMemory(unsigned char* x11_data, size_t length)
     : x11_data_(length ? x11_data : nullptr), length_(length) {
 }

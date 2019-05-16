@@ -85,9 +85,14 @@ void SoftwareBrowserCompositorOutputSurface::SwapBuffers(
 }
 
 void SoftwareBrowserCompositorOutputSurface::SwapBuffersCallback(
-    const std::vector<ui::LatencyInfo>& latency_info) {
+    const std::vector<ui::LatencyInfo>& latency_info,
+    const gfx::Size& pixel_size) {
   latency_tracker_.OnGpuSwapBuffersCompleted(latency_info);
   client_->DidReceiveSwapBuffersAck();
+#if defined(USE_X11)
+  if (needs_swap_size_notifications_)
+    client_->DidSwapWithSize(pixel_size);
+#endif
   client_->DidReceivePresentationFeedback(
       gfx::PresentationFeedback(base::TimeTicks::Now(), refresh_interval_, 0u));
 }
@@ -123,5 +128,12 @@ SoftwareBrowserCompositorOutputSurface::GetFramebufferCopyTextureFormat() {
 unsigned SoftwareBrowserCompositorOutputSurface::UpdateGpuFence() {
   return 0;
 }
+
+#if defined(USE_X11)
+void SoftwareBrowserCompositorOutputSurface::SetNeedsSwapSizeNotifications(
+    bool needs_swap_size_notifications) {
+  needs_swap_size_notifications_ = needs_swap_size_notifications;
+}
+#endif
 
 }  // namespace content
