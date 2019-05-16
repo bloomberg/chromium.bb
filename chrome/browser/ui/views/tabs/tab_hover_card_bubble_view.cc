@@ -341,17 +341,21 @@ void TabHoverCardBubbleView::UpdateAndShow(Tab* tab) {
   bool show_immediately = !last_visible_timestamp_.is_null() &&
                           elapsed_time <= kShowWithoutDelayTimeBuffer;
 
+  fade_animation_delegate_->CancelFadeOut();
+
   if (preview_image_)
     preview_image_->SetVisible(!tab->IsActive());
 
   UpdateCardContent(tab->data());
+  // If widget is already visible and anchored to the correct tab we should not
+  // try to reset the anchor view or reshow.
+  if (widget_->IsVisible() && GetAnchorView() == tab)
+    return;
 
   if (widget_->IsVisible() && !disable_animations_for_testing_)
     slide_animation_delegate_->AnimateToAnchorView(tab);
   else
     SetAnchorView(tab);
-
-  fade_animation_delegate_->CancelFadeOut();
 
   if (!widget_->IsVisible()) {
     if (disable_animations_for_testing_ || show_immediately ||
