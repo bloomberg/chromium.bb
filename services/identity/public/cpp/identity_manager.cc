@@ -106,7 +106,7 @@ CoreAccountInfo IdentityManager::GetPrimaryAccountInfo() const {
   return result;
 }
 
-std::string IdentityManager::GetPrimaryAccountId() const {
+CoreAccountId IdentityManager::GetPrimaryAccountId() const {
   return GetPrimaryAccountInfo().account_id;
 }
 
@@ -124,7 +124,8 @@ std::vector<CoreAccountInfo> IdentityManager::GetAccountsWithRefreshTokens()
   accounts.reserve(account_ids_with_tokens.size());
 
   for (const std::string& account_id : account_ids_with_tokens) {
-    accounts.push_back(GetAccountInfoForAccountWithRefreshToken(account_id));
+    accounts.push_back(
+        GetAccountInfoForAccountWithRefreshToken(CoreAccountId(account_id)));
   }
 
   return accounts;
@@ -139,7 +140,8 @@ IdentityManager::GetExtendedAccountInfoForAccountsWithRefreshToken() const {
   accounts.reserve(account_ids_with_tokens.size());
 
   for (const std::string& account_id : account_ids_with_tokens) {
-    accounts.push_back(GetAccountInfoForAccountWithRefreshToken(account_id));
+    accounts.push_back(
+        GetAccountInfoForAccountWithRefreshToken(CoreAccountId(account_id)));
   }
 
   return accounts;
@@ -156,17 +158,17 @@ AccountsInCookieJarInfo IdentityManager::GetAccountsInCookieJar() const {
 }
 
 bool IdentityManager::HasAccountWithRefreshToken(
-    const std::string& account_id) const {
+    const CoreAccountId& account_id) const {
   return token_service_->RefreshTokenIsAvailable(account_id);
 }
 
 bool IdentityManager::HasAccountWithRefreshTokenInPersistentErrorState(
-    const std::string& account_id) const {
+    const CoreAccountId& account_id) const {
   return GetErrorStateOfRefreshTokenForAccount(account_id).IsPersistentError();
 }
 
 GoogleServiceAuthError IdentityManager::GetErrorStateOfRefreshTokenForAccount(
-    const std::string& account_id) const {
+    const CoreAccountId& account_id) const {
   return token_service_->GetAuthError(account_id);
 }
 
@@ -194,7 +196,7 @@ base::Optional<AccountInfo> IdentityManager::FindExtendedAccountInfoForAccount(
 
 base::Optional<AccountInfo>
 IdentityManager::FindAccountInfoForAccountWithRefreshTokenByAccountId(
-    const std::string& account_id) const {
+    const CoreAccountId& account_id) const {
   AccountInfo account_info =
       account_tracker_service_->GetAccountInfo(account_id);
 
@@ -239,7 +241,7 @@ IdentityManager::FindAccountInfoForAccountWithRefreshTokenByGaiaId(
 
 std::unique_ptr<AccessTokenFetcher>
 IdentityManager::CreateAccessTokenFetcherForAccount(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const std::string& oauth_consumer_name,
     const identity::ScopeSet& scopes,
     AccessTokenFetcher::TokenCallback callback,
@@ -251,7 +253,7 @@ IdentityManager::CreateAccessTokenFetcherForAccount(
 
 std::unique_ptr<AccessTokenFetcher>
 IdentityManager::CreateAccessTokenFetcherForAccount(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const std::string& oauth_consumer_name,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const identity::ScopeSet& scopes,
@@ -264,7 +266,7 @@ IdentityManager::CreateAccessTokenFetcherForAccount(
 
 std::unique_ptr<AccessTokenFetcher>
 IdentityManager::CreateAccessTokenFetcherForClient(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const std::string& client_id,
     const std::string& client_secret,
     const std::string& oauth_consumer_name,
@@ -277,7 +279,7 @@ IdentityManager::CreateAccessTokenFetcherForClient(
 }
 
 void IdentityManager::RemoveAccessTokenFromCache(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const identity::ScopeSet& scopes,
     const std::string& access_token) {
   token_service_->InvalidateAccessToken(account_id, scopes, access_token);
@@ -285,7 +287,7 @@ void IdentityManager::RemoveAccessTokenFromCache(
 
 std::unique_ptr<signin::UbertokenFetcher>
 IdentityManager::CreateUbertokenFetcherForAccount(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     signin::UbertokenFetcher::CompletionCallback callback,
     gaia::GaiaSource source,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -313,10 +315,13 @@ void IdentityManager::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   AccountTrackerService::RegisterPrefs(registry);
 }
 
-std::string IdentityManager::PickAccountIdForAccount(
+CoreAccountId IdentityManager::PickAccountIdForAccount(
     const std::string& gaia,
     const std::string& email) const {
-  return account_tracker_service_->PickAccountIdForAccount(gaia, email);
+  // TODO(triploblastic@): Remove explicit conversion once signin_manager
+  // has been fixed to use CoreAccountId.
+  return CoreAccountId(
+      account_tracker_service_->PickAccountIdForAccount(gaia, email));
 }
 
 IdentityManager::AccountIdMigrationState
@@ -370,12 +375,12 @@ void IdentityManager::ForceTriggerOnCookieChange() {
   gaia_cookie_manager_service_->ForceOnCookieChangeProcessing();
 }
 
-std::string IdentityManager::LegacySeedAccountInfo(const AccountInfo& info) {
+CoreAccountId IdentityManager::LegacySeedAccountInfo(const AccountInfo& info) {
   return account_tracker_service_->SeedAccountInfo(info);
 }
 
 void IdentityManager::LegacyAddAccountFromSystem(
-    const std::string& account_id) {
+    const CoreAccountId& account_id) {
   token_service_->GetDelegate()->AddAccountFromSystem(account_id);
 }
 #endif
@@ -402,7 +407,7 @@ IdentityManager::LegacyGetOAuth2TokenServiceJavaObject() {
 }
 
 void IdentityManager::ForceRefreshOfExtendedAccountInfo(
-    const std::string& account_id) {
+    const CoreAccountId& account_id) {
   DCHECK(HasAccountWithRefreshToken(account_id));
   account_fetcher_service_->ForceRefreshOfAccountInfo(account_id);
 }
@@ -445,7 +450,7 @@ GaiaCookieManagerService* IdentityManager::GetGaiaCookieManagerService() {
 }
 
 AccountInfo IdentityManager::GetAccountInfoForAccountWithRefreshToken(
-    const std::string& account_id) const {
+    const CoreAccountId& account_id) const {
   // TODO(https://crbug.com/919793): This invariant is not currently possible to
   // enforce on Android due to the underlying relationship between
   // O2TS::GetAccounts(), O2TS::RefreshTokenIsAvailable(), and
@@ -466,8 +471,9 @@ AccountInfo IdentityManager::GetAccountInfoForAccountWithRefreshToken(
   // always set.
   // TODO(860492): Remove this special case once supervised user support is
   // removed.
-  DCHECK(!account_info.IsEmpty() || account_id == kSupervisedUserPseudoEmail);
-  if (account_id == kSupervisedUserPseudoEmail && account_info.IsEmpty()) {
+  DCHECK(!account_info.IsEmpty() ||
+         account_id.id == kSupervisedUserPseudoEmail);
+  if (account_id.id == kSupervisedUserPseudoEmail && account_info.IsEmpty()) {
     account_info.account_id = account_id;
     account_info.email = kSupervisedUserPseudoEmail;
     account_info.gaia = kSupervisedUserPseudoGaiaID;
@@ -504,7 +510,7 @@ void IdentityManager::AuthenticatedAccountCleared() {
 
 void IdentityManager::OnRefreshTokenAvailable(const std::string& account_id) {
   CoreAccountInfo account_info =
-      GetAccountInfoForAccountWithRefreshToken(account_id);
+      GetAccountInfoForAccountWithRefreshToken(CoreAccountId(account_id));
 
   for (auto& observer : observer_list_) {
     observer.OnRefreshTokenUpdatedForAccount(account_info);
@@ -531,7 +537,7 @@ void IdentityManager::OnAuthErrorChanged(
     const std::string& account_id,
     const GoogleServiceAuthError& auth_error) {
   CoreAccountInfo account_info =
-      GetAccountInfoForAccountWithRefreshToken(account_id);
+      GetAccountInfoForAccountWithRefreshToken(CoreAccountId(account_id));
 
   for (auto& observer : observer_list_)
     observer.OnErrorStateOfRefreshTokenUpdatedForAccount(account_info,
