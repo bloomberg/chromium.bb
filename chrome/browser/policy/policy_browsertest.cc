@@ -4043,7 +4043,71 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, VirtualKeyboardEnabled) {
   EXPECT_FALSE(keyboard_client->is_keyboard_enabled());
 }
 
-#endif
+IN_PROC_BROWSER_TEST_F(PolicyTest, AssistantContextEnabled) {
+  PrefService* prefs = browser()->profile()->GetPrefs();
+  EXPECT_FALSE(
+      prefs->IsManagedPreference(arc::prefs::kVoiceInteractionContextEnabled));
+  EXPECT_FALSE(prefs->GetBoolean(arc::prefs::kVoiceInteractionContextEnabled));
+  prefs->SetBoolean(arc::prefs::kVoiceInteractionContextEnabled, true);
+  EXPECT_TRUE(prefs->GetBoolean(arc::prefs::kVoiceInteractionContextEnabled));
+
+  // Verifies that the Assistant context can be forced to always disabled.
+  PolicyMap policies;
+  policies.Set(key::kVoiceInteractionContextEnabled, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(false), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_TRUE(
+      prefs->IsManagedPreference(arc::prefs::kVoiceInteractionContextEnabled));
+  EXPECT_FALSE(prefs->GetBoolean(arc::prefs::kVoiceInteractionContextEnabled));
+  prefs->SetBoolean(arc::prefs::kVoiceInteractionContextEnabled, true);
+  EXPECT_FALSE(prefs->GetBoolean(arc::prefs::kVoiceInteractionContextEnabled));
+
+  // Verifies that the Assistant context can be forced to always enabled.
+  policies.Set(key::kVoiceInteractionContextEnabled, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(true), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_TRUE(
+      prefs->IsManagedPreference(arc::prefs::kVoiceInteractionContextEnabled));
+  EXPECT_TRUE(prefs->GetBoolean(arc::prefs::kVoiceInteractionContextEnabled));
+  prefs->SetBoolean(arc::prefs::kVoiceInteractionContextEnabled, false);
+  EXPECT_TRUE(prefs->GetBoolean(arc::prefs::kVoiceInteractionContextEnabled));
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, AssistantHotwordEnabled) {
+  PrefService* prefs = browser()->profile()->GetPrefs();
+  EXPECT_FALSE(
+      prefs->IsManagedPreference(arc::prefs::kVoiceInteractionHotwordEnabled));
+  EXPECT_FALSE(prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled));
+  prefs->SetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled, true);
+  EXPECT_TRUE(prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled));
+
+  // Verifies that the Assistant hotword can be forced to always disabled.
+  PolicyMap policies;
+  policies.Set(key::kVoiceInteractionHotwordEnabled, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(false), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_TRUE(
+      prefs->IsManagedPreference(arc::prefs::kVoiceInteractionHotwordEnabled));
+  EXPECT_FALSE(prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled));
+  prefs->SetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled, true);
+  EXPECT_FALSE(prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled));
+
+  // Verifies that the Assistant hotword can be forced to always enabled.
+  policies.Set(key::kVoiceInteractionHotwordEnabled, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(true), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_TRUE(
+      prefs->IsManagedPreference(arc::prefs::kVoiceInteractionHotwordEnabled));
+  EXPECT_TRUE(prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled));
+  prefs->SetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled, false);
+  EXPECT_TRUE(prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled));
+}
+
+#endif  // defined(OS_CHROMEOS)
 
 namespace {
 
