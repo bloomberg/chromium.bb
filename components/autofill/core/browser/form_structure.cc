@@ -411,8 +411,6 @@ void EncodePasswordAttributesVote(
       break;
     case PasswordAttribute::kHasSpecialSymbol:
       upload->set_password_has_special_symbol(password_attributes_vote.second);
-      if (password_attributes_vote.second)
-        upload->set_password_special_symbol(password_symbol_vote);
       break;
     case PasswordAttribute::kPasswordAttributesCount:
       NOTREACHED();
