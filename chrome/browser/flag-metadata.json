@@ -2122,7 +2122,7 @@
   },
   {
     "name": "in-session-password-change",
-    // "owners": [ "rsorokin" ],
+    "owners": [ "rsorokin" ],
     "expiry_milestone": 77
   },
   {
