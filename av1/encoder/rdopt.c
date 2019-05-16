@@ -12579,7 +12579,6 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   unsigned int ref_costs_comp[REF_FRAMES][REF_FRAMES];
   int *comp_inter_cost = x->comp_inter_cost[av1_get_reference_mode_context(xd)];
   mode_skip_mask_t mode_skip_mask;
-  uint8_t motion_mode_skip_mask = 0;  // second pass of single ref modes
 
   InterModeSearchState search_state;
   init_inter_mode_search_state(&search_state, cpi, tile_data, x, bsize,
@@ -12656,33 +12655,6 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     const MV_REFERENCE_FRAME ref_frame = mode_order->ref_frame[0];
     const MV_REFERENCE_FRAME second_ref_frame = mode_order->ref_frame[1];
     const int comp_pred = second_ref_frame > INTRA_FRAME;
-
-    // When single ref motion search ends:
-    // 1st pass: To evaluate single ref RD results and rewind to the beginning;
-    // 2nd pass: To continue with compound ref search.
-    if (sf->prune_single_motion_modes_by_simple_trans) {
-      if (comp_pred && args.single_ref_first_pass) {
-        args.single_ref_first_pass = 0;
-        // Reach the first comp ref mode
-        // Reset midx to start the 2nd pass for single ref motion search
-        midx = -1;
-        motion_mode_skip_mask = analyze_simple_trans_states(cpi, x);
-        continue;
-      }
-      if (!comp_pred) {  // single ref mode
-        if (args.single_ref_first_pass) {
-          // clear stats
-          for (int k = 0; k < MAX_REF_MV_SEARCH; ++k) {
-            x->simple_rd_state[midx][k].rd_stats.rdcost = INT64_MAX;
-            x->simple_rd_state[midx][k].early_skipped = 0;
-          }
-        } else {
-          if (motion_mode_skip_mask & (1 << ref_frame)) {
-            continue;
-          }
-        }
-      }
-    }
 
     // Reach the first compound prediction mode
     if (sf->prune_comp_search_by_single_result > 0 && comp_pred &&
