@@ -144,7 +144,6 @@ div.splitter {
 div[section-start='removable'].tree-item {
   left: 0;
   max-width: 100%;
-  position: absolute;
 }
 
 #directory-tree .tree-row > .button {
