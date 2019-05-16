@@ -324,8 +324,7 @@ FastInkView::FastInkView(aura::Window* container,
   // but with potential tearing. Note that we have to draw into a temporary
   // surface and copy it into GPU memory buffer to avoid flicker.
   gpu_memory_buffer_ =
-      widget_->GetNativeWindow()
-          ->env()
+      aura::Env::GetInstance()
           ->context_factory()
           ->GetGpuMemoryBufferManager()
           ->CreateGpuMemoryBuffer(buffer_size_,
@@ -407,8 +406,7 @@ void FastInkView::SubmitCompositorFrame() {
     // new instance to be created in lost context situations is acceptable and
     // keeps the code simple.
     if (!resource->context_provider) {
-      resource->context_provider = widget_->GetNativeWindow()
-                                       ->env()
+      resource->context_provider = aura::Env::GetInstance()
                                        ->context_factory()
                                        ->SharedMainThreadContextProvider();
       if (!resource->context_provider) {
@@ -424,8 +422,7 @@ void FastInkView::SubmitCompositorFrame() {
       const uint32_t usage =
           gpu::SHARED_IMAGE_USAGE_DISPLAY | gpu::SHARED_IMAGE_USAGE_SCANOUT;
       gpu::GpuMemoryBufferManager* gmb_manager =
-          widget_->GetNativeWindow()
-              ->env()
+          aura::Env::GetInstance()
               ->context_factory()
               ->GetGpuMemoryBufferManager();
       resource->mailbox = sii->CreateSharedImage(

@@ -146,14 +146,14 @@ TrayBubbleView::InitParams::InitParams() = default;
 TrayBubbleView::InitParams::InitParams(const InitParams& other) = default;
 
 TrayBubbleView::RerouteEventHandler::RerouteEventHandler(
-    TrayBubbleView* tray_bubble_view,
-    aura::Env* aura_env)
-    : tray_bubble_view_(tray_bubble_view), aura_env_(aura_env) {
-  aura_env_->AddPreTargetHandler(this, ui::EventTarget::Priority::kSystem);
+    TrayBubbleView* tray_bubble_view)
+    : tray_bubble_view_(tray_bubble_view) {
+  aura::Env::GetInstance()->AddPreTargetHandler(
+      this, ui::EventTarget::Priority::kSystem);
 }
 
 TrayBubbleView::RerouteEventHandler::~RerouteEventHandler() {
-  aura_env_->RemovePreTargetHandler(this);
+  aura::Env::GetInstance()->RemovePreTargetHandler(this);
 }
 
 void TrayBubbleView::RerouteEventHandler::OnKeyEvent(ui::KeyEvent* event) {
@@ -287,10 +287,8 @@ void TrayBubbleView::InitializeAndShowBubble() {
   // If TrayBubbleView cannot be activated and is shown by clicking on the
   // corresponding tray view, register pre target event handler to reroute key
   // events to the widget for activating the view or closing it.
-  if (!CanActivate() && params_.show_by_click) {
-    reroute_event_handler_ = std::make_unique<RerouteEventHandler>(
-        this, GetWidget()->GetNativeWindow()->env());
-  }
+  if (!CanActivate() && params_.show_by_click)
+    reroute_event_handler_ = std::make_unique<RerouteEventHandler>(this);
 }
 
 void TrayBubbleView::UpdateBubble() {

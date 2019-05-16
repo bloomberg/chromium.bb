@@ -349,7 +349,7 @@ void ToplevelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event) {
       DCHECK_EQ(ui::ET_GESTURE_SCROLL_BEGIN, event->type());
       aura::Window::ConvertPointToTarget(target, new_target, &event_location);
 
-      original_target->env()->gesture_recognizer()->TransferEventsTo(
+      aura::Env::GetInstance()->gesture_recognizer()->TransferEventsTo(
           original_target, new_target, ui::TransferTouchesBehavior::kCancel);
       UpdateGestureTarget(new_target, event_location);
       target = new_target;
@@ -532,7 +532,7 @@ bool ToplevelWindowEventHandler::AttemptToStartDrag(
   if (gesture_target_ != nullptr && update_gesture_target) {
     DCHECK_EQ(source, ::wm::WINDOW_MOVE_SOURCE_TOUCH);
     // Transfer events for gesture if switching to new target.
-    window->env()->gesture_recognizer()->TransferEventsTo(
+    aura::Env::GetInstance()->gesture_recognizer()->TransferEventsTo(
         gesture_target_, window, ui::TransferTouchesBehavior::kDontCancel);
   }
 
@@ -567,11 +567,11 @@ void ToplevelWindowEventHandler::RevertDrag() {
   DCHECK(root_window);
   gfx::Point drag_location;
   if (move_source == ::wm::WINDOW_MOVE_SOURCE_TOUCH &&
-      Shell::Get()->aura_env()->is_touch_down()) {
+      aura::Env::GetInstance()->is_touch_down()) {
     gfx::PointF drag_location_f;
-    bool has_point =
-        source->env()->gesture_recognizer()->GetLastTouchPointForTarget(
-            source, &drag_location_f);
+    bool has_point = aura::Env::GetInstance()
+                         ->gesture_recognizer()
+                         ->GetLastTouchPointForTarget(source, &drag_location_f);
     drag_location = gfx::ToFlooredPoint(drag_location_f);
     DCHECK(has_point);
   } else {

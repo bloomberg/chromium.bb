@@ -7,8 +7,6 @@
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_delegate.h"
 #include "ui/aura/env.h"
-#include "ui/aura/window.h"
-#include "ui/events/base_event_utils.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace ash {

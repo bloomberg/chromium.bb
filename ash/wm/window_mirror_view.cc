@@ -112,8 +112,8 @@ void WindowMirrorView::AddedToWidget() {
   // This is done to minimize the amount of work during the initial animation
   // when entering overview. In particular, telling the remote client it is
   // visible is likely to result in a fair amount of work.
-  if (source_->env()->GetWindowOcclusionTracker()->IsPaused())
-    env_observer_.Add(target_->env());
+  if (aura::Env::GetInstance()->GetWindowOcclusionTracker()->IsPaused())
+    env_observer_.Add(aura::Env::GetInstance());
   else
     ForceVisibilityAndOcclusion();
 }
