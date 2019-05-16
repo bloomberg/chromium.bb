@@ -87,7 +87,7 @@ void CmdExtract::ExtractArchiveInit(Archive &Arc)
   FirstFile=true;
 #endif
 
-  GlobalPassword=Cmd->Password.IsSet();
+  GlobalPassword=Cmd->Password.IsSet() || uiIsGlobalPasswordSet();
 
   DataIO.UnpVolume=false;
 
@@ -300,7 +300,7 @@ bool CmdExtract::ExtractCurrentFile(Archive &Arc,size_t HeaderSize,bool &Repeat)
 
   bool EqualNames=false;
   wchar MatchedArg[NM];
-  int MatchNumber=Cmd->IsProcessFile(Arc.FileHead,&EqualNames,MatchType,MatchedArg,ASIZE(MatchedArg));
+  int MatchNumber=Cmd->IsProcessFile(Arc.FileHead,&EqualNames,MatchType,0,MatchedArg,ASIZE(MatchedArg));
   bool MatchFound=MatchNumber!=0;
 #ifndef SFX_MODULE
   if (Cmd->ExclPath==EXCL_BASEPATH)
@@ -347,7 +347,7 @@ bool CmdExtract::ExtractCurrentFile(Archive &Arc,size_t HeaderSize,bool &Repeat)
 #endif
 
   wchar ArcFileName[NM];
-  ConvertPath(Arc.FileHead.FileName,ArcFileName);
+  ConvertPath(Arc.FileHead.FileName,ArcFileName,ASIZE(ArcFileName));
 
   if (Arc.FileHead.Version)
   {
@@ -475,7 +475,7 @@ bool CmdExtract::ExtractCurrentFile(Archive &Arc,size_t HeaderSize,bool &Repeat)
           memcmp(Arc.FileHead.PswCheck,PswCheck,SIZE_PSWCHECK)!=0 &&
           !Arc.BrokenHeader)
       {
-        if (GlobalPassword) // For -p<pwd> or Ctrl+P.
+        if (GlobalPassword) // For -p<pwd> or Ctrl+P to avoid the infinite loop.
         {
           // This message is used by Android GUI to reset cached passwords.
           // Update appropriate code if changed.
@@ -858,9 +858,12 @@ void CmdExtract::ExtrPrepareName(Archive &Arc,const wchar *ArcFileName,wchar *De
   }
 
 #ifndef SFX_MODULE
-  if (Cmd->AppendArcNameToPath)
+  if (Cmd->AppendArcNameToPath!=APPENDARCNAME_NONE)
   {
-    wcsncatz(DestName,PointToName(Arc.FirstVolumeName),DestSize);
+    if (Cmd->AppendArcNameToPath==APPENDARCNAME_DESTPATH)
+      wcsncatz(DestName,PointToName(Arc.FirstVolumeName),DestSize);
+    else
+      wcsncpyz(DestName,Arc.FirstVolumeName,DestSize); // To archive own dir.
     SetExt(DestName,NULL,DestSize);
     AddEndSlash(DestName,DestSize);
   }
@@ -1089,7 +1092,7 @@ void CmdExtract::ExtrCreateDir(Archive &Arc,const wchar *ArcFileName)
   {
 #if defined(_WIN_ALL) && !defined(SFX_MODULE)
     if (Cmd->SetCompressedAttr &&
-        (Arc.FileHead.FileAttr & FILE_ATTRIBUTE_COMPRESSED)!=0 && WinNT())
+        (Arc.FileHead.FileAttr & FILE_ATTRIBUTE_COMPRESSED)!=0 && WinNT()!=WNT_NONE)
       SetFileCompression(DestFileName,true);
 #endif
     SetFileHeaderExtra(Cmd,Arc,DestFileName);

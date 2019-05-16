@@ -434,12 +434,17 @@ diff --git b/third_party/unrar/src/os.hpp a/third_party/unrar/src/os.hpp
 index d4a7426d9ec4..bc1112633f7d 100644
 --- b/third_party/unrar/src/os.hpp
 +++ a/third_party/unrar/src/os.hpp
-@@ -32,17 +32,21 @@
+@@ -32,22 +32,26 @@
  #define STRICT 1
  #endif
  
 +#if !defined(CHROMIUM_UNRAR)
+ // 'ifndef' check here is needed for unrar.dll header to avoid macro
+ // re-definition warnings in third party projects.
+ #ifndef UNICODE
  #define UNICODE
+ #endif
+ 
  #undef WINVER
  #undef _WIN32_WINNT
  #define WINVER 0x0501
@@ -553,15 +558,6 @@ index ffba8c11fa4b..e84d9c1de02e 100644
    if (!WideToCharMap(Src,Dest,DestSize,RetCode))
    {
      mbstate_t ps; // Use thread safe external state based functions.
-@@ -70,7 +70,7 @@ bool WideToChar(const wchar *Src,char *Dest,size_t DestSize)
- #endif
-   if (DestSize>0)
-     Dest[DestSize-1]=0;
--  
-+
-   // We tried to return the empty string if conversion is failed,
-   // but it does not work well. WideCharToMultiByte returns 'failed' code
-   // and partially converted string even if we wanted to convert only a part
 @@ -95,7 +95,7 @@ bool CharToWide(const char *Src,wchar *Dest,size_t DestSize)
  #elif defined(_APPLE)
    UtfToWide(Src,Dest,DestSize);
@@ -596,9 +592,8 @@ index ffba8c11fa4b..e84d9c1de02e 100644
  
  
 -#if defined(_UNIX) && defined(MBFUNCTIONS)
--// Convert and map inconvertible Unicode characters. 
 +#if !defined(_WIN_ALL) && !defined(_APPLE) && defined(_UNIX) && defined(MBFUNCTIONS)
-+// Convert and map inconvertible Unicode characters.
+ // Convert and map inconvertible Unicode characters.
  // We use it for extended ASCII names in Unix.
  void CharToWideMap(const char *Src,wchar *Dest,size_t DestSize,bool &Success)
  {
@@ -667,7 +662,7 @@ index d55b3564c7d9..e45cb51a389c 100644
 +      base::TerminateBecauseOutOfMemory(Size);
 +#else
        throw std::bad_alloc();
--    
+-
 +#endif  // defined(UNRAR_NO_EXCEPTIONS)
 +    }
 +
