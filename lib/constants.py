@@ -401,9 +401,11 @@ ANDROID_PI_BUILD_TARGETS = {
                                     r'\.zip$'),
 }
 ANDROID_QT_BUILD_TARGETS = {
-    'ARM_USERDEBUG': ('linux-cheets_arm-userdebug', r'\.zip$'),
+    'ARM_USERDEBUG': ('linux-cheets_arm-userdebug',
+                      r'(\.zip|/XkbToKcmConverter)$'),
     'ARM64_USERDEBUG': ('linux-cheets_arm64-userdebug', r'\.zip$'),
-    'X86_USERDEBUG': ('linux-cheets_x86-userdebug', r'\.zip$'),
+    'X86_USERDEBUG': ('linux-cheets_x86-userdebug',
+                      r'(\.zip|/XkbToKcmConverter)$'),
     'X86_64_USERDEBUG': ('linux-cheets_x86_64-userdebug', r'\.zip$'),
 }
 ANDROID_VMPI_BUILD_TARGETS = {
