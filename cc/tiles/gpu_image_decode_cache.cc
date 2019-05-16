@@ -891,17 +891,6 @@ GpuImageDecodeCache::~GpuImageDecodeCache() {
   // It is safe to unregister, even if we didn't register in the constructor.
   base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
       this);
-
-  // TODO(vmpstr): If we don't have a client name, it may cause problems in
-  // unittests, since most tests don't set the name but some do. The UMA system
-  // expects the name to be always the same. This assertion is violated in the
-  // tests that do set the name.
-  if (GetClientNameForMetrics()) {
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
-        base::StringPrintf("Compositing.%s.CachedImagesCount.Gpu",
-                           GetClientNameForMetrics()),
-        lifetime_max_items_in_cache_, 1, 1000, 20);
-  }
 }
 
 ImageDecodeCache::TaskResult GpuImageDecodeCache::GetTaskForImageAndRef(
@@ -1592,9 +1581,6 @@ bool GpuImageDecodeCache::EnsureCapacity(size_t required_size) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "GpuImageDecodeCache::EnsureCapacity");
   lock_.AssertAcquired();
-
-  lifetime_max_items_in_cache_ =
-      std::max(lifetime_max_items_in_cache_, persistent_cache_.size());
 
   // While we are over preferred item capacity, we iterate through our set of
   // cached image data in LRU order, removing unreferenced images.

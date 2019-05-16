@@ -164,16 +164,6 @@ SoftwareImageDecodeCache::~SoftwareImageDecodeCache() {
   // It is safe to unregister, even if we didn't register in the constructor.
   base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
       this);
-  // TODO(vmpstr): If we don't have a client name, it may cause problems in
-  // unittests, since most tests don't set the name but some do. The UMA system
-  // expects the name to be always the same. This assertion is violated in the
-  // tests that do set the name.
-  if (GetClientNameForMetrics()) {
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
-        base::StringPrintf("Compositing.%s.CachedImagesCount.Software",
-                           GetClientNameForMetrics()),
-        lifetime_max_items_in_cache_, 1, 1000, 20);
-  }
 }
 
 ImageDecodeCache::TaskResult SoftwareImageDecodeCache::GetTaskForImageAndRef(
@@ -584,8 +574,6 @@ void SoftwareImageDecodeCache::DrawWithImageFinished(
 void SoftwareImageDecodeCache::ReduceCacheUsageUntilWithinLimit(size_t limit) {
   TRACE_EVENT0("cc",
                "SoftwareImageDecodeCache::ReduceCacheUsageUntilWithinLimit");
-  lifetime_max_items_in_cache_ =
-      std::max(lifetime_max_items_in_cache_, decoded_images_.size());
   for (auto it = decoded_images_.rbegin();
        decoded_images_.size() > limit && it != decoded_images_.rend();) {
     if (it->second->ref_count != 0) {

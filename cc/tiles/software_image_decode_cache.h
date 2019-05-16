@@ -156,9 +156,6 @@ class CC_EXPORT SoftwareImageDecodeCache
   const PaintImage::GeneratorClientId generator_client_id_;
 
   size_t max_items_in_cache_;
-  // Records the maximum number of items in the cache over the lifetime of the
-  // cache. This is updated anytime we are requested to reduce cache usage.
-  size_t lifetime_max_items_in_cache_ = 0u;
 };
 
 }  // namespace cc
