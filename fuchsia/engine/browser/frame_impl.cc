@@ -19,8 +19,8 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/was_activated_option.h"
 #include "fuchsia/base/mem_buffer_util.h"
+#include "fuchsia/base/message_port.h"
 #include "fuchsia/engine/browser/context_impl.h"
-#include "fuchsia/engine/browser/message_port_impl.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/logging/logging_utils.h"
@@ -393,7 +393,7 @@ void FrameImpl::PostMessage(std::string origin,
     for (fuchsia::web::OutgoingTransferable& outgoing :
          *message.mutable_outgoing_transfer()) {
       mojo::ScopedMessagePipeHandle port =
-          MessagePortImpl::FromFidl(std::move(outgoing.message_port()));
+          cr_fuchsia::MessagePortFromFidl(std::move(outgoing.message_port()));
       if (!port) {
         result.set_err(fuchsia::web::FrameError::INTERNAL_ERROR);
         callback(std::move(result));
