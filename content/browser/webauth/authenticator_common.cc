@@ -1304,7 +1304,7 @@ void AuthenticatorCommon::SignalFailureToRequestDelegate(
       break;
     case AuthenticatorRequestClientDelegate::InterestingFailureReason::
         kKeyNotRegistered:
-      status = blink::mojom::AuthenticatorStatus::CREDENTIAL_NOT_RECOGNIZED;
+      status = blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR;
       break;
     case AuthenticatorRequestClientDelegate::InterestingFailureReason::kTimeout:
       status = blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR;
