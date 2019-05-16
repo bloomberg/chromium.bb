@@ -226,6 +226,13 @@ void SmbService::CallMount(const file_system_provider::MountOptions& options,
     return;
   }
 
+  if (IsShareMounted(parsed_url)) {
+    // Prevent a share from being mounted twice. Although technically possible,
+    // the UX when doing so is incomplete.
+    std::move(callback).Run(SmbMountResult::MOUNT_EXISTS);
+    return;
+  }
+
   std::string username;
   std::string password;
   std::string workgroup;
@@ -573,6 +580,22 @@ bool SmbService::IsNetBiosDiscoveryEnabled() const {
 bool SmbService::IsNTLMAuthenticationEnabled() const {
   return profile_->GetPrefs()->GetBoolean(
       prefs::kNTLMShareAuthenticationEnabled);
+}
+
+bool SmbService::IsShareMounted(const SmbUrl& share) const {
+  std::vector<ProvidedFileSystemInfo> file_systems =
+      GetProviderService()->GetProvidedFileSystemInfoList(provider_id_);
+
+  for (const auto& info : file_systems) {
+    base::FilePath share_path =
+        GetSharePathFromFileSystemId(info.file_system_id());
+    SmbUrl parsed_url(share_path.value());
+    DCHECK(parsed_url.IsValid());
+    if (parsed_url.ToString() == share.ToString()) {
+      return true;
+    }
+  }
+  return false;
 }
 
 std::vector<SmbUrl> SmbService::GetPreconfiguredSharePaths(

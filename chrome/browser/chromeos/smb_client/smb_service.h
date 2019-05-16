@@ -198,6 +198,9 @@ class SmbService : public KeyedService,
   // Whether NTLM should be used. Controlled via policy.
   bool IsNTLMAuthenticationEnabled() const;
 
+  // Whether |share| is already mounted.
+  bool IsShareMounted(const SmbUrl& share) const;
+
   // Gets the list of all shares preconfigured via policy with mode
   // |policy_mode|. If |policy_mode| is "unknown", returns a list of all shares
   // preconfigured with a mode that does not match any currently known mode.
