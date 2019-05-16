@@ -234,9 +234,8 @@ NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::
         scoped_refptr<base::SequencedTaskRunner> ui_thread_task_runner)
     : task_runner_(task_runner), ui_thread_task_runner_(ui_thread_task_runner) {
   if (base::win::GetVersion() >= base::win::Version::WIN10) {
-    CHECK(SUCCEEDED(
-        ::CoCreateInstance(__uuidof(VirtualDesktopManager), nullptr, CLSCTX_ALL,
-                           IID_PPV_ARGS(&virtual_desktop_manager_))));
+    ::CoCreateInstance(__uuidof(VirtualDesktopManager), nullptr, CLSCTX_ALL,
+                       IID_PPV_ARGS(&virtual_desktop_manager_));
   }
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }

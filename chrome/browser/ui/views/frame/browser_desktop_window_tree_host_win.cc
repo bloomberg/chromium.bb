@@ -80,9 +80,13 @@ void BrowserDesktopWindowTreeHostWin::Init(
   if (base::win::GetVersion() < base::win::Version::WIN10)
     return;  // VirtualDesktopManager isn't support pre Win-10.
 
-  CHECK(SUCCEEDED(::CoCreateInstance(__uuidof(VirtualDesktopManager), nullptr,
-                                     CLSCTX_ALL,
-                                     IID_PPV_ARGS(&virtual_desktop_manager_))));
+  // Virtual Desktops on Windows are best-effort and may not always be
+  // available.
+  if (FAILED(::CoCreateInstance(__uuidof(VirtualDesktopManager), nullptr,
+                                CLSCTX_ALL,
+                                IID_PPV_ARGS(&virtual_desktop_manager_)))) {
+    return;
+  }
 
   if (!params.workspace.empty()) {
     GUID guid = GUID_NULL;
@@ -95,10 +99,6 @@ void BrowserDesktopWindowTreeHostWin::Init(
       virtual_desktop_manager_->MoveWindowToDesktop(GetHWND(), guid);
     }
   }
-  // This will force the window to re-open in this desktop on restart.
-  // We always want to do this even if |params.workspace| is empty, to handle
-  // the case of new windows.
-  OnHostWorkspaceChanged();
 }
 
 std::string BrowserDesktopWindowTreeHostWin::GetWorkspace() const {

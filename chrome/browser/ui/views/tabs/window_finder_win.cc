@@ -176,7 +176,7 @@ class LocalProcessWindowFinder : public BaseWindowFinder {
     RECT r;
 
     // Make sure the window is on the same virtual desktop.
-    if (base::win::GetVersion() >= base::win::Version::WIN10) {
+    if (virtual_desktop_manager_) {
       BOOL on_current_desktop;
       if (SUCCEEDED(virtual_desktop_manager_->IsWindowOnCurrentVirtualDesktop(
               hwnd, &on_current_desktop)) &&
@@ -199,9 +199,8 @@ class LocalProcessWindowFinder : public BaseWindowFinder {
       : BaseWindowFinder(ignore),
         result_(NULL) {
     if (base::win::GetVersion() >= base::win::Version::WIN10) {
-      CHECK(SUCCEEDED(::CoCreateInstance(
-          __uuidof(VirtualDesktopManager), nullptr, CLSCTX_ALL,
-          IID_PPV_ARGS(&virtual_desktop_manager_))));
+      ::CoCreateInstance(__uuidof(VirtualDesktopManager), nullptr, CLSCTX_ALL,
+                         IID_PPV_ARGS(&virtual_desktop_manager_));
     }
     screen_loc_ = display::win::ScreenWin::DIPToScreenPoint(screen_loc);
     EnumThreadWindows(GetCurrentThreadId(), WindowCallbackProc, as_lparam());
