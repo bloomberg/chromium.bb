@@ -7,7 +7,7 @@ import("//build/config/jumbo.gni")
 # Change this target's type to jumbo_component if it starts to contain more than
 # just headers. Header-only targets cannot be compiled to libraries, so it must
 # remain a source_set for now.
-source_set("type-safety") {
+source_set("type_safety") {
   sources = [
     "id_type.h",
   ]
@@ -20,7 +20,7 @@ source_set("tests") {
   ]
 
   deps = [
-    ":type-safety",
+    ":type_safety",
     "//testing/gtest",
   ]
 }

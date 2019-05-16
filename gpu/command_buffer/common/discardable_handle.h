@@ -6,7 +6,7 @@
 #define GPU_COMMAND_BUFFER_COMMON_DISCARDABLE_HANDLE_H_
 
 #include "base/memory/ref_counted.h"
-#include "base/util/type-safety/id_type.h"
+#include "base/util/type_safety/id_type.h"
 #include "gpu/gpu_export.h"
 
 namespace gpu {

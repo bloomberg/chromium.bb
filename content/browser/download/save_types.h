@@ -13,7 +13,7 @@
 #include <vector>
 
 #include "base/files/file_path.h"
-#include "base/util/type-safety/id_type.h"
+#include "base/util/type_safety/id_type.h"
 #include "url/gurl.h"
 
 namespace content {

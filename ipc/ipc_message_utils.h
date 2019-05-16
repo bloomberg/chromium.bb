@@ -35,7 +35,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/util/type-safety/id_type.h"
+#include "base/util/type_safety/id_type.h"
 #include "build/build_config.h"
 #include "ipc/ipc_message_start.h"
 #include "ipc/ipc_param_traits.h"

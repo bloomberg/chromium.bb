@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_ISOLATION_CONTEXT_H_
 
 #include "base/optional.h"
-#include "base/util/type-safety/id_type.h"
+#include "base/util/type_safety/id_type.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_or_resource_context.h"
 

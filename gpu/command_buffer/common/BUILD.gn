@@ -106,7 +106,7 @@ jumbo_source_set("common_sources") {
   configs += [ "//gpu:gpu_implementation" ]
 
   public_deps = [
-    "//base/util/type-safety",
+    "//base/util/type_safety",
     "//mojo/public/cpp/system",
     "//ui/gfx:memory_buffer",
     "//ui/gfx/geometry",
