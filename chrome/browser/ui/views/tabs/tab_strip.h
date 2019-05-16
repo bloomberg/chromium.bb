@@ -267,6 +267,7 @@ class TabStrip : public views::AccessiblePaneView,
   gfx::Rect GetTabAnimationTargetBounds(const Tab* tab) override;
   float GetHoverOpacityForTab(float range_parameter) const override;
   float GetHoverOpacityForRadialHighlight() const override;
+  const TabGroupData* GetDataForGroup(int group) const override;
 
   // MouseWatcherListener:
   void MouseMovedOutOfHost() override;

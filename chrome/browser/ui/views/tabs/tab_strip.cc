@@ -1199,10 +1199,9 @@ void TabStrip::SetTabData(int model_index, TabRendererData data) {
 void TabStrip::ChangeTabGroup(int model_index,
                               base::Optional<int> old_group,
                               base::Optional<int> new_group) {
+  tab_at(model_index)->SetGroup(new_group);
   if (new_group.has_value() && !group_headers_[new_group.value()]) {
-    const TabGroupData* group_data =
-        controller_->GetDataForGroup(new_group.value());
-    auto header = std::make_unique<TabGroupHeader>(group_data->title());
+    auto header = std::make_unique<TabGroupHeader>(this, new_group.value());
     header->set_owned_by_client();
     AddChildView(header.get());
     group_headers_[new_group.value()] = std::move(header);
@@ -1766,6 +1765,10 @@ float TabStrip::GetHoverOpacityForTab(float range_parameter) const {
 
 float TabStrip::GetHoverOpacityForRadialHighlight() const {
   return radial_highlight_opacity_;
+}
+
+const TabGroupData* TabStrip::GetDataForGroup(int group) const {
+  return controller_->GetDataForGroup(group);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

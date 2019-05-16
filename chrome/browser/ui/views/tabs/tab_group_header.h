@@ -8,8 +8,14 @@
 #include "base/strings/string16.h"
 #include "ui/views/view.h"
 
+class TabController;
+class TabGroupData;
+
 namespace gfx {
 class Canvas;
+}
+namespace views {
+class Label;
 }
 
 // View for tab group headers in the tab strip, which are tab-shaped markers of
@@ -17,12 +23,19 @@ class Canvas;
 // the tab strip flow and positioned left of the leftmost tab in the group.
 class TabGroupHeader : public views::View {
  public:
-  explicit TabGroupHeader(const base::string16& group_title);
+  TabGroupHeader(TabController* controller, int group);
 
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override;
 
  private:
+  const TabGroupData* GetGroupData();
+
+  TabController* const controller_;
+  const int group_;
+
+  views::Label* title_label_;
+
   DISALLOW_COPY_AND_ASSIGN(TabGroupHeader);
 };
 

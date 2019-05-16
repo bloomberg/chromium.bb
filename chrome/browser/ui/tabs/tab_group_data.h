@@ -18,11 +18,11 @@ class TabGroupData {
   ~TabGroupData() = default;
 
   base::string16 title() const { return title_; }
-  SkColor stroke_color() const { return stroke_color_; }
+  SkColor color() const { return color_; }
 
  private:
   base::string16 title_;
-  SkColor stroke_color_;
+  SkColor color_;
 
   DISALLOW_COPY_AND_ASSIGN(TabGroupData);
 };

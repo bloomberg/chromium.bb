@@ -15,5 +15,5 @@ TabGroupData::TabGroupData() {
   ++next_placeholder_title_number;
 
   static SkRandom rand;
-  stroke_color_ = rand.nextU() | 0xff000000;
+  color_ = rand.nextU() | 0xff000000;
 }

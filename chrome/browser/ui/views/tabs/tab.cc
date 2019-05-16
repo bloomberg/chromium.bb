@@ -620,6 +620,21 @@ void Tab::SetClosing(bool closing) {
   }
 }
 
+void Tab::SetGroup(base::Optional<int> group) {
+  if (group_ == group)
+    return;
+  group_ = group;
+  UpdateForegroundColors();
+  SchedulePaint();
+}
+
+base::Optional<SkColor> Tab::GetGroupColor() const {
+  return group_.has_value()
+             ? base::make_optional(
+                   controller_->GetDataForGroup(group_.value())->color())
+             : base::nullopt;
+}
+
 SkColor Tab::GetAlertIndicatorColor(TabAlertState state) const {
   // If theme provider is not yet available, return the default button
   // color.

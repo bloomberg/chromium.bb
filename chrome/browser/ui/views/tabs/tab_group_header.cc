@@ -10,7 +10,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/tabs/tab_group_data.h"
 #include "chrome/browser/ui/tabs/tab_style.h"
+#include "chrome/browser/ui/views/tabs/tab_controller.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/gfx/canvas.h"
@@ -22,7 +24,10 @@
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/flex_layout_types.h"
 
-TabGroupHeader::TabGroupHeader(const base::string16& group_title) {
+TabGroupHeader::TabGroupHeader(TabController* controller, int group)
+    : controller_(controller), group_(group) {
+  DCHECK(controller);
+
   // TODO(crbug.com/905491): Call TabStyle::GetContentsInsets.
   constexpr gfx::Insets kPlaceholderInsets = gfx::Insets(4, 27);
   SetBorder(views::CreateEmptyBorder(kPlaceholderInsets));
@@ -34,11 +39,11 @@ TabGroupHeader::TabGroupHeader(const base::string16& group_title) {
       .SetMainAxisAlignment(views::LayoutAlignment::kStart)
       .SetCrossAxisAlignment(views::LayoutAlignment::kCenter);
 
-  auto title = std::make_unique<views::Label>(group_title);
+  auto title = std::make_unique<views::Label>(GetGroupData()->title());
   title->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
   title->SetElideBehavior(gfx::FADE_TAIL);
-  auto* title_ptr = AddChildView(std::move(title));
-  layout->SetFlexForView(title_ptr,
+  title_label_ = AddChildView(std::move(title));
+  layout->SetFlexForView(title_label_,
                          views::FlexSpecification::ForSizeRule(
                              views::MinimumFlexSizeRule::kScaleToZero,
                              views::MaximumFlexSizeRule::kUnbounded));
@@ -50,8 +55,13 @@ TabGroupHeader::TabGroupHeader(const base::string16& group_title) {
 
 void TabGroupHeader::OnPaint(gfx::Canvas* canvas) {
   // TODO(crbug.com/905491): Call TabStyle::PaintTab.
-  constexpr SkColor kPlaceholderColor = SkColorSetRGB(0xAA, 0xBB, 0xCC);
   gfx::Rect fill_bounds(GetLocalBounds());
   fill_bounds.Inset(TabStyle::GetTabOverlap(), 0);
-  canvas->FillRect(fill_bounds, kPlaceholderColor);
+  const SkColor color = GetGroupData()->color();
+  canvas->FillRect(fill_bounds, color);
+  title_label_->SetBackgroundColor(color);
+}
+
+const TabGroupData* TabGroupHeader::GetGroupData() {
+  return controller_->GetDataForGroup(group_);
 }
