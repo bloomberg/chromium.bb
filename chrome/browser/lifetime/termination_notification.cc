@@ -17,7 +17,6 @@
 #include "chromeos/dbus/power/power_policy_controller.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/dbus/update_engine_client.h"
-#include "chromeos/login/session/session_termination_manager.h"
 #endif
 
 namespace browser_shutdown {
@@ -66,7 +65,7 @@ void NotifyAndTerminate(bool fast_path, RebootPolicy reboot_policy) {
     } else if (chrome::IsAttemptingShutdown()) {
       // Don't ask SessionManager to stop session if the shutdown request comes
       // from session manager.
-      chromeos::SessionTerminationManager::Get()->StopSession();
+      chromeos::SessionManagerClient::Get()->StopSession();
     }
   } else {
     if (chrome::IsAttemptingShutdown()) {
