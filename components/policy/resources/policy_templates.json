@@ -187,6 +187,17 @@
 #   values will be masked with '********' in the chrome://policy UI and policy
 #   exports. 'sensitiveValue' can be applied to all schema types.
 #
+#   For some policies which have complicated schema we add either
+#   'description_schema' which describes some but not necessarily all properties
+#   of the policy or 'url_schema' which contains the link to the expanded
+#   documentation.
+#   Note that 'description_schema' is used for documentation purposes only, but
+#   not for schema validation. It can be used in cases where validation is not
+#   desired, e.g. if the schema does not describe all properties (see
+#   ArcPolicy).
+#
+#   TODO(crbug.com/960274): Add translations of the schemas.
+#
 # IDs:
 #   Since a Protocol Buffer definition is generated from this file, unique and
 #   persistent IDs for all fields (but not for groups!) are needed. These are
@@ -3719,6 +3730,7 @@
           },
         },
       },
+      'url_schema': 'https://www.chromium.org/administrators/policy-list-3/extension-settings-full',
       'supported_on': ['chrome.*:62-', 'chrome_os:62-'],
       'features': {
         'dynamic_refresh': True,
@@ -3774,8 +3786,6 @@
           This policy maps an extension ID or an update URL to its configuration. With an extension ID, configuration will be applied to the specified extension only. A default configuration can be set for the special ID <ph name="DEFAULT_SCOPE">"*"</ph>, which will apply to all extensions that don't have a custom configuration set in this policy. With an update URL, configuration will be applied to all extensions with the exact update URL stated in manifest of this extension, as described at <ph name="LINK_TO_EXTENSION_DOC1">https://developer.chrome.com/extensions/autoupdate</ph>.
 
           For Windows instances that are not joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain, forced installation is limited to apps and extensions listed in the Chrome Web Store.
-
-          For a full description of possible settings and structure of this policy please visit https://www.chromium.org/administrators/policy-list-3/extension-settings-full
           ''',
     },
     {
@@ -6229,6 +6239,7 @@
       'name': 'OpenNetworkConfiguration',
       'type': 'string',
       'schema': { 'type': 'string' },
+      'url_schema': 'https://chromium.googlesource.com/chromium/src/+/master/components/onc/docs/onc_spec.md',
       'supported_on': ['chrome_os:16-'],
       'features': {
         'dynamic_refresh': True,
@@ -6238,13 +6249,14 @@
       'id': 107,
       'caption': '''User-level network configuration''',
       'tags': ['full-admin-access'],
-      'desc': '''Allows pushing network configuration to be applied per-user to a <ph name="PRODUCT_OS_NAME">$2<ex>Chromium OS</ex></ph> device. The network configuration is a JSON-formatted string as defined by the Open Network Configuration format described at <ph name="ONC_SPEC_URL">https://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/open-network-configuration</ph>''',
+      'desc': '''Allows pushing network configuration to be applied per-user to a <ph name="PRODUCT_OS_NAME">$2<ex>Chromium OS</ex></ph> device. The network configuration is a JSON-formatted string as defined by the Open Network Configuration format.''',
       'arc_support': 'Android apps can use the network configurations and CA certificates set via this policy, but do not have access to some configuration options.',
     },
     {
       'name': 'DeviceOpenNetworkConfiguration',
       'type': 'string',
       'schema': { 'type': 'string' },
+      'url_schema': 'https://chromium.googlesource.com/chromium/src/+/master/components/onc/docs/onc_spec.md',
       'supported_on': ['chrome_os:16-'],
       'device_only': True,
       'features': {
@@ -6254,7 +6266,7 @@
       'id': 108,
       'caption': '''Device-level network configuration''',
       'tags': ['full-admin-access'],
-      'desc': '''Allows pushing network configuration to be applied for all users of a <ph name="PRODUCT_OS_NAME">$2<ex>Chromium OS</ex></ph> device. The network configuration is a JSON-formatted string as defined by the Open Network Configuration format described at <ph name="ONC_SPEC_URL">https://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/open-network-configuration</ph>''',
+      'desc': '''Allows pushing network configuration to be applied for all users of a <ph name="PRODUCT_OS_NAME">$2<ex>Chromium OS</ex></ph> device. The network configuration is a JSON-formatted string as defined by the Open Network Configuration format.''',
       'arc_support': 'Android apps can use the network configurations and CA certificates set via this policy, but do not have access to some configuration options.',
     },
     {
@@ -6581,26 +6593,6 @@
       When this policy is set, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will attempt to find a printer matching all of the specified attributes, and select it as default printer. The first printer found matching the policy is selected, in case of non-unique match any matching printer can be selected, depending on the order printers are discovered.
 
       If this policy is not set or matching printer is not found within the timeout, the printer defaults to built-in PDF printer or no printer selected, when PDF printer is not available.
-
-      The value is parsed as JSON object, conforming to the following schema:
-      {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "description": "Whether to limit the search of the matching printer to a specific set of printers.",
-            "type": "string",
-            "enum": [ "local", "cloud" ]
-          },
-          "idPattern": {
-            "description": "Regular expression to match printer id.",
-            "type": "string"
-          },
-          "namePattern": {
-            "description": "Regular expression to match printer display name.",
-            "type": "string"
-          }
-        }
-      }
 
       Printers connected to <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> are considered <ph name="PRINTER_TYPE_CLOUD">"cloud"</ph>, the rest of the printers are classified as <ph name="PRINTER_TYPE_LOCAL">"local"</ph>.
       Omitting a field means all values match, for example, not specifying connectivity will cause Print Preview to initiate the discovery of all kinds of printers, local and cloud.
@@ -9986,8 +9978,14 @@
       'schema': {
         'type': 'object',
         'properties': {
-          'url': { "type": "string" },
-          'hash': { "type": "string" }
+          'url': {
+            'description': 'The URL from which the avatar image can be downloaded.',
+            'type': 'string'
+          },
+          'hash': {
+            'description': 'The SHA-256 hash of the avatar image.',
+            'type': 'string'
+          }
         },
       },
       'supported_on': ['chrome_os:34-'],
@@ -10004,21 +10002,6 @@
 
       The avatar image is downloaded and cached. It will be re-downloaded whenever the URL or the hash changes.
 
-      The policy should be specified as a string that expresses the URL and hash in JSON format, conforming to the following schema:
-      {
-        "type": "object",
-        "properties": {
-          "url": {
-            "description": "The URL from which the avatar image can be downloaded.",
-            "type": "string"
-          },
-          "hash": {
-            "description": "The SHA-256 hash of the avatar image.",
-            "type": "string"
-          }
-        }
-      }
-
       If this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will download and use the avatar image.
 
       If you set this policy, users cannot change or override it.
@@ -10031,8 +10014,14 @@
       'schema': {
         'type': 'object',
         'properties': {
-          'url': { "type": "string" },
-          'hash': { "type": "string" }
+          'url': {
+            'description': 'The URL from which the wallpaper image can be downloaded.',
+            'type': 'string'
+          },
+          'hash': {
+            'description': 'The SHA-256 hash of the wallpaper image.',
+            'type': 'string'
+          }
         },
       },
       'supported_on': ['chrome_os:35-'],
@@ -10048,21 +10037,6 @@
       'desc': '''This policy allows you to configure the wallpaper image that is shown on the desktop and on the login screen background for the user. The policy is set by specifying the URL from which <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> can download the wallpaper image and a cryptographic hash used to verify the integrity of the download. The image must be in JPEG format, its file size must not exceed 16MB. The URL must be accessible without any authentication.
 
       The wallpaper image is downloaded and cached. It will be re-downloaded whenever the URL or the hash changes.
-
-      The policy should be specified as a string that expresses the URL and hash in JSON format, conforming to the following schema:
-      {
-        "type": "object",
-        "properties": {
-          "url": {
-            "description": "The URL from which the wallpaper image can be downloaded.",
-            "type": "string"
-          },
-          "hash": {
-            "description": "The SHA-256 hash of the wallpaper image.",
-            "type": "string"
-          }
-        }
-      }
 
       If this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will download and use the wallpaper image.
 
@@ -10853,21 +10827,7 @@
       'name': 'ArcPolicy',
       'type': 'string',
       'schema': { 'type': 'string' },
-      'supported_on': ['chrome_os:50-'],
-      'features': {
-        'dynamic_refresh': True,
-        'per_profile': False,
-      },
-      'example_value': '{"applications":[{"packageName":"com.google.android.gm","installType":"FORCE_INSTALLED"},{"packageName":"com.google.android.apps.docs","installType":"PRELOAD"}]}',
-      'id': 318,
-      'caption': '''Configure ARC''',
-      'tags': [],
-      'desc':
-      '''Specifies a set of policies that will be handed over to the ARC runtime. The value must be valid JSON.
-
-      This policy can be used to configure which Android apps are automatically installed on the device:
-
-      {
+      'description_schema': {
         "type": "object",
         "properties": {
           "applications": {
@@ -10907,7 +10867,20 @@
             }
           }
         }
-      }
+      },
+      'supported_on': ['chrome_os:50-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': '{"applications":[{"packageName":"com.google.android.gm","installType":"FORCE_INSTALLED","defaultPermissionPolicy":"PROMPT","managedConfiguration":{}},{"packageName":"com.google.android.apps.docs","installType":"PRELOAD","defaultPermissionPolicy":"PROMPT","managedConfiguration":{}}]}',
+      'id': 318,
+      'caption': '''Configure ARC''',
+      'tags': [],
+      'desc':
+      '''Specifies a set of policies that will be handed over to the ARC runtime. The value must be valid JSON.
+
+      This policy can be used to configure which Android apps are automatically installed on the device.
 
       To pin apps to the launcher, see PinnedLauncherApps.'''
     },
@@ -12133,8 +12106,14 @@
       'schema': {
         'type': 'object',
         'properties': {
-          'url': { "type": "string" },
-          'hash': { "type": "string" }
+          'url': {
+            'description': 'The URL from which the wallpaper image can be downloaded.',
+            'type': 'string'
+          },
+          'hash': {
+            'description': 'The SHA-256 hash of the wallpaper image.',
+            'type': 'string'
+          }
         },
       },
       'supported_on': ['chrome_os:61-'],
@@ -12142,18 +12121,12 @@
       'features': {
         'dynamic_refresh': True,
       },
-      'example_value': { "url": "https://example.com/device_wallpaper.jpg", "hash": "examplewallpaperexamplewallpaperexamplewallpaperexamplewallpaper" },
+      'example_value': { "url": "https://example.com/device_wallpaper.jpg", "hash": "1337c0ded00d84b1dbadf00dd15ea5eb000deaddeaddeaddeaddeaddeaddead0" },
       'max_size': 16777216,
       'id': 357,
       'caption': '''Device wallpaper image''',
       'tags': [],
       'desc': '''Configure device-level wallpaper image that is shown on the login screen if no user has yet signed in to the device. The policy is set by specifying the URL from which the Chrome OS device can download the wallpaper image and a cryptographic hash used to verify the integrity of the download. The image must be in JPEG format, its file size must not exceed 16MB. The URL must be accessible without any authentication. The wallpaper image is downloaded and cached. It will be re-downloaded whenever the URL or the hash changes.
-
-      The policy should be speicified as a string that expresses the URL and hash in JSON format, e.g.,
-      {
-        "url": "https://example.com/device_wallpaper.jpg",
-        "hash": "examplewallpaperhash"
-      }
 
       If the device wallpaper policy is set, the Chrome OS device will download and use the wallpaper image on the login screen if no user has yet signed in to the device. Once the user logs in, the user's wallpaper policy kicks in.
 
@@ -16115,6 +16088,14 @@
       'desc': '''Caption text of the field in the generated documentation that describes how a policy affects Android applications on Chrome OS''',
       'text': '''Note for <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> devices supporting Android apps:'''
     },
+    'doc_schema': {
+      'desc': '''Caption text of the 'schema' in the summary chart of a policy in the generated documentation''',
+      'text': '''Schema:'''
+    },
+    'doc_url_schema': {
+      'desc': '''Caption text of the field with the link to expanded schema description in the summary chart of a policy in the generated documentation''',
+      'text': '''Expanded schema description:'''
+    },
     'doc_example_value': {
       'desc': '''Caption text of the field 'example value' in the summary chart of a policy in the generated documentation''',
       'text': '''Example value:'''
@@ -16204,6 +16185,10 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'doc_range_maximum': {
       'desc': '''Caption text of the field 'maximum' in the summary chart of a policy in the generated documentation. Present only if policy has a maximum range restriction.''',
       'text': '''Maximum:'''
+    },
+    'doc_schema_description_link': {
+      'desc': '''Text pointing the user to the expanded documentation page for this policy, containing the information about schema and formatting.''',
+      'text': '''See <ph name="REFERENCE_URL">$6<ex>https://www.chromium.org/administrators/policy-list-3#WallpaperImage</ex></ph> for more information about schema and formatting.'''
     },
     'deprecated_policy_group_caption': {
       'desc': '''Localized name for the deprecated policies folder, for Microsoft's Group Policy Editor.''',

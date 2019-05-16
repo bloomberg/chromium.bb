@@ -196,6 +196,40 @@ class TemplateWriterUnittests(unittest.TestCase):
     self.assertTrue(self._IsPolicySupported('*', 11, policy))
     self.assertFalse(self._IsPolicySupported('*', 10, policy))
 
+  def testHasExpandedPolicyDescriptionForUrlSchema(self):
+    policy = {'url_schema': 'https://example.com/details', 'type': 'list'}
+    tw = template_writer.TemplateWriter(None, None)
+    self.assertTrue(tw.HasExpandedPolicyDescription(policy))
+
+  def testHasExpandedPolicyDescriptionForJSONPolicies(self):
+    policy = {'name': 'PolicyName', 'type': 'dict'}
+    tw = template_writer.TemplateWriter(None, None)
+    self.assertTrue(tw.HasExpandedPolicyDescription(policy))
+
+  def testGetExpandedPolicyDescriptionForUrlSchema(self):
+    policy = {'type': 'integer', 'url_schema': 'https://example.com/details'}
+    tw = template_writer.TemplateWriter(None, None)
+    tw.messages = {
+        'doc_schema_description_link': {
+            'text': '''See $6'''
+        },
+    }
+    expanded_description = tw.GetExpandedPolicyDescription(policy)
+    self.assertEqual(expanded_description, 'See https://example.com/details')
+
+  def testGetExpandedPolicyDescriptionForJSONPolicies(self):
+    policy = {'name': 'PolicyName', 'type': 'dict'}
+    tw = template_writer.TemplateWriter(None, None)
+    tw.messages = {
+        'doc_schema_description_link': {
+            'text': '''See $6'''
+        },
+    }
+    expanded_description = tw.GetExpandedPolicyDescription(policy)
+    self.assertEqual(
+        expanded_description,
+        'See https://www.chromium.org/administrators/policy-list-3#PolicyName')
+
 
 if __name__ == '__main__':
   unittest.main()

@@ -332,7 +332,8 @@ class PolicyTemplateChecker(object):
       if key not in ('name', 'type', 'caption', 'desc', 'device_only',
                      'supported_on', 'label', 'policies', 'items',
                      'example_value', 'features', 'deprecated', 'future', 'id',
-                     'schema', 'validation_schema', 'max_size', 'tags',
+                     'schema', 'validation_schema', 'description_schema',
+                     'url_schema', 'max_size', 'tags',
                      'default_for_enterprise_users',
                      'default_for_managed_devices_doc_only', 'arc_support',
                      'supported_chrome_os_management'):
@@ -533,8 +534,13 @@ class PolicyTemplateChecker(object):
           self._Error(('Example for policy %s does not comply to the policy\'s '
                        'schema or does not use all properties at least once.') %
                       policy.get('name'))
-        if policy.has_key('validation_schema'):
-          validation_schema = policy['validation_schema']
+        if policy.has_key('validation_schema') and policy.has_key(
+            'description_schema'):
+          self._Error(('validation_schema and description_schema both defined '
+                       'for policy %s.') % policy.get('name'))
+        secondary_schema = policy.get('validation_schema',
+                                      policy.get('description_schema'))
+        if secondary_schema:
           real_example = {}
           if policy_type == 'string':
             real_example = json.loads(example)
@@ -543,7 +549,7 @@ class PolicyTemplateChecker(object):
           else:
             self._Error('Unsupported type for legacy embedded json policy.')
           if not self.schema_validator.ValidateValue(
-              validation_schema, real_example, enforce_use_entire_schema=True):
+              secondary_schema, real_example, enforce_use_entire_schema=True):
             self._Error(('Example for policy %s does not comply to the ' +
                          'policy\'s validation_schema') % policy.get('name'))
 

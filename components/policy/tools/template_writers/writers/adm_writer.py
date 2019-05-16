@@ -180,7 +180,7 @@ class AdmWriter(gpo_editor_writer.GpoEditorWriter):
     '''
     policy_desc = policy.get('desc')
     reference_url = POLICY_LIST_URL + '#' + policy['name']
-    reference_link_text = self._GetLocalizedMessage('reference_link')
+    reference_link_text = self.GetLocalizedMessage('reference_link')
     reference_link_text = reference_link_text.replace('$6', reference_url)
 
     if policy_desc is not None:
@@ -190,10 +190,6 @@ class AdmWriter(gpo_editor_writer.GpoEditorWriter):
       return policy_desc
     else:
       return reference_link_text
-
-  def _GetLocalizedMessage(self, msg_id):
-    '''Returns the localized message of the given message ID.'''
-    return self.messages['doc_' + msg_id]['text']
 
   def WriteComment(self, comment):
     self.lines.AddLine('; ' + comment)

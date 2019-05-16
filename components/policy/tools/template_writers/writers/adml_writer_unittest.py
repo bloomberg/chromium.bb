@@ -59,6 +59,9 @@ class AdmlWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
         'doc_legacy_single_line_label': {
             'text': '$6 (deprecated)',
         },
+        'doc_schema_description_link': {
+            'text': '''See $6'''
+        },
     }
     self.writer.Init()
 
@@ -417,7 +420,9 @@ class AdmlWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
     expected_output = (
         '<string id="DictionaryPolicyStub">Dictionary policy caption</string>\n'
         '<string id="DictionaryPolicyStub_Explain">'
-        'This is a test description.</string>')
+        'This is a test description.\n'
+        'See https://www.chromium.org/administrators/policy-list-3#'
+        'DictionaryPolicyStub\n</string>')
     self.AssertXMLEquals(output, expected_output)
     # Assert generated presentation elements.
     output = self.GetXMLOfChildren(self.writer._presentation_table_elem)
