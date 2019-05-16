@@ -47,9 +47,9 @@ id<GREYAction> ScrollDown() {
 }
 }  // namespace
 
-@implementation ChromeEarlGreyUI
+@implementation ChromeEarlGreyUIImpl
 
-+ (void)openToolsMenu {
+- (void)openToolsMenu {
   // TODO(crbug.com/639524): Add logic to ensure the app is in the correct
   // state, for example DCHECK if no tabs are displayed.
   [[[EarlGrey
@@ -63,12 +63,12 @@ id<GREYAction> ScrollDown() {
   // to always find it.
 }
 
-+ (void)openSettingsMenu {
+- (void)openSettingsMenu {
   [ChromeEarlGreyUI openToolsMenu];
   [ChromeEarlGreyUI tapToolsMenuButton:SettingsMenuButton()];
 }
 
-+ (void)tapToolsMenuButton:(id<GREYMatcher>)buttonMatcher {
+- (void)tapToolsMenuButton:(id<GREYMatcher>)buttonMatcher {
   id<GREYMatcher> interactableSettingsButton =
       grey_allOf(buttonMatcher, grey_interactable(), nil);
   [[[EarlGrey selectElementWithMatcher:interactableSettingsButton]
@@ -76,7 +76,7 @@ id<GREYAction> ScrollDown() {
       onElementWithMatcher:ToolsMenuView()] performAction:grey_tap()];
 }
 
-+ (void)tapSettingsMenuButton:(id<GREYMatcher>)buttonMatcher {
+- (void)tapSettingsMenuButton:(id<GREYMatcher>)buttonMatcher {
   id<GREYMatcher> interactableButtonMatcher =
       grey_allOf(buttonMatcher, grey_interactable(), nil);
   [[[EarlGrey selectElementWithMatcher:interactableButtonMatcher]
@@ -85,7 +85,7 @@ id<GREYAction> ScrollDown() {
       performAction:grey_tap()];
 }
 
-+ (void)tapClearBrowsingDataMenuButton:(id<GREYMatcher>)buttonMatcher {
+- (void)tapClearBrowsingDataMenuButton:(id<GREYMatcher>)buttonMatcher {
   id<GREYMatcher> interactableButtonMatcher =
       grey_allOf(buttonMatcher, grey_interactable(), nil);
   [[[EarlGrey selectElementWithMatcher:interactableButtonMatcher]
@@ -93,7 +93,7 @@ id<GREYAction> ScrollDown() {
       onElementWithMatcher:ClearBrowsingDataView()] performAction:grey_tap()];
 }
 
-+ (void)openAndClearBrowsingDataFromHistory {
+- (void)openAndClearBrowsingDataFromHistory {
   // Open Clear Browsing Data Button
   [[EarlGrey
       selectElementWithMatcher:
@@ -126,7 +126,7 @@ id<GREYAction> ScrollDown() {
       performAction:grey_tap()];
 }
 
-+ (void)assertHistoryHasNoEntries {
+- (void)assertHistoryHasNoEntries {
   id<GREYMatcher> noHistoryMessageMatcher =
       grey_allOf(grey_text(l10n_util::GetNSString(IDS_HISTORY_NO_RESULTS)),
                  grey_sufficientlyVisible(), nil);
@@ -140,7 +140,7 @@ id<GREYAction> ScrollDown() {
       assertWithMatcher:grey_nil()];
 }
 
-+ (void)tapPrivacyMenuButton:(id<GREYMatcher>)buttonMatcher {
+- (void)tapPrivacyMenuButton:(id<GREYMatcher>)buttonMatcher {
   id<GREYMatcher> interactableButtonMatcher =
       grey_allOf(buttonMatcher, grey_interactable(), nil);
   [[[EarlGrey selectElementWithMatcher:interactableButtonMatcher]
@@ -149,30 +149,29 @@ id<GREYAction> ScrollDown() {
       performAction:grey_tap()];
 }
 
-+ (void)tapAccountsMenuButton:(id<GREYMatcher>)buttonMatcher {
+- (void)tapAccountsMenuButton:(id<GREYMatcher>)buttonMatcher {
   [[[EarlGrey selectElementWithMatcher:buttonMatcher]
          usingSearchAction:ScrollDown()
       onElementWithMatcher:grey_accessibilityID(kSettingsAccountsTableViewId)]
       performAction:grey_tap()];
 }
 
-+ (void)focusOmniboxAndType:(NSString*)text {
-    [[EarlGrey
-        selectElementWithMatcher:chrome_test_util::DefocusedLocationView()]
-        performAction:grey_tap()];
+- (void)focusOmniboxAndType:(NSString*)text {
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::DefocusedLocationView()]
+      performAction:grey_tap()];
 
-    if (text.length) {
-      [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
-          performAction:grey_typeText(text)];
-    }
+  if (text.length) {
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
+        performAction:grey_typeText(text)];
+  }
 }
 
-+ (void)focusOmnibox {
+- (void)focusOmnibox {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::DefocusedLocationView()]
       performAction:grey_tap()];
 }
 
-+ (void)openNewTab {
+- (void)openNewTab {
   [ChromeEarlGreyUI openToolsMenu];
   id<GREYMatcher> newTabButtonMatcher =
       grey_accessibilityID(kToolsMenuNewTabId);
@@ -181,7 +180,7 @@ id<GREYAction> ScrollDown() {
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 }
 
-+ (void)openNewIncognitoTab {
+- (void)openNewIncognitoTab {
   [ChromeEarlGreyUI openToolsMenu];
   id<GREYMatcher> newIncognitoTabMatcher =
       grey_accessibilityID(kToolsMenuNewIncognitoTabId);
@@ -190,7 +189,7 @@ id<GREYAction> ScrollDown() {
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 }
 
-+ (void)reload {
+- (void)reload {
   // On iPhone Reload button is a part of tools menu, so open it.
   if (IsCompactWidth()) {
     [self openToolsMenu];
@@ -199,12 +198,12 @@ id<GREYAction> ScrollDown() {
       performAction:grey_tap()];
 }
 
-+ (void)openShareMenu {
+- (void)openShareMenu {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::ShareButton()]
       performAction:grey_tap()];
 }
 
-+ (NSError*)waitForToolbarVisible:(BOOL)isVisible {
+- (void)waitForToolbarVisible:(BOOL)isVisible {
   const NSTimeInterval kWaitForToolbarAnimationTimeout = 1.0;
   ConditionBlock condition = ^{
     NSError* error = nil;
@@ -217,12 +216,9 @@ id<GREYAction> ScrollDown() {
   NSString* errorMessage =
       isVisible ? @"Toolbar was not visible" : @"Toolbar was visible";
 
-  if (!base::test::ios::WaitUntilConditionOrTimeout(
-          kWaitForToolbarAnimationTimeout, condition)) {
-    return testing::NSErrorWithLocalizedDescription(errorMessage);
-  }
-
-  return nil;
+  bool toolbarVisibility = base::test::ios::WaitUntilConditionOrTimeout(
+      kWaitForToolbarAnimationTimeout, condition);
+  EG_TEST_HELPER_ASSERT_TRUE(toolbarVisibility, errorMessage);
 }
 
 @end

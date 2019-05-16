@@ -198,7 +198,7 @@ class InfinitePendingResponseProvider : public HtmlResponseProvider {
   [[EarlGrey selectElementWithMatcher:ProgressViewWithProgress(0.5)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGreyUI waitForToolbarVisible:YES]);
+  [ChromeEarlGreyUI waitForToolbarVisible:YES];
   infinitePendingProvider->Abort();
 }
 
@@ -240,7 +240,7 @@ class InfinitePendingResponseProvider : public HtmlResponseProvider {
   [[EarlGrey selectElementWithMatcher:ProgressViewWithProgress(0.5)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGreyUI waitForToolbarVisible:YES]);
+  [ChromeEarlGreyUI waitForToolbarVisible:YES];
   infinitePendingProvider->Abort();
 }
 
