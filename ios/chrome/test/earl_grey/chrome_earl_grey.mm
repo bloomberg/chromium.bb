@@ -131,17 +131,13 @@ id ExecuteJavaScript(NSString* javascript,
 
 - (NSError*)loadURL:(const GURL&)URL {
   chrome_test_util::LoadUrl(URL);
-  NSError* loadingError = [ChromeEarlGrey waitForPageToFinishLoading];
-  if (loadingError) {
-    return loadingError;
-  }
+  bool pageLoaded = chrome_test_util::WaitForPageToFinishLoading();
+  EG_TEST_HELPER_ASSERT_TRUE(pageLoaded, @"Page did not complete loading");
 
   web::WebState* webState = chrome_test_util::GetCurrentWebState();
   if (webState->ContentIsHTML()) {
-    if (!web::WaitUntilWindowIdInjected(webState)) {
-      return testing::NSErrorWithLocalizedDescription(
-          @"WindowID failed to inject");
-    }
+    bool windowIDInjected = web::WaitUntilWindowIdInjected(webState);
+    EG_TEST_HELPER_ASSERT_TRUE(windowIDInjected, @"WindowID failed to inject");
   }
 
   return nil;

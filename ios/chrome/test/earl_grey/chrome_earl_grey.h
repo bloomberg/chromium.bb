@@ -61,7 +61,9 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // Loads |URL| in the current WebState with transition type
 // ui::PAGE_TRANSITION_TYPED, and waits for the loading to complete within a
 // timeout, or a GREYAssert is induced.
-- (NSError*)loadURL:(const GURL&)URL WARN_UNUSED_RESULT;
+// TODO(crbug.com/963613): Change return type to avoid when
+// CHROME_EG_ASSERT_NO_ERROR is removed.
+- (NSError*)loadURL:(const GURL&)URL;
 
 // Reloads the page and waits for the loading to complete within a timeout, or a
 // GREYAssert is induced.
