@@ -927,6 +927,18 @@ label[pseudo="-internal-media-controls-overflow-menu-list-item"] div span {
   text-overflow: ellipsis;
 }
 
+label[pseudo="-internal-media-controls-text-track-list-item"] span {
+  line-height: normal;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  /*
+   * We need to make sure the blue tick has enough space to render. The blue tick needs at least 18px
+   * so the max width the span can go is 200(text-track-list) - 58(left-padding of list-item)
+   * - 16(right-padding of list-item) -30(left and right margin of the checkbox) - 18(blue tick) = 78px
+   */
+  max-width: 78px;
+}
+
 label[pseudo="-internal-media-controls-overflow-menu-list-item"] div span.subtitle {
   color: rgba(0,0,0,0.54);
 }
