@@ -21,6 +21,7 @@
 
 namespace base {
 class TimeDelta;
+struct Feature;
 }
 
 // The set of parameters customizing the HUP scoring.
@@ -506,9 +507,21 @@ namespace internal {
 // context, returns the empty string.  For more details, including how we
 // prioritize different wildcard contexts, see the implementation.  How to
 // interpret the value is left to the caller; this is rule-dependent.
+//
+// Deprecated. Use GetValueForRuleInContextByFeature instead.
 std::string GetValueForRuleInContext(
     const std::string& rule,
     metrics::OmniboxEventProto::PageClassification page_classification);
+
+// Same as GetValueForRuleInContext, but by |feature| instead of the bundled
+// omnibox experiment.  Prefer to use this method over GetValueForRuleInContext
+// when possible, as it can be useful to configure parameters outside of the
+// omnibox bundled experiment.
+std::string GetValueForRuleInContextByFeature(
+    const base::Feature& feature,
+    const std::string& rule,
+    metrics::OmniboxEventProto::PageClassification page_classification);
+
 }  // namespace internal
 
 }  // namespace OmniboxFieldTrial
