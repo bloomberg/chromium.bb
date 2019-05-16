@@ -8,7 +8,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/task_runner.h"
 #include "base/threading/thread.h"
-#include "gpu/ipc/service/image_transport_surface_delegate.h"
 
 #include <windows.h>
 
@@ -19,8 +18,7 @@ namespace gpu {
 // which is reparented by the browser to be a child of its window.
 class ChildWindowWin {
  public:
-  ChildWindowWin(base::WeakPtr<ImageTransportSurfaceDelegate> delegate,
-                 HWND parent_window);
+  explicit ChildWindowWin(HWND parent_window);
   ~ChildWindowWin();
 
   bool Initialize();
@@ -32,12 +30,11 @@ class ChildWindowWin {
   // The window owner thread.
   std::unique_ptr<base::Thread> thread_;
   // The eventual parent of the window living in the browser process.
-  HWND parent_window_;
-  HWND window_;
+  const HWND parent_window_;
+  HWND window_ = nullptr;
   // The window is initially created with this parent window. We need to keep it
   // around so that we can destroy it at the end.
-  HWND initial_parent_window_;
-  base::WeakPtr<ImageTransportSurfaceDelegate> delegate_;
+  HWND initial_parent_window_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ChildWindowWin);
 };

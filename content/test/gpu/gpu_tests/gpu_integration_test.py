@@ -249,8 +249,8 @@ class GpuIntegrationTest(
     config = {
       'direct_composition': False,
       'supports_overlays': False,
-      'overlay_cap_yuy2': 'NONE',
-      'overlay_cap_nv12': 'NONE',
+      'yuy2_overlay_support': 'NONE',
+      'nv12_overlay_support': 'NONE',
     }
     assert os_version in _SUPPORTED_WIN_VERSIONS
     assert gpu_vendor_id in _SUPPORTED_WIN_GPU_VENDORS
@@ -260,9 +260,9 @@ class GpuIntegrationTest(
         config['supports_overlays'] = True
         assert gpu_device_id in _SUPPORTED_WIN_INTEL_GPUS
         if gpu_device_id in _SUPPORTED_WIN_INTEL_GPUS_WITH_YUY2_OVERLAYS:
-          config['overlay_cap_yuy2'] = 'SCALING'
+          config['yuy2_overlay_support'] = 'SCALING'
         if gpu_device_id in _SUPPORTED_WIN_INTEL_GPUS_WITH_NV12_OVERLAYS:
-          config['overlay_cap_nv12'] = 'SCALING'
+          config['nv12_overlay_support'] = 'SCALING'
     return config
 
   @classmethod

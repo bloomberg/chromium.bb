@@ -13,9 +13,6 @@
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/scoped_hdc.h"
 #include "base/win/scoped_select_object.h"
-#include "gpu/command_buffer/common/swap_buffers_complete_params.h"
-#include "gpu/command_buffer/service/feature_info.h"
-#include "gpu/config/gpu_preferences.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/win/hidden_window.h"
 #include "ui/gfx/buffer_format_util.h"
@@ -42,41 +39,6 @@ bool CheckIfDCSupported() {
   }
   return true;
 }
-
-class TestImageTransportSurfaceDelegate
-    : public ImageTransportSurfaceDelegate,
-      public base::SupportsWeakPtr<TestImageTransportSurfaceDelegate> {
- public:
-  TestImageTransportSurfaceDelegate()
-      : feature_info_(new gpu::gles2::FeatureInfo()) {}
-
-  ~TestImageTransportSurfaceDelegate() override {}
-
-  // ImageTransportSurfaceDelegate implementation.
-  void DidCreateAcceleratedSurfaceChildWindow(
-      SurfaceHandle parent_window,
-      SurfaceHandle child_window) override {
-    if (parent_window)
-      ::SetParent(child_window, parent_window);
-  }
-  void DidSwapBuffersComplete(SwapBuffersCompleteParams params) override {}
-  const gles2::FeatureInfo* GetFeatureInfo() const override {
-    return feature_info_.get();
-  }
-  const GpuPreferences& GetGpuPreferences() const override {
-    return gpu_preferences_;
-  }
-  void BufferPresented(const gfx::PresentationFeedback& feedback) override {}
-  void AddFilter(IPC::MessageFilter* message_filter) override {}
-  int32_t GetRouteID() const override { return 0; }
-  viz::GpuVSyncCallback GetGpuVSyncCallback() override {
-    return viz::GpuVSyncCallback();
-  }
-
- private:
-  scoped_refptr<gpu::gles2::FeatureInfo> feature_info_;
-  GpuPreferences gpu_preferences_;
-};
 
 class TestPlatformDelegate : public ui::PlatformWindowDelegate {
  public:
@@ -148,56 +110,89 @@ Microsoft::WRL::ComPtr<ID3D11Texture2D> CreateNV12Texture(
   return texture;
 }
 
-TEST(DirectCompositionSurfaceTest, TestMakeCurrent) {
+class DirectCompositionSurfaceTest : public testing::Test {
+ public:
+  DirectCompositionSurfaceTest() : parent_window_(ui::GetHiddenWindow()) {}
+
+  ~DirectCompositionSurfaceTest() override {
+    context_ = nullptr;
+    if (surface_)
+      DestroySurface(std::move(surface_));
+  }
+
+ protected:
+  scoped_refptr<DirectCompositionSurfaceWin>
+  CreateDirectCompositionSurfaceWin() {
+    DirectCompositionSurfaceWin::Settings settings;
+    scoped_refptr<DirectCompositionSurfaceWin> surface =
+        base::MakeRefCounted<DirectCompositionSurfaceWin>(
+            /*vsync_provider=*/nullptr,
+            DirectCompositionSurfaceWin::VSyncCallback(), parent_window_,
+            settings);
+    EXPECT_TRUE(surface->Initialize(gl::GLSurfaceFormat()));
+
+    // ImageTransportSurfaceDelegate::DidCreateAcceleratedSurfaceChildWindow()
+    // is called in production code here. However, to remove dependency from
+    // gpu/ipc/service/image_transport_surface_delegate.h, here we directly
+    // executes the required minimum code.
+    if (parent_window_)
+      ::SetParent(surface->window(), parent_window_);
+
+    return surface;
+  }
+
+  scoped_refptr<gl::GLContext> CreateGLContext(
+      scoped_refptr<DirectCompositionSurfaceWin> surface) {
+    scoped_refptr<gl::GLContext> context = gl::init::CreateGLContext(
+        nullptr, surface.get(), gl::GLContextAttribs());
+    EXPECT_TRUE(context->MakeCurrent(surface.get()));
+    return context;
+  }
+
+  virtual void InitializeSurface() {
+    surface_ = CreateDirectCompositionSurfaceWin();
+    context_ = CreateGLContext(surface_);
+  }
+
+  HWND parent_window_;
+  scoped_refptr<DirectCompositionSurfaceWin> surface_;
+  scoped_refptr<gl::GLContext> context_;
+};
+
+TEST_F(DirectCompositionSurfaceTest, TestMakeCurrent) {
   if (!CheckIfDCSupported())
     return;
-
-  TestImageTransportSurfaceDelegate delegate;
-
-  scoped_refptr<DirectCompositionSurfaceWin> surface1(
-      new DirectCompositionSurfaceWin(nullptr, delegate.AsWeakPtr(),
-                                      ui::GetHiddenWindow()));
-  EXPECT_TRUE(surface1->Initialize(gl::GLSurfaceFormat()));
-
-  scoped_refptr<gl::GLContext> context1 = gl::init::CreateGLContext(
-      nullptr, surface1.get(), gl::GLContextAttribs());
-  EXPECT_TRUE(context1->MakeCurrent(surface1.get()));
-
-  surface1->SetEnableDCLayers(true);
-  EXPECT_TRUE(surface1->Resize(gfx::Size(100, 100), 1.0,
+  InitializeSurface();
+  surface_->SetEnableDCLayers(true);
+  EXPECT_TRUE(surface_->Resize(gfx::Size(100, 100), 1.0,
                                gl::GLSurface::ColorSpace::UNSPECIFIED, true));
 
   // First SetDrawRectangle must be full size of surface.
-  EXPECT_FALSE(surface1->SetDrawRectangle(gfx::Rect(0, 0, 50, 50)));
-  EXPECT_TRUE(surface1->SetDrawRectangle(gfx::Rect(0, 0, 100, 100)));
+  EXPECT_FALSE(surface_->SetDrawRectangle(gfx::Rect(0, 0, 50, 50)));
+  EXPECT_TRUE(surface_->SetDrawRectangle(gfx::Rect(0, 0, 100, 100)));
 
   // SetDrawRectangle can't be called again until swap.
-  EXPECT_FALSE(surface1->SetDrawRectangle(gfx::Rect(0, 0, 100, 100)));
+  EXPECT_FALSE(surface_->SetDrawRectangle(gfx::Rect(0, 0, 100, 100)));
 
   EXPECT_EQ(gfx::SwapResult::SWAP_ACK,
-            surface1->SwapBuffers(base::DoNothing()));
+            surface_->SwapBuffers(base::DoNothing()));
 
-  EXPECT_TRUE(context1->IsCurrent(surface1.get()));
+  EXPECT_TRUE(context_->IsCurrent(surface_.get()));
 
   // SetDrawRectangle must be contained within surface.
-  EXPECT_FALSE(surface1->SetDrawRectangle(gfx::Rect(0, 0, 101, 101)));
-  EXPECT_TRUE(surface1->SetDrawRectangle(gfx::Rect(0, 0, 100, 100)));
-  EXPECT_TRUE(context1->IsCurrent(surface1.get()));
+  EXPECT_FALSE(surface_->SetDrawRectangle(gfx::Rect(0, 0, 101, 101)));
+  EXPECT_TRUE(surface_->SetDrawRectangle(gfx::Rect(0, 0, 100, 100)));
+  EXPECT_TRUE(context_->IsCurrent(surface_.get()));
 
-  EXPECT_TRUE(surface1->Resize(gfx::Size(50, 50), 1.0,
+  EXPECT_TRUE(surface_->Resize(gfx::Size(50, 50), 1.0,
                                gl::GLSurface::ColorSpace::UNSPECIFIED, true));
-  EXPECT_TRUE(context1->IsCurrent(surface1.get()));
-  EXPECT_TRUE(surface1->SetDrawRectangle(gfx::Rect(0, 0, 50, 50)));
-  EXPECT_TRUE(context1->IsCurrent(surface1.get()));
+  EXPECT_TRUE(context_->IsCurrent(surface_.get()));
+  EXPECT_TRUE(surface_->SetDrawRectangle(gfx::Rect(0, 0, 50, 50)));
+  EXPECT_TRUE(context_->IsCurrent(surface_.get()));
 
-  scoped_refptr<DirectCompositionSurfaceWin> surface2(
-      new DirectCompositionSurfaceWin(nullptr, delegate.AsWeakPtr(),
-                                      ui::GetHiddenWindow()));
-  EXPECT_TRUE(surface2->Initialize(gl::GLSurfaceFormat()));
-
-  scoped_refptr<gl::GLContext> context2 = gl::init::CreateGLContext(
-      nullptr, surface2.get(), gl::GLContextAttribs());
-  EXPECT_TRUE(context2->MakeCurrent(surface2.get()));
+  scoped_refptr<DirectCompositionSurfaceWin> surface2 =
+      CreateDirectCompositionSurfaceWin();
+  scoped_refptr<gl::GLContext> context2 = CreateGLContext(surface2.get());
 
   surface2->SetEnableDCLayers(true);
   EXPECT_TRUE(surface2->Resize(gfx::Size(100, 100), 1.0,
@@ -209,134 +204,96 @@ TEST(DirectCompositionSurfaceTest, TestMakeCurrent) {
 
   // It should be possible to switch back to the previous surface and
   // unsuspend it.
-  EXPECT_TRUE(context1->MakeCurrent(surface1.get()));
+  EXPECT_TRUE(context_->MakeCurrent(surface_.get()));
   context2 = nullptr;
-  context1 = nullptr;
-
-  DestroySurface(std::move(surface1));
   DestroySurface(std::move(surface2));
 }
 
 // Tests that switching using EnableDCLayers works.
-TEST(DirectCompositionSurfaceTest, DXGIDCLayerSwitch) {
+TEST_F(DirectCompositionSurfaceTest, DXGIDCLayerSwitch) {
   if (!CheckIfDCSupported())
     return;
-
-  TestImageTransportSurfaceDelegate delegate;
-
-  scoped_refptr<DirectCompositionSurfaceWin> surface(
-      new DirectCompositionSurfaceWin(nullptr, delegate.AsWeakPtr(),
-                                      ui::GetHiddenWindow()));
-  EXPECT_TRUE(surface->Initialize(gl::GLSurfaceFormat()));
-
-  scoped_refptr<gl::GLContext> context =
-      gl::init::CreateGLContext(nullptr, surface.get(), gl::GLContextAttribs());
-  EXPECT_TRUE(context->MakeCurrent(surface.get()));
-
-  EXPECT_TRUE(surface->Resize(gfx::Size(100, 100), 1.0,
-                              gl::GLSurface::ColorSpace::UNSPECIFIED, true));
-  EXPECT_FALSE(surface->GetBackbufferSwapChainForTesting());
+  InitializeSurface();
+  EXPECT_TRUE(surface_->Resize(gfx::Size(100, 100), 1.0,
+                               gl::GLSurface::ColorSpace::UNSPECIFIED, true));
+  EXPECT_FALSE(surface_->GetBackbufferSwapChainForTesting());
 
   // First SetDrawRectangle must be full size of surface for DXGI swapchain.
-  EXPECT_FALSE(surface->SetDrawRectangle(gfx::Rect(0, 0, 50, 50)));
-  EXPECT_TRUE(surface->SetDrawRectangle(gfx::Rect(0, 0, 100, 100)));
-  EXPECT_TRUE(surface->GetBackbufferSwapChainForTesting());
+  EXPECT_FALSE(surface_->SetDrawRectangle(gfx::Rect(0, 0, 50, 50)));
+  EXPECT_TRUE(surface_->SetDrawRectangle(gfx::Rect(0, 0, 100, 100)));
+  EXPECT_TRUE(surface_->GetBackbufferSwapChainForTesting());
 
   // SetDrawRectangle and SetEnableDCLayers can't be called again until swap.
-  EXPECT_FALSE(surface->SetDrawRectangle(gfx::Rect(0, 0, 100, 100)));
+  EXPECT_FALSE(surface_->SetDrawRectangle(gfx::Rect(0, 0, 100, 100)));
 
-  EXPECT_EQ(gfx::SwapResult::SWAP_ACK, surface->SwapBuffers(base::DoNothing()));
-  EXPECT_TRUE(context->IsCurrent(surface.get()));
+  EXPECT_EQ(gfx::SwapResult::SWAP_ACK,
+            surface_->SwapBuffers(base::DoNothing()));
+  EXPECT_TRUE(context_->IsCurrent(surface_.get()));
 
-  surface->SetEnableDCLayers(true);
+  surface_->SetEnableDCLayers(true);
 
   // Surface switched to use IDCompositionSurface, so must draw to entire
   // surface.
-  EXPECT_FALSE(surface->SetDrawRectangle(gfx::Rect(0, 0, 50, 50)));
-  EXPECT_TRUE(surface->SetDrawRectangle(gfx::Rect(0, 0, 100, 100)));
-  EXPECT_FALSE(surface->GetBackbufferSwapChainForTesting());
+  EXPECT_FALSE(surface_->SetDrawRectangle(gfx::Rect(0, 0, 50, 50)));
+  EXPECT_TRUE(surface_->SetDrawRectangle(gfx::Rect(0, 0, 100, 100)));
+  EXPECT_FALSE(surface_->GetBackbufferSwapChainForTesting());
 
-  EXPECT_EQ(gfx::SwapResult::SWAP_ACK, surface->SwapBuffers(base::DoNothing()));
-  EXPECT_TRUE(context->IsCurrent(surface.get()));
+  EXPECT_EQ(gfx::SwapResult::SWAP_ACK,
+            surface_->SwapBuffers(base::DoNothing()));
+  EXPECT_TRUE(context_->IsCurrent(surface_.get()));
 
-  surface->SetEnableDCLayers(false);
+  surface_->SetEnableDCLayers(false);
 
   // Surface switched to use IDXGISwapChain, so must draw to entire surface.
-  EXPECT_FALSE(surface->SetDrawRectangle(gfx::Rect(0, 0, 50, 50)));
-  EXPECT_TRUE(surface->SetDrawRectangle(gfx::Rect(0, 0, 100, 100)));
-  EXPECT_TRUE(surface->GetBackbufferSwapChainForTesting());
+  EXPECT_FALSE(surface_->SetDrawRectangle(gfx::Rect(0, 0, 50, 50)));
+  EXPECT_TRUE(surface_->SetDrawRectangle(gfx::Rect(0, 0, 100, 100)));
+  EXPECT_TRUE(surface_->GetBackbufferSwapChainForTesting());
 
-  EXPECT_EQ(gfx::SwapResult::SWAP_ACK, surface->SwapBuffers(base::DoNothing()));
-  EXPECT_TRUE(context->IsCurrent(surface.get()));
-
-  context = nullptr;
-  DestroySurface(std::move(surface));
+  EXPECT_EQ(gfx::SwapResult::SWAP_ACK,
+            surface_->SwapBuffers(base::DoNothing()));
+  EXPECT_TRUE(context_->IsCurrent(surface_.get()));
 }
 
 // Ensure that the swapchain's alpha is correct.
-TEST(DirectCompositionSurfaceTest, SwitchAlpha) {
+TEST_F(DirectCompositionSurfaceTest, SwitchAlpha) {
   if (!CheckIfDCSupported())
     return;
+  InitializeSurface();
+  EXPECT_TRUE(surface_->Resize(gfx::Size(100, 100), 1.0,
+                               gl::GLSurface::ColorSpace::UNSPECIFIED, true));
+  EXPECT_FALSE(surface_->GetBackbufferSwapChainForTesting());
 
-  TestImageTransportSurfaceDelegate delegate;
-
-  scoped_refptr<DirectCompositionSurfaceWin> surface(
-      new DirectCompositionSurfaceWin(nullptr, delegate.AsWeakPtr(),
-                                      ui::GetHiddenWindow()));
-  EXPECT_TRUE(surface->Initialize(gl::GLSurfaceFormat()));
-
-  scoped_refptr<gl::GLContext> context =
-      gl::init::CreateGLContext(nullptr, surface.get(), gl::GLContextAttribs());
-  EXPECT_TRUE(context->MakeCurrent(surface.get()));
-
-  EXPECT_TRUE(surface->Resize(gfx::Size(100, 100), 1.0,
-                              gl::GLSurface::ColorSpace::UNSPECIFIED, true));
-  EXPECT_FALSE(surface->GetBackbufferSwapChainForTesting());
-
-  EXPECT_TRUE(surface->SetDrawRectangle(gfx::Rect(0, 0, 100, 100)));
+  EXPECT_TRUE(surface_->SetDrawRectangle(gfx::Rect(0, 0, 100, 100)));
   Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain =
-      surface->GetBackbufferSwapChainForTesting();
+      surface_->GetBackbufferSwapChainForTesting();
   ASSERT_TRUE(swap_chain);
   DXGI_SWAP_CHAIN_DESC1 desc;
   swap_chain->GetDesc1(&desc);
   EXPECT_EQ(DXGI_ALPHA_MODE_PREMULTIPLIED, desc.AlphaMode);
 
   // Resize to the same parameters should have no effect.
-  EXPECT_TRUE(surface->Resize(gfx::Size(100, 100), 1.0,
-                              gl::GLSurface::ColorSpace::UNSPECIFIED, true));
-  EXPECT_TRUE(surface->GetBackbufferSwapChainForTesting());
+  EXPECT_TRUE(surface_->Resize(gfx::Size(100, 100), 1.0,
+                               gl::GLSurface::ColorSpace::UNSPECIFIED, true));
+  EXPECT_TRUE(surface_->GetBackbufferSwapChainForTesting());
 
-  EXPECT_TRUE(surface->Resize(gfx::Size(100, 100), 1.0,
-                              gl::GLSurface::ColorSpace::UNSPECIFIED, false));
-  EXPECT_FALSE(surface->GetBackbufferSwapChainForTesting());
+  EXPECT_TRUE(surface_->Resize(gfx::Size(100, 100), 1.0,
+                               gl::GLSurface::ColorSpace::UNSPECIFIED, false));
+  EXPECT_FALSE(surface_->GetBackbufferSwapChainForTesting());
 
-  EXPECT_TRUE(surface->SetDrawRectangle(gfx::Rect(0, 0, 100, 100)));
+  EXPECT_TRUE(surface_->SetDrawRectangle(gfx::Rect(0, 0, 100, 100)));
 
-  swap_chain = surface->GetBackbufferSwapChainForTesting();
+  swap_chain = surface_->GetBackbufferSwapChainForTesting();
   ASSERT_TRUE(swap_chain);
   swap_chain->GetDesc1(&desc);
   EXPECT_EQ(DXGI_ALPHA_MODE_IGNORE, desc.AlphaMode);
-
-  context = nullptr;
-  DestroySurface(std::move(surface));
 }
 
 // Ensure that the GLImage isn't presented again unless it changes.
-TEST(DirectCompositionSurfaceTest, NoPresentTwice) {
+TEST_F(DirectCompositionSurfaceTest, NoPresentTwice) {
   if (!CheckIfDCSupported())
     return;
-
-  TestImageTransportSurfaceDelegate delegate;
-  scoped_refptr<DirectCompositionSurfaceWin> surface(
-      new DirectCompositionSurfaceWin(nullptr, delegate.AsWeakPtr(),
-                                      ui::GetHiddenWindow()));
-  EXPECT_TRUE(surface->Initialize(gl::GLSurfaceFormat()));
-
-  scoped_refptr<gl::GLContext> context =
-      gl::init::CreateGLContext(nullptr, surface.get(), gl::GLContextAttribs());
-  EXPECT_TRUE(context->MakeCurrent(surface.get()));
-
-  surface->SetEnableDCLayers(true);
+  InitializeSurface();
+  surface_->SetEnableDCLayers(true);
 
   Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
       gl::QueryD3D11DeviceObjectFromANGLE();
@@ -355,15 +312,16 @@ TEST(DirectCompositionSurfaceTest, NoPresentTwice) {
   params.uv_image = image_dxgi;
   params.content_rect = gfx::Rect(texture_size);
   params.quad_rect = gfx::Rect(100, 100);
-  surface->ScheduleDCLayer(params);
+  surface_->ScheduleDCLayer(params);
 
   Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain =
-      surface->GetLayerSwapChainForTesting(0);
+      surface_->GetLayerSwapChainForTesting(0);
   ASSERT_FALSE(swap_chain);
 
-  EXPECT_EQ(gfx::SwapResult::SWAP_ACK, surface->SwapBuffers(base::DoNothing()));
+  EXPECT_EQ(gfx::SwapResult::SWAP_ACK,
+            surface_->SwapBuffers(base::DoNothing()));
 
-  swap_chain = surface->GetLayerSwapChainForTesting(0);
+  swap_chain = surface_->GetLayerSwapChainForTesting(0);
   ASSERT_TRUE(swap_chain);
 
   UINT last_present_count = 0;
@@ -373,11 +331,12 @@ TEST(DirectCompositionSurfaceTest, NoPresentTwice) {
   // and the other buffer needs to be drawn to.
   EXPECT_EQ(2u, last_present_count);
 
-  surface->ScheduleDCLayer(params);
-  EXPECT_EQ(gfx::SwapResult::SWAP_ACK, surface->SwapBuffers(base::DoNothing()));
+  surface_->ScheduleDCLayer(params);
+  EXPECT_EQ(gfx::SwapResult::SWAP_ACK,
+            surface_->SwapBuffers(base::DoNothing()));
 
   Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain2 =
-      surface->GetLayerSwapChainForTesting(0);
+      surface_->GetLayerSwapChainForTesting(0);
   EXPECT_EQ(swap_chain2.Get(), swap_chain.Get());
 
   // It's the same image, so it should have the same swapchain.
@@ -392,38 +351,26 @@ TEST(DirectCompositionSurfaceTest, NoPresentTwice) {
 
   params.y_image = image_dxgi2;
   params.uv_image = image_dxgi2;
-  surface->ScheduleDCLayer(params);
+  surface_->ScheduleDCLayer(params);
 
-  EXPECT_EQ(gfx::SwapResult::SWAP_ACK, surface->SwapBuffers(base::DoNothing()));
+  EXPECT_EQ(gfx::SwapResult::SWAP_ACK,
+            surface_->SwapBuffers(base::DoNothing()));
 
   Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain3 =
-      surface->GetLayerSwapChainForTesting(0);
+      surface_->GetLayerSwapChainForTesting(0);
   EXPECT_TRUE(SUCCEEDED(swap_chain3->GetLastPresentCount(&last_present_count)));
   // the present count should increase with the new present
   EXPECT_EQ(3u, last_present_count);
-
-  context = nullptr;
-  DestroySurface(std::move(surface));
 }
 
 // Ensure the swapchain size is set to the correct size if HW overlay scaling
 // is support - swapchain should be the minimum of the decoded
 // video buffer size and the onscreen video size
-TEST(DirectCompositionSurfaceTest, SwapchainSizeWithScaledOverlays) {
+TEST_F(DirectCompositionSurfaceTest, SwapchainSizeWithScaledOverlays) {
   if (!CheckIfDCSupported())
     return;
-
-  TestImageTransportSurfaceDelegate delegate;
-  scoped_refptr<DirectCompositionSurfaceWin> surface(
-      new DirectCompositionSurfaceWin(nullptr, delegate.AsWeakPtr(),
-                                      ui::GetHiddenWindow()));
-  EXPECT_TRUE(surface->Initialize(gl::GLSurfaceFormat()));
-
-  scoped_refptr<gl::GLContext> context =
-      gl::init::CreateGLContext(nullptr, surface.get(), gl::GLContextAttribs());
-  EXPECT_TRUE(context->MakeCurrent(surface.get()));
-
-  surface->SetEnableDCLayers(true);
+  InitializeSurface();
+  surface_->SetEnableDCLayers(true);
 
   Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
       gl::QueryD3D11DeviceObjectFromANGLE();
@@ -439,18 +386,19 @@ TEST(DirectCompositionSurfaceTest, SwapchainSizeWithScaledOverlays) {
 
   // HW supports scaled overlays
   // The input texture size is maller than the window size.
-  surface->SetScaledOverlaysSupportedForTesting(true);
+  surface_->SetScaledOverlaysSupportedForTesting(true);
 
   ui::DCRendererLayerParams params;
   params.y_image = image_dxgi;
   params.uv_image = image_dxgi;
   params.content_rect = gfx::Rect(texture_size);
   params.quad_rect = gfx::Rect(100, 100);
-  surface->ScheduleDCLayer(params);
+  surface_->ScheduleDCLayer(params);
 
-  EXPECT_EQ(gfx::SwapResult::SWAP_ACK, surface->SwapBuffers(base::DoNothing()));
+  EXPECT_EQ(gfx::SwapResult::SWAP_ACK,
+            surface_->SwapBuffers(base::DoNothing()));
   Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain =
-      surface->GetLayerSwapChainForTesting(0);
+      surface_->GetLayerSwapChainForTesting(0);
   ASSERT_TRUE(swap_chain);
 
   DXGI_SWAP_CHAIN_DESC Desc;
@@ -461,43 +409,32 @@ TEST(DirectCompositionSurfaceTest, SwapchainSizeWithScaledOverlays) {
   // Clear SwapChainPresenters
   // Must do Clear first because the swap chain won't resize immediately if
   // a new size is given unless this is the very first time after Clear.
-  EXPECT_EQ(gfx::SwapResult::SWAP_ACK, surface->SwapBuffers(base::DoNothing()));
+  EXPECT_EQ(gfx::SwapResult::SWAP_ACK,
+            surface_->SwapBuffers(base::DoNothing()));
 
   // The input texture size is bigger than the window size.
   params.quad_rect = gfx::Rect(32, 48);
 
-  surface->ScheduleDCLayer(params);
-  EXPECT_EQ(gfx::SwapResult::SWAP_ACK, surface->SwapBuffers(base::DoNothing()));
+  surface_->ScheduleDCLayer(params);
+  EXPECT_EQ(gfx::SwapResult::SWAP_ACK,
+            surface_->SwapBuffers(base::DoNothing()));
 
   Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain2 =
-      surface->GetLayerSwapChainForTesting(0);
+      surface_->GetLayerSwapChainForTesting(0);
   ASSERT_TRUE(swap_chain2);
 
   EXPECT_TRUE(SUCCEEDED(swap_chain2->GetDesc(&Desc)));
   EXPECT_EQ((int)Desc.BufferDesc.Width, params.quad_rect.width());
   EXPECT_EQ((int)Desc.BufferDesc.Height, params.quad_rect.height());
-
-  context = nullptr;
-  DestroySurface(std::move(surface));
 }
 
 // Ensure the swapchain size is set to the correct size if HW overlay scaling
 // is not support - swapchain should be the onscreen video size
-TEST(DirectCompositionSurfaceTest, SwapchainSizeWithoutScaledOverlays) {
+TEST_F(DirectCompositionSurfaceTest, SwapchainSizeWithoutScaledOverlays) {
   if (!CheckIfDCSupported())
     return;
-
-  TestImageTransportSurfaceDelegate delegate;
-  scoped_refptr<DirectCompositionSurfaceWin> surface(
-      new DirectCompositionSurfaceWin(nullptr, delegate.AsWeakPtr(),
-                                      ui::GetHiddenWindow()));
-  EXPECT_TRUE(surface->Initialize(gl::GLSurfaceFormat()));
-
-  scoped_refptr<gl::GLContext> context =
-      gl::init::CreateGLContext(nullptr, surface.get(), gl::GLContextAttribs());
-  EXPECT_TRUE(context->MakeCurrent(surface.get()));
-
-  surface->SetEnableDCLayers(true);
+  InitializeSurface();
+  surface_->SetEnableDCLayers(true);
 
   Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
       gl::QueryD3D11DeviceObjectFromANGLE();
@@ -513,18 +450,19 @@ TEST(DirectCompositionSurfaceTest, SwapchainSizeWithoutScaledOverlays) {
 
   // HW doesn't support scaled overlays
   // The input texture size is bigger than the window size.
-  surface->SetScaledOverlaysSupportedForTesting(false);
+  surface_->SetScaledOverlaysSupportedForTesting(false);
 
   ui::DCRendererLayerParams params;
   params.y_image = image_dxgi;
   params.uv_image = image_dxgi;
   params.content_rect = gfx::Rect(texture_size);
   params.quad_rect = gfx::Rect(42, 42);
-  surface->ScheduleDCLayer(params);
+  surface_->ScheduleDCLayer(params);
 
-  EXPECT_EQ(gfx::SwapResult::SWAP_ACK, surface->SwapBuffers(base::DoNothing()));
+  EXPECT_EQ(gfx::SwapResult::SWAP_ACK,
+            surface_->SwapBuffers(base::DoNothing()));
   Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain =
-      surface->GetLayerSwapChainForTesting(0);
+      surface_->GetLayerSwapChainForTesting(0);
   ASSERT_TRUE(swap_chain);
 
   DXGI_SWAP_CHAIN_DESC desc;
@@ -535,37 +473,25 @@ TEST(DirectCompositionSurfaceTest, SwapchainSizeWithoutScaledOverlays) {
   // The input texture size is smaller than the window size.
   params.quad_rect = gfx::Rect(124, 136);
 
-  surface->ScheduleDCLayer(params);
-  EXPECT_EQ(gfx::SwapResult::SWAP_ACK, surface->SwapBuffers(base::DoNothing()));
+  surface_->ScheduleDCLayer(params);
+  EXPECT_EQ(gfx::SwapResult::SWAP_ACK,
+            surface_->SwapBuffers(base::DoNothing()));
 
   Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain2 =
-      surface->GetLayerSwapChainForTesting(0);
+      surface_->GetLayerSwapChainForTesting(0);
   ASSERT_TRUE(swap_chain2);
 
   EXPECT_TRUE(SUCCEEDED(swap_chain2->GetDesc(&desc)));
   EXPECT_EQ((int)desc.BufferDesc.Width, params.quad_rect.width());
   EXPECT_EQ((int)desc.BufferDesc.Height, params.quad_rect.height());
-
-  context = nullptr;
-  DestroySurface(std::move(surface));
 }
 
 // Test protected video flags
-TEST(DirectCompositionSurfaceTest, ProtectedVideos) {
+TEST_F(DirectCompositionSurfaceTest, ProtectedVideos) {
   if (!CheckIfDCSupported())
     return;
-
-  TestImageTransportSurfaceDelegate delegate;
-  scoped_refptr<DirectCompositionSurfaceWin> surface(
-      new DirectCompositionSurfaceWin(nullptr, delegate.AsWeakPtr(),
-                                      ui::GetHiddenWindow()));
-  EXPECT_TRUE(surface->Initialize(gl::GLSurfaceFormat()));
-
-  scoped_refptr<gl::GLContext> context =
-      gl::init::CreateGLContext(nullptr, surface.get(), gl::GLContextAttribs());
-  EXPECT_TRUE(context->MakeCurrent(surface.get()));
-
-  surface->SetEnableDCLayers(true);
+  InitializeSurface();
+  surface_->SetEnableDCLayers(true);
 
   Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
       gl::QueryD3D11DeviceObjectFromANGLE();
@@ -589,11 +515,11 @@ TEST(DirectCompositionSurfaceTest, ProtectedVideos) {
     params.content_rect = gfx::Rect(texture_size);
     params.protected_video_type = ui::ProtectedVideoType::kClear;
 
-    surface->ScheduleDCLayer(params);
+    surface_->ScheduleDCLayer(params);
     EXPECT_EQ(gfx::SwapResult::SWAP_ACK,
-              surface->SwapBuffers(base::DoNothing()));
+              surface_->SwapBuffers(base::DoNothing()));
     Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain =
-        surface->GetLayerSwapChainForTesting(0);
+        surface_->GetLayerSwapChainForTesting(0);
     ASSERT_TRUE(swap_chain);
 
     DXGI_SWAP_CHAIN_DESC Desc;
@@ -613,11 +539,11 @@ TEST(DirectCompositionSurfaceTest, ProtectedVideos) {
     params.content_rect = gfx::Rect(texture_size);
     params.protected_video_type = ui::ProtectedVideoType::kSoftwareProtected;
 
-    surface->ScheduleDCLayer(params);
+    surface_->ScheduleDCLayer(params);
     EXPECT_EQ(gfx::SwapResult::SWAP_ACK,
-              surface->SwapBuffers(base::DoNothing()));
+              surface_->SwapBuffers(base::DoNothing()));
     Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain =
-        surface->GetLayerSwapChainForTesting(0);
+        surface_->GetLayerSwapChainForTesting(0);
     ASSERT_TRUE(swap_chain);
 
     DXGI_SWAP_CHAIN_DESC Desc;
@@ -630,9 +556,6 @@ TEST(DirectCompositionSurfaceTest, ProtectedVideos) {
 
   // TODO(magchen): Add a hardware protected video test when hardware procted
   // video support is enabled by defaut in the Intel driver and Chrome
-
-  context = nullptr;
-  DestroySurface(std::move(surface));
 }
 
 std::vector<SkColor> ReadBackWindow(HWND window, const gfx::Size& size) {
@@ -673,27 +596,17 @@ SkColor ReadBackWindowPixel(HWND window, const gfx::Point& point) {
   return pixels[size.width() * point.y() + point.x()];
 }
 
-class DirectCompositionPixelTest : public testing::Test {
+class DirectCompositionPixelTest : public DirectCompositionSurfaceTest {
  public:
   DirectCompositionPixelTest()
-      : window_(&platform_delegate_, gfx::Rect(100, 100)) {}
-
-  ~DirectCompositionPixelTest() override {
-    context_ = nullptr;
-    if (surface_)
-      DestroySurface(std::move(surface_));
+      : window_(&platform_delegate_, gfx::Rect(100, 100)) {
+    parent_window_ = window_.hwnd();
   }
 
  protected:
-  void InitializeSurface() {
+  void InitializeSurface() override {
     static_cast<ui::PlatformWindow*>(&window_)->Show();
-
-    surface_ = new DirectCompositionSurfaceWin(nullptr, delegate_.AsWeakPtr(),
-                                               window_.hwnd());
-    EXPECT_TRUE(surface_->Initialize(gl::GLSurfaceFormat()));
-    context_ = gl::init::CreateGLContext(nullptr, surface_.get(),
-                                         gl::GLContextAttribs());
-    EXPECT_TRUE(context_->MakeCurrent(surface_.get()));
+    DirectCompositionSurfaceTest::InitializeSurface();
   }
 
   void PixelTestSwapChain(bool layers_enabled) {
@@ -728,10 +641,7 @@ class DirectCompositionPixelTest : public testing::Test {
   }
 
   TestPlatformDelegate platform_delegate_;
-  TestImageTransportSurfaceDelegate delegate_;
   ui::WinWindow window_;
-  scoped_refptr<DirectCompositionSurfaceWin> surface_;
-  scoped_refptr<gl::GLContext> context_;
 };
 
 TEST_F(DirectCompositionPixelTest, DCLayersEnabled) {

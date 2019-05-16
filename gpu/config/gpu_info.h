@@ -154,19 +154,9 @@ using ImageDecodeAcceleratorSupportedProfiles =
     std::vector<ImageDecodeAcceleratorSupportedProfile>;
 
 #if defined(OS_WIN)
-// Common overlay formats that we're interested in. Must match the OverlayFormat
-// enum in //tools/metrics/histograms/enums.xml. Mapped to corresponding DXGI
-// formats in DirectCompositionSurfaceWin.
-enum class OverlayFormat { kBGRA = 0, kYUY2 = 1, kNV12 = 2, kMaxValue = kNV12 };
+enum class OverlaySupport { kNone = 0, kDirect = 1, kScaling = 2 };
 
-GPU_EXPORT const char* OverlayFormatToString(OverlayFormat format);
-
-struct GPU_EXPORT OverlayCapability {
-  OverlayFormat format;
-  bool is_scaling_supported;
-  bool operator==(const OverlayCapability& other) const;
-};
-using OverlayCapabilities = std::vector<OverlayCapability>;
+GPU_EXPORT const char* OverlaySupportToString(OverlaySupport support);
 
 struct GPU_EXPORT Dx12VulkanVersionInfo {
   bool IsEmpty() const { return !d3d12_feature_level && !vulkan_version; }
@@ -323,8 +313,8 @@ struct GPU_EXPORT GPUInfo {
 
   // True if we use direct composition surface overlays on Windows.
   bool supports_overlays = false;
-
-  OverlayCapabilities overlay_capabilities;
+  OverlaySupport yuy2_overlay_support = OverlaySupport::kNone;
+  OverlaySupport nv12_overlay_support = OverlaySupport::kNone;
 
   // The information returned by the DirectX Diagnostics Tool.
   DxDiagNode dx_diagnostics;
@@ -390,9 +380,6 @@ struct GPU_EXPORT GPUInfo {
     // (according to the DevTools protocol) are being described.
     virtual void BeginAuxAttributes() = 0;
     virtual void EndAuxAttributes() = 0;
-
-    virtual void BeginOverlayCapability() = 0;
-    virtual void EndOverlayCapability() = 0;
 
     virtual void BeginDx12VulkanVersionInfo() = 0;
     virtual void EndDx12VulkanVersionInfo() = 0;

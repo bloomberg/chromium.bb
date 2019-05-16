@@ -10,9 +10,11 @@
 #include <dcomp.h>
 #include <wrl/client.h>
 
+#include "base/callback.h"
 #include "base/memory/weak_ptr.h"
-#include "gpu/config/gpu_info.h"
+#include "base/time/time.h"
 #include "gpu/ipc/service/child_window_win.h"
+#include "gpu/ipc/service/gpu_ipc_service_export.h"
 #include "ui/gl/gl_surface_egl.h"
 
 namespace gl {
@@ -27,10 +29,29 @@ class DirectCompositionChildSurfaceWin;
 class GPU_IPC_SERVICE_EXPORT DirectCompositionSurfaceWin
     : public gl::GLSurfaceEGL {
  public:
+  using VSyncCallback =
+      base::RepeatingCallback<void(base::TimeTicks, base::TimeDelta)>;
+
+  // Common overlay formats that we're interested in. Must match the
+  // OverlayFormat enum in //tools/metrics/histograms/enums.xml. Mapped to
+  // corresponding DXGI formats in DirectCompositionSurfaceWin.
+  enum class OverlayFormat {
+    kBGRA = 0,
+    kYUY2 = 1,
+    kNV12 = 2,
+    kMaxValue = kNV12
+  };
+
+  struct Settings {
+    bool disable_nv12_dynamic_textures = false;
+    bool disable_larger_than_screen_overlays = false;
+  };
+
   DirectCompositionSurfaceWin(
       std::unique_ptr<gfx::VSyncProvider> vsync_provider,
-      base::WeakPtr<ImageTransportSurfaceDelegate> delegate,
-      HWND parent_window);
+      VSyncCallback vsync_callback,
+      HWND parent_window,
+      const DirectCompositionSurfaceWin::Settings& settings);
 
   // Returns true if direct composition is supported.  We prefer to use direct
   // composition event without hardware overlays, because it allows us to bypass
@@ -58,9 +79,11 @@ class GPU_IPC_SERVICE_EXPORT DirectCompositionSurfaceWin
   // Returns monitor size.
   static gfx::Size GetOverlayMonitorSize();
 
-  // Returns a list of supported overlay formats for GPUInfo.  This does not
-  // depend on finch features or command line flags.
-  static OverlayCapabilities GetOverlayCapabilities();
+  // Returns if the given format is supported for hardware overlays.
+  // Also, if |supports_scaling| is set to true, SCALING mode is supported for
+  // the given format; otherwise, only DIRECT mode is supported.
+  static bool SupportsOverlayFormat(OverlayFormat format,
+                                    bool* supports_scaling);
 
   // Returns true if there is an HDR capable display connected.
   static bool IsHDRSupported();
@@ -109,6 +132,8 @@ class GPU_IPC_SERVICE_EXPORT DirectCompositionSurfaceWin
   // tree at z-order 0.
   bool ScheduleDCLayer(const ui::DCRendererLayerParams& params) override;
 
+  HWND window() const { return window_; }
+
   scoped_refptr<base::TaskRunner> GetWindowTaskRunnerForTesting();
 
   Microsoft::WRL::ComPtr<IDXGISwapChain1> GetLayerSwapChainForTesting(
@@ -127,8 +152,8 @@ class GPU_IPC_SERVICE_EXPORT DirectCompositionSurfaceWin
   std::unique_ptr<gl::VSyncThreadWin> vsync_thread_;
   scoped_refptr<DirectCompositionChildSurfaceWin> root_surface_;
   std::unique_ptr<DCLayerTree> layer_tree_;
-  base::WeakPtr<ImageTransportSurfaceDelegate> delegate_;
   std::unique_ptr<gfx::VSyncProvider> vsync_provider_;
+  const VSyncCallback vsync_callback_;
   std::unique_ptr<gl::GLSurfacePresentationHelper> presentation_helper_;
 
   Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device_;

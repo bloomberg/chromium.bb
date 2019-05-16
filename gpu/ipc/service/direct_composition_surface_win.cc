@@ -14,12 +14,11 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/windows_version.h"
-#include "gpu/command_buffer/service/feature_info.h"
-#include "gpu/config/gpu_finch_features.h"
 #include "gpu/ipc/service/dc_layer_tree.h"
 #include "gpu/ipc/service/direct_composition_child_surface_win.h"
 #include "ui/gl/gl_angle_util_win.h"
 #include "ui/gl/gl_surface_presentation_helper.h"
+#include "ui/gl/gl_switches.h"
 #include "ui/gl/vsync_thread_win.h"
 
 #ifndef EGL_ANGLE_flexible_surface_compatibility
@@ -28,6 +27,8 @@
 #endif /* EGL_ANGLE_flexible_surface_compatibility */
 
 namespace gpu {
+using OverlayFormat = DirectCompositionSurfaceWin::OverlayFormat;
+
 namespace {
 struct OverlaySupportInfo {
   OverlayFormat overlay_format;
@@ -192,15 +193,17 @@ void InitializeHardwareOverlaySupport() {
 
 DirectCompositionSurfaceWin::DirectCompositionSurfaceWin(
     std::unique_ptr<gfx::VSyncProvider> vsync_provider,
-    base::WeakPtr<ImageTransportSurfaceDelegate> delegate,
-    HWND parent_window)
+    VSyncCallback vsync_callback,
+    HWND parent_window,
+    const Settings& settings)
     : gl::GLSurfaceEGL(),
-      child_window_(delegate, parent_window),
+      child_window_(parent_window),
       root_surface_(new DirectCompositionChildSurfaceWin()),
       layer_tree_(std::make_unique<DCLayerTree>(
-          delegate->GetFeatureInfo()->workarounds())),
-      delegate_(delegate),
+          settings.disable_nv12_dynamic_textures,
+          settings.disable_larger_than_screen_overlays)),
       vsync_provider_(std::move(vsync_provider)),
+      vsync_callback_(std::move(vsync_callback)),
       presentation_helper_(std::make_unique<gl::GLSurfacePresentationHelper>(
           vsync_provider_.get())) {}
 
@@ -286,19 +289,21 @@ bool DirectCompositionSurfaceWin::AreScaledOverlaysSupported() {
 }
 
 // static
-OverlayCapabilities DirectCompositionSurfaceWin::GetOverlayCapabilities() {
+bool DirectCompositionSurfaceWin::SupportsOverlayFormat(
+    OverlayFormat format,
+    bool* supports_scaling) {
   InitializeHardwareOverlaySupport();
-  OverlayCapabilities capabilities;
+  DCHECK(supports_scaling);
+  *supports_scaling = false;
   for (const auto& info : g_overlay_support_info) {
     if (info.flags) {
-      OverlayCapability cap;
-      cap.format = info.overlay_format;
-      cap.is_scaling_supported =
-          !!(info.flags & DXGI_OVERLAY_SUPPORT_FLAG_SCALING);
-      capabilities.push_back(cap);
+      if (format == info.overlay_format) {
+        *supports_scaling = !!(info.flags & DXGI_OVERLAY_SUPPORT_FLAG_SCALING);
+        return true;
+      }
     }
   }
-  return capabilities;
+  return false;
 }
 
 // static
@@ -409,10 +414,9 @@ bool DirectCompositionSurfaceWin::Initialize(gl::GLSurfaceFormat format) {
   }
   window_ = child_window_.window();
 
-  auto vsync_callback = delegate_->GetGpuVSyncCallback();
-  if (SupportsGpuVSync() && vsync_callback) {
-    vsync_thread_ = std::make_unique<gl::VSyncThreadWin>(
-        window_, d3d11_device_, std::move(vsync_callback));
+  if (SupportsGpuVSync() && vsync_callback_) {
+    vsync_thread_ = std::make_unique<gl::VSyncThreadWin>(window_, d3d11_device_,
+                                                         vsync_callback_);
   }
 
   if (!layer_tree_->Initialize(window_, d3d11_device_, dcomp_device_))

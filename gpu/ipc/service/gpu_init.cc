@@ -83,8 +83,20 @@ void InitializePlatformOverlaySettings(GPUInfo* gpu_info) {
         DirectCompositionSurfaceWin::IsDirectCompositionSupported();
     gpu_info->supports_overlays =
         DirectCompositionSurfaceWin::AreOverlaysSupported();
-    gpu_info->overlay_capabilities =
-        DirectCompositionSurfaceWin::GetOverlayCapabilities();
+    bool supports_scaling = false;
+    using OverlayFormat = DirectCompositionSurfaceWin::OverlayFormat;
+    if (DirectCompositionSurfaceWin::SupportsOverlayFormat(OverlayFormat::kYUY2,
+                                                           &supports_scaling)) {
+      gpu_info->yuy2_overlay_support = supports_scaling
+                                           ? gpu::OverlaySupport::kScaling
+                                           : gpu::OverlaySupport::kDirect;
+    }
+    if (DirectCompositionSurfaceWin::SupportsOverlayFormat(OverlayFormat::kNV12,
+                                                           &supports_scaling)) {
+      gpu_info->nv12_overlay_support = supports_scaling
+                                           ? gpu::OverlaySupport::kScaling
+                                           : gpu::OverlaySupport::kDirect;
+    }
   }
 #elif defined(OS_ANDROID)
   if (gpu_info->gpu.vendor_string == "Qualcomm")

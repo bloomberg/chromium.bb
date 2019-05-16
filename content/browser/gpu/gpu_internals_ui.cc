@@ -187,15 +187,12 @@ std::unique_ptr<base::ListValue> BasicGpuInfoAsListValue(
   basic_info->Append(NewDescriptionValuePair(
       "Supports overlays",
       std::make_unique<base::Value>(gpu_info.supports_overlays)));
-
-  auto overlay_capabilities = std::make_unique<base::ListValue>();
-  for (const auto& cap : gpu_info.overlay_capabilities) {
-    overlay_capabilities->Append(NewDescriptionValuePair(
-        gpu::OverlayFormatToString(cap.format),
-        cap.is_scaling_supported ? "SCALING" : "DIRECT"));
-  }
-  basic_info->Append(NewDescriptionValuePair("Overlay capabilities",
-                                             std::move(overlay_capabilities)));
+  basic_info->Append(NewDescriptionValuePair(
+      "YUY2 overlay support",
+      gpu::OverlaySupportToString(gpu_info.yuy2_overlay_support)));
+  basic_info->Append(NewDescriptionValuePair(
+      "NV12 overlay support",
+      gpu::OverlaySupportToString(gpu_info.nv12_overlay_support)));
 
   std::vector<gfx::PhysicalDisplaySize> display_sizes =
       gfx::GetPhysicalSizeForDisplays();

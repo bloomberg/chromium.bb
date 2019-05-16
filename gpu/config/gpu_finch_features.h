@@ -27,10 +27,6 @@ GPU_EXPORT extern const base::Feature kDefaultEnableOopRasterization;
 
 GPU_EXPORT extern const base::Feature kDefaultPassthroughCommandDecoder;
 
-GPU_EXPORT extern const base::Feature kDirectCompositionGpuVSync;
-
-GPU_EXPORT extern const base::Feature kDirectCompositionPreferNV12Overlays;
-
 GPU_EXPORT extern const base::Feature kDirectCompositionUnderlays;
 
 GPU_EXPORT extern const base::Feature
@@ -43,8 +39,6 @@ GPU_EXPORT extern const base::Feature kMetal;
 GPU_EXPORT extern const base::Feature kSharedImageManager;
 
 GPU_EXPORT extern const base::Feature kUseDCOverlaysForSoftwareProtectedVideo;
-
-GPU_EXPORT extern const base::Feature kDirectCompositionUseNV12DecodeSwapChain;
 
 GPU_EXPORT extern const base::Feature kVaapiJpegImageDecodeAcceleration;
 

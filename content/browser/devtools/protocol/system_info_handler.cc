@@ -94,10 +94,6 @@ class AuxGPUInfoEnumerator : public gpu::GPUInfo::Enumerator {
 
   void EndImageDecodeAcceleratorSupportedProfile() override {}
 
-  void BeginOverlayCapability() override {}
-
-  void EndOverlayCapability() override {}
-
   void BeginDx12VulkanVersionInfo() override {}
 
   void EndDx12VulkanVersionInfo() override {}

@@ -189,25 +189,10 @@ struct StructTraits<gpu::mojom::ImageDecodeAcceleratorSupportedProfileDataView,
 
 #if defined(OS_WIN)
 template <>
-struct EnumTraits<gpu::mojom::OverlayFormat, gpu::OverlayFormat> {
-  static gpu::mojom::OverlayFormat ToMojom(gpu::OverlayFormat format);
-  static bool FromMojom(gpu::mojom::OverlayFormat input,
-                        gpu::OverlayFormat* out);
-};
-
-template <>
-struct StructTraits<gpu::mojom::OverlayCapabilityDataView,
-                    gpu::OverlayCapability> {
-  static bool Read(gpu::mojom::OverlayCapabilityDataView data,
-                   gpu::OverlayCapability* out);
-
-  static gpu::OverlayFormat format(const gpu::OverlayCapability& input) {
-    return input.format;
-  }
-
-  static bool is_scaling_supported(const gpu::OverlayCapability& input) {
-    return input.is_scaling_supported;
-  }
+struct EnumTraits<gpu::mojom::OverlaySupport, gpu::OverlaySupport> {
+  static gpu::mojom::OverlaySupport ToMojom(gpu::OverlaySupport support);
+  static bool FromMojom(gpu::mojom::OverlaySupport input,
+                        gpu::OverlaySupport* out);
 };
 
 template <>
@@ -341,9 +326,12 @@ struct StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo> {
     return input.supports_overlays;
   }
 
-  static const gpu::OverlayCapabilities& overlay_capabilities(
-      const gpu::GPUInfo& input) {
-    return input.overlay_capabilities;
+  static gpu::OverlaySupport yuy2_overlay_support(const gpu::GPUInfo& input) {
+    return input.yuy2_overlay_support;
+  }
+
+  static gpu::OverlaySupport nv12_overlay_support(const gpu::GPUInfo& input) {
+    return input.nv12_overlay_support;
   }
 
   static const gpu::DxDiagNode& dx_diagnostics(const gpu::GPUInfo& input) {

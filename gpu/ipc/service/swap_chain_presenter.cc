@@ -11,15 +11,17 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "components/crash/core/common/crash_key.h"
-#include "gpu/config/gpu_finch_features.h"
 #include "gpu/ipc/service/dc_layer_tree.h"
 #include "gpu/ipc/service/direct_composition_surface_win.h"
 #include "ui/gfx/color_space_win.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gl/gl_image_dxgi.h"
 #include "ui/gl/gl_image_memory.h"
+#include "ui/gl/gl_switches.h"
 
 namespace gpu {
+using OverlayFormat = DirectCompositionSurfaceWin::OverlayFormat;
+
 namespace {
 // Some drivers fail to correctly handle BT.709 video in overlays. This flag
 // converts them to BT.601 in the video processor.
@@ -145,6 +147,17 @@ bool CreateSurfaceHandleHelper(HANDLE* handle) {
 
   return true;
 }
+
+const char* OverlayFormatToString(OverlayFormat format) {
+  switch (format) {
+    case OverlayFormat::kBGRA:
+      return "BGRA";
+    case OverlayFormat::kYUY2:
+      return "YUY2";
+    case OverlayFormat::kNV12:
+      return "NV12";
+  }
+}
 }  // namespace
 
 SwapChainPresenter::PresentationHistory::PresentationHistory() = default;
@@ -251,8 +264,7 @@ Microsoft::WRL::ComPtr<ID3D11Texture2D> SwapChainPresenter::UploadVideoImages(
   bool first_use = !staging_texture_ || (staging_texture_size_ != texture_size);
   first_use_key.Set(first_use ? "1" : "0");
 
-  bool use_dynamic_texture =
-      !layer_tree_->workarounds().disable_nv12_dynamic_textures;
+  bool use_dynamic_texture = !layer_tree_->disable_nv12_dynamic_textures();
 
   D3D11_TEXTURE2D_DESC desc = {};
   desc.Width = texture_size.width();
@@ -370,7 +382,7 @@ gfx::Size SwapChainPresenter::CalculateSwapChainSize(
   bool workaround_applied = false;
   gfx::Size overlay_monitor_size =
       DirectCompositionSurfaceWin::GetOverlayMonitorSize();
-  if (layer_tree_->workarounds().disable_larger_than_screen_overlays &&
+  if (layer_tree_->disable_larger_than_screen_overlays() &&
       !overlay_monitor_size.IsEmpty()) {
     // Because of the rounding when converting between pixels and DIPs, a
     // fullscreen video can become slightly larger than the monitor - e.g. on

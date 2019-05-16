@@ -81,7 +81,7 @@ _SWAP_CHAIN_PRESENTATION_MODE_COMPOSITION_FAILURE = 3
 # The following is defined for Chromium testing internal use.
 _SWAP_CHAIN_GET_FRAME_STATISTICS_MEDIA_FAILED = -1
 
-# Pixel format enums match OverlayFormat in config/gpu/gpu_info.h
+# Pixel format enums match OverlayFormat in DirectCompositionSurfaceWin.
 _SWAP_CHAIN_PIXEL_FORMAT_BGRA = 0
 _SWAP_CHAIN_PIXEL_FORMAT_YUY2 = 1
 _SWAP_CHAIN_PIXEL_FORMAT_NV12 = 2
@@ -287,9 +287,9 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     supports_nv12_overlays = False
     if overlay_bot_config.get('supports_overlays', False):
       supports_yuy2_overlays = False
-      if overlay_bot_config.get('overlay_cap_yuy2', 'NONE') != 'NONE':
+      if overlay_bot_config['yuy2_overlay_support'] != 'NONE':
         supports_yuy2_overlays = True
-      if overlay_bot_config.get('overlay_cap_nv12', 'NONE') != 'NONE':
+      if overlay_bot_config['nv12_overlay_support'] != 'NONE':
         supports_nv12_overlays = True
       assert supports_yuy2_overlays or supports_nv12_overlays
       if expect_yuy2 or not supports_nv12_overlays:

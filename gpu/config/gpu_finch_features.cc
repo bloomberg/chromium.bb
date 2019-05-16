@@ -63,13 +63,6 @@ const base::Feature kDefaultEnableOopRasterization{
 const base::Feature kDefaultPassthroughCommandDecoder{
     "DefaultPassthroughCommandDecoder", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kDirectCompositionGpuVSync{
-    "DirectCompositionGpuVSync", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Overrides preferred overlay format to NV12 instead of YUY2.
-const base::Feature kDirectCompositionPreferNV12Overlays{
-    "DirectCompositionPreferNV12Overlays", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Allow putting a video swapchain underneath the main swapchain, so overlays
 // can be used even if there are controls on top of the video. It can be
 // enabled only when overlay is supported.
@@ -98,11 +91,6 @@ const base::Feature kSharedImageManager{"SharedImageManager",
 const base::Feature kUseDCOverlaysForSoftwareProtectedVideo{
     "UseDCOverlaysForSoftwareProtectedVideo",
     base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Use decode swap chain created from compatible video decoder buffers.
-const base::Feature kDirectCompositionUseNV12DecodeSwapChain{
-    "DirectCompositionUseNV12DecodeSwapChain",
-    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls the decode acceleration of JPEG images (as opposed to camera
 // captures) in Chrome OS using the VA-API.

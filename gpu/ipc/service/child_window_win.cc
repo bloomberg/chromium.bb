@@ -9,13 +9,7 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
-#include "base/win/scoped_hdc.h"
 #include "base/win/wrapped_window_proc.h"
-#include "gpu/ipc/common/gpu_messages.h"
-#include "gpu/ipc/service/gpu_channel_manager.h"
-#include "gpu/ipc/service/gpu_channel_manager_delegate.h"
-#include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/win/hwnd_util.h"
 #include "ui/gfx/win/window_impl.h"
 
@@ -121,10 +115,8 @@ void DestroyWindowsOnThread(HWND child_window, HWND hidden_popup_window) {
 
 }  // namespace
 
-ChildWindowWin::ChildWindowWin(
-    base::WeakPtr<ImageTransportSurfaceDelegate> delegate,
-    HWND parent_window)
-    : parent_window_(parent_window), window_(nullptr), delegate_(delegate) {}
+ChildWindowWin::ChildWindowWin(HWND parent_window)
+    : parent_window_(parent_window) {}
 
 bool ChildWindowWin::Initialize() {
   if (window_)
@@ -146,7 +138,6 @@ bool ChildWindowWin::Initialize() {
                      &event, &window_, &initial_parent_window_));
   event.Wait();
 
-  delegate_->DidCreateAcceleratedSurfaceChildWindow(parent_window_, window_);
   return true;
 }
 

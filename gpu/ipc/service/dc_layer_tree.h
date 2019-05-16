@@ -12,7 +12,6 @@
 
 #include <memory>
 
-#include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/dc_renderer_layer_params.h"
 
@@ -27,7 +26,8 @@ class SwapChainPresenter;
 // CommitAndClearPendingOverlays().
 class DCLayerTree {
  public:
-  explicit DCLayerTree(const GpuDriverBugWorkarounds& workarounds);
+  DCLayerTree(bool disable_nv12_dynamic_textures,
+              bool disable_larger_than_screen_overlays);
   ~DCLayerTree();
 
   // Returns true on success.
@@ -52,6 +52,14 @@ class DCLayerTree {
 
   void SetNeedsCommit() { needs_commit_ = true; }
 
+  bool disable_nv12_dynamic_textures() const {
+    return disable_nv12_dynamic_textures_;
+  }
+
+  bool disable_larger_than_screen_overlays() const {
+    return disable_larger_than_screen_overlays_;
+  }
+
   const Microsoft::WRL::ComPtr<ID3D11VideoDevice>& video_device() const {
     return video_device_;
   }
@@ -72,10 +80,9 @@ class DCLayerTree {
   Microsoft::WRL::ComPtr<IDXGISwapChain1> GetLayerSwapChainForTesting(
       size_t index) const;
 
-  const GpuDriverBugWorkarounds& workarounds() const { return workarounds_; }
-
  private:
-  const GpuDriverBugWorkarounds workarounds_;
+  const bool disable_nv12_dynamic_textures_;
+  const bool disable_larger_than_screen_overlays_;
 
   Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device_;
   Microsoft::WRL::ComPtr<IDCompositionDevice2> dcomp_device_;
