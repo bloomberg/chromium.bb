@@ -28,7 +28,7 @@
 # The SPIR-V headers from the SPIR-V Registry
 # https://www.khronos.org/registry/spir-v/
 #
-cmake_minimum_required(VERSION 2.8.11)
+cmake_minimum_required(VERSION 3.0)
 project(SPIRV-Headers)
 
 # There are two ways to use this project.
@@ -63,7 +63,6 @@ include(GNUInstallDirs)
 add_library(${PROJECT_NAME} INTERFACE)
 target_include_directories(${PROJECT_NAME} INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
 # Installation
