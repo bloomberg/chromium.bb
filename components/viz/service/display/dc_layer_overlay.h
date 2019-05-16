@@ -16,7 +16,7 @@
 
 namespace viz {
 class DisplayResourceProvider;
-class OutputSurface;
+class ContextProvider;
 
 // Holds all information necessary to construct a DCLayer from a DrawQuad.
 class VIZ_SERVICE_EXPORT DCLayerOverlay {
@@ -69,7 +69,7 @@ typedef std::vector<DCLayerOverlay> DCLayerOverlayList;
 
 class DCLayerOverlayProcessor {
  public:
-  explicit DCLayerOverlayProcessor(OutputSurface* surface);
+  explicit DCLayerOverlayProcessor(const ContextProvider* context_provider);
   ~DCLayerOverlayProcessor();
 
   void Process(DisplayResourceProvider* resource_provider,

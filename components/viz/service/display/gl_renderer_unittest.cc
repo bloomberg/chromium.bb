@@ -2077,9 +2077,9 @@ class MockOutputSurfaceTest : public GLRendererTest {
         DisplayResourceProvider::kGpu, output_surface_->context_provider(),
         shared_bitmap_manager_.get());
 
+    EXPECT_CALL(*output_surface_, GetOverlayCandidateValidator()).Times(1);
     renderer_.reset(new FakeRendererGL(&settings_, output_surface_.get(),
                                        resource_provider_.get()));
-    EXPECT_CALL(*output_surface_, GetOverlayCandidateValidator()).Times(1);
     renderer_->Initialize();
 
     EXPECT_CALL(*output_surface_, EnsureBackbuffer()).Times(1);
@@ -2171,8 +2171,9 @@ class TestOverlayProcessor : public OverlayProcessor {
     void CheckOverlaySupport(OverlayCandidateList* surfaces) override {}
   };
 
-  explicit TestOverlayProcessor(OutputSurface* surface)
-      : OverlayProcessor(surface) {}
+  TestOverlayProcessor(OverlayCandidateValidator* overlay_validator,
+                       ContextProvider* context_provider)
+      : OverlayProcessor(overlay_validator, context_provider) {}
   ~TestOverlayProcessor() override = default;
 
   void Initialize() override {
@@ -2231,6 +2232,10 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
       parent_resource_provider->GetChildToParentMap(child_id);
   ResourceId parent_resource_id = resource_map[list[0].id];
 
+  std::unique_ptr<TestOverlayProcessor::Validator> validator(
+      new TestOverlayProcessor::Validator);
+  output_surface->SetOverlayCandidateValidator(validator.get());
+
   RendererSettings settings;
   FakeRendererGL renderer(&settings, output_surface.get(),
                           parent_resource_provider.get(),
@@ -2238,13 +2243,10 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
   renderer.Initialize();
   renderer.SetVisible(true);
 
-  TestOverlayProcessor* processor =
-      new TestOverlayProcessor(output_surface.get());
+  TestOverlayProcessor* processor = new TestOverlayProcessor(
+      validator.get(), output_surface->context_provider());
   processor->Initialize();
   renderer.SetOverlayProcessor(processor);
-  std::unique_ptr<TestOverlayProcessor::Validator> validator(
-      new TestOverlayProcessor::Validator);
-  output_surface->SetOverlayCandidateValidator(validator.get());
 
   gfx::Size viewport_size(1, 1);
   RenderPass* root_pass = cc::AddRenderPass(
@@ -2359,8 +2361,9 @@ class SingleOverlayOnTopProcessor : public OverlayProcessor {
     bool multiple_candidates_ = false;
   };
 
-  explicit SingleOverlayOnTopProcessor(OutputSurface* surface)
-      : OverlayProcessor(surface) {}
+  explicit SingleOverlayOnTopProcessor(OverlayCandidateValidator* validator,
+                                       ContextProvider* context_provider)
+      : OverlayProcessor(validator, context_provider) {}
 
   void Initialize() override {
     strategies_.push_back(
@@ -2452,8 +2455,9 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
   renderer.Initialize();
   renderer.SetVisible(true);
 
-  SingleOverlayOnTopProcessor* processor =
-      new SingleOverlayOnTopProcessor(output_surface.get());
+  SingleOverlayOnTopProcessor* processor = new SingleOverlayOnTopProcessor(
+      output_surface->GetOverlayCandidateValidator(),
+      output_surface->context_provider());
   processor->Initialize();
   renderer.SetOverlayProcessor(processor);
 
@@ -2835,17 +2839,18 @@ TEST_F(GLRendererTest, DCLayerOverlaySwitch) {
 
   RendererSettings settings;
   settings.partial_swap_enabled = true;
+  std::unique_ptr<DCLayerValidator> validator(new DCLayerValidator);
+  output_surface->SetOverlayCandidateValidator(validator.get());
   FakeRendererGL renderer(&settings, output_surface.get(),
                           parent_resource_provider.get());
   renderer.Initialize();
   renderer.SetVisible(true);
   TestOverlayProcessor* processor =
-      new TestOverlayProcessor(output_surface.get());
+      new TestOverlayProcessor(output_surface->GetOverlayCandidateValidator(),
+                               output_surface->context_provider());
   processor->Initialize();
   processor->SetDCHasHwOverlaySupportForTesting();
   renderer.SetOverlayProcessor(processor);
-  std::unique_ptr<DCLayerValidator> validator(new DCLayerValidator);
-  output_surface->SetOverlayCandidateValidator(validator.get());
 
   gfx::Size viewport_size(100, 100);
 
@@ -2978,7 +2983,9 @@ class ContentBoundsOverlayProcessor : public OverlayProcessor {
 
   ContentBoundsOverlayProcessor(OutputSurface* surface,
                                 const std::vector<gfx::Rect>& content_bounds)
-      : OverlayProcessor(surface), content_bounds_(content_bounds) {}
+      : OverlayProcessor(surface->GetOverlayCandidateValidator(),
+                         surface->context_provider()),
+        content_bounds_(content_bounds) {}
 
   void Initialize() override {
     strategies_.push_back(
@@ -3121,8 +3128,9 @@ class CALayerGLRendererTest : public GLRendererTest {
     renderer_->Initialize();
     renderer_->SetVisible(true);
 
-    TestOverlayProcessor* processor =
-        new TestOverlayProcessor(output_surface_.get());
+    TestOverlayProcessor* processor = new TestOverlayProcessor(
+        output_surface_->GetOverlayCandidateValidator(),
+        output_surface_->context_provider());
     processor->Initialize();
     renderer_->SetOverlayProcessor(processor);
   }
@@ -4063,7 +4071,9 @@ class GLRendererWithGpuFenceTest : public GLRendererTest {
     renderer_->Initialize();
     renderer_->SetVisible(true);
 
-    auto* processor = new SingleOverlayOnTopProcessor(output_surface_.get());
+    auto* processor = new SingleOverlayOnTopProcessor(
+        output_surface_->GetOverlayCandidateValidator(),
+        output_surface_->context_provider());
     processor->AllowMultipleCandidates();
     processor->Initialize();
     renderer_->SetOverlayProcessor(processor);

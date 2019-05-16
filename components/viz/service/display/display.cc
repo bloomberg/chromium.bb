@@ -344,12 +344,10 @@ void Display::InitializeRenderer(bool enable_shared_images) {
 
   // TODO(jbauman): Outputting an incomplete quad list doesn't work when using
   // overlays.
-  OverlayCandidateValidator* overlay_validator =
-      output_surface_->GetOverlayCandidateValidator();
   bool output_partial_list =
-      renderer_->use_partial_swap() && !overlay_validator;
+      renderer_->use_partial_swap() && !renderer_->has_overlay_validator();
   bool needs_surface_occluding_damage_rect =
-      overlay_validator && overlay_validator->NeedsSurfaceOccludingDamageRect();
+      renderer_->OverlayNeedsSurfaceOccludingDamageRect();
   aggregator_.reset(new SurfaceAggregator(
       surface_manager_, resource_provider_.get(), output_partial_list,
       needs_surface_occluding_damage_rect));

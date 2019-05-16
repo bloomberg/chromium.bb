@@ -202,9 +202,9 @@ DCLayerOverlay& DCLayerOverlay::operator=(const DCLayerOverlay& other) =
     default;
 DCLayerOverlay::~DCLayerOverlay() = default;
 
-DCLayerOverlayProcessor::DCLayerOverlayProcessor(OutputSurface* surface) {
+DCLayerOverlayProcessor::DCLayerOverlayProcessor(
+    const ContextProvider* context_provider) {
 #if defined(OS_WIN)
-  auto* context_provider = surface->context_provider();
   if (context_provider) {
     has_hw_overlay_support_ =
         context_provider->ContextCapabilities().dc_layers &&

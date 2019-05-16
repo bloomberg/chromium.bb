@@ -101,6 +101,11 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
     enlarge_pass_texture_amount_ = amount;
   }
 
+  bool has_overlay_validator() const {
+    return !!overlay_processor_->GetOverlayCandidateValidator();
+  }
+  bool OverlayNeedsSurfaceOccludingDamageRect() const;
+
  protected:
   friend class BspWalkActionDrawPolygon;
 

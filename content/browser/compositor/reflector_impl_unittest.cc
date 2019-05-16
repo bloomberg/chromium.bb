@@ -182,6 +182,13 @@ class ReflectorImplTest : public testing::Test {
     reflector_->OnSourcePostSubBuffer(kSubRect, kSurfaceSize);
   }
 
+#if defined(USE_OZONE)
+  void CheckOverlaySupport(viz::OverlayCandidateList* surfaces) {
+    output_surface_->GetOverlayCandidateValidator()->CheckOverlaySupport(
+        surfaces);
+  }
+#endif  // defined(USE_OZONE)
+
  protected:
   std::unique_ptr<ui::TestContextFactories> context_factories_;
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
@@ -234,7 +241,7 @@ TEST_F(ReflectorImplTest, CheckOverlayNoReflector) {
   plane_2.plane_z_order = 1;
   list.push_back(plane_1);
   list.push_back(plane_2);
-  output_surface_->GetOverlayCandidateValidator()->CheckOverlaySupport(&list);
+  CheckOverlaySupport(&list);
   EXPECT_TRUE(list[0].overlay_handled);
 }
 
@@ -250,7 +257,7 @@ TEST_F(ReflectorImplTest, CheckOverlaySWMirroring) {
   plane_2.plane_z_order = 1;
   list.push_back(plane_1);
   list.push_back(plane_2);
-  output_surface_->GetOverlayCandidateValidator()->CheckOverlaySupport(&list);
+  CheckOverlaySupport(&list);
   EXPECT_FALSE(list[0].overlay_handled);
 }
 #endif  // defined(USE_OZONE)

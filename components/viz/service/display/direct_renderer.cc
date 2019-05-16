@@ -109,7 +109,9 @@ DirectRenderer::DirectRenderer(const RendererSettings* settings,
     : settings_(settings),
       output_surface_(output_surface),
       resource_provider_(resource_provider),
-      overlay_processor_(std::make_unique<OverlayProcessor>(output_surface)) {}
+      overlay_processor_(std::make_unique<OverlayProcessor>(
+          output_surface->GetOverlayCandidateValidator(),
+          output_surface->context_provider())) {}
 
 DirectRenderer::~DirectRenderer() = default;
 
@@ -812,6 +814,10 @@ void DirectRenderer::SetCurrentFrameForTesting(const DrawingFrame& frame) {
 bool DirectRenderer::HasAllocatedResourcesForTesting(
     const RenderPassId& render_pass_id) const {
   return IsRenderPassResourceAllocated(render_pass_id);
+}
+
+bool DirectRenderer::OverlayNeedsSurfaceOccludingDamageRect() const {
+  return overlay_processor_->NeedsSurfaceOccludingDamageRect();
 }
 
 bool DirectRenderer::ShouldApplyRoundedCorner(const DrawQuad* quad) const {

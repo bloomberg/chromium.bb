@@ -97,15 +97,15 @@ OverlayStrategy OverlayProcessor::Strategy::GetUMAEnum() const {
   return OverlayStrategy::kUnknown;
 }
 
-OverlayProcessor::OverlayProcessor(OutputSurface* surface)
-    : surface_(surface), dc_processor_(surface) {}
+OverlayProcessor::OverlayProcessor(OverlayCandidateValidator* overlay_validator,
+                                   const ContextProvider* context_provider)
+    : overlay_validator_(overlay_validator),
+      dc_processor_(
+          std::make_unique<DCLayerOverlayProcessor>(context_provider)) {}
 
 void OverlayProcessor::Initialize() {
-  DCHECK(surface_);
-  OverlayCandidateValidator* validator =
-      surface_->GetOverlayCandidateValidator();
-  if (validator)
-    validator->GetStrategies(&strategies_);
+  if (overlay_validator_)
+    overlay_validator_->GetStrategies(&strategies_);
 }
 
 OverlayProcessor::~OverlayProcessor() {}
@@ -124,9 +124,7 @@ bool OverlayProcessor::ProcessForCALayers(
     OverlayCandidateList* overlay_candidates,
     CALayerOverlayList* ca_layer_overlays,
     gfx::Rect* damage_rect) {
-  OverlayCandidateValidator* overlay_validator =
-      surface_->GetOverlayCandidateValidator();
-  if (!overlay_validator || !overlay_validator->AllowCALayerOverlays())
+  if (!overlay_validator_ || !overlay_validator_->AllowCALayerOverlays())
     return false;
 
   if (!ProcessForCALayerOverlays(
@@ -152,14 +150,12 @@ bool OverlayProcessor::ProcessForDCLayers(
     OverlayCandidateList* overlay_candidates,
     DCLayerOverlayList* dc_layer_overlays,
     gfx::Rect* damage_rect) {
-  OverlayCandidateValidator* overlay_validator =
-      surface_->GetOverlayCandidateValidator();
-  if (!overlay_validator || !overlay_validator->AllowDCLayerOverlays())
+  if (!overlay_validator_ || !overlay_validator_->AllowDCLayerOverlays())
     return false;
 
-  dc_processor_.Process(resource_provider,
-                        gfx::RectF(render_passes->back()->output_rect),
-                        render_passes, damage_rect, dc_layer_overlays);
+  dc_processor_->Process(resource_provider,
+                         gfx::RectF(render_passes->back()->output_rect),
+                         render_passes, damage_rect, dc_layer_overlays);
 
   DCHECK(overlay_candidates->empty());
   return true;
@@ -199,10 +195,10 @@ void OverlayProcessor::ProcessForOverlays(
   // contents.
   if (!render_pass->copy_requests.empty()) {
     damage_rect->Union(
-        dc_processor_.previous_frame_overlay_damage_contribution());
+        dc_processor_->previous_frame_overlay_damage_contribution());
     // Update damage rect before calling ClearOverlayState, otherwise
     // previous_frame_overlay_rect_union will be empty.
-    dc_processor_.ClearOverlayState();
+    dc_processor_->ClearOverlayState();
 
     return;
   }
@@ -242,12 +238,11 @@ void OverlayProcessor::ProcessForOverlays(
     // If no strategy worked the only remaining overlay in the list is the one
     // backed by the OutputSurface. Make sure the OverlayCandidateValidator
     // applies any modifications if needed.
-    if (!candidates->empty() && surface_->GetOverlayCandidateValidator()) {
+    if (!candidates->empty() && overlay_validator_) {
       DCHECK_EQ(candidates->size(), 1u);
       DCHECK(candidates->back().use_output_surface_for_resource);
 
-      surface_->GetOverlayCandidateValidator()->AdjustOutputSurfaceOverlay(
-          &candidates->back());
+      overlay_validator_->AdjustOutputSurfaceOverlay(&candidates->back());
       DCHECK_EQ(candidates->size(), 1u);
     }
   }
@@ -337,6 +332,11 @@ void OverlayProcessor::UpdateDamageRect(
   previous_frame_underlay_rect_ = this_frame_underlay_rect;
 
   damage_rect->Union(output_surface_overlay_damage_rect);
+}
+
+bool OverlayProcessor::NeedsSurfaceOccludingDamageRect() const {
+  return overlay_validator_ &&
+         overlay_validator_->NeedsSurfaceOccludingDamageRect();
 }
 
 }  // namespace viz
