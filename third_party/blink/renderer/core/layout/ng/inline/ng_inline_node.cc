@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <memory>
 
+#include "build/build_config.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_list_marker.h"
@@ -943,7 +944,23 @@ scoped_refptr<const NGLayoutResult> NGInlineNode::Layout(
   const auto* inline_break_token = To<NGInlineBreakToken>(break_token);
   NGInlineLayoutAlgorithm algorithm(*this, constraint_space, inline_break_token,
                                     context);
-  return algorithm.Layout();
+  auto layout_result = algorithm.Layout();
+
+#if defined(OS_ANDROID)
+  // Cached position data is crucial for line breaking performance and is
+  // preserved across layouts to speed up subsequent layout passes due to
+  // reflow, page zoom, window resize, etc. On Android though reflows are less
+  // common, page zoom isn't used (instead uses pinch-zoom), and the window
+  // typically can't be resized (apart from rotation). To reduce memory usage
+  // discard the cached position data after layout.
+  NGInlineNodeData* data = MutableData();
+  for (auto& item : data->items) {
+    if (item.shape_result_)
+      item.shape_result_->DiscardPositionData();
+  }
+#endif  // defined(OS_ANDROID)
+
+  return layout_result;
 }
 
 const NGPaintFragment* NGInlineNode::ReusableLineBoxContainer(

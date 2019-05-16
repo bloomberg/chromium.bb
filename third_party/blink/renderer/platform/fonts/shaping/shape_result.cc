@@ -1559,6 +1559,10 @@ void ShapeResult::EnsurePositionData() const {
     ComputePositionData<true>();
 }
 
+void ShapeResult::DiscardPositionData() const {
+  character_position_ = nullptr;
+}
+
 unsigned ShapeResult::CachedOffsetForPosition(float x) const {
   DCHECK(character_position_);
   unsigned offset = character_position_->OffsetForPosition(x, Rtl());
