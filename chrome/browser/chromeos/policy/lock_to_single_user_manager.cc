@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
@@ -24,6 +25,28 @@ using RebootOnSignOutResult =
     cryptohome::LockToSingleUserMountUntilRebootResult;
 
 namespace policy {
+
+namespace {
+
+// The result from D-Bus call to lock the device to single user.
+// These values are logged to UMA. Entries should not be renumbered and
+// numeric values should never be reused. Please keep in sync with
+// "LockToSingleUserResult" in src/tools/metrics/histograms/enums.xml.
+enum class LockToSingleUserResult {
+  // Successfully locked to single user.
+  kSuccess = 0,
+  // No response from DBus call.
+  kNoResponse = 1,
+  // Request failed on Chrome OS side.
+  kFailedToLock = 2,
+  kMaxValue = kFailedToLock,
+};
+
+void RecordDBusResult(LockToSingleUserResult result) {
+  base::UmaHistogramEnumeration("Enterprise.LockToSingleUserResult", result);
+}
+
+}  // namespace
 
 LockToSingleUserManager::LockToSingleUserManager() {
   CHECK(chromeos::LoginState::IsInitialized());
@@ -73,10 +96,11 @@ void LockToSingleUserManager::LockToSingleUser() {
 
 void LockToSingleUserManager::OnLockToSingleUserMountUntilRebootDone(
     base::Optional<cryptohome::BaseReply> reply) {
-  // TODO(igorcov): Add UMA stats and remove multi user sign in option from UI.
+  // TODO(igorcov): Remove multi user sign in option from UI.
   if (!reply || !reply->HasExtension(RebootOnSignOutReply::reply)) {
     LOG(ERROR) << "Signing out user: no reply from "
                   "LockToSingleUserMountUntilReboot D-Bus call.";
+    RecordDBusResult(LockToSingleUserResult::kNoResponse);
     chrome::AttemptUserExit();
     return;
   }
@@ -89,9 +113,11 @@ void LockToSingleUserManager::OnLockToSingleUserMountUntilRebootDone(
     // The device is locked to single user on TPM level. Update the cache in
     // SessionTerminationManager, so that it triggers reboot on sign out.
     chromeos::SessionTerminationManager::Get()->SetDeviceLockedToSingleUser();
+    RecordDBusResult(LockToSingleUserResult::kSuccess);
   } else {
     LOG(ERROR) << "Signing out user: failed to lock device to single user: "
                << extension.result();
+    RecordDBusResult(LockToSingleUserResult::kFailedToLock);
     chrome::AttemptUserExit();
   }
 }
