@@ -25,6 +25,7 @@
 #include "base/debug/stack_trace.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/string_split.h"
 #include "base/system/sys_info.h"
 #include "base/task/thread_pool/initialization_util.h"
 #include "base/task/thread_pool/thread_pool.h"
@@ -208,9 +209,13 @@ RenderProcessImpl::RenderProcessImpl()
   }
 
   if (command_line.HasSwitch(switches::kJavaScriptFlags)) {
-    std::string flags(
-        command_line.GetSwitchValueASCII(switches::kJavaScriptFlags));
-    v8::V8::SetFlagsFromString(flags.c_str(), flags.size());
+    std::string js_flags =
+        command_line.GetSwitchValueASCII(switches::kJavaScriptFlags);
+    std::vector<base::StringPiece> flag_list = base::SplitStringPiece(
+        js_flags, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+    for (const auto& flag : flag_list) {
+      v8::V8::SetFlagsFromString(flag.as_string().c_str(), flag.size());
+    }
   }
 
   if (command_line.HasSwitch(switches::kDomAutomationController))
