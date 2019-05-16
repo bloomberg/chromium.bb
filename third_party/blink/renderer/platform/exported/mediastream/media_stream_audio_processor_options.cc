@@ -113,30 +113,25 @@ AudioProcessingProperties::ToAudioProcessingSettings() const {
   return out;
 }
 
-void EnableEchoCancellation(AudioProcessing* audio_processing) {
-  webrtc::AudioProcessing::Config apm_config = audio_processing->GetConfig();
-  apm_config.echo_canceller.enabled = true;
+void EnableEchoCancellation(AudioProcessing::Config* apm_config) {
+  apm_config->echo_canceller.enabled = true;
 #if defined(OS_ANDROID)
-  apm_config.echo_canceller.mobile_mode = true;
+  apm_config->echo_canceller.mobile_mode = true;
 #else
-  apm_config.echo_canceller.mobile_mode = false;
+  apm_config->echo_canceller.mobile_mode = false;
 #endif
-  audio_processing->ApplyConfig(apm_config);
 }
 
-void EnableNoiseSuppression(AudioProcessing* audio_processing,
-                            webrtc::NoiseSuppression::Level ns_level) {
-  int err = audio_processing->noise_suppression()->set_level(ns_level);
-  err |= audio_processing->noise_suppression()->Enable(true);
-  CHECK_EQ(err, 0);
+void EnableNoiseSuppression(
+    AudioProcessing::Config* apm_config,
+    AudioProcessing::Config::NoiseSuppression::Level ns_level) {
+  apm_config->noise_suppression.enabled = true;
+  apm_config->noise_suppression.level = ns_level;
 }
 
-void EnableTypingDetection(AudioProcessing* audio_processing,
+void EnableTypingDetection(AudioProcessing::Config* apm_config,
                            webrtc::TypingDetection* typing_detector) {
-  webrtc::AudioProcessing::Config apm_config = audio_processing->GetConfig();
-  apm_config.voice_detection.enabled = true;
-  audio_processing->ApplyConfig(apm_config);
-
+  apm_config->voice_detection.enabled = true;
   // Configure the update period to 1s (100 * 10ms) in the typing detector.
   typing_detector->SetParameters(0, 0, 0, 0, 0, 100);
 }
@@ -184,7 +179,7 @@ void GetExtraGainConfig(
 }
 
 void ConfigAutomaticGainControl(
-    webrtc::AudioProcessing::Config* apm_config,
+    AudioProcessing::Config* apm_config,
     bool agc_enabled,
     bool experimental_agc_enabled,
     bool use_hybrid_agc,
@@ -202,9 +197,9 @@ void ConfigAutomaticGainControl(
     apm_config->gain_controller1.enabled = true;
     apm_config->gain_controller1.mode =
 #if defined(OS_ANDROID)
-        webrtc::AudioProcessing::Config::GainController1::Mode::kFixedDigital;
+        AudioProcessing::Config::GainController1::Mode::kFixedDigital;
 #else
-        webrtc::AudioProcessing::Config::GainController1::Mode::kAdaptiveAnalog;
+        AudioProcessing::Config::GainController1::Mode::kAdaptiveAnalog;
 #endif
   }
 
@@ -220,7 +215,7 @@ void ConfigAutomaticGainControl(
     apm_config->gain_controller2.adaptive_digital.enabled = true;
 
     using LevelEstimator =
-        webrtc::AudioProcessing::Config::GainController2::LevelEstimator;
+        AudioProcessing::Config::GainController2::LevelEstimator;
     apm_config->gain_controller2.adaptive_digital.level_estimator =
         hybrid_agc_use_peaks_not_rms.value() ? LevelEstimator::kPeak
                                              : LevelEstimator::kRms;
@@ -239,7 +234,7 @@ void ConfigAutomaticGainControl(
   }
 }
 
-void ConfigPreAmplifier(webrtc::AudioProcessing::Config* apm_config,
+void ConfigPreAmplifier(AudioProcessing::Config* apm_config,
                         base::Optional<double> fixed_gain_factor) {
   if (!!fixed_gain_factor) {
     apm_config->pre_amplifier.enabled = true;

@@ -48,7 +48,7 @@ using EchoCancellationType =
 namespace {
 
 using webrtc::AudioProcessing;
-using webrtc::NoiseSuppression;
+using NoiseSuppression = webrtc::AudioProcessing::Config::NoiseSuppression;
 
 constexpr int kAudioProcessingNumberOfChannels = 1;
 constexpr int kBuffersPerSecond = 100;  // 10 ms per buffer.
@@ -610,22 +610,6 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
     playout_data_source_->AddPlayoutSink(this);
   }
 
-  if (properties.EchoCancellationIsWebRtcProvided()) {
-    blink::EnableEchoCancellation(audio_processing_.get());
-  }
-
-  if (properties.goog_noise_suppression)
-    blink::EnableNoiseSuppression(audio_processing_.get(),
-                                  NoiseSuppression::kHigh);
-
-  if (goog_typing_detection) {
-    // TODO(xians): Remove this |typing_detector_| after the typing suppression
-    // is enabled by default.
-    typing_detector_.reset(new webrtc::TypingDetection());
-    blink::EnableTypingDetection(audio_processing_.get(),
-                                 typing_detector_.get());
-  }
-
   // TODO(saza): When Chrome uses AGC2, handle all JSON config via the
   // webrtc::AudioProcessing::Config, crbug.com/895814.
   base::Optional<double> pre_amplifier_fixed_gain_factor,
@@ -660,6 +644,18 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
   }
 
   blink::ConfigPreAmplifier(&apm_config, pre_amplifier_fixed_gain_factor);
+  if (goog_typing_detection) {
+    // TODO(xians): Remove this |typing_detector_| after the typing suppression
+    // is enabled by default.
+    typing_detector_.reset(new webrtc::TypingDetection());
+    blink::EnableTypingDetection(&apm_config, typing_detector_.get());
+  }
+  if (properties.goog_noise_suppression) {
+    blink::EnableNoiseSuppression(&apm_config, NoiseSuppression::kHigh);
+  }
+  if (properties.EchoCancellationIsWebRtcProvided()) {
+    blink::EnableEchoCancellation(&apm_config);
+  }
   audio_processing_->ApplyConfig(apm_config);
 
   RecordProcessingState(AUDIO_PROCESSING_ENABLED);
