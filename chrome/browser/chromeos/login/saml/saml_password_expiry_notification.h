@@ -11,6 +11,13 @@ namespace chromeos {
 
 // Utility functions to show or hide a password expiry notification.
 
+// Show a password expiry notification if the user's password has expired or
+// soon expires (that is, within pref kSamlPasswordExpirationAdvanceWarningDays
+// time). Otherwise, if the user's password will expire in the more distant
+// future, in that case a notification will be shown in the future. Nothing is
+// shown if the password is not expected to expire.
+void MaybeShowSamlPasswordExpiryNotification(Profile* profile);
+
 // Shows a password expiry notification. |lessThanNDays| should be 1 if the
 // password expires in less than 1 day, 0 if it has already expired, etc.
 // Negative numbers are treated the same as zero.
