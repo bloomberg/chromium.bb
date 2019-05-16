@@ -293,8 +293,9 @@ void ClientTagBasedModelTypeProcessor::ReportError(const ModelError& error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Ignore all errors after the first.
-  if (model_error_)
+  if (model_error_) {
     return;
+  }
 
   model_error_ = error;
 
@@ -307,14 +308,14 @@ void ClientTagBasedModelTypeProcessor::ReportError(const ModelError& error) {
     DisconnectSync();
   }
 
-  if (start_callback_) {
-    // Tell sync about the error instead of connecting.
-    ConnectIfReady();
-  } else if (activation_request_.error_handler) {
-    // Connecting was already initiated; just tell sync about the error instead
-    // of going through ConnectIfReady().
+  // Shouldn't connect anymore.
+  start_callback_.Reset();
+  if (activation_request_.error_handler) {
+    // Tell sync about the error.
     activation_request_.error_handler.Run(error);
   }
+  // If the error handler isn't ready yet, we defer reporting the error until it
+  // becomes available which happens in ConnectIfReady() upon OnSyncStarting().
 }
 
 base::Optional<ModelError> ClientTagBasedModelTypeProcessor::GetError() const {
