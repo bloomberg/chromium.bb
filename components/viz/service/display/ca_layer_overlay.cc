@@ -53,6 +53,7 @@ enum CALayerResult {
   CA_LAYER_FAILED_RENDER_PASS_FILTER_OPERATION,
   CA_LAYER_FAILED_RENDER_PASS_SORTING_CONTEXT_ID,
   CA_LAYER_FAILED_TOO_MANY_RENDER_PASS_DRAW_QUADS,
+  CA_LAYER_FAILED_QUAD_ROUNDED_CORNER,
   CA_LAYER_FAILED_COUNT,
 };
 
@@ -190,6 +191,12 @@ class CALayerOverlayProcessor {
     if (quad->shared_quad_state->opacity == 0.f) {
       *skip = true;
       return CA_LAYER_SUCCESS;
+    }
+
+    // TODO(enne): we could probably handle set rounded corner info on
+    // the CALayer in the case that rounded corner rect aligns with the quad.
+    if (!quad->shared_quad_state->rounded_corner_bounds.IsEmpty()) {
+      return CA_LAYER_FAILED_QUAD_ROUNDED_CORNER;
     }
 
     // Enable edge anti-aliasing only on layer boundaries.

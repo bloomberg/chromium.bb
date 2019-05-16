@@ -6551,6 +6551,7 @@ Unknown properties are collapsed to zero. -->
   <int value="21" label="RenderPassDrawQuad has unconvertable filters."/>
   <int value="22" label="RenderPassDrawQuad has a sorting context id."/>
   <int value="23" label="Too many RenderPassDrawQuads."/>
+  <int value="24" label="Unsupported rounded corner rect."/>
 </enum>
 
 <enum name="CanMakePaymentUsage">
