@@ -3,5 +3,5 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:drawable="@drawable/tile_view_icon_focused" android:state_focused="true"/>
+    <item android:drawable="@drawable/suggestion_tile_focused_highlight" android:state_focused="true"/>
 </selector>

@@ -9,13 +9,14 @@
     android:layout_width="@dimen/tile_view_icon_size"
     android:layout_height="@dimen/tile_view_icon_size"
     android:layout_gravity="center"
-    android:background="@drawable/suggestion_tile">
+    android:background="@drawable/suggestion_tile_highlight">
     <!-- The icon background. -->
     <View
         android:id="@+id/tile_view_icon_background"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@drawable/tile_view_icon_background_modern" />
+        android:background="@drawable/suggestion_tile_background"
+        android:duplicateParentState="true" />
 
     <!-- The main icon. -->
     <org.chromium.chrome.browser.touchless.QuantizedSizeIconView
@@ -23,8 +24,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="center"
-	app:smallSize="@dimen/most_likely_quantized_icon_size_small"
-	app:largeSize="@dimen/most_likely_quantized_icon_size_large"
+        app:smallSize="@dimen/most_likely_quantized_icon_size_small"
+        app:largeSize="@dimen/most_likely_quantized_icon_size_large"
         android:layout_margin="@dimen/most_likely_quantized_icon_margin"
         android:importantForAccessibility="no" />
 
@@ -32,8 +33,8 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@drawable/suggestion_tile"
-        android:duplicateParentState="true"/>
+        android:background="@drawable/suggestion_tile_highlight"
+        android:duplicateParentState="true" />
 
     <!-- The offline badge. -->
     <ImageView
@@ -43,6 +44,6 @@
         android:layout_gravity="top|end"
         android:layout_marginEnd="@dimen/tile_view_offline_badge_margin_end_modern_condensed"
         android:visibility="gone"
-        android:contentDescription="@string/accessibility_ntp_offline_badge"
+        android:importantForAccessibility="no"
         app:srcCompat="@drawable/ic_offline_pin_blue_white" />
 </org.chromium.chrome.browser.touchless.SiteSuggestionsTileView>
