@@ -76,6 +76,8 @@ class MockVideoCaptureClient : public VideoCaptureDevice::Client {
   base::OnceClosure quit_cb_;
 };
 
+using NiceMockVideoCaptureClient = ::testing::NiceMock<MockVideoCaptureClient>;
+
 }  // namespace unittest_internal
 }  // namespace media
 

@@ -147,7 +147,7 @@ class FakeVideoCaptureDeviceTestBase : public ::testing::Test {
   void SetUp() override { EXPECT_CALL(*client_, OnError(_, _, _)).Times(0); }
 
   std::unique_ptr<MockVideoCaptureDeviceClient> CreateClient() {
-    auto result = std::make_unique<MockVideoCaptureDeviceClient>();
+    auto result = std::make_unique<NiceMockVideoCaptureDeviceClient>();
     ON_CALL(*result, ReserveOutputBuffer(_, _, _, _))
         .WillByDefault(
             Invoke([](const gfx::Size& dimensions, VideoPixelFormat format, int,

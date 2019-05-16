@@ -387,9 +387,9 @@ class CameraDeviceDelegateTest : public ::testing::Test {
     EXPECT_EQ(CameraDeviceContext::State::kStopped, GetState());
   }
 
-  unittest_internal::MockVideoCaptureClient* ResetDeviceContext() {
+  unittest_internal::NiceMockVideoCaptureClient* ResetDeviceContext() {
     auto mock_client =
-        std::make_unique<unittest_internal::MockVideoCaptureClient>();
+        std::make_unique<unittest_internal::NiceMockVideoCaptureClient>();
     auto* client_ptr = mock_client.get();
     device_context_ =
         std::make_unique<CameraDeviceContext>(std::move(mock_client));

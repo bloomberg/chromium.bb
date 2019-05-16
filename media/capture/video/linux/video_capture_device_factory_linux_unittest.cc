@@ -123,7 +123,7 @@ TEST_F(VideoCaptureDeviceFactoryLinuxTest,
   arbitrary_params.requested_format.frame_size = gfx::Size(1280, 720);
   arbitrary_params.requested_format.frame_rate = 30.0f;
   arbitrary_params.requested_format.pixel_format = PIXEL_FORMAT_I420;
-  auto client = std::make_unique<MockVideoCaptureDeviceClient>();
+  auto client = std::make_unique<NiceMockVideoCaptureDeviceClient>();
   MockVideoCaptureDeviceClient* client_ptr = client.get();
 
   base::RunLoop wait_loop;

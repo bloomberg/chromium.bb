@@ -69,6 +69,9 @@ class MockVideoCaptureDeviceClient : public VideoCaptureDevice::Client {
                     const media::VideoFrameMetadata& additional_metadata));
 };
 
+using NiceMockVideoCaptureDeviceClient =
+    ::testing::NiceMock<MockVideoCaptureDeviceClient>;
+
 }  // namespace media
 
 #endif  // MEDIA_CAPTURE_VIDEO_MOCK_VIDEO_CAPTURE_DEVICE_CLIENT_H_

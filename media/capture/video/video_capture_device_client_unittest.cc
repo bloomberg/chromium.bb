@@ -27,9 +27,10 @@
 
 using ::testing::_;
 using ::testing::AtLeast;
-using ::testing::Mock;
 using ::testing::InSequence;
 using ::testing::Invoke;
+using ::testing::Mock;
+using ::testing::NiceMock;
 using ::testing::SaveArg;
 
 namespace media {
@@ -55,7 +56,7 @@ class VideoCaptureDeviceClientTest : public ::testing::Test {
     scoped_refptr<VideoCaptureBufferPoolImpl> buffer_pool(
         new VideoCaptureBufferPoolImpl(
             std::make_unique<VideoCaptureBufferTrackerFactoryImpl>(), 2));
-    auto controller = std::make_unique<MockVideoFrameReceiver>();
+    auto controller = std::make_unique<NiceMock<MockVideoFrameReceiver>>();
     receiver_ = controller.get();
     gpu_memory_buffer_manager_ =
         std::make_unique<unittest_internal::MockGpuMemoryBufferManager>();
@@ -72,7 +73,7 @@ class VideoCaptureDeviceClientTest : public ::testing::Test {
   ~VideoCaptureDeviceClientTest() override = default;
 
  protected:
-  MockVideoFrameReceiver* receiver_;
+  NiceMock<MockVideoFrameReceiver>* receiver_;
   std::unique_ptr<unittest_internal::MockGpuMemoryBufferManager>
       gpu_memory_buffer_manager_;
   std::unique_ptr<VideoCaptureDeviceClient> device_client_;
