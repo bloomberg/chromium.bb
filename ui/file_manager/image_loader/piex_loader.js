@@ -62,10 +62,11 @@ Module.onAbort = (error) => {
  * wasm Module is in a broken, non-functional state.
  *
  * Re-loading the page is the only reliable way to attempt to recover from
- * this broken Module state.
+ * broken Module state.
  */
-function hasWasmModuleFailed() {
+function wasmModuleFailed() {
   if (wasmFailed || !Module.calledRun) {
+    console.error('[PiexLoader] wasmModuleFailed');
     setTimeout(chrome.runtime.reload, 0);
     return true;
   }
