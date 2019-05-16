@@ -37,25 +37,6 @@ TEST(SigninPromoTest, TestReauthURL) {
 }
 #endif  // !defined(OS_CHROMEOS)
 
-TEST(SigninPromoTest, TestLandingURL) {
-  GURL expected_url_1(
-      "chrome-extension://mfffpogegjflfpflabcdkioaeobkgjik/"
-      "success.html?access_point=1&source=13");
-  EXPECT_EQ(expected_url_1,
-            GetLandingURL(signin_metrics::AccessPoint::ACCESS_POINT_NTP_LINK));
-  GURL expected_url_2(
-      "chrome-extension://mfffpogegjflfpflabcdkioaeobkgjik/"
-      "success.html?access_point=0&source=0");
-  EXPECT_EQ(
-      expected_url_2,
-      GetLandingURL(signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE));
-  GURL expected_url_3(
-      "chrome-extension://mfffpogegjflfpflabcdkioaeobkgjik/"
-      "success.html?access_point=3&source=3");
-  EXPECT_EQ(expected_url_3,
-            GetLandingURL(signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS));
-}
-
 TEST(SigninPromoTest, SigninURLForDice) {
   EXPECT_EQ(
       "https://accounts.google.com/signin/chrome/sync?ssp=1&"
