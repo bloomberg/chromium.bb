@@ -13,6 +13,7 @@
 
 #include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "cc/layers/surface_layer.h"
@@ -147,8 +148,11 @@ class CONTENT_EXPORT WebMediaPlayerMSCompositor
   void SetCurrentFrame(scoped_refptr<media::VideoFrame> frame);
   // Following the update to |current_frame_|, this will check for changes that
   // require updating video layer.
-  void CheckForFrameChanges(scoped_refptr<media::VideoFrame> old_frame,
-                            scoped_refptr<media::VideoFrame> new_frame);
+  void CheckForFrameChanges(
+      bool is_first_frame,
+      bool has_frame_size_changed,
+      base::Optional<media::VideoRotation> new_frame_rotation,
+      base::Optional<bool> new_frame_opacity);
 
   void StartRenderingInternal();
   void StopRenderingInternal();
