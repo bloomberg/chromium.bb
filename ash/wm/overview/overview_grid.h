@@ -202,10 +202,13 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   // |should_animate_when_exiting_| of the overview items based on where
   // the first MRU window covering the available workspace is found.
   // |selected_item| is not nullptr if |selected_item| is the selected item when
-  // exiting overview mode.
+  // exiting overview mode. |target_bounds| are the bounds that the items will
+  // be in overview. If |tranisition| is exit, |target_bounds| should be empty
+  // and the overview bounds should be queried from |window_list_|.
   void CalculateWindowListAnimationStates(
       OverviewItem* selected_item,
-      OverviewSession::OverviewTransition transition);
+      OverviewSession::OverviewTransition transition,
+      const std::vector<gfx::RectF>& target_bounds);
 
   // Do not animate the entire window list during exiting the overview. It's
   // used when splitview and overview mode are both active, selecting a window
@@ -344,15 +347,6 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
       int* out_max_bottom,
       int* out_min_right,
       int* out_max_right);
-
-  // Calculates |overview_item|'s |should_animate_when_entering_|,
-  // |should_animate_when_exiting_|. |selected| is true if |overview_item| is
-  // the selected item when exiting overview mode.
-  void CalculateOverviewItemAnimationState(
-      OverviewItem* overview_item,
-      bool* has_fullscreen_coverred,
-      bool selected,
-      OverviewSession::OverviewTransition transition);
 
   // Returns the overview item iterator that contains |window|.
   std::vector<std::unique_ptr<OverviewItem>>::iterator

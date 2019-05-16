@@ -51,6 +51,7 @@
 #include "ui/compositor_extra/shadow.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/vector2d.h"
+#include "ui/gfx/geometry/vector2d_conversions.h"
 #include "ui/views/background.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -421,6 +422,10 @@ void OverviewGrid::PositionWindows(
   DCHECK_NE(transition, OverviewSession::OverviewTransition::kExit);
 
   std::vector<gfx::RectF> rects = GetWindowRects(ignored_items);
+  if (transition == OverviewSession::OverviewTransition::kEnter) {
+    CalculateWindowListAnimationStates(/*selected_item=*/nullptr, transition,
+                                       rects);
+  }
 
   // Position the windows centering the left-aligned rows vertically. Do not
   // position items in |ignored_items|.
@@ -1014,57 +1019,89 @@ bool OverviewGrid::ShouldAnimateWallpaper() const {
 
 void OverviewGrid::CalculateWindowListAnimationStates(
     OverviewItem* selected_item,
-    OverviewSession::OverviewTransition transition) {
-  // |selected_item| is nullptr during entering animation.
-  DCHECK(transition == OverviewSession::OverviewTransition::kExit ||
-         selected_item == nullptr);
+    OverviewSession::OverviewTransition transition,
+    const std::vector<gfx::RectF>& target_bounds) {
+  using OverviewTransition = OverviewSession::OverviewTransition;
 
-  bool has_covered_available_workspace = false;
-  bool has_checked_selected_item = false;
-  if (!selected_item ||
-      !wm::GetWindowState(selected_item->GetWindow())->IsFullscreen()) {
-    // Check the always on top window first if |selected_item| is nullptr or the
-    // |selected_item|'s window is not fullscreen. Because always on top windows
-    // are visible and may have a window which can cover available workspace.
-    // If the |selected_item| is fullscreen, we will depromote all always on top
-    // windows.
-    aura::Window* always_on_top_container =
-        RootWindowController::ForWindow(root_window_)
-            ->GetContainer(kShellWindowId_AlwaysOnTopContainer);
-    aura::Window::Windows top_windows = always_on_top_container->children();
-    for (aura::Window::Windows::const_reverse_iterator
-             it = top_windows.rbegin(),
-             rend = top_windows.rend();
-         it != rend; ++it) {
-      aura::Window* top_window = *it;
-      OverviewItem* container_item = GetOverviewItemContaining(top_window);
-      if (!container_item)
-        continue;
+  // Sanity checks to enforce assumptions used in later codes.
+  switch (transition) {
+    case OverviewTransition::kEnter:
+      DCHECK_EQ(target_bounds.size(), window_list_.size());
+      break;
+    case OverviewTransition::kExit:
+      DCHECK(target_bounds.empty());
+      break;
+    default:
+      NOTREACHED();
+  }
 
-      const bool is_selected_item = (selected_item == container_item);
-      if (!has_checked_selected_item && is_selected_item)
-        has_checked_selected_item = true;
-      CalculateOverviewItemAnimationState(
-          container_item, &has_covered_available_workspace,
-          /*selected=*/is_selected_item, transition);
+  // Create a copy of |window_list_| which has always on top windows in the
+  // front.
+  std::vector<OverviewItem*> items;
+  std::transform(
+      window_list_.begin(), window_list_.end(), std::back_inserter(items),
+      [](const std::unique_ptr<OverviewItem>& item) -> OverviewItem* {
+        return item.get();
+      });
+  // Sort items by:
+  // 1) Selected items that are always on top windows.
+  // 2) Other always on top windows.
+  // 3) Selected items that are not always on top windows.
+  // 4) Other not always on top windows.
+  // Preserves ordering if the category is the same.
+  std::sort(items.begin(), items.end(),
+            [&selected_item](OverviewItem* a, OverviewItem* b) {
+              const bool a_on_top =
+                  a->GetWindow()->GetProperty(aura::client::kAlwaysOnTopKey);
+              const bool b_on_top =
+                  b->GetWindow()->GetProperty(aura::client::kAlwaysOnTopKey);
+              if (selected_item && a_on_top && b_on_top)
+                return a == selected_item;
+              if (a_on_top)
+                return true;
+              if (b_on_top)
+                return false;
+              if (selected_item)
+                return a == selected_item;
+              return false;
+            });
+
+  SkRegion occluded_region;
+  for (size_t i = 0; i < items.size(); ++i) {
+    const bool minimized =
+        wm::GetWindowState(items[i]->GetWindow())->IsMinimized();
+    bool src_occluded = minimized;
+    bool dst_occluded = false;
+    gfx::Rect src_bounds_temp =
+        minimized ? gfx::Rect()
+                  : items[i]->GetWindow()->GetBoundsInRootWindow();
+    // On exiting overview, |GetBoundsInRootWindow| will have the overview
+    // translation applied to it, so undo it to get the true target bounds.
+    if (!src_bounds_temp.IsEmpty() && transition == OverviewTransition::kExit) {
+      const gfx::Vector2dF offset =
+          -items[i]->GetWindow()->transform().To2dTranslation();
+      src_bounds_temp.Offset(gfx::ToCeiledVector2d(offset));
     }
-  }
+    SkIRect src_bounds = gfx::RectToSkIRect(src_bounds_temp);
+    SkIRect dst_bounds = gfx::RectToSkIRect(gfx::ToEnclosedRect(
+        transition == OverviewTransition::kEnter ? target_bounds[i]
+                                                 : items[i]->target_bounds()));
 
-  if (!has_checked_selected_item) {
-    CalculateOverviewItemAnimationState(selected_item,
-                                        &has_covered_available_workspace,
-                                        /*selected=*/true, transition);
-  }
-  for (const auto& item : window_list_) {
-    // Has checked the |selected_item|.
-    if (selected_item == item.get())
-      continue;
-    // Has checked all always on top windows.
-    if (item->GetWindow()->GetProperty(aura::client::kAlwaysOnTopKey))
-      continue;
-    CalculateOverviewItemAnimationState(item.get(),
-                                        &has_covered_available_workspace,
-                                        /*selected=*/false, transition);
+    if (!occluded_region.isEmpty()) {
+      src_occluded |=
+          (!src_bounds.isEmpty() && occluded_region.contains(src_bounds));
+      dst_occluded |= occluded_region.contains(dst_bounds);
+    }
+
+    // Add |src_bounds| to our region if it is not empty (minimized window).
+    if (!src_bounds.isEmpty())
+      occluded_region.op(src_bounds, SkRegion::kUnion_Op);
+
+    const bool should_animate = !(src_occluded && dst_occluded);
+    if (transition == OverviewSession::OverviewTransition::kEnter)
+      items[i]->set_should_animate_when_entering(should_animate);
+    else if (transition == OverviewSession::OverviewTransition::kExit)
+      items[i]->set_should_animate_when_exiting(should_animate);
   }
 }
 
@@ -1609,29 +1646,6 @@ bool OverviewGrid::FitWindowRectsInBounds(
     *out_max_right = left;
 
   return true;
-}
-
-void OverviewGrid::CalculateOverviewItemAnimationState(
-    OverviewItem* overview_item,
-    bool* has_covered_available_workspace,
-    bool selected,
-    OverviewSession::OverviewTransition transition) {
-  if (!overview_item)
-    return;
-
-  aura::Window* window = overview_item->GetWindow();
-  // |overview_item| should be contained in the |window_list_|.
-  DCHECK(GetOverviewItemContaining(window));
-
-  bool can_cover_available_workspace = CanCoverAvailableWorkspace(window);
-  const bool should_animate = selected || !(*has_covered_available_workspace);
-  if (transition == OverviewSession::OverviewTransition::kEnter)
-    overview_item->set_should_animate_when_entering(should_animate);
-  if (transition == OverviewSession::OverviewTransition::kExit)
-    overview_item->set_should_animate_when_exiting(should_animate);
-
-  if (!(*has_covered_available_workspace) && can_cover_available_workspace)
-    *has_covered_available_workspace = true;
 }
 
 std::vector<std::unique_ptr<OverviewItem>>::iterator

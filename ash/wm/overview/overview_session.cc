@@ -243,8 +243,6 @@ void OverviewSession::Init(const WindowList& windows,
       // should not appear here.
       DCHECK_NE(enter_exit_overview_type_,
                 EnterExitOverviewType::kSwipeFromShelf);
-      overview_grid->CalculateWindowListAnimationStates(
-          /*selected_item=*/nullptr, OverviewTransition::kEnter);
       overview_grid->PositionWindows(/*animate=*/true, /*ignored_items=*/{},
                                      OverviewTransition::kEnter);
     }
@@ -311,7 +309,7 @@ void OverviewSession::Shutdown() {
                   selected_item_->overview_grid() == overview_grid.get()
               ? selected_item_
               : nullptr,
-          OverviewTransition::kExit);
+          OverviewTransition::kExit, /*target_bounds=*/{});
     }
     for (const auto& overview_item : overview_grid->window_list())
       overview_item->RestoreWindow(/*reset_transform=*/true);

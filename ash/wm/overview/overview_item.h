@@ -242,6 +242,9 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
   RoundedLabelWidget* cannot_snap_widget_for_testing() {
     return cannot_snap_widget_.get();
   }
+  void set_target_bounds_for_testing(const gfx::RectF& target_bounds) {
+    target_bounds_ = target_bounds;
+  }
 
  private:
   friend class OverviewSessionRoundedCornerTest;
