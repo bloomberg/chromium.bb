@@ -225,15 +225,14 @@ base::TimeDelta OmniboxFieldTrial::StopTimerFieldTrialDuration() {
 
 bool OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial() {
   return InZeroSuggestMostVisitedWithoutSerpFieldTrial() ||
-         variations::GetVariationParamValue(kBundledExperimentFieldTrialName,
-                                            kZeroSuggestVariantRule) ==
+         base::GetFieldTrialParamValueByFeature(omnibox::kOnFocusSuggestions,
+                                                kZeroSuggestVariantRule) ==
              "MostVisited";
 }
 
 bool OmniboxFieldTrial::InZeroSuggestMostVisitedWithoutSerpFieldTrial() {
-  std::string variant(variations::GetVariationParamValue(
-      kBundledExperimentFieldTrialName,
-      kZeroSuggestVariantRule));
+  std::string variant = base::GetFieldTrialParamValueByFeature(
+      omnibox::kOnFocusSuggestions, kZeroSuggestVariantRule);
   if (variant == "MostVisitedWithoutSERP")
     return true;
 #if defined(OS_ANDROID)
@@ -249,8 +248,8 @@ bool OmniboxFieldTrial::InZeroSuggestMostVisitedWithoutSerpFieldTrial() {
 
 // static
 bool OmniboxFieldTrial::InZeroSuggestPersonalizedFieldTrial() {
-  return variations::GetVariationParamValue(kBundledExperimentFieldTrialName,
-                                            kZeroSuggestVariantRule) ==
+  return base::GetFieldTrialParamValueByFeature(omnibox::kOnFocusSuggestions,
+                                                kZeroSuggestVariantRule) ==
          "Personalized";
 }
 

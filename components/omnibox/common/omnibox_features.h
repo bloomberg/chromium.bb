@@ -33,7 +33,6 @@ extern const base::Feature kOmniboxPreserveDefaultMatchScore;
 extern const base::Feature kEnableClipboardProviderTextSuggestions;
 extern const base::Feature kEnableClipboardProviderImageSuggestions;
 extern const base::Feature kSearchProviderWarmUpOnFocus;
-extern const base::Feature kZeroSuggestRedirectToChrome;
 extern const base::Feature kDisplayTitleForCurrentUrl;
 extern const base::Feature kQueryInOmnibox;
 extern const base::Feature kUIExperimentMaxAutocompleteMatches;
@@ -55,6 +54,10 @@ extern const base::Feature kDocumentProvider;
 extern const base::Feature kDedupeGoogleDriveURLs;
 extern const base::Feature kOmniboxPopupShortcutIconsInZeroState;
 extern const base::Feature kOmniboxMaterialDesignWeatherIcons;
+
+// On-Focus Suggestions a.k.a. ZeroSuggest.
+extern const base::Feature kOnFocusSuggestions;
+extern const base::Feature kZeroSuggestRedirectToChrome;
 extern const base::Feature kZeroSuggestionsOnNTP;
 
 }  // namespace omnibox

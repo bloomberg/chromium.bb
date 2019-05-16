@@ -11,7 +11,9 @@
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string16.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "components/omnibox/common/omnibox_features.h"
 #include "components/search/search.h"
 #include "components/variations/entropy_provider.h"
 #include "components/variations/variations_associated_data.h"
@@ -178,41 +180,22 @@ TEST_F(OmniboxFieldTrialTest, GetDisabledProviderTypes) {
 // Test if InZeroSuggestFieldTrial*() properly parses various field trial
 // group names.
 TEST_F(OmniboxFieldTrialTest, ZeroSuggestFieldTrial) {
-  {
-    SCOPED_TRACE("Bundled field trial parameters.");
-    ResetFieldTrialList();
-    std::map<std::string, std::string> params;
-    ASSERT_TRUE(variations::AssociateVariationParams(
-        OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params));
-    base::FieldTrialList::CreateFieldTrial(
-        OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
+  ResetFieldTrialList();
 #if defined(OS_ANDROID) || defined(OS_IOS)
-    EXPECT_TRUE(OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial());
+  EXPECT_TRUE(OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial());
 #else
-    EXPECT_FALSE(OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial());
+  EXPECT_FALSE(OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial());
 #endif
 
-    ResetFieldTrialList();
-    params[std::string(OmniboxFieldTrial::kZeroSuggestVariantRule)] =
-        "MostVisited";
-    ASSERT_TRUE(variations::AssociateVariationParams(
-        OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params));
-    base::FieldTrialList::CreateFieldTrial(
-        OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
-    EXPECT_TRUE(OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial());
+  ResetFieldTrialList();
+  // ScopedFeatureList reuses the global field trial list already defined
+  // within ResetFieldTrialList.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeatureWithParameters(
+      omnibox::kOnFocusSuggestions,
+      {{OmniboxFieldTrial::kZeroSuggestVariantRule, "MostVisited"}});
 
-    ResetFieldTrialList();
-    params.erase(std::string(OmniboxFieldTrial::kZeroSuggestVariantRule));
-    base::FieldTrialList::CreateFieldTrial(
-        OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
-    ASSERT_TRUE(variations::AssociateVariationParams(
-        OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params));
-#if defined(OS_ANDROID) || defined(OS_IOS)
-    EXPECT_TRUE(OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial());
-#else
-    EXPECT_FALSE(OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial());
-#endif
-  }
+  EXPECT_TRUE(OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial());
 }
 
 TEST_F(OmniboxFieldTrialTest, GetDemotionsByTypeWithFallback) {

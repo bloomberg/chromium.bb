@@ -141,7 +141,7 @@ class FakeAutocompleteProviderClient : public MockAutocompleteProviderClient {
 class ZeroSuggestProviderTest : public testing::Test,
                                 public AutocompleteProviderListener {
  public:
-  ZeroSuggestProviderTest();
+  ZeroSuggestProviderTest() = default;
 
   void SetUp() override;
 
@@ -149,16 +149,12 @@ class ZeroSuggestProviderTest : public testing::Test,
   // AutocompleteProviderListener:
   void OnProviderUpdate(bool updated_matches) override;
 
-  void ResetFieldTrialList();
-
   void CreatePersonalizedFieldTrial();
   void CreateMostVisitedFieldTrial();
   void CreateContextualSuggestFieldTrial();
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-
-  // Needed for OmniboxFieldTrial::ActivateStaticTrials().
-  std::unique_ptr<base::FieldTrialList> field_trial_list_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   std::unique_ptr<FakeAutocompleteProviderClient> client_;
   scoped_refptr<ZeroSuggestProvider> provider_;
@@ -171,10 +167,6 @@ class ZeroSuggestProviderTest : public testing::Test,
  private:
   DISALLOW_COPY_AND_ASSIGN(ZeroSuggestProviderTest);
 };
-
-ZeroSuggestProviderTest::ZeroSuggestProviderTest() {
-  ResetFieldTrialList();
-}
 
 void ZeroSuggestProviderTest::SetUp() {
   client_.reset(new FakeAutocompleteProviderClient());
@@ -195,43 +187,22 @@ void ZeroSuggestProviderTest::SetUp() {
 void ZeroSuggestProviderTest::OnProviderUpdate(bool updated_matches) {
 }
 
-void ZeroSuggestProviderTest::ResetFieldTrialList() {
-  // Destroy the existing FieldTrialList before creating a new one to avoid
-  // a DCHECK.
-  field_trial_list_.reset();
-  field_trial_list_.reset(new base::FieldTrialList(
-      std::make_unique<variations::SHA1EntropyProvider>("foo")));
-  variations::testing::ClearAllVariationParams();
-}
-
 void ZeroSuggestProviderTest::CreatePersonalizedFieldTrial() {
-  std::map<std::string, std::string> params;
-  params[std::string(OmniboxFieldTrial::kZeroSuggestVariantRule)] =
-      "Personalized";
-  variations::AssociateVariationParams(
-      OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params);
-  base::FieldTrialList::CreateFieldTrial(
-      OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
+  scoped_feature_list_.InitAndEnableFeatureWithParameters(
+      omnibox::kOnFocusSuggestions,
+      {{OmniboxFieldTrial::kZeroSuggestVariantRule, "Personalized"}});
 }
 
 void ZeroSuggestProviderTest::CreateMostVisitedFieldTrial() {
-  std::map<std::string, std::string> params;
-  params[std::string(OmniboxFieldTrial::kZeroSuggestVariantRule)] =
-      "MostVisitedWithoutSERP";
-  variations::AssociateVariationParams(
-      OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params);
-  base::FieldTrialList::CreateFieldTrial(
-      OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
+  scoped_feature_list_.InitAndEnableFeatureWithParameters(
+      omnibox::kOnFocusSuggestions,
+      {{OmniboxFieldTrial::kZeroSuggestVariantRule, "MostVisitedWithoutSERP"}});
 }
 
 void ZeroSuggestProviderTest::CreateContextualSuggestFieldTrial() {
-  std::map<std::string, std::string> params;
-  params[std::string(OmniboxFieldTrial::kZeroSuggestVariantRule)] =
-      "ContextualSuggestions";
-  variations::AssociateVariationParams(
-      OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params);
-  base::FieldTrialList::CreateFieldTrial(
-      OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
+  scoped_feature_list_.InitAndEnableFeatureWithParameters(
+      omnibox::kOnFocusSuggestions,
+      {{OmniboxFieldTrial::kZeroSuggestVariantRule, "ContextualSuggestions"}});
 }
 
 TEST_F(ZeroSuggestProviderTest, TestDoesNotReturnMatchesForPrefix) {
