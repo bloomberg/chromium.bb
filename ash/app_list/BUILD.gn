@@ -118,9 +118,6 @@ component("app_list") {
     "//components/sync",
     "//mojo/public/cpp/bindings",
     "//services/content/public/cpp",
-    "//services/ws/public/cpp",
-    "//services/ws/public/mojom",
-    "//services/ws/remote_view_host",
     "//skia",
     "//third_party/icu",
     "//ui/accessibility",
@@ -138,6 +135,7 @@ component("app_list") {
     "//ui/strings",
     "//ui/views",
     "//ui/wm",
+    "//ui/wm/public",
   ]
 
   # TODO(hejq): Remove this once app_list is migrated. http://crbug.com/733662

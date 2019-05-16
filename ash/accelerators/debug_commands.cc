@@ -13,7 +13,6 @@
 #include "ash/touch/touch_devices_controller.h"
 #include "ash/wallpaper/wallpaper_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
-#include "ash/wm/widget_finder.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -52,7 +51,7 @@ void HandlePrintViewHierarchy() {
   aura::Window* active_window = wm::GetActiveWindow();
   if (!active_window)
     return;
-  views::Widget* widget = GetInternalWidgetForWindow(active_window);
+  views::Widget* widget = views::Widget::GetWidgetForNativeView(active_window);
   if (!widget)
     return;
   views::PrintViewHierarchy(widget->GetRootView());

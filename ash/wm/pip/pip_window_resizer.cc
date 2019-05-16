@@ -10,7 +10,6 @@
 #include "ash/metrics/pip_uma.h"
 #include "ash/wm/collision_detection/collision_detection_utils.h"
 #include "ash/wm/pip/pip_positioner.h"
-#include "ash/wm/widget_finder.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "base/metrics/histogram_functions.h"

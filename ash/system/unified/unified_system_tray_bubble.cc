@@ -16,7 +16,6 @@
 #include "ash/system/unified/unified_system_tray_view.h"
 #include "ash/wm/container_finder.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
-#include "ash/wm/widget_finder.h"
 #include "ash/wm/work_area_insets.h"
 #include "base/metrics/histogram_macros.h"
 #include "ui/aura/window.h"
@@ -268,7 +267,7 @@ void UnifiedSystemTrayBubble::OnWindowActivated(ActivationReason reason,
 
   // Don't close the bubble if a transient child is gaining or losing
   // activation.
-  if (bubble_widget_ == GetInternalWidgetForWindow(gained_active) ||
+  if (bubble_widget_ == views::Widget::GetWidgetForNativeView(gained_active) ||
       ::wm::HasTransientAncestor(gained_active,
                                  bubble_widget_->GetNativeWindow()) ||
       (lost_active && ::wm::HasTransientAncestor(

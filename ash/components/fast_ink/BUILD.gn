@@ -19,7 +19,6 @@ source_set("fast_ink") {
     "//gpu",
     "//gpu/command_buffer/client",
     "//gpu/command_buffer/common",
-    "//services/ws/public/mojom",
     "//skia",
     "//ui/aura",
     "//ui/gfx",

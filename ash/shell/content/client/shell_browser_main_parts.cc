@@ -37,8 +37,6 @@
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "net/base/net_module.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/ws/ime/test_ime_driver/public/mojom/constants.mojom.h"
-#include "services/ws/public/mojom/constants.mojom.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
@@ -120,9 +118,6 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
 
   ash::Shell::GetPrimaryRootWindow()->GetHost()->Show();
 
-  // TODO(https://crbug.com/904148): This should not use |WarmService()|.
-  connector->WarmService(service_manager::ServiceFilter::ByName(
-      test_ime_driver::mojom::kServiceName));
   ash::Shell::Get()->InitWaylandServer(nullptr);
 }
 

@@ -27,9 +27,6 @@
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/manifest.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
-#include "services/ws/ime/test_ime_driver/public/cpp/manifest.h"
-#include "services/ws/ime/test_ime_driver/public/mojom/constants.mojom.h"
-#include "services/ws/public/mojom/constants.mojom.h"
 #include "storage/browser/quota/quota_settings.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -51,7 +48,6 @@ const service_manager::Manifest& GetAshShellPackagedServicesOverlayManifest() {
       service_manager::ManifestBuilder()
           .PackageService(service_manager::Manifest(ash::GetManifest())
                               .Amend(ash::GetManifestOverlayForTesting()))
-          .PackageService(test_ime_driver::GetManifest())
           .Build()};
   return *manifest;
 }
@@ -88,12 +84,6 @@ ShellContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
     return GetAshShellPackagedServicesOverlayManifest();
 
   return base::nullopt;
-}
-
-void ShellContentBrowserClient::RegisterOutOfProcessServices(
-    OutOfProcessServiceMap* services) {
-  (*services)[test_ime_driver::mojom::kServiceName] = base::BindRepeating(
-      &base::ASCIIToUTF16, test_ime_driver::mojom::kServiceName);
 }
 
 }  // namespace shell

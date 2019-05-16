@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <memory>
 
-#include "ash/wm/widget_finder.h"
 #include "ash/wm/window_state.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"

@@ -220,6 +220,7 @@ source_set("unit_tests") {
       "//ui/compositor:test_support",
       "//ui/display",
       "//ui/gfx",
+      "//ui/wm/public",
     ]
   }
 }

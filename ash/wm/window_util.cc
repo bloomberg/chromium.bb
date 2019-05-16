@@ -18,7 +18,6 @@
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
-#include "ash/wm/widget_finder.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
@@ -234,7 +233,7 @@ void SetChildrenUseExtendedHitRegionForWindow(aura::Window* window) {
 }
 
 void CloseWidgetForWindow(aura::Window* window) {
-  views::Widget* widget = GetInternalWidgetForWindow(window);
+  views::Widget* widget = views::Widget::GetWidgetForNativeView(window);
   DCHECK(widget);
   widget->Close();
 }

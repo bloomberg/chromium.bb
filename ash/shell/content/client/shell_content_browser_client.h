@@ -34,7 +34,6 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
       storage::OptionalQuotaSettingsCallback callback) override;
   base::Optional<service_manager::Manifest> GetServiceManifestOverlay(
       base::StringPiece name) override;
-  void RegisterOutOfProcessServices(OutOfProcessServiceMap* services) override;
 
  private:
   ShellBrowserMainParts* shell_browser_main_parts_;
