@@ -6,7 +6,10 @@
 #define ASH_PUBLIC_CPP_DOCKED_MAGNIFIER_CONTROLLER_H_
 
 #include "ash/ash_export.h"
-#include "ui/gfx/geometry/point.h"
+
+namespace gfx {
+class Point;
+}
 
 namespace ash {
 
