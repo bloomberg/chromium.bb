@@ -69,6 +69,7 @@ void WebAppDataRetriever::GetWebApplicationInfo(
 
 void WebAppDataRetriever::CheckInstallabilityAndRetrieveManifest(
     content::WebContents* web_contents,
+    bool bypass_service_worker_check,
     CheckInstallabilityCallback callback) {
   InstallableManager* installable_manager =
       InstallableManager::FromWebContents(web_contents);
@@ -79,7 +80,8 @@ void WebAppDataRetriever::CheckInstallabilityAndRetrieveManifest(
   params.check_eligibility = true;
   params.valid_primary_icon = true;
   params.valid_manifest = true;
-  params.has_worker = true;
+  // Do not wait for a service worker if it doesn't exist.
+  params.has_worker = !bypass_service_worker_check;
   // Do not wait_for_worker. OnDidPerformInstallableCheck is always invoked.
   installable_manager->GetData(
       params,

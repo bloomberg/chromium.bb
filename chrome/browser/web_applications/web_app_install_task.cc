@@ -48,7 +48,7 @@ void WebAppInstallTask::InstallWebAppFromManifest(
   auto web_app_info = std::make_unique<WebApplicationInfo>();
 
   data_retriever_->CheckInstallabilityAndRetrieveManifest(
-      web_contents(),
+      web_contents(), /*bypass_service_worker_check=*/false,
       base::BindOnce(&WebAppInstallTask::OnDidPerformInstallableCheck,
                      base::Unretained(this), std::move(web_app_info),
                      /*force_shortcut_app=*/false));
@@ -194,7 +194,7 @@ void WebAppInstallTask::OnGetWebApplicationInfo(
   }
 
   data_retriever_->CheckInstallabilityAndRetrieveManifest(
-      web_contents(),
+      web_contents(), /*bypass_service_worker_check=*/false,
       base::BindOnce(&WebAppInstallTask::OnDidPerformInstallableCheck,
                      base::Unretained(this), std::move(web_app_info),
                      force_shortcut_app));

@@ -55,6 +55,7 @@ class WebAppDataRetriever {
   // Performs installability check and invokes |callback| with manifest.
   virtual void CheckInstallabilityAndRetrieveManifest(
       content::WebContents* web_contents,
+      bool bypass_service_worker_check,
       CheckInstallabilityCallback callback);
 
   // Downloads icons from |icon_urls|. Runs |callback| with a map of

@@ -301,7 +301,7 @@ TEST_F(WebAppDataRetrieverTest, CheckInstallabilityAndRetrieveManifest) {
   WebAppDataRetriever retriever;
 
   retriever.CheckInstallabilityAndRetrieveManifest(
-      web_contents(),
+      web_contents(), /*bypass_service_worker_check=*/false,
       base::BindLambdaForTesting(
           [&](const blink::Manifest& result, bool is_installable) {
             EXPECT_TRUE(is_installable);
@@ -334,7 +334,7 @@ TEST_F(WebAppDataRetrieverTest, CheckInstallabilityFails) {
   WebAppDataRetriever retriever;
 
   retriever.CheckInstallabilityAndRetrieveManifest(
-      web_contents(),
+      web_contents(), /*bypass_service_worker_check=*/false,
       base::BindLambdaForTesting(
           [&](const blink::Manifest& result, bool is_installable) {
             EXPECT_FALSE(is_installable);

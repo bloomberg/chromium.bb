@@ -28,6 +28,7 @@ class TestDataRetriever : public WebAppDataRetriever {
                              GetWebApplicationInfoCallback callback) override;
   void CheckInstallabilityAndRetrieveManifest(
       content::WebContents* web_contents,
+      bool bypass_service_worker_check,
       CheckInstallabilityCallback callback) override;
   void GetIcons(content::WebContents* web_contents,
                 const std::vector<GURL>& icon_urls,
