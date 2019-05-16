@@ -8,6 +8,8 @@
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_constants.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_delegate.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#include "ios/chrome/grit/ios_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -357,13 +359,16 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
               selector:@selector(acceptInfobar)];
 
   UIAccessibilityCustomAction* dismissAction =
-      [[UIAccessibilityCustomAction alloc] initWithName:@"Dismiss"
-                                                 target:self
-                                               selector:@selector(dismiss)];
+      [[UIAccessibilityCustomAction alloc]
+          initWithName:l10n_util::GetNSString(
+                           IDS_IOS_INFOBAR_BANNER_DISMISS_HINT)
+                target:self
+              selector:@selector(dismiss)];
 
   UIAccessibilityCustomAction* expandAction =
       [[UIAccessibilityCustomAction alloc]
-          initWithName:@"More options"
+          initWithName:l10n_util::GetNSString(
+                           IDS_IOS_INFOBAR_BANNER_OPTIONS_HINT)
                 target:self
               selector:@selector(presentInfobarModal)];
 
@@ -387,6 +392,8 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
 }
 
 - (NSString*)accessibilityLabel {
+  if ([self.optionalAccessibilityLabel length])
+    return self.optionalAccessibilityLabel;
   NSString* accessibilityLabel = self.titleText;
   if ([self.subTitleText length]) {
     accessibilityLabel =

@@ -15,6 +15,8 @@
 #import "ios/chrome/browser/ui/infobars/infobar_container.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_password_modal_delegate.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_password_table_view_controller.h"
+#include "ios/chrome/grit/ios_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -79,6 +81,11 @@
             ConfirmInfoBarDelegate::BUTTON_OK));
     self.bannerViewController.iconImage =
         [UIImage imageNamed:@"infobar_passwords_icon"];
+    NSString* hiddenPasswordText =
+        l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORD_HIDDEN_LABEL);
+    self.bannerViewController.optionalAccessibilityLabel = [NSString
+        stringWithFormat:@"%@,%@, %@", self.bannerViewController.titleText,
+                         username, hiddenPasswordText];
   }
 }
 

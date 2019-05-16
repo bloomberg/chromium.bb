@@ -38,6 +38,10 @@
 // The button text displayed by this InfobarBanner.
 @property(nonatomic, copy) NSString* buttonText;
 
+// Optional A11y label. If set it will be used as the Banner A11y label instead
+// of the default combination of Title and Subtitle texts.
+@property(nonatomic, copy) NSString* optionalAccessibilityLabel;
+
 // - If no interaction is occuring, the InfobarBanner will be dismissed.
 // - If there's some interaction occuring the InfobarBanner will be dismissed
 // once this interaction ends.

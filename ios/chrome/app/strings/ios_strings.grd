@@ -789,6 +789,12 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_ICON_SEARCH" desc="Accessibility label for the search icon [iOS only].">
         Search
       </message>
+      <message name="IDS_IOS_INFOBAR_BANNER_DISMISS_HINT" desc="Accessibility hint that indicates the user that can dismiss the Infobar Banner. [Length:Unlimited]">
+        Dismiss
+      </message>
+      <message name="IDS_IOS_INFOBAR_BANNER_OPTIONS_HINT" desc="Accessibility hint that indicates the user that can get more options for the Infobar banner. [Length:Unlimited]">
+        More Options
+      </message>
       <message name="IDS_IOS_INFOBAR_BADGES_PASSWORD_HINT" desc="The iOS infobar badge item for saving password credentials [Length:Unlimited]">
         Options to Save Password
       </message>
