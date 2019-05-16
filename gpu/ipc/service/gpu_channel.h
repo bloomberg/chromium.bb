@@ -44,7 +44,6 @@ namespace gpu {
 
 class GpuChannelManager;
 class GpuChannelMessageFilter;
-class ImageDecodeAcceleratorStub;
 class ImageDecodeAcceleratorWorker;
 class Scheduler;
 class SharedImageStub;
@@ -154,8 +153,6 @@ class GPU_IPC_SERVICE_EXPORT GpuChannel : public IPC::Listener,
   void HandleOutOfOrderMessage(const IPC::Message& msg);
 
   void HandleMessageForTesting(const IPC::Message& msg);
-
-  ImageDecodeAcceleratorStub* GetImageDecodeAcceleratorStub() const;
 
 #if defined(OS_ANDROID)
   const CommandBufferStub* GetOneStub() const;
