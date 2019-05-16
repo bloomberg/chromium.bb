@@ -229,9 +229,9 @@ DEFINE_UI_CLASS_PROPERTY_KEY(int32_t, kClientSurfaceIdKey, 0)
 // Surface, public:
 
 Surface::Surface()
-    : window_(std::make_unique<aura::Window>(new CustomWindowDelegate(this),
-                                             aura::client::WINDOW_TYPE_CONTROL,
-                                             WMHelper::GetInstance()->env())) {
+    : window_(
+          std::make_unique<aura::Window>(new CustomWindowDelegate(this),
+                                         aura::client::WINDOW_TYPE_CONTROL)) {
   window_->SetName("ExoSurface");
   window_->SetProperty(kSurfaceKey, this);
   window_->Init(ui::LAYER_NOT_DRAWN);

@@ -23,7 +23,6 @@
 #include "components/exo/wayland/server.h"
 #include "components/exo/wm_helper.h"
 #include "components/exo/wm_helper_chromeos.h"
-#include "ui/aura/env.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/wm/core/cursor_manager.h"
@@ -128,8 +127,7 @@ void WaylandClientTest::SetUpOnUIThread(base::WaitableEvent* event) {
   gesture_config->set_long_press_time_in_ms(1000);
   gesture_config->set_max_touch_move_in_pixels_for_click(5);
 
-  wm_helper_ =
-      std::make_unique<WMHelperChromeOS>(ash::Shell::Get()->aura_env());
+  wm_helper_ = std::make_unique<WMHelperChromeOS>();
   WMHelper::SetInstance(wm_helper_.get());
   display_ = std::make_unique<Display>(nullptr, nullptr, nullptr);
   wayland_server_ = exo::wayland::Server::Create(display_.get());

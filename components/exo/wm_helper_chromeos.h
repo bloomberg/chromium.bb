@@ -20,7 +20,6 @@ class TabletModeObserver;
 }
 
 namespace aura {
-class env;
 class Window;
 namespace client {
 class CursorClient;
@@ -51,7 +50,7 @@ namespace exo {
 // features.
 class WMHelperChromeOS : public WMHelper, public VSyncTimingManager::Delegate {
  public:
-  explicit WMHelperChromeOS(aura::Env* env);
+  WMHelperChromeOS();
   ~WMHelperChromeOS() override;
   static WMHelperChromeOS* GetInstance();
   void AddTabletModeObserver(ash::TabletModeObserver* observer);
@@ -62,7 +61,6 @@ class WMHelperChromeOS : public WMHelper, public VSyncTimingManager::Delegate {
       ash::WindowTreeHostManager::Observer* observer);
 
   // Overridden from WMHelper
-  aura::Env* env() override;
   void AddActivationObserver(wm::ActivationChangeObserver* observer) override;
   void RemoveActivationObserver(
       wm::ActivationChangeObserver* observer) override;
@@ -108,7 +106,6 @@ class WMHelperChromeOS : public WMHelper, public VSyncTimingManager::Delegate {
 
  private:
   base::ObserverList<DragDropObserver>::Unchecked drag_drop_observers_;
-  aura::Env* const env_;
   LifetimeManager lifetime_manager_;
   VSyncTimingManager vsync_timing_manager_;
 

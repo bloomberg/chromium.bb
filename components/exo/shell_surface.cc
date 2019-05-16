@@ -15,7 +15,6 @@
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/exo/shell_surface_util.h"
-#include "components/exo/wm_helper.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/env.h"
@@ -638,7 +637,7 @@ void ShellSurface::AttemptToStartDrag(int component) {
         target, location, component,
         base::BindOnce(end_drag, base::Unretained(this)));
   } else {
-    gfx::Point location = WMHelper::GetInstance()->env()->last_mouse_location();
+    gfx::Point location = aura::Env::GetInstance()->last_mouse_location();
     ::wm::ConvertPointFromScreen(widget_->GetNativeWindow()->GetRootWindow(),
                                  &location);
     toplevel_handler->AttemptToStartDrag(

@@ -364,8 +364,8 @@ display::DisplayConfigurator* Shell::display_configurator() {
 }
 
 void Shell::InitWaylandServer(std::unique_ptr<exo::FileHelper> file_helper) {
-  wayland_server_controller_ = WaylandServerController::CreateIfNecessary(
-      std::move(file_helper), aura_env_);
+  wayland_server_controller_ =
+      WaylandServerController::CreateIfNecessary(std::move(file_helper));
   if (wayland_server_controller_) {
     system_tray_model()
         ->virtual_keyboard()

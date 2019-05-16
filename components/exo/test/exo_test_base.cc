@@ -28,8 +28,7 @@ ExoTestBase::~ExoTestBase() {}
 void ExoTestBase::SetUp() {
   ui::SetUpInputMethodFactoryForTesting();
   AshTestBase::SetUp();
-  wm_helper_ =
-      std::make_unique<WMHelperChromeOS>(ash::Shell::Get()->aura_env());
+  wm_helper_ = std::make_unique<WMHelperChromeOS>();
   WMHelper::SetInstance(wm_helper_.get());
   test::TestClientControlledStateDelegate::InstallFactory();
 }

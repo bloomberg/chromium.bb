@@ -30,8 +30,7 @@ aura::Window* GetPrimaryRoot() {
 ////////////////////////////////////////////////////////////////////////////////
 // WMHelperChromeOS, public:
 
-WMHelperChromeOS::WMHelperChromeOS(aura::Env* env)
-    : env_(env), vsync_timing_manager_(this) {}
+WMHelperChromeOS::WMHelperChromeOS() : vsync_timing_manager_(this) {}
 
 WMHelperChromeOS::~WMHelperChromeOS() {}
 
@@ -57,10 +56,6 @@ void WMHelperChromeOS::AddDisplayConfigurationObserver(
 void WMHelperChromeOS::RemoveDisplayConfigurationObserver(
     ash::WindowTreeHostManager::Observer* observer) {
   ash::Shell::Get()->window_tree_host_manager()->RemoveObserver(observer);
-}
-
-aura::Env* WMHelperChromeOS::env() {
-  return env_;
 }
 
 void WMHelperChromeOS::AddActivationObserver(

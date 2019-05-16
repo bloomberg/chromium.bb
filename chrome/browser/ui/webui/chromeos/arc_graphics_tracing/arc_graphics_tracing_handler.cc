@@ -42,6 +42,7 @@
 #include "content/public/browser/web_ui.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/events/event.h"
 #include "ui/gfx/codec/png_codec.h"
 
 namespace chromeos {

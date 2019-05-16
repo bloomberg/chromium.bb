@@ -11,7 +11,6 @@
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "ui/aura/client/drag_drop_delegate.h"
-#include "ui/aura/env.h"
 #include "ui/base/cursor/cursor.h"
 
 namespace aura {
@@ -87,8 +86,6 @@ class WMHelper : public aura::client::DragDropDelegate {
   static void SetInstance(WMHelper* helper);
   static WMHelper* GetInstance();
   static bool HasInstance();
-
-  virtual aura::Env* env() = 0;
 
   virtual void AddActivationObserver(
       wm::ActivationChangeObserver* observer) = 0;

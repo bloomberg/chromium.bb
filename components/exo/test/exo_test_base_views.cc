@@ -18,12 +18,11 @@ namespace {
 
 class WMHelperTester : public WMHelper, public VSyncTimingManager::Delegate {
  public:
-  WMHelperTester(aura::Env* env, aura::Window* root_window)
-      : env_(env), root_window_(root_window), vsync_timing_manager_(this) {}
+  WMHelperTester(aura::Window* root_window)
+      : root_window_(root_window), vsync_timing_manager_(this) {}
   ~WMHelperTester() override {}
 
   // Overridden from WMHelper
-  aura::Env* env() override { return env_; }
   void AddActivationObserver(wm::ActivationChangeObserver* observer) override {}
   void RemoveActivationObserver(
       wm::ActivationChangeObserver* observer) override {}
@@ -80,7 +79,6 @@ class WMHelperTester : public WMHelper, public VSyncTimingManager::Delegate {
       viz::mojom::VSyncParameterObserverPtr observer) override {}
 
  private:
-  aura::Env* const env_;
   aura::Window* root_window_;
   LifetimeManager lifetime_manager_;
   VSyncTimingManager vsync_timing_manager_;
@@ -99,8 +97,7 @@ void ExoTestBaseViews::SetUp() {
   // Takes care of its own lifetime.
   new wm::DefaultActivationClient(root_window());
 
-  wm_helper_ =
-      std::make_unique<WMHelperTester>(aura::Env::GetInstance(), root_window());
+  wm_helper_ = std::make_unique<WMHelperTester>(root_window());
   WMHelper::SetInstance(wm_helper_.get());
 }
 

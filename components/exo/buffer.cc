@@ -19,7 +19,6 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
 #include "components/exo/frame_sink_resource_manager.h"
-#include "components/exo/wm_helper.h"
 #include "components/viz/common/gpu/context_lost_observer.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/resources/resource_format.h"
@@ -386,7 +385,7 @@ bool Buffer::ProduceTransferableResource(
     texture_.reset();
 
   ui::ContextFactory* context_factory =
-      WMHelper::GetInstance()->env()->context_factory();
+      aura::Env::GetInstance()->context_factory();
   // Note: This can fail if GPU acceleration has been disabled.
   scoped_refptr<viz::RasterContextProvider> context_provider =
       context_factory->SharedMainThreadRasterContextProvider();

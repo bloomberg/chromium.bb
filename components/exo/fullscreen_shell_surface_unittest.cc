@@ -26,8 +26,7 @@ using FullscreenShellSurfaceTest = test::ExoTestBaseViews;
 std::unique_ptr<gfx::GpuMemoryBuffer> CreateGpuMemoryBuffer(
     const gfx::Size& size,
     gfx::BufferFormat format) {
-  return WMHelper::GetInstance()
-      ->env()
+  return aura::Env::GetInstance()
       ->context_factory()
       ->GetGpuMemoryBufferManager()
       ->CreateGpuMemoryBuffer(size, format, gfx::BufferUsage::GPU_READ,
