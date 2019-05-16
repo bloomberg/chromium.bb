@@ -202,6 +202,7 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL,
 
   // PresentationFeedback support.
   int presentation_feedback_index_ = -1;
+  int composition_start_index_ = -1;
   uint32_t presentation_flags_ = 0;
 
   base::queue<SwapInfo> swap_info_queue_;
