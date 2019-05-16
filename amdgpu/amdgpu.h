@@ -1517,6 +1517,23 @@ int amdgpu_cs_syncobj_signal(amdgpu_device_handle dev,
 			     const uint32_t *syncobjs, uint32_t syncobj_count);
 
 /**
+ * Signal kernel timeline sync objects.
+ *
+ * \param dev           - \c [in] device handle
+ * \param syncobjs      - \c [in] array of sync object handles
+ * \param points	- \c [in] array of timeline points
+ * \param syncobj_count - \c [in] number of handles in syncobjs
+ *
+ * \return   0 on success\n
+ *          <0 - Negative POSIX Error code
+ *
+*/
+int amdgpu_cs_syncobj_timeline_signal(amdgpu_device_handle dev,
+				      const uint32_t *syncobjs,
+				      uint64_t *points,
+				      uint32_t syncobj_count);
+
+/**
  *  Wait for one or all sync objects to signal.
  *
  * \param   dev	    - \c [in] self-explanatory
@@ -1633,7 +1650,41 @@ int amdgpu_cs_syncobj_export_sync_file(amdgpu_device_handle dev,
 int amdgpu_cs_syncobj_import_sync_file(amdgpu_device_handle dev,
 				       uint32_t syncobj,
 				       int sync_file_fd);
+/**
+ *  Export kernel timeline sync object to a sync_file.
+ *
+ * \param   dev		- \c [in] device handle
+ * \param   syncobj	- \c [in] sync object handle
+ * \param   point	- \c [in] timeline point
+ * \param   flags	- \c [in] flags
+ * \param   sync_file_fd - \c [out] sync_file file descriptor.
+ *
+ * \return   0 on success\n
+ *          <0 - Negative POSIX Error code
+ *
+ */
+int amdgpu_cs_syncobj_export_sync_file2(amdgpu_device_handle dev,
+					uint32_t syncobj,
+					uint64_t point,
+					uint32_t flags,
+					int *sync_file_fd);
 
+/**
+ *  Import kernel timeline sync object from a sync_file.
+ *
+ * \param   dev		- \c [in] device handle
+ * \param   syncobj	- \c [in] sync object handle
+ * \param   point	- \c [in] timeline point
+ * \param   sync_file_fd - \c [in] sync_file file descriptor.
+ *
+ * \return   0 on success\n
+ *          <0 - Negative POSIX Error code
+ *
+ */
+int amdgpu_cs_syncobj_import_sync_file2(amdgpu_device_handle dev,
+					uint32_t syncobj,
+					uint64_t point,
+					int sync_file_fd);
 /**
  * Export an amdgpu fence as a handle (syncobj or fd).
  *

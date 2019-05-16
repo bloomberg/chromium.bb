@@ -674,6 +674,18 @@ drm_public int amdgpu_cs_syncobj_signal(amdgpu_device_handle dev,
 	return drmSyncobjSignal(dev->fd, syncobjs, syncobj_count);
 }
 
+drm_public int amdgpu_cs_syncobj_timeline_signal(amdgpu_device_handle dev,
+						 const uint32_t *syncobjs,
+						 uint64_t *points,
+						 uint32_t syncobj_count)
+{
+	if (NULL == dev)
+		return -EINVAL;
+
+	return drmSyncobjTimelineSignal(dev->fd, syncobjs,
+					points, syncobj_count);
+}
+
 drm_public int amdgpu_cs_syncobj_wait(amdgpu_device_handle dev,
 				      uint32_t *handles, unsigned num_handles,
 				      int64_t timeout_nsec, unsigned flags,
@@ -747,6 +759,62 @@ drm_public int amdgpu_cs_syncobj_import_sync_file(amdgpu_device_handle dev,
 		return -EINVAL;
 
 	return drmSyncobjImportSyncFile(dev->fd, syncobj, sync_file_fd);
+}
+
+drm_public int amdgpu_cs_syncobj_export_sync_file2(amdgpu_device_handle dev,
+						   uint32_t syncobj,
+						   uint64_t point,
+						   uint32_t flags,
+						   int *sync_file_fd)
+{
+	uint32_t binary_handle;
+	int ret;
+
+	if (NULL == dev)
+		return -EINVAL;
+
+	if (!point)
+		return drmSyncobjExportSyncFile(dev->fd, syncobj, sync_file_fd);
+
+	ret = drmSyncobjCreate(dev->fd, 0, &binary_handle);
+	if (ret)
+		return ret;
+
+	ret = drmSyncobjTransfer(dev->fd, binary_handle, 0,
+				 syncobj, point, flags);
+	if (ret)
+		goto out;
+	ret = drmSyncobjExportSyncFile(dev->fd, binary_handle, sync_file_fd);
+out:
+	drmSyncobjDestroy(dev->fd, binary_handle);
+	return ret;
+}
+
+drm_public int amdgpu_cs_syncobj_import_sync_file2(amdgpu_device_handle dev,
+						   uint32_t syncobj,
+						   uint64_t point,
+						   int sync_file_fd)
+{
+	uint32_t binary_handle;
+	int ret;
+
+	if (NULL == dev)
+		return -EINVAL;
+
+	if (!point)
+		return drmSyncobjImportSyncFile(dev->fd, syncobj, sync_file_fd);
+
+	ret = drmSyncobjCreate(dev->fd, 0, &binary_handle);
+	if (ret)
+		return ret;
+	ret = drmSyncobjImportSyncFile(dev->fd, binary_handle, sync_file_fd);
+	if (ret)
+		goto out;
+	ret = drmSyncobjTransfer(dev->fd, syncobj, point,
+				 binary_handle, 0, 0);
+out:
+	drmSyncobjDestroy(dev->fd, binary_handle);
+	return ret;
 }
 
 drm_public int amdgpu_cs_submit_raw(amdgpu_device_handle dev,
