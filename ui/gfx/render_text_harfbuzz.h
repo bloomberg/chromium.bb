@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -319,6 +320,9 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
 
   // Fixed width of glyphs. This should only be set in test environments.
   float glyph_width_for_test_;
+
+  // The process application locale used to configure text rendering.
+  std::string locale_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderTextHarfBuzz);
 };

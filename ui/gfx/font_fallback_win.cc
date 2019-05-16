@@ -336,9 +336,12 @@ namespace internal {
 //   EMR_DELETEOBJECT ID:2
 //   EMR_EOF
 bool GetUniscribeFallbackFont(const Font& font,
+                              const std::string& locale,
                               base::StringPiece16 text,
                               Font* result) {
   static HDC hdc = CreateCompatibleDC(NULL);
+
+  // TODO(etienneb): Support locale with uniscribe font fallback.
 
   // The length passed to |ScriptStringAnalyse| must be at least 1.
   if (text.empty())
@@ -456,7 +459,10 @@ std::vector<Font> GetFallbackFonts(const Font& font) {
   return *font_link->GetLinkedFonts(Font(font_family, 10));
 }
 
-bool GetFallbackFont(const Font& font, base::StringPiece16 text, Font* result) {
+bool GetFallbackFont(const Font& font,
+                     const std::string& locale,
+                     base::StringPiece16 text,
+                     Font* result) {
   TRACE_EVENT0("fonts", "gfx::GetFallbackFont");
   // Creating a DirectWrite font fallback can be expensive. It's ok in the
   // browser process because we can use the shared system fallback, but in the
@@ -481,18 +487,18 @@ bool GetFallbackFont(const Font& font, base::StringPiece16 text, Font* result) {
   factory.CopyTo(factory2.GetAddressOf());
   if (!factory2) {
     // IDWriteFactory2 is not available before Win8.1
-    return internal::GetUniscribeFallbackFont(font, text, result);
+    return internal::GetUniscribeFallbackFont(font, locale, text, result);
   }
 
   Microsoft::WRL::ComPtr<IDWriteFontFallback> fallback;
   if (FAILED(factory2->GetSystemFontFallback(fallback.GetAddressOf())))
     return false;
 
-  base::string16 locale = base::UTF8ToUTF16(base::i18n::GetConfiguredLocale());
+  base::string16 locale16 = base::UTF8ToUTF16(locale);
 
   Microsoft::WRL::ComPtr<IDWriteNumberSubstitution> number_substitution;
   if (FAILED(factory2->CreateNumberSubstitution(
-          DWRITE_NUMBER_SUBSTITUTION_METHOD_NONE, locale.c_str(),
+          DWRITE_NUMBER_SUBSTITUTION_METHOD_NONE, locale16.c_str(),
           true /* ignoreUserOverride */, number_substitution.GetAddressOf()))) {
     return false;
   }
@@ -506,7 +512,7 @@ bool GetFallbackFont(const Font& font, base::StringPiece16 text, Font* result) {
                           : DWRITE_READING_DIRECTION_LEFT_TO_RIGHT;
   if (FAILED(gfx::win::TextAnalysisSource::Create(
           &text_analysis, base::string16(text.data(), text.length()),
-          locale.c_str(), number_substitution.Get(), reading_direction))) {
+          locale16.c_str(), number_substitution.Get(), reading_direction))) {
     return false;
   }
   base::string16 original_name = base::UTF8ToUTF16(font.GetFontName());

@@ -17,17 +17,16 @@
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "ui/gfx/font.h"
 
-#if defined(OS_ANDROID)
-#include "base/android/locale_utils.h"
-#endif  // defined(OS_ANDROID)
-
 namespace gfx {
 
 std::vector<Font> GetFallbackFonts(const Font& font) {
   return std::vector<Font>();
 }
 
-bool GetFallbackFont(const Font& font, base::StringPiece16 text, Font* result) {
+bool GetFallbackFont(const Font& font,
+                     const std::string& locale,
+                     base::StringPiece16 text,
+                     Font* result) {
   TRACE_EVENT0("fonts", "gfx::GetFallbackFont");
 
   if (text.empty())
@@ -35,19 +34,9 @@ bool GetFallbackFont(const Font& font, base::StringPiece16 text, Font* result) {
 
   sk_sp<SkFontMgr> font_mgr(SkFontMgr::RefDefault());
 
-  const char** bcp47_locales = nullptr;
-  int num_bcp_locals = 0;
-
-  // TODO(sergeyu): Specify bcp47 locale on all platforms. Ideally the locale
-  // should be passed here through gfx::RenderText.
-#if defined(OS_ANDROID)
-  std::string locale = base::android::GetDefaultLocaleString();
-  const char* android_bcp47_locales[] = {locale.c_str()};
-  if (!locale.empty()) {
-    bcp47_locales = android_bcp47_locales;
-    num_bcp_locals = base::size(android_bcp47_locales);
-  }
-#endif  // defined(OS_ANDROID)
+  const char* bcp47_locales[] = {locale.c_str()};
+  int num_locales = locale.empty() ? 0 : 1;
+  const char** locales = locale.empty() ? nullptr : bcp47_locales;
 
   const int font_weight = (font.GetWeight() == Font::Weight::INVALID)
                               ? static_cast<int>(Font::Weight::NORMAL)
@@ -67,7 +56,7 @@ bool GetFallbackFont(const Font& font, base::StringPiece16 text, Font* result) {
     U16_NEXT(text.data(), offset, text.length(), code_point);
 
     sk_sp<SkTypeface> typeface(font_mgr->matchFamilyStyleCharacter(
-        font.GetFontName().c_str(), skia_style, bcp47_locales, num_bcp_locals,
+        font.GetFontName().c_str(), skia_style, locales, num_locales,
         code_point));
     // If the typeface is not found or was already tested, skip it.
     if (!typeface || !tested_typeface.insert(typeface->uniqueID()).second)

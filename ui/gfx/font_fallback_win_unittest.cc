@@ -20,6 +20,8 @@ namespace gfx {
 
 namespace {
 
+const char kDefaultApplicationLocale[] = "us-en";
+
 class FontFallbackWinTest : public testing::Test {
  public:
   FontFallbackWinTest() = default;
@@ -91,9 +93,11 @@ class GetFallbackFontTest
  protected:
   bool GetFallbackFont(const Font& font, Font* result) {
     if (test_option_.fallback_font == FallbackFontFn::DEFAULT) {
-      return gfx::GetFallbackFont(font, test_case_.text, result);
+      return gfx::GetFallbackFont(font, kDefaultApplicationLocale,
+                                  test_case_.text, result);
     } else if (test_option_.fallback_font == FallbackFontFn::UNISCRIBE) {
-      return internal::GetUniscribeFallbackFont(font, test_case_.text, result);
+      return internal::GetUniscribeFallbackFont(font, kDefaultApplicationLocale,
+                                                test_case_.text, result);
     }
     return false;
   }
@@ -200,16 +204,17 @@ TEST_F(FontFallbackWinTest, ParseFontFamilyString) {
 TEST_F(FontFallbackWinTest, EmptyStringUniscribeFallback) {
   Font base_font;
   Font fallback_font;
-  bool result = internal::GetUniscribeFallbackFont(
-      base_font, base::StringPiece16(), &fallback_font);
+  bool result =
+      internal::GetUniscribeFallbackFont(base_font, kDefaultApplicationLocale,
+                                         base::StringPiece16(), &fallback_font);
   EXPECT_FALSE(result);
 }
 
 TEST_F(FontFallbackWinTest, EmptyStringFallback) {
   Font base_font;
   Font fallback_font;
-  bool result =
-      GetFallbackFont(base_font, base::StringPiece16(), &fallback_font);
+  bool result = GetFallbackFont(base_font, kDefaultApplicationLocale,
+                                base::StringPiece16(), &fallback_font);
   EXPECT_FALSE(result);
 }
 
@@ -218,20 +223,56 @@ TEST_F(FontFallbackWinTest, NulTerminatedStringPiece) {
   Font fallback_font;
   // Multiple ending NUL characters.
   const wchar_t kTest1[] = {0x0540, 0x0541, 0, 0, 0};
-  EXPECT_FALSE(GetFallbackFont(base_font,
+  EXPECT_FALSE(GetFallbackFont(base_font, kDefaultApplicationLocale,
                                base::StringPiece16(kTest1, ARRAYSIZE(kTest1)),
                                &fallback_font));
   // No ending NUL character.
   const wchar_t kTest2[] = {0x0540, 0x0541};
-  EXPECT_TRUE(GetFallbackFont(base_font,
+  EXPECT_TRUE(GetFallbackFont(base_font, kDefaultApplicationLocale,
                               base::StringPiece16(kTest2, ARRAYSIZE(kTest2)),
                               &fallback_font));
 
   // NUL only characters.
   const wchar_t kTest3[] = {0, 0, 0};
-  EXPECT_FALSE(GetFallbackFont(base_font,
+  EXPECT_FALSE(GetFallbackFont(base_font, kDefaultApplicationLocale,
                                base::StringPiece16(kTest3, ARRAYSIZE(kTest3)),
                                &fallback_font));
+}
+
+TEST_F(FontFallbackWinTest, CJKLocaleFallback) {
+  // The uniscribe fallback used by win7 does not support locale.
+  if (base::win::GetVersion() < base::win::Version::WIN10)
+    return;
+
+  // Han unification is an effort to map multiple character sets of the CJK
+  // languages into a single set of unified characters. Han characters are a
+  // common feature of written Chinese (hanzi), Japanese (kanji), and Korean
+  // (hanja). The same text will be rendered using a different font based on
+  // locale.
+  const wchar_t kCJKTest[] = L"\u8AA4\u904E\u9AA8";
+  Font base_font;
+  Font fallback_font;
+
+  EXPECT_TRUE(GetFallbackFont(base_font, "zh-CN", kCJKTest, &fallback_font));
+  EXPECT_EQ(fallback_font.GetFontName(), "Microsoft YaHei UI");
+
+  EXPECT_TRUE(GetFallbackFont(base_font, "zh-TW", kCJKTest, &fallback_font));
+  EXPECT_EQ(fallback_font.GetFontName(), "Microsoft JhengHei UI");
+
+  EXPECT_TRUE(GetFallbackFont(base_font, "zh-HK", kCJKTest, &fallback_font));
+  EXPECT_EQ(fallback_font.GetFontName(), "Microsoft JhengHei UI");
+
+  EXPECT_TRUE(GetFallbackFont(base_font, "ja", kCJKTest, &fallback_font));
+  EXPECT_EQ(fallback_font.GetFontName(), "Yu Gothic UI");
+
+  EXPECT_TRUE(GetFallbackFont(base_font, "ja-JP", kCJKTest, &fallback_font));
+  EXPECT_EQ(fallback_font.GetFontName(), "Yu Gothic UI");
+
+  EXPECT_TRUE(GetFallbackFont(base_font, "ko", kCJKTest, &fallback_font));
+  EXPECT_EQ(fallback_font.GetFontName(), "Malgun Gothic");
+
+  EXPECT_TRUE(GetFallbackFont(base_font, "ko-KR", kCJKTest, &fallback_font));
+  EXPECT_EQ(fallback_font.GetFontName(), "Malgun Gothic");
 }
 
 // This test ensures the font fallback work correctly. It will ensures that

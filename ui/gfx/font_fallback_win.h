@@ -35,6 +35,7 @@ void GFX_EXPORT ParseFontFamilyString(const std::string& family,
 
 // Exposed for unittest.
 bool GFX_EXPORT GetUniscribeFallbackFont(const Font& font,
+                                         const std::string& locale,
                                          base::StringPiece16 text,
                                          Font* result);
 }  // namespace internal

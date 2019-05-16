@@ -14,6 +14,7 @@
 #include "base/i18n/base_i18n_switches.h"
 #include "base/i18n/break_iterator.h"
 #include "base/i18n/char_iterator.h"
+#include "base/i18n/rtl.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop_current.h"
@@ -47,6 +48,10 @@
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
 #endif
+
+#if defined(OS_ANDROID)
+#include "base/android/locale_utils.h"
+#endif  // defined(OS_ANDROID)
 
 #include <hb.h>
 
@@ -1166,6 +1171,15 @@ void ShapeRunWithFont(const ShapeRunWithFontInput& in,
   hb_font_destroy(harfbuzz_font);
 }
 
+std::string GetApplicationLocale() {
+#if defined(OS_ANDROID)
+  // TODO(etienneb): Android locale should work the same way than base locale.
+  return base::android::GetDefaultLocaleString();
+#else
+  return base::i18n::GetConfiguredLocale();
+#endif
+}
+
 }  // namespace
 
 }  // namespace internal
@@ -1176,7 +1190,8 @@ RenderTextHarfBuzz::RenderTextHarfBuzz()
       update_display_run_list_(false),
       update_grapheme_iterator_(false),
       update_display_text_(false),
-      glyph_width_for_test_(0u) {
+      glyph_width_for_test_(0u),
+      locale_(internal::GetApplicationLocale()) {
   set_truncate_length(kMaxTextLength);
 }
 
@@ -1809,7 +1824,8 @@ void RenderTextHarfBuzz::ShapeRuns(
                  TRACE_STR_COPY(uscript_getShortName(font_params.script)));
     const base::StringPiece16 run_text(&text[runs.front()->range.start()],
                                        runs.front()->range.length());
-    fallback_found = GetFallbackFont(primary_font, run_text, &fallback_font);
+    fallback_found =
+        GetFallbackFont(primary_font, locale_, run_text, &fallback_font);
   }
   if (fallback_found) {
     preferred_fallback_family = fallback_font.GetFontName();

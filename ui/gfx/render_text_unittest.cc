@@ -4359,6 +4359,37 @@ TEST_F(RenderTextTest, HarfBuzz_MultiRunsSupportGlyphs) {
   }
 }
 
+#if defined(OS_WIN)
+// Ensures that locale is used for fonts selection.
+TEST_F(RenderTextTest, CJKFontWithLocale) {
+  // The uniscribe fallback used by win7 is not supporting locale.
+  if (base::win::GetVersion() < base::win::Version::WIN10)
+    return;
+
+  const wchar_t kCJKTest[] = L"\u8AA4\u904E\u9AA8";
+  static const char* kLocaleTests[] = {"zh-CN", "ja-JP", "ko-KR"};
+
+  std::set<std::string> tested_font_names;
+  for (const auto* locale : kLocaleTests) {
+    base::i18n::SetICUDefaultLocale(locale);
+    ResetRenderTextInstance();
+
+    RenderTextHarfBuzz* render_text = GetRenderText();
+    render_text->SetText(WideToUTF16(kCJKTest));
+    test_api()->EnsureLayout();
+
+    const std::vector<RenderText::FontSpan> font_spans =
+        render_text->GetFontSpansForTesting();
+    ASSERT_EQ(font_spans.size(), 1U);
+
+    // Expect the font name to be different for each locale.
+    bool unique_font_name =
+        tested_font_names.insert(font_spans[0].first.GetFontName()).second;
+    EXPECT_TRUE(unique_font_name);
+  }
+}
+#endif  // defined(OS_WIN)
+
 // Ensure that the width reported by RenderText is sufficient for drawing. Draws
 // to a canvas and checks if any pixel beyond the bounding rectangle is colored.
 TEST_F(RenderTextTest, TextDoesntClip) {
