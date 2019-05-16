@@ -113,7 +113,9 @@ struct COMPONENT_EXPORT(BASE_CLIPBOARD_TYPES) ClipboardFormatType {
   // type.
   static std::map<LONG, ClipboardFormatType>& GetFileContentTypeMap();
 
-  FORMATETC data_{};
+  // FORMATETC:
+  // https://docs.microsoft.com/en-us/windows/desktop/com/the-formatetc-structure
+  FORMATETC data_;
 #elif defined(USE_AURA) || defined(OS_ANDROID) || defined(OS_FUCHSIA)
   explicit ClipboardFormatType(const std::string& native_format);
   std::string data_;
