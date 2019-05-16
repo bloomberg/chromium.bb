@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/callback.h"
+#include "base/metrics/histogram_macros.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_form.h"
@@ -40,6 +41,13 @@ gfx::RectF TransformToRootCoordinates(
   return gfx::RectF(rwhv->TransformPointToRootCoordSpaceF(
                         bounds_in_frame_coordinates.origin()),
                     bounds_in_frame_coordinates.size());
+}
+
+void LogSiteIsolationMetricsForSubmittedForm(
+    content::RenderFrameHost* render_frame_host) {
+  UMA_HISTOGRAM_BOOLEAN(
+      "SiteIsolation.IsPasswordFormSubmittedInDedicatedProcess",
+      render_frame_host->GetSiteInstance()->RequiresDedicatedProcess());
 }
 
 }  // namespace
@@ -238,6 +246,8 @@ void ContentPasswordManagerDriver::PasswordFormSubmitted(
           BadMessageReason::CPMD_BAD_ORIGIN_FORM_SUBMITTED))
     return;
   GetPasswordManager()->OnPasswordFormSubmitted(this, password_form);
+
+  LogSiteIsolationMetricsForSubmittedForm(render_frame_host_);
 }
 
 void ContentPasswordManagerDriver::ShowManualFallbackForSaving(
@@ -270,6 +280,8 @@ void ContentPasswordManagerDriver::SameDocumentNavigation(
           BadMessageReason::CPMD_BAD_ORIGIN_IN_PAGE_NAVIGATION))
     return;
   GetPasswordManager()->OnPasswordFormSubmittedNoChecks(this, password_form);
+
+  LogSiteIsolationMetricsForSubmittedForm(render_frame_host_);
 }
 
 void ContentPasswordManagerDriver::ShowPasswordSuggestions(
