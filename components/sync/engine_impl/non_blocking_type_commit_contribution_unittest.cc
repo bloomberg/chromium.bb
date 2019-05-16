@@ -71,7 +71,8 @@ TEST(NonBlockingTypeCommitContributionTest, PopulateCommitProtoDefault) {
   request_data.entity = std::move(data);
 
   SyncEntity entity;
-  NonBlockingTypeCommitContribution::PopulateCommitProto(request_data, &entity);
+  NonBlockingTypeCommitContribution::PopulateCommitProto(PREFERENCES,
+                                                         request_data, &entity);
 
   // Exhaustively verify the populated SyncEntity.
   EXPECT_TRUE(entity.id_string().empty());
@@ -119,7 +120,8 @@ TEST(NonBlockingTypeCommitContributionTest, PopulateCommitProtoBookmark) {
   request_data.entity = std::move(data);
 
   SyncEntity entity;
-  NonBlockingTypeCommitContribution::PopulateCommitProto(request_data, &entity);
+  NonBlockingTypeCommitContribution::PopulateCommitProto(BOOKMARKS,
+                                                         request_data, &entity);
 
   // Exhaustively verify the populated SyncEntity.
   EXPECT_FALSE(entity.id_string().empty());

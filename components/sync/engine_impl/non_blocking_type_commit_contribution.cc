@@ -58,7 +58,7 @@ void NonBlockingTypeCommitContribution::AddToCommitMessage(
       sync_entity->mutable_specifics()->CopyFrom(
           commit_request->entity->specifics);
     } else {
-      PopulateCommitProto(*commit_request, sync_entity);
+      PopulateCommitProto(type_, *commit_request, sync_entity);
       AdjustCommitProto(sync_entity);
     }
 
@@ -126,7 +126,7 @@ SyncerError NonBlockingTypeCommitContribution::ProcessCommitResponse(
         response_list.push_back(response_data);
 
         status->increment_num_successful_commits();
-        if (commit_request.entity->specifics.has_bookmark()) {
+        if (type_ == BOOKMARKS) {
           status->increment_num_successful_bookmark_commits();
         }
 
@@ -178,12 +178,14 @@ size_t NonBlockingTypeCommitContribution::GetNumEntries() const {
 
 // static
 void NonBlockingTypeCommitContribution::PopulateCommitProto(
+    ModelType type,
     const CommitRequestData& commit_entity,
     sync_pb::SyncEntity* commit_proto) {
   const EntityData& entity_data = *commit_entity.entity;
   commit_proto->set_id_string(entity_data.id);
-  // Populate client_defined_unique_tag only for non-bookmark data types.
-  if (!entity_data.specifics.has_bookmark()) {
+  // Populate client_defined_unique_tag only for non-bookmark and non-Nigori
+  // data types.
+  if (type != BOOKMARKS && type != NIGORI) {
     commit_proto->set_client_defined_unique_tag(entity_data.client_tag_hash);
   }
   commit_proto->set_version(commit_entity.base_version);
@@ -193,7 +195,7 @@ void NonBlockingTypeCommitContribution::PopulateCommitProto(
 
   if (!entity_data.is_deleted()) {
     // Handle bookmarks separately.
-    if (entity_data.specifics.has_bookmark()) {
+    if (type == BOOKMARKS) {
       // position_in_parent field is set only for legacy reasons.  See comments
       // in sync.proto for more information.
       commit_proto->set_position_in_parent(
