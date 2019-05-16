@@ -89,12 +89,7 @@ ExtensionAction* ExtensionActionManager::GetExtensionAction(
   if (iter != actions_.end())
     return iter->second.get();
 
-  // TODO(https://crbug.com/893373): Update this to use
-  // ActionInfo::GetAnyActionInfo() once all callers can handle a generic action
-  // type.
-  const ActionInfo* action_info = ActionInfo::GetBrowserActionInfo(&extension);
-  if (!action_info)
-    action_info = ActionInfo::GetPageActionInfo(&extension);
+  const ActionInfo* action_info = ActionInfo::GetAnyActionInfo(&extension);
   if (!action_info)
     return nullptr;
 

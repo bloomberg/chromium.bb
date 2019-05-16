@@ -34,9 +34,11 @@ class ExtensionActionManager : public KeyedService,
   // shared between a profile and its incognito version.
   static ExtensionActionManager* Get(content::BrowserContext* browser_context);
 
-  // Returns either the PageAction or BrowserAction for |extension|, or null if
-  // none exists. Since an extension can only declare one of Browser|PageAction,
-  // this is okay to use anywhere you need a generic "ExtensionAction".
+  // Returns the action associated with the extension (specified through the
+  // "action", "browser_action", or "page_action" keys), or null if none exists.
+  // Since an extension can only declare one of these, this is safe to use
+  // anywhere callers simply need to get at the action and don't care about
+  // the manifest key.
   ExtensionAction* GetExtensionAction(const Extension& extension) const;
 
  private:

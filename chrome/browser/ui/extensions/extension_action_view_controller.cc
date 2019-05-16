@@ -64,8 +64,6 @@ ExtensionActionViewController::ExtensionActionViewController(
       weak_factory_(this) {
   DCHECK(extensions_container);
   DCHECK(extension_action);
-  DCHECK(extension_action->action_type() == ActionInfo::TYPE_PAGE ||
-         extension_action->action_type() == ActionInfo::TYPE_BROWSER);
   DCHECK(extension);
 }
 
