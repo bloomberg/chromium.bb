@@ -125,7 +125,6 @@ class TestBrowserWindow : public BrowserWindow {
                               bool show_stay_in_chrome,
                               bool show_remember_selection,
                               IntentPickerResponse callback) override {}
-  void SetIntentPickerViewVisibility(bool visible) override {}
 #endif  //  !define(OS_ANDROID)
   autofill::SaveCardBubbleView* ShowSaveCreditCardBubble(
       content::WebContents* contents,

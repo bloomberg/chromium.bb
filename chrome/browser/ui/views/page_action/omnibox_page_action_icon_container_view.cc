@@ -6,6 +6,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/location_bar/find_bar_icon.h"
+#include "chrome/browser/ui/views/location_bar/intent_picker_view.h"
 #include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
 #include "chrome/browser/ui/views/page_action/pwa_install_view.h"
 #include "chrome/browser/ui/views/page_action/zoom_view.h"
@@ -43,6 +44,11 @@ OmniboxPageActionIconContainerView::OmniboxPageActionIconContainerView(
         manage_passwords_icon_ = new ManagePasswordsIconViews(
             params.command_updater, params.page_action_icon_delegate);
         page_action_icons_.push_back(manage_passwords_icon_);
+        break;
+      case PageActionIconType::kIntentPicker:
+        intent_picker_view_ = new IntentPickerView(
+            params.browser, params.page_action_icon_delegate);
+        page_action_icons_.push_back(intent_picker_view_);
         break;
       case PageActionIconType::kPwaInstall:
         DCHECK(params.command_updater);
@@ -98,6 +104,8 @@ PageActionIconView* OmniboxPageActionIconContainerView::GetPageActionIconView(
       return find_bar_icon_;
     case PageActionIconType::kManagePasswords:
       return manage_passwords_icon_;
+    case PageActionIconType::kIntentPicker:
+      return intent_picker_view_;
     case PageActionIconType::kPwaInstall:
       return pwa_install_view_;
     case PageActionIconType::kTranslate:

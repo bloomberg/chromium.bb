@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
+#include "chrome/browser/ui/intent_picker_tab_helper.h"
 #include "chrome/common/chrome_features.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -235,10 +236,8 @@ content::NavigationThrottle::ThrottleCheckResult
 AppsNavigationThrottle::WillStartRequest() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   starting_url_ = GetStartingGURL(navigation_handle());
-  Browser* browser =
-      chrome::FindBrowserWithWebContents(navigation_handle()->GetWebContents());
-  if (browser)
-    browser->window()->SetIntentPickerViewVisibility(/*visible=*/false);
+  IntentPickerTabHelper::SetShouldShowIcon(
+      navigation_handle()->GetWebContents(), false);
   return HandleRequest();
 }
 
@@ -360,7 +359,7 @@ void AppsNavigationThrottle::ShowIntentPickerForApps(
   switch (picker_show_state) {
     case PickerShowState::kOmnibox:
       ui_displayed_ = false;
-      browser->window()->SetIntentPickerViewVisibility(true);
+      IntentPickerTabHelper::SetShouldShowIcon(web_contents, true);
       break;
     case PickerShowState::kPopOut:
       ShowIntentPickerBubbleForApps(web_contents, std::move(apps),

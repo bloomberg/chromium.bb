@@ -41,7 +41,6 @@
 class CommandUpdater;
 class ContentSettingBubbleModelDelegate;
 class GURL;
-class IntentPickerView;
 class KeywordHintView;
 class LocationIconView;
 enum class OmniboxPart;
@@ -147,10 +146,6 @@ class LocationBarView : public LocationBar,
 
   // Toggles the star on or off.
   void SetStarToggled(bool on);
-
-  // The intent picker, should not always be visible.  It will be null when
-  // |browser_| is null.
-  IntentPickerView* intent_picker_view() { return intent_picker_view_; }
 
   // The star. It may not be visible.  It will be null when |browser_| is null.
   StarView* star_view() { return star_view_; }
@@ -429,10 +424,6 @@ class LocationBarView : public LocationBar,
   // The send tab to self icon. It will be null when |browser_| is null.
   send_tab_to_self::SendTabToSelfIconView* send_tab_to_self_icon_view_ =
       nullptr;
-
-  // The intent picker for accessing apps.  It will be null when
-  // |browser_| is null.
-  IntentPickerView* intent_picker_view_ = nullptr;
 
   // The star for bookmarking.  It will be null when |browser_| is null.
   StarView* star_view_ = nullptr;

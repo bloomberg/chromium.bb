@@ -900,6 +900,8 @@ jumbo_split_static_library("ui") {
       "hats/hats_service_factory.h",
       "hung_renderer/hung_renderer_core.cc",
       "hung_renderer/hung_renderer_core.h",
+      "intent_picker_tab_helper.cc",
+      "intent_picker_tab_helper.h",
       "javascript_dialogs/javascript_dialog_views.cc",
       "javascript_dialogs/javascript_dialog_views.h",
       "layout_constants.cc",

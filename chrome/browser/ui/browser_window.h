@@ -334,7 +334,6 @@ class BrowserWindow : public ui::BaseWindow {
       bool show_stay_in_chrome,
       bool show_remember_selection,
       IntentPickerResponse callback) = 0;
-  virtual void SetIntentPickerViewVisibility(bool visible) = 0;
 #endif  //  !defined(OS_ANDROID)
 
   // Shows the Bookmark bubble. |url| is the URL being bookmarked,

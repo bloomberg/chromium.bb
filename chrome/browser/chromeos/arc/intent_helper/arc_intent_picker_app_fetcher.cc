@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/intent_picker_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
@@ -311,9 +312,7 @@ apps::PreferredPlatform ArcIntentPickerAppFetcher::DidLaunchPreferredArcApp(
     if (!instance) {
       close_reason = apps::IntentPickerCloseReason::PICKER_ERROR;
     } else if (ArcIntentHelperBridge::IsIntentHelperPackage(package_name)) {
-      Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
-      if (browser)
-        browser->window()->SetIntentPickerViewVisibility(/*visible=*/true);
+      IntentPickerTabHelper::SetShouldShowIcon(web_contents(), true);
       preferred_platform = apps::PreferredPlatform::NATIVE_CHROME;
     } else {
       instance->HandleUrl(url.spec(), package_name);

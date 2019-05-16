@@ -1312,18 +1312,6 @@ void BrowserView::ShowIntentPickerBubble(
                                    std::move(callback));
 }
 
-void BrowserView::SetIntentPickerViewVisibility(bool visible) {
-  LocationBarView* location_bar = GetLocationBarView();
-
-  if (!location_bar->intent_picker_view())
-    return;
-
-  if (location_bar->intent_picker_view()->GetVisible() != visible) {
-    location_bar->intent_picker_view()->SetVisible(visible);
-    location_bar->Layout();
-  }
-}
-
 void BrowserView::ShowBookmarkBubble(const GURL& url, bool already_bookmarked) {
   toolbar_->ShowBookmarkBubble(url, already_bookmarked,
                                bookmark_bar_view_.get());

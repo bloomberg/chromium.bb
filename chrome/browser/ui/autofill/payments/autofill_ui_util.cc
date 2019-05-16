@@ -52,6 +52,7 @@ void UpdatePageActionIcon(PageActionIconType icon_type,
             ->UpdatePageActionIcon(icon_type);
         break;
       case PageActionIconType::kFind:
+      case PageActionIconType::kIntentPicker:
       case PageActionIconType::kPwaInstall:
       case PageActionIconType::kSendTabToSelf:
       case PageActionIconType::kTranslate:

@@ -11,6 +11,7 @@ enum class PageActionIconType {
   kFind,
   kLocalCardMigration,
   kManagePasswords,
+  kIntentPicker,
   kPwaInstall,
   kSaveCard,
   kSendTabToSelf,

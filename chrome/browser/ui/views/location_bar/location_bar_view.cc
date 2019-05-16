@@ -49,7 +49,6 @@
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
-#include "chrome/browser/ui/views/location_bar/intent_picker_view.h"
 #include "chrome/browser/ui/views/location_bar/keyword_hint_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_layout.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
@@ -227,6 +226,7 @@ void LocationBarView::Init() {
       params.types_enabled.push_back(PageActionIconType::kManagePasswords);
     }
     params.types_enabled.push_back(PageActionIconType::kFind);
+    params.types_enabled.push_back(PageActionIconType::kIntentPicker);
     params.types_enabled.push_back(PageActionIconType::kTranslate);
     params.types_enabled.push_back(PageActionIconType::kZoom);
     if (base::FeatureList::IsEnabled(features::kDesktopPWAsOmniboxInstall))
@@ -258,9 +258,6 @@ void LocationBarView::Init() {
                                                    this, font_list);
       page_action_icons_.push_back(local_card_migration_icon_view_);
     }
-
-    page_action_icons_.push_back(intent_picker_view_ =
-                                     new IntentPickerView(browser_, this));
 
     page_action_icons_.push_back(
         star_view_ = new StarView(command_updater(), browser_, this));
@@ -557,8 +554,6 @@ void LocationBarView::Layout() {
   if (star_view_)
     add_trailing_decoration(star_view_);
   add_trailing_decoration(omnibox_page_action_icon_container_view_);
-  if (intent_picker_view_)
-    add_trailing_decoration(intent_picker_view_);
   if (save_credit_card_icon_view_)
     add_trailing_decoration(save_credit_card_icon_view_);
   if (local_card_migration_icon_view_)
@@ -793,8 +788,6 @@ int LocationBarView::GetMinimumTrailingWidth() const {
       IncrementalMinimumWidth(star_view_) +
       IncrementalMinimumWidth(save_credit_card_icon_view_) +
       IncrementalMinimumWidth(local_card_migration_icon_view_);
-
-  trailing_width += IncrementalMinimumWidth(intent_picker_view_);
 
   for (auto* content_setting_view : content_setting_views_)
     trailing_width += IncrementalMinimumWidth(content_setting_view);

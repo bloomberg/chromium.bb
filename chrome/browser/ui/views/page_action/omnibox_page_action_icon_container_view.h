@@ -18,6 +18,7 @@
 class Browser;
 class CommandUpdater;
 class FindBarIcon;
+class IntentPickerView;
 class ManagePasswordsIconViews;
 class PwaInstallView;
 class TranslateIconView;
@@ -81,6 +82,7 @@ class OmniboxPageActionIconContainerView
   ZoomView* zoom_view_ = nullptr;
   FindBarIcon* find_bar_icon_ = nullptr;
   ManagePasswordsIconViews* manage_passwords_icon_ = nullptr;
+  IntentPickerView* intent_picker_view_ = nullptr;
   PwaInstallView* pwa_install_view_ = nullptr;
   send_tab_to_self::SendTabToSelfIconView* send_tab_to_self_icon_view_ =
       nullptr;
