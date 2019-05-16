@@ -164,7 +164,7 @@ std::unique_ptr<TestingProfile> BuildSignedInTestingProfile() {
 // This test ensures that each distinctive SyncService status will return a
 // unique combination of status and link messages from GetStatusLabels().
 // Crashes on Win and Mac. https://crbug.com/954365
-TEST_F(SyncUIUtilTest, DISABLED_DistinctCasesReportUniqueMessageSets) {
+TEST_F(SyncUIUtilTest, DistinctCasesReportUniqueMessageSets) {
   std::set<base::string16> messages;
   for (int idx = 0; idx != NUMBER_OF_STATUS_CASES; idx++) {
     std::unique_ptr<Profile> profile = BuildTestingProfile();
