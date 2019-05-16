@@ -27,9 +27,9 @@ if (chrome && chrome.fileManagerPrivate) {
  *   calledRun: boolean,
  *   onAbort: function(!Error):undefined,
  *   HEAP8: !Uint8Array,
- *   _malloc: function(?number):number,
- *   _free: function(?number):undefined,
- *   image: function(number, ?number):Object
+ *   _malloc: function(number):number,
+ *   _free: function(number):undefined,
+ *   image: function(number, number):Object
  * }}
  */
 var PiexWasmModule;
