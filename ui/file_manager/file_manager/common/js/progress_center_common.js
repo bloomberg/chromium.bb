@@ -4,8 +4,7 @@
 
 /**
  * Event of the ProgressCenter class.
- * @enum {string}
- * @const
+ * @const @enum {string}
  */
 const ProgressCenterEvent = {
   /**
@@ -22,8 +21,7 @@ Object.freeze(ProgressCenterEvent);
 
 /**
  * State of progress items.
- * @enum {string}
- * @const
+ * @const @enum {string}
  */
 const ProgressItemState = {
   PROGRESSING: 'progressing',
@@ -35,8 +33,7 @@ Object.freeze(ProgressItemState);
 
 /**
  * Type of progress items.
- * @enum {string}
- * @const
+ * @const @enum {string}
  */
 const ProgressItemType = {
   // The item is file copy operation.
@@ -62,8 +59,7 @@ class ProgressCenterItem {
   constructor() {
     /**
      * Item ID.
-     * @type {string}
-     * @private
+     * @private {string}
      */
     this.id_ = '';
 
