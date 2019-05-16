@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "device/vr/openvr/openvr_gamepad_helper.h"
+#include "device/vr/openvr/openvr_api_wrapper.h"
 
 #include <memory>
 #include <unordered_set>
@@ -243,13 +244,13 @@ class OpenVRGamepadBuilder : public GamepadBuilder {
     kRequired = 1,
   };
 
-  // TODO(https://crbug.com/942201): Get correct ID string once WebXR spec issue
-  // #550 (https://github.com/immersive-web/webxr/issues/550) is resolved.
   OpenVRGamepadBuilder(vr::IVRSystem* vr_system,
                        uint32_t controller_id,
                        vr::VRControllerState_t controller_state,
                        device::mojom::XRHandedness handedness)
-      : GamepadBuilder("openvr", GamepadMapping::kXRStandard, handedness),
+      : GamepadBuilder(GetGamepadId(vr_system, controller_id),
+                       GamepadMapping::kXRStandard,
+                       handedness),
         controller_state_(controller_state) {
     supported_buttons_ = vr_system->GetUint64TrackedDeviceProperty(
         controller_id, vr::Prop_SupportedButtons_Uint64);
@@ -309,6 +310,26 @@ class OpenVRGamepadBuilder : public GamepadBuilder {
   }
 
  private:
+  static bool IsControllerHTCVive(vr::IVRSystem* vr_system,
+                                  uint32_t controller_id) {
+    std::string model =
+        GetOpenVRString(vr_system, vr::Prop_ModelNumber_String, controller_id);
+    std::string manufacturer = GetOpenVRString(
+        vr_system, vr::Prop_ManufacturerName_String, controller_id);
+    return (model == "Vive Controller MV") && (manufacturer == "HTC");
+  }
+
+  // TODO(https://crbug.com/942201): Get correct ID string once WebXR spec issue
+  // #550 (https://github.com/immersive-web/webxr/issues/550) is resolved.
+  static std::string GetGamepadId(vr::IVRSystem* vr_system,
+                                  uint32_t controller_id) {
+    if (IsControllerHTCVive(vr_system, controller_id)) {
+      return "htc-vive";
+    }
+
+    return "openvr";
+  }
+
   bool IsUsed(vr::EVRButtonId button_id) {
     auto it = used_axes_.find(button_id);
     return it != used_axes_.end();

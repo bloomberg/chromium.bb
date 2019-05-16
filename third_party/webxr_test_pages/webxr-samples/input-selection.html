@@ -164,11 +164,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         let hand = input_source.handedness;
         if (!(hand in loggedGamepadInfo)) {
           loggedGamepadInfo[hand] = true;
-          console.log(
-            "Detected gamepad with:\n" +
-            "hand = " + hand + "\n" +
-            "id = " + gamepad.id + "\n" +
-            "mapping = " + gamepad.mapping + "\n");
+          console.log(gamepad);
         }
         if (!(hand in movableBoxes)) {
           let x = 2;
@@ -193,6 +189,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         }
         let buttons_fired = controllerTable[hand].update(gamepad);
         for (let button_index of buttons_fired) {
+          console.log("controller for " + hand + " hand fired button " + button_index.toString());
           boxTable[hand].toggle(button_index);
         }
         for (let i = 0; i < gamepad.axes.length; i += 2) {
