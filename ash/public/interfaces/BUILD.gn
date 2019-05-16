@@ -45,7 +45,6 @@ mojom("interfaces_internal") {
     "new_window.mojom",
     "night_light_controller.mojom",
     "note_taking_controller.mojom",
-    "process_creation_time_recorder.mojom",
     "shelf.mojom",
     "shelf_integration_test_api.mojom",
     "shutdown.mojom",
@@ -97,7 +96,6 @@ mojom("test_interfaces") {
     "shelf_test_api.test-mojom",
     "status_area_widget_test_api.test-mojom",
     "system_tray_test_api.test-mojom",
-    "time_to_first_present_recorder_test_api.test-mojom",
   ]
   deps = [
     "//ash/public/interfaces:interfaces_internal",

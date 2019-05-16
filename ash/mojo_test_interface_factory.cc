@@ -7,12 +7,10 @@
 #include <utility>
 
 #include "ash/login/login_screen_test_api.h"
-#include "ash/metrics/time_to_first_present_recorder_test_api.h"
 #include "ash/public/interfaces/login_screen_test_api.test-mojom.h"
 #include "ash/public/interfaces/shelf_test_api.test-mojom.h"
 #include "ash/public/interfaces/status_area_widget_test_api.test-mojom.h"
 #include "ash/public/interfaces/system_tray_test_api.test-mojom.h"
-#include "ash/public/interfaces/time_to_first_present_recorder_test_api.test-mojom.h"
 #include "ash/shelf/shelf_test_api.h"
 #include "ash/system/status_area_widget_test_api.h"
 #include "ash/system/unified/unified_system_tray_test_api.h"
@@ -45,11 +43,6 @@ void BindSystemTrayTestApiOnMainThread(
   UnifiedSystemTrayTestApi::BindRequest(std::move(request));
 }
 
-void BindTimeToFirstPresentRecorderTestApiOnMainThread(
-    mojom::TimeToFirstPresentRecorderTestApiRequest request) {
-  TimeToFirstPresentRecorderTestApi::BindRequest(std::move(request));
-}
-
 }  // namespace
 
 void RegisterInterfaces(
@@ -63,9 +56,6 @@ void RegisterInterfaces(
                          main_thread_task_runner);
   registry->AddInterface(base::Bind(&BindSystemTrayTestApiOnMainThread),
                          main_thread_task_runner);
-  registry->AddInterface(
-      base::Bind(&BindTimeToFirstPresentRecorderTestApiOnMainThread),
-      main_thread_task_runner);
 }
 
 }  // namespace mojo_test_interface_factory

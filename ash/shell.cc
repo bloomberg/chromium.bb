@@ -66,7 +66,6 @@
 #include "ash/magnifier/partial_magnification_controller.h"
 #include "ash/media/media_controller.h"
 #include "ash/media/media_notification_controller.h"
-#include "ash/metrics/time_to_first_present_recorder.h"
 #include "ash/multi_device_setup/multi_device_notification_presenter.h"
 #include "ash/new_window_controller.h"
 #include "ash/note_taking_controller.h"
@@ -983,9 +982,6 @@ void Shell::Init(
   // present at all times.
   if (features::IsVirtualDesksEnabled())
     desks_controller_ = std::make_unique<DesksController>();
-
-  time_to_first_present_recorder_ =
-      std::make_unique<TimeToFirstPresentRecorder>(GetPrimaryRootWindow());
 
   shell_state_->SetRootWindowForNewWindows(GetPrimaryRootWindow());
 
