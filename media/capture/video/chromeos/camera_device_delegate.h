@@ -9,11 +9,13 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "media/capture/video/chromeos/mojo/camera3.mojom.h"
 #include "media/capture/video/chromeos/mojo/camera_common.mojom.h"
 #include "media/capture/video/video_capture_device.h"
 #include "media/capture/video_capture_types.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace media {
 
@@ -104,7 +106,7 @@ class CAPTURE_EXPORT CameraDeviceDelegate final {
   void OnMojoConnectionError();
 
   // Reconfigure streams for picture taking.
-  void OnFlushed(int32_t result);
+  void OnFlushed(base::Optional<gfx::Size> new_blob_resolution, int32_t result);
 
   // Callback method for the Close Mojo IPC call.  This method resets the Mojo
   // connection and closes the camera device.
@@ -131,8 +133,10 @@ class CAPTURE_EXPORT CameraDeviceDelegate final {
   // indicates.  If there's no error OnConfiguredStreams notifies
   // |client_| the capture has started by calling OnStarted, and proceeds to
   // ConstructDefaultRequestSettings.
-  void ConfigureStreams(bool require_photo);
+  void ConfigureStreams(bool require_photo,
+                        base::Optional<gfx::Size> new_blob_resolution);
   void OnConfiguredStreams(
+      gfx::Size blob_resolution,
       int32_t result,
       cros::mojom::Camera3StreamConfigurationPtr updated_config);
 
@@ -170,6 +174,9 @@ class CAPTURE_EXPORT CameraDeviceDelegate final {
   const VideoCaptureDeviceDescriptor device_descriptor_;
 
   int32_t camera_id_;
+
+  // Current configured resolution of BLOB stream.
+  gfx::Size current_blob_resolution_;
 
   const scoped_refptr<CameraHalDelegate> camera_hal_delegate_;
 
