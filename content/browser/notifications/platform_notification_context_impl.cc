@@ -725,14 +725,13 @@ void PlatformNotificationContextImpl::DoWriteNotificationData(
         service_proxy_->CloseNotification(notification_id);
 
       // Schedule notification to be shown.
-      service_proxy_->ScheduleTrigger(
-          write_database_data.notification_data.show_trigger_timestamp.value());
+      service_proxy_->ScheduleNotification(std::move(write_database_data));
 
       // Respond with success as this notification got scheduled successfully.
       base::PostTaskWithTraits(
           FROM_HERE, {BrowserThread::UI},
           base::BindOnce(std::move(callback), /* success= */ true,
-                         write_database_data.notification_id));
+                         notification_id));
       return;
     }
 
@@ -767,21 +766,32 @@ void PlatformNotificationContextImpl::DeleteNotificationData(
   if (close_notification)
     service_proxy_->CloseNotification(notification_id);
 
-  LazyInitialize(
-      base::BindOnce(&PlatformNotificationContextImpl::DoDeleteNotificationData,
-                     this, notification_id, origin, std::move(callback)));
+  bool should_log_close = service_proxy_->ShouldLogClose(origin);
+  LazyInitialize(base::BindOnce(
+      &PlatformNotificationContextImpl::DoDeleteNotificationData, this,
+      notification_id, origin, std::move(callback), should_log_close));
 }
 
 void PlatformNotificationContextImpl::DoDeleteNotificationData(
     const std::string& notification_id,
     const GURL& origin,
     DeleteResultCallback callback,
+    bool should_log_close,
     bool initialized) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   if (!initialized) {
     base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
                              base::BindOnce(std::move(callback), false));
     return;
+  }
+
+  // Read additional data if we need to log the close event.
+  if (should_log_close) {
+    NotificationDatabaseData data;
+    if (database_->ReadNotificationData(notification_id, origin, &data) ==
+        NotificationDatabase::STATUS_OK) {
+      service_proxy_->LogClose(std::move(data));
+    }
   }
 
   NotificationDatabase::Status status =

@@ -11,6 +11,7 @@
 #include "base/optional.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
+#include "content/browser/notifications/devtools_event_logging.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_registration.h"
@@ -34,6 +35,7 @@ using NotificationOperationCallback =
                             NotificationDispatchCompleteCallback)>;
 using NotificationOperationCallbackWithContext =
     base::OnceCallback<void(const scoped_refptr<PlatformNotificationContext>&,
+                            BrowserContext* browser_context,
                             const ServiceWorkerRegistration*,
                             const NotificationDatabaseData&,
                             NotificationDispatchCompleteCallback)>;
@@ -153,7 +155,7 @@ void DispatchNotificationEventOnRegistration(
 }
 
 // Finds the ServiceWorkerRegistration associated with the |origin| and
-// |service_worker_registration_id|. Must be called on the IO thread.
+// |service_worker_registration_id|. Must be called on the UI thread.
 void FindServiceWorkerRegistration(
     const GURL& origin,
     const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context,
@@ -240,10 +242,18 @@ void DoDispatchNotificationClickEvent(
     const base::Optional<int>& action_index,
     const base::Optional<base::string16>& reply,
     const scoped_refptr<PlatformNotificationContext>& notification_context,
+    BrowserContext* browser_context,
     const ServiceWorkerRegistration* service_worker_registration,
     const NotificationDatabaseData& notification_database_data,
     NotificationDispatchCompleteCallback dispatch_complete_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(&notifications::LogNotificationClickedEventToDevTools,
+                     browser_context, notification_database_data, action_index,
+                     reply));
+
   service_worker_registration->active_version()->RunAfterStartWorker(
       ServiceWorkerMetrics::EventType::NOTIFICATION_CLICK,
       base::BindOnce(
@@ -317,6 +327,7 @@ void DoDispatchNotificationCloseEvent(
     const std::string& notification_id,
     bool by_user,
     const scoped_refptr<PlatformNotificationContext>& notification_context,
+    BrowserContext* browser_context,
     const ServiceWorkerRegistration* service_worker_registration,
     const NotificationDatabaseData& notification_database_data,
     NotificationDispatchCompleteCallback dispatch_complete_callback) {
@@ -366,7 +377,7 @@ void DispatchNotificationEvent(
       notification_id, origin, interaction, service_worker_context,
       notification_context,
       base::BindOnce(std::move(notification_action_callback),
-                     notification_context),
+                     notification_context, browser_context),
       std::move(dispatch_complete_callback));
 }
 

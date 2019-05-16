@@ -207,6 +207,7 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
   void DoDeleteNotificationData(const std::string& notification_id,
                                 const GURL& origin,
                                 DeleteResultCallback callback,
+                                bool should_log_close,
                                 bool initialized);
 
   // Actually reads all notification origins from the database. Must only be

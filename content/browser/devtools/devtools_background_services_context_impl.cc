@@ -49,6 +49,8 @@ constexpr devtools::proto::BackgroundService ServiceToProtoEnum(
       return devtools::proto::BACKGROUND_SYNC;
     case DevToolsBackgroundService::kPushMessaging:
       return devtools::proto::PUSH_MESSAGING;
+    case DevToolsBackgroundService::kNotifications:
+      return devtools::proto::NOTIFICATIONS;
   }
 }
 

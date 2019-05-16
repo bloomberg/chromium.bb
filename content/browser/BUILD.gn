@@ -1330,6 +1330,8 @@ jumbo_source_set("browser") {
     "notification_service_impl.h",
     "notifications/blink_notification_service_impl.cc",
     "notifications/blink_notification_service_impl.h",
+    "notifications/devtools_event_logging.cc",
+    "notifications/devtools_event_logging.h",
     "notifications/notification_database.cc",
     "notifications/notification_database.h",
     "notifications/notification_database_conversions.cc",
