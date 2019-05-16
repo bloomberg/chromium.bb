@@ -188,6 +188,10 @@ void WebRuntimeFeatures::EnableForceTallerSelectPopup(bool enable) {
   RuntimeEnabledFeatures::SetForceTallerSelectPopupEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableFormControlsRefresh(bool enable) {
+  RuntimeEnabledFeatures::SetFormControlsRefreshEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableGenericSensor(bool enable) {
   RuntimeEnabledFeatures::SetSensorEnabled(enable);
 }
