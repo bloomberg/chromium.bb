@@ -244,6 +244,8 @@ cast_source_set("browser") {
       "cast_content_window_aura.cc",
       "cast_content_window_aura.h",
     ]
+
+    deps += [ "//ui/views:views" ]
   }
 
   if (!is_fuchsia) {
