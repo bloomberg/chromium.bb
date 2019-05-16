@@ -327,6 +327,8 @@ extern const char kInternetSubPage[];
 extern const char kConnectedDevicesSubPage[];
 extern const char kLockScreenSubPage[];
 extern const char kNetworkDetailSubPage[];
+extern const char kPluginVmDetailsSubPage[];
+extern const char kPluginVmSharedPathSubPage[];
 extern const char kPowerSubPage[];
 extern const char kSmartLockSettingsSubPage[];
 extern const char kSmbSharesPage[];

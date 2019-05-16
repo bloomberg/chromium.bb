@@ -365,6 +365,8 @@ const char kInternetSubPage[] = "internet";
 const char kConnectedDevicesSubPage[] = "multidevice/features";
 const char kLockScreenSubPage[] = "lockScreen";
 const char kNetworkDetailSubPage[] = "networkDetail";
+const char kPluginVmDetailsSubPage[] = "pluginVm/details";
+const char kPluginVmSharedPathSubPage[] = "pluginVm/sharedPath";
 const char kPowerSubPage[] = "power";
 const char kSmartLockSettingsSubPage[] = "multidevice/features/smartLock";
 const char kSmbSharesPageAddDialog[] = "smbShares?showAddShare=true";
