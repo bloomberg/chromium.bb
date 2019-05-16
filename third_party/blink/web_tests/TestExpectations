@@ -5601,3 +5601,4 @@ crbug.com/963734 [ Mac ] mojo/bind-intercepted-interface-in-worker.html [ Failur
 crbug.com/963734 [ Mac ] shapedetection/detection-on-worker.html  [ Timeout ]
 crbug.com/963764 [ Mac ] media/video-aspect-ratio.html [ Pass Failure ]
 crbug.com/963141 [ Linux ] media/video-object-fit.html [ Pass Failure ]
+crbug.com/963740 [ Win ] compositing/video-frame-size-change.html [ Pass Failure ]
