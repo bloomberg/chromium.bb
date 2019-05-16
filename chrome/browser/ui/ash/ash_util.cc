@@ -5,25 +5,15 @@
 #include "chrome/browser/ui/ash/ash_util.h"
 
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/public/interfaces/event_properties.mojom.h"
 #include "ash/shell.h"
 #include "base/macros.h"
 #include "components/session_manager/core/session_manager.h"
 #include "content/public/common/service_manager_connection.h"
-#include "ui/aura/window_event_dispatcher.h"
-#include "ui/display/display.h"
-#include "ui/display/screen.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/shadow_types.h"
 #include "ui/wm/core/window_animations.h"
 
 namespace ash_util {
-
-bool WillAshProcessAcceleratorForEvent(const ui::KeyEvent& key_event) {
-  return key_event.properties() &&
-         key_event.properties()->count(
-             ash::mojom::kWillProcessAccelerator_KeyEventProperty);
-}
 
 void SetupWidgetInitParamsForContainer(views::Widget::InitParams* params,
                                        int container_id) {

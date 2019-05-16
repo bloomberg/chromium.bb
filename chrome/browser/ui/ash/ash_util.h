@@ -17,14 +17,7 @@ namespace service_manager {
 class Connector;
 }
 
-namespace ui {
-class KeyEvent;
-}  // namespace ui
-
 namespace ash_util {
-
-// Returns true if ash has an accelerator for |key_event| that is enabled.
-bool WillAshProcessAcceleratorForEvent(const ui::KeyEvent& key_event);
 
 // Sets up |params| to place the widget in an ash shell window container on
 // the primary display. See ash/public/cpp/shell_window_ids.h for |container_id|

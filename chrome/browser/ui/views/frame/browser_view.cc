@@ -173,7 +173,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/accelerators.h"
-#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/window_properties.h"
 #include "chrome/browser/ui/views/frame/top_controls_slide_controller_chromeos.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
@@ -1635,14 +1634,6 @@ content::KeyboardEventProcessingResult BrowserView::PreHandleKeyboardEvent(
       frame_->PreHandleKeyboardEvent(event);
   if (result != content::KeyboardEventProcessingResult::NOT_HANDLED)
     return result;
-
-#if defined(OS_CHROMEOS)
-  if (event.os_event && event.os_event->IsKeyEvent() &&
-      ash_util::WillAshProcessAcceleratorForEvent(
-          *event.os_event->AsKeyEvent())) {
-    return content::KeyboardEventProcessingResult::HANDLED_DONT_UPDATE_EVENT;
-  }
-#endif
 
   int id;
   if (!FindCommandIdForAccelerator(accelerator, &id)) {
