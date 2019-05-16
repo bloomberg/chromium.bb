@@ -4,12 +4,7 @@
 dpranke@chromium.org
 kbr@chromium.org
 martiniss@chromium.org
+crouleau@chromium.org
 
 # TEAM: infra-dev@chromium.org
 # COMPONENT: Infra>Client>Chrome
-
-# Adapters for Telemetry based tests.
-per-file run_gpu*=crouleau@chromium.org
-per-file run_telemetry*=crouleau@chromium.org
-per-file run_performance_tests*=crouleau@chromium.org
-per-file run_gtest*=crouleau@chromium.org
