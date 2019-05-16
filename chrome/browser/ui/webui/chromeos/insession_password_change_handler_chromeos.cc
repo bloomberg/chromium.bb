@@ -11,29 +11,60 @@
 #include "base/macros.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/auth/chrome_cryptohome_authenticator.h"
+#include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
+#include "chrome/browser/chromeos/policy/user_policy_manager_factory_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/login/auth/saml_password_attributes.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
 
 namespace chromeos {
+
+namespace {
+
+std::string GetPasswordChangeUrl(Profile* profile) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSamlPasswordChangeUrl)) {
+    return base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+        switches::kSamlPasswordChangeUrl);
+  }
+
+  const policy::UserCloudPolicyManagerChromeOS* user_cloud_policy_manager =
+      policy::UserPolicyManagerFactoryChromeOS::GetCloudPolicyManagerForProfile(
+          profile);
+  if (user_cloud_policy_manager) {
+    const enterprise_management::PolicyData* policy =
+        user_cloud_policy_manager->core()->store()->policy();
+    if (policy->has_change_password_uri()) {
+      return policy->change_password_uri();
+    }
+  }
+
+  return SamlPasswordAttributes::LoadFromPrefs(profile->GetPrefs())
+      .password_change_url();
+}
+
+}  // namespace
 
 InSessionPasswordChangeHandler::InSessionPasswordChangeHandler() = default;
 InSessionPasswordChangeHandler::~InSessionPasswordChangeHandler() = default;
 
 void InSessionPasswordChangeHandler::HandleInitialize(
     const base::ListValue* value) {
-  const Profile* profile = Profile::FromWebUI(web_ui());
+  Profile* profile = Profile::FromWebUI(web_ui());
   CHECK(profile->GetPrefs()->GetBoolean(
       prefs::kSamlInSessionPasswordChangeEnabled));
 
   AllowJavascript();
   base::Value params(base::Value::Type::DICTIONARY);
-  const std::string password_change_url =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kSamlPasswordChangeUrl);
+  const std::string password_change_url = GetPasswordChangeUrl(profile);
+  if (password_change_url.empty()) {
+    LOG(ERROR) << "Password change url is empty";
+    return;
+  }
   params.SetKey("passwordChangeUrl", base::Value(password_change_url));
   const user_manager::User* user =
       ProfileHelper::Get()->GetUserByProfile(profile);
