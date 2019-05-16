@@ -16,9 +16,8 @@ ChromeClientConnectionManager::ChromeClientConnectionManager(
 
 bool ChromeClientConnectionManager::AllowedToProfileRenderer(
     content::RenderProcessHost* host) {
-  // TODO(https://crbug.com/947933): |IsIncognito| does not cover guest mode.
-  // Is this intentional or |IsOffTheRecord| should be used?
-  return !Profile::FromBrowserContext(host->GetBrowserContext())->IsIncognito();
+  return Profile::FromBrowserContext(host->GetBrowserContext())
+      ->IsRegularProfile();
 }
 
 }  // namespace heap_profiling
