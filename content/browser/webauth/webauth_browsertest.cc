@@ -75,7 +75,7 @@ constexpr char kPublicKeyErrorMessage[] =
     "webauth: NotSupportedError: Required parameters missing in "
     "`options.publicKey`.";
 
-constexpr char kNotAllowedErrorMessage[] =
+constexpr char kTimeoutErrorMessage[] =
     "webauth: NotAllowedError: The operation either timed out or was not "
     "allowed. See: https://w3c.github.io/webauthn/#sec-assertion-privacy.";
 
@@ -92,6 +92,10 @@ constexpr char kRelyingPartyUserIconUrlSecurityErrorMessage[] =
 
 constexpr char kRelyingPartyRpIconUrlSecurityErrorMessage[] =
     "webauth: SecurityError: 'rp.icon' should be a secure URL";
+
+constexpr char kInvalidStateError[] =
+    "webauth: InvalidStateError: The user attempted to use an authenticator "
+    "that recognized none of the provided credentials.";
 
 constexpr char kAbortErrorMessage[] =
     "webauth: AbortError: The user aborted a request.";
@@ -810,7 +814,7 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
     ASSERT_TRUE(content::ExecuteScriptAndExtractString(
         shell()->web_contents()->GetMainFrame(),
         BuildCreateCallWithParameters(parameters), &result));
-    ASSERT_EQ(kNotAllowedErrorMessage, result);
+    ASSERT_EQ(kTimeoutErrorMessage, result);
   }
 }
 
@@ -848,7 +852,7 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
         shell()->web_contents()->GetMainFrame(),
         BuildCreateCallWithParameters(parameters), &result));
 
-    ASSERT_EQ(kNotAllowedErrorMessage, result);
+    ASSERT_EQ(kTimeoutErrorMessage, result);
   }
 }
 
@@ -867,7 +871,7 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
         shell()->web_contents()->GetMainFrame(),
         BuildCreateCallWithParameters(parameters), &result));
 
-    ASSERT_EQ(kNotAllowedErrorMessage, result);
+    ASSERT_EQ(kTimeoutErrorMessage, result);
   }
 }
 // Tests that when navigator.credentials.create() is called with abort
@@ -945,7 +949,7 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
     ASSERT_TRUE(content::ExecuteScriptAndExtractString(
         shell()->web_contents()->GetMainFrame(),
         BuildGetCallWithParameters(parameters), &result));
-    ASSERT_EQ(kNotAllowedErrorMessage, result);
+    ASSERT_EQ(kInvalidStateError, result);
   }
 }
 
@@ -964,7 +968,7 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
 }
 
 // Tests that when navigator.credentials.get() is called with abort
-// signal's aborted flag not set, we get a NOT_ALLOWED_ERROR, because the
+// signal's aborted flag not set, we get a kInvalidStateError, because the
 // virtual device does not have any registered credentials.
 IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
                        GetPublicKeyCredentialWithAbortNotSet) {
@@ -982,7 +986,7 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
 
     ASSERT_TRUE(content::ExecuteScriptAndExtractString(
         shell()->web_contents()->GetMainFrame(), script, &result));
-    ASSERT_EQ(kNotAllowedErrorMessage, result);
+    ASSERT_EQ(kInvalidStateError, result);
   }
 }
 
@@ -1202,7 +1206,7 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
       shell()->web_contents(),
       BuildCreateCallWithParameters(CreateParameters()), "webauth: ");
   ASSERT_TRUE(result);
-  ASSERT_EQ(kNotAllowedErrorMessage, *result);
+  ASSERT_EQ(kTimeoutErrorMessage, *result);
 }
 
 IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest, WinGetAssertion) {
@@ -1224,7 +1228,7 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest, WinGetAssertion) {
       shell()->web_contents(), BuildGetCallWithParameters(GetParameters()),
       "webauth: ");
   ASSERT_TRUE(result);
-  ASSERT_EQ(kNotAllowedErrorMessage, *result);
+  ASSERT_EQ(kTimeoutErrorMessage, *result);
 }
 
 IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
@@ -1240,7 +1244,7 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
       shell()->web_contents(), BuildGetCallWithParameters(GetParameters()),
       "webauth: ");
   ASSERT_TRUE(result);
-  ASSERT_EQ(kNotAllowedErrorMessage, *result);
+  ASSERT_EQ(kTimeoutErrorMessage, *result);
 }
 #endif
 
@@ -1327,7 +1331,7 @@ IN_PROC_BROWSER_TEST_F(WebAuthBrowserCtapTest,
     authenticator()->GetAssertion(std::move(get_assertion_request_params),
                                   get_callback_receiver.callback());
     get_callback_receiver.WaitForCallback();
-    EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR,
+    EXPECT_EQ(AuthenticatorStatus::CREDENTIAL_NOT_RECOGNIZED,
               get_callback_receiver.status());
   }
 }
