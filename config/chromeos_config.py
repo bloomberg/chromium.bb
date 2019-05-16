@@ -2037,6 +2037,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'beaglebone',
       'betty',
       'betty-arc64',
+      'betty-arcnext',
       'bob',
       'capri',
       'capri-zfpga',
@@ -2055,6 +2056,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'elm',
       'eve',
       'eve-arcnext',
+      'eve-campfire',
       'falco',
       'fizz',
       'fizz-accelerator',
@@ -2064,11 +2066,14 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'gale',
       'gonzo',
       'grunt',
+      'guado',
       'guado-accelerator',
+      'guado_moblab',
       'hana',
       'hatch',
       'kalista',
       'kevin',
+      'kevin64',
       'kevin-arcnext',
       'kip',
       'kukui',
@@ -2147,11 +2152,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   _paladin_experimental_boards = _paladin_new_boards | frozenset([
       'mistral', # contact: roopeshr@, b/131190241.
       'moblab-generic-vm', # contact: alevkoy@, crbug/960998
-      'betty-arcnext', # contact: akahuang@, crbug.com/963377
-      'eve-campfile', # contact: akahuang@, crbug.com/963377
-      'guado', # contact: akahuang@, crbug.com/963377
-      'guado_moblab', # contact: akahuang@, crbug.com/963377
-      'kevin64', # contact: akahuang@, crbug.com/963377
   ])
 
 
