@@ -153,7 +153,7 @@ std::vector<AccountInfo> AccountTrackerService::GetAccounts() const {
 }
 
 AccountInfo AccountTrackerService::GetAccountInfo(
-    const std::string& account_id) const {
+    const CoreAccountId& account_id) const {
   const auto iterator = accounts_.find(account_id);
   if (iterator != accounts_.end())
     return iterator->second;
@@ -214,7 +214,7 @@ void AccountTrackerService::NotifyAccountUpdated(
 }
 
 void AccountTrackerService::NotifyAccountUpdateFailed(
-    const std::string& account_id) {
+    const CoreAccountId& account_id) {
   for (auto& observer : observer_list_)
     observer.OnAccountUpdateFailed(account_id);
 }
@@ -227,17 +227,18 @@ void AccountTrackerService::NotifyAccountRemoved(
 }
 
 void AccountTrackerService::StartTrackingAccount(
-    const std::string& account_id) {
+    const CoreAccountId& account_id) {
   if (!base::ContainsKey(accounts_, account_id)) {
     DVLOG(1) << "StartTracking " << account_id;
     AccountInfo account_info;
     account_info.account_id = account_id;
     account_info.is_child_account = false;
-    accounts_.insert(make_pair(account_id, account_info));
+    accounts_.insert(std::make_pair(account_id, account_info));
   }
 }
 
-void AccountTrackerService::StopTrackingAccount(const std::string& account_id) {
+void AccountTrackerService::StopTrackingAccount(
+    const CoreAccountId& account_id) {
   DVLOG(1) << "StopTracking " << account_id;
   if (base::ContainsKey(accounts_, account_id)) {
     AccountInfo account_info = std::move(accounts_[account_id]);
@@ -251,7 +252,7 @@ void AccountTrackerService::StopTrackingAccount(const std::string& account_id) {
 }
 
 void AccountTrackerService::SetAccountInfoFromUserInfo(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const base::DictionaryValue* user_info) {
   DCHECK(base::ContainsKey(accounts_, account_id));
   AccountInfo& account_info = accounts_[account_id];
@@ -274,7 +275,7 @@ void AccountTrackerService::SetAccountInfoFromUserInfo(
   SaveToPrefs(account_info);
 }
 
-void AccountTrackerService::SetAccountImage(const std::string& account_id,
+void AccountTrackerService::SetAccountImage(const CoreAccountId& account_id,
                                             const gfx::Image& image) {
   if (!base::ContainsKey(accounts_, account_id))
     return;
@@ -284,7 +285,7 @@ void AccountTrackerService::SetAccountImage(const std::string& account_id,
   NotifyAccountUpdated(account_info);
 }
 
-void AccountTrackerService::SetIsChildAccount(const std::string& account_id,
+void AccountTrackerService::SetIsChildAccount(const CoreAccountId& account_id,
                                               bool is_child_account) {
   DCHECK(base::ContainsKey(accounts_, account_id));
   AccountInfo& account_info = accounts_[account_id];
@@ -297,7 +298,7 @@ void AccountTrackerService::SetIsChildAccount(const std::string& account_id,
 }
 
 void AccountTrackerService::SetIsAdvancedProtectionAccount(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     bool is_under_advanced_protection) {
   DCHECK(base::ContainsKey(accounts_, account_id));
   AccountInfo& account_info = accounts_[account_id];
@@ -312,10 +313,10 @@ void AccountTrackerService::SetIsAdvancedProtectionAccount(
 void AccountTrackerService::MigrateToGaiaId() {
   DCHECK_EQ(GetMigrationState(), MIGRATION_IN_PROGRESS);
 
-  std::vector<std::string> to_remove;
+  std::vector<CoreAccountId> to_remove;
   std::vector<AccountInfo> migrated_accounts;
   for (const auto& pair : accounts_) {
-    const std::string& new_account_id = pair.second.gaia;
+    const CoreAccountId new_account_id(pair.second.gaia);
     if (pair.first == new_account_id)
       continue;
 
@@ -337,7 +338,7 @@ void AccountTrackerService::MigrateToGaiaId() {
   for (AccountInfo& new_account_info : migrated_accounts) {
     // Copy the AccountInfo |gaia| member field so that it is not left in
     // an undeterminate state in the structure after std::map::emplace call.
-    std::string account_id = new_account_info.gaia;
+    CoreAccountId account_id = new_account_info.account_id;
     SaveToPrefs(new_account_info);
 
     accounts_.emplace(std::move(account_id), std::move(new_account_info));
@@ -398,14 +399,15 @@ AccountTrackerService::GetMigrationState(const PrefService* pref_service) {
 }
 
 base::FilePath AccountTrackerService::GetImagePathFor(
-    const std::string& account_id) {
+    const CoreAccountId& account_id) {
   return user_data_dir_.Append(kAccountsFolder)
       .Append(kAvatarImagesFolder)
-      .AppendASCII(account_id);
+      .AppendASCII(account_id.id);
 }
 
-void AccountTrackerService::OnAccountImageLoaded(const std::string& account_id,
-                                                 gfx::Image image) {
+void AccountTrackerService::OnAccountImageLoaded(
+    const CoreAccountId& account_id,
+    gfx::Image image) {
   if (base::ContainsKey(accounts_, account_id) &&
       accounts_[account_id].account_image.IsEmpty()) {
     AccountInfo& account_info = accounts_[account_id];
@@ -418,7 +420,7 @@ void AccountTrackerService::LoadAccountImagesFromDisk() {
   if (!image_storage_task_runner_)
     return;
   for (const auto& pair : accounts_) {
-    const std::string& account_id = pair.second.account_id;
+    const CoreAccountId& account_id = pair.second.account_id;
     PostTaskAndReplyWithResult(
         image_storage_task_runner_.get(), FROM_HERE,
         base::BindOnce(&ReadImage, GetImagePathFor(account_id)),
@@ -428,7 +430,7 @@ void AccountTrackerService::LoadAccountImagesFromDisk() {
 }
 
 void AccountTrackerService::SaveAccountImageToDisk(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const gfx::Image& image) {
   if (!image_storage_task_runner_)
     return;
@@ -438,7 +440,7 @@ void AccountTrackerService::SaveAccountImageToDisk(
 }
 
 void AccountTrackerService::RemoveAccountImageFromDisk(
-    const std::string& account_id) {
+    const CoreAccountId& account_id) {
   if (!image_storage_task_runner_)
     return;
   image_storage_task_runner_->PostTask(
@@ -447,38 +449,37 @@ void AccountTrackerService::RemoveAccountImageFromDisk(
 
 void AccountTrackerService::LoadFromPrefs() {
   const base::ListValue* list = pref_service_->GetList(prefs::kAccountInfo);
-  std::set<std::string> to_remove;
+  std::set<CoreAccountId> to_remove;
   for (size_t i = 0; i < list->GetSize(); ++i) {
     const base::DictionaryValue* dict;
     if (list->GetDictionary(i, &dict)) {
-      base::string16 value;
+      std::string value;
       if (dict->GetString(kAccountKeyPath, &value)) {
-        std::string account_id = base::UTF16ToUTF8(value);
-
         // Ignore incorrectly persisted non-canonical account ids.
-        if (account_id.find('@') != std::string::npos &&
-            account_id != gaia::CanonicalizeEmail(account_id)) {
-          to_remove.insert(account_id);
+        if (value.find('@') != std::string::npos &&
+            value != gaia::CanonicalizeEmail(value)) {
+          to_remove.insert(CoreAccountId(value));
           continue;
         }
+        CoreAccountId account_id(value);
 
         StartTrackingAccount(account_id);
         AccountInfo& account_info = accounts_[account_id];
 
         if (dict->GetString(kAccountGaiaPath, &value))
-          account_info.gaia = base::UTF16ToUTF8(value);
+          account_info.gaia = value;
         if (dict->GetString(kAccountEmailPath, &value))
-          account_info.email = base::UTF16ToUTF8(value);
+          account_info.email = value;
         if (dict->GetString(kAccountHostedDomainPath, &value))
-          account_info.hosted_domain = base::UTF16ToUTF8(value);
+          account_info.hosted_domain = value;
         if (dict->GetString(kAccountFullNamePath, &value))
-          account_info.full_name = base::UTF16ToUTF8(value);
+          account_info.full_name = value;
         if (dict->GetString(kAccountGivenNamePath, &value))
-          account_info.given_name = base::UTF16ToUTF8(value);
+          account_info.given_name = value;
         if (dict->GetString(kAccountLocalePath, &value))
-          account_info.locale = base::UTF16ToUTF8(value);
+          account_info.locale = value;
         if (dict->GetString(kAccountPictureURLPath, &value))
-          account_info.picture_url = base::UTF16ToUTF8(value);
+          account_info.picture_url = value;
 
         bool is_child_account = false;
         if (dict->GetBoolean(kAccountChildAccountStatusPath, &is_child_account))
@@ -584,14 +585,14 @@ void AccountTrackerService::RemoveFromPrefs(const AccountInfo& account_info) {
   }
 }
 
-std::string AccountTrackerService::PickAccountIdForAccount(
+CoreAccountId AccountTrackerService::PickAccountIdForAccount(
     const std::string& gaia,
     const std::string& email) const {
   return PickAccountIdForAccount(pref_service_, gaia, email);
 }
 
 // static
-std::string AccountTrackerService::PickAccountIdForAccount(
+CoreAccountId AccountTrackerService::PickAccountIdForAccount(
     const PrefService* pref_service,
     const std::string& gaia,
     const std::string& email) {
@@ -602,24 +603,24 @@ std::string AccountTrackerService::PickAccountIdForAccount(
     case MIGRATION_NOT_STARTED:
       // Some tests don't use a real email address.  To support these cases,
       // don't try to canonicalize these strings.
-      return (email.find('@') == std::string::npos)
-                 ? email
-                 : gaia::CanonicalizeEmail(email);
+      return CoreAccountId(email.find('@') == std::string::npos
+                               ? email
+                               : gaia::CanonicalizeEmail(email));
     case MIGRATION_IN_PROGRESS:
     case MIGRATION_DONE:
-      return gaia;
+      return CoreAccountId(gaia);
     default:
       NOTREACHED();
-      return email;
+      return CoreAccountId(email);
   }
 }
 
-std::string AccountTrackerService::SeedAccountInfo(const std::string& gaia,
-                                                   const std::string& email) {
+CoreAccountId AccountTrackerService::SeedAccountInfo(const std::string& gaia,
+                                                     const std::string& email) {
   AccountInfo account_info;
   account_info.gaia = gaia;
   account_info.email = email;
-  std::string account_id = SeedAccountInfo(account_info);
+  CoreAccountId account_id = SeedAccountInfo(account_info);
 
   DVLOG(1) << "AccountTrackerService::SeedAccountInfo"
            << " account_id=" << account_id << " gaia_id=" << gaia
@@ -628,7 +629,7 @@ std::string AccountTrackerService::SeedAccountInfo(const std::string& gaia,
   return account_id;
 }
 
-std::string AccountTrackerService::SeedAccountInfo(AccountInfo info) {
+CoreAccountId AccountTrackerService::SeedAccountInfo(AccountInfo info) {
   info.account_id = PickAccountIdForAccount(info.gaia, info.email);
 
   const bool already_exists = base::ContainsKey(accounts_, info.account_id);
@@ -647,7 +648,7 @@ std::string AccountTrackerService::SeedAccountInfo(AccountInfo info) {
   return info.account_id;
 }
 
-void AccountTrackerService::RemoveAccount(const std::string& account_id) {
+void AccountTrackerService::RemoveAccount(const CoreAccountId& account_id) {
   StopTrackingAccount(account_id);
 }
 
