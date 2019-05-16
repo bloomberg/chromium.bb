@@ -167,8 +167,14 @@ GpuServiceImpl::GpuServiceImpl(
   if (vulkan_implementation_) {
     vulkan_context_provider_ =
         VulkanInProcessContextProvider::Create(vulkan_implementation_);
-    if (!vulkan_context_provider_)
+    if (vulkan_context_provider_) {
+      // If Vulkan is supported, then OOP-R is supported.
+      gpu_info_.oop_rasterization_supported = true;
+      gpu_feature_info_.status_values[gpu::GPU_FEATURE_TYPE_OOP_RASTERIZATION] =
+          gpu::kGpuFeatureStatusEnabled;
+    } else {
       DLOG(WARNING) << "Failed to create Vulkan context provider.";
+    }
   }
 #endif
 
