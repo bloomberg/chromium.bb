@@ -850,9 +850,17 @@ html[darkmode=true] body:not(.light-chip) #promo > div > img {
   border-radius: 8px;
   box-shadow: 0 1px 3px 0 rgba(var(--GG800-rgb), .3),
               0 4px 8px 3px rgba(var(--GG800-rgb), .15);
+  color: rgb(var(--GG700-rgb));
   height: 528px;
   padding: 0;
   width: 800px;
+}
+
+html[darkmode=true] #customization-menu {
+  background-color: rgb(41, 42, 45);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3),
+      0 4px 8px 3px rgba(0, 0, 0, 0.15);
+  color: rgb(var(--GG200-rgb));
 }
 
 #menu-nav-panel {
@@ -910,6 +918,10 @@ html[dir=rtl] .menu-option {
   width: 20px;
 }
 
+html[darkmode=true] .menu-option-icon {
+  background-color: rgb(var(--GG200-rgb));
+}
+
 .menu-option:active .menu-option-icon-wrapper .menu-option-icon,
 .menu-option.selected .menu-option-icon-wrapper .menu-option-icon {
   background-color: rgb(var(--GB600-rgb));
@@ -930,7 +942,6 @@ html[dir=rtl] .menu-option {
 
 #menu-header {
   height: 80px;
-
 }
 
 #menu-title-wrapper {
@@ -963,6 +974,10 @@ html[dir=rtl] .menu-option {
   text-align: end;
   user-select: none;
   width: 100%;
+}
+
+html[darkmode=true] #menu-footer {
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 #menu-done {
@@ -1040,6 +1055,10 @@ html[dir=rtl] .menu-option {
   padding: 8px 0 24px 0;
 }
 
+html[darkmode=true] #backgrounds-menu .bg-sel-tile-title {
+  color: rgb(var(--GG200-rgb));
+}
+
 #backgrounds-default.bg-sel-tile-bg {
   background-color: white;
   border: 1px solid rgb(var(--GG300-rgb));
@@ -1068,14 +1087,20 @@ html[dir=rtl] .menu-option {
 }
 
 #menu-back {
-  background: url(../../../../ui/webui/resources/images/icon_arrow_back.svg) no-repeat center;
-  background-size: 20px 20px;
+  -webkit-mask-image: url(../../../../ui/webui/resources/images/icon_arrow_back.svg);
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 20px;
+  background-color: rgb(var(--GG900-rgb));
   height: 20px;
   margin-inline-start: 192px;
   margin-top: 39px;
   outline: none;
   visibility: hidden;
   width: 20px;
+}
+
+html[darkmode=true] #menu-back {
+  background-color: rgb(var(--GG200-rgb));
 }
 
 html[dir=rtl] #menu-back {
