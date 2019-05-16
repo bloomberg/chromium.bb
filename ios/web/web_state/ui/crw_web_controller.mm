@@ -5206,6 +5206,24 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     [self handleCancelledError:error
                  forNavigation:navigation
                provisionalLoad:provisionalLoad];
+    // TODO(crbug.com/957032): This might get fixed at some point. Check if
+    // there is a iOS version for which we don't need it any more.
+    if (@available(iOS 12.2, *)) {
+      if (![self.webView.backForwardList.currentItem.URL
+              isEqual:self.webView.URL] &&
+          self.isCurrentNavigationItemPOST) {
+        UMA_HISTOGRAM_BOOLEAN("WebController.BackForwardListOutOfSync", true);
+        // Sometimes on error the backForward list is out of sync with the
+        // webView, go back or forward to fix it. See crbug.com/951880.
+        if ([self.webView.backForwardList.backItem.URL
+                isEqual:self.webView.URL]) {
+          [self.webView goBack];
+        } else if ([self.webView.backForwardList.forwardItem.URL
+                       isEqual:self.webView.URL]) {
+          [self.webView goForward];
+        }
+      }
+    }
     // NSURLErrorCancelled errors that aren't handled by aborting the load will
     // automatically be retried by the web view, so early return in this case.
     return;
