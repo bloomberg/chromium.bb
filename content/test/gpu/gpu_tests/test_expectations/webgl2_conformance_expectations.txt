@@ -251,7 +251,7 @@ crbug.com/602688 [ opengl passthrough intel ] conformance/renderbuffers/framebuf
 # Passthrough command decoder / Windows / OpenGL / Intel
 # This case causes no-over-optimization-on-uniform-array fail.
 crbug.com/884210 [ opengl win passthrough intel ] conformance/ogles/GL/gl_FragCoord/gl_FragCoord_001_to_003.html [ Skip ]
-crbug.com/854100 [ opengl win passthrough intel ] conformance/glsl/variables/gl-pointcoord.html [ RetryOnFailure ]
+crbug.com/854100 [ opengl win passthrough intel ] conformance/glsl/variables/gl-pointcoord.html [ Failure ]
 crbug.com/angleproject/2760 [ opengl win passthrough intel ] conformance2/renderbuffers/multisampled-depth-renderbuffer-initialization.html [ Failure ]
 crbug.com/912579 [ opengl win passthrough intel ] conformance2/rendering/out-of-bounds-index-buffers-after-copying.html [ RetryOnFailure ]
 crbug.com/602688 [ opengl win passthrough intel ] conformance/glsl/constructors/glsl-construct-mat2.html [ Failure ]
@@ -261,6 +261,8 @@ crbug.com/602688 [ opengl win passthrough intel ] conformance2/glsl3/vector-dyna
 crbug.com/602688 [ opengl win passthrough intel ] conformance2/glsl3/vector-dynamic-indexing.html [ Failure ]
 crbug.com/angleproject/2880 [ opengl win passthrough intel ] deqp/functional/gles3/shaderbuiltinvar.html [ Failure ]
 crbug.com/957631 [ opengl win passthrough intel ] conformance2/rendering/element-index-uint.html [ Failure ]
+crbug.com/963450 [ opengl win passthrough intel ] deqp/functional/gles3/textureshadow/cube_linear_greater.html [ RetryOnFailure ]
+crbug.com/963450 [ opengl win passthrough intel ] deqp/functional/gles3/textureshadow/cube_linear_mipmap_linear_less.html [ RetryOnFailure ]
 crbug.com/963450 [ opengl win passthrough intel ] deqp/functional/gles3/textureshadow/cube_linear_mipmap_nearest_greater_or_equal.html [ RetryOnFailure ]
 crbug.com/963450 [ opengl win passthrough intel ] deqp/functional/gles3/textureshadow/cube_linear_mipmap_nearest_not_equal.html [ RetryOnFailure ]
 crbug.com/963450 [ opengl win passthrough intel ] deqp/functional/gles3/textureshadow/cube_linear_not_equal.html [ RetryOnFailure ]
@@ -268,6 +270,7 @@ crbug.com/963450 [ opengl win passthrough intel ] deqp/functional/gles3/textures
 crbug.com/963450 [ opengl win passthrough intel ] deqp/functional/gles3/textureshadow/cube_nearest_greater.html [ RetryOnFailure ]
 crbug.com/963450 [ opengl win passthrough intel ] deqp/functional/gles3/textureshadow/cube_nearest_mipmap_linear_less.html [ RetryOnFailure ]
 crbug.com/963450 [ opengl win passthrough intel ] deqp/functional/gles3/textureshadow/cube_nearest_mipmap_linear_not_equal.html [ RetryOnFailure ]
+crbug.com/963450 [ opengl win passthrough intel ] deqp/functional/gles3/textureshadow/cube_nearest_mipmap_nearest_less_or_equal.html [ RetryOnFailure ]
 
 # Passthrough command decoder / Linux / OpenGL / NVIDIA
 crbug.com/773861 [ opengl linux passthrough nvidia ] conformance/textures/image_bitmap_from_video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Failure ]
