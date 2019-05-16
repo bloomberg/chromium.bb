@@ -824,8 +824,8 @@ PerformanceMeasure* Performance::MeasureInternal(
       }
       const PerformanceMeasureOptions* options =
           start_or_options.GetAsPerformanceMeasureOptions();
-      return MeasureWithDetail(script_state, measure_name, options->startTime(),
-                               options->endTime(), options->detail(),
+      return MeasureWithDetail(script_state, measure_name, options->start(),
+                               options->end(), options->detail(),
                                exception_state);
     } else {
       // measure("name", "mark1", *)
