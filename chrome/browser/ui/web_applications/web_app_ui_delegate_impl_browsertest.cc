@@ -108,11 +108,6 @@ IN_PROC_BROWSER_TEST_F(WebAppUiDelegateImplBrowserTest,
   const auto* bar_app = InstallWebApp(kBarUrl);
   LaunchApp(bar_app);
 
-  // Wait for the browser windows to be fully opened, otherwise we'll crash when
-  // closing them.
-  // TODO(ortuno): Investigate removing this.
-  base::RunLoop().RunUntilIdle();
-
   EXPECT_EQ(2u, ui_delegate()->GetNumWindowsForApp(foo_app->id()));
   EXPECT_EQ(1u, ui_delegate()->GetNumWindowsForApp(bar_app->id()));
 
@@ -132,11 +127,6 @@ IN_PROC_BROWSER_TEST_F(WebAppUiDelegateImplBrowserTest,
   const auto* foo_app = InstallWebApp(kFooUrl);
   const auto* bar_app = InstallWebApp(kBarUrl);
   LaunchApp(bar_app);
-
-  // Wait for the browser windows to be fully opened, otherwise we'll crash when
-  // closing them.
-  // TODO(ortuno): Investigate removing this.
-  base::RunLoop().RunUntilIdle();
 
   base::RunLoop run_loop;
   // Should return early; no windows for |foo_app|.
@@ -158,11 +148,6 @@ IN_PROC_BROWSER_TEST_F(WebAppUiDelegateImplBrowserTest,
     auto* foo_window1 = LaunchApp(foo_app);
     auto* foo_window2 = LaunchApp(foo_app);
     auto* bar_window = LaunchApp(bar_app);
-
-    // Wait for the browser windows to be fully opened, otherwise we'll crash
-    // when closing them.
-    // TODO(ortuno): Investigate removing this.
-    base::RunLoop().RunUntilIdle();
 
     bool callback_ran = false;
     base::RunLoop run_loop;
@@ -196,11 +181,6 @@ IN_PROC_BROWSER_TEST_F(WebAppUiDelegateImplBrowserTest,
   auto* foo_window1 = LaunchApp(foo_app);
   auto* foo_window2 = LaunchApp(foo_app);
   auto* bar_window = LaunchApp(bar_app);
-
-  // Wait for the browser windows to be fully opened, otherwise we'll crash when
-  // closing them.
-  // TODO(ortuno): Investigate removing this.
-  base::RunLoop().RunUntilIdle();
 
   bool callback_ran1 = false;
   bool callback_ran2 = false;
