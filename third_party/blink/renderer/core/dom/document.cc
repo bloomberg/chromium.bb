@@ -3537,7 +3537,7 @@ bool Document::CheckCompletedInternal() {
         SchedulingPolicy::Feature::kDocumentLoaded,
         {SchedulingPolicy::RecordMetricsForBackForwardCache()});
 
-    AnchorElementMetrics::MaybeReportViewportMetricsOnLoad(*this);
+    AnchorElementMetrics::NotifyOnLoad(*this);
 
     // If this is a document associated with a resource loading hints based
     // preview, then record the resource loading hints UKM now that the load is

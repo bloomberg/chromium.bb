@@ -2222,7 +2222,8 @@ bool LocalFrameView::UpdateLifecyclePhases(
   }
 
   ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
-    for (auto& observer : frame_view.lifecycle_observers_)
+    auto lifecycle_observers = frame_view.lifecycle_observers_;
+    for (auto& observer : lifecycle_observers)
       observer->WillStartLifecycleUpdate(frame_view);
   });
 
@@ -2238,7 +2239,8 @@ bool LocalFrameView::UpdateLifecyclePhases(
   UpdateLifecyclePhasesInternal(target_state);
 
   ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
-    for (auto& observer : frame_view.lifecycle_observers_)
+    auto lifecycle_observers = frame_view.lifecycle_observers_;
+    for (auto& observer : lifecycle_observers)
       observer->DidFinishLifecycleUpdate(frame_view);
   });
 

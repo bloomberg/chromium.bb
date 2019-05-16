@@ -111,6 +111,15 @@ class NavigationPredictorBrowserTest
     return http_server_->GetURL(file);
   }
 
+  void WaitForLayout(base::HistogramTester* histogram_tester) {
+    // Force a re-layout by adding a text node.
+    EXPECT_TRUE(content::ExecuteScript(
+        browser()->tab_strip_model()->GetActiveWebContents(),
+        "document.body.appendChild(document.createTextNode('node'))"));
+    RetryForHistogramUntilCountReached(
+        histogram_tester, "AnchorElementMetrics.Visible.RatioArea", 1);
+  }
+
  private:
   std::unique_ptr<net::EmbeddedTestServer> http_server_;
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
@@ -124,7 +133,7 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest, Pipeline) {
 
   const GURL& url = GetTestURL("/simple_page_with_anchors.html");
   ui_test_utils::NavigateToURL(browser(), url);
-  base::RunLoop().RunUntilIdle();
+  WaitForLayout(&histogram_tester);
 
   histogram_tester.ExpectUniqueSample(
       "AnchorElementMetrics.Visible.NumberOfAnchorElements", 5, 1);
@@ -175,7 +184,7 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest, PipelineAdsFrameTagged) {
 
   GURL url = GetTestURL("/page_with_ads_iframe.html");
   ui_test_utils::NavigateToURL(browser(), url);
-  base::RunLoop().RunUntilIdle();
+  WaitForLayout(&histogram_tester);
 
   histogram_tester.ExpectUniqueSample(
       "AnchorElementMetrics.Visible.NumberOfAnchorElements", 5, 1);
@@ -200,7 +209,7 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
 
   GURL url = GetTestURL("/page_with_ads_iframe.html");
   ui_test_utils::NavigateToURL(browser(), url);
-  base::RunLoop().RunUntilIdle();
+  WaitForLayout(&histogram_tester);
 
   histogram_tester.ExpectUniqueSample(
       "AnchorElementMetrics.Visible.NumberOfAnchorElements", 7, 1);
@@ -220,7 +229,7 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest, NavigationScore) {
 
   const GURL& url = GetTestURL("/simple_page_with_anchors.html");
   ui_test_utils::NavigateToURL(browser(), url);
-  base::RunLoop().RunUntilIdle();
+  WaitForLayout(&histogram_tester);
 
   histogram_tester.ExpectTotalCount(
       "AnchorElementMetrics.Visible.HighestNavigationScore", 1);
@@ -234,7 +243,7 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest, ClickAnchorElement) {
 
   const GURL& url = GetTestURL("/simple_page_with_anchors.html");
   ui_test_utils::NavigateToURL(browser(), url);
-  base::RunLoop().RunUntilIdle();
+  WaitForLayout(&histogram_tester);
 
   EXPECT_TRUE(content::ExecuteScript(
       browser()->tab_strip_model()->GetActiveWebContents(),
@@ -263,7 +272,7 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
 
   const GURL& url = GetTestURL("/page_with_same_host_anchor_element.html");
   ui_test_utils::NavigateToURL(browser(), url);
-  base::RunLoop().RunUntilIdle();
+  WaitForLayout(&histogram_tester);
 
   EXPECT_TRUE(content::ExecuteScript(
       browser()->tab_strip_model()->GetActiveWebContents(),
@@ -314,7 +323,7 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(content::ExecuteScript(
       browser()->tab_strip_model()->GetActiveWebContents(),
       "document.getElementById('google').click();"));
-  base::RunLoop().RunUntilIdle();
+  WaitForLayout(&histogram_tester);
 
   histogram_tester.ExpectUniqueSample(
       "AnchorElementMetrics.Visible.NumberOfAnchorElements", 2, 1);
@@ -373,7 +382,7 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
 
   const GURL& url = GetTestURL("/page_with_same_host_anchor_element.html");
   ui_test_utils::NavigateToURL(browser(), url);
-  base::RunLoop().RunUntilIdle();
+  WaitForLayout(&histogram_tester);
 
   RetryForHistogramBucketUntilCountReached(
       &histogram_tester, "NavigationPredictor.OnNonDSE.ActionTaken",
@@ -382,33 +391,6 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
       1);
 
   EXPECT_LT(0, histogram_tester.GetBucketCount(
-                   "NavigationPredictor.OnNonDSE.ActionTaken",
-                   static_cast<base::HistogramBase::Sample>(
-                       NavigationPredictor::Action::kPreconnectAfterTimeout)));
-}
-
-// Test that we do not preconnect after the last preconnect timed out when
-// backgrounded.
-IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
-                       DISABLE_ON_CHROMEOS(ActionAccuracy_timeout_background)) {
-  base::HistogramTester histogram_tester;
-
-  base::test::ScopedFeatureList scoped_feature_list;
-  std::map<std::string, std::string> parameters;
-
-  // Force synchronous timer instead of delayed, without tab background this
-  // would cause an infinite loop in RunUntilIdle.
-  parameters["unused_idle_socket_timeout_seconds"] = "-1";
-  scoped_feature_list.InitAndEnableFeatureWithParameters(
-      net::features::kNetUnusedIdleSocketTimeout, parameters);
-
-  const GURL& url = GetTestURL("/page_with_same_host_anchor_element.html");
-
-  browser()->tab_strip_model()->GetActiveWebContents()->WasHidden();
-  ui_test_utils::NavigateToURL(browser(), url);
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_EQ(0, histogram_tester.GetBucketCount(
                    "NavigationPredictor.OnNonDSE.ActionTaken",
                    static_cast<base::HistogramBase::Sample>(
                        NavigationPredictor::Action::kPreconnectAfterTimeout)));
@@ -431,7 +413,7 @@ IN_PROC_BROWSER_TEST_F(
 
   const GURL& url = GetTestURL("/page_with_same_host_anchor_element.html");
   ui_test_utils::NavigateToURL(browser(), url);
-  base::RunLoop().RunUntilIdle();
+  WaitForLayout(&histogram_tester);
 
   histogram_tester.ExpectUniqueSample(
       "AnchorElementMetrics.Visible.NumberOfAnchorElements", 2, 1);
@@ -486,7 +468,7 @@ IN_PROC_BROWSER_TEST_F(
   // This page only has non-same host links.
   const GURL& url = GetTestURL("/anchors_different_area.html");
   ui_test_utils::NavigateToURL(browser(), url);
-  base::RunLoop().RunUntilIdle();
+  WaitForLayout(&histogram_tester);
 
   histogram_tester.ExpectUniqueSample(
       "NavigationPredictor.OnNonDSE.ActionTaken",
@@ -507,7 +489,7 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
   // This page only has non-same host links.
   const GURL& url = GetTestURL("/anchors_different_area.html");
   ui_test_utils::NavigateToURL(browser(), url);
-  base::RunLoop().RunUntilIdle();
+  WaitForLayout(&histogram_tester);
 
   histogram_tester.ExpectUniqueSample(
       "NavigationPredictor.OnNonDSE.ActionTaken",
@@ -549,7 +531,7 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
   // This page only has non-same host links.
   const GURL& url = GetTestURL("/anchors_different_area.html?q=cats");
   ui_test_utils::NavigateToURL(browser(), url);
-  base::RunLoop().RunUntilIdle();
+  WaitForLayout(&histogram_tester);
 
   histogram_tester.ExpectUniqueSample("NavigationPredictor.OnDSE.ActionTaken",
                                       NavigationPredictor::Action::kNone, 1);
@@ -565,7 +547,7 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
 
   const GURL& url = GetTestURL("/page_with_same_host_anchor_element.html");
   ui_test_utils::NavigateToURL(browser(), url);
-  base::RunLoop().RunUntilIdle();
+  WaitForLayout(&histogram_tester);
 
   EXPECT_TRUE(content::ExecuteScript(
       browser()->tab_strip_model()->GetActiveWebContents(),
@@ -618,7 +600,7 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest, AreaRank) {
   // This test file contains 5 anchors with different size.
   const GURL& url = GetTestURL("/anchors_different_area.html");
   ui_test_utils::NavigateToURL(browser(), url);
-  base::RunLoop().RunUntilIdle();
+  WaitForLayout(&histogram_tester);
 
   EXPECT_TRUE(content::ExecuteScript(
       browser()->tab_strip_model()->GetActiveWebContents(),
@@ -639,7 +621,7 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
 
   const GURL& url = GetTestURL("/anchors_same_href.html");
   ui_test_utils::NavigateToURL(browser(), url);
-  base::RunLoop().RunUntilIdle();
+  WaitForLayout(&histogram_tester);
 
   histogram_tester.ExpectTotalCount("AnchorElementMetrics.Visible.RatioArea",
                                     1);
@@ -664,7 +646,7 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
 
   const GURL& url = GetTestURL("/anchors_same_href.html");
   ui_test_utils::NavigateToURL(browser(), url);
-  base::RunLoop().RunUntilIdle();
+  WaitForLayout(&histogram_tester);
 
   histogram_tester.ExpectTotalCount("AnchorElementMetrics.Visible.RatioArea",
                                     1);
@@ -705,7 +687,7 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
 
   const GURL& url = GetTestURL("/anchors_same_href.html?q=cats");
   ui_test_utils::NavigateToURL(browser(), url);
-  base::RunLoop().RunUntilIdle();
+  WaitForLayout(&histogram_tester);
   EXPECT_TRUE(content::ExecuteScript(
       browser()->tab_strip_model()->GetActiveWebContents(),
       "document.getElementById('google').click();"));
@@ -743,7 +725,8 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
 
   const GURL& url = GetTestURL("/anchors_same_href.html?q=cats");
   ui_test_utils::NavigateToURL(browser(), url);
-  base::RunLoop().RunUntilIdle();
+  WaitForLayout(&histogram_tester);
+
   EXPECT_TRUE(content::ExecuteScript(
       browser()->tab_strip_model()->GetActiveWebContents(),
       "document.getElementById('google').click();"));
@@ -763,7 +746,7 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
 
   const GURL& url = GetTestURL("/simple_page_with_anchors.html");
   ui_test_utils::NavigateToURL(browser(), url);
-  base::RunLoop().RunUntilIdle();
+  WaitForLayout(&histogram_tester);
 
   histogram_tester.ExpectUniqueSample(
       "AnchorElementMetrics.Visible.NumberOfAnchorElements", 5, 1);
@@ -781,7 +764,7 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
 
   const GURL& url = GetTestURL("/page_with_same_host_anchor_element.html");
   ui_test_utils::NavigateToURL(browser(), url);
-  base::RunLoop().RunUntilIdle();
+  WaitForLayout(&histogram_tester);
 
   histogram_tester.ExpectUniqueSample(
       "AnchorElementMetrics.Visible.NumberOfAnchorElements", 2, 1);
@@ -802,7 +785,7 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
 
   const GURL& url = GetTestURL("/long_page_with_anchors-1.html");
   ui_test_utils::NavigateToURL(browser(), url);
-  base::RunLoop().RunUntilIdle();
+  WaitForLayout(&histogram_tester);
 
   histogram_tester.ExpectUniqueSample(
       "AnchorElementMetrics.Visible.NumberOfAnchorElements", 2, 1);
