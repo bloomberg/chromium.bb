@@ -37,6 +37,10 @@ COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature kRefreshExpirationDate;
 COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature
     kPreventDownloadsWithSamePath;
 
+// Whether in-progress download manager will be used to initialize download
+// service.
+COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature
+    kUseInProgressDownloadManagerForDownloadService;
 }  // namespace features
 }  // namespace download
 

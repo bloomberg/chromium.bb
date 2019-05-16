@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
@@ -24,6 +25,7 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/download/public/background_service/download_params.h"
 #include "components/download/public/background_service/download_service.h"
+#include "components/download/public/common/download_features.h"
 #include "components/offline_items_collection/core/offline_content_aggregator.h"
 #include "components/offline_items_collection/core/offline_item.h"
 #include "content/public/browser/background_fetch_description.h"
@@ -54,7 +56,11 @@ BackgroundFetchDelegateImpl::BackgroundFetchDelegateImpl(
 
   // Ensure that downloads UI components are initialized to handle the UI
   // updates.
-  content::BrowserContext::GetDownloadManager(profile_);
+  if (!base::FeatureList::IsEnabled(
+          download::features::
+              kUseInProgressDownloadManagerForDownloadService)) {
+    content::BrowserContext::GetDownloadManager(profile_);
+  }
 }
 
 BackgroundFetchDelegateImpl::~BackgroundFetchDelegateImpl() {

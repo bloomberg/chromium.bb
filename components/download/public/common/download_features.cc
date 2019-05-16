@@ -41,5 +41,9 @@ const base::Feature kRefreshExpirationDate{"RefreshExpirationDate",
 const base::Feature kPreventDownloadsWithSamePath{
     "PreventDownloadsWithSamePath", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kUseInProgressDownloadManagerForDownloadService{
+    "UseInProgressDownloadManagerForDownloadService",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace download

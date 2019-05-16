@@ -10,11 +10,13 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "components/download/internal/background_service/driver_entry.h"
+#include "components/download/public/common/download_features.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "components/download/public/common/simple_download_manager_coordinator.h"
@@ -115,6 +117,7 @@ DownloadDriverImpl::DownloadDriverImpl(
     SimpleDownloadManagerCoordinator* download_manager_coordinator)
     : client_(nullptr),
       download_manager_coordinator_(download_manager_coordinator),
+      is_ready_(false),
       weak_ptr_factory_(this) {
   DCHECK(download_manager_coordinator_);
   DETACH_FROM_SEQUENCE(sequence_checker_);
@@ -147,9 +150,10 @@ void DownloadDriverImpl::HardRecover() {
 }
 
 bool DownloadDriverImpl::IsReady() const {
-  // TODO(qinmin): return true when only active downloads are available.
   return client_ && download_manager_coordinator_ &&
-         download_manager_coordinator_->has_all_history_downloads();
+         (download_manager_coordinator_->has_all_history_downloads() ||
+          base::FeatureList::IsEnabled(
+              features::kUseInProgressDownloadManagerForDownloadService));
 }
 
 void DownloadDriverImpl::Start(
@@ -328,10 +332,16 @@ void DownloadDriverImpl::OnDownloadsInitialized(
 
   if (!client_)
     return;
-  // TODO(qinmin): allow client_ to be used even if only active downloads are
-  // ready.
-  if (!active_downloads_only)
+
+  if (is_ready_)
+    return;
+
+  if (!active_downloads_only ||
+      base::FeatureList::IsEnabled(
+          features::kUseInProgressDownloadManagerForDownloadService)) {
     client_->OnDriverReady(true);
+    is_ready_ = true;
+  }
 }
 
 void DownloadDriverImpl::OnManagerGoingDown(

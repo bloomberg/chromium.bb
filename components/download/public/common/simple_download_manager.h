@@ -46,7 +46,7 @@ class COMPONENTS_DOWNLOAD_EXPORT SimpleDownloadManager {
       std::unique_ptr<DownloadUrlParameters> parameters) = 0;
 
   // Returns whether the manager can handle this download.
-  virtual bool CanDownload(DownloadUrlParameters* parameters);
+  virtual bool CanDownload(DownloadUrlParameters* parameters) = 0;
 
   using DownloadVector = std::vector<DownloadItem*>;
   // Add all download items to |downloads|, no matter the type or state, without

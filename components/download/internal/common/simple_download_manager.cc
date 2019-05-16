@@ -13,10 +13,6 @@ SimpleDownloadManager::~SimpleDownloadManager() {
     observer.OnManagerGoingDown();
 }
 
-bool SimpleDownloadManager::CanDownload(DownloadUrlParameters* parameters) {
-  return true;
-}
-
 void SimpleDownloadManager::AddObserver(Observer* observer) {
   simple_download_manager_observers_.AddObserver(observer);
   if (initialized_)

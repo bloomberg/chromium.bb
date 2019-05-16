@@ -30,6 +30,7 @@ class MockSimpleDownloadManager : public SimpleDownloadManager {
     DownloadUrlMock(params.get());
   }
 
+  MOCK_METHOD1(CanDownload, bool(DownloadUrlParameters*));
   MOCK_METHOD1(DownloadUrlMock, void(DownloadUrlParameters*));
   MOCK_METHOD1(GetDownloadByGuid, DownloadItem*(const std::string&));
   MOCK_METHOD1(GetAllDownloads, void(DownloadVector* downloads));

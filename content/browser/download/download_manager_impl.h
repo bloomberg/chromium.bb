@@ -86,11 +86,11 @@ class CONTENT_EXPORT DownloadManagerImpl
                          url_loader_factory_getter,
                      const download::DownloadUrlParameters::OnStartedCallback&
                          on_started) override;
-
   int RemoveDownloadsByURLAndTime(
       const base::Callback<bool(const GURL&)>& url_filter,
       base::Time remove_begin,
       base::Time remove_end) override;
+  bool CanDownload(download::DownloadUrlParameters* parameters) override;
   void DownloadUrl(
       std::unique_ptr<download::DownloadUrlParameters> parameters) override;
   void DownloadUrl(std::unique_ptr<download::DownloadUrlParameters> params,

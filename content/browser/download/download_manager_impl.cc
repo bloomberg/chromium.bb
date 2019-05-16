@@ -956,6 +956,11 @@ int DownloadManagerImpl::RemoveDownloadsByURLAndTime(
   return count;
 }
 
+bool DownloadManagerImpl::CanDownload(
+    download::DownloadUrlParameters* parameters) {
+  return true;
+}
+
 void DownloadManagerImpl::DownloadUrl(
     std::unique_ptr<download::DownloadUrlParameters> params) {
   DownloadUrl(std::move(params), nullptr /* blob_data_handle */,

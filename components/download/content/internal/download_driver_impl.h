@@ -83,6 +83,9 @@ class DownloadDriverImpl : public DownloadDriver,
   // no longer used.
   SimpleDownloadManagerCoordinator* download_manager_coordinator_;
 
+  // Whether this object is ready to handle download requests.
+  bool is_ready_;
+
   SEQUENCE_CHECKER(sequence_checker_);
 
   // Only used to post tasks on the same thread.
