@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <cstddef>
 #include <string>
 #include <utility>
 
@@ -45,7 +46,7 @@ class InterfacePtr {
 
   // Constructs an unbound InterfacePtr.
   InterfacePtr() {}
-  InterfacePtr(decltype(nullptr)) {}
+  InterfacePtr(std::nullptr_t) {}
 
   // Takes over the binding of another InterfacePtr.
   InterfacePtr(InterfacePtr&& other) noexcept {
@@ -64,7 +65,7 @@ class InterfacePtr {
 
   // Assigning nullptr to this class causes it to close the currently bound
   // message pipe (if any) and returns the pointer to the unbound state.
-  InterfacePtr& operator=(decltype(nullptr)) {
+  InterfacePtr& operator=(std::nullptr_t) {
     reset();
     return *this;
   }
