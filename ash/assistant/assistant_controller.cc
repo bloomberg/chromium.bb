@@ -96,6 +96,9 @@ void AssistantController::SetAssistant(
   // provide an opportunity to turn on/off A11Y features.
   Shell::Get()->accessibility_controller()->AddObserver(this);
   OnAccessibilityStatusChanged();
+
+  for (AssistantControllerObserver& observer : observers_)
+    observer.OnAssistantReady();
 }
 
 void AssistantController::SetAssistantImageDownloader(

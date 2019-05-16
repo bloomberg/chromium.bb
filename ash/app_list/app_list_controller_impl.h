@@ -16,6 +16,7 @@
 #include "ash/app_list/model/search/search_model.h"
 #include "ash/app_list/presenter/app_list_presenter_impl.h"
 #include "ash/ash_export.h"
+#include "ash/assistant/assistant_controller_observer.h"
 #include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/home_screen/home_launcher_gesture_handler_observer.h"
@@ -61,6 +62,7 @@ class ASH_EXPORT AppListControllerImpl
       public DefaultVoiceInteractionObserver,
       public WindowTreeHostManager::Observer,
       public ash::MruWindowTracker::Observer,
+      public AssistantControllerObserver,
       public AssistantUiModelObserver,
       public HomeLauncherGestureHandlerObserver,
       public HomeScreenDelegate {
@@ -247,6 +249,9 @@ class ASH_EXPORT AppListControllerImpl
 
   // MruWindowTracker::Observer:
   void OnWindowUntracked(aura::Window* untracked_window) override;
+
+  // AssistantControllerObserver:
+  void OnAssistantReady() override;
 
   // AssistantUiModelObserver:
   void OnUiVisibilityChanged(
