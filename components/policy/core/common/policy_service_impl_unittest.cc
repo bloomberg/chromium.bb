@@ -363,8 +363,8 @@ TEST_F(PolicyServiceTest, Priorities) {
                std::make_unique<base::Value>(13), nullptr);
   expected.Set("aaa", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(0), nullptr);
-  expected.GetMutable("aaa")->AddError(IDS_POLICY_CONFLICT_DIFF_VALUE);
-  expected.GetMutable("aaa")->AddError(IDS_POLICY_CONFLICT_DIFF_VALUE);
+  expected.GetMutable("aaa")->AddWarning(IDS_POLICY_CONFLICT_DIFF_VALUE);
+  expected.GetMutable("aaa")->AddWarning(IDS_POLICY_CONFLICT_DIFF_VALUE);
   policy0_.Set("aaa", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(0), nullptr);
   policy1_.Set("aaa", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
@@ -382,7 +382,7 @@ TEST_F(PolicyServiceTest, Priorities) {
 
   expected.Set("aaa", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(1), nullptr);
-  expected.GetMutable("aaa")->AddError(IDS_POLICY_CONFLICT_DIFF_VALUE);
+  expected.GetMutable("aaa")->AddWarning(IDS_POLICY_CONFLICT_DIFF_VALUE);
   policy0_.Erase("aaa");
   provider0_.UpdateChromePolicy(policy0_);
   expected.GetMutable("aaa")->AddConflictingPolicy(*policy2_.Get("aaa"));
@@ -391,7 +391,7 @@ TEST_F(PolicyServiceTest, Priorities) {
 
   expected.Set("aaa", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(2), nullptr);
-  expected.GetMutable("aaa")->AddError(IDS_POLICY_CONFLICT_SAME_VALUE);
+  expected.GetMutable("aaa")->AddWarning(IDS_POLICY_CONFLICT_SAME_VALUE);
   policy1_.Set("aaa", POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
                POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(1), nullptr);
   expected.GetMutable("aaa")->AddConflictingPolicy(*policy2_.Get("aaa"));
@@ -543,9 +543,9 @@ TEST_F(PolicyServiceTest, NamespaceMerge) {
                POLICY_SOURCE_ENTERPRISE_DEFAULT,
                std::make_unique<base::Value>("bundle0"), nullptr);
   expected.GetMutable(kSameLevelPolicy)
-      ->AddError(IDS_POLICY_CONFLICT_DIFF_VALUE);
+      ->AddWarning(IDS_POLICY_CONFLICT_DIFF_VALUE);
   expected.GetMutable(kSameLevelPolicy)
-      ->AddError(IDS_POLICY_CONFLICT_DIFF_VALUE);
+      ->AddWarning(IDS_POLICY_CONFLICT_DIFF_VALUE);
   expected.GetMutable(kSameLevelPolicy)
       ->AddConflictingPolicy(
           *bundle1->Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
@@ -560,7 +560,7 @@ TEST_F(PolicyServiceTest, NamespaceMerge) {
                POLICY_SOURCE_PLATFORM, std::make_unique<base::Value>("bundle2"),
                nullptr);
   expected.GetMutable(kDiffLevelPolicy)
-      ->AddError(IDS_POLICY_CONFLICT_DIFF_VALUE);
+      ->AddWarning(IDS_POLICY_CONFLICT_DIFF_VALUE);
   expected.GetMutable(kDiffLevelPolicy)
       ->AddConflictingPolicy(
           *bundle0->Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
@@ -785,6 +785,7 @@ TEST_F(PolicyServiceTest, DictionaryPoliciesMerging) {
                           POLICY_SOURCE_MERGED, std::move(result), nullptr);
   merged.AddConflictingPolicy(entry_dict_1.DeepCopy());
   merged.AddConflictingPolicy(entry_dict_2.DeepCopy());
+  merged.AddWarning(IDS_POLICY_CONFLICT_DIFF_VALUE);
   expected_chrome.Set(key::kContentPackManualBehaviorURLs, std::move(merged));
 
   provider0_.UpdatePolicy(std::move(policy_bundle1));
@@ -839,6 +840,7 @@ TEST_F(PolicyServiceTest, ListsPoliciesMerging) {
                           POLICY_SOURCE_MERGED, std::move(result), nullptr);
   merged.AddConflictingPolicy(entry_list_2.DeepCopy());
   merged.AddConflictingPolicy(entry_list_1.DeepCopy());
+  merged.AddWarning(IDS_POLICY_CONFLICT_DIFF_VALUE);
   expected_chrome.Set(key::kExtensionInstallForcelist, std::move(merged));
 
   provider0_.UpdatePolicy(std::move(policy_bundle1));
@@ -899,6 +901,7 @@ TEST_F(PolicyServiceTest, GroupPoliciesMerging) {
                           POLICY_SOURCE_MERGED, std::move(result), nullptr);
   merged.AddConflictingPolicy(entry_list_2.DeepCopy());
   merged.AddConflictingPolicy(entry_list_1.DeepCopy());
+  merged.AddWarning(IDS_POLICY_CONFLICT_DIFF_VALUE);
   expected_chrome.Set(key::kExtensionInstallForcelist, merged.DeepCopy());
   expected_chrome.Set(key::kExtensionInstallBlacklist, std::move(merged));
   entry_list_3.SetIgnoredByPolicyAtomicGroup();

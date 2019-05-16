@@ -328,14 +328,14 @@ Additional details:
   <message name="IDS_POLICY_LABEL_REFRESH_INTERVAL" desc="Label for the refresh interval in the policy status boxes.">
     Fetch interval:
   </message>
-  <message name="IDS_POLICY_LABEL_MESSAGES" desc="Label for the messages row in the policy table.">
-    Messages
-  </message>
   <message name="IDS_POLICY_LABEL_CONFLICT" desc="Label for the conflict row in the policy table.">
     Conflict
   </message>
-  <message name="IDS_POLICY_LABEL_WARNING_AND_CONFLICT" desc="Label for the conflict row in the policy table when there are warnings and conflicts.">
-    Warnings, Conflict
+  <message name="IDS_POLICY_LABEL_ERROR" desc="Label for the error row in the policy table.">
+    Error
+  </message>
+  <message name="IDS_POLICY_LABEL_IGNORED" desc="Label for the ignored row in the policy table.">
+    Ignored
   </message>
   <message name="IDS_POLICY_LABEL_VALUE" desc="Label for the value row in the policy table.">
     Value
@@ -453,10 +453,10 @@ Additional details:
     Warning: This policy was not merged as specified in PolicyDictionaryMultipleSourceMergeList policy because it is not part of the dictionary policies that can be merged.
   </message>
   <message name="IDS_POLICY_CONFLICT_SAME_VALUE" desc="Text explaining that a policy had conflicting sources, but with the same values.">
-    Warning: More than one source is present for the policy, but the values are the same.
+    More than one source is present for the policy, but the values are the same.
   </message>
   <message name="IDS_POLICY_CONFLICT_DIFF_VALUE" desc="Text explaining that a policy had conflicting sources and values.">
-    Warning: More than one source with conflicting values is present for this policy!
+    More than one source with conflicting values is present for this policy!
   </message>
   <message name="IDS_POLICY_MIGRATED_OLD_POLICY" desc="Text explaining that a policy is deprecated, and that admins should use the new policy instead">
     This policy is deprecated. You should use the <ph name="NEW_POLICY">$1<ex>AllowDinosaurEasterEgg</ex></ph> policy instead.

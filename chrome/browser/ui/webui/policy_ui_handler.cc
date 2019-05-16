@@ -642,9 +642,8 @@ void PolicyUIHandler::AddCommonLocalizedStringsToSource(
   source->AddLocalizedString("warning", IDS_POLICY_HEADER_WARNING);
   source->AddLocalizedString("levelMandatory", IDS_POLICY_LEVEL_MANDATORY);
   source->AddLocalizedString("levelRecommended", IDS_POLICY_LEVEL_RECOMMENDED);
-  source->AddLocalizedString("messages", IDS_POLICY_LABEL_MESSAGES);
-  source->AddLocalizedString("warningAndConflicts",
-                             IDS_POLICY_LABEL_WARNING_AND_CONFLICT);
+  source->AddLocalizedString("error", IDS_POLICY_LABEL_ERROR);
+  source->AddLocalizedString("ignored", IDS_POLICY_LABEL_IGNORED);
   source->AddLocalizedString("notSpecified", IDS_POLICY_NOT_SPECIFIED);
   source->AddLocalizedString("ok", IDS_POLICY_OK);
   source->AddLocalizedString("scopeDevice", IDS_POLICY_SCOPE_DEVICE);

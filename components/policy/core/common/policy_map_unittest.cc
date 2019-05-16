@@ -263,31 +263,31 @@ TEST_F(PolicyMapTest, MergeFrom) {
   c.Set(kTestPolicyName1, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
         POLICY_SOURCE_CLOUD, std::make_unique<base::Value>("chromium.org"),
         nullptr);
-  c.GetMutable(kTestPolicyName1)->AddError(IDS_POLICY_CONFLICT_DIFF_VALUE);
+  c.GetMutable(kTestPolicyName1)->AddWarning(IDS_POLICY_CONFLICT_DIFF_VALUE);
   c.GetMutable(kTestPolicyName1)->AddConflictingPolicy(conflicted_policy_1);
   // |a| has precedence over |b|.
   c.Set(kTestPolicyName2, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
         POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(true), nullptr);
-  c.GetMutable(kTestPolicyName2)->AddError(IDS_POLICY_CONFLICT_DIFF_VALUE);
+  c.GetMutable(kTestPolicyName2)->AddWarning(IDS_POLICY_CONFLICT_DIFF_VALUE);
   c.GetMutable(kTestPolicyName2)
       ->AddConflictingPolicy(*b.Get(kTestPolicyName2));
   c.Set(kTestPolicyName3, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
         POLICY_SOURCE_ENTERPRISE_DEFAULT, nullptr,
         CreateExternalDataFetcher("a"));
-  c.GetMutable(kTestPolicyName3)->AddError(IDS_POLICY_CONFLICT_DIFF_VALUE);
+  c.GetMutable(kTestPolicyName3)->AddWarning(IDS_POLICY_CONFLICT_DIFF_VALUE);
   c.GetMutable(kTestPolicyName3)
       ->AddConflictingPolicy(*b.Get(kTestPolicyName3));
   // POLICY_SCOPE_MACHINE over POLICY_SCOPE_USER for POLICY_LEVEL_RECOMMENDED.
   c.Set(kTestPolicyName4, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_MACHINE,
         POLICY_SOURCE_DEVICE_LOCAL_ACCOUNT_OVERRIDE,
         std::make_unique<base::Value>(true), nullptr);
-  c.GetMutable(kTestPolicyName4)->AddError(IDS_POLICY_CONFLICT_DIFF_VALUE);
+  c.GetMutable(kTestPolicyName4)->AddWarning(IDS_POLICY_CONFLICT_DIFF_VALUE);
   c.GetMutable(kTestPolicyName4)->AddConflictingPolicy(conflicted_policy_4);
   // POLICY_LEVEL_MANDATORY over POLICY_LEVEL_RECOMMENDED.
   c.Set(kTestPolicyName5, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
         POLICY_SOURCE_PLATFORM, std::make_unique<base::Value>(std::string()),
         nullptr);
-  c.GetMutable(kTestPolicyName5)->AddError(IDS_POLICY_CONFLICT_DIFF_VALUE);
+  c.GetMutable(kTestPolicyName5)->AddWarning(IDS_POLICY_CONFLICT_DIFF_VALUE);
   c.GetMutable(kTestPolicyName5)->AddConflictingPolicy(conflicted_policy_5);
   // Merge new ones.
   c.Set(kTestPolicyName6, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
@@ -301,7 +301,7 @@ TEST_F(PolicyMapTest, MergeFrom) {
   c.Set(kTestPolicyName8, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
         POLICY_SOURCE_ACTIVE_DIRECTORY,
         std::make_unique<base::Value>("blocked AD policy"), nullptr);
-  c.GetMutable(kTestPolicyName8)->AddError(IDS_POLICY_CONFLICT_DIFF_VALUE);
+  c.GetMutable(kTestPolicyName8)->AddWarning(IDS_POLICY_CONFLICT_DIFF_VALUE);
   c.GetMutable(kTestPolicyName8)->AddConflictingPolicy(conflicted_policy_8);
   c.GetMutable(kTestPolicyName8)->SetBlocked();
 

@@ -151,14 +151,29 @@ Value GetPolicyValue(
     error = l10n_util::GetStringUTF16(IDS_POLICY_UNKNOWN);
   } else {
     // The PolicyMap contains errors about retrieving the policy, while the
-    // PolicyErrorMap contains validation errors. Give priority to PolicyMap.
-    error = policy.GetLocalizedErrors(
+    // PolicyErrorMap contains validation errors. Concat the errors.
+    auto policy_map_errors = policy.GetLocalizedErrors(
         base::BindRepeating(&l10n_util::GetStringUTF16));
-    if (error.empty())
-      error = errors->GetErrors(policy_name);
+    auto error_map_errors = errors->GetErrors(policy_name);
+    if (policy_map_errors.empty())
+      error = error_map_errors;
+    else if (error_map_errors.empty())
+      error = policy_map_errors;
+    else
+      error =
+          base::JoinString({policy_map_errors, errors->GetErrors(policy_name)},
+                           base::ASCIIToUTF16("\n"));
   }
   if (!error.empty())
     value.SetKey("error", Value(error));
+
+  base::string16 warning = policy.GetLocalizedWarnings(
+      base::BindRepeating(&l10n_util::GetStringUTF16));
+  if (!warning.empty())
+    value.SetKey("warning", Value(warning));
+
+  if (policy.IsBlockedOrIgnored())
+    value.SetBoolKey("ignored", true);
 
   if (!policy.conflicts.empty()) {
     Value conflict_values(Value::Type::LIST);

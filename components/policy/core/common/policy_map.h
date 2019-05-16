@@ -69,6 +69,9 @@ class POLICY_EXPORT PolicyMap {
     // Add a localized error given its l10n message ID.
     void AddError(int message_id);
 
+    // Add a localized error given its l10n message ID.
+    void AddWarning(int message_id);
+
     // Adds a conflicting policy.
     void AddConflictingPolicy(const Entry& conflict);
 
@@ -95,9 +98,14 @@ class POLICY_EXPORT PolicyMap {
     // separated with LF characters.
     base::string16 GetLocalizedErrors(L10nLookupFunction lookup) const;
 
+    // Returns localized warnings added through AddWarning(), as UTF-16, and
+    // separated with LF characters.
+    base::string16 GetLocalizedWarnings(L10nLookupFunction lookup) const;
+
    private:
     std::string error_strings_;
     std::set<int> error_message_ids_;
+    std::set<int> warning_message_ids_;
   };
 
   typedef std::map<std::string, Entry> PolicyMapType;
