@@ -36,7 +36,7 @@ Polymer({
     selected: {
       type: Number,
       notify: true,
-      observer: 'updateSelectionBar_',
+      observer: 'updateUi_',
     },
   },
 
@@ -57,33 +57,6 @@ Polymer({
   /** @override */
   attached: function() {
     this.isRtl_ = this.matches(':host-context([dir=rtl]) cr-tabs');
-  },
-
-  /**
-   * @param {number} index
-   * @return {string}
-   * @private
-   */
-  getAriaSelected_: function(index) {
-    return this.selected == index ? 'true' : 'false';
-  },
-
-  /**
-   * @param {number} index
-   * @return {string}
-   * @private
-   */
-  getCssClass_: function(index) {
-    return this.selected == index ? 'selected' : '';
-  },
-
-  /**
-   * @param {number} index
-   * @return {number}
-   * @private
-   */
-  getTabIndex_: function(index) {
-    return this.selected == index ? 0 : -1;
   },
 
   /**
@@ -122,7 +95,7 @@ Polymer({
    * @param {number} width
    * @private
    */
-  transformSelectionBar_: function(left, width) {
+  updateSelectionBar_: function(left, width) {
     const containerWidth = this.offsetWidth;
     const leftPercent = 100 * left / containerWidth;
     const widthRatio = width / containerWidth;
@@ -131,24 +104,47 @@ Polymer({
   },
 
   /** @private */
-  updateSelectionBar_: function() {
-    const selectedTab = this.$$('.selected');
-    if (!selectedTab) {
+  updateUi_: function() {
+    const tabs = this.shadowRoot.querySelectorAll('.tab');
+    // Tabs are not rendered yet by dom-repeat. Skip this update since
+    // dom-repeat will fire a dom-change event when it is ready.
+    if (tabs.length == 0) {
       return;
     }
 
-    selectedTab.focus();
+    tabs.forEach((tab, i) => {
+      const isSelected = this.selected == i;
+      if (isSelected) {
+        tab.focus();
+      }
+      tab.classList.toggle('selected', isSelected);
+      tab.setAttribute('aria-selected', isSelected);
+      tab.setAttribute('tabindex', isSelected ? 0 : -1);
+    });
+
+    if (this.selected == undefined) {
+      return;
+    }
+
     this.$.selectionBar.classList.remove('expand', 'contract');
-    const {offsetLeft: selectedLeft, offsetWidth: selectedWidth} = selectedTab;
     const oldValue = this.lastSelected_;
     this.lastSelected_ = this.selected;
 
     // If there is no previously selected tab or the tab has not changed,
     // underline the selected tab instantly.
     if (oldValue == null || oldValue == this.selected) {
-      this.transformSelectionBar_(selectedLeft, selectedWidth);
+      // When handling the initial 'dom-change' event, it's possible for the
+      // selected tab to exist and not yet be fully rendered. This will result
+      // in the selection bar not rendering correctly.
+      setTimeout(() => {
+        const {offsetLeft, offsetWidth} = tabs[this.selected];
+        this.updateSelectionBar_(offsetLeft, offsetWidth);
+      });
       return;
     }
+
+    const {offsetLeft: newLeft, offsetWidth: newWidth} = tabs[this.selected];
+    const {offsetLeft: oldLeft, offsetWidth: oldWidth} = tabs[oldValue];
 
     // Expand bar to underline the last selected tab, the newly selected tab and
     // everything in between. After expansion is complete, contract bar to
@@ -156,13 +152,11 @@ Polymer({
     this.$.selectionBar.classList.add('expand');
     this.$.selectionBar.addEventListener('transitionend', () => {
       this.$.selectionBar.classList.replace('expand', 'contract');
-      this.transformSelectionBar_(selectedLeft, selectedWidth);
+      this.updateSelectionBar_(newLeft, newWidth);
     }, {once: true});
 
-    const {offsetLeft: lastLeft, offsetWidth: lastWidth} =
-        this.$$(`.tab:nth-of-type(${oldValue + 1})`);
-    const left = Math.min(selectedLeft, lastLeft);
-    const right = Math.max(selectedLeft + selectedWidth, lastLeft + lastWidth);
-    this.transformSelectionBar_(left, right - left);
+    const left = Math.min(newLeft, oldLeft);
+    const right = Math.max(newLeft + newWidth, oldLeft + oldWidth);
+    this.updateSelectionBar_(left, right - left);
   },
 });

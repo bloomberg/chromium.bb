@@ -477,10 +477,6 @@ cr.define('settings_privacy_page', function() {
         assertTrue(!!actionButton);
         const cookieCheckboxBasic = element.$$('#cookiesCheckboxBasic');
         assertTrue(!!cookieCheckboxBasic);
-        const basicTab = element.$$('#basicTabTitle');
-        assertTrue(!!basicTab);
-        const advancedTab = element.$$('#advancedTabTitle');
-        assertTrue(!!advancedTab);
         // Initially the button is disabled because all checkboxes are off.
         assertTrue(actionButton.disabled);
         // The button gets enabled if any checkbox is selected.
@@ -488,10 +484,10 @@ cr.define('settings_privacy_page', function() {
         assertTrue(cookieCheckboxBasic.checked);
         assertFalse(actionButton.disabled);
         // Switching to advanced disables the button.
-        advancedTab.click();
+        element.$$('cr-tabs').selected = 1;
         assertTrue(actionButton.disabled);
         // Switching back enables it again.
-        basicTab.click();
+        element.$$('cr-tabs').selected = 0;
         assertFalse(actionButton.disabled);
       });
 

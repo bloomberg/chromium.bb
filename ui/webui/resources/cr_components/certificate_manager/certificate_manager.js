@@ -115,6 +115,12 @@ Polymer({
             loadTimeData.getBoolean('isKiosk');
       },
     },
+
+    /** @private {!Array<string>} */
+    tabNames_: {
+      type: Array,
+      computed: 'computeTabNames_(isKiosk_)',
+    },
   },
 
   /** @override */
@@ -213,5 +219,22 @@ Polymer({
         cr.ui.focusWithoutInk(assert(this.activeDialogAnchor_));
       });
     });
+  },
+
+  /**
+   * @return {!Array<string>}
+   * @private
+   */
+  computeTabNames_: function() {
+    return [
+      loadTimeData.getString('certificateManagerYourCertificates'),
+      ...(this.isKiosk_ ?
+              [] :
+              [
+                loadTimeData.getString('certificateManagerServers'),
+                loadTimeData.getString('certificateManagerAuthorities'),
+              ]),
+      loadTimeData.getString('certificateManagerOthers'),
+    ];
   },
 });

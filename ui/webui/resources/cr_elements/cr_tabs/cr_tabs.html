@@ -72,13 +72,8 @@
         transition-timing-function: cubic-bezier(0, 0, .2, 1);
       }
     </style>
-    <template is="dom-repeat" items="[[tabNames]]"
-        on-dom-change="updateSelectionBar_">
-      <div class$="tab [[getCssClass_(index, selected)]]" role="tab"
-          aria-selected$="[[getAriaSelected_(index, selected)]]"
-          tabindex$="[[getTabIndex_(index, selected)]]" on-click="onTabClick_">
-        [[item]]
-      </div>
+    <template is="dom-repeat" items="[[tabNames]]" on-dom-change="updateUi_">
+      <div class="tab" role="tab" on-click="onTabClick_">[[item]]</div>
     </template>
     <div id="selectionBar"></div>
   </template>

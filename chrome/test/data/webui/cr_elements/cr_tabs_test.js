@@ -40,7 +40,13 @@ suite('cr_tabs_test', function() {
     const tabElement = getTabElement(expectedSelection);
     assertTrue(!!tabElement);
     assertTrue(tabElement.classList.contains('selected'));
+    assertEquals('0', tabElement.getAttribute('tabindex'));
     assertEquals(getDeepActiveElement(), tabElement);
+    const notSelected = tabs.shadowRoot.querySelectorAll('.tab:not(.selected)');
+    assertEquals(2, notSelected.length);
+    notSelected.forEach(tab => {
+      assertEquals('-1', tab.getAttribute('tabindex'));
+    });
   }
 
   /**

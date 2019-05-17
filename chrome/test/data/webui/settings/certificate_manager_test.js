@@ -648,7 +648,7 @@ cr.define('certificate_manager', function() {
      */
     test('Initialization', function() {
       // Trigger all category tabs to be added to the DOM.
-      const paperTabsElement = page.shadowRoot.querySelector('paper-tabs');
+      const paperTabsElement = page.shadowRoot.querySelector('cr-tabs');
       paperTabsElement.selected = CertificateCategoryIndex.PERSONAL;
       Polymer.dom.flush();
       paperTabsElement.selected = CertificateCategoryIndex.SERVER;
