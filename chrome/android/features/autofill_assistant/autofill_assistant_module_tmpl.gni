@@ -31,6 +31,7 @@ template("autofill_assistant_module_tmpl") {
     package_name = "autofill_assistant"
     package_name_to_id_mapping = resource_packages_id_mapping
     deps = [
+      "//chrome/android/features/autofill_assistant:animated_poodle_java",
       "//chrome/android/features/autofill_assistant:java",
     ]
   }

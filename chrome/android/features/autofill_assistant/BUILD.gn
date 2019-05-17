@@ -37,9 +37,9 @@ android_library("java") {
   classpath_deps = [
     "//base:base_java",
     "//chrome/android:chrome_java",
-    "//components/policy/android:policy_java",
     "//components/signin/core/browser/android:java",
     "//components/url_formatter/android:url_formatter_java",
+    "//components/policy/android:policy_java",
     "//content/public/android:content_java",
     "//mojo/public/java:bindings_java",
     "//third_party/android_deps:android_arch_lifecycle_common_java",
@@ -57,9 +57,11 @@ android_library("java") {
   ]
 
   if (enable_chrome_android_internal) {
-    deps += [ "//clank/features/autofill_assistant:animated_poodle_java" ]
+    # TODO(crbug/951489): Change below to 'deps' once crbug/951489 is fixed.
+    classpath_deps +=
+        [ "//clank/features/autofill_assistant:animated_poodle_java" ]
   } else {
-    deps += [ ":animated_poodle_java" ]
+    classpath_deps += [ ":animated_poodle_java" ]
   }
 
   java_files = [
