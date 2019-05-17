@@ -278,15 +278,12 @@ void SecurityPolicy::AddOriginAccessBlockListEntry(
 void SecurityPolicy::ClearOriginAccessListForOrigin(
     const SecurityOrigin& source_origin) {
   MutexLocker lock(GetMutex());
-  const url::Origin origin = source_origin.ToUrlOrigin();
-  GetOriginAccessList().ClearAllowListForOrigin(origin);
-  GetOriginAccessList().ClearBlockListForOrigin(origin);
+  GetOriginAccessList().ClearForOrigin(source_origin.ToUrlOrigin());
 }
 
 void SecurityPolicy::ClearOriginAccessList() {
   MutexLocker lock(GetMutex());
-  GetOriginAccessList().ClearAllowList();
-  GetOriginAccessList().ClearBlockList();
+  GetOriginAccessList().Clear();
 }
 
 bool SecurityPolicy::ReferrerPolicyFromString(

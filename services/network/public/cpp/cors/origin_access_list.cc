@@ -16,7 +16,7 @@ OriginAccessList::~OriginAccessList() = default;
 void OriginAccessList::SetAllowListForOrigin(
     const url::Origin& source_origin,
     const std::vector<CorsOriginPatternPtr>& patterns) {
-  SetForOrigin(source_origin, patterns, &allow_list_);
+  SetForOrigin(source_origin, patterns, &map_, MapType::kAllowPatterns);
 }
 
 void OriginAccessList::AddAllowListEntryForOrigin(
@@ -27,23 +27,13 @@ void OriginAccessList::AddAllowListEntryForOrigin(
     const mojom::CorsOriginAccessMatchPriority priority) {
   AddForOrigin(source_origin,
                mojom::CorsOriginPattern::New(protocol, domain, mode, priority),
-               &allow_list_);
-}
-
-void OriginAccessList::ClearAllowListForOrigin(
-    const url::Origin& source_origin) {
-  SetForOrigin(source_origin, std::vector<mojom::CorsOriginPatternPtr>(),
-               &allow_list_);
-}
-
-void OriginAccessList::ClearAllowList() {
-  allow_list_.clear();
+               &map_, MapType::kAllowPatterns);
 }
 
 void OriginAccessList::SetBlockListForOrigin(
     const url::Origin& source_origin,
     const std::vector<CorsOriginPatternPtr>& patterns) {
-  SetForOrigin(source_origin, patterns, &block_list_);
+  SetForOrigin(source_origin, patterns, &map_, MapType::kBlockPatterns);
 }
 
 void OriginAccessList::AddBlockListEntryForOrigin(
@@ -54,17 +44,16 @@ void OriginAccessList::AddBlockListEntryForOrigin(
     const mojom::CorsOriginAccessMatchPriority priority) {
   AddForOrigin(source_origin,
                mojom::CorsOriginPattern::New(protocol, domain, mode, priority),
-               &block_list_);
+               &map_, MapType::kBlockPatterns);
 }
 
-void OriginAccessList::ClearBlockListForOrigin(
-    const url::Origin& source_origin) {
-  SetForOrigin(source_origin, std::vector<mojom::CorsOriginPatternPtr>(),
-               &block_list_);
+void OriginAccessList::ClearForOrigin(const url::Origin& source_origin) {
+  DCHECK(!source_origin.opaque());
+  map_.erase(source_origin.Serialize());
 }
 
-void OriginAccessList::ClearBlockList() {
-  block_list_.clear();
+void OriginAccessList::Clear() {
+  map_.clear();
 }
 
 OriginAccessList::AccessState OriginAccessList::CheckAccessState(
@@ -73,27 +62,25 @@ OriginAccessList::AccessState OriginAccessList::CheckAccessState(
   if (source_origin.opaque())
     return AccessState::kBlocked;
 
-  std::string source = source_origin.Serialize();
-  url::Origin destination_origin = url::Origin::Create(destination);
-  network::mojom::CorsOriginAccessMatchPriority allow_list_priority =
-      GetHighestPriorityOfRuleForOrigin(source, destination_origin,
-                                        allow_list_);
-  network::mojom::CorsOriginAccessMatchPriority block_list_priority =
-      GetHighestPriorityOfRuleForOrigin(source, destination_origin,
-                                        block_list_);
+  const std::string source = source_origin.Serialize();
+  const url::Origin destination_origin = url::Origin::Create(destination);
+  const auto patterns_map_it = map_.find(source);
+  if (patterns_map_it == map_.end())
+    return AccessState::kNotListed;
 
-  if (allow_list_priority ==
-      network::mojom::CorsOriginAccessMatchPriority::kNoMatchingOrigin) {
-    return block_list_priority ==
-                   network::mojom::CorsOriginAccessMatchPriority::
-                       kNoMatchingOrigin
-               ? AccessState::kNotListed
-               : AccessState::kBlocked;
-  }
-
+  const network::mojom::CorsOriginAccessMatchPriority allow_list_priority =
+      GetHighestPriorityOfRuleForOrigin(
+          destination_origin, patterns_map_it->second, MapType::kAllowPatterns);
+  const network::mojom::CorsOriginAccessMatchPriority block_list_priority =
+      GetHighestPriorityOfRuleForOrigin(
+          destination_origin, patterns_map_it->second, MapType::kBlockPatterns);
   if (block_list_priority ==
-      network::mojom::CorsOriginAccessMatchPriority::kNoMatchingOrigin)
-    return AccessState::kAllowed;
+      network::mojom::CorsOriginAccessMatchPriority::kNoMatchingOrigin) {
+    return (allow_list_priority ==
+            network::mojom::CorsOriginAccessMatchPriority::kNoMatchingOrigin)
+               ? AccessState::kNotListed
+               : AccessState::kAllowed;
+  }
 
   return (allow_list_priority > block_list_priority) ? AccessState::kAllowed
                                                      : AccessState::kBlocked;
@@ -101,28 +88,22 @@ OriginAccessList::AccessState OriginAccessList::CheckAccessState(
 
 std::vector<mojo::StructPtr<mojom::CorsOriginAccessPatterns>>
 OriginAccessList::CreateCorsOriginAccessPatternsList() const {
-  std::set<std::string> origins;
-  for (const auto& allow_map : allow_list_)
-    origins.insert(allow_map.first);
-  for (const auto& block_map : block_list_)
-    origins.insert(block_map.first);
-
   std::vector<mojom::CorsOriginAccessPatternsPtr> access_patterns;
-  for (const auto& origin : origins) {
+  for (const auto& it : map_) {
     std::vector<mojom::CorsOriginPatternPtr> allow_patterns;
-    const auto& allow_entries = allow_list_.find(origin);
-    if (allow_entries != allow_list_.end()) {
+    const auto& allow_entries = it.second.find(MapType::kAllowPatterns);
+    if (allow_entries != it.second.end()) {
       for (const auto& pattern : allow_entries->second)
         allow_patterns.push_back(pattern.CreateCorsOriginPattern());
     }
     std::vector<mojom::CorsOriginPatternPtr> block_patterns;
-    const auto& block_entries = block_list_.find(origin);
-    if (block_entries != block_list_.end()) {
+    const auto& block_entries = it.second.find(MapType::kBlockPatterns);
+    if (block_entries != it.second.end()) {
       for (const auto& pattern : block_entries->second)
         block_patterns.push_back(pattern.CreateCorsOriginPattern());
     }
     access_patterns.push_back(mojom::CorsOriginAccessPatterns::New(
-        origin, std::move(allow_patterns), std::move(block_patterns)));
+        it.first, std::move(allow_patterns), std::move(block_patterns)));
   }
   return access_patterns;
 }
@@ -131,32 +112,36 @@ OriginAccessList::CreateCorsOriginAccessPatternsList() const {
 void OriginAccessList::SetForOrigin(
     const url::Origin& source_origin,
     const std::vector<CorsOriginPatternPtr>& patterns,
-    PatternMap* map) {
+    OriginPatternsMap* map,
+    MapType type) {
   DCHECK(map);
   DCHECK(!source_origin.opaque());
 
-  std::string source = source_origin.Serialize();
-  map->erase(source);
-  if (patterns.empty())
-    return;
-
-  Patterns& native_patterns = (*map)[source];
+  const std::string source = source_origin.Serialize();
+  PatternsMap& patterns_map = (*map)[source];
+  Patterns& patterns_for_type = patterns_map[type];
+  patterns_for_type.clear();
   for (const auto& pattern : patterns) {
-    native_patterns.push_back(OriginAccessEntry(
+    patterns_for_type.push_back(OriginAccessEntry(
         pattern->protocol, pattern->domain, pattern->mode, pattern->priority));
+  }
+  if (patterns_map[MapType::kAllowPatterns].empty() &&
+      patterns_map[MapType::kBlockPatterns].empty()) {
+    (*map).erase(source);
   }
 }
 
 // static
 void OriginAccessList::AddForOrigin(const url::Origin& source_origin,
                                     const CorsOriginPatternPtr& pattern,
-                                    PatternMap* map) {
+                                    OriginPatternsMap* map,
+                                    MapType type) {
   DCHECK(map);
   DCHECK(!source_origin.opaque());
 
-  std::string source = source_origin.Serialize();
-  (*map)[source].push_back(OriginAccessEntry(pattern->protocol, pattern->domain,
-                                             pattern->mode, pattern->priority));
+  const std::string source = source_origin.Serialize();
+  (*map)[source][type].push_back(OriginAccessEntry(
+      pattern->protocol, pattern->domain, pattern->mode, pattern->priority));
 }
 
 // static
@@ -164,15 +149,16 @@ void OriginAccessList::AddForOrigin(const url::Origin& source_origin,
 // first match which will be the top priority.
 network::mojom::CorsOriginAccessMatchPriority
 OriginAccessList::GetHighestPriorityOfRuleForOrigin(
-    const std::string& source,
     const url::Origin& destination_origin,
-    const PatternMap& map) {
+    const PatternsMap& patterns_map,
+    MapType type) {
+  const auto patterns_it = patterns_map.find(type);
+  if (patterns_it == patterns_map.end())
+    return network::mojom::CorsOriginAccessMatchPriority::kNoMatchingOrigin;
+
   network::mojom::CorsOriginAccessMatchPriority highest_priority =
       network::mojom::CorsOriginAccessMatchPriority::kNoMatchingOrigin;
-  auto patterns_for_origin_it = map.find(source);
-  if (patterns_for_origin_it == map.end())
-    return highest_priority;
-  for (const auto& entry : patterns_for_origin_it->second) {
+  for (const auto& entry : patterns_it->second) {
     if (entry.MatchesOrigin(destination_origin) !=
         OriginAccessEntry::kDoesNotMatchOrigin) {
       highest_priority = std::max(highest_priority, entry.priority());
