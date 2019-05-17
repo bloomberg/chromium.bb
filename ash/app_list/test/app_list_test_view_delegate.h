@@ -76,11 +76,6 @@ class AppListTestViewDelegate : public AppListViewDelegate,
   void GetSearchResultContextMenuModel(
       const std::string& result_id,
       GetContextMenuModelCallback callback) override;
-  void SearchResultContextMenuItemSelected(
-      const std::string& result_id,
-      int command_id,
-      int event_flags,
-      ash::mojom::AppListLaunchType launch_type) override {}
   void ViewShown(int64_t display_id) override {}
   void DismissAppList() override;
   void ViewClosing() override {}
@@ -92,11 +87,6 @@ class AppListTestViewDelegate : public AppListViewDelegate,
                     ash::mojom::AppListLaunchedFrom launched_from) override;
   void GetContextMenuModel(const std::string& id,
                            GetContextMenuModelCallback callback) override;
-  void ContextMenuItemSelected(
-      const std::string& id,
-      int command_id,
-      int event_flags,
-      ash::mojom::AppListLaunchedFrom launched_from) override {}
   void ShowWallpaperContextMenu(const gfx::Point& onscreen_location,
                                 ui::MenuSourceType source_type) override;
   bool ProcessHomeLauncherGesture(ui::GestureEvent* event,
@@ -114,6 +104,8 @@ class AppListTestViewDelegate : public AppListViewDelegate,
   bool ShouldShowAssistantPrivacyInfo() const override;
   void MaybeIncreaseAssistantPrivacyInfoShownCount() override;
   void MarkAssistantPrivacyInfoDismissed() override;
+  void GetAppLaunchedMetricParams(
+      app_list::AppLaunchedMetricParams* metric_params) override;
 
   // Do a bulk replacement of the items in the model.
   void ReplaceTestModel(int item_count);

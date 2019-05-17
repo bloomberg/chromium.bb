@@ -125,9 +125,6 @@ class ChromeSearchResult {
       base::OnceCallback<void(std::unique_ptr<ui::SimpleMenuModel>)>;
   virtual void GetContextMenuModel(GetMenuModelCallback callback);
 
-  // Invoked when a context menu item of this search result is selected.
-  void ContextMenuItemSelected(int command_id, int event_flags);
-
   static std::string TagsDebugStringForTest(const std::string& text,
                                             const Tags& tags);
 

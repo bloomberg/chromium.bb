@@ -12,13 +12,16 @@
 
 #include "ash/app_list/app_list_export.h"
 #include "ash/app_list/model/app_list_item_observer.h"
-#include "ash/app_list/views/app_list_menu_model_adapter.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "base/timer/timer.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
+
+namespace ui {
+class SimpleMenuModel;
+}  // namespace ui
 
 namespace views {
 class ImageView;
@@ -29,14 +32,13 @@ class ProgressBar;
 namespace app_list {
 
 class AppListItem;
+class AppListMenuModelAdapter;
 class AppListViewDelegate;
 class AppsGridView;
 
-class APP_LIST_EXPORT AppListItemView
-    : public views::Button,
-      public views::ContextMenuController,
-      public AppListItemObserver,
-      public AppListMenuModelAdapter::Delegate {
+class APP_LIST_EXPORT AppListItemView : public views::Button,
+                                        public views::ContextMenuController,
+                                        public AppListItemObserver {
  public:
   // Internal class name.
   static const char kViewClassName[];
@@ -200,9 +202,6 @@ class APP_LIST_EXPORT AppListItemView
   void ItemIsInstallingChanged() override;
   void ItemPercentDownloadedChanged() override;
   void ItemBeingDestroyed() override;
-
-  // AppListMenuModelAdapter::Delegate overrides;
-  void ExecuteCommand(int command_id, int event_flags) override;
 
   // Returns the radius of preview circle.
   int GetPreviewCircleRadius() const;

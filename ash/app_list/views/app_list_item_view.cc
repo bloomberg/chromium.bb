@@ -12,6 +12,7 @@
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/model/app_list_folder_item.h"
 #include "ash/app_list/model/app_list_item.h"
+#include "ash/app_list/views/app_list_menu_model_adapter.h"
 #include "ash/app_list/views/apps_grid_view.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
@@ -479,9 +480,13 @@ void AppListItemView::OnContextMenuModelReceived(
   AdaptBoundsForSelectionHighlight(&anchor_rect);
   views::View::ConvertRectToScreen(apps_grid_view_, &anchor_rect);
 
+  AppLaunchedMetricParams metric_params = {
+      ash::mojom::AppListLaunchedFrom::kLaunchedFromGrid};
+  delegate_->GetAppLaunchedMetricParams(&metric_params);
+
   context_menu_ = std::make_unique<AppListMenuModelAdapter>(
       item_weak_->GetMetadata()->id, std::move(menu_model), GetWidget(),
-      source_type, this, AppListMenuModelAdapter::FULLSCREEN_APP_GRID,
+      source_type, metric_params, AppListMenuModelAdapter::FULLSCREEN_APP_GRID,
       base::BindOnce(&AppListItemView::OnMenuClosed,
                      weak_ptr_factory_.GetWeakPtr()),
       apps_grid_view_->IsTabletMode());
@@ -507,14 +512,6 @@ void AppListItemView::ShowContextMenuForViewImpl(
       item_weak_->id(),
       base::BindOnce(&AppListItemView::OnContextMenuModelReceived,
                      weak_ptr_factory_.GetWeakPtr(), point, source_type));
-}
-
-void AppListItemView::ExecuteCommand(int command_id, int event_flags) {
-  if (item_weak_) {
-    delegate_->ContextMenuItemSelected(
-        item_weak_->id(), command_id, event_flags,
-        ash::mojom::AppListLaunchedFrom::kLaunchedFromGrid);
-  }
 }
 
 bool AppListItemView::ShouldEnterPushedState(const ui::Event& event) {

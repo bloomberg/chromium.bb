@@ -66,13 +66,6 @@ class ASH_PUBLIC_EXPORT AppListClient {
   virtual void GetSearchResultContextMenuModel(
       const std::string& result_id,
       GetSearchResultContextMenuModelCallback callback) = 0;
-  // Invoked when a context menu item of a search result is clicked.
-  // |result_id|: the clicked search result's id.
-  // |command_id|: the clicked menu item's command id.
-  // |event_flags|: flags from the event which triggered this command.
-  virtual void SearchResultContextMenuItemSelected(const std::string& result_id,
-                                                   int command_id,
-                                                   int event_flags) = 0;
 
   //////////////////////////////////////////////////////////////////////////////
   // Interfaces on the app list UI:
@@ -100,14 +93,6 @@ class ASH_PUBLIC_EXPORT AppListClient {
   virtual void GetContextMenuModel(int profile_id,
                                    const std::string& id,
                                    GetContextMenuModelCallback callback) = 0;
-  // Invoked when a context menu item of an app list item is clicked.
-  // |id|: the clicked AppListItem's id.
-  // |command_id|: the clicked menu item's command id.
-  // |event_flags|: flags from the event which triggered this command.
-  virtual void ContextMenuItemSelected(int profile_id,
-                                       const std::string& id,
-                                       int command_id,
-                                       int event_flags) = 0;
   // Invoked when a folder is created in Ash (e.g. merge items into a folder).
   virtual void OnFolderCreated(int profile_id,
                                ash::mojom::AppListItemMetadataPtr folder) = 0;

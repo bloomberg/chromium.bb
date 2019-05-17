@@ -254,6 +254,19 @@ enum TabletModeAnimationTransition {
   kEnterFullscreenSearch
 };
 
+// Parameters to call RecordAppListAppLaunched. Passed to code that does not
+// directly have access to them, such ash AppListMenuModelAdapter.
+struct AppLaunchedMetricParams {
+  ash::mojom::AppListLaunchedFrom launched_from =
+      ash::mojom::AppListLaunchedFrom::kLaunchedFromGrid;
+  ash::mojom::AppListLaunchType search_launch_type =
+      ash::mojom::AppListLaunchType::kSearchResult;
+  ash::mojom::AppListViewState app_list_view_state =
+      ash::mojom::AppListViewState::kClosed;
+  bool is_tablet_mode = false;
+  bool home_launcher_shown = false;
+};
+
 void RecordFolderShowHideAnimationSmoothness(int actual_frames,
                                              int ideal_duration_ms,
                                              float refresh_rate);

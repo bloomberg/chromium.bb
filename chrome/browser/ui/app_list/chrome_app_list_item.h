@@ -107,9 +107,6 @@ class ChromeAppListItem {
   // has its Android analog installed.
   virtual bool IsBadged() const;
 
-  // Invoked when a context menu item of this item is selected.
-  void ContextMenuItemSelected(int command_id, int event_flags);
-
   bool CompareForTest(const ChromeAppListItem* other) const;
 
   std::string ToDebugString() const;

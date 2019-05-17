@@ -184,11 +184,6 @@ class ASH_EXPORT AppListControllerImpl
   void GetSearchResultContextMenuModel(
       const std::string& result_id,
       GetContextMenuModelCallback callback) override;
-  void SearchResultContextMenuItemSelected(
-      const std::string& result_id,
-      int command_id,
-      int event_flags,
-      mojom::AppListLaunchType launch_type) override;
   void ViewShown(int64_t display_id) override;
   void ViewClosing() override;
   void ViewClosed() override;
@@ -199,11 +194,6 @@ class ASH_EXPORT AppListControllerImpl
                     mojom::AppListLaunchedFrom launched_from) override;
   void GetContextMenuModel(const std::string& id,
                            GetContextMenuModelCallback callback) override;
-  void ContextMenuItemSelected(
-      const std::string& id,
-      int command_id,
-      int event_flags,
-      mojom::AppListLaunchedFrom launched_from) override;
   void ShowWallpaperContextMenu(const gfx::Point& onscreen_location,
                                 ui::MenuSourceType source_type) override;
   bool ProcessHomeLauncherGesture(ui::GestureEvent* event,
@@ -222,6 +212,8 @@ class ASH_EXPORT AppListControllerImpl
   void MarkAssistantPrivacyInfoDismissed() override;
   void OnStateTransitionAnimationCompleted(
       ash::mojom::AppListViewState state) override;
+  void GetAppLaunchedMetricParams(
+      app_list::AppLaunchedMetricParams* metric_params) override;
 
   void AddObserver(AppListControllerObserver* observer);
   void RemoveObserver(AppListControllerObserver* obsever);

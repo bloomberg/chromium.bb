@@ -111,9 +111,6 @@ class AppListModelUpdater {
       base::OnceCallback<void(const base::flat_map<std::string, uint16_t>&)>;
   virtual void GetIdToAppListIndexMap(GetIdToAppListIndexMapCallback callback) {
   }
-  virtual void ContextMenuItemSelected(const std::string& id,
-                                       int command_id,
-                                       int event_flags) {}
   virtual syncer::StringOrdinal GetFirstAvailablePosition() const = 0;
 
   // Methods for AppListSyncableService:

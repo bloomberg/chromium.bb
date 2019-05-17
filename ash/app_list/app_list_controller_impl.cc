@@ -989,22 +989,6 @@ void AppListControllerImpl::GetSearchResultContextMenuModel(
     client_->GetSearchResultContextMenuModel(result_id, std::move(callback));
 }
 
-void AppListControllerImpl::SearchResultContextMenuItemSelected(
-    const std::string& result_id,
-    int command_id,
-    int event_flags,
-    mojom::AppListLaunchType launch_type) {
-  if (launch_type == mojom::AppListLaunchType::kAppSearchResult &&
-      app_list::IsCommandIdAnAppLaunch(command_id)) {
-    RecordAppLaunched(mojom::AppListLaunchedFrom::kLaunchedFromSearchBox);
-  }
-
-  if (client_) {
-    client_->SearchResultContextMenuItemSelected(result_id, command_id,
-                                                 event_flags);
-  }
-}
-
 void AppListControllerImpl::ViewShown(int64_t display_id) {
   if (app_list_features::IsEmbeddedAssistantUIEnabled() &&
       GetAssistantViewDelegate()->GetUiModel()->ui_mode() !=
@@ -1064,18 +1048,6 @@ void AppListControllerImpl::GetContextMenuModel(
     GetContextMenuModelCallback callback) {
   if (client_)
     client_->GetContextMenuModel(profile_id_, id, std::move(callback));
-}
-
-void AppListControllerImpl::ContextMenuItemSelected(
-    const std::string& id,
-    int command_id,
-    int event_flags,
-    mojom::AppListLaunchedFrom launched_from) {
-  if (app_list::IsCommandIdAnAppLaunch(command_id))
-    RecordAppLaunched(launched_from);
-
-  if (client_)
-    client_->ContextMenuItemSelected(profile_id_, id, command_id, event_flags);
 }
 
 void AppListControllerImpl::ShowWallpaperContextMenu(
@@ -1197,6 +1169,13 @@ void AppListControllerImpl::OnStateTransitionAnimationCompleted(
     ash::mojom::AppListViewState state) {
   if (!state_transition_animation_callback_.is_null())
     state_transition_animation_callback_.Run(state);
+}
+
+void AppListControllerImpl::GetAppLaunchedMetricParams(
+    app_list::AppLaunchedMetricParams* metric_params) {
+  metric_params->app_list_view_state = GetAppListViewState();
+  metric_params->is_tablet_mode = IsTabletMode();
+  metric_params->home_launcher_shown = presenter_.home_launcher_shown();
 }
 
 void AppListControllerImpl::RecordAppLaunched(

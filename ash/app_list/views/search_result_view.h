@@ -43,8 +43,7 @@ class SearchResultActionsView;
 class APP_LIST_EXPORT SearchResultView
     : public SearchResultBaseView,
       public views::ContextMenuController,
-      public SearchResultActionsViewDelegate,
-      public AppListMenuModelAdapter::Delegate {
+      public SearchResultActionsViewDelegate {
  public:
   // Internal class name.
   static const char kViewClassName[];
@@ -55,9 +54,6 @@ class APP_LIST_EXPORT SearchResultView
 
   // Sets/gets SearchResult displayed by this view.
   void OnResultChanged() override;
-
-  // AppListMenuModelAdapter::Delegate overrides:
-  void ExecuteCommand(int command_id, int event_flags) override;
 
   bool selected() const { return selected_; }
 

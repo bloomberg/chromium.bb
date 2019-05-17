@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/app_list/app_list_metrics.h"
 #include "ash/public/cpp/app_menu_constants.h"
 #include "base/metrics/histogram_macros.h"
 #include "ui/views/controls/menu/menu_runner.h"
@@ -17,7 +18,7 @@ AppListMenuModelAdapter::AppListMenuModelAdapter(
     std::unique_ptr<ui::SimpleMenuModel> menu_model,
     views::Widget* widget_owner,
     ui::MenuSourceType source_type,
-    Delegate* delegate,
+    const AppLaunchedMetricParams& metric_params,
     AppListViewAppType type,
     base::OnceClosure on_menu_closed_callback,
     bool is_tablet_mode)
@@ -27,9 +28,8 @@ AppListMenuModelAdapter::AppListMenuModelAdapter(
                                source_type,
                                std::move(on_menu_closed_callback),
                                is_tablet_mode),
-      delegate_(delegate),
+      metric_params_(metric_params),
       type_(type) {
-  DCHECK(delegate_);
   DCHECK_NE(AppListViewAppType::APP_LIST_APP_TYPE_LAST, type);
 }
 
@@ -151,8 +151,31 @@ bool AppListMenuModelAdapter::IsCommandEnabled(int id) const {
 }
 
 void AppListMenuModelAdapter::ExecuteCommand(int id, int mouse_event_flags) {
-  delegate_->ExecuteCommand(id, mouse_event_flags);
   RecordExecuteCommandHistogram(id);
+  MaybeRecordAppLaunched(id);
+
+  // Note that ExecuteCommand might delete us.
+  ash::AppMenuModelAdapter::ExecuteCommand(id, mouse_event_flags);
+}
+
+void AppListMenuModelAdapter::MaybeRecordAppLaunched(int command_id) {
+  // Early out if |command_id| is not considered as app launch.
+  if (!IsCommandIdAnAppLaunch(command_id))
+    return;
+
+  // Note that |search_launch_type| only matters when |launched_from| is
+  // kLaunchedFromSearchBox. Early out if it is not launched as an app search
+  // result.
+  if (metric_params_.launched_from ==
+          ash::mojom::AppListLaunchedFrom::kLaunchedFromSearchBox &&
+      metric_params_.search_launch_type !=
+          ash::mojom::AppListLaunchType::kAppSearchResult) {
+    return;
+  }
+
+  RecordAppListAppLaunched(
+      metric_params_.launched_from, metric_params_.app_list_view_state,
+      metric_params_.is_tablet_mode, metric_params_.home_launcher_shown);
 }
 
 }  // namespace app_list

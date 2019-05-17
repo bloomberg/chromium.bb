@@ -76,9 +76,6 @@ class AppListClientImpl
   void GetSearchResultContextMenuModel(
       const std::string& result_id,
       GetContextMenuModelCallback callback) override;
-  void SearchResultContextMenuItemSelected(const std::string& result_id,
-                                           int command_id,
-                                           int event_flags) override;
   void ViewClosing() override;
   void ViewShown(int64_t display_id) override;
   void ActivateItem(int profile_id,
@@ -87,10 +84,6 @@ class AppListClientImpl
   void GetContextMenuModel(int profile_id,
                            const std::string& id,
                            GetContextMenuModelCallback callback) override;
-  void ContextMenuItemSelected(int profile_id,
-                               const std::string& id,
-                               int command_id,
-                               int event_flags) override;
   void OnAppListTargetVisibilityChanged(bool visible) override;
   void OnAppListVisibilityChanged(bool visible) override;
   void OnFolderCreated(int profile_id,

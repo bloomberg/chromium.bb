@@ -30,6 +30,7 @@ class SimpleMenuModel;
 namespace app_list {
 
 class AppListModel;
+struct AppLaunchedMetricParams;
 class SearchModel;
 
 class ASH_PUBLIC_EXPORT AppListViewDelegate {
@@ -93,16 +94,6 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
       const std::string& result_id,
       GetContextMenuModelCallback callback) = 0;
 
-  // Invoked when a context menu item of a search result is clicked.
-  // |result_id| is the clicked SearchResult's id
-  // |command_id| is the clicked menu item's command id
-  // |event_flags| is flags from the event which triggered this command
-  virtual void SearchResultContextMenuItemSelected(
-      const std::string& result_id,
-      int command_id,
-      int event_flags,
-      ash::mojom::AppListLaunchType launch_type) = 0;
-
   // Invoked when the app list is shown.
   virtual void ViewShown(int64_t display_id) = 0;
 
@@ -132,16 +123,6 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   // Note the returned menu model is owned by that item.
   virtual void GetContextMenuModel(const std::string& id,
                                    GetContextMenuModelCallback callback) = 0;
-
-  // Invoked when a context menu item of an app list item is clicked.
-  // |id| is the clicked AppListItem's id
-  // |command_id| is the clicked menu item's command id
-  // |event_flags| is flags from the event which triggered this command
-  virtual void ContextMenuItemSelected(
-      const std::string& id,
-      int command_id,
-      int event_flags,
-      ash::mojom::AppListLaunchedFrom launched_from) = 0;
 
   // Show wallpaper context menu from the specified onscreen location.
   virtual void ShowWallpaperContextMenu(const gfx::Point& onscreen_location,
@@ -193,6 +174,10 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   // Called when close button in the Assistant privacy info view is pressed to
   // indicate not to show the view any more.
   virtual void MarkAssistantPrivacyInfoDismissed() = 0;
+
+  // Fills the given AppLaunchedMetricParams with info known by the delegate.
+  virtual void GetAppLaunchedMetricParams(
+      AppLaunchedMetricParams* metric_params) = 0;
 };
 
 }  // namespace app_list

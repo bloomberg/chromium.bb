@@ -189,13 +189,6 @@ void ChromeSearchResult::GetContextMenuModel(GetMenuModelCallback callback) {
   std::move(callback).Run(nullptr);
 }
 
-void ChromeSearchResult::ContextMenuItemSelected(int command_id,
-                                                 int event_flags) {
-  app_list::AppContextMenu* menu = GetAppContextMenu();
-  if (menu)
-    menu->ExecuteCommand(command_id, event_flags);
-}
-
 // static
 std::string ChromeSearchResult::TagsDebugStringForTest(const std::string& text,
                                                        const Tags& tags) {

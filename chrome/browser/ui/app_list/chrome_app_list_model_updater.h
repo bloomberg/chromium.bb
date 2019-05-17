@@ -87,9 +87,6 @@ class ChromeAppListModelUpdater : public AppListModelUpdater {
   size_t BadgedItemCount() override;
   void GetContextMenuModel(const std::string& id,
                            GetMenuModelCallback callback) override;
-  void ContextMenuItemSelected(const std::string& id,
-                               int command_id,
-                               int event_flags) override;
   syncer::StringOrdinal GetFirstAvailablePosition() const override;
 
   // Methods for AppListSyncableService:

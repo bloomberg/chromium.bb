@@ -32,8 +32,7 @@ class SearchResult;
 // that has SearchResult::DisplayType DISPLAY_TILE or DISPLAY_RECOMMENDATION.
 class APP_LIST_EXPORT SearchResultTileItemView
     : public SearchResultBaseView,
-      public views::ContextMenuController,
-      public AppListMenuModelAdapter::Delegate {
+      public views::ContextMenuController {
  public:
   SearchResultTileItemView(AppListViewDelegate* view_delegate,
                            ash::PaginationModel* pagination_model,
@@ -68,9 +67,6 @@ class APP_LIST_EXPORT SearchResultTileItemView
   void ShowContextMenuForViewImpl(views::View* source,
                                   const gfx::Point& point,
                                   ui::MenuSourceType source_type) override;
-
-  // AppListMenuModelAdapter::Delegate overrides:
-  void ExecuteCommand(int command_id, int event_flags) override;
 
  private:
   // Launch the result and log to various histograms.

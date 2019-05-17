@@ -458,22 +458,19 @@ void SearchResultView::OnGetContextMenu(
   if (!menu_model || context_menu_->IsShowingMenu())
     return;
 
+  AppLaunchedMetricParams metric_params = {
+      ash::mojom::AppListLaunchedFrom::kLaunchedFromSearchBox,
+      ash::mojom::AppListLaunchType::kSearchResult};
+  view_delegate_->GetAppLaunchedMetricParams(&metric_params);
+
   context_menu_ = std::make_unique<AppListMenuModelAdapter>(
-      std::string(), std::move(menu_model), GetWidget(), source_type, this,
-      AppListMenuModelAdapter::SEARCH_RESULT, base::OnceClosure(),
-      view_delegate_->GetSearchModel()->tablet_mode());
+      std::string(), std::move(menu_model), GetWidget(), source_type,
+      metric_params, AppListMenuModelAdapter::SEARCH_RESULT,
+      base::OnceClosure(), view_delegate_->GetSearchModel()->tablet_mode());
   context_menu_->Run(gfx::Rect(point, gfx::Size()),
                      views::MenuAnchorPosition::kTopLeft,
                      views::MenuRunner::HAS_MNEMONICS);
   source->RequestFocus();
-}
-
-void SearchResultView::ExecuteCommand(int command_id, int event_flags) {
-  if (result()) {
-    view_delegate_->SearchResultContextMenuItemSelected(
-        result()->id(), command_id, event_flags,
-        ash::mojom::AppListLaunchType::kSearchResult);
-  }
 }
 
 void SearchResultView::SetDisplayIcon(const gfx::ImageSkia& source) {

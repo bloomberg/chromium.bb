@@ -164,18 +164,6 @@ void AppListClientImpl::GetSearchResultContextMenuModel(
       std::move(callback)));
 }
 
-void AppListClientImpl::SearchResultContextMenuItemSelected(
-    const std::string& result_id,
-    int command_id,
-    int event_flags) {
-  if (!search_controller_)
-    return;
-  ChromeSearchResult* result = search_controller_->FindSearchResult(result_id);
-  if (!result)
-    return;
-  result->ContextMenuItemSelected(command_id, event_flags);
-}
-
 void AppListClientImpl::ViewClosing() {
   display_id_ = display::kInvalidDisplayId;
   if (search_controller_)
@@ -234,19 +222,6 @@ void AppListClientImpl::GetContextMenuModel(
                 std::move(callback).Run(std::move(menu_model));
               },
               std::move(callback)));
-}
-
-void AppListClientImpl::ContextMenuItemSelected(int profile_id,
-                                                const std::string& id,
-                                                int command_id,
-                                                int event_flags) {
-  auto* requested_model_updater = profile_model_mappings_[profile_id];
-  if (requested_model_updater != current_model_updater_ ||
-      !requested_model_updater) {
-    return;
-  }
-
-  requested_model_updater->ContextMenuItemSelected(id, command_id, event_flags);
 }
 
 void AppListClientImpl::OnAppListTargetVisibilityChanged(bool visible) {

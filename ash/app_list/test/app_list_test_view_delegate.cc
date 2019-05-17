@@ -164,6 +164,9 @@ void AppListTestViewDelegate::MaybeIncreaseAssistantPrivacyInfoShownCount() {}
 
 void AppListTestViewDelegate::MarkAssistantPrivacyInfoDismissed() {}
 
+void AppListTestViewDelegate::GetAppLaunchedMetricParams(
+    app_list::AppLaunchedMetricParams* metric_params) {}
+
 void AppListTestViewDelegate::RecordAppLaunched(
     ash::mojom::AppListLaunchedFrom launched_from) {
   app_list::RecordAppListAppLaunched(launched_from, model_->state_fullscreen(),

@@ -132,13 +132,6 @@ void ChromeAppListItem::MaybeDismissAppList() {
   }
 }
 
-void ChromeAppListItem::ContextMenuItemSelected(int command_id,
-                                                int event_flags) {
-  app_list::AppContextMenu* menu = GetAppContextMenu();
-  if (menu)
-    menu->ExecuteCommand(command_id, event_flags);
-}
-
 extensions::AppSorting* ChromeAppListItem::GetAppSorting() {
   return extensions::ExtensionSystem::Get(profile())->app_sorting();
 }

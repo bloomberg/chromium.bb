@@ -362,9 +362,14 @@ void SearchResultTileItemView::OnGetContextMenuModel(
   // Anchor the menu to the same rect that is used for selection highlight.
   anchor_rect.ClampToCenteredSize(AppListConfig::instance().grid_focus_size());
 
+  AppLaunchedMetricParams metric_params = {
+      ash::mojom::AppListLaunchedFrom::kLaunchedFromSearchBox,
+      ash::mojom::AppListLaunchType::kAppSearchResult};
+  view_delegate_->GetAppLaunchedMetricParams(&metric_params);
+
   context_menu_ = std::make_unique<AppListMenuModelAdapter>(
-      result()->id(), std::move(menu_model), GetWidget(), source_type, this,
-      GetAppType(),
+      result()->id(), std::move(menu_model), GetWidget(), source_type,
+      metric_params, GetAppType(),
       base::BindOnce(&SearchResultTileItemView::OnMenuClosed,
                      weak_ptr_factory_.GetWeakPtr()),
       view_delegate_->GetSearchModel()->tablet_mode());
@@ -378,14 +383,6 @@ void SearchResultTileItemView::OnGetContextMenuModel(
 
 void SearchResultTileItemView::OnMenuClosed() {
   OnBlur();
-}
-
-void SearchResultTileItemView::ExecuteCommand(int command_id, int event_flags) {
-  if (result()) {
-    view_delegate_->SearchResultContextMenuItemSelected(
-        result()->id(), command_id, event_flags,
-        ash::mojom::AppListLaunchType::kAppSearchResult);
-  }
 }
 
 void SearchResultTileItemView::ActivateResult(int event_flags) {

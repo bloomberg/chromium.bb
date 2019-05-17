@@ -378,14 +378,6 @@ void ChromeAppListModelUpdater::GetContextMenuModel(
   item->GetContextMenuModel(std::move(callback));
 }
 
-void ChromeAppListModelUpdater::ContextMenuItemSelected(const std::string& id,
-                                                        int command_id,
-                                                        int event_flags) {
-  ChromeAppListItem* chrome_item = FindItem(id);
-  if (chrome_item)
-    chrome_item->ContextMenuItemSelected(command_id, event_flags);
-}
-
 syncer::StringOrdinal ChromeAppListModelUpdater::GetFirstAvailablePosition()
     const {
   std::vector<ChromeAppListItem*> top_level_items;
