@@ -2769,7 +2769,6 @@ void RTCPeerConnection::DidModifySctpTransport(
       sctp_transport_->native_transport() != snapshot.transport) {
     sctp_transport_ = MakeGarbageCollected<RTCSctpTransport>(
         GetExecutionContext(), snapshot.transport);
-    sctp_transport_->ChangeState(snapshot.sctp_transport_state);
   }
   if (!sctp_transport_->transport() ||
       sctp_transport_->transport()->native_transport() !=
@@ -2778,6 +2777,7 @@ void RTCPeerConnection::DidModifySctpTransport(
         snapshot.sctp_transport_state.dtls_transport(),
         snapshot.dtls_transport_state));
   }
+  sctp_transport_->ChangeState(snapshot.sctp_transport_state);
 }
 
 void RTCPeerConnection::DidModifyTransceivers(
