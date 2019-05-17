@@ -125,8 +125,11 @@ base::flat_map<std::string, float> ZipTargetsWithScores(
 base::flat_map<std::string, float> GetScoresFromFrecencyStore(
     const base::flat_map<std::string, FrecencyStore::ValueData>& target_to_id) {
   base::flat_map<std::string, float> target_to_score;
-  for (const auto& pair : target_to_id)
+  for (const auto& pair : target_to_id) {
+    DCHECK(pair.second.last_num_updates ==
+           target_to_id.begin()->second.last_num_updates);
     target_to_score[pair.first] = pair.second.last_score;
+  }
   return target_to_score;
 }
 
