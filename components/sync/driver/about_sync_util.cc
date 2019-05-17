@@ -333,10 +333,10 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
   Stat<bool>* user_is_primary = section_identity->AddBoolStat("Is Primary");
 
   Section* section_credentials = section_list.AddSection("Credentials");
-  Stat<std::string>* request_token_time =
+  Stat<std::string>* token_request_time =
       section_credentials->AddStringStat("Requested Token");
-  Stat<std::string>* receive_token_time =
-      section_credentials->AddStringStat("Received Token");
+  Stat<std::string>* token_response_time =
+      section_credentials->AddStringStat("Received Token Response");
   Stat<std::string>* last_token_request_result =
       section_credentials->AddStringStat("Last Token Request Result");
   Stat<bool>* has_token = section_credentials->AddBoolStat("Has Token");
@@ -477,8 +477,8 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
   user_is_primary->Set(service->IsAuthenticatedAccountPrimary());
 
   // Credentials.
-  request_token_time->Set(GetTimeStr(token_status.token_request_time, "n/a"));
-  receive_token_time->Set(GetTimeStr(token_status.token_receive_time, "n/a"));
+  token_request_time->Set(GetTimeStr(token_status.token_request_time, "n/a"));
+  token_response_time->Set(GetTimeStr(token_status.token_response_time, "n/a"));
   std::string err = token_status.last_get_token_error.error_message();
   last_token_request_result->Set(err.empty() ? "OK" : err);
   has_token->Set(token_status.has_token);

@@ -561,7 +561,7 @@ TEST_F(ProfileSyncServiceTest, GetSyncTokenStatus) {
   ASSERT_EQ(CONNECTION_NOT_ATTEMPTED, token_status.connection_status);
   ASSERT_TRUE(token_status.connection_status_update_time.is_null());
   ASSERT_FALSE(token_status.token_request_time.is_null());
-  ASSERT_TRUE(token_status.token_receive_time.is_null());
+  ASSERT_TRUE(token_status.token_response_time.is_null());
   ASSERT_FALSE(token_status.has_token);
 
   // The token request will take the form of a posted task.  Run it.
@@ -571,7 +571,7 @@ TEST_F(ProfileSyncServiceTest, GetSyncTokenStatus) {
   token_status = service()->GetSyncTokenStatusForDebugging();
   EXPECT_TRUE(token_status.connection_status_update_time.is_null());
   EXPECT_FALSE(token_status.token_request_time.is_null());
-  EXPECT_FALSE(token_status.token_receive_time.is_null());
+  EXPECT_FALSE(token_status.token_response_time.is_null());
   EXPECT_EQ(GoogleServiceAuthError::AuthErrorNone(),
             token_status.last_get_token_error);
   EXPECT_TRUE(token_status.next_token_request_time.is_null());
@@ -586,7 +586,7 @@ TEST_F(ProfileSyncServiceTest, GetSyncTokenStatus) {
   EXPECT_EQ(CONNECTION_AUTH_ERROR, token_status.connection_status);
   EXPECT_FALSE(token_status.connection_status_update_time.is_null());
   EXPECT_FALSE(token_status.token_request_time.is_null());
-  EXPECT_FALSE(token_status.token_receive_time.is_null());
+  EXPECT_FALSE(token_status.token_response_time.is_null());
   EXPECT_EQ(GoogleServiceAuthError::AuthErrorNone(),
             token_status.last_get_token_error);
   EXPECT_FALSE(token_status.next_token_request_time.is_null());

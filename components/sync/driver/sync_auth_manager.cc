@@ -212,7 +212,7 @@ void SyncAuthManager::ConnectionStatusChanged(ConnectionStatus status) {
       break;
     case CONNECTION_SERVER_ERROR:
       // Note: This case will be exposed as an auth error, due to the
-      // |connection_status| in |partial_token_error_|.
+      // |connection_status| in |partial_token_status_|.
       DCHECK(GetLastAuthError().IsTransientError());
       break;
     case CONNECTION_NOT_ATTEMPTED:
@@ -455,7 +455,7 @@ void SyncAuthManager::RequestAccessToken() {
 
   // Finally, kick off a new access token fetch.
   partial_token_status_.token_request_time = base::Time::Now();
-  partial_token_status_.token_receive_time = base::Time();
+  partial_token_status_.token_response_time = base::Time();
   ongoing_access_token_fetch_ =
       identity_manager_->CreateAccessTokenFetcherForAccount(
           sync_account_.account_info.account_id, kSyncOAuthConsumerName,
@@ -475,6 +475,7 @@ void SyncAuthManager::AccessTokenFetched(
   DCHECK(!request_access_token_retry_timer_.IsRunning());
 
   access_token_ = access_token_info.token;
+  partial_token_status_.token_response_time = base::Time::Now();
   partial_token_status_.last_get_token_error = error;
 
   DCHECK_EQ(access_token_.empty(),
@@ -482,7 +483,6 @@ void SyncAuthManager::AccessTokenFetched(
 
   switch (error.state()) {
     case GoogleServiceAuthError::NONE:
-      partial_token_status_.token_receive_time = base::Time::Now();
       SetLastAuthError(GoogleServiceAuthError::AuthErrorNone());
       break;
     case GoogleServiceAuthError::CONNECTION_FAILED:
