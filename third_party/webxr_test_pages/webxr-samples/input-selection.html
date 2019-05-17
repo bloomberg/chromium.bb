@@ -476,7 +476,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           }
         }
 
-        for (let source of session.getInputSources()) {
+        for (let source of session.inputSources) {
           let gamepad = source.gamepad;
           if (gamepad) {
             ProcessGamepad(gamepad, source);

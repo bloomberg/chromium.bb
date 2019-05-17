@@ -81,7 +81,7 @@ let testFunction =
     // any transforms to the given matrix.
     session.requestReferenceSpace({ type: "stationary", subtype: "eye-level" }).then( (referenceSpace) => {
       function OnFrame(time, frame) {
-        let source = session.getInputSources()[0];
+        let source = session.inputSources[0];
 
         function CheckState(referenceSpace, expected_view_matrix, expected_grip_matrix, expected_ray_matrix) {
           let pose = frame.getViewerPose(referenceSpace);

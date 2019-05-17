@@ -26,7 +26,7 @@ sources for the same object tests.
 
       function getCurrentInputSources() {
         let currentSession = sessionInfos[sessionTypes.IMMERSIVE].currentSession;
-        return currentSession.getInputSources();
+        return Array.from(currentSession.inputSources.values());
       }
 
       let cached_input_source = null;

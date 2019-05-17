@@ -47,7 +47,7 @@ let testFunction =
     session.requestReferenceSpace({ type: "stationary", subtype: "eye-level" }).then( (referenceSpace) => {
 
       function CheckInvalidGrip(time, xrFrame) {
-        let source = session.getInputSources()[0];
+        let source = session.inputSources[0];
         let grip_pose = xrFrame.getPose(source.gripSpace, referenceSpace);
 
         t.step( () => {
@@ -62,7 +62,7 @@ let testFunction =
       }
 
       function CheckValidGrip(time, xrFrame) {
-        let source = session.getInputSources()[0];
+        let source = session.inputSources[0];
 
         let grip_pose = xrFrame.getPose(source.gripSpace, referenceSpace);
 
@@ -85,7 +85,7 @@ let testFunction =
       }
 
       function CheckValidGripAndPointer(time, xrFrame) {
-        let source = session.getInputSources()[0];
+        let source = session.inputSources[0];
 
         let grip_pose = xrFrame.getPose(source.gripSpace, referenceSpace);
         let input_pose = xrFrame.getPose(source.targetRaySpace, referenceSpace);

@@ -84,11 +84,11 @@ export class Scene extends Node {
   updateInputSources(frame, refSpace) {
     // FIXME: Check for the existence of the API first. This check should be
     // removed once the input API is part of the official spec.
-    if (!frame.session.getInputSources) {
+    if (!frame.session.inputSources) {
       return;
     }
 
-    let inputSources = frame.session.getInputSources();
+    let inputSources = frame.session.inputSources;
 
     let newHoveredNodes = [];
     let lastHoverFrame = this._hoverFrame;

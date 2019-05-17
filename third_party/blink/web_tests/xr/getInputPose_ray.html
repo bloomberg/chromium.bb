@@ -45,7 +45,7 @@ let testFunction =
     session.requestReferenceSpace({ type: "stationary", subtype: "eye-level" }).then( (referenceSpace) => {
 
       function CheckTargetRayNoOffset(time, xrFrame) {
-        let source = session.getInputSources()[0];
+        let source = session.inputSources[0];
 
         let grip_pose = xrFrame.getPose(source.gripSpace, referenceSpace);
         assert_not_equals(grip_pose, null);
@@ -76,7 +76,7 @@ let testFunction =
       }
 
       function CheckTargetRayOffset(time, xrFrame) {
-        let source = session.getInputSources()[0];
+        let source = session.inputSources[0];
 
         let grip_pose = xrFrame.getPose(source.gripSpace, referenceSpace);
         assert_not_equals(grip_pose, null);

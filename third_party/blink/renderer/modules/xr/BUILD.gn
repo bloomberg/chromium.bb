@@ -28,6 +28,8 @@ blink_modules_sources("xr") {
     "xr_hit_result.h",
     "xr_input_source.cc",
     "xr_input_source.h",
+    "xr_input_source_array.cc",
+    "xr_input_source_array.h",
     "xr_input_source_event.cc",
     "xr_input_source_event.h",
     "xr_input_sources_change_event.cc",

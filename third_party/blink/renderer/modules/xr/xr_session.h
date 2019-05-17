@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
 #include "third_party/blink/renderer/modules/xr/xr_frame_request_callback_collection.h"
 #include "third_party/blink/renderer/modules/xr/xr_input_source.h"
+#include "third_party/blink/renderer/modules/xr/xr_input_source_array.h"
 #include "third_party/blink/renderer/platform/geometry/double_size.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
@@ -93,7 +94,7 @@ class XRSession final : public EventTargetWithInlineData,
 
   using InputSourceMap = HeapHashMap<uint32_t, Member<XRInputSource>>;
 
-  HeapVector<Member<XRInputSource>> getInputSources() const;
+  XRInputSourceArray* inputSources() const;
 
   ScriptPromise requestHitTest(ScriptState* script_state,
                                XRRay* ray,

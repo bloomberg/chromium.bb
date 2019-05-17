@@ -51,12 +51,12 @@ circumstances.
       }
 
       function inputSourceCount() {
-        return currentImmersiveSession().getInputSources().length;
+        return currentImmersiveSession().inputSources.length;
       }
 
       function inputSourceWithGamepadCount() {
         let numGamepads = 0;
-        for (source of currentImmersiveSession().getInputSources()) {
+        for (source of currentImmersiveSession().inputSources) {
           if (source.gamepad !== null) {
             numGamepads++;
           }
@@ -107,7 +107,7 @@ circumstances.
         }
 
         if (verificationFunction) {
-          let gamepad = currentImmersiveSession().getInputSources()[0].gamepad;
+          let gamepad = currentImmersiveSession().inputSources[0].gamepad;
           if (!verificationFunction(gamepad)) {
             return false;
           }

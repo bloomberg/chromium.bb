@@ -348,7 +348,7 @@ void XRSession::cancelAnimationFrame(int id) {
   callback_collection_->CancelCallback(id);
 }
 
-HeapVector<Member<XRInputSource>> XRSession::getInputSources() const {
+XRInputSourceArray* XRSession::inputSources() const {
   Document* doc = To<Document>(GetExecutionContext());
   if (!did_log_getInputSources_ && doc) {
     ukm::builders::XR_WebXR(xr_->GetSourceId())
@@ -357,15 +357,15 @@ HeapVector<Member<XRInputSource>> XRSession::getInputSources() const {
     did_log_getInputSources_ = true;
   }
 
-  HeapVector<Member<XRInputSource>> source_array;
+  XRInputSourceArray* source_array = MakeGarbageCollected<XRInputSourceArray>();
   for (const auto& input_source : input_sources_.Values()) {
-    source_array.push_back(input_source);
+    source_array->Add(input_source);
   }
 
   if (canvas_input_provider_) {
     XRInputSource* input_source = canvas_input_provider_->GetInputSource();
     if (input_source) {
-      source_array.push_back(input_source);
+      source_array->Add(input_source);
     }
   }
 

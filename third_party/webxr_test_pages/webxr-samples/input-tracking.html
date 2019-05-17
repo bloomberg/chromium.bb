@@ -180,7 +180,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       }
 
       function updateInputSources(session, frame, refSpace) {
-        let inputSources = session.getInputSources();
+        let inputSources = session.inputSources;
 
         for (let inputSource of inputSources) {
           // If we have a grip matrix use it to render a mesh showing the

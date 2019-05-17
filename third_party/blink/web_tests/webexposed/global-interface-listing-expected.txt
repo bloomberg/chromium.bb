@@ -10599,6 +10599,15 @@ interface XRInputSource
     getter targetRayMode
     getter targetRaySpace
     method constructor
+interface XRInputSourceArray
+    attribute @@toStringTag
+    getter length
+    method @@iterator
+    method constructor
+    method entries
+    method forEach
+    method keys
+    method values
 interface XRInputSourceEvent : Event
     attribute @@toStringTag
     getter buttonIndex
@@ -10657,6 +10666,7 @@ interface XRRigidTransform
 interface XRSession : EventTarget
     attribute @@toStringTag
     getter environmentBlendMode
+    getter inputSources
     getter onblur
     getter onend
     getter onfocus
@@ -10669,7 +10679,6 @@ interface XRSession : EventTarget
     method cancelAnimationFrame
     method constructor
     method end
-    method getInputSources
     method requestAnimationFrame
     method requestHitTest
     method requestReferenceSpace

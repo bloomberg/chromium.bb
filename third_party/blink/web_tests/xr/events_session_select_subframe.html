@@ -39,7 +39,7 @@ let testFunction = function(session, t, fakeDeviceController) {
 
   function onSessionSelectStart(event) {
     t.step( () => {
-      let input_sources = session.getInputSources();
+      let input_sources = session.inputSources;
       assert_equals(event.frame.session, session);
       assert_equals(event.inputSource, input_sources[0]);
     });
@@ -47,7 +47,7 @@ let testFunction = function(session, t, fakeDeviceController) {
 
   function onSessionSelectEnd(event) {
     t.step( () => {
-      let input_sources = session.getInputSources();
+      let input_sources = session.inputSources;
       assert_equals(event.frame.session, session);
       assert_equals(event.inputSource, input_sources[0]);
     });
@@ -55,7 +55,7 @@ let testFunction = function(session, t, fakeDeviceController) {
 
   function onSessionSelect(event) {
     t.step( () => {
-      let input_sources = session.getInputSources();
+      let input_sources = session.inputSources;
       assert_equals(event.frame.session, session);
       assert_equals(event.inputSource, input_sources[0]);
     });
