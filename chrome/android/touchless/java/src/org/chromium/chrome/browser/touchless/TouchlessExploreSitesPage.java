@@ -19,23 +19,28 @@ import org.chromium.ui.modaldialog.ModalDialogManager;
  * A variant of {@see ExploreSitesPage} that handles touchless context menus.
  */
 public class TouchlessExploreSitesPage extends ExploreSitesPage {
-    private TouchlessContextMenuManager mTouchlessContextMenuManager;
+    private final ModalDialogManager mModalDialogManager;
     private Context mContext;
-    private ModalDialogManager mModalDialogManager;
+    private TouchlessContextMenuManager mTouchlessContextMenuManager;
 
     /**
      * Create a new instance of the explore sites page.
      */
     public TouchlessExploreSitesPage(ChromeActivity activity, NativePageHost host) {
         super(activity, host);
-        mContext = activity;
         mModalDialogManager = activity.getModalDialogManager();
+    }
+
+    @Override
+    protected void initialize(ChromeActivity activity, final NativePageHost host) {
+        mContext = activity;
+        super.initialize(activity, host);
     }
 
     @Override
     protected ContextMenuManager createContextMenuManager(NativePageNavigationDelegate navDelegate,
             Runnable closeContextMenuCallback, String contextMenuUserActionPrefix) {
-        mTouchlessContextMenuManager = new TouchlessContextMenuManager(navDelegate,
+        mTouchlessContextMenuManager = new TouchlessContextMenuManager(mContext, navDelegate,
                 (enabled) -> {}, closeContextMenuCallback, contextMenuUserActionPrefix);
         return mTouchlessContextMenuManager;
     }
@@ -47,8 +52,7 @@ public class TouchlessExploreSitesPage extends ExploreSitesPage {
         ContextMenuManager.Delegate delegate =
                 ContextMenuManager.getDelegateFromFocusedView(focusedView);
         if (delegate == null) return;
-        mTouchlessContextMenuManager.showTouchlessContextMenu(
-                mModalDialogManager, mContext, delegate);
+        mTouchlessContextMenuManager.showTouchlessContextMenu(mModalDialogManager, delegate);
     }
 
     @Override
