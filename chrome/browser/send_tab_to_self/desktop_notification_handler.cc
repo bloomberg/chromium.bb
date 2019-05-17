@@ -112,13 +112,15 @@ void DesktopNotificationHandler::OnClick(
 }
 
 void DesktopNotificationHandler::DisplaySendingConfirmation(
-    const SendTabToSelfEntry& entry) {
+    const SendTabToSelfEntry& entry,
+    const std::string& target_device_name) {
+  const base::string16 confirm_str = l10n_util::GetStringFUTF16(
+      IDS_MESSAGE_NOTIFICATION_SEND_TAB_TO_SELF_CONFIRMATION_SUCCESS,
+      base::UTF8ToUTF16(target_device_name));
   const GURL& url = entry.GetURL();
   message_center::Notification notification(
       message_center::NOTIFICATION_TYPE_SIMPLE,
-      kDesktopNotificationSharedPrefix + entry.GetGUID(),
-      l10n_util::GetStringUTF16(
-          IDS_MESSAGE_NOTIFICATION_SEND_TAB_TO_SELF_CONFIRMATION_SUCCESS),
+      kDesktopNotificationSharedPrefix + entry.GetGUID(), confirm_str,
       base::UTF8ToUTF16(entry.GetTitle()), GetImageForNotification(),
       base::UTF8ToUTF16(url.host()), url, message_center::NotifierId(url),
       message_center::RichNotificationData(), /*delegate=*/nullptr);

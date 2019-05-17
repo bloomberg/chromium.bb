@@ -36,7 +36,8 @@ void CreateNewEntry(content::WebContents* tab, const GURL& link_url) {
   base::Time navigation_time = navigation_entry->GetTimestamp();
 
   // TODO(crbug/946804) Add target device.
-  std::string target_device;
+  std::string target_device_guid;
+  std::string target_device_name;
   SendTabToSelfModel* model =
       SendTabToSelfSyncServiceFactory::GetForProfile(profile)
           ->GetSendTabToSelfModel();
@@ -51,13 +52,14 @@ void CreateNewEntry(content::WebContents* tab, const GURL& link_url) {
   const SendTabToSelfEntry* entry;
   if (link_url.is_valid()) {
     // When share a link.
-    entry = model->AddEntry(link_url, "", base::Time(), target_device);
+    entry = model->AddEntry(link_url, "", base::Time(), target_device_guid);
   } else {
     // When share a tab.
-    entry = model->AddEntry(url, title, navigation_time, target_device);
+    entry = model->AddEntry(url, title, navigation_time, target_device_guid);
   }
   if (entry) {
-    DesktopNotificationHandler(profile).DisplaySendingConfirmation(*entry);
+    DesktopNotificationHandler(profile).DisplaySendingConfirmation(
+        *entry, target_device_name);
   } else {
     DesktopNotificationHandler(profile).DisplayFailureMessage(url);
   }
