@@ -1482,6 +1482,21 @@
             ]
         }
     ],
+    "ClipboardContentBehavior": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ClipboardContentBehavior"
+                    ]
+                }
+            ]
+        }
+    ],
     "CompositorImageAnimation": [
         {
             "platforms": [
@@ -3401,7 +3416,9 @@
                 {
                     "name": "iOSExperiments",
                     "enable_features": [
-                        "OmniboxDisplayTitleForCurrentUrl"
+                        "OmniboxEnableClipboardProviderImageSuggestions",
+                        "OmniboxEnableClipboardProviderTextSuggestions",
+                        "OmniboxPopupShortcutIconsInZeroState"
                     ]
                 }
             ]
