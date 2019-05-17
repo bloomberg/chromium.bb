@@ -93,7 +93,6 @@ class ChromotingSession : public ClientInputInjector {
                     std::unique_ptr<protocol::CursorShapeStub> cursor_stub,
                     std::unique_ptr<protocol::VideoRenderer> video_renderer,
                     std::unique_ptr<protocol::AudioStub> audio_player,
-                    std::unique_ptr<FtlDeviceIdProvider> device_id_provider,
                     const ConnectToHostInfo& info);
 
   ~ChromotingSession() override;

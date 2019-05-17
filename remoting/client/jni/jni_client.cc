@@ -50,8 +50,7 @@ void JniClient::ConnectToHost(const ConnectToHostInfo& info) {
   session_.reset(new ChromotingSession(
       weak_ptr_, display_handler_->CreateCursorShapeStub(),
       display_handler_->CreateVideoRenderer(),
-      std::make_unique<AudioPlayerAndroid>(), /* device_id_provider */ nullptr,
-      info));
+      std::make_unique<AudioPlayerAndroid>(), info));
 }
 
 void JniClient::DisconnectFromHost() {

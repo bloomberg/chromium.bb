@@ -35,6 +35,7 @@
 #include "remoting/protocol/performance_tracker.h"
 #include "remoting/protocol/transport_context.h"
 #include "remoting/protocol/video_renderer.h"
+#include "remoting/signaling/ftl_client_uuid_device_id_provider.h"
 #include "remoting/signaling/ftl_signal_strategy.h"
 #include "remoting/signaling/server_log_entry.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -86,7 +87,6 @@ struct SessionContext {
       audio_player_weak_factory;
   std::unique_ptr<protocol::CursorShapeStub> cursor_shape_stub;
   std::unique_ptr<protocol::VideoRenderer> video_renderer;
-  std::unique_ptr<FtlDeviceIdProvider> device_id_provider;
 
   ConnectToHostInfo info;
 };
@@ -496,7 +496,7 @@ void ChromotingSession::Core::ConnectOnNetworkThread() {
   if (!session_context_->info.host_ftl_id.empty()) {
     signaling_ = std::make_unique<FtlSignalStrategy>(
         runtime_->CreateOAuthTokenGetter(),
-        std::move(session_context_->device_id_provider));
+        std::make_unique<FtlClientUuidDeviceIdProvider>());
     logger_->SetSignalStrategyType(ChromotingEvent::SignalStrategyType::FTL);
   } else {
     signaling_ = std::make_unique<XmppSignalStrategy>(
@@ -636,7 +636,6 @@ ChromotingSession::ChromotingSession(
     std::unique_ptr<protocol::CursorShapeStub> cursor_shape_stub,
     std::unique_ptr<protocol::VideoRenderer> video_renderer,
     std::unique_ptr<protocol::AudioStub> audio_player,
-    std::unique_ptr<FtlDeviceIdProvider> device_id_provider,
     const ConnectToHostInfo& info)
     : runtime_(ChromotingClientRuntime::GetInstance()) {
   DCHECK(delegate);
@@ -654,7 +653,6 @@ ChromotingSession::ChromotingSession(
           session_context->audio_player.get());
   session_context->cursor_shape_stub = std::move(cursor_shape_stub);
   session_context->video_renderer = std::move(video_renderer);
-  session_context->device_id_provider = std::move(device_id_provider);
   session_context->info = info;
 
   auto logger = std::make_unique<ClientTelemetryLogger>(

@@ -10,8 +10,6 @@ source_set("facade") {
   sources = [
     "directory_client.cc",
     "directory_client.h",
-    "ftl_device_id_provider_ios.h",
-    "ftl_device_id_provider_ios.mm",
     "host_list_service.h",
     "host_list_service.mm",
     "ios_client_runtime_delegate.h",

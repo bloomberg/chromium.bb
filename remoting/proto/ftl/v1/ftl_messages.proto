@@ -46,10 +46,9 @@ message IdType {
 message DeviceIdType {
   enum Type {
     UNKNOWN = 0;
-    ANDROID_IID_TOKEN = 1;
-    IOS_VENDOR_ID = 2;
     WEB_UUID = 3;
     CHROMOTING_HOST_ID = 6;
+    CLIENT_UUID = 7;
   }
 }
 
