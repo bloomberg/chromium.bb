@@ -120,11 +120,8 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   FloatRect LocalBoundingBoxRectForAccessibility() const final;
 
   enum ClippingOption { kNoClipping, kClipToEllipsis };
-  enum LocalOrAbsoluteOption { kLocalQuads, kAbsoluteQuads };
-  void Quads(Vector<FloatQuad>&,
-             ClippingOption = kNoClipping,
-             LocalOrAbsoluteOption = kAbsoluteQuads,
-             MapCoordinatesFlags mode = 0) const;
+  void LocalQuadsInFlippedBlocksDirection(Vector<FloatQuad>&,
+                                          ClippingOption = kNoClipping) const;
 
   PositionWithAffinity PositionForPoint(const LayoutPoint&) const override;
 
@@ -346,11 +343,11 @@ class CORE_EXPORT LayoutText : public LayoutObject {
  private:
   InlineTextBoxList& MutableTextBoxes();
 
-  void AccumlateQuads(Vector<FloatQuad>&,
-                      const IntRect& ellipsis_rect,
-                      LocalOrAbsoluteOption,
-                      MapCoordinatesFlags mode,
-                      const LayoutRect&) const;
+  // PhysicalRectCollector should be like a function:
+  // void (const PhysicalRect&).
+  template <typename PhysicalRectCollector>
+  void CollectLineBoxRects(const PhysicalRectCollector&,
+                           ClippingOption option = kNoClipping) const;
 
   void ComputePreferredLogicalWidths(float lead_width);
   void ComputePreferredLogicalWidths(
@@ -394,6 +391,22 @@ class CORE_EXPORT LayoutText : public LayoutObject {
 
   bool CanOptimizeSetText() const;
   void SetFirstTextBoxLogicalLeft(float text_width) const;
+
+  bool NeedsFlipForWritingMode() const {
+    return HasFlippedBlocksWritingMode() && !IsSVG();
+  }
+  // These functions flip the input rect in ContainingBlock() if
+  // NeedsFlipForWritingMode() is true. If |block_for_flipping| is not null,
+  // it should be ContainingBlock(), otherwise the function will call
+  // ContainingBlock() by themselves. The caller should prepare
+  // |block_for_flipping| if it will loop through many rects to flip to avoid
+  // the cost of repeated ContainingBlock() calls.
+  ALWAYS_INLINE WARN_UNUSED_RESULT LayoutRect
+  FlipForWritingMode(const PhysicalRect& r,
+                     const LayoutBlock* block_for_flipping = nullptr) const;
+  ALWAYS_INLINE WARN_UNUSED_RESULT PhysicalRect
+  FlipForWritingMode(const LayoutRect& r,
+                     const LayoutBlock* block_for_flipping = nullptr) const;
 
  private:
   ContentCaptureManager* GetContentCaptureManager();

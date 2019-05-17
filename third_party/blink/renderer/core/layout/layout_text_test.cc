@@ -662,21 +662,6 @@ TEST_P(ParameterizedLayoutTextTest, PhysicalLinesBoundingBoxVerticalRL) {
                 ->PhysicalLinesBoundingBox());
 }
 
-TEST_P(ParameterizedLayoutTextTest, QuadsBasic) {
-  GetDocument().SetCompatibilityMode(Document::kQuirksMode);
-  LoadAhem();
-  SetBasicBody(
-      "<style>p {font: 13px/17px Ahem;}</style>"
-      "<p id=one>one</p>");
-  const Element& one = *GetDocument().getElementById("one");
-  Vector<FloatQuad> actual_quads;
-  ToLayoutText(one.firstChild()->GetLayoutObject())->Quads(actual_quads);
-  EXPECT_EQ(
-      Vector<FloatQuad>({FloatQuad(FloatPoint(8, 10), FloatPoint(47, 10),
-                                   FloatPoint(47, 23), FloatPoint(8, 23))}),
-      actual_quads);
-}
-
 TEST_P(ParameterizedLayoutTextTest, WordBreakElement) {
   SetBasicBody("foo <wbr> bar");
 
@@ -805,6 +790,53 @@ TEST_P(ParameterizedLayoutTextTest, LocalSelectionRectLineHeightVertical) {
             GetSelectionRectFor("<div style='line-height: 50px; height:1em; "
                                 "writing-mode:vertical-lr'>"
                                 "foo bar b^a|z</div>"));
+}
+
+TEST_P(ParameterizedLayoutTextTest, VisualRectInDocumentSVGTspan) {
+  LoadAhem();
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body {
+        margin:0px;
+        font: 20px/20px Ahem;
+      }
+    </style>
+    <svg>
+      <text x="10" y="50" width="100">
+        <tspan id="target" dx="15" dy="25">tspan</tspan>
+      </text>
+    </svg>
+  )HTML");
+
+  LayoutText* target =
+      ToLayoutText(GetLayoutObjectByElementId("target")->SlowFirstChild());
+  const int ascent = 16;
+  PhysicalRect expected(10 + 15, 50 + 25 - ascent, 20 * 5, 20);
+  EXPECT_EQ(expected, target->VisualRectInDocument());
+  EXPECT_EQ(expected, target->VisualRectInDocument(kUseGeometryMapper));
+}
+
+TEST_P(ParameterizedLayoutTextTest, VisualRectInDocumentSVGTspanTB) {
+  LoadAhem();
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body {
+        margin:0px;
+        font: 20px/20px Ahem;
+      }
+    </style>
+    <svg>
+      <text x="50" y="10" width="100" writing-mode="tb">
+        <tspan id="target" dx="15" dy="25">tspan</tspan>
+      </text>
+    </svg>
+  )HTML");
+
+  LayoutText* target =
+      ToLayoutText(GetLayoutObjectByElementId("target")->SlowFirstChild());
+  PhysicalRect expected(50 + 15 - 20 / 2, 10 + 25, 20, 20 * 5);
+  EXPECT_EQ(expected, target->VisualRectInDocument());
+  EXPECT_EQ(expected, target->VisualRectInDocument(kUseGeometryMapper));
 }
 
 }  // namespace blink

@@ -421,55 +421,48 @@ static IntRect EllipsisRectForBox(InlineTextBox* box,
   return IntRect();
 }
 
-void LayoutText::AccumlateQuads(Vector<FloatQuad>& quads,
-                                const IntRect& ellipsis_rect,
-                                LocalOrAbsoluteOption local_or_absolute,
-                                MapCoordinatesFlags mode,
-                                const LayoutRect& passed_boundaries) const {
-  FloatRect boundaries(passed_boundaries);
-  if (!ellipsis_rect.IsEmpty()) {
-    if (StyleRef().IsHorizontalWritingMode())
-      boundaries.SetWidth(ellipsis_rect.MaxX() - boundaries.X());
-    else
-      boundaries.SetHeight(ellipsis_rect.MaxY() - boundaries.Y());
-  }
-  quads.push_back(local_or_absolute == kAbsoluteQuads
-                      ? LocalToAbsoluteQuad(boundaries, mode)
-                      : boundaries);
-}
-
-void LayoutText::Quads(Vector<FloatQuad>& quads,
-                       ClippingOption option,
-                       LocalOrAbsoluteOption local_or_absolute,
-                       MapCoordinatesFlags mode) const {
+template <typename PhysicalRectCollector>
+void LayoutText::CollectLineBoxRects(const PhysicalRectCollector& yield,
+                                     ClippingOption option) const {
   if (const NGPhysicalBoxFragment* box_fragment =
           ContainingBlockFlowFragment()) {
     const auto children =
         NGInlineFragmentTraversal::SelfFragmentsOf(*box_fragment, this);
-    const LayoutBlock* block_for_flipping = nullptr;
-    if (UNLIKELY(HasFlippedBlocksWritingMode()))
-      block_for_flipping = ContainingBlock();
     for (const auto& child : children) {
       // TODO(layout-dev): We should have NG version of |EllipsisRectForBox()|
-      LayoutRect rect = child.RectInContainerBox().ToLayoutRect();
-      if (UNLIKELY(block_for_flipping))
-        block_for_flipping->FlipForWritingMode(rect);
-      AccumlateQuads(quads, IntRect(), local_or_absolute, mode, rect);
+      yield(child.RectInContainerBox());
     }
     return;
   }
+
+  const LayoutBlock* block_for_flipping =
+      UNLIKELY(NeedsFlipForWritingMode()) ? ContainingBlock() : nullptr;
   for (InlineTextBox* box : TextBoxes()) {
+    LayoutRect boundaries = box->FrameRect();
     const IntRect ellipsis_rect = (option == kClipToEllipsis)
                                       ? EllipsisRectForBox(box, 0, TextLength())
                                       : IntRect();
-    AccumlateQuads(quads, ellipsis_rect, local_or_absolute, mode,
-                   box->FrameRect());
+    if (!ellipsis_rect.IsEmpty()) {
+      if (IsHorizontalWritingMode())
+        boundaries.SetWidth(ellipsis_rect.MaxX() - boundaries.X());
+      else
+        boundaries.SetHeight(ellipsis_rect.MaxY() - boundaries.Y());
+    }
+    yield(FlipForWritingMode(boundaries, block_for_flipping));
   }
 }
 
 void LayoutText::AbsoluteQuads(Vector<FloatQuad>& quads,
                                MapCoordinatesFlags mode) const {
-  Quads(quads, kNoClipping, kAbsoluteQuads, mode);
+  const LayoutBlock* block_for_flipping =
+      UNLIKELY(NeedsFlipForWritingMode()) ? ContainingBlock() : nullptr;
+  CollectLineBoxRects(
+      [this, &quads, mode, block_for_flipping](const PhysicalRect& r) {
+        // LocalToAbsoluteQuad requires the input to be in flipped blocks
+        // direction.
+        LayoutRect rect = FlipForWritingMode(r, block_for_flipping);
+        quads.push_back(LocalToAbsoluteQuad(FloatRect(rect), mode));
+      });
 }
 
 bool LayoutText::MapDOMOffsetToTextContentOffset(const NGOffsetMapping& mapping,
@@ -560,12 +553,12 @@ void LayoutText::AbsoluteQuadsForRange(Vector<FloatQuad>& quads,
       const unsigned clamped_start =
           std::max(start, text_fragment.StartOffset());
       const unsigned clamped_end = std::min(end, text_fragment.EndOffset());
-      LayoutRect rect =
-          text_fragment.LocalRect(clamped_start, clamped_end).ToLayoutRect();
-      rect.MoveBy(fragment->InlineOffsetToContainerBox().ToLayoutPoint());
-      if (UNLIKELY(block_for_flipping))
-        block_for_flipping->FlipForWritingMode(rect);
-      const FloatQuad quad = LocalToAbsoluteQuad(FloatRect(rect));
+      PhysicalRect rect = text_fragment.LocalRect(clamped_start, clamped_end);
+      rect.Move(fragment->InlineOffsetToContainerBox());
+      // LocalToAbsoluteQuad requires the input to be in flipped blocks
+      // direction.
+      LayoutRect layout_rect = FlipForWritingMode(rect, block_for_flipping);
+      const FloatQuad quad = LocalToAbsoluteQuad(FloatRect(layout_rect));
       if (clamped_start < clamped_end) {
         quads.push_back(quad);
         found_non_collapsed_quad = true;
@@ -621,10 +614,16 @@ void LayoutText::AbsoluteQuadsForRange(Vector<FloatQuad>& quads,
 
 FloatRect LayoutText::LocalBoundingBoxRectForAccessibility() const {
   FloatRect result;
-  Vector<FloatQuad> quads;
-  Quads(quads, LayoutText::kClipToEllipsis, LayoutText::kLocalQuads);
-  for (const FloatQuad& quad : quads)
-    result.Unite(quad.BoundingBox());
+  const LayoutBlock* block_for_flipping =
+      UNLIKELY(NeedsFlipForWritingMode()) ? ContainingBlock() : nullptr;
+  CollectLineBoxRects(
+      [this, &result, block_for_flipping](const PhysicalRect& r) {
+        LayoutRect rect = FlipForWritingMode(r, block_for_flipping);
+        result.Unite(FloatRect(rect));
+      },
+      kClipToEllipsis);
+  // TODO(wangxianzhu): This is one of a few cases that a FloatRect is required
+  // to be in flipped blocks direction. Should eliminite them.
   return result;
 }
 
@@ -1546,8 +1545,8 @@ PhysicalOffset LayoutText::FirstLineBoxTopLeft() const {
   if (const NGPaintFragment* fragment = FirstInlineFragment())
     return fragment->InlineOffsetToContainerBox();
   if (const auto* text_box = FirstTextBox()) {
-    auto location = text_box->Location();
-    if (UNLIKELY(HasFlippedBlocksWritingMode())) {
+    LayoutPoint location = text_box->Location();
+    if (UNLIKELY(NeedsFlipForWritingMode())) {
       location = ContainingBlock()->FlipForWritingMode(location);
       location.Move(-text_box->Width(), LayoutUnit());
     }
@@ -1962,55 +1961,19 @@ float LayoutText::Width(unsigned from,
 }
 
 PhysicalRect LayoutText::PhysicalLinesBoundingBox() const {
-  if (const NGPhysicalBoxFragment* box_fragment =
-          ContainingBlockFlowFragment()) {
-    PhysicalRect bounding_box;
-    auto children =
-        NGInlineFragmentTraversal::SelfFragmentsOf(*box_fragment, this);
-    for (const auto& child : children)
-      bounding_box.UniteIfNonZero(child.RectInContainerBox());
-    return bounding_box;
-  }
-
-  LayoutRect result;
-
-  DCHECK_EQ(!FirstTextBox(),
-            !LastTextBox());  // Either both are null or both exist.
-  if (FirstTextBox() && LastTextBox()) {
-    // Return the width of the minimal left side and the maximal right side.
-    float logical_left_side = 0;
-    float logical_right_side = 0;
-    for (InlineTextBox* curr : TextBoxes()) {
-      if (curr == FirstTextBox() || curr->LogicalLeft() < logical_left_side)
-        logical_left_side = curr->LogicalLeft().ToFloat();
-      if (curr == FirstTextBox() || curr->LogicalRight() > logical_right_side)
-        logical_right_side = curr->LogicalRight().ToFloat();
-    }
-
-    bool is_horizontal = StyleRef().IsHorizontalWritingMode();
-
-    float x = is_horizontal ? logical_left_side : FirstTextBox()->X().ToFloat();
-    float y = is_horizontal ? FirstTextBox()->Y().ToFloat() : logical_left_side;
-    float width = is_horizontal ? logical_right_side - logical_left_side
-                                : LastTextBox()->LogicalBottom() - x;
-    float height = is_horizontal ? LastTextBox()->LogicalBottom() - y
-                                 : logical_right_side - logical_left_side;
-    result = EnclosingLayoutRect(FloatRect(x, y, width, height));
-  }
-
-  if (UNLIKELY(HasFlippedBlocksWritingMode()))
-    ContainingBlock()->FlipForWritingMode(result);
-  return PhysicalRect(result);
+  PhysicalRect result;
+  CollectLineBoxRects(
+      [&result](const PhysicalRect& r) { result.UniteIfNonZero(r); });
+  // Some callers expect correct offset even if the rect is empty.
+  if (result == PhysicalRect())
+    result.offset = FirstLineBoxTopLeft();
+  return result;
 }
 
 LayoutRect LayoutText::VisualOverflowRect() const {
   if (base::Optional<PhysicalRect> physical_rect =
-          NGPaintFragment::LocalVisualRectFor(*this)) {
-    LayoutRect rect = physical_rect->ToLayoutRect();
-    if (UNLIKELY(HasFlippedBlocksWritingMode()))
-      ContainingBlock()->FlipForWritingMode(rect);
-    return rect;
-  }
+          NGPaintFragment::LocalVisualRectFor(*this))
+    return FlipForWritingMode(*physical_rect);
 
   if (!FirstTextBox())
     return LayoutRect();
@@ -2057,13 +2020,12 @@ LayoutRect LayoutText::VisualOverflowRect() const {
 }
 
 PhysicalRect LayoutText::LocalVisualRectIgnoringVisibility() const {
-  if (const auto& rect = NGPaintFragment::LocalVisualRectFor(*this))
-    return UnionRect(*rect, LocalSelectionVisualRect());
-
-  auto rect = VisualOverflowRect();
-  if (UNLIKELY(HasFlippedBlocksWritingMode()))
-    ContainingBlock()->FlipForWritingMode(rect);
-  return UnionRect(PhysicalRect(rect), LocalSelectionVisualRect());
+  PhysicalRect rect;
+  if (const auto& r = NGPaintFragment::LocalVisualRectFor(*this))
+    rect = *r;
+  else
+    rect = FlipForWritingMode(VisualOverflowRect());
+  return UnionRect(rect, LocalSelectionVisualRect());
 }
 
 PhysicalRect LayoutText::LocalSelectionVisualRect() const {
@@ -2100,9 +2062,7 @@ PhysicalRect LayoutText::LocalSelectionVisualRect() const {
     rect.Unite(LayoutRect(EllipsisRectForBox(box, start_pos, end_pos)));
   }
 
-  if (UNLIKELY(HasFlippedBlocksWritingMode()))
-    ContainingBlock()->FlipForWritingMode(rect);
-  return PhysicalRect(rect);
+  return FlipForWritingMode(rect);
 }
 
 const NGOffsetMapping* LayoutText::GetNGOffsetMapping() const {
@@ -2465,6 +2425,30 @@ const NGInlineItems& LayoutText::InlineItems() const {
   DCHECK(GetNGInlineItems());
   DCHECK(!GetNGInlineItems()->IsEmpty());
   return *GetNGInlineItems();
+}
+
+LayoutRect LayoutText::FlipForWritingMode(
+    const PhysicalRect& r,
+    const LayoutBlock* block_for_flipping) const {
+  LayoutRect rect = r.ToLayoutRect();
+  if (UNLIKELY(NeedsFlipForWritingMode())) {
+    DCHECK(!block_for_flipping || block_for_flipping == ContainingBlock());
+    (block_for_flipping ? block_for_flipping : ContainingBlock())
+        ->FlipForWritingMode(rect);
+  }
+  return rect;
+}
+
+PhysicalRect LayoutText::FlipForWritingMode(
+    const LayoutRect& r,
+    const LayoutBlock* block_for_flipping) const {
+  LayoutRect rect = r;
+  if (UNLIKELY(NeedsFlipForWritingMode())) {
+    DCHECK(!block_for_flipping || block_for_flipping == ContainingBlock());
+    (block_for_flipping ? block_for_flipping : ContainingBlock())
+        ->FlipForWritingMode(rect);
+  }
+  return PhysicalRect(rect);
 }
 
 }  // namespace blink
