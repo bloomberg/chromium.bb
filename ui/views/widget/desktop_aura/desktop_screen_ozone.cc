@@ -42,7 +42,7 @@ void DesktopScreenOzone::OnHostDisplaysReady(
   display::Display display(display_snapshot->display_id());
   display.set_bounds(gfx::Rect(scaled_size));
   display.set_work_area(display.bounds());
-  display.set_device_scale_factor(device_scale_factor);
+  display.SetDeviceScaleFactor(device_scale_factor);
 
   ProcessDisplayChanged(display, true /* is_primary */);
 }

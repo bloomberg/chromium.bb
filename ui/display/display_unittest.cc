@@ -65,10 +65,16 @@ TEST(DisplayTest, ForcedDeviceScaleFactorByCommandLine) {
 }
 
 TEST(DisplayTest, ForcedDeviceScaleFactor) {
-  Display::SetForceDeviceScaleFactor(2);
+  const float kForcedScaleFactor = 2;
 
-  EXPECT_EQ(2, Display::GetForcedDeviceScaleFactor());
+  Display::SetForceDeviceScaleFactor(kForcedScaleFactor);
+
+  EXPECT_EQ(kForcedScaleFactor, Display::GetForcedDeviceScaleFactor());
   Display::ResetForceDeviceScaleFactorForTesting();
+
+  Display display;
+  display.SetDeviceScaleFactor(5);
+  EXPECT_EQ(display.device_scale_factor(), kForcedScaleFactor);
 }
 
 TEST(DisplayTest, DisplayHDRValues) {

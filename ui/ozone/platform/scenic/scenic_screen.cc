@@ -55,7 +55,7 @@ void ScenicScreen::OnWindowMetrics(int32_t window_id,
                                  });
   DCHECK(display_it != displays_.end());
 
-  display_it->set_device_scale_factor(device_pixel_ratio);
+  display_it->SetDeviceScaleFactor(device_pixel_ratio);
   for (auto& observer : observers_) {
     observer.OnDisplayMetricsChanged(
         *display_it,

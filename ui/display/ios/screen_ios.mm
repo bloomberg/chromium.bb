@@ -17,7 +17,7 @@ class ScreenIos : public ScreenBase {
     UIScreen* mainScreen = [UIScreen mainScreen];
     CHECK(mainScreen);
     Display display(0, gfx::Rect(mainScreen.bounds));
-    display.set_device_scale_factor([mainScreen scale]);
+    display.SetDeviceScaleFactor([mainScreen scale]);
     ProcessDisplayChanged(display, true /* is_primary */);
   }
 

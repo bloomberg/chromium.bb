@@ -79,7 +79,7 @@ void DisplayAndroidManager::DoUpdateDisplay(display::Display* display,
                                             int bitsPerComponent,
                                             bool isWideColorGamut) {
   if (!Display::HasForceDeviceScaleFactor())
-    display->set_device_scale_factor(dipScale);
+    display->SetDeviceScaleFactor(dipScale);
   if (!Display::HasForceDisplayColorProfile()) {
     if (isWideColorGamut) {
       display->set_color_space(gfx::ColorSpace::CreateDisplayP3D65());

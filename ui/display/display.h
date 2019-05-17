@@ -148,12 +148,12 @@ class DISPLAY_EXPORT Display final {
   const gfx::Rect& work_area() const { return work_area_; }
   void set_work_area(const gfx::Rect& work_area) { work_area_ = work_area; }
 
-  // Output device's pixel scale factor. This specifies how much the
-  // UI should be scaled when the actual output has more pixels than
-  // standard displays (which is around 100~120dpi.) The potential return
-  // values depend on each platforms.
+  // Pixel scale factor.  This specifies how much the UI should be scaled when
+  // rendering on the actual output.  This is needed when the latter has more
+  // pixels than standard displays (which is around 100~120dpi).  The potential
+  // return values depend on each platforms.
   float device_scale_factor() const { return device_scale_factor_; }
-  void set_device_scale_factor(float scale) { device_scale_factor_ = scale; }
+  void SetDeviceScaleFactor(float scale);
 
   Rotation rotation() const { return rotation_; }
   void set_rotation(Rotation rotation) { rotation_ = rotation; }
@@ -178,7 +178,7 @@ class DISPLAY_EXPORT Display final {
   gfx::Insets GetWorkAreaInsets() const;
 
   // Sets the device scale factor and display bounds in pixel. This
-  // updates the work are using the same insets between old bounds and
+  // updates the work area using the same insets between old bounds and
   // work area.
   void SetScaleAndBounds(float device_scale_factor,
                          const gfx::Rect& bounds_in_pixel);
@@ -187,7 +187,7 @@ class DISPLAY_EXPORT Display final {
   // between old bounds and work area.
   void SetSize(const gfx::Size& size_in_pixel);
 
-  // Computes and updates the display's work are using
+  // Computes and updates the display's work area using
   // |work_area_insets| and the bounds.
   void UpdateWorkAreaFromInsets(const gfx::Insets& work_area_insets);
 
@@ -239,9 +239,7 @@ class DISPLAY_EXPORT Display final {
 
   // The number of bits per pixel. Used by media query APIs.
   int color_depth() const { return color_depth_; }
-  void set_color_depth(int color_depth) {
-    color_depth_ = color_depth;
-  }
+  void set_color_depth(int color_depth) { color_depth_ = color_depth; }
 
   // The number of bits per color component (all color components are assumed to
   // have the same number of bits). Used by media query APIs.
