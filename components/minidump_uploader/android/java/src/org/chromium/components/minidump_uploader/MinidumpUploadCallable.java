@@ -8,7 +8,6 @@ import android.content.SharedPreferences;
 import android.support.annotation.IntDef;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.base.FileUtils;
 import org.chromium.base.Log;
 import org.chromium.base.StreamUtil;
 import org.chromium.base.VisibleForTesting;
@@ -17,11 +16,14 @@ import org.chromium.components.minidump_uploader.util.HttpURLConnectionFactory;
 import org.chromium.components.minidump_uploader.util.HttpURLConnectionFactoryImpl;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.net.HttpURLConnection;
@@ -117,8 +119,7 @@ public class MinidumpUploadCallable implements Callable<Integer> {
                 return MinidumpUploadStatus.FAILURE;
             }
             minidumpInputStream = new FileInputStream(mFileToUpload);
-            FileUtils.copyStream(
-                    minidumpInputStream, new GZIPOutputStream(connection.getOutputStream()));
+            streamCopy(minidumpInputStream, new GZIPOutputStream(connection.getOutputStream()));
             boolean success = handleExecutionResponse(connection);
 
             return success ? MinidumpUploadStatus.SUCCESS : MinidumpUploadStatus.FAILURE;
@@ -126,11 +127,14 @@ public class MinidumpUploadCallable implements Callable<Integer> {
             // ArrayIndexOutOfBoundsException due to bad GZIPOutputStream implementation on some
             // old sony devices.
             // For now just log the stack trace.
-            Log.w(TAG, "Error while uploading %s", mFileToUpload.getName(), e);
+            Log.w(TAG, "Error while uploading " + mFileToUpload.getName(), e);
             return MinidumpUploadStatus.FAILURE;
         } finally {
             connection.disconnect();
-            StreamUtil.closeQuietly(minidumpInputStream);
+
+            if (minidumpInputStream != null) {
+                StreamUtil.closeQuietly(minidumpInputStream);
+            }
         }
     }
 
@@ -170,9 +174,9 @@ public class MinidumpUploadCallable implements Callable<Integer> {
         if (isSuccessful(responseCode)) {
             String responseContent = getResponseContentAsString(connection);
             // The crash server returns the crash ID.
-            String uploadId = responseContent.isEmpty() ? "unknown" : responseContent;
+            String uploadId = responseContent != null ? responseContent : "unknown";
             String crashFileName = mFileToUpload.getName();
-            Log.i(TAG, "Minidump %s uploaded successfully, id: %s", crashFileName, uploadId);
+            Log.i(TAG, "Minidump " + crashFileName + " uploaded successfully, id: " + uploadId);
 
             // TODO(acleung): MinidumpUploadService is in charge of renaming while this class is
             // in charge of deleting. We should move all the file system operations into
@@ -280,8 +284,33 @@ public class MinidumpUploadCallable implements Callable<Integer> {
      */
     private static String getResponseContentAsString(HttpURLConnection connection)
             throws IOException {
-        byte[] bytes = FileUtils.readStream(connection.getInputStream());
-        return new String(bytes);
+        String responseContent = null;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        streamCopy(connection.getInputStream(), baos);
+        if (baos.size() > 0) {
+            responseContent = baos.toString();
+        }
+        return responseContent;
+    }
+
+    /**
+     * Copies all available data from |inStream| to |outStream|. Closes both
+     * streams when done.
+     *
+     * @param inStream the stream to read
+     * @param outStream the stream to write to
+     * @throws IOException
+     */
+    private static void streamCopy(InputStream inStream, OutputStream outStream)
+            throws IOException {
+        byte[] temp = new byte[4096];
+        int bytesRead = inStream.read(temp);
+        while (bytesRead >= 0) {
+            outStream.write(temp, 0, bytesRead);
+            bytesRead = inStream.read(temp);
+        }
+        inStream.close();
+        outStream.close();
     }
 
     // TODO(gayane): Remove this function and unused prefs in M51. crbug.com/555022
