@@ -459,15 +459,10 @@ android_library("chrome_java") {
 java_group("chrome_all_java") {
   deps = [
     ":chrome_java",
+    "//chrome/android/features/autofill_assistant:animated_poodle_java",
     "//chrome/android/features/autofill_assistant:java",
     "//chrome/android/features/media_router:java",
   ]
-  if (enable_chrome_android_internal) {
-    deps += [ "//clank/features/autofill_assistant:animated_poodle_java" ]
-  } else {
-    deps +=
-        [ "//chrome/android/features/autofill_assistant:animated_poodle_java" ]
-  }
 }
 
 # This is a list of all base module jni headers. New features should add their
