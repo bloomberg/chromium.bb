@@ -4,8 +4,10 @@
 
 #include "chrome/browser/payments/ssl_validity_checker.h"
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
+#include "components/network_session_configurator/common/network_switches.h"
 #include "components/security_state/core/security_state.h"
 
 namespace payments {
@@ -21,7 +23,10 @@ bool SslValidityChecker::IsSslCertificateValid(
   security_state::SecurityLevel security_level = helper->GetSecurityLevel();
   return security_level == security_state::EV_SECURE ||
          security_level == security_state::SECURE ||
-         security_level == security_state::SECURE_WITH_POLICY_INSTALLED_CERT;
+         security_level == security_state::SECURE_WITH_POLICY_INSTALLED_CERT ||
+         // No early return, so the other code is exercised in tests, too.
+         base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kIgnoreCertificateErrors);
 }
 
 }  // namespace payments
