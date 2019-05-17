@@ -239,7 +239,7 @@ Shell* Shell::CreateNewWindow(BrowserContext* browser_context,
     static const gfx::FontRenderParams& fontRenderParams =
         gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(), NULL);
 
-    content::RendererPreferences *prefs = web_contents->GetMutableRendererPrefs();
+    blink::mojom::RendererPreferences *prefs = web_contents->GetMutableRendererPrefs();
 
     prefs->should_antialias_text    = fontRenderParams.antialiasing;
     prefs->use_subpixel_positioning = fontRenderParams.subpixel_positioning;
