@@ -371,3 +371,9 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_conservative_bursts, false)
 QUIC_FLAG(bool,
           FLAGS_quic_restart_flag_quic_no_framer_object_in_dispatcher,
           false)
+
+// When true, QuicFramer will not override connection IDs in headers and will
+// instead respect the source/destination direction as expected by IETF QUIC.
+QUIC_FLAG(bool,
+          FLAGS_quic_restart_flag_quic_do_not_override_connection_id,
+          false)
