@@ -180,6 +180,12 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kShowAndroidFilesInFilesApp[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kSupervisionOnboardingStartPageUrl[];
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const char kSupervisionOnboardingPageUrlPattern[];
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const char kSupervisionOnboardingHttpResponseHeader[];
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const char kSupervisionOnboardingHttpResponseHeaderValue[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kShowLoginDevOverlay[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kTestEncryptionMigrationUI[];

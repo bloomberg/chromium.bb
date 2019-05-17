@@ -5,12 +5,18 @@
 #ifndef CHROME_BROWSER_CHROMEOS_SUPERVISION_ONBOARDING_CONTROLLER_IMPL_H_
 #define CHROME_BROWSER_CHROMEOS_SUPERVISION_ONBOARDING_CONTROLLER_IMPL_H_
 
+#include <memory>
 #include <string>
-#include <vector>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "chrome/browser/chromeos/supervision/mojom/onboarding_controller.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "services/identity/public/cpp/identity_manager.h"
+
+namespace identity {
+class AccessTokenFetcher;
+}
 
 namespace chromeos {
 namespace supervision {
@@ -25,10 +31,18 @@ class OnboardingControllerImpl : public mojom::OnboardingController {
  private:
   // mojom::OnboardingController:
   void BindWebviewHost(mojom::OnboardingWebviewHostPtr webview_host) override;
-  void HandleAction(mojom::OnboardingFlowAction action) override;
+  void HandleAction(mojom::OnboardingAction action) override;
+
+  // Callback to get the access token from the IdentityManager.
+  void AccessTokenCallback(GoogleServiceAuthError error,
+                           identity::AccessTokenInfo access_token_info);
+
+  // Callback to OnboardingWebviewHost::LoadPage.
+  void LoadPageCallback(const base::Optional<std::string>& custom_header_value);
 
   mojom::OnboardingWebviewHostPtr webview_host_;
   mojo::BindingSet<mojom::OnboardingController> bindings_;
+  std::unique_ptr<identity::AccessTokenFetcher> access_token_fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(OnboardingControllerImpl);
 };

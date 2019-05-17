@@ -166,9 +166,7 @@ void AddSyncConsentResources(content::WebUIDataSource* source) {
 }
 
 void AddSupervisionOnboardingScreenResources(content::WebUIDataSource* source) {
-  source->AddResourcePath("supervision_onboarding_controller.mojom.html",
-                          IDR_SUPERVISION_ONBOARDING_CONTROLLER_MOJOM_HTML);
-  source->AddResourcePath("onboarding_controller.mojom-lite.js",
+  source->AddResourcePath("supervision/onboarding_controller.mojom-lite.js",
                           IDR_SUPERVISION_ONBOARDING_CONTROLLER_MOJOM_LITE_JS);
 }
 

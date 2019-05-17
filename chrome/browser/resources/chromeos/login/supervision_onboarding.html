@@ -6,7 +6,9 @@
 
 <link rel="import" href="chrome://oobe/custom_elements.html">
 <link rel="import" href="chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.html">
-<link rel="import" href="chrome://oobe/supervision_onboarding_controller.mojom.html">
+<link rel="import" href="chrome://resources/mojo/url/mojom/url.mojom.html">
+<script src="chrome://oobe/supervision/onboarding_controller.mojom-lite.js">
+</script>
 
 <!--
   UI for the Supervision Onboarding flow that's displayed for the first login
@@ -15,7 +17,7 @@
   <template>
     <link rel="stylesheet" href="oobe_flex_layout.css">
     <oobe-dialog id="supervision-onboarding-dialog" has-buttons>
-      <webview id="contentWebview" slot="footer"></webview>
+      <webview id="contentWebview" slot="footer" hidden></webview>
       <div slot="bottom-buttons" class="flex layout horizontal">
         <oobe-back-button id="back-button"
           on-tap="onBack_">

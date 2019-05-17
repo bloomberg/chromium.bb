@@ -483,6 +483,23 @@ const char kShowLoginDevOverlay[] = "show-login-dev-overlay";
 const char kSupervisionOnboardingStartPageUrl[] =
     "supervision-onboarding-start-page-url";
 
+// Matcher pattern for authenticated requests made by the Supervision
+// onboarding.
+// TODO(958995): Hardcode this value when the server implementation is ready.
+const char kSupervisionOnboardingPageUrlPattern[] =
+    "supervision-onboarding-page-url-pattern";
+
+// Custom HTTP header expected in responses coming from the supervision server.
+// TODO(958995): Hardcode this value when the server implementation is ready.
+const char kSupervisionOnboardingHttpResponseHeader[] =
+    "supervision-onboarding-http-response-header";
+
+// Value expected to be found in custom HTTP header coming from the supervision
+// server.
+// TODO(958995): Hardcode this value when the server implementation is ready.
+const char kSupervisionOnboardingHttpResponseHeaderValue[] =
+    "supervision-onboarding-http-response-header-value";
+
 // Enables testing for encryption migration UI.
 const char kTestEncryptionMigrationUI[] = "test-encryption-migration-ui";
 

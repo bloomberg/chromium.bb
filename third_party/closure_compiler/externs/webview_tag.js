@@ -198,6 +198,9 @@ WebRequestEventInterface.prototype.onBeforeRequest;
 /** @type {!WebRequestOptionallySynchronousEvent} */
 WebRequestEventInterface.prototype.onBeforeSendHeaders;
 
+/** @type {!WebRequestOptionallySynchronousEvent} */
+WebRequestEventInterface.prototype.onHeadersReceived;
+
 /**
  * @constructor
  * @extends {HTMLIFrameElement}

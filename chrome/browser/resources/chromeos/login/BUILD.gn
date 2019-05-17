@@ -47,10 +47,23 @@ js_type_check("closure_compile") {
     ":recommend_apps",
     ":saml_confirm_password",
     ":saml_interstitial",
-    ":supervision_onboarding",
     ":sync_consent",
     ":throbber_notice",
     ":update_required_card",
+  ]
+}
+
+# We need to keep the supervision_onboarding compilation separate from the main
+# target since they depend on incompatible extern files.
+#
+# The main compilation target bundles the networking_private.js externs, it
+# gets that transitively from its :network_select_login dep.
+#
+# Supervision needs the chrome_extensions.js extern, but they end up declaring
+# the same types, so compilation fails.
+js_type_check("closure_compile_supervision") {
+  deps = [
+    ":supervision_onboarding",
   ]
 }
 
@@ -90,6 +103,7 @@ js_library("fake_oobe") {
   deps = [
     ":oobe_types",
     "//ui/login:display_manager_types",
+    "//ui/webui/resources/js:util",
   ]
 }
 
@@ -148,8 +162,14 @@ js_library("multidevice_setup_first_run") {
 
 js_library("supervision_onboarding") {
   deps = [
+    ":login_screen_behavior",
     "//chrome/browser/chromeos/supervision/mojom:mojom_js_library_for_compile",
     "//ui/webui/resources/js:cr",
+  ]
+
+  externs_list = [
+    "$externs_path/chrome_extensions.js",
+    "$externs_path/webview_tag.js",
   ]
 }
 
