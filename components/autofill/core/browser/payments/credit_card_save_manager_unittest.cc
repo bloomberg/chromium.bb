@@ -4450,8 +4450,12 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_DisallowedLocalCard) {
 // if the strike database flag is disabled.
 TEST_F(CreditCardSaveManagerTest,
        LocallySaveCreditCard_MaxStrikesButStrikeDatabaseDisabled) {
-  scoped_feature_list_.InitAndDisableFeature(
-      features::kAutofillSaveCreditCardUsesStrikeSystem);
+  scoped_feature_list_.InitWithFeatures(
+      // Enabled
+      {},
+      // Disabled
+      {features::kAutofillSaveCreditCardUsesStrikeSystem,
+       features::kAutofillSaveCreditCardUsesStrikeSystemV2});
   credit_card_save_manager_->SetCreditCardUploadEnabled(false);
 
   // Max out strikes for the card to be added.
@@ -4493,8 +4497,12 @@ TEST_F(CreditCardSaveManagerTest,
 // if the strike database flag is disabled.
 TEST_F(CreditCardSaveManagerTest,
        UploadCreditCard_MaxStrikesButStrikeDatabaseDisabled) {
-  scoped_feature_list_.InitAndDisableFeature(
-      features::kAutofillSaveCreditCardUsesStrikeSystem);
+  scoped_feature_list_.InitWithFeatures(
+      // Enabled
+      {},
+      // Disabled
+      {features::kAutofillSaveCreditCardUsesStrikeSystem,
+       features::kAutofillSaveCreditCardUsesStrikeSystemV2});
 
   // Max out strikes for the card to be added.
   legacy_strike_database_->AddEntryWithNumStrikes(
@@ -4545,8 +4553,11 @@ TEST_F(CreditCardSaveManagerTest,
 // strikes) should still show the save bubble/infobar.
 TEST_F(CreditCardSaveManagerTest,
        LocallySaveCreditCard_NotEnoughLegacyStrikesStillShowsOfferToSave) {
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillSaveCreditCardUsesStrikeSystem);
+  scoped_feature_list_.InitWithFeatures(
+      // Enabled
+      {features::kAutofillSaveCreditCardUsesStrikeSystem},
+      // Disabled
+      {features::kAutofillSaveCreditCardUsesStrikeSystemV2});
   credit_card_save_manager_->SetCreditCardUploadEnabled(false);
 
   // Add a single strike for the card to be added.
@@ -4586,8 +4597,11 @@ TEST_F(CreditCardSaveManagerTest,
 // strikes) should still show the save bubble/infobar.
 TEST_F(CreditCardSaveManagerTest,
        UploadCreditCard_NotEnoughLegacyStrikesStillShowsOfferToSave) {
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillSaveCreditCardUsesStrikeSystem);
+  scoped_feature_list_.InitWithFeatures(
+      // Enabled
+      {features::kAutofillSaveCreditCardUsesStrikeSystem},
+      // Disabled
+      {features::kAutofillSaveCreditCardUsesStrikeSystemV2});
 
   // Add a single strike for the card to be added.
   legacy_strike_database_->AddEntryWithNumStrikes(
@@ -4637,8 +4651,11 @@ TEST_F(CreditCardSaveManagerTest,
 // save on mobile at all.
 TEST_F(CreditCardSaveManagerTest,
        LocallySaveCreditCard_MaxLegacyStrikesDisallowsSave) {
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillSaveCreditCardUsesStrikeSystem);
+  scoped_feature_list_.InitWithFeatures(
+      // Enabled
+      {features::kAutofillSaveCreditCardUsesStrikeSystem},
+      // Disabled
+      {features::kAutofillSaveCreditCardUsesStrikeSystemV2});
   credit_card_save_manager_->SetCreditCardUploadEnabled(false);
 
   // Max out strikes for the card to be added.
@@ -4676,8 +4693,11 @@ TEST_F(CreditCardSaveManagerTest,
 // save on mobile at all.
 TEST_F(CreditCardSaveManagerTest,
        UploadCreditCard_MaxLegacyStrikesDisallowsSave) {
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillSaveCreditCardUsesStrikeSystem);
+  scoped_feature_list_.InitWithFeatures(
+      // Enabled
+      {features::kAutofillSaveCreditCardUsesStrikeSystem},
+      // Disabled
+      {features::kAutofillSaveCreditCardUsesStrikeSystemV2});
 
   // Max out strikes for the card to be added.
   legacy_strike_database_->AddEntryWithNumStrikes(
@@ -4732,8 +4752,11 @@ TEST_F(CreditCardSaveManagerTest,
 // bubble itself is not shown.
 TEST_F(CreditCardSaveManagerTest,
        LocallySaveCreditCard_MaxLegacyStrikesStillAllowsSave) {
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillSaveCreditCardUsesStrikeSystem);
+  scoped_feature_list_.InitWithFeatures(
+      // Enabled
+      {features::kAutofillSaveCreditCardUsesStrikeSystem},
+      // Disabled
+      {features::kAutofillSaveCreditCardUsesStrikeSystemV2});
   credit_card_save_manager_->SetCreditCardUploadEnabled(false);
 
   // Max out strikes for the card to be added.
@@ -4775,8 +4798,11 @@ TEST_F(CreditCardSaveManagerTest,
 // bubble itself is not shown.
 TEST_F(CreditCardSaveManagerTest,
        UploadCreditCard_MaxLegacyStrikesStillAllowsSave) {
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillSaveCreditCardUsesStrikeSystem);
+  scoped_feature_list_.InitWithFeatures(
+      // Enabled
+      {features::kAutofillSaveCreditCardUsesStrikeSystem},
+      // Disabled
+      {features::kAutofillSaveCreditCardUsesStrikeSystemV2});
 
   // Max out strikes for the card to be added.
   legacy_strike_database_->AddEntryWithNumStrikes(
@@ -4827,8 +4853,11 @@ TEST_F(CreditCardSaveManagerTest,
 // card.
 TEST_F(CreditCardSaveManagerTest,
        LocallySaveCreditCard_ClearLegacyStrikesOnAdd) {
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillSaveCreditCardUsesStrikeSystem);
+  scoped_feature_list_.InitWithFeatures(
+      // Enabled
+      {features::kAutofillSaveCreditCardUsesStrikeSystem},
+      // Disabled
+      {features::kAutofillSaveCreditCardUsesStrikeSystemV2});
   credit_card_save_manager_->SetCreditCardUploadEnabled(false);
 
   // Add a couple of strikes for the card to be added.
@@ -4863,8 +4892,11 @@ TEST_F(CreditCardSaveManagerTest,
 // Tests that adding a card clears all LegacyStrikeDatabase strikes for that
 // card.
 TEST_F(CreditCardSaveManagerTest, UploadCreditCard_ClearLegacyStrikesOnAdd) {
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillSaveCreditCardUsesStrikeSystem);
+  scoped_feature_list_.InitWithFeatures(
+      // Enabled
+      {features::kAutofillSaveCreditCardUsesStrikeSystem},
+      // Disabled
+      {features::kAutofillSaveCreditCardUsesStrikeSystemV2});
 
   // Add a couple of strikes for the card to be added.
   legacy_strike_database_->AddEntryWithNumStrikes(
@@ -4909,8 +4941,11 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_ClearLegacyStrikesOnAdd) {
 // card.
 TEST_F(CreditCardSaveManagerTest,
        LocallySaveCreditCard_NumLegacyStrikesLoggedOnAdd) {
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillSaveCreditCardUsesStrikeSystem);
+  scoped_feature_list_.InitWithFeatures(
+      // Enabled
+      {features::kAutofillSaveCreditCardUsesStrikeSystem},
+      // Disabled
+      {features::kAutofillSaveCreditCardUsesStrikeSystemV2});
   credit_card_save_manager_->SetCreditCardUploadEnabled(false);
 
   // Add a couple of strikes for the card to be added.
@@ -4949,8 +4984,11 @@ TEST_F(CreditCardSaveManagerTest,
 // card.
 TEST_F(CreditCardSaveManagerTest,
        UploadCreditCard_NumLegacyStrikesLoggedOnAdd) {
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillSaveCreditCardUsesStrikeSystem);
+  scoped_feature_list_.InitWithFeatures(
+      // Enabled
+      {features::kAutofillSaveCreditCardUsesStrikeSystem},
+      // Disabled
+      {features::kAutofillSaveCreditCardUsesStrikeSystemV2});
 
   // Add a couple of strikes for the card to be added.
   legacy_strike_database_->AddEntryWithNumStrikes(
@@ -4998,8 +5036,11 @@ TEST_F(CreditCardSaveManagerTest,
 // bubble is shown.
 TEST_F(CreditCardSaveManagerTest,
        UploadCreditCard_NumLegacyStrikesLoggedOnUploadNotSuccess) {
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillSaveCreditCardUsesStrikeSystem);
+  scoped_feature_list_.InitWithFeatures(
+      // Enabled
+      {features::kAutofillSaveCreditCardUsesStrikeSystem},
+      // Disabled
+      {features::kAutofillSaveCreditCardUsesStrikeSystemV2});
   const char* const server_id = "InstrumentData:1234";
   payments_client_->SetServerIdForCardUpload(server_id);
   EXPECT_EQ(0, legacy_strike_database_->GetStrikesForTesting(
