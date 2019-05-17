@@ -78,8 +78,13 @@ class AwCrashReporterClient : public crash_reporter::CrashReporterClient {
       return 100;
     }
 
-    if (version_info::android::GetChannel() == version_info::Channel::STABLE)
+    version_info::Channel channel = version_info::android::GetChannel();
+    // Downsample unknown channel as a precaution in case it ends up being
+    // shipped.
+    if (channel == version_info::Channel::STABLE ||
+        channel == version_info::Channel::UNKNOWN) {
       return kCrashDumpPercentageForStable;
+    }
 
     return 100;
   }
