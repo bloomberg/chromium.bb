@@ -37,13 +37,14 @@ public class KeyFunctionsIPHView extends FrameLayout {
         mTooltipView = hostView;
     }
 
-    void show(boolean isCursorVisible) {
-        if (isCursorVisible) {
-            mNavigationModeImageView.setImageResource(R.drawable.ic_spatial_navigation);
-        } else {
-            mNavigationModeImageView.setImageResource(R.drawable.ic_cursor_navigation);
-        }
+    void show() {
         mTooltipView.show(this);
+    }
+
+    void setCursorVisibility(boolean isCursorVisible) {
+        mNavigationModeImageView.setImageResource(isCursorVisible
+                        ? R.drawable.ic_spatial_navigation
+                        : R.drawable.ic_cursor_navigation);
     }
 
     void hide() {
