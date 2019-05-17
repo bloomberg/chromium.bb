@@ -107,6 +107,17 @@ let SelectToSpeak = function() {
 
   this.runContentScripts_();
   this.setUpEventListeners_();
+
+  /**
+   * Feature flag controlling STS language detection integration.
+   * @type {boolean}
+   */
+  this.enableLanguageDetectionIntegration_ = false;
+  // TODO(chrishall): do we want to (also?) expose this in preferences?
+  chrome.commandLinePrivate.hasSwitch(
+      'enable-experimental-accessibility-language-detection', (result) => {
+        this.enableLanguageDetectionIntegration_ = result;
+      });
 };
 
 /** @const {number} */
@@ -565,7 +576,9 @@ SelectToSpeak.prototype = {
   startSpeechQueue_: function(nodes, opt_startIndex, opt_endIndex) {
     this.prepareForSpeech_();
     for (var i = 0; i < nodes.length; i++) {
-      let nodeGroup = ParagraphUtils.buildNodeGroup(nodes, i);
+      let nodeGroup = ParagraphUtils.buildNodeGroup(
+          nodes, i, this.enableLanguageDetectionIntegration_);
+
       if (i == 0) {
         // We need to start in the middle of a node. Remove all text before
         // the start index so that it is not spoken.
@@ -608,7 +621,14 @@ SelectToSpeak.prototype = {
         continue;
       }
 
-      let options = this.prefsManager_.speechOptions();
+      let options = {};
+      /* Copy options so we can add lang below */
+      Object.assign(options, this.prefsManager_.speechOptions());
+      if (this.enableLanguageDetectionIntegration_ &&
+          nodeGroup.detectedLanguage) {
+        options.lang = nodeGroup.detectedLanguage;
+      }
+
       options.onEvent = (event) => {
         if (event.type == 'start' && nodeGroup.nodes.length > 0) {
           this.onStateChanged_(SelectToSpeakState.SPEAKING);

@@ -25,12 +25,17 @@ SpeechMonitor::~SpeechMonitor() {
 }
 
 std::string SpeechMonitor::GetNextUtterance() {
+  return GetNextUtteranceWithLanguage().first;
+}
+
+std::pair<std::string, std::string>
+SpeechMonitor::GetNextUtteranceWithLanguage() {
   if (utterance_queue_.empty()) {
     loop_runner_ = new content::MessageLoopRunner();
     loop_runner_->Run();
     loop_runner_ = NULL;
   }
-  std::string result = utterance_queue_.front();
+  std::pair<std::string, std::string> result = utterance_queue_.front();
   utterance_queue_.pop_front();
   return result;
 }
@@ -58,9 +63,9 @@ bool SpeechMonitor::SkipChromeVoxMessage(const std::string& message) {
       loop_runner_->Run();
       loop_runner_ = NULL;
     }
-    std::string result = utterance_queue_.front();
+    std::pair<std::string, std::string> result = utterance_queue_.front();
     utterance_queue_.pop_front();
-    if (result == message)
+    if (result.first == message)
       return true;
   }
   return false;
@@ -112,7 +117,8 @@ void SpeechMonitor::WillSpeakUtteranceWithVoice(
     return;
 
   VLOG(0) << "Speaking " << utterance->GetText();
-  utterance_queue_.push_back(utterance->GetText());
+  utterance_queue_.push_back(
+      std::make_pair(utterance->GetText(), utterance->GetLang()));
   if (loop_runner_.get())
     loop_runner_->Quit();
 }
