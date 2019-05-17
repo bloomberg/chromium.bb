@@ -106,7 +106,7 @@ class Video(IntegrationTest):
       self.assertEqual(1, original_kb_histogram['count'])
       self.assertEqual(1, compression_percent_histogram['count'])
       # Verify the total page size is 3 KB, and compression ratio.
-      self.assertGreaterEqual(3, original_kb_histogram['sum'])
+      self.assertLessEqual(3, original_kb_histogram['sum'])
       self.assertEqual(compression_percent_histogram['sum'],
                        compressed_full_content_length/ofcl*100)
       self.assertTrue(saw_range_response, 'No range request was seen in test!')

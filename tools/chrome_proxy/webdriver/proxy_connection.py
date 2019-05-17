@@ -14,6 +14,19 @@ from emulation_server import TLSResetHandler
 
 class ProxyConnection(IntegrationTest):
 
+  def VerifyWarmupHistogram(self, test_driver, is_secure_proxy):
+    is_histogram_found = False
+    for histogram_part in ['Core', 'NonCore']:
+      histogram_name = 'DataReductionProxy.WarmupURLFetcherCallback.' + \
+      'SuccessfulFetch.%s.%s' % (
+          'SecureProxy' if is_secure_proxy else 'InsecureProxy',
+        histogram_part)
+      histogram = test_driver.GetBrowserHistogram(histogram_name)
+      if histogram:
+        self.assertEqual(1, histogram['count'])
+        is_histogram_found = True
+    self.assertTrue(is_histogram_found)
+
   @ChromeVersionEqualOrAfterM(63)
   def testTLSInjectionAfterHandshake(self):
     port = common.GetOpenPort()
@@ -35,10 +48,11 @@ class ProxyConnection(IntegrationTest):
       self.assertEqual(2, len(responses))
       for response in responses:
         self.assertNotHasChromeProxyViaHeader(response)
-      self.assertTrue(t.SleepUntilHistogramHasEntry('DataReductionProxy.'
-        'InvalidResponseHeadersReceived.NetError'))
+      self.assertTrue(
+        t.SleepUntilHistogramHasEntry('DataReductionProxy.WarmupURL.NetError'))
+      self.VerifyWarmupHistogram(t, True)
 
-  @ChromeVersionEqualOrAfterM(75)
+  @ChromeVersionEqualOrAfterM(74)
   def testTCPReset(self):
     port = common.GetOpenPort()
     with TestDriver() as t:
@@ -63,9 +77,7 @@ class ProxyConnection(IntegrationTest):
       self.assertTrue(
         t.SleepUntilHistogramHasEntry('DataReductionProxy.WarmupURL.NetError',
           sleep_intervals=10))
-      histogram = t.GetBrowserHistogram('DataReductionProxy.'
-        'WarmupURLFetcherCallback.SuccessfulFetch.InsecureProxy.Core')
-      self.assertEqual(1, histogram['count'])
+      self.VerifyWarmupHistogram(t, False)
 
   @ChromeVersionEqualOrAfterM(63)
   def testTLSReset(self):
@@ -90,7 +102,7 @@ class ProxyConnection(IntegrationTest):
       for response in responses:
         self.assertNotHasChromeProxyViaHeader(response)
 
-  @ChromeVersionEqualOrAfterM(75)
+  @ChromeVersionEqualOrAfterM(74)
   def testTCPBlackhole(self):
     port = common.GetOpenPort()
     with TestDriver() as t:
@@ -118,9 +130,7 @@ class ProxyConnection(IntegrationTest):
           sleep_intervals=40))
 
       # Check the WarmupURL Callback was called.
-      histogram = t.GetBrowserHistogram('DataReductionProxy.'
-        'WarmupURLFetcherCallback.SuccessfulFetch.InsecureProxy.Core')
-      self.assertEqual(1, histogram['count'])
+      self.VerifyWarmupHistogram(t, False)
 
       # Verify DRP was not used.
       t.LoadURL('http://check.googlezip.net/test.html')
