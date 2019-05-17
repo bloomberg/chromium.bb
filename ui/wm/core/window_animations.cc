@@ -491,6 +491,8 @@ void AddLayerAnimationsForRotate(aura::Window* window, bool show) {
     observer->SetLastSequence(last_sequence);
     observer->DetachAndRecreateLayers();
   }
+
+  window->layer()->SetVisible(show);
 }
 
 void AnimateShowWindow_Rotate(aura::Window* window) {
