@@ -150,12 +150,17 @@ class SiteSuggestionsMediator implements MostVisitedSites.Observer,
                          Toast.LENGTH_SHORT)
                     .show();
 
-            // When we remove an item, reset the item count key first
+            // When we remove an item, reset the item count key first.
             int itemCount =
                     getItemCount(mModel.get(SiteSuggestionsCoordinator.SUGGESTIONS_KEY).size() - 1);
             mModel.set(SiteSuggestionsCoordinator.ITEM_COUNT_KEY, itemCount);
             // Actually remove the suggestion.
             mModel.get(SiteSuggestionsCoordinator.SUGGESTIONS_KEY).remove(suggestion);
+            if (itemCount == 1) {
+                // If we removed everything except "All Apps", reset the index to 0.
+                mModel.set(SiteSuggestionsCoordinator.INITIAL_INDEX_KEY, 0);
+                mModel.set(SiteSuggestionsCoordinator.CURRENT_INDEX_KEY, 0);
+            }
             // When removal of a site causes us to have fewer sites than we want to display, fetch
             // again.
             if (itemCount < MAX_DISPLAYED_TILES) {

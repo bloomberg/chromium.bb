@@ -275,38 +275,44 @@ class SiteSuggestionsLayoutManager extends RecyclerView.LayoutManager {
      */
     private void resizeViews() {
         int leftOffset = 0;
+        final int defaultIconSize =
+                mContext.getResources().getDimensionPixelSize(R.dimen.most_likely_tile_size);
         // Amount of space to leave between items such that it would take up all available width.
         final int horizontalSpacer =
-                (int) ((getWidth()
-                               - SUM_FACTORS
-                                       * mContext.getResources().getDimensionPixelSize(
-                                               R.dimen.most_likely_tile_size))
-                        / (MAX_TILES - 1));
+                (int) ((getWidth() - SUM_FACTORS * defaultIconSize) / (MAX_TILES - 1));
 
-        for (int i = 0; i < Math.min(getChildCount(), MAX_TILES); i++) {
-            View child = getChildAt(i);
+        // Number of "empty" spaces to leave on the left side.
+        // This helps ensure that mFocusPosition is laid out in the center even if there are
+        // no elements to the left of it.
+        int leftSpaceCount =
+                (SCALE_FACTORS.length / 2) - mFocusPosition + findFirstVisibleItemPosition();
+        int leftDecrement = leftSpaceCount;
 
-            // Scale according to position.
-            ViewGroup.LayoutParams params = child.getLayoutParams();
-            int iconSize = (int) (mContext.getResources().getDimensionPixelSize(
-                                          R.dimen.most_likely_tile_size)
-                    * SCALE_FACTORS[i]);
-            params.height = iconSize;
-            params.width = iconSize;
-            child.setLayoutParams(params);
+        for (int i = 0; i < Math.min(getChildCount() + leftSpaceCount, MAX_TILES); i++) {
+            int iconSize = (int) (defaultIconSize * SCALE_FACTORS[i]);
+            int decoratedChildWidth = iconSize;
+            if (leftDecrement == 0) {
+                View child = getChildAt(i - leftSpaceCount);
 
-            // Offset the top so that it's centered vertically.
-            int topOffset =
-                    (mContext.getResources().getDimensionPixelSize(R.dimen.most_likely_tile_size)
-                            - iconSize)
-                    / 2;
+                // Scale according to position.
+                ViewGroup.LayoutParams params = child.getLayoutParams();
 
-            measureChildWithMargins(child, 0, 0);
-            int decoratedChildWidth = getDecoratedMeasuredWidth(child);
-            int decoratedChildHeight = getDecoratedMeasuredHeight(child);
+                params.height = iconSize;
+                params.width = iconSize;
+                child.setLayoutParams(params);
 
-            layoutDecoratedWithMargins(child, leftOffset, topOffset,
-                    leftOffset + decoratedChildWidth, topOffset + decoratedChildHeight);
+                // Offset the top so that it's centered vertically.
+                int topOffset = (defaultIconSize - iconSize) / 2;
+
+                measureChildWithMargins(child, 0, 0);
+                decoratedChildWidth = getDecoratedMeasuredWidth(child);
+                int decoratedChildHeight = getDecoratedMeasuredHeight(child);
+
+                layoutDecoratedWithMargins(child, leftOffset, topOffset,
+                        leftOffset + decoratedChildWidth, topOffset + decoratedChildHeight);
+            } else {
+                leftDecrement--;
+            }
 
             // The next tile needs to be <horizontal spacer> padded away from this tile.
             leftOffset += decoratedChildWidth + horizontalSpacer;

@@ -133,6 +133,9 @@ class SiteSuggestionsAdapter extends ForwardingListObservable<PropertyKey>
 
         mModel.get(SUGGESTIONS_KEY).addObserver(this);
         mModel.addObserver(this);
+
+        // Initialize the titleView text.
+        onPropertyChanged(mModel, CURRENT_INDEX_KEY);
     }
 
     @Override
