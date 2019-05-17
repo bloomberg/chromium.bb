@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
-#include "base/win/windows_version.h"
 #include "build/build_config.h"
 #include "ui/base/ime/mock_input_method.h"
 #include "ui/base/ui_base_features.h"
@@ -60,10 +59,8 @@ std::unique_ptr<InputMethod> CreateInputMethod(
 #if defined(OS_CHROMEOS)
   return std::make_unique<InputMethodChromeOS>(delegate);
 #elif defined(OS_WIN)
-  if (base::FeatureList::IsEnabled(features::kTSFImeSupport) &&
-      base::win::GetVersion() > base::win::Version::WIN7) {
+  if (base::FeatureList::IsEnabled(features::kTSFImeSupport))
     return std::make_unique<InputMethodWinTSF>(delegate, widget);
-  }
   return std::make_unique<InputMethodWinImm32>(delegate, widget);
 #elif defined(OS_MACOSX)
   return std::make_unique<InputMethodMac>(delegate);
