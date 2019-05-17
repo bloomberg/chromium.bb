@@ -26,6 +26,7 @@ import android.security.NetworkSecurityPolicy;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
@@ -67,6 +68,8 @@ class AndroidNetworkLibrary {
 
     // Cached value indicating if app has ACCESS_NETWORK_STATE permission.
     private static Boolean sHaveAccessNetworkState;
+    // Cached value indicating if app has ACCESS_WIFI_STATE permission.
+    private static Boolean sHaveAccessWifiState;
 
     // Set of public DNS servers supporting DNS-over-HTTPS.
     private static final Set<InetAddress> sAutoDohServers = new HashSet<>();
@@ -274,17 +277,27 @@ class AndroidNetworkLibrary {
      */
     @CalledByNative
     public static String getWifiSSID() {
-        final Intent intent = ContextUtils.getApplicationContext().registerReceiver(
-                null, new IntentFilter(WifiManager.NETWORK_STATE_CHANGED_ACTION));
-        if (intent != null) {
-            final WifiInfo wifiInfo = intent.getParcelableExtra(WifiManager.EXTRA_WIFI_INFO);
-            if (wifiInfo != null) {
-                final String ssid = wifiInfo.getSSID();
-                // On Android M+, the platform APIs may return "<unknown ssid>" as the SSID if the
-                // app does not have sufficient permissions. In that case, return an empty string.
-                if (ssid != null && !ssid.equals("<unknown ssid>")) {
-                    return ssid;
-                }
+        WifiInfo wifiInfo = null;
+        // On Android P and above, the WifiInfo cannot be obtained through broadcast.
+        if (haveAccessWifiState()) {
+            WifiManager wifiManager =
+                    (WifiManager) ContextUtils.getApplicationContext().getSystemService(
+                            Context.WIFI_SERVICE);
+            wifiInfo = wifiManager.getConnectionInfo();
+        } else {
+            final Intent intent = ContextUtils.getApplicationContext().registerReceiver(
+                    null, new IntentFilter(WifiManager.NETWORK_STATE_CHANGED_ACTION));
+            if (intent != null) {
+                wifiInfo = intent.getParcelableExtra(WifiManager.EXTRA_WIFI_INFO);
+            }
+        }
+
+        if (wifiInfo != null) {
+            final String ssid = wifiInfo.getSSID();
+            // On Android M+, the platform APIs may return "<unknown ssid>" as the SSID if the
+            // app does not have sufficient permissions. In that case, return an empty string.
+            if (ssid != null && !ssid.equals("<unknown ssid>")) {
+                return ssid;
             }
         }
         return "";
@@ -386,13 +399,25 @@ class AndroidNetworkLibrary {
         // This could be racy if called on multiple threads, but races will
         // end in the same result so it's not a problem.
         if (sHaveAccessNetworkState == null) {
-            sHaveAccessNetworkState =
-                    Boolean.valueOf(ContextUtils.getApplicationContext().checkPermission(
-                                            Manifest.permission.ACCESS_NETWORK_STATE,
-                                            Process.myPid(), Process.myUid())
-                            == PackageManager.PERMISSION_GRANTED);
+            sHaveAccessNetworkState = Boolean.valueOf(
+                    ApiCompatibilityUtils.checkPermission(ContextUtils.getApplicationContext(),
+                            Manifest.permission.ACCESS_NETWORK_STATE, Process.myPid(),
+                            Process.myUid())
+                    == PackageManager.PERMISSION_GRANTED);
         }
         return sHaveAccessNetworkState;
+    }
+
+    private static boolean haveAccessWifiState() {
+        // This could be racy if called on multiple threads, but races will
+        // end in the same result so it's not a problem.
+        if (sHaveAccessWifiState == null) {
+            sHaveAccessWifiState = Boolean.valueOf(
+                    ApiCompatibilityUtils.checkPermission(ContextUtils.getApplicationContext(),
+                            Manifest.permission.ACCESS_WIFI_STATE, Process.myPid(), Process.myUid())
+                    == PackageManager.PERMISSION_GRANTED);
+        }
+        return sHaveAccessWifiState;
     }
 
     /**
