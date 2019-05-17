@@ -174,6 +174,10 @@ the PaintArtifactCompositor. This approach of using foreign layers starts using
 much of the new PaintArtifactCompositor logic (e.g., converting blink property
 trees to cc property trees) without changing how compositing decisions are made.
 
+[Debugging blink objects](https://docs.google.com/document/d/1vgQY11pxRQUDAufxSsc2xKyQCKGPftZ5wZnjY2El4w8/view)
+has information about dumping the paint and compositing datastructures for
+debugging.
+
 
 ### Current compositing algorithm (CompositeBeforePaint)
 
@@ -305,6 +309,9 @@ from layout
   | to compositor
   v
 ```
+[Debugging blink objects](https://docs.google.com/document/d/1vgQY11pxRQUDAufxSsc2xKyQCKGPftZ5wZnjY2El4w8/view)
+has information about dumping these paint and compositing datastructures for
+debugging.
 
 ### New compositing algorithm (CompositeAfterPaint)
 
@@ -363,6 +370,9 @@ from layout
   | to compositor
   v
 ```
+[Debugging blink objects](https://docs.google.com/document/d/1vgQY11pxRQUDAufxSsc2xKyQCKGPftZ5wZnjY2El4w8/view)
+has information about dumping these paint and compositing datastructures for
+debugging.
 
 ### Comparison of the current and new compositing algorithms
 
