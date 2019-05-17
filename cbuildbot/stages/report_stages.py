@@ -397,9 +397,7 @@ class BuildReexecutionFinishedStage(generic_stages.BuilderStage,
                   build='%s/%s' % (self._run.config.name, old_version),
                   board=self._run.config.boards[0],
                   debug=False, # For tryjob
-                  suite=suite_config.suite,
-                  priority=suite_config.priority,
-                  pool=suite_config.pool)
+                  suite=suite_config.suite)
             else:
               commands.AbortHWTests(self._run.config.name, old_version,
                                     debug, suite_config.suite)

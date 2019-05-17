@@ -1696,7 +1696,7 @@ def AbortHWTests(config_type_or_name, version, debug, suite=''):
     logging.warning('AbortHWTests failed', exc_info=True)
 
 
-def AbortSkylabHWTests(build, board, debug, suite, priority, pool=None):
+def AbortSkylabHWTests(build, board, debug, suite):
   """Abort the specified hardware tests for the given bot(s).
 
   Args:
@@ -1704,13 +1704,8 @@ def AbortSkylabHWTests(build, board, debug, suite, priority, pool=None):
     board: The name of the board.
     debug: Whether we are in debug mode.
     suite: Name of the Autotest suite.
-    priority: A string like 'CQ' to represent the suite's priority.
-    pool: The name of the pool.
   """
   abort_args = ['--board', board, '--suite_name', suite, '--build', build]
-
-  if pool is not None:
-    abort_args += ['--pool', pool]
 
   try:
     cmd = [_SKYLAB_ABORT_SUITE_PATH] + abort_args
@@ -1718,7 +1713,6 @@ def AbortSkylabHWTests(build, board, debug, suite, priority, pool=None):
         'swarming_server': topology.topology.get(
             topology.CHROME_SWARMING_PROXY_HOST_KEY),
         'task_name': '-'.join(['abort', build, suite]),
-        'priority': constants.SKYLAB_HWTEST_PRIORITIES_MAP[str(priority)],
         'dimensions': [('os', 'Ubuntu-14.04'),
                        ('pool', SKYLAB_SUITE_BOT_POOL)],
         'print_status_updates': True,
