@@ -1658,6 +1658,9 @@ const char kWebAppCreateInQuickLaunchBar[] =
 // will be launched.
 const char kWebAppInstallForceList[] = "profile.web_app.install.forcelist";
 
+// Dictionary that maps web app ids to installation metrics used by UMA.
+const char kWebAppInstallMetrics[] = "web_app_install_metrics";
+
 // Dictionary that maps web app URLs to Chrome extension IDs.
 const char kWebAppsExtensionIDs[] = "web_apps.extension_ids";
 

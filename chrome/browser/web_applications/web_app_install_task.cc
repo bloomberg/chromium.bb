@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/components/install_bounce_metric.h"
 #include "chrome/browser/web_applications/components/install_finalizer.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_data_retriever.h"
@@ -344,6 +345,8 @@ void WebAppInstallTask::OnInstallFinalizedCreateShortcuts(
   }
 
   RecordAppBanner(web_contents(), web_app_info->app_url);
+  RecordWebAppInstallationTimestamp(profile_->GetPrefs(), app_id,
+                                    install_source_);
 
   // TODO(loyso): Implement |create_shortcuts| to skip OS shortcuts creation.
   auto create_shortcuts_callback = base::BindOnce(

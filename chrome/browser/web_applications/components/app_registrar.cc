@@ -4,7 +4,9 @@
 
 #include "chrome/browser/web_applications/components/app_registrar.h"
 
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/app_registrar_observer.h"
+#include "chrome/browser/web_applications/components/install_bounce_metric.h"
 
 namespace web_app {
 
@@ -23,11 +25,14 @@ void AppRegistrar::RemoveObserver(const AppRegistrarObserver* observer) {
 void AppRegistrar::NotifyWebAppInstalled(const AppId& app_id) {
   for (AppRegistrarObserver& observer : observers_)
     observer.OnWebAppInstalled(app_id);
+  // TODO(alancutter): Call RecordWebAppInstallation here when we get access to
+  // the WebappInstallSource in this event.
 }
 
 void AppRegistrar::NotifyWebAppUninstalled(const AppId& app_id) {
   for (AppRegistrarObserver& observer : observers_)
     observer.OnWebAppUninstalled(app_id);
+  RecordWebAppUninstallation(profile()->GetPrefs(), app_id);
 }
 
 void AppRegistrar::NotifyAppRegistrarShutdown() {

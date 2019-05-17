@@ -35,6 +35,7 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/web_applications/components/install_bounce_metric.h"
 #include "chrome/browser/web_applications/components/web_app_icon_downloader.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
@@ -449,6 +450,8 @@ void BookmarkAppHelper::FinishInstallation(const Extension* extension) {
   }
 
   web_app::RecordAppBanner(contents_, web_app_info_.app_url);
+  web_app::RecordWebAppInstallationTimestamp(profile_->GetPrefs(),
+                                             extension->id(), install_source_);
 
   // TODO(ortuno): Make adding a shortcut to the applications menu independent
   // from adding a shortcut to desktop.

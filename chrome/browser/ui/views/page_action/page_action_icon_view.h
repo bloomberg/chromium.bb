@@ -68,6 +68,8 @@ class PageActionIconView : public IconLabelBubbleView {
 
   SkColor GetLabelColorForTesting() const;
 
+  void ExecuteForTesting();
+
  protected:
   enum ExecuteSource {
     EXECUTE_SOURCE_MOUSE,

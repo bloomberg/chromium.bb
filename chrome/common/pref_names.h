@@ -572,6 +572,7 @@ extern const char kWebAppCreateInAppsMenu[];
 extern const char kWebAppCreateInQuickLaunchBar[];
 
 extern const char kWebAppInstallForceList[];
+extern const char kWebAppInstallMetrics[];
 
 extern const char kWebAppsExtensionIDs[];
 extern const char kSystemWebAppLastUpdateVersion[];

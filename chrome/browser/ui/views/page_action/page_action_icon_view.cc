@@ -74,6 +74,11 @@ SkColor PageActionIconView::GetLabelColorForTesting() const {
   return label()->enabled_color();
 }
 
+void PageActionIconView::ExecuteForTesting() {
+  DCHECK(GetVisible());
+  OnExecuting(EXECUTE_SOURCE_MOUSE);
+}
+
 SkColor PageActionIconView::GetTextColor() const {
   return GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_TextfieldDefaultColor);

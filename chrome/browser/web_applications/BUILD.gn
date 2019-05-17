@@ -138,6 +138,7 @@ source_set("web_applications_on_extensions") {
     "//chrome/browser/web_applications/extensions",
     "//chrome/common",
     "//components/keyed_service/content",
+    "//components/pref_registry:pref_registry",
     "//extensions/browser",
   ]
 }

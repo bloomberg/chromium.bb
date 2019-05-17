@@ -5,19 +5,26 @@
 #include "chrome/browser/ui/views/page_action/pwa_install_view.h"
 
 #include "base/files/file_path.h"
+#include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/banners/test_app_banner_manager_desktop.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
 #include "chrome/browser/ui/views/page_action/omnibox_page_action_icon_container_view.h"
+#include "chrome/browser/ui/web_applications/web_app_dialog_utils.h"
+#include "chrome/browser/web_applications/components/install_bounce_metric.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/common/referrer.h"
+#include "extensions/browser/extension_system.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "ui/gfx/color_utils.h"
 
@@ -93,6 +100,60 @@ class PwaInstallViewBrowserTest : public InProcessBrowserTest {
         url, content::Referrer(), WindowOpenDisposition::CURRENT_TAB,
         ui::PAGE_TRANSITION_TYPED, false /* is_renderer_initiated */));
     app_banner_manager_->WaitForInstallableCheckTearDown();
+  }
+
+  const web_app::AppId& ExecutePwaInstallIcon() {
+    chrome::SetAutoAcceptPWAInstallConfirmationForTesting(true);
+
+    const web_app::AppId* app_id = nullptr;
+    base::RunLoop run_loop;
+    web_app::SetInstalledCallbackForTesting(base::BindLambdaForTesting(
+        [&app_id, &run_loop](const web_app::AppId& installed_app_id,
+                             web_app::InstallResultCode code) {
+          app_id = &installed_app_id;
+          run_loop.Quit();
+        }));
+
+    pwa_install_view_->ExecuteForTesting();
+
+    run_loop.Run();
+
+    chrome::SetAutoAcceptPWAInstallConfirmationForTesting(false);
+
+    return *app_id;
+  }
+
+  // Tests that we measure when a user uninstalls a PWA within a "bounce" period
+  // of time after installation.
+  void TestInstallBounce(base::TimeDelta install_duration, int expected_count) {
+    base::HistogramTester histogram_tester;
+    base::Time test_time = base::Time::Now();
+
+    NavigateToURL(GetInstallableAppURL());
+    ASSERT_TRUE(app_banner_manager_->WaitForInstallableCheck());
+
+    web_app::SetInstallBounceMetricTimeForTesting(test_time);
+
+    const web_app::AppId& app_id = ExecutePwaInstallIcon();
+
+    web_app::SetInstallBounceMetricTimeForTesting(test_time + install_duration);
+
+    ASSERT_TRUE(
+        extensions::ExtensionSystem::Get(browser()->profile())
+            ->extension_service()
+            ->UninstallExtension(
+                app_id, extensions::UNINSTALL_REASON_FOR_TESTING, nullptr));
+
+    web_app::SetInstallBounceMetricTimeForTesting(base::nullopt);
+
+    std::vector<base::Bucket> expected_buckets;
+    if (expected_count > 0) {
+      expected_buckets.push_back(
+          {static_cast<int>(WebappInstallSource::OMNIBOX_INSTALL_ICON),
+           expected_count});
+    }
+    EXPECT_EQ(histogram_tester.GetAllSamples("Webapp.Install.InstallBounce"),
+              expected_buckets);
   }
 
  protected:
@@ -257,4 +318,12 @@ IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest, TextContrast) {
   EXPECT_EQ(SkColorGetA(label_color), SK_AlphaOPAQUE);
   EXPECT_GT(color_utils::GetContrastRatio(omnibox_background, label_color),
             color_utils::kMinimumReadableContrastRatio);
+}
+
+IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest, BouncedInstallMeasured) {
+  TestInstallBounce(base::TimeDelta::FromMinutes(50), 1);
+}
+
+IN_PROC_BROWSER_TEST_F(PwaInstallViewBrowserTest, BouncedInstallIgnored) {
+  TestInstallBounce(base::TimeDelta::FromMinutes(70), 0);
 }
