@@ -78,7 +78,9 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   AtkHyperlink* GetAtkHyperlink();
 
   void ScrollToPoint(AtkCoordType atk_coord_type, int x, int y);
+#if defined(ATK_CHECK_VERSION) && ATK_CHECK_VERSION(2, 30, 0)
   base::Optional<gfx::Point> CalculateScrollToPoint(AtkScrollType scroll_type);
+#endif  // ATK_230
 
   // Misc helpers
   void GetFloatAttributeInGValue(ax::mojom::FloatAttribute attr, GValue* value);

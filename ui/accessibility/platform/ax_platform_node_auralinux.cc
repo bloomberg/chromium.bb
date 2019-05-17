@@ -36,6 +36,10 @@
 #include "ui/accessibility/platform/ax_platform_text_boundary.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
+#if defined(ATK_CHECK_VERSION) && ATK_CHECK_VERSION(2, 10, 0)
+#define ATK_210
+#endif
+
 #if defined(ATK_CHECK_VERSION) && ATK_CHECK_VERSION(2, 12, 0)
 #define ATK_212
 #endif
@@ -232,12 +236,12 @@ AXCoordinateSystem AtkCoordTypeToAXCoordinateSystem(
       return AXCoordinateSystem::kScreen;
     case ATK_XY_WINDOW:
       return AXCoordinateSystem::kRootFrame;
-#ifdef ATK_230
+#if defined(ATK_230)
     case ATK_XY_PARENT:
       // AXCoordinateSystem does not support parent coordinates.
       NOTIMPLEMENTED();
       return AXCoordinateSystem::kFrame;
-#endif  // ATK_230
+#endif
     default:
       return AXCoordinateSystem::kScreen;
   }
@@ -548,7 +552,7 @@ gboolean GrabFocus(AtkComponent* atk_component) {
   return obj->GrabFocus();
 }
 
-#if ATK_CHECK_VERSION(2, 30, 0)
+#if defined(ATK_230)
 gboolean ScrollTo(AtkComponent* component, AtkScrollType scroll_type) {
   AXPlatformNodeAuraLinux* obj =
       AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(component));
@@ -586,7 +590,7 @@ void Init(AtkComponentIface* iface) {
   iface->get_size = GetSize;
   iface->ref_accessible_at_point = RefAccesibleAtPoint;
   iface->grab_focus = GrabFocus;
-#if ATK_CHECK_VERSION(2, 30, 0)
+#if defined(ATK_230)
   if (SupportsAtkComponentScrollingInterface()) {
     iface->scroll_to = ScrollTo;
     iface->scroll_to_point = ScrollToPoint;
@@ -1179,7 +1183,7 @@ gboolean AddSelection(AtkText* atk_text, int start_offset, int end_offset) {
   return SetSelection(atk_text, 0, start_offset, end_offset);
 }
 
-#if ATK_CHECK_VERSION(2, 10, 0)
+#if defined(ATK_210)
 char* GetStringAtOffset(AtkText* atk_text,
                         int offset,
                         AtkTextGranularity atk_granularity,
@@ -1196,7 +1200,7 @@ char* GetStringAtOffset(AtkText* atk_text,
   return GetTextWithBoundaryType(atk_text, offset, boundary, start_offset,
                                  end_offset);
 }
-#endif  // ATK_CHECK_VERSION(2, 10, 0)
+#endif
 
 gfx::Rect GetUnclippedParentHypertextRangeBoundsRect(
     AXPlatformNodeDelegate* ax_platform_node_delegate,
@@ -1234,7 +1238,7 @@ void GetCharacterExtents(AtkText* atk_text,
       AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(atk_text));
   if (obj) {
     switch (coordinate_type) {
-#ifdef ATK_230
+#if defined(ATK_230)
       case ATK_XY_PARENT:
         rect = GetUnclippedParentHypertextRangeBoundsRect(obj->GetDelegate(),
                                                           offset, offset + 1);
@@ -1273,7 +1277,7 @@ void GetRangeExtents(AtkText* atk_text,
       AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(atk_text));
   if (obj) {
     switch (coordinate_type) {
-#ifdef ATK_230
+#if defined(ATK_230)
       case ATK_XY_PARENT:
         rect = GetUnclippedParentHypertextRangeBoundsRect(
             obj->GetDelegate(), start_offset, end_offset);
@@ -1313,7 +1317,7 @@ void Init(AtkTextIface* iface) {
   iface->remove_selection = RemoveSelection;
   iface->set_selection = SetSelection;
 
-#if ATK_CHECK_VERSION(2, 10, 0)
+#if defined(ATK_210)
   iface->get_string_at_offset = GetStringAtOffset;
 #endif
 }
@@ -1774,7 +1778,7 @@ const GInterfaceInfo Info = {reinterpret_cast<GInterfaceInitFunc>(Init),
 
 }  // namespace atk_table_cell
 
-#endif  // ifdef ATK_212
+#endif  // ATK_212
 
 namespace atk_object {
 
@@ -3790,9 +3794,11 @@ void AXPlatformNodeAuraLinux::ScrollToPoint(AtkCoordType atk_coord_type,
     case ATK_XY_WINDOW:
       scroll_to += GetParentFrameOriginInScreenCoordinates();
       break;
+#if defined(ATK_230)
     case ATK_XY_PARENT:
       scroll_to += GetParentOriginInScreenCoordinates();
       break;
+#endif
   }
 
   ui::AXActionData action_data;
@@ -3814,6 +3820,7 @@ AXPlatformNodeAuraLinux::FindTopmostDocumentAncestor() {
   return document;
 }
 
+#if defined(ATK_230)
 base::Optional<gfx::Point> AXPlatformNodeAuraLinux::CalculateScrollToPoint(
     AtkScrollType scroll_type) {
   AXPlatformNodeAuraLinux* document = FindTopmostDocumentAncestor();
@@ -3846,5 +3853,6 @@ base::Optional<gfx::Point> AXPlatformNodeAuraLinux::CalculateScrollToPoint(
   NOTREACHED();
   return base::nullopt;
 }
+#endif
 
 }  // namespace ui
