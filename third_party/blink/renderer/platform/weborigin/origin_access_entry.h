@@ -51,6 +51,7 @@ class PLATFORM_EXPORT OriginAccessEntry {
   // '[2001:db8:85a3::8a2e:370:7334]', not '2001:db8:85a3::8a2e:370:7334').
   // An entry with a higher priority will win in case there are two conflicting
   // entries.
+  // TODO(crbug.com/936900): Take a port.
   OriginAccessEntry(
       const String& protocol,
       const String& host,
@@ -59,8 +60,8 @@ class PLATFORM_EXPORT OriginAccessEntry {
           network::mojom::CorsOriginAccessMatchPriority::kDefaultPriority);
   OriginAccessEntry(OriginAccessEntry&& from);
 
-  // 'matchesOrigin' requires a protocol match (e.g. 'http' != 'https').
-  // 'matchesDomain' relaxes this constraint.
+  // MatchesOrigin requires a protocol match (e.g. 'http' != 'https') and a port
+  // match. MatchesDomain relaxes these constraints.
   network::cors::OriginAccessEntry::MatchResult MatchesOrigin(
       const SecurityOrigin&) const;
   network::cors::OriginAccessEntry::MatchResult MatchesDomain(

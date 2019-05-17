@@ -122,8 +122,10 @@ void OriginAccessList::SetForOrigin(
   Patterns& patterns_for_type = patterns_map[type];
   patterns_for_type.clear();
   for (const auto& pattern : patterns) {
+    // TODO(crbug.com/936900): Use pattern->port when it's ready.
     patterns_for_type.push_back(OriginAccessEntry(
-        pattern->protocol, pattern->domain, pattern->mode, pattern->priority));
+        pattern->protocol, pattern->domain, OriginAccessEntry::kPortAny,
+        pattern->mode, pattern->priority));
   }
   if (patterns_map[MapType::kAllowPatterns].empty() &&
       patterns_map[MapType::kBlockPatterns].empty()) {
@@ -140,8 +142,10 @@ void OriginAccessList::AddForOrigin(const url::Origin& source_origin,
   DCHECK(!source_origin.opaque());
 
   const std::string source = source_origin.Serialize();
+  // TODO(crbug.com/936900): Use pattern->port when it's ready.
   (*map)[source][type].push_back(OriginAccessEntry(
-      pattern->protocol, pattern->domain, pattern->mode, pattern->priority));
+      pattern->protocol, pattern->domain, OriginAccessEntry::kPortAny,
+      pattern->mode, pattern->priority));
 }
 
 // static

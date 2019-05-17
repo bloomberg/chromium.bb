@@ -29,6 +29,8 @@ namespace cors {
 // to control if the matching methods accept a partial match.
 class COMPONENT_EXPORT(NETWORK_CPP) OriginAccessEntry final {
  public:
+  static constexpr int32_t kPortAny = -1;
+
   enum MatchResult {
     kMatchesOrigin,
     kMatchesOriginButIsPublicSuffix,
@@ -43,15 +45,16 @@ class COMPONENT_EXPORT(NETWORK_CPP) OriginAccessEntry final {
   // The priority argument is used to break ties when multiple entries match.
   OriginAccessEntry(const std::string& protocol,
                     const std::string& host,
+                    const int32_t port,
                     const mojom::CorsOriginAccessMatchMode mode,
                     const mojom::CorsOriginAccessMatchPriority priority =
                         mojom::CorsOriginAccessMatchPriority::kDefaultPriority);
   OriginAccessEntry(OriginAccessEntry&& from);
 
-  // 'matchesOrigin' requires a protocol match (e.g. 'http' != 'https').
-  // 'matchesDomain' relaxes this constraint.
+  // MatchesOrigin requires a protocol match (e.g. 'http' != 'https'), and a
+  // port match. MatchesDomain relaxes these constraints.
   MatchResult MatchesOrigin(const url::Origin& origin) const;
-  MatchResult MatchesDomain(const url::Origin& domain) const;
+  MatchResult MatchesDomain(const std::string& domain) const;
 
   bool host_is_ip_address() const { return host_is_ip_address_; }
   mojom::CorsOriginAccessMatchPriority priority() const { return priority_; }
@@ -65,6 +68,7 @@ class COMPONENT_EXPORT(NETWORK_CPP) OriginAccessEntry final {
  private:
   const std::string protocol_;
   const std::string host_;
+  const int32_t port_;
   const mojom::CorsOriginAccessMatchMode mode_;
   const mojom::CorsOriginAccessMatchPriority priority_;
   const bool host_is_ip_address_;

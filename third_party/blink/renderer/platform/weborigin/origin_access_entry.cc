@@ -40,8 +40,9 @@ OriginAccessEntry::OriginAccessEntry(
     const String& host,
     network::mojom::CorsOriginAccessMatchMode match_mode,
     network::mojom::CorsOriginAccessMatchPriority priority)
-    : private_(std::string(protocol.Utf8().data()),
-               std::string(host.Utf8().data()),
+    : private_(protocol.Ascii().data(),
+               host.Ascii().data(),
+               network::cors::OriginAccessEntry::kPortAny,
                match_mode,
                priority) {}
 
@@ -54,7 +55,7 @@ network::cors::OriginAccessEntry::MatchResult OriginAccessEntry::MatchesOrigin(
 
 network::cors::OriginAccessEntry::MatchResult OriginAccessEntry::MatchesDomain(
     const SecurityOrigin& origin) const {
-  return private_.MatchesDomain(origin.ToUrlOrigin());
+  return private_.MatchesDomain(origin.Host().Ascii().data());
 }
 
 bool OriginAccessEntry::HostIsIPAddress() const {

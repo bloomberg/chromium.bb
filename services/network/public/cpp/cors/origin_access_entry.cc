@@ -34,10 +34,12 @@ bool IsSubdomainOfHost(const std::string& subdomain, const std::string& host) {
 OriginAccessEntry::OriginAccessEntry(
     const std::string& protocol,
     const std::string& host,
+    const int32_t port,
     const mojom::CorsOriginAccessMatchMode mode,
     const mojom::CorsOriginAccessMatchPriority priority)
     : protocol_(protocol),
       host_(host),
+      port_(port),
       mode_(mode),
       priority_(priority),
       host_is_ip_address_(url::HostIsIPAddress(host)),
@@ -78,19 +80,23 @@ OriginAccessEntry::MatchResult OriginAccessEntry::MatchesOrigin(
   if (protocol_ != origin.scheme())
     return kDoesNotMatchOrigin;
 
-  return MatchesDomain(origin);
+  if (port_ != kPortAny && port_ != origin.port())
+    return kDoesNotMatchOrigin;
+
+  return MatchesDomain(origin.host());
 }
 
 OriginAccessEntry::MatchResult OriginAccessEntry::MatchesDomain(
-    const url::Origin& origin) const {
+    const std::string& domain) const {
   // Special case: Include subdomains and empty host means "all hosts, including
   // ip addresses".
   if (mode_ != mojom::CorsOriginAccessMatchMode::kDisallowSubdomains &&
-      host_.empty())
+      host_.empty()) {
     return kMatchesOrigin;
+  }
 
   // Exact match.
-  if (host_ == origin.host())
+  if (host_ == domain)
     return kMatchesOrigin;
 
   // Don't try to do subdomain matching on IP addresses.
@@ -103,7 +109,7 @@ OriginAccessEntry::MatchResult OriginAccessEntry::MatchesDomain(
       return kDoesNotMatchOrigin;
 
     case mojom::CorsOriginAccessMatchMode::kAllowSubdomains:
-      if (!IsSubdomainOfHost(origin.host(), host_))
+      if (!IsSubdomainOfHost(domain, host_))
         return kDoesNotMatchOrigin;
       break;
 
@@ -111,10 +117,10 @@ OriginAccessEntry::MatchResult OriginAccessEntry::MatchesDomain(
       // Fall back to a simple subdomain check if no registrable domain could
       // be found:
       if (registrable_domain_.empty()) {
-        if (!IsSubdomainOfHost(origin.host(), host_))
+        if (!IsSubdomainOfHost(domain, host_))
           return kDoesNotMatchOrigin;
-      } else if (registrable_domain_ != origin.host() &&
-                 !IsSubdomainOfHost(origin.host(), registrable_domain_)) {
+      } else if (registrable_domain_ != domain &&
+                 !IsSubdomainOfHost(domain, registrable_domain_)) {
         return kDoesNotMatchOrigin;
       }
       break;
@@ -128,6 +134,7 @@ OriginAccessEntry::MatchResult OriginAccessEntry::MatchesDomain(
 
 mojo::InlinedStructPtr<mojom::CorsOriginPattern>
 OriginAccessEntry::CreateCorsOriginPattern() const {
+  // TODO(crbug.com/936900): Pass |port_|.
   return mojom::CorsOriginPattern::New(protocol_, host_, mode_, priority_);
 }
 
