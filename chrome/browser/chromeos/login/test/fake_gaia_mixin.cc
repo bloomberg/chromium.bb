@@ -16,7 +16,6 @@ namespace chromeos {
 
 namespace {
 constexpr char kGAIAHost[] = "accounts.google.com";
-constexpr char kTestAllScopeAccessToken[] = "fake-all-scope-token";
 }  // namespace
 
 // static
@@ -26,6 +25,7 @@ const char FakeGaiaMixin::kFakeUserGaiaId[] = "fake-gaiaId";
 const char FakeGaiaMixin::kFakeAuthCode[] = "fake-auth-code";
 const char FakeGaiaMixin::kFakeRefreshToken[] = "fake-refresh-token";
 const char FakeGaiaMixin::kEmptyUserServices[] = "[]";
+const char FakeGaiaMixin::kFakeAllScopeAccessToken[] = "fake-all-scope-token";
 
 const char FakeGaiaMixin::kFakeSIDCookie[] = "fake-SID-cookie";
 const char FakeGaiaMixin::kFakeLSIDCookie[] = "fake-LSID-cookie";
@@ -55,7 +55,7 @@ void FakeGaiaMixin::SetupFakeGaiaForLogin(const std::string& user_email,
     fake_gaia_->MapEmailToGaiaId(user_email, gaia_id);
 
   FakeGaia::AccessTokenInfo token_info;
-  token_info.token = kTestAllScopeAccessToken;
+  token_info.token = kFakeAllScopeAccessToken;
   token_info.audience = GaiaUrls::GetInstance()->oauth2_chrome_client_id();
   token_info.email = user_email;
   token_info.any_scope = true;
@@ -80,7 +80,7 @@ void FakeGaiaMixin::SetupFakeGaiaForChildUser(const std::string& user_email,
 
   if (issue_any_scope_token) {
     FakeGaia::AccessTokenInfo all_scopes_token;
-    all_scopes_token.token = kTestAllScopeAccessToken;
+    all_scopes_token.token = kFakeAllScopeAccessToken;
     all_scopes_token.audience =
         GaiaUrls::GetInstance()->oauth2_chrome_client_id();
     all_scopes_token.email = user_email;

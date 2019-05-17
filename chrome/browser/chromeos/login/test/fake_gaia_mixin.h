@@ -28,6 +28,7 @@ class FakeGaiaMixin : public InProcessBrowserTestMixin {
   static const char kFakeAuthCode[];
   static const char kFakeRefreshToken[];
   static const char kEmptyUserServices[];
+  static const char kFakeAllScopeAccessToken[];
 
   // FakeGaia is configured to return these cookies for kFakeUserEmail.
   static const char kFakeSIDCookie[];
