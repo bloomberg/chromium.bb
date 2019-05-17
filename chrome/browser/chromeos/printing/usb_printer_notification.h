@@ -26,7 +26,7 @@ namespace chromeos {
 // according to its state and respond to the user's action.
 class UsbPrinterNotification : public message_center::NotificationObserver {
  public:
-  enum class Type { kEphemeral };
+  enum class Type { kEphemeral, kSaved };
 
   UsbPrinterNotification(const Printer& printer,
                          const std::string& notification_id,

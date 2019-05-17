@@ -94,6 +94,7 @@ void UsbPrinterNotification::ShowNotification() {
 void UsbPrinterNotification::UpdateContents() {
   switch (type_) {
     case Type::kEphemeral:
+    case Type::kSaved:
       notification_->set_title(l10n_util::GetStringUTF16(
           IDS_USB_PRINTER_NOTIFICATION_CONNECTED_TITLE));
       notification_->set_message(l10n_util::GetStringFUTF16(

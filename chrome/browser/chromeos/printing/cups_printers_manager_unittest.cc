@@ -306,13 +306,18 @@ class FakeUsbPrinterNotificationController
   void ShowEphemeralNotification(const Printer& printer) override {
     NOTIMPLEMENTED();
   }
+  void ShowSavedNotification(const Printer& printer) override {
+    open_notifications_.insert(printer.id());
+  }
   void RemoveNotification(const std::string& printer_id) override {
-    NOTIMPLEMENTED();
+    open_notifications_.erase(printer_id);
   }
   bool IsNotification(const std::string& printer_id) const override {
-    NOTIMPLEMENTED();
-    return false;
+    return open_notifications_.contains(printer_id);
   }
+
+ private:
+  base::flat_set<std::string> open_notifications_;
 };
 
 class CupsPrintersManagerTest : public testing::Test,

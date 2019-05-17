@@ -44,6 +44,20 @@ class UsbPrinterNotificationControllerImpl
     return base::ContainsKey(notifications_, printer_id);
   }
 
+  void ShowSavedNotification(const Printer& printer) override {
+    if (!base::FeatureList::IsEnabled(features::kStreamlinedUsbPrinterSetup)) {
+      return;
+    }
+
+    if (base::ContainsKey(notifications_, printer.id())) {
+      return;
+    }
+
+    notifications_[printer.id()] = std::make_unique<UsbPrinterNotification>(
+        printer, GetUniqueNotificationId(),
+        UsbPrinterNotification::Type::kSaved, profile_);
+  }
+
  private:
   std::string GetUniqueNotificationId() {
     return base::StringPrintf("usb_printer_notification_%d",
