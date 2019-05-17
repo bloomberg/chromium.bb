@@ -30,6 +30,10 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension_set.h"
 
+#if defined(OS_MACOSX)
+#include "chrome/common/mac/app_mode_common.h"
+#endif
+
 using extensions::Extension;
 
 namespace {
@@ -38,7 +42,7 @@ namespace {
 // need to be recreated. This might happen when we change various aspects of app
 // shortcuts like command-line flags or associated icons, binaries, etc.
 #if defined(OS_MACOSX)
-const int kCurrentAppShortcutsVersion = 5;
+const int kCurrentAppShortcutsVersion = APP_SHIM_VERSION_NUMBER;
 #else
 const int kCurrentAppShortcutsVersion = 0;
 #endif

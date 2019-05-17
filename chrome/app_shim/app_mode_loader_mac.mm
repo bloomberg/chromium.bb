@@ -31,12 +31,6 @@ namespace {
 
 typedef int (*StartFun)(const app_mode::ChromeAppModeInfo*);
 
-// The name of the entry point in the Framework. This name is dynamically
-// queried at shim launch to allow the shim to connect and run.
-// The function is versioned in case we need to obsolete and rebuild the shim
-// before it loads, e.g. see https://crbug.com/561205.
-const char kStartFunName[] = "ChromeAppModeStart_v5";
-
 int LoadFrameworkAndStart(int argc, char** argv) {
   using base::SysNSStringToUTF8;
   using base::SysNSStringToUTF16;
@@ -101,13 +95,11 @@ int LoadFrameworkAndStart(int argc, char** argv) {
 
   // ** 3: Read information from the Chrome bundle.
   base::FilePath executable_path;
-  base::FilePath version_path;
-  base::FilePath framework_shlib_path;
-  if (!app_mode::GetChromeBundleInfo(cr_bundle_path,
-                                     cr_version_str.value(),
-                                     &executable_path,
-                                     &version_path,
-                                     &framework_shlib_path)) {
+  base::FilePath framework_path;
+  base::FilePath framework_dylib_path;
+  if (!app_mode::GetChromeBundleInfo(cr_bundle_path, cr_version_str.value(),
+                                     &executable_path, &framework_path,
+                                     &framework_dylib_path)) {
     LOG(FATAL) << "Couldn't ready Chrome bundle info";
   }
   base::FilePath app_mode_bundle_path =
@@ -136,10 +128,11 @@ int LoadFrameworkAndStart(int argc, char** argv) {
 
   // ** 5: Open the framework.
   StartFun ChromeAppModeStart = NULL;
-  void* cr_dylib = dlopen(framework_shlib_path.value().c_str(), RTLD_LAZY);
+  void* cr_dylib = dlopen(framework_dylib_path.value().c_str(), RTLD_LAZY);
   if (cr_dylib) {
     // Find the entry point.
-    ChromeAppModeStart = (StartFun)dlsym(cr_dylib, kStartFunName);
+    ChromeAppModeStart =
+        (StartFun)dlsym(cr_dylib, APP_SHIM_ENTRY_POINT_NAME_STRING);
     if (!ChromeAppModeStart)
       LOG(ERROR) << "Couldn't get entry point: " << dlerror();
   } else {
@@ -149,7 +142,7 @@ int LoadFrameworkAndStart(int argc, char** argv) {
   // ** 6: Fill in ChromeAppModeInfo and call into Chrome's framework.
   if (ChromeAppModeStart) {
     // Ensure that the strings pointed to by |info| outlive |info|.
-    const std::string version_path_utf8 = version_path.AsUTF8Unsafe();
+    const std::string framework_path_utf8 = framework_path.AsUTF8Unsafe();
     const std::string cr_bundle_path_utf8 = cr_bundle_path.AsUTF8Unsafe();
     const std::string app_mode_bundle_path_utf8 =
         app_mode_bundle_path.AsUTF8Unsafe();
@@ -157,11 +150,9 @@ int LoadFrameworkAndStart(int argc, char** argv) {
         plist_user_data_dir.AsUTF8Unsafe();
     const std::string profile_dir_utf8 = profile_dir.AsUTF8Unsafe();
     app_mode::ChromeAppModeInfo info;
-    info.major_version = app_mode::kCurrentChromeAppModeInfoMajorVersion;
-    info.minor_version = app_mode::kCurrentChromeAppModeInfoMinorVersion;
     info.argc = argc;
     info.argv = argv;
-    info.chrome_versioned_path = version_path_utf8.c_str();
+    info.chrome_framework_path = framework_path_utf8.c_str();
     info.chrome_outer_bundle_path = cr_bundle_path_utf8.c_str();
     info.app_mode_bundle_path = app_mode_bundle_path_utf8.c_str();
     info.app_mode_id = app_mode_id.c_str();
