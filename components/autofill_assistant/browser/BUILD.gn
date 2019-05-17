@@ -162,6 +162,7 @@ source_set("unit_tests") {
     "actions/mock_action_delegate.cc",
     "actions/mock_action_delegate.h",
     "actions/prompt_action_unittest.cc",
+    "actions/wait_for_dom_action_unittest.cc",
     "batch_element_checker_unittest.cc",
     "controller_unittest.cc",
     "element_area_unittest.cc",

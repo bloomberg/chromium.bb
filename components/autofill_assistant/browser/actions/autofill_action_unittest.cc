@@ -116,9 +116,8 @@ class AutofillActionTest : public testing::Test {
     ON_CALL(mock_action_delegate_, GetPersonalDataManager)
         .WillByDefault(Return(personal_data_manager_.get()));
     ON_CALL(mock_action_delegate_, RunElementChecks)
-        .WillByDefault(Invoke([this](BatchElementChecker* checker,
-                                     base::OnceCallback<void()> all_done) {
-          checker->Run(&mock_web_controller_, std::move(all_done));
+        .WillByDefault(Invoke([this](BatchElementChecker* checker) {
+          checker->Run(&mock_web_controller_);
         }));
     ON_CALL(mock_action_delegate_, OnShortWaitForElement(_, _))
         .WillByDefault(RunOnceCallback<1>(true));

@@ -87,10 +87,9 @@ void PromptAction::CheckPreconditions() {
                              base::BindOnce(&PromptAction::OnPreconditionResult,
                                             weak_ptr_factory_.GetWeakPtr(), i));
   }
-  delegate_->RunElementChecks(
-      precondition_checker_.get(),
-      base::BindOnce(&PromptAction::OnPreconditionChecksDone,
-                     weak_ptr_factory_.GetWeakPtr()));
+  precondition_checker_->AddAllDoneCallback(base::BindOnce(
+      &PromptAction::OnPreconditionChecksDone, weak_ptr_factory_.GetWeakPtr()));
+  delegate_->RunElementChecks(precondition_checker_.get());
 }
 
 void PromptAction::OnPreconditionResult(size_t choice_index, bool result) {
@@ -156,9 +155,9 @@ void PromptAction::CheckAutoSelect() {
         selector, base::BindOnce(&PromptAction::OnAutoSelectElementExists,
                                  weak_ptr_factory_.GetWeakPtr(), i));
   }
-  delegate_->RunElementChecks(auto_select_checker_.get(),
-                              base::BindOnce(&PromptAction::OnAutoSelectDone,
-                                             weak_ptr_factory_.GetWeakPtr()));
+  auto_select_checker_->AddAllDoneCallback(base::BindOnce(
+      &PromptAction::OnAutoSelectDone, weak_ptr_factory_.GetWeakPtr()));
+  delegate_->RunElementChecks(auto_select_checker_.get());
 }
 
 void PromptAction::OnAutoSelectElementExists(int choice_index, bool exists) {

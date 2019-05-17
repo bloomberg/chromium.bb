@@ -99,9 +99,9 @@ void ScriptTracker::CheckScripts() {
     TerminatePendingChecks();
     return;
   }
-  batch_element_checker_->Run(delegate_->GetWebController(),
-                              base::BindOnce(&ScriptTracker::OnCheckDone,
-                                             weak_ptr_factory_.GetWeakPtr()));
+  batch_element_checker_->AddAllDoneCallback(base::BindOnce(
+      &ScriptTracker::OnCheckDone, weak_ptr_factory_.GetWeakPtr()));
+  batch_element_checker_->Run(delegate_->GetWebController());
 }
 
 void ScriptTracker::ExecuteScript(const std::string& script_path,

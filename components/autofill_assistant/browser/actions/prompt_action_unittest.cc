@@ -40,9 +40,8 @@ class PromptActionTest : public testing::Test {
         .WillByDefault(RunOnceCallback<1>(false, ""));
 
     ON_CALL(mock_action_delegate_, RunElementChecks)
-        .WillByDefault(Invoke([this](BatchElementChecker* checker,
-                                     base::OnceCallback<void()> all_done) {
-          checker->Run(&mock_web_controller_, std::move(all_done));
+        .WillByDefault(Invoke([this](BatchElementChecker* checker) {
+          checker->Run(&mock_web_controller_);
         }));
     ON_CALL(mock_action_delegate_, Prompt(_))
         .WillByDefault(Invoke([this](std::unique_ptr<std::vector<Chip>> chips) {

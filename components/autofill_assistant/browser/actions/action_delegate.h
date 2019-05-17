@@ -47,8 +47,7 @@ class ActionDelegate {
   virtual std::string GetStatusMessage() = 0;
 
   // Checks one or more elements.
-  virtual void RunElementChecks(BatchElementChecker* checker,
-                                base::OnceCallback<void()> all_done) = 0;
+  virtual void RunElementChecks(BatchElementChecker* checker) = 0;
 
   // Wait for a short time for a given selector to appear.
   //
@@ -63,27 +62,17 @@ class ActionDelegate {
   virtual void ShortWaitForElement(const Selector& selector,
                                    base::OnceCallback<void(bool)> callback) = 0;
 
-  enum class SelectorPredicate {
-    // The selector matches elements
-    kMatches,
-
-    // The selector doesn't match any elements
-    kDoesntMatch
-  };
-
-  // Wait for up to |max_wait_time| for the element |selectors| to match
-  // element(s) on the page, then call |callback| with true if at least an
-  // element matched, false otherwise.
-  //
-  // |selector_predicate| specifies the condition that must be satisfied for
-  // WaitForDom to return successfully. It applies to the given |selector|.
+  // Wait for up to |max_wait_time| for element conditions to match on the page,
+  // then call |callback| with a successful status if at least an element
+  // matched, an error status otherwise.
   //
   // If |allow_interrupt| interrupts can run while waiting.
   virtual void WaitForDom(
       base::TimeDelta max_wait_time,
       bool allow_interrupt,
-      SelectorPredicate selector_predicate,
-      const Selector& selector,
+      base::RepeatingCallback<void(BatchElementChecker*,
+                                   base::OnceCallback<void(bool)>)>
+          check_elements,
       base::OnceCallback<void(ProcessedActionStatusProto)> callback) = 0;
 
   // Click or tap the element given by |selector| on the web page.

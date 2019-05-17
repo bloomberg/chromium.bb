@@ -96,15 +96,15 @@ class ScriptExecutor : public ActionDelegate,
   void OnNavigationStateChanged() override;
 
   // Override ActionDelegate:
-  void RunElementChecks(BatchElementChecker* checker,
-                        base::OnceCallback<void()> all_done) override;
+  void RunElementChecks(BatchElementChecker* checker) override;
   void ShortWaitForElement(const Selector& selector,
                            base::OnceCallback<void(bool)> callback) override;
   void WaitForDom(
       base::TimeDelta max_wait_time,
       bool allow_interrupt,
-      ActionDelegate::SelectorPredicate selector_predicate,
-      const Selector& selector,
+      base::RepeatingCallback<void(BatchElementChecker*,
+                                   base::OnceCallback<void(bool)>)>
+          check_elements,
       base::OnceCallback<void(ProcessedActionStatusProto)> callback) override;
   void SetStatusMessage(const std::string& message) override;
   std::string GetStatusMessage() override;
@@ -200,12 +200,15 @@ class ScriptExecutor : public ActionDelegate,
                                              const std::set<std::string>&)>;
 
     // |main_script_| must not be null and outlive this instance.
-    WaitForDomOperation(ScriptExecutor* main_script,
-                        base::TimeDelta max_wait_time,
-                        bool allow_interrupt,
-                        ActionDelegate::SelectorPredicate selector_predicate,
-                        const Selector& selectors,
-                        WaitForDomOperation::Callback callback);
+    WaitForDomOperation(
+        ScriptExecutor* main_script,
+        ScriptExecutorDelegate* delegate,
+        base::TimeDelta max_wait_time,
+        bool allow_interrupt,
+        base::RepeatingCallback<void(BatchElementChecker*,
+                                     base::OnceCallback<void(bool)>)>
+            check_elements,
+        WaitForDomOperation::Callback callback);
     ~WaitForDomOperation() override;
 
     void Run();
@@ -244,13 +247,15 @@ class ScriptExecutor : public ActionDelegate,
 
     // if save_pre_interrupt_state_ is set, attempt to scroll the page back to
     // the original area.
-    void RestorePreInterruptScroll(bool element_found);
+    void RestorePreInterruptScroll();
 
     ScriptExecutor* main_script_;
+    ScriptExecutorDelegate* delegate_;
     const base::TimeDelta max_wait_time_;
     const bool allow_interrupt_;
-    const ActionDelegate::SelectorPredicate selector_predicate_;
-    const Selector selector_;
+    base::RepeatingCallback<void(BatchElementChecker*,
+                                 base::OnceCallback<void(bool)>)>
+        check_elements_;
     WaitForDomOperation::Callback callback_;
 
     std::unique_ptr<BatchElementChecker> batch_element_checker_;
@@ -292,6 +297,9 @@ class ScriptExecutor : public ActionDelegate,
   void ProcessAction(Action* action);
   void GetNextActions();
   void OnProcessedAction(std::unique_ptr<ProcessedActionProto> action);
+  void CheckElementMatches(const Selector& selector,
+                           BatchElementChecker* checker,
+                           base::OnceCallback<void(bool)> callback);
   void OnShortWaitForElement(base::OnceCallback<void(bool)> callback,
                              bool element_found,
                              const Result* interrupt_result,

@@ -22,8 +22,7 @@ class MockActionDelegate : public ActionDelegate {
   MockActionDelegate();
   ~MockActionDelegate() override;
 
-  MOCK_METHOD2(RunElementChecks,
-               void(BatchElementChecker*, base::OnceCallback<void()>));
+  MOCK_METHOD1(RunElementChecks, void(BatchElementChecker*));
 
   void ShortWaitForElement(const Selector& selector,
                            base::OnceCallback<void(bool)> callback) override {
@@ -36,19 +35,20 @@ class MockActionDelegate : public ActionDelegate {
   void WaitForDom(
       base::TimeDelta max_wait_time,
       bool allow_interrupt,
-      ActionDelegate::SelectorPredicate selector_predicate,
-      const Selector& selector,
+      base::RepeatingCallback<void(BatchElementChecker*,
+                                   base::OnceCallback<void(bool)>)>
+          check_elements,
       base::OnceCallback<void(ProcessedActionStatusProto)> callback) override {
-    OnWaitForDom(max_wait_time, allow_interrupt, selector_predicate, selector,
-                 callback);
+    OnWaitForDom(max_wait_time, allow_interrupt, check_elements, callback);
   }
 
-  MOCK_METHOD5(OnWaitForDom,
-               void(base::TimeDelta,
-                    bool,
-                    ActionDelegate::SelectorPredicate,
-                    const Selector&,
-                    base::OnceCallback<void(ProcessedActionStatusProto)>&));
+  MOCK_METHOD4(
+      OnWaitForDom,
+      void(base::TimeDelta,
+           bool,
+           base::RepeatingCallback<void(BatchElementChecker*,
+                                        base::OnceCallback<void(bool)>)>&,
+           base::OnceCallback<void(ProcessedActionStatusProto)>&));
 
   MOCK_METHOD1(SetStatusMessage, void(const std::string& message));
   MOCK_METHOD0(GetStatusMessage, std::string());

@@ -153,11 +153,11 @@ void AutofillAction::CheckRequiredFields(ActionDelegate* delegate,
         base::BindOnce(&AutofillAction::OnGetRequiredFieldValue,
                        weak_ptr_factory_.GetWeakPtr(), i));
   }
-  delegate->RunElementChecks(
-      batch_element_checker_.get(),
+  batch_element_checker_->AddAllDoneCallback(
       base::BindOnce(&AutofillAction::OnCheckRequiredFieldsDone,
                      weak_ptr_factory_.GetWeakPtr(), base::Unretained(delegate),
                      allow_fallback));
+  delegate->RunElementChecks(batch_element_checker_.get());
 }
 
 void AutofillAction::OnGetRequiredFieldValue(int required_fields_index,
