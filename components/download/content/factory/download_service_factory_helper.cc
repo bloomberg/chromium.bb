@@ -4,6 +4,8 @@
 
 #include "components/download/content/factory/download_service_factory_helper.h"
 
+#include <utility>
+
 #include "base/files/file_path.h"
 #include "build/build_config.h"
 #include "components/download/content/factory/navigation_monitor_factory.h"
@@ -97,7 +99,6 @@ std::unique_ptr<DownloadService> CreateDownloadServiceInternal(
 // Create download service for normal profile.
 std::unique_ptr<DownloadService> BuildDownloadService(
     SimpleFactoryKey* simple_factory_key,
-    PrefService* prefs,
     std::unique_ptr<DownloadClientMap> clients,
     network::NetworkConnectionTracker* network_connection_tracker,
     const base::FilePath& storage_dir,

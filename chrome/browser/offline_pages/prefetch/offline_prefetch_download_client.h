@@ -5,12 +5,13 @@
 #ifndef CHROME_BROWSER_OFFLINE_PAGES_PREFETCH_OFFLINE_PREFETCH_DOWNLOAD_CLIENT_H_
 #define CHROME_BROWSER_OFFLINE_PAGES_PREFETCH_OFFLINE_PREFETCH_DOWNLOAD_CLIENT_H_
 
+#include <string>
+#include <vector>
+
 #include "base/macros.h"
 #include "components/download/public/background_service/client.h"
 
-namespace content {
-class BrowserContext;
-}  // namespace content
+class SimpleFactoryKey;
 
 namespace download {
 struct CompletionInfo;
@@ -23,7 +24,7 @@ class PrefetchDownloader;
 
 class OfflinePrefetchDownloadClient : public download::Client {
  public:
-  explicit OfflinePrefetchDownloadClient(content::BrowserContext* context);
+  explicit OfflinePrefetchDownloadClient(SimpleFactoryKey* simple_factory_key);
   ~OfflinePrefetchDownloadClient() override;
 
  private:
@@ -45,7 +46,7 @@ class OfflinePrefetchDownloadClient : public download::Client {
 
   PrefetchDownloader* GetPrefetchDownloader() const;
 
-  content::BrowserContext* context_;
+  SimpleFactoryKey* simple_factory_key_;
 
   DISALLOW_COPY_AND_ASSIGN(OfflinePrefetchDownloadClient);
 };

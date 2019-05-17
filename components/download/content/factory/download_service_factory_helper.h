@@ -15,7 +15,6 @@
 #include "components/download/public/background_service/clients.h"
 
 class SimpleFactoryKey;
-class PrefService;
 
 namespace network {
 class NetworkConnectionTracker;
@@ -40,7 +39,6 @@ class TaskScheduler;
 // |background_task_runner| will be used for all disk reads and writes.
 std::unique_ptr<DownloadService> BuildDownloadService(
     SimpleFactoryKey* simple_factory_key,
-    PrefService* prefs,
     std::unique_ptr<DownloadClientMap> clients,
     network::NetworkConnectionTracker* network_connection_tracker,
     const base::FilePath& storage_dir,
