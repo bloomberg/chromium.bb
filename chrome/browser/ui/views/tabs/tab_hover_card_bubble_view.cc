@@ -232,6 +232,8 @@ class TabHoverCardBubbleView::WidgetSlideAnimationDelegate
     slide_animation_->Show();
   }
 
+  void StopAnimation() { slide_animation_->Stop(); }
+
  private:
   void AnimationProgressed(const gfx::Animation* animation) override {
     double value = gfx::Tween::CalculateValue(
@@ -375,6 +377,7 @@ void TabHoverCardBubbleView::UpdateAndShow(Tab* tab) {
 void TabHoverCardBubbleView::FadeOutToHide() {
   if (!widget_->IsVisible())
     return;
+  slide_animation_delegate_->StopAnimation();
   delayed_show_timer_.Stop();
   last_visible_timestamp_ = base::TimeTicks::Now();
   if (disable_animations_for_testing_) {

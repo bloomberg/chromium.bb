@@ -1155,7 +1155,7 @@ void TabStrip::RemoveTabAt(content::WebContents* contents,
 
   UpdateAccessibleTabIndices();
 
-  UpdateHoverCard(nullptr, false);
+  UpdateHoverCard(nullptr, /* should_show */ false);
 
   for (TabStripObserver& observer : observers_)
     observer.OnTabRemoved(model_index);
@@ -1180,7 +1180,7 @@ void TabStrip::SetTabData(int model_index, TabRendererData data) {
   tab->SetData(std::move(data));
 
   if (HoverCardIsShowingForTab(tab))
-    UpdateHoverCard(tab, true);
+    UpdateHoverCard(tab, /* should_show */ true);
 
   if (pinned_state_changed) {
     if (touch_layout_) {
@@ -1328,7 +1328,7 @@ void TabStrip::SetSelection(const ui::ListSelectionModel& new_selection) {
       ->NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
   selected_tabs_ = new_selection;
 
-  UpdateHoverCard(nullptr, false);
+  UpdateHoverCard(nullptr, /* should_show */ false);
 
   // Notify all tabs whose selected state changed.
   for (auto tab_index :
@@ -1462,7 +1462,7 @@ void TabStrip::CloseTab(Tab* tab, CloseTabSource source) {
       AddMessageLoopObserver();
   }
 
-  UpdateHoverCard(nullptr, false);
+  UpdateHoverCard(nullptr, /* should_show */ false);
   controller_->CloseTab(model_index, source);
 }
 
@@ -2224,6 +2224,8 @@ void TabStrip::RemoveTabFromViewModel(int index) {
   Tab* closing_tab = tab_at(index);
   bool closing_tab_was_active = closing_tab->IsActive();
 
+  UpdateHoverCard(closing_tab, /* should_show */ false);
+
   // We still need to paint the tab until we actually remove it. Put it
   // in tabs_closing_map_ so we can find it.
   tabs_closing_map_[index].push_back(closing_tab);
@@ -2855,7 +2857,7 @@ void TabStrip::OnMouseEntered(const ui::MouseEvent& event) {
 }
 
 void TabStrip::OnMouseExited(const ui::MouseEvent& event) {
-  UpdateHoverCard(nullptr, false);
+  UpdateHoverCard(nullptr, /* should_show */ false);
 }
 
 void TabStrip::AddedToWidget() {

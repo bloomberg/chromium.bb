@@ -168,6 +168,7 @@ Tab::Tab(TabController* controller)
 
 Tab::~Tab() {
   close_button_->RemoveObserver(this);
+  controller_->UpdateHoverCard(this, /* should_show */ false);
 }
 
 void Tab::AnimationEnded(const gfx::Animation* animation) {
@@ -375,7 +376,7 @@ void Tab::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 }
 
 bool Tab::OnKeyPressed(const ui::KeyEvent& event) {
-  controller_->UpdateHoverCard(this, false);
+  controller_->UpdateHoverCard(this, /* should_show */ false);
   if (event.key_code() == ui::VKEY_SPACE && !IsSelected()) {
     controller_->SelectTab(this, event);
     return true;
@@ -395,7 +396,7 @@ bool IsSelectionModifierDown(const ui::MouseEvent& event) {
 }  // namespace
 
 bool Tab::OnMousePressed(const ui::MouseEvent& event) {
-  controller_->UpdateHoverCard(this, false);
+  controller_->UpdateHoverCard(this, /* should_show */ false);
   controller_->OnMouseEventInTab(this, event);
 
   // Allow a right click from touch to drag, which corresponds to a long click.
@@ -490,7 +491,7 @@ void Tab::OnMouseEntered(const ui::MouseEvent& event) {
   tab_style_->ShowHover(TabStyle::ShowHoverStyle::kSubtle);
   UpdateForegroundColors();
   Layout();
-  controller_->UpdateHoverCard(this, true);
+  controller_->UpdateHoverCard(this, /* should_show */ true);
 }
 
 void Tab::OnMouseExited(const ui::MouseEvent& event) {
@@ -501,7 +502,7 @@ void Tab::OnMouseExited(const ui::MouseEvent& event) {
 }
 
 void Tab::OnGestureEvent(ui::GestureEvent* event) {
-  controller_->UpdateHoverCard(this, false);
+  controller_->UpdateHoverCard(this, /* should_show */ false);
   switch (event->type()) {
     case ui::ET_GESTURE_TAP_DOWN: {
       // TAP_DOWN is only dispatched for the first touch point.
@@ -596,7 +597,7 @@ void Tab::AddedToWidget() {
 }
 
 void Tab::OnFocus() {
-  controller_->UpdateHoverCard(this, true);
+  controller_->UpdateHoverCard(this, /* should_show */ true);
 }
 
 void Tab::OnThemeChanged() {
@@ -604,7 +605,7 @@ void Tab::OnThemeChanged() {
 }
 
 void Tab::OnViewFocused(views::View* observed_view) {
-  controller_->UpdateHoverCard(this, true);
+  controller_->UpdateHoverCard(this, /* should_show */ true);
 }
 
 void Tab::SetClosing(bool closing) {
