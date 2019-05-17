@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
@@ -87,6 +88,11 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
   std::vector<std::string> keystore_keys_;
 
   Cryptographer cryptographer_;
+
+  // TODO(crbug/922900): consider using checked ObserverList once
+  // SyncEncryptionHandlerImpl is no longer needed or consider refactoring old
+  // implementation to use checked ObserverList as well.
+  base::ObserverList<SyncEncryptionHandler::Observer>::Unchecked observers_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

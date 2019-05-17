@@ -16,7 +16,9 @@ namespace syncer {
 
 namespace {
 
+using testing::_;
 using testing::Eq;
+using testing::NotNull;
 
 const char kNigoriKeyName[] = "nigori-key";
 
@@ -45,6 +47,26 @@ class MockNigoriLocalChangeProcessor : public NigoriLocalChangeProcessor {
                base::WeakPtr<ModelTypeControllerDelegate>());
 };
 
+class MockObserver : public SyncEncryptionHandler::Observer {
+ public:
+  MockObserver() = default;
+  ~MockObserver() = default;
+
+  MOCK_METHOD3(OnPassphraseRequired,
+               void(PassphraseRequiredReason,
+                    const KeyDerivationParams&,
+                    const sync_pb::EncryptedData&));
+  MOCK_METHOD0(OnPassphraseAccepted, void());
+  MOCK_METHOD2(OnBootstrapTokenUpdated,
+               void(const std::string&, BootstrapTokenType type));
+  MOCK_METHOD2(OnEncryptedTypesChanged, void(ModelTypeSet, bool));
+  MOCK_METHOD0(OnEncryptionComplete, void());
+  MOCK_METHOD1(OnCryptographerStateChanged, void(Cryptographer*));
+  MOCK_METHOD2(OnPassphraseTypeChanged, void(PassphraseType, base::Time));
+  MOCK_METHOD1(OnLocalSetPassphraseEncryption,
+               void(const SyncEncryptionHandler::NigoriState&));
+};
+
 class NigoriSyncBridgeImplTest : public testing::Test {
  protected:
   NigoriSyncBridgeImplTest() {
@@ -52,10 +74,14 @@ class NigoriSyncBridgeImplTest : public testing::Test {
     processor_ = processor.get();
     bridge_ = std::make_unique<NigoriSyncBridgeImpl>(std::move(processor),
                                                      &encryptor_);
+    bridge_->AddObserver(&observer_);
   }
+
+  ~NigoriSyncBridgeImplTest() override { bridge_->RemoveObserver(&observer_); }
 
   NigoriSyncBridgeImpl* bridge() { return bridge_.get(); }
   MockNigoriLocalChangeProcessor* processor() { return processor_; }
+  MockObserver* observer() { return &observer_; }
 
   // Builds NigoriSpecifics with following fields:
   // 1. encryption_keybag contains all keys derived from |keybag_keys_params|
@@ -100,6 +126,7 @@ class NigoriSyncBridgeImplTest : public testing::Test {
   std::unique_ptr<NigoriSyncBridgeImpl> bridge_;
   // Ownership transferred to |bridge_|.
   MockNigoriLocalChangeProcessor* processor_;
+  testing::NiceMock<MockObserver> observer_;
 };
 
 MATCHER_P(CanDecryptWith, key_params, "") {
@@ -156,7 +183,8 @@ MATCHER(HasKeystoreNigori, "") {
 // keystore_decryptor_token. Client receives such Nigori if initialization of
 // Nigori node was done after keystore was introduced and no key rotations
 // happened.
-TEST_F(NigoriSyncBridgeImplTest, ShouldAcceptKeysFromKeystoreNigori) {
+TEST_F(NigoriSyncBridgeImplTest,
+       ShouldAcceptKeysFromKeystoreNigoriAndNotifyObservers) {
   const std::string kRawKeystoreKey = "raw_keystore_key";
   const KeyParams kKeystoreKeyParams = KeystoreKeyParams(kRawKeystoreKey);
   EntityData entity_data;
@@ -166,6 +194,8 @@ TEST_F(NigoriSyncBridgeImplTest, ShouldAcceptKeysFromKeystoreNigori) {
       /*keystore_key_params=*/kKeystoreKeyParams);
 
   EXPECT_TRUE(bridge()->SetKeystoreKeys({kRawKeystoreKey}));
+
+  EXPECT_CALL(*observer(), OnCryptographerStateChanged(NotNull()));
   EXPECT_THAT(bridge()->MergeSyncData(std::move(entity_data)),
               Eq(base::nullopt));
 

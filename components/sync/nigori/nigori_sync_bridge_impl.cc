@@ -111,17 +111,20 @@ NigoriSyncBridgeImpl::~NigoriSyncBridgeImpl() {
 
 void NigoriSyncBridgeImpl::AddObserver(Observer* observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  NOTIMPLEMENTED();
+  observers_.AddObserver(observer);
 }
 
 void NigoriSyncBridgeImpl::RemoveObserver(Observer* observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  NOTIMPLEMENTED();
+  observers_.RemoveObserver(observer);
 }
 
 void NigoriSyncBridgeImpl::Init() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   NOTIMPLEMENTED();
+  // TODO(crbug.com/922900): notify observers about cryptographer change in
+  // case UpdateLocalState() is not called in this function (i.e.
+  // initialization implemented in constructor).
 }
 
 void NigoriSyncBridgeImpl::SetEncryptionPassphrase(
@@ -259,23 +262,26 @@ base::Optional<ModelError> NigoriSyncBridgeImpl::UpdateLocalState(
   if (cryptographer_.CanDecrypt(keybag)) {
     // We need to ensure, that |cryptographer_| has all keys.
     cryptographer_.InstallKeys(keybag);
-    return base::nullopt;
+  } else {
+    // We weren't able to decrypt the keybag with current |cryptographer_|
+    // state, but we still can decrypt it with |keystore_keys_|. Note: it's a
+    // normal situation, once we perform initial sync or key rotation was
+    // performed by another client.
+    cryptographer_.SetPendingKeys(keybag);
+    base::Optional<std::string> serialized_keystore_decryptor =
+        DecryptKeystoreDecryptor(keystore_keys_,
+                                 specifics.keystore_decryptor_token(),
+                                 cryptographer_.encryptor());
+    if (!serialized_keystore_decryptor ||
+        !cryptographer_.ImportNigoriKey(*serialized_keystore_decryptor) ||
+        !cryptographer_.is_ready()) {
+      return ModelError(FROM_HERE,
+                        "Failed to decrypt pending keys using the keystore "
+                        "decryptor token.");
+    }
   }
-  // We weren't able to decrypt the keybag with current |cryptographer_| state,
-  // but we still can decrypt it with |keystore_keys_|. Note: it's a normal
-  // situation, once we perform initial sync or key rotation was performed by
-  // another client.
-  cryptographer_.SetPendingKeys(keybag);
-  base::Optional<std::string> serialized_keystore_decryptor =
-      DecryptKeystoreDecryptor(keystore_keys_,
-                               specifics.keystore_decryptor_token(),
-                               cryptographer_.encryptor());
-  if (!serialized_keystore_decryptor ||
-      !cryptographer_.ImportNigoriKey(*serialized_keystore_decryptor) ||
-      !cryptographer_.is_ready()) {
-    return ModelError(FROM_HERE,
-                      "Failed to decrypt pending keys using the keystore "
-                      "decryptor token.");
+  for (auto& observer : observers_) {
+    observer.OnCryptographerStateChanged(&cryptographer_);
   }
   return base::nullopt;
 }
