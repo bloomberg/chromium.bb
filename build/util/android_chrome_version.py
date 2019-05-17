@@ -90,14 +90,8 @@ ARCH_CHOICES = ARCH_VERSION_CODE_DIFF.keys()
 
 We choose 5 because it won't conflict with values in
 ANDROID_CHROME_APK_VERSION_CODE_DIFFS
-
-We also increment BUILD (branch) number to ensure that the version code is
-higher for the next build than any build with the same BUILD value (even if the
-other builds have a higher PATCH value). This is needed for release logistics
-when working with unreleased Android versions: upgrading android will install
-the chrome build (the "next" build) that uses the new android sdk.
 """
-NEXT_BUILD_VERSION_CODE_DIFF = 100005
+NEXT_BUILD_VERSION_CODE_DIFF = 5
 
 """For 64-bit architectures, some packages have multiple targets with version
 codes that differ by the second-to-last digit (the architecture digit). This is
