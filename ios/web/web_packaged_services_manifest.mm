@@ -29,6 +29,7 @@ const service_manager::Manifest& GetWebPackagedServicesManifest() {
                            .CanRegisterOtherServiceInstances(true)
                            .Build())
           .RequireCapability(mojom::kBrowserServiceName, "")
+          .RequireCapability(mojom::kSystemServiceName, "")
           .Build()
           .Amend(GetWebClient()
                      ->GetServiceManifestOverlay(

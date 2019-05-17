@@ -134,6 +134,25 @@ const base::Feature kNetworkServiceDedicatedThread{
 #endif
 };
 
+service_manager::Manifest GetContentSystemManifest() {
+  // TODO(https://crbug.com/961869): This is a bit of a temporary hack so that
+  // we can make the global service instance a singleton. For now we just mirror
+  // the per-BrowserContext manifest (formerly also used for the global
+  // singleton instance), sans packaged services, since those are only meant to
+  // be tied to a BrowserContext. The per-BrowserContext service should go away
+  // soon, and then this can be removed.
+  service_manager::Manifest manifest = GetContentBrowserManifest();
+  manifest.Amend(GetContentClient()
+                     ->browser()
+                     ->GetServiceManifestOverlay(mojom::kBrowserServiceName)
+                     .value_or(service_manager::Manifest()));
+  manifest.service_name = mojom::kSystemServiceName;
+  manifest.packaged_services.clear();
+  manifest.options.instance_sharing_policy =
+      service_manager::Manifest::InstanceSharingPolicy::kSingleton;
+  return manifest;
+}
+
 void DestroyConnectorOnIOThread() { g_io_thread_connector.Get().reset(); }
 
 // Launch a process for a service once its sandbox type is known.
@@ -465,7 +484,8 @@ ServiceManagerContext::ServiceManagerContext(
   std::vector<service_manager::Manifest> manifests{
       GetContentBrowserManifest(),          GetContentGpuManifest(),
       GetContentPackagedServicesManifest(), GetContentPluginManifest(),
-      GetContentRendererManifest(),         GetContentUtilityManifest(),
+      GetContentRendererManifest(),         GetContentSystemManifest(),
+      GetContentUtilityManifest(),
   };
   for (auto& manifest : manifests) {
     base::Optional<service_manager::Manifest> overlay =
@@ -501,18 +521,18 @@ ServiceManagerContext::ServiceManagerContext(
       base::BindRepeating(&ServiceManagerContext::OnUnhandledServiceRequest,
                           weak_ptr_factory_.GetWeakPtr()));
 
-  service_manager::mojom::ServicePtrInfo root_browser_service;
-  ServiceManagerConnection::SetForProcess(
-      ServiceManagerConnection::Create(mojo::MakeRequest(&root_browser_service),
-                                       service_manager_thread_task_runner_));
-  auto* browser_connection = ServiceManagerConnection::GetForProcess();
+  mojo::PendingRemote<service_manager::mojom::Service> system_remote;
+  ServiceManagerConnection::SetForProcess(ServiceManagerConnection::Create(
+      system_remote.InitWithNewPipeAndPassReceiver(),
+      service_manager_thread_task_runner_));
+  auto* system_connection = ServiceManagerConnection::GetForProcess();
 
   mojo::Remote<service_manager::mojom::ProcessMetadata> metadata;
   packaged_services_connection_->GetConnector()->RegisterServiceInstance(
-      service_manager::Identity(mojom::kBrowserServiceName,
-                                service_manager::kSystemInstanceGroup,
-                                base::Token{}, base::Token::CreateRandom()),
-      std::move(root_browser_service), metadata.BindNewPipeAndPassReceiver());
+      service_manager::Identity(mojom::kSystemServiceName,
+                                base::Token::CreateRandom(), base::Token{},
+                                base::Token::CreateRandom()),
+      std::move(system_remote), metadata.BindNewPipeAndPassReceiver());
   metadata->SetPID(base::GetCurrentProcId());
 
   RegisterInProcessService(
@@ -563,7 +583,7 @@ ServiceManagerContext::ServiceManagerContext(
   // This is safe to assign directly from any thread, because
   // ServiceManagerContext must be constructed before anyone can call
   // GetConnectorForIOThread().
-  g_io_thread_connector.Get() = browser_connection->GetConnector()->Clone();
+  g_io_thread_connector.Get() = system_connection->GetConnector()->Clone();
 
   ContentBrowserClient::OutOfProcessServiceMap out_of_process_services;
   GetContentClient()->browser()->RegisterOutOfProcessServices(
@@ -702,9 +722,9 @@ bool ServiceManagerContext::HasValidProcessForProcessGroup(
 
 // static
 void ServiceManagerContext::StartBrowserConnection() {
-  auto* browser_connection = ServiceManagerConnection::GetForProcess();
-  RegisterCommonBrowserInterfaces(browser_connection);
-  browser_connection->Start();
+  auto* system_connection = ServiceManagerConnection::GetForProcess();
+  RegisterCommonBrowserInterfaces(system_connection);
+  system_connection->Start();
 
   if (base::FeatureList::IsEnabled(network::features::kNetworkService))
     return;

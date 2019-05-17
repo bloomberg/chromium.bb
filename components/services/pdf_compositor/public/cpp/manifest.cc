@@ -24,8 +24,8 @@ const service_manager::Manifest& GetPdfCompositorManifest() {
           .ExposeCapability(
               "compositor",
               service_manager::Manifest::InterfaceList<mojom::PdfCompositor>())
-          .RequireCapability("content_browser", "app")
-          .RequireCapability("content_browser", "sandbox_support")
+          .RequireCapability("content_system", "app")
+          .RequireCapability("content_system", "sandbox_support")
           .RequireCapability("ui", "discardable_memory")
           .Build()};
   return *manifest;

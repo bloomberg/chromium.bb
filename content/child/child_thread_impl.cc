@@ -240,8 +240,10 @@ class ChannelBootstrapFilter : public ConnectionFilter {
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle* interface_pipe,
                        service_manager::Connector* connector) override {
-    if (source_info.identity.name() != mojom::kBrowserServiceName)
+    if (source_info.identity.name() != mojom::kBrowserServiceName &&
+        source_info.identity.name() != mojom::kSystemServiceName) {
       return;
+    }
 
     if (interface_name == IPC::mojom::ChannelBootstrap::Name_) {
       DCHECK(bootstrap_.is_valid());
@@ -367,7 +369,7 @@ void ChildThreadImpl::OnFieldTrialGroupFinalized(
     const std::string& trial_name,
     const std::string& group_name) {
   mojom::FieldTrialRecorderPtr field_trial_recorder;
-  GetConnector()->BindInterface(mojom::kBrowserServiceName,
+  GetConnector()->BindInterface(mojom::kSystemServiceName,
                                 &field_trial_recorder);
   field_trial_recorder->FieldTrialActivated(trial_name);
 }
@@ -614,7 +616,7 @@ void ChildThreadImpl::ReleaseCachedFonts() {
 
 mojom::FontCacheWin* ChildThreadImpl::GetFontCacheWin() {
   if (!font_cache_win_ptr_) {
-    GetConnector()->BindInterface(mojom::kBrowserServiceName,
+    GetConnector()->BindInterface(mojom::kSystemServiceName,
                                   &font_cache_win_ptr_);
   }
   return font_cache_win_ptr_.get();

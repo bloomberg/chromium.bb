@@ -35,7 +35,7 @@ class RemoteModuleWatcherTest : public testing::Test,
                 MAIN_THREAD_MOCK_TIME),
         service_binding_(this,
                          test_connector_factory_.RegisterInstance(
-                             content::mojom::kBrowserServiceName)),
+                             content::mojom::kSystemServiceName)),
         binding_(this) {}
 
   ~RemoteModuleWatcherTest() override = default;

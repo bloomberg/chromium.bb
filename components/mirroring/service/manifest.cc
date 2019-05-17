@@ -22,7 +22,7 @@ const service_manager::Manifest& GetManifest() {
           .ExposeCapability("mirroring",
                             service_manager::Manifest::InterfaceList<
                                 mojom::MirroringService>())
-          .RequireCapability("content_browser", "gpu_client")
+          .RequireCapability("content_system", "gpu_client")
           .RequireCapability("ui", "gpu_client")
 
           .Build()};

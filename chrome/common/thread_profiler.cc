@@ -196,7 +196,7 @@ void ThreadProfiler::SetServiceManagerConnectorForChildProcess(
   DCHECK_NE(CallStackProfileParams::BROWSER_PROCESS, GetProcess());
 
   metrics::mojom::CallStackProfileCollectorPtr browser_interface;
-  connector->BindInterface(content::mojom::kBrowserServiceName,
+  connector->BindInterface(content::mojom::kSystemServiceName,
                            &browser_interface);
   CallStackProfileBuilder::SetParentProfileCollectorForChildProcess(
       std::move(browser_interface));

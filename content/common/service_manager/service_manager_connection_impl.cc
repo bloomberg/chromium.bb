@@ -250,7 +250,8 @@ class ServiceManagerConnectionImpl::IOThreadContext
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override {
     DCHECK(io_thread_checker_.CalledOnValidThread());
-    if (source_info.identity.name() == mojom::kBrowserServiceName &&
+    if ((source_info.identity.name() == mojom::kBrowserServiceName ||
+         source_info.identity.name() == mojom::kSystemServiceName) &&
         interface_name == mojom::Child::Name_) {
       DCHECK(!child_binding_.is_bound());
       child_binding_.Bind(mojom::ChildRequest(std::move(interface_pipe)));

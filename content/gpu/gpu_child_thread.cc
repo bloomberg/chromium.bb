@@ -384,12 +384,12 @@ std::unique_ptr<media::AndroidOverlay> GpuChildThread::CreateAndroidOverlay(
   media::mojom::AndroidOverlayProviderPtr overlay_provider;
   if (main_task_runner->RunsTasksInCurrentSequence()) {
     ChildThread::Get()->GetConnector()->BindInterface(
-        content::mojom::kBrowserServiceName, &overlay_provider);
+        content::mojom::kSystemServiceName, &overlay_provider);
   } else {
     // Create a connector on this sequence and bind it on the main thread.
     service_manager::mojom::ConnectorRequest request;
     auto connector = service_manager::Connector::Create(&request);
-    connector->BindInterface(content::mojom::kBrowserServiceName,
+    connector->BindInterface(content::mojom::kSystemServiceName,
                              &overlay_provider);
     auto bind_connector_request =
         [](service_manager::mojom::ConnectorRequest request) {

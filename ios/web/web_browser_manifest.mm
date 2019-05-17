@@ -27,6 +27,7 @@ const service_manager::Manifest& GetWebBrowserManifest() {
                            .CanRegisterOtherServiceInstances(true)
                            .Build())
           .RequireCapability(mojom::kBrowserServiceName, "")
+          .RequireCapability(mojom::kSystemServiceName, "")
           .RequireCapability(service_manager::mojom::kServiceName,
                              "service_manager:service_manager")
           .Build()

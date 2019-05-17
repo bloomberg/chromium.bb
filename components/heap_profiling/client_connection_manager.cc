@@ -49,7 +49,7 @@ class ProfilingClientBinder {
   // Binds to the local connector to get the browser process' ProfilingClient.
   explicit ProfilingClientBinder(service_manager::Connector* connector)
       : ProfilingClientBinder() {
-    connector->BindInterface(content::mojom::kBrowserServiceName,
+    connector->BindInterface(content::mojom::kSystemServiceName,
                              std::move(request_));
   }
 

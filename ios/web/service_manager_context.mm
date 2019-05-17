@@ -46,6 +46,21 @@ struct ManifestInfo {
   int resource_id;
 };
 
+service_manager::Manifest GetWebSystemManifest() {
+  // TODO(crbug.com/961869): This is a bit of a temporary hack so that we can
+  // make the global service instance a singleton. For now we just mirror the
+  // per-BrowserState manifest (formerly also used for the global singleton
+  // instance), sans packaged services, since those are only meant to be tied to
+  // a BrowserState. The per-BrowserState service should go away soon, and then
+  // this can be removed.
+  service_manager::Manifest manifest = GetWebBrowserManifest();
+  manifest.service_name = mojom::kSystemServiceName;
+  manifest.packaged_services.clear();
+  manifest.options.instance_sharing_policy =
+      service_manager::Manifest::InstanceSharingPolicy::kSingleton;
+  return manifest;
+}
+
 }  // namespace
 
 // State which lives on the IO thread and drives the ServiceManager.
@@ -104,7 +119,8 @@ class ServiceManagerContext::InProcessServiceManagerContext
 
 ServiceManagerContext::ServiceManagerContext() {
   const std::vector<service_manager::Manifest> manifests = {
-      GetWebBrowserManifest(), GetWebPackagedServicesManifest()};
+      GetWebSystemManifest(), GetWebBrowserManifest(),
+      GetWebPackagedServicesManifest()};
 
   in_process_context_ = base::MakeRefCounted<InProcessServiceManagerContext>();
   service_manager::mojom::ServicePtr packaged_services_service;
@@ -128,7 +144,7 @@ ServiceManagerContext::ServiceManagerContext() {
 
   mojo::Remote<service_manager::mojom::ProcessMetadata> metadata;
   packaged_services_connection_->GetConnector()->RegisterServiceInstance(
-      service_manager::Identity(mojom::kBrowserServiceName,
+      service_manager::Identity(mojom::kSystemServiceName,
                                 service_manager::kSystemInstanceGroup,
                                 base::Token{}, base::Token::CreateRandom()),
       std::move(root_browser_service), metadata.BindNewPipeAndPassReceiver());

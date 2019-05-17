@@ -148,7 +148,7 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
             // Only used in the classic Ash case
             .RequireCapability("chrome", "input_device_controller")
             .RequireCapability("chrome_printing", "converter")
-            .RequireCapability("content_browser", "profiling_client")
+            .RequireCapability("content_system", "profiling_client")
             .RequireCapability("cups_ipp_parser", "ipp_parser")
             .RequireCapability("device", "device:fingerprint")
             .RequireCapability("device", "device:geolocation_config")

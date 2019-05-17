@@ -48,6 +48,7 @@ const service_manager::Manifest& GetContentPackagedServicesManifest() {
                          .CanRegisterOtherServiceInstances(true)
                          .Build())
         .RequireCapability(mojom::kBrowserServiceName, "")
+        .RequireCapability(mojom::kSystemServiceName, "")
         .RequireCapability("*", "app")
         .PackageService(heap_profiling::GetManifest())
         .PackageService(media::GetCdmManifest())

@@ -60,7 +60,7 @@ void MirroringService::Start(mojom::SessionParametersPtr params,
   if (params->type != mojom::SessionType::AUDIO_ONLY) {
     gpu = ws::Gpu::Create(
         service_binding_.GetConnector(),
-        features::IsUsingWindowService() ? "ui" : "content_browser",
+        features::IsUsingWindowService() ? "ui" : "content_system",
         io_task_runner_);
   }
   session_ = std::make_unique<Session>(

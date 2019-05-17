@@ -10,6 +10,7 @@
 #include "components/services/heap_profiling/public/mojom/heap_profiling_client.mojom.h"
 #include "components/spellcheck/common/spellcheck.mojom.h"
 #include "components/web_restrictions/interfaces/web_restrictions.mojom.h"
+#include "content/public/common/service_names.mojom.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 #include "third_party/blink/public/mojom/input/input_host.mojom.h"
 
@@ -25,7 +26,8 @@ const service_manager::Manifest& GetAWContentBrowserOverlayManifest() {
           .ExposeCapability("profiling_client",
                             service_manager::Manifest::InterfaceList<
                                 heap_profiling::mojom::ProfilingClient>())
-          .RequireCapability("content_browser", "profiling_client")
+          .RequireCapability(content::mojom::kSystemServiceName,
+                             "profiling_client")
           .RequireCapability("heap_profiling", "profiling")
           .RequireCapability("heap_profiling", "heap_profiler")
           .ExposeInterfaceFilterCapability_Deprecated(

@@ -60,7 +60,7 @@ void RemoteModuleWatcher::InitializeOnTaskRunner(
     std::unique_ptr<service_manager::Connector> connector) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
-  connector->BindInterface(content::mojom::kBrowserServiceName,
+  connector->BindInterface(content::mojom::kSystemServiceName,
                            &module_event_sink_);
 
   module_watcher_ = ModuleWatcher::Create(base::BindRepeating(
