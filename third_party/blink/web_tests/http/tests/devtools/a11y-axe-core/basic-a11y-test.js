@@ -12,8 +12,6 @@
       'performance.monitor',
       // Sensors
       'sensors',
-      // Settings
-      'preferences',
     ];
 
 
