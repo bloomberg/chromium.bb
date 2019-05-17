@@ -71,7 +71,7 @@ declare_args() {
     # Restructures the macOS bundle layout so that the Framework goes in
     # Chromium.app/Contents/Frameworks rather than
     # Chromium.app/Contents/Versions. https://crbug.com/958976
-    new_mac_bundle_structure = false
+    new_mac_bundle_structure = true
   }
 }
 
