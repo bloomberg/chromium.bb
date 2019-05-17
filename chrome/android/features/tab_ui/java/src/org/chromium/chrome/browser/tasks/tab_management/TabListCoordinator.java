@@ -83,8 +83,13 @@ public class TabListCoordinator implements Destroyable {
         RecyclerViewAdapter adapter;
         if (mMode == TabListMode.GRID) {
             SimpleRecyclerViewMcpBase<PropertyModel, TabGridViewHolder, PropertyKey> mcp =
-                    new SimpleRecyclerViewMcpBase<>(
-                            null, TabGridViewBinder::onBindViewHolder, tabListModel);
+                    new SimpleRecyclerViewMcpBase<PropertyModel, TabGridViewHolder, PropertyKey>(
+                            null, TabGridViewBinder::onBindViewHolder, tabListModel) {
+                        @Override
+                        public void onViewRecycled(TabGridViewHolder viewHolder) {
+                            viewHolder.resetThumbnail();
+                        }
+                    };
             adapter = new RecyclerViewAdapter<>(mcp, TabGridViewHolder::create);
             mModelChangeProcessor = mcp;
         } else if (mMode == TabListMode.STRIP) {
