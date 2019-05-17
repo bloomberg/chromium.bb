@@ -24,6 +24,7 @@
 #include "media/base/video_frame.h"
 #include "media/base/video_types.h"
 #include "media/gpu/macros.h"
+#include "media/gpu/vaapi/va_surface.h"
 #include "media/gpu/vaapi/vaapi_utils.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 #include "third_party/libyuv/include/libyuv.h"
@@ -226,10 +227,15 @@ void VaapiMjpegDecodeAccelerator::DecodeTask(
   TRACE_EVENT0("jpeg", "DecodeTask");
 
   VaapiJpegDecodeStatus status;
-  std::unique_ptr<ScopedVAImage> image = decoder_.DoDecode(
-      base::make_span<const uint8_t>(static_cast<const uint8_t*>(shm->memory()),
-                                     shm->size()),
+  decoder_.Decode(
+      base::make_span(static_cast<const uint8_t*>(shm->memory()), shm->size()),
       &status);
+  if (status != VaapiJpegDecodeStatus::kSuccess) {
+    NotifyError(bitstream_buffer_id, VaapiJpegDecodeStatusToError(status));
+    return;
+  }
+  std::unique_ptr<ScopedVAImage> image =
+      decoder_.GetImage(VA_FOURCC_I420 /* preferred_image_fourcc */, &status);
   if (status != VaapiJpegDecodeStatus::kSuccess) {
     NotifyError(bitstream_buffer_id, VaapiJpegDecodeStatusToError(status));
     return;

@@ -22,6 +22,7 @@ namespace media {
 
 struct JpegFrameHeader;
 class ScopedVAImage;
+class VASurface;
 class VaapiWrapper;
 
 enum class VaapiJpegDecodeStatus : uint32_t {
@@ -63,20 +64,20 @@ class VaapiJpegDecoder final {
 
   // Decodes a JPEG picture. It will fill VA-API parameters and call the
   // corresponding VA-API methods according to the JPEG in |encoded_image|.
-  // Decoded data will be returned as a ScopedVAImage. The VAImage's format will
-  // be either |preferred_image_fourcc| if the conversion from the internal
-  // format is supported or a fallback FOURCC (see
+  // The image will be decoded into an internally allocated VA surface. It
+  // will be returned as an unowned VASurface, which remains valid until the
+  // next Decode() call or destruction of this class. Returns nullptr on
+  // failure and sets *|status| to the reason for failure.
+  scoped_refptr<VASurface> Decode(base::span<const uint8_t> encoded_image,
+                                  VaapiJpegDecodeStatus* status);
+
+  // Get the decoded data from the last Decode() call as a ScopedVAImage. The
+  // VAImage's format will be either |preferred_image_fourcc| if the conversion
+  // from the internal format is supported or a fallback FOURCC (see
   // VaapiWrapper::GetJpegDecodeSuitableImageFourCC() for details). Returns
   // nullptr on failure and sets *|status| to the reason for failure.
-  std::unique_ptr<ScopedVAImage> DoDecode(
-      base::span<const uint8_t> encoded_image,
-      uint32_t preferred_image_fourcc,
-      VaapiJpegDecodeStatus* status);
-
-  // Calls DoDecode() above with |preferred_image_fourcc| = VA_FOURCC_I420.
-  std::unique_ptr<ScopedVAImage> DoDecode(
-      base::span<const uint8_t> encoded_image,
-      VaapiJpegDecodeStatus* status);
+  std::unique_ptr<ScopedVAImage> GetImage(uint32_t preferred_image_fourcc,
+                                          VaapiJpegDecodeStatus* status);
 
  private:
   scoped_refptr<VaapiWrapper> vaapi_wrapper_;

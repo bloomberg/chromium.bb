@@ -21,6 +21,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_util.h"
 #include "media/base/test_data_util.h"
@@ -333,6 +334,8 @@ int GetMaxSupportedDimension(int max_surface_supported) {
 
 }  // namespace
 
+class VASurface;
+
 class VaapiJpegDecoderTest : public testing::TestWithParam<TestParam> {
  protected:
   VaapiJpegDecoderTest() {
@@ -380,12 +383,22 @@ std::unique_ptr<ScopedVAImage> VaapiJpegDecoderTest::Decode(
     base::span<const uint8_t> encoded_image,
     uint32_t preferred_fourcc,
     VaapiJpegDecodeStatus* status) {
-  VaapiJpegDecodeStatus tmp_status;
-  std::unique_ptr<ScopedVAImage> scoped_image =
-      decoder_.DoDecode(encoded_image, preferred_fourcc, &tmp_status);
-  EXPECT_EQ(!!scoped_image, tmp_status == VaapiJpegDecodeStatus::kSuccess);
-  if (status)
-    *status = tmp_status;
+  VaapiJpegDecodeStatus decode_status;
+  scoped_refptr<VASurface> surface =
+      decoder_.Decode(encoded_image, &decode_status);
+  EXPECT_EQ(!!surface, decode_status == VaapiJpegDecodeStatus::kSuccess);
+
+  // Still try to get image when decode fails.
+  VaapiJpegDecodeStatus image_status;
+  std::unique_ptr<ScopedVAImage> scoped_image;
+  scoped_image = decoder_.GetImage(preferred_fourcc, &image_status);
+  EXPECT_EQ(!!scoped_image, image_status == VaapiJpegDecodeStatus::kSuccess);
+
+  // Record the first fail status.
+  if (status) {
+    *status = decode_status != VaapiJpegDecodeStatus::kSuccess ? decode_status
+                                                               : image_status;
+  }
   return scoped_image;
 }
 
