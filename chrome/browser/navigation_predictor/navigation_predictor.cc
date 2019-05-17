@@ -136,8 +136,7 @@ NavigationPredictor::NavigationPredictor(
           base::GetFieldTrialParamByFeatureAsBool(
               blink::features::kNavigationPredictor,
               "same_origin_preconnecting_allowed",
-              false))
-{
+              false)) {
   DCHECK(browser_context_);
   DETACH_FROM_SEQUENCE(sequence_checker_);
   DCHECK_LE(0, preconnect_origin_score_threshold_);
@@ -317,14 +316,24 @@ void NavigationPredictor::MaybePreconnectNow(Action log_action) {
   if (current_visibility_ != content::Visibility::VISIBLE)
     return;
 
-  // Set/Reset the timer to fire after the pre-connect times out. Add an extra
-  // 50ms to make sure the preconnect has expired if it wasn't used.
+  // The delay beyond the idle socket timeout that net uses when
+  // re-preconnecting. If negative, no retries occur.
+  int retry_delay_ms = base::GetFieldTrialParamByFeatureAsInt(
+      blink::features::kNavigationPredictor, "retry_preconnect_wait_time_ms",
+      50);
+
+  if (retry_delay_ms < 0) {
+    return;
+  }
+
+  // Set/Reset the timer to fire after the preconnect times out. Add an extra
+  // delay to make sure the preconnect has expired if it wasn't used.
   timer_.Start(
       FROM_HERE,
       base::TimeDelta::FromSeconds(base::GetFieldTrialParamByFeatureAsInt(
           net::features::kNetUnusedIdleSocketTimeout,
           "unused_idle_socket_timeout_seconds", 10)) +
-          base::TimeDelta::FromMilliseconds(50),
+          base::TimeDelta::FromMilliseconds(retry_delay_ms),
       base::BindOnce(&NavigationPredictor::MaybePreconnectNow,
                      base::Unretained(this), Action::kPreconnectAfterTimeout));
 }

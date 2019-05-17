@@ -3101,6 +3101,7 @@
                         "is_url_incremented_scale": "100",
                         "preconnect_skip_link_scores": "true",
                         "ratio_area_scale": "100",
+                        "retry_preconnect_wait_time_ms": "50",
                         "same_origin_preconnecting_allowed": "true",
                         "source_engagement_score_scale": "100",
                         "target_engagement_score_scale": "100",

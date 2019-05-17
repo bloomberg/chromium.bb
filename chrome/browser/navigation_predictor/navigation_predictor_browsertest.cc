@@ -396,6 +396,33 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
                        NavigationPredictor::Action::kPreconnectAfterTimeout)));
 }
 
+// Test that we don't preconnect after the last preconnect timed out when
+// retry_preconnect_wait_time_ms is negative.
+IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
+                       DISABLE_ON_CHROMEOS(ActionAccuracy_timeout_no_retry)) {
+  base::HistogramTester histogram_tester;
+
+  base::test::ScopedFeatureList scoped_feature_list_net;
+  // -1 would force synchronous retries if retries were not disabled.
+  scoped_feature_list_net.InitAndEnableFeatureWithParameters(
+      net::features::kNetUnusedIdleSocketTimeout,
+      {{"unused_idle_socket_timeout_seconds", "-1"}});
+
+  base::test::ScopedFeatureList scoped_feature_list_predictor;
+  scoped_feature_list_predictor.InitAndEnableFeatureWithParameters(
+      blink::features::kNavigationPredictor,
+      {{"retry_preconnect_wait_time_ms", "-1"}});
+
+  const GURL& url = GetTestURL("/page_with_same_host_anchor_element.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+  WaitForLayout(&histogram_tester);
+
+  EXPECT_EQ(0, histogram_tester.GetBucketCount(
+                   "NavigationPredictor.OnNonDSE.ActionTaken",
+                   static_cast<base::HistogramBase::Sample>(
+                       NavigationPredictor::Action::kPreconnectAfterTimeout)));
+}
+
 // Test that the action accuracy is properly recorded and when same origin
 // preconnections are enabled, then navigation predictor initiates the
 // preconnection.
