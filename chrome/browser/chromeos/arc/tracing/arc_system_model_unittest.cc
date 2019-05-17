@@ -13,7 +13,7 @@ using ArcSystemModelTest = testing::Test;
 TEST_F(ArcSystemModelTest, TrimByTimestampCPU) {
   ArcSystemModel model;
 
-  constexpr int64_t trim_timestamp = 25;
+  constexpr uint64_t trim_timestamp = 25;
   constexpr int idle_tid = 0;
   constexpr int non_idle_tid = 100;
 
@@ -66,7 +66,7 @@ TEST_F(ArcSystemModelTest, TrimByTimestampCPU) {
 
   ASSERT_EQ(3U, cpu_events_1.size());
   EXPECT_EQ(ArcCpuEvent::Type::kIdleIn, cpu_events_1[0].type);
-  EXPECT_EQ(32, cpu_events_1[0].timestamp);
+  EXPECT_EQ(32u, cpu_events_1[0].timestamp);
 
   ASSERT_EQ(2U, cpu_events_2.size());
   EXPECT_EQ(ArcCpuEvent::Type::kWakeUp, cpu_events_2[0].type);
@@ -80,7 +80,7 @@ TEST_F(ArcSystemModelTest, TrimByTimestampCPU) {
 TEST_F(ArcSystemModelTest, TrimByTimestampMemory) {
   ArcSystemModel model;
 
-  constexpr int64_t trim_timestamp = 25;
+  constexpr uint64_t trim_timestamp = 25;
 
   // First of ArcValueEvent::Type::kMemTotal should be clamped to
   // |trim_timestamp|.

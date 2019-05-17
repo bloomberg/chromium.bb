@@ -42,7 +42,7 @@ class ArcSystemModel {
   // |trim_timestamp| are consolidated with their timestamps aligned
   // to |trim_timestamp|. Events on or after |trim_timestamp| are left
   // in the model unchanged.
-  void Trim(int64_t trim_timestamp);
+  void Trim(uint64_t trim_timestamp);
 
   void CopyFrom(const ArcSystemModel& other);
   base::DictionaryValue Serialize() const;

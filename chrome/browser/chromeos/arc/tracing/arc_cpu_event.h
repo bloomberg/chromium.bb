@@ -21,11 +21,11 @@ struct ArcCpuEvent {
     kActive,      // Task is started on CPU.
   };
 
-  ArcCpuEvent(int64_t timestamp, Type type, uint32_t tid);
+  ArcCpuEvent(uint64_t timestamp, Type type, uint32_t tid);
 
   bool operator==(const ArcCpuEvent& other) const;
 
-  int64_t timestamp;
+  uint64_t timestamp;
   Type type;
   uint32_t tid;
 };
@@ -38,7 +38,7 @@ using AllCpuEvents = std::vector<CpuEvents>;
 // Helper that adds CPU event into |cpu_events|. Returns true in case event was
 // created and added or false if it breaks any constraint.
 bool AddCpuEvent(CpuEvents* cpu_events,
-                 int64_t timestamp,
+                 uint64_t timestamp,
                  ArcCpuEvent::Type type,
                  uint32_t tid);
 
@@ -47,7 +47,7 @@ bool AddCpuEvent(CpuEvents* cpu_events,
 // created and added or false if it breaks any constraint.
 bool AddAllCpuEvent(AllCpuEvents* all_cpu_events,
                     uint32_t cpu_id,
-                    int64_t timestamp,
+                    uint64_t timestamp,
                     ArcCpuEvent::Type type,
                     uint32_t tid);
 

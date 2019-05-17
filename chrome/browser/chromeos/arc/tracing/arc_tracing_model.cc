@@ -102,7 +102,7 @@ struct GraphicsEventsContext {
 };
 
 bool HandleGraphicsEvent(GraphicsEventsContext* context,
-                         double timestamp,
+                         uint64_t timestamp,
                          uint32_t tid,
                          const std::string& line,
                          size_t event_position) {
@@ -166,7 +166,7 @@ bool HandleGraphicsEvent(GraphicsEventsContext* context,
 }
 
 bool HandleCpuIdle(AllCpuEvents* all_cpu_events,
-                   double timestamp,
+                   uint64_t timestamp,
                    uint32_t cpu_id,
                    uint32_t tid,
                    const std::string& line,
@@ -191,7 +191,7 @@ bool HandleCpuIdle(AllCpuEvents* all_cpu_events,
 }
 
 bool HandleSchedWakeUp(AllCpuEvents* all_cpu_events,
-                       double timestamp,
+                       uint64_t timestamp,
                        uint32_t cpu_id,
                        uint32_t tid,
                        const std::string& line,
@@ -247,7 +247,7 @@ bool HandleSchedWakeUp(AllCpuEvents* all_cpu_events,
 }
 
 bool HandleSchedSwitch(AllCpuEvents* all_cpu_events,
-                       double timestamp,
+                       uint64_t timestamp,
                        uint32_t cpu_id,
                        uint32_t tid,
                        const std::string& line,
@@ -266,7 +266,7 @@ bool HandleSchedSwitch(AllCpuEvents* all_cpu_events,
 }
 
 bool HandleGpuFreq(ValueEvents* value_events,
-                   double timestamp,
+                   uint64_t timestamp,
                    const std::string& line,
                    size_t event_position) {
   int new_freq = -1;
@@ -402,8 +402,8 @@ bool ArcTracingModel::ProcessEvent(base::ListValue* events) {
   // for others may appear after children. Sort by ts time.
   std::sort(parsed_events.begin(), parsed_events.end(),
             [](const auto& lhs, const auto& rhs) {
-              const int64_t lhs_timestamp = lhs->GetTimestamp();
-              const int64_t rhs_timestamp = rhs->GetTimestamp();
+              const uint64_t lhs_timestamp = lhs->GetTimestamp();
+              const uint64_t rhs_timestamp = rhs->GetTimestamp();
               if (lhs_timestamp != rhs_timestamp)
                 return lhs_timestamp < rhs->GetTimestamp();
               return lhs->GetDuration() > rhs->GetDuration();
@@ -496,12 +496,14 @@ bool ArcTracingModel::ConvertSysTraces(const std::string& sys_traces) {
     }
     const size_t separator_position =
         ParseUint32(line, pos_dot + 1, ':', &timestamp_low);
-    if (separator_position == std::string::npos) {
+    // We expect to have parsed exactly six digits after the decimal point, to
+    // match the scaling factor used just below.
+    if (separator_position != pos_dot + 7) {
       LOG(ERROR) << "Cannot parse timestamp in trace event: " << line;
       return false;
     }
 
-    const double timestamp = 1000000L * timestamp_high + timestamp_low;
+    const uint64_t timestamp = 1000000LL * timestamp_high + timestamp_low;
     if (timestamp < min_timestamp_ || timestamp >= max_timestamp_)
       continue;
 

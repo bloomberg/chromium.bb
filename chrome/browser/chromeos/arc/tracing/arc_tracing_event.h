@@ -63,18 +63,18 @@ class ArcTracingEvent {
   void SetPhase(char phase);
 
   // Gets timestamp of the start of the event. Return 0 if not set.
-  int64_t GetTimestamp() const;
+  uint64_t GetTimestamp() const;
   // Sets timestamp of the start of the event.
-  void SetTimestamp(double timestamp);
+  void SetTimestamp(uint64_t timestamp);
 
   // Gets duration of the event.  Return 0 if not set. It is optional for some
   // events.
-  int64_t GetDuration() const;
+  uint64_t GetDuration() const;
   // Sets duration of the event.
-  void SetDuration(double duration);
+  void SetDuration(uint64_t duration);
 
   // Gets timestamp of the end of the event.
-  int64_t GetEndTimestamp() const;
+  uint64_t GetEndTimestamp() const;
 
   // Returns base representation of the event as a |base::DictionaryValue|.
   const base::DictionaryValue* GetDictionary() const;

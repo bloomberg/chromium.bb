@@ -30,7 +30,7 @@ struct ArcValueEvent {
 
   bool operator==(const ArcValueEvent& other) const;
 
-  int64_t timestamp;
+  uint64_t timestamp;
   Type type;
   /**
    * kMemTotal - kb.

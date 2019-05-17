@@ -8,7 +8,7 @@
 
 namespace arc {
 
-ArcCpuEvent::ArcCpuEvent(int64_t timestamp, Type type, uint32_t tid)
+ArcCpuEvent::ArcCpuEvent(uint64_t timestamp, Type type, uint32_t tid)
     : timestamp(timestamp), type(type), tid(tid) {}
 
 bool ArcCpuEvent::operator==(const ArcCpuEvent& other) const {
@@ -16,7 +16,7 @@ bool ArcCpuEvent::operator==(const ArcCpuEvent& other) const {
 }
 
 bool AddCpuEvent(CpuEvents* cpu_events,
-                 int64_t timestamp,
+                 uint64_t timestamp,
                  ArcCpuEvent::Type type,
                  uint32_t tid) {
   // Base validation.
@@ -112,7 +112,7 @@ bool AddCpuEvent(CpuEvents* cpu_events,
 
 bool AddAllCpuEvent(AllCpuEvents* all_cpu_events,
                     uint32_t cpu_id,
-                    int64_t timestamp,
+                    uint64_t timestamp,
                     ArcCpuEvent::Type type,
                     uint32_t tid) {
   if (all_cpu_events->size() <= cpu_id)
@@ -144,7 +144,7 @@ bool LoadCpuEvents(const base::Value* value, CpuEvents* cpu_events) {
   if (!value || !value->is_list())
     return false;
 
-  int64_t previous_timestamp = 0;
+  uint64_t previous_timestamp = 0;
   for (const auto& entry : value->GetList()) {
     if (!entry.is_list() || entry.GetList().size() != 3)
       return false;
@@ -163,7 +163,7 @@ bool LoadCpuEvents(const base::Value* value, CpuEvents* cpu_events) {
     }
     if (!entry.GetList()[1].is_double() && !entry.GetList()[1].is_int())
       return false;
-    const int64_t timestamp = entry.GetList()[1].GetDouble();
+    const uint64_t timestamp = entry.GetList()[1].GetDouble();
     if (timestamp < previous_timestamp)
       return false;
     if (!entry.GetList()[2].is_int())

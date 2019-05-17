@@ -92,7 +92,7 @@ class ArcTracingGraphicsModel {
     bool operator==(const BufferEvent& other) const;
 
     BufferEventType type;
-    int64_t timestamp;
+    uint64_t timestamp;
     std::string content;
   };
 
