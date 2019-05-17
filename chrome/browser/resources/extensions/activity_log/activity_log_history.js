@@ -45,6 +45,12 @@ cr.define('extensions', function() {
      * @return {!Promise<void>}
      */
     deleteActivitiesFromExtension(extensionId) {}
+
+    /**
+     * @param {string} rawActivityData
+     * @param {string} fileName
+     */
+    downloadActivities(rawActivityData, fileName) {}
   }
 
   /**
@@ -165,7 +171,7 @@ cr.define('extensions', function() {
    * @return {!Array<!extensions.ActivityGroup>}
    */
   function sortActivitiesByCallCount(groupedActivities) {
-    return Array.from(groupedActivities.values()).sort(function(a, b) {
+    return Array.from(groupedActivities.values()).sort((a, b) => {
       if (a.count != b.count) {
         return b.count - a.count;
       }
@@ -224,6 +230,14 @@ cr.define('extensions', function() {
      * @private {PromiseResolver}
      */
     dataFetchedResolver_: null,
+
+    /**
+     * The stringified API response from the activityLogPrivate API with
+     * individual activities sorted in ascending order by timestamp; used for
+     * exporting the activity log.
+     * @private {string}
+     */
+    rawActivities_: '',
 
     /**
      * Expose only the promise of dataFetchedResolver_.
@@ -302,6 +316,12 @@ cr.define('extensions', function() {
       this.expandItems_(false);
     },
 
+    /** @private */
+    onExportClick_: function() {
+      const fileName = `exported_activity_log_${this.extensionId}.json`;
+      this.delegate.downloadActivities(this.rawActivities_, fileName);
+    },
+
     /**
      * @private
      * @param {!CustomEvent<!Array<string>>} e
@@ -324,6 +344,12 @@ cr.define('extensions', function() {
      */
     processActivities_: function(activityData) {
       this.pageState_ = ActivityLogPageState.LOADED;
+
+      // Sort |activityData| in ascending order based on the activity's
+      // timestamp; Used for |this.encodedRawActivities|.
+      activityData.sort((a, b) => a.time - b.time);
+      this.rawActivities_ = JSON.stringify(activityData);
+
       this.activityData_ =
           sortActivitiesByCallCount(groupActivities(activityData));
       if (!this.dataFetchedResolver_.isFulfilled) {
