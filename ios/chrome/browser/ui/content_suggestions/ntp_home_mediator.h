@@ -16,6 +16,7 @@ class ContentSuggestionsService;
 }
 
 @protocol ApplicationCommands;
+class AuthenticationService;
 @protocol BrowserCommands;
 @class ContentSuggestionsHeaderSynchronizer;
 @class ContentSuggestionsMediator;
@@ -41,6 +42,7 @@ class WebStateList;
     initWithWebStateList:(nonnull WebStateList*)webStateList
       templateURLService:(nonnull TemplateURLService*)templateURLService
        urlLoadingService:(nonnull UrlLoadingService*)urlLoadingService
+             authService:(nonnull AuthenticationService*)authService
               logoVendor:(nonnull id<LogoVendor>)logoVendor
     NS_DESIGNATED_INITIALIZER;
 

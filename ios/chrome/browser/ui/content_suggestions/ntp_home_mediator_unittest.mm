@@ -10,6 +10,8 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/ntp_snippets/ios_chrome_content_suggestions_service_factory.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
+#include "ios/chrome/browser/signin/authentication_service_factory.h"
+#import "ios/chrome/browser/signin/authentication_service_fake.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
@@ -58,6 +60,10 @@ class NTPHomeMediatorTest : public PlatformTest {
     test_cbs_builder.AddTestingFactory(
         UrlLoadingServiceFactory::GetInstance(),
         UrlLoadingServiceFactory::GetDefaultFactory());
+    test_cbs_builder.AddTestingFactory(
+        AuthenticationServiceFactory::GetInstance(),
+        base::BindRepeating(
+            &AuthenticationServiceFake::CreateAuthenticationService));
     chrome_browser_state_ = test_cbs_builder.Build();
 
     std::unique_ptr<ToolbarTestNavigationManager> navigation_manager =
@@ -74,11 +80,15 @@ class NTPHomeMediatorTest : public PlatformTest {
     url_loader_ =
         (TestUrlLoadingService*)UrlLoadingServiceFactory::GetForBrowserState(
             chrome_browser_state_.get());
+    auth_service_ = static_cast<AuthenticationServiceFake*>(
+        AuthenticationServiceFactory::GetInstance()->GetForBrowserState(
+            chrome_browser_state_.get()));
     mediator_ = [[NTPHomeMediator alloc]
         initWithWebStateList:web_state_list_.get()
           templateURLService:ios::TemplateURLServiceFactory::GetForBrowserState(
                                  chrome_browser_state_.get())
            urlLoadingService:url_loader_
+                 authService:auth_service_
                   logoVendor:logo_vendor_];
     mediator_.suggestionsService =
         IOSChromeContentSuggestionsServiceFactory::GetForBrowserState(
@@ -122,6 +132,7 @@ class NTPHomeMediatorTest : public PlatformTest {
   std::unique_ptr<WebStateList> web_state_list_;
   FakeWebStateListDelegate web_state_list_delegate_;
   TestUrlLoadingService* url_loader_;
+  AuthenticationServiceFake* auth_service_;
 
  private:
   std::unique_ptr<web::TestWebState> test_web_state_;

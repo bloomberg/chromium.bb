@@ -16,6 +16,7 @@
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/search_engines/search_engine_observer_bridge.h"
+#import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
@@ -83,6 +84,8 @@ const char kNTPHelpURL[] =
 @property(nonatomic, assign, readonly) WebStateList* webStateList;
 // TemplateURL used to get the search engine.
 @property(nonatomic, assign) TemplateURLService* templateURLService;
+// Authentication Service to get the current user's avatar.
+@property(nonatomic, assign) AuthenticationService* authService;
 // Logo vendor to display the doodle on the NTP.
 @property(nonatomic, strong) id<LogoVendor> logoVendor;
 // The web state associated with this NTP.
@@ -92,22 +95,10 @@ const char kNTPHelpURL[] =
 
 @implementation NTPHomeMediator
 
-@synthesize webState = _webState;
-@synthesize consumer = _consumer;
-@synthesize dispatcher = _dispatcher;
-@synthesize suggestionsService = _suggestionsService;
-@synthesize NTPMetrics = _NTPMetrics;
-@synthesize suggestionsViewController = _suggestionsViewController;
-@synthesize suggestionsMediator = _suggestionsMediator;
-@synthesize alertCoordinator = _alertCoordinator;
-@synthesize metricsRecorder = _metricsRecorder;
-@synthesize logoVendor = _logoVendor;
-@synthesize templateURLService = _templateURLService;
-@synthesize webStateList = _webStateList;
-
 - (instancetype)initWithWebStateList:(WebStateList*)webStateList
                   templateURLService:(TemplateURLService*)templateURLService
                    urlLoadingService:(UrlLoadingService*)urlLoadingService
+                         authService:(AuthenticationService*)authService
                           logoVendor:(id<LogoVendor>)logoVendor {
   self = [super init];
   if (self) {
@@ -116,6 +107,7 @@ const char kNTPHelpURL[] =
     _webStateList->AddObserver(_webStateListObserver.get());
     _templateURLService = templateURLService;
     _urlLoadingService = urlLoadingService;
+    _authService = authService;
     // Listen for default search engine changes.
     _searchEngineObserver = std::make_unique<SearchEngineObserverBridge>(
         self, self.templateURLService);
