@@ -617,8 +617,16 @@ customBackgrounds.richerPicker_deselectTile = function(tile) {
   customBackgrounds.selectedTile = null;
   $(customBackgrounds.IDS.MENU_DONE).tabIndex = -1;
 
-  // Remove selected check.
-  tile.innerHTML = '';
+  // Remove selected check and circle.
+  for (let i = 0; i < tile.children.length; ++i) {
+    if (tile.children[i].classList.contains(
+            customBackgrounds.CLASSES.SELECTED_CHECK) ||
+        tile.children[i].classList.contains(
+            customBackgrounds.CLASSES.SELECTED_CIRCLE)) {
+      tile.removeChild(tile.children[i]);
+      --i;
+    }
+  }
 };
 
 

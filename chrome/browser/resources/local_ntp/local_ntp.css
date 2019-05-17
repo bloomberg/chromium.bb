@@ -1165,11 +1165,40 @@ html[dir=rtl] #customization-menu .bg-sel-tile .selected-check {
 
 #backgrounds-default-icon {
   background-color: white;
-  background-image: url(icons/upload.svg);
   background-repeat: no-repeat;
   height: 174px;
   opacity: 1;
   width: 174px;
+}
+
+#backgrounds-default-icon-header {
+  -webkit-mask-image: url(icons/header.svg);
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 100%;
+  background-color: rgb(var(--GG500-rgb));
+  height: 50px;
+  margin-inline-start: 17px;
+  margin-top: 24px;
+  position: absolute;
+  width: 140px;
+}
+
+#backgrounds-default-icon-shortcuts {
+  -webkit-mask-image: url(icons/shortcut-circles.svg);
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 100%;
+  background-color: rgb(var(--GG500-rgb));
+  height: 50px;
+  margin-inline-start: 17px;
+  margin-top: 86px;
+  position: absolute;
+  width: 140px;
+}
+
+.selected #backgrounds-default-icon-header,
+.selected #backgrounds-default-icon-shortcuts {
+  margin-inline-start: 14px;
+  width: 116px;
 }
 
 #shortcuts-menu {
