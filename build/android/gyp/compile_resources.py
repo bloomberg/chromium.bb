@@ -95,8 +95,12 @@ def _ParseArgs(args):
       help='Package name that will be used to determine package ID.')
 
   input_opts.add_argument(
+      '--rename-manifest-package', help='Package name to force AAPT to use.')
+
+  input_opts.add_argument(
       '--arsc-package-name',
-      help='Package name to use for resources.arsc file.')
+      help='Package name to set in manifest of resources.arsc file. This is '
+      'only used for apks under test.')
 
   input_opts.add_argument(
       '--shared-resources-whitelist',
@@ -180,8 +184,10 @@ def _ParseArgs(args):
   output_opts.add_argument(
       '--info-path', help='Path to output info file for the partial apk.')
 
-  output_opts.add_argument('--srcjar-out',
-                           help='Path to srcjar to contain generated R.java.')
+  output_opts.add_argument(
+      '--srcjar-out',
+      required=True,
+      help='Path to srcjar to contain generated R.java.')
 
   output_opts.add_argument('--r-text-out',
                            help='Path to store the generated R.txt file.')
@@ -674,16 +680,16 @@ def _PackageApk(options, build):
   link_command = [
       options.aapt2_path,
       'link',
-      '--version-code',
-      options.version_code,
-      '--version-name',
-      options.version_name,
       '--auto-add-overlay',
       '--no-version-vectors',
   ]
 
   for j in options.include_resources:
     link_command += ['-I', j]
+  if options.version_code:
+    link_command += ['--version-code', options.version_code]
+  if options.version_name:
+    link_command += ['--version-name', options.version_name]
   if options.proguard_file:
     link_command += ['--proguard', build.proguard_path]
   if options.proguard_file_main_dex:
@@ -707,16 +713,20 @@ def _PackageApk(options, build):
   if package_id is not None:
     link_command += ['--package-id', package_id, '--allow-reserved-package-id']
 
-  fixed_manifest, orig_package = _FixManifest(options, build.temp_dir)
+  fixed_manifest, desired_manifest_package_name = _FixManifest(
+      options, build.temp_dir)
+  if options.rename_manifest_package:
+    desired_manifest_package_name = options.rename_manifest_package
   link_command += [
-      '--manifest', fixed_manifest, '--rename-manifest-package', orig_package
+      '--manifest', fixed_manifest, '--rename-manifest-package',
+      desired_manifest_package_name
   ]
 
   # Creates a .zip with AndroidManifest.xml, resources.arsc, res/*
   # Also creates R.txt
   if options.use_resource_ids_path:
     _CreateStableIdsFile(options.use_resource_ids_path, build.stable_ids_path,
-                         orig_package)
+                         desired_manifest_package_name)
     link_command += ['--stable-ids', build.stable_ids_path]
 
   partials = _CompileDeps(options.aapt2_path, dep_subdirs, build.temp_dir)
@@ -888,8 +898,7 @@ def main(args):
         build.srcjar_dir, None, build.r_txt_path, options.extra_res_packages,
         options.extra_r_text_files, rjava_build_options)
 
-    if options.srcjar_out:
-      build_utils.ZipDir(build.srcjar_path, build.srcjar_dir)
+    build_utils.ZipDir(build.srcjar_path, build.srcjar_dir)
 
     # Sanity check that the created resources have the expected package ID.
     expected_id = _PackageIdFromOptions(options)
@@ -908,7 +917,7 @@ def main(args):
   if options.depfile:
     build_utils.WriteDepfile(
         options.depfile,
-        options.arsc_path or options.proto_path,
+        options.srcjar_out,
         inputs=options.dependencies_res_zips + options.extra_r_text_files,
         add_pydeps=False)
 

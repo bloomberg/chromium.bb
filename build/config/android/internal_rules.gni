@@ -777,33 +777,18 @@ template("test_runner_script") {
         "--test-suite",
         invoker.test_suite,
       ]
-      if (defined(invoker.android_manifest_path)) {
-        _rebased_android_manifest_path =
-            rebase_path(invoker.android_manifest_path, root_build_dir)
-        executable_args += [
-          "--android-manifest-path",
-          "@WrappedPath(${_rebased_android_manifest_path})",
-        ]
-      } else if (defined(invoker.package_name)) {
-        executable_args += [
-          "--package-name",
-          invoker.package_name,
-        ]
-      } else {
-        assert(false, "Must specify a package_name or android_manifest_path")
-      }
 
       deps += [ ":${invoker.test_suite}$build_config_target_suffix" ]
       _junit_binary_build_config =
           "${target_gen_dir}/${invoker.test_suite}.build_config"
-      _rebased_build_config =
-          rebase_path("$_junit_binary_build_config", root_build_dir)
-      executable_args += [ "@WrappedPathList(--resource-zip, @FileArg($_rebased_build_config:resources:dependency_zips))" ]
 
       _rebased_robolectric_runtime_deps_dir =
           rebase_path("$root_build_dir/lib.java/third_party/robolectric",
                       root_build_dir)
+      _rebased_resource_apk = rebase_path(invoker.resource_apk, root_build_dir)
       executable_args += [
+        "--resource-apk",
+        "@WrappedPath(${_rebased_resource_apk})",
         "--robolectric-runtime-deps-dir",
         "@WrappedPath(${_rebased_robolectric_runtime_deps_dir})",
       ]
@@ -2184,9 +2169,7 @@ if (enable_java_templates) {
     if (defined(invoker.optimized_arsc_output)) {
       _optimized_arsc_output = invoker.optimized_arsc_output
     }
-    if (defined(invoker.srcjar_path)) {
-      _srcjar_path = invoker.srcjar_path
-    }
+    _srcjar_path = invoker.srcjar_path
     if (defined(invoker.post_process_script)) {
       _compile_resources_target_name = "${target_name}__intermediate"
       _srcjar_path = "${_srcjar_path}.intermediate.srcjar"
@@ -2219,9 +2202,7 @@ if (enable_java_templates) {
                                "visibility",
                              ])
       script = "//build/android/gyp/compile_resources.py"
-
       depfile = "$target_gen_dir/${invoker.target_name}_1.d"
-      outputs = []
 
       inputs = [
         invoker.build_config,
@@ -2242,9 +2223,14 @@ if (enable_java_templates) {
       ]
 
       inputs += [ invoker.android_manifest ]
+      outputs = [
+        _srcjar_path,
+      ]
       args += [
         "--android-manifest",
         rebase_path(invoker.android_manifest, root_build_dir),
+        "--srcjar-out",
+        rebase_path(_srcjar_path, root_build_dir),
       ]
       if (defined(invoker.no_xml_namespaces) && invoker.no_xml_namespaces) {
         args += [ "--no-xml-namespaces" ]
@@ -2333,18 +2319,10 @@ if (enable_java_templates) {
         ]
       }
 
-      if (defined(_srcjar_path)) {
-        outputs += [ _srcjar_path ]
+      if (defined(invoker.rename_manifest_package)) {
         args += [
-          "--srcjar-out",
-          rebase_path(_srcjar_path, root_build_dir),
-        ]
-      }
-
-      if (defined(invoker.custom_package)) {
-        args += [
-          "--custom-package",
-          invoker.custom_package,
+          "--rename-manifest-package",
+          invoker.rename_manifest_package,
         ]
       }
 

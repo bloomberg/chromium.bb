@@ -10,7 +10,6 @@ import static org.robolectric.Shadows.shadowOf;
 
 import android.app.NotificationManager;
 import android.content.Context;
-import android.os.Build;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,18 +38,6 @@ public class NotificationSystemStatusUtilUnitTest {
         getShadowNotificationManager().setNotificationsEnabled(false);
         assertThat(NotificationSystemStatusUtil.getAppNotificationStatus(),
                 is(NotificationSystemStatusUtil.APP_NOTIFICATIONS_STATUS_DISABLED));
-    }
-
-    @Config(sdk = Build.VERSION_CODES.JELLY_BEAN_MR2, manifest = Config.NONE)
-    @Test
-    public void testAppNotificationStatusPreKitKat() {
-        getShadowNotificationManager().setNotificationsEnabled(true);
-        assertThat(NotificationSystemStatusUtil.getAppNotificationStatus(),
-                is(NotificationSystemStatusUtil.APP_NOTIFICATIONS_STATUS_UNDETERMINABLE));
-
-        getShadowNotificationManager().setNotificationsEnabled(false);
-        assertThat(NotificationSystemStatusUtil.getAppNotificationStatus(),
-                is(NotificationSystemStatusUtil.APP_NOTIFICATIONS_STATUS_UNDETERMINABLE));
     }
 
     private ShadowNotificationManager getShadowNotificationManager() {

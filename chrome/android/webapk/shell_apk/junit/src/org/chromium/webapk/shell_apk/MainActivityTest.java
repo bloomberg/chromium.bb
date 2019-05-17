@@ -35,7 +35,7 @@ import org.chromium.webapk.test.WebApkTestHelper;
  * together.
  */
 @RunWith(LocalRobolectricTestRunner.class)
-@Config(manifest = Config.NONE, packageName = WebApkUtilsTest.WEBAPK_PACKAGE_NAME)
+@Config(manifest = Config.NONE)
 public final class MainActivityTest {
     private PackageManager mPackageManager;
     private static final String BROWSER_PACKAGE_NAME = "com.android.chrome";

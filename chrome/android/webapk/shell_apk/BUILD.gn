@@ -351,5 +351,4 @@ junit_binary("webapk_shell_apk_h2o_junit_tests") {
   data_deps = [
     ":${h2o_junit_manifest_target_name}",
   ]
-  android_manifest_path = h2o_junit_manifest_output
 }

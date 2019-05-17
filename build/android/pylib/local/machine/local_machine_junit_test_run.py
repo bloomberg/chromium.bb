@@ -5,10 +5,8 @@
 import json
 import logging
 import os
-import zipfile
 
 from devil.utils import cmd_helper
-from devil.utils import reraiser_thread
 from pylib import constants
 from pylib.base import base_test_result
 from pylib.base import test_run
@@ -34,21 +32,6 @@ class LocalMachineJunitTestRun(test_run.TestRun):
     with tempfile_ext.NamedTemporaryDirectory() as temp_dir:
       json_file_path = os.path.join(temp_dir, 'results.json')
 
-      # Extract resources needed for test.
-      # TODO(mikecase): Investigate saving md5sums of zipfiles, and only
-      # extract zipfiles when they change.
-      def extract_resource_zip(resource_zip, filename):
-        def helper():
-          extract_dest = os.path.join(temp_dir, filename)
-          with zipfile.ZipFile(resource_zip, 'r') as zf:
-            zf.extractall(extract_dest)
-          return extract_dest
-        return helper
-
-      resource_dirs = reraiser_thread.RunAsync(
-          extract_resource_zip(resource_zip, 'resources_%d' % index) for index,
-          resource_zip in enumerate(self._test_instance.resource_zips))
-
       java_script = os.path.join(
           constants.GetOutDirectory(), 'bin', 'helper',
           self._test_instance.suite)
@@ -67,21 +50,14 @@ class LocalMachineJunitTestRun(test_run.TestRun):
       command.extend(['--jar-args', '"%s"' % ' '.join(jar_args)])
 
       # Add JVM arguments.
-      jvm_args = ['-Drobolectric.dependency.dir=%s' %
-                      self._test_instance.robolectric_runtime_deps_dir,
-                  '-Ddir.source.root=%s' % constants.DIR_SOURCE_ROOT,]
-
-      if self._test_instance.android_manifest_path:
-        jvm_args += ['-Dchromium.robolectric.manifest=%s' %
-                     self._test_instance.android_manifest_path]
-
-      if self._test_instance.package_name:
-        jvm_args += ['-Dchromium.robolectric.package.name=%s' %
-                     self._test_instance.package_name]
-
-      if resource_dirs:
-        jvm_args += ['-Dchromium.robolectric.resource.dirs=%s' %
-                     ':'.join(resource_dirs)]
+      jvm_args = [
+          '-Drobolectric.dependency.dir=%s' %
+          self._test_instance.robolectric_runtime_deps_dir,
+          '-Ddir.source.root=%s' % constants.DIR_SOURCE_ROOT,
+          '-Drobolectric.resourcesMode=binary',
+          '-Dchromium.robolectric.resource.ap_=%s' %
+          self._test_instance.resource_apk
+      ]
 
       if logging.getLogger().isEnabledFor(logging.INFO):
         jvm_args += ['-Drobolectric.logging=stdout']
