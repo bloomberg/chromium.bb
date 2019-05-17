@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/media/media_notification_controller.h"
+#include "ash/media/media_notification_controller_impl.h"
 
 #include "ash/media/media_notification_constants.h"
+#include "ash/media/media_notification_item.h"
 #include "ash/media/media_notification_view.h"
+#include "ash/public/cpp/notification_utils.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/session/session_observer.h"
 #include "ash/shell.h"
@@ -16,6 +18,8 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification_blocker.h"
+#include "ui/message_center/public/cpp/notification.h"
+#include "ui/message_center/public/cpp/notifier_id.h"
 #include "ui/message_center/views/message_view_factory.h"
 
 namespace ash {
@@ -26,7 +30,10 @@ std::unique_ptr<message_center::MessageView> CreateCustomMediaNotificationView(
     const message_center::Notification& notification) {
   DCHECK_EQ(kMediaSessionNotificationCustomViewType,
             notification.custom_view_type());
-  return std::make_unique<MediaNotificationView>(notification);
+  auto* controller = Shell::Get()->media_notification_controller();
+  if (controller)
+    return controller->CreateMediaNotification(notification);
+  return nullptr;
 }
 
 // The maximum number of media notifications to count when recording the
@@ -95,10 +102,10 @@ class MediaNotificationBlocker : public message_center::NotificationBlocker,
 }  // namespace
 
 // static
-const char MediaNotificationController::kCountHistogramName[] =
+const char MediaNotificationControllerImpl::kCountHistogramName[] =
     "Media.Notification.Count";
 
-MediaNotificationController::MediaNotificationController(
+MediaNotificationControllerImpl::MediaNotificationControllerImpl(
     service_manager::Connector* connector)
     : blocker_(std::make_unique<MediaNotificationBlocker>(
           message_center::MessageCenter::Get(),
@@ -125,9 +132,9 @@ MediaNotificationController::MediaNotificationController(
   audio_focus_ptr->AddObserver(std::move(audio_focus_observer));
 }
 
-MediaNotificationController::~MediaNotificationController() = default;
+MediaNotificationControllerImpl::~MediaNotificationControllerImpl() = default;
 
-void MediaNotificationController::OnFocusGained(
+void MediaNotificationControllerImpl::OnFocusGained(
     media_session::mojom::AudioFocusRequestStatePtr session) {
   const std::string id = session->request_id->ToString();
 
@@ -145,25 +152,60 @@ void MediaNotificationController::OnFocusGained(
 
   notifications_.emplace(
       std::piecewise_construct, std::forward_as_tuple(id),
-      std::forward_as_tuple(id, session->source_name.value_or(std::string()),
-                            std::move(controller),
-                            std::move(session->session_info)));
+      std::forward_as_tuple(
+          this, id, session->source_name.value_or(std::string()),
+          std::move(controller), std::move(session->session_info)));
 }
 
-void MediaNotificationController::OnFocusLost(
+void MediaNotificationControllerImpl::OnFocusLost(
     media_session::mojom::AudioFocusRequestStatePtr session) {
   notifications_.erase(session->request_id->ToString());
 }
 
-void MediaNotificationController::SetView(const std::string& id,
-                                          MediaNotificationView* view) {
-  auto it = notifications_.find(id);
-  if (it == notifications_.end())
+void MediaNotificationControllerImpl::ShowNotification(const std::string& id) {
+  // If a notification already exists, do nothing.
+  if (message_center::MessageCenter::Get()->FindVisibleNotificationById(id))
     return;
-  it->second.SetView(view);
+
+  std::unique_ptr<message_center::Notification> notification =
+      ash::CreateSystemNotification(
+          message_center::NotificationType::NOTIFICATION_TYPE_CUSTOM, id,
+          base::string16(), base::string16(), base::string16(), GURL(),
+          message_center::NotifierId(
+              message_center::NotifierType::SYSTEM_COMPONENT,
+              kMediaSessionNotifierId),
+          message_center::RichNotificationData(), nullptr, gfx::VectorIcon(),
+          message_center::SystemNotificationWarningLevel::NORMAL);
+
+  // Set the priority to low to prevent the notification showing as a popup and
+  // keep it at the bottom of the list.
+  notification->set_priority(message_center::LOW_PRIORITY);
+
+  notification->set_custom_view_type(kMediaSessionNotificationCustomViewType);
+
+  message_center::MessageCenter::Get()->AddNotification(
+      std::move(notification));
+
+  RecordConcurrentNotificationCount();
 }
 
-void MediaNotificationController::RecordConcurrentNotificationCount() {
+void MediaNotificationControllerImpl::HideNotification(const std::string& id) {
+  message_center::MessageCenter::Get()->RemoveNotification(id, false);
+}
+
+std::unique_ptr<MediaNotificationView>
+MediaNotificationControllerImpl::CreateMediaNotification(
+    const message_center::Notification& notification) {
+  base::WeakPtr<MediaNotificationItem> item;
+
+  auto it = notifications_.find(notification.id());
+  if (it != notifications_.end())
+    item = it->second.GetWeakPtr();
+
+  return std::make_unique<MediaNotificationView>(notification, std::move(item));
+}
+
+void MediaNotificationControllerImpl::RecordConcurrentNotificationCount() {
   UMA_HISTOGRAM_EXACT_LINEAR(
       kCountHistogramName,
       message_center::MessageCenter::Get()

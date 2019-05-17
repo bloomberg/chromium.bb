@@ -6,6 +6,7 @@
 #define ASH_MEDIA_MEDIA_NOTIFICATION_VIEW_H_
 
 #include "ash/ash_export.h"
+#include "base/memory/weak_ptr.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "ui/message_center/views/message_view.h"
 #include "ui/views/controls/button/button.h"
@@ -18,9 +19,6 @@ class ImageSkia;
 
 namespace media_session {
 struct MediaMetadata;
-}  // namespace media_session
-
-namespace media_session {
 enum class MediaSessionAction;
 }  // namespace media_session
 
@@ -37,6 +35,7 @@ class View;
 namespace ash {
 
 class MediaNotificationBackground;
+class MediaNotificationItem;
 
 // MediaNotificationView will show up as a custom notification. It will show the
 // currently playing media and provide playback controls. There will also be
@@ -63,8 +62,8 @@ class ASH_EXPORT MediaNotificationView : public message_center::MessageView,
     kMaxValue = kCount,
   };
 
-  explicit MediaNotificationView(
-      const message_center::Notification& notification);
+  MediaNotificationView(const message_center::Notification& notification,
+                        base::WeakPtr<MediaNotificationItem> item);
   ~MediaNotificationView() override;
 
   // message_center::MessageView:
@@ -114,6 +113,8 @@ class ASH_EXPORT MediaNotificationView : public message_center::MessageView,
       bool expanded) const;
 
   void UpdateForegroundColor();
+
+  base::WeakPtr<MediaNotificationItem> item_;
 
   // View containing close and settings buttons.
   std::unique_ptr<message_center::NotificationControlButtonsView>

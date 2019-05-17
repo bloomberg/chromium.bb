@@ -9,7 +9,7 @@
 #include "ash/focus_cycler.h"
 #include "ash/media/media_notification_background.h"
 #include "ash/media/media_notification_constants.h"
-#include "ash/media/media_notification_controller.h"
+#include "ash/media/media_notification_controller_impl.h"
 #include "ash/media/media_notification_item.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -262,7 +262,8 @@ class MediaNotificationViewTest : public AshTestBase {
  private:
   std::unique_ptr<message_center::MessageView> CreateAndCaptureCustomView(
       const message_center::Notification& notification) {
-    auto view = std::make_unique<MediaNotificationView>(notification);
+    auto view = std::make_unique<MediaNotificationView>(
+        notification, GetItem()->GetWeakPtr());
     view_ = view.get();
     return view;
   }

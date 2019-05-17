@@ -65,7 +65,7 @@
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"
 #include "ash/media/media_controller.h"
-#include "ash/media/media_notification_controller.h"
+#include "ash/media/media_notification_controller_impl.h"
 #include "ash/multi_device_setup/multi_device_notification_presenter.h"
 #include "ash/new_window_controller.h"
 #include "ash/note_taking_controller.h"
@@ -849,8 +849,8 @@ Shell::~Shell() {
   // before it.
   detachable_base_handler_.reset();
 
-  // MediaNotificationController depends on MessageCenter and must be destructed
-  // before it.
+  // MediaNotificationControllerImpl depends on MessageCenter and must be
+  // destructed before it.
   media_notification_controller_.reset();
 
   // Destroys the MessageCenter singleton, so must happen late.
@@ -1154,7 +1154,7 @@ void Shell::Init(
 
   if (base::FeatureList::IsEnabled(features::kMediaSessionNotification)) {
     media_notification_controller_ =
-        std::make_unique<MediaNotificationController>(connector_);
+        std::make_unique<MediaNotificationControllerImpl>(connector_);
   }
 
   for (auto& observer : shell_observers_)

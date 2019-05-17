@@ -6,7 +6,7 @@
 
 #include "ash/media/media_notification_background.h"
 #include "ash/media/media_notification_constants.h"
-#include "ash/media/media_notification_controller.h"
+#include "ash/media/media_notification_item.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/metrics/histogram_macros.h"
@@ -108,8 +108,9 @@ const char MediaNotificationView::kMetadataHistogramName[] =
     "Media.Notification.MetadataPresent";
 
 MediaNotificationView::MediaNotificationView(
-    const message_center::Notification& notification)
-    : message_center::MessageView(notification) {
+    const message_center::Notification& notification,
+    base::WeakPtr<MediaNotificationItem> item)
+    : message_center::MessageView(notification), item_(std::move(item)) {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical, gfx::Insets(), 0));
 
@@ -209,13 +210,13 @@ MediaNotificationView::MediaNotificationView(
                      message_center::kNotificationCornerRadius);
   UpdateViewForExpandedState();
 
-  Shell::Get()->media_notification_controller()->SetView(notification_id(),
-                                                         this);
+  if (item_)
+    item_->SetView(this);
 }
 
 MediaNotificationView::~MediaNotificationView() {
-  Shell::Get()->media_notification_controller()->SetView(notification_id(),
-                                                         nullptr);
+  if (item_)
+    item_->SetView(nullptr);
 }
 
 void MediaNotificationView::UpdateWithNotification(
@@ -284,8 +285,10 @@ void MediaNotificationView::ButtonPressed(views::Button* sender,
   }
 
   if (sender->parent() == button_row_) {
-    message_center::MessageCenter::Get()->ClickOnNotificationButton(
-        notification_id(), sender->tag());
+    if (item_) {
+      item_->OnMediaSessionActionButtonPressed(
+          static_cast<MediaSessionAction>(sender->tag()));
+    }
     return;
   }
 

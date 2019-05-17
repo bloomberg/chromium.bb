@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/media/media_notification_controller.h"
+#include "ash/media/media_notification_controller_impl.h"
 
 #include <memory>
 
@@ -44,10 +44,10 @@ media_session::mojom::AudioFocusRequestStatePtr GetRequestStateWithId(
 
 }  // namespace
 
-class MediaNotificationControllerTest : public AshTestBase {
+class MediaNotificationControllerImplTest : public AshTestBase {
  public:
-  MediaNotificationControllerTest() = default;
-  ~MediaNotificationControllerTest() override = default;
+  MediaNotificationControllerImplTest() = default;
+  ~MediaNotificationControllerImplTest() override = default;
 
   // AshTestBase
   void SetUp() override {
@@ -77,7 +77,7 @@ class MediaNotificationControllerTest : public AshTestBase {
 
   void ExpectHistogramCountRecorded(int count, int size) {
     histogram_tester_.ExpectBucketCount(
-        MediaNotificationController::kCountHistogramName, count, size);
+        MediaNotificationControllerImpl::kCountHistogramName, count, size);
   }
 
   void ExpectHistogramSourceRecorded(MediaNotificationItem::Source source) {
@@ -98,12 +98,12 @@ class MediaNotificationControllerTest : public AshTestBase {
 
   base::HistogramTester histogram_tester_;
 
-  DISALLOW_COPY_AND_ASSIGN(MediaNotificationControllerTest);
+  DISALLOW_COPY_AND_ASSIGN(MediaNotificationControllerImplTest);
 };
 
 // Test toggling the notification multiple times with the same ID. Since the
 // notification is keyed by ID we should only ever show one.
-TEST_F(MediaNotificationControllerTest, OnFocusGainedLost_SameId) {
+TEST_F(MediaNotificationControllerImplTest, OnFocusGainedLost_SameId) {
   base::UnguessableToken id = base::UnguessableToken::Create();
 
   ExpectNotificationCount(0);
@@ -133,7 +133,7 @@ TEST_F(MediaNotificationControllerTest, OnFocusGainedLost_SameId) {
 
 // Test toggling the notification multiple times with different IDs. This should
 // show one notification per ID.
-TEST_F(MediaNotificationControllerTest, OnFocusGainedLost_MultipleIds) {
+TEST_F(MediaNotificationControllerImplTest, OnFocusGainedLost_MultipleIds) {
   base::UnguessableToken id1 = base::UnguessableToken::Create();
   base::UnguessableToken id2 = base::UnguessableToken::Create();
 
@@ -169,8 +169,9 @@ TEST_F(MediaNotificationControllerTest, OnFocusGainedLost_MultipleIds) {
 }
 
 // Test that a notification is hidden when it becomes uncontrollable. We still
-// keep the MediaNotificationItem around in case it becomes controllable again.
-TEST_F(MediaNotificationControllerTest,
+// keep the MediaNotificationItem around in case it becomes
+// controllable again.
+TEST_F(MediaNotificationControllerImplTest,
        OnFocusGained_ControllableBecomesUncontrollable) {
   base::UnguessableToken id = base::UnguessableToken::Create();
 
@@ -196,7 +197,7 @@ TEST_F(MediaNotificationControllerTest,
 }
 
 // Test that a notification is shown when it becomes controllable.
-TEST_F(MediaNotificationControllerTest,
+TEST_F(MediaNotificationControllerImplTest,
        OnFocusGained_NotControllableBecomesControllable) {
   base::UnguessableToken id = base::UnguessableToken::Create();
 
@@ -225,7 +226,7 @@ TEST_F(MediaNotificationControllerTest,
 }
 
 // Test hiding a notification with an invalid ID.
-TEST_F(MediaNotificationControllerTest, OnFocusLost_Noop) {
+TEST_F(MediaNotificationControllerImplTest, OnFocusLost_Noop) {
   ExpectNotificationCount(0);
 
   Shell::Get()->media_notification_controller()->OnFocusLost(
@@ -235,7 +236,7 @@ TEST_F(MediaNotificationControllerTest, OnFocusLost_Noop) {
 }
 
 // Test that media notifications have the correct custom view type.
-TEST_F(MediaNotificationControllerTest, NotificationHasCustomViewType) {
+TEST_F(MediaNotificationControllerImplTest, NotificationHasCustomViewType) {
   ExpectNotificationCount(0);
 
   base::UnguessableToken id = base::UnguessableToken::Create();
@@ -262,7 +263,7 @@ TEST_F(MediaNotificationControllerTest, NotificationHasCustomViewType) {
 
 // Test that if we recieve a null media session info that we hide the
 // notification.
-TEST_F(MediaNotificationControllerTest, HandleNullMediaSessionInfo) {
+TEST_F(MediaNotificationControllerImplTest, HandleNullMediaSessionInfo) {
   ExpectNotificationCount(0);
 
   base::UnguessableToken id = base::UnguessableToken::Create();
@@ -286,7 +287,7 @@ TEST_F(MediaNotificationControllerTest, HandleNullMediaSessionInfo) {
   ExpectNotificationCount(0);
 }
 
-TEST_F(MediaNotificationControllerTest, MediaMetadata_NoArtist) {
+TEST_F(MediaNotificationControllerImplTest, MediaMetadata_NoArtist) {
   base::UnguessableToken id = base::UnguessableToken::Create();
 
   ExpectNotificationCount(0);
@@ -305,7 +306,7 @@ TEST_F(MediaNotificationControllerTest, MediaMetadata_NoArtist) {
   ExpectNotificationCount(0);
 }
 
-TEST_F(MediaNotificationControllerTest, MediaMetadata_NoTitle) {
+TEST_F(MediaNotificationControllerImplTest, MediaMetadata_NoTitle) {
   base::UnguessableToken id = base::UnguessableToken::Create();
 
   ExpectNotificationCount(0);
@@ -324,7 +325,7 @@ TEST_F(MediaNotificationControllerTest, MediaMetadata_NoTitle) {
   ExpectNotificationCount(0);
 }
 
-TEST_F(MediaNotificationControllerTest, MediaMetadataUpdated_MissingInfo) {
+TEST_F(MediaNotificationControllerImplTest, MediaMetadataUpdated_MissingInfo) {
   base::UnguessableToken id = base::UnguessableToken::Create();
 
   ExpectNotificationCount(0);
@@ -348,7 +349,7 @@ TEST_F(MediaNotificationControllerTest, MediaMetadataUpdated_MissingInfo) {
   ExpectNotificationCount(0);
 }
 
-TEST_F(MediaNotificationControllerTest, RecordHistogramSource_Unknown) {
+TEST_F(MediaNotificationControllerImplTest, RecordHistogramSource_Unknown) {
   base::UnguessableToken id = base::UnguessableToken::Create();
 
   ExpectNotificationCount(0);
@@ -365,7 +366,7 @@ TEST_F(MediaNotificationControllerTest, RecordHistogramSource_Unknown) {
   ExpectHistogramSourceRecorded(MediaNotificationItem::Source::kUnknown);
 }
 
-TEST_F(MediaNotificationControllerTest, RecordHistogramSource_Web) {
+TEST_F(MediaNotificationControllerImplTest, RecordHistogramSource_Web) {
   base::UnguessableToken id = base::UnguessableToken::Create();
 
   ExpectNotificationCount(0);
@@ -386,7 +387,7 @@ TEST_F(MediaNotificationControllerTest, RecordHistogramSource_Web) {
   ExpectHistogramSourceRecorded(MediaNotificationItem::Source::kWeb);
 }
 
-TEST_F(MediaNotificationControllerTest, RecordHistogramSource_Assistant) {
+TEST_F(MediaNotificationControllerImplTest, RecordHistogramSource_Assistant) {
   base::UnguessableToken id = base::UnguessableToken::Create();
 
   ExpectNotificationCount(0);
@@ -407,7 +408,7 @@ TEST_F(MediaNotificationControllerTest, RecordHistogramSource_Assistant) {
   ExpectHistogramSourceRecorded(MediaNotificationItem::Source::kAssistant);
 }
 
-TEST_F(MediaNotificationControllerTest, RecordHistogramSource_Arc) {
+TEST_F(MediaNotificationControllerImplTest, RecordHistogramSource_Arc) {
   base::UnguessableToken id = base::UnguessableToken::Create();
 
   ExpectNotificationCount(0);
@@ -430,7 +431,7 @@ TEST_F(MediaNotificationControllerTest, RecordHistogramSource_Arc) {
 
 // Test that locking the screen will hide the media notifications. Unlocking the
 // screen should re-show the notifications.
-TEST_F(MediaNotificationControllerTest, HideWhenScreenLocked) {
+TEST_F(MediaNotificationControllerImplTest, HideWhenScreenLocked) {
   message_center::MessageCenter* message_center =
       message_center::MessageCenter::Get();
 
