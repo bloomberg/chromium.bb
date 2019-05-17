@@ -362,7 +362,8 @@ SysmemBufferCollection::~SysmemBufferCollection() {
                                      nullptr);
   }
 
-  collection_->Close();
+  if (collection_)
+    collection_->Close();
 
   if (on_deleted_)
     std::move(on_deleted_).Run();
