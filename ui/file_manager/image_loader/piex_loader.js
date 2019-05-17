@@ -382,6 +382,53 @@ PiexLoader.prototype.simulateIdleTimeoutPassedForTests = function() {
 };
 
 /**
+ * Resolves the file entry associated with DOM filesystem |url| and returns
+ * the file content in an ArrayBuffer.
+ * @param {string} url - DOM filesystem URL of the file.
+ * @returns {!Promise<!ArrayBuffer>}
+ */
+function readFromFileSystem(url) {
+  return new Promise((resolve, reject) => {
+    /**
+     * Reject the Promise on fileEntry URL resolve or file read failures.
+     */
+    function failure(error) {
+      reject(new Error('Reading file system: ' + error));
+    }
+
+    /**
+     * Returns true if the fileEntry file size is within sensible limits.
+     * @param {number} size - file size.
+     * @return {boolean}
+     */
+    function valid(size) {
+      return size > 0 && size < Math.pow(2, 30);
+    }
+
+    /**
+     * Reads the fileEntry's content into an ArrayBuffer: resolve Promise
+     * with the ArrayBuffer result or reject the Promise on failure.
+     * @param {!Entry} entry - file system entry of |url|.
+     */
+    function readEntry(entry) {
+      const fileEntry = /** @type {!FileEntry} */ (entry);
+      fileEntry.file((file) => {
+        if (valid(file.size)) {
+          const reader = new FileReader();
+          reader.onerror = failure;
+          reader.onload = (_) => resolve(reader.result);
+          reader.readAsArrayBuffer(file);
+        } else {
+          failure('invalid file size: ' + file.size);
+        }
+      }, failure);
+    }
+
+    window.webkitResolveLocalFileSystemURL(url, readEntry, failure);
+  });
+}
+
+/**
  * Starts to load RAW image.
  * @param {string} url
  * @return {!Promise<!PiexLoaderResponse>}
