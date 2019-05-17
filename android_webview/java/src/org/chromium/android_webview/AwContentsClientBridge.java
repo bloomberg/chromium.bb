@@ -212,6 +212,10 @@ public class AwContentsClientBridge {
         final ClientCertificateRequestCallback callback =
                 new ClientCertificateRequestCallback(id, host, port);
         mClient.onReceivedClientCertRequest(callback, keyTypes, principals, host, port);
+
+        // Record UMA for onReceivedClientCertRequest.
+        AwHistogramRecorder.recordCallbackInvocation(
+                AwHistogramRecorder.WebViewCallbackType.ON_RECEIVED_CLIENT_CERT_REQUEST);
     }
 
     @CalledByNative
@@ -268,11 +272,19 @@ public class AwContentsClientBridge {
             String mimeType, long contentLength) {
         mClient.getCallbackHelper().postOnDownloadStart(
                 url, userAgent, contentDisposition, mimeType, contentLength);
+
+        // Record UMA for onDownloadStart.
+        AwHistogramRecorder.recordCallbackInvocation(
+                AwHistogramRecorder.WebViewCallbackType.ON_DOWNLOAD_START);
     }
 
     @CalledByNative
     private void newLoginRequest(String realm, String account, String args) {
         mClient.getCallbackHelper().postOnReceivedLoginRequest(realm, account, args);
+
+        // Record UMA for onReceivedLoginRequest.
+        AwHistogramRecorder.recordCallbackInvocation(
+                AwHistogramRecorder.WebViewCallbackType.ON_RECEIVED_LOGIN_REQUEST);
     }
 
     @CalledByNative
