@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/list_model/list_item+Controller.h"
+#import "ios/chrome/browser/ui/settings/add_language_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/cells/language_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_cells_constants.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_cell.h"
@@ -49,6 +50,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }  // namespace
 
 @interface LanguageSettingsTableViewController () <
+    AddLanguageTableViewControllerDelegate,
     LanguageDetailsTableViewControllerDelegate>
 
 // The data source passed to this instance.
@@ -62,6 +64,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 // A reference to the Translate switch item for quick access.
 @property(nonatomic, weak) SettingsSwitchItem* translateSwitchItem;
+
+// A reference to the presented AddLanguageTableViewController, if any.
+@property(nonatomic, weak)
+    AddLanguageTableViewController* addLanguageTableViewController;
 
 @end
 
@@ -175,16 +181,36 @@ typedef NS_ENUM(NSInteger, ItemType) {
     didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
   [super tableView:tableView didSelectRowAtIndexPath:indexPath];
 
-  TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
-  if (item.type == ItemTypeLanguage) {
-    LanguageItem* languageItem = base::mac::ObjCCastStrict<LanguageItem>(item);
-    languageItem.canOfferTranslate =
-        [self canOfferTranslateForLanguage:languageItem];
-    LanguageDetailsTableViewController* viewController =
-        [[LanguageDetailsTableViewController alloc]
-            initWithLanguageItem:languageItem
+  ItemType itemType =
+      (ItemType)[self.tableViewModel itemTypeForIndexPath:indexPath];
+  switch (itemType) {
+    case ItemTypeLanguage: {
+      LanguageItem* languageItem = base::mac::ObjCCastStrict<LanguageItem>(
+          [self.tableViewModel itemAtIndexPath:indexPath]);
+      languageItem.canOfferTranslate =
+          [self canOfferTranslateForLanguage:languageItem];
+      LanguageDetailsTableViewController* viewController =
+          [[LanguageDetailsTableViewController alloc]
+              initWithLanguageItem:languageItem
+                          delegate:self];
+      [self.navigationController pushViewController:viewController
+                                           animated:YES];
+      break;
+    }
+    case ItemTypeAddLanguage: {
+      AddLanguageTableViewController* viewController =
+          [[AddLanguageTableViewController alloc]
+              initWithDataSource:self.dataSource
                         delegate:self];
-    [self.navigationController pushViewController:viewController animated:YES];
+      [self.navigationController pushViewController:viewController
+                                           animated:YES];
+      self.addLanguageTableViewController = viewController;
+      break;
+    }
+    case ItemTypeHeader:
+    case ItemTypeTranslateSwitch:
+      // Not handled.
+      break;
   }
 }
 
@@ -278,7 +304,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
         cellForRowAtIndexPath:(NSIndexPath*)indexPath {
   UITableViewCell* cell = [super tableView:tableView
                      cellForRowAtIndexPath:indexPath];
-  switch ([self.tableViewModel itemTypeForIndexPath:indexPath]) {
+  ItemType itemType =
+      (ItemType)[self.tableViewModel itemTypeForIndexPath:indexPath];
+  switch (itemType) {
     case ItemTypeTranslateSwitch: {
       SettingsSwitchCell* switchCell =
           base::mac::ObjCCastStrict<SettingsSwitchCell>(cell);
@@ -287,8 +315,28 @@ typedef NS_ENUM(NSInteger, ItemType) {
                       forControlEvents:UIControlEventValueChanged];
       break;
     }
+    case ItemTypeHeader:
+    case ItemTypeLanguage:
+    case ItemTypeAddLanguage:
+      // Not handled.
+      break;
   }
   return cell;
+}
+
+#pragma mark - AddLanguageTableViewControllerDelegate
+
+- (void)addLanguageTableViewController:
+            (AddLanguageTableViewController*)tableViewController
+                 didSelectLanguageCode:(const std::string&)languageCode {
+  // Inform the command handler.
+  [self.commandHandler addLanguage:languageCode];
+
+  // Update the model and the table view.
+  [self updateLanguagesSection];
+
+  [self.navigationController popViewControllerAnimated:YES];
+  self.addLanguageTableViewController = nil;
 }
 
 #pragma mark - LanguageDetailsTableViewControllerDelegate
@@ -326,6 +374,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
   // Ignore pref changes while in edit mode.
   if (self.isEditing)
     return;
+
+  // Inform the presented AddLanguageTableViewController to update itself.
+  [self.addLanguageTableViewController supportedLanguagesListChanged];
 
   // Update the model and the table view.
   [self updateLanguagesSection];

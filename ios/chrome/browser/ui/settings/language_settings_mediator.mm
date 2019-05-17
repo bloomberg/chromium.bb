@@ -169,6 +169,32 @@
   return acceptLanguages;
 }
 
+- (NSArray<LanguageItem*>*)supportedLanguagesItems {
+  // Get the accept languages.
+  std::vector<std::string> acceptLanguageCodes;
+  _translatePrefs->GetLanguageList(&acceptLanguageCodes);
+
+  // Get the supported languages.
+  std::vector<translate::TranslateLanguageInfo> languages;
+  translate::TranslatePrefs::GetLanguageInfoList(
+      GetApplicationContext()->GetApplicationLocale(),
+      _translatePrefs->IsTranslateAllowedByPolicy(), &languages);
+
+  NSMutableArray<LanguageItem*>* supportedLanguages =
+      [NSMutableArray arrayWithCapacity:languages.size()];
+  for (const auto& language : languages) {
+    // Ignore languages already in the accept languages list.
+    if (std::find(acceptLanguageCodes.begin(), acceptLanguageCodes.end(),
+                  language.code) != acceptLanguageCodes.end()) {
+      continue;
+    }
+    LanguageItem* languageItem = [self languageItemFromLanguage:language];
+    languageItem.accessibilityTraits |= UIAccessibilityTraitButton;
+    [supportedLanguages addObject:languageItem];
+  }
+  return supportedLanguages;
+}
+
 - (BOOL)translateEnabled {
   return self.translateEnabledPref.value;
 }
@@ -196,6 +222,10 @@
   _translatePrefs->GetLanguageList(&languageCodes);
   _translatePrefs->RearrangeLanguage(languageCode, where, offset,
                                      languageCodes);
+}
+
+- (void)addLanguage:(const std::string&)languageCode {
+  _translatePrefs->AddToLanguageList(languageCode, /*force_blocked=*/false);
 }
 
 - (void)removeLanguage:(const std::string&)languageCode {

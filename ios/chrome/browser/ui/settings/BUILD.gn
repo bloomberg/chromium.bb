@@ -42,6 +42,8 @@ source_set("settings") {
   sources = [
     "about_chrome_table_view_controller.h",
     "about_chrome_table_view_controller.mm",
+    "add_language_table_view_controller.h",
+    "add_language_table_view_controller.mm",
     "bandwidth_management_table_view_controller.h",
     "bandwidth_management_table_view_controller.mm",
     "block_popups_table_view_controller.h",

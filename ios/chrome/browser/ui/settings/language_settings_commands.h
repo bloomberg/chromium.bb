@@ -21,6 +21,10 @@
             downward:(BOOL)downward
           withOffset:(NSUInteger)offset;
 
+// Informs the receiver to add the language with the given code to the list of
+// accept languages.
+- (void)addLanguage:(const std::string&)languageCode;
+
 // Informs the receiver to remove the language with the given code from the list
 // of accept languages.
 - (void)removeLanguage:(const std::string&)languageCode;

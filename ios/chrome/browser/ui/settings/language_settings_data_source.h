@@ -18,6 +18,10 @@
 // Returns the accept languages list ordered according to the user prefs.
 - (NSArray<LanguageItem*>*)acceptLanguagesItems;
 
+// Returns the supported languages list excluding the accept languages. This
+// list is sorted alphabetically based on display names in the current locale.
+- (NSArray<LanguageItem*>*)supportedLanguagesItems;
+
 // Returns whether or not Translate is enabled.
 - (BOOL)translateEnabled;
 
