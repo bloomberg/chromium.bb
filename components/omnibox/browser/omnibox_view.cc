@@ -110,7 +110,6 @@ bool OmniboxView::IsEditingOrEmpty() const {
 // want to consider reusing the same code for both the popup and omnibox icons.
 gfx::ImageSkia OmniboxView::GetIcon(int dip_size,
                                     SkColor color,
-                                    SkColor search_alternate_color,
                                     IconFetchedCallback on_icon_fetched) const {
 #if defined(OS_ANDROID) || defined(OS_IOS)
   // This is used on desktop only.
@@ -167,15 +166,6 @@ gfx::ImageSkia OmniboxView::GetIcon(int dip_size,
       bookmark_model && bookmark_model->IsBookmarked(match.destination_url);
 
   const gfx::VectorIcon& vector_icon = match.GetVectorIcon(is_bookmarked);
-
-  // When the blue search loop experiment is enabled, the in-omnibox vector
-  // icon for search type matches should be blue as well. This icon is used if
-  // the default search engine favicon has not yet been fetched, or is disabled.
-  if (base::FeatureList::IsEnabled(
-          omnibox::kUIExperimentBlueSearchLoopAndSearchQuery) &&
-      AutocompleteMatch::IsSearchType(match.type)) {
-    return gfx::CreateVectorIcon(vector_icon, dip_size, search_alternate_color);
-  }
 
   return gfx::CreateVectorIcon(vector_icon, dip_size, color);
 #endif  // defined(OS_ANDROID) || defined(OS_IOS)

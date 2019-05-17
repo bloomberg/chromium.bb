@@ -1274,26 +1274,6 @@ const char kOmniboxSpareRendererDescription[] =
     "When the omnibox is focused, start an empty spare renderer. This can "
     "speed up the load of the navigation from the omnibox.";
 
-const char kOmniboxUIBlueSearchLoopAndSearchQueryName[] =
-    "Omnibox UI Blue Search Loop and Search Query";
-const char kOmniboxUIBlueSearchLoopAndSearchQueryDescription[] =
-    "Color the generic search icon and search terms blue.";
-
-const char kOmniboxUIBlueTitlesAndGrayUrlsOnPageSuggestionsName[] =
-    "Omnibox UI Blue Titles And Gray Urls On Page Suggestions";
-const char kOmniboxUIBlueTitlesAndGrayUrlsOnPageSuggestionsDescription[] =
-    "Displays navigation suggestions with blue titles and gray URLs.";
-
-const char kOmniboxUIBlueTitlesOnPageSuggestionsName[] =
-    "Omnibox UI Blue Titles On Page Suggestions";
-const char kOmniboxUIBlueTitlesOnPageSuggestionsDescription[] =
-    "Displays navigation suggestions with blue titles.";
-
-const char kOmniboxUIBoldUserTextOnSearchSuggestionsName[] =
-    "Omnibox UI Bold User Text On Search Suggestions";
-const char kOmniboxUIBoldUserTextOnSearchSuggestionsDescription[] =
-    "Bolds the user text instead of autocomplete text for search suggestions.";
-
 const char kOmniboxUICuesForSearchHistoryMatchesName[] =
     "Omnibox UI Cues to Differentiate Search History Matches";
 const char kOmniboxUICuesForSearchHistoryMatchesDescription[] =
@@ -1335,12 +1315,6 @@ const char kOmniboxUIShowPlaceholderWhenCaretShowingDescription[] =
     "Shows the \"Search Google or type a URL\" placeholder text in the "
     "omnibox when it's focused / the caret cursor is showing.";
 
-const char kOmniboxUIShowSuffixOnAllSearchSuggestionsName[] =
-    "Omnibox UI Show Suffix On All Search Suggestions";
-const char kOmniboxUIShowSuffixOnAllSearchSuggestionsDescription[] =
-    "Shows the search suffix (e.g. \" - Google Search\") on all search "
-    "suggestions in the omnibox.";
-
 const char kOmniboxUIShowSuggestionFaviconsName[] =
     "Omnibox UI Show Suggestion Favicons";
 const char kOmniboxUIShowSuggestionFaviconsDescription[] =
@@ -1352,17 +1326,6 @@ const char kOmniboxUISwapTitleAndUrlDescription[] =
     "In the omnibox dropdown, shows titles before URLs when both are "
     "available.";
 
-const char kOmniboxUIUnboldSuggestionTextName[] =
-    "Omnibox UI Unbold Suggestion Text";
-const char kOmniboxUIUnboldSuggestionTextDescription[] =
-    "Displays search suggestions without bolding.";
-
-const char kOmniboxUIUseGenericSearchEngineIconName[] =
-    "Omnibox UI Use Generic Search Engine Icon";
-const char kOmniboxUIUseGenericSearchEngineIconDescription[] =
-    "In the omnibox and NTP, shows a generic magnifying glass icon instead of  "
-    "the Search Provider favicon.";
-
 const char kOmniboxUIVerticalMarginName[] = "Omnibox UI Vertical Margin";
 const char kOmniboxUIVerticalMarginDescription[] =
     "Changes the vertical margin in the Omnibox UI.";
@@ -1372,11 +1335,6 @@ const char kOmniboxUIVerticalMarginLimitToNonTouchOnlyName[] =
 const char kOmniboxUIVerticalMarginLimitToNonTouchOnlyDescription[] =
     "Limits the vertical margin UI experiment to non-touch devices only. Has "
     "no effect if the Omnibox Vertical Margin experiment is not enabled.";
-
-const char kOmniboxUIWhiteBackgroundOnBlurName[] =
-    "Omnibox UI White Background On Blur";
-const char kOmniboxUIWhiteBackgroundOnBlurDescription[] =
-    "Set the omnibox background white when it's unfocused";
 
 const char kOmniboxZeroSuggestionsOnNTPName[] =
     "Omnibox Zero Suggestions on New Tab Page";

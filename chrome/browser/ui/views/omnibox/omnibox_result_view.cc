@@ -78,24 +78,6 @@ OmniboxResultView::OmniboxResultView(
 OmniboxResultView::~OmniboxResultView() {}
 
 SkColor OmniboxResultView::GetColor(OmniboxPart part) const {
-  if (!AutocompleteMatch::IsSearchType(match_.type)) {
-    // These recoloring experiments affect all non-search matches.
-    bool color_titles_blue =
-        base::FeatureList::IsEnabled(
-            omnibox::kUIExperimentBlueTitlesAndGrayUrlsOnPageSuggestions) ||
-        base::FeatureList::IsEnabled(
-            omnibox::kUIExperimentBlueTitlesOnPageSuggestions);
-    bool color_urls_gray = base::FeatureList::IsEnabled(
-        omnibox::kUIExperimentBlueTitlesAndGrayUrlsOnPageSuggestions);
-
-    // If these recoloring experiments are enabled, change |part| to fetch an
-    // alternate color for this text.
-    if (color_titles_blue && part == OmniboxPart::RESULTS_TEXT_DEFAULT)
-      part = OmniboxPart::RESULTS_TEXT_URL;
-    else if (color_urls_gray && part == OmniboxPart::RESULTS_TEXT_URL)
-      part = OmniboxPart::RESULTS_TEXT_DIMMED;
-  }
-
   return GetOmniboxColor(part, GetTint(), GetThemeState());
 }
 
@@ -168,8 +150,6 @@ void OmniboxResultView::Invalidate() {
   // Answers use their own styling for additional content text and the
   // description text, whereas non-answer suggestions use the match text and
   // calculated classifications for the description text.
-  bool blue_search_query = base::FeatureList::IsEnabled(
-      omnibox::kUIExperimentBlueSearchLoopAndSearchQuery);
   if (match_.answer) {
     const bool reverse = OmniboxFieldTrial::IsReverseAnswersEnabled() &&
                          !match_.answer->IsExceptedFromLineReversal();
@@ -178,16 +158,14 @@ void OmniboxResultView::Invalidate() {
       suggestion_view_->description()->SetText(match_.contents,
                                                match_.contents_class, true);
       suggestion_view_->description()->ApplyTextColor(
-          blue_search_query ? OmniboxPart::RESULTS_TEXT_URL
-                            : OmniboxPart::RESULTS_TEXT_DIMMED);
+          OmniboxPart::RESULTS_TEXT_DIMMED);
       suggestion_view_->description()->AppendExtraText(
           match_.answer->first_line());
     } else {
       suggestion_view_->content()->SetText(match_.contents,
                                            match_.contents_class);
       suggestion_view_->content()->ApplyTextColor(
-          blue_search_query ? OmniboxPart::RESULTS_TEXT_URL
-                            : OmniboxPart::RESULTS_TEXT_DEFAULT);
+          OmniboxPart::RESULTS_TEXT_DEFAULT);
       suggestion_view_->content()->AppendExtraText(match_.answer->first_line());
       suggestion_view_->description()->SetText(match_.answer->second_line(),
                                                true);
@@ -198,10 +176,6 @@ void OmniboxResultView::Invalidate() {
     // adjustments like answers above.  Pedals do likewise.
     suggestion_view_->content()->SetText(match_.contents,
                                          match_.contents_class);
-    if (blue_search_query) {
-      suggestion_view_->content()->ApplyTextColor(
-          OmniboxPart::RESULTS_TEXT_URL);
-    }
     suggestion_view_->description()->SetText(match_.description,
                                              match_.description_class, -1);
     suggestion_view_->description()->ApplyTextColor(
@@ -219,13 +193,6 @@ void OmniboxResultView::Invalidate() {
     if (high_contrast) {
       suggestion_view_->content()->ReapplyStyling();
       suggestion_view_->description()->ReapplyStyling();
-    }
-
-    // If the blue search query experiment is on, search suggestions are
-    // recolored at the end.
-    if (blue_search_query && AutocompleteMatch::IsSearchType(match_.type)) {
-      suggestion_view_->content()->ApplyTextColor(
-          OmniboxPart::RESULTS_TEXT_URL);
     }
   }
 
@@ -502,17 +469,8 @@ void OmniboxResultView::RemoveSuggestion() const {
 // OmniboxResultView, private:
 
 gfx::Image OmniboxResultView::GetIcon() const {
-  SkColor color = GetColor(OmniboxPart::RESULTS_ICON);
-
-  // If the blue search loop experiment is enabled, set the color of search
-  // match icons to be the same as result URLs (conventionally blue).
-  if (base::FeatureList::IsEnabled(
-          omnibox::kUIExperimentBlueSearchLoopAndSearchQuery) &&
-      AutocompleteMatch::IsSearchType(match_.type)) {
-    color = GetColor(OmniboxPart::RESULTS_TEXT_URL);
-  }
-
-  return popup_contents_view_->GetMatchIcon(match_, color);
+  return popup_contents_view_->GetMatchIcon(
+      match_, GetColor(OmniboxPart::RESULTS_ICON));
 }
 
 void OmniboxResultView::SetHovered(bool hovered) {

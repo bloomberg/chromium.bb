@@ -398,13 +398,6 @@ gfx::Image ChromeOmniboxClient::GetFaviconForPageUrl(
 
 gfx::Image ChromeOmniboxClient::GetFaviconForDefaultSearchProvider(
     FaviconFetchedCallback on_favicon_fetched) {
-  if (base::FeatureList::IsEnabled(
-          omnibox::kUIExperimentUseGenericSearchEngineIcon)) {
-    // Returning an empty image and never calling |on_favicon_fetched| will
-    // keep the generic icon showing for the default search provider.
-    return gfx::Image();
-  }
-
   const TemplateURL* const default_provider =
       GetTemplateURLService()->GetDefaultSearchProvider();
   if (!default_provider)

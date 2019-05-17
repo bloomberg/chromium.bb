@@ -228,61 +228,6 @@ const base::Feature kUIExperimentVerticalMarginLimitToNonTouchOnly{
     "OmniboxUIExperimentVerticalMarginLimitToNonTouchOnly",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Feature used to color "blue" the generic search icon and search terms.
-// Technically, this makes the search icon and search terms match the color of
-// Omnibox link text, which is blue by convention.
-const base::Feature kUIExperimentBlueSearchLoopAndSearchQuery{
-    "OmniboxUIExperimentBlueSearchLoopAndSearchQuery",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Feature used to change the color of text in navigation suggestions. It
-// changes title text from black to blue, and URL text from blue to gray.
-const base::Feature kUIExperimentBlueTitlesAndGrayUrlsOnPageSuggestions{
-    "OmniboxUIExperimentBlueTitlesAndGrayUrlsOnPageSuggestions",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Feature used to change the color of text in navigation suggestions. It
-// changes title text from black to blue.
-const base::Feature kUIExperimentBlueTitlesOnPageSuggestions{
-    "OmniboxUIExperimentBlueTitlesOnPageSuggestions",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Feature used to show a " - Google Search", " - Bing Search", etc. suffix on
-// all search suggestions instead of just the first one in each cluster.
-const base::Feature kUIExperimentShowSuffixOnAllSearchSuggestions{
-    "OmniboxUIExperimentShowSuffixOnAllSearchSuggestions",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Feature used to show a white background in the omnibox while it's unfocused.
-// More technically, with this flag on, it uses the same background color as
-// the results popup (conventionally white).
-const base::Feature kUIExperimentWhiteBackgroundOnBlur{
-    "OmniboxUIExperimentWhiteBackgroundOnBlur",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Feature used to show a generic vector icon for omnibox search instead of the
-// search engine favicon.
-//
-// This feature flag's string has a typo: "Omnibox" => "Ominbox".
-// Do not correct this typo, because this misspelled string is being used
-// as-is in field trials.
-const base::Feature kUIExperimentUseGenericSearchEngineIcon{
-    "OminboxUIExperimentUseGenericSearchEngineIcon",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Feature used to bold the "user text" part of search suggestions instead
-// of the "autocomplete" part. For example, if the user typed "point reyes",
-// and the search suggestion was "point reyes weather", this feature makes
-// the "point reyes" part of the suggestion bold, instead of "weather".
-const base::Feature kUIExperimentBoldUserTextOnSearchSuggestions{
-    "OmniboxUIExperimentBoldUserTextOnSearchSuggestions",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Feature used to unbold suggestion text.
-const base::Feature kUIExperimentUnboldSuggestionText{
-    "OmniboxUIExperimentUnboldSuggestionText",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Shows the "Search Google or type a URL" omnibox placeholder even when the
 // caret (text edit cursor) is showing / when focused. views::Textfield works
 // this way, as does <input placeholder="">. Omnibox and the NTP's "fakebox"

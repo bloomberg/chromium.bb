@@ -813,16 +813,8 @@ void LocationBarView::RefreshBackground() {
   if (omnibox_view_->model()->is_caret_visible()) {
     background_color = border_color = GetColor(OmniboxPart::RESULTS_BACKGROUND);
   } else {
-    // If the white omnibox background experiment is enabled, use the color of
-    // the results box rather than the normal location bar background color.
-    OmniboxPart normal_color_part =
-        base::FeatureList::IsEnabled(
-            omnibox::kUIExperimentWhiteBackgroundOnBlur)
-            ? OmniboxPart::RESULTS_BACKGROUND
-            : OmniboxPart::LOCATION_BAR_BACKGROUND;
-    const SkColor normal =
-        GetOmniboxColor(normal_color_part, tint(), OmniboxPartState::NORMAL);
-
+    const SkColor normal = GetOmniboxColor(OmniboxPart::LOCATION_BAR_BACKGROUND,
+                                           tint(), OmniboxPartState::NORMAL);
     const SkColor hovered =
         GetOmniboxColor(OmniboxPart::LOCATION_BAR_BACKGROUND, tint(),
                         OmniboxPartState::HOVERED);
@@ -839,11 +831,6 @@ void LocationBarView::RefreshBackground() {
     if (GetNativeTheme()->UsesHighContrastColors()) {
       // High contrast schemes get a border stroke even on a rounded omnibox.
       stroke_color = border_color;
-    } else if (base::FeatureList::IsEnabled(
-                   omnibox::kUIExperimentWhiteBackgroundOnBlur)) {
-      const double opacity = hover_animation_.GetCurrentValue();
-      stroke_color = gfx::Tween::ColorValueBetween(opacity, border_color,
-                                                   SK_ColorTRANSPARENT);
     }
 
     SetBackground(CreateRoundRectBackground(background_color, stroke_color));
@@ -1323,7 +1310,6 @@ gfx::ImageSkia LocationBarView::GetLocationIcon(
   return omnibox_view() ? omnibox_view()->GetIcon(
                               GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
                               GetSecurityChipColor(level),
-                              GetColor(OmniboxPart::RESULTS_TEXT_URL),
                               std::move(on_icon_fetched))
                         : gfx::ImageSkia();
 }

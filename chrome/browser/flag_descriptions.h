@@ -784,18 +784,6 @@ extern const char kOmniboxShortBookmarkSuggestionsDescription[];
 extern const char kOmniboxSpareRendererName[];
 extern const char kOmniboxSpareRendererDescription[];
 
-extern const char kOmniboxUIBlueSearchLoopAndSearchQueryName[];
-extern const char kOmniboxUIBlueSearchLoopAndSearchQueryDescription[];
-
-extern const char kOmniboxUIBlueTitlesAndGrayUrlsOnPageSuggestionsName[];
-extern const char kOmniboxUIBlueTitlesAndGrayUrlsOnPageSuggestionsDescription[];
-
-extern const char kOmniboxUIBlueTitlesOnPageSuggestionsName[];
-extern const char kOmniboxUIBlueTitlesOnPageSuggestionsDescription[];
-
-extern const char kOmniboxUIBoldUserTextOnSearchSuggestionsName[];
-extern const char kOmniboxUIBoldUserTextOnSearchSuggestionsDescription[];
-
 extern const char kOmniboxUICuesForSearchHistoryMatchesName[];
 extern const char kOmniboxUICuesForSearchHistoryMatchesDescription[];
 
@@ -817,29 +805,17 @@ extern const char kOmniboxUIMaxAutocompleteMatchesDescription[];
 extern const char kOmniboxUIShowPlaceholderWhenCaretShowingName[];
 extern const char kOmniboxUIShowPlaceholderWhenCaretShowingDescription[];
 
-extern const char kOmniboxUIShowSuffixOnAllSearchSuggestionsName[];
-extern const char kOmniboxUIShowSuffixOnAllSearchSuggestionsDescription[];
-
 extern const char kOmniboxUIShowSuggestionFaviconsName[];
 extern const char kOmniboxUIShowSuggestionFaviconsDescription[];
 
 extern const char kOmniboxUISwapTitleAndUrlName[];
 extern const char kOmniboxUISwapTitleAndUrlDescription[];
 
-extern const char kOmniboxUIUnboldSuggestionTextName[];
-extern const char kOmniboxUIUnboldSuggestionTextDescription[];
-
-extern const char kOmniboxUIUseGenericSearchEngineIconName[];
-extern const char kOmniboxUIUseGenericSearchEngineIconDescription[];
-
 extern const char kOmniboxUIVerticalMarginName[];
 extern const char kOmniboxUIVerticalMarginDescription[];
 
 extern const char kOmniboxUIVerticalMarginLimitToNonTouchOnlyName[];
 extern const char kOmniboxUIVerticalMarginLimitToNonTouchOnlyDescription[];
-
-extern const char kOmniboxUIWhiteBackgroundOnBlurName[];
-extern const char kOmniboxUIWhiteBackgroundOnBlurDescription[];
 
 extern const char kOmniboxZeroSuggestionsOnNTPName[];
 extern const char kOmniboxZeroSuggestionsOnNTPDescription[];

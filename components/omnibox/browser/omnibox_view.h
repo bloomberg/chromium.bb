@@ -91,11 +91,8 @@ class OmniboxView {
 
   // Returns the icon to display as the location icon. If a favicon is
   // available, |on_icon_fetched| may be called later asynchronously.
-  // |search_alternate_color| should match the color used for URL text, and may
-  // be used for search suggestions depending on some flags.
   gfx::ImageSkia GetIcon(int dip_size,
                          SkColor color,
-                         SkColor search_alternate_color,
                          IconFetchedCallback on_icon_fetched) const;
 
   // The user text is the text the user has manually keyed in.  When present,

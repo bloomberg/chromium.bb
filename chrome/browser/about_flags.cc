@@ -2477,55 +2477,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxUISwapTitleAndUrlDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kUIExperimentSwapTitleAndUrl)},
 
-    {"omnibox-ui-blue-search-loop-and-search-query",
-     flag_descriptions::kOmniboxUIBlueSearchLoopAndSearchQueryName,
-     flag_descriptions::kOmniboxUIBlueSearchLoopAndSearchQueryDescription,
-     kOsDesktop,
-     FEATURE_VALUE_TYPE(omnibox::kUIExperimentBlueSearchLoopAndSearchQuery)},
-
-    {"omnibox-ui-blue-titles-and-gray-urls-on-page-suggestions",
-     flag_descriptions::kOmniboxUIBlueTitlesAndGrayUrlsOnPageSuggestionsName,
-     flag_descriptions::
-         kOmniboxUIBlueTitlesAndGrayUrlsOnPageSuggestionsDescription,
-     kOsDesktop,
-     FEATURE_VALUE_TYPE(
-         omnibox::kUIExperimentBlueTitlesAndGrayUrlsOnPageSuggestions)},
-
-    {"omnibox-ui-blue-titles-on-page-suggestions",
-     flag_descriptions::kOmniboxUIBlueTitlesOnPageSuggestionsName,
-     flag_descriptions::kOmniboxUIBlueTitlesOnPageSuggestionsDescription,
-     kOsDesktop,
-     FEATURE_VALUE_TYPE(omnibox::kUIExperimentBlueTitlesOnPageSuggestions)},
-
-    {"omnibox-ui-show-suffix-on-all-search-suggestions",
-     flag_descriptions::kOmniboxUIShowSuffixOnAllSearchSuggestionsName,
-     flag_descriptions::kOmniboxUIShowSuffixOnAllSearchSuggestionsDescription,
-     kOsDesktop,
-     FEATURE_VALUE_TYPE(
-         omnibox::kUIExperimentShowSuffixOnAllSearchSuggestions)},
-
-    {"omnibox-ui-white-background-on-blur",
-     flag_descriptions::kOmniboxUIWhiteBackgroundOnBlurName,
-     flag_descriptions::kOmniboxUIWhiteBackgroundOnBlurDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(omnibox::kUIExperimentWhiteBackgroundOnBlur)},
-
-    {"omnibox-ui-use-generic-search-engine-icon",
-     flag_descriptions::kOmniboxUIUseGenericSearchEngineIconName,
-     flag_descriptions::kOmniboxUIUseGenericSearchEngineIconDescription,
-     kOsDesktop,
-     FEATURE_VALUE_TYPE(omnibox::kUIExperimentUseGenericSearchEngineIcon)},
-
-    {"omnibox-ui-bold-user-text-on-search-suggestions",
-     flag_descriptions::kOmniboxUIBoldUserTextOnSearchSuggestionsName,
-     flag_descriptions::kOmniboxUIBoldUserTextOnSearchSuggestionsDescription,
-     kOsDesktop,
-     FEATURE_VALUE_TYPE(omnibox::kUIExperimentBoldUserTextOnSearchSuggestions)},
-
-    {"omnibox-ui-unbold-suggestion-text",
-     flag_descriptions::kOmniboxUIUnboldSuggestionTextName,
-     flag_descriptions::kOmniboxUIUnboldSuggestionTextDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(omnibox::kUIExperimentUnboldSuggestionText)},
-
 #if defined(OS_ANDROID)
     {"omnibox-zero-suggestions-on-ntp",
      flag_descriptions::kOmniboxZeroSuggestionsOnNTPName,

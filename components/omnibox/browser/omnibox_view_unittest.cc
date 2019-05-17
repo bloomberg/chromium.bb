@@ -145,9 +145,8 @@ TEST_F(OmniboxViewTest, GetIcon_Default) {
   gfx::ImageSkia expected_icon = gfx::CreateVectorIcon(
       vector_icons::kSearchIcon, gfx::kFaviconSize, gfx::kPlaceholderColor);
 
-  gfx::ImageSkia icon =
-      view()->GetIcon(gfx::kFaviconSize, gfx::kPlaceholderColor,
-                      gfx::kPlaceholderColor, base::DoNothing());
+  gfx::ImageSkia icon = view()->GetIcon(
+      gfx::kFaviconSize, gfx::kPlaceholderColor, base::DoNothing());
 
   EXPECT_EQ(icon.bitmap(), expected_icon.bitmap());
 }
@@ -166,9 +165,8 @@ TEST_F(OmniboxViewTest, GetIcon_BookmarkIcon) {
   gfx::ImageSkia expected_icon = gfx::CreateVectorIcon(
       omnibox::kBookmarkIcon, gfx::kFaviconSize, gfx::kPlaceholderColor);
 
-  gfx::ImageSkia icon =
-      view()->GetIcon(gfx::kFaviconSize, gfx::kPlaceholderColor,
-                      gfx::kPlaceholderColor, base::DoNothing());
+  gfx::ImageSkia icon = view()->GetIcon(
+      gfx::kFaviconSize, gfx::kPlaceholderColor, base::DoNothing());
 
   EXPECT_EQ(icon.bitmap(), expected_icon.bitmap());
 }
@@ -182,8 +180,7 @@ TEST_F(OmniboxViewTest, GetIcon_Favicon) {
   match.destination_url = kUrl;
   model()->SetCurrentMatchForTest(match);
 
-  view()->GetIcon(gfx::kFaviconSize, gfx::kPlaceholderColor,
-                  gfx::kPlaceholderColor, base::DoNothing());
+  view()->GetIcon(gfx::kFaviconSize, gfx::kPlaceholderColor, base::DoNothing());
 
   EXPECT_EQ(client()->GetPageUrlForLastFaviconRequest(), kUrl);
 }
