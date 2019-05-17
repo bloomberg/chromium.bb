@@ -1553,8 +1553,8 @@
   },
   {
     "name": "enable-suggestions-with-substring-match",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "tmartino" ],
+    "expiry_milestone": 77
   },
   {
     "name": "enable-surfacecontrol",
