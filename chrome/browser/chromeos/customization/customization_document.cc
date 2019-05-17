@@ -869,17 +869,16 @@ void ServicesCustomizationDocument::CheckAndApplyWallpaper() {
 
   std::unique_ptr<bool> exists(new bool(false));
 
-  base::Closure check_file_exists =
-      base::Bind(&CheckWallpaperCacheExists,
-                 GetCustomizedWallpaperDownloadedFileName(),
-                 base::Unretained(exists.get()));
-  base::Closure on_checked_closure = base::Bind(
+  base::OnceClosure check_file_exists = base::BindOnce(
+      &CheckWallpaperCacheExists, GetCustomizedWallpaperDownloadedFileName(),
+      base::Unretained(exists.get()));
+  base::OnceClosure on_checked_closure = base::BindOnce(
       &ServicesCustomizationDocument::OnCheckedWallpaperCacheExists,
       weak_ptr_factory_.GetWeakPtr(), base::Passed(std::move(exists)),
-      base::Passed(std::move(applying)));
+      std::move(applying));
   base::PostTaskWithTraitsAndReply(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      check_file_exists, on_checked_closure);
+      std::move(check_file_exists), std::move(on_checked_closure));
 }
 
 void ServicesCustomizationDocument::OnCheckedWallpaperCacheExists(

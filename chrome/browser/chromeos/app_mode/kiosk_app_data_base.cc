@@ -102,10 +102,9 @@ void KioskAppDataBase::SaveIcon(const SkBitmap& icon,
 
   const base::FilePath icon_path =
       cache_dir.AppendASCII(app_id_).AddExtension(kIconFileExtension);
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock()},
-      base::BindOnce(&SaveIconToLocalOnBlockingPool, icon_path,
-                     base::Passed(std::move(image_data))));
+  base::PostTaskWithTraits(FROM_HERE, {base::MayBlock()},
+                           base::BindOnce(&SaveIconToLocalOnBlockingPool,
+                                          icon_path, std::move(image_data)));
 
   icon_path_ = icon_path;
 }
