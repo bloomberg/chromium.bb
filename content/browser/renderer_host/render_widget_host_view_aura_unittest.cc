@@ -4488,8 +4488,9 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
 
 // Tests that the gesture debounce timer plays nice with the overscroll
 // controller.
+// TODO(crbug.com/776424): Disabled due to flakiness on Fuchsia and Linux tsan.
 TEST_F(RenderWidgetHostViewAuraOverscrollTest,
-       GestureScrollDebounceTimerOverscroll) {
+       DISABLED_GestureScrollDebounceTimerOverscroll) {
   SetUpOverscrollEnvironmentWithDebounce(10);
 
   PressAndSetTouchActionAuto();
@@ -4661,8 +4662,9 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, OverscrollWithTouchEvents) {
 
 // Tests that touch-gesture end is dispatched to the renderer at the end of a
 // touch-gesture initiated overscroll.
+// TODO(crbug.com/776424): Disabled due to flakiness on Fuchsia and Linux tsan.
 TEST_F(RenderWidgetHostViewAuraOverscrollTest,
-       TouchGestureEndDispatchedAfterOverscrollComplete) {
+       DISABLED_TouchGestureEndDispatchedAfterOverscrollComplete) {
   SetUpOverscrollEnvironmentWithDebounce(10);
   widget_host_->OnMessageReceived(WidgetHostMsg_HasTouchEventHandlers(0, true));
 
