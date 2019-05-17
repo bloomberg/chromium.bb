@@ -245,7 +245,25 @@ When searching for candidate IP addresses, link-local and loopback addresses
 are skipped over. Link-local or loopback address will only be returned as a
 last resort when no other IP address was found by following these steps.
 
-Also note that this sequence of steps explicitly favors IPv4 over IPv6 results.
+This sequence of steps explicitly favors IPv4 over IPv6 results.
+
+*Historical note*: Prior to M72, Chrome's implementation of `myIpAddress()` was
+effectively just `getaddrinfo(gethostname)`. This is now step 2 of the heuristic.
+
+### What about `var pacUseMultihomedDNS`?
+
+In Firefox, if you define a global named `pacUseMultihomedDNS` in your PAC
+script, it causes `myIpAddress()` to report the IP address of the interface
+that would (likely) have been used had we connected to it DIRECT.
+
+In particular, it will do a DNS resolution of the target host (the hostname of
+the URL that the proxy resolution is being done for), and then
+connect a datagram socket to get the source address.
+
+Chrome does not recognize the `pacUseMultihomedDNS` global as having special
+meaning. A PAC script is free to define such a global, and it won't have
+side-effects. Chrome has no APIs or settings to change `myIpAddress()`'s
+algorithm.
 
 ## Resolving client's IP address within a PAC script using `myIpAddressEx()`
 
