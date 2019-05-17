@@ -229,6 +229,8 @@ inline PhysicalRect PhysicalRectToBeNoop(const LayoutRect& r) {
 }
 
 CORE_EXPORT PhysicalRect UnionRect(const Vector<PhysicalRect>& rects);
+CORE_EXPORT PhysicalRect
+UnionRectEvenIfEmpty(const Vector<PhysicalRect>& rects);
 
 CORE_EXPORT std::ostream& operator<<(std::ostream&, const PhysicalRect&);
 CORE_EXPORT WTF::TextStream& operator<<(WTF::TextStream&, const PhysicalRect&);

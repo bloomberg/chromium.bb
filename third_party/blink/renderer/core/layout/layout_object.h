@@ -1542,10 +1542,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   FloatPoint LocalToAncestorPoint(const FloatPoint&,
                                   const LayoutBoxModelObject* ancestor,
                                   MapCoordinatesFlags = 0) const;
-  void LocalToAncestorRects(Vector<LayoutRect>&,
+  void LocalToAncestorRects(Vector<PhysicalRect>&,
                             const LayoutBoxModelObject* ancestor,
-                            const LayoutPoint& pre_offset,
-                            const LayoutPoint& post_offset) const;
+                            const PhysicalOffset& pre_offset,
+                            const PhysicalOffset& post_offset) const;
 
   // Convert a local quad into the coordinate system of container, not
   // include transforms. See localToAncestorQuad for details.
@@ -1890,15 +1890,15 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
            HasFilterInducingProperty() || StyleRef().HasBlendMode();
   }
 
+  Vector<PhysicalRect> OutlineRects(const PhysicalOffset& additional_offset,
+                                    NGOutlineType) const;
+
   // Collects rectangles that the outline of this object would be drawing along
   // the outside of, even if the object isn't styled with a outline for now. The
   // rects also cover continuations.
-  virtual void AddOutlineRects(Vector<LayoutRect>&,
-                               const LayoutPoint& additional_offset,
+  virtual void AddOutlineRects(Vector<PhysicalRect>&,
+                               const PhysicalOffset& additional_offset,
                                NGOutlineType) const {}
-
-  Vector<LayoutRect> PhysicalOutlineRects(const LayoutPoint& additional_offset,
-                                          NGOutlineType) const;
 
   // For history and compatibility reasons, we draw outline:auto (for focus
   // rings) and normal style outline differently.

@@ -60,8 +60,8 @@ class CORE_EXPORT NGPhysicalBoxFragment final
 
   // Fragment offset is this fragment's offset from parent.
   // Needed to compensate for LayoutInline Legacy code offsets.
-  void AddSelfOutlineRects(Vector<LayoutRect>* outline_rects,
-                           const LayoutPoint& additional_offset,
+  void AddSelfOutlineRects(Vector<PhysicalRect>* outline_rects,
+                           const PhysicalOffset& additional_offset,
                            NGOutlineType include_block_overflows) const;
 
   UBiDiLevel BidiLevel() const;

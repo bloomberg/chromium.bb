@@ -518,8 +518,8 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
   void SetLogicalTopForChild(LayoutBox& child, LayoutUnit logical_top);
   void DetermineLogicalLeftPositionForChild(LayoutBox& child);
 
-  void AddOutlineRects(Vector<LayoutRect>&,
-                       const LayoutPoint& additional_offset,
+  void AddOutlineRects(Vector<PhysicalRect>&,
+                       const PhysicalOffset& additional_offset,
                        NGOutlineType) const override;
 
   bool PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const override;

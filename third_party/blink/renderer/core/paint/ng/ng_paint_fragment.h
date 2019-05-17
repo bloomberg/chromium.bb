@@ -159,9 +159,9 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
 
   void RecalcInlineChildrenInkOverflow();
 
-  void AddSelfOutlineRect(Vector<LayoutRect>*,
-                          const LayoutPoint& offset,
-                          NGOutlineType) const;
+  void AddSelfOutlineRects(Vector<PhysicalRect>*,
+                           const PhysicalOffset& offset,
+                           NGOutlineType) const;
 
   // TODO(layout-dev): Implement when we have oveflow support.
   // TODO(eae): Switch to using NG geometry types.

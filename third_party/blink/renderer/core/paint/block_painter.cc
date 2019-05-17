@@ -361,9 +361,9 @@ PhysicalRect BlockPainter::OverflowRectForCullRectTesting(
     // empty, but we need to continue painting to output <a>'s PDF URL rect
     // which covers the continuations, as if we included <a>'s PDF URL rect into
     // layout_block_'s visual overflow.
-    auto rects = layout_block_.PhysicalOutlineRects(
-        LayoutPoint(), NGOutlineType::kIncludeBlockVisualOverflow);
-    overflow_rect = PhysicalRectToBeNoop(UnionRect(rects));
+    auto rects = layout_block_.OutlineRects(
+        PhysicalOffset(), NGOutlineType::kIncludeBlockVisualOverflow);
+    overflow_rect = UnionRect(rects);
   }
   overflow_rect.Unite(layout_block_.PhysicalVisualOverflowRect());
 

@@ -285,7 +285,7 @@ TEST_P(ParameterizedLayoutInlineTest, VisualRectInDocument) {
     </style>
     <div>
       <span>xx<br>
-        <span id="target" tabindex="-1">yy
+        <span id="target">yy
           <div style="width:111px;height:222px;background:yellow"></div>
           yy
         </span>
@@ -325,6 +325,51 @@ TEST_P(ParameterizedLayoutInlineTest, VisualRectInDocumentVerticalRL) {
   EXPECT_EQ(expected, target->VisualRectInDocument(kUseGeometryMapper));
 }
 
+TEST_P(ParameterizedLayoutInlineTest, VisualRectInDocumentSVGTspan) {
+  LoadAhem();
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body {
+        margin:0px;
+        font: 20px/20px Ahem;
+      }
+    </style>
+    <svg>
+      <text x="10" y="50" width="100">
+        <tspan id="target" dx="15" dy="25">tspan</tspan>
+      </text>
+    </svg>
+  )HTML");
+
+  LayoutInline* target = ToLayoutInline(GetLayoutObjectByElementId("target"));
+  const int ascent = 16;
+  PhysicalRect expected(10 + 15, 50 + 25 - ascent, 20 * 5, 20);
+  EXPECT_EQ(expected, target->VisualRectInDocument());
+  EXPECT_EQ(expected, target->VisualRectInDocument(kUseGeometryMapper));
+}
+
+TEST_P(ParameterizedLayoutInlineTest, VisualRectInDocumentSVGTspanTB) {
+  LoadAhem();
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body {
+        margin:0px;
+        font: 20px/20px Ahem;
+      }
+    </style>
+    <svg>
+      <text x="50" y="10" width="100" writing-mode="tb">
+        <tspan id="target" dx="15" dy="25">tspan</tspan>
+      </text>
+    </svg>
+  )HTML");
+
+  LayoutInline* target = ToLayoutInline(GetLayoutObjectByElementId("target"));
+  PhysicalRect expected(50 + 15 - 20 / 2, 10 + 25, 20, 20 * 5);
+  EXPECT_EQ(expected, target->VisualRectInDocument());
+  EXPECT_EQ(expected, target->VisualRectInDocument(kUseGeometryMapper));
+}
+
 // When adding focus ring rects, we should avoid adding duplicated rect for
 // continuations.
 TEST_P(ParameterizedLayoutInlineTest, FocusRingRecursiveContinuations) {
@@ -349,16 +394,90 @@ TEST_P(ParameterizedLayoutInlineTest, FocusRingRecursiveContinuations) {
     </span>
   )HTML");
 
-  Vector<LayoutRect> rects;
-  GetLayoutObjectByElementId("target")->AddOutlineRects(
-      rects, LayoutPoint(), NGOutlineType::kIncludeBlockVisualOverflow);
+  auto rects = GetLayoutObjectByElementId("target")->OutlineRects(
+      PhysicalOffset(), NGOutlineType::kIncludeBlockVisualOverflow);
 
-  EXPECT_THAT(rects,
-              UnorderedElementsAre(LayoutRect(0, 0, 100, 20),    // 'SPAN0'
-                                   LayoutRect(0, 20, 800, 40),   // div DIV1
-                                   LayoutRect(0, 20, 200, 20),   // 'DIV1 SPAN1'
-                                   LayoutRect(0, 40, 800, 20),   // div DIV2
-                                   LayoutRect(0, 40, 80, 20)));  // 'DIV2'
+  EXPECT_THAT(
+      rects, UnorderedElementsAre(PhysicalRect(0, 0, 100, 20),   // 'SPAN0'
+                                  PhysicalRect(0, 20, 800, 40),  // div DIV1
+                                  PhysicalRect(0, 20, 200, 20),  // 'DIV1 SPAN1'
+                                  PhysicalRect(0, 40, 800, 20),  // div DIV2
+                                  PhysicalRect(0, 40, 80, 20)));  // 'DIV2'
+}
+
+// When adding focus ring rects, we should avoid adding line box rects of
+// recursive inlines repeatedly.
+TEST_P(ParameterizedLayoutInlineTest, FocusRingRecursiveInlinesVerticalRL) {
+  // TODO(crbug.com/835484): The test is broken for LayoutNG.
+  if (RuntimeEnabledFeatures::LayoutNGEnabled())
+    return;
+
+  LoadAhem();
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body {
+        margin: 0;
+        font: 20px/20px Ahem;
+      }
+    </style>
+    <div style="width: 200px; height: 200px; writing-mode: vertical-rl">
+      <span id="target">
+        <b><b><b><i><i><i>INLINE</i></i> <i><i>TEXT</i></i>
+        <div style="position: relative; top: -5px">
+          <b><b>BLOCK</b> <i>CONTENTS</i></b>
+        </div>
+        </i></b></b></b>
+      </span>
+    </div>
+  )HTML");
+
+  auto* target = GetLayoutObjectByElementId("target");
+  auto rects = target->OutlineRects(target->FirstFragment().PaintOffset(),
+                                    NGOutlineType::kIncludeBlockVisualOverflow);
+  EXPECT_THAT(rects, UnorderedElementsAre(
+                         PhysicalRect(180, 0, 20, 120),     // 'INLINE'
+                         PhysicalRect(160, 0, 20, 80),      // 'TEXT'
+                         PhysicalRect(120, -5, 40, 200),    // the inner div
+                         PhysicalRect(140, -5, 20, 100),    // 'BLOCK'
+                         PhysicalRect(120, -5, 20, 160)));  // 'CONTENTS'
+}
+
+// When adding focus ring rects, we should avoid adding duplicated rect for
+// continuations.
+TEST_P(ParameterizedLayoutInlineTest,
+       FocusRingRecursiveContinuationsVerticalRL) {
+  // TODO(crbug.com/835484): The test is broken for LayoutNG.
+  if (RuntimeEnabledFeatures::LayoutNGEnabled())
+    return;
+
+  LoadAhem();
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body {
+        margin: 0;
+        font: 20px/20px Ahem;
+      }
+    </style>
+    <div style="width: 200px; height: 400px; writing-mode: vertical-rl">
+      <span id="target">SPAN0
+        <div>DIV1
+          <span>SPAN1
+            <div>DIV2</div>
+          </span>
+        </div>
+      </span>
+    </div>
+  )HTML");
+
+  auto* target = GetLayoutObjectByElementId("target");
+  auto rects = target->OutlineRects(target->FirstFragment().PaintOffset(),
+                                    NGOutlineType::kIncludeBlockVisualOverflow);
+  EXPECT_THAT(rects, UnorderedElementsAre(
+                         PhysicalRect(180, 0, 20, 100),   // 'SPAN0'
+                         PhysicalRect(140, 0, 40, 400),   // div DIV1
+                         PhysicalRect(160, 0, 20, 200),   // 'DIV1 SPAN1'
+                         PhysicalRect(140, 0, 20, 400),   // div DIV2
+                         PhysicalRect(140, 0, 20, 80)));  // 'DIV2'
 }
 
 // When adding focus ring rects, we should avoid adding line box rects of
@@ -387,16 +506,15 @@ TEST_P(ParameterizedLayoutInlineTest, FocusRingRecursiveInlines) {
     </div>
   )HTML");
 
-  Vector<LayoutRect> rects;
-  GetLayoutObjectByElementId("target")->AddOutlineRects(
-      rects, LayoutPoint(), NGOutlineType::kIncludeBlockVisualOverflow);
+  auto rects = GetLayoutObjectByElementId("target")->OutlineRects(
+      PhysicalOffset(), NGOutlineType::kIncludeBlockVisualOverflow);
 
-  EXPECT_THAT(rects,
-              UnorderedElementsAre(LayoutRect(0, 0, 120, 20),   // 'INLINE'
-                                   LayoutRect(0, 20, 80, 20),   // 'TEXT'
-                                   LayoutRect(0, 35, 200, 40),  // the inner div
-                                   LayoutRect(0, 35, 100, 20),  // 'BLOCK'
-                                   LayoutRect(0, 55, 160, 20)));  // 'CONTENTS'
+  EXPECT_THAT(rects, UnorderedElementsAre(
+                         PhysicalRect(0, 0, 120, 20),     // 'INLINE'
+                         PhysicalRect(0, 20, 80, 20),     // 'TEXT'
+                         PhysicalRect(0, 35, 200, 40),    // the inner div
+                         PhysicalRect(0, 35, 100, 20),    // 'BLOCK'
+                         PhysicalRect(0, 55, 160, 20)));  // 'CONTENTS'
 }
 
 TEST_P(ParameterizedLayoutInlineTest,

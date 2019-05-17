@@ -144,6 +144,18 @@ PhysicalRect UnionRect(const Vector<PhysicalRect>& rects) {
   return result;
 }
 
+PhysicalRect UnionRectEvenIfEmpty(const Vector<PhysicalRect>& rects) {
+  wtf_size_t count = rects.size();
+  if (!count)
+    return PhysicalRect();
+
+  PhysicalRect result = rects[0];
+  for (wtf_size_t i = 1; i < count; ++i)
+    result.UniteEvenIfEmpty(rects[i]);
+
+  return result;
+}
+
 std::ostream& operator<<(std::ostream& os, const PhysicalRect& value) {
   return os << value.ToString();
 }

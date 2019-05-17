@@ -300,10 +300,10 @@ void LayoutTextControl::ComputePreferredLogicalWidths() {
   ClearPreferredLogicalWidthsDirty();
 }
 
-void LayoutTextControl::AddOutlineRects(Vector<LayoutRect>& rects,
-                                        const LayoutPoint& additional_offset,
+void LayoutTextControl::AddOutlineRects(Vector<PhysicalRect>& rects,
+                                        const PhysicalOffset& additional_offset,
                                         NGOutlineType) const {
-  rects.push_back(LayoutRect(additional_offset, Size()));
+  rects.emplace_back(additional_offset, Size());
 }
 
 LayoutObject* LayoutTextControl::LayoutSpecialExcludedChild(

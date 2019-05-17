@@ -78,14 +78,14 @@ class CORE_EXPORT NGPhysicalContainerFragment : public NGPhysicalFragment {
                               unsigned sub_type);
 
   void AddOutlineRectsForNormalChildren(
-      Vector<LayoutRect>* outline_rects,
-      const LayoutPoint& additional_offset,
+      Vector<PhysicalRect>* outline_rects,
+      const PhysicalOffset& additional_offset,
       NGOutlineType outline_type,
       const LayoutBoxModelObject* containing_block) const;
   void AddOutlineRectsForDescendant(
       const NGLink& descendant,
-      Vector<LayoutRect>* rects,
-      const LayoutPoint& additional_offset,
+      Vector<PhysicalRect>* rects,
+      const PhysicalOffset& additional_offset,
       NGOutlineType outline_type,
       const LayoutBoxModelObject* containing_block) const;
 

@@ -2344,7 +2344,7 @@ void LayoutBlockFlow::AddVisualOverflowFromInlineChildren() {
       PhysicalRect child_rect = child->InkOverflow();
       if (!child_rect.IsEmpty()) {
         child_rect.offset += child->Offset();
-        AddContentsVisualOverflow(child_rect.ToLayoutRect());
+        AddContentsVisualOverflow(child_rect);
       }
     }
   } else {
@@ -2361,19 +2361,19 @@ void LayoutBlockFlow::AddVisualOverflowFromInlineChildren() {
 
   // Add outline rects of continuations of descendant inlines into visual
   // overflow of this block.
-  LayoutRect outline_bounds_of_all_continuations;
+  PhysicalRect outline_bounds_of_all_continuations;
   for (InlineWalker walker(LineLayoutBlockFlow(this)); !walker.AtEnd();
        walker.Advance()) {
     const LayoutObject& o = *walker.Current().GetLayoutObject();
     if (!IsInlineWithOutlineAndContinuation(o))
       continue;
 
-    Vector<LayoutRect> outline_rects;
+    Vector<PhysicalRect> outline_rects;
     ToLayoutInline(o).AddOutlineRectsForContinuations(
-        outline_rects, LayoutPoint(),
+        outline_rects, PhysicalOffset(),
         o.OutlineRectsShouldIncludeBlockVisualOverflow());
     if (!outline_rects.IsEmpty()) {
-      LayoutRect outline_bounds = UnionRectEvenIfEmpty(outline_rects);
+      PhysicalRect outline_bounds = UnionRectEvenIfEmpty(outline_rects);
       outline_bounds.Inflate(LayoutUnit(o.StyleRef().OutlineOutsetExtent()));
       outline_bounds_of_all_continuations.Unite(outline_bounds);
     }

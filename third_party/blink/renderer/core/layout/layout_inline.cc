@@ -798,32 +798,42 @@ void LayoutInline::Paint(const PaintInfo& paint_info) const {
   InlinePainter(*this).Paint(paint_info);
 }
 
-template <typename GeneratorContext>
-void LayoutInline::GenerateLineBoxRects(GeneratorContext& yield) const {
+template <typename PhysicalRectCollector>
+void LayoutInline::CollectLineBoxRects(
+    const PhysicalRectCollector& yield) const {
   if (IsInLayoutNGInlineFormattingContext()) {
-    const NGPhysicalBoxFragment* box_fragment =
-        ContainingBlockFlowFragmentOf(*this);
+    const auto* box_fragment = ContainingBlockFlowFragmentOf(*this);
     if (!box_fragment)
       return;
-    const auto& descendants =
-        NGInlineFragmentTraversal::SelfFragmentsOf(*box_fragment, this);
-    const LayoutBlock* block_for_flipping = nullptr;
-    if (UNLIKELY(HasFlippedBlocksWritingMode()))
-      block_for_flipping = ContainingBlock();
-    for (const auto& descendant : descendants) {
-      LayoutRect rect = descendant.RectInContainerBox().ToLayoutRect();
-      if (UNLIKELY(block_for_flipping))
-        block_for_flipping->FlipForWritingMode(rect);
-      yield(rect);
-    }
+    for (const auto& fragment :
+         NGInlineFragmentTraversal::SelfFragmentsOf(*box_fragment, this))
+      yield(fragment.RectInContainerBox());
     return;
   }
   if (!AlwaysCreateLineBoxes()) {
-    GenerateCulledLineBoxRects(yield, this);
+    CollectCulledLineBoxRects(yield);
   } else {
-    for (InlineFlowBox* curr : *LineBoxes())
-      yield(LayoutRect(curr->Location(), curr->Size()));
+    const LayoutBlock* block_for_flipping =
+        NeedsFlipForWritingMode() ? ContainingBlock() : nullptr;
+    for (InlineFlowBox* curr : *LineBoxes()) {
+      yield(FlipForWritingMode(LayoutRect(curr->Location(), curr->Size()),
+                               block_for_flipping));
+    }
   }
+}
+
+template <typename PhysicalRectCollector>
+void LayoutInline::CollectCulledLineBoxRects(
+    const PhysicalRectCollector& yield) const {
+  DCHECK(!IsInLayoutNGInlineFormattingContext());
+  const LayoutBlock* block_for_flipping =
+      NeedsFlipForWritingMode() ? ContainingBlock() : nullptr;
+  CollectCulledLineBoxRectsInFlippedBlocksDirection(
+      [this, block_for_flipping, &yield](const LayoutRect& r) {
+        PhysicalRect rect = FlipForWritingMode(r, block_for_flipping);
+        yield(rect);
+      },
+      this);
 }
 
 static inline void ComputeItemTopHeight(const LayoutInline* container,
@@ -849,9 +859,9 @@ static inline void ComputeItemTopHeight(const LayoutInline* container,
   *height = LayoutUnit(container_metrics.Height());
 }
 
-template <typename GeneratorContext>
-void LayoutInline::GenerateCulledLineBoxRects(
-    GeneratorContext& yield,
+template <typename FlippedRectCollector>
+void LayoutInline::CollectCulledLineBoxRectsInFlippedBlocksDirection(
+    const FlippedRectCollector& yield,
     const LayoutInline* container) const {
   if (!CulledInlineFirstLineBox())
     return;
@@ -889,7 +899,8 @@ void LayoutInline::GenerateCulledLineBoxRects(
       // If the child doesn't need line boxes either, then we can recur.
       LayoutInline* curr_inline = ToLayoutInline(curr);
       if (!curr_inline->AlwaysCreateLineBoxes()) {
-        curr_inline->GenerateCulledLineBoxRects(yield, container);
+        curr_inline->CollectCulledLineBoxRectsInFlippedBlocksDirection(
+            yield, container);
       } else {
         for (InlineFlowBox* child_line : *curr_inline->LineBoxes()) {
           RootInlineBox& root_box = child_line->Root();
@@ -926,35 +937,20 @@ void LayoutInline::GenerateCulledLineBoxRects(
   }
 }
 
-namespace {
-
-class AbsoluteQuadsGeneratorContext {
- public:
-  AbsoluteQuadsGeneratorContext(const LayoutInline* layout_object,
-                                Vector<FloatQuad>& quads,
-                                MapCoordinatesFlags mode)
-      : quads_(quads), geometry_map_(mode) {
-    geometry_map_.PushMappingsToAncestor(layout_object, nullptr);
-  }
-
-  void operator()(const FloatRect& rect) {
-    quads_.push_back(geometry_map_.AbsoluteRect(rect));
-  }
-  void operator()(const LayoutRect& rect) { operator()(FloatRect(rect)); }
-
- private:
-  Vector<FloatQuad>& quads_;
-  LayoutGeometryMap geometry_map_;
-};
-
-}  // unnamed namespace
-
 void LayoutInline::AbsoluteQuadsForSelf(Vector<FloatQuad>& quads,
                                         MapCoordinatesFlags mode) const {
-  AbsoluteQuadsGeneratorContext context(this, quads, mode);
-  GenerateLineBoxRects(context);
+  LayoutGeometryMap geometry_map(mode);
+  geometry_map.PushMappingsToAncestor(this, nullptr);
+  const LayoutBlock* block_for_flipping =
+      NeedsFlipForWritingMode() ? ContainingBlock() : nullptr;
+  CollectLineBoxRects(
+      [this, &quads, &geometry_map, block_for_flipping](const PhysicalRect& r) {
+        // LayoutGeometryMap requires flipped rect as the input.
+        LayoutRect rect = FlipForWritingMode(r, block_for_flipping);
+        quads.push_back(geometry_map.AbsoluteRect(FloatRect(rect)));
+      });
   if (quads.IsEmpty())
-    context(FloatRect());
+    quads.push_back(geometry_map.AbsoluteRect(FloatRect()));
 }
 
 base::Optional<PhysicalOffset> LayoutInline::FirstLineBoxTopLeftInternal()
@@ -972,7 +968,7 @@ base::Optional<PhysicalOffset> LayoutInline::FirstLineBoxTopLeftInternal()
   }
   if (const InlineBox* first_box = FirstLineBoxIncludingCulling()) {
     LayoutPoint location = first_box->Location();
-    if (UNLIKELY(HasFlippedBlocksWritingMode())) {
+    if (UNLIKELY(NeedsFlipForWritingMode())) {
       location = ContainingBlock()->FlipForWritingMode(location);
       location.Move(-first_box->Width(), LayoutUnit());
     }
@@ -1004,20 +1000,17 @@ PhysicalOffset LayoutInline::AnchorPhysicalLocation() const {
 }
 
 PhysicalRect LayoutInline::AbsoluteBoundingBoxRectHandlingEmptyInline() const {
-  Vector<LayoutRect> rects;
-  AddOutlineRects(rects, LayoutPoint(),
-                  NGOutlineType::kIncludeBlockVisualOverflow);
-  LayoutRect rect = UnionRect(rects);
-  if (rects.IsEmpty()) {
-    auto location = AnchorPhysicalLocation().ToLayoutPoint();
-    // AnchorPhysicalLocation is pure physical, while LocalToAbsolute() requires
-    // physical coordinates with flipped block direction.
-    if (UNLIKELY(HasFlippedBlocksWritingMode()))
-      location = ContainingBlock()->FlipForWritingMode(location);
-    rect.SetLocation(location);
-  }
-  return PhysicalRect(LocalToAbsoluteQuad(FloatRect(rect), kUseTransforms)
-                          .EnclosingBoundingBox());
+  Vector<PhysicalRect> rects = OutlineRects(
+      PhysicalOffset(), NGOutlineType::kIncludeBlockVisualOverflow);
+  PhysicalRect rect = UnionRect(rects);
+  if (rects.IsEmpty())
+    rect.offset = AnchorPhysicalLocation();
+
+  // rect is pure physical, while LocalToAbsolute() requires physical
+  // coordinates with flipped block direction.
+  FloatRect flipped_rect(FlipForWritingMode(rect));
+  return PhysicalRect(
+      LocalToAbsoluteQuad(flipped_rect, kUseTransforms).EnclosingBoundingBox());
 }
 
 LayoutUnit LayoutInline::OffsetLeft(const Element* parent) const {
@@ -1085,29 +1078,6 @@ bool LayoutInline::NodeAtPoint(HitTestResult& result,
                               hit_test_action);
 }
 
-namespace {
-
-class HitTestCulledInlinesGeneratorContext {
- public:
-  HitTestCulledInlinesGeneratorContext(Region& region,
-                                       const HitTestLocation& location)
-      : intersected_(false), region_(region), location_(location) {}
-  void operator()(const LayoutRect& rect) {
-    if (location_.Intersects(rect)) {
-      intersected_ = true;
-      region_.Unite(EnclosingIntRect(rect));
-    }
-  }
-  bool Intersected() const { return intersected_; }
-
- private:
-  bool intersected_;
-  Region& region_;
-  const HitTestLocation& location_;
-};
-
-}  // unnamed namespace
-
 bool LayoutInline::HitTestCulledInline(
     HitTestResult& result,
     const HitTestLocation& location_in_container,
@@ -1119,10 +1089,15 @@ bool LayoutInline::HitTestCulledInline(
 
   HitTestLocation adjusted_location(location_in_container,
                                     -ToLayoutSize(accumulated_offset));
-
   Region region_result;
-  HitTestCulledInlinesGeneratorContext context(region_result,
-                                               adjusted_location);
+  bool intersected = false;
+  auto yield = [&adjusted_location, &region_result,
+                &intersected](const PhysicalRect& rect) {
+    if (adjusted_location.Intersects(rect.ToLayoutRect())) {
+      intersected = true;
+      region_result.Unite(EnclosingIntRect(rect));
+    }
+  };
 
   // NG generates purely physical rectangles here, while legacy sets the block
   // offset on the rectangles relatively to the block-start. NG is doing the
@@ -1134,21 +1109,21 @@ bool LayoutInline::HitTestCulledInline(
     const auto& traversal_root =
         To<NGPhysicalContainerFragment>(container_fragment->PhysicalFragment());
     DCHECK(traversal_root.IsInline() || traversal_root.IsLineBox());
-    const LayoutPoint root_offset =
-        container_fragment->InlineOffsetToContainerBox().ToLayoutPoint();
+    PhysicalOffset root_offset =
+        container_fragment->InlineOffsetToContainerBox();
     const auto& descendants =
         NGInlineFragmentTraversal::SelfFragmentsOf(traversal_root, this);
     for (const auto& descendant : descendants) {
-      LayoutRect rect = descendant.RectInContainerBox().ToLayoutRect();
-      rect.MoveBy(root_offset);
-      context(rect);
+      PhysicalRect rect = descendant.RectInContainerBox();
+      rect.Move(root_offset);
+      yield(rect);
     }
   } else {
     DCHECK(!ContainingNGBlockFlow());
-    GenerateCulledLineBoxRects(context, this);
+    CollectCulledLineBoxRects(yield);
   }
 
-  if (context.Intersected()) {
+  if (intersected) {
     UpdateHitTestResult(result, adjusted_location.Point());
     if (result.AddNodeToListBasedTestResult(GetNode(), adjusted_location,
                                             region_result) == kStopHitTesting)
@@ -1188,20 +1163,6 @@ PositionWithAffinity LayoutInline::PositionForPoint(
   return LayoutBoxModelObject::PositionForPoint(point);
 }
 
-namespace {
-
-class LinesBoundingBoxGeneratorContext {
- public:
-  LinesBoundingBoxGeneratorContext(FloatRect& rect) : rect_(rect) {}
-  void operator()(const FloatRect& rect) { rect_.UniteIfNonZero(rect); }
-  void operator()(const LayoutRect& rect) { operator()(FloatRect(rect)); }
-
- private:
-  FloatRect& rect_;
-};
-
-}  // unnamed namespace
-
 PhysicalRect LayoutInline::PhysicalLinesBoundingBox() const {
   if (IsInLayoutNGInlineFormattingContext()) {
     const NGPhysicalBoxFragment* box_fragment =
@@ -1218,12 +1179,11 @@ PhysicalRect LayoutInline::PhysicalLinesBoundingBox() const {
 
   if (!AlwaysCreateLineBoxes()) {
     DCHECK(!FirstLineBox());
-    FloatRect float_result;
-    LinesBoundingBoxGeneratorContext context(float_result);
-    GenerateCulledLineBoxRects(context, this);
-    if (UNLIKELY(HasFlippedBlocksWritingMode()))
-      ContainingBlock()->FlipForWritingMode(float_result);
-    return PhysicalRect::EnclosingRect(float_result);
+    PhysicalRect bounding_box;
+    CollectLineBoxRects([&bounding_box](const PhysicalRect& rect) {
+      bounding_box.UniteIfNonZero(rect);
+    });
+    return bounding_box;
   }
 
   LayoutRect result;
@@ -1258,9 +1218,7 @@ PhysicalRect LayoutInline::PhysicalLinesBoundingBox() const {
     result = LayoutRect(x, y, width, height);
   }
 
-  if (UNLIKELY(HasFlippedBlocksWritingMode()))
-    ContainingBlock()->FlipForWritingMode(result);
-  return PhysicalRect(result);
+  return FlipForWritingMode(result);
 }
 
 InlineBox* LayoutInline::CulledInlineFirstLineBox() const {
@@ -1312,10 +1270,9 @@ InlineBox* LayoutInline::CulledInlineLastLineBox() const {
 }
 
 LayoutRect LayoutInline::CulledInlineVisualOverflowBoundingBox() const {
-  FloatRect float_result;
-  LinesBoundingBoxGeneratorContext context(float_result);
-  GenerateCulledLineBoxRects(context, this);
-  LayoutRect result(EnclosingLayoutRect(float_result));
+  LayoutRect result;
+  CollectCulledLineBoxRectsInFlippedBlocksDirection(
+      [&result](const LayoutRect& r) { result.UniteIfNonZero(r); }, this);
   bool is_horizontal = StyleRef().IsHorizontalWritingMode();
   for (LayoutObject* curr = FirstChild(); curr; curr = curr->NextSibling()) {
     if (curr->IsFloatingOrOutOfFlowPositioned())
@@ -1363,10 +1320,7 @@ LayoutRect LayoutInline::LinesVisualOverflowBoundingBox() const {
           result->Unite(child_rect);
         },
         &result);
-    LayoutRect rect = result.ToLayoutRect();
-    if (HasFlippedBlocksWritingMode())
-      ContainingBlock()->FlipForWritingMode(rect);
-    return rect;
+    return FlipForWritingMode(result);
   }
 
   if (!AlwaysCreateLineBoxes())
@@ -1403,21 +1357,16 @@ LayoutRect LayoutInline::LinesVisualOverflowBoundingBox() const {
 }
 
 PhysicalRect LayoutInline::VisualRectInDocument(VisualRectFlags flags) const {
-  LayoutRect rect;
+  PhysicalRect rect;
   if (!Continuation()) {
-    rect = VisualOverflowRect();
+    rect = FlipForWritingMode(VisualOverflowRect());
   } else {
     // Should also cover continuations.
-    Vector<LayoutRect> outlines;
-    AddOutlineRects(outlines, LayoutPoint(),
-                    NGOutlineType::kIncludeBlockVisualOverflow);
-    rect = UnionRect(outlines);
+    rect = UnionRect(OutlineRects(PhysicalOffset(),
+                                  NGOutlineType::kIncludeBlockVisualOverflow));
   }
-  if (UNLIKELY(HasFlippedBlocksWritingMode()))
-    ContainingBlock()->FlipForWritingMode(rect);
-  PhysicalRect physical_rect = PhysicalRectToBeNoop(rect);
-  MapToVisualRectInAncestorSpace(View(), physical_rect, flags);
-  return physical_rect;
+  MapToVisualRectInAncestorSpace(View(), rect, flags);
+  return rect;
 }
 
 PhysicalRect LayoutInline::LocalVisualRectIgnoringVisibility() const {
@@ -1432,33 +1381,31 @@ PhysicalRect LayoutInline::LocalVisualRectIgnoringVisibility() const {
 
   // VisualOverflowRect() is in "physical coordinates with flipped blocks
   // direction", while all "VisualRect"s are in pure physical coordinates.
-  auto rect = VisualOverflowRect();
-  if (UNLIKELY(HasFlippedBlocksWritingMode()))
-    ContainingBlock()->FlipForWritingMode(rect);
-  return PhysicalRect(rect);
+  return FlipForWritingMode(VisualOverflowRect());
 }
 
 LayoutRect LayoutInline::VisualOverflowRect() const {
   LayoutRect overflow_rect = LinesVisualOverflowBoundingBox();
   LayoutUnit outline_outset(StyleRef().OutlineOutsetExtent());
   if (outline_outset) {
-    Vector<LayoutRect> rects;
+    Vector<PhysicalRect> rects;
     if (GetDocument().InNoQuirksMode()) {
       // We have already included outline extents of line boxes in
       // linesVisualOverflowBoundingBox(), so the following just add outline
       // rects for children and continuations.
       AddOutlineRectsForChildrenAndContinuations(
-          rects, LayoutPoint(), OutlineRectsShouldIncludeBlockVisualOverflow());
+          rects, PhysicalOffset(),
+          OutlineRectsShouldIncludeBlockVisualOverflow());
     } else {
       // In non-standard mode, because the difference in
       // LayoutBlock::minLineHeightForReplacedObject(),
       // linesVisualOverflowBoundingBox() may not cover outline rects of lines
       // containing replaced objects.
-      AddOutlineRects(rects, LayoutPoint(),
+      AddOutlineRects(rects, PhysicalOffset(),
                       OutlineRectsShouldIncludeBlockVisualOverflow());
     }
     if (!rects.IsEmpty()) {
-      LayoutRect outline_rect = UnionRectEvenIfEmpty(rects);
+      LayoutRect outline_rect = FlipForWritingMode(UnionRectEvenIfEmpty(rects));
       outline_rect.Inflate(outline_outset);
       overflow_rect.Unite(outline_rect);
     }
@@ -1476,12 +1423,8 @@ PhysicalRect LayoutInline::ReferenceBoxForClipPath() const {
     return PhysicalRect(fragment->InlineOffsetToContainerBox(),
                         fragment->Size());
   }
-  if (const InlineFlowBox* flow_box = FirstLineBox()) {
-    LayoutRect rect = flow_box->FrameRect();
-    if (UNLIKELY(HasFlippedBlocksWritingMode()))
-      ContainingBlock()->FlipForWritingMode(rect);
-    return PhysicalRect(rect);
-  }
+  if (const InlineFlowBox* flow_box = FirstLineBox())
+    return FlipForWritingMode(flow_box->FrameRect());
   return PhysicalRect();
 }
 
@@ -1720,41 +1663,22 @@ void LayoutInline::ImageChanged(WrappedImagePtr, CanDeferInvalidation) {
   SetShouldDoFullPaintInvalidation(PaintInvalidationReason::kImage);
 }
 
-namespace {
-
-class AbsoluteLayoutRectsGeneratorContext {
- public:
-  AbsoluteLayoutRectsGeneratorContext(Vector<LayoutRect>& rects,
-                                      const LayoutPoint& accumulated_offset)
-      : rects_(rects), accumulated_offset_(accumulated_offset) {}
-
-  void operator()(const FloatRect& rect) { operator()(LayoutRect(rect)); }
-  void operator()(const LayoutRect& rect) {
-    LayoutRect layout_rect(rect);
-    layout_rect.MoveBy(accumulated_offset_);
-    rects_.push_back(layout_rect);
-  }
-
- private:
-  Vector<LayoutRect>& rects_;
-  const LayoutPoint& accumulated_offset_;
-};
-
-}  // unnamed namespace
-
 void LayoutInline::AddOutlineRects(
-    Vector<LayoutRect>& rects,
-    const LayoutPoint& additional_offset,
+    Vector<PhysicalRect>& rects,
+    const PhysicalOffset& additional_offset,
     NGOutlineType include_block_overflows) const {
-  AbsoluteLayoutRectsGeneratorContext context(rects, additional_offset);
-  GenerateLineBoxRects(context);
+  CollectLineBoxRects([&rects, &additional_offset](const PhysicalRect& r) {
+    auto rect = r;
+    rect.Move(additional_offset);
+    rects.push_back(rect);
+  });
   AddOutlineRectsForChildrenAndContinuations(rects, additional_offset,
                                              include_block_overflows);
 }
 
 void LayoutInline::AddOutlineRectsForChildrenAndContinuations(
-    Vector<LayoutRect>& rects,
-    const LayoutPoint& additional_offset,
+    Vector<PhysicalRect>& rects,
+    const PhysicalOffset& additional_offset,
     NGOutlineType include_block_overflows) const {
   AddOutlineRectsForNormalChildren(rects, additional_offset,
                                    include_block_overflows);
@@ -1763,8 +1687,8 @@ void LayoutInline::AddOutlineRectsForChildrenAndContinuations(
 }
 
 void LayoutInline::AddOutlineRectsForContinuations(
-    Vector<LayoutRect>& rects,
-    const LayoutPoint& additional_offset,
+    Vector<PhysicalRect>& rects,
+    const PhysicalOffset& additional_offset,
     NGOutlineType include_block_overflows) const {
   if (LayoutBoxModelObject* continuation = Continuation()) {
     if (continuation->NeedsLayout()) {
@@ -1778,21 +1702,20 @@ void LayoutInline::AddOutlineRectsForContinuations(
       // all. Yet, here we are. Bail.
       return;
     }
-    LayoutPoint offset = additional_offset;
+    PhysicalOffset offset = additional_offset;
     if (continuation->IsInline())
-      offset += continuation->ContainingBlock()->Location();
+      offset += continuation->ContainingBlock()->PhysicalLocation();
     else
-      offset += ToLayoutBox(continuation)->Location();
-    offset -= ContainingBlock()->Location();
+      offset += ToLayoutBox(continuation)->PhysicalLocation();
+    offset -= ContainingBlock()->PhysicalLocation();
     continuation->AddOutlineRects(rects, offset, include_block_overflows);
   }
 }
 
 FloatRect LayoutInline::LocalBoundingBoxRectForAccessibility() const {
-  Vector<LayoutRect> rects;
-  AddOutlineRects(rects, LayoutPoint(),
-                  NGOutlineType::kIncludeBlockVisualOverflow);
-  return FloatRect(UnionRect(rects));
+  Vector<PhysicalRect> rects = OutlineRects(
+      PhysicalOffset(), NGOutlineType::kIncludeBlockVisualOverflow);
+  return FloatRect(FlipForWritingMode(UnionRect(rects).ToLayoutRect()));
 }
 
 void LayoutInline::AddAnnotatedRegions(Vector<AnnotatedRegionValue>& regions) {
@@ -1849,6 +1772,30 @@ void LayoutInline::MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
   if (CanContainFixedPositionObjects())
     mode &= ~kIsFixed;
   LayoutBoxModelObject::MapLocalToAncestor(ancestor, transform_state, mode);
+}
+
+LayoutRect LayoutInline::FlipForWritingMode(
+    const PhysicalRect& r,
+    const LayoutBlock* block_for_flipping) const {
+  LayoutRect rect = r.ToLayoutRect();
+  if (UNLIKELY(NeedsFlipForWritingMode())) {
+    DCHECK(!block_for_flipping || block_for_flipping == ContainingBlock());
+    (block_for_flipping ? block_for_flipping : ContainingBlock())
+        ->FlipForWritingMode(rect);
+  }
+  return rect;
+}
+
+PhysicalRect LayoutInline::FlipForWritingMode(
+    const LayoutRect& r,
+    const LayoutBlock* block_for_flipping) const {
+  LayoutRect rect = r;
+  if (UNLIKELY(NeedsFlipForWritingMode())) {
+    DCHECK(!block_for_flipping || block_for_flipping == ContainingBlock());
+    (block_for_flipping ? block_for_flipping : ContainingBlock())
+        ->FlipForWritingMode(rect);
+  }
+  return PhysicalRect(rect);
 }
 
 PhysicalRect LayoutInline::DebugRect() const {

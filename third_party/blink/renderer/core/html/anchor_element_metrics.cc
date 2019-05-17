@@ -128,9 +128,8 @@ bool IsUrlIncrementedByOne(const HTMLAnchorElement& anchor_element) {
 // Returns the bounding box rect of a layout object, including visual
 // overflows.
 IntRect AbsoluteElementBoundingBoxRect(const LayoutObject* layout_object) {
-  Vector<LayoutRect> rects;
-  layout_object->AddOutlineRects(rects, LayoutPoint(),
-                                 NGOutlineType::kIncludeBlockVisualOverflow);
+  Vector<PhysicalRect> rects = layout_object->OutlineRects(
+      PhysicalOffset(), NGOutlineType::kIncludeBlockVisualOverflow);
   return layout_object
       ->LocalToAbsoluteQuad(FloatQuad(FloatRect(UnionRect(rects))))
       .EnclosingBoundingBox();

@@ -519,19 +519,19 @@ PaintLayerScrollableArea* LayoutBoxModelObject::GetScrollableArea() const {
 }
 
 void LayoutBoxModelObject::AddOutlineRectsForNormalChildren(
-    Vector<LayoutRect>& rects,
-    const LayoutPoint& additional_offset,
+    Vector<PhysicalRect>& rects,
+    const PhysicalOffset& additional_offset,
     NGOutlineType include_block_overflows) const {
   for (LayoutObject* child = SlowFirstChild(); child;
        child = child->NextSibling()) {
     // Outlines of out-of-flow positioned descendants are handled in
-    // LayoutBlock::addOutlineRects().
+    // LayoutBlock::AddOutlineRects().
     if (child->IsOutOfFlowPositioned())
       continue;
 
     // Outline of an element continuation or anonymous block continuation is
     // added when we iterate the continuation chain.
-    // See LayoutBlock::addOutlineRects() and LayoutInline::addOutlineRects().
+    // See LayoutBlock::AddOutlineRects() and LayoutInline::AddOutlineRects().
     auto* child_block_flow = DynamicTo<LayoutBlockFlow>(child);
     if (child->IsElementContinuation() ||
         (child_block_flow && child_block_flow->IsAnonymousBlockContinuation()))
@@ -544,17 +544,17 @@ void LayoutBoxModelObject::AddOutlineRectsForNormalChildren(
 
 void LayoutBoxModelObject::AddOutlineRectsForDescendant(
     const LayoutObject& descendant,
-    Vector<LayoutRect>& rects,
-    const LayoutPoint& additional_offset,
+    Vector<PhysicalRect>& rects,
+    const PhysicalOffset& additional_offset,
     NGOutlineType include_block_overflows) const {
   if (descendant.IsText() || descendant.IsListMarker())
     return;
 
   if (descendant.HasLayer()) {
-    Vector<LayoutRect> layer_outline_rects;
-    descendant.AddOutlineRects(layer_outline_rects, LayoutPoint(),
+    Vector<PhysicalRect> layer_outline_rects;
+    descendant.AddOutlineRects(layer_outline_rects, PhysicalOffset(),
                                include_block_overflows);
-    descendant.LocalToAncestorRects(layer_outline_rects, this, LayoutPoint(),
+    descendant.LocalToAncestorRects(layer_outline_rects, this, PhysicalOffset(),
                                     additional_offset);
     rects.AppendVector(layer_outline_rects);
     return;
@@ -562,7 +562,7 @@ void LayoutBoxModelObject::AddOutlineRectsForDescendant(
 
   if (descendant.IsBox()) {
     descendant.AddOutlineRects(
-        rects, additional_offset + ToLayoutBox(descendant).LocationOffset(),
+        rects, additional_offset + ToLayoutBox(descendant).PhysicalLocation(),
         include_block_overflows);
     return;
   }

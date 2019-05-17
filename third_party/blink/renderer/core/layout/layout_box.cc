@@ -958,10 +958,10 @@ PhysicalRect LayoutBox::PhysicalBackgroundRect(
   return PhysicalRect();
 }
 
-void LayoutBox::AddOutlineRects(Vector<LayoutRect>& rects,
-                                const LayoutPoint& additional_offset,
+void LayoutBox::AddOutlineRects(Vector<PhysicalRect>& rects,
+                                const PhysicalOffset& additional_offset,
                                 NGOutlineType) const {
-  rects.push_back(LayoutRect(additional_offset, Size()));
+  rects.emplace_back(additional_offset, Size());
 }
 
 bool LayoutBox::CanResize() const {
@@ -5454,7 +5454,7 @@ void LayoutBox::AddVisualEffectOverflow() {
     return;
 
   // Add in the final overflow with shadows, outsets and outline combined.
-  LayoutRect visual_effect_overflow = BorderBoxRect();
+  PhysicalRect visual_effect_overflow = PhysicalBorderBoxRect();
   LayoutRectOutsets outsets = ComputeVisualEffectOverflowOutsets();
   visual_effect_overflow.Expand(outsets);
   AddSelfVisualOverflow(visual_effect_overflow);
@@ -5472,21 +5472,16 @@ LayoutRectOutsets LayoutBox::ComputeVisualEffectOverflowOutsets() {
 
   LayoutRectOutsets outsets = style.BoxDecorationOutsets();
 
-  // Box-shadow and border-image-outsets are in physical direction. Flip into
-  // block direction.
-  if (UNLIKELY(HasFlippedBlocksWritingMode()))
-    outsets.FlipHorizontally();
-
   if (style.HasOutline()) {
-    Vector<LayoutRect> outline_rects;
-    // The result rects are in coordinates of this object's border box.
-    AddOutlineRects(outline_rects, LayoutPoint(),
-                    OutlineRectsShouldIncludeBlockVisualOverflow());
-    LayoutRect rect = UnionRectEvenIfEmpty(outline_rects);
-    bool outline_affected = rect.Size() != Size();
+    Vector<PhysicalRect> outline_rects = OutlineRects(
+        PhysicalOffset(), OutlineRectsShouldIncludeBlockVisualOverflow());
+    PhysicalRect rect = UnionRectEvenIfEmpty(outline_rects);
+    bool outline_affected = rect.size != PhysicalSizeToBeNoop(Size());
     SetOutlineMayBeAffectedByDescendants(outline_affected);
-    rect.Inflate(style.OutlineOutsetExtent());
-    outsets.Unite(rect.ToOutsets(Size()));
+    rect.Inflate(LayoutUnit(style.OutlineOutsetExtent()));
+    outsets.Unite(LayoutRectOutsets(-rect.Y(), rect.Right() - Size().Width(),
+                                    rect.Bottom() - Size().Height(),
+                                    -rect.X()));
   }
 
   return outsets;
@@ -5601,6 +5596,13 @@ void LayoutBox::AddLayoutOverflow(const LayoutRect& rect) {
   overflow_->layout_overflow->AddLayoutOverflow(overflow_rect);
 }
 
+void LayoutBox::AddSelfVisualOverflow(const PhysicalRect& rect) {
+  LayoutRect layout_rect = rect.ToLayoutRect();
+  if (UNLIKELY(HasFlippedBlocksWritingMode()))
+    FlipForWritingMode(layout_rect);
+  AddSelfVisualOverflow(layout_rect);
+}
+
 void LayoutBox::AddSelfVisualOverflow(const LayoutRect& rect) {
   if (rect.IsEmpty())
     return;
@@ -5617,6 +5619,13 @@ void LayoutBox::AddSelfVisualOverflow(const LayoutRect& rect) {
   }
 
   overflow_->visual_overflow->AddSelfVisualOverflow(rect);
+}
+
+void LayoutBox::AddContentsVisualOverflow(const PhysicalRect& rect) {
+  LayoutRect layout_rect = rect.ToLayoutRect();
+  if (UNLIKELY(HasFlippedBlocksWritingMode()))
+    FlipForWritingMode(layout_rect);
+  AddContentsVisualOverflow(layout_rect);
 }
 
 void LayoutBox::AddContentsVisualOverflow(const LayoutRect& rect) {

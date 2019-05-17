@@ -190,17 +190,17 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
 
   PhysicalOffset OffsetForInFlowPositionedInline(const LayoutBox& child) const;
 
-  void AddOutlineRects(Vector<LayoutRect>&,
-                       const LayoutPoint& additional_offset,
+  void AddOutlineRects(Vector<PhysicalRect>&,
+                       const PhysicalOffset& additional_offset,
                        NGOutlineType) const final;
   // The following methods are called from the container if it has already added
   // outline rects for line boxes and/or children of this LayoutInline.
   void AddOutlineRectsForChildrenAndContinuations(
-      Vector<LayoutRect>&,
-      const LayoutPoint& additional_offset,
+      Vector<PhysicalRect>&,
+      const PhysicalOffset& additional_offset,
       NGOutlineType) const;
-  void AddOutlineRectsForContinuations(Vector<LayoutRect>&,
-                                       const LayoutPoint& additional_offset,
+  void AddOutlineRectsForContinuations(Vector<PhysicalRect>&,
+                                       const PhysicalOffset& additional_offset,
                                        NGOutlineType) const;
 
   using LayoutBoxModelObject::Continuation;
@@ -299,11 +299,19 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
   // line boxes.
   LayoutRect LinesVisualOverflowBoundingBox() const;
 
-  template <typename GeneratorContext>
-  void GenerateLineBoxRects(GeneratorContext& yield) const;
-  template <typename GeneratorContext>
-  void GenerateCulledLineBoxRects(GeneratorContext& yield,
-                                  const LayoutInline* container) const;
+  // PhysicalRectCollector should be like a function:
+  // void (const PhysicalRect&).
+  template <typename PhysicalRectCollector>
+  void CollectLineBoxRects(const PhysicalRectCollector&) const;
+  template <typename PhysicalRectCollector>
+  void CollectCulledLineBoxRects(const PhysicalRectCollector&) const;
+
+  // FlippedRectCollector should be like a function:
+  // void (const LayoutRect&);
+  template <typename FlippedRectCollector>
+  void CollectCulledLineBoxRectsInFlippedBlocksDirection(
+      const FlippedRectCollector&,
+      const LayoutInline* container) const;
 
   void AddChildToContinuation(LayoutObject* new_child,
                               LayoutObject* before_child);
@@ -394,6 +402,22 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
 
   base::Optional<PhysicalOffset> FirstLineBoxTopLeftInternal() const;
   PhysicalOffset AnchorPhysicalLocation() const;
+
+  bool NeedsFlipForWritingMode() const {
+    return HasFlippedBlocksWritingMode() && !IsSVG();
+  }
+  // These functions flip the input rect in ContainingBlock() if
+  // NeedsFlipForWritingMode() is true. If |block_for_flipping| is not null,
+  // it should be ContainingBlock(), otherwise the function will call
+  // ContainingBlock() by themselves. The caller should prepare
+  // |block_for_flipping| if it will loop through many rects to flip to avoid
+  // the cost of repeated ContainingBlock() calls.
+  ALWAYS_INLINE WARN_UNUSED_RESULT LayoutRect
+  FlipForWritingMode(const PhysicalRect& r,
+                     const LayoutBlock* block_for_flipping = nullptr) const;
+  ALWAYS_INLINE WARN_UNUSED_RESULT PhysicalRect
+  FlipForWritingMode(const LayoutRect& r,
+                     const LayoutBlock* block_for_flipping = nullptr) const;
 
   LayoutObjectChildList children_;
 

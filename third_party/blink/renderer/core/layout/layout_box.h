@@ -465,8 +465,8 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
         ClientHeight() - ComputedCSSPaddingTop() - ComputedCSSPaddingBottom());
   }
 
-  void AddOutlineRects(Vector<LayoutRect>&,
-                       const LayoutPoint& additional_offset,
+  void AddOutlineRects(Vector<PhysicalRect>&,
+                       const PhysicalOffset& additional_offset,
                        NGOutlineType) const override;
 
   // Use this with caution! No type checking is done!
@@ -550,7 +550,9 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   virtual bool HasLeftOverflow() const;
 
   void AddLayoutOverflow(const LayoutRect&);
+  void AddSelfVisualOverflow(const PhysicalRect&);
   void AddSelfVisualOverflow(const LayoutRect&);
+  void AddContentsVisualOverflow(const PhysicalRect&);
   void AddContentsVisualOverflow(const LayoutRect&);
 
   void AddVisualEffectOverflow();

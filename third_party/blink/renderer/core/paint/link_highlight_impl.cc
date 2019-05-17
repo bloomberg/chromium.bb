@@ -464,9 +464,8 @@ void LinkHighlightImpl::Paint(GraphicsContext& context) {
   size_t index = 0;
   for (const auto* fragment = &object->FirstFragment(); fragment;
        fragment = fragment->NextFragment(), ++index) {
-    auto rects = object->PhysicalOutlineRects(
-        fragment->PaintOffset().ToLayoutPoint(),
-        NGOutlineType::kIncludeBlockVisualOverflow);
+    auto rects = object->OutlineRects(
+        fragment->PaintOffset(), NGOutlineType::kIncludeBlockVisualOverflow);
     if (rects.size() > 1)
       use_rounded_rects = false;
 

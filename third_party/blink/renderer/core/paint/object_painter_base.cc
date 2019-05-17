@@ -8,7 +8,6 @@
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/style/border_edge.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
-#include "third_party/blink/renderer/platform/geometry/layout_point.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
@@ -491,7 +490,7 @@ void DrawSolidBoxSide(GraphicsContext& graphics_context,
 
 void ObjectPainterBase::PaintOutlineRects(
     const PaintInfo& paint_info,
-    const Vector<LayoutRect>& outline_rects,
+    const Vector<PhysicalRect>& outline_rects,
     const ComputedStyle& style) {
   Vector<IntRect> pixel_snapped_outline_rects;
   for (auto& r : outline_rects)

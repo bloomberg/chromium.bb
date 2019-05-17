@@ -63,8 +63,8 @@ NGPhysicalContainerFragment::NGPhysicalContainerFragment(
 NGPhysicalContainerFragment::~NGPhysicalContainerFragment() = default;
 
 void NGPhysicalContainerFragment::AddOutlineRectsForNormalChildren(
-    Vector<LayoutRect>* outline_rects,
-    const LayoutPoint& additional_offset,
+    Vector<PhysicalRect>* outline_rects,
+    const PhysicalOffset& additional_offset,
     NGOutlineType outline_type,
     const LayoutBoxModelObject* containing_block) const {
   for (const auto& child : Children()) {
@@ -92,8 +92,8 @@ void NGPhysicalContainerFragment::AddOutlineRectsForNormalChildren(
 
 void NGPhysicalContainerFragment::AddOutlineRectsForDescendant(
     const NGLink& descendant,
-    Vector<LayoutRect>* outline_rects,
-    const LayoutPoint& additional_offset,
+    Vector<PhysicalRect>* outline_rects,
+    const PhysicalOffset& additional_offset,
     NGOutlineType outline_type,
     const LayoutBoxModelObject* containing_block) const {
   if (descendant->IsText() || descendant->IsListMarker())
@@ -105,12 +105,12 @@ void NGPhysicalContainerFragment::AddOutlineRectsForDescendant(
     DCHECK(descendant_layout_object);
 
     if (descendant_box->HasLayer()) {
-      Vector<LayoutRect> layer_outline_rects;
-      descendant_box->AddSelfOutlineRects(&layer_outline_rects, LayoutPoint(),
-                                          outline_type);
+      Vector<PhysicalRect> layer_outline_rects;
+      descendant_box->AddSelfOutlineRects(&layer_outline_rects,
+                                          PhysicalOffset(), outline_type);
 
       descendant_layout_object->LocalToAncestorRects(
-          layer_outline_rects, containing_block, LayoutPoint(),
+          layer_outline_rects, containing_block, PhysicalOffset(),
           additional_offset);
       outline_rects->AppendVector(layer_outline_rects);
       return;
@@ -118,9 +118,7 @@ void NGPhysicalContainerFragment::AddOutlineRectsForDescendant(
 
     if (descendant_layout_object->IsBox()) {
       descendant_box->AddSelfOutlineRects(
-          outline_rects,
-          additional_offset + descendant.Offset().ToLayoutPoint(),
-          outline_type);
+          outline_rects, additional_offset + descendant.Offset(), outline_type);
       return;
     }
 
@@ -143,8 +141,8 @@ void NGPhysicalContainerFragment::AddOutlineRectsForDescendant(
   if (const auto* descendant_line_box =
           DynamicTo<NGPhysicalLineBoxFragment>(descendant.get())) {
     descendant_line_box->AddOutlineRectsForNormalChildren(
-        outline_rects, additional_offset + descendant.Offset().ToLayoutPoint(),
-        outline_type, containing_block);
+        outline_rects, additional_offset + descendant.Offset(), outline_type,
+        containing_block);
 
     if (!descendant_line_box->Size().IsEmpty()) {
       outline_rects->emplace_back(additional_offset,

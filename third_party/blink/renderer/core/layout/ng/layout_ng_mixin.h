@@ -73,8 +73,8 @@ class LayoutNGMixin : public Base {
 
   void AddLayoutOverflowFromChildren() final;
 
-  void AddOutlineRects(Vector<LayoutRect>&,
-                       const LayoutPoint& additional_offset,
+  void AddOutlineRects(Vector<PhysicalRect>&,
+                       const PhysicalOffset& additional_offset,
                        NGOutlineType) const final;
 
   const NGPhysicalBoxFragment* CurrentFragment() const final;

@@ -2799,21 +2799,23 @@ FloatPoint LayoutObject::LocalToAncestorPoint(
   return transform_state.LastPlanarPoint();
 }
 
-void LayoutObject::LocalToAncestorRects(Vector<LayoutRect>& rects,
-                                        const LayoutBoxModelObject* ancestor,
-                                        const LayoutPoint& pre_offset,
-                                        const LayoutPoint& post_offset) const {
+void LayoutObject::LocalToAncestorRects(
+    Vector<PhysicalRect>& rects,
+    const LayoutBoxModelObject* ancestor,
+    const PhysicalOffset& pre_offset,
+    const PhysicalOffset& post_offset) const {
   for (wtf_size_t i = 0; i < rects.size(); ++i) {
-    LayoutRect& rect = rects[i];
-    rect.MoveBy(pre_offset);
+    PhysicalRect& rect = rects[i];
+    rect.Move(pre_offset);
     FloatQuad container_quad =
         LocalToAncestorQuad(FloatQuad(FloatRect(rect)), ancestor);
-    LayoutRect container_rect = LayoutRect(container_quad.BoundingBox());
+    PhysicalRect container_rect =
+        PhysicalRect::EnclosingRect(container_quad.BoundingBox());
     if (container_rect.IsEmpty()) {
       rects.EraseAt(i--);
       continue;
     }
-    container_rect.MoveBy(post_offset);
+    container_rect.Move(post_offset);
     rects[i] = container_rect;
   }
 }
@@ -4066,21 +4068,11 @@ IntRect LayoutObject::AdjustVisualRectForInlineBox(
   return visual_rect;
 }
 
-Vector<LayoutRect> LayoutObject::PhysicalOutlineRects(
-    const LayoutPoint& additional_offset,
+Vector<PhysicalRect> LayoutObject::OutlineRects(
+    const PhysicalOffset& additional_offset,
     NGOutlineType outline_type) const {
-  Vector<LayoutRect> outline_rects;
+  Vector<PhysicalRect> outline_rects;
   AddOutlineRects(outline_rects, additional_offset, outline_type);
-  if (IsSVGChild() || !HasFlippedBlocksWritingMode())
-    return outline_rects;
-
-  const auto* writing_mode_container =
-      IsBox() ? ToLayoutBox(this) : ContainingBlock();
-  for (auto& r : outline_rects) {
-    r.MoveBy(-additional_offset);
-    writing_mode_container->FlipForWritingMode(r);
-    r.MoveBy(additional_offset);
-  }
   return outline_rects;
 }
 

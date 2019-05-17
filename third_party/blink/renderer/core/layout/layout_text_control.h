@@ -98,8 +98,8 @@ class CORE_EXPORT LayoutTextControl : public LayoutBlockFlow {
   void ComputePreferredLogicalWidths() final;
   void RemoveLeftoverAnonymousBlock(LayoutBlock*) final {}
 
-  void AddOutlineRects(Vector<LayoutRect>&,
-                       const LayoutPoint& additional_offset,
+  void AddOutlineRects(Vector<PhysicalRect>&,
+                       const PhysicalOffset& additional_offset,
                        NGOutlineType) const final;
 
   bool CanBeProgramaticallyScrolled() const final { return true; }

@@ -4801,8 +4801,8 @@ void LayoutBlockFlow::ShowLineTreeAndMark(const InlineBox* marked_box1,
 #endif
 
 void LayoutBlockFlow::AddOutlineRects(
-    Vector<LayoutRect>& rects,
-    const LayoutPoint& additional_offset,
+    Vector<PhysicalRect>& rects,
+    const PhysicalOffset& additional_offset,
     NGOutlineType include_block_overflows) const {
   // For blocks inside inlines, we go ahead and include margins so that we run
   // right up to the inline boxes above and below us (thus getting merged with
@@ -4823,7 +4823,7 @@ void LayoutBlockFlow::AddOutlineRects(
     LayoutUnit bottom_margin =
         next_inline_has_line_box ? CollapsedMarginAfter() : LayoutUnit();
     if (top_margin || bottom_margin) {
-      LayoutRect rect(additional_offset, Size());
+      PhysicalRect rect(additional_offset, Size());
       rect.ExpandEdges(top_margin, LayoutUnit(), bottom_margin, LayoutUnit());
       rects.push_back(rect);
     }
@@ -4836,23 +4836,37 @@ void LayoutBlockFlow::AddOutlineRects(
       !HasOverflowClip() && !HasControlClip()) {
     for (RootInlineBox* curr = FirstRootBox(); curr;
          curr = curr->NextRootBox()) {
-      LayoutUnit top = std::max<LayoutUnit>(curr->LineTop(), curr->Y());
-      LayoutUnit bottom =
-          std::min<LayoutUnit>(curr->LineBottom(), curr->Y() + curr->Height());
-      LayoutRect rect(additional_offset.X() + curr->X(),
-                      additional_offset.Y() + top, curr->Width(), bottom - top);
-      if (!rect.IsEmpty())
-        rects.push_back(rect);
+      LayoutUnit flipped_left = curr->X();
+      LayoutUnit flipped_right = curr->X() + curr->Width();
+      LayoutUnit top = curr->Y();
+      LayoutUnit bottom = curr->Y() + curr->Height();
+      if (IsHorizontalWritingMode()) {
+        top = std::max(curr->LineTop(), top);
+        bottom = std::min(curr->LineBottom(), bottom);
+      } else {
+        flipped_left = std::max(curr->LineTop(), flipped_left);
+        flipped_right = std::min(curr->LineBottom(), flipped_right);
+      }
+      LayoutRect rect(flipped_left, top, flipped_right - flipped_left,
+                      bottom - top);
+      if (!rect.IsEmpty()) {
+        FlipForWritingMode(rect);
+        PhysicalRect physical_rect(rect);
+        physical_rect.Move(additional_offset);
+        rects.push_back(physical_rect);
+      }
     }
   }
 
-  if (inline_element_continuation)
+  if (const LayoutInline* inline_element_continuation =
+          InlineElementContinuation()) {
     inline_element_continuation->AddOutlineRects(
         rects,
-        additional_offset +
-            (inline_element_continuation->ContainingBlock()->Location() -
-             Location()),
+        additional_offset + (inline_element_continuation->ContainingBlock()
+                                 ->PhysicalLocation() -
+                             PhysicalLocation()),
         include_block_overflows);
+  }
 }
 
 void LayoutBlockFlow::InvalidateDisplayItemClients(

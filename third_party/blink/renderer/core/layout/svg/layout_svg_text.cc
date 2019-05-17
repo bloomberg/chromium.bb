@@ -415,10 +415,10 @@ FloatRect LayoutSVGText::VisualRectInLocalSVGCoordinates() const {
   return visual_rect;
 }
 
-void LayoutSVGText::AddOutlineRects(Vector<LayoutRect>& rects,
-                                    const LayoutPoint&,
+void LayoutSVGText::AddOutlineRects(Vector<PhysicalRect>& rects,
+                                    const PhysicalOffset&,
                                     NGOutlineType) const {
-  rects.push_back(LayoutRect(ObjectBoundingBox()));
+  rects.push_back(PhysicalRect::EnclosingRect(ObjectBoundingBox()));
 }
 
 bool LayoutSVGText::IsObjectBoundingBoxValid() const {

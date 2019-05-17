@@ -488,12 +488,12 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
   LayoutBlock* ContainingBlockForAutoHeightDetection(
       const Length& logical_height) const;
 
-  void AddOutlineRectsForNormalChildren(Vector<LayoutRect>&,
-                                        const LayoutPoint& additional_offset,
+  void AddOutlineRectsForNormalChildren(Vector<PhysicalRect>&,
+                                        const PhysicalOffset& additional_offset,
                                         NGOutlineType) const;
   void AddOutlineRectsForDescendant(const LayoutObject& descendant,
-                                    Vector<LayoutRect>&,
-                                    const LayoutPoint& additional_offset,
+                                    Vector<PhysicalRect>&,
+                                    const PhysicalOffset& additional_offset,
                                     NGOutlineType) const;
 
   void StyleWillChange(StyleDifference,

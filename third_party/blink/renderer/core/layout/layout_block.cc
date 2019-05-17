@@ -1971,11 +1971,11 @@ LayoutRect LayoutBlock::LocalCaretRect(
   return caret_rect;
 }
 
-void LayoutBlock::AddOutlineRects(Vector<LayoutRect>& rects,
-                                  const LayoutPoint& additional_offset,
+void LayoutBlock::AddOutlineRects(Vector<PhysicalRect>& rects,
+                                  const PhysicalOffset& additional_offset,
                                   NGOutlineType include_block_overflows) const {
   if (!IsAnonymous())  // For anonymous blocks, the children add outline rects.
-    rects.push_back(LayoutRect(additional_offset, Size()));
+    rects.emplace_back(additional_offset, Size());
 
   if (include_block_overflows == NGOutlineType::kIncludeBlockVisualOverflow &&
       !HasOverflowClip() && !HasControlClip()) {

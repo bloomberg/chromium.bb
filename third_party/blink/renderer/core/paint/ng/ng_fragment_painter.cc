@@ -23,9 +23,9 @@ void NGFragmentPainter::PaintOutline(const PaintInfo& paint_info,
                                          paint_fragment_.GetNode()))
     return;
 
-  Vector<LayoutRect> outline_rects;
-  paint_fragment_.AddSelfOutlineRect(
-      &outline_rects, paint_offset.ToLayoutPoint(),
+  Vector<PhysicalRect> outline_rects;
+  paint_fragment_.AddSelfOutlineRects(
+      &outline_rects, paint_offset,
       paint_fragment_.GetLayoutObject()
           ->OutlineRectsShouldIncludeBlockVisualOverflow());
   if (outline_rects.IsEmpty())

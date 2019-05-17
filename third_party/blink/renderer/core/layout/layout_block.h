@@ -461,8 +461,8 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
   virtual void AddLayoutOverflowFromChildren();
   void AddVisualOverflowFromChildren();
 
-  void AddOutlineRects(Vector<LayoutRect>&,
-                       const LayoutPoint& additional_offset,
+  void AddOutlineRects(Vector<PhysicalRect>&,
+                       const PhysicalOffset& additional_offset,
                        NGOutlineType) const override;
 
   void UpdateBlockChildDirtyBitsBeforeLayout(bool relayout_children,

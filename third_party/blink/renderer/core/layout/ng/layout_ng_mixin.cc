@@ -189,12 +189,12 @@ void LayoutNGMixin<Base>::AddScrollingOverflowFromChildren() {
 
 template <typename Base>
 void LayoutNGMixin<Base>::AddOutlineRects(
-    Vector<LayoutRect>& rects,
-    const LayoutPoint& additional_offset,
+    Vector<PhysicalRect>& rects,
+    const PhysicalOffset& additional_offset,
     NGOutlineType include_block_overflows) const {
   if (PaintFragment()) {
-    PaintFragment()->AddSelfOutlineRect(&rects, additional_offset,
-                                        include_block_overflows);
+    PaintFragment()->AddSelfOutlineRects(&rects, additional_offset,
+                                         include_block_overflows);
   } else {
     Base::AddOutlineRects(rects, additional_offset, include_block_overflows);
   }

@@ -143,7 +143,7 @@ PhysicalSize NGPhysicalBoxFragment::ScrollSize() const {
 PhysicalRect NGPhysicalBoxFragment::ComputeSelfInkOverflow() const {
   CheckCanUpdateInkOverflow();
   const ComputedStyle& style = Style();
-  LayoutRect ink_overflow({}, Size().ToLayoutSize());
+  PhysicalRect ink_overflow({}, Size().ToLayoutSize());
 
   DCHECK(GetLayoutObject());
   if (style.HasVisualOverflowingEffect()) {
@@ -151,22 +151,22 @@ PhysicalRect NGPhysicalBoxFragment::ComputeSelfInkOverflow() const {
     if (NGOutlineUtils::HasPaintedOutline(style,
                                           GetLayoutObject()->GetNode()) &&
         !NGOutlineUtils::IsInlineOutlineNonpaintingFragment(*this)) {
-      Vector<LayoutRect> outline_rects;
+      Vector<PhysicalRect> outline_rects;
       // The result rects are in coordinates of this object's border box.
       AddSelfOutlineRects(
-          &outline_rects, LayoutPoint(),
+          &outline_rects, PhysicalOffset(),
           GetLayoutObject()->OutlineRectsShouldIncludeBlockVisualOverflow());
-      LayoutRect rect = UnionRectEvenIfEmpty(outline_rects);
-      rect.Inflate(style.OutlineOutsetExtent());
+      PhysicalRect rect = UnionRectEvenIfEmpty(outline_rects);
+      rect.Inflate(LayoutUnit(style.OutlineOutsetExtent()));
       ink_overflow.Unite(rect);
     }
   }
-  return PhysicalRect(ink_overflow);
+  return ink_overflow;
 }
 
 void NGPhysicalBoxFragment::AddSelfOutlineRects(
-    Vector<LayoutRect>* outline_rects,
-    const LayoutPoint& additional_offset,
+    Vector<PhysicalRect>* outline_rects,
+    const PhysicalOffset& additional_offset,
     NGOutlineType outline_type) const {
   // TODO(kojii): Needs inline_element_continuation logic from
   // LayoutBlockFlow::AddOutlineRects?
@@ -174,17 +174,18 @@ void NGPhysicalBoxFragment::AddSelfOutlineRects(
   const LayoutObject* layout_object = GetLayoutObject();
   DCHECK(layout_object);
   if (layout_object->IsLayoutInline()) {
-    Vector<LayoutRect> blockflow_outline_rects =
-        layout_object->PhysicalOutlineRects(LayoutPoint(), outline_type);
+    Vector<PhysicalRect> blockflow_outline_rects =
+        layout_object->OutlineRects(PhysicalOffset(), outline_type);
     // The rectangles returned are offset from the containing block. We need the
     // offset from this fragment.
     if (blockflow_outline_rects.size() > 0) {
-      LayoutPoint first_fragment_offset = blockflow_outline_rects[0].Location();
-      LayoutSize corrected_offset = additional_offset - first_fragment_offset;
+      PhysicalOffset first_fragment_offset = blockflow_outline_rects[0].offset;
+      PhysicalOffset corrected_offset =
+          additional_offset - first_fragment_offset;
       for (auto& outline : blockflow_outline_rects) {
-        // Skip if both width and height are zero. Contaning blocks in empty
+        // Skip if both width and height are zero. Containing blocks in empty
         // linebox is one such case.
-        if (outline.Size().IsZero())
+        if (outline.size.IsZero())
           continue;
         outline.Move(corrected_offset);
         outline_rects->push_back(outline);
