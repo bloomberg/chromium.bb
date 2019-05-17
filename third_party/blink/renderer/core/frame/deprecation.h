@@ -19,7 +19,7 @@ enum class FeaturePolicyFeature;
 class DocumentLoader;
 class LocalFrame;
 
-class CORE_EXPORT Deprecation {
+class CORE_EXPORT Deprecation final {
   DISALLOW_NEW();
 
  public:
@@ -52,7 +52,7 @@ class CORE_EXPORT Deprecation {
   // Note: this is only public for tests.
   bool IsSuppressed(CSSPropertyID unresolved_property);
 
- protected:
+ private:
   void Suppress(CSSPropertyID unresolved_property);
   void SetReported(WebFeature feature);
   bool GetReported(WebFeature feature) const;
