@@ -1,0 +1,13 @@
+This is a testharness.js-based test.
+PASS Check the existence of Element.attachShadow
+PASS Nodes other than Element should not have attachShadow
+PASS Element.attachShadow must throw a TypeError if mode is not "open" or "closed"
+PASS Element.attachShadow must create an instance of ShadowRoot
+FAIL Element.attachShadow must throw a NotSupportedError if the context object already hosts a shadow tree assert_throws: Calling attachShadow({mode: "open"}) twice on the same element must throw function "function () {
+        var div = document.createElement('div');
+        div.attachShadow({mode: "open"});
+        div.attachShadow({mode: "open"});
+    }" threw object "InvalidStateError: Failed to execute 'attachShadow' on 'Element': Shadow root cannot be created on a host which already hosts a shadow tree." ("InvalidStateError") expected object "[object Object]" ("NotSupportedError")
+PASS Element.attachShadow must throw a NotSupportedError for non-safelisted elements
+Harness: the test ran to completion.
+

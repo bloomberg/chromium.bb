@@ -2509,7 +2509,6 @@ crbug.com/706350 external/wpt/html/browsers/browsing-the-web/history-traversal/w
 crbug.com/706350 external/wpt/html/browsers/browsing-the-web/history-traversal/window-name-after-cross-origin-main-frame-navigation.sub.html [ Skip ]
 crbug.com/706350 external/wpt/html/browsers/browsing-the-web/history-traversal/window-name-after-cross-origin-sub-frame-navigation.sub.html [ Skip ]
 crbug.com/706350 external/wpt/html/browsers/browsing-the-web/history-traversal/window-name-after-same-origin-aux-frame-navigation.sub.html [ Skip ]
-crbug.com/706350 external/wpt/html/browsers/browsing-the-web/history-traversal/window-name-after-same-origin-main-frame-navigation.sub.html [ Skip ]
 crbug.com/706350 external/wpt/html/browsers/browsing-the-web/history-traversal/window-name-after-same-origin-sub-frame-navigation.sub.html [ Skip ]
 
 # We don't fully implement the plugin-types check
@@ -2718,6 +2717,23 @@ crbug.com/939181 external/wpt/html/browsers/origin/cross-origin-objects/cross-or
 crbug.com/939181 virtual/not-site-per-process/external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Failure Timeout ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/css-overflow/webkit-line-clamp-018.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-overflow/webkit-line-clamp-009.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-font-loading/fontface-descriptor-updates.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-overflow/webkit-line-clamp-024.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-overflow/webkit-line-clamp-010.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-overflow/webkit-line-clamp-012.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-text/word-break/word-break-break-all-inline-007.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-overflow/webkit-line-clamp-033.html [ Failure ]
+crbug.com/626703 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-width-005.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-multicol/multicol-width-005.html [ Failure ]
+crbug.com/626703 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-width-004.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-overflow/webkit-line-clamp-027.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-text/word-break/word-break-break-all-inline-004.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-overflow/webkit-line-clamp-011.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-overflow/webkit-line-clamp-013.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-overflow/webkit-line-clamp-014.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-overflow/webkit-line-clamp-025.html [ Failure ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/preload/preload-with-type.html [ Failure Timeout ]
 crbug.com/626703 [ Retina ] external/wpt/preload/preload-with-type.html [ Timeout ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/preload/onload-event.html [ Failure Timeout ]
