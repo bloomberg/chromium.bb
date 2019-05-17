@@ -1743,9 +1743,7 @@ inline void SpvHasResultAndType(SpvOp opcode, bool *hasResult, bool *hasResultTy
     case SpvOpSubgroupImageMediaBlockReadINTEL: *hasResult = true; *hasResultType = true; break;
     case SpvOpSubgroupImageMediaBlockWriteINTEL: *hasResult = false; *hasResultType = false; break;
     case SpvOpDecorateString: *hasResult = false; *hasResultType = false; break;
-    case SpvOpDecorateStringGOOGLE: *hasResult = false; *hasResultType = false; break;
     case SpvOpMemberDecorateString: *hasResult = false; *hasResultType = false; break;
-    case SpvOpMemberDecorateStringGOOGLE: *hasResult = false; *hasResultType = false; break;
     case SpvOpVmeImageINTEL: *hasResult = true; *hasResultType = true; break;
     case SpvOpTypeVmeImageINTEL: *hasResult = true; *hasResultType = false; break;
     case SpvOpTypeAvcImePayloadINTEL: *hasResult = true; *hasResultType = false; break;
