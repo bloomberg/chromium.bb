@@ -86,8 +86,6 @@ component("cpp") {
     "lock_screen_widget_factory.cc",
     "lock_screen_widget_factory.h",
     "login_constants.h",
-    "menu_utils.cc",
-    "menu_utils.h",
     "network_icon_image_source.cc",
     "network_icon_image_source.h",
     "notification_utils.cc",
@@ -243,7 +241,6 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "default_scale_factor_retriever_unittest.cc",
-    "menu_utils_unittest.cc",
     "pagination/pagination_model_unittest.cc",
     "power_utils_unittest.cc",
     "rounded_corner_decorator_unittest.cc",
