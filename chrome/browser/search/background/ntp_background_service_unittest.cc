@@ -261,14 +261,3 @@ TEST_F(NtpBackgroundServiceTest, CheckValidAndInvalidBackdropUrls) {
   EXPECT_FALSE(service()->IsValidBackdropUrl(
       GURL("https://wallpapers.co/another_image")));
 }
-
-TEST_F(NtpBackgroundServiceTest, GetThumbnailUrl) {
-  const GURL kInvalidUrl("foo");
-  const GURL kValidUrl("https://www.foo.com");
-  const GURL kValidThumbnailUrl("https://www.foo.com/thumbnail");
-  service()->AddValidBackdropUrlWithThumbnailForTesting(kValidUrl,
-                                                        kValidThumbnailUrl);
-
-  EXPECT_EQ(kValidThumbnailUrl, service()->GetThumbnailUrl(kValidUrl));
-  EXPECT_EQ(GURL::EmptyGURL(), service()->GetThumbnailUrl(kInvalidUrl));
-}

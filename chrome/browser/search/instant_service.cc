@@ -17,7 +17,6 @@
 #include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/image_fetcher/image_decoder_impl.h"
 #include "chrome/browser/ntp_tiles/chrome_most_visited_sites_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/background/ntp_background_service.h"
@@ -52,9 +51,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/url_data_source.h"
-#include "ui/gfx/color_analysis.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/native_theme/dark_mode_observer.h"
 
@@ -65,8 +62,6 @@ const char kNtpCustomBackgroundAttributionLine1[] = "attribution_line_1";
 const char kNtpCustomBackgroundAttributionLine2[] = "attribution_line_2";
 const char kNtpCustomBackgroundAttributionActionURL[] =
     "attribution_action_url";
-
-const char kImageFetcherUmaClientName[] = "NtpCustomBackgrounds";
 
 base::DictionaryValue GetBackgroundInfoAsDict(
     const GURL& background_url,
@@ -84,33 +79,6 @@ base::DictionaryValue GetBackgroundInfoAsDict(
                          base::Value(action_url.spec()));
 
   return background_info;
-}
-
-// |GetBackgroundInfoWithColor| has to return new object so that updated version
-// gets synced.
-base::DictionaryValue GetBackgroundInfoWithColor(
-    const base::DictionaryValue* background_info,
-    const SkColor color) {
-  base::DictionaryValue new_background_info;
-  auto url = const_cast<base::Value&&>(
-      *background_info->FindKey(kNtpCustomBackgroundURL));
-  auto attribution_line_1 = const_cast<base::Value&&>(
-      *background_info->FindKey(kNtpCustomBackgroundAttributionLine1));
-  auto attribution_line_2 = const_cast<base::Value&&>(
-      *background_info->FindKey(kNtpCustomBackgroundAttributionLine2));
-  auto action_url = const_cast<base::Value&&>(
-      *background_info->FindKey(kNtpCustomBackgroundAttributionActionURL));
-
-  new_background_info.SetKey(kNtpCustomBackgroundURL, url.Clone());
-  new_background_info.SetKey(kNtpCustomBackgroundAttributionLine1,
-                             attribution_line_1.Clone());
-  new_background_info.SetKey(kNtpCustomBackgroundAttributionLine1,
-                             attribution_line_2.Clone());
-  new_background_info.SetKey(kNtpCustomBackgroundAttributionActionURL,
-                             action_url.Clone());
-  new_background_info.SetKey(kNtpCustomBackgroundMainColor,
-                             base::Value((int)color));
-  return new_background_info;
 }
 
 base::Value NtpCustomBackgroundDefaults() {
@@ -146,8 +114,6 @@ void DoDeleteThumbnailDataIfExists(
 }
 
 }  // namespace
-
-const char kNtpCustomBackgroundMainColor[] = "background_main_color";
 
 // Keeps track of any changes in search engine provider and notifies
 // InstantService if a third-party search provider (i.e. a third-party NTP) is
@@ -265,11 +231,6 @@ InstantService::InstantService(Profile* profile)
       prefs::kNtpCustomBackgroundDict,
       base::BindRepeating(&InstantService::UpdateBackgroundFromSync,
                           weak_ptr_factory_.GetWeakPtr()));
-
-  image_fetcher_ = std::make_unique<image_fetcher::ImageFetcherImpl>(
-      std::make_unique<ImageDecoderImpl>(),
-      content::BrowserContext::GetDefaultStoragePartition(profile_)
-          ->GetURLLoaderFactoryForBrowserProcess());
 }
 
 InstantService::~InstantService() = default;
@@ -422,12 +383,6 @@ void InstantService::SetCustomBackgroundURLWithAttributions(
   RemoveLocalBackgroundImageCopy();
 
   if (background_url.is_valid() && is_backdrop_url) {
-    const GURL& thumbnail_url =
-        background_service_->GetThumbnailUrl(background_url);
-    FetchCustomBackground(background_url, thumbnail_url.is_valid()
-                                              ? thumbnail_url
-                                              : background_url);
-
     base::DictionaryValue background_info = GetBackgroundInfoAsDict(
         background_url, attribution_line_1, attribution_line_2, action_url);
     pref_service_->Set(prefs::kNtpCustomBackgroundDict, background_info);
@@ -768,62 +723,6 @@ void InstantService::ResetToDefault() {
   ResetCustomBackgroundThemeInfo();
 }
 
-void InstantService::UpdateCustomBackgroundColor(
-    const GURL& image_url,
-    const gfx::Image& fetched_image,
-    const image_fetcher::RequestMetadata& metadata) {
-  constexpr color_utils::HSL kNoBounds = {-1, -1, -1};
-  const SkColor color = color_utils::CalculateKMeanColorOfBitmap(
-      *fetched_image.ToSkBitmap(), fetched_image.Height(), kNoBounds, kNoBounds,
-      false);
-
-  // Update background color only if the selected background is still the same.
-  const base::DictionaryValue* background_info =
-      pref_service_->GetDictionary(prefs::kNtpCustomBackgroundDict);
-  if (!background_info)
-    return;
-
-  GURL current_bg_url(
-      background_info->FindKey(kNtpCustomBackgroundURL)->GetString());
-  if (current_bg_url == image_url) {
-    pref_service_->Set(prefs::kNtpCustomBackgroundDict,
-                       GetBackgroundInfoWithColor(background_info, color));
-  }
-}
-
-void InstantService::FetchCustomBackground(const GURL& image_url,
-                                           const GURL& fetch_url) {
-  DCHECK(!fetch_url.is_empty());
-
-  net::NetworkTrafficAnnotationTag traffic_annotation =
-      net::DefineNetworkTrafficAnnotation("ntp_custom_background",
-                                          R"(
-    semantics {
-      sender: "Desktop Chrome background fetcher"
-      description:
-        "Fetch New Tab Page custom background for color calculation."
-      trigger:
-        "User selects new background on the New Tab Page."
-      data: "The only data sent is the path to an image"
-      destination: GOOGLE_OWNED_SERVICE
-    }
-    policy {
-      cookies_allowed: NO
-      setting:
-        "Users cannot disable this feature. The feature is enabled by "
-        "default."
-      policy_exception_justification: "Not implemented."
-    })");
-
-  image_fetcher::ImageFetcherParams params(traffic_annotation,
-                                           kImageFetcherUmaClientName);
-  image_fetcher_->FetchImage(
-      image_url,
-      base::BindOnce(&InstantService::UpdateCustomBackgroundColor,
-                     weak_ptr_factory_.GetWeakPtr(), image_url),
-      std::move(params));
-}
-
 bool InstantService::IsCustomBackgroundPrefValid(GURL& custom_background_url) {
   const base::DictionaryValue* background_info =
       profile_->GetPrefs()->GetDictionary(prefs::kNtpCustomBackgroundDict);
@@ -877,9 +776,4 @@ void InstantService::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kNtpCustomBackgroundLocalToDevice,
                                 false);
   registry->RegisterBooleanPref(prefs::kNtpUseMostVisitedTiles, false);
-}
-
-void InstantService::SetImageFetcherForTesting(
-    image_fetcher::ImageFetcher* image_fetcher) {
-  image_fetcher_ = base::WrapUnique(image_fetcher);
 }
