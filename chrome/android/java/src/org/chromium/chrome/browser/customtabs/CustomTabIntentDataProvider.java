@@ -4,6 +4,9 @@
 
 package org.chromium.chrome.browser.customtabs;
 
+import static android.support.customtabs.CustomTabsIntent.COLOR_SCHEME_LIGHT;
+import static android.support.customtabs.CustomTabsIntent.COLOR_SCHEME_SYSTEM;
+
 import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
 import android.content.ComponentName;
@@ -16,7 +19,9 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.IntDef;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.customtabs.CustomTabColorSchemeParams;
 import android.support.customtabs.CustomTabsIntent;
 import android.support.customtabs.CustomTabsSessionToken;
 import android.support.customtabs.TrustedWebUtils;
@@ -53,6 +58,10 @@ import java.util.regex.Pattern;
 
 /**
  * A model class that parses the incoming intent for Custom Tabs specific customization data.
+ *
+ * Lifecycle: is activity-scoped, i.e. one instance per CustomTabActivity instance. Must be
+ * re-created when color scheme changes, which happens automatically since color scheme change leads
+ * to activity re-creation.
  */
 public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
     private static final String TAG = "CustomTabIntentData";
@@ -245,9 +254,25 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
     }
 
     /**
-     * Constructs a {@link CustomTabIntentDataProvider}.
+     * Deprecated: use the constructor below.
+     * TODO(pshmakov): remove once no longer used downstream.
      */
+    @Deprecated
     public CustomTabIntentDataProvider(Intent intent, Context context) {
+        this(intent, context, COLOR_SCHEME_LIGHT);
+    }
+
+    /**
+     * Constructs a {@link CustomTabIntentDataProvider}.
+     *
+     * The colorScheme parameter specifies which color scheme the Custom Tab should use.
+     * It can currently be either {@link CustomTabsIntent#COLOR_SCHEME_LIGHT} or
+     * {@link CustomTabsIntent#COLOR_SCHEME_DARK}.
+     * If Custom Tab was launched with {@link CustomTabsIntent#COLOR_SCHEME_SYSTEM}, colorScheme
+     * must reflect the current system setting. When the system setting changes, a new
+     * CustomTabIntentDataProvider object must be created.
+     */
+    public CustomTabIntentDataProvider(Intent intent, Context context, int colorScheme) {
         super(intent);
         if (intent == null) assert false;
 
@@ -261,9 +286,10 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
 
         mIsIncognito = isIncognitoForPaymentsFlow(intent) || isValidExternalIncognitoIntent(intent);
 
+        CustomTabColorSchemeParams params = getColorSchemeParams(intent, colorScheme);
         retrieveCustomButtons(intent, context);
-        retrieveToolbarColor(intent, context);
-        retrieveBottomBarColor(intent);
+        retrieveToolbarColor(params, context);
+        retrieveBottomBarColor(params);
         mInitialBackgroundColor = retrieveInitialBackgroundColor(intent);
 
         mEnableUrlBarHiding = IntentUtils.safeGetBooleanExtra(
@@ -355,6 +381,22 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
         }
     }
 
+    @NonNull
+    private CustomTabColorSchemeParams getColorSchemeParams(Intent intent, int colorScheme) {
+        if (colorScheme == COLOR_SCHEME_SYSTEM) {
+            assert false : "Color scheme passed to IntentDataProvider should not be "
+                    + "COLOR_SCHEME_SYSTEM";
+            colorScheme = COLOR_SCHEME_LIGHT;
+        }
+        try {
+            return CustomTabsIntent.getColorSchemeParams(intent, colorScheme);
+        } catch (Throwable e) {
+            // Catch any un-parceling exceptions, like in IntentUtils#safe* methods
+            Log.e(TAG, "Failed to parse CustomTabColorSchemeParams");
+            return new CustomTabColorSchemeParams.Builder().build(); // Empty params
+        }
+    }
+
     private boolean isIncognitoForPaymentsFlow(Intent intent) {
         return incognitoRequested(intent) && isTrustedIntent() && isOpenedByChrome()
                 && isForPaymentRequest();
@@ -435,28 +477,27 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
     /**
      * Processes the color passed from the client app and updates {@link #mToolbarColor}.
      */
-    private void retrieveToolbarColor(Intent intent, Context context) {
+    private void retrieveToolbarColor(CustomTabColorSchemeParams schemeParams, Context context) {
         int defaultColor = ColorUtils.getDefaultThemeColor(context.getResources(), isIncognito());
         if (isIncognito()) {
             mToolbarColor = defaultColor;
             return; // Don't allow toolbar color customization for incognito tabs.
         }
-        int color = IntentUtils.safeGetIntExtra(
-                intent, CustomTabsIntent.EXTRA_TOOLBAR_COLOR, defaultColor);
+        int color = schemeParams.toolbarColor != null ? schemeParams.toolbarColor : defaultColor;
         mToolbarColor = removeTransparencyFromColor(color);
     }
 
     /**
-     * Must be called after calling {@link #retrieveToolbarColor(Intent, Context)}.
+     * Must be called after calling {@link #retrieveToolbarColor}.
      */
-    private void retrieveBottomBarColor(Intent intent) {
+    private void retrieveBottomBarColor(CustomTabColorSchemeParams schemeParams) {
         if (isIncognito()) {
             mBottomBarColor = mToolbarColor;
             return;
         }
         int defaultColor = mToolbarColor;
-        int color = IntentUtils.safeGetIntExtra(
-                intent, CustomTabsIntent.EXTRA_SECONDARY_TOOLBAR_COLOR, defaultColor);
+        int color = schemeParams.secondaryToolbarColor != null ? schemeParams.secondaryToolbarColor
+                : defaultColor;
         mBottomBarColor = removeTransparencyFromColor(color);
     }
 

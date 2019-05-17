@@ -4,6 +4,9 @@
 
 package org.chromium.chrome.browser.customtabs;
 
+import static android.support.customtabs.CustomTabsIntent.COLOR_SCHEME_DARK;
+import static android.support.customtabs.CustomTabsIntent.COLOR_SCHEME_LIGHT;
+
 import static org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController.FinishReason.USER_NAVIGATION;
 
 import android.app.Activity;
@@ -83,7 +86,6 @@ import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.content_public.browser.WebContents;
 
@@ -212,7 +214,9 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     public void performPreInflationStartup() {
         // Parse the data from the Intent before calling super to allow the Intent to customize
         // the Activity parameters, including the background of the page.
-        mIntentDataProvider = new CustomTabIntentDataProvider(getIntent(), this);
+        // Note that color scheme is fixed for the lifetime of Activity: if the system setting
+        // changes, we recreate the activity.
+        mIntentDataProvider = new CustomTabIntentDataProvider(getIntent(), this, getColorScheme());
 
         super.performPreInflationStartup();
         mTabProvider.addObserver(mTabChangeObserver);
@@ -228,6 +232,15 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         initalizePreviewsObserver();
     }
 
+    private int getColorScheme() {
+        if (mNightModeStateController != null) {
+            return mNightModeStateController.isInNightMode() ? COLOR_SCHEME_DARK :
+                    COLOR_SCHEME_LIGHT;
+        }
+        assert false : "NightModeStateController should have been already created";
+        return COLOR_SCHEME_LIGHT;
+    }
+
     private void initializeIncognito() {
         mIncognitoTabHost = new IncognitoCustomTabHost();
         IncognitoTabHostRegistry.getInstance().register(mIncognitoTabHost);
@@ -237,14 +250,6 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
             // Disable taking screenshots and seeing snapshots in recents
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
         }
-    }
-
-    @Nullable
-    private NavigationController getNavigationController() {
-        if (getActivityTab() == null) return null;
-
-        WebContents webContents = getActivityTab().getWebContents();
-        return webContents == null ? null : webContents.getNavigationController();
     }
 
     @Override
