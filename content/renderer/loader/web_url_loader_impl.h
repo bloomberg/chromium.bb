@@ -86,7 +86,6 @@ class CONTENT_EXPORT WebURLLoaderImpl : public blink::WebURLLoader {
                          blink::WebBlobInfo& downloaded_blob) override;
   void LoadAsynchronously(const blink::WebURLRequest& request,
                           blink::WebURLLoaderClient* client) override;
-  void Cancel() override;
   void SetDefersLoading(bool value) override;
   void DidChangePriority(blink::WebURLRequest::Priority new_priority,
                          int intra_priority_value) override;
@@ -96,6 +95,9 @@ class CONTENT_EXPORT WebURLLoaderImpl : public blink::WebURLLoader {
   class Context;
   class RequestPeerImpl;
   class SinkPeer;
+
+  void Cancel();
+
   scoped_refptr<Context> context_;
 
   DISALLOW_COPY_AND_ASSIGN(WebURLLoaderImpl);

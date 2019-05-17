@@ -71,10 +71,6 @@ class WebURLLoader {
   virtual void LoadAsynchronously(const WebURLRequest&,
                                   WebURLLoaderClient*) = 0;
 
-  // Cancels an asynchronous load.  This will appear as a load error to
-  // the client.
-  virtual void Cancel() = 0;
-
   // Suspends/resumes an asynchronous load.
   virtual void SetDefersLoading(bool) = 0;
 

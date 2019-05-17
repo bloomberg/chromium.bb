@@ -144,8 +144,8 @@ void WebURLLoaderMock::LoadAsynchronously(const WebURLRequest& request,
 }
 
 void WebURLLoaderMock::Cancel() {
-  if (using_default_loader_) {
-    default_loader_->Cancel();
+  if (using_default_loader_ && default_loader_) {
+    default_loader_.reset();
     return;
   }
   client_ = nullptr;

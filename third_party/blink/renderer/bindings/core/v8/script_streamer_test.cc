@@ -92,8 +92,6 @@ class NoopLoaderFactory final : public ResourceFetcher::LoaderFactory {
     }
     void LoadAsynchronously(const WebURLRequest&,
                             WebURLLoaderClient*) override {}
-
-    void Cancel() override {}
     void SetDefersLoading(bool) override {}
     void DidChangePriority(WebURLRequest::Priority, int) override {
       NOTREACHED();

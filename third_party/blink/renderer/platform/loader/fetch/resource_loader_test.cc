@@ -91,7 +91,6 @@ class ResourceLoaderTest : public testing::Test {
     void LoadAsynchronously(const WebURLRequest&,
                             WebURLLoaderClient*) override {}
 
-    void Cancel() override {}
     void SetDefersLoading(bool) override {}
     void DidChangePriority(WebURLRequest::Priority, int) override {
       NOTREACHED();
