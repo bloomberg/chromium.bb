@@ -664,6 +664,8 @@ class DirectoryItem extends cr.ui.TreeItem {
       command.execute(this);
     });
     rowElement.appendChild(ejectButton);
+    // Mark the row as ejectable (for CSS styling positioning).
+    rowElement.classList.add('ejectable');
 
     // Add paper-ripple effect on the eject button.
     const ripple = cr.doc.createElement('paper-ripple');

@@ -141,9 +141,19 @@ div.splitter {
   padding: 0 3px;
 }
 
-div[section-start='removable'].tree-item {
-  left: 0;
-  max-width: 100%;
+.tree-item > .tree-row {
+  position: inherit;
+}
+
+.ejectable > span.label {
+  left: 52px;
+  position: absolute;
+  width: calc(100% - 92px);
+}
+
+.tree-item .root-eject {
+  position: absolute;
+  right: 0;
 }
 
 #directory-tree .tree-row > .button {
@@ -226,7 +236,6 @@ div[section-start='removable'].tree-item {
   cursor: pointer;
   flex: none;
   height: 40px;
-  position: relative;
   width: 40px;
   z-index: 1;  /* Make sure .root-eject is on upper layer than paper-ripple. */
 }
