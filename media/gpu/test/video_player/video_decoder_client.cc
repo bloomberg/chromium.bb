@@ -35,6 +35,14 @@ VideoDecoderClient::VideoDecoderClient(
       video_(video),
       weak_this_factory_(this) {
   DETACH_FROM_SEQUENCE(decoder_client_sequence_checker_);
+
+  // Video frame processors are currently only supported in import mode, as
+  // wrapping texture-backed video frames is not supported (See
+  // http://crbug/362521).
+  LOG_ASSERT(config.allocation_mode == AllocationMode::kImport ||
+             frame_processors.size() == 0)
+      << "Video frame processors are only supported when using import mode";
+
   weak_this_ = weak_this_factory_.GetWeakPtr();
 }
 
