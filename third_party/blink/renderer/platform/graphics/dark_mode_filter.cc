@@ -119,8 +119,9 @@ base::Optional<cc::PaintFlags> DarkModeFilter::ApplyToFlagsIfNeeded(
     dark_mode_flags.setColorFilter(default_filter_);
   } else {
     auto invertedColor = ApplyIfNeeded(flags.getColor());
-    dark_mode_flags.setColor(SkColorSetRGB(
-        invertedColor.Red(), invertedColor.Green(), invertedColor.Blue()));
+    dark_mode_flags.setColor(
+        SkColorSetARGB(invertedColor.Alpha(), invertedColor.Red(),
+                       invertedColor.Green(), invertedColor.Blue()));
   }
 
   return base::make_optional<cc::PaintFlags>(std::move(dark_mode_flags));
