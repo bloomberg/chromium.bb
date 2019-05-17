@@ -48,7 +48,7 @@ class TestShelfItemDelegate : public ShelfItemDelegate {
                     int64_t display_id,
                     ash::ShelfLaunchSource source,
                     ItemSelectedCallback callback) override {
-    std::move(callback).Run(SHELF_ACTION_WINDOW_ACTIVATED, base::nullopt);
+    std::move(callback).Run(SHELF_ACTION_WINDOW_ACTIVATED, {});
   }
   void ExecuteCommand(bool from_context_menu,
                       int64_t command_id,
@@ -90,11 +90,11 @@ class AppListAppLaunchedMetricTest : public AshTestBase {
     ShelfItem shelf_item;
     shelf_item.id = ash::ShelfID("app_id");
     shelf_item.type = TYPE_BROWSER_SHORTCUT;
-    Shell::Get()->shelf_model()->Add(shelf_item);
+    ShelfModel::Get()->Add(shelf_item);
 
     // The TestShelfItemDelegate will simulate a window activation after the
     // shelf item is clicked.
-    Shell::Get()->shelf_model()->SetShelfItemDelegate(
+    ShelfModel::Get()->SetShelfItemDelegate(
         shelf_item.id, std::make_unique<TestShelfItemDelegate>(shelf_item.id));
 
     ClickShelfItem();

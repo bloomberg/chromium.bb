@@ -10,12 +10,10 @@
 
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/multi_user_window_manager.h"
-#include "ash/public/cpp/remote_shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_prefs.h"
 #include "ash/public/cpp/window_animation_types.h"
-#include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/strings/pattern.h"
@@ -197,7 +195,7 @@ ChromeLauncherController* ChromeLauncherController::instance_ = nullptr;
 
 ChromeLauncherController::ChromeLauncherController(Profile* profile,
                                                    ash::ShelfModel* model)
-    : model_(model), observer_binding_(this), weak_ptr_factory_(this) {
+    : model_(model), weak_ptr_factory_(this) {
   DCHECK(!instance_);
   instance_ = this;
 
@@ -206,13 +204,6 @@ ChromeLauncherController::ChromeLauncherController(Profile* profile,
   DCHECK_EQ(2, model_->item_count());
   DCHECK_EQ(ash::kBackButtonId, model_->items()[0].id.app_id);
   DCHECK_EQ(ash::kAppListId, model_->items()[1].id.app_id);
-
-  // Start observing the shelf controller.
-  if (ConnectToShelfController()) {
-    ash::mojom::ShelfObserverAssociatedPtrInfo ptr_info;
-    observer_binding_.Bind(mojo::MakeRequest(&ptr_info));
-    shelf_controller_->AddObserver(std::move(ptr_info));
-  }
 
   if (!web_app::SystemWebAppManager::IsEnabled()) {
     settings_window_observer_ = std::make_unique<SettingsWindowObserver>();
@@ -438,8 +429,7 @@ void ChromeLauncherController::ActivateApp(const std::string& app_id,
                                            int64_t display_id) {
   // If there is an existing delegate for this app, select it.
   const ash::ShelfID shelf_id(app_id);
-  ash::ShelfItemDelegate* delegate = model_->GetShelfItemDelegate(shelf_id);
-  if (delegate) {
+  if (auto* delegate = model_->GetShelfItemDelegate(shelf_id)) {
     SelectItemWithSource(delegate, source, display_id);
     return;
   }
@@ -457,22 +447,16 @@ void ChromeLauncherController::SetLauncherItemImage(
     const ash::ShelfID& shelf_id,
     const gfx::ImageSkia& image) {
   DCHECK(!image.isNull());
-  const ash::ShelfItem* item = GetItem(shelf_id);
-  if (item) {
+  if (const auto* item = GetItem(shelf_id)) {
     ash::ShelfItem new_item = *item;
     new_item.image = image;
-    // Update the image in Ash's ShelfModel, ShelfItemChanged strips images.
-    if (shelf_controller_)
-      shelf_controller_->UpdateShelfItem(new_item);
-    else
-      model_->Set(model_->ItemIndexByID(shelf_id), new_item);
+    model_->Set(model_->ItemIndexByID(shelf_id), new_item);
   }
 }
 
 void ChromeLauncherController::UpdateLauncherItemImage(
     const std::string& app_id) {
-  AppIconLoader* icon_loader = GetAppIconLoaderForApp(app_id);
-  if (icon_loader)
+  if (auto* icon_loader = GetAppIconLoaderForApp(app_id))
     icon_loader->UpdateImage(app_id);
 }
 
@@ -599,11 +583,12 @@ void ChromeLauncherController::AdditionalUserAddedToSession(Profile* profile) {
     controller->AdditionalUserAddedToSession(profile);
 }
 
-ash::MenuItemList ChromeLauncherController::GetAppMenuItemsForTesting(
+ash::ShelfItemDelegate::AppMenuItems
+ChromeLauncherController::GetAppMenuItemsForTesting(
     const ash::ShelfItem& item) {
   ash::ShelfItemDelegate* delegate = model_->GetShelfItemDelegate(item.id);
   return delegate ? delegate->GetAppMenuItems(ui::EF_NONE)
-                  : ash::MenuItemList();
+                  : ash::ShelfItemDelegate::AppMenuItems();
 }
 
 std::vector<content::WebContents*>
@@ -691,7 +676,7 @@ base::string16 ChromeLauncherController::GetAppListTitle(
 BrowserShortcutLauncherItemController*
 ChromeLauncherController::GetBrowserShortcutLauncherItemController() {
   ash::ShelfID id(kChromeAppId);
-  ash::mojom::ShelfItemDelegate* delegate = model_->GetShelfItemDelegate(id);
+  ash::ShelfItemDelegate* delegate = model_->GetShelfItemDelegate(id);
   DCHECK(delegate) << "There should be always be a browser shortcut item.";
   return static_cast<BrowserShortcutLauncherItemController*>(delegate);
 }
@@ -727,10 +712,6 @@ void ChromeLauncherController::SetAppIconLoadersForTest(
 
 void ChromeLauncherController::SetProfileForTest(Profile* profile) {
   profile_ = profile;
-}
-
-void ChromeLauncherController::FlushForTesting() {
-  observer_binding_.FlushForTesting();
 }
 
 void ChromeLauncherController::PinAppWithID(const std::string& app_id) {
@@ -805,30 +786,9 @@ void ChromeLauncherController::OnAppImageUpdated(const std::string& app_id,
     }
     item.image = image;
     shelf_spinner_controller_->MaybeApplySpinningEffect(app_id, &item.image);
-    // Update the image in Ash's ShelfModel, ShelfItemChanged strips images.
-    if (shelf_controller_)
-      shelf_controller_->UpdateShelfItem(item);
-    else
-      model_->Set(index, item);
+    model_->Set(index, item);
     // It's possible we're waiting on more than one item, so don't break.
   }
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// ChromeLauncherController protected:
-
-bool ChromeLauncherController::ConnectToShelfController() {
-  if (shelf_controller_.is_bound())
-    return true;
-
-  auto* connection = content::ServiceManagerConnection::GetForProcess();
-  auto* connector = connection ? connection->GetConnector() : nullptr;
-  // Unit tests may not have a connector.
-  if (!connector)
-    return false;
-
-  connector->BindInterface(ash::mojom::kServiceName, &shelf_controller_);
-  return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -901,7 +861,7 @@ void ChromeLauncherController::PinRunningAppInternal(
 
 void ChromeLauncherController::UnpinRunningAppInternal(int index) {
   DCHECK(index >= 0 && index < model_->item_count());
-  ash::ShelfItem item = model_->items()[index];
+  const ash::ShelfItem& item = model_->items()[index];
   DCHECK_EQ(item.type, ash::TYPE_PINNED_APP);
   SetItemType(item.id, ash::TYPE_APP);
 }
@@ -1005,7 +965,7 @@ void ChromeLauncherController::UpdateAppLaunchersFromSync() {
 
   // At second step remove any pin to the right from the current index.
   while (index < model_->item_count()) {
-    const ash::ShelfItem item = model_->items()[index];
+    const ash::ShelfItem& item = model_->items()[index];
     if (item.type == ash::TYPE_PINNED_APP)
       UnpinShelfItemInternal(item.id);
     else
@@ -1223,139 +1183,39 @@ void ChromeLauncherController::ReleaseProfile() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// ash::mojom::ShelfObserver:
-
-void ChromeLauncherController::OnShelfItemAdded(int32_t index,
-                                                const ash::ShelfItem& item) {
-  DCHECK(shelf_controller_) << " Unexpected model sync";
-  DCHECK(!applying_remote_shelf_model_changes_) << " Unexpected model change";
-
-  // Ignore the back button; it should already exist in the local ShelfModel.
-  if (item.id.app_id == ash::kBackButtonId) {
-    DCHECK_EQ(0, model_->ItemIndexByID(item.id));
-    return;
-  }
-
-  // Ignore the AppList item; it should already exist in the local ShelfModel.
-  if (item.id.app_id == ash::kAppListId) {
-    DCHECK_EQ(1, model_->ItemIndexByID(item.id));
-    return;
-  }
-
-  // Ash items should be sent without images for efficiency.
-  DCHECK(item.image.isNull()) << " Chrome does not need item images from Ash";
-  DCHECK_LE(index, model_->item_count()) << " Index out of bounds";
-  DCHECK_GT(index, 1) << " Items can not preceed the AppList";
-  index = std::min(std::max(index, 1), model_->item_count());
-  base::AutoReset<bool> reset(&applying_remote_shelf_model_changes_, true);
-  model_->AddAt(index, item);
-}
-
-void ChromeLauncherController::OnShelfItemRemoved(const ash::ShelfID& id) {
-  DCHECK(shelf_controller_) << " Unexpected model sync";
-  DCHECK(!applying_remote_shelf_model_changes_) << " Unexpected model change";
-  const int index = model_->ItemIndexByID(id);
-  DCHECK_GE(index, 0) << " No item found with the id: " << id;
-  DCHECK_NE(index, 0) << " The AppList shelf item cannot be removed";
-  if (index <= 0)
-    return;
-  base::AutoReset<bool> reset(&applying_remote_shelf_model_changes_, true);
-  model_->RemoveItemAt(index);
-}
-
-void ChromeLauncherController::OnShelfItemMoved(const ash::ShelfID& id,
-                                                int32_t index) {
-  DCHECK(shelf_controller_) << " Unexpected model sync";
-  DCHECK(!applying_remote_shelf_model_changes_) << " Unexpected model change";
-  const int current_index = model_->ItemIndexByID(id);
-  DCHECK_GE(current_index, 0) << " No item found with the id: " << id;
-  DCHECK_NE(current_index, 0) << " The AppList shelf item cannot be moved";
-  if (current_index <= 0)
-    return;
-  DCHECK_GT(index, 0) << " Items can not preceed the AppList";
-  DCHECK_LT(index, model_->item_count()) << " Index out of bounds";
-  index = std::min(std::max(index, 1), model_->item_count() - 1);
-  DCHECK_NE(current_index, index) << " The item is already at the given index";
-  if (current_index == index)
-    return;
-  base::AutoReset<bool> reset(&applying_remote_shelf_model_changes_, true);
-  model_->Move(current_index, index);
-}
-
-void ChromeLauncherController::OnShelfItemUpdated(const ash::ShelfItem& item) {
-  DCHECK(shelf_controller_) << " Unexpected model sync";
-  DCHECK(!applying_remote_shelf_model_changes_) << " Unexpected model change";
-  const int index = model_->ItemIndexByID(item.id);
-  DCHECK_GE(index, 0) << " No item found with the id: " << item.id;
-  if (index < 0)
-    return;
-  base::AutoReset<bool> reset(&applying_remote_shelf_model_changes_, true);
-
-  // Keep existing images, Ash items should be sent without them for efficiency.
-  DCHECK(item.image.isNull()) << " Chrome does not need item images from Ash";
-  ash::ShelfItem new_item = item;
-  new_item.image = model_->items()[index].image;
-  model_->Set(index, new_item);
-}
-
-void ChromeLauncherController::OnShelfItemDelegateChanged(
-    const ash::ShelfID& id,
-    ash::mojom::ShelfItemDelegatePtr delegate) {
-  DCHECK(shelf_controller_) << " Unexpected model sync";
-  DCHECK(!applying_remote_shelf_model_changes_) << " Unexpected model change";
-  base::AutoReset<bool> reset(&applying_remote_shelf_model_changes_, true);
-  if (delegate.is_bound()) {
-    model_->SetShelfItemDelegate(id,
-                                 std::make_unique<ash::RemoteShelfItemDelegate>(
-                                     id, std::move(delegate)));
-  } else {
-    model_->SetShelfItemDelegate(id, nullptr);
-  }
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // ash::ShelfModelObserver:
 
 void ChromeLauncherController::ShelfItemAdded(int index) {
-  if (shelf_controller_ && !applying_remote_shelf_model_changes_)
-    shelf_controller_->AddShelfItem(index, model_->items()[index]);
-
-  // Perform item init, and ensure these changes are reported to Ash.
-  base::AutoReset<bool> reset(&applying_remote_shelf_model_changes_, false);
-
-  ash::ShelfItem item = model_->items()[index];
+  ash::ShelfID id = model_->items()[index].id;
   // Construct a ShelfItemDelegate for the item if one does not yet exist.
-  // The delegate needs to be set before FetchImage() so that shelf item
-  // icon could be set properly when FetchImage() calls OnAppImageUpdated()
-  // synchronously.
-  if (!model_->GetShelfItemDelegate(item.id)) {
-    model_->SetShelfItemDelegate(
-        item.id, AppShortcutLauncherItemController::Create(item.id));
+  // The delegate must be set before FetchImage() so that shelf item icon is
+  // set properly when FetchImage() calls OnAppImageUpdated() synchronously.
+  if (!model_->GetShelfItemDelegate(id)) {
+    model_->SetShelfItemDelegate(id,
+                                 AppShortcutLauncherItemController::Create(id));
   }
 
   // Fetch the app icon, this may synchronously update the item's image.
-  const std::string& app_id = model_->items()[index].id.app_id;
-  AppIconLoader* app_icon_loader = GetAppIconLoaderForApp(app_id);
+  AppIconLoader* app_icon_loader = GetAppIconLoaderForApp(id.app_id);
   if (app_icon_loader)
-    app_icon_loader->FetchImage(app_id);
+    app_icon_loader->FetchImage(id.app_id);
 
   // Update the item with any other missing Chrome-specific info.
+  // Construct |item| after FetchImage, which might synchronously load an image.
+  ash::ShelfItem item = model_->items()[index];
   if (item.type == ash::TYPE_APP || item.type == ash::TYPE_PINNED_APP) {
     bool needs_update = false;
     if (item.title.empty()) {
       needs_update = true;
-      item.title = LauncherControllerHelper::GetAppTitle(profile(), app_id);
+      item.title = LauncherControllerHelper::GetAppTitle(profile(), id.app_id);
     }
-    ash::ShelfItemStatus status = GetAppState(app_id);
+    ash::ShelfItemStatus status = GetAppState(id.app_id);
     if (status != item.status && status != ash::STATUS_CLOSED) {
       needs_update = true;
       item.status = status;
     }
-    if (needs_update) {
-      // Ensure these changes are reported back to Ash.
-      base::AutoReset<bool> reset(&applying_remote_shelf_model_changes_, false);
+    if (needs_update)
       model_->Set(index, item);
-    }
   }
 
   // Update the pin position preference as needed.
@@ -1366,25 +1226,17 @@ void ChromeLauncherController::ShelfItemAdded(int index) {
 void ChromeLauncherController::ShelfItemRemoved(
     int index,
     const ash::ShelfItem& old_item) {
-  if (shelf_controller_ && !applying_remote_shelf_model_changes_)
-    shelf_controller_->RemoveShelfItem(old_item.id);
-
   // Remove the pin position from preferences as needed.
   if (ItemTypeIsPinned(old_item) && should_sync_pin_changes_)
     RemovePinPosition(profile(), old_item.id);
-
-  AppIconLoader* app_icon_loader = GetAppIconLoaderForApp(old_item.id.app_id);
-  if (app_icon_loader)
+  if (auto* app_icon_loader = GetAppIconLoaderForApp(old_item.id.app_id))
     app_icon_loader->ClearImage(old_item.id.app_id);
 }
 
 void ChromeLauncherController::ShelfItemMoved(int start_index,
                                               int target_index) {
-  const ash::ShelfItem& item = model_->items()[target_index];
-  if (shelf_controller_ && !applying_remote_shelf_model_changes_)
-    shelf_controller_->MoveShelfItem(item.id, target_index);
-
   // Update the pin position preference as needed.
+  const ash::ShelfItem& item = model_->items()[target_index];
   DCHECK_NE(ash::TYPE_BACK_BUTTON, item.type);
   DCHECK_NE(ash::TYPE_APP_LIST, item.type);
   if (ItemTypeIsPinned(item) && should_sync_pin_changes_)
@@ -1394,33 +1246,15 @@ void ChromeLauncherController::ShelfItemMoved(int start_index,
 void ChromeLauncherController::ShelfItemChanged(
     int index,
     const ash::ShelfItem& old_item) {
-  ash::ShelfItem item = model_->items()[index];
-  if (shelf_controller_ && !applying_remote_shelf_model_changes_) {
-    // Avoid passing item images here, ash will retain its existing local image.
-    // Images are synced elsewhere to save costs on these updates (eg. status).
-    item.image = gfx::ImageSkia();
-    shelf_controller_->UpdateShelfItem(item);
-  }
-
   if (!should_sync_pin_changes_)
     return;
 
   // Add or remove the pin position from preferences as needed.
+  const ash::ShelfItem& item = model_->items()[index];
   if (!ItemTypeIsPinned(old_item) && ItemTypeIsPinned(item))
     SyncPinPosition(item.id);
   else if (ItemTypeIsPinned(old_item) && !ItemTypeIsPinned(item))
     RemovePinPosition(profile(), old_item.id);
-}
-
-void ChromeLauncherController::ShelfItemDelegateChanged(
-    const ash::ShelfID& id,
-    ash::ShelfItemDelegate* old_delegate,
-    ash::ShelfItemDelegate* delegate) {
-  if (shelf_controller_ && !applying_remote_shelf_model_changes_) {
-    shelf_controller_->SetShelfItemDelegate(
-        id, delegate ? delegate->CreateInterfacePtrAndBind()
-                     : ash::mojom::ShelfItemDelegatePtr());
-  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

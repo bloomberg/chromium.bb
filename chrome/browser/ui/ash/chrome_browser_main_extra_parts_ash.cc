@@ -93,10 +93,8 @@ class ChromeLauncherControllerInitializer
 
     if (session_manager::SessionManager::Get()->session_state() ==
         session_manager::SessionState::ACTIVE) {
-      // Chrome keeps its own ShelfModel copy in sync with Ash's ShelfModel.
-      chrome_shelf_model_ = std::make_unique<ash::ShelfModel>();
       chrome_launcher_controller_ = std::make_unique<ChromeLauncherController>(
-          nullptr, chrome_shelf_model_.get());
+          nullptr, ash::ShelfModel::Get());
       chrome_launcher_controller_->Init();
 
       session_manager::SessionManager::Get()->RemoveObserver(this);
@@ -104,10 +102,6 @@ class ChromeLauncherControllerInitializer
   }
 
  private:
-  // By default |chrome_shelf_model_| is synced with Ash's ShelfController
-  // instance in Mash and in Classic Ash; otherwise this is not created and
-  // Ash's ShelfModel instance is used directly.
-  std::unique_ptr<ash::ShelfModel> chrome_shelf_model_;
   std::unique_ptr<ChromeLauncherController> chrome_launcher_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerInitializer);

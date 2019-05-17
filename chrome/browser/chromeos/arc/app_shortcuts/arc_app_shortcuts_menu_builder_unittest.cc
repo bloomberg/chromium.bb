@@ -71,7 +71,7 @@ TEST_F(ArcAppShortcutsMenuBuilderTest, Basic) {
   arc_app_shortcuts_menu_builder->BuildMenu(
       kFakeAppPackageName, std::move(simple_menu_model),
       base::BindLambdaForTesting(
-          [&](std::unique_ptr<ui::MenuModel> returned_menu) {
+          [&](std::unique_ptr<ui::SimpleMenuModel> returned_menu) {
             menu = std::move(returned_menu);
             run_loop.Quit();
           }));

@@ -31,7 +31,6 @@
 #include "ash/public/interfaces/app_list_view.mojom.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_controller.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shell.h"
@@ -1291,9 +1290,7 @@ class AppListPresenterDelegateHomeLauncherTest
     std::unique_ptr<ui::Event> event = std::make_unique<ui::MouseEvent>(
         ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(), base::TimeTicks(),
         ui::EF_NONE, 0);
-    Shell::Get()
-        ->shelf_controller()
-        ->model()
+    ShelfModel::Get()
         ->GetShelfItemDelegate(ShelfID(kAppListId))
         ->ItemSelected(std::move(event), GetPrimaryDisplayId(),
                        ash::LAUNCH_FROM_UNKNOWN, base::DoNothing());

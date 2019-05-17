@@ -10,7 +10,6 @@
 
 #include "ash/public/cpp/ash_public_export.h"
 #include "ash/public/cpp/shelf_item.h"
-#include "ash/public/interfaces/shelf.mojom.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 
@@ -32,6 +31,10 @@ ASH_PUBLIC_EXPORT extern const char kBackButtonId[];
 // Model used for shelf items. Owns ShelfItemDelegates but does not create them.
 class ASH_PUBLIC_EXPORT ShelfModel {
  public:
+  // Get or set a weak pointer to the singleton ShelfModel instance, not owned.
+  static ShelfModel* Get();
+  static void SetInstance(ShelfModel* shelf_model);
+
   ShelfModel();
   ~ShelfModel();
 

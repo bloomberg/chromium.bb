@@ -133,7 +133,7 @@ TEST_F(UserMetricsRecorderTest, ValuesRecordedByRecordShelfItemCounts) {
   CreateUserSessions(1);
 
   // Make sure the shelf contains the app list launcher and back button.
-  ShelfModel* shelf_model = Shell::Get()->shelf_model();
+  ShelfModel* shelf_model = ShelfModel::Get();
   ASSERT_EQ(2u, shelf_model->items().size());
   ASSERT_EQ(TYPE_BACK_BUTTON, shelf_model->items()[0].type);
   ASSERT_EQ(TYPE_APP_LIST, shelf_model->items()[1].type);

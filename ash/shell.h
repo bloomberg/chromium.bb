@@ -170,7 +170,6 @@ class ScreenPositionController;
 class ScreenSwitchCheckController;
 class SessionControllerImpl;
 class ShelfController;
-class ShelfModel;
 class ShelfWindowWatcher;
 class ShellDelegate;
 struct ShellInitParams;
@@ -476,7 +475,6 @@ class ASH_EXPORT Shell : public SessionObserver,
     return shadow_controller_.get();
   }
   ShelfController* shelf_controller() { return shelf_controller_.get(); }
-  ShelfModel* shelf_model();
   ShellDelegate* shell_delegate() { return shell_delegate_.get(); }
   ShellState* shell_state() { return shell_state_.get(); }
   ShutdownController* shutdown_controller() {

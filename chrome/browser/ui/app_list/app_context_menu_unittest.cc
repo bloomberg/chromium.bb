@@ -100,11 +100,12 @@ std::unique_ptr<KeyedService> MenuManagerFactory(
       context);
 }
 
-std::unique_ptr<ui::MenuModel> GetContextMenuModel(ChromeAppListItem* item) {
+std::unique_ptr<ui::SimpleMenuModel> GetContextMenuModel(
+    ChromeAppListItem* item) {
   base::RunLoop run_loop;
-  std::unique_ptr<ui::MenuModel> menu;
+  std::unique_ptr<ui::SimpleMenuModel> menu;
   item->GetContextMenuModel(base::BindLambdaForTesting(
-      [&](std::unique_ptr<ui::MenuModel> created_menu) {
+      [&](std::unique_ptr<ui::SimpleMenuModel> created_menu) {
         menu = std::move(created_menu);
         run_loop.Quit();
       }));
@@ -112,12 +113,12 @@ std::unique_ptr<ui::MenuModel> GetContextMenuModel(ChromeAppListItem* item) {
   return menu;
 }
 
-std::unique_ptr<ui::MenuModel> GetMenuModel(
+std::unique_ptr<ui::SimpleMenuModel> GetMenuModel(
     app_list::AppContextMenu* context_menu) {
   base::RunLoop run_loop;
-  std::unique_ptr<ui::MenuModel> menu;
+  std::unique_ptr<ui::SimpleMenuModel> menu;
   context_menu->GetMenuModel(base::BindLambdaForTesting(
-      [&](std::unique_ptr<ui::MenuModel> created_menu) {
+      [&](std::unique_ptr<ui::SimpleMenuModel> created_menu) {
         menu = std::move(created_menu);
         run_loop.Quit();
       }));

@@ -122,7 +122,7 @@ class ChromeSearchResult {
   // no menu for the item (e.g. during install). |callback| takes the ownership
   // of the returned menu model.
   using GetMenuModelCallback =
-      base::OnceCallback<void(std::unique_ptr<ui::MenuModel>)>;
+      base::OnceCallback<void(std::unique_ptr<ui::SimpleMenuModel>)>;
   virtual void GetContextMenuModel(GetMenuModelCallback callback);
 
   // Invoked when a context menu item of this search result is selected.

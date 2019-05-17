@@ -14,6 +14,8 @@ namespace ash {
 
 namespace {
 
+static ShelfModel* g_shelf_model = nullptr;
+
 int ShelfItemTypeToWeight(ShelfItemType type) {
   switch (type) {
     case TYPE_APP_LIST:
@@ -46,6 +48,15 @@ bool CompareByWeight(const ShelfItem& a, const ShelfItem& b) {
 // TODO(michaelpg): Rename App List item to Home Button.
 const char kAppListId[] = "jlfapfmkapbjlfbpjedlinehodkccjee";
 const char kBackButtonId[] = "icmmkgojeloilfifneofeejijgdhjknf";
+
+ShelfModel* ShelfModel::Get() {
+  DCHECK(g_shelf_model);
+  return g_shelf_model;
+}
+
+void ShelfModel::SetInstance(ShelfModel* shelf_model) {
+  g_shelf_model = shelf_model;
+}
 
 ShelfModel::ShelfModel() {
   // Add the back button and app list item; its title and delegate are set in

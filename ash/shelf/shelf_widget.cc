@@ -12,6 +12,7 @@
 #include "ash/kiosk_next/kiosk_next_shell_controller.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
@@ -324,7 +325,7 @@ ShelfWidget::ShelfWidget(aura::Window* shelf_container, Shelf* shelf)
                            Shell::Get()->wallpaper_controller()),
       shelf_layout_manager_(new ShelfLayoutManager(this, shelf)),
       delegate_view_(new DelegateView(this)),
-      shelf_view_(new ShelfView(Shell::Get()->shelf_model(), shelf_, this)),
+      shelf_view_(new ShelfView(ShelfModel::Get(), shelf_, this)),
       login_shelf_view_(
           new LoginShelfView(RootWindowController::ForWindow(shelf_container)
                                  ->lock_screen_action_background_controller())),

@@ -190,21 +190,10 @@ class ShelfItemSelectionTracker : public ShelfItemDelegate {
                     ShelfLaunchSource source,
                     ItemSelectedCallback callback) override {
     item_selected_count_++;
-    std::move(callback).Run(item_selected_action_, base::nullopt);
+    std::move(callback).Run(item_selected_action_, {});
   }
   void ExecuteCommand(bool, int64_t, int32_t, int64_t) override {}
   void Close() override {}
-  void GetContextMenuItems(int64_t display_id,
-                           GetContextMenuItemsCallback callback) override {
-    ash::MenuItemList items;
-    ash::mojom::MenuItemPtr item(ash::mojom::MenuItem::New());
-    item->type = ui::MenuModel::TYPE_COMMAND;
-    item->command_id = 0;
-    item->label = base::UTF8ToUTF16("Item");
-    item->enabled = true;
-    items.push_back(std::move(item));
-    std::move(callback).Run(std::move(items));
-  }
 
  private:
   size_t item_selected_count_ = 0;
@@ -218,13 +207,13 @@ TEST_F(ShelfObserverIconTest, AddRemove) {
   item.id = ShelfID("foo");
   item.type = TYPE_APP;
   EXPECT_FALSE(observer()->icon_positions_changed());
-  const int shelf_item_index = Shell::Get()->shelf_model()->Add(item);
+  const int shelf_item_index = ShelfModel::Get()->Add(item);
   shelf_view_test()->RunMessageLoopUntilAnimationsDone();
   EXPECT_TRUE(observer()->icon_positions_changed());
   observer()->Reset();
 
   EXPECT_FALSE(observer()->icon_positions_changed());
-  Shell::Get()->shelf_model()->RemoveItemAt(shelf_item_index);
+  ShelfModel::Get()->RemoveItemAt(shelf_item_index);
   shelf_view_test()->RunMessageLoopUntilAnimationsDone();
   EXPECT_TRUE(observer()->icon_positions_changed());
   observer()->Reset();
@@ -244,7 +233,7 @@ TEST_F(ShelfObserverIconTest, AddRemoveWithMultipleDisplays) {
   item.type = TYPE_APP;
   EXPECT_FALSE(observer()->icon_positions_changed());
   EXPECT_FALSE(second_observer.icon_positions_changed());
-  const int shelf_item_index = Shell::Get()->shelf_model()->Add(item);
+  const int shelf_item_index = ShelfModel::Get()->Add(item);
   shelf_view_test()->RunMessageLoopUntilAnimationsDone();
   EXPECT_TRUE(observer()->icon_positions_changed());
   EXPECT_TRUE(second_observer.icon_positions_changed());
@@ -253,7 +242,7 @@ TEST_F(ShelfObserverIconTest, AddRemoveWithMultipleDisplays) {
 
   EXPECT_FALSE(observer()->icon_positions_changed());
   EXPECT_FALSE(second_observer.icon_positions_changed());
-  Shell::Get()->shelf_model()->RemoveItemAt(shelf_item_index);
+  ShelfModel::Get()->RemoveItemAt(shelf_item_index);
   shelf_view_test()->RunMessageLoopUntilAnimationsDone();
   EXPECT_TRUE(observer()->icon_positions_changed());
   EXPECT_TRUE(second_observer.icon_positions_changed());
@@ -287,7 +276,7 @@ class ShelfViewTest : public AshTestBase {
 
   void SetUp() override {
     AshTestBase::SetUp();
-    model_ = Shell::Get()->shelf_model();
+    model_ = ShelfModel::Get();
     shelf_view_ = GetPrimaryShelf()->GetShelfViewForTesting();
     gfx::NativeWindow window = shelf_view_->shelf_widget()->GetNativeWindow();
     status_area_ = RootWindowController::ForWindow(window)
@@ -2705,10 +2694,7 @@ class ListMenuShelfItemDelegate : public ShelfItemDelegate {
                     ShelfLaunchSource source,
                     ItemSelectedCallback callback) override {
     // Two items are needed to show a menu; the data in the items is not tested.
-    std::vector<mojom::MenuItemPtr> items;
-    items.push_back(mojom::MenuItem::New());
-    items.push_back(mojom::MenuItem::New());
-    std::move(callback).Run(SHELF_ACTION_NONE, std::move(items));
+    std::move(callback).Run(SHELF_ACTION_NONE, {{}, {}});
   }
   void ExecuteCommand(bool, int64_t, int32_t, int64_t) override {}
   void Close() override {}

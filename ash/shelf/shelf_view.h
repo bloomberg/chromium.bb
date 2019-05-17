@@ -11,9 +11,9 @@
 #include <vector>
 
 #include "ash/app_list/views/app_list_drag_and_drop_host.h"
+#include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model_observer.h"
 #include "ash/public/interfaces/app_list_view.mojom.h"
-#include "ash/public/interfaces/shelf.mojom.h"
 #include "ash/shelf/ink_drop_button_listener.h"
 #include "ash/shelf/overflow_bubble.h"
 #include "ash/shelf/overflow_bubble_view.h"
@@ -477,23 +477,21 @@ class ASH_EXPORT ShelfView : public views::View,
   void OnShelfAlignmentChanged(aura::Window* root_window) override;
   void OnShelfAutoHideBehaviorChanged(aura::Window* root_window) override;
 
-  // Handles the result when querying ShelfItemDelegates for context menu items.
-  // Shows a default shelf context menu with optional extra custom |menu_items|.
-  void AfterGetContextMenuItems(const ShelfID& shelf_id,
-                                const gfx::Point& point,
-                                views::View* source,
-                                ui::MenuSourceType source_type,
-                                std::vector<mojom::MenuItemPtr> menu_items);
+  // Shows a shelf context menu with the given |model|, or a default menu.
+  void ShowShelfContextMenu(const ShelfID& shelf_id,
+                            const gfx::Point& point,
+                            views::View* source,
+                            ui::MenuSourceType source_type,
+                            std::unique_ptr<ui::SimpleMenuModel> model);
 
   // Handles the result of an item selection, records the |action| taken and
   // optionally shows an application menu with the given |menu_items|.
-  void AfterItemSelected(
-      const ShelfItem& item,
-      views::Button* sender,
-      std::unique_ptr<ui::Event> event,
-      views::InkDrop* ink_drop,
-      ShelfAction action,
-      base::Optional<std::vector<mojom::MenuItemPtr>> menu_items);
+  void AfterItemSelected(const ShelfItem& item,
+                         views::Button* sender,
+                         std::unique_ptr<ui::Event> event,
+                         views::InkDrop* ink_drop,
+                         ShelfAction action,
+                         ShelfItemDelegate::AppMenuItems menu_items);
 
   // Overridden from views::ContextMenuController:
   void ShowContextMenuForViewImpl(views::View* source,

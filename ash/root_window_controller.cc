@@ -717,14 +717,10 @@ void RootWindowController::ShowContextMenu(const gfx::Point& location_in_screen,
                                  ->GetDisplayNearestWindow(GetRootWindow())
                                  .id();
 
-  std::unique_ptr<ShelfContextMenuModel> menu_model =
-      std::make_unique<ShelfContextMenuModel>(std::vector<mojom::MenuItemPtr>(),
-                                              nullptr, display_id);
-
   root_window_menu_model_adapter_ =
       std::make_unique<RootWindowMenuModelAdapter>(
-          std::move(menu_model), wallpaper_widget_controller()->GetWidget(),
-          source_type,
+          std::make_unique<ShelfContextMenuModel>(nullptr, display_id),
+          wallpaper_widget_controller()->GetWidget(), source_type,
           base::BindOnce(&RootWindowController::OnMenuClosed,
                          base::Unretained(this)),
           Shell::Get()

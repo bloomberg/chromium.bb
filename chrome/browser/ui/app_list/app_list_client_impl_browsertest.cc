@@ -130,9 +130,9 @@ IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest, ShowContextMenu) {
   EXPECT_TRUE(item);
 
   base::RunLoop run_loop;
-  std::unique_ptr<ui::MenuModel> menu_model;
+  std::unique_ptr<ui::SimpleMenuModel> menu_model;
   item->GetContextMenuModel(base::BindLambdaForTesting(
-      [&](std::unique_ptr<ui::MenuModel> created_menu) {
+      [&](std::unique_ptr<ui::SimpleMenuModel> created_menu) {
         menu_model = std::move(created_menu);
         run_loop.Quit();
       }));

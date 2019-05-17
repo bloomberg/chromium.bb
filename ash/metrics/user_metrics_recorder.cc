@@ -161,7 +161,7 @@ int GetNumVisibleWindowsInPrimaryDisplay() {
 void RecordShelfItemCounts() {
   int pinned_item_count = 0;
   int unpinned_item_count = 0;
-  for (const ShelfItem& item : Shell::Get()->shelf_model()->items()) {
+  for (const ShelfItem& item : ShelfModel::Get()->items()) {
     if (item.type == TYPE_PINNED_APP || item.type == TYPE_BROWSER_SHORTCUT)
       ++pinned_item_count;
     else if (item.type != TYPE_APP_LIST && item.type != TYPE_BACK_BUTTON)

@@ -59,9 +59,9 @@ void ArcAppWindowLauncherItemController::ItemSelected(
 
   if (task_ids_.empty()) {
     NOTREACHED();
-    std::move(callback).Run(ash::SHELF_ACTION_NONE, base::nullopt);
+    std::move(callback).Run(ash::SHELF_ACTION_NONE, {});
     return;
   }
   arc::SetTaskActive(*task_ids_.begin());
-  std::move(callback).Run(ash::SHELF_ACTION_NEW_WINDOW_CREATED, base::nullopt);
+  std::move(callback).Run(ash::SHELF_ACTION_NEW_WINDOW_CREATED, {});
 }

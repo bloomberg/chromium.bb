@@ -16,12 +16,12 @@
 #include "chrome/browser/ui/app_list/app_list_model_updater_observer.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 
-namespace ui {
-class MenuModel;
-}
-
 class ChromeAppListItem;
 class ChromeSearchResult;
+
+namespace ui {
+class SimpleMenuModel;
+}  // namespace ui
 
 // An interface to wrap AppListModel access in browser.
 class AppListModelUpdater {
@@ -133,7 +133,7 @@ class AppListModelUpdater {
       bool update_folder) {}
 
   using GetMenuModelCallback =
-      base::OnceCallback<void(std::unique_ptr<ui::MenuModel>)>;
+      base::OnceCallback<void(std::unique_ptr<ui::SimpleMenuModel>)>;
   virtual void GetContextMenuModel(const std::string& id,
                                    GetMenuModelCallback callback) = 0;
   virtual size_t BadgedItemCount() = 0;

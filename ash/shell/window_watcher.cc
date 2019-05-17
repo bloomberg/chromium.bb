@@ -88,7 +88,7 @@ void WindowWatcher::OnWindowAdded(aura::Window* new_window) {
   if (!wm::IsWindowUserPositionable(new_window))
     return;
 
-  ShelfModel* model = Shell::Get()->shelf_model();
+  ShelfModel* model = ShelfModel::Get();
   ShelfItem item;
   item.type = TYPE_APP;
   static int shelf_id = 0;
@@ -112,7 +112,7 @@ void WindowWatcher::OnWillRemoveWindow(aura::Window* window) {
   for (IDToWindow::iterator i = id_to_window_.begin(); i != id_to_window_.end();
        ++i) {
     if (i->second == window) {
-      ShelfModel* model = Shell::Get()->shelf_model();
+      ShelfModel* model = ShelfModel::Get();
       int index = model->ItemIndexByID(i->first);
       DCHECK_NE(-1, index);
       model->RemoveItemAt(index);

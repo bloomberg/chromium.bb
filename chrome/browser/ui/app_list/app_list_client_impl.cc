@@ -159,7 +159,7 @@ void AppListClientImpl::GetSearchResultContextMenuModel(
   }
   result->GetContextMenuModel(base::BindOnce(
       [](GetContextMenuModelCallback callback,
-         std::unique_ptr<ui::MenuModel> menu_model) {
+         std::unique_ptr<ui::SimpleMenuModel> menu_model) {
         std::move(callback).Run(
             ash::menu_utils::GetMojoMenuItemsFromModel(menu_model.get()));
       },
@@ -233,7 +233,7 @@ void AppListClientImpl::GetContextMenuModel(
       id,
       base::BindOnce(
           [](GetContextMenuModelCallback callback,
-             std::unique_ptr<ui::MenuModel> menu_model) {
+             std::unique_ptr<ui::SimpleMenuModel> menu_model) {
             std::move(callback).Run(
                 ash::menu_utils::GetMojoMenuItemsFromModel(menu_model.get()));
           },

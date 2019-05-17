@@ -29,13 +29,6 @@ base::TimeDelta ShelfSpinnerItemController::GetActiveTime() const {
   return base::Time::Now() - start_time_;
 }
 
-void ShelfSpinnerItemController::ItemSelected(std::unique_ptr<ui::Event> event,
-                                              int64_t display_id,
-                                              ash::ShelfLaunchSource source,
-                                              ItemSelectedCallback callback) {
-  std::move(callback).Run(ash::SHELF_ACTION_NONE, base::nullopt);
-}
-
 void ShelfSpinnerItemController::ExecuteCommand(bool from_context_menu,
                                                 int64_t command_id,
                                                 int32_t event_flags,
@@ -46,8 +39,9 @@ void ShelfSpinnerItemController::ExecuteCommand(bool from_context_menu,
   NOTIMPLEMENTED();
 }
 
-void ShelfSpinnerItemController::GetContextMenu(int64_t display_id,
-                                                GetMenuModelCallback callback) {
+void ShelfSpinnerItemController::GetContextMenu(
+    int64_t display_id,
+    GetContextMenuCallback callback) {
   ChromeLauncherController* controller = ChromeLauncherController::instance();
   const ash::ShelfItem* item = controller->GetItem(shelf_id());
   context_menu_ = LauncherContextMenu::Create(controller, item, display_id);

@@ -300,9 +300,9 @@ class ShelfAppBrowserTest : public extensions::ExtensionBrowserTest {
   bool IsItemPresentInMenu(LauncherContextMenu* launcher_context_menu,
                            int command_id) {
     base::RunLoop run_loop;
-    std::unique_ptr<ui::MenuModel> menu;
+    std::unique_ptr<ui::SimpleMenuModel> menu;
     launcher_context_menu->GetMenuModel(base::BindLambdaForTesting(
-        [&](std::unique_ptr<ui::MenuModel> created_menu) {
+        [&](std::unique_ptr<ui::SimpleMenuModel> created_menu) {
           menu = std::move(created_menu);
           run_loop.Quit();
         }));

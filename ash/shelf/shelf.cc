@@ -71,7 +71,7 @@ Shelf* Shelf::ForWindow(aura::Window* window) {
 
 // static
 void Shelf::LaunchShelfItem(int item_index) {
-  ShelfModel* shelf_model = Shell::Get()->shelf_model();
+  const ShelfModel* shelf_model = ShelfModel::Get();
   const ShelfItems& items = shelf_model->items();
   int item_count = shelf_model->item_count();
   int indexes_left = item_index >= 0 ? item_index : item_count;
@@ -102,7 +102,7 @@ void Shelf::ActivateShelfItem(int item_index) {
 
 // static
 void Shelf::ActivateShelfItemOnDisplay(int item_index, int64_t display_id) {
-  ShelfModel* shelf_model = Shell::Get()->shelf_model();
+  const ShelfModel* shelf_model = ShelfModel::Get();
   const ShelfItem& item = shelf_model->items()[item_index];
   ShelfItemDelegate* item_delegate = shelf_model->GetShelfItemDelegate(item.id);
   std::unique_ptr<ui::Event> event = std::make_unique<ui::KeyEvent>(

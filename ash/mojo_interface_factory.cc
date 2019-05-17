@@ -30,7 +30,6 @@
 #include "ash/note_taking_controller.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
-#include "ash/shelf/shelf_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/shutdown_controller.h"
@@ -186,10 +185,6 @@ void BindNoteTakingControllerRequestOnMainThread(
   Shell::Get()->note_taking_controller()->BindRequest(std::move(request));
 }
 
-void BindShelfRequestOnMainThread(mojom::ShelfControllerRequest request) {
-  Shell::Get()->shelf_controller()->BindRequest(std::move(request));
-}
-
 void BindShelfIntegrationTestApiRequestOnMainThread(
     mojom::ShelfIntegrationTestApiRequest request) {
   ShelfIntegrationTestApi::BindRequest(std::move(request));
@@ -312,8 +307,6 @@ void RegisterInterfaces(
   registry->AddInterface(
       base::BindRepeating(&BindNoteTakingControllerRequestOnMainThread),
       main_thread_task_runner);
-  registry->AddInterface(base::BindRepeating(&BindShelfRequestOnMainThread),
-                         main_thread_task_runner);
   registry->AddInterface(
       base::BindRepeating(&BindShutdownControllerRequestOnMainThread),
       main_thread_task_runner);

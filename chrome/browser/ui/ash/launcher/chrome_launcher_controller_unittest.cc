@@ -21,11 +21,9 @@
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
-#include "ash/public/cpp/shelf_model_observer.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shelf/shelf_application_menu_model.h"
-#include "ash/shelf/shelf_controller.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
@@ -150,53 +148,6 @@ constexpr char kCameraAppName[] = "Camera";
 constexpr char kCameraAppPackage[] = "com.google.android.GoogleCameraArc";
 constexpr char kCameraAppActivity[] = "com.android.camera.CameraLauncher";
 
-// ShelfModelObserver implementation that tracks what messages are invoked.
-class TestShelfModelObserver : public ash::ShelfModelObserver {
- public:
-  TestShelfModelObserver() {}
-  ~TestShelfModelObserver() override {}
-
-  // Overridden from ash::ShelfModelObserver:
-  void ShelfItemAdded(int index) override {
-    ++added_;
-    last_index_ = index;
-  }
-
-  void ShelfItemRemoved(int index, const ash::ShelfItem& old_item) override {
-    ++removed_;
-    last_index_ = index;
-  }
-
-  void ShelfItemChanged(int index, const ash::ShelfItem& old_item) override {
-    ++changed_;
-    last_index_ = index;
-  }
-
-  void ShelfItemMoved(int start_index, int target_index) override {
-    last_index_ = target_index;
-  }
-
-  void clear_counts() {
-    added_ = 0;
-    removed_ = 0;
-    changed_ = 0;
-    last_index_ = 0;
-  }
-
-  int added() const { return added_; }
-  int removed() const { return removed_; }
-  int changed() const { return changed_; }
-  int last_index() const { return last_index_; }
-
- private:
-  int added_ = 0;
-  int removed_ = 0;
-  int changed_ = 0;
-  int last_index_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(TestShelfModelObserver);
-};
-
 // Test implementation of AppIconLoader.
 class TestAppIconLoaderImpl : public AppIconLoader {
  public:
@@ -280,110 +231,13 @@ class TestV2AppLauncherItemController : public ash::ShelfItemDelegate {
                     int64_t display_id,
                     ash::ShelfLaunchSource source,
                     ItemSelectedCallback callback) override {
-    std::move(callback).Run(ash::SHELF_ACTION_WINDOW_ACTIVATED, base::nullopt);
+    std::move(callback).Run(ash::SHELF_ACTION_WINDOW_ACTIVATED, {});
   }
   void ExecuteCommand(bool, int64_t, int32_t, int64_t) override {}
   void Close() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestV2AppLauncherItemController);
-};
-
-// A test ShelfController implementation that tracks state and function calls.
-class TestShelfController : public ash::mojom::ShelfController {
- public:
-  TestShelfController() : binding_(this) {}
-  ~TestShelfController() override = default;
-
-  size_t added_count() const { return added_count_; }
-  size_t removed_count() const { return removed_count_; }
-  size_t updated_count() const { return updated_count_; }
-  size_t set_delegate_count() const { return set_delegate_count_; }
-  const ash::ShelfItem& last_item() const { return last_item_; }
-
-  ash::mojom::ShelfControllerPtr CreateInterfacePtrAndBind() {
-    ash::mojom::ShelfControllerPtr ptr;
-    binding_.Bind(mojo::MakeRequest(&ptr));
-    return ptr;
-  }
-
-  // ash::mojom::ShelfController:
-  void AddObserver(
-      ash::mojom::ShelfObserverAssociatedPtrInfo observer) override {
-    observer_.Bind(std::move(observer));
-  }
-  void AddShelfItem(int32_t, const ash::ShelfItem& item) override {
-    added_count_++;
-    last_item_ = item;
-  }
-  void RemoveShelfItem(const ash::ShelfID&) override { removed_count_++; }
-  void MoveShelfItem(const ash::ShelfID&, int32_t) override {}
-  void UpdateShelfItem(const ash::ShelfItem& item) override {
-    updated_count_++;
-    last_item_ = item;
-    if (updated_count_ == expected_updated_count_ &&
-        !updated_callback_.is_null()) {
-      std::move(updated_callback_).Run();
-    }
-  }
-
-  void WaitForUpdates(size_t expected_updates) {
-    base::RunLoop run_loop;
-    expected_updated_count_ = expected_updates + updated_count_;
-    updated_callback_ = run_loop.QuitClosure();
-    run_loop.Run();
-  }
-
-  void SetShelfItemDelegate(const ash::ShelfID&,
-                            ash::mojom::ShelfItemDelegatePtr) override {
-    set_delegate_count_++;
-  }
-
-  // Helper that waits for idle and extracts the non-default bitmap from the
-  // last updated item in shelf controller.
-  SkBitmap GetLastItemImage() {
-    if (default_app_image_.isNull()) {
-      default_app_image_ =
-          *gfx::ImageSkiaOperations::CreateResizedImage(
-               *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-                   IDR_APP_DEFAULT_ICON),
-               skia::ImageOperations::RESIZE_BEST,
-               gfx::Size(extension_misc::EXTENSION_ICON_SMALL,
-                         extension_misc::EXTENSION_ICON_SMALL))
-               .bitmap();
-    }
-
-    // Loading icon is multistep process. At first step default app icon is
-    // loaded while real icon is requested and decoded.
-    // base::RunLoop().RunUntilIdle() hides these steps and in most cases real
-    // icon is returned afterward. However in rare cases default icon is left
-    // after base::RunLoop().RunUntilIdle(). So make sure we don't return
-    // default icon that may fail test expectations.
-    while (true) {
-      base::RunLoop().RunUntilIdle();
-      const SkBitmap* bitmap = last_item().image.bitmap();
-      CHECK(bitmap);
-      if (!gfx::test::AreBitmapsEqual(default_app_image_, *bitmap))
-        return *bitmap;
-    }
-  }
-
- private:
-  size_t added_count_ = 0;
-  size_t removed_count_ = 0;
-  size_t updated_count_ = 0;
-  size_t expected_updated_count_ = 0;
-  base::OnceClosure updated_callback_;
-  size_t set_delegate_count_ = 0;
-  ash::ShelfItem last_item_;
-
-  ash::mojom::ShelfObserverAssociatedPtr observer_;
-  mojo::Binding<ash::mojom::ShelfController> binding_;
-
-  // Used to cache default app image.
-  SkBitmap default_app_image_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestShelfController);
 };
 
 // Simulates selection of the shelf item.
@@ -403,38 +257,6 @@ bool IsWindowOnDesktopOfUser(aura::Window* window,
 
 }  // namespace
 
-// A test ChromeLauncherController subclass that uses TestShelfController.
-class TestChromeLauncherController : public ChromeLauncherController {
- public:
-  TestChromeLauncherController(Profile* profile, ash::ShelfModel* model)
-      : ChromeLauncherController(profile, model) {
-    // Connect to the shelf controller, the base ctor can't call overrides.
-    EXPECT_TRUE(ConnectToShelfController());
-    ash::mojom::ShelfObserverAssociatedPtrInfo ptr_info;
-    observer_binding_.Bind(mojo::MakeRequest(&ptr_info));
-    shelf_controller_->AddObserver(std::move(ptr_info));
-  }
-
-  // ChromeLauncherController:
-  using ChromeLauncherController::AttachProfile;
-  using ChromeLauncherController::ReleaseProfile;
-  bool ConnectToShelfController() override {
-    // Set the shelf controller pointer to a test instance.
-    if (!shelf_controller_.is_bound())
-      shelf_controller_ = test_shelf_controller_.CreateInterfacePtrAndBind();
-    return true;
-  }
-
-  TestShelfController* test_shelf_controller() {
-    return &test_shelf_controller_;
-  }
-
- private:
-  TestShelfController test_shelf_controller_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestChromeLauncherController);
-};
-
 class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
  protected:
   ChromeLauncherControllerTest()
@@ -450,9 +272,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
 
     BrowserWithTestWindowTest::SetUp();
 
-    model_observer_ = std::make_unique<TestShelfModelObserver>();
     model_ = std::make_unique<ash::ShelfModel>();
-    model_->AddObserver(model_observer_.get());
 
     base::DictionaryValue manifest;
     manifest.SetString(extensions::manifest_keys::kName,
@@ -616,8 +436,6 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
 
   void TearDown() override {
     arc_test_.TearDown();
-    model_->RemoveObserver(model_observer_.get());
-    model_observer_.reset();
     launcher_controller_ = nullptr;
     BrowserWithTestWindowTest::TearDown();
   }
@@ -634,9 +452,9 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
   }
 
   // Create an uninitialized chrome launcher controller instance.
-  TestChromeLauncherController* CreateLauncherController() {
+  ChromeLauncherController* CreateLauncherController() {
     launcher_controller_ =
-        std::make_unique<TestChromeLauncherController>(profile(), model_.get());
+        std::make_unique<ChromeLauncherController>(profile(), model_.get());
     return launcher_controller_.get();
   }
 
@@ -659,13 +477,10 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
   // Returns a pointer to the uninitialized controller, owned by shell delegate.
   // TODO(msw): This does not accurately represent ChromeLauncherController
   // lifetime or usage in production, and does not accurately simulate restarts.
-  TestChromeLauncherController* RecreateLauncherController() {
+  ChromeLauncherController* RecreateLauncherController() {
     // Destroy any existing controller first; only one may exist at a time.
     ResetLauncherController();
-    model_->RemoveObserver(model_observer_.get());
     model_ = std::make_unique<ash::ShelfModel>();
-    model_observer_ = std::make_unique<TestShelfModelObserver>();
-    model_->AddObserver(model_observer_.get());
     return CreateLauncherController();
   }
 
@@ -1079,8 +894,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
 
   ArcAppTest arc_test_;
   bool auto_start_arc_test_ = false;
-  std::unique_ptr<TestChromeLauncherController> launcher_controller_;
-  std::unique_ptr<TestShelfModelObserver> model_observer_;
+  std::unique_ptr<ChromeLauncherController> launcher_controller_;
   std::unique_ptr<ash::ShelfModel> model_;
 
   // |item_delegate_manager_| owns |test_controller_|.
@@ -2467,10 +2281,6 @@ TEST_F(ChromeLauncherControllerWithArcTest, ArcAppPinOptOutOptIn) {
 TEST_F(ChromeLauncherControllerWithArcTest, ArcCustomAppIcon) {
   InitLauncherController();
 
-  TestShelfController* shelf_controller =
-      launcher_controller_->test_shelf_controller();
-  ASSERT_TRUE(shelf_controller);
-
   // Wait until other apps are updated to avoid race condition while accessing
   // last updated item.
   base::RunLoop().RunUntilIdle();
@@ -2480,6 +2290,7 @@ TEST_F(ChromeLauncherControllerWithArcTest, ArcCustomAppIcon) {
   // Use first fake ARC app for testing.
   const arc::mojom::AppInfo& app = arc_test_.fake_apps()[0];
   const std::string arc_app_id = ArcAppTest::GetAppId(app);
+  const ash::ShelfID arc_shelf_id(arc_app_id);
 
   // Generate icon for the testing app and use compressed png content as test
   // input. Take shortcut to separate from default app icon.
@@ -2490,7 +2301,7 @@ TEST_F(ChromeLauncherControllerWithArcTest, ArcCustomAppIcon) {
   // Some input that represents invalid png content.
   std::string invalid_png_data("aaaaaa");
 
-  EXPECT_FALSE(launcher_controller_->GetItem(ash::ShelfID(arc_app_id)));
+  EXPECT_FALSE(launcher_controller_->GetItem(arc_shelf_id));
   std::string window_app_id1("org.chromium.arc.1");
   std::string window_app_id2("org.chromium.arc.2");
   views::Widget* window1 = CreateArcWindow(window_app_id1);
@@ -2500,62 +2311,57 @@ TEST_F(ChromeLauncherControllerWithArcTest, ArcCustomAppIcon) {
   views::Widget* window2 = CreateArcWindow(window_app_id2);
   ASSERT_TRUE(window2 && window2->GetNativeWindow());
   arc_test_.app_instance()->SendTaskCreated(2, app, std::string());
-  EXPECT_TRUE(launcher_controller_->GetItem(ash::ShelfID(arc_app_id)));
+  EXPECT_TRUE(launcher_controller_->GetItem(arc_shelf_id));
   ash::ShelfItemDelegate* item_delegate =
-      model_->GetShelfItemDelegate(ash::ShelfID(arc_app_id));
+      model_->GetShelfItemDelegate(arc_shelf_id);
   ASSERT_TRUE(item_delegate);
   base::RunLoop().RunUntilIdle();
-  const SkBitmap default_icon = shelf_controller->GetLastItemImage();
+
+  auto get_icon = [=]() {
+    return *launcher_controller_->GetItem(arc_shelf_id)->image.bitmap();
+  };
+  const SkBitmap default_icon = get_icon();
 
   // No custom icon set. Acitivating windows should not change icon.
   window1->Activate();
-  EXPECT_TRUE(gfx::test::AreBitmapsEqual(default_icon,
-                                         shelf_controller->GetLastItemImage()));
+  EXPECT_TRUE(gfx::test::AreBitmapsEqual(default_icon, get_icon()));
   window2->Activate();
-  EXPECT_TRUE(gfx::test::AreBitmapsEqual(default_icon,
-                                         shelf_controller->GetLastItemImage()));
+  EXPECT_TRUE(gfx::test::AreBitmapsEqual(default_icon, get_icon()));
 
   // Set custom icon on active item. Icon should change to custom.
   arc_test_.app_instance()->SendTaskDescription(2, std::string(), png_data);
-  const SkBitmap custom_icon = shelf_controller->GetLastItemImage();
+  const SkBitmap custom_icon = get_icon();
   EXPECT_FALSE(gfx::test::AreBitmapsEqual(default_icon, custom_icon));
 
   // Switch back to the item without custom icon. Icon should be changed to
   // default.
   window1->Activate();
-  EXPECT_TRUE(gfx::test::AreBitmapsEqual(default_icon,
-                                         shelf_controller->GetLastItemImage()));
+  EXPECT_TRUE(gfx::test::AreBitmapsEqual(default_icon, get_icon()));
 
   // Test that setting an invalid icon should not change custom icon.
   arc_test_.app_instance()->SendTaskDescription(1, std::string(), png_data);
-  EXPECT_TRUE(gfx::test::AreBitmapsEqual(custom_icon,
-                                         shelf_controller->GetLastItemImage()));
+  EXPECT_TRUE(gfx::test::AreBitmapsEqual(custom_icon, get_icon()));
   arc_test_.app_instance()->SendTaskDescription(1, std::string(),
                                                 invalid_png_data);
-  EXPECT_TRUE(gfx::test::AreBitmapsEqual(custom_icon,
-                                         shelf_controller->GetLastItemImage()));
+  EXPECT_TRUE(gfx::test::AreBitmapsEqual(custom_icon, get_icon()));
 
   // Check window removing with active custom icon. Reseting custom icon of
   // inactive window doesn't reset shelf icon.
   arc_test_.app_instance()->SendTaskDescription(2, std::string(),
                                                 std::string());
-  EXPECT_TRUE(gfx::test::AreBitmapsEqual(custom_icon,
-                                         shelf_controller->GetLastItemImage()));
+  EXPECT_TRUE(gfx::test::AreBitmapsEqual(custom_icon, get_icon()));
   // Set custom icon back to validate closing active window later.
   arc_test_.app_instance()->SendTaskDescription(2, std::string(), png_data);
-  EXPECT_TRUE(gfx::test::AreBitmapsEqual(custom_icon,
-                                         shelf_controller->GetLastItemImage()));
+  EXPECT_TRUE(gfx::test::AreBitmapsEqual(custom_icon, get_icon()));
 
   // Reseting custom icon of active window resets shelf icon.
   arc_test_.app_instance()->SendTaskDescription(1, std::string(),
                                                 std::string());
   // Wait for default icon load.
-  shelf_controller->WaitForUpdates(ui::GetSupportedScaleFactors().size());
-  EXPECT_TRUE(gfx::test::AreBitmapsEqual(default_icon,
-                                         shelf_controller->GetLastItemImage()));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(gfx::test::AreBitmapsEqual(default_icon, get_icon()));
   window1->CloseNow();
-  EXPECT_TRUE(gfx::test::AreBitmapsEqual(custom_icon,
-                                         shelf_controller->GetLastItemImage()));
+  EXPECT_TRUE(gfx::test::AreBitmapsEqual(custom_icon, get_icon()));
 }
 
 TEST_F(ChromeLauncherControllerWithArcTest, ArcWindowPackageName) {
@@ -3120,10 +2926,10 @@ void CheckAppMenu(ChromeLauncherController* controller,
                   const ash::ShelfItem& item,
                   size_t expected_item_count,
                   base::string16 expected_item_titles[]) {
-  ash::MenuItemList items = controller->GetAppMenuItemsForTesting(item);
+  auto items = controller->GetAppMenuItemsForTesting(item);
   ASSERT_EQ(expected_item_count, items.size());
   for (size_t i = 0; i < expected_item_count; i++)
-    EXPECT_EQ(expected_item_titles[i], items[i]->label);
+    EXPECT_EQ(expected_item_titles[i], items[i].first);
 }
 
 // Check that browsers get reflected correctly in the launcher menu.
@@ -3772,19 +3578,16 @@ TEST_F(ChromeLauncherControllerTest, V1AppMenuDeletionExecution) {
   int tabs = browser()->tab_strip_model()->count();
   // Activate the proper tab through the menu item.
   {
-    ash::MenuItemList items =
-        launcher_controller_->GetAppMenuItemsForTesting(item_gmail);
-    item_delegate->ExecuteCommand(false, items[1]->command_id, ui::EF_NONE,
+    auto items = launcher_controller_->GetAppMenuItemsForTesting(item_gmail);
+    item_delegate->ExecuteCommand(false, 1, ui::EF_NONE,
                                   display::kInvalidDisplayId);
     EXPECT_EQ(tabs, browser()->tab_strip_model()->count());
   }
 
   // Delete one tab through the menu item.
   {
-    ash::MenuItemList items =
-        launcher_controller_->GetAppMenuItemsForTesting(item_gmail);
-    item_delegate->ExecuteCommand(false, items[1]->command_id,
-                                  ui::EF_SHIFT_DOWN,
+    auto items = launcher_controller_->GetAppMenuItemsForTesting(item_gmail);
+    item_delegate->ExecuteCommand(false, 1, ui::EF_SHIFT_DOWN,
                                   display::kInvalidDisplayId);
     EXPECT_EQ(--tabs, browser()->tab_strip_model()->count());
   }
@@ -4113,13 +3916,11 @@ TEST_F(ChromeLauncherControllerWithArcTest, ShelfItemWithMultipleWindows) {
 
   // Command ids are just app window indices. Note, apps are registered in
   // opposite order. Last created goes in front.
-  ash::MenuItemList items = item_delegate->GetAppMenuItems(0);
+  auto items = item_delegate->GetAppMenuItems(0);
   ASSERT_EQ(items.size(), 2U);
-  EXPECT_EQ(items[0]->command_id, 0);
-  EXPECT_EQ(items[1]->command_id, 1);
 
-  // Execute command to activate first window.
-  item_delegate->ExecuteCommand(false, items[1]->command_id, ui::EF_NONE,
+  // Execute command 1 to activate the first window.
+  item_delegate->ExecuteCommand(false, 1, ui::EF_NONE,
                                 display::kInvalidDisplayId);
   EXPECT_TRUE(window1->IsActive());
   EXPECT_FALSE(window2->IsActive());
@@ -4130,8 +3931,8 @@ TEST_F(ChromeLauncherControllerWithArcTest, ShelfItemWithMultipleWindows) {
   EXPECT_TRUE(window1->IsActive());
   EXPECT_FALSE(window2->IsActive());
 
-  // Execute command to activate second window.
-  item_delegate->ExecuteCommand(false, items[0]->command_id, ui::EF_NONE,
+  // Execute command 0 to activate the second window.
+  item_delegate->ExecuteCommand(false, 0, ui::EF_NONE,
                                 display::kInvalidDisplayId);
   EXPECT_FALSE(window1->IsActive());
   EXPECT_TRUE(window2->IsActive());
@@ -4187,8 +3988,7 @@ TEST_F(ChromeLauncherControllerWithArcTest, ArcCameraAppMenuItemsCount) {
   // We want to make sure there's only 1 menu item for camera app, even if both
   // ARC window and internal app window might have been added to
   // AppWindowLauncherItemController.
-  ash::MenuItemList items = item_delegate->GetAppMenuItems(ui::EF_NONE);
-  ASSERT_EQ(1u, items.size());
+  ASSERT_EQ(1u, item_delegate->GetAppMenuItems(ui::EF_NONE).size());
 }
 
 namespace {
@@ -4238,10 +4038,6 @@ TEST_F(ChromeLauncherControllerArcDefaultAppsTest, DefaultApps) {
   arc_test_.SetUp(profile());
   InitLauncherController();
 
-  TestShelfController* shelf_controller =
-      launcher_controller_->test_shelf_controller();
-  ASSERT_TRUE(shelf_controller);
-
   ArcAppListPrefs* const prefs = arc_test_.arc_app_list_prefs();
   EnablePlayStore(false);
   EXPECT_FALSE(arc::IsArcPlayStoreEnabledForProfile(profile()));
@@ -4249,60 +4045,50 @@ TEST_F(ChromeLauncherControllerArcDefaultAppsTest, DefaultApps) {
 
   const std::string app_id =
       ArcAppTest::GetAppId(arc_test_.fake_default_apps()[0]);
-  EXPECT_FALSE(launcher_controller_->GetItem(ash::ShelfID(app_id)));
+  const ash::ShelfID shelf_id(app_id);
+  EXPECT_FALSE(launcher_controller_->GetItem(shelf_id));
   EXPECT_TRUE(arc::LaunchApp(profile(), app_id, ui::EF_LEFT_MOUSE_BUTTON,
                              arc::UserInteractionType::NOT_USER_INITIATED));
   EXPECT_TRUE(arc::IsArcPlayStoreEnabledForProfile(profile()));
-  EXPECT_TRUE(launcher_controller_->GetItem(ash::ShelfID(app_id)));
+  EXPECT_TRUE(launcher_controller_->GetItem(shelf_id));
 
   // Stop ARC again. Shelf item should go away.
   EnablePlayStore(false);
 
-  EXPECT_FALSE(launcher_controller_->GetItem(ash::ShelfID(app_id)));
+  EXPECT_FALSE(launcher_controller_->GetItem(shelf_id));
 
   EXPECT_TRUE(arc::LaunchApp(profile(), app_id, ui::EF_LEFT_MOUSE_BUTTON,
                              arc::UserInteractionType::NOT_USER_INITIATED));
   EXPECT_TRUE(arc::IsArcPlayStoreEnabledForProfile(profile()));
-  EXPECT_TRUE(launcher_controller_->GetItem(ash::ShelfID(app_id)));
+  EXPECT_TRUE(launcher_controller_->GetItem(shelf_id));
 
-  ash::ShelfItemDelegate* item_delegate =
-      model_->GetShelfItemDelegate(ash::ShelfID(app_id));
+  auto* item_delegate = model_->GetShelfItemDelegate(shelf_id);
   ASSERT_TRUE(item_delegate);
   EXPECT_TRUE(
       launcher_controller_->GetShelfSpinnerController()->HasApp(app_id));
-  // Wait for non-default item.
-  shelf_controller->GetLastItemImage();
+  // Initially, a default icon is set for the shelf item.
   EXPECT_FALSE(item_delegate->image_set_by_controller());
-
-  const size_t update_count_before_launch = shelf_controller->updated_count();
+  auto get_icon = [=]() {
+    return *launcher_controller_->GetItem(shelf_id)->image.bitmap();
+  };
+  const SkBitmap default_icon = get_icon();
 
   std::string window_app_id("org.chromium.arc.1");
   CreateArcWindow(window_app_id);
   arc_test_.app_instance()->SendTaskCreated(1, arc_test_.fake_default_apps()[0],
                                             std::string());
-  EXPECT_TRUE(launcher_controller_->GetItem(ash::ShelfID(app_id)));
+  EXPECT_TRUE(launcher_controller_->GetItem(shelf_id));
   // Refresh delegate, it was changed.
-  item_delegate = model_->GetShelfItemDelegate(ash::ShelfID(app_id));
+  item_delegate = model_->GetShelfItemDelegate(shelf_id);
   ASSERT_TRUE(item_delegate);
   EXPECT_FALSE(
       launcher_controller_->GetShelfSpinnerController()->HasApp(app_id));
-  // Default icon is not set.
   EXPECT_FALSE(item_delegate->image_set_by_controller());
-  EXPECT_EQ(update_count_before_launch, shelf_controller->updated_count());
+  EXPECT_TRUE(gfx::test::AreBitmapsEqual(default_icon, get_icon()));
 
-  item_delegate = model_->GetShelfItemDelegate(ash::ShelfID(app_id));
-  // Shelf icon should not be overwritten by default app icon.
-  EXPECT_FALSE(item_delegate->image_set_by_controller());
-  EXPECT_EQ(update_count_before_launch, shelf_controller->updated_count());
-
-  // Wait for real app icon image is decoded and set for shelf item.
-  shelf_controller->GetLastItemImage();
-  // Should have only one update for newly created window with no-icon set plus
-  // update for each scale factor. That guarantees default icon was not set in
-  // between.
-  EXPECT_EQ(
-      update_count_before_launch + 1 + ui::GetSupportedScaleFactors().size(),
-      shelf_controller->updated_count());
+  // Wait for the real app icon image to be decoded and set for the shelf item.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(gfx::test::AreBitmapsEqual(default_icon, get_icon()));
 }
 
 TEST_F(ChromeLauncherControllerArcDefaultAppsTest, PlayStoreDeferredLaunch) {
@@ -4430,118 +4216,6 @@ TEST_F(ChromeLauncherControllerTest, SyncOffLocalUpdate) {
   // Resume syncing and sync information overrides local copy.
   StartAppSyncService(copy_sync_list);
   EXPECT_EQ("Back, AppList, Chrome, App1, App2", GetPinnedAppStatus());
-}
-
-// Ensure Ash and Chrome ShelfModel changes are synchronized correctly.
-TEST_F(ChromeLauncherControllerTest, ShelfModelSync) {
-  // ShelfModel creates an app list item, ShelfController creates its delegate.
-  TestChromeLauncherController* launcher_controller =
-      RecreateLauncherController();
-  TestShelfController* shelf_controller =
-      launcher_controller->test_shelf_controller();
-  EXPECT_EQ(0u, shelf_controller->added_count());
-  EXPECT_EQ(0u, shelf_controller->removed_count());
-  EXPECT_EQ(2, model_->item_count());
-  EXPECT_EQ(ash::kBackButtonId, model_->items()[0].id.app_id);
-  EXPECT_EQ(ash::TYPE_BACK_BUTTON, model_->items()[0].type);
-  EXPECT_EQ(ash::kAppListId, model_->items()[1].id.app_id);
-  EXPECT_EQ(ash::TYPE_APP_LIST, model_->items()[1].type);
-  EXPECT_FALSE(model_->GetShelfItemDelegate(model_->items()[1].id));
-
-  // Init creates the browser item and its delegate in Chrome's ShelfModel.
-  // Ash's ShelfController should be notified about the update and delegate.
-  launcher_controller->Init();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(3, model_->item_count());
-  EXPECT_EQ(1u, shelf_controller->added_count());
-  EXPECT_EQ(0u, shelf_controller->removed_count());
-  EXPECT_LE(0u, shelf_controller->updated_count());
-  EXPECT_EQ(1u, shelf_controller->set_delegate_count());
-  EXPECT_EQ(extension_misc::kChromeAppId, model_->items()[2].id.app_id);
-  EXPECT_EQ(ash::TYPE_BROWSER_SHORTCUT, model_->items()[2].type);
-  EXPECT_TRUE(model_->GetShelfItemDelegate(model_->items()[2].id));
-  EXPECT_FALSE(model_->items()[2].title.empty());
-
-  // Add a shelf item using the ShelfController interface.
-  ash::ShelfItem item;
-  item.type = ash::TYPE_PINNED_APP;
-  item.id = ash::ShelfID(kDummyAppId);
-  shelf_controller->AddShelfItem(3, item);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(2u, shelf_controller->added_count());
-  EXPECT_EQ(0u, shelf_controller->removed_count());
-
-  // Remove a shelf item using the ShelfController interface.
-  shelf_controller->RemoveShelfItem(item.id);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(2u, shelf_controller->added_count());
-  EXPECT_EQ(1u, shelf_controller->removed_count());
-
-  // Add an item to Chrome's model; ShelfController should be notified.
-  model_->Add(item);
-  EXPECT_EQ(4, model_->item_count());
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(3u, shelf_controller->added_count());
-  EXPECT_EQ(1u, shelf_controller->removed_count());
-
-  // Remove an item from Chrome's model; ShelfController should be notified.
-  model_->RemoveItemAt(3);
-  EXPECT_EQ(3, model_->item_count());
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(3u, shelf_controller->added_count());
-  EXPECT_EQ(2u, shelf_controller->removed_count());
-}
-
-// Ensure Ash and Chrome ShelfModel changes are synchronized correctly.
-TEST_F(ChromeLauncherControllerTest, ShelfItemImageSync) {
-  InitLauncherController();
-  base::RunLoop().RunUntilIdle();
-  TestShelfController* shelf_controller =
-      launcher_controller_->test_shelf_controller();
-
-  // Create a ShelfItem struct with a valid image icon.
-  ash::ShelfItem item;
-  item.type = ash::TYPE_PINNED_APP;
-  item.id = ash::ShelfID(kDummyAppId);
-  item.title = base::ASCIIToUTF16("Title");
-  item.status = ash::STATUS_CLOSED;
-  item.image = gfx::test::CreateImageSkia(1, 1);
-
-  const size_t added_count = shelf_controller->added_count();
-  const size_t updated_count = shelf_controller->updated_count();
-
-  // Adding an item to Chrome's model notifies ShelfController with the image.
-  launcher_controller_->shelf_model()->Add(item);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(added_count + 1, shelf_controller->added_count());
-  EXPECT_EQ(updated_count, shelf_controller->updated_count());
-  EXPECT_EQ(item.id, shelf_controller->last_item().id);
-  EXPECT_FALSE(shelf_controller->last_item().image.isNull());
-
-  // Updating the item's status notifies ShelfController with a null image.
-  // This avoids some image transport costs for the unrelated item change.
-  launcher_controller_->SetItemStatus(item.id, ash::STATUS_RUNNING);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(added_count + 1, shelf_controller->added_count());
-  EXPECT_EQ(updated_count + 1, shelf_controller->updated_count());
-  EXPECT_EQ(ash::STATUS_RUNNING, shelf_controller->last_item().status);
-  EXPECT_TRUE(shelf_controller->last_item().image.isNull());
-
-  // Calling SetLauncherItemImage will pass the new image to ShelfController.
-  launcher_controller_->SetLauncherItemImage(item.id,
-                                             gfx::test::CreateImageSkia(2, 2));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(added_count + 1, shelf_controller->added_count());
-  EXPECT_EQ(updated_count + 2, shelf_controller->updated_count());
-  EXPECT_EQ(gfx::Size(2, 2), shelf_controller->last_item().image.size());
-
-  // Calling OnAppImageUpdated will pass the new image to ShelfController.
-  launcher_controller_->OnAppImageUpdated(item.id.app_id,
-                                          gfx::test::CreateImageSkia(3, 3));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(added_count + 1, shelf_controller->added_count());
-  EXPECT_EQ(updated_count + 3, shelf_controller->updated_count());
-  EXPECT_EQ(gfx::Size(3, 3), shelf_controller->last_item().image.size());
 }
 
 // Test the Settings can be pinned and unpinned.

@@ -30,7 +30,7 @@ class AppContextMenu : public ui::SimpleMenuModel::Delegate {
   ~AppContextMenu() override;
 
   using GetMenuModelCallback =
-      base::OnceCallback<void(std::unique_ptr<ui::MenuModel>)>;
+      base::OnceCallback<void(std::unique_ptr<ui::SimpleMenuModel>)>;
   virtual void GetMenuModel(GetMenuModelCallback callback);
 
   // ui::SimpleMenuModel::Delegate overrides:

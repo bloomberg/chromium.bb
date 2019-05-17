@@ -15,7 +15,6 @@
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/ash_features.h"
-#include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/window_properties.h"
@@ -665,8 +664,6 @@ void ShelfView::ButtonPressed(views::Button* sender,
   }
 
   // Prevent concurrent requests that may show application or context menus.
-  // If a second request is sent before the first one can respond, the Chrome
-  // side ShelfItemDelegate may become unresponsive: https://crbug.com/881886
   if (!item_awaiting_response_.IsNull()) {
     const ShelfItem* item = ShelfItemForView(sender);
     if (item && item->id != item_awaiting_response_)
@@ -738,7 +735,7 @@ void ShelfView::ButtonPressed(views::Button* sender,
   const ShelfItem& item = model_->items()[last_pressed_index_];
   if (!model_->GetShelfItemDelegate(item.id)) {
     AfterItemSelected(item, sender, ui::Event::Clone(event), ink_drop,
-                      SHELF_ACTION_NONE, base::nullopt);
+                      SHELF_ACTION_NONE, {});
     return;
   }
 
@@ -2317,13 +2314,12 @@ void ShelfView::OnShelfAutoHideBehaviorChanged(aura::Window* root_window) {
   AnnounceShelfAutohideBehavior();
 }
 
-void ShelfView::AfterItemSelected(
-    const ShelfItem& item,
-    views::Button* sender,
-    std::unique_ptr<ui::Event> event,
-    views::InkDrop* ink_drop,
-    ShelfAction action,
-    base::Optional<std::vector<mojom::MenuItemPtr>> menu_items) {
+void ShelfView::AfterItemSelected(const ShelfItem& item,
+                                  views::Button* sender,
+                                  std::unique_ptr<ui::Event> event,
+                                  views::InkDrop* ink_drop,
+                                  ShelfAction action,
+                                  ShelfItemDelegate::AppMenuItems menu_items) {
   item_awaiting_response_ = ShelfID();
   shelf_button_pressed_metric_tracker_.ButtonPressed(*event, sender, action);
 
@@ -2340,13 +2336,12 @@ void ShelfView::AfterItemSelected(
     ink_drop->SnapToActivated();
     ink_drop->AnimateToState(views::InkDropState::HIDDEN);
   } else if (action != SHELF_ACTION_APP_LIST_SHOWN) {
-    if (action != SHELF_ACTION_NEW_WINDOW_CREATED && menu_items &&
-        menu_items->size() > 1) {
+    if (action != SHELF_ACTION_NEW_WINDOW_CREATED && menu_items.size() > 1) {
       // Show the app menu with 2 or more items, if no window was created.
       ink_drop->AnimateToState(views::InkDropState::ACTIVATED);
       context_menu_id_ = item.id;
       ShowMenu(std::make_unique<ShelfApplicationMenuModel>(
-                   item.title, std::move(*menu_items),
+                   item.title, std::move(menu_items),
                    model_->GetShelfItemDelegate(item.id)),
                sender, gfx::Point(), /*context_menu=*/false,
                ui::GetMenuSourceTypeForEvent(*event));
@@ -2358,28 +2353,24 @@ void ShelfView::AfterItemSelected(
   scoped_root_window_for_new_windows_.reset();
 }
 
-void ShelfView::AfterGetContextMenuItems(
+void ShelfView::ShowShelfContextMenu(
     const ShelfID& shelf_id,
     const gfx::Point& point,
     views::View* source,
     ui::MenuSourceType source_type,
-    std::vector<mojom::MenuItemPtr> menu_items) {
+    std::unique_ptr<ui::SimpleMenuModel> model) {
   context_menu_id_ = shelf_id;
-  const int64_t display_id = GetDisplayIdForView(this);
-  std::unique_ptr<ShelfContextMenuModel> menu_model =
-      std::make_unique<ShelfContextMenuModel>(
-          std::move(menu_items), model_->GetShelfItemDelegate(shelf_id),
-          display_id);
-  ShowMenu(std::move(menu_model), source, point, /*context_menu=*/true,
-           source_type);
+  if (!model) {
+    const int64_t display_id = GetDisplayIdForView(this);
+    model = std::make_unique<ShelfContextMenuModel>(nullptr, display_id);
+  }
+  ShowMenu(std::move(model), source, point, /*context_menu=*/true, source_type);
 }
 
 void ShelfView::ShowContextMenuForViewImpl(views::View* source,
                                            const gfx::Point& point,
                                            ui::MenuSourceType source_type) {
   // Prevent concurrent requests that may show application or context menus.
-  // If a second request is sent before the first one can respond, the Chrome
-  // side ShelfItemDelegate may become unresponsive: https://crbug.com/881886
   const ShelfItem* item = ShelfItemForView(source);
   if (!item_awaiting_response_.IsNull()) {
     if (item && item->id != item_awaiting_response_) {
@@ -2389,22 +2380,17 @@ void ShelfView::ShowContextMenuForViewImpl(views::View* source,
     return;
   }
   last_pressed_index_ = -1;
-  const int64_t display_id = GetDisplayIdForView(this);
   if (!item || !model_->GetShelfItemDelegate(item->id)) {
-    context_menu_id_ = ShelfID();
-    std::unique_ptr<ShelfContextMenuModel> menu_model =
-        std::make_unique<ShelfContextMenuModel>(
-            std::vector<mojom::MenuItemPtr>(), nullptr, display_id);
-    ShowMenu(std::move(menu_model), source, point, true, source_type);
+    ShowShelfContextMenu(ShelfID(), point, source, source_type, nullptr);
     return;
   }
 
   item_awaiting_response_ = item->id;
-  // Get any custom entries; show the context menu in AfterGetContextMenuItems.
-  model_->GetShelfItemDelegate(item->id)->GetContextMenuItems(
-      display_id, base::Bind(&ShelfView::AfterGetContextMenuItems,
-                             weak_factory_.GetWeakPtr(), item->id, point,
-                             source, source_type));
+  const int64_t display_id = GetDisplayIdForView(this);
+  model_->GetShelfItemDelegate(item->id)->GetContextMenu(
+      display_id, base::BindOnce(&ShelfView::ShowShelfContextMenu,
+                                 weak_factory_.GetWeakPtr(), item->id, point,
+                                 source, source_type));
 }
 
 void ShelfView::ShowMenu(std::unique_ptr<ui::SimpleMenuModel> menu_model,

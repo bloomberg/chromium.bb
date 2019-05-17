@@ -45,7 +45,7 @@ void HomeButtonDelegate::ItemSelected(std::unique_ptr<ui::Event> event,
       event->IsShiftDown() ? app_list::kShelfButtonFullscreen
                            : app_list::kShelfButton,
       event->time_stamp());
-  std::move(callback).Run(shelf_action, base::nullopt);
+  std::move(callback).Run(shelf_action, {});
 }
 
 void HomeButtonDelegate::ExecuteCommand(bool from_context_menu,

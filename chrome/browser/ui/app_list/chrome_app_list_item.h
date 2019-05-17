@@ -23,7 +23,7 @@ class AppSorting;
 }  // namespace extensions
 
 namespace ui {
-class MenuModel;
+class SimpleMenuModel;
 }  // namespace ui
 
 // Base class of all chrome app list items.
@@ -100,7 +100,7 @@ class ChromeAppListItem {
   // is currently no menu for the item (e.g. during install). Note |callback|
   // takes the ownership of the returned menu model.
   using GetMenuModelCallback =
-      base::OnceCallback<void(std::unique_ptr<ui::MenuModel>)>;
+      base::OnceCallback<void(std::unique_ptr<ui::SimpleMenuModel>)>;
   virtual void GetContextMenuModel(GetMenuModelCallback callback);
 
   // Returns true iff this item was badged because it's an extension app that

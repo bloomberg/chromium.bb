@@ -101,8 +101,6 @@ component("cpp") {
     "power_utils.h",
     "presentation_time_recorder.cc",
     "presentation_time_recorder.h",
-    "remote_shelf_item_delegate.cc",
-    "remote_shelf_item_delegate.h",
     "rounded_corner_decorator.cc",
     "rounded_corner_decorator.h",
     "scale_utility.cc",
@@ -241,21 +239,6 @@ source_set("manifest_for_tests") {
   ]
 }
 
-# Using a test service because the traits need to pass handles around. Revisit
-# this after Deserialize(Serialize()) API works with handles.
-mojom("test_interfaces") {
-  visibility = [ ":unit_tests" ]
-  disable_variants = true
-
-  sources = [
-    "shelf_struct_traits_test_service.mojom",
-  ]
-
-  public_deps = [
-    "//ash/public/interfaces:interfaces_internal",
-  ]
-}
-
 source_set("unit_tests") {
   testonly = true
   sources = [
@@ -265,12 +248,10 @@ source_set("unit_tests") {
     "power_utils_unittest.cc",
     "rounded_corner_decorator_unittest.cc",
     "shelf_model_unittest.cc",
-    "shelf_struct_mojom_traits_unittest.cc",
   ]
 
   deps = [
     ":cpp",
-    ":test_interfaces",
     "//base",
     "//base/test:test_support",
     "//testing/gtest",

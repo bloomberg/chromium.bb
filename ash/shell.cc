@@ -429,10 +429,6 @@ NightLightController* Shell::night_light_controller() {
   return night_light_controller_.get();
 }
 
-ShelfModel* Shell::shelf_model() {
-  return shelf_controller_->model();
-}
-
 ::wm::ActivationClient* Shell::activation_client() {
   return focus_controller_.get();
 }
@@ -1308,8 +1304,10 @@ void Shell::OnSessionStateChanged(session_manager::SessionState state) {
   const bool is_session_active = state == session_manager::SessionState::ACTIVE;
   // Initialize the |shelf_window_watcher_| when a session becomes active.
   // Shelf itself is initialized in RootWindowController.
-  if (is_session_active && !shelf_window_watcher_)
-    shelf_window_watcher_ = std::make_unique<ShelfWindowWatcher>(shelf_model());
+  if (is_session_active && !shelf_window_watcher_) {
+    shelf_window_watcher_ =
+        std::make_unique<ShelfWindowWatcher>(shelf_controller()->model());
+  }
 
   // Disable drag-and-drop during OOBE and GAIA login screens by only enabling
   // the controller when the session is active. https://crbug.com/464118
