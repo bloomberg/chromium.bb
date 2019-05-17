@@ -183,10 +183,6 @@ char kTSanDefaultSuppressions[] =
     // http://crbug.com/633145
     "race:third_party/libjpeg_turbo/simd/jsimd_x86_64.c\n"
 
-    // http://crbug.com/v8/6065
-    "race:net::(anonymous namespace)::ProxyResolverV8TracingImpl::RequestImpl"
-    "::~RequestImpl()\n"
-
     // http://crbug.com/691029
     "deadlock:libGLX.so*\n"
 
