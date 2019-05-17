@@ -267,4 +267,40 @@ algorithm.
 
 ## Resolving client's IP address within a PAC script using `myIpAddressEx()`
 
-TODO
+Chrome supports the [Microsoft PAC
+extension](https://docs.microsoft.com/en-us/windows/desktop/winhttp/myipaddressex)
+`myIpAddressEx()`.
+
+This is like `myIpAddress()`, but instead of returning a single IP address, it
+can return multiple IP addresses. It returns a string containing a semi-colon
+separated list of addresses. On failure it returns an empty string to indicate
+no results (whereas `myIpAddress()` returns `127.0.0.1`).
+
+There are some differences with Chrome's implementation:
+
+* In Chrome the function is unconditionally defined, whereas in Internet
+  Explorer one must have used the `FindProxyForURLEx` entrypoint.
+* Chrome does not enumerate all of the host's network interfaces
+* Chrome does not return link-local or loopback addresses (except if no other
+  addresses were found).
+
+The algorithm that Chrome uses is nearly identical to that of `myIpAddress()`
+described earlier. The main difference is that we don't short-circuit
+after finding the first candidate IP, so multiple IPs may be returned.
+
+1. Select all the IPs of interfaces that can route to public Internet:
+    * Probe for route to `8.8.8.8`.
+    * Probe for route to `2001:4860:4860::8888`.
+    * If any IPs were found, return them, and finish.
+2. Select an IP by doing a DNS resolve of the machine's hostname:
+    * If any IPs were found, return them, and finish.
+3. Select the IP of an interface that can route to private IP space:
+    * Probe for route to `10.0.0.0`.
+    * Probe for route to `172.16.0.0`.
+    * Probe for route to `192.168.0.0`.
+    * Probe for route to `FC00::`.
+    * If any IPs were found, return them, and finish.
+
+Note that short-circuiting happens whenever steps 1-3 find a candidate IP. So
+for example if at least one IP address was discovered by checking routes to
+public Internet, only those IPs will be returned, and steps 2-3 will not run.
