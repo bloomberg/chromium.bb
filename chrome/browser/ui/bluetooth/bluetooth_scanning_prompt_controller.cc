@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/ui/bluetooth/bluetooth_chooser_desktop.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
