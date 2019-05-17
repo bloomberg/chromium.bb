@@ -32,6 +32,7 @@ group("android_webview") {
 
 generate_jni("native_jni") {
   sources = [
+    "apk/java/src/com/android/webview/chromium/WebViewApkApplication.java",
     "java/src/org/chromium/android_webview/AndroidProtocolHandler.java",
     "java/src/org/chromium/android_webview/AwAutofillClient.java",
     "java/src/org/chromium/android_webview/AwBrowserProcess.java",
@@ -222,13 +223,7 @@ android_assets("monochrome_webview_assets") {
   }
 }
 
-java_group("stub_assets") {
-  deps = [
-    ":license_assets",
-  ]
-}
-
-android_assets("license_assets") {
+android_assets("stub_assets") {
   renaming_sources = [ "$root_gen_dir/components/resources/about_credits.html" ]
   renaming_destinations = [ "webview_licenses.notice" ]
   deps = [
@@ -275,13 +270,13 @@ grit("generate_webui_resources") {
 
   # webui/resources has way too many resources. The whitelist is trim this down
   # to a reasonable size
-  whitelist = rebase_path("ui/grit_resources_whitelist.txt", root_build_dir)
+  _whitelist = "ui/grit_resources_whitelist.txt"
   inputs = [
-    "//android_webview/ui/grit_resources_whitelist.txt",
+    _whitelist,
   ]
   grit_flags = [
     "-w",
-    whitelist,
+    rebase_path(_whitelist, root_build_dir),
   ]
   outputs = [
     "grit/webui_resources.h",
@@ -298,13 +293,20 @@ grit("generate_components_resources") {
   source_is_generated = true
 
   # See :generate_webui_resources for an explanation of the whitelist
-  whitelist = rebase_path("ui/grit_resources_whitelist.txt", root_build_dir)
+  _whitelist = "ui/grit_resources_whitelist.txt"
   inputs = [
-    "//android_webview/ui/grit_resources_whitelist.txt",
+    _whitelist,
   ]
+  _about_credits_file_bro =
+      get_label_info("//components/resources", "target_gen_dir") +
+      "/about_credits.bro"
+
   grit_flags = [
     "-w",
-    whitelist,
+    rebase_path(_whitelist, root_build_dir),
+    "-E",
+    "about_credits_file=" +
+        rebase_path(_about_credits_file_bro, root_build_dir),
   ]
   outputs = [
     "grit/components_resources.h",
@@ -312,7 +314,7 @@ grit("generate_components_resources") {
   ]
 
   deps = [
-    "//components/resources:components_resources",
+    "//components/resources:compressed_about_credits",
   ]
 }
 
@@ -480,6 +482,7 @@ if (enable_resource_whitelist_generation) {
 
 source_set("common") {
   sources = [
+    "apk/webview_apk_application.cc",
     "browser/android_protocol_handler.cc",
     "browser/android_protocol_handler.h",
     "browser/aw_autofill_client.cc",
@@ -668,6 +671,8 @@ source_set("common") {
     "common/aw_paths.h",
     "common/aw_resource.cc",
     "common/aw_resource.h",
+    "common/aw_resource_bundle.cc",
+    "common/aw_resource_bundle.h",
     "common/aw_switches.cc",
     "common/aw_switches.h",
     "common/crash_reporter/aw_crash_reporter_client.cc",
@@ -719,6 +724,7 @@ source_set("common") {
     "//android_webview/utility",
     "//base",
     "//base/third_party/dynamic_annotations:dynamic_annotations",
+    "//components/about_ui",
     "//components/autofill/android:provider",
     "//components/autofill/content/browser",
     "//components/autofill/content/common:mojo_interfaces",

@@ -12,9 +12,9 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
-import android.util.Log;
 
 import org.chromium.base.FileUtils;
+import org.chromium.components.aboutui.CreditUtils;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -23,10 +23,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
- * Content provider for the OSS licenses file.
- * This is compiled into the stub WebView and so should not depend on any classes from Chromium.
+ * Content provider for about:credits.
+ * Used by SystemWebview and TrichromeWebview, but not Monochrome.
  */
-@TargetApi(Build.VERSION_CODES.KITKAT)
+@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 public class LicenseContentProvider
         extends ContentProvider implements ContentProvider.PipeDataWriter<String> {
     public static final String LICENSES_URI_SUFFIX = "LicenseContentProvider/webview_licenses";
@@ -49,11 +49,17 @@ public class LicenseContentProvider
     @Override
     public void writeDataToPipe(
             ParcelFileDescriptor output, Uri uri, String mimeType, Bundle opts, String filename) {
-        try (InputStream in = getContext().getAssets().open(filename);
-                OutputStream out = new FileOutputStream(output.getFileDescriptor());) {
-            FileUtils.copyStream(in, out);
-        } catch (IOException e) {
-            Log.e(TAG, "Failed to read the license file", e);
+        if (WebViewApkApplication.initializeNative()) {
+            CreditUtils.nativeWriteCreditsHtml(output.detachFd());
+        } else {
+            // Missing native library means we're the webview stub and licenses are stored as an
+            // asset.
+            try (InputStream in = getContext().getAssets().open(filename);
+                    OutputStream out = new FileOutputStream(output.getFileDescriptor())) {
+                FileUtils.copyStream(in, out);
+            } catch (IOException ioException) {
+                throw new RuntimeException(ioException);
+            }
         }
     }
 
