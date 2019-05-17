@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
 #include "chrome/browser/performance_manager/graph/node_base.h"
@@ -45,7 +46,7 @@ GraphImpl::~GraphImpl() {
 
 void GraphImpl::RegisterObserver(GraphObserver* observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  observer->SetNodeGraph(this);
+  observer->SetGraph(this);
   observers_.push_back(observer);
   observer->OnRegistered();
 }
@@ -58,6 +59,7 @@ void GraphImpl::UnregisterObserver(GraphObserver* observer) {
       observers_.erase(it);
       removed = true;
       observer->OnUnregistered();
+      observer->SetGraph(nullptr);
       break;
     }
   }
@@ -68,7 +70,24 @@ void GraphImpl::OnNodeAdded(NodeBase* node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto* observer : observers_) {
     if (observer->ShouldObserve(node)) {
-      node->AddObserver(observer);
+      // TODO(chrisha): Remove this logic once all observers have been migrated.
+      switch (node->type()) {
+        case NodeTypeEnum::kFrame: {
+          FrameNodeImpl::FromNodeBase(node)->AddObserver(observer);
+        } break;
+        case NodeTypeEnum::kPage: {
+          PageNodeImpl::FromNodeBase(node)->AddObserver(observer);
+        } break;
+        case NodeTypeEnum::kProcess: {
+          ProcessNodeImpl::FromNodeBase(node)->AddObserver(observer);
+        } break;
+        case NodeTypeEnum::kSystem: {
+          SystemNodeImpl::FromNodeBase(node)->AddObserver(observer);
+        } break;
+        case NodeTypeEnum::kInvalidType: {
+          NOTREACHED();
+        } break;
+      }
       observer->OnNodeAdded(node);
     }
   }
@@ -76,7 +95,47 @@ void GraphImpl::OnNodeAdded(NodeBase* node) {
 
 void GraphImpl::OnBeforeNodeRemoved(NodeBase* node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // TODO(chrisha): Kill this logic once observer implementations use distinct
+  // interfaces.
+  switch (node->type()) {
+    case NodeTypeEnum::kFrame: {
+      OnBeforeNodeRemovedImpl(FrameNodeImpl::FromNodeBase(node));
+    } break;
+    case NodeTypeEnum::kPage: {
+      OnBeforeNodeRemovedImpl(PageNodeImpl::FromNodeBase(node));
+    } break;
+    case NodeTypeEnum::kProcess: {
+      OnBeforeNodeRemovedImpl(ProcessNodeImpl::FromNodeBase(node));
+    } break;
+    case NodeTypeEnum::kSystem: {
+      OnBeforeNodeRemovedImpl(SystemNodeImpl::FromNodeBase(node));
+    } break;
+    case NodeTypeEnum::kInvalidType: {
+      NOTREACHED();
+    } break;
+  }
+
+  // Leave the graph only after the OnBeforeNodeRemoved notification so that the
+  // node still observes the graph invariant during that callback.
   node->LeaveGraph();
+}
+
+template <typename NodeType>
+void GraphImpl::OnBeforeNodeRemovedImpl(NodeType* node) {
+  // The current observer logic ensures that OnBeforeNodeRemoved is only fired
+  // for nodes that had an observer added via ShouldObserve. This logic will
+  // be disappearing entirely, but emulate it for correctness right now.
+
+  base::flat_set<typename NodeType::Observer*> node_observers;
+  for (auto& observer : node->observers())
+    node_observers.insert(&observer);
+
+  for (auto* observer : observers_) {
+    typename NodeType::Observer* node_observer = observer;
+    if (base::ContainsKey(node_observers, node_observer))
+      observer->OnBeforeNodeRemoved(node);
+  }
 }
 
 int64_t GraphImpl::GetNextNodeSerializationId() {
@@ -193,6 +252,16 @@ std::vector<NodeType*> GraphImpl::GetAllNodesOfType() {
       ret.push_back(NodeType::FromNodeBase(node));
   }
   return ret;
+}
+
+GraphImpl::Observer::Observer() = default;
+GraphImpl::Observer::~Observer() = default;
+
+GraphImpl::ObserverDefaultImpl::ObserverDefaultImpl() = default;
+GraphImpl::ObserverDefaultImpl::~ObserverDefaultImpl() = default;
+
+void GraphImpl::ObserverDefaultImpl::SetGraph(GraphImpl* graph) {
+  graph_ = graph;
 }
 
 }  // namespace performance_manager

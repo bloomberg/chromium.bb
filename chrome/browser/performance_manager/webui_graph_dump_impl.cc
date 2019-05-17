@@ -256,12 +256,8 @@ void WebUIGraphDumpImpl::OnMainThreadTaskLoadIsLow(
   SendProcessNotification(process_node, false);
 }
 
-void WebUIGraphDumpImpl::OnRendererIsBloated(ProcessNodeImpl* process_node) {
-  SendProcessNotification(process_node, false);
-}
-
-void WebUIGraphDumpImpl::SetNodeGraph(GraphImpl* graph) {
-  DCHECK_EQ(graph_, graph);
+void WebUIGraphDumpImpl::SetGraph(GraphImpl* graph) {
+  DCHECK(!graph || graph_ == graph);
 }
 
 WebUIGraphDumpImpl::FaviconRequestHelper*

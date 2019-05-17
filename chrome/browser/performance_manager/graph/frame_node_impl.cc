@@ -7,10 +7,12 @@
 #include "chrome/browser/performance_manager/graph/graph_impl.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
-#include "chrome/browser/performance_manager/observers/graph_observer.h"
 #include "chrome/browser/performance_manager/performance_manager_clock.h"
 
 namespace performance_manager {
+
+FrameNodeImplObserver::FrameNodeImplObserver() = default;
+FrameNodeImplObserver::~FrameNodeImplObserver() = default;
 
 FrameNodeImpl::FrameNodeImpl(GraphImpl* graph,
                              ProcessNodeImpl* process_node,
@@ -348,5 +350,8 @@ void FrameNodeImpl::DocumentProperties::Reset(FrameNodeImpl* frame_node,
   // Network is busy on navigation.
   network_almost_idle.SetAndMaybeNotify(frame_node, false);
 }
+
+FrameNodeImpl::ObserverDefaultImpl::ObserverDefaultImpl() = default;
+FrameNodeImpl::ObserverDefaultImpl::~ObserverDefaultImpl() = default;
 
 }  // namespace performance_manager

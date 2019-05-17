@@ -11,6 +11,9 @@
 
 namespace performance_manager {
 
+ProcessNodeImplObserver::ProcessNodeImplObserver() = default;
+ProcessNodeImplObserver::~ProcessNodeImplObserver() = default;
+
 ProcessNodeImpl::ProcessNodeImpl(GraphImpl* graph)
     : TypedNodeBase(graph), binding_(this) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
@@ -140,5 +143,8 @@ void ProcessNodeImpl::LeaveGraph() {
   // All child frames should have been removed before the process is removed.
   DCHECK(frame_nodes_.empty());
 }
+
+ProcessNodeImpl::ObserverDefaultImpl::ObserverDefaultImpl() = default;
+ProcessNodeImpl::ObserverDefaultImpl::~ObserverDefaultImpl() = default;
 
 }  // namespace performance_manager

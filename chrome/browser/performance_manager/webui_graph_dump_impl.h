@@ -56,14 +56,13 @@ class WebUIGraphDumpImpl : public mojom::WebUIGraphDump, public GraphObserver {
   void OnExpectedTaskQueueingDurationSample(
       ProcessNodeImpl* process_node) override;
   void OnMainThreadTaskLoadIsLow(ProcessNodeImpl* process_node) override;
-  void OnRendererIsBloated(ProcessNodeImpl* process_node) override;
   // Event notification.
   void OnAllFramesInProcessFrozen(ProcessNodeImpl* process_node) override {}
 
   // Ignored
   void OnProcessCPUUsageReady(SystemNodeImpl* system_node) override {}
 
-  void SetNodeGraph(GraphImpl* graph) override;
+  void SetGraph(GraphImpl* graph) override;
 
  private:
   // The favicon requests happen on the UI thread. This helper class

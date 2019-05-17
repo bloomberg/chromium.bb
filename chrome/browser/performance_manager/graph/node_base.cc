@@ -6,7 +6,11 @@
 
 #include <utility>
 
+#include "chrome/browser/performance_manager/graph/frame_node_impl.h"
 #include "chrome/browser/performance_manager/graph/graph_impl.h"
+#include "chrome/browser/performance_manager/graph/page_node_impl.h"
+#include "chrome/browser/performance_manager/graph/process_node_impl.h"
+#include "chrome/browser/performance_manager/graph/system_node_impl.h"
 #include "chrome/browser/performance_manager/observers/graph_observer.h"
 
 namespace performance_manager {
@@ -33,14 +37,20 @@ int64_t NodeBase::GetSerializationId(NodeBase* node) {
   return node->serialization_id_;
 }
 
-void NodeBase::AddObserver(GraphObserver* observer) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  observers_.AddObserver(observer);
-}
-
+// TODO(chrisha): Remove this!
 void NodeBase::RemoveObserver(GraphObserver* observer) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  observers_.RemoveObserver(observer);
+  switch (type()) {
+    case NodeTypeEnum::kFrame:
+      return FrameNodeImpl::FromNodeBase(this)->RemoveObserver(observer);
+    case NodeTypeEnum::kPage:
+      return PageNodeImpl::FromNodeBase(this)->RemoveObserver(observer);
+    case NodeTypeEnum::kProcess:
+      return ProcessNodeImpl::FromNodeBase(this)->RemoveObserver(observer);
+    case NodeTypeEnum::kSystem:
+      return SystemNodeImpl::FromNodeBase(this)->RemoveObserver(observer);
+    case NodeTypeEnum::kInvalidType:
+      NOTREACHED();
+  }
 }
 
 void NodeBase::JoinGraph() {
@@ -50,9 +60,6 @@ void NodeBase::JoinGraph() {
 void NodeBase::LeaveGraph() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(graph_->NodeInGraph(this));
-
-  for (auto& observer : observers_)
-    observer.OnBeforeNodeRemoved(this);
 }
 
 }  // namespace performance_manager

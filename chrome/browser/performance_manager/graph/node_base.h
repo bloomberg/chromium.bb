@@ -17,13 +17,15 @@
 #include "chrome/browser/performance_manager/graph/graph_impl.h"
 #include "chrome/browser/performance_manager/graph/node_type.h"
 #include "chrome/browser/performance_manager/graph/properties.h"
-#include "chrome/browser/performance_manager/observers/graph_observer.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/resource_coordinator/public/mojom/coordination_unit.mojom.h"
 
 namespace performance_manager {
+
+// TODO(chrisha): Remove all of these when GraphObserver is killed.
+class GraphObserver;
 
 // NodeBase implements shared functionality among different types of graph
 // nodes. A specific type of graph node will derive from this class and can
@@ -38,23 +40,21 @@ class NodeBase {
   NodeBase(NodeTypeEnum type, GraphImpl* graph);
   virtual ~NodeBase();
 
-  void AddObserver(GraphObserver* observer);
-  void RemoveObserver(GraphObserver* observer);
-
   // May be called on any sequence.
   NodeTypeEnum type() const { return type_; }
 
   // May be called on any sequence.
   GraphImpl* graph() const { return graph_; }
 
-  const base::ObserverList<GraphObserver>::Unchecked& observers() const {
-    return observers_;
-  }
-
   // Returns an opaque ID for |node|, unique across all nodes in the same graph,
   // zero for nullptr. This should never be used to look up nodes, only to
   // provide a stable ID for serialization.
   static int64_t GetSerializationId(NodeBase* node);
+
+  // TODO(chrisha): Remove this after observer migration.
+  // Implementations of these are provided in the *_node_impl.cc translation
+  // units for now.
+  void RemoveObserver(GraphObserver* observer);
 
  protected:
   friend class GraphImpl;
@@ -75,8 +75,6 @@ class NodeBase {
   SEQUENCE_CHECKER(sequence_checker_);
 
  private:
-  base::ObserverList<GraphObserver>::Unchecked observers_;
-
   DISALLOW_COPY_AND_ASSIGN(NodeBase);
 };
 
@@ -97,10 +95,14 @@ class PublicNodeImpl : public PublicNodeClass {
   }
 };
 
-template <class NodeImplClass>
+template <class NodeImplClass, class NodeImplObserverClass>
 class TypedNodeBase : public NodeBase {
  public:
-  using ObservedProperty = ObservedPropertyImpl<NodeImplClass, GraphObserver>;
+  using Observer = NodeImplObserverClass;
+  using ObserverList =
+      typename base::ObserverList<NodeImplObserverClass>::Unchecked;
+  using ObservedProperty =
+      ObservedPropertyImpl<NodeImplClass, NodeImplObserverClass>;
 
   explicit TypedNodeBase(GraphImpl* graph)
       : NodeBase(NodeImplClass::Type(), graph) {}
@@ -115,7 +117,21 @@ class TypedNodeBase : public NodeBase {
     return static_cast<NodeImplClass*>(node);
   }
 
+  void AddObserver(Observer* observer) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    observers_.AddObserver(observer);
+  }
+
+  void RemoveObserver(Observer* observer) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    observers_.RemoveObserver(observer);
+  }
+
+  const ObserverList& observers() const { return observers_; }
+
  private:
+  ObserverList observers_;
+
   DISALLOW_COPY_AND_ASSIGN(TypedNodeBase);
 };
 

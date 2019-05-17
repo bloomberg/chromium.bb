@@ -6,16 +6,14 @@
 #define CHROME_BROWSER_PERFORMANCE_MANAGER_OBSERVERS_GRAPH_OBSERVER_H_
 
 #include "base/macros.h"
+#include "chrome/browser/performance_manager/graph/frame_node_impl.h"
+#include "chrome/browser/performance_manager/graph/graph_impl.h"
+#include "chrome/browser/performance_manager/graph/page_node_impl.h"
+#include "chrome/browser/performance_manager/graph/process_node_impl.h"
+#include "chrome/browser/performance_manager/graph/system_node_impl.h"
 #include "services/resource_coordinator/public/mojom/coordination_unit.mojom.h"
 
 namespace performance_manager {
-
-class FrameNodeImpl;
-class GraphImpl;
-class NodeBase;
-class PageNodeImpl;
-class ProcessNodeImpl;
-class SystemNodeImpl;
 
 // An observer API for the graph.
 //
@@ -29,56 +27,25 @@ class SystemNodeImpl;
 //   (3) Before destruction, unregister by calling on
 //       |graph().UnregisterObserver|.
 //
-// TODO: Clean up the observer API, and create a wrapper version that sees
-// const Node* rather then mutable NodeImpl* types for external consumers.
-class GraphObserver {
+// NOTE: This interface is deprecated. Please use the individual interfaces
+// that this class is implementing.
+class GraphObserver : public GraphImpl::Observer,
+                      public FrameNodeImpl::Observer,
+                      public PageNodeImpl::Observer,
+                      public ProcessNodeImpl::Observer,
+                      public SystemNodeImpl::Observer {
  public:
-  virtual ~GraphObserver() = 0;
-
-  // Invoked when an observer is added to or removed from the graph. This is a
-  // convenient place for observers to initialize any necessary state, validate
-  // graph invariants, etc.
-  virtual void OnRegistered() = 0;
-  virtual void OnUnregistered() = 0;
+  GraphObserver();
+  ~GraphObserver() override;
 
   // Determines whether or not the observer should be registered with, and
   // invoked for, the |node|.
+  // TODO(chrisha): Kill this function entirely and delegate that logic to the
+  // actual observer implementations.
   virtual bool ShouldObserve(const NodeBase* node) = 0;
 
-  // Called whenever a node has been added to the graph.
-  virtual void OnNodeAdded(NodeBase* node) = 0;
-
-  // Called when the |node| is about to be removed from the graph.
-  virtual void OnBeforeNodeRemoved(NodeBase* node) = 0;
-
-  // FrameNodeImpl notifications.
-  virtual void OnIsCurrentChanged(FrameNodeImpl* frame_node) = 0;
-  virtual void OnNetworkAlmostIdleChanged(FrameNodeImpl* frame_node) = 0;
-  virtual void OnLifecycleStateChanged(FrameNodeImpl* frame_node) = 0;
-  virtual void OnNonPersistentNotificationCreated(
-      FrameNodeImpl* frame_node) = 0;
-
-  // PageNodeImpl notifications.
-  virtual void OnIsVisibleChanged(PageNodeImpl* page_node) = 0;
-  virtual void OnIsLoadingChanged(PageNodeImpl* page_node) = 0;
-  virtual void OnUkmSourceIdChanged(PageNodeImpl* page_node) = 0;
-  virtual void OnLifecycleStateChanged(PageNodeImpl* page_node) = 0;
-  virtual void OnPageAlmostIdleChanged(PageNodeImpl* page_node) = 0;
-  virtual void OnFaviconUpdated(PageNodeImpl* page_node) = 0;
-  virtual void OnTitleUpdated(PageNodeImpl* page_node) = 0;
-  virtual void OnMainFrameNavigationCommitted(PageNodeImpl* page_node) = 0;
-
-  // ProcessNodeImpl notifications.
-  virtual void OnExpectedTaskQueueingDurationSample(
-      ProcessNodeImpl* process_node) = 0;
-  virtual void OnMainThreadTaskLoadIsLow(ProcessNodeImpl* process_node) = 0;
-  virtual void OnRendererIsBloated(ProcessNodeImpl* process_node) = 0;
-  virtual void OnAllFramesInProcessFrozen(ProcessNodeImpl* process_node) = 0;
-
-  // SystemNodeImpl notifications.
-  virtual void OnProcessCPUUsageReady(SystemNodeImpl* system_node) = 0;
-
-  virtual void SetNodeGraph(GraphImpl* graph) = 0;
+ private:
+  DISALLOW_COPY_AND_ASSIGN(GraphObserver);
 };
 
 // An empty implementation of the interface.
@@ -87,25 +54,20 @@ class GraphObserverDefaultImpl : public GraphObserver {
   GraphObserverDefaultImpl();
   ~GraphObserverDefaultImpl() override;
 
-  // Invoked when an observer is added to or removed from the graph. This is a
-  // convenient place for observers to initialize any necessary state, validate
-  // graph invariants, etc.
+  // GraphImplObserver implementation:
   void OnRegistered() override {}
   void OnUnregistered() override {}
-
-  // Called whenever a node has been added to the graph.
   void OnNodeAdded(NodeBase* node) override {}
-
-  // Called when the |node| is about to be removed from the graph.
   void OnBeforeNodeRemoved(NodeBase* node) override {}
+  void SetGraph(GraphImpl* graph) override;
 
-  // FrameNodeImpl notifications.
+  // FrameNodeImplObserver implementation:
   void OnIsCurrentChanged(FrameNodeImpl* frame_node) override {}
   void OnNetworkAlmostIdleChanged(FrameNodeImpl* frame_node) override {}
   void OnLifecycleStateChanged(FrameNodeImpl* frame_node) override {}
   void OnNonPersistentNotificationCreated(FrameNodeImpl* frame_node) override {}
 
-  // PageNodeImpl notifications.
+  // PageNodeImplObserver implementation:
   void OnIsVisibleChanged(PageNodeImpl* page_node) override {}
   void OnIsLoadingChanged(PageNodeImpl* page_node) override {}
   void OnUkmSourceIdChanged(PageNodeImpl* page_node) override {}
@@ -115,22 +77,19 @@ class GraphObserverDefaultImpl : public GraphObserver {
   void OnTitleUpdated(PageNodeImpl* page_node) override {}
   void OnMainFrameNavigationCommitted(PageNodeImpl* page_node) override {}
 
-  // ProcessNodeImpl notifications.
+  // ProcessNodeImplObserver implementation:
   void OnExpectedTaskQueueingDurationSample(
       ProcessNodeImpl* process_node) override {}
   void OnMainThreadTaskLoadIsLow(ProcessNodeImpl* process_node) override {}
-  void OnRendererIsBloated(ProcessNodeImpl* process_node) override {}
   void OnAllFramesInProcessFrozen(ProcessNodeImpl* process_node) override {}
 
-  // SystemNodeImpl notifications.
+  // SystemNodeImplObserver implementation:
   void OnProcessCPUUsageReady(SystemNodeImpl* system_node) override {}
 
-  void SetNodeGraph(GraphImpl* graph) override;
-
-  GraphImpl* graph() const { return node_graph_; }
+  GraphImpl* graph() const { return graph_; }
 
  private:
-  GraphImpl* node_graph_ = nullptr;
+  GraphImpl* graph_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(GraphObserverDefaultImpl);
 };

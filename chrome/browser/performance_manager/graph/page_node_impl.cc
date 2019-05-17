@@ -12,7 +12,6 @@
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
 #include "chrome/browser/performance_manager/graph/graph_impl.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
-#include "chrome/browser/performance_manager/observers/graph_observer.h"
 #include "chrome/browser/performance_manager/performance_manager_clock.h"
 
 namespace performance_manager {
@@ -42,6 +41,9 @@ void ForFrameAndDescendents(FrameNodeImpl* frame_node,
 }
 
 }  // namespace
+
+PageNodeImplObserver::PageNodeImplObserver() = default;
+PageNodeImplObserver::~PageNodeImplObserver() = default;
 
 PageNodeImpl::PageNodeImpl(GraphImpl* graph,
                            const WebContentsProxy& contents_proxy)
@@ -430,5 +432,8 @@ void PageNodeImpl::ForAllFrameNodes(MapFunction map_function) const {
   for (auto* main_frame_node : main_frame_nodes_)
     ForFrameAndDescendents(main_frame_node, map_function);
 }
+
+PageNodeImpl::ObserverDefaultImpl::ObserverDefaultImpl() = default;
+PageNodeImpl::ObserverDefaultImpl::~ObserverDefaultImpl() = default;
 
 }  // namespace performance_manager

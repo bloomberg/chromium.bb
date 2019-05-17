@@ -35,6 +35,16 @@ class SystemNodeImpl;
 // a list of observers that are notified of node addition and removal.
 class GraphImpl : public Graph {
  public:
+  // Pure virtual observer interface. Derive from this if you want to manually
+  // implement the whole interface, and have the compiler enforce that as new
+  // methods are added.
+  class Observer;
+
+  // A do-nothing implementation of the observer. Derive from this if you want
+  // to selectively override a few methods and not have to worry about
+  // continuously updating your implementation as new methods are added.
+  class ObserverDefaultImpl;
+
   using NodeSet = std::unordered_set<NodeBase*>;
 
   GraphImpl();
@@ -83,6 +93,11 @@ class GraphImpl : public Graph {
   void OnNodeAdded(NodeBase* node);
   void OnBeforeNodeRemoved(NodeBase* node);
 
+  // Templated helper functions for removed nodes.
+  // TODO(chrisha): Kill this off after the observer migration.
+  template <typename NodeType>
+  void OnBeforeNodeRemovedImpl(NodeType* node);
+
   // Returns a new serialization ID.
   friend class NodeBase;
   int64_t GetNextNodeSerializationId();
@@ -113,6 +128,54 @@ class GraphImpl : public Graph {
 
   SEQUENCE_CHECKER(sequence_checker_);
   DISALLOW_COPY_AND_ASSIGN(GraphImpl);
+};
+
+// Observer interface for GraphImpl objects.
+class GraphImpl::Observer {
+ public:
+  Observer();
+  virtual ~Observer();
+
+  // Invoked when an observer is added to or removed from the graph. This is a
+  // convenient place for observers to initialize any necessary state, validate
+  // graph invariants, etc.
+  virtual void OnRegistered() = 0;
+  virtual void OnUnregistered() = 0;
+
+  // Called whenever a node has been added to the graph.
+  virtual void OnNodeAdded(NodeBase* node) = 0;
+
+  // Called when the |node| is about to be removed from the graph.
+  virtual void OnBeforeNodeRemoved(NodeBase* node) = 0;
+
+  // This will be called with a non-null |graph| when the observer is attached
+  // to a graph, and then again with a null |graph| when the observer is
+  // removed.
+  virtual void SetGraph(GraphImpl* graph) = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(Observer);
+};
+
+// A do-nothing default implementation of a GraphImplObserver.
+class GraphImpl::ObserverDefaultImpl : public GraphImpl::Observer {
+ public:
+  ObserverDefaultImpl();
+  ~ObserverDefaultImpl() override;
+
+  // GraphImplObserver implementation:
+  void OnRegistered() override {}
+  void OnUnregistered() override {}
+  void OnNodeAdded(NodeBase* node) override {}
+  void OnBeforeNodeRemoved(NodeBase* node) override {}
+  void SetGraph(GraphImpl* graph) override;
+
+  GraphImpl* graph() const { return graph_; }
+
+ private:
+  GraphImpl* graph_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(ObserverDefaultImpl);
 };
 
 }  // namespace performance_manager
