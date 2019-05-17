@@ -118,6 +118,7 @@ class MockIt2MeHost : public It2MeHost {
   void Connect(std::unique_ptr<ChromotingHostContext> context,
                std::unique_ptr<base::DictionaryValue> policies,
                std::unique_ptr<It2MeConfirmationDialogFactory> dialog_factory,
+               std::unique_ptr<RegisterSupportHostRequest> register_request,
                base::WeakPtr<It2MeHost::Observer> observer,
                std::unique_ptr<SignalStrategy> signal_strategy,
                const std::string& username,
@@ -137,6 +138,7 @@ void MockIt2MeHost::Connect(
     std::unique_ptr<ChromotingHostContext> context,
     std::unique_ptr<base::DictionaryValue> policies,
     std::unique_ptr<It2MeConfirmationDialogFactory> dialog_factory,
+    std::unique_ptr<RegisterSupportHostRequest> register_request,
     base::WeakPtr<It2MeHost::Observer> observer,
     std::unique_ptr<SignalStrategy> signal_strategy,
     const std::string& username,
@@ -152,6 +154,7 @@ void MockIt2MeHost::Connect(
   host_context_ = std::move(context);
   observer_ = std::move(observer);
   signal_strategy_ = std::move(signal_strategy);
+  register_request_ = std::move(register_request);
 
   OnPolicyUpdate(std::move(policies));
 
@@ -640,7 +643,7 @@ TEST_F(It2MeNativeMessagingHostTest,
   connect_message.SetBoolean("noDialogs", true);
   WriteMessageToInputPipe(connect_message);
   VerifyConnectResponses(next_id);
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || !defined(NDEBUG)
   EXPECT_FALSE(factory_raw_ptr_->host->enable_dialogs());
 #else
   EXPECT_TRUE(factory_raw_ptr_->host->enable_dialogs());

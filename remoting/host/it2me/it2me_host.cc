@@ -29,7 +29,6 @@
 #include "remoting/host/host_status_logger.h"
 #include "remoting/host/it2me/it2me_confirmation_dialog.h"
 #include "remoting/host/it2me_desktop_environment.h"
-#include "remoting/host/register_support_host_request.h"
 #include "remoting/protocol/auth_util.h"
 #include "remoting/protocol/chromium_port_allocator_factory.h"
 #include "remoting/protocol/ice_transport.h"
@@ -78,6 +77,7 @@ void It2MeHost::Connect(
     std::unique_ptr<ChromotingHostContext> host_context,
     std::unique_ptr<base::DictionaryValue> policies,
     std::unique_ptr<It2MeConfirmationDialogFactory> dialog_factory,
+    std::unique_ptr<RegisterSupportHostRequest> register_request,
     base::WeakPtr<It2MeHost::Observer> observer,
     std::unique_ptr<SignalStrategy> signal_strategy,
     const std::string& username,
@@ -101,7 +101,8 @@ void It2MeHost::Connect(
   // Switch to the network thread to start the actual connection.
   host_context_->network_task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&It2MeHost::ConnectOnNetworkThread, this,
-                                username, directory_bot_jid, ice_config));
+                                username, directory_bot_jid, ice_config,
+                                std::move(register_request)));
 }
 
 void It2MeHost::Disconnect() {
@@ -110,9 +111,11 @@ void It2MeHost::Disconnect() {
       FROM_HERE, base::BindOnce(&It2MeHost::DisconnectOnNetworkThread, this));
 }
 
-void It2MeHost::ConnectOnNetworkThread(const std::string& username,
-                                       const std::string& directory_bot_jid,
-                                       const protocol::IceConfig& ice_config) {
+void It2MeHost::ConnectOnNetworkThread(
+    const std::string& username,
+    const std::string& directory_bot_jid,
+    const protocol::IceConfig& ice_config,
+    std::unique_ptr<RegisterSupportHostRequest> register_request) {
   DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
   DCHECK_EQ(kDisconnected, state_);
 
@@ -139,11 +142,9 @@ void It2MeHost::ConnectOnNetworkThread(const std::string& username,
   host_key_pair_ = RsaKeyPair::Generate();
 
   // Request registration of the host for support.
-  std::unique_ptr<RegisterSupportHostRequest> register_request(
-      new RegisterSupportHostRequest(
-          signal_strategy_.get(), host_key_pair_, directory_bot_jid,
-          base::Bind(&It2MeHost::OnReceivedSupportID, base::Unretained(this))));
-
+  register_request->StartRequest(
+      signal_strategy_.get(), host_key_pair_,
+      base::BindOnce(&It2MeHost::OnReceivedSupportID, base::Unretained(this)));
   // Beyond this point nothing can fail, so save the config and request.
   register_request_ = std::move(register_request);
 

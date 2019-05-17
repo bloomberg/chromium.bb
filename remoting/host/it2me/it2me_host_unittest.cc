@@ -25,6 +25,7 @@
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/it2me/it2me_confirmation_dialog.h"
 #include "remoting/host/policy_watcher.h"
+#include "remoting/host/xmpp_register_support_host_request.h"
 #include "remoting/protocol/errors.h"
 #include "remoting/protocol/transport_context.h"
 #include "remoting/signaling/fake_signal_strategy.h"
@@ -291,10 +292,13 @@ void It2MeHostTest::StartHost(bool enable_dialogs) {
     // false should only be run on ChromeOS.
     it2me_host_->set_enable_dialogs(enable_dialogs);
   }
-  it2me_host_->Connect(host_context_->Copy(), policies_->CreateDeepCopy(),
-                       std::move(dialog_factory), weak_factory_.GetWeakPtr(),
-                       std::move(fake_signal_strategy), kTestUserName,
-                       "fake_bot_jid", ice_config);
+  auto register_host_request =
+      std::make_unique<XmppRegisterSupportHostRequest>("fake_bot_jid");
+  it2me_host_->Connect(
+      host_context_->Copy(), policies_->CreateDeepCopy(),
+      std::move(dialog_factory), std::move(register_host_request),
+      weak_factory_.GetWeakPtr(), std::move(fake_signal_strategy),
+      kTestUserName, "fake_bot_jid", ice_config);
 
   base::RunLoop run_loop;
   state_change_callback_ =
