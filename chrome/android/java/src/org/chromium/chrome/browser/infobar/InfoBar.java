@@ -146,7 +146,8 @@ public abstract class InfoBar implements InfoBarView {
                         .with(TouchlessDialogProperties.CANCEL_ACTION,
                                 view -> onCloseButtonClicked())
                         .with(TouchlessDialogProperties.ALT_ACTION, null)
-                        .with(ModalDialogProperties.TITLE, mMessage.toString())
+                        .with(ModalDialogProperties.TITLE,
+                                mMessage != null ? mMessage.toString() : "")
                         .with(ModalDialogProperties.TITLE_ICON, icon)
                         .with(ModalDialogProperties.CONTROLLER,
                                 new ModalDialogProperties.Controller() {

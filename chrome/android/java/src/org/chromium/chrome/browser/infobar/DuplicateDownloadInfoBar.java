@@ -23,6 +23,8 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.download.DownloadMetrics;
 import org.chromium.chrome.browser.download.DownloadUtils;
+import org.chromium.ui.modaldialog.ModalDialogProperties;
+import org.chromium.ui.modelutil.PropertyModel;
 
 import java.io.File;
 
@@ -162,5 +164,22 @@ public class DuplicateDownloadInfoBar extends ConfirmInfoBar {
         } else {
             layout.setMessage(getDownloadMessageText(context, template));
         }
+    }
+
+    @Override
+    public boolean supportsTouchlessMode() {
+        return true;
+    }
+
+    @Override
+    public PropertyModel createModel() {
+        PropertyModel model = super.createModel();
+
+        String template = getContext().getString(R.string.duplicate_download_request_infobar_text);
+
+        model.set(ModalDialogProperties.TITLE,
+                getDownloadMessageText(getContext(), template).toString());
+
+        return model;
     }
 }

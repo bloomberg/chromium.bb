@@ -22,6 +22,8 @@ bool GetIsInMultiWindowModeValue();
 
 bool IsDownloadAutoResumptionEnabledInNative();
 
+bool IsNoTouchModeEnabled();
+
 } // namespace android
 } // namespace chrome
 
