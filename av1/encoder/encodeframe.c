@@ -2592,10 +2592,14 @@ BEGIN_PARTITION_SEARCH:
         pc_tree->partitioning = PARTITION_SPLIT;
       }
     } else if (cpi->sf.less_rectangular_check_level > 0) {
-      // skip rectangular partition test when larger block size
-      // gives better rd cost
-      if (cpi->sf.less_rectangular_check_level == 2 || idx <= 2)
-        do_rectangular_split &= !partition_none_allowed;
+      // Skip rectangular partition test when partition type none gives better
+      // rd than partition type split.
+      if (cpi->sf.less_rectangular_check_level == 2 || idx <= 2) {
+        const int partition_none_valid = cur_none_rd > 0;
+        const int partition_none_better = cur_none_rd < sum_rdc.rdcost;
+        do_rectangular_split &=
+            !(partition_none_valid && partition_none_better);
+      }
     }
 
     restore_context(x, &x_ctx, mi_row, mi_col, bsize, num_planes);
