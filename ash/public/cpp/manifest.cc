@@ -41,8 +41,6 @@
 #include "services/preferences/public/mojom/preferences.mojom.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 #include "services/viz/public/interfaces/constants.mojom.h"
-#include "services/ws/public/cpp/manifest.h"
-#include "services/ws/public/mojom/constants.mojom.h"
 #include "ui/base/ime/mojo/ime_engine_factory_registry.mojom.h"
 
 namespace ash {
@@ -97,8 +95,6 @@ const service_manager::Manifest& GetManifest() {
           .RequireCapability(data_decoder::mojom::kServiceName, "image_decoder")
           .RequireCapability(viz::mojom::kVizServiceName, "ozone")
           .RequireCapability(viz::mojom::kVizServiceName, "viz_host")
-          .RequireCapability(ws::mojom::kServiceName, "ozone")
-          .RequireCapability(ws::mojom::kServiceName, "window_manager")
           .RequireCapability(device::mojom::kServiceName,
                              "device:bluetooth_system")
           .RequireCapability(device::mojom::kServiceName, "device:fingerprint")
@@ -107,7 +103,6 @@ const service_manager::Manifest& GetManifest() {
           .RequireCapability(
               chromeos::network_config::mojom::kServiceName,
               chromeos::network_config::mojom::kNetworkConfigCapability)
-          .PackageService(ws::GetManifest())
           .Build()
           .Amend(GetAmendmentForTesting())};
   return *manifest;
