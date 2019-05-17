@@ -17,6 +17,7 @@ namespace {
 constexpr WTF::TimeDelta kTimeToHideControl = TimeDelta::FromMilliseconds(3000);
 
 const char kTransparentCSSClass[] = "transparent";
+const char kTransparentImmediateCSSClass[] = "transparent-immediate";
 
 }  // namespace
 
@@ -34,7 +35,7 @@ HTMLMediaElement& MediaControlsTouchlessElement::MediaElement() const {
 void MediaControlsTouchlessElement::MakeOpaque(bool should_hide) {
   EnsureHideControlTimer();
 
-  classList().Remove(kTransparentCSSClass);
+  removeAttribute("class");
 
   if (hide_control_timer_->IsActive())
     StopHideControlTimer();
@@ -43,8 +44,9 @@ void MediaControlsTouchlessElement::MakeOpaque(bool should_hide) {
     StartHideControlTimer();
 }
 
-void MediaControlsTouchlessElement::MakeTransparent() {
-  classList().Add(kTransparentCSSClass);
+void MediaControlsTouchlessElement::MakeTransparent(bool hide_immediate) {
+  classList().Add(hide_immediate ? kTransparentImmediateCSSClass
+                                 : kTransparentCSSClass);
 }
 
 void MediaControlsTouchlessElement::EnsureHideControlTimer() {

@@ -40,6 +40,10 @@ video::-internal-media-controls-touchless-overlay.transparent {
   transition: opacity .5s;
 }
 
+video::-internal-media-controls-touchless-overlay.transparent-immediate {
+  opacity: 0;
+}
+
 video::-internal-media-controls-touchless-volume-up-button {
   width: 30px;
   height: 30px;
@@ -173,6 +177,10 @@ video::-internal-media-controls-touchless-volume-container {
 video::-internal-media-controls-touchless-volume-container.transparent {
   opacity: 0;
   transition: opacity .5s;
+}
+
+video::-internal-media-controls-touchless-volume-container.transparent-immediate {
+  opacity: 0;
 }
 
 video::-internal-media-controls-touchless-volume-bar-background {

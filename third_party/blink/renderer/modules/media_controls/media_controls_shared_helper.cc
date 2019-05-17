@@ -6,6 +6,7 @@
 
 #include <cmath>
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-shared.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
@@ -20,6 +21,54 @@ const double kCurrentTimeBufferedDelta = 1.0;
 }
 
 namespace blink {
+
+// |element| is the element to listen for the 'transitionend' event on.
+// |callback| is the callback to call when the event is handled.
+MediaControlsSharedHelpers::TransitionEventListener::TransitionEventListener(
+    Element* element,
+    Callback callback)
+    : callback_(callback), element_(element) {
+  DCHECK(callback_);
+  DCHECK(element_);
+}
+
+void MediaControlsSharedHelpers::TransitionEventListener::Attach() {
+  DCHECK(!attached_);
+  attached_ = true;
+
+  element_->addEventListener(event_type_names::kTransitionend, this, false);
+}
+
+void MediaControlsSharedHelpers::TransitionEventListener::Detach() {
+  DCHECK(attached_);
+  attached_ = false;
+
+  element_->removeEventListener(event_type_names::kTransitionend, this, false);
+}
+
+bool MediaControlsSharedHelpers::TransitionEventListener::IsAttached() const {
+  return attached_;
+}
+
+void MediaControlsSharedHelpers::TransitionEventListener::Invoke(
+    ExecutionContext* context,
+    Event* event) {
+  if (event->target() != element_)
+    return;
+
+  if (event->type() == event_type_names::kTransitionend) {
+    callback_.Run();
+    return;
+  }
+
+  NOTREACHED();
+}
+
+void MediaControlsSharedHelpers::TransitionEventListener::Trace(
+    blink::Visitor* visitor) {
+  NativeEventListener::Trace(visitor);
+  visitor->Trace(element_);
+}
 
 base::Optional<unsigned>
 MediaControlsSharedHelpers::GetCurrentBufferedTimeRange(

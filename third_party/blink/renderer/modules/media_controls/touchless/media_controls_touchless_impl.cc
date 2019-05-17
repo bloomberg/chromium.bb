@@ -192,7 +192,7 @@ void MediaControlsTouchlessImpl::OnKeyDown(KeyboardEvent* event) {
   bool handled = true;
   switch (event->keyCode()) {
     case VKEY_RETURN:
-      volume_container_->MakeTransparent();
+      volume_container_->MakeTransparent(true);
       overlay_->MakeOpaque(true);
       MediaElement().TogglePlayState();
       break;
@@ -402,14 +402,14 @@ WebScreenOrientationType MediaControlsTouchlessImpl::GetOrientation() {
 void MediaControlsTouchlessImpl::HandleTopButtonPress() {
   MaybeChangeVolume(kVolumeToChangeForTouchless);
   volume_container_->UpdateVolume();
-  overlay_->MakeTransparent();
+  overlay_->MakeTransparent(true);
   volume_container_->MakeOpaque(true);
 }
 
 void MediaControlsTouchlessImpl::HandleBottomButtonPress() {
   MaybeChangeVolume(kVolumeToChangeForTouchless * -1);
   volume_container_->UpdateVolume();
-  overlay_->MakeTransparent();
+  overlay_->MakeTransparent(true);
   volume_container_->MakeOpaque(true);
 }
 
