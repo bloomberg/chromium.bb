@@ -2468,13 +2468,8 @@ void Document::UpdateStyleAndLayoutTreeForNode(const Node* node) {
     DCHECK_EQ(node->ownerDocument(), this);
     return;
   }
-  DCHECK(node->GetDocument().GetPage());
-  DCHECK(!node->GetDocument()
-              .GetPage()
-              ->Animator()
-              .UpdatingLayoutAndStyleForPainting())
-      << "UpdateStyleAndLayoutTreeForNode called from within a lifecycle "
-         "update";
+  DCHECK(!InStyleRecalc())
+      << "UpdateStyleAndLayoutTreeForNode called from within style recalc";
   if (!NeedsLayoutTreeUpdateForNodeIncludingDisplayLocked(*node))
     return;
 
