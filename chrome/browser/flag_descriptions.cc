@@ -2301,10 +2301,6 @@ const char kManualPasswordGenerationAndroidDescription[] =
     "Whether Chrome should offer users the option to manually request to "
     "generate passwords on Android.";
 
-const char kMediaScreenCaptureName[] = "Experimental ScreenCapture.";
-const char kMediaScreenCaptureDescription[] =
-    "Enable this option for experimental ScreenCapture feature on Android.";
-
 const char kNewNetErrorPageUIName[] = "Enable new UI for net-error page";
 const char kNewNetErrorPageUIDescription[] =
     "Enables showing available offline content on the net-error (Dino) page.";

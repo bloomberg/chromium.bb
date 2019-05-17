@@ -1376,9 +1376,6 @@ extern const char kLsdPermissionPromptDescription[];
 extern const char kManualPasswordGenerationAndroidName[];
 extern const char kManualPasswordGenerationAndroidDescription[];
 
-extern const char kMediaScreenCaptureName[];
-extern const char kMediaScreenCaptureDescription[];
-
 extern const char kNewNetErrorPageUIName[];
 extern const char kNewNetErrorPageUIDescription[];
 
