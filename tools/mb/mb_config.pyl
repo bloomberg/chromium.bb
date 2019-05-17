@@ -447,7 +447,6 @@
       # for the jumbo part.
       'linux-jumbo-rel': 'gpu_tests_release_bot_jumbo_no_symbols_use_dummy_lastchange',
       'linux-ozone-rel': 'ozone_linux_release_bot',
-      'linux-xenial-rel': 'release_bot',
     },
 
     'chromium.lkgr': {
@@ -753,7 +752,6 @@
       'linux-ozone-rel': 'ozone_linux_release_trybot',
       'linux-rel': 'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange',
       'linux-trusty-webkit-msan-rel': 'msan_release_bot',
-      'linux-xenial-rel': 'release_trybot',
       'linux_arm': 'release_trybot_arm',
       'linux_chromium_archive_rel_ng': 'release_bot',
       'linux_chromium_asan_rel_ng': 'asan_lsan_release_trybot',
