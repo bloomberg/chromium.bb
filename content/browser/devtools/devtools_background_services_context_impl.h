@@ -136,7 +136,10 @@ class CONTENT_EXPORT DevToolsBackgroundServicesContextImpl
 
   base::ObserverList<EventObserver> observers_;
 
-  base::WeakPtrFactory<DevToolsBackgroundServicesContextImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<DevToolsBackgroundServicesContextImpl>
+      weak_ptr_factory_ui_{this};
+  base::WeakPtrFactory<DevToolsBackgroundServicesContextImpl>
+      weak_ptr_factory_io_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsBackgroundServicesContextImpl);
 };
