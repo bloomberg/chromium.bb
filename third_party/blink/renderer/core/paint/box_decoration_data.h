@@ -23,10 +23,15 @@ class BoxDecorationData {
       : BoxDecorationData(paint_info, layout_box, layout_box.StyleRef()) {}
 
   BoxDecorationData(const PaintInfo& paint_info,
-                    const NGPhysicalBoxFragment& fragment)
+                    const NGPhysicalFragment& fragment,
+                    const ComputedStyle& style)
       : BoxDecorationData(paint_info,
                           ToLayoutBox(*fragment.GetLayoutObject()),
-                          fragment.Style()) {}
+                          style) {}
+
+  BoxDecorationData(const PaintInfo& paint_info,
+                    const NGPhysicalFragment& fragment)
+      : BoxDecorationData(paint_info, fragment, fragment.Style()) {}
 
   bool IsPaintingScrollingBackground() const {
     return is_painting_scrolling_background_;

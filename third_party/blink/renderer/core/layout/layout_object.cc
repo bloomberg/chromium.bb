@@ -338,10 +338,6 @@ bool LayoutObject::IsDescendantOf(const LayoutObject* obj) const {
   return false;
 }
 
-bool LayoutObject::VirtualIsFirstLineAnonymous() const {
-  return false;
-}
-
 bool LayoutObject::IsHR() const {
   return IsHTMLHRElement(GetNode());
 }
@@ -3392,25 +3388,10 @@ static scoped_refptr<const ComputedStyle> FirstLineStyleForCachedUncachedType(
       return first_line_block->GetUncachedPseudoStyle(
           PseudoStyleRequest(kPseudoIdFirstLine), style);
     }
-  } else if (layout_object_for_first_line_style->IsLayoutInline()) {
-    if (layout_object_for_first_line_style->IsAnonymous()) {
-      // Anonymous inline box for ::first-line should inherit background.
-      if (ToLayoutInline(layout_object_for_first_line_style)
-              ->IsFirstLineAnonymous()) {
-        // TODO(kojii): This function must return a style that is referred by
-        // someone else, and that we can't create an inherited style here.
-        // Returning parent's style seems to work for now.
-        return FirstLineStyleForCachedUncachedType(
-            type, layout_object->Parent(), style);
-      }
-      // TODO(kojii): This does not look correct, but creating a first-line
-      // style for anonymous inline box does not seem easy for now.
-      return nullptr;
-    }
-    if (layout_object_for_first_line_style->GetNode()
-            ->IsFirstLetterPseudoElement()) {
-      return nullptr;
-    }
+  } else if (!layout_object_for_first_line_style->IsAnonymous() &&
+             layout_object_for_first_line_style->IsLayoutInline() &&
+             !layout_object_for_first_line_style->GetNode()
+                  ->IsFirstLetterPseudoElement()) {
     const ComputedStyle* parent_style =
         layout_object_for_first_line_style->Parent()->FirstLineStyle();
     if (parent_style != layout_object_for_first_line_style->Parent()->Style()) {

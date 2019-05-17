@@ -836,22 +836,6 @@ void NGInlineNode::ShapeTextForFirstLineIfNeeded(NGInlineNodeData* data) {
     item.SetStyleVariant(NGStyleVariant::kFirstLine);
   }
 
-  // Check if we have a first-line anonymous inline box. It is the first
-  // open-tag if we have.
-  for (auto& item : first_line_items->items) {
-    if (item.Type() == NGInlineItem::kOpenTag) {
-      if (item.layout_object_->IsAnonymous() &&
-          item.layout_object_->IsLayoutInline() &&
-          item.layout_object_->Parent() == GetLayoutBox() &&
-          ToLayoutInline(item.layout_object_)->IsFirstLineAnonymous()) {
-        item.SetShouldCreateBoxFragment();
-      }
-      break;
-    }
-    if (item.Type() != NGInlineItem::kBidiControl)
-      break;
-  }
-
   // Re-shape if the font is different.
   if (needs_reshape || FirstLineNeedsReshape(*first_line_style, *block_style))
     ShapeText(first_line_items.get());

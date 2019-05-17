@@ -824,8 +824,10 @@ void NGPaintFragment::SetShouldDoFullPaintInvalidationForFirstLine() {
   DCHECK(PhysicalFragment().IsBox() && GetLayoutObject() &&
          GetLayoutObject()->IsLayoutBlockFlow());
 
-  if (NGPaintFragment* line_box = FirstLineBox())
+  if (NGPaintFragment* line_box = FirstLineBox()) {
     line_box->SetShouldDoFullPaintInvalidationRecursively();
+    GetLayoutObject()->SetShouldDoFullPaintInvalidation();
+  }
 }
 
 PhysicalRect NGPaintFragment::ComputeLocalSelectionRectForText(

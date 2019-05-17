@@ -41,8 +41,6 @@ class LayoutNGMixin : public Base {
   LayoutUnit FirstLineBoxBaseline() const final;
   LayoutUnit InlineBlockBaseline(LineDirectionMode) const final;
 
-  void InvalidateDisplayItemClients(PaintInvalidationReason) const final;
-
   void Paint(const PaintInfo&) const final;
 
   bool NodeAtPoint(HitTestResult&,
@@ -57,7 +55,9 @@ class LayoutNGMixin : public Base {
     // Safer option here is to return nullptr only if
     // Lifecycle > DocumentLifecycle::kAfterPerformLayout, but this breaks
     // some layout tests.
-    return Base::NeedsLayout() ? nullptr : paint_fragment_.get();
+    if (Base::NeedsLayout())
+      return nullptr;
+    return paint_fragment_.get();
   }
   void SetPaintFragment(const NGBlockBreakToken*,
                         scoped_refptr<const NGPhysicalFragment>) final;
@@ -76,6 +76,8 @@ class LayoutNGMixin : public Base {
   void AddOutlineRects(Vector<PhysicalRect>&,
                        const PhysicalOffset& additional_offset,
                        NGOutlineType) const final;
+
+  bool PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const final;
 
   const NGPhysicalBoxFragment* CurrentFragment() const final;
 

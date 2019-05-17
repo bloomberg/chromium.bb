@@ -753,10 +753,20 @@ void NGBoxFragmentPainter::PaintLineBoxChildren(
     }
     DCHECK(child_fragment.IsLineBox());
 
-    if (paint_info.phase == PaintPhase::kForeground &&
-        NGFragmentPainter::ShouldRecordHitTestData(paint_info,
-                                                   PhysicalFragment()))
-      RecordHitTestDataForLine(paint_info, child_offset.ToLayoutPoint(), *line);
+    if (paint_info.phase == PaintPhase::kForeground) {
+      if (NGFragmentPainter::ShouldRecordHitTestData(paint_info,
+                                                     PhysicalFragment())) {
+        RecordHitTestDataForLine(paint_info, child_offset.ToLayoutPoint(),
+                                 *line);
+      }
+
+      // Line boxes don't paint anything, except when its ::first-line style has
+      // a background.
+      if (UNLIKELY(NGLineBoxFragmentPainter::NeedsPaint(child_fragment))) {
+        NGLineBoxFragmentPainter line_box_painter(*line, box_fragment_);
+        line_box_painter.PaintBackgroundBorderShadow(paint_info, child_offset);
+      }
+    }
 
     PaintInlineChildren(line->Children(), paint_info, child_offset);
   }

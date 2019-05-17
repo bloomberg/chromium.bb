@@ -119,10 +119,6 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
 
   static LayoutInline* CreateAnonymous(Document*);
 
-  // Create an anonymous inline box for ::first-line. The instance created by
-  // this function has IsFirstLineAnonymous() == true.
-  static LayoutInline* CreateAnonymousForFirstLine(Document*);
-
   LayoutObject* FirstChild() const {
     DCHECK_EQ(Children(), VirtualChildren());
     return Children()->FirstChild();

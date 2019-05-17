@@ -104,22 +104,6 @@ LayoutInline* LayoutInline::CreateAnonymous(Document* document) {
   return layout_inline;
 }
 
-// A private class to distinguish anonymous inline box for ::first-line from
-// other inline boxes.
-class LayoutInlineForFirstLine : public LayoutInline {
- public:
-  LayoutInlineForFirstLine(Element* element) : LayoutInline(element) {}
-
- protected:
-  bool VirtualIsFirstLineAnonymous() const final { return true; }
-};
-
-LayoutInline* LayoutInline::CreateAnonymousForFirstLine(Document* document) {
-  LayoutInline* layout_inline = new LayoutInlineForFirstLine(nullptr);
-  layout_inline->SetDocumentForAnonymous(document);
-  return layout_inline;
-}
-
 void LayoutInline::WillBeDestroyed() {
   // Make sure to destroy anonymous children first while they are still
   // connected to the rest of the tree, so that they will properly dirty line
@@ -568,13 +552,8 @@ void LayoutInline::AddChildIgnoringContinuation(LayoutObject* new_child,
 }
 
 LayoutInline* LayoutInline::Clone() const {
-  LayoutInline* clone_inline = nullptr;
-  if (UNLIKELY(IsFirstLineAnonymous())) {
-    clone_inline = CreateAnonymousForFirstLine(&GetDocument());
-  } else {
-    DCHECK(!IsAnonymous());
-    clone_inline = new LayoutInline(GetNode());
-  }
+  DCHECK(!IsAnonymous());
+  LayoutInline* clone_inline = new LayoutInline(GetNode());
   clone_inline->SetStyle(MutableStyle());
   clone_inline->SetIsInsideFlowThread(IsInsideFlowThread());
   return clone_inline;
@@ -583,8 +562,8 @@ LayoutInline* LayoutInline::Clone() const {
 void LayoutInline::MoveChildrenToIgnoringContinuation(
     LayoutInline* to,
     LayoutObject* start_child) {
-  DCHECK(!IsAnonymous() || IsFirstLineAnonymous());
-  DCHECK(!to->IsAnonymous() || to->IsFirstLineAnonymous());
+  DCHECK(!IsAnonymous());
+  DCHECK(!to->IsAnonymous());
   LayoutObject* child = start_child;
   while (child) {
     LayoutObject* current_child = child;
@@ -600,7 +579,7 @@ void LayoutInline::SplitInlines(LayoutBlockFlow* from_block,
                                 LayoutObject* before_child,
                                 LayoutBoxModelObject* old_cont) {
   DCHECK(IsDescendantOf(from_block));
-  DCHECK(!IsAnonymous() || IsFirstLineAnonymous());
+  DCHECK(!IsAnonymous());
 
   // FIXME: Because splitting is O(n^2) as tags nest pathologically, we cap the
   // depth at which we're willing to clone.

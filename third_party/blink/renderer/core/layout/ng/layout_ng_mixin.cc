@@ -200,6 +200,16 @@ void LayoutNGMixin<Base>::AddOutlineRects(
   }
 }
 
+template <typename Base>
+bool LayoutNGMixin<Base>::PaintedOutputOfObjectHasNoEffectRegardlessOfSize()
+    const {
+  // LayoutNGMixin is in charge of paint invalidation of the first line.
+  if (PaintFragment())
+    return false;
+
+  return Base::PaintedOutputOfObjectHasNoEffectRegardlessOfSize();
+}
+
 // Retrieve NGBaseline from the current fragment.
 template <typename Base>
 base::Optional<LayoutUnit> LayoutNGMixin<Base>::FragmentBaseline(
@@ -262,21 +272,6 @@ void LayoutNGMixin<Base>::SetPaintFragment(
     // fragment tree, or before layout. crbug.com/941228
     ObjectPaintInvalidator(*this).SlowSetPaintingLayerNeedsRepaint();
   }
-}
-
-template <typename Base>
-void LayoutNGMixin<Base>::InvalidateDisplayItemClients(
-    PaintInvalidationReason invalidation_reason) const {
-  if (NGPaintFragment* fragment = PaintFragment()) {
-    // TODO(koji): Should be in the PaintInvalidator, possibly with more logic
-    // ported from BlockFlowPaintInvalidator.
-    ObjectPaintInvalidator object_paint_invalidator(*this);
-    object_paint_invalidator.InvalidateDisplayItemClient(*fragment,
-                                                         invalidation_reason);
-    return;
-  }
-
-  LayoutBlockFlow::InvalidateDisplayItemClients(invalidation_reason);
 }
 
 template <typename Base>

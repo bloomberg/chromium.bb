@@ -978,15 +978,10 @@ TEST_F(LayoutObjectSimTest, FirstLineBackgroundImage) {
   static_cast<ImageObserver*>(image_resource_content)
       ->Changed(image_resource_content->GetImage());
 
-  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
-    // The block itself doesn't paint the first line, so we don't need to
-    // invalidate it for the image change in the first line style.
-    EXPECT_FALSE(target_object->ShouldDoFullPaintInvalidation());
-  } else {
-    // In legacy layout mode, the block is the layout object of the first line's
-    // root line box, so we invalidate it.
-    EXPECT_TRUE(target_object->ShouldDoFullPaintInvalidation());
-  }
+  // The block is the layout object of the first line's root line box, so we
+  // invalidate it.
+  EXPECT_TRUE(target_object->ShouldDoFullPaintInvalidation());
+
   auto* first_line1 =
       GetDocument().getElementById("first-line1")->GetLayoutObject();
   EXPECT_TRUE(first_line1->ShouldDoFullPaintInvalidation());
