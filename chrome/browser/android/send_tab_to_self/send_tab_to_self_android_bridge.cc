@@ -9,10 +9,10 @@
 #include "base/android/jni_string.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
+#include "chrome/browser/android/send_tab_to_self/send_tab_to_self_entry_bridge.h"
 #include "chrome/browser/android/send_tab_to_self/send_tab_to_self_infobar.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
-#include "chrome/browser/send_tab_to_self/send_tab_to_self_client_service.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_client_service_factory.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
 #include "chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
@@ -22,7 +22,6 @@
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/SendTabToSelfAndroidBridge_jni.h"
-#include "jni/SendTabToSelfEntry_jni.h"
 #include "url/gurl.h"
 
 using base::android::AttachCurrentThread;
@@ -38,19 +37,6 @@ using base::android::ScopedJavaLocalRef;
 namespace send_tab_to_self {
 
 namespace {
-
-ScopedJavaLocalRef<jobject> CreateJavaSendTabToSelfEntry(
-    JNIEnv* env,
-    const SendTabToSelfEntry* entry) {
-  return Java_SendTabToSelfEntry_createSendTabToSelfEntry(
-      env, ConvertUTF8ToJavaString(env, entry->GetGUID()),
-      ConvertUTF8ToJavaString(env, entry->GetURL().spec()),
-      ConvertUTF8ToJavaString(env, entry->GetTitle()),
-      entry->GetSharedTime().ToJavaTime(),
-      entry->GetOriginalNavigationTime().ToJavaTime(),
-      ConvertUTF8ToJavaString(env, entry->GetDeviceName()),
-      ConvertUTF8ToJavaString(env, entry->GetTargetDeviceSyncCacheGuid()));
-}
 
 void LogModelLoadedInTime(bool status) {
   UMA_HISTOGRAM_BOOLEAN("SendTabToSelf.Sync.ModelLoadedInTime", status);
@@ -120,7 +106,6 @@ static ScopedJavaLocalRef<jobject> JNI_SendTabToSelfAndroidBridge_AddEntry(
   if (persisted_entry == nullptr) {
     return nullptr;
   }
-
   return CreateJavaSendTabToSelfEntry(env, persisted_entry);
 }
 
