@@ -499,7 +499,7 @@ void av1_cyclic_refresh_setup(AV1_COMP *const cpi) {
   }
 }
 
-INLINE int av1_cyclic_refresh_get_rdmult(const CYCLIC_REFRESH *cr) {
+int av1_cyclic_refresh_get_rdmult(const CYCLIC_REFRESH *cr) {
   return cr->rdmult;
 }
 
