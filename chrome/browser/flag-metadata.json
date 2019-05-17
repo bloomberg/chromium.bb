@@ -1174,11 +1174,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-input-ime-api",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-intent-picker",
     "owners": [ "chromeos-apps-foundation-team@google.com" ],
     "expiry_milestone": 78

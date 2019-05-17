@@ -3284,14 +3284,6 @@ const char kInstallableInkDropDescription[] =
 
 // Random platform combinations -----------------------------------------------
 
-#if defined(OS_WIN) || defined(OS_LINUX)
-
-const char kEnableInputImeApiName[] = "Enable Input IME API";
-const char kEnableInputImeApiDescription[] =
-    "Enable the use of chrome.input.ime API.";
-
-#endif  // defined(OS_WIN) || defined(OS_LINUX)
-
 #if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 const char kWebGL2ComputeContextName[] = "WebGL 2.0 Compute";

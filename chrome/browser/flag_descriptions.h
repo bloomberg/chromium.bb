@@ -1982,13 +1982,6 @@ extern const char kInstallableInkDropDescription[];
 
 // Random platform combinations -----------------------------------------------
 
-#if defined(OS_WIN) || defined(OS_LINUX)
-
-extern const char kEnableInputImeApiName[];
-extern const char kEnableInputImeApiDescription[];
-
-#endif  // defined(OS_WIN) || defined(OS_LINUX)
-
 #if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 extern const char kWebGL2ComputeContextName[];

@@ -1870,12 +1870,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"force-text-direction", flag_descriptions::kForceTextDirectionName,
      flag_descriptions::kForceTextDirectionDescription, kOsAll,
      MULTI_VALUE_TYPE(kForceTextDirectionChoices)},
-#if defined(OS_WIN) || defined(OS_LINUX)
-    {"enable-input-ime-api", flag_descriptions::kEnableInputImeApiName,
-     flag_descriptions::kEnableInputImeApiDescription, kOsWin | kOsLinux,
-     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableInputImeAPI,
-                               switches::kDisableInputImeAPI)},
-#endif  // OS_WIN || OS_LINUX
 #if defined(OS_ANDROID)
     {"force-update-menu-type", flag_descriptions::kUpdateMenuTypeName,
      flag_descriptions::kUpdateMenuTypeDescription, kOsAndroid,

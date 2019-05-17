@@ -267,11 +267,6 @@ extern const char kAllowNaClFileHandleAPI[];
 extern const char kAllowNaClSocketAPI[];
 #endif
 
-#if defined(OS_WIN) || defined(OS_LINUX)
-extern const char kDisableInputImeAPI[];
-extern const char kEnableInputImeAPI[];
-#endif
-
 #if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
 extern const char kEnableNewAppMenuIcon[];
 #endif
