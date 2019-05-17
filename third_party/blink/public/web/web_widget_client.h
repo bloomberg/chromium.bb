@@ -38,7 +38,6 @@
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
-#include "third_party/blink/public/platform/web_gesture_event.h"
 #include "third_party/blink/public/platform/web_intrinsic_sizing_info.h"
 #include "third_party/blink/public/platform/web_layer_tree_view.h"
 #include "third_party/blink/public/platform/web_point.h"
@@ -52,7 +51,6 @@
 class SkBitmap;
 
 namespace cc {
-struct ElementId;
 class PaintImage;
 struct ViewportLayers;
 }
@@ -71,7 +69,6 @@ struct WebCursorInfo;
 struct WebFloatPoint;
 struct WebFloatRect;
 struct WebFloatSize;
-enum class WebInjectedScrollSequenceType;
 
 class WebWidgetClient {
  public:
@@ -168,17 +165,6 @@ class WebWidgetClient {
                              const WebFloatSize& accumulated_overscroll,
                              const WebFloatPoint& position_in_viewport,
                              const WebFloatSize& velocity_in_viewport) {}
-
-  // Requests that a gesture of |injected_type| be reissued at a later point in
-  // time. |injected_type| is required to be one of
-  // GestureScroll{Begin,Update,End}. The dispatched gesture will scroll the
-  // ScrollableArea identified by |scrollable_area_element_id| by the given
-  // delta + granularity.
-  virtual void InjectGestureScrollEvent(
-      const blink::WebFloatSize& delta,
-      blink::WebScrollGranularity granularity,
-      cc::ElementId scrollable_area_element_id,
-      WebInputEvent::Type injected_type) {}
 
   // Set the browser's behavior when overscroll happens, e.g. whether to glow
   // or navigate.

@@ -85,8 +85,6 @@ class CORE_EXPORT ScrollbarThemeOverlay : public ScrollbarTheme {
 
   bool IsMobileTheme() const;
 
-  bool AllowsHitTest() const override;
-
   static ScrollbarThemeOverlay& MobileTheme();
 
  private:
