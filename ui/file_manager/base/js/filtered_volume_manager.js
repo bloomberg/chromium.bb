@@ -232,7 +232,7 @@ class FilteredVolumeManager extends cr.EventTarget {
         break;
       case 'externally-unmounted':
         event = /** @type {!ExternallyUnmountedEvent} */ (event);
-        if (this.isAllowedVolume_(event.volumeInfo)) {
+        if (this.isAllowedVolume_(event.detail)) {
           this.dispatchEvent(event);
         }
         break;

@@ -206,9 +206,8 @@ class VolumeManagerImpl extends cr.EventTarget {
               null;
           if (event.status === 'success' && !requested && volumeInfo) {
             console.warn('Unmounted volume without a request: ' + volumeId);
-            const e = new Event('externally-unmounted');
-            e.volumeInfo = volumeInfo;
-            this.dispatchEvent(e);
+            this.dispatchEvent(
+                new CustomEvent('externally-unmounted', {detail: volumeInfo}));
           }
 
           this.finishRequest_(requestKey, status);

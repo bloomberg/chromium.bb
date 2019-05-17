@@ -122,12 +122,7 @@ VolumeManager.prototype.getDefaultDisplayRoot = function(callback) {};
 
 /**
  * Event object which is dispached with 'externally-unmounted' event.
- * @constructor
- * @extends {Event}
+ * @typedef {!CustomEvent<!VolumeInfo>}
  */
-function ExternallyUnmountedEvent() {}
+let ExternallyUnmountedEvent;
 
-/**
- * @type {!VolumeInfo}
- */
-ExternallyUnmountedEvent.prototype.volumeInfo;
