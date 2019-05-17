@@ -5089,11 +5089,9 @@ static void encode_frame_internal(AV1_COMP *cpi) {
           av1_downconvert_frame(cpi->source, cpi->common.seq_params.bit_depth);
     }
     const int segment_map_w =
-        (cpi->source->y_width + (WARP_ERROR_BLOCK >> 1)) >>
-        WARP_ERROR_BLOCK_LOG;
+        (cpi->source->y_width + WARP_ERROR_BLOCK) >> WARP_ERROR_BLOCK_LOG;
     const int segment_map_h =
-        (cpi->source->y_height + (WARP_ERROR_BLOCK >> 1)) >>
-        WARP_ERROR_BLOCK_LOG;
+        (cpi->source->y_height + WARP_ERROR_BLOCK) >> WARP_ERROR_BLOCK_LOG;
 
     uint8_t *segment_map =
         aom_malloc(sizeof(*segment_map) * segment_map_w * segment_map_h);
