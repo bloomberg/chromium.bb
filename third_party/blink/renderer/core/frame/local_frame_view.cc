@@ -2357,7 +2357,7 @@ bool LocalFrameView::RunPrePaintLifecyclePhase(
       frame_view.SetNeedsPaintPropertyUpdate();
       // We may record more foreign layers under the frame.
       if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
-        frame_view.SetPaintArtifactCompositorNeedsUpdate();
+        frame_view.GraphicsLayersDidChange();
       if (auto* owner = frame_view.GetLayoutEmbeddedContent())
         owner->SetShouldCheckForPaintInvalidation();
     }
@@ -4016,6 +4016,10 @@ void LocalFrameView::RenderThrottlingStatusChanged() {
   DCHECK(!IsInPerformLayout());
   DCHECK(!frame_->GetDocument() || !frame_->GetDocument()->InStyleRecalc());
 
+  // We may record more/less foreign layers under the frame.
+  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
+    GraphicsLayersDidChange();
+
   ScrollingCoordinator* scrolling_coordinator = this->GetScrollingCoordinator();
   if (!CanThrottleRendering()) {
     // ScrollingCoordinator needs to update according to the new throttling
@@ -4036,9 +4040,6 @@ void LocalFrameView::RenderThrottlingStatusChanged() {
       layout_view->AddSubtreePaintPropertyUpdateReason(
           SubtreePaintPropertyUpdateReason::kPreviouslySkipped);
     }
-    // We may record more foreign layers under the frame.
-    if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
-      SetPaintArtifactCompositorNeedsUpdate();
   }
 
   if (scrolling_coordinator) {

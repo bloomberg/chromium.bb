@@ -991,6 +991,7 @@ class CORE_EXPORT LocalFrameView final
 #endif
 
   FRIEND_TEST_ALL_PREFIXES(WebViewTest, DeviceEmulationResetScrollbars);
+  FRIEND_TEST_ALL_PREFIXES(FrameThrottlingTest, GraphicsLayerCollection);
 };
 
 inline void LocalFrameView::IncrementVisuallyNonEmptyCharacterCount(
