@@ -151,33 +151,6 @@ typedef struct {
 // 4: NEAREST, NEW, NEAR, GLOBAL
 #define SINGLE_REF_MODES ((REF_FRAMES - 1) * 4)
 
-// Region size for mode decision sampling in the first pass of partition
-// search(two_pass_partition_search speed feature), in units of mi size(4).
-// Used by the mode pruning in two_pass_partition_search feature.
-#define FIRST_PARTITION_PASS_SAMPLE_REGION 8
-#define FIRST_PARTITION_PASS_SAMPLE_REGION_LOG2 3
-#define FIRST_PARTITION_PASS_STATS_TABLES                     \
-  (MAX_MIB_SIZE >> FIRST_PARTITION_PASS_SAMPLE_REGION_LOG2) * \
-      (MAX_MIB_SIZE >> FIRST_PARTITION_PASS_SAMPLE_REGION_LOG2)
-#define FIRST_PARTITION_PASS_STATS_STRIDE \
-  (MAX_MIB_SIZE_LOG2 - FIRST_PARTITION_PASS_SAMPLE_REGION_LOG2)
-
-static INLINE int av1_first_partition_pass_stats_index(int mi_row, int mi_col) {
-  const int row =
-      (mi_row & MAX_MIB_MASK) >> FIRST_PARTITION_PASS_SAMPLE_REGION_LOG2;
-  const int col =
-      (mi_col & MAX_MIB_MASK) >> FIRST_PARTITION_PASS_SAMPLE_REGION_LOG2;
-  return (row << FIRST_PARTITION_PASS_STATS_STRIDE) + col;
-}
-
-typedef struct {
-  uint8_t ref0_counts[REF_FRAMES];  // Counters for ref_frame[0].
-  uint8_t ref1_counts[REF_FRAMES];  // Counters for ref_frame[1].
-  int sample_counts;                // Number of samples collected.
-  uint8_t interintra_motion_mode_count[REF_FRAMES];  // Counter for interintra
-                                                     // motion mode
-} FIRST_PARTITION_PASS_STATS;
-
 #define MAX_INTERP_FILTER_STATS 64
 typedef struct {
   InterpFilters filters;
@@ -212,14 +185,6 @@ struct macroblock {
   // search model to select prediction modes, or full complexity model
   // to select transform kernel.
   int rd_model;
-
-  // Indicate if the encoder is running in the first pass partition search.
-  // In that case, apply certain speed features therein to reduce the overhead
-  // cost in the first pass search.
-  int cb_partition_scan;
-
-  FIRST_PARTITION_PASS_STATS
-  first_partition_pass_stats[FIRST_PARTITION_PASS_STATS_TABLES];
 
   // [comp_idx][saved stat_idx]
   INTERPOLATION_FILTER_STATS interp_filter_stats[2][MAX_INTERP_FILTER_STATS];

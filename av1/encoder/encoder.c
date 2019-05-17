@@ -4840,9 +4840,6 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
   if (cpi->oxcf.pass == 2 && cpi->sf.adaptive_interp_filter_search)
     cpi->sf.interp_filter_search_mask = setup_interp_filter_search_mask(cpi);
 
-  cpi->two_pass_partition_search = cpi->sf.two_pass_partition_search &&
-                                   !cpi->partition_search_skippable_frame;
-
   if (encode_show_existing_frame(cm)) {
     restore_coding_context(cpi);
 

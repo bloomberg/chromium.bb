@@ -372,10 +372,6 @@ typedef struct SPEED_FEATURES {
   // Use a ML model to prune horz and vert partitions
   int ml_prune_rect_partition;
 
-  // Disable/Enable interintra motion mode based on stats collected during
-  // first_partition_search_pass
-  int use_first_partition_pass_interintra_stats;
-
   // Use a ML model to prune horz_a, horz_b, vert_a and vert_b partitions.
   int ml_prune_ab_partition;
 
@@ -386,10 +382,6 @@ typedef struct SPEED_FEATURES {
   // PARTITION_SPLIT. Can take values 0 - 2, 0 meaning not being enabled, and
   // 1 - 2 increasing aggressiveness in order.
   int ml_early_term_after_part_split_level;
-
-  // 2-pass coding block partition search, and also use the mode decisions made
-  // in the initial partition search to prune mode candidates, e.g. ref frames.
-  int two_pass_partition_search;
 
   // Terminate early in firstpass of two_pass partition search for faster
   // firstpass.

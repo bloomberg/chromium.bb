@@ -669,7 +669,6 @@ enum {
   av1_compute_global_motion_time,
   av1_setup_motion_field_time,
   encode_sb_time,
-  first_partition_search_pass_time,
   rd_pick_partition_time,
   rd_pick_sb_modes_time,
   av1_rd_pick_intra_mode_sb_time,
@@ -697,8 +696,6 @@ static INLINE char const *get_component_name(int index) {
       return "av1_compute_global_motion_time";
     case av1_setup_motion_field_time: return "av1_setup_motion_field_time";
     case encode_sb_time: return "encode_sb_time";
-    case first_partition_search_pass_time:
-      return "first_partition_search_pass_time";
     case rd_pick_partition_time: return "rd_pick_partition_time";
     case rd_pick_sb_modes_time: return "rd_pick_sb_modes_time";
     case av1_rd_pick_intra_mode_sb_time:
@@ -747,8 +744,6 @@ typedef struct AV1_COMP {
 
   // For a still frame, this flag is set to 1 to skip partition search.
   int partition_search_skippable_frame;
-  // The following item corresponds to two_pass_partition_search speed features.
-  int two_pass_partition_search;
 
   double csm_rate_array[32];
   double m_rate_array[32];

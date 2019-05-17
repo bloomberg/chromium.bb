@@ -171,8 +171,6 @@ static void set_good_speed_feature_framesize_dependent(
       sf->partition_search_breakout_dist_thr = (1 << 23);
       sf->partition_search_breakout_rate_thr = 120;
     }
-    sf->use_first_partition_pass_interintra_stats =
-        sf->two_pass_partition_search;
 
     // TODO(Venkat): Clean-up frame type dependency for
     // simple_motion_search_split in partition search function and set the
@@ -710,7 +708,6 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->allow_partition_search_skip = 0;
   sf->use_accurate_subpel_search = USE_8_TAPS;
   sf->disable_wedge_search_edge_thresh = 0;
-  sf->use_first_partition_pass_interintra_stats = 0;
   sf->disable_wedge_search_var_thresh = 0;
   sf->disable_loop_restoration_chroma = 0;
   sf->enable_sgr_ep_pruning = 0;
@@ -721,7 +718,6 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   sf->skip_intra_in_interframe = 1;
   sf->txb_split_cap = 1;
   sf->adaptive_txb_search_level = 0;
-  sf->two_pass_partition_search = 0;
   sf->firstpass_simple_motion_search_early_term = 0;
   sf->use_intra_txb_hash = 0;
   sf->use_inter_txb_hash = 1;
