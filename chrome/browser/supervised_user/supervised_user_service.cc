@@ -87,14 +87,16 @@ const char kBlacklistURL[] =
 const char kBlacklistFilename[] = "su-blacklist.bin";
 
 const char* const kCustodianInfoPrefs[] = {
-  prefs::kSupervisedUserCustodianName,
-  prefs::kSupervisedUserCustodianEmail,
-  prefs::kSupervisedUserCustodianProfileImageURL,
-  prefs::kSupervisedUserCustodianProfileURL,
-  prefs::kSupervisedUserSecondCustodianName,
-  prefs::kSupervisedUserSecondCustodianEmail,
-  prefs::kSupervisedUserSecondCustodianProfileImageURL,
-  prefs::kSupervisedUserSecondCustodianProfileURL,
+    prefs::kSupervisedUserCustodianName,
+    prefs::kSupervisedUserCustodianEmail,
+    prefs::kSupervisedUserCustodianObfuscatedGaiaId,
+    prefs::kSupervisedUserCustodianProfileImageURL,
+    prefs::kSupervisedUserCustodianProfileURL,
+    prefs::kSupervisedUserSecondCustodianName,
+    prefs::kSupervisedUserSecondCustodianEmail,
+    prefs::kSupervisedUserSecondCustodianObfuscatedGaiaId,
+    prefs::kSupervisedUserSecondCustodianProfileImageURL,
+    prefs::kSupervisedUserSecondCustodianProfileURL,
 };
 
 void CreateURLAccessRequest(const GURL& url,
