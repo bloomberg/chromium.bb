@@ -49,9 +49,7 @@ class SequencedTaskRunner;
 namespace policy {
 class ConfigurationPolicyProvider;
 class ProfilePolicyConnector;
-class SchemaRegistryService;
-class UserCloudPolicyManager;
-}
+}  // namespace policy
 
 namespace sync_preferences {
 class PrefServiceSyncable;
@@ -147,9 +145,14 @@ class ProfileImpl : public Profile {
   PrefService* GetOffTheRecordPrefs() override;
   PrefService* GetReadOnlyOffTheRecordPrefs() override;
   policy::SchemaRegistryService* GetPolicySchemaRegistryService() override;
-#if !defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
+  policy::UserCloudPolicyManagerChromeOS* GetUserCloudPolicyManagerChromeOS()
+      override;
+  policy::ActiveDirectoryPolicyManager* GetActiveDirectoryPolicyManager()
+      override;
+#else
   policy::UserCloudPolicyManager* GetUserCloudPolicyManager() override;
-#endif
+#endif  // defined(OS_CHROMEOS)
   policy::ProfilePolicyConnector* GetProfilePolicyConnector() override;
   const policy::ProfilePolicyConnector* GetProfilePolicyConnector()
       const override;
@@ -243,14 +246,24 @@ class ProfileImpl : public Profile {
   // TODO(mnissler, joaodasilva): The |profile_policy_connector_| provides the
   // PolicyService that the |prefs_| depend on, and must outlive |prefs_|. This
   // can be removed once |prefs_| becomes a KeyedService too.
-  // |profile_policy_connector_| in turn depends on
-  // |user_cloud_policy_manager_| or |configuration_policy_provider_chromeos_|,
-  // which depend on |schema_registry_service_|.
+
+  // - |prefs_| depends on |profile_policy_connector_|
+  // - |profile_policy_connector_| depends on configuration_policy_provider(),
+  //   which can be:
+  //     - |user_cloud_policy_manager_|;
+  //     - |user_cloud_policy_manager_chromeos_|;
+  //     - or |active_directory_policy_manager_|.
+  // - configuration_policy_provider() depends on |schema_registry_service_|
+
   std::unique_ptr<policy::SchemaRegistryService> schema_registry_service_;
 
+  // configuration_policy_provider() is either of these, or nullptr in some
+  // tests.
 #if defined(OS_CHROMEOS)
-  std::unique_ptr<policy::ConfigurationPolicyProvider>
-      configuration_policy_provider_chromeos_;
+  std::unique_ptr<policy::UserCloudPolicyManagerChromeOS>
+      user_cloud_policy_manager_chromeos_;
+  std::unique_ptr<policy::ActiveDirectoryPolicyManager>
+      active_directory_policy_manager_;
 #else
   std::unique_ptr<policy::UserCloudPolicyManager> user_cloud_policy_manager_;
 #endif

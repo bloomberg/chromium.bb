@@ -58,9 +58,14 @@ class OffTheRecordProfileImpl : public Profile {
   const PrefService* GetPrefs() const override;
   PrefService* GetOffTheRecordPrefs() override;
   policy::SchemaRegistryService* GetPolicySchemaRegistryService() override;
-#if !defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
+  policy::UserCloudPolicyManagerChromeOS* GetUserCloudPolicyManagerChromeOS()
+      override;
+  policy::ActiveDirectoryPolicyManager* GetActiveDirectoryPolicyManager()
+      override;
+#else
   policy::UserCloudPolicyManager* GetUserCloudPolicyManager() override;
-#endif
+#endif  // defined(OS_CHROMEOS)
   net::URLRequestContextGetter* GetRequestContext() override;
   base::OnceCallback<net::CookieStore*()> GetExtensionsCookieStoreGetter()
       override;

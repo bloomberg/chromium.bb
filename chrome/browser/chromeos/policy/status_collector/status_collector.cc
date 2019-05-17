@@ -10,7 +10,6 @@
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/status_collector/activity_storage.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
-#include "chrome/browser/chromeos/policy/user_policy_manager_factory_chromeos.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/system/statistics_provider.h"
@@ -139,8 +138,7 @@ StatusCollector::GetAutoLaunchedKioskSessionInfo() {
 
 std::string StatusCollector::GetDMTokenForProfile(Profile* profile) const {
   CloudPolicyManager* user_cloud_policy_manager =
-      UserPolicyManagerFactoryChromeOS::GetCloudPolicyManagerForProfile(
-          profile);
+      profile->GetUserCloudPolicyManagerChromeOS();
   DCHECK(user_cloud_policy_manager != nullptr);
   return user_cloud_policy_manager->core()->client()->dm_token();
 }

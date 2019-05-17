@@ -13,7 +13,6 @@
 #include "chrome/browser/chromeos/login/auth/chrome_cryptohome_authenticator.h"
 #include "chrome/browser/chromeos/login/saml/saml_password_expiry_notification.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
-#include "chrome/browser/chromeos/policy/user_policy_manager_factory_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -34,8 +33,7 @@ std::string GetPasswordChangeUrl(Profile* profile) {
   }
 
   const policy::UserCloudPolicyManagerChromeOS* user_cloud_policy_manager =
-      policy::UserPolicyManagerFactoryChromeOS::GetCloudPolicyManagerForProfile(
-          profile);
+      profile->GetUserCloudPolicyManagerChromeOS();
   if (user_cloud_policy_manager) {
     const enterprise_management::PolicyData* policy =
         user_cloud_policy_manager->core()->store()->policy();

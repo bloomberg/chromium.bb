@@ -938,11 +938,21 @@ TestingProfile::GetPolicySchemaRegistryService() {
   return schema_registry_service_.get();
 }
 
-#if !defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
+policy::UserCloudPolicyManagerChromeOS*
+TestingProfile::GetUserCloudPolicyManagerChromeOS() {
+  return nullptr;
+}
+
+policy::ActiveDirectoryPolicyManager*
+TestingProfile::GetActiveDirectoryPolicyManager() {
+  return nullptr;
+}
+#else
 policy::UserCloudPolicyManager* TestingProfile::GetUserCloudPolicyManager() {
   return user_cloud_policy_manager_.get();
 }
-#endif
+#endif  // defined(OS_CHROMEOS)
 
 policy::ProfilePolicyConnector* TestingProfile::GetProfilePolicyConnector() {
   return profile_policy_connector_.get();

@@ -22,7 +22,6 @@
 #include "chrome/browser/chromeos/policy/active_directory_policy_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
-#include "chrome/browser/chromeos/policy/user_policy_manager_factory_chromeos.h"
 #else
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
 #endif
@@ -55,12 +54,8 @@ class PolicyHeaderServiceWrapper : public KeyedService {
 
 PolicyHeaderServiceFactory::PolicyHeaderServiceFactory()
     : BrowserContextKeyedServiceFactory(
-        "PolicyHeaderServiceFactory",
-        BrowserContextDependencyManager::GetInstance()) {
-#if defined(OS_CHROMEOS)
-  DependsOn(UserPolicyManagerFactoryChromeOS::GetInstance());
-#endif
-}
+          "PolicyHeaderServiceFactory",
+          BrowserContextDependencyManager::GetInstance()) {}
 
 PolicyHeaderServiceFactory::~PolicyHeaderServiceFactory() {
 }
@@ -91,14 +86,12 @@ KeyedService* PolicyHeaderServiceFactory::BuildServiceInstanceFor(
   Profile* profile = Profile::FromBrowserContext(context);
 #if defined(OS_CHROMEOS)
   CloudPolicyManager* cloud_manager =
-      UserPolicyManagerFactoryChromeOS::GetCloudPolicyManagerForProfile(
-          profile);
+      profile->GetUserCloudPolicyManagerChromeOS();
   if (cloud_manager) {
     user_store = cloud_manager->core()->store();
   } else {
     ActiveDirectoryPolicyManager* active_directory_manager =
-        UserPolicyManagerFactoryChromeOS::
-            GetActiveDirectoryPolicyManagerForProfile(profile);
+        profile->GetActiveDirectoryPolicyManager();
     if (!active_directory_manager)
       return nullptr;
     user_store = active_directory_manager->store();

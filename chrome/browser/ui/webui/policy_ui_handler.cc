@@ -67,7 +67,6 @@
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
-#include "chrome/browser/chromeos/policy/user_policy_manager_factory_chromeos.h"
 #include "components/user_manager/user_manager.h"
 #else
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
@@ -679,11 +678,9 @@ void PolicyUIHandler::RegisterMessages() {
           ? connector->GetDeviceLocalAccountPolicyService()
           : nullptr;
   policy::UserCloudPolicyManagerChromeOS* user_cloud_policy =
-      policy::UserPolicyManagerFactoryChromeOS::GetCloudPolicyManagerForProfile(
-          profile);
+      profile->GetUserCloudPolicyManagerChromeOS();
   policy::ActiveDirectoryPolicyManager* active_directory_policy =
-      policy::UserPolicyManagerFactoryChromeOS::
-          GetActiveDirectoryPolicyManagerForProfile(profile);
+      profile->GetActiveDirectoryPolicyManager();
   if (local_account_service) {
     user_status_provider_ =
         std::make_unique<DeviceLocalAccountPolicyStatusProvider>(
@@ -919,8 +916,7 @@ void PolicyUIHandler::HandleReloadPolicies(const base::ListValue* args) {
           ->GetDeviceCloudPolicyManager();
   Profile* const profile = Profile::FromWebUI(web_ui());
   policy::CloudPolicyManager* const user_manager =
-      policy::UserPolicyManagerFactoryChromeOS::GetCloudPolicyManagerForProfile(
-          profile);
+      profile->GetUserCloudPolicyManagerChromeOS();
 
   // Fetch both device and user remote commands.
   for (policy::CloudPolicyManager* manager : {device_manager, user_manager}) {

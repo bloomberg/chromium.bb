@@ -39,8 +39,13 @@ class WebUI;
 
 namespace policy {
 class SchemaRegistryService;
-class UserCloudPolicyManager;
 class ProfilePolicyConnector;
+class UserCloudPolicyManager;
+
+#if defined(OS_CHROMEOS)
+class ActiveDirectoryPolicyManager;
+class UserCloudPolicyManagerChromeOS;
+#endif
 }  // namespace policy
 
 namespace network {
@@ -236,9 +241,15 @@ class Profile : public content::BrowserContext {
   // Returns the SchemaRegistryService.
   virtual policy::SchemaRegistryService* GetPolicySchemaRegistryService() = 0;
 
-// In Chrome OS, use UserPolicyManagerFactoryChromeOS::GetCloudPolicyManager()
-// instead.
-#if !defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
+  // Returns the UserCloudPolicyManagerChromeOS.
+  virtual policy::UserCloudPolicyManagerChromeOS*
+  GetUserCloudPolicyManagerChromeOS() = 0;
+
+  // Returns the ActiveDirectoryPolicyManager.
+  virtual policy::ActiveDirectoryPolicyManager*
+  GetActiveDirectoryPolicyManager() = 0;
+#else
   // Returns the UserCloudPolicyManager.
   virtual policy::UserCloudPolicyManager* GetUserCloudPolicyManager() = 0;
 #endif

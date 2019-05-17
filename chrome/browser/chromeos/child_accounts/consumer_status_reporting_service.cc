@@ -12,7 +12,6 @@
 #include "chrome/browser/chromeos/policy/status_collector/child_status_collector.h"
 #include "chrome/browser/chromeos/policy/status_uploader.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
-#include "chrome/browser/chromeos/policy/user_policy_manager_factory_chromeos.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
@@ -36,18 +35,17 @@ constexpr base::TimeDelta kStatusUploadFrequency =
 ConsumerStatusReportingService::ConsumerStatusReportingService(
     content::BrowserContext* context)
     : context_(context) {
+  Profile* profile = Profile::FromBrowserContext(context_);
   // If child user is registered with DMServer and has User Policy applied, it
   // should upload device status to the server.
-  user_cloud_policy_manager_ =
-      policy::UserPolicyManagerFactoryChromeOS::GetCloudPolicyManagerForProfile(
-          Profile::FromBrowserContext(context_));
+  user_cloud_policy_manager_ = profile->GetUserCloudPolicyManagerChromeOS();
   if (!user_cloud_policy_manager_) {
     LOG(WARNING) << "Child user is not managed by User Policy - status reports "
                     "cannot be uploaded to the server. ";
     return;
   }
 
-  PrefService* pref_service = Profile::FromBrowserContext(context_)->GetPrefs();
+  PrefService* pref_service = profile->GetPrefs();
   DCHECK(pref_service->GetInitializationStatus() !=
          PrefService::INITIALIZATION_STATUS_WAITING);
 

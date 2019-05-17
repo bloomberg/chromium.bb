@@ -24,7 +24,6 @@
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
-#include "chrome/browser/chromeos/policy/user_policy_manager_factory_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
@@ -266,8 +265,7 @@ void PowerPolicyBrowserTestBase::RunClosureAndWaitForUserPolicyUpdate(
 
 void PowerPolicyBrowserTestBase::ReloadUserPolicy(Profile* profile) {
   UserCloudPolicyManagerChromeOS* policy_manager =
-      UserPolicyManagerFactoryChromeOS::GetCloudPolicyManagerForProfile(
-          profile);
+      profile->GetUserCloudPolicyManagerChromeOS();
   ASSERT_TRUE(policy_manager);
   policy_manager->core()->store()->Load();
 }

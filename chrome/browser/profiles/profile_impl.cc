@@ -174,8 +174,9 @@
 #include "chrome/browser/chromeos/multidevice_setup/auth_token_validator_impl.h"
 #include "chrome/browser/chromeos/multidevice_setup/oobe_completion_tracker_factory.h"
 #include "chrome/browser/chromeos/net/delay_network_call.h"
+#include "chrome/browser/chromeos/policy/active_directory_policy_manager.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
-#include "chrome/browser/chromeos/policy/user_policy_manager_factory_chromeos.h"
+#include "chrome/browser/chromeos/policy/user_policy_manager_builder_chromeos.h"
 #include "chrome/browser/chromeos/preferences.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/secure_channel/secure_channel_client_provider.h"
@@ -576,9 +577,11 @@ void ProfileImpl::LoadPrefsForNormalStartup(bool async_prefs) {
 #if defined(OS_CHROMEOS)
   if (force_immediate_policy_load)
     chromeos::DeviceSettingsService::Get()->LoadImmediately();
-  configuration_policy_provider_chromeos_ =
-      policy::UserPolicyManagerFactoryChromeOS::CreateForProfile(
-          this, force_immediate_policy_load, io_task_runner_);
+
+  policy::CreateConfigurationPolicyProvider(
+      this, force_immediate_policy_load, io_task_runner_,
+      &user_cloud_policy_manager_chromeos_, &active_directory_policy_manager_);
+
   user_cloud_policy_manager = nullptr;
 #else
   user_cloud_policy_manager_ = CreateUserCloudPolicyManager(
@@ -821,15 +824,9 @@ ProfileImpl::~ProfileImpl() {
 
   SimpleKeyMap::GetInstance()->Dissociate(this);
 
-  // TODO(crbug.com/937770): In Chrome OS, UserPolicyManagerFactoryChromeOS
-  // calls Shutdown() in BrowserContextShutdown(), so we should not call it here
-  // despite owning the instance. When the BrowserContextKeyedBaseFactory does
-  // not have the responsibility to call Shutdown() anymore, remove this
-  // condition.
-#if !defined(OS_CHROMEOS)
   profile_policy_connector_->Shutdown();
-  configuration_policy_provider()->Shutdown();
-#endif
+  if (configuration_policy_provider())
+    configuration_policy_provider()->Shutdown();
 
   // This causes the Preferences file to be written to disk.
   if (prefs_loaded)
@@ -1115,16 +1112,30 @@ policy::SchemaRegistryService* ProfileImpl::GetPolicySchemaRegistryService() {
   return schema_registry_service_.get();
 }
 
-#if !defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
+policy::UserCloudPolicyManagerChromeOS*
+ProfileImpl::GetUserCloudPolicyManagerChromeOS() {
+  return user_cloud_policy_manager_chromeos_.get();
+}
+
+policy::ActiveDirectoryPolicyManager*
+ProfileImpl::GetActiveDirectoryPolicyManager() {
+  return active_directory_policy_manager_.get();
+}
+#else
 policy::UserCloudPolicyManager* ProfileImpl::GetUserCloudPolicyManager() {
   return user_cloud_policy_manager_.get();
 }
-#endif
+#endif  // defined(OS_CHROMEOS)
 
 policy::ConfigurationPolicyProvider*
 ProfileImpl::configuration_policy_provider() {
 #if defined(OS_CHROMEOS)
-  return configuration_policy_provider_chromeos_.get();
+  if (user_cloud_policy_manager_chromeos_)
+    return user_cloud_policy_manager_chromeos_.get();
+  if (active_directory_policy_manager_)
+    return active_directory_policy_manager_.get();
+  return nullptr;
 #else
   return user_cloud_policy_manager_.get();
 #endif

@@ -6,7 +6,6 @@
 
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
-#include "chrome/browser/chromeos/policy/user_policy_manager_factory_chromeos.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 
@@ -66,8 +65,7 @@ void ChildPolicyObserver::OnPolicyReady(
 policy::UserCloudPolicyManagerChromeOS*
 ChildPolicyObserver::GetUserCloudPolicyManager() {
   policy::UserCloudPolicyManagerChromeOS* user_cloud_policy_manager =
-      policy::UserPolicyManagerFactoryChromeOS::GetCloudPolicyManagerForProfile(
-          profile_);
+      profile_->GetUserCloudPolicyManagerChromeOS();
   DCHECK(user_cloud_policy_manager);
   return user_cloud_policy_manager;
 }

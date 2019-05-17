@@ -410,12 +410,22 @@ OffTheRecordProfileImpl::GetPolicySchemaRegistryService() {
   return nullptr;
 }
 
-#if !defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
+policy::UserCloudPolicyManagerChromeOS*
+OffTheRecordProfileImpl::GetUserCloudPolicyManagerChromeOS() {
+  return GetOriginalProfile()->GetUserCloudPolicyManagerChromeOS();
+}
+
+policy::ActiveDirectoryPolicyManager*
+OffTheRecordProfileImpl::GetActiveDirectoryPolicyManager() {
+  return GetOriginalProfile()->GetActiveDirectoryPolicyManager();
+}
+#else
 policy::UserCloudPolicyManager*
 OffTheRecordProfileImpl::GetUserCloudPolicyManager() {
   return GetOriginalProfile()->GetUserCloudPolicyManager();
 }
-#endif
+#endif  // defined(OS_CHROMEOS)
 
 net::URLRequestContextGetter* OffTheRecordProfileImpl::GetRequestContext() {
   return GetDefaultStoragePartition(this)->GetURLRequestContext();

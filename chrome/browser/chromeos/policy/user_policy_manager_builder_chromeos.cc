@@ -1,8 +1,8 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/policy/user_policy_manager_factory_chromeos.h"
+#include "chrome/browser/chromeos/policy/user_policy_manager_builder_chromeos.h"
 
 #include <utility>
 
@@ -28,30 +28,23 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/net/system_network_context_manager.h"
-#include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/schema_registry_service.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
-#include "chrome/common/pref_names.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/constants/dbus_paths.h"
 #include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/tpm/install_attributes.h"
 #include "components/arc/arc_features.h"
-#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/core/common/cloud/enterprise_metrics.h"
 #include "components/policy/core/common/configuration_policy_provider.h"
 #include "components/policy/policy_constants.h"
-#include "components/prefs/pref_service.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 using user_manager::known_user::ProfileRequiresPolicy;
@@ -93,86 +86,23 @@ void OnUserPolicyFatalError(
 
 }  // namespace
 
-// static
-UserPolicyManagerFactoryChromeOS*
-UserPolicyManagerFactoryChromeOS::GetInstance() {
-  return base::Singleton<UserPolicyManagerFactoryChromeOS>::get();
-}
-
-// static
-ConfigurationPolicyProvider* UserPolicyManagerFactoryChromeOS::GetForProfile(
-    Profile* profile) {
-  ConfigurationPolicyProvider* cloud_provider =
-      GetInstance()->GetCloudPolicyManagerForProfile(profile);
-  if (cloud_provider) {
-    return cloud_provider;
-  }
-  return GetInstance()->GetActiveDirectoryPolicyManagerForProfile(profile);
-}
-
-// static
-UserCloudPolicyManagerChromeOS*
-UserPolicyManagerFactoryChromeOS::GetCloudPolicyManagerForProfile(
-    Profile* profile) {
-  return GetInstance()->GetCloudPolicyManager(profile);
-}
-
-// static
-ActiveDirectoryPolicyManager*
-UserPolicyManagerFactoryChromeOS::GetActiveDirectoryPolicyManagerForProfile(
-    Profile* profile) {
-  return GetInstance()->GetActiveDirectoryPolicyManager(profile);
-}
-
-// static
-std::unique_ptr<ConfigurationPolicyProvider>
-UserPolicyManagerFactoryChromeOS::CreateForProfile(
+void CreateConfigurationPolicyProvider(
     Profile* profile,
     bool force_immediate_load,
-    scoped_refptr<base::SequencedTaskRunner> background_task_runner) {
-  return GetInstance()->CreateManagerForProfile(profile, force_immediate_load,
-                                                background_task_runner);
-}
-
-UserPolicyManagerFactoryChromeOS::UserPolicyManagerFactoryChromeOS()
-    : BrowserContextKeyedBaseFactory(
-          "UserCloudPolicyManagerChromeOS",
-          BrowserContextDependencyManager::GetInstance()) {}
-
-UserPolicyManagerFactoryChromeOS::~UserPolicyManagerFactoryChromeOS() {}
-
-UserCloudPolicyManagerChromeOS*
-UserPolicyManagerFactoryChromeOS::GetCloudPolicyManager(Profile* profile) {
-  // Get the manager for the original profile, since the PolicyService is
-  // also shared between the incognito Profile and the original Profile.
-  const auto it = cloud_managers_.find(profile->GetOriginalProfile());
-  return it != cloud_managers_.end() ? it->second : nullptr;
-}
-
-ActiveDirectoryPolicyManager*
-UserPolicyManagerFactoryChromeOS::GetActiveDirectoryPolicyManager(
-    Profile* profile) {
-  // Get the manager for the original profile, since the PolicyService is
-  // also shared between the incognito Profile and the original Profile.
-  const auto it =
-      active_directory_managers_.find(profile->GetOriginalProfile());
-  return it != active_directory_managers_.end() ? it->second : nullptr;
-}
-
-std::unique_ptr<ConfigurationPolicyProvider>
-UserPolicyManagerFactoryChromeOS::CreateManagerForProfile(
-    Profile* profile,
-    bool force_immediate_load,
-    scoped_refptr<base::SequencedTaskRunner> background_task_runner) {
-  DCHECK(cloud_managers_.find(profile) == cloud_managers_.end());
-  DCHECK(active_directory_managers_.find(profile) ==
-         active_directory_managers_.end());
+    scoped_refptr<base::SequencedTaskRunner> background_task_runner,
+    std::unique_ptr<UserCloudPolicyManagerChromeOS>*
+        user_cloud_policy_manager_chromeos_out,
+    std::unique_ptr<ActiveDirectoryPolicyManager>*
+        active_directory_policy_manager_out) {
+  // Clear the two out parameters. Default return will be nullptr for both.
+  *user_cloud_policy_manager_chromeos_out = nullptr;
+  *active_directory_policy_manager_out = nullptr;
 
   // Don't initialize cloud policy for the signin and the lock screen app
   // profile.
   if (chromeos::ProfileHelper::IsSigninProfile(profile) ||
       chromeos::ProfileHelper::IsLockScreenAppProfile(profile)) {
-    return {};
+    return;
   }
 
   // |user| should never be nullptr except for the signin and lock screen app
@@ -207,7 +137,7 @@ UserPolicyManagerFactoryChromeOS::CreateManagerForProfile(
     // Mark this profile as not requiring policy.
     user_manager::known_user::SetProfileRequiresPolicy(
         account_id, ProfileRequiresPolicy::kNoPolicyRequired);
-    return {};
+    return;
   }
 
   policy::BrowserPolicyConnectorChromeOS* connector =
@@ -220,7 +150,7 @@ UserPolicyManagerFactoryChromeOS::CreateManagerForProfile(
       // migration is finished.  (KioskAppManager still needs to be migrated.)
       if (!user->HasGaiaAccount()) {
         DLOG(WARNING) << "No policy for users without Gaia accounts";
-        return {};
+        return;
       }
       is_active_directory = false;
       break;
@@ -265,7 +195,7 @@ UserPolicyManagerFactoryChromeOS::CreateManagerForProfile(
                                   kBlockingInitWithGoogleCloudManagement,
         MetricUserPolicyChromeOSSessionAbortType::kCount);
     chrome::AttemptUserExit();
-    return {};
+    return;
   }
 
   // If true, we must load policy for this user - we will abort profile
@@ -365,9 +295,7 @@ UserPolicyManagerFactoryChromeOS::CreateManagerForProfile(
                            kInitWithActiveDirectoryManagement),
         std::move(store), std::move(external_data_manager));
     manager->Init(profile->GetPolicySchemaRegistryService()->registry());
-
-    active_directory_managers_[profile] = manager.get();
-    return std::move(manager);
+    *active_directory_policy_manager_out = std::move(manager);
   } else {
     std::unique_ptr<UserCloudPolicyManagerChromeOS> manager =
         std::make_unique<UserCloudPolicyManagerChromeOS>(
@@ -392,52 +320,8 @@ UserPolicyManagerFactoryChromeOS::CreateManagerForProfile(
     manager->Connect(g_browser_process->local_state(),
                      device_management_service,
                      g_browser_process->shared_url_loader_factory());
-
-    cloud_managers_[profile] = manager.get();
-    return std::move(manager);
+    *user_cloud_policy_manager_chromeos_out = std::move(manager);
   }
 }
-
-void UserPolicyManagerFactoryChromeOS::BrowserContextShutdown(
-    content::BrowserContext* context) {
-  Profile* profile = static_cast<Profile*>(context);
-  if (profile->IsOffTheRecord())
-    return;
-
-  // TODO(crbug.com/937770): Move the shut down of |profile_policy_connector|
-  // to where the |cloud_manager| is shut down.
-  ProfilePolicyConnector* profile_policy_connector =
-      profile->GetProfilePolicyConnector();
-  if (profile_policy_connector)
-    profile_policy_connector->Shutdown();
-
-  UserCloudPolicyManagerChromeOS* cloud_manager =
-      GetCloudPolicyManager(profile);
-  if (cloud_manager)
-    cloud_manager->Shutdown();
-  ActiveDirectoryPolicyManager* active_directory_manager =
-      GetActiveDirectoryPolicyManager(profile);
-  if (active_directory_manager)
-    active_directory_manager->Shutdown();
-}
-
-void UserPolicyManagerFactoryChromeOS::BrowserContextDestroyed(
-    content::BrowserContext* context) {
-  Profile* profile = static_cast<Profile*>(context);
-  cloud_managers_.erase(profile);
-  active_directory_managers_.erase(profile);
-  BrowserContextKeyedBaseFactory::BrowserContextDestroyed(context);
-}
-
-void UserPolicyManagerFactoryChromeOS::SetEmptyTestingFactory(
-    content::BrowserContext* context) {}
-
-bool UserPolicyManagerFactoryChromeOS::HasTestingFactory(
-    content::BrowserContext* context) {
-  return false;
-}
-
-void UserPolicyManagerFactoryChromeOS::CreateServiceNow(
-    content::BrowserContext* context) {}
 
 }  // namespace policy
