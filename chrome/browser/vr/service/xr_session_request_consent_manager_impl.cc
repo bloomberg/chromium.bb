@@ -22,10 +22,10 @@ TabModalConfirmDialog*
 XRSessionRequestConsentManagerImpl::ShowDialogAndGetConsent(
     content::WebContents* web_contents,
     base::OnceCallback<void(bool)> response_callback) {
-  return TabModalConfirmDialog::Create(
-      new XrSessionRequestConsentDialogDelegate(web_contents,
-                                                std::move(response_callback)),
-      web_contents);
+  auto* delegate = new XrSessionRequestConsentDialogDelegate(
+      web_contents, std::move(response_callback));
+  delegate->OnShowDialog();
+  return TabModalConfirmDialog::Create(delegate, web_contents);
 }
 
 }  // namespace vr

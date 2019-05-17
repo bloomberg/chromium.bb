@@ -30,13 +30,40 @@ class XrSessionRequestConsentDialogDelegate
   base::string16 GetAcceptButtonTitle() override;
   base::string16 GetCancelButtonTitle() override;
 
+  // Metrics helpers
+  void OnShowDialog();
+
  private:
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused. Adding a value at the end is okay.
+  enum class ConsentDialogAction : int {
+    // The user gave permission to enter an immersive presentation.
+    kUserAllowed = 0,
+    // The user denied permission to enter an immersive presentation.
+    kUserDenied = 1,
+    // The user aborted the consent flow by clicking on the permission
+    // dialog's 'X' system button.
+    kUserAbortedConsentFlow = 2,
+    // To insert a new enum, assign the next numeric value to it, and replace
+    // the value of of this enum with the value of the added enum.
+    kMaxValue = kUserAbortedConsentFlow,
+  };
+
   // TabModalConfirmDialogDelegate:
   void OnAccepted() override;
   void OnCanceled() override;
   void OnClosed() override;
 
+  // Metrics helpers
+  void LogUserAction(ConsentDialogAction action);
+  void LogConsentFlowDurationWhenConsentGranted();
+  void LogConsentFlowDurationWhenConsentNotGranted();
+  void LogConsentFlowDurationWhenUserAborted();
+
   base::OnceCallback<void(bool)> response_callback_;
+
+  // Metrics related
+  base::TimeTicks dialog_presented_at_;
 
   DISALLOW_COPY_AND_ASSIGN(XrSessionRequestConsentDialogDelegate);
 };

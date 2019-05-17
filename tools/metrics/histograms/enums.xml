@@ -61150,6 +61150,12 @@ Full version information for the fingerprint enum values:
   <int value="1" label="OpenVR"/>
 </enum>
 
+<enum name="XRSessionRequestDialogAction">
+  <int value="0" label="UserConsented"/>
+  <int value="1" label="UserDenied"/>
+  <int value="2" label="UserAbortedConsentFlow"/>
+</enum>
+
 <enum name="YoungGenerationHandling">
   <int value="0" label="Regular Scavenge"/>
   <int value="1" label="Scavenge using fast promotion mode"/>
