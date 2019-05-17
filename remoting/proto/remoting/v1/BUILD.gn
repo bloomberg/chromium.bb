@@ -5,10 +5,18 @@
 import("//third_party/grpc/grpc_library.gni")
 import("//third_party/protobuf/proto_library.gni")
 
+proto_library("host_info_proto") {
+  sources = [
+    "host_info.proto",
+  ]
+}
+
 proto_library("directory_proto") {
   sources = [
     "directory_messages.proto",
-    "host_info.proto",
+  ]
+  deps = [
+    ":host_info_proto",
   ]
 }
 
@@ -45,5 +53,15 @@ cc_grpc_library("network_traversal_grpc_library") {
   ]
   deps = [
     ":network_traversal_proto",
+  ]
+}
+
+cc_grpc_library("remote_support_host_grpc_library") {
+  sources = [
+    "remote_support_host_messages.proto",
+    "remote_support_host_service.proto",
+  ]
+  deps = [
+    ":host_info_proto",
   ]
 }

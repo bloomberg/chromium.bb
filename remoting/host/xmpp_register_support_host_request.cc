@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/register_support_host_request.h"
+#include "remoting/host/xmpp_register_support_host_request.h"
 
 #include <stdint.h>
 
@@ -48,29 +48,32 @@ const char kSupportIdLifetimeTag[] = "support-id-lifetime";
 
 // The signaling timeout for register support host requests.
 constexpr int kRegisterRequestTimeoutInSeconds = 10;
-}
+}  // namespace
 
-RegisterSupportHostRequest::RegisterSupportHostRequest(
-    SignalStrategy* signal_strategy,
-    scoped_refptr<RsaKeyPair> key_pair,
-    const std::string& directory_bot_jid,
-    const RegisterCallback& callback)
-    : signal_strategy_(signal_strategy),
-      key_pair_(key_pair),
-      directory_bot_jid_(directory_bot_jid),
-      callback_(callback) {
-  DCHECK(signal_strategy_);
-  DCHECK(key_pair_.get());
-  signal_strategy_->AddListener(this);
-  iq_sender_.reset(new IqSender(signal_strategy_));
-}
+XmppRegisterSupportHostRequest::XmppRegisterSupportHostRequest(
+    const std::string& directory_bot_jid)
+    : directory_bot_jid_(directory_bot_jid) {}
 
-RegisterSupportHostRequest::~RegisterSupportHostRequest() {
+XmppRegisterSupportHostRequest::~XmppRegisterSupportHostRequest() {
   if (signal_strategy_)
     signal_strategy_->RemoveListener(this);
 }
 
-void RegisterSupportHostRequest::OnSignalStrategyStateChange(
+void XmppRegisterSupportHostRequest::StartRequest(
+    SignalStrategy* signal_strategy,
+    scoped_refptr<RsaKeyPair> key_pair,
+    RegisterCallback callback) {
+  DCHECK(signal_strategy);
+  DCHECK(key_pair.get());
+  DCHECK(callback);
+  signal_strategy_ = signal_strategy;
+  key_pair_ = key_pair;
+  callback_ = std::move(callback);
+  signal_strategy_->AddListener(this);
+  iq_sender_.reset(new IqSender(signal_strategy_));
+}
+
+void XmppRegisterSupportHostRequest::OnSignalStrategyStateChange(
     SignalStrategy::State state) {
   if (state == SignalStrategy::CONNECTED) {
     DCHECK(!callback_.is_null());
@@ -79,9 +82,10 @@ void RegisterSupportHostRequest::OnSignalStrategyStateChange(
     // remoting bot JID.
     std::string host_jid = signal_strategy_->GetLocalAddress().id();
     request_ = iq_sender_->SendIq(
-        jingle_xmpp::STR_SET, directory_bot_jid_, CreateRegistrationRequest(host_jid),
-        base::Bind(&RegisterSupportHostRequest::ProcessResponse,
-                   base::Unretained(this)));
+        jingle_xmpp::STR_SET, directory_bot_jid_,
+        CreateRegistrationRequest(host_jid),
+        base::BindRepeating(&XmppRegisterSupportHostRequest::ProcessResponse,
+                            base::Unretained(this)));
     if (!request_) {
       LOG(ERROR) << "Error sending the register-support-host request.";
       CallCallback(std::string(), base::TimeDelta(),
@@ -99,13 +103,14 @@ void RegisterSupportHostRequest::OnSignalStrategyStateChange(
   }
 }
 
-bool RegisterSupportHostRequest::OnSignalStrategyIncomingStanza(
+bool XmppRegisterSupportHostRequest::OnSignalStrategyIncomingStanza(
     const jingle_xmpp::XmlElement* stanza) {
   return false;
 }
 
 std::unique_ptr<XmlElement>
-RegisterSupportHostRequest::CreateRegistrationRequest(const std::string& jid) {
+XmppRegisterSupportHostRequest::CreateRegistrationRequest(
+    const std::string& jid) {
   auto query = std::make_unique<XmlElement>(
       QName(kChromotingXmlNamespace, kRegisterQueryTag));
 
@@ -137,15 +142,15 @@ RegisterSupportHostRequest::CreateRegistrationRequest(const std::string& jid) {
   return query;
 }
 
-std::unique_ptr<XmlElement> RegisterSupportHostRequest::CreateSignature(
+std::unique_ptr<XmlElement> XmppRegisterSupportHostRequest::CreateSignature(
     const std::string& jid) {
   std::unique_ptr<XmlElement> signature_tag(
       new XmlElement(QName(kChromotingXmlNamespace, kSignatureTag)));
 
   int64_t time = static_cast<int64_t>(base::Time::Now().ToDoubleT());
   std::string time_str(base::NumberToString(time));
-  signature_tag->AddAttr(
-      QName(kChromotingXmlNamespace, kSignatureTimeAttr), time_str);
+  signature_tag->AddAttr(QName(kChromotingXmlNamespace, kSignatureTimeAttr),
+                         time_str);
 
   std::string message = NormalizeJid(jid) + ' ' + time_str;
   std::string signature(key_pair_->SignMessage(message));
@@ -154,10 +159,10 @@ std::unique_ptr<XmlElement> RegisterSupportHostRequest::CreateSignature(
   return signature_tag;
 }
 
-void RegisterSupportHostRequest::ParseResponse(const XmlElement* response,
-                                               std::string* support_id,
-                                               base::TimeDelta* lifetime,
-                                               ErrorCode* error_code) {
+void XmppRegisterSupportHostRequest::ParseResponse(const XmlElement* response,
+                                                   std::string* support_id,
+                                                   base::TimeDelta* lifetime,
+                                                   ErrorCode* error_code) {
   if (!response) {
     LOG(ERROR) << "register-support-host request timed out.";
     *error_code = ErrorCode::SIGNALING_TIMEOUT;
@@ -179,8 +184,8 @@ void RegisterSupportHostRequest::ParseResponse(const XmlElement* response,
     return;
   }
 
-  const XmlElement* result_element = response->FirstNamed(QName(
-      kChromotingXmlNamespace, kRegisterQueryResultTag));
+  const XmlElement* result_element = response->FirstNamed(
+      QName(kChromotingXmlNamespace, kRegisterQueryResultTag));
   if (!result_element) {
     LOG(ERROR) << "<" << kRegisterQueryResultTag
                << "> is missing in the host registration response: "
@@ -199,9 +204,8 @@ void RegisterSupportHostRequest::ParseResponse(const XmlElement* response,
     return;
   }
 
-  const XmlElement* lifetime_element =
-      result_element->FirstNamed(QName(kChromotingXmlNamespace,
-                                       kSupportIdLifetimeTag));
+  const XmlElement* lifetime_element = result_element->FirstNamed(
+      QName(kChromotingXmlNamespace, kSupportIdLifetimeTag));
   if (!lifetime_element) {
     LOG(ERROR) << "<" << kSupportIdLifetimeTag
                << "> is missing in the host registration response: "
@@ -225,8 +229,9 @@ void RegisterSupportHostRequest::ParseResponse(const XmlElement* response,
   return;
 }
 
-void RegisterSupportHostRequest::ProcessResponse(IqRequest* request,
-                                                 const XmlElement* response) {
+void XmppRegisterSupportHostRequest::ProcessResponse(
+    IqRequest* request,
+    const XmlElement* response) {
   std::string support_id;
   base::TimeDelta lifetime;
   ErrorCode error_code = ErrorCode::OK;
@@ -234,9 +239,9 @@ void RegisterSupportHostRequest::ProcessResponse(IqRequest* request,
   CallCallback(support_id, lifetime, error_code);
 }
 
-void RegisterSupportHostRequest::CallCallback(const std::string& support_id,
-                                              base::TimeDelta lifetime,
-                                              ErrorCode error_code) {
+void XmppRegisterSupportHostRequest::CallCallback(const std::string& support_id,
+                                                  base::TimeDelta lifetime,
+                                                  ErrorCode error_code) {
   // Cleanup state before calling the callback.
   request_.reset();
   iq_sender_.reset();
