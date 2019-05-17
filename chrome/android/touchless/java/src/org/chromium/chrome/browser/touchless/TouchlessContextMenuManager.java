@@ -126,7 +126,11 @@ public class TouchlessContextMenuManager extends ContextMenuManager {
             case ContextMenuItemId.OPEN_IN_NEW_WINDOW:
                 return false;
             case ContextMenuItemId.ADD_TO_MY_APPS:
-                return delegate.isItemSupported(itemId);
+                if (delegate instanceof Delegate) {
+                    return delegate.isItemSupported(itemId);
+                } else {
+                    return false;
+                }
         }
 
         assert false : "Encountered unexpected touchless context menu item type";

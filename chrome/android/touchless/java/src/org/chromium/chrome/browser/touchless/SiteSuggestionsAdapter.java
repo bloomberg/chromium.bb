@@ -13,6 +13,7 @@ import static org.chromium.chrome.browser.touchless.SiteSuggestionsCoordinator.R
 import static org.chromium.chrome.browser.touchless.SiteSuggestionsCoordinator.SHOULD_FOCUS_VIEW;
 import static org.chromium.chrome.browser.touchless.SiteSuggestionsCoordinator.SUGGESTIONS_KEY;
 
+import android.graphics.Bitmap;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.graphics.drawable.VectorDrawableCompat;
@@ -56,7 +57,7 @@ class SiteSuggestionsAdapter extends ForwardingListObservable<PropertyKey>
     }
 
     private class SiteSuggestionInteractionDelegate
-            implements ContextMenuManager.Delegate, View.OnCreateContextMenuListener {
+            implements TouchlessContextMenuManager.Delegate, View.OnCreateContextMenuListener {
         private PropertyModel mSuggestion;
 
         SiteSuggestionInteractionDelegate(PropertyModel model) {
@@ -95,11 +96,22 @@ class SiteSuggestionsAdapter extends ForwardingListObservable<PropertyKey>
 
         @Override
         public boolean isItemSupported(int menuItemId) {
-            return menuItemId == ContextMenuManager.ContextMenuItemId.REMOVE;
+            return menuItemId == ContextMenuManager.ContextMenuItemId.REMOVE
+                    || menuItemId == ContextMenuManager.ContextMenuItemId.ADD_TO_MY_APPS;
         }
 
         @Override
         public void onContextMenuCreated() {}
+
+        @Override
+        public String getTitle() {
+            return mSuggestion.get(SiteSuggestionModel.TITLE_KEY);
+        }
+
+        @Override
+        public Bitmap getIconBitmap() {
+            return mSuggestion.get(SiteSuggestionModel.ICON_KEY);
+        }
     }
 
     private PropertyModel mModel;
