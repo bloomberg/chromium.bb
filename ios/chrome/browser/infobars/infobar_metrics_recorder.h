@@ -59,6 +59,18 @@ enum class MobileMessagesModalEvent {
   kMaxValue = SettingsOpened,
 };
 
+// Values for the UMA Mobile.Messages.Badge.Tapped histogram. These values
+// are persisted to logs. Entries should not be renumbered and numeric values
+// should never be reused.
+enum class MobileMessagesBadgeState {
+  // Infobar Badge is inactive.
+  Inactive = 0,
+  // Infobar Badge is active.
+  Active = 1,
+  // Highest enumerator. Recommended by Histogram metrics best practices.
+  kMaxValue = Active,
+};
+
 // Used to record metrics related to Infobar events.
 @interface InfobarMetricsRecorder : NSObject
 
@@ -75,6 +87,9 @@ enum class MobileMessagesModalEvent {
 
 // Records histogram for Modal |event|.
 - (void)recordModalEvent:(MobileMessagesModalEvent)event;
+
+// Records histogram for Badge Tapped in |state|.
+- (void)recordBadgeTappedInState:(MobileMessagesBadgeState)state;
 
 @end
 

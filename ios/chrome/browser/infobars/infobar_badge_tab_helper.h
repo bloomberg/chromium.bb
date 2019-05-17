@@ -39,6 +39,8 @@ class InfobarBadgeTabHelper
   // Returns wheter an Infobar badge is being displayed for the TabHelper
   // Webstate.
   bool is_infobar_displaying();
+  // Returns whether the Infobar badge is active.
+  bool is_badge_active();
   // Returns the type of the Infobar being displayed.
   InfobarType infobar_type();
 
@@ -64,6 +66,8 @@ class InfobarBadgeTabHelper
   bool is_infobar_displaying_;
   // The type of the Infobar being displayed.
   InfobarType infobar_type_;
+  // Returns whether the Infobar badge is active.
+  bool is_badge_active_ = false;
 
   WEB_STATE_USER_DATA_KEY_DECL();
   DISALLOW_COPY_AND_ASSIGN(InfobarBadgeTabHelper);

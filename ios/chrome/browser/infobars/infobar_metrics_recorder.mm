@@ -21,6 +21,9 @@ const char kInfobarConfirmBannerDismissTypeHistogram[] =
 // Modal.
 const char kInfobarConfirmModalEventHistogram[] =
     "Mobile.Messages.Modal.Event.InfobarTypeConfirm";
+// Badge.
+const char kInfobarConfirmBadgeTappedHistogram[] =
+    "Mobile.Messages.Badge.Tapped.InfobarTypeConfirm";
 
 // Histogram names for InfobarTypePasswordSave.
 // Banner.
@@ -31,6 +34,9 @@ const char kInfobarPasswordSaveBannerDismissTypeHistogram[] =
 // Modal.
 const char kInfobarPasswordSaveModalEventHistogram[] =
     "Mobile.Messages.Modal.Event.InfobarTypePasswordSave";
+// Badge.
+const char kInfobarPasswordSaveBadgeTappedHistogram[] =
+    "Mobile.Messages.Badge.Tapped.InfobarTypePasswordSave";
 
 // Histogram names for InfobarTypePasswordUpdate.
 // Banner.
@@ -41,6 +47,9 @@ const char kInfobarPasswordUpdateBannerDismissTypeHistogram[] =
 // Modal.
 const char kInfobarPasswordUpdateModalEventHistogram[] =
     "Mobile.Messages.Modal.Event.InfobarTypePasswordUpdate";
+// Badge.
+const char kInfobarPasswordUpdateBadgeTappedHistogram[] =
+    "Mobile.Messages.Badge.Tapped.InfobarTypePasswordUpdate";
 
 }  // namespace
 
@@ -105,6 +114,22 @@ const char kInfobarPasswordUpdateModalEventHistogram[] =
     case InfobarType::kInfobarTypePasswordUpdate:
       UMA_HISTOGRAM_ENUMERATION(kInfobarPasswordUpdateModalEventHistogram,
                                 event);
+      break;
+  }
+}
+
+- (void)recordBadgeTappedInState:(MobileMessagesBadgeState)state {
+  switch (self.infobarType) {
+    case InfobarType::kInfobarTypeConfirm:
+      UMA_HISTOGRAM_ENUMERATION(kInfobarConfirmBadgeTappedHistogram, state);
+      break;
+    case InfobarType::kInfobarTypePasswordSave:
+      UMA_HISTOGRAM_ENUMERATION(kInfobarPasswordSaveBadgeTappedHistogram,
+                                state);
+      break;
+    case InfobarType::kInfobarTypePasswordUpdate:
+      UMA_HISTOGRAM_ENUMERATION(kInfobarPasswordUpdateBadgeTappedHistogram,
+                                state);
       break;
   }
 }

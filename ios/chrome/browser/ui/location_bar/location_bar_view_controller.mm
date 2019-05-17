@@ -67,6 +67,10 @@ typedef NS_ENUM(int, TrailingButtonState) {
 // Used to build and record Infobar metrics.
 @property(nonatomic, strong) InfobarMetricsRecorder* infobarMetricsRecorder;
 
+// Whether the InfobarBadge is active or not.
+// TODO(crbug.com/961343): Move this into a future BadgeContainer.
+@property(nonatomic, assign) BOOL activeBadge;
+
 // Starts voice search, updating the NamedGuide to be constrained to the
 // trailing button.
 - (void)startVoiceSearch;
@@ -461,11 +465,19 @@ typedef NS_ENUM(int, TrailingButtonState) {
   DCHECK(IsInfobarUIRebootEnabled());
 
   [self.locationBarSteadyView.leadingButton
-             addTarget:self.dispatcher
+             addTarget:self
                 action:@selector(displayModalInfobar)
       forControlEvents:UIControlEventTouchUpInside];
   // Set as hidden as it should only be shown by |displayInfobarButton:|
   self.locationBarSteadyView.leadingButton.hidden = YES;
+}
+
+- (void)displayModalInfobar {
+  MobileMessagesBadgeState state = self.activeBadge
+                                       ? MobileMessagesBadgeState::Active
+                                       : MobileMessagesBadgeState::Inactive;
+  [self.infobarMetricsRecorder recordBadgeTappedInState:state];
+  [self.dispatcher displayModalInfobar];
 }
 
 - (void)setInfobarButtonStyleSelected:(BOOL)selected {
@@ -473,6 +485,7 @@ typedef NS_ENUM(int, TrailingButtonState) {
 }
 
 - (void)setInfobarButtonStyleActive:(BOOL)active {
+  self.activeBadge = active;
   [self.locationBarSteadyView.leadingButton setActive:active animated:YES];
 }
 

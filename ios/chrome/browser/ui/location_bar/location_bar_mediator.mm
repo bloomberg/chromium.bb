@@ -195,6 +195,8 @@
         [self.consumer
             displayInfobarBadge:infobarBadgeTabHelper->is_infobar_displaying()
                            type:infobarBadgeTabHelper->infobar_type()];
+        [self.consumer
+            activeInfobarBadge:infobarBadgeTabHelper->is_badge_active()];
       }
     }
 

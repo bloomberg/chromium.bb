@@ -38280,6 +38280,11 @@ Called by update_use_counter_css.py.-->
   <int value="4" label="Infobar dismissed after tab closed"/>
 </enum>
 
+<enum name="MobileMessagesBadgeState">
+  <int value="0" label="Inactive"/>
+  <int value="1" label="Active"/>
+</enum>
+
 <enum name="MobileMessagesBannerDismissType">
   <int value="0" label="TimedOut"/>
   <int value="1" label="SwipedUp"/>
