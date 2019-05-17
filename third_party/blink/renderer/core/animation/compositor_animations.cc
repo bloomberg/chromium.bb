@@ -203,10 +203,7 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
     // Elements with subtrees containing will-change: contents are not
     // composited for animations as if the contents change the tiles
     // would need to be rerastered anyways.
-    // TODO(crbug.com/961686): Remove Style() check once unit tests create
-    // fully styled Elements.
-    if (layout_object && layout_object->Style() &&
-        layout_object->Style()->SubtreeWillChangeContents()) {
+    if (layout_object && layout_object->Style()->SubtreeWillChangeContents()) {
       reasons |= kTargetHasInvalidCompositingState;
     }
   }
