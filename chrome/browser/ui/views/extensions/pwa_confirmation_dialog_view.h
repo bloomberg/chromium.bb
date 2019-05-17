@@ -29,6 +29,7 @@ class PWAConfirmationDialogView : public views::DialogDelegateView {
   ui::ModalType GetModalType() const override;
   base::string16 GetWindowTitle() const override;
   bool ShouldShowCloseButton() const override;
+  views::View* GetInitiallyFocusedView() override;
   void WindowClosing() override;
 
   // views::DialogDelegateView:

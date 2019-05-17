@@ -10,12 +10,18 @@
 #include "chrome/common/web_application_info.h"
 #include "ui/views/window/dialog_delegate.h"
 
+namespace views {
+class View;
+}
+
 // Provides the core UI for confirming the installation of a PWA for the
 // |PWAConfirmationDialogView| and |PWAConfirmationBubbleView| form factors.
 class PWAConfirmation {
  public:
   static base::string16 GetWindowTitle();
   static base::string16 GetDialogButtonLabel(ui::DialogButton button);
+  static views::View* GetInitiallyFocusedView(
+      views::DialogDelegateView* dialog);
 
   PWAConfirmation(views::DialogDelegateView* dialog,
                   std::unique_ptr<WebApplicationInfo> web_app_info,

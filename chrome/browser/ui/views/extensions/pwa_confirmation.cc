@@ -16,9 +16,11 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/text_elider.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/window/dialog_client_view.h"
 
 namespace {
 
@@ -122,6 +124,11 @@ base::string16 PWAConfirmation::GetDialogButtonLabel(ui::DialogButton button) {
   return l10n_util::GetStringUTF16(button == ui::DIALOG_BUTTON_OK
                                        ? IDS_INSTALL_PWA_BUTTON_LABEL
                                        : IDS_CANCEL);
+}
+
+views::View* PWAConfirmation::GetInitiallyFocusedView(
+    views::DialogDelegateView* dialog) {
+  return dialog->GetDialogClientView()->cancel_button();
 }
 
 void PWAConfirmation::Accept() {

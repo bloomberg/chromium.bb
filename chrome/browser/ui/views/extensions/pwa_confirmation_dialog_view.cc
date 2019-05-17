@@ -41,6 +41,10 @@ bool PWAConfirmationDialogView::ShouldShowCloseButton() const {
   return false;
 }
 
+views::View* PWAConfirmationDialogView::GetInitiallyFocusedView() {
+  return PWAConfirmation::GetInitiallyFocusedView(this);
+}
+
 void PWAConfirmationDialogView::WindowClosing() {
   pwa_confirmation_.WindowClosing();
 }

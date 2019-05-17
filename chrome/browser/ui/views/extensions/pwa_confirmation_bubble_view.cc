@@ -42,6 +42,10 @@ base::string16 PWAConfirmationBubbleView::GetDialogButtonLabel(
   return PWAConfirmation::GetDialogButtonLabel(button);
 }
 
+views::View* PWAConfirmationBubbleView::GetInitiallyFocusedView() {
+  return PWAConfirmation::GetInitiallyFocusedView(this);
+}
+
 void PWAConfirmationBubbleView::WindowClosing() {
   DCHECK_EQ(g_bubble_, this);
   g_bubble_ = nullptr;
