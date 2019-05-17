@@ -61,7 +61,7 @@ class SyncAuthManager : public identity::IdentityManager::Observer {
 
   // Returns the account which should be used when communicating with the Sync
   // server. Note that this account may not be blessed for Sync-the-feature.
-  syncer::SyncAccountInfo GetActiveAccountInfo() const;
+  SyncAccountInfo GetActiveAccountInfo() const;
 
   // Returns the last auth error that was encountered. The error could have come
   // from the Sync server or from the IdentityManager.
@@ -76,13 +76,13 @@ class SyncAuthManager : public identity::IdentityManager::Observer {
   bool IsSyncPaused() const;
 
   // Returns the credentials to be passed to the SyncEngine.
-  syncer::SyncCredentials GetCredentials() const;
+  SyncCredentials GetCredentials() const;
 
   const std::string& access_token() const { return access_token_; }
 
   // Returns the state of the access token and token request, for display in
   // internals UI.
-  syncer::SyncTokenStatus GetSyncTokenStatus() const;
+  SyncTokenStatus GetSyncTokenStatus() const;
 
   // Called by ProfileSyncService when Sync starts up and will try talking to
   // the server soon. This initiates fetching an access token.
@@ -90,7 +90,7 @@ class SyncAuthManager : public identity::IdentityManager::Observer {
 
   // Called by ProfileSyncService when the status of the connection to the Sync
   // server changed. Updates auth error state accordingly.
-  void ConnectionStatusChanged(syncer::ConnectionStatus status);
+  void ConnectionStatusChanged(ConnectionStatus status);
 
   // Called by ProfileSyncService when the connection to the Sync server is
   // closed (due to Sync being shut down). Clears all related state (such as
@@ -114,7 +114,7 @@ class SyncAuthManager : public identity::IdentityManager::Observer {
   void ResetRequestAccessTokenBackoffForTest();
 
  private:
-  syncer::SyncAccountInfo DetermineAccountToUse() const;
+  SyncAccountInfo DetermineAccountToUse() const;
 
   // Updates |sync_account_| to the appropriate account (i.e.
   // DetermineAccountToUse) if necessary, and notifies observers of any changes
@@ -157,7 +157,7 @@ class SyncAuthManager : public identity::IdentityManager::Observer {
   // The account which we are using to sync. If this is non-empty, that does
   // *not* necessarily imply that Sync is actually running, e.g. because of
   // delayed startup.
-  syncer::SyncAccountInfo sync_account_;
+  SyncAccountInfo sync_account_;
 
   // This is a cache of the last authentication response we received from
   // Chrome's identity/token management system.
@@ -189,7 +189,7 @@ class SyncAuthManager : public identity::IdentityManager::Observer {
   // Info about the state of our access token, for display in the internals UI.
   // "Partial" because this instance is not fully populated - in particular,
   // |has_token| and |next_token_request_time| get computed on demand.
-  syncer::SyncTokenStatus partial_token_status_;
+  SyncTokenStatus partial_token_status_;
 
   base::WeakPtrFactory<SyncAuthManager> weak_ptr_factory_;
 

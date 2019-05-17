@@ -83,7 +83,7 @@ void SyncAuthManager::RegisterForAuthNotifications() {
   sync_account_ = DetermineAccountToUse();
 }
 
-syncer::SyncAccountInfo SyncAuthManager::GetActiveAccountInfo() const {
+SyncAccountInfo SyncAuthManager::GetActiveAccountInfo() const {
   // Note: |sync_account_| should generally be identical to the result of a
   // DetermineAccountToUse() call, but there are a few edge cases when it isn't:
   // E.g. when another identity observer gets notified before us and calls in
@@ -94,8 +94,7 @@ syncer::SyncAccountInfo SyncAuthManager::GetActiveAccountInfo() const {
 
 GoogleServiceAuthError SyncAuthManager::GetLastAuthError() const {
   // TODO(crbug.com/921553): Which error should take precedence?
-  if (partial_token_status_.connection_status ==
-      syncer::CONNECTION_SERVER_ERROR) {
+  if (partial_token_status_.connection_status == CONNECTION_SERVER_ERROR) {
     // TODO(crbug.com/921553): Verify whether CONNECTION_FAILED is really an
     // appropriate auth error here; maybe SERVICE_ERROR would be better? Or
     // maybe we shouldn't expose this case as an auth error at all?
@@ -106,8 +105,7 @@ GoogleServiceAuthError SyncAuthManager::GetLastAuthError() const {
 
 base::Time SyncAuthManager::GetLastAuthErrorTime() const {
   // See GetLastAuthError().
-  if (partial_token_status_.connection_status ==
-      syncer::CONNECTION_SERVER_ERROR) {
+  if (partial_token_status_.connection_status == CONNECTION_SERVER_ERROR) {
     return partial_token_status_.connection_status_update_time;
   }
   return last_auth_error_time_;
@@ -117,10 +115,10 @@ bool SyncAuthManager::IsSyncPaused() const {
   return IsWebSignout(GetLastAuthError());
 }
 
-syncer::SyncTokenStatus SyncAuthManager::GetSyncTokenStatus() const {
+SyncTokenStatus SyncAuthManager::GetSyncTokenStatus() const {
   DCHECK(partial_token_status_.next_token_request_time.is_null());
 
-  syncer::SyncTokenStatus token_status = partial_token_status_;
+  SyncTokenStatus token_status = partial_token_status_;
   token_status.has_token = !access_token_.empty();
   if (request_access_token_retry_timer_.IsRunning()) {
     base::TimeDelta delta =
@@ -131,10 +129,10 @@ syncer::SyncTokenStatus SyncAuthManager::GetSyncTokenStatus() const {
   return token_status;
 }
 
-syncer::SyncCredentials SyncAuthManager::GetCredentials() const {
+SyncCredentials SyncAuthManager::GetCredentials() const {
   const CoreAccountInfo& account_info = sync_account_.account_info;
 
-  syncer::SyncCredentials credentials;
+  SyncCredentials credentials;
   credentials.account_id = account_info.account_id;
   credentials.email = account_info.email;
   credentials.access_token = access_token_;
@@ -157,7 +155,7 @@ void SyncAuthManager::ConnectionOpened() {
   RequestAccessToken();
 }
 
-void SyncAuthManager::ConnectionStatusChanged(syncer::ConnectionStatus status) {
+void SyncAuthManager::ConnectionStatusChanged(ConnectionStatus status) {
   DCHECK(registered_for_auth_notifications_);
   DCHECK(connection_open_);
 
@@ -165,7 +163,7 @@ void SyncAuthManager::ConnectionStatusChanged(syncer::ConnectionStatus status) {
   partial_token_status_.connection_status = status;
 
   switch (status) {
-    case syncer::CONNECTION_AUTH_ERROR:
+    case CONNECTION_AUTH_ERROR:
       // Sync server returned error indicating that access token is invalid. It
       // could be either expired or access is revoked. Let's request another
       // access token and if access is revoked then request for token will fail
@@ -202,7 +200,7 @@ void SyncAuthManager::ConnectionStatusChanged(syncer::ConnectionStatus status) {
         ScheduleAccessTokenRequest();
       }
       break;
-    case syncer::CONNECTION_OK:
+    case CONNECTION_OK:
       // Reset backoff time after successful connection.
       // Request shouldn't be scheduled at this time. But if it is, it's
       // possible that sync flips between OK and auth error states rapidly,
@@ -212,12 +210,12 @@ void SyncAuthManager::ConnectionStatusChanged(syncer::ConnectionStatus status) {
         request_access_token_backoff_.Reset();
       }
       break;
-    case syncer::CONNECTION_SERVER_ERROR:
+    case CONNECTION_SERVER_ERROR:
       // Note: This case will be exposed as an auth error, due to the
       // |connection_status| in |partial_token_error_|.
       DCHECK(GetLastAuthError().IsTransientError());
       break;
-    case syncer::CONNECTION_NOT_ATTEMPTED:
+    case CONNECTION_NOT_ATTEMPTED:
       // The connection status should never change to "not attempted".
       NOTREACHED();
       break;
@@ -261,7 +259,7 @@ void SyncAuthManager::ConnectionClosed() {
   DCHECK(registered_for_auth_notifications_);
   DCHECK(connection_open_);
 
-  partial_token_status_ = syncer::SyncTokenStatus();
+  partial_token_status_ = SyncTokenStatus();
   ClearAccessTokenAndRequest();
 
   connection_open_ = false;
@@ -274,8 +272,7 @@ void SyncAuthManager::OnPrimaryAccountSet(
 
 void SyncAuthManager::OnPrimaryAccountCleared(
     const CoreAccountInfo& previous_primary_account_info) {
-  UMA_HISTOGRAM_ENUMERATION("Sync.StopSource", syncer::SIGN_OUT,
-                            syncer::STOP_SOURCE_LIMIT);
+  UMA_HISTOGRAM_ENUMERATION("Sync.StopSource", SIGN_OUT, STOP_SOURCE_LIMIT);
   UpdateSyncAccountIfNecessary();
 }
 
@@ -386,7 +383,7 @@ void SyncAuthManager::ResetRequestAccessTokenBackoffForTest() {
   request_access_token_backoff_.Reset();
 }
 
-syncer::SyncAccountInfo SyncAuthManager::DetermineAccountToUse() const {
+SyncAccountInfo SyncAuthManager::DetermineAccountToUse() const {
   DCHECK(registered_for_auth_notifications_);
   return syncer::DetermineAccountToUse(
       identity_manager_,
@@ -396,7 +393,7 @@ syncer::SyncAccountInfo SyncAuthManager::DetermineAccountToUse() const {
 bool SyncAuthManager::UpdateSyncAccountIfNecessary() {
   DCHECK(registered_for_auth_notifications_);
 
-  syncer::SyncAccountInfo new_account = DetermineAccountToUse();
+  SyncAccountInfo new_account = DetermineAccountToUse();
   if (new_account.account_info.account_id ==
       sync_account_.account_info.account_id) {
     // We're already using this account (or there was and is no account to use).
@@ -416,10 +413,10 @@ bool SyncAuthManager::UpdateSyncAccountIfNecessary() {
 
   // Sign out of the old account (if any).
   if (!sync_account_.account_info.account_id.empty()) {
-    sync_account_ = syncer::SyncAccountInfo();
+    sync_account_ = SyncAccountInfo();
     // Also clear any pending request or auth errors we might have, since they
     // aren't meaningful anymore.
-    partial_token_status_ = syncer::SyncTokenStatus();
+    partial_token_status_ = SyncTokenStatus();
     ClearAccessTokenAndRequest();
     SetLastAuthError(GoogleServiceAuthError::AuthErrorNone());
     account_state_changed_callback_.Run();
