@@ -46,6 +46,9 @@ class VolumeManagerImpl extends cr.EventTarget {
     this.onDriveConnectionStatusChanged_();
   }
 
+  /** @override */
+  dispose() {}
+
   /**
    * Invoked when the drive connection status is changed.
    * @private
@@ -122,9 +125,8 @@ class VolumeManagerImpl extends cr.EventTarget {
    * Initializes mount points.
    * @param {function()} callback Called upon the completion of the
    *     initialization.
-   * @private
    */
-  initialize_(callback) {
+  initialize(callback) {
     chrome.fileManagerPrivate.onMountCompleted.addListener(
         this.onMountCompleted_.bind(this));
     console.warn('Requesting volume list.');
@@ -277,8 +279,8 @@ class VolumeManagerImpl extends cr.EventTarget {
         return volumeInfo;
       }
       // Additionally, check fake entries.
-      for (let key in volumeInfo.fakeEntries_) {
-        const fakeEntry = volumeInfo.fakeEntries_[key];
+      for (let key in volumeInfo.fakeEntries) {
+        const fakeEntry = volumeInfo.fakeEntries[key];
         if (util.isSameEntry(fakeEntry, entry)) {
           return volumeInfo;
         }

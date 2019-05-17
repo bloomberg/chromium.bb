@@ -9,6 +9,7 @@
  * The inner list ownership is shared between FilteredVolumeInfoList and
  * FilteredVolumeManager to enforce these constraints.
  *
+ * @final
  * @implements {VolumeInfoList}
  */
 class FilteredVolumeInfoList {
@@ -16,29 +17,35 @@ class FilteredVolumeInfoList {
    * @param {!cr.ui.ArrayDataModel} list
    */
   constructor(list) {
-    /** @private */
+    /** @private @const */
     this.list_ = list;
   }
+
   /** @override */
   get length() {
     return this.list_.length;
   }
+
   /** @override */
   addEventListener(type, handler) {
     this.list_.addEventListener(type, handler);
   }
+
   /** @override */
   removeEventListener(type, handler) {
     this.list_.removeEventListener(type, handler);
   }
+
   /** @override */
   add(volumeInfo) {
     throw new Error('FilteredVolumeInfoList.add not allowed in foreground');
   }
+
   /** @override */
   remove(volumeInfo) {
     throw new Error('FilteredVolumeInfoList.remove not allowed in foreground');
   }
+
   /** @override */
   item(index) {
     return /** @type {!VolumeInfo} */ (this.list_.item(index));

@@ -6,12 +6,12 @@ var volumeManagerFactory = (() => {
   /**
    * The singleton instance of VolumeManager. Initialized by the first
    * invocation of getInstance().
-   * @type {VolumeManager}
+   * @type {?VolumeManagerImpl}
    */
   let instance = null;
 
   /**
-   * @type {Promise}
+   * @type {?Promise<!VolumeManager>}
    */
   let instancePromise = null;
 
@@ -22,16 +22,14 @@ var volumeManagerFactory = (() => {
    * @param {function(VolumeManager)=} opt_callback Called with the
    *     VolumeManager instance. TODO(hirono): Remove the callback and use
    *     Promise instead.
-   * @return {Promise} Promise to be fulfilled with the volume manager.
+   * @return {!Promise<!VolumeManager>} Promise to be fulfilled with the volume
+   *     manager.
    */
   function getInstance(opt_callback) {
     if (!instancePromise) {
       instance = new VolumeManagerImpl();
-      instancePromise = new Promise(fulfill => {
-        instance.initialize_(() => {
-          return fulfill(instance);
-        });
-      });
+      instancePromise =
+          new Promise(fulfill => instance.initialize(() => fulfill(instance)));
     }
     if (opt_callback) {
       instancePromise.then(opt_callback);
