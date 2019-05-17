@@ -32,6 +32,7 @@ class ContentCaptureReceiver : public mojom::ContentCaptureReceiver {
   // mojom::ContentCaptureReceiver
   void DidCaptureContent(const ContentCaptureData& data,
                          bool first_data) override;
+  void DidUpdateContent(const ContentCaptureData& data) override;
   void DidRemoveContent(const std::vector<int64_t>& data) override;
   void StartCapture();
   void StopCapture();

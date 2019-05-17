@@ -105,6 +105,15 @@ void ContentCaptureReceiverManager::DidCaptureContent(
   DidCaptureContent(parent_session, data);
 }
 
+void ContentCaptureReceiverManager::DidUpdateContent(
+    ContentCaptureReceiver* content_capture_receiver,
+    const ContentCaptureData& data) {
+  ContentCaptureSession parent_session;
+  BuildContentCaptureSession(content_capture_receiver, true /* ancestor_only */,
+                             &parent_session);
+  DidUpdateContent(parent_session, data);
+}
+
 void ContentCaptureReceiverManager::DidRemoveContent(
     ContentCaptureReceiver* content_capture_receiver,
     const std::vector<int64_t>& data) {

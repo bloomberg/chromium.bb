@@ -69,8 +69,9 @@ public class AwContentCaptureTest {
         private final static long DEFAULT_TIMEOUT_IN_SECONDS = 10;
 
         public final static int CONTENT_CAPTURED = 1;
-        public final static int CONTENT_REMOVED = 2;
-        public final static int SESSION_REMOVED = 3;
+        public final static int CONTENT_UPDATED = 2;
+        public final static int CONTENT_REMOVED = 3;
+        public final static int SESSION_REMOVED = 4;
 
         public TestAwContentCaptureConsumer(WebContents webContents) {
             super(webContents);
@@ -86,6 +87,15 @@ public class AwContentCaptureTest {
                 mCapturedContentIds.add(child.getId());
             }
             mCallbacks.add(CONTENT_CAPTURED);
+            mCallbackHelper.notifyCalled();
+        }
+
+        @Override
+        public void onContentUpdated(
+                FrameSession parentFrame, ContentCaptureData contentCaptureData) {
+            mParentFrame = parentFrame;
+            mUpdatedContent = contentCaptureData;
+            mCallbacks.add(CONTENT_UPDATED);
             mCallbackHelper.notifyCalled();
         }
 
@@ -113,6 +123,10 @@ public class AwContentCaptureTest {
             return mCapturedContent;
         }
 
+        public ContentCaptureData getUpdatedContent() {
+            return mUpdatedContent;
+        }
+
         public FrameSession getCurrentFrameSession() {
             return mCurrentFrameSession;
         }
@@ -124,6 +138,7 @@ public class AwContentCaptureTest {
         public void reset() {
             mParentFrame = null;
             mCapturedContent = null;
+            mUpdatedContent = null;
             mCurrentFrameSession = null;
             mRemovedIds = null;
             mCallbacks.clear();
@@ -160,6 +175,7 @@ public class AwContentCaptureTest {
         private volatile Set<Long> mCapturedContentIds;
         private volatile FrameSession mParentFrame;
         private volatile ContentCaptureData mCapturedContent;
+        private volatile ContentCaptureData mUpdatedContent;
         private volatile FrameSession mCurrentFrameSession;
         private volatile long[] mRemovedIds;
         private volatile ArrayList<Integer> mCallbacks = new ArrayList<Integer>();
@@ -240,6 +256,12 @@ public class AwContentCaptureTest {
                 () -> { mContainerView.scrollTo(0, mContainerView.getHeight()); });
     }
 
+    private void changeContent(String id, String content) {
+        String script = "var el = document.getElementById('" + id + "');"
+                + "el.firstChild.textContent = '" + content + "';";
+        runScript(script);
+    }
+
     private void scrollToTop() {
         TestThreadUtils.runOnUiThreadBlocking(() -> { mContainerView.scrollTo(0, 0); });
     }
@@ -259,13 +281,19 @@ public class AwContentCaptureTest {
             throws Exception {}
 
     private static void verifyContent(Set<String> expectedContent, Set<Long> unexpectedIds,
-            ContentCaptureData result) throws Exception {
+            Set<Long> expectedIds, ContentCaptureData result) throws Exception {
         Assert.assertEquals(expectedContent.size(), result.getChildren().size());
+        if (expectedIds != null) {
+            Assert.assertEquals(expectedIds.size(), result.getChildren().size());
+        }
         for (ContentCaptureData child : result.getChildren()) {
             Assert.assertTrue(expectedContent.contains(child.getValue()));
             expectedContent.remove(child.getValue());
             if (unexpectedIds != null) {
                 Assert.assertFalse(unexpectedIds.contains(child.getId()));
+            }
+            if (expectedIds != null) {
+                Assert.assertTrue(expectedIds.contains(child.getId()));
             }
             Assert.assertFalse(child.getBounds().isEmpty());
         }
@@ -278,7 +306,16 @@ public class AwContentCaptureTest {
             throws Exception {
         verifyFrameSesion(expectedParentSession, parentResult);
         verifyFrame(expectedFrameId, expectedUrl, result);
-        verifyContent(expectedContent, unexpectedContentIds, result);
+        verifyContent(expectedContent, unexpectedContentIds, null, result);
+    }
+
+    private static void verifyUpdatedContent(FrameSession expectedParentSession,
+            Long expectedFrameId, String expectedUrl, Set<String> expectedContent,
+            Set<Long> expectedContentIds, FrameSession parentResult, ContentCaptureData result)
+            throws Exception {
+        verifyFrameSesion(expectedParentSession, parentResult);
+        verifyFrame(expectedFrameId, expectedUrl, result);
+        verifyContent(expectedContent, null, expectedContentIds, result);
     }
 
     private static void verifyRemovedIds(Set<Long> expectedIds, long[] result) throws Exception {
@@ -393,5 +430,33 @@ public class AwContentCaptureTest {
                 toIntArray(TestAwContentCaptureConsumer.CONTENT_REMOVED), mConsumer.getCallbacks());
         verifyRemovedContent(frameId, url, toLongSet(removedContentId),
                 mConsumer.getCurrentFrameSession(), mConsumer.getRemovedIds());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testChangeContent() throws Throwable {
+        final String response = "<html><head></head><body>"
+                + "<div id='editable_id'>Hello</div>"
+                + "</div></body></html>";
+        final String url = mWebServer.setResponse(MAIN_FRAME_FILE, response, null);
+        runAndWaitForCallback(() -> { loadUrlSync(url); });
+        verifyCallbacks(toIntArray(TestAwContentCaptureConsumer.CONTENT_CAPTURED),
+                mConsumer.getCallbacks());
+        Long frameId = null;
+        Set<Long> capturedContentIds = null;
+        // Verify only on-screen content is captured.
+        verifyCapturedContent(null, frameId, url, toStringSet("Hello"), capturedContentIds,
+                mConsumer.getParentFrame(), mConsumer.getCapturedContent());
+
+        // Change the content, we shall get content updated callback.
+        frameId = Long.valueOf(mConsumer.getCapturedContent().getId());
+        capturedContentIds = mConsumer.cloneCaptureContentIds();
+        final String changeContent = "Hello world";
+        runAndWaitForCallback(() -> { changeContent("editable_id", changeContent); });
+        verifyCallbacks(
+                toIntArray(TestAwContentCaptureConsumer.CONTENT_UPDATED), mConsumer.getCallbacks());
+        verifyUpdatedContent(null, frameId, url, toStringSet(changeContent), capturedContentIds,
+                mConsumer.getParentFrame(), mConsumer.getUpdatedContent());
     }
 }

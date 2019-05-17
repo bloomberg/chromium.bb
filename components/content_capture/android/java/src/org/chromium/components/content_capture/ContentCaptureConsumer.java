@@ -24,6 +24,13 @@ public abstract class ContentCaptureConsumer {
             FrameSession parentFrame, ContentCaptureData contentCaptureData);
 
     /**
+     * Invoked when the content is updated in a frame.
+     * @param parentFrame is the parent of the frame from that the content captured.
+     * @param contentCaptureData is the captured content tree, its root is the frame.
+     */
+    public void onContentUpdated(FrameSession parentFrame, ContentCaptureData contentCaptureData) {}
+
+    /**
      * Invoked when the session is removed
      * @param session is the removed frame.
      */

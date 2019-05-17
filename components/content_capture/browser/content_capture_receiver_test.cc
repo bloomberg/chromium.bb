@@ -32,6 +32,10 @@ class FakeContentCaptureSender {
     content_capture_receiver_->DidCaptureContent(captured_content, first_data);
   }
 
+  void DidUpdateContent(const ContentCaptureData& captured_content) {
+    content_capture_receiver_->DidUpdateContent(captured_content);
+  }
+
   void DidRemoveContent(const std::vector<int64_t>& data) {
     content_capture_receiver_->DidRemoveContent(data);
   }
@@ -64,6 +68,12 @@ class ContentCaptureReceiverManagerHelper
     captured_data_ = data;
   }
 
+  void DidUpdateContent(const ContentCaptureSession& parent_session,
+                        const ContentCaptureData& data) override {
+    updated_parent_session_ = parent_session;
+    updated_data_ = data;
+  }
+
   void DidRemoveContent(const ContentCaptureSession& session,
                         const std::vector<int64_t>& ids) override {
     session_ = session;
@@ -80,9 +90,15 @@ class ContentCaptureReceiverManagerHelper
     return parent_session_;
   }
 
+  const ContentCaptureSession& updated_parent_session() const {
+    return updated_parent_session_;
+  }
+
   const ContentCaptureSession& session() const { return session_; }
 
   const ContentCaptureData& captured_data() const { return captured_data_; }
+
+  const ContentCaptureData& updated_data() const { return updated_data_; }
 
   const ContentCaptureSession& removed_session() const {
     return removed_session_;
@@ -92,8 +108,10 @@ class ContentCaptureReceiverManagerHelper
 
  private:
   ContentCaptureSession parent_session_;
+  ContentCaptureSession updated_parent_session_;
   ContentCaptureSession session_;
   ContentCaptureData captured_data_;
+  ContentCaptureData updated_data_;
   std::vector<int64_t> removed_ids_;
   ContentCaptureSession removed_session_;
 };
@@ -127,6 +145,16 @@ class ContentCaptureReceiverTest : public content::RenderViewHostTestHarness {
     test_data2_.value = base::ASCIIToUTF16(kChildFrameUrl);
     test_data2_.bounds = gfx::Rect(10, 10);
     test_data2_.children.push_back(child);
+
+    ContentCaptureData child_change;
+    // Same ID with child.
+    child_change.id = 2;
+    child_change.value = base::ASCIIToUTF16("Hello World");
+    child_change.bounds = gfx::Rect(5, 5, 5, 5);
+    test_data_change_.value = base::ASCIIToUTF16(kMainFrameUrl);
+    test_data_change_.bounds = gfx::Rect(10, 10);
+    test_data_change_.children.push_back(child_change);
+
     // Update to test_data_.
     ContentCaptureData child2;
     // Have the unique id for text content.
@@ -162,6 +190,9 @@ class ContentCaptureReceiverTest : public content::RenderViewHostTestHarness {
   }
 
   const ContentCaptureData& test_data() const { return test_data_; }
+  const ContentCaptureData& test_data_change() const {
+    return test_data_change_;
+  }
   const ContentCaptureData& test_data2() const { return test_data2_; }
   const ContentCaptureData& test_data_update() const {
     return test_data_update_;
@@ -175,6 +206,13 @@ class ContentCaptureReceiverTest : public content::RenderViewHostTestHarness {
     // Replaces the id with expected id.
     expected.id = ContentCaptureReceiver::GetIdFrom(main_frame ? main_frame_
                                                                : child_frame_);
+    return expected;
+  }
+
+  ContentCaptureData GetExpectedTestDataChange(int64_t expected_id) const {
+    ContentCaptureData expected(test_data_change_);
+    // Replaces the id with expected id.
+    expected.id = expected_id;
     return expected;
   }
 
@@ -226,6 +264,12 @@ class ContentCaptureReceiverTest : public content::RenderViewHostTestHarness {
     run_loop.RunUntilIdle();
   }
 
+  void DidUpdateContent(const ContentCaptureData& updated_content) {
+    base::RunLoop run_loop;
+    content_capture_sender()->DidUpdateContent(updated_content);
+    run_loop.RunUntilIdle();
+  }
+
   void DidRemoveContent(const std::vector<int64_t>& data) {
     base::RunLoop run_loop;
     content_capture_sender()->DidRemoveContent(data);
@@ -244,6 +288,7 @@ class ContentCaptureReceiverTest : public content::RenderViewHostTestHarness {
   content::RenderFrameHost* main_frame_ = nullptr;
   content::RenderFrameHost* child_frame_ = nullptr;
   ContentCaptureData test_data_;
+  ContentCaptureData test_data_change_;
   ContentCaptureData test_data2_;
   ContentCaptureData test_data_update_;
   // Expected removed Ids.
@@ -279,6 +324,27 @@ TEST_F(ContentCaptureReceiverTest, DidCaptureContentWithUpdate) {
       content_capture_receiver_manager_helper()->removed_session().empty());
   EXPECT_EQ(GetExpectedTestDataUpdate(true /* main_frame */),
             content_capture_receiver_manager_helper()->captured_data());
+}
+
+TEST_F(ContentCaptureReceiverTest, DidUpdateContent) {
+  DidCaptureContent(test_data(), true /* first_data */);
+  EXPECT_TRUE(
+      content_capture_receiver_manager_helper()->parent_session().empty());
+  EXPECT_TRUE(
+      content_capture_receiver_manager_helper()->removed_session().empty());
+  ContentCaptureData expected_data = GetExpectedTestData(true /* main_frame */);
+  EXPECT_EQ(expected_data,
+            content_capture_receiver_manager_helper()->captured_data());
+
+  // Simulate content change.
+  DidUpdateContent(test_data_change());
+  EXPECT_TRUE(content_capture_receiver_manager_helper()
+                  ->updated_parent_session()
+                  .empty());
+  EXPECT_TRUE(
+      content_capture_receiver_manager_helper()->removed_session().empty());
+  EXPECT_EQ(GetExpectedTestDataChange(expected_data.id),
+            content_capture_receiver_manager_helper()->updated_data());
 }
 
 TEST_F(ContentCaptureReceiverTest, DidRemoveSession) {

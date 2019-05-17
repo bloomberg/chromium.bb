@@ -49,7 +49,7 @@ void ContentCaptureReceiver::DidCaptureContent(const ContentCaptureData& data,
     frame_content_capture_data_.value = data.value;
     frame_content_capture_data_.bounds = data.bounds;
   }
-  // We can't avoid copy the data here, because id need to be overriden.
+  // We can't avoid copy the data here, because id need to be overridden.
   ContentCaptureData content(data);
   content.id = id_;
   // Always have frame URL attached, since the ContentCaptureConsumer will
@@ -57,6 +57,16 @@ void ContentCaptureReceiver::DidCaptureContent(const ContentCaptureData& data,
   if (!first_data)
     content.value = frame_content_capture_data_.value;
   manager->DidCaptureContent(this, content);
+}
+
+void ContentCaptureReceiver::DidUpdateContent(const ContentCaptureData& data) {
+  auto* manager = ContentCaptureReceiverManager::FromWebContents(
+      content::WebContents::FromRenderFrameHost(rfh_));
+  // We can't avoid copy the data here, because id need to be overridden.
+  ContentCaptureData content(data);
+  content.id = id_;
+  content.value = frame_content_capture_data_.value;
+  manager->DidUpdateContent(this, content);
 }
 
 void ContentCaptureReceiver::DidRemoveContent(

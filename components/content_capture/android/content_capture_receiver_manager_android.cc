@@ -113,6 +113,21 @@ void ContentCaptureReceiverManagerAndroid::DidCaptureContent(
       jdata);
 }
 
+void ContentCaptureReceiverManagerAndroid::DidUpdateContent(
+    const ContentCaptureSession& parent_session,
+    const ContentCaptureData& data) {
+  JNIEnv* env = AttachCurrentThread();
+  DCHECK(java_ref_.obj());
+
+  ScopedJavaLocalRef<jobject> jdata =
+      ToJavaObjectOfContentCaptureData(env, data, JavaRef<jobject>());
+  if (jdata.is_null())
+    return;
+  Java_ContentCaptureReceiverManager_didUpdateContent(
+      env, java_ref_, ToJavaArrayOfContentCaptureData(env, parent_session),
+      jdata);
+}
+
 void ContentCaptureReceiverManagerAndroid::DidRemoveContent(
     const ContentCaptureSession& session,
     const std::vector<int64_t>& data) {

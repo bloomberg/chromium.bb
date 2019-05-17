@@ -43,6 +43,8 @@ class ContentCaptureReceiverManager : public content::WebContentsObserver,
   // The methods called by ContentCaptureReceiver.
   void DidCaptureContent(ContentCaptureReceiver* content_capture_receiver,
                          const ContentCaptureData& data);
+  void DidUpdateContent(ContentCaptureReceiver* content_capture_receiver,
+                        const ContentCaptureData& data);
   void DidRemoveContent(ContentCaptureReceiver* content_capture_receiver,
                         const std::vector<int64_t>& data);
   void DidRemoveSession(ContentCaptureReceiver* content_capture_receiver);
@@ -62,6 +64,10 @@ class ContentCaptureReceiverManager : public content::WebContentsObserver,
   // received.
   virtual void DidCaptureContent(const ContentCaptureSession& parent_session,
                                  const ContentCaptureData& data) = 0;
+  // Invoked when the updated content |data| from the |parent_session| was
+  // received.
+  virtual void DidUpdateContent(const ContentCaptureSession& parent_session,
+                                const ContentCaptureData& data) = 0;
   // Invoked when the list of content |ids| of the given |session| was removed.
   virtual void DidRemoveContent(const ContentCaptureSession& session,
                                 const std::vector<int64_t>& ids) = 0;
