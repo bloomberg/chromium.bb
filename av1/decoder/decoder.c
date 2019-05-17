@@ -52,7 +52,7 @@ static void dec_setup_mi(AV1_COMMON *cm) {
          cm->mi_stride * cm->mi_rows * sizeof(*cm->mi_grid_base));
 }
 
-static int av1_dec_alloc_mi(AV1_COMMON *cm, int mi_size) {
+static int dec_alloc_mi(AV1_COMMON *cm, int mi_size) {
   cm->mip = aom_calloc(mi_size, sizeof(*cm->mip));
   if (!cm->mip) return 1;
   cm->mi_alloc_size = mi_size;
@@ -111,7 +111,7 @@ AV1Decoder *av1_decoder_create(BufferPool *const pool) {
 
   cm->seq_params.bit_depth = AOM_BITS_8;
 
-  cm->alloc_mi = av1_dec_alloc_mi;
+  cm->alloc_mi = dec_alloc_mi;
   cm->free_mi = dec_free_mi;
   cm->setup_mi = dec_setup_mi;
 

@@ -52,7 +52,7 @@ void usage_exit(void) {
   exit(EXIT_FAILURE);
 }
 
-static int aom_img_size_bytes(aom_image_t *img) {
+static int img_size_bytes(aom_image_t *img) {
   int image_size_bytes = 0;
   int plane;
   for (plane = 0; plane < 3; ++plane) {
@@ -134,7 +134,7 @@ static aom_fixed_buf_t pass0(aom_image_t *raw, FILE *infile,
                              aom_image_t *raw_shift) {
   aom_codec_ctx_t codec;
   int frame_count = 0;
-  int image_size_bytes = aom_img_size_bytes(raw);
+  int image_size_bytes = img_size_bytes(raw);
   int u_blocks, v_blocks;
   int bu, bv;
   aom_fixed_buf_t stats = { NULL, 0 };
@@ -242,7 +242,7 @@ static void pass1(aom_image_t *raw, FILE *infile, const char *outfile_name,
   AvxVideoWriter *writer = NULL;
   aom_codec_ctx_t codec;
   int frame_count = 0;
-  int image_size_bytes = aom_img_size_bytes(raw);
+  int image_size_bytes = img_size_bytes(raw);
   int bu, bv;
   int u_blocks, v_blocks;
   aom_image_t *frame_to_encode;
