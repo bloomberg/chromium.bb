@@ -1,5 +1,8 @@
 # Makefile for piex-wasm
-
+#
+# An IIFE https://developer.mozilla.org/en-US/docs/Glossary/IIFE is used to
+# wrap em++ compiler-generated JS code so it does not pollute |globalThis|.
+#
 PIEX = node_modules/piex
 
 PSRC = $(PIEX)/src/piex.cc \
@@ -21,12 +24,14 @@ WOPT = -Os --llvm-opts 3 \
   -s EXTRA_EXPORTED_RUNTIME_METHODS='$(WAPI)' \
   -s TOTAL_STACK=$(shell echo $$((8*1024)))
 
+IIFE = --pre-js iife.beg --post-js iife.end
+
 .PHONY: all clean release
 
 all: piex.out.js release
 
-piex.out.js: piex.cpp.bc piex.src.bc
-	em++ --bind --std=c++11 $(WASM) $(WOPT) $^ -o $@
+piex.out.js: iife.beg piex.cpp.bc piex.src.bc iief.end
+	em++ --bind --std=c++11 $(WASM) $(WOPT) $(IIFE) piex.cpp.bc piex.src.bc -o $@
 
 piex.cpp.bc: piex.cpp Makefile
 	em++ --bind --std=c++11 $(WASM) $(WOPT) $(INCS) piex.cpp -o $@
