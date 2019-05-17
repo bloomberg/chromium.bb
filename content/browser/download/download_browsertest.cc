@@ -522,8 +522,6 @@ class TestShellDownloadManagerDelegate : public ShellDownloadManagerDelegate {
     return true;
   }
 
-  bool GenerateFileHash() override { return true; }
-
   void SetDelayedOpen(bool delay) {
     delay_download_open_ = delay;
   }

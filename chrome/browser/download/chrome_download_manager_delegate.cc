@@ -596,15 +596,6 @@ bool ChromeDownloadManagerDelegate::InterceptDownloadIfApplicable(
   return false;
 }
 
-bool ChromeDownloadManagerDelegate::GenerateFileHash() {
-#if defined(FULL_SAFE_BROWSING)
-  return profile_->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled) &&
-      g_browser_process->safe_browsing_service()->DownloadBinHashNeeded();
-#else
-  return false;
-#endif
-}
-
 void ChromeDownloadManagerDelegate::GetSaveDir(
     content::BrowserContext* browser_context,
     base::FilePath* website_save_dir,

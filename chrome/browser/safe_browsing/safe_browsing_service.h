@@ -96,10 +96,6 @@ class SafeBrowsingService : public SafeBrowsingServiceInterface,
   // Called on the main thread to let us know that the io_thread is going away.
   void ShutDown();
 
-  // Called on UI thread to decide if the download file's sha256 hash
-  // should be calculated for safebrowsing.
-  bool DownloadBinHashNeeded() const;
-
   // NOTE(vakh): This is not the most reliable way to find out if extended
   // reporting has been enabled. That's why it starts with estimated_. It
   // returns true if any of the profiles have extended reporting enabled. It may

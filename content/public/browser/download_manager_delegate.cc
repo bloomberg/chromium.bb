@@ -53,10 +53,6 @@ bool DownloadManagerDelegate::IsMostRecentDownloadItemAtFilePath(
   return true;
 }
 
-bool DownloadManagerDelegate::GenerateFileHash() {
-  return false;
-}
-
 std::string
 DownloadManagerDelegate::ApplicationClientIdForFileScanning() const {
   return std::string();

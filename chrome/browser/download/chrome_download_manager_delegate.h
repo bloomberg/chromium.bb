@@ -99,7 +99,6 @@ class ChromeDownloadManagerDelegate
       const std::string& request_origin,
       int64_t content_length,
       content::WebContents* web_contents) override;
-  bool GenerateFileHash() override;
   void GetSaveDir(content::BrowserContext* browser_context,
                   base::FilePath* website_save_dir,
                   base::FilePath* download_save_dir,

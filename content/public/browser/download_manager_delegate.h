@@ -132,9 +132,6 @@ class CONTENT_EXPORT DownloadManagerDelegate {
       int64_t content_length,
       WebContents* web_contents);
 
-  // Returns true if we need to generate a binary hash for downloads.
-  virtual bool GenerateFileHash();
-
   // Retrieve the directories to save html pages and downloads to.
   virtual void GetSaveDir(BrowserContext* browser_context,
                           base::FilePath* website_save_dir,

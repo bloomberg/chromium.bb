@@ -211,18 +211,6 @@ void SafeBrowsingService::ShutDown() {
   url_request_context_getter_ = nullptr;
 }
 
-bool SafeBrowsingService::DownloadBinHashNeeded() const {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-#if defined(FULL_SAFE_BROWSING)
-  return database_manager()->IsDownloadProtectionEnabled() ||
-         (download_protection_service() &&
-          download_protection_service()->enabled());
-#else
-  return false;
-#endif
-}
-
 scoped_refptr<net::URLRequestContextGetter>
 SafeBrowsingService::url_request_context() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
