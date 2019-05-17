@@ -131,7 +131,9 @@ V4L2MjpegDecodeAccelerator::JobRecord::JobRecord(
     BitstreamBuffer bitstream_buffer,
     scoped_refptr<VideoFrame> video_frame)
     : bitstream_buffer_id(bitstream_buffer.id()),
-      shm(bitstream_buffer.TakeRegion(), bitstream_buffer.size(), true),
+      shm(bitstream_buffer.TakeRegion(),
+          bitstream_buffer.size(),
+          false /* read_only */),
       offset(bitstream_buffer.offset()),
       out_frame(video_frame) {}
 

@@ -253,7 +253,8 @@ void VaapiMjpegDecodeAccelerator::Decode(
 
   // UnalignedSharedMemory will take over the |bitstream_buffer.handle()|.
   auto shm = std::make_unique<UnalignedSharedMemory>(
-      bitstream_buffer.TakeRegion(), bitstream_buffer.size(), true);
+      bitstream_buffer.TakeRegion(), bitstream_buffer.size(),
+      false /* read_only */);
 
   if (bitstream_buffer.id() < 0) {
     VLOGF(1) << "Invalid bitstream_buffer, id: " << bitstream_buffer.id();
