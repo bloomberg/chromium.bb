@@ -189,6 +189,14 @@ class StatsRatesCalculator {
         names: [
           ['bytesSent', 'timestamp'],
           ['packetsSent', 'timestamp'],
+          [
+            'totalPacketSendDelay',
+            'packetsSent',
+            '[totalPacketSendDelay/packetsSent_in_ms]',
+            (value) => {
+              return value * 1000;  // s -> ms
+            },
+          ],
           ['framesEncoded', 'timestamp'],
           ['qpSum', 'framesEncoded'],
         ],
