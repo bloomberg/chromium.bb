@@ -11,7 +11,6 @@
 
 #include "base/callback_forward.h"
 #include "base/containers/span.h"
-#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "ui/gfx/geometry/size.h"
@@ -80,11 +79,6 @@ class VaapiJpegDecoder final {
       VaapiJpegDecodeStatus* status);
 
  private:
-  // TODO(andrescj): move vaapi_utils tests out of vaapi_jpeg_decoder_unittest
-  // and remove this friend declaration.
-  friend class VaapiJpegDecoderTest;
-  FRIEND_TEST_ALL_PREFIXES(VaapiJpegDecoderTest, ScopedVAImage);
-
   scoped_refptr<VaapiWrapper> vaapi_wrapper_;
 
   // The current VA surface for decoding.

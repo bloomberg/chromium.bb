@@ -20,13 +20,11 @@
 #include <va/va.h>
 
 #include "base/files/file.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
-#include "components/chromeos_camera/mjpeg_decode_accelerator.h"
-#include "media/base/video_decoder_config.h"
-#include "media/base/video_frame.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/vaapi/va_surface.h"
 #include "media/video/video_decode_accelerator.h"
@@ -44,6 +42,7 @@ class NativePixmap;
 namespace media {
 
 class ScopedVAImage;
+class VideoFrame;
 
 // This class handles VA-API calls and ensures proper locking of VA-API calls
 // to libva, the userspace shim to the HW codec driver. libva is not
@@ -276,7 +275,10 @@ class MEDIA_GPU_EXPORT VaapiWrapper
 
  private:
   friend class base::RefCountedThreadSafe<VaapiWrapper>;
-  friend class VaapiJpegDecoderTest;
+
+  FRIEND_TEST_ALL_PREFIXES(VaapiUtilsTest, ScopedVAImage);
+  FRIEND_TEST_ALL_PREFIXES(VaapiUtilsTest, BadScopedVAImage);
+  FRIEND_TEST_ALL_PREFIXES(VaapiUtilsTest, BadScopedVABufferMapping);
 
   bool Initialize(CodecMode mode, VAProfile va_profile);
   void Deinitialize();

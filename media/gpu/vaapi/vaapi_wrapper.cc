@@ -31,6 +31,7 @@
 #include "build/build_config.h"
 
 #include "media/base/media_switches.h"
+#include "media/base/video_frame.h"
 #include "media/base/video_types.h"
 
 // Auto-generated for dlopen libva libraries

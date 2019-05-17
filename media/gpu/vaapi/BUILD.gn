@@ -157,13 +157,30 @@ source_set("jpeg_decoder_unit_test") {
   ]
   deps = [
     ":vaapi",
+    ":vaapi_utils_unittest",
     "//base",
-    "//base/test:test_support",
     "//media:test_support",
     "//skia",
     "//testing/gtest",
     "//third_party/libyuv:libyuv",
     "//ui/gfx/codec",
     "//ui/gfx/geometry",
+  ]
+}
+
+source_set("vaapi_utils_unittest") {
+  testonly = true
+  sources = [
+    "vaapi_utils_unittest.cc",
+  ]
+  deps = [
+    ":vaapi",
+    "//base",
+    "//base/test:test_support",
+    "//testing/gtest",
+    "//ui/gfx/geometry",
+
+    # Indirect dependency from vaapi_wrapper.h.
+    "//skia",
   ]
 }
