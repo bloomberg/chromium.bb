@@ -31,6 +31,7 @@
 #include "components/error_page/common/localized_error.h"
 #include "components/error_page/common/net_error_info.h"
 #include "components/grit/components_resources.h"
+#include "components/offline_pages/core/offline_page_feature.h"
 #include "components/security_interstitials/core/common/interfaces/interstitial_commands.mojom.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
@@ -99,7 +100,8 @@ NetErrorHelperCore::FrameType GetFrameType(RenderFrame* render_frame) {
 
 #if defined(OS_ANDROID)
 bool IsOfflineContentOnNetErrorFeatureEnabled() {
-  return base::FeatureList::IsEnabled(features::kNewNetErrorPageUI);
+  return offline_pages::IsOfflinePagesEnabled() &&
+         base::FeatureList::IsEnabled(features::kNewNetErrorPageUI);
 }
 #else   // OS_ANDROID
 bool IsOfflineContentOnNetErrorFeatureEnabled() {
@@ -110,9 +112,10 @@ bool IsOfflineContentOnNetErrorFeatureEnabled() {
 #if defined(OS_ANDROID)
 bool IsAutoFetchFeatureEnabled() {
   // This feature is incompatible with OfflineContentOnNetError, so don't allow
-  // both.
+  // both. Disabled for touchless builds.
   return !IsOfflineContentOnNetErrorFeatureEnabled() &&
-         base::FeatureList::IsEnabled(features::kAutoFetchOnNetErrorPage);
+         base::FeatureList::IsEnabled(features::kAutoFetchOnNetErrorPage) &&
+         offline_pages::IsOfflinePagesEnabled();
 }
 #else   // OS_ANDROID
 bool IsAutoFetchFeatureEnabled() {

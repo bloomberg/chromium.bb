@@ -25,6 +25,7 @@
 #include "components/error_page/common/error_page_params.h"
 #include "components/error_page/common/error_page_switches.h"
 #include "components/error_page/common/net_error_info.h"
+#include "components/offline_pages/core/offline_page_feature.h"
 #include "components/strings/grit/components_chromium_strings.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/url_formatter.h"
@@ -1041,7 +1042,7 @@ LocalizedError::PageState LocalizedError::GetPageState(
   if (!is_post && !result.reload_button_shown && !is_incognito &&
       failed_url.is_valid() && failed_url.SchemeIsHTTPOrHTTPS() &&
       IsOfflineError(error_domain, error_code)) {
-    if (!auto_fetch_feature_enabled) {
+    if (!auto_fetch_feature_enabled && offline_pages::IsOfflinePagesEnabled()) {
       result.download_button_shown = true;
       result.strings.SetPath({"downloadButton", "msg"},
                              base::Value(l10n_util::GetStringUTF16(

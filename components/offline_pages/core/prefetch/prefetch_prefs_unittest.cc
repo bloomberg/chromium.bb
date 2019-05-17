@@ -4,6 +4,7 @@
 
 #include "components/offline_pages/core/prefetch/prefetch_prefs.h"
 #include "base/test/scoped_feature_list.h"
+#include "components/offline_pages/buildflags/buildflags.h"
 #include "components/offline_pages/core/offline_clock.h"
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/test_scoped_offline_clock.h"
@@ -27,7 +28,12 @@ void PrefetchPrefsTest::SetUp() {
   prefetch_prefs::RegisterPrefs(prefs()->registry());
 }
 
-TEST_F(PrefetchPrefsTest, PrefetchingEnabled) {
+#if defined(DISABLE_OFFLINE_PAGES_TOUCHLESS)
+#define MAYBE_PrefetchingEnabled DISABLED_PrefetchingEnabled
+#else
+#define MAYBE_PrefetchingEnabled PrefetchingEnabled
+#endif
+TEST_F(PrefetchPrefsTest, MAYBE_PrefetchingEnabled) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(kPrefetchingOfflinePagesFeature);
   EXPECT_FALSE(prefetch_prefs::IsEnabled(prefs()));
@@ -104,7 +110,12 @@ TEST_F(PrefetchPrefsTest, EnabledByServer) {
   EXPECT_FALSE(prefetch_prefs::IsEnabledByServer(prefs()));
 }
 
-TEST_F(PrefetchPrefsTest, ForbiddenCheck) {
+#if defined(DISABLE_OFFLINE_PAGES_TOUCHLESS)
+#define MAYBE_ForbiddenCheck DISABLED_ForbiddenCheck
+#else
+#define MAYBE_ForbiddenCheck ForbiddenCheck
+#endif
+TEST_F(PrefetchPrefsTest, MAYBE_ForbiddenCheck) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(kPrefetchingOfflinePagesFeature);
 
@@ -135,7 +146,12 @@ TEST_F(PrefetchPrefsTest, ForbiddenCheck) {
   EXPECT_FALSE(prefetch_prefs::IsForbiddenCheckDue(prefs()));
 }
 
-TEST_F(PrefetchPrefsTest, FirstForbiddenCheck) {
+#if defined(DISABLE_OFFLINE_PAGES_TOUCHLESS)
+#define MAYBE_FirstForbiddenCheck DISABLED_FirstForbiddenCheck
+#else
+#define MAYBE_FirstForbiddenCheck FirstForbiddenCheck
+#endif
+TEST_F(PrefetchPrefsTest, MAYBE_FirstForbiddenCheck) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(kPrefetchingOfflinePagesFeature);
 

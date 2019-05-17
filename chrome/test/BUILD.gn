@@ -3091,9 +3091,7 @@ test("unit_tests") {
 
   # Pixeltests only support win.
   if (is_win) {
-    sources += [
-      "../test/pixel/skia_gold_pixel_diff_unittest.cc",
-    ]
+    sources += [ "../test/pixel/skia_gold_pixel_diff_unittest.cc" ]
   }
 
   if (!is_android) {
@@ -3275,12 +3273,10 @@ test("unit_tests") {
       "../browser/offline_pages/background_loader_offliner_unittest.cc",
       "../browser/offline_pages/download_archive_manager_unittest.cc",
       "../browser/offline_pages/offline_page_mhtml_archiver_unittest.cc",
-      "../browser/offline_pages/offline_page_request_handler_unittest.cc",
       "../browser/offline_pages/offline_page_tab_helper_unittest.cc",
       "../browser/offline_pages/offline_page_utils_unittest.cc",
       "../browser/offline_pages/prefetch/offline_metrics_collector_impl_unittest.cc",
       "../browser/offline_pages/prefetch/prefetch_background_task_handler_impl_unittest.cc",
-      "../browser/offline_pages/prefetch/prefetch_instance_id_proxy_unittest.cc",
       "../browser/offline_pages/prefetch/prefetched_pages_notifier_unittest.cc",
       "../browser/offline_pages/prefetch/thumbnail_fetcher_impl_unittest.cc",
       "../browser/offline_pages/recent_tab_helper_unittest.cc",
@@ -3297,6 +3293,14 @@ test("unit_tests") {
       "//components/offline_pages/core/background:test_support",
       "//components/offline_pages/core/prefetch:test_support",
     ]
+    if (defined(notouch_build) && notouch_build) {
+      defines += [ "DISABLE_OFFLINE_PAGES_TOUCHLESS" ]
+    } else {
+      sources += [
+        "../browser/offline_pages/offline_page_request_handler_unittest.cc",
+        "../browser/offline_pages/prefetch/prefetch_instance_id_proxy_unittest.cc",
+      ]
+    }
   }
 
   if (enable_feed_in_chrome) {
@@ -6073,17 +6077,19 @@ if (is_win) {
       "pixel/demo/skia_gold_demo_pixeltest.cc",
     ]
     configs += [ "//build/config:precompiled_headers" ]
-    defines = [
-      "HAS_OUT_OF_PROC_TEST_RUNNER",
-    ]
+    defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
     deps = [
-      ":test_support",
       ":browser_tests_runner",
+      ":test_support",
     ]
     if (is_win) {
-      data = [ "//tools/skia_goldctl/goldctl.exe" ]
+      data = [
+        "//tools/skia_goldctl/goldctl.exe",
+      ]
     } else {
-      data = [ "//tools/skia_goldctl/goldctl" ]
+      data = [
+        "//tools/skia_goldctl/goldctl",
+      ]
     }
   }
 }

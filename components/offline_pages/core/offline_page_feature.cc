@@ -83,7 +83,8 @@ bool IsOfflinePagesLivePageSharingEnabled() {
 }
 
 bool IsPrefetchingOfflinePagesEnabled() {
-  return base::FeatureList::IsEnabled(kPrefetchingOfflinePagesFeature);
+  return IsOfflinePagesEnabled() &&
+         base::FeatureList::IsEnabled(kPrefetchingOfflinePagesFeature);
 }
 
 bool IsOfflinePagesLoadSignalCollectingEnabled() {
@@ -140,7 +141,8 @@ std::string GetPrefetchingOfflinePagesExperimentTag() {
 }
 
 bool IsOfflineIndicatorFeatureEnabled() {
-  return base::FeatureList::IsEnabled(kOfflineIndicatorFeature);
+  return IsOfflinePagesEnabled() &&
+         base::FeatureList::IsEnabled(kOfflineIndicatorFeature);
 }
 
 bool IsOfflineIndicatorAlwaysHttpProbeEnabled() {
@@ -149,6 +151,14 @@ bool IsOfflineIndicatorAlwaysHttpProbeEnabled() {
 
 bool IsOnTheFlyMhtmlHashComputationEnabled() {
   return base::FeatureList::IsEnabled(kOnTheFlyMhtmlHashComputationFeature);
+}
+
+bool IsOfflinePagesEnabled() {
+#if defined(DISABLE_OFFLINE_PAGES_TOUCHLESS)
+  return false;
+#else
+  return true;
+#endif  // defined(DISABLE_OFFLINE_PAGES_TOUCHLESS)
 }
 
 }  // namespace offline_pages

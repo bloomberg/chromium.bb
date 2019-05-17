@@ -215,8 +215,6 @@ source_set("unit_tests") {
   sources = [
     "generate_page_bundle_request_unittest.cc",
     "get_operation_request_unittest.cc",
-    "prefetch_dispatcher_impl_unittest.cc",
-    "prefetch_download_flow_unittest.cc",
     "prefetch_downloader_impl_unittest.cc",
     "prefetch_gcm_app_handler_unittest.cc",
     "prefetch_importer_impl_unittest.cc",
@@ -259,6 +257,7 @@ source_set("unit_tests") {
     "//components/download/public/background_service/test:test_support",
     "//components/gcm_driver/instance_id",
     "//components/image_fetcher/core:test_support",
+    "//components/offline_pages/buildflags",
     "//components/offline_pages/core",
     "//components/offline_pages/core:switches",
     "//components/offline_pages/core:test_support",
@@ -275,4 +274,15 @@ source_set("unit_tests") {
     "//testing/gtest",
     "//url",
   ]
+
+  defines = []
+
+  if (defined(notouch_build) && notouch_build) {
+    defines += [ "DISABLE_OFFLINE_PAGES_TOUCHLESS" ]
+  } else {
+    sources += [
+      "prefetch_dispatcher_impl_unittest.cc",
+      "prefetch_download_flow_unittest.cc",
+    ]
+  }
 }
