@@ -96,5 +96,23 @@ TEST_F(ServiceDirectoryTest, NoService) {
   VerifyTestInterface(&stub, ZX_ERR_PEER_CLOSED);
 }
 
+// Verify that we can connect to a debug service.
+TEST_F(ServiceDirectoryTest, ConnectDebugService) {
+  // Remove the public service binding.
+  service_binding_.reset();
+
+  // Publish the test service to the "debug" directory.
+  ScopedServiceBinding<testfidl::TestInterface> debug_service_binding(
+      service_directory_->debug(), &test_service_);
+
+  auto debug_stub = debug_service_directory_client_
+                        ->ConnectToService<testfidl::TestInterface>();
+  VerifyTestInterface(&debug_stub, ZX_OK);
+
+  auto release_stub = public_service_directory_client_
+                          ->ConnectToService<testfidl::TestInterface>();
+  VerifyTestInterface(&release_stub, ZX_ERR_PEER_CLOSED);
+}
+
 }  // namespace fuchsia
 }  // namespace base

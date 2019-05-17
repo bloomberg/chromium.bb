@@ -31,6 +31,15 @@ ServiceDirectoryTestBase::ServiceDirectoryTestBase() {
   public_service_directory_client_ =
       std::make_unique<ServiceDirectoryClient>(std::move(svc_directory));
 
+  // Create the ServiceDirectoryClient, connected to the "debug" sub-directory.
+  fidl::InterfaceHandle<::fuchsia::io::Directory> debug_directory;
+  CHECK_EQ(fdio_service_connect_at(
+               directory.channel().get(), "/debug/.",
+               debug_directory.NewRequest().TakeChannel().release()),
+           ZX_OK);
+  debug_service_directory_client_ =
+      std::make_unique<ServiceDirectoryClient>(std::move(debug_directory));
+
   // Create the ServiceDirectoryClient, connected to the "public" sub-directory
   // (same contents as "svc", provided for compatibility).
   fidl::InterfaceHandle<::fuchsia::io::Directory> public_directory;
