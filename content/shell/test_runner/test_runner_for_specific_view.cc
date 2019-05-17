@@ -625,13 +625,17 @@ void TestRunnerForSpecificView::SetIsolatedWorldInfo(
     int world_id,
     v8::Local<v8::Value> security_origin,
     v8::Local<v8::Value> content_security_policy) {
-  CHECK(security_origin->IsString() || security_origin->IsNull());
-  CHECK(content_security_policy->IsString() ||
-        content_security_policy->IsNull());
+  if (!security_origin->IsString() && !security_origin->IsNull())
+    return;
+
+  if (!content_security_policy->IsString() && !content_security_policy->IsNull()) {
+    return;
+  }
 
   // If |content_security_policy| is specified, |security_origin| must also be
   // specified.
-  CHECK(content_security_policy->IsNull() || security_origin->IsString());
+  if (content_security_policy->IsString() && security_origin->IsNull())
+    return;
 
   blink::WebIsolatedWorldInfo info;
   if (security_origin->IsString()) {
