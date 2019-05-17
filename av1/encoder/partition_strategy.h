@@ -65,15 +65,6 @@ void av1_simple_motion_search_early_term_none(AV1_COMP *const cpi,
                                               const RD_STATS *none_rdc,
                                               int *early_terminate);
 
-// Early terminates after PARTITION_NONE in firstpass of two pass partition
-// search.
-void av1_firstpass_simple_motion_search_early_term(AV1_COMP *const cpi,
-                                                   MACROBLOCK *x,
-                                                   PC_TREE *pc_tree, int mi_row,
-                                                   int mi_col, BLOCK_SIZE bsize,
-                                                   const RD_STATS *none_rdc,
-                                                   int *do_square_split);
-
 // Get the features for selecting the max and min partition size. Currently this
 // performs simple_motion_search on 16X16 subblocks of the current superblock,
 // and then extract the statistics of sse and motion vectors as features.
@@ -93,14 +84,6 @@ void av1_ml_early_term_after_split(AV1_COMP *const cpi, MACROBLOCK *const x,
                                    int64_t *split_block_rd, int mi_row,
                                    int mi_col,
                                    int *const terminate_partition_search);
-
-// Use data from first partition pass to emit split_scores and none_scores.
-// Returns 0 if the firstpass data is not valid, 1  otherwise.
-// split_score indicates confidence of picking split partition;
-// none_score indicates confidence of picking none partition;
-int av1_ml_prune_2pass_split_partition(const PC_TREE_STATS *pc_tree_stats,
-                                       BLOCK_SIZE bsize, int *split_score,
-                                       int *none_score);
 
 // Use the rdcost ratio and source var ratio to prune PARTITION_HORZ and
 // PARTITION_VERT.

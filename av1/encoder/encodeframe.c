@@ -2176,19 +2176,7 @@ static void rd_test_partition3(AV1_COMP *const cpi, ThreadData *td,
 
 static void reset_partition(PC_TREE *pc_tree, BLOCK_SIZE bsize) {
   pc_tree->partitioning = PARTITION_NONE;
-  pc_tree->cb_search_range = SEARCH_FULL_PLANE;
   pc_tree->none.rd_stats.skip = 0;
-
-  pc_tree->pc_tree_stats.valid = 0;
-  pc_tree->pc_tree_stats.split = 0;
-  pc_tree->pc_tree_stats.skip = 0;
-  pc_tree->pc_tree_stats.rdcost = INT64_MAX;
-
-  for (int i = 0; i < 4; i++) {
-    pc_tree->pc_tree_stats.sub_block_split[i] = 0;
-    pc_tree->pc_tree_stats.sub_block_skip[i] = 0;
-    pc_tree->pc_tree_stats.sub_block_rdcost[i] = INT64_MAX;
-  }
 
   if (bsize >= BLOCK_8X8) {
     BLOCK_SIZE subsize = get_partition_subsize(bsize, PARTITION_SPLIT);
@@ -2340,58 +2328,6 @@ static void rd_pick_partition(AV1_COMP *const cpi, ThreadData *td,
   if (bsize > cpi->sf.use_square_partition_only_threshold) {
     partition_horz_allowed &= !has_rows;
     partition_vert_allowed &= !has_cols;
-  }
-
-  if (bsize > BLOCK_4X4 && x->use_cb_search_range) {
-    int split_score = 0;
-    int none_score = 0;
-    const int score_valid = av1_ml_prune_2pass_split_partition(
-        &pc_tree->pc_tree_stats, bsize, &split_score, &none_score);
-    if (score_valid) {
-      {
-        const int only_split_thresh = 300;
-        const int no_none_thresh = 250;
-        const int no_split_thresh = 0;
-        if (split_score > only_split_thresh) {
-          partition_none_allowed = 0;
-          partition_horz_allowed = 0;
-          partition_vert_allowed = 0;
-        } else if (split_score > no_none_thresh) {
-          partition_none_allowed = 0;
-        }
-        if (split_score < no_split_thresh) do_square_split = 0;
-      }
-      {
-        const int no_split_thresh = 120;
-        const int no_none_thresh = -120;
-        if (none_score > no_split_thresh && partition_none_allowed)
-          do_square_split = 0;
-        if (none_score < no_none_thresh) partition_none_allowed = 0;
-      }
-    } else {
-      if (pc_tree->cb_search_range == SPLIT_PLANE) {
-        partition_none_allowed = 0;
-        partition_horz_allowed = 0;
-        partition_vert_allowed = 0;
-      }
-      if (pc_tree->cb_search_range == SEARCH_SAME_PLANE) do_square_split = 0;
-      if (pc_tree->cb_search_range == NONE_PARTITION_PLANE) {
-        do_square_split = 0;
-        partition_horz_allowed = 0;
-        partition_vert_allowed = 0;
-      }
-    }
-
-    // Fall back to default values in case all partition modes are rejected.
-    if (partition_none_allowed == 0 && do_square_split == 0 &&
-        partition_horz_allowed == 0 && partition_vert_allowed == 0) {
-      do_square_split = bsize_at_least_8x8;
-      partition_none_allowed = has_rows && has_cols;
-      partition_horz_allowed = has_cols && yss <= xss && bsize_at_least_8x8 &&
-                               cpi->oxcf.enable_rect_partitions;
-      partition_vert_allowed = has_rows && xss <= yss && bsize_at_least_8x8 &&
-                               cpi->oxcf.enable_rect_partitions;
-    }
   }
 
   xd->above_txfm_context = cm->above_txfm_context[tile_info->tile_row] + mi_col;
@@ -3906,8 +3842,7 @@ static void encode_sb_row(AV1_COMP *cpi, ThreadData *td, TileDataEnc *tile_data,
 
     if ((sf->simple_motion_search_split ||
          sf->simple_motion_search_prune_rect ||
-         sf->simple_motion_search_early_term_none ||
-         sf->firstpass_simple_motion_search_early_term) &&
+         sf->simple_motion_search_early_term_none) &&
         !frame_is_intra_only(cm) && !use_nonrd_mode) {
       init_simple_motion_search_mvs(pc_root);
     }
@@ -3961,7 +3896,6 @@ static void encode_sb_row(AV1_COMP *cpi, ThreadData *td, TileDataEnc *tile_data,
     } else {
       adjust_rdmult_tpl_model(cpi, x, mi_row, mi_col);
       reset_partition(pc_root, sb_size);
-      x->use_cb_search_range = 0;
 
 #if CONFIG_COLLECT_COMPONENT_TIMING
       start_timing(cpi, rd_pick_partition_time);

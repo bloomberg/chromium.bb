@@ -193,9 +193,6 @@ struct macroblock {
   // prune_comp_search_by_single_result (3:MAX_REF_MV_SEARCH)
   SimpleRDState simple_rd_state[SINGLE_REF_MODES][3];
 
-  // Activate constrained coding block partition search range.
-  int use_cb_search_range;
-
   // Inter macroblock RD search info.
   MB_RD_RECORD mb_rd_record;
 

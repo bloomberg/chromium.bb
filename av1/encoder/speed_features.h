@@ -383,10 +383,6 @@ typedef struct SPEED_FEATURES {
   // 1 - 2 increasing aggressiveness in order.
   int ml_early_term_after_part_split_level;
 
-  // Terminate early in firstpass of two_pass partition search for faster
-  // firstpass.
-  int firstpass_simple_motion_search_early_term;
-
   // Skip rectangular partition test when partition type none gives better
   // rd than partition type split. Can take values 0 - 2, 0 referring to no
   // skipping, and 1 - 2 increasing aggressiveness of skipping in order.
