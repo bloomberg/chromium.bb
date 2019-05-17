@@ -153,9 +153,17 @@ void ScreenOrientationControllerImpl::NotifyOrientationChanged() {
 
   // Notify current orientation object.
   if (IsActive() && orientation_) {
-    ScopedAllowFullscreen allow_fullscreen(
-        ScopedAllowFullscreen::kOrientationChange);
-    orientation_->DispatchEvent(*Event::Create(event_type_names::kChange));
+    GetExecutionContext()
+        ->GetTaskRunner(TaskType::kMiscPlatformAPI)
+        ->PostTask(FROM_HERE,
+                   WTF::Bind(
+                       [](ScreenOrientation* orientation) {
+                         ScopedAllowFullscreen allow_fullscreen(
+                             ScopedAllowFullscreen::kOrientationChange);
+                         orientation->DispatchEvent(
+                             *Event::Create(event_type_names::kChange));
+                       },
+                       WrapPersistent(orientation_.Get())));
   }
 
   // ... and child frames, if they have a ScreenOrientationControllerImpl.
