@@ -121,6 +121,9 @@ class OverlayWindowViews : public content::OverlayWindow,
   // Updates the bounds of the controls.
   void UpdateControlsBounds();
 
+  // Called when the bounds of the controls should be updated.
+  void OnUpdateControlsBounds();
+
   // Update the size of each controls view as the size of the window changes.
   void UpdateButtonControlsSize();
 
@@ -217,6 +220,9 @@ class OverlayWindowViews : public content::OverlayWindow,
 
   // Automatically hides the controls a few seconds after user tap gesture.
   base::RetainingOneShotTimer hide_controls_timer_;
+
+  // Timer used to update controls bounds.
+  std::unique_ptr<base::OneShotTimer> update_controls_bounds_timer_;
 
   // Current playback state on the video in Picture-in-Picture window. It is
   // used to toggle play/pause/replay button.

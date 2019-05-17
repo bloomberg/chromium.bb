@@ -79,6 +79,10 @@ const int kSecondaryControlBottomMargin = 16;
 // Margin between controls.
 const int kControlMargin = 32;
 
+// Delay in milliseconds before controls bounds are updated. It is the same as
+// HIDE_NOTIFICATION_DELAY_MILLIS in MediaSessionTabHelper.java
+const int kUpdateControlsBoundsDelayMs = 1000;
+
 // Returns the quadrant the OverlayWindowViews is primarily in on the current
 // work area.
 OverlayWindowViews::WindowQuadrant GetCurrentWindowQuadrant(
@@ -511,6 +515,15 @@ void OverlayWindowViews::UpdateControlsVisibility(bool is_visible) {
 }
 
 void OverlayWindowViews::UpdateControlsBounds() {
+  update_controls_bounds_timer_.reset(new base::OneShotTimer());
+  update_controls_bounds_timer_->Start(
+      FROM_HERE,
+      base::TimeDelta::FromMilliseconds(kUpdateControlsBoundsDelayMs),
+      base::BindOnce(&OverlayWindowViews::OnUpdateControlsBounds,
+                     base::Unretained(this)));
+}
+
+void OverlayWindowViews::OnUpdateControlsBounds() {
   // Adding an extra pixel to width/height makes sure the scrim covers the
   // entire window when the platform has fractional scaling applied.
   gfx::Rect larger_window_bounds =
@@ -688,6 +701,9 @@ void OverlayWindowViews::ShowInactive() {
         ash::kPipRoundedCornerRadius);
   }
 #endif
+
+  // Update immediately controls bounds.
+  OnUpdateControlsBounds();
 
   // If this is not the first time the window is shown, this will be a no-op.
   has_been_shown_ = true;

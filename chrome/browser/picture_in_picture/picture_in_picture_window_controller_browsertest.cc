@@ -2046,6 +2046,10 @@ IN_PROC_BROWSER_TEST_F(MediaSessionPictureInPictureWindowControllerBrowserTest,
   EXPECT_TRUE(
       overlay_window->next_track_controls_view_for_testing()->IsDrawn());
 
+  gfx::Rect next_track_bounds =
+      overlay_window->next_track_controls_view_for_testing()
+          ->GetContentsBounds();
+
   // Unset action handler and check that Next Track button is not displayed when
   // video plays and mouse is hovering over the window.
   ASSERT_TRUE(content::ExecuteScript(
@@ -2054,6 +2058,11 @@ IN_PROC_BROWSER_TEST_F(MediaSessionPictureInPictureWindowControllerBrowserTest,
   MoveMouseOver(overlay_window);
   EXPECT_FALSE(
       overlay_window->next_track_controls_view_for_testing()->IsDrawn());
+
+  // Next Track button is still at the same previous location.
+  EXPECT_EQ(next_track_bounds,
+            overlay_window->next_track_controls_view_for_testing()
+                ->GetContentsBounds());
 }
 
 // Tests that a Previous Track button is displayed in the Picture-in-Picture
@@ -2092,6 +2101,10 @@ IN_PROC_BROWSER_TEST_F(MediaSessionPictureInPictureWindowControllerBrowserTest,
   EXPECT_TRUE(
       overlay_window->previous_track_controls_view_for_testing()->IsDrawn());
 
+  gfx::Rect previous_track_bounds =
+      overlay_window->previous_track_controls_view_for_testing()
+          ->GetContentsBounds();
+
   // Unset action handler and check that Previous Track button is not displayed
   // when video plays and mouse is hovering over the window.
   ASSERT_TRUE(content::ExecuteScript(
@@ -2100,6 +2113,11 @@ IN_PROC_BROWSER_TEST_F(MediaSessionPictureInPictureWindowControllerBrowserTest,
   MoveMouseOver(overlay_window);
   EXPECT_FALSE(
       overlay_window->previous_track_controls_view_for_testing()->IsDrawn());
+
+  // Previous Track button is still at the same previous location.
+  EXPECT_EQ(previous_track_bounds,
+            overlay_window->previous_track_controls_view_for_testing()
+                ->GetContentsBounds());
 }
 
 // Tests that clicking the Skip Ad button in the Picture-in-Picture window
