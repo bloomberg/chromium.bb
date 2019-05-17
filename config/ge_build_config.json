@@ -2003,6 +2003,7 @@
           "board_name": "grunt",
           "name": "aleena",
           "test_suites": [
+            "sanity",
             "bvt-inline",
             "bvt-tast-cq",
             "bvt-installer",
