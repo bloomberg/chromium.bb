@@ -67,6 +67,25 @@ class LayerTreeHostClientForTesting;
 // thread, but be aware that ending the test is an asynchronous process.
 class LayerTreeTest : public testing::Test, public TestHooks {
  public:
+  // TODO(sgilhuly): Once the pixel tests are working on skia gl, add the option
+  // for skia vulkan.
+  enum RendererType {
+    RENDERER_GL,
+    RENDERER_SKIA_GL,
+    RENDERER_SOFTWARE,
+  };
+
+  static std::string TestTypeToString(RendererType renderer_type) {
+    switch (renderer_type) {
+      case RENDERER_GL:
+        return "GL";
+      case RENDERER_SKIA_GL:
+        return "Skia GL";
+      case RENDERER_SOFTWARE:
+        return "Software";
+    }
+  }
+
   ~LayerTreeTest() override;
 
   virtual void EndTest();
@@ -178,8 +197,10 @@ class LayerTreeTest : public testing::Test, public TestHooks {
     begin_frame_source_ = begin_frame_source;
   }
 
-  bool use_skia_renderer_ = false;
-  bool use_software_renderer_ = false;
+  bool use_skia_renderer() { return renderer_type_ == RENDERER_SKIA_GL; }
+  bool use_software_renderer() { return renderer_type_ == RENDERER_SOFTWARE; }
+
+  RendererType renderer_type_ = RENDERER_GL;
 
  private:
   virtual void DispatchAddNoDamageAnimation(

@@ -8683,7 +8683,7 @@ class LayerTreeHostTestImageAnimationSynchronousSchedulingSoftwareDraw
   void InitializeSettings(LayerTreeSettings* settings) override {
     LayerTreeHostTestImageAnimationSynchronousScheduling::InitializeSettings(
         settings);
-    use_software_renderer_ = true;
+    renderer_type_ = RENDERER_SOFTWARE;
   }
 
   void AfterTest() override {

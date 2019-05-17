@@ -17,6 +17,21 @@
 
 namespace cc {
 
+namespace {
+
+LayerTreeTest::RendererType GetRendererType(PixelResourceTestCase test_case) {
+  switch (test_case) {
+    case SOFTWARE:
+      return LayerTreeTest::RENDERER_SOFTWARE;
+    case SKIA_GL:
+      return LayerTreeTest::RENDERER_SKIA_GL;
+    default:
+      return LayerTreeTest::RENDERER_GL;
+  }
+}
+
+}  // namespace
+
 LayerTreeHostPixelResourceTest::LayerTreeHostPixelResourceTest(
     PixelResourceTestCase test_case,
     Layer::LayerMaskType mask_type)
@@ -30,16 +45,6 @@ void LayerTreeHostPixelResourceTest::InitializeFromTestCase(
     PixelResourceTestCase test_case) {
   DCHECK(!initialized_);
   test_case_ = test_case;
-  switch (test_case) {
-    case SOFTWARE:
-      SetPixelTestType(PIXEL_TEST_SOFTWARE);
-      break;
-    case SKIA_GL:
-      SetPixelTestType(PIXEL_TEST_SKIA_GL);
-      break;
-    default:
-      SetPixelTestType(PIXEL_TEST_GL);
-  }
   initialized_ = true;
 }
 
@@ -80,14 +85,14 @@ LayerTreeHostPixelResourceTest::CreateRasterBufferProvider(
   switch (test_case_) {
     case SOFTWARE:
       EXPECT_FALSE(compositor_context_provider);
-      EXPECT_EQ(PIXEL_TEST_SOFTWARE, test_type_);
+      EXPECT_EQ(RENDERER_SOFTWARE, renderer_type_);
 
       return std::make_unique<BitmapRasterBufferProvider>(
           host_impl->layer_tree_frame_sink());
     case GPU:
       EXPECT_TRUE(compositor_context_provider);
       EXPECT_TRUE(worker_context_provider);
-      EXPECT_EQ(PIXEL_TEST_GL, test_type_);
+      EXPECT_EQ(RENDERER_GL, renderer_type_);
 
       return std::make_unique<GpuRasterBufferProvider>(
           compositor_context_provider, worker_context_provider, false, 0,
@@ -95,7 +100,7 @@ LayerTreeHostPixelResourceTest::CreateRasterBufferProvider(
     case ZERO_COPY:
       EXPECT_TRUE(compositor_context_provider);
       EXPECT_TRUE(gpu_memory_buffer_manager);
-      EXPECT_EQ(PIXEL_TEST_GL, test_type_);
+      EXPECT_EQ(RENDERER_GL, renderer_type_);
 
       return std::make_unique<ZeroCopyRasterBufferProvider>(
           gpu_memory_buffer_manager, compositor_context_provider,
@@ -103,7 +108,7 @@ LayerTreeHostPixelResourceTest::CreateRasterBufferProvider(
     case ONE_COPY:
       EXPECT_TRUE(compositor_context_provider);
       EXPECT_TRUE(worker_context_provider);
-      EXPECT_EQ(PIXEL_TEST_GL, test_type_);
+      EXPECT_EQ(RENDERER_GL, renderer_type_);
 
       return std::make_unique<OneCopyRasterBufferProvider>(
           task_runner, compositor_context_provider, worker_context_provider,
@@ -112,7 +117,7 @@ LayerTreeHostPixelResourceTest::CreateRasterBufferProvider(
     case SKIA_GL:
       EXPECT_TRUE(compositor_context_provider);
       EXPECT_TRUE(worker_context_provider);
-      EXPECT_EQ(PIXEL_TEST_SKIA_GL, test_type_);
+      EXPECT_EQ(RENDERER_SKIA_GL, renderer_type_);
 
       return std::make_unique<GpuRasterBufferProvider>(
           compositor_context_provider, worker_context_provider, false, 0,
@@ -124,20 +129,21 @@ LayerTreeHostPixelResourceTest::CreateRasterBufferProvider(
 void LayerTreeHostPixelResourceTest::RunPixelResourceTest(
     scoped_refptr<Layer> content_root,
     base::FilePath file_name) {
-  RunPixelTest(test_type_, content_root, file_name);
+  RunPixelTest(GetRendererType(test_case_), content_root, file_name);
 }
 
 void LayerTreeHostPixelResourceTest::RunPixelResourceTest(
     scoped_refptr<Layer> content_root,
     const SkBitmap& expected_bitmap) {
-  RunPixelTest(test_type_, content_root, expected_bitmap);
+  RunPixelTest(GetRendererType(test_case_), content_root, expected_bitmap);
 }
 
 void LayerTreeHostPixelResourceTest::RunPixelResourceTestWithLayerList(
     scoped_refptr<Layer> root_layer,
     base::FilePath file_name,
     PropertyTrees* property_trees) {
-  RunPixelTestWithLayerList(test_type_, root_layer, file_name, property_trees);
+  RunPixelTestWithLayerList(GetRendererType(test_case_), root_layer, file_name,
+                            property_trees);
 }
 
 ParameterizedPixelResourceTest::ParameterizedPixelResourceTest()

@@ -960,7 +960,7 @@ class LayerTreeHostMaskAsBlendingPixelTest
       average_error_allowed_in_bad_pixels = 3.5f;
       large_error_allowed = 15;
       small_error_allowed = 1;
-    } else if (test_type_ != PIXEL_TEST_SOFTWARE) {
+    } else if (test_case_ != SOFTWARE) {
       percentage_pixels_small_error = 0.9f;
       percentage_pixels_error = 6.5f;
       average_error_allowed_in_bad_pixels = 3.5f;
@@ -1213,7 +1213,7 @@ TEST_P(LayerTreeHostMaskAsBlendingPixelTest, RotatedClippedCircle) {
   mask_isolation->AddChild(mask_layer);
 
   base::FilePath image_name =
-      (test_type_ == PIXEL_TEST_SOFTWARE)
+      (test_case_ == SOFTWARE)
           ? base::FilePath(
                 FILE_PATH_LITERAL("mask_as_blending_rotated_circle.png"))
           : base::FilePath(
@@ -1260,7 +1260,7 @@ TEST_P(LayerTreeHostMaskAsBlendingPixelTest, RotatedClippedCircleUnderflow) {
   mask_isolation->AddChild(mask_layer);
 
   base::FilePath image_name =
-      (test_type_ == PIXEL_TEST_SOFTWARE)
+      (test_case_ == SOFTWARE)
           ? base::FilePath(FILE_PATH_LITERAL(
                 "mask_as_blending_rotated_circle_underflow.png"))
           : base::FilePath(FILE_PATH_LITERAL(

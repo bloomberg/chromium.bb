@@ -18,7 +18,7 @@ namespace {
 
 class LayerTreeHostSynchronousPixelTest
     : public LayerTreePixelTest,
-      public ::testing::WithParamInterface<LayerTreePixelTest::PixelTestType> {
+      public ::testing::WithParamInterface<LayerTreeTest::RendererType> {
  protected:
   void InitializeSettings(LayerTreeSettings* settings) override {
     LayerTreePixelTest::InitializeSettings(settings);
@@ -27,7 +27,7 @@ class LayerTreeHostSynchronousPixelTest
     settings->use_zero_copy = use_zero_copy_;
   }
 
-  LayerTreePixelTest::PixelTestType pixel_test_type() { return GetParam(); }
+  LayerTreeTest::RendererType renderer_type() { return GetParam(); }
 
   void BeginTest() override {
     LayerTreePixelTest::BeginTest();
@@ -46,7 +46,7 @@ class LayerTreeHostSynchronousPixelTest
     root->SetBounds(bounds);
     root->SetIsDrawable(true);
 
-    RunSingleThreadedPixelTest(pixel_test_type(), root,
+    RunSingleThreadedPixelTest(renderer_type(), root,
                                base::FilePath(FILE_PATH_LITERAL("green.png")));
   }
 
@@ -54,11 +54,10 @@ class LayerTreeHostSynchronousPixelTest
   bool use_zero_copy_ = false;
 };
 
-INSTANTIATE_TEST_SUITE_P(
-    ,
-    LayerTreeHostSynchronousPixelTest,
-    ::testing::Values(LayerTreePixelTest::PIXEL_TEST_GL,
-                      LayerTreePixelTest::PIXEL_TEST_SKIA_GL));
+INSTANTIATE_TEST_SUITE_P(,
+                         LayerTreeHostSynchronousPixelTest,
+                         ::testing::Values(LayerTreeTest::RENDERER_GL,
+                                           LayerTreeTest::RENDERER_SKIA_GL));
 
 TEST_P(LayerTreeHostSynchronousPixelTest, OneContentLayerZeroCopy) {
   use_zero_copy_ = true;

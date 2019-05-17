@@ -90,7 +90,7 @@ class LayerTreeHostTilesPixelTest : public LayerTreePixelTest {
                           base::FilePath file_name) {
     raster_mode_ = mode;
 
-    PixelTestType test_type = PIXEL_TEST_SOFTWARE;
+    RendererType renderer_type = RENDERER_SOFTWARE;
     switch (mode) {
       case PARTIAL_ONE_COPY:
       case FULL_ONE_COPY:
@@ -98,17 +98,17 @@ class LayerTreeHostTilesPixelTest : public LayerTreePixelTest {
       case FULL_GPU:
       case PARTIAL_GPU_LOW_BIT_DEPTH:
       case FULL_GPU_LOW_BIT_DEPTH:
-        test_type = PIXEL_TEST_GL;
+        renderer_type = RENDERER_GL;
         break;
       case PARTIAL_BITMAP:
       case FULL_BITMAP:
-        test_type = PIXEL_TEST_SOFTWARE;
+        renderer_type = RENDERER_SOFTWARE;
     }
 
     if (threaded)
-      RunPixelTest(test_type, content_root, file_name);
+      RunPixelTest(renderer_type, content_root, file_name);
     else
-      RunSingleThreadedPixelTest(test_type, content_root, file_name);
+      RunSingleThreadedPixelTest(renderer_type, content_root, file_name);
   }
 
   base::FilePath ref_file_;

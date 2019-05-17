@@ -38,7 +38,6 @@ namespace cc {
 
 LayerTreePixelTest::LayerTreePixelTest()
     : pixel_comparator_(new ExactPixelComparator(true)),
-      test_type_(PIXEL_TEST_GL),
       property_trees_(nullptr),
       pending_texture_mailbox_callbacks_(0) {}
 
@@ -52,7 +51,7 @@ LayerTreePixelTest::CreateLayerTreeFrameSink(
     scoped_refptr<viz::RasterContextProvider>) {
   scoped_refptr<TestInProcessContextProvider> compositor_context_provider;
   scoped_refptr<TestInProcessContextProvider> worker_context_provider;
-  if (test_type_ == PIXEL_TEST_GL || test_type_ == PIXEL_TEST_SKIA_GL) {
+  if (renderer_type_ == RENDERER_GL || renderer_type_ == RENDERER_SKIA_GL) {
     compositor_context_provider = new TestInProcessContextProvider(
         /*enable_oop_rasterization=*/false, /*support_locking=*/false);
     worker_context_provider = new TestInProcessContextProvider(
@@ -94,7 +93,7 @@ std::unique_ptr<viz::OutputSurface>
 LayerTreePixelTest::CreateDisplayOutputSurfaceOnThread(
     scoped_refptr<viz::ContextProvider> compositor_context_provider) {
   std::unique_ptr<PixelTestOutputSurface> display_output_surface;
-  if (test_type_ == PIXEL_TEST_GL) {
+  if (renderer_type_ == RENDERER_GL) {
     // Pixel tests use a separate context for the Display to more closely
     // mimic texture transport from the renderer process to the Display
     // compositor.
@@ -108,7 +107,7 @@ LayerTreePixelTest::CreateDisplayOutputSurfaceOnThread(
     display_output_surface = std::make_unique<PixelTestOutputSurface>(
         std::move(display_context_provider), flipped_output_surface);
   } else {
-    EXPECT_EQ(PIXEL_TEST_SOFTWARE, test_type_);
+    EXPECT_EQ(RENDERER_SOFTWARE, renderer_type_);
     display_output_surface = std::make_unique<PixelTestOutputSurface>(
         std::make_unique<viz::SoftwareOutputDevice>());
   }
@@ -234,20 +233,20 @@ scoped_refptr<SolidColorLayer> LayerTreePixelTest::
   return layer;
 }
 
-void LayerTreePixelTest::RunPixelTest(PixelTestType test_type,
+void LayerTreePixelTest::RunPixelTest(RendererType renderer_type,
                                       scoped_refptr<Layer> content_root,
                                       base::FilePath file_name) {
-  SetPixelTestType(test_type);
+  renderer_type_ = renderer_type;
   content_root_ = content_root;
   readback_target_ = nullptr;
   ref_file_ = file_name;
   RunTest(CompositorMode::THREADED);
 }
 
-void LayerTreePixelTest::RunPixelTest(PixelTestType test_type,
+void LayerTreePixelTest::RunPixelTest(RendererType renderer_type,
                                       scoped_refptr<Layer> content_root,
                                       const SkBitmap& expected_bitmap) {
-  SetPixelTestType(test_type);
+  renderer_type_ = renderer_type;
   content_root_ = content_root;
   readback_target_ = nullptr;
   ref_file_ = base::FilePath();
@@ -256,11 +255,11 @@ void LayerTreePixelTest::RunPixelTest(PixelTestType test_type,
 }
 
 void LayerTreePixelTest::RunPixelTestWithLayerList(
-    PixelTestType test_type,
+    RendererType renderer_type,
     scoped_refptr<Layer> root_layer,
     base::FilePath file_name,
     PropertyTrees* property_trees) {
-  SetPixelTestType(test_type);
+  renderer_type_ = renderer_type;
   content_root_ = root_layer;
   property_trees_ = property_trees;
   readback_target_ = nullptr;
@@ -298,10 +297,10 @@ void LayerTreePixelTest::InitializeForLayerListMode(
 }
 
 void LayerTreePixelTest::RunSingleThreadedPixelTest(
-    PixelTestType test_type,
+    RendererType renderer_type,
     scoped_refptr<Layer> content_root,
     base::FilePath file_name) {
-  SetPixelTestType(test_type);
+  renderer_type_ = renderer_type;
   content_root_ = content_root;
   readback_target_ = nullptr;
   ref_file_ = file_name;
@@ -309,11 +308,11 @@ void LayerTreePixelTest::RunSingleThreadedPixelTest(
 }
 
 void LayerTreePixelTest::RunPixelTestWithReadbackTarget(
-    PixelTestType test_type,
+    RendererType renderer_type,
     scoped_refptr<Layer> content_root,
     Layer* target,
     base::FilePath file_name) {
-  SetPixelTestType(test_type);
+  renderer_type_ = renderer_type;
   content_root_ = content_root;
   readback_target_ = target;
   ref_file_ = file_name;

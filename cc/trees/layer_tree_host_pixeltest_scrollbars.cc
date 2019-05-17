@@ -95,7 +95,7 @@ TEST_F(LayerTreeHostScrollbarsPixelTest, NoScale) {
   layer->SetBounds(gfx::Size(200, 200));
   background->AddChild(layer);
 
-  RunPixelTest(PIXEL_TEST_GL, background,
+  RunPixelTest(RENDERER_GL, background,
                base::FilePath(FILE_PATH_LITERAL("spiral.png")));
 }
 
@@ -114,7 +114,7 @@ TEST_F(LayerTreeHostScrollbarsPixelTest, DeviceScaleFactor) {
   layer->SetBounds(gfx::Size(100, 100));
   background->AddChild(layer);
 
-  RunPixelTest(PIXEL_TEST_GL, background,
+  RunPixelTest(RENDERER_GL, background,
                base::FilePath(FILE_PATH_LITERAL("spiral_double_scale.png")));
 }
 
@@ -135,7 +135,7 @@ TEST_F(LayerTreeHostScrollbarsPixelTest, TransformScale) {
   scale_transform.Scale(2.0, 2.0);
   layer->SetTransform(scale_transform);
 
-  RunPixelTest(PIXEL_TEST_GL, background,
+  RunPixelTest(RENDERER_GL, background,
                base::FilePath(FILE_PATH_LITERAL("spiral_double_scale.png")));
 }
 
@@ -179,7 +179,7 @@ TEST_F(LayerTreeHostScrollbarsPixelTest, MAYBE_HugeTransformScale) {
   scale_transform.Scale(scale, scale);
   layer->SetTransform(scale_transform);
 
-  RunPixelTest(PIXEL_TEST_GL, background,
+  RunPixelTest(RENDERER_GL, background,
                base::FilePath(FILE_PATH_LITERAL("spiral_64_scale.png")));
 }
 
@@ -261,7 +261,7 @@ TEST_F(LayerTreeHostOverlayScrollbarsPixelTest, NinePatchScrollbarScaledUp) {
   layer->SetPosition(gfx::PointF(185, 10));
 
   RunPixelTest(
-      PIXEL_TEST_GL, background,
+      RENDERER_GL, background,
       base::FilePath(FILE_PATH_LITERAL("overlay_scrollbar_scaled_up.png")));
 }
 
@@ -285,7 +285,7 @@ TEST_F(LayerTreeHostOverlayScrollbarsPixelTest, NinePatchScrollbarScaledDown) {
   layer->SetPosition(gfx::PointF(185, 10));
 
   RunPixelTest(
-      PIXEL_TEST_GL, background,
+      RENDERER_GL, background,
       base::FilePath(FILE_PATH_LITERAL("overlay_scrollbar_scaled_down.png")));
 }
 

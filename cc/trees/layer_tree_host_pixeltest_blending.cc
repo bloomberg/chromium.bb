@@ -213,10 +213,10 @@ class LayerTreeHostBlendingPixelTest
     InitializeFromTestCase(resource_type());
 
     // Force shaders only applies to gl renderer.
-    if (test_type_ != PIXEL_TEST_GL && flags & kForceShaders)
+    if (renderer_type_ != RENDERER_GL && flags & kForceShaders)
       return;
 
-    SCOPED_TRACE(TestTypeToString(test_type_));
+    SCOPED_TRACE(TestTypeToString(renderer_type_));
     SCOPED_TRACE(SkBlendMode_Name(current_blend_mode()));
 
     scoped_refptr<SolidColorLayer> root = CreateSolidColorLayer(
@@ -232,7 +232,7 @@ class LayerTreeHostBlendingPixelTest
     this->force_antialiasing_ = (flags & kUseAntialiasing);
     this->force_blending_with_shaders_ = (flags & kForceShaders);
 
-    if ((flags & kUseAntialiasing) && (test_type_ == PIXEL_TEST_GL)) {
+    if ((flags & kUseAntialiasing) && (renderer_type_ == RENDERER_GL)) {
       // Blending results might differ with one pixel.
       // Don't allow large errors here, only off by ones.
       // However, large error still has to be specified to satisfy
