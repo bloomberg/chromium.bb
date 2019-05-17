@@ -214,4 +214,13 @@ public final class DownloadNotificationUmaHelper {
         RecordHistogram.recordEnumeratedHistogram(
                 "MobileDownload.Background", type, UmaBackgroundDownload.NUM_ENTRIES);
     }
+
+    /**
+     * Helper method to record the first background download resumption UMA.
+     * @param type UMA type to be recorded.
+     */
+    static void recordFirstBackgroundDownloadHistogram(@UmaBackgroundDownload int type) {
+        RecordHistogram.recordEnumeratedHistogram(
+                "MobileDownload.Background.FirstDownload", type, UmaBackgroundDownload.NUM_ENTRIES);
+    }
 }
