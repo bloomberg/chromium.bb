@@ -242,8 +242,24 @@ void EasyUnlockServiceRegular::UseLoadedRemoteDevices(
     device_list->Append(std::move(dict));
   }
 
-  // TODO(tengs): Rename this function after the easy_unlock app is replaced.
-  SetRemoteDevices(*device_list);
+  SetStoredRemoteDevices(*device_list);
+}
+
+void EasyUnlockServiceRegular::SetStoredRemoteDevices(
+    const base::ListValue& devices) {
+  std::string remote_devices_json;
+  JSONStringValueSerializer serializer(&remote_devices_json);
+  serializer.Serialize(devices);
+  PA_LOG(VERBOSE) << "Setting RemoteDevices:\n  " << remote_devices_json;
+
+  DictionaryPrefUpdate pairing_update(profile()->GetPrefs(),
+                                      prefs::kEasyUnlockPairing);
+  if (devices.empty())
+    pairing_update->RemoveWithoutPathExpansion(kKeyDevices, NULL);
+  else
+    pairing_update->SetKey(kKeyDevices, devices.Clone());
+
+  RefreshCryptohomeKeysIfPossible();
 }
 
 proximity_auth::ProximityAuthPrefManager*
@@ -294,23 +310,6 @@ const base::ListValue* EasyUnlockServiceRegular::GetRemoteDevices() const {
   if (pairing_dict && pairing_dict->GetList(kKeyDevices, &devices))
     return devices;
   return NULL;
-}
-
-void EasyUnlockServiceRegular::SetRemoteDevices(
-    const base::ListValue& devices) {
-  std::string remote_devices_json;
-  JSONStringValueSerializer serializer(&remote_devices_json);
-  serializer.Serialize(devices);
-  PA_LOG(VERBOSE) << "Setting RemoteDevices:\n  " << remote_devices_json;
-
-  DictionaryPrefUpdate pairing_update(profile()->GetPrefs(),
-                                      prefs::kEasyUnlockPairing);
-  if (devices.empty())
-    pairing_update->RemoveWithoutPathExpansion(kKeyDevices, NULL);
-  else
-    pairing_update->SetKey(kKeyDevices, devices.Clone());
-
-  RefreshCryptohomeKeysIfPossible();
 }
 
 std::string EasyUnlockServiceRegular::GetChallenge() const {

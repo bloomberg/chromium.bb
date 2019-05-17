@@ -72,6 +72,11 @@ class EasyUnlockServiceRegular
   void UseLoadedRemoteDevices(
       const multidevice::RemoteDeviceRefList& remote_devices);
 
+  // Persists Smart Lock host and local device to prefs, and then informs
+  // the base class to potentially update Smart Lock host and local device
+  // stored in the TPM.
+  void SetStoredRemoteDevices(const base::ListValue& devices);
+
   // EasyUnlockService implementation:
   proximity_auth::ProximityAuthPrefManager* GetProximityAuthPrefManager()
       override;
@@ -79,7 +84,6 @@ class EasyUnlockServiceRegular
   AccountId GetAccountId() const override;
   void ClearPermitAccess() override;
   const base::ListValue* GetRemoteDevices() const override;
-  void SetRemoteDevices(const base::ListValue& devices) override;
   std::string GetChallenge() const override;
   std::string GetWrappedSecret() const override;
   void RecordEasySignInOutcome(const AccountId& account_id,
