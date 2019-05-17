@@ -20,7 +20,6 @@
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/histogram_test_util.h"
-#include "ios/chrome/test/app/navigation_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/app/web_view_interaction_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
@@ -396,7 +395,8 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
   // A blank tab needed to switch to it after reloading.
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
-  chrome_test_util::LoadUrl(slowURL);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:slowURL
+                                  waitForCompletion:NO]);
   CHROME_EG_ASSERT_NO_ERROR(OpenNewIncognitoTabUsingUIAndEvictMainTabs());
 
   web::test::SetUpHttpServer(std::make_unique<web::DelayedResponseProvider>(
@@ -416,7 +416,7 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
   GREYAssert(
       [[GREYCondition conditionWithName:@"Wait for tab to restart loading."
                                   block:^BOOL() {
-                                    return chrome_test_util::IsLoading();
+                                    return [ChromeEarlGrey isLoading];
                                   }] waitWithTimeout:kWaitElementTimeout],
       @"Tab did not start loading.");
   [[GREYConfiguration sharedInstance]
@@ -528,8 +528,8 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
 
   chrome_test_util::HistogramTester histogramTester;
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
-  chrome_test_util::LoadUrl(slowURL);
-
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:slowURL
+                                  waitForCompletion:NO]);
   CHROME_EG_ASSERT_NO_ERROR(OpenNewIncognitoTabUsingUIAndEvictMainTabs());
 
   web::test::SetUpHttpServer(std::make_unique<web::DelayedResponseProvider>(
@@ -585,7 +585,8 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
   [[GREYConfiguration sharedInstance]
           setValue:@(NO)
       forConfigKey:kGREYConfigKeySynchronizationEnabled];
-  chrome_test_util::LoadUrl(slowURL);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:slowURL
+                                  waitForCompletion:NO]);
 
   // Ensure loading starts but is not finished.
   base::test::ios::SpinRunLoopWithMaxDelay(base::TimeDelta::FromSeconds(1));

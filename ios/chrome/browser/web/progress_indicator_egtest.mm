@@ -15,7 +15,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
-#include "ios/chrome/test/app/navigation_test_util.h"
 #import "ios/chrome/test/app/web_view_interaction_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
@@ -188,7 +187,8 @@ class InfinitePendingResponseProvider : public HtmlResponseProvider {
   web::test::SetUpHttpServer(std::move(uniqueInfinitePendingProvider));
   // The page being loaded never completes, so call the LoadUrl helper that
   // does not wait for the page to complete loading.
-  chrome_test_util::LoadUrl(infinitePendingURL);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:infinitePendingURL
+                                  waitForCompletion:NO]);
 
   // Wait until the page is half loaded.
   CHROME_EG_ASSERT_NO_ERROR(

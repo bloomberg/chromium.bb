@@ -13,7 +13,6 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
-#include "ios/chrome/test/app/navigation_test_util.h"
 #import "ios/chrome/test/app/web_view_interaction_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
@@ -198,7 +197,7 @@ id<GREYMatcher> WaitForOmniboxText(std::string text) {
 - (void)testChromeURLInvalid {
   // Navigate to the native error page chrome://invalidchromeurl.
   const std::string kChromeInvalidURL = "chrome://invalidchromeurl";
-  chrome_test_util::LoadUrl(GURL(kChromeInvalidURL));
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:GURL(kChromeInvalidURL)]);
 
   // Verify that the resulting page is an error page.
   [[EarlGrey selectElementWithMatcher:WaitForOmniboxText(kChromeInvalidURL)]

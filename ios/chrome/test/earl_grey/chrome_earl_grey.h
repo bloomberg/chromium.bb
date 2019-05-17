@@ -61,14 +61,26 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 #pragma mark - Navigation Utilities
 
 // Loads |URL| in the current WebState with transition type
+// ui::PAGE_TRANSITION_TYPED, and if waitForCompletion is YES
+// waits for the loading to complete within a timeout.
+// Returns nil on success, or else an NSError indicating why the operation
+// failed.
+- (NSError*)loadURL:(const GURL&)URL waitForCompletion:(BOOL)wait;
+
+// Loads |URL| in the current WebState with transition type
 // ui::PAGE_TRANSITION_TYPED, and waits for the loading to complete within a
-// timeout, or a GREYAssert is induced.
+// timeout. Returns nil on success, or else an NSError indicating why the
+// operation failed.
 // TODO(crbug.com/963613): Change return type to avoid when
 // CHROME_EG_ASSERT_NO_ERROR is removed.
 - (NSError*)loadURL:(const GURL&)URL;
 
-// Reloads the page and waits for the loading to complete within a timeout, or a
-// GREYAssert is induced.
+// Checks whether current WebState is loading.
+- (BOOL)isLoading WARN_UNUSED_RESULT;
+
+// Reloads the page and waits for the loading to complete within a timeout.
+// If the condition is not met within a timeout returns an NSError indicating
+// why the operation failed, otherwise nil.
 - (NSError*)reload WARN_UNUSED_RESULT;
 
 // Navigates back to the previous page and waits for the loading to complete

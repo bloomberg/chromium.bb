@@ -130,8 +130,12 @@ id ExecuteJavaScript(NSString* javascript,
 
 #pragma mark - Navigation Utilities
 
-- (NSError*)loadURL:(const GURL&)URL {
+- (NSError*)loadURL:(const GURL&)URL waitForCompletion:(BOOL)wait {
   chrome_test_util::LoadUrl(URL);
+  if (!wait) {
+    return nil;
+  }
+
   bool pageLoaded = chrome_test_util::WaitForPageToFinishLoading();
   EG_TEST_HELPER_ASSERT_TRUE(pageLoaded, @"Page did not complete loading");
 
@@ -142,6 +146,14 @@ id ExecuteJavaScript(NSString* javascript,
   }
 
   return nil;
+}
+
+- (NSError*)loadURL:(const GURL&)URL {
+  return [ChromeEarlGrey loadURL:URL waitForCompletion:YES];
+}
+
+- (BOOL)isLoading {
+  return chrome_test_util::IsLoading();
 }
 
 - (NSError*)reload {
