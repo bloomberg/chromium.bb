@@ -23,26 +23,27 @@
 #include "test/util.h"
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
-namespace AV1FrameError {
-
+namespace {
 typedef int64_t (*frame_error_func)(const uint8_t *const ref, int stride,
                                     const uint8_t *const dst, int p_width,
                                     int p_height, int p_stride);
-
+#if HAVE_AVX2
 const int kBlockWidth[] = {
   832, 834, 640, 1280, 1920,
 };
-
 const int kBlockHeight[] = {
   480, 482, 360, 720, 1080,
 };
+#endif
 typedef ::testing::tuple<frame_error_func, int, int> FrameErrorParam;
 
 class AV1FrameErrorTest : public ::testing::TestWithParam<FrameErrorParam> {
  public:
-  ~AV1FrameErrorTest();
-  void SetUp() { rnd_.Reset(libaom_test::ACMRandom::DeterministicSeed()); }
-  void TearDown() { libaom_test::ClearSystemState(); }
+  virtual ~AV1FrameErrorTest() {}
+  virtual void SetUp() {
+    rnd_.Reset(libaom_test::ACMRandom::DeterministicSeed());
+  }
+  virtual void TearDown() { libaom_test::ClearSystemState(); }
 
  protected:
   void RandomValues(frame_error_func test_impl, int width, int height);
@@ -50,35 +51,37 @@ class AV1FrameErrorTest : public ::testing::TestWithParam<FrameErrorParam> {
   void RunSpeedTest(frame_error_func test_impl, int width, int height);
   libaom_test::ACMRandom rnd_;
 };
-AV1FrameErrorTest::~AV1FrameErrorTest() { ; }
 
 void AV1FrameErrorTest::RandomValues(frame_error_func test_impl, int width,
                                      int height) {
-  int w = width;
-  int h = height;
-  const int stride = (((w * 3) / 2) + 15) & (~15);
-  const int max_blk_size = stride * h;
-  uint8_t *dst = (uint8_t *)aom_memalign(16, max_blk_size * sizeof(uint8_t));
-  uint8_t *ref = (uint8_t *)aom_memalign(16, max_blk_size * sizeof(uint8_t));
+  const int stride = (((width * 3) / 2) + 15) & (~15);
+  const int max_blk_size = stride * height;
+  uint8_t *dst, *ref;
+  dst = (uint8_t *)aom_memalign(16, max_blk_size * sizeof(*dst));
+  ref = (uint8_t *)aom_memalign(16, max_blk_size * sizeof(*ref));
+  ASSERT_TRUE(dst != NULL);
+  ASSERT_TRUE(ref != NULL);
   for (int i = 0; i < (max_blk_size); ++i) {
     dst[i] = rnd_.Rand8();
     ref[i] = rnd_.Rand8();
   }
-  int64_t ref_error = av1_calc_frame_error_c(ref, stride, dst, w, h, stride);
-  int64_t test_error = test_impl(ref, stride, dst, w, h, stride);
-  ASSERT_EQ(test_error, ref_error) << w << "x" << h;
+  const int64_t ref_error =
+      av1_calc_frame_error_c(ref, stride, dst, width, height, stride);
+  const int64_t test_error = test_impl(ref, stride, dst, width, height, stride);
+  ASSERT_EQ(test_error, ref_error) << width << "x" << height;
   aom_free(dst);
   aom_free(ref);
 }
 
 void AV1FrameErrorTest::ExtremeValues(frame_error_func test_impl, int width,
                                       int height) {
-  int w = width;
-  int h = height;
-  const int stride = (((w * 3) / 2) + 15) & (~15);
-  const int max_blk_size = stride * h;
-  uint8_t *dst = (uint8_t *)aom_memalign(16, max_blk_size * sizeof(uint8_t));
-  uint8_t *ref = (uint8_t *)aom_memalign(16, max_blk_size * sizeof(uint8_t));
+  const int stride = (((width * 3) / 2) + 15) & (~15);
+  const int max_blk_size = stride * height;
+  uint8_t *dst, *ref;
+  dst = (uint8_t *)aom_memalign(16, max_blk_size * sizeof(*dst));
+  ref = (uint8_t *)aom_memalign(16, max_blk_size * sizeof(*ref));
+  ASSERT_TRUE(dst != NULL);
+  ASSERT_TRUE(ref != NULL);
   for (int r = 0; r < 2; r++) {
     if (r == 0) {
       memset(dst, 0, max_blk_size);
@@ -87,9 +90,11 @@ void AV1FrameErrorTest::ExtremeValues(frame_error_func test_impl, int width,
       memset(dst, 255, max_blk_size);
       memset(ref, 0, max_blk_size);
     }
-    int64_t ref_error = av1_calc_frame_error_c(ref, stride, dst, w, h, stride);
-    int64_t test_error = test_impl(ref, stride, dst, w, h, stride);
-    ASSERT_EQ(test_error, ref_error) << w << "x" << h;
+    const int64_t ref_error =
+        av1_calc_frame_error_c(ref, stride, dst, width, height, stride);
+    const int64_t test_error =
+        test_impl(ref, stride, dst, width, height, stride);
+    ASSERT_EQ(test_error, ref_error) << width << "x" << height;
   }
   aom_free(dst);
   aom_free(ref);
@@ -97,16 +102,17 @@ void AV1FrameErrorTest::ExtremeValues(frame_error_func test_impl, int width,
 
 void AV1FrameErrorTest::RunSpeedTest(frame_error_func test_impl, int width,
                                      int height) {
-  const int w = width;
-  const int h = height;
-  const int stride = (((w * 3) / 2) + 15) & (~15);
-  const int max_blk_size = stride * h;
-  uint8_t *dst = (uint8_t *)aom_memalign(16, max_blk_size * sizeof(uint8_t));
-  uint8_t *ref = (uint8_t *)aom_memalign(16, max_blk_size * sizeof(uint8_t));
+  const int stride = (((width * 3) / 2) + 15) & (~15);
+  const int max_blk_size = stride * height;
+  uint8_t *dst, *ref;
+  dst = (uint8_t *)aom_memalign(16, max_blk_size * sizeof(*dst));
+  ref = (uint8_t *)aom_memalign(16, max_blk_size * sizeof(*ref));
+  ASSERT_TRUE(dst != NULL);
+  ASSERT_TRUE(ref != NULL);
   for (int i = 0; i < (max_blk_size); ++i) {
     dst[i] = ref[i] = rnd_.Rand8();
   }
-  const int num_loops = 10000000 / (w + h);
+  const int num_loops = 10000000 / (width + height);
   frame_error_func funcs[2] = { av1_calc_frame_error_c, test_impl };
   double elapsed_time[2] = { 0 };
   for (int i = 0; i < 2; ++i) {
@@ -114,7 +120,7 @@ void AV1FrameErrorTest::RunSpeedTest(frame_error_func test_impl, int width,
     aom_usec_timer_start(&timer);
     frame_error_func func = funcs[i];
     for (int j = 0; j < num_loops; ++j) {
-      func(ref, stride, dst, w, h, stride);
+      func(ref, stride, dst, width, height, stride);
     }
     aom_usec_timer_mark(&timer);
     double time = static_cast<double>(aom_usec_timer_elapsed(&timer));
@@ -122,8 +128,8 @@ void AV1FrameErrorTest::RunSpeedTest(frame_error_func test_impl, int width,
   }
   aom_free(dst);
   aom_free(ref);
-  printf("av1_calc_frame_error %3dx%-3d: %7.2f/%7.2fns", w, h, elapsed_time[0],
-         elapsed_time[1]);
+  printf("av1_calc_frame_error %3dx%-3d: %7.2f/%7.2fns", width, height,
+         elapsed_time[0], elapsed_time[1]);
   printf("(%3.2f)\n", elapsed_time[0] / elapsed_time[1]);
 }
 
@@ -143,4 +149,4 @@ INSTANTIATE_TEST_CASE_P(
                        ::testing::ValuesIn(kBlockWidth),
                        ::testing::ValuesIn(kBlockHeight)));
 #endif
-};  // namespace AV1FrameError
+};  // namespace
