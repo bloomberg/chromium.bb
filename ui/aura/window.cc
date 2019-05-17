@@ -54,14 +54,13 @@
 
 namespace aura {
 
-Window::Window(WindowDelegate* delegate, client::WindowType type, Env* env)
-    : Window(delegate, nullptr, type, env) {}
+Window::Window(WindowDelegate* delegate, client::WindowType type)
+    : Window(delegate, nullptr, type) {}
 
 Window::Window(WindowDelegate* delegate,
                std::unique_ptr<WindowPort> port,
-               client::WindowType type,
-               Env* env)
-    : env_(env ? env : Env::GetInstance()),
+               client::WindowType type)
+    : env_(Env::GetInstance()),
       port_owner_(std::move(port)),
       port_(port_owner_.get()),
       host_(nullptr),

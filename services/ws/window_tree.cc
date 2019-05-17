@@ -789,8 +789,7 @@ bool WindowTree::NewWindowImpl(
   // WindowDelegateImpl deletes itself when |window| is destroyed.
   WindowDelegateImpl* window_delegate = new WindowDelegateImpl();
   std::unique_ptr<aura::Window> window_ptr = std::make_unique<aura::Window>(
-      window_delegate, aura::client::WINDOW_TYPE_UNKNOWN,
-      window_service_->env());
+      window_delegate, aura::client::WINDOW_TYPE_UNKNOWN);
   window_delegate->set_window(window_ptr.get());
   aura::Window* window = AddClientCreatedWindow(client_window_id, is_top_level,
                                                 std::move(window_ptr));

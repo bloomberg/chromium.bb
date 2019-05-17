@@ -580,12 +580,8 @@ class ShellTest2 : public AshTestBase {
 };
 
 TEST_F(ShellTest2, DontCrashWhenWindowDeleted) {
-  // This test explicitly uses aura::Env::GetInstance() rather than
-  // Shell->aura_env() as the Window outlives the Shell. In order for a Window
-  // to outlive Shell the Window must be created outside of Ash, which uses
-  // aura::Env::GetInstance() as the Env.
-  window_ = std::make_unique<aura::Window>(
-      nullptr, aura::client::WINDOW_TYPE_UNKNOWN, aura::Env::GetInstance());
+  window_ = std::make_unique<aura::Window>(nullptr,
+                                           aura::client::WINDOW_TYPE_UNKNOWN);
   window_->Init(ui::LAYER_NOT_DRAWN);
 }
 

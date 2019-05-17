@@ -19,7 +19,6 @@ class Transform;
 }
 
 namespace aura {
-class Env;
 class Window;
 class WindowTreeHost;
 
@@ -32,7 +31,7 @@ class TestScreen : public display::ScreenBase, public WindowObserver {
   static TestScreen* Create(const gfx::Size& size);
   ~TestScreen() override;
 
-  WindowTreeHost* CreateHostForPrimaryDisplay(Env* env = nullptr);
+  WindowTreeHost* CreateHostForPrimaryDisplay();
 
   void SetDeviceScaleFactor(float device_scale_fator);
   void SetColorSpace(

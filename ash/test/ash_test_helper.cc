@@ -135,8 +135,6 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
   aura::test::EnvTestHelper env_helper(Shell::Get()->aura_env());
   env_helper.ResetEnvForTesting();
 
-  aura::test::SetEnvForTestWindows(Shell::Get()->aura_env());
-
   env_helper.SetInputStateLookup(std::unique_ptr<aura::InputStateLookup>());
 
   Shell* shell = Shell::Get();
@@ -184,8 +182,6 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
 void AshTestHelper::TearDown() {
   test_keyboard_controller_observer_.reset();
   app_list_test_helper_.reset();
-
-  aura::test::SetEnvForTestWindows(nullptr);
 
   Shell::DeleteInstance();
 

@@ -51,7 +51,6 @@ namespace test {
 class WindowTreeHostTestApi;
 }
 
-class Env;
 class ScopedKeyboardHook;
 class WindowEventDispatcher;
 class WindowTreeHostObserver;
@@ -66,11 +65,9 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
  public:
   ~WindowTreeHost() override;
 
-  // Creates a new WindowTreeHost with the specified |properties| and an
-  // optional |env|. If |env| is null, the default Env::GetInstance() is used.
+  // Creates a new WindowTreeHost with the specified |properties|.
   static std::unique_ptr<WindowTreeHost> Create(
-      ui::PlatformWindowInitProperties properties,
-      Env* env = nullptr);
+      ui::PlatformWindowInitProperties properties);
 
   // Returns the WindowTreeHost for the specified accelerated widget, or NULL
   // if there is none associated.

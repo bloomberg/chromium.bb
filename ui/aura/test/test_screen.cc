@@ -40,11 +40,10 @@ TestScreen::~TestScreen() {
   delete host_;
 }
 
-WindowTreeHost* TestScreen::CreateHostForPrimaryDisplay(Env* env) {
+WindowTreeHost* TestScreen::CreateHostForPrimaryDisplay() {
   DCHECK(!host_);
   host_ = WindowTreeHost::Create(ui::PlatformWindowInitProperties{gfx::Rect(
-                                     GetPrimaryDisplay().GetSizeInPixel())},
-                                 env)
+                                     GetPrimaryDisplay().GetSizeInPixel())})
               .release();
   // Some tests don't correctly manage window focus/activation states.
   // Makes sure InputMethod is default focused so that IME basics can work.

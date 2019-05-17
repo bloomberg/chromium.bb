@@ -92,7 +92,7 @@ std::unique_ptr<aura::Window> TestWindowService::NewTopLevel(
     aura::PropertyConverter* property_converter,
     const base::flat_map<std::string, std::vector<uint8_t>>& properties) {
   std::unique_ptr<aura::Window> top_level = std::make_unique<aura::Window>(
-      nullptr, aura::client::WINDOW_TYPE_UNKNOWN, aura_test_helper_->GetEnv());
+      nullptr, aura::client::WINDOW_TYPE_UNKNOWN);
   aura::SetWindowType(top_level.get(), aura::GetWindowTypeFromProperties(
                                            mojo::FlatMapToMap(properties)));
   top_level->Init(ui::LAYER_NOT_DRAWN);

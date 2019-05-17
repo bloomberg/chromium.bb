@@ -21,8 +21,7 @@ ServerRemoteViewHost::ServerRemoteViewHost(WindowService* window_service)
     : window_service_(window_service),
       embedding_root_(
           std::make_unique<aura::Window>(nullptr,
-                                         aura::client::WINDOW_TYPE_UNKNOWN,
-                                         window_service_->env())) {
+                                         aura::client::WINDOW_TYPE_UNKNOWN)) {
   embedding_root_->set_owned_by_parent(false);
   embedding_root_->SetName("ServerRemoteViewHostWindow");
   embedding_root_->SetType(aura::client::WINDOW_TYPE_CONTROL);

@@ -45,12 +45,10 @@ namespace aura {
 
 // static
 std::unique_ptr<WindowTreeHost> WindowTreeHost::Create(
-    ui::PlatformWindowInitProperties properties,
-    Env* env) {
+    ui::PlatformWindowInitProperties properties) {
   return std::make_unique<WindowTreeHostPlatform>(
       std::move(properties),
-      std::make_unique<aura::Window>(nullptr, client::WINDOW_TYPE_UNKNOWN,
-                                     env ? env : Env::GetInstance()));
+      std::make_unique<aura::Window>(nullptr, client::WINDOW_TYPE_UNKNOWN));
 }
 
 WindowTreeHostPlatform::WindowTreeHostPlatform(
