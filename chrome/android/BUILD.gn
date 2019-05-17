@@ -2116,7 +2116,7 @@ android_app_bundle("chrome_modern_public_bundle") {
   if (!is_java_debug) {
     proguard_enabled = true
   }
-  enable_language_splits = enable_chrome_language_splits
+  enable_language_splits = true
   compress_shared_libraries = true
   min_sdk_version = 21
   if (enable_vr) {
@@ -2272,7 +2272,7 @@ template("monochrome_or_trichrome_public_bundle_tmpl") {
         verify_proguard_flags = true
       }
     }
-    enable_language_splits = enable_chrome_language_splits
+    enable_language_splits = true
     min_sdk_version = _min_sdk_version
 
     if (trichrome_synchronized_proguard) {
