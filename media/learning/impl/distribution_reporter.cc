@@ -146,6 +146,12 @@ class UmaRegressionReporter : public DistributionReporter {
       const int n_buckets = task().num_reporting_weight_buckets;
       DCHECK_LE(n_buckets, max_buckets);
 
+      // If the max reporting weight is zero, then default to splitting the
+      // buckets evenly, with the last bucket being "completely full set".
+      const int max_reporting_weight = task().max_reporting_weight
+                                           ? task().max_reporting_weight
+                                           : task().max_data_set_size - 1;
+
       // We use one fewer buckets, to save one for the overflow.  Buckets are
       // numbered from 0 to |n_buckets-1|, inclusive.  In other words, when the
       // training weight is equal to |max_reporting_weight|, we still want to
@@ -153,7 +159,7 @@ class UmaRegressionReporter : public DistributionReporter {
       // we divide; only things over the max go into the last bucket.
       uma_bucket_number =
           std::min<int>((n_buckets - 1) * info.total_training_weight /
-                            (task().max_reporting_weight + 1),
+                            (max_reporting_weight + 1),
                         n_buckets - 1);
 
       std::string base(kByTrainingWeightBase);

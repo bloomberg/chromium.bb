@@ -178,7 +178,13 @@ struct COMPONENT_EXPORT(LEARNING_COMMON) LearningTask {
   // into different confusion matrices in the same histogram, evenly spaced
   // from 0 to |max_reporting_weight|, with one additional bucket for everything
   // larger than that.  The number of buckets is |num_reporting_weight_buckets|.
-  double max_reporting_weight = 99.;
+  // The default value of 0 is special; it means that we should split up the
+  // buckets such that the last bucket means "entirely full training set", while
+  // the remainder are evenly spaced.  This is the same as setting it to
+  // |max_data_set_size - 1|.  Of course, |max_data_set_size| is a number of
+  // examples, not a weight, so this only makes any sense at all if all of the
+  // examples have the default weight of 1.
+  double max_reporting_weight = 0.;
 
   // Number of buckets that we'll use to split out the confusion matrix by
   // training weight.  The last one is reserved for "all", while the others are
