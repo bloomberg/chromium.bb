@@ -426,6 +426,21 @@
             ]
         }
     ],
+    "AndroidNightMode": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20190503",
+                    "enable_features": [
+                        "AndroidNightMode"
+                    ]
+                }
+            ]
+        }
+    ],
     "AndroidSpellChecker": [
         {
             "platforms": [
