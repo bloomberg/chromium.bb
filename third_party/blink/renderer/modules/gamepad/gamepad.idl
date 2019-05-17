@@ -35,6 +35,9 @@
 enum GamepadMappingType {
   "",
   "standard",
+  // https://immersive-web.github.io/webxr/#xr-standard-gamepad-mapping
+  // Extended attributes are not supported for enum values.
+  /* [RuntimeEnabled=WebXR] */ "xr-standard",
 };
 
 // https://w3c.github.io/gamepad/#gamepad-interface
