@@ -228,10 +228,7 @@ std::unique_ptr<P2PQuicTransportImpl> P2PQuicTransportImpl::Create(
   // TODO(shampson): Consider setting larger initial flow control window sizes
   // so that the default limit doesn't cause initial undersending.
   quic::QuicConfig quic_config;
-  quic_config.SetMaxIncomingBidirectionalStreamsToSend(
-      kMaxIncomingDynamicStreams);
-  quic_config.SetMaxIncomingUnidirectionalStreamsToSend(
-      kMaxIncomingDynamicStreams);
+  quic_config.SetMaxIncomingDynamicStreamsToSend(kMaxIncomingDynamicStreams);
   // The handshake network timeouts are configured to large values to prevent
   // the QUIC connection from being closed on a slow connection. This can occur
   // if signaling is slow and one side begins the handshake early.

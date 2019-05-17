@@ -810,8 +810,8 @@ void QuicConnectionLogger::UpdateReceivedFrameCounts(
     quic::QuicStreamId stream_id,
     int num_frames_received,
     int num_duplicate_frames_received) {
-  if (!quic::QuicUtils::IsCryptoStreamId(session_->transport_version(),
-                                         stream_id)) {
+  if (stream_id != quic::QuicUtils::GetCryptoStreamId(
+                       session_->connection()->transport_version())) {
     num_frames_received_ += num_frames_received;
     num_duplicate_frames_received_ += num_duplicate_frames_received;
   }

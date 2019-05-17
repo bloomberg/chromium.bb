@@ -275,14 +275,11 @@ void MockCryptoClientStream::SetConfigNegotiated() {
       QuicTime::Delta::FromSeconds(2 * kMaximumIdleTimeoutSecs),
       QuicTime::Delta::FromSeconds(kMaximumIdleTimeoutSecs));
   config.SetBytesForConnectionIdToSend(PACKET_8BYTE_CONNECTION_ID);
-  config.SetMaxIncomingBidirectionalStreamsToSend(
-      kDefaultMaxStreamsPerConnection / 2);
-  config.SetMaxIncomingUnidirectionalStreamsToSend(
-      kDefaultMaxStreamsPerConnection / 2);
+  config.SetMaxIncomingDynamicStreamsToSend(kDefaultMaxStreamsPerConnection /
+                                            2);
 
   CryptoHandshakeMessage msg;
-  config.ToHandshakeMessage(
-      &msg, session()->connection()->version().transport_version);
+  config.ToHandshakeMessage(&msg);
   std::string error_details;
   const QuicErrorCode error =
       session()->config()->ProcessPeerHello(msg, CLIENT, &error_details);
