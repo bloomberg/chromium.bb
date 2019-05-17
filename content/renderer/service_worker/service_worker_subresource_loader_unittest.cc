@@ -603,6 +603,7 @@ class ServiceWorkerSubresourceLoaderTest : public ::testing::Test {
         CreateSubresourceLoaderFactory();
     network::ResourceRequest request =
         CreateRequest(GURL("https://www.example.com/big-file"));
+    request.resource_type = static_cast<int>(content::ResourceType::kMedia);
     request.headers.SetHeader("Range", range_header);
     network::mojom::URLLoaderPtr loader;
     std::unique_ptr<network::TestURLLoaderClient> client;
@@ -1011,7 +1012,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, BlobResponse) {
   base::HistogramTester histogram_tester;
 
   // Construct the Blob to respond with.
-  const std::string kResponseBody = "Here is sample text for the Blob.";
+  const std::string kResponseBody = "/* Here is sample text for the Blob. */";
   const std::vector<uint8_t> kMetadata = {0xE3, 0x81, 0x8F, 0xE3, 0x82,
                                           0x8D, 0xE3, 0x81, 0xBF, 0xE3,
                                           0x81, 0x86, 0xE3, 0x82, 0x80};
@@ -1024,7 +1025,8 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, BlobResponse) {
 
   // Perform the request.
   network::ResourceRequest request =
-      CreateRequest(GURL("https://www.example.com/foo.png"));
+      CreateRequest(GURL("https://www.example.com/foo.js"));
+  request.resource_type = static_cast<int>(content::ResourceType::kScript);
   network::mojom::URLLoaderPtr loader;
   std::unique_ptr<network::TestURLLoaderClient> client;
   StartRequest(factory, request, &loader, &client);
@@ -1037,7 +1039,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, BlobResponse) {
   expected_info->is_in_cache_storage = true;
   const network::ResourceResponseHead& info = client->response_head();
   ExpectResponseInfo(info, *expected_info);
-  EXPECT_EQ(33, info.content_length);
+  EXPECT_EQ(39, info.content_length);
 
   // Test the cached metadata.
   client->RunUntilCachedMetadataReceived();
@@ -1073,7 +1075,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, BlobResponseWithoutMetadata) {
   base::HistogramTester histogram_tester;
 
   // Construct the Blob to respond with.
-  const std::string kResponseBody = "Here is sample text for the Blob.";
+  const std::string kResponseBody = "/* Here is sample text for the Blob. */";
   fake_controller_.RespondWithBlob(base::nullopt, kResponseBody);
 
   network::mojom::URLLoaderFactoryPtr factory =
@@ -1081,7 +1083,8 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, BlobResponseWithoutMetadata) {
 
   // Perform the request.
   network::ResourceRequest request =
-      CreateRequest(GURL("https://www.example.com/foo.png"));
+      CreateRequest(GURL("https://www.example.com/foo.js"));
+  request.resource_type = static_cast<int>(content::ResourceType::kScript);
   network::mojom::URLLoaderPtr loader;
   std::unique_ptr<network::TestURLLoaderClient> client;
   StartRequest(factory, request, &loader, &client);
@@ -1110,6 +1113,52 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, BlobResponseWithoutMetadata) {
       1);
   histogram_tester.ExpectTotalCount(
       "ServiceWorker.LoadTiming.Subresource.ResponseReceivedToCompleted2", 1);
+}
+
+TEST_F(ServiceWorkerSubresourceLoaderTest, BlobResponseNonScript) {
+  // Construct the Blob to respond with.
+  const std::string kResponseBody = "Here is sample text for the Blob.";
+  const std::vector<uint8_t> kMetadata = {0xE3, 0x81, 0x8F, 0xE3, 0x82,
+                                          0x8D, 0xE3, 0x81, 0xBF, 0xE3,
+                                          0x81, 0x86, 0xE3, 0x82, 0x80};
+  fake_controller_.RespondWithBlob(kMetadata, kResponseBody);
+  fake_controller_.SetResponseSource(
+      network::mojom::FetchResponseSource::kCacheStorage);
+
+  network::mojom::URLLoaderFactoryPtr factory =
+      CreateSubresourceLoaderFactory();
+
+  // Perform the request.
+  network::ResourceRequest request =
+      CreateRequest(GURL("https://www.example.com/foo.txt"));
+  request.resource_type = static_cast<int>(content::ResourceType::kSubResource);
+  network::mojom::URLLoaderPtr loader;
+  std::unique_ptr<network::TestURLLoaderClient> client;
+  StartRequest(factory, request, &loader, &client);
+  client->RunUntilResponseReceived();
+
+  std::unique_ptr<network::ResourceResponseHead> expected_info =
+      CreateResponseInfoFromServiceWorker();
+  // |is_in_cache_storage| should be true because |fake_controller_| sets the
+  // response source as CacheStorage.
+  expected_info->is_in_cache_storage = true;
+  const network::ResourceResponseHead& info = client->response_head();
+  ExpectResponseInfo(info, *expected_info);
+  EXPECT_EQ(33, info.content_length);
+
+  client->RunUntilComplete();
+  EXPECT_EQ(net::OK, client->completion_status().error_code);
+
+  // Even though the blob has metadata, verify that the client didn't receive
+  // it because this is not a script resource.
+  EXPECT_TRUE(client->cached_metadata().empty());
+
+  // Test the body.
+  std::string response;
+  EXPECT_TRUE(client->response_body().is_valid());
+  EXPECT_TRUE(
+      mojo::BlockingCopyToString(client->response_body_release(), &response));
+  EXPECT_EQ(kResponseBody, response);
 }
 
 // Test when the service worker responds with network fallback.

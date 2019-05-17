@@ -512,9 +512,20 @@ void ServiceWorkerSubresourceLoader::StartResponse(
       }
     }
 
-    body_as_blob_->ReadSideData(base::BindOnce(
-        &ServiceWorkerSubresourceLoader::OnBlobSideDataReadingComplete,
-        weak_factory_.GetWeakPtr(), std::move(data_pipe)));
+    // Read side data if necessary.
+    auto resource_type =
+        static_cast<content::ResourceType>(resource_request_.resource_type);
+    if (resource_type == content::ResourceType::kScript) {
+      body_as_blob_->ReadSideData(base::BindOnce(
+          &ServiceWorkerSubresourceLoader::OnBlobSideDataReadingComplete,
+          weak_factory_.GetWeakPtr(), std::move(data_pipe)));
+    } else {
+      // Bypass reading side data when the request isn't for script. Currently
+      // side data only exists for scripts (as cached metadata).
+      OnBlobSideDataReadingComplete(std::move(data_pipe),
+                                    base::Optional<mojo_base::BigBuffer>());
+    }
+
     return;
   }
 
