@@ -3298,35 +3298,11 @@ void RenderWidget::SetAllowGpuRasterization(bool allow_gpu_raster) {
       allow_gpu_raster);
 }
 
-void RenderWidget::SetPageScaleStateAndLimits(float page_scale_factor,
-                                              bool is_pinch_gesture_active,
-                                              float minimum,
-                                              float maximum) {
+void RenderWidget::SetPageScaleFactorAndLimits(float page_scale_factor,
+                                               float minimum,
+                                               float maximum) {
   layer_tree_view_->layer_tree_host()->SetPageScaleFactorAndLimits(
       page_scale_factor, minimum, maximum);
-
-  // Only continue if this is a mainframe, or something's actually changed.
-  if (!delegate() ||
-      (page_scale_factor == page_scale_factor_from_mainframe_ &&
-       is_pinch_gesture_active == is_pinch_gesture_active_from_mainframe_)) {
-    return;
-  }
-
-  // The page scale is controlled by the WebView for the local main frame of
-  // the Page. So this is called from blink by for the RenderWidget of that
-  // local main frame. We forward the value on to each child RenderWidget (each
-  // of which will be via proxy child frame). These will each in turn forward
-  // the message to their child RenderWidgets (through their proxy child
-  // frames).
-  DCHECK(!is_frozen_);
-
-  for (auto& observer : render_frame_proxies_) {
-    observer.OnPageScaleFactorChanged(page_scale_factor,
-                                      is_pinch_gesture_active);
-  }
-  // Store the value to give to any new RenderFrameProxy that is registered.
-  page_scale_factor_from_mainframe_ = page_scale_factor;
-  is_pinch_gesture_active_from_mainframe_ = is_pinch_gesture_active;
 }
 
 void RenderWidget::StartPageScaleAnimation(const gfx::Vector2d& target_offset,
@@ -3604,6 +3580,26 @@ void RenderWidget::SetMouseCapture(bool capture) {
 bool RenderWidget::IsSurfaceSynchronizationEnabled() const {
   return layer_tree_view_ &&
          layer_tree_view_->IsSurfaceSynchronizationEnabled();
+}
+
+void RenderWidget::PageScaleFactorChanged(float page_scale_factor,
+                                          bool is_pinch_gesture_active) {
+  // The page scale is controlled by the WebView for the local main frame of
+  // the Page. So this is called from blink by for the RenderWidget of that
+  // local main frame. We forward the value on to each child RenderWidget (each
+  // of which will be via proxy child frame). These will each in turn forward
+  // the message to their child RenderWidgets (through their proxy child
+  // frames).
+  DCHECK(!is_frozen_);
+  DCHECK(delegate());
+
+  for (auto& observer : render_frame_proxies_) {
+    observer.OnPageScaleFactorChanged(page_scale_factor,
+                                      is_pinch_gesture_active);
+  }
+  // Store the value to give to any new RenderFrameProxy that is registered.
+  page_scale_factor_from_mainframe_ = page_scale_factor;
+  is_pinch_gesture_active_from_mainframe_ = is_pinch_gesture_active;
 }
 
 void RenderWidget::UseSynchronousResizeModeForTesting(bool enable) {

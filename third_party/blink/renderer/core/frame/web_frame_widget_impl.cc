@@ -228,9 +228,9 @@ void WebFrameWidgetImpl::Resize(const WebSize& new_size) {
       // TODO(wjmaclean): This is updating when the size of the *child frame*
       // have changed which are completely independent of the WebView, and in an
       // OOPIF where the main frame is remote, are these limits even useful?
-      Client()->SetPageScaleStateAndLimits(
-          1.f, false /* is_pinch_gesture_active */,
-          View()->MinimumPageScaleFactor(), View()->MaximumPageScaleFactor());
+      Client()->SetPageScaleFactorAndLimits(1.f,
+                                            View()->MinimumPageScaleFactor(),
+                                            View()->MaximumPageScaleFactor());
     }
   }
 }
@@ -1037,9 +1037,8 @@ void WebFrameWidgetImpl::SetRootLayer(scoped_refptr<cc::Layer> layer) {
   Client()->SetBackgroundColor(SK_ColorTRANSPARENT);
   // Pass the limits even though this is for subframes, as the limits will
   // be needed in setting the raster scale.
-  Client()->SetPageScaleStateAndLimits(1.f, false /* is_pinch_gesture_active */,
-                                       View()->MinimumPageScaleFactor(),
-                                       View()->MaximumPageScaleFactor());
+  Client()->SetPageScaleFactorAndLimits(1.f, View()->MinimumPageScaleFactor(),
+                                        View()->MaximumPageScaleFactor());
 
   // TODO(kenrb): Currently GPU rasterization is always enabled for OOPIFs.
   // This is okay because it is only necessarily to set the trigger to false

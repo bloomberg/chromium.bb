@@ -578,13 +578,7 @@ TEST_F(RenderViewImplTest, IsPinchGestureActivePropagatesToProxies) {
   EXPECT_FALSE(child_proxy_1->is_pinch_gesture_active_for_testing());
 
   // Set the |is_pinch_gesture_active| flag.
-  cc::ApplyViewportChangesArgs args;
-  args.page_scale_delta = 1.f;
-  args.is_pinch_gesture_active = true;
-  args.browser_controls_delta = 0.f;
-  args.scroll_gesture_did_end = false;
-
-  view()->webview()->MainFrameWidget()->ApplyViewportChanges(args);
+  view()->PageScaleFactorChanged(1.f, true);
   EXPECT_TRUE(child_proxy_1->is_pinch_gesture_active_for_testing());
 
   // Create a new remote child, and get its proxy. Swapping out will force
@@ -600,8 +594,7 @@ TEST_F(RenderViewImplTest, IsPinchGestureActivePropagatesToProxies) {
   EXPECT_TRUE(child_proxy_2->is_pinch_gesture_active_for_testing());
 
   // Reset the flag, make sure both children respond.
-  args.is_pinch_gesture_active = false;
-  view()->webview()->MainFrameWidget()->ApplyViewportChanges(args);
+  view()->PageScaleFactorChanged(1.f, false);
   EXPECT_FALSE(child_proxy_1->is_pinch_gesture_active_for_testing());
   EXPECT_FALSE(child_proxy_2->is_pinch_gesture_active_for_testing());
 }
