@@ -36131,6 +36131,13 @@ from previous Chrome versions.
   <int value="1999" label="Unknown CBError code"/>
 </enum>
 
+<enum name="MacThermalState">
+  <int value="0" label="Nominal"/>
+  <int value="1" label="Fair"/>
+  <int value="2" label="Serious"/>
+  <int value="3" label="Critical"/>
+</enum>
+
 <enum name="MainFrameDownloadSandboxGesture">
   <obsolete>
     Deprecated as of 03/2019.
