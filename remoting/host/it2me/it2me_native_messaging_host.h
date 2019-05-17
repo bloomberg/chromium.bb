@@ -115,11 +115,15 @@ class It2MeNativeMessagingHost : public It2MeHost::Observer,
   std::unique_ptr<SignalStrategy> CreateDelegatedSignalStrategy(
       const base::DictionaryValue* message);
 
-  // Creates an XMPP signal strategy from the values stored in |message| along
+  // Creates a Muxing signal strategy from the values stored in |message| along
   // with |user_name|.  Returns nullptr on failure.
-  std::unique_ptr<SignalStrategy> CreateXmppSignalStrategy(
+  std::unique_ptr<SignalStrategy> CreateMuxingSignalStrategy(
       const std::string& user_name,
+      const std::string& access_token,
       const base::DictionaryValue* message);
+
+  // Extracts OAuth access token from the message passed from the client.
+  std::string ExtractAccessToken(const base::DictionaryValue* message);
 
   // Used to determine whether to create and pass messages to an elevated host.
   bool needs_elevation_ = false;

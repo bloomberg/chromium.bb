@@ -27,6 +27,7 @@ namespace {
 
 constexpr char kChromotingAuthScopeValues[] =
     "https://www.googleapis.com/auth/chromoting "
+    "https://www.googleapis.com/auth/chromoting.remote.support "
     "https://www.googleapis.com/auth/googletalk "
     "https://www.googleapis.com/auth/userinfo.email "
     "https://www.googleapis.com/auth/tachyon";

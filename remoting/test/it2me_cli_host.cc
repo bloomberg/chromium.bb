@@ -175,12 +175,12 @@ void It2MeCliHost::PostMessageFromNativeHost(const std::string& message) {
   } else if (type == kCRDDebugLog) {
     // The It2Me host already prints the log to stdout/stderr.
   } else {
-    LOG(WARNING) << "Unknown message type :" << type;
+    LOG(WARNING) << "Unknown message type: " << type;
   }
 }
 
 void It2MeCliHost::CloseChannel(const std::string& error_message) {
-  LOG(ERROR) << "CRD Host closed channel" << error_message;
+  LOG(ERROR) << "CRD Host closed channel: " << error_message;
   command_awaiting_crd_access_code_ = false;
 
   ShutdownHost();
