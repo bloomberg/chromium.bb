@@ -73,6 +73,7 @@ python_library("devil_chromium_py") {
 }
 
 python_library("test_runner_py") {
+  testonly = true
   pydeps_file = "test_runner.pydeps"
   data = [
     "pylib/gtest/filter/",

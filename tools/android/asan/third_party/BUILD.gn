@@ -7,6 +7,7 @@ import("//build/config/clang/clang.gni")
 import("//build/util/generate_wrapper.gni")
 
 generate_wrapper("asan_device_setup") {
+  testonly = true
   executable = "with_asan.py"
   wrapper_script = "$root_out_dir/bin/run_with_asan"
 
@@ -37,6 +38,11 @@ generate_wrapper("asan_device_setup") {
     _adb_path,
   ]
   data += _lib_paths
+
+  data_deps = [
+    "//build/android:devil_chromium_py",
+    "//third_party/catapult/devil",
+  ]
 
   _rebased_adb_path = rebase_path(_adb_path, root_build_dir)
   _rebased_lib_dir_path = rebase_path(_lib_dir, root_build_dir)
