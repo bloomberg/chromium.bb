@@ -30,13 +30,6 @@ PerformanceMark::PerformanceMark(ScriptState* script_state,
 // static
 PerformanceMark* PerformanceMark::Create(ScriptState* script_state,
                                          const AtomicString& mark_name,
-                                         ExceptionState& exception_state) {
-  return Create(script_state, mark_name, nullptr, exception_state);
-}
-
-// static
-PerformanceMark* PerformanceMark::Create(ScriptState* script_state,
-                                         const AtomicString& mark_name,
                                          PerformanceMarkOptions* mark_options,
                                          ExceptionState& exception_state) {
   LocalDOMWindow* window = LocalDOMWindow::From(script_state);

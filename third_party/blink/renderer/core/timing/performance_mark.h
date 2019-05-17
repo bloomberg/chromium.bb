@@ -51,11 +51,6 @@ class CORE_EXPORT PerformanceMark final : public PerformanceEntry {
   // This method is required by the constructor defined in performance_mark.idl.
   static PerformanceMark* Create(ScriptState*,
                                  const AtomicString& mark_name,
-                                 ExceptionState&);
-
-  // This method is required by the constructor defined in performance_mark.idl.
-  static PerformanceMark* Create(ScriptState*,
-                                 const AtomicString& mark_name,
                                  PerformanceMarkOptions*,
                                  ExceptionState&);
 
