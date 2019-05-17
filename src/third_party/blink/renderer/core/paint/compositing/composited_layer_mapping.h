@@ -455,6 +455,8 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
 
   Color LayoutObjectBackgroundColor() const;
   void UpdateBackgroundColor();
+  void UpdateLCDBackgroundColor(CompositedLayerMapping *containerLayerMapping);
+
   void UpdateContentsRect();
   void UpdateAfterPartResize();
   void UpdateCompositingReasons();
@@ -672,7 +674,6 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
 
   unsigned pending_update_scope_ : 2;
   unsigned is_main_frame_layout_view_layer_ : 1;
-
   unsigned scrolling_contents_are_empty_ : 1;
 
   // Keep track of whether the background is painted onto the scrolling contents
@@ -685,7 +686,7 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   unsigned background_paints_onto_graphics_layer_ : 1;
 
   bool draws_background_onto_content_layer_;
-
+  Color inherited_background_color;
   friend class CompositedLayerMappingTest;
   DISALLOW_COPY_AND_ASSIGN(CompositedLayerMapping);
 };
