@@ -66,10 +66,10 @@ class MimeHandlerViewTest : public ExtensionApiTest,
     bool use_cross_process_frames_for_guests = GetParam();
     if (use_cross_process_frames_for_guests) {
       scoped_feature_list_.InitAndEnableFeature(
-          features::kGuestViewCrossProcessFrames);
+          features::kMimeHandlerViewInCrossProcessFrame);
     } else {
       scoped_feature_list_.InitAndDisableFeature(
-          features::kGuestViewCrossProcessFrames);
+          features::kMimeHandlerViewInCrossProcessFrame);
     }
   }
 
