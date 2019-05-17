@@ -117,13 +117,19 @@ bool MaybeUpdateFrameRate(ComputedSettings* settings) {
 
 }  // anonymous namespace
 
-// Template specialization of [1], needed to be able to pass WTF callbacks
-// that have VideoTrackAdapterSettings parameters across threads.
+// Template specializations of [1], needed to be able to pass WTF callbacks
+// that have VideoTrackAdapterSettings or gfx::Size parameters across threads.
 //
 // [1] third_party/blink/renderer/platform/cross_thread_copier.h.
 template <>
 struct CrossThreadCopier<VideoTrackAdapterSettings>
     : public CrossThreadCopierPassThrough<VideoTrackAdapterSettings> {
+  STATIC_ONLY(CrossThreadCopier);
+};
+
+template <>
+struct CrossThreadCopier<gfx::Size>
+    : public CrossThreadCopierPassThrough<gfx::Size> {
   STATIC_ONLY(CrossThreadCopier);
 };
 
@@ -588,7 +594,7 @@ void VideoTrackAdapter::StopFrameMonitoring() {
                           WrapRefCounted(this)));
 }
 
-void VideoTrackAdapter::SetSourceFrameSize(const IntSize& source_frame_size) {
+void VideoTrackAdapter::SetSourceFrameSize(const gfx::Size& source_frame_size) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   PostCrossThreadTask(
       *io_task_runner_, FROM_HERE,
@@ -686,7 +692,7 @@ void VideoTrackAdapter::StopFrameMonitoringOnIO() {
 }
 
 void VideoTrackAdapter::SetSourceFrameSizeOnIO(
-    const IntSize& source_frame_size) {
+    const gfx::Size& source_frame_size) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   source_frame_size_ = source_frame_size;
 }
@@ -739,8 +745,8 @@ void VideoTrackAdapter::DeliverFrameOnIO(
   // TODO(guidou): Use actual device information instead of this heuristic to
   // detect frames from rotated devices. https://crbug.com/722748
   if (source_frame_size_ &&
-      frame->natural_size().width() == source_frame_size_->Height() &&
-      frame->natural_size().height() == source_frame_size_->Width()) {
+      frame->natural_size().width() == source_frame_size_->height() &&
+      frame->natural_size().height() == source_frame_size_->width()) {
     is_device_rotated = true;
   }
   if (adapters_.IsEmpty()) {
