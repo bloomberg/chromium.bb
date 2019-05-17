@@ -28,11 +28,11 @@
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/editor.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
-#include "third_party/blink/renderer/core/editing/iterators/search_buffer.h"
 #include "third_party/blink/renderer/core/editing/local_caret_rect.h"
 #include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
 #include "third_party/blink/renderer/core/editing/spellcheck/spell_checker.h"
 #include "third_party/blink/renderer/core/editing/visible_position.h"
+#include "third_party/blink/renderer/core/editing/finder/find_buffer.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
@@ -144,8 +144,14 @@ void BBWindowHooks::removeHighlightMarker(Range *range)
 
 Range* BBWindowHooks::findPlainText(Range* range, const String& target, long options)
 {
-    EphemeralRange result = blink::FindPlainText(EphemeralRange(range), target, options);
-    return Range::Create(result.GetDocument(), result.StartPosition(), result.EndPosition());
+    EphemeralRangeInFlatTree result_range =
+        blink::FindBuffer::FindMatchInRange(EphemeralRangeInFlatTree(range), target, options);
+
+    Range* range_object =
+        Range::Create(result_range.GetDocument(),
+                      ToPositionInDOMTree(result_range.StartPosition()),
+                      ToPositionInDOMTree(result_range.EndPosition()));
+    return range_object;
 }
 
 bool BBWindowHooks::checkSpellingForNode(Node* node)
