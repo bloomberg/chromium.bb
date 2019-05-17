@@ -47,23 +47,34 @@ class RecurrenceRankerTest : public testing::Test {
     Test::SetUp();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     ranker_filepath_ = temp_dir_.GetPath().AppendASCII("recurrence_ranker");
-
-    PartiallyPopulateConfig(&config_);
-    // Even if empty, the setting of the oneof |predictor_config| in
-    // RecurrenceRankerConfigProto is used to determine which predictor is
-    // constructed.
-    config_.mutable_fake_predictor();
-
-    ranker_ =
-        std::make_unique<RecurrenceRanker>(ranker_filepath_, config_, false);
     Wait();
   }
 
   void Wait() { scoped_task_environment_.RunUntilIdle(); }
 
+  // Returns the config for a ranker with a fake predictor.
+  RecurrenceRankerConfigProto MakeSimpleConfig() {
+    RecurrenceRankerConfigProto config;
+    PartiallyPopulateConfig(&config);
+    // Even if empty, the setting of the oneof |predictor_config| in
+    // RecurrenceRankerConfigProto is used to determine which predictor is
+    // constructed.
+    config.mutable_fake_predictor();
+    return config;
+  }
+
+  // Returns a ranker using a fake predictor.
+  std::unique_ptr<RecurrenceRanker> MakeSimpleRanker() {
+    auto ranker = std::make_unique<RecurrenceRanker>(ranker_filepath_,
+                                                     MakeSimpleConfig(), false);
+    Wait();
+    return ranker;
+  }
+
   RecurrenceRankerProto MakeTestingProto() {
     RecurrenceRankerProto proto;
-    proto.set_config_hash(base::PersistentHash(config_.SerializeAsString()));
+    proto.set_config_hash(
+        base::PersistentHash(MakeSimpleConfig().SerializeAsString()));
 
     // Make target frecency store.
     auto* targets = proto.mutable_targets();
@@ -101,70 +112,78 @@ class RecurrenceRankerTest : public testing::Test {
     return proto;
   }
 
-  RecurrenceRankerConfigProto config_;
   base::test::ScopedTaskEnvironment scoped_task_environment_{
       base::test::ScopedTaskEnvironment::MainThreadType::DEFAULT,
       base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::QUEUED};
   base::ScopedTempDir temp_dir_;
   base::test::ScopedFeatureList scoped_feature_list_;
 
-  std::unique_ptr<RecurrenceRanker> ranker_;
   base::FilePath ranker_filepath_;
 };
 
 TEST_F(RecurrenceRankerTest, Record) {
-  ranker_->Record("A");
-  ranker_->Record("B");
-  ranker_->Record("B");
+  auto ranker = MakeSimpleRanker();
 
-  EXPECT_THAT(ranker_->Rank(), UnorderedElementsAre(Pair("A", FloatEq(1.0f)),
-                                                    Pair("B", FloatEq(2.0f))));
+  ranker->Record("A");
+  ranker->Record("B");
+  ranker->Record("B");
+
+  EXPECT_THAT(ranker->Rank(), UnorderedElementsAre(Pair("A", FloatEq(1.0f)),
+                                                   Pair("B", FloatEq(2.0f))));
 }
 
 TEST_F(RecurrenceRankerTest, RenameTarget) {
-  ranker_->Record("A");
-  ranker_->Record("B");
-  ranker_->Record("B");
-  ranker_->RenameTarget("B", "A");
+  auto ranker = MakeSimpleRanker();
 
-  EXPECT_THAT(ranker_->Rank(), ElementsAre(Pair("A", FloatEq(2.0f))));
+  ranker->Record("A");
+  ranker->Record("B");
+  ranker->Record("B");
+  ranker->RenameTarget("B", "A");
+
+  EXPECT_THAT(ranker->Rank(), ElementsAre(Pair("A", FloatEq(2.0f))));
 }
 
 TEST_F(RecurrenceRankerTest, RemoveTarget) {
-  ranker_->Record("A");
-  ranker_->Record("B");
-  ranker_->Record("B");
-  ranker_->RemoveTarget("A");
+  auto ranker = MakeSimpleRanker();
 
-  EXPECT_THAT(ranker_->Rank(), ElementsAre(Pair("B", FloatEq(2.0f))));
+  ranker->Record("A");
+  ranker->Record("B");
+  ranker->Record("B");
+  ranker->RemoveTarget("A");
+
+  EXPECT_THAT(ranker->Rank(), ElementsAre(Pair("B", FloatEq(2.0f))));
 }
 
 TEST_F(RecurrenceRankerTest, ComplexRecordAndRank) {
-  ranker_->Record("A");
-  ranker_->Record("B");
-  ranker_->Record("C");
-  ranker_->Record("B");
-  ranker_->RenameTarget("D", "C");
-  ranker_->RemoveTarget("F");
-  ranker_->RenameTarget("C", "F");
-  ranker_->RemoveTarget("A");
-  ranker_->RenameTarget("C", "F");
-  ranker_->Record("A");
+  auto ranker = MakeSimpleRanker();
 
-  EXPECT_THAT(ranker_->Rank(), UnorderedElementsAre(Pair("A", FloatEq(1.0f)),
-                                                    Pair("B", FloatEq(2.0f)),
-                                                    Pair("F", FloatEq(1.0f))));
+  ranker->Record("A");
+  ranker->Record("B");
+  ranker->Record("C");
+  ranker->Record("B");
+  ranker->RenameTarget("D", "C");
+  ranker->RemoveTarget("F");
+  ranker->RenameTarget("C", "F");
+  ranker->RemoveTarget("A");
+  ranker->RenameTarget("C", "F");
+  ranker->Record("A");
+
+  EXPECT_THAT(ranker->Rank(), UnorderedElementsAre(Pair("A", FloatEq(1.0f)),
+                                                   Pair("B", FloatEq(2.0f)),
+                                                   Pair("F", FloatEq(1.0f))));
 }
 
 TEST_F(RecurrenceRankerTest, RankTopN) {
+  auto ranker = MakeSimpleRanker();
+
   const std::vector<std::string> targets = {"B", "A", "A", "B", "C",
                                             "B", "D", "C", "A", "A"};
   for (auto target : targets)
-    ranker_->Record(target);
+    ranker->Record(target);
 
-  EXPECT_THAT(ranker_->RankTopN(2),
+  EXPECT_THAT(ranker->RankTopN(2),
               ElementsAre(Pair("A", FloatEq(4.0f)), Pair("B", FloatEq(3.0f))));
-  EXPECT_THAT(ranker_->RankTopN(100),
+  EXPECT_THAT(ranker->RankTopN(100),
               ElementsAre(Pair("A", FloatEq(4.0f)), Pair("B", FloatEq(3.0f)),
                           Pair("C", FloatEq(2.0f)), Pair("D", FloatEq(1.0f))));
 }
@@ -181,7 +200,7 @@ TEST_F(RecurrenceRankerTest, LoadFromDisk) {
   EXPECT_NE(base::WriteFile(filepath, proto_str.c_str(), proto_str.size()), -1);
 
   // Make a ranker.
-  RecurrenceRanker ranker(filepath, config_, false);
+  RecurrenceRanker ranker(filepath, MakeSimpleConfig(), false);
 
   // Check that the file loading is executed in non-blocking way.
   EXPECT_FALSE(ranker.load_from_disk_completed_);
@@ -201,26 +220,28 @@ TEST_F(RecurrenceRankerTest, InitializeIfNoFileExists) {
   base::FilePath filepath =
       temp_dir.GetPath().AppendASCII("recurrence_ranker_invalid");
 
-  RecurrenceRanker ranker(filepath, config_, false);
+  RecurrenceRanker ranker(filepath, MakeSimpleConfig(), false);
   Wait();
-  EXPECT_TRUE(ranker_->load_from_disk_completed_);
+  EXPECT_TRUE(ranker.load_from_disk_completed_);
   EXPECT_TRUE(ranker.Rank().empty());
 }
 
 TEST_F(RecurrenceRankerTest, SaveToDisk) {
+  auto ranker = MakeSimpleRanker();
+
   // Sanity checks
-  ASSERT_TRUE(ranker_->load_from_disk_completed_);
-  EXPECT_TRUE(ranker_->Rank().empty());
+  ASSERT_TRUE(ranker->load_from_disk_completed_);
+  EXPECT_TRUE(ranker->Rank().empty());
 
   // Check the ranker file is not created.
   EXPECT_FALSE(base::PathExists(ranker_filepath_));
 
   // Make the ranker do a save.
-  ranker_->Record("A");
-  ranker_->Record("B");
-  ranker_->Record("B");
-  ranker_->ForceSaveOnNextUpdateForTesting();
-  ranker_->Record("C");
+  ranker->Record("A");
+  ranker->Record("B");
+  ranker->Record("B");
+  ranker->ForceSaveOnNextUpdateForTesting();
+  ranker->Record("C");
   Wait();
 
   // Check the ranker file is created.
@@ -237,17 +258,18 @@ TEST_F(RecurrenceRankerTest, SaveToDisk) {
 }
 
 TEST_F(RecurrenceRankerTest, SavedRankerRejectedIfConfigMismatched) {
+  auto ranker = MakeSimpleRanker();
+
   // Make the first ranker do a save.
-  ranker_->ForceSaveOnNextUpdateForTesting();
-  ranker_->Record("A");
+  ranker->ForceSaveOnNextUpdateForTesting();
+  ranker->Record("A");
   Wait();
 
   // Construct a second ranker with a slightly different config.
   RecurrenceRankerConfigProto other_config;
   PartiallyPopulateConfig(&other_config);
   other_config.mutable_fake_predictor();
-  other_config.set_min_seconds_between_saves(
-      config_.min_seconds_between_saves() + 1);
+  other_config.set_min_seconds_between_saves(1234);
 
   RecurrenceRanker other_ranker(ranker_filepath_, other_config, false);
   Wait();
@@ -257,11 +279,11 @@ TEST_F(RecurrenceRankerTest, SavedRankerRejectedIfConfigMismatched) {
   EXPECT_TRUE(other_ranker.load_from_disk_completed_);
   EXPECT_TRUE(other_ranker.Rank().empty());
   // For comparison:
-  EXPECT_THAT(ranker_->Rank(), UnorderedElementsAre(Pair("A", FloatEq(1.0f))));
+  EXPECT_THAT(ranker->Rank(), UnorderedElementsAre(Pair("A", FloatEq(1.0f))));
 }
 
 TEST_F(RecurrenceRankerTest, EphemeralUsersUseDefaultPredictor) {
-  RecurrenceRanker ephemeral_ranker(ranker_filepath_, config_, true);
+  RecurrenceRanker ephemeral_ranker(ranker_filepath_, MakeSimpleConfig(), true);
   Wait();
   EXPECT_THAT(ephemeral_ranker.GetPredictorNameForTesting(),
               StrEq(DefaultPredictor::kPredictorName));
