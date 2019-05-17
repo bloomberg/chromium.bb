@@ -280,6 +280,38 @@ void PrepareDragData(const DropData& drop_data,
   }
 }
 
+#if defined(OS_WIN)
+// Function returning whether this drop target should extract virtual file data
+// from the data store.
+// (1) As with real files, only add virtual files if the drag did not originate
+// in the renderer process. Without this, if an anchor element is dragged and
+// then dropped on the same page, the browser will navigate to the URL
+// referenced by the anchor. That is because virtual ".url" file data
+// (internet shortcut) is added to the data object on drag start, and if
+// script doesn't handle the drop, the browser behaves just as if a .url file
+// were dragged in from the desktop. Filtering out virtual files if the drag
+// is renderer tainted also prevents the possibility of a compromised renderer
+// gaining access to the backing temp file paths.
+// (2) Even if the drag is not renderer tainted, also exclude virtual files
+// if the UniformResourceLocatorW clipboard format is found in the data object.
+// Drags initiated in the browser process, such as dragging a bookmark from
+// the bookmark bar, will add a virtual .url file to the data object using the
+// CFSTR_FILEDESCRIPTORW/CFSTR_FILECONTENTS formats, which represents an
+// internet shortcut intended to be  dropped on the desktop. But this causes a
+// regression in the behavior of the extensions page (see
+// https://crbug.com/963392). The primary scenario for introducing virtual file
+// support was for dragging items out of Outlook.exe for upload to a file
+// hosting service. The Outlook drag source does not add url data to the data
+// object.
+// TODO(https://crbug.com/958273): DragDrop: Extend virtual filename support
+// to DropData, for parity with real filename support.
+// TODO(https://crbug.com/964461): Drag and drop: Should support both virtual
+// file and url data on drop.
+bool ShouldIncludeVirtualFiles(const DropData& drop_data) {
+  return !drop_data.did_originate_from_renderer && drop_data.url.is_empty();
+}
+#endif
+
 // Utility to fill a DropData object from ui::OSExchangeData.
 void PrepareDropData(DropData* drop_data, const ui::OSExchangeData& data) {
   drop_data->did_originate_from_renderer = data.DidOriginateFromRenderer();
@@ -312,7 +344,8 @@ void PrepareDropData(DropData* drop_data, const ui::OSExchangeData& data) {
   // Get a list of virtual files for later retrieval when a drop is performed
   // (will return empty vector if there are any non-virtual files in the data
   // store).
-  data.GetVirtualFilenames(&drop_data->filenames);
+  if (ShouldIncludeVirtualFiles(*drop_data))
+    data.GetVirtualFilenames(&drop_data->filenames);
 #endif
 
   base::Pickle pickle;
@@ -1331,18 +1364,7 @@ int WebContentsViewAura::OnPerformDrop(const ui::DropTargetEvent& event) {
 
   const int key_modifiers = ui::EventFlagsToWebEventModifiers(event.flags());
 #if defined(OS_WIN)
-  // As with real files, only add virtual files if the drag did not originate in
-  // the renderer process. Without this, if an anchor element is dragged and
-  // then dropped on the same page, the browser will navigate to the URL
-  // referenced by the anchor. That is because virtual ".url" file data
-  // (internet shortcut) is added to the data object on drag start, and if
-  // script doesn't handle the drop, the browser behaves just as if a .url file
-  // were dragged in from the desktop. Filtering out virtual files if the drag
-  // is renderer tainted also prevents the possibility of a compromised renderer
-  // gaining access to the backing temp file paths.
-  // TODO(https://crbug.com/958273): DragDrop: Extend virtual filename support
-  // to DropData, for parity with real filename support.
-  if (!current_drop_data_->did_originate_from_renderer &&
+  if (ShouldIncludeVirtualFiles(*current_drop_data_) &&
       event.data().HasVirtualFilenames()) {
     // Asynchronously retrieve the actual content of any virtual files now (this
     // step is not needed for "real" files already on the file system, e.g.

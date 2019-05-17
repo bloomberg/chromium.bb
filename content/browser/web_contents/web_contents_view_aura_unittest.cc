@@ -447,6 +447,57 @@ TEST_F(WebContentsViewAuraTest, DragDropVirtualFilesOriginateFromRenderer) {
 
   ASSERT_TRUE(drop_complete_data_->drop_data.filenames.empty());
 }
+
+TEST_F(WebContentsViewAuraTest, DragDropUrlData) {
+  WebContentsViewAura* view = GetView();
+  ui::OSExchangeData data;
+
+  const std::string url_spec = "https://www.wikipedia.org/";
+  const GURL url(url_spec);
+  const base::string16 url_title = base::ASCIIToUTF16("Wikipedia");
+  data.SetURL(url, url_title);
+
+  // SetUrl should also add a virtual .url (internet shortcut) file.
+  std::vector<ui::FileInfo> file_infos;
+  EXPECT_TRUE(data.GetVirtualFilenames(&file_infos));
+  ASSERT_EQ(1ULL, file_infos.size());
+  EXPECT_EQ(base::FilePath(url_title + base::ASCIIToUTF16(".url")),
+            file_infos[0].display_name);
+
+  ui::DropTargetEvent event(data, kClientPt, kScreenPt,
+                            ui::DragDropTypes::DRAG_COPY);
+
+  // Simulate drag enter.
+  EXPECT_EQ(nullptr, view->current_drop_data_);
+  view->OnDragEntered(event);
+  ASSERT_NE(nullptr, view->current_drop_data_);
+
+  EXPECT_EQ(url_spec, view->current_drop_data_->url);
+  EXPECT_EQ(url_title, view->current_drop_data_->url_title);
+
+  // Virtual files should not have been retrieved if url data present.
+  ASSERT_TRUE(view->current_drop_data_->filenames.empty());
+
+  // Simulate drop (completes asynchronously since virtual file data is
+  // present).
+  auto callback = base::BindOnce(&WebContentsViewAuraTest::OnDropComplete,
+                                 base::Unretained(this));
+  view->RegisterDropCallbackForTesting(std::move(callback));
+
+  base::RunLoop run_loop;
+  async_drop_closure_ = run_loop.QuitClosure();
+
+  view->OnPerformDrop(event);
+  run_loop.Run();
+
+  CheckDropData(view);
+
+  EXPECT_EQ(url_spec, drop_complete_data_->drop_data.url);
+  EXPECT_EQ(url_title, drop_complete_data_->drop_data.url_title);
+
+  // Virtual files should not have been retrieved if url data present.
+  ASSERT_TRUE(drop_complete_data_->drop_data.filenames.empty());
+}
 #endif
 
 }  // namespace content

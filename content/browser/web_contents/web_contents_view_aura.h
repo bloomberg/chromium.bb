@@ -72,6 +72,7 @@ class CONTENT_EXPORT WebContentsViewAura
   FRIEND_TEST_ALL_PREFIXES(WebContentsViewAuraTest, DragDropVirtualFiles);
   FRIEND_TEST_ALL_PREFIXES(WebContentsViewAuraTest,
                            DragDropVirtualFilesOriginateFromRenderer);
+  FRIEND_TEST_ALL_PREFIXES(WebContentsViewAuraTest, DragDropUrlData);
 
   class WindowObserver;
 
