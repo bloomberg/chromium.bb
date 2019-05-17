@@ -1864,7 +1864,6 @@ jumbo_split_static_library("ui") {
       "//services/data_decoder/public/cpp",
       "//services/device/public/cpp:device_features",
       "//services/device/public/mojom",
-      "//services/ws/public/cpp",
       "//services/ws/public/mojom",
       "//ui/base/ime/chromeos",
       "//ui/chromeos",
@@ -3097,10 +3096,7 @@ jumbo_split_static_library("ui") {
     }
 
     if (use_aura) {
-      deps += [
-        "//services/ws/public/cpp",
-        "//services/ws/public/mojom",
-      ]
+      deps += [ "//services/ws/public/mojom" ]
 
       # These files can do Gtk+-based theming for builds with gtk enabled.
       if (is_desktop_linux) {

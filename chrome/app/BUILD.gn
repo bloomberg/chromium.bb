@@ -444,7 +444,6 @@ source_set("chrome_content_browser_overlay_manifest") {
     "//services/image_annotation/public/cpp:manifest",
     "//services/preferences/public/cpp:manifest",
     "//services/service_manager/public/cpp",
-    "//services/ws/common",
     "//third_party/blink/public/common",
   ]
 

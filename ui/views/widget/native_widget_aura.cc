@@ -24,7 +24,6 @@
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/client/window_types.h"
 #include "ui/aura/env.h"
-#include "ui/aura/mus/property_utils.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_observer.h"
@@ -152,9 +151,7 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
   ownership_ = params.ownership;
 
   RegisterNativeWidgetForWindow(this, window_);
-  // MusClient has assertions that ws::mojom::WindowType matches
-  // views::Widget::InitParams::Type.
-  aura::SetWindowType(window_, static_cast<ws::mojom::WindowType>(params.type));
+  window_->SetType(GetAuraWindowTypeForWidgetType(params.type));
   if (params.corner_radius) {
     window_->SetProperty(aura::client::kWindowCornerRadiusKey,
                          *params.corner_radius);

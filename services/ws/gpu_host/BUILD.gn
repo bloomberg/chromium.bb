@@ -100,7 +100,6 @@ source_set("tests") {
     "//services/service_manager/public/mojom",
     "//services/ws/common",
     "//services/ws/common:task_runner_test_base",
-    "//services/ws/public/cpp",
     "//services/ws/public/mojom",
     "//testing/gtest",
     "//third_party/mesa_headers",

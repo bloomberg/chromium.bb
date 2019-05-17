@@ -5,7 +5,6 @@ include_rules = [
   "+components/viz/service",
   "+gpu/command_buffer/client/gles2_interface.h",
   "+services/viz/privileged/interfaces/compositing",
-  "+services/ws/public/cpp",
   "+skia/ext/refptr.h",
   "+third_party/khronos/GLES2/gl2.h",
   "+third_party/skia",

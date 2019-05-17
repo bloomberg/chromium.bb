@@ -53,7 +53,6 @@
 #include "extensions/browser/api/vpn_provider/vpn_service_factory.h"
 #include "net/base/escape.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/ws/public/cpp/property_type_converters.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 #include "ui/events/event_constants.h"
 
