@@ -375,11 +375,13 @@ public class ExternalNavigationHandler {
             return OverrideUrlLoadingResult.NO_OVERRIDE;
         }
 
-        // The "about:", "chrome:", and "chrome-native:" schemes are internal to the browser;
-        // don't want these to be dispatched to other apps.
+        // The "about:", "chrome:", "chrome-native:", "chrome-devtools:", and "devtools:" schemes
+        // are internal to the browser; don't want these to be dispatched to other apps.
         if (params.getUrl().startsWith(ContentUrlConstants.ABOUT_URL_SHORT_PREFIX)
                 || params.getUrl().startsWith(UrlConstants.CHROME_URL_SHORT_PREFIX)
-                || params.getUrl().startsWith(UrlConstants.CHROME_NATIVE_URL_SHORT_PREFIX)) {
+                || params.getUrl().startsWith(UrlConstants.CHROME_NATIVE_URL_SHORT_PREFIX)
+                || params.getUrl().startsWith(UrlConstants.DEVTOOLS_URL_SHORT_PREFIX)
+                || params.getUrl().startsWith(UrlConstants.DEVTOOLS_FALLBACK_URL_SHORT_PREFIX)) {
             if (DEBUG) Log.i(TAG, "NO_OVERRIDE: Navigating to a chrome-internal page");
             return OverrideUrlLoadingResult.NO_OVERRIDE;
         }
