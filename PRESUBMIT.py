@@ -775,7 +775,7 @@ _BANNED_CPP_FUNCTIONS = (
         'StringTraits if you would like to convert between custom types and',
         'the wire format of mojom types.'
       ),
-      True,
+      False,
       (
         r'^third_party/blink/.*\.(cc|h)$',
         r'^content/renderer/.*\.(cc|h)$',

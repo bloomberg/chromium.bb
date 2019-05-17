@@ -1938,14 +1938,16 @@ class BannedFunctionCheckTest(unittest.TestCase):
                ['mojo::ConvertTo<>']),
     ]
 
-    errors = PRESUBMIT._CheckNoBannedFunctions(input_api, MockOutputApi())
-    self.assertEqual(1, len(errors))
-    self.assertTrue('some/cpp/problematic/file.cc' in errors[0].message)
-    self.assertTrue('some/cpp/problematic/file2.cc' in errors[0].message)
-    self.assertTrue('some/cpp/ok/file.cc' not in errors[0].message)
-    self.assertTrue('some/cpp/ok/file2.cc' not in errors[0].message)
-    self.assertTrue('third_party/blink/ok/file3.cc' not in errors[0].message)
-    self.assertTrue('content/renderer/ok/file3.cc' not in errors[0].message)
+    results = PRESUBMIT._CheckNoBannedFunctions(input_api, MockOutputApi())
+
+    # warnings are results[0], errors are results[1]
+    self.assertEqual(2, len(results))
+    self.assertTrue('some/cpp/problematic/file.cc' in results[1].message)
+    self.assertTrue('some/cpp/problematic/file2.cc' in results[0].message)
+    self.assertTrue('some/cpp/ok/file.cc' not in results[1].message)
+    self.assertTrue('some/cpp/ok/file2.cc' not in results[1].message)
+    self.assertTrue('third_party/blink/ok/file3.cc' not in results[0].message)
+    self.assertTrue('content/renderer/ok/file3.cc' not in results[0].message)
 
 
 class NoProductionCodeUsingTestOnlyFunctionsTest(unittest.TestCase):
