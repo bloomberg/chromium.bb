@@ -768,8 +768,8 @@ void HostProcess::CreateAuthenticatorFactory() {
     }
 
     factory = protocol::Me2MeHostAuthenticatorFactory::CreateWithPin(
-        use_service_account_, host_owner_, local_certificate, key_pair_,
-        client_domain_list_, pin_hash_, pairing_registry);
+        use_service_account_, host_owner_, host_owner_email_, local_certificate,
+        key_pair_, client_domain_list_, pin_hash_, pairing_registry);
 
     host_->set_pairing_registry(pairing_registry);
   } else {
@@ -792,8 +792,8 @@ void HostProcess::CreateAuthenticatorFactory() {
         new TokenValidatorFactoryImpl(third_party_auth_config_, key_pair_,
                                       context_->url_request_context_getter());
     factory = protocol::Me2MeHostAuthenticatorFactory::CreateWithThirdPartyAuth(
-        use_service_account_, host_owner_, local_certificate, key_pair_,
-        client_domain_list_, token_validator_factory);
+        use_service_account_, host_owner_, host_owner_email_, local_certificate,
+        key_pair_, client_domain_list_, token_validator_factory);
   }
 
 #if defined(OS_POSIX)
