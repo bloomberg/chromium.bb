@@ -48,24 +48,25 @@ class KeyboardUI;
 class KeyboardUIFactory;
 
 // Represents the current state of the keyboard managed by the controller.
-// Don't change the numeric value of the members because they are used in UMA
-// - VirtualKeyboard.ControllerStateTransition.
-// - VirtualKeyboard.LingeringIntermediateState
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 enum class KeyboardControllerState {
-  UNKNOWN = 0,
+  kUnknown = 0,
   // Keyboard has never been shown.
-  INITIAL = 1,
+  kInitial = 1,
   // Waiting for an extension to be loaded. Will move to HIDDEN if this is
   // loading pre-emptively, otherwise will move to SHOWN.
-  LOADING_EXTENSION = 2,
+  kLoadingExtension = 2,
+  // kShowing = 3,  // no longer used
   // Keyboard is shown.
-  SHOWN = 4,
+  kShown = 4,
   // Keyboard is still shown, but will move to HIDING in a short period, or if
   // an input element gets focused again, will move to SHOWN.
-  WILL_HIDE = 5,
+  kWillHide = 5,
+  // kHiding = 6,  // no longer used
   // Keyboard is hidden, but has shown at least once.
-  HIDDEN = 7,
-  COUNT,
+  kHidden = 7,
+  kMaxValue = kHidden
 };
 
 // Provides control of the virtual keyboard, including enabling/disabling the
@@ -445,7 +446,7 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   // the keyboard window. If not, this should be empty.
   gfx::Rect visual_bounds_in_root_;
 
-  KeyboardControllerState state_ = KeyboardControllerState::UNKNOWN;
+  KeyboardControllerState state_ = KeyboardControllerState::kUnknown;
 
   // Keyboard configuration associated with the controller.
   mojom::KeyboardConfig keyboard_config_;
