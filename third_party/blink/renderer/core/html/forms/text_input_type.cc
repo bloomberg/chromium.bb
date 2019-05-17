@@ -38,10 +38,6 @@ namespace blink {
 
 using namespace html_names;
 
-InputType* TextInputType::Create(HTMLInputElement& element) {
-  return MakeGarbageCollected<TextInputType>(element);
-}
-
 void TextInputType::CountUsage() {
   CountUsageIfVisible(WebFeature::kInputTypeText);
   if (GetElement().FastHasAttribute(kMaxlengthAttr))

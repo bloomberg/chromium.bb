@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/html/forms/html_option_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_select_element.h"
 #include "third_party/blink/renderer/core/html/html_document.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -22,7 +23,7 @@ AtomicString Id(const HTMLOptionElement* option) {
 class OptionListTest : public testing::Test {
  protected:
   void SetUp() override {
-    HTMLDocument* document = HTMLDocument::CreateForTest();
+    auto* document = MakeGarbageCollected<HTMLDocument>();
     auto* select = MakeGarbageCollected<HTMLSelectElement>(*document);
     document->AppendChild(select);
     select_ = select;

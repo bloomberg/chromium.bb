@@ -29,8 +29,6 @@ class HTMLDetailsElement;
 
 class HTMLSummaryElement final : public HTMLElement {
  public:
-  static HTMLSummaryElement* Create(Document&);
-
   explicit HTMLSummaryElement(Document&);
 
   bool IsMainSummary() const;

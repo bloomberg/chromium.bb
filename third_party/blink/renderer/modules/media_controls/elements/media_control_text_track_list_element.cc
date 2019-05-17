@@ -117,8 +117,8 @@ Element* MediaControlTextTrackListElement::CreateTextTrackListItem(
   auto* track_item = MakeGarbageCollected<HTMLLabelElement>(GetDocument());
   track_item->SetShadowPseudoId(
       AtomicString("-internal-media-controls-text-track-list-item"));
-  auto* track_item_input =
-      HTMLInputElement::Create(GetDocument(), CreateElementFlags());
+  auto* track_item_input = MakeGarbageCollected<HTMLInputElement>(
+      GetDocument(), CreateElementFlags());
   track_item_input->SetShadowPseudoId(
       AtomicString("-internal-media-controls-text-track-list-item-input"));
   track_item_input->setAttribute(html_names::kAriaHiddenAttr, "true");

@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/text/bidi_text_run.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
@@ -476,8 +477,9 @@ TextMetrics* OffscreenCanvasRenderingContext2D::measureText(
   else
     direction = ToTextDirection(GetState().GetDirection());
 
-  return TextMetrics::Create(font, direction, GetState().GetTextBaseline(),
-                             GetState().GetTextAlign(), text);
+  return MakeGarbageCollected<TextMetrics>(font, direction,
+                                           GetState().GetTextBaseline(),
+                                           GetState().GetTextAlign(), text);
 }
 
 const Font& OffscreenCanvasRenderingContext2D::AccessFont() {

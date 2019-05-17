@@ -49,6 +49,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/date_components.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/text/date_time_format.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 #include "third_party/blink/renderer/platform/wtf/date_math.h"
@@ -360,13 +361,22 @@ void MultipleFieldsTemporalInputTypeView::CreateShadowSubtree() {
 
   container->AppendChild(DateTimeEditElement::Create(document, *this));
   GetElement().UpdateView();
-  container->AppendChild(ClearButtonElement::Create(document, *this));
-  container->AppendChild(SpinButtonElement::Create(document, *this));
+  container->AppendChild(
+      MakeGarbageCollected<ClearButtonElement, Document&,
+                           ClearButtonElement::ClearButtonOwner&>(document,
+                                                                  *this));
+  container->AppendChild(
+      MakeGarbageCollected<SpinButtonElement, Document&,
+                           SpinButtonElement::SpinButtonOwner&>(document,
+                                                                *this));
 
   if (LayoutTheme::GetTheme().SupportsCalendarPicker(
           input_type_->FormControlType()))
     picker_indicator_is_always_visible_ = true;
-  container->AppendChild(PickerIndicatorElement::Create(document, *this));
+  container->AppendChild(
+      MakeGarbageCollected<PickerIndicatorElement, Document&,
+                           PickerIndicatorElement::PickerIndicatorOwner&>(
+          document, *this));
   picker_indicator_is_visible_ = true;
   UpdatePickerIndicatorVisibility();
 }

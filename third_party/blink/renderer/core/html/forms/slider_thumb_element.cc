@@ -56,16 +56,10 @@ inline static bool HasVerticalAppearance(HTMLInputElement* input) {
   return input->ComputedStyleRef().Appearance() == kSliderVerticalPart;
 }
 
-inline SliderThumbElement::SliderThumbElement(Document& document)
+SliderThumbElement::SliderThumbElement(Document& document)
     : HTMLDivElement(document), in_drag_mode_(false) {
   SetHasCustomStyleCallbacks();
-}
-
-SliderThumbElement* SliderThumbElement::Create(Document& document) {
-  SliderThumbElement* element =
-      MakeGarbageCollected<SliderThumbElement>(document);
-  element->setAttribute(kIdAttr, shadow_element_names::SliderThumb());
-  return element;
+  setAttribute(kIdAttr, shadow_element_names::SliderThumb());
 }
 
 void SliderThumbElement::SetPositionFromValue() {

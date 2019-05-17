@@ -65,6 +65,7 @@
 #include "third_party/blink/renderer/core/loader/form_submission.h"
 #include "third_party/blink/renderer/core/loader/mixed_content_checker.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
@@ -447,7 +448,7 @@ FormData* HTMLFormElement::ConstructEntryList(
     }
   }
   if (RuntimeEnabledFeatures::FormDataEventEnabled())
-    DispatchEvent(*FormDataEvent::Create(form_data));
+    DispatchEvent(*MakeGarbageCollected<FormDataEvent>(form_data));
 
   if (submit_button)
     submit_button->SetActivatedSubmit(false);

@@ -55,8 +55,6 @@ class CORE_EXPORT HTMLInputElement
   USING_GARBAGE_COLLECTED_MIXIN(HTMLInputElement);
 
  public:
-  static HTMLInputElement* Create(Document&, const CreateElementFlags);
-
   HTMLInputElement(Document&, const CreateElementFlags);
   ~HTMLInputElement() override;
   void Trace(Visitor*) override;

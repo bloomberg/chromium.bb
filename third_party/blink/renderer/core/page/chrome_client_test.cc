@@ -76,7 +76,8 @@ TEST_F(ChromeClientTest, SetToolTipEmptyString) {
   HitTestLocation location(LayoutPoint(10, 20));
   HitTestResult result(HitTestRequest(HitTestRequest::kMove), location);
   auto& doc = *Document::CreateForTest();
-  auto& input_element = *HTMLInputElement::Create(doc, CreateElementFlags());
+  auto& input_element =
+      *MakeGarbageCollected<HTMLInputElement>(doc, CreateElementFlags());
   input_element.setAttribute(html_names::kTypeAttr, "file");
 
   result.SetInnerNode(&input_element);

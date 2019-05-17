@@ -125,7 +125,7 @@ void PluginDocumentParser::CreateDocumentStructure() {
     return;
   }
 
-  embed_element_ = HTMLEmbedElement::Create(*GetDocument());
+  embed_element_ = MakeGarbageCollected<HTMLEmbedElement>(*GetDocument());
   embed_element_->setAttribute(kWidthAttr, "100%");
   embed_element_->setAttribute(kHeightAttr, "100%");
   embed_element_->setAttribute(kNameAttr, "plugin");

@@ -72,8 +72,8 @@ LayoutObject* HTMLDetailsElement::CreateLayoutObject(const ComputedStyle& style,
 }
 
 void HTMLDetailsElement::DidAddUserAgentShadowRoot(ShadowRoot& root) {
-  HTMLSummaryElement* default_summary =
-      HTMLSummaryElement::Create(GetDocument());
+  auto* default_summary =
+      MakeGarbageCollected<HTMLSummaryElement>(GetDocument());
   default_summary->AppendChild(
       Text::Create(GetDocument(),
                    GetLocale().QueryString(WebLocalizedString::kDetailsLabel)));

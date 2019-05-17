@@ -61,6 +61,7 @@
 #include "third_party/blink/renderer/core/html/forms/html_option_element.h"
 #include "third_party/blink/renderer/core/html/forms/input_type.h"
 #include "third_party/blink/renderer/core/html/forms/search_input_type.h"
+#include "third_party/blink/renderer/core/html/forms/text_input_type.h"
 #include "third_party/blink/renderer/core/html/html_collection.h"
 #include "third_party/blink/renderer/core/html/html_image_loader.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
@@ -71,6 +72,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/language.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
@@ -83,9 +85,6 @@ using namespace html_names;
 
 class ListAttributeTargetObserver : public IdTargetObserver {
  public:
-  static ListAttributeTargetObserver* Create(const AtomicString& id,
-                                             HTMLInputElement*);
-
   ListAttributeTargetObserver(const AtomicString& id, HTMLInputElement*);
 
   void Trace(Visitor*) override;
@@ -119,8 +118,9 @@ HTMLInputElement::HTMLInputElement(Document& document,
       // constructing unnecessarily a text InputType and its shadow subtree,
       // just to destroy them when the |type| attribute gets set by the parser
       // to something else than 'text'.
-      input_type_(flags.IsCreatedByParser() ? nullptr
-                                            : InputType::CreateText(*this)),
+      input_type_(flags.IsCreatedByParser()
+                      ? nullptr
+                      : MakeGarbageCollected<TextInputType>(*this)),
       input_type_view_(input_type_ ? input_type_->CreateView() : nullptr) {
   SetHasCustomStyleCallbacks();
 
@@ -129,11 +129,6 @@ HTMLInputElement::HTMLInputElement(Document& document,
     CreateUserAgentShadowRoot();
     CreateShadowSubtree();
   }
-}
-
-HTMLInputElement* HTMLInputElement::Create(Document& document,
-                                           const CreateElementFlags flags) {
-  return MakeGarbageCollected<HTMLInputElement>(document, flags);
 }
 
 void HTMLInputElement::Trace(Visitor* visitor) {
@@ -1711,7 +1706,7 @@ void HTMLInputElement::ResetListAttributeTargetObserver() {
   const AtomicString& value = FastGetAttribute(kListAttr);
   if (!value.IsNull() && isConnected()) {
     SetListAttributeTargetObserver(
-        ListAttributeTargetObserver::Create(value, this));
+        MakeGarbageCollected<ListAttributeTargetObserver>(value, this));
   } else {
     SetListAttributeTargetObserver(nullptr);
   }
@@ -1827,12 +1822,6 @@ void HTMLInputElement::setHeight(unsigned height) {
 
 void HTMLInputElement::setWidth(unsigned width) {
   SetUnsignedIntegralAttribute(kWidthAttr, width);
-}
-
-ListAttributeTargetObserver* ListAttributeTargetObserver::Create(
-    const AtomicString& id,
-    HTMLInputElement* element) {
-  return MakeGarbageCollected<ListAttributeTargetObserver>(id, element);
 }
 
 ListAttributeTargetObserver::ListAttributeTargetObserver(

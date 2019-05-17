@@ -5,12 +5,15 @@
 #include "third_party/blink/renderer/core/fetch/fetch_data_loader.h"
 
 #include <memory>
+#include <utility>
+
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "third_party/blink/renderer/core/fetch/multipart_parser.h"
 #include "third_party/blink/renderer/core/fileapi/file.h"
 #include "third_party/blink/renderer/core/html/forms/form_data.h"
 #include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
 #include "third_party/blink/renderer/platform/file_metadata.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/bytes_consumer.h"
 #include "third_party/blink/renderer/platform/loader/fetch/text_resource_decoder_options.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
@@ -336,7 +339,7 @@ class FetchDataLoaderAsFormData final : public FetchDataLoader,
                                      multipart_boundary_utf8.length());
 
     client_ = client;
-    form_data_ = FormData::Create();
+    form_data_ = MakeGarbageCollected<FormData>();
     multipart_parser_ = MakeGarbageCollected<MultipartParser>(
         std::move(multipart_boundary_vector), this);
     consumer_ = consumer;

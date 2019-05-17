@@ -74,21 +74,14 @@ HTMLDocument::HTMLDocument(const DocumentInit& initializer,
   }
 }
 
-HTMLDocument* HTMLDocument::Create(const DocumentInit& initializer) {
-  return MakeGarbageCollected<HTMLDocument>(initializer);
-}
-
-HTMLDocument* HTMLDocument::CreateForTest() {
-  return MakeGarbageCollected<HTMLDocument>(DocumentInit::Create());
-}
-
 HTMLDocument::~HTMLDocument() = default;
 
 Document* HTMLDocument::CloneDocumentWithoutChildren() const {
-  return Create(DocumentInit::Create()
-                    .WithContextDocument(ContextDocument())
-                    .WithURL(Url())
-                    .WithRegistrationContext(RegistrationContext()));
+  return MakeGarbageCollected<HTMLDocument>(
+      DocumentInit::Create()
+          .WithContextDocument(ContextDocument())
+          .WithURL(Url())
+          .WithRegistrationContext(RegistrationContext()));
 }
 
 // --------------------------------------------------------------------------

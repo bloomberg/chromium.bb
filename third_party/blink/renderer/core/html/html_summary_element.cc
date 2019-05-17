@@ -32,14 +32,11 @@
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
 using namespace html_names;
-
-HTMLSummaryElement* HTMLSummaryElement::Create(Document& document) {
-  return MakeGarbageCollected<HTMLSummaryElement>(document);
-}
 
 HTMLSummaryElement::HTMLSummaryElement(Document& document)
     : HTMLElement(kSummaryTag, document) {
@@ -62,8 +59,8 @@ LayoutObject* HTMLSummaryElement::CreateLayoutObject(const ComputedStyle& style,
 }
 
 void HTMLSummaryElement::DidAddUserAgentShadowRoot(ShadowRoot& root) {
-  DetailsMarkerControl* marker_control =
-      DetailsMarkerControl::Create(GetDocument());
+  auto* marker_control =
+      MakeGarbageCollected<DetailsMarkerControl>(GetDocument());
   marker_control->SetIdAttribute(shadow_element_names::DetailsMarker());
   root.AppendChild(marker_control);
   root.AppendChild(HTMLSlotElement::CreateUserAgentDefaultSlot(GetDocument()));

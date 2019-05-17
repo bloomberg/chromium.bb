@@ -318,8 +318,12 @@ void TextFieldInputType::CreateShadowSubtree() {
   // FIXME: Because of a special handling for a spin button in
   // LayoutTextControlSingleLine, we need to put it to the last position. It's
   // inconsistent with multiple-fields date/time types.
-  if (should_have_spin_button)
-    container->AppendChild(SpinButtonElement::Create(document, *this));
+  if (should_have_spin_button) {
+    container->AppendChild(
+        MakeGarbageCollected<SpinButtonElement, Document&,
+                             SpinButtonElement::SpinButtonOwner&>(document,
+                                                                  *this));
+  }
 
   // See listAttributeTargetChanged too.
 }

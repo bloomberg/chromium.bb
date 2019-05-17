@@ -51,11 +51,6 @@ HTMLEmbedElement::HTMLEmbedElement(Document& document,
   EnsureUserAgentShadowRoot();
 }
 
-HTMLEmbedElement* HTMLEmbedElement::Create(Document& document,
-                                           const CreateElementFlags flags) {
-  return MakeGarbageCollected<HTMLEmbedElement>(document, flags);
-}
-
 const AttrNameToTrustedType& HTMLEmbedElement::GetCheckedAttributeTypes()
     const {
   DEFINE_STATIC_LOCAL(AttrNameToTrustedType, attribute_map,

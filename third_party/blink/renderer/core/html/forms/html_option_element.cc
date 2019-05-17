@@ -58,10 +58,6 @@ HTMLOptionElement::HTMLOptionElement(Document& document)
 // a compile error because of lack of ComputedStyle definition.
 HTMLOptionElement::~HTMLOptionElement() = default;
 
-HTMLOptionElement* HTMLOptionElement::Create(Document& document) {
-  return MakeGarbageCollected<HTMLOptionElement>(document);
-}
-
 HTMLOptionElement* HTMLOptionElement::CreateForJSConstructor(
     Document& document,
     const String& data,

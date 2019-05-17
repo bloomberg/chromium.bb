@@ -951,9 +951,11 @@ void HTMLCanvasElement::toBlob(V8BlobCallback* callback,
   scoped_refptr<StaticBitmapImage> image_bitmap =
       Snapshot(kBackBuffer, kPreferNoAcceleration);
   if (image_bitmap) {
-    async_creator = CanvasAsyncBlobCreator::Create(
-        image_bitmap, encoding_mime_type, callback,
-        CanvasAsyncBlobCreator::kHTMLCanvasToBlobCallback, start_time,
+    auto* options = ImageEncodeOptions::Create();
+    options->setType(ImageEncodingMimeTypeName(encoding_mime_type));
+    async_creator = MakeGarbageCollected<CanvasAsyncBlobCreator>(
+        image_bitmap, options,
+        CanvasAsyncBlobCreator::kHTMLCanvasToBlobCallback, callback, start_time,
         &GetDocument());
   }
 

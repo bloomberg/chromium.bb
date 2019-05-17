@@ -245,7 +245,7 @@ void RangeInputType::CreateShadowSubtree() {
   auto* track = MakeGarbageCollected<HTMLDivElement>(document);
   track->SetShadowPseudoId(AtomicString("-webkit-slider-runnable-track"));
   track->setAttribute(kIdAttr, shadow_element_names::SliderTrack());
-  track->AppendChild(SliderThumbElement::Create(document));
+  track->AppendChild(MakeGarbageCollected<SliderThumbElement>(document));
   auto* container = MakeGarbageCollected<SliderContainerElement>(document);
   container->AppendChild(track);
   GetElement().UserAgentShadowRoot()->AppendChild(container);

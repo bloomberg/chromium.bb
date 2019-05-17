@@ -74,6 +74,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/spatial_navigation.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 
@@ -421,7 +422,8 @@ void HTMLSelectElement::setLength(unsigned new_len,
 
   if (diff < 0) {  // Add dummy elements.
     do {
-      AppendChild(HTMLOptionElement::Create(GetDocument()), exception_state);
+      AppendChild(MakeGarbageCollected<HTMLOptionElement>(GetDocument()),
+                  exception_state);
       if (exception_state.HadException())
         break;
     } while (++diff);

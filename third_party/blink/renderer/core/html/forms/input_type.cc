@@ -182,13 +182,10 @@ InputType* InputType::Create(HTMLInputElement& element,
                              const AtomicString& type_name) {
   InputTypeFactoryFunction factory =
       type_name.IsEmpty() ? nullptr : FactoryMap()->at(type_name);
-  if (!factory)
-    factory = TextInputType::Create;
-  return factory(element);
-}
-
-InputType* InputType::CreateText(HTMLInputElement& element) {
-  return TextInputType::Create(element);
+  if (factory) {
+    return factory(element);
+  }
+  return MakeGarbageCollected<TextInputType>(element);
 }
 
 const AtomicString& InputType::NormalizeTypeName(

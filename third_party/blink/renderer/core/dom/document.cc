@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/auto_reset.h"
 #include "base/macros.h"
@@ -1209,7 +1210,7 @@ void Document::ClearImportsController() {
 HTMLImportsController* Document::EnsureImportsController() {
   if (!imports_controller_) {
     DCHECK(frame_);
-    imports_controller_ = HTMLImportsController::Create(*this);
+    imports_controller_ = MakeGarbageCollected<HTMLImportsController>(*this);
   }
 
   return imports_controller_;
@@ -2985,9 +2986,10 @@ CanvasFontCache* Document::GetCanvasFontCache() {
 }
 
 DocumentParser* Document::CreateParser() {
-  if (IsHTMLDocument())
-    return HTMLDocumentParser::Create(ToHTMLDocument(*this),
-                                      parser_sync_policy_);
+  if (IsHTMLDocument()) {
+    return MakeGarbageCollected<HTMLDocumentParser>(ToHTMLDocument(*this),
+                                                    parser_sync_policy_);
+  }
   // FIXME: this should probably pass the frame instead
   return MakeGarbageCollected<XMLDocumentParser>(*this, View());
 }
@@ -7285,11 +7287,11 @@ Document& Document::EnsureTemplateDocument() {
     return *template_document_;
 
   if (IsHTMLDocument()) {
-    template_document_ =
-        HTMLDocument::Create(DocumentInit::Create()
-                                 .WithContextDocument(ContextDocument())
-                                 .WithURL(BlankURL())
-                                 .WithNewRegistrationContext());
+    template_document_ = MakeGarbageCollected<HTMLDocument>(
+        DocumentInit::Create()
+            .WithContextDocument(ContextDocument())
+            .WithURL(BlankURL())
+            .WithNewRegistrationContext());
   } else {
     template_document_ =
         Document::Create(DocumentInit::Create().WithURL(BlankURL()));

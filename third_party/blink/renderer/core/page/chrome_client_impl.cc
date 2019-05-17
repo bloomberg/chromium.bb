@@ -30,6 +30,7 @@
  */
 
 #include "third_party/blink/renderer/core/page/chrome_client_impl.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 #include <memory>
 #include <utility>
@@ -843,7 +844,7 @@ PopupMenu* ChromeClientImpl::OpenPopupMenu(LocalFrame& frame,
     return MakeGarbageCollected<ExternalPopupMenu>(frame, select, *web_view_);
 
   DCHECK(RuntimeEnabledFeatures::PagePopupEnabled());
-  return InternalPopupMenu::Create(this, select);
+  return MakeGarbageCollected<InternalPopupMenu>(this, select);
 }
 
 PagePopup* ChromeClientImpl::OpenPagePopup(PagePopupClient* client) {

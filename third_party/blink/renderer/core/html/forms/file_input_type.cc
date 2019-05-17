@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/core/page/drag_data.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/file_metadata.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -307,8 +308,8 @@ void FileInputType::CountUsage() {
 
 void FileInputType::CreateShadowSubtree() {
   DCHECK(IsShadowHost(GetElement()));
-  auto* button = HTMLInputElement::Create(GetElement().GetDocument(),
-                                          CreateElementFlags());
+  auto* button = MakeGarbageCollected<HTMLInputElement>(
+      GetElement().GetDocument(), CreateElementFlags());
   button->setType(input_type_names::kButton);
   button->setAttribute(
       kValueAttr,

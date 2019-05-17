@@ -128,29 +128,20 @@ void RecordScaledDurationHistogram(ImageEncodingMimeType mime_type,
 
 }  // anonymous namespace
 
-CanvasAsyncBlobCreator* CanvasAsyncBlobCreator::Create(
-    scoped_refptr<StaticBitmapImage> image,
-    const ImageEncodingMimeType mime_type,
-    V8BlobCallback* callback,
-    ToBlobFunctionType function_type,
-    TimeTicks start_time,
-    ExecutionContext* context) {
-  ImageEncodeOptions* options = ImageEncodeOptions::Create();
-  options->setType(ImageEncodingMimeTypeName(mime_type));
-  return MakeGarbageCollected<CanvasAsyncBlobCreator>(
-      image, options, function_type, callback, start_time, context, nullptr);
-}
-
-CanvasAsyncBlobCreator* CanvasAsyncBlobCreator::Create(
+CanvasAsyncBlobCreator::CanvasAsyncBlobCreator(
     scoped_refptr<StaticBitmapImage> image,
     const ImageEncodeOptions* options,
     ToBlobFunctionType function_type,
     TimeTicks start_time,
     ExecutionContext* context,
-    ScriptPromiseResolver* resolver) {
-  return MakeGarbageCollected<CanvasAsyncBlobCreator>(
-      image, options, function_type, nullptr, start_time, context, resolver);
-}
+    ScriptPromiseResolver* resolver)
+    : CanvasAsyncBlobCreator(image,
+                             options,
+                             function_type,
+                             nullptr,
+                             start_time,
+                             context,
+                             resolver) {}
 
 CanvasAsyncBlobCreator::CanvasAsyncBlobCreator(
     scoped_refptr<StaticBitmapImage> image,

@@ -44,8 +44,8 @@ namespace blink {
 
 using namespace html_names;
 
-inline SpinButtonElement::SpinButtonElement(Document& document,
-                                            SpinButtonOwner& spin_button_owner)
+SpinButtonElement::SpinButtonElement(Document& document,
+                                     SpinButtonOwner& spin_button_owner)
     : HTMLDivElement(document),
       spin_button_owner_(&spin_button_owner),
       capturing_(false),
@@ -53,16 +53,9 @@ inline SpinButtonElement::SpinButtonElement(Document& document,
       press_starting_state_(kIndeterminate),
       repeating_timer_(document.GetTaskRunner(TaskType::kInternalDefault),
                        this,
-                       &SpinButtonElement::RepeatingTimerFired) {}
-
-SpinButtonElement* SpinButtonElement::Create(
-    Document& document,
-    SpinButtonOwner& spin_button_owner) {
-  SpinButtonElement* element =
-      MakeGarbageCollected<SpinButtonElement>(document, spin_button_owner);
-  element->SetShadowPseudoId(AtomicString("-webkit-inner-spin-button"));
-  element->setAttribute(kIdAttr, shadow_element_names::SpinButton());
-  return element;
+                       &SpinButtonElement::RepeatingTimerFired) {
+  SetShadowPseudoId(AtomicString("-webkit-inner-spin-button"));
+  setAttribute(kIdAttr, shadow_element_names::SpinButton());
 }
 
 void SpinButtonElement::DetachLayoutTree(const AttachContext& context) {

@@ -24,8 +24,6 @@ class HTMLSelectElement;
 class CORE_EXPORT InternalPopupMenu final : public PopupMenu,
                                             public PagePopupClient {
  public:
-  static InternalPopupMenu* Create(ChromeClient*, HTMLSelectElement&);
-
   InternalPopupMenu(ChromeClient*, HTMLSelectElement&);
   ~InternalPopupMenu() override;
   void Trace(Visitor*) override;

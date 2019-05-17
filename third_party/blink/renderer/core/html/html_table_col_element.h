@@ -34,7 +34,6 @@ class CORE_EXPORT HTMLTableColElement final : public HTMLTablePartElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-
   HTMLTableColElement(const QualifiedName& tag_name, Document&);
 
   unsigned span() const { return span_; }

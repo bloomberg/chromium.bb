@@ -54,28 +54,21 @@ class CORE_EXPORT CanvasAsyncBlobCreator
     kNumberOfToBlobFunctionTypes
   };
 
-  static CanvasAsyncBlobCreator* Create(scoped_refptr<StaticBitmapImage>,
-                                        const ImageEncodingMimeType mime_type,
-                                        V8BlobCallback*,
-                                        ToBlobFunctionType function_type,
-                                        TimeTicks start_time,
-                                        ExecutionContext*);
-  static CanvasAsyncBlobCreator* Create(scoped_refptr<StaticBitmapImage>,
-                                        const ImageEncodeOptions* options,
-                                        ToBlobFunctionType function_type,
-                                        TimeTicks start_time,
-                                        ExecutionContext*,
-                                        ScriptPromiseResolver*);
-
   void ScheduleAsyncBlobCreation(const double& quality);
 
+  CanvasAsyncBlobCreator(scoped_refptr<StaticBitmapImage>,
+                         const ImageEncodeOptions* options,
+                         ToBlobFunctionType function_type,
+                         TimeTicks start_time,
+                         ExecutionContext*,
+                         ScriptPromiseResolver*);
   CanvasAsyncBlobCreator(scoped_refptr<StaticBitmapImage>,
                          const ImageEncodeOptions*,
                          ToBlobFunctionType,
                          V8BlobCallback*,
                          TimeTicks start_time,
                          ExecutionContext*,
-                         ScriptPromiseResolver*);
+                         ScriptPromiseResolver* = nullptr);
   virtual ~CanvasAsyncBlobCreator();
 
   // Methods are virtual for mocking in unit tests

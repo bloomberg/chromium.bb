@@ -5,6 +5,8 @@
 #include "third_party/blink/renderer/core/css/selector_query.h"
 
 #include <memory>
+#include <utility>
+
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
@@ -91,7 +93,7 @@ TEST(SelectorQueryTest, NotMatchingPseudoElement) {
 }
 
 TEST(SelectorQueryTest, LastOfTypeNotFinishedParsing) {
-  Document* document = HTMLDocument::CreateForTest();
+  auto* document = MakeGarbageCollected<HTMLDocument>();
   auto* html = MakeGarbageCollected<HTMLHtmlElement>(*document);
   document->AppendChild(html);
   document->documentElement()->SetInnerHTMLFromString(
@@ -113,7 +115,7 @@ TEST(SelectorQueryTest, LastOfTypeNotFinishedParsing) {
 }
 
 TEST(SelectorQueryTest, StandardsModeFastPaths) {
-  Document* document = HTMLDocument::CreateForTest();
+  auto* document = MakeGarbageCollected<HTMLDocument>();
   document->write(R"HTML(
     <!DOCTYPE html>
     <html>
@@ -225,7 +227,7 @@ TEST(SelectorQueryTest, StandardsModeFastPaths) {
 }
 
 TEST(SelectorQueryTest, FastPathScoped) {
-  Document* document = HTMLDocument::CreateForTest();
+  auto* document = MakeGarbageCollected<HTMLDocument>();
   document->write(R"HTML(
     <!DOCTYPE html>
     <html id=root-id class=root-class>
@@ -291,7 +293,7 @@ TEST(SelectorQueryTest, FastPathScoped) {
 }
 
 TEST(SelectorQueryTest, QuirksModeSlowPath) {
-  Document* document = HTMLDocument::CreateForTest();
+  auto* document = MakeGarbageCollected<HTMLDocument>();
   document->write(R"HTML(
     <html>
       <head></head>
@@ -327,7 +329,7 @@ TEST(SelectorQueryTest, QuirksModeSlowPath) {
 }
 
 TEST(SelectorQueryTest, DisconnectedSubtree) {
-  Document* document = HTMLDocument::CreateForTest();
+  auto* document = MakeGarbageCollected<HTMLDocument>();
   Element* scope = document->CreateRawElement(html_names::kDivTag);
   scope->SetInnerHTMLFromString(R"HTML(
     <section>
@@ -354,7 +356,7 @@ TEST(SelectorQueryTest, DisconnectedSubtree) {
 }
 
 TEST(SelectorQueryTest, DisconnectedTreeScope) {
-  Document* document = HTMLDocument::CreateForTest();
+  auto* document = MakeGarbageCollected<HTMLDocument>();
   Element* host = document->CreateRawElement(html_names::kDivTag);
   ShadowRoot& shadowRoot =
       host->AttachShadowRootInternal(ShadowRootType::kOpen);

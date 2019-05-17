@@ -55,16 +55,11 @@ class CORE_EXPORT FormData final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static FormData* Create() { return MakeGarbageCollected<FormData>(); }
   static FormData* Create(ExceptionState& exception_state) {
     return MakeGarbageCollected<FormData>();
   }
   static FormData* Create(HTMLFormElement* form,
                           ExceptionState& exception_state);
-
-  static FormData* Create(const WTF::TextEncoding& encoding) {
-    return MakeGarbageCollected<FormData>(encoding);
-  }
 
   explicit FormData(const WTF::TextEncoding&);
   // Clones form_data.  This clones |form_data.entries_| Vector, but

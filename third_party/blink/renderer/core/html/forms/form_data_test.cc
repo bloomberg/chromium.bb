@@ -7,6 +7,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/fileapi/file.h"
 #include "third_party/blink/renderer/core/html/forms/form_controller.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -22,7 +23,7 @@ FormData* Deserialize(const Vector<String>& strings) {
 }  // namespace
 
 TEST(FormDataTest, append) {
-  FormData* fd = FormData::Create(UTF8Encoding());
+  auto* fd = MakeGarbageCollected<FormData>(UTF8Encoding());
   fd->append("test\n1", "value\n1");
   fd->append("test\r2", nullptr, "filename");
 
@@ -35,7 +36,7 @@ TEST(FormDataTest, append) {
 }
 
 TEST(FormDataTest, AppendFromElement) {
-  FormData* fd = FormData::Create(UTF8Encoding());
+  auto* fd = MakeGarbageCollected<FormData>(UTF8Encoding());
   fd->AppendFromElement("Atomic\nNumber", 1);
   fd->AppendFromElement("Periodic\nTable", nullptr);
   fd->AppendFromElement("Noble\nGas", "He\rNe\nAr\r\nKr");
@@ -53,7 +54,7 @@ TEST(FormDataTest, AppendFromElement) {
 }
 
 TEST(FormDataTest, get) {
-  FormData* fd = FormData::Create(UTF8Encoding());
+  auto* fd = MakeGarbageCollected<FormData>(UTF8Encoding());
   fd->append("name1", "value1");
 
   FileOrUSVString result;
@@ -67,7 +68,7 @@ TEST(FormDataTest, get) {
 }
 
 TEST(FormDataTest, getAll) {
-  FormData* fd = FormData::Create(UTF8Encoding());
+  auto* fd = MakeGarbageCollected<FormData>(UTF8Encoding());
   fd->append("name1", "value1");
 
   HeapVector<FormDataEntryValue> results = fd->getAll("name1");
@@ -79,7 +80,7 @@ TEST(FormDataTest, getAll) {
 }
 
 TEST(FormDataTest, has) {
-  FormData* fd = FormData::Create(UTF8Encoding());
+  auto* fd = MakeGarbageCollected<FormData>(UTF8Encoding());
   fd->append("name1", "value1");
 
   EXPECT_TRUE(fd->has("name1"));

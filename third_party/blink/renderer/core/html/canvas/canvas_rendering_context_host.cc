@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/skia/include/core/SkSurface.h"
 
@@ -211,7 +212,7 @@ ScriptPromise CanvasRenderingContextHost::convertToBlob(
       function_type =
           CanvasAsyncBlobCreator::kOffscreenCanvasConvertToBlobPromise;
     }
-    CanvasAsyncBlobCreator* async_creator = CanvasAsyncBlobCreator::Create(
+    auto* async_creator = MakeGarbageCollected<CanvasAsyncBlobCreator>(
         image_bitmap, options, function_type, start_time,
         ExecutionContext::From(script_state), resolver);
     async_creator->ScheduleAsyncBlobCreation(options->quality());

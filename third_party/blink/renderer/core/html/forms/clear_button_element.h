@@ -41,8 +41,6 @@ class ClearButtonElement final : public HTMLDivElement {
     virtual void ClearValue() = 0;
   };
 
-  static ClearButtonElement* Create(Document&, ClearButtonOwner&);
-
   ClearButtonElement(Document&, ClearButtonOwner&);
 
   void RemoveClearButtonOwner() { clear_button_owner_ = nullptr; }

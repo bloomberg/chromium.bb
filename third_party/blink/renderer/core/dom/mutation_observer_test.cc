@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/dom/mutation_observer_registration.h"
 #include "third_party/blink/renderer/core/html/html_document.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -34,7 +35,7 @@ class EmptyMutationCallback : public MutationObserver::Delegate {
 }  // namespace
 
 TEST(MutationObserverTest, DisconnectCrash) {
-  Persistent<Document> document = HTMLDocument::CreateForTest();
+  Persistent<Document> document = MakeGarbageCollected<HTMLDocument>();
   auto* root =
       To<HTMLElement>(document->CreateRawElement(html_names::kHTMLTag));
   document->AppendChild(root);
