@@ -342,9 +342,10 @@ void ManagementUIHandler::InitializeInternal(content::WebUI* web_ui,
   auto handler = std::make_unique<ManagementUIHandler>();
 
 #if defined(OS_CHROMEOS)
-  handler->managed_ = IsProfileManaged(profile) || IsDeviceManaged();
+  handler->account_managed_ = IsProfileManaged(profile);
+  handler->device_managed_ = IsDeviceManaged();
 #else
-  handler->managed_ = IsProfileManaged(profile) || IsBrowserManaged();
+  handler->account_managed_ = IsProfileManaged(profile) || IsBrowserManaged();
 #endif  // defined(OS_CHROMEOS)
 
   web_ui->AddMessageHandler(std::move(handler));
@@ -484,17 +485,18 @@ void ManagementUIHandler::AddExtensionReportingInfo(
 base::DictionaryValue ManagementUIHandler::GetContextualManagedData(
     Profile* profile) const {
   base::DictionaryValue response;
-
 #if defined(OS_CHROMEOS)
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  std::string management_domain = connector->GetEnterpriseDisplayDomain();
-  if (management_domain.empty())
-    management_domain = connector->GetRealm();
+  std::string management_domain = GetDeviceDomain();
   if (management_domain.empty())
     management_domain = GetAccountDomain(profile);
 #else
   std::string management_domain = GetAccountDomain(profile);
+
+  response.SetString("browserManagementNotice",
+                     l10n_util::GetStringFUTF16(
+                         managed_() ? IDS_MANAGEMENT_BROWSER_NOTICE
+                                    : IDS_MANAGEMENT_NOT_MANAGED_NOTICE,
+                         base::UTF8ToUTF16(chrome::kManagedUiLearnMoreUrl)));
 #endif
 
   if (management_domain.empty()) {
@@ -503,24 +505,20 @@ base::DictionaryValue ManagementUIHandler::GetContextualManagedData(
         l10n_util::GetStringUTF16(IDS_MANAGEMENT_EXTENSIONS_INSTALLED));
 
 #if !defined(OS_CHROMEOS)
-    response.SetString("browserManagementNotice",
-                       l10n_util::GetStringFUTF16(
-                           managed_ ? IDS_MANAGEMENT_BROWSER_NOTICE
-                                    : IDS_MANAGEMENT_NOT_MANAGED_NOTICE,
-                           base::UTF8ToUTF16(chrome::kManagedUiLearnMoreUrl)));
     response.SetString("pageSubtitle",
                        l10n_util::GetStringUTF16(
-                           managed_ ? IDS_MANAGEMENT_SUBTITLE
-                                    : IDS_MANAGEMENT_NOT_MANAGED_SUBTITLE));
+                           managed_() ? IDS_MANAGEMENT_SUBTITLE
+                                      : IDS_MANAGEMENT_NOT_MANAGED_SUBTITLE));
 #else
     const auto device_type = ui::GetChromeOSDeviceTypeResourceId();
-    response.SetString("pageSubtitle",
-                       managed_ ? l10n_util::GetStringFUTF16(
-                                      IDS_MANAGEMENT_SUBTITLE_MANAGED,
-                                      l10n_util::GetStringUTF16(device_type))
-                                : l10n_util::GetStringFUTF16(
-                                      IDS_MANAGEMENT_NOT_MANAGED_SUBTITLE,
-                                      l10n_util::GetStringUTF16(device_type)));
+    response.SetString(
+        "pageSubtitle",
+        managed_()
+            ? l10n_util::GetStringFUTF16(IDS_MANAGEMENT_SUBTITLE_MANAGED,
+                                         l10n_util::GetStringUTF16(device_type))
+            : l10n_util::GetStringFUTF16(
+                  IDS_MANAGEMENT_NOT_MANAGED_SUBTITLE,
+                  l10n_util::GetStringUTF16(device_type)));
 #endif  // !defined(OS_CHROMEOS)
 
   } else {
@@ -531,33 +529,25 @@ base::DictionaryValue ManagementUIHandler::GetContextualManagedData(
 
 #if !defined(OS_CHROMEOS)
     response.SetString(
-        "browserManagementNotice",
-        managed_ ? l10n_util::GetStringFUTF16(
-                       IDS_MANAGEMENT_MANAGEMENT_BY_NOTICE,
-                       base::UTF8ToUTF16(management_domain),
-                       base::UTF8ToUTF16(chrome::kManagedUiLearnMoreUrl))
-                 : l10n_util::GetStringFUTF16(
-                       IDS_MANAGEMENT_NOT_MANAGED_NOTICE,
-                       base::UTF8ToUTF16(chrome::kManagedUiLearnMoreUrl)));
-    response.SetString(
         "pageSubtitle",
-        managed_
+        managed_()
             ? l10n_util::GetStringFUTF16(IDS_MANAGEMENT_SUBTITLE_MANAGED_BY,
                                          base::UTF8ToUTF16(management_domain))
             : l10n_util::GetStringUTF16(IDS_MANAGEMENT_NOT_MANAGED_SUBTITLE));
 #else
     const auto device_type = ui::GetChromeOSDeviceTypeResourceId();
-    response.SetString("pageSubtitle",
-                       managed_ ? l10n_util::GetStringFUTF16(
-                                      IDS_MANAGEMENT_SUBTITLE_MANAGED_BY,
-                                      l10n_util::GetStringUTF16(device_type),
-                                      base::UTF8ToUTF16(management_domain))
-                                : l10n_util::GetStringFUTF16(
-                                      IDS_MANAGEMENT_NOT_MANAGED_SUBTITLE,
-                                      l10n_util::GetStringUTF16(device_type)));
+    response.SetString(
+        "pageSubtitle",
+        managed_()
+            ? l10n_util::GetStringFUTF16(IDS_MANAGEMENT_SUBTITLE_MANAGED_BY,
+                                         l10n_util::GetStringUTF16(device_type),
+                                         base::UTF8ToUTF16(management_domain))
+            : l10n_util::GetStringFUTF16(
+                  IDS_MANAGEMENT_NOT_MANAGED_SUBTITLE,
+                  l10n_util::GetStringUTF16(device_type)));
 #endif  // !defined(OS_CHROMEOS)
   }
-  response.SetBoolean("managed", managed_);
+  response.SetBoolean("managed", managed_());
   GetManagementStatus(profile, &response);
   return response;
 }
@@ -575,36 +565,6 @@ const extensions::Extension* ManagementUIHandler::GetEnabledExtension(
                          extensions::ExtensionRegistry::ENABLED);
 }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
-
-#if defined(OS_CHROMEOS)
-void AddStatusDeviceManagedInfo(base::Value* status,
-                                const std::string& device_domain) {
-  base::Value info(base::Value::Type::DICTIONARY);
-  info.SetKey(kOverview, base::Value(l10n_util::GetStringFUTF16(
-                             IDS_MANAGEMENT_DEVICE_MANAGED_CLARIFICATION,
-                             base::UTF8ToUTF16(device_domain))));
-  info.SetKey(kSetup, base::Value(l10n_util::GetStringUTF16(
-                          IDS_MANAGEMENT_DEVICE_MANAGED_SETUP)));
-  info.SetKey(kData, base::Value(l10n_util::GetStringUTF16(
-                         IDS_MANAGEMENT_DEVICE_MANAGED_DATA)));
-  status->SetKey(kDeviceManagedInfo, std::move(info));
-}
-
-void AddStatusDeviceAndAccountManagedInfo(
-    base::Value* status,
-    const std::string& device_and_account_domain) {
-  base::Value info(base::Value::Type::DICTIONARY);
-  info.SetKey(kOverview,
-              base::Value(l10n_util::GetStringFUTF16(
-                  IDS_MANAGEMENT_DEVICE_AND_ACCOUNT_MANAGED_CLARIFICATION,
-                  base::UTF8ToUTF16(device_and_account_domain))));
-  info.SetKey(kSetup, base::Value(l10n_util::GetStringUTF16(
-                          IDS_MANAGEMENT_DEVICE_AND_ACCOUNT_MANAGED_SETUP)));
-  info.SetKey(kData, base::Value(l10n_util::GetStringUTF16(
-                         IDS_MANAGEMENT_DEVICE_AND_ACCOUNT_MANAGED_DATA)));
-  status->SetKey(kDeviceManagedInfo, std::move(info));
-}
-#endif  // defined(OS_CHROMEOS)
 
 void AddStatusAccountManagedInfo(base::Value* status,
                                  const std::string& account_domain) {
@@ -629,117 +589,106 @@ void AddStatusAccountManagedInfo(base::Value* status,
 #if defined(OS_CHROMEOS)
 void AddStatusOverviewManagedDeviceAndAccount(
     base::Value* status,
+    bool device_managed,
+    bool account_managed,
     const std::string& device_domain,
     const std::string& account_domain) {
-  status->SetKey(kOverview,
-                 base::Value(l10n_util::GetStringFUTF16(
-                     IDS_MANAGEMENT_DEVICE_MANAGED_BY_ACCOUNT_MANAGED_BY,
-                     base::UTF8ToUTF16(device_domain),
-                     base::UTF8ToUTF16(account_domain))));
-  AddStatusDeviceManagedInfo(status, device_domain);
-  AddStatusAccountManagedInfo(status, account_domain);
-}
+  if (device_managed && account_managed &&
+      (account_domain.empty() || account_domain == device_domain)) {
+    status->SetKey(kOverview, base::Value(l10n_util::GetStringFUTF16(
+                                  IDS_MANAGEMENT_DEVICE_AND_ACCOUNT_MANAGED_BY,
+                                  base::UTF8ToUTF16(device_domain))));
+    base::Value info(base::Value::Type::DICTIONARY);
+    info.SetKey(kOverview,
+                base::Value(l10n_util::GetStringFUTF16(
+                    IDS_MANAGEMENT_DEVICE_AND_ACCOUNT_MANAGED_CLARIFICATION,
+                    base::UTF8ToUTF16(device_domain))));
+    info.SetKey(kSetup, base::Value(l10n_util::GetStringUTF16(
+                            IDS_MANAGEMENT_DEVICE_AND_ACCOUNT_MANAGED_SETUP)));
+    info.SetKey(kData, base::Value(l10n_util::GetStringUTF16(
+                           IDS_MANAGEMENT_DEVICE_AND_ACCOUNT_MANAGED_DATA)));
+    status->SetKey(kDeviceManagedInfo, std::move(info));
 
-void AddStatusOverviewManagedDeviceAndAccount(
-    base::Value* status,
-    const std::string& device_and_account_domain) {
-  status->SetKey(kOverview, base::Value(l10n_util::GetStringFUTF16(
-                                IDS_MANAGEMENT_DEVICE_AND_ACCOUNT_MANAGED_BY,
-                                base::UTF8ToUTF16(device_and_account_domain))));
-  AddStatusDeviceAndAccountManagedInfo(status, device_and_account_domain);
-  status->SetKey(kAccountManagedInfo, base::Value());
-}
+    return;
+  }
 
-void AddStatusOverviewManagedDevice(base::Value* status,
-                                    const std::string& device_domain) {
-  status->SetKey(kOverview, base::Value(l10n_util::GetStringFUTF16(
-                                IDS_MANAGEMENT_DEVICE_MANAGED_BY,
-                                base::UTF8ToUTF16(device_domain))));
-  AddStatusDeviceManagedInfo(status, device_domain);
-  status->SetKey(kAccountManagedInfo, base::Value());
-}
-
-#endif  // defined(OS_CHROMEOS)
-
-void AddStatusOverviewManagedAccount(base::Value* status,
-                                     const std::string& account_domain) {
-#if defined(OS_CHROMEOS)
-  status->SetKey(kOverview, base::Value(l10n_util::GetStringFUTF16(
-                                IDS_MANAGEMENT_ACCOUNT_MANAGED_BY,
-                                base::UTF8ToUTF16(account_domain))));
-  status->SetKey(kDeviceManagedInfo, base::Value());
-#endif  // defined(OS_CHROMEOS)
-  AddStatusAccountManagedInfo(status, account_domain);
-}
-
-#if defined(OS_CHROMEOS)
-void AddStatusOverviewNotManaged(base::Value* status) {
-  status->SetKey(kOverview, base::Value(l10n_util::GetStringUTF16(
-                                IDS_MANAGEMENT_DEVICE_NOT_MANAGED)));
-  status->SetKey(kAccountManagedInfo, base::Value());
-  status->SetKey(kDeviceManagedInfo, base::Value());
-}
-#endif  // defined(OS_CHROMEOS)
-
-void ManagementUIHandler::GetManagementStatus(Profile* profile,
-                                              base::Value* status) const {
-  const std::string account_domain = GetAccountDomain(profile);
-#if defined(OS_CHROMEOS)
-  const bool account_managed = IsProfileManaged(profile);
-  const bool profile_associated_with_gaia_account =
-      chromeos::IsProfileAssociatedWithGaiaAccount(profile);
-
-  std::string device_domain;
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  const bool device_managed = connector->IsEnterpriseManaged();
-  if (device_managed)
-    device_domain = connector->GetEnterpriseDisplayDomain();
-  if (device_domain.empty() && connector->IsActiveDirectoryManaged())
-    device_domain = connector->GetRealm();
-
-  bool primary_user_managed = false;
-  std::string primary_user_account_domain;
-  auto* primary_user = user_manager::UserManager::Get()->GetPrimaryUser();
-  if (primary_user) {
-    auto* primary_profile =
-        chromeos::ProfileHelper::Get()->GetProfileByUser(primary_user);
-    if (primary_profile) {
-      primary_user_managed = IsProfileManaged(primary_profile);
-      primary_user_account_domain = GetAccountDomain(primary_profile);
+  if (account_managed) {
+    AddStatusAccountManagedInfo(
+        status, !account_domain.empty() ? account_domain : device_domain);
+    if (!account_domain.empty()) {
+      status->SetKey(kOverview, base::Value(l10n_util::GetStringFUTF16(
+                                    IDS_MANAGEMENT_ACCOUNT_MANAGED_BY,
+                                    base::UTF8ToUTF16(account_domain))));
     }
   }
 
   if (device_managed) {
-    DCHECK(!device_domain.empty());
-    if (account_managed) {
-      if (device_domain == account_domain ||
-          !profile_associated_with_gaia_account) {
-        AddStatusOverviewManagedDeviceAndAccount(status, device_domain);
-        return;
-      }
-      DCHECK(!account_domain.empty());
-      AddStatusOverviewManagedDeviceAndAccount(status, device_domain,
-                                               account_domain);
-      return;
-    }
-    AddStatusOverviewManagedDevice(status, device_domain);
-    return;
+    base::Value info(base::Value::Type::DICTIONARY);
+    info.SetKey(kOverview, base::Value(l10n_util::GetStringFUTF16(
+                               IDS_MANAGEMENT_DEVICE_MANAGED_CLARIFICATION,
+                               base::UTF8ToUTF16(device_domain))));
+    info.SetKey(kSetup, base::Value(l10n_util::GetStringUTF16(
+                            IDS_MANAGEMENT_DEVICE_MANAGED_SETUP)));
+    info.SetKey(kData, base::Value(l10n_util::GetStringUTF16(
+                           IDS_MANAGEMENT_DEVICE_MANAGED_DATA)));
+    status->SetKey(kDeviceManagedInfo, std::move(info));
   }
 
-  if (primary_user_managed) {
-    AddStatusOverviewManagedAccount(status, primary_user_account_domain);
-    return;
+  if (account_managed && device_managed && !account_domain.empty() &&
+      account_domain != device_domain) {
+    status->SetKey(kOverview,
+                   base::Value(l10n_util::GetStringFUTF16(
+                       IDS_MANAGEMENT_DEVICE_MANAGED_BY_ACCOUNT_MANAGED_BY,
+                       base::UTF8ToUTF16(device_domain),
+                       base::UTF8ToUTF16(account_domain))));
   }
+}
+
+const std::string ManagementUIHandler::GetDeviceDomain() const {
+  std::string device_domain;
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  if (device_managed_)
+    device_domain = connector->GetEnterpriseDisplayDomain();
+  if (device_domain.empty() && connector->IsActiveDirectoryManaged())
+    device_domain = connector->GetRealm();
+  return device_domain;
+}
+
 #endif  // defined(OS_CHROMEOS)
 
-  if (managed_) {
-    AddStatusOverviewManagedAccount(status, account_domain);
+void ManagementUIHandler::GetManagementStatus(Profile* profile,
+                                              base::Value* status) const {
+#if defined(OS_CHROMEOS)
+  status->SetKey(kDeviceManagedInfo, base::Value());
+  status->SetKey(kAccountManagedInfo, base::Value());
+  status->SetKey(kOverview, base::Value());
+  if (!managed_()) {
+    status->SetKey(kOverview, base::Value(l10n_util::GetStringUTF16(
+                                  IDS_MANAGEMENT_DEVICE_NOT_MANAGED)));
     return;
   }
 
-#if defined(OS_CHROMEOS)
-  AddStatusOverviewNotManaged(status);
+  std::string account_domain = GetAccountDomain(profile);
+  auto* primary_user = user_manager::UserManager::Get()->GetPrimaryUser();
+  auto* primary_profile =
+      primary_user
+          ? chromeos::ProfileHelper::Get()->GetProfileByUser(primary_user)
+          : nullptr;
+  const bool primary_user_managed =
+      primary_profile ? IsProfileManaged(primary_profile) : false;
+
+  if (primary_user_managed)
+    account_domain = GetAccountDomain(primary_profile);
+
+  std::string device_domain = GetDeviceDomain();
+
+  AddStatusOverviewManagedDeviceAndAccount(
+      status, device_managed_, account_managed_ || primary_user_managed,
+      device_domain, account_domain);
+#else
+  if (managed_())
+    AddStatusAccountManagedInfo(status, GetAccountDomain(profile));
 #endif  // defined(OS_CHROMEOS)
 }
 
@@ -835,27 +784,29 @@ void ManagementUIHandler::OnExtensionUnloaded(
   }
 }
 
-void ManagementUIHandler::OnManagedStateChanged() {
+void ManagementUIHandler::UpdateManagedState() {
   auto* profile = Profile::FromWebUI(web_ui());
+  bool managed_state_changed = false;
 #if defined(OS_CHROMEOS)
-  bool managed = IsProfileManaged(profile) || IsDeviceManaged();
+  managed_state_changed |= account_managed_ != IsProfileManaged(profile);
+  managed_state_changed |= device_managed_ != IsDeviceManaged();
+  account_managed_ = IsProfileManaged(profile);
+  device_managed_ = IsDeviceManaged();
 #else
-  bool managed = IsProfileManaged(profile) || IsBrowserManaged();
+  managed_state_changed |=
+      account_managed_ != (IsProfileManaged(profile) || IsBrowserManaged());
+  account_managed_ = IsProfileManaged(profile) || IsBrowserManaged();
 #endif  // defined(OS_CHROMEOS)
 
-  if (managed == managed_)
-    return;
-
-  managed_ = managed;
-
-  FireWebUIListener("managed_state_changed");
+  if (managed_state_changed)
+    FireWebUIListener("managed_state_changed");
 }
 
 void ManagementUIHandler::OnPolicyUpdated(
     const policy::PolicyNamespace& /*ns*/,
     const policy::PolicyMap& /*previous*/,
     const policy::PolicyMap& /*current*/) {
-  OnManagedStateChanged();
+  UpdateManagedState();
   NotifyBrowserReportingInfoUpdated();
 }
 
@@ -876,7 +827,7 @@ void ManagementUIHandler::AddObservers() {
 
   pref_registrar_.Add(
       prefs::kSupervisedUserId,
-      base::BindRepeating(&ManagementUIHandler::OnManagedStateChanged,
+      base::BindRepeating(&ManagementUIHandler::UpdateManagedState,
                           base::Unretained(this)));
 }
 
