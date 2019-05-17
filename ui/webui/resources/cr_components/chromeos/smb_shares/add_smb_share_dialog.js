@@ -197,6 +197,10 @@ Polymer({
         this.setPathError_(
             loadTimeData.getString('smbShareAddedInvalidURLMessage'));
         break;
+      case SmbMountResult.INVALID_SSO_URL:
+        this.setPathError_(
+            loadTimeData.getString('smbShareAddedInvalidSSOURLMessage'));
+        break;
 
       // General Errors
       case SmbMountResult.UNSUPPORTED_DEVICE:

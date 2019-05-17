@@ -35,6 +35,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/base/network_interfaces.h"
+#include "url/url_util.h"
 
 using chromeos::file_system_provider::Service;
 
@@ -223,6 +224,14 @@ void SmbService::CallMount(const file_system_provider::MountOptions& options,
     // authentication method.
     std::move(callback).Run(
         TranslateErrorToMountResult(base::File::Error::FILE_ERROR_INVALID_URL));
+    return;
+  }
+
+  // When using kerberos, the URL must contain the hostname because that is used
+  // to obtain the ticket. If the user enters an IP address, Samba will give us
+  // a permission error, which isn't correct or useful to the end user.
+  if (use_chromad_kerberos && url::HostIsIPAddress(parsed_url.GetHost())) {
+    std::move(callback).Run(SmbMountResult::INVALID_SSO_URL);
     return;
   }
 

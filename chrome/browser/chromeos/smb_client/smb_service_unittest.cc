@@ -77,6 +77,16 @@ class SmbServiceTest : public testing::Test {
     EXPECT_EQ(result, SmbMountResult::INVALID_URL);
   }
 
+  void ExpectInvalidSsoUrl(const std::string& url) {
+    SmbMountResult result = SmbMountResult::SUCCESS;
+    smb_service_->CallMount({} /* options */, base::FilePath(url),
+                            "" /* username */, "" /* password */,
+                            true /* use_chromad_kerberos */,
+                            false /* should_open_file_manager_after_mount */,
+                            base::BindOnce(&SaveMountResult, &result));
+    EXPECT_EQ(result, SmbMountResult::INVALID_SSO_URL);
+  }
+
   content::TestBrowserThreadBundle
       thread_bundle_;        // Included so tests magically don't crash.
   TestingProfile* profile_;  // Not owned.
@@ -100,6 +110,15 @@ TEST_F(SmbServiceTest, InvalidUrls) {
   ExpectInvalidUrl("smb://user@password:foo");
   ExpectInvalidUrl("smb:\\\\foo\\bar");
   ExpectInvalidUrl("//foo/bar");
+}
+
+TEST_F(SmbServiceTest, InvalidSsoUrls) {
+  ExpectInvalidSsoUrl("\\\\192.168.1.1\\foo");
+  ExpectInvalidSsoUrl("\\\\[0:0:0:0:0:0:0:1]\\foo");
+  ExpectInvalidSsoUrl("\\\\[::1]\\foo");
+  ExpectInvalidSsoUrl("smb://192.168.1.1/foo");
+  ExpectInvalidSsoUrl("smb://[0:0:0:0:0:0:0:1]/foo");
+  ExpectInvalidSsoUrl("smb://[::1]/foo");
 }
 
 }  // namespace smb_client
