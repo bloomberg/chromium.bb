@@ -13,7 +13,6 @@
       // Sensors
       'sensors',
       // Settings
-      'blackbox',
       'preferences',
     ];
 
