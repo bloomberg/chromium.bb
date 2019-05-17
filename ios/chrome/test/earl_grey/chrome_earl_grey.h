@@ -69,8 +69,9 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 
 // Loads |URL| in the current WebState with transition type
 // ui::PAGE_TRANSITION_TYPED, and waits for the loading to complete within a
-// timeout. Returns nil on success, or else an NSError indicating why the
-// operation failed.
+// timeout.
+// If the condition is not met within a timeout returns an NSError indicating
+// why the operation failed, otherwise nil.
 // TODO(crbug.com/963613): Change return type to avoid when
 // CHROME_EG_ASSERT_NO_ERROR is removed.
 - (NSError*)loadURL:(const GURL&)URL;
@@ -78,21 +79,29 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // Checks whether current WebState is loading.
 - (BOOL)isLoading WARN_UNUSED_RESULT;
 
-// Reloads the page and waits for the loading to complete within a timeout.
-// If the condition is not met within a timeout returns an NSError indicating
-// why the operation failed, otherwise nil.
-- (NSError*)reload WARN_UNUSED_RESULT;
+// Reloads the page and waits for the loading to complete within a timeout, or a
+// GREYAssert is induced.
+// TODO(crbug.com/963613): Change return type to void when
+// CHROME_EG_ASSERT_NO_ERROR is removed.
+- (NSError*)reload;
 
 // Navigates back to the previous page and waits for the loading to complete
 // within a timeout, or a GREYAssert is induced.
-- (NSError*)goBack WARN_UNUSED_RESULT;
+// TODO(crbug.com/963613): Change return type to void when
+// CHROME_EG_ASSERT_NO_ERROR is removed.
+- (NSError*)goBack;
 
 // Navigates forward to the next page and waits for the loading to complete
 // within a timeout, or a GREYAssert is induced.
-- (NSError*)goForward WARN_UNUSED_RESULT;
+// TODO(crbug.com/963613): Change return type to void when
+// CHROME_EG_ASSERT_NO_ERROR is removed.
+- (NSError*)goForward;
 
-// Opens a new tab and waits for the new tab animation to complete.
-- (NSError*)openNewTab WARN_UNUSED_RESULT;
+// Opens a new tab and waits for the new tab animation to complete within a
+// timeout, or a GREYAssert is induced.
+// TODO(crbug.com/963613): Change return type to void when
+// CHROME_EG_ASSERT_NO_ERROR is removed.
+- (NSError*)openNewTab;
 
 // Opens a new incognito tab and waits for the new tab animation to complete.
 - (NSError*)openNewIncognitoTab WARN_UNUSED_RESULT;
@@ -102,29 +111,36 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // normal after closing all tabs.
 - (void)closeAllTabsInCurrentMode;
 
-// Closes all incognito tabs and waits for the UI to complete.
-- (NSError*)closeAllIncognitoTabs WARN_UNUSED_RESULT;
+// Closes all incognito tabs and waits for the UI to complete  within a
+// timeout, or a GREYAssert is induced.
+// TODO(crbug.com/963613): Change return type to void when
+// CHROME_EG_ASSERT_NO_ERROR is removed.
+- (NSError*)closeAllIncognitoTabs;
 
 // Closes the current tab and waits for the UI to complete.
 - (void)closeCurrentTab;
 
 // Waits for the page to finish loading within a timeout, or a GREYAssert is
 // induced.
-- (NSError*)waitForPageToFinishLoading WARN_UNUSED_RESULT;
+// TODO(crbug.com/963613): Change return type to void when
+// CHROME_EG_ASSERT_NO_ERROR is removed.
+- (NSError*)waitForPageToFinishLoading;
 
 // Taps html element with |elementID| in the current web view.
 - (NSError*)tapWebViewElementWithID:(NSString*)elementID WARN_UNUSED_RESULT;
 
 // Waits for a static html view containing |text|. If the condition is not met
 // within a timeout, a GREYAssert is induced.
-- (NSError*)waitForStaticHTMLViewContainingText:(NSString*)text
-    WARN_UNUSED_RESULT;
+// TODO(crbug.com/963613): Change return type to void when
+// CHROME_EG_ASSERT_NO_ERROR is removed.
+- (NSError*)waitForStaticHTMLViewContainingText:(NSString*)text;
 
 // Waits for there to be no static html view, or a static html view that does
 // not contain |text|. If the condition is not met within a timeout, a
 // GREYAssert is induced.
-- (NSError*)waitForStaticHTMLViewNotContainingText:(NSString*)text
-    WARN_UNUSED_RESULT;
+// TODO(crbug.com/963613): Change return type to void when
+// CHROME_EG_ASSERT_NO_ERROR is removed.
+- (NSError*)waitForStaticHTMLViewNotContainingText:(NSString*)text;
 
 // Waits for a Chrome error page. If it is not found within a timeout, a
 // GREYAssert is induced.

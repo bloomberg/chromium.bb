@@ -132,12 +132,9 @@ id ExecuteJavaScript(NSString* javascript,
 
 - (NSError*)loadURL:(const GURL&)URL waitForCompletion:(BOOL)wait {
   chrome_test_util::LoadUrl(URL);
-  if (!wait) {
-    return nil;
+  if (wait) {
+    [self waitForPageToFinishLoading];
   }
-
-  bool pageLoaded = chrome_test_util::WaitForPageToFinishLoading();
-  EG_TEST_HELPER_ASSERT_TRUE(pageLoaded, @"Page did not complete loading");
 
   web::WebState* webState = chrome_test_util::GetCurrentWebState();
   if (webState->ContentIsHTML()) {
@@ -158,37 +155,39 @@ id ExecuteJavaScript(NSString* javascript,
 
 - (NSError*)reload {
   [chrome_test_util::BrowserCommandDispatcherForMainBVC() reload];
-  return [ChromeEarlGrey waitForPageToFinishLoading];
+  [self waitForPageToFinishLoading];
+
+  return nil;
 }
 
 - (NSError*)goBack {
   [chrome_test_util::BrowserCommandDispatcherForMainBVC() goBack];
+  [self waitForPageToFinishLoading];
 
-  return [ChromeEarlGrey waitForPageToFinishLoading];
+  return nil;
 }
 
 - (NSError*)goForward {
   [chrome_test_util::BrowserCommandDispatcherForMainBVC() goForward];
+  [self waitForPageToFinishLoading];
 
-  return [ChromeEarlGrey waitForPageToFinishLoading];
+  return nil;
 }
 
 - (NSError*)openNewTab {
   chrome_test_util::OpenNewTab();
-  NSError* error = [ChromeEarlGrey waitForPageToFinishLoading];
-  if (!error) {
-    [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
-  }
-  return error;
+  [self waitForPageToFinishLoading];
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+
+  return nil;
 }
 
 - (NSError*)openNewIncognitoTab {
   chrome_test_util::OpenNewIncognitoTab();
-  NSError* error = [ChromeEarlGrey waitForPageToFinishLoading];
-  if (!error) {
-    [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
-  }
-  return error;
+  [self waitForPageToFinishLoading];
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+
+  return nil;
 }
 
 - (void)closeAllTabsInCurrentMode {
@@ -197,11 +196,10 @@ id ExecuteJavaScript(NSString* javascript,
 }
 
 - (NSError*)closeAllIncognitoTabs {
-  if (!chrome_test_util::CloseAllIncognitoTabs()) {
-    return testing::NSErrorWithLocalizedDescription(@"Tabs did not close");
-  }
-
+  bool closed = chrome_test_util::CloseAllIncognitoTabs();
+  EG_TEST_HELPER_ASSERT_TRUE(closed, @"Could not close all Incognito tabs");
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+
   return nil;
 }
 
@@ -211,10 +209,8 @@ id ExecuteJavaScript(NSString* javascript,
 }
 
 - (NSError*)waitForPageToFinishLoading {
-  if (!chrome_test_util::WaitForPageToFinishLoading()) {
-    return testing::NSErrorWithLocalizedDescription(
-        @"Page did not complete loading.");
-  }
+  bool pageLoaded = chrome_test_util::WaitForPageToFinishLoading();
+  EG_TEST_HELPER_ASSERT_TRUE(pageLoaded, @"Page did not finish loading");
 
   return nil;
 }
@@ -240,33 +236,28 @@ id ExecuteJavaScript(NSString* javascript,
 }
 
 - (NSError*)waitForStaticHTMLViewContainingText:(NSString*)text {
-  bool success = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^bool {
+  bool hasStaticView = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^{
     return chrome_test_util::StaticHtmlViewContainingText(
         chrome_test_util::GetCurrentWebState(), base::SysNSStringToUTF8(text));
   });
 
-  if (!success) {
-    NSString* errorDescription = [NSString
-        stringWithFormat:@"Failed to find static html view containing %@",
-                         text];
-    return testing::NSErrorWithLocalizedDescription(errorDescription);
-  }
+  NSString* errorDescription = [NSString
+      stringWithFormat:@"Failed to find static html view containing %@", text];
+  EG_TEST_HELPER_ASSERT_TRUE(hasStaticView, errorDescription);
 
   return nil;
 }
 
 - (NSError*)waitForStaticHTMLViewNotContainingText:(NSString*)text {
-  bool success = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^bool {
+  bool noStaticView = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^{
     return !chrome_test_util::StaticHtmlViewContainingText(
         chrome_test_util::GetCurrentWebState(), base::SysNSStringToUTF8(text));
   });
 
-  if (!success) {
-    NSString* errorDescription = [NSString
-        stringWithFormat:@"Failed, there was a static html view containing %@",
-                         text];
-    return testing::NSErrorWithLocalizedDescription(errorDescription);
-  }
+  NSString* errorDescription = [NSString
+      stringWithFormat:@"Failed, there was a static html view containing %@",
+                       text];
+  EG_TEST_HELPER_ASSERT_TRUE(noStaticView, errorDescription);
 
   return nil;
 }
