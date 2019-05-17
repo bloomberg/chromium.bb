@@ -50,6 +50,8 @@ class PerUserTopicRegistrationRequest {
 
     Builder& SetType(RequestType type);
 
+    Builder& SetTopicIsPublic(bool topic_is_public);
+
     enum RegistrationState { REGISTERED, UNREGISTERED };
 
    private:
@@ -68,6 +70,7 @@ class PerUserTopicRegistrationRequest {
     std::string scope_;
     std::string auth_header_;
     RequestType type_;
+    bool topic_is_public_ = false;
 
     DISALLOW_COPY_AND_ASSIGN(Builder);
   };

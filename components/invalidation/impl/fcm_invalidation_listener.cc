@@ -56,7 +56,7 @@ void FCMInvalidationListener::Start(
   DoRegistrationUpdate();
 }
 
-void FCMInvalidationListener::UpdateRegisteredTopics(const TopicSet& topics) {
+void FCMInvalidationListener::UpdateRegisteredTopics(const Topics& topics) {
   ids_update_requested_ = true;
   registered_topics_ = topics;
   DoRegistrationUpdate();
@@ -191,7 +191,7 @@ void FCMInvalidationListener::StopForTest() {
   Stop();
 }
 
-TopicSet FCMInvalidationListener::GetRegisteredIdsForTest() const {
+Topics FCMInvalidationListener::GetRegisteredIdsForTest() const {
   return registered_topics_;
 }
 
@@ -251,9 +251,9 @@ base::DictionaryValue FCMInvalidationListener::CollectDebugData() const {
   status.SetString(
       "InvalidationListener.Subscription-channel-state",
       SubscriptionChannelStateToString(subscription_channel_state_));
-  for (const Topic& topic : registered_topics_) {
-    if (!status.HasKey(topic)) {
-      status.SetString(topic, "Unregistered");
+  for (const auto& topic : registered_topics_) {
+    if (!status.HasKey(topic.first)) {
+      status.SetString(topic.first, "Unregistered");
     }
   }
   return status;

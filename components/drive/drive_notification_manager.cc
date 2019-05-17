@@ -131,6 +131,9 @@ void DriveNotificationManager::OnIncomingInvalidation(
 }
 
 std::string DriveNotificationManager::GetOwnerName() const { return "Drive"; }
+bool DriveNotificationManager::IsPublicTopic(const syncer::Topic& topic) const {
+  return base::StringPiece(topic).starts_with(kFcmTeamDriveChangePrefix);
+}
 
 void DriveNotificationManager::AddObserver(
     DriveNotificationObserver* observer) {

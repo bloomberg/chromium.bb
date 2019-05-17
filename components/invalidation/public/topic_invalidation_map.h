@@ -39,7 +39,7 @@ class INVALIDATION_EXPORT TopicInvalidationMap {
 
   // Returns a new map containing the subset of invaliations from this map
   // whose IDs were in the specified |ids| set.
-  TopicInvalidationMap GetSubsetWithTopics(const TopicSet& ids) const;
+  TopicInvalidationMap GetSubsetWithTopics(const Topics& ids) const;
 
   // Returns the subset of invalidations with IDs matching |id|.
   const SingleObjectInvalidationSet& ForTopic(Topic id) const;

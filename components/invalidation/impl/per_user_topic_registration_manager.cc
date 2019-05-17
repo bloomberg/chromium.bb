@@ -142,7 +142,8 @@ void PerUserTopicRegistrationManager::RegisterProfilePrefs(
 struct PerUserTopicRegistrationManager::RegistrationEntry {
   RegistrationEntry(const Topic& id,
                     SubscriptionFinishedCallback completion_callback,
-                    PerUserTopicRegistrationRequest::RequestType type);
+                    PerUserTopicRegistrationRequest::RequestType type,
+                    bool topic_is_public = false);
   ~RegistrationEntry();
 
   void RegistrationFinished(const Status& code,
@@ -151,6 +152,7 @@ struct PerUserTopicRegistrationManager::RegistrationEntry {
 
   // The object for which this is the status.
   const Topic topic;
+  const bool topic_is_public;
   SubscriptionFinishedCallback completion_callback;
   PerUserTopicRegistrationRequest::RequestType type;
 
@@ -165,8 +167,10 @@ struct PerUserTopicRegistrationManager::RegistrationEntry {
 PerUserTopicRegistrationManager::RegistrationEntry::RegistrationEntry(
     const Topic& topic,
     SubscriptionFinishedCallback completion_callback,
-    PerUserTopicRegistrationRequest::RequestType type)
+    PerUserTopicRegistrationRequest::RequestType type,
+    bool topic_is_public)
     : topic(topic),
+      topic_is_public(topic_is_public),
       completion_callback(std::move(completion_callback)),
       type(type),
       request_backoff_(&kBackoffPolicy) {}
@@ -234,23 +238,24 @@ void PerUserTopicRegistrationManager::Init() {
 }
 
 void PerUserTopicRegistrationManager::UpdateRegisteredTopics(
-    const TopicSet& topics,
+    const Topics& topics,
     const std::string& instance_id_token) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   token_ = instance_id_token;
   DropAllSavedRegistrationsOnTokenChange(instance_id_token);
   for (const auto& topic : topics) {
     // If id isn't registered, schedule the registration.
-    if (topic_to_private_topic_.find(topic) == topic_to_private_topic_.end()) {
-      auto it = registration_statuses_.find(topic);
+    if (topic_to_private_topic_.find(topic.first) ==
+        topic_to_private_topic_.end()) {
+      auto it = registration_statuses_.find(topic.first);
       if (it != registration_statuses_.end())
         it->second->Cancel();
-      registration_statuses_[topic] = std::make_unique<RegistrationEntry>(
-          topic,
+      registration_statuses_[topic.first] = std::make_unique<RegistrationEntry>(
+          topic.first,
           base::BindOnce(
               &PerUserTopicRegistrationManager::RegistrationFinishedForTopic,
               base::Unretained(this)),
-          PerUserTopicRegistrationRequest::SUBSCRIBE);
+          PerUserTopicRegistrationRequest::SUBSCRIBE, topic.second.is_public);
     }
   }
 
@@ -303,6 +308,7 @@ void PerUserTopicRegistrationManager::StartRegistrationRequest(
                                 "Bearer %s", access_token_.c_str()))
                             .SetProjectId(project_id_)
                             .SetType(it->second->type)
+                            .SetTopicIsPublic(it->second->topic_is_public)
                             .Build();
   it->second->request->Start(
       base::BindOnce(&PerUserTopicRegistrationManager::RegistrationEntry::

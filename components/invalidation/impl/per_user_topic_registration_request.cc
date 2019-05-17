@@ -81,13 +81,6 @@ void RecordRequestStatus(
   }
 }
 
-bool IsPublicTopic(const base::StringPiece topic) {
-  // Team Drive topics are public.
-  // TODO(crbug.com/912281): Replace with plumbing this through from the
-  // InvalidationHandler.
-  return topic.starts_with("team-drive-");
-}
-
 }  // namespace
 
 namespace syncer {
@@ -223,7 +216,7 @@ PerUserTopicRegistrationRequest::Builder::Build() const {
       break;
     case UNSUBSCRIBE:
       std::string public_param;
-      if (IsPublicTopic(topic_)) {
+      if (topic_is_public_) {
         public_param = "subscription.is_public=true&";
       }
       url = base::StringPrintf(
@@ -292,6 +285,13 @@ PerUserTopicRegistrationRequest::Builder::SetType(RequestType type) {
   return *this;
 }
 
+PerUserTopicRegistrationRequest::Builder&
+PerUserTopicRegistrationRequest::Builder::SetTopicIsPublic(
+    bool topic_is_public) {
+  topic_is_public_ = topic_is_public;
+  return *this;
+}
+
 HttpRequestHeaders PerUserTopicRegistrationRequest::Builder::BuildHeaders()
     const {
   HttpRequestHeaders headers;
@@ -305,7 +305,7 @@ std::string PerUserTopicRegistrationRequest::Builder::BuildBody() const {
   base::DictionaryValue request;
 
   request.SetString("public_topic_name", topic_);
-  if (IsPublicTopic(topic_)) {
+  if (topic_is_public_) {
     request.SetBoolean("is_public", true);
   }
 

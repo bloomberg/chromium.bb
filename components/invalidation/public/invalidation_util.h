@@ -45,6 +45,7 @@ enum class HandlerOwnerType {
 };
 
 class Invalidation;
+class InvalidationHandler;
 
 // TODO(https://crbug.com/842655): Convert Repeating to Once.
 using ParseJSONCallback = base::RepeatingCallback<void(
@@ -70,6 +71,15 @@ typedef std::map<invalidation::ObjectId, int, ObjectIdLessThan>
 using Topic = std::string;
 // It should be std::set, since std::set_difference is used for it.
 using TopicSet = std::set<std::string>;
+
+INVALIDATION_EXPORT struct TopicMetadata {
+  // Whether the topic is public.
+  bool is_public;
+};
+
+INVALIDATION_EXPORT bool operator==(const TopicMetadata&, const TopicMetadata&);
+
+using Topics = std::map<std::string, TopicMetadata>;
 
 // Caller owns the returned DictionaryValue.
 std::unique_ptr<base::DictionaryValue> ObjectIdToValue(
@@ -108,11 +118,19 @@ bool DeserializeInvalidationObjectId(const std::string& serialized,
 INVALIDATION_EXPORT std::string InvalidationObjectIdToString(
     const invalidation::InvalidationObjectId& object_id);
 
-TopicSet ConvertIdsToTopics(ObjectIdSet ids);
 ObjectIdSet ConvertTopicsToIds(TopicSet topics);
+ObjectIdSet ConvertTopicsToIds(Topics topics);
 invalidation::ObjectId ConvertTopicToId(const Topic& topic);
+Topics ConvertIdsToTopics(ObjectIdSet ids, InvalidationHandler* handler);
 
 HandlerOwnerType OwnerNameToHandlerType(const std::string& owner_name);
+
+// Returns a |Topic| contained within both |lhs| and |rhs| or null if |lhs| and
+// |rhs| are disjoint.
+const Topic* FindMatchingTopic(const Topics& lhs, const Topics& rhs);
+
+// Returns a vector of Topics in |lhs| but not |rhs|.
+std::vector<Topic> FindRemovedTopics(const Topics& lhs, const Topics& rhs);
 
 }  // namespace syncer
 

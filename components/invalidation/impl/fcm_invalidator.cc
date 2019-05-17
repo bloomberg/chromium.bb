@@ -37,11 +37,11 @@ void FCMInvalidator::RegisterHandler(InvalidationHandler* handler) {
 
 bool FCMInvalidator::UpdateRegisteredIds(InvalidationHandler* handler,
                                          const ObjectIdSet& ids) {
-  return UpdateRegisteredIds(handler, ConvertIdsToTopics(ids));
+  return UpdateRegisteredIds(handler, ConvertIdsToTopics(ids, handler));
 }
 
 bool FCMInvalidator::UpdateRegisteredIds(InvalidationHandler* handler,
-                                         const TopicSet& topics) {
+                                         const Topics& topics) {
   if (!registrar_.UpdateRegisteredTopics(handler, topics))
     return false;
 

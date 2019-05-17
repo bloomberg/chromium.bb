@@ -120,7 +120,7 @@ bool FCMInvalidationService::UpdateRegisteredInvalidationIds(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   update_was_requested_ = true;
   DVLOG(2) << "Registering ids: " << ids.size();
-  syncer::TopicSet topics = ConvertIdsToTopics(ids);
+  syncer::Topics topics = ConvertIdsToTopics(ids, handler);
   if (!invalidator_registrar_.UpdateRegisteredTopics(handler, topics))
     return false;
   DoUpdateRegisteredIdsIfNeeded();

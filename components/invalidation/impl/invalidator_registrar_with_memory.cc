@@ -20,9 +20,12 @@ namespace syncer {
 
 namespace {
 
-const char kTopicsToHandlerDeprecated[] = "invalidation.topics_to_handler";
+constexpr char kTopicsToHandlerDeprecated[] = "invalidation.topics_to_handler";
 
-const char kTopicsToHandler[] = "invalidation.per_sender_topics_to_handler";
+constexpr char kTopicsToHandler[] = "invalidation.per_sender_topics_to_handler";
+
+constexpr char kHandler[] = "handler";
+constexpr char kIsPublic[] = "is_public";
 
 // Added in M76.
 void MigratePrefs(PrefService* prefs, const std::string& sender_id) {
@@ -63,9 +66,20 @@ InvalidatorRegistrarWithMemory::InvalidatorRegistrarWithMemory(
   }
   for (const auto& it : pref_data->DictItems()) {
     Topic topic = it.first;
-    std::string handler_name;
-    it.second.GetAsString(&handler_name);
-    handler_name_to_topics_map_[handler_name].insert(topic);
+    if (it.second.is_dict()) {
+      const auto* handler = it.second.FindDictKey(kHandler);
+      const auto* is_public = it.second.FindDictKey(kIsPublic);
+      if (!handler || !is_public) {
+        continue;
+      }
+      handler_name_to_topics_map_[handler->GetString()].emplace(
+          topic, TopicMetadata{is_public->GetBool()});
+    } else if (it.second.is_string()) {
+      std::string handler_name;
+      it.second.GetAsString(&handler_name);
+      handler_name_to_topics_map_[handler_name].emplace(topic,
+                                                        TopicMetadata{false});
+    }
   }
 }
 
@@ -73,19 +87,16 @@ InvalidatorRegistrarWithMemory::~InvalidatorRegistrarWithMemory() {}
 
 bool InvalidatorRegistrarWithMemory::UpdateRegisteredTopics(
     InvalidationHandler* handler,
-    const TopicSet& topics) {
-  TopicSet old_topics = GetRegisteredTopics(handler);
+    const Topics& topics) {
+  Topics old_topics = GetRegisteredTopics(handler);
   bool success = InvalidatorRegistrar::UpdateRegisteredTopics(handler, topics);
   if (!InvalidatorRegistrar::IsHandlerRegistered(handler)) {
     return success;
   }
 
-  TopicSet to_unregister;
   DictionaryPrefUpdate update(local_state_, kTopicsToHandler);
   base::Value* pref_data = update->FindDictKey(sender_id_);
-  std::set_difference(old_topics.begin(), old_topics.end(), topics.begin(),
-                      topics.end(),
-                      std::inserter(to_unregister, to_unregister.begin()));
+  auto to_unregister = FindRemovedTopics(old_topics, topics);
   if (!to_unregister.empty()) {
     for (const auto& topic : to_unregister) {
       pref_data->RemoveKey(topic);
@@ -95,13 +106,16 @@ bool InvalidatorRegistrarWithMemory::UpdateRegisteredTopics(
 
   for (const auto& topic : topics) {
     handler_name_to_topics_map_[handler->GetOwnerName()].insert(topic);
-    pref_data->SetKey(topic, base::Value(handler->GetOwnerName()));
+    base::DictionaryValue handler_pref;
+    handler_pref.SetStringKey(kHandler, handler->GetOwnerName());
+    handler_pref.SetBoolKey(kIsPublic, topic.second.is_public);
+    pref_data->SetKey(topic.first, std::move(handler_pref));
   }
   return success;
 }
 
-TopicSet InvalidatorRegistrarWithMemory::GetAllRegisteredIds() const {
-  TopicSet registered_topics;
+Topics InvalidatorRegistrarWithMemory::GetAllRegisteredIds() const {
+  Topics registered_topics;
   for (const auto& handler_to_topic : handler_name_to_topics_map_) {
     registered_topics.insert(handler_to_topic.second.begin(),
                              handler_to_topic.second.end());
@@ -122,7 +136,7 @@ base::DictionaryValue InvalidatorRegistrarWithMemory::CollectDebugData() const {
   for (const auto& handler_to_topics : handler_name_to_topics_map_) {
     const std::string& handler = handler_to_topics.first;
     for (const auto& topic : handler_to_topics.second) {
-      return_value.SetString("InvalidatorRegistrarWithMemory." + topic,
+      return_value.SetString("InvalidatorRegistrarWithMemory." + topic.first,
                              handler);
     }
   }

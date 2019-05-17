@@ -172,7 +172,7 @@ class MockRegistrationManager : public PerUserTopicRegistrationManager {
   }
   ~MockRegistrationManager() override {}
   MOCK_METHOD2(UpdateRegisteredTopics,
-               void(const TopicSet& topics, const std::string& token));
+               void(const Topics& topics, const std::string& token));
   MOCK_METHOD0(Init, void());
   MOCK_CONST_METHOD1(LookupRegisteredPublicTopicByPrivateTopic,
                      base::Optional<Topic>(const std::string& private_topic));
@@ -192,8 +192,8 @@ class FCMInvalidationListenerTest : public testing::Test {
   void SetUp() override {
     StartListener();
 
-    registred_topics_.insert(kBookmarksTopic_);
-    registred_topics_.insert(kPreferencesTopic_);
+    registred_topics_.emplace(kBookmarksTopic_, TopicMetadata{false});
+    registred_topics_.emplace(kPreferencesTopic_, TopicMetadata{true});
     listener_.UpdateRegisteredTopics(registred_topics_);
   }
 
@@ -250,7 +250,7 @@ class FCMInvalidationListenerTest : public testing::Test {
     fake_delegate_.AcknowledgeAll(topic);
   }
 
-  TopicSet GetRegisteredTopics() const {
+  Topics GetRegisteredTopics() const {
     return listener_.GetRegisteredIdsForTest();
   }
 
@@ -281,7 +281,7 @@ class FCMInvalidationListenerTest : public testing::Test {
   const Topic kExtensionsTopic_;
   const Topic kAppsTopic_;
 
-  TopicSet registred_topics_;
+  Topics registred_topics_;
 
  private:
   base::test::ScopedTaskEnvironment task_environment_;
@@ -363,8 +363,8 @@ TEST_F(FCMInvalidationListenerTest, ManyInvalidations_NoDrop) {
 TEST_F(FCMInvalidationListenerTest, InvalidateBeforeRegistration_Simple) {
   const Topic kUnregisteredId = "unregistered";
   const Topic& topic = kUnregisteredId;
-  TopicSet topics;
-  topics.insert(topic);
+  Topics topics;
+  topics.emplace(topic, TopicMetadata{false});
 
   EXPECT_EQ(0U, GetInvalidationCount(topic));
 
@@ -388,8 +388,8 @@ TEST_F(FCMInvalidationListenerTest, InvalidateBeforeRegistration_Drop) {
       UnackedInvalidationSet::kMaxBufferedInvalidations + 1;
   const Topic kUnregisteredId("unregistered");
   const Topic& topic = kUnregisteredId;
-  TopicSet topics;
-  topics.insert(topic);
+  Topics topics;
+  topics.emplace(topic, TopicMetadata{false});
 
   EXPECT_EQ(0U, GetInvalidationCount(topic));
 

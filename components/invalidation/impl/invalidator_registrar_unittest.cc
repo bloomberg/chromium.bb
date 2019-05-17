@@ -36,14 +36,12 @@ class RegistrarInvalidator : public Invalidator {
 
   bool UpdateRegisteredIds(InvalidationHandler* handler,
                            const ObjectIdSet& ids) override {
-    TopicSet topics;
-    for (const auto& id : ids)
-      topics.insert(id.name());
-    return registrar_.UpdateRegisteredTopics(handler, topics);
+    return registrar_.UpdateRegisteredTopics(handler,
+                                             ConvertIdsToTopics(ids, handler));
   }
 
   bool UpdateRegisteredIds(InvalidationHandler* handler,
-                           const TopicSet& ids) override {
+                           const Topics& ids) override {
     NOTREACHED();
     return false;
   }

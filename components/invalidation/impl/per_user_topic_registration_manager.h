@@ -62,7 +62,7 @@ class INVALIDATION_EXPORT PerUserTopicRegistrationManager {
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
-  virtual void UpdateRegisteredTopics(const TopicSet& ids,
+  virtual void UpdateRegisteredTopics(const Topics& ids,
                                       const std::string& token);
 
   virtual void Init();
