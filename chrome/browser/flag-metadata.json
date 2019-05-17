@@ -1813,8 +1813,8 @@
   },
   {
     "name": "enable-webrtc-hide-local-ips-with-mdns",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "qingsi", "jeroendb" ],
+    "expiry_milestone": 78
   },
   {
     "name": "enable-webrtc-hw-h264-encoding",
@@ -1858,8 +1858,8 @@
   },
   {
     "name": "enable-webrtc-stun-origin",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "qingsi", "jeroendb" ],
+    "expiry_milestone": 78
   },
   {
     "name": "enable-webvr",
