@@ -119,7 +119,8 @@ class InnerResponseURLLoader : public network::mojom::URLLoader {
       const network::ResourceResponseHead& inner_response,
       std::unique_ptr<const storage::BlobDataHandle> blob_data_handle,
       const network::URLLoaderCompletionStatus& completion_status,
-      network::mojom::URLLoaderClientPtr client)
+      network::mojom::URLLoaderClientPtr client,
+      bool is_navigation_request)
       : blob_data_handle_(std::move(blob_data_handle)),
         completion_status_(completion_status),
         client_(std::move(client)),
@@ -128,10 +129,14 @@ class InnerResponseURLLoader : public network::mojom::URLLoader {
     UpdateRequestResponseStartTime(&response);
     response.encoded_data_length = 0;
     client_->OnReceiveResponse(response);
-    // When Network Service is not enabled, we need to wait ProceedWithResponse.
+    // When Network Service is not enabled, we need to wait ProceedWithResponse
+    // for navigation request.
     // See https://crbug.com/791049.
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService))
-      SendResponseBody();
+    if (is_navigation_request &&
+        !base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+      return;
+    }
+    SendResponseBody();
   }
   ~InnerResponseURLLoader() override {}
 
@@ -235,13 +240,13 @@ class SubresourceSignedExchangeURLLoaderFactory
                                 traffic_annotation) override {
     // TODO(crbug.com/935267): Implement CORS check.
     DCHECK_EQ(request.url, entry_->inner_url());
-    mojo::MakeStrongBinding(
-        std::make_unique<InnerResponseURLLoader>(
-            *entry_->inner_response(),
-            std::make_unique<const storage::BlobDataHandle>(
-                *entry_->blob_data_handle()),
-            *entry_->completion_status(), std::move(client)),
-        std::move(loader));
+    mojo::MakeStrongBinding(std::make_unique<InnerResponseURLLoader>(
+                                *entry_->inner_response(),
+                                std::make_unique<const storage::BlobDataHandle>(
+                                    *entry_->blob_data_handle()),
+                                *entry_->completion_status(), std::move(client),
+                                false /* is_navigation_request */),
+                            std::move(loader));
   }
   void Clone(network::mojom::URLLoaderFactoryRequest request) override {
     bindings_.AddBinding(this, std::move(request));
@@ -338,7 +343,8 @@ class PrefetchedNavigationLoaderInterceptor
             *exchange_->inner_response(),
             std::make_unique<const storage::BlobDataHandle>(
                 *exchange_->blob_data_handle()),
-            *exchange_->completion_status(), std::move(client)),
+            *exchange_->completion_status(), std::move(client),
+            true /* is_navigation_request */),
         std::move(request));
   }
 

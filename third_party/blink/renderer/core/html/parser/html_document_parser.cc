@@ -48,6 +48,7 @@
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/core/loader/prefetched_signed_exchange_manager.h"
 #include "third_party/blink/renderer/core/loader/preload_helper.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/script/html_parser_script_runner.h"
@@ -325,6 +326,15 @@ void HTMLDocumentParser::EnqueueTokenizedChunk(
     GetDocument()->Loader()->DispatchLinkHeaderPreloads(
         &chunk->viewport, PreloadHelper::kOnlyLoadMedia);
     tried_loading_link_headers_ = true;
+    if (GetDocument()->Loader()->GetPrefetchedSignedExchangeManager()) {
+      // Link header preloads for prefetched signed exchanges won't be started
+      // until StartPrefetchedLinkHeaderPreloads() is called. See the header
+      // comment of PrefetchedSignedExchangeManager.
+      GetDocument()
+          ->Loader()
+          ->GetPrefetchedSignedExchangeManager()
+          ->StartPrefetchedLinkHeaderPreloads();
+    }
   }
 
   // Defer preloads if any of the chunks contains a <meta> csp tag.

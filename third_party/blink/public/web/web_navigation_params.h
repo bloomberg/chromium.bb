@@ -295,6 +295,27 @@ struct BLINK_EXPORT WebNavigationParams {
   // document.
   std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
       service_worker_network_provider;
+
+  // Used for SignedExchangeSubresourcePrefetch.
+  // This struct keeps the information about a prefetched signed exchange.
+  struct BLINK_EXPORT PrefetchedSignedExchange {
+    PrefetchedSignedExchange();
+    PrefetchedSignedExchange(
+        const WebURL& outer_url,
+        const WebString& header_integrity,
+        const WebURL& inner_url,
+        const WebURLResponse& inner_response,
+        mojo::ScopedMessagePipeHandle loader_factory_handle);
+    ~PrefetchedSignedExchange();
+
+    WebURL outer_url;
+    WebString header_integrity;
+    WebURL inner_url;
+    WebURLResponse inner_response;
+    mojo::ScopedMessagePipeHandle loader_factory_handle;
+  };
+  WebVector<std::unique_ptr<PrefetchedSignedExchange>>
+      prefetched_signed_exchanges;
 };
 
 }  // namespace blink

@@ -89,6 +89,8 @@ blink_core_sources("loader") {
     "navigation_policy.h",
     "ping_loader.cc",
     "ping_loader.h",
+    "prefetched_signed_exchange_manager.cc",
+    "prefetched_signed_exchange_manager.h",
     "preload_helper.cc",
     "preload_helper.h",
     "prerenderer_client.cc",

@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/auto_reset.h"
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -448,7 +449,7 @@ void FillNavigationParamsRequest(
   navigation_params->url = !commit_params.original_url.is_empty()
                                ? commit_params.original_url
                                : common_params.url;
-  navigation_params->http_method = WebString::FromLatin1(
+  navigation_params->http_method = WebString::FromASCII(
       !commit_params.original_method.empty() ? commit_params.original_method
                                              : common_params.method);
 
@@ -493,8 +494,31 @@ void FillNavigationParamsRequest(
   if (!commit_params.prefetched_signed_exchanges.empty()) {
     DCHECK(base::FeatureList::IsEnabled(
         features::kSignedExchangeSubresourcePrefetch));
-    // TODO(crbug.com/935267): Pass the prefetched signed exchanges to Blink.
+    navigation_params->prefetched_signed_exchanges = WebVector<std::unique_ptr<
+        blink::WebNavigationParams::PrefetchedSignedExchange>>();
+
+    for (const auto& exchange : commit_params.prefetched_signed_exchanges) {
+      blink::WebURLResponse web_response;
+      WebURLLoaderImpl::PopulateURLResponse(
+          exchange.inner_url, exchange.inner_response, &web_response,
+          false /* report_security_info*/, -1 /* request_id */);
+      std::string header_integrity_base64;
+      base::Base64Encode(
+          base::StringPiece(
+              reinterpret_cast<const char*>(exchange.header_integrity.data),
+              sizeof(exchange.header_integrity.data)),
+          &header_integrity_base64);
+      navigation_params->prefetched_signed_exchanges.emplace_back(
+          std::make_unique<
+              blink::WebNavigationParams::PrefetchedSignedExchange>(
+              exchange.outer_url,
+              WebString::FromLatin1(std::string("sha256-") +
+                                    header_integrity_base64),
+              exchange.inner_url, web_response,
+              mojo::ScopedMessagePipeHandle(exchange.loader_factory_handle)));
+    }
   }
+
 #if defined(OS_ANDROID)
   navigation_params->had_transient_activation = common_params.has_user_gesture;
 #endif

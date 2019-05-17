@@ -116,4 +116,20 @@ void WebNavigationParams::FillStaticResponse(WebNavigationParams* params,
   FillBodyLoader(params, data);
 }
 
+WebNavigationParams::PrefetchedSignedExchange::PrefetchedSignedExchange() =
+    default;
+WebNavigationParams::PrefetchedSignedExchange::~PrefetchedSignedExchange() =
+    default;
+WebNavigationParams::PrefetchedSignedExchange::PrefetchedSignedExchange(
+    const WebURL& outer_url,
+    const WebString& header_integrity,
+    const WebURL& inner_url,
+    const WebURLResponse& inner_response,
+    mojo::ScopedMessagePipeHandle loader_factory_handle)
+    : outer_url(outer_url),
+      header_integrity(header_integrity),
+      inner_url(inner_url),
+      inner_response(inner_response),
+      loader_factory_handle(std::move(loader_factory_handle)) {}
+
 }  // namespace blink

@@ -68,6 +68,7 @@
 #include "third_party/blink/renderer/core/loader/idleness_detector.h"
 #include "third_party/blink/renderer/core/loader/interactive_detector.h"
 #include "third_party/blink/renderer/core/loader/mixed_content_checker.h"
+#include "third_party/blink/renderer/core/loader/prefetched_signed_exchange_manager.h"
 #include "third_party/blink/renderer/core/loader/preload_helper.h"
 #include "third_party/blink/renderer/core/loader/private/frame_client_hints_preferences_context.h"
 #include "third_party/blink/renderer/core/loader/progress_tracker.h"
@@ -263,6 +264,7 @@ void DocumentLoader::Trace(blink::Visitor* visitor) {
   visitor->Trace(application_cache_host_);
   visitor->Trace(content_security_policy_);
   visitor->Trace(cached_metadata_handler_);
+  visitor->Trace(prefetched_signed_exchange_manager_);
   visitor->Trace(use_counter_);
 }
 
@@ -1234,6 +1236,8 @@ void DocumentLoader::StartLoadingInternal() {
     return;
   }
 
+  InitializePrefetchedSignedExchangeManager();
+
   if (defers_loading_)
     body_loader_->SetDefersLoading(true);
 
@@ -1762,6 +1766,31 @@ void DocumentLoader::ParseAndPersistClientHints(
   settings_client->PersistClientHints(
       client_hints_preferences_.GetWebEnabledClientHints(),
       client_hints_preferences_.GetPersistDuration(), url);
+}
+
+void DocumentLoader::InitializePrefetchedSignedExchangeManager() {
+  if (params_->prefetched_signed_exchanges.empty())
+    return;
+  DCHECK(RuntimeEnabledFeatures::SignedExchangeSubresourcePrefetchEnabled());
+  // |prefetched_signed_exchanges| is set only when the page is loaded from a
+  // signed exchange.
+  DCHECK(GetResponse().IsSignedExchangeInnerResponse());
+  // When the page is loaded from a signed exchange, |last_redirect| must be the
+  // synthesized redirect for the signed exchange.
+  DCHECK(params_->redirects.size());
+  const WebNavigationParams::RedirectInfo& last_redirect =
+      params_->redirects[params_->redirects.size() - 1];
+  prefetched_signed_exchange_manager_ =
+      PrefetchedSignedExchangeManager::MaybeCreate(
+          GetFrame(),
+          last_redirect.redirect_response.HttpHeaderField(http_names::kLink),
+          GetResponse().HttpHeaderField(http_names::kLink),
+          std::move(params_->prefetched_signed_exchanges));
+}
+
+PrefetchedSignedExchangeManager*
+DocumentLoader::GetPrefetchedSignedExchangeManager() const {
+  return prefetched_signed_exchange_manager_;
 }
 
 DEFINE_WEAK_IDENTIFIER_MAP(DocumentLoader)

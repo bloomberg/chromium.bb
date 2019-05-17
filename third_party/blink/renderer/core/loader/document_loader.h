@@ -76,6 +76,7 @@ class HistoryItem;
 class LocalFrame;
 class LocalFrameClient;
 class MHTMLArchive;
+class PrefetchedSignedExchangeManager;
 class ResourceTimingInfo;
 class SerializedScriptValue;
 class SubresourceFilter;
@@ -267,6 +268,8 @@ class CORE_EXPORT DocumentLoader
 
   int ErrorCode() const { return error_code_; }
 
+  PrefetchedSignedExchangeManager* GetPrefetchedSignedExchangeManager() const;
+
  protected:
   bool had_transient_activation() const { return had_transient_activation_; }
 
@@ -363,6 +366,17 @@ class CORE_EXPORT DocumentLoader
   // persistence duration.
   void ParseAndPersistClientHints(const ResourceResponse&);
 
+  // For SignedExchangeSubresourcePrefetch feature. If the page was loaded from
+  // a signed exchage which has "allowed-alt-sxg" link headers in the inner
+  // response and PrefetchedSignedExchanges were passed from the previous page,
+  // initializes a PrefetchedSignedExchangeManager which will hold the
+  // subresource signed exchange related headers ("alternate" link header in the
+  // outer response and "allowed-alt-sxg" link header in the inner response of
+  // the page's signed exchange), and the passed PrefetchedSignedExchanges.
+  // The created PrefetchedSignedExchangeManager will be used to load the
+  // prefetched signed exchanges for matching requests.
+  void InitializePrefetchedSignedExchangeManager();
+
   // These fields are copied from WebNavigationParams, see there for definition.
   KURL url_;
   AtomicString http_method_;
@@ -457,6 +471,7 @@ class CORE_EXPORT DocumentLoader
   bool report_timing_info_to_parent_ = false;
   WebScopedVirtualTimePauser virtual_time_pauser_;
   Member<SourceKeyedCachedMetadataHandler> cached_metadata_handler_;
+  Member<PrefetchedSignedExchangeManager> prefetched_signed_exchange_manager_;
 
   // This UseCounter tracks feature usage associated with the lifetime of the
   // document load. Features recorded prior to commit will be recorded locally.
