@@ -98,8 +98,8 @@ class CORE_EXPORT NGLineBreaker {
                               unsigned end_offset,
                               NGLineInfo*);
   NGInlineItemResult* AddItem(const NGInlineItem&, NGLineInfo*);
-  void SetLineEndFragment(scoped_refptr<const NGPhysicalTextFragment>,
-                          NGLineInfo*);
+  LayoutUnit SetLineEndFragment(scoped_refptr<const NGPhysicalTextFragment>,
+                                NGLineInfo*);
 
   void BreakLine(LayoutUnit percentage_resolution_block_size_for_min_max,
                  Vector<LayoutObject*>* out_floats_for_min_max,
@@ -126,11 +126,12 @@ class CORE_EXPORT NGLineBreaker {
     HandleText(item, *item.TextShapeResult(), line_info);
   }
   void HandleText(const NGInlineItem& item, const ShapeResult&, NGLineInfo*);
-  void BreakText(NGInlineItemResult*,
-                 const NGInlineItem&,
-                 const ShapeResult&,
-                 LayoutUnit available_width,
-                 NGLineInfo*);
+  enum BreakResult { kSuccess, kOverflow };
+  BreakResult BreakText(NGInlineItemResult*,
+                        const NGInlineItem&,
+                        const ShapeResult&,
+                        LayoutUnit available_width,
+                        NGLineInfo*);
   bool HandleTextForFastMinContent(NGInlineItemResult*,
                                    const NGInlineItem&,
                                    const ShapeResult&,
@@ -179,11 +180,13 @@ class CORE_EXPORT NGLineBreaker {
   void ComputeBaseDirection();
 
   LayoutUnit AvailableWidth() const {
-    return line_opportunity_.AvailableInlineSize();
+    DCHECK_EQ(available_width_, ComputeAvailableWidth());
+    return available_width_;
   }
   LayoutUnit AvailableWidthToFit() const {
     return AvailableWidth().AddEpsilon();
   }
+  LayoutUnit ComputeAvailableWidth() const;
 
   // Represents the current offset of the input.
   LineBreakState state_;
@@ -197,6 +200,7 @@ class CORE_EXPORT NGLineBreaker {
   // The current position from inline_start. Unlike NGInlineLayoutAlgorithm
   // that computes position in visual order, this position in logical order.
   LayoutUnit position_;
+  LayoutUnit available_width_;
   NGLineLayoutOpportunity line_opportunity_;
 
   NGInlineNode node_;
