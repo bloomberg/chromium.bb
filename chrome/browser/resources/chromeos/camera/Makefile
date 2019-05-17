@@ -110,6 +110,7 @@ RESOURCES = \
 	src/images/settings_feedback.svg \
 	src/images/settings_grid_type.svg \
 	src/images/settings_help.svg \
+	src/images/settings_resolution.svg \
 	src/images/settings_timer_duration.svg \
 	src/images/spinner.svg \
 	src/js/background.js \
@@ -122,6 +123,7 @@ RESOURCES = \
 	src/js/models/filesystem.js \
 	src/js/mojo/imagecapture.js \
 	src/js/nav.js \
+	src/js/resolution_event_broker.js \
 	src/js/scrollbar.js \
 	src/js/sound.js \
 	src/js/state.js \

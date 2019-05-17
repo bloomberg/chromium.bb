@@ -443,6 +443,9 @@ body._10sec #toggle-timer:checked {
 #settings,
 #gridsettings,
 #timersettings,
+#resolutionsettings,
+#photoresolutionsettings,
+#videoresolutionsettings,
 #browser,
 #message-dialog,
 #intro-dialog,
@@ -461,6 +464,9 @@ body.camera #camera,
 body.settings #settings,
 body.gridsettings #gridsettings,
 body.timersettings #timersettings,
+body.resolutionsettings #resolutionsettings,
+body.photoresolutionsettings #photoresolutionsettings,
+body.videoresolutionsettings #videoresolutionsettings,
 body.browser #browser,
 body.message-dialog #message-dialog,
 body.intro-dialog #intro-dialog,
@@ -472,6 +478,9 @@ body.warning #warning {
 
 body.gridsettings #gridsettings,
 body.timersettings #timersettings,
+body.resolutionsettings #resolutionsettings,
+body.photoresolutionsettings #photoresolutionsettings,
+body.videoresolutionsettings #videoresolutionsettings,
 body.settings #settings {
   /* Avoid flicking for transition between settings. */
   transition: opacity 0ms;
@@ -481,7 +490,15 @@ body.settings .left-stripe,
 body.gridsettings .left-stripe,
 body.gridsettings #settings,
 body.timersettings .left-stripe,
-body.timersettings #settings {
+body.timersettings #settings,
+body.resolutionsettings .left-stripe,
+body.resolutionsettings #settings,
+body.photoresolutionsettings .left-stripe,
+body.photoresolutionsettings #settings,
+body.photoresolutionsettings #resolutionsettings,
+body.videoresolutionsettings .left-stripe,
+body.videoresolutionsettings #settings,
+body.videoresolutionsettings #resolutionsettings {
   opacity: 0;
 }
 
@@ -903,6 +920,7 @@ body.ext-fs #browser-export {
   left: 0;
   min-width: 360px;
   opacity: 0.9;
+  overflow-y: scroll;
   position: absolute;
   top: 0;
 }
@@ -919,6 +937,10 @@ body.ext-fs #browser-export {
   justify-content: flex-start;
   padding: 0 20px 0 24px;
   text-align: left;
+}
+
+.menu-item.resol-item {
+  padding-left: 60px;
 }
 
 .menu-header {
@@ -945,11 +967,21 @@ body.ext-fs #browser-export {
   display: none;
 }
 
+body:not(.has-front-camera) #settings-front-photores,
+body:not(.has-front-camera) #settings-front-videores,
+body:not(.has-back-camera) #settings-back-photores,
+body:not(.has-back-camera) #settings-back-videores,
+body:not(.has-front-camera):not(.has-back-camera) #builtin-photo-header,
+body:not(.has-front-camera):not(.has-back-camera) #builtin-video-header {
+  display: none;
+}
+
 body._3x3 .description span[i18n-content=label_grid_3x3],
 body._4x4 .description span[i18n-content=label_grid_4x4],
 body.golden .description span[i18n-content=label_grid_golden],
 body._3sec .description span[i18n-content=label_timer_3s],
-body._10sec .description span[i18n-content=label_timer_10s] {
+body._10sec .description span[i18n-content=label_timer_10s],
+.menu-item.resol-item .description span {
   display: inline;
 }
 
@@ -993,6 +1025,10 @@ body._10sec .description span[i18n-content=label_timer_10s] {
   background-image: url(../images/settings_timer_duration.svg);
 }
 
+#settings-resolution .icon {
+  background-image: url(../images/settings_resolution.svg);
+}
+
 #settings-feedback .icon {
   background-image: url(../images/settings_feedback.svg);
 }
@@ -1002,7 +1038,9 @@ body._10sec .description span[i18n-content=label_timer_10s] {
 }
 
 #settings-gridtype .icon.end,
-#settings-timerdur .icon.end {
+#settings-timerdur .icon.end,
+#settings-resolution .icon.end,
+.resol-item.multi-option .icon.end {
   background-image: url(../images/settings_button_expand.svg);
 }
 

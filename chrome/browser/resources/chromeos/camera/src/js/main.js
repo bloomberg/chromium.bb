@@ -32,6 +32,18 @@ cca.App = function() {
    */
   this.browserView_ = new cca.views.Browser(this.model_);
 
+  /**
+   * @type {cca.ResolutionEventBroker}
+   * @private
+   */
+  this.resolBroker_ = new cca.ResolutionEventBroker();
+
+  /**
+   * @type {cca.views.ResolutionSettings}
+   * @private
+   */
+  this.resolSettingsView_ = new cca.views.ResolutionSettings(this.resolBroker_);
+
   // End of properties. Seal the object.
   Object.seal(this);
 
@@ -43,10 +55,13 @@ cca.App = function() {
 
   // Set up views navigation by their DOM z-order.
   cca.nav.setup([
-    new cca.views.Camera(this.model_),
+    new cca.views.Camera(this.model_, this.resolBroker_),
     new cca.views.MasterSettings(),
-    new cca.views.GridSettings(),
-    new cca.views.TimerSettings(),
+    new cca.views.BaseSettings('#gridsettings'),
+    new cca.views.BaseSettings('#timersettings'),
+    this.resolSettingsView_,
+    new cca.views.BaseSettings('#photoresolutionsettings'),
+    new cca.views.BaseSettings('#videoresolutionsettings'),
     this.browserView_,
     new cca.views.Warning(),
     new cca.views.Dialog('#message-dialog'),

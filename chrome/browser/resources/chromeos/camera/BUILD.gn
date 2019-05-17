@@ -88,6 +88,7 @@ copy("chrome_camera_app_images") {
     "src/images/settings_feedback.svg",
     "src/images/settings_grid_type.svg",
     "src/images/settings_help.svg",
+    "src/images/settings_resolution.svg",
     "src/images/settings_timer_duration.svg",
     "src/images/spinner.svg",
   ]
@@ -105,6 +106,7 @@ copy("chrome_camera_app_js") {
     "src/js/main.js",
     "src/js/metrics.js",
     "src/js/nav.js",
+    "src/js/resolution_event_broker.js",
     "src/js/scrollbar.js",
     "src/js/sound.js",
     "src/js/state.js",

@@ -21,10 +21,17 @@ cca.views.camera = cca.views.camera || {};
 
 /**
  * Creates a controller for the options of Camera view.
+ * @param {cca.ResolutionEventBroker} resolBroker
  * @param {function()} doSwitchDevice Callback to trigger device switching.
  * @constructor
  */
-cca.views.camera.Options = function(doSwitchDevice) {
+cca.views.camera.Options = function(resolBroker, doSwitchDevice) {
+  /**
+   * @type {cca.ResolutionEventBroker}
+   * @private
+   */
+  this.resolBroker_ = resolBroker;
+
   /**
    * @type {function()}
    * @private
@@ -65,6 +72,14 @@ cca.views.camera.Options = function(doSwitchDevice) {
   this.videoDevices_ = null;
 
   /**
+   * List of available video devices and width, height of its supported video
+   * resolutions and photo resolutions.
+   * @type {Promise<!Array<[MediaDeviceInfo, ResolList, ResolList]>>}
+   * @private
+   */
+  this.deviceResolutions_ = null;
+
+  /**
    * Mirroring set per device.
    * @type {Object}
    * @private
@@ -102,6 +117,27 @@ cca.views.camera.Options = function(doSwitchDevice) {
   this.maybeRefreshVideoDeviceIds_();
   setInterval(() => this.maybeRefreshVideoDeviceIds_(), 1000);
 };
+
+/**
+ * Label of front facing camera from MediaDeviceInfo.
+ * @type {string}
+ * @const
+ */
+cca.views.camera.Options.FRONT_CAMERA_LABEL = 'Front Camera';
+
+/**
+ * Label of back facing camera from MediaDeviceInfo.
+ * @type {string}
+ * @const
+ */
+cca.views.camera.Options.BACK_CAMERA_LABEL = 'Back Camera';
+
+/**
+ * Label of external facing camera from MediaDeviceInfo.
+ * @type {string}
+ * @const
+ */
+cca.views.camera.Options.EXTERNAL_CAMERA_LABEL = 'External Camera';
 
 /**
  * Switches to the next available camera device.
@@ -240,6 +276,40 @@ cca.views.camera.Options.prototype.maybeRefreshVideoDeviceIds_ = function() {
     cca.state.set('multi-camera', multi);
     this.refreshingVideoDeviceIds_ = false;
   });
+
+  this.deviceResolutions_ = this.videoDevices_.then((devices) => {
+    return Promise.all(devices.map((d) => Promise.all([
+      d,
+      cca.mojo.getPhotoResolutions(d.deviceId),
+      cca.mojo.getVideoConfigs(d.deviceId)
+          .then((v) => v.filter(([, , fps]) => fps >= 24).map(([w,
+                                                                h]) => [w, h])),
+    ])));
+  });
+
+  this.deviceResolutions_.then((deviceResolutions) => {
+    let frontSetting = null;
+    let backSetting = null;
+    let externalSettings = [];
+    deviceResolutions.forEach(([{deviceId, label}, photoRs, videoRs]) => {
+      const setting = [deviceId, photoRs, videoRs];
+      switch (label) {
+        case cca.views.camera.Options.FRONT_CAMERA_LABEL:
+          frontSetting = setting;
+          break;
+        case cca.views.camera.Options.BACK_CAMERA_LABEL:
+          backSetting = setting;
+          break;
+        case cca.views.camera.Options.EXTERNAL_CAMERA_LABEL:
+          externalSettings.push(setting);
+          break;
+        default:
+          console.error(`Ignore device of unknown label: ${label}`);
+      }
+    });
+    this.resolBroker_.notifyUpdateDeviceResolutions(
+        frontSetting, backSetting, externalSettings);
+  });
 };
 
 /**
@@ -252,20 +322,32 @@ cca.views.camera.Options.prototype.videoDeviceIds = function() {
       throw new Error('Device list empty.');
     }
     // Put the selected video device id first.
-    var sorted = devices.map((device) => device.deviceId).sort((a, b) => {
-      if (a == b) {
-        return 0;
-      }
-      if (a == this.videoDeviceId_) {
-        return -1;
-      }
-      return 1;
-    });
-    // Prepended 'null' deviceId means the system default camera. Add it only
-    // when the app is launched (no video-device-id set).
-    if (this.videoDeviceId_ == null) {
-      sorted.unshift(null);
-    }
-    return sorted;
+    return devices
+        .sort((a, b) => {
+          if (a.deviceId == b.deviceId) {
+            return 0;
+          }
+          if (this.videoDeviceId_ ?
+                  (a.deviceId == this.videoDeviceId_) :
+                  (a.label == cca.views.camera.Options.FRONT_CAMERA_LABEL)) {
+            return -1;
+          }
+          return 1;
+        })
+        .map(({deviceId}) => deviceId);
   });
+};
+
+/**
+ * Gets supported photo and video resolutions for specified video device.
+ * @async
+ * @param {string} deviceId Device id of the video device.
+ * @return {[ResolList, ResolList]} Supported photo and video resolutions.
+ */
+cca.views.camera.Options.prototype.getDeviceResolutions =
+    async function(deviceId) {
+  const deviceResolutions = await this.deviceResolutions_;
+  const [, photoRs, videoRs] =
+      deviceResolutions.find(([d]) => d.deviceId == deviceId);
+  return [photoRs, videoRs];
 };

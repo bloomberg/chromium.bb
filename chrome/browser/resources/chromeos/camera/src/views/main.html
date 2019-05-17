@@ -12,6 +12,7 @@
     <script src="../js/google-analytics-bundle.js"></script>
     <script src="../js/metrics.js"></script>
     <script src="../js/util.js"></script>
+    <script src="../js/resolution_event_broker.js"></script>
     <script src="../js/toast.js"></script>
     <script src="../js/tooltip.js"></script>
     <script src="../js/state.js"></script>
@@ -164,6 +165,17 @@
           </div>
           <div class="icon end"></div>
         </button>
+        <button class="menu-item circle" id="settings-resolution" tabindex="0"
+                aria-describedby="resolution-desc">
+          <div class="icon"></div>
+          <div>
+            <div>Camera resolution</div>
+            <div class="description" id="resolution-desc" aria-hidden="true">
+              <span></span>
+            </div>
+          </div>
+          <div class="icon end"></div>
+        </button>
         <button class="menu-item circle" id="settings-feedback" tabindex="0">
           <div class="icon"></div>
           <div i18n-content="feedback_button"></div>
@@ -216,6 +228,77 @@
         </label>
       </div>
     </div>
+    <div id="resolutionsettings">
+      <div class="menu">
+        <div class="menu-header circle">
+          <button class="icon" tabindex="0" i18n-aria="back_button"></button>
+          <div>Camera resolutions</div>
+        </div>
+        <div id="builtin-photo-header" class="menu-item">Photo</div>
+        <button class="menu-item resol-item circle"
+                id="settings-front-photores" tabindex="0"
+                aria-describedby="front-photores-desc">
+          <div>
+            <div>Front camera</div>
+            <div class="description" id="front-photores-desc"
+                 aria-hidden="true">
+              <span></span>
+            </div>
+          </div>
+          <div class="icon end"></div>
+        </button>
+        <button class="menu-item resol-item circle"
+                id="settings-back-photores" tabindex="0"
+                aria-describedby="back-photores-desc">
+          <div>
+            <div>Back camera</div>
+            <div class="description" id="back-photores-desc" aria-hidden="true">
+              <span></span>
+            </div>
+          </div>
+          <div class="icon end"></div>
+        </button>
+        <div id="builtin-video-header" class="menu-item">Video</div>
+        <button class="menu-item resol-item circle"
+                id="settings-front-videores" tabindex="0"
+                aria-describedby="front-videores-desc">
+          <div>
+            <div>Front camera</div>
+            <div class="description" id="front-videores-desc" aria-hidden="true">
+              <span></span>
+            </div>
+          </div>
+          <div class="icon end"></div>
+        </button>
+        <button class="menu-item resol-item circle"
+                id="settings-back-videores" tabindex="0"
+                aria-describedby="back-videores-desc">
+          <div>
+            <div>Back camera</div>
+            <div class="description" id="back-videores-desc" aria-hidden="true">
+              <span></span>
+            </div>
+          </div>
+          <div class="icon end"></div>
+        </button>
+      </div>
+    </div>
+    <div id="photoresolutionsettings">
+      <div class="menu" data-name="photores">
+        <div class="menu-header circle">
+          <button class="icon" tabindex="0" i18n-aria="back_button"></button>
+          <div>Photo resolution</div>
+        </div>
+      </div>
+    </div>
+    <div id="videoresolutionsettings">
+      <div class="menu" data-name="videores">
+        <div class="menu-header circle">
+          <button class="icon" tabindex="0" i18n-aria="back_button"></button>
+          <div>Video resolution</div>
+        </div>
+      </div>
+    </div>
     <div class="centered-overlay" id="spinner"></div>
     <div id="browser" role="listbox" i18n-aria="gallery_images">
       <div class="padder">
@@ -264,5 +347,34 @@
     <audio id="sound-shutter" src="../sounds/shutter.ogg" data-timeout="350">
     <audio id="sound-rec-start" src="../sounds/record_start.ogg" data-timeout="200">
     <audio id="sound-rec-end" src="../sounds/record_end.ogg" data-timeout="450">
+    <template id="resolution-item-template">
+      <label class="menu-item circle">
+        <input class="icon" type="radio" tabindex="0">
+        <span></span>
+      </label>
+    </template>
+    <template id="extcam-resolution-item-template">
+        <div class="menu-item external-camera">External camera</div>
+        <button class="menu-item resol-item external-camera"
+              tabindex="0">
+          <div>
+            <div>Photo resolution</div>
+            <div class="description" aria-hidden="true">
+              <span></span>
+            </div>
+          </div>
+          <div class="icon end"></div>
+        </button>
+        <button class="menu-item resol-item circle external-camera"
+              tabindex="0">
+          <div>
+            <div>Video resolution</div>
+            <div class="description" aria-hidden="true">
+              <span></span>
+            </div>
+          </div>
+          <div class="icon end"></div>
+        </button>
+    </template>
   </body>
 </html>
