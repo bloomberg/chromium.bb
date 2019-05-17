@@ -214,7 +214,7 @@ class RunTestsWithExpectationsFiles(_BaseSampleIntegrationTest):
     tests = [('a/b/unexpected-fail.html', 'failure.html', ()),
              ('a/b/expected-fail.html', 'failure.html', ()),
              ('a/b/expected-flaky.html', 'flaky.html', ()),
-             ('a/b/expected-skip.html', 'skip.html', ())]
+             ('should_skip', 'skip.html', ())]
     for test in tests:
       yield test
 

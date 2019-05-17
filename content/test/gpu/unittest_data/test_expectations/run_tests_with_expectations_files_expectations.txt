@@ -2,4 +2,4 @@
 
 crbug.com/124 [ foo ] a/b/expected-fail.html [ Failure ]
 crbug.com/125 [ foo ] a/b/expected-flaky.html [ RetryOnFailure ]
-crbug.com/125 [ foo ] a/b/expected-skip.html [ Skip ]
+crbug.com/125 [ foo ] should_skip [ Skip ]

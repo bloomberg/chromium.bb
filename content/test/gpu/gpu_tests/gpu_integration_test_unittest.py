@@ -780,17 +780,28 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
   def _RunTestsWithExpectationsFiles(self):
     self._RunIntegrationTest(
       'run_tests_with_expectations_files',
-      [('a/b/unexpected-fail.html')],
-      [('a/b/expected-fail.html'),
-       ('a/b/expected-flaky.html')],
-      [('a/b/expected-skip.html')],
+      ['a/b/unexpected-fail.html'],
+      ['a/b/expected-fail.html', 'a/b/expected-flaky.html'],
+      ['should_skip'],
       ['--retry-limit=3', '--retry-only-retry-on-failure-tests',
+       ('--test-name-prefix=unittest_data.integration_tests.'
+        'RunTestsWithExpectationsFiles.')])
+
+  def testTestFilterCommandLineArg(self):
+    self._RunIntegrationTest(
+      'run_tests_with_expectations_files',
+      ['a/b/unexpected-fail.html'],
+      ['a/b/expected-fail.html'],
+      ['should_skip'],
+      ['--retry-limit=3', '--retry-only-retry-on-failure-tests',
+       ('--test-filter=a/b/unexpected-fail.html::a/b/expected-fail.html::'
+        'should_skip'),
        ('--test-name-prefix=unittest_data.integration_tests.'
         'RunTestsWithExpectationsFiles.')])
 
   def testUseTestExpectationsFileToHandleExpectedSkip(self):
     self._RunTestsWithExpectationsFiles()
-    results = self._test_result['tests']['a']['b']['expected-skip.html']
+    results = self._test_result['tests']['should_skip']
     self.assertEqual(results['expected'], 'SKIP')
     self.assertEqual(results['actual'], 'SKIP')
     self.assertNotIn('is_regression', results)
