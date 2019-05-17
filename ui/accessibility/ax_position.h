@@ -796,31 +796,47 @@ class AXPosition {
     return previous_leaf->AsTextPosition();
   }
 
+  // Returns a text position located right before the next character (from this
+  // position) on the tree's text representation, following these conditions:
+  //   - If this position is at the end of its anchor, normalize it to the start
+  //   of the next text anchor. Both positions are equal when compared, but we
+  //   consider the start of an anchor to be a position BEFORE its first
+  //   character and the end to be AFTER its last character.
+  //   - Skip any empty text anchors; they're "invisible" to the text
+  //   representation and the next character could be ahead.
+  //   - Return a null position if there is no next character forward.
+  AXPositionInstance AsPositionBeforeCharacter() const {
+    AXPositionInstance text_position = AsLeafTextPosition();
+
+    // This loop satisfies all the conditions described above.
+    while (text_position->AtEndOfAnchor())
+      text_position = text_position->CreateNextTextAnchorPosition();
+    return text_position;
+  }
+
+  // Returns a text position located right after the previous character (from
+  // this position) on the tree's text representation.
+  // See `AsPositionBeforeCharacter`, as this is its "reversed" version.
+  AXPositionInstance AsPositionAfterCharacter() const {
+    AXPositionInstance text_position = AsLeafTextPosition();
+    while (text_position->AtStartOfAnchor()) {
+      text_position = text_position->CreatePreviousTextAnchorPosition();
+      text_position = text_position->CreatePositionAtEndOfAnchor();
+    }
+    return text_position;
+  }
+
   AXPositionInstance CreateNextCharacterPosition(
       AXBoundaryBehavior boundary_behavior) const {
     DCHECK_NE(boundary_behavior, AXBoundaryBehavior::StopIfAlreadyAtBoundary)
         << "StopIfAlreadyAtBoundary is unreasonable for character boundaries.";
-
     if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary &&
         AtEndOfAnchor())
       return Clone();
 
     const bool was_tree_position = IsTreePosition();
-    AXPositionInstance text_position = AsTextPosition();
-
-    // Being at the end of a text anchor could mean:
-    //   - We're in the position between this anchor's end and the next text
-    //   anchor's start. Normalize it to the next anchor's start so we can reach
-    //   the next character by simply increasing its offset.
-    //   - We're at an empty anchor. Skip it, such anchor is "invisible" to the
-    //   text representation and the next character could be ahead.
-    //   - We're at the end of the last anchor and there is no next character,
-    //   let CreateNextTextAnchorPosition return a null position.
-    while (text_position->AtEndOfAnchor())
-      text_position = text_position->CreateNextTextAnchorPosition();
-
-    // Either we couldn't get this position as a text position or we reached the
-    // last anchor and there is no next character position to create.
+    AXPositionInstance text_position = AsPositionBeforeCharacter();
+    // There is no next character position.
     if (text_position->IsNullPosition())
       return text_position;
 
@@ -839,29 +855,13 @@ class AXPosition {
       AXBoundaryBehavior boundary_behavior) const {
     DCHECK_NE(boundary_behavior, AXBoundaryBehavior::StopIfAlreadyAtBoundary)
         << "StopIfAlreadyAtBoundary is unreasonable for character boundaries.";
-
     if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary &&
         AtStartOfAnchor())
       return Clone();
 
     const bool was_tree_position = IsTreePosition();
-    AXPositionInstance text_position = AsTextPosition();
-
-    // Being at the start of a text anchor could mean:
-    //   - We're in the position between this anchor's start and the previous
-    //   text anchor's end. Normalize it to the previous anchor's end so we can
-    //   reach the previous character by simply decreasing its offset.
-    //   - We're at an empty anchor. Skip it, such anchor is "invisible" to the
-    //   text representation and the previous character could be behind.
-    //   - We're at the start of the first anchor and there is no previous
-    //   character, let CreatePreviousTextAnchorPosition return a null position.
-    while (text_position->AtStartOfAnchor()) {
-      text_position = text_position->CreatePreviousTextAnchorPosition();
-      text_position = text_position->CreatePositionAtEndOfAnchor();
-    }
-
-    // Either we couldn't get this position as a text position or we reached the
-    // first anchor and there is no previous character position to create.
+    AXPositionInstance text_position = AsPositionAfterCharacter();
+    // There is no previous character position.
     if (text_position->IsNullPosition())
       return text_position;
 

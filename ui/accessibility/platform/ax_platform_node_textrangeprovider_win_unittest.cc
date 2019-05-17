@@ -696,9 +696,10 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
        TestITextRangeProviderExpandToEnclosingCharacter) {
   Init(BuildTextDocument({"some text", "more text"}));
   AXNodePosition::SetTreeForTesting(tree_.get());
+  AXNode* root_node = GetRootNode();
 
   ComPtr<ITextRangeProvider> text_range_provider;
-  GetTextRangeProviderFromTextNode(text_range_provider, GetRootNode());
+  GetTextRangeProviderFromTextNode(text_range_provider, root_node);
   ASSERT_HRESULT_SUCCEEDED(
       text_range_provider->ExpandToEnclosingUnit(TextUnit_Character));
   EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"s");
@@ -739,16 +740,33 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
 
   ASSERT_HRESULT_SUCCEEDED(
       text_range_provider->ExpandToEnclosingUnit(TextUnit_Character));
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"");
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"t");
 
-  // Move both endpoints to the position between the end of the first text
-  // anchor and before the start of the next anchor.
+  // Move both endpoints to the position before the start of the "more text"
+  // anchor. Then, force the start to be on the position after the end of
+  // "some text" by moving one character backward and one forward.
   ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
       TextPatternRangeEndpoint_End, TextUnit_Character, /*count*/ -9, &count));
   ASSERT_EQ(-9, count);
+  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
+      TextPatternRangeEndpoint_Start, TextUnit_Character, /*count*/ -1,
+      &count));
+  ASSERT_EQ(-1, count);
+  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
+      TextPatternRangeEndpoint_Start, TextUnit_Character, /*count*/ 1, &count));
+  ASSERT_EQ(1, count);
   ASSERT_HRESULT_SUCCEEDED(
       text_range_provider->ExpandToEnclosingUnit(TextUnit_Character));
   EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"m");
+
+  // Check that the enclosing element of the range matches ATs expectations.
+  ComPtr<IRawElementProviderSimple> more_text_provider =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(
+          root_node->children()[1]);
+  ComPtr<IRawElementProviderSimple> enclosing_element;
+  ASSERT_HRESULT_SUCCEEDED(
+      text_range_provider->GetEnclosingElement(&enclosing_element));
+  EXPECT_EQ(more_text_provider.Get(), enclosing_element.Get());
 }
 
 TEST_F(AXPlatformNodeTextRangeProviderTest,

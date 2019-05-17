@@ -124,33 +124,49 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::ExpandToEnclosingUnit(
   // is on the next TextUnit boundary, if one exists.
   switch (unit) {
     case TextUnit_Character: {
-      // For characters, start_ will always be on a TextUnit boundary.
-      // Thus, end_ is the only position that needs to be moved.
-      AXNodePosition::AXPositionInstance next =
-          start_->CreateNextCharacterPosition(
-              ui::AXBoundaryBehavior::CrossBoundary);
-      if (!next->IsNullPosition())
-        end_ = next->Clone();
-      return S_OK;
+      // For characters, the start endpoint will always be on a TextUnit
+      // boundary, thus we only need to move the end position.
+      AXPositionInstance end_backup = end_->Clone();
+      end_ = start_->CreateNextCharacterPosition(
+          ui::AXBoundaryBehavior::CrossBoundary);
+
+      if (end_->IsNullPosition()) {
+        // The previous could fail if the start is at the end of the last anchor
+        // of the tree, try expanding to the previous character instead.
+        AXPositionInstance start_backup = start_->Clone();
+        start_ = start_->CreatePreviousCharacterPosition(
+            ui::AXBoundaryBehavior::CrossBoundary);
+
+        if (start_->IsNullPosition()) {
+          // Text representation is empty, undo everything and exit.
+          start_ = std::move(start_backup);
+          end_ = std::move(end_backup);
+          return S_OK;
+        }
+        end_ = start_->CreateNextCharacterPosition(
+            ui::AXBoundaryBehavior::CrossBoundary);
+        DCHECK(!end_->IsNullPosition());
+      }
+      break;
     }
     case TextUnit_Format:
       start_ = start_->CreatePreviousFormatStartPosition(
           ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary);
       end_ = start_->CreateNextFormatEndPosition(
           ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary);
-      return S_OK;
+      break;
     case TextUnit_Word:
       start_ = start_->CreatePreviousWordStartPosition(
           ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary);
       end_ = start_->CreateNextWordEndPosition(
           ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary);
-      return S_OK;
+      break;
     case TextUnit_Line:
       start_ = start_->CreatePreviousLineStartPosition(
           ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary);
       end_ = start_->CreateNextLineEndPosition(
           ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary);
-      return S_OK;
+      break;
     case TextUnit_Paragraph:
       return E_NOTIMPL;
     // Since web content is not paginated, TextUnit_Page is not supported.
@@ -159,10 +175,26 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::ExpandToEnclosingUnit(
     case TextUnit_Document:
       start_ = start_->CreatePositionAtStartOfDocument()->AsLeafTextPosition();
       end_ = start_->CreatePositionAtEndOfDocument();
-      return S_OK;
+      break;
     default:
       return UIA_E_NOTSUPPORTED;
   }
+
+  // Some text positions are equal when compared, but they could be located at
+  // different anchors, affecting how `GetEnclosingElement` works. Normalize the
+  // endpoints to correctly enclose characters of the text representation.
+  AXPositionInstance normalized_start = start_->AsPositionBeforeCharacter();
+  AXPositionInstance normalized_end = end_->AsPositionBeforeCharacter();
+
+  if (!normalized_start->IsNullPosition()) {
+    DCHECK_EQ(*start_, *normalized_start);
+    start_ = std::move(normalized_start);
+  }
+  if (!normalized_end->IsNullPosition()) {
+    DCHECK_EQ(*end_, *normalized_end);
+    end_ = std::move(normalized_end);
+  }
+  return S_OK;
 }
 
 STDMETHODIMP AXPlatformNodeTextRangeProviderWin::FindAttribute(
