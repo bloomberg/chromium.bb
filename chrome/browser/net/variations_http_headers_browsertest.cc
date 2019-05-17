@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
@@ -324,9 +325,17 @@ IN_PROC_BROWSER_TEST_F(VariationsHttpHeadersBrowserTest,
   EXPECT_FALSE(HasReceivedHeader(GetExampleUrl(), "X-Client-Data"));
 }
 
+#if defined(OS_CHROMEOS)
+// See https://crbug.com/964338
+#define MAYBE_TestStrippingHeadersFromRequestUsingSimpleURLLoaderWithProfileNetworkContext \
+  DISABLED_TestStrippingHeadersFromRequestUsingSimpleURLLoaderWithProfileNetworkContext
+#else
+#define MAYBE_TestStrippingHeadersFromRequestUsingSimpleURLLoaderWithProfileNetworkContext \
+  TestStrippingHeadersFromRequestUsingSimpleURLLoaderWithProfileNetworkContext
+#endif
 IN_PROC_BROWSER_TEST_F(
     VariationsHttpHeadersBrowserTest,
-    TestStrippingHeadersFromRequestUsingSimpleURLLoaderWithProfileNetworkContext) {
+    MAYBE_TestStrippingHeadersFromRequestUsingSimpleURLLoaderWithProfileNetworkContext) {
   GURL url = GetGoogleRedirectUrl1();
 
   auto resource_request = std::make_unique<network::ResourceRequest>();
