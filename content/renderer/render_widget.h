@@ -440,9 +440,10 @@ class CONTENT_EXPORT RenderWidget
                                     bool down) override;
   void FallbackCursorModeSetCursorVisibility(bool visible) override;
   void SetAllowGpuRasterization(bool allow_gpu_raster) override;
-  void SetPageScaleFactorAndLimits(float page_scale_factor,
-                                   float minimum,
-                                   float maximum) override;
+  void SetPageScaleStateAndLimits(float page_scale_factor,
+                                  bool is_pinch_gesture_active,
+                                  float minimum,
+                                  float maximum) override;
   void StartPageScaleAnimation(const gfx::Vector2d& destination,
                                bool use_anchor,
                                float new_page_scale,
@@ -618,9 +619,6 @@ class CONTENT_EXPORT RenderWidget
   void SetMouseCapture(bool capture);
 
   bool IsSurfaceSynchronizationEnabled() const;
-
-  void PageScaleFactorChanged(float page_scale_factor,
-                              bool is_pinch_gesture_active);
 
   void UseSynchronousResizeModeForTesting(bool enable);
   void SetDeviceScaleFactorForTesting(float factor);
