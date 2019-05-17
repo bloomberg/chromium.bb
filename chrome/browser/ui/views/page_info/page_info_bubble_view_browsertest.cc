@@ -5,10 +5,12 @@
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view.h"
 
 #include "base/run_loop.h"
+#include "base/scoped_observer.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/page_info/page_info.h"
 #include "chrome/browser/ui/page_info/page_info_dialog.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -43,6 +45,7 @@
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event_constants.h"
+#include "ui/views/test/widget_test.h"
 
 namespace {
 
@@ -275,6 +278,23 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
                               base::Value result) { quit_callback.Run(); },
                            run_loop.QuitClosure()));
     run_loop.Run();
+  }
+
+  void TriggerReloadPromptOnClose() const {
+    PageInfoBubbleView* const page_info_bubble_view =
+        static_cast<PageInfoBubbleView*>(
+            PageInfoBubbleView::GetPageInfoBubble());
+    ASSERT_NE(nullptr, page_info_bubble_view);
+
+    // Set some dummy non-default permissions. This will trigger a reload prompt
+    // when the bubble is closed.
+    PageInfoUI::PermissionInfo permission;
+    permission.type = ContentSettingsType::CONTENT_SETTINGS_TYPE_NOTIFICATIONS;
+    permission.setting = ContentSetting::CONTENT_SETTING_BLOCK;
+    permission.default_setting = ContentSetting::CONTENT_SETTING_ASK;
+    permission.source = content_settings::SettingSource::SETTING_SOURCE_USER;
+    permission.is_incognito = false;
+    page_info_bubble_view->OnPermissionChanged(permission);
   }
 
  private:
@@ -644,4 +664,147 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
   ExecuteJavaScriptForTests("load_mixed();");
   EXPECT_EQ(page_info->GetWindowTitle(),
             l10n_util::GetStringUTF16(IDS_PAGE_INFO_MIXED_CONTENT_SUMMARY));
+}
+
+namespace {
+
+// Tracks focus of an arbitrary UI element.
+class FocusTracker {
+ public:
+  bool focused() const { return focused_; }
+
+  // Wait for focused() to be in state |target_state_is_focused|. If focused()
+  // is already in the desired state, returns immediately, otherwise waits until
+  // it is.
+  void WaitForFocus(bool target_state_is_focused) {
+    if (focused_ == target_state_is_focused)
+      return;
+    target_state_is_focused_ = target_state_is_focused;
+    run_loop_.Run();
+  }
+
+ protected:
+  explicit FocusTracker(bool initially_focused) : focused_(initially_focused) {}
+  virtual ~FocusTracker() {}
+
+  void OnFocused() {
+    focused_ = true;
+    if (run_loop_.running() && target_state_is_focused_ == focused_)
+      run_loop_.Quit();
+  }
+
+  void OnBlurred() {
+    focused_ = false;
+    if (run_loop_.running() && target_state_is_focused_ == focused_)
+      run_loop_.Quit();
+  }
+
+ private:
+  // Whether the tracked visual element is currently focused.
+  bool focused_ = false;
+
+  // Desired state when waiting for focus to change.
+  bool target_state_is_focused_;
+
+  base::RunLoop run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(FocusTracker);
+};
+
+// Watches a WebContents for focus changes.
+class WebContentsFocusTracker : public FocusTracker,
+                                public content::WebContentsObserver {
+ public:
+  explicit WebContentsFocusTracker(content::WebContents* web_contents)
+      : FocusTracker(IsWebContentsFocused(web_contents)),
+        WebContentsObserver(web_contents) {}
+
+  void OnWebContentsFocused(
+      content::RenderWidgetHost* render_widget_host) override {
+    OnFocused();
+  }
+
+  void OnWebContentsLostFocus(
+      content::RenderWidgetHost* render_widget_host) override {
+    OnBlurred();
+  }
+
+ private:
+  static bool IsWebContentsFocused(content::WebContents* web_contents) {
+    Browser* const browser = chrome::FindBrowserWithWebContents(web_contents);
+    if (!browser)
+      return false;
+    if (browser->tab_strip_model()->GetActiveWebContents() != web_contents)
+      return false;
+    return BrowserView::GetBrowserViewForBrowser(browser)
+        ->contents_web_view()
+        ->HasFocus();
+  }
+};
+
+// Watches a View for focus changes.
+class ViewFocusTracker : public FocusTracker, public views::ViewObserver {
+ public:
+  explicit ViewFocusTracker(views::View* view)
+      : FocusTracker(view->HasFocus()) {
+    scoped_observer_.Add(view);
+  }
+
+  void OnViewFocused(views::View* observed_view) override { OnFocused(); }
+
+  void OnViewBlurred(views::View* observed_view) override { OnBlurred(); }
+
+ private:
+  ScopedObserver<views::View, ViewFocusTracker> scoped_observer_{this};
+};
+
+}  // namespace
+
+// Test that when the PageInfo bubble is closed, focus is returned to the web
+// contents pane.
+IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
+                       FocusReturnsToContentOnClose) {
+  content::WebContents* const web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  WebContentsFocusTracker web_contents_focus_tracker(web_contents);
+  web_contents->Focus();
+  web_contents_focus_tracker.WaitForFocus(true);
+
+  OpenPageInfoBubble(browser());
+  PageInfoBubbleView* page_info_bubble_view =
+      static_cast<PageInfoBubbleView*>(PageInfoBubbleView::GetPageInfoBubble());
+  EXPECT_FALSE(web_contents_focus_tracker.focused());
+
+  page_info_bubble_view->GetWidget()->CloseWithReason(
+      views::Widget::ClosedReason::kEscKeyPressed);
+  web_contents_focus_tracker.WaitForFocus(true);
+  EXPECT_TRUE(web_contents_focus_tracker.focused());
+}
+
+// Test that when the PageInfo bubble is closed and a reload prompt is
+// displayed, focus is NOT returned to the web contents pane, but rather returns
+// to the location bar so accessibility users must tab through the reload prompt
+// before getting back to web contents (see https://crbug.com/910067).
+IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
+                       FocusDoesNotReturnToContentsOnReloadPrompt) {
+  content::WebContents* const web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  WebContentsFocusTracker web_contents_focus_tracker(web_contents);
+  ViewFocusTracker location_bar_focus_tracker(
+      BrowserView::GetBrowserViewForBrowser(browser())->GetLocationBarView());
+  web_contents->Focus();
+  web_contents_focus_tracker.WaitForFocus(true);
+
+  OpenPageInfoBubble(browser());
+  PageInfoBubbleView* page_info_bubble_view =
+      static_cast<PageInfoBubbleView*>(PageInfoBubbleView::GetPageInfoBubble());
+  EXPECT_FALSE(web_contents_focus_tracker.focused());
+
+  TriggerReloadPromptOnClose();
+  page_info_bubble_view->GetWidget()->CloseWithReason(
+      views::Widget::ClosedReason::kEscKeyPressed);
+  location_bar_focus_tracker.WaitForFocus(true);
+  web_contents_focus_tracker.WaitForFocus(false);
+  EXPECT_TRUE(location_bar_focus_tracker.focused());
+  EXPECT_FALSE(web_contents_focus_tracker.focused());
 }
