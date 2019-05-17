@@ -56,16 +56,21 @@ class SystemWebAppManager {
 
   static bool IsEnabled();
 
+  // The SystemWebAppManager is disabled in browser tests by default because it
+  // pollutes the startup state. Call this to enable them for SystemWebApp
+  // specific tests.
+  void InstallSystemAppsForTesting();
+
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Returns the app id for the given System App |id|.
-  base::Optional<std::string> GetAppIdForSystemApp(SystemAppType id) const;
+  base::Optional<AppId> GetAppIdForSystemApp(SystemAppType id) const;
 
   // Returns whether |app_id| points to an installed System App.
   bool IsSystemWebApp(const AppId& app_id) const;
 
   const base::OneShotEvent& on_apps_synchronized() const {
-    return on_apps_synchronized_;
+    return *on_apps_synchronized_;
   }
 
  protected:
@@ -79,7 +84,7 @@ class SystemWebAppManager {
   void OnAppsSynchronized(PendingAppManager::SynchronizeResult result);
   bool NeedsUpdate() const;
 
-  base::OneShotEvent on_apps_synchronized_;
+  std::unique_ptr<base::OneShotEvent> on_apps_synchronized_;
 
   UpdatePolicy update_policy_;
 

@@ -93,6 +93,10 @@ void WebAppTabHelperBase::OnAppRegistrarShutdown() {
   ResetAppId();
 }
 
+void WebAppTabHelperBase::OnAppRegistrarDestroyed() {
+  observer_.RemoveAll();
+}
+
 void WebAppTabHelperBase::ResetAppId() {
   app_id_.clear();
 

@@ -117,6 +117,7 @@ class InstallManager {
                                         WebAppInstallabilityCheckCallback);
 
   // Called before the web app system gets destroyed.
+  // TODO(calamity): Rename to Shutdown().
   void Reset();
 
   void AddObserver(InstallManagerObserver* observer);

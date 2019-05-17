@@ -106,6 +106,23 @@ WebAppUiDelegate& WebAppProvider::ui_delegate() {
   return *ui_delegate_;
 }
 
+void WebAppProvider::Shutdown() {
+  // Destroy subsystems.
+  // The order of destruction is the reverse order of creation:
+  // TODO(calamity): Make subsystem destruction happen in destructor.
+  web_app_policy_manager_.reset();
+  system_web_app_manager_.reset();
+  pending_app_manager_.reset();
+
+  install_manager_.reset();
+  install_finalizer_.reset();
+  icon_manager_.reset();
+  registrar_.reset();
+  database_.reset();
+  database_factory_.reset();
+  audio_focus_id_map_.reset();
+}
+
 void WebAppProvider::CreateWebAppsSubsystems(Profile* profile) {
   database_factory_ = std::make_unique<WebAppDatabaseFactory>(profile);
   database_ = std::make_unique<WebAppDatabase>(database_factory_.get());
@@ -206,11 +223,19 @@ void WebAppProvider::Observe(int type,
                              const content::NotificationDetails& detals) {
   DCHECK_EQ(chrome::NOTIFICATION_PROFILE_DESTROYED, type);
 
+  ProfileDestroyed();
+}
+
+void WebAppProvider::ProfileDestroyed() {
+  // Do Reset() for each subsystem to nullify pointers (detach subsystems).
+  if (install_manager_)
+    install_manager_->Reset();
+
   // KeyedService::Shutdown() gets called when the profile is being destroyed,
   // but after DCHECK'ing that no RenderProcessHosts are being leaked. The
   // "chrome::NOTIFICATION_PROFILE_DESTROYED" notification gets sent before the
   // DCHECK so we use that to clean up RenderProcessHosts instead.
-  Reset();
+  pending_app_manager_->Shutdown();
 }
 
 void WebAppProvider::SetRegistryReadyCallback(base::OnceClosure callback) {
@@ -229,27 +254,6 @@ int WebAppProvider::CountUserInstalledApps() const {
     return 0;
 
   return extensions::CountUserInstalledBookmarkApps(profile_);
-}
-
-void WebAppProvider::Reset() {
-  // TODO(loyso): Make it independent to the order of destruction via using two
-  // end-to-end passes:
-  // 1) Do Reset() for each subsystem to nullify pointers (detach subsystems).
-  install_manager_->Reset();
-
-  // 2) Destroy subsystems.
-  // The order of destruction is the reverse order of creation:
-  web_app_policy_manager_.reset();
-  system_web_app_manager_.reset();
-  pending_app_manager_.reset();
-
-  install_manager_.reset();
-  install_finalizer_.reset();
-  icon_manager_.reset();
-  registrar_.reset();
-  database_.reset();
-  database_factory_.reset();
-  audio_focus_id_map_.reset();
 }
 
 void WebAppProvider::OnScanForExternalWebApps(

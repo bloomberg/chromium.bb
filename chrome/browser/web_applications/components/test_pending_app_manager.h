@@ -61,6 +61,7 @@ class TestPendingAppManager : public PendingAppManager {
   bool HasAppIdWithInstallSource(
       const AppId& app_id,
       web_app::InstallSource install_source) const override;
+  void Shutdown() override {}
 
  private:
   void DoInstall(InstallOptions install_options, OnceInstallCallback callback);

@@ -25,6 +25,11 @@ class WebAppPolicyManager;
 
 class TestWebAppProvider : public WebAppProvider {
  public:
+  // Builds a default WebAppProvider that won't be started. To activate this
+  // default instance, call WebAppProvider::StartRegistry().
+  static std::unique_ptr<KeyedService> BuildDefault(
+      content::BrowserContext* context);
+
   explicit TestWebAppProvider(Profile* profile);
   ~TestWebAppProvider() override;
 

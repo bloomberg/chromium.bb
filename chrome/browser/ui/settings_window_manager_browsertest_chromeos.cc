@@ -63,13 +63,9 @@ class SettingsWindowManagerTest : public InProcessBrowserTest,
     if (!EnableSystemWebApps())
       return;
 
-    // Wait for the Settings System Web App to install.
-    base::RunLoop run_loop;
     web_app::WebAppProvider::Get(browser()->profile())
         ->system_web_app_manager()
-        .on_apps_synchronized()
-        .Post(FROM_HERE, run_loop.QuitClosure());
-    run_loop.Run();
+        .InstallSystemAppsForTesting();
   }
 
   bool EnableSystemWebApps() { return GetParam(); }
@@ -177,6 +173,10 @@ IN_PROC_BROWSER_TEST_P(SettingsWindowManagerTest, SplitSettings) {
   settings_manager_->ShowOSSettings(browser()->profile());
   EXPECT_EQ(1u, observer_.new_settings_count());
   EXPECT_EQ(2u, chrome::GetTotalBrowserCount());
+
+  content::WebContents* web_contents =
+      observer_.browser()->tab_strip_model()->GetWebContentsAt(0);
+  EXPECT_EQ(chrome::kChromeUIOSSettingsHost, web_contents->GetURL().host());
 
   // Showing an OS sub-page reuses the OS settings window.
   settings_manager_->ShowOSSettings(browser()->profile(),

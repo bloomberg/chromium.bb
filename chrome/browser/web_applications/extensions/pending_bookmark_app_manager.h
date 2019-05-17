@@ -58,6 +58,7 @@ class PendingBookmarkAppManager final : public web_app::PendingAppManager {
   ~PendingBookmarkAppManager() override;
 
   // web_app::PendingAppManager
+  void Shutdown() override;
   void Install(web_app::InstallOptions install_options,
                OnceInstallCallback callback) override;
   void InstallApps(std::vector<web_app::InstallOptions> install_options_list,
@@ -111,6 +112,8 @@ class PendingBookmarkAppManager final : public web_app::PendingAppManager {
   std::unique_ptr<TaskAndCallback> current_task_and_callback_;
 
   std::deque<std::unique_ptr<TaskAndCallback>> pending_tasks_and_callbacks_;
+
+  bool shutting_down_ = false;
 
   base::WeakPtrFactory<PendingBookmarkAppManager> weak_ptr_factory_{this};
 

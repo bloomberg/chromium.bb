@@ -12,7 +12,10 @@ namespace web_app {
 
 AppRegistrar::AppRegistrar(Profile* profile) : profile_(profile) {}
 
-AppRegistrar::~AppRegistrar() = default;
+AppRegistrar::~AppRegistrar() {
+  for (AppRegistrarObserver& observer : observers_)
+    observer.OnAppRegistrarDestroyed();
+}
 
 void AppRegistrar::AddObserver(AppRegistrarObserver* observer) {
   observers_.AddObserver(observer);

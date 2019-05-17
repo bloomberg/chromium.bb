@@ -12,10 +12,21 @@
 #include "chrome/browser/web_applications/components/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
+#include "chrome/browser/web_applications/test/test_system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 namespace web_app {
+
+// static
+std::unique_ptr<KeyedService> TestWebAppProvider::BuildDefault(
+    content::BrowserContext* context) {
+  Profile* profile = Profile::FromBrowserContext(context);
+  auto provider = std::make_unique<TestWebAppProvider>(profile);
+  provider->Init();
+
+  return provider;
+}
 
 TestWebAppProvider::TestWebAppProvider(Profile* profile)
     : WebAppProvider(profile) {}

@@ -48,6 +48,10 @@ source_set("web_applications") {
     "//skia",
   ]
 
+  if (is_chromeos) {
+    deps += [ "//chromeos/constants" ]
+  }
+
   public_deps = [
     "//chrome/browser/web_applications/proto",
   ]
@@ -82,9 +86,11 @@ source_set("web_applications_test_support") {
   deps = [
     ":web_app_test_group",
     ":web_applications",
+    "//base/test:test_support",
+    "//chrome/browser",
     "//chrome/browser/web_applications/components",
-    "//chrome/test:test_support",
     "//components/sync:test_support_model",
+    "//content/test:test_support",
     "//testing/gtest",
   ]
 }

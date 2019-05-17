@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/optional.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "url/gurl.h"
 
@@ -17,8 +18,8 @@ class Profile;
 namespace web_app {
 
 // Returns the PWA system App ID for the given system app type.
-base::Optional<std::string> GetAppIdForSystemWebApp(Profile* profile,
-                                                    SystemAppType app_type);
+base::Optional<web_app::AppId> GetAppIdForSystemWebApp(Profile* profile,
+                                                       SystemAppType app_type);
 
 // Launches a System App to the given URL, reusing any existing window for the
 // app. Returns the browser for the System App, or nullptr if launch/focus

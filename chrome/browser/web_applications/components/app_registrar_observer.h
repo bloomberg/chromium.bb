@@ -15,6 +15,7 @@ class AppRegistrarObserver : public base::CheckedObserver {
   virtual void OnWebAppInstalled(const AppId& app_id) {}
   virtual void OnWebAppUninstalled(const AppId& app_id) {}
   virtual void OnAppRegistrarShutdown() {}
+  virtual void OnAppRegistrarDestroyed() {}
 };
 
 }  // namespace web_app

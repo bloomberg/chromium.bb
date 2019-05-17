@@ -27,11 +27,12 @@
 
 namespace web_app {
 
-base::Optional<std::string> GetAppIdForSystemWebApp(Profile* profile,
-                                                    SystemAppType app_type) {
-  return WebAppProvider::Get(profile)
-      ->system_web_app_manager()
-      .GetAppIdForSystemApp(app_type);
+base::Optional<web_app::AppId> GetAppIdForSystemWebApp(Profile* profile,
+                                                       SystemAppType app_type) {
+  auto* provider = WebAppProvider::Get(profile);
+  return provider
+             ? provider->system_web_app_manager().GetAppIdForSystemApp(app_type)
+             : base::Optional<web_app::AppId>();
 }
 
 Browser* LaunchSystemWebApp(Profile* profile,
@@ -51,7 +52,7 @@ Browser* LaunchSystemWebApp(Profile* profile,
     }
   }
 
-  base::Optional<std::string> app_id =
+  base::Optional<web_app::AppId> app_id =
       GetAppIdForSystemWebApp(profile, app_type);
   // TODO(calamity): Queue a task to launch app after it is installed.
   if (!app_id)
@@ -83,7 +84,7 @@ Browser* LaunchSystemWebApp(Profile* profile,
 Browser* FindSystemWebAppBrowser(Profile* profile, SystemAppType app_type) {
   // TODO(calamity): Determine whether, during startup, we need to wait for
   // app install and then provide a valid answer here.
-  base::Optional<std::string> app_id =
+  base::Optional<web_app::AppId> app_id =
       GetAppIdForSystemWebApp(profile, app_type);
   if (!app_id)
     return nullptr;

@@ -84,6 +84,7 @@ class WebAppTabHelperBase
   void OnWebAppInstalled(const AppId& installed_app_id) override;
   void OnWebAppUninstalled(const AppId& uninstalled_app_id) override;
   void OnAppRegistrarShutdown() override;
+  void OnAppRegistrarDestroyed() override;
 
   void ResetAppId();
 

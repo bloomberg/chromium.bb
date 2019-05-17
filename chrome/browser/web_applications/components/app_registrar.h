@@ -64,7 +64,7 @@ class AppRegistrar {
  private:
   Profile* profile_;
 
-  base::ObserverList<AppRegistrarObserver> observers_;
+  base::ObserverList<AppRegistrarObserver, /*check_empty=*/true> observers_;
 };
 
 }  // namespace web_app
