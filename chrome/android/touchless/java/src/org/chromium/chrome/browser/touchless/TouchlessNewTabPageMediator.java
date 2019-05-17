@@ -75,20 +75,19 @@ class TouchlessNewTabPageMediator extends EmptyTabObserver {
     }
 
     @Override
+    public void onContentChanged(Tab tab) {
+        // This is the main entry point for #saveStateAndRemoveObserver when loading a native page.
+        // This is still called when loading renderer pages, but after the next navigation entry is
+        // committed, see https://crbug.com/963584.
+        saveStateAndRemoveObserver(tab);
+    }
+
+    @Override
     public void onPageLoadStarted(Tab tab, String url) {
-        if (mScrollPosition != null) {
-            NewTabPage.saveStringToNavigationEntry(
-                    tab, NAVIGATION_ENTRY_SCROLL_POSITION_KEY, mScrollPosition.serialize());
-        }
-        if (mFocus != null) {
-            Parcel parcel = Parcel.obtain();
-            mFocus.writeToParcel(parcel, 0);
-            byte[] bytes = parcel.marshall();
-            parcel.recycle();
-            String serializedString = Base64.encodeToString(bytes, Base64.DEFAULT);
-            NewTabPage.saveStringToNavigationEntry(
-                    tab, NAVIGATION_ENTRY_FOCUS_KEY, serializedString);
-        }
+        // This is the main entry point for #saveStateAndRemoveObserver when loading a renderer
+        // page. This is still called when loading native pages, but after we should have completely
+        // cleaned up ourselves and observers, see https://crbug.com/963584.
+        saveStateAndRemoveObserver(tab);
     }
 
     public PropertyModel getModel() {
@@ -97,8 +96,7 @@ class TouchlessNewTabPageMediator extends EmptyTabObserver {
 
     void destroy() {
         if (!mTab.isHidden()) recordNTPHidden();
-
-        mTab.removeObserver(this);
+        // Should already have been removed from mTab's observer list.
     }
 
     /**
@@ -116,5 +114,34 @@ class TouchlessNewTabPageMediator extends EmptyTabObserver {
     private void recordNTPHidden() {
         NewTabPageUma.recordTimeSpentOnNtp(mLastShownTimeNs);
         SuggestionsMetrics.recordSurfaceHidden();
+    }
+
+    /**
+     * Saves focus and scroll state to the current navigation entry.
+     * @param tab The current tab.
+     */
+    private void saveStateAndRemoveObserver(Tab tab) {
+        // This method ends up being called when the NTP is loaded, so ignore those cases.
+        if (mScrollPosition == null && mFocus == null) {
+            return;
+        }
+
+        if (mScrollPosition != null) {
+            NewTabPage.saveStringToNavigationEntry(
+                    tab, NAVIGATION_ENTRY_SCROLL_POSITION_KEY, mScrollPosition.serialize());
+        }
+        if (mFocus != null) {
+            Parcel parcel = Parcel.obtain();
+            mFocus.writeToParcel(parcel, 0);
+            byte[] bytes = parcel.marshall();
+            parcel.recycle();
+            String serializedString = Base64.encodeToString(bytes, Base64.DEFAULT);
+            NewTabPage.saveStringToNavigationEntry(
+                    tab, NAVIGATION_ENTRY_FOCUS_KEY, serializedString);
+        }
+
+        // Observations need to be removed now to avoid saving state to the wrong entry when loading
+        // a renderer page from on onContentChange notification, see https://crbug.com/963584.
+        tab.removeObserver(this);
     }
 }
