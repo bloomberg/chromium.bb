@@ -54706,6 +54706,16 @@ would be helpful to identify which type is being sent.
   <int value="1" label="Unknown reason"/>
 </enum>
 
+<enum name="SyncMissingBookmarkPermanentNodes">
+  <int value="0" label="Bookmark Bar"/>
+  <int value="1" label="Other Bookmarks"/>
+  <int value="2" label="Mobile Bookmarks"/>
+  <int value="3" label="Bookmark Bar and Other Bookmarks"/>
+  <int value="4" label="Bookmarks Bar and Mobile Bookmarks"/>
+  <int value="5" label="Other Bookmarks and Mobile Bookmarks"/>
+  <int value="6" label="Bookmark Bar and Other Bookmarks and Mobile Bookmarks"/>
+</enum>
+
 <enum name="SyncModelTypes">
   <int value="0" label="Unspecified"/>
   <int value="1" label="Top Level Folder"/>
