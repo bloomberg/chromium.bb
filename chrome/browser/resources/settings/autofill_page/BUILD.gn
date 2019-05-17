@@ -9,6 +9,7 @@ js_type_check("closure_compile") {
     ":address_edit_dialog",
     ":autofill_page",
     ":autofill_section",
+    ":blocking_request_manager",
     ":credit_card_edit_dialog",
     ":credit_card_list",
     ":credit_card_list_entry",
@@ -48,6 +49,9 @@ js_library("autofill_section") {
     "//ui/webui/resources/js/cr/ui:focus_without_ink",
   ]
   externs_list = [ "$externs_path/autofill_private.js" ]
+}
+
+js_library("blocking_request_manager") {
 }
 
 js_library("payments_section") {
@@ -134,5 +138,8 @@ js_library("password_edit_dialog") {
 }
 
 js_library("show_password_behavior") {
+  deps = [
+    ":blocking_request_manager",
+  ]
   externs_list = [ "$externs_path/passwords_private.js" ]
 }

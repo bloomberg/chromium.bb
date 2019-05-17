@@ -122,11 +122,28 @@ Polymer({
 
     /** @private */
     listBlurred_: Boolean,
+
+    // <if expr="chromeos">
+    /**
+     * Auth token for retrieving passwords if required by OS.
+     * @private
+     */
+    authToken_: {
+      type: String,
+      value: '',
+      observer: 'onAuthTokenChanged_',
+    },
+
+    /** @private */
+    showPasswordPromptDialog_: Boolean,
+
+    /** @private {settings.BlockingRequestManager} */
+    tokenRequestManager_: Object
+    // </if>
   },
 
   listeners: {
     'password-menu-tap': 'onPasswordMenuTap_',
-    'export-passwords': 'onExportPasswords_',
   },
 
   keyBindings: {
@@ -184,6 +201,11 @@ Polymer({
     // Set the manager. These can be overridden by tests.
     this.passwordManager_ = PasswordManagerImpl.getInstance();
 
+    // <if expr="chromeos">
+    this.tokenRequestManager_ = new settings.BlockingRequestManager(
+        () => this.showPasswordPromptDialog_ = true);
+    // </if>
+
     // Request initial data.
     this.passwordManager_.getSavedPasswordList(setSavedPasswordsListener);
     this.passwordManager_.getExceptionList(setPasswordExceptionsListener);
@@ -218,6 +240,33 @@ Polymer({
       this.$.undoToast.hide();
     }
   },
+
+  // <if expr="chromeos">
+  /**
+   * When |authToken_| changes to a new non-empty value, it means that the
+   * password-prompt-dialog succeeded in creating a fresh token in the
+   * quickUnlockPrivate API. Because new tokens can only ever be created
+   * immediately following a GAIA password check, the passwordsPrivate API can
+   * now safely grant requests for secure data (i.e. saved passwords) for a
+   * limited time. This observer resolves the request, triggering a callback
+   * that requires a fresh auth token to succeed and that was provided to the
+   * BlockingRequestManager by another DOM element seeking secure data.
+   *
+   * @param {string} newToken The newly created auth token. Note that its
+   *     precise value is not relevant here, only the facts that it changed and
+   *     that it is non-empty (i.e. not expired).
+   * @private
+   */
+  onAuthTokenChanged_: function(newToken) {
+    if (newToken) {
+      this.tokenRequestManager_.resolve();
+    }
+  },
+
+  onPasswordPromptClosed_: function() {
+    this.showPasswordPromptDialog_ = false;
+  },
+  // </if>
 
   /**
    * Shows the edit password dialog.
