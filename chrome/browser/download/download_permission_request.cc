@@ -35,6 +35,10 @@ PermissionRequest::IconId DownloadPermissionRequest::GetIconId() const {
 }
 
 #if defined(OS_ANDROID)
+base::string16 DownloadPermissionRequest::GetTitleText() const {
+  return l10n_util::GetStringUTF16(IDS_MULTI_DOWNLOAD_WARNING_TITLE);
+}
+
 base::string16 DownloadPermissionRequest::GetMessageText() const {
   return l10n_util::GetStringFUTF16(
       IDS_MULTI_DOWNLOAD_WARNING,

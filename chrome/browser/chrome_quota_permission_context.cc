@@ -56,6 +56,7 @@ class QuotaPermissionRequest : public PermissionRequest {
   // PermissionRequest:
   IconId GetIconId() const override;
 #if defined(OS_ANDROID)
+  base::string16 GetTitleText() const override;
   base::string16 GetMessageText() const override;
 #endif
   base::string16 GetMessageTextFragment() const override;
@@ -98,6 +99,10 @@ PermissionRequest::IconId QuotaPermissionRequest::GetIconId() const {
 }
 
 #if defined(OS_ANDROID)
+base::string16 QuotaPermissionRequest::GetTitleText() const {
+  return l10n_util::GetStringUTF16(IDS_REQUEST_QUOTA_PERMISSION_TITLE);
+}
+
 base::string16 QuotaPermissionRequest::GetMessageText() const {
   // If the site requested larger quota than this threshold, show a different
   // message to the user.
