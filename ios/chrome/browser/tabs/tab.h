@@ -10,7 +10,6 @@
 #include <memory>
 #include <vector>
 
-#include "ios/net/request_tracker.h"
 #include "ios/web/public/user_agent.h"
 #include "ui/base/page_transition_types.h"
 

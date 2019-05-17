@@ -31,9 +31,6 @@ source_set("net") {
   configs += [ "//build/config/compiler:enable_arc" ]
 
   sources = [
-    "chunked_data_stream_uploader.cc",
-    "chunked_data_stream_uploader.h",
-    "clients/crn_network_client_protocol.h",
     "cookies/cookie_cache.cc",
     "cookies/cookie_cache.h",
     "cookies/cookie_creation_time_manager.h",
@@ -50,29 +47,51 @@ source_set("net") {
     "cookies/system_cookie_store.mm",
     "cookies/system_cookie_util.h",
     "cookies/system_cookie_util.mm",
-    "crn_http_protocol_handler.h",
-    "crn_http_protocol_handler.mm",
-    "crn_http_protocol_handler_proxy.h",
-    "crn_http_protocol_handler_proxy_with_client_thread.h",
-    "crn_http_protocol_handler_proxy_with_client_thread.mm",
     "crn_http_url_response.h",
     "crn_http_url_response.mm",
     "empty_nsurlcache.h",
     "empty_nsurlcache.mm",
     "http_cache_helper.cc",
     "http_cache_helper.h",
-    "http_protocol_logging.h",
-    "http_protocol_logging.mm",
     "http_response_headers_util.h",
     "http_response_headers_util.mm",
-    "nsurlrequest_util.h",
-    "nsurlrequest_util.mm",
     "protocol_handler_util.h",
     "protocol_handler_util.mm",
-    "request_tracker.h",
-    "request_tracker.mm",
     "url_scheme_util.h",
     "url_scheme_util.mm",
+  ]
+
+  if (!use_platform_icu_alternatives) {
+    deps += [ "//base:i18n" ]
+  }
+}
+
+source_set("network_protocol") {
+  deps = [
+    ":ios_net_buildflags",
+    ":net",
+    "//base",
+    "//net",
+    "//url:buildflags",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+
+  sources = [
+    "chunked_data_stream_uploader.cc",
+    "chunked_data_stream_uploader.h",
+    "clients/crn_network_client_protocol.h",
+    "crn_http_protocol_handler.h",
+    "crn_http_protocol_handler.mm",
+    "crn_http_protocol_handler_proxy.h",
+    "crn_http_protocol_handler_proxy_with_client_thread.h",
+    "crn_http_protocol_handler_proxy_with_client_thread.mm",
+    "http_protocol_logging.h",
+    "http_protocol_logging.mm",
+    "nsurlrequest_util.h",
+    "nsurlrequest_util.mm",
+    "request_tracker.h",
+    "request_tracker.mm",
   ]
 
   if (!use_platform_icu_alternatives) {
@@ -103,6 +122,7 @@ test("ios_net_unittests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   deps = [
     ":net",
+    ":network_protocol",
     ":test_support",
     "//base",
     "//base/test:run_all_unittests",
