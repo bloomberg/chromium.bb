@@ -2274,7 +2274,8 @@ TEST_P(CertVerifyProcInternalTest, LeafNewerThan20181015NoScts) {
 
 #if defined(OS_IOS) && !TARGET_IPHONE_SIMULATOR
   if (verify_proc_type() == CERT_VERIFY_PROC_IOS) {
-    if (__builtin_available(iOS 12.1.1, *)) {
+    // TODO(crbug.com/964323): Verify which version this should work for.
+    if (__builtin_available(iOS 12.2, *)) {
       // TODO(mattm): Check if this can this be mapped to some better error.
       EXPECT_THAT(error, IsError(ERR_CERT_INVALID));
       EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_INVALID);
