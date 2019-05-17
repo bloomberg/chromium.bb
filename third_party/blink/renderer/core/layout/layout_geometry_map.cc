@@ -255,7 +255,7 @@ void LayoutGeometryMap::PushMappingsToAncestor(
 #endif
 
   if (can_convert_in_layer_tree) {
-    LayoutPoint layer_offset;
+    PhysicalOffset layer_offset;
     layer->ConvertToLayerCoords(ancestor_layer, layer_offset);
 
     // The LayoutView must be pushed first.
@@ -269,7 +269,7 @@ void LayoutGeometryMap::PushMappingsToAncestor(
     bool accumulating_transform =
         layout_object.StyleRef().Preserves3D() ||
         ancestor_layer->GetLayoutObject().StyleRef().Preserves3D();
-    Push(&layout_object, PhysicalOffsetToBeNoop(layer_offset),
+    Push(&layout_object, layer_offset,
          accumulating_transform ? kAccumulatingTransform : 0);
     return;
   }

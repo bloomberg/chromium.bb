@@ -564,7 +564,7 @@ bool FrameSelection::ComputeAbsoluteBounds(IntRect& anchor,
 }
 
 void FrameSelection::PaintCaret(GraphicsContext& context,
-                                const LayoutPoint& paint_offset) {
+                                const PhysicalOffset& paint_offset) {
   frame_caret_->PaintCaret(context, paint_offset);
 }
 

@@ -9,9 +9,9 @@
 
 namespace blink {
 
-struct PaintInfo;
-class LayoutPoint;
 class LayoutHTMLCanvas;
+struct PaintInfo;
+struct PhysicalOffset;
 
 class HTMLCanvasPainter {
   STACK_ALLOCATED();
@@ -19,7 +19,7 @@ class HTMLCanvasPainter {
  public:
   HTMLCanvasPainter(const LayoutHTMLCanvas& layout_html_canvas)
       : layout_html_canvas_(layout_html_canvas) {}
-  void PaintReplaced(const PaintInfo&, const LayoutPoint& paint_offset);
+  void PaintReplaced(const PaintInfo&, const PhysicalOffset& paint_offset);
 
  private:
   const LayoutHTMLCanvas& layout_html_canvas_;

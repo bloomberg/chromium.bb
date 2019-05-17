@@ -16,7 +16,7 @@
 namespace blink {
 
 void NGFragmentPainter::PaintOutline(const PaintInfo& paint_info,
-                                     const LayoutPoint& paint_offset) {
+                                     const PhysicalOffset& paint_offset) {
   DCHECK(ShouldPaintSelfOutline(paint_info.phase));
 
   if (!NGOutlineUtils::HasPaintedOutline(paint_fragment_.Style(),
@@ -25,7 +25,7 @@ void NGFragmentPainter::PaintOutline(const PaintInfo& paint_info,
 
   Vector<LayoutRect> outline_rects;
   paint_fragment_.AddSelfOutlineRect(
-      &outline_rects, paint_offset,
+      &outline_rects, paint_offset.ToLayoutPoint(),
       paint_fragment_.GetLayoutObject()
           ->OutlineRectsShouldIncludeBlockVisualOverflow());
   if (outline_rects.IsEmpty())
@@ -40,8 +40,9 @@ void NGFragmentPainter::PaintOutline(const PaintInfo& paint_info,
   PaintOutlineRects(paint_info, outline_rects, paint_fragment_.Style());
 }
 
-void NGFragmentPainter::AddPDFURLRectIfNeeded(const PaintInfo& paint_info,
-                                              const LayoutPoint& paint_offset) {
+void NGFragmentPainter::AddPDFURLRectIfNeeded(
+    const PaintInfo& paint_info,
+    const PhysicalOffset& paint_offset) {
   DCHECK(paint_info.IsPrinting());
 
   // TODO(layout-dev): Should use break token when NG has its own tree building.

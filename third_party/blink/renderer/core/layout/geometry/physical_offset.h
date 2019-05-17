@@ -43,7 +43,10 @@ struct CORE_EXPORT PhysicalOffset {
                                  PhysicalSize outer_size,
                                  PhysicalSize inner_size) const;
 
-  bool IsZero() const { return !left && !top; }
+  constexpr bool IsZero() const { return !left && !top; }
+  constexpr bool HasFraction() const {
+    return left.HasFraction() || top.HasFraction();
+  }
 
   PhysicalOffset operator+(const PhysicalOffset& other) const {
     return PhysicalOffset{this->left + other.left, this->top + other.top};

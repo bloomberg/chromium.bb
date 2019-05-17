@@ -24,7 +24,8 @@ static void AddPDFURLRectsForInlineChildrenRecursively(
     if (!child->IsLayoutInline() ||
         ToLayoutBoxModelObject(child)->HasSelfPaintingLayer())
       continue;
-    ObjectPainter(*child).AddPDFURLRectIfNeeded(paint_info, paint_offset);
+    ObjectPainter(*child).AddPDFURLRectIfNeeded(
+        paint_info, PhysicalOffsetToBeNoop(paint_offset));
     AddPDFURLRectsForInlineChildrenRecursively(*child, paint_info,
                                                paint_offset);
   }

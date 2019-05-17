@@ -1669,7 +1669,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // Invalidate the raster of a specific sub-rectangle within the object. The
   // rect is in the object's local coordinate space. This is useful e.g. when
   // a small region of a canvas changes.
-  void InvalidatePaintRectangle(const LayoutRect&);
+  void InvalidatePaintRectangle(const PhysicalRect&);
 
   // Returns the rect that should have raster invalidated whenever this object
   // changes. The rect is in the coordinate space of the document's scrolling
@@ -2272,7 +2272,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   IntRect SelectionVisualRect() const {
     return fragment_.SelectionVisualRect();
   }
-  LayoutRect PartialInvalidationLocalRect() const {
+  PhysicalRect PartialInvalidationLocalRect() const {
     return fragment_.PartialInvalidationLocalRect();
   }
 

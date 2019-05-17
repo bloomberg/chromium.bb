@@ -98,7 +98,7 @@ void SVGContainerPainter::Paint(const PaintInfo& paint_info) {
   if (paint_info_before_filtering.IsPrinting() &&
       paint_info_before_filtering.phase == PaintPhase::kForeground) {
     ObjectPainter(layout_svg_container_)
-        .AddPDFURLRectIfNeeded(paint_info_before_filtering, LayoutPoint());
+        .AddPDFURLRectIfNeeded(paint_info_before_filtering, PhysicalOffset());
   }
 }
 

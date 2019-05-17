@@ -46,6 +46,7 @@ class LayoutBlock;
 class LocalFrame;
 class SelectionEditor;
 struct PaintInvalidatorContext;
+struct PhysicalOffset;
 
 enum class CaretVisibility { kVisible, kHidden };
 
@@ -80,7 +81,7 @@ class CORE_EXPORT FrameCaret final
   void InvalidatePaint(const LayoutBlock&, const PaintInvalidatorContext&);
 
   bool ShouldPaintCaret(const LayoutBlock&) const;
-  void PaintCaret(GraphicsContext&, const LayoutPoint&) const;
+  void PaintCaret(GraphicsContext&, const PhysicalOffset&) const;
 
   // For unit tests.
   const DisplayItemClient& CaretDisplayItemClientForTesting() const;

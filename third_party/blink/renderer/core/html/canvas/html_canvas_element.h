@@ -156,7 +156,7 @@ class CORE_EXPORT HTMLCanvasElement final
   void DidDraw() override;
 
   void Paint(GraphicsContext&,
-             const LayoutRect&,
+             const PhysicalRect&,
              bool flatten_composited_layers);
 
   void DisableDeferral(DisableDeferralReason);
@@ -321,7 +321,7 @@ class CORE_EXPORT HTMLCanvasElement final
  private:
   void Dispose();
 
-  void PaintInternal(GraphicsContext&, const LayoutRect&);
+  void PaintInternal(GraphicsContext&, const PhysicalRect&);
 
   using ContextFactoryVector =
       Vector<std::unique_ptr<CanvasRenderingContextFactory>>;

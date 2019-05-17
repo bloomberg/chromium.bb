@@ -283,13 +283,13 @@ bool PaintLayer::PaintsWithFilters() const {
          GetCompositingState() != kPaintsIntoOwnBacking;
 }
 
-LayoutSize PaintLayer::SubpixelAccumulation() const {
-  return rare_data_ ? rare_data_->subpixel_accumulation : LayoutSize();
+PhysicalOffset PaintLayer::SubpixelAccumulation() const {
+  return rare_data_ ? rare_data_->subpixel_accumulation : PhysicalOffset();
 }
 
-void PaintLayer::SetSubpixelAccumulation(const LayoutSize& size) {
-  if (rare_data_ || !size.IsZero()) {
-    EnsureRareData().subpixel_accumulation = size;
+void PaintLayer::SetSubpixelAccumulation(const PhysicalOffset& accumulation) {
+  if (rare_data_ || !accumulation.IsZero()) {
+    EnsureRareData().subpixel_accumulation = accumulation;
     if (PaintLayerScrollableArea* scrollable_area = GetScrollableArea()) {
       scrollable_area->PositionOverflowControls();
     }
@@ -317,7 +317,7 @@ void PaintLayer::UpdateLayerPositionsAfterLayout() {
 void PaintLayer::UpdateLayerPositionRecursive(
     UpdateLayerPositionBehavior behavior,
     bool dirty_compositing_if_needed) {
-  LayoutPoint old_location = location_;
+  auto old_location = location_;
   switch (behavior) {
     case AllLayers:
       UpdateLayerPosition();
@@ -522,7 +522,7 @@ TransformationMatrix PaintLayer::RenderableTransform(
 
 void PaintLayer::ConvertFromFlowThreadToVisualBoundingBoxInAncestor(
     const PaintLayer* ancestor_layer,
-    LayoutRect& rect) const {
+    PhysicalRect& rect) const {
   PaintLayer* pagination_layer = EnclosingPaginationLayer();
   DCHECK(pagination_layer);
   LayoutFlowThread& flow_thread =
@@ -530,24 +530,25 @@ void PaintLayer::ConvertFromFlowThreadToVisualBoundingBoxInAncestor(
 
   // First make the flow thread rectangle relative to the flow thread, not to
   // |layer|.
-  LayoutPoint offset_within_pagination_layer;
+  PhysicalOffset offset_within_pagination_layer;
   ConvertToLayerCoords(pagination_layer, offset_within_pagination_layer);
-  rect.MoveBy(offset_within_pagination_layer);
+  rect.Move(offset_within_pagination_layer);
 
   // Then make the rectangle visual, relative to the fragmentation context.
   // Split our box up into the actual fragment boxes that layout in the
   // columns/pages and unite those together to get our true bounding box.
-  rect = flow_thread.FragmentsBoundingBox(rect);
+  rect = PhysicalRectToBeNoop(
+      flow_thread.FragmentsBoundingBox(rect.ToLayoutRect()));
 
   // Finally, make the visual rectangle relative to |ancestorLayer|.
   if (ancestor_layer->EnclosingPaginationLayer() != pagination_layer) {
-    rect.MoveBy(pagination_layer->VisualOffsetFromAncestor(ancestor_layer));
+    rect.Move(pagination_layer->VisualOffsetFromAncestor(ancestor_layer));
     return;
   }
   // The ancestor layer is inside the same pagination layer as |layer|, so we
   // need to subtract the visual distance from the ancestor layer to the
   // pagination layer.
-  rect.MoveBy(-ancestor_layer->VisualOffsetFromAncestor(pagination_layer));
+  rect.Move(-ancestor_layer->VisualOffsetFromAncestor(pagination_layer));
 }
 
 void PaintLayer::UpdatePaginationRecursive(bool needs_pagination_update) {
@@ -852,7 +853,7 @@ void PaintLayer::UpdateLayerPosition() {
     rare_data_->offset_for_in_flow_position = PhysicalOffset();
   }
 
-  location_ = local_point.ToLayoutPoint();
+  location_ = local_point;
 
 #if DCHECK_IS_ON()
   needs_position_update_ = false;
@@ -961,7 +962,7 @@ PaintLayer* PaintLayer::ContainingLayer(const PaintLayer* ancestor,
   return nullptr;
 }
 
-LayoutPoint PaintLayer::ComputeOffsetFromAncestor(
+PhysicalOffset PaintLayer::ComputeOffsetFromAncestor(
     const PaintLayer& ancestor_layer) const {
   TransformState transform_state(TransformState::kApplyTransformDirection,
                                  FloatPoint());
@@ -971,7 +972,7 @@ LayoutPoint PaintLayer::ComputeOffsetFromAncestor(
   if (ancestor_object.UsesCompositedScrolling())
     transform_state.Move(ToLayoutBox(ancestor_object).ScrolledContentOffset());
   transform_state.Flatten();
-  return LayoutPoint(transform_state.LastPlanarPoint());
+  return PhysicalOffset::FromFloatPointRound(transform_state.LastPlanarPoint());
 }
 
 PaintLayer* PaintLayer::CompositingContainer() const {
@@ -1186,11 +1187,11 @@ bool PaintLayer::HasAncestorWithFilterThatMovesPixels() const {
 }
 
 static void ExpandClipRectForDescendants(
-    LayoutRect& clip_rect,
+    PhysicalRect& clip_rect,
     const PaintLayer* layer,
     const PaintLayer* root_layer,
     PaintLayer::TransparencyClipBoxBehavior transparency_behavior,
-    const LayoutSize& sub_pixel_accumulation,
+    const PhysicalOffset& sub_pixel_accumulation,
     GlobalPaintFlags global_paint_flags) {
   // If we have a mask, then the clip is limited to the border box area (and
   // there is no need to examine child layers).
@@ -1207,12 +1208,12 @@ static void ExpandClipRectForDescendants(
   }
 }
 
-LayoutRect PaintLayer::TransparencyClipBox(
+PhysicalRect PaintLayer::TransparencyClipBox(
     const PaintLayer* layer,
     const PaintLayer* root_layer,
     TransparencyClipBoxBehavior transparency_behavior,
     TransparencyClipBoxMode transparency_mode,
-    const LayoutSize& sub_pixel_accumulation,
+    const PhysicalOffset& sub_pixel_accumulation,
     GlobalPaintFlags global_paint_flags) {
   // FIXME: Although this function completely ignores CSS-imposed clipping, we
   // did already intersect with the paintDirtyRect, and that should cut down on
@@ -1232,10 +1233,10 @@ LayoutRect PaintLayer::TransparencyClipBox(
             : nullptr;
     const PaintLayer* root_layer_for_transform =
         pagination_layer ? pagination_layer : root_layer;
-    LayoutPoint delta;
+    PhysicalOffset delta;
     layer->ConvertToLayerCoords(root_layer_for_transform, delta);
 
-    delta.Move(sub_pixel_accumulation);
+    delta += sub_pixel_accumulation;
     IntPoint pixel_snapped_delta = RoundedIntPoint(delta);
     TransformationMatrix transform;
     transform.Translate(pixel_snapped_delta.X(), pixel_snapped_delta.Y());
@@ -1244,10 +1245,10 @@ LayoutRect PaintLayer::TransparencyClipBox(
 
     // We don't use fragment boxes when collecting a transformed layer's
     // bounding box, since it always paints unfragmented.
-    LayoutRect clip_rect = layer->PhysicalBoundingBox(LayoutPoint());
+    PhysicalRect clip_rect = layer->LocalBoundingBox();
     ExpandClipRectForDescendants(clip_rect, layer, layer, transparency_behavior,
                                  sub_pixel_accumulation, global_paint_flags);
-    LayoutRect result = EnclosingLayoutRect(
+    PhysicalRect result = PhysicalRect::EnclosingRect(
         transform.MapRect(layer->MapRectForFilter(FloatRect(clip_rect))));
     if (!pagination_layer)
       return result;
@@ -1257,37 +1258,38 @@ LayoutRect PaintLayer::TransparencyClipBox(
     // columns/pages and unite those together to get our true bounding box.
     LayoutFlowThread& enclosing_flow_thread =
         ToLayoutFlowThread(pagination_layer->GetLayoutObject());
-    result = enclosing_flow_thread.FragmentsBoundingBox(result);
+    result = PhysicalRectToBeNoop(
+        enclosing_flow_thread.FragmentsBoundingBox(result.ToLayoutRect()));
 
-    LayoutPoint root_layer_delta;
+    PhysicalOffset root_layer_delta;
     pagination_layer->ConvertToLayerCoords(root_layer, root_layer_delta);
-    result.MoveBy(root_layer_delta);
+    result.Move(root_layer_delta);
     return result;
   }
 
-  LayoutRect clip_rect = layer->ShouldFragmentCompositedBounds(root_layer)
-                             ? layer->FragmentsBoundingBox(root_layer)
-                             : layer->PhysicalBoundingBox(root_layer);
+  PhysicalRect clip_rect = layer->ShouldFragmentCompositedBounds(root_layer)
+                               ? layer->FragmentsBoundingBox(root_layer)
+                               : layer->PhysicalBoundingBox(root_layer);
   ExpandClipRectForDescendants(clip_rect, layer, root_layer,
                                transparency_behavior, sub_pixel_accumulation,
                                global_paint_flags);
 
   // Convert clipRect into local coordinates for mapLayerRectForFilter(), and
   // convert back after.
-  LayoutPoint delta;
+  PhysicalOffset delta;
   layer->ConvertToLayerCoords(root_layer, delta);
-  clip_rect.MoveBy(-delta);
-  clip_rect =
-      layer->MapRectForFilter(PhysicalRectToBeNoop(clip_rect)).ToLayoutRect();
-  clip_rect.MoveBy(delta);
+  clip_rect.Move(-delta);
+  clip_rect = layer->MapRectForFilter(clip_rect);
+  clip_rect.Move(delta);
 
   clip_rect.Move(sub_pixel_accumulation);
   return clip_rect;
 }
 
-LayoutRect PaintLayer::PaintingExtent(const PaintLayer* root_layer,
-                                      const LayoutSize& sub_pixel_accumulation,
-                                      GlobalPaintFlags global_paint_flags) {
+PhysicalRect PaintLayer::PaintingExtent(
+    const PaintLayer* root_layer,
+    const PhysicalOffset& sub_pixel_accumulation,
+    GlobalPaintFlags global_paint_flags) {
   return TransparencyClipBox(this, root_layer, kPaintingTransparencyClipBox,
                              kRootOfTransparencyClipBox, sub_pixel_accumulation,
                              global_paint_flags);
@@ -1517,7 +1519,7 @@ void PaintLayer::InsertOnlyThisLayerAfterStyleChange() {
 static inline const PaintLayer* AccumulateOffsetTowardsAncestor(
     const PaintLayer* layer,
     const PaintLayer* ancestor_layer,
-    LayoutPoint& location) {
+    PhysicalOffset& location) {
   DCHECK(ancestor_layer != layer);
 
   const LayoutBoxModelObject& layout_object = layer->GetLayoutObject();
@@ -1527,7 +1529,7 @@ static inline const PaintLayer* AccumulateOffsetTowardsAncestor(
     // If the fixed layer's container is the root, just add in the offset of the
     // view. We can obtain this by calling localToAbsolute() on the LayoutView.
     FloatPoint abs_pos = layout_object.LocalToAbsolute();
-    location += LayoutSize(abs_pos.X(), abs_pos.Y());
+    location += PhysicalOffset::FromFloatPointRound(abs_pos);
     return ancestor_layer;
   }
 
@@ -1538,10 +1540,10 @@ static inline const PaintLayer* AccumulateOffsetTowardsAncestor(
   if (found_ancestor_first) {
     // Found ancestorLayer before the containing layer, so compute offset of
     // both relative to the container and subtract.
-    LayoutPoint this_coords;
+    PhysicalOffset this_coords;
     layer->ConvertToLayerCoords(containing_layer, this_coords);
 
-    LayoutPoint ancestor_coords;
+    PhysicalOffset ancestor_coords;
     ancestor_layer->ConvertToLayerCoords(containing_layer, ancestor_coords);
 
     location += (this_coords - ancestor_coords);
@@ -1556,7 +1558,7 @@ static inline const PaintLayer* AccumulateOffsetTowardsAncestor(
 }
 
 void PaintLayer::ConvertToLayerCoords(const PaintLayer* ancestor_layer,
-                                      LayoutPoint& location) const {
+                                      PhysicalOffset& location) const {
   if (ancestor_layer == this)
     return;
 
@@ -1567,15 +1569,15 @@ void PaintLayer::ConvertToLayerCoords(const PaintLayer* ancestor_layer,
 }
 
 void PaintLayer::ConvertToLayerCoords(const PaintLayer* ancestor_layer,
-                                      LayoutRect& rect) const {
-  LayoutPoint delta;
+                                      PhysicalRect& rect) const {
+  PhysicalOffset delta;
   ConvertToLayerCoords(ancestor_layer, delta);
-  rect.MoveBy(delta);
+  rect.Move(delta);
 }
 
-LayoutPoint PaintLayer::VisualOffsetFromAncestor(
+PhysicalOffset PaintLayer::VisualOffsetFromAncestor(
     const PaintLayer* ancestor_layer,
-    LayoutPoint offset) const {
+    PhysicalOffset offset) const {
   if (ancestor_layer == this)
     return offset;
   PaintLayer* pagination_layer = EnclosingPaginationLayer();
@@ -1589,17 +1591,18 @@ LayoutPoint PaintLayer::VisualOffsetFromAncestor(
   LayoutFlowThread& flow_thread =
       ToLayoutFlowThread(pagination_layer->GetLayoutObject());
   ConvertToLayerCoords(pagination_layer, offset);
-  offset = flow_thread.FlowThreadPointToVisualPoint(offset);
+  offset = PhysicalOffsetToBeNoop(
+      flow_thread.FlowThreadPointToVisualPoint(offset.ToLayoutPoint()));
   if (ancestor_layer == pagination_layer)
     return offset;
 
   if (ancestor_layer->EnclosingPaginationLayer() != pagination_layer) {
-    offset.MoveBy(pagination_layer->VisualOffsetFromAncestor(ancestor_layer));
+    offset += pagination_layer->VisualOffsetFromAncestor(ancestor_layer);
   } else {
     // The ancestor layer is also inside the pagination layer, so we need to
     // subtract the visual distance from the ancestor layer to the pagination
     // layer.
-    offset.MoveBy(-ancestor_layer->VisualOffsetFromAncestor(pagination_layer));
+    offset -= ancestor_layer->VisualOffsetFromAncestor(pagination_layer);
   }
   return offset;
 }
@@ -1657,8 +1660,8 @@ void PaintLayer::AppendSingleFragmentIgnoringPagination(
     const CullRect* cull_rect,
     OverlayScrollbarClipBehavior overlay_scrollbar_clip_behavior,
     ShouldRespectOverflowClipType respect_overflow_clip,
-    const LayoutPoint* offset_from_root,
-    const LayoutSize& sub_pixel_accumulation) const {
+    const PhysicalOffset* offset_from_root,
+    const PhysicalOffset& sub_pixel_accumulation) const {
   PaintLayerFragment fragment;
   ClipRectsContext clip_rects_context(
       root_layer, &root_layer->GetLayoutObject().FirstFragment(),
@@ -1698,8 +1701,8 @@ void PaintLayer::CollectFragments(
     const CullRect* cull_rect,
     OverlayScrollbarClipBehavior overlay_scrollbar_clip_behavior,
     ShouldRespectOverflowClipType respect_overflow_clip,
-    const LayoutPoint* offset_from_root,
-    const LayoutSize& sub_pixel_accumulation) const {
+    const PhysicalOffset* offset_from_root,
+    const PhysicalOffset& sub_pixel_accumulation) const {
   PaintLayerFragment fragment;
   const auto& first_fragment_data = GetLayoutObject().FirstFragment();
   const auto& first_root_fragment_data =
@@ -1900,26 +1903,25 @@ HitTestingTransformState PaintLayer::CreateLocalTransformState(
                                      recursion_data.location.TransformedRect(),
                                      FloatQuad(FloatRect(recursion_data.rect)));
 
-  LayoutPoint offset;
+  PhysicalOffset offset;
   if (container_transform_state)
     ConvertToLayerCoords(container_layer, offset);
   else
     ConvertToLayerCoords(root_layer, offset);
 
-  offset.MoveBy(translation_offset);
+  offset += PhysicalOffsetToBeNoop(translation_offset);
 
   LayoutObject* container_layout_object =
       container_layer ? &container_layer->GetLayoutObject() : nullptr;
   if (GetLayoutObject().ShouldUseTransformFromContainer(
           container_layout_object)) {
     TransformationMatrix container_transform;
-    GetLayoutObject().GetTransformFromContainer(container_layout_object,
-                                                PhysicalOffsetToBeNoop(offset),
+    GetLayoutObject().GetTransformFromContainer(container_layout_object, offset,
                                                 container_transform);
     transform_state.ApplyTransform(
         container_transform, HitTestingTransformState::kAccumulateTransform);
   } else {
-    transform_state.Translate(offset.X().ToInt(), offset.Y().ToInt(),
+    transform_state.Translate(offset.left.ToInt(), offset.top.ToInt(),
                               HitTestingTransformState::kAccumulateTransform);
   }
 
@@ -2125,7 +2127,7 @@ PaintLayer* PaintLayer::HitTestLayer(PaintLayer* root_layer,
     layer_fragments.emplace();
     if (applied_transform) {
       DCHECK(root_layer == this);
-      LayoutPoint ignored;
+      PhysicalOffset ignored;
       AppendSingleFragmentIgnoringPagination(
           *layer_fragments, root_layer, nullptr,
           kExcludeOverlayScrollbarSizeForHitTesting, clip_behavior, &ignored);
@@ -2231,7 +2233,7 @@ bool PaintLayer::HitTestContentsForFragments(
       continue;
     inside_clip_rect = true;
     LayoutPoint fragment_offset = offset;
-    fragment_offset.MoveBy(fragment.layer_bounds.Location());
+    fragment_offset.MoveBy(fragment.layer_bounds.offset.ToLayoutPoint());
     if (HitTestContents(result, fragment_offset, hit_test_location,
                         hit_test_filter))
       return true;
@@ -2254,18 +2256,18 @@ PaintLayer* PaintLayer::HitTestTransformedLayerInFragments(
   EnclosingPaginationLayer()->CollectFragments(
       enclosing_pagination_fragments, root_layer, nullptr,
       kExcludeOverlayScrollbarSizeForHitTesting, clip_behavior, nullptr,
-      LayoutSize());
+      PhysicalOffset());
 
   for (const auto& fragment : enclosing_pagination_fragments) {
     // Apply the page/column clip for this fragment, as well as any clips
     // established by layers in between us and the enclosing pagination layer.
-    LayoutRect clip_rect = fragment.background_rect.Rect();
-    if (!recursion_data.location.Intersects(clip_rect))
+    PhysicalRect clip_rect = fragment.background_rect.Rect();
+    if (!recursion_data.location.Intersects(clip_rect.ToLayoutRect()))
       continue;
 
     PaintLayer* hit_layer = HitTestLayerByApplyingTransform(
         root_layer, container_layer, result, recursion_data, transform_state,
-        z_offset, fragment.fragment_data->PaginationOffset());
+        z_offset, fragment.fragment_data->PaginationOffset().ToLayoutPoint());
     if (hit_layer)
       return hit_layer;
   }
@@ -2443,7 +2445,7 @@ void PaintLayer::UpdateFilterReferenceBox() {
     return;
   FloatRect reference_box =
       FloatRect(PhysicalBoundingBoxIncludingStackingChildren(
-          LayoutPoint(),
+          PhysicalOffset(),
           PaintLayer::kIncludeTransformsAndCompositedChildLayers));
   float zoom = GetLayoutObject().StyleRef().EffectiveZoom();
   if (zoom != 1)
@@ -2498,13 +2500,13 @@ bool PaintLayer::HitTestClippedOutByClipPath(
   DCHECK(IsSelfPaintingLayer());
   DCHECK(root_layer);
 
-  LayoutRect origin;
+  PhysicalRect origin;
   if (EnclosingPaginationLayer())
     ConvertFromFlowThreadToVisualBoundingBoxInAncestor(root_layer, origin);
   else
     ConvertToLayerCoords(root_layer, origin);
 
-  FloatPoint point(hit_test_location.Point() - origin.Location());
+  FloatPoint point(hit_test_location.Point() - origin.offset.ToLayoutPoint());
   FloatRect reference_box(
       ClipPathClipper::LocalReferenceBox(GetLayoutObject()));
 
@@ -2539,9 +2541,9 @@ bool PaintLayer::HitTestClippedOutByClipPath(
 }
 
 bool PaintLayer::IntersectsDamageRect(
-    const LayoutRect& layer_bounds,
-    const LayoutRect& damage_rect,
-    const LayoutPoint& offset_from_root) const {
+    const PhysicalRect& layer_bounds,
+    const PhysicalRect& damage_rect,
+    const PhysicalOffset& offset_from_root) const {
   // Always examine the canvas and the root.
   // FIXME: Could eliminate the isDocumentElement() check if we fix background
   // painting so that the LayoutView paints the root's background.
@@ -2580,38 +2582,38 @@ PhysicalRect PaintLayer::LocalBoundingBox() const {
   return rect;
 }
 
-LayoutRect PaintLayer::PhysicalBoundingBox(
+PhysicalRect PaintLayer::PhysicalBoundingBox(
     const PaintLayer* ancestor_layer) const {
-  LayoutPoint offset_from_root;
+  PhysicalOffset offset_from_root;
   ConvertToLayerCoords(ancestor_layer, offset_from_root);
   return PhysicalBoundingBox(offset_from_root);
 }
 
-LayoutRect PaintLayer::PhysicalBoundingBox(
-    const LayoutPoint& offset_from_root) const {
-  LayoutRect result = LocalBoundingBox().ToLayoutRect();
-  result.MoveBy(offset_from_root);
+PhysicalRect PaintLayer::PhysicalBoundingBox(
+    const PhysicalOffset& offset_from_root) const {
+  PhysicalRect result = LocalBoundingBox();
+  result.Move(offset_from_root);
   return result;
 }
 
-LayoutRect PaintLayer::FragmentsBoundingBox(
+PhysicalRect PaintLayer::FragmentsBoundingBox(
     const PaintLayer* ancestor_layer) const {
   if (!EnclosingPaginationLayer())
     return PhysicalBoundingBox(ancestor_layer);
 
-  LayoutRect result = LocalBoundingBox().ToLayoutRect();
+  PhysicalRect result = LocalBoundingBox();
   ConvertFromFlowThreadToVisualBoundingBoxInAncestor(ancestor_layer, result);
   return result;
 }
 
-LayoutRect PaintLayer::BoundingBoxForCompositingOverlapTest() const {
+PhysicalRect PaintLayer::BoundingBoxForCompositingOverlapTest() const {
   // Apply NeverIncludeTransformForAncestorLayer, because the geometry map in
   // CompositingInputsUpdater will take care of applying the transform of |this|
   // (== the ancestorLayer argument to boundingBoxForCompositing).
   // TODO(trchen): Layer fragmentation is inhibited across compositing boundary.
   // Should we return the unfragmented bounds for overlap testing? Or perhaps
   // assume fragmented layers always overlap?
-  LayoutRect bounding_box =
+  PhysicalRect bounding_box =
       OverlapBoundsIncludeChildren()
           ? BoundingBoxForCompositingInternal(
                 *this, nullptr, kNeverIncludeTransformForAncestorLayer)
@@ -2619,7 +2621,7 @@ LayoutRect PaintLayer::BoundingBoxForCompositingOverlapTest() const {
   const ComputedStyle& style = GetLayoutObject().StyleRef();
   if (style.HasBackdropFilter() &&
       style.BackdropFilter().HasFilterThatMovesPixels()) {
-    bounding_box = EnclosingLayoutRect(
+    bounding_box = PhysicalRect::EnclosingRect(
         style.BackdropFilter().MapRect(FloatRect(bounding_box)));
   }
   return bounding_box;
@@ -2631,7 +2633,7 @@ bool PaintLayer::OverlapBoundsIncludeChildren() const {
 
 void PaintLayer::ExpandRectForStackingChildren(
     const PaintLayer& composited_layer,
-    LayoutRect& result,
+    PhysicalRect& result,
     PaintLayer::CalculateBoundsOptions options) const {
   if (!StackingNode())
     return;
@@ -2660,17 +2662,17 @@ void PaintLayer::ExpandRectForStackingChildren(
   }
 }
 
-LayoutRect PaintLayer::PhysicalBoundingBoxIncludingStackingChildren(
-    const LayoutPoint& offset_from_root,
+PhysicalRect PaintLayer::PhysicalBoundingBoxIncludingStackingChildren(
+    const PhysicalOffset& offset_from_root,
     CalculateBoundsOptions options) const {
-  LayoutRect result = PhysicalBoundingBox(LayoutPoint());
+  PhysicalRect result = LocalBoundingBox();
   ExpandRectForStackingChildren(*this, result, options);
 
-  result.MoveBy(offset_from_root);
+  result.Move(offset_from_root);
   return result;
 }
 
-LayoutRect PaintLayer::BoundingBoxForCompositing() const {
+PhysicalRect PaintLayer::BoundingBoxForCompositing() const {
   return BoundingBoxForCompositingInternal(
       *this, nullptr, kMaybeIncludeTransformForAncestorLayer);
 }
@@ -2691,18 +2693,18 @@ bool PaintLayer::ShouldApplyTransformToBoundingBox(
   return false;
 }
 
-LayoutRect PaintLayer::BoundingBoxForCompositingInternal(
+PhysicalRect PaintLayer::BoundingBoxForCompositingInternal(
     const PaintLayer& composited_layer,
     const PaintLayer* stacking_parent,
     CalculateBoundsOptions options) const {
   if (!IsSelfPaintingLayer())
-    return LayoutRect();
+    return PhysicalRect();
 
   // FIXME: This could be improved to do a check like
   // hasVisibleNonCompositingDescendantLayers() (bug 92580).
   if (this != &composited_layer && !HasVisibleContent() &&
       !HasVisibleDescendant())
-    return LayoutRect();
+    return PhysicalRect();
 
   if (GetLayoutObject().IsEffectiveRootScroller() || IsRootLayer()) {
     // In root layer scrolling mode, the main GraphicsLayer is the size of the
@@ -2711,7 +2713,7 @@ LayoutRect PaintLayer::BoundingBoxForCompositingInternal(
     IntRect result = IntRect();
     if (LocalFrameView* frame_view = GetLayoutObject().GetFrameView())
       result = IntRect(IntPoint(), frame_view->Size());
-    return LayoutRect(result);
+    return PhysicalRect(result);
   }
 
   // The layer created for the LayoutFlowThread is just a helper for painting
@@ -2719,24 +2721,26 @@ LayoutRect PaintLayer::BoundingBoxForCompositingInternal(
   // LayoutMultiColumnSets will contribute the correct size for the layout
   // content of the multicol container.
   if (GetLayoutObject().IsLayoutFlowThread())
-    return LayoutRect();
+    return PhysicalRect();
 
   // If there is a clip applied by an ancestor to this PaintLayer but below or
   // equal to |ancestorLayer|, apply that clip.
-  LayoutRect result = Clipper(GeometryMapperOption::kDoNotUseGeometryMapper)
-                          .LocalClipRect(composited_layer);
+  PhysicalRect result = Clipper(GeometryMapperOption::kDoNotUseGeometryMapper)
+                            .LocalClipRect(composited_layer);
 
-  result.Intersect(PhysicalBoundingBox(LayoutPoint()));
+  result.Intersect(LocalBoundingBox());
 
   ExpandRectForStackingChildren(composited_layer, result, options);
 
   // Only enlarge by the filter outsets if we know the filter is going to be
   // rendered in software.  Accelerated filters will handle their own outsets.
   if (PaintsWithFilters())
-    result = MapRectForFilter(PhysicalRectToBeNoop(result)).ToLayoutRect();
+    result = MapRectForFilter(result);
 
-  if (ShouldApplyTransformToBoundingBox(composited_layer, options))
-    result = Transform()->MapRect(result);
+  if (ShouldApplyTransformToBoundingBox(composited_layer, options)) {
+    result =
+        PhysicalRect::EnclosingRect(Transform()->MapRect(FloatRect(result)));
+  }
 
   if (ShouldFragmentCompositedBounds(&composited_layer)) {
     ConvertFromFlowThreadToVisualBoundingBoxInAncestor(&composited_layer,
@@ -2745,9 +2749,9 @@ LayoutRect PaintLayer::BoundingBoxForCompositingInternal(
   }
 
   if (stacking_parent) {
-    LayoutPoint delta;
+    PhysicalOffset delta;
     ConvertToLayerCoords(stacking_parent, delta);
-    result.MoveBy(delta);
+    result.Move(delta);
   }
   return result;
 }
@@ -2890,7 +2894,7 @@ bool PaintLayer::CompositesWithOpacity() const {
 }
 
 bool PaintLayer::BackgroundIsKnownToBeOpaqueInRect(
-    const LayoutRect& local_rect,
+    const PhysicalRect& local_rect,
     bool should_check_children) const {
   if (PaintsWithTransparency(kGlobalPaintNormalPhase))
     return false;
@@ -2938,7 +2942,7 @@ bool PaintLayer::BackgroundIsKnownToBeOpaqueInRect(
 }
 
 bool PaintLayer::ChildBackgroundIsKnownToBeOpaqueInRect(
-    const LayoutRect& local_rect) const {
+    const PhysicalRect& local_rect) const {
   if (!stacking_node_)
     return false;
 
@@ -2953,10 +2957,10 @@ bool PaintLayer::ChildBackgroundIsKnownToBeOpaqueInRect(
     if (!child_layer->CanUseConvertToLayerCoords())
       continue;
 
-    LayoutPoint child_offset;
-    LayoutRect child_local_rect(local_rect);
+    PhysicalOffset child_offset;
+    PhysicalRect child_local_rect(local_rect);
     child_layer->ConvertToLayerCoords(this, child_offset);
-    child_local_rect.MoveBy(-child_offset);
+    child_local_rect.Move(-child_offset);
 
     if (child_layer->BackgroundIsKnownToBeOpaqueInRect(child_local_rect, true))
       return true;
@@ -3230,12 +3234,13 @@ void PaintLayer::StyleDidChange(StyleDifference diff,
   }
 }
 
-LayoutPoint PaintLayer::LocationInternal() const {
-  LayoutPoint result(location_);
+PhysicalOffset PaintLayer::LocationInternal() const {
+  PhysicalOffset result = location_;
   PaintLayer* containing_layer = ContainingLayer();
   if (containing_layer && containing_layer->IsRootLayer() &&
       containing_layer->GetLayoutObject().HasOverflowClip()) {
-    result -= containing_layer->GetLayoutBox()->ScrolledContentOffset();
+    result -= PhysicalOffset(
+        containing_layer->GetLayoutBox()->ScrolledContentOffset());
   }
   return result;
 }

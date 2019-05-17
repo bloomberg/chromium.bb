@@ -10,10 +10,10 @@
 
 namespace blink {
 
-class LayoutPoint;
 class NGPaintFragment;
 class NGPhysicalFragment;
 struct PaintInfo;
+struct PhysicalOffset;
 
 // Generic fragment painter for paint logic shared between all types of
 // fragments. LayoutNG version of ObjectPainter, based on ObjectPainterBase.
@@ -24,9 +24,10 @@ class NGFragmentPainter : public ObjectPainterBase {
   NGFragmentPainter(const NGPaintFragment& paint_fragment)
       : paint_fragment_(paint_fragment) {}
 
-  void PaintOutline(const PaintInfo&, const LayoutPoint& paint_offset);
+  void PaintOutline(const PaintInfo&, const PhysicalOffset& paint_offset);
 
-  void AddPDFURLRectIfNeeded(const PaintInfo&, const LayoutPoint& paint_offset);
+  void AddPDFURLRectIfNeeded(const PaintInfo&,
+                             const PhysicalOffset& paint_offset);
 
   static bool ShouldRecordHitTestData(const PaintInfo&,
                                       const NGPhysicalFragment&);

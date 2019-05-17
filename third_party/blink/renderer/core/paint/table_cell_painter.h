@@ -10,11 +10,11 @@
 
 namespace blink {
 
-struct PaintInfo;
-class LayoutPoint;
-class LayoutRect;
 class LayoutTableCell;
 class LayoutObject;
+struct PaintInfo;
+struct PhysicalOffset;
+struct PhysicalRect;
 
 class TableCellPainter {
   STACK_ALLOCATED();
@@ -27,15 +27,15 @@ class TableCellPainter {
       const PaintInfo&,
       const LayoutObject& background_object);
   void PaintBoxDecorationBackground(const PaintInfo&,
-                                    const LayoutPoint& paint_offset);
-  void PaintMask(const PaintInfo&, const LayoutPoint& paint_offset);
+                                    const PhysicalOffset& paint_offset);
+  void PaintMask(const PaintInfo&, const PhysicalOffset& paint_offset);
 
-  LayoutRect PaintRectNotIncludingVisualOverflow(
-      const LayoutPoint& paint_offset);
+  PhysicalRect PaintRectNotIncludingVisualOverflow(
+      const PhysicalOffset& paint_offset);
 
  private:
   void PaintBackground(const PaintInfo&,
-                       const LayoutRect&,
+                       const PhysicalRect&,
                        const LayoutObject& background_object);
 
   const LayoutTableCell& layout_table_cell_;

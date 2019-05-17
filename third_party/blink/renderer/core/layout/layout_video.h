@@ -65,7 +65,7 @@ class LayoutVideo final : public LayoutMedia {
   }
 
   void PaintReplaced(const PaintInfo&,
-                     const LayoutPoint& paint_offset) const override;
+                     const PhysicalOffset& paint_offset) const override;
 
   void UpdateLayout() override;
 

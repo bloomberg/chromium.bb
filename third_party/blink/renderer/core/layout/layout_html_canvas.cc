@@ -44,7 +44,7 @@ PaintLayerType LayoutHTMLCanvas::LayerTypeRequired() const {
 }
 
 void LayoutHTMLCanvas::PaintReplaced(const PaintInfo& paint_info,
-                                     const LayoutPoint& paint_offset) const {
+                                     const PhysicalOffset& paint_offset) const {
   HTMLCanvasPainter(*this).PaintReplaced(paint_info, paint_offset);
 }
 

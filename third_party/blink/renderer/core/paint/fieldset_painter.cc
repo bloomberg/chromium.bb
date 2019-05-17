@@ -24,16 +24,19 @@ FieldsetPaintInfo CreateFieldsetPaintInfo(const LayoutBox& fieldset,
       fieldset.BorderTop(), fieldset.BorderRight(),
       LayoutUnit(),  // bottom border will always be left alone.
       fieldset.BorderLeft());
-  return FieldsetPaintInfo(fieldset.StyleRef(), fieldset.Size(),
-                           fieldset_borders, legend.FrameRect());
+  // Using legend.FrameRect() is incorrect in vertical-rl mode, but we probably
+  // won't fix this here which is for legacy layout.
+  return FieldsetPaintInfo(fieldset.StyleRef(),
+                           PhysicalSizeToBeNoop(fieldset.Size()),
+                           fieldset_borders, PhysicalRect(legend.FrameRect()));
 }
 
 }  // anonymous namespace
 
 void FieldsetPainter::PaintBoxDecorationBackground(
     const PaintInfo& paint_info,
-    const LayoutPoint& paint_offset) {
-  LayoutRect paint_rect(paint_offset, layout_fieldset_.Size());
+    const PhysicalOffset& paint_offset) {
+  PhysicalRect paint_rect(paint_offset, layout_fieldset_.Size());
   LayoutBox* legend = layout_fieldset_.FindInFlowLegend();
   if (!legend) {
     return BoxPainter(layout_fieldset_)
@@ -73,8 +76,8 @@ void FieldsetPainter::PaintBoxDecorationBackground(
       GraphicsContext& graphics_context = paint_info.context;
       GraphicsContextStateSaver state_saver(graphics_context);
 
-      LayoutRect legend_cutout_rect = fieldset_paint_info.legend_cutout_rect;
-      legend_cutout_rect.MoveBy(paint_offset);
+      PhysicalRect legend_cutout_rect = fieldset_paint_info.legend_cutout_rect;
+      legend_cutout_rect.Move(paint_offset);
       graphics_context.ClipOut(PixelSnappedIntRect(legend_cutout_rect));
 
       Node* node = nullptr;
@@ -92,12 +95,12 @@ void FieldsetPainter::PaintBoxDecorationBackground(
 }
 
 void FieldsetPainter::PaintMask(const PaintInfo& paint_info,
-                                const LayoutPoint& paint_offset) {
+                                const PhysicalOffset& paint_offset) {
   if (layout_fieldset_.StyleRef().Visibility() != EVisibility::kVisible ||
       paint_info.phase != PaintPhase::kMask)
     return;
 
-  LayoutRect paint_rect = LayoutRect(paint_offset, layout_fieldset_.Size());
+  PhysicalRect paint_rect(paint_offset, layout_fieldset_.Size());
   LayoutBox* legend = layout_fieldset_.FindInFlowLegend();
   if (!legend)
     return BoxPainter(layout_fieldset_).PaintMask(paint_info, paint_offset);

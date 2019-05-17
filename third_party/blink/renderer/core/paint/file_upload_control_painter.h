@@ -9,9 +9,9 @@
 
 namespace blink {
 
-struct PaintInfo;
-class LayoutPoint;
 class LayoutFileUploadControl;
+struct PaintInfo;
+struct PhysicalOffset;
 
 class FileUploadControlPainter {
   STACK_ALLOCATED();
@@ -21,7 +21,7 @@ class FileUploadControlPainter {
       const LayoutFileUploadControl& layout_file_upload_control)
       : layout_file_upload_control_(layout_file_upload_control) {}
 
-  void PaintObject(const PaintInfo&, const LayoutPoint& paint_offset);
+  void PaintObject(const PaintInfo&, const PhysicalOffset& paint_offset);
 
  private:
   const LayoutFileUploadControl& layout_file_upload_control_;

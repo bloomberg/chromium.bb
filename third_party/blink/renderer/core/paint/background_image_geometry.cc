@@ -316,7 +316,7 @@ LayoutPoint BackgroundImageGeometry::GetOffsetForCell(
            LayoutSize(border_spacing.Width(), LayoutUnit());
   }
 
-  LayoutRect sections_rect(LayoutPoint(), cell.Table()->Size());
+  PhysicalRect sections_rect(PhysicalOffset(), cell.Table()->Size());
   cell.Table()->SubtractCaptionRect(sections_rect);
   LayoutUnit height_of_captions =
       cell.Table()->Size().Height() - sections_rect.Height();
@@ -355,7 +355,7 @@ LayoutSize BackgroundImageGeometry::GetBackgroundObjectDimensions(
   }
 
   DCHECK(positioning_box.IsLayoutTableCol());
-  LayoutRect sections_rect(LayoutPoint(), cell.Table()->Size());
+  PhysicalRect sections_rect(PhysicalOffset(), cell.Table()->Size());
   cell.Table()->SubtractCaptionRect(sections_rect);
   LayoutUnit column_height = sections_rect.Height() -
                              cell.Table()->BorderBefore() -
@@ -431,7 +431,7 @@ LayoutRect FixedAttachmentPositioningArea(const LayoutBoxModelObject& obj,
   if (container) {
     DCHECK_GE(container->GetDocument().Lifecycle().GetState(),
               DocumentLifecycle::kPrePaintClean);
-    rect.MoveBy(container->FirstFragment().PaintOffset());
+    rect.MoveBy(container->FirstFragment().PaintOffset().ToLayoutPoint());
   }
 
   return rect;
@@ -872,7 +872,8 @@ void BackgroundImageGeometry::Calculate(const LayoutBoxModelObject* container,
                                         PaintPhase paint_phase,
                                         GlobalPaintFlags flags,
                                         const FillLayer& fill_layer,
-                                        const LayoutRect& paint_rect) {
+                                        const PhysicalRect& paint_rect_arg) {
+  LayoutRect paint_rect = paint_rect_arg.ToLayoutRect();
   // Unsnapped positioning area is used to derive quantities
   // that reference source image maps and define non-integer values, such
   // as phase and position.

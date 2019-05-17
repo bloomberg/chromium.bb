@@ -415,7 +415,7 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
 
   // Returns true if the background is painted opaque in the given rect.
   // The query rect is given in local coordinate system.
-  virtual bool BackgroundIsKnownToBeOpaqueInRect(const LayoutRect&) const {
+  virtual bool BackgroundIsKnownToBeOpaqueInRect(const PhysicalRect&) const {
     return false;
   }
 

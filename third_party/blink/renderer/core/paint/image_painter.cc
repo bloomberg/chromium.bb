@@ -100,7 +100,7 @@ void ImagePainter::PaintAreaElementFocusRing(const PaintInfo& paint_info) {
 
   ScopedPaintState paint_state(layout_image_, paint_info);
   auto paint_offset = paint_state.PaintOffset();
-  path.Translate(FloatSize(paint_offset.X(), paint_offset.Y()));
+  path.Translate(FloatSize(paint_offset));
 
   if (DrawingRecorder::UseCachedDrawingIfPossible(
           paint_info.context, layout_image_, DisplayItem::kImageAreaFocusRing))
@@ -113,8 +113,8 @@ void ImagePainter::PaintAreaElementFocusRing(const PaintInfo& paint_info) {
   // https://crbug.com/251206
 
   paint_info.context.Save();
-  LayoutRect focus_rect = layout_image_.PhysicalContentBoxRect().ToLayoutRect();
-  focus_rect.MoveBy(paint_offset);
+  PhysicalRect focus_rect = layout_image_.PhysicalContentBoxRect();
+  focus_rect.Move(paint_offset);
   paint_info.context.Clip(PixelSnappedIntRect(focus_rect));
   paint_info.context.DrawFocusRing(
       path, area_element_style.GetOutlineStrokeWidthForFocusRing(),
@@ -125,7 +125,7 @@ void ImagePainter::PaintAreaElementFocusRing(const PaintInfo& paint_info) {
 }
 
 void ImagePainter::PaintReplaced(const PaintInfo& paint_info,
-                                 const LayoutPoint& paint_offset) {
+                                 const PhysicalOffset& paint_offset) {
   LayoutSize content_size = layout_image_.ContentSize();
   bool has_image = layout_image_.ImageResource()->HasImage();
 
@@ -152,9 +152,9 @@ void ImagePainter::PaintReplaced(const PaintInfo& paint_info,
       layout_image_.ImageResource()->MaybeAnimated())
     cache_skipper.emplace(context);
 
-  LayoutRect content_rect(
-      paint_offset + layout_image_.PhysicalContentBoxOffset().ToLayoutPoint(),
-      content_size);
+  PhysicalRect content_rect(
+      paint_offset + layout_image_.PhysicalContentBoxOffset(),
+      PhysicalSizeToBeNoop(content_size));
 
   if (!has_image) {
     // Draw an outline rect where the image should be.
@@ -167,8 +167,8 @@ void ImagePainter::PaintReplaced(const PaintInfo& paint_info,
     return;
   }
 
-  LayoutRect paint_rect = layout_image_.ReplacedContentRect().ToLayoutRect();
-  paint_rect.MoveBy(paint_offset);
+  PhysicalRect paint_rect = layout_image_.ReplacedContentRect();
+  paint_rect.offset += paint_offset;
 
   DrawingRecorder recorder(context, layout_image_, paint_info.phase);
   DCHECK(paint_info.PaintContainer());
@@ -176,8 +176,8 @@ void ImagePainter::PaintReplaced(const PaintInfo& paint_info,
 }
 
 void ImagePainter::PaintIntoRect(GraphicsContext& context,
-                                 const LayoutRect& dest_rect,
-                                 const LayoutRect& content_rect) {
+                                 const PhysicalRect& dest_rect,
+                                 const PhysicalRect& content_rect) {
   if (!layout_image_.ImageResource()->HasImage() ||
       layout_image_.ImageResource()->ErrorOccurred())
     return;  // FIXME: should we just ASSERT these conditions? (audit all

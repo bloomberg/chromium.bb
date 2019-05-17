@@ -42,8 +42,8 @@ void CompositingLayerPropertyUpdater::Update(const LayoutObject& object) {
          // during printing.
          object.GetDocument().Printing());
 
-  LayoutPoint layout_snapped_paint_offset =
-      fragment_data.PaintOffset() - mapping->SubpixelAccumulation();
+  PhysicalOffset layout_snapped_paint_offset =
+      fragment_data.PaintOffset() - paint_layer->SubpixelAccumulation();
   IntPoint snapped_paint_offset = RoundedIntPoint(layout_snapped_paint_offset);
 
 #if DCHECK_IS_ON()
@@ -54,7 +54,7 @@ void CompositingLayerPropertyUpdater::Update(const LayoutObject& object) {
   // resulted in the paint offset used by CompositedLayerMapping to mismatch.
   bool subpixel_accumulation_may_be_bogus = paint_layer->SubtreeIsInvisible();
   if (!subpixel_accumulation_may_be_bogus &&
-      layout_snapped_paint_offset != snapped_paint_offset) {
+      layout_snapped_paint_offset != PhysicalOffset(snapped_paint_offset)) {
     // TODO(crbug.com/925377): Fix the root cause.
     DLOG(ERROR) << "Paint offset pixel snapping error for " << object
                 << " expected: " << snapped_paint_offset

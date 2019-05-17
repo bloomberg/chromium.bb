@@ -131,8 +131,10 @@ void ScopedSVGPaintState::ApplyPaintPropertyState() {
 }
 
 void ScopedSVGPaintState::ApplyClipIfNecessary() {
-  if (object_.StyleRef().ClipPath())
-    clip_path_clipper_.emplace(GetPaintInfo().context, object_, LayoutPoint());
+  if (object_.StyleRef().ClipPath()) {
+    clip_path_clipper_.emplace(GetPaintInfo().context, object_,
+                               PhysicalOffset());
+  }
 }
 
 bool ScopedSVGPaintState::ApplyMaskIfNecessary(SVGResources* resources) {

@@ -12,10 +12,10 @@
 
 namespace blink {
 
-class TransformPaintPropertyNode;
 class ClipPaintPropertyNode;
 class ScrollPaintPropertyNode;
-class LayoutPoint;
+class TransformPaintPropertyNode;
+struct PhysicalOffset;
 
 class PaintPropertyTreeBuilderTest : public PaintControllerPaintTest {
  public:
@@ -37,7 +37,7 @@ class PaintPropertyTreeBuilderTest : public PaintControllerPaintTest {
 
   // Return the local border box's paint offset. For more details, see
   // ObjectPaintProperties::localBorderBoxProperties().
-  LayoutPoint PaintOffset(const LayoutObject*);
+  PhysicalOffset PaintOffset(const LayoutObject*);
 
   const ObjectPaintProperties* PaintPropertiesForElement(const char* name);
 

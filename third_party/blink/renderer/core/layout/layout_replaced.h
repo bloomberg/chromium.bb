@@ -79,7 +79,7 @@ class CORE_EXPORT LayoutReplaced : public LayoutBox {
   static const int kDefaultHeight;
   bool CanHaveChildren() const override { return false; }
   virtual void PaintReplaced(const PaintInfo&,
-                             const LayoutPoint& paint_offset) const {}
+                             const PhysicalOffset& paint_offset) const {}
 
   PhysicalRect LocalSelectionVisualRect() const final;
 

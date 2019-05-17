@@ -438,7 +438,7 @@ void LayoutView::Paint(const PaintInfo& paint_info) const {
 }
 
 void LayoutView::PaintBoxDecorationBackground(const PaintInfo& paint_info,
-                                              const LayoutPoint&) const {
+                                              const PhysicalOffset&) const {
   ViewPainter(*this).PaintBoxDecorationBackground(paint_info);
 }
 
@@ -817,7 +817,7 @@ IntervalArena* LayoutView::GetIntervalArena() {
   return interval_arena_.get();
 }
 
-bool LayoutView::BackgroundIsKnownToBeOpaqueInRect(const LayoutRect&) const {
+bool LayoutView::BackgroundIsKnownToBeOpaqueInRect(const PhysicalRect&) const {
   // FIXME: Remove this main frame check. Same concept applies to subframes too.
   if (!GetFrame()->IsMainFrame())
     return false;

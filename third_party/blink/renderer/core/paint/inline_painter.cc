@@ -38,10 +38,9 @@ void InlinePainter::Paint(const PaintInfo& paint_info) {
   if (layout_inline_.IsInLayoutNGInlineFormattingContext()) {
     for (const NGPaintFragment* fragment :
          NGPaintFragment::InlineFragmentsFor(&layout_inline_)) {
-      auto child_offset =
-          paint_offset +
-          (fragment->InlineOffsetToContainerBox() - fragment->Offset())
-              .ToLayoutPoint();
+      auto child_offset = paint_offset +
+                          fragment->InlineOffsetToContainerBox() -
+                          fragment->Offset();
 
       if (fragment->PhysicalFragment().IsText()) {
         const auto& text_fragment =
@@ -74,7 +73,7 @@ void InlinePainter::Paint(const PaintInfo& paint_info) {
   }
 
   LineBoxListPainter(*layout_inline_.LineBoxes())
-      .Paint(layout_inline_, local_paint_info, paint_offset);
+      .Paint(layout_inline_, local_paint_info, paint_offset.ToLayoutPoint());
 }
 
 }  // namespace blink

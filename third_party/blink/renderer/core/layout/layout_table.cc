@@ -1012,11 +1012,11 @@ void LayoutTable::AddLayoutOverflowFromChildren() {
 }
 
 void LayoutTable::PaintObject(const PaintInfo& paint_info,
-                              const LayoutPoint& paint_offset) const {
+                              const PhysicalOffset& paint_offset) const {
   TablePainter(*this).PaintObject(paint_info, paint_offset);
 }
 
-void LayoutTable::SubtractCaptionRect(LayoutRect& rect) const {
+void LayoutTable::SubtractCaptionRect(PhysicalRect& rect) const {
   for (unsigned i = 0; i < captions_.size(); i++) {
     LayoutUnit caption_logical_height = captions_[i]->LogicalHeight() +
                                         captions_[i]->MarginBefore() +
@@ -1025,13 +1025,13 @@ void LayoutTable::SubtractCaptionRect(LayoutRect& rect) const {
         (captions_[i]->StyleRef().CaptionSide() != ECaptionSide::kBottom) ^
         StyleRef().IsFlippedBlocksWritingMode();
     if (StyleRef().IsHorizontalWritingMode()) {
-      rect.SetHeight(rect.Height() - caption_logical_height);
+      rect.size.height -= caption_logical_height;
       if (caption_is_before)
-        rect.Move(LayoutUnit(), caption_logical_height);
+        rect.offset.top += caption_logical_height;
     } else {
-      rect.SetWidth(rect.Width() - caption_logical_height);
+      rect.size.width -= caption_logical_height;
       if (caption_is_before)
-        rect.Move(caption_logical_height, LayoutUnit());
+        rect.offset.left += caption_logical_height;
     }
   }
 }
@@ -1049,12 +1049,12 @@ void LayoutTable::MarkAllCellsWidthsDirtyAndOrNeedsLayout(
 
 void LayoutTable::PaintBoxDecorationBackground(
     const PaintInfo& paint_info,
-    const LayoutPoint& paint_offset) const {
+    const PhysicalOffset& paint_offset) const {
   TablePainter(*this).PaintBoxDecorationBackground(paint_info, paint_offset);
 }
 
 void LayoutTable::PaintMask(const PaintInfo& paint_info,
-                            const LayoutPoint& paint_offset) const {
+                            const PhysicalOffset& paint_offset) const {
   TablePainter(*this).PaintMask(paint_info, paint_offset);
 }
 

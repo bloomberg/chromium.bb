@@ -202,7 +202,7 @@ void WebPluginContainerImpl::InvalidateRect(const IntRect& rect) {
       (layout_object->BorderLeft() + layout_object->PaddingLeft()).ToInt(),
       (layout_object->BorderTop() + layout_object->PaddingTop()).ToInt());
 
-  layout_object->InvalidatePaintRectangle(LayoutRect(dirty_rect));
+  layout_object->InvalidatePaintRectangle(PhysicalRect(dirty_rect));
 }
 
 void WebPluginContainerImpl::SetFocused(bool focused, WebFocusType focus_type) {

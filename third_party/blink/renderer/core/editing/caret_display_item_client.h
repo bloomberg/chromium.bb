@@ -63,7 +63,7 @@ class CORE_EXPORT CaretDisplayItemClient final : public DisplayItemClient {
     return &block == layout_block_;
   }
   void PaintCaret(GraphicsContext&,
-                  const LayoutPoint& paint_offset,
+                  const PhysicalOffset& paint_offset,
                   DisplayItem::Type) const;
 
   // DisplayItemClient methods.

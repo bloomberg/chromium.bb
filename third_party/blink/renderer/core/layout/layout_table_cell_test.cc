@@ -115,7 +115,7 @@ TEST_F(LayoutTableCellTest,
     </table>
   )HTML");
   EXPECT_FALSE(GetCellByElementId("cell")->BackgroundIsKnownToBeOpaqueInRect(
-      LayoutRect(0, 0, 1, 1)));
+      PhysicalRect(0, 0, 1, 1)));
 }
 
 TEST_F(LayoutTableCellTest, RepaintContentInTableCell) {

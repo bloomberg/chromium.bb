@@ -46,6 +46,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_LAYER_PAINTING_INFO_H_
 
 #include "base/logging.h"
+#include "third_party/blink/renderer/core/layout/geometry/physical_offset.h"
 #include "third_party/blink/renderer/core/paint/paint_phase.h"
 #include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
@@ -91,7 +92,7 @@ struct PaintLayerPaintingInfo {
   PaintLayerPaintingInfo(PaintLayer* root_layer,
                          const CullRect& cull_rect,
                          GlobalPaintFlags global_paint_flags,
-                         const LayoutSize& sub_pixel_accumulation)
+                         const PhysicalOffset& sub_pixel_accumulation)
       : root_layer(root_layer),
         cull_rect(cull_rect),
         sub_pixel_accumulation(sub_pixel_accumulation),
@@ -102,7 +103,7 @@ struct PaintLayerPaintingInfo {
   // TODO(jchaffraix): We should encapsulate all these fields.
   const PaintLayer* root_layer;
   CullRect cull_rect;  // relative to rootLayer;
-  LayoutSize sub_pixel_accumulation;
+  PhysicalOffset sub_pixel_accumulation;
 
  private:
   const GlobalPaintFlags global_paint_flags_;

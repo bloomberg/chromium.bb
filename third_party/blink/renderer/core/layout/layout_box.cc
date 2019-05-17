@@ -1591,19 +1591,19 @@ bool LayoutBox::HitTestAllPhases(HitTestResult& result,
   // If we have clipping, then we can't have any spillout.
   // TODO(pdr): Why is this optimization not valid for the effective root?
   if (!IsEffectiveRootScroller()) {
-    LayoutRect overflow_box;
+    PhysicalRect overflow_box;
     if (result.GetHitTestRequest().GetType() &
         HitTestRequest::kHitTestVisualOverflow) {
-      overflow_box =
-          PhysicalVisualOverflowRectIncludingFilters().ToLayoutRect();
+      overflow_box = PhysicalVisualOverflowRectIncludingFilters();
     } else {
       overflow_box = (HasOverflowClip() || ShouldApplyPaintContainment())
-                         ? BorderBoxRect()
-                         : PhysicalVisualOverflowRect().ToLayoutRect();
+                         ? PhysicalBorderBoxRect()
+                         : PhysicalVisualOverflowRect();
     }
-    LayoutPoint adjusted_location = accumulated_offset + Location();
-    overflow_box.MoveBy(adjusted_location);
-    if (!location_in_container.Intersects(overflow_box))
+
+    LayoutRect adjusted_overflow_box = overflow_box.ToLayoutRect();
+    adjusted_overflow_box.MoveBy(accumulated_offset + Location());
+    if (!location_in_container.Intersects(adjusted_overflow_box))
       return false;
   }
   return LayoutObject::HitTestAllPhases(result, location_in_container,
@@ -1704,18 +1704,18 @@ void LayoutBox::Paint(const PaintInfo& paint_info) const {
 
 void LayoutBox::PaintBoxDecorationBackground(
     const PaintInfo& paint_info,
-    const LayoutPoint& paint_offset) const {
+    const PhysicalOffset& paint_offset) const {
   BoxPainter(*this).PaintBoxDecorationBackground(paint_info, paint_offset);
 }
 
-bool LayoutBox::GetBackgroundPaintedExtent(LayoutRect& painted_extent) const {
+bool LayoutBox::GetBackgroundPaintedExtent(PhysicalRect& painted_extent) const {
   DCHECK(StyleRef().HasBackground());
 
   // LayoutView is special in the sense that it expands to the whole canvas,
   // thus can't be handled by this function.
   DCHECK(!IsLayoutView());
 
-  LayoutRect background_rect(BorderBoxRect());
+  PhysicalRect background_rect(PhysicalBorderBoxRect());
 
   Color background_color = ResolveColor(GetCSSPropertyBackgroundColor());
   if (background_color.Alpha()) {
@@ -1738,12 +1738,12 @@ bool LayoutBox::GetBackgroundPaintedExtent(LayoutRect& painted_extent) const {
                      background_rect);
   if (geometry.HasNonLocalGeometry())
     return false;
-  painted_extent = LayoutRect(geometry.SnappedDestRect());
+  painted_extent = PhysicalRect(geometry.SnappedDestRect());
   return true;
 }
 
 bool LayoutBox::BackgroundIsKnownToBeOpaqueInRect(
-    const LayoutRect& local_rect) const {
+    const PhysicalRect& local_rect) const {
   // If the background transfers to view, the used background of this object
   // is transparent.
   if (BackgroundTransfersToView())
@@ -1765,7 +1765,7 @@ bool LayoutBox::BackgroundIsKnownToBeOpaqueInRect(
   if (StyleRef().HasBlendMode())
     return false;
   return PhysicalBackgroundRect(kBackgroundKnownOpaqueRect)
-      .Contains(PhysicalRectToBeNoop(local_rect));
+      .Contains(local_rect);
 }
 
 static bool IsCandidateForOpaquenessTest(const LayoutBox& child_box) {
@@ -1799,7 +1799,7 @@ static bool IsCandidateForOpaquenessTest(const LayoutBox& child_box) {
 }
 
 bool LayoutBox::ForegroundIsKnownToBeOpaqueInRect(
-    const LayoutRect& local_rect,
+    const PhysicalRect& local_rect,
     unsigned max_depth_to_test) const {
   if (!max_depth_to_test)
     return false;
@@ -1810,11 +1810,11 @@ bool LayoutBox::ForegroundIsKnownToBeOpaqueInRect(
     LayoutBox* child_box = ToLayoutBox(child);
     if (!IsCandidateForOpaquenessTest(*child_box))
       continue;
-    LayoutPoint child_location = child_box->PhysicalLocation().ToLayoutPoint();
+    PhysicalOffset child_location = child_box->PhysicalLocation();
     if (child_box->IsInFlowPositioned())
-      child_location.Move(child_box->OffsetForInFlowPosition().ToLayoutSize());
-    LayoutRect child_local_rect = local_rect;
-    child_local_rect.MoveBy(-child_location);
+      child_location += child_box->OffsetForInFlowPosition();
+    PhysicalRect child_local_rect = local_rect;
+    child_local_rect.Move(-child_location);
     if (child_local_rect.Y() < 0 || child_local_rect.X() < 0) {
       // If there is unobscured area above/left of a static positioned box then
       // the rect is probably not covered. This can cause false-negative in
@@ -1823,8 +1823,8 @@ bool LayoutBox::ForegroundIsKnownToBeOpaqueInRect(
         return false;
       continue;
     }
-    if (child_local_rect.MaxY() > child_box->Size().Height() ||
-        child_local_rect.MaxX() > child_box->Size().Width())
+    if (child_local_rect.Bottom() > child_box->Size().Height() ||
+        child_local_rect.Right() > child_box->Size().Width())
       continue;
     if (child_box->BackgroundIsKnownToBeOpaqueInRect(child_local_rect))
       return true;
@@ -1848,7 +1848,7 @@ bool LayoutBox::ComputeBackgroundIsKnownToBeObscured() const {
   // FIXME: box-shadow is painted while background painting.
   if (StyleRef().BoxShadow())
     return false;
-  LayoutRect background_rect;
+  PhysicalRect background_rect;
   if (!GetBackgroundPaintedExtent(background_rect))
     return false;
   return ForegroundIsKnownToBeOpaqueInRect(background_rect,
@@ -1856,7 +1856,7 @@ bool LayoutBox::ComputeBackgroundIsKnownToBeObscured() const {
 }
 
 void LayoutBox::PaintMask(const PaintInfo& paint_info,
-                          const LayoutPoint& paint_offset) const {
+                          const PhysicalOffset& paint_offset) const {
   BoxPainter(*this).PaintMask(paint_info, paint_offset);
 }
 

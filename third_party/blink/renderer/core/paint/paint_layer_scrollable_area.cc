@@ -668,15 +668,17 @@ LayoutRect PaintLayerScrollableArea::VisibleScrollSnapportRect(
 }
 
 IntSize PaintLayerScrollableArea::ContentsSize() const {
-  LayoutPoint offset(
+  PhysicalOffset offset(
       GetLayoutBox()->ClientLeft() + GetLayoutBox()->Location().X(),
       GetLayoutBox()->ClientTop() + GetLayoutBox()->Location().Y());
+  // TODO(crbug.com/962299): The pixel snapping is incorrect in some cases.
   return PixelSnappedContentsSize(offset);
 }
 
 IntSize PaintLayerScrollableArea::PixelSnappedContentsSize(
-    const LayoutPoint& paint_offset) const {
-  return PixelSnappedIntSize(overflow_rect_.Size(), paint_offset);
+    const PhysicalOffset& paint_offset) const {
+  return PixelSnappedIntRect(PhysicalRect(paint_offset, overflow_rect_.Size()))
+      .Size();
 }
 
 void PaintLayerScrollableArea::ContentsResized() {
@@ -2280,9 +2282,7 @@ bool PaintLayerScrollableArea::ComputeNeedsCompositedScrolling(
           &non_composited_main_thread_scrolling_reasons_) &
           kBackgroundPaintInScrollingContents &&
       layer->BackgroundIsKnownToBeOpaqueInRect(
-          ToLayoutBox(layer->GetLayoutObject())
-              .PhysicalPaddingBoxRect()
-              .ToLayoutRect(),
+          ToLayoutBox(layer->GetLayoutObject()).PhysicalPaddingBoxRect(),
           true) &&
       !layer->CompositesWithTransform() && !layer->CompositesWithOpacity();
 
@@ -2301,9 +2301,7 @@ bool PaintLayerScrollableArea::ComputeNeedsCompositedScrolling(
           cc::MainThreadScrollingReason::kHasTransformAndLCDText;
     }
     if (!layer->BackgroundIsKnownToBeOpaqueInRect(
-            ToLayoutBox(layer->GetLayoutObject())
-                .PhysicalPaddingBoxRect()
-                .ToLayoutRect(),
+            ToLayoutBox(layer->GetLayoutObject()).PhysicalPaddingBoxRect(),
             true)) {
       non_composited_main_thread_scrolling_reasons_ |=
           cc::MainThreadScrollingReason::kBackgroundNotOpaqueInRectAndLCDText;

@@ -482,14 +482,11 @@ void PrePaintTreeWalk::Walk(const LayoutObject& object) {
     FrameView* frame_view = layout_embedded_content.ChildFrameView();
     if (auto* local_frame_view = DynamicTo<LocalFrameView>(frame_view)) {
       if (context().tree_builder_context) {
-        context().tree_builder_context->fragments[0].current.paint_offset +=
-            layout_embedded_content.ReplacedContentRect()
-                .offset.ToLayoutPoint() -
-            local_frame_view->FrameRect().Location();
-        context()
-            .tree_builder_context->fragments[0]
-            .current.paint_offset = RoundedIntPoint(
-            context().tree_builder_context->fragments[0].current.paint_offset);
+        auto& offset =
+            context().tree_builder_context->fragments[0].current.paint_offset;
+        offset += layout_embedded_content.ReplacedContentRect().offset;
+        offset -= PhysicalOffset(local_frame_view->FrameRect().Location());
+        offset = PhysicalOffset(RoundedIntPoint(offset));
       }
       Walk(*local_frame_view);
     }

@@ -88,8 +88,8 @@ bool NGPhysicalBoxFragment::HasSelfPaintingLayer() const {
       ->HasSelfPaintingLayer();
 }
 
-LayoutRect NGPhysicalBoxFragment::OverflowClipRect(
-    const LayoutPoint& location,
+PhysicalRect NGPhysicalBoxFragment::OverflowClipRect(
+    const PhysicalOffset& location,
     OverlayScrollbarClipBehavior overlay_scrollbar_clip_behavior) const {
   DCHECK(GetLayoutObject() && GetLayoutObject()->IsBox());
   const LayoutBox* box = ToLayoutBox(GetLayoutObject());
@@ -134,10 +134,10 @@ IntSize NGPhysicalBoxFragment::ScrolledContentOffset() const {
   return box->ScrolledContentOffset();
 }
 
-LayoutSize NGPhysicalBoxFragment::ScrollSize() const {
+PhysicalSize NGPhysicalBoxFragment::ScrollSize() const {
   DCHECK(GetLayoutObject() && GetLayoutObject()->IsBox());
   const LayoutBox* box = ToLayoutBox(GetLayoutObject());
-  return LayoutSize(box->ScrollWidth(), box->ScrollHeight());
+  return {box->ScrollWidth(), box->ScrollHeight()};
 }
 
 PhysicalRect NGPhysicalBoxFragment::ComputeSelfInkOverflow() const {

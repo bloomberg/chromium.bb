@@ -103,7 +103,7 @@ bool DragCaret::ShouldPaintCaret(const LayoutBlock& block) const {
 
 void DragCaret::PaintDragCaret(const LocalFrame* frame,
                                GraphicsContext& context,
-                               const LayoutPoint& paint_offset) const {
+                               const PhysicalOffset& paint_offset) const {
   if (position_.AnchorNode()->GetDocument().GetFrame() != frame)
     return;
   display_item_client_->PaintCaret(context, paint_offset,

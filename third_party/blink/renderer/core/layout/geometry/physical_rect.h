@@ -132,6 +132,25 @@ struct CORE_EXPORT PhysicalRect {
 
   void Move(const PhysicalOffset& o) { offset += o; }
 
+  void ShiftLeftEdgeTo(LayoutUnit edge) {
+    LayoutUnit delta = edge - X();
+    SetX(edge);
+    SetWidth((Width() - delta).ClampNegativeToZero());
+  }
+  void ShiftRightEdgeTo(LayoutUnit edge) {
+    LayoutUnit delta = edge - Right();
+    SetWidth((Width() + delta).ClampNegativeToZero());
+  }
+  void ShiftTopEdgeTo(LayoutUnit edge) {
+    LayoutUnit delta = edge - Y();
+    SetY(edge);
+    SetHeight((Height() - delta).ClampNegativeToZero());
+  }
+  void ShiftBottomEdgeTo(LayoutUnit edge) {
+    LayoutUnit delta = edge - Bottom();
+    SetHeight((Height() + delta).ClampNegativeToZero());
+  }
+
   // TODO(crbug.com/962299): These functions should upgraded to force correct
   // pixel snapping in a type-safe way.
   IntPoint PixelSnappedOffset() const { return RoundedIntPoint(offset); }

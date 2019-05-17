@@ -49,8 +49,10 @@ void EllipsisBoxPainter::PaintEllipsis(const PaintInfo& paint_info,
                                  ellipsis_box_.VirtualLogicalHeight()));
 
   GraphicsContextStateSaver state_saver(context);
-  if (!ellipsis_box_.IsHorizontal())
-    context.ConcatCTM(TextPainter::Rotation(box_rect, TextPainter::kClockwise));
+  if (!ellipsis_box_.IsHorizontal()) {
+    context.ConcatCTM(TextPainter::Rotation(PhysicalRectToBeNoop(box_rect),
+                                            TextPainter::kClockwise));
+  }
 
   const Font& font = style.GetFont();
   const SimpleFontData* font_data = font.PrimaryFont();

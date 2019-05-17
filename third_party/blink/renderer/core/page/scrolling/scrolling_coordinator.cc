@@ -544,19 +544,17 @@ void ScrollingCoordinator::ScrollableAreaScrollLayerDidChange(
 
     // TODO(bokan): This method shouldn't be resizing the layer geometry. That
     // happens in CompositedLayerMapping::UpdateScrollingLayerGeometry.
-    LayoutSize subpixel_accumulation =
+    PhysicalOffset subpixel_accumulation =
         scrollable_area->Layer()
             ? scrollable_area->Layer()->SubpixelAccumulation()
-            : LayoutSize();
-    LayoutSize contents_size =
+            : PhysicalOffset();
+    PhysicalSize contents_size =
         scrollable_area->GetLayoutBox()
-            ? LayoutSize(scrollable_area->GetLayoutBox()->ScrollWidth(),
-                         scrollable_area->GetLayoutBox()->ScrollHeight())
-            : LayoutSize(scrollable_area->ContentsSize());
+            ? PhysicalSize(scrollable_area->GetLayoutBox()->ScrollWidth(),
+                           scrollable_area->GetLayoutBox()->ScrollHeight())
+            : PhysicalSize(scrollable_area->ContentsSize());
     IntSize scroll_contents_size =
-        PixelSnappedIntRect(
-            LayoutRect(LayoutPoint(subpixel_accumulation), contents_size))
-            .Size();
+        PhysicalRect(subpixel_accumulation, contents_size).PixelSnappedSize();
 
     if (scrollable_area != &page_->GetVisualViewport()) {
       // The scrolling contents layer must be at least as large as its clip.

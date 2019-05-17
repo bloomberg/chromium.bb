@@ -182,7 +182,7 @@ bool FrameCaret::ShouldPaintCaret(const LayoutBlock& block) const {
 }
 
 void FrameCaret::PaintCaret(GraphicsContext& context,
-                            const LayoutPoint& paint_offset) const {
+                            const PhysicalOffset& paint_offset) const {
   display_item_client_->PaintCaret(context, paint_offset, DisplayItem::kCaret);
 }
 

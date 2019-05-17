@@ -14,7 +14,7 @@
 namespace blink {
 
 class LayoutObject;
-class LayoutPoint;
+struct PhysicalOffset;
 
 class CORE_EXPORT CSSMaskPainter {
   STATIC_ONLY(CSSMaskPainter);
@@ -25,7 +25,7 @@ class CORE_EXPORT CSSMaskPainter {
   // there is no mask or the mask is invalid.
   static base::Optional<IntRect> MaskBoundingBox(
       const LayoutObject&,
-      const LayoutPoint& paint_offset);
+      const PhysicalOffset& paint_offset);
 
   // Returns the color filter used to interpret mask pixel values as opaqueness.
   // The return value is undefined if there is no mask or the mask is invalid.

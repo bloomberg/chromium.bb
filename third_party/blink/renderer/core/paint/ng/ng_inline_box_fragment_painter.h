@@ -12,9 +12,9 @@
 
 namespace blink {
 
-class LayoutRect;
 class NGPaintFragment;
 struct PaintInfo;
+struct PhysicalRect;
 
 // Painter for LayoutNG inline box fragments. Delegates to NGBoxFragmentPainter
 // for all box painting logic that isn't specific to inline boxes.
@@ -24,25 +24,25 @@ class NGInlineBoxFragmentPainter : public InlineBoxPainterBase {
  public:
   NGInlineBoxFragmentPainter(const NGPaintFragment&);
 
-  void Paint(const PaintInfo&, const LayoutPoint& paint_offset);
+  void Paint(const PaintInfo&, const PhysicalOffset& paint_offset);
   void ComputeFragmentOffsetOnLine(TextDirection,
                                    LayoutUnit* offset_on_line,
                                    LayoutUnit* total_width) const;
 
  protected:
-  LayoutRect PaintRectForImageStrip(const LayoutRect&,
-                                    TextDirection direction) const override;
+  PhysicalRect PaintRectForImageStrip(const PhysicalRect&,
+                                      TextDirection direction) const override;
 
   BorderPaintingType GetBorderPaintType(
-      const LayoutRect& adjusted_frame_rect,
+      const PhysicalRect& adjusted_frame_rect,
       IntRect& adjusted_clip_rect,
       bool object_has_multiple_boxes) const override;
   void PaintNormalBoxShadow(const PaintInfo&,
                             const ComputedStyle&,
-                            const LayoutRect& paint_rect) override;
+                            const PhysicalRect& paint_rect) override;
   void PaintInsetBoxShadow(const PaintInfo&,
                            const ComputedStyle&,
-                           const LayoutRect& paint_rect) override;
+                           const PhysicalRect& paint_rect) override;
 
  private:
   NGInlineBoxFragmentPainter(const NGPaintFragment& inline_box_fragment,
@@ -51,7 +51,7 @@ class NGInlineBoxFragmentPainter : public InlineBoxPainterBase {
                              const ComputedStyle& line_style);
 
   void PaintBackgroundBorderShadow(const PaintInfo&,
-                                   const LayoutPoint& paint_offset);
+                                   const PhysicalOffset& paint_offset);
 
   const NGPaintFragment& inline_box_fragment_;
   NGBorderEdges border_edges_;

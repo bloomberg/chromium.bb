@@ -14,9 +14,9 @@ namespace blink {
 
 class FillLayer;
 class InlineFlowBox;
-class LayoutRect;
-struct PaintInfo;
 class LayoutBoxModelObject;
+struct PaintInfo;
+struct PhysicalRect;
 
 // BoxModelObjectPainter is a class that can paint either a LayoutBox or a
 // LayoutInline and allows code sharing between block and inline block painting.
@@ -37,11 +37,12 @@ class BoxModelObjectPainter : public BoxPainterBase {
 
   void PaintTextClipMask(GraphicsContext&,
                          const IntRect& mask_rect,
-                         const LayoutPoint& paint_offset,
+                         const PhysicalOffset& paint_offset,
                          bool object_has_multiple_boxes) override;
-  LayoutRect AdjustRectForScrolledContent(const PaintInfo&,
-                                          const BoxPainterBase::FillLayerInfo&,
-                                          const LayoutRect&) override;
+  PhysicalRect AdjustRectForScrolledContent(
+      const PaintInfo&,
+      const BoxPainterBase::FillLayerInfo&,
+      const PhysicalRect&) override;
 
  private:
   const LayoutBoxModelObject& box_model_;

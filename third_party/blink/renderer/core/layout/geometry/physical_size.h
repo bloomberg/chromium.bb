@@ -68,6 +68,9 @@ struct CORE_EXPORT PhysicalSize {
   constexpr bool IsZero() const {
     return width == LayoutUnit() && height == LayoutUnit();
   }
+  constexpr bool HasFraction() const {
+    return width.HasFraction() || height.HasFraction();
+  }
 
   void Scale(float s) {
     width *= s;

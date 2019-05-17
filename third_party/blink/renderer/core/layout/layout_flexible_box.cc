@@ -404,7 +404,7 @@ void LayoutFlexibleBox::UpdateBlockLayout(bool relayout_children) {
 }
 
 void LayoutFlexibleBox::PaintChildren(const PaintInfo& paint_info,
-                                      const LayoutPoint&) const {
+                                      const PhysicalOffset&) const {
   BlockPainter(*this).PaintChildrenAtomically(this->GetOrderIterator(),
                                               paint_info);
 }

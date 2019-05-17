@@ -219,7 +219,7 @@ void LayoutImage::ImageNotifyFinished(ImageResourceContent* new_image) {
 }
 
 void LayoutImage::PaintReplaced(const PaintInfo& paint_info,
-                                const LayoutPoint& paint_offset) const {
+                                const PhysicalOffset& paint_offset) const {
   ImagePainter(*this).PaintReplaced(paint_info, paint_offset);
 }
 
@@ -237,14 +237,14 @@ void LayoutImage::AreaElementFocusChanged(HTMLAreaElement* area_element) {
 }
 
 bool LayoutImage::ForegroundIsKnownToBeOpaqueInRect(
-    const LayoutRect& local_rect,
+    const PhysicalRect& local_rect,
     unsigned) const {
   if (!image_resource_->HasImage() || image_resource_->ErrorOccurred())
     return false;
   ImageResourceContent* image_content = image_resource_->CachedImage();
   if (!image_content || !image_content->IsLoaded())
     return false;
-  if (!PhysicalContentBoxRect().ToLayoutRect().Contains(local_rect))
+  if (!PhysicalContentBoxRect().Contains(local_rect))
     return false;
   EFillBox background_clip = StyleRef().BackgroundClip();
   // Background paints under borders.
@@ -275,7 +275,7 @@ bool LayoutImage::ComputeBackgroundIsKnownToBeObscured() const {
   if (!StyleRef().HasBackground())
     return false;
 
-  LayoutRect painted_extent;
+  PhysicalRect painted_extent;
   if (!GetBackgroundPaintedExtent(painted_extent))
     return false;
   return ForegroundIsKnownToBeOpaqueInRect(painted_extent, 0);

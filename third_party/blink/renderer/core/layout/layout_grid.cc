@@ -2360,7 +2360,7 @@ LayoutPoint LayoutGrid::GridAreaLogicalPosition(const GridArea& area) const {
 }
 
 void LayoutGrid::PaintChildren(const PaintInfo& paint_info,
-                               const LayoutPoint& paint_offset) const {
+                               const PhysicalOffset& paint_offset) const {
   DCHECK(!grid_->NeedsItemsPlacement());
   if (grid_->HasGridItems()) {
     BlockPainter(*this).PaintChildrenAtomically(grid_->GetOrderIterator(),

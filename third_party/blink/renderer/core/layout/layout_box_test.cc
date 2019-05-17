@@ -27,7 +27,7 @@ class LayoutBoxTest : public testing::WithParamInterface<bool>,
   }
 
   bool ForegroundIsKnownToBeOpaqueInRect(const LayoutBox& box,
-                                         const LayoutRect& rect) {
+                                         const PhysicalRect& rect) {
     return box.ForegroundIsKnownToBeOpaqueInRect(rect, 10);
   }
 };
@@ -132,21 +132,21 @@ TEST_P(LayoutBoxTest, ForegroundIsKnownToBeOpaqueInRect) {
   auto& target = *GetLayoutBoxByElementId("target");
   // Covered by the first child which is opaque.
   EXPECT_TRUE(
-      ForegroundIsKnownToBeOpaqueInRect(target, LayoutRect(0, 0, 10, 10)));
+      ForegroundIsKnownToBeOpaqueInRect(target, PhysicalRect(0, 0, 10, 10)));
   // Covered by the first child of the second child is translucent.
   EXPECT_FALSE(
-      ForegroundIsKnownToBeOpaqueInRect(target, LayoutRect(0, 10, 10, 10)));
+      ForegroundIsKnownToBeOpaqueInRect(target, PhysicalRect(0, 10, 10, 10)));
   // Covered by the second child of the second child which is opaque.
   EXPECT_TRUE(
-      ForegroundIsKnownToBeOpaqueInRect(target, LayoutRect(20, 20, 10, 10)));
+      ForegroundIsKnownToBeOpaqueInRect(target, PhysicalRect(20, 20, 10, 10)));
   // Not covered by any child.
   EXPECT_FALSE(
-      ForegroundIsKnownToBeOpaqueInRect(target, LayoutRect(0, 20, 10, 10)));
+      ForegroundIsKnownToBeOpaqueInRect(target, PhysicalRect(0, 20, 10, 10)));
   // Partly covered by opaque children.
   EXPECT_FALSE(
-      ForegroundIsKnownToBeOpaqueInRect(target, LayoutRect(0, 0, 30, 30)));
+      ForegroundIsKnownToBeOpaqueInRect(target, PhysicalRect(0, 0, 30, 30)));
   EXPECT_FALSE(
-      ForegroundIsKnownToBeOpaqueInRect(target, LayoutRect(0, 0, 10, 30)));
+      ForegroundIsKnownToBeOpaqueInRect(target, PhysicalRect(0, 0, 10, 30)));
 }
 
 TEST_P(LayoutBoxTest, ForegroundIsKnownToBeOpaqueInRectVerticalRL) {
@@ -166,23 +166,23 @@ TEST_P(LayoutBoxTest, ForegroundIsKnownToBeOpaqueInRectVerticalRL) {
   auto& target = *GetLayoutBoxByElementId("target");
   // Covered by the first child which is opaque.
   EXPECT_TRUE(
-      ForegroundIsKnownToBeOpaqueInRect(target, LayoutRect(20, 0, 10, 10)));
+      ForegroundIsKnownToBeOpaqueInRect(target, PhysicalRect(20, 0, 10, 10)));
   // Covered by the first child of the second child is translucent.
   EXPECT_FALSE(
-      ForegroundIsKnownToBeOpaqueInRect(target, LayoutRect(10, 0, 10, 10)));
+      ForegroundIsKnownToBeOpaqueInRect(target, PhysicalRect(10, 0, 10, 10)));
   // Covered by the second child of the second child which is opaque.
   // However, the algorithm is optimized for horizontal-tb writing mode and has
   // false-negative (which is allowed) in this case.
   EXPECT_FALSE(
-      ForegroundIsKnownToBeOpaqueInRect(target, LayoutRect(0, 20, 10, 10)));
+      ForegroundIsKnownToBeOpaqueInRect(target, PhysicalRect(0, 20, 10, 10)));
   // Not covered by any child.
   EXPECT_FALSE(
-      ForegroundIsKnownToBeOpaqueInRect(target, LayoutRect(0, 0, 10, 10)));
+      ForegroundIsKnownToBeOpaqueInRect(target, PhysicalRect(0, 0, 10, 10)));
   // Partly covered by opaque children.
   EXPECT_FALSE(
-      ForegroundIsKnownToBeOpaqueInRect(target, LayoutRect(0, 0, 30, 30)));
+      ForegroundIsKnownToBeOpaqueInRect(target, PhysicalRect(0, 0, 30, 30)));
   EXPECT_FALSE(
-      ForegroundIsKnownToBeOpaqueInRect(target, LayoutRect(20, 0, 30, 10)));
+      ForegroundIsKnownToBeOpaqueInRect(target, PhysicalRect(20, 0, 30, 10)));
 }
 
 TEST_P(LayoutBoxTest, BackgroundRect) {

@@ -51,7 +51,7 @@ class LayoutEmbeddedObject final : public LayoutEmbeddedContent {
 
  private:
   void PaintReplaced(const PaintInfo&,
-                     const LayoutPoint& paint_offset) const final;
+                     const PhysicalOffset& paint_offset) const final;
 
   void UpdateLayout() final;
 

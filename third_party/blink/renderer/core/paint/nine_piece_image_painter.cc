@@ -5,11 +5,11 @@
 #include "third_party/blink/renderer/core/paint/nine_piece_image_painter.h"
 
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
+#include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/core/paint/nine_piece_image_grid.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/nine_piece_image.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
-#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/scoped_interpolation_quality.h"
 
@@ -76,7 +76,7 @@ base::Optional<TileParameters> ComputeTileParameters(
 }
 
 void PaintPieces(GraphicsContext& context,
-                 const LayoutRect& border_image_rect,
+                 const PhysicalRect& border_image_rect,
                  const ComputedStyle& style,
                  const NinePieceImage& nine_piece_image,
                  Image* image,
@@ -144,7 +144,7 @@ bool NinePieceImagePainter::Paint(GraphicsContext& graphics_context,
                                   const ImageResourceObserver& observer,
                                   const Document& document,
                                   Node* node,
-                                  const LayoutRect& rect,
+                                  const PhysicalRect& rect,
                                   const ComputedStyle& style,
                                   const NinePieceImage& nine_piece_image,
                                   bool include_logical_left_edge,
@@ -163,9 +163,9 @@ bool NinePieceImagePainter::Paint(GraphicsContext& graphics_context,
   // FIXME: border-image is broken with full page zooming when tiling has to
   // happen, since the tiling function doesn't have any understanding of the
   // zoom that is in effect on the tile.
-  LayoutRect rect_with_outsets = rect;
+  PhysicalRect rect_with_outsets = rect;
   rect_with_outsets.Expand(style.ImageOutsets(nine_piece_image));
-  LayoutRect border_image_rect = rect_with_outsets;
+  PhysicalRect border_image_rect = rect_with_outsets;
 
   // NinePieceImage returns the image slices without effective zoom applied and
   // thus we compute the nine piece grid on top of the image in unzoomed
@@ -177,8 +177,8 @@ bool NinePieceImagePainter::Paint(GraphicsContext& graphics_context,
   // is one. For generated images, the actual image data (gradient stops, etc.)
   // are scaled to effective zoom instead so we must take care not to cause
   // scale of them again.
-  IntSize image_size = RoundedIntSize(
-      style_image->ImageSize(document, 1, border_image_rect.Size()));
+  IntSize image_size = RoundedIntSize(style_image->ImageSize(
+      document, 1, border_image_rect.size.ToLayoutSize()));
   scoped_refptr<Image> image =
       style_image->GetImage(observer, document, style, FloatSize(image_size));
 

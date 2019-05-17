@@ -9,10 +9,10 @@
 
 namespace blink {
 
-struct PaintInfo;
 class Path;
-class LayoutPoint;
 class LayoutDetailsMarker;
+struct PaintInfo;
+struct PhysicalOffset;
 
 class DetailsMarkerPainter {
   STACK_ALLOCATED();
@@ -25,7 +25,7 @@ class DetailsMarkerPainter {
 
  private:
   Path GetCanonicalPath() const;
-  Path GetPath(const LayoutPoint& origin) const;
+  Path GetPath(const PhysicalOffset& origin) const;
 
   const LayoutDetailsMarker& layout_details_marker_;
 };

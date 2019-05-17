@@ -73,7 +73,7 @@ void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
   }
   if (has_touch_action_rect) {
     BoxPainter(layout_view_)
-        .RecordHitTestData(paint_info, LayoutRect(background_rect),
+        .RecordHitTestData(paint_info, PhysicalRect(background_rect),
                            *background_client);
   }
 }
@@ -154,9 +154,9 @@ void ViewPainter::PaintBoxDecorationBackgroundInternal(
     }
     const PaintLayer& root_layer =
         *ToLayoutBoxModelObject(root_object)->Layer();
-    LayoutPoint offset;
+    PhysicalOffset offset;
     root_layer.ConvertToLayerCoords(nullptr, offset);
-    transform.Translate(offset.X(), offset.Y());
+    transform.Translate(offset.left, offset.top);
     transform.Multiply(
         root_layer.RenderableTransform(paint_info.GetGlobalPaintFlags()));
 
@@ -245,7 +245,7 @@ void ViewPainter::PaintBoxDecorationBackgroundInternal(
         (*it)->Attachment() == EFillAttachment::kFixed;
     if (should_paint_in_viewport_space) {
       box_model_painter.PaintFillLayer(paint_info, Color(), **it,
-                                       LayoutRect(background_rect),
+                                       PhysicalRect(background_rect),
                                        kBackgroundBleedNone, geometry);
     } else {
       context.Save();
@@ -253,7 +253,7 @@ void ViewPainter::PaintBoxDecorationBackgroundInternal(
       // background with slimming paint by using transform display items.
       context.ConcatCTM(transform.ToAffineTransform());
       box_model_painter.PaintFillLayer(paint_info, Color(), **it,
-                                       LayoutRect(paint_rect),
+                                       PhysicalRect(paint_rect),
                                        kBackgroundBleedNone, geometry);
       context.Restore();
     }

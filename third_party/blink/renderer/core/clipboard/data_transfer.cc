@@ -124,7 +124,7 @@ class DraggedNodeImageBuilder {
             .BoundingBox();
     PaintLayerPaintingInfo painting_info(
         layer, CullRect(EnclosingIntRect(bounding_box)),
-        kGlobalPaintFlattenCompositingLayers, LayoutSize());
+        kGlobalPaintFlattenCompositingLayers, PhysicalOffset());
     PaintLayerFlags flags = kPaintLayerHaveTransparency |
                             kPaintLayerUncachedClipRects;
     PaintRecordBuilder builder;

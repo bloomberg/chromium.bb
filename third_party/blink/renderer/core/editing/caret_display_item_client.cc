@@ -257,14 +257,14 @@ void CaretDisplayItemClient::InvalidatePaintInCurrentLayoutBlock(
 
 void CaretDisplayItemClient::PaintCaret(
     GraphicsContext& context,
-    const LayoutPoint& paint_offset,
+    const PhysicalOffset& paint_offset,
     DisplayItem::Type display_item_type) const {
   if (DrawingRecorder::UseCachedDrawingIfPossible(context, *this,
                                                   display_item_type))
     return;
 
-  auto drawing_rect = local_rect_.ToLayoutRect();
-  drawing_rect.MoveBy(paint_offset);
+  PhysicalRect drawing_rect = local_rect_;
+  drawing_rect.Move(paint_offset);
 
   DrawingRecorder recorder(context, *this, display_item_type);
   IntRect paint_rect = PixelSnappedIntRect(drawing_rect);

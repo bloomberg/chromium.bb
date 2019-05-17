@@ -178,9 +178,9 @@ void RemoteFrameView::InvalidateRect(const IntRect& rect) {
   if (!object)
     return;
 
-  LayoutRect repaint_rect(rect);
-  repaint_rect.Move(object->BorderLeft() + object->PaddingLeft(),
-                    object->BorderTop() + object->PaddingTop());
+  PhysicalRect repaint_rect(rect);
+  repaint_rect.Move(PhysicalOffset(object->BorderLeft() + object->PaddingLeft(),
+                                   object->BorderTop() + object->PaddingTop()));
   object->InvalidatePaintRectangle(repaint_rect);
 }
 

@@ -250,11 +250,11 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
   // Whether a section has opaque background depends on many factors, e.g.
   // border spacing, border collapsing, missing cells, etc. For simplicity,
   // just conservatively assume all table sections are not opaque.
-  bool ForegroundIsKnownToBeOpaqueInRect(const LayoutRect&,
+  bool ForegroundIsKnownToBeOpaqueInRect(const PhysicalRect&,
                                          unsigned) const override {
     return false;
   }
-  bool BackgroundIsKnownToBeOpaqueInRect(const LayoutRect&) const override {
+  bool BackgroundIsKnownToBeOpaqueInRect(const PhysicalRect&) const override {
     return false;
   }
 

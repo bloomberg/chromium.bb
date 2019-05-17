@@ -550,7 +550,7 @@ void HTMLCanvasElement::DoDeferredPaintInvalidation() {
     }
 
     dirty_rect_.Intersect(src_rect);
-    LayoutRect mapped_dirty_rect(
+    PhysicalRect mapped_dirty_rect(
         EnclosingIntRect(MapRect(dirty_rect_, src_rect, content_rect)));
     // For querying PaintLayer::GetCompositingState()
     // FIXME: is this invalidation using the correct compositing state?
@@ -693,7 +693,7 @@ SkFilterQuality HTMLCanvasElement::FilterQuality() const {
 // In some instances we don't actually want to paint to the parent layer
 // We still might want to set filter quality and MarkFirstContentfulPaint though
 void HTMLCanvasElement::Paint(GraphicsContext& context,
-                              const LayoutRect& r,
+                              const PhysicalRect& r,
                               bool flatten_composited_layers) {
   if (context_creation_was_blocked_ ||
       (context_ && context_->isContextLost())) {
@@ -708,7 +708,7 @@ void HTMLCanvasElement::Paint(GraphicsContext& context,
     // for image elements. Offset it a bit from the upper corner.
     FloatSize icon_size(broken_canvas->Size());
     FloatPoint upper_left =
-        FloatPoint(r.PixelSnappedLocation()) + icon_size.ScaledBy(0.5f);
+        FloatPoint(r.PixelSnappedOffset()) + icon_size.ScaledBy(0.5f);
     context.DrawImage(broken_canvas, Image::kSyncDecode,
                       FloatRect(upper_left, icon_size));
     context.Restore();
@@ -748,7 +748,7 @@ void HTMLCanvasElement::Paint(GraphicsContext& context,
 }
 
 void HTMLCanvasElement::PaintInternal(GraphicsContext& context,
-                                      const LayoutRect& r) {
+                                      const PhysicalRect& r) {
   context_->PaintRenderingResultsToCanvas(kFrontBuffer);
   if (HasResourceProvider()) {
     if (!context.ContextDisabled()) {

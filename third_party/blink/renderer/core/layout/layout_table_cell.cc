@@ -1097,13 +1097,13 @@ void LayoutTableCell::UpdateCollapsedBorderValues() const {
 
 void LayoutTableCell::PaintBoxDecorationBackground(
     const PaintInfo& paint_info,
-    const LayoutPoint& paint_offset) const {
+    const PhysicalOffset& paint_offset) const {
   TableCellPainter(*this).PaintBoxDecorationBackground(paint_info,
                                                        paint_offset);
 }
 
 void LayoutTableCell::PaintMask(const PaintInfo& paint_info,
-                                const LayoutPoint& paint_offset) const {
+                                const PhysicalOffset& paint_offset) const {
   TableCellPainter(*this).PaintMask(paint_info, paint_offset);
 }
 
@@ -1168,7 +1168,7 @@ LayoutTableCell* LayoutTableCell::CreateAnonymousWithParent(
 }
 
 bool LayoutTableCell::BackgroundIsKnownToBeOpaqueInRect(
-    const LayoutRect& local_rect) const {
+    const PhysicalRect& local_rect) const {
   // If this object has layer, the area of collapsed borders should be
   // transparent to expose the collapsed borders painted on the underlying
   // layer.

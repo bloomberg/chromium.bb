@@ -392,9 +392,9 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
  public:
   void Paint(const PaintInfo&) const override;
   virtual void PaintObject(const PaintInfo&,
-                           const LayoutPoint& paint_offset) const;
+                           const PhysicalOffset& paint_offset) const;
   virtual void PaintChildren(const PaintInfo&,
-                             const LayoutPoint& paint_offset) const;
+                             const PhysicalOffset& paint_offset) const;
   void UpdateAfterLayout() override;
 
  protected:

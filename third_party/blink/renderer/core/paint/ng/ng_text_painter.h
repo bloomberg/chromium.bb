@@ -26,8 +26,8 @@ class CORE_EXPORT NGTextPainter : public TextPainterBase {
   NGTextPainter(GraphicsContext& context,
                 const Font& font,
                 const NGPhysicalTextFragment& text_fragment,
-                const LayoutPoint& text_origin,
-                const LayoutRect& text_bounds,
+                const PhysicalOffset& text_origin,
+                const PhysicalRect& text_bounds,
                 bool horizontal)
       : TextPainterBase(context, font, text_origin, text_bounds, horizontal),
         fragment_(text_fragment) {}

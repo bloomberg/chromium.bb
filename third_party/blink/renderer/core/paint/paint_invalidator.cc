@@ -83,15 +83,14 @@ IntRect PaintInvalidatorContext::MapLocalRectToVisualRect(
   // Usually it is done at layout object level and included as a part of
   // local visual overflow, but clip-path can be a reference to SVG, and we
   // have to wait until pre-paint to ensure clean layout.
-  LayoutRect rect = local_rect.ToLayoutRect();
+  PhysicalRect rect = local_rect;
   if (base::Optional<FloatRect> clip_path_bounding_box =
           ClipPathClipper::LocalClipPathBoundingBox(object))
-    rect.Unite(LayoutRect(EnclosingIntRect(*clip_path_bounding_box)));
+    rect.Unite(PhysicalRect(EnclosingIntRect(*clip_path_bounding_box)));
 
-  rect.MoveBy(fragment_data->PaintOffset());
-  if (ShouldExcludeCompositedLayerSubpixelAccumulation(object)) {
+  rect.Move(fragment_data->PaintOffset());
+  if (ShouldExcludeCompositedLayerSubpixelAccumulation(object))
     rect.Move(-paint_invalidation_container->Layer()->SubpixelAccumulation());
-  }
   // Use EnclosingIntRect to ensure the final visual rect will cover the rect
   // in source coordinates no matter if the painting will snap to pixels.
   return EnclosingIntRect(rect);

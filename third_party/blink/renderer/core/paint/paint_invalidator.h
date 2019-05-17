@@ -126,7 +126,7 @@ struct CORE_EXPORT PaintInvalidatorContext {
 
   // The previous VisualRect and PaintOffset of FragmentData.
   IntRect old_visual_rect;
-  LayoutPoint old_paint_offset;
+  PhysicalOffset old_paint_offset;
 
   const FragmentData* fragment_data;
 

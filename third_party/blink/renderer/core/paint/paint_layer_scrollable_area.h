@@ -321,7 +321,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
 
   // Similar to |ContentsSize| but snapped considering |paint_offset| which can
   // have subpixel accumulation.
-  IntSize PixelSnappedContentsSize(const LayoutPoint& paint_offset) const;
+  IntSize PixelSnappedContentsSize(const PhysicalOffset& paint_offset) const;
 
   void ContentsResized() override;
   IntPoint LastKnownMousePosition() const override;

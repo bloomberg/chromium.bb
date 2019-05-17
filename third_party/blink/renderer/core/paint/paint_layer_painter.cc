@@ -30,7 +30,7 @@ void PaintLayerPainter::Paint(GraphicsContext& context,
                               const GlobalPaintFlags global_paint_flags,
                               PaintLayerFlags paint_flags) {
   PaintLayerPaintingInfo painting_info(&paint_layer_, cull_rect,
-                                       global_paint_flags, LayoutSize());
+                                       global_paint_flags, PhysicalOffset());
   if (!paint_layer_.PaintsIntoOwnOrGroupedBacking(global_paint_flags))
     Paint(context, painting_info, paint_flags);
 }
@@ -294,8 +294,7 @@ void PaintLayerPainter::AdjustForPaintProperties(
 
   if (first_fragment.PaintProperties() &&
       first_fragment.PaintProperties()->PaintOffsetTranslation()) {
-    painting_info.sub_pixel_accumulation =
-        ToLayoutSize(first_fragment.PaintOffset());
+    painting_info.sub_pixel_accumulation = first_fragment.PaintOffset();
   }
 }
 
@@ -357,7 +356,7 @@ PaintResult PaintLayerPainter::PaintLayerContents(
        (!is_painting_overflow_contents && !is_painting_mask)) &&
       paint_layer_.GetLayoutObject().StyleRef().HasOutline();
 
-  LayoutSize subpixel_accumulation =
+  PhysicalOffset subpixel_accumulation =
       paint_layer_.GetCompositingState() == kPaintsIntoOwnBacking
           ? paint_layer_.SubpixelAccumulation()
           : painting_info.sub_pixel_accumulation;
@@ -379,12 +378,12 @@ PaintResult PaintLayerPainter::PaintLayerContents(
     subsequence_recorder.emplace(context, paint_layer_);
   }
 
-  LayoutPoint offset_from_root;
+  PhysicalOffset offset_from_root;
   paint_layer_.ConvertToLayerCoords(painting_info.root_layer, offset_from_root);
-  offset_from_root.Move(subpixel_accumulation);
+  offset_from_root += subpixel_accumulation;
 
-  LayoutRect bounds = paint_layer_.PhysicalBoundingBox(offset_from_root);
-  if (!LayoutRect(painting_info.cull_rect.Rect()).Contains(bounds))
+  PhysicalRect bounds = paint_layer_.PhysicalBoundingBox(offset_from_root);
+  if (!PhysicalRect(painting_info.cull_rect.Rect()).Contains(bounds))
     result = kMayBeClippedByCullRect;
 
   // These helpers output clip and compositing operations using a RAII pattern.
@@ -394,10 +393,10 @@ PaintResult PaintLayerPainter::PaintLayerContents(
   bool should_paint_clip_path =
       is_painting_mask && paint_layer_.GetLayoutObject().HasClipPath();
   if (should_paint_clip_path) {
-    LayoutPoint visual_offset_from_root =
+    PhysicalOffset visual_offset_from_root =
         paint_layer_.EnclosingPaginationLayer()
-            ? paint_layer_.VisualOffsetFromAncestor(
-                  painting_info.root_layer, LayoutPoint(subpixel_accumulation))
+            ? paint_layer_.VisualOffsetFromAncestor(painting_info.root_layer,
+                                                    subpixel_accumulation)
             : offset_from_root;
     clip_path_clipper.emplace(context, paint_layer_.GetLayoutObject(),
                               visual_offset_from_root);
@@ -420,7 +419,7 @@ PaintResult PaintLayerPainter::PaintLayerContents(
       is_painting_overlay_scrollbars) {
     // Collect the fragments. This will compute the clip rectangles and paint
     // offsets for each layer fragment.
-    LayoutPoint offset_to_clipper;
+    PhysicalOffset offset_to_clipper;
     const PaintLayer* paint_layer_for_fragments = &paint_layer_;
     if (paint_flags & kPaintLayerPaintingAncestorClippingMaskPhase) {
       // Compute fragments and their clips with respect to the outermost
@@ -436,8 +435,8 @@ PaintResult PaintLayerPainter::PaintLayerContents(
       local_painting_info.root_layer = paint_layer_for_fragments;
       paint_layer_.ConvertToLayerCoords(local_painting_info.root_layer,
                                         offset_to_clipper);
-      LayoutRect new_cull_rect(local_painting_info.cull_rect.Rect());
-      new_cull_rect.MoveBy(offset_to_clipper);
+      PhysicalRect new_cull_rect(local_painting_info.cull_rect.Rect());
+      new_cull_rect.Move(offset_to_clipper);
       local_painting_info.cull_rect = CullRect(EnclosingIntRect(new_cull_rect));
       // Overflow clip of the compositing container is irrelevant.
       respect_overflow_clip = kIgnoreOverflowClip;
@@ -460,8 +459,7 @@ PaintResult PaintLayerPainter::PaintLayerContents(
       // layer's coordinate system, but for the rest of painting we need
       // them in the layer coordinate. So move them and the
       // foreground/background rects that are also in the clipper's space.
-      LayoutSize negative_offset(-offset_to_clipper.X(),
-                                 -offset_to_clipper.Y());
+      PhysicalOffset negative_offset = -offset_to_clipper;
       for (auto& fragment : layer_fragments) {
         fragment.background_rect.Move(negative_offset);
         fragment.foreground_rect.Move(negative_offset);
@@ -606,9 +604,9 @@ PaintResult PaintLayerPainter::PaintLayerContents(
 
     const GraphicsLayer* mask_layer =
         paint_layer_.GetCompositedLayerMapping()->MaskLayer();
-    ClipRect layer_rect = LayoutRect(
-        LayoutPoint(LayoutSize(mask_layer->OffsetFromLayoutObject())),
-        LayoutSize(IntSize(mask_layer->Size())));
+    ClipRect layer_rect =
+        PhysicalRect(PhysicalOffset(mask_layer->OffsetFromLayoutObject()),
+                     PhysicalSize(IntSize(mask_layer->Size())));
     FillMaskingFragment(context, layer_rect, *mask_layer);
   }
 
@@ -638,7 +636,7 @@ bool PaintLayerPainter::AtLeastOneFragmentIntersectsDamageRect(
     PaintLayerFragments& fragments,
     const PaintLayerPaintingInfo& local_painting_info,
     PaintLayerFlags local_paint_flags,
-    const LayoutPoint& offset_from_root) {
+    const PhysicalOffset& offset_from_root) {
   if (&paint_layer_ == local_painting_info.root_layer &&
       (local_paint_flags & kPaintLayerPaintingOverflowContents))
     return true;
@@ -723,7 +721,7 @@ void PaintLayerPainter::PaintOverflowControlsForFragments(
 
         // We need to apply the same clips and transforms that
         // paintFragmentWithPhase would have.
-        LayoutRect cull_rect = fragment.background_rect.Rect();
+        PhysicalRect cull_rect = fragment.background_rect.Rect();
         PaintInfo paint_info(
             context, PixelSnappedIntRect(cull_rect),
             PaintPhase::kSelfBlockBackgroundOnly,
@@ -767,12 +765,12 @@ void PaintLayerPainter::PaintFragmentWithPhase(
       context.GetPaintController(), chunk_properties, paint_layer_,
       DisplayItem::PaintPhaseToDrawingType(phase));
 
-  LayoutRect new_cull_rect(clip_rect.Rect());
+  PhysicalRect new_cull_rect(clip_rect.Rect());
   // Now |new_cull_rect| is in the pixel-snapped border box space of
   // |fragment.root_fragment_data|. Adjust it to the containing transform node's
   // space in which we will paint.
-  new_cull_rect.MoveBy(
-      RoundedIntPoint(fragment.root_fragment_data->PaintOffset()));
+  new_cull_rect.Move(PhysicalOffset(
+      RoundedIntPoint(fragment.root_fragment_data->PaintOffset())));
 
   PaintInfo paint_info(context, PixelSnappedIntRect(new_cull_rect), phase,
                        painting_info.GetGlobalPaintFlags(), paint_flags,
@@ -907,7 +905,7 @@ void PaintLayerPainter::PaintAncestorClippingMask(
   ScopedPaintChunkProperties properties(context.GetPaintController(), state,
                                         client, DisplayItem::kClippingMask);
   ClipRect mask_rect = fragment.background_rect;
-  mask_rect.MoveBy(layer_fragment.PaintOffset());
+  mask_rect.Move(layer_fragment.PaintOffset());
   FillMaskingFragment(context, mask_rect, client);
 }
 
@@ -946,7 +944,7 @@ void PaintLayerPainter::PaintOverlayScrollbars(
     return;
 
   PaintLayerPaintingInfo painting_info(&paint_layer_, cull_rect, paint_flags,
-                                       LayoutSize());
+                                       PhysicalOffset());
   Paint(context, painting_info, kPaintLayerPaintingOverlayScrollbars);
 
   paint_layer_.SetContainsDirtyOverlayScrollbars(false);

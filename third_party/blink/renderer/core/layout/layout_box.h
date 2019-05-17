@@ -230,7 +230,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   PaintLayerType LayerTypeRequired() const override;
 
   bool BackgroundIsKnownToBeOpaqueInRect(
-      const LayoutRect& local_rect) const override;
+      const PhysicalRect& local_rect) const override;
 
   virtual bool BackgroundShouldAlwaysBeClipped() const { return false; }
 
@@ -1211,9 +1211,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
                                   kIgnorePlatformOverlayScrollbarSize) const {
     return OverflowClipRect(PhysicalOffset(location), behavior).ToLayoutRect();
   }
-  LayoutRect ClipRect(const LayoutPoint& location) const {
-    return ClipRect(PhysicalOffset(location)).ToLayoutRect();
-  }
 
   // Returns the combination of overflow clip, contain: paint clip and CSS clip
   // for this object.
@@ -1221,9 +1218,9 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   virtual void PaintBoxDecorationBackground(
       const PaintInfo&,
-      const LayoutPoint& paint_offset) const;
+      const PhysicalOffset& paint_offset) const;
   virtual void PaintMask(const PaintInfo&,
-                         const LayoutPoint& paint_offset) const;
+                         const PhysicalOffset& paint_offset) const;
   void ImageChanged(WrappedImagePtr, CanDeferInvalidation) override;
   ResourcePriority ComputeResourcePriority() const final;
 
@@ -1608,9 +1605,9 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   // Returns false if it could not cheaply compute the extent (e.g. fixed
   // background), in which case the returned rect may be incorrect.
-  bool GetBackgroundPaintedExtent(LayoutRect&) const;
+  bool GetBackgroundPaintedExtent(PhysicalRect&) const;
   virtual bool ForegroundIsKnownToBeOpaqueInRect(
-      const LayoutRect& local_rect,
+      const PhysicalRect& local_rect,
       unsigned max_depth_to_test) const;
   virtual bool ComputeBackgroundIsKnownToBeObscured() const;
 

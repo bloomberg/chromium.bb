@@ -596,9 +596,9 @@ enum LayerPaintPhase {
 
 static void Write(WTF::TextStream& ts,
                   PaintLayer& layer,
-                  const LayoutRect& layer_bounds,
-                  const LayoutRect& background_clip_rect,
-                  const LayoutRect& clip_rect,
+                  const PhysicalRect& layer_bounds,
+                  const PhysicalRect& background_clip_rect,
+                  const PhysicalRect& clip_rect,
                   LayerPaintPhase paint_phase = kLayerPaintPhaseAll,
                   int indent = 0,
                   LayoutAsTextBehavior behavior = kLayoutAsTextBehaviorNormal,
@@ -706,7 +706,7 @@ void LayoutTreeAsText::WriteLayers(WTF::TextStream& ts,
                                    LayoutAsTextBehavior behavior,
                                    const PaintLayer* marked_layer) {
   // Calculate the clip rects we should use.
-  LayoutRect layer_bounds;
+  PhysicalRect layer_bounds;
   ClipRect damage_rect, clip_rect_to_apply;
   if (layer->GetLayoutObject().FirstFragment().HasLocalBorderBoxProperties()) {
     layer->Clipper(PaintLayer::GeometryMapperOption::kUseGeometryMapper)
@@ -723,7 +723,7 @@ void LayoutTreeAsText::WriteLayers(WTF::TextStream& ts,
             nullptr, layer_bounds, damage_rect, clip_rect_to_apply);
   }
 
-  LayoutPoint offset_from_root;
+  PhysicalOffset offset_from_root;
   layer->ConvertToLayerCoords(root_layer, offset_from_root);
   bool should_paint =
       (behavior & kLayoutAsTextShowAllLayers)

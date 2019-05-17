@@ -57,7 +57,7 @@ class DragCaret final : public GarbageCollectedFinalized<DragCaret>,
   bool ShouldPaintCaret(const LayoutBlock&) const;
   void PaintDragCaret(const LocalFrame*,
                       GraphicsContext&,
-                      const LayoutPoint&) const;
+                      const PhysicalOffset&) const;
 
   bool IsContentRichlyEditable() const;
 

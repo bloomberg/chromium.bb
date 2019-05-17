@@ -442,7 +442,8 @@ void LocalFrameView::InvalidateRect(const IntRect& rect) {
   paint_invalidation_rect.Move(
       (layout_object->BorderLeft() + layout_object->PaddingLeft()).ToInt(),
       (layout_object->BorderTop() + layout_object->PaddingTop()).ToInt());
-  layout_object->InvalidatePaintRectangle(LayoutRect(paint_invalidation_rect));
+  layout_object->InvalidatePaintRectangle(
+      PhysicalRect(paint_invalidation_rect));
 }
 
 void LocalFrameView::FrameRectsChanged(const IntRect& old_rect) {
@@ -1069,7 +1070,7 @@ void LocalFrameView::UpdateGeometry() {
   bool did_need_layout = NeedsLayout();
 
   PhysicalRect new_frame = layout->ReplacedContentRect();
-  DCHECK_EQ(new_frame.size, PhysicalSize(RoundedIntSize(new_frame.size)));
+  DCHECK(!new_frame.size.HasFraction());
   bool bounds_will_change = PhysicalSize(Size()) != new_frame.size;
 
   // If frame bounds are changing mark the view for layout. Also check the

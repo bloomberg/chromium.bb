@@ -504,8 +504,9 @@ unsigned LayoutMultiColumnSet::ActualColumnCount() const {
   return FirstFragmentainerGroup().ActualColumnCount();
 }
 
-void LayoutMultiColumnSet::PaintObject(const PaintInfo& paint_info,
-                                       const LayoutPoint& paint_offset) const {
+void LayoutMultiColumnSet::PaintObject(
+    const PaintInfo& paint_info,
+    const PhysicalOffset& paint_offset) const {
   MultiColumnSetPainter(*this).PaintObject(paint_info, paint_offset);
 }
 

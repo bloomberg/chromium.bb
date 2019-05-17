@@ -97,7 +97,7 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info) {
 
   const auto& local_paint_info = paint_state.GetPaintInfo();
   auto paint_offset = paint_state.PaintOffset();
-  LayoutRect border_rect(paint_offset, layout_replaced_.Size());
+  PhysicalRect border_rect(paint_offset, layout_replaced_.Size());
 
   if (ShouldPaintBoxDecorationBackground(local_paint_info)) {
     bool should_paint_background = false;
@@ -179,9 +179,9 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info) {
   if (draw_selection_tint && !DrawingRecorder::UseCachedDrawingIfPossible(
                                  local_paint_info.context, layout_replaced_,
                                  DisplayItem::kSelectionTint)) {
-    LayoutRect selection_painting_rect =
-        layout_replaced_.LocalSelectionVisualRect().ToLayoutRect();
-    selection_painting_rect.MoveBy(paint_offset);
+    PhysicalRect selection_painting_rect =
+        layout_replaced_.LocalSelectionVisualRect();
+    selection_painting_rect.Move(paint_offset);
     IntRect selection_painting_int_rect =
         PixelSnappedIntRect(selection_painting_rect);
 

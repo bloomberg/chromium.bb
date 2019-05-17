@@ -278,7 +278,7 @@ void LayoutEmbeddedContent::UpdateLayout() {
 
 void LayoutEmbeddedContent::PaintReplaced(
     const PaintInfo& paint_info,
-    const LayoutPoint& paint_offset) const {
+    const PhysicalOffset& paint_offset) const {
   EmbeddedContentPainter(*this).PaintReplaced(paint_info, paint_offset);
 }
 

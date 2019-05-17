@@ -189,10 +189,10 @@ void PaintSingleRectangleOutline(const PaintInfo& paint_info,
                                  const Color& color) {
   DCHECK(!style.OutlineStyleIsAuto());
 
-  LayoutRect inner(rect);
-  inner.Inflate(style.OutlineOffset());
-  LayoutRect outer(inner);
-  outer.Inflate(style.OutlineWidth());
+  PhysicalRect inner(rect);
+  inner.Inflate(LayoutUnit(style.OutlineOffset()));
+  PhysicalRect outer(inner);
+  outer.Inflate(LayoutUnit(style.OutlineWidth()));
   const BorderEdge common_edge_info(style.OutlineWidth(), color,
                                     style.OutlineStyle());
   BoxBorderPainter(style, outer, inner, common_edge_info)

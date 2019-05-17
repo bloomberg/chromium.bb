@@ -235,7 +235,7 @@ class LayoutGrid final : public LayoutBlock {
       GridTrackSizingDirection) const;
 
   void PaintChildren(const PaintInfo&,
-                     const LayoutPoint& paint_offset) const override;
+                     const PhysicalOffset& paint_offset) const override;
 
   LayoutUnit AvailableAlignmentSpaceForChildBeforeStretching(
       LayoutUnit grid_area_breadth_for_child,

@@ -28,7 +28,7 @@ class BoxPaintInvalidatorTest : public PaintControllerPaintTest {
   PaintInvalidationReason ComputePaintInvalidationReason(
       const LayoutBox& box,
       const IntRect& old_visual_rect,
-      const LayoutPoint& old_paint_offset) {
+      const PhysicalOffset& old_paint_offset) {
     FragmentData fragment_data;
     PaintInvalidatorContext context;
     context.old_visual_rect = old_visual_rect;
@@ -37,6 +37,16 @@ class BoxPaintInvalidatorTest : public PaintControllerPaintTest {
     fragment_data_.SetPaintOffset(box.FirstFragment().PaintOffset());
     context.fragment_data = &fragment_data_;
     return BoxPaintInvalidator(box, context).ComputePaintInvalidationReason();
+  }
+
+  // Accepts old_paint_offset as an IntPoint for convenience of passing it
+  // based on visual rect offset.
+  PaintInvalidationReason ComputePaintInvalidationReason(
+      const LayoutBox& box,
+      const IntRect& old_visual_rect,
+      const IntPoint& old_paint_offset) {
+    return ComputePaintInvalidationReason(box, old_visual_rect,
+                                          PhysicalOffset(old_paint_offset));
   }
 
   // This applies when the target is set to meet conditions that we should do
@@ -111,14 +121,14 @@ TEST_P(BoxPaintInvalidatorTest, ComputePaintInvalidationReasonPaintingNothing) {
   auto visual_rect = box.FirstFragment().VisualRect();
 
   // No geometry change.
-  EXPECT_EQ(PaintInvalidationReason::kNone,
-            ComputePaintInvalidationReason(
-                box, visual_rect, LayoutPoint(visual_rect.Location())));
+  EXPECT_EQ(
+      PaintInvalidationReason::kNone,
+      ComputePaintInvalidationReason(box, visual_rect, visual_rect.Location()));
 
   // Paint offset change.
   EXPECT_EQ(PaintInvalidationReason::kNone,
             ComputePaintInvalidationReason(
-                box, visual_rect, visual_rect.Location() + LayoutSize(10, 20)));
+                box, visual_rect, visual_rect.Location() + IntSize(10, 20)));
 
   // Visual rect size change.
   auto old_visual_rect = visual_rect;
@@ -129,8 +139,8 @@ TEST_P(BoxPaintInvalidatorTest, ComputePaintInvalidationReasonPaintingNothing) {
       IntRect(visual_rect.Location(), RoundedIntSize(box.Size())));
 
   EXPECT_EQ(PaintInvalidationReason::kNone,
-            ComputePaintInvalidationReason(
-                box, old_visual_rect, LayoutPoint(old_visual_rect.Location())));
+            ComputePaintInvalidationReason(box, old_visual_rect,
+                                           old_visual_rect.Location()));
 }
 
 TEST_P(BoxPaintInvalidatorTest, ComputePaintInvalidationReasonBasic) {
@@ -147,9 +157,9 @@ TEST_P(BoxPaintInvalidatorTest, ComputePaintInvalidationReasonBasic) {
   EXPECT_EQ(IntRect(0, 0, 50, 100), visual_rect);
 
   // No geometry change.
-  EXPECT_EQ(PaintInvalidationReason::kNone,
-            ComputePaintInvalidationReason(
-                box, visual_rect, LayoutPoint(visual_rect.Location())));
+  EXPECT_EQ(
+      PaintInvalidationReason::kNone,
+      ComputePaintInvalidationReason(box, visual_rect, visual_rect.Location()));
 
   // Visual rect size change.
   auto old_visual_rect = visual_rect;
@@ -160,13 +170,13 @@ TEST_P(BoxPaintInvalidatorTest, ComputePaintInvalidationReasonBasic) {
       IntRect(visual_rect.Location(), RoundedIntSize(box.Size())));
 
   EXPECT_EQ(PaintInvalidationReason::kIncremental,
-            ComputePaintInvalidationReason(
-                box, old_visual_rect, LayoutPoint(old_visual_rect.Location())));
+            ComputePaintInvalidationReason(box, old_visual_rect,
+                                           old_visual_rect.Location()));
 
   // Visual rect size change, with paint offset different from location of
   // visual rect.
-  LayoutPoint fake_paint_offset =
-      LayoutPoint(visual_rect.Location()) + LayoutSize(10, 20);
+  PhysicalOffset fake_paint_offset =
+      PhysicalOffset(visual_rect.Location()) + PhysicalOffset(10, 20);
   box.GetMutableForPainting().FirstFragment().SetPaintOffset(fake_paint_offset);
   EXPECT_EQ(
       PaintInvalidationReason::kGeometry,
@@ -175,13 +185,12 @@ TEST_P(BoxPaintInvalidatorTest, ComputePaintInvalidationReasonBasic) {
   // Should use the existing full paint invalidation reason regardless of
   // geometry change.
   box.SetShouldDoFullPaintInvalidation(PaintInvalidationReason::kStyle);
+  EXPECT_EQ(
+      PaintInvalidationReason::kStyle,
+      ComputePaintInvalidationReason(box, visual_rect, visual_rect.Location()));
   EXPECT_EQ(PaintInvalidationReason::kStyle,
             ComputePaintInvalidationReason(
-                box, visual_rect, LayoutPoint(visual_rect.Location())));
-  EXPECT_EQ(PaintInvalidationReason::kStyle,
-            ComputePaintInvalidationReason(
-                box, visual_rect,
-                LayoutPoint(visual_rect.Location()) + LayoutSize(10, 20)));
+                box, visual_rect, visual_rect.Location() + IntSize(10, 20)));
 }
 
 TEST_P(BoxPaintInvalidatorTest, ComputePaintInvalidationReasonOtherCases) {

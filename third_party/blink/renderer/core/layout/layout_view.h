@@ -144,7 +144,7 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
   void Paint(const PaintInfo&) const override;
   void PaintBoxDecorationBackground(
       const PaintInfo&,
-      const LayoutPoint& paint_offset) const override;
+      const PhysicalOffset& paint_offset) const override;
 
   void CommitPendingSelection();
 
@@ -214,7 +214,7 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
   void UpdateCounters();
 
   bool BackgroundIsKnownToBeOpaqueInRect(
-      const LayoutRect& local_rect) const override;
+      const PhysicalRect& local_rect) const override;
 
   // Returns the viewport size in (CSS pixels) that vh and vw units are
   // calculated from.
@@ -256,17 +256,17 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
   // The visible background area, in the local coordinates. The view background
   // will be painted in this rect. It's also the positioning area of fixed-
   // attachment backgrounds.
-  LayoutRect BackgroundRect() const {
-    return OverflowClipRect(PhysicalOffset()).ToLayoutRect();
+  PhysicalRect BackgroundRect() const {
+    return OverflowClipRect(PhysicalOffset());
   }
 
   // The previous BackgroundRect after the previous paint invalidation.
-  LayoutRect PreviousBackgroundRect() const {
+  PhysicalRect PreviousBackgroundRect() const {
     DCHECK_EQ(GetDocument().Lifecycle().GetState(),
               DocumentLifecycle::kInPrePaint);
     return previous_background_rect_;
   }
-  void SetPreviousBackgroundRect(const LayoutRect& r) const {
+  void SetPreviousBackgroundRect(const PhysicalRect& r) const {
     DCHECK_EQ(GetDocument().Lifecycle().GetState(),
               DocumentLifecycle::kInPrePaint);
     previous_background_rect_ = r;
@@ -339,7 +339,7 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
 
   Vector<IntRect> tickmarks_override_;
 
-  mutable LayoutRect previous_background_rect_;
+  mutable PhysicalRect previous_background_rect_;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutView, IsLayoutView());

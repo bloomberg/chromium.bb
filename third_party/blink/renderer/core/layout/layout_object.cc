@@ -1505,7 +1505,7 @@ bool LayoutObject::CompositedScrollsWithRespectTo(
          this != &paint_invalidation_container;
 }
 
-void LayoutObject::InvalidatePaintRectangle(const LayoutRect& dirty_rect) {
+void LayoutObject::InvalidatePaintRectangle(const PhysicalRect& dirty_rect) {
   DCHECK_NE(GetDocument().Lifecycle().GetState(), DocumentLifecycle::kInPaint);
 
   if (dirty_rect.IsEmpty())
@@ -1604,7 +1604,7 @@ bool LayoutObject::MapToVisualRectInAncestorSpaceInternalFastPath(
   // FirstFragment().PaintOffset() is relative to the transform space defined by
   // FirstFragment().LocalBorderBoxProperties() (if this == property_container)
   // or property_container->FirstFragment().ContentsProperties().
-  rect.Move(PhysicalOffsetToBeNoop(FirstFragment().PaintOffset()));
+  rect.Move(FirstFragment().PaintOffset());
   if (property_container != ancestor) {
     FloatClipRect clip_rect((FloatRect(rect)));
     const auto& local_state =
@@ -1618,7 +1618,7 @@ bool LayoutObject::MapToVisualRectInAncestorSpaceInternalFastPath(
                                              : kNonInclusiveIntersect);
     rect = PhysicalRect::EnclosingRect(clip_rect.Rect());
   }
-  rect.Move(-PhysicalOffsetToBeNoop(ancestor->FirstFragment().PaintOffset()));
+  rect.offset -= ancestor->FirstFragment().PaintOffset();
 
   return true;
 }
@@ -3873,7 +3873,7 @@ void LayoutObject::ClearPaintInvalidationFlags() {
 #if DCHECK_IS_ON()
   DCHECK(!ShouldCheckForPaintInvalidation() || PaintInvalidationStateIsDirty());
 #endif
-  fragment_.SetPartialInvalidationLocalRect(LayoutRect());
+  fragment_.SetPartialInvalidationLocalRect(PhysicalRect());
   if (!ShouldDelayFullPaintInvalidation()) {
     full_paint_invalidation_reason_ = PaintInvalidationReason::kNone;
     bitfields_.SetBackgroundNeedsFullPaintInvalidation(false);

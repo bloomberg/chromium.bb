@@ -49,11 +49,11 @@ class CORE_EXPORT NGPhysicalBoxFragment final
   // TODO(layout-dev): These three methods delegate to legacy layout for now,
   // update them to use LayoutNG based overflow information from the fragment
   // and change them to use NG geometry types once LayoutNG supports overflow.
-  LayoutRect OverflowClipRect(
-      const LayoutPoint& location,
+  PhysicalRect OverflowClipRect(
+      const PhysicalOffset& location,
       OverlayScrollbarClipBehavior = kIgnorePlatformOverlayScrollbarSize) const;
   IntSize ScrolledContentOffset() const;
-  LayoutSize ScrollSize() const;
+  PhysicalSize ScrollSize() const;
 
   // Compute visual overflow of this box in the local coordinate.
   PhysicalRect ComputeSelfInkOverflow() const;

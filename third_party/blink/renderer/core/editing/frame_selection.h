@@ -59,6 +59,7 @@ enum class SelectionModifyDirection;
 enum class SelectionState;
 class TextIteratorBehavior;
 struct PaintInvalidatorContext;
+struct PhysicalOffset;
 
 enum RevealExtentOption { kRevealExtent, kDoNotRevealExtent };
 
@@ -220,7 +221,7 @@ class CORE_EXPORT FrameSelection final
   void UpdateStyleAndLayoutIfNeeded();
   void InvalidatePaint(const LayoutBlock&, const PaintInvalidatorContext&);
 
-  void PaintCaret(GraphicsContext&, const LayoutPoint&);
+  void PaintCaret(GraphicsContext&, const PhysicalOffset&);
 
   // Used to suspend caret blinking while the mouse is down.
   void SetCaretBlinkingSuspended(bool);

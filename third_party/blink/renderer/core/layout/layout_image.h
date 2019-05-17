@@ -112,10 +112,10 @@ class CORE_EXPORT LayoutImage : public LayoutReplaced {
   bool IsImage() const override { return true; }
 
   void PaintReplaced(const PaintInfo&,
-                     const LayoutPoint& paint_offset) const override;
+                     const PhysicalOffset& paint_offset) const override;
 
   bool ForegroundIsKnownToBeOpaqueInRect(
-      const LayoutRect& local_rect,
+      const PhysicalRect& local_rect,
       unsigned max_depth_to_test) const final;
   bool ComputeBackgroundIsKnownToBeObscured() const final;
 
