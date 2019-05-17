@@ -78,6 +78,12 @@ class SendTabToSelfEntry {
   // Returns if the Entry has expired based on the |current_time|.
   bool IsExpired(base::Time current_time) const;
 
+  // Creates a SendTabToSelfEntry consisting of only the required fields.
+  static std::unique_ptr<SendTabToSelfEntry> FromRequiredFields(
+      const std::string& guid,
+      const GURL& url,
+      const std::string& target_device_sync_cache_guid);
+
  private:
   std::string guid_;
   GURL url_;

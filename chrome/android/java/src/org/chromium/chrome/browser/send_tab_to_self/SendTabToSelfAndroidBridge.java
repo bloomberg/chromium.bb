@@ -48,7 +48,9 @@ public class SendTabToSelfAndroidBridge {
         allGuids.add(newGuid);
     }
 
-    /** Deletes all SendTabToSelf entries. This is called when the user disables sync. */
+    /**
+     * Deletes all SendTabToSelf entries. This is called when the user disables sync.
+     */
     public static void deleteAllEntries(Profile profile) {
         // TODO(https://crbug.com/942549): Add this assertion back in once the code to load is in
         // place. assert mIsNativeSendTabToSelfModelLoaded;
@@ -117,6 +119,16 @@ public class SendTabToSelfAndroidBridge {
         return SendTabToSelfAndroidBridgeJni.get().isFeatureAvailable(webContents);
     }
 
+    /**
+     * Shows an infobar for the webcontents passed in.
+     * @param entry Contains the URL to open when the user taps on the infobar.
+     * @param webContents Where to create the infobar.
+     */
+    public static void showInfoBar(SendTabToSelfEntry entry, WebContents webContents) {
+        SendTabToSelfAndroidBridgeJni.get().showInfoBar(
+                webContents, entry.guid, entry.url, entry.targetDeviceSyncCacheGuid);
+    }
+
     @NativeMethods
     interface Natives {
         SendTabToSelfEntry addEntry(Profile profile, String url, String title, long navigationTime,
@@ -133,5 +145,8 @@ public class SendTabToSelfAndroidBridge {
         SendTabToSelfEntry getEntryByGUID(Profile profile, String guid);
 
         boolean isFeatureAvailable(WebContents webContents);
+
+        void showInfoBar(
+                WebContents webContents, String guid, String url, String targetDeviceSyncCacheGuid);
     }
 }

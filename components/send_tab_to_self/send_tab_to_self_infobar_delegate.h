@@ -11,15 +11,21 @@
 #include "base/strings/string16.h"
 #include "components/infobars/core/infobar_delegate.h"
 
+namespace content {
+class WebContents;
+}
+
 namespace send_tab_to_self {
 
 class SendTabToSelfEntry;
 
 // Delegate containing logic about what to display and how to behave
-// in the SendTabToSelf infobar. Used across Android and iOS.
+// in the SendTabToSelf infobar. Used on Android.
+// TODO(crbug.com/964112): Rename this class to be Android specific.
 class SendTabToSelfInfoBarDelegate : public infobars::InfoBarDelegate {
  public:
   static std::unique_ptr<SendTabToSelfInfoBarDelegate> Create(
+      content::WebContents* web_contents,
       const SendTabToSelfEntry* entry);
   ~SendTabToSelfInfoBarDelegate() override;
 
@@ -34,8 +40,11 @@ class SendTabToSelfInfoBarDelegate : public infobars::InfoBarDelegate {
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
 
  private:
-  explicit SendTabToSelfInfoBarDelegate(const SendTabToSelfEntry* entry);
+  explicit SendTabToSelfInfoBarDelegate(content::WebContents* web_contents,
+                                        const SendTabToSelfEntry* entry);
 
+  // The web_content the infobar is attached to. Must outlive this class.
+  content::WebContents* web_contents_ = nullptr;
   // The entry that was share to this device. Must outlive this instance.
   const SendTabToSelfEntry* entry_ = nullptr;
 

@@ -78,6 +78,17 @@ TEST(SendTabToSelfEntry, AsProto) {
   EXPECT_TRUE(IsEqualForTesting(entry, pb_entry.specifics()));
 }
 
+// Tests that the send tab to self entry is correctly created from the required
+// fields
+TEST(SendTabToSelfEntry, FromRequiredFields) {
+  SendTabToSelfEntry expected("1", GURL("http://example.com"), "", base::Time(),
+                              base::Time(), "", "target_device");
+  std::unique_ptr<SendTabToSelfEntry> actual =
+      SendTabToSelfEntry::FromRequiredFields("1", GURL("http://example.com"),
+                                             "target_device");
+  EXPECT_TRUE(IsEqualForTesting(expected, *actual));
+}
+
 // Tests that the send tab to self entry is correctly parsed from
 // sync_pb::SendTabToSelfSpecifics.
 TEST(SendTabToSelfEntry, FromProto) {

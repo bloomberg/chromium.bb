@@ -23,8 +23,9 @@ class SendTabToSelfInfoBar : public InfoBarAndroid {
  public:
   ~SendTabToSelfInfoBar() override;
   // |delegate| must remain alive while showing this info bar.
-  static void ShowInfoBar(content::WebContents* web_contents,
-                          SendTabToSelfInfoBarDelegate* delegate);
+  static void ShowInfoBar(
+      content::WebContents* web_contents,
+      std::unique_ptr<SendTabToSelfInfoBarDelegate> delegate);
 
  private:
   explicit SendTabToSelfInfoBar(
