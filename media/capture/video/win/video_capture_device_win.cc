@@ -389,6 +389,7 @@ VideoCaptureDeviceWin::VideoCaptureDeviceWin(
       state_(kIdle),
       white_balance_mode_manual_(false),
       exposure_mode_manual_(false),
+      focus_mode_manual_(false),
       enable_get_photo_state_(
           base::FeatureList::IsEnabled(media::kDirectShowGetPhotoState)) {
   // TODO(mcasas): Check that CoInitializeEx() has been called with the
@@ -674,8 +675,7 @@ void VideoCaptureDeviceWin::GetPhotoState(GetPhotoStateCallback callback) {
       &photo_capabilities->supported_white_balance_modes,
       &photo_capabilities->current_white_balance_mode);
 
-  // Ignore the returned Focus control range and status.
-  RetrieveControlRangeAndCurrent(
+  photo_capabilities->focus_distance = RetrieveControlRangeAndCurrent(
       [this](auto... args) {
         return this->camera_control_->getRange_Focus(args...);
       },
@@ -771,6 +771,26 @@ void VideoCaptureDeviceWin::SetPhotoOptions(
     hr = video_control_->put_WhiteBalance(settings->color_temperature,
                                           CameraControl_Flags_Manual);
     DLOG_IF_FAILED_WITH_HRESULT("Color temperature config failed", hr);
+    if (FAILED(hr))
+      return;
+  }
+
+  if (settings->has_focus_mode) {
+    if (settings->focus_mode == mojom::MeteringMode::CONTINUOUS) {
+      hr = camera_control_->put_Focus(0L, VideoProcAmp_Flags_Auto);
+      DLOG_IF_FAILED_WITH_HRESULT("Auto focus config failed", hr);
+      if (FAILED(hr))
+        return;
+
+      focus_mode_manual_ = false;
+    } else {
+      focus_mode_manual_ = true;
+    }
+  }
+  if (focus_mode_manual_ && settings->has_focus_distance) {
+    hr = camera_control_->put_Focus(settings->focus_distance,
+                                    CameraControl_Flags_Manual);
+    DLOG_IF_FAILED_WITH_HRESULT("Focus Distance config failed", hr);
     if (FAILED(hr))
       return;
   }

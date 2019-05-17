@@ -139,6 +139,7 @@ class VideoCaptureDeviceWin : public VideoCaptureDevice,
   // These flags keep the manual/auto mode between cycles of SetPhotoOptions().
   bool white_balance_mode_manual_;
   bool exposure_mode_manual_;
+  bool focus_mode_manual_;
 
   base::TimeTicks first_ref_time_;
 
