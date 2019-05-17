@@ -108,6 +108,8 @@ class InstallToolchainTest(cros_test_lib.MockTempDirTestCase):
 
   def setUp(self):
     self.PatchObject(cros_build_lib, 'IsInsideChroot', return_value=True)
+    # Avoid running the portageq command.
+    self.PatchObject(sysroot_controller, '_LogBinhost')
     self.board = 'board'
     self.sysroot = os.path.join(self.tempdir, 'board')
     self.invalid_sysroot = os.path.join(self.tempdir, 'invalid', 'sysroot')
@@ -194,6 +196,8 @@ class InstallPackagesTest(cros_test_lib.MockTempDirTestCase):
 
   def setUp(self):
     self.PatchObject(cros_build_lib, 'IsInsideChroot', return_value=True)
+    # Avoid running the portageq command.
+    self.PatchObject(sysroot_controller, '_LogBinhost')
     self.build_target = 'board'
     self.sysroot = os.path.join(self.tempdir, 'build', 'board')
     osutils.SafeMakedirs(self.sysroot)

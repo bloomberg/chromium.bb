@@ -11,6 +11,8 @@ from chromite.api import controller
 from chromite.api.controller import controller_util
 from chromite.lib import build_target_util
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
+from chromite.lib import portage_util
 from chromite.lib import sysroot_lib
 from chromite.service import sysroot
 
@@ -61,6 +63,8 @@ def InstallToolchain(input_proto, output_proto):
   if not target_sysroot.Exists():
     cros_build_lib.Die('Sysroot has not been created. Run Create first.')
 
+  _LogBinhost(build_target.name)
+
   try:
     sysroot.InstallToolchain(build_target, target_sysroot, run_configs)
   except sysroot_lib.ToolchainInstallError as e:
@@ -91,6 +95,8 @@ def InstallPackages(input_proto, output_proto):
   if not target_sysroot.IsToolchainInstalled():
     cros_build_lib.Die('Toolchain must first be installed.')
 
+  _LogBinhost(build_target.name)
+
   use_flags = [u.flag for u in input_proto.use_flags]
   build_packages_config = sysroot.BuildPackagesRunConfig(
       event_file=event_file, usepkg=not compile_source,
@@ -104,3 +110,13 @@ def InstallPackages(input_proto, output_proto):
       controller_util.CPVToPackageInfo(package, package_info)
 
     return controller.RETURN_CODE_UNSUCCESSFUL_RESPONSE_AVAILABLE
+
+
+def _LogBinhost(board):
+  """Log the portage binhost for the given board."""
+  binhost = portage_util.PortageqEnvvar('PORTAGE_BINHOST', board=board,
+                                        allow_undefined=True)
+  if not binhost:
+    logging.warning('Portage Binhost not found.')
+  else:
+    logging.info('Portage Binhost: %s', binhost)
