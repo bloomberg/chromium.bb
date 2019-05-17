@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
@@ -41,8 +42,7 @@ class BLINK_EXPORT VideoTrackAdapter
 
   VideoTrackAdapter(
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-      base::RepeatingCallback<void(media::VideoCaptureFrameDropReason)>
-          frame_dropped_cb);
+      base::WeakPtr<MediaStreamVideoSource> media_stream_video_source);
 
   // Register |track| to receive video frames in |frame_callback| with
   // a resolution within the boundaries of the arguments, and settings
@@ -130,12 +130,11 @@ class BLINK_EXPORT VideoTrackAdapter
 
   const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
+  base::WeakPtr<MediaStreamVideoSource> media_stream_video_source_;
+
   // |renderer_task_runner_| is used to ensure that
   // VideoCaptureDeliverFrameCB is released on the main render thread.
   const scoped_refptr<base::SingleThreadTaskRunner> renderer_task_runner_;
-
-  const base::RepeatingCallback<void(media::VideoCaptureFrameDropReason)>
-      frame_dropped_cb_;
 
   // VideoFrameResolutionAdapter is an inner class that lives on the IO-thread.
   // It does the resolution adaptation and delivers frames to all registered

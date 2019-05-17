@@ -16,11 +16,13 @@
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util_video_device.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/renderer/modules/mediastream/video_track_adapter.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 
 namespace blink {
 
@@ -36,9 +38,7 @@ MediaStreamVideoSource* MediaStreamVideoSource::GetVideoSource(
 MediaStreamVideoSource::MediaStreamVideoSource()
     : state_(NEW), weak_factory_(this) {
   track_adapter_ = base::MakeRefCounted<VideoTrackAdapter>(
-      Platform::Current()->GetIOTaskRunner(),
-      base::BindRepeating(&MediaStreamVideoSource::OnFrameDropped,
-                          weak_factory_.GetWeakPtr()));
+      Platform::Current()->GetIOTaskRunner(), GetWeakPtr());
 }
 
 MediaStreamVideoSource::~MediaStreamVideoSource() {
@@ -65,8 +65,8 @@ void MediaStreamVideoSource::AddTrack(
   switch (state_) {
     case NEW: {
       state_ = STARTING;
-      StartSourceImpl(
-          base::Bind(&VideoTrackAdapter::DeliverFrameOnIO, track_adapter_));
+      StartSourceImpl(ConvertToBaseCallback(CrossThreadBind(
+          &VideoTrackAdapter::DeliverFrameOnIO, track_adapter_)));
       break;
     }
     case STARTING:
@@ -128,9 +128,9 @@ void MediaStreamVideoSource::RemoveTrack(MediaStreamVideoTrack* video_track,
       // stopping a source with StopSource() can have side effects that affect
       // sources created after that StopSource() call, but before the actual
       // stop takes place. See https://crbug.com/778039.
-      StopForRestart(base::BindOnce(&MediaStreamVideoSource::DidStopSource,
-                                    weak_factory_.GetWeakPtr(),
-                                    std::move(callback)));
+      StopForRestart(WTF::Bind(&MediaStreamVideoSource::DidStopSource,
+                               weak_factory_.GetWeakPtr(),
+                               std::move(callback)));
       if (state_ == STOPPING_FOR_RESTART || state_ == STOPPED_FOR_RESTART) {
         // If the source supports restarting, it is necessary to call
         // FinalizeStopSource() to ensure the same behavior as StopSource(),
@@ -186,9 +186,9 @@ void MediaStreamVideoSource::ReconfigureTrack(
 void MediaStreamVideoSource::StopForRestart(RestartCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (state_ != STARTED) {
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    Thread::Current()->GetTaskRunner()->PostTask(
         FROM_HERE,
-        base::BindOnce(std::move(callback), RestartResult::INVALID_STATE));
+        WTF::Bind(std::move(callback), RestartResult::INVALID_STATE));
     return;
   }
 
@@ -223,8 +223,8 @@ void MediaStreamVideoSource::OnStopForRestartDone(bool did_stop_for_restart) {
 
   RestartResult result = did_stop_for_restart ? RestartResult::IS_STOPPED
                                               : RestartResult::IS_RUNNING;
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(restart_callback_), result));
+  Thread::Current()->GetTaskRunner()->PostTask(
+      FROM_HERE, WTF::Bind(std::move(restart_callback_), result));
 }
 
 void MediaStreamVideoSource::Restart(
@@ -232,9 +232,9 @@ void MediaStreamVideoSource::Restart(
     RestartCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (state_ != STOPPED_FOR_RESTART) {
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    Thread::Current()->GetTaskRunner()->PostTask(
         FROM_HERE,
-        base::BindOnce(std::move(callback), RestartResult::INVALID_STATE));
+        WTF::Bind(std::move(callback), RestartResult::INVALID_STATE));
     return;
   }
   DCHECK(!restart_callback_);
@@ -264,8 +264,8 @@ void MediaStreamVideoSource::OnRestartDone(bool did_restart) {
 
   RestartResult result =
       did_restart ? RestartResult::IS_RUNNING : RestartResult::IS_STOPPED;
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(restart_callback_), result));
+  Thread::Current()->GetTaskRunner()->PostTask(
+      FROM_HERE, WTF::Bind(std::move(restart_callback_), result));
 }
 
 void MediaStreamVideoSource::UpdateHasConsumers(MediaStreamVideoTrack* track,
@@ -400,8 +400,8 @@ void MediaStreamVideoSource::StartFrameMonitoring() {
     track_adapter_->SetSourceFrameSize(IntSize(current_format->frame_size));
   }
   track_adapter_->StartFrameMonitoring(
-      frame_rate, base::Bind(&MediaStreamVideoSource::SetMutedState,
-                             weak_factory_.GetWeakPtr()));
+      frame_rate, WTF::BindRepeating(&MediaStreamVideoSource::SetMutedState,
+                                     weak_factory_.GetWeakPtr()));
 }
 
 void MediaStreamVideoSource::SetReadyState(
