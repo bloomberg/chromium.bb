@@ -378,6 +378,8 @@ source_set("eg_test_support+eg2") {
     "chrome_earl_grey.h",
     "chrome_earl_grey.mm",
     "chrome_earl_grey_app_interface.h",
+    "chrome_egtest_bundle_main.h",
+    "chrome_egtest_bundle_main.mm",
     "chrome_error_util.h",
     "chrome_matchers.h",
     "chrome_matchers.mm",
@@ -393,6 +395,7 @@ source_set("eg_test_support+eg2") {
     "//ios/testing/earl_grey:eg_test_support+eg2",
     "//ios/third_party/earl_grey2:test_lib",
     "//ios/web/public/test:element_selector",
+    "//ui/base",
     "//url",
   ]
 }

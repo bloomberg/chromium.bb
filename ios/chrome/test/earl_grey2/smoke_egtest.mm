@@ -5,6 +5,7 @@
 #import <TestLib/EarlGreyImpl/EarlGrey.h>
 #import <UIKit/UIKit.h>
 
+#include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_error_util.h"
@@ -12,6 +13,7 @@
 #import "ios/chrome/test/earl_grey2/chrome_earl_grey_edo.h"
 #import "ios/testing/earl_grey/base_earl_grey_test_case.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -83,6 +85,21 @@
 // Tests that helpers from chrome_earl_grey.h are available for use in tests.
 - (void)testClearBrowsingHistory {
   [ChromeEarlGrey clearBrowsingHistory];
+}
+
+// Tests that string resources are loaded into the ResourceBundle and available
+// for use in tests.
+- (void)testAppResourcesArePresent {
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::ToolsMenuButton()]
+      performAction:grey_tap()];
+
+  NSString* settingsLabel = l10n_util::GetNSString(IDS_IOS_TOOLBAR_SETTINGS);
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(settingsLabel)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Tap a second time to close the menu.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::ToolsMenuButton()]
+      performAction:grey_tap()];
 }
 
 @end
