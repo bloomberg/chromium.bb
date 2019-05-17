@@ -56,7 +56,8 @@ const char* NetworkTrayView::GetClassName() const {
 }
 
 void NetworkTrayView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->SetName(connection_status_string_);
+  node_data->SetName(accessible_name_);
+  node_data->SetDescription(accessible_description_);
   node_data->role = ax::mojom::Role::kButton;
 }
 
@@ -120,9 +121,8 @@ void NetworkTrayView::UpdateConnectionStatus(
     bool notify_a11y) {
   using SignalStrength = network_icon::SignalStrength;
 
-  base::string16 new_connection_status_string;
   if (connected_network) {
-    new_connection_status_string = l10n_util::GetStringFUTF16(
+    base::string16 new_accessible_name = l10n_util::GetStringFUTF16(
         IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED,
         base::UTF8ToUTF16(connected_network->name()));
 
@@ -148,28 +148,31 @@ void NetworkTrayView::UpdateConnectionStatus(
           break;
       }
 
+      accessible_description_ = signal_strength_string;
+
       if (!signal_strength_string.empty()) {
-        new_connection_status_string = l10n_util::GetStringFUTF16(
+        connection_status_tooltip_ = l10n_util::GetStringFUTF16(
             IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED_ACCESSIBLE,
             base::UTF8ToUTF16(connected_network->name()),
             signal_strength_string);
+      } else {
+        // Use shorter description like "Disconnected" instead of "disconnected
+        // from network" for the tooltip, because the visual icon tells that
+        // this is about the network status.
+        connection_status_tooltip_ = l10n_util::GetStringUTF16(
+            IDS_ASH_STATUS_TRAY_NETWORK_DISCONNECTED_TOOLTIP);
       }
+    } else {
+      accessible_description_.clear();
     }
-    connection_status_tooltip_ = new_connection_status_string;
-  } else {
-    new_connection_status_string = l10n_util::GetStringUTF16(
-        IDS_ASH_STATUS_TRAY_NETWORK_NOT_CONNECTED_A11Y);
-    // Use shorter desription like "Disconnected" instead of "disconnected from
-    // netrowk" for the tooltip, because the visual icon tells that this is
-    // about the network status.
-    connection_status_tooltip_ = l10n_util::GetStringUTF16(
-        IDS_ASH_STATUS_TRAY_NETWORK_DISCONNECTED_TOOLTIP);
-  }
-  if (new_connection_status_string != connection_status_string_) {
-    connection_status_string_ = new_connection_status_string;
-    if (notify_a11y && !connection_status_string_.empty())
+
+    if (accessible_name_ == new_accessible_name)
+      return;
+
+    accessible_name_ = new_accessible_name;
+
+    if (notify_a11y && !accessible_name_.empty())
       NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
-    image_view()->SetAccessibleName(connection_status_string_);
   }
 }
 

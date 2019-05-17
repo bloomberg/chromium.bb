@@ -67,7 +67,8 @@ class NetworkTrayView : public TrayItemView,
   void UpdateConnectionStatus(const chromeos::NetworkState* connected_network,
                               bool notify_a11y);
 
-  base::string16 connection_status_string_;
+  base::string16 accessible_name_;
+  base::string16 accessible_description_;
   base::string16 connection_status_tooltip_;
 
   std::unique_ptr<TrayNetworkStateObserver> network_state_observer_;

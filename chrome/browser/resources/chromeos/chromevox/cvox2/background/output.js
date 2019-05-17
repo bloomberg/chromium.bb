@@ -2046,6 +2046,10 @@ Output.prototype = {
     if (!this.enableHints_ || localStorage['useVerboseMode'] != 'true')
       return;
 
+    // No hints for alerts, which can be targeted at controls.
+    if (type == EventType.ALERT)
+      return;
+
     // Hints are not yet specialized for braille.
     if (this.formatOptions_.braille)
       return;
