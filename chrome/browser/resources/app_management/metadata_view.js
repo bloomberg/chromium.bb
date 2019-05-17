@@ -41,10 +41,6 @@ Polymer({
     return app.isPinned === OptionalBool.kTrue;
   },
 
-  isPolicyPinned_: function(app) {
-    return app.isPolicyPinned === OptionalBool.kTrue;
-  },
-
   /** @private */
   togglePinned_: function() {
     let newPinnedValue;

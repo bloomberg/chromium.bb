@@ -56,7 +56,7 @@ struct ArcPackageInfo {
   // If non-null, signifies this package represents a web app that should be
   // installed on the browser side.
   [MinVersion=38] WebAppInfo? web_app_info;
-  [MinVersion=42] map<AppPermission, PermissionState>? permissions;
+  [MinVersion=41] map<AppPermission, bool>? permissions;
 };
 
 // Describes ARC app shortcut.

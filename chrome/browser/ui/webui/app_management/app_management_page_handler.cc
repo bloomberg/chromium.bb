@@ -197,9 +197,6 @@ app_management::mojom::AppPtr AppManagementPageHandler::CreateUIAppPtr(
   app->is_pinned = shelf_delegate_.IsPinned(update.AppId())
                        ? OptionalBool::kTrue
                        : OptionalBool::kFalse;
-  app->is_policy_pinned = shelf_delegate_.IsPolicyPinned(update.AppId())
-                              ? OptionalBool::kTrue
-                              : OptionalBool::kFalse;
 #endif
 
   return app;

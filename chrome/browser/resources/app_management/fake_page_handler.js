@@ -8,10 +8,9 @@ cr.define('app_management', function() {
    */
   class FakePageHandler {
     /**
-     * @param {Object=} options
      * @return {!Object<number, Permission>}
      */
-    static createWebPermissions(options) {
+    static createWebPermissions() {
       const permissionIds = [
         PwaPermissionType.CONTENT_SETTINGS_TYPE_GEOLOCATION,
         PwaPermissionType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
@@ -22,17 +21,8 @@ cr.define('app_management', function() {
       const permissions = {};
 
       for (const permissionId of permissionIds) {
-        let permissionValue = TriState.kAllow;
-        let isManaged = false;
-
-        if (options && options[permissionId]) {
-          const opts = options[permissionId];
-          permissionValue = opts.permissionValue || permissionValue;
-          isManaged = opts.isManaged || isManaged;
-        }
         permissions[permissionId] = app_management.util.createPermission(
-            permissionId, PermissionValueType.kTriState, permissionValue,
-            isManaged);
+            permissionId, PermissionValueType.kTriState, TriState.kAllow);
       }
 
       return permissions;
@@ -54,8 +44,7 @@ cr.define('app_management', function() {
 
       for (const permissionId of permissionIds) {
         permissions[permissionId] = app_management.util.createPermission(
-            permissionId, PermissionValueType.kBool, Bool.kTrue,
-            false /*is_managed*/);
+            permissionId, PermissionValueType.kBool, Bool.kTrue);
       }
 
       return permissions;
@@ -90,7 +79,6 @@ cr.define('app_management', function() {
         version: '5.1',
         size: '9.0MB',
         isPinned: apps.mojom.OptionalBool.kFalse,
-        isPolicyPinned: apps.mojom.OptionalBool.kFalse,
         installSource: apps.mojom.InstallSource.kUser,
         permissions: {},
       };

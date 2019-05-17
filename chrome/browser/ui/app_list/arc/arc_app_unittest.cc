@@ -465,19 +465,13 @@ class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
   arc::mojom::ArcPackageInfoPtr CreatePackageWithVersion(
       const std::string& package_name,
       int package_version) {
-    base::flat_map<arc::mojom::AppPermission, arc::mojom::PermissionStatePtr>
-        permissions;
-    permissions.emplace(arc::mojom::AppPermission::CAMERA,
-                        arc::mojom::PermissionState::New(false /* granted */,
-                                                         false /* managed */));
-    permissions.emplace(arc::mojom::AppPermission::LOCATION,
-                        arc::mojom::PermissionState::New(true /* granted */,
-                                                         false /* managed */));
+    base::flat_map<arc::mojom::AppPermission, bool> permissions;
+    permissions.insert(std::make_pair(arc::mojom::AppPermission::CAMERA, 0));
+    permissions.insert(std::make_pair(arc::mojom::AppPermission::LOCATION, 1));
     return arc::mojom::ArcPackageInfo::New(
         package_name, package_version, 1 /* last_backup_android_id */,
         1 /* last_backup_time */, true /* sync */, false /* system */,
-        false /* vpn_provider */, nullptr /* web_app_info */,
-        std::move(permissions));
+        false /* vpn_provider */, nullptr /* web_app_info */, permissions);
   }
 
   void AddPackage(const arc::mojom::ArcPackageInfoPtr& package) {

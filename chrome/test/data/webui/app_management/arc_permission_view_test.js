@@ -8,6 +8,11 @@ suite('<app-management-arc-permission-view>', () => {
   let arcPermissionView;
   let fakeHandler;
 
+  function getPermissionItemByPermissionType(permissionType) {
+    return arcPermissionView.root.querySelector(
+        '[permission-type=' + permissionType + ']');
+  }
+
   function expandPermissions() {
     arcPermissionView.root.querySelector('#subpermission-expand-row').click();
   }
@@ -17,13 +22,20 @@ suite('<app-management-arc-permission-view>', () => {
         arcPermissionView.app_, permissionType);
   }
 
+  function getPermissionToggleByType(permissionType) {
+    return arcPermissionView.root
+        .querySelector('[permission-type=' + permissionType + ']')
+        .root.querySelector('app-management-permission-toggle')
+        .root.querySelector('cr-toggle');
+  }
+
   async function clickPermissionToggle(permissionType) {
-    getPermissionCrToggleByType(arcPermissionView, permissionType).click();
+    getPermissionToggleByType(permissionType).click();
     await fakeHandler.$.flushForTesting();
   }
 
   async function clickPermissionItem(permissionType) {
-    getPermissionItemByType(arcPermissionView, permissionType).click();
+    getPermissionItemByPermissionType(permissionType).click();
     await fakeHandler.$.flushForTesting();
   }
 
@@ -59,30 +71,25 @@ suite('<app-management-arc-permission-view>', () => {
 
   test('Permissions are hidden correctly', () => {
     expandPermissions();
-    assertTrue(
-        isHidden(getPermissionItemByType(arcPermissionView, 'MICROPHONE')));
-    assertFalse(
-        isHidden(getPermissionItemByType(arcPermissionView, 'LOCATION')));
-    assertFalse(isHidden(getPermissionItemByType(arcPermissionView, 'CAMERA')));
+    assertTrue(isHidden(getPermissionItemByPermissionType('MICROPHONE')));
+    assertFalse(isHidden(getPermissionItemByPermissionType('LOCATION')));
+    assertFalse(isHidden(getPermissionItemByPermissionType('CAMERA')));
   });
 
   test('Toggle works correctly', async () => {
     const checkPermissionToggle = async (permissionType) => {
       assertTrue(getPermissionBoolByType(permissionType));
-      assertTrue(getPermissionCrToggleByType(arcPermissionView, permissionType)
-                     .checked);
+      assertTrue(getPermissionToggleByType(permissionType).checked);
 
       // Toggle Off.
       await clickPermissionToggle(permissionType);
       assertFalse(getPermissionBoolByType(permissionType));
-      assertFalse(getPermissionCrToggleByType(arcPermissionView, permissionType)
-                      .checked);
+      assertFalse(getPermissionToggleByType(permissionType).checked);
 
       // Toggle On.
       await clickPermissionToggle(permissionType);
       assertTrue(getPermissionBoolByType(permissionType));
-      assertTrue(getPermissionCrToggleByType(arcPermissionView, permissionType)
-                     .checked);
+      assertTrue(getPermissionToggleByType(permissionType).checked);
     };
 
     expandPermissions();
@@ -95,20 +102,17 @@ suite('<app-management-arc-permission-view>', () => {
   test('OnClick handler for permission item works correctly', async () => {
     const checkPermissionItemOnClick = async (permissionType) => {
       assertTrue(getPermissionBoolByType(permissionType));
-      assertTrue(getPermissionCrToggleByType(arcPermissionView, permissionType)
-                     .checked);
+      assertTrue(getPermissionToggleByType(permissionType).checked);
 
       // Toggle Off.
       await clickPermissionItem(permissionType);
       assertFalse(getPermissionBoolByType(permissionType));
-      assertFalse(getPermissionCrToggleByType(arcPermissionView, permissionType)
-                      .checked);
+      assertFalse(getPermissionToggleByType(permissionType).checked);
 
       // Toggle On.
       await clickPermissionItem(permissionType);
       assertTrue(getPermissionBoolByType(permissionType));
-      assertTrue(getPermissionCrToggleByType(arcPermissionView, permissionType)
-                     .checked);
+      assertTrue(getPermissionToggleByType(permissionType).checked);
     };
 
     expandPermissions();
