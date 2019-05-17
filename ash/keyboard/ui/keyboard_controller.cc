@@ -381,17 +381,24 @@ void KeyboardController::MoveToParentContainer(aura::Window* parent) {
 // private
 void KeyboardController::NotifyKeyboardBoundsChanging(
     const gfx::Rect& new_bounds_in_root) {
-  visual_bounds_in_root_ = new_bounds_in_root;
-  gfx::Rect occluded_bounds_in_screen = GetWorkspaceOccludedBoundsInScreen();
-
+  gfx::Rect occluded_bounds_in_screen;
   aura::Window* window = GetKeyboardWindow();
   if (window && window->IsVisible()) {
+    visual_bounds_in_root_ = new_bounds_in_root;
+
+    // |visual_bounds_in_root_| affects the result of
+    // GetWorkspaceOccludedBoundsInScreen. Calculate |occluded_bounds_in_screen|
+    // after updating |visual_bounds_in_root_|.
+    // TODO(andrewxu): Add the unit test case for issue 960174.
+    occluded_bounds_in_screen = GetWorkspaceOccludedBoundsInScreen();
+
     // TODO(https://crbug.com/943446): Use screen bounds for visual bounds.
     notification_manager_.SendNotifications(
         container_behavior_->OccludedBoundsAffectWorkspaceLayout(),
         new_bounds_in_root, occluded_bounds_in_screen, observer_list_);
   } else {
     visual_bounds_in_root_ = gfx::Rect();
+    occluded_bounds_in_screen = GetWorkspaceOccludedBoundsInScreen();
   }
 
   EnsureCaretInWorkArea(occluded_bounds_in_screen);
