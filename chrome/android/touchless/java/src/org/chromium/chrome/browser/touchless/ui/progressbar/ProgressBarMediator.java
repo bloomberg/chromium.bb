@@ -32,6 +32,10 @@ public class ProgressBarMediator {
         mModel = model;
     }
 
+    void onActivityResume() {
+        if (mModel.get(ProgressBarProperties.IS_ENABLED)) show();
+    }
+
     void onKeyEvent() {
         mCanHideProgressBar = true;
         hide();

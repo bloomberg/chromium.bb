@@ -28,6 +28,10 @@ public class ProgressBarCoordinator {
         mMediator = new ProgressBarMediator(model, activityTabProvider);
     }
 
+    public void onActivityResume() {
+        mMediator.onActivityResume();
+    }
+
     public void onKeyEvent() {
         mMediator.onKeyEvent();
     }

@@ -14,6 +14,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
+import org.chromium.chrome.browser.lifecycle.PauseResumeWithNativeObserver;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogPresenter;
 import org.chromium.chrome.browser.touchless.snackbar.BlackHoleSnackbarManager;
@@ -25,8 +26,9 @@ import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogManager.ModalDialogType;
 
 /** A coordinator for touchless UI. */
-public class TouchlessUiCoordinatorImpl
-        implements Destroyable, NativeInitObserver, InflationObserver, TouchlessUiCoordinator {
+public class TouchlessUiCoordinatorImpl implements Destroyable, NativeInitObserver,
+                                                   InflationObserver, PauseResumeWithNativeObserver,
+                                                   TouchlessUiCoordinator {
     private ChromeActivity mActivity;
 
     private TouchlessModelCoordinator mModelCoordinator;
@@ -74,6 +76,14 @@ public class TouchlessUiCoordinatorImpl
         }
         mTouchlessZoomHelper = new TouchlessZoomHelper(mActivity.getActivityTabProvider());
     }
+
+    @Override
+    public void onResumeWithNative() {
+        mProgressBarCoordinator.onActivityResume();
+    }
+
+    @Override
+    public void onPauseWithNative() {}
 
     @Override
     public KeyEvent processKeyEvent(KeyEvent event) {
