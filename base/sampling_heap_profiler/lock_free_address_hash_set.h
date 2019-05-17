@@ -124,8 +124,8 @@ inline LockFreeAddressHashSet::Node* LockFreeAddressHashSet::FindNode(
 // static
 inline uint32_t LockFreeAddressHashSet::Hash(void* key) {
   // A simple fast hash function for addresses.
-  uint64_t k = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(key));
-  uint64_t random_bits = 0x4bfdb9df5a6f243bull;
+  constexpr uintptr_t random_bits = static_cast<uintptr_t>(0x4bfdb9df5a6f243b);
+  uint64_t k = reinterpret_cast<uintptr_t>(key);
   return static_cast<uint32_t>((k * random_bits) >> 32);
 }
 
