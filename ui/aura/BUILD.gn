@@ -124,7 +124,6 @@ jumbo_component("aura") {
     "//gpu/ipc/client",
     "//mojo/public/cpp/system",
     "//services/service_manager/public/cpp",
-    "//services/ws/common",
     "//services/ws/public/cpp",
     "//services/ws/public/mojom",
     "//skia",
@@ -230,7 +229,6 @@ jumbo_static_library("test_support") {
 
   public_deps = [
     ":aura",
-    "//services/ws/common",
 
     # Must be public as headers include buildflags.h.
     "//ui/base:buildflags",
@@ -339,7 +337,6 @@ test("aura_unittests") {
     "//cc/mojo_embedder",
     "//components/viz/client",
     "//mojo/core/embedder",
-    "//services/ws/common:task_runner_test_base",
     "//services/ws/public/cpp",
     "//skia",
     "//testing/gtest",

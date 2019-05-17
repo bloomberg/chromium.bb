@@ -1285,7 +1285,6 @@ component("ash") {
     "//services/device/public/mojom",
     "//services/media_session/public/mojom",
     "//services/service_manager/public/cpp",
-    "//services/ws/common",
     "//services/ws/public/cpp",
     "//services/ws/public/cpp/input_devices",
     "//services/ws/public/mojom",

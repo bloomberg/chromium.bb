@@ -59,7 +59,6 @@
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_info.h"
 #include "components/user_manager/user_manager.h"
-#include "services/ws/common/util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/env_test_helper.h"
 #include "ui/aura/window.h"

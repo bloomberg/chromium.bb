@@ -4,6 +4,7 @@
 
 #include "base/macros.h"
 
+#include "ash/public/cpp/ash_switches.h"
 #include "build/build_config.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -16,7 +17,6 @@
 #include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_app_instance.h"
 #include "components/prefs/pref_service.h"
-#include "services/ws/common/switches.h"
 
 namespace extensions {
 
@@ -30,7 +30,7 @@ class AutotestPrivateApiTest : public ExtensionApiTest {
     // Make ARC enabled for tests.
     arc::SetArcAvailableCommandLineForTesting(command_line);
     // Enable certain Mojo services like ShelfIntegrationTestApi.
-    command_line->AppendSwitch(ws::switches::kUseTestConfig);
+    command_line->AppendSwitch(ash::switches::kAshEnableTestInterfaces);
   }
 
   void SetUpInProcessBrowserTestFixture() override {

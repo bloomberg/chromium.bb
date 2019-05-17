@@ -47,7 +47,6 @@
 #include "base/lazy_instance.h"
 #include "base/single_thread_task_runner.h"
 #include "chromeos/constants/chromeos_switches.h"
-#include "services/ws/common/switches.h"
 
 namespace ash {
 namespace mojo_interface_factory {
@@ -328,7 +327,7 @@ void RegisterInterfaces(
                          main_thread_task_runner);
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ws::switches::kUseTestConfig)) {
+          switches::kAshEnableTestInterfaces)) {
     registry->AddInterface(
         base::BindRepeating(&BindShelfIntegrationTestApiRequestOnMainThread),
         main_thread_task_runner);
