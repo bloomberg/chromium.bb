@@ -68,11 +68,7 @@ void InitializePDF() {
   // (https://bugs.chromium.org/p/pdfium/issues/detail?id=11).
 #if defined(COMPONENT_BUILD)
   HMODULE module = ::GetModuleHandleA("pdfium.dll");
-
-  // TODO(thomasanderson): Replace this condition with DCHECK(module) once
-  // PDFium is switched to a component.
-  if (!module)
-    module = CURRENT_MODULE();
+  DCHECK(module);
 #else
   HMODULE module = CURRENT_MODULE();
 #endif  // defined(COMPONENT_BUILD)
