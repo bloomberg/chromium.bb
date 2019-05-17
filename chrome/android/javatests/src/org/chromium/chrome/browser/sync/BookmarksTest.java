@@ -16,6 +16,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
@@ -384,6 +385,7 @@ public class BookmarksTest {
     @Test
     @LargeTest
     @Feature({"Sync"})
+    @DisabledTest(message = "https://crbug.com/964342")
     public void testDisabledNoDownloadBookmark() throws Exception {
         mSyncTestRule.disableDataType(ModelType.BOOKMARKS);
         addServerBookmark(TITLE, URL);
@@ -395,6 +397,7 @@ public class BookmarksTest {
     @Test
     @LargeTest
     @Feature({"Sync"})
+    @DisabledTest(message = "https://crbug.com/964342")
     public void testDisabledNoUploadBookmark() throws Exception {
         mSyncTestRule.disableDataType(ModelType.BOOKMARKS);
         addClientBookmark(TITLE, URL);
