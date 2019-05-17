@@ -309,27 +309,23 @@ void OverviewWindowDragController::UpdateDragIndicatorsAndOverviewGrid(
   if (!ShouldUpdateDragIndicatorsOrSnap(location_in_screen))
     return;
 
-  // Attempt to update the drag indicators and move the window grid only if the
-  // window is snappable.
-  if (!CanSnapInSplitview(item_->GetWindow())) {
-    snap_position_ = SplitViewController::NONE;
-    return;
-  }
-
-  snap_position_ = GetSnapPosition(location_in_screen);
   IndicatorState indicator_state;
-  switch (snap_position_) {
-    case SplitViewController::NONE:
-      indicator_state = CanSnapInSplitview(item_->GetWindow())
-                            ? IndicatorState::kDragArea
-                            : IndicatorState::kCannotSnap;
-      break;
-    case SplitViewController::LEFT:
-      indicator_state = IndicatorState::kPreviewAreaLeft;
-      break;
-    case SplitViewController::RIGHT:
-      indicator_state = IndicatorState::kPreviewAreaRight;
-      break;
+  if (CanSnapInSplitview(item_->GetWindow())) {
+    snap_position_ = GetSnapPosition(location_in_screen);
+    switch (snap_position_) {
+      case SplitViewController::NONE:
+        indicator_state = IndicatorState::kDragArea;
+        break;
+      case SplitViewController::LEFT:
+        indicator_state = IndicatorState::kPreviewAreaLeft;
+        break;
+      case SplitViewController::RIGHT:
+        indicator_state = IndicatorState::kPreviewAreaRight;
+        break;
+    }
+  } else {
+    snap_position_ = SplitViewController::NONE;
+    indicator_state = IndicatorState::kCannotSnap;
   }
   overview_session_->RearrangeDuringDrag(item_->GetWindow(), location_in_screen,
                                          indicator_state);
