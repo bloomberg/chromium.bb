@@ -302,13 +302,6 @@ public abstract class Stack {
      */
     public abstract float getScaleAmount();
 
-    /**
-     * @return The index of the currently centered tab. If we're not currently snapped to a tab
-     *         (e.g. we're in the process of animating a scroll or the user is currently dragging),
-     *         returns the index of the tab closest to the center.
-     */
-    public abstract int getCenteredTabIndex();
-
     /*
      * Main Interaction Methods for the rest of the application
      *

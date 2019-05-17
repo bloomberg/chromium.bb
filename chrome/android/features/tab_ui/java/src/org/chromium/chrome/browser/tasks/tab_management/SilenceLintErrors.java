@@ -25,6 +25,7 @@ import org.chromium.chrome.R;
             R.string.iph_tab_groups_tap_to_see_another_tab_accessibility_text,
             R.string.accessibility_bottom_tab_strip_expand_tab_sheet,
             R.string.accessibility_bottom_tab_grid_close_tab_sheet,
+            R.string.tabswitcher_create_group,
     };
 
     private SilenceLintErrors() {}

@@ -45,11 +45,9 @@ import org.chromium.chrome.browser.gesturenav.TabSwitcherActionDelegate;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabList;
-import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
-import org.chromium.chrome.browser.tasks.tab_groups.LayoutTabGroupCreationButton;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.ui.UiUtils;
@@ -239,8 +237,6 @@ public abstract class StackLayoutBase extends Layout {
     private final ArrayList<Pair<CompositorAnimator, FloatProperty>> mLayoutAnimations =
             new ArrayList<>();
 
-    private LayoutTabGroupCreationButton mLayoutTabGroupCreationButton;
-
     private class StackLayoutGestureHandler implements GestureHandler {
         @Override
         public void onDown(float x, float y, boolean fromMouse, int buttons) {
@@ -303,13 +299,6 @@ public abstract class StackLayoutBase extends Layout {
 
             // Click event happens before the up event. mClicked is set to mute the up event.
             mClicked = true;
-
-            if (mLayoutTabGroupCreationButton != null
-                    && mLayoutTabGroupCreationButton.getCreateGroupButton().checkClicked(x, y)) {
-                mLayoutTabGroupCreationButton.getCreateGroupButton().handleClick(time());
-                return;
-            }
-
             PortraitViewport viewportParams = getViewportParameters();
             final int stackIndexDeltaAt = viewportParams.getStackIndexDeltaAt(x, y);
             if (stackIndexDeltaAt == 0) {
@@ -1407,11 +1396,6 @@ public abstract class StackLayoutBase extends Layout {
         return distance - 2 * getViewportParameters().getInnerMargin();
     }
 
-    private int getCenteredTabIndex() {
-        if (!mIsActiveLayout) return -1;
-        return mStacks.get(getTabStackIndex()).getCenteredTabIndex();
-    }
-
     @Override
     public void startHiding(int nextTabId, boolean hintAtTabSelection) {
         super.startHiding(nextTabId, hintAtTabSelection);
@@ -1610,23 +1594,6 @@ public abstract class StackLayoutBase extends Layout {
         super.updateSceneLayer(viewport, contentViewport, layerTitleCache, tabContentManager,
                 resourceManager, fullscreenManager);
         assert mSceneLayer != null;
-
-        int centerIndex = getCenteredTabIndex();
-        if (centerIndex != TabModel.INVALID_TAB_INDEX
-                && FeatureUtilities.isTabGroupsAndroidEnabled()
-                && layerTitleCache.getLayoutTabGroupCreationButton() != null) {
-            if (mLayoutTabGroupCreationButton == null) {
-                mLayoutTabGroupCreationButton = layerTitleCache.getLayoutTabGroupCreationButton();
-            }
-
-            Tab tab = mStacks.get(getTabStackIndex()).getTabList().getTabAt(centerIndex);
-            boolean ableToCreateGroup = mTabModelSelector.getTabModelFilterProvider()
-                                                .getCurrentTabModelFilter()
-                                                .getRelatedTabList(tab.getId())
-                                                .size()
-                    == 1;
-            mLayoutTabGroupCreationButton.updateLayout(tab, mLayoutTabs, ableToCreateGroup);
-        }
 
         mSceneLayer.pushLayers(getContext(), viewport, contentViewport, this, layerTitleCache,
                 tabContentManager, resourceManager, fullscreenManager);

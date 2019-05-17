@@ -15,13 +15,11 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
-import org.chromium.chrome.browser.compositor.layouts.components.CompositorButton;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.ColorUtils;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.resources.ResourceManager;
 
 /**
@@ -69,17 +67,6 @@ public class TabListSceneLayer extends SceneLayer {
 
         nativeUpdateLayer(mNativePtr, tabListBgColor, viewport.left, viewport.top, viewport.width(),
                 viewport.height(), layerTitleCache, tabContentManager, resourceManager);
-
-        boolean isTabGroupEnabled = FeatureUtilities.isTabGroupsAndroidEnabled();
-
-        if (isTabGroupEnabled && layerTitleCache.getLayoutTabGroupCreationButton() != null) {
-            CompositorButton createGroupButton =
-                    layerTitleCache.getLayoutTabGroupCreationButton().getCreateGroupButton();
-            nativePutCreateGroupTextButtonLayer(mNativePtr,
-                    layerTitleCache.getLayoutTabGroupCreationButton().getButtonResourceId(),
-                    createGroupButton.getX() * dpToPx, createGroupButton.getY() * dpToPx,
-                    createGroupButton.isVisible());
-        }
 
         boolean isHTSEnabled =
                 ChromeFeatureList.isEnabled(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID);
@@ -212,7 +199,4 @@ public class TabListSceneLayer extends SceneLayer {
             int toolbarTextBoxResource, int toolbarTextBoxBackgroundColor,
             float toolbarTextBoxAlpha, float toolbarAlpha, float toolbarYOffset,
             float sideBorderScale, boolean insetVerticalBorder);
-
-    private native void nativePutCreateGroupTextButtonLayer(long nativeTabListSceneLayer,
-            int buttonResourceId, float x, float y, boolean isVisible);
 }
