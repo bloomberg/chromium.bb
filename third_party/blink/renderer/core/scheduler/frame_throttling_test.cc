@@ -804,7 +804,6 @@ TEST_P(FrameThrottlingTest, ThrottledTopLevelEventHandlerIgnored) {
   DocumentLifecycle::AllowThrottlingScope throttling_scope(
       GetDocument().Lifecycle());
   CompositeFrame();  // Throttle the frame.
-  CompositeFrame();  // Update touch handler regions.
 
   // In here, throttle iframe doesn't throttle the main frame.
   EXPECT_TRUE(
@@ -825,7 +824,6 @@ TEST_P(FrameThrottlingTest, ThrottledTopLevelEventHandlerIgnored) {
   // there is only one rectangle in total.
   frame_element->setAttribute(kStyleAttr, "transform: translateY(0px)");
   CompositeFrame();  // Unthrottle the frame.
-  CompositeFrame();  // Update touch handler regions.
   EXPECT_EQ(1u, TouchHandlerRegionSize());
 }
 
@@ -858,7 +856,6 @@ TEST_P(FrameThrottlingTest, ThrottledEventHandlerIgnored) {
   DocumentLifecycle::AllowThrottlingScope throttling_scope(
       GetDocument().Lifecycle());
   CompositeFrame();  // Throttle the frame.
-  CompositeFrame();  // Update touch handler regions.
 
   // In here, throttle iframe doesn't throttle the main frame.
   EXPECT_TRUE(
@@ -877,7 +874,6 @@ TEST_P(FrameThrottlingTest, ThrottledEventHandlerIgnored) {
   // Unthrottling the frame makes the touch handler active again.
   frame_element->setAttribute(kStyleAttr, "transform: translateY(0px)");
   CompositeFrame();  // Unthrottle the frame.
-  CompositeFrame();  // Update touch handler regions.
   EXPECT_EQ(1u, TouchHandlerRegionSize());
 }
 

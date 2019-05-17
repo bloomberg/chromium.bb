@@ -53,7 +53,6 @@
 #include "third_party/blink/renderer/core/events/error_event.h"
 #include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
 #include "third_party/blink/renderer/core/frame/browser_controls.h"
-#include "third_party/blink/renderer/core/frame/event_handler_registry.h"
 #include "third_party/blink/renderer/core/frame/find_in_page.h"
 #include "third_party/blink/renderer/core/frame/frame_overlay.h"
 #include "third_party/blink/renderer/core/frame/frame_view_auto_size_info.h"
@@ -4021,11 +4020,10 @@ void LocalFrameView::RenderThrottlingStatusChanged() {
   if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
     GraphicsLayersDidChange();
 
-  ScrollingCoordinator* scrolling_coordinator = this->GetScrollingCoordinator();
   if (!CanThrottleRendering()) {
     // ScrollingCoordinator needs to update according to the new throttling
     // status.
-    if (scrolling_coordinator)
+    if (auto* scrolling_coordinator = GetScrollingCoordinator())
       scrolling_coordinator->NotifyGeometryChanged(this);
     // Start ticking animation frames again if necessary.
     if (GetPage())
@@ -4040,20 +4038,6 @@ void LocalFrameView::RenderThrottlingStatusChanged() {
       // the frame was throttled.
       layout_view->AddSubtreePaintPropertyUpdateReason(
           SubtreePaintPropertyUpdateReason::kPreviouslySkipped);
-    }
-  }
-
-  if (scrolling_coordinator) {
-    EventHandlerRegistry& registry = frame_->GetEventHandlerRegistry();
-    bool has_handlers =
-        (registry.HasEventHandlers(EventHandlerRegistry::kTouchAction) ||
-         registry.HasEventHandlers(
-             EventHandlerRegistry::kTouchStartOrMoveEventBlocking) ||
-         registry.HasEventHandlers(
-             EventHandlerRegistry::kTouchStartOrMoveEventBlockingLowLatency));
-    if (has_handlers) {
-      scrolling_coordinator->TouchEventTargetRectsDidChange(
-          &GetFrame().LocalFrameRoot());
     }
   }
 
