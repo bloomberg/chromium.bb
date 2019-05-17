@@ -304,6 +304,7 @@ const char kCreateServiceRecord[] = "CreateServiceRecord";
 const char kRemoveServiceRecord[] = "RemoveServiceRecord";
 const char kHandleSuspendImminent[] = "HandleSuspendImminent";
 const char kHandleSuspendDone[] = "HandleSuspendDone";
+const char kGetSupportedCapabilities[] = "GetSupportedCapabilities";
 
 // Bluetooth Adapter properties.
 const char kAddressProperty[] = "Address";
