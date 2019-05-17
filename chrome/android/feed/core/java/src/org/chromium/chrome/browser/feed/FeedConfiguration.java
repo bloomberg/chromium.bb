@@ -44,12 +44,12 @@ public final class FeedConfiguration {
 
     private static final String INITIAL_NON_CACHED_PAGE_SIZE = "initial_non_cached_page_size";
     /** Default value for initial non cached page size. */
-    public static final int INITIAL_NON_CACHED_PAGE_SIZE_DEFAULT = 10;
+    public static final long INITIAL_NON_CACHED_PAGE_SIZE_DEFAULT = 10;
 
     private static final String LOGGING_IMMEDIATE_CONTENT_THRESHOLD_MS =
             "logging_immediate_content_threshold_ms";
     /** Default value for logging immediate content threshold. */
-    public static final int LOGGING_IMMEDIATE_CONTENT_THRESHOLD_MS_DEFAULT = 1000;
+    public static final long LOGGING_IMMEDIATE_CONTENT_THRESHOLD_MS_DEFAULT = 1000;
 
     private static final String MANAGE_INTERESTS_ENABLED = "manage_interests_enabled";
     /** Default value for whether to use menu options to launch interest management page. */
@@ -57,15 +57,15 @@ public final class FeedConfiguration {
 
     private static final String NON_CACHED_MIN_PAGE_SIZE = "non_cached_min_page_size";
     /** Default value for non cached minimum page size. */
-    public static final int NON_CACHED_MIN_PAGE_SIZE_DEFAULT = 5;
+    public static final long NON_CACHED_MIN_PAGE_SIZE_DEFAULT = 5;
 
     private static final String NON_CACHED_PAGE_SIZE = "non_cached_page_size";
     /** Default value for non cached page size. */
-    public static final int NON_CACHED_PAGE_SIZE_DEFAULT = 25;
+    public static final long NON_CACHED_PAGE_SIZE_DEFAULT = 25;
 
     private static final String SESSION_LIFETIME_MS = "session_lifetime_ms";
     /** Default value for session lifetime. */
-    public static final int SESSION_LIFETIME_MS_DEFAULT = 3600000;
+    public static final long SESSION_LIFETIME_MS_DEFAULT = 3600000;
 
     private static final String SNIPPETS_ENABLED = "snippets_enabled";
     /** Default value for whether to show article snippets. */
@@ -136,7 +136,7 @@ public final class FeedConfiguration {
     static int getInitialNonCachedPageSize() {
         return ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
                 ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS, INITIAL_NON_CACHED_PAGE_SIZE,
-                INITIAL_NON_CACHED_PAGE_SIZE_DEFAULT);
+                (int) INITIAL_NON_CACHED_PAGE_SIZE_DEFAULT);
     }
 
     /**
@@ -148,7 +148,7 @@ public final class FeedConfiguration {
         return (long) ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
                 ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS,
                 LOGGING_IMMEDIATE_CONTENT_THRESHOLD_MS,
-                LOGGING_IMMEDIATE_CONTENT_THRESHOLD_MS_DEFAULT);
+                (int) LOGGING_IMMEDIATE_CONTENT_THRESHOLD_MS_DEFAULT);
     }
 
     /** return Whether to show context menu option to launch to customization page. */
@@ -164,7 +164,7 @@ public final class FeedConfiguration {
     static int getNonCachedMinPageSize() {
         return ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
                 ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS, NON_CACHED_MIN_PAGE_SIZE,
-                NON_CACHED_MIN_PAGE_SIZE_DEFAULT);
+                (int) NON_CACHED_MIN_PAGE_SIZE_DEFAULT);
     }
 
     /** @return Used to decide where to place the more button. */
@@ -172,7 +172,7 @@ public final class FeedConfiguration {
     static int getNonCachedPageSize() {
         return ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
                 ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS, NON_CACHED_PAGE_SIZE,
-                NON_CACHED_PAGE_SIZE_DEFAULT);
+                (int) NON_CACHED_PAGE_SIZE_DEFAULT);
     }
 
     /** @return Time until feed stops restoring the UI. */
@@ -180,7 +180,7 @@ public final class FeedConfiguration {
     static long getSessionLifetimeMs() {
         return (long) ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
                 ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS, SESSION_LIFETIME_MS,
-                SESSION_LIFETIME_MS_DEFAULT);
+                (int) SESSION_LIFETIME_MS_DEFAULT);
     }
 
     /**

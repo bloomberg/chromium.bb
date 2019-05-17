@@ -6,8 +6,8 @@ package org.chromium.chrome.browser.feed;
 
 import android.support.annotation.NonNull;
 
+import com.google.android.libraries.feed.api.client.requestmanager.RequestManager;
 import com.google.android.libraries.feed.api.host.scheduler.SchedulerApi;
-import com.google.android.libraries.feed.api.requestmanager.RequestManager;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;

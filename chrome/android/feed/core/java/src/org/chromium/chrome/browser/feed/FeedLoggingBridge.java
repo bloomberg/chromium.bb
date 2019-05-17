@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.feed;
 
 import android.support.annotation.NonNull;
 
+import com.google.android.libraries.feed.api.client.stream.Stream.ScrollListener;
 import com.google.android.libraries.feed.api.host.logging.ActionType;
 import com.google.android.libraries.feed.api.host.logging.BasicLoggingApi;
 import com.google.android.libraries.feed.api.host.logging.ContentLoggingData;
@@ -17,7 +18,6 @@ import com.google.android.libraries.feed.api.host.logging.SessionEvent;
 import com.google.android.libraries.feed.api.host.logging.SpinnerType;
 import com.google.android.libraries.feed.api.host.logging.Task;
 import com.google.android.libraries.feed.api.host.logging.ZeroStateShowReason;
-import com.google.android.libraries.feed.api.stream.ScrollListener;
 import com.google.search.now.ui.action.FeedActionProto;
 
 import org.chromium.base.annotations.JNINamespace;

@@ -253,21 +253,21 @@ public class FeedConfigurationTest {
         Assert.assertEquals(FeedConfiguration.FEED_SERVER_METHOD_DEFAULT,
                 configuration.getValueOrDefault(ConfigKey.FEED_SERVER_METHOD, ""));
         Assert.assertEquals(FeedConfiguration.FEED_SERVER_RESPONSE_LENGTH_PREFIXED_DEFAULT,
-                configuration.getValueOrDefault(ConfigKey.FEED_SERVER_RESPONSE_LENGTH_PREFIXED, 0));
+                configuration.getValueOrDefault(
+                        ConfigKey.FEED_SERVER_RESPONSE_LENGTH_PREFIXED, false));
         Assert.assertFalse(configuration.getValueOrDefault(ConfigKey.FEED_UI_ENABLED, true));
-        Assert.assertEquals(Integer.valueOf(FeedConfiguration.INITIAL_NON_CACHED_PAGE_SIZE_DEFAULT),
+        Assert.assertEquals((long) FeedConfiguration.INITIAL_NON_CACHED_PAGE_SIZE_DEFAULT,
                 configuration.getValueOrDefault(ConfigKey.INITIAL_NON_CACHED_PAGE_SIZE, 0));
-        Assert.assertEquals(
-                Long.valueOf(FeedConfiguration.LOGGING_IMMEDIATE_CONTENT_THRESHOLD_MS_DEFAULT),
+        Assert.assertEquals((long) FeedConfiguration.LOGGING_IMMEDIATE_CONTENT_THRESHOLD_MS_DEFAULT,
                 configuration.getValueOrDefault(
                         ConfigKey.LOGGING_IMMEDIATE_CONTENT_THRESHOLD_MS, 0l));
         Assert.assertFalse(
                 configuration.getValueOrDefault(ConfigKey.MANAGE_INTERESTS_ENABLED, true));
-        Assert.assertEquals(Integer.valueOf(FeedConfiguration.NON_CACHED_MIN_PAGE_SIZE_DEFAULT),
+        Assert.assertEquals((long) FeedConfiguration.NON_CACHED_MIN_PAGE_SIZE_DEFAULT,
                 configuration.getValueOrDefault(ConfigKey.NON_CACHED_MIN_PAGE_SIZE, 0));
-        Assert.assertEquals(Integer.valueOf(FeedConfiguration.NON_CACHED_PAGE_SIZE_DEFAULT),
+        Assert.assertEquals((long) FeedConfiguration.NON_CACHED_PAGE_SIZE_DEFAULT,
                 configuration.getValueOrDefault(ConfigKey.NON_CACHED_PAGE_SIZE, 0));
-        Assert.assertEquals(Long.valueOf(FeedConfiguration.SESSION_LIFETIME_MS_DEFAULT),
+        Assert.assertEquals((long) FeedConfiguration.SESSION_LIFETIME_MS_DEFAULT,
                 configuration.getValueOrDefault(ConfigKey.SESSION_LIFETIME_MS, 0l));
         Assert.assertFalse(configuration.getValueOrDefault(ConfigKey.SNIPPETS_ENABLED, true));
         Assert.assertFalse(

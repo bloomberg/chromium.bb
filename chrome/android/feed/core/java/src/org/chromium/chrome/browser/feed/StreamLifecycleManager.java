@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.feed;
 import android.app.Activity;
 import android.support.annotation.IntDef;
 
-import com.google.android.libraries.feed.api.stream.Stream;
+import com.google.android.libraries.feed.api.client.stream.Stream;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;

@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.feed;
 
-import com.google.android.libraries.feed.api.requestmanager.RequestManager;
+import com.google.android.libraries.feed.api.client.requestmanager.RequestManager;
 import com.google.android.libraries.feed.api.scope.FeedProcessScope;
 import com.google.android.libraries.feed.common.logging.Dumper;
 

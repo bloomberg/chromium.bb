@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.feed;
 import android.support.test.filters.SmallTest;
 import android.support.test.rule.UiThreadTestRule;
 
-import com.google.android.libraries.feed.api.requestmanager.RequestManager;
+import com.google.android.libraries.feed.api.client.requestmanager.RequestManager;
 import com.google.android.libraries.feed.testing.conformance.scheduler.SchedulerConformanceTest;
 
 import org.junit.After;

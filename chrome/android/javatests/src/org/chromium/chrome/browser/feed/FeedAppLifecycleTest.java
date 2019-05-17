@@ -14,8 +14,8 @@ import static org.mockito.Mockito.when;
 import android.app.Activity;
 import android.support.test.filters.SmallTest;
 
+import com.google.android.libraries.feed.api.client.lifecycle.AppLifecycleListener;
 import com.google.android.libraries.feed.api.host.network.NetworkClient;
-import com.google.android.libraries.feed.api.lifecycle.AppLifecycleListener;
 
 import org.junit.Assert;
 import org.junit.Before;

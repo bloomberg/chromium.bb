@@ -3,8 +3,8 @@
 # found in the LICENSE file.
 
 feed_lib_proto_sources = [
+  "src/src/main/proto/com/google/android/libraries/feed/api/internal/proto/stream_data.proto",
   "src/src/main/proto/com/google/android/libraries/feed/basicstream/internal/proto/stream_saved_instance_state.proto",
-  "src/src/main/proto/com/google/android/libraries/feed/internalapi/proto/stream_data.proto",
   "src/src/main/proto/com/google/android/libraries/feed/sharedstream/proto/scroll_state.proto",
   "src/src/main/proto/com/google/android/libraries/feed/sharedstream/proto/ui_refresh_reason.proto",
   "src/src/main/proto/com/google/android/libraries/feed/testing/proto/ui_context_for_test.proto",

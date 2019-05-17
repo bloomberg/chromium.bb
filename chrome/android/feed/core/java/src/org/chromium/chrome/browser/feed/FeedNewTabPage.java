@@ -17,6 +17,9 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ScrollView;
 
+import com.google.android.libraries.feed.api.client.scope.StreamScope;
+import com.google.android.libraries.feed.api.client.stream.Header;
+import com.google.android.libraries.feed.api.client.stream.Stream;
 import com.google.android.libraries.feed.api.host.action.ActionApi;
 import com.google.android.libraries.feed.api.host.stream.CardConfiguration;
 import com.google.android.libraries.feed.api.host.stream.SnackbarApi;
@@ -26,10 +29,7 @@ import com.google.android.libraries.feed.api.host.stream.TooltipApi;
 import com.google.android.libraries.feed.api.host.stream.TooltipCallbackApi;
 import com.google.android.libraries.feed.api.host.stream.TooltipInfo;
 import com.google.android.libraries.feed.api.scope.FeedProcessScope;
-import com.google.android.libraries.feed.api.scope.FeedStreamScope;
-import com.google.android.libraries.feed.api.stream.Header;
 import com.google.android.libraries.feed.api.stream.NonDismissibleHeader;
-import com.google.android.libraries.feed.api.stream.Stream;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
@@ -372,9 +372,9 @@ public class FeedNewTabPage extends NewTabPage {
 
         TooltipApi tooltipApi = new BasicTooltipApi();
 
-        FeedStreamScope streamScope =
+        StreamScope streamScope =
                 feedProcessScope
-                        .createFeedStreamScopeBuilder(chromeActivity, mImageLoader, actionApi,
+                        .createStreamScopeBuilder(chromeActivity, mImageLoader, actionApi,
                                 new BasicStreamConfiguration(),
                                 new BasicCardConfiguration(
                                         chromeActivity.getResources(), mUiConfig),

@@ -21,7 +21,7 @@ import static org.chromium.chrome.browser.tabmodel.TabSelectionType.FROM_USER;
 import android.app.Activity;
 import android.support.test.filters.SmallTest;
 
-import com.google.android.libraries.feed.api.stream.Stream;
+import com.google.android.libraries.feed.api.client.stream.Stream;
 
 import org.junit.After;
 import org.junit.Before;
