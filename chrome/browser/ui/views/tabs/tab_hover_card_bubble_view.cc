@@ -379,10 +379,10 @@ void TabHoverCardBubbleView::UpdateAndShow(Tab* tab) {
 }
 
 void TabHoverCardBubbleView::FadeOutToHide() {
+  delayed_show_timer_.Stop();
   if (!widget_->IsVisible())
     return;
   slide_animation_delegate_->StopAnimation();
-  delayed_show_timer_.Stop();
   last_visible_timestamp_ = base::TimeTicks::Now();
   if (disable_animations_for_testing_) {
     widget_->Hide();
