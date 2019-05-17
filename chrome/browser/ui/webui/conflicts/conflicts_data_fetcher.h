@@ -12,10 +12,10 @@
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "build/build_config.h"
-#include "chrome/browser/conflicts/module_database_observer_win.h"
+#include "chrome/browser/win/conflicts/module_database_observer.h"
 
 #if defined(GOOGLE_CHROME_BUILD)
-#include "chrome/browser/conflicts/third_party_conflicts_manager_win.h"
+#include "chrome/browser/win/conflicts/third_party_conflicts_manager.h"
 #endif
 
 namespace base {

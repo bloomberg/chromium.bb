@@ -106,7 +106,6 @@ check_targets = [
   "//chrome/browser/client_hints/*",
   "//chrome/browser/clipboard/*",
   "//chrome/browser/component_updater/*",
-  "//chrome/browser/conflicts/*",
   "//chrome/browser/consent_auditor/*",
   "//chrome/browser/content_settings/*",
   "//chrome/browser/crash_upload_list/*",
