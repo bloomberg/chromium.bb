@@ -1,4 +1,8 @@
 #!/bin/sh
+# Copyright 2019 The LUCI Authors. All rights reserved.
+# Use of this source code is governed under the Apache License, Version 2.0
+# that can be found in the LICENSE file.
+
 # We want to run python in unbuffered mode; however shebangs on linux grab the
 # entire rest of the shebang line as a single argument, leading to errors like:
 #
@@ -6,12 +10,9 @@
 #
 # This little shell hack is a triple-quoted noop in python, but in sh it
 # evaluates to re-exec'ing this script in unbuffered mode.
+# pylint: disable=pointless-string-statement
 ''''exec python -u -- "$0" ${1+"$@"} # '''
 # vi: syntax=python
-
-# Copyright 2017 The LUCI Authors. All rights reserved.
-# Use of this source code is governed under the Apache License, Version 2.0
-# that can be found in the LICENSE file.
 
 """Bootstrap script to clone and forward to the recipe engine tool.
 
