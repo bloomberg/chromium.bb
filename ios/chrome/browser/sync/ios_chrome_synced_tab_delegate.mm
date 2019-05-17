@@ -135,4 +135,9 @@ bool IOSChromeSyncedTabDelegate::ShouldSync(
   return false;
 }
 
+int64_t IOSChromeSyncedTabDelegate::GetTaskIdForNavigationId(int nav_id) const {
+  // TODO: (davidjm) Implement for iOS - bug 964356
+  return -1;
+}
+
 WEB_STATE_USER_DATA_KEY_IMPL(IOSChromeSyncedTabDelegate)
