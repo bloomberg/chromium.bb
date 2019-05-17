@@ -845,52 +845,29 @@ template("test_runner_script") {
 }
 
 template("stack_script") {
-  action_with_pydeps(target_name) {
+  generate_wrapper(target_name) {
     forward_variables_from(invoker,
                            [
-                             "data_deps",
                              "deps",
                              "testonly",
                            ])
-    if (!defined(deps)) {
-      deps = []
-    }
-    if (!defined(data_deps)) {
-      data_deps = []
-    }
-
-    data_deps +=
-        [ "//third_party/android_platform/development/scripts:stack_py" ]
-
-    script = "//build/android/gyp/create_stack_script.py"
-
     _stack_target_name = invoker.stack_target_name
-    _stack_script = "//third_party/android_platform/development/scripts/stack"
 
-    _generated_script = "$root_build_dir/bin/stack_${_stack_target_name}"
-
-    outputs = [
-      _generated_script,
+    data_deps = [
+      "//third_party/android_platform/development/scripts:stack_py",
     ]
-    data = [
-      _generated_script,
-    ]
+    if (defined(invoker.data_deps)) {
+      data_deps += invoker.data_deps
+    }
 
-    args = [
+    executable = "//third_party/android_platform/development/scripts/stack"
+    wrapper_script = "$root_build_dir/bin/stack_${_stack_target_name}"
+
+    executable_args = [
       "--output-directory",
-      rebase_path(root_build_dir, root_build_dir),
-      "--script-path",
-      rebase_path(_stack_script, root_build_dir),
-      "--script-output-path",
-      rebase_path(_generated_script, root_build_dir),
+      "@WrappedPath(.)",
       "--arch=$target_cpu",
     ]
-    if (defined(invoker.packed_libraries)) {
-      args += [
-        "--packed-libs",
-        invoker.packed_libraries,
-      ]
-    }
   }
 }
 
