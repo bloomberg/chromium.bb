@@ -245,11 +245,10 @@ static_library("common") {
     "process_stats_agent.h",
     "process_stats_sender.cc",
     "process_stats_sender.h",
+    "register_support_host_request.cc",
     "register_support_host_request.h",
     "remote_input_filter.cc",
     "remote_input_filter.h",
-    "remoting_register_support_host_request.cc",
-    "remoting_register_support_host_request.h",
     "resizing_host_observer.cc",
     "resizing_host_observer.h",
     "resources.h",
@@ -294,8 +293,6 @@ static_library("common") {
     "username.h",
     "xmpp_heartbeat_sender.cc",
     "xmpp_heartbeat_sender.h",
-    "xmpp_register_support_host_request.cc",
-    "xmpp_register_support_host_request.h",
   ]
 
   libs = []
@@ -320,7 +317,6 @@ static_library("common") {
     "//remoting/host/input_monitor",
     "//remoting/host/security_key",
     "//remoting/proto/remoting/v1:directory_grpc_library",
-    "//remoting/proto/remoting/v1:remote_support_host_grpc_library",
     "//remoting/protocol",
     "//remoting/resources",
     "//services/network:network_service",
@@ -504,6 +500,7 @@ source_set("unit_tests") {
     "pin_hash_unittest.cc",
     "policy_watcher_unittest.cc",
     "process_stats_sender_unittest.cc",
+    "register_support_host_request_unittest.cc",
     "remote_input_filter_unittest.cc",
     "resizing_host_observer_unittest.cc",
     "resources_unittest.cc",
@@ -516,7 +513,6 @@ source_set("unit_tests") {
     "token_validator_factory_impl_unittest.cc",
     "touch_injector_win_unittest.cc",
     "xmpp_heartbeat_sender_unittest.cc",
-    "xmpp_register_support_host_request_unittest.cc",
   ]
 
   if (use_ozone || is_chromeos) {

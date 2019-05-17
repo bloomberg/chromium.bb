@@ -47,10 +47,3 @@ cc_grpc_library("network_traversal_grpc_library") {
     ":network_traversal_proto",
   ]
 }
-
-cc_grpc_library("remote_support_host_grpc_library") {
-  sources = [
-    "remote_support_host_messages.proto",
-    "remote_support_host_service.proto",
-  ]
-}

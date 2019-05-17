@@ -31,7 +31,6 @@
 #include "remoting/host/host_exit_codes.h"
 #include "remoting/host/it2me/it2me_confirmation_dialog.h"
 #include "remoting/host/policy_watcher.h"
-#include "remoting/host/xmpp_register_support_host_request.h"
 #include "remoting/protocol/ice_config.h"
 #include "remoting/signaling/delegating_signal_strategy.h"
 
@@ -288,13 +287,10 @@ void It2MeNativeMessagingHost::ProcessConnect(
 #if defined(OS_CHROMEOS) || !defined(NDEBUG)
   it2me_host_->set_enable_dialogs(!no_dialogs);
 #endif
-  auto register_host_request =
-      std::make_unique<XmppRegisterSupportHostRequest>(directory_bot_jid);
   it2me_host_->Connect(host_context_->Copy(), std::move(policies),
                        std::make_unique<It2MeConfirmationDialogFactory>(),
-                       std::move(register_host_request), weak_ptr_,
-                       std::move(signal_strategy), username, directory_bot_jid,
-                       ice_config);
+                       weak_ptr_, std::move(signal_strategy), username,
+                       directory_bot_jid, ice_config);
 
   SendMessageToClient(std::move(response));
 }

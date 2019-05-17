@@ -16,7 +16,6 @@
 #include "remoting/host/host_status_observer.h"
 #include "remoting/host/it2me/it2me_confirmation_dialog.h"
 #include "remoting/host/it2me/it2me_confirmation_dialog_proxy.h"
-#include "remoting/host/register_support_host_request.h"
 #include "remoting/protocol/errors.h"
 #include "remoting/protocol/port_range.h"
 #include "remoting/protocol/validating_authenticator.h"
@@ -81,7 +80,6 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
       std::unique_ptr<ChromotingHostContext> context,
       std::unique_ptr<base::DictionaryValue> policies,
       std::unique_ptr<It2MeConfirmationDialogFactory> dialog_factory,
-      std::unique_ptr<RegisterSupportHostRequest> register_request,
       base::WeakPtr<It2MeHost::Observer> observer,
       std::unique_ptr<SignalStrategy> signal_strategy,
       const std::string& username,
@@ -133,11 +131,9 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
       It2MeConfirmationDialog::Result result);
 
   // Task posted to the network thread from Connect().
-  void ConnectOnNetworkThread(
-      const std::string& username,
-      const std::string& directory_bot_jid,
-      const protocol::IceConfig& ice_config,
-      std::unique_ptr<RegisterSupportHostRequest> register_request);
+  void ConnectOnNetworkThread(const std::string& username,
+                              const std::string& directory_bot_jid,
+                              const protocol::IceConfig& ice_config);
 
   // Called when the support host registration completes.
   void OnReceivedSupportID(const std::string& support_id,
