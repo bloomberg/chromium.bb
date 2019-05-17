@@ -129,7 +129,7 @@ void EasyUnlockServiceRegular::LoadRemoteDevices() {
       multidevice_setup::mojom::FeatureState::kEnabledByUser) {
     // OnFeatureStatesChanged() will call back on this method when feature state
     // changes.
-    PA_LOG(VERBOSE) << "Smart Lock is disabled; aborting.";
+    PA_LOG(VERBOSE) << "Smart Lock is not enabled by user; aborting.";
     SetProximityAuthDevices(GetAccountId(), multidevice::RemoteDeviceRefList(),
                             base::nullopt /* local_device */);
     return;
@@ -149,6 +149,8 @@ void EasyUnlockServiceRegular::LoadRemoteDevices() {
     pref_manager_->SetEasyUnlockEnabledStateSet();
     LogSmartLockEnabledState(SmartLockEnabledState::ENABLED);
   } else {
+    PA_LOG(ERROR) << "Smart Lock is enabled by user, but no unlock key is "
+                     "present; aborting.";
     SetProximityAuthDevices(GetAccountId(), multidevice::RemoteDeviceRefList(),
                             base::nullopt /* local_device */);
 
@@ -175,7 +177,11 @@ void EasyUnlockServiceRegular::LoadRemoteDevices() {
 void EasyUnlockServiceRegular::UseLoadedRemoteDevices(
     const multidevice::RemoteDeviceRefList& remote_devices) {
   // When EasyUnlock is enabled, only one EasyUnlock host should exist.
-  DCHECK(remote_devices.size() == 1u);
+  if (remote_devices.size() != 1u) {
+    PA_LOG(ERROR) << "There should only be 1 Smart Lock host, but there are: "
+                  << remote_devices.size();
+    NOTREACHED();
+  }
 
   SetProximityAuthDevices(GetAccountId(), remote_devices,
                           device_sync_client_->GetLocalDeviceMetadata());
@@ -239,7 +245,19 @@ void EasyUnlockServiceRegular::UseLoadedRemoteDevices(
                       multidevice::SoftwareFeatureState::kEnabled;
     dict->SetBoolean(key_names::kKeyUnlockKey, unlock_key);
 
+    PA_LOG(VERBOSE) << "Storing RemoteDevice: { "
+                    << "name: " << device.name()
+                    << ", unlock_key: " << unlock_key
+                    << ", id: " << device.GetTruncatedDeviceIdForLogs()
+                    << " }.";
     device_list->Append(std::move(dict));
+  }
+
+  if (device_list->GetSize() != 2u) {
+    PA_LOG(ERROR) << "There should only be 2 devices persisted, the host and "
+                     "the client, but there are: "
+                  << device_list->GetSize();
+    NOTREACHED();
   }
 
   SetStoredRemoteDevices(*device_list);
@@ -250,7 +268,6 @@ void EasyUnlockServiceRegular::SetStoredRemoteDevices(
   std::string remote_devices_json;
   JSONStringValueSerializer serializer(&remote_devices_json);
   serializer.Serialize(devices);
-  PA_LOG(VERBOSE) << "Setting RemoteDevices:\n  " << remote_devices_json;
 
   DictionaryPrefUpdate pairing_update(profile()->GetPrefs(),
                                       prefs::kEasyUnlockPairing);

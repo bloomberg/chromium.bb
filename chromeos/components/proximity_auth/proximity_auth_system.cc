@@ -59,6 +59,11 @@ void ProximityAuthSystem::SetRemoteDevicesForUser(
     const AccountId& account_id,
     const chromeos::multidevice::RemoteDeviceRefList& remote_devices,
     base::Optional<chromeos::multidevice::RemoteDeviceRef> local_device) {
+  PA_LOG(VERBOSE) << "Setting devices for user " << account_id.Serialize()
+                  << ". Remote device count: " << remote_devices.size()
+                  << ", Local device: ["
+                  << (local_device.has_value() ? "present" : "absent") << "].";
+
   remote_devices_map_[account_id] = remote_devices;
   local_device_map_.emplace(account_id, *local_device);
 
