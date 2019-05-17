@@ -2250,6 +2250,16 @@ crbug.com/v8/8672 http/tests/devtools/bindings/suspendtarget-bindings.js [ Skip 
 crbug.com/v8/8672 http/tests/devtools/bindings/suspendtarget-navigator.js [ Skip ]
 crbug.com/v8/8672 http/tests/devtools/tracing/decode-resize.js [ Skip ]
 
+# Stack trace layout changes, disabled until v8 roll.
+crbug.com/v8/8742 fast/events/window-onerror-11.html [ Failure Pass ]
+crbug.com/v8/8742 fast/events/window-onerror-12.html [ Failure Pass ]
+crbug.com/v8/8742 http/tests/devtools/console/console-log-linkify-stack-in-errors.js [ Failure Pass ]
+crbug.com/v8/8742 http/tests/devtools/console/console-worker-nested-imports-syntax-error.js [ Failure Pass ]
+crbug.com/v8/8742 http/tests/devtools/console/console-xpath.js [ Failure Pass ]
+crbug.com/v8/8742 http/tests/devtools/sources/debugger/rethrow-error-from-bindings-crash.js [ Failure Pass ]
+crbug.com/v8/8742 virtual/mouseevent_fractional/fast/events/window-onerror-11.html [ Failure Pass ]
+crbug.com/v8/8742 virtual/mouseevent_fractional/fast/events/window-onerror-12.html [ Failure Pass ]
+
 # These testcases are incorrect, mark them as failing until they're fixed in the testsuite.
 # https://lists.w3.org/Archives/Public/www-style/2016Jan/0275.html
 # https://lists.w3.org/Archives/Public/www-style/2016Jan/0276.html
