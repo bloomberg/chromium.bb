@@ -143,7 +143,7 @@ class TabHoverCardEventSniffer : public ui::EventHandler {
  protected:
   // ui::EventTarget:
   void OnKeyEvent(ui::KeyEvent* event) override {
-    if (!TabStripIsKeyboardFocused())
+    if (!tab_strip_->pane_has_focus())
       hover_card_->FadeOutToHide();
   }
 
@@ -153,10 +153,6 @@ class TabHoverCardEventSniffer : public ui::EventHandler {
   }
 
  private:
-  bool TabStripIsKeyboardFocused() {
-    return tab_strip_->GetPaneFocusTraversable() != nullptr;
-  }
-
   TabHoverCardBubbleView* const hover_card_;
   TabStrip* tab_strip_;
   views::Widget* widget_;

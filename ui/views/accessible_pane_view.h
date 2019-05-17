@@ -35,6 +35,8 @@ class VIEWS_EXPORT AccessiblePaneView : public View,
   // the pane was able to receive focus.
   virtual bool SetPaneFocus(View* initial_focus);
 
+  bool pane_has_focus() const { return pane_has_focus_; }
+
   // Set focus to the pane with complete keyboard access, with the
   // focus initially set to the default child. Focus will be restored
   // to the last focused view if the user escapes.
