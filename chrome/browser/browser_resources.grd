@@ -379,11 +379,6 @@
       <include name="IDR_NETWORK_SPEECH_SYNTHESIS_MANIFEST" file="resources\network_speech_synthesis\manifest.json" type="BINDATA" />
       <include name="IDR_PREDICTORS_HTML" file="resources\predictors\predictors.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
       <include name="IDR_PREDICTORS_JS" file="resources\predictors\predictors.js" flattenhtml="true" type="BINDATA" compress="gzip" />
-      <if expr="not is_android">
-        <include name="IDR_NOTIFICATION_1LINE_HTML" file="resources\notification_1line.html" flattenhtml="true" type="BINDATA" />
-        <include name="IDR_NOTIFICATION_2LINE_HTML" file="resources\notification_2line.html" flattenhtml="true" type="BINDATA" />
-        <include name="IDR_NOTIFICATION_ICON_HTML" file="resources\notification_icon.html" type="BINDATA" />
-      </if>
 
       <if expr="enable_service_discovery">
         <include name="IDR_LOCAL_DISCOVERY_HTML" file="resources\local_discovery\local_discovery.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
