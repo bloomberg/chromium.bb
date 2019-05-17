@@ -96,7 +96,7 @@ void TapOnWebElementWithID(const std::string& elementID) {
       "http://ios/testing/data/http_server_files/multi_field_form.html");
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"hello!"]);
+      [ChromeEarlGrey waitForWebViewContainingText:"hello!"]);
 
   // Opening the keyboard from a webview blocks EarlGrey's synchronization.
   [[GREYConfiguration sharedInstance]

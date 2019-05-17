@@ -111,7 +111,7 @@ id<GREYMatcher> TitleOfTestPage() {
   // Open the test page in a new tab.
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:testPageURL]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"hello"]);
+      [ChromeEarlGrey waitForWebViewContainingText:"hello"]);
 
   // Open the Recent Tabs panel, check that the test page is not
   // present.
@@ -145,7 +145,7 @@ id<GREYMatcher> TitleOfTestPage() {
   // Open the test page in a new tab.
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:testPageURL]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"hello"]);
+      [ChromeEarlGrey waitForWebViewContainingText:"hello"]);
 
   // Open a new incognito tab, then close the non-OTR tab.
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewIncognitoTab]);

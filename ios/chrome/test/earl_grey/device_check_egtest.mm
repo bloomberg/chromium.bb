@@ -25,7 +25,7 @@
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey loadURL:GURL("http://browsingtest.appspot.com")]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"Window1"]);
+      [ChromeEarlGrey waitForWebViewContainingText:"Window1"]);
 }
 
 @end

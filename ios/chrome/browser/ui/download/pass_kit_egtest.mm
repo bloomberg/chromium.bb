@@ -82,8 +82,8 @@ std::unique_ptr<net::test_server::HttpResponse> GetResponse(
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey loadURL:self.testServer->GetURL("/")]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"Bad"]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"bad"]);
+      [ChromeEarlGrey waitForWebViewContainingText:"Bad"]);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebViewElementWithID:@"bad"]);
 
   bool infobarShown = WaitUntilConditionOrTimeout(kWaitForDownloadTimeout, ^{
     NSError* error = nil;
@@ -105,8 +105,8 @@ std::unique_ptr<net::test_server::HttpResponse> GetResponse(
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey loadURL:self.testServer->GetURL("/")]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"Good"]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"good"]);
+      [ChromeEarlGrey waitForWebViewContainingText:"Good"]);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebViewElementWithID:@"good"]);
 
   // PKAddPassesViewController UI is rendered out of host process so EarlGrey
   // matcher can not find PassKit Dialog UI. Instead this test relies on view

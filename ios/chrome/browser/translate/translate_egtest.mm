@@ -38,6 +38,7 @@
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
+#import "ios/chrome/test/app/web_view_interaction_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_error_util.h"
@@ -64,6 +65,7 @@ using base::test::ios::kWaitForUIElementTimeout;
 using chrome_test_util::ButtonWithAccessibilityLabel;
 using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::CloseButton;
+using chrome_test_util::TapWebViewElementWithId;
 using chrome_test_util::ToolsMenuView;
 
 namespace {
@@ -634,7 +636,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
   expectedLanguageDetails.adopted_language = "fr";
   [self assertLanguageDetails:expectedLanguageDetails];
   // Trigger the hash change.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"Hash"]);
+  GREYAssert(TapWebViewElementWithId("Hash"), @"Failed to tap \"Hash\"");
   // Check that language detection has been re-run.
   expectedLanguageDetails.adopted_language = "en";
   [self assertLanguageDetails:expectedLanguageDetails];
@@ -690,9 +692,9 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
   GURL URL = web::test::HttpServer::MakeUrl(std::string("http://") + kLinkPath);
   GURL someLanguageURL = web::test::HttpServer::MakeUrl(kSomeLanguageUrl);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"click"]);
+  GREYAssert(TapWebViewElementWithId("click"), @"Failed to tap \"click\"");
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kLanguagePathText]);
+      [ChromeEarlGrey waitForWebViewContainingText:kLanguagePathText]);
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           someLanguageURL.GetContent())]
       assertWithMatcher:grey_notNil()];
@@ -879,7 +881,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
 
   // Make sure the page is not translated.
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateNotContainingText:"Translated"]);
+      [ChromeEarlGrey waitForWebViewNotContainingText:"Translated"]);
 
   // The source language tab must be selected and the target language tab must
   // not. Translate the page by tapping the target language tab.
@@ -890,7 +892,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
 
   // Make sure the page is translated.
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"Translated"]);
+      [ChromeEarlGrey waitForWebViewContainingText:"Translated"]);
 
   // The target language tab must be selected and the source language tab must
   // not. Revert the translation by tapping the source language tab.
@@ -901,7 +903,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
 
   // Make sure the translation is reverted.
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateNotContainingText:"Translated"]);
+      [ChromeEarlGrey waitForWebViewNotContainingText:"Translated"]);
 
   // The source language tab must be selected and the target language tab must
   // not.
@@ -927,7 +929,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
 
   // Make sure the page is not translated.
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateNotContainingText:"Translated"]);
+      [ChromeEarlGrey waitForWebViewNotContainingText:"Translated"]);
 
   // The target language tab must not be selected. Translate the page by
   // tapping the target language tab.
@@ -936,10 +938,10 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
 
   // Make sure the page is translated.
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"Translated"]);
+      [ChromeEarlGrey waitForWebViewContainingText:"Translated"]);
 
   // Click on the link.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"link"]);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebViewElementWithID:@"link"]);
 
   // Make sure the navigation is completed.
   GURL frenchPagePathURL = web::test::HttpServer::MakeUrl(
@@ -950,7 +952,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
 
   // Make sure the page is automatically translated.
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"Translated"]);
+      [ChromeEarlGrey waitForWebViewContainingText:"Translated"]);
 }
 
 // Tests that the source and the target languages can be changed.
@@ -1004,7 +1006,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
 
   // Make sure the page is translated.
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"Translated"]);
+      [ChromeEarlGrey waitForWebViewContainingText:"Translated"]);
 
   // Make sure the target language changes to "Dutch". The target language
   // tab must be selected and the source language tab must not. Revert the
@@ -1016,7 +1018,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
 
   // Make sure the translation is reverted.
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateNotContainingText:"Translated"]);
+      [ChromeEarlGrey waitForWebViewNotContainingText:"Translated"]);
 
   // Open the translate options menu.
   [[EarlGrey selectElementWithMatcher:OptionsButton()]
@@ -1041,7 +1043,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
 
   // Make sure the page is translated.
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"Translated"]);
+      [ChromeEarlGrey waitForWebViewContainingText:"Translated"]);
 
   // Make sure the source language changes to "English". The target language
   // tab must be selected and the source language tab must not.
@@ -1086,7 +1088,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
 
   // Make sure the page is not translated yet.
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateNotContainingText:"Translated"]);
+      [ChromeEarlGrey waitForWebViewNotContainingText:"Translated"]);
 
   // Make sure that French to English translation is not whitelisted yet.
   GREYAssert(!translatePrefs->IsLanguagePairWhitelisted("fr", "en"),
@@ -1102,7 +1104,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
 
   // Make sure the page is translated after the snackbar is dismissed.
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"Translated"]);
+      [ChromeEarlGrey waitForWebViewContainingText:"Translated"]);
 
   // Make sure that French to English translation is whitelisted after the
   // snackbar is dismissed.
@@ -1116,7 +1118,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
 
   // Make sure the page is translated.
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"Translated"]);
+      [ChromeEarlGrey waitForWebViewContainingText:"Translated"]);
 
   // The target language tab must be selected and the source language tab must
   // not.
@@ -1608,7 +1610,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
 
   // Make sure the page is translated.
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"Translated"]);
+      [ChromeEarlGrey waitForWebViewContainingText:"Translated"]);
 
   // Dismiss the translate infobar.
   [[EarlGrey selectElementWithMatcher:CloseButton()] performAction:grey_tap()];

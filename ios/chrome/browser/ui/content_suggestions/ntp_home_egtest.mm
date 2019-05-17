@@ -431,7 +431,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
                      base::SysUTF8ToNSString(kPageTitle))]
       performAction:grey_tap()];
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kPageLoadedString]);
+      [ChromeEarlGrey waitForWebViewContainingText:kPageLoadedString]);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey goBack]);
 
   // Check that the new position is the same.
@@ -470,7 +470,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
                      base::SysUTF8ToNSString(kPageTitle))]
       performAction:grey_tap()];
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kPageLoadedString]);
+      [ChromeEarlGrey waitForWebViewContainingText:kPageLoadedString]);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey goBack]);
 
   // Check that the new position is the same.
@@ -501,7 +501,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
   // Check that the page is loaded.
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kPageLoadedString]);
+      [ChromeEarlGrey waitForWebViewContainingText:kPageLoadedString]);
 }
 
 // Tests that tapping the omnibox search button logs correctly.
@@ -633,7 +633,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
                                           kToolbarOmniboxButtonIdentifier)]
       performAction:grey_tap()];
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForSufficientlyVisibleElementWithMatcher:
+      [ChromeEarlGrey waitForElementWithMatcherSufficientlyVisible:
                           chrome_test_util::Omnibox()]);
 }
 
@@ -725,7 +725,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   [ChromeEarlGrey clearBrowsingHistory];
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:pageURL]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kPageLoadedString]);
+      [ChromeEarlGrey waitForWebViewContainingText:kPageLoadedString]);
 
   // After loading URL, need to do another action before opening a new tab
   // with the icon present.
@@ -739,7 +739,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
       performAction:grey_tap()];
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForSufficientlyVisibleElementWithMatcher:
+      [ChromeEarlGrey waitForElementWithMatcherSufficientlyVisible:
                           chrome_test_util::Omnibox()]);
 }
 

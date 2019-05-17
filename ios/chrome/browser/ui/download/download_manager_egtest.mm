@@ -111,9 +111,9 @@ bool WaitForDownloadButton() {
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey loadURL:self.testServer->GetURL("/")]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"Download"]);
+      [ChromeEarlGrey waitForWebViewContainingText:"Download"]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebStateElementWithID:@"download"]);
+      [ChromeEarlGrey tapWebViewElementWithID:@"download"]);
 
   GREYAssert(WaitForDownloadButton(), @"Download button did not show up");
   [[EarlGrey selectElementWithMatcher:DownloadButton()]
@@ -130,9 +130,9 @@ bool WaitForDownloadButton() {
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey loadURL:self.testServer->GetURL("/")]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"Download"]);
+      [ChromeEarlGrey waitForWebViewContainingText:"Download"]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebStateElementWithID:@"download"]);
+      [ChromeEarlGrey tapWebViewElementWithID:@"download"]);
 
   GREYAssert(WaitForDownloadButton(), @"Download button did not show up");
   [[EarlGrey selectElementWithMatcher:DownloadButton()]
@@ -146,9 +146,9 @@ bool WaitForDownloadButton() {
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey loadURL:self.testServer->GetURL("/")]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"Download"]);
+      [ChromeEarlGrey waitForWebViewContainingText:"Download"]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebStateElementWithID:@"download"]);
+      [ChromeEarlGrey tapWebViewElementWithID:@"download"]);
 
   GREYAssert(WaitForDownloadButton(), @"Download button did not show up");
   [[EarlGrey selectElementWithMatcher:DownloadButton()]
@@ -170,9 +170,9 @@ bool WaitForDownloadButton() {
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey loadURL:self.testServer->GetURL("/")]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"Download"]);
+      [ChromeEarlGrey waitForWebViewContainingText:"Download"]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebStateElementWithID:@"download"]);
+      [ChromeEarlGrey tapWebViewElementWithID:@"download"]);
 
   GREYAssert(WaitForDownloadButton(), @"Download button did not show up");
   [[EarlGrey selectElementWithMatcher:DownloadButton()]
@@ -190,7 +190,7 @@ bool WaitForDownloadButton() {
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:GURL(kChromeUITermsURL)]);
   const char kTermsText[] = "Google Chrome Terms of Service";
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kTermsText]);
+      [ChromeEarlGrey waitForWebViewContainingText:kTermsText]);
   [ChromeEarlGrey closeCurrentTab];
   GREYAssert(WaitForOpenInButton(), @"Open in... button did not show up");
 }
@@ -200,7 +200,7 @@ bool WaitForDownloadButton() {
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey loadURL:self.testServer->GetURL("/")]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"Download"]);
+      [ChromeEarlGrey waitForWebViewContainingText:"Download"]);
 
   // Open context menu for download link.
   [[EarlGrey selectElementWithMatcher:WebViewInWebState(GetCurrentWebState())]
@@ -230,9 +230,9 @@ bool WaitForDownloadButton() {
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey loadURL:self.testServer->GetURL("/")]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"Download"]);
+      [ChromeEarlGrey waitForWebViewContainingText:"Download"]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebStateElementWithID:@"download"]);
+      [ChromeEarlGrey tapWebViewElementWithID:@"download"]);
 
   GREYAssert(WaitForDownloadButton(), @"Download button did not show up");
   [[EarlGrey selectElementWithMatcher:DownloadButton()]
@@ -246,9 +246,9 @@ bool WaitForDownloadButton() {
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey loadURL:self.testServer->GetURL("/")]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"Download"]);
+      [ChromeEarlGrey waitForWebViewContainingText:"Download"]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebStateElementWithID:@"download"]);
+      [ChromeEarlGrey tapWebViewElementWithID:@"download"]);
 
   GREYAssert(WaitForDownloadButton(), @"Download button did not show up");
   [[EarlGrey selectElementWithMatcher:DownloadButton()]

@@ -13,6 +13,7 @@
 #include "base/values.h"
 #import "ios/testing/earl_grey/earl_grey_app.h"
 #import "ios/web/interstitials/web_interstitial_impl.h"
+#import "ios/web/public/test/web_view_interaction_test_util.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "net/base/mac/url_conversions.h"
 

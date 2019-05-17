@@ -37,7 +37,7 @@
                    "e; }\">Data URL Test</button><div "
                    "id='result'></div></body></html>")]);
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"buy"]);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebViewElementWithID:@"buy"]);
 
   [self waitForWebViewContainingTexts:{"SecurityError",
                                        "Failed to construct 'PaymentRequest': "

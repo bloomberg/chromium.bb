@@ -99,7 +99,7 @@ void WaitForHttpAuthDialog() {
 
   const std::string pageText = web::HttpAuthResponseProvider::page_text();
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:pageText]);
+      [ChromeEarlGrey waitForWebViewContainingText:pageText]);
 }
 
 // Tests Basic HTTP Authentication with incorrect username and password.

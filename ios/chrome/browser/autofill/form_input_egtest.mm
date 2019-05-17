@@ -93,7 +93,7 @@ void AssertElementIsFocused(const std::string& element_id) {
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
 
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"hello!"]);
+      [ChromeEarlGrey waitForWebViewContainingText:"hello!"]);
 
   // Opening the keyboard from a webview blocks EarlGrey's synchronization.
   [[GREYConfiguration sharedInstance]

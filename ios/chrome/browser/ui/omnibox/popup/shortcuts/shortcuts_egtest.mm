@@ -123,7 +123,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   [[EarlGrey selectElementWithMatcher:[self mostVisitedTileMatcher]]
       performAction:grey_tap()];
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kTilePageLoadedString]);
+      [ChromeEarlGrey waitForWebViewContainingText:kTilePageLoadedString]);
 }
 
 - (void)testBookmarksShortcut {
@@ -246,7 +246,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
       performAction:grey_tap()];
   // Wait for the real omnibox to be visible.
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForSufficientlyVisibleElementWithMatcher:
+      [ChromeEarlGrey waitForElementWithMatcherSufficientlyVisible:
                           chrome_test_util::Omnibox()]);
 
   // The shortcuts should not show up here.
@@ -264,14 +264,14 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   const GURL pageURL = self.testServer->GetURL(kPageURL);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:pageURL]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kPageLoadedString]);
+      [ChromeEarlGrey waitForWebViewContainingText:kPageLoadedString]);
 }
 
 - (void)prepareMostVisitedTiles {
   const GURL pageURL = self.testServer->GetURL(kTilePageURL);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:pageURL]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kTilePageLoadedString]);
+      [ChromeEarlGrey waitForWebViewContainingText:kTilePageLoadedString]);
 
   // After loading URL, need to do another action before opening a new tab
   // with the icon present.

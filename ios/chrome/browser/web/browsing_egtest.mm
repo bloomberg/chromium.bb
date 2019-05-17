@@ -14,6 +14,7 @@
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
+#import "ios/chrome/test/app/web_view_interaction_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_error_util.h"
@@ -38,6 +39,7 @@
 using chrome_test_util::GetOriginalBrowserState;
 using chrome_test_util::OmniboxText;
 using chrome_test_util::OmniboxContainingText;
+using chrome_test_util::TapWebViewElementWithId;
 
 namespace {
 
@@ -104,13 +106,13 @@ id<GREYMatcher> TabWithTitle(const std::string& tab_title) {
   std::string expectedBodyBeforeReload(
       ReloadResponseProvider::GetResponseBody(0 /* request number */));
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:expectedBodyBeforeReload]);
+      [ChromeEarlGrey waitForWebViewContainingText:expectedBodyBeforeReload]);
 
   [ChromeEarlGreyUI reload];
   std::string expectedBodyAfterReload(
       ReloadResponseProvider::GetResponseBody(1 /* request_number */));
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:expectedBodyAfterReload]);
+      [ChromeEarlGrey waitForWebViewContainingText:expectedBodyAfterReload]);
 }
 
 // Tests that a tab's title is based on the URL when no other information is
@@ -194,7 +196,8 @@ id<GREYMatcher> TabWithTitle(const std::string& tab_title) {
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:1]);
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"link"]);
+  GREYAssert(TapWebViewElementWithId("link"), @"Failed to tap \"link\"");
+
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:2]);
 
   // Verify the new tab was opened with the expected URL.
@@ -224,7 +227,7 @@ id<GREYMatcher> TabWithTitle(const std::string& tab_title) {
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:1]);
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"link"]);
+  GREYAssert(TapWebViewElementWithId("link"), @"Failed to tap \"link\"");
 
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:2]);
 
@@ -267,7 +270,8 @@ id<GREYMatcher> TabWithTitle(const std::string& tab_title) {
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:1]);
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"link"]);
+  GREYAssert(TapWebViewElementWithId("link"), @"Failed to tap \"link\"");
+
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:2]);
 
   // Verify the new tab was opened with the expected URL.
@@ -306,7 +310,8 @@ id<GREYMatcher> TabWithTitle(const std::string& tab_title) {
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:1]);
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"link"]);
+  GREYAssert(TapWebViewElementWithId("link"), @"Failed to tap \"link\"");
+
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:2]);
 
   // Verify the new tab was opened with the expected URL.
@@ -330,7 +335,7 @@ id<GREYMatcher> TabWithTitle(const std::string& tab_title) {
   web::test::SetUpSimpleHttpServer(responses);
 
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"link"]);
+  GREYAssert(TapWebViewElementWithId("link"), @"Failed to tap \"link\"");
 
   [[EarlGrey selectElementWithMatcher:OmniboxText(destURL.GetContent())]
       assertWithMatcher:grey_notNil()];
@@ -338,7 +343,7 @@ id<GREYMatcher> TabWithTitle(const std::string& tab_title) {
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey goBack]);
 
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"Link"]);
+      [ChromeEarlGrey waitForWebViewContainingText:"Link"]);
   if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
     // Using partial match for Omnibox text because the displayed URL is now
     // "http://origin/#" due to the link click. This is consistent with all
@@ -379,14 +384,14 @@ id<GREYMatcher> TabWithTitle(const std::string& tab_title) {
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
 
   // Tap on chrome://version link.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"link"]);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebViewElementWithID:@"link"]);
 
   // Verify that page did not change by checking its URL and message printed by
   // onclick event.
   [[EarlGrey selectElementWithMatcher:OmniboxText("chrome://version")]
       assertWithMatcher:grey_nil()];
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"Hello world!"]);
+      [ChromeEarlGrey waitForWebViewContainingText:"Hello world!"]);
 
   // Verify that no new tabs were open which could load chrome://version.
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:1]);
@@ -453,7 +458,7 @@ id<GREYMatcher> TabWithTitle(const std::string& tab_title) {
   // Execute some JavaScript in the omnibox.
   [ChromeEarlGreyUI focusOmniboxAndType:@"javascript:document.write('foo')\n"];
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"foo"]);
+      [ChromeEarlGrey waitForWebViewContainingText:"foo"]);
 
   // Verify that the JavaScript did not affect history by going back and then
   // forward again.

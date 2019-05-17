@@ -60,7 +60,7 @@
 
   // Waits for the page to load and check it is the expected content.
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:responses[startURL]]);
+      [ChromeEarlGrey waitForWebViewContainingText:responses[startURL]]);
 
   // In the omnibox, the URL should be present, without the http:// prefix.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
@@ -84,7 +84,7 @@
 
   // Verifies that the destination page is shown.
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:responses[destinationURL]]);
+      [ChromeEarlGrey waitForWebViewContainingText:responses[destinationURL]]);
 }
 
 // Tests the fix for the regression reported in https://crbug.com/801165.  The
@@ -102,11 +102,11 @@
   // Load the test page.
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:testURL]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"File Picker Test"]);
+      [ChromeEarlGrey waitForWebViewContainingText:"File Picker Test"]);
 
   // Invoke the file picker and tap on the "Cancel" button to dismiss the file
   // picker.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"file"]);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebViewElementWithID:@"file"]);
   [[EarlGrey selectElementWithMatcher:chrome_test_util::CancelButton()]
       performAction:grey_tap()];
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
@@ -179,14 +179,14 @@
   // Load the test page.
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:testURL]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:testPageContents]);
+      [ChromeEarlGrey waitForWebViewContainingText:testPageContents]);
   web::WebState* firstWebState = chrome_test_util::GetCurrentTab().webState;
 
   // And do the same in a second tab.
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:testURL]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:testPageContents]);
+      [ChromeEarlGrey waitForWebViewContainingText:testPageContents]);
   web::WebState* secondWebState = chrome_test_util::GetCurrentTab().webState;
 
   // Check visibility before and after switching tabs.

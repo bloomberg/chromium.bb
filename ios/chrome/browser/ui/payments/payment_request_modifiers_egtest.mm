@@ -104,7 +104,7 @@ id<GREYMatcher> PaymentMethodCellMatcher(
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kModifiersPage)]);
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"buy"]);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebViewElementWithID:@"buy"]);
 
   // Verify there's no line item.
   [[EarlGrey selectElementWithMatcher:PriceCellMatcher(@"Total, USD $5.00", NO)]
@@ -119,7 +119,7 @@ id<GREYMatcher> PaymentMethodCellMatcher(
 
   [self addLocalCard];
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"buy"]);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebViewElementWithID:@"buy"]);
 
   // Verify there's a selected payment method.
   [[EarlGrey selectElementWithMatcher:PaymentMethodCellMatcher(_localCard)]
@@ -148,7 +148,7 @@ id<GREYMatcher> PaymentMethodCellMatcher(
 
   [self addServerCardWithType:CREDIT];
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"buy"]);
+  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebViewElementWithID:@"buy"]);
 
   // Verify there's a selected payment method.
   [[EarlGrey selectElementWithMatcher:PaymentMethodCellMatcher(_serverCard)]
@@ -178,7 +178,7 @@ id<GREYMatcher> PaymentMethodCellMatcher(
   [self addServerCardWithType:CREDIT];
 
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebStateElementWithID:@"credit_supported_type"]);
+      [ChromeEarlGrey tapWebViewElementWithID:@"credit_supported_type"]);
 
   // Verify there's a selected payment method.
   [[EarlGrey selectElementWithMatcher:PaymentMethodCellMatcher(_serverCard)]
@@ -204,7 +204,7 @@ id<GREYMatcher> PaymentMethodCellMatcher(
   [self addServerCardWithType:CREDIT];
 
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebStateElementWithID:@"debit_supported_type"]);
+      [ChromeEarlGrey tapWebViewElementWithID:@"debit_supported_type"]);
 
   // Verify there's no line item.
   [[EarlGrey selectElementWithMatcher:PriceCellMatcher(@"Total, USD $5.00", NO)]
@@ -224,7 +224,7 @@ id<GREYMatcher> PaymentMethodCellMatcher(
   [self addServerCardWithType:CREDIT];
 
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      tapWebStateElementWithID:@"mastercard_any_supported_type"]);
+      tapWebViewElementWithID:@"mastercard_any_supported_type"]);
 
   // Verify there's a selected payment method.
   [[EarlGrey selectElementWithMatcher:PaymentMethodCellMatcher(_serverCard)]
@@ -250,7 +250,7 @@ id<GREYMatcher> PaymentMethodCellMatcher(
   [self addLocalCard];
 
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      tapWebStateElementWithID:@"mastercard_any_supported_type"]);
+      tapWebViewElementWithID:@"mastercard_any_supported_type"]);
 
   // Verify there's a selected payment method.
   [[EarlGrey selectElementWithMatcher:PaymentMethodCellMatcher(_localCard)]
@@ -274,8 +274,8 @@ id<GREYMatcher> PaymentMethodCellMatcher(
 
   [self addServerCardWithType:CREDIT];
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      tapWebStateElementWithID:@"mastercard_supported_network"]);
+  CHROME_EG_ASSERT_NO_ERROR(
+      [ChromeEarlGrey tapWebViewElementWithID:@"mastercard_supported_network"]);
 
   // Verify there's a selected payment method.
   [[EarlGrey selectElementWithMatcher:PaymentMethodCellMatcher(_serverCard)]

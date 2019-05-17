@@ -9,6 +9,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
+#import "ios/chrome/test/app/web_view_interaction_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -23,6 +24,7 @@
 #endif
 
 using chrome_test_util::GetOriginalBrowserState;
+using chrome_test_util::TapWebViewElementWithId;
 
 namespace {
 
@@ -59,12 +61,10 @@ GURL GetTestUrl() {
 
   // Tap on the test link and wait for the page to display "Click done", as an
   // indicator that the element was tapped.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      tapWebStateElementWithID:
-          [NSString stringWithCString:linkID.c_str()
-                             encoding:[NSString defaultCStringEncoding]]]);
+  GREYAssert(TapWebViewElementWithId(linkID), @"Failed to tap %s",
+             linkID.c_str());
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"Click done"]);
+      [ChromeEarlGrey waitForWebViewContainingText:"Click done"]);
 
   // Check that no navigation occurred and no new tabs were opened.
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:1]);
@@ -101,7 +101,7 @@ GURL GetTestUrl() {
 
   // Tap on the test link.
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebStateElementWithID:@"overrides-window-open"]);
+      [ChromeEarlGrey tapWebViewElementWithID:@"overrides-window-open"]);
 
   // Check that the tab navigated to about:blank and no new tabs were opened.
   [[GREYCondition

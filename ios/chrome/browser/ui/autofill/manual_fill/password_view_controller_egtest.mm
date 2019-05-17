@@ -30,6 +30,7 @@
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
 #include "ios/web/public/test/element_selector.h"
+#import "ios/web/public/test/web_view_interaction_test_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
 
@@ -243,7 +244,7 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
   const GURL URL = self.testServer->GetURL(kFormHTMLFile);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"hello!"]);
+      [ChromeEarlGrey waitForWebViewContainingText:"hello!"]);
   SaveExamplePasswordForm();
 }
 
@@ -577,7 +578,7 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
   const GURL URL = self.testServer->GetURL(kIFrameHTMLFile);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"iFrame"]);
+      [ChromeEarlGrey waitForWebViewContainingText:"iFrame"]);
   SaveLocalPasswordForm(URL);
 
   // Bring up the keyboard.

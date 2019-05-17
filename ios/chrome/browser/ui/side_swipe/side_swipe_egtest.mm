@@ -56,7 +56,7 @@
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey loadURL:self.testServer->GetURL("/echo")]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"Echo"]);
+      [ChromeEarlGrey waitForWebViewContainingText:"Echo"]);
 
   // Open a new Tab to have a tab to switch to.
   [ChromeEarlGreyUI openNewTab];
@@ -65,7 +65,7 @@
   CHROME_EG_ASSERT_NO_ERROR(
       [ChromeEarlGrey loadURL:self.testServer->GetURL("/defaultresponse")]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"Default response"]);
+      [ChromeEarlGrey waitForWebViewContainingText:"Default response"]);
 
   // Side swipe on the toolbar.
   [[EarlGrey selectElementWithMatcher:grey_kindOfClass(klass)]
@@ -73,7 +73,7 @@
 
   // Check that we swiped back to our web page.
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"Echo"]);
+      [ChromeEarlGrey waitForWebViewContainingText:"Echo"]);
 }
 
 @end

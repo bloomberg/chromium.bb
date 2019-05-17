@@ -145,15 +145,15 @@ char kResponse3[] = "Test Page 3 content";
 - (void)loadTestURLs {
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:_URL1]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kResponse1]);
+      [ChromeEarlGrey waitForWebViewContainingText:kResponse1]);
 
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:_URL2]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kResponse2]);
+      [ChromeEarlGrey waitForWebViewContainingText:kResponse2]);
 
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:_URL3]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kResponse3]);
+      [ChromeEarlGrey waitForWebViewContainingText:kResponse3]);
 }
 
 // Test that Clear Browsing Data can be successfully done from tab grid.

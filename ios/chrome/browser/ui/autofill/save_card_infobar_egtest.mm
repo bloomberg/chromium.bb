@@ -22,6 +22,7 @@
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #import "ios/chrome/browser/ui/autofill/save_card_infobar_controller.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
+#import "ios/chrome/test/app/web_view_interaction_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -43,6 +44,7 @@ namespace {
 using base::test::ios::kWaitForDownloadTimeout;
 using base::test::ios::kWaitForUIElementTimeout;
 using base::test::ios::WaitUntilConditionOrTimeout;
+using chrome_test_util::TapWebViewElementWithId;
 
 // URLs of the test pages.
 const char kCreditCardUploadForm[] =
@@ -237,20 +239,19 @@ class SaveCardInfobarEGTestHelper {
 #pragma mark - Page interaction helper methods
 
 - (void)fillAndSubmitFormWithCardDetailsOnly {
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebStateElementWithID:@"fill_card_only"]);
+  GREYAssert(TapWebViewElementWithId("fill_card_only"),
+             @"Failed to tap \"fill_card_only\"");
   [self submitForm];
 }
 
 - (void)fillAndSubmitForm {
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebStateElementWithID:@"fill_form"]);
+  GREYAssert(TapWebViewElementWithId("fill_form"),
+             @"Failed to tap \"fill_form\"");
   [self submitForm];
 }
 
 - (void)submitForm {
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebStateElementWithID:@"submit"]);
+  GREYAssert(TapWebViewElementWithId("submit"), @"Failed to tap \"submit\"");
 }
 
 #pragma mark - Helper methods

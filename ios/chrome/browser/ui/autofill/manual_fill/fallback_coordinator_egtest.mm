@@ -31,6 +31,7 @@
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
 #include "ios/web/public/test/element_selector.h"
+#import "ios/web/public/test/web_view_interaction_test_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
 
@@ -328,7 +329,7 @@ void DockKeyboard() {
   const GURL URL = self.testServer->GetURL(kFormHTMLFile);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"Profile form"]);
+      [ChromeEarlGrey waitForWebViewContainingText:"Profile form"]);
 }
 
 - (void)tearDown {
@@ -594,7 +595,7 @@ void DockKeyboard() {
   NSString* omniboxText = base::SysUTF8ToNSString(URL.spec() + "\n");
   [ChromeEarlGreyUI focusOmniboxAndType:omniboxText];
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"Profile form"]);
+      [ChromeEarlGrey waitForWebViewContainingText:"Profile form"]);
 
   // Bring up the keyboard by tapping the city, which is the element before the
   // picker.
@@ -628,7 +629,7 @@ void DockKeyboard() {
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewIncognitoTab]);
   [ChromeEarlGreyUI focusOmniboxAndType:omniboxText];
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:webViewText]);
+      [ChromeEarlGrey waitForWebViewContainingText:webViewText]);
 
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
       performAction:chrome_test_util::TapWebElement(kFormElementCity)];
@@ -641,7 +642,7 @@ void DockKeyboard() {
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:webViewText]);
+      [ChromeEarlGrey waitForWebViewContainingText:webViewText]);
 
   // Bring up the keyboard by tapping the city, which is the element before the
   // picker.
@@ -656,7 +657,7 @@ void DockKeyboard() {
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewIncognitoTab]);
   [ChromeEarlGreyUI focusOmniboxAndType:omniboxText];
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:webViewText]);
+      [ChromeEarlGrey waitForWebViewContainingText:webViewText]);
 
   // Bring up the keyboard by tapping the city, which is the element before the
   // picker.
@@ -667,7 +668,7 @@ void DockKeyboard() {
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:webViewText]);
+      [ChromeEarlGrey waitForWebViewContainingText:webViewText]);
 
   // Bring up the keyboard by tapping the city, which is the element before the
   // picker.
@@ -699,7 +700,7 @@ void DockKeyboard() {
   NSString* omniboxText = base::SysUTF8ToNSString(URL.spec() + "\n");
   [ChromeEarlGreyUI focusOmniboxAndType:omniboxText];
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"Profile form"]);
+      [ChromeEarlGrey waitForWebViewContainingText:"Profile form"]);
 
   // Bring up the keyboard by tapping the city, which is the element before the
   // picker.
@@ -710,7 +711,7 @@ void DockKeyboard() {
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
   CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"Profile form"]);
+      [ChromeEarlGrey waitForWebViewContainingText:"Profile form"]);
 
   // Bring up the keyboard by tapping the city, which is the element before the
   // picker.

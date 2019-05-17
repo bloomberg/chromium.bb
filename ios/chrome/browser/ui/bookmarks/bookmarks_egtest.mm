@@ -923,7 +923,7 @@ id<GREYMatcher> SearchIconButton() {
   // Verify that the resulting page is an error page.
   std::string errorMessage = net::ErrorToShortString(net::ERR_INVALID_URL);
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:errorMessage]);
+      [ChromeEarlGrey waitForWebViewContainingText:errorMessage]);
 }
 
 #pragma mark - Helpers

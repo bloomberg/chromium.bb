@@ -402,7 +402,7 @@ void AssertIsShowingDistillablePageNoNativeContent(
     bool online,
     const GURL& distillable_url) {
   CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kContentToKeep]);
+      [ChromeEarlGrey waitForWebViewContainingText:kContentToKeep]);
 
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           distillable_url.GetContent())]
@@ -411,14 +411,14 @@ void AssertIsShowingDistillablePageNoNativeContent(
   // Test that the offline and online pages are properly displayed.
   if (online) {
     CHROME_EG_ASSERT_NO_ERROR(
-        [ChromeEarlGrey waitForWebStateContainingText:kContentToRemove]);
+        [ChromeEarlGrey waitForWebViewContainingText:kContentToRemove]);
     CHROME_EG_ASSERT_NO_ERROR(
-        [ChromeEarlGrey waitForWebStateContainingText:kContentToKeep]);
+        [ChromeEarlGrey waitForWebViewContainingText:kContentToKeep]);
   } else {
     CHROME_EG_ASSERT_NO_ERROR(
-        [ChromeEarlGrey waitForWebStateNotContainingText:kContentToRemove]);
+        [ChromeEarlGrey waitForWebViewNotContainingText:kContentToRemove]);
     CHROME_EG_ASSERT_NO_ERROR(
-        [ChromeEarlGrey waitForWebStateContainingText:kContentToKeep]);
+        [ChromeEarlGrey waitForWebViewContainingText:kContentToKeep]);
   }
 
   // Test the presence of the omnibox offline chip.
@@ -458,12 +458,12 @@ void AssertIsShowingDistillablePageNativeContent(bool online,
   // Test that the offline and online pages are properly displayed.
   if (online) {
     CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-        waitForWebStateContainingText:base::SysNSStringToUTF8(contentToKeep)]);
+        waitForWebViewContainingText:base::SysNSStringToUTF8(contentToKeep)]);
     CHROME_EG_ASSERT_NO_ERROR(
         [ChromeEarlGrey waitForStaticHTMLViewNotContainingText:contentToKeep]);
   } else {
     CHROME_EG_ASSERT_NO_ERROR(
-        [ChromeEarlGrey waitForWebStateNotContainingText:kContentToKeep]);
+        [ChromeEarlGrey waitForWebViewNotContainingText:kContentToKeep]);
     CHROME_EG_ASSERT_NO_ERROR(
         [ChromeEarlGrey waitForStaticHTMLViewContainingText:contentToKeep]);
   }
