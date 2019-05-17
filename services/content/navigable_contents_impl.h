@@ -20,6 +20,7 @@ namespace content {
 
 class Service;
 class NavigableContentsDelegate;
+class NavigableContentsView;
 
 // This is the state which backs an individual NavigableContents owned by some
 // client of the Content Service. In terms of the classical Content API, this is
@@ -37,8 +38,13 @@ class NavigableContentsImpl : public mojom::NavigableContents {
   // mojom::NavigableContents:
   void Navigate(const GURL& url, mojom::NavigateParamsPtr params) override;
   void GoBack(mojom::NavigableContents::GoBackCallback callback) override;
+  void CreateView(CreateViewCallback callback) override;
   void Focus() override;
   void FocusThroughTabTraversal(bool reverse) override;
+
+  // Used (indirectly) by the client library when run in the same process as the
+  // service. See the |CreateView()| implementation for details.
+  void EmbedInProcessClientView(NavigableContentsView* view);
 
   Service* const service_;
 

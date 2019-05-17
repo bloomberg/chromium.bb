@@ -4,6 +4,8 @@
 
 #include "services/content/public/cpp/navigable_contents_view.h"
 
+#include <map>
+
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/no_destructor.h"
@@ -27,6 +29,15 @@
 namespace content {
 
 namespace {
+
+using InProcessEmbeddingMap =
+    std::map<base::UnguessableToken,
+             base::OnceCallback<void(NavigableContentsView*)>>;
+
+InProcessEmbeddingMap& GetInProcessEmbeddingMap() {
+  static base::NoDestructor<InProcessEmbeddingMap> embedding_map;
+  return *embedding_map;
+}
 
 base::AtomicFlag& GetInServiceProcessFlag() {
   static base::NoDestructor<base::AtomicFlag> in_service_process;
@@ -142,6 +153,36 @@ NavigableContentsView::NavigableContentsView(NavigableContents* contents)
   view_ = std::make_unique<LocalViewHost>(window_.get(), contents_);
   view_->set_owned_by_client();
 #endif  // defined(TOOLKIT_VIEWS) && defined(USE_AURA)
+}
+
+void NavigableContentsView::EmbedUsingToken(
+    const base::UnguessableToken& token) {
+#if defined(TOOLKIT_VIEWS)
+  DCHECK(IsClientRunningInServiceProcess());
+
+  // |token| should already have an embed callback entry in the in-process
+  // callback map, injected by the in-process Content Service implementation.
+  auto& embeddings = GetInProcessEmbeddingMap();
+  auto it = embeddings.find(token);
+  if (it == embeddings.end()) {
+    DLOG(ERROR) << "Unable to embed with unknown token " << token.ToString();
+    return;
+  }
+
+  // Invoke a callback provided by the Content Service's host environment. This
+  // should parent a web content view to our own |view()|, as well as set
+  // |native_view_| to the corresponding web contents' own NativeView.
+  auto callback = std::move(it->second);
+  embeddings.erase(it);
+  std::move(callback).Run(this);
+#endif  // defined(TOOLKIT_VIEWS)
+}
+
+// static
+void NavigableContentsView::RegisterInProcessEmbedCallback(
+    const base::UnguessableToken& token,
+    base::OnceCallback<void(NavigableContentsView*)> callback) {
+  GetInProcessEmbeddingMap()[token] = std::move(callback);
 }
 
 }  // namespace content

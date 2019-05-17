@@ -48,12 +48,36 @@ void NavigableContentsImpl::GoBack(
   delegate_->GoBack(std::move(callback));
 }
 
+void NavigableContentsImpl::CreateView(CreateViewCallback callback) {
+  // Create and stash a new callback (indexed by token) which the in-process
+  // client library can use to establish an "embedding" of the contents' view.
+  auto token = base::UnguessableToken::Create();
+  NavigableContentsView::RegisterInProcessEmbedCallback(
+      token, base::BindOnce(&NavigableContentsImpl::EmbedInProcessClientView,
+                            weak_ptr_factory_.GetWeakPtr()));
+  std::move(callback).Run(token);
+}
+
 void NavigableContentsImpl::Focus() {
   delegate_->Focus();
 }
 
 void NavigableContentsImpl::FocusThroughTabTraversal(bool reverse) {
   delegate_->FocusThroughTabTraversal(reverse);
+}
+
+void NavigableContentsImpl::EmbedInProcessClientView(
+    NavigableContentsView* view) {
+  DCHECK(native_content_view_);
+#if defined(TOOLKIT_VIEWS) && defined(USE_AURA)
+  view->native_view()->AddChild(native_content_view_);
+  native_content_view_->Show();
+#else
+  // TODO(https://crbug.com/855092): Support embedding of other native client
+  // views without Views + Aura.
+  NOTREACHED()
+      << "NavigableContents views are currently only supported on Views UI.";
+#endif
 }
 
 }  // namespace content

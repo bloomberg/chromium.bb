@@ -34,6 +34,8 @@ void NavigableContents::RemoveObserver(NavigableContentsObserver* observer) {
 NavigableContentsView* NavigableContents::GetView() {
   if (!view_) {
     view_ = base::WrapUnique(new NavigableContentsView(this));
+    contents_->CreateView(base::BindOnce(
+        &NavigableContents::OnEmbedTokenReceived, base::Unretained(this)));
   }
   return view_.get();
 }
@@ -97,6 +99,12 @@ void NavigableContents::UpdateContentAXTree(const ui::AXTreeID& id) {
   content_ax_tree_id_ = id;
   if (view_)
     view_->NotifyAccessibilityTreeChange();
+}
+
+void NavigableContents::OnEmbedTokenReceived(
+    const base::UnguessableToken& token) {
+  DCHECK(view_);
+  view_->EmbedUsingToken(token);
 }
 
 }  // namespace content

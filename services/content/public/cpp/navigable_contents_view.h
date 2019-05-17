@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/component_export.h"
+#include "base/unguessable_token.h"
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(TOOLKIT_VIEWS) && defined(USE_AURA)
@@ -65,6 +66,16 @@ class COMPONENT_EXPORT(CONTENT_SERVICE_CPP) NavigableContentsView {
   friend class NavigableContentsImpl;
 
   explicit NavigableContentsView(NavigableContents* contents_);
+
+  // Establishes a hierarchical relationship between this view's native UI
+  // object and another native UI object within the Content Service.
+  void EmbedUsingToken(const base::UnguessableToken& token);
+
+  // Used by the service directly when running in the same process. Establishes
+  // a way for an embed token to be used without the UI service.
+  static void RegisterInProcessEmbedCallback(
+      const base::UnguessableToken& token,
+      base::OnceCallback<void(NavigableContentsView*)> callback);
 
   NavigableContents* const contents_;
 

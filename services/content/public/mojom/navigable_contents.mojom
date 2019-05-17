@@ -8,6 +8,7 @@ import "services/network/public/mojom/network_param.mojom";
 import "ui/accessibility/mojom/ax_tree_id.mojom";
 import "ui/base/mojo/window_open_disposition.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
+import "mojo/public/mojom/base/unguessable_token.mojom";
 import "url/mojom/url.mojom";
 
 // Parameters used to configure the behavior of |NavigableContents.Navigate|.
@@ -30,6 +31,12 @@ interface NavigableContents {
   // supplied |callback| is run to indicate success/failure of the attempt. The
   // navigation attempt will fail if the history stack is empty.
   GoBack() => (bool success);
+
+  // Creates a visual representation of the navigated contents, which is
+  // maintained by the Content Service. Responds with a |embed_token| which can
+  // be given to Mus in order to authorize embedding of that visual
+  // representation within the client application's own window tree.
+  CreateView() => (mojo_base.mojom.UnguessableToken embed_token);
 
   // Attempts to transfer global input focus to the navigated contents if they
   // have an active visual representation.

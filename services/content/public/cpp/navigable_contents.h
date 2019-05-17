@@ -85,6 +85,8 @@ class COMPONENT_EXPORT(CONTENT_SERVICE_CPP) NavigableContents
                              bool from_user_gesture) override;
   void UpdateContentAXTree(const ui::AXTreeID& id) override;
 
+  void OnEmbedTokenReceived(const base::UnguessableToken& token);
+
   mojo::Remote<mojom::NavigableContents> contents_;
   mojo::Receiver<mojom::NavigableContentsClient> client_receiver_;
   std::unique_ptr<NavigableContentsView> view_;
