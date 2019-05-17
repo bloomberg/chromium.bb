@@ -66,6 +66,7 @@ class AppServiceProxyImpl : public KeyedService,
 
   apps::IconLoader* OverrideInnerIconLoaderForTesting(
       apps::IconLoader* icon_loader);
+  void ReInitializeCrostiniForTesting(Profile* profile);
 
  private:
   // An adapter, presenting an IconLoader interface based on the underlying

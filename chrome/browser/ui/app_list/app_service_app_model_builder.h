@@ -19,11 +19,15 @@ class AppServiceAppModelBuilder : public AppListModelBuilder,
   ~AppServiceAppModelBuilder() override;
 
  private:
+  class CrostiniFolderObserver;
+
   // AppListModelBuilder overrides:
   void BuildModel() override;
 
   // apps::AppRegistryCache::Observer overrides:
   void OnAppUpdate(const apps::AppUpdate& update) override;
+
+  std::unique_ptr<AppListModelUpdaterObserver> crostini_folder_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(AppServiceAppModelBuilder);
 };

@@ -179,6 +179,14 @@ apps::IconLoader* AppServiceProxyImpl::OverrideInnerIconLoaderForTesting(
   return old;
 }
 
+void AppServiceProxyImpl::ReInitializeCrostiniForTesting(Profile* profile) {
+#if defined(OS_CHROMEOS)
+  if (app_service_.is_bound()) {
+    crostini_apps_.ReInitializeForTesting(app_service_, profile);
+  }
+#endif
+}
+
 void AppServiceProxyImpl::Shutdown() {
 #if defined(OS_CHROMEOS)
   if (app_service_.is_bound()) {
