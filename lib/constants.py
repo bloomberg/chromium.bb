@@ -911,13 +911,6 @@ GERRIT_ON_BORG_LABELS = {
     'Legacy-Commit-Queue': 'LCQ',
 }
 
-# Path is releative to the root of the Gerrit instance
-WHITELISTED_PARALLEL_CQ_PROJECTS = [
-    'chromeos/infra_internal/skylab_inventory',
-    'chromiumos/chromite',
-    'chromiumos/infra/recipes',
-]
-
 # Actions that a CQ run can take on a CL
 CL_ACTION_PICKED_UP = 'picked_up'         # CL picked up in CommitQueueSync
 CL_ACTION_SUBMITTED = 'submitted'         # CL submitted successfully
