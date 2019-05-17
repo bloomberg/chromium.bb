@@ -1431,7 +1431,7 @@ void RenderWidgetHostViewAndroid::ShowInternal() {
     }
   }
 
-  host()->WasShown(false /* record_presentation_time */);
+  host()->WasShown(base::nullopt /* record_tab_switch_time_request */);
 
   if (delegated_frame_host_) {
     delegated_frame_host_->WasShown(

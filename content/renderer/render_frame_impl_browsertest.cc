@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/debug/leak_annotations.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -230,7 +231,7 @@ TEST_F(RenderFrameImplTest, FrameWasShown) {
 
   WidgetMsg_WasShown was_shown_message(
       0, base::TimeTicks(), false /* was_evicted */,
-      base::TimeTicks() /* tab_switch_start_time */);
+      base::nullopt /* tab_switch_start_state */);
   frame_widget()->OnMessageReceived(was_shown_message);
 
   EXPECT_FALSE(frame_widget()->is_hidden());
@@ -269,7 +270,7 @@ TEST_F(RenderFrameImplTest, LocalChildFrameWasShown) {
 
   WidgetMsg_WasShown was_shown_message(
       0, base::TimeTicks(), false /* was_evicted */,
-      base::TimeTicks() /* tab_switch_start_time */);
+      base::nullopt /* tab_switch_start_state */);
   frame_widget()->OnMessageReceived(was_shown_message);
 
   EXPECT_FALSE(frame_widget()->is_hidden());

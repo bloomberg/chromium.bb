@@ -737,7 +737,8 @@ class CONTENT_EXPORT RenderWidget
   void OnWasHidden();
   void OnWasShown(base::TimeTicks show_request_timestamp,
                   bool was_evicted,
-                  base::TimeTicks tab_switch_start_time);
+                  const base::Optional<content::RecordTabSwitchTimeRequest>&
+                      record_tab_switch_time_request);
   void OnCreateVideoAck(int32_t video_id);
   void OnUpdateVideoAck(int32_t video_id);
   void OnRequestSetBoundsAck();

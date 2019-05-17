@@ -15,15 +15,23 @@ namespace content {
 constexpr char kDurationWithSavedFramesHistogram[] =
     "Browser.Tabs.TotalSwitchDuration.WithSavedFrames";
 constexpr char kDurationNoSavedFramesHistogram[] =
-    "Browser.Tabs.TotalSwitchDuration.NoSavedFrames";
+    "Browser.Tabs.TotalSwitchDuration.NoSavedFrames_Loaded_NotFrozen";
+constexpr char kDurationNoSavedFramesFrozenHistogram[] =
+    "Browser.Tabs.TotalSwitchDuration.NoSavedFrames_Loaded_Frozen";
+constexpr char kDurationNoSavedFramesUnloadedHistogram[] =
+    "Browser.Tabs.TotalSwitchDuration.NoSavedFrames_NotLoaded";
 constexpr char kIncompleteDurationWithSavedFramesHistogram[] =
     "Browser.Tabs.TotalIncompleteSwitchDuration.WithSavedFrames";
 constexpr char kIncompleteDurationNoSavedFramesHistogram[] =
-    "Browser.Tabs.TotalIncompleteSwitchDuration.NoSavedFrames";
+    "Browser.Tabs.TotalIncompleteSwitchDuration.NoSavedFrames_Loaded_NotFrozen";
 constexpr char kResultWithSavedFramesHistogram[] =
     "Browser.Tabs.TabSwitchResult.WithSavedFrames";
 constexpr char kResultNoSavedFramesHistogram[] =
-    "Browser.Tabs.TabSwitchResult.NoSavedFrames";
+    "Browser.Tabs.TabSwitchResult.NoSavedFrames_Loaded_NotFrozen";
+constexpr char kResultNoSavedFramesFrozenHistogram[] =
+    "Browser.Tabs.TabSwitchResult.NoSavedFrames_Loaded_Frozen";
+constexpr char kResultNoSavedFramesUnloadedHistogram[] =
+    "Browser.Tabs.TabSwitchResult.NoSavedFrames_NotLoaded";
 constexpr base::TimeDelta kDuration = base::TimeDelta::FromMilliseconds(42);
 constexpr base::TimeDelta kOtherDuration =
     base::TimeDelta::FromMilliseconds(4242);
@@ -36,6 +44,8 @@ class TabSwitchTimeRecorderTest : public testing::Test {
 
     ExpectTotalSamples(kDurationWithSavedFramesHistogram, 0);
     ExpectTotalSamples(kDurationNoSavedFramesHistogram, 0);
+    ExpectTotalSamples(kDurationNoSavedFramesFrozenHistogram, 0);
+    ExpectTotalSamples(kDurationNoSavedFramesUnloadedHistogram, 0);
   }
 
   void ExpectTotalSamples(const char* histogram_name, int expected_count) {
@@ -68,7 +78,10 @@ class TabSwitchTimeRecorderTest : public testing::Test {
 TEST_F(TabSwitchTimeRecorderTest, TimeIsRecordedWithSavedFrames) {
   const auto start = base::TimeTicks::Now();
   auto callback = tab_switch_time_recorder_.TabWasShown(
-      true /* has_saved_frames */, start, start);
+      true /* has_saved_frames */,
+      {start, /* destination_is_loaded */ true,
+       /* destination_is_frozen */ false},
+      start);
   const auto end = start + kDuration;
   auto presentation_feedback = gfx::PresentationFeedback(
       end, end - start, gfx::PresentationFeedback::Flags::kHWCompletion);
@@ -81,7 +94,6 @@ TEST_F(TabSwitchTimeRecorderTest, TimeIsRecordedWithSavedFrames) {
                           TabSwitchTimeRecorder::TabSwitchResult::kSuccess, 1);
   ExpectTotalSamples(kIncompleteDurationWithSavedFramesHistogram, 0);
 
-  ExpectTotalSamples(kDurationNoSavedFramesHistogram, 0);
   ExpectTotalSamples(kResultNoSavedFramesHistogram, 0);
   ExpectTotalSamples(kIncompleteDurationNoSavedFramesHistogram, 0);
 }
@@ -91,7 +103,10 @@ TEST_F(TabSwitchTimeRecorderTest, TimeIsRecordedWithSavedFrames) {
 TEST_F(TabSwitchTimeRecorderTest, TimeIsRecordedNoSavedFrame) {
   const auto start = base::TimeTicks::Now();
   auto callback = tab_switch_time_recorder_.TabWasShown(
-      false /* has_saved_frames */, start, start);
+      false /* has_saved_frames */,
+      {start, /* destination_is_loaded */ true,
+       /* destination_is_frozen */ false},
+      start);
   const auto end = start + kDuration;
   auto presentation_feedback = gfx::PresentationFeedback(
       end, end - start, gfx::PresentationFeedback::Flags::kHWCompletion);
@@ -103,8 +118,70 @@ TEST_F(TabSwitchTimeRecorderTest, TimeIsRecordedNoSavedFrame) {
 
   ExpectTotalSamples(kDurationNoSavedFramesHistogram, 1);
   ExpectTimeBucketCount(kDurationNoSavedFramesHistogram, kDuration, 1);
+  ExpectTotalSamples(kDurationNoSavedFramesFrozenHistogram, 0);
+  ExpectTotalSamples(kDurationNoSavedFramesUnloadedHistogram, 0);
   ExpectTotalSamples(kResultNoSavedFramesHistogram, 1);
   ExpectResultBucketCount(kResultNoSavedFramesHistogram,
+                          TabSwitchTimeRecorder::TabSwitchResult::kSuccess, 1);
+  ExpectTotalSamples(kResultNoSavedFramesFrozenHistogram, 0);
+  ExpectTotalSamples(kResultNoSavedFramesUnloadedHistogram, 0);
+  ExpectTotalSamples(kIncompleteDurationNoSavedFramesHistogram, 0);
+}
+
+// Same as TimeIsRecordedNoSavedFrame but with the destination frame frozen.
+TEST_F(TabSwitchTimeRecorderTest, TimeIsRecordedNoSavedFrameAndFrozen) {
+  const auto start = base::TimeTicks::Now();
+  auto callback = tab_switch_time_recorder_.TabWasShown(
+      false /* has_saved_frames */,
+      {start, /* destination_is_loaded */ true,
+       /* destination_is_frozen */ true},
+      start);
+  const auto end = start + kDuration;
+  auto presentation_feedback = gfx::PresentationFeedback(
+      end, end - start, gfx::PresentationFeedback::Flags::kHWCompletion);
+  std::move(callback).Run(presentation_feedback);
+
+  ExpectTotalSamples(kDurationWithSavedFramesHistogram, 0);
+  ExpectTotalSamples(kResultWithSavedFramesHistogram, 0);
+  ExpectTotalSamples(kIncompleteDurationWithSavedFramesHistogram, 0);
+
+  ExpectTotalSamples(kDurationNoSavedFramesHistogram, 0);
+  ExpectTotalSamples(kDurationNoSavedFramesFrozenHistogram, 1);
+  ExpectTimeBucketCount(kDurationNoSavedFramesFrozenHistogram, kDuration, 1);
+  ExpectTotalSamples(kDurationNoSavedFramesUnloadedHistogram, 0);
+  ExpectTotalSamples(kResultNoSavedFramesHistogram, 0);
+  ExpectTotalSamples(kResultNoSavedFramesFrozenHistogram, 1);
+  ExpectResultBucketCount(kResultNoSavedFramesFrozenHistogram,
+                          TabSwitchTimeRecorder::TabSwitchResult::kSuccess, 1);
+  ExpectTotalSamples(kResultNoSavedFramesUnloadedHistogram, 0);
+  ExpectTotalSamples(kIncompleteDurationNoSavedFramesHistogram, 0);
+}
+
+// Same as TimeIsRecordedNoSavedFrame but with the destination frame unloaded.
+TEST_F(TabSwitchTimeRecorderTest, TimeIsRecordedNoSavedFrameUnloaded) {
+  const auto start = base::TimeTicks::Now();
+  auto callback = tab_switch_time_recorder_.TabWasShown(
+      false /* has_saved_frames */,
+      {start, /* destination_is_loaded */ false,
+       /* destination_is_frozen */ false},
+      start);
+  const auto end = start + kDuration;
+  auto presentation_feedback = gfx::PresentationFeedback(
+      end, end - start, gfx::PresentationFeedback::Flags::kHWCompletion);
+  std::move(callback).Run(presentation_feedback);
+
+  ExpectTotalSamples(kDurationWithSavedFramesHistogram, 0);
+  ExpectTotalSamples(kResultWithSavedFramesHistogram, 0);
+  ExpectTotalSamples(kIncompleteDurationWithSavedFramesHistogram, 0);
+
+  ExpectTotalSamples(kDurationNoSavedFramesHistogram, 0);
+  ExpectTotalSamples(kDurationNoSavedFramesFrozenHistogram, 0);
+  ExpectTotalSamples(kDurationNoSavedFramesUnloadedHistogram, 1);
+  ExpectTimeBucketCount(kDurationNoSavedFramesUnloadedHistogram, kDuration, 1);
+  ExpectTotalSamples(kResultNoSavedFramesHistogram, 0);
+  ExpectTotalSamples(kResultNoSavedFramesFrozenHistogram, 0);
+  ExpectTotalSamples(kResultNoSavedFramesUnloadedHistogram, 1);
+  ExpectResultBucketCount(kResultNoSavedFramesUnloadedHistogram,
                           TabSwitchTimeRecorder::TabSwitchResult::kSuccess, 1);
   ExpectTotalSamples(kIncompleteDurationNoSavedFramesHistogram, 0);
 }
@@ -114,7 +191,10 @@ TEST_F(TabSwitchTimeRecorderTest, TimeIsRecordedNoSavedFrame) {
 TEST_F(TabSwitchTimeRecorderTest, PresentationFailureWithSavedFrames) {
   const auto start = base::TimeTicks::Now();
   auto callback = tab_switch_time_recorder_.TabWasShown(
-      true /* has_saved_frames */, start, start);
+      true /* has_saved_frames */,
+      {start, /* destination_is_loaded */ true,
+       /* destination_is_frozen */ false},
+      start);
   std::move(callback).Run(gfx::PresentationFeedback::Failure());
 
   ExpectTotalSamples(kDurationWithSavedFramesHistogram, 0);
@@ -134,7 +214,10 @@ TEST_F(TabSwitchTimeRecorderTest, PresentationFailureWithSavedFrames) {
 TEST_F(TabSwitchTimeRecorderTest, PresentationFailureNoSavedFrames) {
   const auto start = base::TimeTicks::Now();
   auto callback = tab_switch_time_recorder_.TabWasShown(
-      false /* has_saved_frames */, start, start);
+      false /* has_saved_frames */,
+      {start, /* destination_is_loaded */ true,
+       /* destination_is_frozen */ false},
+      start);
   std::move(callback).Run(gfx::PresentationFeedback::Failure());
 
   ExpectTotalSamples(kDurationWithSavedFramesHistogram, 0);
@@ -154,7 +237,10 @@ TEST_F(TabSwitchTimeRecorderTest, PresentationFailureNoSavedFrames) {
 TEST_F(TabSwitchTimeRecorderTest, HideBeforePresentFrameWithSavedFrames) {
   const auto start1 = base::TimeTicks::Now();
   auto callback1 = tab_switch_time_recorder_.TabWasShown(
-      true /* has_saved_frames */, start1, start1);
+      true /* has_saved_frames */,
+      {start1, /* destination_is_loaded */ true,
+       /* destination_is_frozen */ false},
+      start1);
 
   scoped_task_environment_.FastForwardBy(kDuration);
   tab_switch_time_recorder_.TabWasHidden();
@@ -174,9 +260,11 @@ TEST_F(TabSwitchTimeRecorderTest, HideBeforePresentFrameWithSavedFrames) {
 
   const auto start2 = base::TimeTicks::Now();
   auto callback2 = tab_switch_time_recorder_.TabWasShown(
-      true /* has_saved_frames */, start2, start2);
+      true /* has_saved_frames */,
+      {start2, /* destination_is_loaded */ true,
+       /* destination_is_frozen */ false},
+      start2);
   const auto end2 = start2 + kOtherDuration;
-
   auto presentation_feedback = gfx::PresentationFeedback(
       end2, end2 - start2, gfx::PresentationFeedback::Flags::kHWCompletion);
   std::move(callback2).Run(presentation_feedback);
@@ -201,7 +289,10 @@ TEST_F(TabSwitchTimeRecorderTest, HideBeforePresentFrameWithSavedFrames) {
 TEST_F(TabSwitchTimeRecorderTest, HideBeforePresentFrameNoSavedFrames) {
   const auto start1 = base::TimeTicks::Now();
   auto callback1 = tab_switch_time_recorder_.TabWasShown(
-      false /* has_saved_frames */, start1, start1);
+      false /* has_saved_frames */,
+      {start1, /* destination_is_loaded */ true,
+       /* destination_is_frozen */ false},
+      start1);
 
   scoped_task_environment_.FastForwardBy(kDuration);
   tab_switch_time_recorder_.TabWasHidden();
@@ -221,7 +312,10 @@ TEST_F(TabSwitchTimeRecorderTest, HideBeforePresentFrameNoSavedFrames) {
 
   const auto start2 = base::TimeTicks::Now();
   auto callback2 = tab_switch_time_recorder_.TabWasShown(
-      false /* has_saved_frames */, start2, start2);
+      false /* has_saved_frames */,
+      {start2, /* destination_is_loaded */ true,
+       /* destination_is_frozen */ false},
+      start2);
   const auto end2 = start2 + kOtherDuration;
 
   auto presentation_feedback = gfx::PresentationFeedback(

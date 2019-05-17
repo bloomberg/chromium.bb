@@ -16,6 +16,7 @@
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -459,11 +460,12 @@ void RenderWidgetHostViewMac::WasUnOccluded() {
   bool has_saved_frame =
       browser_compositor_->has_saved_frame_before_state_transition();
 
-  auto tab_switch_start_time = GetAndResetLastTabChangeStartTime();
+  auto tab_switch_start_state = TakeRecordTabSwitchTimeRequest();
 
   const bool renderer_should_record_presentation_time = !has_saved_frame;
-  host()->WasShown(renderer_should_record_presentation_time,
-                   tab_switch_start_time);
+  host()->WasShown(renderer_should_record_presentation_time
+                       ? tab_switch_start_state
+                       : base::nullopt);
 
   if (delegated_frame_host) {
     // If the frame for the renderer is already available, then the
@@ -472,8 +474,8 @@ void RenderWidgetHostViewMac::WasUnOccluded() {
     delegated_frame_host->WasShown(
         browser_compositor_->GetRendererLocalSurfaceIdAllocation()
             .local_surface_id(),
-        browser_compositor_->GetRendererSize(), record_presentation_time,
-        tab_switch_start_time);
+        browser_compositor_->GetRendererSize(),
+        record_presentation_time ? tab_switch_start_state : base::nullopt);
   }
 }
 

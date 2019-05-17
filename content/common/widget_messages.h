@@ -7,10 +7,12 @@
 
 // IPC messages for controlling painting and input events.
 
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "cc/input/touch_action.h"
 #include "content/common/content_param_traits.h"
 #include "content/common/cursors/webcursor.h"
+#include "content/common/tab_switch_time_recorder.h"
 #include "content/common/text_input_state.h"
 #include "content/common/visual_properties.h"
 #include "content/public/common/common_param_traits.h"
@@ -157,10 +159,13 @@ IPC_MESSAGE_ROUTED0(WidgetMsg_DisableDeviceEmulation)
 IPC_MESSAGE_ROUTED0(WidgetMsg_WasHidden)
 
 // Tells the render view that it is no longer hidden (see WasHidden).
-IPC_MESSAGE_ROUTED3(WidgetMsg_WasShown,
-                    base::TimeTicks /* show_request_timestamp */,
-                    bool /* was_evicted */,
-                    base::TimeTicks /* tab_switch_start_time */)
+IPC_MESSAGE_ROUTED3(
+    WidgetMsg_WasShown,
+    base::TimeTicks /* show_request_timestamp */,
+    bool /* was_evicted */,
+    base::Optional<
+        content::
+            RecordTabSwitchTimeRequest> /* record_tab_switch_time_request */)
 
 // Activate/deactivate the RenderWidget (i.e., set its controls' tint
 // accordingly, etc.).

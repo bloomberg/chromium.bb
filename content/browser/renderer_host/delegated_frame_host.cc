@@ -92,18 +92,17 @@ DelegatedFrameHost::~DelegatedFrameHost() {
 void DelegatedFrameHost::WasShown(
     const viz::LocalSurfaceId& new_local_surface_id,
     const gfx::Size& new_dip_size,
-    bool record_presentation_time,
-    base::TimeTicks tab_switch_start_time) {
+    const base::Optional<RecordTabSwitchTimeRequest>&
+        record_tab_switch_time_request) {
   // Cancel any pending frame eviction and unpause it if paused.
   frame_eviction_state_ = FrameEvictionState::kNotStarted;
 
   frame_evictor_->SetVisible(true);
-  if (record_presentation_time && compositor_ &&
-      !tab_switch_start_time.is_null()) {
+  if (record_tab_switch_time_request && compositor_) {
     compositor_->RequestPresentationTimeForNextFrame(
-        tab_switch_time_recorder_.TabWasShown(true /* has_saved_frames */,
-                                              tab_switch_start_time,
-                                              base::TimeTicks::Now()));
+        tab_switch_time_recorder_.TabWasShown(
+            true /* has_saved_frames */, record_tab_switch_time_request.value(),
+            base::TimeTicks::Now()));
   }
 
   // Use the default deadline to synchronize web content with browser UI.

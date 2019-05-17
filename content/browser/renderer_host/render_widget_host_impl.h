@@ -313,8 +313,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Called to notify the RenderWidget that it has been hidden or restored from
   // having been hidden.
   void WasHidden();
-  void WasShown(bool record_presentation_time,
-                base::TimeTicks tab_switch_start_time = base::TimeTicks());
+  void WasShown(const base::Optional<RecordTabSwitchTimeRequest>&
+                    record_tab_switch_time_request);
 
   // Send a WidgetMsg_WasHidden message to the RenderWidget, without caring
   // about the visibility state of the RenderWidgetHostImpl. This is used to

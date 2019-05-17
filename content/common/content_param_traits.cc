@@ -14,6 +14,7 @@
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "content/common/frame_message_structs.h"
+#include "content/common/tab_switch_time_recorder.h"
 #include "ipc/ipc_mojo_message_helper.h"
 #include "ipc/ipc_mojo_param_traits.h"
 #include "net/base/ip_endpoint.h"
@@ -537,6 +538,32 @@ bool ParamTraits<net::SHA256HashValue>::Read(const base::Pickle* m,
 void ParamTraits<net::SHA256HashValue>::Log(const param_type& p,
                                             std::string* l) {
   l->append("<SHA256HashValue>");
+}
+
+void ParamTraits<content::RecordTabSwitchTimeRequest>::Write(
+    base::Pickle* m,
+    const param_type& p) {
+  WriteParam(m, p.tab_switch_start_time);
+  WriteParam(m, p.destination_is_loaded);
+  WriteParam(m, p.destination_is_frozen);
+}
+
+bool ParamTraits<content::RecordTabSwitchTimeRequest>::Read(
+    const base::Pickle* m,
+    base::PickleIterator* iter,
+    param_type* r) {
+  if (!ReadParam(m, iter, &r->tab_switch_start_time) ||
+      !ReadParam(m, iter, &r->destination_is_loaded) ||
+      !ReadParam(m, iter, &r->destination_is_frozen)) {
+    return false;
+  }
+
+  return true;
+}
+
+void ParamTraits<content::RecordTabSwitchTimeRequest>::Log(const param_type& p,
+                                                           std::string* l) {
+  l->append("<content::RecordTabSwitchTimeRequest>");
 }
 
 }  // namespace IPC

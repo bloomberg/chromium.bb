@@ -21,6 +21,7 @@
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/resource_coordinator/tab_helper.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_desktop_util.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
 #include "chrome/browser/ui/browser.h"
@@ -1624,8 +1625,12 @@ TabStripSelectionChange TabStripModel::SetSelection(
             tab_switch_event_latency_recorder_.input_event_timestamp();
         // input_event_timestamp may be null in some cases, e.g. in tests.
         selection.new_contents->GetRenderWidgetHostView()
-            ->SetLastTabChangeStartTime(
-                !input_event_timestamp.is_null() ? input_event_timestamp : now);
+            ->SetRecordTabSwitchTimeRequest(
+                !input_event_timestamp.is_null() ? input_event_timestamp : now,
+                resource_coordinator::ResourceCoordinatorTabHelper::IsLoaded(
+                    selection.new_contents),
+                resource_coordinator::ResourceCoordinatorTabHelper::IsFrozen(
+                    selection.new_contents));
       }
       tab_switch_event_latency_recorder_.OnWillChangeActiveTab(now);
     }

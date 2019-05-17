@@ -924,9 +924,11 @@ void RenderWidget::OnWasHidden() {
     observer.WasHidden();
 }
 
-void RenderWidget::OnWasShown(base::TimeTicks show_request_timestamp,
-                              bool was_evicted,
-                              base::TimeTicks tab_switch_start_time) {
+void RenderWidget::OnWasShown(
+    base::TimeTicks show_request_timestamp,
+    bool was_evicted,
+    const base::Optional<content::RecordTabSwitchTimeRequest>&
+        record_tab_switch_time_request) {
   // A frozen main frame widget does not become shown, since it has no frame
   // associated with it. It must be thawed before changing visibility.
   DCHECK(!is_frozen_);
@@ -937,11 +939,11 @@ void RenderWidget::OnWasShown(base::TimeTicks show_request_timestamp,
   was_shown_time_ = base::TimeTicks::Now();
 
   SetHidden(false);
-  if (!tab_switch_start_time.is_null()) {
+  if (record_tab_switch_time_request) {
     layer_tree_view_->layer_tree_host()->RequestPresentationTimeForNextFrame(
-        tab_switch_time_recorder_.TabWasShown(false /* has_saved_frames */,
-                                              tab_switch_start_time,
-                                              show_request_timestamp));
+        tab_switch_time_recorder_.TabWasShown(
+            false /* has_saved_frames */,
+            record_tab_switch_time_request.value(), show_request_timestamp));
   }
 
   for (auto& observer : render_frames_)

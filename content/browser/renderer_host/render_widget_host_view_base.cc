@@ -823,15 +823,19 @@ RenderWidgetHostViewBase::GetTouchSelectionControllerClientManager() {
   return nullptr;
 }
 
-void RenderWidgetHostViewBase::SetLastTabChangeStartTime(
-    base::TimeTicks start_time) {
-  last_tab_switch_start_time_ = start_time;
+void RenderWidgetHostViewBase::SetRecordTabSwitchTimeRequest(
+    base::TimeTicks start_time,
+    bool destination_is_loaded,
+    bool destination_is_frozen) {
+  last_record_tab_switch_time_request_.emplace(
+      start_time, destination_is_loaded, destination_is_frozen);
 }
 
-base::TimeTicks RenderWidgetHostViewBase::GetAndResetLastTabChangeStartTime() {
-  auto stored_time = last_tab_switch_start_time_;
-  last_tab_switch_start_time_ = base::TimeTicks();
-  return stored_time;
+base::Optional<RecordTabSwitchTimeRequest>
+RenderWidgetHostViewBase::TakeRecordTabSwitchTimeRequest() {
+  auto stored_state = std::move(last_record_tab_switch_time_request_);
+  last_record_tab_switch_time_request_.reset();
+  return stored_state;
 }
 
 void RenderWidgetHostViewBase::SynchronizeVisualProperties() {

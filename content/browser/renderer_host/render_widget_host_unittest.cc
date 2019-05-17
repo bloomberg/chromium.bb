@@ -1017,7 +1017,7 @@ TEST_F(RenderWidgetHostTest, HideShowMessages) {
 
   // Now unhide.
   process_->sink().ClearMessages();
-  host_->WasShown(false /* record_presentation_time */);
+  host_->WasShown(base::nullopt /* record_tab_switch_time_request */);
   EXPECT_FALSE(host_->is_hidden_);
 
   // It should have sent out a restored message.
@@ -1322,7 +1322,7 @@ TEST_F(RenderWidgetHostTest, InputEventAckTimeoutDisabledForInputWhenHidden) {
 
   // Showing the widget should restore the timeout, as the events have
   // not yet been ack'ed.
-  host_->WasShown(false /* record_presentation_time */);
+  host_->WasShown(base::nullopt /* record_tab_switch_time_request */);
   RunLoopFor(TimeDelta::FromMicroseconds(2));
   EXPECT_TRUE(delegate_->unresponsive_timer_fired());
 }
@@ -1628,7 +1628,7 @@ TEST_F(RenderWidgetHostTest, RendererExitedResetsInputRouter) {
 TEST_F(RenderWidgetHostTest, RendererExitedResetsIsHidden) {
   // RendererExited will delete the view.
   host_->SetView(new TestView(host_.get()));
-  host_->WasShown(false /* record_presentation_time */);
+  host_->WasShown(base::nullopt /* record_tab_switch_time_request */);
 
   ASSERT_FALSE(host_->is_hidden());
   host_->RendererExited();
@@ -2038,20 +2038,20 @@ TEST_F(RenderWidgetHostTest, RenderWidgetSurfaceProperties) {
 TEST_F(RenderWidgetHostTest, NavigateInBackgroundShowsBlank) {
   // When visible, navigation does not immediately call into
   // ClearDisplayedGraphics.
-  host_->WasShown(false /* record_presentation_time */);
+  host_->WasShown(base::nullopt /* record_tab_switch_time_request */);
   host_->DidNavigate(5);
   EXPECT_FALSE(host_->new_content_rendering_timeout_fired());
 
   // Hide then show. ClearDisplayedGraphics must be called.
   host_->WasHidden();
-  host_->WasShown(false /* record_presentation_time */);
+  host_->WasShown(base::nullopt /* record_tab_switch_time_request */);
   EXPECT_TRUE(host_->new_content_rendering_timeout_fired());
   host_->reset_new_content_rendering_timeout_fired();
 
   // Hide, navigate, then show. ClearDisplayedGraphics must be called.
   host_->WasHidden();
   host_->DidNavigate(6);
-  host_->WasShown(false /* record_presentation_time */);
+  host_->WasShown(base::nullopt /* record_tab_switch_time_request */);
   EXPECT_TRUE(host_->new_content_rendering_timeout_fired());
 }
 

@@ -638,13 +638,11 @@ void RenderWidgetHostViewAura::WasUnOccluded() {
   if (!host_->is_hidden())
     return;
 
-  auto tab_switch_start_time = GetAndResetLastTabChangeStartTime();
+  auto tab_switch_start_state = TakeRecordTabSwitchTimeRequest();
   bool has_saved_frame =
       delegated_frame_host_ ? delegated_frame_host_->HasSavedFrame() : false;
 
-  const bool renderer_should_record_presentation_time = !has_saved_frame;
-  host()->WasShown(renderer_should_record_presentation_time,
-                   tab_switch_start_time);
+  host()->WasShown(has_saved_frame ? base::nullopt : tab_switch_start_state);
 
   aura::Window* root = window_->GetRootWindow();
   if (root) {
@@ -657,11 +655,10 @@ void RenderWidgetHostViewAura::WasUnOccluded() {
   if (delegated_frame_host_) {
     // If the frame for the renderer is already available, then the
     // tab-switching time is the presentation time for the browser-compositor.
-    const bool record_presentation_time = has_saved_frame;
     delegated_frame_host_->WasShown(
         GetLocalSurfaceIdAllocation().local_surface_id(),
-        window_->bounds().size(), record_presentation_time,
-        tab_switch_start_time);
+        window_->bounds().size(),
+        has_saved_frame ? tab_switch_start_state : base::nullopt);
   }
 
 #if defined(OS_WIN)

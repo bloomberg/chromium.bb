@@ -157,7 +157,7 @@ void RenderWidgetHostViewGuest::Show() {
     // the renderer.
     SendSurfaceInfoToEmbedder();
   }
-  host()->WasShown(false /* record_presentation_time */);
+  host()->WasShown(base::nullopt /* record_tab_switch_time_request */);
 }
 
 void RenderWidgetHostViewGuest::Hide() {

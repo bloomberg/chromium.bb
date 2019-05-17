@@ -229,7 +229,7 @@ void RenderWidgetHostViewChildFrame::Show() {
   if (!CanBecomeVisible())
     return;
 
-  host()->WasShown(false /* record_presentation_time */);
+  host()->WasShown(base::nullopt /* record_tab_switch_time_request */);
 
   if (frame_connector_)
     frame_connector_->SetVisibilityForChildViews(true);
