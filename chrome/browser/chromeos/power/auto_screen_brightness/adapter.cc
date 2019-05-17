@@ -602,7 +602,7 @@ void Adapter::AdjustBrightness(BrightnessChangeCause cause,
   power_manager::SetBacklightBrightnessRequest request;
   request.set_percent(brightness);
   request.set_transition(
-      power_manager::SetBacklightBrightnessRequest_Transition_FAST);
+      power_manager::SetBacklightBrightnessRequest_Transition_SLOW);
   request.set_cause(power_manager::SetBacklightBrightnessRequest_Cause_MODEL);
   PowerManagerClient::Get()->SetScreenBrightness(request);
 
