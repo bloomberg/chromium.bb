@@ -628,7 +628,8 @@ void TestRunnerForSpecificView::SetIsolatedWorldInfo(
   if (!security_origin->IsString() && !security_origin->IsNull())
     return;
 
-  if (!content_security_policy->IsString() && !content_security_policy->IsNull()) {
+  if (!content_security_policy->IsString() &&
+      !content_security_policy->IsNull()) {
     return;
   }
 
