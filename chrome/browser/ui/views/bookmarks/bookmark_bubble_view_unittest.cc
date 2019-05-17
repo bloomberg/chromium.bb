@@ -27,9 +27,7 @@ const char kTestBookmarkURL[] = "http://www.google.com";
 
 class BookmarkBubbleViewTest : public BrowserWithTestWindowTest {
  public:
-  BookmarkBubbleViewTest()
-      : BrowserWithTestWindowTest(
-            content::TestBrowserThreadBundle::IO_MAINLOOP) {}
+  BookmarkBubbleViewTest() {}
 
   // testing::Test:
   void SetUp() override {

@@ -38,11 +38,8 @@ KeyedService* AccountConsistencyModeManagerFactory::BuildServiceInstanceFor(
   DCHECK(!context->IsOffTheRecord());
   Profile* profile = Profile::FromBrowserContext(context);
 
-  // New profiles are consistent at creation and can be migrated immediately
-  // without going through full migration (which requires restarting Chrome).
-  bool auto_migrate_to_dice = profile->WasCreatedByVersionOrLater("75.0.0.0");
   return AccountConsistencyModeManager::ShouldBuildServiceForProfile(profile)
-             ? new AccountConsistencyModeManager(profile, auto_migrate_to_dice)
+             ? new AccountConsistencyModeManager(profile)
              : nullptr;
 }
 

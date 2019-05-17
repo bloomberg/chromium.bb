@@ -68,9 +68,7 @@ AccountConsistencyModeManager* AccountConsistencyModeManager::GetForProfile(
   return AccountConsistencyModeManagerFactory::GetForProfile(profile);
 }
 
-AccountConsistencyModeManager::AccountConsistencyModeManager(
-    Profile* profile,
-    bool auto_migrate_to_dice)
+AccountConsistencyModeManager::AccountConsistencyModeManager(Profile* profile)
     : profile_(profile),
       account_consistency_(signin::AccountConsistencyMethod::kDisabled),
       account_consistency_initialized_(false) {
@@ -92,8 +90,7 @@ AccountConsistencyModeManager::AccountConsistencyModeManager(
   account_consistency_ = ComputeAccountConsistencyMethod(profile_);
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
-  bool is_ready_for_dice =
-      IsReadyForDiceMigration(profile_, auto_migrate_to_dice);
+  bool is_ready_for_dice = IsReadyForDiceMigration(profile_);
   if (is_ready_for_dice &&
       signin::DiceMethodGreaterOrEqual(
           account_consistency_, AccountConsistencyMethod::kDiceMigration)) {
@@ -161,11 +158,9 @@ void AccountConsistencyModeManager::SetDiceMigrationOnStartup(
 }
 
 // static
-bool AccountConsistencyModeManager::IsReadyForDiceMigration(
-    Profile* profile,
-    bool auto_migrate_to_dice) {
+bool AccountConsistencyModeManager::IsReadyForDiceMigration(Profile* profile) {
   return ShouldBuildServiceForProfile(profile) &&
-         (auto_migrate_to_dice ||
+         (profile->IsNewProfile() ||
           profile->GetPrefs()->GetBoolean(kDiceMigrationOnStartupPref));
 }
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)

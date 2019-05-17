@@ -4,11 +4,9 @@
 
 #include "chrome/browser/extensions/api/identity/identity_api.h"
 
-#include <memory>
-
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
-#include "chrome/browser/signin/account_consistency_mode_manager_test_util.h"
+#include "chrome/browser/signin/scoped_account_consistency.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/signin/core/browser/signin_buildflags.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -24,7 +22,7 @@ TEST(IdentityApiTest, DiceAllAccountsExtensions) {
   feature_list.InitAndEnableFeature(kExtensionsAllAccountsFeature);
 
   {
-    // Dice is enabled by default on new profiles.
+    ScopedAccountConsistencyDice scoped_dice;
     TestingProfile profile;
     IdentityAPI api(&profile);
     EXPECT_FALSE(api.AreExtensionsRestrictedToPrimaryAccount());
@@ -32,8 +30,9 @@ TEST(IdentityApiTest, DiceAllAccountsExtensions) {
   }
 
   {
-    std::unique_ptr<TestingProfile> pre_dice_profile = BuildPreDiceProfile();
-    IdentityAPI api(pre_dice_profile.get());
+    ScopedAccountConsistencyDiceMigration scoped_dice_migration;
+    TestingProfile profile;
+    IdentityAPI api(&profile);
     EXPECT_TRUE(api.AreExtensionsRestrictedToPrimaryAccount());
     api.Shutdown();
   }
