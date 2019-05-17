@@ -39,7 +39,7 @@ const base::Feature kFCMInvalidationsForSyncDontCheckVersion = {
 // should be removed.
 const base::Feature kTiclInvalidationsStartInvalidatorOnActiveHandler = {
     "TiclInvalidationsStartInvalidatorOnActiveHandler",
-    base::FEATURE_ENABLED_BY_DEFAULT};
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace switches
 }  // namespace invalidation
