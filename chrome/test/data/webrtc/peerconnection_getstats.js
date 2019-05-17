@@ -179,6 +179,7 @@ let kRTCOutboundRtpStreamStats = new RTCStats(kRTCSentRtpStreamStats, {
   framesEncoded: 'number',
   qpSum: 'number',
   totalEncodeTime: 'number',
+  totalPacketSendDelay: 'number',
   averageRtcpInterval: 'number',
   qualityLimitationReason: 'string',
   qualityLimitationDurations: 'object',
