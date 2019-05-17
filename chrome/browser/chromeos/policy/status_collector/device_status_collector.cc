@@ -546,6 +546,8 @@ class DeviceStatusCollectorState : public StatusCollectorState {
         tpm_status_struct.boot_lockbox_finalized);
   }
 
+  // Note that we use proto3 syntax for ProbeResult, so missing fields will
+  // have default values.
   void OnProbeDataReceived(
       const base::Optional<runtime_probe::ProbeResult>& probe_result,
       const base::circular_deque<std::unique_ptr<SampledData>>& samples) {
@@ -587,6 +589,18 @@ class DeviceStatusCollectorState : public StatusCollectorState {
         // uV to mV:
         battery_info->set_design_min_voltage(
             battery.values().voltage_min_design() / 1000);
+        if (battery.values().manufacture_date_smart() > 0) {
+          // manufacture_date in (((year-1980) * 16 + month) * 32 + day) format.
+          int remainder = battery.values().manufacture_date_smart();
+          int day = remainder % 32;
+          remainder /= 32;
+          int month = remainder % 16;
+          remainder /= 16;
+          int year = remainder + 1980;
+          // set manufacture_date in yyyy-mm-dd format.
+          battery_info->set_manufacture_date(
+              base::StringPrintf("%04d-%02d-%02d", year, month, day));
+        }
 
         for (const std::unique_ptr<SampledData>& sample_data : samples) {
           auto it = sample_data->battery_samples.find(battery.name());
