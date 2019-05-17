@@ -4322,8 +4322,8 @@ void av1_read_op_parameters_info(AV1_COMMON *const cm,
   cm->op_params[op_num].low_delay_mode_flag = aom_rb_read_bit(rb);
 }
 
-static void av1_read_temporal_point_info(AV1_COMMON *const cm,
-                                         struct aom_read_bit_buffer *rb) {
+static void read_temporal_point_info(AV1_COMMON *const cm,
+                                     struct aom_read_bit_buffer *rb) {
   cm->frame_presentation_time = aom_rb_read_unsigned_literal(
       rb, cm->buffer_model.frame_presentation_time_length);
 }
@@ -4687,7 +4687,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
       }
       if (seq_params->decoder_model_info_present_flag &&
           cm->timing_info.equal_picture_interval == 0) {
-        av1_read_temporal_point_info(cm, rb);
+        read_temporal_point_info(cm, rb);
       }
       if (seq_params->frame_id_numbers_present_flag) {
         int frame_id_length = seq_params->frame_id_length;
@@ -4766,7 +4766,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     if (cm->show_frame) {
       if (seq_params->decoder_model_info_present_flag &&
           cm->timing_info.equal_picture_interval == 0)
-        av1_read_temporal_point_info(cm, rb);
+        read_temporal_point_info(cm, rb);
     } else {
       // See if this frame can be used as show_existing_frame in future
       cm->showable_frame = aom_rb_read_bit(rb);
