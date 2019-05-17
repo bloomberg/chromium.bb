@@ -1650,10 +1650,8 @@ void DragWindowAndVerifyOffset(DetachToBrowserTabDragControllerTest* test,
 #if defined(OS_WIN)
 // TODO(mukai): enable those tests on Windows.
 #define MAYBE_OffsetForDraggingTab DISABLED_OffsetForDraggingTab
-#define MAYBE_OffsetForDraggingDetachedTab DISABLED_OffsetForDraggingDetachedTab
 #else
 #define MAYBE_OffsetForDraggingTab OffsetForDraggingTab
-#define MAYBE_OffsetForDraggingDetachedTab OffsetForDraggingDetachedTab
 #endif
 
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
@@ -1662,8 +1660,9 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   ASSERT_FALSE(TabDragController::IsActive());
 }
 
+// TODO(960915): fix flakiness and re-enable this test on mac/linux.
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
-                       MAYBE_OffsetForDraggingDetachedTab) {
+                       DISABLED_OffsetForDraggingDetachedTab) {
   AddTabAndResetBrowser(browser());
 
   DragWindowAndVerifyOffset(this, GetTabStripForBrowser(browser()), 1);
