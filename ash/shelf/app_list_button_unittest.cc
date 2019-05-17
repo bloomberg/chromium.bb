@@ -50,12 +50,13 @@ class AppListButtonTest : public AshTestBase {
   // AshTestBase:
   void SetUp() override {
     AshTestBase::SetUp();
-    app_list_button_ =
-        GetPrimaryShelf()->GetShelfViewForTesting()->GetAppListButton();
   }
 
   void SendGestureEvent(ui::GestureEvent* event) {
-    app_list_button_->OnGestureEvent(event);
+    GetPrimaryShelf()
+        ->GetShelfViewForTesting()
+        ->GetAppListButton()
+        ->OnGestureEvent(event);
   }
 
   void SendGestureEventToSecondaryDisplay(ui::GestureEvent* event) {
@@ -68,11 +69,11 @@ class AppListButtonTest : public AshTestBase {
         ->OnGestureEvent(event);
   }
 
-  const AppListButton* app_list_button() const { return app_list_button_; }
+  const AppListButton* app_list_button() const {
+    return GetPrimaryShelf()->GetShelfViewForTesting()->GetAppListButton();
+  }
 
  private:
-  AppListButton* app_list_button_ = nullptr;
-
   DISALLOW_COPY_AND_ASSIGN(AppListButtonTest);
 };
 

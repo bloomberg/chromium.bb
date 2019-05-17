@@ -47,7 +47,7 @@ class BackButtonTest : public AshTestBase {
     base::RunLoop().RunUntilIdle();
   }
 
- private:
+ protected:
   std::unique_ptr<ShelfViewTestAPI> test_api_;
 
   DISALLOW_COPY_AND_ASSIGN(BackButtonTest);
@@ -136,6 +136,14 @@ class KioskNextBackButtonTest : public BackButtonTest {
     client_ = BindMockKioskNextShellClient();
   }
 
+  void SimulateKioskNextSession() {
+    LogInKioskNextUser(GetSessionControllerClient());
+
+    // Update test_api_ because its reference to ShelfView is outdated.
+    test_api_ = std::make_unique<ShelfViewTestAPI>(
+        GetPrimaryShelf()->GetShelfViewForTesting());
+  }
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<MockKioskNextShellClient> client_;
@@ -144,7 +152,7 @@ class KioskNextBackButtonTest : public BackButtonTest {
 };
 
 TEST_F(KioskNextBackButtonTest, BackKeySequenceGenerated) {
-  LogInKioskNextUser(GetSessionControllerClient());
+  SimulateKioskNextSession();
 
   // Tablet mode should be enabled in Kiosk Next.
   ASSERT_TRUE(Shell::Get()
