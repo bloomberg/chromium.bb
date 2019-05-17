@@ -122,7 +122,8 @@ BENCHMARK_PROFILE_NAME_RE = re.compile(
        (\d+)                      # Patch
        (?:_rc)?-r(\d+)            # Revision
        (-merged)?\.
-       afdo\.bz2$
+       afdo(?:\.bz2)?$            # We don't care about the presence of .bz2,
+                                  # so we use the ignore-group '?:' operator.
      ''', re.VERBOSE)
 
 BenchmarkProfileVersion = collections.namedtuple(

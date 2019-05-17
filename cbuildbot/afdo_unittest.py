@@ -82,6 +82,15 @@ class AfdoTest(cros_test_lib.MockTempDirTestCase):
         2: 'gs://foo/2_1',
     })
 
+  def testParseProfileMatchesUncompressedProfiles(self):
+    # Local profiles will be uncompressed, and the profile parser needs to
+    # handle that.
+    profile_name = 'chromeos-chrome-amd64-76.0.3795.2_rc-r1.afdo'
+    profile_name_compressed = profile_name + '.bz2'
+    parsed = afdo._ParseBenchmarkProfileName(profile_name)
+    parsed_compressed = afdo._ParseBenchmarkProfileName(profile_name_compressed)
+    self.assertEqual(parsed, parsed_compressed)
+
   def testEnumerateBenchmarkProfilesMatchesRealWorldNames(self):
     enumerate_profiles = self.PatchObject(afdo, '_EnumerateMostRecentProfiles')
     afdo._EnumerateMostRecentBenchmarkProfiles(object(), [1])
