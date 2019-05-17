@@ -139,8 +139,14 @@ void LocalFrameUkmAggregator::RecordSample(size_t metric_index,
   auto& record = absolute_metric_records_[metric_index];
   record.interval_duration += duration;
   // Record the UMA
-  if (record.uma_counter)
+  // ForcedStyleAndLayout happen so frequently on some pages that we overflow
+  // the signed 32 counter for number of events in a 30 minute period. So
+  // randomly record with probability 1/100.
+  if (record.uma_counter &&
+      (metric_index != static_cast<MetricId>(kForcedStyleAndLayout) ||
+       base::RandInt(0, 99) == 0)) {
     record.uma_counter->CountMicroseconds(duration);
+  }
 
   // Only record ratios when inside a main frame.
   if (in_main_frame_update_) {
