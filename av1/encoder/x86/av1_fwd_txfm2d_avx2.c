@@ -711,8 +711,8 @@ static INLINE void fdct16x64_new_avx2(const __m256i *input, __m256i *output,
   output[63] = x1[63];
 }
 
-static INLINE void av1_fdct32_new_avx2(const __m256i *input, __m256i *output,
-                                       int8_t cos_bit) {
+static INLINE void fdct32_new_avx2(const __m256i *input, __m256i *output,
+                                   int8_t cos_bit) {
   __m256i x1[32];
   const int32_t *cospi = cospi_arr(cos_bit);
   const __m256i _r = _mm256_set1_epi32(1 << (cos_bit - 1));
@@ -865,8 +865,8 @@ static INLINE void av1_fdct32_new_avx2(const __m256i *input, __m256i *output,
   output[31] = x1[31];
 }
 
-static INLINE void av1_fdct64_new_avx2(const __m256i *input, __m256i *output,
-                                       int8_t cos_bit) {
+static INLINE void fdct64_new_avx2(const __m256i *input, __m256i *output,
+                                   int8_t cos_bit) {
   const int32_t *cospi = cospi_arr(cos_bit);
   const __m256i _r = _mm256_set1_epi32(1 << (cos_bit - 1));
 
@@ -1702,8 +1702,8 @@ static void lowbd_fwd_txfm2d_64x64_avx2(const int16_t *input, int32_t *output,
       bufA[j] = _mm256_cvtepi16_epi32(buf[j * 2]);
       bufB[j] = _mm256_cvtepi16_epi32(buf[j * 2 + 1]);
     }
-    av1_fdct64_new_avx2(bufA, bufA, cos_bit_row);
-    av1_fdct64_new_avx2(bufB, bufB, cos_bit_row);
+    fdct64_new_avx2(bufA, bufA, cos_bit_row);
+    fdct64_new_avx2(bufB, bufB, cos_bit_row);
     av1_round_shift_array_32_avx2(bufA, bufA, 32, -shift[2]);
     av1_round_shift_array_32_avx2(bufB, bufB, 32, -shift[2]);
 
@@ -1841,8 +1841,8 @@ static void lowbd_fwd_txfm2d_64x32_avx2(const int16_t *input, int32_t *output,
       bufA[j] = _mm256_cvtepi16_epi32(buf[j * 2]);
       bufB[j] = _mm256_cvtepi16_epi32(buf[j * 2 + 1]);
     }
-    av1_fdct64_new_avx2(bufA, bufA, cos_bit_row);
-    av1_fdct64_new_avx2(bufB, bufB, cos_bit_row);
+    fdct64_new_avx2(bufA, bufA, cos_bit_row);
+    fdct64_new_avx2(bufB, bufB, cos_bit_row);
     av1_round_shift_rect_array_32_avx2(bufA, bufA, 32, -shift[2], NewSqrt2);
     av1_round_shift_rect_array_32_avx2(bufB, bufB, 32, -shift[2], NewSqrt2);
 
@@ -1891,8 +1891,8 @@ static void lowbd_fwd_txfm2d_32x64_avx2(const int16_t *input, int32_t *output,
       bufA[j] = _mm256_cvtepi16_epi32(buf[j * 2]);
       bufB[j] = _mm256_cvtepi16_epi32(buf[j * 2 + 1]);
     }
-    av1_fdct32_new_avx2(bufA, bufA, cos_bit_row);
-    av1_fdct32_new_avx2(bufB, bufB, cos_bit_row);
+    fdct32_new_avx2(bufA, bufA, cos_bit_row);
+    fdct32_new_avx2(bufB, bufB, cos_bit_row);
     av1_round_shift_rect_array_32_avx2(bufA, bufA, 32, -shift[2], NewSqrt2);
     av1_round_shift_rect_array_32_avx2(bufB, bufB, 32, -shift[2], NewSqrt2);
 
