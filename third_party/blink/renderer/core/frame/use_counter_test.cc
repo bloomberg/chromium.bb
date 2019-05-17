@@ -46,17 +46,6 @@ class UseCounterTest : public testing::Test {
   void SetURL(const KURL& url) { dummy_->GetDocument().SetURL(url); }
   Document& GetDocument() { return dummy_->GetDocument(); }
 
-  template <typename T>
-  void HistogramBasicTest(
-      const std::string& histogram,
-      T item,
-      T second_item,
-      std::function<bool(T, UseCounter&)> counted,
-      std::function<void(T, UseCounter&)> count,
-      std::function<int(T)> histogram_map,
-      std::function<void(LocalFrame*, UseCounter&)> did_commit_load,
-      const std::string& url,
-      UseCounter::Context context = UseCounter::kDefaultContext);
   std::unique_ptr<DummyPageHolder> dummy_;
   HistogramTester histogram_tester_;
 
@@ -66,72 +55,52 @@ class UseCounterTest : public testing::Test {
   }
 };
 
-template <typename T>
-void UseCounterTest::HistogramBasicTest(
-    const std::string& histogram,
-    T item,
-    T second_item,
-    std::function<bool(T, UseCounter&)> counted,
-    std::function<void(T, UseCounter&)> count,
-    std::function<int(T)> histogram_map,
-    std::function<void(LocalFrame*, UseCounter&)> did_commit_load,
-    const std::string& url,
-    UseCounter::Context context) {
+TEST_F(UseCounterTest, RecordingExtensions) {
+  const std::string histogram = kExtensionFeaturesHistogramName;
+  constexpr auto item = mojom::WebFeature::kFetch;
+  constexpr auto second_item = WebFeature::kFetchBodyStream;
+  const std::string url = kExtensionUrl;
+  UseCounter::Context context = UseCounter::kExtensionContext;
   int page_visits_bucket = GetPageVisitsBucketforHistogram(histogram);
 
   UseCounter use_counter0(context, UseCounter::kCommited);
 
   // Test recording a single (arbitrary) counter
-  EXPECT_FALSE(counted(item, use_counter0));
-  count(item, use_counter0);
-  EXPECT_TRUE(counted(item, use_counter0));
-  histogram_tester_.ExpectUniqueSample(histogram, histogram_map(item), 1);
+  EXPECT_FALSE(use_counter0.HasRecordedMeasurement(item));
+  use_counter0.RecordMeasurement(item, *GetFrame());
+  EXPECT_TRUE(use_counter0.HasRecordedMeasurement(item));
+  histogram_tester_.ExpectUniqueSample(histogram, static_cast<int>(item), 1);
   // Test that repeated measurements have no effect
-  count(item, use_counter0);
-  histogram_tester_.ExpectUniqueSample(histogram, histogram_map(item), 1);
+  use_counter0.RecordMeasurement(item, *GetFrame());
+  histogram_tester_.ExpectUniqueSample(histogram, static_cast<int>(item), 1);
 
   // Test recording a different sample
-  EXPECT_FALSE(counted(second_item, use_counter0));
-  count(second_item, use_counter0);
-  EXPECT_TRUE(counted(second_item, use_counter0));
-  histogram_tester_.ExpectBucketCount(histogram, histogram_map(item), 1);
-  histogram_tester_.ExpectBucketCount(histogram, histogram_map(second_item), 1);
+  EXPECT_FALSE(use_counter0.HasRecordedMeasurement(second_item));
+  use_counter0.RecordMeasurement(second_item, *GetFrame());
+  EXPECT_TRUE(use_counter0.HasRecordedMeasurement(second_item));
+  histogram_tester_.ExpectBucketCount(histogram, static_cast<int>(item), 1);
+  histogram_tester_.ExpectBucketCount(histogram, static_cast<int>(second_item),
+                                      1);
   histogram_tester_.ExpectTotalCount(histogram, 2);
 
   // After a page load, the histograms will be updated, even when the URL
   // scheme is internal
   UseCounter use_counter1(context);
   SetURL(url_test_helpers::ToKURL(url));
-  did_commit_load(GetFrame(), use_counter1);
-  histogram_tester_.ExpectBucketCount(histogram, histogram_map(item), 1);
-  histogram_tester_.ExpectBucketCount(histogram, histogram_map(second_item), 1);
+  use_counter1.DidCommitLoad(GetFrame());
+  histogram_tester_.ExpectBucketCount(histogram, static_cast<int>(item), 1);
+  histogram_tester_.ExpectBucketCount(histogram, static_cast<int>(second_item),
+                                      1);
   histogram_tester_.ExpectBucketCount(histogram, page_visits_bucket, 1);
   histogram_tester_.ExpectTotalCount(histogram, 3);
 
   // Now a repeat measurement should get recorded again, exactly once
-  EXPECT_FALSE(counted(item, use_counter1));
-  count(item, use_counter1);
-  count(item, use_counter1);
-  EXPECT_TRUE(counted(item, use_counter1));
-  histogram_tester_.ExpectBucketCount(histogram, histogram_map(item), 2);
+  EXPECT_FALSE(use_counter1.HasRecordedMeasurement(item));
+  use_counter1.RecordMeasurement(item, *GetFrame());
+  use_counter1.RecordMeasurement(item, *GetFrame());
+  EXPECT_TRUE(use_counter1.HasRecordedMeasurement(item));
+  histogram_tester_.ExpectBucketCount(histogram, static_cast<int>(item), 2);
   histogram_tester_.ExpectTotalCount(histogram, 4);
-}
-
-TEST_F(UseCounterTest, RecordingExtensions) {
-  HistogramBasicTest<WebFeature>(
-      kExtensionFeaturesHistogramName, WebFeature::kFetch,
-      WebFeature::kFetchBodyStream,
-      [&](WebFeature feature, UseCounter& use_counter) -> bool {
-        return use_counter.HasRecordedMeasurement(feature);
-      },
-      [&](WebFeature feature, UseCounter& use_counter) {
-        use_counter.RecordMeasurement(feature, *GetFrame());
-      },
-      [](WebFeature feature) -> int { return static_cast<int>(feature); },
-      [&](LocalFrame* frame, UseCounter& use_counter) {
-        use_counter.DidCommitLoad(frame);
-      },
-      kExtensionUrl, UseCounter::kExtensionContext);
 }
 
 TEST_F(UseCounterTest, CSSSelectorPseudoWhere) {
