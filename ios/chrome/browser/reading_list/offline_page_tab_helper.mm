@@ -133,10 +133,9 @@ void OfflinePageTabHelper::LoadData(int offline_navigation,
   }
   DCHECK(mime);
   presenting_offline_page_ = true;
-  NSString* ns_data = base::SysUTF8ToNSString(data);
+  NSData* ns_data = [NSData dataWithBytes:data.c_str() length:data.size()];
   offline_navigation_triggered_ = url;
-  web_state_->LoadData([ns_data dataUsingEncoding:NSUTF8StringEncoding], mime,
-                       url);
+  web_state_->LoadData(ns_data, mime, url);
 }
 
 void OfflinePageTabHelper::DidStartNavigation(web::WebState* web_state,
