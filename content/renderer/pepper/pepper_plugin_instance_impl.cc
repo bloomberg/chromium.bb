@@ -1182,11 +1182,16 @@ bool PepperPluginInstanceImpl::HandleInputEvent(
       // gesture after processing has finished here.
       if (WebUserGestureIndicator::IsProcessingUserGesture(
               render_frame_->GetWebFrame())) {
-        pending_user_gesture_ =
-            ppapi::TimeTicksToPPTimeTicks(base::TimeTicks::Now());
-        pending_user_gesture_token_ =
+        auto user_gesture_token =
             WebUserGestureIndicator::CurrentUserGestureToken();
-        WebUserGestureIndicator::ExtendTimeout();
+        // Checking user_gesture_token.HasGestures() to make sure we are
+        // processing user geasture.
+        if (user_gesture_token.HasGestures()) {
+          pending_user_gesture_ =
+              ppapi::TimeTicksToPPTimeTicks(base::TimeTicks::Now());
+          pending_user_gesture_token_ = user_gesture_token;
+          WebUserGestureIndicator::ExtendTimeout();
+        }
       }
 
       // Each input event may generate more than one PP_InputEvent.

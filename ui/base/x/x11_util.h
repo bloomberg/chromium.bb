@@ -301,6 +301,9 @@ UI_BASE_X_EXPORT bool WmSupportsHint(XAtom atom);
 // Returns the ICCProfile corresponding to |monitor| using XGetWindowProperty.
 UI_BASE_X_EXPORT gfx::ICCProfile GetICCProfileForMonitor(int monitor);
 
+// Return true if the display supports SYNC extension.
+UI_BASE_X_EXPORT bool IsSyncExtensionAvailable();
+
 // Manages a piece of X11 allocated memory as a RefCountedMemory segment. This
 // object takes ownership over the passed in memory and will free it with the
 // X11 allocator when done.
