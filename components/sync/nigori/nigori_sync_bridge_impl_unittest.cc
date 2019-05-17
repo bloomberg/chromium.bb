@@ -8,6 +8,7 @@
 
 #include "base/base64.h"
 #include "components/sync/base/fake_encryptor.h"
+#include "components/sync/base/time.h"
 #include "components/sync/model/entity_data.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -18,9 +19,41 @@ namespace {
 
 using testing::_;
 using testing::Eq;
+using testing::Ne;
 using testing::NotNull;
 
 const char kNigoriKeyName[] = "nigori-key";
+
+MATCHER(NotNullTime, "") {
+  return !arg.is_null();
+}
+
+MATCHER_P(HasDefaultKeyDerivedFrom, key_params, "") {
+  const Cryptographer& cryptographer = arg;
+  Nigori expected_default_nigori;
+  expected_default_nigori.InitByDerivation(key_params.derivation_params,
+                                           key_params.password);
+  std::string expected_default_key_name;
+  EXPECT_TRUE(expected_default_nigori.Permute(
+      Nigori::Type::Password, kNigoriKeyName, &expected_default_key_name));
+  return cryptographer.GetDefaultNigoriKeyName() == expected_default_key_name;
+}
+
+MATCHER(HasKeystoreNigori, "") {
+  const std::unique_ptr<EntityData>& entity_data = arg;
+  if (!entity_data || !entity_data->specifics.has_nigori()) {
+    return false;
+  }
+  const sync_pb::NigoriSpecifics& specifics = entity_data->specifics.nigori();
+  if (specifics.passphrase_type() !=
+      sync_pb::NigoriSpecifics::KEYSTORE_PASSPHRASE) {
+    return false;
+  }
+  return !specifics.encryption_keybag().blob().empty() &&
+         !specifics.keystore_decryptor_token().blob().empty() &&
+         specifics.keybag_is_frozen() &&
+         specifics.has_keystore_migration_time();
+}
 
 KeyParams Pbkdf2KeyParams(std::string key) {
   return {KeyDerivationParams::CreateForPbkdf2(), std::move(key)};
@@ -97,8 +130,7 @@ class NigoriSyncBridgeImplTest : public testing::Test {
       const std::vector<KeyParams>& keybag_keys_params,
       const KeyParams& keystore_decryptor_params,
       const KeyParams& keystore_key_params) {
-    sync_pb::NigoriSpecifics specifics =
-        sync_pb::NigoriSpecifics::default_instance();
+    sync_pb::NigoriSpecifics specifics;
 
     Cryptographer cryptographer(&encryptor_);
     cryptographer.AddKey(keystore_decryptor_params);
@@ -117,6 +149,21 @@ class NigoriSyncBridgeImplTest : public testing::Test {
 
     specifics.set_passphrase_type(
         sync_pb::NigoriSpecifics::KEYSTORE_PASSPHRASE);
+    return specifics;
+  }
+
+  sync_pb::NigoriSpecifics BuildCustomPassphraseNigoriSpecifics(
+      const KeyParams& key_params) {
+    sync_pb::NigoriSpecifics specifics;
+
+    Cryptographer cryptographer(&encryptor_);
+    cryptographer.AddKey(key_params);
+    EXPECT_TRUE(cryptographer.GetKeys(specifics.mutable_encryption_keybag()));
+
+    specifics.set_custom_passphrase_time(TimeToProtoTime(base::Time::Now()));
+    specifics.set_passphrase_type(sync_pb::NigoriSpecifics::CUSTOM_PASSPHRASE);
+    specifics.set_encrypt_everything(true);
+
     return specifics;
   }
 
@@ -149,33 +196,6 @@ MATCHER_P(CanDecryptWith, key_params, "") {
     return false;
   }
   return decrypted == unencrypted;
-}
-
-MATCHER_P(HasDefaultKeyDerivedFrom, key_params, "") {
-  const Cryptographer& cryptographer = arg;
-  Nigori expected_default_nigori;
-  expected_default_nigori.InitByDerivation(key_params.derivation_params,
-                                           key_params.password);
-  std::string expected_default_key_name;
-  EXPECT_TRUE(expected_default_nigori.Permute(
-      Nigori::Type::Password, kNigoriKeyName, &expected_default_key_name));
-  return cryptographer.GetDefaultNigoriKeyName() == expected_default_key_name;
-}
-
-MATCHER(HasKeystoreNigori, "") {
-  const std::unique_ptr<EntityData>& entity_data = arg;
-  if (!entity_data || !entity_data->specifics.has_nigori()) {
-    return false;
-  }
-  const sync_pb::NigoriSpecifics& specifics = entity_data->specifics.nigori();
-  if (ProtoPassphraseTypeToEnum(specifics.passphrase_type()) !=
-      PassphraseType::KEYSTORE_PASSPHRASE) {
-    return false;
-  }
-  return !specifics.encryption_keybag().blob().empty() &&
-         !specifics.keystore_decryptor_token().blob().empty() &&
-         specifics.keybag_is_frozen() &&
-         specifics.has_keystore_migration_time();
 }
 
 // Simplest case of keystore Nigori: we have only one keystore key and no old
@@ -305,6 +325,80 @@ TEST_F(NigoriSyncBridgeImplTest,
   EXPECT_THAT(cryptographer, HasDefaultKeyDerivedFrom(kKeystoreKeyParams));
   // TODO(crbug.com/922900): verify that passphrase type is equal to
   // KeystorePassphrase once passphrase type support is implemented.
+}
+
+// Tests that we can perform initial sync with custom passphrase Nigori.
+// We should notify observers about encryption state changes and cryptographer
+// shouldn't be ready (by having pending keys) until user provides the
+// passphrase.
+TEST_F(NigoriSyncBridgeImplTest,
+       ShouldNotifyWhenSyncedWithCustomPassphraseNigori) {
+  EntityData entity_data;
+  *entity_data.specifics.mutable_nigori() =
+      BuildCustomPassphraseNigoriSpecifics(Pbkdf2KeyParams("passphrase"));
+
+  ASSERT_TRUE(bridge()->SetKeystoreKeys({"keystore_key"}));
+
+  EXPECT_CALL(*observer(), OnEncryptedTypesChanged(
+                               /*encrypted_types=*/EncryptableUserTypes(),
+                               /*encrypt_everything=*/true));
+  EXPECT_CALL(*observer(), OnCryptographerStateChanged(NotNull()));
+  EXPECT_CALL(*observer(),
+              OnPassphraseTypeChanged(PassphraseType::CUSTOM_PASSPHRASE,
+                                      NotNullTime()));
+  EXPECT_THAT(bridge()->MergeSyncData(std::move(entity_data)),
+              Eq(base::nullopt));
+  EXPECT_TRUE(bridge()->GetCryptographerForTesting().has_pending_keys());
+}
+
+// Tests that we can process remote update with custom passphrase Nigori, while
+// we already have keystore Nigori locally.
+// We should notify observers about encryption state changes and cryptographer
+// shouldn't be ready (by having pending keys) until user provides the
+// passphrase.
+TEST_F(NigoriSyncBridgeImplTest, ShouldTransitToCustomPassphrase) {
+  EntityData default_entity_data;
+  *default_entity_data.specifics.mutable_nigori() =
+      sync_pb::NigoriSpecifics::default_instance();
+
+  ASSERT_TRUE(bridge()->SetKeystoreKeys({"keystore_key"}));
+  // Note: passing default Nigori to MergeSyncData() leads to instantiation of
+  // keystore Nigori.
+  ASSERT_THAT(bridge()->MergeSyncData(std::move(default_entity_data)),
+              Eq(base::nullopt));
+
+  EntityData new_entity_data;
+  *new_entity_data.specifics.mutable_nigori() =
+      BuildCustomPassphraseNigoriSpecifics(Pbkdf2KeyParams("passphrase"));
+
+  EXPECT_CALL(*observer(), OnEncryptedTypesChanged(
+                               /*encrypted_types=*/EncryptableUserTypes(),
+                               /*encrypt_everything=*/true));
+  EXPECT_CALL(*observer(), OnCryptographerStateChanged(NotNull()));
+  EXPECT_CALL(*observer(),
+              OnPassphraseTypeChanged(PassphraseType::CUSTOM_PASSPHRASE,
+                                      NotNullTime()));
+  EXPECT_THAT(bridge()->ApplySyncChanges(std::move(new_entity_data)),
+              Eq(base::nullopt));
+  EXPECT_TRUE(bridge()->GetCryptographerForTesting().has_pending_keys());
+}
+
+// Tests that we don't try to overwrite default passphrase type and report
+// ModelError unless we received default Nigori node (which is determined by
+// the size of encryption_keybag). It's a requirement because receiving default
+// passphrase type might mean that some newer client switched to the new
+// passphrase type.
+TEST_F(NigoriSyncBridgeImplTest, ShouldFailOnUnknownPassprase) {
+  EntityData entity_data;
+  *entity_data.specifics.mutable_nigori() =
+      sync_pb::NigoriSpecifics::default_instance();
+  entity_data.specifics.mutable_nigori()->mutable_encryption_keybag()->set_blob(
+      "data");
+  ASSERT_TRUE(bridge()->SetKeystoreKeys({"keystore_key"}));
+
+  EXPECT_CALL(*processor(), Put(_)).Times(0);
+  EXPECT_THAT(bridge()->MergeSyncData(std::move(entity_data)),
+              Ne(base::nullopt));
 }
 
 }  // namespace

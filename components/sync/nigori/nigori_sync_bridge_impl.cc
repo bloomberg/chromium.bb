@@ -19,6 +19,8 @@ namespace syncer {
 
 namespace {
 
+using sync_pb::NigoriSpecifics;
+
 // Attempts to decrypt |keystore_decryptor_token| with |keystore_keys|. Returns
 // serialized Nigori key if successful and base::nullopt otherwise.
 base::Optional<std::string> DecryptKeystoreDecryptor(
@@ -63,7 +65,7 @@ base::Optional<std::string> DecryptKeystoreDecryptor(
 // 4. keybag_is_frozen = true.
 // 5. keystore_migration_time is current time.
 // 6. Other fields are default.
-base::Optional<sync_pb::NigoriSpecifics> MakeDefaultKeystoreNigori(
+base::Optional<NigoriSpecifics> MakeDefaultKeystoreNigori(
     const std::vector<std::string>& keystore_keys,
     Encryptor* encryptor) {
   DCHECK(encryptor);
@@ -79,7 +81,7 @@ base::Optional<sync_pb::NigoriSpecifics> MakeDefaultKeystoreNigori(
       return base::nullopt;
     }
   }
-  sync_pb::NigoriSpecifics specifics;
+  NigoriSpecifics specifics;
   if (!cryptographer.EncryptString(
           cryptographer.GetDefaultNigoriKeyData(),
           specifics.mutable_keystore_decryptor_token())) {
@@ -90,12 +92,122 @@ base::Optional<sync_pb::NigoriSpecifics> MakeDefaultKeystoreNigori(
     DLOG(ERROR) << "Failed to encrypt keystore keys into encryption_keybag.";
     return base::nullopt;
   }
-  specifics.set_passphrase_type(
-      EnumPassphraseTypeToProto(PassphraseType::KEYSTORE_PASSPHRASE));
+  specifics.set_passphrase_type(NigoriSpecifics::KEYSTORE_PASSPHRASE);
   // Let non-USS client know, that Nigori doesn't need migration.
   specifics.set_keybag_is_frozen(true);
   specifics.set_keystore_migration_time(TimeToProtoTime(base::Time::Now()));
   return specifics;
+}
+
+// Validates given |specifics| assuming it's not specifics received from the
+// server during first-time sync for current user (i.e. it's not a default
+// specifics).
+bool IsValidNigoriSpecifics(const NigoriSpecifics& specifics) {
+  if (specifics.encryption_keybag().blob().empty()) {
+    DLOG(ERROR) << "Specifics contains empty encryption_keybag.";
+    return false;
+  }
+  if (!specifics.has_passphrase_type()) {
+    DLOG(ERROR) << "Specifics has no passphrase_type.";
+    return false;
+  }
+  switch (specifics.passphrase_type()) {
+    case NigoriSpecifics::UNKNOWN:
+      DLOG(ERROR) << "Received UNKNOWN passphrase_type";
+      return false;
+    case NigoriSpecifics::IMPLICIT_PASSPHRASE:
+      // TODO(crbug.com/922900): we hope that IMPLICIT_PASSPHRASE support is not
+      // needed in new implementation. In case we need to continue migration to
+      // keystore we will need to support it.
+      // Note: in case passphrase_type is not set, we also end up here, because
+      // IMPLICIT_PASSPHRASE is a default value.
+      DLOG(ERROR) << "IMPLICIT_PASSPHRASE is not supported.";
+      return false;
+    case NigoriSpecifics::KEYSTORE_PASSPHRASE:
+      if (specifics.keystore_decryptor_token().blob().empty()) {
+        DLOG(ERROR) << "Keystore Nigori should have filled "
+                    << "keystore_decryptor_token.";
+        return false;
+      }
+      break;
+    case NigoriSpecifics::FROZEN_IMPLICIT_PASSPHRASE:
+    case NigoriSpecifics::CUSTOM_PASSPHRASE:
+      if (!specifics.encrypt_everything()) {
+        DLOG(ERROR) << "Nigori with explicit passphrase type should have "
+                       "enabled encrypt_everything.";
+        return false;
+      }
+  }
+  return true;
+}
+
+bool IsValidPassphraseTransition(
+    NigoriSpecifics::PassphraseType old_passphrase_type,
+    NigoriSpecifics::PassphraseType new_passphrase_type) {
+  // We never allow setting IMPLICIT_PASSPHRASE as current passphrase type.
+  DCHECK_NE(old_passphrase_type, NigoriSpecifics::IMPLICIT_PASSPHRASE);
+  // We assume that |new_passphrase_type| is valid.
+  DCHECK_NE(new_passphrase_type, NigoriSpecifics::UNKNOWN);
+  DCHECK_NE(new_passphrase_type, NigoriSpecifics::IMPLICIT_PASSPHRASE);
+
+  if (old_passphrase_type == new_passphrase_type) {
+    return true;
+  }
+  switch (old_passphrase_type) {
+    case NigoriSpecifics::UNKNOWN:
+      // This can happen iff we have not synced local state yet, so we accept
+      // any valid passphrase type (invalid filtered before).
+      return true;
+    case NigoriSpecifics::IMPLICIT_PASSPHRASE:
+      NOTREACHED();
+      return false;
+    case NigoriSpecifics::KEYSTORE_PASSPHRASE:
+      return new_passphrase_type == NigoriSpecifics::CUSTOM_PASSPHRASE;
+    case NigoriSpecifics::FROZEN_IMPLICIT_PASSPHRASE:
+      // There is no client side code which can cause such transition, but
+      // technically it's a valid one and can be implemented in the future.
+      return new_passphrase_type == NigoriSpecifics::CUSTOM_PASSPHRASE;
+    case NigoriSpecifics::CUSTOM_PASSPHRASE:
+      return false;
+  }
+  NOTREACHED();
+  return false;
+}
+
+// Updates |*current_type| if needed. Returns true if its value was changed.
+bool UpdatePassphraseType(NigoriSpecifics::PassphraseType new_type,
+                          NigoriSpecifics::PassphraseType* current_type) {
+  DCHECK(current_type);
+  DCHECK(IsValidPassphraseTransition(*current_type, new_type));
+  if (*current_type == new_type) {
+    return false;
+  }
+  *current_type = new_type;
+  return true;
+}
+
+bool IsValidEncryptedTypesTransition(bool old_encrypt_everything,
+                                     const NigoriSpecifics& specifics) {
+  // We don't support relaxing the encryption requirements.
+  // TODO(crbug.com/922900): more logic is to be added here, once we support
+  // enforced encryption for individual datatypes.
+  return specifics.encrypt_everything() || !old_encrypt_everything;
+}
+
+// Updates |*current_encrypt_everything| if needed. Returns true if its value
+// was changed.
+bool UpdateEncryptedTypes(const NigoriSpecifics& specifics,
+                          bool* current_encrypt_everything) {
+  DCHECK(current_encrypt_everything);
+  DCHECK(
+      IsValidEncryptedTypesTransition(*current_encrypt_everything, specifics));
+  // TODO(crbug.com/922900): more logic is to be added here, once we support
+  // enforced encryption for individual datatypes.
+  if (*current_encrypt_everything == specifics.encrypt_everything()) {
+    return false;
+  }
+  *current_encrypt_everything = specifics.encrypt_everything();
+  return true;
 }
 
 }  // namespace
@@ -103,7 +215,10 @@ base::Optional<sync_pb::NigoriSpecifics> MakeDefaultKeystoreNigori(
 NigoriSyncBridgeImpl::NigoriSyncBridgeImpl(
     std::unique_ptr<NigoriLocalChangeProcessor> processor,
     Encryptor* encryptor)
-    : processor_(std::move(processor)), cryptographer_(encryptor) {}
+    : processor_(std::move(processor)),
+      cryptographer_(encryptor),
+      passphrase_type_(NigoriSpecifics::UNKNOWN),
+      encrypt_everything_(false) {}
 
 NigoriSyncBridgeImpl::~NigoriSyncBridgeImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -224,7 +339,7 @@ base::Optional<ModelError> NigoriSyncBridgeImpl::MergeSyncData(
   }
   // We received uninitialized Nigori and need to initialize it as default
   // keystore Nigori.
-  base::Optional<sync_pb::NigoriSpecifics> initialized_specifics =
+  base::Optional<NigoriSpecifics> initialized_specifics =
       MakeDefaultKeystoreNigori(keystore_keys_, cryptographer_.encryptor());
   if (!initialized_specifics) {
     return ModelError(FROM_HERE, "Failed to initialize keystore Nigori.");
@@ -237,6 +352,7 @@ base::Optional<ModelError> NigoriSyncBridgeImpl::MergeSyncData(
 base::Optional<ModelError> NigoriSyncBridgeImpl::ApplySyncChanges(
     base::Optional<EntityData> data) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_NE(passphrase_type_, NigoriSpecifics::UNKNOWN);
   if (!data) {
     // TODO(crbug.com/922900): persist SyncMetadata and ModelTypeState.
     NOTIMPLEMENTED();
@@ -247,43 +363,115 @@ base::Optional<ModelError> NigoriSyncBridgeImpl::ApplySyncChanges(
 }
 
 base::Optional<ModelError> NigoriSyncBridgeImpl::UpdateLocalState(
-    const sync_pb::NigoriSpecifics& specifics) {
-  if (ProtoPassphraseTypeToEnum(specifics.passphrase_type()) !=
-      PassphraseType::KEYSTORE_PASSPHRASE) {
-    // TODO(crbug.com/922900): support other passphrase types.
-    NOTIMPLEMENTED();
-    return ModelError(FROM_HERE,
-                      "Only keystore Nigori node is currently supported.");
+    const NigoriSpecifics& specifics) {
+  if (!IsValidNigoriSpecifics(specifics)) {
+    return ModelError(FROM_HERE, "NigoriSpecifics is not valid.");
   }
+  if (!IsValidPassphraseTransition(
+          /*old_passphrase_type=*/passphrase_type_,
+          /*new_paspshrase_type=*/specifics.passphrase_type())) {
+    return ModelError(FROM_HERE, "Invalid passphrase type transition.");
+  }
+  if (!IsValidEncryptedTypesTransition(encrypt_everything_, specifics)) {
+    return ModelError(FROM_HERE, "Invalid encrypted types transition.");
+  }
+
+  DCHECK(specifics.has_passphrase_type());
+  const bool passphrase_type_changed =
+      UpdatePassphraseType(specifics.passphrase_type(), &passphrase_type_);
+
+  const bool encrypted_types_changed =
+      UpdateEncryptedTypes(specifics, &encrypt_everything_);
+
+  if (specifics.has_custom_passphrase_time()) {
+    custom_passphrase_time_ =
+        ProtoTimeToTime(specifics.custom_passphrase_time());
+  }
+  if (specifics.has_keystore_migration_time()) {
+    keystore_migration_time_ =
+        ProtoTimeToTime(specifics.keystore_migration_time());
+  }
+
   DCHECK(!keystore_keys_.empty());
-  // TODO(crbug.com/922900): sanitize remote update (e.g. ensure, that
-  // encryption_keybag() and keystore_decryptor_token() aren't empty).
-  const sync_pb::EncryptedData& keybag = specifics.encryption_keybag();
-  if (cryptographer_.CanDecrypt(keybag)) {
-    // We need to ensure, that |cryptographer_| has all keys.
-    cryptographer_.InstallKeys(keybag);
-  } else {
-    // We weren't able to decrypt the keybag with current |cryptographer_|
-    // state, but we still can decrypt it with |keystore_keys_|. Note: it's a
-    // normal situation, once we perform initial sync or key rotation was
-    // performed by another client.
-    cryptographer_.SetPendingKeys(keybag);
-    base::Optional<std::string> serialized_keystore_decryptor =
-        DecryptKeystoreDecryptor(keystore_keys_,
-                                 specifics.keystore_decryptor_token(),
-                                 cryptographer_.encryptor());
-    if (!serialized_keystore_decryptor ||
-        !cryptographer_.ImportNigoriKey(*serialized_keystore_decryptor) ||
-        !cryptographer_.is_ready()) {
-      return ModelError(FROM_HERE,
-                        "Failed to decrypt pending keys using the keystore "
-                        "decryptor token.");
+  const sync_pb::EncryptedData& encryption_keybag =
+      specifics.encryption_keybag();
+  switch (passphrase_type_) {
+    case NigoriSpecifics::UNKNOWN:
+    case NigoriSpecifics::IMPLICIT_PASSPHRASE:
+      // NigoriSpecifics with UNKNOWN or IMPLICIT_PASSPHRASE type is not valid
+      // and shouldn't reach this codepath. We just updated |passphrase_type_|
+      // from specifics, so it can't be in these states as well.
+      NOTREACHED();
+      break;
+    case NigoriSpecifics::KEYSTORE_PASSPHRASE: {
+      base::Optional<ModelError> error = UpdateCryptographerFromKeystoreNigori(
+          encryption_keybag, specifics.keystore_decryptor_token());
+      if (error) {
+        return error;
+      }
+      break;
+    }
+    case NigoriSpecifics::FROZEN_IMPLICIT_PASSPHRASE:
+    case NigoriSpecifics::CUSTOM_PASSPHRASE:
+      UpdateCryptographerFromExplicitPassphraseNigori(encryption_keybag);
+  }
+
+  if (passphrase_type_changed) {
+    for (auto& observer : observers_) {
+      observer.OnPassphraseTypeChanged(
+          ProtoPassphraseTypeToEnum(passphrase_type_),
+          GetExplicitPassphraseTime());
+    }
+  }
+  if (encrypted_types_changed) {
+    // Currently the only way to change encrypted types is to enable
+    // encrypt_everything.
+    DCHECK(encrypt_everything_);
+    for (auto& observer : observers_) {
+      observer.OnEncryptedTypesChanged(EncryptableUserTypes(),
+                                       encrypt_everything_);
     }
   }
   for (auto& observer : observers_) {
     observer.OnCryptographerStateChanged(&cryptographer_);
   }
   return base::nullopt;
+}
+
+base::Optional<ModelError>
+NigoriSyncBridgeImpl::UpdateCryptographerFromKeystoreNigori(
+    const sync_pb::EncryptedData& encryption_keybag,
+    const sync_pb::EncryptedData& keystore_decryptor_token) {
+  DCHECK(!encryption_keybag.blob().empty());
+  DCHECK(!keystore_decryptor_token.blob().empty());
+  if (cryptographer_.CanDecrypt(encryption_keybag)) {
+    cryptographer_.InstallKeys(encryption_keybag);
+    return base::nullopt;
+  }
+  // We weren't able to decrypt the keybag with current |cryptographer_|
+  // state, but we still can decrypt it with |keystore_keys_|. Note: it's a
+  // normal situation, once we perform initial sync or key rotation was
+  // performed by another client.
+  cryptographer_.SetPendingKeys(encryption_keybag);
+  base::Optional<std::string> serialized_keystore_decryptor =
+      DecryptKeystoreDecryptor(keystore_keys_, keystore_decryptor_token,
+                               cryptographer_.encryptor());
+  if (!serialized_keystore_decryptor ||
+      !cryptographer_.ImportNigoriKey(*serialized_keystore_decryptor) ||
+      !cryptographer_.is_ready()) {
+    return ModelError(FROM_HERE,
+                      "Failed to decrypt pending keys using the keystore "
+                      "decryptor token.");
+  }
+  return base::nullopt;
+}
+
+void NigoriSyncBridgeImpl::UpdateCryptographerFromExplicitPassphraseNigori(
+    const sync_pb::EncryptedData& keybag) {
+  // TODO(crbug.com/922900): support the case when client knows passphrase.
+  NOTIMPLEMENTED();
+  DCHECK(!keybag.blob().empty());
+  cryptographer_.SetPendingKeys(keybag);
 }
 
 std::unique_ptr<EntityData> NigoriSyncBridgeImpl::GetData() {
@@ -307,6 +495,25 @@ void NigoriSyncBridgeImpl::ApplyDisableSyncChanges() {
 
 const Cryptographer& NigoriSyncBridgeImpl::GetCryptographerForTesting() const {
   return cryptographer_;
+}
+
+base::Time NigoriSyncBridgeImpl::GetExplicitPassphraseTime() const {
+  switch (passphrase_type_) {
+    case NigoriSpecifics::IMPLICIT_PASSPHRASE:
+      // IMPLICIT_PASSPHRASE type isn't supported and should be never set as
+      // |passphrase_type_|;
+      NOTREACHED();
+      return base::Time();
+    case NigoriSpecifics::UNKNOWN:
+    case NigoriSpecifics::KEYSTORE_PASSPHRASE:
+      return base::Time();
+    case NigoriSpecifics::FROZEN_IMPLICIT_PASSPHRASE:
+      return keystore_migration_time_;
+    case NigoriSpecifics::CUSTOM_PASSPHRASE:
+      return custom_passphrase_time_;
+  }
+  NOTREACHED();
+  return custom_passphrase_time_;
 }
 
 }  // namespace syncer

@@ -74,11 +74,17 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
   const Cryptographer& GetCryptographerForTesting() const;
 
  private:
-  // Updates state of |cryptographer_| according to given |specifics|.
-  // TODO(crbug.com/922900): update the comment above once more fields are
-  // supported.
   base::Optional<ModelError> UpdateLocalState(
       const sync_pb::NigoriSpecifics& specifics);
+
+  base::Optional<ModelError> UpdateCryptographerFromKeystoreNigori(
+      const sync_pb::EncryptedData& encryption_keybag,
+      const sync_pb::EncryptedData& keystore_decryptor_token);
+
+  void UpdateCryptographerFromExplicitPassphraseNigori(
+      const sync_pb::EncryptedData& keybag);
+
+  base::Time GetExplicitPassphraseTime() const;
 
   const std::unique_ptr<NigoriLocalChangeProcessor> processor_;
 
@@ -88,6 +94,10 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
   std::vector<std::string> keystore_keys_;
 
   Cryptographer cryptographer_;
+  sync_pb::NigoriSpecifics::PassphraseType passphrase_type_;
+  bool encrypt_everything_;
+  base::Time custom_passphrase_time_;
+  base::Time keystore_migration_time_;
 
   // TODO(crbug/922900): consider using checked ObserverList once
   // SyncEncryptionHandlerImpl is no longer needed or consider refactoring old
