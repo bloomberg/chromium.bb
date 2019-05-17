@@ -13,7 +13,6 @@
 #include "ash/public/cpp/ash_public_export.h"
 #include "ash/public/interfaces/app_list.mojom.h"
 #include "ash/public/interfaces/app_list_view.mojom.h"
-#include "ash/public/interfaces/menu.mojom.h"
 #include "base/callback_forward.h"
 #include "base/strings/string16.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -25,6 +24,7 @@
 
 namespace ui {
 class GestureEvent;
+class SimpleMenuModel;
 }  // namespace ui
 
 namespace app_list {
@@ -88,7 +88,7 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   // or NULL if there is currently no menu for the result.
   // Note the returned menu model is owned by that result.
   using GetContextMenuModelCallback =
-      base::OnceCallback<void(std::vector<ash::mojom::MenuItemPtr>)>;
+      base::OnceCallback<void(std::unique_ptr<ui::SimpleMenuModel>)>;
   virtual void GetSearchResultContextMenuModel(
       const std::string& result_id,
       GetContextMenuModelCallback callback) = 0;

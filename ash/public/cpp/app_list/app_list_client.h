@@ -12,12 +12,10 @@
 
 #include "ash/public/cpp/ash_public_export.h"
 #include "ash/public/interfaces/app_list.mojom.h"
-// TODO(crbug.com/958208): Remove menu.mojom.h
-#include "ash/public/interfaces/menu.mojom.h"
 #include "base/callback_forward.h"
 #include "base/strings/string16.h"
 #include "components/sync/model/string_ordinal.h"
-#include "ui/base/models/menu_model.h"
+#include "ui/base/models/simple_menu_model.h"
 
 namespace app_list {
 
@@ -64,7 +62,7 @@ class ASH_PUBLIC_EXPORT AppListClient {
   // Returns the context menu model for the search result with |result_id|, or
   // an empty array if there is currently no menu for the result.
   using GetSearchResultContextMenuModelCallback =
-      base::OnceCallback<void(std::vector<::ash::mojom::MenuItemPtr>)>;
+      base::OnceCallback<void(std::unique_ptr<ui::SimpleMenuModel>)>;
   virtual void GetSearchResultContextMenuModel(
       const std::string& result_id,
       GetSearchResultContextMenuModelCallback callback) = 0;
@@ -98,7 +96,7 @@ class ASH_PUBLIC_EXPORT AppListClient {
   // Returns the context menu model for the item with |id|, or an empty array if
   // there is currently no menu for the item (e.g. during install).
   using GetContextMenuModelCallback =
-      base::OnceCallback<void(std::vector<::ash::mojom::MenuItemPtr>)>;
+      base::OnceCallback<void(std::unique_ptr<ui::SimpleMenuModel>)>;
   virtual void GetContextMenuModel(int profile_id,
                                    const std::string& id,
                                    GetContextMenuModelCallback callback) = 0;

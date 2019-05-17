@@ -11,7 +11,6 @@
 #include "ash/app_list/app_list_export.h"
 #include "ash/app_list/views/app_list_menu_model_adapter.h"
 #include "ash/app_list/views/search_result_base_view.h"
-#include "ash/public/interfaces/menu.mojom.h"
 #include "base/macros.h"
 #include "ui/views/context_menu_controller.h"
 
@@ -81,7 +80,7 @@ class APP_LIST_EXPORT SearchResultTileItemView
   void OnGetContextMenuModel(views::View* source,
                              const gfx::Point& point,
                              ui::MenuSourceType source_type,
-                             std::vector<ash::mojom::MenuItemPtr> menu);
+                             std::unique_ptr<ui::SimpleMenuModel> menu_model);
 
   // The callback used when a menu closes.
   void OnMenuClosed();

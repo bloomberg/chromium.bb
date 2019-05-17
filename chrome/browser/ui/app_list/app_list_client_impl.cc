@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "ash/public/cpp/app_list/app_list_controller.h"
-#include "ash/public/cpp/menu_utils.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
@@ -149,19 +148,18 @@ void AppListClientImpl::GetSearchResultContextMenuModel(
     const std::string& result_id,
     GetContextMenuModelCallback callback) {
   if (!search_controller_) {
-    std::move(callback).Run(std::vector<ash::mojom::MenuItemPtr>());
+    std::move(callback).Run(nullptr);
     return;
   }
   ChromeSearchResult* result = search_controller_->FindSearchResult(result_id);
   if (!result) {
-    std::move(callback).Run(std::vector<ash::mojom::MenuItemPtr>());
+    std::move(callback).Run(nullptr);
     return;
   }
   result->GetContextMenuModel(base::BindOnce(
       [](GetContextMenuModelCallback callback,
          std::unique_ptr<ui::SimpleMenuModel> menu_model) {
-        std::move(callback).Run(
-            ash::menu_utils::GetMojoMenuItemsFromModel(menu_model.get()));
+        std::move(callback).Run(std::move(menu_model));
       },
       std::move(callback)));
 }
@@ -226,18 +224,16 @@ void AppListClientImpl::GetContextMenuModel(
   auto* requested_model_updater = profile_model_mappings_[profile_id];
   if (requested_model_updater != current_model_updater_ ||
       !requested_model_updater) {
-    std::move(callback).Run(std::vector<ash::mojom::MenuItemPtr>());
+    std::move(callback).Run(nullptr);
     return;
   }
   requested_model_updater->GetContextMenuModel(
-      id,
-      base::BindOnce(
-          [](GetContextMenuModelCallback callback,
-             std::unique_ptr<ui::SimpleMenuModel> menu_model) {
-            std::move(callback).Run(
-                ash::menu_utils::GetMojoMenuItemsFromModel(menu_model.get()));
-          },
-          std::move(callback)));
+      id, base::BindOnce(
+              [](GetContextMenuModelCallback callback,
+                 std::unique_ptr<ui::SimpleMenuModel> menu_model) {
+                std::move(callback).Run(std::move(menu_model));
+              },
+              std::move(callback)));
 }
 
 void AppListClientImpl::ContextMenuItemSelected(int profile_id,

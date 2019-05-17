@@ -14,14 +14,14 @@ TestAppListClient::~TestAppListClient() = default;
 void TestAppListClient::GetSearchResultContextMenuModel(
     const std::string& result_id,
     GetContextMenuModelCallback callback) {
-  std::move(callback).Run({});
+  std::move(callback).Run(nullptr);
 }
 
 void TestAppListClient::GetContextMenuModel(
     int profile_id,
     const std::string& id,
     GetContextMenuModelCallback callback) {
-  std::move(callback).Run({});
+  std::move(callback).Run(nullptr);
 }
 
 }  // namespace ash

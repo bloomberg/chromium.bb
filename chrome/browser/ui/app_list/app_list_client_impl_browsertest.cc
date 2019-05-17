@@ -53,7 +53,7 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/common/constants.h"
 #include "ui/aura/window.h"
-#include "ui/base/models/menu_model.h"
+#include "ui/base/models/simple_menu_model.h"
 
 // Browser Test for AppListClientImpl.
 using AppListClientImplBrowserTest = extensions::PlatformAppBrowserTest;

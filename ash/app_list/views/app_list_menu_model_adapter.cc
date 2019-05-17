@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "ash/public/cpp/app_menu_constants.h"
-#include "ash/public/cpp/menu_utils.h"
 #include "base/metrics/histogram_macros.h"
 #include "ui/views/controls/menu/menu_runner.h"
 
@@ -15,6 +14,7 @@ namespace app_list {
 
 AppListMenuModelAdapter::AppListMenuModelAdapter(
     const std::string& app_id,
+    std::unique_ptr<ui::SimpleMenuModel> menu_model,
     views::Widget* widget_owner,
     ui::MenuSourceType source_type,
     Delegate* delegate,
@@ -22,7 +22,7 @@ AppListMenuModelAdapter::AppListMenuModelAdapter(
     base::OnceClosure on_menu_closed_callback,
     bool is_tablet_mode)
     : ash::AppMenuModelAdapter(app_id,
-                               std::make_unique<ui::SimpleMenuModel>(nullptr),
+                               std::move(menu_model),
                                widget_owner,
                                source_type,
                                std::move(on_menu_closed_callback),
@@ -34,15 +34,6 @@ AppListMenuModelAdapter::AppListMenuModelAdapter(
 }
 
 AppListMenuModelAdapter::~AppListMenuModelAdapter() = default;
-
-void AppListMenuModelAdapter::Build(
-    std::vector<ash::mojom::MenuItemPtr> items) {
-  DCHECK(!items.empty() && !IsShowingMenu());
-
-  ash::menu_utils::PopulateMenuFromMojoMenuItems(model(), nullptr, items,
-                                                 &submenu_models_);
-  menu_items_ = std::move(items);
-}
 
 void AppListMenuModelAdapter::RecordHistogramOnMenuClosed() {
   const base::TimeDelta user_journey_time =
@@ -149,18 +140,14 @@ void AppListMenuModelAdapter::RecordHistogramOnMenuClosed() {
   }
 }
 
-bool AppListMenuModelAdapter::IsItemChecked(int id) const {
-  return ash::menu_utils::GetMenuItemByCommandId(menu_items_, id)->checked;
-}
-
 bool AppListMenuModelAdapter::IsCommandEnabled(int id) const {
   // NOTIFICATION_CONTAINER is always enabled. It is added to this model by
-  // NotificationMenuController, but it is not added to |menu_items_|, so check
-  // for it first.
+  // NotificationMenuController. It is not known by model()'s delegate (i.e.
+  // an instance of AppContextMenu). Check for it first.
   if (id == ash::NOTIFICATION_CONTAINER)
     return true;
 
-  return ash::menu_utils::GetMenuItemByCommandId(menu_items_, id)->enabled;
+  return ash::AppMenuModelAdapter::IsCommandEnabled(id);
 }
 
 void AppListMenuModelAdapter::ExecuteCommand(int id, int mouse_event_flags) {

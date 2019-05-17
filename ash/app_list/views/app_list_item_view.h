@@ -13,7 +13,6 @@
 #include "ash/app_list/app_list_export.h"
 #include "ash/app_list/model/app_list_item_observer.h"
 #include "ash/app_list/views/app_list_menu_model_adapter.h"
-#include "ash/public/interfaces/menu.mojom.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
@@ -169,9 +168,10 @@ class APP_LIST_EXPORT AppListItemView
 
   // Callback invoked when a context menu is received after calling
   // |AppListViewDelegate::GetContextMenuModel|.
-  void OnContextMenuModelReceived(const gfx::Point& point,
-                                  ui::MenuSourceType source_type,
-                                  std::vector<ash::mojom::MenuItemPtr> menu);
+  void OnContextMenuModelReceived(
+      const gfx::Point& point,
+      ui::MenuSourceType source_type,
+      std::unique_ptr<ui::SimpleMenuModel> menu_model);
 
   // views::ContextMenuController overrides:
   void ShowContextMenuForViewImpl(views::View* source,

@@ -448,9 +448,9 @@ void AppListItemView::SetItemPercentDownloaded(int percent_downloaded) {
 void AppListItemView::OnContextMenuModelReceived(
     const gfx::Point& point,
     ui::MenuSourceType source_type,
-    std::vector<ash::mojom::MenuItemPtr> menu) {
+    std::unique_ptr<ui::SimpleMenuModel> menu_model) {
   waiting_for_context_menu_options_ = false;
-  if (menu.empty() || (context_menu_ && context_menu_->IsShowingMenu()))
+  if (!menu_model || (context_menu_ && context_menu_->IsShowingMenu()))
     return;
 
   // GetContextMenuModel is asynchronous and takes a nontrivial amount of time
@@ -480,12 +480,11 @@ void AppListItemView::OnContextMenuModelReceived(
   views::View::ConvertRectToScreen(apps_grid_view_, &anchor_rect);
 
   context_menu_ = std::make_unique<AppListMenuModelAdapter>(
-      item_weak_->GetMetadata()->id, GetWidget(), source_type, this,
-      AppListMenuModelAdapter::FULLSCREEN_APP_GRID,
+      item_weak_->GetMetadata()->id, std::move(menu_model), GetWidget(),
+      source_type, this, AppListMenuModelAdapter::FULLSCREEN_APP_GRID,
       base::BindOnce(&AppListItemView::OnMenuClosed,
                      weak_ptr_factory_.GetWeakPtr()),
       apps_grid_view_->IsTabletMode());
-  context_menu_->Build(std::move(menu));
   context_menu_->Run(anchor_rect, views::MenuAnchorPosition::kBubbleRight,
                      run_types);
   apps_grid_view_->SetSelectedView(this);

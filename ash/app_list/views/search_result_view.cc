@@ -454,15 +454,14 @@ void SearchResultView::OnGetContextMenu(
     views::View* source,
     const gfx::Point& point,
     ui::MenuSourceType source_type,
-    std::vector<ash::mojom::MenuItemPtr> menu) {
-  if (menu.empty() || context_menu_->IsShowingMenu())
+    std::unique_ptr<ui::SimpleMenuModel> menu_model) {
+  if (!menu_model || context_menu_->IsShowingMenu())
     return;
 
   context_menu_ = std::make_unique<AppListMenuModelAdapter>(
-      std::string(), GetWidget(), source_type, this,
+      std::string(), std::move(menu_model), GetWidget(), source_type, this,
       AppListMenuModelAdapter::SEARCH_RESULT, base::OnceClosure(),
       view_delegate_->GetSearchModel()->tablet_mode());
-  context_menu_->Build(std::move(menu));
   context_menu_->Run(gfx::Rect(point, gfx::Size()),
                      views::MenuAnchorPosition::kTopLeft,
                      views::MenuRunner::HAS_MNEMONICS);

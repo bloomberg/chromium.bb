@@ -15,7 +15,6 @@
 #include "ash/app_list/views/app_list_menu_model_adapter.h"
 #include "ash/app_list/views/search_result_actions_view_delegate.h"
 #include "ash/app_list/views/search_result_base_view.h"
-#include "ash/public/interfaces/menu.mojom.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -105,7 +104,7 @@ class APP_LIST_EXPORT SearchResultView
   void OnGetContextMenu(views::View* source,
                         const gfx::Point& point,
                         ui::MenuSourceType source_type,
-                        std::vector<ash::mojom::MenuItemPtr> menu);
+                        std::unique_ptr<ui::SimpleMenuModel> menu_model);
 
   // SearchResultObserver overrides:
   void OnMetadataChanged() override;

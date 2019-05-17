@@ -138,7 +138,6 @@ class AppListTestViewDelegate : public AppListViewDelegate,
   std::unique_ptr<AppListTestModel> model_;
   std::unique_ptr<SearchModel> search_model_;
   std::vector<SkColor> wallpaper_prominent_colors_;
-  ui::SimpleMenuModel search_result_context_menu_model_;
   content::FakeNavigableContentsFactory fake_navigable_contents_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListTestViewDelegate);
