@@ -54,9 +54,6 @@ class HostedAppBrowserController : public ExtensionUninstallDialog::Delegate,
   // Returns true if the associated Hosted App is for a PWA.
   bool CreatedForInstalledPwa() const override;
 
-  // Returns true if this controller is for a System Web App.
-  bool IsForSystemWebApp() const;
-
   // Whether the browser being controlled should be currently showing the
   // toolbar.
   bool ShouldShowToolbar() const override;

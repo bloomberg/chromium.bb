@@ -93,6 +93,9 @@ class AppBrowserController : public TabStripModelObserver,
   // animated.
   void UpdateToolbarVisibility(bool animate) const;
 
+  // Returns true if this controller is for a System Web App.
+  bool IsForSystemWebApp() const;
+
   Browser* browser() const { return browser_; }
 
   // content::WebContentsObserver:

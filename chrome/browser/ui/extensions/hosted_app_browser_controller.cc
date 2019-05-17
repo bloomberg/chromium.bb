@@ -144,13 +144,6 @@ bool HostedAppBrowserController::CreatedForInstalledPwa() const {
   return created_for_installed_pwa_;
 }
 
-bool HostedAppBrowserController::IsForSystemWebApp() const {
-  const Extension* extension = GetExtension();
-
-  return extension && extension->from_bookmark() &&
-         extension->location() == Manifest::EXTERNAL_COMPONENT;
-}
-
 bool HostedAppBrowserController::IsHostedApp() const {
   return true;
 }

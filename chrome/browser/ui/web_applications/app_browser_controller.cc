@@ -9,6 +9,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/web_applications/system_web_app_manager.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_features.h"
 #include "components/security_state/core/security_state.h"
 #include "components/url_formatter/url_formatter.h"
@@ -99,6 +101,15 @@ void AppBrowserController::Uninstall() {
 
 void AppBrowserController::UpdateToolbarVisibility(bool animate) const {
   browser()->window()->UpdateToolbarVisibility(ShouldShowToolbar(), animate);
+}
+
+bool AppBrowserController::IsForSystemWebApp() const {
+  if (!GetAppId())
+    return false;
+
+  return web_app::WebAppProvider::Get(browser()->profile())
+      ->system_web_app_manager()
+      .IsSystemWebApp(*GetAppId());
 }
 
 void AppBrowserController::DidChangeThemeColor(
