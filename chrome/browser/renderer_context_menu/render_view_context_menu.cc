@@ -2078,14 +2078,13 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     case IDC_SEND_TAB_TO_SELF:
       send_tab_to_self::RecordSendTabToSelfClickResult(
           send_tab_to_self::kContentMenu, SendTabToSelfClickResult::kClickItem);
-      send_tab_to_self::CreateNewEntry(embedder_web_contents_);
+      // TODO(crbug/945988): add histograms to count valid device number.
       break;
 
     case IDC_CONTENT_LINK_SEND_TAB_TO_SELF:
       send_tab_to_self::RecordSendTabToSelfClickResult(
           send_tab_to_self::kLinkMenu, SendTabToSelfClickResult::kClickItem);
-      send_tab_to_self::CreateNewEntry(embedder_web_contents_,
-                                       params_.link_url);
+      // TODO(crbug/945988): add histograms to count valid device number.
       break;
 
     case IDC_RELOAD:

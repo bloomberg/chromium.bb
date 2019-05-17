@@ -497,7 +497,7 @@ void OmniboxViewViews::ExecuteCommand(int command_id, int event_flags) {
     case IDC_SEND_TAB_TO_SELF:
       send_tab_to_self::RecordSendTabToSelfClickResult(
           send_tab_to_self::kOmniboxMenu, SendTabToSelfClickResult::kClickItem);
-      send_tab_to_self::CreateNewEntry(location_bar_view_->GetWebContents());
+      // TODO(crbug/945988): add histograms to count valid device number.
       return;
 
     // These commands do invoke the popup.

@@ -27,7 +27,10 @@
 
 namespace send_tab_to_self {
 
-void CreateNewEntry(content::WebContents* tab, const GURL& link_url) {
+void CreateNewEntry(content::WebContents* tab,
+                    const std::string& target_device_name,
+                    const std::string& target_device_guid,
+                    const GURL& link_url) {
   content::NavigationEntry* navigation_entry =
       tab->GetController().GetLastCommittedEntry();
   Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
@@ -35,9 +38,6 @@ void CreateNewEntry(content::WebContents* tab, const GURL& link_url) {
   std::string title = base::UTF16ToUTF8(navigation_entry->GetTitle());
   base::Time navigation_time = navigation_entry->GetTimestamp();
 
-  // TODO(crbug/946804) Add target device.
-  std::string target_device_guid;
-  std::string target_device_name;
   SendTabToSelfModel* model =
       SendTabToSelfSyncServiceFactory::GetForProfile(profile)
           ->GetSendTabToSelfModel();

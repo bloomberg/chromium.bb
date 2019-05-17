@@ -37,7 +37,10 @@ const char kTabMenu[] = "TabMenu";
 
 // Add a new entry to SendTabToSelfModel when user click "Share to your
 // devices" option.
-void CreateNewEntry(content::WebContents* tab, const GURL& link_url = GURL());
+void CreateNewEntry(content::WebContents* tab,
+                    const std::string& target_device_name,
+                    const std::string& target_device_guid,
+                    const GURL& link_url = GURL());
 
 // Get the icon for send tab to self menu item.
 gfx::ImageSkia* GetImageSkia();

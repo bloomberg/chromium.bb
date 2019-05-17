@@ -96,23 +96,25 @@ TEST_F(SendTabToSelfDesktopUtilTest, CreateNewEntry) {
   GURL url = entry->GetURL();
   std::string title = base::UTF16ToUTF8(entry->GetTitle());
   base::Time navigation_time = entry->GetTimestamp();
+  std::string target_device_sync_cache_name;
   std::string target_device_sync_cache_guid;
 
   SendTabToSelfModelMock* model_mock = static_cast<SendTabToSelfModelMock*>(
       SendTabToSelfSyncServiceFactory::GetForProfile(profile())
           ->GetSendTabToSelfModel());
 
-  // TODO(crbug/946804) Add target Device to createNewEntry call.
   EXPECT_CALL(*model_mock, AddEntry(url, title, navigation_time,
                                     target_device_sync_cache_guid))
       .WillOnce(testing::Return(nullptr));
-  CreateNewEntry(tab);
+  CreateNewEntry(tab, target_device_sync_cache_name,
+                 target_device_sync_cache_guid);
 
   GURL link_url = GURL("https://www.1112233.com");
   EXPECT_CALL(*model_mock, AddEntry(link_url, "", base::Time(),
                                     target_device_sync_cache_guid))
       .WillOnce(testing::Return(nullptr));
-  CreateNewEntry(tab, link_url);
+  CreateNewEntry(tab, target_device_sync_cache_name,
+                 target_device_sync_cache_guid, link_url);
 }
 
 }  // namespace
