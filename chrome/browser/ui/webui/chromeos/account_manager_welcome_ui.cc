@@ -41,7 +41,8 @@ AccountManagerWelcomeUI::AccountManagerWelcomeUI(content::WebUI* web_ui)
                          l10n_util::GetStringFUTF16(
                              IDS_ACCOUNT_MANAGER_WELCOME_TEXT,
                              base::ASCIIToUTF16(kAccountManagerLearnMoreURL)));
-  html_source->AddLocalizedString("okButton", IDS_APP_OK);
+  html_source->AddLocalizedString("okButton",
+                                  IDS_ACCOUNT_MANAGER_WELCOME_BUTTON);
 
   // Add required resources.
   html_source->AddResourcePath("account_manager_welcome.css",

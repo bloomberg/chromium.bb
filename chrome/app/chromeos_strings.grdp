@@ -3900,11 +3900,13 @@
 
   <!-- Strings for Account Manager welcome screen -->
   <message name="IDS_ACCOUNT_MANAGER_WELCOME_TITLE" desc="Title for the Chrome OS Account Manager Welcome screen.">
-    Manage your Google Accounts in one place
+    Sign-in has changed
   </message>
   <message name="IDS_ACCOUNT_MANAGER_WELCOME_TEXT" desc="Text body for the Chrome OS Account Manager Welcome screen.">
-    Switch accounts quickly and sign in to apps and websites all at once.
-    Apps and sites can ask you for permission to use some of your Google Account info. <ph name="LINK_BEGIN">&lt;a target="_blank" href="$1<ex>https://support.google.com/chromebook/?p=google_accounts</ex>"&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
+    You can now manage all of your Google Accounts in one place. Access and permissions you've granted to apps, websites, and extensions in Chrome and Google Play may now apply to all of your signed-in accounts. <ph name="LINK_BEGIN">&lt;a target="_blank" href="$1<ex>https://support.google.com/chromebook/?p=google_accounts</ex>"&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
+  </message>
+  <message name="IDS_ACCOUNT_MANAGER_WELCOME_BUTTON" desc="Label for the button to view accounts on the Chrome OS Account Manager Welcome screen.">
+    View accounts
   </message>
 
   <!-- TPM firmware auto-update notifications -->
