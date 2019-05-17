@@ -125,7 +125,6 @@ extern const char kLoadMediaRouterComponentExtension[];
 extern const char kMakeDefaultBrowser[];
 extern const char kMediaCacheSize[];
 extern const char kMonitoringDestinationID[];
-extern const char kNetLogCaptureMode[];
 extern const char kNewNetErrorPageUI[];
 extern const char kNoDefaultBrowserCheck[];
 extern const char kNoExperiments[];

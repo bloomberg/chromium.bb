@@ -183,10 +183,12 @@ CONTENT_EXPORT network::mojom::NetworkService* GetNetworkServiceFromConnector(
           if (!file.IsValid()) {
             LOG(ERROR) << "Failed opening: " << log_path.value();
           } else {
-            // TODO(mmenke): Get capture mode from the command line.
+            net::NetLogCaptureMode capture_mode =
+                net::GetNetCaptureModeFromCommandLine(
+                    *command_line, network::switches::kNetLogCaptureMode);
+
             (*g_network_service_ptr)
-                ->StartNetLog(std::move(file),
-                              net::NetLogCaptureMode::Default(),
+                ->StartNetLog(std::move(file), capture_mode,
                               std::move(client_constants));
           }
         }

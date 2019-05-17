@@ -400,16 +400,6 @@ const char kMediaCacheSize[]                = "media-cache-size";
 // messages. Useful when running against a non-prod management server.
 const char kMonitoringDestinationID[]       = "monitoring-destination-id";
 
-// Sets the granularity of events to capture in the network log. The mode can be
-// set to one of the following values:
-//   "Default"
-//   "IncludeCookiesAndCredentials"
-//   "IncludeSocketBytes"
-//
-// See the functions of the corresponding name in net_log_capture_mode.h for a
-// description of their meaning.
-const char kNetLogCaptureMode[]             = "net-log-capture-mode";
-
 // Disables the default browser check. Useful for UI/browser tests where we
 // want to avoid having the default browser info-bar displayed.
 const char kNoDefaultBrowserCheck[]         = "no-default-browser-check";

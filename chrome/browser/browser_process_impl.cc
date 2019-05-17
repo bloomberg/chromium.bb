@@ -59,7 +59,6 @@
 #include "chrome/browser/metrics/chrome_metrics_services_manager_client.h"
 #include "chrome/browser/metrics/metrics_reporting_state.h"
 #include "chrome/browser/metrics/thread_watcher.h"
-#include "chrome/browser/net/chrome_net_log_helper.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/notifications/notification_platform_bridge.h"
 #include "chrome/browser/notifications/system_notification_helper.h"
@@ -1178,7 +1177,9 @@ void BrowserProcessImpl::PreCreateThreads(
       log_file = user_data_dir.AppendASCII("netlog.json");
     }
     net_log_->StartWritingToFile(
-        log_file, GetNetCaptureModeFromCommandLine(command_line),
+        log_file,
+        net::GetNetCaptureModeFromCommandLine(
+            command_line, network::switches::kNetLogCaptureMode),
         command_line.GetCommandLineString(), chrome::GetChannelName());
   }
 
