@@ -153,6 +153,7 @@ enum LaunchSource {
   kFromAppListQueryContextMenu,  // Query-dependent results; context menu.
   kFromAppListRecommendation,    // Query-less recommendations (smaller icons).
   kFromKioskNextHome,            // Kiosk Next Home app.
+  kFromParentalControls,         // Parental Controls Settings Section.
 };
 
 enum TriState {
