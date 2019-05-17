@@ -1672,6 +1672,39 @@ TEST_P(ScrollingCoordinatorTest, ScrollOffsetClobberedBeforeCompositingUpdate) {
   EXPECT_EQ(gfx::ScrollOffset(), cc_layer->CurrentScrollOffset());
 }
 
+TEST_P(ScrollingCoordinatorTest, UpdateVisualViewportScrollLayer) {
+  // This test fails without BGPT enabled. https://crbug.com/930636.
+  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
+    return;
+  LoadHTML(R"HTML(
+          <!DOCTYPE html>
+          <style>
+            #box {
+              width: 300px;
+              height: 1000px;
+              background-color: red;
+            }
+          </style>
+          <div id="box">
+          </div>
+      )HTML");
+  ForceFullCompositingUpdate();
+
+  Page* page = GetFrame()->GetPage();
+  cc::Layer* inner_viewport_scroll_layer =
+      page->GetVisualViewport().ScrollLayer()->CcLayer();
+
+  page->GetVisualViewport().SetScale(2);
+
+  EXPECT_EQ(gfx::ScrollOffset(0, 0),
+            inner_viewport_scroll_layer->CurrentScrollOffset());
+
+  page->GetVisualViewport().SetLocation(FloatPoint(10, 20));
+
+  EXPECT_EQ(gfx::ScrollOffset(10, 20),
+            inner_viewport_scroll_layer->CurrentScrollOffset());
+}
+
 TEST_P(ScrollingCoordinatorTest, UpdateUMAMetricUpdated) {
   HistogramTester histogram_tester;
   LoadHTML(R"HTML(
