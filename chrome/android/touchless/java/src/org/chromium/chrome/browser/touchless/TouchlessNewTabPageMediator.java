@@ -56,12 +56,16 @@ class TouchlessNewTabPageMediator extends EmptyTabObserver {
                          .with(TouchlessNewTabPageProperties.SCROLL_POSITION_CALLBACK,
                                  (newScrollPosition) -> mScrollPosition = newScrollPosition)
                          .build();
+
+        // TODO(dewittj): Track loading status of the tiles before we record shown and hidden
+        // states.
+        recordNTPShown();
     }
 
     @Override
     public void onShown(Tab tab, @TabSelectionType int type) {
-        // TODO(dewittj): Track loading status of the tiles before we record
-        // shown and hidden states.
+        // TODO(dewittj): Track loading status of the tiles before we record shown and hidden
+        // states.
         recordNTPShown();
     }
 
