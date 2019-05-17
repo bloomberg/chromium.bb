@@ -1638,8 +1638,8 @@
   },
   {
     "name": "enable-system-webapps",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "calamity" ],
+    "expiry_milestone": 78
   },
   {
     "name": "enable-tab-grid-layout",
