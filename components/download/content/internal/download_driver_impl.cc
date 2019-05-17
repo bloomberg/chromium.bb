@@ -190,6 +190,8 @@ void DownloadDriverImpl::Start(
   download_url_params->set_upload_progress_callback(
       base::BindRepeating(&DownloadDriverImpl::OnUploadProgress,
                           weak_ptr_factory_.GetWeakPtr(), guid));
+  download_url_params->set_require_safety_checks(
+      request_params.require_safety_checks);
   download_manager_coordinator_->DownloadUrl(std::move(download_url_params));
 }
 

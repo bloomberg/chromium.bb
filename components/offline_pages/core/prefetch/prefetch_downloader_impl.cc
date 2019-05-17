@@ -121,6 +121,7 @@ void PrefetchDownloaderImpl::StartDownload(const std::string& download_id,
   params.scheduling_params.cancel_time =
       OfflineTimeNow() + kPrefetchDownloadLifetime;
   params.request_params.url = PrefetchDownloadURL(download_location, channel_);
+  params.request_params.require_safety_checks = false;
 
   std::string experiment_header = PrefetchExperimentHeader();
   if (!experiment_header.empty()) {
