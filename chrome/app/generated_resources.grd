@@ -9248,6 +9248,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_UTILITY_PROCESS_UTILITY_WIN_NAME" desc="The name of the utility process used to handle Windows utility operations.">
         Windows Utilities
       </message>
+      <message name="IDS_UTILITY_PROCESS_QUARANTINE_SERVICE_NAME" desc="The name of the utility process used to handle file quarantine.">
+        Quarantine Service
+    </message>
     </if>
 
     <!-- Framebust / Blocked Redirection intervention message -->

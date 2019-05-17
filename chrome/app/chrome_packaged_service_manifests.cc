@@ -11,6 +11,7 @@
 #include "chrome/services/file_util/public/cpp/manifest.h"
 #include "chrome/services/noop/public/cpp/manifest.h"
 #include "components/services/patch/public/cpp/manifest.h"
+#include "components/services/quarantine/public/cpp/manifest.h"
 #include "components/services/unzip/public/cpp/manifest.h"
 #include "components/spellcheck/common/spellcheck.mojom.h"
 #include "components/startup_metric_utils/common/startup_metric.mojom.h"
@@ -134,6 +135,7 @@ GetChromePackagedServiceManifests() {
       unzip::GetManifest(),
       proxy_resolver::GetManifest(),
       prefs::GetLocalStateManifest(),
+      quarantine::GetQuarantineManifest(),
 #if BUILDFLAG(ENABLE_EXTENSIONS)
       GetRemovableStorageWriterManifest(),
 #endif

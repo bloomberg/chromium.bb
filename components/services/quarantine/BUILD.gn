@@ -1,0 +1,27 @@
+# Copyright 2019 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+static_library("quarantine") {
+  sources = [
+    "quarantine_impl.cc",
+    "quarantine_impl.h",
+    "quarantine_service.cc",
+    "quarantine_service.h",
+  ]
+
+  if (is_win) {
+    sources += [
+      "quarantine_features_win.cc",
+      "quarantine_features_win.h",
+    ]
+  }
+
+  public_deps = [
+    "//components/services/quarantine/public/mojom",
+  ]
+
+  deps = [
+    "//services/service_manager/public/cpp",
+  ]
+}

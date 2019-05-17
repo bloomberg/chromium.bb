@@ -50,6 +50,9 @@
 #if defined(OS_WIN)
 #include "chrome/services/util_win/public/mojom/constants.mojom.h"
 #include "chrome/services/util_win/util_win_service.h"
+#include "components/services/quarantine/public/mojom/quarantine.mojom.h"  // nogncheck
+#include "components/services/quarantine/quarantine_features_win.h"  // nogncheck
+#include "components/services/quarantine/quarantine_service.h"  // nogncheck
 #endif
 
 #if BUILDFLAG(ENABLE_ISOLATED_XR_SERVICE)
@@ -282,6 +285,13 @@ ChromeContentUtilityClient::MaybeCreateMainThreadService(
   if (service_name == printing::mojom::kChromePrintingServiceName)
     return std::make_unique<printing::PrintingService>(std::move(request));
 #endif
+
+#if defined(OS_WIN)
+  if (service_name == quarantine::mojom::kServiceName &&
+      base::FeatureList::IsEnabled(quarantine::kOutOfProcessQuarantine)) {
+    return std::make_unique<quarantine::QuarantineService>(std::move(request));
+  }
+#endif  // OS_WIN
 
 #if !defined(OS_ANDROID)
   if (service_name == chrome::mojom::kProfileImportServiceName)

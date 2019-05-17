@@ -258,6 +258,8 @@
 #include "components/services/heap_profiling/public/cpp/settings.h"
 #include "components/services/heap_profiling/public/mojom/constants.mojom.h"
 #include "components/services/patch/public/interfaces/constants.mojom.h"
+#include "components/services/quarantine/public/mojom/quarantine.mojom.h"
+#include "components/services/quarantine/quarantine_service.h"
 #include "components/services/unzip/public/interfaces/constants.mojom.h"
 #include "components/signin/core/browser/account_consistency_method.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
@@ -378,6 +380,7 @@
 #include "chrome/install_static/install_util.h"
 #include "chrome/services/util_win/public/mojom/constants.mojom.h"
 #include "chrome/services/wifi_util_win/public/mojom/constants.mojom.h"
+#include "components/services/quarantine/quarantine_features_win.h"
 #include "sandbox/win/src/sandbox_policy.h"
 #elif defined(OS_MACOSX)
 #include "chrome/browser/chrome_browser_main_mac.h"
@@ -3944,6 +3947,14 @@ void ChromeContentBrowserClient::RegisterOutOfProcessServices(
                           IDS_UTILITY_PROCESS_PDF_COMPOSITOR_SERVICE_NAME);
 #endif
 
+#if defined(OS_WIN)
+  if (base::FeatureList::IsEnabled(quarantine::kOutOfProcessQuarantine)) {
+    (*services)[quarantine::mojom::kServiceName] =
+        base::BindRepeating(&l10n_util::GetStringUTF16,
+                            IDS_UTILITY_PROCESS_QUARANTINE_SERVICE_NAME);
+  }
+#endif
+
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) || \
     (BUILDFLAG(ENABLE_PRINTING) && defined(OS_WIN))
   (*services)[printing::mojom::kChromePrintingServiceName] =
@@ -4035,6 +4046,19 @@ void ChromeContentBrowserClient::HandleServiceRequest(
     service_manager::Service::RunAsyncUntilTermination(
         g_browser_process->pref_service_factory()->CreatePrefService(
             std::move(request)));
+  }
+
+#if defined(OS_WIN)
+  bool run_quarantine_service_in_process =
+      !base::FeatureList::IsEnabled(quarantine::kOutOfProcessQuarantine);
+#else
+  bool run_quarantine_service_in_process = true;
+#endif
+
+  if (run_quarantine_service_in_process &&
+      service_name == quarantine::mojom::kServiceName) {
+    service_manager::Service::RunAsyncUntilTermination(
+        std::make_unique<quarantine::QuarantineService>(std::move(request)));
   }
 
 #if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)

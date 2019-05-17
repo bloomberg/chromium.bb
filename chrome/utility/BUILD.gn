@@ -59,6 +59,13 @@ static_library("utility") {
     "//ui/base:buildflags",
   ]
 
+  if (is_win) {
+    deps += [
+      "//components/services/quarantine",
+      "//components/services/quarantine/public/mojom",
+    ]
+  }
+
   if (!is_android) {
     sources += [
       "importer/bookmark_html_reader.cc",
