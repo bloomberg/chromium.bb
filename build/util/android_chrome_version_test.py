@@ -101,10 +101,10 @@ class _VersionTest(unittest.TestCase):
     webview_stable_version_code = output['WEBVIEW_STABLE_VERSION_CODE']
     webview_beta_version_code = output['WEBVIEW_BETA_VERSION_CODE']
 
-    self.assertEqual(chrome_version_code, '372100005')
-    self.assertEqual(monochrome_version_code, '372100007')
-    self.assertEqual(webview_stable_version_code, '372100005')
-    self.assertEqual(webview_beta_version_code, '372100006')
+    self.assertEqual(chrome_version_code, '372000005')
+    self.assertEqual(monochrome_version_code, '372000007')
+    self.assertEqual(webview_stable_version_code, '372000005')
+    self.assertEqual(webview_beta_version_code, '372000006')
 
   def testGenerateVersionCodesAndroidArchArm(self):
     """Assert it handles different architectures correctly.
