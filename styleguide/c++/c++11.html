@@ -409,6 +409,22 @@ template &lt;typename T&gt;<br/>void Function(T&amp;&amp; t) { ... }</code></td>
 </tr>
 
 <tr>
+<td>Lambda capture expressions</td>
+<td><code>auto widget = std::make_unique&lt;Widget&gt;();<br>auto lambda = [widget = std::move(widget)]() {<br>&nbsp;&nbsp;SetWidget(std::move(widget));<br>}</code></td>
+<td>Allows lambda captures to be explicitly initialized with expressions.</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/lambda#Lambda_capture">Lambda capture</a></td>
+<td> Lambda capture expressions should only be used to capture existing names in
+  ways that C++11's direct capture doesn't allow, and should not be used as a
+  way to introduce new names. That is, capture expressions should always shadow
+  existing variables (or data members), and not substantially change their
+  meaning. Usage should be rare.
+  <a href="https://groups.google.com/a/chromium.org/d/msg/cxx/8BHoi4T6ZhA/pWHB6IYoAgAJ">
+    Discussion thread</a> with
+  <a href="https://groups.google.com/a/chromium.org/d/msg/cxx/8BHoi4T6ZhA/WwKXh2RgAgAJ">
+    examples</a></td>
+</tr>
+
+<tr>
 <td>Number literal separators</td>
 <td><code>float f = 1'000'000.000'1;</code></td>
 <td><code>'</code>s anywhere in int or float literals are ignored</td>
@@ -1023,14 +1039,6 @@ something, remove all callers and remove the function instead.</td>
 <td>Allows deducing the type of a variable using <code>decltype</code> rules.</td>
 <td><a href="http://en.cppreference.com/w/cpp/language/auto">auto specifier</a></td>
 <td>Often more surprising than <code>auto</code>. For instance, the <code>decltype</code> deduction rules do not remove references.</td>
-</tr>
-
-<tr>
-<td>Lambda capture expressions</td>
-<td><code>auto widget = std::make_unique&lt;Widget&gt;();<br>auto lambda = [widget = std::move(widget)]() {<br>&nbsp;&nbsp;SetWidget(std::move(widget));<br>}</code></td>
-<td>Allows lambda captures to be explicitly initialized with expressions.</td>
-<td><a href="http://en.cppreference.com/w/cpp/language/lambda#Lambda_capture">Lambda capture</a></td>
-<td>Particularly useful to capture move-only types in a lambda when a reference would go out of scope. Less useful without allowing lambdas to outlive the scope.</td>
 </tr>
 
 <tr>
