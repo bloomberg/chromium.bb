@@ -113,6 +113,7 @@
 #import "ios/web/web_state/web_state_impl.h"
 #import "ios/web/web_state/web_view_internal_creation_util.h"
 #import "ios/web/web_state/wk_web_view_security_util.h"
+#import "ios/web/web_view/wk_web_view_util.h"
 #import "ios/web/webui/mojo_facade.h"
 #import "net/base/mac/url_conversions.h"
 #include "net/base/net_errors.h"
@@ -529,9 +530,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
              completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition,
                                          NSURLCredential*))completionHandler;
 
-// Returns YES if a SafeBrowsing warning is currently displayed within
-// WKWebView.
-- (BOOL)isSafeBrowsingWarningDisplayedInWebView;
 // Loads request for the URL of the current navigation item. Subclasses may
 // choose to build a new NSURLRequest and call |loadRequest| on the underlying
 // web view, or use native web view navigation where possible (for example,
@@ -1513,29 +1511,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 }
 
 #pragma mark - ** Private Methods **
-
-#pragma mark -
-
-- (BOOL)isSafeBrowsingWarningDisplayedInWebView {
-  // A SafeBrowsing warning is a UIScrollView that is inserted on top of
-  // WKWebView's scroll view. This method uses heuristics to detect this view.
-  // It may break in the future if WebKit's implementation of SafeBrowsing
-  // warnings changes.
-  UIView* containingView = self.webView.scrollView.superview;
-  if (!containingView)
-    return NO;
-
-  UIView* topView = containingView.subviews.lastObject;
-
-  if (topView == self.webView.scrollView)
-    return NO;
-
-  return
-      [topView isKindOfClass:[UIScrollView class]] &&
-      [NSStringFromClass([topView class]) containsString:@"Warning"] &&
-      topView.subviews.count > 0 &&
-      [topView.subviews[0].subviews.lastObject isKindOfClass:[UIButton class]];
-}
 
 - (void)setDocumentURL:(const GURL&)newURL
                context:(web::NavigationContextImpl*)context {
@@ -4261,14 +4236,15 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   // iframe navigations, because the omnibox already shows the correct main
   // frame URL in that case.
   if (allowLoad && isMainFrameNavigationAction &&
-      ![self isSafeBrowsingWarningDisplayedInWebView]) {
+      !web::IsSafeBrowsingWarningDisplayedInWebView(self.webView)) {
     __weak CRWWebController* weakSelf = self;
     const base::TimeDelta kDelayUntilSafeBrowsingWarningCheck =
         base::TimeDelta::FromMilliseconds(20);
     self.navigationHandler.safeBrowsingWarningDetectionTimer->Start(
         FROM_HERE, kDelayUntilSafeBrowsingWarningCheck, base::BindRepeating(^{
           __strong __typeof(weakSelf) strongSelf = weakSelf;
-          if ([strongSelf isSafeBrowsingWarningDisplayedInWebView]) {
+          if (web::IsSafeBrowsingWarningDisplayedInWebView(
+                  strongSelf.webView)) {
             // Extract state from an existing navigation context if one exists.
             // Create a new context rather than just re-using the existing one,
             // since the existing context will continue to be used if the user
@@ -5073,7 +5049,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     // the button on the warning page to proceed to the site, the site has
     // started loading, and the warning is about to be removed. In this case,
     // the transient item for the warning needs to be removed too.
-    if ([self isSafeBrowsingWarningDisplayedInWebView])
+    if (web::IsSafeBrowsingWarningDisplayedInWebView(self.webView))
       self.navigationManagerImpl->DiscardNonCommittedItems();
   }
 }
@@ -5846,7 +5822,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   // view's current URL.
   if (!self.webView.loading) {
     if (_documentURL == URL) {
-      if (![self isSafeBrowsingWarningDisplayedInWebView])
+      if (!web::IsSafeBrowsingWarningDisplayedInWebView(self.webView))
         return;
 
       self.navigationManagerImpl->DiscardNonCommittedItems();
