@@ -225,8 +225,10 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
                             bool prevent_contents_opaque_changes) {
     SetContentsTo(layer, prevent_contents_opaque_changes);
   }
-  bool HasContentsLayer() const { return contents_layer_; }
-  cc::Layer* ContentsLayer() const { return contents_layer_; }
+  bool HasContentsLayer() const { return ContentsLayer(); }
+  cc::Layer* ContentsLayer() const {
+    return const_cast<GraphicsLayer*>(this)->ContentsLayerIfRegistered();
+  }
 
   // For hosting this GraphicsLayer in a native layer hierarchy.
   cc::PictureLayer* CcLayer() const;
