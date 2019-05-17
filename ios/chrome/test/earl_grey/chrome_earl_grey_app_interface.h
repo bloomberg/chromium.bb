@@ -17,6 +17,12 @@
 // operation failed.
 + (NSError*)clearBrowsingHistory;
 
+// Returns YES if the current WebState is loading.
++ (BOOL)isLoading;
+
+// Navigates back to the previous page.
++ (void)goBack;
+
 @end
 
 #endif  // IOS_CHROME_TEST_EARL_GREY_CHROME_EARL_GREY_APP_INTERFACE_H_

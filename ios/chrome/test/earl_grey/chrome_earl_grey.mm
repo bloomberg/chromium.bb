@@ -39,8 +39,13 @@
 #endif
 
 using base::test::ios::kWaitForJSCompletionTimeout;
+using base::test::ios::kWaitForPageLoadTimeout;
 using base::test::ios::kWaitForUIElementTimeout;
 using base::test::ios::WaitUntilConditionOrTimeout;
+
+namespace {
+NSString* kWaitForPageToFinishLoadingError = @"Page did not finish loading";
+}
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -61,6 +66,26 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   // After clearing browsing history via code, wait for the UI to be done
   // with any updates. This includes icons from the new tab page being removed.
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+}
+
+- (NSError*)goBack {
+  [ChromeEarlGreyAppInterface goBack];
+
+  [self waitForPageToFinishLoading];
+  return nil;
+}
+
+- (NSError*)waitForPageToFinishLoading {
+  GREYCondition* finishedLoading = [GREYCondition
+      conditionWithName:kWaitForPageToFinishLoadingError
+                  block:^{
+                    return ![ChromeEarlGreyAppInterface isLoading];
+                  }];
+
+  bool pageLoaded = [finishedLoading waitWithTimeout:kWaitForPageLoadTimeout];
+  EG_TEST_HELPER_ASSERT_TRUE(pageLoaded, kWaitForPageToFinishLoadingError);
+
+  return nil;
 }
 
 @end
@@ -160,13 +185,6 @@ id ExecuteJavaScript(NSString* javascript,
   return nil;
 }
 
-- (NSError*)goBack {
-  [chrome_test_util::BrowserCommandDispatcherForMainBVC() goBack];
-  [self waitForPageToFinishLoading];
-
-  return nil;
-}
-
 - (NSError*)goForward {
   [chrome_test_util::BrowserCommandDispatcherForMainBVC() goForward];
   [self waitForPageToFinishLoading];
@@ -206,13 +224,6 @@ id ExecuteJavaScript(NSString* javascript,
 - (void)closeCurrentTab {
   chrome_test_util::CloseCurrentTab();
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
-}
-
-- (NSError*)waitForPageToFinishLoading {
-  bool pageLoaded = chrome_test_util::WaitForPageToFinishLoading();
-  EG_TEST_HELPER_ASSERT_TRUE(pageLoaded, @"Page did not finish loading");
-
-  return nil;
 }
 
 - (NSError*)tapWebViewElementWithID:(NSString*)elementID {

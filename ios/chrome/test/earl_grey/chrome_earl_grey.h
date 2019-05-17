@@ -38,10 +38,24 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // will properly synchronize the UI for Earl Grey tests.
 @interface ChromeEarlGreyImpl : BaseEGTestHelperImpl
 
-#pragma mark - History Utilities
+#pragma mark - History Utilities (EG2)
 // Clears browsing history. Raises an EarlGrey exception if history is not
 // cleared within a timeout.
 - (void)clearBrowsingHistory;
+
+#pragma mark - Navigation Utilities (EG2)
+
+// Navigates back to the previous page and waits for the loading to complete
+// within a timeout, or a GREYAssert is induced.
+// TODO(crbug.com/963613): Change return type to void when
+// CHROME_EG_ASSERT_NO_ERROR is removed.
+- (NSError*)goBack;
+
+// Waits for the page to finish loading within a timeout, or a GREYAssert is
+// induced.
+// TODO(crbug.com/963613): Change return type to void when
+// CHROME_EG_ASSERT_NO_ERROR is removed.
+- (NSError*)waitForPageToFinishLoading;
 
 @end
 
@@ -85,12 +99,6 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // CHROME_EG_ASSERT_NO_ERROR is removed.
 - (NSError*)reload;
 
-// Navigates back to the previous page and waits for the loading to complete
-// within a timeout, or a GREYAssert is induced.
-// TODO(crbug.com/963613): Change return type to void when
-// CHROME_EG_ASSERT_NO_ERROR is removed.
-- (NSError*)goBack;
-
 // Navigates forward to the next page and waits for the loading to complete
 // within a timeout, or a GREYAssert is induced.
 // TODO(crbug.com/963613): Change return type to void when
@@ -119,12 +127,6 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 
 // Closes the current tab and waits for the UI to complete.
 - (void)closeCurrentTab;
-
-// Waits for the page to finish loading within a timeout, or a GREYAssert is
-// induced.
-// TODO(crbug.com/963613): Change return type to void when
-// CHROME_EG_ASSERT_NO_ERROR is removed.
-- (NSError*)waitForPageToFinishLoading;
 
 // Taps html element with |elementID| in the current web view.
 - (NSError*)tapWebViewElementWithID:(NSString*)elementID WARN_UNUSED_RESULT;

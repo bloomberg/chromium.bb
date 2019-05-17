@@ -4,7 +4,9 @@
 
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_app_interface.h"
 
+#import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/history_test_util.h"
+#include "ios/chrome/test/app/navigation_test_util.h"
 #import "ios/testing/nserror_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -20,6 +22,14 @@
 
   return testing::NSErrorWithLocalizedDescription(
       @"Clearing browser history timed out");
+}
+
++ (bool)isLoading {
+  return chrome_test_util::IsLoading();
+}
+
++ (void)goBack {
+  [chrome_test_util::BrowserCommandDispatcherForMainBVC() goBack];
 }
 
 @end
