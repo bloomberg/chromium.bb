@@ -41,7 +41,11 @@ class FrameRenderer {
   virtual gl::GLContext* GetGLContext() = 0;
 
   // Render the specified video frame. Once rendering is done the reference to
-  // the |video_frame| should be dropped so the video frame can be reused.
+  // the |video_frame| should be dropped so the video frame can be reused. If
+  // the specified frame is an EOS frame, the frame renderer will assume the
+  // next frame received is unrelated to the previous one, and any internal
+  // state can be reset. This is e.g. important when calculating the frame
+  // drop rate.
   virtual void RenderFrame(scoped_refptr<VideoFrame> video_frame) = 0;
 
   // Create a texture-backed video frame with specified |pixel_format|, |size|

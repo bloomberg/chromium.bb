@@ -329,6 +329,9 @@ void VideoDecoderClient::FlushDoneTask(media::DecodeStatus status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_client_sequence_checker_);
   DCHECK_EQ(0u, num_outstanding_decode_requests_);
 
+  // Send an EOS frame to the renderer, so it can reset any internal state it
+  // might keep in preparation of the next stream of video frames.
+  frame_renderer_->RenderFrame(VideoFrame::CreateEOSFrame());
   decoder_client_state_ = VideoDecoderClientState::kIdle;
   FireEvent(VideoPlayerEvent::kFlushDone);
 }
@@ -342,6 +345,7 @@ void VideoDecoderClient::ResetDoneTask() {
   // is supported, so we can set the frame index to zero here.
   current_frame_index_ = 0;
 
+  frame_renderer_->RenderFrame(VideoFrame::CreateEOSFrame());
   decoder_client_state_ = VideoDecoderClientState::kIdle;
   FireEvent(VideoPlayerEvent::kResetDone);
 }
