@@ -48,9 +48,14 @@ BluetoothBrailleDisplayUI.prototype = {
     element.appendChild(container);
     this.root_ = container;
 
+    var title = document.createElement('h2');
+    title.textContent = Msgs.getMsg('options_bluetooth_braille_display_title');
+    container.appendChild(title);
+
     var controls = document.createElement('div');
     container.appendChild(controls);
     this.controls_ = controls;
+    controls.className = 'option';
 
     var selectLabel = document.createElement('span');
     controls.appendChild(selectLabel);
