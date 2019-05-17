@@ -16,6 +16,44 @@
 
 namespace plugin_vm {
 
+namespace {
+const char kDiskImageImportCommandUuid[] = "3922722bd7394acf85bf4d5a330d4a47";
+}  // namespace
+
+void SetupConciergeForSuccessfulDiskImageImport(
+    chromeos::FakeConciergeClient* fake_concierge_client_) {
+  // Set immediate response for the ImportDiskImage call: will be that "image is
+  // in progress":
+  vm_tools::concierge::ImportDiskImageResponse import_disk_image_response;
+  import_disk_image_response.set_status(
+      vm_tools::concierge::DISK_STATUS_IN_PROGRESS);
+  import_disk_image_response.set_command_uuid(kDiskImageImportCommandUuid);
+  fake_concierge_client_->set_import_disk_image_response(
+      import_disk_image_response);
+
+  // Set a series of signals: one at 50% (in progress) and one at 100%
+  // (created):
+  std::vector<vm_tools::concierge::DiskImageStatusResponse> signals;
+  vm_tools::concierge::DiskImageStatusResponse signal1;
+  signal1.set_status(vm_tools::concierge::DISK_STATUS_IN_PROGRESS);
+  signal1.set_progress(50);
+  signal1.set_command_uuid(kDiskImageImportCommandUuid);
+  vm_tools::concierge::DiskImageStatusResponse signal2;
+  signal2.set_status(vm_tools::concierge::DISK_STATUS_CREATED);
+  signal2.set_progress(100);
+  signal2.set_command_uuid(kDiskImageImportCommandUuid);
+  fake_concierge_client_->set_disk_image_status_signals({signal1, signal2});
+
+  // Finally, set a success response for any eventual final call to
+  // DiskImageStatus:
+  vm_tools::concierge::DiskImageStatusResponse disk_image_status_response;
+  disk_image_status_response.set_status(
+      vm_tools::concierge::DISK_STATUS_CREATED);
+  disk_image_status_response.set_command_uuid(kDiskImageImportCommandUuid);
+  fake_concierge_client_->set_disk_image_status_response(
+      disk_image_status_response);
+}
+
 PluginVmTestHelper::PluginVmTestHelper(TestingProfile* testing_profile)
     : testing_profile_(testing_profile) {
   testing_profile_->ScopedCrosSettingsTestHelper()

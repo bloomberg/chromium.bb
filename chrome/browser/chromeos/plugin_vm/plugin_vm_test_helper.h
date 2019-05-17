@@ -6,10 +6,14 @@
 #define CHROME_BROWSER_CHROMEOS_PLUGIN_VM_PLUGIN_VM_TEST_HELPER_H_
 
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
+#include "chromeos/dbus/fake_concierge_client.h"
 
 class TestingProfile;
 
 namespace plugin_vm {
+
+void SetupConciergeForSuccessfulDiskImageImport(
+    chromeos::FakeConciergeClient* fake_concierge_client_);
 
 // A helper class for enabling Plugin VM in unit tests.
 class PluginVmTestHelper {

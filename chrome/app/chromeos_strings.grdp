@@ -3873,12 +3873,6 @@
   <message name="IDS_PLUGIN_VM_LAUNCHER_IMPORTING_MESSAGE" desc="Text of the Plugin VM installer while configuring the VM.">
     Configuring the virtual machine. This may take a few minutes.
   </message>
-  <message name="IDS_PLUGIN_VM_LAUNCHER_UNZIPPING_MESSAGE" desc="Text of the Plugin VM installer while configuring the VM." translateable="false">
-    Configuring the virtual machine. This may take a few minutes.
-  </message>
-  <message name="IDS_PLUGIN_VM_LAUNCHER_REGISTERING_MESSAGE" desc="Text of the Plugin VM installer shortly before completion." translateable="false">
-    Putting on final touches...
-  </message>
   <message name="IDS_PLUGIN_VM_LAUNCHER_FINISHED_MESSAGE" desc="Text of the Plugin VM installer after successful installation.">
     Click or tap Launch to use Plugin VM. In the future, you can start Plugin VM by selecting the icon in the Launcher.
   </message>

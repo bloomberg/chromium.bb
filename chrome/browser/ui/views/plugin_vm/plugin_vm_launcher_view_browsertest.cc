@@ -9,6 +9,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_pref_names.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_test_helper.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
@@ -17,6 +18,9 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/fake_concierge_client.h"
+#include "chromeos/dbus/fake_debug_daemon_client.h"
 #include "components/account_id/account_id.h"
 #include "components/download/public/background_service/download_metadata.h"
 #include "components/prefs/pref_service.h"
@@ -29,7 +33,6 @@
 namespace {
 
 const char kZipFile[] = "/downloads/a_zip_file.zip";
-const char kZippedFile[] = "a_file.txt";
 const char kZipFileHash[] =
     "bb077522e6c6fec07cf863ca44d5701935c4bc36ed12ef154f4cc22df70aec18";
 const char kNonMatchingHash[] =
@@ -92,6 +95,9 @@ class PluginVmLauncherViewBrowserTest : public DialogBrowserTest {
 
   void SetUpOnMainThread() override {
     ASSERT_TRUE(embedded_test_server()->Start());
+    fake_concierge_client_ = static_cast<chromeos::FakeConciergeClient*>(
+        chromeos::DBusThreadManager::Get()->GetConciergeClient());
+    fake_concierge_client_->set_disk_image_progress_signal_connected(true);
   }
 
   // DialogBrowserTest:
@@ -125,7 +131,6 @@ class PluginVmLauncherViewBrowserTest : public DialogBrowserTest {
     EXPECT_EQ(
         view_->GetMessage(),
         l10n_util::GetStringUTF16(IDS_PLUGIN_VM_LAUNCHER_NOT_ALLOWED_MESSAGE));
-    CheckNoPluginVmImageDirExists();
   }
 
   void CheckSetupFailed() {
@@ -135,21 +140,6 @@ class PluginVmLauncherViewBrowserTest : public DialogBrowserTest {
               l10n_util::GetStringUTF16(IDS_PLUGIN_VM_LAUNCHER_RETRY_BUTTON));
     EXPECT_EQ(view_->GetBigMessage(),
               l10n_util::GetStringUTF16(IDS_PLUGIN_VM_LAUNCHER_ERROR_TITLE));
-    EXPECT_EQ(view_->GetMessage(),
-              l10n_util::GetStringUTF16(IDS_PLUGIN_VM_LAUNCHER_ERROR_MESSAGE));
-    CheckNoPluginVmImageDirExists();
-  }
-
-  void CheckNoPluginVmImageDirExists() {
-    base::FilePath plugin_vm_image_dir =
-        browser()
-            ->profile()
-            ->GetPath()
-            .AppendASCII(plugin_vm::kCrosvmDir)
-            .AppendASCII(plugin_vm::kPvmDir)
-            .AppendASCII(plugin_vm::kPluginVmImageDir);
-    base::ScopedAllowBlockingForTesting allow_blocking;
-    EXPECT_FALSE(base::DirectoryExists(plugin_vm_image_dir));
   }
 
   void CheckSetupIsFinishedSuccessfully() {
@@ -159,17 +149,6 @@ class PluginVmLauncherViewBrowserTest : public DialogBrowserTest {
               l10n_util::GetStringUTF16(IDS_PLUGIN_VM_LAUNCHER_LAUNCH_BUTTON));
     EXPECT_EQ(view_->GetBigMessage(),
               l10n_util::GetStringUTF16(IDS_PLUGIN_VM_LAUNCHER_FINISHED_TITLE));
-
-    base::FilePath plugin_vm_image_dir =
-        browser()
-            ->profile()
-            ->GetPath()
-            .AppendASCII(plugin_vm::kCrosvmDir)
-            .AppendASCII(plugin_vm::kPvmDir)
-            .AppendASCII(plugin_vm::kPluginVmImageDir);
-    base::ScopedAllowBlockingForTesting allow_blocking;
-    EXPECT_TRUE(base::DirectoryExists(plugin_vm_image_dir));
-    EXPECT_TRUE(base::PathExists(plugin_vm_image_dir.AppendASCII(kZippedFile)));
   }
 
   void SetPluginVmDevicePolicies() {
@@ -196,6 +175,9 @@ class PluginVmLauncherViewBrowserTest : public DialogBrowserTest {
     plugin_vm_image->SetKey("hash", base::Value(hash));
   }
 
+ protected:
+  chromeos::FakeConciergeClient* fake_concierge_client_;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(PluginVmLauncherViewBrowserTest);
 };
@@ -209,6 +191,7 @@ IN_PROC_BROWSER_TEST_F(PluginVmLauncherViewBrowserTest,
                        SetupShouldFinishSuccessfully) {
   SetPluginVmDevicePolicies();
   SetUserWithAffiliation();
+  plugin_vm::SetupConciergeForSuccessfulDiskImageImport(fake_concierge_client_);
   SetPluginVmImagePref(embedded_test_server()->GetURL(kZipFile).spec(),
                        kZipFileHash);
 
@@ -264,6 +247,7 @@ IN_PROC_BROWSER_TEST_F(PluginVmLauncherViewBrowserTest,
 
   CheckSetupFailed();
 
+  plugin_vm::SetupConciergeForSuccessfulDiskImageImport(fake_concierge_client_);
   SetPluginVmImagePref(embedded_test_server()->GetURL(kZipFile).spec(),
                        kZipFileHash);
 

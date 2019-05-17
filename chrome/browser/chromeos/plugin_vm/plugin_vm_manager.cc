@@ -16,8 +16,6 @@ namespace plugin_vm {
 
 namespace {
 
-constexpr char kPluginVmDefaultName[] = "PvmDefault";
-
 class PluginVmManagerFactory : public BrowserContextKeyedServiceFactory {
  public:
   static PluginVmManager* GetForProfile(Profile* profile) {
@@ -49,6 +47,8 @@ class PluginVmManagerFactory : public BrowserContextKeyedServiceFactory {
 };
 
 }  // namespace
+
+const char kPluginVmDefaultName[] = "PvmDefault";
 
 PluginVmManager* PluginVmManager::GetForProfile(Profile* profile) {
   return PluginVmManagerFactory::GetForProfile(profile);

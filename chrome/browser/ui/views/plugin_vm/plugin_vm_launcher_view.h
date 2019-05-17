@@ -42,13 +42,10 @@ class PluginVmLauncherView : public views::BubbleDialogDelegateView,
   void OnDownloadCompleted() override;
   void OnDownloadCancelled() override;
   void OnDownloadFailed() override;
-  void OnUnzippingProgressUpdated(int64_t bytes_unzipped,
-                                  int64_t plugin_vm_image_size,
-                                  int64_t unzipping_bytes_per_sec) override;
-  void OnUnzipped() override;
-  void OnUnzippingFailed() override;
-  void OnRegistered() override;
-  void OnRegistrationFailed() override;
+  void OnImportProgressUpdated(uint64_t percent_completed,
+                               int64_t import_percent_per_sec) override;
+  void OnImported() override;
+  void OnImportFailed() override;
 
   // Public for testing purposes.
   base::string16 GetBigMessage() const;
@@ -58,8 +55,7 @@ class PluginVmLauncherView : public views::BubbleDialogDelegateView,
   enum class State {
     START_DOWNLOADING,  // PluginVm image downloading should be started.
     DOWNLOADING,        // PluginVm image downloading is in progress.
-    UNZIPPING,          // Downloaded PluginVm image unzipping is in progress.
-    REGISTERING,        // PluginVm image registering is in progress.
+    IMPORTING,          // Downloaded PluginVm image importing is in progress.
     FINISHED,           // PluginVm environment setting has been finished.
     ERROR,              // Something unexpected happened.
     NOT_ALLOWED,        // PluginVm is disallowed on the device.
