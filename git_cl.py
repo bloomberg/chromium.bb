@@ -82,20 +82,14 @@ GITCOOKIES_REDACT_RE = re.compile(r'1/.*')
 # The maximum number of traces we will keep. Multiplied by 3 since we store
 # 3 files per trace.
 MAX_TRACES = 3 * 10
-# Message to display to the user after git-cl has run, to inform them of the
-# traces we just collected.
+# Message to be displayed to the user to inform where to find the traces for a
+# git-cl upload execution.
 TRACES_MESSAGE = (
 '\n'
-'A trace of this git-cl execution has been recorded at:\n'
+'The traces of this git-cl execution have been recorded at:\n'
 '  %(trace_name)s-traces.zip\n'
-'A redacted copy of your gitcookies file and git config has been recorded at:\n'
-'  %(trace_name)s-git-info.zip\n'
-'If git-cl is not working correctly, please file a bug under the Infra>SDK\n'
-'component, include the files above, and set the Restrict-View-Google label\n'
-'so that they\'re not publicly accessible.\n'
-'Review the files before upload. They might contain sensitive information\n'
-'like reviewer emails, patchset titles, and the local path to your checkout.\n'
-)
+'Copies of your gitcookies file and git config have been recorded at:\n'
+'  %(trace_name)s-git-info.zip\n')
 # Format of the message to be stored as part of the traces to give developers a
 # better context when they go through traces.
 TRACES_README_FORMAT = (
@@ -2542,11 +2536,9 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
             '  %s'
             'Consider removing them manually.' % TRACES_DIR)
 
-  def _WriteGitPushTraces(self, traces_dir, git_push_metadata):
+  def _WriteGitPushTraces(self, trace_name, traces_dir, git_push_metadata):
     """Zip and write the git push traces stored in traces_dir."""
     gclient_utils.safe_makedirs(TRACES_DIR)
-    now = datetime_now()
-    trace_name = os.path.join(TRACES_DIR, now.strftime('%Y%m%dT%H%M%S.%f'))
     traces_zip = trace_name + '-traces'
     traces_readme = trace_name + '-README'
     # Create a temporary dir to store git config and gitcookies in. It will be
@@ -2554,7 +2546,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     git_info_dir = tempfile.mkdtemp()
     git_info_zip = trace_name + '-git-info'
 
-    git_push_metadata['now'] = now.strftime('%c')
+    git_push_metadata['now'] = datetime_now().strftime('%c')
     git_push_metadata['trace_name'] = trace_name
     gclient_utils.FileWrite(
         traces_readme, TRACES_README_FORMAT % git_push_metadata)
@@ -2584,8 +2576,6 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
             GITCOOKIES_REDACT_RE.sub('REDACTED', gitcookies))
     shutil.make_archive(git_info_zip, 'zip', git_info_dir)
 
-    print(TRACES_MESSAGE % {'trace_name': trace_name})
-
     gclient_utils.rmtree(git_info_dir)
 
   def _RunGitPushWithTraces(
@@ -2594,6 +2584,8 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     # Create a temporary directory to store traces in. Traces will be compressed
     # and stored in a 'traces' dir inside depot_tools.
     traces_dir = tempfile.mkdtemp()
+    trace_name = os.path.join(
+        TRACES_DIR, datetime_now().strftime('%Y%m%dT%H%M%S.%f'))
 
     env = os.environ.copy()
     env['GIT_REDACT_COOKIES'] = 'o,SSO,GSSO_Uberproxy'
@@ -2619,7 +2611,15 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
                    'for the reason of the failure.\n'
                    'Hint: run command below to diagnose common Git/Gerrit '
                    'credential problems:\n'
-                   '  git cl creds-check',
+                   '  git cl creds-check\n'
+                   '\n'
+                   'If git-cl is not working correctly, file a bug under the '
+                   'Infra>SDK component including the files below.\n'
+                   'Review the files before upload, since they might contain '
+                   'sensitive information.\n'
+                   'Set the Restrict-View-Google label so that they are not '
+                   'publicly accessible.\n'
+                   + TRACES_MESSAGE % {'trace_name': trace_name},
                    change_desc)
     finally:
       execution_time = time_time() - before_push
@@ -2632,7 +2632,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
 
       git_push_metadata['execution_time'] = execution_time
       git_push_metadata['exit_code'] = push_returncode
-      self._WriteGitPushTraces(traces_dir, git_push_metadata)
+      self._WriteGitPushTraces(trace_name, traces_dir, git_push_metadata)
 
       self._CleanUpOldTraces()
       gclient_utils.rmtree(traces_dir)
