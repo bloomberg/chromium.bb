@@ -80,6 +80,132 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="AdFrameLoad">
+  <owner>johnidel@chromium.org</owner>
+  <owner>jkarlin@chromium.org</owner>
+  <summary>
+    Records metrics associated with a single ad frame for a page load. An ad
+    frame includes itself and all of its child frames. Only recorded for frames
+    with non-zero bytes. Recorded when a page is destroyed or when the app is
+    backgrounded on mobile.
+  </summary>
+  <metric name="CpuTime.PreActivation">
+    <summary>
+      Wall time of tasks attributed to the frame after the frame recieved user
+      activation. Measured in millseconds.
+    </summary>
+  </metric>
+  <metric name="CpuTime.Total">
+    <summary>
+      Total wall time of tasks attributed to the frame. Measured in
+      milliseconds.
+    </summary>
+  </metric>
+  <metric name="FrameDepth">
+    <summary>
+      The depth of this frame's frame tree. There is no set limit on a frame's
+      maximum depth.
+    </summary>
+  </metric>
+  <metric name="Loading.CacheBytes">
+    <summary>
+      Bytes loaded from the cache for all resources loaded within the frame.
+      This is rounded down to the nearest exponential bucket (with a bucket
+      ratio of 1.3).
+    </summary>
+  </metric>
+  <metric name="Loading.ImageBytes">
+    <summary>
+      Network bytes loaded for resources with an image mime type within the
+      frame. Includes header bytes. This is rounded down to the nearest
+      exponential bucket (with a bucket ratio of 1.3).
+    </summary>
+  </metric>
+  <metric name="Loading.JavascriptBytes">
+    <summary>
+      Network bytes loaded for resources with a javascript mime type within the
+      frame. Includes header bytes. This is rounded down to the nearest
+      exponential bucket (with a bucket ratio of 1.3).
+    </summary>
+  </metric>
+  <metric name="Loading.NetworkBytes">
+    <summary>
+      Network bytes loaded for all resources within the frame. Includes header
+      bytes. This is rounded down to the nearest exponential bucket (with a
+      bucket ratio of 1.3).
+    </summary>
+  </metric>
+  <metric name="Loading.NumResources">
+    <summary>
+      Total number of resources loaded by the frame, including incomplete
+      resources.
+    </summary>
+  </metric>
+  <metric name="Loading.VideoBytes">
+    <summary>
+      Network bytes loaded for resources with a video/ mime type within the
+      frame. Includes header bytes. This is rounded down to the nearest
+      exponential bucket (with a bucket ratio of 1.3).
+    </summary>
+  </metric>
+  <metric name="Status.CrossOrigin">
+    <summary>
+      An enum representing whether the frame was Cross-Origin or Same-Origin to
+      it's parent frame. See FrameData::OriginStatus.
+    </summary>
+  </metric>
+  <metric name="Status.Media">
+    <summary>
+      An enum representing whether media was played in the frame. See
+      FrameData::MediaStatus.
+    </summary>
+  </metric>
+  <metric name="Status.UserActivation">
+    <summary>
+      An enum representing whether the frame received user activation. See
+      FrameData::UserActivationStatus.
+    </summary>
+  </metric>
+  <metric name="Timing.FirstContentfulPaint">
+    <summary>
+      Number of milliseconds before FirstContentfulpaint was reached in the
+      frame. This is relative to subframe navigation start.
+    </summary>
+  </metric>
+  <metric name="Timing.Interactive">
+    <summary>
+      Number of millseconds before Time-To-Interactive was reached in the frame.
+      This is relative to subframe navigation start.
+    </summary>
+  </metric>
+  <metric name="Timing.PreActivationForegroundDuration">
+    <summary>
+      Number of millseconds that the current web contents spent in the
+      foreground prior to the frame receiving user activation.
+    </summary>
+  </metric>
+  <metric name="Visibility.FrameHeight">
+    <summary>
+      Last known height of the iframe in pixels. Not reported accurately when
+      &quot;Visiblity.Hidden&quot; is true. This is rounded down to the nearest
+      exponential bucket (with a bucket ratio of 1.15).
+    </summary>
+  </metric>
+  <metric name="Visibility.FrameWidth">
+    <summary>
+      Last known width of the iframe in pixels. Not reported accurately when
+      &quot;Visiblity.Hidden&quot; is true. This is rounded down to the nearest
+      exponential bucket (with a bucket ratio of 1.15).
+    </summary>
+  </metric>
+  <metric name="Visibility.Hidden">
+    <summary>
+      A 0 or 1 values representing whether the frame had a display=none styling
+      set. Records the last known value.
+    </summary>
+  </metric>
+</event>
+
 <event name="AdPageLoad">
   <owner>johnidel@chromium.org</owner>
   <owner>jkarlin@chromium.org</owner>

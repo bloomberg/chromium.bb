@@ -160,6 +160,9 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // of its size.
   virtual const base::Optional<gfx::Size>& GetFrameSize() = 0;
 
+  // Returns the distance from this frame to the root frame.
+  virtual size_t GetFrameDepth() = 0;
+
   // Returns true if the frame is out of process.
   virtual bool IsCrossProcessSubframe() = 0;
 

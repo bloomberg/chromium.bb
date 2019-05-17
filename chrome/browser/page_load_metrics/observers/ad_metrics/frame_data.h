@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "chrome/common/page_load_metrics/page_load_metrics.mojom.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/origin.h"
 
@@ -100,7 +101,9 @@ class FrameData {
 
   // Updates the number of bytes loaded in the frame given a resource load.
   void ProcessResourceLoadInFrame(
-      const page_load_metrics::mojom::ResourceDataUpdatePtr& resource);
+      const page_load_metrics::mojom::ResourceDataUpdatePtr& resource,
+      int process_id,
+      const page_load_metrics::ResourceTracker& resource_tracker);
 
   // Adds additional bytes to the ad resource byte counts. This
   // is used to notify the frame that some bytes were tagged as ad bytes after
@@ -133,6 +136,14 @@ class FrameData {
   base::TimeDelta pre_activation_foreground_duration() const {
     return pre_activation_foreground_duration_;
   }
+
+  // Updates the max frame depth of this frames tree given the newly seen child
+  // frame.
+  void MaybeUpdateFrameDepth(content::RenderFrameHost* render_frame_host);
+
+  // Construct and record an AdFrameLoad UKM event for this frame. Only records
+  // events for frames that have non-zero bytes.
+  void RecordAdFrameLoadUkmEvent(ukm::SourceId source_id) const;
 
   FrameTreeNodeId frame_tree_node_id() const { return frame_tree_node_id_; }
 
@@ -170,9 +181,19 @@ class FrameData {
     media_status_ = media_status;
   }
 
+  void set_timing(page_load_metrics::mojom::PageLoadTimingPtr timing) {
+    timing_ = std::move(timing);
+  }
+
  private:
   // Updates whether or not this frame meets the criteria for visibility.
   void UpdateFrameVisibility();
+
+  // The most recently updated timing received for this frame.
+  page_load_metrics::mojom::PageLoadTimingPtr timing_;
+
+  // Number of resources loaded by the frame (both complete and incomplete).
+  int num_resources_;
 
   // Total bytes used to load resources in the frame, including headers.
   size_t bytes_;
@@ -194,6 +215,12 @@ class FrameData {
           base::TimeDelta(), base::TimeDelta()};
   // Duration of time the page spent in the foreground before activation.
   base::TimeDelta pre_activation_foreground_duration_;
+
+  // The depth of this FrameData's root frame.
+  unsigned int root_frame_depth_ = 0;
+
+  // The max depth of this frames frame tree.
+  unsigned int frame_depth_ = 0;
 
   // Tracks the number of bytes that were used to load resources which were
   // detected to be ads inside of this frame. For ad frames, these counts should

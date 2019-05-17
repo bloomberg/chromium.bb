@@ -131,6 +131,24 @@ AdsPageLoadMetricsObserver::OnCommit(
   return CONTINUE_OBSERVING;
 }
 
+void AdsPageLoadMetricsObserver::OnTimingUpdate(
+    content::RenderFrameHost* subframe_rfh,
+    const page_load_metrics::mojom::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+  if (!subframe_rfh)
+    return;
+  const auto& id_and_data =
+      ad_frames_data_.find(subframe_rfh->GetFrameTreeNodeId());
+  if (id_and_data == ad_frames_data_.end())
+    return;
+  FrameData* ancestor_data = id_and_data->second;
+
+  // Only update the frame with the root frames timing updates.
+  if (ancestor_data &&
+      ancestor_data->frame_tree_node_id() == subframe_rfh->GetFrameTreeNodeId())
+    ancestor_data->set_timing(timing.Clone());
+}
+
 void AdsPageLoadMetricsObserver::OnCpuTimingUpdate(
     content::RenderFrameHost* subframe_rfh,
     const page_load_metrics::mojom::CpuTiming& timing) {
@@ -205,6 +223,11 @@ void AdsPageLoadMetricsObserver::RecordAdFrameData(
     ad_data = &ad_frames_data_storage_.back();
     ad_data->UpdateForNavigation(ad_host, frame_navigated);
   }
+
+  // Maybe update frame depth based on the new ad frames distance to the ad
+  // root.
+  if (ad_data)
+    ad_data->MaybeUpdateFrameDepth(ad_host);
 
   // If there was previous data, then we don't want to overwrite this frame.
   if (!previous_data)
@@ -416,11 +439,13 @@ void AdsPageLoadMetricsObserver::ProcessResourceForPage(
     const page_load_metrics::mojom::ResourceDataUpdatePtr& resource) {
   auto mime_type = FrameData::GetResourceMimeType(resource);
   int unaccounted_ad_bytes = GetUnaccountedAdBytes(process_id, resource);
-  aggregate_frame_data_->ProcessResourceLoadInFrame(resource);
+  aggregate_frame_data_->ProcessResourceLoadInFrame(
+      resource, process_id, GetDelegate()->GetResourceTracker());
   if (unaccounted_ad_bytes)
     aggregate_frame_data_->AdjustAdBytes(unaccounted_ad_bytes, mime_type);
   if (resource->is_main_frame_resource) {
-    main_frame_data_->ProcessResourceLoadInFrame(resource);
+    main_frame_data_->ProcessResourceLoadInFrame(
+        resource, process_id, GetDelegate()->GetResourceTracker());
     if (unaccounted_ad_bytes)
       main_frame_data_->AdjustAdBytes(unaccounted_ad_bytes, mime_type);
   }
@@ -462,7 +487,8 @@ void AdsPageLoadMetricsObserver::ProcessResourceForFrame(
 
   auto mime_type = FrameData::GetResourceMimeType(resource);
   int unaccounted_ad_bytes = GetUnaccountedAdBytes(process_id, resource);
-  ancestor_data->ProcessResourceLoadInFrame(resource);
+  ancestor_data->ProcessResourceLoadInFrame(
+      resource, process_id, GetDelegate()->GetResourceTracker());
   if (unaccounted_ad_bytes)
     ancestor_data->AdjustAdBytes(unaccounted_ad_bytes, mime_type);
 
@@ -472,6 +498,11 @@ void AdsPageLoadMetricsObserver::ProcessResourceForFrame(
         GetDelegate()->GetWebContents()->GetMainFrame(),
         blink::mojom::WebFeature::kAdFrameSizeIntervention);
   }
+}
+
+void AdsPageLoadMetricsObserver::RecordAdFrameUkm(ukm::SourceId source_id) {
+  for (const FrameData& ad_frame_data : ad_frames_data_storage_)
+    ad_frame_data.RecordAdFrameLoadUkmEvent(source_id);
 }
 
 void AdsPageLoadMetricsObserver::RecordPageResourceTotalHistograms(
@@ -527,6 +558,7 @@ void AdsPageLoadMetricsObserver::RecordHistograms(ukm::SourceId source_id) {
   RecordHistogramsForAdTagging(FrameData::FrameVisibility::kNonVisible);
   RecordHistogramsForAdTagging(FrameData::FrameVisibility::kVisible);
   RecordHistogramsForAdTagging(FrameData::FrameVisibility::kAnyVisibility);
+  RecordAdFrameUkm(source_id);
   RecordPageResourceTotalHistograms(source_id);
 }
 

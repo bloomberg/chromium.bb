@@ -1136,6 +1136,10 @@ const base::Optional<gfx::Size>& RenderFrameHostImpl::GetFrameSize() {
   return frame_size_;
 }
 
+size_t RenderFrameHostImpl::GetFrameDepth() {
+  return frame_tree_node()->depth();
+}
+
 bool RenderFrameHostImpl::IsCrossProcessSubframe() {
   if (!parent_)
     return false;
