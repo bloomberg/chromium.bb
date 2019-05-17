@@ -3257,13 +3257,6 @@ extern const char kAshNotificationStackingBarRedesignDescription[] =
     "Enables the redesigned notification stacking bar UI with a \"Clear all\" "
     "button.";
 
-extern const char kInSessionPasswordChangeName[] =
-    "Enable user password change in the session";
-
-extern const char kInSessionPasswordChangeDescription[] =
-    "Let user change both their IdP password and Chromebook password on "
-    "chrome://password-change page.";
-
 #endif  // defined(OS_CHROMEOS)
 
 // All views-based platforms --------------------------------------------------

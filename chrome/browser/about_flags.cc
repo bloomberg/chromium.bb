@@ -3819,14 +3819,6 @@ bool SkipConditionalFeatureEntry(const FeatureEntry& entry) {
       channel == version_info::Channel::STABLE) {
     return true;
   }
-
-  // Don't expose in-session password change on stable and beta channel.
-  if (!strcmp("in-session-password-change", entry.internal_name) &&
-      channel != version_info::Channel::DEV &&
-      channel != version_info::Channel::CANARY &&
-      channel != version_info::Channel::UNKNOWN) {
-    return true;
-  }
 #endif  // defined(OS_CHROMEOS)
 
   // data-reduction-proxy-lo-fi and enable-data-reduction-proxy-lite-page
