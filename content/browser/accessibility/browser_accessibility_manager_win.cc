@@ -333,6 +333,10 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
       break;
     case ui::AXEventGenerator::Event::SET_SIZE_CHANGED:
       FireUiaPropertyChangedEvent(UIA_SizeOfSetPropertyId, node);
+      aria_properties_events_.insert(node);
+      break;
+    case ui::AXEventGenerator::Event::SORT_CHANGED:
+      aria_properties_events_.insert(node);
       break;
     case ui::AXEventGenerator::Event::SUBTREE_CREATED:
       FireWinAccessibilityEvent(EVENT_OBJECT_SHOW, node);
@@ -340,18 +344,24 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
       break;
     case ui::AXEventGenerator::Event::VALUE_CHANGED:
       FireWinAccessibilityEvent(EVENT_OBJECT_VALUECHANGE, node);
-      if (ui::IsRangeValueSupported(node->GetData()))
+      if (ui::IsRangeValueSupported(node->GetData())) {
         FireUiaPropertyChangedEvent(UIA_RangeValueValuePropertyId, node);
-      else if (ui::IsValuePatternSupported(node))
+        aria_properties_events_.insert(node);
+      } else if (ui::IsValuePatternSupported(node)) {
         FireUiaPropertyChangedEvent(UIA_ValueValuePropertyId, node);
+      }
       break;
     case ui::AXEventGenerator::Event::VALUE_MAX_CHANGED:
-      if (IsRangeValueSupported(node->GetData()))
+      if (IsRangeValueSupported(node->GetData())) {
         FireUiaPropertyChangedEvent(UIA_RangeValueMaximumPropertyId, node);
+        aria_properties_events_.insert(node);
+      }
       break;
     case ui::AXEventGenerator::Event::VALUE_MIN_CHANGED:
-      if (IsRangeValueSupported(node->GetData()))
+      if (IsRangeValueSupported(node->GetData())) {
         FireUiaPropertyChangedEvent(UIA_RangeValueMinimumPropertyId, node);
+        aria_properties_events_.insert(node);
+      }
       break;
     case ui::AXEventGenerator::Event::VALUE_STEP_CHANGED:
       if (IsRangeValueSupported(node->GetData())) {

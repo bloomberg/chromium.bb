@@ -307,6 +307,12 @@ void AXEventGenerator::OnIntAttributeChanged(AXTree* tree,
     case ax::mojom::IntAttribute::kScrollY:
       AddEvent(node, Event::SCROLL_VERTICAL_POSITION_CHANGED);
       break;
+    case ax::mojom::IntAttribute::kSortDirection:
+      // Ignore sort direction changes on roles other than table headers and
+      // grid headers.
+      if (ui::IsTableHeader(node->data().role))
+        AddEvent(node, Event::SORT_CHANGED);
+      break;
     case ax::mojom::IntAttribute::kImageAnnotationStatus:
       // The image annotation is reported as part of the accessible name.
       AddEvent(node, Event::IMAGE_ANNOTATION_CHANGED);
