@@ -926,8 +926,7 @@ void PrintPreviewHandler::HandleOpenPrinterSettings(
 #endif
 
 void PrintPreviewHandler::GetNumberFormatAndMeasurementSystem(
-    base::DictionaryValue* settings) {
-
+    base::Value* settings) {
   // Getting the measurement system based on the locale.
   UErrorCode errorCode = U_ZERO_ERROR;
   const char* locale = g_browser_process->GetApplicationLocale().c_str();
@@ -941,9 +940,9 @@ void PrintPreviewHandler::GetNumberFormatAndMeasurementSystem(
   // Getting the number formatting based on the locale and writing to
   // dictionary.
   base::string16 number_format = base::FormatDouble(123456.78, 2);
-  settings->SetString(kDecimalDelimeter, number_format.substr(7, 1));
-  settings->SetString(kThousandsDelimeter, number_format.substr(3, 1));
-  settings->SetInteger(kUnitType, system);
+  settings->SetStringKey(kDecimalDelimeter, number_format.substr(7, 1));
+  settings->SetStringKey(kThousandsDelimeter, number_format.substr(3, 1));
+  settings->SetIntKey(kUnitType, system);
 }
 
 void PrintPreviewHandler::HandleGetInitialSettings(
@@ -962,22 +961,22 @@ void PrintPreviewHandler::HandleGetInitialSettings(
 void PrintPreviewHandler::SendInitialSettings(
     const std::string& callback_id,
     const std::string& default_printer) {
-  base::DictionaryValue initial_settings;
-  initial_settings.SetString(kDocumentTitle,
-                             print_preview_ui()->initiator_title());
-  initial_settings.SetBoolean(kSettingPreviewModifiable,
+  base::Value initial_settings(base::Value::Type::DICTIONARY);
+  initial_settings.SetStringKey(kDocumentTitle,
+                                print_preview_ui()->initiator_title());
+  initial_settings.SetBoolKey(kSettingPreviewModifiable,
                               print_preview_ui()->source_is_modifiable());
-  initial_settings.SetString(kSettingPrinterName, default_printer);
-  initial_settings.SetBoolean(kDocumentHasSelection,
+  initial_settings.SetStringKey(kSettingPrinterName, default_printer);
+  initial_settings.SetBoolKey(kDocumentHasSelection,
                               print_preview_ui()->source_has_selection());
-  initial_settings.SetBoolean(kSettingShouldPrintSelectionOnly,
+  initial_settings.SetBoolKey(kSettingShouldPrintSelectionOnly,
                               print_preview_ui()->print_selection_only());
   PrefService* prefs = GetPrefs();
   StickySettings* sticky_settings = GetStickySettings();
   sticky_settings->RestoreFromPrefs(prefs);
   if (sticky_settings->printer_app_state()) {
-    initial_settings.SetString(kAppState,
-                               *sticky_settings->printer_app_state());
+    initial_settings.SetStringKey(kAppState,
+                                  *sticky_settings->printer_app_state());
   } else {
     initial_settings.SetKey(kAppState, base::Value());
   }
@@ -985,29 +984,29 @@ void PrintPreviewHandler::SendInitialSettings(
   if (prefs->HasPrefPath(prefs::kPrintHeaderFooter)) {
     // Don't override sticky settings, unless kPrintHeaderFooter is actually
     // customized.
-    initial_settings.SetBoolean(kHeaderFooter,
+    initial_settings.SetBoolKey(kHeaderFooter,
                                 prefs->GetBoolean(prefs::kPrintHeaderFooter));
   }
   if (prefs->GetBoolean(prefs::kCloudPrintSubmitEnabled) &&
       !base::FeatureList::IsEnabled(features::kCloudPrinterHandler)) {
-    initial_settings.SetString(kCloudPrintURL,
-                               GURL(cloud_devices::GetCloudPrintURL()).spec());
+    initial_settings.SetStringKey(
+        kCloudPrintURL, GURL(cloud_devices::GetCloudPrintURL()).spec());
   }
-  initial_settings.SetBoolean(
+  initial_settings.SetBoolKey(
       kIsHeaderFooterManaged,
       prefs->IsManagedPreference(prefs::kPrintHeaderFooter));
 
   base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
-  initial_settings.SetBoolean(kIsInKioskAutoPrintMode,
+  initial_settings.SetBoolKey(kIsInKioskAutoPrintMode,
                               cmdline->HasSwitch(switches::kKioskModePrinting));
-  initial_settings.SetBoolean(kIsInAppKioskMode,
+  initial_settings.SetBoolKey(kIsInAppKioskMode,
                               chrome::IsRunningInForcedAppMode());
   const std::string rules_str =
       prefs->GetString(prefs::kPrintPreviewDefaultDestinationSelectionRules);
   if (rules_str.empty()) {
     initial_settings.SetKey(kDefaultDestinationSelectionRules, base::Value());
   } else {
-    initial_settings.SetString(kDefaultDestinationSelectionRules, rules_str);
+    initial_settings.SetStringKey(kDefaultDestinationSelectionRules, rules_str);
   }
 
   GetNumberFormatAndMeasurementSystem(&initial_settings);

@@ -277,7 +277,7 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   void ClearInitiatorDetails();
 
   // Populates |settings| according to the current locale.
-  void GetNumberFormatAndMeasurementSystem(base::DictionaryValue* settings);
+  void GetNumberFormatAndMeasurementSystem(base::Value* settings);
 
   PdfPrinterHandler* GetPdfPrinterHandler();
 
