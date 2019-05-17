@@ -124,6 +124,13 @@ class LocalCardMigrationManager {
   int GetDetectedValues() const;
 
   // Fetch all migratable credit cards and store in |migratable_credit_cards_|.
+  // Migratable cards are cards whose card number passed luhn check and
+  // expiration date are valid. We do NOT filter unsupported cards here.
+  // Any other usage of this function other than ShouldOfferLocalCardMigration()
+  // and from settings page after OnDidGetUploadDetails, you should call
+  // FilterOutUnsupportedLocalCards right after this function to filter out
+  // unsupported cards. If so, the first OnDidGetUploadDetails() will need to
+  // store the supported ranges locally.
   void GetMigratableCreditCards();
 
   // For testing.
@@ -177,9 +184,12 @@ class LocalCardMigrationManager {
   // Returns the LocalCardMigrationStrikeDatabase for |client_|.
   LocalCardMigrationStrikeDatabase* GetLocalCardMigrationStrikeDatabase();
 
-  // Filter the |migratable_credit_cards_| with |supported_card_bin_ranges_| and
+  // Filter the |migratable_credit_cards_| with |supported_card_bin_ranges| and
   // keep supported local cards in |migratable_credit_cards_|.
-  void FilterOutUnsupportedLocalCards();
+  // Effective after one successful GetUploadDetails call where we fetch the
+  // |supported_card_bin_ranges|.
+  void FilterOutUnsupportedLocalCards(
+      const std::vector<std::pair<int, int>>& supported_card_bin_ranges);
 
   // Pops up a larger, modal dialog showing the local cards to be uploaded.
   void ShowMainMigrationDialog();
@@ -228,10 +238,6 @@ class LocalCardMigrationManager {
 
   std::unique_ptr<LocalCardMigrationStrikeDatabase>
       local_card_migration_strike_database_;
-
-  // List of BIN prefix ranges which are supoorted, with the first and second
-  // number in the pair being the start and end of the range.
-  std::vector<std::pair<int, int>> supported_card_bin_ranges_;
 
   base::WeakPtrFactory<LocalCardMigrationManager> weak_ptr_factory_;
 

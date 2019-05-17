@@ -226,7 +226,6 @@ void LocalCardMigrationManager::OnDidGetUploadDetails(
     migration_request_.context_token = context_token;
     legal_message_ = base::DictionaryValue::From(std::move(legal_message));
     migration_request_.risk_data.clear();
-    supported_card_bin_ranges_ = supported_card_bin_ranges;
     // If we successfully received the legal docs, trigger the offer-to-migrate
     // dialog. If triggered from settings page, we pop-up the main prompt
     // directly. If not, we pop up the intermediate bubble.
@@ -237,8 +236,8 @@ void LocalCardMigrationManager::OnDidGetUploadDetails(
       // Pops up a larger, modal dialog showing the local cards to be uploaded.
       ShowMainMigrationDialog();
     } else {
-      // Filter the migratable credit cards with |supported_card_bin_ranges_|.
-      FilterOutUnsupportedLocalCards();
+      // Filter the migratable credit cards with |supported_card_bin_ranges|.
+      FilterOutUnsupportedLocalCards(supported_card_bin_ranges);
       // Abandon the migration if no supported card left.
       if (migratable_credit_cards_.empty()) {
         AutofillMetrics::LogLocalCardMigrationDecisionMetric(
@@ -416,23 +415,19 @@ void LocalCardMigrationManager::GetMigratableCreditCards() {
       migratable_credit_cards_.push_back(MigratableCreditCard(*credit_card));
     }
   }
-
-  // Filter out Unsupported local cards when |supported_card_bin_ranges_| is not
-  // empty.
-  FilterOutUnsupportedLocalCards();
 }
 
-void LocalCardMigrationManager::FilterOutUnsupportedLocalCards() {
+void LocalCardMigrationManager::FilterOutUnsupportedLocalCards(
+    const std::vector<std::pair<int, int>>& supported_card_bin_ranges) {
   if (base::FeatureList::IsEnabled(
           features::kAutofillDoNotMigrateUnsupportedLocalCards) &&
-      !supported_card_bin_ranges_.empty()) {
+      !supported_card_bin_ranges.empty()) {
     // Update the |migratable_credit_cards_| with the
     // |supported_card_bin_ranges|. This will remove any card from
     // |migratable_credit_cards_| of which the card number is not in
     // |supported_card_bin_ranges|.
     auto card_is_unsupported =
-        [& supported_card_bin_ranges =
-             supported_card_bin_ranges_](MigratableCreditCard& card) {
+        [&supported_card_bin_ranges](MigratableCreditCard& card) {
           return !payments::IsCreditCardSupported(card.credit_card(),
                                                   supported_card_bin_ranges);
         };
