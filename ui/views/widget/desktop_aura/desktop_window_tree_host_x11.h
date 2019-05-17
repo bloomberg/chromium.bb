@@ -180,8 +180,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   void MoveCursorToScreenLocationInPixels(
       const gfx::Point& location_in_pixels) override;
   void OnCursorVisibilityChangedNative(bool show) override;
-  void OnCompositingCompleteSwapWithNewSize(ui::Compositor* compositor,
-                                            const gfx::Size& size) override;
 
   // Overridden from display::DisplayObserver via aura::WindowTreeHost:
   void OnDisplayMetricsChanged(const display::Display& display,
@@ -462,16 +460,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   std::unique_ptr<aura::ScopedWindowTargeter> targeter_for_modal_;
 
   uint32_t modal_dialog_counter_ = 0;
-
-  // Used for synchronizing between |xwindow_| between desktop compositor during
-  // resizing.
-  XID update_counter_ = x11::None;
-  XID extended_update_counter_ = x11::None;
-  int64_t pending_counter_value_ = 0;
-  int64_t configure_counter_value_ = 0;
-  int64_t current_counter_value_ = 0;
-  bool pending_counter_value_is_extended_ = false;
-  bool configure_counter_value_is_extended_ = false;
 
   base::WeakPtrFactory<DesktopWindowTreeHostX11> close_widget_factory_{this};
   base::WeakPtrFactory<DesktopWindowTreeHostX11> weak_factory_{this};

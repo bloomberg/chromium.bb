@@ -48,13 +48,9 @@ class VIZ_SERVICE_EXPORT SoftwareOutputSurface : public OutputSurface {
       UpdateVSyncParametersCallback callback) override;
   void SetDisplayTransformHint(gfx::OverlayTransform transform) override {}
   gfx::OverlayTransform GetDisplayTransform() override;
-#if defined(USE_X11)
-  void SetNeedsSwapSizeNotifications(
-      bool needs_swap_size_notifications) override;
-#endif
 
  private:
-  void SwapBuffersCallback(const gfx::Size& pixel_size);
+  void SwapBuffersCallback();
   void UpdateVSyncParameters(base::TimeTicks timebase,
                              base::TimeDelta interval);
 
@@ -66,10 +62,6 @@ class VIZ_SERVICE_EXPORT SoftwareOutputSurface : public OutputSurface {
 
   std::vector<ui::LatencyInfo> stored_latency_info_;
   ui::LatencyTracker latency_tracker_;
-
-#if defined(USE_X11)
-  bool needs_swap_size_notifications_ = false;
-#endif
 
   base::WeakPtrFactory<SoftwareOutputSurface> weak_factory_{this};
 

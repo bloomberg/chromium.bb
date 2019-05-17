@@ -183,7 +183,7 @@ class SoftwareOutputDeviceWinProxy : public SoftwareOutputDeviceWinBase {
   ~SoftwareOutputDeviceWinProxy() override = default;
 
   // SoftwareOutputDevice implementation.
-  void OnSwapBuffers(SwapBuffersCallback swap_ack_callback) override;
+  void OnSwapBuffers(base::OnceClosure swap_ack_callback) override;
 
   // SoftwareOutputDeviceWinBase implementation.
   void ResizeDelegated() override;
@@ -212,19 +212,16 @@ SoftwareOutputDeviceWinProxy::SoftwareOutputDeviceWinProxy(
 }
 
 void SoftwareOutputDeviceWinProxy::OnSwapBuffers(
-    SwapBuffersCallback swap_ack_callback) {
+    base::OnceClosure swap_ack_callback) {
   DCHECK(swap_ack_callback_.is_null());
 
   // We aren't waiting on DrawAck() and can immediately run the callback.
   if (!waiting_on_draw_ack_) {
-    task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(swap_ack_callback), viewport_pixel_size_));
+    task_runner_->PostTask(FROM_HERE, std::move(swap_ack_callback));
     return;
   }
 
-  swap_ack_callback_ =
-      base::BindOnce(std::move(swap_ack_callback), viewport_pixel_size_);
+  swap_ack_callback_ = std::move(swap_ack_callback);
 }
 
 void SoftwareOutputDeviceWinProxy::ResizeDelegated() {

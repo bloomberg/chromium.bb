@@ -425,10 +425,6 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override;
   void OnFrameTokenChanged(uint32_t frame_token) override;
 
-#if defined(USE_X11)
-  void OnCompleteSwapWithNewSize(const gfx::Size& size);
-#endif
-
   bool IsLocked() { return lock_manager_.IsLocked(); }
 
   void SetOutputIsSecure(bool output_is_secure);

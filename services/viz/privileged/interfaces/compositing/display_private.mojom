@@ -90,10 +90,6 @@ interface DisplayClient {
   [EnableIf=is_android]
   DidCompleteSwapWithSize(gfx.mojom.Size size);
 
-  // Notifies that a swap has occurred with a new size.
-  [EnableIf=use_x11]
-  DidCompleteSwapWithNewSize(gfx.mojom.Size size);
-
   // Notifies that context creation failed. On Android we can't fall back to
   // SW in these cases, so we need to handle this specifically.
   [EnableIf=is_android]

@@ -707,13 +707,6 @@ void Compositor::OnFrameTokenChanged(uint32_t frame_token) {
   NOTREACHED();
 }
 
-#if defined(USE_X11)
-void Compositor::OnCompleteSwapWithNewSize(const gfx::Size& size) {
-  for (auto& observer : observer_list_)
-    observer.OnCompositingCompleteSwapWithNewSize(this, size);
-}
-#endif
-
 void Compositor::SetOutputIsSecure(bool output_is_secure) {
   if (context_factory_private_)
     context_factory_private_->SetOutputIsSecure(this, output_is_secure);

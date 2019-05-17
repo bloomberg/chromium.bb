@@ -128,12 +128,6 @@ int IgnoreX11Errors(XDisplay* display, XErrorEvent* error) {
   return 0;
 }
 
-bool SyncSetCounter(XDisplay* display, XID counter, int64_t value) {
-  XSyncValue sync_value;
-  XSyncIntsToValue(&sync_value, value & 0xFFFFFFFF, value >> 32);
-  return XSyncSetCounter(display, counter, sync_value) == x11::True;
-}
-
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -491,13 +485,6 @@ void DesktopWindowTreeHostX11::CloseNow() {
     ui::PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
   XDestroyWindow(xdisplay_, xwindow_);
   xwindow_ = x11::None;
-
-  if (update_counter_ != x11::None) {
-    XSyncDestroyCounter(xdisplay_, update_counter_);
-    XSyncDestroyCounter(xdisplay_, extended_update_counter_);
-    update_counter_ = x11::None;
-    extended_update_counter_ = x11::None;
-  }
 
   desktop_native_widget_aura_->OnHostClosed();
 }
@@ -1350,31 +1337,6 @@ void DesktopWindowTreeHostX11::OnCursorVisibilityChangedNative(bool show) {
   // the same tap-to-click disabling here that chromeos does.
 }
 
-void DesktopWindowTreeHostX11::OnCompositingCompleteSwapWithNewSize(
-    ui::Compositor* compositor,
-    const gfx::Size& size) {
-  if (update_counter_ == x11::None)
-    return;
-
-  if (configure_counter_value_is_extended_) {
-    if ((current_counter_value_ % 2) == 1) {
-      // An increase 3 means that the frame was not drawn as fast as possible.
-      // This can trigger different handling from the compositor.
-      // Setting an even number to |extended_update_counter_| will trigger a
-      // new resize.
-      current_counter_value_ += 3;
-      SyncSetCounter(xdisplay_, extended_update_counter_,
-                     current_counter_value_);
-    }
-    return;
-  }
-
-  if (configure_counter_value_ != 0) {
-    SyncSetCounter(xdisplay_, update_counter_, configure_counter_value_);
-    configure_counter_value_ = 0;
-  }
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostX11, display::DisplayObserver implementation:
 
@@ -1514,27 +1476,10 @@ void DesktopWindowTreeHostX11::InitX11Window(
   // TODO(erg): We currently only request window deletion events. We also
   // should listen for activation events and anything else that GTK+ listens
   // for, and do something useful.
-  // Request the _NET_WM_SYNC_REQUEST protocol which is used for synchronizing
-  // between chrome and desktop compositor (or WM) during resizing.
-  // The resizing behavior with _NET_WM_SYNC_REQUEST is:
-  // 1. Desktop compositor (or WM) sends client message _NET_WM_SYNC_REQUEST
-  //    with a 64 bits counter to notify about an incoming resize.
-  // 2. Desktop compositor resizes chrome browser window.
-  // 3. Desktop compositor waits on an alert on value change of XSyncCounter on
-  //    chrome window.
-  // 4. Chrome handles the ConfigureNotify event, and renders a new frame with
-  //    the new size.
-  // 5. Chrome increases the XSyncCounter on chrome window
-  // 6. Desktop compositor gets the alert of counter change, and draws a new
-  //    frame with new content from chrome.
-  // 7. Desktop compositor responses user mouse move events, and starts a new
-  //    resize process, go to step 1.
-  XAtom protocols[] = {
-      gfx::GetAtom("WM_DELETE_WINDOW"),
-      gfx::GetAtom("_NET_WM_PING"),
-      gfx::GetAtom("_NET_WM_SYNC_REQUEST"),
-  };
-  XSetWMProtocols(xdisplay_, xwindow_, protocols, base::size(protocols));
+  XAtom protocols[2];
+  protocols[0] = gfx::GetAtom("WM_DELETE_WINDOW");
+  protocols[1] = gfx::GetAtom("_NET_WM_PING");
+  XSetWMProtocols(xdisplay_, xwindow_, protocols, 2);
 
   // We need a WM_CLIENT_MACHINE and WM_LOCALE_NAME value so we integrate with
   // the desktop environment.
@@ -1619,24 +1564,6 @@ void DesktopWindowTreeHostX11::InitX11Window(
     XChangeProperty(xdisplay_, xwindow_, gfx::GetAtom("_GTK_THEME_VARIANT"),
                     gfx::GetAtom("UTF8_STRING"), 8, PropModeReplace,
                     kDarkGtkThemeVariant, base::size(kDarkGtkThemeVariant) - 1);
-  }
-
-  if (ui::IsSyncExtensionAvailable()) {
-    XSyncValue value;
-    XSyncIntToValue(&value, 0);
-    update_counter_ = XSyncCreateCounter(xdisplay_, value);
-    extended_update_counter_ = XSyncCreateCounter(xdisplay_, value);
-    XID counters[2] = {
-        update_counter_,
-        extended_update_counter_,
-    };
-
-    // Set XSyncCounter as window property _NET_WM_SYNC_REQUEST_COUNTER. the
-    // compositor will listen on them during resizing.
-    XChangeProperty(
-        xdisplay_, xwindow_, gfx::GetAtom("_NET_WM_SYNC_REQUEST_COUNTER"),
-        XA_CARDINAL, 32, PropModeReplace,
-        reinterpret_cast<const unsigned char*>(counters), base::size(counters));
   }
 
   // Always composite Chromium windows if a compositing WM is used.  Sometimes,
@@ -2150,11 +2077,6 @@ uint32_t DesktopWindowTreeHostX11::DispatchEvent(
     case ConfigureNotify: {
       DCHECK_EQ(xwindow_, xev->xconfigure.window);
       DCHECK_EQ(xwindow_, xev->xconfigure.event);
-
-      configure_counter_value_ = pending_counter_value_;
-      configure_counter_value_is_extended_ = pending_counter_value_is_extended_;
-      pending_counter_value_ = 0;
-
       // It's possible that the X window may be resized by some other means than
       // from within aura (e.g. the X window manager can change the size). Make
       // sure the root window size is maintained properly.
@@ -2317,11 +2239,6 @@ uint32_t DesktopWindowTreeHostX11::DispatchEvent(
           XSendEvent(xdisplay_, reply_event.xclient.window, x11::False,
                      SubstructureRedirectMask | SubstructureNotifyMask,
                      &reply_event);
-        } else if (protocol == gfx::GetAtom("_NET_WM_SYNC_REQUEST")) {
-          pending_counter_value_ =
-              xev->xclient.data.l[2] +
-              (static_cast<int64_t>(xev->xclient.data.l[3]) << 32);
-          pending_counter_value_is_extended_ = xev->xclient.data.l[4] != 0;
         }
       } else if (message_type == gfx::GetAtom("XdndEnter")) {
         drag_drop_client_->OnXdndEnter(xev->xclient);
@@ -2398,15 +2315,6 @@ uint32_t DesktopWindowTreeHostX11::DispatchEvent(
 }
 
 void DesktopWindowTreeHostX11::DelayedResize(const gfx::Size& size_in_pixels) {
-  if (configure_counter_value_is_extended_ &&
-      (current_counter_value_ % 2) == 0) {
-    // Increase the |extended_update_counter_|, so the compositor will know we
-    // are not frozen and re-enable _NET_WM_SYNC_REQUEST, if it was disabled.
-    // Increase the |extended_update_counter_| to an odd number will not trigger
-    // a new resize.
-    SyncSetCounter(xdisplay_, extended_update_counter_,
-                   ++current_counter_value_);
-  }
   OnHostResizedInPixels(size_in_pixels);
   ResetWindowRegion();
   delayed_resize_task_.Cancel();
@@ -2455,30 +2363,11 @@ void DesktopWindowTreeHostX11::EnableEventListening() {
 }
 
 void DesktopWindowTreeHostX11::RestartDelayedResizeTask() {
-  if (update_counter_ == x11::None || configure_counter_value_ == 0) {
-    // WM doesn't support _NET_WM_SYNC_REQUEST.
-    // Or we are too slow, so _NET_WM_SYNC_REQUEST is disabled by the
-    // compositor.
-    delayed_resize_task_.Reset(base::BindOnce(
-        &DesktopWindowTreeHostX11::DelayedResize,
-        close_widget_factory_.GetWeakPtr(), bounds_in_pixels_.size()));
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, delayed_resize_task_.callback());
-    return;
-  }
-
-  if (configure_counter_value_is_extended_) {
-    current_counter_value_ = configure_counter_value_;
-    configure_counter_value_ = 0;
-    // Make sure the counter is even number.
-    if ((current_counter_value_ % 2) == 1)
-      ++current_counter_value_;
-  }
-
-  // If _NET_WM_SYNC_REQUEST is used to synchronize with compositor during
-  // resizing, the compositor will not resize the window, until last resize is
-  // handled, so we don't need accumulate resize events.
-  DelayedResize(bounds_in_pixels_.size());
+  delayed_resize_task_.Reset(base::BindOnce(
+      &DesktopWindowTreeHostX11::DelayedResize,
+      close_widget_factory_.GetWeakPtr(), bounds_in_pixels_.size()));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, delayed_resize_task_.callback());
 }
 
 aura::Window* DesktopWindowTreeHostX11::content_window() {

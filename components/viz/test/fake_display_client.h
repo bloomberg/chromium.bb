@@ -31,10 +31,6 @@ class FakeDisplayClient : public mojom::DisplayClient {
       mojom::LayeredWindowUpdaterRequest request) override;
 #endif
 
-#if defined(USE_X11)
-  void DidCompleteSwapWithNewSize(const gfx::Size& size) override;
-#endif
-
  private:
   mojo::Binding<mojom::DisplayClient> binding_;
 

@@ -49,12 +49,6 @@ RootCompositorFrameSinkImpl::Create(
   output_surface->SetNeedsSwapSizeNotifications(
       params->send_swap_size_notifications);
 
-#if defined(USE_X11)
-  // For X11, we need notify client about swap completion after resizing, so the
-  // client can use it for synchronize with X11 WM.
-  output_surface->SetNeedsSwapSizeNotifications(true);
-#endif
-
   // Create some sort of a BeginFrameSource, depending on the platform and
   // |params|.
   std::unique_ptr<ExternalBeginFrameSource> external_begin_frame_source;
@@ -354,11 +348,6 @@ void RootCompositorFrameSinkImpl::DisplayDidCompleteSwapWithSize(
 #if defined(OS_ANDROID)
   if (display_client_)
     display_client_->DidCompleteSwapWithSize(pixel_size);
-#elif defined(USE_X11)
-  if (display_client_ && pixel_size != last_swap_pixel_size_) {
-    last_swap_pixel_size_ = pixel_size;
-    display_client_->DidCompleteSwapWithNewSize(last_swap_pixel_size_);
-  }
 #else
   NOTREACHED();
   ALLOW_UNUSED_LOCAL(display_client_);

@@ -39,25 +39,15 @@ class CONTENT_EXPORT SoftwareBrowserCompositorOutputSurface
   gfx::BufferFormat GetOverlayBufferFormat() const override;
   uint32_t GetFramebufferCopyTextureFormat() override;
   unsigned UpdateGpuFence() override;
-#if defined(USE_X11)
-  void SetNeedsSwapSizeNotifications(
-      bool needs_swap_size_notifications) override;
-#endif
 
  private:
-  void SwapBuffersCallback(const std::vector<ui::LatencyInfo>& latency_info,
-                           const gfx::Size& pixel_size);
+  void SwapBuffersCallback(const std::vector<ui::LatencyInfo>& latency_info);
   void UpdateVSyncCallback(const base::TimeTicks timebase,
                            const base::TimeDelta interval);
 
   viz::OutputSurfaceClient* client_ = nullptr;
   base::TimeDelta refresh_interval_;
   ui::LatencyTracker latency_tracker_;
-
-#if defined(USE_X11)
-  bool needs_swap_size_notifications_ = false;
-#endif
-
   base::WeakPtrFactory<SoftwareBrowserCompositorOutputSurface> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SoftwareBrowserCompositorOutputSurface);

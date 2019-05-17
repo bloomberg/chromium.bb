@@ -8,10 +8,6 @@
 #include "base/time/time.h"
 #include "ui/compositor/compositor_export.h"
 
-namespace gfx {
-class Size;
-}
-
 namespace viz {
 class LocalSurfaceIdAllocation;
 }
@@ -44,12 +40,6 @@ class COMPOSITOR_EXPORT CompositorObserver {
 
   // Called when a child of the compositor is resizing.
   virtual void OnCompositingChildResizing(Compositor* compositor) {}
-
-#if defined(USE_X11)
-  // Called when a swap with new size is completed.
-  virtual void OnCompositingCompleteSwapWithNewSize(ui::Compositor* compositor,
-                                                    const gfx::Size& size) {}
-#endif
 
   // Called at the top of the compositor's destructor, to give observers a
   // chance to remove themselves.

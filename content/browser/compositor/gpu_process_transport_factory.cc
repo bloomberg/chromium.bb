@@ -113,35 +113,6 @@ constexpr char kIdentityUrl[] =
 constexpr gpu::SchedulingPriority kStreamPriority =
     content::kGpuStreamPriorityUI;
 
-#if defined(USE_X11)
-class HostDisplayClient : public viz::HostDisplayClient {
- public:
-  explicit HostDisplayClient(ui::Compositor* compositor)
-      : viz::HostDisplayClient(compositor->widget()), compositor_(compositor) {}
-  ~HostDisplayClient() override = default;
-
-  // viz::HostDisplayClient:
-  void DidCompleteSwapWithNewSize(const gfx::Size& size) override {
-    compositor_->OnCompleteSwapWithNewSize(size);
-  }
-
- private:
-  ui::Compositor* const compositor_;
-
-  DISALLOW_COPY_AND_ASSIGN(HostDisplayClient);
-};
-#else
-class HostDisplayClient : public viz::HostDisplayClient {
- public:
-  explicit HostDisplayClient(ui::Compositor* compositor)
-      : viz::HostDisplayClient(compositor->widget()) {}
-  ~HostDisplayClient() override = default;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(HostDisplayClient);
-};
-#endif
-
 }  // namespace
 
 namespace content {
@@ -505,7 +476,8 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       server_shared_bitmap_manager_, viz::CreateRendererSettings(),
       compositor->frame_sink_id(), std::move(display_output_surface),
       std::move(scheduler), compositor->task_runner());
-  data->display_client = std::make_unique<HostDisplayClient>(compositor.get());
+  data->display_client =
+      std::make_unique<viz::HostDisplayClient>(compositor->widget());
   GetFrameSinkManager()->RegisterBeginFrameSource(begin_frame_source,
                                                   compositor->frame_sink_id());
   // Note that we are careful not to destroy prior BeginFrameSource objects
