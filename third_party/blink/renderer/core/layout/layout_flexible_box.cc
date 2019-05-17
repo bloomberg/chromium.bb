@@ -307,7 +307,7 @@ bool LayoutFlexibleBox::HitTestChildren(
         child->HitTestAllPhases(result, location_in_container, child_point);
     if (child_hit) {
       UpdateHitTestResult(
-          result, FlipForWritingMode(ToLayoutPoint(
+          result, DeprecatedFlipForWritingMode(ToLayoutPoint(
                       location_in_container.Point() - accumulated_offset)));
       return true;
     }

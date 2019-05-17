@@ -321,6 +321,9 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   // it was inserted/changed but also it was moved.
   void InvalidateInlineItems() { valid_ng_items_ = false; }
 
+  WARN_UNUSED_RESULT LayoutRect FlipForWritingMode(const PhysicalRect& r) const;
+  WARN_UNUSED_RESULT PhysicalRect FlipForWritingMode(const LayoutRect& r) const;
+
  protected:
   virtual const NGInlineItems* GetNGInlineItems() const { return nullptr; }
   virtual NGInlineItems* GetNGInlineItems() { return nullptr; }
@@ -403,10 +406,10 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   // the cost of repeated ContainingBlock() calls.
   ALWAYS_INLINE WARN_UNUSED_RESULT LayoutRect
   FlipForWritingMode(const PhysicalRect& r,
-                     const LayoutBlock* block_for_flipping = nullptr) const;
+                     const LayoutBlock* block_for_flipping) const;
   ALWAYS_INLINE WARN_UNUSED_RESULT PhysicalRect
   FlipForWritingMode(const LayoutRect& r,
-                     const LayoutBlock* block_for_flipping = nullptr) const;
+                     const LayoutBlock* block_for_flipping) const;
 
  private:
   ContentCaptureManager* GetContentCaptureManager();

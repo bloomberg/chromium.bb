@@ -1660,9 +1660,9 @@ bool LayoutBox::NodeAtPoint(HitTestResult& result,
     }
     bounds_rect.Move(ToSize(adjusted_location));
     if (location_in_container.Intersects(bounds_rect)) {
-      UpdateHitTestResult(result,
-                          FlipForWritingMode(location_in_container.Point() -
-                                             ToLayoutSize(adjusted_location)));
+      UpdateHitTestResult(result, DeprecatedFlipForWritingMode(
+                                      location_in_container.Point() -
+                                      ToLayoutSize(adjusted_location)));
       if (result.AddNodeToListBasedTestResult(NodeForHitTest(),
                                               location_in_container,
                                               bounds_rect) == kStopHitTesting)
@@ -2684,11 +2684,7 @@ bool LayoutBox::PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const {
 }
 
 PhysicalRect LayoutBox::LocalVisualRectIgnoringVisibility() const {
-  // VisualOverflowRect() is in "physical coordinates with flipped blocks
-  // direction", while all "VisualRect"s are in pure physical coordinates.
-  LayoutRect rect = SelfVisualOverflowRect();
-  FlipForWritingMode(rect);
-  return PhysicalRect(rect);
+  return PhysicalSelfVisualOverflowRect();
 }
 
 void LayoutBox::InflateVisualRectForFilterUnderContainer(
@@ -5596,13 +5592,6 @@ void LayoutBox::AddLayoutOverflow(const LayoutRect& rect) {
   overflow_->layout_overflow->AddLayoutOverflow(overflow_rect);
 }
 
-void LayoutBox::AddSelfVisualOverflow(const PhysicalRect& rect) {
-  LayoutRect layout_rect = rect.ToLayoutRect();
-  if (UNLIKELY(HasFlippedBlocksWritingMode()))
-    FlipForWritingMode(layout_rect);
-  AddSelfVisualOverflow(layout_rect);
-}
-
 void LayoutBox::AddSelfVisualOverflow(const LayoutRect& rect) {
   if (rect.IsEmpty())
     return;
@@ -5619,13 +5608,6 @@ void LayoutBox::AddSelfVisualOverflow(const LayoutRect& rect) {
   }
 
   overflow_->visual_overflow->AddSelfVisualOverflow(rect);
-}
-
-void LayoutBox::AddContentsVisualOverflow(const PhysicalRect& rect) {
-  LayoutRect layout_rect = rect.ToLayoutRect();
-  if (UNLIKELY(HasFlippedBlocksWritingMode()))
-    FlipForWritingMode(layout_rect);
-  AddContentsVisualOverflow(layout_rect);
 }
 
 void LayoutBox::AddContentsVisualOverflow(const LayoutRect& rect) {
@@ -5825,7 +5807,7 @@ LayoutRect LayoutBox::LayoutOverflowRectForPropagation(
     // If we are relatively positioned or if we have a transform, then we have
     // to convert this rectangle into physical coordinates, apply relative
     // positioning and transforms to it, and then convert it back.
-    FlipForWritingMode(rect);
+    DeprecatedFlipForWritingMode(rect);
 
     PhysicalOffset container_offset;
 
@@ -5842,7 +5824,7 @@ LayoutRect LayoutBox::LayoutOverflowRectForPropagation(
     }
 
     // Now we need to flip back.
-    FlipForWritingMode(rect);
+    DeprecatedFlipForWritingMode(rect);
   }
 
   return RectForOverflowPropagation(rect);
@@ -5850,9 +5832,7 @@ LayoutRect LayoutBox::LayoutOverflowRectForPropagation(
 
 DISABLE_CFI_PERF
 LayoutRect LayoutBox::NoOverflowRect() const {
-  auto rect = PhysicalPaddingBoxRect().ToLayoutRect();
-  FlipForWritingMode(rect);
-  return rect;
+  return FlipForWritingMode(PhysicalPaddingBoxRect());
 }
 
 LayoutRect LayoutBox::VisualOverflowRect() const {

@@ -1641,9 +1641,9 @@ bool LayoutTable::NodeAtPoint(HitTestResult& result,
       (action == kHitTestBlockBackground ||
        action == kHitTestChildBlockBackground) &&
       location_in_container.Intersects(bounds_rect)) {
-    UpdateHitTestResult(result,
-                        FlipForWritingMode(location_in_container.Point() -
-                                           ToLayoutSize(adjusted_location)));
+    UpdateHitTestResult(
+        result, DeprecatedFlipForWritingMode(location_in_container.Point() -
+                                             ToLayoutSize(adjusted_location)));
     if (result.AddNodeToListBasedTestResult(GetNode(), location_in_container,
                                             bounds_rect) == kStopHitTesting)
       return true;

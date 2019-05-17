@@ -2572,7 +2572,7 @@ void LayoutObject::MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
         IntPoint center_point = RoundedIntPoint(transform_state.MappedPoint());
         transform_state.Move(ToLayoutBox(container)->FlipForWritingMode(
                                  LayoutPoint(center_point)) -
-                             center_point);
+                             PhysicalOffset(center_point));
       }
       mode &= ~kApplyContainerFlip;
     }
@@ -2692,7 +2692,7 @@ void LayoutObject::MapAncestorToLocal(const LayoutBoxModelObject* ancestor,
   if (apply_container_flip) {
     IntPoint center_point = RoundedIntPoint(transform_state.MappedPoint());
     transform_state.Move(
-        center_point -
+        PhysicalOffset(center_point) -
         ToLayoutBox(container)->FlipForWritingMode(LayoutPoint(center_point)));
   }
 

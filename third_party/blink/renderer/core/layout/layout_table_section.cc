@@ -1510,7 +1510,7 @@ LayoutRect LayoutTableSection::LogicalRectForWritingModeAndDirection(
     const LayoutRect& rect) const {
   LayoutRect table_aligned_rect(rect);
 
-  FlipForWritingMode(table_aligned_rect);
+  DeprecatedFlipForWritingMode(table_aligned_rect);
 
   if (!TableStyle().IsHorizontalWritingMode())
     table_aligned_rect = table_aligned_rect.TransposedRect();

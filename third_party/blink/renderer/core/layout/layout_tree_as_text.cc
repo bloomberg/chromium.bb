@@ -451,15 +451,16 @@ static void WriteTextFragment(WTF::TextStream& ts,
   if (!physical_text_fragment)
     return;
   const ComputedStyle& style = physical_fragment.Style();
+  // TODO(layout-dev): Dump physical coordinates when removing the legacy inline
+  // layout code.
   NGTextFragment fragment(style.GetWritingMode(), *physical_text_fragment);
   if (UNLIKELY(style.IsFlippedBlocksWritingMode())) {
     if (physical_fragment.GetLayoutObject()) {
-      LayoutRect rect(offset_to_container_box.ToLayoutPoint(),
-                      physical_fragment.Size().ToLayoutSize());
+      PhysicalRect rect(offset_to_container_box, physical_fragment.Size());
       const LayoutBlock* containing_block =
           physical_fragment.GetLayoutObject()->ContainingBlock();
-      containing_block->FlipForWritingMode(rect);
-      offset_to_container_box.left = rect.X();
+      LayoutRect layout_rect = containing_block->FlipForWritingMode(rect);
+      offset_to_container_box.left = layout_rect.X();
     }
   }
 

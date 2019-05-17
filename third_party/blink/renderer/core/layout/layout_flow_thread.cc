@@ -253,12 +253,12 @@ void LayoutFlowThread::FlowThreadToContainingCoordinateSpace(
   // expects and returns.
   if (!IsHorizontalWritingMode())
     position = position.TransposedPoint();
-  position = FlipForWritingMode(position);
+  position = DeprecatedFlipForWritingMode(position);
 
   position.Move(ColumnOffset(position));
 
   // Make |position| logical again, and read out the values.
-  position = FlipForWritingMode(position);
+  position = DeprecatedFlipForWritingMode(position);
   if (!IsHorizontalWritingMode())
     position = position.TransposedPoint();
   block_position = position.Y();

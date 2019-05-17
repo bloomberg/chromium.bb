@@ -859,7 +859,7 @@ void PaintLayerScrollableArea::UpdateScrollOrigin() {
 
 void PaintLayerScrollableArea::UpdateScrollDimensions() {
   LayoutRect new_overflow_rect = GetLayoutBox()->LayoutOverflowRect();
-  GetLayoutBox()->FlipForWritingMode(new_overflow_rect);
+  GetLayoutBox()->DeprecatedFlipForWritingMode(new_overflow_rect);
 
   // The layout viewport can be larger than the document's layout overflow when
   // top controls are hidden.  Expand the overflow here to ensure that our

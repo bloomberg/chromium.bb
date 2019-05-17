@@ -902,8 +902,9 @@ void LayoutBoxModelObject::UpdateStickyPositionConstraints() const {
     sticky_box_rect =
         FloatRect(ToLayoutInline(this)->PhysicalLinesBoundingBox());
   } else {
-    sticky_box_rect = FloatRect(ToLayoutBox(this)->FrameRect());
-    containing_block->FlipForWritingMode(sticky_box_rect);
+    PhysicalRect physical_rect =
+        containing_block->FlipForWritingMode(ToLayoutBox(this)->FrameRect());
+    sticky_box_rect = FloatRect(physical_rect);
   }
   FloatPoint sticky_location =
       sticky_box_rect.Location() + skipped_containers_offset;

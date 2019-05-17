@@ -357,8 +357,6 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
 
   // TODO(szager): The Rect versions should return a rect, not modify the
   // argument.
-  void FlipForWritingMode(FloatRect&) const;
-  FloatPoint FlipForWritingMode(const FloatPoint&) const;
   void FlipForWritingMode(LayoutRect&) const;
   LayoutPoint FlipForWritingMode(const LayoutPoint&) const;
 

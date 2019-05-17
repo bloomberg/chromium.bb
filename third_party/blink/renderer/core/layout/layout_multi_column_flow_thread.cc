@@ -393,7 +393,7 @@ LayoutSize LayoutMultiColumnFlowThread::FlowThreadTranslationAtOffset(
 LayoutSize LayoutMultiColumnFlowThread::FlowThreadTranslationAtPoint(
     const LayoutPoint& flow_thread_point,
     CoordinateSpaceConversion mode) const {
-  LayoutPoint flipped_point = FlipForWritingMode(flow_thread_point);
+  LayoutPoint flipped_point = DeprecatedFlipForWritingMode(flow_thread_point);
   LayoutUnit block_offset =
       IsHorizontalWritingMode() ? flipped_point.Y() : flipped_point.X();
 

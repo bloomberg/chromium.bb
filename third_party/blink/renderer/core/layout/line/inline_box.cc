@@ -346,18 +346,6 @@ LayoutPoint InlineBox::PhysicalLocation() const {
   return rect.Location();
 }
 
-void InlineBox::FlipForWritingMode(FloatRect& rect) const {
-  if (!UNLIKELY(GetLineLayoutItem().HasFlippedBlocksWritingMode()))
-    return;
-  Root().Block().FlipForWritingMode(rect);
-}
-
-FloatPoint InlineBox::FlipForWritingMode(const FloatPoint& point) const {
-  if (!UNLIKELY(GetLineLayoutItem().HasFlippedBlocksWritingMode()))
-    return point;
-  return Root().Block().FlipForWritingMode(point);
-}
-
 void InlineBox::FlipForWritingMode(LayoutRect& rect) const {
   if (!UNLIKELY(GetLineLayoutItem().HasFlippedBlocksWritingMode()))
     return;

@@ -1834,7 +1834,7 @@ bool PaintLayer::HitTest(const HitTestLocation& hit_test_location,
     if (fallback) {
       GetLayoutObject().UpdateHitTestResult(
           result, ToLayoutView(GetLayoutObject())
-                      .FlipForWritingMode(hit_test_location.Point()));
+                      .DeprecatedFlipForWritingMode(hit_test_location.Point()));
       inside_layer = this;
 
       // Don't cache this result since it really wasn't a true hit.
@@ -2570,8 +2570,7 @@ PhysicalRect PaintLayer::LocalBoundingBox() const {
     rect = ToLayoutBox(GetLayoutObject()).PhysicalVisualOverflowRect();
   } else {
     LayoutRect layout_rect = GetLayoutObject().VisualOverflowRect();
-    GetLayoutObject().ContainingBlock()->FlipForWritingMode(layout_rect);
-    rect = PhysicalRect(layout_rect);
+    rect = GetLayoutObject().ContainingBlock()->FlipForWritingMode(layout_rect);
   }
 
   if (GetLayoutObject().IsEffectiveRootScroller() || IsRootLayer()) {

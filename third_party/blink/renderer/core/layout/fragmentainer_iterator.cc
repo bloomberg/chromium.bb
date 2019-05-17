@@ -19,7 +19,7 @@ FragmentainerIterator::FragmentainerIterator(
   // This is how rectangles typically are represented in layout, i.e. with the
   // block direction coordinate flipped, if writing mode is vertical-rl.
   LayoutRect bounds_in_flow_thread = physical_bounding_box_in_flow_thread;
-  flow_thread_.FlipForWritingMode(bounds_in_flow_thread);
+  flow_thread_.DeprecatedFlipForWritingMode(bounds_in_flow_thread);
 
   if (flow_thread_.IsHorizontalWritingMode()) {
     logical_top_in_flow_thread_ = bounds_in_flow_thread.Y();
@@ -83,7 +83,7 @@ LayoutRect FragmentainerIterator::ClipRectInFlowThread() const {
   DCHECK(!AtEnd());
   LayoutRect clip_rect = CurrentGroup().FlowThreadPortionOverflowRectAt(
       current_fragmentainer_index_);
-  flow_thread_.FlipForWritingMode(clip_rect);
+  flow_thread_.DeprecatedFlipForWritingMode(clip_rect);
   return clip_rect;
 }
 

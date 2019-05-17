@@ -405,6 +405,8 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   LayoutRect BorderBoxRect() const { return LayoutRect(LayoutPoint(), Size()); }
   PhysicalRect PhysicalBorderBoxRect() const {
     // This doesn't need flipping because the result would be the same.
+    DCHECK_EQ(PhysicalRect(BorderBoxRect()),
+              FlipForWritingMode(BorderBoxRect()));
     return PhysicalRect(BorderBoxRect());
   }
 
@@ -494,9 +496,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
                : NoOverflowRect();
   }
   PhysicalRect PhysicalLayoutOverflowRect() const {
-    LayoutRect overflow_rect = LayoutOverflowRect();
-    FlipForWritingMode(overflow_rect);
-    return PhysicalRect(overflow_rect);
+    return FlipForWritingMode(LayoutOverflowRect());
   }
   // TODO(crbug.com/962299): This is incorrect in some cases.
   IntRect PixelSnappedLayoutOverflowRect() const {
@@ -508,9 +508,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   LayoutRect VisualOverflowRect() const override;
   PhysicalRect PhysicalVisualOverflowRect() const {
-    LayoutRect overflow_rect = VisualOverflowRect();
-    FlipForWritingMode(overflow_rect);
-    return PhysicalRect(overflow_rect);
+    return FlipForWritingMode(VisualOverflowRect());
   }
   LayoutUnit LogicalLeftVisualOverflow() const {
     return StyleRef().IsHorizontalWritingMode() ? VisualOverflowRect().X()
@@ -527,9 +525,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
                : BorderBoxRect();
   }
   PhysicalRect PhysicalSelfVisualOverflowRect() const {
-    LayoutRect overflow_rect = SelfVisualOverflowRect();
-    FlipForWritingMode(overflow_rect);
-    return PhysicalRect(overflow_rect);
+    return FlipForWritingMode(SelfVisualOverflowRect());
   }
   LayoutRect ContentsVisualOverflowRect() const {
     return VisualOverflowIsSet()
@@ -550,9 +546,13 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   virtual bool HasLeftOverflow() const;
 
   void AddLayoutOverflow(const LayoutRect&);
-  void AddSelfVisualOverflow(const PhysicalRect&);
+  void AddSelfVisualOverflow(const PhysicalRect& r) {
+    AddSelfVisualOverflow(FlipForWritingMode(r));
+  }
   void AddSelfVisualOverflow(const LayoutRect&);
-  void AddContentsVisualOverflow(const PhysicalRect&);
+  void AddContentsVisualOverflow(const PhysicalRect& r) {
+    AddContentsVisualOverflow(FlipForWritingMode(r));
+  }
   void AddContentsVisualOverflow(const LayoutRect&);
 
   void AddVisualEffectOverflow();
@@ -1302,6 +1302,8 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   LayoutUnit OffsetLeft(const Element*) const final;
   LayoutUnit OffsetTop(const Element*) const final;
 
+  // TODO(wangxianzhu): This should be also type-safe. Will do when converting
+  // hit testing geometry to use physical geometry types.
   LayoutPoint FlipForWritingModeForChild(const LayoutBox* child,
                                          const LayoutPoint&) const;
 
@@ -1314,33 +1316,31 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     return frame_rect_.Width() - position;
   }
   WARN_UNUSED_RESULT LayoutPoint
+  FlipForWritingMode(const PhysicalOffset& offset) const {
+    return LayoutPoint(FlipForWritingMode(offset.left), offset.top);
+  }
+  WARN_UNUSED_RESULT PhysicalOffset
   FlipForWritingMode(const LayoutPoint& position) const {
-    if (!UNLIKELY(HasFlippedBlocksWritingMode()))
-      return position;
-    DCHECK(!IsHorizontalWritingMode());
-    return LayoutPoint(frame_rect_.Width() - position.X(), position.Y());
+    return PhysicalOffset(FlipForWritingMode(position.X()), position.Y());
   }
-  WARN_UNUSED_RESULT LayoutSize
-  FlipForWritingMode(const LayoutSize& offset) const {
-    if (!UNLIKELY(HasFlippedBlocksWritingMode()))
-      return offset;
-    DCHECK(!IsHorizontalWritingMode());
-    return LayoutSize(frame_rect_.Width() - offset.Width(), offset.Height());
+  WARN_UNUSED_RESULT LayoutPoint
+  DeprecatedFlipForWritingMode(const LayoutPoint& position) const {
+    return LayoutPoint(FlipForWritingMode(position.X()), position.Y());
   }
-  void FlipForWritingMode(LayoutRect& rect) const {
-    if (!UNLIKELY(HasFlippedBlocksWritingMode()))
-      return;
-    DCHECK(!IsHorizontalWritingMode());
-    rect.SetX(frame_rect_.Width() - rect.MaxX());
+
+  WARN_UNUSED_RESULT LayoutRect
+  FlipForWritingMode(const PhysicalRect& r) const {
+    return FlipForWritingMode(r.ToLayoutRect()).ToLayoutRect();
   }
-  WARN_UNUSED_RESULT FloatPoint
-  FlipForWritingMode(const FloatPoint& position) const {
+  WARN_UNUSED_RESULT PhysicalRect
+  FlipForWritingMode(const LayoutRect& r) const {
     if (!UNLIKELY(HasFlippedBlocksWritingMode()))
-      return position;
+      return PhysicalRect(r);
     DCHECK(!IsHorizontalWritingMode());
-    return FloatPoint(frame_rect_.Width() - position.X(), position.Y());
+    return PhysicalRect(frame_rect_.Width() - r.MaxX(), r.Y(), r.Width(),
+                        r.Height());
   }
-  void FlipForWritingMode(FloatRect& rect) const {
+  void DeprecatedFlipForWritingMode(LayoutRect& rect) const {
     if (!UNLIKELY(HasFlippedBlocksWritingMode()))
       return;
     DCHECK(!IsHorizontalWritingMode());

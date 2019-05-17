@@ -948,8 +948,8 @@ base::Optional<PhysicalOffset> LayoutInline::FirstLineBoxTopLeftInternal()
   if (const InlineBox* first_box = FirstLineBoxIncludingCulling()) {
     LayoutPoint location = first_box->Location();
     if (UNLIKELY(NeedsFlipForWritingMode())) {
-      location = ContainingBlock()->FlipForWritingMode(location);
-      location.Move(-first_box->Width(), LayoutUnit());
+      location.Move(first_box->Width(), LayoutUnit());
+      return ContainingBlock()->FlipForWritingMode(location);
     }
     return PhysicalOffset(location);
   }
@@ -1754,24 +1754,22 @@ void LayoutInline::MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
 }
 
 LayoutRect LayoutInline::FlipForWritingMode(
-    const PhysicalRect& r,
+    const PhysicalRect& rect,
     const LayoutBlock* block_for_flipping) const {
-  LayoutRect rect = r.ToLayoutRect();
   if (UNLIKELY(NeedsFlipForWritingMode())) {
     DCHECK(!block_for_flipping || block_for_flipping == ContainingBlock());
-    (block_for_flipping ? block_for_flipping : ContainingBlock())
+    return (block_for_flipping ? block_for_flipping : ContainingBlock())
         ->FlipForWritingMode(rect);
   }
-  return rect;
+  return rect.ToLayoutRect();
 }
 
 PhysicalRect LayoutInline::FlipForWritingMode(
-    const LayoutRect& r,
+    const LayoutRect& rect,
     const LayoutBlock* block_for_flipping) const {
-  LayoutRect rect = r;
   if (UNLIKELY(NeedsFlipForWritingMode())) {
     DCHECK(!block_for_flipping || block_for_flipping == ContainingBlock());
-    (block_for_flipping ? block_for_flipping : ContainingBlock())
+    return (block_for_flipping ? block_for_flipping : ContainingBlock())
         ->FlipForWritingMode(rect);
   }
   return PhysicalRect(rect);

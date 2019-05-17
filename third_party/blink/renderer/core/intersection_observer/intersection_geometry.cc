@@ -286,7 +286,7 @@ bool IntersectionGeometry::ClipToRoot(LayoutObject* root,
   LayoutRect root_clip_rect = root_rect.ToLayoutRect();
   // TODO(szager): This flipping seems incorrect because root_rect is already
   // physical.
-  local_ancestor->FlipForWritingMode(root_clip_rect);
+  local_ancestor->DeprecatedFlipForWritingMode(root_clip_rect);
   return does_intersect &
          intersection_rect.InclusiveIntersect(PhysicalRect(root_clip_rect));
 }

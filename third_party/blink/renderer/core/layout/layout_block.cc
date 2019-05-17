@@ -1251,7 +1251,7 @@ bool LayoutBlock::HitTestChildren(HitTestResult& result,
     }
     if (did_hit) {
       UpdateHitTestResult(
-          result, FlipForWritingMode(ToLayoutPoint(
+          result, DeprecatedFlipForWritingMode(ToLayoutPoint(
                       location_in_container.Point() - accumulated_offset)));
       return true;
     }
@@ -1423,12 +1423,12 @@ PositionWithAffinity LayoutBlock::PositionForPoint(
 }
 
 void LayoutBlock::OffsetForContents(LayoutPoint& offset) const {
-  offset = FlipForWritingMode(offset);
+  offset = DeprecatedFlipForWritingMode(offset);
 
   if (HasOverflowClip())
     offset += LayoutSize(ScrolledContentOffset());
 
-  offset = FlipForWritingMode(offset);
+  offset = DeprecatedFlipForWritingMode(offset);
 }
 
 void LayoutBlock::ScrollbarsChanged(bool horizontal_scrollbar_changed,

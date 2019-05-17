@@ -715,8 +715,7 @@ void LayoutView::MayUpdateHoverWhenContentUnderMouseChanged(
 }
 
 IntRect LayoutView::DocumentRect() const {
-  LayoutRect overflow_rect(LayoutOverflowRect());
-  FlipForWritingMode(overflow_rect);
+  PhysicalRect overflow_rect = FlipForWritingMode(LayoutOverflowRect());
   // TODO(crbug.com/650768): The pixel snapping looks incorrect.
   return PixelSnappedIntRect(overflow_rect);
 }

@@ -4195,7 +4195,7 @@ bool LayoutBlockFlow::HitTestChildren(
                             location_in_container, scrolled_offset,
                             hit_test_action)) {
       UpdateHitTestResult(
-          result, FlipForWritingMode(ToLayoutPoint(
+          result, DeprecatedFlipForWritingMode(ToLayoutPoint(
                       location_in_container.Point() - accumulated_offset)));
       return true;
     }
@@ -4820,8 +4820,7 @@ void LayoutBlockFlow::AddOutlineRects(
       LayoutRect rect(flipped_left, top, flipped_right - flipped_left,
                       bottom - top);
       if (!rect.IsEmpty()) {
-        FlipForWritingMode(rect);
-        PhysicalRect physical_rect(rect);
+        PhysicalRect physical_rect = FlipForWritingMode(rect);
         physical_rect.Move(additional_offset);
         rects.push_back(physical_rect);
       }

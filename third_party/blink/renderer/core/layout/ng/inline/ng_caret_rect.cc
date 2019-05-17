@@ -136,10 +136,12 @@ LocalCaretRect ComputeLocalCaretRect(const NGCaretPosition& caret_position) {
 
       // For vertical-rl, convert to "flipped block-flow" coordinates space.
       // See core/layout/README.md#coordinate-spaces for details.
+      // TODO(layout-dev): Use PhysicalRect for LocalCaretRect when removing
+      // legacy inline layout code.
       if (fragment.Style().IsFlippedBlocksWritingMode()) {
         const LayoutBlockFlow* container =
             layout_object->ContainingNGBlockFlow();
-        container->FlipForWritingMode(layout_rect);
+        container->DeprecatedFlipForWritingMode(layout_rect);
       }
 
       return {layout_object, layout_rect};
@@ -177,9 +179,11 @@ LocalCaretRect ComputeLocalSelectionRect(
   LayoutRect layout_rect(line_top, rect.Y(), line_height, rect.Height());
   // For vertical-rl, convert to "flipped block-flow" coordinates space.
   // See core/layout/README.md#coordinate-spaces for details.
+  // TODO(layout-dev): Use PhysicalRect for LocalCaretRect when removing
+  // legacy inline layout code.
   if (fragment.Style().IsFlippedBlocksWritingMode()) {
     const LayoutBlockFlow* container = layout_object->ContainingNGBlockFlow();
-    container->FlipForWritingMode(layout_rect);
+    container->DeprecatedFlipForWritingMode(layout_rect);
   }
   return LocalCaretRect(layout_object, layout_rect);
 }
