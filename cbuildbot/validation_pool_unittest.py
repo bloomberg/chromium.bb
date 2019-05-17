@@ -679,32 +679,26 @@ class TestCoreLogic(_Base):
     lcq_delegation_patches = self.GetPatches(2)
     for patch in lcq_delegation_patches:
       patch.project = 'chromiumos/chromite'
-    lcq_delegation_patches[1]._approvals.append({
-        'type': 'LCQ',
-        'description': 'Legacy-Commit-Queue',
-        'value': '1',
-        'grantedOn': '1970-01-01 00:00:00',
-        'by': 'Rupert',
-    })
+      patch._approvals.append({
+          'type': 'LCQ',
+          'description': 'Legacy-Commit-Queue',
+          'value': '1',
+          'grantedOn': '1970-01-01 00:00:00',
+          'by': 'Rupert',
+      })
 
     filtered_patches = patches[:4]
-    allowed_patches = []
     projects = {}
     for idx, patch in enumerate(patches[4:]):
       fails = bool(idx % 2)
       # Vary the revision so we can validate that it checks the branch.
       revision = ('monkeys' if fails else 'refs/heads/%s' %
                   patch.tracking_branch)
-      if fails:
-        filtered_patches.append(patch)
-      else:
-        allowed_patches.append(patch)
+      filtered_patches.append(patch)
       projects.setdefault(patch.project, {})['revision'] = revision
 
-    allowed_patches.append(lcq_delegation_patches[1])
-
     manifest = MockManifest(self.build_root, projects=projects)
-    for patch in allowed_patches:
+    for patch in lcq_delegation_patches:
       patch.GetCheckout = lambda *_args, **_kwargs: True
     for patch in filtered_patches:
       patch.GetCheckout = lambda *_args, **_kwargs: False
@@ -717,7 +711,7 @@ class TestCoreLogic(_Base):
     filtered_patches = filtered_patches[:-1]
 
     results = validation_pool.ValidationPool._FilterNonLcqProjects(
-        patches + non_cros_patches + lcq_delegation_patches, manifest)
+        filtered_patches + lcq_delegation_patches, manifest)
 
     def compare(list1, list2):
       mangle = lambda c: (c.id, c.project, c.tracking_branch)
@@ -727,8 +721,8 @@ class TestCoreLogic(_Base):
           msg=('Comparison failed:\n list1: %r\n list2: %r' %
                (map(mangle, list1), map(mangle, list2))))
 
-    compare(results[0], allowed_patches)
-    compare(results[1], filtered_patches)
+    compare(results[0], lcq_delegation_patches)
+    self.assertEqual(len(results[1]), 0)
 
   def testAcquirePool(self):
     """Various tests for the AcquirePool method."""
