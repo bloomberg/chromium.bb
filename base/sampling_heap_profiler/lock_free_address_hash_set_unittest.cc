@@ -12,7 +12,6 @@
 #include "base/allocator/allocator_shim.h"
 #include "base/debug/alias.h"
 #include "base/threading/simple_thread.h"
-#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -139,12 +138,7 @@ class WriterThread : public SimpleThread {
   std::atomic_bool* cancel_;
 };
 
-#if defined(THREAD_SANITIZER)
-#define DISABLE_ON_TSAN(test_name) DISABLED_##test_name
-#else
-#define DISABLE_ON_TSAN(test_name) test_name
-#endif  // defined(THREAD_SANITIZER)
-TEST_F(LockFreeAddressHashSetTest, DISABLE_ON_TSAN(ConcurrentAccess)) {
+TEST_F(LockFreeAddressHashSetTest, ConcurrentAccess) {
   // The purpose of this test is to make sure adding/removing keys concurrently
   // does not disrupt the state of other keys.
   LockFreeAddressHashSet set(16);
