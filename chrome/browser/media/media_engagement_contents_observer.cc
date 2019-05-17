@@ -581,6 +581,9 @@ void MediaEngagementContentsObserver::ReadyToCommitNavigation(
   MediaEngagementScore score = service_->CreateEngagementScore(origin);
   bool has_high_engagement = score.high_score();
 
+  if (base::FeatureList::IsEnabled(media::kMediaEngagementHTTPSOnly))
+    DCHECK(!has_high_engagement || (origin.scheme() == url::kHttpsScheme));
+
   // If the preloaded feature flag is enabled and the number of visits is less
   // than the number of visits required to have an MEI score we should check the
   // global data.

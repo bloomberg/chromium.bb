@@ -113,13 +113,23 @@ std::unique_ptr<KeyedService> BuildTestHistoryService(
 
 }  // namespace
 
-class MediaEngagementServiceTest : public ChromeRenderViewHostTestHarness {
+class MediaEngagementServiceTest : public ChromeRenderViewHostTestHarness,
+                                   public testing::WithParamInterface<bool> {
  public:
   void SetUp() override {
     mock_time_task_runner_ =
         base::MakeRefCounted<base::TestMockTimeTaskRunner>();
-    scoped_feature_list_.InitAndEnableFeature(
-        media::kRecordMediaEngagementScores);
+
+    if (GetParam()) {
+      scoped_feature_list_.InitWithFeatures(
+          {media::kRecordMediaEngagementScores,
+           media::kMediaEngagementHTTPSOnly},
+          {});
+    } else {
+      scoped_feature_list_.InitWithFeatures(
+          {media::kRecordMediaEngagementScores},
+          {media::kMediaEngagementHTTPSOnly});
+    }
     ChromeRenderViewHostTestHarness::SetUp();
 
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -279,34 +289,40 @@ class MediaEngagementServiceTest : public ChromeRenderViewHostTestHarness {
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-TEST_F(MediaEngagementServiceTest, MojoSerialization) {
+TEST_P(MediaEngagementServiceTest, MojoSerialization) {
   EXPECT_EQ(0u, GetAllScoreDetails().size());
 
   RecordVisitAndPlaybackAndAdvanceClock(
-      url::Origin::Create(GURL("https://www.google.com")));
-  EXPECT_EQ(1u, GetAllScoreDetails().size());
+      url::Origin::Create(GURL("http://www.example.com")));
+  RecordVisitAndPlaybackAndAdvanceClock(
+      url::Origin::Create(GURL("https://www.example.com")));
+
+  EXPECT_EQ(GetParam() ? 1u : 2u, GetAllScoreDetails().size());
 }
 
-TEST_F(MediaEngagementServiceTest, RestrictedToHTTPAndHTTPS) {
-  url::Origin origin1 = url::Origin::Create(GURL("ftp://www.google.com/"));
-  url::Origin origin2 = url::Origin::Create(GURL("file://blah"));
-  url::Origin origin3 = url::Origin::Create(GURL("chrome://"));
-  url::Origin origin4 = url::Origin::Create(GURL("about://config"));
+TEST_P(MediaEngagementServiceTest, RestrictedToHTTPAndHTTPS) {
+  std::vector<url::Origin> origins = {
+      url::Origin::Create(GURL("ftp://www.google.com/")),
+      url::Origin::Create(GURL("file://blah")),
+      url::Origin::Create(GURL("chrome://")),
+      url::Origin::Create(GURL("about://config")),
+      url::Origin::Create(GURL("http://example.com")),
+      url::Origin::Create(GURL("https://example.com")),
+  };
 
-  RecordVisitAndPlaybackAndAdvanceClock(origin1);
-  ExpectScores(origin1, 0.0, 0, 0, TimeNotSet());
+  for (const url::Origin& origin : origins) {
+    RecordVisitAndPlaybackAndAdvanceClock(origin);
 
-  RecordVisitAndPlaybackAndAdvanceClock(origin2);
-  ExpectScores(origin2, 0.0, 0, 0, TimeNotSet());
-
-  RecordVisitAndPlaybackAndAdvanceClock(origin4);
-  ExpectScores(origin4, 0.0, 0, 0, TimeNotSet());
-
-  RecordVisitAndPlaybackAndAdvanceClock(origin4);
-  ExpectScores(origin4, 0.0, 0, 0, TimeNotSet());
+    if (origin.scheme() == url::kHttpsScheme ||
+        (origin.scheme() == url::kHttpScheme && !GetParam())) {
+      ExpectScores(origin, 0.05, 1, 1, Now());
+    } else {
+      ExpectScores(origin, 0.0, 0, 0, TimeNotSet());
+    }
+  }
 }
 
-TEST_F(MediaEngagementServiceTest,
+TEST_P(MediaEngagementServiceTest,
        HandleRecordVisitAndPlaybackAndAdvanceClockion) {
   url::Origin origin1 = url::Origin::Create(GURL("https://www.google.com"));
   ExpectScores(origin1, 0.0, 0, 0, TimeNotSet());
@@ -326,8 +342,8 @@ TEST_F(MediaEngagementServiceTest,
   ExpectScores(origin1, 0.1, 2, 2, origin1_time);
 }
 
-TEST_F(MediaEngagementServiceTest, IncognitoEngagementService) {
-  url::Origin origin1 = url::Origin::Create(GURL("http://www.google.com/"));
+TEST_P(MediaEngagementServiceTest, IncognitoEngagementService) {
+  url::Origin origin1 = url::Origin::Create(GURL("https://www.google.fr/"));
   url::Origin origin2 = url::Origin::Create(GURL("https://www.google.com/"));
   url::Origin origin3 = url::Origin::Create(GURL("https://drive.google.com/"));
   url::Origin origin4 = url::Origin::Create(GURL("https://maps.google.com/"));
@@ -360,7 +376,7 @@ TEST_F(MediaEngagementServiceTest, IncognitoEngagementService) {
   ExpectScores(origin4, 0.05, 1, 1, Now());
 }
 
-TEST_F(MediaEngagementServiceTest, IncognitoOverrideRegularProfile) {
+TEST_P(MediaEngagementServiceTest, IncognitoOverrideRegularProfile) {
   const url::Origin kOrigin1 = url::Origin::Create(GURL("https://example.org"));
   const url::Origin kOrigin2 = url::Origin::Create(GURL("https://example.com"));
 
@@ -436,15 +452,15 @@ TEST_F(MediaEngagementServiceTest, IncognitoOverrideRegularProfile) {
   }
 }
 
-TEST_F(MediaEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
-  url::Origin origin1 = url::Origin::Create(GURL("http://www.google.com/"));
+TEST_P(MediaEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
+  url::Origin origin1 = url::Origin::Create(GURL("https://www.google.com/"));
   url::Origin origin2 = url::Origin::Create(GURL("https://drive.google.com/"));
-  url::Origin origin3 = url::Origin::Create(GURL("http://deleted.com/"));
-  url::Origin origin4 = url::Origin::Create(GURL("http://notdeleted.com"));
+  url::Origin origin3 = url::Origin::Create(GURL("https://deleted.com/"));
+  url::Origin origin4 = url::Origin::Create(GURL("https://notdeleted.com"));
 
-  GURL url1a = GURL("http://www.google.com/search?q=asdf");
-  GURL url1b = GURL("http://www.google.com/maps/search?q=asdf");
-  GURL url3a = GURL("http://deleted.com/test");
+  GURL url1a = GURL("https://www.google.com/search?q=asdf");
+  GURL url1b = GURL("https://www.google.com/maps/search?q=asdf");
+  GURL url3a = GURL("https://deleted.com/test");
 
   // origin1 will have a score that is high enough to not return zero
   // and we will ensure it has the same score. origin2 will have a score
@@ -596,7 +612,7 @@ TEST_F(MediaEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
   }
 }
 
-TEST_F(MediaEngagementServiceTest, CleanUpDatabaseWhenHistoryIsExpired) {
+TEST_P(MediaEngagementServiceTest, CleanUpDatabaseWhenHistoryIsExpired) {
   base::HistogramTester histogram_tester;
 
   // |origin1| will have history that is before the expiry threshold and should
@@ -605,7 +621,7 @@ TEST_F(MediaEngagementServiceTest, CleanUpDatabaseWhenHistoryIsExpired) {
   // threshold and should be deleted.
   url::Origin origin1 = url::Origin::Create(GURL("https://www.google.com"));
   url::Origin origin2 = url::Origin::Create(GURL("https://drive.google.com"));
-  url::Origin origin3 = url::Origin::Create(GURL("http://deleted.com"));
+  url::Origin origin3 = url::Origin::Create(GURL("https://deleted.com"));
 
   // Populate test MEI data.
   SetScores(origin1, 20, 20);
@@ -647,15 +663,15 @@ TEST_F(MediaEngagementServiceTest, CleanUpDatabaseWhenHistoryIsExpired) {
       MediaEngagementService::kHistogramClearName, 4, 1);
 }
 
-TEST_F(MediaEngagementServiceTest, CleanUpDatabaseWhenHistoryIsDeleted) {
-  url::Origin origin1 = url::Origin::Create(GURL("http://www.google.com/"));
+TEST_P(MediaEngagementServiceTest, CleanUpDatabaseWhenHistoryIsDeleted) {
+  url::Origin origin1 = url::Origin::Create(GURL("https://www.google.com/"));
   url::Origin origin2 = url::Origin::Create(GURL("https://drive.google.com/"));
-  url::Origin origin3 = url::Origin::Create(GURL("http://deleted.com/"));
-  url::Origin origin4 = url::Origin::Create(GURL("http://notdeleted.com"));
+  url::Origin origin3 = url::Origin::Create(GURL("https://deleted.com/"));
+  url::Origin origin4 = url::Origin::Create(GURL("https://notdeleted.com"));
 
-  GURL url1a = GURL("http://www.google.com/search?q=asdf");
-  GURL url1b = GURL("http://www.google.com/maps/search?q=asdf");
-  GURL url3a = GURL("http://deleted.com/test");
+  GURL url1a = GURL("https://www.google.com/search?q=asdf");
+  GURL url1b = GURL("https://www.google.com/maps/search?q=asdf");
+  GURL url3a = GURL("https://deleted.com/test");
 
   // origin1 will have a score that is high enough to not return zero
   // and we will ensure it has the same score. origin2 will have a score
@@ -730,15 +746,15 @@ TEST_F(MediaEngagementServiceTest, CleanUpDatabaseWhenHistoryIsDeleted) {
   }
 }
 
-TEST_F(MediaEngagementServiceTest, HistoryExpirationIsNoOp) {
-  url::Origin origin1 = url::Origin::Create(GURL("http://www.google.com/"));
+TEST_P(MediaEngagementServiceTest, HistoryExpirationIsNoOp) {
+  url::Origin origin1 = url::Origin::Create(GURL("https://www.google.com/"));
   url::Origin origin2 = url::Origin::Create(GURL("https://drive.google.com/"));
-  url::Origin origin3 = url::Origin::Create(GURL("http://deleted.com/"));
-  url::Origin origin4 = url::Origin::Create(GURL("http://notdeleted.com"));
+  url::Origin origin3 = url::Origin::Create(GURL("https://deleted.com/"));
+  url::Origin origin4 = url::Origin::Create(GURL("https://notdeleted.com"));
 
-  GURL url1a = GURL("http://www.google.com/search?q=asdf");
-  GURL url1b = GURL("http://www.google.com/maps/search?q=asdf");
-  GURL url3a = GURL("http://deleted.com/test");
+  GURL url1a = GURL("https://www.google.com/search?q=asdf");
+  GURL url1b = GURL("https://www.google.com/maps/search?q=asdf");
+  GURL url3a = GURL("https://deleted.com/test");
 
   SetScores(origin1, MediaEngagementScore::GetScoreMinVisits() + 2, 14);
   SetScores(origin2, 2, 1);
@@ -787,7 +803,7 @@ TEST_F(MediaEngagementServiceTest, HistoryExpirationIsNoOp) {
   }
 }
 
-TEST_F(MediaEngagementServiceTest,
+TEST_P(MediaEngagementServiceTest,
        CleanupDataOnSiteDataCleanup_OutsideBoundary) {
   url::Origin origin = url::Origin::Create(GURL("https://www.google.com"));
   base::HistogramTester histogram_tester;
@@ -808,7 +824,7 @@ TEST_F(MediaEngagementServiceTest,
       MediaEngagementService::kHistogramClearName, 1, 1);
 }
 
-TEST_F(MediaEngagementServiceTest,
+TEST_P(MediaEngagementServiceTest,
        CleanupDataOnSiteDataCleanup_WithinBoundary) {
   url::Origin origin1 = url::Origin::Create(GURL("https://www.google.com"));
   url::Origin origin2 = url::Origin::Create(GURL("https://www.google.co.uk"));
@@ -834,7 +850,7 @@ TEST_F(MediaEngagementServiceTest,
       MediaEngagementService::kHistogramClearName, 1, 1);
 }
 
-TEST_F(MediaEngagementServiceTest, CleanupDataOnSiteDataCleanup_NoTimeSet) {
+TEST_P(MediaEngagementServiceTest, CleanupDataOnSiteDataCleanup_NoTimeSet) {
   url::Origin origin = url::Origin::Create(GURL("https://www.google.com"));
   base::HistogramTester histogram_tester;
 
@@ -853,7 +869,7 @@ TEST_F(MediaEngagementServiceTest, CleanupDataOnSiteDataCleanup_NoTimeSet) {
       MediaEngagementService::kHistogramClearName, 1, 1);
 }
 
-TEST_F(MediaEngagementServiceTest, CleanupDataOnSiteDataCleanup_All) {
+TEST_P(MediaEngagementServiceTest, CleanupDataOnSiteDataCleanup_All) {
   url::Origin origin1 = url::Origin::Create(GURL("https://www.google.com"));
   url::Origin origin2 = url::Origin::Create(GURL("https://www.google.co.uk"));
   base::HistogramTester histogram_tester;
@@ -878,7 +894,7 @@ TEST_F(MediaEngagementServiceTest, CleanupDataOnSiteDataCleanup_All) {
       MediaEngagementService::kHistogramClearName, 0, 1);
 }
 
-TEST_F(MediaEngagementServiceTest, HasHighEngagement) {
+TEST_P(MediaEngagementServiceTest, HasHighEngagement) {
   url::Origin origin1 = url::Origin::Create(GURL("https://www.google.com"));
   url::Origin origin2 = url::Origin::Create(GURL("https://www.google.co.uk"));
   url::Origin origin3 = url::Origin::Create(GURL("https://www.example.com"));
@@ -891,7 +907,7 @@ TEST_F(MediaEngagementServiceTest, HasHighEngagement) {
   EXPECT_FALSE(HasHighEngagement(origin3));
 }
 
-TEST_F(MediaEngagementServiceTest, SchemaVersion_Changed) {
+TEST_P(MediaEngagementServiceTest, SchemaVersion_Changed) {
   url::Origin origin = url::Origin::Create(GURL("https://www.google.com"));
   SetScores(origin, 1, 2);
 
@@ -904,7 +920,7 @@ TEST_F(MediaEngagementServiceTest, SchemaVersion_Changed) {
   new_service->Shutdown();
 }
 
-TEST_F(MediaEngagementServiceTest, SchemaVersion_Same) {
+TEST_P(MediaEngagementServiceTest, SchemaVersion_Same) {
   url::Origin origin = url::Origin::Create(GURL("https://www.google.com"));
   SetScores(origin, 1, 2);
 
@@ -915,6 +931,8 @@ TEST_F(MediaEngagementServiceTest, SchemaVersion_Same) {
   ExpectScores(new_service.get(), origin, 0.1, 1, 2, TimeNotSet());
   new_service->Shutdown();
 }
+
+INSTANTIATE_TEST_SUITE_P(, MediaEngagementServiceTest, ::testing::Bool());
 
 class MediaEngagementServiceEnabledTest
     : public ChromeRenderViewHostTestHarness {};

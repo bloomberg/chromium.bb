@@ -136,6 +136,8 @@ function renderConfigTable(config) {
   configTableBody.appendChild(createConfigRow(
       'Preload MEI data', formatFeatureFlag(config.featurePreloadData)));
   configTableBody.appendChild(createConfigRow(
+      'MEI for HTTPS only', formatFeatureFlag(config.featureHttpsOnly)));
+  configTableBody.appendChild(createConfigRow(
       'Autoplay disable settings',
       formatFeatureFlag(config.featureAutoplayDisableSettings)));
   configTableBody.appendChild(createConfigRow(

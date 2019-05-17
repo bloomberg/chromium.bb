@@ -108,7 +108,8 @@ class MediaEngagementScoreTest : public ChromeRenderViewHostTestHarness {
       int visits_with_media_tag,
       int high_score_changes,
       int media_element_playbacks,
-      int audio_context_playbacks) {
+      int audio_context_playbacks,
+      bool update_score_expectation) {
     MediaEngagementScore* initial_score =
         new MediaEngagementScore(&test_clock, url::Origin(),
                                  std::move(score_dict), nullptr /* settings */);
@@ -124,7 +125,7 @@ class MediaEngagementScoreTest : public ChromeRenderViewHostTestHarness {
 
     // Increment the scores and check that the values were stored correctly.
     UpdateScore(initial_score);
-    EXPECT_TRUE(initial_score->UpdateScoreDict());
+    EXPECT_EQ(update_score_expectation, initial_score->UpdateScoreDict());
     delete initial_score;
   }
 
@@ -201,7 +202,7 @@ TEST_F(MediaEngagementScoreTest, MojoSerialization) {
 TEST_F(MediaEngagementScoreTest, EmptyDictionary) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   TestScoreInitializesAndUpdates(std::move(dict), 0, 0, base::Time(), false, 0,
-                                 0, 0, 0, 0, 0);
+                                 0, 0, 0, 0, 0, true);
 }
 
 // Test that scores are read / written correctly from / to partially empty
@@ -211,7 +212,7 @@ TEST_F(MediaEngagementScoreTest, PartiallyEmptyDictionary) {
   dict->SetInteger(MediaEngagementScore::kVisitsKey, 2);
 
   TestScoreInitializesAndUpdates(std::move(dict), 2, 0, base::Time(), false, 0,
-                                 0, 0, 0, 0, 0);
+                                 0, 0, 0, 0, 0, true);
 }
 
 // Test that scores are read / written correctly from / to populated score
@@ -232,7 +233,7 @@ TEST_F(MediaEngagementScoreTest, PopulatedDictionary) {
                    2);
 
   TestScoreInitializesAndUpdates(std::move(dict), 20, 12, test_clock.Now(),
-                                 true, 2, 4, 6, 3, 1, 2);
+                                 true, 2, 4, 6, 3, 1, 2, true);
 }
 
 // Test getting and commiting the score works correctly with different
@@ -721,4 +722,28 @@ TEST_F(MediaEngagementScoreTest,
     EXPECT_EQ(media_playbacks, stored_media_playbacks);
     EXPECT_EQ(media_element_playbacks, stored_media_element_playbacks);
   }
+}
+
+// Test that scores are read / written correctly from / to populated score
+// dictionaries.
+TEST_F(MediaEngagementScoreTest, PopulatedDictionary_HTTPSOnly) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(media::kMediaEngagementHTTPSOnly);
+
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  dict->SetInteger(MediaEngagementScore::kVisitsKey, 20);
+  dict->SetInteger(MediaEngagementScore::kMediaPlaybacksKey, 12);
+  dict->SetDouble(MediaEngagementScore::kLastMediaPlaybackTimeKey,
+                  test_clock.Now().ToDeltaSinceWindowsEpoch().InMicroseconds());
+  dict->SetBoolean(MediaEngagementScore::kHasHighScoreKey, true);
+  dict->SetInteger(MediaEngagementScore::kAudiblePlaybacksKey, 2);
+  dict->SetInteger(MediaEngagementScore::kSignificantPlaybacksKey, 4);
+  dict->SetInteger(MediaEngagementScore::kVisitsWithMediaTagKey, 6);
+  dict->SetInteger(MediaEngagementScore::kHighScoreChanges, 3);
+  dict->SetInteger(MediaEngagementScore::kSignificantMediaPlaybacksKey, 1);
+  dict->SetInteger(MediaEngagementScore::kSignificantAudioContextPlaybacksKey,
+                   2);
+
+  TestScoreInitializesAndUpdates(std::move(dict), 0, 0, base::Time(), false, 0,
+                                 0, 0, 0, 0, 0, false);
 }

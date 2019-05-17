@@ -367,6 +367,16 @@ IN_PROC_BROWSER_TEST_P(MediaEngagementAutoplayBrowserTest, TopFrameNavigation) {
   ExpectAutoplayAllowedIfEnabled();
 }
 
+IN_PROC_BROWSER_TEST_P(MediaEngagementAutoplayBrowserTest,
+                       BypassAutoplayHighEngagement_HTTPSOnly) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(media::kMediaEngagementHTTPSOnly);
+
+  SetScores(PrimaryOrigin(), 20, 20);
+  LoadTestPage("engagement_autoplay_test.html");
+  ExpectAutoplayDenied();
+}
+
 INSTANTIATE_TEST_SUITE_P(/* no prefix */,
                          MediaEngagementAutoplayBrowserTest,
                          testing::Bool());
