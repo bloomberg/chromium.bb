@@ -5,7 +5,6 @@
 #include "net/quic/platform/impl/quic_socket_address_impl.h"
 
 #include "net/base/sockaddr_storage.h"
-#include "net/quic/address_utils.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
 
 using std::string;
@@ -15,9 +14,9 @@ namespace quic {
 QuicSocketAddressImpl::QuicSocketAddressImpl(const net::IPEndPoint& address)
     : socket_address_(address) {}
 
-QuicSocketAddressImpl::QuicSocketAddressImpl(QuicIpAddress address,
+QuicSocketAddressImpl::QuicSocketAddressImpl(QuicIpAddressImpl address,
                                              uint16_t port)
-    : socket_address_(net::ToIPAddress(address), port) {}
+    : socket_address_(address.ip_address(), port) {}
 
 QuicSocketAddressImpl::QuicSocketAddressImpl(
     const struct sockaddr_storage& saddr) {

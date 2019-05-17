@@ -3122,6 +3122,8 @@ if (is_linux) {
 
   source_set("epoll_quic_tools") {
     sources = [
+      "quic/platform/impl/quic_default_proof_providers_impl.cc",
+      "quic/platform/impl/quic_default_proof_providers_impl.h",
       "quic/platform/impl/quic_epoll_clock.cc",
       "quic/platform/impl/quic_epoll_clock.h",
       "quic/platform/impl/quic_linux_socket_utils.cc",
@@ -3129,6 +3131,7 @@ if (is_linux) {
       "quic/platform/impl/quic_socket_utils.cc",
       "quic/platform/impl/quic_socket_utils.h",
       "quic/platform/impl/quic_stream_buffer_allocator_impl.h",
+      "quic/platform/impl/quic_system_event_loop_impl.h",
       "third_party/quiche/src/quic/core/quic_default_packet_writer.cc",
       "third_party/quiche/src/quic/core/quic_default_packet_writer.h",
       "third_party/quiche/src/quic/core/quic_epoll_alarm_factory.cc",
@@ -3137,8 +3140,10 @@ if (is_linux) {
       "third_party/quiche/src/quic/core/quic_epoll_connection_helper.h",
       "third_party/quiche/src/quic/core/quic_packet_reader.cc",
       "third_party/quiche/src/quic/core/quic_packet_reader.h",
+      "third_party/quiche/src/quic/platform/api/quic_default_proof_providers.h",
       "third_party/quiche/src/quic/platform/api/quic_epoll.h",
       "third_party/quiche/src/quic/platform/api/quic_stream_buffer_allocator.h",
+      "third_party/quiche/src/quic/platform/api/quic_system_event_loop.h",
       "third_party/quiche/src/quic/tools/quic_client.cc",
       "third_party/quiche/src/quic/tools/quic_client.h",
       "third_party/quiche/src/quic/tools/quic_client_epoll_network_helper.cc",
@@ -3161,8 +3166,6 @@ if (is_linux) {
   executable("epoll_quic_client") {
     sources = [
       "third_party/quiche/src/quic/tools/quic_client_bin.cc",
-      "third_party/quiche/src/quic/tools/quic_toy_client.cc",
-      "third_party/quiche/src/quic/tools/quic_toy_client.h",
     ]
     deps = [
       ":epoll_quic_tools",
@@ -3463,9 +3466,6 @@ source_set("quic_test_tools") {
 
 source_set("simple_quic_tools") {
   sources = [
-    "quic/platform/impl/quic_default_proof_providers_impl.cc",
-    "quic/platform/impl/quic_default_proof_providers_impl.h",
-    "quic/platform/impl/quic_system_event_loop_impl.h",
     "third_party/quiche/src/quic/core/chlo_extractor.cc",
     "third_party/quiche/src/quic/core/chlo_extractor.h",
     "third_party/quiche/src/quic/core/http/quic_spdy_client_session.cc",
@@ -3483,8 +3483,6 @@ source_set("simple_quic_tools") {
     "third_party/quiche/src/quic/core/quic_time_wait_list_manager.h",
     "third_party/quiche/src/quic/core/stateless_rejector.cc",
     "third_party/quiche/src/quic/core/stateless_rejector.h",
-    "third_party/quiche/src/quic/platform/api/quic_default_proof_providers.h",
-    "third_party/quiche/src/quic/platform/api/quic_system_event_loop.h",
     "third_party/quiche/src/quic/tools/quic_backend_response.cc",
     "third_party/quiche/src/quic/tools/quic_backend_response.h",
     "third_party/quiche/src/quic/tools/quic_client_base.cc",
@@ -3537,8 +3535,6 @@ source_set("simple_quic_tools") {
 if (!is_ios) {
   executable("quic_client") {
     sources = [
-      "third_party/quiche/src/quic/tools/quic_toy_client.cc",
-      "third_party/quiche/src/quic/tools/quic_toy_client.h",
       "tools/quic/quic_simple_client_bin.cc",
     ]
     deps = [

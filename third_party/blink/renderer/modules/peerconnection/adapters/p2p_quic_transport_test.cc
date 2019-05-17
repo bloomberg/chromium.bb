@@ -472,13 +472,10 @@ class ConnectedCryptoClientStream final : public quic::QuicCryptoClientStream {
         quic::QuicTime::Delta::FromSeconds(2 * quic::kMaximumIdleTimeoutSecs),
         quic::QuicTime::Delta::FromSeconds(quic::kMaximumIdleTimeoutSecs));
     config.SetBytesForConnectionIdToSend(quic::PACKET_8BYTE_CONNECTION_ID);
-    config.SetMaxIncomingBidirectionalStreamsToSend(
-        quic::kDefaultMaxStreamsPerConnection / 2);
-    config.SetMaxIncomingUnidirectionalStreamsToSend(
+    config.SetMaxIncomingDynamicStreamsToSend(
         quic::kDefaultMaxStreamsPerConnection / 2);
     quic::CryptoHandshakeMessage message;
-    config.ToHandshakeMessage(&message,
-                              session()->connection()->transport_version());
+    config.ToHandshakeMessage(&message);
     std::string error_details;
     session()->config()->ProcessPeerHello(message, quic::CLIENT,
                                           &error_details);
@@ -527,7 +524,8 @@ class ConnectedCryptoClientStreamFactory final
       quic::QuicSession* session,
       quic::QuicCryptoServerStream::Helper* helper) override {
     return std::make_unique<quic::QuicCryptoServerStream>(
-        crypto_config, compressed_certs_cache, session, helper);
+        crypto_config, compressed_certs_cache,
+        /*use_stateless_rejects_if_peer_supported=*/false, session, helper);
   }
 };
 
