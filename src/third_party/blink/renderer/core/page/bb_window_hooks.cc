@@ -147,7 +147,6 @@ Range* BBWindowHooks::findPlainText(Range* range, const String& target, long opt
     EphemeralRangeInFlatTree result_range =
         blink::FindBuffer::FindMatchInRange(EphemeralRangeInFlatTree(range), target, options);
 
-    // EphemeralRange result = blink::FindPlainText(EphemeralRange(range), target, options);
     Range* range_object =
         Range::Create(result_range.GetDocument(),
                       ToPositionInDOMTree(result_range.StartPosition()),
