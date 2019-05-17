@@ -11,8 +11,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/memory/read_only_shared_memory_region.h"
-#include "base/memory/writable_shared_memory_region.h"
+#include "base/memory/shared_memory.h"
 #include "base/process/process_handle.h"
 #include "build/build_config.h"
 #include "ipc/ipc_channel.h"
@@ -68,7 +67,7 @@ struct NaClResourcePrefetchResult {
 // Parameters sent to the NaCl process when we start it.
 struct NaClStartParams {
   NaClStartParams();
-  NaClStartParams(NaClStartParams&& other);
+  NaClStartParams(const NaClStartParams& other);
   ~NaClStartParams();
 
   IPC::PlatformFileForTransit nexe_file;
@@ -104,14 +103,11 @@ struct NaClStartParams {
   NaClAppProcessType process_type;
 
   // For NaCl <-> renderer crash information reporting.
-  base::WritableSharedMemoryRegion crash_info_shmem_region;
+  base::SharedMemoryHandle crash_info_shmem_handle;
 
   // NOTE: Any new fields added here must also be added to the IPC
   // serialization in nacl_messages.h and (for POD fields) the constructor
   // in nacl_types.cc.
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(NaClStartParams);
 };
 
 // Parameters sent to the browser process to have it launch a NaCl process.
@@ -157,7 +153,7 @@ struct NaClLaunchResult {
       const IPC::ChannelHandle& manifest_service_ipc_channel_handle,
       base::ProcessId plugin_pid,
       int plugin_child_id,
-      base::ReadOnlySharedMemoryRegion crash_info_shmem_region);
+      base::SharedMemoryHandle crash_info_shmem_handle);
   ~NaClLaunchResult();
 
   // For plugin <-> renderer PPAPI communication.
@@ -174,10 +170,7 @@ struct NaClLaunchResult {
   int plugin_child_id;
 
   // For NaCl <-> renderer crash information reporting.
-  base::ReadOnlySharedMemoryRegion crash_info_shmem_region;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(NaClLaunchResult);
+  base::SharedMemoryHandle crash_info_shmem_handle;
 };
 
 }  // namespace nacl

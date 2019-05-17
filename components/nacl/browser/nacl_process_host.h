@@ -15,8 +15,8 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
 #include "components/nacl/common/nacl_types.h"
@@ -144,8 +144,7 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   void ReplyToRenderer(
       mojo::ScopedMessagePipeHandle ppapi_channel_handle,
       mojo::ScopedMessagePipeHandle trusted_channel_handle,
-      mojo::ScopedMessagePipeHandle manifest_service_channel_handle,
-      base::ReadOnlySharedMemoryRegion crash_info_shmem_region);
+      mojo::ScopedMessagePipeHandle manifest_service_channel_handle);
 
   // Sends the reply with error message to the renderer.
   void SendErrorToRenderer(const std::string& error_message);
@@ -195,8 +194,7 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
       const IPC::ChannelHandle& ppapi_browser_channel_handle,
       const IPC::ChannelHandle& ppapi_renderer_channel_handle,
       const IPC::ChannelHandle& trusted_renderer_channel_handle,
-      const IPC::ChannelHandle& manifest_service_channel_handle,
-      base::ReadOnlySharedMemoryRegion crash_info_shmem_region);
+      const IPC::ChannelHandle& manifest_service_channel_handle);
 
   GURL manifest_url_;
   base::File nexe_file_;
@@ -247,6 +245,10 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
 
   // Throttling time in milliseconds for PpapiHostMsg_Keepalive IPCs.
   static unsigned keepalive_throttle_interval_milliseconds_;
+
+  // Shared memory provided to the plugin and renderer for
+  // reporting crash information.
+  base::SharedMemory crash_info_shmem_;
 
   base::WeakPtrFactory<NaClProcessHost> weak_factory_;
 
