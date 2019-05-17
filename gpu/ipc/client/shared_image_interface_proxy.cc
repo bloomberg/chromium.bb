@@ -126,8 +126,11 @@ Mailbox SharedImageInterfaceProxy::CreateSharedImage(
   DCHECK(gpu_memory_buffer->GetType() == gfx::NATIVE_PIXMAP ||
          gpu_memory_buffer->GetType() == gfx::ANDROID_HARDWARE_BUFFER ||
          gpu_memory_buffer_manager);
+
+  auto mailbox = Mailbox::GenerateForSharedImage();
+
   GpuChannelMsg_CreateGMBSharedImage_Params params;
-  params.mailbox = Mailbox::GenerateForSharedImage();
+  params.mailbox = mailbox;
   params.handle = gpu_memory_buffer->CloneHandle();
   params.size = gpu_memory_buffer->GetSize();
   params.format = gpu_memory_buffer->GetFormat();
@@ -158,7 +161,7 @@ Mailbox SharedImageInterfaceProxy::CreateSharedImage(
     gpu_memory_buffer_manager->SetDestructionSyncToken(gpu_memory_buffer,
                                                        sync_token);
   }
-  return params.mailbox;
+  return mailbox;
 }
 
 void SharedImageInterfaceProxy::UpdateSharedImage(const SyncToken& sync_token,
