@@ -18,8 +18,10 @@
 #include "chrome/browser/chromeos/login/test/embedded_test_server_mixin.h"
 #include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
+#include "chrome/browser/chromeos/login/test/local_policy_test_server_mixin.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
+#include "chrome/browser/chromeos/login/test/user_policy_mixin.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/profiles/profile.h"
@@ -40,9 +42,6 @@ using net::test_server::HttpResponse;
 namespace chromeos {
 
 namespace {
-
-constexpr char kTestUser[] = "test-user1@gmail.com";
-constexpr char kTestUserGaiaId[] = "test-user1-gaia";
 
 constexpr char kTestStartPageRelativeUrl[] = "/families/onboarding/start";
 constexpr char kTestCustomHttpHeaderKey[] =
@@ -135,10 +134,47 @@ class SupervisionOnboardingBaseTest : public MixinBasedInProcessBrowserTest {
   SupervisionOnboardingBaseTest() = default;
   ~SupervisionOnboardingBaseTest() override = default;
 
+  virtual bool IsFeatureOn() const = 0;
+  virtual bool IsChild() const = 0;
+
+  void SetUp() override {
+    if (IsFeatureOn()) {
+      feature_list_.InitAndEnableFeature(
+          features::kEnableSupervisionOnboardingScreens);
+    }
+
+    MixinBasedInProcessBrowserTest::SetUp();
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    if (IsFeatureOn()) {
+      command_line->AppendSwitchASCII(
+          chromeos::switches::kSupervisionOnboardingPageUrlPattern,
+          supervision_server()->url_filter_pattern().spec());
+      command_line->AppendSwitchASCII(
+          chromeos::switches::kSupervisionOnboardingStartPageUrl,
+          supervision_server()->start_page_url().spec());
+      command_line->AppendSwitchASCII(
+          chromeos::switches::kSupervisionOnboardingHttpResponseHeader,
+          kTestCustomHttpHeaderKey);
+
+      // To turn on the feature properly we also ask the server to return the
+      // expected custom http header value. Tests that want to simulate other
+      // server responses can call these methods again to override this
+      // behavior.
+      ExpectCustomHttpHeaderValue("user-eligible");
+      supervision_server()->set_custom_http_header_value("user-eligible");
+    }
+
+    MixinBasedInProcessBrowserTest::SetUpCommandLine(command_line);
+  }
+
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
 
-    fake_gaia_.SetupFakeGaiaForLogin(kTestUser, kTestUserGaiaId,
+    AccountId id =
+        IsChild() ? child_user_.account_id : regular_user_.account_id;
+    fake_gaia_.SetupFakeGaiaForLogin(id.GetUserEmail(), id.GetGaiaId(),
                                      FakeGaiaMixin::kFakeRefreshToken);
 
     // Since we will login after this method returns, we need to set this
@@ -149,8 +185,10 @@ class SupervisionOnboardingBaseTest : public MixinBasedInProcessBrowserTest {
   }
 
   void LoginAndShowScreen() {
+    LoginManagerMixin::TestUserInfo user_info =
+        IsChild() ? child_user_ : regular_user_;
     UserContext user_context =
-        LoginManagerMixin::CreateDefaultUserContext(test_user_);
+        LoginManagerMixin::CreateDefaultUserContext(user_info);
     user_context.SetRefreshToken(FakeGaiaMixin::kFakeRefreshToken);
     login_manager_.LoginAndWaitForActiveSession(user_context);
 
@@ -170,74 +208,6 @@ class SupervisionOnboardingBaseTest : public MixinBasedInProcessBrowserTest {
         ->SetScreenForTesting(std::move(supervision_onboarding_screen));
 
     supervision_onboarding_screen_->Show();
-  }
-
-  void WaitForScreenExit() {
-    if (screen_exited_)
-      return;
-
-    base::RunLoop run_loop;
-    screen_exit_callback_ = run_loop.QuitClosure();
-    run_loop.Run();
-  }
-
-  FakeSupervisionServer* supervision_server() { return &supervision_server_; }
-
-  SupervisionOnboardingScreen* supervision_onboarding_screen_;
-
- private:
-  void HandleScreenExit() {
-    ASSERT_FALSE(screen_exited_);
-    screen_exited_ = true;
-    if (screen_exit_callback_)
-      std::move(screen_exit_callback_).Run();
-  }
-
-  bool screen_exited_ = false;
-  base::OnceClosure screen_exit_callback_;
-
-  const AccountId test_account_id_ =
-      AccountId::FromUserEmailGaiaId(kTestUser, kTestUserGaiaId);
-
-  const LoginManagerMixin::TestUserInfo test_user_{test_account_id_};
-  EmbeddedTestServerSetupMixin embedded_test_server_{&mixin_host_,
-                                                     embedded_test_server()};
-  FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
-  LoginManagerMixin login_manager_{&mixin_host_, {test_user_}};
-  FakeSupervisionServer supervision_server_{embedded_test_server()};
-};
-
-class SupervisionOnboardingTest : public SupervisionOnboardingBaseTest {
- public:
-  SupervisionOnboardingTest() = default;
-  ~SupervisionOnboardingTest() override = default;
-
-  void SetUp() override {
-    feature_list_.InitAndEnableFeature(
-        features::kEnableSupervisionOnboardingScreens);
-
-    SupervisionOnboardingBaseTest::SetUp();
-  }
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitchASCII(
-        chromeos::switches::kSupervisionOnboardingPageUrlPattern,
-        supervision_server()->url_filter_pattern().spec());
-    command_line->AppendSwitchASCII(
-        chromeos::switches::kSupervisionOnboardingStartPageUrl,
-        supervision_server()->start_page_url().spec());
-    command_line->AppendSwitchASCII(
-        chromeos::switches::kSupervisionOnboardingHttpResponseHeader,
-        kTestCustomHttpHeaderKey);
-
-    // To turn on the feature properly we also ask the server to return the
-    // expected custom http header value. Tests that want to simulate other
-    // server responses can call these methods again to override this
-    // behavior.
-    ExpectCustomHttpHeaderValue("user-eligible");
-    supervision_server()->set_custom_http_header_value("user-eligible");
-
-    SupervisionOnboardingBaseTest::SetUpCommandLine(command_line);
   }
 
   // Sets the flow to expect the given header value in server responses. If
@@ -267,17 +237,97 @@ class SupervisionOnboardingTest : public SupervisionOnboardingBaseTest {
     test::OobeJS().TapOnPath(button_path);
   }
 
+  void WaitForScreenExit() {
+    if (screen_exited_)
+      return;
+
+    base::RunLoop run_loop;
+    screen_exit_callback_ = run_loop.QuitClosure();
+    run_loop.Run();
+  }
+
+  FakeSupervisionServer* supervision_server() { return &supervision_server_; }
+
+  SupervisionOnboardingScreen* supervision_onboarding_screen_;
+
  private:
+  void HandleScreenExit() {
+    ASSERT_FALSE(screen_exited_);
+    screen_exited_ = true;
+    if (screen_exit_callback_)
+      std::move(screen_exit_callback_).Run();
+  }
+
   base::test::ScopedFeatureList feature_list_;
+  bool screen_exited_ = false;
+  base::OnceClosure screen_exit_callback_;
+
+  const LoginManagerMixin::TestUserInfo regular_user_{
+      AccountId::FromUserEmailGaiaId("test-regular-user@gmail.com",
+                                     "test-regular-user-gaia-id")};
+  const LoginManagerMixin::TestUserInfo child_user_{
+      AccountId::FromUserEmailGaiaId("test-child-user@gmail.com",
+                                     "test-child-user-gaia-id"),
+      user_manager::USER_TYPE_CHILD};
+
+  EmbeddedTestServerSetupMixin embedded_test_server_{&mixin_host_,
+                                                     embedded_test_server()};
+  FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
+  LoginManagerMixin login_manager_{&mixin_host_, {regular_user_, child_user_}};
+  LocalPolicyTestServerMixin local_policy_mixin_{&mixin_host_};
+  UserPolicyMixin user_policy_{&mixin_host_, child_user_.account_id,
+                               &local_policy_mixin_};
+
+  FakeSupervisionServer supervision_server_{embedded_test_server()};
 };
 
-IN_PROC_BROWSER_TEST_F(SupervisionOnboardingBaseTest,
-                       ExitImmediatelyWhenFeatureIsOff) {
+class SupervisionOnboardingRegularUserTest
+    : public SupervisionOnboardingBaseTest {
+ public:
+  SupervisionOnboardingRegularUserTest() = default;
+  ~SupervisionOnboardingRegularUserTest() override = default;
+
+  bool IsFeatureOn() const override { return true; }
+
+  bool IsChild() const override { return false; }
+};
+
+IN_PROC_BROWSER_TEST_F(SupervisionOnboardingRegularUserTest,
+                       FlowExitsImmediately) {
   LoginAndShowScreen();
 
   WaitForScreenExit();
   EXPECT_EQ(0u, supervision_server()->GetReceivedRequestsCount());
 }
+
+class SupervisionOnboardingFeatureTurnedOffTest
+    : public SupervisionOnboardingBaseTest {
+ public:
+  SupervisionOnboardingFeatureTurnedOffTest() = default;
+  ~SupervisionOnboardingFeatureTurnedOffTest() override = default;
+
+  bool IsFeatureOn() const override { return false; }
+
+  bool IsChild() const override { return true; }
+};
+
+IN_PROC_BROWSER_TEST_F(SupervisionOnboardingFeatureTurnedOffTest,
+                       FlowExitsImmediately) {
+  LoginAndShowScreen();
+
+  WaitForScreenExit();
+  EXPECT_EQ(0u, supervision_server()->GetReceivedRequestsCount());
+}
+
+class SupervisionOnboardingTest : public SupervisionOnboardingBaseTest {
+ public:
+  SupervisionOnboardingTest() = default;
+  ~SupervisionOnboardingTest() override = default;
+
+  bool IsFeatureOn() const override { return true; }
+
+  bool IsChild() const override { return true; }
+};
 
 IN_PROC_BROWSER_TEST_F(SupervisionOnboardingTest,
                        ExitWhenServerDoesNotReturnHeader) {

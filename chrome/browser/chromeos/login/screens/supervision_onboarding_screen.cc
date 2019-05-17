@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "chrome/browser/ui/webui/chromeos/login/supervision_onboarding_screen_handler.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "components/user_manager/user_manager.h"
 
 namespace chromeos {
 namespace {
@@ -31,10 +32,14 @@ SupervisionOnboardingScreen::~SupervisionOnboardingScreen() {
 }
 
 void SupervisionOnboardingScreen::Show() {
-  // TODO(ltenorio): Show this screen only for supervised accounts when the
-  // test support is improved by b/959244.
-  if (view_ && base::FeatureList::IsEnabled(
-                   features::kEnableSupervisionOnboardingScreens)) {
+  const user_manager::UserManager* user_manager =
+      user_manager::UserManager::Get();
+  DCHECK(user_manager->IsUserLoggedIn());
+
+  if (view_ &&
+      base::FeatureList::IsEnabled(
+          features::kEnableSupervisionOnboardingScreens) &&
+      user_manager->IsLoggedInAsChildUser()) {
     view_->Show();
     return;
   }
