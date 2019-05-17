@@ -681,10 +681,11 @@ customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
       $(customBackgrounds.IDS.CUSTOMIZATION_MENU) :
       $(customBackgrounds.IDS.MENU);
 
-  $(customBackgrounds.IDS.MENU_TITLE).textContent = dialogTitle;
   if (configData.richerPicker) {
+    $(customBackgrounds.IDS.MENU_TITLE).textContent = dialogTitle;
     menu.classList.toggle(customBackgrounds.CLASSES.ON_IMAGE_MENU, true);
   } else {
+    $(customBackgrounds.IDS.TITLE).textContent = dialogTitle;
     menu.classList.remove(customBackgrounds.CLASSES.COLLECTION_DIALOG);
     menu.classList.add(customBackgrounds.CLASSES.IMAGE_DIALOG);
   }
