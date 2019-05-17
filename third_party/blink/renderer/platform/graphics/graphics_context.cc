@@ -59,11 +59,10 @@
 
 namespace blink {
 
-// Effectively allows modifying the provided |flags| without technically
-// violating its constness.
+// Helper class that copies |flags| only when dark mode is enabled.
 //
 // TODO(gilmanmh): Investigate removing const from |flags| in the calling
-// methods so that this isn't necessary.
+// methods and modifying the variable directly instead of copying it.
 class GraphicsContext::DarkModeFlags final {
   STACK_ALLOCATED();
 
@@ -79,6 +78,7 @@ class GraphicsContext::DarkModeFlags final {
   }
 
   operator const PaintFlags&() const { return *flags_; }
+
  private:
   const PaintFlags* flags_;
   base::Optional<PaintFlags> dark_mode_flags_;
@@ -811,11 +811,15 @@ void GraphicsContext::DrawTextInternal(const Font& font,
   if (ContextDisabled())
     return;
 
-  DrawTextPasses(
-      [&font, &text_info, &point, this, node_holder](const PaintFlags& flags) {
-        font.DrawText(canvas_, text_info, point, device_scale_factor_,
-                      node_holder, DarkModeFlags(this, flags));
-      });
+  DrawTextPasses([&](const PaintFlags& flags) {
+    if (dark_mode_filter_.ShouldInvertTextColor(flags.getColor())) {
+      font.DrawText(canvas_, text_info, point, device_scale_factor_,
+                    node_holder, DarkModeFlags(this, flags));
+    } else {
+      font.DrawText(canvas_, text_info, point, device_scale_factor_,
+                    node_holder, flags);
+    }
+  });
 }
 
 void GraphicsContext::DrawText(const Font& font,

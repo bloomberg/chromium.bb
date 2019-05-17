@@ -33,6 +33,8 @@ class DarkModeFilter {
 
   Color InvertColor(const Color& color) const;
 
+  bool ShouldInvertTextColor(const Color& color) const;
+
  private:
   DarkModeSettings settings_;
 

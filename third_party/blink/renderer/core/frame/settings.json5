@@ -913,6 +913,12 @@
       invalidate: "Paint",
     },
     {
+      name: "darkModeTextPolicy",
+      initial: "DarkModeTextPolicy::kInvertAll",
+      type: "DarkModeTextPolicy",
+      invalidate: "Paint",
+    },
+    {
       name: "darkModeImageGrayscale",
       initial: "0.0",
       type: "float",

@@ -139,4 +139,17 @@ Color DarkModeFilter::InvertColor(const Color& color) const {
                static_cast<unsigned int>(rgb.Z() * 255 + 0.5), color.Alpha());
 }
 
+bool DarkModeFilter::ShouldInvertTextColor(const Color& color) const {
+  if (settings_.text_policy == DarkModeTextPolicy::kInvertAll)
+    return true;
+
+  // Throw an error in debug mode if new values are added to the enum without
+  // updating this method.
+  DCHECK_EQ(settings_.text_policy, DarkModeTextPolicy::kInvertDarkOnly);
+  if (color == Color::kWhite) {
+    return false;
+  }
+  return true;
+}
+
 }  // namespace blink
