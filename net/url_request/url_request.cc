@@ -281,53 +281,52 @@ LoadStateWithParam URLRequest::GetLoadState() const {
 }
 
 base::Value URLRequest::GetStateAsValue() const {
-  base::DictionaryValue dict;
-  dict.SetString("url", original_url().possibly_invalid_spec());
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetStringKey("url", original_url().possibly_invalid_spec());
 
   if (url_chain_.size() > 1) {
-    base::ListValue list;
+    base::Value list(base::Value::Type::LIST);
     for (const GURL& url : url_chain_) {
-      list.AppendString(url.possibly_invalid_spec());
+      list.GetList().emplace_back(url.possibly_invalid_spec());
     }
     dict.SetKey("url_chain", std::move(list));
   }
 
-  dict.SetInteger("load_flags", load_flags_);
+  dict.SetIntKey("load_flags", load_flags_);
 
   LoadStateWithParam load_state = GetLoadState();
-  dict.SetInteger("load_state", load_state.state);
+  dict.SetIntKey("load_state", load_state.state);
   if (!load_state.param.empty())
-    dict.SetString("load_state_param", load_state.param);
+    dict.SetStringKey("load_state_param", load_state.param);
   if (!blocked_by_.empty())
-    dict.SetString("delegate_blocked_by", blocked_by_);
+    dict.SetStringKey("delegate_blocked_by", blocked_by_);
 
-  dict.SetString("method", method_);
-  dict.SetBoolean("has_upload", has_upload());
-  dict.SetBoolean("is_pending", is_pending_);
+  dict.SetStringKey("method", method_);
+  dict.SetBoolKey("has_upload", has_upload());
+  dict.SetBoolKey("is_pending", is_pending_);
 
-  dict.SetInteger("traffic_annotation",
-                  traffic_annotation_.unique_id_hash_code);
+  dict.SetIntKey("traffic_annotation", traffic_annotation_.unique_id_hash_code);
 
   // Add the status of the request.  The status should always be IO_PENDING, and
   // the error should always be OK, unless something is holding onto a request
   // that has finished or a request was leaked.  Neither of these should happen.
   switch (status_.status()) {
     case URLRequestStatus::SUCCESS:
-      dict.SetString("status", "SUCCESS");
+      dict.SetStringKey("status", "SUCCESS");
       break;
     case URLRequestStatus::IO_PENDING:
-      dict.SetString("status", "IO_PENDING");
+      dict.SetStringKey("status", "IO_PENDING");
       break;
     case URLRequestStatus::CANCELED:
-      dict.SetString("status", "CANCELED");
+      dict.SetStringKey("status", "CANCELED");
       break;
     case URLRequestStatus::FAILED:
-      dict.SetString("status", "FAILED");
+      dict.SetStringKey("status", "FAILED");
       break;
   }
   if (status_.error() != OK)
-    dict.SetInteger("net_error", status_.error());
-  return std::move(dict);
+    dict.SetIntKey("net_error", status_.error());
+  return dict;
 }
 
 void URLRequest::LogBlockedBy(const char* blocked_by) {

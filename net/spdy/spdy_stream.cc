@@ -37,11 +37,11 @@ base::Value NetLogSpdyStreamErrorCallback(
     int net_error,
     const std::string* description,
     NetLogCaptureMode /* capture_mode */) {
-  base::DictionaryValue dict;
-  dict.SetInteger("stream_id", static_cast<int>(stream_id));
-  dict.SetString("net_error", ErrorToShortString(net_error));
-  dict.SetString("description", *description);
-  return std::move(dict);
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetIntKey("stream_id", static_cast<int>(stream_id));
+  dict.SetStringKey("net_error", ErrorToShortString(net_error));
+  dict.SetStringKey("description", *description);
+  return dict;
 }
 
 base::Value NetLogSpdyStreamWindowUpdateCallback(
@@ -49,11 +49,11 @@ base::Value NetLogSpdyStreamWindowUpdateCallback(
     int32_t delta,
     int32_t window_size,
     NetLogCaptureMode /* capture_mode */) {
-  base::DictionaryValue dict;
-  dict.SetInteger("stream_id", stream_id);
-  dict.SetInteger("delta", delta);
-  dict.SetInteger("window_size", window_size);
-  return std::move(dict);
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetIntKey("stream_id", stream_id);
+  dict.SetIntKey("delta", delta);
+  dict.SetIntKey("window_size", window_size);
+  return dict;
 }
 
 }  // namespace
