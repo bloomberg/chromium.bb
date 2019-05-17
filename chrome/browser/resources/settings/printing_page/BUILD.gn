@@ -7,16 +7,21 @@ import("//third_party/closure_compiler/compile_js.gni")
 js_type_check("closure_compile") {
   deps = [
     ":cloud_printers",
-    ":cups_add_printer_dialog",
-    ":cups_add_printer_dialog_elements",
-    ":cups_edit_printer_dialog",
-    ":cups_printer_dialog_util",
-    ":cups_printers",
-    ":cups_printers_browser_proxy",
-    ":cups_printers_list",
-    ":printing_browser_proxy",
     ":printing_page",
   ]
+
+  if (is_chromeos) {
+    deps += [
+      ":cups_add_printer_dialog",
+      ":cups_add_printer_dialog_elements",
+      ":cups_edit_printer_dialog",
+      ":cups_printer_dialog_util",
+      ":cups_printers",
+      ":cups_printers_browser_proxy",
+      ":cups_printers_list",
+      ":printing_browser_proxy",
+    ]
+  }
 }
 
 js_library("cloud_printers") {
