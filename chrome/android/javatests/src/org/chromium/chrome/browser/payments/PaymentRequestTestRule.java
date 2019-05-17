@@ -751,6 +751,7 @@ public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
         ThreadUtils.runOnUiThreadBlocking(() -> {
             List<EditText> fields = mUI.getEditorDialog().getEditableTextFieldsForTest();
             for (int i = 0; i < values.length; i++) {
+                fields.get(i).requestFocus();
                 fields.get(i).setText(values[i]);
             }
         });
@@ -918,6 +919,11 @@ public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
                         -> mCardUnmaskPrompt.getDialogForTest()
                                    .get(ModalDialogProperties.CUSTOM_VIEW)
                                    .findViewById(R.id.autofill_card_unmask_prompt));
+    }
+
+    /* package */ View getEditorDialogView() throws Throwable {
+        return ThreadUtils.runOnUiThreadBlocking(
+                () -> mUI.getEditorDialog().findViewById(R.id.editor_container));
     }
 
     /** Allows to skip UI into paymenthandler for"basic-card". */
