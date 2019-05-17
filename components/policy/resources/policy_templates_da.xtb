@@ -2680,7 +2680,7 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 <translation id="6034341625190551415">Styrer offentlige kontotyper og terminalkontotyper.</translation>
 <translation id="6034603289689965535">Tillader, at en side viser pop op-vinduer under indlæsning</translation>
 <translation id="6036523166753287175">Aktiver gennemgang af firewall fra vært for fjernadgang</translation>
-<translation id="605475635122964053">Begrænser tilstanden for udskrivning med pinkode. En politik uden konfiguration behandles som ingen begrænsning. Hvis tilstanden ikke er tilgængelig, ignoreres politikken. Bemærk! Funktionen til udskrivning med pinkode kun er aktiveret for printere, som anvender en af protokollerne IPPS, USB eller IPP-over-USB </translation>
+<translation id="605475635122964053">Begrænser tilstanden for udskrivning med pinkode. En politik uden konfiguration behandles som ingen begrænsning. Hvis tilstanden ikke er tilgængelig, ignoreres politikken. Bemærk! Funktionen til udskrivning med pinkode er kun aktiveret for printere, som anvender en af protokollerne IPPS, USB eller IPP-over-USB </translation>
 <translation id="6070667616071269965">Tastaturlayouts for loginskærme på enheder</translation>
 <translation id="6074963268421707432">Tillad ikke, at websites viser skrivebordsunderretninger</translation>
 <translation id="6074964551275531965">Angiv tidsrummet for notifikationer om opdateringer</translation>

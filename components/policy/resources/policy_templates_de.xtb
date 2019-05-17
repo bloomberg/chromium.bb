@@ -323,9 +323,9 @@ Bei verwalteten Geräten sind standardmäßig keine Modi für das schnelle Entsp
 
           Wenn "DeviceDockMacAddress" ausgewählt ist oder die Richtlinie nicht festgelegt wurde, wird die eingetragene Dock-MAC-Adresse des Geräts verwendet.
 
-          Ist "DeviceNicMacAddress" festgelegt, dann wird die MAC-Adresse des NIC (Netzwerkschnittstellencontrollers) des Geräts verwendet.
+          Ist "DeviceNicMacAddress" festgelegt, dann wird die MAC-Adresse der NIC (Netzwerkkarte) des Geräts verwendet.
 
-          Ist "DockNicMacAddress" ausgewählt, dann wird die MAC-Adresse des Dock-NIC verwendet.
+          Ist "DockNicMacAddress" ausgewählt, dann wird die MAC-Adresse der Dock-NIC verwendet.
 
           Diese Einstellung kann vom Nutzer nicht geändert werden.</translation>
 <translation id="1507957856411744193">Wenn diese Richtlinie auf "true" gesetzt ist, stellt <ph name="PRODUCT_NAME" /> eine Verbindung zu Übertragungsgeräten unter allen IP-Adressen her, nicht nur zu jenen unter privaten RFC1918- oder RFC4193-Adressen.
@@ -1052,7 +1052,7 @@ Wenn Sie "Letzte Sitzung wiederherstellen" wählen, werden die URLs, die beim le
       Wenn Sie diese Einstellung deaktivieren oder keinen Wert festlegen, wird für die Druckvorschau der zuletzt genutzte Drucker als Standarddrucker verwendet.
 
       Ist diese Einstellung aktiviert, wird für die Druckvorschau der Standarddrucker des Betriebssystems als Standarddrucker ausgewählt.</translation>
-<translation id="285627849510728211">Legt die Tageskonfiguration für den erweiterten Akkulademodus fest</translation>
+<translation id="285627849510728211">Tageskonfiguration für den erweiterten Akkulademodus festlegen</translation>
 <translation id="2856674246949497058">Führen Sie ein Rollback durch und bleiben Sie bei der Zielversion, falls die Version des Betriebssystems neuer ist als die der Zielversion. Außerdem sollten Sie während des Vorgangs einen Powerwash durchführen.</translation>
 <translation id="2872961005593481000">Herunterfahren</translation>
 <translation id="2873651257716068683">Dadurch wird die standardmäßige Druckseitengröße überschrieben. Wenn die Seitengröße nicht verfügbar ist, wird die Richtlinie ignoriert.</translation>
@@ -1238,7 +1238,7 @@ Ist die Richtlinie deaktiviert oder nicht konfiguriert, kann WebDriver nicht kom
 <translation id="3220624000494482595">Wenn die Kiosk-App eine Android-App ist, hat sie keine Kontrolle über die <ph name="PRODUCT_OS_NAME" />-Version, auch wenn diese Richtlinie auf <ph name="TRUE" /> gesetzt ist.</translation>
 <translation id="3236046242843493070">URL-Muster für die Installation von Erweiterungen, Apps und Nutzerskripten von</translation>
 <translation id="3240609035816615922">Richtlinie für den Zugriff auf die Konfiguration von Druckern.</translation>
-<translation id="3240655340884151271">MAC-Adresse der im Dock verbauten Netzwerkkarte</translation>
+<translation id="3240655340884151271">MAC-Adresse der im Dock verbauten NIC</translation>
 <translation id="3243309373265599239">Hiermit wird angegeben, nach welchem Zeitraum ohne Nutzereingabe der Bildschirm im Netzbetrieb abgedunkelt wird.
 
           Wenn für diese Richtlinie ein höherer Wert als null festgelegt wird, gibt dieser an, wie lange ein Nutzer inaktiv sein muss, bevor <ph name="PRODUCT_OS_NAME" /> den Bildschirm abdunkelt.
@@ -1262,7 +1262,7 @@ Ist die Richtlinie deaktiviert oder nicht konfiguriert, kann WebDriver nicht kom
        Ist diese Einstellung deaktiviert, können Nutzer den Proxy nicht aktivieren und der Computer darf seine Drucker nicht für <ph name="CLOUD_PRINT_NAME" /> freigeben.</translation>
 <translation id="3312206664202507568">Aktiviert eine Seite auf "chrome://password-change", auf der SAML-Nutzer ihre SAML-Passwörter bei laufender Sitzung ändern können. Hierdurch wird dafür gesorgt, dass das SAML-Passwort und das Passwort für den Sperrbildschirm des Geräts synchronisiert bleiben.
 
-      Außerdem ermöglicht diese Richtlinie Benachrichtigungen, mit denen SAML-Nutzer gewarnt werden, wenn ihre SAML-Passwörter bald ablaufen. Auf diese Weise können sie das Problem sofort dadurch beheben, dass sie bei laufender Sitzung ihr Passwort ändern.
+      Außerdem ermöglicht diese Richtlinie Benachrichtigungen, mit denen SAML-Nutzer gewarnt werden, wenn ihre SAML-Passwörter bald ablaufen. Sie können dann direkt bei laufender Sitzung ihr Passwort ändern.
       Allerdings werden diese Benachrichtigungen nur angezeigt, wenn vom SAML-Identitätsanbieter während des SAML-Anmeldeablaufs Informationen zum Ablauf des Passworts an das Gerät gesendet werden.
 
       Ist diese Richtlinie eingestellt, dann kann der Nutzer sie weder ändern noch überschreiben.</translation>
@@ -1393,7 +1393,7 @@ Wenn diese Einstellung auf "Aus" oder kein Wert festgelegt wird, wird der einges
       Wenn diese Richtlinie auf "DeveloperToolsAllowed" (Wert 1), gesetzt ist, können die Entwicklertools und die JavaScript-Konsole in allen Kontexten aufgerufen und verwendet werden. Dies gilt auch für Erweiterungen, die über die Unternehmensrichtlinie installiert wurden.
       Wenn diese Richtlinie auf "DeveloperToolsDisallowed" (Wert 2) gesetzt ist, kann nicht auf die Entwicklertools zugegriffen werden und Websiteelemente können nicht mehr überprüft werden. Alle Tastenkombinationen und Menü- oder Kontextmenüeinträge, mit denen die Entwicklertools oder die JavaScript-Konsole aufgerufen werden, sind deaktiviert.</translation>
 <translation id="3547954654003013442">Proxy-Einstellungen</translation>
-<translation id="3550875587920006460">Wenn diese Richtlinie konfiguriert ist, kann ein benutzerdefinierter Zeitplan zum Prüfen auf Updates festgelegt werden. Er gilt für alle Nutzer und alle Oberflächen auf diesem Gerät. Das Gerät sucht dann gemäß dem Zeitplan nach Updates. Wenn geplante Prüfungen auf Updates nicht mehr durchgeführt werden sollen, müssen Sie die Richtlinie entfernen.</translation>
+<translation id="3550875587920006460">Mit dieser Richtlinie kann ein benutzerdefinierter Zeitplan zum Prüfen auf Updates festgelegt werden. Er gilt für alle Nutzer und alle Oberflächen auf diesem Gerät. Wenn ein Zeitplan aktiviert wird, sucht das Gerät entsprechend nach Updates. Wenn geplante Prüfungen auf Updates nicht mehr durchgeführt werden sollen, muss die Richtlinie entfernt werden.</translation>
 <translation id="355118380775352753">Websites, die in einem alternativen Browser geöffnet werden sollen</translation>
 <translation id="3554984410014457319">Google Assistant erlauben, bei Gesprächen zuzuhören und so zu prüfen, ob die Wortgruppe für die Sprachaktivierung genannt wird</translation>
 <translation id="356579196325389849">Nutzer dürfen die Chrome OS-Release-Version konfigurieren</translation>
@@ -1634,17 +1634,17 @@ Wird die Richtlinie auf "false" gesetzt oder nicht konfiguriert, wird kein Zerti
       Wenn diese Richtlinie auf "True" gesetzt oder nicht konfiguriert ist, können Nutzer Angebote über die Chrome OS-Registrierung einlösen.
 
       Ist die Richtlinie auf "False" eingestellt, können Nutzer keine Angebote einlösen.</translation>
-<translation id="4008233182078913897">Hierdurch wird eine Liste von Apps und Erweiterungen festgelegt, die automatisch installiert werden, also ohne Interaktion des Nutzers, und die vom Nutzer weder deinstalliert noch deaktiviert werden können. Alle von den Apps und Erweiterungen angeforderten Berechtigungen werden implizit, ohne Eingriff durch den Nutzer, gewährt. Dazu gehören auch alle weiteren Berechtigungen, die von künftigen Versionen der Apps oder Erweiterungen angefordert werden. Außerdem werden den Erweiterungs-APIs "enterprise.deviceAttributes" und "enterprise.platformKeys" Berechtigungen erteilt. Diese beiden APIs stehen bei Apps und Erweiterungen ohne erzwungene Installation nicht zur Verfügung.
+<translation id="4008233182078913897">Gibt eine Liste von Apps und Erweiterungen an, die automatisch, ohne Zutun des Nutzers, installiert werden und die nicht von ihm deinstalliert oder deaktiviert werden können. Alle von den Apps und Erweiterungen angeforderten Berechtigungen werden implizit, ohne Eingriff durch den Nutzer, gewährt. Dazu gehören auch alle weiteren Berechtigungen, die von künftigen Versionen der App oder Erweiterung angefordert werden. Außerdem werden den Erweiterungs-APIs "enterprise.deviceAttributes" und "enterprise.platformKeys" Berechtigungen erteilt. Diese beiden APIs stehen bei Apps oder Erweiterungen ohne erzwungene Installation nicht zur Verfügung.
 
-          Diese Richtlinie hat Vorrang gegenüber einer möglicherweise damit in Konflikt stehenden Richtlinie "<ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />". Wenn eine App oder Erweiterung mit erzwungener Installation aus dieser Liste entfernt wird, wird sie automatisch von <ph name="PRODUCT_NAME" /> deinstalliert.
+Diese Richtlinie hat Vorrang gegenüber einer möglicherweise in Konflikt stehenden Richtlinie "<ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />". Wenn eine App oder Erweiterung mit erzwungener Installation aus dieser Liste entfernt wird, wird sie automatisch von <ph name="PRODUCT_NAME" /> deinstalliert.
 
 Bei Windows-Instanzen, die nicht Teil einer <ph name="MS_AD_NAME" />-Domain sind, bleibt die erzwungene Installation auf die im Chrome Web Store aufgeführten Apps und Erweiterungen beschränkt.
 
-          Beachten Sie, dass Nutzer den Quellcode jeder Erweiterung mithilfe der Entwicklertools ändern können. Danach funktioniert die entsprechende Erweiterung eventuell nicht mehr. Wenn Sie das verhindern möchten, können Sie die Richtlinie "<ph name="DEVELOPER_TOOLS_POLICY_NAME" />" festlegen.
+Der Quellcode jeder Erweiterung kann mithilfe der Entwicklertools von Nutzern geändert werden. Danach funktioniert die entsprechende Erweiterung eventuell nicht mehr. Wenn Sie dies verhindern möchten, können Sie die Richtlinie "<ph name="DEVELOPER_TOOLS_POLICY_NAME" />" festlegen.
 
-          Jedes Listenelement der Richtlinie ist ein String mit einer Erweiterungs-ID und einer optionalen Update-URL, die durch ein Semikolon (<ph name="SEMICOLON" />) getrennt sind. Die Erweiterungs-ID ist der String mit 32 Buchstaben, den Sie beispielsweise im Entwicklermodus in <ph name="CHROME_EXTENSIONS_LINK" /> sehen. Die Update-URL sollte, sofern festgelegt, auf ein XML-Dokument mit einem Update-Manifest verweisen, wie in <ph name="LINK_TO_EXTENSION_DOC1" /> beschrieben. Standardmäßig kommt die Update-URL des Chrome Web Store zum Einsatz, die derzeit "https://clients2.google.com/service/update2/crx" lautet. Die in dieser Richtlinie festgelegte Update-URL wird nur für die erste Installation verwendet. In nachfolgenden Updates der Erweiterung kommt die Update-URL zum Einsatz, die im Manifest der Erweiterung angegeben wurde. Außerdem war die explizite Festlegung der Update-URL in <ph name="PRODUCT_NAME" />-Versionen bis einschließlich Version 67 obligatorisch.
+Jedes Listenelement der Richtlinie ist ein String mit einer Erweiterungs-ID und einer optionalen Update-URL, die durch ein Semikolon (<ph name="SEMICOLON" />) getrennt sind. Die Erweiterungs-ID ist der String mit 32 Buchstaben, den Sie beispielsweise im Entwicklermodus unter <ph name="CHROME_EXTENSIONS_LINK" /> sehen. Die Update-URL sollte, sofern festgelegt, auf ein XML-Dokument mit einem Update-Manifest verweisen, wie unter <ph name="LINK_TO_EXTENSION_DOC1" /> beschrieben. Standardmäßig kommt die Update-URL des Chrome Web Store zum Einsatz, die derzeit "https://clients2.google.com/service/update2/crx" lautet. Die in dieser Richtlinie festgelegte Update-URL wird nur für die erste Installation verwendet. In nachfolgenden Updates der Erweiterung kommt die Update-URL zum Einsatz, die im Manifest der Erweiterung angegeben wurde. Außerdem war die explizite Festlegung der Update-URL in <ph name="PRODUCT_NAME" />-Versionen bis einschließlich Version 67 obligatorisch.
 
-          Beispiel: <ph name="EXTENSION_POLICY_EXAMPLE" /> installiert die Erweiterung mit der ID "<ph name="EXTENSION_ID_SAMPLE" />" über die standardmäßige Update-URL aus dem Chrome Web Store. Weitere Informationen zum Hosten von Erweiterungen finden Sie unter: <ph name="LINK_TO_EXTENSION_DOC2" />.
+Beispiel: "<ph name="EXTENSION_POLICY_EXAMPLE" />" installiert die Erweiterung mit der ID "<ph name="EXTENSION_ID_SAMPLE" />" über die standardmäßige Update-URL aus dem Chrome Web Store. Weitere Informationen zum Hosting von Erweiterungen finden Sie unter <ph name="LINK_TO_EXTENSION_DOC2" />.
 
 Wenn diese Richtlinie nicht festgelegt ist, werden Apps und Erweiterungen nicht automatisch installiert und der Nutzer kann jede App oder Erweiterung in <ph name="PRODUCT_NAME" /> deinstallieren.
 
@@ -1859,7 +1859,7 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
 <translation id="4360826270668210664">Wenn diese Richtlinie konfiguriert ist, verlangt der Host für den Remotezugriff von Clients, die sich authentifizieren, ein Authentifizierungstoken von dieser URL, damit eine Verbindung aufgebaut werden kann. Diese Richtlinie muss in Verbindung mit "RemoteAccessHostTokenValidationUrl" verwendet werden.
 
           Diese Funktion ist derzeit serverseitig deaktiviert.</translation>
-<translation id="4363057787588706121">Erlaubt das Zusammenführen von Listenrichtlinien aus unterschiedlichen Quellen</translation>
+<translation id="4363057787588706121">Zusammenführen von Listenrichtlinien aus unterschiedlichen Quellen erlauben</translation>
 <translation id="436581050240847513">Gerätenetzwerk-Schnittstellen melden</translation>
 <translation id="4372704773119750918">Nutzer in Unternehmen dürfen keine Mehrfachprofile verwenden (weder als primärer, noch als sekundärer Nutzer)</translation>
 <translation id="4377599627073874279">Anzeige aller Bilder auf allen Websites zulassen</translation>
@@ -2591,10 +2591,10 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
       </translation>
 <translation id="5901427587865226597">Nur Duplexdruck</translation>
 <translation id="5903898512448364160">
-      Ist die Richtlinie auf "true" gesetzt, hat die Cloudrichtlinie Vorrang, wenn sie mit der Plattformrichtlinie in Konflikt steht.
+      Wenn die Richtlinie auf "true" gesetzt wird, hat die Cloudrichtlinie Vorrang, wenn sie mit der Plattformrichtlinie in Konflikt steht.
       Falls die Richtlinie auf "false" gesetzt oder nicht konfiguriert ist, hat die Plattformrichtlinie Vorrang, wenn sie mit der Cloudrichtlinie in Konflikt steht.
 
-      Diese Richtlinie ist nur als obligatorische Computer-Plattformvariante verfügbar. Sie gilt nur für Cloudrichtlinien auf Computern.
+      Diese Richtlinie ist nur als erforderliche Computer-Plattformrichtlinie verfügbar und wirkt sich lediglich auf Cloudrichtlinien auf Computern aus.
       </translation>
 <translation id="5905473632148429217">OCSP/CRL-Online-Prüfungen aktivieren</translation>
 <translation id="5906199912611534122">Ermöglicht die Aktivierung oder Deaktivierung der Netzwerkbegrenzung.
@@ -2626,7 +2626,7 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
 <translation id="5950205771952201658">Da Online-Überprüfungen zu SoftFail-Zertifikatssperren keinen wirkungsvollen Sicherheitseffekt bieten, werden sie ab <ph name="PRODUCT_NAME" />-Version 19 standardmäßig deaktiviert. Wenn Sie diese Richtlinie auf "true" setzen, wird das vorherige Verhalten wiederhergestellt und es werden online OCSP-/CRL-Prüfungen durchgeführt.
 
       Falls die Richtlinie nicht konfiguriert oder auf "false" eingestellt ist, führt <ph name="PRODUCT_NAME" /> ab <ph name="PRODUCT_NAME" />-Version 19 keine Online-Überprüfungen auf Zertifikatssperren mehr durch.</translation>
-<translation id="5961137303188584693">MAC-Adresse des im Gerät verbauten NIC</translation>
+<translation id="5961137303188584693">MAC-Adresse der im Gerät verbauten NIC</translation>
 <translation id="5966615072639944554">Erweiterungen, die die Remote Attestation API zur Bestätigung der Nutzeridentität verwenden dürfen</translation>
 <translation id="5983708779415553259">Standardverhalten für Websites, die nicht zu einem Inhaltspaket gehören</translation>
 <translation id="5997543603646547632">Standardmäßig 24-Stunden-Uhr verwenden</translation>
@@ -2689,7 +2689,7 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
 <translation id="6034341625190551415">Legt die Typen für öffentliche Sitzungen und Kiosk-Konten fest.</translation>
 <translation id="6034603289689965535">Erlaubt einer Seite, während des Unloads Pop-ups einzublenden</translation>
 <translation id="6036523166753287175">Firewallausnahme über Host für Remotezugriff aktivieren</translation>
-<translation id="605475635122964053">Hiermit wird der PIN-Druckmodus eingeschränkt. Wenn die Richtlinie nicht konfiguriert ist, wird keine Einschränkung angewendet. Wenn der Modus nicht verfügbar ist, wird diese Richtlinie ignoriert. Der PIN-Druckmodus wird nur für Drucker angewendet, die IPPS, USB oder IPP über USB verwenden. </translation>
+<translation id="605475635122964053">Hiermit wird der PIN-Druckmodus eingeschränkt. Wenn die Richtlinie nicht konfiguriert ist, gelten keine Einschränkungen. Ist der Modus nicht verfügbar, wird diese Richtlinie ignoriert. Der PIN-Druckmodus wird nur für Drucker angewendet, die das IPPS- oder USB-Protokoll bzw. IPP über USB verwenden. </translation>
 <translation id="6070667616071269965">Tastaturlayouts der Anmeldeseite</translation>
 <translation id="6074963268421707432">Anzeige von Desktop-Benachrichtigungen für keine Website zulassen</translation>
 <translation id="6074964551275531965">Zeitraum für Updatebenachrichtigungen festlegen</translation>
@@ -2789,7 +2789,7 @@ Für diese Richtlinie wird die Installation von <ph name="CHROME_REPORTING_EXTEN
       Wenn die Richtlinie deaktiviert ist, erfolgt kein Import der AutoFill-Formulardaten.
 
       Ist die Richtlinie nicht konfiguriert, wird der Nutzer möglicherweise gefragt, ob ein Import erfolgen soll, oder der Import findet automatisch statt.</translation>
-<translation id="6221175752766085998">Lässt Zertifikate zu, die von lokalen Vertrauensankern ausgestellt werden, bei denen die "subjectAlternativeName"-Erweiterung fehlt</translation>
+<translation id="6221175752766085998">Zertifikate zulassen, die von lokalen Vertrauensankern ausgestellt werden, bei denen die "subjectAlternativeName"-Erweiterung fehlt</translation>
 <translation id="6224304369267200483">Automatischer Nachweis des Sicherheitsschlüssels durch URLs/Domains</translation>
 <translation id="6233173491898450179">Downloadverzeichnis festlegen</translation>
 <translation id="6244210204546589761">Beim Start zu öffnende URLs</translation>
@@ -3330,7 +3330,7 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
 <translation id="7273823081800296768">Wenn diese Einstellung aktiviert oder nicht konfiguriert ist, kann der Nutzer beim Herstellen der Verbindung Clients und Hosts koppeln. Dadurch braucht nicht jedes Mal eine PIN eingegeben zu werden.
 
           Bei Deaktivierung dieser Einstellung ist diese Funktion nicht verfügbar.</translation>
-<translation id="7274077256421167535">Gemeinsame Stromversorgung für USB aktivieren</translation>
+<translation id="7274077256421167535">Gemeinsame Stromversorgung per USB aktivieren</translation>
 <translation id="7275334191706090484">Verwaltete Lesezeichen</translation>
 <translation id="7291084543582732020">Wenn Sie die Einstellung aktivieren, können Nutzer Smart Lock verwenden, wenn die Voraussetzungen für die Funktion erfüllt sind.
 
@@ -4024,7 +4024,7 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
       Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, leitet der Passwortschutzdienst Nutzer an https://myaccounts.google.com weiter, damit sie ihr Passwort ändern können.
       Diese Richtlinie steht nur bei Windows-Instanzen zur Verfügung, die Teil einer <ph name="MS_AD_NAME" />-Domain sind, oder bei Windows 10 Pro- oder Enterprise-Instanzen, bei denen zur Geräteverwaltung eine Anmeldung vorgenommen wurde.</translation>
 <translation id="8798099450830957504">Standardeinstellung</translation>
-<translation id="8800453707696044281">Legt den Akkuladestand (%) für benutzerdefiniertes Beenden des Ladevorgangs fest</translation>
+<translation id="8800453707696044281">Den Akkuladestand (%) für benutzerdefiniertes Beenden des Ladevorgangs festlegen</translation>
 <translation id="8801680448782904838">Nutzer benachrichtigen, dass ein Neustart des Browsers oder des Geräts empfohlen wird oder erforderlich ist</translation>
 <translation id="8818173863808665831">Meldet den Standort des Geräts.
 

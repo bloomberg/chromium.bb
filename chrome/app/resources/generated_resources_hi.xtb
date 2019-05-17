@@ -28,7 +28,7 @@
 <translation id="1035590878859356651">इस पेज को बुकमार्क करें...</translation>
 <translation id="1036348656032585052">बंद करें</translation>
 <translation id="1036511912703768636">इनमें से कोई भी USB डिवाइस ऐक्‍सेस करें</translation>
-<translation id="1036982837258183574">पूर्ण स्क्रीन से बाहर निकलने के लिए |<ph name="ACCELERATOR" />| दबाएं</translation>
+<translation id="1036982837258183574">फ़ुल स्क्रीन से बाहर निकलने के लिए |<ph name="ACCELERATOR" />| दबाएं</translation>
 <translation id="1038168778161626396">केवल कूटलेखन</translation>
 <translation id="1039337018183941703">अमान्‍य या खराब फ़ाइल</translation>
 <translation id="1041175011127912238">इस पेज से जवाब नहीं मिल रहा है</translation>
@@ -247,7 +247,7 @@
 <translation id="1377600615067678409">अभी के लिए छोड़ें</translation>
 <translation id="1378613616312864539"><ph name="NAME" /> इस सेटिंग को नियंत्रित कर रहा है</translation>
 <translation id="1380436189840894976">फिर भी गुप्त मोड छोड़ना चाहते हैं?</translation>
-<translation id="1383861834909034572">पूर्ण होने पर खुल रहा है</translation>
+<translation id="1383861834909034572">पूरा होने पर खुल रहा है</translation>
 <translation id="1383876407941801731">खोजें</translation>
 <translation id="1386387014181100145">कैसे हैं.</translation>
 <translation id="138784436342154190">डिफ़ॉल्ट स्टार्टअप पेज को बहाल करना चाहते हैं?</translation>
@@ -552,7 +552,7 @@
 <translation id="1842766183094193446">क्या आप वाकई 'डेमो मोड' चालू करना चाहते हैं?</translation>
 <translation id="1846308012215045257"><ph name="PLUGIN_NAME" /> को चलाने के लिए कंट्रोल दबाए रखते हुए क्लिक करें</translation>
 <translation id="1848219224579402567">लिड बंद होने पर साइन आउट करें</translation>
-<translation id="1849186935225320012">इस पेज के पास MIDI डिवाइस का पूर्ण नियंत्रण है.</translation>
+<translation id="1849186935225320012">इस पेज के पास MIDI डिवाइस का पूरा नियंत्रण है.</translation>
 <translation id="1850508293116537636">&amp;घड़ी की दिशा में घुमाएं</translation>
 <translation id="1852141627593563189">नुकसान पहुंचाने वाला सॉफ़्टवेयर ढूंढें</translation>
 <translation id="1852799913675865625">फ़ाइल पढ़ने का प्रयास करते समय कोई गड़बड़ी आई: <ph name="ERROR_TEXT" /></translation>
@@ -568,7 +568,7 @@
 <translation id="1865678028973512614">फ़ाइलें मिटाएं</translation>
 <translation id="1865769994591826607">केवल समान-साइट कनेक्शन</translation>
 <translation id="186612162884103683">"<ph name="EXTENSION" />" चेक किए गए स्‍थानों में चित्रों, वीडियो, और ध्‍वनि फ़ाइलों को पढ़ और लिख सकता है.</translation>
-<translation id="1867780286110144690"><ph name="PRODUCT_NAME" /> आपकी स्थापना पूर्ण करने के लिए तैयार है</translation>
+<translation id="1867780286110144690"><ph name="PRODUCT_NAME" /> आपके इंस्टालेशन पूरा करने के लिए तैयार हैं</translation>
 <translation id="1868193363684582383">"Ok Google"</translation>
 <translation id="1871615898038944731">आपका <ph name="DEVICE_TYPE" /> अप टू डेट है</translation>
 <translation id="1875312262568496299">शुरू करें</translation>
@@ -582,7 +582,7 @@
 <translation id="1887850431809612466">हार्डवेयर पुनरीक्षण</translation>
 <translation id="1889984860246851556">प्रॉक्सी सेटिंग खोलें</translation>
 <translation id="1890674179660343635">&lt;span&gt;आईडी: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
-<translation id="189210018541388520">पूर्ण स्‍क्रीन खोलें</translation>
+<translation id="189210018541388520">पूरी स्‍क्रीन खोलें</translation>
 <translation id="189358972401248634">अन्य भाषाएं</translation>
 <translation id="1895658205118569222">बंद करें</translation>
 <translation id="1895934970388272448">यह प्रोसेस पूरा करने के लिए आपको अपने प्रिंटर पर रजिस्ट्रेशन की पुष्टि करनी होगी - इसे अभी चुनें.</translation>
@@ -723,7 +723,7 @@
 <translation id="2138398485845393913">"<ph name="DEVICE_NAME" />" से कनेक्शन अब भी प्रगति में है</translation>
 <translation id="214169863967063661">प्रकटन सेटिंग खोलें</translation>
 <translation id="2142328300403846845">लिंक को इस रूप में खोलें</translation>
-<translation id="2143765403545170146">टूलबार को हमेशा पूर्ण स्क्रीन में दिखाएं</translation>
+<translation id="2143765403545170146">टूलबार को हमेशा फ़ुल स्क्रीन में दिखाएं</translation>
 <translation id="2143778271340628265">मैन्‍युअल प्रॉक्सी कॉन्फ़िगरेशन</translation>
 <translation id="2144536955299248197">प्रमाणपत्र व्यूअर: <ph name="CERTIFICATE_NAME" /></translation>
 <translation id="2148219725039824548">शेयर माउंट करने में गड़बड़ी. बताया गया शेयर नेटवर्क पर नहीं मिला.</translation>
@@ -737,8 +737,8 @@
 <translation id="2155772377859296191"><ph name="WIDTH" /> x <ph name="HEIGHT" /> जैसा लगता है</translation>
 <translation id="2156283799932971644">आप Google को कुछ 'सिस्टम जानकारी' और 'पेज सामग्री' भेजकर 'सुरक्षित ब्राउज़िंग' को बेहतर बना सकते हैं.</translation>
 <translation id="2156294658807918600">सर्विस वर्कर: <ph name="SCRIPT_URL" /></translation>
-<translation id="215753907730220065">पूर्ण स्क्रीन से बाहर निकलें</translation>
-<translation id="2157875535253991059">यह पेज अब पूर्ण स्‍क्रीन है.</translation>
+<translation id="215753907730220065">फ़ुल स्क्रीन से बाहर निकलें</translation>
+<translation id="2157875535253991059">यह पेज अब फ़ुल स्‍क्रीन है.</translation>
 <translation id="216169395504480358">वाई-फ़ाई  जोड़ें...</translation>
 <translation id="2162155940152307086">सिंक की सेटिंग छोड़ते ही सिंक फिर से शुरू हो जाएगा</translation>
 <translation id="2163470535490402084">अपने <ph name="DEVICE_TYPE" /> में साइन इन करने के लिए कृपया इंटरनेट से कनेक्ट करें.</translation>
@@ -787,7 +787,7 @@
 <translation id="2220572644011485463">पिन या पासवर्ड</translation>
 <translation id="2224444042887712269">यह सेटिंग <ph name="OWNER_EMAIL" /> से संबंधित है.</translation>
 <translation id="2224551243087462610">फ़ोल्डर के नाम में बदलाव करें</translation>
-<translation id="2226449515541314767">इस साइट को MIDI डिवाइस का पूर्ण नियंत्रण रखने से अवरोधित कर दिया गया है.</translation>
+<translation id="2226449515541314767">इस साइट को MIDI डिवाइस का पूरा नियंत्रण रखने से ब्लॉक कर दिया गया है.</translation>
 <translation id="2226720438730111184">हमें बताएं कि क्या हो रहा है</translation>
 <translation id="2229161054156947610">1 घंटा से ज़्यादा शेष है</translation>
 <translation id="222931766245975952">फ़ाइल छोटी हो गई</translation>
@@ -1075,7 +1075,7 @@
 <translation id="2662876636500006917">Chrome Web Store</translation>
 <translation id="2663302507110284145">भाषा</translation>
 <translation id="2665394472441560184">एक नया शब्द जोड़ें</translation>
-<translation id="2665717534925640469">यह पेज अब पूर्ण स्‍क्रीन है और आपका माउस कर्सर अक्षम कर दिया गया है.</translation>
+<translation id="2665717534925640469">यह पेज अब फ़ुल स्‍क्रीन है और आपका माउस कर्सर बंद कर दिया गया है.</translation>
 <translation id="2665919335226618153">हे भगवान! फ़ॉर्मेटिंग के दौरान गड़बड़ी आई.</translation>
 <translation id="2666990579225592931">मेहमान विंडो खोलें</translation>
 <translation id="2667463864537187133">वर्तनी जाँच प्रबंधित करें</translation>
@@ -1193,7 +1193,7 @@
 <translation id="2828650939514476812">वाई-फ़ाई नेटवर्क से कनेक्‍ट करें</translation>
 <translation id="2836269494620652131">खराबी</translation>
 <translation id="2836635946302913370">आपके व्यवस्थापक द्वारा इस उपयोगकर्ता नाम से प्रवेश करना अक्षम कर दिया गया है.</translation>
-<translation id="283669119850230892">नेटवर्क <ph name="NETWORK_ID" /> का उपयोग करने के लिए, सबसे पहले नीचे इंटरनेट से अपना कनेक्‍शन पूर्ण करें.</translation>
+<translation id="283669119850230892">नेटवर्क <ph name="NETWORK_ID" /> का उपयोग करने के लिए, सबसे पहले नीचे इंटरनेट से अपना कनेक्‍शन पूरा करें.</translation>
 <translation id="2838379631617906747">इंस्‍टॉल कर रहा है</translation>
 <translation id="2841013758207633010">समय</translation>
 <translation id="2841837950101800123">प्रदाता</translation>
@@ -1280,7 +1280,7 @@
 <translation id="2979639724566107830">नई विंडो में खोलें</translation>
 <translation id="2981113813906970160">बड़ा माउस कर्सर दिखाएं</translation>
 <translation id="2982970937345031">अनाम रूप से रिपोर्ट करें</translation>
-<translation id="2986010903908656993">इस पेज को MIDI डिवाइस का पूर्ण नियंत्रण रखने से अवरोधित कर दिया गया है.</translation>
+<translation id="2986010903908656993">इस पेज को MIDI डिवाइस का पूरा नियंत्रण रखने से ब्लॉक कर दिया गया है.</translation>
 <translation id="2989474696604907455">अटैचमेंट नहीं</translation>
 <translation id="2989786307324390836">DER-एन्कोड की गई बाइनरी, एकल प्रमाणपत्र</translation>
 <translation id="2992931425024192067">सभी सूचना सामग्री दिखाएं</translation>
@@ -1324,7 +1324,7 @@
 <translation id="3039491566278747710">डिवाइस पर ऑफ़लाइन नीति इंस्टॉल नहीं की जा सकी.</translation>
 <translation id="3040310857793999281">म्यूट करना टॉगल करें</translation>
 <translation id="3045447014237878114">इस साइट ने कई फ़ाइलें अपने आप डाउनलोड की हैं</translation>
-<translation id="3046910703532196514">वेबपेज, पूर्ण</translation>
+<translation id="3046910703532196514">वेबपेज, पूरा हुआ</translation>
 <translation id="304747341537320566">बोली इंजन</translation>
 <translation id="3047644958362961983">यह जानकारी आपकी Assistant से जुड़ी समस्या को बेहतर तरीके से समझने में हमारी सहायता करती है. इसे 90 दिनों तक स्टोर किया जाता है और इसका एक्सेस उचित इंजीनियर और फ़ीडबैक टीमों तक सीमित होता है.</translation>
 <translation id="3053013834507634016">प्रमाणपत्र कुंजी उपयोग</translation>
@@ -1449,7 +1449,7 @@
 <translation id="3270965368676314374">अपने कंप्यूटर के फ़ोटो, संगीत और दूसरे मीडिया पढ़ें, बदलें और मिटाएं</translation>
 <translation id="327147043223061465">सभी कुकी और साइट डेटा देखें</translation>
 <translation id="3271648667212143903"><ph name="ORIGIN" /> कनेक्ट करना चाहती है</translation>
-<translation id="3274763671541996799">आप पूर्ण स्‍क्रीन में देख रहे हैं.</translation>
+<translation id="3274763671541996799">आप फ़ुल स्‍क्रीन में देख रहे हैं.</translation>
 <translation id="3275778913554317645">विंडो के रूप में खोलें</translation>
 <translation id="3278001907972365362">आपके Google खाता (खातों) पर ध्यान देना होगा</translation>
 <translation id="3279230909244266691">इस प्रोसेस में कुछ मिनट लग सकते हैं. वर्चुअल मशीन को शुरू किया जा रहा है.</translation>
@@ -1469,7 +1469,7 @@
 <translation id="3298789223962368867">गलत यूआरएल डाला गया.</translation>
 <translation id="32991397311664836">डिवाइस:</translation>
 <translation id="33022249435934718">GDI हैंडल</translation>
-<translation id="3303260552072730022">किसी एक्‍सटेंशन ने पूर्ण स्‍क्रीन ट्रिगर किया है.</translation>
+<translation id="3303260552072730022">किसी एक्‍सटेंशन ने फ़ुल स्‍क्रीन ट्रिगर किया है.</translation>
 <translation id="3303818374450886607">प्रतियां</translation>
 <translation id="3303855915957856445">कोई खोज नतीजे नहीं मिले</translation>
 <translation id="3305389145870741612">स्‍वरूपण प्रक्रिया में कुछ सेकंड लग सकते हैं. कृपया प्रतीक्षा करें.</translation>
@@ -1505,7 +1505,7 @@
 <translation id="3349933790966648062">मेमोरी फ़ुटप्रिंट</translation>
 <translation id="3350117557200012647">दूसरे डिवाइस से जोड़ने के मोड में जाएं</translation>
 <translation id="3355936511340229503">कनेक्शन गड़बड़ी</translation>
-<translation id="3356580349448036450">पूर्ण</translation>
+<translation id="3356580349448036450">पूरा हुआ</translation>
 <translation id="3359256513598016054">प्रमाणपत्र नीति बाध्यताएं</translation>
 <translation id="3360297538363969800">प्रिंट करना पूरा नहीं हो सका. कृपया अपना प्रिंटर जाँचें और फिर से कोशिश करें.</translation>
 <translation id="3365598184818502391">Ctrl या फिर Alt का इस्तेमाल करें</translation>
@@ -1566,7 +1566,7 @@
 <translation id="3449839693241009168">आदेशों को <ph name="EXTENSION_NAME" /> पर भेजने के लिए <ph name="SEARCH_KEY" /> दबाएं</translation>
 <translation id="3450157232394774192">निष्क्रिय स्थिति उपयोग प्रतिशत</translation>
 <translation id="3453612417627951340">अनुमति की ज़रुरत है</translation>
-<translation id="3454157711543303649">सक्रियण पूर्ण</translation>
+<translation id="3454157711543303649">चालू करना पूरा हुआ</translation>
 <translation id="345693547134384690">नए टैब में &amp;छवि खोलें</translation>
 <translation id="3459509316159669723">प्रिंट करना</translation>
 <translation id="3459697287128633276">Google Play स्टोर एक्सेस करने को अपना खाता चालू करने के लिए, कृपया अपनी पहचान देने वाली सेवा के ज़रिए पुष्टि करें.</translation>
@@ -1740,7 +1740,7 @@
 <translation id="3705722231355495246">-</translation>
 <translation id="3706463572498736864">हर शीट पर मौजूद पेज की संख्या</translation>
 <translation id="370665806235115550">लोड हो रही हैं...</translation>
-<translation id="3709244229496787112">डाउनलोड पूर्ण होने से पहले ही ब्राउज़र बंद हो गया था.</translation>
+<translation id="3709244229496787112">डाउनलोड पूरा होने से पहले ही ब्राउज़र बंद हो गया था.</translation>
 <translation id="3711931198657368127">चिपकाएं और <ph name="URL" /> पर जाएं</translation>
 <translation id="3712217561553024354">इस डिवाइस को आपके Google खाते वाले ऐसे दूसरे डिवाइस ढूंढने दें जिनमें मोबाइल डेटा कनेक्शन है</translation>
 <translation id="3712897371525859903">पेज को इस रूप में सेव करें...</translation>
@@ -1932,7 +1932,7 @@
 <translation id="3960566196862329469">ONC</translation>
 <translation id="3965965397408324205"><ph name="PROFILE_NAME" /> से बाहर निकलें</translation>
 <translation id="3966072572894326936">कोई अन्य फ़ोल्डर चुनें</translation>
-<translation id="3967822245660637423">डाउनलोड पूर्ण</translation>
+<translation id="3967822245660637423">डाउनलोड पूरा हुआ</translation>
 <translation id="3967919079500697218">स्क्रीनशॉट लेने की क्षमता को आपके व्यवस्थापक द्वारा अक्षम कर दिया गया है.</translation>
 <translation id="3970114302595058915">आईडी</translation>
 <translation id="397105322502079400">गणना की जा रही है...</translation>
@@ -2636,7 +2636,7 @@
 <translation id="5139955368427980650">&amp;खोलें</translation>
 <translation id="5142961317498132443">पहचान करना</translation>
 <translation id="5143374789336132547">एक्सटेंशन <ph name="EXTENSION_NAME" /> ने यह बदल दिया है कि जब आप होम बटन क्लिक करते हैं तब कौन सा पेज दिखाया जाए.</translation>
-<translation id="5143712164865402236">पूर्ण स्क्रीन में प्रवेश करें</translation>
+<translation id="5143712164865402236">फ़ुल स्क्रीन में प्रवेश करें</translation>
 <translation id="514575469079499857">जगह तय करने के लिए अपने आईपी पते का इस्तेमाल करें (डिफ़ॉल्ट)</translation>
 <translation id="5150254825601720210">Netscape प्रमाणपत्र SSL सर्वर नाम</translation>
 <translation id="5151354047782775295">डिस्क स्पेस खाली करें अन्यथा चयनित डेटा अपने आप हट जाएगा</translation>
@@ -2696,7 +2696,7 @@
 <translation id="5244474230056479698"><ph name="EMAIL" /> से समन्वयित हो रहा है</translation>
 <translation id="5246282308050205996"><ph name="APP_NAME" /> क्रैश हो गया है. ऐप्‍लिकेशन को रीस्टार्ट करने के लिए इस गुब्‍बारे पर क्‍लिक करें .</translation>
 <translation id="5247051749037287028">दिखाई देने वाला नाम (वैकल्पिक)</translation>
-<translation id="5249624017678798539">डाउनलोड पूर्ण होने से पहले ही ब्राउज़र क्रैश हो गया था.</translation>
+<translation id="5249624017678798539">डाउनलोड पूरा होने से पहले ही ब्राउज़र क्रैश हो गया था.</translation>
 <translation id="5250372599208556903">आपको स्थानीय सामग्री देने के लिए, <ph name="SEARCH_ENGINE_NAME" /> आपके स्थान की जानकारी का इस्तेमाल करता है. आप इसे <ph name="SETTINGS_LINK" /> में बदल सकते हैं.</translation>
 <translation id="5252456968953390977">रोमिंग</translation>
 <translation id="5252653240322147470">पिन <ph name="MAXIMUM" /> से कम अंकों का होना चाहिए</translation>
@@ -3202,7 +3202,7 @@
 <translation id="6016551720757758985">पिछले वर्शन पर वापस लौटने के साथ ही पावरवॉश की पुष्‍टि करें</translation>
 <translation id="6016972670657536680">भाषा और कीबोर्ड बटन चुनें. इस समय चुनी गई भाषा <ph name="LANGUAGE" /> है.</translation>
 <translation id="6020431688553761150">इस संसाधन को एक्सेस करने के लिए सर्वर ने आपको अनुमति नहीं दी.</translation>
-<translation id="6022526133015258832">पूर्ण स्‍क्रीन खोलें</translation>
+<translation id="6022526133015258832">पूरी स्‍क्रीन खोलें</translation>
 <translation id="6022659036123304283">Chrome को अपने मुताबिक बनाएं</translation>
 <translation id="6022705094403139349">अपनी 'सुरक्षा चाबी' जोड़ने के लिए तैयार हैं?</translation>
 <translation id="6023643151125006053">इस डिवाइस (क्रमांक: <ph name="SERIAL_NUMBER" />) को <ph name="SAML_DOMAIN" /> के एडमिन ने लॉक कर दिया था.</translation>
@@ -3321,7 +3321,7 @@
 <translation id="6185132558746749656">डिवाइस स्थान</translation>
 <translation id="6195693561221576702">यह डिवाइस ऑफ़लाइन डेमो मोड में सेट अप नहीं किया जा सकता.</translation>
 <translation id="6196640612572343990">तीसरे पक्ष की कुकी ब्लॉक करें</translation>
-<translation id="6196854373336333322">एक्सटेंशन "<ph name="EXTENSION_NAME" />" ने आपकी प्रॉक्सी सेटिंग पर नियंत्रण कर लिया है, जिसका अर्थ है कि यह   ऑनलाइन किए जाने वाले कार्यों को बदल सकता है, रोक सकता है या उसे छिप कर सुन सकता है. अगर आप सुनिश्चित नहीं हैं कि यह बदलाव क्यों हुआ है, तो संभवत: आप उसे नहीं चाहते हैं.</translation>
+<translation id="6196854373336333322">एक्सटेंशन "<ph name="EXTENSION_NAME" />" ने आपकी प्रॉक्सी सेटिंग पर नियंत्रण कर लिया है, जिसका अर्थ है कि यह   ऑनलाइन किए जाने वाले काम को बदल सकता है, रोक सकता है या उसे छिप कर सुन सकता है. अगर आप सुनिश्चित नहीं हैं कि यह बदलाव क्यों हुआ है, तो संभवत: आप उसे नहीं चाहते हैं.</translation>
 <translation id="6198102561359457428">साइन आउट करें और फिर से साइन इन करें...</translation>
 <translation id="6198252989419008588">पिन बदलें</translation>
 <translation id="6201792273624501289">Linux ऐप्लिकेशन</translation>
@@ -3344,7 +3344,7 @@
 <translation id="6225475702458870625">आपके <ph name="PHONE_NAME" /> से डेटा कनेक्शन उपलब्ध है</translation>
 <translation id="6226777517901268232">निजी कुंजी फ़ाइल (वैकल्पिक)</translation>
 <translation id="6228516488918914827">पेज ज़्यादा तेज़ी से लोड हुआ</translation>
-<translation id="6228691855869374890">इस साइट के पास MIDI डिवाइस का पूर्ण नियंत्रण है.</translation>
+<translation id="6228691855869374890">इस साइट के पास MIDI डिवाइस का पूरा नियंत्रण है.</translation>
 <translation id="6229890768313448549">Google Play सेवा की शर्तें लोड नहीं की जा सकतीं. कृपया फिर से कोशिश करें.</translation>
 <translation id="6231881193380278751">पेज को अपने आप रीफ्रेश करने के लिए URL में एक क्‍वेरी पैरामीटर जोड़ें: chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="6232017090690406397">बैटरी</translation>
@@ -3449,7 +3449,7 @@
 <translation id="6396988158856674517">साइटों को हलचल पकड़ने वाले सेंसर का इस्तेमाल करने से रोकें</translation>
 <translation id="6397094776139756010">सिंक करने और मनमुताबिक बनाने के विकल्प</translation>
 <translation id="6398715114293939307">Google Play स्टोर निकालें</translation>
-<translation id="6398765197997659313">पूर्ण स्क्रीन से बाहर निकलें</translation>
+<translation id="6398765197997659313">फ़ुल स्क्रीन से बाहर निकलें</translation>
 <translation id="6399774419735315745">जासूस</translation>
 <translation id="6404511346730675251">बुकमार्क में बदलाव करें</translation>
 <translation id="6406303162637086258">ब्राउज़र पुनर्प्रारंभ को सिम्युलेट करें</translation>
@@ -3612,7 +3612,7 @@
 <translation id="6649563841575838401">संग्रह का फ़ॉर्मेट काम नहीं करता या फ़ाइल में गड़बड़ी है.</translation>
 <translation id="665061930738760572">&amp;नई विंडो में खोलें</translation>
 <translation id="6651237644330755633">वेबसाइटों की पहचान करने के लिए इस प्रमाणपत्र पर विश्वास करें</translation>
-<translation id="665355505818177700">Chrome <ph name="MS_AD_NAME" /> एकीकरण सिर्फ़ x86_64 प्लैटफ़ॉर्म पर काम करता है. किसी ARM या x86 प्लैटफ़ॉर्म पर बने Chromebook इस कार्यक्षमता की सुविधा नहीं देते हैं.</translation>
+<translation id="665355505818177700">Chrome <ph name="MS_AD_NAME" /> एकीकरण सिर्फ़ x86_64 प्लैटफ़ॉर्म पर काम करता है. किसी ARM या x86 प्लैटफ़ॉर्म पर बने Chromebook इस काम की क्षमता की सुविधा नहीं देते हैं.</translation>
 <translation id="6655190889273724601">डेवलपर मोड</translation>
 <translation id="6655458902729017087">खाते छिपाएं</translation>
 <translation id="6657585470893396449">पासवर्ड</translation>
@@ -4012,7 +4012,7 @@
 <translation id="7270858098575133036">जब साइट MIDI डिवाइस को एक्सेस करने के लिए सिस्टम के खास संदेशों का उपयोग करना चाहे, तो इसके लिए पूछें</translation>
 <translation id="7272674038937250585">कोई विवरण नहीं दिया गया है</translation>
 <translation id="7273110280511444812">पिछली बार <ph name="DATE" /> को अनुलग्न किया गया</translation>
-<translation id="727441411541283857"><ph name="PERCENTAGE" />% - पूर्ण होने में <ph name="TIME" /> शेष</translation>
+<translation id="727441411541283857"><ph name="PERCENTAGE" />% - पूरा होने में <ph name="TIME" /> बचा</translation>
 <translation id="727952162645687754">डाउनलोड गड़बड़ी</translation>
 <translation id="7279701417129455881">कुकी अवरोधन प्रबंधित करें...</translation>
 <translation id="7280041992884344566">जिस समय Chrome नुकसान पहुंचाने वाला सॉफ़्टवेयर खोज रहा था, तब कोई गड़बड़ी हुई</translation>
@@ -4054,7 +4054,7 @@
 <translation id="7339763383339757376">PKCS #7, एकल प्रमाणपत्र</translation>
 <translation id="7339785458027436441">लिखते समय वर्तनी की जाँच करें</translation>
 <translation id="7339898014177206373">नई विंडो</translation>
-<translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN" /> अब पूर्ण स्‍क्रीन है.</translation>
+<translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN" /> अब फ़ुल स्‍क्रीन है.</translation>
 <translation id="7340650977506865820">साइट आपकी स्क्रीन शेयर कर रही है</translation>
 <translation id="7341834142292923918">इस साइट का एक्सेस चाहिए</translation>
 <translation id="7345706641791090287">अपने पासवर्ड की पुष्टि करें</translation>
@@ -4088,7 +4088,7 @@
 <translation id="7384292194278095697">यह डिवाइस अब समर्थित नहीं है</translation>
 <translation id="7385854874724088939">प्रिंट करने की कोशिश करते समय कुछ गड़बड़ी हो गई.  कृपया अपना प्रिंटर जाँचें और फिर से कोशिश करें.</translation>
 <translation id="7385896526023870365">इस एक्सटेंशन में कोई भी दूसरा साइट एक्सेस नहीं है.</translation>
-<translation id="7388044238629873883">आप करीब पूर्ण कर चुके हैं!</translation>
+<translation id="7388044238629873883">आप करीब पूरा कर चुके हैं!</translation>
 <translation id="7388222713940428051">मेहमान विंडो खोलें</translation>
 <translation id="7392118418926456391">वायरस स्कैन विफल रहा</translation>
 <translation id="7392915005464253525">बंद की गई विंडो पु&amp;न: खोलें</translation>
@@ -4276,7 +4276,7 @@
 <translation id="7701869757853594372">उपयोगकर्ता हैंडल</translation>
 <translation id="7702574632857388784"><ph name="FILE_NAME" /> को सूची से हटाएं</translation>
 <translation id="7702907602086592255">डोमेन</translation>
-<translation id="7704305437604973648">कार्य</translation>
+<translation id="7704305437604973648">Tasks</translation>
 <translation id="7704317875155739195">खोजों और यूआरएल को अपने आप पूरा करें</translation>
 <translation id="7704521324619958564">Play स्टोर खोलें</translation>
 <translation id="7704628569466676326">अपनी 'सुरक्षा चाबी' को इस डिवाइस से जोड़ें ताकि आप अपने खाते में साइन इन करने के लिए इसका इस्तेमाल कर सकें</translation>
@@ -4665,7 +4665,7 @@
 <translation id="8261378640211443080">यह एक्सटेंशन <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> में सूचीबद्ध नहीं है और यह आपकी जानकारी के बिना जोड़ा गया हो सकता है.</translation>
 <translation id="8261506727792406068">मिटाएं</translation>
 <translation id="8263744495942430914"><ph name="FULLSCREEN_ORIGIN" /> ने आपका माउस कर्सर अक्षम कर दिया है.</translation>
-<translation id="8264718194193514834">"<ph name="EXTENSION_NAME" />" ने पूर्ण स्क्रीन ट्रिगर की है.</translation>
+<translation id="8264718194193514834">"<ph name="EXTENSION_NAME" />" ने पूरी स्क्रीन ट्रिगर की है.</translation>
 <translation id="8267961145111171918"><ph name="BEGIN_PARAGRAPH1" />यह इस डिवाइस और इसके इस्तेमाल के तरीके के बारे में सामान्य जानकारी है (जैसे कि बैटरी लेवल, सिस्टम और ऐप्लिकेशन गतिविधि और गड़बड़ियां). इस डेटा का इस्तेमाल Android को बेहतर बनाने के लिए किया जाएगा. इकट्ठी की गई कुछ जानकारी से Google ऐप्लिकेशन और 'Android डेवलपर' जैसे पार्टनर को भी मदद मिलेगी और वे अपने ऐप्लिकेशन और उत्पादों को बेहतर बना सकेंगे.<ph name="END_PARAGRAPH1" />
     <ph name="BEGIN_PARAGRAPH2" />इस सुविधा को बंद करने के बाद भी यह डिवाइस, सिस्टम अपडेट और सुरक्षा जैसी ज़रूरी सेवाएं पाने के लिए जानकारी भेज सकेगा.<ph name="END_PARAGRAPH2" />
     <ph name="BEGIN_PARAGRAPH3" />सेटिंग &gt; बेहतर &gt; Google को निदान और इस्तेमाल का डेटा अपने आप भेजें पर जाकर मालिक इस सुविधा को नियंत्रित कर सकता है.<ph name="END_PARAGRAPH3" />
@@ -4708,7 +4708,7 @@
 <translation id="833986336429795709">यह लिंक खोलने के लिए कोई ऐप्लिकेशन चुनें</translation>
 <translation id="8342861492835240085">कोई संग्रह चुनें</translation>
 <translation id="8343956361364550006">सबसे बढ़िया वीडियो या ऐनिमेशन के लिए उच्च बैंडविड्थ का इस्तेमाल करें. हो सकता है कि धीमे कनेक्शन वाले अन्य लोगों को आपकी सामग्री दिखाई न दे.</translation>
-<translation id="8351419472474436977">इस एक्सटेंशन ने आपकी प्रॉक्सी सेटिंग पर नियंत्रण कर लिया है, जिसका अर्थ है कि यह   ऑनलाइन किए जाने वाले कार्यों को बदल सकता है, खंडित कर सकता है या उसे छिप कर सुन सकता है. अगर आप सुनिश्चित नहीं हैं कि यह बदलाव क्यों हुआ है, तो संभवत: आप उसे नहीं चाहते हैं.</translation>
+<translation id="8351419472474436977">इस एक्सटेंशन ने आपकी प्रॉक्सी सेटिंग पर नियंत्रण कर लिया है, जिसका अर्थ है कि यह   ऑनलाइन किए जाने वाले काम को बदल सकता है, खंडित कर सकता है या उसे छिप कर सुन सकता है. अगर आप सुनिश्चित नहीं हैं कि यह बदलाव क्यों हुआ है, तो संभवत: आप उसे नहीं चाहते हैं.</translation>
 <translation id="835238322900896202">अनइंस्टॉल करते समय एक गड़बड़ी हुई. कृपया 'टर्मिनल' के ज़रिए अनइंस्टॉल करें.</translation>
 <translation id="8352772353338965963">एक से ज़्यादा साइन-इन के लिए कोई खाता जोड़ें. सभी साइन इन किए गए खातों को पासवर्ड के बिना एक्सेस किया जा सकता है, इसलिए इस सुविधा का इस्तेमाल सिर्फ़ विश्वसनीय खातों के साथ किया जाना चाहिए.</translation>
 <translation id="8353683614194668312">यह निम्न कर सकता है:</translation>
@@ -4812,7 +4812,7 @@
 <translation id="8523493869875972733">बदलावों को बनाए रखें</translation>
 <translation id="8523849605371521713">पॉलिसी द्वारा जोड़ा गया</translation>
 <translation id="8524783101666974011">अपने Google खाते में कार्ड सेव करें</translation>
-<translation id="8525306231823319788">पूर्ण स्‍क्रीन</translation>
+<translation id="8525306231823319788">फ़ुल स्‍क्रीन</translation>
 <translation id="8528074251912154910">भाषाएं जोड़ें</translation>
 <translation id="8528962588711550376">प्रवेश कर रहा है.</translation>
 <translation id="8529925957403338845">इंस्टैंट टेदरिंग कनेक्शन नहीं किया जा सका</translation>
@@ -4905,7 +4905,7 @@
 <translation id="8665180165765946056">बैकअप पूरा हुआ</translation>
 <translation id="866611985033792019">ईमेल उपयोगकर्ताओं की पहचान करने के लिए इस प्रमाणपत्र पर विश्वास करें</translation>
 <translation id="8666584013686199826">जब कोई साइट यूएसबी डिवाइस एक्सेस करना चाहे, तो इसके लिए पूछें</translation>
-<translation id="8667328578593601900"><ph name="FULLSCREEN_ORIGIN" /> अब पूर्ण स्‍क्रीन है और आपका माउस कर्सर अक्षम कर दिया गया है.</translation>
+<translation id="8667328578593601900"><ph name="FULLSCREEN_ORIGIN" /> अब फ़ुल स्‍क्रीन है और आपका माउस कर्सर बंद कर दिया गया है.</translation>
 <translation id="8669284339312441707">वॉर्मर</translation>
 <translation id="867085395664725367">सर्वर में कुछ समय के लिए गड़बड़ी हुई.</translation>
 <translation id="8673026256276578048">वेब पर खोजें...</translation>

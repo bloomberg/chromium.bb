@@ -881,7 +881,7 @@
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{अपने Google खाते में कार्ड सेव करें}one{अपने Google खाते में कार्ड सेव करें}other{अपने Google खाते में कार्ड सेव करें}}</translation>
 <translation id="5763042198335101085">मान्य ईमेल पता डालें</translation>
 <translation id="5765072501007116331">वितरण के तरीके और ज़रूरतें देखने के लिए, कोई पता चुनें</translation>
-<translation id="5778550464785688721">MIDI डिवाइस पूर्ण नियंत्रण</translation>
+<translation id="5778550464785688721">MIDI डिवाइस पूरा नियंत्रण</translation>
 <translation id="578305955206182703">ऐंबर</translation>
 <translation id="57838592816432529">म्यूट करें</translation>
 <translation id="5784606427469807560">आपके कार्ड की पुष्टि करते समय समस्‍या हुई. अपना इंटरनेट कनेक्‍शन जांचें और फिर से कोशिश करें.</translation>
@@ -919,7 +919,7 @@
 <translation id="598637245381783098">भुगतान ऐप्लिकेशन नहीं खुल सका</translation>
 <translation id="5988826871883769516">आपके डिवाइस का प्रबंधन <ph name="ENROLLMENT_DOMAIN" /> करता है.</translation>
 <translation id="5989320800837274978">न तो कोई फ़िक्‍स्‍ड प्रॉक्‍सी सर्वर और न ही कोई .pac स्क्रिप्ट URL साफ़ तौर पर बताया गया है.</translation>
-<translation id="5990559369517809815">सर्वर से किए गए अनुरोधों को एक्‍सटेंशन द्वारा अवरुद्ध कर दिया गया है.</translation>
+<translation id="5990559369517809815">सर्वर से किए गए अनुरोधों को एक्‍सटेंशन द्वारा ब्लॉक कर दिया गया है.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6015796118275082299">वर्ष</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{पेज 1}one{पेज #}other{पेज #}}</translation>

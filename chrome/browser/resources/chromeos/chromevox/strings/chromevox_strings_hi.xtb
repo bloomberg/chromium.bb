@@ -54,7 +54,6 @@
 <translation id="1319608975892113573">कोई पिछला ब्‍लॉककोट नहीं.</translation>
 <translation id="1321576897702511272">ChromeVox सहायता छिपाएं</translation>
 <translation id="1325946044405407859">हल्का भूरा रंग</translation>
-<translation id="1331634987653814322">ब्रेल की सेटिंग</translation>
 <translation id="1331702245475014624"><ph name="TOTAL" /> में से <ph name="INDEX" /></translation>
 <translation id="1334095593597963605">वर्ण और शब्द इको</translation>
 <translation id="1334570596456017464">सबस्क्रिप्ट</translation>
@@ -557,7 +556,6 @@
 <translation id="489907760999452556">आंतरिक लिंक</translation>
 <translation id="4915087353619183190">'सीखने वाला मोड' शुरू किया जा रहा है. इसके फ़ंक्शन के बारे में जानने के लिए कोई क्वर्टी कुंजी, रीफ्रेश की जा सकने वाली ब्रेल कुंजी या हाथ का जेस्चर (छूना) दबाएं. बाहर निकलने के लिए control और w या escape कुंजी दबाएं.</translation>
 <translation id="492295894462528572">भूमिका</translation>
-<translation id="4943781537993885772">डिसप्ले का प्रकार</translation>
 <translation id="495170559598752135">क्रियाएं</translation>
 <translation id="4953585991029886728">लेख में बदलाव करें</translation>
 <translation id="4954534434583049121">पिछला ब्‍लॉक क्वोट</translation>
@@ -688,7 +686,7 @@
 <translation id="5729047866208036762">गणित के बारे में और जानने के लिए ऊपर, नीचे, बाएं या दाएं वाले तीर दबाएं.</translation>
 <translation id="5732189279857692565">यह दूसरा शीर्षक है. आगे बढ़ते रहें; Search+H या Search+Shift+H दबाएं</translation>
 <translation id="5748623122140342504">पिछला लेवल 5 का शीर्षक</translation>
-<translation id="5750633686117194034">कोई संशोधक नहीं दबाया गया; कृपया एक या ज़्यादा संशोधक दबाकर रखें; पूर्ण हो जाने पर अपनी अंगुलियां उठा लें और आपको सुनाई देगा कि कुंजियां सेट हो गई हैं. बाहर निकलने के लिए टैब दबाएं.</translation>
+<translation id="5750633686117194034">कोई मॉडिफ़ायर नहीं दबाया गया; कृपया एक या ज़्यादा मॉडिफ़ायर दबाकर रखें; पूरा हो जाने पर अपनी अंगुलियां उठा लें और आपको सुनाई देगा कि कुंजियां सेट हो गई हैं. बाहर निकलने के लिए टैब दबाएं.</translation>
 <translation id="5760594853119905566">परिशिष्ट</translation>
 <translation id="5788275253279308023">गुप्‍त विंडो, <ph name="TITLE" />, टैब</translation>
 <translation id="5805940204952508776">दो उंगलियों से टैप करें</translation>
@@ -725,7 +723,6 @@
 <translation id="6006050241733874051">फ़ॉर्म</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{बैकस्लैश}one{# बैकस्लैश}other{# बैकस्लैश}}</translation>
 <translation id="6017514345406065928">हरा</translation>
-<translation id="6021969570711251331">इंटरलीव</translation>
 <translation id="6034000775414344507">हल्का भूरा</translation>
 <translation id="6037602951055904232">आगे की ओर पैन करें</translation>
 <translation id="6042826534790431634">चालू करने के लिए Search+Space दबाएं.</translation>
@@ -777,7 +774,6 @@
 <translation id="6438968337250688271"><ph name="NAME" />, मेन्यू</translation>
 <translation id="6444046323172968959">सूचना डॉयलॉग</translation>
 <translation id="6452403590345320472">विषय सूची</translation>
-<translation id="6454456397828627257">साथ-साथ</translation>
 <translation id="6459511626086141404">फ़्लैट कीमैप</translation>
 <translation id="6468049171101508116">अगला बटन</translation>
 <translation id="646954774886932461">इंडेक्स</translation>
@@ -1092,7 +1088,7 @@
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8183813379996435469">ChromeVox भाषा का अपने आप पता लगाएं और बदलें.</translation>
 <translation id="8184828902145951186">पंक्ति</translation>
-<translation id="8186185314313222077">पूर्ण स्‍क्रीन टॉगल करें</translation>
+<translation id="8186185314313222077">फ़ुल स्‍क्रीन टॉगल करें</translation>
 <translation id="8199231515320852133">वर्तमान सेल के शीर्षलेखों को प्रदर्शित करें</translation>
 <translation id="8202174735952881587">आसमानी नीला</translation>
 <translation id="820417203470636242">खाली सेल.</translation>

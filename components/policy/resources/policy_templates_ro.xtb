@@ -1634,25 +1634,25 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       Dacă politica este activată sau nu este configurată, utilizatorii pot valorifica oferte prin înregistrarea sistemului de operare Chrome.
 
       Dacă politica nu este activată, utilizatorii nu vor putea valorifica oferte.</translation>
-<translation id="4008233182078913897">Specifică o listă de aplicații și extensii instalate în fundal,
-          fără intervenția utilizatorului și care nu pot fi dezinstalate sau
-          dezactivate de acesta. Toate permisiunile solicitate de
-          aplicații/extensii sunt acordate în mod prestabilit, fără intervenția utilizatorului,
-          inclusiv orice permisiune suplimentară solicitată de viitoarele versiuni ale
-          aplicației/extensiei. În plus, permisiunile sunt acordate pentru
-          API-urile extensiei
-          enterprise.deviceAttributes și enterprise.platformKeys. (Aceste două API-uri nu sunt disponibile pentru aplicațiile/extensiile care
-          nu sunt instalate forțat.)
+<translation id="4008233182078913897">Specifică o listă de aplicații și extensii care sunt instalate în fundal,
+          fără intervenția utilizatorului, și care nu pot fi dezinstalate sau
+          dezactivate de utilizator. Toate permisiunile solicitate de
+          aplicații/extensii sunt acordate implicit, fără intervenția utilizatorului,
+          inclusiv orice permisiune suplimentară solicitată de versiunile ulterioare ale
+          aplicației/extensiei. Mai mult, sunt acordate permisiuni pentru
+          API-urile extensiilor enterprise.deviceAttributes și
+          enterprise.platformKeys. (Aceste două API-uri nu sunt disponibile pentru aplicațiile/extensiile care
+          nu sunt instalate automat.)
 
-          Această politică are prioritate față de o politică <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> care poate crea conflicte. Dacă o aplicație sau o extensie care a fost instalată forțat anterior este eliminată din listă, aceasta este dezinstalată automat de <ph name="PRODUCT_NAME" />.
+          Politica are prioritate față de o politică <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> care poate fi în conflict. Dacă o aplicație sau extensie care a fost instalată automat anterior este eliminată din listă, este dezinstalată automat de <ph name="PRODUCT_NAME" />.
 
-          Pentru instanțele Windows neasociate unui domeniu <ph name="MS_AD_NAME" />, instalarea forțată se limitează la aplicațiile și extensiile afișate în Magazinul web Chrome.
+          Pentru exemplarele de Windows neasociate unui domeniu <ph name="MS_AD_NAME" />, instalarea automată se limitează la aplicațiile și extensiile afișate în Magazinul web Chrome.
 
-          Reține că utilizatorii pot să modifice codul sursă al oricărei extensii cu ajutorul Developer Tools (ceea ce poate face extensia nefuncțională). Dacă acest aspect creează probleme, trebuie să se seteze politica <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
+          Reține că utilizatorii pot să modifice codul sursă al oricărei extensii cu ajutorul Developer Tools (ceea ce poate face ca extensia să fie nefuncțională). Dacă acest aspect creează probleme, politica <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> trebuie să fie setată.
 
-          Fiecare element din lista politicii este un șir care include un ID al extensiei și, opțional, o adresă URL de „actualizare”, separate prin punct și virgulă (<ph name="SEMICOLON" />). ID-ul extensiei este un șir alcătuit din 32 de litere și se găsește, de exemplu, la <ph name="CHROME_EXTENSIONS_LINK" /> în modul pentru dezvoltatori. Adresa URL de „actualizare”, dacă este specificată, trebuie să trimită la un document XML cu manifestul de actualizare, conform descrierii de la <ph name="LINK_TO_EXTENSION_DOC1" />. În mod prestabilit, se folosește adresa URL de actualizare a Magazinului web Chrome (care acum este „https://clients2.google.com/service/update2/crx”). Reține că adresa URL de „actualizare” setată în această politică este folosită numai la instalarea inițială. Actualizările ulterioare ale extensiei vor folosi adresa URL de actualizare indicată în manifestul extensiei. Reține și că specificarea explicită a adresei URL de „actualizare” era obligatorie în versiunile <ph name="PRODUCT_NAME" /> de până la 67, inclusiv.
+          Fiecare element din lista politicii este un șir care include un ID al extensiei și, opțional, o adresă URL de „actualizare”, separate prin punct și virgulă (<ph name="SEMICOLON" />). ID-ul de extensie este un șir alcătuit din 32 de litere găsit, de exemplu, la <ph name="CHROME_EXTENSIONS_LINK" /> în modul pentru dezvoltatori. Adresa URL de „actualizare”, dacă este specificată, trebuie să trimită la un document XML cu manifestul de actualizare, conform descrierii de la <ph name="LINK_TO_EXTENSION_DOC1" />. În mod prestabilit, se folosește adresa URL de actualizare a Magazinului web Chrome (care acum este „https://clients2.google.com/service/update2/crx”). Reține că adresa URL de „actualizare” setată în această politică este folosită numai la instalarea inițială. Actualizările ulterioare ale extensiei vor folosi adresa URL de actualizare indicată în manifestul extensiei. Reține și că indicarea explicită a adresei URL de „actualizare” era obligatorie în versiunea 67 de <ph name="PRODUCT_NAME" /> și versiunile anterioare.
 
-          De exemplu, <ph name="EXTENSION_POLICY_EXAMPLE" /> instalează aplicația <ph name="EXTENSION_ID_SAMPLE" /> de la adresa URL standard de „actualizare” din Magazinul web Chrome. Pentru mai multe informații despre găzduirea extensiilor, accesează <ph name="LINK_TO_EXTENSION_DOC2" />.
+          De exemplu, <ph name="EXTENSION_POLICY_EXAMPLE" /> instalează extensia cu ID-ul <ph name="EXTENSION_ID_SAMPLE" /> de la adresa de „actualizare” standard a Magazinului web Chrome. Pentru mai multe informații despre găzduirea extensiilor, accesează: <ph name="LINK_TO_EXTENSION_DOC2" />.
 
           Dacă politica nu este setată, nicio aplicație sau extensie nu va fi instalată automat, iar utilizatorul poate dezinstala orice aplicație sau extensie din <ph name="PRODUCT_NAME" />.
 
@@ -2154,7 +2154,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 <translation id="5124368997194894978">Activează pornirea pe c.a. (curent alternativ)</translation>
 <translation id="5131211790949066746">Activează îmbinarea politicilor din listă privind extensiile instalate: <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" /> și <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />.
 
-      Dacă activezi această setare, valorile pentru politica platformei dispozitivului, politica în cloud a dispozitivului și politica platformei utilizatorului sunt îmbinate într-o listă și folosite ca întreg, fără a mai folosi numai valorile din sursa cu cea mai mare prioritate.
+      Dacă activezi această setare, valorile pentru politica platformei dispozitivului, politica privind serviciile cloud a dispozitivului și politica platformei utilizatorului sunt îmbinate într-o listă și folosite ca întreg, fără a mai folosi numai valorile din sursa cu cea mai mare prioritate.
 
       Dacă dezactivezi această setare sau nu o configurezi, sunt luate numai intrările în listă din sursa cu cea mai mare prioritate, iar toate celelalte surse sunt afișate drept conflicte, dar sunt ignorate.</translation>
 <translation id="5141670636904227950">Setați tipul prestabilit al lupei pentru ecran activate pe ecranul de conectare</translation>
@@ -2487,7 +2487,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
           Setarea trece pe lista albă tipurile permise de extensii/aplicații care pot fi instalate în <ph name="PRODUCT_NAME" /> și gazdele cu care pot interacționa. Valoarea este o listă de șiruri și fiecare dintre acestea ar trebui să fie una dintre următoarele: „extension”, „theme”, „user_script”, „hosted_app”, „legacy_packaged_app”, „platform_app”. Consultă documentația privind extensiile pentru <ph name="PRODUCT_NAME" /> pentru mai multe informații despre aceste tipuri.
 
-          Reține că această politică se aplică și extensiilor și aplicațiilor care vor fi instalate forțat prin ExtensionInstallForcelist.
+          Reține că această politică se aplică și extensiilor și aplicațiilor care vor fi instalate automat prin ExtensionInstallForcelist.
 
           Dacă setarea este configurată, extensiile/aplicațiile care au un tip ce nu se află pe listă nu vor fi instalate.
 
@@ -2605,10 +2605,10 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
       </translation>
 <translation id="5901427587865226597">Numai printare duplex</translation>
 <translation id="5903898512448364160">
-      Când politica este activată, politica în cloud are prioritate dacă este în conflict cu politica platformei.
-      Când politica este dezactivată sau nu este configurată, politica platformei are prioritate dacă este în conflict cu politica în cloud.
+      Când politica este activată, politica privind serviciile cloud are prioritate dacă este în conflict cu politica platformei.
+      Când politica este dezactivată sau nu este configurată, politica platformei are prioritate dacă este în conflict cu politica privind serviciile cloud.
 
-      Politica este disponibilă numai ca politică obligatorie a platformei dispozitivului și stabilește numai politicile în cloud privind aria de acoperire a dispozitivului.
+      Politica este disponibilă numai ca politică obligatorie a platformei dispozitivului și stabilește numai politicile privind serviciile cloud ale domeniului dispozitivului.
       </translation>
 <translation id="5905473632148429217">Activează verificările OCSP/CRL online</translation>
 <translation id="5906199912611534122">Permite activarea sau dezactivarea limitării rețelei.
@@ -3161,9 +3161,9 @@ Atunci când ecranul este pe cale să se întunece, modelul inteligent de reduce
 Dacă politica este setată la True sau nu este setată, modelul inteligent de reducere a luminozității va fi activat și va putea extinde timpul până la întunecarea ecranului. Dacă politica este setată la False, modelul inteligent de reducere a luminozității nu va influența întunecarea ecranului.</translation>
 <translation id="6967394885063085697">Activează politica de gestionare a alimentării privind modul de încărcare avansată a bateriei.
 
-          Folosind modul de încărcare avansată a bateriei, utilizatorul poate să maximizeze durata de viață a bateriei. În modul de încărcare avansată a bateriei, sistemul va folosi algoritmul de încărcare standard și alte tehnici în timpul orelor nelucrătoare pentru a maximiza durata de viață a bateriei. În timpul orelor de lucru se folosește încărcarea expres. Cu încărcarea expres, bateria poate fi încărcată mai rapid și, astfel, bateria este încărcată complet mai repede. Pentru fiecare zi, orele la care sistemul va fi folosit cel mai intens sunt indicate de ora de începere și de durată.
+          Folosind modul de încărcare avansată a bateriei, utilizatorul poate să maximizeze durata de viață a bateriei. În modul de încărcare avansată a bateriei, sistemul va folosi algoritmul de încărcare standard și alte tehnici când dispozitivul nu este activ pentru a maximiza durata de viață a bateriei. Când dispozitivul este activ, se folosește încărcarea expres. Cu încărcarea expres, bateria poate fi încărcată mai rapid și, astfel, bateria este încărcată complet mai repede. Pentru fiecare zi, orele la care sistemul va fi folosit cel mai intens sunt indicate de ora de începere și de durată.
 
-          Dacă politica este activată și DeviceAdvancedBatteryChargeModeDayConfig este setată, modul de încărcare avansată a bateriei va fi activat întotdeauna dacă este acceptat de dispozitiv.
+          Dacă politica este activată și valoarea DeviceAdvancedBatteryChargeModeDayConfig este setată, modul de încărcare avansată a bateriei va fi activat întotdeauna dacă este acceptat de dispozitiv.
 
           Dacă politica este dezactivată, modul de încărcare avansată a bateriei va fi dezactivat întotdeauna.
 

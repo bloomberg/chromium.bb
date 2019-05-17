@@ -311,7 +311,7 @@
 <translation id="1502843533062797703">Üçüncü taraf yazılımı yerleştirme engellemesini etkinleştirin</translation>
 <translation id="1504431521196476721">Uzaktan Doğrulama</translation>
 <translation id="1507382822467487898">
-          Cihaza bir yerleştirme yuvası bağlandığında MAC (medya erişim denetimi) adresi kullanılır.
+          Cihaza bir yerleştirme yuvası bağlandığında hangi MAC (medya erişim denetimi) adresinin kullanılacağını yapılandırır.
 
           Bazı cihaz modellerine bir yerleştirme yuvası bağlandığında, varsayılan olarak cihazı Ethernet ağında tanımlamak için cihazın atanmış yuvasına ait MAC adresi kullanılır. Bu politika, cihaz yuvaya yerleştirilmiş durumdayken MAC adresi kaynağının yönetici tarafından değiştirilmesine izin verir.
 
@@ -761,7 +761,7 @@
 <translation id="2327252517317514801">G Suite'e erişmesine izin verilen alan adlarını tanımla</translation>
 <translation id="2356878440219553005">Pil şarj modu güç yönetimi politikasını belirtir.
 
-          Pil stresi nedeniyle pilin aşınmasını en aza indirmek ve pil ömrünü uzatmak için pil şarjını dinamik olarak denetleyin.
+          Pil stresi nedeniyle pilin aşınmasını en aza indirmek ve pil ömrünü uzatmak için pil şarjını dinamik olarak denetler.
 
           Özel pil şarj modu seçiliyse, DeviceBatteryChargeCustomStartCharging ve DeviceBatteryChargeCustomStopCharging belirtilmelidir.
 
@@ -1278,9 +1278,9 @@
       Bu ayar etkinleştirilirse veya yapılandırılmazsa, kullanıcılar kendi Google hesaplarından kimlik doğrulama ile bulut (cloud) yazdırma proxy'sini etkinleştirebilirler.
 
       Bu ayar devre dışı bırakılırsa, kullanıcılar proxy'yi etkinleştiremezler ve makinenin, yazıcılarını <ph name="CLOUD_PRINT_NAME" /> ile paylaşmasına izin verilmez.</translation>
-<translation id="3312206664202507568">chrome://password-change konumunda, SAML kullanıcılarının oturum açmış durumdayken SAML şifrelerini değiştirmelerine izin veren ve SAML şifresi ile cihaz kilitli ekran şifresinin senkronize durumda tutulmasını sağlayan bir sayfayı etkinleştirir.
+<translation id="3312206664202507568">chrome://password-change konumunda, SAML kullanıcılarının oturum açmış durumdayken SAML şifrelerini değiştirmelerine izin veren ve SAML şifresi ile cihaz ekran kilidi şifresinin senkronize durumda tutulmasını sağlayan bir sayfayı etkinleştirir.
 
-      Bu politika ayrıca SAML kullanıcılarını SAML şifrelerinin süresinin biteceği konusunda uyaran bildirimleri etkinleştirir, böylece kullanıcılar hemen oturum içi şifre değiştirme işlemini yapabilirler.
+      Bu politika ayrıca SAML kullanıcılarını SAML şifrelerinin süresinin biteceği konusunda uyaran bildirimleri etkinleştirir, böylece kullanıcılar oturum içi şifre değiştirme işlemini hemen yapabilirler.
       Ancak bu bildirimler sadece şifre geçerliliği bitiş bilgileri cihaza SAML kimlik sağlayıcısı tarafından SAML oturum açma akışı sırasında gönderilirse gösterilir.
 
       Bu politika ayarlanırsa, kullanıcı tarafından değiştirilemez veya geçersiz kılınamaz.</translation>
@@ -1367,7 +1367,7 @@ Bu ayar Kapalı değerine getirilirse veya herhangi bir değer belirlenmezse <ph
 
          Bu politika Yanlış seçeneğine ayarlanır veya ayarlanmadan bırakılırsa güç yönetimi gecikmeleri ve oturum süresi sınırı oturumun başında hemen çalışmaya başlar.</translation>
 <translation id="3478024346823118645">Çıkışta kullanıcı verilerini sil</translation>
-<translation id="3480961938508521469">Pili standart bir hızda tam olarak şarj edin.</translation>
+<translation id="3480961938508521469">Pili standart bir hızda tam olarak şarj et.</translation>
 <translation id="348495353354674884">Sanal klavyeyi etkinleştir</translation>
 <translation id="3487623755010328395">
         Bu politika ayarlanırsa <ph name="PRODUCT_NAME" /> kendisini kaydetmeye çalışır ve tüm profiller için ilişkili bulut politikasını uygular.
@@ -2311,7 +2311,7 @@ Bu politika ayarlanmadan bırakılırsa kullanıcı sistemde yüklü herhangi bi
 
       Politika ayarlanmazsa veya boş dize değerine ya da geçersiz bir bağlantı noktası aralığına ayarlanırsa, WebRTC'nin kullanılabilir herhangi bir yerel UDP bağlantı noktasını kullanmasına izin verilir.</translation>
 <translation id="5290940294294002042">Kullanıcının etkinleştirebileceği veya devre dışı bırakabileceği eklentilerin listesini belirt</translation>
-<translation id="5306186200045823863">Symantec Corporation'ın Eski PKI Altyapısında güveni etkinleştir</translation>
+<translation id="5306186200045823863">Symantec Corporation'ın Eski PKI Altyapısına güveni etkinleştir</translation>
 <translation id="5307432759655324440">Gizli modun kullanılabilirliği</translation>
 <translation id="5318185076587284965">Uzaktan erişen ana makine tarafından geçiş sunucuları kullanılmasını etkinleştir</translation>
 <translation id="5323128137188992869"><ph name="PRODUCT_NAME" /> kullanarak içeriğin cihaza yayınlanmasına izin verin.
@@ -2580,7 +2580,7 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
 <translation id="5765780083710877561">Açıklama:</translation>
 <translation id="5770738360657678870">Yeni geliştirilenler kanalı (kararsız olabilir)</translation>
 <translation id="5774856474228476867">Varsayılan arama sağlayıcı arama URL'si</translation>
-<translation id="5775235485119094648">Pili belirlenmiş bir aralıktayken şarj edin.</translation>
+<translation id="5775235485119094648">Pili belirlenmiş bir aralıktayken şarj et.</translation>
 <translation id="5776485039795852974">Bir site, masaüstü bildirimlerini her göstermek istediğinde sor.</translation>
 <translation id="5781412041848781654">HTTP kimlik doğrulaması için hangi GSSAPI kitaplığının kullanılacağını belirtir. Sadece bir kitaplık adı ya da tam yol ayarlayabilirsiniz.
 
@@ -2648,7 +2648,7 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
 <translation id="5893553533827140852">Bu ayar etkinleştirilirse gnubby kimlik doğrulama isteklerinde uzaktan ana bilgisayar bağlantısı üzerinden proxy kullanılır.
 
           Bu ayar devre dışı bırakılır veya yapılandırılmazsa gnubby kimlik doğrulama isteklerinde proxy kullanılmaz.</translation>
-<translation id="5897913798715600338">Pili hızlı şarj teknolojisiyle şarj edin.</translation>
+<translation id="5897913798715600338">Pili hızlı şarj teknolojisiyle şarj et.</translation>
 <translation id="5898486742390981550">Birden fazla kullanıcı giriş yaptığında, yalnızca birincil kullanıcı Android uygulamalarını kullanabilir.</translation>
 <translation id="5900196529149231477">
       Bu politika, oturum açma ekranı için geçerlidir. Lütfen kullanıcı oturumu için geçerli olan <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> politikasına da bakın. Her iki politikanın da aynı değere ayarlanması önerilir. Değerler eşleşmezse kullanıcı oturumuna giriş sırasında kullanıcı politikası tarafından belirtilen değer uygulanırken gecikme olabilir.
@@ -3205,7 +3205,7 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
 
       Ekran karartılmak üzereyken akıllı karartma modeli, ekranı karartmanın geciktirilmesinin gerekip gerekmediğini değerlendirir. Akıllı karartma modeli ekranın karartılmasını geciktirirse, ekranın karartılması için gereken süre etkili şekilde uzar. Bu durumda, ekran kapatma, ekran kilidi ve işlem yapılmadan geçen süre gecikmeleri, ekran karartma gecikmesinin başlangıçta yapılandırıldığı değerle aynı süreyi koruyacak şekilde ayarlanır. 
       Bu politika True (Doğru) değerine ayarlanır veya ayarlanmadan bırakılırsa akıllı karartma modeli etkinleşir ve ekranı karartma süresini uzatmasına izin verilir. Bu politika False (Yanlış) değerine ayarlanırsa akıllı karartma modeli, ekran karartmayı etkilemez.</translation>
-<translation id="6967394885063085697">Gelişmiş pil şarj modu güç yönetim politikasını etkinleştirin.
+<translation id="6967394885063085697">Gelişmiş pil şarj modu güç yönetim politikasını etkinleştir.
 
           Gelişmiş Pil Şarj Modu, kullanıcının pil sağlığını maksimuma çıkarmasına olanak verir. Gelişmiş Şarj Modu'nda, sistem pil sağlığını maksimuma çıkarmak için mesai saatleri dışında standart şarj algoritmasını ve diğer teknikleri kullanır. Mesai saatlerinde ise bir hızlı şarj yöntemi kullanılır. Bu hızlı şarj, pilin daha hızlı şarj edilmesini sağlar; dolayısıyla pil kısa sürede tam şarj kapasitesine ulaşır. Her gün için, sistemin en yoğun şekilde kullanılacağı zaman başlangıç saati ve süre ile belirtilir.
 
@@ -3645,7 +3645,7 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 <translation id="7712109699186360774">Bir site kamera ve/veya mikrofona erişmek istediğinde her zaman sor</translation>
 <translation id="7713608076604149344">İndirme kısıtlamaları</translation>
 <translation id="7715711044277116530">Sunum modunda ekranın kararma gecikmesinin ölçekleneceği yüzde</translation>
-<translation id="7716781462866245042">Gelişmiş pil şarj modu gün yapılandırmasını ayarlayın.
+<translation id="7716781462866245042">Gelişmiş pil şarj modu gün yapılandırmasını ayarla.
 
           Bu politika sadece DeviceAdvancedBatteryChargeModeEnabled ayarı true (doğru) seçeneğine ayarlanmışsa kullanılır.
 

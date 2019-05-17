@@ -373,7 +373,7 @@
 <translation id="2948083400971632585">Puedes inhabilitar los servidores proxy configurados para una conexión desde la página de configuración.</translation>
 <translation id="2955913368246107853">Cerrar la barra de búsqueda</translation>
 <translation id="2969319727213777354">Para establecer una conexión segura, el reloj se debe configurar correctamente. Esto se debe a que los certificados que usan los sitios web para su identificación solo son válidos por períodos de tiempo específicos. Debido a que la configuración del reloj del dispositivo es incorrecta, Google Chrome no puede verificar estos certificados.</translation>
-<translation id="2970515157925768593">Puedes cambiar la configuración de tu cuenta y dispositivo de forma remota</translation>
+<translation id="2970515157925768593">Puedes cambiar la configuración de tu cuenta y dispositivo de forma remota.</translation>
 <translation id="2972581237482394796">&amp;Rehacer</translation>
 <translation id="2977665033722899841">Fila <ph name="ROW_NAME" /> seleccionada. <ph name="ROW_CONTENT" /></translation>
 <translation id="2982481275546140226">Borrar datos</translation>
@@ -741,7 +741,7 @@
 <translation id="5017554619425969104">Texto que copiaste</translation>
 <translation id="5018422839182700155">No se puede abrir esta página</translation>
 <translation id="5019198164206649151">La memoria auxiliar se encuentra en mal estado.</translation>
-<translation id="5020154601324912079">Controla la forma en que administran los datos de tu dispositivo. Google procesa estos datos exclusivamente según las indicaciones del administrador de tu dispositivo y solo para los fines que se indiquen.</translation>
+<translation id="5020154601324912079">Controla la forma en que se administran los datos de tu dispositivo. Google procesa estos datos exclusivamente según las indicaciones del administrador de tu dispositivo y solo para los fines que se indiquen.</translation>
 <translation id="5023310440958281426">Revisa las políticas del administrador.</translation>
 <translation id="5029568752722684782">Borrar la copia</translation>
 <translation id="503069730517007720">Se requiere un certificado raíz para "<ph name="SOFTWARE_NAME" />", pero no está instalado. Tu administrador de IT debe analizar las instrucciones de configuración de "<ph name="SOFTWARE_NAME" />" para corregir este problema. <ph name="FURTHER_EXPLANATION" /></translation>

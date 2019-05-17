@@ -365,7 +365,7 @@
 <translation id="2948083400971632585">Sie können alle für eine Verbindung konfigurierten Proxys auf der Seite "Einstellungen" deaktivieren.</translation>
 <translation id="2955913368246107853">Suchleiste schließen</translation>
 <translation id="2969319727213777354">Zum Herstellen einer sicheren Verbindung muss die Uhrzeit richtig eingestellt sein. Der Grund hierfür ist, dass Websites sich mithilfe von Zertifikaten identifizieren, die nur für einen bestimmten Zeitraum gelten. Da die Uhrzeit Ihres Geräts falsch ist, kann Google Chrome diese Zertifikate nicht bestätigen.</translation>
-<translation id="2970515157925768593">Kann Ihre Geräte- und Kontoeinrichtung remote ändern.</translation>
+<translation id="2970515157925768593">Ihre Geräte- und Kontoeinrichtung remote ändern.</translation>
 <translation id="2972581237482394796">&amp;Wiederholen</translation>
 <translation id="2977665033722899841"><ph name="ROW_NAME" />, aktuell ausgewählt. <ph name="ROW_CONTENT" /></translation>
 <translation id="2982481275546140226">Daten löschen</translation>
@@ -716,7 +716,7 @@
 <translation id="4926159001844873046">Auf <ph name="SITE" /> wird Folgendes angezeigt:</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4943872375798546930">Keine Ergebnisse</translation>
-<translation id="4945672369594656571">Legt fest, wie mit Ihren Geräte- und Kontodaten verfahren wird. Google verarbeitet Ihre Geräte- und Kontodaten ausschließlich nach Vorgabe durch Ihren Geräte- und Kontomanager und allein zu dem von Ihrem Geräte- und Kontomanager festgelegten Zweck.</translation>
+<translation id="4945672369594656571">Festlegen, wie mit Ihren Geräte- und Kontodaten verfahren wird. Google verarbeitet Ihre Geräte- und Kontodaten ausschließlich nach Vorgabe durch Ihren Geräte- und Kontomanager und allein zu dem von Ihrem Geräte- und Kontomanager festgelegten Zweck.</translation>
 <translation id="4950898438188848926">Schaltfläche zum Wechseln von Tabs, Eingabetaste drücken, um zum offenen Tab "<ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" />" zu wechseln</translation>
 <translation id="495170559598752135">Aktionen</translation>
 <translation id="4955242332710481440">A5-Extra</translation>
@@ -730,7 +730,7 @@
 <translation id="5017554619425969104">Von Ihnen kopierter Text</translation>
 <translation id="5018422839182700155">Diese Seite kann nicht geöffnet werden</translation>
 <translation id="5019198164206649151">Sicherungsspeicher ist fehlerhaft.</translation>
-<translation id="5020154601324912079">Legt fest, wie mit Ihren Gerätedaten verfahren wird. Google verarbeitet Ihre Gerätedaten ausschließlich nach Vorgabe durch Ihren Gerätemanager und allein zu dem von Ihrem Gerätemanager festgelegten Zweck.</translation>
+<translation id="5020154601324912079">Festlegen, wie mit Ihren Gerätedaten verfahren wird. Google verarbeitet Ihre Gerätedaten ausschließlich nach Vorgabe durch Ihren Gerätemanager und allein zu dem von Ihrem Gerätemanager festgelegten Zweck.</translation>
 <translation id="5023310440958281426">Informieren Sie sich über die von Ihrem Administrator festgelegten Richtlinien.</translation>
 <translation id="5029568752722684782">Kopie löschen</translation>
 <translation id="503069730517007720">Für "<ph name="SOFTWARE_NAME" />" ist ein Stammzertifikat erforderlich, das nicht installiert ist. Ihr IT-Administrator sollte die Konfigurationsanweisungen für "<ph name="SOFTWARE_NAME" />" lesen, um das Problem zu beheben. <ph name="FURTHER_EXPLANATION" /></translation>
@@ -888,7 +888,7 @@
 <translation id="5838278095973806738">Sie sollten keine vertraulichen Informationen wie Passwörter oder Kreditkartennummern auf dieser Website eingeben, da sie von Angreifern gestohlen werden könnten.</translation>
 <translation id="5860033963881614850">Aus</translation>
 <translation id="5863847714970149516">Auf der nächsten Seite wird möglicherweise versucht, Ihnen etwas in Rechnung zu stellen</translation>
-<translation id="5865951947699094510">Kann Ihre Kontoeinrichtung remote ändern.</translation>
+<translation id="5865951947699094510">Ihre Kontoeinrichtung remote ändern.</translation>
 <translation id="5866257070973731571">Telefonnummer hinzufügen</translation>
 <translation id="5869405914158311789">Die Website ist nicht erreichbar</translation>
 <translation id="5869522115854928033">Gespeicherte Passwörter</translation>
@@ -1156,7 +1156,7 @@ Weitere Details:
 <translation id="741007362987735528">Wide-Format</translation>
 <translation id="7416351320495623771">Passwörter verwalten…</translation>
 <translation id="7419106976560586862">Profilpfad</translation>
-<translation id="7424427397225027541">Legt fest, wie mit Ihren Kontodaten verfahren wird. Google verarbeitet Ihre Kontodaten ausschließlich nach Vorgabe durch Ihren Kontomanager und allein zu dem von Ihrem Kontomanager festgelegten Zweck.</translation>
+<translation id="7424427397225027541">Festlegen, wie mit Ihren Kontodaten verfahren wird. Google verarbeitet Ihre Kontodaten ausschließlich nach Vorgabe durch Ihren Kontomanager und allein zu dem von Ihrem Kontomanager festgelegten Zweck.</translation>
 <translation id="7437289804838430631">Kontaktdaten hinzufügen</translation>
 <translation id="7440140511386898319">Verfügbare Offline-Inhalte</translation>
 <translation id="7441627299479586546">Falsche(r) Nutzername/Domain der Richtlinie</translation>

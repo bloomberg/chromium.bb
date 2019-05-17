@@ -165,7 +165,7 @@ Periksa email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</
 <translation id="5386244825306882791">Juga mengontrol halaman apa yang ditampilkan saat Anda memulai Chrome atau menelusuri dari Omnibox.</translation>
 <translation id="5430073640787465221">File preferensi Anda rusak atau tidak valid. Google Chrome tidak dapat memulihkan setelan Anda.</translation>
 <translation id="5483595757826856374">{0,plural, =0{Chrome akan diluncurkan ulang sekarang}=1{Chrome akan diluncurkan ulang dalam 1 detik}other{Chrome akan diluncurkan ulang dalam # detik}}</translation>
-<translation id="5543953544073077331">Salinan Chrome lain sedang berjalan. Untuk mengupdate, tutup salinan tersebut.</translation>
+<translation id="5543953544073077331">Salinan Chrome lain sedang berjalan. Untuk menjalankan update, tutup salinan tersebut.</translation>
 <translation id="556024056938947818">Google Chrome mencoba menampilkan sandi.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> mungkin berbahaya, sehingga Chrome memblokirnya.</translation>

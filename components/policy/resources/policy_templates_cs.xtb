@@ -1224,7 +1224,7 @@ Pokud je tato zásada zakázána nebo není nakonfigurována, funkce WebDriver n
 <translation id="3220624000494482595">Je-li terminálová aplikace aplikace Android, nebude mít nad verzí systému <ph name="PRODUCT_OS_NAME" /> kontrolu ani v případě, že je tato zásada nastavena na hodnotu <ph name="TRUE" />.</translation>
 <translation id="3236046242843493070">Vzory adres URL, ze kterých je možné instalovat rozšíření, aplikace a uživatelské skripty</translation>
 <translation id="3240609035816615922">Zásada přístupu ke konfiguraci tiskáren.</translation>
-<translation id="3240655340884151271">Adresa MAC rozhraní NIC vestavěného v doku</translation>
+<translation id="3240655340884151271">Adresa MAC síťové karty vestavěné v doku</translation>
 <translation id="3243309373265599239">Udává dobu nečinnosti uživatele, po které bude při napájení ze sítě snížen jas obrazovky.
 
           Pokud je tato zásada nastavena hodnotu větší než nula, jedná se o dobu, po kterou musí uživatel zůstat v nečinnosti, než systém <ph name="PRODUCT_OS_NAME" /> sníží jas obrazovku.
@@ -1620,19 +1620,19 @@ Existující nepřihlášené profily po zapnutí této zásady budou uzamčeny 
       Pokud je tato zásada nastavena na hodnotu true nebo ponechána bez nastavení, uživatelé budou moci při registraci systému Chrome OS uplatňovat zvláštní nabídky.
 
       Pokud je tato zásada nastavena na hodnotu false, uživatelé zvláštní nabídky nebudou moci uplatnit.</translation>
-<translation id="4008233182078913897">Určuje seznam aplikací a rozšíření, které se instalují na pozadí bez zásahu uživatele a které uživatel nemůže odinstalovat ani deaktivovat. Všechna oprávnění požadovaná aplikacemi nebo rozšířeními jsou udělována implicitně bez zásahu uživatele, a to včetně všech dodatečných oprávnění požadovaných budoucími verzemi aplikace nebo rozšíření. Kromě toho jsou udělována také oprávnění k používání těchto rozhraní API pro rozšíření: enterprise.deviceAttributes a enterprise.platformKeys. (Tato rozhraní API jsou k dispozici pouze u aplikací/rozšíření, jejichž instalace je vynucena.)
+<translation id="4008233182078913897">Určuje seznam aplikací a rozšíření, které se instalují na pozadí bez zásahu uživatele a které uživatel nemůže odinstalovat ani deaktivovat. Všechna oprávnění požadovaná aplikacemi nebo rozšířeními jsou udělována implicitně bez zásahu uživatele, a to včetně všech dodatečných oprávnění požadovaných budoucími verzemi aplikace nebo rozšíření. Kromě toho jsou udělena oprávnění těmto rozhraním API rozšíření: enterprise.deviceAttributes a enterprise.platformKeys. (Tato rozhraní API nejsou k dispozici aplikacím/rozšířením, jejichž instalace není vynucena.)
 
-Tato zásada má přednost před potenciálně konfliktní zásadou <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Bude-li aplikace nebo rozšíření, které bylo dříve vynuceně nainstalováno, z tohoto seznamu odebráno, <ph name="PRODUCT_NAME" /> je automaticky odinstaluje.
+          Tato zásada má přednost před potenciálně konfliktní zásadou <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Bude-li aplikace nebo rozšíření, které bylo dříve vynuceně nainstalováno, z tohoto seznamu odebráno, <ph name="PRODUCT_NAME" /> je automaticky odinstaluje.
 
-U instancí systému Windows, které nejsou propojeny s doménou <ph name="MS_AD_NAME" />, je vynucená instalace omezena pouze na aplikace a rozšíření z Internetového obchodu Chrome.
+U instancí systému Windows, které nejsou propojeny s doménou <ph name="MS_AD_NAME" />, je vynucená instalace omezena pouze na aplikace a rozšíření z Internetového obchodu Chrome.
 
-Zdrojový kód libovolného rozšíření mohou uživatelé pomocí Nástrojů pro vývojáře upravit (což může způsobit, že rozšíření nebude fungovat). Pokud je to problém, nastavte zásadu <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
+          Zdrojový kód libovolného rozšíření mohou uživatelé pomocí Nástrojů pro vývojáře upravit (což může způsobit, že rozšíření nebude fungovat). Pokud je to problém, nastavte zásadu <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
 
-Každá položka v seznamu zásady představuje řetězec, který obsahuje ID rozšíření a volitelně také adresu URL pro aktualizaci oddělené středníkem (<ph name="SEMICOLON" />). ID rozšíření je řetězec s 32 písmeny a naleznete jej například zde: <ph name="CHROME_EXTENSIONS_LINK" /> (v režimu pro vývojáře). Pokud je zadána adresa URL pro aktualizaci, měla by odkazovat na dokument XML manifestu aktualizace (viz <ph name="LINK_TO_EXTENSION_DOC1" />). Ve výchozím nastavení se použije adresa URL pro aktualizaci Internetového obchodu Chrome (v současné době https://clients2.google.com/service/update2/crx). Adresa URL pro aktualizaci nastavená v této zásadě slouží pouze k počáteční instalaci. Další aktualizace rozšíření budou používat adresu URL pro aktualizaci uvedenou v manifestu rozšíření. Upozorňujeme, že až do verze 67 prohlížeče <ph name="PRODUCT_NAME" /> bylo explicitní zadání adresy URL pro aktualizaci povinné.
+          Každá položka v seznamu zásady představuje řetězec, který obsahuje ID rozšíření a volitelně také adresu URL pro aktualizaci oddělené středníkem (<ph name="SEMICOLON" />). ID rozšíření je řetězec s 32 písmeny a naleznete jej například zde: <ph name="CHROME_EXTENSIONS_LINK" /> (v režimu pro vývojáře). Pokud je zadána adresa URL pro aktualizaci, měla by odkazovat na dokument XML manifestu aktualizace (viz <ph name="LINK_TO_EXTENSION_DOC1" />). Ve výchozím nastavení se použije adresa URL pro aktualizaci Internetového obchodu Chrome (v současné době https://clients2.google.com/service/update2/crx). Adresa URL pro aktualizaci nastavená v této zásadě slouží pouze k počáteční instalaci. Pro následné aktualizace rozšíření se použije adresa URL pro aktualizaci uvedená v manifestu rozšíření. Upozorňujeme, že až do verze 67 prohlížeče <ph name="PRODUCT_NAME" /> bylo explicitní zadání adresy URL pro aktualizaci povinné.
 
-Například <ph name="EXTENSION_POLICY_EXAMPLE" /> nainstaluje rozšíření s ID <ph name="EXTENSION_ID_SAMPLE" /> ze standardní adresy URL pro aktualizaci z Internetového obchodu Chrome. Další informace o hostování rozšíření viz <ph name="LINK_TO_EXTENSION_DOC2" />.
+          Například <ph name="EXTENSION_POLICY_EXAMPLE" /> nainstaluje rozšíření s ID <ph name="EXTENSION_ID_SAMPLE" /> ze standardní adresy URL pro aktualizaci z Internetového obchodu Chrome. Další informace o hostování rozšíření viz <ph name="LINK_TO_EXTENSION_DOC2" />.
 
-Je-li tato zásada ponechána nenastavená, žádné aplikace ani rozšíření se automaticky neinstalují a uživatel v prohlížeči <ph name="PRODUCT_NAME" /> může kteroukoliv aplikaci nebo rozšíření odinstalovat.
+Je-li tato zásada ponechána nenastavená, žádné aplikace ani rozšíření se automaticky neinstalují a uživatel v prohlížeči <ph name="PRODUCT_NAME" /> může kteroukoliv aplikaci nebo rozšíření odinstalovat.
 
 Tato zásada se nevztahuje na anonymní režim.</translation>
 <translation id="4008507541867797979">Pokud je tato zásada nastavena na hodnotu true nebo není nakonfigurována, bude <ph name="PRODUCT_OS_NAME" /> na přihlašovací obrazovce ukazovat existující uživatele a umožní vybrat si z nich.
@@ -2525,7 +2525,7 @@ Pokud tato zásada není nastavena nebo je nastavena na hodnotu false, prohlíž
 <translation id="5765780083710877561">Popis:</translation>
 <translation id="5770738360657678870">Verze pro vývojáře (mohou být nestabilní)</translation>
 <translation id="5774856474228476867">Adresa URL vyhledávání výchozího poskytovatele vyhledávání</translation>
-<translation id="5775235485119094648">Nabít baterii, když je v určitém rozmezí.</translation>
+<translation id="5775235485119094648">Nabíjet baterii, když je v určitém rozmezí.</translation>
 <translation id="5776485039795852974">Dotázat se vždy, když se webové stránky snaží zobrazit oznámení na ploše</translation>
 <translation id="5781412041848781654">Určuje knihovnu GSSAPI, která bude použita pro ověření v protokolu HTTP. Nastavit lze buď pouze název knihovny, nebo celou cestu.
 
@@ -2638,7 +2638,7 @@ Pokud tuto zásadu nenastavíte, bude při prvním zobrazení přihlašovací ob
 <translation id="5950205771952201658">Vzhledem k tomu, že online kontroly zamítnutých certifikátů nepřinášejí žádné efektivní bezpečnostní výhody a také snadno selhávají, jsou v prohlížeči <ph name="PRODUCT_NAME" /> verze 19 a vyšší ve výchozím nastavení deaktivovány. Nastavíte-li tuto zásadu na hodnotu True, obnoví se předchozí chování a budou prováděny online kontroly OCSP/CRL.
 
 Pokud tato zásada není nastavena nebo je nastavena na hodnotu False, <ph name="PRODUCT_NAME" /> nebude u verzí <ph name="PRODUCT_NAME" /> 19 a novějších provádět online kontroly zamítnutých certifikátů.</translation>
-<translation id="5961137303188584693">Adresa MAC rozhraní NIC vestavěného v zařízení</translation>
+<translation id="5961137303188584693">Adresa MAC síťové karty vestavěné v zařízení</translation>
 <translation id="5966615072639944554">Rozšíření, která mohou používat rozhraní API vzdáleného ověření identity</translation>
 <translation id="5983708779415553259">Výchozí chování pro stránky, které nejsou součástí žádného obsahového balíčku</translation>
 <translation id="5997543603646547632">Ve výchozím nastavení použít 24hodinový formát</translation>

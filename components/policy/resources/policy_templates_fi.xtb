@@ -1264,7 +1264,7 @@ Jos tämä asetus on käytössä tai sitä ei ole määritetty, käyttäjät voi
 Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta käyttöön eikä kone voi jakaa tulostimiaan palvelussa <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="3312206664202507568">Ottaa osoitteessa chrome://password-change käyttöön sivun, jossa SAML-käyttäjät voivat vaihtaa SAML-salasanansa käyttökerran aikana, mikä varmistaa sen, että SAML-salasana ja laitteen lukitusnäyttö pysyvät synkronoituina.
 
-      Tämä käytäntö ottaa myös käyttöön ilmoitukset, jotka varoittavat SAML-käyttäjiä, kun heidän SAML-salasanansa ovat vanhentumassa, jotta välittömästi vaihtaa salasanan käyttökerran aikana.
+      Tämä käytäntö ottaa myös käyttöön ilmoitukset, jotka varoittavat SAML-käyttäjiä, kun heidän SAML-salasanansa ovat vanhentumassa, jotta he voivat välittömästi vaihtaa salasanan käyttökerran aikana.
       Nämä ilmoitukset näytetään vain, jos SAML-tunnistustietojen tarjoaja lähettää salasanan vanhentumistiedot laitteelle SAML-kirjautumisprosessin aikana.
 
       Jos tämä käytäntö on määritetty, käyttäjä ei voi muuttaa tai ohittaa sitä.</translation>
@@ -2497,7 +2497,7 @@ Jos käytäntöä ei määritetä, käyttäjät voivat valita, tuleeko hylly pii
 
           Jos tätä asetusta ei ole määritetty, kaiken tyyppisiä sovelluksia ja laajennuksia voi asentaa.
 
-          Ennen versiota 75 useiden pilkuilla erotettuja laajennustunnuksia käyttöä ei tueta ja se ohitetaan. Käytännön muita osia sovelletaan jatkossakin.</translation>
+          Ennen versiota 75 useiden pilkuilla erotettujen laajennustunnusten käyttöä ei tueta ja se ohitetaan. Käytännön muita osia sovelletaan jatkossakin.</translation>
 <translation id="5645779841392247734">Salli evästeet näissä sivustoissa</translation>
 <translation id="5689430183304951538">Tulostuksen oletussivukoko</translation>
 <translation id="5693469654327063861">Salli tietojen siirtäminen</translation>

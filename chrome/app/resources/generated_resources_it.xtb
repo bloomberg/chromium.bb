@@ -613,7 +613,7 @@
 <translation id="1932026958134051332">Opzioni Switch Access</translation>
 <translation id="1932098463447129402">Non prima</translation>
 <translation id="1933809209549026293">Collega un mouse o una tastiera. Se utilizzi un dispositivo Bluetooth, assicurati che sia pronto per essere accoppiato.</translation>
-<translation id="1937774647013465102">Impossibile importare il tipo di architettura del contenitore <ph name="ARCHITECTURE_CONTAINER" /> con questo dispositivo che invece è <ph name="ARCHITECTURE_DEVICE" />. Puoi provare a ripristinare questo contenitore in un diverso dispositivo oppure puoi accedere ai file all'interno dell'immagine del contenitore se accedi all'app File.</translation>
+<translation id="1937774647013465102">Impossibile importare il tipo di architettura del contenitore <ph name="ARCHITECTURE_CONTAINER" /> con questo dispositivo che invece è <ph name="ARCHITECTURE_DEVICE" />. Puoi provare a ripristinare questo contenitore in un diverso dispositivo oppure puoi accedere ai file all'interno dell'immagine del contenitore aprendoli nell'app File.</translation>
 <translation id="1938351510777341717">Comando esterno</translation>
 <translation id="1940546824932169984">Dispositivi collegati</translation>
 <translation id="1944921356641260203">Aggiornamento trovato</translation>
@@ -899,7 +899,7 @@
 <translation id="2392369802118427583">Attiva</translation>
 <translation id="2394566832561516196">Le impostazioni verranno cancellate al prossimo aggiornamento della pagina.</translation>
 <translation id="2395616325548404795">Il dispositivo <ph name="DEVICE_TYPE" /> è stato registrato correttamente per la gestione aziendale, ma l'invio delle relative informazioni su asset e posizione non è riuscito. Inserisci manualmente queste informazioni nella Console di amministrazione del dispositivo.</translation>
-<translation id="2396783860772170191">Inserisci il pin di 4 cifre (0000-9999)</translation>
+<translation id="2396783860772170191">Inserisci il PIN di 4 cifre (0000-9999)</translation>
 <translation id="2408955596600435184">Inserisci il codice PIN</translation>
 <translation id="241082044617551207">Plug-in sconosciuto</translation>
 <translation id="2413749388954403953">Modifica dell'interfaccia utente dei Preferiti</translation>
@@ -1086,7 +1086,7 @@
 <translation id="2677748264148917807">Esci</translation>
 <translation id="2678063897982469759">Riattiva</translation>
 <translation id="268053382412112343">Cr&amp;onologia</translation>
-<translation id="2682498795777673382">Aggiornata da un genitore</translation>
+<translation id="2682498795777673382">Aggiornato da un genitore</translation>
 <translation id="2683638487103917598">Cartella ordinata</translation>
 <translation id="2684004000387153598">Per continuare, fai clic su OK, quindi fai clic su Aggiungi persona per creare un nuovo profilo per il tuo indirizzo email.</translation>
 <translation id="2688196195245426394">Errore durante la registrazione del dispositivo con il server. <ph name="CLIENT_ERROR" />.</translation>
@@ -4949,7 +4949,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8732212173949624846">Lettura e modifica della cronologia di navigazione su tutti i dispositivi su cui viene eseguito l'accesso</translation>
 <translation id="8732844209475700754">Altre impostazioni relative a privacy, sicurezza e raccolta dei dati</translation>
 <translation id="8734073480934656039">L'attivazione di questa impostazione consente l'apertura automatica delle applicazioni kiosk all'avvio.</translation>
-<translation id="8734671092194994316">Lascerà un record della tua visita al sito <ph name="WEBSITE" /> sul tuo token di sicurezza.</translation>
+<translation id="8734671092194994316">Verrà memorizzato un record della tua visita al sito <ph name="WEBSITE" /> sul tuo token di sicurezza.</translation>
 <translation id="873545264931343897">Al termine dell'aggiornamento del plug-in <ph name="PLUGIN_NAME" />, ricarica la pagina per attivarlo</translation>
 <translation id="8736288397686080465">Il sito è stato aggiornato in background.</translation>
 <translation id="8737685506611670901">Aprire link <ph name="PROTOCOL" /> anziché <ph name="REPLACED_HANDLER_TITLE" /></translation>

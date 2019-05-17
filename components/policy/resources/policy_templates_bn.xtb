@@ -2181,7 +2181,7 @@
 
       <ph name="URL_LIST_POLICY_NAME" />-এর ক্ষেত্রে সেটি না হলেও, এখানে নিয়ম উভয় দিকেই প্রযোজ্য হয়। অর্থাৎ, Internet Explorer অ্যাড-ইন উপস্থিত ও চালু থাকলে, <ph name="IE_PRODUCT_NAME" /> এই ইউআরএলগুলি <ph name="PRODUCT_NAME" />-এ খুলবে কিনা সেটিও এর দ্বারা নিয়ন্ত্রিত হয়।</translation>
 <translation id="5124368997194894978">AC-এর বুট প্রক্রিয়া চালু করা (অলটার্নেটিং কারেন্ট)</translation>
-<translation id="5131211790949066746"><ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" /> ও <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" /> এক্সটে`নশন ইনস্টল তালিকার নীতিগুলি মার্জ করা চালু করে।
+<translation id="5131211790949066746"><ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" /> ও <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" /> এক্সটেনশন ইনস্টল তালিকার নীতিগুলি মার্জ করা চালু করে।
 
       আপনি এই সেটিং চালু করলে, শুধু একটি উৎস থেকে সবচেয়ে বেশি অগ্রাধিকার সম্পন্ন মানগুলিকে ব্যবহার না করে মেশিন প্ল্যাটফর্ম নীতি, মেশিন ক্লাউড নীতি ও ব্যবহারকারীর প্ল্যাটফর্ম নীতির মানগুলিকে একটি তালিকায় মার্জ করে সামগ্রিকভাবে ব্যবহার করা হয়।
 

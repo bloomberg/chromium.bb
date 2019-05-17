@@ -3832,7 +3832,7 @@
 <translation id="7003339318920871147">ウェブ データベース</translation>
 <translation id="7003723821785740825">デバイスのロックをすばやく解除する方法を設定できます</translation>
 <translation id="7003844668372540529">不明な商品（<ph name="PRODUCT_ID" />、ベンダー: <ph name="VENDOR_NAME" />）</translation>
-<translation id="7004402701596653846">サイトで MIDI が使用される可能性があります</translation>
+<translation id="7004402701596653846">サイトに MIDI の使用が許可されています</translation>
 <translation id="7004499039102548441">最近使ったタブ</translation>
 <translation id="7005848115657603926">ページ範囲が無効です。<ph name="EXAMPLE_PAGE_RANGE" /> の範囲で指定してください。</translation>
 <translation id="7006634003215061422">下余白</translation>

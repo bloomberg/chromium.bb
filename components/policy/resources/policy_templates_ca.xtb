@@ -2358,7 +2358,7 @@ Si desactiveu aquest paràmetre o si no definiu cap valor, SafeSearch de Cerca d
 Si s'activa aquest paràmetre, <ph name="PRODUCT_NAME" /> obrirà el diàleg d'impressió del sistema en comptes de la previsualització integrada quan un usuari sol·liciti la impressió d'una pàgina.
 
 Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran que aparegui la pantalla de previsualització d'impressió.</translation>
-<translation id="6022948604095165524">Acció en iniciar</translation>
+<translation id="6022948604095165524">Acció a l'inici</translation>
 <translation id="6023030044732320798">Especifica un conjunt de polítiques que es transferiran al temps d'execució d'ARC. El valor ha d'estar en format JSON vàlid.
 
       Aquesta política es pot utilitzar per configurar quines aplicacions per a Android s'instal·len automàticament al dispositiu:
@@ -2512,7 +2512,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="6221175752766085998">Permet els certificats emesos per ancoratges de confiança locals sense l'extensió subjectAlternativeName</translation>
 <translation id="6224304369267200483">Els URL i els dominis han permès automàticament la confirmació directa de la clau de seguretat</translation>
 <translation id="6233173491898450179">Estableix el directori de baixada</translation>
-<translation id="6244210204546589761">URL que s'han d'obrir en iniciar</translation>
+<translation id="6244210204546589761">URL que s'han d'obrir a l'inici</translation>
 <translation id="6255387031094435995">Permet que les polítiques seleccionades es combinin quan procedeixin de fonts diferents i tinguin el mateix abast i nivell.
 
         Si una política és a la llista i es produeix un conflicte entre dos fonts, com que tenen el mateix abast i nivell, els valors es combinaran en una llista de polítiques nova.

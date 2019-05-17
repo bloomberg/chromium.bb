@@ -1709,7 +1709,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3664511988987167893">Uzantı Simgesi</translation>
 <translation id="3665589677786828986">Chrome, bazı ayarlarınızın başka bir program tarafından bozulduğunu algıladı ve onları orijinal varsayılan değerlerine sıfırladı.</translation>
 <translation id="3668570675727296296">Dil ayarları</translation>
-<translation id="366867565525278777">Depolama alanı yetersiz olduğu için yükleme işlemi başarısız oldu. En az <ph name="INSTALL_SIZE" /> boş alan gerekiyor. Yer açmak için cihaz depolama alanındaki dosyaları silin.</translation>
+<translation id="366867565525278777">Depolama alanı yetersiz olduğu için yükleme işlemi başarısız oldu. En az <ph name="INSTALL_SIZE" /> boş alan gerekiyor. Yer açmak için cihaz depolama alanından dosya silin.</translation>
 <translation id="3668801437375206837">Google çalışanları Bluetooth sorunlarını daha iyi teşhis etmek için geri bildirim raporlarına ek Bluetooth günlükleri dahil edebilirler. Bu seçenek işaretlendiğinde, geçerli oturumunuzdan btsnoop ve HCI günlükleri raporunuza eklenecektir. Bu şekilde mümkün olan en fazla sayıda PII temizlenecektir. Bu günlüklere erişim, Listnr'da Chrome OS ürün grubu yöneticileri ile kısıtlı olacaktır. Günlükler 90 gün sonra tamamen silinecektir.</translation>
 <translation id="3668823961463113931">İşleyiciler</translation>
 <translation id="3670113805793654926">Herhangi bir tedarikçinin cihazları</translation>
@@ -2180,7 +2180,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="438503109373656455">Şimşek</translation>
 <translation id="4387004326333427325">Kimlik doğrulama sertifikası uzaktan reddedildi</translation>
 <translation id="4389091756366370506">Kullanıcı <ph name="VALUE" /></translation>
-<translation id="4390000551125140321">{0,plural, =1{Gizli mod}other{açık # gizli pencere}}</translation>
+<translation id="4390000551125140321">{0,plural, =1{Gizli mod}other{Açık # gizli pencere}}</translation>
 <translation id="439266289085815679">Bluetooth yapılandırması <ph name="USER_EMAIL" /> tarafından kontrol ediliyor.</translation>
 <translation id="4394049700291259645">Devre dışı bırak</translation>
 <translation id="4400367121200150367">Şifreleri hiçbir zaman kaydedilmeyecek siteler burada görünür</translation>
@@ -2486,7 +2486,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="488785315393301722">Ayrıntıları Göster</translation>
 <translation id="4890773143211625964">Gelişmiş yazıcı seçeneklerini göster</translation>
 <translation id="4891089016822695758">Beta forumu</translation>
-<translation id="4892229439761351791">Sitede Bluetooth bağlantısı kullanılabilir</translation>
+<translation id="4892229439761351791">Site Bluetooth bağlantısı kullanabilir</translation>
 <translation id="4893336867552636863">Bu işlem, tarama verilerinizi bu cihazdan kalıcı olarak silecektir.</translation>
 <translation id="4893522937062257019">Kilit ekranında</translation>
 <translation id="489454699928748701">Sitelerin hareket sensörlerini kullanmasına izin ver</translation>
@@ -4284,7 +4284,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7704628569466676326">Güvenlik anahtarınızı hesabınızda oturum açarken kullanabilmeniz için bu cihazla eşleyin</translation>
 <translation id="7705276765467986571">Yer işareti modeli yüklenemedi.</translation>
 <translation id="7705524343798198388">VPN</translation>
-<translation id="7707108266051544351">Bu sitenin, hareket sensörlerini kullanımı engellenmiştir.</translation>
+<translation id="7707108266051544351">Bu sitenin, hareket sensörlerini kullanması engellenmiştir.</translation>
 <translation id="7707922173985738739">Mobil veri kullanın</translation>
 <translation id="7709152031285164251">Başarısız - <ph name="INTERRUPT_REASON" /></translation>
 <translation id="7710568461918838723">&amp;Yayınla...</translation>
@@ -5056,7 +5056,7 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8877448029301136595">[üst dizin]</translation>
 <translation id="8879284080359814990">&amp;Sekme Olarak Göster</translation>
 <translation id="8883847527783433352">Başka bir Hesapla Senkronize Et</translation>
-<translation id="8884570509232205463">Cihazınız artık saat <ph name="UNLOCK_TIME" /> olduğunda kilitlenecek.</translation>
+<translation id="8884570509232205463">Cihazınız saat <ph name="UNLOCK_TIME" /> olduğunda artık kilitlenecek.</translation>
 <translation id="8885197664446363138">Smart Lock kullanılamıyor</translation>
 <translation id="8888253246822647887">Uygulamanız, yeni sürüme geçme işlemi tamamlandığında açılır. Yeni sürüme geçme işlemi birkaç dakika sürebilir.</translation>
 <translation id="8888432776533519951">Renk:</translation>

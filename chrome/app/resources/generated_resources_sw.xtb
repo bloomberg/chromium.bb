@@ -3438,7 +3438,7 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6390994422085833176">Kagua vipengee vya kuweka mapendeleo na usawazishaji vinavyotokana na mipangilio</translation>
 <translation id="6393156038355142111">Pendekeza nenosiri thabiti</translation>
 <translation id="6395423953133416962">Tuma <ph name="BEGIN_LINK1" />maelezo ya mfumo<ph name="END_LINK1" /> na <ph name="BEGIN_LINK2" />hesabu<ph name="END_LINK2" /></translation>
-<translation id="6396988158856674517">Zuia touti zisitumie vitambuzi vya mwendo</translation>
+<translation id="6396988158856674517">Zuia tovuti zisitumie vitambuzi vya mwendo</translation>
 <translation id="6397094776139756010">Chaguo za usawazishaji na kuweka mapendeleo</translation>
 <translation id="6398715114293939307">Ondoa Duka la Google Play</translation>
 <translation id="6398765197997659313">Ondoka kwenye Skrini nzima</translation>
@@ -4017,7 +4017,7 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="7289225569524511578">Fungua programu ya mandhari</translation>
 <translation id="7290242001003353852">Huduma hii ya kuingia katika akaunti, inayopangishwa na <ph name="SAML_DOMAIN" />, ina idhini ya kufikia kamera yako.</translation>
 <translation id="7290594223351252791">Thibitisha usajili</translation>
-<translation id="7295614427631867477">Kumbuka kwamba Google Play, Android na programu zinazohusiana zinaoongozwa na sera zake za ukusanyaji na utumiaji wa data.</translation>
+<translation id="7295614427631867477">Kumbuka kwamba Google Play, Android na programu zinazohusiana zinaongozwa na sera mahususi za ukusanyaji na utumiaji wa data.</translation>
 <translation id="729583233778673644">Ruhusu usimbaji wa AES na RC4. Kutumia chaguo hili huongeza uwezekano wa hatari, kwa kuwa misimbo ya RC45 si salama.</translation>
 <translation id="7296774163727375165"><ph name="DOMAIN" /> Masharti</translation>
 <translation id="7297443947353982503">Jina la mtumiaji/nenosiri sio sahihi au EAP-auth imeshindwa</translation>

@@ -877,7 +877,7 @@
 <translation id="236117173274098341">Optimizar</translation>
 <translation id="236141728043665931">Bloquear siempre el acceso al micrófono</translation>
 <translation id="2365507699358342471">Este sitio puede ver el texto y las imágenes que se copiaron en el portapapeles.</translation>
-<translation id="2367199180085172140">Agregar uso compartido del archivo</translation>
+<translation id="2367199180085172140">Agregar archivos compartidos</translation>
 <translation id="2367972762794486313">Mostrar aplicaciones</translation>
 <translation id="2371076942591664043">Abrir al &amp;finalizar</translation>
 <translation id="2375406435414127095">Conéctate a tu teléfono</translation>
@@ -1085,7 +1085,7 @@
 <translation id="2677748264148917807">Abandonar</translation>
 <translation id="2678063897982469759">Permitir nuevamente</translation>
 <translation id="268053382412112343">Hi&amp;storial</translation>
-<translation id="2682498795777673382">Actualización de uno de tus padres</translation>
+<translation id="2682498795777673382">Actualización por parte de uno de tus padres</translation>
 <translation id="2683638487103917598">Se ordenó la carpeta</translation>
 <translation id="2684004000387153598">Para continuar, haz clic en Aceptar y, luego, en Agregar un usuario para crear un nuevo perfil para tu dirección de correo electrónico.</translation>
 <translation id="2688196195245426394">Se produjo un error al registrar el dispositivo en el servidor: <ph name="CLIENT_ERROR" />.</translation>
@@ -1706,7 +1706,7 @@
 <translation id="3664511988987167893">Ícono de extensión</translation>
 <translation id="3665589677786828986">Chrome detectó que otro programa dañó algunas opciones de configuración, por lo que la restableció a los valores predeterminados.</translation>
 <translation id="3668570675727296296">Configuración de idiomas</translation>
-<translation id="366867565525278777">No se pudo instalar debido a la falta de espacio de almacenamiento. Se necesita al menos <ph name="INSTALL_SIZE" /> de espacio libre. Para liberar espacio, borra archivos del almacenamiento del dispositivo.</translation>
+<translation id="366867565525278777">No se pudo instalar debido a la falta de espacio de almacenamiento. Se necesita, al menos, <ph name="INSTALL_SIZE" /> de espacio libre. Para liberar espacio, borra archivos del almacenamiento del dispositivo.</translation>
 <translation id="3668801437375206837">Para diagnosticar mejor los problemas de Bluetooth, los empleados de Google pueden incluir registros de Bluetooth adicionales en sus informes de respuesta. Si se selecciona esta opción, tu informe incluirá registros de btsnoop y HCI de tu sesión actual editados para quitar la mayor cantidad posible de información de identificación personal. Solo los gerentes del grupo del producto Sistema operativo Chrome tienen acceso a estos registros en Listnr. Los registros se borrarán definitivamente después de 90 días.</translation>
 <translation id="3668823961463113931">Controladores</translation>
 <translation id="3670113805793654926">Dispositivos de cualquier proveedor</translation>
@@ -1862,7 +1862,7 @@
 <translation id="3869917919960562512">Índice incorrecto.</translation>
 <translation id="3870931306085184145">No hay contraseñas guardadas para <ph name="DOMAIN" /></translation>
 <translation id="3871092408932389764">Muy bajo</translation>
-<translation id="3871350334636688135">A las 24 horas de que restablezcas tu dispositivo, el administrador realizará una actualización única que borrará tus datos locales. Guarda estos datos en el almacenamiento de nube antes de que se cumpla este plazo.</translation>
+<translation id="3871350334636688135">A las 24 horas de que restablezcas tu dispositivo, el administrador realizará una actualización única que borrará tus datos locales. Guarda estos datos en el almacenamiento en la nube antes de que se cumpla este plazo.</translation>
 <translation id="3872220884670338524">Más acciones (cuenta guardada para <ph name="USERNAME" /> en <ph name="DOMAIN" />)</translation>
 <translation id="3872991219937722530">Libera espacio en el disco o el dispositivo dejará de funcionar.</translation>
 <translation id="3873315167136380065">A fin de activar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización<ph name="END_LINK" /> para quitar la frase de contraseña de sincronización</translation>

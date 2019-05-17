@@ -3456,7 +3456,7 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 
           Chính sách này chỉ được áp dụng nếu chính sách 'DefaultSearchProviderEnabled' được bật.</translation>
 <translation id="7302043767260300182">Độ trễ khóa màn hình khi chạy trên nguồn AC</translation>
-<translation id="7305262223970835999">Cho phép người dùng SAML đổi mật khẩu của một trang ngay trong phiên đăng nhập.</translation>
+<translation id="7305262223970835999">Cho phép một trang để người dùng SAML có thể đổi mật khẩu ngay trong phiên đăng nhập.</translation>
 <translation id="7311458740754205918">Nếu giá trị này được đặt thành true hoặc không được đặt, trang Tab mới có thể hiển thị đề xuất nội dung dựa trên lịch sử duyệt web, sở thích hoặc vị trí của người dùng.
 
       Nếu giá trị này được đặt thành false, các đề xuất nội dung được tạo tự động sẽ không hiển thị trên trang Tab mới.</translation>

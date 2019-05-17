@@ -1174,7 +1174,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="3077183141551274418">Habilitar o inhabilitar los ciclos de vida de las pestañas</translation>
 <translation id="3079417254871857650">Especifica la acción que debe realizarse cuando se creó el directorio principal del usuario con la encriptación ecryptfs.
 
-      Si configuras esta política como "DisallowArc", se inhabilitarán las apps de Android para el usuario y no se realizará la migración de la encriptación ecryptfs a ext4. Si el directorio principal ya cuenta con la encriptación ext4, no se inhabilitarán las apps de Android.
+      Si configuras esta política como "DisallowArc", se inhabilitarán las apps de Android para el usuario, y no se realizará la migración de la encriptación ecryptfs a ext4. Si el directorio principal ya cuenta con la encriptación ext4, no se inhabilitarán las apps de Android.
 
       Si configuras esta política como "Migrate", los directorios principales con la encriptación ecryptfs se migrarán automáticamente a la encriptación ext4 cuando el usuario acceda, sin solicitarle permiso.
 
@@ -1500,7 +1500,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="3826475866868158882">Se habilitaron los Servicios de ubicación de Google</translation>
 <translation id="3831054243924627613">Esta política controla el estado inicial de la funcionalidad de Android para hacer copias de seguridad y aplicar restablecimientos.
 
-      Si no se configura o se establece como <ph name="BR_DISABLED" />, se inhabilitará la funcionalidad de Android para hacer copias de seguridad y aplicar restablecimientos.
+      Si no se configura o se establece como <ph name="BR_DISABLED" />, se inhabilitará esa funcionalidad de Android.
 
       Si esta política se establece como <ph name="BR_ENABLED" />, se habilitará la funcionalidad de Android para hacer copias de seguridad y aplicar restablecimientos.
 
@@ -2462,7 +2462,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="5630352020869108293">Restaurar la última sesión</translation>
 <translation id="5643906875497889108">Controla los tipos de extensiones o apps que se pueden instalar y limita el acceso al tiempo de ejecución.
 
-          Esta configuración incluye en la lista blanca los tipos de extensiones o apps permitidos que se pueden instalar en <ph name="PRODUCT_NAME" /> y los hosts con los que pueden interactuar. El valor es una lista con las siguientes strings: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Para obtener más información sobre estos tipos, consulta la documentación de extensiones de <ph name="PRODUCT_NAME" />.
+          Esta configuración incluye en la lista blanca los tipos de extensiones o apps permitidos que se pueden instalar en <ph name="PRODUCT_NAME" /> y los hosts con los que pueden interactuar. El valor es una lista con los siguientes strings: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Para obtener más información sobre estos tipos, consulta la documentación de extensiones de <ph name="PRODUCT_NAME" />.
 
           Ten en cuenta que esta política también afecta las extensiones y apps que se instalan de forma automática mediante la política ExtensionInstallForcelist.
 
@@ -2681,7 +2681,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="6034341625190551415">Controla la sesión pública y los tipos de cuenta del kiosko.</translation>
 <translation id="6034603289689965535">Permite que una página muestre ventanas emergentes durante su descarga</translation>
 <translation id="6036523166753287175">Habilitar el cruce seguro de firewall desde hosts de acceso remoto</translation>
-<translation id="605475635122964053">Restringe el modo de impresión con PIN. Si no se configura la política, no se aplicará ninguna restricción. Si el modo no está disponible, se ignorará esta política. Ten en cuenta que la función de impresión de PIN solo se habilitará para impresoras que usen uno de los protocolos IPPS, USB o IPP-over-USB </translation>
+<translation id="605475635122964053">Restringe el modo de impresión con PIN. Si no se configura la política, no se aplicará ninguna restricción. Si el modo no está disponible, se ignorará esta política. Ten en cuenta que la función de impresión con PIN solo se habilitará para impresoras que usen uno de los protocolos IPPS, USB o IPP-over-USB </translation>
 <translation id="6070667616071269965">Diseños de teclado de la pantalla de acceso del dispositivo</translation>
 <translation id="6074963268421707432">No permitir que los sitios muestren notificaciones de escritorio.</translation>
 <translation id="6074964551275531965">Establecer el período para las notificaciones de actualización</translation>
@@ -3215,7 +3215,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
       Si no estableces esta política, los usuarios podrán decidir si quieren que sea necesaria una contraseña para volver a activar el dispositivo o no.</translation>
 <translation id="7107148737865880402">Habilita la política de administración de la energía para el uso compartido de energía con USB.
 
-          Ciertos dispositivos tienen un puerto USB específico, marcado con un ícono de rayo o de batería, que se puede usar para cargar dispositivos como teléfonos móviles con la batería del sistema. Esta política afecta el comportamiento de carga de este puerto mientras el sistema está apagado o en suspensión. Esta política no afecta los demás puertos USB ni el comportamiento de carga cuando el sistema está activado.
+          Ciertos dispositivos tienen un puerto USB específico, marcado con un ícono de rayo o de batería, que se puede usar para cargar dispositivos, como teléfonos móviles, con la batería del sistema. Esta política afecta el comportamiento de carga de este puerto mientras el sistema está apagado o en suspensión. Esta política no afecta los demás puertos USB ni el comportamiento de carga cuando el sistema está activado.
 
           En ese caso, el puerto USB siempre proporcionará energía.
 
@@ -3352,7 +3352,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 
           Esta política solo se respeta si la política "DefaultSearchProviderEnabled" está habilitada.</translation>
 <translation id="7302043767260300182">Demora de bloqueo de pantalla con alimentación de CA</translation>
-<translation id="7305262223970835999">Permitir una página para el cambio de contraseña en la sesión para usuarios de SAML</translation>
+<translation id="7305262223970835999">Habilita una página para el cambio de contraseña en la sesión para usuarios de SAML.</translation>
 <translation id="7311458740754205918">Si esta política se establece como verdadera o no se establece, la página Nueva pestaña mostrará sugerencias de contenido basadas en la ubicación, los intereses o el historial de navegación del usuario.
 
       Si se establece como falsa, la página Nueva pestaña no mostrará sugerencias de contenido generadas de forma automática.</translation>

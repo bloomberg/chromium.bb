@@ -1707,7 +1707,7 @@
 <translation id="3664511988987167893">Ikon Ekstensi</translation>
 <translation id="3665589677786828986">Chrome mendeteksi bahwa beberapa setelan Anda dirusak oleh program lain dan menyetelnya ulang ke setelan default aslinya.</translation>
 <translation id="3668570675727296296">Setelan bahasa</translation>
-<translation id="366867565525278777">Gagal menginstal karena ruang penyimpanan tidak cukup. Diperlukan ruang kosong minimal <ph name="INSTALL_SIZE" />. Untuk mengosongkan ruang, hapus file dari penyimpanan perangkat.</translation>
+<translation id="366867565525278777">Gagal menginstal karena ruang penyimpanan tidak cukup. Diperlukan ruang kosong minimal sebesar <ph name="INSTALL_SIZE" />. Untuk mengosongkan ruang, hapus file dari penyimpanan perangkat.</translation>
 <translation id="3668801437375206837">Untuk mendiagnosis masalah Bluetooth dengan lebih baik, Googler dapat menyertakan log Bluetooth tambahan dengan laporan umpannya. Jika opsi ini dicentang, laporan Anda akan menyertakan log HCI dan btsnoop dari sesi Anda saat ini, yang dihapus untuk membuang PII sebanyak mungkin. Akses ke log ini akan dibatasi pada pengelola grup produk Chrome OS di Listnr. Log akan dihapus setelah 90 hari.</translation>
 <translation id="3668823961463113931">Penangan</translation>
 <translation id="3670113805793654926">Perangkat dari semua vendor</translation>
@@ -4954,7 +4954,7 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8732212173949624846">Membaca dan mengubah histori penjelajahan Anda di semua perangkat tempat Anda masuk</translation>
 <translation id="8732844209475700754">Setelan lain yang berkaitan dengan privasi, keamanan, dan pengumpulan data</translation>
 <translation id="8734073480934656039">Dengan mengaktifkan setelan ini, Anda memungkinkan aplikasi kios diluncurkan secara otomatis saat memulai.</translation>
-<translation id="8734671092194994316">Tindakan ini akan meninggalkan data kunjungan Anda ke <ph name="WEBSITE" /> pada kunci keamanan.</translation>
+<translation id="8734671092194994316">Tindakan ini akan menyebabkan data kunjungan Anda ke <ph name="WEBSITE" /> disimpan di kunci keamanan.</translation>
 <translation id="873545264931343897">Setelah <ph name="PLUGIN_NAME" /> selesai diperbarui, muat ulang halaman untuk mengaktifkannya</translation>
 <translation id="8736288397686080465">Situs ini diperbarui di latar belakang.</translation>
 <translation id="8737685506611670901">Membuka link <ph name="PROTOCOL" /> sebagai ganti <ph name="REPLACED_HANDLER_TITLE" /></translation>

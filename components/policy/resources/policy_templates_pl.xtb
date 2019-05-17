@@ -1387,7 +1387,7 @@ Jeśli nie podasz wartości albo wybierzesz ustawienie „Wyłącz”, stosowani
       Jeśli ta zasada jest ustawiona na wartość „DeveloperToolsAllowed” (wartość 1), narzędzia dla deweloperów i konsola JavaScript są dostępne we wszystkich kontekstach, również w kontekście rozszerzeń zainstalowanych przez zasady przedsiębiorstwa.
       Jeśli ta zasada jest ustawiona na wartość „DeveloperToolsDisallowed” (wartość 2), narzędzia dla deweloperów są niedostępne i nie można badać elementów na stronach. Wyłączone będą wszystkie skróty klawiszowe oraz pozycje menu i menu kontekstowego, które otwierają narzędzia dla deweloperów i konsolę JavaScript.</translation>
 <translation id="3547954654003013442">Ustawienia serwera proxy</translation>
-<translation id="3550875587920006460">Umożliwia ustawienie niestandardowego harmonogramu sprawdzania dostępności aktualizacji. Dotyczy to wszystkich użytkowników oraz wszystkich interfejsów na urządzeniu. Po ustawieniu zasady urządzenie sprawdza dostępność aktualizacji zgodnie z harmonogramem. Aby anulować kolejne zaplanowane sprawdzanie dostępności aktualizacji, musisz usunąć tę zasadę.</translation>
+<translation id="3550875587920006460">Umożliwia ustawienie niestandardowego harmonogramu sprawdzania dostępności aktualizacji. Dotyczy to wszystkich użytkowników oraz wszystkich interfejsów na urządzeniu. Po skonfigurowaniu zasady urządzenie sprawdza dostępność aktualizacji zgodnie z harmonogramem. Aby anulować kolejne zaplanowane sprawdzanie dostępności aktualizacji, musisz usunąć tę zasadę.</translation>
 <translation id="355118380775352753">Witryny otwierane w alternatywnej przeglądarce</translation>
 <translation id="3554984410014457319">Zezwól Asystentowi Google nasłuchiwać wyrażenia aktywującego obsługę komend głosowych</translation>
 <translation id="356579196325389849">Użytkownicy mogą skonfigurować kanał wersji Chrome OS</translation>
@@ -1628,21 +1628,21 @@ Jeśli ta zasada jest wyłączona, informacje o sesji nie będą przesyłane. Je
       Jeśli nie skonfigurujesz tej zasady lub ustawisz dla niej wartość prawda, użytkownicy będą mogli wykorzystywać oferty przy rejestracji systemu operacyjnego Chrome.
 
       Jeśli ustawisz tu wartość fałsz, użytkownicy nie będą mogli wykorzystywać ofert.</translation>
-<translation id="4008233182078913897">Określa listę aplikacji i rozszerzeń, które zostaną zainstalowane dyskretnie, bez interakcji z użytkownikiem, a użytkownik nie będzie mógł ich odinstalować ani wyłączyć. Aplikacje/rozszerzenia bez interakcji z użytkownikiem otrzymają wszystkie uprawnienia, o które proszą, w tym wszelkie dodatkowe uprawnienia, o które będą prosić przyszłe ich wersje. Otrzymają też uprawnienia do interfejsów API dla rozszerzeń enterprise.deviceAttributes i enterprise.platformKeys. (Te dwa interfejsy API nie są dostępne dla aplikacji/rozszerzeń, których instalacja nie jest wymuszana).
+<translation id="4008233182078913897">Określa listę aplikacji i rozszerzeń, które zostaną zainstalowane dyskretnie, bez interakcji z użytkownikiem, a użytkownik nie będzie mógł ich odinstalować ani wyłączyć. Aplikacje/rozszerzenia otrzymają bez interakcji z użytkownikiem wszystkie uprawnienia, o które proszą, w tym wszelkie dodatkowe uprawnienia, o które będą prosić ich przyszłe wersje. Otrzymają też uprawnienia do interfejsów API dla rozszerzeń enterprise.deviceAttributes i enterprise.platformKeys. (Te dwa interfejsy API są niedostępne w przypadku aplikacji/rozszerzeń, których instalacja nie jest wymuszana).
 
-Ta zasada ma pierwszeństwo przed potencjalnie powodującą konflikt zasadą <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Jeśli z tej listy zostaną usunięte aplikacja lub rozszerzenie, których instalacja została wymuszona wcześniej, <ph name="PRODUCT_NAME" /> automatycznie je odinstaluje.
+Ta zasada ma pierwszeństwo przed potencjalnie powodującą konflikt zasadą <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Jeśli z tej listy zostaną usunięte aplikacje lub rozszerzenia, których instalacja została wymuszona wcześniej, <ph name="PRODUCT_NAME" /> automatycznie je odinstaluje.
 
 W przypadku systemów Windows niepodłączonych do domeny <ph name="MS_AD_NAME" /> wymuszona instalacja jest ograniczona do aplikacji i rozszerzeń dostępnych w Chrome Web Store.
 
-Pamiętaj, że kod źródłowy każdego rozszerzenia można zmodyfikować za pomocą Narzędzi dla programistów (potencjalnie zakłócając jego działanie). Jeśli jest to problemem, ustaw zasadę <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
+Pamiętaj, że kod źródłowy każdego rozszerzenia można zmodyfikować za pomocą Narzędzi dla programistów (potencjalnie zakłócając jego działanie). Jeśli stanowi to problem, skonfiguruj zasadę <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
 
-Każdy element na liście tej zasady jest ciągiem zawierającym identyfikator rozszerzenia i opcjonalnie URL „aktualizacji” oddzielone średnikiem (<ph name="SEMICOLON" />). Identyfikator rozszerzenia to ciąg 32 znaków, który znajdziesz np. na <ph name="CHROME_EXTENSIONS_LINK" /> w trybie programisty. URL „aktualizacji” powinien wskazywać plik manifestu aktualizacji w postaci dokumentu XML, zgodnie z opisem na <ph name="LINK_TO_EXTENSION_DOC1" />. Domyślnie używany jest URL aktualizacji Chrome Web Store (obecnie to „https://clients2.google.com/service/update2/crx”). Uwaga: URL „aktualizacji” ustawiony przez tę zasadę jest używany tylko podczas pierwszej instalacji. Późniejsze aktualizacje rozszerzenia korzystają z adresu URL aktualizacji wskazanego w pliku manifestu. Pamiętaj też, że podanie adresu URL „aktualizacji” było obowiązkowe w <ph name="PRODUCT_NAME" /> do wersji 67 włącznie.
+Każdy element na liście tej zasady jest ciągiem zawierającym identyfikator rozszerzenia i opcjonalnie adres URL „aktualizacji” oddzielone średnikiem (<ph name="SEMICOLON" />). Identyfikator rozszerzenia to ciąg 32 znaków, który znajdziesz np. na <ph name="CHROME_EXTENSIONS_LINK" /> w trybie programisty. Adres URL „aktualizacji” powinien wskazywać plik manifestu aktualizacji w postaci dokumentu XML, zgodnie z opisem na <ph name="LINK_TO_EXTENSION_DOC1" />. Domyślnie używany jest adres URL „aktualizacji” Chrome Web Store (obecnie to „https://clients2.google.com/service/update2/crx”). Uwaga: adres URL „aktualizacji” ustawiony przez tę zasadę jest używany tylko podczas pierwszej instalacji. Późniejsze aktualizacje rozszerzenia korzystają z adresu URL „aktualizacji” wskazanego w pliku manifestu. Pamiętaj też, że podanie adresu URL „aktualizacji” było obowiązkowe w <ph name="PRODUCT_NAME" /> do wersji 67 włącznie.
 
-Na przykład <ph name="EXTENSION_POLICY_EXAMPLE" /> instaluje rozszerzenie o identyfikatorze <ph name="EXTENSION_ID_SAMPLE" /> ze standardowego adresu URL „aktualizacji” Chrome Web Store. Więcej informacji o hostowaniu rozszerzeń znajdziesz na <ph name="LINK_TO_EXTENSION_DOC2" />.
+Na przykład <ph name="EXTENSION_POLICY_EXAMPLE" /> instaluje rozszerzenie o identyfikatorze <ph name="EXTENSION_ID_SAMPLE" /> ze standardowego adresu URL „aktualizacji” Chrome Web Store. Więcej informacji o hostowaniu rozszerzeń znajdziesz na stronie <ph name="LINK_TO_EXTENSION_DOC2" />.
 
-Jeśli ta zasada nie jest ustawiona, aplikacje ani rozszerzenia nie są instalowane automatycznie, a użytkownik może odinstalować dowolne z nich w <ph name="PRODUCT_NAME" />.
+Jeśli ta zasada nie jest skonfigurowana, aplikacje ani rozszerzenia nie są instalowane automatycznie, a użytkownik może odinstalować dowolne z nich w <ph name="PRODUCT_NAME" />.
 
-Uwaga: ta zasada nie jest stosowana do trybu incognito.</translation>
+Uwaga: ta zasada nie ma zastosowania do trybu incognito.</translation>
 <translation id="4008507541867797979">Gdy ta zasada ma wartość prawda lub jest nieskonfigurowana, <ph name="PRODUCT_OS_NAME" /> będzie wyświetlać istniejących użytkowników na ekranie logowania i umożliwiać wybranie jednego z nich.
 
       Gdy zasada ma wartość fałsz, <ph name="PRODUCT_OS_NAME" /> nie będzie wyświetlać istniejących użytkowników na ekranie logowania. Wyświetlony zostanie normalny ekran logowania (umożliwiający wpisanie adresu e-mail i hasła lub numeru telefonu użytkownika) lub ekran SAML (jeśli jest włączony przy użyciu zasady <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />), chyba że skonfigurowana jest sesja zarządzania – w takim przypadku wyświetlane będą tylko konta z sesją zarządzaną i będzie można wybrać jedno z nich.
@@ -1745,7 +1745,7 @@ Jeśli wartość |IdleAction| nie będzie określona, zostanie wykonane działan
 <translation id="4150201353443180367">Wyświetlacz</translation>
 <translation id="4157003184375321727">Zgłoś wersje systemu operacyjnego i oprogramowania układowego</translation>
 <translation id="4157594634940419685">Zezwalaj na dostęp do natywnych drukarek CUPS</translation>
-<translation id="4160962198980004898">Źródło adresu MAC urządzenia zadokowanego</translation>
+<translation id="4160962198980004898">Źródło adresu MAC zadokowanego urządzenia</translation>
 <translation id="4163705126749612234">Służy do konfigurowania wymaganych nazw domen klientów, które będą stosowane do klientów dostępu zdalnego. Blokuje też użytkownikom możliwość zmiany tych nazw.
 
           Jeśli ta zasada jest włączona, z hostem mogą się łączyć tylko klienty ze wskazanych domen.
@@ -2586,10 +2586,10 @@ Do odwzorowania sekwencji dowolnych znaków można używać symboli wieloznaczny
       </translation>
 <translation id="5901427587865226597">Tylko drukowanie dwustronne</translation>
 <translation id="5903898512448364160">
-      Po wybraniu dla tej zasady wartości Prawda zasady dotyczące chmury mają pierwszeństwo przed zasadami dotyczącymi platformy, gdy z nimi kolidują.
-      Jeśli ta zasada ma wartość Fałsz lub nie jest skonfigurowana, zasady dotyczące platformy mają pierwszeństwo przed zasadami dotyczącymi chmury, gdy z nimi kolidują.
+      Po wybraniu dla tej zasady wartości Prawda zasady chmury mają pierwszeństwo przed zasadami platformy, gdy z nimi kolidują.
+      Jeśli ta zasada ma wartość Fałsz lub nie jest skonfigurowana, zasady platformy mają pierwszeństwo przed zasadami chmury, gdy z nimi kolidują.
 
-      Ta zasada jest dostępna tylko jako obowiązkowa zasada platformy komputera i ma zastosowanie wyłącznie do zasad dotyczących chmury obejmujących cały komputer.
+      Ta zasada jest dostępna tylko jako obowiązkowa zasada platformy komputera i ma wpływ wyłącznie na zasady chmury, które obejmują cały komputer.
       </translation>
 <translation id="5905473632148429217">Włącz sprawdzanie OCSP/CRL online</translation>
 <translation id="5906199912611534122">Umożliwia włączenie lub wyłączenie ograniczenia przepustowości sieci.

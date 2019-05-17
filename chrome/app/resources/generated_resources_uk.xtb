@@ -613,7 +613,7 @@
 <translation id="1932026958134051332">Опції кнопкового доступу</translation>
 <translation id="1932098463447129402">Не раніше</translation>
 <translation id="1933809209549026293">Підключіть мишу чи клавіатуру. Якщо ви користуєтеся пристроєм Bluetooth, перевірте, чи він готовий до підключення.</translation>
-<translation id="1937774647013465102">Не вдається імпортувати контейнер архітектури<ph name="ARCHITECTURE_CONTAINER" /> на пристрій з архітектурою<ph name="ARCHITECTURE_DEVICE" />. Ви можете спробувати відновити цей контейнер на іншому пристрої або отримати доступ до його вмісту в додатку Файли.</translation>
+<translation id="1937774647013465102">Не вдається імпортувати контейнер архітектури <ph name="ARCHITECTURE_CONTAINER" /> на пристрій з архітектурою <ph name="ARCHITECTURE_DEVICE" />. Ви можете спробувати відновити цей контейнер на іншому пристрої або отримати доступ до його вмісту в додатку Файли.</translation>
 <translation id="1938351510777341717">Зовнішня клавіша Command</translation>
 <translation id="1940546824932169984">Під’єднані пристрої</translation>
 <translation id="1944921356641260203">Знайдено оновлення</translation>
@@ -903,7 +903,7 @@
 <translation id="2408955596600435184">Введіть PIN-код</translation>
 <translation id="241082044617551207">Невідомий плагін</translation>
 <translation id="2413749388954403953">Змінювати інтерфейс користувача для закладок</translation>
-<translation id="241639282915300771">Триває відновлення контейнера<ph name="CONTAINER_ID" /></translation>
+<translation id="241639282915300771">Триває відновлення контейнера <ph name="CONTAINER_ID" /></translation>
 <translation id="241727068219398187">Дані зашифровано паролем Google від
           <ph name="TIME" />. Це не стосується способів оплати й адрес із Google Pay.</translation>
 <translation id="2419706071571366386">З міркувань безпеки виходьте з облікового запису, коли не використовуєте комп’ютер.</translation>

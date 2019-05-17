@@ -1087,7 +1087,7 @@
 <translation id="2677748264148917807">Odejít</translation>
 <translation id="2678063897982469759">Znovu aktivovat</translation>
 <translation id="268053382412112343">&amp;Historie</translation>
-<translation id="2682498795777673382">Aktualita od rodiče</translation>
+<translation id="2682498795777673382">Novinka od rodiče</translation>
 <translation id="2683638487103917598">Složka je seřazena</translation>
 <translation id="2684004000387153598">Chcete-li pokračovat, klikněte na OK a poté kliknutím na Přidat uživatele vytvořte nový profil pro svou novou e-mailovou adresu.</translation>
 <translation id="2688196195245426394">Při registraci zařízení na serveru došlo k chybě: <ph name="CLIENT_ERROR" />.</translation>
@@ -2949,7 +2949,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="5620568081365989559">Nástroj DevTools požaduje úplný přístup ke složce <ph name="FOLDER_PATH" />. Dejte pozor, abyste mu nezpřístupnili žádné citlivé informace.</translation>
 <translation id="5620612546311710611">statistiky využití</translation>
 <translation id="5620655347161642930">Exportovat hesla...</translation>
-<translation id="5623282979409330487">Tento web používá vaše senzory pohybu.</translation>
+<translation id="5623282979409330487">Tento web používá senzory pohybu.</translation>
 <translation id="5623842676595125836">Protokol</translation>
 <translation id="5624120631404540903">Spravovat hesla</translation>
 <translation id="5626134646977739690">Jméno:</translation>

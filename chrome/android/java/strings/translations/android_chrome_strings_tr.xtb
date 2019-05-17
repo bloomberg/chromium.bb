@@ -915,7 +915,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="756809126120519699">Chrome verileri temizlendi</translation>
 <translation id="757524316907819857">Sitelerin korumalı içeriği oynatmasını engellenir</translation>
 <translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" /> dosya indirildi}other{<ph name="FILES_DOWNLOADED_MANY" /> dosya indirildi}}</translation>
-<translation id="7588219262685291874">Cihazınızın Pil Tasarrufu özelliği açık olduğunda koyu temayı açın</translation>
+<translation id="7588219262685291874">Cihazın Pil Tasarrufu özelliği açık olduğunda koyu tema açılır</translation>
 <translation id="7589445247086920869">Geçerli arama motorunu engelle</translation>
 <translation id="7593557518625677601">Chrome Senkronizasyonu'nu başlatmak için Android ayarlarını açın ve Android sistem senkronizasyonunu yeniden etkinleştirin</translation>
 <translation id="7596558890252710462">İşletim sistemi</translation>

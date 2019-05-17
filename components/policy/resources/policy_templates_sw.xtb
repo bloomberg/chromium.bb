@@ -1667,7 +1667,7 @@ kawaida la Duka la Chrome kwenye Wavuti. Kwa maelezo zaidi kuhusu jinsi ya kupan
 
           Ikiwa sera hii haijawekwa, hakuna programu au viendelezi vitakavyosakinishwa kiotomatiki na mtumiaji anaweza kuondoa programu au kiendelezi chochote katika <ph name="PRODUCT_NAME" />.
 
-          Kumbukakwamba sera hii haitumiki katika hali fiche.</translation>
+          Kumbuka kwamba sera hii haitumiki katika hali fiche.</translation>
 <translation id="4008507541867797979">Sera hii ikiwekwa kuwa ndivyo au mipangilio isipowekwa, <ph name="PRODUCT_OS_NAME" /> itaonyesha watumiaji waliopo kwenye skrini ya kuingia katika akaunti na kukuruhusu uteue mmoja.
 
       Sera hii ikiwekwa kuwa sivyo, <ph name="PRODUCT_OS_NAME" /> haitaonyesha watumiaji waliopo kwenye skrini ya kuingia katika akaunti. Skrini ya kawaida ya kuingia katika akaunti (inayomdokezea mtumiaji kuweka anwani yake ya barua pepe na nenosiri au simu) au skrini ya ukurasa wenye maelezo yanayomwelekeza mtumiaji kuendelea na uthibitishaji kupitia SAML (kama imewashwa kupitia sera ya <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />) itaonyeshwa, isipokuwa katika hali ambapo mipangilio ya Kipindi Kilichodhibitiwa imewashwa. Wakati mipangllio ya Kipindi kilichodhibitiwa imewekwa, ni akaunti za kipindi kilichodhibitiwa pekee zitakazoonyeshwa, hali inayokuruhusu kuteua moja.
@@ -2513,7 +2513,7 @@ Iwapo sera hii haijawekwa, kiteuzi kikubwa kitazimwa mwanzoni lakini kitawashwa 
 <translation id="5630352020869108293">Rejesha kipindi kilichopita</translation>
 <translation id="5643906875497889108">Hudhibiti aina ya programu au viendelezi ambavyo vinaruhusiwa kusakinishwa na hupunguza ufikiaji wa programu inapotumika.
 
-          Mipangilio hii inaidhinisha aina ya viendelezi au programu zinazoruhusiwa ambazo zinaweza kusakinishwa katika <ph name="PRODUCT_NAME" /> na seva pangishi ambazo zinanaweza kuwasiliana nazo. Thamani ni orodha ya mifuatano ambayo inapaswa kuwa mojawapo ya zifuatazo: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Angalia hati za viendelezi vya <ph name="PRODUCT_NAME" /> ili upate maelezo zaidi kuhusu aina hizi.
+          Mipangilio hii inaidhinisha aina ya viendelezi au programu zinazoruhusiwa ambazo zinaweza kusakinishwa katika <ph name="PRODUCT_NAME" /> na seva pangishi ambazo zinaweza kuwasiliana nazo. Thamani ni orodha ya mifuatano ambayo inapaswa kuwa mojawapo ya zifuatazo: "extension", "theme", "user_script", "hosted_app", "legacy_packaged_app", "platform_app". Angalia hati za viendelezi vya <ph name="PRODUCT_NAME" /> ili upate maelezo zaidi kuhusu aina hizi.
 
           Kumbuka kwamba sera hii pia huathiri hali ya viendelezi na programu kusakinishwa kwa lazima kupitia ExtensionInstallForcelist.
 
@@ -2767,7 +2767,7 @@ Thamani ya sera inapaswa kubainishwa katika milisekunde. Thamani huwekwa pamoja 
 
       Sera hii ikiwekwa kuwa <ph name="GLS_ENABLED" />, Huduma za Mahali za Google huwashwa kwanza.
 
-      Sera hii ikiwekwa kuwa <ph name="GLS_UNDER_USER_CONTROL" />, mtumiaii huulizwa ikiwa atatumia Huduma za Mahali za Google. Hali hii itaruhusu programu za Android kutumia huduma kubaini mahali kifaa kilipo. Pia itaruhusu hali ya kuwasilisha data ya mahali uliko kwa Google bila kufichua maelezo yanayoweza kukutambulisha.
+      Sera hii ikiwekwa kuwa <ph name="GLS_UNDER_USER_CONTROL" />, mtumiaji huulizwa ikiwa atatumia Huduma za Mahali za Google. Hali hii itaruhusu programu za Android kutumia huduma kubaini mahali kifaa kilipo. Pia itaruhusu hali ya kuwasilisha data ya mahali uliko kwa Google bila kufichua maelezo yanayoweza kukutambulisha.
 
       Kumbuka kwamba sera hii hudhibiti hali ya Huduma za Mahali za Google wakati wa kuweka mipangilio ya kwanza pekee. Mtumiaji anaweza kufungua mipangilio ya Android baadaye na kuwasha au kuzima Huduma za Mahali za Google.
 
@@ -3289,11 +3289,11 @@ Ikiwa sera haijawekwa, mtumiaji ataweza kubadilisha mipangilio hii.
 
           Mfumo unapotumika, mlango wa USB utatoa nishati kila wakati.
 
-          Mfumo ukiwa katika hali tuli, ikiwa sera hii imewekwa kuwa 'ndivyo', basi nishati itatolewa kwenye mlango wa USB wakati kifaa kitachomekwa katika chaja iliyo ukatani au ikiwa kiwango cha betri ni &gt; 50%. Vingenevyo, hakuna nishati itakayotolewa.
+          Mfumo ukiwa katika hali tuli, ikiwa sera hii imewekwa kuwa 'ndivyo', basi nishati itatolewa kwenye mlango wa USB wakati kifaa kitachomekwa katika chaja iliyo ukatani au ikiwa kiwango cha betri ni &gt; 50%. Vinginevyo, hakuna nishati itakayotolewa.
 
-          Mfumo ukiwa umezimwa, ikiwa sera hii imewekwa kuwa 'ndivyo', basi nishati itatolewa kwenye mlango wa USB wakati kifaa kimechomekwa katika chaja iliyo ukutani. Vingenevyo, hakuna nishati itakayotolewa.
+          Mfumo ukiwa umezimwa, ikiwa sera hii imewekwa kuwa 'ndivyo', basi nishati itatolewa kwenye mlango wa USB wakati kifaa kimechomekwa katika chaja iliyo ukutani. Vinginevyo, hakuna nishati itakayotolewa.
 
-          Sera hii ikiachwa bila kuweka, sera inawashwa na haiwezi kuzima na mtumiaji.</translation>
+          Sera hii ikiachwa bila kuweka, sera inawashwa na haiwezi kuzimwa na mtumiaji.</translation>
 <translation id="7115494316187648452">Huamua ikiwa machakato wa <ph name="PRODUCT_NAME" /> utaanza wakati wa kuingia katika Mfumo wa Uendeshaji na kuendelea kutekeleza dirisha la mwisho la kivinjari linapofungwa, hivyo kuruhusu programu za chini chini na kipindi cha kuvinjari cha sasa kuendelea, ikiwa ni pamoja na vidakuzi vya kipindi. Mchakato wa chini chini huonyesha aikoni katika treya ya mfumo na unaweza kufungwa kutoka huko wakati wowote.
 
      Sera hii ikiwekwa kuwa Ndivyo, kipengee cha hali ya chinichini huwashwa na hakiwezi kudhibitiwa na mtumiaji katika mipangilio ya kivinjari.
@@ -3640,7 +3640,7 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
 
           Kumbuka: Ni lazima <ph name="CHARGE_START_TIME_FIELD_NAME" /> isipite <ph name="CHARGE_END_TIME_FIELD_NAME" />.
 
-          Kumbuka: thamani zinazoruhiswa za sehemu ya <ph name="MINUTE_FIELD_NAME" /> ya <ph name="CHARGE_START_TIME_FIELD_NAME" /> na<ph name="CHARGE_END_TIME_FIELD_NAME" /> ni 0, 15, 30, 45.</translation>
+          Kumbuka: thamani zinazoruhusiwa za sehemu ya <ph name="MINUTE_FIELD_NAME" /> ya <ph name="CHARGE_START_TIME_FIELD_NAME" /> na<ph name="CHARGE_END_TIME_FIELD_NAME" /> ni 0, 15, 30, 45.</translation>
 <translation id="7717938661004793600">Sanidi vipengele vya ufikiaji vya <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7724994675283793633">Sera hii huwasha HTTP/0.9 kwenye milango mbali na 80 ya HTTP na 443 ya HTTPS.
 

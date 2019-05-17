@@ -1615,7 +1615,7 @@ Vzory webových adries v tomto pravidle by nemali byť v konflikte s tými, k
 <translation id="3915395663995367577">Webová adresa súboru PAC servera proxy</translation>
 <translation id="3920892052017026701">Nastavte vlastnú hodnotu začatia nabíjania batérie v percentách.
 
-          Batéria sa začne nabíjať, keď dosiahne vlastnú hodnotu nabíjania batérie.
+          Batéria sa začne nabíjať, keď dosiahne vlastnú hodnotu nabitia.
 
           Parameter DeviceBatteryChargeCustomStartCharging musí byť menší ako DeviceBatteryChargeCustomStopCharging.
 
@@ -1650,7 +1650,7 @@ Vzory webových adries v tomto pravidle by nemali byť v konflikte s tými, k
       Ak je toto pravidlo nastavené na hodnotu true alebo je ponechané bez nastavenia, používatelia si pri registrácii OS Chrome budú môcť uplatniť ponuky.
 
       Ak je toto pravidlo nastavené na hodnotu false, používatelia si nebudú môcť uplatniť ponuky.</translation>
-<translation id="4008233182078913897">Umožňuje určiť zoznam aplikácií a rozšírení, ktoré sa inštalujú potichu bez interakcie používateľa a používateľ ich nemôže odinštalovať ani zakázať. Všetky povolenia vyžadované aplikáciami alebo rozšíreniami sú bezpodmienečne udelené bez interakcie s používateľom, a to vrátane všetkých ďalších povolení vyžiadaných budúcimi verziami daných aplikácií alebo rozšírení. 
+<translation id="4008233182078913897">Umožňuje určiť zoznam aplikácií a rozšírení, ktoré sa inštalujú potichu bez interakcie s používateľom a používateľ ich nemôže odinštalovať ani zakázať. Všetky povolenia vyžadované aplikáciami alebo rozšíreniami sú bezpodmienečne udelené bez interakcie s používateľom, a to vrátane všetkých ďalších povolení vyžiadaných budúcimi verziami daných aplikácií alebo rozšírení. 
 Ďalej sa udeľujú povolenia pre rozhrania API rozšírení enterprise.deviceAttributes a enterprise.platformKeys. (Tieto dve rozhrania sú k dispozícii iba pre aplikácie alebo rozšírenia, ktorých inštalácia bola vynútená.)
 
           Toto pravidlo má prednosť v prípade potenciálneho konfliktu s pravidlom <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Ak je z tohto zoznamu odstránená aplikácia alebo rozšírenie, ktorého inštalácia bola v minulosti vynútená, <ph name="PRODUCT_NAME" /> ich automaticky odinštaluje.
@@ -2510,7 +2510,7 @@ Ak toto nastavenie zakážete, v okne správcu hesiel nebude možné zobraziť 
 <translation id="5630352020869108293">Obnoviť poslednú reláciu</translation>
 <translation id="5643906875497889108">Ovláda typy aplikácií a rozšírení, ktoré je možné nainštalovať. Tiež obmedzuje prístup k spúšťaniu.
 
-          Týmto nastavením pridáte do zoznamu povolených položiek povolené typy rozšírení a aplikácií, ktoré je možné nainštalovať v aplikácii <ph name="PRODUCT_NAME" />, a hostiteľov, s ktorými je možné interagovať. Daná hodnota je zoznam týchto reťazcov: extension, theme, user_script, hosted_app, legacy_packaged_app, platform_app. Ďalšie informácie o týchto typoch si môžete prečítať v dokumentácii k rozšíreniam prehliadača <ph name="PRODUCT_NAME" />.
+          Týmto nastavením pridáte do zoznamu povolených položiek povolené typy rozšírení a aplikácií, ktoré je možné nainštalovať v aplikácii <ph name="PRODUCT_NAME" />, a hostiteľov, s ktorými je možné interagovať. Hodnotou je napríklad zoznam týchto reťazcov: extension, theme, user_script, hosted_app, legacy_packaged_app, platform_app. Ďalšie informácie o týchto typoch si môžete prečítať v dokumentácii k rozšíreniam prehliadača <ph name="PRODUCT_NAME" />.
 
           Upozorňujeme, že toto pravidlo má vplyv aj na rozšírenia a aplikácie, ktorých inštalácia bude presadená prostredníctvom pravidla ExtensionInstallForcelist.
 

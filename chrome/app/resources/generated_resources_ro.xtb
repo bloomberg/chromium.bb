@@ -899,7 +899,7 @@
 <translation id="2392369802118427583">Activează</translation>
 <translation id="2394566832561516196">Setările vor fi șterse la următoarea reîncărcare.</translation>
 <translation id="2395616325548404795">Dispozitivul <ph name="DEVICE_TYPE" /> a fost înscris pentru gestionarea de întreprindere, dar nu a putut trimite informațiile despre locație și articol. Introdu manual aceste informații din consola de administrare pentru acest dispozitiv.</translation>
-<translation id="2396783860772170191">Introdu codul PIN de 4 cifre (0000-9999)</translation>
+<translation id="2396783860772170191">Introdu codul PIN de 4 cifre (0000 – 9999)</translation>
 <translation id="2408955596600435184">Introdu codul PIN</translation>
 <translation id="241082044617551207">Plugin necunoscut</translation>
 <translation id="2413749388954403953">Modifică interfața de utilizare pentru marcaje</translation>
@@ -2019,7 +2019,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="409579654357498729">Adăugați la Cloud Print</translation>
 <translation id="4096508467498758490">Dezactivați extensiile care rulează în modul pentru dezvoltatori</translation>
 <translation id="4096824249111507322">Se pregătește modulul securizat. Așteaptă (poate dura câteva minute)...</translation>
-<translation id="4097560579602855702">Căutați pe Google</translation>
+<translation id="4097560579602855702">Caută pe Google</translation>
 <translation id="4099060993766194518">Restabilești motorul de căutare prestabilit?</translation>
 <translation id="4099874310852108874">A apărut o eroare de rețea.</translation>
 <translation id="4100733287846229632">Spațiul de pe dispozitiv este foarte redus</translation>
@@ -3874,7 +3874,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="706626672220389329">Eroare la montarea dispozitivului de stocare în rețea. Dispozitivul indicat este deja montat.</translation>
 <translation id="7066944511817949584">Conectarea la „<ph name="DEVICE_NAME" />” a eșuat.</translation>
 <translation id="7067725467529581407">Nu mai afișa niciodată acest mesaj.</translation>
-<translation id="7069811530847688087">Este posibil ca <ph name="WEBSITE" /> să necesite un tip diferit sau mai nou de cheie de securitate</translation>
+<translation id="7069811530847688087"><ph name="WEBSITE" /> poate necesita un tip diferit sau mai nou de cheie de securitate</translation>
 <translation id="7070484045139057854">Poate să citească și să modifice datele site-ului</translation>
 <translation id="7072010813301522126">Numele comenzii rapide</translation>
 <translation id="707392107419594760">Selectează tastatura:</translation>

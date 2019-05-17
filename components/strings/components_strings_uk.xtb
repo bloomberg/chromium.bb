@@ -919,7 +919,7 @@
 <translation id="5977976211062815271">На цьому пристрої</translation>
 <translation id="5980920751713728343">Index-3x5</translation>
 <translation id="598637245381783098">Неможливо відкрити додаток для платежів</translation>
-<translation id="5988826871883769516">Вашим пристроєм керує<ph name="ENROLLMENT_DOMAIN" />.</translation>
+<translation id="5988826871883769516">Вашим пристроєм керує <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="5989320800837274978">Не вказано ні фіксованих проксі-серверів, ні URL-адрес сценарію .pac.</translation>
 <translation id="5990559369517809815">Надсилання запитів на сервер заблоковано розширенням.</translation>
 <translation id="6008256403891681546">JCB</translation>
