@@ -163,6 +163,15 @@ RenderFrameProxyHost* Portal::CreateProxyAndAttachPortal() {
 }
 
 void Portal::Navigate(const GURL& url) {
+  if (!url.SchemeIsHTTPOrHTTPS()) {
+    mojo::ReportBadMessage("Portal::Navigate tried to use non-HTTP protocol.");
+    binding_->Close();  // Also deletes |this|.
+    return;
+  }
+
+  // TODO(lfg): Investigate which other restrictions we might need when
+  // navigating portals. See http://crbug.com/964395.
+
   NavigationController::LoadURLParams load_url_params(url);
   portal_contents_impl_->GetController().LoadURLWithParams(load_url_params);
 }
