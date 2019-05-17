@@ -146,11 +146,10 @@ void CachedImageFetcher::OnImageFetchedFromCache(
     if (!image_callback.is_null()) {
       GetImageDecoder()->DecodeImage(
           image_data, gfx::Size(),
-          base::BindRepeating(&CachedImageFetcher::OnImageDecodedFromCache,
-                              weak_ptr_factory_.GetWeakPtr(),
-                              std::move(request),
-                              base::Passed(std::move(image_data_callback)),
-                              base::Passed(std::move(image_callback))));
+          base::BindOnce(&CachedImageFetcher::OnImageDecodedFromCache,
+                         weak_ptr_factory_.GetWeakPtr(), std::move(request),
+                         std::move(image_data_callback),
+                         std::move(image_callback)));
     }
   }
 }
