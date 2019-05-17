@@ -870,8 +870,7 @@ bool TabletModeController::LidAngleIsInTabletModeRange() {
 void TabletModeController::SuspendOcclusionTracker() {
   occlusion_tracker_reset_timer_.Stop();
   occlusion_tracker_pauser_ =
-      std::make_unique<aura::WindowOcclusionTracker::ScopedPause>(
-          Shell::Get()->aura_env());
+      std::make_unique<aura::WindowOcclusionTracker::ScopedPause>();
   occlusion_tracker_reset_timer_.Start(FROM_HERE, kOcclusionTrackerTimeout,
                                        this,
                                        &TabletModeController::ResetPauser);

@@ -155,12 +155,12 @@ float GetLayerCombinedTargetOpacity(const ui::Layer* layer) {
 
 }  // namespace
 
-WindowOcclusionTracker::ScopedPause::ScopedPause(Env* env) : env_(env) {
-  env_->PauseWindowOcclusionTracking();
+WindowOcclusionTracker::ScopedPause::ScopedPause() {
+  Env::GetInstance()->PauseWindowOcclusionTracking();
 }
 
 WindowOcclusionTracker::ScopedPause::~ScopedPause() {
-  env_->UnpauseWindowOcclusionTracking();
+  Env::GetInstance()->UnpauseWindowOcclusionTracking();
 }
 
 WindowOcclusionTracker::ScopedExclude::ScopedExclude(Window* window)

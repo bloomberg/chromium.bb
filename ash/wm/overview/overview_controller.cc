@@ -513,8 +513,7 @@ void OverviewController::PauseOcclusionTracker() {
 
   reset_pauser_task_.Cancel();
   occlusion_tracker_pauser_ =
-      std::make_unique<aura::WindowOcclusionTracker::ScopedPause>(
-          Shell::Get()->aura_env());
+      std::make_unique<aura::WindowOcclusionTracker::ScopedPause>();
 }
 
 void OverviewController::UnpauseOcclusionTracker(int delay) {

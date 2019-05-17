@@ -617,8 +617,7 @@ void DesktopNativeWidgetAura::ReorderNativeViews() {
   // Instantiate a ScopedPause to recompute occlusion once at the end of this
   // scope rather than after each individual change.
   // https://crbug.com/829918
-  aura::WindowOcclusionTracker::ScopedPause pause_occlusion(
-      aura::Env::GetInstance());
+  aura::WindowOcclusionTracker::ScopedPause pause_occlusion;
   window_reorderer_->ReorderChildWindows();
 }
 

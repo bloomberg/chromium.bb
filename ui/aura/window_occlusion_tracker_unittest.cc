@@ -1109,8 +1109,7 @@ TEST_F(WindowOcclusionTrackerTest, ScopedPause) {
   // Change bounds multiple times. At the end of the scope, expect window a to
   // be occluded.
   {
-    WindowOcclusionTracker::ScopedPause pause_occlusion_tracking(
-        root_window()->env());
+    WindowOcclusionTracker::ScopedPause pause_occlusion_tracking;
     window_b->SetBounds(window_a->bounds());
     window_a->SetBounds(gfx::Rect(0, 10, 5, 5));
     window_b->SetBounds(window_a->bounds());
@@ -1140,22 +1139,18 @@ TEST_F(WindowOcclusionTrackerTest, NestedScopedPause) {
   // Change bounds multiple times. At the end of the scope, expect window a to
   // be occluded.
   {
-    WindowOcclusionTracker::ScopedPause pause_occlusion_tracking_a(
-        root_window()->env());
+    WindowOcclusionTracker::ScopedPause pause_occlusion_tracking_a;
 
     {
-      WindowOcclusionTracker::ScopedPause pause_occlusion_tracking_b(
-          root_window()->env());
+      WindowOcclusionTracker::ScopedPause pause_occlusion_tracking_b;
       window_b->SetBounds(window_a->bounds());
     }
     {
-      WindowOcclusionTracker::ScopedPause pause_occlusion_tracking_c(
-          root_window()->env());
+      WindowOcclusionTracker::ScopedPause pause_occlusion_tracking_c;
       window_a->SetBounds(gfx::Rect(0, 10, 5, 5));
     }
     {
-      WindowOcclusionTracker::ScopedPause pause_occlusion_tracking_d(
-          root_window()->env());
+      WindowOcclusionTracker::ScopedPause pause_occlusion_tracking_d;
       window_b->SetBounds(window_a->bounds());
     }
 
@@ -2224,8 +2219,7 @@ TEST_F(WindowOcclusionTrackerTest, ScopedForceVisibleWithOccludedSibling) {
   // the same bounds.
   std::unique_ptr<WindowOcclusionTracker::ScopedPause>
       pause_occlusion_tracking =
-          std::make_unique<WindowOcclusionTracker::ScopedPause>(
-              root_window()->env());
+          std::make_unique<WindowOcclusionTracker::ScopedPause>();
   MockWindowDelegate* parent_delegate = new MockWindowDelegate();
   Window* parent_window =
       CreateTrackedWindow(parent_delegate, gfx::Rect(0, 0, 10, 10));

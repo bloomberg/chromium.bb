@@ -32,7 +32,6 @@ namespace test {
 class WindowOcclusionTrackerTestApi;
 }
 
-class Env;
 class WindowOcclusionChangeBuilder;
 
 // Notifies tracked Windows when their occlusion state change.
@@ -55,14 +54,12 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
   // that could cause window occlusion states to change occurs within the scope
   // of a ScopedPause, window occlusion state computations are delayed until all
   // ScopedPause objects have been destroyed.
-  // TODO(crbug.com/867150): Pause the tracker in Window Service under mus.
   class AURA_EXPORT ScopedPause {
    public:
-    explicit ScopedPause(Env* env);
+    ScopedPause();
     ~ScopedPause();
 
    private:
-    Env* const env_;
     DISALLOW_COPY_AND_ASSIGN(ScopedPause);
   };
 

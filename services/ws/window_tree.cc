@@ -2390,8 +2390,7 @@ void WindowTree::TrackOcclusionState(Id transport_window_id) {
 
 void WindowTree::PauseWindowOcclusionTracking() {
   window_occlusion_tracking_pauses_.emplace_back(
-      std::make_unique<aura::WindowOcclusionTracker::ScopedPause>(
-          window_service_->env()));
+      std::make_unique<aura::WindowOcclusionTracker::ScopedPause>());
 }
 
 void WindowTree::UnpauseWindowOcclusionTracking() {

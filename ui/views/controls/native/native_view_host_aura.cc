@@ -118,7 +118,7 @@ void NativeViewHostAura::NativeViewDetaching(bool destroyed) {
   // change.
   base::Optional<aura::WindowOcclusionTracker::ScopedPause> pause_occlusion;
   if (clipping_window_)
-    pause_occlusion.emplace(aura::Env::GetInstance());
+    pause_occlusion.emplace();
 
   clipping_window_delegate_->set_native_view(nullptr);
   RemoveClippingWindow();
