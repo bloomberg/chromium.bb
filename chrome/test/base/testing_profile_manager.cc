@@ -76,7 +76,8 @@ TestingProfile* TestingProfileManager::CreateTestingProfile(
     const base::string16& user_name,
     int avatar_id,
     const std::string& supervised_user_id,
-    TestingProfile::TestingFactories testing_factories) {
+    TestingProfile::TestingFactories testing_factories,
+    base::Optional<bool> override_new_profile) {
   DCHECK(called_set_up_);
 
   // Create a path for the profile based on the name.
@@ -101,6 +102,8 @@ TestingProfile* TestingProfileManager::CreateTestingProfile(
   builder.SetPrefService(std::move(prefs));
   builder.SetSupervisedUserId(supervised_user_id);
   builder.SetProfileName(profile_name);
+  if (override_new_profile)
+    builder.OverrideIsNewProfile(*override_new_profile);
 
   for (TestingProfile::TestingFactories::value_type& pair : testing_factories)
     builder.AddTestingFactory(pair.first, std::move(pair.second));

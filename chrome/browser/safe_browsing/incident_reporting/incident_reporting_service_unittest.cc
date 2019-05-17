@@ -267,7 +267,8 @@ class IncidentReportingServiceTest : public testing::Test {
         profile_name, std::move(prefs), base::ASCIIToUTF16(profile_name),
         0,              // avatar_id (unused)
         std::string(),  // supervised_user_id (unused)
-        TestingProfile::TestingFactories());
+        TestingProfile::TestingFactories(),
+        /*override_new_profile=*/base::Optional<bool>(false));
   }
 
   // Configures a callback to run when the next upload is started that will post

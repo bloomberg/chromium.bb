@@ -181,6 +181,7 @@ class ProfileSigninConfirmationHelperTest : public testing::Test {
 // http://crbug.com/393149
 TEST_F(ProfileSigninConfirmationHelperTest, DISABLED_DoNotPromptForNewProfile) {
   // Profile is new and there's no profile data.
+  profile_->SetIsNewProfile(true);
   EXPECT_FALSE(
       GetCallbackResult(
           base::Bind(
@@ -192,6 +193,7 @@ TEST_F(ProfileSigninConfirmationHelperTest, PromptForNewProfile_Bookmarks) {
   ASSERT_TRUE(model_);
 
   // Profile is new but has bookmarks.
+  profile_->SetIsNewProfile(true);
   model_->AddURL(model_->bookmark_bar_node(), 0,
                  base::string16(base::ASCIIToUTF16("foo")),
                  GURL("http://foo.com"));
@@ -208,9 +210,8 @@ TEST_F(ProfileSigninConfirmationHelperTest, PromptForNewProfile_Extensions) {
       extensions::ExtensionSystem::Get(profile_.get())->extension_service();
   ASSERT_TRUE(extensions);
 
-  // Profile is new but has synced extensions.
-
-  // (The web store doesn't count.)
+  // Profile is new but has synced extensions (The web store doesn't count).
+  profile_->SetIsNewProfile(true);
   scoped_refptr<extensions::Extension> webstore =
       CreateExtension("web store",
                       extensions::kWebStoreAppId,
@@ -240,6 +241,7 @@ TEST_F(ProfileSigninConfirmationHelperTest,
 
   // Profile is new but has more than $(kHistoryEntriesBeforeNewProfilePrompt)
   // history items.
+  profile_->SetIsNewProfile(true);
   char buf[18];
   for (int i = 0; i < 10; i++) {
     base::snprintf(buf, base::size(buf), "http://foo.com/%d", i);
@@ -263,6 +265,7 @@ TEST_F(ProfileSigninConfirmationHelperTest,
   ASSERT_TRUE(history);
 
   // Profile is new but has a typed URL.
+  profile_->SetIsNewProfile(true);
   history->AddPage(
       GURL("http://example.com"), base::Time::Now(), NULL, 1,
       GURL(), history::RedirectList(), ui::PAGE_TRANSITION_TYPED,
@@ -276,7 +279,7 @@ TEST_F(ProfileSigninConfirmationHelperTest,
 
 TEST_F(ProfileSigninConfirmationHelperTest, PromptForNewProfile_Restarted) {
   // Browser has been shut down since profile was created.
-  user_prefs_->set_read_error(PersistentPrefStore::PREF_READ_ERROR_NONE);
+  profile_->SetIsNewProfile(false);
   EXPECT_TRUE(
       GetCallbackResult(
           base::Bind(

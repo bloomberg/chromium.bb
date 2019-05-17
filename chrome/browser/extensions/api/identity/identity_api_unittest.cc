@@ -31,8 +31,11 @@ TEST(IdentityApiTest, DiceAllAccountsExtensions) {
 
   {
     ScopedAccountConsistencyDiceMigration scoped_dice_migration;
-    TestingProfile profile;
-    IdentityAPI api(&profile);
+    TestingProfile::Builder profile_builder;
+    // The profile is not a new profile to prevent automatic migration.
+    profile_builder.OverrideIsNewProfile(false);
+    std::unique_ptr<TestingProfile> profile = profile_builder.Build();
+    IdentityAPI api(profile.get());
     EXPECT_TRUE(api.AreExtensionsRestrictedToPrimaryAccount());
     api.Shutdown();
   }
