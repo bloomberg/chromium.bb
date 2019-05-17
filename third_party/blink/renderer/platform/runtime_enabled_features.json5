@@ -310,7 +310,7 @@
     },
     {
       name: "CSSBackdropFilter",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "CSSCalcAsInt",
