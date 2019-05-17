@@ -19,17 +19,7 @@ class UsbPrinterNotificationControllerImpl
   ~UsbPrinterNotificationControllerImpl() override = default;
 
   void ShowEphemeralNotification(const Printer& printer) override {
-    if (!base::FeatureList::IsEnabled(features::kStreamlinedUsbPrinterSetup)) {
-      return;
-    }
-
-    if (base::ContainsKey(notifications_, printer.id())) {
-      return;
-    }
-
-    notifications_[printer.id()] = std::make_unique<UsbPrinterNotification>(
-        printer, GetUniqueNotificationId(),
-        UsbPrinterNotification::Type::kEphemeral, profile_);
+    ShowNotification(printer, UsbPrinterNotification::Type::kEphemeral);
   }
 
   void RemoveNotification(const std::string& printer_id) override {
@@ -45,6 +35,17 @@ class UsbPrinterNotificationControllerImpl
   }
 
   void ShowSavedNotification(const Printer& printer) override {
+    ShowNotification(printer, UsbPrinterNotification::Type::kSaved);
+  }
+
+  void ShowConfigurationNotification(const Printer& printer) override {
+    ShowNotification(printer,
+                     UsbPrinterNotification::Type::kConfigurationRequired);
+  }
+
+ private:
+  void ShowNotification(const Printer& printer,
+                        UsbPrinterNotification::Type type) {
     if (!base::FeatureList::IsEnabled(features::kStreamlinedUsbPrinterSetup)) {
       return;
     }
@@ -54,11 +55,9 @@ class UsbPrinterNotificationControllerImpl
     }
 
     notifications_[printer.id()] = std::make_unique<UsbPrinterNotification>(
-        printer, GetUniqueNotificationId(),
-        UsbPrinterNotification::Type::kSaved, profile_);
+        printer, GetUniqueNotificationId(), type, profile_);
   }
 
- private:
   std::string GetUniqueNotificationId() {
     return base::StringPrintf("usb_printer_notification_%d",
                               next_notification_id_++);

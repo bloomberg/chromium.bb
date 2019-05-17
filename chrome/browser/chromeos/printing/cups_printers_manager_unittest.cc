@@ -306,6 +306,9 @@ class FakeUsbPrinterNotificationController
   void ShowEphemeralNotification(const Printer& printer) override {
     NOTIMPLEMENTED();
   }
+  void ShowConfigurationNotification(const Printer& printer) override {
+    NOTIMPLEMENTED();
+  }
   void ShowSavedNotification(const Printer& printer) override {
     open_notifications_.insert(printer.id());
   }

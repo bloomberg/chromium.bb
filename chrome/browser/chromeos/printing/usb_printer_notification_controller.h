@@ -33,6 +33,10 @@ class UsbPrinterNotificationController {
   // is already an existing notification for |printer|.
   virtual void ShowSavedNotification(const Printer& printer) = 0;
 
+  // Creates a notification for a printer that needs configuration. This is a
+  // no-op if there is already an existing notification for |printer|.
+  virtual void ShowConfigurationNotification(const Printer& printer) = 0;
+
   // Closes the notification for |printer_id|. This is a no-op if the
   // notification has already been closed by the user.
   virtual void RemoveNotification(const std::string& printer_id) = 0;

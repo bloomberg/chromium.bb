@@ -11,6 +11,9 @@
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/notifications/notification_handler.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image.h"
@@ -77,6 +80,13 @@ void UsbPrinterNotification::Click(
   if (!button_index) {
     // Body of notification clicked.
     visible_ = false;
+    if (type_ == Type::kConfigurationRequired) {
+      auto* const settings_manager =
+          chrome::SettingsWindowManager::GetInstance();
+      settings_manager->ShowChromePageForProfile(
+          profile_,
+          chrome::GetSettingsUrl(chrome::kNativePrintingSettingsSubPage));
+    }
     return;
   }
 
@@ -99,6 +109,13 @@ void UsbPrinterNotification::UpdateContents() {
           IDS_USB_PRINTER_NOTIFICATION_CONNECTED_TITLE));
       notification_->set_message(l10n_util::GetStringFUTF16(
           IDS_USB_PRINTER_NOTIFICATION_CONNECTED_MESSAGE,
+          base::UTF8ToUTF16(printer_.display_name())));
+      return;
+    case Type::kConfigurationRequired:
+      notification_->set_title(l10n_util::GetStringUTF16(
+          IDS_USB_PRINTER_NOTIFICATION_CONFIGURATION_REQUIRED_TITLE));
+      notification_->set_message(l10n_util::GetStringFUTF16(
+          IDS_USB_PRINTER_NOTIFICATION_CONFIGURATION_REQUIRED_MESSAGE,
           base::UTF8ToUTF16(printer_.display_name())));
       return;
   }

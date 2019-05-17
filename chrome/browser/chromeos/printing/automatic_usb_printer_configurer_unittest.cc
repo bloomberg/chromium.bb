@@ -142,6 +142,10 @@ class FakeUsbPrinterNotificationController
     NOTIMPLEMENTED();
   }
 
+  void ShowConfigurationNotification(const Printer& printer) override {
+    NOTIMPLEMENTED();
+  }
+
   void RemoveNotification(const std::string& printer_id) override {
     open_notifications_.erase(printer_id);
   }

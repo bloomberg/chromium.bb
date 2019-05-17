@@ -326,6 +326,7 @@ extern const char kHelpSubPage[];
 extern const char kInternetSubPage[];
 extern const char kConnectedDevicesSubPage[];
 extern const char kLockScreenSubPage[];
+extern const char kNativePrintingSettingsSubPage[];
 extern const char kNetworkDetailSubPage[];
 extern const char kPluginVmDetailsSubPage[];
 extern const char kPluginVmSharedPathSubPage[];
