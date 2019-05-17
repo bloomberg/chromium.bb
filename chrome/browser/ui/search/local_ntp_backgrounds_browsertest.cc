@@ -21,14 +21,26 @@
 #include "chrome/common/search/instant_types.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/image_fetcher/core/mock_image_fetcher.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace {
-
 using LocalNTPCustomBackgroundsTest = InProcessBrowserTest;
+
+class TestInstantService {
+ public:
+  explicit TestInstantService(Profile* profile) {
+    instant_service = InstantServiceFactory::GetForProfile(profile);
+    instant_service->SetImageFetcherForTesting(
+        new testing::NiceMock<image_fetcher::MockImageFetcher>());
+  }
+  InstantService* get_instant_service() { return instant_service; }
+
+ private:
+  InstantService* instant_service;
+};
 
 IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsTest,
                        EmbeddedSearchAPIEndToEnd) {
@@ -41,9 +53,9 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsTest,
   local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
 
   // Check that a URL with no attributions can be set.
-  InstantService* instant_service =
-      InstantServiceFactory::GetForProfile(browser()->profile());
-  instant_service->AddValidBackdropUrlForTesting(GURL("https://www.test.com/"));
+  TestInstantService test_instant_service(browser()->profile());
+  test_instant_service.get_instant_service()->AddValidBackdropUrlForTesting(
+      GURL("https://www.test.com/"));
   EXPECT_TRUE(content::ExecuteScript(active_tab,
                                      "window.chrome.embeddedSearch.newTabPage."
                                      "setBackgroundURL('https://www.test.com/"
@@ -76,9 +88,9 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsTest, AttributionSetAndReset) {
   local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
 
   // Set a custom background attribution via the EmbeddedSearch API.
-  InstantService* instant_service =
-      InstantServiceFactory::GetForProfile(browser()->profile());
-  instant_service->AddValidBackdropUrlForTesting(GURL("https://www.test.com/"));
+  TestInstantService test_instant_service(browser()->profile());
+  test_instant_service.get_instant_service()->AddValidBackdropUrlForTesting(
+      GURL("https://www.test.com/"));
   EXPECT_TRUE(content::ExecuteScript(active_tab,
                                      "window.chrome.embeddedSearch.newTabPage."
                                      "setBackgroundURLWithAttributions('https:/"
@@ -120,9 +132,8 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsTest,
   local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
 
   // Set a custom background image via the EmbeddedSearch API.
-  InstantService* instant_service =
-      InstantServiceFactory::GetForProfile(browser()->profile());
-  instant_service->AddValidBackdropUrlForTesting(
+  TestInstantService test_instant_service(browser()->profile());
+  test_instant_service.get_instant_service()->AddValidBackdropUrlForTesting(
       GURL("chrome-search://local-ntp/background1.jpg"));
   EXPECT_TRUE(content::ExecuteScript(
       active_tab,
@@ -166,9 +177,8 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsTest,
   local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
 
   // Set a custom background image via the EmbeddedSearch API.
-  InstantService* instant_service =
-      InstantServiceFactory::GetForProfile(browser()->profile());
-  instant_service->AddValidBackdropUrlForTesting(
+  TestInstantService test_instant_service(browser()->profile());
+  test_instant_service.get_instant_service()->AddValidBackdropUrlForTesting(
       GURL("chrome-search://local-ntp/background1.jpg"));
   ASSERT_TRUE(content::ExecuteScript(
       active_tab,
@@ -268,9 +278,9 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsThemeTest,
   local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
 
   // Set a custom background attribution via the EmbeddedSearch API.
-  InstantService* instant_service =
-      InstantServiceFactory::GetForProfile(profile());
-  instant_service->AddValidBackdropUrlForTesting(GURL("https://www.test.com/"));
+  TestInstantService test_instant_service(browser()->profile());
+  test_instant_service.get_instant_service()->AddValidBackdropUrlForTesting(
+      GURL("https://www.test.com/"));
   ASSERT_TRUE(content::ExecuteScript(active_tab,
                                      "window.chrome.embeddedSearch.newTabPage."
                                      "setBackgroundURLWithAttributions('https:/"
@@ -327,9 +337,8 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsThemeTest,
   local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
 
   // Set a custom background image via the EmbeddedSearch API.
-  InstantService* instant_service =
-      InstantServiceFactory::GetForProfile(profile());
-  instant_service->AddValidBackdropUrlForTesting(
+  TestInstantService test_instant_service(browser()->profile());
+  test_instant_service.get_instant_service()->AddValidBackdropUrlForTesting(
       GURL("chrome-search://local-ntp/background1.jpg"));
   ASSERT_TRUE(content::ExecuteScript(
       active_tab,
@@ -392,9 +401,8 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsThemeTest,
   EXPECT_TRUE(result);
 
   // Set a custom background image via the EmbeddedSearch API.
-  InstantService* instant_service =
-      InstantServiceFactory::GetForProfile(profile());
-  instant_service->AddValidBackdropUrlForTesting(
+  TestInstantService test_instant_service(browser()->profile());
+  test_instant_service.get_instant_service()->AddValidBackdropUrlForTesting(
       GURL("chrome-search://local-ntp/background1.jpg"));
   ASSERT_TRUE(content::ExecuteScript(
       active_tab,
@@ -440,6 +448,8 @@ class LocalNTPBackgroundsAndDarkModeTest
         InstantServiceFactory::GetForProfile(browser()->profile());
     theme()->SetDarkMode(true);
     instant_service->SetDarkModeThemeForTesting(theme());
+    instant_service->SetImageFetcherForTesting(
+        new testing::NiceMock<image_fetcher::MockImageFetcher>());
   }
 
   InstantService* instant_service;
@@ -534,5 +544,3 @@ IN_PROC_BROWSER_TEST_F(LocalNTPBackgroundsAndDarkModeTest,
   EXPECT_TRUE(GetIsDarkModeApplied(active_tab));
   EXPECT_TRUE(GetIsLightChipsApplied(active_tab));
 }
-
-}  // namespace

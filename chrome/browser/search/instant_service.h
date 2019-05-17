@@ -18,6 +18,7 @@
 #include "base/optional.h"
 #include "build/build_config.h"
 #include "components/history/core/browser/history_types.h"
+#include "components/image_fetcher/core/image_fetcher_impl.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/ntp_tiles/most_visited_sites.h"
 #include "components/ntp_tiles/ntp_tile.h"
@@ -46,6 +47,8 @@ class RenderProcessHost;
 namespace ui {
 class DarkModeObserver;
 }  // namespace ui
+
+extern const char kNtpCustomBackgroundMainColor[];
 
 // Tracks render process host IDs that are associated with Instant, i.e.
 // processes that are used to render an NTP. Also responsible for keeping
@@ -154,11 +157,22 @@ class InstantService : public KeyedService,
   // tests.
   virtual void ResetToDefault();
 
+  // Calculates the most frequent color of the image and stores it in prefs.
+  void UpdateCustomBackgroundColor(
+      const GURL& image_url,
+      const gfx::Image& fetched_image,
+      const image_fetcher::RequestMetadata& metadata);
+
+  // Fetches the image for the given |fetch_url|.
+  void FetchCustomBackground(const GURL& image_url, const GURL& fetch_url);
+
  private:
   class SearchProviderObserver;
 
   friend class InstantExtendedTest;
   friend class InstantUnitTestBase;
+  friend class LocalNTPBackgroundsAndDarkModeTest;
+  friend class TestInstantService;
 
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, ProcessIsolation);
   FRIEND_TEST_ALL_PREFIXES(InstantServiceTest, DeleteThumbnailDataIfExists);
@@ -229,6 +243,8 @@ class InstantService : public KeyedService,
 
   void CreateDarkModeObserver(ui::NativeTheme* theme);
 
+  void SetImageFetcherForTesting(image_fetcher::ImageFetcher* image_fetcher);
+
   Profile* const profile_;
 
   // The process ids associated with Instant processes.
@@ -260,6 +276,8 @@ class InstantService : public KeyedService,
   std::unique_ptr<ui::DarkModeObserver> dark_mode_observer_;
 
   NtpBackgroundService* background_service_;
+
+  std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher_;
 
   base::WeakPtrFactory<InstantService> weak_ptr_factory_;
 

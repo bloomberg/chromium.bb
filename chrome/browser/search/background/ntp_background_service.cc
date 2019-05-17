@@ -267,6 +267,23 @@ void NtpBackgroundService::AddValidBackdropUrlForTesting(const GURL& url) {
   collection_images_.push_back(image);
 }
 
+void NtpBackgroundService::AddValidBackdropUrlWithThumbnailForTesting(
+    const GURL& url,
+    const GURL& thumbnail_url) {
+  CollectionImage image;
+  image.image_url = url;
+  image.thumbnail_image_url = thumbnail_url;
+  collection_images_.push_back(image);
+}
+
+const GURL& NtpBackgroundService::GetThumbnailUrl(const GURL& image_url) {
+  for (auto& image : collection_images_) {
+    if (image.image_url == image_url)
+      return image.thumbnail_image_url;
+  }
+  return GURL::EmptyGURL();
+}
+
 void NtpBackgroundService::NotifyObservers(FetchComplete fetch_complete) {
   for (auto& observer : observers_) {
     switch (fetch_complete) {

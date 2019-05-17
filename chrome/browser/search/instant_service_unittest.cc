@@ -55,6 +55,18 @@ class MockInstantService : public InstantService {
   MOCK_METHOD0(ResetCustomBackgroundThemeInfo, void());
 };
 
+bool CheckBackgroundColor(SkColor color,
+                          const base::DictionaryValue* background_info) {
+  if (!background_info)
+    return false;
+
+  const base::Value* background_color =
+      background_info->FindKey(kNtpCustomBackgroundMainColor);
+  if (!background_color)
+    return false;
+
+  return color == static_cast<uint32_t>(background_color->GetInt());
+}
 }  // namespace
 
 using InstantServiceTest = InstantUnitTestBase;
@@ -575,4 +587,46 @@ TEST_F(InstantServiceTest, LocalImageDoesNotHaveAttribution) {
   EXPECT_EQ(std::string(), theme_info->custom_background_attribution_line_1);
   EXPECT_EQ(std::string(), theme_info->custom_background_attribution_line_2);
   EXPECT_EQ(GURL(), theme_info->custom_background_attribution_action_url);
+}
+
+TEST_F(InstantServiceTest, TestUpdateCustomBackgroundColor) {
+  SkBitmap bitmap;
+  bitmap.allocN32Pixels(32, 32);
+  bitmap.eraseColor(SK_ColorRED);
+  gfx::Image image = gfx::Image::CreateFrom1xBitmap(bitmap);
+  sync_preferences::TestingPrefServiceSyncable* pref_service =
+      profile()->GetTestingPrefService();
+
+  ASSERT_FALSE(instant_service_->IsCustomBackgroundSet());
+
+  // Background color will not update if no background is set.
+  instant_service_->UpdateCustomBackgroundColor(
+      GURL(), image, image_fetcher::RequestMetadata());
+  EXPECT_FALSE(CheckBackgroundColor(
+      SK_ColorRED,
+      pref_service->GetDictionary(prefs::kNtpCustomBackgroundDict)));
+
+  const GURL kUrl("https://www.foo.com");
+  const std::string kAttributionLine1 = "foo";
+  const std::string kAttributionLine2 = "bar";
+  const GURL kActionUrl("https://www.bar.com");
+
+  SetUserSelectedDefaultSearchProvider("{google:baseURL}");
+  instant_service_->AddValidBackdropUrlForTesting(kUrl);
+  instant_service_->SetCustomBackgroundURLWithAttributions(
+      kUrl, kAttributionLine1, kAttributionLine2, kActionUrl);
+
+  // Background color will not update if current background url changed.
+  instant_service_->UpdateCustomBackgroundColor(
+      GURL("different_url"), image, image_fetcher::RequestMetadata());
+  EXPECT_FALSE(CheckBackgroundColor(
+      SK_ColorRED,
+      pref_service->GetDictionary(prefs::kNtpCustomBackgroundDict)));
+
+  // Background color should update.
+  instant_service_->UpdateCustomBackgroundColor(
+      kUrl, image, image_fetcher::RequestMetadata());
+  EXPECT_TRUE(CheckBackgroundColor(
+      SK_ColorRED,
+      pref_service->GetDictionary(prefs::kNtpCustomBackgroundDict)));
 }
