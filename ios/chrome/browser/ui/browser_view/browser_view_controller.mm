@@ -1447,8 +1447,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   [self.commandDispatcher stopDispatchingToTarget:self];
   self.commandDispatcher = nil;
 
-  [self.tabStripCoordinator stop];
-  self.tabStripCoordinator = nil;
   [self.primaryToolbarCoordinator stop];
   self.primaryToolbarCoordinator = nil;
   [self.secondaryToolbarContainerCoordinator stop];
@@ -1458,7 +1456,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   [_downloadManagerCoordinator stop];
   _downloadManagerCoordinator = nil;
   self.toolbarInterface = nil;
-  self.tabStripView = nil;
   [self.infobarContainerCoordinator stop];
   self.infobarContainerCoordinator = nil;
   // SideSwipeController is a tab model observer, so it needs to stop observing
