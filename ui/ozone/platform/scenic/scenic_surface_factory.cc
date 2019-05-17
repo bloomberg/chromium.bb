@@ -85,7 +85,8 @@ ScenicSurfaceFactory::~ScenicSurfaceFactory() {
 std::vector<gl::GLImplementation>
 ScenicSurfaceFactory::GetAllowedGLImplementations() {
   // TODO(spang): Remove this after crbug.com/897208 is fixed.
-  return std::vector<gl::GLImplementation>{gl::kGLImplementationSwiftShaderGL};
+  return std::vector<gl::GLImplementation>{gl::kGLImplementationSwiftShaderGL,
+                                           gl::kGLImplementationStubGL};
 }
 
 GLOzone* ScenicSurfaceFactory::GetGLOzone(gl::GLImplementation implementation) {
