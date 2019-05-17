@@ -179,6 +179,7 @@ const CSSPropertyID kComputedPropertyArray[] = {
 
 
     // patch section: lcd-text background
+    CSSPropertyBbLcdBackgroundColor,
 
 
     // patch section: rubberband
