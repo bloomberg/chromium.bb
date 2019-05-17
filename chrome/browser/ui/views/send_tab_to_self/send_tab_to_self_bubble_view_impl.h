@@ -26,6 +26,8 @@ class WebContents;
 namespace send_tab_to_self {
 
 class SendTabToSelfBubbleController;
+class SendTabToSelfBubbleDeviceButton;
+struct TargetDeviceInfo;
 
 // View component of the send tab to self bubble that allows users to choose
 // target device to send tab to.
@@ -33,6 +35,13 @@ class SendTabToSelfBubbleViewImpl : public SendTabToSelfBubbleView,
                                     public views::ButtonListener,
                                     public LocationBarBubbleDelegateView {
  public:
+  // The valid device button height.
+  static constexpr int kDeviceButtonHeight = 56;
+  // Maximum number of buttons that are shown without scroll. If the device
+  // number is larger than kMaximumButtons, the bubble content will be
+  // scrollable.
+  static constexpr int kMaximumButtons = 5;
+
   // Bubble will be anchored to |anchor_view|.
   SendTabToSelfBubbleViewImpl(views::View* anchor_view,
                               const gfx::Point& anchor_point,
@@ -60,17 +69,22 @@ class SendTabToSelfBubbleViewImpl : public SendTabToSelfBubbleView,
   gfx::Size CalculatePreferredSize() const override;
   void OnPaint(gfx::Canvas* canvas) override;
 
+  // Shows the bubble view.
   void Show(DisplayReason reason);
 
  private:
   // views::BubbleDialogDelegateView:
   void Init() override;
 
-  // Shows the scroll view.
-  void ShowScrollView();
+  // Creates the scroll view.
+  void CreateScrollView();
 
   // Populates the scroll view containing valid devices.
-  void PopulateScrollView();
+  void PopulateScrollView(
+      const std::map<std::string, TargetDeviceInfo> devices);
+
+  // Handles the action when a target device has been pressed.
+  void DevicePressed(size_t index);
 
   // Resizes and potentially moves the bubble to fit the content's preferred
   // size.
@@ -79,10 +93,18 @@ class SendTabToSelfBubbleViewImpl : public SendTabToSelfBubbleView,
   // Title shown at the top of the bubble.
   base::string16 bubble_title_;
 
+  // Contains references to device buttons in the order they appear.
+  std::vector<std::unique_ptr<SendTabToSelfBubbleDeviceButton>> device_buttons_;
+
   SendTabToSelfBubbleController* controller_;  // Weak reference.
+
+  // ScrollView containing the list of device buttons.
+  views::ScrollView* scroll_view_ = nullptr;
 
   // The device that the user has selected to share tab to.
   base::Optional<size_t> selected_device_index_;
+
+  base::WeakPtrFactory<SendTabToSelfBubbleViewImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SendTabToSelfBubbleViewImpl);
 };

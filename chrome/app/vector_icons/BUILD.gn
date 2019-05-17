@@ -54,6 +54,8 @@ aggregate_vector_icons("chrome_vector_icons") {
     "forward_arrow_touch.icon",
     "generic_stop.icon",
     "globe.icon",
+    "hardware_computer.icon",
+    "hardware_smartphone.icon",
     "horizontal_menu.icon",
     "incognito.icon",
     "incognito_profile.icon",

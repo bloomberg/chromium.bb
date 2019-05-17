@@ -5,11 +5,19 @@
 #include "chrome/browser/ui/views/send_tab_to_self/send_tab_to_self_bubble_view_impl.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/ui/send_tab_to_self/send_tab_to_self_bubble_controller.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/send_tab_to_self/send_tab_to_self_bubble_device_button.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/send_tab_to_self/target_device_info.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/views/controls/scroll_view.h"
+#include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 
 namespace send_tab_to_self {
@@ -20,7 +28,8 @@ SendTabToSelfBubbleViewImpl::SendTabToSelfBubbleViewImpl(
     content::WebContents* web_contents,
     SendTabToSelfBubbleController* controller)
     : LocationBarBubbleDelegateView(anchor_view, anchor_point, web_contents),
-      controller_(controller) {
+      controller_(controller),
+      weak_factory_(this) {
   DCHECK(controller);
 }
 
@@ -59,8 +68,10 @@ bool SendTabToSelfBubbleViewImpl::Close() {
 
 void SendTabToSelfBubbleViewImpl::ButtonPressed(views::Button* sender,
                                                 const ui::Event& event) {
-  // TODO(crbug/959698): handle the action when a button has been clicked.
-  NOTIMPLEMENTED();
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
+      base::BindOnce(&SendTabToSelfBubbleViewImpl::DevicePressed,
+                     weak_factory_.GetWeakPtr(), sender->tag()));
 }
 
 gfx::Size SendTabToSelfBubbleViewImpl::CalculatePreferredSize() const {
@@ -87,17 +98,45 @@ void SendTabToSelfBubbleViewImpl::Init() {
                       views::DISTANCE_DIALOG_CONTENT_MARGIN_BOTTOM_CONTROL),
                   0));
   SetLayoutManager(std::make_unique<views::FillLayout>());
+
+  CreateScrollView();
+
+  PopulateScrollView(controller_->GetValidDevices());
 }
 
-void SendTabToSelfBubbleViewImpl::ShowScrollView() {
-  // TODO(crbug/960595): show the scroll view.
-  NOTIMPLEMENTED();
+void SendTabToSelfBubbleViewImpl::CreateScrollView() {
+  scroll_view_ = new views::ScrollView();
+  AddChildView(scroll_view_);
+  scroll_view_->ClipHeightTo(0, kDeviceButtonHeight * kMaximumButtons);
 }
 
-void SendTabToSelfBubbleViewImpl::PopulateScrollView() {
-  // TODO(crbug/960595): get the valid devices data and populate the bubble
-  // scroll view.
-  NOTIMPLEMENTED();
+void SendTabToSelfBubbleViewImpl::PopulateScrollView(
+    const std::map<std::string, TargetDeviceInfo> devices) {
+  device_buttons_.clear();
+  auto device_list_view = std::make_unique<views::View>();
+  device_list_view->SetLayoutManager(
+      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  int tag = 0;
+  for (const auto& device : devices) {
+    auto device_button = std::make_unique<SendTabToSelfBubbleDeviceButton>(
+        this, device.first, device.second,
+        /** button_tag */ tag++);
+    device_buttons_.push_back(std::move(device_button));
+    device_list_view->AddChildView(device_buttons_.back().get());
+  }
+  scroll_view_->SetContents(std::move(device_list_view));
+
+  MaybeSizeToContents();
+  Layout();
+}
+
+void SendTabToSelfBubbleViewImpl::DevicePressed(size_t index) {
+  if (!controller_) {
+    return;
+  }
+  SendTabToSelfBubbleDeviceButton* device_button =
+      device_buttons_.at(index).get();
+  controller_->OnDeviceSelected(device_button->device_guid());
 }
 
 void SendTabToSelfBubbleViewImpl::MaybeSizeToContents() {

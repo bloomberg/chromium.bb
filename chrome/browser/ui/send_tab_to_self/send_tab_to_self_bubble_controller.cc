@@ -7,11 +7,14 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_desktop_util.h"
+#include "chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/send_tab_to_self/send_tab_to_self_bubble_view.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/send_tab_to_self/send_tab_to_self_model.h"
+#include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
 #include "components/send_tab_to_self/target_device_info.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -86,8 +89,18 @@ SendTabToSelfBubbleController::SendTabToSelfBubbleController(
 }
 
 void SendTabToSelfBubbleController::FetchDeviceInfo() {
-  // TODO(crbug/960595): get devices info map from SendTabToSelfModel.
-  NOTIMPLEMENTED();
+  valid_devices_.clear();
+  send_tab_to_self::SendTabToSelfSyncService* service =
+      SendTabToSelfSyncServiceFactory::GetForProfile(GetProfile());
+  if (!service) {
+    return;
+  }
+  send_tab_to_self::SendTabToSelfModel* model =
+      service->GetSendTabToSelfModel();
+  if (!model) {
+    return;
+  }
+  valid_devices_ = model->GetTargetDeviceNameToCacheInfoMap();
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(SendTabToSelfBubbleController)
