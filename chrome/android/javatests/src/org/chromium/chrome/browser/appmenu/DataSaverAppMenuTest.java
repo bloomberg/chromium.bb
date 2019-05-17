@@ -20,8 +20,10 @@ import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
+import org.chromium.chrome.browser.util.ObservableSupplier;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
@@ -52,9 +54,10 @@ public class DataSaverAppMenuTest {
          */
         public AppMenuHandlerForTest(AppMenuPropertiesDelegate delegate,
                 AppMenuCoordinator.AppMenuDelegate appMenuDelegate, int menuResourceId,
-                View decorView, ActivityLifecycleDispatcher activityLifecycleDispatcher) {
-            super(delegate, appMenuDelegate, menuResourceId, decorView,
-                    activityLifecycleDispatcher);
+                View decorView, ActivityLifecycleDispatcher activityLifecycleDispatcher,
+                ObservableSupplier<OverviewModeBehavior> overviewModeBehaviorSupplier) {
+            super(delegate, appMenuDelegate, menuResourceId, decorView, activityLifecycleDispatcher,
+                    overviewModeBehaviorSupplier);
             mDelegate = delegate;
         }
 
@@ -83,10 +86,11 @@ public class DataSaverAppMenuTest {
     @Before
     public void setUp() throws Exception {
         AppMenuCoordinator.setAppMenuHandlerFactoryForTesting(
-                (delegate, appMenuDelegate, menuResourceId, decorView,
-                        activityLifecycleDispatcher) -> {
+                (delegate, appMenuDelegate, menuResourceId, decorView, activityLifecycleDispatcher,
+                        overviewModeBehaviorSupplier) -> {
                     mAppMenuHandler = new AppMenuHandlerForTest(delegate, appMenuDelegate,
-                            menuResourceId, decorView, activityLifecycleDispatcher);
+                            menuResourceId, decorView, activityLifecycleDispatcher,
+                            overviewModeBehaviorSupplier);
                     return mAppMenuHandler;
                 });
 

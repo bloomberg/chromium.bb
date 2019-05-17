@@ -18,6 +18,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import org.chromium.base.Callback;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
@@ -40,6 +41,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.translate.TranslateBridge;
+import org.chromium.chrome.browser.util.ObservableSupplier;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.webapk.lib.client.WebApkValidator;
@@ -57,6 +59,8 @@ public class AppMenuPropertiesDelegate {
     protected final TabModelSelector mTabModelSelector;
     protected final ToolbarManager mToolbarManager;
     protected final View mDecorView;
+    private final @Nullable ObservableSupplier<OverviewModeBehavior> mOverviewModeBehaviorSupplier;
+    private @Nullable Callback<OverviewModeBehavior> mOverviewModeSupplierCallback;
 
     protected @Nullable OverviewModeBehavior mOverviewModeBehavior;
     protected BookmarkBridge mBookmarkBridge;
@@ -71,10 +75,13 @@ public class AppMenuPropertiesDelegate {
      * @param toolbarManager The {@link ToolbarManager} for the containing activity.
      * @param decorView The decor {@link View}, e.g. from Window#getDecorView(), for the containing
      *         activity.
+     * @param overviewModeBehaviorSupplier An {@link ObservableSupplier} for the
+     *         {@link OverviewModeBehavior} associated with the containing activity.
      */
     public AppMenuPropertiesDelegate(Context context, ActivityTabProvider activityTabProvider,
             MultiWindowModeStateDispatcher multiWindowModeStateDispatcher,
-            TabModelSelector tabModelSelector, ToolbarManager toolbarManager, View decorView) {
+            TabModelSelector tabModelSelector, ToolbarManager toolbarManager, View decorView,
+            @Nullable ObservableSupplier<OverviewModeBehavior> overviewModeBehaviorSupplier) {
         mContext = context;
         mIsTablet = DeviceFormFactor.isNonMultiDisplayContextOnTablet(mContext);
         mActivityTabProvider = activityTabProvider;
@@ -82,17 +89,23 @@ public class AppMenuPropertiesDelegate {
         mTabModelSelector = tabModelSelector;
         mToolbarManager = toolbarManager;
         mDecorView = decorView;
+
+        mOverviewModeBehaviorSupplier = overviewModeBehaviorSupplier;
+        if (mOverviewModeBehaviorSupplier != null) {
+            mOverviewModeSupplierCallback = overviewModeBehavior -> {
+                mOverviewModeBehavior = overviewModeBehavior;
+            };
+            mOverviewModeBehaviorSupplier.addObserver(mOverviewModeSupplierCallback);
+        }
     }
 
     /**
-     * Called when native initialization has finished to provide additional activity-scoped objects
-     * only available after native initialization.
-     *
-     * @param overviewModeBehavior The {@link OverviewModeBehavior} for the containing activity
-     *         if the current activity supports an overview mode, or null otherwise.
+     * Called when the containing activity is being destroyed.
      */
-    void onNativeInitialized(@Nullable OverviewModeBehavior overviewModeBehavior) {
-        mOverviewModeBehavior = overviewModeBehavior;
+    public void destroy() {
+        if (mOverviewModeBehaviorSupplier != null) {
+            mOverviewModeBehaviorSupplier.removeObserver(mOverviewModeSupplierCallback);
+        }
     }
 
     /**

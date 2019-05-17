@@ -32,6 +32,7 @@ public class RootUiCoordinator implements Destroyable, NativeInitObserver, Infla
     private @Nullable AppMenuCoordinator mAppMenuCoordinator;
     private @Nullable ImmersiveModeManager mImmersiveModeManager;
     private SystemUiCoordinator mSystemUiCoordinator;
+    private @Nullable EmptyBackgroundViewWrapper mEmptyBackgroundViewWrapper;
 
     /**
      * Create a new {@link RootUiCoordinator} for the given activity.
@@ -51,6 +52,7 @@ public class RootUiCoordinator implements Destroyable, NativeInitObserver, Infla
         if (mSystemUiCoordinator != null) mSystemUiCoordinator.destroy();
         if (mImmersiveModeManager != null) mImmersiveModeManager.destroy();
         if (mAppMenuCoordinator != null) mAppMenuCoordinator.destroy();
+        if (mEmptyBackgroundViewWrapper != null) mEmptyBackgroundViewWrapper.destroy();
     }
 
     @Override
@@ -63,7 +65,8 @@ public class RootUiCoordinator implements Destroyable, NativeInitObserver, Infla
         if (mActivity.supportsAppMenu()) {
             mAppMenuCoordinator = new AppMenuCoordinator(mActivity,
                     mActivity.getLifecycleDispatcher(), mActivity.getToolbarManager(), mActivity,
-                    mActivity.getWindow().getDecorView());
+                    mActivity.getWindow().getDecorView(),
+                    mActivity.getOverviewModeBehaviorSupplier());
             mActivity.getToolbarManager().onAppMenuInitialized(
                     mAppMenuCoordinator.getAppMenuHandler(),
                     mAppMenuCoordinator.getAppMenuPropertiesDelegate());
@@ -73,9 +76,9 @@ public class RootUiCoordinator implements Destroyable, NativeInitObserver, Infla
 
         mImmersiveModeManager = AppHooks.get().createImmersiveModeManager(
                 mActivity.getWindow().getDecorView().findViewById(android.R.id.content));
-        mSystemUiCoordinator =
-                new SystemUiCoordinator(mActivity.getWindow(), mActivity.getTabModelSelector(),
-                        mImmersiveModeManager, mActivity.getActivityType());
+        mSystemUiCoordinator = new SystemUiCoordinator(mActivity.getWindow(),
+                mActivity.getTabModelSelector(), mImmersiveModeManager, mActivity.getActivityType(),
+                mActivity.getOverviewModeBehaviorSupplier());
 
         if (mImmersiveModeManager != null && mActivity.getToolbarManager() != null) {
             mActivity.getToolbarManager().setImmersiveModeManager(mImmersiveModeManager);
@@ -84,21 +87,17 @@ public class RootUiCoordinator implements Destroyable, NativeInitObserver, Infla
 
     @Override
     public void onFinishNativeInitialization() {
-        mSystemUiCoordinator.onNativeInitialized(mActivity.getOverviewModeBehavior());
-        if (mAppMenuCoordinator != null) {
-            mAppMenuCoordinator.onNativeInitialized(mActivity.getOverviewModeBehavior());
-        }
-
-        // TODO(twellington): Move to a TabbedRootUiCoordinator or delegate?
+        // TODO(https://crbug.com/931496): Move to a TabbedRootUiCoordinator or delegate?
+        // TODO(twellington): Supply TabModelSelector as well and move initialization earlier.
         if (mActivity.getActivityType() == ChromeActivity.ActivityType.TABBED
                 && DeviceFormFactor.isNonMultiDisplayContextOnTablet(mActivity)) {
             AppMenuHandler appMenuHandler =
                     mAppMenuCoordinator == null ? null : mAppMenuCoordinator.getAppMenuHandler();
-            EmptyBackgroundViewWrapper bgViewWrapper =
-                    new EmptyBackgroundViewWrapper(mActivity.getTabModelSelector(),
-                            mActivity.getTabCreator(false), mActivity, appMenuHandler,
-                            mActivity.getSnackbarManager(), mActivity.getOverviewModeBehavior());
-            bgViewWrapper.initialize();
+            mEmptyBackgroundViewWrapper = new EmptyBackgroundViewWrapper(
+                    mActivity.getTabModelSelector(), mActivity.getTabCreator(false), mActivity,
+                    appMenuHandler, mActivity.getSnackbarManager(),
+                    mActivity.getOverviewModeBehaviorSupplier());
+            mEmptyBackgroundViewWrapper.initialize();
         }
     }
 

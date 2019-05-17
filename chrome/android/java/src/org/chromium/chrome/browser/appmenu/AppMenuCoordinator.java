@@ -17,6 +17,7 @@ import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
+import org.chromium.chrome.browser.util.ObservableSupplier;
 
 /** A UI coordinator the app menu. */
 public class AppMenuCoordinator {
@@ -69,11 +70,14 @@ public class AppMenuCoordinator {
          *            It is assumed to have back_menu_id, forward_menu_id, bookmark_this_page_id.
          * @param decorView The decor {@link View}, e.g. from Window#getDecorView(), for the
          *         containing activity.
+         * @param overviewModeBehaviorSupplier An {@link ObservableSupplier} for the
+         *         {@link OverviewModeBehavior} associated with the containing activity.
          * @return AppMenuHandler for the given activity and menu resource id.
          */
         AppMenuHandler get(AppMenuPropertiesDelegate delegate, AppMenuDelegate appMenuDelegate,
                 int menuResourceId, View decorView,
-                ActivityLifecycleDispatcher activityLifecycleDispatcher);
+                ActivityLifecycleDispatcher activityLifecycleDispatcher,
+                @Nullable ObservableSupplier<OverviewModeBehavior> overviewModeBehaviorSupplier);
     }
 
     /**
@@ -91,10 +95,10 @@ public class AppMenuCoordinator {
     private AppMenuPropertiesDelegate mAppMenuPropertiesDelegate;
     private AppMenuHandler mAppMenuHandler;
 
-    private static AppMenuHandlerFactory sAppMenuHandlerFactory =
-            (delegate, appMenuDelegate, menuResourceId, decorView, activityLifecycleDispatcher)
+    private static AppMenuHandlerFactory sAppMenuHandlerFactory = (delegate, appMenuDelegate,
+            menuResourceId, decorView, activityLifecycleDispatcher, overviewModeBehaviorSupplier)
             -> new AppMenuHandler(delegate, appMenuDelegate, menuResourceId, decorView,
-                    activityLifecycleDispatcher);
+                    activityLifecycleDispatcher, overviewModeBehaviorSupplier);
 
     /**
      * Construct a new AppMenuCoordinator.
@@ -105,10 +109,13 @@ public class AppMenuCoordinator {
      * @param appMenuDelegate The {@link AppMenuDelegate} for the containing activity.
      * @param decorView The decor {@link View}, e.g. from Window#getDecorView(), for the containing
      *         activity.
+     * @param overviewModeBehaviorSupplier An {@link ObservableSupplier} for the
+     *         {@link OverviewModeBehavior} associated with the containing activity.
      */
     public AppMenuCoordinator(Context context,
             ActivityLifecycleDispatcher activityLifecycleDispatcher,
-            MenuButtonDelegate buttonDelegate, AppMenuDelegate appMenuDelegate, View decorView) {
+            MenuButtonDelegate buttonDelegate, AppMenuDelegate appMenuDelegate, View decorView,
+            @Nullable ObservableSupplier<OverviewModeBehavior> overviewModeBehaviorSupplier) {
         mContext = context;
         mButtonDelegate = buttonDelegate;
         mAppMenuDelegate = appMenuDelegate;
@@ -116,7 +123,7 @@ public class AppMenuCoordinator {
 
         mAppMenuHandler = sAppMenuHandlerFactory.get(mAppMenuPropertiesDelegate, mAppMenuDelegate,
                 mAppMenuPropertiesDelegate.getAppMenuLayoutId(), decorView,
-                activityLifecycleDispatcher);
+                activityLifecycleDispatcher, overviewModeBehaviorSupplier);
 
         // TODO(twellington): Move to UpdateMenuItemHelper or common UI coordinator parent?
         mAppMenuHandler.addObserver(new AppMenuObserver() {
@@ -143,20 +150,8 @@ public class AppMenuCoordinator {
     public void destroy() {
         // Prevent the menu window from leaking.
         if (mAppMenuHandler != null) mAppMenuHandler.destroy();
-    }
 
-    /**
-     * Called when native initialization has finished to provide additional activity-scoped objects
-     * only available after native initialization.
-     *
-     * @param overviewModeBehavior The {@link OverviewModeBehavior} for the containing activity
-     *         if the current activity supports an overview mode, or null otherwise.
-     */
-    public void onNativeInitialized(@Nullable OverviewModeBehavior overviewModeBehavior) {
-        // TODO(https://crbug.com/956260): Look into providing this during construction
-        // (e.g. through an AsyncSupplier that can notify when the dependency is available).
-        mAppMenuPropertiesDelegate.onNativeInitialized(overviewModeBehavior);
-        mAppMenuHandler.onNativeInitialized(overviewModeBehavior);
+        mAppMenuPropertiesDelegate.destroy();
     }
 
     /**

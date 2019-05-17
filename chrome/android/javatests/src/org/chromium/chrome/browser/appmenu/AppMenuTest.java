@@ -27,7 +27,9 @@ import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
+import org.chromium.chrome.browser.util.ObservableSupplier;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
@@ -62,9 +64,10 @@ public class AppMenuTest {
          */
         public AppMenuHandlerForTest(AppMenuPropertiesDelegate delegate,
                 AppMenuCoordinator.AppMenuDelegate appMenuDelegate, int menuResourceId,
-                View decorView, ActivityLifecycleDispatcher activityLifecycleDispatcher) {
-            super(delegate, appMenuDelegate, menuResourceId, decorView,
-                    activityLifecycleDispatcher);
+                View decorView, ActivityLifecycleDispatcher activityLifecycleDispatcher,
+                ObservableSupplier<OverviewModeBehavior> overviewModeBehaviorSupplier) {
+            super(delegate, appMenuDelegate, menuResourceId, decorView, activityLifecycleDispatcher,
+                    overviewModeBehaviorSupplier);
         }
 
         @Override
@@ -79,10 +82,11 @@ public class AppMenuTest {
         InstrumentationRegistry.getInstrumentation().setInTouchMode(false);
 
         AppMenuCoordinator.setAppMenuHandlerFactoryForTesting(
-                (delegate, appMenuDelegate, menuResourceId, decorView,
-                        activityLifecycleDispatcher) -> {
+                (delegate, appMenuDelegate, menuResourceId, decorView, activityLifecycleDispatcher,
+                        overviewModeBehaviorSupplier) -> {
                     mAppMenuHandler = new AppMenuHandlerForTest(delegate, appMenuDelegate,
-                            menuResourceId, decorView, activityLifecycleDispatcher);
+                            menuResourceId, decorView, activityLifecycleDispatcher,
+                            overviewModeBehaviorSupplier);
                     return mAppMenuHandler;
                 });
 

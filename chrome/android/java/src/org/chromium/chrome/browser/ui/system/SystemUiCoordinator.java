@@ -12,6 +12,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.ui.ImmersiveModeManager;
+import org.chromium.chrome.browser.util.ObservableSupplier;
 
 /**
  * A UI coordinator that manages the system status bar and bottom navigation bar.
@@ -29,30 +30,20 @@ public class SystemUiCoordinator {
      * @param tabModelSelector The {@link TabModelSelector} for the containing activity.
      * @param immersiveModeManager The {@link ImmersiveModeManager} for the containing activity.
      * @param activityType The {@link org.chromium.chrome.browser.ChromeActivity.ActivityType} of
-     *         the containing activity
+     *         the containing activity.
+     * @param overviewModeBehaviorSupplier An {@link ObservableSupplier} for the
+     *         {@link OverviewModeBehavior} associated with the containing activity.
      */
     public SystemUiCoordinator(Window window, TabModelSelector tabModelSelector,
             @Nullable ImmersiveModeManager immersiveModeManager,
-            @ChromeActivity.ActivityType int activityType) {
+            @ChromeActivity.ActivityType int activityType,
+            @Nullable ObservableSupplier<OverviewModeBehavior> overviewModeBehaviorSupplier) {
+        // TODO(https://crbug.com/931496): Move to a TabbedSystemUiCoordinator or delegate?
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1
                 && activityType == ChromeActivity.ActivityType.TABBED) {
+            assert overviewModeBehaviorSupplier != null;
             mNavigationBarColorController = new NavigationBarColorController(
-                    window, tabModelSelector, immersiveModeManager);
-        }
-    }
-
-    /**
-     * Called when native initialization has finished to provide additional activity-scoped objects
-     * only available after native initialization.
-     *
-     * @param overviewModeBehavior The {@link OverviewModeBehavior} for the containing activity
-     *         if the current activity supports an overview mode, or null otherwise.
-     */
-    public void onNativeInitialized(@Nullable OverviewModeBehavior overviewModeBehavior) {
-        if (mNavigationBarColorController != null) {
-            assert overviewModeBehavior != null;
-
-            mNavigationBarColorController.setOverviewModeBehavior(overviewModeBehavior);
+                    window, tabModelSelector, immersiveModeManager, overviewModeBehaviorSupplier);
         }
     }
 

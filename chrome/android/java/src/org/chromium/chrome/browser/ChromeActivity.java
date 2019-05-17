@@ -148,6 +148,7 @@ import org.chromium.chrome.browser.ui.system.StatusBarColorController;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.MathUtils;
+import org.chromium.chrome.browser.util.ObservableSupplier;
 import org.chromium.chrome.browser.vr.ArDelegate;
 import org.chromium.chrome.browser.vr.ArDelegateProvider;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
@@ -763,7 +764,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     public AppMenuPropertiesDelegate createAppMenuPropertiesDelegate() {
         return new AppMenuPropertiesDelegate(this, getActivityTabProvider(),
                 getMultiWindowModeStateDispatcher(), getTabModelSelector(), getToolbarManager(),
-                getWindow().getDecorView());
+                getWindow().getDecorView(), null);
     }
 
     /**
@@ -1439,6 +1440,14 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      *         OverviewModeBehavior has been initialized, null otherwise.
      */
     public @Nullable OverviewModeBehavior getOverviewModeBehavior() {
+        return null;
+    }
+
+    /**
+     * @return {@link ObservableSupplier} for the {@link OverviewModeBehavior} for this activity
+     *         if it supports an overview mode, null otherwise.
+     */
+    public @Nullable ObservableSupplier<OverviewModeBehavior> getOverviewModeBehaviorSupplier() {
         return null;
     }
 

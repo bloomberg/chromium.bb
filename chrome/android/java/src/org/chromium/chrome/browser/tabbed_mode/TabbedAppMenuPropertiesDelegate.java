@@ -13,11 +13,13 @@ import org.chromium.chrome.browser.appmenu.AppMenu;
 import org.chromium.chrome.browser.appmenu.AppMenuCoordinator;
 import org.chromium.chrome.browser.appmenu.AppMenuIconRowFooter;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.datareduction.DataReductionMainMenuItem;
 import org.chromium.chrome.browser.multiwindow.MultiWindowModeStateDispatcher;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
+import org.chromium.chrome.browser.util.ObservableSupplier;
 
 /**
  * An {@link AppMenuPropertiesDelegate} for ChromeTabbedActivity.
@@ -28,9 +30,10 @@ public class TabbedAppMenuPropertiesDelegate extends AppMenuPropertiesDelegate {
     public TabbedAppMenuPropertiesDelegate(Context context, ActivityTabProvider activityTabProvider,
             MultiWindowModeStateDispatcher multiWindowModeStateDispatcher,
             TabModelSelector tabModelSelector, ToolbarManager toolbarManager, View decorView,
-            AppMenuCoordinator.AppMenuDelegate appMenuDelegate) {
+            AppMenuCoordinator.AppMenuDelegate appMenuDelegate,
+            ObservableSupplier<OverviewModeBehavior> overviewModeBehaviorSupplier) {
         super(context, activityTabProvider, multiWindowModeStateDispatcher, tabModelSelector,
-                toolbarManager, decorView);
+                toolbarManager, decorView, overviewModeBehaviorSupplier);
         mAppMenuDelegate = appMenuDelegate;
     }
 

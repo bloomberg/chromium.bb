@@ -149,6 +149,8 @@ import org.chromium.chrome.browser.usage_stats.UsageStatsService;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
+import org.chromium.chrome.browser.util.ObservableSupplier;
+import org.chromium.chrome.browser.util.ObservableSupplierImpl;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.browser.widget.OverviewListLayout;
 import org.chromium.components.feature_engagement.EventConstants;
@@ -332,6 +334,8 @@ public class ChromeTabbedActivity
             implements OverviewModeObserver, OverviewModeController {
         private OverviewModeController mInternalOverviewModeController;
         private ObserverList<OverviewModeObserver> mOverviewModeObserverList = new ObserverList<>();
+        private final ObservableSupplierImpl<OverviewModeBehavior> mOverviewModeBehaviorSupplier =
+                new ObservableSupplierImpl<>();
 
         @Override
         public boolean overviewVisible() {
@@ -392,15 +396,17 @@ public class ChromeTabbedActivity
         }
 
         /**
-         * Provide a new internal implementation to use for {@link OverviewModeController}.
-         * @param newOverviewModeController The new internal implementation to use.
+         * Provide an internal implementation to use for {@link OverviewModeController}.
+         * @param overviewModeController The internal implementation to use.
          */
-        void overrideOverviewModeController(OverviewModeController newOverviewModeController) {
+        void overrideOverviewModeController(OverviewModeController overviewModeController) {
             if (mInternalOverviewModeController != null) {
                 mInternalOverviewModeController.removeOverviewModeObserver(this);
             }
-            mInternalOverviewModeController = newOverviewModeController;
+
+            mInternalOverviewModeController = overviewModeController;
             mInternalOverviewModeController.addOverviewModeObserver(this);
+            mOverviewModeBehaviorSupplier.set(overviewModeController);
         }
     }
 
@@ -756,7 +762,10 @@ public class ChromeTabbedActivity
                         TabManagementModuleProvider.getDelegate().createGridTabSwitcher(this);
                 mOverviewModeController.overrideOverviewModeController(
                         gridTabSwitcher.getOverviewModeController());
+            } else {
+                mOverviewModeController.overrideOverviewModeController(mLayoutManager);
             }
+            mOverviewModeController.addOverviewModeObserver(this);
 
             if (ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_ENGAGEMENT_REPORTING_ANDROID)) {
                 // The lifecycle of this object is managed by the lifecycle dispatcher.
@@ -917,6 +926,11 @@ public class ChromeTabbedActivity
     }
 
     @Override
+    public @Nullable ObservableSupplier<OverviewModeBehavior> getOverviewModeBehaviorSupplier() {
+        return mOverviewModeController.mOverviewModeBehaviorSupplier;
+    }
+
+    @Override
     protected AssistStatusHandler createAssistStatusHandler() {
         return new TabbedAssistStatusHandler(this);
     }
@@ -963,8 +977,6 @@ public class ChromeTabbedActivity
                         new LayoutManagerChromePhone(compositorViewHolder, mOverviewModeController);
             }
             mLayoutManager.setEnableAnimations(DeviceClassManager.enableAnimations());
-            mOverviewModeController.overrideOverviewModeController(mLayoutManager);
-            mOverviewModeController.addOverviewModeObserver(this);
 
             // TODO(yusufo): get rid of findViewById(R.id.url_bar).
             initializeCompositorContent(mLayoutManager, findViewById(R.id.url_bar),
@@ -1649,7 +1661,8 @@ public class ChromeTabbedActivity
     public AppMenuPropertiesDelegate createAppMenuPropertiesDelegate() {
         return new TabbedAppMenuPropertiesDelegate(this, getActivityTabProvider(),
                 getMultiWindowModeStateDispatcher(), getTabModelSelector(), getToolbarManager(),
-                getWindow().getDecorView(), this);
+                getWindow().getDecorView(), this,
+                mOverviewModeController.mOverviewModeBehaviorSupplier);
     }
 
     @Override

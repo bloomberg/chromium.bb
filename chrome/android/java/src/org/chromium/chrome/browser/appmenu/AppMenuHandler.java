@@ -19,6 +19,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.PopupMenu;
 
+import org.chromium.base.Callback;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
@@ -26,6 +27,7 @@ import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.ConfigurationChangedObserver;
 import org.chromium.chrome.browser.lifecycle.StartStopWithNativeObserver;
+import org.chromium.chrome.browser.util.ObservableSupplier;
 import org.chromium.chrome.browser.widget.textbubble.TextBubble;
 
 import java.util.ArrayList;
@@ -47,7 +49,9 @@ public class AppMenuHandler implements StartStopWithNativeObserver, Configuratio
     private final AppMenuCoordinator.AppMenuDelegate mAppMenuDelegate;
     private final View mDecorView;
     private final ActivityLifecycleDispatcher mActivityLifecycleDispatcher;
-    private OverviewModeBehavior mOverviewModeBehavior;
+    private final @Nullable ObservableSupplier<OverviewModeBehavior> mOverviewModeBehaviorSupplier;
+    private @Nullable Callback<OverviewModeBehavior> mOverviewModeSupplierCallback;
+    private @Nullable OverviewModeBehavior mOverviewModeBehavior;
 
     /**
      * The resource id of the menu item to highlight when the menu next opens. A value of
@@ -71,10 +75,13 @@ public class AppMenuHandler implements StartStopWithNativeObserver, Configuratio
      *            activity.
      * @param activityLifecycleDispatcher The {@link ActivityLifecycleDispatcher} for the containing
      *            activity.
+     * @param overviewModeBehaviorSupplier An {@link ObservableSupplier} for the
+     *            {@link OverviewModeBehavior} associated with the containing activity.
      */
     public AppMenuHandler(AppMenuPropertiesDelegate delegate,
             AppMenuCoordinator.AppMenuDelegate appMenuDelegate, int menuResourceId, View decorView,
-            ActivityLifecycleDispatcher activityLifecycleDispatcher) {
+            ActivityLifecycleDispatcher activityLifecycleDispatcher,
+            @Nullable ObservableSupplier<OverviewModeBehavior> overviewModeBehaviorSupplier) {
         mAppMenuDelegate = appMenuDelegate;
         mDelegate = delegate;
         mDecorView = decorView;
@@ -84,6 +91,19 @@ public class AppMenuHandler implements StartStopWithNativeObserver, Configuratio
 
         mActivityLifecycleDispatcher = activityLifecycleDispatcher;
         mActivityLifecycleDispatcher.register(this);
+
+        mOverviewModeBehaviorSupplier = overviewModeBehaviorSupplier;
+        if (mOverviewModeBehavior != null) {
+            mOverviewModeSupplierCallback = overviewModeBehavior -> {
+                if (mOverviewModeBehavior != null) {
+                    mOverviewModeBehavior.removeOverviewModeObserver(this);
+                }
+
+                mOverviewModeBehavior = overviewModeBehavior;
+                mOverviewModeBehavior.addOverviewModeObserver(this);
+            };
+            mOverviewModeBehaviorSupplier.addObserver(mOverviewModeSupplierCallback);
+        }
 
         assert mHardwareButtonMenuAnchor != null
                 : "Using AppMenu requires to have menu_anchor_stub view";
@@ -97,24 +117,13 @@ public class AppMenuHandler implements StartStopWithNativeObserver, Configuratio
         hideAppMenu();
 
         mActivityLifecycleDispatcher.unregister(this);
+        if (mOverviewModeBehaviorSupplier != null) {
+            mOverviewModeBehaviorSupplier.removeObserver(mOverviewModeSupplierCallback);
+        }
         if (mOverviewModeBehavior != null) {
             mOverviewModeBehavior.removeOverviewModeObserver(this);
         }
 
-    }
-
-    /**
-     * Called when native initialization has finished to provide additional activity-scoped objects
-     * only available after native initialization.
-     *
-     * @param overviewModeBehavior The {@link OverviewModeBehavior} for the containing activity
-     *         if the current activity supports an overview mode, or null otherwise.
-     */
-    void onNativeInitialized(@Nullable OverviewModeBehavior overviewModeBehavior) {
-        if (overviewModeBehavior != null) {
-            mOverviewModeBehavior = overviewModeBehavior;
-            mOverviewModeBehavior.addOverviewModeObserver(this);
-        }
     }
 
     /**
