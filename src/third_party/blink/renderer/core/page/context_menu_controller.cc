@@ -538,7 +538,7 @@ static bool FireBbContextMenuEvent(const HitTestResult& hitTestResult, const Web
   v8::Context::Scope context_scope(context);
 
   v8::Handle<v8::ObjectTemplate> templ = v8::ObjectTemplate::New(isolate);
-  v8::Handle<v8::Object> detail_obj = templ->NewInstance();
+  v8::Handle<v8::Object> detail_obj = templ->NewInstance(context).ToLocalChecked();
 
   ExposeBool(isolate, detail_obj, "canUndo", data.edit_flags & WebContextMenuData::kCanUndo);
   ExposeBool(isolate, detail_obj, "canRedo", data.edit_flags & WebContextMenuData::kCanRedo);
