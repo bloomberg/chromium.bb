@@ -1084,6 +1084,8 @@ source_set("chromeos") {
     "kiosk_next_home/intent_config_helper.h",
     "kiosk_next_home/kiosk_next_home_interface_broker_impl.cc",
     "kiosk_next_home/kiosk_next_home_interface_broker_impl.h",
+    "kiosk_next_home/metrics_helper.cc",
+    "kiosk_next_home/metrics_helper.h",
     "language_preferences.cc",
     "language_preferences.h",
     "launcher_search_provider/error_reporter.cc",

@@ -12,12 +12,14 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/apps/app_service/app_icon_source.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/chromeos/kiosk_next_home/app_controller_service_factory.h"
 #include "chrome/browser/chromeos/kiosk_next_home/intent_config_helper.h"
+#include "chrome/browser/chromeos/kiosk_next_home/metrics_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
@@ -44,6 +46,10 @@ arc::mojom::AppInstance* GetArcAppInstanceForLaunchIntent() {
                    arc::ArcServiceManager::Get()->arc_bridge_service()->app(),
                    LaunchIntent)
              : nullptr;
+}
+
+void RecordLaunchIntentResult(LaunchIntentResult result) {
+  UMA_HISTOGRAM_ENUMERATION("KioskNextHome.Bridge.LaunchIntentResult", result);
 }
 
 }  // namespace
@@ -78,6 +84,7 @@ void AppControllerService::BindRequest(mojom::AppControllerRequest request) {
 
 void AppControllerService::GetApps(
     mojom::AppController::GetAppsCallback callback) {
+  RecordBridgeAction(BridgeAction::kListApps);
   std::vector<chromeos::kiosk_next_home::mojom::AppPtr> app_list;
   // Using AppUpdate objects here since that's how the app list is intended to
   // be consumed. Refer to AppRegistryCache::ForEachApp for more information.
@@ -97,20 +104,25 @@ void AppControllerService::SetClient(mojom::AppControllerClientPtr client) {
 }
 
 void AppControllerService::LaunchApp(const std::string& app_id) {
+  RecordBridgeAction(BridgeAction::kLaunchApp);
   app_service_proxy_->Launch(app_id, ui::EventFlags::EF_NONE,
                              apps::mojom::LaunchSource::kFromKioskNextHome,
                              display::kDefaultDisplayId);
 }
 
 void AppControllerService::UninstallApp(const std::string& app_id) {
+  RecordBridgeAction(BridgeAction::kUninstallApp);
   app_service_proxy_->Uninstall(app_id);
 }
 
 void AppControllerService::GetArcAndroidId(
     mojom::AppController::GetArcAndroidIdCallback callback) {
+  RecordBridgeAction(BridgeAction::kGetAndroidId);
   arc::GetAndroidId(base::BindOnce(
       [](mojom::AppController::GetArcAndroidIdCallback callback, bool success,
          int64_t raw_android_id) {
+        UMA_HISTOGRAM_BOOLEAN("KioskNextHome.Bridge.GetAndroidIdSuccess",
+                              success);
         // The bridge expects the Android id as a hex string.
         std::stringstream android_id_stream;
         android_id_stream << std::hex << raw_android_id;
@@ -121,18 +133,22 @@ void AppControllerService::GetArcAndroidId(
 
 void AppControllerService::LaunchIntent(const std::string& intent,
                                         LaunchIntentCallback callback) {
+  RecordBridgeAction(BridgeAction::kLaunchIntent);
   GURL intent_uri(intent);
   if (!intent_config_helper_->IsIntentAllowed(intent_uri)) {
+    RecordLaunchIntentResult(LaunchIntentResult::kNotAllowed);
     std::move(callback).Run(false, "Intent not allowed.");
     return;
   }
 
   arc::mojom::AppInstance* app_instance = GetArcAppInstanceForLaunchIntent();
   if (!app_instance) {
+    RecordLaunchIntentResult(LaunchIntentResult::kArcUnavailable);
     std::move(callback).Run(false, "ARC bridge not available.");
     return;
   }
 
+  RecordLaunchIntentResult(LaunchIntentResult::kSuccess);
   app_instance->LaunchIntent(intent_uri.spec(), display::kDefaultDisplayId);
   std::move(callback).Run(true, base::nullopt);
 }
@@ -149,8 +165,10 @@ void AppControllerService::OnAppUpdate(const apps::AppUpdate& update) {
   if (!AppIsRelevantForKioskNextHome(update))
     return;
 
-  if (client_)
+  if (client_) {
+    RecordBridgeAction(BridgeAction::kNotifiedAppChange);
     client_->OnAppChanged(CreateAppPtr(update));
+  }
 }
 
 void AppControllerService::SetIntentConfigHelperForTesting(

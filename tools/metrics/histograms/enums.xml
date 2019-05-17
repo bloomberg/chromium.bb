@@ -31338,6 +31338,21 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="3" label="Consumer manual launch"/>
 </enum>
 
+<enum name="KioskNextHomeBridgeAction">
+  <int value="0" label="List apps"/>
+  <int value="1" label="Launch app"/>
+  <int value="2" label="Uninstall app"/>
+  <int value="3" label="Notified of app change"/>
+  <int value="4" label="Get ARC Android id"/>
+  <int value="5" label="Launch intent"/>
+</enum>
+
+<enum name="KioskNextHomeLaunchIntentResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Not allowed"/>
+  <int value="2" label="ARC not available"/>
+</enum>
+
 <enum name="LanguageCode">
   <summary>ISO 639 Language Codes.</summary>
   <int value="24929" label="Afar"/>

@@ -12,8 +12,10 @@
 
 #include "base/optional.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/chromeos/kiosk_next_home/intent_config_helper.h"
+#include "chrome/browser/chromeos/kiosk_next_home/metrics_helper.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -250,6 +252,23 @@ class AppControllerServiceTest : public testing::Test {
     }
   }
 
+  void ExpectBridgeActionRecorded(BridgeAction action, int count) {
+    // Since seeding apps may fire bridge actions, check only the bucket of
+    // interest.
+    histogram_tester_.ExpectBucketCount("KioskNextHome.Bridge.Action", action,
+                                        count);
+  }
+
+  void ExpectLaunchIntentResultRecorded(LaunchIntentResult result) {
+    histogram_tester_.ExpectUniqueSample(
+        "KioskNextHome.Bridge.LaunchIntentResult", result, 1);
+  }
+
+  void ExpectGetAndroidIdSuccessRecorded(bool success, int count) {
+    histogram_tester_.ExpectUniqueSample(
+        "KioskNextHome.Bridge.GetAndroidIdSuccess", success, count);
+  }
+
  private:
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
   std::unique_ptr<TestingProfile> profile_;
@@ -257,6 +276,7 @@ class AppControllerServiceTest : public testing::Test {
   MockAppServiceProxy* proxy_ = nullptr;
   AppControllerService* app_controller_service_ = nullptr;
   std::unique_ptr<FakeAppControllerClient> client_;
+  base::HistogramTester histogram_tester_;
 
   void ExpectEqualApps(const mojom::App& expected_app,
                        const mojom::App& actual_app) {
@@ -298,6 +318,7 @@ TEST_F(AppControllerServiceTest, AppIsFetchedCorrectly) {
   expected_app.readiness = readiness;
 
   ExpectApps({expected_app});
+  ExpectBridgeActionRecorded(BridgeAction::kListApps, 1);
 }
 
 TEST_F(AppControllerServiceTest, AndroidAppIsFetchedCorrectly) {
@@ -325,6 +346,7 @@ TEST_F(AppControllerServiceTest, AndroidAppIsFetchedCorrectly) {
   expected_app.readiness = readiness;
 
   ExpectApps({expected_app});
+  ExpectBridgeActionRecorded(BridgeAction::kListApps, 1);
 }
 
 TEST_F(AppControllerServiceTest, AndroidAppWithMissingPackageFetchedCorrectly) {
@@ -366,6 +388,7 @@ TEST_F(AppControllerServiceTest, AppReadinessIsUpdated) {
   delta.readiness = readiness;
   delta.show_in_launcher = OptionalBool::kTrue;
   AddAppDeltaToAppService(delta.Clone());
+  ExpectBridgeActionRecorded(BridgeAction::kNotifiedAppChange, 1);
 
   mojom::App expected_app;
   expected_app.app_id = app_id;
@@ -376,9 +399,11 @@ TEST_F(AppControllerServiceTest, AppReadinessIsUpdated) {
   // Now we change the readiness.
   delta.readiness = Readiness::kReady;
   AddAppDeltaToAppService(delta.Clone());
+  ExpectBridgeActionRecorded(BridgeAction::kNotifiedAppChange, 2);
 
   expected_app.readiness = Readiness::kReady;
   ExpectApps({expected_app});
+  ExpectBridgeActionRecorded(BridgeAction::kListApps, 2);
 }
 
 TEST_F(AppControllerServiceTest, AppDisplayNameIsUpdated) {
@@ -392,6 +417,7 @@ TEST_F(AppControllerServiceTest, AppDisplayNameIsUpdated) {
   delta.name = display_name;
   delta.show_in_launcher = OptionalBool::kTrue;
   AddAppDeltaToAppService(delta.Clone());
+  ExpectBridgeActionRecorded(BridgeAction::kNotifiedAppChange, 1);
 
   mojom::App expected_app;
   expected_app.app_id = app_id;
@@ -403,9 +429,11 @@ TEST_F(AppControllerServiceTest, AppDisplayNameIsUpdated) {
   std::string new_display_name = "New App Name";
   delta.name = new_display_name;
   AddAppDeltaToAppService(delta.Clone());
+  ExpectBridgeActionRecorded(BridgeAction::kNotifiedAppChange, 2);
 
   expected_app.display_name = new_display_name;
   ExpectApps({expected_app});
+  ExpectBridgeActionRecorded(BridgeAction::kListApps, 2);
 }
 
 TEST_F(AppControllerServiceTest, MultipleAppsAreFetchedCorrectly) {
@@ -500,6 +528,9 @@ TEST_F(AppControllerServiceTest, GetArcAndroidIdReturnsItWhenItHasIt) {
   // Make sure the returned Android ID doesn't get clipped when it's too large.
   SetAndroidId(std::numeric_limits<int64_t>::max());
   ExpectArcAndroidIdResponse(true, "7fffffffffffffff");
+
+  ExpectBridgeActionRecorded(BridgeAction::kGetAndroidId, 2);
+  ExpectGetAndroidIdSuccessRecorded(/*success=*/true, 2);
 }
 
 TEST_F(AppControllerServiceTest, GetArcAndroidIdFailureIsPropagated) {
@@ -507,6 +538,8 @@ TEST_F(AppControllerServiceTest, GetArcAndroidIdFailureIsPropagated) {
   StopArc();
 
   ExpectArcAndroidIdResponse(false, "0");
+  ExpectBridgeActionRecorded(BridgeAction::kGetAndroidId, 1);
+  ExpectGetAndroidIdSuccessRecorded(/*success=*/false, 1);
 }
 
 TEST_F(AppControllerServiceTest, LaunchIntentLaunchesWhenAllowed) {
@@ -515,6 +548,8 @@ TEST_F(AppControllerServiceTest, LaunchIntentLaunchesWhenAllowed) {
   ExpectLaunchIntentResponse(intent, true, base::nullopt);
 
   ExpectIntentLaunched(intent);
+  ExpectBridgeActionRecorded(BridgeAction::kLaunchIntent, 1);
+  ExpectLaunchIntentResultRecorded(LaunchIntentResult::kSuccess);
 }
 
 TEST_F(AppControllerServiceTest, LaunchIntentFailsWhenNotAllowed) {
@@ -524,6 +559,8 @@ TEST_F(AppControllerServiceTest, LaunchIntentFailsWhenNotAllowed) {
       intent, false, base::Optional<std::string>("Intent not allowed."));
 
   ExpectNoLaunchedIntents();
+  ExpectBridgeActionRecorded(BridgeAction::kLaunchIntent, 1);
+  ExpectLaunchIntentResultRecorded(LaunchIntentResult::kNotAllowed);
 }
 
 TEST_F(AppControllerServiceTest, LaunchIntentFailsWhenArcIsDisabled) {
@@ -534,6 +571,8 @@ TEST_F(AppControllerServiceTest, LaunchIntentFailsWhenArcIsDisabled) {
       intent, false, base::Optional<std::string>("ARC bridge not available."));
 
   ExpectNoLaunchedIntents();
+  ExpectBridgeActionRecorded(BridgeAction::kLaunchIntent, 1);
+  ExpectLaunchIntentResultRecorded(LaunchIntentResult::kArcUnavailable);
 }
 
 TEST_F(AppControllerServiceTest, ClientIsNotifiedOfChangesToAndroidApp) {
@@ -666,12 +705,14 @@ TEST_F(AppControllerServiceTest, ClientIsNotNotifiedOfSuperfluousChanges) {
   first_app_state.app_id = "app";
   first_app_state.type = AppType::kBuiltIn;
   ExpectAppChangedUpdates({first_app_state});
+  ExpectBridgeActionRecorded(BridgeAction::kNotifiedAppChange, 1);
 
   // We don't care about this field, so changes to it shouldn't be
   // propagated to the client.
   app_delta.additional_search_terms = {"random_term"};
   AddAppDeltaToAppService(app_delta.Clone());
   ExpectAppChangedUpdates({first_app_state});
+  ExpectBridgeActionRecorded(BridgeAction::kNotifiedAppChange, 1);
 }
 
 TEST_F(AppControllerServiceTest, LaunchAppCallsAppServiceCorrectly) {
@@ -680,12 +721,14 @@ TEST_F(AppControllerServiceTest, LaunchAppCallsAppServiceCorrectly) {
                                display::kDefaultDisplayId));
 
   service()->LaunchApp("fake_app_id");
+  ExpectBridgeActionRecorded(BridgeAction::kLaunchApp, 1);
 }
 
 TEST_F(AppControllerServiceTest, UninstallAppCallsAppServiceCorrectly) {
   EXPECT_CALL(*proxy(), Uninstall("fake_app_id"));
 
   service()->UninstallApp("fake_app_id");
+  ExpectBridgeActionRecorded(BridgeAction::kUninstallApp, 1);
 }
 
 }  // namespace kiosk_next_home
