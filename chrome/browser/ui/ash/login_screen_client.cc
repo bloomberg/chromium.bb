@@ -138,7 +138,7 @@ void LoginScreenClient::AuthenticateUserWithEasyUnlock(
 }
 
 void LoginScreenClient::ValidateParentAccessCode(
-    const AccountId& account_id,
+    const base::Optional<AccountId>& account_id,
     const std::string& access_code,
     ValidateParentAccessCodeCallback callback) {
   bool result = chromeos::parent_access::ParentAccessService::Get()

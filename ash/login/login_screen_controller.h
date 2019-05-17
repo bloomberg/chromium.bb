@@ -74,7 +74,7 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen,
                                           OnAuthenticateCallback callback);
   void EnrollUserWithExternalBinary(OnAuthenticateCallback callback);
   void AuthenticateUserWithEasyUnlock(const AccountId& account_id);
-  void ValidateParentAccessCode(const AccountId& account_id,
+  void ValidateParentAccessCode(const base::Optional<AccountId>& account_id,
                                 const std::string& code,
                                 OnParentAccessValidation callback);
   void HardlockPod(const AccountId& account_id);
@@ -218,4 +218,4 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen,
 
 }  // namespace ash
 
-#endif  // ASH_LOGIN_LOCK_SCREEN_CONTROLLER_H_
+#endif  // ASH_LOGIN_LOGIN_SCREEN_CONTROLLER_H_

@@ -180,7 +180,7 @@ void LoginScreenController::AuthenticateUserWithEasyUnlock(
 }
 
 void LoginScreenController::ValidateParentAccessCode(
-    const AccountId& account_id,
+    const base::Optional<AccountId>& account_id,
     const std::string& code,
     OnParentAccessValidation callback) {
   if (!login_screen_client_) {

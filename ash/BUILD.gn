@@ -429,6 +429,8 @@ component("ash") {
     "login/ui/note_action_launch_button.h",
     "login/ui/parent_access_view.cc",
     "login/ui/parent_access_view.h",
+    "login/ui/parent_access_widget.cc",
+    "login/ui/parent_access_widget.h",
     "login/ui/pin_keyboard_animation.cc",
     "login/ui/pin_keyboard_animation.h",
     "login/ui/public_account_warning_dialog.cc",

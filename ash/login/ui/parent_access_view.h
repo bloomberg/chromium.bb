@@ -76,9 +76,12 @@ class ASH_EXPORT ParentAccessView : public NonAccessibleView,
     OnFinished on_finished;
   };
 
-  // Creates parent access view for the user identified by |account_id|.
-  // |callbacks| will be called when user performs certain actions.
-  ParentAccessView(const AccountId& account_id, const Callbacks& callbacks);
+  // Creates parent access view that will validate the parent access code for a
+  // specific child, when |account_id| is set, or to any child signed in the
+  // device, when it is empty. |callbacks| will be called when user performs
+  // certain actions.
+  ParentAccessView(const base::Optional<AccountId>& account_id,
+                   const Callbacks& callbacks);
   ~ParentAccessView() override;
 
   // views::View:
@@ -118,8 +121,9 @@ class ASH_EXPORT ParentAccessView : public NonAccessibleView,
   // Callbacks to be called when user performs certain actions.
   const Callbacks callbacks_;
 
-  // Account id of the user that parent access code is processed for.
-  const AccountId account_id_;
+  // Account id of the user that parent access code is processed for. When
+  // empty, the code is processed for all the children signed in the device.
+  const base::Optional<AccountId> account_id_;
 
   State state_ = State::kNormal;
 
