@@ -2,20 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/metrics/persistent_histograms.h"
+#include "components/metrics/persistent_histograms.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/persistent_histogram_allocator.h"
-#include "base/path_service.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
-#include "chrome/common/chrome_paths.h"
 #include "components/metrics/persistent_system_profile.h"
 #include "components/variations/variations_associated_data.h"
 
@@ -41,11 +38,7 @@ const char kBrowserMetricsName[] = "BrowserMetrics";
 
 // Check for feature enabling the use of persistent histogram storage and
 // enable the global allocator if so.
-void InstantiatePersistentHistograms() {
-  base::FilePath metrics_dir;
-  if (!base::PathService::Get(chrome::DIR_USER_DATA, &metrics_dir))
-    return;
-
+void InstantiatePersistentHistograms(const base::FilePath& metrics_dir) {
   // Create a directory for storing completed metrics files. Files in this
   // directory must have embedded system profiles. If the directory can't be
   // created, the file will just be deleted below.
