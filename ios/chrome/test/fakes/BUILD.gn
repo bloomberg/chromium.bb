@@ -29,6 +29,8 @@ source_set("fakes") {
     "fake_store_kit_launcher.mm",
     "fake_ui_view_controller.h",
     "fake_ui_view_controller.mm",
+    "fake_web_state_list_observing_delegate.h",
+    "fake_web_state_list_observing_delegate.mm",
   ]
 
   deps = [
@@ -42,6 +44,7 @@ source_set("fakes") {
     "//ios/chrome/browser/ui/overscroll_actions",
     "//ios/chrome/browser/ui/presenters",
     "//ios/chrome/browser/web:web_internal",
+    "//ios/chrome/browser/web_state_list",
     "//ios/web/public",
     "//ios/web/public/download",
   ]

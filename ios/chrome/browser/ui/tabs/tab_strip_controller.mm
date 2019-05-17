@@ -972,6 +972,21 @@ UIColor* BackgroundColor() {
   [_tabStripView setNeedsLayout];
 }
 
+// Observer method. |webState| moved in |webStateList|.
+- (void)webStateList:(WebStateList*)webStateList
+     didMoveWebState:(web::WebState*)webState
+           fromIndex:(int)fromIndex
+             toIndex:(int)toIndex {
+  DCHECK(!_isReordering);
+
+  // Reorder the objects in _tabArray to keep in sync with the model ordering.
+  NSUInteger arrayIndex = [self indexForModelIndex:fromIndex];
+  TabView* view = [_tabArray objectAtIndex:arrayIndex];
+  [_tabArray removeObject:view];
+  [_tabArray insertObject:view atIndex:toIndex];
+  [self setNeedsLayoutWithAnimation];
+}
+
 // Observer method, |webState| removed from |webStateList|.
 - (void)webStateList:(WebStateList*)webStateList
     didDetachWebState:(web::WebState*)webState
@@ -1028,21 +1043,6 @@ UIColor* BackgroundColor() {
   [self updateContentOffsetForTabIndex:modelIndex isNewTab:YES];
 
   [self updateTabCount];
-}
-
-// Observer method.
-- (void)tabModel:(TabModel*)model
-      didMoveTab:(Tab*)tab
-       fromIndex:(NSUInteger)fromIndex
-         toIndex:(NSUInteger)toIndex {
-  DCHECK(!_isReordering);
-
-  // Reorder the objects in _tabArray to keep in sync with the model ordering.
-  NSUInteger arrayIndex = [self indexForModelIndex:fromIndex];
-  TabView* view = [_tabArray objectAtIndex:arrayIndex];
-  [_tabArray removeObject:view];
-  [_tabArray insertObject:view atIndex:toIndex];
-  [self setNeedsLayoutWithAnimation];
 }
 
 // Observer method.

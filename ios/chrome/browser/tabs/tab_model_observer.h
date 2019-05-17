@@ -26,16 +26,6 @@
     didRemoveTab:(Tab*)tab
          atIndex:(NSUInteger)index;
 
-// A tab was moved to the given index.  |fromIndex| is guaranteed to be
-// different than |toIndex| (moves to the same index do not trigger
-// notifications).  This method is only called for moves that change the
-// relative order of tabs (for example, closing the first tab decrements all tab
-// indexes by one, but will not call this observer method).
-- (void)tabModel:(TabModel*)model
-      didMoveTab:(Tab*)tab
-       fromIndex:(NSUInteger)fromIndex
-         toIndex:(NSUInteger)toIndex;
-
 // A Tab was replaced in the model, at the given index.
 - (void)tabModel:(TabModel*)model
     didReplaceTab:(Tab*)oldTab

@@ -46,18 +46,6 @@
 }
 
 - (void)webStateList:(WebStateList*)webStateList
-     didMoveWebState:(web::WebState*)webState
-           fromIndex:(int)fromIndex
-             toIndex:(int)toIndex {
-  DCHECK_GE(fromIndex, 0);
-  DCHECK_GE(toIndex, 0);
-  [_tabModelObservers tabModel:_tabModel
-                    didMoveTab:LegacyTabHelper::GetTabForWebState(webState)
-                     fromIndex:static_cast<NSUInteger>(fromIndex)
-                       toIndex:static_cast<NSUInteger>(toIndex)];
-}
-
-- (void)webStateList:(WebStateList*)webStateList
     didReplaceWebState:(web::WebState*)oldWebState
           withWebState:(web::WebState*)newWebState
                atIndex:(int)atIndex {
