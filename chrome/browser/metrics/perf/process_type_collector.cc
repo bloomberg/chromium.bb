@@ -170,6 +170,12 @@ std::map<uint32_t, Thread> ProcessTypeCollector::ParseThreadTypes(
                base::StartsWith(cmd, "VizCompositorTh",
                                 base::CompareCase::SENSITIVE)) {
       thread = Thread::COMPOSITOR_THREAD;
+    } else if (base::StartsWith(cmd, "TaskScheduler",
+                                base::CompareCase::SENSITIVE)) {
+      thread = Thread::SCHEDULER_WORKER_THREAD;
+    } else if (base::StartsWith(cmd, "CompositorTileW",
+                                base::CompareCase::SENSITIVE)) {
+      thread = Thread::COMPOSITOR_TILE_WORKER_THREAD;
     }
 
     thread_types.emplace(tid, thread);
