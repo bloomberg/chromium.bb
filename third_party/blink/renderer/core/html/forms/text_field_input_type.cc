@@ -96,17 +96,10 @@ class DataListIndicatorElement final : public HTMLDivElement {
   }
 
  public:
-  static DataListIndicatorElement* Create(Document& document) {
-    DataListIndicatorElement* element =
-        MakeGarbageCollected<DataListIndicatorElement>(document);
-    element->SetShadowPseudoId(
-        AtomicString("-webkit-calendar-picker-indicator"));
-    element->setAttribute(kIdAttr, shadow_element_names::PickerIndicator());
-    return element;
+  DataListIndicatorElement(Document& document) : HTMLDivElement(document) {
+    SetShadowPseudoId(AtomicString("-webkit-calendar-picker-indicator"));
+    setAttribute(kIdAttr, shadow_element_names::PickerIndicator());
   }
-
-  inline DataListIndicatorElement(Document& document)
-      : HTMLDivElement(document) {}
 };
 
 TextFieldInputType::TextFieldInputType(HTMLInputElement& element)
@@ -313,8 +306,10 @@ void TextFieldInputType::CreateShadowSubtree() {
   editing_view_port->AppendChild(inner_editor);
   container->AppendChild(editing_view_port);
 
-  if (should_have_data_list_indicator)
-    container->AppendChild(DataListIndicatorElement::Create(document));
+  if (should_have_data_list_indicator) {
+    container->AppendChild(
+        MakeGarbageCollected<DataListIndicatorElement>(document));
+  }
   // FIXME: Because of a special handling for a spin button in
   // LayoutTextControlSingleLine, we need to put it to the last position. It's
   // inconsistent with multiple-fields date/time types.
@@ -352,8 +347,9 @@ void TextFieldInputType::ListAttributeTargetChanged() {
   if (will_have_picker_indicator) {
     Document& document = GetElement().GetDocument();
     if (Element* container = ContainerElement()) {
-      container->InsertBefore(DataListIndicatorElement::Create(document),
-                              GetSpinButtonElement());
+      container->InsertBefore(
+          MakeGarbageCollected<DataListIndicatorElement>(document),
+          GetSpinButtonElement());
     } else {
       // FIXME: The following code is similar to createShadowSubtree(),
       // but they are different. We should simplify the code by making
@@ -366,7 +362,8 @@ void TextFieldInputType::ListAttributeTargetChanged() {
       Element* editing_view_port = EditingViewPortElement::Create(document);
       editing_view_port->AppendChild(inner_editor);
       rp_container->AppendChild(editing_view_port);
-      rp_container->AppendChild(DataListIndicatorElement::Create(document));
+      rp_container->AppendChild(
+          MakeGarbageCollected<DataListIndicatorElement>(document));
       if (GetElement().GetDocument().FocusedElement() == GetElement())
         GetElement().UpdateFocusAppearance(SelectionBehaviorOnFocus::kRestore);
     }

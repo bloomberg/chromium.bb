@@ -36,12 +36,13 @@
 #include "third_party/blink/renderer/core/html/imports/html_import_child_client.h"
 #include "third_party/blink/renderer/core/html/imports/html_import_loader.h"
 #include "third_party/blink/renderer/core/html/imports/html_import_tree_root.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 
 namespace blink {
 
 HTMLImportsController::HTMLImportsController(Document& master)
-    : root_(HTMLImportTreeRoot::Create(&master)) {}
+    : root_(MakeGarbageCollected<HTMLImportTreeRoot>(&master)) {}
 
 void HTMLImportsController::Dispose() {
   // TODO(tkent): We copy loaders_ before iteration to avoid crashes.
@@ -117,7 +118,7 @@ HTMLImportChild* HTMLImportsController::Load(const Document& parent_document,
   params.SetCrossOriginAccessControl(Master()->GetSecurityOrigin(),
                                      kCrossOriginAttributeAnonymous);
 
-  HTMLImportLoader* loader = HTMLImportLoader::Create(this);
+  auto* loader = MakeGarbageCollected<HTMLImportLoader>(this);
   ResourceFetcher* fetcher = parent->GetDocument()->Fetcher();
   RawResource::FetchImport(params, fetcher, loader);
   loaders_.push_back(loader);

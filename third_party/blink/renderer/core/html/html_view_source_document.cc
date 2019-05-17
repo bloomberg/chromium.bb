@@ -61,7 +61,7 @@ HTMLViewSourceDocument::HTMLViewSourceDocument(const DocumentInit& initializer,
 }
 
 DocumentParser* HTMLViewSourceDocument::CreateParser() {
-  return HTMLViewSourceParser::Create(*this, type_);
+  return MakeGarbageCollected<HTMLViewSourceParser>(*this, type_);
 }
 
 void HTMLViewSourceDocument::CreateContainingTable() {

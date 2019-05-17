@@ -359,7 +359,10 @@ void MultipleFieldsTemporalInputTypeView::CreateShadowSubtree() {
   Document& document = GetElement().GetDocument();
   ContainerNode* container = GetElement().UserAgentShadowRoot();
 
-  container->AppendChild(DateTimeEditElement::Create(document, *this));
+  container->AppendChild(
+      MakeGarbageCollected<DateTimeEditElement, Document&,
+                           DateTimeEditElement::EditControlOwner&>(document,
+                                                                   *this));
   GetElement().UpdateView();
   container->AppendChild(
       MakeGarbageCollected<ClearButtonElement, Document&,

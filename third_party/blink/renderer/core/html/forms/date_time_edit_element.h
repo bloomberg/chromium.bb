@@ -82,8 +82,6 @@ class DateTimeEditElement final : public HTMLDivElement,
         : locale(locale), step_range(step_range) {}
   };
 
-  static DateTimeEditElement* Create(Document&, EditControlOwner&);
-
   DateTimeEditElement(Document&, EditControlOwner&);
   ~DateTimeEditElement() override;
   void Trace(Visitor*) override;
