@@ -330,7 +330,9 @@ static void set_good_speed_features_framesize_independent(
     // and clean-up the speed feature
     sf->perform_best_rd_based_gating_for_chroma = 1;
     sf->prune_ref_frame_for_rect_partitions =
-        frame_is_intra_only(&cpi->common) ? 0 : (boosted ? 1 : 2);
+        (frame_is_intra_only(&cpi->common) || (cm->allow_screen_content_tools))
+            ? 0
+            : (boosted ? 1 : 2);
     sf->prune_comp_type_by_model_rd = boosted ? 0 : 1;
     sf->disable_smooth_intra =
         !frame_is_intra_only(&cpi->common) || (cpi->rc.frames_to_key != 1);
