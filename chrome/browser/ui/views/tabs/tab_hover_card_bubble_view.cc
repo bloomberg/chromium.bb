@@ -234,6 +234,8 @@ class TabHoverCardBubbleView::WidgetSlideAnimationDelegate
 
   void StopAnimation() { slide_animation_->Stop(); }
 
+  bool IsAnimating() { return slide_animation_->is_animating(); }
+
  private:
   void AnimationProgressed(const gfx::Animation* animation) override {
     double value = gfx::Tween::CalculateValue(
@@ -351,8 +353,10 @@ void TabHoverCardBubbleView::UpdateAndShow(Tab* tab) {
   UpdateCardContent(tab->data());
   // If widget is already visible and anchored to the correct tab we should not
   // try to reset the anchor view or reshow.
-  if (widget_->IsVisible() && GetAnchorView() == tab)
+  if (widget_->IsVisible() && GetAnchorView() == tab &&
+      !slide_animation_delegate_->IsAnimating()) {
     return;
+  }
 
   if (widget_->IsVisible() && !disable_animations_for_testing_)
     slide_animation_delegate_->AnimateToAnchorView(tab);
