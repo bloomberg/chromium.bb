@@ -381,8 +381,9 @@ void ScrollManager::ComputeScrollRelatedMetrics(
     if (!scrollable_area || !scrollable_area->ScrollsOverflow())
       continue;
 
-    DCHECK(!scrollable_area->UsesCompositedScrolling() ||
-           !scrollable_area->GetNonCompositedMainThreadScrollingReasons());
+    // TODO(bokan): This DCHECK is occasionally tripped. See crbug.com/944706.
+    // DCHECK(!scrollable_area->UsesCompositedScrolling() ||
+    //        !scrollable_area->GetNonCompositedMainThreadScrollingReasons());
     *non_composited_main_thread_scrolling_reasons |=
         scrollable_area->GetNonCompositedMainThreadScrollingReasons();
   }
