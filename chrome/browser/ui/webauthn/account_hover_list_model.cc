@@ -27,8 +27,8 @@ base::string16 AccountHoverListModel::GetPlaceholderText() const {
   return base::string16();
 }
 
-const gfx::VectorIcon& AccountHoverListModel::GetPlaceholderIcon() const {
-  return kUserAccountAvatarIcon;
+const gfx::VectorIcon* AccountHoverListModel::GetPlaceholderIcon() const {
+  return &kUserAccountAvatarIcon;
 }
 
 std::vector<int> AccountHoverListModel::GetItemTags() const {
@@ -50,9 +50,8 @@ base::string16 AccountHoverListModel::GetDescriptionText(int item_tag) const {
   return base::UTF8ToUTF16(user->name.value_or(""));
 }
 
-const gfx::VectorIcon& AccountHoverListModel::GetItemIcon(int item_tag) const {
-  // TODO(nsatragno): fetch an icon from |user->icon_url|.
-  return GetPlaceholderIcon();
+const gfx::VectorIcon* AccountHoverListModel::GetItemIcon(int item_tag) const {
+  return nullptr;
 }
 
 void AccountHoverListModel::OnListItemSelected(int item_tag) {
@@ -61,4 +60,8 @@ void AccountHoverListModel::OnListItemSelected(int item_tag) {
 
 size_t AccountHoverListModel::GetPreferredItemCount() const {
   return response_list_->size();
+}
+
+bool AccountHoverListModel::StyleForTwoLines() const {
+  return true;
 }

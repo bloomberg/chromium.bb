@@ -124,6 +124,9 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
           {"", "Test User 2"},
           {"", ""},
           {"bat@example.com", "Test User 4"},
+          {"verylong@reallylongreallylongreallylongreallylongreallylong.com",
+           "Very Long String Very Long String Very Long String Very Long "
+           "String Very Long String Very Long String "},
       };
       std::vector<device::AuthenticatorGetAssertionResponse> responses;
 
