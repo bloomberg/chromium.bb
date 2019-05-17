@@ -61,7 +61,11 @@ ImageViewBase::Alignment ImageViewBase::GetVerticalAlignment() const {
 }
 
 void ImageViewBase::SetAccessibleName(const base::string16& accessible_name) {
+  if (accessible_name_ == accessible_name)
+    return;
+
   accessible_name_ = accessible_name;
+  OnPropertyChanged(&accessible_name_, kPropertyEffectsNone);
 }
 
 const base::string16& ImageViewBase::GetAccessibleName() const {
@@ -153,6 +157,7 @@ BEGIN_METADATA(ImageViewBase)
 METADATA_PARENT_CLASS(View)
 ADD_PROPERTY_METADATA(ImageViewBase, Alignment, HorizontalAlignment)
 ADD_PROPERTY_METADATA(ImageViewBase, Alignment, VerticalAlignment)
+ADD_PROPERTY_METADATA(ImageViewBase, base::string16, AccessibleName)
 END_METADATA()
 
 }  // namespace views

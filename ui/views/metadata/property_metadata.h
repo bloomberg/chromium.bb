@@ -19,7 +19,12 @@ namespace metadata {
 
 // Represents meta data for a specific read-only property member of class
 // |TClass|, with underlying type |TValue|, as the type of the actual member.
-template <typename TClass, typename TValue, TValue (TClass::*Get)() const>
+// Using a separate |TRet| type for the getter function's return type to allow
+// it to return a type with qualifier and by reference.
+template <typename TClass,
+          typename TValue,
+          typename TRet,
+          TRet (TClass::*Get)() const>
 class ClassPropertyReadOnlyMetaData : public MemberMetaDataBase {
  public:
   ClassPropertyReadOnlyMetaData() {}
@@ -45,9 +50,10 @@ class ClassPropertyReadOnlyMetaData : public MemberMetaDataBase {
 template <typename TClass,
           typename TValue,
           void (TClass::*Set)(ArgType<TValue>),
-          TValue (TClass::*Get)() const>
+          typename TRet,
+          TRet (TClass::*Get)() const>
 class ClassPropertyMetaData
-    : public ClassPropertyReadOnlyMetaData<TClass, TValue, Get> {
+    : public ClassPropertyReadOnlyMetaData<TClass, TValue, TRet, Get> {
  public:
   ClassPropertyMetaData() {}
   ~ClassPropertyMetaData() override = default;
