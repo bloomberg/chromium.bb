@@ -8,10 +8,6 @@
 
 #include "base/logging.h"
 #include "ui/aura/env.h"
-#include "ui/aura/mus/window_tree_client.h"
-#include "ui/aura/mus/window_tree_host_mus.h"
-#include "ui/aura/mus/window_tree_host_mus_init_params.h"
-#include "ui/aura/test/mus/window_tree_client_test_api.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
@@ -33,13 +29,11 @@ bool IsRotationPortrait(display::Display::Rotation rotation) {
 }  // namespace
 
 // static
-TestScreen* TestScreen::Create(const gfx::Size& size,
-                               WindowTreeClient* window_tree_client) {
+TestScreen* TestScreen::Create(const gfx::Size& size) {
   const gfx::Size kDefaultSize(800, 600);
   // Use (0,0) because the desktop aura tests are executed in
   // native environment where the display's origin is (0,0).
-  return new TestScreen(gfx::Rect(size.IsEmpty() ? kDefaultSize : size),
-                        window_tree_client);
+  return new TestScreen(gfx::Rect(size.IsEmpty() ? kDefaultSize : size));
 }
 
 TestScreen::~TestScreen() {
@@ -48,16 +42,10 @@ TestScreen::~TestScreen() {
 
 WindowTreeHost* TestScreen::CreateHostForPrimaryDisplay(Env* env) {
   DCHECK(!host_);
-  if (window_tree_client_) {
-    host_ =
-        new WindowTreeHostMus(CreateInitParamsForTopLevel(window_tree_client_));
-    host_->SetBoundsInPixels(gfx::Rect(GetPrimaryDisplay().GetSizeInPixel()));
-  } else {
-    host_ = WindowTreeHost::Create(ui::PlatformWindowInitProperties{gfx::Rect(
-                                       GetPrimaryDisplay().GetSizeInPixel())},
-                                   env)
-                .release();
-  }
+  host_ = WindowTreeHost::Create(ui::PlatformWindowInitProperties{gfx::Rect(
+                                     GetPrimaryDisplay().GetSizeInPixel())},
+                                 env)
+              .release();
   // Some tests don't correctly manage window focus/activation states.
   // Makes sure InputMethod is default focused so that IME basics can work.
   host_->GetInputMethod()->OnFocus();
@@ -184,9 +172,7 @@ display::Display TestScreen::GetDisplayNearestWindow(
   return GetPrimaryDisplay();
 }
 
-TestScreen::TestScreen(const gfx::Rect& screen_bounds,
-                       WindowTreeClient* window_tree_client)
-    : host_(nullptr), ui_scale_(1.0f), window_tree_client_(window_tree_client) {
+TestScreen::TestScreen(const gfx::Rect& screen_bounds) {
   static int64_t synthesized_display_id = 2000;
   display::Display display(synthesized_display_id++);
   display.SetScaleAndBounds(1.0f, screen_bounds);

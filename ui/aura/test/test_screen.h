@@ -21,7 +21,6 @@ class Transform;
 namespace aura {
 class Env;
 class Window;
-class WindowTreeClient;
 class WindowTreeHost;
 
 // A minimal, testing Aura implementation of display::Screen.
@@ -30,8 +29,7 @@ class TestScreen : public display::ScreenBase, public WindowObserver {
  public:
   // Creates a display::Screen of the specified size. If no size is specified,
   // then creates a 800x600 screen. |size| is in physical pixels.
-  static TestScreen* Create(const gfx::Size& size,
-                            WindowTreeClient* window_tree_client = nullptr);
+  static TestScreen* Create(const gfx::Size& size);
   ~TestScreen() override;
 
   WindowTreeHost* CreateHostForPrimaryDisplay(Env* env = nullptr);
@@ -63,14 +61,11 @@ class TestScreen : public display::ScreenBase, public WindowObserver {
       gfx::NativeWindow window) const override;
 
  private:
-  TestScreen(const gfx::Rect& screen_bounds,
-             WindowTreeClient* window_tree_client);
+  explicit TestScreen(const gfx::Rect& screen_bounds);
 
-  aura::WindowTreeHost* host_;
+  aura::WindowTreeHost* host_ = nullptr;
 
-  float ui_scale_;
-
-  WindowTreeClient* window_tree_client_;
+  float ui_scale_ = 1.0f;
 
   DISALLOW_COPY_AND_ASSIGN(TestScreen);
 };

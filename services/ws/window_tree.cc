@@ -2164,10 +2164,6 @@ void WindowTree::BindWindowManagerInterface(
 
 void WindowTree::GetCursorLocationMemory(
     GetCursorLocationMemoryCallback callback) {
-  auto shared_buffer_handle =
-      aura::Env::GetInstance()->GetLastMouseLocationMemory();
-  DCHECK(shared_buffer_handle.is_valid());
-  std::move(callback).Run(std::move(shared_buffer_handle));
 }
 
 void WindowTree::PerformWindowMove(uint32_t change_id,

@@ -69,10 +69,6 @@ WindowService::WindowService(
       ime_registrar_(&ime_driver_),
       event_queue_(std::make_unique<EventQueue>(this)) {
   DCHECK(focus_client);  // A |focus_client| must be provided.
-  // MouseLocationManager is necessary for providing the shared memory with the
-  // location of the mouse to clients.
-  aura::Env::GetInstance()->CreateMouseLocationManager();
-
   input_device_server_.RegisterAsObserver();
 
   // This property should be registered by the PropertyConverter constructor,

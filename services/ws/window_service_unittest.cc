@@ -12,6 +12,7 @@
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "services/ws/public/cpp/host/gpu_interface_provider.h"
 #include "services/ws/public/mojom/constants.mojom.h"
+#include "services/ws/public/mojom/window_manager.mojom.h"
 #include "services/ws/public/mojom/window_tree.mojom.h"
 #include "services/ws/test_wm.mojom.h"
 #include "services/ws/window_manager_interface.h"

@@ -11,6 +11,7 @@
 #include "ui/aura/test/test_screen.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/wm/core/default_screen_position_client.h"
 
 namespace wm {

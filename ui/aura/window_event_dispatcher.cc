@@ -21,7 +21,6 @@
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/env_input_state_controller.h"
-#include "ui/aura/mus/mus_mouse_location_updater.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_event_dispatcher_observer.h"
@@ -67,18 +66,6 @@ bool IsEventCandidateForHold(const ui::Event& event) {
   return false;
 }
 
-void ConvertEventLocationToTarget(ui::EventTarget* event_target,
-                                  ui::EventTarget* target,
-                                  ui::Event* event) {
-  if (target == event_target || !event->IsLocatedEvent())
-    return;
-
-  gfx::Point location = event->AsLocatedEvent()->location();
-  Window::ConvertPointToTarget(static_cast<Window*>(event_target),
-                               static_cast<Window*>(target), &location);
-  event->AsLocatedEvent()->set_location(location);
-}
-
 }  // namespace
 
 WindowEventDispatcher::ObserverNotifier::ObserverNotifier(
@@ -110,8 +97,6 @@ WindowEventDispatcher::WindowEventDispatcher(WindowTreeHost* host,
       event_targeter_(std::make_unique<WindowTargeter>()) {
   env_->gesture_recognizer()->AddGestureEventHelper(this);
   env_->AddObserver(this);
-  if (env_->mode() == Env::Mode::MUS)
-    mus_mouse_location_updater_ = std::make_unique<MusMouseLocationUpdater>();
 }
 
 WindowEventDispatcher::~WindowEventDispatcher() {
@@ -483,71 +468,8 @@ void WindowEventDispatcher::ReleaseNativeCapture() {
 ////////////////////////////////////////////////////////////////////////////////
 // WindowEventDispatcher, ui::EventProcessor implementation:
 
-ui::EventTarget* WindowEventDispatcher::GetInitialEventTarget(
-    ui::Event* event) {
-  if (host_->window()->env()->mode() == Env::Mode::LOCAL ||
-      !event->IsLocatedEvent() || !event->target()) {
-    return nullptr;
-  }
-
-  ui::LocatedEvent* located_event = event->AsLocatedEvent();
-
-  Window* priority_target = static_cast<Window*>(
-      event_targeter_->GetPriorityTargetInRootWindow(window(), *located_event));
-  if (!priority_target)
-    return nullptr;
-
-  Window* original_target = static_cast<Window*>(event->target());
-
-  // The event has a target but we need to dispatch it using the normal path.
-  // Reset the target and location so the normal flow is used.
-  const gfx::PointF original_location = located_event->location_f();
-  ui::Event::DispatcherApi(event).set_target(nullptr);
-  located_event->set_location_f(located_event->root_location_f());
-  if (event_targeter_->ProcessEventIfTargetsDifferentRootWindow(
-          window(), static_cast<Window*>(priority_target), event)) {
-    // Make sure the event was marked handled so that EventProcessor doesn't
-    // attempt to process the event as well.
-    event->SetHandled();
-    return nullptr;
-  }
-  located_event->set_location_f(original_location);
-  if (original_target != priority_target) {
-    // Don't convert from the root as it may be offset by the bounds of the
-    // root's host.
-    located_event->ConvertLocationToTarget(original_target, window());
-    located_event->ConvertLocationToTarget(window(), priority_target);
-  }
-  return priority_target;
-}
-
 ui::EventTarget* WindowEventDispatcher::GetRootForEvent(ui::Event* event) {
-  if (host_->window()->env()->mode() == Env::Mode::LOCAL)
-    return window();
-
-  if (!event->target())
-    return window();
-
-  ui::EventTarget* event_target = event->target();
-  if (event->IsLocatedEvent()) {
-    ui::EventTarget* target = event_targeter_->FindTargetInRootWindow(
-        window(), *event->AsLocatedEvent());
-    if (target) {
-      ConvertEventLocationToTarget(event_target, target, event);
-      return target;
-    }
-  }
-
-  ui::EventTarget* ancestor_with_targeter = event_target;
-  for (ui::EventTarget* ancestor = event_target; ancestor;
-       ancestor = ancestor->GetParentTarget()) {
-    if (ancestor->GetEventTargeter())
-      ancestor_with_targeter = ancestor;
-    if (ancestor == window())
-      break;
-  }
-  ConvertEventLocationToTarget(event_target, ancestor_with_targeter, event);
-  return ancestor_with_targeter;
+  return window();
 }
 
 void WindowEventDispatcher::OnEventProcessingStarted(ui::Event* event) {
@@ -565,9 +487,6 @@ void WindowEventDispatcher::OnEventProcessingStarted(ui::Event* event) {
     TransformEventForDeviceScaleFactor(static_cast<ui::LocatedEvent*>(event));
   }
 
-  if (mus_mouse_location_updater_)
-    mus_mouse_location_updater_->OnEventProcessingStarted(*event);
-
   observer_notifiers_.push(std::make_unique<ObserverNotifier>(this, *event));
 }
 
@@ -575,8 +494,6 @@ void WindowEventDispatcher::OnEventProcessingFinished(ui::Event* event) {
   if (in_shutdown_)
     return;
 
-  if (mus_mouse_location_updater_)
-    mus_mouse_location_updater_->OnEventProcessingFinished();
   observer_notifiers_.pop();
 }
 

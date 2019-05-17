@@ -87,8 +87,8 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
   statistics_provider_ =
       std::make_unique<chromeos::system::ScopedFakeStatisticsProvider>();
 
-  ui::test::EventGeneratorDelegate::SetFactoryFunction(base::BindRepeating(
-      &aura::test::EventGeneratorDelegateAura::Create, nullptr));
+  ui::test::EventGeneratorDelegate::SetFactoryFunction(
+      base::BindRepeating(&aura::test::EventGeneratorDelegateAura::Create));
 
   display::ResetDisplayIdForTest();
   wm_state_ = std::make_unique<::wm::WMState>();

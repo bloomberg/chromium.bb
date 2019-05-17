@@ -15,7 +15,7 @@
 #include "third_party/blink/public/web/blink.h"
 
 #if defined(USE_AURA)
-#include "ui/aura/test/aura_test_suite_setup.h"
+#include "ui/aura/env.h"
 #endif
 
 #if defined(USE_X11)
@@ -75,8 +75,7 @@ UnitTestTestSuite::~UnitTestTestSuite() = default;
 
 int UnitTestTestSuite::Run() {
 #if defined(USE_AURA)
-  // Must be initialized after test suites manipulate feature flags.
-  aura::AuraTestSuiteSetup aura_setup;
+  std::unique_ptr<aura::Env> aura_env = aura::Env::CreateInstance();
 #endif
 
   return test_suite_->Run();

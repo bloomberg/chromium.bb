@@ -653,11 +653,7 @@ class ASH_EXPORT Shell : public SessionObserver,
 
   static Shell* instance_;
 
-  // |owned_aura_env_| is non-null if Shell created aura::Env. Shell creates
-  // aura::Env only in single-process-mash mode.
-  std::unique_ptr<aura::Env> owned_aura_env_;
-
-  // This is either |owned_aura_env_|, or Env::GetInstance().
+  // TODO(crbug.com/960503): remove this.
   aura::Env* aura_env_;
 
   // The CompoundEventFilter owned by aura::Env object.

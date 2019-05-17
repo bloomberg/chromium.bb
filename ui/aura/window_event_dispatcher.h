@@ -39,7 +39,6 @@ class TouchEvent;
 
 namespace aura {
 class Env;
-class MusMouseLocationUpdater;
 class TestScreen;
 class WindowTargeter;
 class WindowTreeHost;
@@ -220,7 +219,6 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   void ReleaseNativeCapture() override;
 
   // Overridden from ui::EventProcessor:
-  ui::EventTarget* GetInitialEventTarget(ui::Event* event) override;
   ui::EventTarget* GetRootForEvent(ui::Event* event) override;
   void OnEventProcessingStarted(ui::Event* event) override;
   void OnEventProcessingFinished(ui::Event* event) override;
@@ -326,8 +324,6 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   ui::LocatedEvent* dispatching_held_event_ = nullptr;
 
   ScopedObserver<aura::Window, aura::WindowObserver> observer_manager_;
-
-  std::unique_ptr<MusMouseLocationUpdater> mus_mouse_location_updater_;
 
   // The default EventTargeter for WindowEventDispatcher generated events.
   std::unique_ptr<WindowTargeter> event_targeter_;

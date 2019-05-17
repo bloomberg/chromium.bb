@@ -553,11 +553,7 @@ void Shell::NotifyShelfAutoHideBehaviorChanged(aura::Window* root_window) {
 
 Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
              service_manager::Connector* connector)
-    : owned_aura_env_(::features::IsSingleProcessMash()
-                          ? aura::Env::CreateLocalInstanceForInProcess()
-                          : nullptr),
-      aura_env_(owned_aura_env_.get() ? owned_aura_env_.get()
-                                      : aura::Env::GetInstance()),
+    : aura_env_(aura::Env::GetInstance()),
       brightness_control_delegate_(
           std::make_unique<system::BrightnessControllerChromeos>()),
       connector_(connector),

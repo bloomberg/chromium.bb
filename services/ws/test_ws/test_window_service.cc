@@ -61,8 +61,8 @@ void TestWindowService::InitForInProcess(
     ui::ContextFactoryPrivate* context_factory_private,
     std::unique_ptr<GpuInterfaceProvider> gpu_interface_provider) {
   is_in_process_ = true;
-  aura_test_helper_ = std::make_unique<aura::test::AuraTestHelper>(
-      aura::Env::CreateLocalInstanceForInProcess());
+  aura_test_helper_ =
+      std::make_unique<aura::test::AuraTestHelper>(aura::Env::CreateInstance());
   SetupAuraTestHelper(context_factory, context_factory_private);
 
   gpu_interface_provider_ = std::move(gpu_interface_provider);

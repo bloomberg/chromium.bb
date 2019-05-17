@@ -10,8 +10,6 @@
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
-#include "ui/aura/mus/window_port_mus.h"
-#include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -22,32 +20,10 @@
 #include "ui/events/event_target_iterator.h"
 
 namespace aura {
-namespace {
 
-bool AreInsetsEmptyOrPositive(const gfx::Insets& insets) {
-  return insets.left() >= 0 && insets.right() >= 0 && insets.top() >= 0 &&
-         insets.bottom() >= 0;
-}
+WindowTargeter::WindowTargeter() = default;
 
-void UpdateMusIfNecessary(aura::Window* window,
-                          const gfx::Insets& mouse_extend,
-                          const gfx::Insets& touch_extend) {
-  if (!window || window->env()->mode() != Env::Mode::MUS)
-    return;
-
-  // Negative insets are used solely to extend the hit-test region of child
-  // windows, which is not needed by code using MUS (negative insets are only
-  // used in the server).
-  if (AreInsetsEmptyOrPositive(mouse_extend) &&
-      AreInsetsEmptyOrPositive(touch_extend)) {
-    WindowPortMus::Get(window)->SetHitTestInsets(mouse_extend, touch_extend);
-  }
-}
-
-}  // namespace
-
-WindowTargeter::WindowTargeter() {}
-WindowTargeter::~WindowTargeter() {}
+WindowTargeter::~WindowTargeter() = default;
 
 bool WindowTargeter::SubtreeShouldBeExploredForEvent(
     Window* window,
@@ -87,7 +63,6 @@ void WindowTargeter::SetInsets(const gfx::Insets& mouse_extend,
 
   mouse_extend_ = mouse_extend;
   touch_extend_ = touch_extend;
-  UpdateMusIfNecessary();
 }
 
 Window* WindowTargeter::GetPriorityTargetInRootWindow(
@@ -239,11 +214,7 @@ Window* WindowTargeter::FindTargetForKeyEvent(Window* window) {
 }
 
 void WindowTargeter::OnInstalled(Window* window) {
-  // Needs to clear the existing insets when uninstalled.
-  if (!window)
-    aura::UpdateMusIfNecessary(window_, gfx::Insets(), gfx::Insets());
   window_ = window;
-  UpdateMusIfNecessary();
 }
 
 Window* WindowTargeter::FindTargetForLocatedEvent(Window* window,
@@ -348,11 +319,6 @@ bool WindowTargeter::ShouldUseExtendedBounds(const aura::Window* w) const {
   // Insets should only apply to the window. Subclasses may enforce other
   // policies.
   return window() == w;
-}
-
-// TODO: this function should go away once https://crbug.com/879308 is fixed.
-void WindowTargeter::UpdateMusIfNecessary() {
-  aura::UpdateMusIfNecessary(window_, mouse_extend_, touch_extend_);
 }
 
 Window* WindowTargeter::FindTargetForNonKeyEvent(Window* root_window,

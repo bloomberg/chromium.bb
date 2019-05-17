@@ -44,10 +44,6 @@ source_set("test_support") {
 
     public_deps += [ "//content/test:test_support" ]
   }
-
-  if (enable_mus) {
-    deps += [ "//ui/aura:test_support" ]
-  }
 }
 
 # Defines a main() function that uses components_test_suite.h

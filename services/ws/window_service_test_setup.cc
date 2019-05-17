@@ -12,6 +12,7 @@
 #include "services/ws/window_service.h"
 #include "services/ws/window_tree.h"
 #include "services/ws/window_tree_binding.h"
+#include "ui/aura/env.h"
 #include "ui/aura/test/event_generator_delegate_aura.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/compositor/test/test_context_factories.h"

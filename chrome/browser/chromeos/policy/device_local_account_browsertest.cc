@@ -248,7 +248,6 @@ const char kFakeOncWithCertificate[] =
     "]}";
 
 bool IsLogoutConfirmationDialogShowing() {
-  // TODO(mash): Add mojo test API for this.
   return !!ash::Shell::Get()
                ->logout_confirmation_controller()
                ->dialog_for_testing();

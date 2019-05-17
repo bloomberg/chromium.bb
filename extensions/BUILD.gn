@@ -234,10 +234,6 @@ test("extensions_unittests") {
   data_deps = [
     "//third_party/mesa_headers",
   ]
-
-  if (enable_mus) {
-    deps += [ "//ui/aura:test_support" ]
-  }
 }
 
 test("extensions_browsertests") {

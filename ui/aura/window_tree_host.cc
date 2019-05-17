@@ -459,11 +459,7 @@ void WindowTreeHost::OnHostResizedInPixels(
     window_->AllocateLocalSurfaceId();
     local_surface_id_allocation = window_->GetLocalSurfaceIdAllocation();
   }
-  std::unique_ptr<ScopedLocalSurfaceIdValidator> lsi_validator;
-  // With mus |local_surface_id_allocation|, may be applied to Window by way of
-  // Compositor::SetScaleAndSize() so that we can't check here.
-  if (window()->env()->mode() == Env::Mode::LOCAL)
-    lsi_validator = std::make_unique<ScopedLocalSurfaceIdValidator>(window());
+  ScopedLocalSurfaceIdValidator lsi_validator(window());
   compositor_->SetScaleAndSize(device_scale_factor_, new_size_in_pixels,
                                local_surface_id_allocation);
 

@@ -169,8 +169,8 @@ BrowserTestBase::BrowserTestBase()
   embedded_test_server_ = std::make_unique<net::EmbeddedTestServer>();
 
 #if defined(USE_AURA)
-  ui::test::EventGeneratorDelegate::SetFactoryFunction(base::BindRepeating(
-      &aura::test::EventGeneratorDelegateAura::Create, nullptr));
+  ui::test::EventGeneratorDelegate::SetFactoryFunction(
+      base::BindRepeating(&aura::test::EventGeneratorDelegateAura::Create));
 #elif defined(OS_MACOSX)
   ui::test::EventGeneratorDelegate::SetFactoryFunction(
       base::BindRepeating(&views::test::CreateEventGeneratorDelegateMac));

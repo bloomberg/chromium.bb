@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/strings/string_number_conversions.h"
+#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
