@@ -58,7 +58,7 @@ class RecurrencePredictor {
 // so should not be used for anything except testing.
 class FakePredictor : public RecurrencePredictor {
  public:
-  explicit FakePredictor(FakePredictorConfig config);
+  explicit FakePredictor(const FakePredictorConfig& config);
   ~FakePredictor() override;
 
   // RecurrencePredictor:
@@ -102,7 +102,8 @@ class DefaultPredictor : public RecurrencePredictor {
 // store are needed, the DefaultPredictor should be used instead.
 class ZeroStateFrecencyPredictor : public RecurrencePredictor {
  public:
-  explicit ZeroStateFrecencyPredictor(ZeroStateFrecencyPredictorConfig config);
+  explicit ZeroStateFrecencyPredictor(
+      const ZeroStateFrecencyPredictorConfig& config);
   ~ZeroStateFrecencyPredictor() override;
 
   // Records all information about a target: its id and score, along with the
@@ -131,7 +132,7 @@ class ZeroStateFrecencyPredictor : public RecurrencePredictor {
 
   // Controls how quickly scores decay, in other words controls the trade-off
   // between frequency and recency.
-  float decay_coeff_;
+  const float decay_coeff_;
 
   // Number of times the store has been updated.
   unsigned int num_updates_ = 0;

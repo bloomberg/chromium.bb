@@ -119,9 +119,9 @@ class RecurrenceRanker {
   bool load_from_disk_completed_ = false;
   // Whether the current user will have their home directory wiped at the end of
   // the session. We adjust the behaviour of the ranker based on this.
-  bool is_ephemeral_user_;
+  const bool is_ephemeral_user_;
 
-  base::TimeDelta min_seconds_between_saves_;
+  const base::TimeDelta min_seconds_between_saves_;
   base::Time time_of_last_save_;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;

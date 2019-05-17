@@ -31,7 +31,7 @@ base::flat_map<unsigned int, float> RecurrencePredictor::Rank(
   return {};
 }
 
-FakePredictor::FakePredictor(FakePredictorConfig config) {}
+FakePredictor::FakePredictor(const FakePredictorConfig& config) {}
 FakePredictor::~FakePredictor() = default;
 
 const char FakePredictor::kPredictorName[] = "FakePredictor";
@@ -75,7 +75,7 @@ void DefaultPredictor::ToProto(RecurrencePredictorProto* proto) const {}
 void DefaultPredictor::FromProto(const RecurrencePredictorProto& proto) {}
 
 ZeroStateFrecencyPredictor::ZeroStateFrecencyPredictor(
-    ZeroStateFrecencyPredictorConfig config)
+    const ZeroStateFrecencyPredictorConfig& config)
     : decay_coeff_(config.decay_coeff()) {}
 ZeroStateFrecencyPredictor::~ZeroStateFrecencyPredictor() = default;
 
