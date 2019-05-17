@@ -251,7 +251,7 @@ const AXPosition AXPosition::FromPosition(
           case AXPositionAdjustmentBehavior::kMoveRight: {
             const AXObject* next_child = FindNeighboringUnignoredObject(
                 *document, *node_after_position,
-                ToContainerNodeOrNull(container_node), adjustment_behavior);
+                DynamicTo<ContainerNode>(container_node), adjustment_behavior);
             if (next_child) {
               return CreatePositionBeforeObject(*next_child,
                                                 adjustment_behavior);
@@ -263,7 +263,7 @@ const AXPosition AXPosition::FromPosition(
           case AXPositionAdjustmentBehavior::kMoveLeft: {
             const AXObject* previous_child = FindNeighboringUnignoredObject(
                 *document, *node_after_position,
-                ToContainerNodeOrNull(container_node), adjustment_behavior);
+                DynamicTo<ContainerNode>(container_node), adjustment_behavior);
             if (previous_child) {
               // |CreatePositionAfterObject| cannot be used here because it will
               // try to create a position before the object that comes after

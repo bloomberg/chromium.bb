@@ -394,9 +394,9 @@ ContainerNode* Node::ParentNodeWithCounting() const {
 
 NodeList* Node::childNodes() {
   ThreadState::MainThreadGCForbiddenScope gc_forbidden;
-  if (IsContainerNode())
-    return EnsureRareData().EnsureNodeLists().EnsureChildNodeList(
-        ToContainerNode(*this));
+  auto* this_node = DynamicTo<ContainerNode>(this);
+  if (this_node)
+    return EnsureRareData().EnsureNodeLists().EnsureChildNodeList(*this_node);
   return EnsureRareData().EnsureNodeLists().EnsureEmptyChildNodeList(*this);
 }
 
@@ -666,9 +666,9 @@ void Node::DidEndCustomizedScrollPhase() {
 Node* Node::insertBefore(Node* new_child,
                          Node* ref_child,
                          ExceptionState& exception_state) {
-  if (IsContainerNode())
-    return ToContainerNode(this)->InsertBefore(new_child, ref_child,
-                                               exception_state);
+  auto* this_node = DynamicTo<ContainerNode>(this);
+  if (this_node)
+    return this_node->InsertBefore(new_child, ref_child, exception_state);
 
   exception_state.ThrowDOMException(
       DOMExceptionCode::kHierarchyRequestError,
@@ -683,9 +683,9 @@ Node* Node::insertBefore(Node* new_child, Node* ref_child) {
 Node* Node::replaceChild(Node* new_child,
                          Node* old_child,
                          ExceptionState& exception_state) {
-  if (IsContainerNode())
-    return ToContainerNode(this)->ReplaceChild(new_child, old_child,
-                                               exception_state);
+  auto* this_node = DynamicTo<ContainerNode>(this);
+  if (this_node)
+    return this_node->ReplaceChild(new_child, old_child, exception_state);
 
   exception_state.ThrowDOMException(
       DOMExceptionCode::kHierarchyRequestError,
@@ -698,8 +698,9 @@ Node* Node::replaceChild(Node* new_child, Node* old_child) {
 }
 
 Node* Node::removeChild(Node* old_child, ExceptionState& exception_state) {
-  if (IsContainerNode())
-    return ToContainerNode(this)->RemoveChild(old_child, exception_state);
+  auto* this_node = DynamicTo<ContainerNode>(this);
+  if (this_node)
+    return this_node->RemoveChild(old_child, exception_state);
 
   exception_state.ThrowDOMException(
       DOMExceptionCode::kNotFoundError,
@@ -712,8 +713,9 @@ Node* Node::removeChild(Node* old_child) {
 }
 
 Node* Node::appendChild(Node* new_child, ExceptionState& exception_state) {
-  if (IsContainerNode())
-    return ToContainerNode(this)->AppendChild(new_child, exception_state);
+  auto* this_node = DynamicTo<ContainerNode>(this);
+  if (this_node)
+    return this_node->AppendChild(new_child, exception_state);
 
   exception_state.ThrowDOMException(
       DOMExceptionCode::kHierarchyRequestError,
@@ -1333,7 +1335,8 @@ bool Node::IsShadowIncludingInclusiveAncestorOf(const Node* node) const {
   if (isConnected() != node->isConnected())
     return false;
 
-  bool has_children = IsContainerNode() && ToContainerNode(this)->HasChildren();
+  auto* this_node = DynamicTo<ContainerNode>(this);
+  bool has_children = this_node ? this_node->HasChildren() : false;
   bool has_shadow = IsShadowHost(this);
   if (!has_children && !has_shadow)
     return false;
@@ -1836,7 +1839,7 @@ void Node::setTextContent(const String& text) {
     case kElementNode:
     case kDocumentFragmentNode: {
       // FIXME: Merge this logic into replaceChildrenWithText.
-      ContainerNode* container = ToContainerNode(this);
+      auto* container = To<ContainerNode>(this);
 
       // Note: This is an intentional optimization.
       // See crbug.com/352836 also.
@@ -2746,8 +2749,9 @@ void Node::WillCallDefaultEventHandler(const Event& event) {
   if (GetLayoutObject()) {
     GetLayoutObject()->InvalidateIfControlStateChanged(kFocusControlState);
 
-    if (RuntimeEnabledFeatures::CSSFocusVisibleEnabled() && IsContainerNode())
-      ToContainerNode(*this).FocusVisibleStateChanged();
+    auto* this_node = DynamicTo<ContainerNode>(this);
+    if (RuntimeEnabledFeatures::CSSFocusVisibleEnabled() && this_node)
+      this_node->FocusVisibleStateChanged();
   }
 }
 

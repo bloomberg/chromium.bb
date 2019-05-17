@@ -3159,9 +3159,9 @@ String AXNodeObject::NativeTextAlternative(
       name_sources->back().type = name_from;
       name_sources->back().native_source = kAXTextFromNativeHTMLTitleElement;
     }
-    DCHECK(GetNode()->IsContainerNode());
+    auto* container_node = To<ContainerNode>(GetNode());
     Element* title = ElementTraversal::FirstChild(
-        ToContainerNode(*(GetNode())), HasTagName(svg_names::kTitleTag));
+        *container_node, HasTagName(svg_names::kTitleTag));
 
     if (title) {
       AXObject* title_ax_object = AXObjectCache().GetOrCreate(title);

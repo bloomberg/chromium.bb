@@ -300,7 +300,8 @@ String StyledMarkupSerializer<Strategy>::CreateMarkup() {
     }
   } else if (should_append_parent_tag) {
     EditingStyle* style = traverser.CreateInlineStyleIfNeeded(*last_closed_);
-    traverser.WrapWithNode(*ToContainerNode(last_closed_), style);
+    // traverser.WrapWithNode(*To<ContainerNode>(last_closed_.Get()), style);
+    traverser.WrapWithNode(To<ContainerNode>(*last_closed_), style);
   }
 
   // FIXME: The interchange newline should be placed in the block that it's in,
@@ -386,7 +387,7 @@ Node* StyledMarkupTraverser<Strategy>::Traverse(Node* start_node,
             AppendEndMarkup(*next);
             last_closed = next;
           } else {
-            ancestors_to_close.push_back(ToContainerNode(n));
+            ancestors_to_close.push_back(To<ContainerNode>(n));
           }
           continue;
         }

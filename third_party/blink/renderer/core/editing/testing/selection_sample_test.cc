@@ -181,7 +181,7 @@ TEST_F(SelectionSampleTest, SerializeEmpty) {
 
 TEST_F(SelectionSampleTest, SerializeNamespace) {
   SetBodyContent("<div xmlns:foo='http://xyz'><foo:bar></foo:bar>");
-  ContainerNode& sample = *ToContainerNode(GetDocument().body()->firstChild());
+  auto& sample = *To<ContainerNode>(GetDocument().body()->firstChild());
   EXPECT_EQ("<foo:bar></foo:bar>",
             SelectionSample::GetSelectionText(sample, SelectionInDOMTree()))
       << "GetSelectionText() does not insert namespace declaration.";

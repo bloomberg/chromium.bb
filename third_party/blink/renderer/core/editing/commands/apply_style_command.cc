@@ -360,11 +360,12 @@ void ApplyStyleCommand::ApplyBlockStyle(EditingStyle* style,
 
   EphemeralRange start_ephemeral_range =
       PlainTextRange(start_index)
-          .CreateRangeForSelection(ToContainerNode(scope));
+          .CreateRangeForSelection(To<ContainerNode>(scope));
   if (start_ephemeral_range.IsNull())
     return;
   EphemeralRange end_ephemeral_range =
-      PlainTextRange(end_index).CreateRangeForSelection(ToContainerNode(scope));
+      PlainTextRange(end_index).CreateRangeForSelection(
+          To<ContainerNode>(scope));
   if (end_ephemeral_range.IsNull())
     return;
   UpdateStartEnd(EphemeralRange(start_ephemeral_range.StartPosition(),
@@ -1372,7 +1373,7 @@ void ApplyStyleCommand::PushDownInlineStyleAroundNode(
   HeapVector<Member<Element>> elements_to_push_down;
   while (current && current != target_node && current->contains(target_node)) {
     NodeVector current_children;
-    GetChildNodes(ToContainerNode(*current), current_children);
+    GetChildNodes(To<ContainerNode>(*current), current_children);
     Element* styled_element = nullptr;
     if (current->IsStyledElement() &&
         IsStyledInlineElementToRemove(ToElement(current))) {

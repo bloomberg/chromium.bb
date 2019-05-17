@@ -627,12 +627,13 @@ Response InspectorDOMAgent::querySelector(int node_id,
   Response response = AssertNode(node_id, node);
   if (!response.isSuccess())
     return response;
-  if (!node || !node->IsContainerNode())
+  auto* container_node = DynamicTo<ContainerNode>(node);
+  if (!container_node)
     return Response::Error("Not a container node");
 
   DummyExceptionStateForTesting exception_state;
-  Element* element = ToContainerNode(node)->QuerySelector(
-      AtomicString(selectors), exception_state);
+  Element* element =
+      container_node->QuerySelector(AtomicString(selectors), exception_state);
   if (exception_state.HadException())
     return Response::Error("DOM Error while querying");
 
@@ -649,11 +650,12 @@ Response InspectorDOMAgent::querySelectorAll(
   Response response = AssertNode(node_id, node);
   if (!response.isSuccess())
     return response;
-  if (!node || !node->IsContainerNode())
+  auto* container_node = DynamicTo<ContainerNode>(node);
+  if (!container_node)
     return Response::Error("Not a container node");
 
   DummyExceptionStateForTesting exception_state;
-  StaticElementList* elements = ToContainerNode(node)->QuerySelectorAll(
+  StaticElementList* elements = container_node->QuerySelectorAll(
       AtomicString(selectors), exception_state);
   if (exception_state.HadException())
     return Response::Error("DOM Error while querying");

@@ -338,7 +338,7 @@ void SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::ExitNode() {
     // TODO(editing-dev): The start of this emitted range is wrong. Ensuring
     // correctness would require |VisiblePositions| and so would be slow.
     // previousBoundary expects this.
-    text_state_.EmitChar16BeforeChildren('\n', ToContainerNode(*node_));
+    text_state_.EmitChar16BeforeChildren('\n', To<ContainerNode>(*node_));
   }
 }
 

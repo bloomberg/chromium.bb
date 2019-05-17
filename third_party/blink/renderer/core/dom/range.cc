@@ -516,7 +516,7 @@ static unsigned LengthOfContents(const Node* node) {
     case Node::kElementNode:
     case Node::kDocumentNode:
     case Node::kDocumentFragmentNode:
-      return ToContainerNode(node)->CountChildren();
+      return To<ContainerNode>(node)->CountChildren();
     case Node::kAttributeNode:
     case Node::kDocumentTypeNode:
       return 0;
@@ -898,7 +898,7 @@ void Range::insertNode(Node* new_node, ExceptionState& exception_state) {
   // 5. Let parent be range’s start node if referenceNode is null, and
   // referenceNode’s parent otherwise.
   ContainerNode& parent = reference_node ? *reference_node->parentNode()
-                                         : ToContainerNode(start_node);
+                                         : To<ContainerNode>(start_node);
 
   // 6. Ensure pre-insertion validity of node into parent before referenceNode.
   if (!parent.EnsurePreInsertionValidity(*new_node, reference_node, nullptr,
@@ -1348,7 +1348,7 @@ void Range::surroundContents(Node* new_parent,
 
   // 4. If newParent has children, replace all with null within newParent.
   while (Node* n = new_parent->firstChild()) {
-    ToContainerNode(new_parent)->RemoveChild(n, exception_state);
+    To<ContainerNode>(new_parent)->RemoveChild(n, exception_state);
     if (exception_state.HadException())
       return;
   }

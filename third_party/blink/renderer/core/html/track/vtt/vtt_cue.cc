@@ -463,8 +463,9 @@ void VTTCue::CopyVTTNodeToDOMTree(ContainerNode* vtt_node,
     else
       cloned_node = node->cloneNode(false);
     parent->AppendChild(cloned_node);
-    if (node->IsContainerNode())
-      CopyVTTNodeToDOMTree(ToContainerNode(node), ToContainerNode(cloned_node));
+    auto* container_node = DynamicTo<ContainerNode>(node);
+    if (container_node)
+      CopyVTTNodeToDOMTree(container_node, To<ContainerNode>(cloned_node));
   }
 }
 

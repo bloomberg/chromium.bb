@@ -17,7 +17,7 @@ class SplitTextNodeCommandTest : public EditingTestBase {};
 TEST_F(SplitTextNodeCommandTest, splitInMarkerInterior) {
   SetBodyContent("<div contenteditable>test1 test2 test3</div>");
 
-  ContainerNode* div = ToContainerNode(GetDocument().body()->firstChild());
+  auto* div = To<ContainerNode>(GetDocument().body()->firstChild());
 
   EphemeralRange range = PlainTextRange(0, 5).CreateRange(*div);
   GetDocument().Markers().AddTextMatchMarker(
