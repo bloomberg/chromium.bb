@@ -53,6 +53,7 @@ import org.chromium.chrome.browser.preferences.PreferenceUtils;
 import org.chromium.chrome.browser.preferences.SearchUtils;
 import org.chromium.chrome.browser.preferences.website.Website.StoredDataClearedCallback;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.ui.widget.Toast;
 
@@ -349,6 +350,9 @@ public class SingleCategoryPreferences extends PreferenceFragment
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         menu.clear();
+        // We don't need the options menu in touchless mode (crbug/962562).
+        if (FeatureUtilities.isNoTouchModeEnabled()) return;
+
         inflater.inflate(R.menu.website_preferences_menu, menu);
 
         mSearchItem = menu.findItem(R.id.search);
@@ -855,7 +859,9 @@ public class SingleCategoryPreferences extends PreferenceFragment
         }
 
         // Configure/hide the third-party cookie toggle, as needed.
-        if (mCategory.showSites(SiteSettingsCategory.Type.COOKIES)) {
+        // We don't need this toggle in touchless. Refer to crbug/951850.
+        if (mCategory.showSites(SiteSettingsCategory.Type.COOKIES)
+                && !FeatureUtilities.isNoTouchModeEnabled()) {
             thirdPartyCookies.setOnPreferenceChangeListener(this);
             updateThirdPartyCookiesCheckBox();
         } else {
