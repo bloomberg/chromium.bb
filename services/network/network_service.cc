@@ -24,7 +24,6 @@
 #include "components/os_crypt/os_crypt.h"
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "mojo/public/cpp/bindings/type_converter.h"
 #include "net/base/logging_network_change_observer.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/network_change_notifier_posix.h"
@@ -47,7 +46,6 @@
 #include "services/network/cross_origin_read_blocking.h"
 #include "services/network/dns_config_change_manager.h"
 #include "services/network/http_auth_cache_copier.h"
-#include "services/network/net_log_capture_mode_type_converter.h"
 #include "services/network/net_log_exporter.h"
 #include "services/network/network_context.h"
 #include "services/network/network_usage_accumulator.h"
@@ -428,7 +426,7 @@ void NetworkService::SetClient(mojom::NetworkServiceClientPtr client,
 }
 
 void NetworkService::StartNetLog(base::File file,
-                                 mojom::NetLogCaptureMode capture_mode,
+                                 net::NetLogCaptureMode capture_mode,
                                  base::Value client_constants) {
   DCHECK(client_constants.is_dict());
   std::unique_ptr<base::DictionaryValue> constants = net::GetNetConstants();
@@ -436,8 +434,7 @@ void NetworkService::StartNetLog(base::File file,
 
   file_net_log_observer_ = net::FileNetLogObserver::CreateUnboundedPreExisting(
       std::move(file), std::move(constants));
-  file_net_log_observer_->StartObserving(
-      net_log_, mojo::ConvertTo<net::NetLogCaptureMode>(capture_mode));
+  file_net_log_observer_->StartObserving(net_log_, capture_mode);
 }
 
 void NetworkService::SetSSLKeyLogFile(const base::FilePath& file) {

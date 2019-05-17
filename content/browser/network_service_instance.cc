@@ -186,7 +186,7 @@ CONTENT_EXPORT network::mojom::NetworkService* GetNetworkServiceFromConnector(
             // TODO(mmenke): Get capture mode from the command line.
             (*g_network_service_ptr)
                 ->StartNetLog(std::move(file),
-                              network::mojom::NetLogCaptureMode::DEFAULT,
+                              net::NetLogCaptureMode::Default(),
                               std::move(client_constants));
           }
         }

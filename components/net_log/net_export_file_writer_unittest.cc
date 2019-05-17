@@ -68,7 +68,7 @@ class FakeNetLogExporter : public network::mojom::NetLogExporter {
 
   void Start(base::File destination,
              base::Value extra_constants,
-             network::mojom::NetLogCaptureMode capture_mode,
+             net::NetLogCaptureMode capture_mode,
              uint64_t max_file_size,
              StartCallback callback) override {
     std::move(callback).Run(net::OK);

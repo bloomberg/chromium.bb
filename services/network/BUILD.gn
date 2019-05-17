@@ -61,8 +61,6 @@ jumbo_component("network_service") {
     "loader_util.h",
     "mojo_host_resolver_impl.cc",
     "mojo_host_resolver_impl.h",
-    "net_log_capture_mode_type_converter.cc",
-    "net_log_capture_mode_type_converter.h",
     "net_log_exporter.cc",
     "net_log_exporter.h",
     "network_change_manager.cc",

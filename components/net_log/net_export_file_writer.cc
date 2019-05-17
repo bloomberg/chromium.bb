@@ -184,20 +184,11 @@ void NetExportFileWriter::StartNetLogAfterCreateFile(
   if (!net_log_exporter_)
     return;
 
-  network::mojom::NetLogCaptureMode rpc_capture_mode =
-      network::mojom::NetLogCaptureMode::DEFAULT;
-  if (capture_mode.include_socket_bytes()) {
-    rpc_capture_mode = network::mojom::NetLogCaptureMode::INCLUDE_SOCKET_BYTES;
-  } else if (capture_mode.include_cookies_and_credentials()) {
-    rpc_capture_mode =
-        network::mojom::NetLogCaptureMode::INCLUDE_COOKIES_AND_CREDENTIALS;
-  }
-
   // base::Unretained(this) is safe here since |net_log_exporter_| is owned by
   // |this| and is a mojo InterfacePtr, which guarantees callback cancellation
   // upon its destruction.
   net_log_exporter_->Start(
-      std::move(output_file), std::move(custom_constants), rpc_capture_mode,
+      std::move(output_file), std::move(custom_constants), capture_mode,
       max_file_size,
       base::BindOnce(&NetExportFileWriter::OnStartResult,
                      base::Unretained(this), capture_mode));

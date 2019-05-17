@@ -150,7 +150,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   void SetClient(mojom::NetworkServiceClientPtr client,
                  mojom::NetworkServiceParamsPtr params) override;
   void StartNetLog(base::File file,
-                   mojom::NetLogCaptureMode capture_mode,
+                   net::NetLogCaptureMode capture_mode,
                    base::Value constants) override;
   void SetSSLKeyLogFile(const base::FilePath& file) override;
   void CreateNetworkContext(mojom::NetworkContextRequest request,
