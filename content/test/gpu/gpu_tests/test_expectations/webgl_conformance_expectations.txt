@@ -1,8 +1,9 @@
 # tags: [ android chromeos linux mac win win10 win7 ]
 # tags: [ android-chromium android-webview-instrumentation debug release ]
 # tags: [ amd amd-0x6613 amd-0x699f intel intel-0xa011 intel-0xa2e nvidia
-#         nvidia-0x1cb3 nvidia-0xfe9 qualcomm qualcomm-adreno-(tm)-330
-#         qualcomm-adreno-(tm)-418 qualcomm-adreno-(tm)-420 qualcomm-adreno-(tm)-430 ]
+#         nvidia-0x1cb3 nvidia-0x2184 nvidia-0xfe9 qualcomm
+#         qualcomm-adreno-(tm)-330 qualcomm-adreno-(tm)-418
+#         qualcomm-adreno-(tm)-420 qualcomm-adreno-(tm)-430 ]
 # tags: [ d3d11 d3d9 no-angle opengl opengles vulkan ]
 # tags: [ no-passthrough passthrough ]
 # tags: [ webgl-version-1 ]
@@ -249,7 +250,7 @@ crbug.com/angleproject/2192 [ win d3d9 passthrough ] conformance/textures/video/
 crbug.com/angleproject/2192 [ win d3d9 passthrough ] conformance/textures/webgl_canvas/tex-2d-luminance-luminance-unsigned_byte.html [ Failure ]
 crbug.com/angleproject/2192 [ win d3d9 passthrough ] conformance/textures/webgl_canvas/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Failure ]
 
-# Vulkan / Win / Passthough command decoder
+# Vulkan / Win / Passthrough command decoder
 crbug.com/angleproject/2708 [ win vulkan passthrough ] conformance/attribs/gl-vertex-attrib-unconsumed-out-of-bounds.html [ Failure ]
 crbug.com/angleproject/2929 [ win vulkan passthrough ] conformance/canvas/canvas-test.html [ Failure ]
 crbug.com/angleproject/2918 [ win vulkan passthrough ] conformance/canvas/draw-static-webgl-to-multiple-canvas-test.html [ Failure ]
@@ -296,10 +297,11 @@ crbug.com/angleproject/2905 [ win vulkan passthrough ] WebglExtension_WEBGL_dept
 crbug.com/angleproject/2394 [ win vulkan passthrough ] WebglExtension_WEBGL_draw_buffers [ Failure ]
 crbug.com/angleproject/3111 [ win vulkan passthrough ] deqp/data/gles2/shaders/swizzles.html [ Skip ]
 
-# Vulkan / Win / NVIDIA / Passthough command decoder
+# Vulkan / Win / NVIDIA / Passthrough command decoder
 crbug.com/angleproject/2918 [ win nvidia vulkan passthrough ] conformance/canvas/to-data-url-test.html [ Failure ]
 crbug.com/angleproject/2922 [ win nvidia vulkan passthrough ] conformance/context/premultiplyalpha-test.html [ Failure ]
 crbug.com/963205 [ win nvidia vulkan passthrough ] conformance/extensions/webgl-compressed-texture-s3tc-srgb.html [ Failure ]
+crbug.com/964321 [ win nvidia vulkan passthrough ] conformance/extensions/webgl-compressed-texture-s3tc.html [ RetryOnFailure ]
 crbug.com/963217 [ win nvidia vulkan passthrough ] conformance/glsl/samplers/glsl-function-texture2dprojlod.html [ Failure ]
 crbug.com/angleproject/2915 [ win nvidia vulkan passthrough ] conformance/limits/gl-max-texture-dimensions.html [ Failure ]
 crbug.com/angleproject/2939 [ win nvidia vulkan passthrough ] conformance/rendering/gl-scissor-fbo-test.html [ RetryOnFailure ]
@@ -308,10 +310,14 @@ crbug.com/angleproject/2915 [ win nvidia vulkan passthrough ] conformance/textur
 crbug.com/angleproject/2930 [ win nvidia vulkan passthrough ] conformance/textures/misc/texture-size-cube-maps.html [ Failure ]
 crbug.com/angleproject/2926 [ win nvidia vulkan passthrough ] deqp/data/gles2/shaders/conversions.html [ Failure ]
 
-# Vulkan / Win / Intel / Passthough command decoder
+# Vulkan / Win10 / NVIDIA GeForce GTX 1660 / Passthrough command decoder
+crbug.com/964331 [ win10 nvidia-0x2184 vulkan passthrough ] conformance/ogles/GL/pow/pow_009_to_016.html [ Failure ]
+crbug.com/964331 [ win10 nvidia-0x2184 vulkan passthrough ] conformance/ogles/GL/pow/pow_017_to_024.html [ Failure ]
+
+# Vulkan / Win / Intel / Passthrough command decoder
 crbug.com/angleproject/2722 [ win intel vulkan passthrough ] conformance/rendering/clipping-wide-points.html [ Failure ]
 
-# Vulkan / Win / AMD / Passthough command decoder
+# Vulkan / Win / AMD / Passthrough command decoder
 crbug.com/angleproject/2931 [ win amd vulkan passthrough ] conformance/buffers/buffer-data-dynamic-delay.html [ Failure ]
 crbug.com/angleproject/2918 [ win amd vulkan passthrough ] conformance/canvas/to-data-url-test.html [ Failure ]
 crbug.com/angleproject/2922 [ win amd vulkan passthrough ] conformance/context/premultiplyalpha-test.html [ Failure ]
