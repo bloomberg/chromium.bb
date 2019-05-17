@@ -28,6 +28,7 @@ def _CommonChecks(input_api, output_api, block_on_failure=False):
   results.extend(
       _CheckPerfJsonConfigs(input_api, output_api, block_on_failure))
   results.extend(_CheckWprShaFiles(input_api, output_api))
+  results.extend(_CheckShardMaps(input_api, output_api, block_on_failure))
   results.extend(input_api.RunTests(input_api.canned_checks.GetPylint(
       input_api, output_api, extra_paths_list=_GetPathsToPrepend(input_api),
       pylintrc='pylintrc')))
@@ -134,6 +135,24 @@ def _CheckWprShaFiles(input_api, output_api):
   if return_code:
     results.append(output_api.PresubmitError(
         'Validating WPR archives failed:', long_text=out))
+  return results
+
+
+def _CheckShardMaps(input_api, output_api, block_on_failure):
+  results = []
+  perf_dir = input_api.PresubmitLocalPath()
+  vpython = 'vpython.bat' if input_api.is_windows else 'vpython'
+  out, return_code = _RunArgs([
+      vpython,
+      input_api.os_path.join(perf_dir, 'generate_perf_sharding'),
+      'validate'], input_api)
+  if return_code:
+    if block_on_failure:
+      results.append(output_api.PresubmitError(
+          'Validating shard maps failed', long_text=out))
+    else:
+      results.append(output_api.PresubmitPromptWarning(
+          'Validating shard maps failed', long_text=out))
   return results
 
 

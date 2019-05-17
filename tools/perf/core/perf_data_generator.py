@@ -807,32 +807,6 @@ def _get_telemetry_perf_benchmarks_metadata():
 
 TELEMETRY_PERF_BENCHMARKS = _get_telemetry_perf_benchmarks_metadata()
 
-ALL_PERF_WATERFALL_BENCHMARKS_METADATA = merge_dicts(
-    TELEMETRY_PERF_BENCHMARKS, GTEST_BENCHMARKS, OTHER_BENCHMARKS)
-
-
-# With migration to new recipe tests are now listed in the shard maps
-# that live in tools/perf/core.  We need to verify off of that list.
-def get_telemetry_tests_in_performance_test_suite():
-  tests = set()
-  for platform in bot_platforms.OFFICIAL_PLATFORMS:
-    add_benchmarks_from_sharding_map(
-        tests, platform.shards_map_file_path)
-  return tests
-
-
-def add_benchmarks_from_sharding_map(tests, shard_map_path):
-  if not os.path.exists(shard_map_path):
-    raise RuntimeError(
-        'Platform does not have a shard map at %s.' % shard_map_path)
-  with open(shard_map_path) as f:
-    shard_map = json.load(f)
-  for shard, benchmarks in shard_map.iteritems():
-    if "extra_infos" in shard:
-      continue
-    for benchmark, _ in benchmarks['benchmarks'].iteritems():
-      tests.add(benchmark)
-
 
 def get_scheduled_non_telemetry_benchmarks(perf_waterfall_file):
   test_names = set()
@@ -865,32 +839,12 @@ def is_perf_benchmarks_scheduling_valid(
 
   Return: True if all benchmarks are properly scheduled, False otherwise.
   """
-  scheduled_telemetry_tests = get_telemetry_tests_in_performance_test_suite()
   scheduled_non_telemetry_tests = get_scheduled_non_telemetry_benchmarks(
       perf_waterfall_file)
-
-  all_perf_telemetry_tests = set(TELEMETRY_PERF_BENCHMARKS)
   all_perf_gtests = set(GTEST_BENCHMARKS)
   all_perf_other_tests = set(OTHER_BENCHMARKS)
 
   error_messages = []
-
-  for test_name in all_perf_telemetry_tests - scheduled_telemetry_tests:
-    if not test_name.startswith('UNSCHEDULED_'):
-      error_messages.append(
-          'Telemetry benchmark %s exists but is not scheduled to run. Rename '
-          'it to UNSCHEDULED_%s, then file a crbug against Telemetry and '
-          'Chrome Client Infrastructure team to schedule the benchmark on the '
-          'perf waterfall.' % (test_name, test_name))
-
-  for test_name in scheduled_telemetry_tests - all_perf_telemetry_tests:
-    error_messages.append(
-        'Telemetry benchmark %s no longer exists but is scheduled. File a bug '
-        'against Telemetry and/or Chrome Client Infrastructure team to remove '
-        'the corresponding benchmark class and deschedule the benchmark on the '
-        "perf waterfall. After that, you can safely remove the benchmark's "
-        'dependency code, e.g: stories, WPR archives, metrics, etc.' %
-        test_name)
 
   for test_name in all_perf_gtests - scheduled_non_telemetry_tests:
     error_messages.append(
