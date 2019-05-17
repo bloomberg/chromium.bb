@@ -999,6 +999,35 @@ TEST_F(AuthenticatorImplTest, AppIdExtension) {
     EXPECT_EQ(true, callback_receiver.value()->echo_appid_extension);
     EXPECT_EQ(true, callback_receiver.value()->appid_extension);
   }
+
+  {
+    // AppID should still work when the authenticator supports credProtect.
+    device::VirtualCtap2Device::Config config;
+    config.u2f_support = true;
+    config.pin_support = true;
+    config.resident_key_support = true;
+    config.cred_protect_support = true;
+
+    device::test::ScopedVirtualFidoDevice virtual_device;
+    virtual_device.SetCtap2Config(config);
+
+    // Inject a registration for the URL (which is a U2F AppID).
+    PublicKeyCredentialRequestOptionsPtr options =
+        GetTestPublicKeyCredentialRequestOptions();
+    ASSERT_TRUE(virtual_device.mutable_state()->InjectRegistration(
+        options->allow_credentials[0]->id, kTestOrigin1));
+
+    options->appid = kTestOrigin1;
+
+    TestGetAssertionCallback callback_receiver;
+    authenticator->GetAssertion(std::move(options),
+                                callback_receiver.callback());
+    callback_receiver.WaitForCallback();
+    ASSERT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+
+    EXPECT_EQ(true, callback_receiver.value()->echo_appid_extension);
+    EXPECT_EQ(true, callback_receiver.value()->appid_extension);
+  }
 }
 
 TEST_F(AuthenticatorImplTest, TestGetAssertionTimeout) {
