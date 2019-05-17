@@ -31,8 +31,7 @@ P2PQuicCryptoStreamFactoryImpl::CreateServerCryptoStream(
     quic::QuicSession* session,
     quic::QuicCryptoServerStream::Helper* helper) {
   return std::make_unique<quic::QuicCryptoServerStream>(
-      crypto_config, compressed_certs_cache,
-      /*use_stateless_rejects_if_peer_supported=*/false, session, helper);
+      crypto_config, compressed_certs_cache, session, helper);
 }
 
 }  // namespace blink

@@ -106,7 +106,7 @@ QUIC_FLAG(double, FLAGS_quic_lumpy_pacing_cwnd_fraction, 0.25f)
 // If true, static streams in a QuicSession will be stored inside dynamic
 // stream map. static_stream_map will no longer be used.
 QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_eliminate_static_stream_map_2,
+          FLAGS_quic_reloadable_flag_quic_eliminate_static_stream_map_3,
           false)
 
 // Default enables QUIC ack decimation and adds a connection option to disable
@@ -370,4 +370,10 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_conservative_bursts, false)
 // If true, make QuicDispatcher no longer have an instance of QuicFramer.
 QUIC_FLAG(bool,
           FLAGS_quic_restart_flag_quic_no_framer_object_in_dispatcher,
+          false)
+
+// When true, QuicFramer will not override connection IDs in headers and will
+// instead respect the source/destination direction as expected by IETF QUIC.
+QUIC_FLAG(bool,
+          FLAGS_quic_restart_flag_quic_do_not_override_connection_id,
           false)
