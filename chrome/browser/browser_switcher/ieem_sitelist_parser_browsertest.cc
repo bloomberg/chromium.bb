@@ -152,7 +152,7 @@ IN_PROC_BROWSER_TEST_F(IeemSitelistParserTest, V2Full) {
       "</somethings></site><!-- good sites --> <site url=\"www.cpandl.com\">"
       "<compat-mode>IE8Enterprise</compat-mode><open-in>MSEdge</open-in></site>"
       "<site url=\"contoso.com\"><compat-mode>default</compat-mode><open-in>"
-      "none</open-in></site><site url=\"relecloud.com\"/><site "
+      "None</open-in></site><site url=\"relecloud.com\"/><site "
       "url=\"relecloud.com/about\"><compat-mode>IE8Enterprise</compat-mode>"
       "</site></site-list><!-- trailing gibberish <trailing><site "
       "url=\"ignore after site list!\">  <compat-mode>IE8Enterprise\""

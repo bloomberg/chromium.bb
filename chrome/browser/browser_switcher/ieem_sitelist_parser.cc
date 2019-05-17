@@ -121,7 +121,9 @@ void ParseIeFileVersionTwo(const base::Value& xml, ParsedXml* result) {
       GetXmlElementText(*open_in_node, &mode);
     }
     base::TrimWhitespaceASCII(mode, base::TRIM_ALL, &mode);
-    std::string prefix = (mode.empty() || mode == "none") ? "!" : "";
+    std::string prefix =
+        (mode.empty() || !base::CompareCaseInsensitiveASCII(mode, "none")) ? "!"
+                                                                           : "";
     result->rules.push_back(prefix + url);
   }
 }
